@@ -6,7 +6,7 @@ import {
   View
 } from '@avalabs/k2-alpine'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
-import { useLocalSearchParams, useRouter } from 'expo-router'
+import { useLocalSearchParams } from 'expo-router'
 import React, { useCallback, useMemo, useRef, useState } from 'react'
 import { useSelector } from 'react-redux'
 import {
@@ -48,12 +48,13 @@ import {
   isTokenWithBalancePVM
 } from '@avalabs/avalanche-module'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { useDebouncedRouter } from 'common/utils/useDebouncedRouter'
 
 const TokenDetailScreen = (): React.JSX.Element => {
   const {
     theme: { colors }
   } = useTheme()
-  const { navigate } = useRouter()
+  const { navigate } = useDebouncedRouter()
   const botomInset = useSafeAreaInsets().bottom
   const tabViewRef = useRef<CollapsibleTabsRef>(null)
   const { openUrl } = useInAppBrowser()
@@ -147,14 +148,17 @@ const TokenDetailScreen = (): React.JSX.Element => {
     })
   }, [navigate])
 
-  const ACTION_BUTTONS: ActionButton[] = [
-    { title: ActionButtonTitle.Send, icon: 'send', onPress: noop },
-    { title: ActionButtonTitle.Swap, icon: 'swap', onPress: noop },
-    { title: ActionButtonTitle.Buy, icon: 'buy', onPress: handleBuy },
-    { title: ActionButtonTitle.Stake, icon: 'stake', onPress: noop },
-    { title: ActionButtonTitle.Bridge, icon: 'bridge', onPress: noop },
-    { title: ActionButtonTitle.Connect, icon: 'connect', onPress: noop }
-  ]
+  const ACTION_BUTTONS: ActionButton[] = useMemo(
+    () => [
+      { title: ActionButtonTitle.Send, icon: 'send', onPress: noop },
+      { title: ActionButtonTitle.Swap, icon: 'swap', onPress: noop },
+      { title: ActionButtonTitle.Buy, icon: 'buy', onPress: handleBuy },
+      { title: ActionButtonTitle.Stake, icon: 'stake', onPress: noop },
+      { title: ActionButtonTitle.Bridge, icon: 'bridge', onPress: noop },
+      { title: ActionButtonTitle.Connect, icon: 'connect', onPress: noop }
+    ],
+    [handleBuy]
+  )
 
   const renderEmptyTabBar = useCallback((): JSX.Element => <></>, [])
 
@@ -190,6 +194,7 @@ const TokenDetailScreen = (): React.JSX.Element => {
       </View>
     )
   }, [
+    ACTION_BUTTONS,
     animatedHeaderStyle,
     colors.$surfacePrimary,
     formattedBalance,

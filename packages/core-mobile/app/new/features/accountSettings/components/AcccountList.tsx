@@ -1,5 +1,4 @@
 import { AnimatedPressable, useTheme, View, Text } from '@avalabs/k2-alpine'
-import { useRouter } from 'expo-router'
 import React, { useCallback, useMemo, useRef } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import {
@@ -12,6 +11,7 @@ import Animated, { LinearTransition } from 'react-native-reanimated'
 import { getItemEnteringAnimation } from 'common/utils/animations'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { FlatList } from 'react-native-gesture-handler'
+import { useDebouncedRouter } from 'common/utils/useDebouncedRouter'
 import { AccountItem } from './AccountItem'
 
 export const ACCOUNT_CARD_SIZE = 140
@@ -23,7 +23,7 @@ export const AccountList = (): React.JSX.Element => {
     theme: { colors }
   } = useTheme()
   const dispatch = useDispatch()
-  const { navigate } = useRouter()
+  const { navigate } = useDebouncedRouter()
   const activeAccount = useSelector(selectActiveAccount)
   const accountCollection = useSelector(selectAccounts)
   const flatListRef = useRef<FlatList>(null)

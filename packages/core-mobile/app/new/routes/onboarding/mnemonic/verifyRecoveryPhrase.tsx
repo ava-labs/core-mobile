@@ -1,9 +1,10 @@
 import React from 'react'
-import { useGlobalSearchParams, useRouter } from 'expo-router'
+import { useGlobalSearchParams } from 'expo-router'
 import { VerifyRecoveryPhrase as Component } from 'features/onboarding/components/VerifyRecoveryPhrase'
+import { useDebouncedRouter } from 'common/utils/useDebouncedRouter'
 
 export default function VerifyRecoveryPhrase(): JSX.Element {
-  const { navigate } = useRouter()
+  const { navigate } = useDebouncedRouter()
   const { mnemonic } = useGlobalSearchParams<{ mnemonic: string }>()
 
   const handleVerified = (): void => {

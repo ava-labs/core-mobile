@@ -5,9 +5,10 @@ import {
   View
 } from '@avalabs/k2-alpine'
 import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
+import { useDebouncedRouter } from 'common/utils/useDebouncedRouter'
 import { Space } from 'components/Space'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
-import { useLocalSearchParams, useRouter } from 'expo-router'
+import { useLocalSearchParams } from 'expo-router'
 import { AccountAddresses } from 'features/accountSettings/components/accountAddresses'
 import { AccountButtons } from 'features/accountSettings/components/AccountButtons'
 import { WalletInfo } from 'features/accountSettings/components/WalletInfo'
@@ -31,7 +32,7 @@ import { selectIsPrivacyModeEnabled } from 'store/settings/securityPrivacy'
 
 const AccountScreen = (): JSX.Element => {
   const { accountIndex } = useLocalSearchParams<{ accountIndex: string }>()
-  const { navigate } = useRouter()
+  const { navigate } = useDebouncedRouter()
   const isPrivacyModeEnabled = useSelector(selectIsPrivacyModeEnabled)
   const { theme } = useTheme()
   const [balanceHeaderLayout, setBalanceHeaderLayout] = useState<

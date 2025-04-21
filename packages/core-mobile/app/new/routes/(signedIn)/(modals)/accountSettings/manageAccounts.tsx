@@ -1,4 +1,3 @@
-import { useRouter } from 'expo-router'
 import { useNavigation } from '@react-navigation/native'
 import React, {
   useLayoutEffect,
@@ -35,6 +34,7 @@ import { selectTokenVisibility } from 'store/portfolio'
 import { selectBalanceTotalInCurrencyForAccount } from 'store/balance'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import { ScrollView as RnScrollView } from 'react-native'
+import { useDebouncedRouter } from 'common/utils/useDebouncedRouter'
 
 const ITEM_HEIGHT = 50
 
@@ -44,7 +44,7 @@ const ManageAccountsScreen = (): React.JSX.Element => {
   } = useTheme()
   const { setOptions } = useNavigation()
   const dispatch = useDispatch()
-  const { navigate } = useRouter()
+  const { navigate } = useDebouncedRouter()
   const [searchText, setSearchText] = useState('')
   const [isAddingAccount, setIsAddingAccount] = useState(false)
   const accountCollection = useSelector(selectAccounts)

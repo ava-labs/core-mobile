@@ -8,7 +8,7 @@ import {
   Icons,
   useTheme
 } from '@avalabs/k2-alpine'
-import { useLocalSearchParams, useRouter } from 'expo-router'
+import { useLocalSearchParams } from 'expo-router'
 import { useDeFiProtocol } from 'hooks/defi/useDeFiProtocol'
 import { useExchangedAmount } from 'new/common/hooks/useExchangedAmount'
 import { useDeFiChainList } from 'hooks/defi/useDeFiChainList'
@@ -21,9 +21,10 @@ import { LogoWithNetwork } from 'features/portfolio/defi/components/LogoWithNetw
 import { DeFiPortfolioItemGroup } from 'features/portfolio/defi/components/DeFiPortfolioItemGroup'
 import { LinearGradientBottomWrapper } from 'common/components/LinearGradientBottomWrapper'
 import { useFormatCurrency } from 'new/common/hooks/useFormatCurrency'
+import { useDebouncedRouter } from 'common/utils/useDebouncedRouter'
 
 const DeFiDetailScreen = (): JSX.Element => {
-  const { back } = useRouter()
+  const { back } = useDebouncedRouter()
   const { protocolId } = useLocalSearchParams<{ protocolId: string }>()
 
   const { formatCurrency } = useFormatCurrency()

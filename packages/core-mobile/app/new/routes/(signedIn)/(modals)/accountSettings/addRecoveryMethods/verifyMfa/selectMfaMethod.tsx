@@ -1,7 +1,7 @@
 import { Text, View } from '@avalabs/k2-alpine'
 import { Loader } from 'common/components/Loader'
 import { useUserMfa } from 'common/hooks/useUserMfa'
-import { useRouter } from 'expo-router'
+import { useDebouncedRouter } from 'common/utils/useDebouncedRouter'
 import { useRecoveryMethodsContext } from 'features/accountSettings/context/RecoverMethodsProvider'
 import { RecoveryMethodList } from 'features/onboarding/components/RecoveryMethodList'
 import { RecoveryMethod } from 'features/onboarding/hooks/useAvailableRecoveryMethods'
@@ -12,7 +12,7 @@ import { ScrollView } from 'react-native-gesture-handler'
 const TITLE = 'Verify recovery method'
 
 const SelectRecoveryMethodScreen = (): React.JSX.Element => {
-  const { navigate } = useRouter()
+  const { navigate } = useDebouncedRouter()
   const { onVerifyFido } = useRecoveryMethodsContext()
   const { data: mfaMethods, isLoading } = useUserMfa()
   const registeredRecoveryMethods = useRegisteredRecoveryMethods(mfaMethods)

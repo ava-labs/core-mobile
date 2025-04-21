@@ -1,10 +1,11 @@
 import React from 'react'
 import { useAnalyticsConsent } from 'hooks/useAnalyticsConsent'
-import { useGlobalSearchParams, useRouter } from 'expo-router'
+import { useGlobalSearchParams } from 'expo-router'
 import { AnalyticsConsent as Component } from 'features/onboarding/components/AnalyticsConsent'
+import { useDebouncedRouter } from 'common/utils/useDebouncedRouter'
 
 export default function AnalyticsConsent(): JSX.Element {
-  const { navigate } = useRouter()
+  const { navigate } = useDebouncedRouter()
   const { accept, reject } = useAnalyticsConsent()
   const { recovering } = useGlobalSearchParams<{ recovering: string }>()
 

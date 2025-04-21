@@ -12,7 +12,7 @@ import {
   View
 } from '@avalabs/k2-alpine'
 import { LoadingState } from 'common/components/LoadingState'
-import { useLocalSearchParams, useRouter } from 'expo-router'
+import { useLocalSearchParams } from 'expo-router'
 /**
  * Temporarily import "useNavigation" from @react-navigation/native.
  * This is a workaround due to a render bug in the expo-router version.
@@ -44,13 +44,14 @@ import { FavoriteBarButton } from 'common/components/FavoriteBarButton'
 import { TokenDetailFooter } from 'features/track/components/TokenDetailFooter'
 import { ScrollView } from 'react-native-gesture-handler'
 import { truncateAddress } from '@avalabs/core-utils-sdk'
+import { useDebouncedRouter } from 'common/utils/useDebouncedRouter'
 
 const TrackTokenDetailScreen = (): JSX.Element => {
   const { theme } = useTheme()
   const { tokenId } = useLocalSearchParams<{ tokenId: string }>()
   const [isChartInteracting, setIsChartInteracting] = useState(false)
   const navigation = useNavigation()
-  const { navigate } = useRouter()
+  const { navigate } = useDebouncedRouter()
   const headerOpacity = useSharedValue(1)
   const selectedDataIndicatorOpacity = useDerivedValue(
     () => 1 - headerOpacity.value

@@ -11,16 +11,17 @@ import { showSnackbar } from 'common/utils/toast'
 import React, { useCallback, useEffect } from 'react'
 import useAddCustomToken from 'screens/tokenManagement/hooks/useAddCustomToken'
 import { LocalTokenWithBalance } from 'store/balance'
-import { useLocalSearchParams, useRouter } from 'expo-router'
+import { useLocalSearchParams } from 'expo-router'
 import { LogoWithNetwork } from 'features/portfolio/assets/components/LogoWithNetwork'
 import { LoadingState } from 'common/components/LoadingState'
+import { useDebouncedRouter } from 'common/utils/useDebouncedRouter'
 
 const AddCustomTokenScreen = (): JSX.Element => {
   const {
     theme: { colors }
   } = useTheme()
   const params = useLocalSearchParams<{ tokenAddress: string }>()
-  const { canGoBack, back, push } = useRouter()
+  const { canGoBack, back, push } = useDebouncedRouter()
 
   const showSuccess = useCallback(() => {
     showSnackbar('Added!')

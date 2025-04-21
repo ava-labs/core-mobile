@@ -15,13 +15,13 @@ import {
 } from '@cubist-labs/cubesigner-sdk'
 import { useVerifyRecoveryMethods } from 'common/hooks/useVerifyRecoveryMethods'
 import { startRefreshSeedlessTokenFlow } from 'common/utils/startRefreshSeedlessTokenFlow'
-import { useRouter } from 'expo-router'
 import { showAlert } from '@avalabs/k2-alpine'
 import Logger from 'utils/Logger'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { showSnackbar } from 'common/utils/toast'
 import SeedlessService from 'seedless/services/SeedlessService'
 import { useUserMfa } from 'common/hooks/useUserMfa'
+import { useDebouncedRouter } from 'common/utils/useDebouncedRouter'
 import { getExportInitProgress } from '../utils/getExportInitProgress'
 
 const HOURS_48 = 60 * 60 * 48
@@ -67,7 +67,7 @@ export const SeedlessMnemonicExportProvider = ({
   const [pendingRequest, setPendingRequest] = useState<UserExportInitResponse>()
   const [mnemonic, setMnemonic] = useState<string>()
   const { verifyMFA } = useVerifyRecoveryMethods(seedlessExportService.session)
-  const { canGoBack, back, navigate, replace } = useRouter()
+  const { canGoBack, back, navigate, replace } = useDebouncedRouter()
   const [keyId, setKeyId] = useState<string>('')
   const [keyPair, setKeyPair] = useState<CryptoKeyPair>()
 

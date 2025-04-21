@@ -10,8 +10,9 @@ import {
 } from '@avalabs/k2-alpine'
 import { Keyboard } from 'react-native'
 import { truncateAddress } from '@avalabs/core-utils-sdk'
-import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router'
+import { useFocusEffect, useLocalSearchParams } from 'expo-router'
 import { copyToClipboard } from 'common/utils/clipboard'
+import { useDebouncedRouter } from 'common/utils/useDebouncedRouter'
 import { AddressType } from '../consts'
 import { ContactAddressMenu } from './ContactAddressMenu'
 
@@ -34,7 +35,7 @@ export const ContactAddressForm = ({
     address: string
     addressType: AddressType
   }>()
-  const { navigate, setParams } = useRouter()
+  const { navigate, setParams } = useDebouncedRouter()
   const [isEditing, setIsEditing] = useState(false)
   const [value, setValue] = useState('')
   const {

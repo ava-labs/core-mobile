@@ -1,5 +1,5 @@
 import { showAlert } from '@avalabs/k2-alpine'
-import { useRouter } from 'expo-router'
+import { useDebouncedRouter } from 'common/utils/useDebouncedRouter'
 import { useHasEnoughAvaxToStake } from 'hooks/earn/useHasEnoughAvaxToStake'
 import useStakingParams from 'hooks/earn/useStakingParams'
 import { useCallback, useEffect, useState } from 'react'
@@ -8,7 +8,7 @@ export const useAddStake = (): {
   addStake: () => void
   canAddStake: boolean
 } => {
-  const { navigate } = useRouter()
+  const { navigate } = useDebouncedRouter()
   const { hasEnoughAvax } = useHasEnoughAvaxToStake()
   const [canAddStake, setCanAddStake] = useState(false)
   const { minStakeAmount } = useStakingParams()

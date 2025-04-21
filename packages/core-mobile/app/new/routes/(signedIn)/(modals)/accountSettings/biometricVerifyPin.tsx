@@ -1,11 +1,11 @@
 import { VerifyWithPinOrBiometry } from 'common/components/VerifyWithPinOrBiometry'
-import { useRouter } from 'expo-router'
+import { useDebouncedRouter } from 'common/utils/useDebouncedRouter'
 import React from 'react'
 import BiometricsSDK from 'utils/BiometricsSDK'
 import Logger from 'utils/Logger'
 
 const BiometricVerifyPinScreen = (): React.JSX.Element => {
-  const { canGoBack, back } = useRouter()
+  const { canGoBack, back } = useDebouncedRouter()
 
   const handleLoginSuccess = (mnemonic: string): void => {
     BiometricsSDK.storeWalletWithBiometry(mnemonic)

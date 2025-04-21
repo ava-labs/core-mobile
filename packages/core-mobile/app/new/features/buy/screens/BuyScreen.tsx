@@ -10,7 +10,8 @@ import {
 } from '@avalabs/k2-alpine'
 import { generateOnRampURL } from '@coinbase/cbpay-js'
 import { useCoreBrowser } from 'common/hooks/useCoreBrowser'
-import { useLocalSearchParams, useRouter } from 'expo-router'
+import { useDebouncedRouter } from 'common/utils/useDebouncedRouter'
+import { useLocalSearchParams } from 'expo-router'
 import React, { FC, useCallback, useMemo } from 'react'
 import Config from 'react-native-config'
 import { useSelector } from 'react-redux'
@@ -29,7 +30,7 @@ enum Provider {
 const LOGO_SIZE = 36
 
 export const BuyScreen: FC = () => {
-  const { back } = useRouter()
+  const { back } = useDebouncedRouter()
   const { openUrl } = useCoreBrowser()
   const { theme } = useTheme()
   const { showAvaxWarning } = useLocalSearchParams()

@@ -1,5 +1,5 @@
 import React, { useCallback } from 'react'
-import { useFocusEffect, useRouter } from 'expo-router'
+import { useFocusEffect } from 'expo-router'
 import {
   Icons,
   ScrollView,
@@ -17,10 +17,11 @@ import ScreenHeader from 'common/components/ScreenHeader'
 import { useNavigation } from '@react-navigation/native'
 import { useRecoveryMethodsContext } from 'features/accountSettings/context/RecoverMethodsProvider'
 import { useUserMfa } from 'common/hooks/useUserMfa'
+import { useDebouncedRouter } from 'common/utils/useDebouncedRouter'
 import { Loader } from '../../../../../common/components/Loader'
 
 const ManageRecoveryMethodsScreen = (): JSX.Element => {
-  const { navigate } = useRouter()
+  const { navigate } = useDebouncedRouter()
   const {
     theme: { colors }
   } = useTheme()

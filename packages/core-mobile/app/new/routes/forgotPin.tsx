@@ -9,16 +9,16 @@ import {
   useTheme
 } from '@avalabs/k2-alpine'
 import BlurredBarsContentLayout from 'common/components/BlurredBarsContentLayout'
-import { useRouter } from 'expo-router'
 import SlideToConfirm from 'common/components/SlideToConfirm'
 import { selectWalletType } from 'store/app'
 import { useSelector } from 'react-redux'
 import { WalletType } from 'services/wallet/types'
 import { setPinRecovery } from 'utils/Navigation'
 import { useDeleteWallet } from 'new/common/hooks/useDeleteWallet'
+import { useDebouncedRouter } from 'common/utils/useDebouncedRouter'
 
 const ForgotPin = (): JSX.Element => {
-  const router = useRouter()
+  const router = useDebouncedRouter()
   const { theme } = useTheme()
   const { deleteWallet } = useDeleteWallet()
   const walletType = useSelector(selectWalletType)

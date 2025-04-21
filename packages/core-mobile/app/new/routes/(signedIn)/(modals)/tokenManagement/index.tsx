@@ -11,12 +11,12 @@ import {
   View
 } from '@avalabs/k2-alpine'
 import { TokenType } from '@avalabs/vm-module-types'
-import { useRouter } from 'expo-router'
 import { useSearchableTokenList } from 'common/hooks/useSearchableTokenList'
 import { FlatList } from 'react-native-gesture-handler'
 import TokenManagementItem from 'features/portfolio/assets/components/TokenManagementItem'
 import { LoadingState } from 'common/components/LoadingState'
 import { ErrorState } from 'common/components/ErrorState'
+import { useDebouncedRouter } from 'common/utils/useDebouncedRouter'
 
 const TokenManagementScreen = (): JSX.Element => {
   const {
@@ -30,7 +30,7 @@ const TokenManagementScreen = (): JSX.Element => {
   const {
     theme: { colors }
   } = useTheme()
-  const { push } = useRouter()
+  const { push } = useDebouncedRouter()
 
   // only show erc20 tokens here
   const tokenList = filteredTokenList.filter(

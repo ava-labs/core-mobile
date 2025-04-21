@@ -1,5 +1,4 @@
 import React, { useCallback, useState, useEffect } from 'react'
-import { useRouter } from 'expo-router'
 import { CreatePin as Component } from 'features/onboarding/components/CreatePin'
 import Logger from 'utils/Logger'
 import AnalyticsService from 'services/analytics/AnalyticsService'
@@ -13,10 +12,11 @@ import BlurredBarsContentLayout from 'common/components/BlurredBarsContentLayout
 import { KeyboardAvoidingView } from 'common/components/KeyboardAvoidingView'
 import BiometricsSDK from 'utils/BiometricsSDK'
 import { useStoredBiometrics } from 'common/hooks/useStoredBiometrics'
+import { useDebouncedRouter } from 'common/utils/useDebouncedRouter'
 
 export default function CreatePin(): JSX.Element {
   const walletType = useSelector(selectWalletType)
-  const { navigate } = useRouter()
+  const { navigate } = useDebouncedRouter()
   const { onPinCreated } = useWallet()
   const [hasWalletName, setHasWalletName] = useState(false)
   const { isBiometricAvailable, useBiometrics, setUseBiometrics } =

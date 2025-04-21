@@ -9,7 +9,7 @@ import {
   View
 } from '@avalabs/k2-alpine'
 import ScreenHeader from 'common/components/ScreenHeader'
-import { useLocalSearchParams, useRouter } from 'expo-router'
+import { useLocalSearchParams } from 'expo-router'
 import { useDelegationContext } from 'contexts/DelegationContext'
 import { advancedFilterDropDownItems } from 'consts/earn'
 import { NodeValidator } from 'types/earn'
@@ -21,11 +21,12 @@ import { NodeItem } from 'features/stake/components/NodeItem'
 import { FlatList } from 'react-native'
 import { useNodeSort } from 'features/stake/hooks/useNodeSort'
 import { ErrorState } from 'common/components/ErrorState'
+import { useDebouncedRouter } from 'common/utils/useDebouncedRouter'
 
 const errorIcon = require('../../../../assets/icons/melting_face.png')
 
 const StakeSelectNode = (): JSX.Element => {
-  const { navigate } = useRouter()
+  const { navigate } = useDebouncedRouter()
 
   const { stakeAmount } = useDelegationContext()
   const [searchText, setSearchText] = useState('')

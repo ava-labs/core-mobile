@@ -12,7 +12,6 @@ import {
 } from '@avalabs/k2-alpine'
 import ScreenHeader from 'common/components/ScreenHeader'
 import { useDelegationContext } from 'contexts/DelegationContext'
-import { useRouter } from 'expo-router'
 import { useSelector } from 'react-redux'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { useStakeEstimatedRewards } from 'features/stake/hooks/useStakeEstimatedRewards'
@@ -44,9 +43,10 @@ import { useDebounce } from 'hooks/useDebounce'
 import { StakeCustomEndDatePicker } from 'features/stake/components/StakeCustomEndDatePicker'
 import { useAvaxTokenPriceInSelectedCurrency } from 'hooks/useAvaxTokenPriceInSelectedCurrency'
 import { convertToDurationInSeconds } from 'features/stake/utils'
+import { useDebouncedRouter } from 'common/utils/useDebouncedRouter'
 
 const StakeDurationScreen = (): JSX.Element => {
-  const { navigate } = useRouter()
+  const { navigate } = useDebouncedRouter()
   const { stakeAmount } = useDelegationContext()
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const avaxPrice = useAvaxTokenPriceInSelectedCurrency()

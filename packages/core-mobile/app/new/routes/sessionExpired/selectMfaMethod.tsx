@@ -2,11 +2,12 @@ import { SelectRecoveryMethods } from 'features/accountSettings/components/Selec
 import React from 'react'
 import { useCallback } from 'react'
 import { RecoveryMethod } from 'features/onboarding/hooks/useAvailableRecoveryMethods'
-import { useLocalSearchParams, useRouter } from 'expo-router'
+import { useLocalSearchParams } from 'expo-router'
 import SeedlessService from 'seedless/services/SeedlessService'
 import { useInitSeedlessWalletAndUnlock } from 'common/hooks/useInitSeedlessWalletAndUnlock'
 import { useUserMfa } from 'common/hooks/useUserMfa'
 import { Loader } from 'common/components/Loader'
+import { useDebouncedRouter } from 'common/utils/useDebouncedRouter'
 
 const SelectMfaMethodScreen = (): React.JSX.Element => {
   const { initSeedlessWalletAndUnlock } = useInitSeedlessWalletAndUnlock()
@@ -14,8 +15,7 @@ const SelectMfaMethodScreen = (): React.JSX.Element => {
     oidcToken: string
     mfaId: string
   }>()
-  const { navigate } = useRouter()
-  const { canGoBack, back } = useRouter()
+  const { navigate, canGoBack, back } = useDebouncedRouter()
   const { data: mfaMethods, isLoading } = useUserMfa()
 
   const handleSelectMfa = useCallback(

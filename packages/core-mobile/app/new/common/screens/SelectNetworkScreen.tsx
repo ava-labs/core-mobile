@@ -1,11 +1,11 @@
 import { Network } from '@avalabs/core-chains-sdk'
 import { Icons, Pressable, Text, useTheme, View } from '@avalabs/k2-alpine'
-import { useRouter } from 'expo-router'
 import React from 'react'
 import { FlatList, ListRenderItem } from 'react-native'
 import { isPChain, isXChain, isXPChain } from 'utils/network/isAvalancheNetwork'
 import { HORIZONTAL_MARGIN } from 'common/consts'
 import { NetworkLogoWithChain } from 'common/components/NetworkLogoWithChain'
+import { useDebouncedRouter } from 'common/utils/useDebouncedRouter'
 
 export const SelectNetworkScreen = ({
   networks,
@@ -17,7 +17,7 @@ export const SelectNetworkScreen = ({
   onSelect: (network: Network) => void
 }): JSX.Element => {
   const { theme } = useTheme()
-  const { back } = useRouter()
+  const { back } = useDebouncedRouter()
 
   const handleNetworkSelect = (network: Network): void => {
     onSelect(network)

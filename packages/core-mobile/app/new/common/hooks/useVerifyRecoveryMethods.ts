@@ -1,10 +1,10 @@
 import { CubeSignerResponse } from '@cubist-labs/cubesigner-sdk'
 import { showSnackbar } from 'common/utils/toast'
-import { useRouter } from 'expo-router'
 import SeedlessSession from 'seedless/services/SeedlessSession'
 import PasskeyService from 'services/passkey/PasskeyService'
 import Logger from 'utils/Logger'
 import { useCallback } from 'react'
+import { useDebouncedRouter } from 'common/utils/useDebouncedRouter'
 
 export const useVerifyRecoveryMethods = (
   session: SeedlessSession
@@ -12,7 +12,7 @@ export const useVerifyRecoveryMethods = (
   verifyMFA: VerifyMFAFunction
   verifyFido: VerifyFidoFunction
 } => {
-  const { navigate } = useRouter()
+  const { navigate } = useDebouncedRouter()
 
   const verifyFido: VerifyFidoFunction = useCallback(
     async <T>({

@@ -1,8 +1,8 @@
 import { Text, View } from '@avalabs/k2-alpine'
 import { Loader } from 'common/components/Loader'
 import { useUserMfa } from 'common/hooks/useUserMfa'
+import { useDebouncedRouter } from 'common/utils/useDebouncedRouter'
 import { Space } from 'components/Space'
-import { useRouter } from 'expo-router'
 import { useRecoveryMethodsContext } from 'features/accountSettings/context/RecoverMethodsProvider'
 import { RecoveryMethodList } from 'features/onboarding/components/RecoveryMethodList'
 import {
@@ -16,7 +16,7 @@ import AnalyticsService from 'services/analytics/AnalyticsService'
 import { FidoType } from 'services/passkey/types'
 
 const AvailableRecoveryMethodScreen = (): React.JSX.Element => {
-  const { navigate } = useRouter()
+  const { navigate } = useDebouncedRouter()
   const { data: mfaMethods, isLoading } = useUserMfa()
   const available = useAvailableRecoveryMethods(mfaMethods)
   const { totpResetInit } = useRecoveryMethodsContext()

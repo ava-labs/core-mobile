@@ -13,7 +13,7 @@ import Animated, {
 } from 'react-native-reanimated'
 import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
 import { LayoutChangeEvent, LayoutRectangle } from 'react-native'
-import { useFocusEffect, useRouter } from 'expo-router'
+import { useFocusEffect } from 'expo-router'
 import { ScrollView } from 'react-native-gesture-handler'
 import { useConnectedDapps } from 'features/accountSettings/hooks/useConnectedDapps'
 import { Space } from 'components/Space'
@@ -32,6 +32,7 @@ import BiometricsSDK from 'utils/BiometricsSDK'
 import Logger from 'utils/Logger'
 import { commonStorage } from 'utils/mmkv'
 import { StorageKey } from 'resources/Constants'
+import { useDebouncedRouter } from 'common/utils/useDebouncedRouter'
 
 const navigationHeader = <NavigationTitleHeader title={'Security & privacy'} />
 
@@ -46,7 +47,7 @@ const SecurityAndPrivacyScreen = (): JSX.Element => {
   const [biometricType, setBiometricType] = useState<BiometricType>(
     BiometricType.NONE
   )
-  const { navigate } = useRouter()
+  const { navigate } = useDebouncedRouter()
   const headerOpacity = useSharedValue(1)
   const [headerLayout, setHeaderLayout] = useState<
     LayoutRectangle | undefined

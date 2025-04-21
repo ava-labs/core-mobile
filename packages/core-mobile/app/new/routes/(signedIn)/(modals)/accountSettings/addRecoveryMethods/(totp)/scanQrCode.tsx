@@ -1,11 +1,11 @@
 import React from 'react'
-import { useRouter } from 'expo-router'
 import { ScanQrCode as ScanQrCodeComponent } from 'features/onboarding/components/ScanQrCode'
 import { useRecoveryMethodsContext } from 'features/accountSettings/context/RecoverMethodsProvider'
+import { useDebouncedRouter } from 'common/utils/useDebouncedRouter'
 
 export default function ScanQrCode(): JSX.Element {
   const { verifiedTotpChallenge } = useRecoveryMethodsContext()
-  const router = useRouter()
+  const router = useDebouncedRouter()
 
   const goToVerifyCode = (): void => {
     router.push('./verifyCode')

@@ -1,7 +1,6 @@
 import React, { useEffect, useMemo, useCallback } from 'react'
 import { View, Image, Separator } from '@avalabs/k2-alpine'
 import { CollapsibleTabs } from 'common/components/CollapsibleTabs'
-import { useRouter } from 'expo-router'
 import { StyleSheet } from 'react-native'
 import { useExchangedAmount } from 'new/common/hooks/useExchangedAmount'
 import AnalyticsService from 'services/analytics/AnalyticsService'
@@ -14,6 +13,7 @@ import { Space } from 'components/Space'
 import { LoadingState } from 'common/components/LoadingState'
 import { ErrorState } from 'common/components/ErrorState'
 import { DropdownSelections } from 'common/components/DropdownSelections'
+import { useDebouncedRouter } from 'common/utils/useDebouncedRouter'
 import { portfolioTabContentHeight } from '../../utils'
 import { DeFiViewOption } from '../types'
 import { useDeFiProtocols } from '../hooks/useDeFiProtocols'
@@ -22,7 +22,7 @@ import { DeFiListItem } from './DeFiListItem'
 const placeholderIcon = require('../../../../assets/icons/bar_chart_emoji.png')
 
 export const DeFiScreen = (): JSX.Element => {
-  const { navigate } = useRouter()
+  const { navigate } = useDebouncedRouter()
   const {
     data,
     sort,

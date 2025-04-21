@@ -1,5 +1,5 @@
 import { Button, showAlert, useTheme, View } from '@avalabs/k2-alpine'
-import { useLocalSearchParams, useRouter } from 'expo-router'
+import { useLocalSearchParams } from 'expo-router'
 import { ContactForm } from 'features/accountSettings/components/ContactForm'
 import React, { useCallback } from 'react'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
@@ -11,6 +11,7 @@ import {
   selectContact
 } from 'store/addressBook'
 import { ScrollView } from 'react-native-gesture-handler'
+import { useDebouncedRouter } from 'common/utils/useDebouncedRouter'
 
 const ContactDetailScreen = (): React.JSX.Element => {
   const dispatch = useDispatch()
@@ -18,7 +19,7 @@ const ContactDetailScreen = (): React.JSX.Element => {
     theme: { colors }
   } = useTheme()
   const { bottom } = useSafeAreaInsets()
-  const { canGoBack, back } = useRouter()
+  const { canGoBack, back } = useDebouncedRouter()
   const { contactId } = useLocalSearchParams<{ contactId: string }>()
   const contact = useSelector(selectContact(contactId))
 

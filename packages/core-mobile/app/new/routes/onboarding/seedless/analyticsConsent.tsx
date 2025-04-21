@@ -1,10 +1,10 @@
 import React from 'react'
 import { useAnalyticsConsent } from 'hooks/useAnalyticsConsent'
-import { useRouter } from 'expo-router'
 import { AnalyticsConsent as Component } from 'features/onboarding/components/AnalyticsConsent'
+import { useDebouncedRouter } from 'common/utils/useDebouncedRouter'
 
 export default function AnalyticsConsent(): JSX.Element {
-  const { navigate } = useRouter()
+  const { navigate } = useDebouncedRouter()
   const { accept, reject } = useAnalyticsConsent()
 
   function handleAcceptAnalytics(): void {

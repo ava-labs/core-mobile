@@ -3,10 +3,10 @@ import { View, Text, TextInput, Tooltip } from '@avalabs/k2-alpine'
 import { QrCodeScanner } from 'common/components/QrCodeScanner'
 import { useDeeplink } from 'contexts/DeeplinkContext/DeeplinkContext'
 import { DeepLinkOrigin } from 'contexts/DeeplinkContext/types'
-import { useRouter } from 'expo-router'
+import { useDebouncedRouter } from 'common/utils/useDebouncedRouter'
 
 export const WalletConnectScanScreen = (): React.JSX.Element => {
-  const router = useRouter()
+  const router = useDebouncedRouter()
   const { setPendingDeepLink } = useDeeplink()
   const [wcLink, setWcLink] = useState('')
 

@@ -1,5 +1,4 @@
 import React, { useState, useCallback, useEffect } from 'react'
-import { useRouter } from 'expo-router'
 import { useFocusEffect, useNavigation } from '@react-navigation/native'
 import { showAlert, View } from '@avalabs/k2-alpine'
 import Logger from 'utils/Logger'
@@ -12,9 +11,10 @@ import {
 } from 'features/accountSettings/context/SeedlessMnemonicExportProvider'
 import { Platform } from 'react-native'
 import { SeedlessExportMnemonicPhrase } from 'features/accountSettings/components/SeedlessExportMnemonicPhrase'
+import { useDebouncedRouter } from 'common/utils/useDebouncedRouter'
 
 const SeedlessExportReadyScreen = (): JSX.Element => {
-  const { back, canGoBack } = useRouter()
+  const { back, canGoBack } = useDebouncedRouter()
   const { deleteExport, completeExport, mnemonic } =
     useSeedlessMnemonicExportContext()
   const { getParent } = useNavigation()

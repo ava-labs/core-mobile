@@ -3,10 +3,10 @@ import { VerifyCode } from 'features/onboarding/components/VerifyCode'
 import { TotpErrors } from 'seedless/errors'
 import { Result } from 'types/result'
 import { useSeedlessMnemonicExportContext } from 'features/accountSettings/context/SeedlessMnemonicExportProvider'
-import { useRouter } from 'expo-router'
 import { UserExportInitResponse } from '@cubist-labs/cubesigner-sdk'
 import { dismissTotpStack } from 'features/accountSettings/utils/dismissTotpStack'
 import { useNavigation } from '@react-navigation/native'
+import { useDebouncedRouter } from 'common/utils/useDebouncedRouter'
 
 const VerifyTotpCodeScreen = (): React.JSX.Element => {
   const {
@@ -14,7 +14,7 @@ const VerifyTotpCodeScreen = (): React.JSX.Element => {
     userExportInitResponse,
     onVerifyExportInitSuccess
   } = useSeedlessMnemonicExportContext()
-  const router = useRouter()
+  const router = useDebouncedRouter()
   const { getState } = useNavigation()
 
   const handleVerifySuccess = useCallback(

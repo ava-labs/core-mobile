@@ -9,7 +9,7 @@ import {
   View
 } from '@avalabs/k2-alpine'
 import ScreenHeader from 'common/components/ScreenHeader'
-import { useLocalSearchParams, useRouter } from 'expo-router'
+import { useLocalSearchParams } from 'expo-router'
 import { LinearGradientBottomWrapper } from 'common/components/LinearGradientBottomWrapper'
 import { useGetValidatorByNodeId } from 'hooks/earn/useGetValidatorByNodeId'
 import { truncateNodeId } from 'utils/Utils'
@@ -20,9 +20,10 @@ import { useSelector } from 'react-redux'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import NetworkService from 'services/network/NetworkService'
 import { getAvailableDelegationWeight } from 'services/earn/utils'
+import { useDebouncedRouter } from 'common/utils/useDebouncedRouter'
 
 const StakeNodeDetails = (): JSX.Element => {
-  const { navigate } = useRouter()
+  const { navigate } = useDebouncedRouter()
 
   const { stakeEndTime, nodeId } = useLocalSearchParams<{
     stakeEndTime: string

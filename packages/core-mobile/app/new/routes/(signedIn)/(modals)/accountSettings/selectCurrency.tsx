@@ -27,8 +27,8 @@ import {
 import { getListItemEnteringAnimation } from 'common/utils/animations'
 import { CurrencyIcon } from 'common/components/CurrencyIcon'
 import { useDispatch, useSelector } from 'react-redux'
-import { useRouter } from 'expo-router'
 import { ErrorState } from 'common/components/ErrorState'
+import { useDebouncedRouter } from 'common/utils/useDebouncedRouter'
 
 const errorIcon = require('../../../../assets/icons/melting_face.png')
 
@@ -36,7 +36,7 @@ const SelectCurrencyScreen = (): JSX.Element => {
   const {
     theme: { colors }
   } = useTheme()
-  const { canGoBack, back } = useRouter()
+  const { canGoBack, back } = useDebouncedRouter()
   const [searchText, setSearchText] = useState('')
   const headerOpacity = useSharedValue(1)
   const [headerLayout, setHeaderLayout] = useState<

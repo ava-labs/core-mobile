@@ -1,4 +1,4 @@
-import { useFocusEffect, useRouter } from 'expo-router'
+import { useFocusEffect } from 'expo-router'
 import React, { useCallback } from 'react'
 import { BackHandler } from 'react-native'
 import {
@@ -18,11 +18,12 @@ import { onLogOut } from 'store/app'
 import Logger from 'utils/Logger'
 import { useInitSeedlessWalletAndUnlock } from 'common/hooks/useInitSeedlessWalletAndUnlock'
 import { useUserMfa } from 'common/hooks/useUserMfa'
+import { useDebouncedRouter } from 'common/utils/useDebouncedRouter'
 
 const SessionExpiredScreen = (): React.JSX.Element => {
   const { data: mfaMethods } = useUserMfa()
   const { initSeedlessWalletAndUnlock } = useInitSeedlessWalletAndUnlock()
-  const router = useRouter()
+  const router = useDebouncedRouter()
   const dispatch = useDispatch()
   const {
     theme: { colors }

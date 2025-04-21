@@ -1,5 +1,5 @@
 import React, { useCallback } from 'react'
-import { useLocalSearchParams, useRouter } from 'expo-router'
+import { useLocalSearchParams } from 'expo-router'
 import { CreatePin as Component } from 'features/onboarding/components/CreatePin'
 import { useWallet } from 'hooks/useWallet'
 import AnalyticsService from 'services/analytics/AnalyticsService'
@@ -8,9 +8,10 @@ import BlurredBarsContentLayout from 'common/components/BlurredBarsContentLayout
 import { KeyboardAvoidingView } from 'common/components/KeyboardAvoidingView'
 import BiometricsSDK from 'utils/BiometricsSDK'
 import { useStoredBiometrics } from 'common/hooks/useStoredBiometrics'
+import { useDebouncedRouter } from 'common/utils/useDebouncedRouter'
 
 export default function CreatePin(): JSX.Element {
-  const { navigate } = useRouter()
+  const { navigate } = useDebouncedRouter()
   const { mnemonic } = useLocalSearchParams<{ mnemonic: string }>()
   const { onPinCreated } = useWallet()
   const { isBiometricAvailable, useBiometrics, setUseBiometrics } =

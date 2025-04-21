@@ -3,15 +3,15 @@ import { useRecoveryMethodContext } from 'features/onboarding/contexts/RecoveryM
 import useSeedlessManageMFA from 'features/onboarding/hooks/useSeedlessManageMFA'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import Logger from 'utils/Logger'
-import { useRouter } from 'expo-router'
 import { Loader } from 'common/components/Loader'
 import { AuthenticatorSetup as AuthenticatorSetupComponent } from 'features/onboarding/components/AuthenticatorSetup'
 import BlurredBarsContentLayout from 'common/components/BlurredBarsContentLayout'
+import { useDebouncedRouter } from 'common/utils/useDebouncedRouter'
 
 export default function AuthenticatorSetup(): JSX.Element {
   const { totpKey, handleCopyCode, totpChallenge, setTotpChallenge } =
     useRecoveryMethodContext()
-  const router = useRouter()
+  const router = useDebouncedRouter()
   const { totpResetInit } = useSeedlessManageMFA()
 
   const goToVerifyCode = (): void => {

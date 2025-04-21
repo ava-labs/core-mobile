@@ -12,7 +12,6 @@ import {
   TotpChallenge
 } from '@cubist-labs/cubesigner-sdk'
 import { useVerifyRecoveryMethods } from 'common/hooks/useVerifyRecoveryMethods'
-import { useRouter } from 'expo-router'
 import SeedlessService from 'seedless/services/SeedlessService'
 import { showSnackbar } from 'common/utils/toast'
 import Logger from 'utils/Logger'
@@ -25,6 +24,7 @@ import { FidoType } from 'services/passkey/types'
 import { useLogoModal } from 'common/hooks/useLogoModal'
 import PasskeyService from 'services/passkey/PasskeyService'
 import { useUserMfa } from 'common/hooks/useUserMfa'
+import { useDebouncedRouter } from 'common/utils/useDebouncedRouter'
 import {
   dismissToManageRecoveryMethods,
   dismissTotpStack
@@ -59,7 +59,7 @@ export const RecoverMethodsProvider = ({
   const { verifyFido, verifyMFA } = useVerifyRecoveryMethods(
     SeedlessService.session
   )
-  const router = useRouter()
+  const router = useDebouncedRouter()
   const { getState } = useNavigation()
 
   const [mfaChallengeResponse, setMfaChallengeResponse] =

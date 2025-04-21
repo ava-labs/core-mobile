@@ -1,4 +1,4 @@
-import { useLocalSearchParams, useRouter } from 'expo-router'
+import { useLocalSearchParams } from 'expo-router'
 import { CreatePin } from 'features/onboarding/components/CreatePin'
 import { useWallet } from 'hooks/useWallet'
 import React, { useState, useEffect, useCallback } from 'react'
@@ -9,9 +9,10 @@ import BiometricsSDK from 'utils/BiometricsSDK'
 import { StorageKey } from 'resources/Constants'
 import { commonStorage } from 'utils/mmkv'
 import { useStoredBiometrics } from 'common/hooks/useStoredBiometrics'
+import { useDebouncedRouter } from 'common/utils/useDebouncedRouter'
 
 const ChangePinScreen = (): React.JSX.Element => {
-  const { canGoBack, back } = useRouter()
+  const { canGoBack, back } = useDebouncedRouter()
   const { mnemonic } = useLocalSearchParams<{ mnemonic: string }>()
   const { onPinCreated } = useWallet()
   const { bottom } = useSafeAreaInsets()

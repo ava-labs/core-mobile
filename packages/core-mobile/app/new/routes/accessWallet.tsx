@@ -9,11 +9,11 @@ import {
 } from '@avalabs/k2-alpine'
 import Encrypted from 'assets/icons/encrypted.svg'
 import BlurredBarsContentLayout from 'common/components/BlurredBarsContentLayout'
-import { useRouter } from 'expo-router'
+import { useDebouncedRouter } from 'common/utils/useDebouncedRouter'
 
 const AccessWalletScreen = (): JSX.Element => {
   const { theme } = useTheme()
-  const { navigate } = useRouter()
+  const { navigate } = useDebouncedRouter()
 
   const handleEnterRecoveryPhrase = (): void => {
     navigate({

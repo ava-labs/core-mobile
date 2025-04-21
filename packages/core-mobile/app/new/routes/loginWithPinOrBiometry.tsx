@@ -28,18 +28,19 @@ import {
 } from '@avalabs/k2-alpine'
 import { usePinOrBiometryLogin } from 'common/hooks/usePinOrBiometryLogin'
 import { useWallet } from 'hooks/useWallet'
-import { useFocusEffect, useRouter } from 'expo-router'
+import { useFocusEffect } from 'expo-router'
 import { KeyboardAvoidingView } from 'common/components/KeyboardAvoidingView'
 import { BiometricType } from 'services/deviceInfo/DeviceInfoService'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { useSelector } from 'react-redux'
+import { useDebouncedRouter } from 'common/utils/useDebouncedRouter'
 
 const LoginWithPinOrBiometry = (): JSX.Element => {
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const { theme } = useTheme()
   const pinInputRef = useRef<PinInputActions>(null)
   const { unlock } = useWallet()
-  const router = useRouter()
+  const router = useDebouncedRouter()
   const handleLoginSuccess = useCallback(
     (mnemonic: string) => {
       unlock({ mnemonic }).catch(Logger.error)

@@ -28,15 +28,15 @@ import {
 import { LinearGradientBottomWrapper } from 'common/components/LinearGradientBottomWrapper'
 import { TrendingScreen } from 'features/track/trending/components/TrendingScreen'
 import MarketScreen from 'features/track/market/components/MarketScreen'
-import { useRouter } from 'expo-router'
 import FavoriteScreen from 'features/track/market/components/FavoriteScreen'
 import SearchResultScreen from 'features/track/market/components/SearchResultScreen'
 import { Platform } from 'react-native'
+import { useDebouncedRouter } from 'common/utils/useDebouncedRouter'
 
 const SEARCH_BAR_MARGIN_TOP = Platform.OS === 'ios' ? 60 : 55
 
 const TrackHomeScreen = (): JSX.Element => {
-  const { navigate } = useRouter()
+  const { navigate } = useDebouncedRouter()
   const { theme } = useTheme()
   const [isSearchBarFocused, setSearchBarFocused] = useState(false)
   const [searchText, setSearchText] = useState('')

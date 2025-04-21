@@ -25,7 +25,6 @@ import {
   OnTabChange
 } from 'common/components/CollapsibleTabs'
 import { LinearGradientBottomWrapper } from 'common/components/LinearGradientBottomWrapper'
-import { useRouter } from 'expo-router'
 import { useStakes } from 'hooks/earn/useStakes'
 import { Banner } from 'features/stake/components/Banner'
 import { LoadingState } from 'common/components/LoadingState'
@@ -33,9 +32,10 @@ import { useAddStake } from 'features/stake/hooks/useAddStake'
 import { AllStakesScreen } from 'features/stake/components/AllStakesScreen'
 import { ActiveStakesScreen } from 'features/stake/components/ActiveStakesScreen'
 import { CompletedStakesScreen } from 'features/stake/components/CompletedStakesScreen'
+import { useDebouncedRouter } from 'common/utils/useDebouncedRouter'
 
 const StakeHomeScreen = (): JSX.Element => {
-  const { navigate } = useRouter()
+  const { navigate } = useDebouncedRouter()
   const { data, isLoading } = useStakes()
   const { theme } = useTheme()
   const tabViewRef = useRef<CollapsibleTabsRef>(null)

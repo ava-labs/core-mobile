@@ -13,7 +13,6 @@ import {
   View
 } from '@avalabs/k2-alpine'
 import { useNavigation } from '@react-navigation/native'
-import { useRouter } from 'expo-router'
 import React, { useCallback, useEffect, useState } from 'react'
 import Animated, { useSharedValue } from 'react-native-reanimated'
 import { LayoutRectangle } from 'react-native'
@@ -42,9 +41,11 @@ import { ScrollView } from 'react-native-gesture-handler'
 import { selectContacts } from 'store/addressBook'
 import { Space } from 'components/Space'
 import { showSnackbar } from 'common/utils/toast'
+import { useDebouncedRouter } from 'common/utils/useDebouncedRouter'
 
 const AccountSettingsScreen = (): JSX.Element => {
   const { deleteWallet } = useDeleteWallet()
+  const { navigate } = useDebouncedRouter()
   const dispatch = useDispatch()
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const isPrivacyModeEnabled = useSelector(selectIsPrivacyModeEnabled)
@@ -58,7 +59,6 @@ const AccountSettingsScreen = (): JSX.Element => {
     theme: { colors }
   } = useTheme()
   const contacts = useSelector(selectContacts)
-  const { navigate } = useRouter()
   const { setOptions } = useNavigation()
   const headerOpacity = useSharedValue(1)
   const [headerLayout, setHeaderLayout] = useState<

@@ -1,10 +1,10 @@
 import { Text, View } from '@avalabs/k2-alpine'
 import React from 'react'
-import { useRouter } from 'expo-router'
 import { QrCodeScanner } from 'common/components/QrCodeScanner'
+import { useDebouncedRouter } from 'common/utils/useDebouncedRouter'
 
 const ScanQrCodeScreen = (): JSX.Element => {
-  const { dismiss, setParams } = useRouter()
+  const { dismiss, setParams } = useDebouncedRouter()
 
   const handleOnSuccess = (tokenAddress: string): void => {
     dismiss()

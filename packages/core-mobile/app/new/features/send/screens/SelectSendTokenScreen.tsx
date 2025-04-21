@@ -10,16 +10,16 @@ import {
 import { ListRenderItem } from '@shopify/flash-list'
 import { LocalTokenWithBalance } from 'store/balance'
 import { LogoWithNetwork } from 'features/portfolio/assets/components/LogoWithNetwork'
-import { useRouter } from 'expo-router'
 import { useSendSelectedToken } from 'features/send/store'
 import { SelectTokenScreen } from 'common/screens/SelectTokenScreen'
 import { useSearchableTokenList } from 'common/hooks/useSearchableTokenList'
+import { useDebouncedRouter } from 'common/utils/useDebouncedRouter'
 
 export const SelectSendTokenScreen = (): JSX.Element => {
   const {
     theme: { colors }
   } = useTheme()
-  const { back, canGoBack } = useRouter()
+  const { back, canGoBack } = useDebouncedRouter()
   const [searchText, setSearchText] = useState<string>('')
   const [selectedToken, setSelectedToken] = useSendSelectedToken()
   const { filteredTokenList } = useSearchableTokenList({})

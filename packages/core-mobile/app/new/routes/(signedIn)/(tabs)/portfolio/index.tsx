@@ -16,7 +16,6 @@ import {
 import { LinearGradientBottomWrapper } from 'common/components/LinearGradientBottomWrapper'
 import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
-import { useRouter } from 'expo-router'
 import {
   ActionButton,
   ActionButtons
@@ -57,13 +56,14 @@ import { selectSelectedCurrency } from 'store/settings/currency'
 import { selectIsPrivacyModeEnabled } from 'store/settings/securityPrivacy'
 import { useFocusedSelector } from 'utils/performance/useFocusedSelector'
 import { useSendSelectedToken } from 'features/send/store'
+import { useDebouncedRouter } from 'common/utils/useDebouncedRouter'
 
 const SEGMENT_ITEMS = ['Assets', 'Collectibles', 'DeFi']
 
 const PortfolioHomeScreen = (): JSX.Element => {
   const isPrivacyModeEnabled = useFocusedSelector(selectIsPrivacyModeEnabled)
   const { theme } = useTheme()
-  const { navigate } = useRouter()
+  const { navigate } = useDebouncedRouter()
   const { addStake, canAddStake } = useAddStake()
   const [balanceHeaderLayout, setBalanceHeaderLayout] = useState<
     LayoutRectangle | undefined
@@ -206,7 +206,7 @@ const PortfolioHomeScreen = (): JSX.Element => {
         onPress: handleConnect
       }
     ],
-    [addStake, canAddStake, handleConnect, handleSend, handleSwap]
+    [addStake, canAddStake, handleBuy, handleConnect, handleSend, handleSwap]
   )
 
   const renderHeader = useCallback((): JSX.Element => {

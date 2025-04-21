@@ -14,7 +14,8 @@ import Animated from 'react-native-reanimated'
 import { getListItemEnteringAnimation } from 'common/utils/animations'
 import { MarketToken } from 'store/watchlist'
 import { TokenLogo } from 'common/components/TokenLogo'
-import { useRouter } from 'expo-router'
+import { useDebouncedRouter } from 'common/utils/useDebouncedRouter'
+
 const logoSize = 36
 
 export const TrendingTokenListView = memo(
@@ -35,7 +36,7 @@ export const TrendingTokenListView = memo(
     status: PriceChangeStatus
     onPress: () => void
   }) => {
-    const { navigate } = useRouter()
+    const { navigate } = useDebouncedRouter()
     const handleBuy = useCallback(() => {
       navigate({
         pathname: '/buy',

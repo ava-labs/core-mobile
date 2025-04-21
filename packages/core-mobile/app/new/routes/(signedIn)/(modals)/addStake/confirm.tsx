@@ -14,7 +14,7 @@ import {
 } from '@avalabs/k2-alpine'
 import ScreenHeader from 'common/components/ScreenHeader'
 import { useDelegationContext } from 'contexts/DelegationContext'
-import { useLocalSearchParams, useRouter } from 'expo-router'
+import { useLocalSearchParams } from 'expo-router'
 import { useDispatch, useSelector } from 'react-redux'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { useNodes } from 'hooks/earn/useNodes'
@@ -41,10 +41,11 @@ import { useNow } from 'hooks/time/useNow'
 import { useGetValidatorByNodeId } from 'hooks/earn/useGetValidatorByNodeId'
 import { truncateNodeId } from 'utils/Utils'
 import { copyToClipboard } from 'common/utils/clipboard'
+import { useDebouncedRouter } from 'common/utils/useDebouncedRouter'
 
 const StakeConfirmScreen = (): JSX.Element => {
   const { theme } = useTheme()
-  const { back, dismissAll, navigate } = useRouter()
+  const { back, dismissAll, navigate } = useDebouncedRouter()
   const dispatch = useDispatch()
   const { stakeAmount, networkFees } = useDelegationContext()
   const { stakeEndTime, nodeId } = useLocalSearchParams<{

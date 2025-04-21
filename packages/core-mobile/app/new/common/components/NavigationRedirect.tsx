@@ -2,7 +2,7 @@ import { useEffect } from 'react'
 import 'react-native-reanimated'
 import { selectWalletState, WalletState } from 'store/app'
 import { useSelector } from 'react-redux'
-import { useRootNavigationState, useRouter, usePathname } from 'expo-router'
+import { useRootNavigationState, usePathname } from 'expo-router'
 /**
  * Temporarily import "useNavigation" from @react-navigation/native.
  * This is a workaround due to a render bug in the expo-router version.
@@ -11,9 +11,10 @@ import { useRootNavigationState, useRouter, usePathname } from 'expo-router'
  */
 import { useNavigation } from '@react-navigation/native'
 import { StackActions } from '@react-navigation/native'
+import { useDebouncedRouter } from 'common/utils/useDebouncedRouter'
 
 export const NavigationRedirect = (): null => {
-  const router = useRouter()
+  const router = useDebouncedRouter()
   const navigation = useNavigation()
   const pathName = usePathname()
   const walletState = useSelector(selectWalletState)

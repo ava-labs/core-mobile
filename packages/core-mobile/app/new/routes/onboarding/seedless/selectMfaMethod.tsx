@@ -1,17 +1,17 @@
 import React, { useCallback } from 'react'
 import { SafeAreaView, Text, View } from '@avalabs/k2-alpine'
 import { useRecoveryMethodContext } from 'features/onboarding/contexts/RecoveryMethodProvider'
-import { useRouter } from 'expo-router'
 import { RecoveryMethodList } from 'features/onboarding/components/RecoveryMethodList'
 import { RecoveryMethod } from 'features/onboarding/hooks/useAvailableRecoveryMethods'
 import BlurredBarsContentLayout from 'common/components/BlurredBarsContentLayout'
 import { useRegisteredRecoveryMethods } from 'features/onboarding/hooks/useRegisteredRecoveryMethods'
 import { useSeedlessRegister } from 'features/onboarding/hooks/useSeedlessRegister'
+import { useDebouncedRouter } from 'common/utils/useDebouncedRouter'
 
 const SelectMfaMethodScreen = (): JSX.Element => {
   const { mfaMethods, oidcAuth } = useRecoveryMethodContext()
   const { verify } = useSeedlessRegister()
-  const { navigate } = useRouter()
+  const { navigate } = useDebouncedRouter()
   const registeredRecoveryMethods = useRegisteredRecoveryMethods(mfaMethods)
 
   const handleSelectMFA = useCallback(

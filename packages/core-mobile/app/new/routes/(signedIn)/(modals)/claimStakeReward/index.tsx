@@ -17,7 +17,6 @@ import NetworkService from 'services/network/NetworkService'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { usePreventScreenRemoval } from 'common/hooks/usePreventScreenRemoval'
-import { useRouter } from 'expo-router'
 import { usePChainBalance } from 'hooks/earn/usePChainBalance'
 import { useAvaxTokenPriceInSelectedCurrency } from 'hooks/useAvaxTokenPriceInSelectedCurrency'
 import { useClaimRewards } from 'hooks/earn/useClaimRewards'
@@ -27,9 +26,10 @@ import { showSnackbar } from 'common/utils/toast'
 import { TokenUnitInput, TokenUnitInputHandle } from '@avalabs/k2-alpine'
 import { useConfetti } from 'common/contexts/ConfettiContext'
 import { StakeTokenUnitValue } from 'features/stake/components/StakeTokenUnitValue'
+import { useDebouncedRouter } from 'common/utils/useDebouncedRouter'
 
 const ClaimStakeRewardScreen = (): JSX.Element => {
-  const { navigate, back } = useRouter()
+  const { navigate, back } = useDebouncedRouter()
   const { formatTokenInCurrency } = useFormatCurrency()
   const { data } = usePChainBalance()
   const ref = useRef<TokenUnitInputHandle>(null)

@@ -1,12 +1,12 @@
 import React, { useCallback } from 'react'
-import { useRouter } from 'expo-router'
 import { Loader } from 'common/components/Loader'
 import { AuthenticatorSetup as AuthenticatorSetupComponent } from 'features/onboarding/components/AuthenticatorSetup'
 import { useRecoveryMethodsContext } from 'features/accountSettings/context/RecoverMethodsProvider'
+import { useDebouncedRouter } from 'common/utils/useDebouncedRouter'
 
 export default function AuthenticatorSetup(): JSX.Element {
   const { totpKey, handleCopyCode } = useRecoveryMethodsContext()
-  const router = useRouter()
+  const router = useDebouncedRouter()
 
   const goToVerifyCode = useCallback((): void => {
     router.push('./verifyCode')

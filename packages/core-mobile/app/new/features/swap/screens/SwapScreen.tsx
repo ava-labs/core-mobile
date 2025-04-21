@@ -1,9 +1,9 @@
 import React, { useCallback } from 'react'
 import { Pressable, Text, View } from '@avalabs/k2-alpine'
-import { useRouter } from 'expo-router'
+import { useDebouncedRouter } from 'common/utils/useDebouncedRouter'
 
 export const SwapScreen = (): JSX.Element => {
-  const { navigate } = useRouter()
+  const { navigate } = useDebouncedRouter()
 
   const handleSelectToken = useCallback((): void => {
     navigate({ pathname: '/selectSendToken' })

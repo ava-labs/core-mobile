@@ -1,8 +1,9 @@
 import React, { useCallback, useState } from 'react'
-import { useLocalSearchParams, useRouter } from 'expo-router'
+import { useLocalSearchParams } from 'expo-router'
 import { FidoType } from 'services/passkey/types'
 import Component from 'features/onboarding/components/FidoNameInput'
 import { useRecoveryMethodsContext } from 'features/accountSettings/context/RecoverMethodsProvider'
+import { useDebouncedRouter } from 'common/utils/useDebouncedRouter'
 
 export type FIDONameInputProps = {
   fidoType: FidoType
@@ -12,7 +13,7 @@ export type FIDONameInputProps = {
 }
 
 const FidoNameInput = (): JSX.Element => {
-  const router = useRouter()
+  const router = useDebouncedRouter()
   const { fidoRegisterInit } = useRecoveryMethodsContext()
   const { title, description, textInputPlaceholder, fidoType } =
     useLocalSearchParams<FIDONameInputProps>()

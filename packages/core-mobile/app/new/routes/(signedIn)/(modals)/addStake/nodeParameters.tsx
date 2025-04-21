@@ -1,12 +1,13 @@
 import React, { useCallback } from 'react'
 import { Button, SafeAreaView, ScrollView, View } from '@avalabs/k2-alpine'
 import ScreenHeader from 'common/components/ScreenHeader'
-import { useLocalSearchParams, useRouter } from 'expo-router'
+import { useLocalSearchParams } from 'expo-router'
 import { NodeParameterWidget } from 'features/stake/components/NodeParameterWidget'
 import { useSharedValue } from 'react-native-reanimated'
+import { useDebouncedRouter } from 'common/utils/useDebouncedRouter'
 
 const StakeNodeParameter = (): JSX.Element => {
-  const { navigate } = useRouter()
+  const { navigate } = useDebouncedRouter()
 
   const { stakeEndTime } = useLocalSearchParams<{
     stakeEndTime: string

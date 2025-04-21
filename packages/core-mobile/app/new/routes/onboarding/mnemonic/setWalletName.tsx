@@ -2,13 +2,14 @@ import React, { useState } from 'react'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { useDispatch } from 'react-redux'
 import { setWalletName } from 'store/account'
-import { useLocalSearchParams, useRouter } from 'expo-router'
+import { useLocalSearchParams } from 'expo-router'
 import { SetWalletName as Component } from 'features/onboarding/components/SetWalletName'
+import { useDebouncedRouter } from 'common/utils/useDebouncedRouter'
 
 export default function SetWalletName(): JSX.Element {
   const [name, setName] = useState<string>('Wallet 1')
   const dispatch = useDispatch()
-  const { navigate } = useRouter()
+  const { navigate } = useDebouncedRouter()
   const { mnemonic } = useLocalSearchParams<{ mnemonic: string }>()
 
   const handleNext = (): void => {

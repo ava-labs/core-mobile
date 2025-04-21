@@ -3,13 +3,13 @@ import AnalyticsService from 'services/analytics/AnalyticsService'
 import { useDispatch } from 'react-redux'
 import { setAccountTitle } from 'store/account'
 import { WalletType } from 'services/wallet/types'
-import { useRouter } from 'expo-router'
 import { SetWalletName as Component } from 'features/onboarding/components/SetWalletName'
+import { useDebouncedRouter } from 'common/utils/useDebouncedRouter'
 
 export default function SetWalletName(): JSX.Element {
   const [name, setName] = useState<string>('Wallet 1')
   const dispatch = useDispatch()
-  const { navigate } = useRouter()
+  const { navigate } = useDebouncedRouter()
 
   const handleNext = (): void => {
     AnalyticsService.capture('Onboard:WalletNameSet')

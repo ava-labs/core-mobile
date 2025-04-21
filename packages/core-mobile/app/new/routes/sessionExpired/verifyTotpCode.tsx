@@ -2,11 +2,12 @@ import React, { useCallback } from 'react'
 import { VerifyCode } from 'features/onboarding/components/VerifyCode'
 import { TotpErrors } from 'seedless/errors'
 import { Result } from 'types/result'
-import { useLocalSearchParams, useRouter } from 'expo-router'
+import { useLocalSearchParams } from 'expo-router'
 import { dismissTotpStack } from 'features/accountSettings/utils/dismissTotpStack'
 import { useNavigation } from '@react-navigation/native'
 import SeedlessService from 'seedless/services/SeedlessService'
 import { useInitSeedlessWalletAndUnlock } from 'common/hooks/useInitSeedlessWalletAndUnlock'
+import { useDebouncedRouter } from 'common/utils/useDebouncedRouter'
 
 const VerifyTotpCodeScreen = (): React.JSX.Element => {
   const { initSeedlessWalletAndUnlock } = useInitSeedlessWalletAndUnlock()
@@ -14,7 +15,7 @@ const VerifyTotpCodeScreen = (): React.JSX.Element => {
     oidcToken: string
     mfaId: string
   }>()
-  const router = useRouter()
+  const router = useDebouncedRouter()
   const { getState } = useNavigation()
 
   const handleVerifySuccess = useCallback(async (): Promise<void> => {

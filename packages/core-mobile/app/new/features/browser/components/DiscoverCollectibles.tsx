@@ -1,14 +1,14 @@
 import { AnimatedPressable, Button, Text } from '@avalabs/k2-alpine'
 import { Image } from 'expo-image'
-import { useRouter } from 'expo-router'
 import { CardContainer } from 'features/portfolio/collectibles/components/CardContainer'
 import React from 'react'
 import { View } from 'react-native'
+import { useDebouncedRouter } from 'common/utils/useDebouncedRouter'
 import { HORIZONTAL_MARGIN } from '../consts'
 import NftCollectionImage from '../../../assets/nft-collection.png'
 
 export const DiscoverCollectibles = (): JSX.Element => {
-  const { navigate } = useRouter()
+  const { navigate } = useDebouncedRouter()
 
   const openDiscoverCollectibles = (): void => {
     navigate('/discoverCollectibles')

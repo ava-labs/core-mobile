@@ -16,13 +16,13 @@ import { useGetClaimableBalance } from 'hooks/earn/useGetClaimableBalance'
 import { useGetStuckBalance } from 'hooks/earn/useGetStuckBalance'
 import { useDelegationContext } from 'contexts/DelegationContext'
 import useStakingParams from 'hooks/earn/useStakingParams'
-import { useRouter } from 'expo-router'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import { useAvaxTokenPriceInSelectedCurrency } from 'hooks/useAvaxTokenPriceInSelectedCurrency'
 import AnalyticsService from 'services/analytics/AnalyticsService'
+import { useDebouncedRouter } from 'common/utils/useDebouncedRouter'
 
 const StakeAmountScreen = (): JSX.Element => {
-  const { navigate } = useRouter()
+  const { navigate } = useDebouncedRouter()
   const [isComputing, setIsComputing] = useState<boolean>(false)
   const [computeError, setComputeError] = useState<Error | null>(null)
   const { compute, setStakeAmount, stakeAmount } = useDelegationContext()

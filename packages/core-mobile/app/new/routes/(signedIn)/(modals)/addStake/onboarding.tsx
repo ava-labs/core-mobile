@@ -2,10 +2,10 @@ import React, { useCallback } from 'react'
 import { TransactionOnboarding } from 'common/components/TransactionOnboarding'
 import { Icons } from '@avalabs/k2-alpine'
 import { ViewOnceKey } from 'store/viewOnce'
-import { useRouter } from 'expo-router'
+import { useDebouncedRouter } from 'common/utils/useDebouncedRouter'
 
 const StakeOnboardingScreen = (): JSX.Element => {
-  const { navigate } = useRouter()
+  const { navigate } = useDebouncedRouter()
 
   const handlePressNext = useCallback(() => {
     navigate('addStake/amount')

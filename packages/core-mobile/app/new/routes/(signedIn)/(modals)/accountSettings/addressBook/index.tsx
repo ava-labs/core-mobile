@@ -15,8 +15,6 @@ import {
   View
 } from '@avalabs/k2-alpine'
 import React, { useCallback, useState, useMemo } from 'react'
-import { useRouter } from 'expo-router'
-
 import { LayoutRectangle, LayoutChangeEvent } from 'react-native'
 import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
 import Animated, {
@@ -31,6 +29,7 @@ import { useFocusEffect, useNavigation } from '@react-navigation/native'
 import { getAddressFromContact } from 'features/accountSettings/utils/getAddressFromContact'
 import { uuid } from 'utils/uuid'
 import { useSortedContacts } from 'features/accountSettings/hooks/useSortedContacts'
+import { useDebouncedRouter } from 'common/utils/useDebouncedRouter'
 
 const TITLE = 'Contacts'
 const HEADER = <NavigationTitleHeader title={TITLE} />
@@ -43,7 +42,7 @@ const AddressBookScreen = (): JSX.Element => {
   const { data: contacts, sort } = useSortedContacts()
 
   const [searchText, setSearchText] = useState('')
-  const { navigate } = useRouter()
+  const { navigate } = useDebouncedRouter()
   const [headerLayout, setHeaderLayout] = useState<
     LayoutRectangle | undefined
   >()

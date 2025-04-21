@@ -1,12 +1,12 @@
 import React from 'react'
 import { useRecoveryMethodContext } from 'features/onboarding/contexts/RecoveryMethodProvider'
-import { useRouter } from 'expo-router'
 import { ScanQrCode as ScanQrCodeComponent } from 'features/onboarding/components/ScanQrCode'
 import BlurredBarsContentLayout from 'common/components/BlurredBarsContentLayout'
+import { useDebouncedRouter } from 'common/utils/useDebouncedRouter'
 
 export default function ScanQrCode(): JSX.Element {
   const { totpChallenge } = useRecoveryMethodContext()
-  const router = useRouter()
+  const router = useDebouncedRouter()
 
   const goToVerifyCode = (): void => {
     router.push('./verifyCode')

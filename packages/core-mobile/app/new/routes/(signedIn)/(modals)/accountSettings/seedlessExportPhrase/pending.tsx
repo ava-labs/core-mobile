@@ -1,5 +1,4 @@
 import React, { useCallback, useState, useEffect } from 'react'
-import { useRouter } from 'expo-router'
 import { showAlert } from '@avalabs/k2-alpine'
 import { SeedlessExportPending } from 'features/accountSettings/components/SeedlessExportPending'
 import {
@@ -9,11 +8,12 @@ import {
 } from 'features/accountSettings/context/SeedlessMnemonicExportProvider'
 import { formatExportPhraseDuration } from 'features/accountSettings/utils/formatExportPhraseDuration'
 import { getExportInitProgress } from 'features/accountSettings/utils/getExportInitProgress'
+import { useDebouncedRouter } from 'common/utils/useDebouncedRouter'
 
 const SeedlessExportPendingScreen = (): JSX.Element => {
   const [progress, setProgress] = useState(0)
   const [timeLeft, setTimeLeft] = useState('')
-  const { back, canGoBack, replace } = useRouter()
+  const { back, canGoBack, replace } = useDebouncedRouter()
   const { deleteExport, pendingRequest } = useSeedlessMnemonicExportContext()
 
   const onCancelExportRequest = useCallback(

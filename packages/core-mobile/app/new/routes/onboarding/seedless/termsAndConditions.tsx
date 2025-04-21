@@ -1,10 +1,11 @@
 import React, { useCallback } from 'react'
 import { TermsAndConditions as Component } from 'features/onboarding/components/TermsAndConditions'
-import { useLocalSearchParams, useRouter } from 'expo-router'
+import { useLocalSearchParams } from 'expo-router'
 import { useUserMfa } from 'common/hooks/useUserMfa'
+import { useDebouncedRouter } from 'common/utils/useDebouncedRouter'
 
 export default function TermsAndConditions(): JSX.Element {
-  const { navigate } = useRouter()
+  const { navigate } = useDebouncedRouter()
   const { data: mfas } = useUserMfa()
   const { recovering } = useLocalSearchParams<{ recovering: string }>()
 

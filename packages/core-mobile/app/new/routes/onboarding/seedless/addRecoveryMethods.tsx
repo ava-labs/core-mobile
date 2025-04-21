@@ -1,5 +1,4 @@
 import React from 'react'
-import { useRouter } from 'expo-router'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import {
   RecoveryMethods,
@@ -9,9 +8,10 @@ import { AddRecoveryMethods as Component } from 'features/onboarding/components/
 import { useRecoveryMethodContext } from 'features/onboarding/contexts/RecoveryMethodProvider'
 import { FidoType } from 'services/passkey/types'
 import { RecoveryMethod } from 'features/onboarding/hooks/useAvailableRecoveryMethods'
+import { useDebouncedRouter } from 'common/utils/useDebouncedRouter'
 
 const AddRecoveryMethods = (): JSX.Element => {
-  const { navigate } = useRouter()
+  const { navigate } = useDebouncedRouter()
   const { oidcAuth } = useRecoveryMethodContext()
   const availableRecoveryMethods = useAvailableRecoveryMethods()
 

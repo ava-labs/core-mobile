@@ -1,5 +1,4 @@
 import React, { useCallback } from 'react'
-import { useRouter } from 'expo-router'
 import { VerifyCode as VerifyCodeComponent } from 'features/onboarding/components/VerifyCode'
 import { useRecoveryMethodsContext } from 'features/accountSettings/context/RecoverMethodsProvider'
 import { showSnackbar } from 'common/utils/toast'
@@ -7,10 +6,11 @@ import { Result } from 'types/result'
 import { TotpErrors } from 'seedless/errors'
 import { dismissTotpStack } from 'features/accountSettings/utils/dismissTotpStack'
 import { useNavigation } from '@react-navigation/native'
+import { useDebouncedRouter } from 'common/utils/useDebouncedRouter'
 
 export default function VerifyCode(): JSX.Element {
   const { verifiedTotpChallenge } = useRecoveryMethodsContext()
-  const router = useRouter()
+  const router = useDebouncedRouter()
   const { getState } = useNavigation()
 
   const onVerifyCode = useCallback(
