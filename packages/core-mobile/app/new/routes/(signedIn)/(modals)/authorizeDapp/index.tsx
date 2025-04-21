@@ -1,1 +1,1 @@
-export { AuthorizeDappScreen as default } from 'features/rpc/screens/AuthorizeDappScreen'
+export { default } from 'features/rpc/screens/AuthorizeDappScreen'
