@@ -18,7 +18,7 @@ import { TokenLogo } from 'new/common/components/TokenLogo'
 import { Button, Text } from '@avalabs/k2-alpine'
 import { LinearGradientBottomWrapper } from 'new/common/components/LinearGradientBottomWrapper'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { SessionProposalV2Params } from 'services/walletconnectv2/walletConnectCache/types'
+import { SessionProposalParams } from 'services/walletconnectv2/walletConnectCache/types'
 import { SelectAccounts } from '../components/SelectAccounts'
 
 const showNoActiveAccountMessage = (): void => {
@@ -26,7 +26,7 @@ const showNoActiveAccountMessage = (): void => {
 }
 
 const AuthorizeDappScreenWrapper = (): JSX.Element | null => {
-  const [params, setParams] = useState<SessionProposalV2Params>()
+  const [params, setParams] = useState<SessionProposalParams>()
 
   useLayoutEffect(() => {
     setParams(walletConnectCache.sessionProposalParams.get())
@@ -42,7 +42,7 @@ const AuthorizeDappScreenWrapper = (): JSX.Element | null => {
 const AuthorizeDappScreen = ({
   params: { request, namespaces }
 }: {
-  params: SessionProposalV2Params
+  params: SessionProposalParams
 }): JSX.Element => {
   const shouldRejectOnClose = useRef(true)
   const { bottom } = useSafeAreaInsets()

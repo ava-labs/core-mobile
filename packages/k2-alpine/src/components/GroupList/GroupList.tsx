@@ -161,7 +161,9 @@ export const GroupList = ({
                     sx={{
                       flexDirection: 'row',
                       alignItems: 'center',
-                      gap: 4
+                      gap: 4,
+                      flex: 1,
+                      justifyContent: 'flex-end'
                     }}>
                     {value !== undefined &&
                       (typeof value === 'string' ? (
