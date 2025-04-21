@@ -12,8 +12,10 @@ import { BROWSER_CONTROLS_HEIGHT } from 'features/browser/consts'
 import React, { useCallback, useEffect, useMemo } from 'react'
 import { Platform } from 'react-native'
 import { useBottomTabBarHeight } from 'react-native-bottom-tabs'
-import { AndroidSoftInputModes } from 'react-native-keyboard-controller'
-import { KeyboardController } from 'react-native-keyboard-controller'
+import {
+  AndroidSoftInputModes,
+  KeyboardController
+} from 'react-native-keyboard-controller'
 import Animated, { useAnimatedStyle, withTiming } from 'react-native-reanimated'
 import { useSelector } from 'react-redux'
 import { selectActiveTab, selectAllTabs, selectIsTabEmpty } from 'store/browser'
@@ -75,13 +77,17 @@ const Browser = (): React.ReactNode => {
   })
 
   useFocusEffect(() => {
-    KeyboardController.setInputMode(
-      AndroidSoftInputModes.SOFT_INPUT_ADJUST_NOTHING
-    )
-    return () => {
+    if (!KeyboardController.isVisible()) {
       KeyboardController.setInputMode(
-        AndroidSoftInputModes.SOFT_INPUT_ADJUST_RESIZE
+        AndroidSoftInputModes.SOFT_INPUT_ADJUST_NOTHING
       )
+    }
+    return () => {
+      if (!KeyboardController.isVisible()) {
+        KeyboardController.setInputMode(
+          AndroidSoftInputModes.SOFT_INPUT_ADJUST_RESIZE
+        )
+      }
     }
   })
 

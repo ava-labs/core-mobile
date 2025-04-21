@@ -6,7 +6,7 @@ import {
   View
 } from '@avalabs/k2-alpine'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
-import { useLocalSearchParams } from 'expo-router'
+import { useLocalSearchParams, useRouter } from 'expo-router'
 import React, { useCallback, useMemo, useRef, useState } from 'react'
 import { useSelector } from 'react-redux'
 import {
@@ -53,6 +53,7 @@ const TokenDetailScreen = (): React.JSX.Element => {
   const {
     theme: { colors }
   } = useTheme()
+  const { navigate } = useRouter()
   const botomInset = useSafeAreaInsets().bottom
   const tabViewRef = useRef<CollapsibleTabsRef>(null)
   const { openUrl } = useInAppBrowser()
@@ -139,6 +140,21 @@ const TokenDetailScreen = (): React.JSX.Element => {
     },
     [selectedSegmentIndex]
   )
+
+  const handleBuy = useCallback(() => {
+    navigate({
+      pathname: '/buy'
+    })
+  }, [navigate])
+
+  const ACTION_BUTTONS: ActionButton[] = [
+    { title: ActionButtonTitle.Send, icon: 'send', onPress: noop },
+    { title: ActionButtonTitle.Swap, icon: 'swap', onPress: noop },
+    { title: ActionButtonTitle.Buy, icon: 'buy', onPress: handleBuy },
+    { title: ActionButtonTitle.Stake, icon: 'stake', onPress: noop },
+    { title: ActionButtonTitle.Bridge, icon: 'bridge', onPress: noop },
+    { title: ActionButtonTitle.Connect, icon: 'connect', onPress: noop }
+  ]
 
   const renderEmptyTabBar = useCallback((): JSX.Element => <></>, [])
 
@@ -237,14 +253,5 @@ export enum TokenDetailTab {
 }
 
 const SEGMENT_ITEMS = [TokenDetailTab.Tokens, TokenDetailTab.Activity]
-
-const ACTION_BUTTONS: ActionButton[] = [
-  { title: ActionButtonTitle.Send, icon: 'send', onPress: noop },
-  { title: ActionButtonTitle.Swap, icon: 'swap', onPress: noop },
-  { title: ActionButtonTitle.Buy, icon: 'buy', onPress: noop },
-  { title: ActionButtonTitle.Stake, icon: 'stake', onPress: noop },
-  { title: ActionButtonTitle.Bridge, icon: 'bridge', onPress: noop },
-  { title: ActionButtonTitle.Connect, icon: 'connect', onPress: noop }
-]
 
 export default TokenDetailScreen

@@ -90,6 +90,7 @@ export const CarouselItem = ({
               }}>
               <Image
                 source={image}
+                renderToHardwareTextureAndroid={false}
                 style={{ width: 150, height: 150, borderRadius: 100 }}
               />
             </View>

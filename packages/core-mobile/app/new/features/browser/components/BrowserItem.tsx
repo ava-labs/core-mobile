@@ -231,6 +231,7 @@ const Avatar = memo(
       return (
         <Image
           source={image}
+          renderToHardwareTextureAndroid={false}
           style={{
             width: size,
             height: size,
