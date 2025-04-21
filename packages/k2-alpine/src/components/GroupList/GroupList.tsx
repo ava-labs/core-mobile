@@ -35,7 +35,7 @@ export const GroupList = ({
   const { theme } = useTheme()
   const [textMarginLeft, setTextMarginLeft] = useState(0)
   const [expandedStates, setExpandedStates] = useState<boolean[]>(
-    data.map(() => false)
+    data.map(i => i.expanded ?? false)
   )
 
   const handleLayout = (event: LayoutChangeEvent): void => {
@@ -217,6 +217,7 @@ export type GroupListItem = {
   rightIcon?: JSX.Element
   accessory?: JSX.Element
   accordion?: JSX.Element
+  expanded?: boolean
 }
 
 const AnimatedChevron = ({ expanded }: { expanded: boolean }): JSX.Element => {

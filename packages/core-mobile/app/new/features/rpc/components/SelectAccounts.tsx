@@ -75,6 +75,7 @@ export const SelectAccounts = ({
             {selectedAccounts.length} of {Object.keys(accounts).length}
           </Text>
         ),
+        expanded: true,
         accordion: (
           <View style={{ marginVertical: 12 }}>
             {allAccounts.map((account, index) => {
