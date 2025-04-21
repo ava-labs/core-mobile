@@ -5,7 +5,8 @@ import React, {
   useCallback,
   useState,
   useMemo,
-  useRef
+  useRef,
+  useEffect
 } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import {
@@ -57,7 +58,6 @@ const ManageAccountsScreen = (): React.JSX.Element => {
   const [isAddingAccount, setIsAddingAccount] = useState(false)
   const accountCollection = useSelector(selectAccounts)
   const scrollViewRef = useRef<RnScrollView>(null)
-  const [indexToLoad, setIndexToLoad] = useState<number | undefined>()
 
   const accounts = useMemo(
     () => Object.values(accountCollection),
@@ -80,14 +80,6 @@ const ManageAccountsScreen = (): React.JSX.Element => {
     })
   }, [accounts, searchText])
 
-  const handleLoadingBalance = useCallback(
-    (accountIndex: number): void => {
-      dispatch(fetchBalanceForAccount({ accountIndex }))
-      setIndexToLoad(accountIndex)
-    },
-    [dispatch]
-  )
-
   const data = useMemo(() => {
     return accountSearchResults.map(account => ({
       title: account.name,
@@ -101,13 +93,7 @@ const ManageAccountsScreen = (): React.JSX.Element => {
       ) : (
         <View sx={{ width: 24 }} />
       ),
-      value: (
-        <AccountBalance
-          accountIndex={account.index}
-          onLoadingBalance={handleLoadingBalance}
-          shouldShowLoader={account.index === indexToLoad}
-        />
-      ),
+      value: <AccountBalance accountIndex={account.index} />,
       onPress: () => dispatch(setActiveAccountIndex(account.index)),
       accessory: (
         <TouchableOpacity
@@ -127,9 +113,7 @@ const ManageAccountsScreen = (): React.JSX.Element => {
     colors.$textPrimary,
     colors.$textSecondary,
     dispatch,
-    gotoAccountDetails,
-    handleLoadingBalance,
-    indexToLoad
+    gotoAccountDetails
   ])
 
   const handleAddAccount = useCallback(async (): Promise<void> => {
@@ -224,13 +208,9 @@ const ManageAccountsScreen = (): React.JSX.Element => {
 export default ManageAccountsScreen
 
 const AccountBalance = ({
-  accountIndex,
-  shouldShowLoader,
-  onLoadingBalance
+  accountIndex
 }: {
   accountIndex: number
-  shouldShowLoader: boolean
-  onLoadingBalance: (accountIndex: number) => void
 }): React.JSX.Element => {
   const balanceStatus = useSelector(selectBalanceStatus)
   const isBalanceLoading = balanceStatus !== QueryStatus.IDLE
@@ -238,9 +218,11 @@ const AccountBalance = ({
   const {
     theme: { colors }
   } = useTheme()
+  const dispatch = useDispatch()
   const isBalanceLoaded = useSelector(
     selectIsBalanceLoadedForAccount(accountIndex)
   )
+  const [showLoader, setShowLoader] = useState(false)
   const tokenVisibility = useSelector(selectTokenVisibility)
   const accountBalance = useSelector(
     selectBalanceTotalInCurrencyForAccount(accountIndex, tokenVisibility)
@@ -251,10 +233,24 @@ const AccountBalance = ({
     return formatCurrency({ amount: accountBalance })
   }, [accountBalance, formatCurrency])
 
-  return shouldShowLoader && isBalanceLoading && isBalanceLoaded === false ? (
+  const handleLoadingBalance = useCallback(
+    (index: number): void => {
+      dispatch(fetchBalanceForAccount({ accountIndex: index }))
+      setShowLoader(true)
+    },
+    [dispatch]
+  )
+
+  useEffect(() => {
+    if (!isBalanceLoading && showLoader) {
+      setShowLoader(false)
+    }
+  }, [isBalanceLoading, showLoader])
+
+  return showLoader && isBalanceLoading && isBalanceLoaded === false ? (
     <ActivityIndicator size="small" />
   ) : isBalanceLoaded === false ? (
-    <Pressable onPress={() => onLoadingBalance(accountIndex)}>
+    <Pressable onPress={() => handleLoadingBalance(accountIndex)}>
       <Text
         variant="caption"
         numberOfLines={1}
