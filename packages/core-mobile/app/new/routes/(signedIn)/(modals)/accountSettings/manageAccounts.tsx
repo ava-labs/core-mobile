@@ -16,6 +16,7 @@ import {
   ScrollView,
   SearchBar,
   Separator,
+  Text,
   TouchableOpacity,
   useTheme,
   View
@@ -32,7 +33,11 @@ import { showSnackbar } from 'common/utils/toast'
 import { truncateAddress } from '@avalabs/core-utils-sdk'
 import { selectIsPrivacyModeEnabled } from 'store/settings/securityPrivacy'
 import { selectTokenVisibility } from 'store/portfolio'
-import { selectBalanceTotalInCurrencyForAccount } from 'store/balance'
+import {
+  QueryStatus,
+  selectBalanceStatus,
+  selectBalanceTotalInCurrencyForAccount
+} from 'store/balance'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import { ScrollView as RnScrollView } from 'react-native'
 
@@ -49,6 +54,7 @@ const ManageAccountsScreen = (): React.JSX.Element => {
   const [isAddingAccount, setIsAddingAccount] = useState(false)
   const accountCollection = useSelector(selectAccounts)
   const scrollViewRef = useRef<RnScrollView>(null)
+  const [indexToLoad, setIndexToLoad] = useState<number | undefined>()
 
   const accounts = useMemo(
     () => Object.values(accountCollection),
@@ -71,6 +77,14 @@ const ManageAccountsScreen = (): React.JSX.Element => {
     })
   }, [accounts, searchText])
 
+  const handleOnPress = useCallback(
+    (accountIndex: number): void => {
+      setIndexToLoad(accountIndex)
+      dispatch(setActiveAccountIndex(accountIndex))
+    },
+    [dispatch]
+  )
+
   const data = useMemo(() => {
     return accountSearchResults.map(account => ({
       title: account.name,
@@ -84,8 +98,13 @@ const ManageAccountsScreen = (): React.JSX.Element => {
       ) : (
         <View sx={{ width: 24 }} />
       ),
-      value: <AccountBalance accountIndex={account.index} />,
-      onPress: () => dispatch(setActiveAccountIndex(account.index)),
+      value: (
+        <AccountBalance
+          accountIndex={account.index}
+          shouldShowLoader={account.index === indexToLoad}
+        />
+      ),
+      onPress: () => handleOnPress(account.index),
       accessory: (
         <TouchableOpacity
           hitSlop={16}
@@ -103,8 +122,9 @@ const ManageAccountsScreen = (): React.JSX.Element => {
     accountSearchResults,
     colors.$textPrimary,
     colors.$textSecondary,
-    dispatch,
-    gotoAccountDetails
+    gotoAccountDetails,
+    handleOnPress,
+    indexToLoad
   ])
 
   const handleAddAccount = useCallback(async (): Promise<void> => {
@@ -199,10 +219,14 @@ const ManageAccountsScreen = (): React.JSX.Element => {
 export default ManageAccountsScreen
 
 const AccountBalance = ({
-  accountIndex
+  accountIndex,
+  shouldShowLoader
 }: {
   accountIndex: number
+  shouldShowLoader: boolean
 }): React.JSX.Element => {
+  const balanceStatus = useSelector(selectBalanceStatus)
+  const isBalanceLoading = balanceStatus !== QueryStatus.IDLE
   const isPrivacyModeEnabled = useSelector(selectIsPrivacyModeEnabled)
   const {
     theme: { colors }
@@ -216,12 +240,18 @@ const AccountBalance = ({
 
   const balance = useMemo(() => {
     if (accountBalance === 0) {
-      return ''
+      return undefined
     }
     return formatCurrency({ amount: accountBalance })
   }, [accountBalance, formatCurrency])
 
-  return (
+  return shouldShowLoader && isBalanceLoading && balance === undefined ? (
+    <ActivityIndicator size="small" />
+  ) : balance === undefined ? (
+    <Text variant="body1" sx={{ color: colors.$textSecondary, lineHeight: 18 }}>
+      View Balance
+    </Text>
+  ) : (
     <AnimatedBalance
       variant="body1"
       balance={balance}
