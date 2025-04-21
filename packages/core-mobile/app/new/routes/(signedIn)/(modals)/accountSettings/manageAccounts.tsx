@@ -5,8 +5,7 @@ import React, {
   useCallback,
   useState,
   useMemo,
-  useRef,
-  useEffect
+  useRef
 } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import {
@@ -242,7 +241,6 @@ const AccountBalance = ({
   const isBalanceLoaded = useSelector(
     selectIsBalanceLoadedForAccount(accountIndex)
   )
-  const [showLoader, setShowLoader] = useState(false)
   const tokenVisibility = useSelector(selectTokenVisibility)
   const accountBalance = useSelector(
     selectBalanceTotalInCurrencyForAccount(accountIndex, tokenVisibility)
@@ -252,12 +250,6 @@ const AccountBalance = ({
   const balance = useMemo(() => {
     return formatCurrency({ amount: accountBalance })
   }, [accountBalance, formatCurrency])
-
-  useEffect(() => {
-    if (!isBalanceLoading && showLoader) {
-      setShowLoader(false)
-    }
-  }, [isBalanceLoading, showLoader])
 
   return shouldShowLoader && isBalanceLoading && isBalanceLoaded === false ? (
     <ActivityIndicator size="small" />
