@@ -8,19 +8,33 @@ import {
   View
 } from '@avalabs/k2-alpine'
 import { ListRenderItem } from '@shopify/flash-list'
-import { LocalTokenWithBalance } from 'store/balance'
+import { AVAX_P_ID, AVAX_X_ID, LocalTokenWithBalance } from 'store/balance'
 import { LogoWithNetwork } from 'features/portfolio/assets/components/LogoWithNetwork'
-import { useRouter } from 'expo-router'
+import { useLocalSearchParams, useRouter } from 'expo-router'
 import { useSendSelectedToken } from 'features/send/store'
 import { SelectTokenScreen } from 'common/screens/SelectTokenScreen'
+import { useNetworks } from 'hooks/networks/useNetworks'
+import { selectIsDeveloperMode } from 'store/settings/advanced'
+import { useSelector } from 'react-redux'
+import { useContacts } from 'common/hooks/useContacts'
 import { useSearchableTokenList } from 'common/hooks/useSearchableTokenList'
+import { TokenType } from '@avalabs/vm-module-types'
+import { RecipientType } from '../context/sendContext'
+import { getNetworks } from '../utils/getNetworks'
 
 export const SelectSendTokenScreen = (): JSX.Element => {
   const {
     theme: { colors }
   } = useTheme()
+  const { to, recipientType } = useLocalSearchParams<{
+    to: string
+    recipientType: RecipientType
+  }>()
   const { back, canGoBack } = useRouter()
+  const { allNetworks } = useNetworks()
+  const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const [searchText, setSearchText] = useState<string>('')
+  const { contacts, accounts } = useContacts()
   const [selectedToken, setSelectedToken] = useSendSelectedToken()
   const { filteredTokenList } = useSearchableTokenList({})
   const handleSelectToken = (token: LocalTokenWithBalance): void => {
@@ -28,22 +42,71 @@ export const SelectSendTokenScreen = (): JSX.Element => {
     canGoBack() && back()
   }
 
-  const availableTokens = useMemo(() => {
-    return filteredTokenList.filter(
-      token => token.networkChainId !== selectedToken?.networkChainId
+  const tokens = useMemo(() => {
+    const networks = getNetworks({
+      to,
+      recipientType,
+      allNetworks,
+      isDeveloperMode,
+      contacts: contacts.concat(accounts)
+    })
+    return filteredTokenList.filter(t =>
+      networks.some(network => network.chainId === t.networkChainId)
     )
-  }, [filteredTokenList, selectedToken?.networkChainId])
+  }, [
+    accounts,
+    allNetworks,
+    contacts,
+    filteredTokenList,
+    isDeveloperMode,
+    recipientType,
+    to
+  ])
 
   const searchResults = useMemo(() => {
     if (searchText.length === 0) {
-      return availableTokens
+      return tokens
     }
-    return availableTokens.filter(
+    return tokens.filter(
       token =>
         token.name.toLowerCase().includes(searchText.toLowerCase()) ||
-        token.symbol.toLowerCase().includes(searchText.toLowerCase())
+        token.symbol.toLowerCase().includes(searchText.toLowerCase()) ||
+        token.networkChainId.toString().includes(searchText)
     )
-  }, [availableTokens, searchText])
+  }, [tokens, searchText])
+
+  const sortedSearchResults = useMemo(() => {
+    const sortedAvalancheTokens: LocalTokenWithBalance[] = []
+    const cChainToken = tokens.find(
+      token =>
+        token.type === TokenType.NATIVE && token.localId === 'AvalancheAVAX'
+    )
+    if (cChainToken) {
+      sortedAvalancheTokens.push(cChainToken)
+    }
+    const pChainToken = tokens.find(
+      token => token.type === TokenType.NATIVE && token.localId === AVAX_P_ID
+    )
+    if (pChainToken) {
+      sortedAvalancheTokens.push(pChainToken)
+    }
+    const xChainToken = tokens.find(
+      token => token.type === TokenType.NATIVE && token.localId === AVAX_X_ID
+    )
+    if (xChainToken) {
+      sortedAvalancheTokens.push(xChainToken)
+    }
+    const rest = tokens.filter(
+      token =>
+        token.localId !== 'AvalancheAVAX' &&
+        token.localId !== AVAX_P_ID &&
+        token.localId !== AVAX_X_ID
+    )
+    const sorted = rest.sort(
+      (a, b) => Number(b.balanceInCurrency) - Number(a.balanceInCurrency)
+    )
+    return [...sortedAvalancheTokens, ...sorted]
+  }, [tokens])
 
   const renderItem: ListRenderItem<LocalTokenWithBalance> = ({
     item,
@@ -72,7 +135,7 @@ export const SelectSendTokenScreen = (): JSX.Element => {
             <View>
               <Text variant="buttonMedium">{item.name}</Text>
               <Text variant="subtitle2">
-                {item.balanceDisplayValue + item.symbol}
+                {item.balanceDisplayValue + ' ' + item.symbol}
               </Text>
             </View>
           </View>
@@ -97,7 +160,7 @@ export const SelectSendTokenScreen = (): JSX.Element => {
     <SelectTokenScreen
       onSearchText={setSearchText}
       searchText={searchText}
-      tokens={[]}
+      tokens={sortedSearchResults ?? []}
       renderListItem={renderItem}
       keyExtractor={item => item.localId}
     />

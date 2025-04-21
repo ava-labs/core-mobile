@@ -4,11 +4,12 @@ import {
 } from '@avalabs/core-wallets-sdk'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import Logger from 'utils/Logger'
-import { bigIntToString } from '@avalabs/core-utils-sdk'
+import { TokenUnit } from '@avalabs/core-utils-sdk'
 import { useInAppRequest } from 'hooks/useInAppRequest'
-import { useSendContext } from 'contexts/SendContext'
 import { assertNotUndefined } from 'utils/assertions'
 import { useBitcoinProvider } from 'hooks/networks/networkProviderHooks'
+import { useSendContext } from 'new/features/send/context/sendContext'
+import { useSendSelectedToken } from 'new/features/send/store'
 import { SendAdapterBTC } from '../utils/types'
 import { getBtcInputUtxos } from '../utils/btc/getBtcInputUtxos'
 import { send as sendBTC } from '../utils/btc/send'
@@ -27,16 +28,18 @@ const useBTCSend: SendAdapterBTC = ({
     setMaxAmount,
     setError,
     setIsSending,
-    toAddress,
-    token,
+    addressToSend,
     amount,
     canValidate
   } = useSendContext()
-  const provider = useBitcoinProvider(!!network.isTestnet)
+  const provider = useBitcoinProvider(!!network?.isTestnet)
+  const [selectedToken] = useSendSelectedToken()
 
   useEffect(() => {
     const fetchInputUtxos = async (): Promise<void> => {
       assertNotUndefined(provider)
+      assertNotUndefined(nativeToken)
+
       const inputUtxos = await getBtcInputUtxos(
         provider,
         nativeToken,
@@ -59,27 +62,32 @@ const useBTCSend: SendAdapterBTC = ({
   }, [nativeToken, maxFee, provider])
 
   const maxAmountValue = useMemo(() => {
-    if (!toAddress) {
+    if (!addressToSend) {
       return
     }
 
     return BigInt(
       Math.max(
-        getMaxTransferAmount(utxos, toAddress, fromAddress, Number(maxFee)),
+        getMaxTransferAmount(utxos, addressToSend, fromAddress, Number(maxFee)),
         0
       )
     )
-  }, [toAddress, fromAddress, utxos, maxFee])
+  }, [addressToSend, fromAddress, utxos, maxFee])
 
   const validate = useCallback(async () => {
-    if (!toAddress || !token || maxAmountValue === undefined) {
+    if (
+      !addressToSend ||
+      !selectedToken ||
+      maxAmountValue === undefined ||
+      maxFee === undefined
+    ) {
       return
     }
 
     try {
       validateBTCSend({
-        toAddress,
-        amount: amount?.bn ?? 0n,
+        toAddress: addressToSend,
+        amount: amount?.toSubUnit() ?? 0n,
         maxAmount: maxAmountValue,
         maxFee,
         isMainnet
@@ -92,27 +100,44 @@ const useBTCSend: SendAdapterBTC = ({
         Logger.error('failed to validate send', e)
       }
     }
-  }, [maxFee, isMainnet, setError, toAddress, token, amount, maxAmountValue])
+  }, [
+    maxFee,
+    isMainnet,
+    setError,
+    addressToSend,
+    selectedToken,
+    amount,
+    maxAmountValue
+  ])
 
   const send = useCallback(async () => {
     try {
-      assertNotUndefined(toAddress)
+      assertNotUndefined(addressToSend)
       assertNotUndefined(amount)
+      assertNotUndefined(maxFee)
 
       setIsSending(true)
 
       return await sendBTC({
         request,
-        toAddress,
+        toAddress: addressToSend,
         fromAddress,
-        amount: amount?.bn,
+        amount: amount?.toSubUnit(),
         feeRate: maxFee,
         isMainnet
       })
     } finally {
       setIsSending(false)
     }
-  }, [isMainnet, maxFee, fromAddress, request, setIsSending, toAddress, amount])
+  }, [
+    isMainnet,
+    maxFee,
+    fromAddress,
+    request,
+    setIsSending,
+    addressToSend,
+    amount
+  ])
 
   useEffect(() => {
     if (canValidate) {
@@ -121,15 +146,18 @@ const useBTCSend: SendAdapterBTC = ({
   }, [validate, canValidate])
 
   useEffect(() => {
-    if (maxAmountValue !== undefined) {
-      setMaxAmount({
-        bn: maxAmountValue ?? 0n,
-        amount: maxAmountValue
-          ? bigIntToString(maxAmountValue, nativeToken.decimals)
-          : ''
-      })
+    if (maxAmountValue !== undefined && nativeToken !== undefined) {
+      setMaxAmount(
+        new TokenUnit(maxAmountValue, nativeToken.decimals, nativeToken.symbol)
+      )
     }
-  }, [maxAmountValue, setMaxAmount, nativeToken.decimals])
+  }, [
+    maxAmountValue,
+    setMaxAmount,
+    nativeToken?.decimals,
+    nativeToken?.symbol,
+    nativeToken
+  ])
 
   return {
     send

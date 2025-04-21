@@ -10,8 +10,6 @@ import {
 } from '@avalabs/k2-alpine'
 import React, { ReactNode, useCallback, useMemo } from 'react'
 import { NftItem } from 'services/nft/types'
-
-import { noop } from '@avalabs/core-utils-sdk'
 import { LinearGradientBottomWrapper } from 'common/components/LinearGradientBottomWrapper'
 import { showSnackbar } from 'common/utils/toast'
 import { LinearGradient } from 'expo-linear-gradient'
@@ -25,6 +23,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { isAvalancheCChainId } from 'services/network/utils/isAvalancheNetwork'
 import { truncateAddress } from 'utils/Utils'
 import { isAddress } from 'viem'
+import { useRouter } from 'expo-router'
 import { useCollectiblesContext } from '../CollectiblesContext'
 import { HORIZONTAL_MARGIN } from '../consts'
 
@@ -40,6 +39,7 @@ export const CollectibleDetailsContent = ({
   const {
     theme: { colors }
   } = useTheme()
+  const { navigate } = useRouter()
   const insets = useSafeAreaInsets()
   const networks = useNetworks()
   const { refreshMetadata, isCollectibleRefreshing } = useCollectiblesContext()
@@ -90,6 +90,14 @@ export const CollectibleDetailsContent = ({
     await refreshMetadata(collectible, collectible.chainId)
   }, [canRefreshMetadata, collectible, refreshMetadata])
 
+  const handleSend = useCallback(() => {
+    collectible?.localId &&
+      navigate({
+        pathname: '/collectiblesSend',
+        params: { localId: collectible.localId }
+      })
+  }, [collectible, navigate])
+
   const ACTION_BUTTONS: ActionButton[] = useMemo(() => {
     const visibilityAction: ActionButton = {
       title: isVisible ? ActionButtonTitle.Hide : ActionButtonTitle.Unhide,
@@ -98,10 +106,10 @@ export const CollectibleDetailsContent = ({
     }
 
     return [
-      { title: ActionButtonTitle.Send, icon: 'send', onPress: noop },
+      { title: ActionButtonTitle.Send, icon: 'send', onPress: handleSend },
       visibilityAction
     ]
-  }, [isVisible, onHide])
+  }, [isVisible, onHide, handleSend])
 
   return (
     <View

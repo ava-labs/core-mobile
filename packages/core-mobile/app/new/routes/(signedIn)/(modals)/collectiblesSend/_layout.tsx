@@ -10,7 +10,7 @@ import { selectHasBeenViewedOnce, ViewOnceKey } from 'store/viewOnce'
 import { useNavigation } from 'expo-router'
 import { SendContextProvider } from 'features/send/context/sendContext'
 
-export default function SendLayout(): JSX.Element {
+export default function NftSendLayout(): JSX.Element {
   const hasBeenViewedOnboarding = useSelector(
     selectHasBeenViewedOnce(ViewOnceKey.SEND_ONBOARDING)
   )
@@ -19,7 +19,7 @@ export default function SendLayout(): JSX.Element {
 
   useEffect(() => {
     const sendRoute = state?.routes?.find(
-      route => route.name === '(modals)/send'
+      route => route.name === '(modals)/collectiblesSend'
     )
     if (sendRoute?.state?.index !== undefined) {
       setCurrentPage(sendRoute.state.index)
@@ -48,7 +48,7 @@ export default function SendLayout(): JSX.Element {
         />
         <Stack.Screen name="recentContacts" options={modalFirstScreenOptions} />
         <Stack.Screen name="scanQrCode" options={{ headerTitle: undefined }} />
-        <Stack.Screen name="send" />
+        <Stack.Screen name="approval" />
       </Stack>
     </SendContextProvider>
   )
