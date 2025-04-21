@@ -7,7 +7,6 @@ import {
 import { RootState } from 'store'
 import { selectActiveAccount } from 'store/account'
 import { selectActiveNetwork, selectAllNetworks } from 'store/network'
-import { Network } from '@avalabs/core-chains-sdk'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { TokenType } from '@avalabs/vm-module-types'
 import {
@@ -118,14 +117,14 @@ export const selectTokensWithBalance = createSelector(
 )
 
 export const selectTokensWithBalanceByNetwork =
-  (network?: Network) =>
+  (chainId?: number) =>
   (state: RootState): LocalTokenWithBalance[] => {
     const activeAccount = selectActiveAccount(state)
 
-    if (!network) return []
+    if (!chainId) return []
     if (!activeAccount) return []
 
-    const key = getKey(network.chainId, activeAccount.index)
+    const key = getKey(chainId, activeAccount.index)
     return state.balance.balances[key]?.tokens ?? []
   }
 

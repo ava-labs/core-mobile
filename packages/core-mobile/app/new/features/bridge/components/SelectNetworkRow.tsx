@@ -22,7 +22,10 @@ export const SelectNetworkRow = ({
     theme: { colors }
   } = useTheme()
   return (
-    <TouchableOpacity sx={{ padding: 16 }} onPress={onPress}>
+    <TouchableOpacity
+      sx={{ padding: 16 }}
+      onPress={onPress}
+      disabled={!onPress}>
       <View
         sx={{
           flexDirection: 'row',

@@ -48,6 +48,8 @@ import {
   isTokenWithBalancePVM
 } from '@avalabs/avalanche-module'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { UI, useIsUIDisabled } from 'hooks/useIsUIDisabled'
+import { useAssetBalances } from 'screens/bridge/hooks/useAssetBalances'
 
 const TokenDetailScreen = (): React.JSX.Element => {
   const {
@@ -91,6 +93,59 @@ const TokenDetailScreen = (): React.JSX.Element => {
     () => <NavigationTitleHeader title={tokenName} />,
     [tokenName]
   )
+
+  const isSwapDisabled = useIsUIDisabled(UI.Swap)
+  const isBridgeDisabled = useIsUIDisabled(UI.Bridge)
+  const { assetsWithBalances } = useAssetBalances(token?.networkChainId)
+  const isTokenBridgable = Boolean(
+    assetsWithBalances &&
+      assetsWithBalances.some(
+        asset => (asset.symbolOnNetwork ?? asset.symbol) === token?.symbol
+      )
+  )
+
+  const handleBridge = useCallback(() => {
+    navigate({
+      pathname: '/bridge',
+      params: token?.symbol ? { initialTokenSymbol: token.symbol } : undefined
+    })
+  }, [navigate, token?.symbol])
+
+  const actionButtons: ActionButton[] = useMemo(() => {
+    const buttons: ActionButton[] = [
+      { title: ActionButtonTitle.Send, icon: 'send', onPress: noop }
+    ]
+
+    if (!isSwapDisabled) {
+      buttons.push({
+        title: ActionButtonTitle.Swap,
+        icon: 'swap',
+        onPress: noop
+      })
+    }
+
+    buttons.push({
+      title: ActionButtonTitle.Buy,
+      icon: 'buy',
+      onPress: noop
+    })
+
+    buttons.push({
+      title: ActionButtonTitle.Stake,
+      icon: 'stake',
+      onPress: noop
+    })
+
+    if (!isBridgeDisabled && isTokenBridgable) {
+      buttons.push({
+        title: ActionButtonTitle.Bridge,
+        icon: 'bridge',
+        onPress: handleBridge
+      })
+    }
+
+    return buttons
+  }, [isSwapDisabled, isBridgeDisabled, isTokenBridgable, handleBridge])
 
   const { onScroll, targetHiddenProgress } = useFadingHeaderNavigation({
     header: header,
@@ -186,7 +241,7 @@ const TokenDetailScreen = (): React.JSX.Element => {
             />
           </Animated.View>
         </View>
-        <ActionButtons buttons={ACTION_BUTTONS} />
+        <ActionButtons buttons={actionButtons} />
       </View>
     )
   }, [
@@ -197,7 +252,8 @@ const TokenDetailScreen = (): React.JSX.Element => {
     isBalanceAccurate,
     isBalanceLoading,
     selectedCurrency,
-    token
+    token,
+    actionButtons
   ])
 
   const tabs = useMemo(() => {

@@ -1,4 +1,3 @@
-import { noop } from '@avalabs/core-utils-sdk'
 import {
   BalanceHeader,
   NavigationTitleHeader,
@@ -57,6 +56,7 @@ import { selectSelectedCurrency } from 'store/settings/currency'
 import { selectIsPrivacyModeEnabled } from 'store/settings/securityPrivacy'
 import { useFocusedSelector } from 'utils/performance/useFocusedSelector'
 import { useSendSelectedToken } from 'features/send/store'
+import { UI, useIsUIDisabled } from 'hooks/useIsUIDisabled'
 
 const SEGMENT_ITEMS = ['Assets', 'Collectibles', 'DeFi']
 
@@ -194,8 +194,9 @@ const PortfolioHomeScreen = (): JSX.Element => {
     })
   }, [navigate])
 
-  const ACTION_BUTTONS: ActionButton[] = useMemo(
-    () => [
+  const isBridgeDisabled = useIsUIDisabled(UI.Bridge)
+  const actionButtons = useMemo(() => {
+    const buttons: ActionButton[] = [
       { title: ActionButtonTitle.Send, icon: 'send', onPress: handleSend },
       { title: ActionButtonTitle.Swap, icon: 'swap', onPress: handleSwap },
       { title: ActionButtonTitle.Buy, icon: 'buy', onPress: handleBuy },
@@ -204,28 +205,31 @@ const PortfolioHomeScreen = (): JSX.Element => {
         icon: 'stake',
         onPress: addStake,
         disabled: !canAddStake
-      },
-      {
+      }
+    ]
+    if (!isBridgeDisabled) {
+      buttons.push({
         title: ActionButtonTitle.Bridge,
         icon: 'bridge',
         onPress: handleBridge
-      },
-      {
-        title: ActionButtonTitle.Connect,
-        icon: 'connect',
-        onPress: handleConnect
-      }
-    ],
-    [
-      addStake,
-      canAddStake,
-      handleConnect,
-      handleSend,
-      handleSwap,
-      handleBuy,
-      handleBridge
-    ]
-  )
+      })
+    }
+    buttons.push({
+      title: ActionButtonTitle.Connect,
+      icon: 'connect',
+      onPress: handleConnect
+    })
+    return buttons
+  }, [
+    addStake,
+    canAddStake,
+    handleSend,
+    handleSwap,
+    handleBridge,
+    handleConnect,
+    handleBuy,
+    isBridgeDisabled
+  ])
 
   const renderHeader = useCallback((): JSX.Element => {
     return (
@@ -269,7 +273,7 @@ const PortfolioHomeScreen = (): JSX.Element => {
             />
           </Animated.View>
         </View>
-        <ActionButtons buttons={ACTION_BUTTONS} />
+        <ActionButtons buttons={actionButtons} />
       </View>
     )
   }, [
@@ -286,7 +290,7 @@ const PortfolioHomeScreen = (): JSX.Element => {
     isLoading,
     isPrivacyModeEnabled,
     isDeveloperMode,
-    ACTION_BUTTONS
+    actionButtons
   ])
 
   const handleSelectSegment = useCallback(

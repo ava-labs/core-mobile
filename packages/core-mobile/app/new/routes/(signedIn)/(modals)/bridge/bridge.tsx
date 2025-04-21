@@ -19,7 +19,7 @@ import {
   //  resolve
 } from '@avalabs/core-utils-sdk'
 import { KeyboardAvoidingView } from 'common/components/KeyboardAvoidingView'
-import { useLocalSearchParams, useRouter } from 'expo-router'
+import { useGlobalSearchParams, useRouter } from 'expo-router'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import { TokenInputWidget } from 'common/components/TokenInputWidget'
 import useBridge from 'screens/bridge/hooks/useBridge'
@@ -66,7 +66,7 @@ const BridgeScreen = (): JSX.Element => {
   const {
     theme: { colors }
   } = useTheme()
-  const { initialTokenSymbol } = useLocalSearchParams<{
+  const { initialTokenSymbol } = useGlobalSearchParams<{
     initialTokenSymbol: string
   }>()
   const { navigate } = useRouter()

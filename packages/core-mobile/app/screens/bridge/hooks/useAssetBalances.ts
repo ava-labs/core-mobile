@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 import { AssetBalance } from 'screens/bridge/utils/types'
 import { useSelector } from 'react-redux'
-import { selectTokensWithBalance } from 'store/balance/slice'
+import { selectTokensWithBalanceByNetwork } from 'store/balance/slice'
 import { bigintToBig } from 'utils/bigNumbers/bigintToBig'
 import { useTokenInfoContext } from '@avalabs/core-bridge-sdk'
 import { selectTokenVisibility } from 'store/portfolio'
@@ -18,7 +18,9 @@ export function useAssetBalances(sourceNetworkChainId?: number): {
   assetsWithBalances: AssetBalance[]
 } {
   const tokenVisibility = useSelector(selectTokenVisibility)
-  const tokens = useSelector(selectTokensWithBalance)
+  const tokens = useSelector(
+    selectTokensWithBalanceByNetwork(sourceNetworkChainId)
+  )
   const tokenInfoData = useTokenInfoContext()
   const bridgeAssets = useBridgeAssets(sourceNetworkChainId)
 

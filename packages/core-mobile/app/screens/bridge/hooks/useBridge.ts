@@ -70,7 +70,7 @@ export default function useBridge(): Bridge {
   const { assetsWithBalances } = useAssetBalances(sourceNetwork?.chainId)
   const { assetsWithBalances: assetsWithBalancesOnTargetNetwork } =
     useAssetBalances(targetNetwork?.chainId)
-  const { data: networkFeeRate } = useNetworkFee()
+  const { data: networkFeeRate } = useNetworkFee(sourceNetwork)
 
   const assetBalance = useMemo(
     () => getAssetBalance(selectedBridgeAsset?.symbol, assetsWithBalances),
