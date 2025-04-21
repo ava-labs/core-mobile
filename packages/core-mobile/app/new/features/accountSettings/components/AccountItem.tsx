@@ -9,14 +9,17 @@ import {
   useTheme,
   alpha,
   AnimatedBalance,
-  ActivityIndicator
+  ActivityIndicator,
+  Pressable
 } from '@avalabs/k2-alpine'
-import { useSelector } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import { selectTokenVisibility } from 'store/portfolio'
 import {
+  fetchBalanceForAccount,
   QueryStatus,
   selectBalanceStatus,
-  selectBalanceTotalInCurrencyForAccount
+  selectBalanceTotalInCurrencyForAccount,
+  selectIsBalanceLoadedForAccount
 } from 'store/balance'
 import { getItemEnteringAnimation } from 'common/utils/animations'
 import Animated, { LinearTransition } from 'react-native-reanimated'
@@ -42,6 +45,7 @@ export const AccountItem = memo(
     testID?: string
     // eslint-disable-next-line sonarjs/cognitive-complexity
   }): React.JSX.Element => {
+    const dispatch = useDispatch()
     const balanceStatus = useSelector(selectBalanceStatus)
     const isBalanceLoading = balanceStatus !== QueryStatus.IDLE
     const isPrivacyModeEnabled = useSelector(selectIsPrivacyModeEnabled)
@@ -56,6 +60,15 @@ export const AccountItem = memo(
     )
     const { formatCurrency } = useFormatCurrency()
 
+    const isBalanceLoaded = useSelector(
+      selectIsBalanceLoadedForAccount(account.index)
+    )
+
+    const handleLoadBalance = useCallback(() => {
+      dispatch(fetchBalanceForAccount({ accountIndex: account.index }))
+      setShowLoader(true)
+    }, [dispatch, account.index])
+
     useEffect(() => {
       if (!isBalanceLoading && showLoader) {
         setShowLoader(false)
@@ -63,9 +76,6 @@ export const AccountItem = memo(
     }, [setShowLoader, isBalanceLoading, showLoader])
 
     const balance = useMemo(() => {
-      if (accountBalance === 0) {
-        return undefined
-      }
       return formatCurrency({ amount: accountBalance })
     }, [accountBalance, formatCurrency])
 
@@ -96,11 +106,19 @@ export const AccountItem = memo(
     const iconColor = isActive ? colors.$surfacePrimary : colors.$textPrimary
 
     const renderBalance = useCallback(() => {
-      if (balance === undefined) {
+      if (isBalanceLoaded === false) {
         return (
-          <Text variant="body1" sx={{ color: subtitleColor, lineHeight: 18 }}>
-            View Balance
-          </Text>
+          <Pressable onPress={handleLoadBalance}>
+            <Text
+              variant="caption"
+              numberOfLines={1}
+              sx={{
+                color: accountNameColor,
+                fontFamily: 'Inter-SemiBold'
+              }}>
+              View Balance
+            </Text>
+          </Pressable>
         )
       }
       return (
@@ -108,23 +126,26 @@ export const AccountItem = memo(
           variant="body1"
           balance={balance}
           shouldMask={isPrivacyModeEnabled}
-          balanceSx={{ color: subtitleColor, lineHeight: 18 }}
+          balanceSx={{ color: accountNameColor, lineHeight: 18 }}
           maskBackgroundColor={backgroundColor}
+          shouldAnimate={false}
         />
       )
-    }, [backgroundColor, balance, isPrivacyModeEnabled, subtitleColor])
-
-    const handleSelectAccount = useCallback(() => {
-      if (balance === undefined) setShowLoader(true)
-      onSelectAccount(account.index)
-    }, [balance, onSelectAccount, account.index])
+    }, [
+      accountNameColor,
+      backgroundColor,
+      balance,
+      handleLoadBalance,
+      isBalanceLoaded,
+      isPrivacyModeEnabled
+    ])
 
     return (
       <Animated.View
         entering={getItemEnteringAnimation(index)}
         layout={LinearTransition.springify()}>
         <AnimatedPressable
-          onPress={handleSelectAccount}
+          onPress={() => onSelectAccount(account.index)}
           style={{
             backgroundColor: containerBackgroundColor,
             width: ACCOUNT_CARD_SIZE,

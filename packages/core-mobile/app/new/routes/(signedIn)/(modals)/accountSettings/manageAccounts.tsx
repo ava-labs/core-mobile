@@ -5,7 +5,8 @@ import React, {
   useCallback,
   useState,
   useMemo,
-  useRef
+  useRef,
+  useEffect
 } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import {
@@ -13,6 +14,7 @@ import {
   AnimatedBalance,
   GroupList,
   Icons,
+  Pressable,
   ScrollView,
   SearchBar,
   Separator,
@@ -34,9 +36,11 @@ import { truncateAddress } from '@avalabs/core-utils-sdk'
 import { selectIsPrivacyModeEnabled } from 'store/settings/securityPrivacy'
 import { selectTokenVisibility } from 'store/portfolio'
 import {
+  fetchBalanceForAccount,
   QueryStatus,
   selectBalanceStatus,
-  selectBalanceTotalInCurrencyForAccount
+  selectBalanceTotalInCurrencyForAccount,
+  selectIsBalanceLoadedForAccount
 } from 'store/balance'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import { ScrollView as RnScrollView } from 'react-native'
@@ -77,10 +81,10 @@ const ManageAccountsScreen = (): React.JSX.Element => {
     })
   }, [accounts, searchText])
 
-  const handleOnPress = useCallback(
+  const handleLoadingBalance = useCallback(
     (accountIndex: number): void => {
+      dispatch(fetchBalanceForAccount({ accountIndex }))
       setIndexToLoad(accountIndex)
-      dispatch(setActiveAccountIndex(accountIndex))
     },
     [dispatch]
   )
@@ -101,10 +105,11 @@ const ManageAccountsScreen = (): React.JSX.Element => {
       value: (
         <AccountBalance
           accountIndex={account.index}
+          onLoadingBalance={handleLoadingBalance}
           shouldShowLoader={account.index === indexToLoad}
         />
       ),
-      onPress: () => handleOnPress(account.index),
+      onPress: () => dispatch(setActiveAccountIndex(account.index)),
       accessory: (
         <TouchableOpacity
           hitSlop={16}
@@ -122,8 +127,9 @@ const ManageAccountsScreen = (): React.JSX.Element => {
     accountSearchResults,
     colors.$textPrimary,
     colors.$textSecondary,
+    dispatch,
     gotoAccountDetails,
-    handleOnPress,
+    handleLoadingBalance,
     indexToLoad
   ])
 
@@ -220,10 +226,12 @@ export default ManageAccountsScreen
 
 const AccountBalance = ({
   accountIndex,
-  shouldShowLoader
+  shouldShowLoader,
+  onLoadingBalance
 }: {
   accountIndex: number
   shouldShowLoader: boolean
+  onLoadingBalance: (accountIndex: number) => void
 }): React.JSX.Element => {
   const balanceStatus = useSelector(selectBalanceStatus)
   const isBalanceLoading = balanceStatus !== QueryStatus.IDLE
@@ -231,7 +239,10 @@ const AccountBalance = ({
   const {
     theme: { colors }
   } = useTheme()
-
+  const isBalanceLoaded = useSelector(
+    selectIsBalanceLoadedForAccount(accountIndex)
+  )
+  const [showLoader, setShowLoader] = useState(false)
   const tokenVisibility = useSelector(selectTokenVisibility)
   const accountBalance = useSelector(
     selectBalanceTotalInCurrencyForAccount(accountIndex, tokenVisibility)
@@ -239,24 +250,36 @@ const AccountBalance = ({
   const { formatCurrency } = useFormatCurrency()
 
   const balance = useMemo(() => {
-    if (accountBalance === 0) {
-      return undefined
-    }
     return formatCurrency({ amount: accountBalance })
   }, [accountBalance, formatCurrency])
 
-  return shouldShowLoader && isBalanceLoading && balance === undefined ? (
+  useEffect(() => {
+    if (!isBalanceLoading && showLoader) {
+      setShowLoader(false)
+    }
+  }, [isBalanceLoading, showLoader])
+
+  return shouldShowLoader && isBalanceLoading && isBalanceLoaded === false ? (
     <ActivityIndicator size="small" />
-  ) : balance === undefined ? (
-    <Text variant="body1" sx={{ color: colors.$textSecondary, lineHeight: 18 }}>
-      View Balance
-    </Text>
+  ) : isBalanceLoaded === false ? (
+    <Pressable onPress={() => onLoadingBalance(accountIndex)}>
+      <Text
+        variant="caption"
+        numberOfLines={1}
+        sx={{
+          color: '$textPrimary',
+          fontFamily: 'Inter-SemiBold'
+        }}>
+        View Balance
+      </Text>
+    </Pressable>
   ) : (
     <AnimatedBalance
       variant="body1"
       balance={balance}
       shouldMask={isPrivacyModeEnabled}
       balanceSx={{ color: colors.$textSecondary, lineHeight: 18 }}
+      shouldAnimate={false}
     />
   )
 }
