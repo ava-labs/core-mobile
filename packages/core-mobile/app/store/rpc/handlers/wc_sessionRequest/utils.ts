@@ -25,6 +25,8 @@ import {
   isPChainId,
   isBtcChainId
 } from 'utils/caip2ChainIds'
+import { router } from 'expo-router'
+import { walletConnectCache } from 'services/walletconnectv2/walletConnectCache/walletConnectCache'
 
 const CORE_WEB_HOSTNAMES = [
   'localhost',
@@ -227,13 +229,8 @@ export const scanAndSessionProposal = async ({
 export const navigateToSessionProposal = (
   params: SessionProposalV2Params
 ): void => {
-  Navigation.navigate({
-    name: AppNavigation.Root.Wallet,
-    params: {
-      screen: AppNavigation.Modal.SessionProposalV2,
-      params
-    }
-  })
+  walletConnectCache.sessionProposalParams.set(params)
+  router.navigate('/authorizeDapp')
 }
 
 export const isSiteScanResponseMalicious = (

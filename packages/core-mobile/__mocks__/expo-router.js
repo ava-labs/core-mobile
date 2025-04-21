@@ -8,5 +8,6 @@ export const router = {
     router.back.mockReset()
     router.replace.mockReset()
     router.setParams.mockReset()
-  }
+  },
+  navigate: jest.fn()
 }

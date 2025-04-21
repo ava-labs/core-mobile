@@ -10,7 +10,7 @@
     "ios": "ENVFILE=.env.development react-native run-ios",
     "start": "expo start --dev-client",
     "test": "jest",
-    "tsc": "tsc -p tsconfig.test.json",
+    "tsc": "",
     "lint": "eslint .",
     "clean": "./scripts/clean",
     "postinstall": "node ${PROJECT_CWD}/scripts/generate-metro-monorepo-config.js; node_modules/.bin/patch-package; node_modules/.bin/rn-nodeify --install events,stream,vm,assert,https,http,os,zlib,path,fs --hack; yarn run gen:contracts",

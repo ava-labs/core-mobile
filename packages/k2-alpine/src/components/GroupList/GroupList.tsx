@@ -35,7 +35,7 @@ export const GroupList = ({
   const { theme } = useTheme()
   const [textMarginLeft, setTextMarginLeft] = useState(0)
   const [expandedStates, setExpandedStates] = useState<boolean[]>(
-    data.map(() => false)
+    data.map(i => i.expanded ?? false)
   )
 
   const handleLayout = (event: LayoutChangeEvent): void => {
@@ -67,6 +67,25 @@ export const GroupList = ({
         <Icons.Navigation.ChevronRight color={theme.colors.$textSecondary} />
       )
     }
+  }
+
+  const renderTitle = (title: React.ReactNode): React.ReactNode => {
+    if (typeof title === 'string') {
+      return (
+        <Text
+          variant="buttonMedium"
+          sx={{
+            fontFamily: 'Inter-Medium',
+            fontSize: 16,
+            color: '$textPrimary',
+            ...titleSx
+          }}>
+          {title}
+        </Text>
+      )
+    }
+
+    return title
   }
 
   return (
@@ -121,16 +140,7 @@ export const GroupList = ({
                         alignItems: 'center',
                         gap: 8
                       }}>
-                      <Text
-                        variant="buttonMedium"
-                        sx={{
-                          fontFamily: 'Inter-Medium',
-                          fontSize: 16,
-                          color: '$textPrimary',
-                          ...titleSx
-                        }}>
-                        {title}
-                      </Text>
+                      {renderTitle(title)}
                       {rightIcon !== undefined && rightIcon}
                     </View>
                     {subtitle && (
@@ -198,7 +208,7 @@ export const GroupList = ({
 }
 
 export type GroupListItem = {
-  title: string
+  title: React.ReactNode
   subtitle?: string
   value?: React.ReactNode
   onPress?: () => void
@@ -207,6 +217,7 @@ export type GroupListItem = {
   rightIcon?: JSX.Element
   accessory?: JSX.Element
   accordion?: JSX.Element
+  expanded?: boolean
 }
 
 const AnimatedChevron = ({ expanded }: { expanded: boolean }): JSX.Element => {

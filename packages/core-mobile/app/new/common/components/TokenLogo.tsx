@@ -9,7 +9,7 @@ import {
 import { Logo } from 'common/components/Logo'
 
 interface TokenAvatarProps {
-  symbol: string
+  symbol?: string
   logoUri?: string
   size?: number
   testID?: string
@@ -33,8 +33,9 @@ export const TokenLogo: FC<TokenAvatarProps> = ({
 
   const backgroundColor = colors.$borderPrimary
 
-  const useLocalNetworkTokenLogo =
-    isNetworkToken && hasLocalNetworkTokenLogo(symbol)
+  const useLocalNetworkTokenLogo = Boolean(
+    symbol && isNetworkToken && hasLocalNetworkTokenLogo(symbol)
+  )
 
   // border color is the same no matter where the logo is used
   const borderColor = useMemo(() => {
@@ -92,7 +93,7 @@ export const TokenLogo: FC<TokenAvatarProps> = ({
     )
   }
 
-  if (hasLocalTokenLogo(symbol) || useLocalNetworkTokenLogo) {
+  if ((symbol && hasLocalTokenLogo(symbol)) || useLocalNetworkTokenLogo) {
     return (
       <View sx={containerStyle}>
         <TokenIcon

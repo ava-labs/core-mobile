@@ -33,7 +33,7 @@ export const BlurViewWithFallback = ({
     let timer: NodeJS.Timeout
 
     if (shouldDelayBlurOniOS && Platform.OS === 'ios') {
-      timer = setTimeout(() => setReady(true), 0)
+      timer = setTimeout(() => setReady(true), 500)
     }
     return () => timer && clearTimeout(timer)
   }, [shouldDelayBlurOniOS])
@@ -59,12 +59,8 @@ export const BlurViewWithFallback = ({
     [style, theme.colors.$surfacePrimary]
   )
 
-  if (Platform.OS === 'android') {
+  if (!ready || Platform.OS === 'android') {
     return <View style={androidContainerStyle}>{children}</View>
-  }
-
-  if (!ready) {
-    return null
   }
 
   return (

@@ -1,5 +1,4 @@
-import { Text, Toggle, useTheme, View } from '@avalabs/k2-alpine'
-import { alpha } from '@avalabs/k2-mobile'
+import { alpha, Text, Toggle, useTheme, View } from '@avalabs/k2-alpine'
 import React, { ReactNode } from 'react'
 import { Pressable } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'

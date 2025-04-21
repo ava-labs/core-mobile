@@ -34,13 +34,13 @@ const ConnectedSitesScreen = (): JSX.Element => {
     LayoutRectangle | undefined
   >()
 
+  const navigationTitle = `${allApprovedDapps.length} connected ${
+    allApprovedDapps.length < 2 ? 'site' : 'sites'
+  }`
+
   const navigationHeader = useMemo(
-    () => (
-      <NavigationTitleHeader
-        title={`${allApprovedDapps.length} connected sites`}
-      />
-    ),
-    [allApprovedDapps.length]
+    () => <NavigationTitleHeader title={navigationTitle} />,
+    [navigationTitle]
   )
 
   const { onScroll, targetHiddenProgress } = useFadingHeaderNavigation({
@@ -180,9 +180,7 @@ const ConnectedSitesScreen = (): JSX.Element => {
             <Animated.View
               style={[{ opacity: headerOpacity }, animatedHeaderStyle]}
               onLayout={handleHeaderLayout}>
-              <Text variant="heading2">
-                {allApprovedDapps.length} connected sites
-              </Text>
+              <Text variant="heading2">{navigationTitle}</Text>
             </Animated.View>
             <SearchBar
               onTextChanged={setSearchText}
