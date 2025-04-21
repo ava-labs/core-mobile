@@ -74,6 +74,7 @@ import IconLayers from '../../assets/icons/layers.svg'
 import IconStake from '../../assets/icons/stake.svg'
 import IconBrowser from '../../assets/icons/browser.svg'
 import IconTrack from '../../assets/icons/track.svg'
+import IconWallet from '../../assets/icons/wallet.svg'
 
 // Transaction types
 import IconTxTypeAdd from '../../assets/icons/tx-type-add.svg'
@@ -284,7 +285,8 @@ export const Icons = {
     WaterDrop: IconWaterDrop,
     WaterDropFilled: IconWaterDropFilled,
     DoNotDisturbOn: IconDoNotDisturbOn,
-    AddCircle: IconAddCircle
+    AddCircle: IconAddCircle,
+    Wallet: IconWallet
   },
   RecoveryMethod: {
     Passkey: IconPasskey,

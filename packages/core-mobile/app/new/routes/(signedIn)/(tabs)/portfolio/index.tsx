@@ -148,7 +148,11 @@ const PortfolioHomeScreen = (): JSX.Element => {
   }, [navigate, setSelectedToken])
 
   const handleSwap = useCallback((): void => {
-    navigate({ pathname: '/swap' })
+    navigate('/swap')
+  }, [navigate])
+
+  const handleConnect = useCallback((): void => {
+    navigate('/walletConnectScan')
   }, [navigate])
 
   const header = useMemo(
@@ -192,9 +196,13 @@ const PortfolioHomeScreen = (): JSX.Element => {
         disabled: !canAddStake
       },
       { title: ActionButtonTitle.Bridge, icon: 'bridge', onPress: noop },
-      { title: ActionButtonTitle.Connect, icon: 'connect', onPress: noop }
+      {
+        title: ActionButtonTitle.Connect,
+        icon: 'connect',
+        onPress: handleConnect
+      }
     ],
-    [addStake, canAddStake, handleSend, handleSwap]
+    [addStake, canAddStake, handleConnect, handleSend, handleSwap]
   )
 
   const renderHeader = useCallback((): JSX.Element => {
