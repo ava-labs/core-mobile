@@ -1,88 +1,67 @@
-import React from 'react'
+import React, { useMemo } from 'react'
 import { GroupList, useTheme, TouchableOpacity, Text } from '@avalabs/k2-alpine'
 import { Account } from 'store/account'
 import { copyToClipboard } from 'common/utils/clipboard'
 import { truncateAddress } from '@avalabs/core-utils-sdk'
-import { TokenLogo } from 'common/components/TokenLogo'
-import { TokenSymbol } from 'store/network'
-import { XPChainLogo } from '../../../common/components/XPChainLogo'
+import { usePrimaryNetworks } from 'common/hooks/usePrimaryNetworks'
+import { NetworkLogoWithChain } from 'common/components/NetworkLogoWithChain'
+import { isXPChain } from 'utils/network/isAvalancheNetwork'
+import { NetworkVMType } from '@avalabs/vm-module-types'
 
 export const AccountAddresses = ({
   account
 }: {
-  account?: Account
+  account: Account
 }): React.JSX.Element => {
+  const {
+    theme: { colors }
+  } = useTheme()
+  const { networks } = usePrimaryNetworks()
+
   const onCopyAddress = (value: string, message: string): void => {
     copyToClipboard(value, message)
   }
 
-  const data = [
-    {
-      subtitle: truncateAddress(account.addressC),
-      title: 'Avalanche C-Chain',
-      leftIcon: <TokenLogo symbol={TokenSymbol.AVAX} size={24} />,
-      value: (
-        <CopyButton
-          testID="copy_c_chain_address"
-          onPress={() =>
-            onCopyAddress(account.addressC, 'C-Chain address copied')
-          }
-        />
-      )
-    },
-    {
-      subtitle: truncateAddress(account.addressPVM),
-      title: 'Avalanche P-Chain',
-      leftIcon: <XPChainLogo networkType="PVM" />,
-      value: (
-        <CopyButton
-          testID="copy_p_chain_address"
-          onPress={() =>
-            onCopyAddress(account.addressPVM, 'P-Chain address copied')
-          }
-        />
-      )
-    },
-    {
-      subtitle: truncateAddress(account.addressAVM),
-      title: 'Avalanche X-Chain',
-      leftIcon: <XPChainLogo networkType="AVM" />,
-      value: (
-        <CopyButton
-          testID="copy_x_chain_address"
-          onPress={() =>
-            onCopyAddress(account.addressAVM, 'X-Chain address copied')
-          }
-        />
-      )
-    },
-    {
-      subtitle: truncateAddress(account.addressC),
-      title: 'Ethereum',
-      leftIcon: <TokenLogo symbol={TokenSymbol.ETH} size={24} />,
-      value: (
-        <CopyButton
-          testID="copy_ethereum_address"
-          onPress={() =>
-            onCopyAddress(account.addressC, 'Ethereum address copied')
-          }
-        />
-      )
-    },
-    {
-      subtitle: truncateAddress(account.addressBTC),
-      title: 'Bitcoin',
-      leftIcon: <TokenLogo symbol={TokenSymbol.BTC} size={24} />,
-      value: (
-        <CopyButton
-          testID="copy_bitcoin_address"
-          onPress={() =>
-            onCopyAddress(account.addressBTC, 'Bitcoin address copied')
-          }
-        />
-      )
-    }
-  ]
+  const data = useMemo(() => {
+    return networks.map(network => {
+      const address =
+        network.vmName === NetworkVMType.AVM ||
+        network.vmName === NetworkVMType.PVM
+          ? account.addressPVM.replace(/^[XP]-/, '')
+          : network.vmName === NetworkVMType.BITCOIN
+          ? account.addressBTC
+          : network.vmName === NetworkVMType.EVM
+          ? account.addressC
+          : undefined
+
+      return {
+        subtitle: address ? truncateAddress(address) : '',
+        title: network.chainName,
+        leftIcon: (
+          <NetworkLogoWithChain
+            network={network}
+            networkSize={36}
+            outerBorderColor={colors.$surfaceSecondary}
+            showChainLogo={isXPChain(network.chainId)}
+          />
+        ),
+        value: (
+          <CopyButton
+            onPress={() =>
+              address &&
+              onCopyAddress(address, `${network.chainName} address copied`)
+            }
+          />
+        )
+      }
+    })
+  }, [
+    account.addressBTC,
+    account.addressC,
+    account.addressPVM,
+    colors.$surfaceSecondary,
+    networks
+  ])
 
   return (
     <GroupList
