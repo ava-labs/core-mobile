@@ -97,7 +97,7 @@ const TokenDetailScreen = (): React.JSX.Element => {
   const isSwapDisabled = useIsUIDisabled(UI.Swap)
   const isBridgeDisabled = useIsUIDisabled(UI.Bridge)
   const { assetsWithBalances } = useAssetBalances(token?.networkChainId)
-  const isTokenBridgable = Boolean(
+  const isTokenBridgeable = Boolean(
     assetsWithBalances &&
       assetsWithBalances.some(
         asset => (asset.symbolOnNetwork ?? asset.symbol) === token?.symbol
@@ -116,6 +116,12 @@ const TokenDetailScreen = (): React.JSX.Element => {
     })
   }, [navigate, token])
 
+  const handleBuy = useCallback(() => {
+    navigate({
+      pathname: '/buy'
+    })
+  }, [navigate])
+
   const actionButtons: ActionButton[] = useMemo(() => {
     const buttons: ActionButton[] = [
       { title: ActionButtonTitle.Send, icon: 'send', onPress: noop }
@@ -132,7 +138,7 @@ const TokenDetailScreen = (): React.JSX.Element => {
     buttons.push({
       title: ActionButtonTitle.Buy,
       icon: 'buy',
-      onPress: noop
+      onPress: handleBuy
     })
 
     buttons.push({
@@ -141,7 +147,7 @@ const TokenDetailScreen = (): React.JSX.Element => {
       onPress: noop
     })
 
-    if (!isBridgeDisabled && isTokenBridgable) {
+    if (!isBridgeDisabled && isTokenBridgeable) {
       buttons.push({
         title: ActionButtonTitle.Bridge,
         icon: 'bridge',
@@ -150,7 +156,13 @@ const TokenDetailScreen = (): React.JSX.Element => {
     }
 
     return buttons
-  }, [isSwapDisabled, isBridgeDisabled, isTokenBridgable, handleBridge])
+  }, [
+    isSwapDisabled,
+    isBridgeDisabled,
+    isTokenBridgeable,
+    handleBridge,
+    handleBuy
+  ])
 
   const { onScroll, targetHiddenProgress } = useFadingHeaderNavigation({
     header: header,
@@ -200,21 +212,6 @@ const TokenDetailScreen = (): React.JSX.Element => {
     },
     [selectedSegmentIndex]
   )
-
-  const handleBuy = useCallback(() => {
-    navigate({
-      pathname: '/buy'
-    })
-  }, [navigate])
-
-  const ACTION_BUTTONS: ActionButton[] = [
-    { title: ActionButtonTitle.Send, icon: 'send', onPress: noop },
-    { title: ActionButtonTitle.Swap, icon: 'swap', onPress: noop },
-    { title: ActionButtonTitle.Buy, icon: 'buy', onPress: handleBuy },
-    { title: ActionButtonTitle.Stake, icon: 'stake', onPress: noop },
-    { title: ActionButtonTitle.Bridge, icon: 'bridge', onPress: noop },
-    { title: ActionButtonTitle.Connect, icon: 'connect', onPress: noop }
-  ]
 
   const renderEmptyTabBar = useCallback((): JSX.Element => <></>, [])
 
