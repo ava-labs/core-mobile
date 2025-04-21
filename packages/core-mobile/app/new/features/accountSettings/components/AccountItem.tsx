@@ -108,7 +108,11 @@ export const AccountItem = memo(
     const renderBalance = useCallback(() => {
       if (isBalanceLoaded === false) {
         return (
-          <Pressable onPress={handleLoadBalance}>
+          <Pressable
+            onPress={handleLoadBalance}
+            onTouchStart={e => {
+              e.stopPropagation()
+            }}>
             <Text
               variant="caption"
               numberOfLines={1}
@@ -168,14 +172,16 @@ export const AccountItem = memo(
               sx={{ color: subtitleColor, lineHeight: 16, marginRight: 8 }}>
               {truncateAddress(account.addressC)}
             </Text>
-            <TouchableOpacity
-              onPress={() => gotoAccountDetails(account.index)}
-              hitSlop={16}>
-              <Icons.Alert.AlertCircle
-                color={iconColor}
-                testID={`account_detail_icon__${testID}`}
-              />
-            </TouchableOpacity>
+            <View onTouchStart={e => e.stopPropagation()}>
+              <TouchableOpacity
+                onPress={() => gotoAccountDetails(account.index)}
+                hitSlop={16}>
+                <Icons.Alert.AlertCircle
+                  color={iconColor}
+                  testID={`account_detail_icon__${testID}`}
+                />
+              </TouchableOpacity>
+            </View>
           </View>
         </AnimatedPressable>
         {showLoader && (
