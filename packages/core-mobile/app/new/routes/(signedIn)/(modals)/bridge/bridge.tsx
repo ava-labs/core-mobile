@@ -499,6 +499,14 @@ const BridgeScreen = (): JSX.Element => {
   }, [selectedTargetNetwork, setTargetNetwork])
 
   useEffect(() => {
+    return () => {
+      setSelectedSourceNetwork(undefined)
+      setSelectedTargetNetwork(undefined)
+      setSelectedAsset(undefined)
+    }
+  }, [setSelectedSourceNetwork, setSelectedTargetNetwork, setSelectedAsset])
+
+  useEffect(() => {
     if (selectedAsset) {
       setSelectedBridgeAsset(selectedAsset)
     }

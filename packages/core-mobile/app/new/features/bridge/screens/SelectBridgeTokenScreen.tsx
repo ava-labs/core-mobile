@@ -27,18 +27,20 @@ export const SelectBridgeTokenScreen = (): JSX.Element => {
   const { back, canGoBack } = useRouter()
   const [searchText, setSearchText] = useState<string>('')
   const [selectedAsset, setSelectedAsset] = useBridgeSelectedAsset()
-  const { sourceNetworkChainId } = useLocalSearchParams<{
-    sourceNetworkChainId: string
-  }>()
+  const { sourceNetworkChainId: sourceNetworkChainIdParam } =
+    useLocalSearchParams<{
+      sourceNetworkChainId: string
+    }>()
+  const sourceNetworkChainId = Number(sourceNetworkChainIdParam)
   const handleSelectToken = (token: AssetBalance): void => {
     setSelectedAsset(token.asset)
     canGoBack() && back()
   }
   const { getNetwork } = useNetworks()
-  const network = getNetwork(Number(sourceNetworkChainId))
+  const network = getNetwork(sourceNetworkChainId)
 
-  const { bridgeAssets } = useBridgeAssets(Number(sourceNetworkChainId))
-  const { assetsWithBalances } = useAssetBalances()
+  const bridgeAssets = useBridgeAssets(sourceNetworkChainId)
+  const { assetsWithBalances } = useAssetBalances(sourceNetworkChainId)
   const tokens = useMemo(
     () =>
       (assetsWithBalances ?? []).filter(asset =>

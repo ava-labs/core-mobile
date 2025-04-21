@@ -14,13 +14,13 @@ import { useBridgeAssets } from './useBridgeAssets'
  * Get a list of bridge supported assets with the balances.
  * The list is sorted by balance.
  */
-export function useAssetBalances(): {
+export function useAssetBalances(sourceNetworkChainId?: number): {
   assetsWithBalances: AssetBalance[]
 } {
   const tokenVisibility = useSelector(selectTokenVisibility)
   const tokens = useSelector(selectTokensWithBalance)
   const tokenInfoData = useTokenInfoContext()
-  const { bridgeAssets } = useBridgeAssets()
+  const bridgeAssets = useBridgeAssets(sourceNetworkChainId)
 
   const visibleTokens = useMemo(
     () => tokens.filter(token => isTokenVisible(tokenVisibility, token)),
