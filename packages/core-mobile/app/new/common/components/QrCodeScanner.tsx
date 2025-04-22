@@ -22,8 +22,7 @@ export const QrCodeScanner = ({
   onSuccess,
   vibrate = false,
   sx
-}: // eslint-disable-next-line sonarjs/cognitive-complexity
-Props): React.JSX.Element | undefined => {
+}: Props): React.JSX.Element | undefined => {
   const {
     theme: { colors }
   } = useTheme()
@@ -83,19 +82,26 @@ Props): React.JSX.Element | undefined => {
     checkAndroidPermission()
   }, [checkAndroidPermission])
 
-  const shouldShowCamera =
+  const cameraPermissionNotGranted =
     (permission?.granted === true && Platform.OS === 'ios') ||
     (isAndroidPermissionGranted === true && Platform.OS === 'android')
 
-  return shouldShowCamera ? (
-    <View
-      sx={{
-        justifyContent: 'center',
-        alignItems: 'center',
-        borderRadius: 18,
-        overflow: 'hidden',
-        ...sx
-      }}>
+  const cameraPermissionPending =
+    (Platform.OS === 'ios' && permission === null) ||
+    (Platform.OS === 'android' && isAndroidPermissionGranted === undefined)
+
+  const containerStyle = {
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 18,
+    overflow: 'hidden',
+    ...sx
+  }
+
+  if (cameraPermissionPending) return <View sx={containerStyle} />
+
+  return cameraPermissionNotGranted ? (
+    <View sx={containerStyle}>
       <View
         sx={{
           position: 'absolute',
