@@ -118,6 +118,7 @@ const onBalanceUpdateCore = async ({
   const { getState, dispatch } = listenerApi
   const state = getState()
   const currentStatus = selectBalanceStatus(state)
+  const isDeveloperMode = selectIsDeveloperMode(state)
 
   if (
     queryStatus === QueryStatus.POLLING &&
@@ -143,7 +144,7 @@ const onBalanceUpdateCore = async ({
     async span => {
       const balanceKeyedPromises = accounts.map(account => {
         return {
-          key: getKey(firstNetwork.chainId, account.index),
+          key: getKey(firstNetwork.chainId, account.index, isDeveloperMode),
           promise: BalanceService.getBalancesForAccount({
             network: firstNetwork,
             account,
@@ -169,7 +170,7 @@ const onBalanceUpdateCore = async ({
           inactiveNetworkPromises.push(
             ...accounts.map(account => {
               return {
-                key: getKey(n.chainId, account.index),
+                key: getKey(n.chainId, account.index, isDeveloperMode),
                 promise: BalanceService.getBalancesForAccount({
                   network: n,
                   account,
@@ -277,17 +278,19 @@ const fetchBalanceForAccounts = async (
         dataAccurate: false,
         accountIndex: -1,
         chainId: 0,
-        tokens: []
+        tokens: [],
+        isTestnet: false
       }
       return acc
     }
 
-    const { accountIndex, chainId, tokens } = result.value
+    const { accountIndex, chainId, tokens, isTestnet } = result.value
     const balances = {
       dataAccurate: true,
       accountIndex,
       chainId,
-      tokens: [] as LocalTokenWithBalance[]
+      tokens: [] as LocalTokenWithBalance[],
+      isTestnet
     }
 
     balances.tokens = tokens.reduce((tokenBalance, token) => {
@@ -332,7 +335,7 @@ const fetchBalanceForAccounts = async (
       ]
     }, [] as LocalTokenWithBalance[])
 
-    acc[getKey(chainId, accountIndex)] = balances
+    acc[getKey(chainId, accountIndex, isTestnet)] = balances
     return acc
   }, {})
 }

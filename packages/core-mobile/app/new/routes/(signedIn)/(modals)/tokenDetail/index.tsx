@@ -27,7 +27,6 @@ import Animated, {
   useAnimatedStyle,
   useSharedValue
 } from 'react-native-reanimated'
-import useInAppBrowser from 'hooks/useInAppBrowser'
 import { ActionButtonTitle } from 'features/portfolio/assets/consts'
 import {
   ActionButton,
@@ -48,6 +47,7 @@ import {
   isTokenWithBalancePVM
 } from '@avalabs/avalanche-module'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { useCoreBrowser } from 'common/hooks/useCoreBrowser'
 
 const TokenDetailScreen = (): React.JSX.Element => {
   const {
@@ -56,7 +56,7 @@ const TokenDetailScreen = (): React.JSX.Element => {
   const { navigate } = useRouter()
   const botomInset = useSafeAreaInsets().bottom
   const tabViewRef = useRef<CollapsibleTabsRef>(null)
-  const { openUrl } = useInAppBrowser()
+  const { openUrl } = useCoreBrowser()
   const [tokenHeaderLayout, setTokenHeaderLayout] = useState<
     LayoutRectangle | undefined
   >()
@@ -114,7 +114,7 @@ const TokenDetailScreen = (): React.JSX.Element => {
   const handleExplorerLink = useCallback(
     (explorerLink: string): void => {
       AnalyticsService.capture('ActivityCardLinkClicked')
-      openUrl(explorerLink)
+      openUrl({ url: explorerLink, title: '' })
     },
     [openUrl]
   )
@@ -147,14 +147,17 @@ const TokenDetailScreen = (): React.JSX.Element => {
     })
   }, [navigate])
 
-  const ACTION_BUTTONS: ActionButton[] = [
-    { title: ActionButtonTitle.Send, icon: 'send', onPress: noop },
-    { title: ActionButtonTitle.Swap, icon: 'swap', onPress: noop },
-    { title: ActionButtonTitle.Buy, icon: 'buy', onPress: handleBuy },
-    { title: ActionButtonTitle.Stake, icon: 'stake', onPress: noop },
-    { title: ActionButtonTitle.Bridge, icon: 'bridge', onPress: noop },
-    { title: ActionButtonTitle.Connect, icon: 'connect', onPress: noop }
-  ]
+  const ACTION_BUTTONS: ActionButton[] = useMemo(
+    () => [
+      { title: ActionButtonTitle.Send, icon: 'send', onPress: noop },
+      { title: ActionButtonTitle.Swap, icon: 'swap', onPress: noop },
+      { title: ActionButtonTitle.Buy, icon: 'buy', onPress: handleBuy },
+      { title: ActionButtonTitle.Stake, icon: 'stake', onPress: noop },
+      { title: ActionButtonTitle.Bridge, icon: 'bridge', onPress: noop },
+      { title: ActionButtonTitle.Connect, icon: 'connect', onPress: noop }
+    ],
+    [handleBuy]
+  )
 
   const renderEmptyTabBar = useCallback((): JSX.Element => <></>, [])
 
@@ -190,6 +193,7 @@ const TokenDetailScreen = (): React.JSX.Element => {
       </View>
     )
   }, [
+    ACTION_BUTTONS,
     animatedHeaderStyle,
     colors.$surfacePrimary,
     formattedBalance,

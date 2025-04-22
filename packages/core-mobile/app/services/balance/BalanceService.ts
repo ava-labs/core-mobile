@@ -16,6 +16,7 @@ export type BalancesForAccount = {
   chainId: number
   accountAddress: string
   tokens: (TokenWithBalance | Error)[]
+  isTestnet: boolean
 }
 
 export class BalanceService {
@@ -48,7 +49,8 @@ export class BalanceService {
         accountIndex: account.index,
         chainId: network.chainId,
         tokens: [],
-        accountAddress
+        accountAddress,
+        isTestnet: network.isTestnet ?? false
       }
     }
 
@@ -56,7 +58,8 @@ export class BalanceService {
       accountIndex: account.index,
       chainId: network.chainId,
       tokens: Object.values(balances),
-      accountAddress
+      accountAddress,
+      isTestnet: network.isTestnet ?? false
     }
   }
 }

@@ -13,6 +13,7 @@ export type Balance = {
   accountIndex: number
   chainId: number
   tokens: LocalTokenWithBalance[]
+  isTestnet: boolean
 }
 
 export type Balances = { [chainId_address: string]: Balance }

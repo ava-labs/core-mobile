@@ -39,8 +39,11 @@ const updateBalanceForKey = (
   state.balances[key] = balance
 }
 
-export const getKey = (chainId: number, accountIndex: number): string =>
-  `${chainId}-${accountIndex}`
+export const getKey = (
+  chainId: number,
+  accountIndex: number,
+  isTestnet: boolean
+): string => `${chainId}-${accountIndex}-${isTestnet}`
 
 export const balanceSlice = createSlice({
   name: reducerName,
@@ -63,8 +66,13 @@ export const selectBalanceStatus = (state: RootState): QueryStatus =>
 
 export const selectIsBalanceLoadedForAccount =
   (accountIndex: number) => (state: RootState) => {
+    const isDeveloperMode = selectIsDeveloperMode(state)
+
     const foundBalance = Object.values(state.balance.balances).find(balance => {
-      return balance.accountIndex === accountIndex
+      return (
+        balance.accountIndex === accountIndex &&
+        balance.isTestnet === isDeveloperMode
+      )
     })
 
     return !!foundBalance
@@ -75,11 +83,12 @@ export const selectIsBalanceLoadedForActiveNetwork = (
 ): boolean => {
   const activeNetwork = selectActiveNetwork(state)
   const activeAccount = selectActiveAccount(state)
+  const isDeveloperMode = selectIsDeveloperMode(state)
 
   if (!activeAccount) return false
 
   return !!state.balance.balances[
-    getKey(activeNetwork.chainId, activeAccount.index)
+    getKey(activeNetwork.chainId, activeAccount.index, isDeveloperMode)
   ]
 }
 
@@ -87,11 +96,14 @@ export const selectIsBalanceLoadedForNetworks =
   (chainIds: number[]) =>
   (state: RootState): boolean => {
     const activeAccount = selectActiveAccount(state)
+    const isDeveloperMode = selectIsDeveloperMode(state)
 
     if (!activeAccount) return false
 
     return chainIds.every(chainId => {
-      return !!state.balance.balances[getKey(chainId, activeAccount.index)]
+      return !!state.balance.balances[
+        getKey(chainId, activeAccount.index, isDeveloperMode)
+      ]
     })
   }
 
@@ -108,11 +120,26 @@ const _selectAllBalances = (state: RootState): Balances => {
 // get the list of tokens for the active network
 // each token will have info such as: balance, price, market cap,...
 export const selectTokensWithBalance = createSelector(
-  [selectActiveNetwork, selectActiveAccount, _selectAllBalances],
-  (activeNetwork, activeAccount, allBalances): LocalTokenWithBalance[] => {
+  [
+    selectIsDeveloperMode,
+    selectActiveNetwork,
+    selectActiveAccount,
+    _selectAllBalances
+  ],
+  (
+    isDeveloperMode,
+    activeNetwork,
+    activeAccount,
+    allBalances
+    // eslint-disable-next-line max-params
+  ): LocalTokenWithBalance[] => {
     if (!activeAccount) return []
 
-    const key = getKey(activeNetwork.chainId, activeAccount.index)
+    const key = getKey(
+      activeNetwork.chainId,
+      activeAccount.index,
+      isDeveloperMode
+    )
     return allBalances[key]?.tokens ?? []
   }
 )
@@ -121,11 +148,11 @@ export const selectTokensWithBalanceByNetwork =
   (network?: Network) =>
   (state: RootState): LocalTokenWithBalance[] => {
     const activeAccount = selectActiveAccount(state)
-
+    const isDeveloperMode = selectIsDeveloperMode(state)
     if (!network) return []
     if (!activeAccount) return []
 
-    const key = getKey(network.chainId, activeAccount.index)
+    const key = getKey(network.chainId, activeAccount.index, isDeveloperMode)
     return state.balance.balances[key]?.tokens ?? []
   }
 
@@ -172,13 +199,15 @@ const _selectAccountIndex = (
 ): number | undefined => accountIndex
 
 const _selectBalancesByAccountIndex = createSelector(
-  [_selectAllBalances, _selectAccountIndex],
-  (balances, accountIndex) => {
+  [selectIsDeveloperMode, _selectAllBalances, _selectAccountIndex],
+  (isDeveloperMode, balances, accountIndex) => {
     if (accountIndex === undefined) return []
 
     // Filter balances based on accountIndex and other conditions
     return Object.values(balances).filter(
-      balance => balance.accountIndex === accountIndex
+      balance =>
+        balance.accountIndex === accountIndex &&
+        balance.isTestnet === isDeveloperMode
     )
   }
 )
@@ -229,11 +258,14 @@ export const selectBalanceTotalInCurrencyForNetworkAndAccount =
     tokenVisibility: TokenVisibility
   ) =>
   (state: RootState) => {
+    const isDeveloperMode = selectIsDeveloperMode(state)
     if (accountIndex === undefined) return 0
 
     const balances = Object.values(state.balance.balances).filter(
       balance =>
-        balance.chainId === chainId && balance.accountIndex === accountIndex
+        balance.chainId === chainId &&
+        balance.accountIndex === accountIndex &&
+        balance.isTestnet === isDeveloperMode
     )
 
     let totalInCurrency = 0
@@ -253,9 +285,10 @@ const _selectBalanceKeyForNetworkAndAccount = (
   chainId: number,
   accountIndex: number | undefined
 ): string | undefined => {
+  const isDeveloperMode = selectIsDeveloperMode(_state)
   if (accountIndex === undefined) return undefined
 
-  return getKey(chainId, accountIndex)
+  return getKey(chainId, accountIndex, isDeveloperMode)
 }
 
 export const selectAvailableNativeTokenBalanceForNetworkAndAccount =
@@ -298,12 +331,13 @@ export const selectIsAllBalancesInaccurate =
 export const selectIsBalancesAccurateByNetwork =
   (chainId?: number) =>
   (state: RootState): boolean => {
+    const isDeveloperMode = selectIsDeveloperMode(state)
     const activeAccount = selectActiveAccount(state)
 
     if (!chainId) return false
     if (!activeAccount) return false
 
-    const key = getKey(chainId, activeAccount.index)
+    const key = getKey(chainId, activeAccount.index, isDeveloperMode)
     return state.balance.balances[key]?.dataAccurate ?? false
   }
 
