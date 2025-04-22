@@ -221,16 +221,15 @@ export const CollectibleDetailsContent = ({
                 )}
               </Button>
             ) : null}
-            <Button
-              type="secondary"
-              size="large"
-              onPress={handleSaveAvatar}
-              disabled={
-                avatar.id === collectible?.localId ||
-                collectible?.status === NftLocalStatus.Unprocessable
-              }>
-              Set as my avatar
-            </Button>
+            {collectible?.status === NftLocalStatus.Processed && (
+              <Button
+                type="secondary"
+                size="large"
+                onPress={handleSaveAvatar}
+                disabled={avatar.id === collectible?.localId}>
+                Set as my avatar
+              </Button>
+            )}
           </View>
         </LinearGradientBottomWrapper>
       </View>
