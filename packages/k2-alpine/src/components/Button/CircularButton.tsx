@@ -42,20 +42,25 @@ export const CircularButton = forwardRef<
       accessible={false}
       testID={testID}
       disabled={disabled}
+      style={[
+        {
+          width: CIRCULAR_BUTTON_WIDTH
+        },
+        style
+      ]}
       {...rest}>
       <View sx={{ gap: 8, alignItems: 'center' }}>
         <View
           style={[
             {
+              width: '100%',
+              aspectRatio: 1,
               borderRadius: 1000,
               alignItems: 'center',
-              width: CIRCULAR_BUTTON_WIDTH,
-              height: CIRCULAR_BUTTON_WIDTH,
               backgroundColor,
               justifyContent: 'center',
               overflow: 'hidden'
-            },
-            style
+            }
           ]}>
           {coloredChildren}
         </View>
