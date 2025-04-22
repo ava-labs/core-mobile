@@ -1,13 +1,13 @@
+import { useDispatch, useSelector } from 'react-redux'
 import {
-  Avatar,
   AVATARS,
+  AvatarType,
   selectSelectedAvatar,
   setSelectedAvatar
 } from 'store/settings/avatar'
-import { useDispatch, useSelector } from 'react-redux'
 
 export const useAvatar = (): {
-  avatar: Avatar
+  avatar: AvatarType
   saveLocalAvatar: (avatarId: string) => Promise<void>
   saveExternalAvatar: (id: string, url: string) => Promise<void>
 } => {

@@ -71,8 +71,11 @@ export const DEFAULT_AVATAR = {
   source: require('assets/avatars/abstract-1.png')
 }
 
+export const RANDOM_AVATAR =
+  AVATARS[Math.floor(Math.random() * AVATARS.length)] ?? DEFAULT_AVATAR
+
 export const initialState: AvatarState = {
-  selected: DEFAULT_AVATAR
+  selected: RANDOM_AVATAR
 }
 
 export type AvatarState = {
