@@ -10,7 +10,8 @@ export enum ViewOnceKey {
   HALLIDAY_BANNER,
   STAKE_ONBOARDING,
   BRIDGE_ONBOARDING,
-  SWAP_ONBOARDING
+  SWAP_ONBOARDING,
+  SEND_ONBOARDING
 }
 
 export type ViewOnceObjectType = {
