@@ -3,7 +3,7 @@ import { useInAppRequest } from 'hooks/useInAppRequest'
 import { TokenWithBalanceAVM } from '@avalabs/vm-module-types'
 import { assertNotUndefined } from 'utils/assertions'
 import { GAS_LIMIT_FOR_X_CHAIN } from 'consts/fees'
-import { bigIntToString, TokenUnit } from '@avalabs/core-utils-sdk'
+import { TokenUnit } from '@avalabs/core-utils-sdk'
 import { isTokenWithBalanceAVM } from '@avalabs/avalanche-module'
 import Logger from 'utils/Logger'
 import { useSendContext } from 'new/features/send/context/sendContext'
@@ -95,10 +95,11 @@ const useAVMSend: SendAdapterAVM = ({
     const balance = selectedToken.available ?? 0n
     const maxAmountValue = balance - fee
     const maxAmount = maxAmountValue > 0n ? maxAmountValue : 0n
-    return {
-      bn: maxAmount,
-      amount: bigIntToString(maxAmount, selectedToken.decimals)
-    }
+    return new TokenUnit(
+      maxAmount,
+      selectedToken.decimals,
+      selectedToken.symbol
+    )
   }, [maxFee, selectedToken])
 
   useEffect(() => {
@@ -111,13 +112,7 @@ const useAVMSend: SendAdapterAVM = ({
     getMaxAmount()
       .then(maxAmount => {
         if (maxAmount) {
-          setMaxAmount(
-            new TokenUnit(
-              maxAmount.bn,
-              selectedToken.decimals,
-              selectedToken.symbol
-            )
-          )
+          setMaxAmount(maxAmount)
         }
       })
       .catch(Logger.error)

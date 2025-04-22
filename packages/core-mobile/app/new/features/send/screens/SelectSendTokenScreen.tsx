@@ -20,6 +20,10 @@ import { useContacts } from 'common/hooks/useContacts'
 import { useSearchableTokenList } from 'common/hooks/useSearchableTokenList'
 import { TokenType } from '@avalabs/vm-module-types'
 import { AddrBookItemType } from 'store/addressBook'
+import {
+  isTokenWithBalanceAVM,
+  isTokenWithBalancePVM
+} from '@avalabs/avalanche-module'
 import { getNetworks } from '../utils/getNetworks'
 
 export const SelectSendTokenScreen = (): JSX.Element => {
@@ -114,6 +118,11 @@ export const SelectSendTokenScreen = (): JSX.Element => {
   }): React.JSX.Element => {
     const isSelected = selectedToken?.localId === item.localId
     const isLastItem = index === searchResults.length - 1
+
+    const balance =
+      isTokenWithBalancePVM(item) || isTokenWithBalanceAVM(item)
+        ? item.availableDisplayValue
+        : item.balanceDisplayValue
     return (
       <TouchableOpacity
         onPress={() => handleSelectToken(item)}
@@ -134,9 +143,7 @@ export const SelectSendTokenScreen = (): JSX.Element => {
             />
             <View>
               <Text variant="buttonMedium">{item.name}</Text>
-              <Text variant="subtitle2">
-                {item.balanceDisplayValue + ' ' + item.symbol}
-              </Text>
+              <Text variant="subtitle2">{balance + ' ' + item.symbol}</Text>
             </View>
           </View>
           {isSelected && (

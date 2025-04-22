@@ -3,7 +3,7 @@ import { useInAppRequest } from 'hooks/useInAppRequest'
 import { TokenWithBalancePVM } from '@avalabs/vm-module-types'
 import { isTokenWithBalancePVM } from '@avalabs/avalanche-module'
 import { GAS_LIMIT_FOR_X_CHAIN } from 'consts/fees'
-import { bigIntToString, TokenUnit } from '@avalabs/core-utils-sdk'
+import { TokenUnit } from '@avalabs/core-utils-sdk'
 import Logger from 'utils/Logger'
 import { Avalanche } from '@avalabs/core-wallets-sdk'
 import { UnsignedTx } from '@avalabs/avalanchejs'
@@ -166,10 +166,11 @@ const usePVMSend: SendAdapterPVM = ({
     const maxAmountValue = balance - fee
     const maxAmount = maxAmountValue > 0n ? maxAmountValue : 0n
 
-    return {
-      bn: maxAmount,
-      amount: bigIntToString(maxAmount, selectedToken.decimals)
-    }
+    return new TokenUnit(
+      maxAmount,
+      selectedToken.decimals,
+      selectedToken.symbol
+    )
   }, [maxFee, selectedToken])
 
   useEffect(() => {
@@ -182,13 +183,7 @@ const usePVMSend: SendAdapterPVM = ({
     getMaxAmount()
       .then(maxAmount => {
         if (maxAmount) {
-          setMaxAmount(
-            new TokenUnit(
-              maxAmount.bn,
-              selectedToken.decimals,
-              selectedToken.symbol
-            )
-          )
+          setMaxAmount(maxAmount)
         }
       })
       .catch(Logger.error)
