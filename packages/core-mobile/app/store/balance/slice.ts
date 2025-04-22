@@ -67,13 +67,11 @@ export const selectBalanceStatus = (state: RootState): QueryStatus =>
 export const selectIsBalanceLoadedForAccount =
   (accountIndex: number) => (state: RootState) => {
     const networks = selectNetworks(state)
-    const isDeveloperMode = selectIsDeveloperMode(state)
     const foundBalance = Object.values(state.balance.balances).find(balance => {
       const network = networks[balance.chainId]
       return (
         balance.accountIndex === accountIndex &&
-        network?.chainId === balance.chainId &&
-        network.isTestnet === isDeveloperMode
+        network?.chainId === balance.chainId
       )
     })
 
