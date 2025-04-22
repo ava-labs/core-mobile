@@ -21,7 +21,6 @@ import { KeyboardAvoidingView } from 'common/components/KeyboardAvoidingView'
 import { useGlobalSearchParams, useRouter } from 'expo-router'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import { TokenInputWidget } from 'common/components/TokenInputWidget'
-import useBridge from 'screens/bridge/hooks/useBridge'
 import useCChainNetwork from 'hooks/earn/useCChainNetwork'
 import Logger from 'utils/Logger'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
@@ -63,6 +62,7 @@ import { HallidayBanner } from 'features/bridge/components/HallidayBanner'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { HALLIDAY_BRIDGE_URL } from 'features/bridge/const'
 import { useCoreBrowser } from 'common/hooks/useCoreBrowser'
+import useBridge from '../hooks/useBridge'
 
 export const BridgeScreen = (): JSX.Element => {
   const {

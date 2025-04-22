@@ -1,12 +1,12 @@
 import { useMemo } from 'react'
 import { AssetBalance } from 'screens/bridge/utils/types'
 import { useSelector } from 'react-redux'
-import { selectTokensWithBalance } from 'store/balance/slice'
+import { selectTokensWithBalanceByNetwork } from 'store/balance/slice'
 import { bigintToBig } from 'utils/bigNumbers/bigintToBig'
 import { useTokenInfoContext } from '@avalabs/core-bridge-sdk'
 import { selectTokenVisibility } from 'store/portfolio'
 import { isTokenVisible } from 'store/balance/utils'
-import { getAssetBalances } from '../handlers/getAssetBalances'
+import { getAssetBalances } from 'screens/bridge/handlers/getAssetBalances'
 import { unwrapAssetSymbol } from '../utils/bridgeUtils'
 import { useBridgeAssets } from './useBridgeAssets'
 
@@ -14,13 +14,15 @@ import { useBridgeAssets } from './useBridgeAssets'
  * Get a list of bridge supported assets with the balances.
  * The list is sorted by balance.
  */
-export function useAssetBalances(): {
+export function useAssetBalances(sourceNetworkChainId?: number): {
   assetsWithBalances: AssetBalance[]
 } {
   const tokenVisibility = useSelector(selectTokenVisibility)
-  const tokens = useSelector(selectTokensWithBalance)
+  const tokens = useSelector(
+    selectTokensWithBalanceByNetwork(sourceNetworkChainId)
+  )
   const tokenInfoData = useTokenInfoContext()
-  const { bridgeAssets } = useBridgeAssets()
+  const bridgeAssets = useBridgeAssets(sourceNetworkChainId)
 
   const visibleTokens = useMemo(
     () => tokens.filter(token => isTokenVisible(tokenVisibility, token)),

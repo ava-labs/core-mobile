@@ -6,7 +6,6 @@ import {
 } from 'common/consts/screenOptions'
 import { useSelector } from 'react-redux'
 import { selectHasBeenViewedOnce, ViewOnceKey } from 'store/viewOnce'
-import { DelegationContextProvider } from 'contexts/DelegationContext'
 
 export default function BridgeLayout(): JSX.Element {
   const shouldHideOnboarding = useSelector(
@@ -16,16 +15,14 @@ export default function BridgeLayout(): JSX.Element {
   const initialRouteName = shouldHideOnboarding ? 'bridge' : 'onboarding'
 
   return (
-    <DelegationContextProvider>
-      <Stack
-        screenOptions={modalStackNavigatorScreenOptions}
-        initialRouteName={initialRouteName}>
-        <Stack.Screen name="onboarding" options={modalFirstScreenOptions} />
-        <Stack.Screen
-          name="bridge"
-          options={shouldHideOnboarding ? modalFirstScreenOptions : undefined}
-        />
-      </Stack>
-    </DelegationContextProvider>
+    <Stack
+      screenOptions={modalStackNavigatorScreenOptions}
+      initialRouteName={initialRouteName}>
+      <Stack.Screen name="onboarding" options={modalFirstScreenOptions} />
+      <Stack.Screen
+        name="bridge"
+        options={shouldHideOnboarding ? modalFirstScreenOptions : undefined}
+      />
+    </Stack>
   )
 }

@@ -10,8 +10,6 @@ import {
 import { ListRenderItem } from '@shopify/flash-list'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { SelectTokenScreen } from 'common/screens/SelectTokenScreen'
-import { useAssetBalances } from 'screens/bridge/hooks/useAssetBalances'
-import { useBridgeAssets } from 'screens/bridge/hooks/useBridgeAssets'
 import { AssetBalance } from 'screens/bridge/utils/types'
 import { LogoWithNetwork } from 'common/components/LogoWithNetwork'
 import { useNetworks } from 'hooks/networks/useNetworks'
@@ -19,6 +17,8 @@ import { formatTokenAmount } from '@avalabs/core-bridge-sdk'
 import { bigintToBig } from '@avalabs/core-utils-sdk'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
 import { useBridgeSelectedAsset } from '../store/store'
+import { useBridgeAssets } from '../hooks/useBridgeAssets'
+import { useAssetBalances } from '../hooks/useAssetBalances'
 
 export const SelectBridgeTokenScreen = (): JSX.Element => {
   const {

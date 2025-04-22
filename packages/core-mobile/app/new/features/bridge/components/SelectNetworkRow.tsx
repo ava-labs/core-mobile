@@ -7,7 +7,7 @@ import {
   View
 } from '@avalabs/k2-alpine'
 import { Network } from '@avalabs/core-chains-sdk'
-import { NetworkLogo } from 'screens/network/NetworkLogo'
+import { NetworkLogo } from 'common/components/NetworkLogo'
 
 export const SelectNetworkRow = ({
   title,
