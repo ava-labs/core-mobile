@@ -1,4 +1,4 @@
-import React, { memo, useMemo, useCallback, useState, useEffect } from 'react'
+import React, { memo, useMemo, useCallback } from 'react'
 import { Account } from 'store/account'
 import {
   View,
@@ -12,20 +12,13 @@ import {
   ActivityIndicator,
   Pressable
 } from '@avalabs/k2-alpine'
-import { useDispatch, useSelector } from 'react-redux'
-import { selectTokenVisibility } from 'store/portfolio'
-import {
-  fetchBalanceForAccount,
-  QueryStatus,
-  selectBalanceStatus,
-  selectBalanceTotalInCurrencyForAccount,
-  selectIsBalanceLoadedForAccount
-} from 'store/balance'
+import { useSelector } from 'react-redux'
 import { getItemEnteringAnimation } from 'common/utils/animations'
 import Animated, { LinearTransition } from 'react-native-reanimated'
 import { truncateAddress } from '@avalabs/core-utils-sdk'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import { selectIsPrivacyModeEnabled } from 'store/settings/securityPrivacy'
+import { useBalanceForAccount } from 'new/common/contexts/useBalanceForAccount'
 import { ACCOUNT_CARD_SIZE } from './AcccountList'
 
 export const AccountItem = memo(
@@ -45,35 +38,17 @@ export const AccountItem = memo(
     testID?: string
     // eslint-disable-next-line sonarjs/cognitive-complexity
   }): React.JSX.Element => {
-    const dispatch = useDispatch()
-    const balanceStatus = useSelector(selectBalanceStatus)
-    const isBalanceLoading = balanceStatus !== QueryStatus.IDLE
+    const {
+      balance: accountBalance,
+      fetchBalance,
+      isFetchingBalance,
+      isBalanceLoaded
+    } = useBalanceForAccount(account.index)
     const isPrivacyModeEnabled = useSelector(selectIsPrivacyModeEnabled)
     const {
       theme: { colors, isDark }
     } = useTheme()
-    const [showLoader, setShowLoader] = useState(false)
-
-    const tokenVisibility = useSelector(selectTokenVisibility)
-    const accountBalance = useSelector(
-      selectBalanceTotalInCurrencyForAccount(account.index, tokenVisibility)
-    )
     const { formatCurrency } = useFormatCurrency()
-
-    const isBalanceLoaded = useSelector(
-      selectIsBalanceLoadedForAccount(account.index)
-    )
-
-    const handleLoadBalance = useCallback(() => {
-      dispatch(fetchBalanceForAccount({ accountIndex: account.index }))
-      setShowLoader(true)
-    }, [dispatch, account.index])
-
-    useEffect(() => {
-      if (!isBalanceLoading && showLoader) {
-        setShowLoader(false)
-      }
-    }, [setShowLoader, isBalanceLoading, showLoader])
 
     const balance = useMemo(() => {
       return formatCurrency({ amount: accountBalance })
@@ -106,31 +81,43 @@ export const AccountItem = memo(
     const iconColor = isActive ? colors.$surfacePrimary : colors.$textPrimary
 
     const renderBalance = useCallback(() => {
-      if (isBalanceLoaded === false) {
+      if (isFetchingBalance) {
         return (
-          <Pressable
-            onPress={handleLoadBalance}
-            onTouchStart={e => {
-              e.stopPropagation()
+          <ActivityIndicator
+            style={{
+              alignSelf: 'flex-start',
+              marginTop: 4
+            }}
+            size="small"
+          />
+        )
+      }
+
+      if (!isBalanceLoaded) {
+        return (
+          <View
+            sx={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              marginLeft: -4
             }}>
-            <Text
-              variant="caption"
-              numberOfLines={1}
-              sx={{
-                color: accountNameColor,
-                fontFamily: 'Inter-SemiBold'
+            <Pressable
+              onPress={fetchBalance}
+              onTouchStart={e => {
+                // prevent the parent (the square pressable)from being pressed
+                e.stopPropagation()
               }}>
-              View Balance
-            </Text>
-          </Pressable>
+              <Icons.Custom.BalanceRefresh color={colors.$textPrimary} />
+            </Pressable>
+          </View>
         )
       }
       return (
         <AnimatedBalance
-          variant="body1"
+          variant="heading6"
           balance={balance}
           shouldMask={isPrivacyModeEnabled}
-          balanceSx={{ color: accountNameColor, lineHeight: 18 }}
+          balanceSx={{ color: alpha(accountNameColor, 0.6), lineHeight: 18 }}
           maskBackgroundColor={backgroundColor}
           shouldAnimate={false}
         />
@@ -139,9 +126,11 @@ export const AccountItem = memo(
       accountNameColor,
       backgroundColor,
       balance,
-      handleLoadBalance,
+      fetchBalance,
       isBalanceLoaded,
-      isPrivacyModeEnabled
+      isPrivacyModeEnabled,
+      colors.$textPrimary,
+      isFetchingBalance
     ])
 
     return (
@@ -160,11 +149,13 @@ export const AccountItem = memo(
           }}>
           <View>
             <Text
+              variant="heading6"
               testID={`account_name__${testID}`}
-              sx={{ color: accountNameColor }}>
+              numberOfLines={2}
+              sx={{ color: accountNameColor, marginBottom: 2 }}>
               {account.name}
             </Text>
-            {showLoader === false && renderBalance()}
+            {renderBalance()}
           </View>
           <View sx={{ flexDirection: 'row', alignItems: 'center' }}>
             <Text
@@ -184,19 +175,6 @@ export const AccountItem = memo(
             </View>
           </View>
         </AnimatedPressable>
-        {showLoader && (
-          <ActivityIndicator
-            style={{
-              marginRight: 14,
-              position: 'absolute',
-              top: 0,
-              right: 0,
-              bottom: 0,
-              left: 0
-            }}
-            size="small"
-          />
-        )}
       </Animated.View>
     )
   }

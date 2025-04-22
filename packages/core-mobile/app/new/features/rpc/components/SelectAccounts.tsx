@@ -1,11 +1,11 @@
-import React, { useEffect, useCallback, useMemo, useState } from 'react'
+import React, { useCallback, useMemo } from 'react'
 import { truncateAddress } from '@avalabs/core-utils-sdk'
 import {
   ActivityIndicator,
   alpha,
-  Button,
   GroupList,
   Icons,
+  Pressable,
   Separator,
   Text,
   Toggle,
@@ -14,16 +14,8 @@ import {
 } from '@avalabs/k2-alpine'
 import { CorePrimaryAccount } from '@avalabs/types'
 import { AccountCollection } from 'store/account/types'
-import { QueryStatus } from 'store/balance/types'
-import { useDispatch, useSelector } from 'react-redux'
-import {
-  fetchBalanceForAccount,
-  selectBalanceStatus,
-  selectBalanceTotalInCurrencyForAccount,
-  selectIsBalanceLoadedForAccount
-} from 'store/balance/slice'
-import { selectTokenVisibility } from 'store/portfolio/slice'
 import { useFormatCurrency } from 'new/common/hooks/useFormatCurrency'
+import { useBalanceForAccount } from 'new/common/contexts/useBalanceForAccount'
 
 type Props = {
   onSelect: (account: CorePrimaryAccount) => void
@@ -45,13 +37,18 @@ export const SelectAccounts = ({
 
     return [
       {
-        title: (
+        // eslint-disable-next-line react/no-unstable-nested-components
+        title: (expanded: boolean) => (
           <View
             style={{
               flexDirection: 'row',
               alignItems: 'center'
             }}>
-            <Icons.Custom.Wallet color={colors.$textPrimary} />
+            {expanded ? (
+              <Icons.Custom.Wallet color={colors.$textPrimary} />
+            ) : (
+              <Icons.Custom.WalletClosed color={colors.$textPrimary} />
+            )}
             <Text
               variant="body1"
               sx={{
@@ -118,41 +115,24 @@ const Account = ({
   const {
     theme: { colors }
   } = useTheme()
-  const tokenVisibility = useSelector(selectTokenVisibility)
-  const accountBalance = useSelector(
-    selectBalanceTotalInCurrencyForAccount(account.index, tokenVisibility)
-  )
-  const isBalanceLoaded = useSelector(
-    selectIsBalanceLoadedForAccount(account.index)
-  )
-
-  const balanceStatus = useSelector(selectBalanceStatus)
-  const isBalanceLoading = balanceStatus !== QueryStatus.IDLE
+  const {
+    balance: accountBalance,
+    isBalanceLoaded,
+    isFetchingBalance,
+    fetchBalance
+  } = useBalanceForAccount(account.index)
   const { formatCurrency } = useFormatCurrency()
-  const [showLoader, setShowLoader] = useState(false)
-  const dispatch = useDispatch()
-
-  const handleLoadBalance = useCallback(() => {
-    dispatch(fetchBalanceForAccount({ accountIndex: account.index }))
-    setShowLoader(true)
-  }, [dispatch, account.index])
-
-  useEffect(() => {
-    if (!isBalanceLoading && showLoader) {
-      setShowLoader(false)
-    }
-  }, [isBalanceLoading, showLoader])
 
   const renderBalance = useCallback(() => {
-    if (showLoader) {
+    if (isFetchingBalance) {
       return <ActivityIndicator style={{ marginRight: 14 }} size="small" />
     }
 
     if (!isBalanceLoaded) {
       return (
-        <Button type="tertiary" size="small" onPress={handleLoadBalance}>
-          View Balance
-        </Button>
+        <Pressable onPress={fetchBalance} style={{ marginRight: 14 }}>
+          <Icons.Custom.BalanceRefresh color={colors.$textPrimary} />
+        </Pressable>
       )
     }
 
@@ -170,11 +150,12 @@ const Account = ({
       </Text>
     )
   }, [
-    showLoader,
+    isFetchingBalance,
+    isBalanceLoaded,
     accountBalance,
     formatCurrency,
-    handleLoadBalance,
-    isBalanceLoaded
+    fetchBalance,
+    colors.$textPrimary
   ])
 
   return (

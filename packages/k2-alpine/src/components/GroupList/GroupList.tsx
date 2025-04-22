@@ -72,7 +72,7 @@ export const GroupList = ({
     }
   }
 
-  const renderTitle = (title: React.ReactNode): React.ReactNode => {
+  const renderTitle = (title: Title, index: number): React.ReactNode => {
     if (typeof title === 'string') {
       return (
         <Text
@@ -88,7 +88,37 @@ export const GroupList = ({
       )
     }
 
+    if (typeof title === 'function') {
+      return title(expandedStates[index] ?? false)
+    }
+
     return title
+  }
+
+  const renderSubTitle = (
+    subtitle: Subtitle,
+    index: number
+  ): React.ReactNode => {
+    if (typeof subtitle === 'string') {
+      return (
+        <Text
+          variant={subtitleVariant}
+          sx={{
+            color: '$textSecondary',
+            fontSize: 13,
+            lineHeight: 18,
+            ...subtitleSx
+          }}>
+          {subtitle}
+        </Text>
+      )
+    }
+
+    if (typeof subtitle === 'function') {
+      return subtitle(expandedStates[index] ?? false)
+    }
+
+    return subtitle
   }
 
   return (
@@ -143,21 +173,10 @@ export const GroupList = ({
                         alignItems: 'center',
                         gap: 8
                       }}>
-                      {renderTitle(title)}
+                      {renderTitle(title, index)}
                       {rightIcon !== undefined && rightIcon}
                     </View>
-                    {subtitle && (
-                      <Text
-                        variant={subtitleVariant}
-                        sx={{
-                          color: '$textSecondary',
-                          fontSize: 13,
-                          lineHeight: 18,
-                          ...subtitleSx
-                        }}>
-                        {subtitle}
-                      </Text>
-                    )}
+                    {renderSubTitle(subtitle, index)}
                   </View>
 
                   <View
@@ -212,9 +231,12 @@ export const GroupList = ({
   )
 }
 
+type Title = React.ReactNode | ((expanded: boolean) => React.ReactNode)
+type Subtitle = React.ReactNode | ((expanded: boolean) => React.ReactNode)
+
 export type GroupListItem = {
-  title: React.ReactNode
-  subtitle?: string
+  title: Title
+  subtitle?: Subtitle
   value?: React.ReactNode
   onPress?: () => void
   onLongPress?: () => void
