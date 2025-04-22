@@ -6,7 +6,11 @@ import {
 } from '@reduxjs/toolkit'
 import { RootState } from 'store'
 import { selectActiveAccount } from 'store/account'
-import { selectActiveNetwork, selectAllNetworks } from 'store/network'
+import {
+  selectActiveNetwork,
+  selectAllNetworks,
+  selectNetworks
+} from 'store/network'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { TokenType } from '@avalabs/vm-module-types'
 import {
@@ -62,8 +66,15 @@ export const selectBalanceStatus = (state: RootState): QueryStatus =>
 
 export const selectIsBalanceLoadedForAccount =
   (accountIndex: number) => (state: RootState) => {
+    const networks = selectNetworks(state)
+    const isDeveloperMode = selectIsDeveloperMode(state)
     const foundBalance = Object.values(state.balance.balances).find(balance => {
-      return balance.accountIndex === accountIndex
+      const network = networks[balance.chainId]
+      return (
+        balance.accountIndex === accountIndex &&
+        network?.chainId === balance.chainId &&
+        network.isTestnet === isDeveloperMode
+      )
     })
 
     return !!foundBalance
