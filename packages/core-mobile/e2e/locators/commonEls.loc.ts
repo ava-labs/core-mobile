@@ -35,5 +35,11 @@ export default {
   copyPhrase: 'Copy phrase',
   copied: 'Copied',
   save: 'Save',
-  dialogInput: 'dialog_input'
+  dialogInput: 'dialog_input',
+  copy: 'Copy',
+  selectNetworkBitcoin: 'select_network__Bitcoin',
+  selectNetworkCChainEVM: 'select_network__Avalanche C-Chain/EVM',
+  selectNetworkXPChain: 'select_network__Avalanche X/P-Chain',
+  evmNetwork: 'Avalanche C-Chain/EVM',
+  XPNetwork: 'Avalanche X/P-Chain'
 }

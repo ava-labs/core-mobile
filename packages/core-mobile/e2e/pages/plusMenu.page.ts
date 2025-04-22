@@ -37,16 +37,8 @@ class PlusMenuPage {
     return by.text(PlusMenuLoc.walletConnectButton)
   }
 
-  get receiveButton() {
-    return by.id(PlusMenuLoc.receive)
-  }
-
   get buyButton() {
     return by.id(PlusMenuLoc.buy)
-  }
-
-  async tapReceiveButton() {
-    await Actions.tap(this.receiveButton)
   }
 
   async tapBuyButton() {
@@ -85,7 +77,6 @@ class PlusMenuPage {
       PlusMenuLoc.send,
       PlusMenuLoc.swap,
       PlusMenuLoc.buy,
-      PlusMenuLoc.receive,
       PlusMenuLoc.walletConnectSVG,
       PlusMenuLoc.bridge
     ]
