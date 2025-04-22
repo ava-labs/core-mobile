@@ -7,7 +7,10 @@ export default function VerifyRecoveryPhrase(): JSX.Element {
   const { mnemonic } = useGlobalSearchParams<{ mnemonic: string }>()
 
   const handleVerified = (): void => {
-    navigate({ pathname: './createPin', params: { mnemonic } })
+    navigate({
+      pathname: '/onboarding/mnemonic/createPin',
+      params: { mnemonic }
+    })
   }
 
   return <Component onVerified={handleVerified} mnemonic={mnemonic} />

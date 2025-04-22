@@ -9,12 +9,12 @@ export default function AnalyticsConsent(): JSX.Element {
 
   function handleAcceptAnalytics(): void {
     accept()
-    navigate('./createPin')
+    navigate('/onboarding/seedless/createPin')
   }
 
   function handleRejectAnalytics(): void {
     reject()
-    navigate('./createPin')
+    navigate('/onboarding/seedless/createPin')
   }
 
   return (

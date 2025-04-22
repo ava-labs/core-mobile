@@ -9,11 +9,11 @@ export default function ScanQrCode(): JSX.Element {
   const router = useRouter()
 
   const goToVerifyCode = (): void => {
-    router.push('./verifyCode')
+    router.push('/onboarding/seedless/verifyCode')
   }
 
   const goToEnterCodeManually = (): void => {
-    router.navigate('./copyCode')
+    router.navigate('/onboarding/seedless/copyCode')
   }
 
   return (

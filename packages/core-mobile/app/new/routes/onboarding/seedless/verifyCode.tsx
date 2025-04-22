@@ -10,7 +10,7 @@ export default function VerifyCode(): JSX.Element {
   const router = useRouter()
 
   const onVerifySuccess = useCallback((): void => {
-    router.navigate('./analyticsConsent')
+    router.navigate('/onboarding/seedless/analyticsConsent')
     AnalyticsService.capture('SeedlessMfaVerified', {
       type: 'Authenticator'
     })

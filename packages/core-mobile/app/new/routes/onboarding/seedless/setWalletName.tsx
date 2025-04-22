@@ -20,7 +20,7 @@ export default function SetWalletName(): JSX.Element {
         accountIndex: 0
       })
     )
-    navigate('./selectAvatar')
+    navigate('/onboarding/seedless/selectAvatar')
   }
 
   return <Component name={name} setName={setName} onNext={handleNext} />

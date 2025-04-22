@@ -9,11 +9,11 @@ export default function AuthenticatorSetup(): JSX.Element {
   const router = useRouter()
 
   const goToVerifyCode = useCallback((): void => {
-    router.push('./verifyCode')
+    router.push('/accountSettings/addRecoveryMethods/verifyCode')
   }, [router])
 
   const goToScanQrCode = useCallback((): void => {
-    router.navigate('./scanQrCode')
+    router.navigate('/accountSettings/addRecoveryMethods/scanQrCode')
   }, [router])
 
   return totpKey === undefined ? (

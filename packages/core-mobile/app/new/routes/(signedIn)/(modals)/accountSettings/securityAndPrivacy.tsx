@@ -90,7 +90,7 @@ const SecurityAndPrivacyScreen = (): JSX.Element => {
     (value: boolean): void => {
       setIsBiometricSwitchEnabled(value)
       if (value) {
-        navigate('./biometricVerifyPin')
+        navigate('/accountSettings/biometricVerifyPin')
       } else {
         commonStorage.set(StorageKey.SECURE_ACCESS_SET, 'PIN')
       }
@@ -103,7 +103,7 @@ const SecurityAndPrivacyScreen = (): JSX.Element => {
       {
         title: 'Connected sites',
         onPress: () => {
-          navigate('./connectedSites')
+          navigate('/accountSettings/connectedSites')
         },
         value: allApprovedDapps.length.toString()
       }
@@ -115,7 +115,7 @@ const SecurityAndPrivacyScreen = (): JSX.Element => {
       {
         title: 'Change PIN',
         onPress: () => {
-          navigate('./verifyChangePin')
+          navigate('/accountSettings/verifyChangePin')
         }
       }
     ]
@@ -146,10 +146,10 @@ const SecurityAndPrivacyScreen = (): JSX.Element => {
         title: 'Show recovery phrase',
         onPress: () => {
           if (walletType === WalletType.SEEDLESS) {
-            navigate('./seedlessExportPhrase')
+            navigate('/accountSettings/seedlessExportPhrase')
             return
           }
-          navigate('./recoveryPhraseVerifyPin')
+          navigate('/accountSettings/recoveryPhraseVerifyPin')
         }
       }
     ]
@@ -158,7 +158,7 @@ const SecurityAndPrivacyScreen = (): JSX.Element => {
       data.push({
         title: 'Recovery methods',
         onPress: () => {
-          navigate('./addRecoveryMethods')
+          navigate('/accountSettings/addRecoveryMethods')
         }
       })
     }
