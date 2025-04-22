@@ -1,3 +1,4 @@
+import { router } from 'expo-router'
 import { Network } from '@avalabs/core-chains-sdk'
 import { CorePrimaryAccount } from '@avalabs/types'
 import {
@@ -5,17 +6,12 @@ import {
   ApprovalController as VmModuleApprovalController,
   ApprovalParams,
   ApprovalResponse,
-  RpcMethod,
-  AlertType
+  RpcMethod
 } from '@avalabs/vm-module-types'
-import AppNavigation from 'navigation/AppNavigation'
-import * as Navigation from 'utils/Navigation'
 import { providerErrors, rpcErrors } from '@metamask/rpc-errors'
-import {
-  showTransactionErrorToast,
-  showTransactionSuccessToast
-} from 'utils/toast'
 import { btcSignTransaction } from 'vmModule/handlers/btcSignTransaction'
+import { walletConnectCache } from 'services/walletconnectv2/walletConnectCache/walletConnectCache'
+import { showSnackbar } from 'new/common/utils/toast'
 import { avalancheSignTransaction } from '../handlers/avalancheSignTransaction'
 import { ethSendTransaction } from '../handlers/ethSendTransaction'
 import { signMessage } from '../handlers/signMessage'
@@ -27,15 +23,19 @@ class ApprovalController implements VmModuleApprovalController {
     return Promise.reject(providerErrors.unsupportedMethod('requestPublicKey'))
   }
 
-  onTransactionConfirmed(txHash: Hex): void {
-    showTransactionSuccessToast({
-      message: 'Transaction Successful',
-      txHash
-    })
+  onTransactionConfirmed(_txHash: Hex): void {
+    // TODO: use new toast
+    showSnackbar('Transaction Successful')
+    // showTransactionSuccessToast({
+    //   message: 'Transaction Successful',
+    //   txHash
+    // })
   }
 
   onTransactionReverted(_txHash: Hex): void {
-    showTransactionErrorToast({ message: 'Transaction Reverted' })
+    // TODO: use new toast
+    showSnackbar('Transaction Reverted')
+    //showTransactionErrorToast({ message: 'Transaction Reverted' })
   }
 
   async requestApproval({
@@ -148,47 +148,41 @@ class ApprovalController implements VmModuleApprovalController {
         })
       }
 
-      if (displayData.alert?.type === AlertType.DANGER) {
-        Navigation.navigate({
-          name: AppNavigation.Root.Wallet,
-          params: {
-            screen: AppNavigation.Modal.AlertScreen,
-            params: {
-              alert: displayData.alert,
-              onReject,
-              onProceed: () => {
-                Navigation.navigate({
-                  name: AppNavigation.Root.Wallet,
-                  params: {
-                    screen: AppNavigation.Modal.ApprovalPopup,
-                    params: {
-                      request,
-                      displayData,
-                      signingData,
-                      onApprove,
-                      onReject
-                    }
-                  }
-                })
-              }
-            }
-          }
-        })
-      } else {
-        Navigation.navigate({
-          name: AppNavigation.Root.Wallet,
-          params: {
-            screen: AppNavigation.Modal.ApprovalPopup,
-            params: {
-              request,
-              displayData,
-              signingData,
-              onApprove,
-              onReject
-            }
-          }
-        })
-      }
+      // if (displayData.alert?.type === AlertType.DANGER) {
+      //   Navigation.navigate({
+      //     name: AppNavigation.Root.Wallet,
+      //     params: {
+      //       screen: AppNavigation.Modal.AlertScreen,
+      //       params: {
+      //         alert: displayData.alert,
+      //         onReject,
+      //         onProceed: () => {
+      //           Navigation.navigate({
+      //             name: AppNavigation.Root.Wallet,
+      //             params: {
+      //               screen: AppNavigation.Modal.ApprovalPopup,
+      //               params: {
+      //                 request,
+      //                 displayData,
+      //                 signingData,
+      //                 onApprove,
+      //                 onReject
+      //               }
+      //             }
+      //           })
+      //         }
+      //       }
+      //     }
+      //   })
+      // } else {
+      walletConnectCache.approvalParams.set({
+        request,
+        displayData,
+        signingData,
+        onApprove,
+        onReject
+      })
+      router.navigate('/approval')
     })
   }
 }
