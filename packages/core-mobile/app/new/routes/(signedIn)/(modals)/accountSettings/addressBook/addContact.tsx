@@ -2,18 +2,29 @@ import { Button, View } from '@avalabs/k2-alpine'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { ContactForm } from 'features/accountSettings/components/ContactForm'
 import { useNewContactAvatar } from 'features/accountSettings/store'
-import React, { useCallback, useMemo, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useDispatch } from 'react-redux'
 import { addContact, Contact } from 'store/addressBook'
+import { AVATARS } from 'store/settings/avatar'
 
 const AddContactScreen = (): React.JSX.Element => {
   const dispatch = useDispatch()
   const { bottom } = useSafeAreaInsets()
   const { canGoBack, back } = useRouter()
   const { contactId } = useLocalSearchParams<{ contactId: string }>()
-  const [newContactAvatar] = useNewContactAvatar()
+  const [newContactAvatar, setNewContactAvatar] = useNewContactAvatar()
+
+  useEffect(() => {
+    return () => {
+      const randomAvatar = AVATARS[Math.floor(Math.random() * AVATARS.length)]
+
+      if (randomAvatar) {
+        setNewContactAvatar(randomAvatar)
+      }
+    }
+  }, [setNewContactAvatar])
 
   const [contact, setContact] = useState<Contact>({
     id: contactId,
