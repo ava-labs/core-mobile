@@ -7,7 +7,7 @@ export const ReceiveBarButton = forwardRef<RNView>(
     const { theme } = useTheme()
 
     return (
-      <TouchableOpacity ref={ref} onPress={onPress}>
+      <TouchableOpacity ref={ref} onPress={onPress} testID="receive_icon">
         <Icons.Communication.QRCode2 color={theme.colors.$textPrimary} />
       </TouchableOpacity>
     )

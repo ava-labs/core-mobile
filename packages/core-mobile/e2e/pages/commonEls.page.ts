@@ -140,6 +140,30 @@ class CommonElsPage {
     return by.id(commonEls.dialogInput)
   }
 
+  get copy() {
+    return by.text(commonEls.copy)
+  }
+
+  get selectNetworkBitcoin() {
+    return by.id(commonElsLoc.selectNetworkBitcoin)
+  }
+
+  get selectNetworkCChainEVM() {
+    return by.id(commonElsLoc.selectNetworkCChainEVM)
+  }
+
+  get selectNetworkXPChain() {
+    return by.id(commonElsLoc.selectNetworkXPChain)
+  }
+
+  get evmNetwork() {
+    return by.text(commonElsLoc.evmNetwork)
+  }
+
+  get XPNetwork() {
+    return by.text(commonElsLoc.XPNetwork)
+  }
+
   async enterPin(pin = '000000') {
     await Actions.waitForElement(this.pinInputField)
     await Actions.setInputText(this.pinInputField, pin)

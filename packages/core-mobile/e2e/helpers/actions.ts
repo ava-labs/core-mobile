@@ -6,6 +6,7 @@ import { element, waitFor } from 'detox'
 import { Page } from '@playwright/test'
 import { Platform } from './constants'
 import Constants from './constants'
+import delay from './waits'
 const fs = require('fs')
 
 const balanceToNumber = async (balance: Detox.NativeMatcher, index = 0) => {
@@ -16,6 +17,12 @@ const balanceToNumber = async (balance: Detox.NativeMatcher, index = 0) => {
 
 const tap = async (item: Detox.NativeMatcher) => {
   await element(item).tap()
+}
+
+const waitAndTap = async (item: Detox.NativeMatcher, timeout = 5000) => {
+  await waitForElementNoSync(item, timeout)
+  await delay(500)
+  await tap(item)
 }
 
 const tapAtXAndY = async (
@@ -472,5 +479,6 @@ export default {
   getAmount,
   getRandomEle,
   getRandomIndex,
-  isWithinTolerance
+  isWithinTolerance,
+  waitAndTap
 }
