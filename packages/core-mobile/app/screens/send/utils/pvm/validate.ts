@@ -1,6 +1,6 @@
 import { Avalanche } from '@avalabs/core-wallets-sdk'
 import { TokenWithBalancePVM } from '@avalabs/vm-module-types'
-import { GAS_LIMIT_FOR_XP_CHAIN } from 'consts/fees'
+import { GAS_LIMIT_FOR_X_CHAIN } from 'consts/fees'
 import { SendErrorMessage } from '../types'
 
 export const validate = ({
@@ -19,7 +19,8 @@ export const validate = ({
   gasPrice?: bigint
 }): void => {
   if (!address) throw new Error(SendErrorMessage.ADDRESS_REQUIRED)
-  const fee = estimatedFee ?? BigInt(GAS_LIMIT_FOR_XP_CHAIN) * maxFee
+  // TODO: use correct gas limit for P-chain
+  const fee = estimatedFee ?? BigInt(GAS_LIMIT_FOR_X_CHAIN) * maxFee
 
   const balance = token.available ?? 0n
   const maxAmountValue = balance - fee

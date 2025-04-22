@@ -1,6 +1,5 @@
 import Big from 'big.js'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
-import { NetworkToken } from '@avalabs/core-chains-sdk'
 import DeviceInfo from 'react-native-device-info'
 import { formatNumber } from './formatNumber/formatNumber'
 
@@ -18,7 +17,7 @@ export const truncateNodeId = (nodeId: string, size = 6): string => {
 
   const firstChunkLength = 'NodeID-'.length + Math.ceil(size / 2)
   const firstChunk = nodeId.substring(0, firstChunkLength)
-  const lastChunk = nodeId.slice(firstChunkLength).substr(-Math.floor(size / 2))
+  const lastChunk = nodeId.slice(firstChunkLength).slice(-Math.floor(size / 2))
 
   const shouldShowDots =
     lastChunk && lastChunk.length + firstChunk.length !== nodeId.length
@@ -106,16 +105,18 @@ export function calculateGasAndFees({
   maxPriorityFeePerGas,
   tokenPrice,
   gasLimit,
-  networkToken
+  networkTokenDecimals,
+  networkTokenSymbol
 }: Eip1559Fees & {
   tokenPrice: number
-  networkToken: NetworkToken
+  networkTokenDecimals: number
+  networkTokenSymbol: string
 }): GasAndFees {
   const maxTotalFee = maxFeePerGas * BigInt(gasLimit)
   const maxFeeInUnit = new TokenUnit(
     maxTotalFee,
-    networkToken.decimals,
-    networkToken.symbol
+    networkTokenDecimals,
+    networkTokenSymbol
   )
   return {
     maxFeePerGas,
