@@ -87,7 +87,7 @@ export const CollectibleDetailsContent = ({
       return
     }
 
-    await refreshMetadata(collectible, collectible.chainId)
+    await refreshMetadata(collectible, collectible.networkChainId)
   }, [canRefreshMetadata, collectible, refreshMetadata])
 
   const handleSend = useCallback(() => {
@@ -179,7 +179,7 @@ export const CollectibleDetailsContent = ({
               {
                 title: `Chain`,
                 value:
-                  networks.getNetwork(collectible?.chainId)?.chainName ||
+                  networks.getNetwork(collectible?.networkChainId)?.chainName ||
                   'Unknown network'
               }
             ]}
@@ -203,8 +203,8 @@ export const CollectibleDetailsContent = ({
               padding: HORIZONTAL_MARGIN,
               paddingBottom: insets.bottom + HORIZONTAL_MARGIN
             }}>
-            {collectible?.chainId &&
-            isAvalancheCChainId(collectible?.chainId) ? (
+            {collectible?.networkChainId &&
+            isAvalancheCChainId(collectible?.networkChainId) ? (
               <Button
                 disabled={isRefreshing}
                 type="secondary"

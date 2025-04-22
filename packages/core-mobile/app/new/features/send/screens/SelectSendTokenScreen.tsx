@@ -19,7 +19,7 @@ import { useSelector } from 'react-redux'
 import { useContacts } from 'common/hooks/useContacts'
 import { useSearchableTokenList } from 'common/hooks/useSearchableTokenList'
 import { TokenType } from '@avalabs/vm-module-types'
-import { RecipientType } from '../context/sendContext'
+import { AddrBookItemType } from 'store/addressBook'
 import { getNetworks } from '../utils/getNetworks'
 
 export const SelectSendTokenScreen = (): JSX.Element => {
@@ -28,7 +28,7 @@ export const SelectSendTokenScreen = (): JSX.Element => {
   } = useTheme()
   const { to, recipientType } = useLocalSearchParams<{
     to: string
-    recipientType: RecipientType
+    recipientType: AddrBookItemType | 'address'
   }>()
   const { back, canGoBack } = useRouter()
   const { allNetworks } = useNetworks()

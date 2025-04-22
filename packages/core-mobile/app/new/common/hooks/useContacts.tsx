@@ -27,14 +27,21 @@ export const useContacts = (
             address: account.addressC,
             addressBTC: account.addressBTC,
             addressXP: account.addressPVM.replace(/^[PX]-/, ''),
-            avatar: '' // TODO: replace with actual avatar
+            avatar: '', // TODO: replace with actual avatar
+            type: 'account'
           } as Contact)
       ),
     [accountCollection]
   )
   const contactCollection = useSelector(selectContacts)
   const contacts = useMemo(() => {
-    return Object.values(contactCollection)
+    return Object.values(contactCollection).map(contact => {
+      return {
+        ...contact,
+        avatar: '', // TODO: replace with actual avatar
+        type: 'contact'
+      } as Contact
+    })
   }, [contactCollection])
 
   const recentAddresses = useMemo(

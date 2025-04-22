@@ -18,7 +18,7 @@ export const RecentContactsScreen = (): JSX.Element => {
       resetAmount()
       navigate({
         pathname: '/send/send',
-        params: { to: contact.id, recipientType: 'contact' }
+        params: { to: contact.id, recipientType: contact.type }
       })
     },
     [navigate, resetAmount, setSelectedToken]

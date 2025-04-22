@@ -18,12 +18,12 @@ export const SendTutorialScreen = (): JSX.Element => {
   } = useTheme()
   const { replace } = useRouter()
   const dispatch = useDispatch()
-  const [hideIntro, setHideIntro] = useState(false)
+  const [hideOnboarding, setHideOnboarding] = useState(false)
 
   const handleGoToRecentContacts = useCallback((): void => {
-    hideIntro && dispatch(setViewOnce(ViewOnceKey.SEND_INTRO))
+    hideOnboarding && dispatch(setViewOnce(ViewOnceKey.SEND_ONBOARDING))
     replace('/send/recentContacts')
-  }, [replace, hideIntro, dispatch])
+  }, [replace, hideOnboarding, dispatch])
 
   return (
     <SafeAreaView
@@ -78,7 +78,7 @@ export const SendTutorialScreen = (): JSX.Element => {
             paddingVertical: 13
           }}>
           <Text variant="subtitle1">Hide this screen next time</Text>
-          <Toggle value={hideIntro} onValueChange={setHideIntro} />
+          <Toggle value={hideOnboarding} onValueChange={setHideOnboarding} />
         </View>
         <Button type="primary" size="large" onPress={handleGoToRecentContacts}>
           Let’s go!

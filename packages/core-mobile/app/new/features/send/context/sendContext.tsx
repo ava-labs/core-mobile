@@ -9,7 +9,7 @@ import React, {
 } from 'react'
 import { useNetworks } from 'hooks/networks/useNetworks'
 import { useNetworkFee } from 'hooks/useNetworkFee'
-import { Contact } from 'store/addressBook'
+import { AddrBookItemType, Contact } from 'store/addressBook'
 import { useContacts } from 'common/hooks/useContacts'
 import { isValidAddress } from 'features/accountSettings/utils/isValidAddress'
 import { AddressType } from 'features/accountSettings/consts'
@@ -48,11 +48,9 @@ interface TokenAddresses {
   addressBTC?: string
 }
 
-export type RecipientType = 'contact' | 'address'
-
 export type ToAddress = {
   to: string // accountIndex | contactUID | address
-  recipientType: RecipientType
+  recipientType: AddrBookItemType | 'address'
 }
 
 interface SendContextState {
@@ -158,7 +156,10 @@ export const SendContextProvider = ({
   const recipient = useMemo(() => {
     if (toAddress === undefined) return undefined
 
-    if (toAddress.recipientType === 'contact') {
+    if (
+      toAddress.recipientType === 'contact' ||
+      toAddress.recipientType === 'account'
+    ) {
       return accounts
         .concat(contacts)
         .find(account => account.id === toAddress.to)

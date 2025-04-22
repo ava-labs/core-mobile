@@ -1,4 +1,4 @@
-import { Contact } from 'store/addressBook'
+import { AddrBookItemType, Contact } from 'store/addressBook'
 import { Networks } from 'store/network'
 import { Network } from '@avalabs/core-chains-sdk'
 import { isValidAddress } from 'features/accountSettings/utils/isValidAddress'
@@ -14,7 +14,6 @@ import {
   NETWORK_X,
   NETWORK_X_TEST
 } from 'services/network/consts'
-import { RecipientType } from '../context/sendContext'
 
 export const getNetworks = ({
   to,
@@ -24,7 +23,7 @@ export const getNetworks = ({
   contacts
 }: {
   to?: Contact | string
-  recipientType?: RecipientType
+  recipientType?: AddrBookItemType | 'address'
   allNetworks: Networks
   isDeveloperMode: boolean
   contacts: Contact[]

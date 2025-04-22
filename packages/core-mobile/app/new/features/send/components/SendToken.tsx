@@ -22,13 +22,14 @@ import {
   isTokenWithBalanceAVM,
   isTokenWithBalancePVM
 } from '@avalabs/avalanche-module'
-import { RecipientType, useSendContext } from '../context/sendContext'
+import { AddrBookItemType } from 'store/addressBook'
+import { useSendContext } from '../context/sendContext'
 import { useSendSelectedToken } from '../store'
 
 export const SendToken = ({ onSend }: { onSend: () => void }): JSX.Element => {
   const { to, recipientType } = useLocalSearchParams<{
     to: string // accountIndex | contactUID | address
-    recipientType: RecipientType
+    recipientType: AddrBookItemType | 'address'
   }>()
   const {
     setToAddress,

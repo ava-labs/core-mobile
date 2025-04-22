@@ -5,7 +5,7 @@ import { audioFeedback, Audios } from 'utils/AudioFeedback'
 import { isUserRejectedError } from 'store/rpc/providers/walletConnect/utils'
 import { showSnackbar } from 'common/utils/toast'
 import { getJsonRpcErrorMessage } from 'utils/getJsonRpcErrorMessage/getJsonRpcErrorMessage'
-import { useSelector } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import { selectActiveAccount } from 'store/account'
 import { View, ActivityIndicator } from '@avalabs/k2-alpine'
 import {
@@ -17,7 +17,8 @@ import {
 } from '@avalabs/vm-module-types'
 import { ErrorState } from 'common/components/ErrorState'
 import { useNavigation } from '@react-navigation/native'
-import { RecipientType, useSendContext } from '../context/sendContext'
+import { AddrBookItemType, addRecentContact } from 'store/addressBook'
+import { useSendContext } from '../context/sendContext'
 import { SendAVM } from '../components/SendAVM'
 import { SendPVM } from '../components/SendPVM'
 import { SendBTC } from '../components/SendBTC'
@@ -27,12 +28,13 @@ import { useSendSelectedToken } from '../store'
 
 export type SendNavigationProps = {
   to: string // accountIndex | contactUID | address
-  recipientType: RecipientType
+  recipientType: AddrBookItemType | 'address'
 }
 
 export const SendScreen = (): JSX.Element => {
   const { to, recipientType } = useLocalSearchParams<SendNavigationProps>()
   const { canGoBack, back } = useRouter()
+  const dispatch = useDispatch()
   const { setToAddress, network, resetAmount } = useSendContext()
   const nativeToken = useNativeTokenWithBalanceByNetwork(network)
   const activeAccount = useSelector(selectActiveAccount)
@@ -55,6 +57,8 @@ export const SendScreen = (): JSX.Element => {
       audioFeedback(Audios.Send)
       resetAmount()
       setSelectedToken(undefined)
+      recipientType !== 'address' &&
+        dispatch(addRecentContact({ id: to, type: recipientType }))
 
       canGoBack() && back()
       // dismiss recent contacts modal
@@ -66,7 +70,17 @@ export const SendScreen = (): JSX.Element => {
         canGoBack() && back()
       }
     },
-    [back, canGoBack, getState, network, resetAmount, setSelectedToken]
+    [
+      back,
+      canGoBack,
+      dispatch,
+      getState,
+      network,
+      recipientType,
+      resetAmount,
+      setSelectedToken,
+      to
+    ]
   )
 
   const handleFailure = useCallback(
