@@ -15,7 +15,7 @@ import { showSnackbar } from 'new/common/utils/toast'
 import { router } from 'expo-router'
 import { walletConnectCache } from 'services/walletconnectv2/walletConnectCache/walletConnectCache'
 import { TokenLogo } from 'new/common/components/TokenLogo'
-import { Button, Text } from '@avalabs/k2-alpine'
+import { Button, SCREEN_WIDTH, Text } from '@avalabs/k2-alpine'
 import { LinearGradientBottomWrapper } from 'new/common/components/LinearGradientBottomWrapper'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { SessionProposalParams } from 'services/walletconnectv2/walletConnectCache/types'
@@ -147,10 +147,20 @@ const AuthorizeDappScreen = ({
         <View style={styles.iconContainer}>
           <TokenLogo logoUri={getLogoIconUrl(peerMeta.icons)} size={62} />
           <View style={styles.domainUrlContainer}>
+            <Text
+              variant="heading6"
+              style={{
+                textAlign: 'center',
+                width: SCREEN_WIDTH * 0.7,
+                marginBottom: 24
+              }}
+              numberOfLines={2}>
+              {peerMeta.name}
+            </Text>
             <Text variant="body1" style={{ textAlign: 'center' }}>
               Do you want to allow{' '}
               <Text variant="body1" style={{ fontWeight: '600' }}>
-                {peerMeta?.url}
+                {peerMeta.url}
               </Text>{' '}
               to access your wallet? Tapping “Connect” will grant full access to
               the accounts selected

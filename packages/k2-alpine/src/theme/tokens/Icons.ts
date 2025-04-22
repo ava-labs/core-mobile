@@ -75,7 +75,9 @@ import IconStake from '../../assets/icons/stake.svg'
 import IconBrowser from '../../assets/icons/browser.svg'
 import IconTrack from '../../assets/icons/track.svg'
 import IconWallet from '../../assets/icons/wallet.svg'
+import IconWalletClosed from '../../assets/icons/wallet_closed.svg'
 import IconSwapVertical from '../../assets/icons/swap_vertical.svg'
+import IconBalanceRefresh from '../../assets/icons/balance_refresh.svg'
 
 // Transaction types
 import IconTxTypeAdd from '../../assets/icons/tx-type-add.svg'
@@ -288,7 +290,9 @@ export const Icons = {
     DoNotDisturbOn: IconDoNotDisturbOn,
     AddCircle: IconAddCircle,
     Wallet: IconWallet,
-    SwapVertical: IconSwapVertical
+    WalletClosed: IconWalletClosed,
+    SwapVertical: IconSwapVertical,
+    BalanceRefresh: IconBalanceRefresh
   },
   RecoveryMethod: {
     Passkey: IconPasskey,

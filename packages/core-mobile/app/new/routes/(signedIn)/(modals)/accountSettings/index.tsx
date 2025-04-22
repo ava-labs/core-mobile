@@ -1,5 +1,4 @@
 import {
-  AnimatedBalance,
   Avatar,
   GroupList,
   Icons,
@@ -21,9 +20,6 @@ import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigatio
 import { LayoutChangeEvent } from 'react-native'
 import { VisibilityBarButton } from 'common/components/VisibilityBarButton'
 import { useDispatch, useSelector } from 'react-redux'
-import { selectActiveAccount } from 'store/account'
-import { useTotalBalanceInCurrencyForAccount } from 'common/hooks/useTotalBalanceInCurrency'
-import { selectSelectedCurrency } from 'store/settings/currency'
 import { AccountList } from 'features/accountSettings/components/AcccountList'
 import { useDeleteWallet } from 'common/hooks/useDeleteWallet'
 import { UserPreferences } from 'features/accountSettings/components/UserPreferences'
@@ -48,12 +44,6 @@ const AccountSettingsScreen = (): JSX.Element => {
   const dispatch = useDispatch()
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const isPrivacyModeEnabled = useSelector(selectIsPrivacyModeEnabled)
-  const activeAccount = useSelector(selectActiveAccount)
-  const totalBalanceInCurrency = useTotalBalanceInCurrencyForAccount(
-    activeAccount?.index ?? 0
-  )
-
-  const selectedCurrency = useSelector(selectSelectedCurrency)
   const {
     theme: { colors }
   } = useTheme()
@@ -175,28 +165,6 @@ const AccountSettingsScreen = (): JSX.Element => {
               />
             </TouchableOpacity>
           </Animated.View>
-          <View style={{ marginTop: 23 }}>
-            <AnimatedBalance
-              balance={totalBalanceInCurrency}
-              currency={` ${selectedCurrency}`}
-              shouldMask={isPrivacyModeEnabled}
-              maskWidth={100}
-              balanceSx={{ lineHeight: 38 }}
-              currencySx={{
-                fontFamily: 'Aeonik-Medium',
-                fontSize: 18,
-                lineHeight: 28
-              }}
-            />
-          </View>
-          <Text
-            variant="body1"
-            sx={{
-              marginTop: 2,
-              color: isDeveloperMode ? '#27DAA6' : '$textSecondary'
-            }}>
-            {isDeveloperMode ? 'Fuji funds' : 'Total net worth'}
-          </Text>
         </View>
 
         {/* Account list */}

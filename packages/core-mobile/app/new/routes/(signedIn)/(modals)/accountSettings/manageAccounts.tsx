@@ -5,8 +5,7 @@ import React, {
   useCallback,
   useState,
   useMemo,
-  useRef,
-  useEffect
+  useRef
 } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import {
@@ -18,10 +17,11 @@ import {
   ScrollView,
   SearchBar,
   Separator,
-  Text,
   TouchableOpacity,
   useTheme,
-  View
+  View,
+  Text,
+  alpha
 } from '@avalabs/k2-alpine'
 import {
   addAccount,
@@ -34,16 +34,9 @@ import WalletService from 'services/wallet/WalletService'
 import { showSnackbar } from 'common/utils/toast'
 import { truncateAddress } from '@avalabs/core-utils-sdk'
 import { selectIsPrivacyModeEnabled } from 'store/settings/securityPrivacy'
-import { selectTokenVisibility } from 'store/portfolio'
-import {
-  fetchBalanceForAccount,
-  QueryStatus,
-  selectBalanceStatus,
-  selectBalanceTotalInCurrencyForAccount,
-  selectIsBalanceLoadedForAccount
-} from 'store/balance'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import { ScrollView as RnScrollView } from 'react-native'
+import { useBalanceForAccount } from 'new/common/contexts/useBalanceForAccount'
 
 const ITEM_HEIGHT = 50
 
@@ -82,8 +75,30 @@ const ManageAccountsScreen = (): React.JSX.Element => {
 
   const data = useMemo(() => {
     return accountSearchResults.map(account => ({
-      title: account.name,
-      subtitle: truncateAddress(account.addressC),
+      title: (
+        <Text
+          variant="body1"
+          sx={{
+            color: colors.$textPrimary,
+            fontSize: 14,
+            lineHeight: 16,
+            fontWeight: '500'
+          }}>
+          {account.name}
+        </Text>
+      ),
+      subtitle: (
+        <Text
+          variant="mono"
+          sx={{
+            color: alpha(colors.$textPrimary, 0.6),
+            fontSize: 13,
+            lineHeight: 16,
+            fontWeight: '500'
+          }}>
+          {truncateAddress(account.addressC)}
+        </Text>
+      ),
       leftIcon: account.active ? (
         <Icons.Custom.CheckSmall
           color={colors.$textPrimary}
@@ -93,12 +108,17 @@ const ManageAccountsScreen = (): React.JSX.Element => {
       ) : (
         <View sx={{ width: 24 }} />
       ),
-      value: <AccountBalance accountIndex={account.index} />,
+      value: (
+        <AccountBalance
+          accountIndex={account.index}
+          isActive={account.active}
+        />
+      ),
       onPress: () => dispatch(setActiveAccountIndex(account.index)),
       accessory: (
         <TouchableOpacity
           hitSlop={16}
-          sx={{ marginLeft: 13 }}
+          sx={{ marginLeft: 4 }}
           onPress={() => gotoAccountDetails(account.index)}>
           <Icons.Alert.AlertCircle
             color={colors.$textSecondary}
@@ -190,15 +210,7 @@ const ManageAccountsScreen = (): React.JSX.Element => {
           paddingBottom: ITEM_HEIGHT
         }}
         showsVerticalScrollIndicator={false}>
-        <GroupList
-          itemHeight={ITEM_HEIGHT}
-          data={data}
-          titleSx={{
-            fontSize: 14,
-            lineHeight: 16,
-            fontFamily: 'Inter-Regular'
-          }}
-        />
+        <GroupList itemHeight={ITEM_HEIGHT} data={data} />
         <ActivityIndicator animating={isAddingAccount} sx={{ marginTop: 16 }} />
       </ScrollView>
     </View>
@@ -208,65 +220,49 @@ const ManageAccountsScreen = (): React.JSX.Element => {
 export default ManageAccountsScreen
 
 const AccountBalance = ({
+  isActive,
   accountIndex
 }: {
+  isActive: boolean
   accountIndex: number
 }): React.JSX.Element => {
-  const balanceStatus = useSelector(selectBalanceStatus)
-  const isBalanceLoading = balanceStatus !== QueryStatus.IDLE
   const isPrivacyModeEnabled = useSelector(selectIsPrivacyModeEnabled)
   const {
     theme: { colors }
   } = useTheme()
-  const dispatch = useDispatch()
-  const isBalanceLoaded = useSelector(
-    selectIsBalanceLoadedForAccount(accountIndex)
-  )
-  const [showLoader, setShowLoader] = useState(false)
-  const tokenVisibility = useSelector(selectTokenVisibility)
-  const accountBalance = useSelector(
-    selectBalanceTotalInCurrencyForAccount(accountIndex, tokenVisibility)
-  )
+  const {
+    balance: accountBalance,
+    fetchBalance,
+    isFetchingBalance,
+    isBalanceLoaded
+  } = useBalanceForAccount(accountIndex)
   const { formatCurrency } = useFormatCurrency()
 
   const balance = useMemo(() => {
     return formatCurrency({ amount: accountBalance })
   }, [accountBalance, formatCurrency])
 
-  const handleLoadingBalance = useCallback(
-    (index: number): void => {
-      dispatch(fetchBalanceForAccount({ accountIndex: index }))
-      setShowLoader(true)
-    },
-    [dispatch]
-  )
+  if (isFetchingBalance) {
+    return <ActivityIndicator size="small" sx={{ marginRight: 4 }} />
+  }
 
-  useEffect(() => {
-    if (!isBalanceLoading && showLoader) {
-      setShowLoader(false)
-    }
-  }, [isBalanceLoading, showLoader])
+  if (!isBalanceLoaded) {
+    return (
+      <Pressable onPress={fetchBalance}>
+        <Icons.Custom.BalanceRefresh color={colors.$textPrimary} />
+      </Pressable>
+    )
+  }
 
-  return showLoader && isBalanceLoading && isBalanceLoaded === false ? (
-    <ActivityIndicator size="small" />
-  ) : isBalanceLoaded === false ? (
-    <Pressable onPress={() => handleLoadingBalance(accountIndex)}>
-      <Text
-        variant="caption"
-        numberOfLines={1}
-        sx={{
-          color: '$textPrimary',
-          fontFamily: 'Inter-SemiBold'
-        }}>
-        View Balance
-      </Text>
-    </Pressable>
-  ) : (
+  return (
     <AnimatedBalance
       variant="body1"
       balance={balance}
       shouldMask={isPrivacyModeEnabled}
-      balanceSx={{ color: colors.$textSecondary, lineHeight: 18 }}
+      balanceSx={{
+        color: isActive ? colors.$textPrimary : alpha(colors.$textPrimary, 0.6),
+        lineHeight: 18
+      }}
       shouldAnimate={false}
     />
   )
