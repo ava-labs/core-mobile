@@ -75,6 +75,7 @@ export const HexagonImageView = ({
         style={{ width: height, height: height, backgroundColor }}
         onLoadStart={hasLoading ? handleLoadStart : undefined}
         onLoadEnd={hasLoading ? handleLoadEnd : undefined}
+        cachePolicy="memory-disk"
       />
       {isLoading && (
         <LoadingView

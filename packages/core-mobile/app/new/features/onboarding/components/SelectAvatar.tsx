@@ -8,8 +8,10 @@ import {
   useTheme,
   View
 } from '@avalabs/k2-alpine'
+// import { AvatarSelector } from 'common/components/AvatarSelector'
 import ScreenHeader from 'common/components/ScreenHeader'
 import React, { memo } from 'react'
+import Animated, { FadeIn } from 'react-native-reanimated'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { AvatarType } from 'store/settings/avatar'
 
@@ -43,26 +45,34 @@ export const SelectAvatar = memo(
 
     return (
       <View sx={{ flex: 1 }}>
-        <ScrollView contentContainerSx={{ padding: 16 }}>
-          <ScreenHeader
-            title={`Select your\npersonal avatar`}
-            description={description}
-          />
+        <ScrollView>
           <View
-            sx={{
-              alignItems: 'center',
-              justifyContent: 'center',
-              paddingVertical: AVATAR_BLURAREA_INSET
+            style={{
+              padding: 16
             }}>
-            {selectedAvatar?.source && (
-              <Avatar
-                backgroundColor={colors.$surfacePrimary}
-                source={selectedAvatar.source}
-                size={isScreenSmall ? 100 : 'large'}
-                testID="selected_avatar"
-              />
-            )}
+            <ScreenHeader
+              title={`Select your\npersonal avatar`}
+              description={description}
+            />
           </View>
+          <Animated.View entering={FadeIn.delay(400)}>
+            <View
+              sx={{
+                alignItems: 'center',
+                justifyContent: 'center',
+                paddingVertical: AVATAR_BLURAREA_INSET
+              }}>
+              {selectedAvatar?.source && (
+                <Avatar
+                  backgroundColor={colors.$surfacePrimary}
+                  source={selectedAvatar.source}
+                  size={isScreenSmall ? 100 : 'large'}
+                  testID="selected_avatar"
+                />
+              )}
+            </View>
+          </Animated.View>
+
           <AvatarSelector
             selectedId={selectedAvatar?.id}
             avatars={avatars}
