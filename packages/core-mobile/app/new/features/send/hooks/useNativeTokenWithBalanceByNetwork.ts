@@ -7,7 +7,7 @@ import { selectTokensWithBalanceByNetwork } from 'store/balance'
 export const useNativeTokenWithBalanceByNetwork = (
   network?: Network
 ): NetworkTokenWithBalance | undefined => {
-  const tokens = useSelector(selectTokensWithBalanceByNetwork(network))
+  const tokens = useSelector(selectTokensWithBalanceByNetwork(network?.chainId))
   const [nativeToken, setNativeToken] = useState(
     tokens.find(t => t.type === TokenType.NATIVE) as NetworkTokenWithBalance
   )

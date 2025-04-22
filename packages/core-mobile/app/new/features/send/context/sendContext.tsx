@@ -2,7 +2,6 @@ import React, {
   createContext,
   Dispatch,
   ReactNode,
-  useCallback,
   useContext,
   useEffect,
   useState,
@@ -34,7 +33,10 @@ import {
   isTokenWithBalanceAVM,
   isTokenWithBalancePVM
 } from '@avalabs/avalanche-module'
-import { LocalTokenWithBalance } from 'store/balance'
+import {
+  AVALANCHE_MAINNET_NETWORK,
+  AVALANCHE_TESTNET_NETWORK
+} from 'services/network/consts'
 import { isXPChain } from '../../../../utils/network/isAvalancheNetwork'
 import { useSendSelectedToken } from '../store'
 import { getNetworks } from '../utils/getNetworks'
@@ -68,9 +70,9 @@ interface SendContextState {
   canValidate: boolean
   setCanValidate: Dispatch<boolean>
   isValid: boolean
-  network?: Network
+  network: Network
   addressToSend?: string
-  setTokenAndResetAmount: (newToken: LocalTokenWithBalance | undefined) => void
+  resetAmount: () => void
 }
 
 export const SendContext = createContext<SendContextState>(
@@ -78,10 +80,8 @@ export const SendContext = createContext<SendContextState>(
 )
 
 export const SendContextProvider = ({
-  initialToken,
   children
 }: {
-  initialToken?: LocalTokenWithBalance
   children: ReactNode
 }): JSX.Element => {
   const { allNetworks, getFromPopulatedNetwork } = useNetworks()
@@ -94,18 +94,7 @@ export const SendContextProvider = ({
   const [isSending, setIsSending] = useState(false)
   const [canValidate, setCanValidate] = useState(false)
   const [defaultMaxFeePerGas, setDefaultMaxFeePerGas] = useState<bigint>(0n)
-  const [selectedToken, setSelectedToken] = useSendSelectedToken()
-
-  useEffect(() => {
-    if (initialToken) {
-      setSelectedToken(initialToken)
-    }
-  }, [initialToken, setSelectedToken])
-
-  // useEffect(() => {
-  //   if (selectedToken) {
-  //   }
-  // }, [selectedToken])
+  const [selectedToken] = useSendSelectedToken()
 
   const defaultNetwork = useMemo(() => {
     const networks = getNetworks({
@@ -135,7 +124,9 @@ export const SendContextProvider = ({
     if (networks.find(n => n.chainId && isBitcoinChainId(n.chainId))) {
       return getBitcoinNetwork(isDeveloperMode)
     }
-    return avalancheCChain
+    return isDeveloperMode
+      ? AVALANCHE_TESTNET_NETWORK
+      : AVALANCHE_MAINNET_NETWORK
   }, [
     accounts,
     allNetworks,
@@ -159,16 +150,10 @@ export const SendContextProvider = ({
     setDefaultMaxFeePerGas(networkFee.low.maxFeePerGas)
   }, [networkFee])
 
-  const setTokenAndResetAmount = useCallback(
-    (newToken: LocalTokenWithBalance | undefined) => {
-      newToken && setSelectedToken(newToken)
-      if (newToken?.symbol !== selectedToken?.symbol) {
-        setAmount(undefined)
-        setMaxAmount(undefined)
-      }
-    },
-    [selectedToken?.symbol, setSelectedToken]
-  )
+  const resetAmount = (): void => {
+    setAmount(undefined)
+    setMaxAmount(undefined)
+  }
 
   const recipient = useMemo(() => {
     if (toAddress === undefined) return undefined
@@ -248,7 +233,7 @@ export const SendContextProvider = ({
     setCanValidate,
     network,
     isValid: error === undefined,
-    setTokenAndResetAmount,
+    resetAmount,
     addressToSend
   }
   return <SendContext.Provider value={state}>{children}</SendContext.Provider>

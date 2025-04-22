@@ -83,10 +83,12 @@ export const SendToken = ({ onSend }: { onSend: () => void }): JSX.Element => {
     !isSending && amount && amount.gt(0) && selectedToken !== undefined
 
   const tokenBalance = useMemo(() => {
+    if (selectedToken === undefined) {
+      return undefined
+    }
     if (
-      selectedToken &&
-      (isTokenWithBalancePVM(selectedToken) ||
-        isTokenWithBalanceAVM(selectedToken))
+      isTokenWithBalancePVM(selectedToken) ||
+      isTokenWithBalanceAVM(selectedToken)
     ) {
       return new TokenUnit(
         selectedToken.available ?? 0,
@@ -235,24 +237,26 @@ export const SendToken = ({ onSend }: { onSend: () => void }): JSX.Element => {
         </Pressable>
 
         {/* Token amount input widget */}
-        <SendTokenUnitInputWidget
-          sx={{ marginTop: 12 }}
-          amount={amount}
-          token={{
-            maxDecimals:
-              selectedToken && 'decimals' in selectedToken
-                ? selectedToken.decimals
-                : 0,
-            symbol: selectedToken?.symbol ?? ''
-          }}
-          balance={tokenBalance}
-          formatInCurrency={amt =>
-            formatInCurrency(amt, selectedToken?.symbol ?? '')
-          }
-          onChange={setAmount}
-          validateAmount={validateSendAmount}
-          disabled={isSending || selectedToken === undefined}
-        />
+        {tokenBalance && (
+          <SendTokenUnitInputWidget
+            sx={{ marginTop: 12 }}
+            amount={amount}
+            token={{
+              maxDecimals:
+                selectedToken && 'decimals' in selectedToken
+                  ? selectedToken.decimals
+                  : 0,
+              symbol: selectedToken?.symbol ?? ''
+            }}
+            balance={tokenBalance}
+            formatInCurrency={amt =>
+              formatInCurrency(amt, selectedToken?.symbol ?? '')
+            }
+            onChange={setAmount}
+            validateAmount={validateSendAmount}
+            disabled={isSending || selectedToken === undefined}
+          />
+        )}
       </KeyboardAwareScrollView>
 
       {/* Send */}

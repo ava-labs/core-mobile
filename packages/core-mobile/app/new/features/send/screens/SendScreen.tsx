@@ -16,12 +16,14 @@ import {
   TokenWithBalancePVM
 } from '@avalabs/vm-module-types'
 import { ErrorState } from 'common/components/ErrorState'
+import { useNavigation } from '@react-navigation/native'
 import { RecipientType, useSendContext } from '../context/sendContext'
 import { SendAVM } from '../components/SendAVM'
 import { SendPVM } from '../components/SendPVM'
 import { SendBTC } from '../components/SendBTC'
 import { SendEVM } from '../components/SendEVM'
 import { useNativeTokenWithBalanceByNetwork } from '../hooks/useNativeTokenWithBalanceByNetwork'
+import { useSendSelectedToken } from '../store'
 
 export type SendNavigationProps = {
   to: string // accountIndex | contactUID | address
@@ -31,9 +33,11 @@ export type SendNavigationProps = {
 export const SendScreen = (): JSX.Element => {
   const { to, recipientType } = useLocalSearchParams<SendNavigationProps>()
   const { canGoBack, back } = useRouter()
-  const { setToAddress, network } = useSendContext()
+  const { setToAddress, network, resetAmount } = useSendContext()
   const nativeToken = useNativeTokenWithBalanceByNetwork(network)
   const activeAccount = useSelector(selectActiveAccount)
+  const { getState } = useNavigation()
+  const [_, setSelectedToken] = useSendSelectedToken()
 
   useFocusEffect(
     useCallback(() => {
@@ -49,10 +53,20 @@ export const SendScreen = (): JSX.Element => {
           txHash
         })
       audioFeedback(Audios.Send)
+      resetAmount()
+      setSelectedToken(undefined)
 
       canGoBack() && back()
+      // dismiss recent contacts modal
+      const navigationState = getState()
+      if (
+        navigationState?.routes[navigationState?.index ?? 0]?.name ===
+        'recentContacts'
+      ) {
+        canGoBack() && back()
+      }
     },
-    [back, canGoBack, network]
+    [back, canGoBack, getState, network, resetAmount, setSelectedToken]
   )
 
   const handleFailure = useCallback(
