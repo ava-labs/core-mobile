@@ -3,7 +3,7 @@ import { useInAppRequest } from 'hooks/useInAppRequest'
 import { useSendContext } from 'contexts/SendContext'
 import { TokenWithBalanceAVM } from '@avalabs/vm-module-types'
 import { assertNotUndefined } from 'utils/assertions'
-import { GAS_LIMIT_FOR_XP_CHAIN } from 'consts/fees'
+import { GAS_LIMIT_FOR_X_CHAIN } from 'consts/fees'
 import { bigIntToString } from '@avalabs/core-utils-sdk'
 import { isTokenWithBalanceAVM } from '@avalabs/avalanche-module'
 import Logger from 'utils/Logger'
@@ -79,7 +79,7 @@ const useAVMSend: SendAdapterAVM = ({
       return
     }
 
-    const fee = maxFee ? BigInt(GAS_LIMIT_FOR_XP_CHAIN) * maxFee : 0n
+    const fee = maxFee ? BigInt(GAS_LIMIT_FOR_X_CHAIN) * maxFee : 0n
 
     const balance = token.available ?? 0n
     const maxAmountValue = balance - fee

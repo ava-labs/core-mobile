@@ -37,7 +37,6 @@ export const NetworkFeeSelector = ({
   chainId: number
   gasLimit: number
   onFeesChange: (fees: Eip1559Fees, preset: FeePreset) => void
-  supportsAvalancheDynamicFee?: boolean
 }): JSX.Element => {
   const {
     theme: { colors }
@@ -138,7 +137,7 @@ export const NetworkFeeSelector = ({
           maxFeePerGas: presetFeeRate.maxFeePerGas,
           maxPriorityFeePerGas: presetFeeRate.maxPriorityFeePerGas ?? 0n,
           tokenPrice: nativeTokenPrice,
-          gasLimit,
+          gasLimit: isAVM ? GAS_LIMIT_FOR_X_CHAIN : gasLimit,
           networkTokenDecimals,
           networkTokenSymbol
         })
@@ -153,7 +152,8 @@ export const NetworkFeeSelector = ({
       gasLimit,
       nativeTokenPrice,
       networkFee,
-      onFeesChange
+      onFeesChange,
+      isAVM
     ]
   )
 
