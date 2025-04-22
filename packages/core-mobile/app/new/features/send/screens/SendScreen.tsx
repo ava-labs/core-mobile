@@ -20,7 +20,7 @@ import { RecipientType, useSendContext } from '../context/sendContext'
 import { SendAVM } from '../components/SendAVM'
 import { SendPVM } from '../components/SendPVM'
 import { SendBTC } from '../components/SendBTC'
-import { SendEVM } from '../components/SendEvma'
+import { SendEVM } from '../components/SendEVM'
 import { useNativeTokenWithBalanceByNetwork } from '../hooks/useNativeTokenWithBalanceByNetwork'
 
 export type SendNavigationProps = {
