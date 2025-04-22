@@ -28,7 +28,7 @@ export const Avatar = ({
 }: {
   source?: ImageSourcePropType
   size: number | 'small' | 'large'
-  backgroundColor: string
+  backgroundColor?: string
   isSelected?: boolean
   isPressed?: boolean
   hasBlur?: boolean

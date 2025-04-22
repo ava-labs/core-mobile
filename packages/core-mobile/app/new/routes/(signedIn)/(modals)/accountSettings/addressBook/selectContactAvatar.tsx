@@ -7,7 +7,7 @@ import { AVATARS } from 'store/settings/avatar'
 const SelectContactAvatarScreen = (): JSX.Element => {
   const { back } = useRouter()
 
-  const [newContactAvatar, setNewContactAvatar] = useNewContactAvatar()
+  const [, setNewContactAvatar] = useNewContactAvatar()
   const [selectedAvatar, setSelectedAvatar] = useState(
     AVATARS[Math.floor(Math.random() * AVATARS.length)]
   )

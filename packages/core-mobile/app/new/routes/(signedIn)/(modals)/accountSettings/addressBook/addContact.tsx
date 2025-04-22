@@ -13,7 +13,7 @@ const AddContactScreen = (): React.JSX.Element => {
   const { bottom } = useSafeAreaInsets()
   const { canGoBack, back } = useRouter()
   const { contactId } = useLocalSearchParams<{ contactId: string }>()
-  const [newContactAvatar, setNewContactAvatar] = useNewContactAvatar()
+  const [, setNewContactAvatar] = useNewContactAvatar()
 
   useEffect(() => {
     return () => {
