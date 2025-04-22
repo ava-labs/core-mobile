@@ -44,14 +44,12 @@ export const AvatarSelector = ({
       const isSelected = item.id === selectedId
       return (
         <AnimatedPressable
-          key={index}
           style={{ marginTop: index % 2 === 0 ? avatarWidth : 0 }}
           onPress={() => handleSelect(index)}>
           <Avatar
             source={item.source}
             size={avatarWidth}
             isSelected={isSelected}
-            backgroundColor={'white'}
           />
         </AnimatedPressable>
       )
@@ -65,13 +63,11 @@ export const AvatarSelector = ({
       height={avatarWidth * 2}
       data={avatars}
       renderItem={renderItem}
-      snapEnabled={false}
-      pagingEnabled={false}
       defaultIndex={defaultIndex}
       style={{
         width: '100%',
         overflow: 'visible',
-        paddingVertical: configuration.spacing * 2,
+        paddingVertical: configuration.spacing * 2 + 20,
         marginLeft: SCREEN_WIDTH / 2 - avatarWidth / 2
       }}
     />

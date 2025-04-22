@@ -17,11 +17,12 @@ export const Avatar = ({
   isSelected,
   hasBlur,
   style,
-  backgroundColor = 'transparent',
+  backgroundColor,
   glowEffect,
   testID,
   hasLoading = true,
-  isDeveloperMode = false
+  isDeveloperMode = false,
+  showAddIcon = false
 }: {
   source?: ImageSourcePropType
   size: number | 'small' | 'large'
@@ -33,6 +34,7 @@ export const Avatar = ({
   testID?: string
   hasLoading?: boolean
   isDeveloperMode?: boolean
+  showAddIcon?: boolean
 }): JSX.Element => {
   const { theme } = useTheme()
 
@@ -67,7 +69,9 @@ export const Avatar = ({
     return (
       <View
         sx={{
-          backgroundColor: surfacePrimaryBlurBgMap[backgroundColor],
+          backgroundColor: backgroundColor
+            ? surfacePrimaryBlurBgMap[backgroundColor]
+            : 'transparent',
           position: 'absolute',
           top: -AVATAR_BLURAREA_INSET + 10,
           left: -AVATAR_BLURAREA_INSET,
@@ -81,7 +85,9 @@ export const Avatar = ({
         {(isAnimating === false || Platform.OS === 'ios') && (
           <>
             <HexagonImageView
-              backgroundColor={backgroundColor}
+              backgroundColor={
+                backgroundColor ? backgroundColor : 'transparent'
+              }
               source={source}
               height={height}
             />
@@ -91,7 +97,8 @@ export const Avatar = ({
                 top: 0,
                 left: 0,
                 right: 0,
-                bottom: 0
+                bottom: 0,
+                overflow: 'hidden'
               }}
               tint={theme.isDark ? 'dark' : 'light'}
               intensity={75}
@@ -134,6 +141,7 @@ export const Avatar = ({
           backgroundColor={backgroundColor ?? theme.colors.$surfaceSecondary}
           isSelected={isSelected}
           hasLoading={hasLoading}
+          showAddIcon={showAddIcon}
         />
       )}
       <HexagonBorder height={height} />

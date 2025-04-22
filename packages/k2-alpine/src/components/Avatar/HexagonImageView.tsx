@@ -28,13 +28,15 @@ export const HexagonImageView = ({
   height,
   backgroundColor,
   isSelected,
-  hasLoading = false
+  hasLoading = false,
+  showAddIcon = false
 }: {
   source?: ImageSourcePropType
   height: number
   backgroundColor: string
   isSelected?: boolean
   hasLoading?: boolean
+  showAddIcon?: boolean
 }): JSX.Element => {
   const { theme } = useTheme()
   const selectedAnimation = useSharedValue(0)
@@ -65,58 +67,55 @@ export const HexagonImageView = ({
           <Path d={hexagonPath.path} fill={theme.colors.$surfacePrimary} />
         </Svg>
       }>
-      {source ? (
-        <>
-          <Image
-            key={`image-${source}`}
-            contentFit="cover"
-            source={source}
-            style={{ width: height, height: height, backgroundColor }}
-            onLoadStart={hasLoading ? handleLoadStart : undefined}
-            onLoadEnd={hasLoading ? handleLoadEnd : undefined}
-          />
-          {isLoading && (
-            <LoadingView
-              style={{
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                right: 0,
-                bottom: 0
-              }}
-            />
-          )}
-          <Animated.View
-            style={[
-              {
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                right: 0,
-                bottom: 0,
-                backgroundColor: alpha(
-                  theme.isDark ? colors.$neutralWhite : colors.$neutral850,
-                  0.8
-                ),
-                alignItems: 'center',
-                justifyContent: 'center'
-              },
-              selectedAnimatedStyle
-            ]}>
-            <Arrow
-              key={theme.isDark ? 'dark' : 'light'}
-              isSelected={isSelected}
-            />
-          </Animated.View>
-        </>
-      ) : (
+      <Image
+        key={`image-${source}`}
+        recyclingKey={`image-recycling-${source}`}
+        contentFit="cover"
+        source={source}
+        style={{ width: height, height: height, backgroundColor }}
+        onLoadStart={hasLoading ? handleLoadStart : undefined}
+        onLoadEnd={hasLoading ? handleLoadEnd : undefined}
+      />
+      {isLoading && (
+        <LoadingView
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0
+          }}
+        />
+      )}
+      <Animated.View
+        style={[
+          {
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: alpha(
+              theme.isDark ? colors.$neutralWhite : colors.$neutral850,
+              0.8
+            ),
+            alignItems: 'center',
+            justifyContent: 'center'
+          },
+          selectedAnimatedStyle
+        ]}>
+        <Arrow key={theme.isDark ? 'dark' : 'light'} isSelected={isSelected} />
+      </Animated.View>
+      {showAddIcon && (
         <View
           style={{
-            width: '100%',
-            height: '100%',
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
             alignItems: 'center',
-            justifyContent: 'center',
-            backgroundColor
+            justifyContent: 'center'
           }}>
           <Icons.Content.Add
             color={theme.colors.$textPrimary}
