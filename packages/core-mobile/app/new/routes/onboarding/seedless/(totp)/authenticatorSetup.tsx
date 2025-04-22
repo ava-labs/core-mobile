@@ -15,11 +15,11 @@ export default function AuthenticatorSetup(): JSX.Element {
   const { totpResetInit } = useSeedlessManageMFA()
 
   const goToVerifyCode = (): void => {
-    router.push('./verifyCode')
+    router.push('/onboarding/seedless/verifyCode')
   }
 
   const goToScanQrCode = (): void => {
-    router.navigate('./scanQrCode')
+    router.navigate('/onboarding/seedless/scanQrCode')
   }
 
   useEffect(() => {

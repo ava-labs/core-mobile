@@ -6,7 +6,7 @@ const VerifyChangePinScreen = (): React.JSX.Element => {
   const { replace } = useRouter()
 
   const handleLoginSuccess = (mnemonic: string): void => {
-    replace({ pathname: './changePin', params: { mnemonic } })
+    replace({ pathname: '/accountSettings/changePin', params: { mnemonic } })
   }
 
   return <VerifyWithPinOrBiometry onLoginSuccess={handleLoginSuccess} />

@@ -78,7 +78,7 @@ const AddressBookScreen = (): JSX.Element => {
 
   const goToAddContact = useCallback((): void => {
     navigate({
-      pathname: './addressBook/addContact',
+      pathname: '/accountSettings/addressBook/addContact',
       params: { contactId: uuid() }
     })
   }, [navigate])
@@ -86,7 +86,7 @@ const AddressBookScreen = (): JSX.Element => {
   const goToContactDetail = useCallback(
     (contactId: string): void => {
       navigate({
-        pathname: './addressBook/contactDetail',
+        pathname: '/accountSettings/addressBook/contactDetail',
         params: { contactId }
       })
     },

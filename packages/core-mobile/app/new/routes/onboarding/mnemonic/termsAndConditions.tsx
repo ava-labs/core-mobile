@@ -6,7 +6,7 @@ export default function TermsAndConditions(): JSX.Element {
   const { navigate } = useRouter()
 
   const handleAgreeAndContinue = (): void => {
-    navigate('./analyticsConsent')
+    navigate('/onboarding/mnemonic/analyticsConsent')
   }
 
   return <Component onAgreeAndContinue={handleAgreeAndContinue} />

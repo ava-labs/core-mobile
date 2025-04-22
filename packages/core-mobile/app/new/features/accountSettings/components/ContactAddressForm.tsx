@@ -51,7 +51,10 @@ export const ContactAddressForm = ({
   )
 
   const handleScanQrCode = useCallback(() => {
-    navigate({ pathname: './scanQrCode', params: { addressType: title } })
+    navigate({
+      pathname: '/accountSettings/addressBook/scanQrCode',
+      params: { addressType: title }
+    })
   }, [navigate, title])
 
   const handleCopyAddress = useCallback(() => {

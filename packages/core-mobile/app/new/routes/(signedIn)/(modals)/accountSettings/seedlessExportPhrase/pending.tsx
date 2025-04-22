@@ -61,7 +61,7 @@ const SeedlessExportPendingScreen = (): JSX.Element => {
       )
     } else if (isReadyToDecrypt) {
       setTimeout(() => {
-        replace('./readyToExport')
+        replace('/accountSettings/seedlessExportPhrase/readyToExport')
       }, 100)
     } else {
       await deleteExport()

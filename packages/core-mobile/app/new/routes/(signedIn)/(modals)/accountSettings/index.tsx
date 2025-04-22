@@ -99,7 +99,7 @@ const AccountSettingsScreen = (): JSX.Element => {
   }, [renderHeaderRight, setOptions])
 
   const goToSelectAvatar = useCallback(() => {
-    navigate('./accountSettings/selectAvatar')
+    navigate('/accountSettings/selectAvatar')
   }, [navigate])
 
   const goToAppAppearance = useCallback(() => {
@@ -117,23 +117,19 @@ const AccountSettingsScreen = (): JSX.Element => {
       })
       return
     }
-    navigate('./accountSettings/selectAppearance')
+    navigate('/accountSettings/selectAppearance')
   }, [isDeveloperMode, navigate])
 
-  const goToAppIcon = useCallback(() => {
-    navigate('./accountSettings/appIcon')
-  }, [navigate])
-
   const goToCurrency = useCallback(() => {
-    navigate('./accountSettings/selectCurrency')
+    navigate('/accountSettings/selectCurrency')
   }, [navigate])
 
   const goToNotificationPreferences = useCallback(() => {
-    navigate('./accountSettings/notificationPreferences')
+    navigate('/accountSettings/notificationPreferences')
   }, [navigate])
 
   const goToSecurityPrivacy = useCallback(() => {
-    navigate('./accountSettings/securityAndPrivacy')
+    navigate('/accountSettings/securityAndPrivacy')
   }, [navigate])
 
   const onTestnetChange = (value: boolean): void => {
@@ -239,7 +235,7 @@ const AccountSettingsScreen = (): JSX.Element => {
                 data={[
                   {
                     title: 'Address book',
-                    onPress: () => navigate('./accountSettings/addressBook'),
+                    onPress: () => navigate('/accountSettings/addressBook'),
                     value: (
                       <Text
                         variant="body2"
@@ -265,7 +261,6 @@ const AccountSettingsScreen = (): JSX.Element => {
             </View>
             <AppAppearance
               selectAppAppearance={goToAppAppearance}
-              selectAppIcon={goToAppIcon}
               selectCurrency={goToCurrency}
             />
             <UserPreferences

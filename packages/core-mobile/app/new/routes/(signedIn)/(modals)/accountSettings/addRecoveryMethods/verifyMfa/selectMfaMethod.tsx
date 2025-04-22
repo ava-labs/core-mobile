@@ -20,7 +20,7 @@ const SelectRecoveryMethodScreen = (): React.JSX.Element => {
   const handleSelectMfa = useCallback(
     async (recoveryMethod: RecoveryMethod): Promise<void> => {
       if (recoveryMethod.mfa?.type === 'totp') {
-        navigate('./verifyTotpCode')
+        navigate('/accountSettings/addRecoveryMethods/verifyMfa/verifyTotpCode')
         return
       }
 

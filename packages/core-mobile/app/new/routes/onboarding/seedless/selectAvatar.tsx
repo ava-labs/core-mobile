@@ -13,7 +13,8 @@ export default function SelectAvatar(): JSX.Element {
     if (selectedAvatar.id) saveLocalAvatar(selectedAvatar.id)
 
     navigate({
-      pathname: './confirmation'
+      pathname: '/onboarding/seedless/confirmation',
+      params: { selectedAvatarId: selectedAvatar.id }
     })
   }
 

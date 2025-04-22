@@ -18,7 +18,7 @@ export default function SelectAvatar(): JSX.Element {
     if (selectedAvatar.id) saveLocalAvatar(selectedAvatar.id)
 
     navigate({
-      pathname: './confirmation',
+      pathname: '/onboarding/mnemonic/confirmation',
       params: { mnemonic, selectedAvatarId: selectedAvatar.id }
     })
   }

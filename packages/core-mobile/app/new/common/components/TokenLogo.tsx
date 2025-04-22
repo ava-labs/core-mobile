@@ -99,7 +99,7 @@ export const TokenLogo: FC<TokenAvatarProps> = ({
         <TokenIcon
           size={size}
           symbol={symbol}
-          isNetworkTokenSymbol={useLocalNetworkTokenLogo}
+          isNetworkTokenSymbol={Boolean(useLocalNetworkTokenLogo)}
         />
         {androidBorderOverlay}
       </View>
