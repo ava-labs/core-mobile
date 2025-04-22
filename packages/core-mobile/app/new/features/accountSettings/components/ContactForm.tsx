@@ -1,25 +1,25 @@
-import React, { useCallback, useMemo, useRef } from 'react'
-import {
-  View,
-  Text,
-  Button,
-  Avatar,
-  TouchableOpacity,
-  showAlert,
-  AlertWithTextInputs
-} from '@avalabs/k2-alpine'
-import { Contact } from 'store/addressBook'
 import { noop } from '@avalabs/core-utils-sdk'
-import { Space } from 'components/Space'
-import { useSelector } from 'react-redux'
+import {
+  AlertWithTextInputs,
+  Avatar,
+  Button,
+  Text,
+  TouchableOpacity,
+  View,
+  showAlert
+} from '@avalabs/k2-alpine'
 import { AlertWithTextInputsHandle } from '@avalabs/k2-alpine/src/components/Alert/types'
-import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { isValidContactName } from 'common/utils/isValidContactName'
+import { Space } from 'components/Space'
+import React, { useCallback, useMemo, useRef } from 'react'
+import { useSelector } from 'react-redux'
+import { Contact } from 'store/addressBook'
+import { selectIsDeveloperMode } from 'store/settings/advanced'
+import { selectSelectedAvatar } from 'store/settings/avatar'
 import { AddressType } from '../consts'
 import { constructContactByAddressType } from '../utils/constructContactByAddressType'
 import { isValidAddress } from '../utils/isValidAddress'
 import { ContactAddressForm } from './ContactAddressForm'
-
 export const ContactForm = ({
   contact,
   onUpdate
@@ -29,6 +29,7 @@ export const ContactForm = ({
 }): React.JSX.Element => {
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const alert = useRef<AlertWithTextInputsHandle>(null)
+  const avatar = useSelector(selectSelectedAvatar)
 
   const handleShowAlertWithTextInput = useCallback((): void => {
     alert.current?.show({
@@ -164,10 +165,7 @@ export const ContactForm = ({
         <Avatar
           backgroundColor="transparent"
           size={150}
-          // todo: replace with actual avatar
-          source={{
-            uri: 'https://miro.medium.com/v2/resize:fit:1256/format:webp/1*xm2-adeU3YD4MsZikpc5UQ.png'
-          }}
+          source={avatar.source}
           hasLoading={false}
         />
       </TouchableOpacity>

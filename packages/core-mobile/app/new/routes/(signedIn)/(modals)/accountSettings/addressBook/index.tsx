@@ -31,6 +31,8 @@ import { useFocusEffect, useNavigation } from '@react-navigation/native'
 import { getAddressFromContact } from 'features/accountSettings/utils/getAddressFromContact'
 import { uuid } from 'utils/uuid'
 import { useSortedContacts } from 'features/accountSettings/hooks/useSortedContacts'
+import { selectSelectedAvatar } from 'store/settings/avatar'
+import { useSelector } from 'react-redux'
 
 const TITLE = 'Contacts'
 const HEADER = <NavigationTitleHeader title={TITLE} />
@@ -41,6 +43,7 @@ const AddressBookScreen = (): JSX.Element => {
     theme: { colors }
   } = useTheme()
   const { data: contacts, sort } = useSortedContacts()
+  const avatar = useSelector(selectSelectedAvatar)
 
   const [searchText, setSearchText] = useState('')
   const { navigate } = useRouter()
@@ -160,10 +163,7 @@ const AddressBookScreen = (): JSX.Element => {
                 <Avatar
                   backgroundColor="transparent"
                   size={40}
-                  // todo: replace with actual avatar
-                  source={{
-                    uri: 'https://miro.medium.com/v2/resize:fit:1256/format:webp/1*xm2-adeU3YD4MsZikpc5UQ.png'
-                  }}
+                  source={avatar.source}
                   hasLoading={false}
                 />
               </View>

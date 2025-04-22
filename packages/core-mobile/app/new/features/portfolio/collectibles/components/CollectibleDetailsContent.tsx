@@ -13,6 +13,7 @@ import { NftItem } from 'services/nft/types'
 
 import { noop } from '@avalabs/core-utils-sdk'
 import { LinearGradientBottomWrapper } from 'common/components/LinearGradientBottomWrapper'
+import { useAvatar } from 'common/hooks/useAvatar'
 import { showSnackbar } from 'common/utils/toast'
 import { LinearGradient } from 'expo-linear-gradient'
 import {
@@ -22,7 +23,9 @@ import {
 import { ActionButtonTitle } from 'features/portfolio/assets/consts'
 import { useNetworks } from 'hooks/networks/useNetworks'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { useSelector } from 'react-redux'
 import { isAvalancheCChainId } from 'services/network/utils/isAvalancheNetwork'
+import { selectSelectedAvatar } from 'store/settings/avatar'
 import { truncateAddress } from 'utils/Utils'
 import { isAddress } from 'viem'
 import { useCollectiblesContext } from '../CollectiblesContext'
@@ -40,9 +43,18 @@ export const CollectibleDetailsContent = ({
   const {
     theme: { colors }
   } = useTheme()
+  const avatar = useSelector(selectSelectedAvatar)
   const insets = useSafeAreaInsets()
   const networks = useNetworks()
   const { refreshMetadata, isCollectibleRefreshing } = useCollectiblesContext()
+  const { saveExternalAvatar } = useAvatar()
+
+  const handleSaveAvatar = (): void => {
+    if (!collectible?.imageData) return
+
+    saveExternalAvatar(collectible.localId, collectible.imageData.image)
+    showSnackbar('Avatar saved')
+  }
 
   const attributes: GroupListItem[] = useMemo(
     () =>
@@ -209,7 +221,11 @@ export const CollectibleDetailsContent = ({
                 )}
               </Button>
             ) : null}
-            <Button type="secondary" size="large">
+            <Button
+              type="secondary"
+              size="large"
+              onPress={handleSaveAvatar}
+              disabled={avatar.id === collectible?.localId}>
               Set as my avatar
             </Button>
           </View>

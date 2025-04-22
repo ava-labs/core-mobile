@@ -1,26 +1,27 @@
-import React from 'react'
-import BlurredBarsContentLayout from 'common/components/BlurredBarsContentLayout'
 import {
   Avatar,
-  Button,
-  ScrollView,
-  View,
-  AvatarSelector,
-  useTheme,
   AVATAR_BLURAREA_INSET,
-  isScreenSmall
+  AvatarSelector,
+  Button,
+  isScreenSmall,
+  ScrollView,
+  useTheme,
+  View
 } from '@avalabs/k2-alpine'
-import { ImageSourcePropType } from 'react-native'
 import ScreenHeader from 'common/components/ScreenHeader'
+import React from 'react'
+import { ImageSourcePropType } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 export const SelectAvatar = ({
   avatars,
+  description,
   selectedAvatarId,
   setSelectedAvatarId,
   onNext
 }: {
   avatars: { id: string; source: ImageSourcePropType }[]
+  description?: string
   selectedAvatarId?: string
   setSelectedAvatarId: (id: string) => void
   onNext: () => void
@@ -33,11 +34,11 @@ export const SelectAvatar = ({
   const avatar = avatars.find(a => a.id === selectedAvatarId)
 
   return (
-    <BlurredBarsContentLayout>
+    <View sx={{ flex: 1 }}>
       <ScrollView contentContainerSx={{ padding: 16 }}>
         <ScreenHeader
           title={`Select your\npersonal avatar`}
-          description="Add a display avatar for your wallet. You can change it at any time in the app's settings"
+          description={description}
         />
         <View
           sx={{
@@ -73,6 +74,6 @@ export const SelectAvatar = ({
           Next
         </Button>
       </View>
-    </BlurredBarsContentLayout>
+    </View>
   )
 }
