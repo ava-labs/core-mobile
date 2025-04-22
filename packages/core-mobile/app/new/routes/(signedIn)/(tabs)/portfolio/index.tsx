@@ -206,7 +206,7 @@ const PortfolioHomeScreen = (): JSX.Element => {
         onPress: handleConnect
       }
     ],
-    [addStake, canAddStake, handleConnect, handleSend, handleSwap]
+    [addStake, canAddStake, handleBuy, handleConnect, handleSend, handleSwap]
   )
 
   const renderHeader = useCallback((): JSX.Element => {
