@@ -1,0 +1,82 @@
+import {
+  Text,
+  TouchableOpacity,
+  useInversedTheme,
+  useTheme,
+  View
+} from '@avalabs/k2-alpine'
+import React from 'react'
+
+export enum FeePreset {
+  SLOW = 'Slow',
+  NORMAL = 'Normal',
+  FAST = 'Fast',
+  CUSTOM = 'Custom'
+}
+
+const presets = Object.values(FeePreset)
+
+export const GasOptions = ({
+  selectedPreset,
+  onSelectPreset
+}: {
+  selectedPreset: FeePreset
+  onSelectPreset: (preset: FeePreset) => void
+}): JSX.Element => {
+  const {
+    theme: { colors, isDark }
+  } = useTheme()
+  const {
+    theme: { colors: inversedColors }
+  } = useInversedTheme({ isDark })
+
+  return (
+    <View
+      sx={{
+        padding: 16,
+        gap: 8,
+        width: '100%',
+        flexDirection: 'row',
+        justifyContent: 'space-evenly'
+      }}>
+      {presets.map((item, index) => {
+        const isSelected = selectedPreset === item
+        const backgroundColor = (isSelected ? colors : inversedColors)
+          .$surfacePrimary
+        const textColor = (isSelected ? colors : inversedColors).$textPrimary
+
+        return (
+          <View
+            key={index}
+            sx={{
+              flexDirection: 'row',
+              flexGrow: 1
+            }}>
+            <TouchableOpacity
+              style={{ flex: 1 }}
+              onPress={() => onSelectPreset(item)}>
+              <View
+                sx={{
+                  backgroundColor,
+                  paddingVertical: 16,
+                  alignItems: 'center',
+                  borderRadius: 12
+                }}>
+                <Text
+                  variant="body1"
+                  sx={{
+                    color: textColor,
+                    fontSize: 15,
+                    lineHeight: 20,
+                    fontWeight: '500'
+                  }}>
+                  {item}
+                </Text>
+              </View>
+            </TouchableOpacity>
+          </View>
+        )
+      })}
+    </View>
+  )
+}

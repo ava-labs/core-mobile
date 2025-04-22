@@ -26,7 +26,7 @@ import {
   View
 } from '@avalabs/k2-mobile'
 import { NetworkFees } from '@avalabs/vm-module-types'
-import { GAS_LIMIT_FOR_XP_CHAIN } from 'consts/fees'
+import { GAS_LIMIT_FOR_X_CHAIN } from 'consts/fees'
 import { isAvmNetwork, isPvmNetwork } from 'utils/network/isAvalancheNetwork'
 import { useNetworks } from 'hooks/networks/useNetworks'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
@@ -103,7 +103,7 @@ const NetworkFeeSelector = ({
         tokenPrice: nativeTokenPrice,
         gasLimit:
           (isPVM && !supportsAvalancheDynamicFee) || isAVM
-            ? GAS_LIMIT_FOR_XP_CHAIN
+            ? GAS_LIMIT_FOR_X_CHAIN
             : gasLimit,
         networkToken
       })
