@@ -12,28 +12,26 @@ import { NetworkVMType } from '@avalabs/vm-module-types'
 import { usePrimaryNetworks } from 'common/hooks/usePrimaryNetworks'
 import { isValidContactName } from 'common/utils/isValidContactName'
 import { Space } from 'components/Space'
-import { useRouter } from 'expo-router'
 import React, { useCallback, useMemo, useRef } from 'react'
 import { useSelector } from 'react-redux'
 import { Contact } from 'store/addressBook'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { AddressType } from '../consts'
-import { useNewContactAvatar } from '../store'
 import { constructContactByAddressType } from '../utils/constructContactByAddressType'
 import { isValidAddress } from '../utils/isValidAddress'
 import { ContactAddressForm } from './ContactAddressForm'
 
 export const ContactForm = ({
   contact,
-  onUpdate
+  onUpdate,
+  onSelectAvatar
 }: {
   contact: Contact
   onUpdate: (contact: Contact) => void
+  onSelectAvatar: () => void
 }): React.JSX.Element => {
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const alert = useRef<AlertWithTextInputsHandle>(null)
-  const { navigate } = useRouter()
-  const [newContactAvatar] = useNewContactAvatar()
   const { networks } = usePrimaryNetworks()
 
   const handleShowAlertWithTextInput = useCallback((): void => {
@@ -56,7 +54,10 @@ export const ContactForm = ({
           },
           onPress: (values: Record<string, string>) => {
             if (values.save !== '' && values.save !== undefined) {
-              onUpdate({ ...contact, name: values.save?.trim() })
+              onUpdate({
+                ...contact,
+                name: values.save?.trim()
+              })
               alert.current?.hide()
             }
           }
@@ -160,17 +161,14 @@ export const ContactForm = ({
     )
   }, [contact.name, handleShowAlertWithTextInput])
 
-  const openSelectAvatar = useCallback(() => {
-    navigate('/accountSettings/addressBook/selectContactAvatar')
-  }, [navigate])
-
   return (
     <View sx={{ alignItems: 'center' }}>
-      <TouchableOpacity onPress={openSelectAvatar}>
+      <TouchableOpacity onPress={onSelectAvatar}>
         <Avatar
           size={150}
-          source={newContactAvatar?.source}
+          source={contact?.avatar?.source}
           hasLoading={false}
+          showAddIcon={contact?.avatar?.source === undefined}
         />
       </TouchableOpacity>
       <Space y={20} />

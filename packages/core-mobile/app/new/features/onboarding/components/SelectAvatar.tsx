@@ -36,7 +36,6 @@ export const SelectAvatar = memo(
 
     const onSelect = (id: string): void => {
       const avatar = avatars.find(a => a.id === id)
-
       if (avatar) {
         setSelectedAvatar(avatar)
       }
@@ -60,18 +59,15 @@ export const SelectAvatar = memo(
                 backgroundColor={colors.$surfacePrimary}
                 source={selectedAvatar.source}
                 size={isScreenSmall ? 100 : 'large'}
-                hasBlur={true}
                 testID="selected_avatar"
               />
             )}
           </View>
-          <View sx={{ paddingVertical: 20 }}>
-            <AvatarSelector
-              selectedId={selectedAvatar?.id}
-              avatars={avatars}
-              onSelect={onSelect}
-            />
-          </View>
+          <AvatarSelector
+            selectedId={selectedAvatar?.id}
+            avatars={avatars}
+            onSelect={onSelect}
+          />
         </ScrollView>
         <View
           sx={{

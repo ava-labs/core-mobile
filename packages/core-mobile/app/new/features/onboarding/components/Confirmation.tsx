@@ -32,7 +32,6 @@ export const Confirmation = ({
                 backgroundColor={colors.$surfacePrimary}
                 source={avatar.source}
                 size="large"
-                hasBlur={true}
                 glowEffect={{
                   imageSource: require('../../../../assets/glow.png'),
                   size: 380,

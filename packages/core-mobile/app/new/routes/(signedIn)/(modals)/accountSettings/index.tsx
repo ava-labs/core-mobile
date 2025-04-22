@@ -168,7 +168,6 @@ const AccountSettingsScreen = (): JSX.Element => {
                 testID={isDeveloperMode ? 'testnet_avatar' : 'mainnet_avatar'}
                 size={150}
                 source={avatar.source}
-                hasBlur={false}
                 hasLoading={false}
                 isDeveloperMode={isDeveloperMode}
               />

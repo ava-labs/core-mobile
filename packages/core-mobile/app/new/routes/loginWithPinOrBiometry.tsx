@@ -249,7 +249,6 @@ const LoginWithPinOrBiometry = (): JSX.Element => {
                 <Avatar
                   size="small"
                   source={avatar.source}
-                  hasBlur={Platform.OS !== 'android'}
                   backgroundColor={theme.colors.$surfacePrimary}
                   isDeveloperMode={isDeveloperMode}
                 />

@@ -11,9 +11,9 @@ import { addContact, Contact } from 'store/addressBook'
 const AddContactScreen = (): React.JSX.Element => {
   const dispatch = useDispatch()
   const { bottom } = useSafeAreaInsets()
-  const { canGoBack, back } = useRouter()
+  const { canGoBack, back, navigate } = useRouter()
   const { contactId } = useLocalSearchParams<{ contactId: string }>()
-  const [, setNewContactAvatar] = useNewContactAvatar()
+  const [newContactAvatar, setNewContactAvatar] = useNewContactAvatar()
 
   useEffect(() => {
     return () => {
@@ -26,8 +26,12 @@ const AddContactScreen = (): React.JSX.Element => {
     name: ''
   })
 
+  const contactWithAvatar = useMemo(() => {
+    return { ...contact, avatar: newContactAvatar }
+  }, [contact, newContactAvatar])
+
   const handleUpdateContact = (updated: Contact): void => {
-    setContact(updated)
+    setContact({ ...updated, avatar: newContactAvatar })
   }
 
   const isSaveDisabled = useMemo(() => {
@@ -44,6 +48,10 @@ const AddContactScreen = (): React.JSX.Element => {
     canGoBack() && back()
   }, [back, canGoBack, contact, contactId, dispatch])
 
+  const handleSelectAvatar = useCallback(() => {
+    navigate('/accountSettings/addressBook/selectContactAvatar')
+  }, [navigate])
+
   return (
     <View sx={{ flex: 1, paddingHorizontal: 16, paddingBottom: 16 }}>
       <KeyboardAwareScrollView
@@ -54,7 +62,11 @@ const AddContactScreen = (): React.JSX.Element => {
           justifyContent: 'space-between'
         }}>
         {contact && (
-          <ContactForm contact={contact} onUpdate={handleUpdateContact} />
+          <ContactForm
+            contact={contactWithAvatar}
+            onUpdate={handleUpdateContact}
+            onSelectAvatar={handleSelectAvatar}
+          />
         )}
       </KeyboardAwareScrollView>
       <View

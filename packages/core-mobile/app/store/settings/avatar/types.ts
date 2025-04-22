@@ -10,6 +10,7 @@ export const AVATARS: AvatarType[] = [
   require('assets/avatars/abstract-2.png'),
   require('assets/avatars/abstract-3.png'),
   require('assets/avatars/abstract-4.png'),
+  require('assets/avatars/abstract-5.png'),
   require('assets/avatars/art-1.png'),
   require('assets/avatars/art-2.png'),
   require('assets/avatars/art-3.png'),
@@ -63,10 +64,7 @@ export const AVATARS: AvatarType[] = [
   return { id: index.toString(), source: avatar }
 })
 
-export const DEFAULT_AVATAR = {
-  id: '0',
-  source: require('assets/avatars/abstract-1.png')
-}
+export const DEFAULT_AVATAR = AVATARS[0] as AvatarType
 
 export const initialState: AvatarState = {
   selected:
