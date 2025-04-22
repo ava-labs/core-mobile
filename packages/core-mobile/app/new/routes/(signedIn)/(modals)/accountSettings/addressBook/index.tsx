@@ -14,25 +14,23 @@ import {
   useTheme,
   View
 } from '@avalabs/k2-alpine'
-import React, { useCallback, useState, useMemo } from 'react'
 import { useRouter } from 'expo-router'
+import React, { useCallback, useMemo, useState } from 'react'
 
-import { LayoutRectangle, LayoutChangeEvent } from 'react-native'
+import { truncateAddress } from '@avalabs/core-utils-sdk'
+import { useFocusEffect, useNavigation } from '@react-navigation/native'
+import { ErrorState } from 'common/components/ErrorState'
 import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
+import { getListItemEnteringAnimation } from 'common/utils/animations'
+import { useSortedContacts } from 'features/accountSettings/hooks/useSortedContacts'
+import { getAddressFromContact } from 'features/accountSettings/utils/getAddressFromContact'
+import { LayoutChangeEvent, LayoutRectangle } from 'react-native'
 import Animated, {
   useAnimatedStyle,
   useSharedValue
 } from 'react-native-reanimated'
-import { ErrorState } from 'common/components/ErrorState'
-import { getListItemEnteringAnimation } from 'common/utils/animations'
-import { truncateAddress } from '@avalabs/core-utils-sdk'
 import { Contact } from 'store/addressBook'
-import { useFocusEffect, useNavigation } from '@react-navigation/native'
-import { getAddressFromContact } from 'features/accountSettings/utils/getAddressFromContact'
 import { uuid } from 'utils/uuid'
-import { useSortedContacts } from 'features/accountSettings/hooks/useSortedContacts'
-import { selectSelectedAvatar } from 'store/settings/avatar'
-import { useSelector } from 'react-redux'
 
 const TITLE = 'Contacts'
 const HEADER = <NavigationTitleHeader title={TITLE} />
@@ -43,7 +41,6 @@ const AddressBookScreen = (): JSX.Element => {
     theme: { colors }
   } = useTheme()
   const { data: contacts, sort } = useSortedContacts()
-  const avatar = useSelector(selectSelectedAvatar)
 
   const [searchText, setSearchText] = useState('')
   const { navigate } = useRouter()
@@ -163,7 +160,7 @@ const AddressBookScreen = (): JSX.Element => {
                 <Avatar
                   backgroundColor="transparent"
                   size={40}
-                  source={avatar.source}
+                  source={item.avatar.source}
                   hasLoading={false}
                 />
               </View>

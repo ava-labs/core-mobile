@@ -1,18 +1,25 @@
 import { Button, View } from '@avalabs/k2-alpine'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { ContactForm } from 'features/accountSettings/components/ContactForm'
-import React, { useCallback, useState, useMemo } from 'react'
+import { useNewContactAvatar } from 'features/accountSettings/store'
+import React, { useCallback, useMemo, useState } from 'react'
+import { KeyboardAwareScrollView } from 'react-native-keyboard-controller'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useDispatch } from 'react-redux'
 import { addContact, Contact } from 'store/addressBook'
-import { KeyboardAwareScrollView } from 'react-native-keyboard-controller'
 
 const AddContactScreen = (): React.JSX.Element => {
   const dispatch = useDispatch()
   const { bottom } = useSafeAreaInsets()
   const { canGoBack, back } = useRouter()
   const { contactId } = useLocalSearchParams<{ contactId: string }>()
-  const [contact, setContact] = useState<Contact>({ id: contactId, name: '' })
+  const [newContactAvatar] = useNewContactAvatar()
+
+  const [contact, setContact] = useState<Contact>({
+    id: contactId,
+    name: '',
+    avatar: newContactAvatar
+  })
 
   const handleUpdateContact = (updated: Contact): void => {
     setContact(updated)

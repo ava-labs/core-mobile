@@ -1,4 +1,3 @@
-import { noop } from '@avalabs/core-utils-sdk'
 import {
   AlertWithTextInputs,
   Avatar,
@@ -11,12 +10,13 @@ import {
 import { AlertWithTextInputsHandle } from '@avalabs/k2-alpine/src/components/Alert/types'
 import { isValidContactName } from 'common/utils/isValidContactName'
 import { Space } from 'components/Space'
+import { useRouter } from 'expo-router'
 import React, { useCallback, useMemo, useRef } from 'react'
 import { useSelector } from 'react-redux'
 import { Contact } from 'store/addressBook'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
-import { selectSelectedAvatar } from 'store/settings/avatar'
 import { AddressType } from '../consts'
+import { useNewContactAvatar } from '../store'
 import { constructContactByAddressType } from '../utils/constructContactByAddressType'
 import { isValidAddress } from '../utils/isValidAddress'
 import { ContactAddressForm } from './ContactAddressForm'
@@ -29,7 +29,8 @@ export const ContactForm = ({
 }): React.JSX.Element => {
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const alert = useRef<AlertWithTextInputsHandle>(null)
-  const avatar = useSelector(selectSelectedAvatar)
+  const { navigate } = useRouter()
+  const [newContactAvatar] = useNewContactAvatar()
 
   const handleShowAlertWithTextInput = useCallback((): void => {
     alert.current?.show({
@@ -158,14 +159,17 @@ export const ContactForm = ({
     )
   }, [contact.name, handleShowAlertWithTextInput])
 
+  const openSelectAvatar = useCallback(() => {
+    navigate('/accountSettings/addressBook/selectContactAvatar')
+  }, [navigate])
+
   return (
     <View sx={{ alignItems: 'center' }}>
-      {/* todo: open up avatar selector */}
-      <TouchableOpacity onPress={noop}>
+      <TouchableOpacity onPress={openSelectAvatar}>
         <Avatar
           backgroundColor="transparent"
           size={150}
-          source={avatar.source}
+          source={newContactAvatar.source}
           hasLoading={false}
         />
       </TouchableOpacity>

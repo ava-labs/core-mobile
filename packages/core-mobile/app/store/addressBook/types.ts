@@ -1,8 +1,9 @@
 import { Contact as _Contact } from '@avalabs/types'
+import { AvatarType } from 'store/settings/avatar'
 
 export type Contact = Omit<_Contact, 'address' | 'addressSVM'> & {
   address?: string
-  avatar?: string
+  avatar: AvatarType
 }
 
 export type ContactCollection = { [uid: UID]: Contact }

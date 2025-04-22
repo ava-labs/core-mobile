@@ -1,8 +1,8 @@
+import React, { useCallback, useMemo } from 'react'
 import { Dimensions, ImageSourcePropType } from 'react-native'
-import React, { useMemo, useState } from 'react'
 import Carousel from 'react-native-reanimated-carousel'
-import { Pressable } from '../Primitives'
 import { isScreenSmall } from '../../utils'
+import { AnimatedPressable } from '../Animated/AnimatedPressable'
 import { Avatar } from './Avatar'
 
 export const AvatarSelector = ({
@@ -15,69 +15,62 @@ export const AvatarSelector = ({
   onSelect?: (id: string) => void
 }): JSX.Element => {
   const data = useMemo(() => {
-    // we should always have an even number of avatars, due to infinite scrolling + two avatars per column
-    if (avatars.length % 2 === 0) {
-      return avatars
-    } else {
-      return [...avatars, ...avatars]
-    }
+    return avatars
   }, [avatars])
-  const [pressedIndex, setPressedIndex] = useState<number>()
+
   const avatarWidth = isScreenSmall
     ? configuration.avatarWidth.small
     : configuration.avatarWidth.large
 
-  const handlePressIn = (index: number): void => {
-    setPressedIndex(index)
-  }
+  const defaultIndex = useMemo(() => {
+    const foundIndex = data.findIndex(item => item.id === selectedId)
+    return foundIndex === -1 ? 0 : foundIndex
+  }, [data, selectedId])
 
-  const handlePressOut = (index: number): void => {
-    if (pressedIndex === index) {
-      setPressedIndex(undefined)
-    }
-  }
+  const handleSelect = useCallback(
+    (index: number): void => {
+      if (data[index]?.id === undefined) {
+        return
+      }
+      onSelect?.(data[index].id)
+    },
+    [data, onSelect]
+  )
 
-  const handleSelect = (index: number): void => {
-    if (data[index]?.id === undefined) {
-      return
-    }
-
-    onSelect?.(data[index].id)
-  }
-
-  const renderItem = ({
-    item,
-    index
-  }: {
-    item: { id: string; source: ImageSourcePropType }
-    index: number
-  }): JSX.Element => {
-    return (
-      <Pressable
-        key={index}
-        style={{ marginTop: index % 2 === 0 ? avatarWidth : 0 }}
-        onPressIn={() => handlePressIn(index)}
-        onPressOut={() => handlePressOut(index)}
-        onPress={() => handleSelect(index)}>
-        <Avatar
-          source={item.source}
-          size={avatarWidth}
-          isSelected={data[index]?.id === selectedId}
-          isPressed={pressedIndex === index}
-          backgroundColor={'white'}
-        />
-      </Pressable>
-    )
-  }
+  const renderItem = useCallback(
+    ({
+      item,
+      index
+    }: {
+      item: { id: string; source: ImageSourcePropType }
+      index: number
+    }): JSX.Element => {
+      return (
+        <AnimatedPressable
+          key={index}
+          style={{ marginTop: index % 2 === 0 ? avatarWidth : 0 }}
+          onPress={() => handleSelect(index)}>
+          <Avatar
+            source={item.source}
+            size={avatarWidth}
+            isSelected={data[index]?.id === selectedId}
+            backgroundColor={'white'}
+          />
+        </AnimatedPressable>
+      )
+    },
+    [avatarWidth, data, handleSelect, selectedId]
+  )
 
   return (
     <Carousel
       width={avatarWidth / 2 + configuration.spacing}
-      height={avatarWidth * 2}
+      // height={avatarWidth * 2}
       data={data}
       renderItem={renderItem}
-      pagingEnabled={false}
       snapEnabled={false}
+      pagingEnabled={false}
+      defaultIndex={defaultIndex}
       style={{
         width: '100%',
         overflow: 'visible',
