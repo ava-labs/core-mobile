@@ -23,6 +23,10 @@ export default function WalletLayout(): JSX.Element {
             name="(modals)/accountSettings"
             options={modalScreensOptions}
           />
+          <Stack.Screen
+            name="(modals)/approval"
+            options={modalScreensOptions}
+          />
           <Stack.Screen name="(modals)/receive" options={modalScreensOptions} />
           <Stack.Screen
             name="(modals)/notifications"
@@ -38,6 +42,7 @@ export default function WalletLayout(): JSX.Element {
           />
           <Stack.Screen name="(modals)/send" options={modalScreensOptions} />
           <Stack.Screen name="(modals)/swap" options={modalScreensOptions} />
+          <Stack.Screen name="(modals)/buy" options={modalScreensOptions} />
           <Stack.Screen
             name="(modals)/selectSendToken"
             options={formSheetScreensOptions}

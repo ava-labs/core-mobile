@@ -19,7 +19,7 @@ const AddRecoveryMethods = (): JSX.Element => {
     if (selectedMethod?.type === RecoveryMethods.Passkey) {
       AnalyticsService.capture('SeedlessAddMfa', { type: FidoType.PASS_KEY })
       navigate({
-        pathname: './fidoNameInput',
+        pathname: '/onboarding/seedless/fidoNameInput',
         params: {
           title: 'How would you like to name your passkey?',
           description: 'Add a Passkey name, so it’s easier to find later',
@@ -32,7 +32,7 @@ const AddRecoveryMethods = (): JSX.Element => {
     if (selectedMethod?.type === RecoveryMethods.Yubikey) {
       AnalyticsService.capture('SeedlessAddMfa', { type: FidoType.YUBI_KEY })
       navigate({
-        pathname: './fidoNameInput',
+        pathname: '/onboarding/seedless/fidoNameInput',
         params: {
           title: 'How would you like to name your YubiKey?',
           description: 'Add a YubiKey name, so it’s easier to find later',
@@ -43,13 +43,13 @@ const AddRecoveryMethods = (): JSX.Element => {
       return
     }
     if (selectedMethod?.type === RecoveryMethods.Authenticator) {
-      navigate('./authenticatorSetup')
+      navigate('/onboarding/seedless/authenticatorSetup')
       AnalyticsService.capture('SeedlessAddMfa', { type: 'Authenticator' })
     }
   }
 
   const handleOnSkip = (): void => {
-    navigate('./analyticsConsent')
+    navigate('/onboarding/seedless/analyticsConsent')
   }
 
   return (
