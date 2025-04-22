@@ -124,8 +124,13 @@ export const ReceiveScreen = (): ReactNode => {
               symbol={selectedNetwork.networkToken?.symbol ?? 'AVAX'}
               size={20}
             />
-            <Text variant="buttonMedium">{selectedNetwork.chainName}</Text>
+            <Text
+              variant="buttonMedium"
+              testID={`receive_selected_network__${selectedNetwork.chainName}`}>
+              {selectedNetwork.chainName}
+            </Text>
             <Icons.Navigation.ChevronRight
+              testID="select_receive_network"
               color={theme.colors.$textSecondary}
               style={{
                 transform: [{ rotate: '90deg' }]

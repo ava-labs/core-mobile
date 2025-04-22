@@ -20,19 +20,27 @@ class BottomsTabsPage {
   }
 
   get portfolioTab() {
-    return by.id(bottomTabsLoc.portfolioTab)
+    return by
+      .text(bottomTabsLoc.portfolioTab)
+      .withAncestor(by.label(bottomTabsLoc.tabBar))
   }
 
   get trackTab() {
-    return by.id(bottomTabsLoc.trackTab)
+    return by
+      .text(bottomTabsLoc.trackTab)
+      .withAncestor(by.label(bottomTabsLoc.tabBar))
   }
 
   get stakeTab() {
-    return by.id(bottomTabsLoc.stakeTab)
+    return by
+      .text(bottomTabsLoc.stakeTab)
+      .withAncestor(by.label(bottomTabsLoc.tabBar))
   }
 
   get browserTab() {
-    return by.id(bottomTabsLoc.browserTab)
+    return by
+      .text(bottomTabsLoc.browserTab)
+      .withAncestor(by.label(bottomTabsLoc.tabBar))
   }
 
   async tapBrowserTab() {
