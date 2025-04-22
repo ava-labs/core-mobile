@@ -60,7 +60,11 @@ export const SelectNetworkScreen = ({
             paddingRight: HORIZONTAL_MARGIN
           }}>
           <View style={{ flex: 1 }}>
-            <Text variant="buttonMedium">{item.chainName}</Text>
+            <Text
+              testID={`select_network__${item.chainName}`}
+              variant="buttonMedium">
+              {item.chainName}
+            </Text>
           </View>
           {selected?.chainId === item.chainId && (
             <Icons.Navigation.Check color={theme.colors.$textPrimary} />

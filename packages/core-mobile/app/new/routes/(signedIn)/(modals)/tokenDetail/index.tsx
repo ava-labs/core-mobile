@@ -27,7 +27,6 @@ import Animated, {
   useAnimatedStyle,
   useSharedValue
 } from 'react-native-reanimated'
-import useInAppBrowser from 'hooks/useInAppBrowser'
 import { ActionButtonTitle } from 'features/portfolio/assets/consts'
 import {
   ActionButton,
@@ -48,6 +47,9 @@ import {
   isTokenWithBalancePVM
 } from '@avalabs/avalanche-module'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { UI, useIsUIDisabled } from 'hooks/useIsUIDisabled'
+import { useAssetBalances } from 'screens/bridge/hooks/useAssetBalances'
+import { useCoreBrowser } from 'common/hooks/useCoreBrowser'
 
 const TokenDetailScreen = (): React.JSX.Element => {
   const {
@@ -56,7 +58,7 @@ const TokenDetailScreen = (): React.JSX.Element => {
   const { navigate } = useRouter()
   const botomInset = useSafeAreaInsets().bottom
   const tabViewRef = useRef<CollapsibleTabsRef>(null)
-  const { openUrl } = useInAppBrowser()
+  const { openUrl } = useCoreBrowser()
   const [tokenHeaderLayout, setTokenHeaderLayout] = useState<
     LayoutRectangle | undefined
   >()
@@ -92,6 +94,76 @@ const TokenDetailScreen = (): React.JSX.Element => {
     [tokenName]
   )
 
+  const isSwapDisabled = useIsUIDisabled(UI.Swap)
+  const isBridgeDisabled = useIsUIDisabled(UI.Bridge)
+  const { assetsWithBalances } = useAssetBalances()
+  const isTokenBridgeable = Boolean(
+    assetsWithBalances &&
+      assetsWithBalances.some(
+        asset => (asset.symbolOnNetwork ?? asset.symbol) === token?.symbol
+      )
+  )
+
+  const handleBridge = useCallback(() => {
+    navigate({
+      pathname: '/bridge',
+      params: token
+        ? {
+            initialSourceNetworkChainId: token.networkChainId,
+            initialTokenSymbol: token.symbol
+          }
+        : undefined
+    })
+  }, [navigate, token])
+
+  const handleBuy = useCallback(() => {
+    navigate({
+      pathname: '/buy'
+    })
+  }, [navigate])
+
+  const actionButtons: ActionButton[] = useMemo(() => {
+    const buttons: ActionButton[] = [
+      { title: ActionButtonTitle.Send, icon: 'send', onPress: noop }
+    ]
+
+    if (!isSwapDisabled) {
+      buttons.push({
+        title: ActionButtonTitle.Swap,
+        icon: 'swap',
+        onPress: noop
+      })
+    }
+
+    buttons.push({
+      title: ActionButtonTitle.Buy,
+      icon: 'buy',
+      onPress: handleBuy
+    })
+
+    buttons.push({
+      title: ActionButtonTitle.Stake,
+      icon: 'stake',
+      onPress: noop
+    })
+
+    if (!isBridgeDisabled && isTokenBridgeable) {
+      buttons.push({
+        title: ActionButtonTitle.Bridge,
+        icon: 'bridge',
+        onPress: handleBridge
+      })
+    }
+
+    return buttons
+  }, [
+    isSwapDisabled,
+    isBridgeDisabled,
+    isTokenBridgeable,
+    handleBridge,
+    handleBuy
+  ])
+
   const { onScroll, targetHiddenProgress } = useFadingHeaderNavigation({
     header: header,
     targetLayout: tokenHeaderLayout
@@ -114,7 +186,7 @@ const TokenDetailScreen = (): React.JSX.Element => {
   const handleExplorerLink = useCallback(
     (explorerLink: string): void => {
       AnalyticsService.capture('ActivityCardLinkClicked')
-      openUrl(explorerLink)
+      openUrl({ url: explorerLink, title: '' })
     },
     [openUrl]
   )
@@ -140,21 +212,6 @@ const TokenDetailScreen = (): React.JSX.Element => {
     },
     [selectedSegmentIndex]
   )
-
-  const handleBuy = useCallback(() => {
-    navigate({
-      pathname: '/buy'
-    })
-  }, [navigate])
-
-  const ACTION_BUTTONS: ActionButton[] = [
-    { title: ActionButtonTitle.Send, icon: 'send', onPress: noop },
-    { title: ActionButtonTitle.Swap, icon: 'swap', onPress: noop },
-    { title: ActionButtonTitle.Buy, icon: 'buy', onPress: handleBuy },
-    { title: ActionButtonTitle.Stake, icon: 'stake', onPress: noop },
-    { title: ActionButtonTitle.Bridge, icon: 'bridge', onPress: noop },
-    { title: ActionButtonTitle.Connect, icon: 'connect', onPress: noop }
-  ]
 
   const renderEmptyTabBar = useCallback((): JSX.Element => <></>, [])
 
@@ -186,7 +243,7 @@ const TokenDetailScreen = (): React.JSX.Element => {
             />
           </Animated.View>
         </View>
-        <ActionButtons buttons={ACTION_BUTTONS} />
+        <ActionButtons buttons={actionButtons} />
       </View>
     )
   }, [
@@ -197,7 +254,8 @@ const TokenDetailScreen = (): React.JSX.Element => {
     isBalanceAccurate,
     isBalanceLoading,
     selectedCurrency,
-    token
+    token,
+    actionButtons
   ])
 
   const tabs = useMemo(() => {
