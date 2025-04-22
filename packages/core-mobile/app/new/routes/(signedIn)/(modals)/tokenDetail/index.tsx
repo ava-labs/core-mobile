@@ -27,7 +27,6 @@ import Animated, {
   useAnimatedStyle,
   useSharedValue
 } from 'react-native-reanimated'
-import useInAppBrowser from 'hooks/useInAppBrowser'
 import { ActionButtonTitle } from 'features/portfolio/assets/consts'
 import {
   ActionButton,
@@ -50,6 +49,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { UI, useIsUIDisabled } from 'hooks/useIsUIDisabled'
 import { useAssetBalances } from 'screens/bridge/hooks/useAssetBalances'
+import { useCoreBrowser } from 'common/hooks/useCoreBrowser'
 
 const TokenDetailScreen = (): React.JSX.Element => {
   const {
@@ -58,7 +58,7 @@ const TokenDetailScreen = (): React.JSX.Element => {
   const { navigate } = useRouter()
   const botomInset = useSafeAreaInsets().bottom
   const tabViewRef = useRef<CollapsibleTabsRef>(null)
-  const { openUrl } = useInAppBrowser()
+  const { openUrl } = useCoreBrowser()
   const [tokenHeaderLayout, setTokenHeaderLayout] = useState<
     LayoutRectangle | undefined
   >()
@@ -96,7 +96,7 @@ const TokenDetailScreen = (): React.JSX.Element => {
 
   const isSwapDisabled = useIsUIDisabled(UI.Swap)
   const isBridgeDisabled = useIsUIDisabled(UI.Bridge)
-  const { assetsWithBalances } = useAssetBalances(token?.networkChainId)
+  const { assetsWithBalances } = useAssetBalances()
   const isTokenBridgeable = Boolean(
     assetsWithBalances &&
       assetsWithBalances.some(
@@ -186,7 +186,7 @@ const TokenDetailScreen = (): React.JSX.Element => {
   const handleExplorerLink = useCallback(
     (explorerLink: string): void => {
       AnalyticsService.capture('ActivityCardLinkClicked')
-      openUrl(explorerLink)
+      openUrl({ url: explorerLink, title: '' })
     },
     [openUrl]
   )
