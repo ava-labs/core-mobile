@@ -160,7 +160,7 @@ const AddressBookScreen = (): JSX.Element => {
                 <Avatar
                   backgroundColor="transparent"
                   size={40}
-                  source={item.avatar.source}
+                  source={item.avatar?.source}
                   hasLoading={false}
                 />
               </View>

@@ -7,7 +7,6 @@ import { KeyboardAwareScrollView } from 'react-native-keyboard-controller'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useDispatch } from 'react-redux'
 import { addContact, Contact } from 'store/addressBook'
-import { AVATARS } from 'store/settings/avatar'
 
 const AddContactScreen = (): React.JSX.Element => {
   const dispatch = useDispatch()
@@ -18,18 +17,13 @@ const AddContactScreen = (): React.JSX.Element => {
 
   useEffect(() => {
     return () => {
-      const randomAvatar = AVATARS[Math.floor(Math.random() * AVATARS.length)]
-
-      if (randomAvatar) {
-        setNewContactAvatar(randomAvatar)
-      }
+      setNewContactAvatar(undefined)
     }
   }, [setNewContactAvatar])
 
   const [contact, setContact] = useState<Contact>({
     id: contactId,
-    name: '',
-    avatar: newContactAvatar
+    name: ''
   })
 
   const handleUpdateContact = (updated: Contact): void => {

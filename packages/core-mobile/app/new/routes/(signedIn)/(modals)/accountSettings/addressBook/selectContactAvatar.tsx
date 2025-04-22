@@ -8,7 +8,9 @@ const SelectContactAvatarScreen = (): JSX.Element => {
   const { back } = useRouter()
 
   const [newContactAvatar, setNewContactAvatar] = useNewContactAvatar()
-  const [selectedAvatar, setSelectedAvatar] = useState(newContactAvatar)
+  const [selectedAvatar, setSelectedAvatar] = useState(
+    AVATARS[Math.floor(Math.random() * AVATARS.length)]
+  )
 
   const onSubmit = (): void => {
     back()

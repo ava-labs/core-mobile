@@ -1,4 +1,5 @@
 import MaskedView from '@react-native-masked-view/masked-view'
+import { Image } from 'expo-image'
 import React, { useEffect, useState } from 'react'
 import { ImageSourcePropType, Platform, ViewStyle } from 'react-native'
 import Animated, {
@@ -12,14 +13,15 @@ import Animated, {
   withTiming
 } from 'react-native-reanimated'
 import Svg, { Path } from 'react-native-svg'
-import { Image } from 'expo-image'
-import { alpha } from '../../utils'
+import { useTheme } from '../../hooks'
 import {
   colors,
   darkModeColors,
   lightModeColors
 } from '../../theme/tokens/colors'
-import { useTheme } from '../../hooks'
+import { alpha } from '../../utils'
+import { View } from '../Primitives'
+import { Icons } from '../../theme/tokens/Icons'
 
 export const HexagonImageView = ({
   source,
@@ -28,7 +30,7 @@ export const HexagonImageView = ({
   isSelected,
   hasLoading = false
 }: {
-  source: ImageSourcePropType
+  source?: ImageSourcePropType
   height: number
   backgroundColor: string
   isSelected?: boolean
@@ -63,44 +65,66 @@ export const HexagonImageView = ({
           <Path d={hexagonPath.path} fill={theme.colors.$surfacePrimary} />
         </Svg>
       }>
-      <Image
-        key={`image-${source}`}
-        contentFit="cover"
-        source={source}
-        style={{ width: height, height: height, backgroundColor }}
-        onLoadStart={hasLoading ? handleLoadStart : undefined}
-        onLoadEnd={hasLoading ? handleLoadEnd : undefined}
-      />
-      {isLoading && (
-        <LoadingView
+      {source ? (
+        <>
+          <Image
+            key={`image-${source}`}
+            contentFit="cover"
+            source={source}
+            style={{ width: height, height: height, backgroundColor }}
+            onLoadStart={hasLoading ? handleLoadStart : undefined}
+            onLoadEnd={hasLoading ? handleLoadEnd : undefined}
+          />
+          {isLoading && (
+            <LoadingView
+              style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0
+              }}
+            />
+          )}
+          <Animated.View
+            style={[
+              {
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                backgroundColor: alpha(
+                  theme.isDark ? colors.$neutralWhite : colors.$neutral850,
+                  0.8
+                ),
+                alignItems: 'center',
+                justifyContent: 'center'
+              },
+              selectedAnimatedStyle
+            ]}>
+            <Arrow
+              key={theme.isDark ? 'dark' : 'light'}
+              isSelected={isSelected}
+            />
+          </Animated.View>
+        </>
+      ) : (
+        <View
           style={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0
-          }}
-        />
-      )}
-      <Animated.View
-        style={[
-          {
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            backgroundColor: alpha(
-              theme.isDark ? colors.$neutralWhite : colors.$neutral850,
-              0.8
-            ),
+            width: '100%',
+            height: '100%',
             alignItems: 'center',
-            justifyContent: 'center'
-          },
-          selectedAnimatedStyle
-        ]}>
-        <Arrow key={theme.isDark ? 'dark' : 'light'} isSelected={isSelected} />
-      </Animated.View>
+            justifyContent: 'center',
+            backgroundColor
+          }}>
+          <Icons.Content.Add
+            color={theme.colors.$textPrimary}
+            width={40}
+            height={40}
+          />
+        </View>
+      )}
     </MaskedView>
   )
 }

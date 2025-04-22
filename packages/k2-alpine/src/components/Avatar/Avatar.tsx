@@ -26,7 +26,7 @@ export const Avatar = ({
   hasLoading = true,
   isDeveloperMode = false
 }: {
-  source: ImageSourcePropType
+  source?: ImageSourcePropType
   size: number | 'small' | 'large'
   backgroundColor: string
   isSelected?: boolean
@@ -142,7 +142,7 @@ export const Avatar = ({
         <HexagonImageView
           source={source}
           height={height}
-          backgroundColor={'white'}
+          backgroundColor={backgroundColor ?? theme.colors.$surfaceSecondary}
           isSelected={isSelected}
           hasLoading={hasLoading}
         />

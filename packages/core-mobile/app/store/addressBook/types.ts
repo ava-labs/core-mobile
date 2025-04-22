@@ -3,7 +3,7 @@ import { AvatarType } from 'store/settings/avatar'
 
 export type Contact = Omit<_Contact, 'address' | 'addressSVM'> & {
   address?: string
-  avatar: AvatarType
+  avatar?: AvatarType
 }
 
 export type ContactCollection = { [uid: UID]: Contact }

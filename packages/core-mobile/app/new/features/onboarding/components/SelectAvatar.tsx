@@ -23,7 +23,7 @@ export const SelectAvatar = ({
 }: {
   avatars: AvatarType[]
   description?: string
-  selectedAvatar: AvatarType
+  selectedAvatar?: AvatarType
   setSelectedAvatar: (avatar: AvatarType) => void
   onSubmit: () => void
   buttonText?: string
@@ -66,7 +66,7 @@ export const SelectAvatar = ({
         </View>
         <View sx={{ paddingVertical: 20 }}>
           <AvatarSelector
-            selectedId={selectedAvatar.id}
+            selectedId={selectedAvatar?.id}
             avatars={avatars}
             onSelect={onSelect}
           />

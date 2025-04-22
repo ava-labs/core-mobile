@@ -168,9 +168,8 @@ export const ContactForm = ({
     <View sx={{ alignItems: 'center' }}>
       <TouchableOpacity onPress={openSelectAvatar}>
         <Avatar
-          backgroundColor="transparent"
           size={150}
-          source={newContactAvatar.source}
+          source={newContactAvatar?.source}
           hasLoading={false}
         />
       </TouchableOpacity>
