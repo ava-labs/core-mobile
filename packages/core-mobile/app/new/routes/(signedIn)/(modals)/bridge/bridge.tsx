@@ -62,6 +62,7 @@ import { selectHasBeenViewedOnce, ViewOnceKey } from 'store/viewOnce'
 import { HallidayBanner } from 'features/bridge/components/HallidayBanner'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { HALLIDAY_BRIDGE_URL } from 'features/bridge/const'
+import { useCoreBrowser } from 'common/hooks/useCoreBrowser'
 
 const BridgeScreen = (): JSX.Element => {
   const {
@@ -72,7 +73,8 @@ const BridgeScreen = (): JSX.Element => {
       initialSourceNetworkChainId?: string
       initialTokenSymbol?: string
     }>()
-  const { navigate } = useRouter()
+  const { navigate, back } = useRouter()
+  const { openUrl } = useCoreBrowser()
   const {
     sourceNetworks,
     assetBalance,
@@ -336,11 +338,11 @@ const BridgeScreen = (): JSX.Element => {
   }
 
   const handlePressHallidayBanner = async (): Promise<void> => {
+    back()
+
     AnalyticsService.capture('HallidayBuyClicked')
-    navigate({
-      pathname: 'webView',
-      params: { url: HALLIDAY_BRIDGE_URL, testID: 'halliday-bridge-webview' }
-    })
+
+    openUrl({ url: HALLIDAY_BRIDGE_URL, title: 'Halliday' })
   }
 
   const errorMessage = useMemo(() => {
