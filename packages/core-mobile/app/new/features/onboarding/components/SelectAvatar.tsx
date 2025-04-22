@@ -10,28 +10,36 @@ import {
 } from '@avalabs/k2-alpine'
 import ScreenHeader from 'common/components/ScreenHeader'
 import React from 'react'
-import { ImageSourcePropType } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { AvatarType } from 'store/settings/avatar'
 
 export const SelectAvatar = ({
+  selectedAvatar,
   avatars,
   description,
-  selectedAvatarId,
-  setSelectedAvatarId,
-  onNext
+  setSelectedAvatar,
+  onSubmit,
+  buttonText
 }: {
-  avatars: { id: string; source: ImageSourcePropType }[]
+  avatars: AvatarType[]
   description?: string
-  selectedAvatarId?: string
-  setSelectedAvatarId: (id: string) => void
-  onNext: () => void
+  selectedAvatar: AvatarType
+  setSelectedAvatar: (avatar: AvatarType) => void
+  onSubmit: () => void
+  buttonText?: string
 }): React.JSX.Element => {
   const {
     theme: { colors }
   } = useTheme()
   const { bottom } = useSafeAreaInsets()
 
-  const avatar = avatars.find(a => a.id === selectedAvatarId)
+  const onSelect = (id: string): void => {
+    const avatar = avatars.find(a => a.id === id)
+
+    if (avatar) {
+      setSelectedAvatar(avatar)
+    }
+  }
 
   return (
     <View sx={{ flex: 1 }}>
@@ -46,10 +54,10 @@ export const SelectAvatar = ({
             justifyContent: 'center',
             paddingVertical: AVATAR_BLURAREA_INSET
           }}>
-          {avatar?.source && (
+          {selectedAvatar?.source && (
             <Avatar
               backgroundColor={colors.$surfacePrimary}
-              source={avatar.source}
+              source={selectedAvatar.source}
               size={isScreenSmall ? 100 : 'large'}
               hasBlur={true}
               testID="selected_avatar"
@@ -58,9 +66,9 @@ export const SelectAvatar = ({
         </View>
         <View sx={{ paddingVertical: 20 }}>
           <AvatarSelector
-            selectedId={selectedAvatarId}
+            selectedId={selectedAvatar.id}
             avatars={avatars}
-            onSelect={setSelectedAvatarId}
+            onSelect={onSelect}
           />
         </View>
       </ScrollView>
@@ -70,8 +78,8 @@ export const SelectAvatar = ({
           paddingBottom: bottom + 16,
           backgroundColor: '$surfacePrimary'
         }}>
-        <Button size="large" type="primary" onPress={onNext}>
-          Next
+        <Button size="large" type="primary" onPress={onSubmit}>
+          {buttonText}
         </Button>
       </View>
     </View>

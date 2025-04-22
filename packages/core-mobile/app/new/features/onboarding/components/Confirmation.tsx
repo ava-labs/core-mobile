@@ -9,20 +9,18 @@ import {
   useTheme,
   Text
 } from '@avalabs/k2-alpine'
-import { AVATARS } from 'common/consts/avatars'
+import { selectSelectedAvatar } from 'store/settings/avatar'
+import { useSelector } from 'react-redux'
 
 export const Confirmation = ({
-  selectedAvatarId,
   onNext
 }: {
-  selectedAvatarId?: string
   onNext: () => void
 }): JSX.Element => {
   const {
     theme: { colors }
   } = useTheme()
-
-  const avatar = AVATARS.find(a => a.id === selectedAvatarId)
+  const avatar = useSelector(selectSelectedAvatar)
 
   return (
     <BlurredBarsContentLayout>

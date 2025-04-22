@@ -1,22 +1,19 @@
-import React, { useState } from 'react'
+import { useAvatar } from 'common/hooks/useAvatar'
 import { useRouter } from 'expo-router'
 import { SelectAvatar as Component } from 'features/onboarding/components/SelectAvatar'
-import { AVATARS } from 'common/consts/avatars'
-import { useAvatar } from 'common/hooks/useAvatar'
-import { DEFAULT_AVATAR } from 'store/settings/avatar'
+import React, { useState } from 'react'
+import { AVATARS } from 'store/settings/avatar'
 
 export default function SelectAvatar(): JSX.Element {
   const { navigate } = useRouter()
-  const { saveLocalAvatar } = useAvatar()
-
-  const [selectedAvatarId, setSelectedAvatarId] = useState(DEFAULT_AVATAR.id)
+  const { saveLocalAvatar, avatar } = useAvatar()
+  const [selectedAvatar, setSelectedAvatar] = useState(avatar)
 
   const handleNext = (): void => {
-    if (selectedAvatarId) saveLocalAvatar(selectedAvatarId)
+    if (selectedAvatar.id) saveLocalAvatar(selectedAvatar.id)
 
     navigate({
-      pathname: './confirmation',
-      params: { selectedAvatarId }
+      pathname: './confirmation'
     })
   }
 
@@ -24,9 +21,10 @@ export default function SelectAvatar(): JSX.Element {
     <Component
       avatars={AVATARS}
       description="Add a display avatar for your wallet. You can change it at any time in the app's settings"
-      selectedAvatarId={selectedAvatarId}
-      onNext={handleNext}
-      setSelectedAvatarId={setSelectedAvatarId}
+      selectedAvatar={selectedAvatar}
+      onSubmit={handleNext}
+      buttonText="Next"
+      setSelectedAvatar={setSelectedAvatar}
     />
   )
 }

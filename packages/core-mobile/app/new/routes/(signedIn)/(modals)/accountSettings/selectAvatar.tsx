@@ -1,30 +1,28 @@
-import { View } from '@avalabs/k2-alpine'
-import { AVATARS, DEFAULT_AVATAR } from 'store/settings/avatar'
 import { useAvatar } from 'common/hooks/useAvatar'
+import { useRouter } from 'expo-router'
 import { SelectAvatar } from 'features/onboarding/components/SelectAvatar'
 import React, { useState } from 'react'
+import { AVATARS } from 'store/settings/avatar'
 
 const SelectAvatarScreen = (): JSX.Element => {
-  const { saveLocalAvatar } = useAvatar()
+  const { back } = useRouter()
+  const { saveLocalAvatar, avatar } = useAvatar()
 
-  const [selectedAvatarId, setSelectedAvatarId] = useState(DEFAULT_AVATAR.id)
+  const [selectedAvatar, setSelectedAvatar] = useState(avatar)
 
   const onSubmit = (): void => {
-    saveLocalAvatar(selectedAvatarId)
+    back()
+    saveLocalAvatar(selectedAvatar.id)
   }
 
   return (
-    <View
-      sx={{
-        flex: 1
-      }}>
-      <SelectAvatar
-        avatars={AVATARS}
-        selectedAvatarId={selectedAvatarId}
-        onNext={onSubmit}
-        setSelectedAvatarId={setSelectedAvatarId}
-      />
-    </View>
+    <SelectAvatar
+      avatars={AVATARS}
+      selectedAvatar={selectedAvatar}
+      onSubmit={onSubmit}
+      setSelectedAvatar={setSelectedAvatar}
+      buttonText="Save"
+    />
   )
 }
 

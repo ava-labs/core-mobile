@@ -1,9 +1,9 @@
 import {
   Avatar,
+  AVATARS,
   selectSelectedAvatar,
   setSelectedAvatar
 } from 'store/settings/avatar'
-import { AVATARS } from 'common/consts/avatars'
 import { useDispatch, useSelector } from 'react-redux'
 
 export const useAvatar = (): {
