@@ -59,7 +59,7 @@ export type AdapterOptionsX = {
 type SendAdapter<CustomOptions = unknown, Token = NetworkTokenWithBalance> = (
   options: CommonAdapterOptions<Token> & CustomOptions
 ) => {
-  send(): Promise<string>
+  send(toAddress?: string): Promise<string>
   estimatedFee?: bigint
   setGasPrice?: Dispatch<bigint>
 }
