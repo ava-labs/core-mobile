@@ -50,7 +50,7 @@ const InactiveNetworkCard: FC<Props> = ({
   const backgroundColor = theme.colors.$neutral900
   const pendingBridgeTxs = usePendingBridgeTransactions(network)
 
-  const tokens = useSelector(selectTokensWithBalanceByNetwork(network))
+  const tokens = useSelector(selectTokensWithBalanceByNetwork(network.chainId))
   const { tokenPortfolioPriceChange } = useTokenPortfolioPriceChange(tokens)
   const renderContent = (): JSX.Element => {
     const balance = currencyFormatter(totalBalance)
