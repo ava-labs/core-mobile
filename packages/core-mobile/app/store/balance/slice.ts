@@ -7,7 +7,6 @@ import {
 import { RootState } from 'store'
 import { selectActiveAccount } from 'store/account'
 import { selectActiveNetwork, selectAllNetworks } from 'store/network'
-import { Network } from '@avalabs/core-chains-sdk'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { TokenType } from '@avalabs/vm-module-types'
 import {
@@ -117,17 +116,19 @@ export const selectTokensWithBalance = createSelector(
   }
 )
 
-export const selectTokensWithBalanceByNetwork =
-  (network?: Network) =>
-  (state: RootState): LocalTokenWithBalance[] => {
-    const activeAccount = selectActiveAccount(state)
+export const selectTokensWithBalanceByNetwork = (
+  chainId?: number
+): ((state: RootState) => LocalTokenWithBalance[]) =>
+  createSelector(
+    [selectActiveAccount, _selectAllBalances],
+    (activeAccount, balances): LocalTokenWithBalance[] => {
+      if (!chainId) return []
+      if (!activeAccount) return []
 
-    if (!network) return []
-    if (!activeAccount) return []
-
-    const key = getKey(network.chainId, activeAccount.index)
-    return state.balance.balances[key]?.tokens ?? []
-  }
+      const balanceKey = getKey(chainId, activeAccount.index)
+      return balances[balanceKey]?.tokens ?? []
+    }
+  )
 
 export const selectTokensWithZeroBalance = createSelector(
   selectTokensWithBalance,
@@ -250,10 +251,10 @@ export const selectBalanceTotalInCurrencyForNetworkAndAccount =
 
 const _selectBalanceKeyForNetworkAndAccount = (
   _state: RootState,
-  chainId: number,
+  chainId: number | undefined,
   accountIndex: number | undefined
 ): string | undefined => {
-  if (accountIndex === undefined) return undefined
+  if (accountIndex === undefined || chainId === undefined) return undefined
 
   return getKey(chainId, accountIndex)
 }
