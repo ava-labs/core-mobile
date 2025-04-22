@@ -1,17 +1,15 @@
-import React, { useEffect } from 'react'
+import { BlurView } from 'expo-blur'
+import React from 'react'
 import { ImageSourcePropType, Platform, ViewStyle } from 'react-native'
 import Animated, {
-  Easing,
   useAnimatedStyle,
-  useSharedValue,
-  withTiming
+  useSharedValue
 } from 'react-native-reanimated'
-import { BlurView } from 'expo-blur'
-import { View } from '../Primitives'
 import { useTheme } from '../../hooks'
-import { HexagonImageView, HexagonBorder } from './HexagonImageView'
-import { useGlowAnimatedStyle } from './useGlowAnimatedStyle'
+import { View } from '../Primitives'
+import { HexagonBorder, HexagonImageView } from './HexagonImageView'
 import { TestnetHexagonImageView } from './TestnetHexagonImageView'
+import { useGlowAnimatedStyle } from './useGlowAnimatedStyle'
 
 export const Avatar = ({
   source,

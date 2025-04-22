@@ -9,7 +9,7 @@ import {
   View
 } from '@avalabs/k2-alpine'
 import React, { ReactNode, useCallback, useMemo } from 'react'
-import { NftItem } from 'services/nft/types'
+import { NftItem, NftLocalStatus } from 'services/nft/types'
 
 import { noop } from '@avalabs/core-utils-sdk'
 import { LinearGradientBottomWrapper } from 'common/components/LinearGradientBottomWrapper'
@@ -225,7 +225,10 @@ export const CollectibleDetailsContent = ({
               type="secondary"
               size="large"
               onPress={handleSaveAvatar}
-              disabled={avatar.id === collectible?.localId}>
+              disabled={
+                avatar.id === collectible?.localId ||
+                collectible?.status === NftLocalStatus.Unprocessable
+              }>
               Set as my avatar
             </Button>
           </View>

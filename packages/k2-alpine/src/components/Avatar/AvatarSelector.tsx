@@ -14,27 +14,23 @@ export const AvatarSelector = ({
   selectedId?: string
   onSelect?: (id: string) => void
 }): JSX.Element => {
-  const data = useMemo(() => {
-    return avatars
-  }, [avatars])
-
   const avatarWidth = isScreenSmall
     ? configuration.avatarWidth.small
     : configuration.avatarWidth.large
 
   const defaultIndex = useMemo(() => {
-    const foundIndex = data.findIndex(item => item.id === selectedId)
+    const foundIndex = avatars.findIndex(item => item.id === selectedId)
     return foundIndex === -1 ? 0 : foundIndex
-  }, [data, selectedId])
+  }, [avatars, selectedId])
 
   const handleSelect = useCallback(
     (index: number): void => {
-      if (data[index]?.id === undefined) {
-        return
+      const id = avatars[index]?.id
+      if (id) {
+        onSelect?.(id)
       }
-      onSelect?.(data[index].id)
     },
-    [data, onSelect]
+    [avatars, onSelect]
   )
 
   const renderItem = useCallback(
@@ -45,6 +41,7 @@ export const AvatarSelector = ({
       item: { id: string; source: ImageSourcePropType }
       index: number
     }): JSX.Element => {
+      const isSelected = item.id === selectedId
       return (
         <AnimatedPressable
           key={index}
@@ -53,20 +50,20 @@ export const AvatarSelector = ({
           <Avatar
             source={item.source}
             size={avatarWidth}
-            isSelected={data[index]?.id === selectedId}
+            isSelected={isSelected}
             backgroundColor={'white'}
           />
         </AnimatedPressable>
       )
     },
-    [avatarWidth, data, handleSelect, selectedId]
+    [avatarWidth, handleSelect, selectedId]
   )
 
   return (
     <Carousel
       width={avatarWidth / 2 + configuration.spacing}
       height={avatarWidth * 2}
-      data={data}
+      data={avatars}
       renderItem={renderItem}
       snapEnabled={false}
       pagingEnabled={false}
