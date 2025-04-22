@@ -84,7 +84,7 @@ export const AnimatedBalance = ({
         alignItems: 'flex-end',
         gap: 1
       }}>
-      <Text variant={variant} sx={balanceSx}>
+      <Text variant={variant} sx={balanceSx} numberOfLines={1}>
         {balance}
       </Text>
       <Text variant={variant} sx={currencySx}>
