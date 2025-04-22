@@ -10,7 +10,7 @@ export default function SelectAvatar(): JSX.Element {
   )
   const handleNext = (): void => {
     navigate({
-      pathname: './confirmation',
+      pathname: '/onboarding/seedless/confirmation',
       params: { selectedAvatarId }
     })
   }

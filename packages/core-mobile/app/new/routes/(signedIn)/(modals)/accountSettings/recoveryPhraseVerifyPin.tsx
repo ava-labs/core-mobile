@@ -6,7 +6,10 @@ const RecoveryPhraseVerifyPinScreen = (): JSX.Element => {
   const { replace } = useRouter()
 
   const handleLoginSuccess = (mnemonic: string): void => {
-    replace({ pathname: './showRecoveryPhrase', params: { mnemonic } })
+    replace({
+      pathname: '/accountSettings/showRecoveryPhrase',
+      params: { mnemonic }
+    })
   }
 
   return <VerifyWithPinOrBiometry onLoginSuccess={handleLoginSuccess} />

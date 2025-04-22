@@ -50,7 +50,7 @@ export const AccountList = (): React.JSX.Element => {
   const gotoAccountDetails = useCallback(
     (accountIndex: number): void => {
       navigate({
-        pathname: './accountSettings/account',
+        pathname: '/accountSettings/account',
         params: { accountIndex: accountIndex.toString() }
       })
     },
@@ -58,7 +58,7 @@ export const AccountList = (): React.JSX.Element => {
   )
 
   const goToManageAccounts = useCallback(() => {
-    navigate('./accountSettings/manageAccounts')
+    navigate('/accountSettings/manageAccounts')
   }, [navigate])
 
   const renderSeparator = useCallback(() => <View sx={{ width: 16 }} />, [])
