@@ -17,10 +17,12 @@ export const useBridgeTargetNetworks = (
     Object.keys(selectedBridgeAsset?.destinations ?? [])
   )
 }
+
 export const useNetworksFromCaip2ChainIds = (
   caip2ChainIds: string[]
 ): Network[] => {
   const { networks } = useNetworks()
+
   return caip2ChainIds
     .map(caip2ChainId => getChainIdFromCaip2(caip2ChainId))
     .filter((chainId): chainId is number => !!chainId)
