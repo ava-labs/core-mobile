@@ -10,13 +10,9 @@ import {
 } from 'react-native'
 import { Text, View } from '../Primitives'
 import { Icons } from '../../theme/tokens/Icons'
-import {
-  colors,
-  darkModeColors,
-  lightModeColors
-} from '../../theme/tokens/colors'
+import { darkModeColors, lightModeColors } from '../../theme/tokens/colors'
 import { TextVariant } from '../../theme/tokens/text'
-import { alpha, overlayColor } from '../../utils/colors'
+import { getButtonBackgroundColor } from '../../utils/colors'
 import { K2AlpineTheme } from '../../theme/theme'
 import { useInversedTheme, useTheme } from '../../hooks'
 
@@ -75,7 +71,7 @@ export const Button = forwardRef<RNView, ButtonProps & PropsWithChildren>(
     )
 
     const backgroundColor = useMemo(
-      () => getBackgroundColor(type, resultTheme, disabled),
+      () => getButtonBackgroundColor(type, resultTheme, disabled),
       [type, resultTheme, disabled]
     )
 
@@ -187,37 +183,6 @@ const getIcon = (
 ): JSX.Element | undefined => {
   const IconComponent = iconComponents[type]
   return <IconComponent {...iconProps} />
-}
-
-const getBackgroundColor = (
-  type: ButtonType,
-  theme: K2AlpineTheme,
-  disabled: boolean | undefined
-): string | undefined => {
-  if (disabled) {
-    return theme.isDark
-      ? overlayColor(
-          alpha(lightModeColors.$surfacePrimary, 0.3),
-          darkModeColors.$surfacePrimary
-        )
-      : overlayColor(
-          alpha(darkModeColors.$surfacePrimary, 0.3),
-          lightModeColors.$surfacePrimary
-        )
-  }
-
-  switch (type) {
-    case 'primary':
-      return theme.isDark
-        ? lightModeColors.$surfacePrimary
-        : darkModeColors.$surfacePrimary
-    case 'secondary':
-      return theme.isDark
-        ? alpha('#ffffff', 0.1)
-        : alpha(colors.$neutral850, 0.1)
-    case 'tertiary':
-      return 'transparent'
-  }
 }
 
 export const getTintColor = (
