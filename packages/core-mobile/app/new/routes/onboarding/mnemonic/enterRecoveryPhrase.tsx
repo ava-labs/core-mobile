@@ -7,7 +7,7 @@ export default function EnterRecoveryPhrase(): JSX.Element {
 
   function handleNext(mnemonic: string): void {
     navigate({
-      pathname: './createPin',
+      pathname: '/onboarding/mnemonic/createPin',
       params: { mnemonic }
     })
   }

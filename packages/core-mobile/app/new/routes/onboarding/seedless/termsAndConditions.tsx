@@ -12,13 +12,13 @@ export default function TermsAndConditions(): JSX.Element {
     const isRecovering = recovering === 'true'
     if (isRecovering) {
       if (mfas?.length === 0) {
-        navigate('./addRecoveryMethods')
+        navigate('/onboarding/seedless/addRecoveryMethods')
         return
       }
-      navigate('./selectMfaMethod')
+      navigate('/onboarding/seedless/selectMfaMethod')
       return
     }
-    navigate('./addRecoveryMethods')
+    navigate('/onboarding/seedless/addRecoveryMethods')
   }, [mfas?.length, navigate, recovering])
 
   return <Component onAgreeAndContinue={handleAgreeAndContinue} />

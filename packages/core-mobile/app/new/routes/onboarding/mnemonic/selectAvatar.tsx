@@ -14,7 +14,7 @@ export default function SelectAvatar(): JSX.Element {
 
   const handleNext = (): void => {
     navigate({
-      pathname: './confirmation',
+      pathname: '/onboarding/mnemonic/confirmation',
       params: { mnemonic, selectedAvatarId }
     })
   }
