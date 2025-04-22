@@ -170,7 +170,6 @@ const AccountSettingsScreen = (): JSX.Element => {
               sx={{ marginTop: 5, height: 150 }}>
               <Avatar
                 testID={isDeveloperMode ? 'testnet_avatar' : 'mainnet_avatar'}
-                backgroundColor="transparent"
                 size={150}
                 source={avatar.source}
                 hasBlur={false}

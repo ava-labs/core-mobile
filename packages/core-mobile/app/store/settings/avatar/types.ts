@@ -38,7 +38,6 @@ export const AVATARS: AvatarType[] = [
   require('assets/avatars/cub-9.png'),
   require('assets/avatars/cub-10.png'),
   require('assets/avatars/cub-11.png'),
-  // require('assets/avatars/cub-12.png'), // Missing
   require('assets/avatars/cub-13.png'),
   require('assets/avatars/cub-14.png'),
   require('assets/avatars/cub-15.png'),
@@ -46,7 +45,6 @@ export const AVATARS: AvatarType[] = [
   require('assets/avatars/cub-17.png'),
   require('assets/avatars/cub-18.png'),
   require('assets/avatars/cub-19.png'),
-  // require('assets/avatars/cub-20.png'), // Missing
   require('assets/avatars/cub-21.png'),
   require('assets/avatars/cub-22.png'),
   require('assets/avatars/cub-23.png'),
@@ -58,7 +56,6 @@ export const AVATARS: AvatarType[] = [
   require('assets/avatars/cub-29.png'),
   require('assets/avatars/cub-30.png'),
   require('assets/avatars/cub-31.png'),
-  // require('assets/avatars/cub-32.png'), // Missing
   require('assets/avatars/cub-33.png'),
   require('assets/avatars/cub-34.png'),
   require('assets/avatars/cub-35.png')
@@ -71,11 +68,9 @@ export const DEFAULT_AVATAR = {
   source: require('assets/avatars/abstract-1.png')
 }
 
-export const RANDOM_AVATAR =
-  AVATARS[Math.floor(Math.random() * AVATARS.length)] ?? DEFAULT_AVATAR
-
 export const initialState: AvatarState = {
-  selected: RANDOM_AVATAR
+  selected:
+    AVATARS[Math.floor(Math.random() * AVATARS.length)] ?? DEFAULT_AVATAR
 }
 
 export type AvatarState = {

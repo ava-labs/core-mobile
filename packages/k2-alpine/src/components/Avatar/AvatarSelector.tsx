@@ -65,7 +65,7 @@ export const AvatarSelector = ({
   return (
     <Carousel
       width={avatarWidth / 2 + configuration.spacing}
-      // height={avatarWidth * 2}
+      height={avatarWidth * 2}
       data={data}
       renderItem={renderItem}
       snapEnabled={false}

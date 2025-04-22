@@ -16,7 +16,6 @@ export const AccountSettingBarButton = forwardRef<RNView>(
         ref={ref}
         onPress={onPress}>
         <Avatar
-          backgroundColor="transparent"
           size={32}
           source={avatar.source}
           hasBlur={false}

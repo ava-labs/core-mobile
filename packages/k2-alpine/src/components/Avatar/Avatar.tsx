@@ -17,10 +17,9 @@ export const Avatar = ({
   source,
   size,
   isSelected,
-  isPressed,
   hasBlur,
   style,
-  backgroundColor,
+  backgroundColor = 'transparent',
   glowEffect,
   testID,
   hasLoading = true,
@@ -30,7 +29,6 @@ export const Avatar = ({
   size: number | 'small' | 'large'
   backgroundColor?: string
   isSelected?: boolean
-  isPressed?: boolean
   hasBlur?: boolean
   style?: ViewStyle
   glowEffect?: { imageSource: ImageSourcePropType; size: number; delay: number }
@@ -119,13 +117,6 @@ export const Avatar = ({
       </View>
     )
   }
-
-  useEffect(() => {
-    pressedAnimation.value = withTiming(isPressed ? 0.95 : 1, {
-      duration: 150,
-      easing: Easing.inOut(Easing.ease)
-    })
-  }, [isPressed, pressedAnimation])
 
   return (
     <Animated.View

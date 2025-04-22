@@ -158,7 +158,6 @@ const AddressBookScreen = (): JSX.Element => {
                   height: 40
                 }}>
                 <Avatar
-                  backgroundColor="transparent"
                   size={40}
                   source={item.avatar?.source}
                   hasLoading={false}
