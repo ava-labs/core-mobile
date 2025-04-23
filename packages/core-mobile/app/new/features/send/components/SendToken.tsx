@@ -1,5 +1,6 @@
 import React, { useCallback, useMemo, useState, useEffect } from 'react'
 import {
+  ActivityIndicator,
   Avatar,
   Button,
   Card,
@@ -267,7 +268,7 @@ export const SendToken = ({ onSend }: { onSend: () => void }): JSX.Element => {
         type="primary"
         size="large"
         onPress={onSend}>
-        Send
+        {isSending ? <ActivityIndicator size="small" /> : 'Next'}
       </Button>
     </SafeAreaView>
   )
