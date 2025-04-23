@@ -5,9 +5,9 @@ import React, {
   useLayoutEffect,
   useMemo
 } from 'react'
+import { LayoutChangeEvent } from 'react-native'
 import {
   Icons,
-  ScrollView,
   Separator,
   showAlert,
   Text,
@@ -32,13 +32,13 @@ import { validateFee } from 'screens/send/utils/evm/validate'
 import { SendErrorMessage } from 'screens/send/utils/types'
 import { router } from 'expo-router'
 import { Eip1559Fees } from 'utils/Utils'
-import { useSimpleFadingHeader } from 'new/common/hooks/useSimpleFadingHeader'
+import { ActionSheet } from 'new/common/components/ActionSheet'
 import { Details } from '../components/Details'
-import { ActionButtons } from '../components/ActionButtons'
 import { Network } from '../components/Network'
 import { NetworkFeeSelectorWithGasless } from '../components/NetworkFeeSelectorWithGasless'
 import { Account } from '../components/Account'
 import BalanceChange from '../components/BalanceChange'
+
 // import { SpendLimits } from '../components/SpendLimits'
 
 const ApprovalScreenWrapper = (): JSX.Element | null => {
@@ -63,9 +63,6 @@ const ApprovalScreen = ({
   const {
     theme: { colors }
   } = useTheme()
-  const { onScroll, handleHeaderLayout } = useSimpleFadingHeader({
-    title: 'Approve transaction?'
-  })
   const isSeedlessSigningBlocked = useSelector(selectIsSeedlessSigningBlocked)
   const { getNetwork } = useNetworks()
   const caip2ChainId = request.chainId
@@ -266,7 +263,9 @@ const ApprovalScreen = ({
     // )
   }
 
-  const renderDappInfo = (): JSX.Element | null => {
+  const renderDappInfo = (
+    handleHeaderLayout: (event: LayoutChangeEvent) => void
+  ): JSX.Element | null => {
     if (!displayData.dAppInfo) return null
 
     const { action, logoUri } = displayData.dAppInfo
@@ -432,30 +431,34 @@ const ApprovalScreen = ({
     ])
 
   return (
-    <View style={{ flex: 1 }}>
-      <ScrollView
-        onScroll={onScroll}
-        contentContainerStyle={{
-          backgroundColor: colors.$surfacePrimary,
-          paddingHorizontal: 16,
-          paddingBottom: '50%'
-        }}>
-        {renderDappInfo()}
-        {renderGaslessAlert()}
-        {renderAccountAndNetwork()}
-        {renderBalanceChange()}
-        {/* {renderSpendLimit()} */}
-        {renderDetails()}
-        {renderNetworkFeeSelectorWithGasless()}
-        {renderDisclaimer()}
-      </ScrollView>
-      <ActionButtons
-        onApprove={handleApprove}
-        onReject={() => rejectAndClose()}
-        approveDisabled={approveDisabled}
-        rejectDisabled={submitting}
-      />
-    </View>
+    <ActionSheet
+      title="Approve transaction?"
+      onClose={onReject}
+      confirm={{
+        label: 'Approve',
+        onPress: handleApprove,
+        disabled: approveDisabled
+      }}
+      cancel={{
+        label: 'Reject',
+        onPress: rejectAndClose,
+        disabled: submitting
+      }}>
+      {({ handleHeaderLayout }) => {
+        return (
+          <>
+            {renderDappInfo(handleHeaderLayout)}
+            {renderGaslessAlert()}
+            {renderAccountAndNetwork()}
+            {renderBalanceChange()}
+            {/* {renderSpendLimit()} */}
+            {renderDetails()}
+            {renderNetworkFeeSelectorWithGasless()}
+            {renderDisclaimer()}
+          </>
+        )
+      }}
+    </ActionSheet>
   )
 }
 
