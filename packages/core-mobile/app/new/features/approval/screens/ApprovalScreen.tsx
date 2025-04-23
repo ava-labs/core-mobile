@@ -438,7 +438,7 @@ const ApprovalScreen = ({
 
   return (
     <ActionSheet
-      title="Approve transaction?"
+      title={displayData.title}
       onClose={onReject}
       alert={alert}
       confirm={{
