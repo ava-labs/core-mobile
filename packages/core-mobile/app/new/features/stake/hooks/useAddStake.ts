@@ -1,5 +1,6 @@
 import { showAlert } from '@avalabs/k2-alpine'
 import { useRouter } from 'expo-router'
+import { useNavigateToSwap } from 'features/swap/hooks/useNavigateToSwap'
 import { useHasEnoughAvaxToStake } from 'hooks/earn/useHasEnoughAvaxToStake'
 import useStakingParams from 'hooks/earn/useStakingParams'
 import { useCallback, useEffect, useState } from 'react'
@@ -12,14 +13,11 @@ export const useAddStake = (): {
   const { hasEnoughAvax } = useHasEnoughAvaxToStake()
   const [canAddStake, setCanAddStake] = useState(false)
   const { minStakeAmount } = useStakingParams()
+  const { navigateToSwap } = useNavigateToSwap()
 
-  const handleBuy = (): void => {
-    //Todo
-  }
-
-  const handleSwap = (): void => {
-    // Todo
-  }
+  const handleBuy = useCallback((): void => {
+    navigate({ pathname: '/buy' })
+  }, [navigate])
 
   const showNotEnoughAvaxAlert = useCallback((): void => {
     showAlert({
@@ -33,14 +31,14 @@ export const useAddStake = (): {
         },
         {
           text: 'Swap AVAX',
-          onPress: handleSwap
+          onPress: navigateToSwap
         },
         {
           text: 'Cancel'
         }
       ]
     })
-  }, [minStakeAmount])
+  }, [minStakeAmount, navigateToSwap, handleBuy])
 
   useEffect(() => {
     setCanAddStake(hasEnoughAvax !== undefined)

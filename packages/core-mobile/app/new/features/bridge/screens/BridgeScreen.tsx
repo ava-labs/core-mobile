@@ -671,7 +671,7 @@ export const BridgeScreen = (): JSX.Element => {
                     alignSelf: 'center'
                   }}
                   onPress={handleToggleNetwork}>
-                  <Icons.Custom.SwapVertical color="red" />
+                  <Icons.Custom.SwapVertical />
                 </CircularButton>
               </Animated.View>
             )}

@@ -293,6 +293,15 @@ export const selectAvailableNativeTokenBalanceForNetworkAndAccount =
     }
   )
 
+export const selectTokensWithBalanceForAccountAndNetwork = createSelector(
+  [_selectAllBalances, _selectBalanceKeyForNetworkAndAccount],
+  (allBalances, key): LocalTokenWithBalance[] => {
+    if (key === undefined) return []
+
+    return allBalances[key]?.tokens ?? []
+  }
+)
+
 // use in k2-alpine
 export const selectIsAllBalancesInaccurate =
   (accountIndex: number) => (state: RootState) => {
