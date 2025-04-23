@@ -3,16 +3,9 @@ import React, {
   useLayoutEffect,
   useCallback,
   useEffect,
-  useState,
-  useMemo
+  useState
 } from 'react'
-import {
-  LayoutChangeEvent,
-  LayoutRectangle,
-  ScrollView,
-  StyleSheet,
-  View
-} from 'react-native'
+import { ScrollView, StyleSheet, View } from 'react-native'
 import { CorePrimaryAccount } from '@avalabs/types'
 import { useDappConnectionV2 } from 'hooks/useDappConnectionV2'
 import { useSelector } from 'react-redux'
@@ -22,16 +15,11 @@ import { showSnackbar } from 'new/common/utils/toast'
 import { router } from 'expo-router'
 import { walletConnectCache } from 'services/walletconnectv2/walletConnectCache/walletConnectCache'
 import { TokenLogo } from 'new/common/components/TokenLogo'
-import {
-  Button,
-  NavigationTitleHeader,
-  SCREEN_WIDTH,
-  Text
-} from '@avalabs/k2-alpine'
+import { Button, SCREEN_WIDTH, Text } from '@avalabs/k2-alpine'
 import { LinearGradientBottomWrapper } from 'new/common/components/LinearGradientBottomWrapper'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { SessionProposalParams } from 'services/walletconnectv2/walletConnectCache/types'
-import { useFadingHeaderNavigation } from 'new/common/hooks/useFadingHeaderNavigation'
+import { useSimpleFadingHeader } from 'new/common/hooks/useSimpleFadingHeader'
 import { SelectAccounts } from '../components/SelectAccounts'
 
 const showNoActiveAccountMessage = (): void => {
@@ -57,18 +45,8 @@ const AuthorizeDappScreen = ({
 }: {
   params: SessionProposalParams
 }): JSX.Element => {
-  const [headerLayout, setHeaderLayout] = useState<
-    LayoutRectangle | undefined
-  >()
-  const header = useMemo(
-    () => <NavigationTitleHeader title={'Connect wallet?'} />,
-    []
-  )
-
-  const { onScroll } = useFadingHeaderNavigation({
-    header: header,
-    targetLayout: headerLayout,
-    shouldHeaderHaveGrabber: true
+  const { onScroll, handleHeaderLayout } = useSimpleFadingHeader({
+    title: 'Connect wallet?'
   })
 
   const shouldRejectOnClose = useRef(true)
@@ -83,10 +61,6 @@ const AuthorizeDappScreen = ({
   >([])
   const peerMeta = request.data.params.proposer.metadata
   const approveDisabled = selectedAccounts.length === 0
-
-  const handleHeaderLayout = useCallback((event: LayoutChangeEvent): void => {
-    setHeaderLayout(event.nativeEvent.layout)
-  }, [])
 
   const rejectAndClose = useCallback(() => {
     shouldRejectOnClose.current = false

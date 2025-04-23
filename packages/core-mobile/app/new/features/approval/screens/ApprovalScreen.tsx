@@ -32,6 +32,7 @@ import { validateFee } from 'screens/send/utils/evm/validate'
 import { SendErrorMessage } from 'screens/send/utils/types'
 import { router } from 'expo-router'
 import { Eip1559Fees } from 'utils/Utils'
+import { useSimpleFadingHeader } from 'new/common/hooks/useSimpleFadingHeader'
 import { Details } from '../components/Details'
 import { ActionButtons } from '../components/ActionButtons'
 import { Network } from '../components/Network'
@@ -62,6 +63,9 @@ const ApprovalScreen = ({
   const {
     theme: { colors }
   } = useTheme()
+  const { onScroll, handleHeaderLayout } = useSimpleFadingHeader({
+    title: 'Approve transaction?'
+  })
   const isSeedlessSigningBlocked = useSelector(selectIsSeedlessSigningBlocked)
   const { getNetwork } = useNetworks()
   const caip2ChainId = request.chainId
@@ -274,7 +278,9 @@ const ApprovalScreen = ({
           alignItems: 'center',
           marginBottom: 36
         }}>
-        <TokenLogo logoUri={logoUri} size={62} />
+        <View onLayout={handleHeaderLayout}>
+          <TokenLogo logoUri={logoUri} size={62} />
+        </View>
         <View
           style={{
             alignItems: 'center',
@@ -307,6 +313,7 @@ const ApprovalScreen = ({
           alignItems: 'center',
           overflow: 'hidden',
           paddingRight: 26,
+          marginTop: 20,
           marginBottom: 20
         }}>
         <Icons.Alert.ErrorOutline
@@ -431,19 +438,20 @@ const ApprovalScreen = ({
   return (
     <View style={{ flex: 1 }}>
       <ScrollView
+        onScroll={onScroll}
         contentContainerStyle={{
           backgroundColor: colors.$surfacePrimary,
           paddingHorizontal: 16,
           paddingBottom: '50%'
         }}>
-        {renderGaslessAlert()}
         {renderDappInfo()}
-        {renderDisclaimer()}
+        {renderGaslessAlert()}
         {renderAccountAndNetwork()}
         {renderBalanceChange()}
         {/* {renderSpendLimit()} */}
         {renderDetails()}
         {renderNetworkFeeSelectorWithGasless()}
+        {renderDisclaimer()}
       </ScrollView>
       <ActionButtons
         onApprove={handleApprove}
