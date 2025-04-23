@@ -10,9 +10,15 @@ import { useNativeTokenWithBalanceByNetwork } from 'features/send/hooks/useNativ
 import { useSendSelectedToken } from 'features/send/store'
 import { useNetworkFee } from 'hooks/useNetworkFee'
 import useCollectibleSend from 'screens/send/hooks/useCollectibleSend'
+import { useSendContext } from 'features/send/context/sendContext'
+import { ActivityIndicator, alpha, useTheme, View } from '@avalabs/k2-alpine'
 import { useSuccessOrFailure } from '../hooks/useSuccessOrFailure'
 
 export const RecentContactsScreen = (): JSX.Element | null => {
+  const {
+    theme: { colors }
+  } = useTheme()
+  const { isSending } = useSendContext()
   const { navigate, canGoBack, back } = useRouter()
   const { recentAddresses, contacts, accounts } = useContacts()
   const { getNetwork } = useNetworks()
@@ -81,12 +87,30 @@ export const RecentContactsScreen = (): JSX.Element | null => {
   )
 
   return (
-    <RecentContacts
-      recentAddresses={recentAddresses}
-      contacts={collectiblesContacts}
-      onGoToQrCode={handleGoToQrCode}
-      onSelectContact={goToApproval}
-      onSubmitEditing={handleSumbitEditing}
-    />
+    <>
+      <RecentContacts
+        recentAddresses={recentAddresses}
+        contacts={collectiblesContacts}
+        onGoToQrCode={handleGoToQrCode}
+        onSelectContact={goToApproval}
+        onSubmitEditing={handleSumbitEditing}
+      />
+      {isSending && (
+        <View
+          sx={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            justifyContent: 'center',
+            alignItems: 'center',
+            backgroundColor: alpha(colors.$surfaceSecondary, 0.5),
+            zIndex: 1
+          }}>
+          <ActivityIndicator size="small" />
+        </View>
+      )}
+    </>
   )
 }

@@ -1,5 +1,11 @@
 import React, { useCallback, useMemo } from 'react'
-import { Text, View } from '@avalabs/k2-alpine'
+import {
+  ActivityIndicator,
+  alpha,
+  Text,
+  useTheme,
+  View
+} from '@avalabs/k2-alpine'
 import { useRouter } from 'expo-router'
 import { QrCodeScanner } from 'common/components/QrCodeScanner'
 import { useSendSelectedToken } from 'features/send/store'
@@ -10,9 +16,14 @@ import { selectActiveAccount } from 'store/account'
 import { useSelector } from 'react-redux'
 import { useNetworkFee } from 'hooks/useNetworkFee'
 import { useNavigation } from '@react-navigation/native'
+import { useSendContext } from 'features/send/context/sendContext'
 import { useSuccessOrFailure } from '../hooks/useSuccessOrFailure'
 
 export const ScanQrCodeScreen = (): JSX.Element => {
+  const {
+    theme: { colors }
+  } = useTheme()
+  const { isSending } = useSendContext()
   const { getNetwork } = useNetworks()
   const { canGoBack, back } = useRouter()
   const { getState } = useNavigation()
@@ -73,6 +84,22 @@ export const ScanQrCodeScreen = (): JSX.Element => {
           marginTop: 21
         }}
       />
+      {isSending && (
+        <View
+          sx={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            justifyContent: 'center',
+            alignItems: 'center',
+            backgroundColor: alpha(colors.$surfaceSecondary, 0.5),
+            zIndex: 1
+          }}>
+          <ActivityIndicator size="small" />
+        </View>
+      )}
     </View>
   )
 }

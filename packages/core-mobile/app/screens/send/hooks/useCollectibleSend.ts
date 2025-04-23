@@ -1,5 +1,5 @@
 import { NetworkTokenWithBalance, TokenType } from '@avalabs/vm-module-types'
-import { useCallback, useState } from 'react'
+import { useCallback } from 'react'
 import { useInAppRequest } from 'hooks/useInAppRequest'
 import { assertNotUndefined } from 'utils/assertions'
 import { useEVMProvider } from 'hooks/networks/networkProviderHooks'
@@ -9,6 +9,7 @@ import { useSendSelectedToken } from 'new/features/send/store'
 import { NftItem } from 'services/nft/types'
 import { JsonRpcBatchInternal } from '@avalabs/core-wallets-sdk'
 import { showSnackbar } from 'new/common/utils/toast'
+import { useSendContext } from 'new/features/send/context/sendContext'
 import { SendAdapterEVM, SendErrorMessage } from '../utils/types'
 import { send as sendEVM } from '../utils/evm/send'
 import { getGasLimit } from '../utils/evm/getGasLimit'
@@ -28,7 +29,7 @@ const useCollectibleSend: SendAdapterEVM = ({
   network
 }) => {
   const { request } = useInAppRequest()
-  const [isSending, setIsSending] = useState(false)
+  const { setIsSending } = useSendContext()
   const [selectedToken] = useSendSelectedToken()
   const provider = useEVMProvider(network)
   const isGaslessBlocked = useSelector(selectIsGaslessBlocked)
@@ -97,10 +98,6 @@ const useCollectibleSend: SendAdapterEVM = ({
   const send = useCallback(
     async (toAddress: string) => {
       try {
-        if (isSending) {
-          showSnackbar('Transaction already in progress')
-        }
-
         assertNotUndefined(selectedToken)
         assertNotUndefined(toAddress)
         assertNotUndefined(provider)
@@ -132,7 +129,6 @@ const useCollectibleSend: SendAdapterEVM = ({
       }
     },
     [
-      isSending,
       selectedToken,
       provider,
       chainId,
@@ -140,6 +136,7 @@ const useCollectibleSend: SendAdapterEVM = ({
       maxFee,
       validate,
       fromAddress,
+      setIsSending,
       request
     ]
   )
