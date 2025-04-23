@@ -312,8 +312,7 @@ const ApprovalScreen = ({
           alignItems: 'center',
           overflow: 'hidden',
           paddingRight: 26,
-          marginTop: 20,
-          marginBottom: 20
+          marginBottom: 19
         }}>
         <Icons.Action.Info width={20} height={20} color={colors.$textDanger} />
         <Text
@@ -430,10 +429,18 @@ const ApprovalScreen = ({
       handleFeesChange
     ])
 
+  const alert = displayData.alert
+    ? {
+        type: displayData.alert.type,
+        message: displayData.alert.details.description
+      }
+    : undefined
+
   return (
     <ActionSheet
       title="Approve transaction?"
       onClose={onReject}
+      alert={alert}
       confirm={{
         label: 'Approve',
         onPress: handleApprove,
@@ -448,13 +455,13 @@ const ApprovalScreen = ({
         return (
           <>
             {renderDappInfo(handleHeaderLayout)}
+            {renderDisclaimer()}
             {renderGaslessAlert()}
             {renderAccountAndNetwork()}
             {renderBalanceChange()}
             {/* {renderSpendLimit()} */}
             {renderDetails()}
             {renderNetworkFeeSelectorWithGasless()}
-            {renderDisclaimer()}
           </>
         )
       }}

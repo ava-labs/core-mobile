@@ -27,7 +27,8 @@ export const ActionSheet = ({
   onClose,
   confirm,
   cancel,
-  children
+  children,
+  alert
 }: {
   title: string
   onClose: () => void
@@ -61,11 +62,11 @@ export const ActionSheet = ({
         contentContainerStyle={{
           backgroundColor: colors.$surfacePrimary,
           paddingHorizontal: 16,
-          paddingBottom: '50%'
+          paddingBottom: '90%'
         }}>
         {children({ handleHeaderLayout })}
       </ScrollView>
-      <ActionButtons confirm={confirm} cancel={cancel} />
+      <ActionButtons confirm={confirm} cancel={cancel} alert={alert} />
     </View>
   )
 }
