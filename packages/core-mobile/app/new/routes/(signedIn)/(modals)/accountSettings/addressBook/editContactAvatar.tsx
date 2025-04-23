@@ -1,9 +1,10 @@
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { SelectAvatar } from 'features/onboarding/components/SelectAvatar'
-import React, { useMemo, useState } from 'react'
+import { useRandomAvatar } from 'features/onboarding/hooks/useRandomAvatar'
+import { useRandomizedAvatars } from 'features/onboarding/hooks/useRandomizedAvatars'
+import React, { useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { editContact, selectContact } from 'store/addressBook'
-import { AVATARS } from 'store/settings/avatar'
 
 const EditContactAvatarScreen = (): JSX.Element => {
   const { back } = useRouter()
@@ -12,13 +13,11 @@ const EditContactAvatarScreen = (): JSX.Element => {
 
   const contact = useSelector(selectContact(contactId))
 
-  const randomizedAvatars = useMemo(() => {
-    return [...AVATARS].sort(() => Math.random() - 0.5)
-  }, [])
+  const randomizedAvatars = useRandomizedAvatars()
+  const randomAvatar = useRandomAvatar(randomizedAvatars)
 
   const [selectedAvatar, setSelectedAvatar] = useState(
-    contact?.avatar ??
-      randomizedAvatars[Math.floor(Math.random() * AVATARS.length)]
+    contact?.avatar ?? randomAvatar
   )
 
   const onSubmit = (): void => {

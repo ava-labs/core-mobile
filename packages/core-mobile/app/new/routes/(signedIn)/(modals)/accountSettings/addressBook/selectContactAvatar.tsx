@@ -1,20 +1,19 @@
 import { useRouter } from 'expo-router'
 import { useNewContactAvatar } from 'features/accountSettings/store'
 import { SelectAvatar } from 'features/onboarding/components/SelectAvatar'
-import React, { useMemo, useState } from 'react'
-import { AVATARS } from 'store/settings/avatar'
+import { useRandomAvatar } from 'features/onboarding/hooks/useRandomAvatar'
+import { useRandomizedAvatars } from 'features/onboarding/hooks/useRandomizedAvatars'
+import React, { useState } from 'react'
 
 const SelectContactAvatarScreen = (): JSX.Element => {
   const { back } = useRouter()
-
   const [newContactAvatar, setNewContactAvatar] = useNewContactAvatar()
 
-  const randomizedAvatars = useMemo(() => {
-    return [...AVATARS].sort(() => Math.random() - 0.5)
-  }, [])
+  const randomizedAvatars = useRandomizedAvatars()
+  const randomAvatar = useRandomAvatar(randomizedAvatars)
 
   const [selectedAvatar, setSelectedAvatar] = useState(
-    newContactAvatar ?? AVATARS[Math.floor(Math.random() * AVATARS.length)]
+    newContactAvatar ?? randomAvatar
   )
 
   const onSubmit = (): void => {

@@ -2,20 +2,18 @@ import BlurredBarsContentLayout from 'common/components/BlurredBarsContentLayout
 import { useAvatar } from 'common/hooks/useAvatar'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { SelectAvatar as Component } from 'features/onboarding/components/SelectAvatar'
-import React, { useMemo, useState } from 'react'
-import { AVATARS } from 'store/settings/avatar'
+import { useRandomAvatar } from 'features/onboarding/hooks/useRandomAvatar'
+import { useRandomizedAvatars } from 'features/onboarding/hooks/useRandomizedAvatars'
+import React, { useState } from 'react'
 
 export default function SelectAvatar(): JSX.Element {
   const { navigate } = useRouter()
   const { saveLocalAvatar } = useAvatar()
 
-  const randomizedAvatars = useMemo(() => {
-    return [...AVATARS].sort(() => Math.random() - 0.5)
-  }, [])
+  const randomizedAvatars = useRandomizedAvatars()
+  const randomAvatar = useRandomAvatar(randomizedAvatars)
 
-  const [selectedAvatar, setSelectedAvatar] = useState(
-    randomizedAvatars[Math.floor(Math.random() * randomizedAvatars.length)]
-  )
+  const [selectedAvatar, setSelectedAvatar] = useState(randomAvatar)
 
   const { mnemonic } = useLocalSearchParams<{
     mnemonic: string

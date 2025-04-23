@@ -8,7 +8,6 @@ import {
   useTheme,
   View
 } from '@avalabs/k2-alpine'
-// import { AvatarSelector } from 'common/components/AvatarSelector'
 import ScreenHeader from 'common/components/ScreenHeader'
 import React, { memo } from 'react'
 import Animated, { FadeIn } from 'react-native-reanimated'
