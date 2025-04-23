@@ -8,9 +8,7 @@ import {
   selectRecentContacts
 } from 'store/addressBook'
 
-export const useContacts = (
-  onlyBtc = false
-): {
+export const useContacts = (): {
   recentAddresses: Contact[]
   accounts: Contact[]
   contacts: Contact[]
@@ -78,16 +76,10 @@ export const useContacts = (
             type: AddrBookItemType
           }[]
         )
-        .filter(
-          value =>
-            (onlyBtc && value.type === 'contact' && value.item.addressBTC) ||
-            (onlyBtc && value.type === 'account') ||
-            !onlyBtc
-        )
         .map(value => {
           return value.item as Contact
         }),
-    [selectedRecentContacts, accounts, contactCollection, onlyBtc]
+    [selectedRecentContacts, accounts, contactCollection]
   )
 
   return {
