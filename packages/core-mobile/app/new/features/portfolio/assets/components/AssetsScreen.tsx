@@ -126,11 +126,7 @@ const AssetsScreen: FC<Props> = ({
     )
   }, [isBalanceLoading, isRefetchingBalance, refetch, isAllBalancesInaccurate])
 
-  const dataLength = data.length
-
   const header = useMemo(() => {
-    if (dataLength === 0) return
-
     return (
       <View sx={styles.dropdownContainer}>
         <DropdownSelections
@@ -141,7 +137,7 @@ const AssetsScreen: FC<Props> = ({
         />
       </View>
     )
-  }, [dataLength, filter, sort, view, handleManageList])
+  }, [filter, sort, view, handleManageList])
 
   return (
     <CollapsibleTabs.FlashList

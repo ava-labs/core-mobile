@@ -55,8 +55,7 @@ import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { selectSelectedCurrency } from 'store/settings/currency'
 import { selectIsPrivacyModeEnabled } from 'store/settings/securityPrivacy'
 import { useFocusedSelector } from 'utils/performance/useFocusedSelector'
-import { useSendSelectedToken } from 'features/send/store'
-import { UI, useIsUIDisabled } from 'hooks/useIsUIDisabled'
+import { useNavigateToSwap } from 'features/swap/hooks/useNavigateToSwap'
 
 const SEGMENT_ITEMS = ['Assets', 'Collectibles', 'DeFi']
 
@@ -64,11 +63,11 @@ const PortfolioHomeScreen = (): JSX.Element => {
   const isPrivacyModeEnabled = useFocusedSelector(selectIsPrivacyModeEnabled)
   const { theme } = useTheme()
   const { navigate } = useRouter()
+  const { navigateToSwap } = useNavigateToSwap()
   const { addStake, canAddStake } = useAddStake()
   const [balanceHeaderLayout, setBalanceHeaderLayout] = useState<
     LayoutRectangle | undefined
   >()
-  const [_, setSelectedToken] = useSendSelectedToken()
   const selectedSegmentIndex = useSharedValue(0)
   const activeAccount = useFocusedSelector(selectActiveAccount)
   const isBalanceLoading = useFocusedSelector(selectIsLoadingBalances)
@@ -143,12 +142,7 @@ const PortfolioHomeScreen = (): JSX.Element => {
   )
 
   const handleSend = useCallback((): void => {
-    setSelectedToken(undefined)
     navigate('/send')
-  }, [navigate, setSelectedToken])
-
-  const handleSwap = useCallback((): void => {
-    navigate('/swap')
   }, [navigate])
 
   const handleConnect = useCallback((): void => {
@@ -194,26 +188,33 @@ const PortfolioHomeScreen = (): JSX.Element => {
     })
   }, [navigate])
 
-  const isBridgeDisabled = useIsUIDisabled(UI.Bridge)
   const actionButtons = useMemo(() => {
     const buttons: ActionButton[] = [
-      { title: ActionButtonTitle.Send, icon: 'send', onPress: handleSend },
-      { title: ActionButtonTitle.Swap, icon: 'swap', onPress: handleSwap },
-      { title: ActionButtonTitle.Buy, icon: 'buy', onPress: handleBuy },
-      {
-        title: ActionButtonTitle.Stake,
-        icon: 'stake',
-        onPress: addStake,
-        disabled: !canAddStake
-      }
+      { title: ActionButtonTitle.Send, icon: 'send', onPress: handleSend }
     ]
-    if (!isBridgeDisabled) {
+    if (!isDeveloperMode) {
       buttons.push({
-        title: ActionButtonTitle.Bridge,
-        icon: 'bridge',
-        onPress: handleBridge
+        title: ActionButtonTitle.Swap,
+        icon: 'swap',
+        onPress: () => navigateToSwap()
       })
     }
+    buttons.push({
+      title: ActionButtonTitle.Buy,
+      icon: 'buy',
+      onPress: handleBuy
+    })
+    buttons.push({
+      title: ActionButtonTitle.Stake,
+      icon: 'stake',
+      onPress: addStake,
+      disabled: !canAddStake
+    })
+    buttons.push({
+      title: ActionButtonTitle.Bridge,
+      icon: 'bridge',
+      onPress: handleBridge
+    })
     buttons.push({
       title: ActionButtonTitle.Connect,
       icon: 'connect',
@@ -224,11 +225,11 @@ const PortfolioHomeScreen = (): JSX.Element => {
     addStake,
     canAddStake,
     handleSend,
-    handleSwap,
     handleBridge,
     handleConnect,
     handleBuy,
-    isBridgeDisabled
+    isDeveloperMode,
+    navigateToSwap
   ])
 
   const renderHeader = useCallback((): JSX.Element => {

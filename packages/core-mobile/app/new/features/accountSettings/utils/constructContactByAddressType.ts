@@ -15,7 +15,7 @@ export const constructContactByAddressType = (
     case AddressType.XP_TESTNET: {
       return {
         ...contact,
-        addressXP: xpAddressWithoutPrefix(address ?? '')
+        addressXP: address ? xpAddressWithoutPrefix(address) : undefined
       }
     }
     case AddressType.BTC:

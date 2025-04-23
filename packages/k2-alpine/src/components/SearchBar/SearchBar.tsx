@@ -179,7 +179,14 @@ export const SearchBar: FC<Props> = ({
             {...rest}
           />
         </View>
-        {renderRightComponent()}
+        <View
+          sx={{
+            alignItems: 'center',
+            justifyContent: 'center',
+            marginLeft: 8
+          }}>
+          {renderRightComponent()}
+        </View>
       </View>
       {isFocused && useCancel && (
         <Text

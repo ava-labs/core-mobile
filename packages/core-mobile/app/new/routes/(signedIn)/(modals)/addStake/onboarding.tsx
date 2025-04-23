@@ -14,8 +14,8 @@ const StakeOnboardingScreen = (): JSX.Element => {
   return (
     <TransactionOnboarding
       icon={{ component: Icons.Custom.Psychiatry, size: 60 }}
-      title={`Stake your AVAX and\nearn rewards`}
-      subtitle={`Lock AVAX in the network for a set period\nof time and generate staking rewards`}
+      title={`Stake your AVAX and earn rewards`}
+      subtitle={`Lock AVAX in the network for a set period of time and generate staking rewards`}
       viewOnceKey={ViewOnceKey.STAKE_ONBOARDING}
       onPressNext={handlePressNext}
     />

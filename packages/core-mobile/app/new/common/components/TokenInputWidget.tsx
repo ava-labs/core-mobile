@@ -38,7 +38,8 @@ export const TokenInputWidget = ({
   sx,
   disabled,
   editable = true,
-  inputTextColor
+  inputTextColor,
+  isLoadingAmount = false
 }: {
   title: string
   amount?: bigint
@@ -56,6 +57,7 @@ export const TokenInputWidget = ({
   disabled?: boolean
   editable?: boolean
   inputTextColor?: string
+  isLoadingAmount?: boolean
 }): JSX.Element => {
   const {
     theme: { colors }
@@ -74,7 +76,7 @@ export const TokenInputWidget = ({
     } else {
       const value = Number(balance ?? 0n) * button.percent
 
-      onAmountChange?.(button.value ?? BigInt(value))
+      onAmountChange?.(button.value ?? BigInt(Math.floor(value)))
     }
 
     setPercentageButtons(prevButtons =>
@@ -91,7 +93,7 @@ export const TokenInputWidget = ({
           ...b,
           isSelected:
             balance !== undefined &&
-            value.value === BigInt(Number(balance) * b.percent)
+            value.value === BigInt(Math.floor(Number(balance) * b.percent))
         }))
       )
 
@@ -147,93 +149,124 @@ export const TokenInputWidget = ({
           sx={{
             flexDirection: 'row',
             alignItems: 'center',
-            justifyContent: 'space-between',
             gap: 12
           }}>
-          <TouchableOpacity
-            onPress={onSelectToken}
-            disabled={!isTokenSelectable}>
-            <View sx={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-              {token && network && (
-                <LogoWithNetwork
-                  token={token}
-                  network={network}
-                  outerBorderColor={colors.$surfaceSecondary}
-                />
-              )}
-              <View sx={{ gap: 1 }}>
-                {token && <Text variant="subtitle2">{title}</Text>}
-                <View sx={{ flexDirection: 'row', alignItems: 'center' }}>
-                  <Text
-                    variant="heading6"
-                    sx={{
-                      marginTop: 0
-                    }}>
-                    {token
-                      ? token.symbol
-                      : isTokenSelectable
-                      ? 'Select a token'
-                      : ''}
-                  </Text>
-                  {isTokenSelectable && (
-                    <Icons.Navigation.ExpandMore
-                      width={20}
-                      color={colors.$textPrimary}
-                    />
-                  )}
-                </View>
-                {token &&
-                  (balance !== undefined ? (
-                    <Text
-                      variant="subtitle2"
-                      sx={{
-                        color: '$textSecondary'
-                      }}>{`${formatTokenAmount(
-                      bigintToBig(balance, token.decimals),
-                      6
-                    )} ${token.symbol}`}</Text>
-                  ) : shouldShowBalance ? (
-                    <View sx={{ alignSelf: 'flex-start' }}>
-                      <ActivityIndicator size={'small'} />
-                    </View>
-                  ) : undefined)}
-              </View>
-            </View>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={{ flexShrink: 1 }}
-            onPress={token === undefined ? onSelectToken : undefined}>
-            <View
-              sx={{ alignItems: 'flex-end' }}
-              pointerEvents={token === undefined ? 'none' : 'auto'}>
-              <TokenAmountInput
-                editable={editable}
-                denomination={token?.decimals ?? 0}
-                style={{
-                  fontFamily: 'Aeonik-Medium',
-                  fontSize: 42,
-                  minWidth: 100,
-                  textAlign: 'right',
-                  color:
-                    inputTextColor ??
-                    (editable ? colors.$textPrimary : colors.$textSecondary)
-                }}
-                value={amount}
-                onChange={handleAmountChange}
-                onFocus={handleFocus}
-                onBlur={handleBlur}
-                placeholder="0.00"
+          <View sx={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+            {token && network && (
+              <LogoWithNetwork
+                token={token}
+                network={network}
+                outerBorderColor={colors.$surfaceSecondary}
               />
-              <Text
-                variant="subtitle2"
+            )}
+            <View sx={{ flex: 1 }}>
+              <View
                 sx={{
-                  color: inputTextColor ?? '$textSecondary',
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  gap: 20,
+                  justifyContent: 'space-between'
+                }}>
+                <TouchableOpacity
+                  onPress={onSelectToken}
+                  disabled={!isTokenSelectable}>
+                  <View sx={{ gap: 1 }}>
+                    {token && <Text variant="subtitle2">{title}</Text>}
+                    <View sx={{ flexDirection: 'row', alignItems: 'center' }}>
+                      <Text
+                        variant="heading6"
+                        sx={{
+                          marginTop: 0
+                        }}>
+                        {token
+                          ? token.symbol
+                          : isTokenSelectable
+                          ? 'Select a token'
+                          : ''}
+                      </Text>
+                      {isTokenSelectable && (
+                        <Icons.Navigation.ExpandMore
+                          width={20}
+                          color={colors.$textPrimary}
+                        />
+                      )}
+                    </View>
+                  </View>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  sx={{ flex: 1 }}
+                  onPress={token === undefined ? onSelectToken : undefined}>
+                  <View
+                    sx={{ alignItems: 'flex-end' }}
+                    pointerEvents={token === undefined ? 'none' : 'auto'}>
+                    <TokenAmountInput
+                      editable={editable}
+                      denomination={token?.decimals ?? 0}
+                      style={{
+                        fontFamily: 'Aeonik-Medium',
+                        fontSize: 42,
+                        minWidth: 100,
+                        textAlign: 'right',
+                        color:
+                          inputTextColor ??
+                          (editable
+                            ? colors.$textPrimary
+                            : colors.$textSecondary)
+                      }}
+                      value={amount}
+                      onChange={handleAmountChange}
+                      onFocus={handleFocus}
+                      onBlur={handleBlur}
+                      placeholder="0.00"
+                    />
+                  </View>
+                </TouchableOpacity>
+              </View>
+              <View
+                sx={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  gap: 20,
+                  justifyContent: 'space-between',
                   marginTop: -4
                 }}>
-                {formatInCurrency(amount)}
-              </Text>
+                <View>
+                  {token &&
+                    (balance !== undefined ? (
+                      <Text
+                        variant="subtitle2"
+                        sx={{
+                          color: '$textSecondary'
+                        }}>{`${formatTokenAmount(
+                        bigintToBig(balance, token.decimals),
+                        6
+                      )} ${token.symbol}`}</Text>
+                    ) : shouldShowBalance ? (
+                      <View sx={{ alignSelf: 'flex-start' }}>
+                        <ActivityIndicator size="small" />
+                      </View>
+                    ) : undefined)}
+                </View>
+                <View
+                  sx={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    gap: 6,
+                    flexShrink: 1
+                  }}>
+                  {isLoadingAmount && <ActivityIndicator size="small" />}
+                  <Text
+                    variant="subtitle2"
+                    numberOfLines={1}
+                    sx={{
+                      color: inputTextColor ?? '$textSecondary'
+                    }}>
+                    {formatInCurrency(amount)}
+                  </Text>
+                </View>
+              </View>
             </View>
-          </TouchableOpacity>
+          </View>
         </View>
         <View
           sx={{
