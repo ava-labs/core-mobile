@@ -46,7 +46,12 @@ export default function NftSendLayout(): JSX.Element {
           name="onboarding"
           options={{ ...modalFirstScreenOptions, headerTitle: undefined }}
         />
-        <Stack.Screen name="recentContacts" options={modalFirstScreenOptions} />
+        <Stack.Screen
+          name="recentContacts"
+          options={
+            hasBeenViewedOnboarding ? modalFirstScreenOptions : undefined
+          }
+        />
         <Stack.Screen name="scanQrCode" options={{ headerTitle: undefined }} />
       </Stack>
     </SendContextProvider>
