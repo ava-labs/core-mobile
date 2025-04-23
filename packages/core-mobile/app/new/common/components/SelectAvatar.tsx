@@ -18,12 +18,14 @@ export const SelectAvatar = memo(
   ({
     selectedAvatar,
     avatars,
+    title,
     description,
     setSelectedAvatar,
     onSubmit,
     buttonText
   }: {
     avatars: AvatarType[]
+    title: string
     description?: string
     selectedAvatar?: AvatarType
     setSelectedAvatar: (avatar: AvatarType) => void
@@ -49,10 +51,7 @@ export const SelectAvatar = memo(
             style={{
               padding: 16
             }}>
-            <ScreenHeader
-              title={`Select your\npersonal avatar`}
-              description={description}
-            />
+            <ScreenHeader title={title} description={description} />
           </View>
           <Animated.View entering={FadeIn.delay(400)}>
             <View

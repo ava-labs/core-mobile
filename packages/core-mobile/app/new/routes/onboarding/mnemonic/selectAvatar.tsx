@@ -1,7 +1,7 @@
 import BlurredBarsContentLayout from 'common/components/BlurredBarsContentLayout'
 import { useAvatar } from 'common/hooks/useAvatar'
 import { useLocalSearchParams, useRouter } from 'expo-router'
-import { SelectAvatar as Component } from 'features/onboarding/components/SelectAvatar'
+import { SelectAvatar as Component } from 'common/components/SelectAvatar'
 import { useRandomAvatar } from 'features/onboarding/hooks/useRandomAvatar'
 import { useRandomizedAvatars } from 'features/onboarding/hooks/useRandomizedAvatars'
 import React, { useState } from 'react'
@@ -34,6 +34,7 @@ export default function SelectAvatar(): JSX.Element {
     <BlurredBarsContentLayout>
       <Component
         avatars={randomizedAvatars}
+        title={`Select your\npersonal avatar`}
         description="Add a display avatar for your wallet. You can change it at any time in the app's settings"
         selectedAvatar={selectedAvatar}
         onSubmit={onSubmit}

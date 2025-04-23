@@ -49,8 +49,13 @@ const AddContactScreen = (): React.JSX.Element => {
   }, [back, canGoBack, contact, contactId, dispatch])
 
   const handleSelectAvatar = useCallback(() => {
-    navigate('/accountSettings/addressBook/selectContactAvatar')
-  }, [navigate])
+    navigate({
+      pathname: '/accountSettings/addressBook/selectContactAvatar',
+      params: {
+        name: contact?.name
+      }
+    })
+  }, [navigate, contact?.name])
 
   return (
     <View sx={{ flex: 1, paddingHorizontal: 16, paddingBottom: 16 }}>

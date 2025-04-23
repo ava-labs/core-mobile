@@ -1,14 +1,14 @@
 import { Avatar, TouchableOpacity } from '@avalabs/k2-alpine'
+import { useAvatar } from 'common/hooks/useAvatar'
 import React, { forwardRef } from 'react'
 import { View as RNView } from 'react-native'
 import { useSelector } from 'react-redux'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
-import { selectSelectedAvatar } from 'store/settings/avatar'
 
 export const AccountSettingBarButton = forwardRef<RNView>(
   ({ onPress }: { onPress?: () => void }, ref): JSX.Element => {
     const isDeveloperMode = useSelector(selectIsDeveloperMode)
-    const avatar = useSelector(selectSelectedAvatar)
+    const { avatar } = useAvatar()
 
     return (
       <TouchableOpacity
