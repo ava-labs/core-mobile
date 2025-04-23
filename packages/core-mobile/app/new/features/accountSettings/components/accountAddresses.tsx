@@ -66,9 +66,13 @@ export const AccountAddresses = ({
   return (
     <GroupList
       data={data}
-      titleSx={{ fontSize: 15, lineHeight: 18, fontFamily: 'Inter-Regular' }}
+      titleSx={{
+        fontSize: 15,
+        lineHeight: 18,
+        fontFamily: 'Inter-Regular'
+      }}
       subtitleSx={{ fontSize: 13, lineHeight: 18 }}
-      textContainerSx={{ paddingVertical: 9 }}
+      textContainerSx={{ paddingVertical: 9, flex: 2 }}
       valueSx={{ fontSize: 16, lineHeight: 22 }}
     />
   )

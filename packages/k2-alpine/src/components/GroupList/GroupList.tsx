@@ -76,6 +76,7 @@ export const GroupList = ({
     if (typeof title === 'string') {
       return (
         <Text
+          numberOfLines={2}
           variant="buttonMedium"
           sx={{
             fontFamily: 'Inter-Medium',
