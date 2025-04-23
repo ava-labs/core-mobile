@@ -33,6 +33,8 @@ import { SendErrorMessage } from 'screens/send/utils/types'
 import { router } from 'expo-router'
 import { Eip1559Fees } from 'utils/Utils'
 import { ActionSheet } from 'new/common/components/ActionSheet'
+import ScreenHeader from 'new/common/components/ScreenHeader'
+import { sentenceCase } from 'new/common/utils/sentenceCase'
 import { Details } from '../components/Details'
 import { Network } from '../components/Network'
 import { NetworkFeeSelectorWithGasless } from '../components/NetworkFeeSelectorWithGasless'
@@ -241,7 +243,7 @@ const ApprovalScreen = ({
     validateEthSendTransaction()
   }, [validateEthSendTransaction, gaslessEnabled])
 
-  const renderGaslessAlert = (): JSX.Element | null => {
+  const renderGaslessAlert = useCallback((): JSX.Element | null => {
     if (!gaslessError) return null
 
     return (
@@ -261,48 +263,89 @@ const ApprovalScreen = ({
     //     />
     //   </View>
     // )
-  }
+  }, [gaslessError])
 
-  const renderDappInfo = (
-    handleHeaderLayout: (event: LayoutChangeEvent) => void
-  ): JSX.Element | null => {
-    if (!displayData.dAppInfo) return null
-
-    const { action, logoUri } = displayData.dAppInfo
-
-    return (
-      <View
-        style={{
-          justifyContent: 'center',
-          alignItems: 'center',
-          marginBottom: 36
-        }}>
-        <View onLayout={handleHeaderLayout}>
-          <TokenLogo logoUri={logoUri} size={62} />
+  const renderTitle = useCallback(
+    (
+      title: string,
+      handleHeaderLayout: (event: LayoutChangeEvent) => void
+    ): JSX.Element | null => {
+      return (
+        <View
+          onLayout={handleHeaderLayout}
+          style={{
+            marginBottom: 32
+          }}>
+          <ScreenHeader title={sentenceCase(title)} />
         </View>
+      )
+    },
+    []
+  )
+
+  const renderDappInfo = useCallback(
+    (
+      dAppInfo: {
+        name: string
+        action: string
+        logoUri?: string
+      },
+      handleHeaderLayout: (event: LayoutChangeEvent) => void
+    ): JSX.Element | null => {
+      const { action, logoUri } = dAppInfo
+
+      return (
         <View
           style={{
-            alignItems: 'center',
             justifyContent: 'center',
-            marginTop: 21
+            alignItems: 'center',
+            marginBottom: 36
           }}>
-          <Text
-            variant="body1"
-            sx={{
-              textAlign: 'center',
-              fontSize: 15,
-              lineHeight: 20,
-              fontWeight: '500',
-              color: '$textPrimary'
+          <View onLayout={handleHeaderLayout}>
+            <TokenLogo logoUri={logoUri} size={62} />
+          </View>
+          <View
+            style={{
+              alignItems: 'center',
+              justifyContent: 'center',
+              marginTop: 21
             }}>
-            {action}
-          </Text>
+            <Text
+              variant="body1"
+              sx={{
+                textAlign: 'center',
+                fontSize: 15,
+                lineHeight: 20,
+                fontWeight: '500',
+                color: '$textPrimary'
+              }}>
+              {action}
+            </Text>
+          </View>
         </View>
-      </View>
-    )
-  }
+      )
+    },
+    []
+  )
 
-  const renderDisclaimer = (): JSX.Element | null => {
+  const renderDappInfoOrTitle = useCallback(
+    (
+      handleHeaderLayout: (event: LayoutChangeEvent) => void
+    ): JSX.Element | null => {
+      // prioritize rendering dAppInfo over title if both are present
+      // we only want to render one of them
+      if (displayData.dAppInfo)
+        return renderDappInfo(displayData.dAppInfo, handleHeaderLayout)
+
+      if (displayData.title)
+        return renderTitle(displayData.title, handleHeaderLayout)
+
+      return null
+    },
+    [displayData.dAppInfo, displayData.title, renderDappInfo, renderTitle]
+  )
+
+  const renderDisclaimer = useCallback((): JSX.Element | null => {
     if (!displayData.disclaimer) return null
 
     return (
@@ -328,9 +371,9 @@ const ApprovalScreen = ({
         </Text>
       </View>
     )
-  }
+  }, [displayData.disclaimer, colors.$textDanger])
 
-  const renderAccountAndNetwork = (): JSX.Element | undefined => {
+  const renderAccountAndNetwork = useCallback((): JSX.Element | undefined => {
     if (displayData.account && displayData.network) {
       return (
         <View
@@ -360,7 +403,7 @@ const ApprovalScreen = ({
     if (displayData.account) {
       return <Account address={displayData.account} />
     }
-  }
+  }, [displayData.account, displayData.network])
 
   const renderDetails = useCallback((): JSX.Element => {
     return (
@@ -375,11 +418,11 @@ const ApprovalScreen = ({
     )
   }, [filteredSections])
 
-  const renderBalanceChange = (): JSX.Element | null => {
+  const renderBalanceChange = useCallback((): JSX.Element | null => {
     if (!hasBalanceChange) return null
 
     return <BalanceChange balanceChange={balanceChange} />
-  }
+  }, [balanceChange, hasBalanceChange])
 
   // const renderSpendLimit = (): JSX.Element | null => {
   //   // if (spendLimits.length === 0 || hasBalanceChange) {
@@ -438,7 +481,7 @@ const ApprovalScreen = ({
 
   return (
     <ActionSheet
-      title={displayData.title}
+      title={sentenceCase(displayData.title)}
       onClose={onReject}
       alert={alert}
       confirm={{
@@ -454,7 +497,7 @@ const ApprovalScreen = ({
       {({ handleHeaderLayout }) => {
         return (
           <>
-            {renderDappInfo(handleHeaderLayout)}
+            {renderDappInfoOrTitle(handleHeaderLayout)}
             {renderDisclaimer()}
             {renderGaslessAlert()}
             {renderAccountAndNetwork()}
