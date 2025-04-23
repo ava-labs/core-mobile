@@ -1,13 +1,14 @@
 import { TokenType } from '@avalabs/vm-module-types'
 import { useCallback, useEffect } from 'react'
 import { useInAppRequest } from 'hooks/useInAppRequest'
-import { useSendContext } from 'contexts/SendContext'
 import { assertNotUndefined } from 'utils/assertions'
 import { useEVMProvider } from 'hooks/networks/networkProviderHooks'
-import { bigIntToString } from '@avalabs/core-utils-sdk'
+import { TokenUnit } from '@avalabs/core-utils-sdk'
 import Logger from 'utils/Logger'
 import { selectIsGaslessBlocked } from 'store/posthog'
 import { useSelector } from 'react-redux'
+import { useSendContext } from 'new/features/send/context/sendContext'
+import { useSendSelectedToken } from 'new/features/send/store'
 import { SendAdapterEVM, SendErrorMessage } from '../utils/types'
 import { send as sendEVM } from '../utils/evm/send'
 import { getGasLimit } from '../utils/evm/getGasLimit'
@@ -34,20 +35,22 @@ const useEVMSend: SendAdapterEVM = ({
     setMaxAmount,
     setError,
     setIsSending,
-    token,
-    toAddress,
+    addressToSend,
     amount,
     canValidate
   } = useSendContext()
+
+  const [selectedToken] = useSendSelectedToken()
   const provider = useEVMProvider(network)
   const isGaslessBlocked = useSelector(selectIsGaslessBlocked)
 
   const send = useCallback(async () => {
     try {
-      assertNotUndefined(token)
-      assertNotUndefined(toAddress)
+      assertNotUndefined(selectedToken)
+      assertNotUndefined(addressToSend)
       assertNotUndefined(provider)
-      validateSupportedToken(token)
+      assertNotUndefined(chainId)
+      validateSupportedToken(selectedToken)
       setIsSending(true)
 
       return await sendEVM({
@@ -55,21 +58,21 @@ const useEVMSend: SendAdapterEVM = ({
         fromAddress,
         chainId,
         provider,
-        token,
-        toAddress,
-        amount: amount?.bn
+        token: selectedToken,
+        toAddress: addressToSend,
+        amount: amount?.toSubUnit()
       })
     } finally {
       setIsSending(false)
     }
   }, [
-    request,
     chainId,
     fromAddress,
+    addressToSend,
+    selectedToken,
     provider,
     setIsSending,
-    token,
-    toAddress,
+    request,
     amount
   ])
 
@@ -93,10 +96,12 @@ const useEVMSend: SendAdapterEVM = ({
 
   const validate = useCallback(async () => {
     try {
-      assertNotUndefined(token)
-      validateSupportedToken(token)
-      validateBasicInputs(token, toAddress, maxFee)
-      assertNotUndefined(toAddress)
+      assertNotUndefined(selectedToken)
+      validateSupportedToken(selectedToken)
+      assertNotUndefined(nativeToken)
+      assertNotUndefined(maxFee)
+      validateBasicInputs(selectedToken, addressToSend, maxFee)
+      assertNotUndefined(addressToSend)
       assertNotUndefined(provider)
 
       // For ERC-20 and native tokens, we want to know the max. transfer amount
@@ -105,29 +110,29 @@ const useEVMSend: SendAdapterEVM = ({
       const gasLimit = await getGasLimit({
         fromAddress,
         provider,
-        toAddress, // gas used for transfer will be the same no matter the target address
-        amount: amount?.bn ?? 0n, // the amount does not change the gas costs
-        token
+        toAddress: addressToSend, // gas used for transfer will be the same no matter the target address
+        amount: amount?.toSubUnit() ?? 0n, // the amount does not change the gas costs
+        token: selectedToken
       })
 
-      if (token.type === TokenType.ERC721) {
+      if (selectedToken.type === TokenType.ERC721) {
         validateERC721(nativeToken)
-      } else if (token.type === TokenType.ERC1155) {
-        validateERC1155(token, nativeToken)
+      } else if (selectedToken.type === TokenType.ERC1155) {
+        validateERC1155(selectedToken, nativeToken)
       } else if (
-        token.type === TokenType.NATIVE ||
-        token.type === TokenType.ERC20
+        selectedToken.type === TokenType.NATIVE ||
+        selectedToken.type === TokenType.ERC20
       ) {
         validateAmount({
-          amount: amount?.bn,
-          token
+          amount: amount?.toSubUnit(),
+          token: selectedToken
         })
         validateFee({
           gasLimit,
           maxFee,
-          amount: amount?.bn,
+          amount: amount?.toSubUnit(),
           nativeToken,
-          token
+          token: selectedToken
         })
       }
 
@@ -138,47 +143,62 @@ const useEVMSend: SendAdapterEVM = ({
       handleError(err)
     }
   }, [
-    nativeToken,
-    fromAddress,
-    provider,
-    handleError,
-    setError,
+    selectedToken,
+    addressToSend,
     maxFee,
-    token,
-    toAddress,
-    amount
+    provider,
+    fromAddress,
+    amount,
+    setError,
+    nativeToken,
+    handleError
   ])
 
   const getMaxAmount = useCallback(async () => {
-    if (!provider || !toAddress || !token || !isSupportedToken(token)) {
+    if (
+      !provider ||
+      !addressToSend ||
+      !selectedToken ||
+      nativeToken === undefined ||
+      maxFee === undefined ||
+      !isSupportedToken(selectedToken)
+    ) {
       return
     }
 
     const gasLimit = await getGasLimit({
       fromAddress,
       provider,
-      toAddress,
-      amount: amount?.bn ?? 0n,
-      token
+      toAddress: addressToSend,
+      amount: amount?.toSubUnit() ?? 0n,
+      token: selectedToken
     })
 
     const totalFee = gasLimit * maxFee
     const maxAmountValue = nativeToken.balance - totalFee
 
-    if (token.type === TokenType.NATIVE) {
-      return {
-        bn: maxAmountValue ?? 0n,
-        amount: maxAmountValue
-          ? bigIntToString(maxAmountValue, nativeToken.decimals)
-          : ''
-      }
-    } else if (token.type === TokenType.ERC20) {
-      return {
-        bn: token.balance,
-        amount: bigIntToString(token.balance, token.decimals)
-      }
+    if (selectedToken.type === TokenType.NATIVE) {
+      return new TokenUnit(
+        maxAmountValue ?? 0n,
+        nativeToken.decimals,
+        nativeToken.symbol
+      )
+    } else if (selectedToken.type === TokenType.ERC20) {
+      return new TokenUnit(
+        selectedToken.balance,
+        selectedToken.decimals,
+        selectedToken.symbol
+      )
     }
-  }, [amount, fromAddress, maxFee, nativeToken, provider, toAddress, token])
+  }, [
+    addressToSend,
+    amount,
+    fromAddress,
+    maxFee,
+    nativeToken,
+    provider,
+    selectedToken
+  ])
 
   useEffect(() => {
     if (canValidate) {

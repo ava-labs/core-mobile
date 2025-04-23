@@ -55,7 +55,6 @@ import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { selectSelectedCurrency } from 'store/settings/currency'
 import { selectIsPrivacyModeEnabled } from 'store/settings/securityPrivacy'
 import { useFocusedSelector } from 'utils/performance/useFocusedSelector'
-import { useSendSelectedToken } from 'features/send/store'
 import { useNavigateToSwap } from 'features/swap/hooks/useNavigateToSwap'
 
 const SEGMENT_ITEMS = ['Assets', 'Collectibles', 'DeFi']
@@ -69,7 +68,6 @@ const PortfolioHomeScreen = (): JSX.Element => {
   const [balanceHeaderLayout, setBalanceHeaderLayout] = useState<
     LayoutRectangle | undefined
   >()
-  const [_, setSelectedToken] = useSendSelectedToken()
   const selectedSegmentIndex = useSharedValue(0)
   const activeAccount = useFocusedSelector(selectActiveAccount)
   const isBalanceLoading = useFocusedSelector(selectIsLoadingBalances)
@@ -144,9 +142,8 @@ const PortfolioHomeScreen = (): JSX.Element => {
   )
 
   const handleSend = useCallback((): void => {
-    setSelectedToken(undefined)
     navigate('/send')
-  }, [navigate, setSelectedToken])
+  }, [navigate])
 
   const handleConnect = useCallback((): void => {
     navigate('/walletConnectScan')

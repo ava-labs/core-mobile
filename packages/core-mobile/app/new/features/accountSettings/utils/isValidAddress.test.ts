@@ -9,43 +9,87 @@ const BTC_ADDRESS_TESTNET = 'tb1q0hchrw5nnru09292jz67zhzrq56tapgaftw7ps'
 
 describe('isValidAddress', () => {
   it('should return true for valid CChain address', () => {
-    expect(isValidAddress(AddressType.EVM, C_ADDRESS)).toBe(true)
+    expect(
+      isValidAddress({ addressType: AddressType.EVM, address: C_ADDRESS })
+    ).toBe(true)
   })
 
   it('should return false for invalid CChain address', () => {
-    expect(isValidAddress(AddressType.EVM, 'invalidCChainAddress')).toBe(false)
+    expect(
+      isValidAddress({
+        addressType: AddressType.EVM,
+        address: 'invalidCChainAddress'
+      })
+    ).toBe(false)
   })
 
   it('should return true for valid X/P address in developer mode', () => {
-    expect(isValidAddress(AddressType.XP, XP_ADDRESS_TESTNET, true)).toBe(true)
+    expect(
+      isValidAddress({
+        addressType: AddressType.XP,
+        address: XP_ADDRESS_TESTNET,
+        isDeveloperMode: true
+      })
+    ).toBe(true)
   })
   it('should return false for invalid X/P address in developer mode', () => {
-    expect(isValidAddress(AddressType.XP, 'invalidXPAddress', true)).toBe(false)
+    expect(
+      isValidAddress({
+        addressType: AddressType.XP,
+        address: 'invalidXPAddress',
+        isDeveloperMode: true
+      })
+    ).toBe(false)
   })
 
   it('should return true for valid X/P address in production mode', () => {
-    expect(isValidAddress(AddressType.XP, XP_ADDRESS, false)).toBe(true)
+    expect(
+      isValidAddress({
+        addressType: AddressType.XP,
+        address: XP_ADDRESS,
+        isDeveloperMode: false
+      })
+    ).toBe(true)
   })
   it('should return false for invalid X/P address in production mode', () => {
-    expect(isValidAddress(AddressType.XP, 'invalidXPVMAddress', false)).toBe(
-      false
-    )
+    expect(
+      isValidAddress({
+        addressType: AddressType.XP,
+        address: 'invalidXPVMAddress',
+        isDeveloperMode: false
+      })
+    ).toBe(false)
   })
   it('should return true for valid BTC address in developer mode', () => {
-    expect(isValidAddress(AddressType.BTC, BTC_ADDRESS_TESTNET, true)).toBe(
-      true
-    )
+    expect(
+      isValidAddress({
+        addressType: AddressType.BTC,
+        address: BTC_ADDRESS_TESTNET,
+        isDeveloperMode: true
+      })
+    ).toBe(true)
   })
 
   it('should return false for invalid BTC address in developer mode', () => {
-    expect(isValidAddress(AddressType.BTC, 'invalidBTCAddress', true)).toBe(
-      false
-    )
+    expect(
+      isValidAddress({
+        addressType: AddressType.BTC,
+        address: 'invalidBTCAddress',
+        isDeveloperMode: true
+      })
+    ).toBe(false)
   })
   it('should return true for valid BTC address in production mode', () => {
-    expect(isValidAddress(AddressType.BTC, BTC_ADDRESS)).toBe(true)
+    expect(
+      isValidAddress({ addressType: AddressType.BTC, address: BTC_ADDRESS })
+    ).toBe(true)
   })
   it('should return false for invalid BTC address in production mode', () => {
-    expect(isValidAddress(AddressType.BTC, 'invalidBTCAddress')).toBe(false)
+    expect(
+      isValidAddress({
+        addressType: AddressType.BTC,
+        address: 'invalidBTCAddress'
+      })
+    ).toBe(false)
   })
 })
