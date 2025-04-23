@@ -14,8 +14,8 @@ const SendOnboardingScreen = (): JSX.Element => {
   return (
     <TransactionOnboarding
       icon={{ component: Icons.Custom.Send, size: 60 }}
-      title={`Send tokens to an address\nor contact`}
-      subtitle={`Send tokens to any address or contact\non a given network`}
+      title={`Send tokens to an address or contact`}
+      subtitle={`Send tokens to any address or contact on a given network`}
       viewOnceKey={ViewOnceKey.SEND_ONBOARDING}
       onPressNext={handlePressNext}
     />
