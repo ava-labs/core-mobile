@@ -8,7 +8,6 @@ import { PageControl } from '@avalabs/k2-alpine'
 import { useSelector } from 'react-redux'
 import { selectHasBeenViewedOnce, ViewOnceKey } from 'store/viewOnce'
 import { useNavigation } from 'expo-router'
-import { SendContextProvider } from 'features/send/context/sendContext'
 
 export default function NftSendLayout(): JSX.Element {
   const hasBeenViewedOnboarding = useSelector(
@@ -35,20 +34,18 @@ export default function NftSendLayout(): JSX.Element {
     : 'onboarding'
 
   return (
-    <SendContextProvider>
-      <Stack
-        initialRouteName={initialRouteName}
-        screenOptions={{
-          ...modalStackNavigatorScreenOptions,
-          headerTitle: renderPageControl
-        }}>
-        <Stack.Screen
-          name="onboarding"
-          options={{ ...modalFirstScreenOptions, headerTitle: undefined }}
-        />
-        <Stack.Screen name="recentContacts" options={modalFirstScreenOptions} />
-        <Stack.Screen name="scanQrCode" options={{ headerTitle: undefined }} />
-      </Stack>
-    </SendContextProvider>
+    <Stack
+      initialRouteName={initialRouteName}
+      screenOptions={{
+        ...modalStackNavigatorScreenOptions,
+        headerTitle: renderPageControl
+      }}>
+      <Stack.Screen
+        name="onboarding"
+        options={{ ...modalFirstScreenOptions, headerTitle: undefined }}
+      />
+      <Stack.Screen name="recentContacts" options={modalFirstScreenOptions} />
+      <Stack.Screen name="scanQrCode" options={{ headerTitle: undefined }} />
+    </Stack>
   )
 }

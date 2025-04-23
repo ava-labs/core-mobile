@@ -1,14 +1,14 @@
 import { NetworkTokenWithBalance, TokenType } from '@avalabs/vm-module-types'
-import { useCallback } from 'react'
+import { useCallback, useState } from 'react'
 import { useInAppRequest } from 'hooks/useInAppRequest'
 import { assertNotUndefined } from 'utils/assertions'
 import { useEVMProvider } from 'hooks/networks/networkProviderHooks'
 import { selectIsGaslessBlocked } from 'store/posthog'
 import { useSelector } from 'react-redux'
-import { useSendContext } from 'new/features/send/context/sendContext'
 import { useSendSelectedToken } from 'new/features/send/store'
 import { NftItem } from 'services/nft/types'
 import { JsonRpcBatchInternal } from '@avalabs/core-wallets-sdk'
+import { showSnackbar } from 'new/common/utils/toast'
 import { SendAdapterEVM, SendErrorMessage } from '../utils/types'
 import { send as sendEVM } from '../utils/evm/send'
 import { getGasLimit } from '../utils/evm/getGasLimit'
@@ -23,11 +23,12 @@ import {
 const useCollectibleSend: SendAdapterEVM = ({
   chainId,
   fromAddress,
-  nativeToken
+  nativeToken,
+  maxFee,
+  network
 }) => {
   const { request } = useInAppRequest()
-  const { setError, setIsSending, amount, network, maxFee } = useSendContext()
-
+  const [isSending, setIsSending] = useState(false)
   const [selectedToken] = useSendSelectedToken()
   const provider = useEVMProvider(network)
   const isGaslessBlocked = useSelector(selectIsGaslessBlocked)
@@ -39,15 +40,14 @@ const useCollectibleSend: SendAdapterEVM = ({
           !isGaslessBlocked &&
           err.message === SendErrorMessage.INSUFFICIENT_BALANCE_FOR_FEE
         ) {
-          setError(undefined)
           return
         }
-        setError(err.message)
+        showSnackbar(err.message)
       } else {
-        setError(SendErrorMessage.UNKNOWN_ERROR)
+        showSnackbar(SendErrorMessage.UNKNOWN_ERROR)
       }
     },
-    [setError, isGaslessBlocked]
+    [isGaslessBlocked]
   )
 
   const validate = useCallback(
@@ -56,13 +56,15 @@ const useCollectibleSend: SendAdapterEVM = ({
       from,
       token,
       p,
-      nt
+      nt,
+      fee
     }: {
       toAddress: string
       from: string
       token: NftItem
       p: JsonRpcBatchInternal
       nt: NetworkTokenWithBalance
+      fee: bigint
     }) => {
       try {
         // For ERC-20 and native tokens, we want to know the max. transfer amount
@@ -72,7 +74,7 @@ const useCollectibleSend: SendAdapterEVM = ({
           fromAddress: from,
           provider: p,
           toAddress, // gas used for transfer will be the same no matter the target address
-          amount: amount?.toSubUnit() ?? 0n, // the amount does not change the gas costs
+          amount: 0n, // the amount does not change the gas costs
           token
         })
 
@@ -82,19 +84,23 @@ const useCollectibleSend: SendAdapterEVM = ({
           validateERC1155(token, nt)
         }
 
+        validateSupportedToken(selectedToken)
+        validateBasicInputs(selectedToken, toAddress, fee)
         validateGasLimit(gasLimit)
-
-        setError(undefined)
       } catch (err) {
         handleError(err)
       }
     },
-    [amount, setError, handleError]
+    [selectedToken, handleError]
   )
 
   const send = useCallback(
     async (toAddress: string) => {
       try {
+        if (isSending) {
+          showSnackbar('Transaction already in progress')
+        }
+
         assertNotUndefined(selectedToken)
         assertNotUndefined(toAddress)
         assertNotUndefined(provider)
@@ -102,15 +108,13 @@ const useCollectibleSend: SendAdapterEVM = ({
         assertNotUndefined(nativeToken)
         assertNotUndefined(maxFee)
 
-        validateSupportedToken(selectedToken)
-        validateBasicInputs(selectedToken, toAddress, maxFee)
-
         validate({
           toAddress,
           from: fromAddress,
           token: selectedToken as NftItem,
           p: provider,
-          nt: nativeToken
+          nt: nativeToken,
+          fee: maxFee
         })
 
         setIsSending(true)
@@ -121,14 +125,14 @@ const useCollectibleSend: SendAdapterEVM = ({
           chainId,
           provider,
           token: selectedToken,
-          toAddress,
-          amount: amount?.toSubUnit()
+          toAddress
         })
       } finally {
         setIsSending(false)
       }
     },
     [
+      isSending,
       selectedToken,
       provider,
       chainId,
@@ -136,9 +140,7 @@ const useCollectibleSend: SendAdapterEVM = ({
       maxFee,
       validate,
       fromAddress,
-      setIsSending,
-      request,
-      amount
+      request
     ]
   )
 

@@ -27,6 +27,7 @@ import { selectSelectedAvatar } from 'store/settings/avatar'
 import { truncateAddress } from 'utils/Utils'
 import { isAddress } from 'viem'
 import { useRouter } from 'expo-router'
+import { useSendSelectedToken } from 'features/send/store'
 import { useCollectiblesContext } from '../CollectiblesContext'
 import { HORIZONTAL_MARGIN } from '../consts'
 
@@ -55,6 +56,7 @@ export const CollectibleDetailsContent = ({
     saveExternalAvatar(collectible.localId, collectible.imageData.image)
     showSnackbar('Avatar saved')
   }
+  const [_, setSelectedToken] = useSendSelectedToken()
 
   const attributes: GroupListItem[] = useMemo(
     () =>
@@ -103,12 +105,9 @@ export const CollectibleDetailsContent = ({
   }, [canRefreshMetadata, collectible, refreshMetadata])
 
   const handleSend = useCallback(() => {
-    collectible?.localId &&
-      navigate({
-        pathname: '/collectiblesSend',
-        params: { localId: collectible.localId }
-      })
-  }, [collectible, navigate])
+    setSelectedToken(collectible)
+    navigate('/collectiblesSend')
+  }, [collectible, navigate, setSelectedToken])
 
   const ACTION_BUTTONS: ActionButton[] = useMemo(() => {
     const visibilityAction: ActionButton = {
