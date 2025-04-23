@@ -1,4 +1,4 @@
-import React, { useCallback, useState, useEffect, useMemo } from 'react'
+import React, { useCallback, useState, useEffect, useMemo, useRef } from 'react'
 import {
   ActivityIndicator,
   Button,
@@ -93,8 +93,10 @@ export const SwapScreen = (): JSX.Element => {
   }, [back, swapStatus])
 
   useEffect(validateInputsFx, [fromTokenValue, maxFromValue])
-  useEffect(applyOptimalRateFx, [optimalRate])
+  useEffect(applyOptimalRateFx, [optimalRate, fromTokenValue, toTokenValue])
   useEffect(calculateMaxFx, [fromToken, activeAccount])
+
+  const initialized = useRef(false)
   useEffect(setInitialTokensFx, [
     params,
     filteredTokenList,
@@ -103,6 +105,26 @@ export const SwapScreen = (): JSX.Element => {
     fromToken,
     toToken
   ])
+
+  const prevFromRef = useRef(fromToken)
+  const prevToRef = useRef(toToken)
+
+  useEffect(() => {
+    if (fromToken && toToken && fromToken.localId === toToken.localId) {
+      if (prevFromRef.current !== fromToken) {
+        setToToken(undefined)
+      } else if (prevToRef.current !== toToken) {
+        setFromToken(undefined)
+      }
+
+      setAmount(undefined)
+      setToTokenValue(undefined)
+      setFromTokenValue(undefined)
+    }
+
+    prevFromRef.current = fromToken
+    prevToRef.current = toToken
+  }, [fromToken, toToken, setToToken, setFromToken, setAmount])
 
   function validateInputsFx(): void {
     if (fromTokenValue && fromTokenValue === 0n) {
@@ -121,15 +143,25 @@ export const SwapScreen = (): JSX.Element => {
   function applyOptimalRateFx(): void {
     if (optimalRate) {
       if (optimalRate.side === SwapSide.SELL) {
-        setToTokenValue(BigInt(optimalRate.destAmount))
+        if (fromTokenValue !== undefined) {
+          setToTokenValue(BigInt(optimalRate.destAmount))
+        }
       } else {
-        setFromTokenValue(BigInt(optimalRate.srcAmount))
+        if (toTokenValue !== undefined) {
+          setFromTokenValue(BigInt(optimalRate.srcAmount))
+        }
       }
     }
   }
 
   function setInitialTokensFx(): void {
-    if (!fromToken && params?.initialTokenIdFrom) {
+    if (initialized.current) return
+
+    if (params.initialTokenIdFrom || params.initialTokenIdTo) {
+      initialized.current = true
+    }
+
+    if (params?.initialTokenIdFrom) {
       const token = filteredTokenList.find(
         tk =>
           tk.localId.toLowerCase() === params.initialTokenIdFrom?.toLowerCase()
@@ -139,7 +171,7 @@ export const SwapScreen = (): JSX.Element => {
         setFromToken(token)
       }
     }
-    if (!toToken && params?.initialTokenIdTo) {
+    if (params?.initialTokenIdTo) {
       const token = filteredTokenList.find(
         tk =>
           tk.localId.toLowerCase() === params.initialTokenIdTo?.toLowerCase()

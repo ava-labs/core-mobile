@@ -22,7 +22,6 @@ import { Account, selectActiveAccount } from 'store/account'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { useInAppRequest } from 'hooks/useInAppRequest'
 import { getEvmCaip2ChainId } from 'utils/caip2ChainIds'
-import { useNetworks } from 'hooks/networks/useNetworks'
 import { showTransactionErrorToast } from 'utils/toast'
 import { audioFeedback, Audios } from 'utils/AudioFeedback'
 import { RpcMethod } from '@avalabs/vm-module-types'
@@ -32,6 +31,7 @@ import { humanizeParaswapRateError } from 'errors/swapError'
 import { selectIsSwapFeesBlocked } from 'store/posthog'
 import { performSwap } from 'contexts/SwapContext/performSwap/performSwap'
 import { LocalTokenWithBalance } from 'store/balance'
+import useCChainNetwork from 'hooks/earn/useCChainNetwork'
 import { useSwapSelectedFromToken, useSwapSelectedToToken } from '../store'
 
 const DEFAULT_DEBOUNCE_MILLISECONDS = 150
@@ -54,6 +54,7 @@ export interface SwapContextState {
   setFromToken: Dispatch<LocalTokenWithBalance | undefined>
   setToToken: Dispatch<LocalTokenWithBalance | undefined>
   optimalRate?: OptimalRate
+  setOptimalRate: Dispatch<OptimalRate | undefined>
   refresh: () => void
   swap(params: SwapParams): void
   slippage: number
@@ -61,7 +62,7 @@ export interface SwapContextState {
   destination: SwapSide
   setDestination: Dispatch<SwapSide>
   swapStatus: SwapStatus
-  setAmount: Dispatch<bigint>
+  setAmount: Dispatch<bigint | undefined>
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   error: any
   isFetchingOptimalRate: boolean
@@ -78,7 +79,7 @@ export const SwapContextProvider = ({
 }): JSX.Element => {
   const abortControllerRef = useRef<AbortController | null>(null)
   const { request } = useInAppRequest()
-  const { activeNetwork } = useNetworks()
+  const cChainNetwork = useCChainNetwork()
   const activeAccount = useSelector(selectActiveAccount)
   const avalancheProvider = useAvalancheProvider()
   const [fromToken, setFromToken] = useSwapSelectedFromToken()
@@ -98,6 +99,9 @@ export const SwapContextProvider = ({
 
   const getOptimalRateForAmount = useCallback(
     (account: Account, amnt: bigint) => {
+      if (!cChainNetwork) {
+        return Promise.reject('Invalid from network')
+      }
       if (!fromToken || !('decimals' in fromToken))
         return Promise.reject('Invalid from token')
 
@@ -119,12 +123,12 @@ export const SwapContextProvider = ({
         toTokenDecimals: toToken.decimals,
         amount: amnt.toString(),
         swapSide: destination,
-        network: activeNetwork,
+        network: cChainNetwork,
         account,
         abortSignal: controller.signal
       })
     },
-    [activeNetwork, destination, fromToken, toToken]
+    [cChainNetwork, destination, fromToken, toToken]
   )
 
   const getOptimalRate = useCallback(() => {
@@ -162,9 +166,13 @@ export const SwapContextProvider = ({
 
   const handleSwapError = useCallback(
     (account: Account, err: unknown) => {
+      if (!cChainNetwork) {
+        return
+      }
+
       AnalyticsService.captureWithEncryption('SwapTransactionFailed', {
         address: account.addressC,
-        chainId: activeNetwork.chainId
+        chainId: cChainNetwork.chainId
       })
 
       const readableErrorMessage = humanizeSwapError(err)
@@ -174,19 +182,23 @@ export const SwapContextProvider = ({
       showTransactionErrorToast({ message: readableErrorMessage })
       Logger.error(readableErrorMessage, originalError)
     },
-    [activeNetwork.chainId]
+    [cChainNetwork]
   )
 
   const handleSwapSuccess = useCallback(
     (swapTxHash: string | undefined) => {
+      if (!cChainNetwork) {
+        return
+      }
+
       setSwapStatus('Success')
       AnalyticsService.captureWithEncryption('SwapTransactionSucceeded', {
         txHash: swapTxHash ?? '',
-        chainId: activeNetwork.chainId
+        chainId: cChainNetwork.chainId
       })
       audioFeedback(Audios.Send)
     },
-    [activeNetwork.chainId]
+    [cChainNetwork]
   )
 
   // eslint-disable-next-line sonarjs/cognitive-complexity
@@ -202,7 +214,7 @@ export const SwapContextProvider = ({
 
     InteractionManager.runAfterInteractions(async () => {
       SentryWrapper.startSpan({ name: 'swap' }, async span => {
-        if (!avalancheProvider || !activeAccount) {
+        if (!avalancheProvider || !activeAccount || !cChainNetwork) {
           return
         }
 
@@ -214,13 +226,13 @@ export const SwapContextProvider = ({
             isDestTokenNative,
             priceRoute,
             slippage: swapSlippage,
-            activeNetwork,
+            activeNetwork: cChainNetwork,
             provider: avalancheProvider,
             signAndSend: txParams =>
               request({
                 method: RpcMethod.ETH_SEND_TRANSACTION,
                 params: txParams,
-                chainId: getEvmCaip2ChainId(activeNetwork.chainId)
+                chainId: getEvmCaip2ChainId(cChainNetwork.chainId)
               }),
             userAddress: activeAccount.addressC,
             isSwapFeesEnabled: !isSwapFeesBlocked
@@ -250,6 +262,7 @@ export const SwapContextProvider = ({
     toToken,
     setToToken,
     optimalRate,
+    setOptimalRate,
     refresh,
     slippage,
     setSlippage,
