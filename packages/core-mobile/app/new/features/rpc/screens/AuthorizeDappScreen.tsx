@@ -12,6 +12,8 @@ import { TokenLogo } from 'new/common/components/TokenLogo'
 import { SCREEN_WIDTH, Text } from '@avalabs/k2-alpine'
 import { SessionProposalParams } from 'services/walletconnectv2/walletConnectCache/types'
 import { ActionSheet } from 'new/common/components/ActionSheet'
+import { isSiteScanResponseMalicious } from 'store/rpc/handlers/wc_sessionRequest/utils'
+import { AlertType } from '@avalabs/vm-module-types'
 import { SelectAccounts } from '../components/SelectAccounts'
 
 const showNoActiveAccountMessage = (): void => {
@@ -33,7 +35,7 @@ const AuthorizeDappScreenWrapper = (): JSX.Element | null => {
 }
 
 const AuthorizeDappScreen = ({
-  params: { request, namespaces }
+  params: { request, namespaces, scanResponse }
 }: {
   params: SessionProposalParams
 }): JSX.Element => {
@@ -77,22 +79,21 @@ const AuthorizeDappScreen = ({
     [selectedAccounts]
   )
 
-  // TODO render AlertBanner
-  // scanResponse && isSiteScanResponseMalicious(scanResponse)
-  //  <AlertBanner
-  //   alert={{
-  //   type: AlertType.DANGER,
-  //   details: {
-  //    title: 'Scam Application',
-  //    description:
-  //    'This application is malicious, do not proceed.'
-  //   }
-  //   }}
-  //  />
+  const isMaliciousDapp =
+    scanResponse && isSiteScanResponseMalicious(scanResponse)
+
+  const alert = isMaliciousDapp
+    ? {
+        type: AlertType.DANGER,
+        message: 'This application is malicious, do not proceed.'
+      }
+    : undefined
+
   return (
     <ActionSheet
       title="Connect wallet?"
       onClose={() => onReject(request)}
+      alert={alert}
       confirm={{
         label: 'Connect',
         onPress: approveAndClose,
