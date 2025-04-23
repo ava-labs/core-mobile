@@ -5,11 +5,11 @@ import { ViewOnceKey } from 'store/viewOnce'
 import { useRouter } from 'expo-router'
 
 const SendOnboardingScreen = (): JSX.Element => {
-  const { replace } = useRouter()
+  const { navigate } = useRouter()
 
   const handlePressNext = useCallback(() => {
-    replace('send/recentContacts')
-  }, [replace])
+    navigate('send/recentContacts')
+  }, [navigate])
 
   return (
     <TransactionOnboarding
