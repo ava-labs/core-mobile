@@ -80,53 +80,28 @@ export const SwapScreen = (): JSX.Element => {
   const [localError, setLocalError] = useState<string>('')
   const cChainNetwork = useCChainNetwork()
   const [isInputFocused, setIsInputFocused] = useState<boolean>(false)
-
+  const swapButtonBackgroundColor = useMemo(
+    () => getButtonBackgroundColor('secondary', theme, false),
+    [theme]
+  )
+  const errorMessage = useMemo(
+    () => localError || swapError,
+    [localError, swapError]
+  )
   const canSwap: boolean =
     !localError && !swapError && !!fromToken && !!toToken && !!optimalRate
 
   const swapInProcess = swapStatus === 'Swapping'
 
-  useEffect(() => {
-    if (swapStatus === 'Success') {
-      back()
-    }
-  }, [back, swapStatus])
+  const coreFeeMessage = useMemo(
+    () =>
+      `Quote includes a ${basisPointsToPercentage(
+        PARASWAP_PARTNER_FEE_BPS
+      )} Core fee`,
+    []
+  )
 
-  useEffect(validateInputsFx, [fromTokenValue, maxFromValue])
-  useEffect(applyOptimalRateFx, [optimalRate, fromTokenValue, toTokenValue])
-  useEffect(calculateMaxFx, [fromToken, activeAccount])
-
-  const initialized = useRef(false)
-  useEffect(setInitialTokensFx, [
-    params,
-    filteredTokenList,
-    setFromToken,
-    setToToken,
-    fromToken,
-    toToken
-  ])
-
-  const prevFromRef = useRef(fromToken)
-  const prevToRef = useRef(toToken)
-
-  useEffect(() => {
-    if (fromToken && toToken && fromToken.localId === toToken.localId) {
-      if (prevFromRef.current !== fromToken) {
-        setToToken(undefined)
-      } else if (prevToRef.current !== toToken) {
-        setFromToken(undefined)
-      }
-
-      setAmount(undefined)
-      setToTokenValue(undefined)
-      setFromTokenValue(undefined)
-    }
-
-    prevFromRef.current = fromToken
-    prevToRef.current = toToken
-  }, [fromToken, toToken, setToToken, setFromToken, setAmount])
-
-  function validateInputsFx(): void {
+  const validateInputsFx = useCallback(() => {
     if (fromTokenValue && fromTokenValue === 0n) {
       setLocalError('Please enter an amount')
     } else if (
@@ -138,9 +113,9 @@ export const SwapScreen = (): JSX.Element => {
     } else {
       setLocalError('')
     }
-  }
+  }, [fromTokenValue, maxFromValue])
 
-  function applyOptimalRateFx(): void {
+  const applyOptimalRateFx = useCallback(() => {
     if (optimalRate) {
       if (optimalRate.side === SwapSide.SELL) {
         if (fromTokenValue !== undefined) {
@@ -152,9 +127,46 @@ export const SwapScreen = (): JSX.Element => {
         }
       }
     }
-  }
+  }, [optimalRate, fromTokenValue, toTokenValue])
 
-  function setInitialTokensFx(): void {
+  const calculateMaxFx = useCallback(() => {
+    if (!fromToken) return
+
+    setMaxFromValue(fromToken?.balance)
+  }, [fromToken])
+
+  const handleToggleTokens = useCallback(() => {
+    if (
+      tokensWithZeroBalance.some(
+        token =>
+          token.name === toToken?.name && token.symbol === toToken?.symbol
+      )
+    ) {
+      setLocalError(`You don't have any ${toToken?.symbol} token for swap`)
+      return
+    }
+
+    const [to, from] = [fromToken, toToken]
+    setFromToken(from)
+    setToToken(to)
+    setDestination(SwapSide.SELL)
+    setFromTokenValue(toTokenValue)
+    setToTokenValue(undefined)
+    toTokenValue && setAmount(toTokenValue)
+    setMaxFromValue(undefined)
+  }, [
+    fromToken,
+    toToken,
+    setFromToken,
+    setToToken,
+    setDestination,
+    setFromTokenValue,
+    setAmount,
+    toTokenValue,
+    tokensWithZeroBalance
+  ])
+
+  const setInitialTokensFx = useCallback(() => {
     if (initialized.current) return
 
     if (params.initialTokenIdFrom || params.initialTokenIdTo) {
@@ -185,36 +197,9 @@ export const SwapScreen = (): JSX.Element => {
     } else {
       setToToken(undefined)
     }
-  }
+  }, [params, filteredTokenList, setFromToken, setToToken])
 
-  function calculateMaxFx(): void {
-    if (!fromToken) return
-
-    setMaxFromValue(fromToken?.balance)
-  }
-
-  const swapTokens = (): void => {
-    if (
-      tokensWithZeroBalance.some(
-        token =>
-          token.name === toToken?.name && token.symbol === toToken?.symbol
-      )
-    ) {
-      setLocalError(`You don't have any ${toToken?.symbol} token for swap`)
-      return
-    }
-
-    const [to, from] = [fromToken, toToken]
-    setFromToken(from)
-    setToToken(to)
-    setDestination(SwapSide.SELL)
-    setFromTokenValue(toTokenValue)
-    setToTokenValue(undefined)
-    toTokenValue && setAmount(toTokenValue)
-    setMaxFromValue(undefined)
-  }
-
-  const handleSwap = (): void => {
+  const handleSwap = useCallback(() => {
     if (optimalRate) {
       AnalyticsService.capture('SwapReviewOrder', {
         destinationInputField: destination,
@@ -232,7 +217,7 @@ export const SwapScreen = (): JSX.Element => {
         })
       }
     }
-  }
+  }, [optimalRate, swap, fromToken, toToken, slippage, destination])
 
   const handleFromAmountChange = useCallback(
     (amount: bigint): void => {
@@ -251,8 +236,6 @@ export const SwapScreen = (): JSX.Element => {
     },
     [setDestination, setAmount]
   )
-
-  const isPending = false
 
   const handleSelectFromToken = useCallback((): void => {
     navigate({ pathname: '/selectSwapFromToken' })
@@ -371,16 +354,6 @@ export const SwapScreen = (): JSX.Element => {
     handleSelectToToken
   ])
 
-  const swapButtonBackgroundColor = useMemo(
-    () => getButtonBackgroundColor('secondary', theme, false),
-    [theme]
-  )
-
-  const errorMessage = useMemo(
-    () => localError || swapError,
-    [localError, swapError]
-  )
-
   const data = useMemo(() => {
     const items: GroupListItem[] = []
 
@@ -416,13 +389,38 @@ export const SwapScreen = (): JSX.Element => {
     isFetchingOptimalRate
   ])
 
-  const coreFeeMessage = useMemo(
-    () =>
-      `Quote includes a ${basisPointsToPercentage(
-        PARASWAP_PARTNER_FEE_BPS
-      )} Core fee`,
-    []
-  )
+  useEffect(() => {
+    if (swapStatus === 'Success') {
+      back()
+    }
+  }, [back, swapStatus])
+
+  useEffect(validateInputsFx, [validateInputsFx])
+  useEffect(applyOptimalRateFx, [applyOptimalRateFx])
+  useEffect(calculateMaxFx, [calculateMaxFx])
+
+  const initialized = useRef(false)
+  useEffect(setInitialTokensFx, [setInitialTokensFx])
+
+  const prevFromRef = useRef(fromToken)
+  const prevToRef = useRef(toToken)
+
+  useEffect(() => {
+    if (fromToken && toToken && fromToken.localId === toToken.localId) {
+      if (prevFromRef.current !== fromToken) {
+        setToToken(undefined)
+      } else if (prevToRef.current !== toToken) {
+        setFromToken(undefined)
+      }
+
+      setAmount(undefined)
+      setToTokenValue(undefined)
+      setFromTokenValue(undefined)
+    }
+
+    prevFromRef.current = fromToken
+    prevToRef.current = toToken
+  }, [fromToken, toToken, setToToken, setFromToken, setAmount])
 
   useEffect(() => {
     if (!fromTokenValue) {
@@ -479,7 +477,7 @@ export const SwapScreen = (): JSX.Element => {
                       height: 40,
                       alignSelf: 'center'
                     }}
-                    onPress={swapTokens}>
+                    onPress={handleToggleTokens}>
                     <Icons.Custom.SwapVertical />
                   </CircularButton>
                 </Animated.View>
@@ -517,7 +515,7 @@ export const SwapScreen = (): JSX.Element => {
             size="large"
             onPress={handleSwap}
             disabled={!canSwap || swapInProcess}>
-            {isPending ? <ActivityIndicator /> : 'Swap'}
+            {swapInProcess ? <ActivityIndicator /> : 'Swap'}
           </Button>
         </View>
       </SafeAreaView>
