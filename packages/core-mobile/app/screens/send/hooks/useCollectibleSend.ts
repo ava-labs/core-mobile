@@ -10,7 +10,7 @@ import { NftItem } from 'services/nft/types'
 import { JsonRpcBatchInternal } from '@avalabs/core-wallets-sdk'
 import { showSnackbar } from 'new/common/utils/toast'
 import { useSendContext } from 'new/features/send/context/sendContext'
-import { SendAdapterEVM, SendErrorMessage } from '../utils/types'
+import { SendAdapterCollectible, SendErrorMessage } from '../utils/types'
 import { send as sendEVM } from '../utils/evm/send'
 import { getGasLimit } from '../utils/evm/getGasLimit'
 import {
@@ -21,7 +21,7 @@ import {
   validateSupportedToken
 } from '../utils/evm/validate'
 
-const useCollectibleSend: SendAdapterEVM = ({
+const useCollectibleSend: SendAdapterCollectible = ({
   chainId,
   fromAddress,
   nativeToken,
