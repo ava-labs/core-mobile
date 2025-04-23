@@ -12,7 +12,7 @@ import Animated, {
   withRepeat,
   withTiming
 } from 'react-native-reanimated'
-import Svg, { Path } from 'react-native-svg'
+import Svg, { Path, SvgProps } from 'react-native-svg'
 import { useTheme } from '../../hooks'
 import {
   colors,
@@ -31,7 +31,7 @@ export const HexagonImageView = ({
   hasLoading = false,
   showAddIcon = false
 }: {
-  source?: ImageSourcePropType
+  source?: ImageSourcePropType | React.FC<SvgProps>
   height: number
   backgroundColor: string
   isSelected?: boolean
@@ -60,6 +60,8 @@ export const HexagonImageView = ({
     })
   }, [isSelected, selectedAnimation])
 
+  const isSvgComponent = typeof source === 'function'
+
   return (
     <MaskedView
       maskElement={
@@ -67,16 +69,22 @@ export const HexagonImageView = ({
           <Path d={hexagonPath.path} fill={theme.colors.$surfacePrimary} />
         </Svg>
       }>
-      <Image
-        key={`image-${source}`}
-        recyclingKey={`image-recycling-${source}`}
-        contentFit="cover"
-        source={source}
-        style={{ width: height, height: height, backgroundColor }}
-        onLoadStart={hasLoading ? handleLoadStart : undefined}
-        onLoadEnd={hasLoading ? handleLoadEnd : undefined}
-        cachePolicy="memory-disk"
-      />
+      {isSvgComponent ? (
+        // If source is a local SVG component
+        React.createElement(source, { width: height, height: height })
+      ) : (
+        // If source is a regular image
+        <Image
+          key={`image-${source}`}
+          recyclingKey={`image-recycling-${source}`}
+          contentFit="cover"
+          source={source}
+          style={{ width: height, height: height, backgroundColor }}
+          onLoadStart={hasLoading ? handleLoadStart : undefined}
+          onLoadEnd={hasLoading ? handleLoadEnd : undefined}
+          cachePolicy="memory-disk"
+        />
+      )}
       {isLoading && (
         <LoadingView
           style={{

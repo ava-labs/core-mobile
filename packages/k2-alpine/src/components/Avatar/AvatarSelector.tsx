@@ -2,16 +2,16 @@ import React, { useCallback, useMemo } from 'react'
 import { Dimensions, ImageSourcePropType } from 'react-native'
 import Animated, { FadeIn } from 'react-native-reanimated'
 import Carousel, { CarouselRenderItem } from 'react-native-reanimated-carousel'
+import { SvgProps } from 'react-native-svg'
 import { isScreenSmall } from '../../utils'
 import { AnimatedPressable } from '../Animated/AnimatedPressable'
 import { Avatar } from './Avatar'
-
 export const AvatarSelector = ({
   avatars,
   selectedId,
   onSelect
 }: {
-  avatars: { id: string; source: ImageSourcePropType }[]
+  avatars: { id: string; source: ImageSourcePropType | React.FC<SvgProps> }[]
   selectedId?: string
   onSelect?: (id: string) => void
 }): JSX.Element => {
@@ -36,7 +36,7 @@ export const AvatarSelector = ({
 
   const renderItem: CarouselRenderItem<{
     id: string
-    source: ImageSourcePropType
+    source: ImageSourcePropType | React.FC<SvgProps>
   }> = useCallback(
     ({ item, index }): JSX.Element => {
       const isSelected = item.id === selectedId
@@ -44,7 +44,7 @@ export const AvatarSelector = ({
       return (
         <Animated.View
           key={`${item.source.toString()}-${index}`}
-          entering={FadeIn.delay(index * 15)}
+          entering={FadeIn.delay(index * 5)}
           style={{ marginTop: index % 2 === 0 ? avatarWidth : 0 }}>
           <AnimatedPressable
             onPress={() => handleSelect(index)}

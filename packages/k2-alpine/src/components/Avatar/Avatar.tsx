@@ -10,6 +10,7 @@ import { View } from '../Primitives'
 import { HexagonBorder, HexagonImageView } from './HexagonImageView'
 import { TestnetHexagonImageView } from './TestnetHexagonImageView'
 import { useGlowAnimatedStyle } from './useGlowAnimatedStyle'
+import { SvgProps } from 'react-native-svg'
 
 export const Avatar = ({
   source,
@@ -24,7 +25,7 @@ export const Avatar = ({
   isDeveloperMode = false,
   showAddIcon = false
 }: {
-  source?: ImageSourcePropType
+  source?: ImageSourcePropType | React.FC<SvgProps>
   size: number | 'small' | 'large'
   backgroundColor?: string
   isSelected?: boolean
