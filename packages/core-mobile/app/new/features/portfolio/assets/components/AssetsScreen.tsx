@@ -24,11 +24,13 @@ import { TokenListItem } from './TokenListItem'
 interface Props {
   goToTokenDetail: (localId: string) => void
   goToTokenManagement: () => void
+  goToBuy: () => void
 }
 
 const AssetsScreen: FC<Props> = ({
   goToTokenDetail,
-  goToTokenManagement
+  goToTokenManagement,
+  goToBuy
 }): JSX.Element => {
   const { data, filter, sort, view, refetch, isRefetching } =
     useAssetsFilterAndSort()
@@ -118,13 +120,17 @@ const AssetsScreen: FC<Props> = ({
         description="On-ramp using Core in two minutes"
         button={{
           title: 'Let’s go!',
-          onPress: () => {
-            // TODO: navigate to buy on-ramp
-          }
+          onPress: goToBuy
         }}
       />
     )
-  }, [isBalanceLoading, isRefetchingBalance, refetch, isAllBalancesInaccurate])
+  }, [
+    isBalanceLoading,
+    isRefetchingBalance,
+    isAllBalancesInaccurate,
+    goToBuy,
+    refetch
+  ])
 
   const header = useMemo(() => {
     return (

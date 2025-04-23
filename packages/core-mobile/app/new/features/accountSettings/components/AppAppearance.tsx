@@ -48,7 +48,7 @@ export const AppAppearance = ({
       )
     },
     {
-      title: 'Appearance',
+      title: 'Theme',
       onPress: selectAppAppearance,
       value: appearance
     }
