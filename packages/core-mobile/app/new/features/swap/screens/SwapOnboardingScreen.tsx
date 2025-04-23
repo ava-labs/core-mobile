@@ -4,22 +4,20 @@ import { Icons } from '@avalabs/k2-alpine'
 import { ViewOnceKey } from 'store/viewOnce'
 import { useRouter } from 'expo-router'
 
-const StakeOnboardingScreen = (): JSX.Element => {
+export const SwapOnboardingScreen = (): JSX.Element => {
   const { navigate } = useRouter()
 
   const handlePressNext = useCallback(() => {
-    navigate('addStake/amount')
+    navigate('/swap/swap')
   }, [navigate])
 
   return (
     <TransactionOnboarding
-      icon={{ component: Icons.Custom.Psychiatry, size: 60 }}
-      title={`Stake your AVAX and earn rewards`}
-      subtitle={`Lock AVAX in the network for a set period of time and generate staking rewards`}
-      viewOnceKey={ViewOnceKey.STAKE_ONBOARDING}
+      icon={{ component: Icons.Custom.Compare, size: 75 }}
+      title={`Swap tokens across any token pair`}
+      subtitle={`Directly exchange any token for another token, such as USDC for AVAX`}
+      viewOnceKey={ViewOnceKey.SWAP_ONBOARDING}
       onPressNext={handlePressNext}
     />
   )
 }
-
-export default StakeOnboardingScreen
