@@ -1,4 +1,8 @@
-import React, { useCallback, useMemo, useState, useEffect } from 'react'
+import {
+  isTokenWithBalanceAVM,
+  isTokenWithBalancePVM
+} from '@avalabs/avalanche-module'
+import { TokenUnit, truncateAddress } from '@avalabs/core-utils-sdk'
 import {
   ActivityIndicator,
   Avatar,
@@ -12,18 +16,15 @@ import {
   useTheme,
   View
 } from '@avalabs/k2-alpine'
+import { loadAvatar } from 'common/utils/loadAvatar'
 import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router'
-import { TokenUnit, truncateAddress } from '@avalabs/core-utils-sdk'
 import { LogoWithNetwork } from 'features/portfolio/assets/components/LogoWithNetwork'
-import { KeyboardAwareScrollView } from 'react-native-keyboard-controller'
 import { useWatchlist } from 'hooks/watchlist/useWatchlist'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import { KeyboardAwareScrollView } from 'react-native-keyboard-controller'
 import { useSelector } from 'react-redux'
-import { selectSelectedCurrency } from 'store/settings/currency'
-import {
-  isTokenWithBalanceAVM,
-  isTokenWithBalancePVM
-} from '@avalabs/avalanche-module'
 import { AddrBookItemType } from 'store/addressBook'
+import { selectSelectedCurrency } from 'store/settings/currency'
 import { useSendContext } from '../context/sendContext'
 import { useSendSelectedToken } from '../store'
 
@@ -134,6 +135,10 @@ export const SendToken = ({ onSend }: { onSend: () => void }): JSX.Element => {
     [getMarketTokenBySymbol, selectedCurrency]
   )
 
+  const recipientAvatar = useMemo(() => {
+    return loadAvatar(recipient?.avatar)
+  }, [recipient?.avatar])
+
   return (
     <SafeAreaView
       style={{
@@ -189,10 +194,7 @@ export const SendToken = ({ onSend }: { onSend: () => void }): JSX.Element => {
             <Avatar
               backgroundColor="transparent"
               size={40}
-              // todo: replace with actual avatar
-              source={{
-                uri: 'https://miro.medium.com/v2/resize:fit:1256/format:webp/1*xm2-adeU3YD4MsZikpc5UQ.png'
-              }}
+              source={recipientAvatar?.source}
               hasLoading={false}
             />
           </View>

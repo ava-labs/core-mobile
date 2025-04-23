@@ -1,7 +1,7 @@
+import { AvatarType } from '@avalabs/k2-alpine'
 import { useDispatch, useSelector } from 'react-redux'
 import {
   AVATARS,
-  AvatarType,
   selectSelectedAvatar,
   setSelectedAvatar
 } from 'store/settings/avatar'

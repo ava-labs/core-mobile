@@ -1,5 +1,5 @@
+import { AvatarType } from '@avalabs/k2-alpine'
 import { useMemo } from 'react'
-import { AvatarType } from 'store/settings/avatar'
 
 export function useRandomAvatar(avatars: AvatarType[]): AvatarType {
   return useMemo(

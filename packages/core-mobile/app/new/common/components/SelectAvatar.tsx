@@ -9,10 +9,11 @@ import {
   View
 } from '@avalabs/k2-alpine'
 import ScreenHeader from 'common/components/ScreenHeader'
-import React, { memo } from 'react'
+import React, { memo, useMemo } from 'react'
 import Animated, { FadeIn } from 'react-native-reanimated'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { AvatarType } from 'store/settings/avatar'
+import { AvatarType } from '@avalabs/k2-alpine'
+import { loadAvatar } from 'common/utils/loadAvatar'
 
 export const SelectAvatar = memo(
   ({
@@ -44,6 +45,10 @@ export const SelectAvatar = memo(
       }
     }
 
+    const avatar = useMemo(() => {
+      return loadAvatar(selectedAvatar)
+    }, [selectedAvatar])
+
     return (
       <View sx={{ flex: 1 }}>
         <ScrollView>
@@ -60,10 +65,10 @@ export const SelectAvatar = memo(
                 justifyContent: 'center',
                 paddingVertical: AVATAR_BLURAREA_INSET
               }}>
-              {selectedAvatar?.source && (
+              {avatar?.source && (
                 <Avatar
                   backgroundColor={colors.$surfacePrimary}
-                  source={selectedAvatar.source}
+                  source={avatar?.source}
                   size={isScreenSmall ? 100 : 'large'}
                   testID="selected_avatar"
                 />

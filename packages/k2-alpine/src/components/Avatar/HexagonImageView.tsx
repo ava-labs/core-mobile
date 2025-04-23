@@ -1,7 +1,7 @@
 import MaskedView from '@react-native-masked-view/masked-view'
 import { Image } from 'expo-image'
 import React, { useEffect, useState } from 'react'
-import { ImageSourcePropType, Platform, ViewStyle } from 'react-native'
+import { Platform, ViewStyle } from 'react-native'
 import Animated, {
   Easing,
   interpolateColor,
@@ -12,16 +12,17 @@ import Animated, {
   withRepeat,
   withTiming
 } from 'react-native-reanimated'
-import Svg, { Path, SvgProps } from 'react-native-svg'
+import Svg, { Path } from 'react-native-svg'
 import { useTheme } from '../../hooks'
 import {
   colors,
   darkModeColors,
   lightModeColors
 } from '../../theme/tokens/colors'
+import { Icons } from '../../theme/tokens/Icons'
 import { alpha } from '../../utils'
 import { View } from '../Primitives'
-import { Icons } from '../../theme/tokens/Icons'
+import { AvatarType } from './Avatar'
 
 export const HexagonImageView = ({
   source,
@@ -31,7 +32,7 @@ export const HexagonImageView = ({
   hasLoading = false,
   showAddIcon = false
 }: {
-  source?: ImageSourcePropType | React.FC<SvgProps>
+  source?: AvatarType['source']
   height: number
   backgroundColor: string
   isSelected?: boolean

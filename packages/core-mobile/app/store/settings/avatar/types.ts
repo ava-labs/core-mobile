@@ -1,9 +1,4 @@
-import { ImageSourcePropType } from 'react-native'
-import { SvgProps } from 'react-native-svg'
-export type AvatarType = {
-  id: string
-  source: ImageSourcePropType | React.FC<SvgProps>
-}
+import { AvatarType } from '@avalabs/k2-alpine'
 
 import Abstract1 from 'assets/avatars/abstract-1.svg'
 import Abstract2 from 'assets/avatars/abstract-2.svg'
@@ -59,7 +54,6 @@ import Cub6 from 'assets/avatars/cub-6.svg'
 import Cub7 from 'assets/avatars/cub-7.svg'
 import Cub8 from 'assets/avatars/cub-8.svg'
 import Cub9 from 'assets/avatars/cub-9.svg'
-import React from 'react'
 
 const LOCAL_AVATARS = {
   abstract1: Abstract1,

@@ -11,6 +11,7 @@ import { AlertWithTextInputsHandle } from '@avalabs/k2-alpine/src/components/Ale
 import { NetworkVMType } from '@avalabs/vm-module-types'
 import { usePrimaryNetworks } from 'common/hooks/usePrimaryNetworks'
 import { isValidContactName } from 'common/utils/isValidContactName'
+import { loadAvatar } from 'common/utils/loadAvatar'
 import { Space } from 'components/Space'
 import React, { useCallback, useMemo, useRef } from 'react'
 import { useSelector } from 'react-redux'
@@ -161,12 +162,16 @@ export const ContactForm = ({
     )
   }, [contact.name, handleShowAlertWithTextInput])
 
+  const avatar = useMemo(() => {
+    return loadAvatar(contact.avatar)
+  }, [contact?.avatar])
+
   return (
     <View sx={{ alignItems: 'center' }}>
       <TouchableOpacity onPress={onSelectAvatar}>
         <Avatar
           size={150}
-          source={contact?.avatar?.source}
+          source={avatar?.source}
           hasLoading={false}
           showAddIcon={contact?.avatar?.source === undefined}
         />

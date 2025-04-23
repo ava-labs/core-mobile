@@ -5,12 +5,17 @@ import Animated, {
   useAnimatedStyle,
   useSharedValue
 } from 'react-native-reanimated'
+import { SvgProps } from 'react-native-svg'
 import { useTheme } from '../../hooks'
 import { View } from '../Primitives'
 import { HexagonBorder, HexagonImageView } from './HexagonImageView'
 import { TestnetHexagonImageView } from './TestnetHexagonImageView'
 import { useGlowAnimatedStyle } from './useGlowAnimatedStyle'
-import { SvgProps } from 'react-native-svg'
+
+export type AvatarType = {
+  id: string
+  source: ImageSourcePropType | React.FC<SvgProps>
+}
 
 export const Avatar = ({
   source,
@@ -25,7 +30,7 @@ export const Avatar = ({
   isDeveloperMode = false,
   showAddIcon = false
 }: {
-  source?: ImageSourcePropType | React.FC<SvgProps>
+  source?: AvatarType['source']
   size: number | 'small' | 'large'
   backgroundColor?: string
   isSelected?: boolean
