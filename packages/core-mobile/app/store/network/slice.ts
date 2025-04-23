@@ -20,14 +20,16 @@ export const alwaysFavoriteNetworks = [
 
 export const reducerName = 'network'
 
+export const FAVORITE_NETWORKS = [
+  ...alwaysFavoriteNetworks,
+  ChainsSDKChainId.BITCOIN,
+  ChainsSDKChainId.BITCOIN_TESTNET,
+  ChainsSDKChainId.ETHEREUM_HOMESTEAD
+]
+
 const initialState: NetworkState = {
   customNetworks: {},
-  favorites: [
-    ...alwaysFavoriteNetworks,
-    ChainsSDKChainId.BITCOIN,
-    ChainsSDKChainId.BITCOIN_TESTNET,
-    ChainsSDKChainId.ETHEREUM_HOMESTEAD
-  ],
+  favorites: FAVORITE_NETWORKS,
   active: noActiveNetwork
 }
 

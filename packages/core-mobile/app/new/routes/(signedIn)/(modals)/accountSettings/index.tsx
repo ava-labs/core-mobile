@@ -228,6 +228,35 @@ const AccountSettingsScreen = (): JSX.Element => {
                 separatorMarginRight={16}
               />
             </View>
+            <View>
+              <GroupList
+                data={[
+                  {
+                    title: 'Networks',
+                    onPress: () => navigate('/accountSettings/manageNetworks'),
+                    value: (
+                      <Text
+                        variant="body2"
+                        sx={{
+                          color: colors.$textSecondary,
+                          fontSize: 16,
+                          lineHeight: 22,
+                          marginLeft: 9
+                        }}>
+                        {/* {Object.keys(contacts).length} */}
+                      </Text>
+                    )
+                  }
+                ]}
+                titleSx={{
+                  fontSize: 16,
+                  lineHeight: 22,
+                  fontFamily: 'Inter-Regular'
+                }}
+                valueSx={{ fontSize: 16, lineHeight: 22 }}
+                separatorMarginRight={16}
+              />
+            </View>
             <AppAppearance
               selectAppAppearance={goToAppAppearance}
               selectCurrency={goToCurrency}
