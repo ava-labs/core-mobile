@@ -70,8 +70,7 @@ export const DEFAULT_AVATAR = {
 }
 
 export const initialState: AvatarState = {
-  selected:
-    AVATARS[Math.floor(Math.random() * AVATARS.length)] ?? DEFAULT_AVATAR
+  selected: DEFAULT_AVATAR
 }
 
 export type AvatarState = {
