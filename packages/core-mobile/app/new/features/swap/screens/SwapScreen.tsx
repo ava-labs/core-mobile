@@ -170,7 +170,10 @@ export const SwapScreen = (): JSX.Element => {
       if (token) {
         setFromToken(token)
       }
+    } else {
+      setFromToken(undefined)
     }
+
     if (params?.initialTokenIdTo) {
       const token = filteredTokenList.find(
         tk =>
@@ -179,6 +182,8 @@ export const SwapScreen = (): JSX.Element => {
       if (token) {
         setToToken(token)
       }
+    } else {
+      setToToken(undefined)
     }
   }
 
