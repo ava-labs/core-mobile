@@ -21,7 +21,7 @@ const SelectAppearanceScreen = (): JSX.Element => {
         gap: 85,
         marginHorizontal: 16
       }}>
-      <Text variant="heading2">{`Customize the\napp appearance`}</Text>
+      <Text variant="heading2">{`Customize the\napp theme`}</Text>
       <View
         sx={{
           flexDirection: 'row',
