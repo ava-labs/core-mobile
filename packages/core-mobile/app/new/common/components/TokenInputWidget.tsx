@@ -38,7 +38,8 @@ export const TokenInputWidget = ({
   sx,
   disabled,
   editable = true,
-  inputTextColor
+  inputTextColor,
+  isLoadingAmount = false
 }: {
   title: string
   amount?: bigint
@@ -56,6 +57,7 @@ export const TokenInputWidget = ({
   disabled?: boolean
   editable?: boolean
   inputTextColor?: string
+  isLoadingAmount?: boolean
 }): JSX.Element => {
   const {
     theme: { colors }
@@ -74,7 +76,7 @@ export const TokenInputWidget = ({
     } else {
       const value = Number(balance ?? 0n) * button.percent
 
-      onAmountChange?.(button.value ?? BigInt(value))
+      onAmountChange?.(button.value ?? BigInt(Math.floor(value)))
     }
 
     setPercentageButtons(prevButtons =>
@@ -91,7 +93,7 @@ export const TokenInputWidget = ({
           ...b,
           isSelected:
             balance !== undefined &&
-            value.value === BigInt(Number(balance) * b.percent)
+            value.value === BigInt(Math.floor(Number(balance) * b.percent))
         }))
       )
 
@@ -194,7 +196,7 @@ export const TokenInputWidget = ({
                     )} ${token.symbol}`}</Text>
                   ) : shouldShowBalance ? (
                     <View sx={{ alignSelf: 'flex-start' }}>
-                      <ActivityIndicator size={'small'} />
+                      <ActivityIndicator size="small" />
                     </View>
                   ) : undefined)}
               </View>
@@ -224,14 +226,22 @@ export const TokenInputWidget = ({
                 onBlur={handleBlur}
                 placeholder="0.00"
               />
-              <Text
-                variant="subtitle2"
+              <View
                 sx={{
-                  color: inputTextColor ?? '$textSecondary',
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  gap: 6,
                   marginTop: -4
                 }}>
-                {formatInCurrency(amount)}
-              </Text>
+                {isLoadingAmount && <ActivityIndicator size="small" />}
+                <Text
+                  variant="subtitle2"
+                  sx={{
+                    color: inputTextColor ?? '$textSecondary'
+                  }}>
+                  {formatInCurrency(amount)}
+                </Text>
+              </View>
             </View>
           </TouchableOpacity>
         </View>
