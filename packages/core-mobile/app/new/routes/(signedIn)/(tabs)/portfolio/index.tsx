@@ -193,20 +193,26 @@ const PortfolioHomeScreen = (): JSX.Element => {
 
   const actionButtons = useMemo(() => {
     const buttons: ActionButton[] = [
-      { title: ActionButtonTitle.Send, icon: 'send', onPress: handleSend },
-      {
+      { title: ActionButtonTitle.Send, icon: 'send', onPress: handleSend }
+    ]
+    if (!isDeveloperMode) {
+      buttons.push({
         title: ActionButtonTitle.Swap,
         icon: 'swap',
         onPress: () => navigateToSwap()
-      },
-      { title: ActionButtonTitle.Buy, icon: 'buy', onPress: handleBuy },
-      {
-        title: ActionButtonTitle.Stake,
-        icon: 'stake',
-        onPress: addStake,
-        disabled: !canAddStake
-      }
-    ]
+      })
+    }
+    buttons.push({
+      title: ActionButtonTitle.Buy,
+      icon: 'buy',
+      onPress: handleBuy
+    })
+    buttons.push({
+      title: ActionButtonTitle.Stake,
+      icon: 'stake',
+      onPress: addStake,
+      disabled: !canAddStake
+    })
     buttons.push({
       title: ActionButtonTitle.Bridge,
       icon: 'bridge',
@@ -225,6 +231,7 @@ const PortfolioHomeScreen = (): JSX.Element => {
     handleBridge,
     handleConnect,
     handleBuy,
+    isDeveloperMode,
     navigateToSwap
   ])
 
