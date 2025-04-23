@@ -9,7 +9,8 @@ export enum ViewOnceKey {
   NOTIFICATIONS_PROMPT,
   HALLIDAY_BANNER,
   STAKE_ONBOARDING,
-  BRIDGE_ONBOARDING
+  BRIDGE_ONBOARDING,
+  SWAP_ONBOARDING
 }
 
 export type ViewOnceObjectType = {

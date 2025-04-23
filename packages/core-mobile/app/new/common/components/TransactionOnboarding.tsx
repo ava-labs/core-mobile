@@ -77,10 +77,17 @@ export const TransactionOnboarding = ({
           })}
           <Text
             variant="heading3"
-            sx={{ textAlign: 'center', marginTop: 24, lineHeight: 30 }}>
+            sx={{
+              textAlign: 'center',
+              marginTop: 24,
+              lineHeight: 30,
+              maxWidth: 300
+            }}>
             {title}
           </Text>
-          <Text variant="subtitle1" sx={{ textAlign: 'center', marginTop: 14 }}>
+          <Text
+            variant="subtitle1"
+            sx={{ textAlign: 'center', marginTop: 14, maxWidth: 320 }}>
             {subtitle}
           </Text>
         </View>
