@@ -13,7 +13,7 @@ const SendOnboardingScreen = (): JSX.Element => {
 
   return (
     <TransactionOnboarding
-      icon={{ component: Icons.Custom.Bridge, size: 60 }}
+      icon={{ component: Icons.Custom.Send, size: 60 }}
       title={`Send tokens to an address\nor contact`}
       subtitle={`Send tokens to any address or contact\non a given network`}
       viewOnceKey={ViewOnceKey.SEND_ONBOARDING}

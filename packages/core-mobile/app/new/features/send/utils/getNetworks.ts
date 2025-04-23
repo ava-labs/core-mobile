@@ -15,6 +15,17 @@ import {
   NETWORK_X_TEST
 } from 'services/network/consts'
 
+/*
+ * Returns the networks for the given address.
+ * If the address is a string, it checks if it's a valid address and returns the corresponding networks.
+ * If the address is an object, it checks the type of address and returns the corresponding networks.
+ * @param {string | Contact} to - The address or contact to get networks for.
+ * @param {AddrBookItemType | 'address'} recipientType - The type of recipient (address or contact/account).
+ * @param {Networks} allNetworks - All available networks.
+ * @param {boolean} isDeveloperMode - Whether developer mode is enabled.
+ * @param {Contact[]} contacts - List of contacts and accounts.
+ * @returns {Network[]} - The list of networks for the given address.
+ */
 export const getNetworks = ({
   to,
   recipientType,
