@@ -55,7 +55,6 @@ import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { selectSelectedCurrency } from 'store/settings/currency'
 import { selectIsPrivacyModeEnabled } from 'store/settings/securityPrivacy'
 import { useFocusedSelector } from 'utils/performance/useFocusedSelector'
-import { useSendSelectedToken } from 'features/send/store'
 import { useNavigateToSwap } from 'features/swap/hooks/useNavigateToSwap'
 
 const SEGMENT_ITEMS = ['Assets', 'Collectibles', 'DeFi']
@@ -69,7 +68,6 @@ const PortfolioHomeScreen = (): JSX.Element => {
   const [balanceHeaderLayout, setBalanceHeaderLayout] = useState<
     LayoutRectangle | undefined
   >()
-  const [_, setSelectedToken] = useSendSelectedToken()
   const selectedSegmentIndex = useSharedValue(0)
   const activeAccount = useFocusedSelector(selectActiveAccount)
   const isBalanceLoading = useFocusedSelector(selectIsLoadingBalances)
@@ -144,9 +142,8 @@ const PortfolioHomeScreen = (): JSX.Element => {
   )
 
   const handleSend = useCallback((): void => {
-    setSelectedToken(undefined)
     navigate('/send')
-  }, [navigate, setSelectedToken])
+  }, [navigate])
 
   const handleConnect = useCallback((): void => {
     navigate('/walletConnectScan')
@@ -193,20 +190,26 @@ const PortfolioHomeScreen = (): JSX.Element => {
 
   const actionButtons = useMemo(() => {
     const buttons: ActionButton[] = [
-      { title: ActionButtonTitle.Send, icon: 'send', onPress: handleSend },
-      {
+      { title: ActionButtonTitle.Send, icon: 'send', onPress: handleSend }
+    ]
+    if (!isDeveloperMode) {
+      buttons.push({
         title: ActionButtonTitle.Swap,
         icon: 'swap',
         onPress: () => navigateToSwap()
-      },
-      { title: ActionButtonTitle.Buy, icon: 'buy', onPress: handleBuy },
-      {
-        title: ActionButtonTitle.Stake,
-        icon: 'stake',
-        onPress: addStake,
-        disabled: !canAddStake
-      }
-    ]
+      })
+    }
+    buttons.push({
+      title: ActionButtonTitle.Buy,
+      icon: 'buy',
+      onPress: handleBuy
+    })
+    buttons.push({
+      title: ActionButtonTitle.Stake,
+      icon: 'stake',
+      onPress: addStake,
+      disabled: !canAddStake
+    })
     buttons.push({
       title: ActionButtonTitle.Bridge,
       icon: 'bridge',
@@ -225,6 +228,7 @@ const PortfolioHomeScreen = (): JSX.Element => {
     handleBridge,
     handleConnect,
     handleBuy,
+    isDeveloperMode,
     navigateToSwap
   ])
 

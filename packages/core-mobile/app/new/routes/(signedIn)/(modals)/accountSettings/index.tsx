@@ -195,13 +195,13 @@ const AccountSettingsScreen = (): JSX.Element => {
               valueSx={{ fontSize: 16, lineHeight: 22 }}
               separatorMarginRight={16}
             />
-            {/* Address book */}
+            {/* Contacts */}
             <View>
               <Space y={12} />
               <GroupList
                 data={[
                   {
-                    title: 'Address book',
+                    title: 'Contacts',
                     onPress: () => navigate('/accountSettings/addressBook'),
                     value: (
                       <Text

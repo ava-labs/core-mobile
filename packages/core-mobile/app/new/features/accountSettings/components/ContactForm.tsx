@@ -92,7 +92,7 @@ export const ContactForm = ({
         return
       }
 
-      if (!isValidAddress(addressType, value, isDeveloperMode)) {
+      if (!isValidAddress({ addressType, address: value, isDeveloperMode })) {
         showAlert({
           title: 'Invalid address',
           description:

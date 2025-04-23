@@ -515,7 +515,7 @@ export const SwapScreen = (): JSX.Element => {
             size="large"
             onPress={handleSwap}
             disabled={!canSwap || swapInProcess}>
-            {swapInProcess ? <ActivityIndicator /> : 'Swap'}
+            {swapInProcess ? <ActivityIndicator /> : 'Next'}
           </Button>
         </View>
       </SafeAreaView>
