@@ -316,11 +316,7 @@ const ApprovalScreen = ({
           marginTop: 20,
           marginBottom: 20
         }}>
-        <Icons.Alert.ErrorOutline
-          width={20}
-          height={20}
-          color={colors.$textDanger}
-        />
+        <Icons.Action.Info width={20} height={20} color={colors.$textDanger} />
         <Text
           sx={{
             marginLeft: 8,
