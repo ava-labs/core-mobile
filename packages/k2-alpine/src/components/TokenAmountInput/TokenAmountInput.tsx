@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react'
 import Big from 'big.js'
 import { bigintToBig, bigToBigInt } from '@avalabs/core-utils-sdk'
 import { TextInput, TextInputProps } from 'react-native'
+import { alpha } from '../../utils'
 import {
   normalizeNumericTextInput,
   splitIntegerAndFraction
@@ -66,6 +67,7 @@ export function TokenAmountInput({
       keyboardType="numeric"
       onChangeText={handleChangeText}
       value={valueAsString}
+      placeholderTextColor={alpha(theme.colors.$textSecondary, 0.2)}
       selectionColor={theme.colors.$textPrimary}
       style={[{ color: theme.colors.$textPrimary }, props.style]}
     />

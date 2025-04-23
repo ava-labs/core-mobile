@@ -157,6 +157,7 @@ export const TokenUnitInput = forwardRef<
             ]}
             keyboardType="numeric"
             placeholder={PLACEHOLDER}
+            placeholderTextColor={alpha(colors.$textSecondary, 0.2)}
             autoFocus={true}
             value={value}
             onChangeText={handleValueChanged}
