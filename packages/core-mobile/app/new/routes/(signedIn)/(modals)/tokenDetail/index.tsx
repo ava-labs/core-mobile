@@ -47,15 +47,22 @@ import {
   isTokenWithBalancePVM
 } from '@avalabs/avalanche-module'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { UI, useIsUIDisabled } from 'hooks/useIsUIDisabled'
+import { UI, useIsUIDisabledForNetwork } from 'hooks/useIsUIDisabled'
 import { useAssetBalances } from 'screens/bridge/hooks/useAssetBalances'
 import { useCoreBrowser } from 'common/hooks/useCoreBrowser'
+import { useErc20ContractTokens } from 'common/hooks/useErc20ContractTokens'
+import { useNavigateToSwap } from 'features/swap/hooks/useNavigateToSwap'
+import { useAddStake } from 'features/stake/hooks/useAddStake'
+import useCChainNetwork from 'hooks/earn/useCChainNetwork'
+import { AVAX_TOKEN_ID } from 'features/swap/const'
 
 const TokenDetailScreen = (): React.JSX.Element => {
   const {
     theme: { colors }
   } = useTheme()
   const { navigate } = useRouter()
+  const { navigateToSwap } = useNavigateToSwap()
+  const { addStake, canAddStake } = useAddStake()
   const botomInset = useSafeAreaInsets().bottom
   const tabViewRef = useRef<CollapsibleTabsRef>(null)
   const { openUrl } = useCoreBrowser()
@@ -66,7 +73,10 @@ const TokenDetailScreen = (): React.JSX.Element => {
     localId: string
   }>()
 
-  const { filteredTokenList } = useSearchableTokenList({})
+  const erc20ContractTokens = useErc20ContractTokens()
+  const { filteredTokenList } = useSearchableTokenList({
+    tokens: erc20ContractTokens
+  })
 
   const token = useMemo(() => {
     return filteredTokenList.find(tk => tk.localId === localId)
@@ -94,14 +104,32 @@ const TokenDetailScreen = (): React.JSX.Element => {
     [tokenName]
   )
 
-  const isSwapDisabled = useIsUIDisabled(UI.Swap)
-  const isBridgeDisabled = useIsUIDisabled(UI.Bridge)
+  const isSwapDisabled = useIsUIDisabledForNetwork(
+    UI.Swap,
+    token?.networkChainId
+  )
+  const isBridgeDisabled = useIsUIDisabledForNetwork(
+    UI.Bridge,
+    token?.networkChainId
+  )
   const { assetsWithBalances } = useAssetBalances()
-  const isTokenBridgeable = Boolean(
-    assetsWithBalances &&
-      assetsWithBalances.some(
-        asset => (asset.symbolOnNetwork ?? asset.symbol) === token?.symbol
-      )
+  const isTokenBridgeable = useMemo(
+    () =>
+      Boolean(
+        assetsWithBalances &&
+          assetsWithBalances.some(
+            asset => (asset.symbolOnNetwork ?? asset.symbol) === token?.symbol
+          )
+      ),
+    [assetsWithBalances, token]
+  )
+
+  const cChainNetwork = useCChainNetwork()
+  const isTokenStakable = useMemo(
+    () =>
+      token?.networkChainId === cChainNetwork?.chainId &&
+      token?.localId === AVAX_TOKEN_ID,
+    [cChainNetwork, token]
   )
 
   const handleBridge = useCallback(() => {
@@ -131,7 +159,7 @@ const TokenDetailScreen = (): React.JSX.Element => {
       buttons.push({
         title: ActionButtonTitle.Swap,
         icon: 'swap',
-        onPress: noop
+        onPress: () => navigateToSwap(token?.localId)
       })
     }
 
@@ -141,11 +169,14 @@ const TokenDetailScreen = (): React.JSX.Element => {
       onPress: handleBuy
     })
 
-    buttons.push({
-      title: ActionButtonTitle.Stake,
-      icon: 'stake',
-      onPress: noop
-    })
+    if (isTokenStakable) {
+      buttons.push({
+        title: ActionButtonTitle.Stake,
+        icon: 'stake',
+        disabled: !canAddStake,
+        onPress: addStake
+      })
+    }
 
     if (!isBridgeDisabled && isTokenBridgeable) {
       buttons.push({
@@ -161,7 +192,12 @@ const TokenDetailScreen = (): React.JSX.Element => {
     isBridgeDisabled,
     isTokenBridgeable,
     handleBridge,
-    handleBuy
+    handleBuy,
+    navigateToSwap,
+    token,
+    canAddStake,
+    isTokenStakable,
+    addStake
   ])
 
   const { onScroll, targetHiddenProgress } = useFadingHeaderNavigation({

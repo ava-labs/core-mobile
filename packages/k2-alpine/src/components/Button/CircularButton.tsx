@@ -17,58 +17,64 @@ interface CircularButtonProps {
   disabled?: boolean
   style?: StyleProp<ViewStyle>
   testID?: string
+  backgroundColor?: string
 }
 
 export const CircularButton = forwardRef<
   RNView,
   CircularButtonProps & PropsWithChildren
->(({ title, disabled, style, children, testID, ...rest }, ref) => {
-  const { theme } = useTheme()
+>(
+  (
+    { title, disabled, style, children, testID, backgroundColor, ...rest },
+    ref
+  ) => {
+    const { theme } = useTheme()
 
-  const tintColor = getTintColor(theme, disabled)
+    const tintColor = getTintColor(theme, disabled)
 
-  const coloredChildren = React.isValidElement(children)
-    ? React.cloneElement(children, {
-        // @ts-expect-error color is a valid prop
-        color: tintColor
-      })
-    : children
+    const coloredChildren = React.isValidElement(children)
+      ? React.cloneElement(children, {
+          // @ts-expect-error color is a valid prop
+          color: tintColor
+        })
+      : children
 
-  const backgroundColor = getBackgroundColor(theme, disabled)
+    const bgColor = backgroundColor ?? getBackgroundColor(theme, disabled)
 
-  return (
-    <TouchableOpacity
-      ref={ref}
-      accessible={false}
-      testID={testID}
-      disabled={disabled}
-      style={[
-        {
-          width: CIRCULAR_BUTTON_WIDTH
-        },
-        style
-      ]}
-      {...rest}>
-      <View sx={{ gap: 8, alignItems: 'center' }}>
-        <View
-          style={[
-            {
-              width: '100%',
-              aspectRatio: 1,
-              borderRadius: 1000,
-              alignItems: 'center',
-              backgroundColor,
-              justifyContent: 'center',
-              overflow: 'hidden'
-            }
-          ]}>
-          {coloredChildren}
+    return (
+      <TouchableOpacity
+        ref={ref}
+        accessible={false}
+        testID={testID}
+        disabled={disabled}
+        style={[
+          {
+            width: CIRCULAR_BUTTON_WIDTH
+          },
+          style
+        ]}
+        {...rest}>
+        <View sx={{ gap: 8, alignItems: 'center' }}>
+          <View
+            style={[
+              {
+                width: '100%',
+                aspectRatio: 1,
+                borderRadius: 1000,
+                alignItems: 'center',
+                backgroundColor: bgColor,
+                justifyContent: 'center',
+                overflow: 'hidden'
+              }
+            ]}>
+            {coloredChildren}
+          </View>
+          {title && <Text variant="subtitle2">{title}</Text>}
         </View>
-        {title && <Text variant="subtitle2">{title}</Text>}
-      </View>
-    </TouchableOpacity>
-  )
-})
+      </TouchableOpacity>
+    )
+  }
+)
 
 const getBackgroundColor = (
   theme: K2AlpineTheme,

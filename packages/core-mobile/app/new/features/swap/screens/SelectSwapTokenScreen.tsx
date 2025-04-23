@@ -11,43 +11,47 @@ import { ListRenderItem } from '@shopify/flash-list'
 import { LocalTokenWithBalance } from 'store/balance'
 import { LogoWithNetwork } from 'features/portfolio/assets/components/LogoWithNetwork'
 import { useRouter } from 'expo-router'
-import { useSendSelectedToken } from 'features/send/store'
 import { SelectTokenScreen } from 'common/screens/SelectTokenScreen'
 import { useSearchableTokenList } from 'common/hooks/useSearchableTokenList'
-import { useErc20ContractTokens } from 'common/hooks/useErc20ContractTokens'
+import { useAvalancheErc20ContractTokens } from 'common/hooks/useErc20ContractTokens'
+import useCChainNetwork from 'hooks/earn/useCChainNetwork'
 
-export const SelectSendTokenScreen = (): JSX.Element => {
+export const SelectSwapTokenScreen = ({
+  selectedToken,
+  setSelectedToken,
+  hideZeroBalance
+}: {
+  selectedToken: LocalTokenWithBalance | undefined
+  setSelectedToken: (token: LocalTokenWithBalance) => void
+  hideZeroBalance?: boolean
+}): JSX.Element => {
   const {
     theme: { colors }
   } = useTheme()
   const { back, canGoBack } = useRouter()
   const [searchText, setSearchText] = useState<string>('')
-  const [selectedToken, setSelectedToken] = useSendSelectedToken()
-  const erc20ContractTokens = useErc20ContractTokens()
+  const avalancheErc20ContractTokens = useAvalancheErc20ContractTokens()
+  const cChainNetwork = useCChainNetwork()
   const { filteredTokenList } = useSearchableTokenList({
-    tokens: erc20ContractTokens
+    tokens: avalancheErc20ContractTokens,
+    chainId: cChainNetwork?.chainId,
+    hideZeroBalance
   })
   const handleSelectToken = (token: LocalTokenWithBalance): void => {
     setSelectedToken(token)
     canGoBack() && back()
   }
 
-  const availableTokens = useMemo(() => {
-    return filteredTokenList.filter(
-      token => token.networkChainId !== selectedToken?.networkChainId
-    )
-  }, [filteredTokenList, selectedToken?.networkChainId])
-
   const searchResults = useMemo(() => {
     if (searchText.length === 0) {
-      return availableTokens
+      return filteredTokenList
     }
-    return availableTokens.filter(
+    return filteredTokenList.filter(
       token =>
         token.name.toLowerCase().includes(searchText.toLowerCase()) ||
         token.symbol.toLowerCase().includes(searchText.toLowerCase())
     )
-  }, [availableTokens, searchText])
+  }, [filteredTokenList, searchText])
 
   const renderItem: ListRenderItem<LocalTokenWithBalance> = ({
     item,
@@ -101,7 +105,7 @@ export const SelectSendTokenScreen = (): JSX.Element => {
     <SelectTokenScreen
       onSearchText={setSearchText}
       searchText={searchText}
-      tokens={[]}
+      tokens={searchResults}
       renderListItem={renderItem}
       keyExtractor={item => item.localId}
     />
