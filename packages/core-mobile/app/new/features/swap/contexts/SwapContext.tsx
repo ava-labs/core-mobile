@@ -25,12 +25,14 @@ import { getEvmCaip2ChainId } from 'utils/caip2ChainIds'
 import { useNetworks } from 'hooks/networks/useNetworks'
 import { showTransactionErrorToast } from 'utils/toast'
 import { audioFeedback, Audios } from 'utils/AudioFeedback'
-import { RpcMethod, TokenWithBalance } from '@avalabs/vm-module-types'
+import { RpcMethod } from '@avalabs/vm-module-types'
 import { isUserRejectedError } from 'store/rpc/providers/walletConnect/utils'
 import { useDebounce } from 'hooks/useDebounce'
 import { humanizeParaswapRateError } from 'errors/swapError'
 import { selectIsSwapFeesBlocked } from 'store/posthog'
 import { performSwap } from 'contexts/SwapContext/performSwap/performSwap'
+import { LocalTokenWithBalance } from 'store/balance'
+import { useSwapSelectedFromToken, useSwapSelectedToToken } from '../store'
 
 const DEFAULT_DEBOUNCE_MILLISECONDS = 150
 
@@ -47,10 +49,10 @@ export type SwapParams = {
 }
 
 export interface SwapContextState {
-  fromToken?: TokenWithBalance
-  toToken?: TokenWithBalance
-  setFromToken: Dispatch<TokenWithBalance | undefined>
-  setToToken: Dispatch<TokenWithBalance | undefined>
+  fromToken?: LocalTokenWithBalance
+  toToken?: LocalTokenWithBalance
+  setFromToken: Dispatch<LocalTokenWithBalance | undefined>
+  setToToken: Dispatch<LocalTokenWithBalance | undefined>
   optimalRate?: OptimalRate
   refresh: () => void
   swap(params: SwapParams): void
@@ -79,8 +81,8 @@ export const SwapContextProvider = ({
   const { activeNetwork } = useNetworks()
   const activeAccount = useSelector(selectActiveAccount)
   const avalancheProvider = useAvalancheProvider()
-  const [fromToken, setFromToken] = useState<TokenWithBalance>()
-  const [toToken, setToToken] = useState<TokenWithBalance>()
+  const [fromToken, setFromToken] = useSwapSelectedFromToken()
+  const [toToken, setToToken] = useSwapSelectedToToken()
   const [optimalRate, setOptimalRate] = useState<OptimalRate>()
   const [error, setError] = useState('')
   const [slippage, setSlippage] = useState<number>(1)

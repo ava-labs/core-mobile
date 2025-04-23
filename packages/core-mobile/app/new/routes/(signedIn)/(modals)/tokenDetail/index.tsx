@@ -50,6 +50,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { UI, useIsUIDisabled } from 'hooks/useIsUIDisabled'
 import { useAssetBalances } from 'screens/bridge/hooks/useAssetBalances'
 import { useCoreBrowser } from 'common/hooks/useCoreBrowser'
+import { useErc20ContractTokens } from 'common/hooks/useErc20ContractTokens'
 
 const TokenDetailScreen = (): React.JSX.Element => {
   const {
@@ -66,7 +67,10 @@ const TokenDetailScreen = (): React.JSX.Element => {
     localId: string
   }>()
 
-  const { filteredTokenList } = useSearchableTokenList({})
+  const erc20ContractTokens = useErc20ContractTokens()
+  const { filteredTokenList } = useSearchableTokenList({
+    tokens: erc20ContractTokens
+  })
 
   const token = useMemo(() => {
     return filteredTokenList.find(tk => tk.localId === localId)

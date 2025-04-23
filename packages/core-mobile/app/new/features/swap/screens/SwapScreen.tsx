@@ -40,6 +40,7 @@ import Animated, {
 import { calculateRate } from 'swap/utils'
 import { basisPointsToPercentage } from 'utils/basisPointsToPercentage'
 import { PARASWAP_PARTNER_FEE_BPS } from 'contexts/SwapContext/consts'
+import { useAvalancheErc20ContractTokens } from 'common/hooks/useErc20ContractTokens'
 import { useSwapContext } from '../contexts/SwapContext'
 import { SlippageInput } from '../components.tsx/SlippageInput'
 
@@ -51,7 +52,10 @@ export const SwapScreen = (): JSX.Element => {
     initialTokenIdTo?: string
   }>()
   const { formatCurrency } = useFormatCurrency()
-  const { filteredTokenList } = useSearchableTokenList({})
+  const avalancheErc20ContractTokens = useAvalancheErc20ContractTokens()
+  const { filteredTokenList } = useSearchableTokenList({
+    tokens: avalancheErc20ContractTokens
+  })
   const tokensWithZeroBalance = useSelector(selectTokensWithZeroBalance)
   const activeAccount = useSelector(selectActiveAccount)
   const {
@@ -99,13 +103,6 @@ export const SwapScreen = (): JSX.Element => {
     fromToken,
     toToken
   ])
-  useEffect(updateTokensOnTokenListChangeFx, [
-    filteredTokenList,
-    fromToken,
-    setFromToken,
-    setToToken,
-    toToken
-  ])
 
   function validateInputsFx(): void {
     if (fromTokenValue && fromTokenValue === 0n) {
@@ -146,38 +143,6 @@ export const SwapScreen = (): JSX.Element => {
       const token = filteredTokenList.find(
         tk =>
           tk.localId.toLowerCase() === params.initialTokenIdTo?.toLowerCase()
-      )
-      if (token) {
-        setToToken(token)
-      }
-    }
-  }
-
-  function updateTokensOnTokenListChangeFx(): void {
-    if (
-      fromToken &&
-      'localId' in fromToken &&
-      !!fromToken.localId &&
-      typeof fromToken.localId === 'string'
-    ) {
-      const token = filteredTokenList.find(
-        tk =>
-          tk.localId.toLowerCase() ===
-          (fromToken.localId as string).toLowerCase()
-      )
-      if (token) {
-        setFromToken(token)
-      }
-    }
-    if (
-      toToken &&
-      'localId' in toToken &&
-      !!toToken.localId &&
-      typeof toToken.localId === 'string'
-    ) {
-      const token = filteredTokenList.find(
-        tk =>
-          tk.localId.toLowerCase() === (toToken.localId as string).toLowerCase()
       )
       if (token) {
         setToToken(token)
@@ -252,8 +217,12 @@ export const SwapScreen = (): JSX.Element => {
 
   const isPending = false
 
-  const handleSelectToken = useCallback((): void => {
-    navigate({ pathname: '/selectSendToken' })
+  const handleSelectFromToken = useCallback((): void => {
+    navigate({ pathname: '/selectSwapFromToken' })
+  }, [navigate])
+
+  const handleSelectToToken = useCallback((): void => {
+    navigate({ pathname: '/selectSwapToToken' })
   }, [navigate])
 
   const formatInCurrency = useCallback(
@@ -303,7 +272,7 @@ export const SwapScreen = (): JSX.Element => {
           onAmountChange={handleFromAmountChange}
           onFocus={() => setIsInputFocused(true)}
           onBlur={() => setIsInputFocused(false)}
-          onSelectToken={handleSelectToken}
+          onSelectToken={handleSelectFromToken}
           maximum={fromToken?.balance}
           inputTextColor={localError ? theme.colors.$textDanger : undefined}
         />
@@ -313,7 +282,7 @@ export const SwapScreen = (): JSX.Element => {
     theme,
     formatInCurrency,
     handleFromAmountChange,
-    handleSelectToken,
+    handleSelectFromToken,
     cChainNetwork,
     fromToken,
     localError,
@@ -333,6 +302,7 @@ export const SwapScreen = (): JSX.Element => {
         <TokenInputWidget
           amount={toTokenValue}
           balance={toToken?.balance}
+          shouldShowBalance={true}
           title="You receive"
           token={
             toToken && 'decimals' in toToken
@@ -346,6 +316,9 @@ export const SwapScreen = (): JSX.Element => {
           network={cChainNetwork}
           formatInCurrency={amount => formatInCurrency(toToken, amount)}
           onAmountChange={handleToAmountChange}
+          onFocus={() => setIsInputFocused(true)}
+          onBlur={() => setIsInputFocused(false)}
+          onSelectToken={handleSelectToToken}
           isLoadingAmount={isFetchingOptimalRate}
         />
       </View>
@@ -357,7 +330,8 @@ export const SwapScreen = (): JSX.Element => {
     toToken,
     cChainNetwork,
     toTokenValue,
-    isFetchingOptimalRate
+    isFetchingOptimalRate,
+    handleSelectToToken
   ])
 
   const swapButtonBackgroundColor = useMemo(
@@ -383,7 +357,9 @@ export const SwapScreen = (): JSX.Element => {
     if (fromToken && toToken) {
       items.push({
         title: 'Rate',
-        value: `1 ${fromToken.symbol} = ${rate?.toFixed(4)} ${toToken.symbol}`
+        value: isFetchingOptimalRate
+          ? undefined
+          : `1 ${fromToken.symbol} = ${rate?.toFixed(4)} ${toToken.symbol}`
       })
     }
 
@@ -393,9 +369,17 @@ export const SwapScreen = (): JSX.Element => {
     })
 
     return items
-  }, [activeAccount, toToken, fromToken, optimalRate, slippage, setSlippage])
+  }, [
+    activeAccount,
+    toToken,
+    fromToken,
+    optimalRate,
+    slippage,
+    setSlippage,
+    isFetchingOptimalRate
+  ])
 
-  const tooltipCoreFeeMessage = useMemo(
+  const coreFeeMessage = useMemo(
     () =>
       `Quote includes a ${basisPointsToPercentage(
         PARASWAP_PARTNER_FEE_BPS
@@ -481,8 +465,8 @@ export const SwapScreen = (): JSX.Element => {
           )}
           <View style={{ marginTop: 24 }}>
             <GroupList data={data} separatorMarginRight={16} />
-            <Text variant="caption" sx={{ marginTop: 5, alignSelf: 'center' }}>
-              {tooltipCoreFeeMessage}
+            <Text variant="caption" sx={{ marginTop: 6, alignSelf: 'center' }}>
+              {coreFeeMessage}
             </Text>
           </View>
         </KeyboardAwareScrollView>

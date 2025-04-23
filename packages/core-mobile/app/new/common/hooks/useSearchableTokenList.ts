@@ -3,18 +3,16 @@ import {
   refetchBalance,
   selectIsLoadingBalances,
   selectIsRefetchingBalances,
-  selectTokensWithBalanceForAccount
+  selectTokensWithBalanceForAccount,
+  selectTokensWithBalanceForAccountAndNetwork
 } from 'store/balance/slice'
 import { LocalTokenId, LocalTokenWithBalance } from 'store/balance/types'
 import { useDispatch, useSelector } from 'react-redux'
 import { selectTokenVisibility, TokenVisibility } from 'store/portfolio'
 import { getLocalTokenId, isTokenVisible } from 'store/balance/utils'
-import { TokenType } from '@avalabs/vm-module-types'
-import { isErc20 } from 'common/utils/isErc20'
+import { NetworkContractToken, TokenType } from '@avalabs/vm-module-types'
 import { selectActiveAccount } from 'store/account'
 import { RootState } from 'store'
-import { useEthereumContractTokens } from './useEthereumContractTokens'
-import { useCChainContractTokens } from './useCChainContractTokens'
 
 const isGreaterThanZero = (token: LocalTokenWithBalance): boolean =>
   token.balance > 0n
@@ -36,13 +34,17 @@ const containSearchText = (text: string) => (token: LocalTokenWithBalance) => {
 }
 
 export function useSearchableTokenList({
+  tokens,
   hideZeroBalance = true,
   hideBlacklist = true,
-  hideNft = true
+  hideNft = true,
+  chainId
 }: {
+  tokens: NetworkContractToken[]
   hideZeroBalance?: boolean
   hideBlacklist?: boolean
   hideNft?: boolean
+  chainId?: number
 }): {
   searchText: string
   filteredTokenList: LocalTokenWithBalance[]
@@ -51,46 +53,41 @@ export function useSearchableTokenList({
   refetch: () => void
   isRefetching: boolean
 } {
-  const avalancheContractTokens = useCChainContractTokens()
-  const ethereumContractTokens = useEthereumContractTokens()
-
-  const avalancheErc20ContractTokens = avalancheContractTokens.filter(token =>
-    isErc20(token)
-  )
-  const ethereumErc20ContractTokens = ethereumContractTokens.filter(token =>
-    isErc20(token)
-  )
-
   const allNetworkTokens = useMemo(() => {
     return (
-      [...avalancheErc20ContractTokens, ...ethereumErc20ContractTokens].map(
-        token => {
-          return {
-            ...token,
-            ...('chainId' in token && { networkChainId: token.chainId }),
-            localId: getLocalTokenId(token),
-            balance: 0n,
-            balanceInCurrency: 0,
-            balanceDisplayValue: '0',
-            balanceCurrencyDisplayValue: '0',
-            priceInCurrency: 0,
-            marketCap: 0,
-            change24: 0,
-            vol24: 0
-          } as LocalTokenWithBalance
-        }
-      ) ?? []
+      tokens.map(token => {
+        return {
+          ...token,
+          ...('chainId' in token && { networkChainId: token.chainId }),
+          localId: getLocalTokenId(token),
+          balance: 0n,
+          balanceInCurrency: 0,
+          balanceDisplayValue: '0',
+          balanceCurrencyDisplayValue: '0',
+          priceInCurrency: 0,
+          marketCap: 0,
+          change24: 0,
+          vol24: 0
+        } as LocalTokenWithBalance
+      }) ?? []
     )
-  }, [ethereumErc20ContractTokens, avalancheErc20ContractTokens])
+  }, [tokens])
   const dispatch = useDispatch()
   const [searchText, setSearchText] = useState('')
   const tokenVisibility = useSelector(selectTokenVisibility)
   const isLoadingBalances = useSelector(selectIsLoadingBalances)
   const isRefetchingBalances = useSelector(selectIsRefetchingBalances)
   const activeAccount = useSelector(selectActiveAccount)
-  const tokensWithBalance = useSelector((state: RootState) =>
-    selectTokensWithBalanceForAccount(state, activeAccount?.index)
-  )
+  const tokensWithBalance = useSelector((state: RootState) => {
+    if (chainId) {
+      return selectTokensWithBalanceForAccountAndNetwork(
+        state,
+        chainId,
+        activeAccount?.index
+      )
+    }
+    return selectTokensWithBalanceForAccount(state, activeAccount?.index)
+  })
 
   // 1. merge tokens with balance with the remaining
   // zero balance tokens from avalanche and ethereum networks
@@ -126,7 +123,7 @@ export function useSearchableTokenList({
     }
 
     return filters.reduce(
-      (tokens, filter) => tokens.filter(filter),
+      (_tokens, filter) => _tokens.filter(filter),
       mergedTokens
     )
   }, [
