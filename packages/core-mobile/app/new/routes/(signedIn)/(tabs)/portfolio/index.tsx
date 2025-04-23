@@ -153,7 +153,7 @@ const PortfolioHomeScreen = (): JSX.Element => {
   }, [navigate])
 
   const handleBuy = useCallback((): void => {
-    navigate({ pathname: '/buy' })
+    navigate('/buy')
   }, [navigate])
 
   const header = useMemo(
@@ -355,6 +355,7 @@ const PortfolioHomeScreen = (): JSX.Element => {
           <AssetsScreen
             goToTokenDetail={handleGoToTokenDetail}
             goToTokenManagement={handleGoToTokenManagement}
+            goToBuy={handleBuy}
           />
         )
       },
@@ -376,6 +377,7 @@ const PortfolioHomeScreen = (): JSX.Element => {
   }, [
     handleGoToTokenDetail,
     handleGoToTokenManagement,
+    handleBuy,
     handleGoToCollectibleDetail,
     handleGoToCollectibleManagement,
     handleGoToDiscoverCollectibles
