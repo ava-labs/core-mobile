@@ -25,13 +25,13 @@ export enum SendErrorMessage {
 
 type CommonAdapterOptions<Token> = {
   fromAddress: string
-  maxFee: bigint
-  nativeToken: Token
-  network: Network
+  maxFee?: bigint
+  nativeToken?: Token
+  network?: Network
 }
 
 export type AdapterOptionsEVM = {
-  chainId: number
+  chainId?: number
 }
 
 export type AdapterOptionsBTC = {

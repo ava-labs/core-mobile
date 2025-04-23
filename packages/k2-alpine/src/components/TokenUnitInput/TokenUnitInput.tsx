@@ -1,7 +1,6 @@
 import React, {
   forwardRef,
   useCallback,
-  useEffect,
   useImperativeHandle,
   useMemo,
   useRef,
@@ -32,10 +31,10 @@ type TokenUnitInputProps = {
     maxDecimals: number
     symbol: string
   }
-  onChange?(amount: TokenUnit): void
   formatInCurrency?(amount: TokenUnit): string
   sx?: SxProp
   editable?: boolean
+  onChange?(amount: TokenUnit): void
 }
 
 export const TokenUnitInput = forwardRef<
@@ -97,11 +96,20 @@ export const TokenUnitInput = forwardRef<
         )
 
         setValue(normalizeValue(changedValue))
+        onChange?.(
+          new TokenUnit(
+            !normalizeValue(changedValue)
+              ? 0
+              : Number(normalizeValue(changedValue)) * 10 ** token.maxDecimals,
+            token.maxDecimals,
+            token.symbol
+          )
+        )
       } else {
         setMaxLength(undefined)
       }
     },
-    [maxDecimalDigits, token]
+    [maxDecimalDigits, onChange, token.maxDecimals, token.symbol]
   )
 
   const handlePress = (): void => {
@@ -111,10 +119,6 @@ export const TokenUnitInput = forwardRef<
   const handleTextInputLayout = (event: LayoutChangeEvent): void => {
     setTextInputMinimumLayout(event.nativeEvent.layout)
   }
-
-  useEffect(() => {
-    onChange?.(inputAmount)
-  }, [inputAmount, onChange])
 
   useImperativeHandle(ref, () => ({
     setValue: (newValue: string) => setValue(newValue),
@@ -157,6 +161,7 @@ export const TokenUnitInput = forwardRef<
             ]}
             keyboardType="numeric"
             placeholder={PLACEHOLDER}
+            placeholderTextColor={alpha(colors.$textSecondary, 0.2)}
             autoFocus={true}
             value={value}
             onChangeText={handleValueChanged}

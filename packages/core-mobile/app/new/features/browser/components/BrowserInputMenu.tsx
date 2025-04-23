@@ -1,5 +1,4 @@
 import { Icons, useTheme } from '@avalabs/k2-alpine'
-import { useNavigation } from '@react-navigation/native'
 import { DropdownItem, DropdownMenu } from 'common/components/DropdownMenu'
 import { DropdownMenuIcon } from 'common/components/DropdownMenuIcons'
 import { showSnackbar } from 'common/utils/toast'
@@ -14,6 +13,7 @@ import {
   selectActiveTab
 } from 'store/browser/slices/tabs'
 import Logger from 'utils/Logger'
+import { useRouter } from 'expo-router'
 import { useBrowserContext } from '../BrowserContext'
 import { isValidUrl } from '../utils'
 
@@ -37,7 +37,7 @@ export const BrowserInputMenu = ({
 }): JSX.Element => {
   const { theme } = useTheme()
   const dispatch = useDispatch()
-  const { navigate } = useNavigation()
+  const { navigate } = useRouter()
   const { handleClearAndFocus, browserRefs } = useBrowserContext()
   const activeHistory = useSelector(selectActiveHistory)
   const activeTab = useSelector(selectActiveTab)
@@ -133,7 +133,7 @@ export const BrowserInputMenu = ({
 
   const handleHistory = useCallback((): void => {
     AnalyticsService.capture('BrowserViewHistoryTapped')
-    navigate('history')
+    navigate('/browser/history')
   }, [navigate])
 
   const handleFavorite = useCallback((): void => {

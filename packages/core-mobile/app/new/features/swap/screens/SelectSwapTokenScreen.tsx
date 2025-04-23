@@ -80,7 +80,7 @@ export const SelectSwapTokenScreen = ({
             <View>
               <Text variant="buttonMedium">{item.name}</Text>
               <Text variant="subtitle2">
-                {item.balanceDisplayValue + item.symbol}
+                {item.balanceDisplayValue} {item.symbol}
               </Text>
             </View>
           </View>

@@ -2,9 +2,10 @@ import React, { useCallback, useState } from 'react'
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
 import { ScrollView, Text, View } from '../Primitives'
-import { Icons, useTheme } from '../..'
+import { Button, Icons, useTheme } from '../..'
 import { TokenUnitInputWidget } from './TokenUnitInputWidget'
 import { TokenUnitInput } from './TokenUnitInput'
+import { SendTokenUnitInputWidget } from './SendTokenUnitInputWidget'
 
 export default {
   title: 'Token Unit Input'
@@ -30,6 +31,7 @@ export const All = (): JSX.Element => {
         <TokenUnitInputStory />
         <StakingTokenUnitInputWidgetStory />
         <SwapTokenUnitInputWidgetStory />
+        <SendTokenUnitInputWidgetStory />
       </ScrollView>
     </GestureHandlerRootView>
   )
@@ -138,6 +140,65 @@ const SwapTokenUnitInputWidgetStory = (): JSX.Element => {
   )
 }
 
+const SendTokenUnitInputWidgetStory = (): JSX.Element => {
+  const { theme } = useTheme()
+  const [sendAmount, setSendAmount] = useState<TokenUnit>()
+  const [availabelBalance, setAvailableBalance] =
+    useState<TokenUnit>(balanceInAvax)
+  const handleChange = (amount: TokenUnit): void => {
+    setSendAmount(amount)
+  }
+
+  const validateSendAmount = useCallback(
+    async (amount: TokenUnit) => {
+      if (amount.gt(availabelBalance)) {
+        throw new Error(
+          'The specified send amount exceeds the available balance'
+        )
+      }
+    },
+    [availabelBalance]
+  )
+
+  const renderAccessory = useCallback(() => {
+    return <Icons.Custom.Switch color={theme.colors.$textPrimary} />
+  }, [theme])
+
+  return (
+    <View sx={{ gap: 12 }}>
+      <Text variant="heading6">
+        Send Amount Input Widget: {sendAmount?.toString()} AVAX
+      </Text>
+
+      <View sx={{ flexDirection: 'row', gap: 8, alignItems: 'center' }}>
+        <Text variant="body1" sx={{ color: '$textPrimary' }}>
+          Set available balances:
+        </Text>
+        {BalancesInAvax.map((balance, index) => (
+          <Button
+            size="small"
+            type="secondary"
+            key={index}
+            style={{ width: 40 }}
+            onPress={() => setAvailableBalance(balance)}>
+            {balance.toString()}
+          </Button>
+        ))}
+      </View>
+
+      <SendTokenUnitInputWidget
+        amount={sendAmount}
+        token={xpChainToken}
+        balance={availabelBalance}
+        formatInCurrency={testFormatInCurrency}
+        onChange={handleChange}
+        validateAmount={validateSendAmount}
+        accessory={renderAccessory()}
+      />
+    </View>
+  )
+}
+
 const xpChainToken = {
   maxDecimals: 9,
   symbol: 'AVAX'
@@ -164,3 +225,10 @@ const minStakeAmount = new TokenUnit(
   xpChainToken.maxDecimals,
   xpChainToken.symbol
 ).add(25)
+
+const BalancesInAvax = [
+  new TokenUnit(1000000000, xpChainToken.maxDecimals, xpChainToken.symbol),
+  new TokenUnit(6000000000, xpChainToken.maxDecimals, xpChainToken.symbol),
+  new TokenUnit(11000000000, xpChainToken.maxDecimals, xpChainToken.symbol),
+  new TokenUnit(125000000000, xpChainToken.maxDecimals, xpChainToken.symbol)
+]
