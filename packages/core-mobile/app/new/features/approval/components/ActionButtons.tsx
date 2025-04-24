@@ -70,6 +70,31 @@ export const ActionButtons = ({
     )
   }, [confirm, cancel, alert, alertConfirmed])
 
+  const renderIcon = useCallback(
+    (alertType: AlertType) => {
+      if (alertType === AlertType.DANGER) {
+        return <Icons.Social.RemoveModerator color={colors.$textDanger} />
+      } else if (alertType === AlertType.WARNING) {
+        return (
+          <Icons.Device.GPPMaybe
+            color={colors.$textPrimary}
+            width={20}
+            height={20}
+          />
+        )
+      } else {
+        return (
+          <Icons.Action.Info
+            color={colors.$textPrimary}
+            width={20}
+            height={20}
+          />
+        )
+      }
+    },
+    [colors.$textDanger, colors.$textPrimary]
+  )
+
   const renderAlertSection = useCallback(
     (alertData: Alert) => {
       const isDangerAlert = alertData.type === AlertType.DANGER
@@ -90,21 +115,23 @@ export const ActionButtons = ({
               paddingTop: 20,
               marginBottom: 22
             }}>
-            <Icons.Device.GPPMaybe color={colors.$textDanger} />
+            <View style={{ alignSelf: 'center' }}>
+              {renderIcon(alertData.type)}
+            </View>
             <View
               sx={{
                 flex: 1,
                 marginLeft: 8,
-                marginRight: isDangerAlert ? 31 : 0
+                marginRight: isDangerAlert ? 31 : 10
               }}>
               <Text
                 variant="buttonMedium"
-                sx={{ fontSize: 13, textAlign: 'left' }}>
+                sx={{
+                  fontSize: 13,
+                  textAlign: 'left',
+                  color: isDangerAlert ? '$textDanger' : '$textPrimary'
+                }}>
                 {alertData.message}
-                <Text variant="subtitle2" sx={{ lineHeight: 18 }}>
-                  {isDangerAlert ? ' ' : ' \n'}I understand the risk and want to
-                  proceed anyway.
-                </Text>
               </Text>
             </View>
             {isDangerAlert && (
@@ -118,7 +145,7 @@ export const ActionButtons = ({
         </View>
       )
     },
-    [renderButtons, alertConfirmed, colors.$textDanger, containerStyle]
+    [renderButtons, alertConfirmed, containerStyle, renderIcon]
   )
 
   const renderDefaultSection = useCallback(

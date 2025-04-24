@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react'
 import { LayoutChangeEvent } from 'react-native'
-import { View, ScrollView, useTheme } from '@avalabs/k2-alpine'
+import { View, ScrollView, useTheme, SCREEN_HEIGHT } from '@avalabs/k2-alpine'
 /**
  * Temporarily import "useNavigation" from @react-navigation/native.
  * This is a workaround due to a render bug in the expo-router version.
@@ -59,10 +59,10 @@ export const ActionSheet = ({
     <View style={{ flex: 1 }}>
       <ScrollView
         onScroll={onScroll}
+        contentInset={{ bottom: SCREEN_HEIGHT * 0.4 }}
         contentContainerStyle={{
           backgroundColor: colors.$surfacePrimary,
-          paddingHorizontal: 16,
-          paddingBottom: '90%'
+          paddingHorizontal: 16
         }}>
         {children({ handleHeaderLayout })}
       </ScrollView>

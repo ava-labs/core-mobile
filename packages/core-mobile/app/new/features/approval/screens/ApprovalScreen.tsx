@@ -6,14 +6,7 @@ import React, {
   useMemo
 } from 'react'
 import { LayoutChangeEvent } from 'react-native'
-import {
-  Icons,
-  Separator,
-  showAlert,
-  Text,
-  useTheme,
-  View
-} from '@avalabs/k2-alpine'
+import { Separator, showAlert, Text, View } from '@avalabs/k2-alpine'
 import { TokenLogo } from 'new/common/components/TokenLogo'
 import { ApprovalParams } from 'services/walletconnectv2/walletConnectCache/types'
 import { walletConnectCache } from 'services/walletconnectv2/walletConnectCache/walletConnectCache'
@@ -34,7 +27,6 @@ import { router } from 'expo-router'
 import { Eip1559Fees } from 'utils/Utils'
 import { ActionSheet } from 'new/common/components/ActionSheet'
 import ScreenHeader from 'new/common/components/ScreenHeader'
-import { sentenceCase } from 'new/common/utils/sentenceCase'
 import { Details } from '../components/Details'
 import { Network } from '../components/Network'
 import { NetworkFeeSelectorWithGasless } from '../components/NetworkFeeSelectorWithGasless'
@@ -62,9 +54,6 @@ const ApprovalScreen = ({
 }: {
   params: ApprovalParams
 }): JSX.Element => {
-  const {
-    theme: { colors }
-  } = useTheme()
   const isSeedlessSigningBlocked = useSelector(selectIsSeedlessSigningBlocked)
   const { getNetwork } = useNetworks()
   const caip2ChainId = request.chainId
@@ -276,7 +265,7 @@ const ApprovalScreen = ({
           style={{
             marginBottom: 32
           }}>
-          <ScreenHeader title={sentenceCase(title)} />
+          <ScreenHeader title={title} />
         </View>
       )
     },
@@ -344,34 +333,6 @@ const ApprovalScreen = ({
     },
     [displayData.dAppInfo, displayData.title, renderDappInfo, renderTitle]
   )
-
-  const renderDisclaimer = useCallback((): JSX.Element | null => {
-    if (!displayData.disclaimer) return null
-
-    return (
-      <View
-        sx={{
-          flexDirection: 'row',
-          alignItems: 'center',
-          overflow: 'hidden',
-          paddingRight: 26,
-          marginBottom: 19
-        }}>
-        <Icons.Action.Info width={20} height={20} color={colors.$textDanger} />
-        <Text
-          sx={{
-            marginLeft: 8,
-            fontSize: 15,
-            lineHeight: 20,
-            color: '$textDanger',
-            fontWeight: '500'
-          }}
-          variant="body1">
-          {displayData.disclaimer}
-        </Text>
-      </View>
-    )
-  }, [displayData.disclaimer, colors.$textDanger])
 
   const renderAccountAndNetwork = useCallback((): JSX.Element | undefined => {
     if (displayData.account && displayData.network) {
@@ -481,7 +442,7 @@ const ApprovalScreen = ({
 
   return (
     <ActionSheet
-      title={sentenceCase(displayData.title)}
+      title={displayData.title}
       onClose={onReject}
       alert={alert}
       confirm={{
@@ -498,7 +459,6 @@ const ApprovalScreen = ({
         return (
           <>
             {renderDappInfoOrTitle(handleHeaderLayout)}
-            {renderDisclaimer()}
             {renderGaslessAlert()}
             {renderAccountAndNetwork()}
             {renderBalanceChange()}

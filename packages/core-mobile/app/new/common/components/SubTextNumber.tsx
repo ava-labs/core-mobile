@@ -19,10 +19,14 @@ export const SubTextNumber: React.FC<Props> = ({
     [number]
   )
 
-  const textVariant = size === 'big' ? 'heading5' : 'subtitle2'
+  const textVariant = size === 'big' ? 'heading5' : 'body1'
+
   return (
     <View style={styles.container} testID={testID}>
-      <Text variant={textVariant} sx={{ color: '$textPrimary' }}>
+      <Text
+        numberOfLines={1}
+        variant={textVariant}
+        sx={{ color: '$textPrimary' }}>
         {mainTextBefore}
       </Text>
       {subText && (
@@ -45,17 +49,17 @@ export const SubTextNumber: React.FC<Props> = ({
 const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
-    alignItems: 'center'
+    alignItems: 'center',
+    maxWidth: '70%'
   },
   subTextSmall: {
-    fontSize: 10,
-    fontWeight: 'bold',
+    fontSize: 13,
+    fontWeight: '500',
     position: 'relative',
     top: 4
   },
   subTextBig: {
     fontSize: 15,
-    fontWeight: 'bold',
     position: 'relative',
     top: 4
   }
