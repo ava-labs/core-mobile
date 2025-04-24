@@ -106,7 +106,7 @@ export const CollectibleDetailsContent = ({
 
   const handleSend = useCallback(() => {
     setSelectedToken(collectible)
-    navigate('/collectiblesSend')
+    navigate('/collectibleSend')
   }, [collectible, navigate, setSelectedToken])
 
   const ACTION_BUTTONS: ActionButton[] = useMemo(() => {

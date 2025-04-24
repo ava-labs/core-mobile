@@ -46,7 +46,7 @@ export default function WalletLayout(): JSX.Element {
               options={modalScreensOptions}
             />
             <Stack.Screen
-              name="(modals)/collectiblesSend"
+              name="(modals)/collectibleSend"
               options={modalScreensOptions}
             />
             <Stack.Screen name="(modals)/send" options={modalScreensOptions} />
