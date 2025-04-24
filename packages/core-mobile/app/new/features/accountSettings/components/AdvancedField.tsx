@@ -1,54 +1,41 @@
-import React, { useState, useCallback } from 'react'
 import {
+  Button,
+  Icons,
+  Text,
+  TextInput,
   TouchableOpacity,
   useTheme,
-  View,
-  Text,
-  Icons,
-  TextInput,
-  Button
+  View
 } from '@avalabs/k2-alpine'
-import { Keyboard } from 'react-native'
-import { truncateAddress } from '@avalabs/core-utils-sdk'
-import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router'
 import { copyToClipboard } from 'common/utils/clipboard'
-import { AddressType } from '../consts'
+import { useRouter } from 'expo-router'
+import React, { useCallback, useState } from 'react'
+import { Keyboard } from 'react-native'
 import { ContactAddressMenu } from './ContactAddressMenu'
 
-interface NetworkAddressFormProps {
-  title: AddressType
-  address?: string
+export interface AdvancedFieldProps {
+  id: string
+  title: string
+  value?: string
   emptyText: string
   placeholder: string
-  onUpdateNetwork: (addressType: AddressType, value?: string) => void
+  onUpdate: (id: string, value?: string) => void
 }
 
-export const NetworkAddressForm = ({
+export const AdvancedField = ({
+  id,
   title,
-  address,
+  value,
   emptyText,
   placeholder,
-  onUpdateNetwork
-}: NetworkAddressFormProps): React.JSX.Element => {
-  const params = useLocalSearchParams<{
-    address: string
-    addressType: AddressType
-  }>()
-  const { navigate, setParams } = useRouter()
+  onUpdate
+}: AdvancedFieldProps): React.JSX.Element => {
+  const { navigate } = useRouter()
   const [isEditing, setIsEditing] = useState(false)
-  const [value, setValue] = useState('')
+  const [inputValue, setInputValue] = useState('')
   const {
     theme: { colors }
   } = useTheme()
-
-  useFocusEffect(
-    useCallback(() => {
-      if (params.address && params.addressType === title) {
-        onUpdateNetwork(params.addressType, params.address)
-        setParams({ address: undefined, addressType: undefined })
-      }
-    }, [params.address, params.addressType, title, onUpdateNetwork, setParams])
-  )
 
   const handleScanQrCode = useCallback(() => {
     navigate({
@@ -57,23 +44,22 @@ export const NetworkAddressForm = ({
     })
   }, [navigate, title])
 
-  const handleCopyAddress = useCallback(() => {
-    if (address) {
-      copyToClipboard(address, `${title} address copied!`)
+  const handleCopy = useCallback(() => {
+    if (value) {
+      copyToClipboard(value, `${title} address copied!`)
     }
-  }, [address, title])
+  }, [value, title])
 
-  const renderNetwork = useCallback(() => {
+  const renderField = useCallback(() => {
     if (isEditing) {
       return (
         <TextInput
           autoFocus
           numberOfLines={1}
           onSubmitEditing={e => {
-            e.nativeEvent.text.length > 0 &&
-              onUpdateNetwork(title, e.nativeEvent.text)
+            e.nativeEvent.text.length > 0 && onUpdate(id, e.nativeEvent.text)
             setIsEditing(false)
-            setValue('')
+            setInputValue('')
             Keyboard.dismiss()
           }}
           onBlur={() => {
@@ -81,21 +67,31 @@ export const NetworkAddressForm = ({
           }}
           submitBehavior="blurAndSubmit"
           autoCorrect={false}
-          value={value}
-          onChangeText={setValue}
+          value={inputValue}
+          onChangeText={setInputValue}
           placeholder={placeholder}
           textInputSx={{ height: undefined }}
-          containerSx={{ paddingHorizontal: undefined }}
+          containerSx={{
+            paddingHorizontal: 16,
+            paddingVertical: 14
+          }}
         />
       )
     }
 
-    if (address === undefined) {
+    if (value === undefined) {
       return (
         <ContactAddressMenu
           onTypeOrPaste={() => setIsEditing(true)}
           onScanQrCode={handleScanQrCode}>
-          <View sx={{ flexDirection: 'row', alignItems: 'center', gap: 14 }}>
+          <View
+            sx={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: 14,
+              paddingHorizontal: 16,
+              paddingVertical: 14
+            }}>
             <Icons.Custom.AddCircle width={20} height={20} />
             <Text variant="body1">{emptyText}</Text>
           </View>
@@ -111,12 +107,14 @@ export const NetworkAddressForm = ({
           alignItems: 'center'
         }}>
         <TouchableOpacity
-          onPress={() => onUpdateNetwork(title, undefined)}
+          onPress={() => onUpdate(undefined)}
           style={{
             backgroundColor: colors.$surfaceSecondary,
             gap: 14,
             flexDirection: 'row',
-            alignItems: 'center'
+            alignItems: 'center',
+            paddingHorizontal: 16,
+            paddingVertical: 14
           }}>
           <Icons.Custom.DoNotDisturbOn width={20} height={20} />
           <View>
@@ -136,27 +134,27 @@ export const NetworkAddressForm = ({
                 fontSize: 13,
                 lineHeight: 18
               }}>
-              {truncateAddress(address)}
+              {value}
             </Text>
           </View>
         </TouchableOpacity>
-        <Button size="small" type="secondary" onPress={handleCopyAddress}>
+        <Button size="small" type="secondary" onPress={handleCopy}>
           Copy
         </Button>
       </View>
     )
   }, [
-    address,
-    colors.$surfaceSecondary,
-    emptyText,
-    handleCopyAddress,
-    handleScanQrCode,
     isEditing,
-    onUpdateNetwork,
-    placeholder,
+    value,
+    colors.$surfaceSecondary,
     title,
-    value
+    handleCopy,
+    inputValue,
+    placeholder,
+    onUpdate,
+    handleScanQrCode,
+    emptyText
   ])
 
-  return renderNetwork()
+  return renderField()
 }
