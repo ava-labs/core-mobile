@@ -28,6 +28,7 @@ import { truncateAddress } from 'utils/Utils'
 import { isAddress } from 'viem'
 import { useRouter } from 'expo-router'
 import { useSendSelectedToken } from 'features/send/store'
+import { NftContentType } from 'store/nft'
 import { useCollectiblesContext } from '../CollectiblesContext'
 import { HORIZONTAL_MARGIN } from '../consts'
 
@@ -50,15 +51,11 @@ export const CollectibleDetailsContent = ({
   const { refreshMetadata, isCollectibleRefreshing } = useCollectiblesContext()
   const { saveExternalAvatar } = useAvatar()
 
-  const isVideo =
-    collectible?.imageData?.type.includes('video') ||
-    collectible?.imageData?.type.includes('mp4')
+  const isSupportedAvatar =
+    collectible?.imageData?.type !== NftContentType.MP4 &&
+    collectible?.imageData?.type !== NftContentType.Unknown
 
   const handleSaveAvatar = (): void => {
-    if (isVideo) {
-      showSnackbar('Video avatars are not supported')
-      return
-    }
     if (!collectible?.imageData?.image) return
     saveExternalAvatar(collectible.localId, collectible.imageData.image)
     showSnackbar('Avatar saved')
@@ -240,7 +237,10 @@ export const CollectibleDetailsContent = ({
                 type="secondary"
                 size="large"
                 onPress={handleSaveAvatar}
-                disabled={avatar.id === collectible?.localId}>
+                disabled={
+                  avatar.id === collectible?.localId ||
+                  isSupportedAvatar === false
+                }>
                 Set as my avatar
               </Button>
             )}
