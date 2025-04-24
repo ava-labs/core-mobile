@@ -5,15 +5,8 @@ import React, {
   useLayoutEffect,
   useMemo
 } from 'react'
-import {
-  Icons,
-  ScrollView,
-  Separator,
-  showAlert,
-  Text,
-  useTheme,
-  View
-} from '@avalabs/k2-alpine'
+import { LayoutChangeEvent } from 'react-native'
+import { Separator, showAlert, Text, View } from '@avalabs/k2-alpine'
 import { TokenLogo } from 'new/common/components/TokenLogo'
 import { ApprovalParams } from 'services/walletconnectv2/walletConnectCache/types'
 import { walletConnectCache } from 'services/walletconnectv2/walletConnectCache/walletConnectCache'
@@ -30,14 +23,18 @@ import { useNetworks } from 'hooks/networks/useNetworks'
 import { isInAppRequest } from 'store/rpc/utils/isInAppRequest'
 import { validateFee } from 'screens/send/utils/evm/validate'
 import { SendErrorMessage } from 'screens/send/utils/types'
-import { router } from 'expo-router'
+import { router, useLocalSearchParams } from 'expo-router'
 import { Eip1559Fees } from 'utils/Utils'
+import { ActionSheet } from 'new/common/components/ActionSheet'
+import ScreenHeader from 'new/common/components/ScreenHeader'
+import { NavigationPresentationMode } from 'new/common/types'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { Details } from '../components/Details'
-import { ActionButtons } from '../components/ActionButtons'
 import { Network } from '../components/Network'
 import { NetworkFeeSelectorWithGasless } from '../components/NetworkFeeSelectorWithGasless'
 import { Account } from '../components/Account'
 import BalanceChange from '../components/BalanceChange'
+
 // import { SpendLimits } from '../components/SpendLimits'
 
 const ApprovalScreenWrapper = (): JSX.Element | null => {
@@ -59,9 +56,8 @@ const ApprovalScreen = ({
 }: {
   params: ApprovalParams
 }): JSX.Element => {
-  const {
-    theme: { colors }
-  } = useTheme()
+  const insets = useSafeAreaInsets()
+  const { presentationMode } = useLocalSearchParams()
   const isSeedlessSigningBlocked = useSelector(selectIsSeedlessSigningBlocked)
   const { getNetwork } = useNetworks()
   const caip2ChainId = request.chainId
@@ -115,11 +111,10 @@ const ApprovalScreen = ({
       const filteredItems = detailSection.items.filter(item => {
         if (typeof item === 'string') return true
 
-        // const isDataOrInAppWebsite = false
-        const isDataOrInAppWebsite =
+        const isInAppWebsite =
           item.label.toLowerCase() === 'website' && isInAppRequest(request)
 
-        return !isDataOrInAppWebsite
+        return !isInAppWebsite
       })
 
       return { ...detailSection, items: filteredItems }
@@ -240,7 +235,7 @@ const ApprovalScreen = ({
     validateEthSendTransaction()
   }, [validateEthSendTransaction, gaslessEnabled])
 
-  const renderGaslessAlert = (): JSX.Element | null => {
+  const renderGaslessAlert = useCallback((): JSX.Element | null => {
     if (!gaslessError) return null
 
     return (
@@ -260,76 +255,91 @@ const ApprovalScreen = ({
     //     />
     //   </View>
     // )
-  }
+  }, [gaslessError])
 
-  const renderDappInfo = (): JSX.Element | null => {
-    if (!displayData.dAppInfo) return null
+  const renderTitle = useCallback(
+    (
+      title: string,
+      handleHeaderLayout: (event: LayoutChangeEvent) => void
+    ): JSX.Element | null => {
+      return (
+        <View
+          onLayout={handleHeaderLayout}
+          style={{
+            marginBottom: 32,
+            marginTop: -10,
+            width: '80%'
+          }}>
+          <ScreenHeader title={title} />
+        </View>
+      )
+    },
+    []
+  )
 
-    const { action, logoUri } = displayData.dAppInfo
+  const renderDappInfo = useCallback(
+    (
+      dAppInfo: {
+        name: string
+        action: string
+        logoUri?: string
+      },
+      handleHeaderLayout: (event: LayoutChangeEvent) => void
+    ): JSX.Element | null => {
+      const { action, logoUri } = dAppInfo
 
-    return (
-      <View
-        style={{
-          justifyContent: 'center',
-          alignItems: 'center',
-          marginBottom: 36
-        }}>
-        <TokenLogo logoUri={logoUri} size={62} />
+      return (
         <View
           style={{
-            alignItems: 'center',
             justifyContent: 'center',
-            marginTop: 21
+            alignItems: 'center',
+            marginBottom: 36
           }}>
-          <Text
-            variant="body1"
-            sx={{
-              textAlign: 'center',
-              fontSize: 15,
-              lineHeight: 20,
-              fontWeight: '500',
-              color: '$textPrimary'
+          <View onLayout={handleHeaderLayout}>
+            <TokenLogo logoUri={logoUri} size={62} />
+          </View>
+          <View
+            style={{
+              alignItems: 'center',
+              justifyContent: 'center',
+              marginTop: 21
             }}>
-            {action}
-          </Text>
+            <Text
+              variant="body1"
+              sx={{
+                textAlign: 'center',
+                fontSize: 15,
+                lineHeight: 20,
+                fontWeight: '500',
+                color: '$textPrimary'
+              }}>
+              {action}
+            </Text>
+          </View>
         </View>
-      </View>
-    )
-  }
+      )
+    },
+    []
+  )
 
-  const renderDisclaimer = (): JSX.Element | null => {
-    if (!displayData.disclaimer) return null
+  const renderDappInfoOrTitle = useCallback(
+    (
+      handleHeaderLayout: (event: LayoutChangeEvent) => void
+    ): JSX.Element | null => {
+      // prioritize rendering dAppInfo over title if both are present
+      // we only want to render one of them
+      if (displayData.dAppInfo)
+        return renderDappInfo(displayData.dAppInfo, handleHeaderLayout)
 
-    return (
-      <View
-        sx={{
-          flexDirection: 'row',
-          alignItems: 'center',
-          overflow: 'hidden',
-          paddingRight: 26,
-          marginBottom: 20
-        }}>
-        <Icons.Alert.ErrorOutline
-          width={20}
-          height={20}
-          color={colors.$textDanger}
-        />
-        <Text
-          sx={{
-            marginLeft: 8,
-            fontSize: 15,
-            lineHeight: 20,
-            color: '$textDanger',
-            fontWeight: '500'
-          }}
-          variant="body1">
-          {displayData.disclaimer}
-        </Text>
-      </View>
-    )
-  }
+      if (displayData.title)
+        return renderTitle(displayData.title, handleHeaderLayout)
 
-  const renderAccountAndNetwork = (): JSX.Element | undefined => {
+      return null
+    },
+    [displayData.dAppInfo, displayData.title, renderDappInfo, renderTitle]
+  )
+
+  const renderAccountAndNetwork = useCallback((): JSX.Element | undefined => {
     if (displayData.account && displayData.network) {
       return (
         <View
@@ -359,7 +369,7 @@ const ApprovalScreen = ({
     if (displayData.account) {
       return <Account address={displayData.account} />
     }
-  }
+  }, [displayData.account, displayData.network])
 
   const renderDetails = useCallback((): JSX.Element => {
     return (
@@ -374,11 +384,11 @@ const ApprovalScreen = ({
     )
   }, [filteredSections])
 
-  const renderBalanceChange = (): JSX.Element | null => {
+  const renderBalanceChange = useCallback((): JSX.Element | null => {
     if (!hasBalanceChange) return null
 
     return <BalanceChange balanceChange={balanceChange} />
-  }
+  }, [balanceChange, hasBalanceChange])
 
   // const renderSpendLimit = (): JSX.Element | null => {
   //   // if (spendLimits.length === 0 || hasBalanceChange) {
@@ -428,30 +438,50 @@ const ApprovalScreen = ({
       handleFeesChange
     ])
 
+  const alert = displayData.alert
+    ? {
+        type: displayData.alert.type,
+        message: displayData.alert.details.description
+      }
+    : undefined
+
+  const marginBottom =
+    presentationMode === NavigationPresentationMode.FORM_SHEET
+      ? insets.bottom
+      : 0
+
   return (
-    <View style={{ flex: 1 }}>
-      <ScrollView
-        contentContainerStyle={{
-          backgroundColor: colors.$surfacePrimary,
-          paddingHorizontal: 16,
-          paddingBottom: '50%'
-        }}>
-        {renderGaslessAlert()}
-        {renderDappInfo()}
-        {renderDisclaimer()}
-        {renderAccountAndNetwork()}
-        {renderBalanceChange()}
-        {/* {renderSpendLimit()} */}
-        {renderDetails()}
-        {renderNetworkFeeSelectorWithGasless()}
-      </ScrollView>
-      <ActionButtons
-        onApprove={handleApprove}
-        onReject={() => rejectAndClose()}
-        approveDisabled={approveDisabled}
-        rejectDisabled={submitting}
-      />
-    </View>
+    <ActionSheet
+      sx={{
+        marginBottom
+      }}
+      title={displayData.title}
+      onClose={onReject}
+      alert={alert}
+      confirm={{
+        label: 'Approve',
+        onPress: handleApprove,
+        disabled: approveDisabled
+      }}
+      cancel={{
+        label: 'Reject',
+        onPress: rejectAndClose,
+        disabled: submitting
+      }}>
+      {({ handleHeaderLayout }) => {
+        return (
+          <>
+            {renderDappInfoOrTitle(handleHeaderLayout)}
+            {renderGaslessAlert()}
+            {renderAccountAndNetwork()}
+            {renderBalanceChange()}
+            {/* {renderSpendLimit()} */}
+            {renderDetails()}
+            {renderNetworkFeeSelectorWithGasless()}
+          </>
+        )
+      }}
+    </ActionSheet>
   )
 }
 

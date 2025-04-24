@@ -1,5 +1,4 @@
 import { NetworkVMType } from '@avalabs/core-chains-sdk'
-import AppNavigation from 'navigation/AppNavigation'
 import { Networks } from 'store/network/types'
 import {
   CORE_EVM_METHODS,
@@ -8,16 +7,11 @@ import {
   RpcMethod
 } from 'store/rpc/types'
 import { SafeParseError, SafeParseSuccess, z, ZodArray } from 'zod'
-import * as Navigation from 'utils/Navigation'
 import { WCSessionProposal } from 'store/walletConnectV2/types'
 import Logger from 'utils/Logger'
 import BlockaidService from 'services/blockaid/BlockaidService'
 import { SessionProposalV2Params } from 'navigation/types'
 import { SiteScanResponse } from 'services/blockaid/types'
-import { providerErrors } from '@metamask/rpc-errors'
-import { onRequestRejected } from 'store/rpc/slice'
-import { AnyAction, Dispatch } from '@reduxjs/toolkit'
-import { AlertType } from '@avalabs/vm-module-types'
 import { ProposalTypes } from '@walletconnect/types'
 import {
   isXChainId,
@@ -167,61 +161,20 @@ export const parseApproveData: (data: unknown) =>
   return approveDataSchema.safeParse(data)
 }
 
-export const scanAndSessionProposal = async ({
+export const scanAndNavigateToSessionProposal = async ({
   dappUrl,
   request,
-  namespaces,
-  dispatch
+  namespaces
 }: {
   dappUrl: string
   request: WCSessionProposal
   namespaces: Record<string, ProposalTypes.RequiredNamespace>
-  dispatch: Dispatch<AnyAction>
 }): Promise<void> => {
   try {
     const scanResponse = await BlockaidService.scanSite(dappUrl)
-
-    if (isSiteScanResponseMalicious(scanResponse)) {
-      Navigation.navigate({
-        name: AppNavigation.Root.Wallet,
-        params: {
-          screen: AppNavigation.Modal.AlertScreen,
-          params: {
-            alert: {
-              type: AlertType.DANGER,
-              details: {
-                title: 'Scam\nApplication',
-                description: 'This application is malicious, do not proceed.',
-                actionTitles: {
-                  reject: 'Reject Connection',
-                  proceed: 'Proceed Anyway'
-                }
-              }
-            },
-            onReject: (): void => {
-              dispatch(
-                onRequestRejected({
-                  request,
-                  error: providerErrors.userRejectedRequest()
-                })
-              )
-            },
-            onProceed: () => {
-              navigateToSessionProposal({
-                request,
-                namespaces,
-                scanResponse
-              })
-            }
-          }
-        }
-      })
-    } else {
-      navigateToSessionProposal({ request, namespaces, scanResponse })
-    }
+    navigateToSessionProposal({ request, namespaces, scanResponse })
   } catch (error) {
     Logger.error('[Blockaid] Failed to scan dApp', error)
-
     navigateToSessionProposal({ request, namespaces })
   }
 }

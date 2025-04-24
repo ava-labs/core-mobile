@@ -1,6 +1,7 @@
 import React, { useCallback, useMemo } from 'react'
 import {
   alpha,
+  Icons,
   Pressable,
   Separator,
   showAlert,
@@ -199,25 +200,23 @@ export const Details = ({
   const renderDataValue = useCallback(
     (data: string): JSX.Element => (
       <TouchableOpacity
-        hitSlop={12}
+        hitSlop={24}
         onPress={() => {
           showAlert({
             title: `Transaction Data (${getHexStringToBytes(data)} Bytes)`,
             description: data,
             buttons: [
               {
-                text: 'Okay',
+                text: 'Got it',
                 style: 'cancel'
               }
             ]
           })
         }}>
-        <Text variant="buttonMedium" sx={{ color: '$textPrimary' }}>
-          View
-        </Text>
+        <Icons.Navigation.ChevronRight color={valueTextColor} />
       </TouchableOpacity>
     ),
-    []
+    [valueTextColor]
   )
 
   const renderCurrencyValue = useCallback(

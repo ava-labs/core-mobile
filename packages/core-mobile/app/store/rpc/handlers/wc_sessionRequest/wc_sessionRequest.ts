@@ -32,7 +32,7 @@ import {
   NamespaceToApprove,
   navigateToSessionProposal,
   parseApproveData,
-  scanAndSessionProposal
+  scanAndNavigateToSessionProposal
 } from './utils'
 import { COMMON_EVENTS, NON_EVM_OPTIONAL_NAMESPACES } from './namespaces'
 
@@ -250,11 +250,10 @@ class WCSessionRequestHandler implements RpcRequestHandler<WCSessionProposal> {
       if (isScanDisabled) {
         navigateToSessionProposal({ request, namespaces })
       } else {
-        scanAndSessionProposal({
+        scanAndNavigateToSessionProposal({
           dappUrl,
           request,
-          namespaces,
-          dispatch: listenerApi.dispatch
+          namespaces
         })
       }
       return { success: true, value: DEFERRED_RESULT }
