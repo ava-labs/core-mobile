@@ -307,21 +307,12 @@ export const AddEditNetworkScreen = ({
         placeholder: 'Explorer URL',
         emptyText: 'Add explorer URL',
         onUpdate: handleUpdate
-      },
-      {
-        id: 'logoUri',
-        title: 'Logo URL',
-        value: network.logoUri,
-        placeholder: 'Logo URL',
-        emptyText: 'Add logo URL (Optional)',
-        onUpdate: handleUpdate
       }
     ]
   }, [
     handleUpdate,
     network.chainId,
     network.explorerUrl,
-    network.logoUri,
     network.networkToken?.name,
     network.networkToken?.symbol,
     network.rpcUrl
@@ -368,9 +359,8 @@ export const AddEditNetworkScreen = ({
           <Avatar
             backgroundColor="transparent"
             size={150}
-            // todo: replace with actual avatar
             source={{
-              uri: 'https://miro.medium.com/v2/resize:fit:1256/format:webp/1*xm2-adeU3YD4MsZikpc5UQ.png'
+              uri: network.logoUri ?? ''
             }}
             hasLoading={false}
           />
