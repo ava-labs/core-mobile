@@ -40,7 +40,7 @@ export function useSearchableTokenList({
   hideNft = true,
   chainId
 }: {
-  tokens: NetworkContractToken[]
+  tokens?: NetworkContractToken[]
   hideZeroBalance?: boolean
   hideBlacklist?: boolean
   hideNft?: boolean
@@ -54,6 +54,8 @@ export function useSearchableTokenList({
   isRefetching: boolean
 } {
   const allNetworkTokens = useMemo(() => {
+    if (tokens === undefined) return []
+
     return (
       tokens.map(token => {
         return {
@@ -72,6 +74,7 @@ export function useSearchableTokenList({
       }) ?? []
     )
   }, [tokens])
+
   const dispatch = useDispatch()
   const [searchText, setSearchText] = useState('')
   const tokenVisibility = useSelector(selectTokenVisibility)
