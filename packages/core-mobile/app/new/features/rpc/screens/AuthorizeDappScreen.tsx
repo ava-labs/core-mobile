@@ -85,7 +85,8 @@ const AuthorizeDappScreen = ({
   const alert = isMaliciousDapp
     ? {
         type: AlertType.DANGER,
-        message: 'This application is malicious, do not proceed.'
+        message:
+          'This application has been flagged as malicious, I understand the risk.'
       }
     : undefined
 
