@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react'
-import { View, Text } from '@avalabs/k2-alpine'
+import { View, Text, alpha, useTheme } from '@avalabs/k2-alpine'
 import { StyleSheet } from 'react-native'
 import { numberToSubscriptFormat } from 'utils/numberToSubscriptFormat/numberToSubscriptFormat'
 
@@ -14,31 +14,38 @@ export const SubTextNumber: React.FC<Props> = ({
   testID,
   size = 'small'
 }) => {
+  const {
+    theme: { colors }
+  } = useTheme()
   const { mainTextBefore, subText, mainTextAfter } = useMemo(
     () => numberToSubscriptFormat(number),
     [number]
   )
 
   const textVariant = size === 'big' ? 'heading5' : 'body1'
+  const textSize = size === 'big' ? 26 : 16
+  const textColor = alpha(colors.$textPrimary, 0.6)
 
   return (
     <View style={styles.container} testID={testID}>
       <Text
         numberOfLines={1}
         variant={textVariant}
-        sx={{ color: '$textPrimary' }}>
+        sx={{ color: textColor, fontSize: textSize }}>
         {mainTextBefore}
       </Text>
       {subText && (
         <Text
           style={size === 'big' ? styles.subTextBig : styles.subTextSmall}
           variant={textVariant}
-          sx={{ color: '$textPrimary' }}>
+          sx={{ color: textColor }}>
           {subText}
         </Text>
       )}
       {mainTextAfter && (
-        <Text variant={textVariant} sx={{ color: '$textPrimary' }}>
+        <Text
+          variant={textVariant}
+          sx={{ color: textColor, fontSize: textSize }}>
           {mainTextAfter}
         </Text>
       )}

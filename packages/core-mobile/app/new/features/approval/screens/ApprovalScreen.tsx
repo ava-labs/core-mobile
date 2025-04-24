@@ -263,7 +263,9 @@ const ApprovalScreen = ({
         <View
           onLayout={handleHeaderLayout}
           style={{
-            marginBottom: 32
+            marginBottom: 32,
+            marginTop: -10,
+            width: '80%'
           }}>
           <ScreenHeader title={title} />
         </View>

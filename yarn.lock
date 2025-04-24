@@ -212,7 +212,7 @@ __metadata:
     "@avalabs/core-coingecko-sdk": 3.1.0-alpha.44
     "@avalabs/core-gasless-sdk": 3.1.0-alpha.44
     "@avalabs/core-utils-sdk": 3.1.0-alpha.44
-    "@avalabs/core-wallets-sdk": 3.1.0-alpha.44
+    "@avalabs/core-wallets-sdk": 3.1.0-alpha.48
     "@avalabs/evm-module": 0.0.0-adjust-messages-20250424033151
     "@avalabs/glacier-sdk": 3.1.0-alpha.44
     "@avalabs/k2-alpine": "workspace:*"

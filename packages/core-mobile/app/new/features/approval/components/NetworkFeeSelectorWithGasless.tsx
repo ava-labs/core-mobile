@@ -10,7 +10,7 @@ import {
 } from '@avalabs/k2-alpine'
 import { Eip1559Fees } from 'utils/Utils'
 import { getChainIdFromCaip2 } from 'utils/caip2ChainIds'
-import { NetworkFeeSelector } from './NetworkFeeSelector'
+import { NetworkFeeSelector } from './NetworkFeeSelector/NetworkFeeSelector'
 
 type Props = {
   gaslessEnabled: boolean

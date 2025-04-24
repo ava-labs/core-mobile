@@ -1,0 +1,3 @@
+export const DEFAULT_NETWORK_TOKEN_SYMBOL = ''
+export const DEFAULT_NETWORK_TOKEN_DECIMALS = 9
+export const DEFAULT_FEE_DECIMALS = 9

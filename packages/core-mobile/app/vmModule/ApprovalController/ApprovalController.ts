@@ -148,33 +148,6 @@ class ApprovalController implements VmModuleApprovalController {
         })
       }
 
-      // if (displayData.alert?.type === AlertType.DANGER) {
-      //   Navigation.navigate({
-      //     name: AppNavigation.Root.Wallet,
-      //     params: {
-      //       screen: AppNavigation.Modal.AlertScreen,
-      //       params: {
-      //         alert: displayData.alert,
-      //         onReject,
-      //         onProceed: () => {
-      //           Navigation.navigate({
-      //             name: AppNavigation.Root.Wallet,
-      //             params: {
-      //               screen: AppNavigation.Modal.ApprovalPopup,
-      //               params: {
-      //                 request,
-      //                 displayData,
-      //                 signingData,
-      //                 onApprove,
-      //                 onReject
-      //               }
-      //             }
-      //           })
-      //         }
-      //       }
-      //     }
-      //   })
-      // } else {
       walletConnectCache.approvalParams.set({
         request,
         displayData,
@@ -182,6 +155,7 @@ class ApprovalController implements VmModuleApprovalController {
         onApprove,
         onReject
       })
+
       router.navigate('/approval')
     })
   }

@@ -65,9 +65,13 @@ export const AlertWithTextInputs = forwardRef<
           keyboardType={input.keyboardType}
           secureTextEntry={input.secureTextEntry ?? false}
           blurOnSubmit
-          onChangeText={(text: string) =>
-            setValues(current => ({ ...current, [input.key]: text }))
-          }
+          onChangeText={(text: string) => {
+            const sanitized =
+              typeof input.sanitize === 'function'
+                ? input.sanitize({ key: input.key, text })
+                : text
+            setValues(current => ({ ...current, [input.key]: sanitized }))
+          }}
         />
       ))}
       {buttons.map((button, index) => {

@@ -121,7 +121,9 @@ const AuthorizeDappScreen = ({
                 numberOfLines={2}>
                 {peerMeta.name}
               </Text>
-              <Text variant="body1" style={{ textAlign: 'center' }}>
+              <Text
+                variant="body1"
+                style={{ textAlign: 'center', width: SCREEN_WIDTH * 0.85 }}>
                 Do you want to allow{' '}
                 <Text variant="body1" style={{ fontWeight: '600' }}>
                   {peerMeta.url}
