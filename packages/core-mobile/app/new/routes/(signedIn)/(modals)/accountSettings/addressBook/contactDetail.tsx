@@ -18,7 +18,7 @@ const ContactDetailScreen = (): React.JSX.Element => {
     theme: { colors }
   } = useTheme()
   const { bottom } = useSafeAreaInsets()
-  const { canGoBack, back } = useRouter()
+  const { canGoBack, back, navigate } = useRouter()
   const { contactId } = useLocalSearchParams<{ contactId: string }>()
   const contact = useSelector(selectContact(contactId))
 
@@ -68,6 +68,13 @@ const ContactDetailScreen = (): React.JSX.Element => {
     [dispatch, handleRemoveContact]
   )
 
+  const handleSelectAvatar = useCallback(() => {
+    navigate({
+      pathname: '/accountSettings/addressBook/editContactAvatar',
+      params: { contactId }
+    })
+  }, [navigate, contactId])
+
   return (
     <View sx={{ flex: 1, paddingHorizontal: 16, paddingBottom: 16 }}>
       <ScrollView
@@ -77,7 +84,13 @@ const ContactDetailScreen = (): React.JSX.Element => {
         contentContainerStyle={{
           justifyContent: 'space-between'
         }}>
-        {contact && <ContactForm contact={contact} onUpdate={handleUpdate} />}
+        {contact && (
+          <ContactForm
+            onSelectAvatar={handleSelectAvatar}
+            contact={contact}
+            onUpdate={handleUpdate}
+          />
+        )}
       </ScrollView>
       <Button
         type="secondary"

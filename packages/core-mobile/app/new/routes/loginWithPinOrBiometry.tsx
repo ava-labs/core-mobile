@@ -33,9 +33,11 @@ import { KeyboardAvoidingView } from 'common/components/KeyboardAvoidingView'
 import { BiometricType } from 'services/deviceInfo/DeviceInfoService'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { useSelector } from 'react-redux'
+import { selectSelectedAvatar } from 'store/settings/avatar'
 
 const LoginWithPinOrBiometry = (): JSX.Element => {
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
+  const avatar = useSelector(selectSelectedAvatar)
   const { theme } = useTheme()
   const pinInputRef = useRef<PinInputActions>(null)
   const { unlock } = useWallet()
@@ -246,11 +248,7 @@ const LoginWithPinOrBiometry = (): JSX.Element => {
               <Reanimated.View style={[{ zIndex: -100, marginTop: 10 }]}>
                 <Avatar
                   size="small"
-                  // todo: replace with actual avatar
-                  source={{
-                    uri: 'https://miro.medium.com/v2/resize:fit:1256/format:webp/1*xm2-adeU3YD4MsZikpc5UQ.png'
-                  }}
-                  hasBlur={Platform.OS !== 'android'}
+                  source={avatar.source}
                   backgroundColor={theme.colors.$surfacePrimary}
                   isDeveloperMode={isDeveloperMode}
                 />
