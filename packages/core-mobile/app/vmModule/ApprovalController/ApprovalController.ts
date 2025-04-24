@@ -12,6 +12,8 @@ import { providerErrors, rpcErrors } from '@metamask/rpc-errors'
 import { btcSignTransaction } from 'vmModule/handlers/btcSignTransaction'
 import { walletConnectCache } from 'services/walletconnectv2/walletConnectCache/walletConnectCache'
 import { showSnackbar } from 'new/common/utils/toast'
+import { isInAppRequest } from 'store/rpc/utils/isInAppRequest'
+import { NavigationPresentationMode } from 'new/common/types'
 import { avalancheSignTransaction } from '../handlers/avalancheSignTransaction'
 import { ethSendTransaction } from '../handlers/ethSendTransaction'
 import { signMessage } from '../handlers/signMessage'
@@ -156,7 +158,15 @@ class ApprovalController implements VmModuleApprovalController {
         onReject
       })
 
-      router.navigate('/approval')
+      router.navigate({
+        // @ts-ignore
+        pathname: '/approval',
+        params: {
+          presentationMode: isInAppRequest(request)
+            ? NavigationPresentationMode.FORM_SHEET
+            : undefined
+        }
+      })
     })
   }
 }

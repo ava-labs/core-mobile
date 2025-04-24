@@ -23,10 +23,12 @@ import { useNetworks } from 'hooks/networks/useNetworks'
 import { isInAppRequest } from 'store/rpc/utils/isInAppRequest'
 import { validateFee } from 'screens/send/utils/evm/validate'
 import { SendErrorMessage } from 'screens/send/utils/types'
-import { router } from 'expo-router'
+import { router, useLocalSearchParams } from 'expo-router'
 import { Eip1559Fees } from 'utils/Utils'
 import { ActionSheet } from 'new/common/components/ActionSheet'
 import ScreenHeader from 'new/common/components/ScreenHeader'
+import { NavigationPresentationMode } from 'new/common/types'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { Details } from '../components/Details'
 import { Network } from '../components/Network'
 import { NetworkFeeSelectorWithGasless } from '../components/NetworkFeeSelectorWithGasless'
@@ -54,6 +56,8 @@ const ApprovalScreen = ({
 }: {
   params: ApprovalParams
 }): JSX.Element => {
+  const insets = useSafeAreaInsets()
+  const { presentationMode } = useLocalSearchParams()
   const isSeedlessSigningBlocked = useSelector(selectIsSeedlessSigningBlocked)
   const { getNetwork } = useNetworks()
   const caip2ChainId = request.chainId
@@ -107,11 +111,10 @@ const ApprovalScreen = ({
       const filteredItems = detailSection.items.filter(item => {
         if (typeof item === 'string') return true
 
-        // const isDataOrInAppWebsite = false
-        const isDataOrInAppWebsite =
+        const isInAppWebsite =
           item.label.toLowerCase() === 'website' && isInAppRequest(request)
 
-        return !isDataOrInAppWebsite
+        return !isInAppWebsite
       })
 
       return { ...detailSection, items: filteredItems }
@@ -442,8 +445,16 @@ const ApprovalScreen = ({
       }
     : undefined
 
+  const marginBottom =
+    presentationMode === NavigationPresentationMode.FORM_SHEET
+      ? insets.bottom
+      : 0
+
   return (
     <ActionSheet
+      sx={{
+        marginBottom
+      }}
       title={displayData.title}
       onClose={onReject}
       alert={alert}

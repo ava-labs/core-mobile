@@ -1,6 +1,12 @@
 import React, { useEffect } from 'react'
 import { LayoutChangeEvent } from 'react-native'
-import { View, ScrollView, useTheme, SCREEN_HEIGHT } from '@avalabs/k2-alpine'
+import {
+  View,
+  ScrollView,
+  useTheme,
+  SCREEN_HEIGHT,
+  SxProp
+} from '@avalabs/k2-alpine'
 /**
  * Temporarily import "useNavigation" from @react-navigation/native.
  * This is a workaround due to a render bug in the expo-router version.
@@ -28,13 +34,15 @@ export const ActionSheet = ({
   confirm,
   cancel,
   children,
-  alert
+  alert,
+  sx
 }: {
   title: string
   onClose: () => void
   children: (props: {
     handleHeaderLayout: (event: LayoutChangeEvent) => void
   }) => React.ReactNode
+  sx?: SxProp
 } & ActionButtonsProps): JSX.Element => {
   const {
     theme: { colors }
@@ -56,7 +64,7 @@ export const ActionSheet = ({
   }, [navigation, onClose])
 
   return (
-    <View style={{ flex: 1 }}>
+    <View sx={{ flex: 1, ...sx }}>
       <ScrollView
         onScroll={onScroll}
         contentInset={{ bottom: SCREEN_HEIGHT * 0.4 }}
