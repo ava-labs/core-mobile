@@ -8,7 +8,7 @@ const SendOnboardingScreen = (): JSX.Element => {
   const { navigate } = useRouter()
 
   const handlePressNext = useCallback(() => {
-    navigate('send/recentContacts')
+    navigate('collectibleSend/recentContacts')
   }, [navigate])
 
   return (

@@ -22,19 +22,19 @@ export const SubTextNumber: React.FC<Props> = ({
   const textVariant = size === 'big' ? 'heading5' : 'subtitle2'
   return (
     <View style={styles.container} testID={testID}>
-      <Text variant={textVariant} sx={{ color: '$neutral50' }}>
+      <Text variant={textVariant} sx={{ color: '$textPrimary' }}>
         {mainTextBefore}
       </Text>
       {subText && (
         <Text
           style={size === 'big' ? styles.subTextBig : styles.subTextSmall}
           variant={textVariant}
-          sx={{ color: '$neutral50' }}>
+          sx={{ color: '$textPrimary' }}>
           {subText}
         </Text>
       )}
       {mainTextAfter && (
-        <Text variant={textVariant} sx={{ color: '$neutral50' }}>
+        <Text variant={textVariant} sx={{ color: '$textPrimary' }}>
           {mainTextAfter}
         </Text>
       )}

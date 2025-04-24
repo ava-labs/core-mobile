@@ -17,11 +17,11 @@ import { useNetworks } from './useNetworks'
 
 // this will return an EVM provider (that uses the network.rpcUrl)
 export function useEVMProvider(
-  network: Network
+  network?: Network
 ): JsonRpcBatchInternal | undefined {
   const [evmProvider, setEVMProvider] = useState<JsonRpcBatchInternal>()
   useEffect(() => {
-    getEvmProvider(network).then(setEVMProvider).catch(Logger.error)
+    network && getEvmProvider(network).then(setEVMProvider).catch(Logger.error)
   }, [network])
 
   return evmProvider
