@@ -1,6 +1,7 @@
 import React, { useState, useMemo, useCallback } from 'react'
-import { LayoutChangeEvent, LayoutRectangle } from 'react-native'
+import { LayoutChangeEvent, LayoutRectangle, ViewStyle } from 'react-native'
 import { NavigationTitleHeader } from '@avalabs/k2-alpine'
+import { useAnimatedStyle } from 'react-native-reanimated'
 import { useFadingHeaderNavigation } from './useFadingHeaderNavigation'
 
 interface FadingHeaderOptions {
@@ -14,6 +15,7 @@ export const useSimpleFadingHeader = ({
   title,
   shouldHeaderHaveGrabber = true
 }: FadingHeaderOptions): {
+  animatedHeaderStyle: ViewStyle
   onScroll: ReturnType<typeof useFadingHeaderNavigation>['onScroll']
   handleHeaderLayout: (event: LayoutChangeEvent) => void
 } => {
@@ -27,14 +29,19 @@ export const useSimpleFadingHeader = ({
     setHeaderLayout(event.nativeEvent.layout)
   }, [])
 
-  const { onScroll } = useFadingHeaderNavigation({
+  const { onScroll, targetHiddenProgress } = useFadingHeaderNavigation({
     header,
     targetLayout: headerLayout,
     shouldHeaderHaveGrabber
   })
 
+  const animatedHeaderStyle = useAnimatedStyle(() => ({
+    opacity: 1 - targetHiddenProgress.value
+  }))
+
   return {
     onScroll,
+    animatedHeaderStyle,
     handleHeaderLayout
   }
 }

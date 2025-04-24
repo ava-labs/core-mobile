@@ -5,7 +5,8 @@ import React, {
   useLayoutEffect,
   useMemo
 } from 'react'
-import { LayoutChangeEvent } from 'react-native'
+import { LayoutChangeEvent, ViewStyle } from 'react-native'
+import Animated from 'react-native-reanimated'
 import { Separator, showAlert, Text, View } from '@avalabs/k2-alpine'
 import { TokenLogo } from 'new/common/components/TokenLogo'
 import { ApprovalParams } from 'services/walletconnectv2/walletConnectCache/types'
@@ -260,18 +261,22 @@ const ApprovalScreen = ({
   const renderTitle = useCallback(
     (
       title: string,
-      handleHeaderLayout: (event: LayoutChangeEvent) => void
+      handleHeaderLayout: (event: LayoutChangeEvent) => void,
+      animatedHeaderStyle: ViewStyle
     ): JSX.Element | null => {
       return (
-        <View
+        <Animated.View
           onLayout={handleHeaderLayout}
-          style={{
-            marginBottom: 32,
-            marginTop: -10,
-            width: '80%'
-          }}>
+          style={[
+            {
+              marginBottom: 32,
+              marginTop: -10,
+              width: '80%'
+            },
+            animatedHeaderStyle
+          ]}>
           <ScreenHeader title={title} />
-        </View>
+        </Animated.View>
       )
     },
     []
@@ -324,7 +329,8 @@ const ApprovalScreen = ({
 
   const renderDappInfoOrTitle = useCallback(
     (
-      handleHeaderLayout: (event: LayoutChangeEvent) => void
+      handleHeaderLayout: (event: LayoutChangeEvent) => void,
+      animatedHeaderStyle: ViewStyle
     ): JSX.Element | null => {
       // prioritize rendering dAppInfo over title if both are present
       // we only want to render one of them
@@ -332,7 +338,11 @@ const ApprovalScreen = ({
         return renderDappInfo(displayData.dAppInfo, handleHeaderLayout)
 
       if (displayData.title)
-        return renderTitle(displayData.title, handleHeaderLayout)
+        return renderTitle(
+          displayData.title,
+          handleHeaderLayout,
+          animatedHeaderStyle
+        )
 
       return null
     },
@@ -468,10 +478,10 @@ const ApprovalScreen = ({
         onPress: rejectAndClose,
         disabled: submitting
       }}>
-      {({ handleHeaderLayout }) => {
+      {({ handleHeaderLayout, animatedHeaderStyle }) => {
         return (
           <>
-            {renderDappInfoOrTitle(handleHeaderLayout)}
+            {renderDappInfoOrTitle(handleHeaderLayout, animatedHeaderStyle)}
             {renderGaslessAlert()}
             {renderAccountAndNetwork()}
             {renderBalanceChange()}
