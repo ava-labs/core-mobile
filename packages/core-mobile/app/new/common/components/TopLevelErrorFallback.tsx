@@ -1,11 +1,11 @@
 import React from 'react'
 import RNRestart from 'react-native-restart'
 import { withK2AlpineThemeProvider } from './withK2AlpineThemeProvider'
-import { GenericWarning } from './GenericWarning'
+import { FullScreenWarning } from './FullScreenWarning'
 
 const TopLevelErrorFallback = (): JSX.Element => {
   return (
-    <GenericWarning
+    <FullScreenWarning
       title={
         <>
           Oops!
