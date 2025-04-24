@@ -3,7 +3,7 @@ import { useTheme, Text, View, Button } from '@avalabs/k2-alpine'
 import CoreAppIconLight from '../../assets/icons/core-app-icon-light.svg'
 import CoreAppIconDark from '../../assets/icons/core-app-icon-dark.svg'
 
-export const GenericWarning = ({
+export const FullScreenWarning = ({
   title,
   description,
   action
