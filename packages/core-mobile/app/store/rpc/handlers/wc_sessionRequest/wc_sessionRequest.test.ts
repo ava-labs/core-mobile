@@ -11,7 +11,7 @@ import { wcSessionRequestHandler as handler } from './wc_sessionRequest'
 jest.mock('./utils', () => ({
   ...jest.requireActual('./utils'),
   navigateToSessionProposal: jest.fn(),
-  scanAndSessionProposal: jest.fn()
+  scanAndNavigateToSessionProposal: jest.fn()
 }))
 
 jest.mock('store/network/slice', () => {
@@ -366,9 +366,8 @@ describe('session_request handler', () => {
 
       const result = await handler.handle(testRequest, mockListenerApi)
 
-      expect(utils.scanAndSessionProposal).toHaveBeenCalledWith({
+      expect(utils.scanAndNavigateToSessionProposal).toHaveBeenCalledWith({
         dappUrl: 'https://core.app',
-        dispatch: mockListenerApi.dispatch,
         request: testRequest,
         namespaces: {
           ...testNamespacesToApprove,
