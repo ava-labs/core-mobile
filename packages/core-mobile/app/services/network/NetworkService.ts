@@ -23,13 +23,16 @@ import { addIdToPromise, settleAllIdPromises } from '@avalabs/evm-module'
 import { Module } from '@avalabs/vm-module-types'
 import { SpanName } from 'services/sentry/types'
 import { mapToVmNetwork } from 'vmModule/utils/mapToVmNetwork'
+import { queryClient } from 'contexts/ReactQueryProvider'
+import { ReactQueryKeys } from 'consts/reactQueryKeys'
+import GlacierService from 'services/GlacierService'
 import { NETWORK_P, NETWORK_P_TEST, NETWORK_X, NETWORK_X_TEST } from './consts'
 
 if (!Config.PROXY_URL)
   Logger.warn('PROXY_URL is missing in env file. Network service is disabled.')
 
 class NetworkService {
-  async getNetworks(): Promise<Networks> {
+  async getNetworks(address?: string): Promise<Networks> {
     const erc20Networks = await this.fetchERC20Networks().catch(reason => {
       Logger.error(`[NetworkService][fetchERC20Networks]${reason}`)
       return {} as Networks
@@ -39,10 +42,17 @@ class NetworkService {
       return {} as Networks
     })
 
+    const lastTransactedErc20Networks =
+      ((await queryClient.getQueryData([
+        ReactQueryKeys.LAST_TRANSACTED_ERC20_NETWORKS,
+        address
+      ])) as Networks) ?? {}
+
     delete erc20Networks[ChainId.AVALANCHE_LOCAL_ID]
 
     return {
       ...erc20Networks,
+      ...lastTransactedErc20Networks,
       ...deBankNetworks,
       [ChainId.BITCOIN]: BITCOIN_NETWORK,
       [ChainId.BITCOIN_TESTNET]: BITCOIN_TEST_NETWORK,
@@ -213,6 +223,40 @@ class NetworkService {
     }
 
     return networksWithToken
+  }
+
+  async fetchLastTransactedERC20Networks({
+    address
+  }: {
+    address: string
+  }): Promise<Networks> {
+    const response = await GlacierService.listAddressChains({ address })
+    if (
+      response.indexedChains === undefined ||
+      response.indexedChains?.length === 0
+    ) {
+      return {}
+    }
+
+    return response.indexedChains.reduce((acc, chainInfo) => {
+      acc[Number(chainInfo.chainId)] = {
+        ...chainInfo,
+        chainId: Number(chainInfo.chainId),
+        logoUri: chainInfo.chainLogoUri ?? '',
+        explorerUrl: chainInfo.explorerUrl ?? '',
+        vmName: NetworkVMType.EVM,
+        description: chainInfo.description ?? '',
+        networkToken: {
+          ...chainInfo.networkToken,
+          description: chainInfo.description ?? '',
+          logoUri: chainInfo.networkToken?.logoUri ?? ''
+        },
+        utilityAddresses: {
+          multicall: chainInfo.utilityAddresses?.multicall ?? ''
+        }
+      }
+      return acc
+    }, {} as Networks)
   }
 }
 
