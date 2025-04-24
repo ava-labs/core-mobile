@@ -12,6 +12,8 @@ import { providerErrors, rpcErrors } from '@metamask/rpc-errors'
 import { btcSignTransaction } from 'vmModule/handlers/btcSignTransaction'
 import { walletConnectCache } from 'services/walletconnectv2/walletConnectCache/walletConnectCache'
 import { showSnackbar } from 'new/common/utils/toast'
+import { isInAppRequest } from 'store/rpc/utils/isInAppRequest'
+import { NavigationPresentationMode } from 'new/common/types'
 import { avalancheSignTransaction } from '../handlers/avalancheSignTransaction'
 import { ethSendTransaction } from '../handlers/ethSendTransaction'
 import { signMessage } from '../handlers/signMessage'
@@ -148,33 +150,6 @@ class ApprovalController implements VmModuleApprovalController {
         })
       }
 
-      // if (displayData.alert?.type === AlertType.DANGER) {
-      //   Navigation.navigate({
-      //     name: AppNavigation.Root.Wallet,
-      //     params: {
-      //       screen: AppNavigation.Modal.AlertScreen,
-      //       params: {
-      //         alert: displayData.alert,
-      //         onReject,
-      //         onProceed: () => {
-      //           Navigation.navigate({
-      //             name: AppNavigation.Root.Wallet,
-      //             params: {
-      //               screen: AppNavigation.Modal.ApprovalPopup,
-      //               params: {
-      //                 request,
-      //                 displayData,
-      //                 signingData,
-      //                 onApprove,
-      //                 onReject
-      //               }
-      //             }
-      //           })
-      //         }
-      //       }
-      //     }
-      //   })
-      // } else {
       walletConnectCache.approvalParams.set({
         request,
         displayData,
@@ -182,7 +157,16 @@ class ApprovalController implements VmModuleApprovalController {
         onApprove,
         onReject
       })
-      router.navigate('/approval')
+
+      router.navigate({
+        // @ts-ignore
+        pathname: '/approval',
+        params: {
+          presentationMode: isInAppRequest(request)
+            ? NavigationPresentationMode.FORM_SHEET
+            : undefined
+        }
+      })
     })
   }
 }

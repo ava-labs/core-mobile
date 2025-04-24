@@ -12,7 +12,7 @@ import BlurredBackgroundView from 'common/components/BlurredBackgroundView'
 import { View } from '@avalabs/k2-alpine'
 import { Link } from 'expo-router'
 import { ReceiveBarButton } from 'common/components/ReceiveBarButton'
-import { NotificationBarButton } from 'common/components/NotificationBarButton'
+//import { NotificationBarButton } from 'common/components/NotificationBarButton'
 import { AccountSettingBarButton } from 'common/components/AccountSettingBarButton'
 
 const BAR_BUTTONS_BOTTOM_MARGIN = Platform.OS === 'ios' ? 8 : 0
@@ -119,9 +119,9 @@ export const homeScreenOptions: StackNavigationOptions = {
         <Link href="/receive/" asChild>
           <ReceiveBarButton />
         </Link>
-        <Link href="/notifications/" asChild>
+        {/* <Link href="/notifications/" asChild>
           <NotificationBarButton />
-        </Link>
+        </Link> */}
       </View>
     )
   },

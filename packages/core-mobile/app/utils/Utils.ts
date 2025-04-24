@@ -22,7 +22,7 @@ export const truncateNodeId = (nodeId: string, size = 6): string => {
   const shouldShowDots =
     lastChunk && lastChunk.length + firstChunk.length !== nodeId.length
 
-  return `${firstChunk}${shouldShowDots ? '...' : ''}${lastChunk}`
+  return `${firstChunk}${shouldShowDots ? '…' : ''}${lastChunk}`
 }
 
 export function formatTokenAmount(amount: Big, denomination = 2): string {

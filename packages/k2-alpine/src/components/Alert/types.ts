@@ -35,6 +35,7 @@ export type ShowAlertWithTextInputsConfig = {
     defaultValue?: string
     keyboardType?: KeyboardTypeOptions
     secureTextEntry?: boolean
+    sanitize?: ({ key, text }: { key: string; text: string }) => string
   }[]
   buttons: AlertButton<Record<string, string>>[]
 }

@@ -49,11 +49,11 @@ export const TokenDiffGroup = ({
                 width: '80%'
               }}>
               <Text
-                variant="heading1"
+                variant="body1"
                 numberOfLines={1}
                 sx={{
-                  fontSize: 18,
-                  lineHeight: 18,
+                  fontSize: 16,
+                  lineHeight: 22,
                   color: '$textPrimary'
                 }}>
                 {token.name}
@@ -72,9 +72,11 @@ export const TokenDiffGroup = ({
                     fontSize: 16,
                     lineHeight: 16
                   }}>
-                  ({diffItems.length})
+                  {diffItems.length}
                 </Text>
-                <Arrow expanded={expanded} />
+                <View style={{ marginTop: -3 }}>
+                  <Arrow expanded={expanded} />
+                </View>
               </View>
             </View>
           </View>
