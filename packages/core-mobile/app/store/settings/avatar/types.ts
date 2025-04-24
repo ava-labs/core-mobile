@@ -119,7 +119,7 @@ export const AVATARS: AvatarType[] = Object.entries(LOCAL_AVATARS).map(
 )
 
 export const DEFAULT_AVATAR = {
-  id: 'DEFAULT',
+  id: 'art7',
   source: LOCAL_AVATARS.art7
 }
 
