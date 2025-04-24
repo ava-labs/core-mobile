@@ -49,9 +49,16 @@ export const CollectibleDetailsContent = ({
   const { refreshMetadata, isCollectibleRefreshing } = useCollectiblesContext()
   const { saveExternalAvatar } = useAvatar()
 
-  const handleSaveAvatar = (): void => {
-    if (!collectible?.imageData) return
+  const isVideo =
+    collectible?.imageData?.type.includes('video') ||
+    collectible?.imageData?.type.includes('mp4')
 
+  const handleSaveAvatar = (): void => {
+    if (isVideo) {
+      showSnackbar('Video avatars are not supported')
+      return
+    }
+    if (!collectible?.imageData?.image) return
     saveExternalAvatar(collectible.localId, collectible.imageData.image)
     showSnackbar('Avatar saved')
   }
