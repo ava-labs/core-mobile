@@ -3,7 +3,7 @@ import { Action, isAnyOf, TaskAbortError } from '@reduxjs/toolkit'
 import BalanceService, {
   BalancesForAccount
 } from 'services/balance/BalanceService'
-import { AppListenerEffectAPI } from 'store'
+import { AppListenerEffectAPI, RootState } from 'store'
 import { Account } from 'store/account/types'
 import {
   selectAccounts,
@@ -15,8 +15,9 @@ import { onAppLocked, onAppUnlocked, onLogOut } from 'store/app'
 import { addCustomToken, selectAllCustomTokens } from 'store/customToken'
 import { AppStartListening } from 'store/middleware/listener'
 import {
+  addCustomNetwork,
   onNetworksFetched,
-  selectActiveNetwork,
+  selectCustomNetworks,
   selectFavoriteNetworks,
   toggleFavorite
 } from 'store/network/slice'
@@ -34,6 +35,10 @@ import { isPChain, isXChain } from 'utils/network/isAvalancheNetwork'
 import ActivityService from 'services/activity/ActivityService'
 import { uuid } from 'utils/uuid'
 import SentryWrapper from 'services/sentry/SentryWrapper'
+import { ReactQueryKeys } from 'consts/reactQueryKeys'
+import { Networks } from 'store/network'
+import { queryClient } from 'contexts/ReactQueryProvider'
+import { Balances, LocalTokenWithBalance, QueryStatus } from './types'
 import {
   fetchBalanceForAccount,
   getKey,
@@ -42,63 +47,72 @@ import {
   setBalances,
   setStatus
 } from './slice'
-import { Balances, LocalTokenWithBalance, QueryStatus } from './types'
 
 /**
  * In production:
- *  - Update balances every 2 seconds for the active network
- *  - Update balances for all networks and accounts every 30 seconds
+ *  - Update balances for all networks and accounts every 10 seconds
+ * -  Update balances for last transacted networks every 15 minutes
  *
  * In development:
- *  - Update balances every 30 seconds for the active network
  *  - Update balances for all networks and accounts every 60 seconds
+ *  -  Update balances for last transacted networks every 1 hour
  */
 export const PollingConfig = {
-  activeNetwork: __DEV__ ? 30000 : 2000,
-  allNetworks: __DEV__ ? 60000 : 30000
+  allNetworks: __DEV__ ? 60000 : 10000,
+  lastTransactedNetworks: __DEV__ ? 3600000 : 900000
 }
 
 export const AVAX_X_ID = 'AVAX-X'
 export const AVAX_P_ID = 'AVAX-P'
 
-const allNetworksOperand =
-  PollingConfig.allNetworks / PollingConfig.activeNetwork
+const getNetworksToFetch = async (
+  state: RootState,
+  address: string
+): Promise<Network[]> => {
+  // combine all primary networks, custom networks and last transacted networks
+  // to fetch balances for
+  const customNetworks = selectCustomNetworks(state)
+  const favoriteNetworks = selectFavoriteNetworks(state)
+  let lastTransactedNetworks = {} as Networks
+  try {
+    lastTransactedNetworks = await queryClient.fetchQuery({
+      staleTime: Infinity,
+      queryKey: [ReactQueryKeys.LAST_TRANSACTED_ERC20_NETWORKS, address],
+      queryFn: () =>
+        NetworkService.fetchLastTransactedERC20Networks({
+          address
+        }),
+      retry(failureCount) {
+        return failureCount < 3
+      }
+    })
+  } catch (error) {
+    Logger.error('Error fetching last transacted ERC20 networks', error)
+  }
+  return [
+    ...favoriteNetworks,
+    ...Object.values(customNetworks),
+    ...Object.values(lastTransactedNetworks)
+  ]
+}
 
 const onBalanceUpdate = async (
   queryStatus: QueryStatus,
-  listenerApi: AppListenerEffectAPI,
-  fetchActiveOnly: boolean
+  listenerApi: AppListenerEffectAPI
 ): Promise<void> => {
-  const state = listenerApi.getState()
-  const activeNetwork = selectActiveNetwork(state)
-
-  let networksToFetch: Network[]
-  const activeAccount = selectActiveAccount(state)
-  const accountsToFetch = activeAccount ? [activeAccount] : []
-
-  if (fetchActiveOnly) {
-    networksToFetch = [activeNetwork]
-  } else {
-    const favoriteNetworks = selectFavoriteNetworks(state)
-
-    if (
-      // in case the active network has not been favorited
-      !favoriteNetworks.map(n => n.chainId).includes(activeNetwork.chainId) ||
-      // or the active network is not the first in the list
-      favoriteNetworks[0]?.chainId !== activeNetwork.chainId
-    ) {
-      // move the active network to the front of the list
-      networksToFetch = [activeNetwork, ...favoriteNetworks]
-    }
-
-    networksToFetch = favoriteNetworks
-  }
+  const { getState } = listenerApi
+  const state = getState()
+  const account = selectActiveAccount(state)
+  const networksToFetch = await getNetworksToFetch(
+    state,
+    account?.addressC ?? ''
+  )
 
   onBalanceUpdateCore({
     queryStatus,
     listenerApi,
     networks: networksToFetch,
-    accounts: accountsToFetch
+    account
   }).catch(Logger.error)
 }
 
@@ -106,14 +120,14 @@ const onBalanceUpdateCore = async ({
   queryStatus,
   listenerApi,
   networks,
-  accounts
+  account
 }: {
   queryStatus: QueryStatus
   listenerApi: AppListenerEffectAPI
   networks: Network[]
-  accounts: Account[]
+  account?: Account
 }): Promise<void> => {
-  if (networks.length === 0) return
+  if (networks.length === 0 || account === undefined) return
 
   const { getState, dispatch } = listenerApi
   const state = getState()
@@ -133,59 +147,31 @@ const onBalanceUpdateCore = async ({
 
   const currency = selectSelectedCurrency(state).toLowerCase()
 
-  const [firstNetwork, ...restNetworks] = networks
-
-  // fetch the first network balances first
-  if (firstNetwork === undefined) return
-
   SentryWrapper.startSpan(
     { name: 'get-balances', contextName: 'svc.balance.get_for_account' },
     async span => {
-      const balanceKeyedPromises = accounts.map(account => {
-        return {
-          key: getKey(firstNetwork.chainId, account.index),
+      // fetch all network balances
+      const customTokens = selectAllCustomTokens(state)
+      const networkPromises: {
+        key: string
+        promise: Promise<BalancesForAccount>
+      }[] = []
+
+      for (const n of networks) {
+        const customTokensByChainIdAndNetwork =
+          customTokens[n.chainId.toString()] ?? []
+        networkPromises.push({
+          key: getKey(n.chainId, account.index),
           promise: BalanceService.getBalancesForAccount({
-            network: firstNetwork,
+            network: n,
             account,
-            currency
+            currency,
+            customTokens: customTokensByChainIdAndNetwork
           })
-        }
-      })
-      const balances = await fetchBalanceForAccounts(balanceKeyedPromises)
-
-      dispatch(setBalances(balances))
-
-      // fetch all other network balances
-      if (restNetworks.length > 0) {
-        const customTokens = selectAllCustomTokens(state)
-        const inactiveNetworkPromises: {
-          key: string
-          promise: Promise<BalancesForAccount>
-        }[] = []
-
-        for (const n of restNetworks) {
-          const customTokensByChainIdAndNetwork =
-            customTokens[n.chainId.toString()] ?? []
-          inactiveNetworkPromises.push(
-            ...accounts.map(account => {
-              return {
-                key: getKey(n.chainId, account.index),
-                promise: BalanceService.getBalancesForAccount({
-                  network: n,
-                  account,
-                  currency,
-                  customTokens: customTokensByChainIdAndNetwork
-                })
-              }
-            })
-          )
-        }
-        const inactiveNetworkBalances = await fetchBalanceForAccounts(
-          inactiveNetworkPromises
-        )
-        dispatch(setBalances(inactiveNetworkBalances))
+        })
       }
-
+      const networkBalances = await fetchBalanceForNetworks(networkPromises)
+      dispatch(setBalances(networkBalances))
       dispatch(setStatus(QueryStatus.IDLE))
       span?.end()
     }
@@ -193,39 +179,23 @@ const onBalanceUpdateCore = async ({
 }
 
 const fetchBalancePeriodically = async (
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  action: any,
+  _: Action,
   listenerApi: AppListenerEffectAPI
 ): Promise<void> => {
   const { condition } = listenerApi
-  onBalanceUpdate(QueryStatus.LOADING, listenerApi, false)
+  onBalanceUpdate(QueryStatus.LOADING, listenerApi)
 
   const pollingTask = listenerApi.fork(async forkApi => {
     const taskId = uuid().slice(0, 8)
     Logger.info(`started task ${taskId}`, 'fetch balance periodically')
 
-    let intervalCount = 1
-
     try {
       // eslint-disable-next-line no-constant-condition
       while (true) {
-        let fetchActiveOnly
-
-        if (intervalCount % allNetworksOperand === 0) {
-          fetchActiveOnly = false
-        } else {
-          fetchActiveOnly = true
-        }
-
         // cancellation-aware wait for the balance update to be done
-        await forkApi.pause(
-          onBalanceUpdate(QueryStatus.POLLING, listenerApi, fetchActiveOnly)
-        )
-
-        intervalCount += 1
-
+        await forkApi.pause(onBalanceUpdate(QueryStatus.POLLING, listenerApi))
         // cancellation-aware delay
-        await forkApi.delay(PollingConfig.activeNetwork)
+        await forkApi.delay(PollingConfig.allNetworks)
       }
     } catch (err) {
       if (err instanceof TaskAbortError) {
@@ -244,26 +214,22 @@ const handleFetchBalanceForAccount = async (
   accountIndex: number
 ): Promise<void> => {
   const state = listenerApi.getState()
-  const activeNetwork = selectActiveNetwork(state)
-
   const accounts = selectAccounts(state)
   const accountToFetchFor = accounts[accountIndex]
-  const accountsToFetch = accountToFetchFor ? [accountToFetchFor] : []
-  const networksToFetch = selectFavoriteNetworks(state)
-  // Just in case the active network has not been favorited
-  if (!networksToFetch.map(n => n.chainId).includes(activeNetwork.chainId)) {
-    networksToFetch.push(activeNetwork)
-  }
+  const networksToFetch = await getNetworksToFetch(
+    state,
+    accountToFetchFor?.addressC ?? ''
+  )
 
   onBalanceUpdateCore({
     queryStatus: QueryStatus.LOADING,
     listenerApi,
     networks: networksToFetch,
-    accounts: accountsToFetch
+    account: accountToFetchFor
   }).catch(Logger.error)
 }
 
-const fetchBalanceForAccounts = async (
+const fetchBalanceForNetworks = async (
   keyedPromises: { promise: Promise<BalancesForAccount>; key: string }[]
 ): Promise<Balances> => {
   const keys = keyedPromises.map(value => value.key)
@@ -448,8 +414,8 @@ export const addBalanceListeners = (
 
   startListening({
     actionCreator: refetchBalance,
-    effect: async (action, listenerApi) =>
-      onBalanceUpdate(QueryStatus.REFETCHING, listenerApi, false)
+    effect: async (_, listenerApi) =>
+      onBalanceUpdate(QueryStatus.REFETCHING, listenerApi)
   })
 
   startListening({
@@ -459,10 +425,11 @@ export const addBalanceListeners = (
       setActiveAccountIndex,
       addCustomToken,
       onNetworksFetched,
-      toggleFavorite
+      toggleFavorite,
+      addCustomNetwork
     ),
-    effect: async (action, listenerApi) =>
-      onBalanceUpdate(QueryStatus.LOADING, listenerApi, false)
+    effect: async (_, listenerApi) =>
+      onBalanceUpdate(QueryStatus.LOADING, listenerApi)
   })
 
   startListening({
