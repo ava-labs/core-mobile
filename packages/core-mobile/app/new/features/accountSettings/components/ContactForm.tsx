@@ -1,33 +1,35 @@
-import React, { useCallback, useMemo, useRef } from 'react'
 import {
-  View,
-  Text,
-  Button,
+  AlertWithTextInputs,
   Avatar,
+  Button,
+  Text,
   TouchableOpacity,
-  showAlert,
-  AlertWithTextInputs
+  View,
+  showAlert
 } from '@avalabs/k2-alpine'
-import { Contact } from 'store/addressBook'
-import { noop } from '@avalabs/core-utils-sdk'
-import { Space } from 'components/Space'
-import { useSelector } from 'react-redux'
 import { AlertWithTextInputsHandle } from '@avalabs/k2-alpine/src/components/Alert/types'
-import { selectIsDeveloperMode } from 'store/settings/advanced'
-import { isValidContactName } from 'common/utils/isValidContactName'
-import { usePrimaryNetworks } from 'common/hooks/usePrimaryNetworks'
 import { NetworkVMType } from '@avalabs/vm-module-types'
-import { isValidAddress } from '../utils/isValidAddress'
+import { usePrimaryNetworks } from 'common/hooks/usePrimaryNetworks'
+import { isValidContactName } from 'common/utils/isValidContactName'
+import { loadAvatar } from 'common/utils/loadAvatar'
+import { Space } from 'components/Space'
+import React, { useCallback, useMemo, useRef } from 'react'
+import { useSelector } from 'react-redux'
+import { Contact } from 'store/addressBook'
+import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { AddressType } from '../consts'
 import { constructContactByAddressType } from '../utils/constructContactByAddressType'
+import { isValidAddress } from '../utils/isValidAddress'
 import { ContactAddressForm } from './ContactAddressForm'
 
 export const ContactForm = ({
   contact,
-  onUpdate
+  onUpdate,
+  onSelectAvatar
 }: {
   contact: Contact
   onUpdate: (contact: Contact) => void
+  onSelectAvatar: () => void
 }): React.JSX.Element => {
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const alert = useRef<AlertWithTextInputsHandle>(null)
@@ -53,7 +55,10 @@ export const ContactForm = ({
           },
           onPress: (values: Record<string, string>) => {
             if (values.save !== '' && values.save !== undefined) {
-              onUpdate({ ...contact, name: values.save?.trim() })
+              onUpdate({
+                ...contact,
+                name: values.save?.trim()
+              })
               alert.current?.hide()
             }
           }
@@ -157,18 +162,18 @@ export const ContactForm = ({
     )
   }, [contact.name, handleShowAlertWithTextInput])
 
+  const avatar = useMemo(() => {
+    return loadAvatar(contact.avatar)
+  }, [contact?.avatar])
+
   return (
     <View sx={{ alignItems: 'center' }}>
-      {/* todo: open up avatar selector */}
-      <TouchableOpacity onPress={noop}>
+      <TouchableOpacity onPress={onSelectAvatar}>
         <Avatar
-          backgroundColor="transparent"
           size={150}
-          // todo: replace with actual avatar
-          source={{
-            uri: 'https://miro.medium.com/v2/resize:fit:1256/format:webp/1*xm2-adeU3YD4MsZikpc5UQ.png'
-          }}
+          source={avatar?.source}
           hasLoading={false}
+          showAddIcon={contact?.avatar?.source === undefined}
         />
       </TouchableOpacity>
       <Space y={20} />

@@ -12,6 +12,7 @@ import {
 import { selectActiveAccount } from 'store/account'
 import { NetworkLogoWithChain } from 'common/components/NetworkLogoWithChain'
 import { isXPChain } from 'utils/network/isAvalancheNetwork'
+import { truncateAddress } from '@avalabs/core-utils-sdk'
 import { useReceiveSelectedNetwork } from '../store'
 
 export const AccountAddresses = memo(
@@ -30,13 +31,17 @@ export const AccountAddresses = memo(
       if (isXPChain(selectedNetwork.chainId)) {
         const networkX = selectedNetwork.isTestnet ? NETWORK_X_TEST : NETWORK_X
         const networkP = selectedNetwork.isTestnet ? NETWORK_P_TEST : NETWORK_P
-        const addressP = activeAccount?.addressPVM ?? ''
-        const addressX = activeAccount?.addressAVM ?? ''
+        const addressP = activeAccount?.addressPVM
+          ? truncateAddress(activeAccount.addressPVM)
+          : ''
+        const addressX = activeAccount?.addressAVM
+          ? truncateAddress(activeAccount?.addressAVM)
+          : ''
 
         return [
           {
-            title: networkX.chainName,
-            subtitle: addressX?.replace('-', '\u2011'), // to prevent word wrap because of the dash
+            title: networkX.chainName.replace('-', '\u2011'),
+            subtitle: addressX.replace('-', '\u2011'), // to prevent word wrap because of the dash
             leftIcon: (
               <NetworkLogoWithChain
                 network={networkX}
@@ -59,8 +64,8 @@ export const AccountAddresses = memo(
             )
           },
           {
-            title: networkP.chainName,
-            subtitle: addressP?.replace('-', '\u2011'), // to prevent word wrap because of the dash
+            title: networkP.chainName.replace('-', '\u2011'),
+            subtitle: addressP.replace('-', '\u2011'), // to prevent word wrap because of the dash
             leftIcon: (
               <NetworkLogoWithChain
                 network={networkP}
@@ -87,8 +92,8 @@ export const AccountAddresses = memo(
 
       return [
         {
-          title: selectedNetwork.chainName,
-          subtitle: address.replace('-', '\u2011'), // to prevent word wrap because of the dash
+          title: selectedNetwork.chainName.replace('-', '\u2011'),
+          subtitle: truncateAddress(address).replace('-', '\u2011'),
           leftIcon: (
             <NetworkLogoWithChain
               network={selectedNetwork}
@@ -118,6 +123,6 @@ export const AccountAddresses = memo(
       theme.colors.$surfaceSecondary
     ])
 
-    return <GroupList data={walletAddreses} textContainerSx={{ flex: 1 }} />
+    return <GroupList data={walletAddreses} textContainerSx={{ flex: 2 }} />
   }
 )

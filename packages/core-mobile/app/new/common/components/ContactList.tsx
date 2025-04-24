@@ -22,6 +22,7 @@ import { getListItemEnteringAnimation } from 'common/utils/animations'
 import { truncateAddress } from '@avalabs/core-utils-sdk'
 import { Contact } from 'store/addressBook'
 import { getAddressFromContact } from 'features/accountSettings/utils/getAddressFromContact'
+import { loadAvatar } from 'common/utils/loadAvatar'
 
 export const ContactList = ({
   contacts,
@@ -80,6 +81,7 @@ export const ContactList = ({
       const address = getAddressFromContact(item)
       const { name } = item
       const isLastItem = index === searchResults.length - 1
+      const avatar = loadAvatar(item.avatar)
 
       return (
         <Animated.View
@@ -109,10 +111,7 @@ export const ContactList = ({
                 <Avatar
                   backgroundColor="transparent"
                   size={40}
-                  // todo: replace with actual avatar
-                  source={{
-                    uri: 'https://miro.medium.com/v2/resize:fit:1256/format:webp/1*xm2-adeU3YD4MsZikpc5UQ.png'
-                  }}
+                  source={avatar?.source}
                   hasLoading={false}
                 />
               </View>

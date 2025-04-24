@@ -38,6 +38,7 @@ import { ScrollView } from 'react-native-gesture-handler'
 import { selectContacts } from 'store/addressBook'
 import { Space } from 'components/Space'
 import { showSnackbar } from 'common/utils/toast'
+import { useAvatar } from 'common/hooks/useAvatar'
 
 const AccountSettingsScreen = (): JSX.Element => {
   const { deleteWallet } = useDeleteWallet()
@@ -59,6 +60,8 @@ const AccountSettingsScreen = (): JSX.Element => {
     targetLayout: headerLayout,
     shouldHeaderHaveGrabber: true
   })
+
+  const { avatar } = useAvatar()
 
   const handleHeaderLayout = (event: LayoutChangeEvent): void => {
     setHeaderLayout(event.nativeEvent.layout)
@@ -153,13 +156,8 @@ const AccountSettingsScreen = (): JSX.Element => {
               sx={{ marginTop: 5, height: 150 }}>
               <Avatar
                 testID={isDeveloperMode ? 'testnet_avatar' : 'mainnet_avatar'}
-                backgroundColor="transparent"
                 size={150}
-                // todo: replace with actual avatar
-                source={{
-                  uri: 'https://miro.medium.com/v2/resize:fit:1256/format:webp/1*xm2-adeU3YD4MsZikpc5UQ.png'
-                }}
-                hasBlur={false}
+                source={avatar.source}
                 hasLoading={false}
                 isDeveloperMode={isDeveloperMode}
               />
