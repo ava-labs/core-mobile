@@ -1,48 +1,50 @@
+import {
+  isTokenWithBalanceAVM,
+  isTokenWithBalancePVM
+} from '@avalabs/avalanche-module'
+import {
+  AVALANCHE_XP_NETWORK,
+  AVALANCHE_XP_TEST_NETWORK,
+  Network
+} from '@avalabs/core-chains-sdk'
+import { TokenUnit } from '@avalabs/core-utils-sdk'
+import { AvatarType } from '@avalabs/k2-alpine'
+import { useContacts } from 'common/hooks/useContacts'
+import { AddressType } from 'features/accountSettings/consts'
+import { isValidAddress } from 'features/accountSettings/utils/isValidAddress'
+import { useNetworks } from 'hooks/networks/useNetworks'
+import { useNetworkFee } from 'hooks/useNetworkFee'
 import React, {
   createContext,
   Dispatch,
   ReactNode,
   useContext,
   useEffect,
-  useState,
-  useMemo
+  useMemo,
+  useState
 } from 'react'
-import { useNetworks } from 'hooks/networks/useNetworks'
-import { useNetworkFee } from 'hooks/useNetworkFee'
-import { AddrBookItemType, Contact } from 'store/addressBook'
-import { useContacts } from 'common/hooks/useContacts'
-import { isValidAddress } from 'features/accountSettings/utils/isValidAddress'
-import { AddressType } from 'features/accountSettings/consts'
+import { useSelector } from 'react-redux'
 import {
-  AVALANCHE_XP_NETWORK,
-  AVALANCHE_XP_TEST_NETWORK,
-  Network
-} from '@avalabs/core-chains-sdk'
+  AVALANCHE_MAINNET_NETWORK,
+  AVALANCHE_TESTNET_NETWORK
+} from 'services/network/consts'
+import { isAvalancheCChainId } from 'services/network/utils/isAvalancheNetwork'
+import { isEthereumChainId } from 'services/network/utils/isEthereumNetwork'
 import {
   getAvalancheNetwork,
   getBitcoinNetwork,
   getEthereumNetwork
 } from 'services/network/utils/providerUtils'
-import { useSelector } from 'react-redux'
+import { AddrBookItemType, Contact } from 'store/addressBook'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
-import { isAvalancheCChainId } from 'services/network/utils/isAvalancheNetwork'
-import { isEthereumChainId } from 'services/network/utils/isEthereumNetwork'
 import { isBitcoinChainId } from 'utils/network/isBitcoinNetwork'
-import { TokenUnit } from '@avalabs/core-utils-sdk'
-import {
-  isTokenWithBalanceAVM,
-  isTokenWithBalancePVM
-} from '@avalabs/avalanche-module'
-import {
-  AVALANCHE_MAINNET_NETWORK,
-  AVALANCHE_TESTNET_NETWORK
-} from 'services/network/consts'
 import { isXPChain } from '../../../../utils/network/isAvalancheNetwork'
 import { useSendSelectedToken } from '../store'
 import { getNetworks } from '../utils/getNetworks'
 
 interface TokenAddresses {
   name?: string
+  avatar?: AvatarType
   address?: string
   addressXP?: string
   addressBTC?: string

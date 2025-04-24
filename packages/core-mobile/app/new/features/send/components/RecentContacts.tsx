@@ -1,33 +1,34 @@
-import React, { useCallback, useMemo, useState } from 'react'
+import { truncateAddress } from '@avalabs/core-utils-sdk'
 import {
-  useTheme,
-  Text,
-  NavigationTitleHeader,
-  View,
-  Image,
-  SearchBar,
-  TouchableOpacity,
-  Icons,
-  FlatList,
-  SPRING_LINEAR_TRANSITION,
-  Separator,
   Avatar,
-  showAlert
+  FlatList,
+  Icons,
+  Image,
+  NavigationTitleHeader,
+  SPRING_LINEAR_TRANSITION,
+  SearchBar,
+  Separator,
+  Text,
+  TouchableOpacity,
+  View,
+  showAlert,
+  useTheme
 } from '@avalabs/k2-alpine'
-import { Contact } from 'store/addressBook'
+import { ErrorState } from 'common/components/ErrorState'
+import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
+import { getListItemEnteringAnimation } from 'common/utils/animations'
+import { loadAvatar } from 'common/utils/loadAvatar'
+import { getAddressFromContact } from 'features/accountSettings/utils/getAddressFromContact'
+import { isValidAddress } from 'features/accountSettings/utils/isValidAddress'
+import { portfolioTabContentHeight } from 'features/portfolio/utils'
+import React, { useCallback, useMemo, useState } from 'react'
+import { LayoutChangeEvent, LayoutRectangle } from 'react-native'
 import Animated, {
   useAnimatedStyle,
   useSharedValue
 } from 'react-native-reanimated'
-import { LayoutRectangle, LayoutChangeEvent } from 'react-native'
-import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
-import { ErrorState } from 'common/components/ErrorState'
-import { portfolioTabContentHeight } from 'features/portfolio/utils'
-import { getAddressFromContact } from 'features/accountSettings/utils/getAddressFromContact'
-import { getListItemEnteringAnimation } from 'common/utils/animations'
 import { useSelector } from 'react-redux'
-import { truncateAddress } from '@avalabs/core-utils-sdk'
-import { isValidAddress } from 'features/accountSettings/utils/isValidAddress'
+import { Contact } from 'store/addressBook'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import EMPTY_ADDRESS_BOOK_ICON from '../../../assets/icons/address_book_empty.png'
 
@@ -124,6 +125,8 @@ export const RecentContacts = ({
       const { name } = item
       const isLastItem = index === searchResults.length - 1
 
+      const avatar = loadAvatar(item.avatar)
+
       return (
         <Animated.View
           key={item.id}
@@ -153,10 +156,7 @@ export const RecentContacts = ({
                 <Avatar
                   backgroundColor="transparent"
                   size={40}
-                  // todo: replace with actual avatar
-                  source={{
-                    uri: 'https://miro.medium.com/v2/resize:fit:1256/format:webp/1*xm2-adeU3YD4MsZikpc5UQ.png'
-                  }}
+                  source={avatar?.source}
                   hasLoading={false}
                 />
               </View>

@@ -7,6 +7,7 @@ import {
   selectContacts,
   selectRecentContacts
 } from 'store/addressBook'
+import { useAvatar } from './useAvatar'
 
 export const useContacts = (): {
   recentAddresses: Contact[]
@@ -15,6 +16,8 @@ export const useContacts = (): {
 } => {
   const selectedRecentContacts = useSelector(selectRecentContacts)
   const accountCollection = useSelector(selectAccounts)
+  const { avatar } = useAvatar()
+
   const accounts = useMemo(
     () =>
       Object.values(accountCollection).map(
@@ -25,18 +28,17 @@ export const useContacts = (): {
             address: account.addressC,
             addressBTC: account.addressBTC,
             addressXP: account.addressPVM.replace(/^[PX]-/, ''),
-            avatar: '', // TODO: replace with actual avatar
+            avatar: avatar,
             type: 'account'
           } as Contact)
       ),
-    [accountCollection]
+    [accountCollection, avatar]
   )
   const contactCollection = useSelector(selectContacts)
   const contacts = useMemo(() => {
     return Object.values(contactCollection).map(contact => {
       return {
         ...contact,
-        avatar: '', // TODO: replace with actual avatar
         type: 'contact'
       } as Contact
     })

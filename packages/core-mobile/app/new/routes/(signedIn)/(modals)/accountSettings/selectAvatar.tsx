@@ -1,14 +1,33 @@
-import React from 'react'
-import { View, Text } from '@avalabs/k2-alpine'
+import { useAvatar } from 'common/hooks/useAvatar'
+import { useRouter } from 'expo-router'
+import { SelectAvatar } from 'common/components/SelectAvatar'
+import { useRandomizedAvatars } from 'features/onboarding/hooks/useRandomizedAvatars'
+import React, { useState } from 'react'
 
 const SelectAvatarScreen = (): JSX.Element => {
+  const { back } = useRouter()
+  const { saveLocalAvatar, avatar } = useAvatar()
+
+  const randomizedAvatars = useRandomizedAvatars()
+
+  const [selectedAvatar, setSelectedAvatar] = useState(avatar)
+
+  const onSubmit = (): void => {
+    back()
+    if (selectedAvatar) {
+      saveLocalAvatar(selectedAvatar.id)
+    }
+  }
+
   return (
-    <View
-      sx={{
-        marginHorizontal: 16
-      }}>
-      <Text variant="heading2">Select your personal avatar</Text>
-    </View>
+    <SelectAvatar
+      title={`Select your\npersonal avatar`}
+      avatars={randomizedAvatars}
+      selectedAvatar={selectedAvatar}
+      onSubmit={onSubmit}
+      setSelectedAvatar={setSelectedAvatar}
+      buttonText="Save"
+    />
   )
 }
 
