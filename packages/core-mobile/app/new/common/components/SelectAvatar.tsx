@@ -10,7 +10,7 @@ import {
 } from '@avalabs/k2-alpine'
 import ScreenHeader from 'common/components/ScreenHeader'
 import React, { memo, useMemo } from 'react'
-import Animated, { FadeIn } from 'react-native-reanimated'
+import Animated, { FadeIn, ZoomIn } from 'react-native-reanimated'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { AvatarType } from '@avalabs/k2-alpine'
 import { loadAvatar } from 'common/utils/loadAvatar'
@@ -58,7 +58,7 @@ export const SelectAvatar = memo(
             }}>
             <ScreenHeader title={title} description={description} />
           </View>
-          <Animated.View entering={FadeIn.delay(400)}>
+          <Animated.View entering={ZoomIn.delay(400)}>
             <View
               sx={{
                 alignItems: 'center',

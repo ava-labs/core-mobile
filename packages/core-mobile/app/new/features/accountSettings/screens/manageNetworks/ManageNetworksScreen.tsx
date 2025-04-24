@@ -14,7 +14,7 @@ import { NetworkLogoWithChain } from 'common/components/NetworkLogoWithChain'
 import { useFocusEffect, useNavigation, useRouter } from 'expo-router'
 import { useNetworks } from 'hooks/networks/useNetworks'
 import React, { useCallback, useMemo, useState } from 'react'
-import { FlatList, ListRenderItem } from 'react-native'
+import { FlatList, ListRenderItem, SectionList } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useDispatch } from 'react-redux'
 import {
@@ -50,13 +50,12 @@ export const ManageNetworksScreen = (): JSX.Element => {
         !main.some(n => n.chainId === network.chainId)
     )
 
-    const custom = Object.values(networks).filter(network =>
-      Object.values(customNetworks)
-        .map(n => n.chainId)
-        .includes(network.chainId)
-    )
-
-    return [...main, ...enabled, ...custom]
+    return [...main, ...enabled].filter(item => {
+      // Filter out custom networks
+      return !Object.values(customNetworks).some(
+        network => network.chainId === item.chainId
+      )
+    })
   }, [networks, favoriteNetworks, customNetworks])
 
   const filteredNetworks = useMemo(() => {
@@ -77,6 +76,18 @@ export const ManageNetworksScreen = (): JSX.Element => {
     filterBySearchText
   ])
 
+  const sections = useMemo(() => {
+    return [
+      {
+        data: Object.values(visibleNetworks)
+      },
+      {
+        title: customNetworks?.length ? 'Custom networks' : undefined,
+        data: Object.values(customNetworks)
+      }
+    ]
+  }, [customNetworks, visibleNetworks])
+
   const onFavorite = useCallback(
     (item: Network) => {
       dispatch(toggleFavorite(item.chainId))
@@ -92,7 +103,9 @@ export const ManageNetworksScreen = (): JSX.Element => {
       network => network.chainId === item.chainId
     )
     const isLast = index === filteredNetworks.length - 1
-
+    const isCustomNetwork = Object.values(customNetworks).some(
+      network => network.chainId === item.chainId
+    )
     return (
       <Pressable
         style={{
@@ -101,14 +114,36 @@ export const ManageNetworksScreen = (): JSX.Element => {
           gap: 16,
           height: 62,
           paddingLeft: 16
-        }}>
-        <NetworkLogoWithChain
-          network={item}
-          networkSize={36}
-          showChainLogo
-          chainLogoSize={24}
-          outerBorderColor={theme.colors.$surfacePrimary}
-        />
+        }}
+        onPress={() => goToNetwork(item)}>
+        {isCustomNetwork ? (
+          <View
+            style={{
+              width: 36,
+              height: 36,
+              borderRadius: 18,
+              overflow: 'hidden',
+              backgroundColor: theme.colors.$surfaceSecondary,
+              borderWidth: 1,
+              borderColor: theme.colors.$borderPrimary,
+              justifyContent: 'center',
+              alignItems: 'center'
+            }}>
+            <Icons.Custom.Category
+              width={20}
+              height={20}
+              color={theme.colors.$textSecondary}
+            />
+          </View>
+        ) : (
+          <NetworkLogoWithChain
+            network={item}
+            networkSize={36}
+            showChainLogo
+            chainLogoSize={24}
+            outerBorderColor={theme.colors.$surfacePrimary}
+          />
+        )}
         <View
           style={{
             flex: 1,
@@ -132,6 +167,22 @@ export const ManageNetworksScreen = (): JSX.Element => {
     navigate('/accountSettings/manageNetworks/addCustomNetwork')
   }, [navigate])
 
+  const goToNetwork = useCallback(
+    (item: Network) => {
+      const isCustomNetwork = Object.values(customNetworks).some(
+        network => network.chainId === item.chainId
+      )
+
+      navigate({
+        pathname: '/accountSettings/manageNetworks/addCustomNetwork',
+        params: {
+          network: JSON.stringify(item),
+          isCustomNetwork: isCustomNetwork ? 'true' : 'false'
+        }
+      })
+    },
+    [navigate, customNetworks]
+  )
   const renderHeaderRight = useCallback(() => {
     return (
       <TouchableOpacity
@@ -182,27 +233,58 @@ export const ManageNetworksScreen = (): JSX.Element => {
           testID="network_manager__search_input"
         />
       </View>
-      <FlatList
-        data={filteredNetworks}
-        renderItem={renderNetwork}
-        keyExtractor={item => item.chainId.toString()}
-        contentContainerStyle={[
-          {
-            paddingBottom: insets.bottom
-          },
-          filteredNetworks.length === 0
-            ? {
-                justifyContent: 'center',
-                flex: 1
-              }
-            : {
-                paddingTop: 16
-              }
-        ]}
-        ListEmptyComponent={
-          <ErrorState title="No results" description="Try a different search" />
-        }
-      />
+      {searchText.length > 0 ? (
+        <FlatList
+          data={filteredNetworks}
+          renderItem={renderNetwork}
+          keyExtractor={item => item.chainId.toString()}
+          contentContainerStyle={[
+            {
+              paddingBottom: insets.bottom
+            },
+            filteredNetworks.length === 0
+              ? {
+                  justifyContent: 'center',
+                  flex: 1
+                }
+              : {
+                  paddingTop: 16
+                }
+          ]}
+          ListEmptyComponent={
+            <ErrorState
+              title="No results"
+              description="Try a different search"
+            />
+          }
+        />
+      ) : (
+        <>
+          <SectionList
+            sections={sections}
+            renderItem={renderNetwork}
+            renderSectionHeader={({ section }) => {
+              if (!section.title) return null // Hide the first section
+              return (
+                <Text
+                  variant="heading3"
+                  style={{
+                    paddingTop: 32,
+                    paddingHorizontal: 16,
+                    paddingBottom: 8,
+                    backgroundColor: theme.colors.$surfacePrimary
+                  }}>
+                  {section.title}
+                </Text>
+              )
+            }}
+            keyExtractor={item => item.chainId.toString()}
+            contentContainerStyle={{
+              paddingTop: 16
+            }}
+          />
+        </>
+      )}
     </View>
   )
 }
