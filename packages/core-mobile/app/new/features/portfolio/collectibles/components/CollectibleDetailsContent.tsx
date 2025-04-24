@@ -28,6 +28,7 @@ import { truncateAddress } from 'utils/Utils'
 import { isAddress } from 'viem'
 import { useRouter } from 'expo-router'
 import { useSendSelectedToken } from 'features/send/store'
+import { NftContentType } from 'store/nft'
 import { useCollectiblesContext } from '../CollectiblesContext'
 import { HORIZONTAL_MARGIN } from '../consts'
 
@@ -50,9 +51,13 @@ export const CollectibleDetailsContent = ({
   const { refreshMetadata, isCollectibleRefreshing } = useCollectiblesContext()
   const { saveExternalAvatar } = useAvatar()
 
-  const handleSaveAvatar = (): void => {
-    if (!collectible?.imageData) return
+  const isSupportedAvatar =
+    collectible?.imageData?.type !== NftContentType.MP4 &&
+    collectible?.imageData?.type !== NftContentType.Unknown &&
+    collectible?.imageData?.image !== undefined
 
+  const handleSaveAvatar = (): void => {
+    if (!collectible?.imageData?.image) return
     saveExternalAvatar(collectible.localId, collectible.imageData.image)
     showSnackbar('Avatar saved')
   }
@@ -228,15 +233,16 @@ export const CollectibleDetailsContent = ({
                 )}
               </Button>
             ) : null}
-            {collectible?.status === NftLocalStatus.Processed && (
-              <Button
-                type="secondary"
-                size="large"
-                onPress={handleSaveAvatar}
-                disabled={avatar.id === collectible?.localId}>
-                Set as my avatar
-              </Button>
-            )}
+            {collectible?.status === NftLocalStatus.Processed &&
+              isSupportedAvatar && (
+                <Button
+                  type="secondary"
+                  size="large"
+                  onPress={handleSaveAvatar}
+                  disabled={avatar.id === collectible?.localId}>
+                  Set as my avatar
+                </Button>
+              )}
           </View>
         </LinearGradientBottomWrapper>
       </View>
