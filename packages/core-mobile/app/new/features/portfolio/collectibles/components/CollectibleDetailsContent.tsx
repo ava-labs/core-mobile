@@ -10,8 +10,6 @@ import {
 } from '@avalabs/k2-alpine'
 import React, { ReactNode, useCallback, useMemo } from 'react'
 import { NftItem, NftLocalStatus } from 'services/nft/types'
-
-import { noop } from '@avalabs/core-utils-sdk'
 import { LinearGradientBottomWrapper } from 'common/components/LinearGradientBottomWrapper'
 import { useAvatar } from 'common/hooks/useAvatar'
 import { showSnackbar } from 'common/utils/toast'
@@ -28,6 +26,8 @@ import { isAvalancheCChainId } from 'services/network/utils/isAvalancheNetwork'
 import { selectSelectedAvatar } from 'store/settings/avatar'
 import { truncateAddress } from 'utils/Utils'
 import { isAddress } from 'viem'
+import { useRouter } from 'expo-router'
+import { useSendSelectedToken } from 'features/send/store'
 import { useCollectiblesContext } from '../CollectiblesContext'
 import { HORIZONTAL_MARGIN } from '../consts'
 
@@ -44,6 +44,7 @@ export const CollectibleDetailsContent = ({
     theme: { colors }
   } = useTheme()
   const avatar = useSelector(selectSelectedAvatar)
+  const { navigate } = useRouter()
   const insets = useSafeAreaInsets()
   const networks = useNetworks()
   const { refreshMetadata, isCollectibleRefreshing } = useCollectiblesContext()
@@ -55,6 +56,7 @@ export const CollectibleDetailsContent = ({
     saveExternalAvatar(collectible.localId, collectible.imageData.image)
     showSnackbar('Avatar saved')
   }
+  const [_, setSelectedToken] = useSendSelectedToken()
 
   const attributes: GroupListItem[] = useMemo(
     () =>
@@ -99,8 +101,13 @@ export const CollectibleDetailsContent = ({
       return
     }
 
-    await refreshMetadata(collectible, collectible.chainId)
+    await refreshMetadata(collectible, collectible.networkChainId)
   }, [canRefreshMetadata, collectible, refreshMetadata])
+
+  const handleSend = useCallback(() => {
+    setSelectedToken(collectible)
+    navigate('/collectibleSend')
+  }, [collectible, navigate, setSelectedToken])
 
   const ACTION_BUTTONS: ActionButton[] = useMemo(() => {
     const visibilityAction: ActionButton = {
@@ -110,10 +117,10 @@ export const CollectibleDetailsContent = ({
     }
 
     return [
-      { title: ActionButtonTitle.Send, icon: 'send', onPress: noop },
+      { title: ActionButtonTitle.Send, icon: 'send', onPress: handleSend },
       visibilityAction
     ]
-  }, [isVisible, onHide])
+  }, [isVisible, onHide, handleSend])
 
   return (
     <View
@@ -183,7 +190,7 @@ export const CollectibleDetailsContent = ({
               {
                 title: `Chain`,
                 value:
-                  networks.getNetwork(collectible?.chainId)?.chainName ||
+                  networks.getNetwork(collectible?.networkChainId)?.chainName ||
                   'Unknown network'
               }
             ]}
@@ -207,8 +214,8 @@ export const CollectibleDetailsContent = ({
               padding: HORIZONTAL_MARGIN,
               paddingBottom: insets.bottom + HORIZONTAL_MARGIN
             }}>
-            {collectible?.chainId &&
-            isAvalancheCChainId(collectible?.chainId) ? (
+            {collectible?.networkChainId &&
+            isAvalancheCChainId(collectible?.networkChainId) ? (
               <Button
                 disabled={isRefreshing}
                 type="secondary"
