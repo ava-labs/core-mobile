@@ -9,10 +9,10 @@ import { RootSiblingParent } from 'react-native-root-siblings'
 import JailbrokenWarning from 'screens/onboarding/JailbrokenWarning'
 import { PosthogContextProvider } from 'contexts/PosthogContext'
 import { EncryptedStoreProvider } from 'contexts/EncryptedStoreProvider'
-import { TopLevelErrorFallback } from 'components/TopLevelErrorFallback'
 import { ReactQueryProvider } from 'contexts/ReactQueryProvider'
 import { DeeplinkContextProvider } from 'contexts/DeeplinkContext/DeeplinkContext'
 import SentryService from 'services/sentry/SentryService'
+import TopLevelErrorFallback from './common/components/TopLevelErrorFallback'
 import { App } from './App'
 
 function setToast(toast: Toast): void {
