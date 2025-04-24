@@ -19,7 +19,7 @@ export const CustomFees = ({
   onPress
 }: {
   customFees: GasAndFees | undefined
-  feeDecimals: number
+  feeDecimals: number | undefined
   onPress: ({
     key,
     title,
@@ -33,6 +33,8 @@ export const CustomFees = ({
   const {
     theme: { colors }
   } = useTheme()
+
+  const isBaseUnitRate = feeDecimals === undefined
 
   const valueColor = useMemo(
     () => alpha(colors.$textPrimary, 0.6),
@@ -49,10 +51,12 @@ export const CustomFees = ({
       key: FeeType
       title: string
       value: string
-      tooltip: {
-        title: string
-        description: string
-      }
+      tooltip:
+        | {
+            title: string
+            description: string
+          }
+        | undefined
     }): JSX.Element => {
       return (
         <View sx={{ marginHorizontal: HORIZONTAL_MARGIN }}>
@@ -73,10 +77,12 @@ export const CustomFees = ({
                 }}>
                 {title}
               </Text>
-              <Tooltip
-                title={tooltip.title}
-                description={tooltip.description}
-              />
+              {tooltip && (
+                <Tooltip
+                  title={tooltip.title}
+                  description={tooltip.description}
+                />
+              )}
             </View>
             <Pressable
               hitSlop={10}
@@ -103,41 +109,50 @@ export const CustomFees = ({
 
   if (!customFees) return null
 
+  const shouldRenderMaxPriorityFee = !isBaseUnitRate
+  const shouldRenderGasLimit = !isBaseUnitRate
+
   return (
     <>
       {renderCustomFeeItem({
         key: FeeType.MAX_FEE_PER_GAS,
-        title: 'Max base fee',
-        value: formatUnits(customFees.maxFeePerGas.toString(), feeDecimals),
-        tooltip: {
-          title: 'Max base fee',
-          description:
-            'The base fee is set by the network and changes frequently. Any difference between the set base fee and the actual base fee will be refunded.'
-        }
+        title: isBaseUnitRate ? 'Network Fee' : 'Max base fee',
+        value: isBaseUnitRate
+          ? customFees.maxFeePerGas.toString()
+          : formatUnits(customFees.maxFeePerGas.toString(), feeDecimals),
+        tooltip: isBaseUnitRate
+          ? undefined
+          : {
+              title: 'Network Fee',
+              description:
+                'The base fee is set by the network and changes frequently. Any difference between the set base fee and the actual base fee will be refunded.'
+            }
       })}
-      {renderCustomFeeItem({
-        key: FeeType.MAX_PRIORITY_FEE,
-        title: 'Max priority fee',
-        value: formatUnits(
-          customFees.maxPriorityFeePerGas.toString(),
-          feeDecimals
-        ),
-        tooltip: {
+      {shouldRenderMaxPriorityFee &&
+        renderCustomFeeItem({
+          key: FeeType.MAX_PRIORITY_FEE,
           title: 'Max priority fee',
-          description:
-            'The Priority Fee is an incentive paid to network operators to prioritize processing a transaction.'
-        }
-      })}
-      {renderCustomFeeItem({
-        key: FeeType.GAS_LIMIT,
-        title: 'Gas limit',
-        value: String(customFees.gasLimit),
-        tooltip: {
+          value: formatUnits(
+            customFees.maxPriorityFeePerGas.toString(),
+            feeDecimals
+          ),
+          tooltip: {
+            title: 'Max priority fee',
+            description:
+              'The Priority Fee is an incentive paid to network operators to prioritize processing a transaction.'
+          }
+        })}
+      {shouldRenderGasLimit &&
+        renderCustomFeeItem({
+          key: FeeType.GAS_LIMIT,
           title: 'Gas limit',
-          description:
-            'Total units of gas needed to complete the transaction. Do not edit unless necessary.'
-        }
-      })}
+          value: String(customFees.gasLimit),
+          tooltip: {
+            title: 'Gas limit',
+            description:
+              'Total units of gas needed to complete the transaction. Do not edit unless necessary.'
+          }
+        })}
     </>
   )
 }

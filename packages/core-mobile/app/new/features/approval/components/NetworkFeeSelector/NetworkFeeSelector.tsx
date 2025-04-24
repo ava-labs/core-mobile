@@ -41,7 +41,8 @@ export const NetworkFeeSelector = ({
     alertRef,
     showFeeEditAlert,
     selectedPreset,
-    handleSelectedPreset
+    handleSelectedPreset,
+    isBaseUnitRate
   } = useNetworkFeeSelector({
     chainId,
     gasLimit,
@@ -73,7 +74,9 @@ export const NetworkFeeSelector = ({
               if (item.key === FeeType.GAS_LIMIT) {
                 updatedValue = parseInt(enteredValue)
               } else {
-                updatedValue = parseUnits(enteredValue, feeDecimals)
+                updatedValue = isBaseUnitRate
+                  ? BigInt(enteredValue)
+                  : parseUnits(enteredValue, feeDecimals)
               }
               const currentValues = {
                 maxFeePerGas: customFees?.maxFeePerGas ?? 0n,
@@ -92,7 +95,14 @@ export const NetworkFeeSelector = ({
         }}
       />
     )
-  }, [customFees, feeDecimals, gasLimit, handleSetCustomFees, showFeeEditAlert])
+  }, [
+    isBaseUnitRate,
+    customFees,
+    feeDecimals,
+    gasLimit,
+    handleSetCustomFees,
+    showFeeEditAlert
+  ])
 
   const data = useMemo(() => {
     const items: GroupListItem[] = []

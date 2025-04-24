@@ -23,8 +23,7 @@ import { NetworkWithCaip2ChainId } from 'store/network/types'
 import { FeePreset } from '../types'
 import {
   DEFAULT_NETWORK_TOKEN_SYMBOL,
-  DEFAULT_NETWORK_TOKEN_DECIMALS,
-  DEFAULT_FEE_DECIMALS
+  DEFAULT_NETWORK_TOKEN_DECIMALS
 } from '../consts'
 
 enum FeeType {
@@ -46,7 +45,7 @@ export const useNetworkFeeSelector = ({
   network: NetworkWithCaip2ChainId | undefined
   calculatedFees: GasAndFees | undefined
   calculatedMaxTotalFeeDisplayed: number | undefined
-  feeDecimals: number
+  feeDecimals: number | undefined
   customFees: GasAndFees | undefined
   handleSetCustomFees: (fees: Eip1559Fees) => void
   alertRef: RefObject<AlertWithTextInputsHandle> | null
@@ -58,6 +57,7 @@ export const useNetworkFeeSelector = ({
   }) => void
   selectedPreset: FeePreset
   handleSelectedPreset: (preset: FeePreset) => void
+  isBaseUnitRate: boolean
 } => {
   const alertRef = useRef<AlertWithTextInputsHandle>(null)
   const selectedCurrency = useSelector(selectSelectedCurrency)
@@ -70,7 +70,8 @@ export const useNetworkFeeSelector = ({
     network?.networkToken?.decimals ?? DEFAULT_NETWORK_TOKEN_DECIMALS
 
   const { data: networkFee } = useNetworkFee(network)
-  const feeDecimals = networkFee?.displayDecimals ?? DEFAULT_FEE_DECIMALS
+  const feeDecimals = networkFee?.displayDecimals
+  const isBaseUnitRate = feeDecimals === undefined
 
   const { nativeTokenPrice } = useNativeTokenPriceForNetwork(
     network,
@@ -127,10 +128,9 @@ export const useNetworkFeeSelector = ({
 
     // update calculated fees and custom fees whenever network fee changes
     if (networkFee && gasLimit > 0) {
-      // getting both slow and normal (default custom fees) fees
-      const slowFees = getFeesForPreset(networkFee, FeePreset.SLOW)
-      setCalculatedFees(slowFees)
-      slowFees && onFeesChange(slowFees, FeePreset.SLOW)
+      const updatedFees = getFeesForPreset(networkFee, selectedPreset)
+      setCalculatedFees(updatedFees)
+      updatedFees && onFeesChange(updatedFees, selectedPreset)
 
       const normalFees = getFeesForPreset(networkFee, FeePreset.NORMAL)
       normalFees && setCustomFees(normalFees)
@@ -165,6 +165,7 @@ export const useNetworkFeeSelector = ({
           networkTokenSymbol
         })
       }
+
       setCalculatedFees(newFees)
       newFees && onFeesChange?.(newFees, preset)
     },
@@ -179,8 +180,6 @@ export const useNetworkFeeSelector = ({
       isAVM
     ]
   )
-
-  const isBaseUnitRate = feeDecimals === undefined
 
   const sanitize = useCallback(
     ({ text, key }: { text: string; key: string }): string => {
@@ -272,6 +271,7 @@ export const useNetworkFeeSelector = ({
     alertRef,
     showFeeEditAlert,
     selectedPreset,
-    handleSelectedPreset
+    handleSelectedPreset,
+    isBaseUnitRate
   }
 }
