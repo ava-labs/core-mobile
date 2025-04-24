@@ -53,7 +53,8 @@ export const CollectibleDetailsContent = ({
 
   const isSupportedAvatar =
     collectible?.imageData?.type !== NftContentType.MP4 &&
-    collectible?.imageData?.type !== NftContentType.Unknown
+    collectible?.imageData?.type !== NftContentType.Unknown &&
+    collectible?.imageData?.image !== undefined
 
   const handleSaveAvatar = (): void => {
     if (!collectible?.imageData?.image) return
