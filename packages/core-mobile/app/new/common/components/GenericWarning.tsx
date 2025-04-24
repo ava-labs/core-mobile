@@ -23,7 +23,11 @@ export const GenericWarning = ({
     <View
       sx={{
         backgroundColor: '$surfacePrimary',
-        flex: 1,
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
         justifyContent: 'center',
         alignItems: 'center'
       }}>
@@ -47,20 +51,22 @@ export const GenericWarning = ({
             </View>
           </View>
         </View>
-        <Text variant="heading6" sx={{ textAlign: 'center' }}>
-          {title}
-        </Text>
-        <Text
-          variant="body2"
-          sx={{
-            textAlign: 'center',
-            fontSize: 12,
-            lineHeight: 16,
-            marginTop: 8,
-            marginBottom: 15
-          }}>
-          {description}
-        </Text>
+        <View style={{ width: '60%' }}>
+          <Text variant="heading6" sx={{ textAlign: 'center' }}>
+            {title}
+          </Text>
+          <Text
+            variant="body2"
+            sx={{
+              textAlign: 'center',
+              fontSize: 12,
+              lineHeight: 16,
+              marginTop: 8,
+              marginBottom: 15
+            }}>
+            {description}
+          </Text>
+        </View>
       </View>
       <View style={{ paddingHorizontal: 0 }}>
         <Button type="secondary" size="medium" onPress={action.onPress}>
