@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react'
-import { LayoutChangeEvent } from 'react-native'
+import { LayoutChangeEvent, ViewStyle } from 'react-native'
 import {
   View,
   ScrollView,
@@ -41,6 +41,7 @@ export const ActionSheet = ({
   onClose: () => void
   children: (props: {
     handleHeaderLayout: (event: LayoutChangeEvent) => void
+    animatedHeaderStyle: ViewStyle
   }) => React.ReactNode
   sx?: SxProp
 } & ActionButtonsProps): JSX.Element => {
@@ -49,10 +50,11 @@ export const ActionSheet = ({
   } = useTheme()
   const navigation = useNavigation()
 
-  const { onScroll, handleHeaderLayout } = useSimpleFadingHeader({
-    title,
-    shouldHeaderHaveGrabber: true
-  })
+  const { onScroll, handleHeaderLayout, animatedHeaderStyle } =
+    useSimpleFadingHeader({
+      title,
+      shouldHeaderHaveGrabber: true
+    })
 
   useEffect(() => {
     return navigation.addListener('beforeRemove', e => {
@@ -72,7 +74,7 @@ export const ActionSheet = ({
           backgroundColor: colors.$surfacePrimary,
           paddingHorizontal: 16
         }}>
-        {children({ handleHeaderLayout })}
+        {children({ handleHeaderLayout, animatedHeaderStyle })}
       </ScrollView>
       <ActionButtons confirm={confirm} cancel={cancel} alert={alert} />
     </View>

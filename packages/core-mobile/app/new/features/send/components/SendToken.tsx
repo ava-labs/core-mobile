@@ -25,10 +25,18 @@ import { KeyboardAwareScrollView } from 'react-native-keyboard-controller'
 import { useSelector } from 'react-redux'
 import { AddrBookItemType } from 'store/addressBook'
 import { selectSelectedCurrency } from 'store/settings/currency'
+import { useSimpleFadingHeader } from 'new/common/hooks/useSimpleFadingHeader'
+import Animated from 'react-native-reanimated'
 import { useSendContext } from '../context/sendContext'
 import { useSendSelectedToken } from '../store'
 
 export const SendToken = ({ onSend }: { onSend: () => void }): JSX.Element => {
+  const { onScroll, handleHeaderLayout, animatedHeaderStyle } =
+    useSimpleFadingHeader({
+      title: 'How much?',
+      shouldHeaderHaveGrabber: true
+    })
+
   const { to, recipientType } = useLocalSearchParams<{
     to: string // accountIndex | contactUID | address
     recipientType: AddrBookItemType | 'address'
@@ -146,10 +154,14 @@ export const SendToken = ({ onSend }: { onSend: () => void }): JSX.Element => {
         justifyContent: 'space-between',
         marginHorizontal: 16
       }}>
-      <KeyboardAwareScrollView>
-        <Text variant="heading2" style={{ marginBottom: 12 }}>
-          {`${'How much would\nyou like to send?'}`}
-        </Text>
+      <KeyboardAwareScrollView onScroll={onScroll}>
+        <Animated.View
+          style={animatedHeaderStyle}
+          onLayout={handleHeaderLayout}>
+          <Text variant="heading2" style={{ marginBottom: 12 }}>
+            {`${'How much would\nyou like to send?'}`}
+          </Text>
+        </Animated.View>
         {/* Send to */}
         <Card
           sx={{

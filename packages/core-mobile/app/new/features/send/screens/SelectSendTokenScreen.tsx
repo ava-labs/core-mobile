@@ -85,26 +85,26 @@ export const SelectSendTokenScreen = (): JSX.Element => {
 
   const sortedSearchResults = useMemo(() => {
     const sortedAvalancheTokens: LocalTokenWithBalance[] = []
-    const cChainToken = tokens.find(
+    const cChainToken = searchResults.find(
       token =>
         token.type === TokenType.NATIVE && token.localId === 'AvalancheAVAX'
     )
     if (cChainToken) {
       sortedAvalancheTokens.push(cChainToken)
     }
-    const pChainToken = tokens.find(
+    const pChainToken = searchResults.find(
       token => token.type === TokenType.NATIVE && token.localId === AVAX_P_ID
     )
     if (pChainToken) {
       sortedAvalancheTokens.push(pChainToken)
     }
-    const xChainToken = tokens.find(
+    const xChainToken = searchResults.find(
       token => token.type === TokenType.NATIVE && token.localId === AVAX_X_ID
     )
     if (xChainToken) {
       sortedAvalancheTokens.push(xChainToken)
     }
-    const rest = tokens.filter(
+    const rest = searchResults.filter(
       token =>
         token.localId !== 'AvalancheAVAX' &&
         token.localId !== AVAX_P_ID &&
@@ -114,7 +114,7 @@ export const SelectSendTokenScreen = (): JSX.Element => {
       (a, b) => Number(b.balanceInCurrency) - Number(a.balanceInCurrency)
     )
     return [...sortedAvalancheTokens, ...sorted]
-  }, [tokens])
+  }, [searchResults])
 
   const renderItem: ListRenderItem<LocalTokenWithBalance> = ({
     item,
