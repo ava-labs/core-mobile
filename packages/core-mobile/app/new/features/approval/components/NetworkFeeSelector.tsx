@@ -188,7 +188,7 @@ export const NetworkFeeSelector = ({
               number={calculatedMaxTotalFeeDisplayed}
               testID="token_gas_fee"
             />
-            <Text variant="subtitle2" sx={{ color: '$neutral50' }}>
+            <Text variant="subtitle2" sx={{ color: '$textPrimary' }}>
               {' ' + network?.networkToken?.symbol}
             </Text>
           </View>

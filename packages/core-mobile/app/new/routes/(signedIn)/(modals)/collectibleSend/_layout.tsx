@@ -8,7 +8,7 @@ import { useSelector } from 'react-redux'
 import { selectHasBeenViewedOnce, ViewOnceKey } from 'store/viewOnce'
 import { SendContextProvider } from 'features/send/context/sendContext'
 
-export default function SendLayout(): JSX.Element {
+export default function CollectibleSendLayout(): JSX.Element {
   const hasBeenViewedOnboarding = useSelector(
     selectHasBeenViewedOnce(ViewOnceKey.SEND_ONBOARDING)
   )
@@ -30,7 +30,6 @@ export default function SendLayout(): JSX.Element {
           }
         />
         <Stack.Screen name="scanQrCode" />
-        <Stack.Screen name="send" />
       </Stack>
     </SendContextProvider>
   )

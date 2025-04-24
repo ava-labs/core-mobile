@@ -175,9 +175,9 @@ export const useCollectiblesFilterAndSort = (
         nfts = nfts.filter((nft: NftItem) => {
           switch (network) {
             case AssetNetworkFilter.AvalancheCChain:
-              return isAvalancheChainId(nft.chainId)
+              return isAvalancheChainId(nft.networkChainId)
             case AssetNetworkFilter.Ethereum:
-              return isEthereumChainId(nft.chainId)
+              return isEthereumChainId(nft.networkChainId)
             default:
               return true
           }
