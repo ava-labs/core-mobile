@@ -2,6 +2,8 @@ import React from 'react'
 import { SearchBar, Text, View } from '@avalabs/k2-alpine'
 import { FlashList, ListRenderItem } from '@shopify/flash-list'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import Animated from 'react-native-reanimated'
+import { useSimpleFadingHeader } from '../hooks/useSimpleFadingHeader'
 
 export const SelectTokenScreen = <T,>({
   tokens,
@@ -16,12 +18,21 @@ export const SelectTokenScreen = <T,>({
   renderListItem: ListRenderItem<T>
   keyExtractor?: (item: T) => string
 }): JSX.Element => {
+  const { onScroll, handleHeaderLayout, animatedHeaderStyle } =
+    useSimpleFadingHeader({
+      title: 'Select a token',
+      shouldHeaderHaveGrabber: true
+    })
   const insets = useSafeAreaInsets()
 
   const renderHeader = (): React.JSX.Element => {
     return (
       <View sx={{ gap: 8, marginBottom: 16 }}>
-        <Text variant="heading2">Select a token</Text>
+        <Animated.View
+          style={animatedHeaderStyle}
+          onLayout={handleHeaderLayout}>
+          <Text variant="heading2">Select a token</Text>
+        </Animated.View>
         <SearchBar onTextChanged={onSearchText} searchText={searchText} />
       </View>
     )
@@ -29,6 +40,7 @@ export const SelectTokenScreen = <T,>({
 
   return (
     <FlashList
+      onScroll={onScroll}
       ListHeaderComponent={renderHeader()}
       data={tokens}
       estimatedItemSize={60}

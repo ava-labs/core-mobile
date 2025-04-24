@@ -4,7 +4,6 @@ import {
   FlatList,
   Icons,
   Image,
-  NavigationTitleHeader,
   SPRING_LINEAR_TRANSITION,
   SearchBar,
   Separator,
@@ -15,24 +14,19 @@ import {
   useTheme
 } from '@avalabs/k2-alpine'
 import { ErrorState } from 'common/components/ErrorState'
-import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
 import { getListItemEnteringAnimation } from 'common/utils/animations'
 import { loadAvatar } from 'common/utils/loadAvatar'
 import { getAddressFromContact } from 'features/accountSettings/utils/getAddressFromContact'
 import { isValidAddress } from 'features/accountSettings/utils/isValidAddress'
 import { portfolioTabContentHeight } from 'features/portfolio/utils'
 import React, { useCallback, useMemo, useState } from 'react'
-import { LayoutChangeEvent, LayoutRectangle } from 'react-native'
-import Animated, {
-  useAnimatedStyle,
-  useSharedValue
-} from 'react-native-reanimated'
+import Animated from 'react-native-reanimated'
 import { useSelector } from 'react-redux'
 import { Contact } from 'store/addressBook'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
+import { useSimpleFadingHeader } from 'new/common/hooks/useSimpleFadingHeader'
 import EMPTY_ADDRESS_BOOK_ICON from '../../../assets/icons/address_book_empty.png'
 
-const HEADER = <NavigationTitleHeader title={`Recipient's address`} />
 const TITLE = `First, enter the\nrecipient’s address`
 
 interface Props {
@@ -50,10 +44,11 @@ export const RecentContacts = ({
   onSubmitEditing,
   onGoToQrCode
 }: Props): JSX.Element => {
-  const headerOpacity = useSharedValue(1)
-  const [balanceHeaderLayout, setBalanceHeaderLayout] = useState<
-    LayoutRectangle | undefined
-  >()
+  const { onScroll, handleHeaderLayout, animatedHeaderStyle } =
+    useSimpleFadingHeader({
+      title: 'Recipient’s address',
+      shouldHeaderHaveGrabber: true
+    })
   const {
     theme: { colors }
   } = useTheme()
@@ -72,24 +67,6 @@ export const RecentContacts = ({
         contact.addressBTC?.toLowerCase().includes(searchText.toLowerCase())
     )
   }, [contacts, recentAddresses, searchText])
-
-  const { onScroll, targetHiddenProgress } = useFadingHeaderNavigation({
-    header: HEADER,
-    targetLayout: balanceHeaderLayout,
-    /*
-     * there's a bug on the Portfolio screen where the BlurView
-     * in the navigation header doesn't render correctly on initial load.
-     * To work around it, we delay the BlurView's rendering slightly
-     * so it captures the correct content behind it.
-     *
-     * note: we are also applying the same solution to the linear gradient bottom wrapper below
-     */
-    shouldDelayBlurOniOS: true
-  })
-
-  const animatedHeaderStyle = useAnimatedStyle(() => ({
-    opacity: 1 - targetHiddenProgress.value
-  }))
 
   const handleSumbitEditing = useCallback(
     (text: string): void => {
@@ -114,10 +91,6 @@ export const RecentContacts = ({
     },
     [isDeveloperMode, onSubmitEditing]
   )
-
-  const handleHeaderLayout = useCallback((event: LayoutChangeEvent): void => {
-    setBalanceHeaderLayout(event.nativeEvent.layout)
-  }, [])
 
   const renderItem = useCallback(
     (item: Contact, index: number): React.JSX.Element => {
@@ -234,7 +207,7 @@ export const RecentContacts = ({
       ListHeaderComponent={
         <View sx={{ gap: 16, marginHorizontal: 16 }}>
           <Animated.View
-            style={[{ opacity: headerOpacity }, animatedHeaderStyle]}
+            style={animatedHeaderStyle}
             onLayout={handleHeaderLayout}>
             <Text variant="heading2">{TITLE}</Text>
           </Animated.View>
