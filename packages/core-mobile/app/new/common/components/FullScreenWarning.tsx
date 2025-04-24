@@ -8,7 +8,7 @@ export const FullScreenWarning = ({
   description,
   action
 }: {
-  title: React.ReactNode
+  title: string
   description: string
   action: {
     label: string

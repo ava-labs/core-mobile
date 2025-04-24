@@ -6,13 +6,7 @@ import { FullScreenWarning } from './FullScreenWarning'
 const TopLevelErrorFallback = (): JSX.Element => {
   return (
     <FullScreenWarning
-      title={
-        <>
-          Oops!
-          {'\n'}
-          Something went wrong
-        </>
-      }
+      title={`Oops!\nSomething went wrong`}
       description="Please reload the application"
       action={{
         label: 'Reload',
