@@ -2,6 +2,7 @@ import {
   Avatar,
   AVATAR_BLURAREA_INSET,
   AvatarSelector,
+  AvatarType,
   Button,
   isScreenSmall,
   ScrollView,
@@ -9,11 +10,10 @@ import {
   View
 } from '@avalabs/k2-alpine'
 import ScreenHeader from 'common/components/ScreenHeader'
-import React, { memo, useMemo } from 'react'
-import Animated, { FadeIn } from 'react-native-reanimated'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { AvatarType } from '@avalabs/k2-alpine'
 import { loadAvatar } from 'common/utils/loadAvatar'
+import React, { memo, useMemo } from 'react'
+import Animated, { ZoomIn } from 'react-native-reanimated'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 export const SelectAvatar = memo(
   ({
@@ -58,7 +58,7 @@ export const SelectAvatar = memo(
             }}>
             <ScreenHeader title={title} description={description} />
           </View>
-          <Animated.View entering={FadeIn.delay(400)}>
+          <Animated.View entering={ZoomIn.delay(400)}>
             <View
               sx={{
                 alignItems: 'center',

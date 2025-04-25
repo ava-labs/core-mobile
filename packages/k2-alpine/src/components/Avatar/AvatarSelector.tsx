@@ -44,7 +44,7 @@ export const AvatarSelector = ({
       return (
         <Animated.View
           key={`${item.source.toString()}-${index}`}
-          entering={FadeIn.delay(index * 5)}
+          entering={FadeIn.delay(index * 15)}
           style={{ marginTop: index % 2 === 0 ? avatarWidth : 0 }}>
           <AnimatedPressable
             onPress={() => handleSelect(index)}

@@ -79,6 +79,7 @@ import IconWallet from '../../assets/icons/wallet.svg'
 import IconWalletClosed from '../../assets/icons/wallet_closed.svg'
 import IconSwapVertical from '../../assets/icons/swap_vertical.svg'
 import IconBalanceRefresh from '../../assets/icons/balance_refresh.svg'
+import IconCategory from '../../assets/icons/category.svg'
 
 // Transaction types
 import IconTxTypeAdd from '../../assets/icons/tx-type-add.svg'
@@ -294,7 +295,8 @@ export const Icons = {
     Wallet: IconWallet,
     WalletClosed: IconWalletClosed,
     SwapVertical: IconSwapVertical,
-    BalanceRefresh: IconBalanceRefresh
+    BalanceRefresh: IconBalanceRefresh,
+    Category: IconCategory
   },
   RecoveryMethod: {
     Passkey: IconPasskey,

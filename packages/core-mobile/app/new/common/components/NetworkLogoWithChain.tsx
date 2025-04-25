@@ -2,19 +2,23 @@ import { Network } from '@avalabs/core-chains-sdk'
 import { Icons, useTheme, View } from '@avalabs/k2-alpine'
 import { TokenLogo } from 'common/components/TokenLogo'
 import React from 'react'
+import { ViewStyle } from 'react-native'
 import { isPChain, isXChain, isXPChain } from 'utils/network/isAvalancheNetwork'
 
 export const NetworkLogoWithChain = ({
   network,
   networkSize = 24,
   outerBorderColor,
-  showChainLogo = true
+  showChainLogo = true,
+  chainLogoSize,
+  chainLogoStyle
 }: {
   network: Network
   networkSize?: number
   outerBorderColor: string
   showChainLogo?: boolean
   chainLogoSize?: number
+  chainLogoStyle?: ViewStyle
 }): React.JSX.Element => {
   const { theme } = useTheme()
 
@@ -23,14 +27,14 @@ export const NetworkLogoWithChain = ({
       return theme.isDark ? (
         <Icons.TokenLogos.AVAX_XP_DARK
           testID="network_logo__xp_chain"
-          width={16}
-          height={16}
+          width={chainLogoSize ?? 16}
+          height={chainLogoSize ?? 16}
         />
       ) : (
         <Icons.TokenLogos.AVAX_XP_LIGHT
           testID="network_logo__xp_chain"
-          width={16}
-          height={16}
+          width={chainLogoSize ?? 16}
+          height={chainLogoSize ?? 16}
         />
       )
     }
@@ -39,14 +43,14 @@ export const NetworkLogoWithChain = ({
       return theme.isDark ? (
         <Icons.TokenLogos.AVAX_P_DARK
           testID="network_logo__p_chain"
-          width={12}
-          height={12}
+          width={chainLogoSize ?? 12}
+          height={chainLogoSize ?? 12}
         />
       ) : (
         <Icons.TokenLogos.AVAX_P_LIGHT
           testID="network_logo__p_chain"
-          width={12}
-          height={12}
+          width={chainLogoSize ?? 12}
+          height={chainLogoSize ?? 12}
         />
       )
     }
@@ -55,21 +59,21 @@ export const NetworkLogoWithChain = ({
       return theme.isDark ? (
         <Icons.TokenLogos.AVAX_X_DARK
           testID="network_logo__x_chain"
-          width={12}
-          height={12}
+          width={chainLogoSize ?? 12}
+          height={chainLogoSize ?? 12}
         />
       ) : (
         <Icons.TokenLogos.AVAX_X_LIGHT
           testID="network_logo__x_chain"
-          width={12}
-          height={12}
+          width={chainLogoSize ?? 12}
+          height={chainLogoSize ?? 12}
         />
       )
     }
 
     return (
       <TokenLogo
-        size={12}
+        size={chainLogoSize ?? 12}
         symbol={network.networkToken.symbol ?? 'AVAX'}
         logoUri={network.logoUri}
         isNetworkToken
@@ -87,9 +91,9 @@ export const NetworkLogoWithChain = ({
       {showChainLogo && (
         <View
           style={{
-            width: 16,
-            height: 16,
-            borderRadius: 16 / 2,
+            width: chainLogoSize ?? 16,
+            height: chainLogoSize ?? 16,
+            borderRadius: 1000,
             justifyContent: 'center',
             alignItems: 'center',
             borderWidth: 2,
@@ -97,7 +101,8 @@ export const NetworkLogoWithChain = ({
             position: 'absolute',
             bottom: -5,
             right: -5,
-            backgroundColor: 'transparent'
+            backgroundColor: 'transparent',
+            ...chainLogoStyle
           }}
           testID="network_logo">
           {renderChainLogo()}
