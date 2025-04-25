@@ -26,6 +26,9 @@ import { KeyboardAwareScrollView } from 'react-native-keyboard-controller'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useDispatch } from 'react-redux'
 import { removeCustomNetwork } from 'store/network'
+import { isXPChain } from 'utils/network/isAvalancheNetwork'
+import { isPChain } from 'utils/network/isAvalancheNetwork'
+import { isXChain } from 'utils/network/isAvalancheNetwork'
 
 enum Mode {
   ADD = 'add',
@@ -96,6 +99,17 @@ export const AddEditNetworkScreen = (): JSX.Element => {
     isInitialStateDifferent,
     mode
   ])
+
+  const showChainLogo = useMemo(() => {
+    if (foundNetwork) {
+      return (
+        isXPChain(foundNetwork.chainId) ||
+        isPChain(foundNetwork.chainId) ||
+        isXChain(foundNetwork.chainId)
+      )
+    }
+    return false
+  }, [foundNetwork])
 
   const handleDelete = useCallback(() => {
     showAlert({
@@ -329,7 +343,7 @@ export const AddEditNetworkScreen = (): JSX.Element => {
               network={foundNetwork || (formState as unknown as Network)}
               networkSize={96}
               outerBorderColor={theme.colors.$surfacePrimary}
-              showChainLogo
+              showChainLogo={showChainLogo}
               chainLogoSize={24}
               chainLogoStyle={{
                 borderWidth: 16

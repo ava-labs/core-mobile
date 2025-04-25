@@ -23,6 +23,9 @@ import {
 } from 'services/network/utils/isAvalancheNetwork'
 import { isEthereumChainId } from 'services/network/utils/isEthereumNetwork'
 import { alwaysFavoriteNetworks, toggleFavorite } from 'store/network'
+import { isPChain } from 'utils/network/isAvalancheNetwork'
+import { isXPChain } from 'utils/network/isAvalancheNetwork'
+import { isXChain } from 'utils/network/isAvalancheNetwork'
 import { isBitcoinChainId } from 'utils/network/isBitcoinNetwork'
 
 export const ManageNetworksScreen = (): JSX.Element => {
@@ -51,7 +54,7 @@ export const ManageNetworksScreen = (): JSX.Element => {
       network => !enabled.includes(network)
     )
     const disabled = Object.values(networks).filter(
-      network => !enabled.includes(network) || custom.includes(network)
+      network => !enabled.includes(network) && !custom.includes(network)
     )
 
     return [...enabled, ...custom, ...disabled]
@@ -82,6 +85,12 @@ export const ManageNetworksScreen = (): JSX.Element => {
     const isCustomNetwork = Object.values(customNetworks).some(
       network => network.chainId === item.chainId
     )
+
+    const showChainLogo =
+      isXPChain(item.chainId) ||
+      isPChain(item.chainId) ||
+      isXChain(item.chainId)
+
     return (
       <Pressable
         style={{
@@ -115,7 +124,7 @@ export const ManageNetworksScreen = (): JSX.Element => {
           <NetworkLogoWithChain
             network={item}
             networkSize={36}
-            showChainLogo
+            showChainLogo={showChainLogo}
             outerBorderColor={theme.colors.$surfacePrimary}
           />
         )}
