@@ -65,7 +65,7 @@ export const networkSlice = createSlice({
       const chainId = action.payload.chainId
       const network = action.payload.network
 
-      if (chainId === network?.chainId) {
+      if (chainId === network.chainId) {
         state.customNetworks[chainId] = network
       } else {
         delete state.customNetworks[chainId]

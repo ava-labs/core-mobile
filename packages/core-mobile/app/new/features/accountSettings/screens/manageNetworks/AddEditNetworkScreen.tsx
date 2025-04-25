@@ -1,4 +1,4 @@
-import { Network, NetworkVMType } from '@avalabs/core-chains-sdk'
+import { Network } from '@avalabs/core-chains-sdk'
 import {
   AlertWithTextInputs,
   Button,
@@ -10,33 +10,28 @@ import {
 } from '@avalabs/k2-alpine'
 import { AlertWithTextInputsHandle } from '@avalabs/k2-alpine/src/components/Alert/types'
 import { NetworkLogoWithChain } from 'common/components/NetworkLogoWithChain'
+import { useFormState } from 'common/hooks/useFormState'
 import { isValidContactName } from 'common/utils/isValidContactName'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { AdvancedFieldProps } from 'features/accountSettings/components/AdvancedField'
 import { AdvancedForm } from 'features/accountSettings/components/AdvancedForm'
+
+import {
+  CustomNetworkType,
+  useCustomNetwork
+} from 'features/accountSettings/hooks/useCustomNetwork'
 import { useNetworks } from 'hooks/networks/useNetworks'
-import React, { useCallback, useMemo, useRef, useState } from 'react'
+import React, { useCallback, useMemo, useRef } from 'react'
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { useDispatch, useSelector } from 'react-redux'
-import {
-  addCustomNetwork,
-  ChainID,
-  removeCustomNetwork,
-  toggleFavorite,
-  updateCustomNetwork
-} from 'store/network'
-import { selectIsDeveloperMode } from 'store/settings/advanced'
+import { useDispatch } from 'react-redux'
+import { removeCustomNetwork } from 'store/network'
 
-type NetworkFormState = {
-  chainId?: string
-  chainName?: string
-  explorerUrl?: string
-  logoUri?: string
-  tokenSymbol?: string
-  tokenName?: string
-  rpcUrl?: string
+enum Mode {
+  ADD = 'add',
+  EDIT = 'edit'
 }
+
 export const AddEditNetworkScreen = (): JSX.Element => {
   const { canGoBack, back } = useRouter()
   const { theme } = useTheme()
@@ -47,12 +42,27 @@ export const AddEditNetworkScreen = (): JSX.Element => {
     chainId: string
   }>()
 
+  const { handleAddNetwork, handleUpdateNetwork } = useCustomNetwork()
+
+  const alert = useRef<AlertWithTextInputsHandle>(null)
+
   const foundNetwork: Network | null = useMemo(() => {
     if (params.chainId) {
       return networks[Number(params.chainId)] as Network
     }
     return null
   }, [params.chainId, networks])
+
+  const { formState, isInitialStateDifferent, handleUpdate } =
+    useFormState<CustomNetworkType>({
+      chainId: foundNetwork?.chainId.toString(),
+      chainName: foundNetwork?.chainName,
+      explorerUrl: foundNetwork?.explorerUrl,
+      logoUri: foundNetwork?.logoUri,
+      tokenSymbol: foundNetwork?.networkToken.symbol,
+      tokenName: foundNetwork?.networkToken.name,
+      rpcUrl: foundNetwork?.rpcUrl
+    })
 
   const isCustomNetwork = useMemo(() => {
     return Object.values(customNetworks).some(
@@ -61,36 +71,12 @@ export const AddEditNetworkScreen = (): JSX.Element => {
   }, [customNetworks, foundNetwork?.chainId])
 
   const mode = useMemo(() => {
-    if (foundNetwork || isCustomNetwork) {
-      return 'edit'
-    }
-    return 'add'
+    if (foundNetwork || isCustomNetwork) return Mode.EDIT
+    return Mode.ADD
   }, [isCustomNetwork, foundNetwork])
 
-  const [formState, setFormState] = useState<NetworkFormState>({
-    chainId: foundNetwork?.chainId.toString(),
-    chainName: foundNetwork?.chainName,
-    explorerUrl: foundNetwork?.explorerUrl,
-    logoUri: foundNetwork?.logoUri,
-    tokenSymbol: foundNetwork?.networkToken.symbol,
-    tokenName: foundNetwork?.networkToken.name,
-    rpcUrl: foundNetwork?.rpcUrl
-  })
-  const previousFormState = useRef<NetworkFormState>(formState)
-  const isTestnet = useSelector(selectIsDeveloperMode)
-  const alert = useRef<AlertWithTextInputsHandle>(null)
-
   const isSaveDisabled = useMemo(() => {
-    if (
-      isCustomNetwork &&
-      mode === 'edit' &&
-      previousFormState.current.chainId === formState.chainId &&
-      previousFormState.current.chainName === formState.chainName &&
-      previousFormState.current.explorerUrl === formState.explorerUrl &&
-      previousFormState.current.tokenSymbol === formState.tokenSymbol &&
-      previousFormState.current.tokenName === formState.tokenName &&
-      previousFormState.current.rpcUrl === formState.rpcUrl
-    ) {
+    if (isCustomNetwork && mode === Mode.EDIT && isInitialStateDifferent) {
       return true
     }
     return (
@@ -103,11 +89,11 @@ export const AddEditNetworkScreen = (): JSX.Element => {
   }, [
     formState.chainId,
     formState.chainName,
-    formState.explorerUrl,
     formState.rpcUrl,
     formState.tokenName,
     formState.tokenSymbol,
     isCustomNetwork,
+    isInitialStateDifferent,
     mode
   ])
 
@@ -137,86 +123,6 @@ export const AddEditNetworkScreen = (): JSX.Element => {
     })
   }, [foundNetwork?.chainId, dispatch, canGoBack, back])
 
-  const handleAddNetwork = useCallback(() => {
-    const newNetwork = {
-      chainId: Number(formState.chainId),
-      chainName: formState.chainName ?? '',
-      description: '',
-      explorerUrl: formState.explorerUrl ?? '',
-      isTestnet,
-      logoUri: formState.logoUri ?? '',
-      mainnetChainId: 0,
-      networkToken: {
-        symbol: formState.tokenSymbol ?? '',
-        name: formState.tokenName ?? '',
-        description: '',
-        decimals: 18,
-        logoUri: ''
-      },
-      platformChainId: '',
-      rpcUrl: formState.rpcUrl ?? '',
-      subnetId: '',
-      vmId: '',
-      vmName: NetworkVMType.EVM
-    }
-
-    dispatch(addCustomNetwork(newNetwork))
-    dispatch(toggleFavorite(newNetwork.chainId))
-    canGoBack() && back()
-  }, [
-    dispatch,
-    formState.chainId,
-    formState.chainName,
-    formState.explorerUrl,
-    formState.logoUri,
-    formState.tokenSymbol,
-    formState.tokenName,
-    formState.rpcUrl,
-    isTestnet,
-    canGoBack,
-    back
-  ])
-
-  const handleUpdateNetwork = useCallback(
-    (chainId: ChainID, network: Network): void => {
-      const updatedNetwork = {
-        chainId: Number(formState.chainId),
-        chainName: formState.chainName ?? '',
-        explorerUrl: formState.explorerUrl ?? '',
-        isTestnet,
-        logoUri: formState.logoUri ?? '',
-        mainnetChainId: 0,
-        networkToken: {
-          ...network.networkToken,
-          symbol: formState.tokenSymbol ?? '',
-          name: formState.tokenName ?? ''
-        },
-        rpcUrl: formState.rpcUrl ?? '',
-        vmName: NetworkVMType.EVM
-      }
-      dispatch(
-        updateCustomNetwork({
-          chainId,
-          network: updatedNetwork
-        })
-      )
-      canGoBack() && back()
-    },
-    [
-      formState.chainId,
-      formState.chainName,
-      formState.explorerUrl,
-      formState.logoUri,
-      formState.tokenSymbol,
-      formState.tokenName,
-      formState.rpcUrl,
-      isTestnet,
-      dispatch,
-      canGoBack,
-      back
-    ]
-  )
-
   const handleSubmit = useCallback(() => {
     // Filter out custom networks
     const existingNetwork = Object.values(networks)
@@ -239,31 +145,30 @@ export const AddEditNetworkScreen = (): JSX.Element => {
       return
     }
 
-    if (mode === 'edit') {
+    if (mode === Mode.EDIT) {
       const existingCustomNetwork = customNetworks.find(item => {
         return item.chainId === foundNetwork?.chainId
       })
 
       if (existingCustomNetwork && foundNetwork?.chainId) {
-        handleUpdateNetwork(foundNetwork?.chainId, existingCustomNetwork)
+        handleUpdateNetwork(foundNetwork.chainId, formState)
       }
-      return
+    } else {
+      handleAddNetwork(formState)
     }
 
-    handleAddNetwork()
+    canGoBack() && back()
   }, [
     networks,
     mode,
     handleAddNetwork,
+    formState,
+    canGoBack,
+    back,
     customNetworks,
-    formState.chainId,
     foundNetwork?.chainId,
     handleUpdateNetwork
   ])
-
-  const handleUpdate = useCallback((id: string, value?: string) => {
-    setFormState(prev => ({ ...prev, [id]: value }))
-  }, [])
 
   const handleShowAlertWithTextInput = useCallback((): void => {
     alert.current?.show({
@@ -295,7 +200,7 @@ export const AddEditNetworkScreen = (): JSX.Element => {
   }, [formState.chainName, handleUpdate])
 
   const data: AdvancedFieldProps[] = useMemo(() => {
-    const disabled = mode === 'edit' && !isCustomNetwork
+    const disabled = mode === Mode.EDIT && !isCustomNetwork
 
     const rpcUrl: AdvancedFieldProps = {
       id: 'rpcUrl',
@@ -394,7 +299,7 @@ export const AddEditNetworkScreen = (): JSX.Element => {
           </Text>
         )}
 
-        {(isCustomNetwork || mode === 'add') && (
+        {(isCustomNetwork || mode === Mode.ADD) && (
           <View>
             <Button
               onPress={handleShowAlertWithTextInput}
@@ -456,7 +361,7 @@ export const AddEditNetworkScreen = (): JSX.Element => {
         <AdvancedForm data={data} />
       </KeyboardAwareScrollView>
 
-      {(isCustomNetwork || mode === 'add') && (
+      {(isCustomNetwork || mode === Mode.ADD) && (
         <View
           sx={{
             gap: 16,

@@ -52,7 +52,7 @@ export const ManageNetworksScreen = (): JSX.Element => {
         if (isAvalancheCChainId(b.chainId)) return 1
         if (isAvalancheChainId(a.chainId)) return -1
         if (isAvalancheChainId(b.chainId)) return 1
-        return sortNetworks(a, b)
+        return 0
       })
 
     const disabled = Object.values(networks)
