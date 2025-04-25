@@ -1,6 +1,6 @@
 import React, { useCallback, useMemo } from 'react'
 import { Dimensions, ImageSourcePropType } from 'react-native'
-import Animated, { FadeIn, ZoomIn } from 'react-native-reanimated'
+import Animated, { FadeIn } from 'react-native-reanimated'
 import Carousel, { CarouselRenderItem } from 'react-native-reanimated-carousel'
 import { SvgProps } from 'react-native-svg'
 import { isScreenSmall } from '../../utils'

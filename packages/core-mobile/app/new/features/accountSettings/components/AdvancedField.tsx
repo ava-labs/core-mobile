@@ -21,6 +21,7 @@ export interface AdvancedFieldProps {
   emptyText: string
   disabled?: boolean
   placeholder: string
+  optional?: boolean
   type?: 'address' | 'text' | 'url' | 'number'
   onUpdate: (id: string, value?: string) => void
 }
@@ -33,6 +34,7 @@ export const AdvancedField = ({
   disabled,
   placeholder,
   type,
+  optional,
   onUpdate
 }: AdvancedFieldProps): React.JSX.Element => {
   const { navigate } = useRouter()
@@ -156,6 +158,7 @@ export const AdvancedField = ({
 
           <TouchableOpacity
             onPress={onEdit}
+            disabled={disabled}
             style={{
               flex: 1,
               paddingLeft: disabled ? 16 : 0
@@ -191,6 +194,7 @@ export const AdvancedField = ({
     return (
       <TouchableOpacity
         onPress={onEdit}
+        disabled={disabled}
         sx={{
           flexDirection: 'row',
           alignItems: 'center',
@@ -198,7 +202,21 @@ export const AdvancedField = ({
           paddingHorizontal: 16
         }}>
         <Icons.Custom.AddCircle width={20} height={20} />
-        <Text variant="body1">{emptyText}</Text>
+        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+          <Text
+            sx={{
+              fontFamily: 'Inter-Medium'
+            }}>
+            {emptyText}
+          </Text>
+          {optional && (
+            <Text
+              variant="body1"
+              sx={{ color: '$textSecondary', fontFamily: 'Inter-Medium' }}>
+              {` - Optional`}
+            </Text>
+          )}
+        </View>
       </TouchableOpacity>
     )
   }

@@ -13,7 +13,7 @@ import {
 } from '@avalabs/k2-alpine'
 import { useNavigation } from '@react-navigation/native'
 import { useRouter } from 'expo-router'
-import React, { useCallback, useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import Animated, { useSharedValue } from 'react-native-reanimated'
 import { LayoutRectangle } from 'react-native'
 import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
@@ -39,6 +39,7 @@ import { selectContacts } from 'store/addressBook'
 import { Space } from 'components/Space'
 import { showSnackbar } from 'common/utils/toast'
 import { useAvatar } from 'common/hooks/useAvatar'
+import { useNetworks } from 'hooks/networks/useNetworks'
 
 const AccountSettingsScreen = (): JSX.Element => {
   const { deleteWallet } = useDeleteWallet()
@@ -48,6 +49,7 @@ const AccountSettingsScreen = (): JSX.Element => {
   const {
     theme: { colors }
   } = useTheme()
+  const { favoriteNetworks } = useNetworks()
   const contacts = useSelector(selectContacts)
   const { navigate } = useRouter()
   const { setOptions } = useNavigation()
@@ -153,6 +155,7 @@ const AccountSettingsScreen = (): JSX.Element => {
             onLayout={handleHeaderLayout}>
             <TouchableOpacity
               onPress={goToSelectAvatar}
+              disabled={isDeveloperMode}
               sx={{ marginTop: 5, height: 150 }}>
               <Avatar
                 testID={isDeveloperMode ? 'testnet_avatar' : 'mainnet_avatar'}
@@ -241,7 +244,7 @@ const AccountSettingsScreen = (): JSX.Element => {
                           lineHeight: 22,
                           marginLeft: 9
                         }}>
-                        {/* {Object.keys(contacts).length} */}
+                        {favoriteNetworks.length}
                       </Text>
                     )
                   }

@@ -14,9 +14,13 @@ import { NetworkLogoWithChain } from 'common/components/NetworkLogoWithChain'
 import { useFocusEffect, useNavigation, useRouter } from 'expo-router'
 import { useNetworks } from 'hooks/networks/useNetworks'
 import React, { useCallback, useMemo, useState } from 'react'
-import { FlatList, ListRenderItem, SectionList } from 'react-native'
+import { FlatList, ListRenderItem } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useDispatch } from 'react-redux'
+import {
+  isAvalancheCChainId,
+  isAvalancheChainId
+} from 'services/network/utils/isAvalancheNetwork'
 import {
   alwaysFavoriteNetworks,
   FAVORITE_NETWORKS,
@@ -40,53 +44,48 @@ export const ManageNetworksScreen = (): JSX.Element => {
   )
 
   const visibleNetworks = useMemo(() => {
-    const main = Object.values(networks).filter(network =>
-      FAVORITE_NETWORKS.includes(network.chainId)
-    )
+    const enabled = Object.values(networks)
+      .filter(network => favoriteNetworks.includes(network))
+      .sort((a, b) => {
+        if (isAvalancheCChainId(a.chainId)) return -1
+        if (isAvalancheCChainId(b.chainId)) return 1
+        if (isAvalancheChainId(a.chainId)) return -1
+        if (isAvalancheChainId(b.chainId)) return 1
+        return sortNetworks(a, b)
+      })
 
-    const enabled = Object.values(networks).filter(
-      network =>
-        favoriteNetworks.some(n => n.chainId === network.chainId) &&
-        !main.some(n => n.chainId === network.chainId)
-    )
+    const disabled = Object.values(networks)
+      .filter(network => !enabled.includes(network))
+      .sort((a, b) => {
+        if (
+          isAvalancheChainId(a.chainId) ||
+          FAVORITE_NETWORKS.includes(a.chainId) ||
+          customNetworks.includes(a)
+        ) {
+          return -1
+        }
 
-    return [...main, ...enabled].filter(item => {
-      // Filter out custom networks
-      return !Object.values(customNetworks).some(
-        network => network.chainId === item.chainId
-      )
-    })
-  }, [networks, favoriteNetworks, customNetworks])
+        if (
+          isAvalancheChainId(b.chainId) ||
+          FAVORITE_NETWORKS.includes(b.chainId) ||
+          customNetworks.includes(b)
+        ) {
+          return 1
+        }
+        return sortNetworks(a, b)
+      })
+
+    return [...enabled, ...disabled]
+  }, [customNetworks, favoriteNetworks, networks])
 
   const filteredNetworks = useMemo(() => {
     if (searchText.length) {
-      return Object.values([
-        ...Object.values(networks),
-        ...Object.values(customNetworks)
-      ])
+      return Object.values(networks)
         .filter(network => filterBySearchText(network))
         .sort(sortNetworks)
     }
-    return visibleNetworks.sort(sortNetworks)
-  }, [
-    searchText.length,
-    visibleNetworks,
-    networks,
-    customNetworks,
-    filterBySearchText
-  ])
-
-  const sections = useMemo(() => {
-    return [
-      {
-        data: Object.values(visibleNetworks)
-      },
-      {
-        title: customNetworks?.length ? 'Custom networks' : undefined,
-        data: Object.values(customNetworks)
-      }
-    ]
-  }, [customNetworks, visibleNetworks])
+    return [...visibleNetworks].filter(filterBySearchText)
+  }, [searchText.length, visibleNetworks, networks, filterBySearchText])
 
   const onFavorite = useCallback(
     (item: Network) => {
@@ -233,58 +232,27 @@ export const ManageNetworksScreen = (): JSX.Element => {
           testID="network_manager__search_input"
         />
       </View>
-      {searchText.length > 0 ? (
-        <FlatList
-          data={filteredNetworks}
-          renderItem={renderNetwork}
-          keyExtractor={item => item.chainId.toString()}
-          contentContainerStyle={[
-            {
-              paddingBottom: insets.bottom
-            },
-            filteredNetworks.length === 0
-              ? {
-                  justifyContent: 'center',
-                  flex: 1
-                }
-              : {
-                  paddingTop: 16
-                }
-          ]}
-          ListEmptyComponent={
-            <ErrorState
-              title="No results"
-              description="Try a different search"
-            />
-          }
-        />
-      ) : (
-        <>
-          <SectionList
-            sections={sections}
-            renderItem={renderNetwork}
-            renderSectionHeader={({ section }) => {
-              if (!section.title) return null // Hide the first section
-              return (
-                <Text
-                  variant="heading3"
-                  style={{
-                    paddingTop: 32,
-                    paddingHorizontal: 16,
-                    paddingBottom: 8,
-                    backgroundColor: theme.colors.$surfacePrimary
-                  }}>
-                  {section.title}
-                </Text>
-              )
-            }}
-            keyExtractor={item => item.chainId.toString()}
-            contentContainerStyle={{
-              paddingTop: 16
-            }}
-          />
-        </>
-      )}
+      <FlatList
+        data={filteredNetworks}
+        renderItem={renderNetwork}
+        keyExtractor={item => item.chainId.toString()}
+        contentContainerStyle={[
+          {
+            paddingBottom: insets.bottom
+          },
+          filteredNetworks.length === 0
+            ? {
+                justifyContent: 'center',
+                flex: 1
+              }
+            : {
+                paddingTop: 16
+              }
+        ]}
+        ListEmptyComponent={
+          <ErrorState title="No results" description="Try a different search" />
+        }
+      />
     </View>
   )
 }

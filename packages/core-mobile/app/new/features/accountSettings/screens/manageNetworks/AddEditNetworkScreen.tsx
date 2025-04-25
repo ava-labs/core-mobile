@@ -42,24 +42,24 @@ export const AddEditNetworkScreen = (): JSX.Element => {
   const dispatch = useDispatch()
   const insets = useSafeAreaInsets()
   const { networks, customNetworks } = useNetworks()
-  const { network, isCustomNetwork } = useLocalSearchParams<{
+  const params = useLocalSearchParams<{
     network: string
     isCustomNetwork: string
   }>()
 
   const parsedNetwork: Network = useMemo(() => {
-    if (network) {
-      return JSON.parse(network)
+    if (params.network) {
+      return JSON.parse(params.network)
     }
     return null
-  }, [network])
+  }, [params.network])
 
-  const isEditDisabled = useMemo(() => {
-    if (isCustomNetwork) {
-      return JSON.parse(isCustomNetwork) ? false : true
+  const isCustomNetwork = useMemo(() => {
+    if (params.isCustomNetwork) {
+      return JSON.parse(params.isCustomNetwork)
     }
     return false
-  }, [isCustomNetwork])
+  }, [params.isCustomNetwork])
 
   const [formState, setFormState] = useState<NetworkFormState>({
     chainId: parsedNetwork?.chainId,
@@ -272,64 +272,91 @@ export const AddEditNetworkScreen = (): JSX.Element => {
   }, [formState.chainName, handleUpdate])
 
   const data: AdvancedFieldProps[] = useMemo(() => {
-    return [
-      {
-        id: 'rpcUrl',
-        title: 'Network RPC URL',
-        value: formState.rpcUrl,
-        placeholder: `Network RPC URL`,
-        emptyText: `Add network RPC URL`,
-        type: 'url',
-        disabled: isEditDisabled,
-        onUpdate: handleUpdate
-      },
-      {
-        id: 'chainId',
-        title: 'Chain ID',
-        value: formState.chainId?.toString(),
-        placeholder: 'Chain ID',
-        emptyText: 'Add chain ID',
-        type: 'number',
-        disabled: isEditDisabled,
-        onUpdate: handleUpdate
-      },
-      {
-        id: 'tokenSymbol',
-        title: 'Token symbol',
-        value: formState.tokenSymbol,
-        placeholder: 'Token symbol',
-        emptyText: 'Add token symbol',
-        disabled: isEditDisabled,
-        onUpdate: handleUpdate
-      },
-      {
-        id: 'tokenName',
-        title: 'Token name',
-        value: formState.tokenName,
-        placeholder: 'Token name',
-        emptyText: 'Add token name (Optional)',
-        disabled: isEditDisabled,
-        onUpdate: handleUpdate
-      },
-      {
-        id: 'explorerUrl',
-        title: 'Explorer URL',
-        value: formState.explorerUrl,
-        placeholder: 'Explorer URL',
-        emptyText: 'Add explorer URL',
-        type: 'url',
-        disabled: isEditDisabled,
-        onUpdate: handleUpdate
-      }
+    const disabled = !isCustomNetwork && !!parsedNetwork
+
+    const rpcUrl: AdvancedFieldProps = {
+      id: 'rpcUrl',
+      title: 'Network RPC URL',
+      value: formState.rpcUrl,
+      placeholder: `Network RPC URL`,
+      emptyText: `Add Network RPC URL`,
+      type: 'url',
+      disabled,
+      onUpdate: handleUpdate
+    }
+
+    const chainId: AdvancedFieldProps = {
+      id: 'chainId',
+      title: 'Chain ID',
+      value: formState.chainId?.toString(),
+      placeholder: 'Chain ID',
+      emptyText: 'Add Chain ID',
+      type: 'number',
+      disabled,
+      onUpdate: handleUpdate
+    }
+
+    const tokenSymbol: AdvancedFieldProps = {
+      id: 'tokenSymbol',
+      title: 'Token symbol',
+      value: formState.tokenSymbol,
+      placeholder: 'Token symbol',
+      emptyText: 'Add token symbol',
+      disabled,
+      onUpdate: handleUpdate
+    }
+
+    const tokenName: AdvancedFieldProps = {
+      id: 'tokenName',
+      title: 'Token name',
+      value: formState.tokenName,
+      placeholder: 'Token name',
+      emptyText: 'Add token name',
+      disabled,
+      onUpdate: handleUpdate
+    }
+
+    const explorerUrl: AdvancedFieldProps = {
+      id: 'explorerUrl',
+      title: 'Explorer URL',
+      value: formState.explorerUrl,
+      optional: true,
+      placeholder: 'Explorer URL',
+      emptyText: 'Add explorer URL',
+      type: 'url',
+      disabled,
+      onUpdate: handleUpdate
+    }
+
+    if (!isCustomNetwork && parsedNetwork) {
+      const readOnlyFields: AdvancedFieldProps[] = []
+      if (parsedNetwork.rpcUrl) readOnlyFields.push(rpcUrl)
+      if (parsedNetwork.chainId) readOnlyFields.push(chainId)
+      if (parsedNetwork.networkToken.symbol) readOnlyFields.push(tokenSymbol)
+      if (parsedNetwork.networkToken.name) readOnlyFields.push(tokenName)
+      if (parsedNetwork.explorerUrl) readOnlyFields.push(explorerUrl)
+
+      return readOnlyFields
+    }
+
+    const editableFields: AdvancedFieldProps[] = [
+      rpcUrl,
+      chainId,
+      tokenSymbol,
+      tokenName,
+      explorerUrl
     ]
+
+    return editableFields
   }, [
     formState.rpcUrl,
     formState.chainId,
     formState.tokenSymbol,
     formState.tokenName,
     formState.explorerUrl,
-    isEditDisabled,
-    handleUpdate
+    handleUpdate,
+    isCustomNetwork,
+    parsedNetwork
   ])
 
   const renderName = useCallback(() => {
@@ -340,7 +367,7 @@ export const AddEditNetworkScreen = (): JSX.Element => {
             {formState.chainName}
           </Text>
 
-          {!isEditDisabled && (
+          {isCustomNetwork && (
             <View>
               <Button
                 type="secondary"
@@ -362,7 +389,7 @@ export const AddEditNetworkScreen = (): JSX.Element => {
         Name this network
       </Button>
     )
-  }, [formState.chainName, handleShowAlertWithTextInput, isEditDisabled])
+  }, [formState.chainName, handleShowAlertWithTextInput, isCustomNetwork])
 
   return (
     <View sx={{ flex: 1, paddingHorizontal: 16, paddingBottom: 16 }}>
@@ -406,7 +433,7 @@ export const AddEditNetworkScreen = (): JSX.Element => {
         <AdvancedForm data={data} />
       </KeyboardAwareScrollView>
 
-      {!isEditDisabled && (
+      {(isCustomNetwork || !parsedNetwork) && (
         <View
           sx={{
             gap: 16,
