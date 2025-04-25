@@ -9,6 +9,7 @@ import Logger from 'utils/Logger'
 import { useSelector } from 'react-redux'
 import { selectSelectedCurrency } from 'store/settings/currency'
 import {
+  ActivityIndicator,
   alpha,
   Button,
   GroupList,
@@ -30,7 +31,6 @@ import { Network } from '@avalabs/core-chains-sdk'
 import Animated, {
   FadeIn,
   FadeOut,
-  SharedValue,
   useSharedValue
 } from 'react-native-reanimated'
 import usePendingBridgeTransactions from '../hooks/usePendingBridgeTransactions'
@@ -126,10 +126,10 @@ export const BridgeStatusScreen = (): JSX.Element => {
         value: sourceNetwork && <NetworkComponent network={sourceNetwork} />
       }
     ]
-    if (sourceNetworkFee !== undefined && bridgeTransaction !== undefined) {
-      data.push({
-        title: 'Network fee',
-        value: (
+    data.push({
+      title: 'Network fee',
+      value:
+        sourceNetworkFee !== undefined && bridgeTransaction !== undefined ? (
           <View style={{ alignItems: 'flex-end' }}>
             <Text variant="body1" sx={{ color: '$textSecondary' }}>
               {sourceNetworkFee.toNumber().toFixed(6)}{' '}
@@ -141,9 +141,10 @@ export const BridgeStatusScreen = (): JSX.Element => {
               })}
             </Text>
           </View>
+        ) : (
+          <ActivityIndicator />
         )
-      })
-    }
+    })
     data.push({
       title: 'Confirmations',
       value:
@@ -154,10 +155,12 @@ export const BridgeStatusScreen = (): JSX.Element => {
             {`${sourceCurrentConfirmations} out of ${sourceRequiredConfirmations}`}
           </Text>
         ),
-      bottomAccessory:
-        sourceCurrentConfirmations < sourceRequiredConfirmations ? (
-          <ConfirmationProgress progress={sourceConfirmationProgress} />
-        ) : undefined
+      bottomAccessory: (
+        <ConfirmationProgress
+          currentConfirmations={sourceCurrentConfirmations}
+          requiredConfirmations={sourceRequiredConfirmations}
+        />
+      )
     })
 
     return data
@@ -168,7 +171,6 @@ export const BridgeStatusScreen = (): JSX.Element => {
     formatCurrency,
     sourceCurrentConfirmations,
     sourceRequiredConfirmations,
-    sourceConfirmationProgress,
     sourceNetwork
   ])
 
@@ -190,9 +192,11 @@ export const BridgeStatusScreen = (): JSX.Element => {
           </Text>
         ),
       bottomAccessory:
-        sourceCurrentConfirmations === sourceRequiredConfirmations &&
-        targetCurrentConfirmations < targetRequiredConfirmations ? (
-          <ConfirmationProgress progress={targetConfirmationProgress} />
+        sourceCurrentConfirmations === sourceRequiredConfirmations ? (
+          <ConfirmationProgress
+            currentConfirmations={targetCurrentConfirmations}
+            requiredConfirmations={targetRequiredConfirmations}
+          />
         ) : undefined
     })
 
@@ -202,8 +206,7 @@ export const BridgeStatusScreen = (): JSX.Element => {
     targetRequiredConfirmations,
     sourceCurrentConfirmations,
     sourceRequiredConfirmations,
-    targetNetwork,
-    targetConfirmationProgress
+    targetNetwork
   ])
 
   useEffect(
@@ -335,13 +338,41 @@ const NetworkComponent = ({ network }: { network: Network }): JSX.Element => {
 }
 
 const ConfirmationProgress = ({
-  progress
+  currentConfirmations,
+  requiredConfirmations
 }: {
-  progress: SharedValue<number>
-}): JSX.Element => {
+  currentConfirmations: number
+  requiredConfirmations: number
+}): JSX.Element | undefined => {
   const {
     theme: { colors }
   } = useTheme()
+
+  const progress = useSharedValue(0)
+
+  useEffect(() => {
+    progress.value = (currentConfirmations + 1) / (requiredConfirmations + 1)
+  }, [currentConfirmations, requiredConfirmations, progress])
+
+  const [isVisible, setIsVisible] = useState(true)
+
+  useEffect(() => {
+    if (requiredConfirmations === 0) {
+      return
+    }
+
+    if (currentConfirmations < requiredConfirmations) {
+      setIsVisible(true)
+    } else {
+      setTimeout(() => {
+        setIsVisible(false)
+      }, 600)
+    }
+  }, [currentConfirmations, requiredConfirmations])
+
+  if (!isVisible) {
+    return undefined
+  }
 
   return (
     <Animated.View style={{ padding: 16, paddingBottom: 18, paddingTop: 10 }}>
