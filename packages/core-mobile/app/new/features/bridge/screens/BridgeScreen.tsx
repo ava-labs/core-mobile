@@ -610,10 +610,15 @@ export const BridgeScreen = (): JSX.Element => {
   ])
 
   useEffect(() => {
-    if (!initialSourceNetworkChainId && cChainNetwork) {
+    if (!initialSourceNetworkChainId && cChainNetwork && !sourceNetwork) {
       setSourceNetwork(cChainNetwork)
     }
-  }, [setSourceNetwork, cChainNetwork, initialSourceNetworkChainId])
+  }, [
+    setSourceNetwork,
+    cChainNetwork,
+    initialSourceNetworkChainId,
+    sourceNetwork
+  ])
 
   useEffect(() => {
     const bridgeTokenList = (assetsWithBalances ?? []).filter(asset =>

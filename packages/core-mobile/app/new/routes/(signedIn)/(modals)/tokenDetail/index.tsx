@@ -48,7 +48,6 @@ import {
 } from '@avalabs/avalanche-module'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { UI, useIsUIDisabledForNetwork } from 'hooks/useIsUIDisabled'
-import { useAssetBalances } from 'screens/bridge/hooks/useAssetBalances'
 import { useCoreBrowser } from 'common/hooks/useCoreBrowser'
 import { useErc20ContractTokens } from 'common/hooks/useErc20ContractTokens'
 import { useNavigateToSwap } from 'features/swap/hooks/useNavigateToSwap'
@@ -59,6 +58,7 @@ import { BridgeTransaction } from '@avalabs/core-bridge-sdk'
 import { BridgeTransfer } from '@avalabs/bridge-unified'
 import { getSourceChainId } from 'features/bridge/utils/bridgeUtils'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
+import { useAssetBalances } from 'features/bridge/hooks/useAssetBalances'
 
 const TokenDetailScreen = (): React.JSX.Element => {
   const {
@@ -117,16 +117,12 @@ const TokenDetailScreen = (): React.JSX.Element => {
     UI.Bridge,
     token?.networkChainId
   )
-  const { assetsWithBalances } = useAssetBalances()
-  const isTokenBridgeable = useMemo(
-    () =>
-      Boolean(
-        assetsWithBalances &&
-          assetsWithBalances.some(
-            asset => (asset.symbolOnNetwork ?? asset.symbol) === token?.symbol
-          )
-      ),
-    [assetsWithBalances, token]
+  const { assetsWithBalances } = useAssetBalances(token?.networkChainId)
+  const isTokenBridgeable = Boolean(
+    assetsWithBalances &&
+      assetsWithBalances.some(
+        asset => (asset.symbolOnNetwork ?? asset.symbol) === token?.symbol
+      )
   )
 
   const cChainNetwork = useCChainNetwork()
