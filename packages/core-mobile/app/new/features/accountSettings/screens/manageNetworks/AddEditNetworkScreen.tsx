@@ -23,6 +23,7 @@ import {
   addCustomNetwork,
   ChainID,
   removeCustomNetwork,
+  toggleFavorite,
   updateCustomNetwork
 } from 'store/network'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
@@ -160,6 +161,7 @@ export const AddEditNetworkScreen = (): JSX.Element => {
     }
 
     dispatch(addCustomNetwork(newNetwork))
+    dispatch(toggleFavorite(newNetwork.chainId))
     canGoBack() && back()
   }, [
     dispatch,
