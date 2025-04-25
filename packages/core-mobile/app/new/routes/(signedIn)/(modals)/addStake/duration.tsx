@@ -23,7 +23,7 @@ import {
   getStakeEndDate,
   THREE_MONTHS
 } from 'services/earn/getStakeEndDate'
-import {
+import Animated, {
   runOnJS,
   useAnimatedReaction,
   useSharedValue
@@ -44,9 +44,15 @@ import { useDebounce } from 'hooks/useDebounce'
 import { StakeCustomEndDatePicker } from 'features/stake/components/StakeCustomEndDatePicker'
 import { useAvaxTokenPriceInSelectedCurrency } from 'hooks/useAvaxTokenPriceInSelectedCurrency'
 import { convertToDurationInSeconds } from 'features/stake/utils'
+import { useSimpleFadingHeader } from 'common/hooks/useSimpleFadingHeader'
 
 const StakeDurationScreen = (): JSX.Element => {
   const { navigate } = useRouter()
+  const { onScroll, handleHeaderLayout, animatedHeaderStyle } =
+    useSimpleFadingHeader({
+      title: 'How long?',
+      shouldHeaderHaveGrabber: true
+    })
   const { stakeAmount } = useDelegationContext()
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const avaxPrice = useAvaxTokenPriceInSelectedCurrency()
@@ -309,8 +315,13 @@ const StakeDurationScreen = (): JSX.Element => {
     <SafeAreaView sx={{ flex: 1 }}>
       <ScrollView
         style={{ flex: 1 }}
-        contentContainerSx={{ padding: 16, paddingTop: 0 }}>
-        <ScreenHeader title="For how long would you like to stake?" />
+        contentContainerSx={{ padding: 16, paddingTop: 0 }}
+        onScroll={onScroll}>
+        <Animated.View
+          onLayout={handleHeaderLayout}
+          style={animatedHeaderStyle}>
+          <ScreenHeader title="For how long would you like to stake?" />
+        </Animated.View>
         <View sx={{ gap: 12, marginTop: 16 }}>
           <StakeRewardChart
             ref={rewardChartRef}

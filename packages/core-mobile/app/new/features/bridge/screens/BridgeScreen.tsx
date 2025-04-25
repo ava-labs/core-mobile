@@ -59,6 +59,7 @@ import { isUserRejectedError } from 'store/rpc/providers/walletConnect/utils'
 import { getJsonRpcErrorMessage } from 'utils/getJsonRpcErrorMessage/getJsonRpcErrorMessage'
 import { audioFeedback, Audios } from 'utils/AudioFeedback'
 import { usePreventScreenRemoval } from 'common/hooks/usePreventScreenRemoval'
+import { useSimpleFadingHeader } from 'common/hooks/useSimpleFadingHeader'
 import useBridge from '../hooks/useBridge'
 
 export const BridgeScreen = (): JSX.Element => {
@@ -100,6 +101,11 @@ export const BridgeScreen = (): JSX.Element => {
     selectedAssetInTargetNetwork
   } = useBridge()
   const [bridgeError, setBridgeError] = useState('')
+  const { onScroll, handleHeaderLayout, animatedHeaderStyle } =
+    useSimpleFadingHeader({
+      title: 'Bridge',
+      shouldHeaderHaveGrabber: true
+    })
 
   const [isPending, setIsPending] = useState<boolean>(false)
   const [isInputFocused, setIsInputFocused] = useState<boolean>(false)
@@ -652,8 +658,13 @@ export const BridgeScreen = (): JSX.Element => {
           style={{ flex: 1 }}
           contentContainerSx={{ padding: 16, paddingTop: 0 }}
           keyboardDismissMode="on-drag"
-          keyboardShouldPersistTaps="always">
-          <ScreenHeader title="Bridge" />
+          keyboardShouldPersistTaps="always"
+          onScroll={onScroll}>
+          <Animated.View
+            style={animatedHeaderStyle}
+            onLayout={handleHeaderLayout}>
+            <ScreenHeader title="Bridge" />
+          </Animated.View>
           {shouldShowHallidayBanner && (
             <View sx={{ marginTop: 16, marginBottom: 8 }}>
               <HallidayBanner onPress={handlePressHallidayBanner} />

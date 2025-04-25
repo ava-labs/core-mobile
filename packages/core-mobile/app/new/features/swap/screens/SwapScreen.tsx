@@ -42,6 +42,7 @@ import { basisPointsToPercentage } from 'utils/basisPointsToPercentage'
 import { PARASWAP_PARTNER_FEE_BPS } from 'contexts/SwapContext/consts'
 import { useAvalancheErc20ContractTokens } from 'common/hooks/useErc20ContractTokens'
 import { usePreventScreenRemoval } from 'common/hooks/usePreventScreenRemoval'
+import { useSimpleFadingHeader } from 'common/hooks/useSimpleFadingHeader'
 import { useSwapContext } from '../contexts/SwapContext'
 import { SlippageInput } from '../components.tsx/SlippageInput'
 
@@ -52,6 +53,12 @@ export const SwapScreen = (): JSX.Element => {
     initialTokenIdFrom?: string
     initialTokenIdTo?: string
   }>()
+  const { onScroll, handleHeaderLayout, animatedHeaderStyle } =
+    useSimpleFadingHeader({
+      title: 'Swap',
+      shouldHeaderHaveGrabber: true
+    })
+
   const { formatCurrency } = useFormatCurrency()
   const avalancheErc20ContractTokens = useAvalancheErc20ContractTokens()
   const { filteredTokenList } = useSearchableTokenList({
@@ -438,8 +445,13 @@ export const SwapScreen = (): JSX.Element => {
           style={{ flex: 1 }}
           contentContainerStyle={{ padding: 16, paddingTop: 0 }}
           keyboardDismissMode="on-drag"
-          keyboardShouldPersistTaps="always">
-          <ScreenHeader title="Swap" />
+          keyboardShouldPersistTaps="always"
+          onScroll={onScroll}>
+          <Animated.View
+            onLayout={handleHeaderLayout}
+            style={animatedHeaderStyle}>
+            <ScreenHeader title="Swap" />
+          </Animated.View>
           <Animated.View style={{ marginTop: 16 }} layout={LinearTransition}>
             {renderFromSection()}
             <Animated.View
