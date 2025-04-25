@@ -1,11 +1,11 @@
-import { createAction, createSlice, PayloadAction } from '@reduxjs/toolkit'
 import {
   BITCOIN_NETWORK,
   ChainId as ChainsSDKChainId,
   Network
 } from '@avalabs/core-chains-sdk'
-import { selectIsDeveloperMode } from 'store/settings/advanced'
+import { createAction, createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { getNetworksFromCache } from 'hooks/networks/utils/getNetworksFromCache'
+import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { RootState } from '../index'
 import { ChainID, Networks, NetworkState } from './types'
 
@@ -22,7 +22,8 @@ export const reducerName = 'network'
 
 const initialState: NetworkState = {
   customNetworks: {},
-  favorites: [ ...alwaysFavoriteNetworks,
+  favorites: [
+    ...alwaysFavoriteNetworks,
     ChainsSDKChainId.BITCOIN,
     ChainsSDKChainId.BITCOIN_TESTNET,
     ChainsSDKChainId.ETHEREUM_HOMESTEAD
