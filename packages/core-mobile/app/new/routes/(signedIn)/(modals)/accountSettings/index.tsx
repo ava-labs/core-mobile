@@ -12,34 +12,33 @@ import {
   View
 } from '@avalabs/k2-alpine'
 import { useNavigation } from '@react-navigation/native'
-import { useRouter } from 'expo-router'
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
-import Animated, { useSharedValue } from 'react-native-reanimated'
-import { LayoutRectangle } from 'react-native'
-import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
-import { LayoutChangeEvent } from 'react-native'
 import { VisibilityBarButton } from 'common/components/VisibilityBarButton'
-import { useDispatch, useSelector } from 'react-redux'
-import { AccountList } from 'features/accountSettings/components/AcccountList'
+import { useAvatar } from 'common/hooks/useAvatar'
 import { useDeleteWallet } from 'common/hooks/useDeleteWallet'
-import { UserPreferences } from 'features/accountSettings/components/UserPreferences'
+import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
+import { showSnackbar } from 'common/utils/toast'
+import { Space } from 'components/Space'
+import { useRouter } from 'expo-router'
 import { About } from 'features/accountSettings/components/About'
+import { AccountList } from 'features/accountSettings/components/AcccountList'
 import { AppAppearance } from 'features/accountSettings/components/AppAppearance'
-import {
-  selectIsPrivacyModeEnabled,
-  togglePrivacyMode
-} from 'store/settings/securityPrivacy'
+import { UserPreferences } from 'features/accountSettings/components/UserPreferences'
+import { useNetworks } from 'hooks/networks/useNetworks'
+import React, { useCallback, useEffect, useState } from 'react'
+import { LayoutChangeEvent, LayoutRectangle } from 'react-native'
+import { ScrollView } from 'react-native-gesture-handler'
+import Animated, { useSharedValue } from 'react-native-reanimated'
+import { useDispatch, useSelector } from 'react-redux'
+import AnalyticsService from 'services/analytics/AnalyticsService'
+import { selectContacts } from 'store/addressBook'
 import {
   selectIsDeveloperMode,
   toggleDeveloperMode
 } from 'store/settings/advanced'
-import AnalyticsService from 'services/analytics/AnalyticsService'
-import { ScrollView } from 'react-native-gesture-handler'
-import { selectContacts } from 'store/addressBook'
-import { Space } from 'components/Space'
-import { showSnackbar } from 'common/utils/toast'
-import { useAvatar } from 'common/hooks/useAvatar'
-import { useNetworks } from 'hooks/networks/useNetworks'
+import {
+  selectIsPrivacyModeEnabled,
+  togglePrivacyMode
+} from 'store/settings/securityPrivacy'
 
 const AccountSettingsScreen = (): JSX.Element => {
   const { deleteWallet } = useDeleteWallet()

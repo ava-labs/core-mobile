@@ -9,9 +9,9 @@ import {
   View
 } from '@avalabs/k2-alpine'
 import { AlertWithTextInputsHandle } from '@avalabs/k2-alpine/src/components/Alert/types'
+import { NetworkLogoWithChain } from 'common/components/NetworkLogoWithChain'
 import { isValidContactName } from 'common/utils/isValidContactName'
 import { Space } from 'components/Space'
-import { Image } from 'expo-image'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { AdvancedFieldProps } from 'features/accountSettings/components/AdvancedField'
 import { AdvancedForm } from 'features/accountSettings/components/AdvancedForm'
@@ -367,7 +367,7 @@ export const AddEditNetworkScreen = (): JSX.Element => {
             {formState.chainName}
           </Text>
 
-          {isCustomNetwork && (
+          {(isCustomNetwork || !parsedNetwork) && (
             <View>
               <Button
                 type="secondary"
@@ -389,7 +389,12 @@ export const AddEditNetworkScreen = (): JSX.Element => {
         Name this network
       </Button>
     )
-  }, [formState.chainName, handleShowAlertWithTextInput, isCustomNetwork])
+  }, [
+    formState.chainName,
+    handleShowAlertWithTextInput,
+    isCustomNetwork,
+    parsedNetwork
+  ])
 
   return (
     <View sx={{ flex: 1, paddingHorizontal: 16, paddingBottom: 16 }}>
@@ -398,38 +403,44 @@ export const AddEditNetworkScreen = (): JSX.Element => {
         automaticallyAdjustKeyboardInsets
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{
-          justifyContent: 'space-between'
+          justifyContent: 'space-between',
+          gap: 40
         }}>
-        <View sx={{ alignItems: 'center' }}>
-          <View
-            style={{
-              width: 150,
-              height: 150,
-              borderRadius: 75,
-              overflow: 'hidden',
-              backgroundColor: theme.colors.$surfaceSecondary,
-              borderWidth: 1,
-              borderColor: theme.colors.$borderPrimary,
-              justifyContent: 'center',
-              alignItems: 'center'
-            }}>
-            {formState.logoUri ? (
-              <Image
-                source={{ uri: formState.logoUri }}
-                style={{ width: '100%', height: '100%' }}
-              />
-            ) : (
+        <View sx={{ alignItems: 'center', gap: 24 }}>
+          {formState.logoUri ? (
+            <NetworkLogoWithChain
+              network={parsedNetwork ?? (formState as Network)}
+              networkSize={150}
+              outerBorderColor={theme.colors.$surfacePrimary}
+              showChainLogo
+              chainLogoSize={36}
+              chainLogoStyle={{
+                borderWidth: 24
+              }}
+            />
+          ) : (
+            <View
+              style={{
+                width: 150,
+                height: 150,
+                borderRadius: 75,
+                overflow: 'hidden',
+                backgroundColor: theme.colors.$surfaceSecondary,
+                borderWidth: 1,
+                borderColor: theme.colors.$borderPrimary,
+                justifyContent: 'center',
+                alignItems: 'center'
+              }}>
               <Icons.Custom.Category
                 width={40}
                 height={40}
                 color={theme.colors.$textSecondary}
               />
-            )}
-          </View>
-          <Space y={20} />
+            </View>
+          )}
           {renderName()}
-          <Space y={47} />
         </View>
+
         <AdvancedForm data={data} />
       </KeyboardAwareScrollView>
 

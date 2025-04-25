@@ -39,11 +39,12 @@ export const ManageNetworksScreen = (): JSX.Element => {
 
   const filterBySearchText = useCallback(
     (network: Network) =>
-      network.chainName.toLowerCase().includes(searchText.toLowerCase()),
+      network.chainName.toLowerCase().includes(searchText.toLowerCase()) ||
+      network.chainId.toString().includes(searchText),
     [searchText]
   )
 
-  const visibleNetworks = useMemo(() => {
+  const availableNetworks = useMemo(() => {
     const enabled = Object.values(networks)
       .filter(network => favoriteNetworks.includes(network))
       .sort((a, b) => {
@@ -58,17 +59,15 @@ export const ManageNetworksScreen = (): JSX.Element => {
       .filter(network => !enabled.includes(network))
       .sort((a, b) => {
         if (
-          isAvalancheChainId(a.chainId) ||
-          FAVORITE_NETWORKS.includes(a.chainId) ||
-          customNetworks.includes(a)
+          customNetworks.includes(a) ||
+          FAVORITE_NETWORKS.includes(a.chainId)
         ) {
           return -1
         }
 
         if (
-          isAvalancheChainId(b.chainId) ||
-          FAVORITE_NETWORKS.includes(b.chainId) ||
-          customNetworks.includes(b)
+          customNetworks.includes(b) ||
+          FAVORITE_NETWORKS.includes(b.chainId)
         ) {
           return 1
         }
@@ -80,12 +79,10 @@ export const ManageNetworksScreen = (): JSX.Element => {
 
   const filteredNetworks = useMemo(() => {
     if (searchText.length) {
-      return Object.values(networks)
-        .filter(network => filterBySearchText(network))
-        .sort(sortNetworks)
+      return availableNetworks.filter(filterBySearchText)
     }
-    return [...visibleNetworks].filter(filterBySearchText)
-  }, [searchText.length, visibleNetworks, networks, filterBySearchText])
+    return availableNetworks
+  }, [availableNetworks, filterBySearchText, searchText.length])
 
   const onFavorite = useCallback(
     (item: Network) => {
@@ -139,7 +136,6 @@ export const ManageNetworksScreen = (): JSX.Element => {
             network={item}
             networkSize={36}
             showChainLogo
-            chainLogoSize={24}
             outerBorderColor={theme.colors.$surfacePrimary}
           />
         )}
