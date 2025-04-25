@@ -51,8 +51,6 @@ const trackPendingTransfers = (listenerApi: AppListenerEffectAPI): void => {
         showSuccessToast(transfer)
       } else {
         const updateListener = (updatedTransfer: BridgeTransfer): void => {
-          // update the transaction, even if it's complete
-          // (we want to keep the tx up to date, because some Component(i.e. BridgeTransactionStatus) has local state that depends on it)
           listenerApi.dispatch(setPendingTransfer(updatedTransfer))
         }
         UnifiedBridgeService.trackTransfer(transfer, updateListener)
@@ -140,6 +138,11 @@ export const checkTransferStatus = async (
   action: ReturnType<typeof setPendingTransfer>,
   listenerApi: AppListenerEffectAPI
 ): Promise<void> => {
+  // delay 1 second to remove the completed transfer,
+  // to ensure that the component(i.e. BridgeStatusScreen) displaying the transfer
+  // has enough time to handle the completed status
+  await listenerApi.delay(1000)
+
   const transfer = action.payload
 
   if (transfer.completedAt) {

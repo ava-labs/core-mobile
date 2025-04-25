@@ -35,6 +35,7 @@ const mockListenerApi = {
       pendingTransfers: []
     }
   }),
+  delay: jest.fn().mockResolvedValue(undefined),
   dispatch: mockDispatch
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
 } as any
