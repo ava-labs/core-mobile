@@ -6,7 +6,7 @@ import {
   stackNavigatorScreenOptions
 } from 'common/consts/screenOptions'
 import { ConfettiContext } from 'common/contexts/ConfettiContext'
-import { BridgeProvider } from 'contexts/BridgeContext'
+import { BridgeProvider } from 'features/bridge/contexts/BridgeContext'
 import { CollectiblesProvider } from 'features/portfolio/collectibles/CollectiblesContext'
 import { NavigationPresentationMode } from 'new/common/types'
 import React, { useRef } from 'react'
@@ -93,6 +93,10 @@ export default function WalletLayout(): JSX.Element {
             />
             <Stack.Screen
               name="(modals)/bridge"
+              options={modalScreensOptions}
+            />
+            <Stack.Screen
+              name="(modals)/bridgeStatus"
               options={modalScreensOptions}
             />
             <Stack.Screen

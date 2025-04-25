@@ -41,6 +41,7 @@ import { calculateRate } from 'swap/utils'
 import { basisPointsToPercentage } from 'utils/basisPointsToPercentage'
 import { PARASWAP_PARTNER_FEE_BPS } from 'contexts/SwapContext/consts'
 import { useAvalancheErc20ContractTokens } from 'common/hooks/useErc20ContractTokens'
+import { usePreventScreenRemoval } from 'common/hooks/usePreventScreenRemoval'
 import { useSwapContext } from '../contexts/SwapContext'
 import { SlippageInput } from '../components.tsx/SlippageInput'
 
@@ -427,6 +428,8 @@ export const SwapScreen = (): JSX.Element => {
       setToTokenValue(undefined)
     }
   }, [fromTokenValue])
+
+  usePreventScreenRemoval(swapInProcess)
 
   return (
     <KeyboardAvoidingView style={{ flex: 1 }}>

@@ -55,6 +55,10 @@ import { useNavigateToSwap } from 'features/swap/hooks/useNavigateToSwap'
 import { useAddStake } from 'features/stake/hooks/useAddStake'
 import useCChainNetwork from 'hooks/earn/useCChainNetwork'
 import { AVAX_TOKEN_ID } from 'features/swap/const'
+import { BridgeTransaction } from '@avalabs/core-bridge-sdk'
+import { BridgeTransfer } from '@avalabs/bridge-unified'
+import { getSourceChainId } from 'features/bridge/utils/bridgeUtils'
+import { selectIsDeveloperMode } from 'store/settings/advanced'
 
 const TokenDetailScreen = (): React.JSX.Element => {
   const {
@@ -72,6 +76,7 @@ const TokenDetailScreen = (): React.JSX.Element => {
   const { localId } = useLocalSearchParams<{
     localId: string
   }>()
+  const isDeveloperMode = useSelector(selectIsDeveloperMode)
 
   const erc20ContractTokens = useErc20ContractTokens()
   const { filteredTokenList } = useSearchableTokenList({
@@ -227,6 +232,19 @@ const TokenDetailScreen = (): React.JSX.Element => {
     [openUrl]
   )
 
+  const handlePendingBridge = useCallback(
+    (pendingBridge: BridgeTransaction | BridgeTransfer): void => {
+      navigate({
+        pathname: '/bridgeStatus',
+        params: {
+          txHash: pendingBridge.sourceTxHash,
+          chainId: getSourceChainId(pendingBridge, isDeveloperMode)
+        }
+      })
+    },
+    [navigate, isDeveloperMode]
+  )
+
   const handleSelectSegment = useCallback(
     (index: number): void => {
       selectedSegmentIndex.value = index
@@ -301,6 +319,7 @@ const TokenDetailScreen = (): React.JSX.Element => {
         <TransactionHistory
           token={token}
           handleExplorerLink={handleExplorerLink}
+          handlePendingBridge={handlePendingBridge}
         />
       )
     }
@@ -314,7 +333,7 @@ const TokenDetailScreen = (): React.JSX.Element => {
           activityTab
         ]
       : [activityTab]
-  }, [handleExplorerLink, isXpToken, token])
+  }, [handleExplorerLink, isXpToken, token, handlePendingBridge])
 
   return (
     <BlurredBarsContentLayout>
