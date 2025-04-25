@@ -11,7 +11,6 @@ import {
 import { AlertWithTextInputsHandle } from '@avalabs/k2-alpine/src/components/Alert/types'
 import { NetworkLogoWithChain } from 'common/components/NetworkLogoWithChain'
 import { isValidContactName } from 'common/utils/isValidContactName'
-import { Space } from 'components/Space'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { AdvancedFieldProps } from 'features/accountSettings/components/AdvancedField'
 import { AdvancedForm } from 'features/accountSettings/components/AdvancedForm'
