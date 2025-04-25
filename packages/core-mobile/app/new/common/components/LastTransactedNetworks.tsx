@@ -1,5 +1,4 @@
 import { useLastTransactedNetworks } from 'common/hooks/useLastTransactedNetworks'
-import React from 'react'
 
 /**
  * This component is used to trigger the useLastTransactedNetworks hook.
@@ -8,7 +7,7 @@ import React from 'react'
  * It does not render anything.
  * @returns {React.JSX.Element} An empty fragment.
  */
-export const LastTransactedNetworks = (): React.JSX.Element => {
+export const LastTransactedNetworks = (): null => {
   useLastTransactedNetworks()
-  return <></>
+  return null
 }

@@ -5,6 +5,8 @@ import NetworkService from 'services/network/NetworkService'
 import { selectActiveAccount } from 'store/account'
 import { Networks } from 'store/network'
 
+// listAddressChains endpoint refreshes every 15 minutes,
+// therefore we don't need to refresh the data too often
 const REFETCH_INTERVAL = 1000 * 60 * 5 // 5 minutes
 
 export const useLastTransactedNetworks = (): UseQueryResult<

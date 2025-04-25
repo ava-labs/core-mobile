@@ -12,9 +12,8 @@ import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { type Network } from '@avalabs/core-chains-sdk'
 import { isAvalancheChainId } from 'services/network/utils/isAvalancheNetwork'
 import { getCaip2ChainId } from 'utils/caip2ChainIds'
-import { getLastTransactedNetworks } from 'new/common/utils/getLastTransactedNetworks'
-import { selectActiveAccount } from 'store/account'
-import { uniq } from 'lodash'
+import { uniqBy } from 'lodash'
+import { useLastTransactedNetworks } from 'new/common/hooks/useLastTransactedNetworks'
 import { useGetNetworks } from './useGetNetworks'
 
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
@@ -24,7 +23,7 @@ export const useNetworks = () => {
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const activeChainId = useSelector(selectActiveChainId)
   const enabledChainIds = useSelector(selectEnabledChainIds)
-  const activeAccount = useSelector(selectActiveAccount)
+  const { data: lastTransactedChains } = useLastTransactedNetworks()
 
   // all networks, including custom networks
   const allNetworks = useMemo((): Networks => {
@@ -84,18 +83,17 @@ export const useNetworks = () => {
     return network === undefined ? defaultNetwork : network
   }, [networks, activeChainId])
 
-  const lastTransactedChains = useMemo(() => {
-    if (activeAccount === undefined) return {}
-    return getLastTransactedNetworks(activeAccount.addressC ?? '')
-  }, [activeAccount])
-
   const enabledNetworks = useMemo(() => {
     if (networks === undefined) return []
 
-    const lastTransactedChainIds = Object.values(lastTransactedChains).map(
-      chain => chain.chainId
+    const lastTransactedChainIds = lastTransactedChains
+      ? Object.values(lastTransactedChains).map(chain => chain.chainId)
+      : []
+
+    const allChainIds = uniqBy(
+      [...enabledChainIds, ...lastTransactedChainIds],
+      'chainId'
     )
-    const allChainIds = uniq([...enabledChainIds, ...lastTransactedChainIds])
 
     const enabled = allChainIds.reduce((acc, chainId) => {
       const network = networks[chainId]

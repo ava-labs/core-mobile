@@ -56,8 +56,8 @@ const toggleEnabledChainIdSideEffect = (
     .includes(chainId)
 
   const event = enabledChainIds.includes(chainId)
-    ? 'NetworkEnabledAdded'
-    : 'NetworkEnabledRemoved'
+    ? 'NetworkEnabled'
+    : 'NetworkDisabled'
 
   AnalyticsService.capture(event, {
     networkChainId: chainId,
