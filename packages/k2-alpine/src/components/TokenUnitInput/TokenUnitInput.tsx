@@ -176,7 +176,7 @@ export const TokenUnitInput = forwardRef<
               fontFamily: 'Aeonik-Medium',
               fontSize: 24,
               lineHeight: 24,
-              marginTop: Platform.OS === 'ios' ? 14 : 20
+              marginTop: SYMBOL_MARGIN_TOP
             }}>
             {token.symbol}
           </Text>
@@ -201,3 +201,5 @@ const styles = StyleSheet.create({
 })
 
 const PLACEHOLDER = '0.0'
+
+const SYMBOL_MARGIN_TOP = Platform.OS === 'ios' ? 14 : 20
