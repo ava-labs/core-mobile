@@ -41,9 +41,16 @@ import { useNow } from 'hooks/time/useNow'
 import { useGetValidatorByNodeId } from 'hooks/earn/useGetValidatorByNodeId'
 import { truncateNodeId } from 'utils/Utils'
 import { copyToClipboard } from 'common/utils/clipboard'
+import { useSimpleFadingHeader } from 'common/hooks/useSimpleFadingHeader'
+import Animated from 'react-native-reanimated'
 
 const StakeConfirmScreen = (): JSX.Element => {
   const { theme } = useTheme()
+  const { onScroll, handleHeaderLayout, animatedHeaderStyle } =
+    useSimpleFadingHeader({
+      title: 'Review',
+      shouldHeaderHaveGrabber: true
+    })
   const { back, dismissAll, navigate } = useRouter()
   const dispatch = useDispatch()
   const { stakeAmount, networkFees } = useDelegationContext()
@@ -353,8 +360,13 @@ const StakeConfirmScreen = (): JSX.Element => {
     <SafeAreaView sx={{ flex: 1 }}>
       <ScrollView
         style={{ flex: 1 }}
-        contentContainerSx={{ padding: 16, paddingTop: 0 }}>
-        <ScreenHeader title="That's it! Review your staking" />
+        contentContainerSx={{ padding: 16, paddingTop: 0 }}
+        onScroll={onScroll}>
+        <Animated.View
+          onLayout={handleHeaderLayout}
+          style={animatedHeaderStyle}>
+          <ScreenHeader title="That's it! Review your staking" />
+        </Animated.View>
         <View sx={{ gap: 12, marginTop: 16 }}>
           <GroupList
             data={amountSection}

@@ -8,6 +8,10 @@ import { Transaction } from 'store/transaction'
 import { ChainId, Network } from '@avalabs/core-chains-sdk'
 import { Networks } from 'store/network'
 import { BridgeTransfer, Chain } from '@avalabs/bridge-unified'
+import { getChainIdFromCaip2 } from 'utils/caip2ChainIds'
+import { isBitcoinChainId } from 'utils/network/isBitcoinNetwork'
+import { isEthereumChainId } from 'services/network/utils/isEthereumNetwork'
+import { isAvalancheChainId } from 'services/network/utils/isAvalancheNetwork'
 import { AssetBalance } from './types'
 
 export function isPendingBridgeTransaction(
@@ -116,4 +120,83 @@ export const unwrapAssetSymbol = (symbol: string): string => {
 
 export const wrapAssetSymbol = (symbol: string, postfix: string): string => {
   return `${symbol}${postfix}`
+}
+
+export function getSourceChainId(
+  bridgeTransaction: BridgeTransaction | BridgeTransfer | undefined,
+  isTestnet: boolean
+): number | undefined {
+  if (isUnifiedBridgeTransfer(bridgeTransaction)) {
+    return getChainIdForChain(bridgeTransaction.sourceChain, isTestnet)
+  } else {
+    return getChainIdForBlockchain(bridgeTransaction?.sourceChain, isTestnet)
+  }
+}
+
+export function getTargetChainId(
+  bridgeTransaction: BridgeTransaction | BridgeTransfer | undefined,
+  isTestnet: boolean
+): number | undefined {
+  if (isUnifiedBridgeTransfer(bridgeTransaction)) {
+    return getChainIdForChain(bridgeTransaction.targetChain, isTestnet)
+  } else {
+    return getChainIdForBlockchain(bridgeTransaction?.targetChain, isTestnet)
+  }
+}
+
+function getChainIdForBlockchain(
+  blockchain: Blockchain | undefined,
+  isTestnet: boolean
+): number {
+  switch (blockchain) {
+    case Blockchain.BITCOIN:
+      return isTestnet ? ChainId.BITCOIN_TESTNET : ChainId.BITCOIN
+    case Blockchain.ETHEREUM:
+      // ETHEREUM_SEPOLIA doesn't have contract tokens, so always use ETHEREUM_HOMESTEAD chainid.
+      return ChainId.ETHEREUM_HOMESTEAD
+    case Blockchain.AVALANCHE:
+    default:
+      return isTestnet
+        ? ChainId.AVALANCHE_TESTNET_ID
+        : ChainId.AVALANCHE_MAINNET_ID
+  }
+}
+
+export function getChainIdForChain(
+  chain: Chain | undefined,
+  isTestnet: boolean
+): number | undefined {
+  const chainId = chain?.chainId
+    ? getChainIdFromCaip2(chain?.chainId)
+    : undefined
+
+  if (!chainId) return undefined
+
+  if (isBitcoinChainId(chainId)) {
+    return isTestnet ? ChainId.BITCOIN_TESTNET : ChainId.BITCOIN
+  }
+
+  if (isEthereumChainId(chainId)) {
+    return isTestnet
+      ? ChainId.ETHEREUM_TEST_SEPOLIA
+      : ChainId.ETHEREUM_HOMESTEAD
+  }
+
+  if (isAvalancheChainId(chainId)) {
+    return isTestnet
+      ? ChainId.AVALANCHE_TESTNET_ID
+      : ChainId.AVALANCHE_MAINNET_ID
+  }
+
+  return chainId
+}
+
+export function getBridgeAssetSymbol(
+  bridgeTransaction: BridgeTransaction | BridgeTransfer | undefined
+): string | undefined {
+  if (isUnifiedBridgeTransfer(bridgeTransaction)) {
+    return bridgeTransaction.asset.symbol
+  } else {
+    return bridgeTransaction?.symbol
+  }
 }

@@ -1,6 +1,5 @@
 import UnifiedBridgeService from 'services/bridge/UnifiedBridgeService'
 import { BridgeType, Environment } from '@avalabs/bridge-unified'
-import * as Toast from 'utils/toast'
 import { FeatureGates } from 'services/posthog/types'
 import { WalletState } from 'store/app'
 import {
@@ -10,10 +9,9 @@ import {
   createEvmSigner
 } from './listeners'
 
-const mockShowTransactionSuccessToast = jest.fn()
-jest
-  .spyOn(Toast, 'showTransactionSuccessToast')
-  .mockImplementation(mockShowTransactionSuccessToast)
+jest.mock('new/common/utils/toast', () => ({
+  showNotificationAlert: jest.fn()
+}))
 
 jest.mock('services/bridge/UnifiedBridgeService')
 jest.mock('store/rpc/utils/createInAppRequest')
@@ -37,6 +35,7 @@ const mockListenerApi = {
       pendingTransfers: []
     }
   }),
+  delay: jest.fn().mockResolvedValue(undefined),
   dispatch: mockDispatch
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
 } as any
