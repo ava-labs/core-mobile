@@ -173,7 +173,7 @@ export const ContactForm = ({
           size={150}
           source={avatar?.source}
           hasLoading={false}
-          showAddIcon={contact?.avatar?.source === undefined}
+          showAddIcon={avatar?.source === undefined}
         />
       </TouchableOpacity>
       <Space y={20} />
