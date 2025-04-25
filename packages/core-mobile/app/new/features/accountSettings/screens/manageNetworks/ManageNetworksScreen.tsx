@@ -22,11 +22,7 @@ import {
   isAvalancheChainId
 } from 'services/network/utils/isAvalancheNetwork'
 import { isEthereumChainId } from 'services/network/utils/isEthereumNetwork'
-import {
-  alwaysFavoriteNetworks,
-  FAVORITE_NETWORKS,
-  toggleFavorite
-} from 'store/network'
+import { alwaysFavoriteNetworks, toggleFavorite } from 'store/network'
 import { isBitcoinChainId } from 'utils/network/isBitcoinNetwork'
 
 export const ManageNetworksScreen = (): JSX.Element => {
@@ -49,17 +45,7 @@ export const ManageNetworksScreen = (): JSX.Element => {
   const availableNetworks = useMemo(() => {
     const enabled = Object.values(networks)
       .filter(network => favoriteNetworks.includes(network))
-      .sort((a, b) => {
-        if (isAvalancheCChainId(a.chainId)) return -1
-        if (isAvalancheCChainId(b.chainId)) return 1
-        if (isAvalancheChainId(a.chainId)) return -1
-        if (isAvalancheChainId(b.chainId)) return 1
-        if (isBitcoinChainId(a.chainId)) return -1
-        if (isBitcoinChainId(b.chainId)) return 1
-        if (isEthereumChainId(a.chainId)) return -1
-        if (isEthereumChainId(b.chainId)) return 1
-        return 0
-      })
+      .sort(sortPrimaryNetworks)
 
     const custom = Object.values(customNetworks).filter(
       network => !enabled.includes(network)
@@ -242,6 +228,14 @@ export const ManageNetworksScreen = (): JSX.Element => {
   )
 }
 
-function sortNetworks(a: Network, b: Network): number {
-  return a.chainName.localeCompare(b.chainName)
+function sortPrimaryNetworks(a: Network, b: Network): number {
+  if (isAvalancheCChainId(a.chainId)) return -1
+  if (isAvalancheCChainId(b.chainId)) return 1
+  if (isAvalancheChainId(a.chainId)) return -1
+  if (isAvalancheChainId(b.chainId)) return 1
+  if (isBitcoinChainId(a.chainId)) return -1
+  if (isBitcoinChainId(b.chainId)) return 1
+  if (isEthereumChainId(a.chainId)) return -1
+  if (isEthereumChainId(b.chainId)) return 1
+  return 0
 }
