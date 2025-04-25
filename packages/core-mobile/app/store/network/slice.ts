@@ -58,9 +58,19 @@ export const networkSlice = createSlice({
       const network = action.payload
       state.customNetworks[network.chainId] = network
     },
-    updateCustomNetwork: (state, action: PayloadAction<Network>) => {
-      const network = action.payload
-      state.customNetworks[network.chainId] = network
+    updateCustomNetwork: (
+      state,
+      action: PayloadAction<{ chainId: ChainID; network: Network }>
+    ) => {
+      const chainId = action.payload.chainId
+      const network = action.payload.network
+
+      if (chainId === network?.chainId) {
+        state.customNetworks[chainId] = network
+      } else {
+        delete state.customNetworks[chainId]
+        state.customNetworks[network.chainId] = network
+      }
     },
     removeCustomNetwork: (state, action: PayloadAction<ChainID>) => {
       const chainId = action.payload

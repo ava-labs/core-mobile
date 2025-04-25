@@ -200,7 +200,8 @@ export const AdvancedField = ({
           flexDirection: 'row',
           alignItems: 'center',
           gap: 14,
-          paddingHorizontal: 16
+          paddingHorizontal: 16,
+          flex: 1
         }}>
         <Icons.Custom.AddCircle width={20} height={20} />
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>

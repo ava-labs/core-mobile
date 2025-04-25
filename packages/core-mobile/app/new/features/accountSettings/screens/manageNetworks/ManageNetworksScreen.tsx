@@ -164,19 +164,14 @@ export const ManageNetworksScreen = (): JSX.Element => {
 
   const goToNetwork = useCallback(
     (item: Network) => {
-      const isCustomNetwork = Object.values(customNetworks).some(
-        network => network.chainId === item.chainId
-      )
-
       navigate({
         pathname: '/accountSettings/manageNetworks/addCustomNetwork',
         params: {
-          network: JSON.stringify(item),
-          isCustomNetwork: isCustomNetwork ? 'true' : 'false'
+          chainId: item.chainId.toString()
         }
       })
     },
-    [navigate, customNetworks]
+    [navigate]
   )
   const renderHeaderRight = useCallback(() => {
     return (
