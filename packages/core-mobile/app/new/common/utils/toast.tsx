@@ -67,7 +67,7 @@ export const GlobalToast = (): JSX.Element => {
               dismissToast(toast.id)
 
               if (!isActionable) return
-
+              
               if (toast.data.type === 'success') {
                 openUrl({
                   url: toast.data.explorerLink,
