@@ -34,8 +34,15 @@ export const All = (): JSX.Element => {
         <Snackbar message="Code copied" />
         <Text variant="heading6">Transaction Snackbar</Text>
         <TransactionSnackbar type="pending" />
-        <TransactionSnackbar type="success" />
-        <TransactionSnackbar type="error" />
+        <TransactionSnackbar type="success" isActionable={true} />
+        <TransactionSnackbar type="success" message="Stake reward claimed!" />
+        <TransactionSnackbar type="error" isActionable={true} />
+        <TransactionSnackbar
+          type="error"
+          message="Transaction failed with no action"
+          isActionable={false}
+        />
+
         <Text variant="heading6">Notification Alert</Text>
         {notificationAlertTypes.map((type, index) => (
           <NotificationAlert

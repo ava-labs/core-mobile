@@ -17,16 +17,20 @@ import { SCREEN_WIDTH } from '../../const'
 export type TransactionSnackbarType = 'pending' | 'success' | 'error'
 
 type TransactionSnackbarProps = {
+  message?: string
   type: TransactionSnackbarType
   testID?: string
   onPress?: () => void
+  isActionable?: boolean
   style?: ViewStyle
 }
 
 export const TransactionSnackbar = ({
+  message,
   type,
   testID,
   onPress,
+  isActionable = false,
   style
 }: TransactionSnackbarProps): JSX.Element | null => {
   const { theme } = useTheme()
@@ -67,6 +71,10 @@ export const TransactionSnackbar = ({
   }, [type, textColor, theme.colors.$textDanger])
 
   const getMessage = useCallback(() => {
+    if (message) {
+      return message
+    }
+
     switch (type) {
       case 'pending':
         return 'Transaction pending...'
@@ -75,7 +83,7 @@ export const TransactionSnackbar = ({
       case 'error':
         return 'Transaction failed'
     }
-  }, [type])
+  }, [type, message])
 
   const renderChevronIcon = useCallback((): JSX.Element => {
     return (
@@ -83,7 +91,8 @@ export const TransactionSnackbar = ({
         style={{
           alignItems: 'flex-end',
           marginLeft: 6,
-          marginRight: -11
+          marginRight: -11,
+          marginVertical: -2
         }}>
         <Icons.Navigation.ChevronRight
           width={20}
@@ -125,7 +134,9 @@ export const TransactionSnackbar = ({
             }}>
             {getMessage()}
           </Text>
-          {(type === 'success' || type === 'error') && renderChevronIcon()}
+          {(type === 'success' || type === 'error') &&
+            isActionable &&
+            renderChevronIcon()}
         </View>
       </View>
     </TouchableWithoutFeedback>
