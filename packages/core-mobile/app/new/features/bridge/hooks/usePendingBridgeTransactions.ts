@@ -1,30 +1,31 @@
 import { BridgeTransaction } from '@avalabs/core-bridge-sdk'
 import { BridgeTransfer } from '@avalabs/bridge-unified'
-import { Network } from '@avalabs/core-chains-sdk'
 import { useMemo } from 'react'
 import { useSelector } from 'react-redux'
-import { isAvalancheNetwork } from 'services/network/utils/isAvalancheNetwork'
-import { isEthereumNetwork } from 'services/network/utils/isEthereumNetwork'
+import { isAvalancheCChainId } from 'services/network/utils/isAvalancheNetwork'
+import { isEthereumChainId } from 'services/network/utils/isEthereumNetwork'
 import { selectBridgeTransactions } from 'store/bridge'
 import { selectPendingTransfers } from 'store/unifiedBridge/slice'
-import { isBitcoinNetwork } from 'utils/network/isBitcoinNetwork'
+import { isBitcoinChainId } from 'utils/network/isBitcoinNetwork'
 import { getChainIdFromCaip2 } from 'utils/caip2ChainIds'
+import { selectIsDeveloperMode } from 'store/settings/advanced'
 
 const usePendingLegacyBridgeTransactions = (
-  network?: Network
+  chainId?: number
 ): BridgeTransaction[] => {
   const pendingBridgeByTxId = useSelector(selectBridgeTransactions)
+  const isDeveloperMode = useSelector(selectIsDeveloperMode)
 
   return useMemo(() => {
-    if (!network) {
+    if (!chainId) {
       return Object.values(pendingBridgeByTxId)
     }
 
-    const networkNameToCheck = isBitcoinNetwork(network)
+    const networkNameToCheck = isBitcoinChainId(chainId)
       ? BridgeNetwork.BITCOIN
-      : isAvalancheNetwork(network)
+      : isAvalancheCChainId(chainId)
       ? BridgeNetwork.AVALANCHE
-      : isEthereumNetwork(network)
+      : isEthereumChainId(chainId)
       ? BridgeNetwork.ETHEREUM
       : null
 
@@ -33,14 +34,14 @@ const usePendingLegacyBridgeTransactions = (
         tx =>
           (tx.sourceChain.valueOf() === networkNameToCheck ||
             tx.targetChain.valueOf() === networkNameToCheck) &&
-          tx.environment === (network.isTestnet ? 'test' : 'main')
+          tx.environment === (isDeveloperMode ? 'test' : 'main')
       )
     ]
-  }, [network, pendingBridgeByTxId])
+  }, [chainId, pendingBridgeByTxId, isDeveloperMode])
 }
 
 const usePendingUnifiedBridgeTransactions = (
-  network?: Network
+  chainId?: number
 ): BridgeTransfer[] => {
   const pendingTransfer = useSelector(selectPendingTransfers)
 
@@ -49,18 +50,18 @@ const usePendingUnifiedBridgeTransactions = (
       ...Object.values(pendingTransfer).filter(
         tx =>
           // filter pending transactions that don't belong to the given network
-          network?.chainId === getChainIdFromCaip2(tx.sourceChain.chainId) ||
-          network?.chainId === getChainIdFromCaip2(tx.targetChain.chainId)
+          chainId === getChainIdFromCaip2(tx.sourceChain.chainId) ||
+          chainId === getChainIdFromCaip2(tx.targetChain.chainId)
       )
     ]
-  }, [pendingTransfer, network?.chainId])
+  }, [pendingTransfer, chainId])
 }
 
 const usePendingBridgeTransactions = (
-  network?: Network
+  chainId?: number
 ): Array<BridgeTransaction | BridgeTransfer> => {
-  const legacyBridgeTransfers = usePendingLegacyBridgeTransactions(network)
-  const unifiedBridgeTransfers = usePendingUnifiedBridgeTransactions(network)
+  const legacyBridgeTransfers = usePendingLegacyBridgeTransactions(chainId)
+  const unifiedBridgeTransfers = usePendingUnifiedBridgeTransactions(chainId)
 
   return useMemo(() => {
     return [

@@ -6,6 +6,7 @@ import IconTouchID from '../../assets/icons/touch_id.svg'
 import IconPin from '../../assets/icons/pin.svg'
 import IconInfo from '../../assets/icons/info.svg'
 import IconCheckCircleOutline from '../../assets/icons/check_circle_outline.svg'
+import IconCheckCircle from '../../assets/icons/check_circle.svg'
 import IconErrorOutline from '../../assets/icons/error_outline.svg'
 import IconError from '../../assets/icons/error.svg'
 import IconRemoveModerator from '../../assets/icons/remove_moderator.svg'
@@ -196,6 +197,7 @@ export const Icons = {
   Action: {
     Info: IconInfo,
     CheckCircleOutline: IconCheckCircleOutline,
+    CheckCircle: IconCheckCircle,
     Clear: IconClear,
     VisibilityOff: IconVisibilityOff,
     VisibilityOn: IconVisibilityOn,

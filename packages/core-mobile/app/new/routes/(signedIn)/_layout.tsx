@@ -6,8 +6,9 @@ import {
   stackNavigatorScreenOptions
 } from 'common/consts/screenOptions'
 import { ConfettiContext } from 'common/contexts/ConfettiContext'
-import { BridgeProvider } from 'contexts/BridgeContext'
+import { BridgeProvider } from 'features/bridge/contexts/BridgeContext'
 import { CollectiblesProvider } from 'features/portfolio/collectibles/CollectiblesContext'
+import { NavigationPresentationMode } from 'new/common/types'
 import React, { useRef } from 'react'
 
 const PolyfillCrypto = React.lazy(() => import('react-native-webview-crypto'))
@@ -27,7 +28,17 @@ export default function WalletLayout(): JSX.Element {
             />
             <Stack.Screen
               name="(modals)/approval"
-              options={modalScreensOptions}
+              options={({ route }) => {
+                if (
+                  // @ts-ignore
+                  route.params?.presentationMode ===
+                  NavigationPresentationMode.FORM_SHEET
+                ) {
+                  return formSheetScreensOptions
+                }
+
+                return modalScreensOptions
+              }}
             />
             <Stack.Screen
               name="(modals)/receive"
@@ -43,6 +54,10 @@ export default function WalletLayout(): JSX.Element {
             />
             <Stack.Screen
               name="(modals)/authorizeDapp"
+              options={modalScreensOptions}
+            />
+            <Stack.Screen
+              name="(modals)/collectibleSend"
               options={modalScreensOptions}
             />
             <Stack.Screen name="(modals)/send" options={modalScreensOptions} />
@@ -78,6 +93,10 @@ export default function WalletLayout(): JSX.Element {
             />
             <Stack.Screen
               name="(modals)/bridge"
+              options={modalScreensOptions}
+            />
+            <Stack.Screen
+              name="(modals)/bridgeStatus"
               options={modalScreensOptions}
             />
             <Stack.Screen

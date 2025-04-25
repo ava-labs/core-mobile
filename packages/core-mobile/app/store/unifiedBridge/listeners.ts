@@ -17,7 +17,6 @@ import {
   Hex
 } from '@avalabs/bridge-unified'
 import { selectIsFeatureBlocked, setFeatureFlags } from 'store/posthog'
-import { showTransactionSuccessToast } from 'utils/toast'
 import Logger from 'utils/Logger'
 import { createInAppRequest, Request } from 'store/rpc/utils/createInAppRequest'
 import { FeatureGates } from 'services/posthog/types'
@@ -25,6 +24,7 @@ import { getBitcoinProvider } from 'services/network/utils/providerUtils'
 import { getBitcoinCaip2ChainId, getEvmCaip2ChainId } from 'utils/caip2ChainIds'
 import { TransactionParams } from '@avalabs/evm-module'
 import { RpcMethod } from '@avalabs/vm-module-types'
+import { showNotificationAlert } from 'new/common/utils/toast'
 import {
   removePendingTransfer,
   selectPendingTransfers,
@@ -32,9 +32,11 @@ import {
 } from './slice'
 
 const showSuccessToast = (tx: BridgeTransfer): void => {
-  showTransactionSuccessToast({
-    message: 'Bridge Successful',
-    txHash: tx.sourceTxHash
+  // TODO: use new toast
+  showNotificationAlert({
+    type: 'success',
+    title: 'Bridge Successful',
+    message: tx.sourceTxHash
   })
 }
 
@@ -49,14 +51,7 @@ const trackPendingTransfers = (listenerApi: AppListenerEffectAPI): void => {
         showSuccessToast(transfer)
       } else {
         const updateListener = (updatedTransfer: BridgeTransfer): void => {
-          // update the transaction, even if it's complete
-          // (we want to keep the tx up to date, because some Component(i.e. BridgeTransactionStatus) has local state that depends on it)
           listenerApi.dispatch(setPendingTransfer(updatedTransfer))
-
-          if (transfer.completedAt) {
-            listenerApi.dispatch(removePendingTransfer(transfer.sourceTxHash))
-            showSuccessToast(transfer)
-          }
         }
         UnifiedBridgeService.trackTransfer(transfer, updateListener)
       }
@@ -143,6 +138,11 @@ export const checkTransferStatus = async (
   action: ReturnType<typeof setPendingTransfer>,
   listenerApi: AppListenerEffectAPI
 ): Promise<void> => {
+  // delay 2 second to remove the completed transfer,
+  // to ensure that the component(i.e. BridgeStatusScreen) displaying the transfer
+  // has enough time to handle the completed status
+  await listenerApi.delay(2000)
+
   const transfer = action.payload
 
   if (transfer.completedAt) {

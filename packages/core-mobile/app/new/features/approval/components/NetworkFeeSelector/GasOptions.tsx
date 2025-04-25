@@ -3,16 +3,11 @@ import {
   TouchableOpacity,
   useInversedTheme,
   useTheme,
+  alpha,
   View
 } from '@avalabs/k2-alpine'
 import React from 'react'
-
-export enum FeePreset {
-  SLOW = 'Slow',
-  NORMAL = 'Normal',
-  FAST = 'Fast',
-  CUSTOM = 'Custom'
-}
+import { FeePreset } from '../../types'
 
 const presets = Object.values(FeePreset)
 
@@ -41,9 +36,22 @@ export const GasOptions = ({
       }}>
       {presets.map((item, index) => {
         const isSelected = selectedPreset === item
-        const backgroundColor = (isSelected ? colors : inversedColors)
-          .$surfacePrimary
-        const textColor = (isSelected ? colors : inversedColors).$textPrimary
+        const backgroundColor = isDark
+          ? isSelected
+            ? colors.$textPrimary
+            : colors.$surfacePrimary
+          : isSelected
+          ? inversedColors.$surfaceTertiary
+          : alpha(colors.$textPrimary, 0.1)
+
+        // ? alpha(
+        //   (!isSelected ? colors : colors).$textPrimary,
+        //   0.1
+        // )
+
+        // 10% 850
+
+        const textColor = (!isSelected ? colors : inversedColors).$textPrimary
 
         return (
           <View
