@@ -3,7 +3,6 @@ import {
   Button,
   GroupList,
   GroupListItem,
-  SafeAreaView,
   ScrollView,
   StakeRewardChart,
   StakeRewardChartHandle,
@@ -45,6 +44,7 @@ import { StakeCustomEndDatePicker } from 'features/stake/components/StakeCustomE
 import { useAvaxTokenPriceInSelectedCurrency } from 'hooks/useAvaxTokenPriceInSelectedCurrency'
 import { convertToDurationInSeconds } from 'features/stake/utils'
 import { useSimpleFadingHeader } from 'common/hooks/useSimpleFadingHeader'
+import { BottomButtonsContainer } from 'common/components/BottomButtonsContainer'
 
 const StakeDurationScreen = (): JSX.Element => {
   const { navigate } = useRouter()
@@ -312,7 +312,7 @@ const StakeDurationScreen = (): JSX.Element => {
   ])
 
   return (
-    <SafeAreaView sx={{ flex: 1 }}>
+    <View sx={{ flex: 1 }}>
       <ScrollView
         style={{ flex: 1 }}
         contentContainerSx={{ padding: 16, paddingTop: 0 }}
@@ -346,19 +346,14 @@ const StakeDurationScreen = (): JSX.Element => {
           />
         </View>
       </ScrollView>
-      <View
-        sx={{
-          padding: 16,
-          gap: 16,
-          backgroundColor: '$surfacePrimary'
-        }}>
+      <BottomButtonsContainer>
         <Button type="primary" size="large" onPress={handlePressNext}>
           Next
         </Button>
         <Button type="tertiary" size="large" onPress={handleAdvancedSetup}>
           Advanced setup
         </Button>
-      </View>
+      </BottomButtonsContainer>
       <StakeCustomEndDatePicker
         customEndDate={customEndDate}
         isVisible={isCustomEndDatePickerVisible}
@@ -366,7 +361,7 @@ const StakeDurationScreen = (): JSX.Element => {
         onDateSelected={handleDateSelected}
         onCancel={handleCancelSelectingCustomEndDate}
       />
-    </SafeAreaView>
+    </View>
   )
 }
 

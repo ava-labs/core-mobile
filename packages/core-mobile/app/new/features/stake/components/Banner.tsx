@@ -16,6 +16,7 @@ import useCChainNetwork from 'hooks/earn/useCChainNetwork'
 import NetworkService from 'services/network/NetworkService'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
 import useStakingParams from 'hooks/earn/useStakingParams'
+import { Platform } from 'react-native'
 
 export const Banner = (): JSX.Element | undefined => {
   const { theme } = useTheme()
@@ -107,12 +108,14 @@ export const Banner = (): JSX.Element | undefined => {
       .toDisplay({ fixedDp: 2, asNumber: true })
   }, [totalStakedInAvax, availableInAvax])
 
+  const paddingBottom = Platform.OS === 'ios' ? 4 : 20
+
   if (isEmpty) {
     return (
       <View
         sx={{
           paddingHorizontal: 16,
-          paddingBottom: 4
+          paddingBottom
         }}>
         <Card
           sx={{
@@ -140,7 +143,7 @@ export const Banner = (): JSX.Element | undefined => {
     <View
       sx={{
         paddingHorizontal: 16,
-        paddingBottom: 4
+        paddingBottom
       }}>
       <Card
         sx={{

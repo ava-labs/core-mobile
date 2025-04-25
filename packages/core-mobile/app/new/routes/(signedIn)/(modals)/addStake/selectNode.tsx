@@ -3,7 +3,6 @@ import {
   ActivityIndicator,
   Chip,
   Image,
-  SafeAreaView,
   SearchBar,
   SimpleDropdown,
   View
@@ -18,9 +17,9 @@ import { useAdvancedSearchNodes } from 'hooks/earn/useAdvancedSearchNodes'
 import { secondsToMilliseconds } from 'date-fns'
 import { UTCDate } from '@date-fns/utc'
 import { NodeItem } from 'features/stake/components/NodeItem'
-import { FlatList } from 'react-native'
 import { useNodeSort } from 'features/stake/hooks/useNodeSort'
 import { ErrorState } from 'common/components/ErrorState'
+import { FlatList } from 'react-native-gesture-handler'
 
 const errorIcon = require('../../../../assets/icons/melting_face.png')
 
@@ -109,7 +108,7 @@ const StakeSelectNode = (): JSX.Element => {
   }
 
   return (
-    <SafeAreaView sx={{ flex: 1 }}>
+    <View sx={{ flex: 1 }}>
       <View sx={{ paddingHorizontal: 16, paddingBottom: 16, gap: 16 }}>
         <ScreenHeader title="Which node would you like to use?" />
         <SearchBar searchText={searchText} onTextChanged={setSearchText} />
@@ -125,7 +124,7 @@ const StakeSelectNode = (): JSX.Element => {
           gap: 10
         }}
       />
-    </SafeAreaView>
+    </View>
   )
 }
 

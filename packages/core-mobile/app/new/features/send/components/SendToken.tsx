@@ -10,7 +10,6 @@ import {
   Card,
   Icons,
   Pressable,
-  SafeAreaView,
   SendTokenUnitInputWidget,
   Text,
   useTheme,
@@ -27,6 +26,7 @@ import { AddrBookItemType } from 'store/addressBook'
 import { selectSelectedCurrency } from 'store/settings/currency'
 import { useSimpleFadingHeader } from 'new/common/hooks/useSimpleFadingHeader'
 import Animated from 'react-native-reanimated'
+import { BottomButtonsContainer } from 'common/components/BottomButtonsContainer'
 import { useSendContext } from '../context/sendContext'
 import { useSendSelectedToken } from '../store'
 
@@ -148,13 +148,14 @@ export const SendToken = ({ onSend }: { onSend: () => void }): JSX.Element => {
   }, [recipient?.avatar])
 
   return (
-    <SafeAreaView
+    <View
       style={{
         flex: 1,
-        justifyContent: 'space-between',
-        marginHorizontal: 16
+        justifyContent: 'space-between'
       }}>
-      <KeyboardAwareScrollView onScroll={onScroll}>
+      <KeyboardAwareScrollView
+        onScroll={onScroll}
+        contentContainerStyle={{ paddingHorizontal: 16 }}>
         <Animated.View
           style={animatedHeaderStyle}
           onLayout={handleHeaderLayout}>
@@ -274,16 +275,16 @@ export const SendToken = ({ onSend }: { onSend: () => void }): JSX.Element => {
           />
         )}
       </KeyboardAwareScrollView>
-
-      {/* Send */}
-      <Button
-        disabled={!canSubmit}
-        style={{ marginBottom: 16 }}
-        type="primary"
-        size="large"
-        onPress={onSend}>
-        {isSending ? <ActivityIndicator size="small" /> : 'Next'}
-      </Button>
-    </SafeAreaView>
+      <BottomButtonsContainer>
+        <Button
+          disabled={!canSubmit}
+          style={{ marginBottom: 16 }}
+          type="primary"
+          size="large"
+          onPress={onSend}>
+          {isSending ? <ActivityIndicator size="small" /> : 'Next'}
+        </Button>
+      </BottomButtonsContainer>
+    </View>
   )
 }

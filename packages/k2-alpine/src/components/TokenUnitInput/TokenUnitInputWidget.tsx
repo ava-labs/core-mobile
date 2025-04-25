@@ -58,6 +58,14 @@ export const TokenUnitInputWidget = ({
     const value = balance.mul(percent)
     textInputRef.current?.setValue(value.toDisplay())
 
+    onChange?.(
+      new TokenUnit(
+        Number(value.toDisplay()) * 10 ** token.maxDecimals,
+        token.maxDecimals,
+        token.symbol
+      )
+    )
+
     setPercentageButtons(prevButtons =>
       prevButtons.map((b, i) =>
         i === index ? { ...b, isSelected: true } : { ...b, isSelected: false }

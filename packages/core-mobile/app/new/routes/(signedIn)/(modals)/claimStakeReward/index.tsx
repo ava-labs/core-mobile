@@ -4,7 +4,6 @@ import {
   Button,
   GroupList,
   GroupListItem,
-  SafeAreaView,
   ScrollView,
   showAlert,
   Tooltip,
@@ -27,6 +26,7 @@ import { transactionSnackbar } from 'common/utils/toast'
 import { TokenUnitInput, TokenUnitInputHandle } from '@avalabs/k2-alpine'
 import { useConfetti } from 'common/contexts/ConfettiContext'
 import { StakeTokenUnitValue } from 'features/stake/components/StakeTokenUnitValue'
+import { BottomButtonsContainer } from 'common/components/BottomButtonsContainer'
 
 const ClaimStakeRewardScreen = (): JSX.Element => {
   const { navigate, back } = useRouter()
@@ -172,7 +172,7 @@ const ClaimStakeRewardScreen = (): JSX.Element => {
   }, [data, back])
 
   return (
-    <SafeAreaView sx={{ flex: 1 }}>
+    <View sx={{ flex: 1 }}>
       <ScrollView
         style={{ flex: 1 }}
         contentContainerSx={{ padding: 16, paddingTop: 0 }}>
@@ -205,12 +205,7 @@ const ClaimStakeRewardScreen = (): JSX.Element => {
           />
         </View>
       </ScrollView>
-      <View
-        sx={{
-          padding: 16,
-          gap: 16,
-          backgroundColor: '$surfacePrimary'
-        }}>
+      <BottomButtonsContainer>
         <Button
           type="primary"
           size="large"
@@ -225,8 +220,8 @@ const ClaimStakeRewardScreen = (): JSX.Element => {
           disabled={claimRewardsMutation.isPending}>
           Cancel
         </Button>
-      </View>
-    </SafeAreaView>
+      </BottomButtonsContainer>
+    </View>
   )
 }
 

@@ -7,7 +7,6 @@ import {
   GroupList,
   GroupListItem,
   Icons,
-  SafeAreaView,
   Separator,
   Text,
   useTheme,
@@ -43,6 +42,7 @@ import { PARASWAP_PARTNER_FEE_BPS } from 'contexts/SwapContext/consts'
 import { useAvalancheErc20ContractTokens } from 'common/hooks/useErc20ContractTokens'
 import { usePreventScreenRemoval } from 'common/hooks/usePreventScreenRemoval'
 import { useSimpleFadingHeader } from 'common/hooks/useSimpleFadingHeader'
+import { BottomButtonsContainer } from 'common/components/BottomButtonsContainer'
 import { useSwapContext } from '../contexts/SwapContext'
 import { SlippageInput } from '../components.tsx/SlippageInput'
 
@@ -440,7 +440,7 @@ export const SwapScreen = (): JSX.Element => {
 
   return (
     <KeyboardAvoidingView style={{ flex: 1 }}>
-      <SafeAreaView sx={{ flex: 1 }}>
+      <View sx={{ flex: 1 }}>
         <KeyboardAwareScrollView
           style={{ flex: 1 }}
           contentContainerStyle={{ padding: 16, paddingTop: 0 }}
@@ -520,11 +520,7 @@ export const SwapScreen = (): JSX.Element => {
             </Text>
           </View>
         </KeyboardAwareScrollView>
-        <View
-          sx={{
-            padding: 16,
-            gap: 20
-          }}>
+        <BottomButtonsContainer>
           <Button
             type="primary"
             size="large"
@@ -532,8 +528,8 @@ export const SwapScreen = (): JSX.Element => {
             disabled={!canSwap || swapInProcess}>
             {swapInProcess ? <ActivityIndicator /> : 'Next'}
           </Button>
-        </View>
-      </SafeAreaView>
+        </BottomButtonsContainer>
+      </View>
     </KeyboardAvoidingView>
   )
 }
