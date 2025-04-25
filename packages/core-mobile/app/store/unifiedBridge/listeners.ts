@@ -144,12 +144,7 @@ export const checkTransferStatus = async (
 
   if (transfer.completedAt) {
     showSuccessToast(transfer)
-    // remove the completed transfer after 1 second,
-    // to ensure that the component displaying the transfer
-    // has enough time to handle the completed status
-    setTimeout(() => {
-      listenerApi.dispatch(removePendingTransfer(transfer.sourceTxHash))
-    }, 1000)
+    listenerApi.dispatch(removePendingTransfer(transfer.sourceTxHash))
   }
 
   if (transfer.errorCode) {
