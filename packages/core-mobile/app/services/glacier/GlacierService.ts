@@ -29,7 +29,6 @@ class GlacierService {
   private supportedChainIds: string[] = []
 
   async isNetworkSupported(chainId: number): Promise<boolean> {
-    this.glacierSdk.request
     if (!this.isGlacierHealthy) return this.isGlacierHealthy
     const chainIds = await this.getSupportedChainIds()
     return chainIds.some(id => id === chainId.toString())
