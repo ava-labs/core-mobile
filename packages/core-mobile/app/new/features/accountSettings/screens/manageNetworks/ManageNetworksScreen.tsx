@@ -21,11 +21,13 @@ import {
   isAvalancheCChainId,
   isAvalancheChainId
 } from 'services/network/utils/isAvalancheNetwork'
+import { isEthereumChainId } from 'services/network/utils/isEthereumNetwork'
 import {
   alwaysFavoriteNetworks,
   FAVORITE_NETWORKS,
   toggleFavorite
 } from 'store/network'
+import { isBitcoinChainId } from 'utils/network/isBitcoinNetwork'
 
 export const ManageNetworksScreen = (): JSX.Element => {
   const { theme } = useTheme()
@@ -52,29 +54,21 @@ export const ManageNetworksScreen = (): JSX.Element => {
         if (isAvalancheCChainId(b.chainId)) return 1
         if (isAvalancheChainId(a.chainId)) return -1
         if (isAvalancheChainId(b.chainId)) return 1
+        if (isBitcoinChainId(a.chainId)) return -1
+        if (isBitcoinChainId(b.chainId)) return 1
+        if (isEthereumChainId(a.chainId)) return -1
+        if (isEthereumChainId(b.chainId)) return 1
         return 0
       })
 
-    const disabled = Object.values(networks)
-      .filter(network => !enabled.includes(network))
-      .sort((a, b) => {
-        if (
-          customNetworks.includes(a) ||
-          FAVORITE_NETWORKS.includes(a.chainId)
-        ) {
-          return -1
-        }
+    const custom = Object.values(customNetworks).filter(
+      network => !enabled.includes(network)
+    )
+    const disabled = Object.values(networks).filter(
+      network => !enabled.includes(network) || custom.includes(network)
+    )
 
-        if (
-          customNetworks.includes(b) ||
-          FAVORITE_NETWORKS.includes(b.chainId)
-        ) {
-          return 1
-        }
-        return sortNetworks(a, b)
-      })
-
-    return [...enabled, ...disabled]
+    return [...enabled, ...custom, ...disabled]
   }, [customNetworks, favoriteNetworks, networks])
 
   const filteredNetworks = useMemo(() => {
