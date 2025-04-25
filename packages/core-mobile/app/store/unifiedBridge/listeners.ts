@@ -143,8 +143,8 @@ export const checkTransferStatus = async (
   const transfer = action.payload
 
   if (transfer.completedAt) {
-    showSuccessToast(transfer)
     listenerApi.dispatch(removePendingTransfer(transfer.sourceTxHash))
+    showSuccessToast(transfer)
   }
 
   if (transfer.errorCode) {
