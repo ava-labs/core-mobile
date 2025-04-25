@@ -31,6 +31,10 @@ export const glacierApi = GLACIER_URL
   ? createApiClient(GLACIER_URL, {
       axiosConfig: {
         headers: CORE_HEADERS,
+        params: {
+          // bypass ratelimit in development/e2e
+          rltoken: Config.GLACIER_API_KEY
+        },
         // Use query-string's stringify with arrayFormat 'comma'
         // so that array parameters are serialized as comma-separated values,
         // e.g. txTypes=AddPermissionlessDelegatorTx,AddDelegatorTx,

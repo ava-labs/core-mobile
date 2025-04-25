@@ -8,6 +8,7 @@ import {
 import Config from 'react-native-config'
 import Logger from 'utils/Logger'
 import { CORE_HEADERS } from 'utils/network/constants'
+import { GlacierFetchHttpRequest } from './GlacierFetchHttpRequest'
 
 if (!Config.GLACIER_URL)
   Logger.warn(
@@ -17,10 +18,13 @@ if (!Config.GLACIER_URL)
 export const GLACIER_URL = Config.GLACIER_URL
 
 class GlacierService {
-  private glacierSdk = new Glacier({
-    BASE: process.env.GLACIER_URL,
-    HEADERS: CORE_HEADERS
-  })
+  private glacierSdk = new Glacier(
+    {
+      BASE: process.env.GLACIER_URL,
+      HEADERS: CORE_HEADERS
+    },
+    GlacierFetchHttpRequest
+  )
   private isGlacierHealthy = true
   private supportedChainIds: string[] = []
 
