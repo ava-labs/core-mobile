@@ -13,7 +13,7 @@ import { Platform } from 'react-native'
 import { useCoreBrowser } from '../hooks/useCoreBrowser'
 
 const DURATION_SHORT = 3000
-const DURATION_LONG = 5000
+const DURATION_LONG = 6000
 
 export enum ToastType {
   SNACKBAR = 'snackbar',
@@ -55,31 +55,45 @@ export const GlobalToast = (): JSX.Element => {
                 onPress={() => dismissToast(toast.id)}
               />
             )
-          case ToastType.TRANSACTION_SNACKBAR:
+          case ToastType.TRANSACTION_SNACKBAR: {
+            const isActionable =
+              toast.data.type === 'success' && toast.data.explorerLink
+                ? true
+                : toast.data.type === 'error' && toast.data.error
+                ? true
+                : false
+
+            const onPress = (): void => {
+              dismissToast(toast.id)
+
+              if (!isActionable) return
+              if (toast.data.type === 'success') {
+                openUrl({
+                  url: toast.data.explorerLink,
+                  title: 'Transaction Details'
+                })
+              } else if (toast.data.type === 'error') {
+                showAlert({
+                  title: 'Error details',
+                  description: toast.data.error,
+                  buttons: [
+                    {
+                      text: 'Got it'
+                    }
+                  ]
+                })
+              }
+            }
+
             return (
               <TransactionSnackbar
+                message={toast.data.message}
                 type={toast.data.type}
-                onPress={() => {
-                  dismissToast(toast.id)
-                  if (toast.data.type === 'success') {
-                    openUrl({
-                      url: `https://explorer.avax.network/tx/${toast.data.txHash}`,
-                      title: 'Transaction'
-                    })
-                  } else if (toast.data.type === 'error') {
-                    showAlert({
-                      title: 'Some error message',
-                      description: 'This action can’t be undone',
-                      buttons: [
-                        {
-                          text: 'Got it'
-                        }
-                      ]
-                    })
-                  }
-                }}
+                isActionable={isActionable}
+                onPress={onPress}
               />
             )
+          }
           default:
             throw new Error('Invalid toast type')
         }
@@ -104,17 +118,17 @@ type TransactionSnackbarToast =
   | {
       toastType: ToastType.TRANSACTION_SNACKBAR
       toastId?: string
-      content: { type: 'pending' }
+      content: { type: 'pending'; message?: string }
     }
   | {
       toastType: ToastType.TRANSACTION_SNACKBAR
       toastId?: string
-      content: { type: 'success'; txHash: string }
+      content: { type: 'success'; message?: string; explorerLink?: string }
     }
   | {
       toastType: ToastType.TRANSACTION_SNACKBAR
       toastId?: string
-      content: { type: 'error'; error: string }
+      content: { type: 'error'; message?: string; error?: string }
     }
 
 type ToastProps =
@@ -171,28 +185,41 @@ export function showNotificationAlert({
   })
 }
 
-export function showPendingTransactionSnackbar(): void {
-  showToast(
-    {
-      toastType: ToastType.TRANSACTION_SNACKBAR,
-      content: { type: 'pending' }
-    },
-    {
-      duration: DURATION_SHORT
-    }
-  )
-}
-
-export function showSuccessTransactionSnackbar(txHash: string): void {
-  showToast({
-    toastType: ToastType.TRANSACTION_SNACKBAR,
-    content: { type: 'success', txHash }
-  })
-}
-
-export function showErrorTransactionSnackbar(error: string): void {
-  showToast({
-    toastType: ToastType.TRANSACTION_SNACKBAR,
-    content: { type: 'error', error }
-  })
+export const transactionSnackbar = {
+  pending: () =>
+    showToast(
+      {
+        toastType: ToastType.TRANSACTION_SNACKBAR,
+        content: { type: 'pending' }
+      },
+      {
+        duration: DURATION_SHORT
+      }
+    ),
+  success: ({
+    message,
+    explorerLink
+  }: {
+    message?: string
+    explorerLink?: string
+  }) =>
+    showToast(
+      {
+        toastType: ToastType.TRANSACTION_SNACKBAR,
+        content: { type: 'success', explorerLink, message }
+      },
+      {
+        duration: DURATION_LONG
+      }
+    ),
+  error: (error?: string) =>
+    showToast(
+      {
+        toastType: ToastType.TRANSACTION_SNACKBAR,
+        content: { type: 'error', error }
+      },
+      {
+        duration: DURATION_LONG
+      }
+    )
 }
