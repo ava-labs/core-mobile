@@ -204,6 +204,7 @@ export const GroupList = ({
                   </View>
                 </View>
               </View>
+              {item.bottomAccessory}
             </TouchableOpacity>
 
             {accordion !== undefined && expandedStates[index] && (
@@ -244,6 +245,7 @@ export type GroupListItem = {
   leftIcon?: JSX.Element
   rightIcon?: JSX.Element
   accessory?: JSX.Element
+  bottomAccessory?: JSX.Element
   accordion?: JSX.Element
   expanded?: boolean
 }

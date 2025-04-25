@@ -67,6 +67,7 @@ export const TokenUnitInput = forwardRef<
     (rawValue: string): void => {
       if (!rawValue) {
         setValue('')
+        onChange?.(new TokenUnit(0, token.maxDecimals, token.symbol))
         return
       }
       const changedValue = rawValue.startsWith('.') ? '0.' : rawValue
@@ -95,12 +96,13 @@ export const TokenUnitInput = forwardRef<
             Math.min(maxDecimalDigits, token.maxDecimals)
         )
 
-        setValue(normalizeValue(changedValue))
+        const normalizedValue = normalizeValue(changedValue)
+        setValue(normalizedValue)
         onChange?.(
           new TokenUnit(
-            !normalizeValue(changedValue)
+            !normalizedValue
               ? 0
-              : Number(normalizeValue(changedValue)) * 10 ** token.maxDecimals,
+              : Number(normalizedValue) * 10 ** token.maxDecimals,
             token.maxDecimals,
             token.symbol
           )

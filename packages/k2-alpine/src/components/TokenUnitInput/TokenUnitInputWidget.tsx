@@ -1,10 +1,7 @@
 import React, { useCallback, useRef, useState } from 'react'
 import { SxProp } from 'dripsy'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
-import { normalizeErrorMessage } from '../../utils/tokenUnitInput'
-import { useTheme } from '../../hooks'
-import { Text, View } from '../Primitives'
-import { alpha } from '../../utils'
+import { View } from '../Primitives'
 import { Button } from '../Button/Button'
 import { TokenUnitInput, TokenUnitInputHandle } from './TokenUnitInput'
 
@@ -15,7 +12,6 @@ export const TokenUnitInputWidget = ({
   amount,
   onChange,
   formatInCurrency,
-  validateAmount,
   accessory,
   sx,
   disabled
@@ -34,9 +30,6 @@ export const TokenUnitInputWidget = ({
   sx?: SxProp
   disabled?: boolean
 }): JSX.Element => {
-  const {
-    theme: { colors }
-  } = useTheme()
   const [percentageButtons, setPercentageButtons] = useState<
     { text: string; percent: number; isSelected: boolean }[]
   >([
@@ -56,7 +49,6 @@ export const TokenUnitInputWidget = ({
       isSelected: false
     }
   ])
-  const [errorMessage, setErrorMessage] = useState<string>()
   const textInputRef = useRef<TokenUnitInputHandle>(null)
 
   const handlePressPercentageButton = (
@@ -83,24 +75,12 @@ export const TokenUnitInputWidget = ({
       )
 
       onChange?.(value)
-
-      if (validateAmount) {
-        try {
-          await validateAmount(value)
-
-          setErrorMessage(undefined)
-        } catch (e) {
-          if (e instanceof Error) {
-            setErrorMessage(e.message)
-          }
-        }
-      }
     },
-    [onChange, validateAmount, balance]
+    [onChange, balance]
   )
 
   return (
-    <View sx={{ gap: 8, ...sx }}>
+    <View sx={sx}>
       <View
         sx={{
           backgroundColor: '$surfaceSecondary',
@@ -146,20 +126,6 @@ export const TokenUnitInputWidget = ({
           </View>
         )}
       </View>
-      <Text
-        variant="caption"
-        sx={{
-          paddingHorizontal: 36,
-          color: errorMessage
-            ? '$textDanger'
-            : alpha(colors.$textPrimary, 0.85),
-          alignSelf: 'center',
-          textAlign: 'center'
-        }}>
-        {errorMessage
-          ? normalizeErrorMessage(errorMessage)
-          : `Balance: ${balance.toDisplay()} ${token.symbol}`}
-      </Text>
     </View>
   )
 }

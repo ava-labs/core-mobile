@@ -13,10 +13,7 @@ import {
   View
 } from '@avalabs/k2-alpine'
 import ScreenHeader from 'common/components/ScreenHeader'
-import {
-  bigintToBig
-  //  resolve
-} from '@avalabs/core-utils-sdk'
+import { bigintToBig, resolve } from '@avalabs/core-utils-sdk'
 import { KeyboardAvoidingView } from 'common/components/KeyboardAvoidingView'
 import { useGlobalSearchParams, useRouter } from 'expo-router'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
@@ -48,10 +45,6 @@ import { selectActiveAccount } from 'store/account'
 import GaslessService from 'services/gasless/GaslessService'
 import { AssetBalance } from 'screens/bridge/utils/types'
 import BridgeTypeFootnote from 'features/bridge/components/BridgeTypeFootnote'
-// import AnalyticsService from 'services/analytics/AnalyticsService'
-// import { isUserRejectedError } from 'store/rpc/providers/walletConnect/utils'
-// import { audioFeedback, Audios } from 'utils/AudioFeedback'
-// import { getJsonRpcErrorMessage } from 'utils/getJsonRpcErrorMessage/getJsonRpcErrorMessage'
 import {
   useBridgeSelectedAsset,
   useBridgeSelectedSourceNetwork,
@@ -62,6 +55,11 @@ import { HallidayBanner } from 'features/bridge/components/HallidayBanner'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { HALLIDAY_BRIDGE_URL } from 'features/bridge/const'
 import { useCoreBrowser } from 'common/hooks/useCoreBrowser'
+import { isUserRejectedError } from 'store/rpc/providers/walletConnect/utils'
+import { getJsonRpcErrorMessage } from 'utils/getJsonRpcErrorMessage/getJsonRpcErrorMessage'
+import { audioFeedback, Audios } from 'utils/AudioFeedback'
+import { usePreventScreenRemoval } from 'common/hooks/usePreventScreenRemoval'
+import { useSimpleFadingHeader } from 'common/hooks/useSimpleFadingHeader'
 import useBridge from '../hooks/useBridge'
 
 export const BridgeScreen = (): JSX.Element => {
@@ -85,8 +83,8 @@ export const BridgeScreen = (): JSX.Element => {
     price,
     maximum,
     minimum,
-    // transfer,
-    // bridgeFee,
+    transfer,
+    bridgeFee,
     bridgeType,
     amount,
     targetNetworks,
@@ -103,8 +101,13 @@ export const BridgeScreen = (): JSX.Element => {
     selectedAssetInTargetNetwork
   } = useBridge()
   const [bridgeError, setBridgeError] = useState('')
+  const { onScroll, handleHeaderLayout, animatedHeaderStyle } =
+    useSimpleFadingHeader({
+      title: 'Bridge',
+      shouldHeaderHaveGrabber: true
+    })
 
-  const [isPending /*, setIsPending*/] = useState<boolean>(false)
+  const [isPending, setIsPending] = useState<boolean>(false)
   const [isInputFocused, setIsInputFocused] = useState<boolean>(false)
 
   const isAmountTooLow = amount !== 0n && minimum && amount < minimum
@@ -197,77 +200,95 @@ export const BridgeScreen = (): JSX.Element => {
     [setInputAmount, bridgeError]
   )
 
-  const handleTransfer = async (): Promise<void> => {
-    showAlert({
-      title: 'Coming soon',
-      description: 'This feature is not yet available.',
-      buttons: [{ text: 'OK', style: 'cancel' }]
+  const [bridgeResult, setBridgeResult] = useState<{
+    txHash: string
+    chainId: number
+  }>()
+  useEffect(() => {
+    if (bridgeResult) {
+      audioFeedback(Audios.Send)
+      back()
+      navigate({
+        pathname: '/bridgeStatus',
+        params: bridgeResult
+      })
+    }
+  }, [bridgeResult, back, navigate])
+
+  const handleTransfer = useCallback(async () => {
+    if (
+      amount === 0n ||
+      !sourceNetwork ||
+      !targetNetwork ||
+      !selectedBridgeAsset
+    ) {
+      return
+    }
+    AnalyticsService.capture('BridgeTransferStarted', {
+      sourceBlockchain: sourceNetwork.chainName,
+      targetBlockchain: targetNetwork.chainName
     })
-    // if (
-    //   amount === 0n ||
-    //   !sourceNetwork ||
-    //   !targetNetwork ||
-    //   !selectedBridgeAsset
-    // ) {
-    //   return
-    // }
-    // AnalyticsService.capture('BridgeTransferStarted', {
-    //   sourceBlockchain: sourceNetwork.chainName,
-    //   targetBlockchain: targetNetwork.chainName
-    // })
-    // try {
-    //   setIsPending(true)
-    //   const [hash, transferError] = await resolve(transfer())
-    //   setIsPending(false)
-    //   if (transferError || !hash) {
-    //     // do not show the error when the user denied the transfer
-    //     if (isUserRejectedError(transferError)) {
-    //       Logger.error('failed to bridge', transferError)
-    //       AnalyticsService.capture('BridgeTransferRequestUserRejectedError', {
-    //         sourceBlockchain: sourceNetwork.chainName,
-    //         targetBlockchain: targetNetwork.chainName,
-    //         fee: bigintToBig(bridgeFee, selectedBridgeAsset.decimals).toNumber()
-    //       })
-    //       return
-    //     }
-    //     transferError instanceof Error && setBridgeError(transferError.message)
-    //     showAlert({
-    //       title: 'Error',
-    //       description: getJsonRpcErrorMessage(transferError),
-    //       buttons: [{ text: 'OK', style: 'cancel' }]
-    //     })
-    //     Logger.error('[Bridge error]', transferError)
-    //     AnalyticsService.capture('BridgeTransferRequestError', {
-    //       sourceBlockchain: sourceNetwork.chainName,
-    //       targetBlockchain: targetNetwork.chainName
-    //     })
-    //     return
-    //   }
-    //   audioFeedback(Audios.Send)
-    //   // Navigate to transaction status page
-    //   navigate(AppNavigation.Bridge.BridgeTransactionStatus, {
-    //     txHash: hash ?? ''
-    //   })
-    //   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    // } catch (e: any) {
-    //   const errorMessage =
-    //     'reason' in e
-    //       ? e?.reason
-    //       : e?.message ??
-    //         'An unknown error has occurred. Bridging was halted. Please try again later'
-    //   showAlert({
-    //     title: 'Error Bridging',
-    //     description: errorMessage,
-    //     buttons: [{ text: 'OK', style: 'cancel' }]
-    //   })
-    //   AnalyticsService.capture('BridgeTokenSelectError', {
-    //     errorMessage
-    //   })
-    //   return
-    // } finally {
-    //   setIsPending(false)
-    // }
-  }
+    try {
+      setIsPending(true)
+      const [txHash, transferError] = await resolve(transfer())
+      setIsPending(false)
+      if (transferError || !txHash) {
+        // do not show the error when the user denied the transfer
+        if (isUserRejectedError(transferError)) {
+          Logger.error('failed to bridge', transferError)
+          AnalyticsService.capture('BridgeTransferRequestUserRejectedError', {
+            sourceBlockchain: sourceNetwork.chainName,
+            targetBlockchain: targetNetwork.chainName,
+            fee: bigintToBig(bridgeFee, selectedBridgeAsset.decimals).toNumber()
+          })
+          return
+        }
+        transferError instanceof Error && setBridgeError(transferError.message)
+        showAlert({
+          title: 'Error',
+          description: getJsonRpcErrorMessage(transferError),
+          buttons: [{ text: 'OK', style: 'cancel' }]
+        })
+        Logger.error('[Bridge error]', transferError)
+        AnalyticsService.capture('BridgeTransferRequestError', {
+          sourceBlockchain: sourceNetwork.chainName,
+          targetBlockchain: targetNetwork.chainName
+        })
+        return
+      }
+
+      setBridgeResult({
+        txHash,
+        chainId: sourceNetwork.chainId
+      })
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (e: any) {
+      const errorMessage =
+        'reason' in e
+          ? e?.reason
+          : e?.message ??
+            'An unknown error has occurred. Bridging was halted. Please try again later'
+      showAlert({
+        title: 'Error Bridging',
+        description: errorMessage,
+        buttons: [{ text: 'OK', style: 'cancel' }]
+      })
+      AnalyticsService.capture('BridgeTokenSelectError', {
+        errorMessage
+      })
+      return
+    } finally {
+      setIsPending(false)
+    }
+  }, [
+    amount,
+    bridgeFee,
+    selectedBridgeAsset,
+    sourceNetwork,
+    targetNetwork,
+    transfer
+  ])
 
   const handleSelectToken = useCallback(() => {
     if (sourceNetwork === undefined) {
@@ -602,10 +623,15 @@ export const BridgeScreen = (): JSX.Element => {
   ])
 
   useEffect(() => {
-    if (!initialSourceNetworkChainId && cChainNetwork) {
+    if (!initialSourceNetworkChainId && cChainNetwork && !sourceNetwork) {
       setSourceNetwork(cChainNetwork)
     }
-  }, [setSourceNetwork, cChainNetwork, initialSourceNetworkChainId])
+  }, [
+    setSourceNetwork,
+    cChainNetwork,
+    initialSourceNetworkChainId,
+    sourceNetwork
+  ])
 
   useEffect(() => {
     const bridgeTokenList = (assetsWithBalances ?? []).filter(asset =>
@@ -630,6 +656,8 @@ export const BridgeScreen = (): JSX.Element => {
     sourceNetwork
   ])
 
+  usePreventScreenRemoval(isPending)
+
   return (
     <KeyboardAvoidingView>
       <SafeAreaView sx={{ flex: 1 }}>
@@ -637,8 +665,13 @@ export const BridgeScreen = (): JSX.Element => {
           style={{ flex: 1 }}
           contentContainerSx={{ padding: 16, paddingTop: 0 }}
           keyboardDismissMode="on-drag"
-          keyboardShouldPersistTaps="always">
-          <ScreenHeader title="Bridge" />
+          keyboardShouldPersistTaps="always"
+          onScroll={onScroll}>
+          <Animated.View
+            style={animatedHeaderStyle}
+            onLayout={handleHeaderLayout}>
+            <ScreenHeader title="Bridge" />
+          </Animated.View>
           {shouldShowHallidayBanner && (
             <View sx={{ marginTop: 16, marginBottom: 8 }}>
               <HallidayBanner onPress={handlePressHallidayBanner} />
@@ -670,6 +703,7 @@ export const BridgeScreen = (): JSX.Element => {
                     marginVertical: 8,
                     alignSelf: 'center'
                   }}
+                  disabled={isPending}
                   onPress={handleToggleNetwork}>
                   <Icons.Custom.SwapVertical />
                 </CircularButton>
@@ -688,7 +722,7 @@ export const BridgeScreen = (): JSX.Element => {
             size="large"
             onPress={handleTransfer}
             disabled={transferDisabled}>
-            {isPending ? <ActivityIndicator /> : 'Bridge'}
+            {isPending ? <ActivityIndicator /> : 'Next'}
           </Button>
           {bridgeType && <BridgeTypeFootnote bridgeType={bridgeType} />}
         </View>
