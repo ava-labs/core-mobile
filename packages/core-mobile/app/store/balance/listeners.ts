@@ -1,4 +1,4 @@
-import { Network } from '@avalabs/core-chains-sdk'
+import { ChainId, Network } from '@avalabs/core-chains-sdk'
 import { Action, isAnyOf, TaskAbortError } from '@reduxjs/toolkit'
 import BalanceService, {
   BalancesForAccount
@@ -17,6 +17,7 @@ import { AppStartListening } from 'store/middleware/listener'
 import {
   addCustomNetwork,
   onNetworksFetched,
+  selectAllNetworks,
   selectEnabledNetworks,
   toggleEnabledChainId
 } from 'store/network/slice'
@@ -29,12 +30,16 @@ import { getLocalTokenId } from 'store/balance/utils'
 import { selectHasBeenViewedOnce, setViewOnce } from 'store/viewOnce/slice'
 import { ViewOnceKey } from 'store/viewOnce/types'
 import NetworkService from 'services/network/NetworkService'
-import { selectIsDeveloperMode } from 'store/settings/advanced/slice'
+import {
+  selectIsDeveloperMode,
+  toggleDeveloperMode
+} from 'store/settings/advanced/slice'
 import { isPChain, isXChain } from 'utils/network/isAvalancheNetwork'
 import ActivityService from 'services/activity/ActivityService'
 import { uuid } from 'utils/uuid'
 import SentryWrapper from 'services/sentry/SentryWrapper'
 import { getLastTransactedNetworks } from 'new/common/utils/getLastTransactedNetworks'
+import { uniqBy } from 'lodash'
 import { Balances, LocalTokenWithBalance, QueryStatus } from './types'
 import {
   fetchBalanceForAccount,
@@ -45,33 +50,61 @@ import {
   setStatus
 } from './slice'
 
+const PRIMARY_TESTNET_CHAIN_IDS = [
+  ChainId.AVALANCHE_TESTNET_ID,
+  ChainId.ETHEREUM_TEST_SEPOLIA,
+  ChainId.BITCOIN_TESTNET,
+  ChainId.AVALANCHE_TEST_P
+]
+
+const PRIMARY_MAINNET_CHAIN_IDS = [
+  ChainId.AVALANCHE_MAINNET_ID,
+  ChainId.ETHEREUM_HOMESTEAD,
+  ChainId.BITCOIN,
+  ChainId.AVALANCHE_P
+]
+
+const TESTNET_BASE_INTERVAL = 5000
+const MAINNET_BASE_INTERVAL = 1000
+
+// polling interval based on the number of primary networks
+// 4 seconds for primary networks size of 4, 20 seconds for all networks
+const primaryNetworksPollingInterval =
+  PRIMARY_MAINNET_CHAIN_IDS.length * MAINNET_BASE_INTERVAL
+const allNetworksPollingInterval =
+  primaryNetworksPollingInterval * (PRIMARY_MAINNET_CHAIN_IDS.length + 1)
+
+const primaryTestnetNetworksPollingInterval =
+  PRIMARY_MAINNET_CHAIN_IDS.length * TESTNET_BASE_INTERVAL
+const allTestnetNetworksPollingInterval =
+  primaryTestnetNetworksPollingInterval * (PRIMARY_MAINNET_CHAIN_IDS.length + 1)
+
 /**
  * In production:
- *  - Update balances for all networks and accounts every 10 seconds
+ *  - Update balances for all networks and accounts every
+ *    [primary network size * 1000 * (primary network size + 1)] seconds
+ *  - Update balances for primary networks every [testnet network size * 1000] seconds
  *
  * In development:
- *  - Update balances for all networks and accounts every 60 seconds
+ *  - Update balances for all networks and accounts every
+ *    [primary network size * 5000 * (primary network size + 1)]] seconds
+ *  - Update balances for primary networks every [testnet network size * 5000] seconds
  */
 export const PollingConfig = {
-  allNetworks: __DEV__ ? 60000 : 10000
+  allNetworks: __DEV__
+    ? allTestnetNetworksPollingInterval
+    : allNetworksPollingInterval,
+  primaryNetworks: __DEV__
+    ? primaryTestnetNetworksPollingInterval
+    : primaryNetworksPollingInterval
 }
 
+const allNetworksOperand =
+  PollingConfig.allNetworks / PollingConfig.primaryNetworks
+
+const UPDATE_PERIOD = 15
 export const AVAX_X_ID = 'AVAX-X'
 export const AVAX_P_ID = 'AVAX-P'
-
-const getNetworksToFetch = (state: RootState, address: string): Network[] => {
-  const enabledNetworks = selectEnabledNetworks(state)
-  const lastTransactedNetworks = getLastTransactedNetworks(address)
-  const additionalNetworks: Network[] = Object.values(
-    lastTransactedNetworks
-  ).filter(network => {
-    const networkInEnabledNetworks = enabledNetworks.find(
-      value => value.chainId === network.chainId
-    )
-    return networkInEnabledNetworks === undefined
-  })
-  return [...enabledNetworks, ...additionalNetworks]
-}
 
 const onBalanceUpdate = async (
   queryStatus: QueryStatus,
@@ -80,12 +113,51 @@ const onBalanceUpdate = async (
   const { getState } = listenerApi
   const state = getState()
   const account = selectActiveAccount(state)
-  const networksToFetch = getNetworksToFetch(state, account?.addressC ?? '')
+  const activeAccount = selectActiveAccount(state)
+  const primaryNetworks = getPrimaryNetworks(state)
+  const networksToFetch = getNetworksToFetch(
+    state,
+    activeAccount?.addressC ?? ''
+  )
+  const networks = uniqBy([...primaryNetworks, ...networksToFetch], 'chainId')
 
   onBalanceUpdateCore({
     queryStatus,
     listenerApi,
-    networks: networksToFetch,
+    networks,
+    account
+  }).catch(Logger.error)
+}
+
+const onBalancePolling = async ({
+  queryStatus,
+  listenerApi,
+  iteration,
+  pullPrimaryNetworks,
+  allNetworksIteration
+}: {
+  queryStatus: QueryStatus
+  listenerApi: AppListenerEffectAPI
+  iteration: number
+  pullPrimaryNetworks: boolean
+  allNetworksIteration: number
+}): Promise<void> => {
+  const { getState } = listenerApi
+  const state = getState()
+  const account = selectActiveAccount(state)
+  const primaryNetworks = getPrimaryNetworks(state)
+  const primaryNetworkIndex = iteration % primaryNetworks.length
+  const networksToFetch = getNetworksToFetch(state, account?.addressC ?? '')
+  const networks = pullPrimaryNetworks
+    ? primaryNetworks[primaryNetworkIndex]
+      ? [primaryNetworks[primaryNetworkIndex]]
+      : []
+    : getNetworksToUpdate(networksToFetch, allNetworksIteration, UPDATE_PERIOD)
+
+  onBalanceUpdateCore({
+    queryStatus,
+    listenerApi,
+    networks,
     account
   }).catch(Logger.error)
 }
@@ -156,9 +228,11 @@ const fetchBalancePeriodically = async (
   _: Action,
   listenerApi: AppListenerEffectAPI
 ): Promise<void> => {
+  onBalanceUpdate(QueryStatus.LOADING, listenerApi).catch(Logger.error)
   const { condition } = listenerApi
-  onBalanceUpdate(QueryStatus.LOADING, listenerApi)
 
+  let iteration = 1
+  let allNetworksIteration = 0
   const pollingTask = listenerApi.fork(async forkApi => {
     const taskId = uuid().slice(0, 8)
     Logger.info(`started task ${taskId}`, 'fetch balance periodically')
@@ -166,10 +240,32 @@ const fetchBalancePeriodically = async (
     try {
       // eslint-disable-next-line no-constant-condition
       while (true) {
+        let pullPrimaryNetworks
+
+        if (iteration % allNetworksOperand === 0) {
+          pullPrimaryNetworks = false
+        } else {
+          pullPrimaryNetworks = true
+        }
+
         // cancellation-aware wait for the balance update to be done
-        await forkApi.pause(onBalanceUpdate(QueryStatus.POLLING, listenerApi))
+        await forkApi.pause(
+          onBalancePolling({
+            queryStatus: QueryStatus.POLLING,
+            listenerApi,
+            iteration,
+            pullPrimaryNetworks,
+            allNetworksIteration
+          })
+        )
+        iteration += 1
+
+        if (pullPrimaryNetworks === false) {
+          allNetworksIteration += 1
+        }
+
         // cancellation-aware delay
-        await forkApi.delay(PollingConfig.allNetworks)
+        await forkApi.delay(PollingConfig.primaryNetworks)
       }
     } catch (err) {
       if (err instanceof TaskAbortError) {
@@ -190,15 +286,17 @@ const handleFetchBalanceForAccount = async (
   const state = listenerApi.getState()
   const accounts = selectAccounts(state)
   const accountToFetchFor = accounts[accountIndex]
+  const primaryNetworks = getPrimaryNetworks(state)
   const networksToFetch = getNetworksToFetch(
     state,
     accountToFetchFor?.addressC ?? ''
   )
+  const networks = uniqBy([...primaryNetworks, ...networksToFetch], 'chainId')
 
   onBalanceUpdateCore({
     queryStatus: QueryStatus.LOADING,
     listenerApi,
-    networks: networksToFetch,
+    networks,
     account: accountToFetchFor
   }).catch(Logger.error)
 }
@@ -378,6 +476,55 @@ const addXChainToEnabledChainIdsIfNeeded = async (
   dispatch(setViewOnce(ViewOnceKey.X_CHAIN_FAVORITE))
 }
 
+const getPrimaryNetworks = (state: RootState): Network[] => {
+  const isDeveloperMode = selectIsDeveloperMode(state)
+  const allNetworks = selectAllNetworks(state)
+
+  const primaryChainIds = isDeveloperMode
+    ? PRIMARY_TESTNET_CHAIN_IDS
+    : PRIMARY_MAINNET_CHAIN_IDS
+  return Object.values(allNetworks).filter(network =>
+    primaryChainIds.includes(network.chainId)
+  )
+}
+
+const getNetworksToFetch = (state: RootState, address: string): Network[] => {
+  const enabledNetworks = selectEnabledNetworks(state)
+  const lastTransactedNetworks = getLastTransactedNetworks(address)
+  const isDeveloperMode = selectIsDeveloperMode(state)
+  const additionalNetworks: Network[] = Object.values(
+    lastTransactedNetworks
+  ).filter(network => {
+    const networkInEnabledNetworks = enabledNetworks.find(
+      value => value.chainId === network.chainId
+    )
+    return networkInEnabledNetworks === undefined
+  })
+  return [...enabledNetworks, ...additionalNetworks].filter(
+    network => network.isTestnet === isDeveloperMode
+  )
+}
+
+const getNetworksToUpdate = (
+  networks: Network[],
+  iteration: number,
+  updatePeriod: number
+): Network[] => {
+  const numberOfNetworksToUpdate = Math.ceil(networks.length / updatePeriod)
+
+  const roundsWithUpdates = Math.ceil(
+    networks.length / numberOfNetworksToUpdate
+  )
+
+  if (iteration % updatePeriod < roundsWithUpdates) {
+    const startIndex =
+      ((iteration % updatePeriod) * numberOfNetworksToUpdate) % networks.length
+
+    return networks.slice(startIndex, startIndex + numberOfNetworksToUpdate)
+  }
+  return []
+}
+
 export const addBalanceListeners = (
   startListening: AppStartListening
 ): void => {
@@ -400,7 +547,8 @@ export const addBalanceListeners = (
       addCustomToken,
       onNetworksFetched,
       toggleEnabledChainId,
-      addCustomNetwork
+      addCustomNetwork,
+      toggleDeveloperMode
     ),
     effect: async (_, listenerApi) =>
       onBalanceUpdate(QueryStatus.LOADING, listenerApi)

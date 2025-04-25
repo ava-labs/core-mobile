@@ -23,8 +23,8 @@ import { addIdToPromise, settleAllIdPromises } from '@avalabs/evm-module'
 import { Module } from '@avalabs/vm-module-types'
 import { SpanName } from 'services/sentry/types'
 import { mapToVmNetwork } from 'vmModule/utils/mapToVmNetwork'
-import GlacierService from 'services/GlacierService'
 import { ChainInfo } from '@avalabs/glacier-sdk'
+import GlacierService from 'services/glacier/GlacierService'
 import { NETWORK_P, NETWORK_P_TEST, NETWORK_X, NETWORK_X_TEST } from './consts'
 
 if (!Config.PROXY_URL)
