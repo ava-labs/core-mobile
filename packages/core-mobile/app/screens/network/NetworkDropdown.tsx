@@ -25,7 +25,7 @@ type NetworkDropdownNavigationProp = DrawerScreenProps<
 >['navigation']
 
 export default function NetworkDropdown(): JSX.Element {
-  const { favoriteNetworks, activeNetwork } = useNetworks()
+  const { enabledNetworks, activeNetwork } = useNetworks()
   const dispatch = useDispatch()
   const { theme } = useApplicationContext()
   const navigation = useNavigation<NetworkDropdownNavigationProp>()
@@ -37,7 +37,7 @@ export default function NetworkDropdown(): JSX.Element {
         chainId: activeNetwork.chainId,
         logoUri: activeNetwork.logoUri
       },
-      ...favoriteNetworks
+      ...enabledNetworks
         .filter(item => item.chainId !== activeNetwork.chainId)
         .map(item => ({
           name: item.chainName,
@@ -46,7 +46,7 @@ export default function NetworkDropdown(): JSX.Element {
         })),
       { name: ManageNetworks, chainId: 0, logoUri: '' }
     ],
-    [activeNetwork, favoriteNetworks]
+    [activeNetwork, enabledNetworks]
   )
 
   const dropdownUniqueId = useMemo(() => {

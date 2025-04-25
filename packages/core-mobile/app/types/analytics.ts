@@ -74,8 +74,8 @@ export type AnalyticsEvents = {
   ManageTokensAddCustomToken: { status: string; address: string }
   MoonpayBuyClicked: undefined
   NetworkDetailsClicked: { chainId: number }
-  NetworkFavoriteAdded: { networkChainId: string; isCustom: boolean }
-  NetworkFavoriteRemoved: { networkChainId: string; isCustom: boolean }
+  NetworkEnabledAdded: { networkChainId: string; isCustom: boolean }
+  NetworkEnabledRemoved: { networkChainId: string; isCustom: boolean }
   DefaultWatchlistFavoritesAdded: undefined
   NetworkSwitcherOpened: undefined
   NftSendFailed: { errorMessage: string; chainId: number }

@@ -8,7 +8,7 @@ export type Networks = { [chainId: ChainID]: NetworkWithCaip2ChainId }
 
 export type NetworkState = {
   customNetworks: Networks
-  favorites: ChainID[]
+  enabledChainIds: ChainID[]
   active: ChainID
 }
 

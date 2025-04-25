@@ -17,9 +17,8 @@ import { AppStartListening } from 'store/middleware/listener'
 import {
   addCustomNetwork,
   onNetworksFetched,
-  selectCustomNetworks,
-  selectFavoriteNetworks,
-  toggleFavorite
+  selectEnabledNetworks,
+  toggleEnabledChainId
 } from 'store/network/slice'
 import {
   selectSelectedCurrency,
@@ -35,9 +34,7 @@ import { isPChain, isXChain } from 'utils/network/isAvalancheNetwork'
 import ActivityService from 'services/activity/ActivityService'
 import { uuid } from 'utils/uuid'
 import SentryWrapper from 'services/sentry/SentryWrapper'
-import { ReactQueryKeys } from 'consts/reactQueryKeys'
-import { Networks } from 'store/network'
-import { queryClient } from 'contexts/ReactQueryProvider'
+import { getLastTransactedNetworks } from 'new/common/utils/getLastTransactedNetworks'
 import { Balances, LocalTokenWithBalance, QueryStatus } from './types'
 import {
   fetchBalanceForAccount,
@@ -62,35 +59,18 @@ export const PollingConfig = {
 export const AVAX_X_ID = 'AVAX-X'
 export const AVAX_P_ID = 'AVAX-P'
 
-const getNetworksToFetch = async (
-  state: RootState,
-  address: string
-): Promise<Network[]> => {
-  // combine all primary networks, custom networks and last transacted networks
-  // to fetch balances for
-  const customNetworks = selectCustomNetworks(state)
-  const favoriteNetworks = selectFavoriteNetworks(state)
-  let lastTransactedNetworks = {} as Networks
-  try {
-    lastTransactedNetworks = await queryClient.fetchQuery({
-      staleTime: Infinity,
-      queryKey: [ReactQueryKeys.LAST_TRANSACTED_ERC20_NETWORKS, address],
-      queryFn: () =>
-        NetworkService.fetchLastTransactedERC20Networks({
-          address
-        }),
-      retry(failureCount) {
-        return failureCount < 3
-      }
-    })
-  } catch (error) {
-    Logger.error('Error fetching last transacted ERC20 networks', error)
-  }
-  return [
-    ...favoriteNetworks,
-    ...Object.values(customNetworks),
-    ...Object.values(lastTransactedNetworks)
-  ]
+const getNetworksToFetch = (state: RootState, address: string): Network[] => {
+  const enabledNetworks = selectEnabledNetworks(state)
+  const lastTransactedNetworks = getLastTransactedNetworks(address)
+  const additionalNetworks: Network[] = Object.values(
+    lastTransactedNetworks
+  ).filter(network => {
+    const networkInEnabledNetworks = enabledNetworks.find(
+      value => value.chainId === network.chainId
+    )
+    return networkInEnabledNetworks === undefined
+  })
+  return [...enabledNetworks, ...additionalNetworks]
 }
 
 const onBalanceUpdate = async (
@@ -100,10 +80,7 @@ const onBalanceUpdate = async (
   const { getState } = listenerApi
   const state = getState()
   const account = selectActiveAccount(state)
-  const networksToFetch = await getNetworksToFetch(
-    state,
-    account?.addressC ?? ''
-  )
+  const networksToFetch = getNetworksToFetch(state, account?.addressC ?? '')
 
   onBalanceUpdateCore({
     queryStatus,
@@ -213,7 +190,7 @@ const handleFetchBalanceForAccount = async (
   const state = listenerApi.getState()
   const accounts = selectAccounts(state)
   const accountToFetchFor = accounts[accountIndex]
-  const networksToFetch = await getNetworksToFetch(
+  const networksToFetch = getNetworksToFetch(
     state,
     accountToFetchFor?.addressC ?? ''
   )
@@ -300,30 +277,30 @@ const fetchBalanceForNetworks = async (
   }, {})
 }
 
-const addPChainToFavoritesIfNeeded = async (
+const addPChainToEnabledChainIdsIfNeeded = async (
   _: Action,
   listenerApi: AppListenerEffectAPI
 ): Promise<void> => {
   const { getState, dispatch } = listenerApi
   const state = getState()
   //check if we've added P chain before
-  const hadAddedPChainToFavorites = selectHasBeenViewedOnce(
+  const hadAddedPChainToEnabledChainIds = selectHasBeenViewedOnce(
     ViewOnceKey.P_CHAIN_FAVORITE
   )(state)
-  if (hadAddedPChainToFavorites) {
-    Logger.trace('Already added P-chain to favorites')
+  if (hadAddedPChainToEnabledChainIds) {
+    Logger.trace('Already added P-chain to enabled chain ids')
     return
   }
-  //check if P chain already in favorites list
+  //check if P chain already in enabled chain id list
   const isDeveloperMode = selectIsDeveloperMode(state)
   const avalancheNetworkP = NetworkService.getAvalancheNetworkP(isDeveloperMode)
-  const favoriteNetworks = selectFavoriteNetworks(state)
+  const enabledNetworks = selectEnabledNetworks(state)
   if (
-    favoriteNetworks.find(
+    enabledNetworks.find(
       value => value.chainId === avalancheNetworkP.chainId
     ) !== undefined
   ) {
-    Logger.trace('P-chain already in fav list')
+    Logger.trace('P-chain already in enabled chain id list')
     return
   }
 
@@ -344,12 +321,12 @@ const addPChainToFavoritesIfNeeded = async (
     return
   }
 
-  Logger.info('Adding P-Chain to favorites')
-  dispatch(toggleFavorite(avalancheNetworkP.chainId))
+  Logger.info('Adding P-Chain to enabled chain ids')
+  dispatch(toggleEnabledChainId(avalancheNetworkP.chainId))
   dispatch(setViewOnce(ViewOnceKey.P_CHAIN_FAVORITE))
 }
 
-const addXChainToFavoritesIfNeeded = async (
+const addXChainToEnabledChainIdsIfNeeded = async (
   _: Action,
   listenerApi: AppListenerEffectAPI
 ): Promise<void> => {
@@ -357,25 +334,25 @@ const addXChainToFavoritesIfNeeded = async (
   const state = getState()
 
   //check if we've added X chain before
-  const hadAddedXChainToFavorites = selectHasBeenViewedOnce(
+  const hadAddedXChainToEnabledChainIds = selectHasBeenViewedOnce(
     ViewOnceKey.X_CHAIN_FAVORITE
   )(state)
 
-  if (hadAddedXChainToFavorites) {
-    Logger.trace('Already added X-chain to favorites')
+  if (hadAddedXChainToEnabledChainIds) {
+    Logger.trace('Already added X-chain to enabled chain ids')
     return
   }
-  //check if X chain already in favorites list
+  //check if X chain already in enabled chain id list
   const isDeveloperMode = selectIsDeveloperMode(state)
   const avalancheNetworkX = NetworkService.getAvalancheNetworkX(isDeveloperMode)
-  const favoriteNetworks = selectFavoriteNetworks(state)
+  const enabledNetworks = selectEnabledNetworks(state)
 
   if (
-    favoriteNetworks.find(
+    enabledNetworks.find(
       value => value.chainId === avalancheNetworkX.chainId
     ) !== undefined
   ) {
-    Logger.trace('X-chain already in fav list')
+    Logger.trace('X-chain already in enabled chain id list')
     return
   }
 
@@ -396,8 +373,8 @@ const addXChainToFavoritesIfNeeded = async (
     return
   }
 
-  Logger.info('Adding X-Chain to favorites')
-  dispatch(toggleFavorite(avalancheNetworkX.chainId))
+  Logger.info('Adding X-Chain to enabled chain ids')
+  dispatch(toggleEnabledChainId(avalancheNetworkX.chainId))
   dispatch(setViewOnce(ViewOnceKey.X_CHAIN_FAVORITE))
 }
 
@@ -422,7 +399,7 @@ export const addBalanceListeners = (
       setActiveAccountIndex,
       addCustomToken,
       onNetworksFetched,
-      toggleFavorite,
+      toggleEnabledChainId,
       addCustomNetwork
     ),
     effect: async (_, listenerApi) =>
@@ -438,11 +415,11 @@ export const addBalanceListeners = (
 
   startListening({
     matcher: isAnyOf(onAppUnlocked, setAccounts),
-    effect: addPChainToFavoritesIfNeeded
+    effect: addPChainToEnabledChainIdsIfNeeded
   })
 
   startListening({
     matcher: isAnyOf(onAppUnlocked, setAccounts),
-    effect: addXChainToFavoritesIfNeeded
+    effect: addXChainToEnabledChainIdsIfNeeded
   })
 }

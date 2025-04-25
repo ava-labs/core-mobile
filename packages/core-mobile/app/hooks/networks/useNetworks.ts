@@ -5,13 +5,16 @@ import {
   selectCustomNetworks as customNetworksSelector,
   defaultNetwork,
   selectActiveChainId,
-  selectFavorites
+  selectEnabledChainIds
 } from 'store/network'
 import { useCallback, useMemo } from 'react'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { type Network } from '@avalabs/core-chains-sdk'
 import { isAvalancheChainId } from 'services/network/utils/isAvalancheNetwork'
 import { getCaip2ChainId } from 'utils/caip2ChainIds'
+import { getLastTransactedNetworks } from 'new/common/utils/getLastTransactedNetworks'
+import { selectActiveAccount } from 'store/account'
+import { uniq } from 'lodash'
 import { useGetNetworks } from './useGetNetworks'
 
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
@@ -20,7 +23,8 @@ export const useNetworks = () => {
   const _customNetworks = useSelector(customNetworksSelector)
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const activeChainId = useSelector(selectActiveChainId)
-  const favorites = useSelector(selectFavorites)
+  const enabledChainIds = useSelector(selectEnabledChainIds)
+  const activeAccount = useSelector(selectActiveAccount)
 
   // all networks, including custom networks
   const allNetworks = useMemo((): Networks => {
@@ -80,10 +84,20 @@ export const useNetworks = () => {
     return network === undefined ? defaultNetwork : network
   }, [networks, activeChainId])
 
-  const favoriteNetworks = useMemo(() => {
+  const lastTransactedChains = useMemo(() => {
+    if (activeAccount === undefined) return {}
+    return getLastTransactedNetworks(activeAccount.addressC ?? '')
+  }, [activeAccount])
+
+  const enabledNetworks = useMemo(() => {
     if (networks === undefined) return []
 
-    const favoritedNetworks = favorites.reduce((acc, chainId) => {
+    const lastTransactedChainIds = Object.values(lastTransactedChains).map(
+      chain => chain.chainId
+    )
+    const allChainIds = uniq([...enabledChainIds, ...lastTransactedChainIds])
+
+    const enabled = allChainIds.reduce((acc, chainId) => {
       const network = networks[chainId]
       if (network && network.isTestnet === isDeveloperMode) {
         acc.push(network)
@@ -92,7 +106,7 @@ export const useNetworks = () => {
     }, [] as Network[])
 
     // sort all C/X/P networks to the top
-    return favoritedNetworks.sort((a, b) => {
+    return enabled.sort((a, b) => {
       if (isAvalancheChainId(a.chainId) && !isAvalancheChainId(b.chainId)) {
         return -1
       }
@@ -101,11 +115,11 @@ export const useNetworks = () => {
       }
       return 0
     })
-  }, [networks, favorites, isDeveloperMode])
+  }, [networks, lastTransactedChains, enabledChainIds, isDeveloperMode])
 
   const inactiveNetworks = useMemo(() => {
-    return favoriteNetworks.filter(network => network.chainId !== activeChainId)
-  }, [favoriteNetworks, activeChainId])
+    return enabledNetworks.filter(network => network.chainId !== activeChainId)
+  }, [enabledNetworks, activeChainId])
 
   const getIsTestnet = useCallback(
     (chainId: number) => {
@@ -161,7 +175,7 @@ export const useNetworks = () => {
     customNetworks,
     networks,
     activeNetwork,
-    favoriteNetworks,
+    enabledNetworks,
     inactiveNetworks,
     getIsTestnet,
     getIsCustomNetwork,
