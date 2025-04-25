@@ -200,6 +200,21 @@ export const BridgeScreen = (): JSX.Element => {
     [setInputAmount, bridgeError]
   )
 
+  const [bridgeResult, setBridgeResult] = useState<{
+    txHash: string
+    chainId: number
+  }>()
+  useEffect(() => {
+    if (bridgeResult) {
+      audioFeedback(Audios.Send)
+      back()
+      navigate({
+        pathname: '/bridgeStatus',
+        params: bridgeResult
+      })
+    }
+  }, [bridgeResult, back, navigate])
+
   const handleTransfer = useCallback(async () => {
     if (
       amount === 0n ||
@@ -241,17 +256,11 @@ export const BridgeScreen = (): JSX.Element => {
         })
         return
       }
-      audioFeedback(Audios.Send)
-      setTimeout(() => {
-        back()
-        navigate({
-          pathname: '/bridgeStatus',
-          params: {
-            txHash,
-            chainId: sourceNetwork.chainId
-          }
-        })
-      }, 300)
+
+      setBridgeResult({
+        txHash,
+        chainId: sourceNetwork.chainId
+      })
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (e: any) {
@@ -275,8 +284,6 @@ export const BridgeScreen = (): JSX.Element => {
   }, [
     amount,
     bridgeFee,
-    back,
-    navigate,
     selectedBridgeAsset,
     sourceNetwork,
     targetNetwork,
