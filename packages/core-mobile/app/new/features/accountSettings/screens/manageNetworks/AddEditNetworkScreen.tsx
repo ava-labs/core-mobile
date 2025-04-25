@@ -88,7 +88,6 @@ export const AddEditNetworkScreen = (): JSX.Element => {
     return (
       formState.chainId === undefined ||
       formState.chainName === undefined ||
-      formState.explorerUrl === undefined ||
       formState.tokenSymbol === undefined ||
       formState.tokenName === undefined ||
       formState.rpcUrl === undefined
@@ -409,20 +408,20 @@ export const AddEditNetworkScreen = (): JSX.Element => {
           {formState.logoUri ? (
             <NetworkLogoWithChain
               network={parsedNetwork ?? (formState as Network)}
-              networkSize={150}
+              networkSize={96}
               outerBorderColor={theme.colors.$surfacePrimary}
               showChainLogo
-              chainLogoSize={36}
+              chainLogoSize={32}
               chainLogoStyle={{
-                borderWidth: 24
+                borderWidth: 20
               }}
             />
           ) : (
             <View
               style={{
-                width: 150,
-                height: 150,
-                borderRadius: 75,
+                width: 96,
+                height: 96,
+                borderRadius: 96,
                 overflow: 'hidden',
                 backgroundColor: theme.colors.$surfaceSecondary,
                 borderWidth: 1,

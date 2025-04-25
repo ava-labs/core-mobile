@@ -97,8 +97,8 @@ export const AdvancedField = ({
     }
     if (!isValidField()) {
       showAlert({
-        title: 'Invalid Url',
-        description: 'The url your entered is not valid',
+        title: `Invalid field`,
+        description: `The ${type} your entered is not valid`,
         buttons: [
           {
             text: 'Dismiss',
@@ -114,7 +114,7 @@ export const AdvancedField = ({
     }
     onUpdate(id, inputValue)
     setIsEditing(false)
-  }, [isValidField, onUpdate, id, inputValue])
+  }, [inputValue, isValidField, onUpdate, id, type])
 
   const onBlur = useCallback(() => {
     onSubmit()
@@ -136,6 +136,7 @@ export const AdvancedField = ({
   }, [type])
 
   const renderContent = (): React.ReactNode => {
+    if (isEditing) return null
     if (inputValue?.length)
       return (
         <View
@@ -272,6 +273,7 @@ export const AdvancedField = ({
           textInputSx={{ height: undefined }}
           containerSx={{
             paddingHorizontal: 16,
+            maxHeight: 48,
             height: '100%'
           }}
           editable={!disabled}
