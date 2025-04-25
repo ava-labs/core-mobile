@@ -7,44 +7,17 @@ import Animated, {
   withTiming,
   withRepeat
 } from 'react-native-reanimated'
-import { Icons } from 'src/theme/tokens/Icons'
-import { alpha } from 'src/utils'
+import { Icons } from '../../theme/tokens/Icons'
+import { alpha } from '../../utils'
 import { darkModeColors, lightModeColors } from '../../theme/tokens/colors'
 import { Text, View } from '../Primitives'
 import { useTheme } from '../../hooks'
 import { SCREEN_WIDTH } from '../../const'
 
-const RotatingSyncIcon = ({
-  textColor
-}: {
-  textColor: string
-}): JSX.Element => {
-  const rotation = useSharedValue(0)
-
-  useEffect(() => {
-    rotation.value = withRepeat(
-      withTiming(-360, {
-        duration: 1500,
-        easing: Easing.linear
-      }),
-      -1,
-      false
-    )
-  }, [rotation])
-
-  const animatedStyle = useAnimatedStyle(() => ({
-    transform: [{ rotate: `${rotation.value}deg` }]
-  }))
-
-  return (
-    <Animated.View style={animatedStyle}>
-      <Icons.Notification.Sync width={16} height={16} color={textColor} />
-    </Animated.View>
-  )
-}
+export type TransactionSnackbarType = 'pending' | 'success' | 'error'
 
 type TransactionSnackbarProps = {
-  type: 'pending' | 'success' | 'error'
+  type: TransactionSnackbarType
   testID?: string
   onPress?: () => void
   style?: ViewStyle
@@ -156,5 +129,34 @@ export const TransactionSnackbar = ({
         </View>
       </View>
     </TouchableWithoutFeedback>
+  )
+}
+
+const RotatingSyncIcon = ({
+  textColor
+}: {
+  textColor: string
+}): JSX.Element => {
+  const rotation = useSharedValue(0)
+
+  useEffect(() => {
+    rotation.value = withRepeat(
+      withTiming(-360, {
+        duration: 1500,
+        easing: Easing.linear
+      }),
+      -1,
+      false
+    )
+  }, [rotation])
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [{ rotate: `${rotation.value}deg` }]
+  }))
+
+  return (
+    <Animated.View style={animatedStyle}>
+      <Icons.Notification.Sync width={16} height={16} color={textColor} />
+    </Animated.View>
   )
 }
