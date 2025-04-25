@@ -138,10 +138,10 @@ export const checkTransferStatus = async (
   action: ReturnType<typeof setPendingTransfer>,
   listenerApi: AppListenerEffectAPI
 ): Promise<void> => {
-  // delay 1 second to remove the completed transfer,
+  // delay 2 second to remove the completed transfer,
   // to ensure that the component(i.e. BridgeStatusScreen) displaying the transfer
   // has enough time to handle the completed status
-  await listenerApi.delay(1000)
+  await listenerApi.delay(2000)
 
   const transfer = action.payload
 
