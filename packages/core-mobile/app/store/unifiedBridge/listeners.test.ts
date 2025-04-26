@@ -19,6 +19,13 @@ jest.mock('new/common/utils/toast', () => ({
 
 jest.mock('services/bridge/UnifiedBridgeService')
 jest.mock('store/rpc/utils/createInAppRequest')
+jest.mock('store/network/slice', () => {
+  const actual = jest.requireActual('store/network/slice')
+  return {
+    ...actual,
+    selectNetworks: jest.fn().mockReturnValue({ 1: { chainId: '1' } })
+  }
+})
 
 const bitcoinProvider = {}
 jest.mock('services/network/utils/providerUtils', () => ({
