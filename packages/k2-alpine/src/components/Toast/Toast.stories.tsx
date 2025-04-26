@@ -36,6 +36,10 @@ export const All = (): JSX.Element => {
         <TransactionSnackbar type="pending" />
         <TransactionSnackbar type="success" isActionable={true} />
         <TransactionSnackbar type="success" message="Stake reward claimed!" />
+        <TransactionSnackbar
+          type="success"
+          message="Super long message message message message message message message message message message message message"
+        />
         <TransactionSnackbar type="error" isActionable={true} />
         <TransactionSnackbar
           type="error"

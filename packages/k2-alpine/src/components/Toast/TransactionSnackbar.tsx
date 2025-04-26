@@ -127,7 +127,9 @@ export const TransactionSnackbar = ({
           {renderIcon()}
           <Text
             variant="body1"
+            numberOfLines={1}
             sx={{
+              maxWidth: '80%',
               marginLeft: 5,
               fontSize: 14,
               color: textColor
