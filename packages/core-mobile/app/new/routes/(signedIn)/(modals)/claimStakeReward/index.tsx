@@ -53,7 +53,7 @@ const ClaimStakeRewardScreen = (): JSX.Element => {
 
   const onClaimError = (error: Error): void => {
     AnalyticsService.capture('StakeClaimFail')
-    transactionSnackbar.error(error.message)
+    transactionSnackbar.error({ error: error.message })
   }
 
   const onFundsStuck = (): void => {

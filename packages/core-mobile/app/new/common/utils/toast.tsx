@@ -67,6 +67,7 @@ export const GlobalToast = (): JSX.Element => {
               dismissToast(toast.id)
 
               if (!isActionable) return
+
               if (toast.data.type === 'success') {
                 openUrl({
                   url: toast.data.explorerLink,
@@ -212,11 +213,11 @@ export const transactionSnackbar = {
         duration: DURATION_LONG
       }
     ),
-  error: (error?: string) =>
+  error: ({ error, message }: { error?: string; message?: string }) =>
     showToast(
       {
         toastType: ToastType.TRANSACTION_SNACKBAR,
-        content: { type: 'error', error }
+        content: { type: 'error', error, message }
       },
       {
         duration: DURATION_LONG

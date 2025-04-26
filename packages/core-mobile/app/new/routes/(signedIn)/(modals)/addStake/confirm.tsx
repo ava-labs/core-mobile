@@ -261,7 +261,7 @@ const StakeConfirmScreen = (): JSX.Element => {
 
   const onDelegationError = useCallback((e: Error): void => {
     AnalyticsService.capture('StakeDelegationFail')
-    transactionSnackbar.error(e.message)
+    transactionSnackbar.error({ error: e.message })
   }, [])
 
   function onFundsStuck(): void {

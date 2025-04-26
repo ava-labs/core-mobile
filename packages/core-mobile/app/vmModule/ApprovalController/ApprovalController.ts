@@ -25,6 +25,10 @@ class ApprovalController implements VmModuleApprovalController {
     return Promise.reject(providerErrors.unsupportedMethod('requestPublicKey'))
   }
 
+  onTransactionPending(): void {
+    transactionSnackbar.pending()
+  }
+
   onTransactionConfirmed({
     explorerLink
   }: {
@@ -34,8 +38,8 @@ class ApprovalController implements VmModuleApprovalController {
     transactionSnackbar.success({ explorerLink })
   }
 
-  onTransactionReverted(_txHash: Hex): void {
-    transactionSnackbar.error('Transaction reverted')
+  onTransactionReverted(): void {
+    transactionSnackbar.error({ error: 'Transaction reverted' })
   }
 
   async requestApproval({

@@ -42,7 +42,7 @@ export const useSendTransactionCallbacks = (): {
   const onFailure = useCallback(
     (error: unknown): void => {
       if (error instanceof Error && !isUserRejectedError(error)) {
-        transactionSnackbar.error(getJsonRpcErrorMessage(error))
+        transactionSnackbar.error({ error: getJsonRpcErrorMessage(error) })
         selectedToken &&
           AnalyticsService.capture('SendTransactionFailed', {
             errorMessage: error.message,
