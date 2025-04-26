@@ -187,6 +187,9 @@ export function showNotificationAlert({
 }
 
 export const transactionSnackbar = {
+  /*
+   * Displays a pending snackbar with a short duration.
+   */
   pending: () =>
     showToast(
       {
@@ -197,6 +200,12 @@ export const transactionSnackbar = {
         duration: DURATION_SHORT
       }
     ),
+  /*
+   * Displays a success snackbar.
+   *
+   * `message` is a short, one-line message for the snackbar.
+   * `explorerLink` is an optional link to a blockchain explorer or related page.
+   */
   success: ({
     message,
     explorerLink
@@ -213,6 +222,12 @@ export const transactionSnackbar = {
         duration: DURATION_LONG
       }
     ),
+  /*
+   * Displays an error snackbar.
+   *
+   * `message` is a short, one-line message for the snackbar.
+   * `error` is the detailed error message shown in an alert when the user clicks on the snackbar.
+   */
   error: ({ error, message }: { error?: string; message?: string }) =>
     showToast(
       {

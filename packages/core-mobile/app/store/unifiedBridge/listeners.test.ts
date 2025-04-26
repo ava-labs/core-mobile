@@ -10,7 +10,11 @@ import {
 } from './listeners'
 
 jest.mock('new/common/utils/toast', () => ({
-  showNotificationAlert: jest.fn()
+  transactionSnackbar: {
+    pending: jest.fn(),
+    success: jest.fn(),
+    error: jest.fn()
+  }
 }))
 
 jest.mock('services/bridge/UnifiedBridgeService')
@@ -139,9 +143,16 @@ describe('Unified Bridge Listeners', () => {
 
   describe('checkTransferStatus', () => {
     it('should remove completed transfers', async () => {
-      const transfer = { sourceTxHash: '0x123', completedAt: Date.now() }
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      await checkTransferStatus({ payload: transfer } as any, mockListenerApi)
+      const transfer = {
+        sourceTxHash: '0x123',
+        completedAt: Date.now(),
+        sourceChain: { chainId: 1 }
+      }
+      await checkTransferStatus(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        { payload: transfer } as any,
+        mockListenerApi
+      )
 
       expect(mockListenerApi.dispatch).toHaveBeenCalledWith({
         type: 'unifiedBridge/removePendingTransfer',
