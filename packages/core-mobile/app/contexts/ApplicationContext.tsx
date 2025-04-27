@@ -1,7 +1,8 @@
-import React, { createContext, useContext, useMemo, useState } from 'react'
-import { COLORS_DAY, COLORS_NIGHT } from 'resources/Constants'
 import { DefaultTheme, type Theme } from '@react-navigation/native'
 import { AppHook, useApp } from 'AppHook'
+import React, { createContext, useContext, useMemo, useState } from 'react'
+import { Appearance } from 'react-native'
+import { COLORS_DAY, COLORS_NIGHT } from 'resources/Constants'
 
 export type AppTheme = typeof COLORS_DAY | typeof COLORS_NIGHT
 
@@ -50,7 +51,7 @@ export const ApplicationContextProvider = ({
 }): JSX.Element => {
   const appHook = useApp()
 
-  const isDarkMode = true // useState(Appearance.getColorScheme() === 'dark');
+  const isDarkMode = Appearance.getColorScheme() === 'dark' // useState(Appearance.getColorScheme() === 'dark');
   const [theme] = useState(isDarkMode ? COLORS_NIGHT : COLORS_DAY)
   const [backgroundStyle] = useState({
     backgroundColor: theme.background,

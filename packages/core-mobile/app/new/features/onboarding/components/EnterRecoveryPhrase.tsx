@@ -1,10 +1,15 @@
-import { Button, ScrollView, showAlert, View } from '@avalabs/k2-alpine'
+import {
+  Button,
+  SafeAreaView,
+  ScrollView,
+  showAlert,
+  View
+} from '@avalabs/k2-alpine'
 import * as bip39 from 'bip39'
 import BlurredBarsContentLayout from 'common/components/BlurredBarsContentLayout'
 import { KeyboardAvoidingView } from 'common/components/KeyboardAvoidingView'
 import ScreenHeader from 'common/components/ScreenHeader'
 import React, { useState } from 'react'
-import { SafeAreaView } from 'react-native-safe-area-context'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import WalletSDK from 'utils/WalletSDK'
 import RecoveryPhraseInput from './RecoveryPhraseInput'
@@ -48,9 +53,9 @@ export const EnterRecoveryPhrase = ({
   }
 
   return (
-    <BlurredBarsContentLayout>
-      <KeyboardAvoidingView>
-        <SafeAreaView style={{ flex: 1 }} edges={['top']}>
+    <KeyboardAvoidingView>
+      <BlurredBarsContentLayout>
+        <SafeAreaView sx={{ flex: 1 }}>
           <ScrollView
             sx={{ flex: 1 }}
             contentContainerSx={{ padding: 16 }}
@@ -90,8 +95,8 @@ export const EnterRecoveryPhrase = ({
             </Button>
           </View>
         </SafeAreaView>
-      </KeyboardAvoidingView>
-    </BlurredBarsContentLayout>
+      </BlurredBarsContentLayout>
+    </KeyboardAvoidingView>
   )
 }
 

@@ -20,13 +20,13 @@ import { loadAvatar } from 'common/utils/loadAvatar'
 import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router'
 import { LogoWithNetwork } from 'features/portfolio/assets/components/LogoWithNetwork'
 import { useWatchlist } from 'hooks/watchlist/useWatchlist'
+import { useSimpleFadingHeader } from 'new/common/hooks/useSimpleFadingHeader'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller'
+import Animated from 'react-native-reanimated'
 import { useSelector } from 'react-redux'
 import { AddrBookItemType } from 'store/addressBook'
 import { selectSelectedCurrency } from 'store/settings/currency'
-import { useSimpleFadingHeader } from 'new/common/hooks/useSimpleFadingHeader'
-import Animated from 'react-native-reanimated'
 import { useSendContext } from '../context/sendContext'
 import { useSendSelectedToken } from '../store'
 
@@ -149,7 +149,7 @@ export const SendToken = ({ onSend }: { onSend: () => void }): JSX.Element => {
 
   return (
     <SafeAreaView
-      style={{
+      sx={{
         flex: 1,
         justifyContent: 'space-between',
         marginHorizontal: 16

@@ -154,7 +154,7 @@ const StakeAmountScreen = (): JSX.Element => {
           <Animated.View
             onLayout={handleHeaderLayout}
             style={animatedHeaderStyle}>
-            <ScreenHeader title="How much would you like to stake?" />
+            <ScreenHeader title=" like to stake?" />
           </Animated.View>
           <TokenUnitInputWidget
             sx={{

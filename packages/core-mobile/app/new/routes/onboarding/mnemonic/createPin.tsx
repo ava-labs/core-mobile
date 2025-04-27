@@ -8,7 +8,7 @@ import BlurredBarsContentLayout from 'common/components/BlurredBarsContentLayout
 import { KeyboardAvoidingView } from 'common/components/KeyboardAvoidingView'
 import BiometricsSDK from 'utils/BiometricsSDK'
 import { useStoredBiometrics } from 'common/hooks/useStoredBiometrics'
-import { SafeAreaView } from 'react-native-safe-area-context'
+import { SafeAreaView } from '@avalabs/k2-alpine'
 
 export default function CreatePin(): JSX.Element {
   const { navigate } = useRouter()
@@ -39,7 +39,7 @@ export default function CreatePin(): JSX.Element {
   )
 
   return (
-    <SafeAreaView style={{ flex: 1 }}>
+    <SafeAreaView sx={{ flex: 1 }}>
       <BlurredBarsContentLayout>
         <KeyboardAvoidingView>
           <Component
