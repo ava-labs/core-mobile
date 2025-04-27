@@ -55,7 +55,10 @@ const initAccounts = async (
       listenerApi,
       initialAccounts: accounts // pass the initial account for analytic reporting purposes
     })
-  } else if (walletType === WalletType.MNEMONIC) {
+  } else if (
+    walletType === WalletType.MNEMONIC ||
+    walletType === WalletType.KEYSTONE
+  ) {
     // only add the first account for mnemonic wallet
     const acc = await accountService.createNextAccount({
       index: 0,

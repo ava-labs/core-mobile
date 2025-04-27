@@ -16,6 +16,7 @@ enum OnboardScreens {
   CreateWalletStack = 'OnboardScreens.CreateWalletStack',
   EnterWithMnemonicStack = 'OnboardScreens.EnterWithMnemonicStack',
   RecoverWithMnemonicStack = 'OnboardScreens.RecoverWithMnemonicStack',
+  RecoverWithKeystone = 'OnboardScreens.RecoverWithKeystone',
   CreatePin = 'OnboardScreens.CreatePin',
   NameYourWallet = 'OnboardScreens.NameYourWallet'
 }
@@ -199,7 +200,8 @@ enum ModalScreens {
   UseWalletConnect = 'ModalScreens.UseWalletConnect',
   AlertScreen = 'ModalScreens.AlertScreen',
   EnableNotificationsPrompt = 'ModalScreens.EnableNotificationsPrompt',
-  QRScanner = 'ModalScreens.QRScanner'
+  QRScanner = 'ModalScreens.QRScanner',
+  KeystoneSigner = 'ModalScreens.KeystoneSigner'
 }
 
 enum SendScreens {
@@ -226,6 +228,15 @@ enum RecoveryMethodsScreens {
   LearnMore = 'RecoveryMethodsScreens.LearnMore',
   PasskeySetup = 'RecoveryMethodsScreens.PasskeySetup',
   FIDONameInput = 'RecoveryMethodsScreens.FIDONameInput'
+}
+
+enum RecoveryKeystoneScreens {
+  ScanQrCode = 'RecoveryKeystoneScreens.ScanQrCode',
+  NameYourWallet = 'RecoveryKeystoneScreens.NameYourWallet',
+  CreatePin = 'RecoveryKeystoneScreens.CreatePin',
+  BiometricLogin = 'RecoveryKeystoneScreens.BiometricLogin',
+  TermsNConditions = 'RecoveryKeystoneScreens.TermsNConditions',
+  Loader = 'RecoveryKeystoneScreens.Loader'
 }
 
 enum SeedlessExportScreens {
@@ -281,6 +292,7 @@ const AppNavigation = {
   Notifications: NotificationsScreens,
   SendFeedback: SendFeedbackScreens,
   RecoveryMethods: RecoveryMethodsScreens,
+  RecoveryKeystoneScreens: RecoveryKeystoneScreens,
   SeedlessExport: SeedlessExportScreens,
   SettingRecoveryMethods: SettingRecoveryMethodsScreens,
   Debug: DebugScreens

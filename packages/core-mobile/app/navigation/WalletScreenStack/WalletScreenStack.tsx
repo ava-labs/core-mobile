@@ -92,7 +92,8 @@ import {
   TokenSelectParams,
   UpdateContactV2Params,
   WalletScreenProps,
-  TransactionDataParams
+  TransactionDataParams,
+  KeystoneSignerParams
 } from '../types'
 import AdvancedStackScreen, {
   AdvancedStackParamList
@@ -177,6 +178,7 @@ export type WalletScreenStackParams = {
     onSuccess: (data: string) => void
     onCancel?: () => void
   }
+  [AppNavigation.Modal.KeystoneSigner]: KeystoneSignerParams
 }
 
 const WalletScreenS = createStackNavigator<WalletScreenStackParams>()

@@ -1,20 +1,29 @@
 import { SeedlessPubKeysStorage } from 'seedless/services/storage/SeedlessPubKeysStorage'
+import { KeystonePubKeysStorage } from 'keystone/services/storage/KeystonePubKeysStorage'
 import Logger from 'utils/Logger'
 import { transformKeyInfosToPubKeys } from 'seedless/services/wallet/transformKeyInfosToPubkeys'
 import { Avalanche, getXpubFromMnemonic } from '@avalabs/core-wallets-sdk'
 import SeedlessService from 'seedless/services/SeedlessService'
 import { WalletType } from './types'
 import MnemonicWalletInstance from './MnemonicWallet'
+import KeystoneWalletInstance from './KeystoneWallet'
 
 class WalletInitializer {
+  // eslint-disable-next-line sonarjs/cognitive-complexity
   async initialize({
     mnemonic,
     walletType,
-    isLoggingIn
+    isLoggingIn,
+    xpub,
+    xpubXP,
+    masterfingerprint
   }: {
     mnemonic?: string
     walletType: WalletType
     isLoggingIn: boolean
+    xpub?: string
+    xpubXP?: string
+    masterfingerprint?: string
   }): Promise<void> {
     switch (walletType) {
       case WalletType.SEEDLESS: {
@@ -58,6 +67,27 @@ class WalletInitializer {
         MnemonicWalletInstance.mnemonic = mnemonic
         break
       }
+      case WalletType.KEYSTONE: {
+        try {
+          const pubKeysStorage = new KeystonePubKeysStorage()
+          if (xpub && xpubXP && masterfingerprint) {
+            await pubKeysStorage.save({
+              evm: xpub,
+              xp: xpubXP,
+              mfp: masterfingerprint
+            })
+          }
+          const pubKeys = await pubKeysStorage.retrieve()
+
+          KeystoneWalletInstance.xpub = pubKeys.evm
+          KeystoneWalletInstance.xpubXP = pubKeys.xp
+          KeystoneWalletInstance.mfp = pubKeys.mfp
+        } catch (error) {
+          Logger.error(`Unable to save public keys`, error)
+          throw new Error(`Unable to save public keys`)
+        }
+        break
+      }
       default:
         throw new Error(`Wallet type ${walletType} not supported`)
     }
@@ -74,6 +104,11 @@ class WalletInitializer {
         MnemonicWalletInstance.mnemonic = undefined
         MnemonicWalletInstance.xpub = undefined
         MnemonicWalletInstance.xpubXP = undefined
+        break
+      case WalletType.KEYSTONE:
+        KeystoneWalletInstance.xpub = undefined
+        KeystoneWalletInstance.xpubXP = undefined
+        KeystoneWalletInstance.mfp = undefined
         break
       default:
         throw new Error(
