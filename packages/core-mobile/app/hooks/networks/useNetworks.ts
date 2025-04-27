@@ -12,7 +12,7 @@ import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { type Network } from '@avalabs/core-chains-sdk'
 import { isAvalancheChainId } from 'services/network/utils/isAvalancheNetwork'
 import { getCaip2ChainId } from 'utils/caip2ChainIds'
-import { uniqBy } from 'lodash'
+import { uniq } from 'lodash'
 import { useLastTransactedNetworks } from 'new/common/hooks/useLastTransactedNetworks'
 import { useGetNetworks } from './useGetNetworks'
 
@@ -90,10 +90,7 @@ export const useNetworks = () => {
       ? Object.values(lastTransactedChains).map(chain => chain.chainId)
       : []
 
-    const allChainIds = uniqBy(
-      [...enabledChainIds, ...lastTransactedChainIds],
-      'chainId'
-    )
+    const allChainIds = uniq([...enabledChainIds, ...lastTransactedChainIds])
 
     const enabled = allChainIds.reduce((acc, chainId) => {
       const network = networks[chainId]

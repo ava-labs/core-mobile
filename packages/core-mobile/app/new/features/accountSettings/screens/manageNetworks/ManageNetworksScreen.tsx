@@ -22,7 +22,7 @@ import {
   isAvalancheChainId
 } from 'services/network/utils/isAvalancheNetwork'
 import { isEthereumChainId } from 'services/network/utils/isEthereumNetwork'
-import { alwaysFavoriteNetworks, toggleFavorite } from 'store/network'
+import { alwaysEnabledNetworks, toggleEnabledChainId } from 'store/network'
 import { isPChain } from 'utils/network/isAvalancheNetwork'
 import { isXPChain } from 'utils/network/isAvalancheNetwork'
 import { isXChain } from 'utils/network/isAvalancheNetwork'
@@ -31,7 +31,7 @@ import { isBitcoinChainId } from 'utils/network/isBitcoinNetwork'
 export const ManageNetworksScreen = (): JSX.Element => {
   const { theme } = useTheme()
   const insets = useSafeAreaInsets()
-  const { networks, favoriteNetworks, customNetworks } = useNetworks()
+  const { networks, enabledNetworks, customNetworks } = useNetworks()
   const dispatch = useDispatch()
   const [searchText, setSearchText] = useState('')
   const title = 'Networks'
@@ -47,7 +47,7 @@ export const ManageNetworksScreen = (): JSX.Element => {
 
   const availableNetworks = useMemo(() => {
     const enabled = Object.values(networks)
-      .filter(network => favoriteNetworks.includes(network))
+      .filter(network => enabledNetworks.includes(network))
       .sort(sortPrimaryNetworks)
 
     const custom = Object.values(customNetworks).filter(
@@ -58,7 +58,7 @@ export const ManageNetworksScreen = (): JSX.Element => {
     )
 
     return [...enabled, ...custom, ...disabled]
-  }, [customNetworks, favoriteNetworks, networks])
+  }, [customNetworks, enabledNetworks, networks])
 
   const filteredNetworks = useMemo(() => {
     if (searchText.length) {
@@ -69,7 +69,7 @@ export const ManageNetworksScreen = (): JSX.Element => {
 
   const onFavorite = useCallback(
     (item: Network) => {
-      dispatch(toggleFavorite(item.chainId))
+      dispatch(toggleEnabledChainId(item.chainId))
     },
     [dispatch]
   )
@@ -78,7 +78,7 @@ export const ManageNetworksScreen = (): JSX.Element => {
     item,
     index
   }): JSX.Element => {
-    const isEnabled = favoriteNetworks.some(
+    const isEnabled = enabledNetworks.some(
       network => network.chainId === item.chainId
     )
     const isLast = index === filteredNetworks.length - 1
@@ -139,7 +139,7 @@ export const ManageNetworksScreen = (): JSX.Element => {
             paddingRight: 16
           }}>
           <Text style={{ flex: 1 }}>{item.chainName}</Text>
-          {!alwaysFavoriteNetworks.includes(item.chainId) && (
+          {!alwaysEnabledNetworks.includes(item.chainId) && (
             <Toggle value={isEnabled} onValueChange={() => onFavorite(item)} />
           )}
         </View>
