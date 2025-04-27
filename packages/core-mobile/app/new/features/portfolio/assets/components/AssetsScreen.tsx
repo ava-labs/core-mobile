@@ -18,18 +18,22 @@ import {
 } from 'store/balance'
 import { portfolioTabContentHeight } from '../../utils'
 import { useAssetsFilterAndSort } from '../hooks/useAssetsFilterAndSort'
+import errorIcon from '../../../../assets/icons/rocket.png'
 import { TokenListItem } from './TokenListItem'
 
 interface Props {
   goToTokenDetail: (localId: string) => void
   goToTokenManagement: () => void
+  goToBuy: () => void
 }
 
 const AssetsScreen: FC<Props> = ({
   goToTokenDetail,
-  goToTokenManagement
+  goToTokenManagement,
+  goToBuy
 }): JSX.Element => {
-  const { data, filter, sort, view, refetch } = useAssetsFilterAndSort()
+  const { data, filter, sort, view, refetch, isRefetching } =
+    useAssetsFilterAndSort()
   const activeAccount = useSelector(selectActiveAccount)
 
   const isAllBalancesInaccurate = useSelector(
@@ -111,29 +115,24 @@ const AssetsScreen: FC<Props> = ({
     return (
       <ErrorState
         sx={{ height: portfolioTabContentHeight }}
-        icon={
-          <Image
-            source={require('../../../../assets/icons/rocket.png')}
-            sx={{ width: 42, height: 42 }}
-          />
-        }
+        icon={<Image source={errorIcon} sx={{ width: 42, height: 42 }} />}
         title="No assets yet"
         description="On-ramp using Core in two minutes"
         button={{
           title: 'Let’s go!',
-          onPress: () => {
-            // TODO: navigate to buy on-ramp
-          }
+          onPress: goToBuy
         }}
       />
     )
-  }, [isBalanceLoading, isRefetchingBalance, refetch, isAllBalancesInaccurate])
-
-  const dataLength = data.length
+  }, [
+    isBalanceLoading,
+    isRefetchingBalance,
+    isAllBalancesInaccurate,
+    goToBuy,
+    refetch
+  ])
 
   const header = useMemo(() => {
-    if (dataLength === 0) return
-
     return (
       <View sx={styles.dropdownContainer}>
         <DropdownSelections
@@ -144,7 +143,7 @@ const AssetsScreen: FC<Props> = ({
         />
       </View>
     )
-  }, [dataLength, filter, sort, view, handleManageList])
+  }, [filter, sort, view, handleManageList])
 
   return (
     <CollapsibleTabs.FlashList
@@ -157,6 +156,8 @@ const AssetsScreen: FC<Props> = ({
       ListEmptyComponent={emptyComponent}
       ItemSeparatorComponent={renderSeparator}
       showsVerticalScrollIndicator={false}
+      refreshing={isRefetching}
+      onRefresh={refetch}
       key={isGridView ? 'grid' : 'list'}
       keyExtractor={item => item.localId}
     />

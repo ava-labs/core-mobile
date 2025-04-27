@@ -1,6 +1,6 @@
+import { SxProp } from 'dripsy'
 import React, { useEffect, useState } from 'react'
 import { LayoutChangeEvent } from 'react-native'
-import { SxProp } from 'dripsy'
 import Animated, {
   Easing,
   FadeIn,
@@ -10,10 +10,11 @@ import Animated, {
   useSharedValue,
   withTiming
 } from 'react-native-reanimated'
-import { View, Text, TouchableOpacity } from '../Primitives'
-import { Separator } from '../Separator/Separator'
-import { Icons } from '../../theme/tokens/Icons'
+import { TextVariant } from 'src/theme/tokens/text'
 import { useTheme } from '../../hooks'
+import { Icons } from '../../theme/tokens/Icons'
+import { Text, TouchableOpacity, View } from '../Primitives'
+import { Separator } from '../Separator/Separator'
 
 export const GroupList = ({
   data,
@@ -22,12 +23,14 @@ export const GroupList = ({
   subtitleSx,
   valueSx,
   textContainerSx,
-  separatorMarginRight
+  separatorMarginRight,
+  subtitleVariant = 'mono'
 }: {
   data: GroupListItem[]
   itemHeight?: number
   titleSx?: SxProp
   subtitleSx?: SxProp
+  subtitleVariant?: TextVariant
   textContainerSx?: SxProp
   valueSx?: SxProp
   separatorMarginRight?: number
@@ -35,7 +38,7 @@ export const GroupList = ({
   const { theme } = useTheme()
   const [textMarginLeft, setTextMarginLeft] = useState(0)
   const [expandedStates, setExpandedStates] = useState<boolean[]>(
-    data.map(() => false)
+    data.map(i => i.expanded ?? false)
   )
 
   const handleLayout = (event: LayoutChangeEvent): void => {
@@ -69,6 +72,56 @@ export const GroupList = ({
     }
   }
 
+  const renderTitle = (title: Title, index: number): React.ReactNode => {
+    if (typeof title === 'string') {
+      return (
+        <Text
+          numberOfLines={2}
+          variant="buttonMedium"
+          sx={{
+            fontFamily: 'Inter-Medium',
+            fontSize: 16,
+            color: '$textPrimary',
+            ...titleSx
+          }}>
+          {title}
+        </Text>
+      )
+    }
+
+    if (typeof title === 'function') {
+      return title(expandedStates[index] ?? false)
+    }
+
+    return title
+  }
+
+  const renderSubTitle = (
+    subtitle: Subtitle,
+    index: number
+  ): React.ReactNode => {
+    if (typeof subtitle === 'string') {
+      return (
+        <Text
+          variant={subtitleVariant}
+          sx={{
+            color: '$textSecondary',
+            fontSize: 13,
+            lineHeight: 18,
+            ...subtitleSx
+          }}>
+          {subtitle}
+        </Text>
+      )
+    }
+
+    if (typeof subtitle === 'function') {
+      return subtitle(expandedStates[index] ?? false)
+    }
+
+    return subtitle
+  }
+
   return (
     <Animated.View
       layout={LinearTransition.easing(Easing.inOut(Easing.ease))}
@@ -100,54 +153,40 @@ export const GroupList = ({
                 sx={{
                   flexDirection: 'row',
                   alignItems: 'center',
-                  minHeight: itemHeight
+                  minHeight: itemHeight,
+                  gap: 16,
+                  paddingHorizontal: 16
                 }}>
-                {leftIcon && <View sx={{ marginLeft: 16 }}>{leftIcon}</View>}
+                {leftIcon}
                 <View
                   sx={{
-                    flexGrow: 1,
+                    flex: 1,
                     flexDirection: 'row',
                     alignItems: 'center',
                     justifyContent: 'space-between',
-                    marginLeft: 15
+                    gap: 28
                   }}
                   onLayout={handleLayout}>
-                  <View
-                    sx={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                    <View sx={{ paddingVertical: 14, ...textContainerSx }}>
-                      <Text
-                        variant="buttonMedium"
-                        sx={{
-                          fontFamily: 'Inter-Medium',
-                          fontSize: 16,
-                          color: '$textPrimary',
-                          ...titleSx
-                        }}>
-                        {title}
-                      </Text>
-                      {subtitle && (
-                        <Text
-                          variant="mono"
-                          sx={{
-                            color: '$textSecondary',
-                            fontSize: 13,
-                            lineHeight: 18,
-                            ...subtitleSx
-                          }}>
-                          {subtitle}
-                        </Text>
-                      )}
+                  <View sx={{ marginVertical: 14, ...textContainerSx }}>
+                    <View
+                      sx={{
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        gap: 8
+                      }}>
+                      {renderTitle(title, index)}
+                      {rightIcon !== undefined && rightIcon}
                     </View>
-
-                    {rightIcon !== undefined && rightIcon}
+                    {renderSubTitle(subtitle, index)}
                   </View>
+
                   <View
                     sx={{
                       flexDirection: 'row',
                       alignItems: 'center',
-                      marginRight: 15,
                       gap: 4,
-                      flexShrink: 1
+                      flex: 1,
+                      justifyContent: 'flex-end'
                     }}>
                     {value !== undefined &&
                       (typeof value === 'string' ? (
@@ -165,7 +204,9 @@ export const GroupList = ({
                   </View>
                 </View>
               </View>
+              {item.bottomAccessory}
             </TouchableOpacity>
+
             {accordion !== undefined && expandedStates[index] && (
               <Animated.View entering={FadeIn} exiting={FadeOut}>
                 <Separator
@@ -192,16 +233,21 @@ export const GroupList = ({
   )
 }
 
+type Title = React.ReactNode | ((expanded: boolean) => React.ReactNode)
+type Subtitle = React.ReactNode | ((expanded: boolean) => React.ReactNode)
+
 export type GroupListItem = {
-  title: string
-  subtitle?: string
+  title: Title
+  subtitle?: Subtitle
   value?: React.ReactNode
   onPress?: () => void
   onLongPress?: () => void
   leftIcon?: JSX.Element
   rightIcon?: JSX.Element
   accessory?: JSX.Element
+  bottomAccessory?: JSX.Element
   accordion?: JSX.Element
+  expanded?: boolean
 }
 
 const AnimatedChevron = ({ expanded }: { expanded: boolean }): JSX.Element => {
@@ -220,7 +266,7 @@ const AnimatedChevron = ({ expanded }: { expanded: boolean }): JSX.Element => {
   })
 
   return (
-    <Animated.View style={animatedStyle}>
+    <Animated.View style={[{ marginRight: -6 }, animatedStyle]}>
       <Icons.Navigation.ChevronRight color={theme.colors.$textSecondary} />
     </Animated.View>
   )

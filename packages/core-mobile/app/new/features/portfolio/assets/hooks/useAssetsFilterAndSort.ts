@@ -17,6 +17,7 @@ import {
   isTokenWithBalanceAVM,
   isTokenWithBalancePVM
 } from '@avalabs/avalanche-module'
+import { useErc20ContractTokens } from 'common/hooks/useErc20ContractTokens'
 
 export const useAssetsFilterAndSort = (): {
   data: LocalTokenWithBalance[]
@@ -24,8 +25,12 @@ export const useAssetsFilterAndSort = (): {
   sort: DropdownSelection
   view: DropdownSelection
   refetch: () => void
+  isRefetching: boolean
 } => {
-  const { filteredTokenList, refetch } = useSearchableTokenList({})
+  const erc20ContractTokens = useErc20ContractTokens()
+  const { filteredTokenList, refetch, isRefetching } = useSearchableTokenList({
+    tokens: erc20ContractTokens
+  })
 
   const [selectedFilter, setSelectedFilter] = useState<IndexPath>({
     section: 0,
@@ -143,8 +148,9 @@ export const useAssetsFilterAndSort = (): {
       sort,
       view,
       data: filteredAndSorted,
-      refetch
+      refetch,
+      isRefetching
     }),
-    [filter, sort, view, filteredAndSorted, refetch]
+    [filter, sort, view, filteredAndSorted, refetch, isRefetching]
   )
 }

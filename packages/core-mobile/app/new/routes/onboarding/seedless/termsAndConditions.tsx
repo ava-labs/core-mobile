@@ -1,25 +1,25 @@
 import React, { useCallback } from 'react'
 import { TermsAndConditions as Component } from 'features/onboarding/components/TermsAndConditions'
 import { useLocalSearchParams, useRouter } from 'expo-router'
-import SeedlessService from 'seedless/services/SeedlessService'
+import { useUserMfa } from 'common/hooks/useUserMfa'
 
 export default function TermsAndConditions(): JSX.Element {
   const { navigate } = useRouter()
+  const { data: mfas } = useUserMfa()
   const { recovering } = useLocalSearchParams<{ recovering: string }>()
 
   const handleAgreeAndContinue = useCallback(async (): Promise<void> => {
     const isRecovering = recovering === 'true'
     if (isRecovering) {
-      const mfas = await SeedlessService.session.userMfa()
-      if (mfas.length === 0) {
-        navigate('./addRecoveryMethods')
+      if (mfas?.length === 0) {
+        navigate('/onboarding/seedless/addRecoveryMethods')
         return
       }
-      navigate('./selectMfaMethod')
+      navigate('/onboarding/seedless/selectMfaMethod')
       return
     }
-    navigate('./addRecoveryMethods')
-  }, [navigate, recovering])
+    navigate('/onboarding/seedless/addRecoveryMethods')
+  }, [mfas?.length, navigate, recovering])
 
   return <Component onAgreeAndContinue={handleAgreeAndContinue} />
 }

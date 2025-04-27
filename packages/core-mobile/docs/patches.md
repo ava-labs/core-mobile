@@ -73,3 +73,7 @@ to fix it, we patched the lib so that the webview is still rendered but won't be
 ### @datadog+mobile-react-native+2.6.4.patch
 
 we can't build Android with this version of datadog. they have fixed this in 2.6.5 but haven't released yet.
+
+### @react-navigation+stack+7.1.2.patch
+
+we need to override CardStyleInterpolators.forModalPresentationIOS to support a custom "formSheet" effect for modals on both iOS and Android

@@ -6,6 +6,7 @@ import Logger from 'utils/Logger'
 import { useRouter } from 'expo-router'
 import { Loader } from 'common/components/Loader'
 import { AuthenticatorSetup as AuthenticatorSetupComponent } from 'features/onboarding/components/AuthenticatorSetup'
+import BlurredBarsContentLayout from 'common/components/BlurredBarsContentLayout'
 
 export default function AuthenticatorSetup(): JSX.Element {
   const { totpKey, handleCopyCode, totpChallenge, setTotpChallenge } =
@@ -14,11 +15,11 @@ export default function AuthenticatorSetup(): JSX.Element {
   const { totpResetInit } = useSeedlessManageMFA()
 
   const goToVerifyCode = (): void => {
-    router.push('./verifyCode')
+    router.push('/onboarding/seedless/verifyCode')
   }
 
   const goToScanQrCode = (): void => {
-    router.navigate('./scanQrCode')
+    router.navigate('/onboarding/seedless/scanQrCode')
   }
 
   useEffect(() => {
@@ -43,11 +44,13 @@ export default function AuthenticatorSetup(): JSX.Element {
   }
 
   return (
-    <AuthenticatorSetupComponent
-      totpKey={totpKey}
-      onScanQrCode={goToScanQrCode}
-      onCopyCode={handleCopyCode}
-      onVerifyCode={goToVerifyCode}
-    />
+    <BlurredBarsContentLayout>
+      <AuthenticatorSetupComponent
+        totpKey={totpKey}
+        onScanQrCode={goToScanQrCode}
+        onCopyCode={handleCopyCode}
+        onVerifyCode={goToVerifyCode}
+      />
+    </BlurredBarsContentLayout>
   )
 }

@@ -2,7 +2,7 @@ import React, { FC } from 'react'
 import { ViewStyle } from 'react-native'
 import { Slider as RNSlider } from 'react-native-awesome-slider'
 import Svg, { Circle } from 'react-native-svg'
-import { SharedValue } from 'react-native-reanimated'
+import { SharedValue, useSharedValue } from 'react-native-reanimated'
 import { useTheme } from '../../hooks'
 import { alpha } from '../../utils'
 import { Text, View } from '../Primitives'
@@ -19,6 +19,9 @@ export const Slider: FC<SliderProps> = ({
   const {
     theme: { colors }
   } = useTheme()
+
+  const minValue = useSharedValue(minimumValue ?? 0)
+  const maxValue = useSharedValue(maximumValue ?? 1)
 
   return (
     <View style={style}>
@@ -42,8 +45,8 @@ export const Slider: FC<SliderProps> = ({
             <Circle cx={12} cy={12} r={8} fill={colors.$textPrimary} />
           </Svg>
         )}
-        minimumValue={minimumValue}
-        maximumValue={maximumValue}
+        minimumValue={minValue}
+        maximumValue={maxValue}
         // Note: The package only clamps the value during onValueChange.
         // If onValueChange isn't triggered, the raw value may go below 0 or above the max.
         onValueChange={newValue => {
@@ -53,7 +56,7 @@ export const Slider: FC<SliderProps> = ({
       {(minimumValueLabel !== undefined || maximumValueLabel !== undefined) && (
         <View
           style={{
-            marginTop: 8,
+            marginTop: 10,
             flexDirection: 'row',
             justifyContent: 'space-between'
           }}>
@@ -73,8 +76,8 @@ type SliderProps = {
   value: SharedValue<number>
   thumbBorderColor?: string
   style?: ViewStyle
-  minimumValue: SharedValue<number>
-  maximumValue: SharedValue<number>
+  minimumValue?: number
+  maximumValue?: number
   minimumValueLabel?: string
   maximumValueLabel?: string
 }

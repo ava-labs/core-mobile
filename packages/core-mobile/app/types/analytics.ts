@@ -177,16 +177,21 @@ export type AnalyticsEvents = {
   BrowserOpened: { openTabs: number }
   BrowserWelcomeScreenButtonTapped: undefined
   BrowserSearchSubmitted: undefined
+  BrowserDiscoverEcosystemProjectTapped: { url: string }
+  BrowserDiscoverFeaturedProjectTapped: { url: string }
+  BrowserDiscoverLearnTapped: { url: string }
   BrowserFavoritesTapped: undefined
   BrowserSuggestedTapped: { url: string }
   BrowserBackTapped: undefined
   BrowserForwardTapped: undefined
+  BrowserRefreshTapped: undefined
   BrowserAddToFavoriteTapped: undefined
   BrowserTabsOpened: undefined
   BrowserNewTabTapped: undefined
   BrowserContextualMenuOpened: undefined
   BrowserShareTapped: undefined
   BrowserViewHistoryTapped: undefined
+  BrowserHistoryTapped: { url: string }
   WalletConnectedToDapp: { dAppUrl: string }
   TxSubmittedToDapp: undefined
 

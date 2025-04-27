@@ -30,5 +30,16 @@ export default {
   bitcoinNetwork: 'Bitcoin network',
   bitcoin: 'Bitcoin',
   allNetworks: 'All networks',
-  balanceHeaderAccountName: 'balance_header_account_name'
+  balanceHeaderAccountName: 'balance_header_account_name',
+  pinInputField: 'pin_input',
+  copyPhrase: 'Copy phrase',
+  copied: 'Copied',
+  save: 'Save',
+  dialogInput: 'dialog_input',
+  copy: 'Copy',
+  selectNetworkBitcoin: 'select_network__Bitcoin',
+  selectNetworkCChainEVM: 'select_network__Avalanche C-Chain/EVM',
+  selectNetworkXPChain: 'select_network__Avalanche X/P-Chain',
+  evmNetwork: 'Avalanche C-Chain/EVM',
+  XPNetwork: 'Avalanche X/P-Chain'
 }

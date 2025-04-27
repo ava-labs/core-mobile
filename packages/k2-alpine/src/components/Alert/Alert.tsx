@@ -1,26 +1,50 @@
-import React, { useEffect, useState } from 'react'
-import { AlertOptions, KeyboardTypeOptions } from 'react-native'
+import React, {
+  forwardRef,
+  useImperativeHandle,
+  useState,
+  useCallback
+} from 'react'
 import Dialog from 'react-native-dialog'
 import { Alert as NativeAlert } from 'react-native'
+import {
+  AlertWithTextInputsHandle,
+  ShowAlertConfig,
+  ShowAlertWithTextInputsConfig
+} from './types'
 
-export const AlertWithTextInputs = ({
-  visible,
-  title,
-  description,
-  verticalButtons,
-  inputs,
-  buttons
-}: AlertWithTextInputsProps): JSX.Element => {
+export const AlertWithTextInputs = forwardRef<
+  AlertWithTextInputsHandle,
+  object
+>((_, ref) => {
+  const [visible, setVisible] = useState(false)
+  const [config, setConfig] = useState<ShowAlertWithTextInputsConfig | null>(
+    null
+  )
   const [values, setValues] = useState<Record<string, string>>({})
 
-  useEffect(() => {
+  const show = useCallback((alertConfig: ShowAlertWithTextInputsConfig) => {
     setValues(
-      inputs.reduce((acc, input) => {
+      alertConfig.inputs.reduce((acc, input) => {
         acc[input.key] = input.defaultValue ?? ''
         return acc
       }, {} as Record<string, string>)
     )
-  }, [inputs])
+    setConfig(alertConfig)
+    setVisible(true)
+  }, [])
+
+  const hide = (): void => {
+    setVisible(false)
+  }
+
+  useImperativeHandle(ref, () => ({
+    show,
+    hide
+  }))
+
+  if (!config) return null
+
+  const { title, description, verticalButtons, inputs, buttons } = config
 
   return (
     <Dialog.Container
@@ -31,23 +55,27 @@ export const AlertWithTextInputs = ({
       {description && description.length > 0 && (
         <Dialog.Description>{description}</Dialog.Description>
       )}
-      {inputs &&
-        inputs.map(input => (
-          <Dialog.Input
-            value={values[input.key]}
-            key={input.key}
-            autoCorrect={false}
-            autoFocus
-            keyboardType={input.keyboardType}
-            secureTextEntry={input.secureTextEntry ?? false}
-            blurOnSubmit
-            onChangeText={(text: string) =>
-              setValues(current => ({ ...current, [input.key]: text }))
-            }
-          />
-        ))}
+      {inputs.map(input => (
+        <Dialog.Input
+          testID="dialog_input"
+          value={values[input.key]}
+          key={input.key}
+          autoCorrect={false}
+          autoFocus
+          keyboardType={input.keyboardType}
+          secureTextEntry={input.secureTextEntry ?? false}
+          blurOnSubmit
+          onChangeText={(text: string) => {
+            const sanitized =
+              typeof input.sanitize === 'function'
+                ? input.sanitize({ key: input.key, text })
+                : text
+            setValues(current => ({ ...current, [input.key]: sanitized }))
+          }}
+        />
+      ))}
       {buttons.map((button, index) => {
-        const disabled = button.shouldDisable && button.shouldDisable(values)
+        const disabled = button.shouldDisable?.(values)
         const bold = button.style === 'cancel'
 
         return (
@@ -64,6 +92,7 @@ export const AlertWithTextInputs = ({
             bold={bold}
             onPress={() => {
               button.onPress?.(values)
+              setVisible(false)
             }}
             disabled={disabled}
           />
@@ -71,40 +100,14 @@ export const AlertWithTextInputs = ({
       })}
     </Dialog.Container>
   )
-}
-
-type AlertWithTextInputsProps = {
-  visible: boolean
-  title?: string
-  description?: string
-  verticalButtons?: boolean
-  inputs: {
-    key: string
-    defaultValue?: string
-    keyboardType?: KeyboardTypeOptions
-    secureTextEntry?: boolean
-  }[]
-  buttons: AlertButton<Record<string, string>>[]
-}
-
-type AlertButton<T> = {
-  text: string
-  style?: 'default' | 'cancel' | 'destructive'
-  onPress?: (values: T) => void
-  shouldDisable?: (values: T) => boolean
-}
+})
 
 export function showAlert({
   title,
   description,
   buttons,
   options
-}: {
-  title: string
-  description?: string
-  buttons: AlertButton<string | undefined>[]
-  options?: AlertOptions
-}): void {
+}: ShowAlertConfig): void {
   // use react-native's Alert for now
   NativeAlert.alert(title, description, buttons, options)
 }

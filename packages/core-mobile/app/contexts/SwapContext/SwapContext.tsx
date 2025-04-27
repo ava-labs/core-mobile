@@ -89,7 +89,10 @@ export const SwapContextProvider = ({
   const [swapStatus, setSwapStatus] = useState<SwapStatus>('Idle')
   const [amount, setAmount] = useState<Amount | undefined>() //the amount that's gonna be passed to paraswap
   const [isFetchingOptimalRate, setIsFetchingOptimalRate] = useState(false)
-  const debouncedAmount = useDebounce(amount, DEFAULT_DEBOUNCE_MILLISECONDS) // debounce since fetching rates via paraswaps can take awhile
+  const { debounced: debouncedAmount } = useDebounce(
+    amount,
+    DEFAULT_DEBOUNCE_MILLISECONDS
+  ) // debounce since fetching rates via paraswaps can take awhile
   const isSwapFeesBlocked = useSelector(selectIsSwapFeesBlocked)
 
   const getOptimalRateForAmount = useCallback(

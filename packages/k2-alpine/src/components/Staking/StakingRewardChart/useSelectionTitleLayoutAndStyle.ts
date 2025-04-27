@@ -4,6 +4,7 @@ import {
   AnimatedStyle,
   SharedValue,
   useAnimatedStyle,
+  withDelay,
   withTiming
 } from 'react-native-reanimated'
 
@@ -30,7 +31,7 @@ export const useSelectionTitleLayoutAndStyle = ({
   }, [])
 
   const animatedStyle = useAnimatedStyle(() => {
-    if (selectionX.value === undefined)
+    if (selectionX.value === undefined || layout === undefined)
       return { opacity: withTiming(0, { duration: 300 }) }
 
     const componentWidth = layout?.width ?? 0
@@ -43,7 +44,7 @@ export const useSelectionTitleLayoutAndStyle = ({
     )
     return {
       transform: [{ translateX }],
-      opacity: withTiming(1, { duration: 300 })
+      opacity: withDelay(300, withTiming(1, { duration: 300 }))
     }
   }, [layout, graphWidth, selectionX])
 

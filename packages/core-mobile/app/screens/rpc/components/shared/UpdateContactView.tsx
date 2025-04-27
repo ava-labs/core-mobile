@@ -2,14 +2,14 @@ import AvaText from 'components/AvaText'
 import React from 'react'
 import { StyleSheet, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
-import { useApplicationContext } from 'contexts/ApplicationContext'
-import OvalTagBg from 'components/OvalTagBg'
+// import { useApplicationContext } from 'contexts/ApplicationContext'
+// import OvalTagBg from 'components/OvalTagBg'
 import { Space } from 'components/Space'
 import AvaButton from 'components/AvaButton'
 import { NativeViewGestureHandler } from 'react-native-gesture-handler'
 import FlexSpacer from 'components/FlexSpacer'
-import AddressBookSVG from 'components/svg/AddressBookSVG'
-import AddressBookItem from 'components/addressBook/AddressBookItem'
+// import AddressBookSVG from 'components/svg/AddressBookSVG'
+// import AddressBookItem from 'components/addressBook/AddressBookItem'
 import { Contact } from '@avalabs/types'
 import RpcRequestBottomSheet from 'screens/rpc/components/shared/RpcRequestBottomSheet'
 
@@ -25,30 +25,29 @@ const UpdateContactView = ({
   onReject,
   onApprove,
   dappUrl,
-  existingContact,
-  contact
-}: Props): JSX.Element => {
-  const theme = useApplicationContext().theme
+  existingContact
+}: // contact
+Props): JSX.Element => {
+  // const theme = useApplicationContext().theme
 
-  const renderContacts = (
-    contactToUpdate: Contact,
-    update: Contact
-  ): JSX.Element => {
-    return (
-      <>
-        <AddressBookItem
-          title={contactToUpdate.name}
-          address={contactToUpdate.address}
-          addressBtc={contactToUpdate.addressBTC}
-        />
-        <AddressBookItem
-          title={update.name}
-          address={update.address}
-          addressBtc={update.addressBTC}
-        />
-      </>
-    )
-  }
+  // const renderContacts = (): // contactToUpdate: Contact,
+  // // update: Contact
+  // JSX.Element => {
+  //   return (
+  //     <>
+  //       {/* <AddressBookItem
+  //         title={contactToUpdate.name}
+  //         address={contactToUpdate.address}
+  //         addressBtc={contactToUpdate.addressBTC}
+  //       />
+  //       <AddressBookItem
+  //         title={update.name}
+  //         address={update.address}
+  //         addressBtc={update.addressBTC}
+  //       /> */}
+  //     </>
+  //   )
+  // }
 
   return (
     <RpcRequestBottomSheet onClose={onReject}>
@@ -58,14 +57,14 @@ const UpdateContactView = ({
             <AvaText.LargeTitleBold>Update Contact?</AvaText.LargeTitleBold>
             <Space y={35} />
             <View style={styles.subTitleView}>
-              <OvalTagBg
+              {/* <OvalTagBg
                 style={{
                   height: 80,
                   width: 80,
                   backgroundColor: theme.colorBg3
-                }}>
-                <AddressBookSVG size={48} />
-              </OvalTagBg>
+                }}> */}
+              {/* <AddressBookSVG size={48} /> */}
+              {/* </OvalTagBg> */}
               <Space y={15} />
               <AvaText.Body1 textStyle={styles.subTileText}>
                 {new URL(dappUrl).hostname} is requesting to update a contact:
@@ -73,7 +72,7 @@ const UpdateContactView = ({
               <Space y={16} />
             </View>
             <Space y={30} />
-            {renderContacts(existingContact, contact)}
+            {/* {renderContacts(existingContact, contact)} */}
             <FlexSpacer />
             <View style={styles.actionContainer}>
               <AvaButton.PrimaryMedium onPress={onApprove}>

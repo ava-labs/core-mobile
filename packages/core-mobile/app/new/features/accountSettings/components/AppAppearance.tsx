@@ -7,12 +7,10 @@ import { selectSelectedAppearance } from 'store/settings/appearance'
 
 export const AppAppearance = ({
   selectAppAppearance,
-  selectAppIcon,
   selectCurrency
 }: {
   selectCurrency: () => void
   selectAppAppearance: () => void
-  selectAppIcon: () => void
 }): React.JSX.Element => {
   const {
     theme: { colors }
@@ -50,14 +48,9 @@ export const AppAppearance = ({
       )
     },
     {
-      title: 'Appearance',
+      title: 'Theme',
       onPress: selectAppAppearance,
       value: appearance
-    },
-    {
-      title: 'App icon',
-      onPress: selectAppIcon,
-      value: 'Default'
     }
   ]
 

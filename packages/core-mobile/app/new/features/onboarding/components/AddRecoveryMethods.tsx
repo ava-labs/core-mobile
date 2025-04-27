@@ -7,18 +7,16 @@ import { RecoveryMethodList } from 'features/onboarding/components/RecoveryMetho
 import ScreenHeader from 'common/components/ScreenHeader'
 
 export const AddRecoveryMethods = ({
-  setSelectedMethod,
   oidcAuth,
   availableRecoveryMethods,
   allowsUserToAddLater,
   onNext,
   onSkip
 }: {
-  setSelectedMethod: (method: RecoveryMethod) => void
   oidcAuth?: OidcAuth
   availableRecoveryMethods: RecoveryMethod[]
   allowsUserToAddLater: boolean
-  onNext: () => void
+  onNext: (method: RecoveryMethod) => void
   onSkip: () => void
 }): JSX.Element => {
   return (
@@ -35,19 +33,9 @@ export const AddRecoveryMethods = ({
           description="Add recovery methods to securely restore access in case you lose
             your credentials."
         />
-        <RecoveryMethodList
-          data={availableRecoveryMethods}
-          onPress={setSelectedMethod}
-        />
+        <RecoveryMethodList data={availableRecoveryMethods} onPress={onNext} />
       </ScrollView>
-      <View sx={{ paddingHorizontal: 16, gap: 16, paddingBottom: 60 }}>
-        <Button
-          type="primary"
-          size="large"
-          onPress={onNext}
-          disabled={availableRecoveryMethods.length === 0}>
-          Next
-        </Button>
+      <View sx={{ paddingHorizontal: 16, paddingBottom: 60 }}>
         {oidcAuth === undefined && allowsUserToAddLater && (
           <Button type="tertiary" size="large" onPress={onSkip}>
             Skip

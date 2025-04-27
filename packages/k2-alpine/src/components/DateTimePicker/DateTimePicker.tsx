@@ -6,6 +6,7 @@ import { useTheme } from '../../hooks'
 export const DateTimePicker: React.FC<DateTimePickerProps> = ({
   date,
   onDateSelected,
+  onCancel,
   setIsVisible,
   isVisible,
   minimumDate,
@@ -22,6 +23,8 @@ export const DateTimePicker: React.FC<DateTimePickerProps> = ({
     setIsVisible(false)
   }
   const handleCancel = (): void => {
+    onCancel?.()
+
     setIsVisible(false)
   }
 
@@ -33,6 +36,7 @@ export const DateTimePicker: React.FC<DateTimePickerProps> = ({
       isVisible={isVisible}
       mode={mode ?? 'date'}
       onConfirm={handleConfirm}
+      onChange={handleConfirm}
       onCancel={handleCancel}
       minimumDate={minimumDate}
       maximumDate={maximumDate}
@@ -51,6 +55,7 @@ export const DateTimePicker: React.FC<DateTimePickerProps> = ({
 interface DateTimePickerProps {
   date?: Date
   onDateSelected: (date: Date) => void
+  onCancel?: () => void
   setIsVisible: (value: boolean) => void
   isVisible: boolean
   minimumDate?: Date

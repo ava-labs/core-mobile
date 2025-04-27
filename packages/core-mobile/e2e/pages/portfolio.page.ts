@@ -164,6 +164,10 @@ class PortfolioPage {
     return by.id(portfolio.portfolioTokenList)
   }
 
+  get testnetModeIsOn() {
+    return by.text(portfolio.testnetModeIsOn)
+  }
+
   async verifyPorfolioScreen() {
     await Assert.isVisible(this.viewAllBtn)
     await Assert.isVisible(this.favoritesHeader)

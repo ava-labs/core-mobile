@@ -1,7 +1,7 @@
-import React, { useState, useCallback, useEffect, useLayoutEffect } from 'react'
+import React, { useState, useCallback, useEffect } from 'react'
 import { useRouter } from 'expo-router'
-import { useNavigation } from '@react-navigation/native'
-import { showAlert } from '@avalabs/k2-alpine'
+import { useFocusEffect, useNavigation } from '@react-navigation/native'
+import { showAlert, View } from '@avalabs/k2-alpine'
 import Logger from 'utils/Logger'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import BackBarButton from 'common/components/BackBarButton'
@@ -10,13 +10,14 @@ import {
   getConfirmCloseDelayText,
   useSeedlessMnemonicExportContext
 } from 'features/accountSettings/context/SeedlessMnemonicExportProvider'
+import { Platform } from 'react-native'
 import { SeedlessExportMnemonicPhrase } from 'features/accountSettings/components/SeedlessExportMnemonicPhrase'
 
 const SeedlessExportReadyScreen = (): JSX.Element => {
   const { back, canGoBack } = useRouter()
   const { deleteExport, completeExport, mnemonic } =
     useSeedlessMnemonicExportContext()
-  const { setOptions, getParent } = useNavigation()
+  const { getParent } = useNavigation()
   const [hideMnemonic, setHideMnemonic] = useState(true)
 
   const onCancelExportRequest = useCallback(
@@ -72,15 +73,30 @@ const SeedlessExportReadyScreen = (): JSX.Element => {
   }, [onCancelExportRequest])
 
   const renderCustomBackButton = useCallback(
-    () => <BackBarButton onBack={customGoBack} />,
+    () => (
+      <View
+        sx={{
+          marginLeft: Platform.OS === 'android' ? 12 : 0
+        }}>
+        <BackBarButton onBack={customGoBack} />
+      </View>
+    ),
     [customGoBack]
   )
 
-  useLayoutEffect(() => {
-    getParent()?.setOptions({
-      headerLeft: renderCustomBackButton
-    })
-  }, [customGoBack, getParent, renderCustomBackButton, setOptions])
+  useFocusEffect(
+    useCallback(() => {
+      getParent()?.setOptions({
+        headerLeft: renderCustomBackButton
+      })
+
+      return () => {
+        getParent()?.setOptions({
+          headerLeft: undefined
+        })
+      }
+    }, [getParent, renderCustomBackButton])
+  )
 
   return (
     <SeedlessExportMnemonicPhrase

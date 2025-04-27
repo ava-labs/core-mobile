@@ -51,9 +51,9 @@ export default function CreatePin(): JSX.Element {
             BiometricsSDK.storeWalletWithBiometry(SEEDLESS_MNEMONIC_STUB)
           }
           if (hasWalletName) {
-            navigate('./selectAvatar')
+            navigate('/onboarding/seedless/selectAvatar')
           } else {
-            navigate('./setWalletName')
+            navigate('/onboarding/seedless/setWalletName')
           }
         })
         .catch(Logger.error)

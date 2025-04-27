@@ -6,6 +6,7 @@ import { element, waitFor } from 'detox'
 import { Page } from '@playwright/test'
 import { Platform } from './constants'
 import Constants from './constants'
+import delay from './waits'
 const fs = require('fs')
 
 const balanceToNumber = async (balance: Detox.NativeMatcher, index = 0) => {
@@ -16,6 +17,12 @@ const balanceToNumber = async (balance: Detox.NativeMatcher, index = 0) => {
 
 const tap = async (item: Detox.NativeMatcher) => {
   await element(item).tap()
+}
+
+const waitAndTap = async (item: Detox.NativeMatcher, timeout = 5000) => {
+  await waitForElementNoSync(item, timeout)
+  await delay(500)
+  await tap(item)
 }
 
 const tapAtXAndY = async (
@@ -58,8 +65,8 @@ const tapElementAtIndexNoSync = async (
   }
 }
 
-const longPress = async (item: Detox.NativeMatcher) => {
-  await element(item).longPress()
+const longPress = async (item: Detox.NativeMatcher, duration = 100) => {
+  await element(item).longPress(duration)
 }
 
 const setColumnToValue = async (
@@ -96,7 +103,7 @@ const dismissKeyboard = async (searchBarId = 'search_bar__search') => {
 
 const waitForElement = async (
   item: Detox.NativeMatcher,
-  timeout = 2000,
+  timeout = 5000,
   index = 0
 ) => {
   await waitFor(element(item).atIndex(index)).toBeVisible().withTimeout(timeout)
@@ -472,5 +479,6 @@ export default {
   getAmount,
   getRandomEle,
   getRandomIndex,
-  isWithinTolerance
+  isWithinTolerance,
+  waitAndTap
 }

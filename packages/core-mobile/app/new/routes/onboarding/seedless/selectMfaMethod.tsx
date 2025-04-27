@@ -23,11 +23,11 @@ const SelectMfaMethodScreen = (): JSX.Element => {
         oidcAuth,
         onAccountVerified: mfaType => {
           if (mfaType === 'totp') {
-            navigate('./verifyCode')
+            navigate('/onboarding/seedless/verifyCode')
             return
           }
           if (mfaType === 'fido') {
-            navigate('./analyticsConsent')
+            navigate('/onboarding/seedless/analyticsConsent')
           }
         }
       })

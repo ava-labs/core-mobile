@@ -40,6 +40,8 @@ export const useCollectiblesFilterAndSort = (
   sort: DropdownSelection
   view: DropdownSelection
   isEveryCollectibleHidden: boolean
+  isUnprocessableHidden: boolean
+  isHiddenVisible: boolean
   onResetFilter: () => void
   onShowHidden: () => void
 } => {
@@ -123,10 +125,12 @@ export const useCollectiblesFilterAndSort = (
       title: 'Sort',
       data: COLLECTIBLE_SORTS,
       selected: selectedSort,
-      onSelected: setSelectedSort
+      onSelected: setSelectedSort,
+      useAnchorRect: true
     }),
     [selectedSort]
   )
+
   const view = useMemo(
     () => ({
       title: 'View',
@@ -159,7 +163,7 @@ export const useCollectiblesFilterAndSort = (
 
       if (isUnprocessableHidden)
         nfts = nfts.filter((nft: NftItem) => {
-          return nft.status !== NftLocalStatus.Unprocessable
+          return nft.status === NftLocalStatus.Processed
         })
 
       if (contentType !== CollectibleStatus.Hidden)
@@ -171,9 +175,9 @@ export const useCollectiblesFilterAndSort = (
         nfts = nfts.filter((nft: NftItem) => {
           switch (network) {
             case AssetNetworkFilter.AvalancheCChain:
-              return isAvalancheChainId(nft.chainId)
+              return isAvalancheChainId(nft.networkChainId)
             case AssetNetworkFilter.Ethereum:
-              return isEthereumChainId(nft.chainId)
+              return isEthereumChainId(nft.networkChainId)
             default:
               return true
           }
@@ -249,12 +253,16 @@ export const useCollectiblesFilterAndSort = (
     [collectibles?.length, collectiblesVisibility, filteredAndSorted]
   )
 
+  const isHiddenVisible = filter.selected[1]?.row !== 3
+
   return {
     filteredAndSorted,
     filter: filter as DropdownSelection & { selected: IndexPath[] },
     sort,
     view,
+    isHiddenVisible,
     isEveryCollectibleHidden,
+    isUnprocessableHidden,
     onResetFilter,
     onShowHidden
   }

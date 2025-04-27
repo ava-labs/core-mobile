@@ -1,5 +1,6 @@
 import React from 'react'
-import { KeyboardAvoidingView as Component, Platform } from 'react-native'
+import { Platform } from 'react-native'
+import { KeyboardAvoidingView as Component } from 'react-native-keyboard-controller'
 
 export const KeyboardAvoidingView = ({
   children

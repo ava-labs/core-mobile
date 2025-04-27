@@ -51,9 +51,7 @@ export interface GlowRef {
 export const Glow = forwardRef<
   GlowRef,
   { size: number; autoPlay?: boolean; style?: ViewStyle }
->(({ size = 256, autoPlay, style }, ref): ReactNode => {
-  const circleSize = size * 0.7
-
+>(({ size, autoPlay, style }, ref): ReactNode => {
   const rotation = useSharedValue(START_ROTATION)
   const opacity = useSharedValue(START_OPACITY)
   const scale = useSharedValue(START_SCALE)
@@ -110,29 +108,37 @@ export const Glow = forwardRef<
   return (
     <Animated.View
       style={[{ width: size, height: size }, style, animatedStyle]}>
-      <Canvas style={{ flex: 1 }}>
-        <Group
-          layer={
-            <Paint>
-              <Blur blur={50} />
-            </Paint>
-          }>
-          <Circle cx={size / 2} cy={size / 2} r={circleSize / 2}>
-            <SweepGradient
-              c={vec(size / 2, size / 2)}
-              colors={[
-                '#B0FF18',
-                '#B0FF18',
-                '#A1FF68',
-                '#26F2FF',
-                '#7748FF',
-                '#FF048C'
-              ]}
-              positions={[0.05, 0.08, 0.25, 0.35, 0.5, 0.7]}
-            />
-          </Circle>
-        </Group>
-      </Canvas>
+      <GlowCircle size={size} />
     </Animated.View>
   )
 })
+
+export const GlowCircle = ({ size = 256 }: { size?: number }): ReactNode => {
+  const circleSize = size * 0.7
+
+  return (
+    <Canvas style={{ flex: 1 }}>
+      <Group
+        layer={
+          <Paint>
+            <Blur blur={50} />
+          </Paint>
+        }>
+        <Circle cx={size / 2} cy={size / 2} r={circleSize / 2}>
+          <SweepGradient
+            c={vec(size / 2, size / 2)}
+            colors={[
+              '#B0FF18',
+              '#B0FF18',
+              '#A1FF68',
+              '#26F2FF',
+              '#7748FF',
+              '#FF048C'
+            ]}
+            positions={[0.05, 0.08, 0.25, 0.35, 0.5, 0.7]}
+          />
+        </Circle>
+      </Group>
+    </Canvas>
+  )
+}

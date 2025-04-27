@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React from 'react'
 import { useRouter } from 'expo-router'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import {
@@ -8,23 +8,18 @@ import {
 import { AddRecoveryMethods as Component } from 'features/onboarding/components/AddRecoveryMethods'
 import { useRecoveryMethodContext } from 'features/onboarding/contexts/RecoveryMethodProvider'
 import { FidoType } from 'services/passkey/types'
+import { RecoveryMethod } from 'features/onboarding/hooks/useAvailableRecoveryMethods'
 
 const AddRecoveryMethods = (): JSX.Element => {
   const { navigate } = useRouter()
   const { oidcAuth } = useRecoveryMethodContext()
   const availableRecoveryMethods = useAvailableRecoveryMethods()
 
-  const [selectedMethod, setSelectedMethod] = useState(
-    availableRecoveryMethods.length > 0
-      ? availableRecoveryMethods[0]
-      : undefined
-  )
-
-  const handleOnNext = (): void => {
+  const handleOnNext = (selectedMethod: RecoveryMethod): void => {
     if (selectedMethod?.type === RecoveryMethods.Passkey) {
       AnalyticsService.capture('SeedlessAddMfa', { type: FidoType.PASS_KEY })
       navigate({
-        pathname: './fidoNameInput',
+        pathname: '/onboarding/seedless/fidoNameInput',
         params: {
           title: 'How would you like to name your passkey?',
           description: 'Add a Passkey name, so it’s easier to find later',
@@ -37,7 +32,7 @@ const AddRecoveryMethods = (): JSX.Element => {
     if (selectedMethod?.type === RecoveryMethods.Yubikey) {
       AnalyticsService.capture('SeedlessAddMfa', { type: FidoType.YUBI_KEY })
       navigate({
-        pathname: './fidoNameInput',
+        pathname: '/onboarding/seedless/fidoNameInput',
         params: {
           title: 'How would you like to name your YubiKey?',
           description: 'Add a YubiKey name, so it’s easier to find later',
@@ -48,13 +43,13 @@ const AddRecoveryMethods = (): JSX.Element => {
       return
     }
     if (selectedMethod?.type === RecoveryMethods.Authenticator) {
-      navigate('./authenticatorSetup')
+      navigate('/onboarding/seedless/authenticatorSetup')
       AnalyticsService.capture('SeedlessAddMfa', { type: 'Authenticator' })
     }
   }
 
   const handleOnSkip = (): void => {
-    navigate('./analyticsConsent')
+    navigate('/onboarding/seedless/analyticsConsent')
   }
 
   return (
@@ -64,8 +59,6 @@ const AddRecoveryMethods = (): JSX.Element => {
       allowsUserToAddLater={true}
       oidcAuth={oidcAuth}
       availableRecoveryMethods={availableRecoveryMethods}
-      selectedMethod={selectedMethod}
-      setSelectedMethod={setSelectedMethod}
     />
   )
 }

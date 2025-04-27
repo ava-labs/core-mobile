@@ -108,26 +108,28 @@ export function useWallet(): UseWallet {
         masterfingerprint
       })
 
-      dispatch(onLogIn())
+        dispatch(onLogIn())
 
-      AnalyticsService.capture('OnboardingSubmitSucceeded', {
-        walletType: walletType
-      })
-    } catch (e) {
-      Logger.error('Unable to create wallet', e)
+        AnalyticsService.capture('OnboardingSubmitSucceeded', {
+          walletType: walletType
+        })
+      } catch (e) {
+        Logger.error('Unable to create wallet', e)
 
-      AnalyticsService.capture('OnboardingSubmitFailed', {
-        walletType: walletType
-      })
-    }
-  }
+        AnalyticsService.capture('OnboardingSubmitFailed', {
+          walletType: walletType
+        })
+      }
+    },
+    [dispatch]
+  )
 
   /**
    * Destroys the wallet instance
    */
-  async function destroyWallet(): Promise<void> {
+  const destroyWallet = useCallback(async () => {
     await walletService.destroy()
-  }
+  }, [])
 
   return {
     onPinCreated,

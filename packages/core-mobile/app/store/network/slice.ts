@@ -1,11 +1,11 @@
-import { createAction, createSlice, PayloadAction } from '@reduxjs/toolkit'
 import {
   BITCOIN_NETWORK,
   ChainId as ChainsSDKChainId,
   Network
 } from '@avalabs/core-chains-sdk'
-import { selectIsDeveloperMode } from 'store/settings/advanced'
+import { createAction, createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { getNetworksFromCache } from 'hooks/networks/utils/getNetworksFromCache'
+import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { RootState } from '../index'
 import { ChainID, Networks, NetworkState } from './types'
 
@@ -55,6 +55,20 @@ export const networkSlice = createSlice({
     addCustomNetwork: (state, action: PayloadAction<Network>) => {
       const network = action.payload
       state.customNetworks[network.chainId] = network
+    },
+    updateCustomNetwork: (
+      state,
+      action: PayloadAction<{ chainId: ChainID; network: Network }>
+    ) => {
+      const chainId = action.payload.chainId
+      const network = action.payload.network
+
+      if (chainId === network.chainId) {
+        state.customNetworks[chainId] = network
+      } else {
+        delete state.customNetworks[chainId]
+        state.customNetworks[network.chainId] = network
+      }
     },
     removeCustomNetwork: (state, action: PayloadAction<ChainID>) => {
       const chainId = action.payload
@@ -155,7 +169,8 @@ export const {
   setActive,
   toggleFavorite,
   addCustomNetwork,
-  removeCustomNetwork
+  removeCustomNetwork,
+  updateCustomNetwork
 } = networkSlice.actions
 
 export const networkReducer = networkSlice.reducer

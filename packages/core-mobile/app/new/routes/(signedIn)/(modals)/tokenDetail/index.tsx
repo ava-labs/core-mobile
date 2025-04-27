@@ -6,7 +6,7 @@ import {
   View
 } from '@avalabs/k2-alpine'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
-import { useLocalSearchParams } from 'expo-router'
+import { useLocalSearchParams, useRouter } from 'expo-router'
 import React, { useCallback, useMemo, useRef, useState } from 'react'
 import { useSelector } from 'react-redux'
 import {
@@ -27,7 +27,6 @@ import Animated, {
   useAnimatedStyle,
   useSharedValue
 } from 'react-native-reanimated'
-import useInAppBrowser from 'hooks/useInAppBrowser'
 import { ActionButtonTitle } from 'features/portfolio/assets/consts'
 import {
   ActionButton,
@@ -48,22 +47,41 @@ import {
   isTokenWithBalancePVM
 } from '@avalabs/avalanche-module'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { UI, useIsUIDisabledForNetwork } from 'hooks/useIsUIDisabled'
+import { useCoreBrowser } from 'common/hooks/useCoreBrowser'
+import { useErc20ContractTokens } from 'common/hooks/useErc20ContractTokens'
+import { useNavigateToSwap } from 'features/swap/hooks/useNavigateToSwap'
+import { useAddStake } from 'features/stake/hooks/useAddStake'
+import useCChainNetwork from 'hooks/earn/useCChainNetwork'
+import { AVAX_TOKEN_ID } from 'features/swap/const'
+import { BridgeTransaction } from '@avalabs/core-bridge-sdk'
+import { BridgeTransfer } from '@avalabs/bridge-unified'
+import { getSourceChainId } from 'features/bridge/utils/bridgeUtils'
+import { selectIsDeveloperMode } from 'store/settings/advanced'
+import { useAssetBalances } from 'features/bridge/hooks/useAssetBalances'
 
 const TokenDetailScreen = (): React.JSX.Element => {
   const {
     theme: { colors }
   } = useTheme()
+  const { navigate } = useRouter()
+  const { navigateToSwap } = useNavigateToSwap()
+  const { addStake, canAddStake } = useAddStake()
   const botomInset = useSafeAreaInsets().bottom
   const tabViewRef = useRef<CollapsibleTabsRef>(null)
-  const { openUrl } = useInAppBrowser()
+  const { openUrl } = useCoreBrowser()
   const [tokenHeaderLayout, setTokenHeaderLayout] = useState<
     LayoutRectangle | undefined
   >()
   const { localId } = useLocalSearchParams<{
     localId: string
   }>()
+  const isDeveloperMode = useSelector(selectIsDeveloperMode)
 
-  const { filteredTokenList } = useSearchableTokenList({})
+  const erc20ContractTokens = useErc20ContractTokens()
+  const { filteredTokenList } = useSearchableTokenList({
+    tokens: erc20ContractTokens
+  })
 
   const token = useMemo(() => {
     return filteredTokenList.find(tk => tk.localId === localId)
@@ -91,6 +109,98 @@ const TokenDetailScreen = (): React.JSX.Element => {
     [tokenName]
   )
 
+  const isSwapDisabled = useIsUIDisabledForNetwork(
+    UI.Swap,
+    token?.networkChainId
+  )
+  const isBridgeDisabled = useIsUIDisabledForNetwork(
+    UI.Bridge,
+    token?.networkChainId
+  )
+  const { assetsWithBalances } = useAssetBalances(token?.networkChainId)
+  const isTokenBridgeable = Boolean(
+    assetsWithBalances &&
+      assetsWithBalances.some(
+        asset => (asset.symbolOnNetwork ?? asset.symbol) === token?.symbol
+      )
+  )
+
+  const cChainNetwork = useCChainNetwork()
+  const isTokenStakable = useMemo(
+    () =>
+      token?.networkChainId === cChainNetwork?.chainId &&
+      token?.localId === AVAX_TOKEN_ID,
+    [cChainNetwork, token]
+  )
+
+  const handleBridge = useCallback(() => {
+    navigate({
+      pathname: '/bridge',
+      params: token
+        ? {
+            initialSourceNetworkChainId: token.networkChainId,
+            initialTokenSymbol: token.symbol
+          }
+        : undefined
+    })
+  }, [navigate, token])
+
+  const handleBuy = useCallback(() => {
+    navigate({
+      pathname: '/buy'
+    })
+  }, [navigate])
+
+  const actionButtons: ActionButton[] = useMemo(() => {
+    const buttons: ActionButton[] = [
+      { title: ActionButtonTitle.Send, icon: 'send', onPress: noop }
+    ]
+
+    if (!isSwapDisabled) {
+      buttons.push({
+        title: ActionButtonTitle.Swap,
+        icon: 'swap',
+        onPress: () => navigateToSwap(token?.localId)
+      })
+    }
+
+    buttons.push({
+      title: ActionButtonTitle.Buy,
+      icon: 'buy',
+      onPress: handleBuy
+    })
+
+    if (isTokenStakable) {
+      buttons.push({
+        title: ActionButtonTitle.Stake,
+        icon: 'stake',
+        disabled: !canAddStake,
+        onPress: addStake
+      })
+    }
+
+    if (!isBridgeDisabled && isTokenBridgeable) {
+      buttons.push({
+        title: ActionButtonTitle.Bridge,
+        icon: 'bridge',
+        onPress: handleBridge
+      })
+    }
+
+    return buttons
+  }, [
+    isSwapDisabled,
+    isBridgeDisabled,
+    isTokenBridgeable,
+    handleBridge,
+    handleBuy,
+    navigateToSwap,
+    token,
+    canAddStake,
+    isTokenStakable,
+    addStake
+  ])
+
   const { onScroll, targetHiddenProgress } = useFadingHeaderNavigation({
     header: header,
     targetLayout: tokenHeaderLayout
@@ -113,9 +223,22 @@ const TokenDetailScreen = (): React.JSX.Element => {
   const handleExplorerLink = useCallback(
     (explorerLink: string): void => {
       AnalyticsService.capture('ActivityCardLinkClicked')
-      openUrl(explorerLink)
+      openUrl({ url: explorerLink, title: '' })
     },
     [openUrl]
+  )
+
+  const handlePendingBridge = useCallback(
+    (pendingBridge: BridgeTransaction | BridgeTransfer): void => {
+      navigate({
+        pathname: '/bridgeStatus',
+        params: {
+          txHash: pendingBridge.sourceTxHash,
+          chainId: getSourceChainId(pendingBridge, isDeveloperMode)
+        }
+      })
+    },
+    [navigate, isDeveloperMode]
   )
 
   const handleSelectSegment = useCallback(
@@ -170,7 +293,7 @@ const TokenDetailScreen = (): React.JSX.Element => {
             />
           </Animated.View>
         </View>
-        <ActionButtons buttons={ACTION_BUTTONS} />
+        <ActionButtons buttons={actionButtons} />
       </View>
     )
   }, [
@@ -181,7 +304,8 @@ const TokenDetailScreen = (): React.JSX.Element => {
     isBalanceAccurate,
     isBalanceLoading,
     selectedCurrency,
-    token
+    token,
+    actionButtons
   ])
 
   const tabs = useMemo(() => {
@@ -191,6 +315,7 @@ const TokenDetailScreen = (): React.JSX.Element => {
         <TransactionHistory
           token={token}
           handleExplorerLink={handleExplorerLink}
+          handlePendingBridge={handlePendingBridge}
         />
       )
     }
@@ -204,7 +329,7 @@ const TokenDetailScreen = (): React.JSX.Element => {
           activityTab
         ]
       : [activityTab]
-  }, [handleExplorerLink, isXpToken, token])
+  }, [handleExplorerLink, isXpToken, token, handlePendingBridge])
 
   return (
     <BlurredBarsContentLayout>
@@ -237,14 +362,5 @@ export enum TokenDetailTab {
 }
 
 const SEGMENT_ITEMS = [TokenDetailTab.Tokens, TokenDetailTab.Activity]
-
-const ACTION_BUTTONS: ActionButton[] = [
-  { title: ActionButtonTitle.Send, icon: 'send', onPress: noop },
-  { title: ActionButtonTitle.Swap, icon: 'swap', onPress: noop },
-  { title: ActionButtonTitle.Buy, icon: 'buy', onPress: noop },
-  { title: ActionButtonTitle.Stake, icon: 'stake', onPress: noop },
-  { title: ActionButtonTitle.Bridge, icon: 'bridge', onPress: noop },
-  { title: ActionButtonTitle.Connect, icon: 'connect', onPress: noop }
-]
 
 export default TokenDetailScreen

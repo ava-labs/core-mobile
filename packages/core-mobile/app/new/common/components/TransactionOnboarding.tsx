@@ -77,10 +77,17 @@ export const TransactionOnboarding = ({
           })}
           <Text
             variant="heading3"
-            sx={{ textAlign: 'center', marginTop: 24, lineHeight: 30 }}>
+            sx={{
+              textAlign: 'center',
+              marginTop: 24,
+              lineHeight: 30,
+              maxWidth: 300
+            }}>
             {title}
           </Text>
-          <Text variant="subtitle1" sx={{ textAlign: 'center', marginTop: 14 }}>
+          <Text
+            variant="subtitle1"
+            sx={{ textAlign: 'center', marginTop: 14, maxWidth: 320 }}>
             {subtitle}
           </Text>
         </View>
@@ -90,7 +97,7 @@ export const TransactionOnboarding = ({
           data={groupListData}
           titleSx={{ fontFamily: 'Inter-regular', fontSize: 15 }}
           textContainerSx={{
-            paddingVertical: 17
+            paddingVertical: 4
           }}
         />
         <Button type="primary" size="large" onPress={onPressNext}>

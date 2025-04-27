@@ -1,10 +1,11 @@
-import React, { FC } from 'react'
-import { GraphPoint, LineGraph } from 'react-native-graph'
-import { useTheme, View } from '@avalabs/k2-alpine'
+import React, { FC, useCallback } from 'react'
+import { GraphPoint, LineGraph, SelectionDotProps } from 'react-native-graph'
+import { alpha, useTheme, View } from '@avalabs/k2-alpine'
 import { ViewStyle } from 'react-native'
-import { alpha } from '@avalabs/k2-mobile'
 import Svg, { Line } from 'react-native-svg'
 import { K2AlpineTheme } from '@avalabs/k2-alpine/src/theme/theme'
+import { selectSelectedColorScheme } from 'store/settings/appearance'
+import { useSelector } from 'react-redux'
 import { SelectionDot } from './SelectionDot'
 
 const SparklineChart: FC<Props> = ({
@@ -19,7 +20,16 @@ const SparklineChart: FC<Props> = ({
   overrideTheme
 }) => {
   const { theme: defaultTheme } = useTheme()
+  const colorScheme = useSelector(selectSelectedColorScheme)
+
   const theme = overrideTheme ?? defaultTheme
+
+  const SelectionDotWithSelector = useCallback(
+    (props: SelectionDotProps) => {
+      return <SelectionDot colorScheme={colorScheme} {...props} />
+    },
+    [colorScheme]
+  )
 
   const NEGATIVE_GRADIENT_FILL_COLORS = [
     '#FF097F99',
@@ -50,7 +60,7 @@ const SparklineChart: FC<Props> = ({
         points={data}
         gradientFillColors={gradientFillColors}
         enablePanGesture={true}
-        SelectionDot={SelectionDot}
+        SelectionDot={props => SelectionDotWithSelector(props)}
         onPointSelected={onPointSelected}
         onGestureStart={onGestureStart}
         onGestureEnd={onGestureEnd}

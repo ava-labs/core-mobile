@@ -1,42 +1,46 @@
-import React, { useEffect } from 'react'
+import { BlurView } from 'expo-blur'
+import React from 'react'
 import { ImageSourcePropType, Platform, ViewStyle } from 'react-native'
 import Animated, {
-  Easing,
   useAnimatedStyle,
-  useSharedValue,
-  withTiming
+  useSharedValue
 } from 'react-native-reanimated'
-import { BlurView } from 'expo-blur'
-import { View } from '../Primitives'
+import { SvgProps } from 'react-native-svg'
 import { useTheme } from '../../hooks'
-import { HexagonImageView, HexagonBorder } from './HexagonImageView'
-import { useGlowAnimatedStyle } from './useGlowAnimatedStyle'
+import { View } from '../Primitives'
+import { HexagonBorder, HexagonImageView } from './HexagonImageView'
 import { TestnetHexagonImageView } from './TestnetHexagonImageView'
+import { useGlowAnimatedStyle } from './useGlowAnimatedStyle'
+
+export type AvatarType = {
+  id: string
+  source: ImageSourcePropType | React.FC<SvgProps>
+}
 
 export const Avatar = ({
   source,
   size,
   isSelected,
-  isPressed,
   hasBlur,
   style,
   backgroundColor,
   glowEffect,
   testID,
   hasLoading = true,
-  isDeveloperMode = false
+  isDeveloperMode = false,
+  showAddIcon = false
 }: {
-  source: ImageSourcePropType
+  source?: AvatarType['source']
   size: number | 'small' | 'large'
-  backgroundColor: string
+  backgroundColor?: string
   isSelected?: boolean
-  isPressed?: boolean
   hasBlur?: boolean
   style?: ViewStyle
   glowEffect?: { imageSource: ImageSourcePropType; size: number; delay: number }
   testID?: string
   hasLoading?: boolean
   isDeveloperMode?: boolean
+  showAddIcon?: boolean
 }): JSX.Element => {
   const { theme } = useTheme()
 
@@ -71,7 +75,9 @@ export const Avatar = ({
     return (
       <View
         sx={{
-          backgroundColor: surfacePrimaryBlurBgMap[backgroundColor],
+          backgroundColor: backgroundColor
+            ? surfacePrimaryBlurBgMap[backgroundColor]
+            : 'transparent',
           position: 'absolute',
           top: -AVATAR_BLURAREA_INSET + 10,
           left: -AVATAR_BLURAREA_INSET,
@@ -85,7 +91,9 @@ export const Avatar = ({
         {(isAnimating === false || Platform.OS === 'ios') && (
           <>
             <HexagonImageView
-              backgroundColor={backgroundColor}
+              backgroundColor={
+                backgroundColor ? backgroundColor : 'transparent'
+              }
               source={source}
               height={height}
             />
@@ -95,9 +103,10 @@ export const Avatar = ({
                 top: 0,
                 left: 0,
                 right: 0,
-                bottom: 0
+                bottom: 0,
+                overflow: 'hidden'
               }}
-              tint={theme.isDark ? 'dark' : undefined}
+              tint={theme.isDark ? 'dark' : 'light'}
               intensity={75}
               experimentalBlurMethod="dimezisBlurView"
             />
@@ -120,13 +129,6 @@ export const Avatar = ({
     )
   }
 
-  useEffect(() => {
-    pressedAnimation.value = withTiming(isPressed ? 0.95 : 1, {
-      duration: 150,
-      easing: Easing.inOut(Easing.ease)
-    })
-  }, [isPressed, pressedAnimation])
-
   return (
     <Animated.View
       testID={testID}
@@ -142,9 +144,10 @@ export const Avatar = ({
         <HexagonImageView
           source={source}
           height={height}
-          backgroundColor={'white'}
+          backgroundColor={backgroundColor ?? theme.colors.$surfaceSecondary}
           isSelected={isSelected}
           hasLoading={hasLoading}
+          showAddIcon={showAddIcon}
         />
       )}
       <HexagonBorder height={height} />

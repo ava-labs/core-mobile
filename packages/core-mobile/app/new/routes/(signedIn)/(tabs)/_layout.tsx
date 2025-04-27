@@ -1,74 +1,80 @@
-import { Tabs } from 'expo-router'
-import React, { useCallback } from 'react'
-import BlurredBackgroundView from 'common/components/BlurredBackgroundView'
-import { Icons, useTheme } from '@avalabs/k2-alpine'
+import { alpha, useTheme } from '@avalabs/k2-alpine'
+import { BottomTabs } from 'common/components/BottomTabs'
+import React, { useMemo } from 'react'
+import { Platform } from 'react-native'
+
+const isIOS = Platform.OS === 'ios'
+
+const portfolioIcon = require('../../../assets/icons/tabs/layers.png')
+const trackIcon = require('../../../assets/icons/tabs/search-custom.png')
+const stakeIcon = require('../../../assets/icons/tabs/psychiatry.png')
+const browserIcon = require('../../../assets/icons/tabs/compass.png')
+
+const tabLabelStyle = {
+  fontSize: 10,
+  fontFamily: isIOS ? undefined : 'Inter-Medium'
+}
+
+const tabBarInactiveTintOpacity = 0.6
 
 export default function TabLayout(): JSX.Element {
-  const {
-    theme: { isDark }
-  } = useTheme()
-  const backgroundColor = isDark ? '#1E1E2499' : '#FFFFFFCC'
-  const tabBarBackground = useCallback(
-    () => <BlurredBackgroundView backgroundColor={backgroundColor} />,
-    [backgroundColor]
-  )
+  const { theme } = useTheme()
+
+  const tabBarInactiveTintColor = useMemo(() => {
+    return theme.isDark
+      ? alpha(theme.colors.$white, tabBarInactiveTintOpacity)
+      : alpha('#121213', tabBarInactiveTintOpacity)
+  }, [theme.colors.$white, theme.isDark])
+
+  const tabBarStyle = useMemo(() => {
+    return {
+      backgroundColor: theme.isDark
+        ? alpha('#121213', isIOS ? 0.8 : 1)
+        : alpha(theme.colors.$white, isIOS ? 0.8 : 1)
+    }
+  }, [theme.colors.$white, theme.isDark])
 
   return (
-    <Tabs
-      screenOptions={{
-        headerShown: false,
-        tabBarBackground,
-        tabBarLabelStyle: {
-          fontFamily: 'Inter-SemiBold'
-        },
-        tabBarStyle: {
-          position: 'absolute'
-        }
-      }}>
-      <Tabs.Screen
+    <BottomTabs
+      labeled
+      translucent
+      // on Android, page animations are disabled to improve performance.
+      // on iOS, animations remain enabled as they are needed to fix the
+      // BlurView rendering issue in the navigation header.
+      disablePageAnimations={isIOS ? false : true}
+      tabBarActiveTintColor={theme.colors.$textPrimary}
+      scrollEdgeAppearance={'default'}
+      tabBarInactiveTintColor={tabBarInactiveTintColor}
+      tabBarStyle={tabBarStyle}
+      tabLabelStyle={tabLabelStyle}>
+      <BottomTabs.Screen
         name="portfolio"
         options={{
           title: 'Portfolio',
-          tabBarIcon: PortfolioTabBarIcon
+          tabBarIcon: () => portfolioIcon
         }}
       />
-      <Tabs.Screen
+      <BottomTabs.Screen
         name="track"
         options={{
           title: 'Track',
-          tabBarIcon: TrackTabBarIcon
+          tabBarIcon: () => trackIcon
         }}
       />
-      <Tabs.Screen
+      <BottomTabs.Screen
         name="stake"
         options={{
           title: 'Stake',
-          tabBarIcon: StakeTabBarIcon
+          tabBarIcon: () => stakeIcon
         }}
       />
-      <Tabs.Screen
+      <BottomTabs.Screen
         name="browser"
         options={{
           title: 'Browser',
-          tabBarIcon: BrowserTabBarIcon
+          tabBarIcon: () => browserIcon
         }}
       />
-    </Tabs>
+    </BottomTabs>
   )
 }
-
-const PortfolioTabBarIcon = ({ color }: { color: string }): JSX.Element => (
-  <Icons.Maps.Layer testID="portfolio_tab" color={color} />
-)
-
-const TrackTabBarIcon = ({ color }: { color: string }): JSX.Element => (
-  <Icons.Custom.SearchCustom testID="track_tab" color={color} />
-)
-
-const StakeTabBarIcon = ({ color }: { color: string }): JSX.Element => (
-  <Icons.Custom.Psychiatry testID="stake_tab" color={color} />
-)
-
-const BrowserTabBarIcon = ({ color }: { color: string }): JSX.Element => (
-  <Icons.Custom.Compass testID="browser_tab" color={color} />
-)

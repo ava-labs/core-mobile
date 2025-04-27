@@ -23,9 +23,9 @@ export const useTotalBalanceInCurrencyForAccount = (
     selectBalanceForAccountIsAccurate(account?.index ?? 0)
   )
   const currencyBalance =
-    !balanceAccurate && balanceTotalInCurrency === 0
+    !balanceAccurate || balanceTotalInCurrency === 0
       ? '$' + UNKNOWN_AMOUNT
-      : formatCurrency(balanceTotalInCurrency)
+      : formatCurrency({ amount: balanceTotalInCurrency })
 
   return currencyBalance.replace(selectedCurrency, '')
 }

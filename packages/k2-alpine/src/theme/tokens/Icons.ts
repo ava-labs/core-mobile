@@ -6,6 +6,7 @@ import IconTouchID from '../../assets/icons/touch_id.svg'
 import IconPin from '../../assets/icons/pin.svg'
 import IconInfo from '../../assets/icons/info.svg'
 import IconCheckCircleOutline from '../../assets/icons/check_circle_outline.svg'
+import IconCheckCircle from '../../assets/icons/check_circle.svg'
 import IconErrorOutline from '../../assets/icons/error_outline.svg'
 import IconError from '../../assets/icons/error.svg'
 import IconRemoveModerator from '../../assets/icons/remove_moderator.svg'
@@ -60,10 +61,25 @@ import IconLayer from '../../assets/icons/layer.svg'
 import IconHideImage from '../../assets/icons/hide_image.svg'
 import IconClose from '../../assets/icons/close.svg'
 import IconMoreHoriz from '../../assets/icons/more-horiz.svg'
+import IconTabs from '../../assets/icons/tabs.svg'
 import IconLink from '../../assets/icons/link.svg'
 import IconSwitch from '../../assets/icons/switch.svg'
 import IconWaterDrop from '../../assets/icons/water_drop.svg'
 import IconWaterDropFilled from '../../assets/icons/water_drop_filled.svg'
+import IconHistory from '../../assets/icons/history.svg'
+import IconArrowOutward from '../../assets/icons/arrow_outward.svg'
+import IconDoNotDisturbOn from '../../assets/icons/do_not_disturb_on.svg'
+import IconAddCircle from '../../assets/icons/add_circle.svg'
+import IconRefresh from '../../assets/icons/refresh.svg'
+import IconLayers from '../../assets/icons/layers.svg'
+import IconStake from '../../assets/icons/stake.svg'
+import IconBrowser from '../../assets/icons/browser.svg'
+import IconTrack from '../../assets/icons/track.svg'
+import IconWallet from '../../assets/icons/wallet.svg'
+import IconWalletClosed from '../../assets/icons/wallet_closed.svg'
+import IconSwapVertical from '../../assets/icons/swap_vertical.svg'
+import IconBalanceRefresh from '../../assets/icons/balance_refresh.svg'
+import IconCategory from '../../assets/icons/category.svg'
 
 // Transaction types
 import IconTxTypeAdd from '../../assets/icons/tx-type-add.svg'
@@ -127,6 +143,8 @@ import IconAvaxP from '../../assets/tokenLogos/AVAX_P_LIGHT.svg'
 import IconAvaxX from '../../assets/tokenLogos/AVAX_X_LIGHT.svg'
 import IconAvaxPDark from '../../assets/tokenLogos/AVAX_P_DARK.svg'
 import IconAvaxXDark from '../../assets/tokenLogos/AVAX_X_DARK.svg'
+import IconAvaxXPDark from '../../assets/tokenLogos/AVAX_XP_DARK.svg'
+import IconAvaxXPLight from '../../assets/tokenLogos/AVAX_XP_LIGHT.svg'
 
 // Currency/Flag Icons
 import AED from '../../assets/currency-flagKit/currency-aed.svg'
@@ -179,6 +197,7 @@ export const Icons = {
   Action: {
     Info: IconInfo,
     CheckCircleOutline: IconCheckCircleOutline,
+    CheckCircle: IconCheckCircle,
     Clear: IconClear,
     VisibilityOff: IconVisibilityOff,
     VisibilityOn: IconVisibilityOn,
@@ -199,7 +218,14 @@ export const Icons = {
     ChevronRight: IconChevronRight,
     Check: IconCheck,
     ExpandMore: IconExpandMore,
-    MoreHoriz: IconMoreHoriz
+    MoreHoriz: IconMoreHoriz,
+    Tabs: IconTabs,
+    History: IconHistory,
+    Refresh: IconRefresh,
+    Layers: IconLayers,
+    Stake: IconStake,
+    Browser: IconBrowser,
+    Track: IconTrack
   },
   Notification: {
     Sync: IconSync
@@ -223,6 +249,7 @@ export const Icons = {
     StarFilled: IconStarFilled
   },
   Custom: {
+    ArrowOutward: IconArrowOutward,
     BackArrowCustom: IconBackArrowCustom,
     FaceID: IconFaceID,
     TouchID: IconTouchID,
@@ -262,7 +289,14 @@ export const Icons = {
     Unknown: IconTxTypeUnknown,
     Switch: IconSwitch,
     WaterDrop: IconWaterDrop,
-    WaterDropFilled: IconWaterDropFilled
+    WaterDropFilled: IconWaterDropFilled,
+    DoNotDisturbOn: IconDoNotDisturbOn,
+    AddCircle: IconAddCircle,
+    Wallet: IconWallet,
+    WalletClosed: IconWalletClosed,
+    SwapVertical: IconSwapVertical,
+    BalanceRefresh: IconBalanceRefresh,
+    Category: IconCategory
   },
   RecoveryMethod: {
     Passkey: IconPasskey,
@@ -324,7 +358,9 @@ export const Icons = {
     AVAX_P_LIGHT: IconAvaxP,
     AVAX_X_LIGHT: IconAvaxX,
     AVAX_P_DARK: IconAvaxPDark,
-    AVAX_X_DARK: IconAvaxXDark
+    AVAX_X_DARK: IconAvaxXDark,
+    AVAX_XP_DARK: IconAvaxXPDark,
+    AVAX_XP_LIGHT: IconAvaxXPLight
   },
   Currencies: {
     AED: AED,

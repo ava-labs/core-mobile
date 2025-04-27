@@ -49,7 +49,6 @@ enum LoginWithMnemonicStackScreens {
 
 enum WalletScreens {
   AddCustomToken = 'WalletScreens.AddCustomToken',
-  AddressBook = 'WalletScreens.AddressBook',
   CurrencySelector = 'WalletScreens.CurrencySelector',
   Drawer = 'WalletScreens.Drawer',
   Legal = 'WalletScreens.Legal',
@@ -209,14 +208,6 @@ enum SendScreens {
   Send = 'SendScreens.Send'
 }
 
-enum AddressBookScreens {
-  List = 'AddressBookScreens.List',
-  Add = 'AddressBookScreens.Add',
-  Details = 'AddressBookScreens.Details',
-  DeleteConfirm = 'AddressBookScreens.DeleteConfirm',
-  Share = 'AddressBookScreens.Share'
-}
-
 enum BridgeScreens {
   Bridge = 'BridgeScreens.Swap',
   BridgeTransactionStatus = 'BridgeScreens.BridgeTransactionStatus',
@@ -291,7 +282,6 @@ const AppNavigation = {
   Nft: NftScreens,
   NftSend: NftSendScreens,
   Send: SendScreens,
-  AddressBook: AddressBookScreens,
   Bridge: BridgeScreens,
   Portfolio: PortfolioScreens,
   ReceiveTokens: ReceiveTokensScreens,

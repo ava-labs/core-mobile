@@ -1,18 +1,27 @@
 import { useRouter } from 'expo-router'
 import { useNavigation } from '@react-navigation/native'
-import React, { useLayoutEffect, useCallback, useState, useMemo } from 'react'
+import React, {
+  useLayoutEffect,
+  useCallback,
+  useState,
+  useMemo,
+  useRef
+} from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import {
   ActivityIndicator,
   AnimatedBalance,
   GroupList,
   Icons,
+  Pressable,
   ScrollView,
   SearchBar,
   Separator,
   TouchableOpacity,
   useTheme,
-  View
+  View,
+  Text,
+  alpha
 } from '@avalabs/k2-alpine'
 import {
   addAccount,
@@ -25,9 +34,11 @@ import WalletService from 'services/wallet/WalletService'
 import { showSnackbar } from 'common/utils/toast'
 import { truncateAddress } from '@avalabs/core-utils-sdk'
 import { selectIsPrivacyModeEnabled } from 'store/settings/securityPrivacy'
-import { selectTokenVisibility } from 'store/portfolio'
-import { selectBalanceTotalInCurrencyForAccount } from 'store/balance'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
+import { ScrollView as RnScrollView } from 'react-native'
+import { useBalanceForAccount } from 'new/common/contexts/useBalanceForAccount'
+
+const ITEM_HEIGHT = 50
 
 const ManageAccountsScreen = (): React.JSX.Element => {
   const {
@@ -39,11 +50,92 @@ const ManageAccountsScreen = (): React.JSX.Element => {
   const [searchText, setSearchText] = useState('')
   const [isAddingAccount, setIsAddingAccount] = useState(false)
   const accountCollection = useSelector(selectAccounts)
+  const scrollViewRef = useRef<RnScrollView>(null)
 
   const accounts = useMemo(
     () => Object.values(accountCollection),
     [accountCollection]
   )
+
+  const gotoAccountDetails = useCallback(
+    (accountIndex: number): void => {
+      navigate({
+        pathname: '/accountSettings/account',
+        params: { accountIndex: accountIndex.toString() }
+      })
+    },
+    [navigate]
+  )
+
+  const accountSearchResults = useMemo(() => {
+    return accounts.filter(account => {
+      return account.name.toLowerCase().includes(searchText.toLowerCase())
+    })
+  }, [accounts, searchText])
+
+  const data = useMemo(() => {
+    return accountSearchResults.map(account => ({
+      title: (
+        <Text
+          variant="body1"
+          sx={{
+            color: colors.$textPrimary,
+            fontSize: 14,
+            lineHeight: 16,
+            fontWeight: '500'
+          }}>
+          {account.name}
+        </Text>
+      ),
+      subtitle: (
+        <Text
+          variant="mono"
+          sx={{
+            color: alpha(colors.$textPrimary, 0.6),
+            fontSize: 13,
+            lineHeight: 16,
+            fontWeight: '500'
+          }}>
+          {truncateAddress(account.addressC)}
+        </Text>
+      ),
+      leftIcon: account.active ? (
+        <Icons.Custom.CheckSmall
+          color={colors.$textPrimary}
+          width={24}
+          height={24}
+        />
+      ) : (
+        <View sx={{ width: 24 }} />
+      ),
+      value: (
+        <AccountBalance
+          accountIndex={account.index}
+          isActive={account.active}
+        />
+      ),
+      onPress: () => dispatch(setActiveAccountIndex(account.index)),
+      accessory: (
+        <TouchableOpacity
+          hitSlop={16}
+          sx={{ marginLeft: 4 }}
+          onPress={() => gotoAccountDetails(account.index)}>
+          <Icons.Alert.AlertCircle
+            color={colors.$textSecondary}
+            width={18}
+            height={18}
+          />
+        </TouchableOpacity>
+      )
+    }))
+  }, [
+    accountSearchResults,
+    colors.$textPrimary,
+    colors.$textSecondary,
+    dispatch,
+    gotoAccountDetails
+  ])
+
   const handleAddAccount = useCallback(async (): Promise<void> => {
     if (isAddingAccount) return
 
@@ -65,18 +157,12 @@ const ManageAccountsScreen = (): React.JSX.Element => {
       showSnackbar('Unable to add account')
     } finally {
       setIsAddingAccount(false)
-    }
-  }, [accounts, dispatch, isAddingAccount])
-
-  const gotoAccountDetails = useCallback(
-    (accountIndex: number): void => {
-      navigate({
-        pathname: '/accountSettings/account',
-        params: { accountIndex: accountIndex.toString() }
+      scrollViewRef.current?.scrollTo({
+        y: data.length * ITEM_HEIGHT,
+        animated: true
       })
-    },
-    [navigate]
-  )
+    }
+  }, [accounts, data.length, dispatch, isAddingAccount])
 
   const renderHeaderRight = useCallback(() => {
     return (
@@ -105,67 +191,26 @@ const ManageAccountsScreen = (): React.JSX.Element => {
     })
   }, [renderHeaderRight, setOptions])
 
-  const accountSearchResults = useMemo(() => {
-    return accounts.filter(account => {
-      return account.name.toLowerCase().includes(searchText.toLowerCase())
-    })
-  }, [accounts, searchText])
-
-  const data = useMemo(() => {
-    return accountSearchResults.map(account => ({
-      title: account.name,
-      subtitle: truncateAddress(account.addressC),
-      leftIcon: account.active ? (
-        <Icons.Custom.CheckSmall
-          color={colors.$textPrimary}
-          width={24}
-          height={24}
-        />
-      ) : (
-        <View sx={{ width: 24 }} />
-      ),
-      value: <AccountBalance accountIndex={account.index} />,
-      onPress: () => dispatch(setActiveAccountIndex(account.index)),
-      accessory: (
-        <TouchableOpacity
-          hitSlop={16}
-          sx={{ marginLeft: 13 }}
-          onPress={() => gotoAccountDetails(account.index)}>
-          <Icons.Alert.AlertCircle
-            color={colors.$textSecondary}
-            width={18}
-            height={18}
-          />
-        </TouchableOpacity>
-      )
-    }))
-  }, [
-    accountSearchResults,
-    colors.$textPrimary,
-    colors.$textSecondary,
-    dispatch,
-    gotoAccountDetails
-  ])
-
   return (
-    <View>
+    <View sx={{ flex: 1 }}>
       <View sx={{ zIndex: 1000 }}>
-        <SearchBar
-          onTextChanged={setSearchText}
-          searchText={searchText}
-          useDebounce={true}
-        />
+        <View sx={{ alignItems: 'center' }}>
+          <SearchBar
+            onTextChanged={setSearchText}
+            searchText={searchText}
+            useDebounce={true}
+          />
+        </View>
         <Separator sx={{ marginTop: 11, marginBottom: 16 }} />
       </View>
-      <ScrollView sx={{ marginHorizontal: 16 }}>
-        <GroupList
-          data={data}
-          titleSx={{
-            fontSize: 14,
-            lineHeight: 16,
-            fontFamily: 'Inter-Regular'
-          }}
-        />
+      <ScrollView
+        ref={scrollViewRef}
+        sx={{ marginHorizontal: 16, overflow: 'hidden' }}
+        contentContainerStyle={{
+          paddingBottom: ITEM_HEIGHT
+        }}
+        showsVerticalScrollIndicator={false}>
+        <GroupList itemHeight={ITEM_HEIGHT} data={data} />
         <ActivityIndicator animating={isAddingAccount} sx={{ marginTop: 16 }} />
       </ScrollView>
     </View>
@@ -175,27 +220,50 @@ const ManageAccountsScreen = (): React.JSX.Element => {
 export default ManageAccountsScreen
 
 const AccountBalance = ({
+  isActive,
   accountIndex
 }: {
+  isActive: boolean
   accountIndex: number
 }): React.JSX.Element => {
   const isPrivacyModeEnabled = useSelector(selectIsPrivacyModeEnabled)
   const {
     theme: { colors }
   } = useTheme()
-
-  const tokenVisibility = useSelector(selectTokenVisibility)
-  const accountBalance = useSelector(
-    selectBalanceTotalInCurrencyForAccount(accountIndex, tokenVisibility)
-  )
+  const {
+    balance: accountBalance,
+    fetchBalance,
+    isFetchingBalance,
+    isBalanceLoaded
+  } = useBalanceForAccount(accountIndex)
   const { formatCurrency } = useFormatCurrency()
+
+  const balance = useMemo(() => {
+    return formatCurrency({ amount: accountBalance })
+  }, [accountBalance, formatCurrency])
+
+  if (isFetchingBalance) {
+    return <ActivityIndicator size="small" sx={{ marginRight: 4 }} />
+  }
+
+  if (!isBalanceLoaded) {
+    return (
+      <Pressable onPress={fetchBalance}>
+        <Icons.Custom.BalanceRefresh color={colors.$textPrimary} />
+      </Pressable>
+    )
+  }
 
   return (
     <AnimatedBalance
       variant="body1"
-      balance={formatCurrency(accountBalance)}
+      balance={balance}
       shouldMask={isPrivacyModeEnabled}
-      balanceSx={{ color: colors.$textSecondary, lineHeight: 18 }}
+      balanceSx={{
+        color: isActive ? colors.$textPrimary : alpha(colors.$textPrimary, 0.6),
+        lineHeight: 18
+      }}
+      shouldAnimate={false}
     />
   )
 }

@@ -1,10 +1,9 @@
-import { noop } from '@avalabs/core-utils-sdk'
 import {
   BalanceHeader,
   NavigationTitleHeader,
+  PriceChangeStatus,
   SegmentedControl,
   useTheme,
-  PriceChangeStatus,
   View
 } from '@avalabs/k2-alpine'
 import BlurredBarsContentLayout from 'common/components/BlurredBarsContentLayout'
@@ -16,7 +15,6 @@ import {
 import { LinearGradientBottomWrapper } from 'common/components/LinearGradientBottomWrapper'
 import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
-import { useApplicationContext } from 'contexts/ApplicationContext'
 import { useRouter } from 'expo-router'
 import {
   ActionButton,
@@ -27,14 +25,16 @@ import { ActionButtonTitle } from 'features/portfolio/assets/consts'
 import { CollectiblesScreen } from 'features/portfolio/collectibles/components/CollectiblesScreen'
 import { CollectibleFilterAndSortInitialState } from 'features/portfolio/collectibles/hooks/useCollectiblesFilterAndSort'
 import { DeFiScreen } from 'features/portfolio/defi/components/DeFiScreen'
+import { useAddStake } from 'features/stake/hooks/useAddStake'
 import { useWatchlist } from 'hooks/watchlist/useWatchlist'
+import { useFormatCurrency } from 'new/common/hooks/useFormatCurrency'
 import React, { useCallback, useMemo, useRef, useState } from 'react'
 import {
+  InteractionManager,
   LayoutChangeEvent,
   LayoutRectangle,
   Platform,
-  StyleSheet,
-  InteractionManager
+  StyleSheet
 } from 'react-native'
 import Animated, {
   useAnimatedStyle,
@@ -52,42 +52,45 @@ import {
 } from 'store/balance'
 import { selectTokenVisibility } from 'store/portfolio'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
+import { selectSelectedCurrency } from 'store/settings/currency'
 import { selectIsPrivacyModeEnabled } from 'store/settings/securityPrivacy'
+import { useFocusedSelector } from 'utils/performance/useFocusedSelector'
+import { useNavigateToSwap } from 'features/swap/hooks/useNavigateToSwap'
 
 const SEGMENT_ITEMS = ['Assets', 'Collectibles', 'DeFi']
 
 const PortfolioHomeScreen = (): JSX.Element => {
-  const isPrivacyModeEnabled = useSelector(selectIsPrivacyModeEnabled)
+  const isPrivacyModeEnabled = useFocusedSelector(selectIsPrivacyModeEnabled)
   const { theme } = useTheme()
   const { navigate } = useRouter()
+  const { navigateToSwap } = useNavigateToSwap()
+  const { addStake, canAddStake } = useAddStake()
   const [balanceHeaderLayout, setBalanceHeaderLayout] = useState<
     LayoutRectangle | undefined
   >()
-
   const selectedSegmentIndex = useSharedValue(0)
-  const context = useApplicationContext()
-  const activeAccount = useSelector(selectActiveAccount)
-  const isBalanceLoading = useSelector(selectIsLoadingBalances)
-  const isRefetchingBalance = useSelector(selectIsRefetchingBalances)
-  const isDeveloperMode = useSelector(selectIsDeveloperMode)
-  const tokenVisibility = useSelector(selectTokenVisibility)
-  const balanceTotalInCurrency = useSelector(
+  const activeAccount = useFocusedSelector(selectActiveAccount)
+  const isBalanceLoading = useFocusedSelector(selectIsLoadingBalances)
+  const isRefetchingBalance = useFocusedSelector(selectIsRefetchingBalances)
+  const isDeveloperMode = useFocusedSelector(selectIsDeveloperMode)
+  const tokenVisibility = useFocusedSelector(selectTokenVisibility)
+  const balanceTotalInCurrency = useFocusedSelector(
     selectBalanceTotalInCurrencyForAccount(
       activeAccount?.index ?? 0,
       tokenVisibility
     )
   )
   const isLoading = isBalanceLoading || isRefetchingBalance
-  const balanceAccurate = useSelector(
+  const balanceAccurate = useFocusedSelector(
     selectBalanceForAccountIsAccurate(activeAccount?.index ?? 0)
   )
-  const { selectedCurrency, currencyFormatter } = context.appHook
-
+  const selectedCurrency = useSelector(selectSelectedCurrency)
+  const { formatCurrency } = useFormatCurrency()
   const currencyBalance = useMemo(() => {
-    return !balanceAccurate && balanceTotalInCurrency === 0
+    return !balanceAccurate || balanceTotalInCurrency === 0
       ? '$' + UNKNOWN_AMOUNT
-      : currencyFormatter(balanceTotalInCurrency)
-  }, [balanceAccurate, balanceTotalInCurrency, currencyFormatter])
+      : formatCurrency({ amount: balanceTotalInCurrency })
+  }, [balanceAccurate, balanceTotalInCurrency, formatCurrency])
 
   const formattedBalance = useMemo(
     () => currencyBalance.replace(selectedCurrency, ''),
@@ -95,7 +98,7 @@ const PortfolioHomeScreen = (): JSX.Element => {
   )
 
   const { getMarketTokenBySymbol } = useWatchlist()
-  const tokens = useSelector((state: RootState) =>
+  const tokens = useFocusedSelector((state: RootState) =>
     selectTokensWithBalanceForAccount(state, activeAccount?.index)
   )
 
@@ -138,8 +141,16 @@ const PortfolioHomeScreen = (): JSX.Element => {
     []
   )
 
-  const handleStake = useCallback((): void => {
-    navigate({ pathname: '/startStake' })
+  const handleSend = useCallback((): void => {
+    navigate('/send')
+  }, [navigate])
+
+  const handleConnect = useCallback((): void => {
+    navigate('/walletConnectScan')
+  }, [navigate])
+
+  const handleBuy = useCallback((): void => {
+    navigate('/buy')
   }, [navigate])
 
   const header = useMemo(
@@ -155,24 +166,71 @@ const PortfolioHomeScreen = (): JSX.Element => {
 
   const { onScroll, targetHiddenProgress } = useFadingHeaderNavigation({
     header,
-    targetLayout: balanceHeaderLayout
+    targetLayout: balanceHeaderLayout,
+    /*
+     * there's a bug on the Portfolio screen where the BlurView
+     * in the navigation header doesn't render correctly on initial load.
+     * To work around it, we delay the BlurView's rendering slightly
+     * so it captures the correct content behind it.
+     *
+     * note: we are also applying the same solution to the linear gradient bottom wrapper below
+     */
+    shouldDelayBlurOniOS: true
   })
 
   const animatedHeaderStyle = useAnimatedStyle(() => ({
     opacity: 1 - targetHiddenProgress.value
   }))
 
-  const ACTION_BUTTONS: ActionButton[] = useMemo(
-    () => [
-      { title: ActionButtonTitle.Send, icon: 'send', onPress: noop },
-      { title: ActionButtonTitle.Swap, icon: 'swap', onPress: noop },
-      { title: ActionButtonTitle.Buy, icon: 'buy', onPress: noop },
-      { title: ActionButtonTitle.Stake, icon: 'stake', onPress: handleStake },
-      { title: ActionButtonTitle.Bridge, icon: 'bridge', onPress: noop },
-      { title: ActionButtonTitle.Connect, icon: 'connect', onPress: noop }
-    ],
-    [handleStake]
-  )
+  const handleBridge = useCallback(() => {
+    navigate({
+      pathname: '/bridge'
+    })
+  }, [navigate])
+
+  const actionButtons = useMemo(() => {
+    const buttons: ActionButton[] = [
+      { title: ActionButtonTitle.Send, icon: 'send', onPress: handleSend }
+    ]
+    if (!isDeveloperMode) {
+      buttons.push({
+        title: ActionButtonTitle.Swap,
+        icon: 'swap',
+        onPress: () => navigateToSwap()
+      })
+    }
+    buttons.push({
+      title: ActionButtonTitle.Buy,
+      icon: 'buy',
+      onPress: handleBuy
+    })
+    buttons.push({
+      title: ActionButtonTitle.Stake,
+      icon: 'stake',
+      onPress: addStake,
+      disabled: !canAddStake
+    })
+    buttons.push({
+      title: ActionButtonTitle.Bridge,
+      icon: 'bridge',
+      onPress: handleBridge
+    })
+    buttons.push({
+      title: ActionButtonTitle.Connect,
+      icon: 'connect',
+      onPress: handleConnect
+    })
+    return buttons
+  }, [
+    addStake,
+    canAddStake,
+    handleSend,
+    handleBridge,
+    handleConnect,
+    handleBuy,
+    isDeveloperMode,
+    navigateToSwap
+  ])
 
   const renderHeader = useCallback((): JSX.Element => {
     return (
@@ -196,11 +254,17 @@ const PortfolioHomeScreen = (): JSX.Element => {
               accountName={activeAccount?.name ?? ''}
               formattedBalance={formattedBalance}
               currency={selectedCurrency}
-              priceChange={{
-                formattedPrice: `$${Math.abs(totalPriceChanged).toFixed(2)}`,
-                status: indicatorStatus,
-                formattedPercent
-              }}
+              priceChange={
+                totalPriceChanged > 0
+                  ? {
+                      formattedPrice: `$${Math.abs(totalPriceChanged).toFixed(
+                        2
+                      )}`,
+                      status: indicatorStatus,
+                      formattedPercent
+                    }
+                  : undefined
+              }
               errorMessage={
                 balanceAccurate ? undefined : 'Unable to load all balances'
               }
@@ -210,7 +274,7 @@ const PortfolioHomeScreen = (): JSX.Element => {
             />
           </Animated.View>
         </View>
-        <ActionButtons buttons={ACTION_BUTTONS} />
+        <ActionButtons buttons={actionButtons} />
       </View>
     )
   }, [
@@ -227,7 +291,7 @@ const PortfolioHomeScreen = (): JSX.Element => {
     isLoading,
     isPrivacyModeEnabled,
     isDeveloperMode,
-    ACTION_BUTTONS
+    actionButtons
   ])
 
   const handleSelectSegment = useCallback(
@@ -277,6 +341,12 @@ const PortfolioHomeScreen = (): JSX.Element => {
     navigate('/collectibleManagement')
   }, [navigate])
 
+  const handleGoToDiscoverCollectibles = useCallback((): void => {
+    navigate({
+      pathname: '/discoverCollectibles'
+    })
+  }, [navigate])
+
   const renderEmptyTabBar = useCallback((): JSX.Element => <></>, [])
 
   const tabViewRef = useRef<CollapsibleTabsRef>(null)
@@ -289,6 +359,7 @@ const PortfolioHomeScreen = (): JSX.Element => {
           <AssetsScreen
             goToTokenDetail={handleGoToTokenDetail}
             goToTokenManagement={handleGoToTokenManagement}
+            goToBuy={handleBuy}
           />
         )
       },
@@ -298,6 +369,7 @@ const PortfolioHomeScreen = (): JSX.Element => {
           <CollectiblesScreen
             goToCollectibleDetail={handleGoToCollectibleDetail}
             goToCollectibleManagement={handleGoToCollectibleManagement}
+            goToDiscoverCollectibles={handleGoToDiscoverCollectibles}
           />
         )
       },
@@ -307,10 +379,12 @@ const PortfolioHomeScreen = (): JSX.Element => {
       }
     ]
   }, [
-    handleGoToCollectibleDetail,
     handleGoToTokenDetail,
     handleGoToTokenManagement,
-    handleGoToCollectibleManagement
+    handleBuy,
+    handleGoToCollectibleDetail,
+    handleGoToCollectibleManagement,
+    handleGoToDiscoverCollectibles
   ])
 
   return (
@@ -323,7 +397,8 @@ const PortfolioHomeScreen = (): JSX.Element => {
         onScrollY={onScroll}
         tabs={tabs}
       />
-      <LinearGradientBottomWrapper>
+
+      <LinearGradientBottomWrapper shouldDelayBlurOniOS={true}>
         <SegmentedControl
           dynamicItemWidth={false}
           items={SEGMENT_ITEMS}

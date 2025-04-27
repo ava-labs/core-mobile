@@ -3,7 +3,12 @@ import { TokenUnit } from '@avalabs/core-utils-sdk'
 import { PChainTransaction, RewardType } from '@avalabs/glacier-sdk'
 import { UTCDate } from '@date-fns/utc'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
-import { fromUnixTime, secondsToMilliseconds } from 'date-fns'
+import {
+  differenceInMilliseconds,
+  fromUnixTime,
+  secondsToMilliseconds
+} from 'date-fns'
+import { convertToSeconds, MilliSeconds, Seconds } from 'types/siUnits'
 import { getReadableDateDuration } from 'utils/date/getReadableDateDuration'
 import { xpChainToken } from 'utils/units/knownTokens'
 
@@ -128,4 +133,10 @@ export const getEarnedRewardAmount = (
         pChainNetworkToken.symbol
       )
     : undefined
+}
+
+export const convertToDurationInSeconds = (date: UTCDate): Seconds => {
+  const stakeDurationMs = differenceInMilliseconds(date, new UTCDate())
+
+  return convertToSeconds(BigInt(stakeDurationMs) as MilliSeconds)
 }

@@ -55,8 +55,6 @@ const SliderStory = ({
 }): JSX.Element => {
   const { theme } = useTheme()
   const value = useSharedValue(0.5)
-  const minValue = useSharedValue(minimumValue ?? 0)
-  const maxValue = useSharedValue(maximumValue ?? 1)
   const [text, setText] = useState(value.value.toFixed(2))
 
   useAnimatedReaction(
@@ -75,8 +73,8 @@ const SliderStory = ({
       <Slider
         thumbBorderColor={theme.colors.$surfacePrimary}
         value={value}
-        minimumValue={minValue}
-        maximumValue={maxValue}
+        minimumValue={minimumValue}
+        maximumValue={maximumValue}
         minimumValueLabel={minimumValueLabel}
         maximumValueLabel={maximumValueLabel}
       />

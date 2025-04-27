@@ -28,11 +28,6 @@ export type CollectTokensForStakingParams = {
   feeState?: pvm.FeeState
 }
 
-export type GetAllStakesParams = {
-  isTestnet: boolean
-  addresses: string[]
-}
-
 export enum StakeTypeEnum {
   Available = 'Available',
   Staked = 'Staked',

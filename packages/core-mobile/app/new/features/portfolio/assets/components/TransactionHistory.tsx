@@ -14,18 +14,30 @@ import {
   isTokenWithBalanceAVM,
   isTokenWithBalancePVM
 } from '@avalabs/avalanche-module'
+import usePendingBridgeTransactions from 'features/bridge/hooks/usePendingBridgeTransactions'
+import {
+  getBridgeAssetSymbol,
+  isPendingBridgeTransaction
+} from 'features/bridge/utils/bridgeUtils'
+import { BridgeTransaction } from '@avalabs/core-bridge-sdk'
+import { BridgeTransfer } from '@avalabs/bridge-unified'
+import { TransactionType } from '@avalabs/vm-module-types'
 import { useTokenDetailFilterAndSort } from '../hooks/useTokenDetailFilterAndSort'
 import { XpActivityListItem } from './XpActivityListItem'
 import { TokenActivityListItem } from './TokenActivityListItem'
+import { PendingBridgeTransactionItem } from './PendingBridgeTransactionItem'
 
+const errorIcon = require('../../../../assets/icons/unamused_emoji.png')
 interface Props {
   token?: LocalTokenWithBalance
   handleExplorerLink: (explorerLink: string) => void
+  handlePendingBridge: (transaction: BridgeTransaction | BridgeTransfer) => void
 }
 
 const TransactionHistory: FC<Props> = ({
   token,
-  handleExplorerLink
+  handleExplorerLink,
+  handlePendingBridge
 }): React.JSX.Element => {
   const { getNetwork } = useNetworks()
 
@@ -36,18 +48,49 @@ const TransactionHistory: FC<Props> = ({
   const { transactions, refresh, isLoading, isRefreshing, isError } =
     useGetRecentTransactions(network)
 
-  const transactionsBySymbol = useMemo(() => {
-    return transactions.filter(tx => {
+  const pendingBridgeTxs = usePendingBridgeTransactions(token?.networkChainId)
+  const isPendingBridge = useCallback(
+    (tx: Transaction) => {
       return (
-        !token?.symbol ||
-        (tx.tokens[0]?.symbol && token.symbol === tx.tokens[0].symbol)
+        tx.txType === TransactionType.BRIDGE &&
+        pendingBridgeTxs.some(
+          bridge =>
+            (bridge.sourceTxHash === tx.hash ||
+              (!!bridge.targetTxHash && bridge.targetTxHash === tx.hash)) &&
+            Boolean(bridge.completedAt) === false
+        )
       )
-    })
-  }, [token, transactions])
+    },
+    [pendingBridgeTxs]
+  )
+  const transactionsBySymbol = useMemo(() => {
+    return transactions
+      .filter(tx => {
+        return (
+          !token?.symbol ||
+          (tx.tokens[0]?.symbol && token.symbol === tx.tokens[0].symbol)
+        )
+      })
+      .filter(tx => !isPendingBridge(tx))
+  }, [token, transactions, isPendingBridge])
 
   const { data, filter, sort } = useTokenDetailFilterAndSort({
     transactions: transactionsBySymbol
   })
+
+  const filteredPendingBridgeTxs = useMemo(
+    () =>
+      pendingBridgeTxs
+        .filter(tx => getBridgeAssetSymbol(tx) === token?.symbol)
+        .sort(
+          (a, b) => b.sourceStartedAt - a.sourceStartedAt // descending
+        ),
+    [pendingBridgeTxs, token]
+  )
+
+  const combinedData = useMemo(() => {
+    return [filteredPendingBridgeTxs, data].flat()
+  }, [data, filteredPendingBridgeTxs])
 
   const emptyComponent = useMemo(() => {
     if (isLoading || isRefreshing) {
@@ -70,12 +113,7 @@ const TransactionHistory: FC<Props> = ({
     return (
       <ErrorState
         sx={{ height: portfolioTabContentHeight }}
-        icon={
-          <Image
-            source={require('../../../../assets/icons/unamused_emoji.png')}
-            sx={{ width: 42, height: 42 }}
-          />
-        }
+        icon={<Image source={errorIcon} sx={{ width: 42, height: 42 }} />}
         title="No recent transactions"
         description="Interact with this token onchain and see your activity here"
       />
@@ -83,27 +121,41 @@ const TransactionHistory: FC<Props> = ({
   }, [isError, isLoading, isRefreshing, refresh])
 
   const renderItem = useCallback(
-    (item: Transaction, index: number): React.JSX.Element => {
-      const isXpTx =
-        isXpTransaction(item.txType) &&
-        token &&
-        (isTokenWithBalanceAVM(token) || isTokenWithBalancePVM(token))
+    (
+      item: Transaction | BridgeTransaction | BridgeTransfer,
+      index: number
+    ): React.JSX.Element => {
+      if (isPendingBridgeTransaction(item)) {
+        return (
+          <PendingBridgeTransactionItem
+            key={item.sourceTxHash}
+            item={item}
+            index={index}
+            onPress={() => handlePendingBridge(item)}
+          />
+        )
+      } else {
+        const isXpTx =
+          isXpTransaction(item.txType) &&
+          token &&
+          (isTokenWithBalanceAVM(token) || isTokenWithBalancePVM(token))
 
-      const props = {
-        tx: item,
-        index,
-        onPress: () => handleExplorerLink(item.explorerLink)
-      }
+        const props = {
+          tx: item,
+          index,
+          onPress: () => handleExplorerLink(item.explorerLink)
+        }
 
-      if (isXpTx) {
-        return <XpActivityListItem {...props} key={item.hash} />
+        if (isXpTx) {
+          return <XpActivityListItem {...props} key={item.hash} />
+        }
+        return <TokenActivityListItem {...props} key={item.hash} />
       }
-      return <TokenActivityListItem {...props} key={item.hash} />
     },
-    [handleExplorerLink, token]
+    [handleExplorerLink, token, handlePendingBridge]
   )
 
-  const dataLength = data.length
+  const dataLength = combinedData.length
 
   const dropdowns = useMemo(() => {
     if (dataLength === 0) return
@@ -120,13 +172,13 @@ const TransactionHistory: FC<Props> = ({
   return (
     <CollapsibleTabs.FlatList
       contentContainerStyle={{ overflow: 'visible', paddingBottom: 16 }}
-      data={data}
+      data={combinedData}
       renderItem={item => renderItem(item.item, item.index)}
       ListHeaderComponent={dropdowns}
       ListEmptyComponent={emptyComponent}
       ItemSeparatorComponent={renderSeparator}
       showsVerticalScrollIndicator={false}
-      keyExtractor={item => item.hash}
+      keyExtractor={keyExtractor}
     />
   )
 }
@@ -134,5 +186,13 @@ const TransactionHistory: FC<Props> = ({
 const styles = StyleSheet.create({
   dropdown: { paddingHorizontal: 16, marginTop: 4, marginBottom: 16 }
 })
+
+const keyExtractor = (
+  item: Transaction | BridgeTransaction | BridgeTransfer
+): string => {
+  if (isPendingBridgeTransaction(item)) return `pending-${item.sourceTxHash}`
+
+  return item.hash
+}
 
 export default TransactionHistory

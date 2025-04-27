@@ -25,13 +25,13 @@ export enum SendErrorMessage {
 
 type CommonAdapterOptions<Token> = {
   fromAddress: string
-  maxFee: bigint
-  nativeToken: Token
-  network: Network
+  maxFee?: bigint
+  nativeToken?: Token
+  network?: Network
 }
 
 export type AdapterOptionsEVM = {
-  chainId: number
+  chainId?: number
 }
 
 export type AdapterOptionsBTC = {
@@ -56,13 +56,21 @@ export type AdapterOptionsX = {
   account: AvmCapableAccount
 }
 
-type SendAdapter<CustomOptions = unknown, Token = NetworkTokenWithBalance> = (
-  options: CommonAdapterOptions<Token> & CustomOptions
-) => {
+export type SendReturnType = {
   send(): Promise<string>
   estimatedFee?: bigint
   setGasPrice?: Dispatch<bigint>
 }
+
+export type CollectibleSendReturnType = Omit<SendReturnType, 'send'> & {
+  send(toAddress: string): Promise<string>
+}
+
+type SendAdapter<
+  CustomOptions = unknown,
+  Token = NetworkTokenWithBalance,
+  ReturnType = SendReturnType
+> = (options: CommonAdapterOptions<Token> & CustomOptions) => ReturnType
 
 export type SendAdapterEVM = SendAdapter<
   AdapterOptionsEVM,
@@ -74,6 +82,12 @@ export type SendAdapterBTC = SendAdapter<AdapterOptionsBTC, TokenWithBalanceBTC>
 export type SendAdapterPVM = SendAdapter<AdapterOptionsP, TokenWithBalancePVM>
 
 export type SendAdapterAVM = SendAdapter<AdapterOptionsX, TokenWithBalanceAVM>
+
+export type SendAdapterCollectible = SendAdapter<
+  AdapterOptionsEVM,
+  NetworkTokenWithBalance,
+  CollectibleSendReturnType
+>
 
 // A helper generic that turns only given keys (K) of type T
 // from optional to required.

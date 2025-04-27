@@ -3,6 +3,7 @@ import Actions from '../helpers/actions'
 import assertions from '../helpers/assertions'
 import settings from '../locators/settings.loc'
 import commonElsPage from './commonEls.page'
+import portfolioPage from './portfolio.page'
 
 class Settings {
   get eyeIcon() {
@@ -23,10 +24,6 @@ class Settings {
 
   get participateInCoreAnalytics() {
     return by.text(settings.participateInCoreAnalytics)
-  }
-
-  get copyPhraseButton() {
-    return by.text(settings.copyPhraseButton)
   }
 
   get firstMnemonicWord() {
@@ -73,8 +70,16 @@ class Settings {
     return by.text(settings.securityAndPrivacy)
   }
 
-  get notifications() {
-    return by.text(settings.notifications)
+  get securityAndPrivacyTitle() {
+    return by.text(settings.securityAndPrivacyTitle)
+  }
+
+  get notificationsPreferences() {
+    return by.text(settings.notificationsPreferences)
+  }
+
+  get notificationsPreferencesTitle() {
+    return by.text(settings.notificationsPreferencesTitle)
   }
 
   get deleteWalletBtn() {
@@ -121,6 +126,122 @@ class Settings {
     return by.id(settings.accountList)
   }
 
+  get enterYourCurrentPinTitle() {
+    return by.text(settings.enterYourCurrentPinTitle)
+  }
+
+  get enterYourNewPinTitle() {
+    return by.text(settings.enterYourNewPinTitle)
+  }
+
+  get unlockWithFaceId() {
+    return by.text(settings.unlockWithFaceId)
+  }
+
+  get toggleBiometricsOn() {
+    return by.id(settings.toggleBiometricsOn)
+  }
+
+  get toggleBiometricsOff() {
+    return by.id(settings.toggleBiometricsOff)
+  }
+
+  get confirmYourNewPinTitle() {
+    return by.text(settings.confirmYourNewPinTitle)
+  }
+
+  get showRecoveryPhraseTitle() {
+    return by.text(settings.showRecoveryPhraseTitle)
+  }
+
+  get showRecoveryPhraseDescription() {
+    return by.text(settings.showRecoveryPhraseDescription)
+  }
+
+  get showRecoveryPhraseWarning() {
+    return by.text(settings.showRecoveryPhraseWarning)
+  }
+
+  get testnetSwitchOff() {
+    return by.id(settings.testnetSwitchOff)
+  }
+
+  get testnetSwitchOn() {
+    return by.id(settings.testnetSwitchOn)
+  }
+
+  get testnetModeToast() {
+    return by.id(settings.testnetModeToast)
+  }
+
+  get testnetModeOffToast() {
+    return by.text(settings.testnetModeOffToast)
+  }
+
+  get fujiFunds() {
+    return by.text(settings.fujiFunds)
+  }
+
+  get totalNetWorth() {
+    return by.text(settings.totalNetWorth)
+  }
+
+  get mainnetAvatar() {
+    return by.id(settings.mainnetAvatar)
+  }
+
+  get testnetAvatar() {
+    return by.id(settings.testnetAvatar)
+  }
+
+  get cChainAddressCopyBtn() {
+    return by.id(settings.cChainAddressCopyBtn)
+  }
+
+  get pChainAddressCopyBtn() {
+    return by.id(settings.pChainAddressCopyBtn)
+  }
+
+  get xChainAddressCopyBtn() {
+    return by.id(settings.xChainAddressCopyBtn)
+  }
+
+  get ethAddressCopyBtn() {
+    return by.id(settings.ethAddressCopyBtn)
+  }
+
+  get btcAddressCopyBtn() {
+    return by.id(settings.btcAddressCopyBtn)
+  }
+
+  get cChainAddressCopyToast() {
+    return by.text(settings.cChainAddressCopyToast)
+  }
+
+  get pChainAddressCopyToast() {
+    return by.text(settings.pChainAddressCopyToast)
+  }
+
+  get xChainAddressCopyToast() {
+    return by.text(settings.xChainAddressCopyToast)
+  }
+
+  get ethAddressCopyToast() {
+    return by.text(settings.ethAddressCopyToast)
+  }
+
+  get btcAddressCopyToast() {
+    return by.text(settings.btcAddressCopyToast)
+  }
+
+  get renameAccount() {
+    return by.text(settings.renameAccount)
+  }
+
+  get manageAccountsBtn() {
+    return by.id(settings.manageAccountsBtn)
+  }
+
   async tapAdvanced() {
     await Actions.tapElementAtIndex(this.advanced, 0)
   }
@@ -130,13 +251,22 @@ class Settings {
   }
 
   async tapNotifications() {
-    await Actions.tapElementAtIndex(this.notifications, 0)
+    await this.scrollToSettingsFooter()
+    await Actions.tapElementAtIndex(this.notificationsPreferences, 0)
   }
   async tapCurrencyRow() {
     await Actions.tapElementAtIndex(this.currency, 0)
   }
 
+  async scrollToSettingsFooter() {
+    const isVisible = await Actions.expectToBeVisible(this.securityAndPrivacy)
+    if (!isVisible) {
+      await Actions.scrollToBottom(this.settingsScrollView)
+    }
+  }
+
   async tapSecurityAndPrivacy() {
+    await this.scrollToSettingsFooter()
     await Actions.tapElementAtIndex(this.securityAndPrivacy, 0)
   }
 
@@ -175,9 +305,9 @@ class Settings {
 
   async tapAnalyticsSwitch(isOn = true) {
     if (isOn) {
-      await Actions.tap(this.analyticsOn)
+      await Actions.longPress(this.analyticsOn)
     } else {
-      await Actions.tap(this.analyticsOff)
+      await Actions.longPress(this.analyticsOff)
     }
   }
 
@@ -225,8 +355,23 @@ class Settings {
     await this.verifyUnselectedAppearance(unselectedAppearances[1] ?? '')
   }
 
+  async verifyShowRecoveryPhraseScreen() {
+    await Actions.waitForElement(this.showRecoveryPhraseTitle, 5000)
+    await assertions.isVisible(this.showRecoveryPhraseDescription)
+    await assertions.isVisible(this.showRecoveryPhraseWarning)
+    await assertions.isVisible(commonElsPage.copyPhrase)
+  }
+
   async goSettings() {
     await Actions.tap(this.settingsBtn)
+  }
+
+  async switchToTestnet() {
+    await Actions.longPress(this.testnetSwitchOff)
+  }
+
+  async switchToMainnet() {
+    await Actions.longPress(this.testnetSwitchOn)
   }
 
   async verifyCurrencyScreen(curr = 'USD') {
@@ -242,9 +387,11 @@ class Settings {
   }
 
   async tapAddAccountBtn() {
-    while (!(await Actions.isVisible(this.addAccountBtn, 0, 0))) {
+    while (!(await Actions.isVisible(this.manageAccountsBtn, 0, 0))) {
       await Actions.swipe(this.accountList, 'left', 'fast', 0.5)
     }
+    await Actions.tap(this.manageAccountsBtn)
+    await Actions.waitForElement(this.addAccountBtn)
     await Actions.tap(this.addAccountBtn)
   }
 
@@ -300,6 +447,91 @@ class Settings {
       // Scroll to the next box
       await Actions.swipe(this.accountList, 'left', 'slow', 0.5)
     }
+  }
+
+  async tapBiometrics(on = true) {
+    await Actions.tap(on ? this.toggleBiometricsOn : this.toggleBiometricsOff)
+  }
+
+  async verifyNotificationsScreen(data: Record<string, string>) {
+    await Actions.waitForElement(this.notificationsPreferencesTitle)
+    for (const [title, subtitle] of Object.entries(data)) {
+      await assertions.isVisible(by.id(`${title}_enabled_switch`))
+      await assertions.isVisible(by.text(title))
+      await assertions.isVisible(by.text(subtitle))
+    }
+  }
+
+  async toggleAndVerify(isSwitchOn = 'enabled', notiType: string) {
+    const toggled = isSwitchOn === 'enabled' ? 'disabled' : 'enabled'
+    await this.tapNotificationSwitch(isSwitchOn, notiType)
+    await Actions.waitForElement(by.id(`${notiType}_${toggled}_switch`))
+    await commonElsPage.goBack()
+    await this.tapNotifications()
+    await Actions.waitForElement(by.id(`${notiType}_${toggled}_switch`))
+  }
+
+  async tapNotificationSwitch(isSwitchOn = 'enabled', notiType = 'Stake') {
+    const switchTestID = `${notiType}_${isSwitchOn}_switch`
+    await Actions.tap(by.id(switchTestID))
+  }
+
+  async verifyTestnetMode() {
+    await Actions.waitForElement(this.testnetSwitchOn)
+    await assertions.isVisible(this.fujiFunds)
+    await assertions.isVisible(this.testnetAvatar)
+    await commonElsPage.dismissBottomSheet()
+    await assertions.isVisible(portfolioPage.testnetModeIsOn)
+  }
+
+  async verifyMainnetMode() {
+    await Actions.waitForElement(this.testnetSwitchOff)
+    await assertions.isNotVisible(this.fujiFunds)
+    await assertions.isVisible(this.totalNetWorth)
+    await assertions.isVisible(this.mainnetAvatar)
+    await commonElsPage.dismissBottomSheet()
+    await assertions.isNotVisible(portfolioPage.testnetModeIsOn)
+  }
+
+  async goToAccountDetail(accountNum: number) {
+    await Actions.tap(
+      by.id(`${settings.accountDetailIconIdPrefix}${accountNum}`)
+    )
+  }
+
+  async verifyAccountDetail(portfolioAccountName: string) {
+    // Account name verification
+    await Actions.waitForElement(commonElsPage.cChain)
+    await commonElsPage.verifyAccountName(portfolioAccountName, 1)
+
+    // Wallet address section verification
+    await assertions.isVisible(commonElsPage.pChain)
+    await assertions.isVisible(commonElsPage.xChain)
+    await assertions.isVisible(commonElsPage.ethereum)
+    await assertions.isVisible(commonElsPage.bitcoin)
+
+    // Copy address verification
+    await Actions.tap(this.cChainAddressCopyBtn)
+    await assertions.isVisible(this.cChainAddressCopyToast)
+    await Actions.tap(this.pChainAddressCopyBtn)
+    await assertions.isVisible(this.pChainAddressCopyToast)
+    await Actions.tap(this.xChainAddressCopyBtn)
+    await assertions.isVisible(this.xChainAddressCopyToast)
+    await Actions.tap(this.ethAddressCopyBtn)
+    await assertions.isVisible(this.ethAddressCopyToast)
+    await Actions.tap(this.btcAddressCopyBtn)
+    await assertions.isVisible(this.btcAddressCopyToast)
+
+    // Wallet info verification is NOT done yet and let's revisit it once it's done
+  }
+
+  async tapRenameAccount() {
+    await Actions.tap(this.renameAccount)
+  }
+
+  async setNewAccountName(newAccountName: string) {
+    await commonElsPage.typeSearchBar(newAccountName, commonElsPage.dialogInput)
+    await commonElsPage.tapSave()
   }
 }
 
