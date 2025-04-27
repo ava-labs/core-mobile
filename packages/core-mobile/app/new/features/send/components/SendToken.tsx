@@ -149,6 +149,7 @@ export const SendToken = ({ onSend }: { onSend: () => void }): JSX.Element => {
 
   return (
     <SafeAreaView
+      edges={['bottom']}
       sx={{
         flex: 1,
         justifyContent: 'space-between',

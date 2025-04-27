@@ -1,65 +1,65 @@
-import React, { useMemo, useCallback, useState, useEffect } from 'react'
+import { BridgeAsset, TokenType } from '@avalabs/bridge-unified'
+import { Network } from '@avalabs/core-chains-sdk'
+import { bigintToBig, resolve } from '@avalabs/core-utils-sdk'
 import {
   ActivityIndicator,
   Button,
   CircularButton,
   Icons,
   SafeAreaView,
-  ScrollView,
   Separator,
   showAlert,
   Text,
   useTheme,
   View
 } from '@avalabs/k2-alpine'
-import ScreenHeader from 'common/components/ScreenHeader'
-import { bigintToBig, resolve } from '@avalabs/core-utils-sdk'
-import { KeyboardAvoidingView } from 'common/components/KeyboardAvoidingView'
-import { useGlobalSearchParams, useRouter } from 'expo-router'
-import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
-import { TokenInputWidget } from 'common/components/TokenInputWidget'
-import useCChainNetwork from 'hooks/earn/useCChainNetwork'
-import Logger from 'utils/Logger'
-import { UNKNOWN_AMOUNT } from 'consts/amount'
-import {
-  selectIsHallidayBridgeBannerBlocked,
-  selectIsGaslessBlocked
-} from 'store/posthog'
-import { useSelector } from 'react-redux'
-import { SelectNetworkRow } from 'features/bridge/components/SelectNetworkRow'
-import { BridgeAsset, TokenType } from '@avalabs/bridge-unified'
-import { Network } from '@avalabs/core-chains-sdk'
-import {
-  unwrapAssetSymbol,
-  wrapAssetSymbol
-} from 'screens/bridge/utils/bridgeUtils'
 import { NetworkVMType } from '@avalabs/vm-module-types'
-import Animated, {
-  FadeIn,
-  FadeOut,
-  LinearTransition
-} from 'react-native-reanimated'
-import { RootState } from 'store'
-import { selectAvailableNativeTokenBalanceForNetworkAndAccount } from 'store/balance'
-import { selectActiveAccount } from 'store/account'
-import GaslessService from 'services/gasless/GaslessService'
-import { AssetBalance } from 'screens/bridge/utils/types'
+import { KeyboardAvoidingView } from 'common/components/KeyboardAvoidingView'
+import ScreenHeader from 'common/components/ScreenHeader'
+import { TokenInputWidget } from 'common/components/TokenInputWidget'
+import { useCoreBrowser } from 'common/hooks/useCoreBrowser'
+import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
+import { usePreventScreenRemoval } from 'common/hooks/usePreventScreenRemoval'
+import { useSimpleFadingHeader } from 'common/hooks/useSimpleFadingHeader'
+import { UNKNOWN_AMOUNT } from 'consts/amount'
+import { useGlobalSearchParams, useRouter } from 'expo-router'
 import BridgeTypeFootnote from 'features/bridge/components/BridgeTypeFootnote'
+import { HallidayBanner } from 'features/bridge/components/HallidayBanner'
+import { SelectNetworkRow } from 'features/bridge/components/SelectNetworkRow'
+import { HALLIDAY_BRIDGE_URL } from 'features/bridge/const'
 import {
   useBridgeSelectedAsset,
   useBridgeSelectedSourceNetwork,
   useBridgeSelectedTargetNetwork
 } from 'features/bridge/store/store'
-import { selectHasBeenViewedOnce, ViewOnceKey } from 'store/viewOnce'
-import { HallidayBanner } from 'features/bridge/components/HallidayBanner'
+import useCChainNetwork from 'hooks/earn/useCChainNetwork'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import { KeyboardAwareScrollView } from 'react-native-keyboard-controller'
+import Animated, {
+  FadeIn,
+  FadeOut,
+  LinearTransition
+} from 'react-native-reanimated'
+import { useSelector } from 'react-redux'
+import {
+  unwrapAssetSymbol,
+  wrapAssetSymbol
+} from 'screens/bridge/utils/bridgeUtils'
+import { AssetBalance } from 'screens/bridge/utils/types'
 import AnalyticsService from 'services/analytics/AnalyticsService'
-import { HALLIDAY_BRIDGE_URL } from 'features/bridge/const'
-import { useCoreBrowser } from 'common/hooks/useCoreBrowser'
+import GaslessService from 'services/gasless/GaslessService'
+import { RootState } from 'store'
+import { selectActiveAccount } from 'store/account'
+import { selectAvailableNativeTokenBalanceForNetworkAndAccount } from 'store/balance'
+import {
+  selectIsGaslessBlocked,
+  selectIsHallidayBridgeBannerBlocked
+} from 'store/posthog'
 import { isUserRejectedError } from 'store/rpc/providers/walletConnect/utils'
-import { getJsonRpcErrorMessage } from 'utils/getJsonRpcErrorMessage/getJsonRpcErrorMessage'
+import { selectHasBeenViewedOnce, ViewOnceKey } from 'store/viewOnce'
 import { audioFeedback, Audios } from 'utils/AudioFeedback'
-import { usePreventScreenRemoval } from 'common/hooks/usePreventScreenRemoval'
-import { useSimpleFadingHeader } from 'common/hooks/useSimpleFadingHeader'
+import { getJsonRpcErrorMessage } from 'utils/getJsonRpcErrorMessage/getJsonRpcErrorMessage'
+import Logger from 'utils/Logger'
 import useBridge from '../hooks/useBridge'
 
 export const BridgeScreen = (): JSX.Element => {
@@ -660,12 +660,12 @@ export const BridgeScreen = (): JSX.Element => {
 
   return (
     <KeyboardAvoidingView>
-      <SafeAreaView sx={{ flex: 1 }}>
-        <ScrollView
+      <SafeAreaView sx={{ flex: 1 }} edges={['bottom']}>
+        <KeyboardAwareScrollView
           style={{ flex: 1 }}
-          contentContainerSx={{ padding: 16, paddingTop: 0 }}
-          keyboardDismissMode="on-drag"
-          keyboardShouldPersistTaps="always"
+          contentContainerStyle={{ padding: 16, paddingTop: 0 }}
+          keyboardDismissMode="interactive"
+          keyboardShouldPersistTaps="handled"
           onScroll={onScroll}>
           <Animated.View
             style={animatedHeaderStyle}
@@ -711,7 +711,7 @@ export const BridgeScreen = (): JSX.Element => {
             )}
             {renderToSection()}
           </Animated.View>
-        </ScrollView>
+        </KeyboardAwareScrollView>
         <View
           sx={{
             padding: 16,

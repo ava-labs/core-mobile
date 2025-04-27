@@ -146,15 +146,17 @@ const StakeAmountScreen = (): JSX.Element => {
 
   return (
     <KeyboardAvoidingView>
-      <SafeAreaView sx={{ flex: 1 }}>
+      <SafeAreaView edges={['bottom']} sx={{ flex: 1 }}>
         <ScrollView
           style={{ flex: 1 }}
+          keyboardDismissMode="interactive"
+          keyboardShouldPersistTaps="handled"
           contentContainerSx={{ padding: 16, paddingTop: 0 }}
           onScroll={onScroll}>
           <Animated.View
             onLayout={handleHeaderLayout}
             style={animatedHeaderStyle}>
-            <ScreenHeader title=" like to stake?" />
+            <ScreenHeader title="How much would you like to stake?" />
           </Animated.View>
           <TokenUnitInputWidget
             sx={{

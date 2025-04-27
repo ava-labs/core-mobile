@@ -1,4 +1,4 @@
-import React, { useCallback, useState, useEffect, useMemo, useRef } from 'react'
+import { TokenUnit } from '@avalabs/core-utils-sdk'
 import {
   ActivityIndicator,
   Button,
@@ -13,38 +13,36 @@ import {
   useTheme,
   View
 } from '@avalabs/k2-alpine'
-import { useGlobalSearchParams, useRouter } from 'expo-router'
-import {
-  KeyboardAvoidingView,
-  KeyboardAwareScrollView
-} from 'react-native-keyboard-controller'
+import { TokenType, TokenWithBalance } from '@avalabs/vm-module-types'
+import { SwapSide } from '@paraswap/sdk'
+import { KeyboardAvoidingView } from 'common/components/KeyboardAvoidingView'
 import ScreenHeader from 'common/components/ScreenHeader'
 import { TokenInputWidget } from 'common/components/TokenInputWidget'
-import { UNKNOWN_AMOUNT } from 'consts/amount'
+import { useAvalancheErc20ContractTokens } from 'common/hooks/useErc20ContractTokens'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
+import { usePreventScreenRemoval } from 'common/hooks/usePreventScreenRemoval'
 import { useSearchableTokenList } from 'common/hooks/useSearchableTokenList'
-import { useSelector } from 'react-redux'
-import { selectTokensWithZeroBalance } from 'store/balance'
-import { selectActiveAccount } from 'store/account'
-import { SwapSide } from '@paraswap/sdk'
-import AnalyticsService from 'services/analytics/AnalyticsService'
-import { getTokenAddress } from 'swap/getSwapRate'
-import { TokenType, TokenWithBalance } from '@avalabs/vm-module-types'
-import { TokenUnit } from '@avalabs/core-utils-sdk'
+import { useSimpleFadingHeader } from 'common/hooks/useSimpleFadingHeader'
+import { UNKNOWN_AMOUNT } from 'consts/amount'
+import { PARASWAP_PARTNER_FEE_BPS } from 'contexts/SwapContext/consts'
+import { useGlobalSearchParams, useRouter } from 'expo-router'
 import useCChainNetwork from 'hooks/earn/useCChainNetwork'
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { KeyboardAwareScrollView } from 'react-native-keyboard-controller'
 import Animated, {
   FadeIn,
   FadeOut,
   LinearTransition
 } from 'react-native-reanimated'
+import { useSelector } from 'react-redux'
+import AnalyticsService from 'services/analytics/AnalyticsService'
+import { selectActiveAccount } from 'store/account'
+import { selectTokensWithZeroBalance } from 'store/balance'
+import { getTokenAddress } from 'swap/getSwapRate'
 import { calculateRate } from 'swap/utils'
 import { basisPointsToPercentage } from 'utils/basisPointsToPercentage'
-import { PARASWAP_PARTNER_FEE_BPS } from 'contexts/SwapContext/consts'
-import { useAvalancheErc20ContractTokens } from 'common/hooks/useErc20ContractTokens'
-import { usePreventScreenRemoval } from 'common/hooks/usePreventScreenRemoval'
-import { useSimpleFadingHeader } from 'common/hooks/useSimpleFadingHeader'
-import { useSwapContext } from '../contexts/SwapContext'
 import { SlippageInput } from '../components.tsx/SlippageInput'
+import { useSwapContext } from '../contexts/SwapContext'
 
 export const SwapScreen = (): JSX.Element => {
   const { theme } = useTheme()
@@ -439,19 +437,19 @@ export const SwapScreen = (): JSX.Element => {
   usePreventScreenRemoval(swapInProcess)
 
   return (
-    <KeyboardAvoidingView style={{ flex: 1 }}>
-      <SafeAreaView sx={{ flex: 1 }}>
+    <KeyboardAvoidingView>
+      <SafeAreaView sx={{ flex: 1 }} edges={['bottom']}>
         <KeyboardAwareScrollView
-          style={{ flex: 1 }}
           contentContainerStyle={{ padding: 16, paddingTop: 0 }}
-          keyboardDismissMode="on-drag"
-          keyboardShouldPersistTaps="always"
+          keyboardDismissMode="interactive"
+          keyboardShouldPersistTaps="handled"
           onScroll={onScroll}>
           <Animated.View
             onLayout={handleHeaderLayout}
             style={animatedHeaderStyle}>
             <ScreenHeader title="Swap" />
           </Animated.View>
+
           <Animated.View style={{ marginTop: 16 }} layout={LinearTransition}>
             {renderFromSection()}
             <Animated.View
@@ -500,6 +498,7 @@ export const SwapScreen = (): JSX.Element => {
             </Animated.View>
             {renderToSection()}
           </Animated.View>
+
           {errorMessage && (
             <Animated.View entering={FadeIn} exiting={FadeOut}>
               <Text
@@ -520,6 +519,7 @@ export const SwapScreen = (): JSX.Element => {
             </Text>
           </View>
         </KeyboardAwareScrollView>
+
         <View
           sx={{
             padding: 16,
