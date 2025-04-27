@@ -1,12 +1,7 @@
-import React, { useEffect } from 'react'
-import { LayoutChangeEvent, ViewStyle } from 'react-native'
-import {
-  View,
-  ScrollView,
-  useTheme,
-  SCREEN_HEIGHT,
-  SxProp
-} from '@avalabs/k2-alpine'
+import React, { useEffect, useMemo, useState, useCallback } from 'react'
+import { LayoutChangeEvent, Platform, ViewStyle } from 'react-native'
+import { ScrollView } from 'react-native-gesture-handler'
+import { View, useTheme, SCREEN_HEIGHT, SxProp } from '@avalabs/k2-alpine'
 /**
  * Temporarily import "useNavigation" from @react-navigation/native.
  * This is a workaround due to a render bug in the expo-router version.
@@ -50,6 +45,15 @@ export const ActionSheet = ({
   } = useTheme()
   const navigation = useNavigation()
 
+  const [increasedHeight, setIncreasedHeight] = useState<number>()
+
+  const handleScrollViewLayout = useCallback(
+    (event: LayoutChangeEvent): void => {
+      setIncreasedHeight(event.nativeEvent.layout.height * 1.4)
+    },
+    []
+  )
+
   const { onScroll, handleHeaderLayout, animatedHeaderStyle } =
     useSimpleFadingHeader({
       title,
@@ -65,15 +69,37 @@ export const ActionSheet = ({
     })
   }, [navigation, onClose])
 
+  // on Android, we need to manually increase the height (1.4x content) to enable proper scrolling.
+  // on iOS, this is not needed as it handles it correctly already; only a bottom contentInset is needed.
+  const onLayout = useMemo(() => {
+    return Platform.OS === 'android' ? handleScrollViewLayout : undefined
+  }, [handleScrollViewLayout])
+
+  const contentInset = useMemo(() => {
+    if (Platform.OS === 'ios') {
+      return {
+        bottom: SCREEN_HEIGHT * 0.4
+      }
+    }
+    return { bottom: 0 }
+  }, [])
+
+  const contentContainerStyle = useMemo(() => {
+    return {
+      flexGrow: 1,
+      backgroundColor: colors.$surfacePrimary,
+      paddingHorizontal: 16,
+      height: Platform.OS === 'android' ? increasedHeight : undefined
+    }
+  }, [colors.$surfacePrimary, increasedHeight])
+
   return (
     <View sx={{ flex: 1, ...sx }}>
       <ScrollView
+        onLayout={onLayout}
         onScroll={onScroll}
-        contentInset={{ bottom: SCREEN_HEIGHT * 0.4 }}
-        contentContainerStyle={{
-          backgroundColor: colors.$surfacePrimary,
-          paddingHorizontal: 16
-        }}>
+        contentInset={contentInset}
+        contentContainerStyle={contentContainerStyle}>
         {children({ handleHeaderLayout, animatedHeaderStyle })}
       </ScrollView>
       <ActionButtons confirm={confirm} cancel={cancel} alert={alert} />
