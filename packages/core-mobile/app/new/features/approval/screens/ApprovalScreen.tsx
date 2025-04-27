@@ -36,7 +36,7 @@ import { Network } from '../components/Network'
 import { NetworkFeeSelectorWithGasless } from '../components/NetworkFeeSelectorWithGasless'
 import { Account } from '../components/Account'
 import BalanceChange from '../components/BalanceChange/BalanceChange'
-import { SpendLimits } from '../components/SpendLimits'
+import { SpendLimits } from '../components/SpendLimits/SpendLimits'
 
 const ApprovalScreenWrapper = (): JSX.Element | null => {
   const [params, setParams] = useState<ApprovalParams>()

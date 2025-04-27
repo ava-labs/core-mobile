@@ -1,6 +1,8 @@
-import { SpendLimit } from 'hooks/useSpendLimits'
+import { Limit, SpendLimit } from 'hooks/useSpendLimits'
 import React, { useMemo } from 'react'
 import { View, GroupList } from '@avalabs/k2-alpine'
+import { DropdownMenuIcon } from 'new/common/components/DropdownMenuIcons'
+import { DropdownGroup } from 'new/common/components/DropdownMenu'
 import { getDefaultSpendLimitValue } from './utils'
 import { MenuId } from './types'
 import { SpendLimitOptions } from './SpendLimitOptions'
@@ -17,21 +19,33 @@ export const SpendLimits = ({
       const defaultSpendLimitValue = getDefaultSpendLimitValue(spendLimit)
       const token = spendLimit.tokenApproval.token
 
-      const menuItems = [
+      const menuItems: DropdownGroup[] = [
         {
           id: 'spendLimitItems',
           items: [
             {
               id: MenuId.DEFAULT,
-              title: `${defaultSpendLimitValue} ${token.symbol} - Default`
+              title: `${defaultSpendLimitValue} ${token.symbol} - Default`,
+              icon:
+                spendLimit.limitType === Limit.DEFAULT
+                  ? DropdownMenuIcon.Check
+                  : undefined
             },
             {
               id: MenuId.UNLIMITED,
-              title: 'Unlimited'
+              title: 'Unlimited',
+              icon:
+                spendLimit.limitType === Limit.UNLIMITED
+                  ? DropdownMenuIcon.Check
+                  : undefined
             },
             {
               id: MenuId.CUSTOM,
-              title: 'Custom'
+              title: 'Custom',
+              icon:
+                spendLimit.limitType === Limit.CUSTOM
+                  ? DropdownMenuIcon.Check
+                  : undefined
             }
           ]
         }

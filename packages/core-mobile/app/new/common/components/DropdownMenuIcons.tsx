@@ -15,6 +15,7 @@ import HistoryDark from '../../assets/icons/menu/history.png'
 import RefreshDark from '../../assets/icons/menu/refresh.png'
 import RefreshDisabledDark from '../../assets/icons/menu/refresh_disabled.png'
 import ShareDark from '../../assets/icons/menu/share.png'
+import CheckDark from '../../assets/icons/menu/check.png'
 
 // Light
 import AddLight from '../../assets/icons/menu/add_light.png'
@@ -29,6 +30,7 @@ import HistoryLight from '../../assets/icons/menu/history_light.png'
 import RefreshLight from '../../assets/icons/menu/refresh_light.png'
 import RefreshDisabledLight from '../../assets/icons/menu/refresh_light_disabled.png'
 import ShareLight from '../../assets/icons/menu/share_light.png'
+import CheckLight from '../../assets/icons/menu/check_light.png'
 
 // icon names are 1 to 1 with the filenames in the android/ios drawable folders
 export enum DropdownMenuIcon {
@@ -40,7 +42,8 @@ export enum DropdownMenuIcon {
   Share = 'share',
   FavoriteOn = 'favorite_on',
   FavoriteOff = 'favorite_off',
-  Close = 'close'
+  Close = 'close',
+  Check = 'check'
 }
 
 export function getPlatformIcons(
@@ -105,7 +108,8 @@ export const DropdownMenuIcons = {
     [DropdownMenuIcon.FavoriteOn]: FavoriteOnDark,
     [DropdownMenuIcon.FavoriteOff]: FavoriteOffDark,
     [DropdownMenuIcon.Close]: CloseDark,
-    [`${DropdownMenuIcon.Close}_destructive`]: CloseDestructive
+    [`${DropdownMenuIcon.Close}_destructive`]: CloseDestructive,
+    [DropdownMenuIcon.Check]: CheckDark
   },
   Dark: {
     [DropdownMenuIcon.Add]: AddLight,
@@ -120,6 +124,7 @@ export const DropdownMenuIcons = {
     [DropdownMenuIcon.FavoriteOn]: FavoriteOnLight,
     [DropdownMenuIcon.FavoriteOff]: FavoriteOffLight,
     [DropdownMenuIcon.Close]: CloseLight,
-    [`${DropdownMenuIcon.Close}_destructive`]: CloseDestructive
+    [`${DropdownMenuIcon.Close}_destructive`]: CloseDestructive,
+    [DropdownMenuIcon.Check]: CheckLight
   }
 }
