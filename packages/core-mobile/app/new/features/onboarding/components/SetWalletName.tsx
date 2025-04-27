@@ -1,9 +1,10 @@
 import React from 'react'
 import BlurredBarsContentLayout from 'common/components/BlurredBarsContentLayout'
-import { Button, SafeAreaView, ScrollView, View } from '@avalabs/k2-alpine'
+import { Button, ScrollView, View } from '@avalabs/k2-alpine'
 import ScreenHeader from 'common/components/ScreenHeader'
 import { SimpleTextInput } from 'common/components/SimpleTextInput'
 import { KeyboardAvoidingView } from 'common/components/KeyboardAvoidingView'
+import { SafeAreaView } from 'react-native-safe-area-context'
 
 export const SetWalletName = ({
   name,
@@ -16,8 +17,8 @@ export const SetWalletName = ({
 }): React.JSX.Element => {
   return (
     <BlurredBarsContentLayout>
-      <KeyboardAvoidingView>
-        <SafeAreaView sx={{ flex: 1 }}>
+      <SafeAreaView style={{ flex: 1 }}>
+        <KeyboardAvoidingView>
           <ScrollView
             sx={{ flex: 1 }}
             contentContainerSx={{ padding: 16, gap: 27 }}
@@ -42,8 +43,8 @@ export const SetWalletName = ({
               Next
             </Button>
           </View>
-        </SafeAreaView>
-      </KeyboardAvoidingView>
+        </KeyboardAvoidingView>
+      </SafeAreaView>
     </BlurredBarsContentLayout>
   )
 }

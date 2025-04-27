@@ -1,15 +1,10 @@
 import React, { useEffect } from 'react'
 import BlurredBarsContentLayout from 'common/components/BlurredBarsContentLayout'
-import {
-  Button,
-  SafeAreaView,
-  ScrollView,
-  Text,
-  View
-} from '@avalabs/k2-alpine'
+import { Button, ScrollView, Text, View } from '@avalabs/k2-alpine'
 import { useDispatch } from 'react-redux'
 import { setViewOnce, ViewOnceKey } from 'store/viewOnce'
 import ScreenHeader from 'common/components/ScreenHeader'
+import { SafeAreaView } from 'react-native-safe-area-context'
 
 export const AnalyticsConsent = ({
   onAcceptAnalytics,
@@ -28,7 +23,7 @@ export const AnalyticsConsent = ({
 
   return (
     <BlurredBarsContentLayout>
-      <SafeAreaView sx={{ flex: 1 }}>
+      <SafeAreaView style={{ flex: 1 }}>
         <ScrollView sx={{ flex: 1 }} contentContainerSx={{ padding: 16 }}>
           <ScreenHeader
             title="Unlock airdrops"

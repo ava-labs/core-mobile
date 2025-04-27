@@ -8,6 +8,7 @@ import BlurredBarsContentLayout from 'common/components/BlurredBarsContentLayout
 import { KeyboardAvoidingView } from 'common/components/KeyboardAvoidingView'
 import BiometricsSDK from 'utils/BiometricsSDK'
 import { useStoredBiometrics } from 'common/hooks/useStoredBiometrics'
+import { SafeAreaView } from 'react-native-safe-area-context'
 
 export default function CreatePin(): JSX.Element {
   const { navigate } = useRouter()
@@ -38,18 +39,20 @@ export default function CreatePin(): JSX.Element {
   )
 
   return (
-    <BlurredBarsContentLayout sx={{ marginTop: 16 }}>
-      <KeyboardAvoidingView>
-        <Component
-          onEnteredValidPin={handleEnteredValidPin}
-          useBiometrics={useBiometrics}
-          setUseBiometrics={setUseBiometrics}
-          newPinTitle={`Secure your wallet\nwith a PIN`}
-          newPinDescription="For extra security, avoid choosing a PIN that contains repeating digits in a sequential order"
-          confirmPinTitle={`Confirm your\nPIN code`}
-          isBiometricAvailable={isBiometricAvailable}
-        />
-      </KeyboardAvoidingView>
-    </BlurredBarsContentLayout>
+    <SafeAreaView style={{ flex: 1 }}>
+      <BlurredBarsContentLayout>
+        <KeyboardAvoidingView>
+          <Component
+            onEnteredValidPin={handleEnteredValidPin}
+            useBiometrics={useBiometrics}
+            setUseBiometrics={setUseBiometrics}
+            newPinTitle={`Secure your wallet\nwith a PIN`}
+            newPinDescription="For extra security, avoid choosing a PIN that contains repeating digits in a sequential order"
+            confirmPinTitle={`Confirm your\nPIN code`}
+            isBiometricAvailable={isBiometricAvailable}
+          />
+        </KeyboardAvoidingView>
+      </BlurredBarsContentLayout>
+    </SafeAreaView>
   )
 }

@@ -3,7 +3,6 @@ import BlurredBarsContentLayout from 'common/components/BlurredBarsContentLayout
 import {
   Avatar,
   Button,
-  SafeAreaView,
   ScrollView,
   View,
   useTheme,
@@ -11,6 +10,7 @@ import {
 } from '@avalabs/k2-alpine'
 import { selectSelectedAvatar } from 'store/settings/avatar'
 import { useSelector } from 'react-redux'
+import { SafeAreaView } from 'react-native-safe-area-context'
 
 export const Confirmation = ({
   onNext
@@ -24,7 +24,7 @@ export const Confirmation = ({
 
   return (
     <BlurredBarsContentLayout>
-      <SafeAreaView sx={{ flex: 1 }}>
+      <SafeAreaView style={{ flex: 1 }}>
         <ScrollView sx={{ flex: 1 }} contentContainerSx={{ padding: 16 }}>
           <View sx={{ alignItems: 'center', marginTop: 100 }}>
             {avatar?.source && (

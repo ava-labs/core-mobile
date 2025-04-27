@@ -1,4 +1,4 @@
-import { View, Button, useTheme, SafeAreaView, Logos } from '@avalabs/k2-alpine'
+import { View, Button, useTheme, Logos } from '@avalabs/k2-alpine'
 import React, { useEffect } from 'react'
 import { useSelector } from 'react-redux'
 import {
@@ -16,6 +16,7 @@ import { showSnackbar } from 'common/utils/toast'
 import { useRecoveryMethodContext } from 'features/onboarding/contexts/RecoveryMethodProvider'
 import { useLogoModal } from 'common/hooks/useLogoModal'
 import { useSeedlessRegister } from 'features/onboarding/hooks/useSeedlessRegister'
+import { SafeAreaView } from 'react-native-safe-area-context'
 
 export default function Signup(): JSX.Element {
   const { theme } = useTheme()
@@ -161,7 +162,7 @@ export default function Signup(): JSX.Element {
 
   return (
     <SafeAreaView
-      sx={{
+      style={{
         flex: 1
       }}>
       <View sx={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
