@@ -179,7 +179,7 @@ export const SwapContextProvider = ({
       const originalError =
         err instanceof JsonRpcError ? err.data.cause : undefined
 
-      transactionSnackbar.error({ message: readableErrorMessage })
+      transactionSnackbar.error({ error: readableErrorMessage })
       Logger.error(readableErrorMessage, originalError)
     },
     [cChainNetwork]
