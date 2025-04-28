@@ -9,14 +9,14 @@ import {
   useTheme,
   View
 } from '@avalabs/k2-alpine'
+import { useHeaderHeight } from '@react-navigation/elements'
 import { FlatListScreenTemplate } from 'common/components/FlatListScreenTemplate'
 import { NetworkLogoWithChain } from 'common/components/NetworkLogoWithChain'
-import { getListItemEnteringAnimation } from 'common/utils/animations'
 import { useRouter } from 'expo-router'
 import { useNetworks } from 'hooks/networks/useNetworks'
 import React, { useCallback, useMemo, useState } from 'react'
 import { ListRenderItem } from 'react-native'
-import Animated, { LinearTransition } from 'react-native-reanimated'
+import Animated from 'react-native-reanimated'
 import { useDispatch } from 'react-redux'
 import {
   isAvalancheCChainId,
@@ -34,7 +34,7 @@ export const ManageNetworksScreen = (): JSX.Element => {
   const [searchText, setSearchText] = useState('')
   const title = 'Networks'
   const { navigate } = useRouter()
-
+  const headerHeight = useHeaderHeight()
   const filterBySearchText = useCallback(
     (network: Network) =>
       network.chainName.toLowerCase().includes(searchText.toLowerCase()) ||
@@ -186,7 +186,8 @@ export const ManageNetworksScreen = (): JSX.Element => {
           flexDirection: 'row',
           gap: 16,
           marginRight: 18,
-          alignItems: 'center'
+          alignItems: 'center',
+          height: headerHeight
         }}>
         <Icons.Content.Add
           testID="add_custon_network_btn"
@@ -196,14 +197,14 @@ export const ManageNetworksScreen = (): JSX.Element => {
         />
       </TouchableOpacity>
     )
-  }, [goToAddCustomNetwork, theme.colors.$textPrimary])
+  }, [goToAddCustomNetwork, headerHeight, theme.colors.$textPrimary])
 
   return (
     <FlatListScreenTemplate
       title={title}
       data={filteredNetworks}
-      hasParent
       isModal
+      hasParent
       keyExtractor={item => item.chainId.toString()}
       renderItem={renderNetwork}
       renderHeaderRight={renderHeaderRight}

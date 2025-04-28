@@ -18,7 +18,6 @@ import { getListItemEnteringAnimation } from 'common/utils/animations'
 import { loadAvatar } from 'common/utils/loadAvatar'
 import { getAddressFromContact } from 'features/accountSettings/utils/getAddressFromContact'
 import { isValidAddress } from 'features/accountSettings/utils/isValidAddress'
-import { portfolioTabContentHeight } from 'features/portfolio/utils'
 import React, { useCallback, useMemo, useState } from 'react'
 import Animated from 'react-native-reanimated'
 import { useSelector } from 'react-redux'
@@ -216,6 +215,7 @@ export const RecentContacts = ({
     <FlatListScreenTemplate
       title={TITLE}
       data={searchResults}
+      isModal
       renderHeader={renderHeader}
       keyExtractor={item => `recent-contact-${item.id}`}
       renderItem={item => renderItem(item.item as Contact, item.index)}

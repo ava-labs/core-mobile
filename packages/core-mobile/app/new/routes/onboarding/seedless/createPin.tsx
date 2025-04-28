@@ -63,20 +63,14 @@ export default function CreatePin(): JSX.Element {
   )
 
   return (
-    <SafeAreaView sx={{ flex: 1 }}>
-      <KeyboardAvoidingView>
-        <BlurredBarsContentLayout>
-          <Component
-            onEnteredValidPin={handleEnteredValidPin}
-            useBiometrics={useBiometrics}
-            setUseBiometrics={setUseBiometrics}
-            newPinTitle={`Secure your wallet\nwith a PIN`}
-            newPinDescription="For extra security, avoid choosing a PIN that contains repeating digits in a sequential order"
-            confirmPinTitle={`Confirm your\nPIN code`}
-            isBiometricAvailable={isBiometricAvailable}
-          />
-        </BlurredBarsContentLayout>
-      </KeyboardAvoidingView>
-    </SafeAreaView>
+    <Component
+      onEnteredValidPin={handleEnteredValidPin}
+      useBiometrics={useBiometrics}
+      setUseBiometrics={setUseBiometrics}
+      newPinTitle={`Secure your wallet\nwith a PIN`}
+      newPinDescription="For extra security, avoid choosing a PIN that contains repeating digits in a sequential order"
+      confirmPinTitle={`Confirm your\nPIN code`}
+      isBiometricAvailable={isBiometricAvailable}
+    />
   )
 }

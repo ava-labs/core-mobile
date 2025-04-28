@@ -9,6 +9,7 @@ import {
   View
 } from '@avalabs/k2-alpine'
 import { generateOnRampURL } from '@coinbase/cbpay-js'
+import { ScrollViewScreenTemplate } from 'common/components/ScrollViewScreenTemplate'
 import { useCoreBrowser } from 'common/hooks/useCoreBrowser'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import React, { FC, useCallback, useMemo } from 'react'
@@ -215,16 +216,23 @@ export const BuyScreen: FC = () => {
   ])
 
   return (
-    <View style={{ paddingHorizontal: 16, gap: 24 }}>
-      <View style={{ gap: 4 }}>
-        <Text variant="heading2">Buy crypto</Text>
+    <ScrollViewScreenTemplate
+      title="Buy crypto"
+      isModal
+      contentContainerStyle={{
+        padding: 16
+      }}>
+      <View
+        style={{
+          gap: 24
+        }}>
         <Text variant="body1">
           {`Buy tokens with fiat currency using your debit card or bank account leveraging one of our many partners`}
         </Text>
-      </View>
 
-      {renderAvaxWarning()}
-      <GroupList data={data} subtitleVariant="body1" />
-    </View>
+        {renderAvaxWarning()}
+        <GroupList data={data} subtitleVariant="body1" />
+      </View>
+    </ScrollViewScreenTemplate>
   )
 }

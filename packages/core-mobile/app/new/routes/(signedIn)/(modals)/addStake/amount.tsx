@@ -148,7 +148,8 @@ const StakeAmountScreen = (): JSX.Element => {
 
   return (
     <ScrollViewScreenTemplate
-      title="How much would you like to stake?"
+      title={`How much would\nyou like to stake?`}
+      navigationTitle="How much would you like to stake?"
       renderFooter={renderFooter}
       isModal
       contentContainerStyle={{ padding: 16 }}>

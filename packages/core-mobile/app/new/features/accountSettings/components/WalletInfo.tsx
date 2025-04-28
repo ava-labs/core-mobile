@@ -42,11 +42,11 @@ export const WalletInfo = ({
           {'Test wallet'}
         </Text>
       )
-    },
-    {
-      title: 'Show private key',
-      onPress: showPrivateKey
     }
+    // {
+    //   title: 'Show private key',
+    //   onPress: showPrivateKey
+    // }
   ]
 
   return (
@@ -60,11 +60,11 @@ export const WalletInfo = ({
         }}
         valueSx={{ fontSize: 16, lineHeight: 22 }}
       />
-      <Text variant="caption" sx={{ color: colors.$textSecondary }}>
+      {/* <Text variant="caption" sx={{ color: colors.$textSecondary }}>
         Your account’s private key is a fixed password for accessing the
         specific addresses above. Keep it secure, anyone with this private key
         can access the account associated with it
-      </Text>
+      </Text> */}
     </View>
   )
 }

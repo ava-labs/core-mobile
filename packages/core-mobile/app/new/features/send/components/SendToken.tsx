@@ -158,6 +158,7 @@ export const SendToken = ({ onSend }: { onSend: () => void }): JSX.Element => {
   return (
     <ScrollViewScreenTemplate
       title={'How much would\nyou like to send?'}
+      navigationTitle={'How much would you like to send?'}
       contentContainerStyle={{ padding: 16 }}
       isModal
       renderFooter={renderFooter}>

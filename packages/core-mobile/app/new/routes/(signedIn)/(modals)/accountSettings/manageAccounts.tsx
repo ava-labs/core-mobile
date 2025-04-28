@@ -1,42 +1,35 @@
-import { useRouter } from 'expo-router'
-import { useNavigation } from '@react-navigation/native'
-import React, {
-  useLayoutEffect,
-  useCallback,
-  useState,
-  useMemo,
-  useRef
-} from 'react'
-import { useDispatch, useSelector } from 'react-redux'
+import { truncateAddress } from '@avalabs/core-utils-sdk'
 import {
   ActivityIndicator,
+  alpha,
   AnimatedBalance,
   GroupList,
   Icons,
   Pressable,
-  ScrollView,
   SearchBar,
-  Separator,
+  Text,
   TouchableOpacity,
   useTheme,
-  View,
-  Text,
-  alpha
+  View
 } from '@avalabs/k2-alpine'
+import { useNavigation } from '@react-navigation/native'
+import { ScrollViewScreenTemplate } from 'common/components/ScrollViewScreenTemplate'
+import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
+import { showSnackbar } from 'common/utils/toast'
+import { useRouter } from 'expo-router'
+import { useBalanceForAccount } from 'new/common/contexts/useBalanceForAccount'
+import React, { useCallback, useMemo, useRef, useState } from 'react'
+import { ScrollView as RnScrollView } from 'react-native'
+import { useDispatch, useSelector } from 'react-redux'
+import AnalyticsService from 'services/analytics/AnalyticsService'
+import WalletService from 'services/wallet/WalletService'
 import {
   addAccount,
   selectAccounts,
   setActiveAccountIndex
 } from 'store/account'
-import Logger from 'utils/Logger'
-import AnalyticsService from 'services/analytics/AnalyticsService'
-import WalletService from 'services/wallet/WalletService'
-import { showSnackbar } from 'common/utils/toast'
-import { truncateAddress } from '@avalabs/core-utils-sdk'
 import { selectIsPrivacyModeEnabled } from 'store/settings/securityPrivacy'
-import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
-import { ScrollView as RnScrollView } from 'react-native'
-import { useBalanceForAccount } from 'new/common/contexts/useBalanceForAccount'
+import Logger from 'utils/Logger'
 
 const ITEM_HEIGHT = 50
 
@@ -44,7 +37,6 @@ const ManageAccountsScreen = (): React.JSX.Element => {
   const {
     theme: { colors }
   } = useTheme()
-  const { setOptions } = useNavigation()
   const dispatch = useDispatch()
   const { navigate } = useRouter()
   const [searchText, setSearchText] = useState('')
@@ -184,36 +176,25 @@ const ManageAccountsScreen = (): React.JSX.Element => {
     )
   }, [colors.$textPrimary, handleAddAccount])
 
-  useLayoutEffect(() => {
-    setOptions({
-      headerRight: renderHeaderRight,
-      headerTitle: 'Manage accounts'
-    })
-  }, [renderHeaderRight, setOptions])
+  const renderHeader = useCallback(() => {
+    return (
+      <SearchBar
+        onTextChanged={setSearchText}
+        searchText={searchText}
+        useDebounce={true}
+      />
+    )
+  }, [searchText])
 
   return (
-    <View sx={{ flex: 1 }}>
-      <View sx={{ zIndex: 1000 }}>
-        <View sx={{ alignItems: 'center' }}>
-          <SearchBar
-            onTextChanged={setSearchText}
-            searchText={searchText}
-            useDebounce={true}
-          />
-        </View>
-        <Separator sx={{ marginTop: 11, marginBottom: 16 }} />
-      </View>
-      <ScrollView
-        ref={scrollViewRef}
-        sx={{ marginHorizontal: 16, overflow: 'hidden' }}
-        contentContainerStyle={{
-          paddingBottom: ITEM_HEIGHT
-        }}
-        showsVerticalScrollIndicator={false}>
-        <GroupList itemHeight={ITEM_HEIGHT} data={data} />
-        <ActivityIndicator animating={isAddingAccount} sx={{ marginTop: 16 }} />
-      </ScrollView>
-    </View>
+    <ScrollViewScreenTemplate
+      title="Manage accounts"
+      renderHeader={renderHeader}
+      renderHeaderRight={renderHeaderRight}
+      contentContainerStyle={{ padding: 16 }}>
+      <GroupList itemHeight={ITEM_HEIGHT} data={data} />
+      <ActivityIndicator animating={isAddingAccount} sx={{ marginTop: 16 }} />
+    </ScrollViewScreenTemplate>
   )
 }
 

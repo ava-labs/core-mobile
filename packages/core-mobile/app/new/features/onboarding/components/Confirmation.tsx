@@ -1,17 +1,8 @@
-import React from 'react'
-import BlurredBarsContentLayout from 'common/components/BlurredBarsContentLayout'
-import {
-  Avatar,
-  Button,
-  ScrollView,
-  View,
-  useTheme,
-  Text,
-  SafeAreaView
-} from '@avalabs/k2-alpine'
-import { selectSelectedAvatar } from 'store/settings/avatar'
-import { useSelector } from 'react-redux'
+import { Avatar, Button, Text, View, useTheme } from '@avalabs/k2-alpine'
 import { ScrollViewScreenTemplate } from 'common/components/ScrollViewScreenTemplate'
+import React from 'react'
+import { useSelector } from 'react-redux'
+import { selectSelectedAvatar } from 'store/settings/avatar'
 
 export const Confirmation = ({
   onNext

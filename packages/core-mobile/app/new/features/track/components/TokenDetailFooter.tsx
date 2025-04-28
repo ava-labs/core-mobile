@@ -1,11 +1,9 @@
 import { Button, View } from '@avalabs/k2-alpine'
-import { LinearGradientBottomWrapper } from 'common/components/LinearGradientBottomWrapper'
 import { AVAX_COINGECKO_ID } from 'consts/coingecko'
 import { USDC_TOKEN_ID } from 'consts/swap'
 import { useHasEnoughAvaxToStake } from 'hooks/earn/useHasEnoughAvaxToStake'
 import { UI, useIsUIDisabled } from 'hooks/useIsUIDisabled'
 import React from 'react'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useSelector } from 'react-redux'
 import { selectActiveAccount } from 'store/account'
 import { selectBalanceTotalInCurrencyForAccount } from 'store/balance'
@@ -26,7 +24,6 @@ export const TokenDetailFooter = ({
   onStake: () => void
   onSwap: (initialTokenIdTo?: string) => void
 }): JSX.Element | null => {
-  const { bottom } = useSafeAreaInsets()
   const activeAccount = useSelector(selectActiveAccount)
   const tokenVisibility = useSelector(selectTokenVisibility)
   const balanceTotalInCurrency = useSelector(
@@ -104,16 +101,12 @@ export const TokenDetailFooter = ({
   }
 
   return (
-    <LinearGradientBottomWrapper>
-      <View
-        sx={{
-          paddingHorizontal: 16,
-          paddingBottom: bottom + 12,
-          flexDirection: 'row',
-          gap: 12
-        }}>
-        {actions}
-      </View>
-    </LinearGradientBottomWrapper>
+    <View
+      sx={{
+        flexDirection: 'row',
+        gap: 12
+      }}>
+      {actions}
+    </View>
   )
 }

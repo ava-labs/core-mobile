@@ -3,7 +3,6 @@ import {
   AlertWithTextInputs,
   Button,
   Icons,
-  SafeAreaView,
   showAlert,
   Text,
   useTheme,
@@ -11,6 +10,7 @@ import {
 } from '@avalabs/k2-alpine'
 import { AlertWithTextInputsHandle } from '@avalabs/k2-alpine/src/components/Alert/types'
 import { NetworkLogoWithChain } from 'common/components/NetworkLogoWithChain'
+import { ScrollViewScreenTemplate } from 'common/components/ScrollViewScreenTemplate'
 import { useFormState } from 'common/hooks/useFormState'
 import { isValidContactName } from 'common/utils/isValidContactName'
 import { useLocalSearchParams, useRouter } from 'expo-router'
@@ -23,7 +23,6 @@ import {
 } from 'features/accountSettings/hooks/useCustomNetwork'
 import { useNetworks } from 'hooks/networks/useNetworks'
 import React, { useCallback, useMemo, useRef } from 'react'
-import { KeyboardAwareScrollView } from 'react-native-keyboard-controller'
 import { useDispatch } from 'react-redux'
 import { removeCustomNetwork } from 'store/network'
 import { isPChain, isXChain, isXPChain } from 'utils/network/isAvalancheNetwork'
@@ -324,15 +323,63 @@ export const AddEditNetworkScreen = (): JSX.Element => {
     )
   }, [formState.chainName, handleShowAlertWithTextInput, isCustomNetwork, mode])
 
+  const renderFooter = useCallback(() => {
+    if (isCustomNetwork || mode === Mode.ADD)
+      return (
+        <View
+          sx={{
+            gap: 16
+          }}>
+          <Button
+            type="primary"
+            size="large"
+            onPress={handleSubmit}
+            disabled={isSaveDisabled}>
+            Save
+          </Button>
+          {foundNetwork ? (
+            <Button
+              type="secondary"
+              textStyle={{
+                color: theme.colors.$textDanger
+              }}
+              size="large"
+              onPress={handleDelete}>
+              Delete
+            </Button>
+          ) : (
+            <Button
+              type="tertiary"
+              size="large"
+              onPress={() => canGoBack() && back()}>
+              Cancel
+            </Button>
+          )}
+        </View>
+      )
+    return null
+  }, [
+    back,
+    canGoBack,
+    foundNetwork,
+    handleDelete,
+    handleSubmit,
+    isCustomNetwork,
+    isSaveDisabled,
+    mode,
+    theme.colors.$textDanger
+  ])
+
   return (
-    <SafeAreaView sx={{ flex: 1, paddingHorizontal: 16 }}>
-      <KeyboardAwareScrollView
-        keyboardShouldPersistTaps="handled"
-        keyboardDismissMode="interactive"
-        automaticallyAdjustKeyboardInsets
-        showsVerticalScrollIndicator={false}
+    <>
+      <ScrollViewScreenTemplate
+        isModal
+        disabled
+        renderFooter={renderFooter}
         contentContainerStyle={{
-          gap: 40
+          padding: 16,
+          gap: 40,
+          flex: 1
         }}>
         <View sx={{ alignItems: 'center', gap: 24 }}>
           {formState.logoUri ? (
@@ -370,46 +417,11 @@ export const AddEditNetworkScreen = (): JSX.Element => {
         </View>
 
         <AdvancedForm data={data} />
-      </KeyboardAwareScrollView>
-
-      {(isCustomNetwork || mode === Mode.ADD) && (
-        <View
-          sx={{
-            gap: 16,
-            backgroundColor: '$surfacePrimary',
-            paddingBottom: 16
-          }}>
-          <Button
-            type="primary"
-            size="large"
-            onPress={handleSubmit}
-            disabled={isSaveDisabled}>
-            Save
-          </Button>
-          {foundNetwork ? (
-            <Button
-              type="secondary"
-              textStyle={{
-                color: theme.colors.$textDanger
-              }}
-              size="large"
-              onPress={handleDelete}>
-              Delete
-            </Button>
-          ) : (
-            <Button
-              type="tertiary"
-              size="large"
-              onPress={() => canGoBack() && back()}>
-              Cancel
-            </Button>
-          )}
-        </View>
-      )}
+      </ScrollViewScreenTemplate>
 
       <View>
         <AlertWithTextInputs ref={alert} />
       </View>
-    </SafeAreaView>
+    </>
   )
 }

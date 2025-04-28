@@ -1,61 +1,27 @@
-import {
-  Icons,
-  NavigationTitleHeader,
-  Text,
-  ScrollView,
-  useTheme,
-  View,
-  Button
-} from '@avalabs/k2-alpine'
-import React, { useState, useMemo, useCallback, useEffect } from 'react'
-import Animated, {
-  useAnimatedStyle,
-  useSharedValue
-} from 'react-native-reanimated'
-import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
-import { LayoutChangeEvent, LayoutRectangle } from 'react-native'
-import ScreenHeader from 'common/components/ScreenHeader'
+import { Button, Icons, Text, useTheme, View } from '@avalabs/k2-alpine'
+import { ScrollViewScreenTemplate } from 'common/components/ScrollViewScreenTemplate'
+import { Space } from 'components/Space'
+import NotificationToggle from 'features/accountSettings/components/NotificationToggle'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
 import {
   ChannelId,
   notificationChannels
 } from 'services/notifications/channels'
-import { useDispatch, useSelector } from 'react-redux'
+import NotificationsService from 'services/notifications/NotificationsService'
 import { selectAppState } from 'store/app'
+import { setNotificationSubscriptions } from 'store/notifications'
 import {
   selectIsAllNotificationsBlocked,
   selectIsEarnBlocked
 } from 'store/posthog'
-import { setNotificationSubscriptions } from 'store/notifications'
-import NotificationsService from 'services/notifications/NotificationsService'
 import Logger from 'utils/Logger'
-import NotificationToggle from 'features/accountSettings/components/NotificationToggle'
-import { Space } from 'components/Space'
-
-const navigationHeader = (
-  <NavigationTitleHeader title={'Notification preferences'} />
-)
 
 const NotificationPreferencesScreen = (): JSX.Element => {
   const {
     theme: { colors }
   } = useTheme()
-  const headerOpacity = useSharedValue(1)
-  const [headerLayout, setHeaderLayout] = useState<
-    LayoutRectangle | undefined
-  >()
-  const { onScroll, targetHiddenProgress } = useFadingHeaderNavigation({
-    header: navigationHeader,
-    targetLayout: headerLayout,
-    shouldHeaderHaveGrabber: true
-  })
 
-  const animatedHeaderStyle = useAnimatedStyle(() => ({
-    opacity: 1 - targetHiddenProgress.value
-  }))
-
-  const handleHeaderLayout = (event: LayoutChangeEvent): void => {
-    setHeaderLayout(event.nativeEvent.layout)
-  }
   const dispatch = useDispatch()
   const [showAllowPushNotificationsCard, setShowAllowPushNotificationsCard] =
     useState(false)
@@ -117,18 +83,14 @@ const NotificationPreferencesScreen = (): JSX.Element => {
   }, [blockedChannels, disabledChannels])
 
   return (
-    <ScrollView
-      onScroll={onScroll}
-      contentContainerSx={{
-        paddingBottom: 60,
-        paddingHorizontal: 16
-      }}
-      showsVerticalScrollIndicator={false}>
-      <Animated.View
-        style={[{ opacity: headerOpacity }, animatedHeaderStyle]}
-        onLayout={handleHeaderLayout}>
-        <ScreenHeader title={`Notification\npreferences`} />
-      </Animated.View>
+    <ScrollViewScreenTemplate
+      title={`Notification\npreferences`}
+      navigationTitle="Notification preferences"
+      hasParent
+      isModal
+      contentContainerStyle={{
+        padding: 16
+      }}>
       {showAllowPushNotificationsCard && (
         <View sx={{ gap: 12, marginBottom: 8 }}>
           <View
@@ -159,7 +121,7 @@ const NotificationPreferencesScreen = (): JSX.Element => {
       )}
       <Space y={16} />
       <View sx={{ gap: 12 }}>{renderNotificationToggles()}</View>
-    </ScrollView>
+    </ScrollViewScreenTemplate>
   )
 }
 

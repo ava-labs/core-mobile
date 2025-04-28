@@ -102,6 +102,7 @@ const TokenManagementScreen = (): JSX.Element => {
     <FlatListScreenTemplate
       title="Manage list"
       data={tokenList}
+      isModal
       renderHeaderRight={renderHeaderRight}
       ItemSeparatorComponent={renderSeparator}
       renderItem={item =>

@@ -7,13 +7,12 @@ import {
   useTheme,
   View
 } from '@avalabs/k2-alpine'
-import React, { useCallback } from 'react'
-import { useRouter } from 'expo-router'
-import { ErrorState } from 'common/components/ErrorState'
-import { useFocusEffect, useNavigation } from '@react-navigation/native'
-import { uuid } from 'utils/uuid'
-import { useSortedContacts } from 'features/accountSettings/hooks/useSortedContacts'
 import { ContactList } from 'common/components/ContactList'
+import { ErrorState } from 'common/components/ErrorState'
+import { useRouter } from 'expo-router'
+import { useSortedContacts } from 'features/accountSettings/hooks/useSortedContacts'
+import React, { useCallback } from 'react'
+import { uuid } from 'utils/uuid'
 import EMPTY_ADDRESS_BOOK_ICON from '../../../../assets/icons/address_book_empty.png'
 
 export const AddressBookScreen = (): JSX.Element => {
@@ -23,7 +22,6 @@ export const AddressBookScreen = (): JSX.Element => {
   const { data: contacts, sort } = useSortedContacts()
 
   const { navigate } = useRouter()
-  const { getParent } = useNavigation()
 
   const goToAddContact = useCallback((): void => {
     navigate({
@@ -84,6 +82,7 @@ export const AddressBookScreen = (): JSX.Element => {
       title="Contacts"
       contacts={contacts}
       onPress={contact => goToContactDetail(contact.id)}
+      renderHeaderRight={renderHeaderRight}
       ListEmptyComponent={
         <ErrorState
           sx={{ flex: 1 }}

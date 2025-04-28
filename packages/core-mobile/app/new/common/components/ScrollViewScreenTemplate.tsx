@@ -1,12 +1,7 @@
-import {
-  NavigationTitleHeader,
-  SafeAreaView,
-  useKeyboardHeight
-} from '@avalabs/k2-alpine'
+import { NavigationTitleHeader, useKeyboardHeight } from '@avalabs/k2-alpine'
 import { useHeaderHeight } from '@react-navigation/elements'
-import { useFocusEffect, useNavigation } from '@react-navigation/native'
 import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
-import React, { useCallback, useLayoutEffect, useRef, useState } from 'react'
+import React, { useLayoutEffect, useRef, useState } from 'react'
 import { LayoutRectangle, View } from 'react-native'
 import {
   KeyboardAwareScrollView,
@@ -20,18 +15,19 @@ import Animated, {
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { BlurViewWithFallback } from './BlurViewWithFallback'
 import { KeyboardAvoidingView } from './KeyboardAvoidingView'
-import ScreenHeader from './ScreenHeader'
 import { LinearGradientBottomWrapper } from './LinearGradientBottomWrapper'
+import ScreenHeader from './ScreenHeader'
 
 interface FlatListScreenTemplateProps extends KeyboardAwareScrollViewProps {
-  title: string
+  title?: string
   children: React.ReactNode
   hasParent?: boolean
   isModal?: boolean
   disabled?: boolean
-  renderHeader?: () => React.ReactNode
-  renderFooter?: () => React.ReactNode
-  renderHeaderRight?: () => React.ReactNode
+  navigationTitle?: string
+  renderHeader?: () => JSX.Element
+  renderFooter?: () => JSX.Element
+  renderHeaderRight?: () => JSX.Element
 }
 
 export const ScrollViewScreenTemplate = ({
@@ -40,13 +36,13 @@ export const ScrollViewScreenTemplate = ({
   hasParent,
   isModal,
   disabled,
+  navigationTitle,
   renderHeader,
   renderFooter,
   renderHeaderRight,
   ...props
-}: FlatListScreenTemplateProps): React.ReactNode => {
+}: FlatListScreenTemplateProps): JSX.Element => {
   const insets = useSafeAreaInsets()
-  const navigation = useNavigation()
   const headerHeight = useHeaderHeight()
   const keyboardHeight = useKeyboardHeight()
 
@@ -56,9 +52,11 @@ export const ScrollViewScreenTemplate = ({
 
   const { onScroll, scrollY, targetHiddenProgress } = useFadingHeaderNavigation(
     {
-      header: <NavigationTitleHeader title={title} />,
+      header: <NavigationTitleHeader title={navigationTitle ?? title ?? ''} />,
       targetLayout: headerLayout,
-      shouldHeaderHaveGrabber: isModal ? true : false
+      shouldHeaderHaveGrabber: isModal ? true : false,
+      hasParent,
+      renderHeaderRight
     }
   )
 
@@ -86,91 +84,64 @@ export const ScrollViewScreenTemplate = ({
     }
   }, [contentHeaderHeight])
 
-  useFocusEffect(
-    useCallback(() => {
-      if (hasParent) {
-        navigation.getParent()?.setOptions({
-          headerRight: renderHeaderRight,
-          headerTransparent: true
-        })
-        return () => {
-          navigation.getParent()?.setOptions({
-            headerRight: renderHeaderRight ?? undefined,
-            headerTransparent: false
-          })
-        }
-      } else {
-        navigation.setOptions({
-          headerRight: renderHeaderRight,
-          headerTransparent: true
-        })
-        return () => {
-          navigation?.setOptions({
-            headerRight: renderHeaderRight ?? undefined,
-            headerTransparent: false
-          })
-        }
-      }
-    }, [hasParent, navigation, renderHeaderRight])
-  )
-
   return (
     <KeyboardAvoidingView
       enabled={!disabled}
       keyboardVerticalOffset={isModal ? insets.bottom : -insets.bottom}>
-      <SafeAreaView edges={['bottom']} sx={{ flex: 1 }}>
-        <BlurViewWithFallback
+      <BlurViewWithFallback
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          height: headerHeight,
+          zIndex: 100
+        }}
+      />
+      <KeyboardAwareScrollView
+        style={{ flex: 1 }}
+        keyboardDismissMode="interactive"
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+        extraKeyboardSpace={-keyboardHeight}
+        {...props}
+        contentContainerStyle={[
+          props?.contentContainerStyle,
+          {
+            paddingBottom: insets.bottom
+          }
+        ]}
+        onScroll={onScroll}>
+        <View
           style={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            height: headerHeight,
-            zIndex: 100
-          }}
-        />
-        <KeyboardAwareScrollView
-          style={{ flex: 1 }}
-          keyboardDismissMode="interactive"
-          keyboardShouldPersistTaps="handled"
-          extraKeyboardSpace={-keyboardHeight}
-          {...props}
-          contentContainerStyle={[
-            props?.contentContainerStyle,
-            {
-              paddingBottom: insets.bottom
-            }
-          ]}
-          onScroll={onScroll}>
+            paddingBottom: 12,
+            paddingTop: headerHeight
+          }}>
+          {title ? (
+            <Animated.View style={[animatedHeaderStyle]} ref={headerRef}>
+              <ScreenHeader title={title ?? ''} />
+            </Animated.View>
+          ) : null}
+
+          {renderHeader?.()}
+        </View>
+
+        {children}
+      </KeyboardAwareScrollView>
+
+      {renderFooter ? (
+        <LinearGradientBottomWrapper>
           <View
             style={{
-              paddingBottom: 12,
-              paddingTop: headerHeight
+              padding: 16,
+              paddingTop: 0,
+              paddingBottom: insets.bottom + 16
             }}>
-            {title ? (
-              <Animated.View style={[animatedHeaderStyle]} ref={headerRef}>
-                <ScreenHeader title={title} />
-              </Animated.View>
-            ) : null}
-
-            {renderHeader?.()}
+            {renderFooter?.()}
           </View>
-          {children}
-        </KeyboardAwareScrollView>
-
-        {renderFooter ? (
-          <LinearGradientBottomWrapper>
-            <View
-              style={{
-                padding: 16,
-                paddingTop: 0
-              }}>
-              {renderFooter?.()}
-            </View>
-          </LinearGradientBottomWrapper>
-        ) : null}
-      </SafeAreaView>
+        </LinearGradientBottomWrapper>
+      ) : null}
     </KeyboardAvoidingView>
   )
 }

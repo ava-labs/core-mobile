@@ -1,18 +1,14 @@
-import React from 'react'
-import BlurredBarsContentLayout from 'common/components/BlurredBarsContentLayout'
 import {
   Button,
   Icons,
-  SafeAreaView,
-  ScrollView,
   showAlert,
   Text,
   useTheme,
   View
 } from '@avalabs/k2-alpine'
-import MnemonicScreen from 'features/onboarding/components/MnemonicPhrase'
-import ScreenHeader from 'common/components/ScreenHeader'
 import { ScrollViewScreenTemplate } from 'common/components/ScrollViewScreenTemplate'
+import MnemonicScreen from 'features/onboarding/components/MnemonicPhrase'
+import React from 'react'
 
 export const RecoveryPhrase = ({
   onNext,

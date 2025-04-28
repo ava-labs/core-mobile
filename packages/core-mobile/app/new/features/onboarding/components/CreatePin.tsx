@@ -1,22 +1,19 @@
-import React, { useCallback, useRef, useEffect, useState } from 'react'
-import { useFocusEffect } from 'expo-router'
 import {
   GroupList,
   PinInput,
   PinInputActions,
-  SafeAreaView,
-  ScrollView,
   Text,
   Toggle,
   View
 } from '@avalabs/k2-alpine'
+import { ScrollViewScreenTemplate } from 'common/components/ScrollViewScreenTemplate'
+import { useFocusEffect } from 'expo-router'
 import { useCreatePin } from 'features/onboarding/hooks/useCreatePin'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { InteractionManager } from 'react-native'
-import ScreenHeader from 'common/components/ScreenHeader'
 import DeviceInfoService, {
   BiometricType
 } from 'services/deviceInfo/DeviceInfoService'
-import { ScrollViewScreenTemplate } from 'common/components/ScrollViewScreenTemplate'
 
 export const CreatePin = ({
   useBiometrics,
@@ -25,7 +22,6 @@ export const CreatePin = ({
   newPinTitle,
   newPinDescription,
   confirmPinTitle,
-  keyboardHeight,
   isBiometricAvailable = false
 }: {
   useBiometrics: boolean
@@ -34,7 +30,6 @@ export const CreatePin = ({
   newPinTitle: string
   newPinDescription?: string
   confirmPinTitle: string
-  keyboardHeight?: number
   isBiometricAvailable?: boolean
 }): React.JSX.Element => {
   const ref = useRef<PinInputActions>(null)
@@ -108,6 +103,7 @@ export const CreatePin = ({
   return (
     <ScrollViewScreenTemplate
       title={chosenPinEntered ? confirmPinTitle : newPinTitle}
+      navigationTitle={chosenPinEntered ? confirmPinTitle : newPinTitle}
       contentContainerStyle={{ padding: 16, flex: 1 }}
       renderFooter={
         !chosenPinEntered && isBiometricAvailable

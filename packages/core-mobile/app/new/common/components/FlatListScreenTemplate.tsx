@@ -1,6 +1,5 @@
 import { NavigationTitleHeader } from '@avalabs/k2-alpine'
 import { useHeaderHeight } from '@react-navigation/elements'
-import { useFocusEffect, useNavigation } from '@react-navigation/native'
 import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
 import { getListItemEnteringAnimation } from 'common/utils/animations'
 import React, { useCallback, useLayoutEffect, useRef, useState } from 'react'
@@ -28,11 +27,12 @@ import ScreenHeader from './ScreenHeader'
 interface FlatListScreenTemplateProps<T>
   extends Omit<FlatListPropsWithLayout<T>, 'ListHeaderComponent'> {
   title: string
+  navigationTitle?: string
   data: T[]
   hasParent?: boolean
   isModal?: boolean
-  renderHeader: () => React.ReactNode
-  renderHeaderRight?: () => React.ReactNode
+  renderHeader: () => JSX.Element
+  renderHeaderRight?: () => JSX.Element
 }
 
 const AnimatedFlatList = Animated.createAnimatedComponent(FlatList)
@@ -40,16 +40,16 @@ const AnimatedFlatList = Animated.createAnimatedComponent(FlatList)
 export const FlatListScreenTemplate = <T,>({
   data,
   title,
+  navigationTitle,
   hasParent = false,
   isModal = false,
   ListEmptyComponent,
   renderHeader,
   renderHeaderRight,
   ...props
-}: FlatListScreenTemplateProps<T>): React.ReactNode => {
+}: FlatListScreenTemplateProps<T>): JSX.Element => {
   const headerHeight = useHeaderHeight()
   const insets = useSafeAreaInsets()
-  const navigation = useNavigation()
 
   const [headerLayout, setHeaderLayout] = useState<
     LayoutRectangle | undefined
@@ -59,10 +59,11 @@ export const FlatListScreenTemplate = <T,>({
 
   const { onScroll, scrollY, targetHiddenProgress } = useFadingHeaderNavigation(
     {
-      header: <NavigationTitleHeader title={title} />,
+      header: <NavigationTitleHeader title={navigationTitle ?? title ?? ''} />,
       targetLayout: headerLayout,
-      shouldHeaderHaveGrabber: isModal,
-      hasParent: hasParent
+      shouldHeaderHaveGrabber: isModal ? true : false,
+      hasParent,
+      renderHeaderRight
     }
   )
 
@@ -86,36 +87,6 @@ export const FlatListScreenTemplate = <T,>({
       })
     }
   }, [contentHeaderHeight])
-
-  useFocusEffect(
-    useCallback(() => {
-      if (hasParent) {
-        navigation.getParent()?.setOptions({
-          headerRight: renderHeaderRight
-        })
-        return () => {
-          navigation.getParent()?.setOptions({
-            headerRight: renderHeaderRight ?? undefined
-          })
-        }
-      } else {
-        navigation.setOptions({
-          headerRight: renderHeaderRight
-        })
-        return () => {
-          navigation?.setOptions({
-            headerRight: renderHeaderRight ?? undefined
-          })
-        }
-      }
-    }, [hasParent, navigation, renderHeaderRight])
-  )
-
-  // const onScroll = useAnimatedScrollHandler({
-  //   onScroll: event => {
-  //     scrollY.value = event.contentOffset.y
-  //   }
-  // })
 
   const onScrollEvent = useCallback(
     (event: NativeSyntheticEvent<NativeScrollEvent>) => {

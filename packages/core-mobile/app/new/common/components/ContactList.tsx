@@ -23,13 +23,15 @@ export const ContactList = ({
   title,
   ListHeader,
   onPress,
-  ListEmptyComponent
+  ListEmptyComponent,
+  renderHeaderRight
 }: {
   contacts: Contact[]
   title: string
   ListHeader?: React.JSX.Element
   onPress: (contact: Contact) => void
   ListEmptyComponent?: React.JSX.Element
+  renderHeaderRight?: () => React.JSX.Element
 }): React.JSX.Element => {
   const {
     theme: { colors }
@@ -158,8 +160,10 @@ export const ContactList = ({
       keyExtractor={item => (item as Contact).id}
       data={searchResults}
       hasParent
+      isModal
       renderItem={item => renderItem(item.item as Contact, item.index)}
       renderHeader={renderHeader}
+      renderHeaderRight={renderHeaderRight}
       ListEmptyComponent={ListEmptyComponent}
     />
   )

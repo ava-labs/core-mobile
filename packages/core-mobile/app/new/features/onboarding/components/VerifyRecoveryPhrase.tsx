@@ -1,23 +1,14 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
-import BlurredBarsContentLayout from 'common/components/BlurredBarsContentLayout'
-import {
-  Button,
-  SafeAreaView,
-  ScrollView,
-  showAlert,
-  Text,
-  View
-} from '@avalabs/k2-alpine'
-import ScreenHeader from 'common/components/ScreenHeader'
+import { Button, showAlert, Text } from '@avalabs/k2-alpine'
+import { ScrollViewScreenTemplate } from 'common/components/ScrollViewScreenTemplate'
 import WordSelection from 'features/onboarding/components/WordSelection'
-import AnalyticsService from 'services/analytics/AnalyticsService'
+import { useCheckMnemonic } from 'features/onboarding/hooks/useCheckMnemonic'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
   withTiming
 } from 'react-native-reanimated'
-import { useCheckMnemonic } from 'features/onboarding/hooks/useCheckMnemonic'
-import { ScrollViewScreenTemplate } from 'common/components/ScrollViewScreenTemplate'
+import AnalyticsService from 'services/analytics/AnalyticsService'
 
 export const VerifyRecoveryPhrase = ({
   mnemonic,

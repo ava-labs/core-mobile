@@ -1,39 +1,30 @@
 import {
-  NavigationTitleHeader,
-  Text,
-  useTheme,
   GroupList,
+  GroupListItem,
+  Text,
   Toggle,
-  GroupListItem
+  useTheme
 } from '@avalabs/k2-alpine'
-import React, { useState, useMemo, useCallback, useEffect } from 'react'
-import Animated, {
-  useAnimatedStyle,
-  useSharedValue
-} from 'react-native-reanimated'
-import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
-import { LayoutChangeEvent, LayoutRectangle } from 'react-native'
-import { useFocusEffect, useRouter } from 'expo-router'
-import { ScrollView } from 'react-native-gesture-handler'
-import { useConnectedDapps } from 'features/accountSettings/hooks/useConnectedDapps'
+import { ScrollViewScreenTemplate } from 'common/components/ScrollViewScreenTemplate'
 import { Space } from 'components/Space'
-import {
-  selectCoreAnalyticsConsent,
-  setCoreAnalytics
-} from 'store/settings/securityPrivacy'
+import { useFocusEffect, useRouter } from 'expo-router'
+import { useConnectedDapps } from 'features/accountSettings/hooks/useConnectedDapps'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
+import { StorageKey } from 'resources/Constants'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import DeviceInfoService, {
   BiometricType
 } from 'services/deviceInfo/DeviceInfoService'
 import { WalletType } from 'services/wallet/types'
 import { selectWalletType } from 'store/app'
+import {
+  selectCoreAnalyticsConsent,
+  setCoreAnalytics
+} from 'store/settings/securityPrivacy'
 import BiometricsSDK from 'utils/BiometricsSDK'
 import Logger from 'utils/Logger'
 import { commonStorage } from 'utils/mmkv'
-import { StorageKey } from 'resources/Constants'
-
-const navigationHeader = <NavigationTitleHeader title={'Security & privacy'} />
 
 const SecurityAndPrivacyScreen = (): JSX.Element => {
   const {
@@ -47,23 +38,6 @@ const SecurityAndPrivacyScreen = (): JSX.Element => {
     BiometricType.NONE
   )
   const { navigate } = useRouter()
-  const headerOpacity = useSharedValue(1)
-  const [headerLayout, setHeaderLayout] = useState<
-    LayoutRectangle | undefined
-  >()
-  const { onScroll, targetHiddenProgress } = useFadingHeaderNavigation({
-    header: navigationHeader,
-    targetLayout: headerLayout,
-    shouldHeaderHaveGrabber: true
-  })
-
-  const animatedHeaderStyle = useAnimatedStyle(() => ({
-    opacity: 1 - targetHiddenProgress.value
-  }))
-
-  const handleHeaderLayout = (event: LayoutChangeEvent): void => {
-    setHeaderLayout(event.nativeEvent.layout)
-  }
 
   const [isBiometricSwitchEnabled, setIsBiometricSwitchEnabled] =
     useState(false)
@@ -203,18 +177,11 @@ const SecurityAndPrivacyScreen = (): JSX.Element => {
   }, [])
 
   return (
-    <ScrollView
-      showsVerticalScrollIndicator={false}
-      contentContainerStyle={{ paddingBottom: 60, paddingHorizontal: 16 }}
-      onScroll={onScroll}>
-      {/* Header */}
-      <Animated.View
-        style={[{ opacity: headerOpacity }, animatedHeaderStyle]}
-        onLayout={handleHeaderLayout}>
-        <Text variant="heading2">{`Security\n& privacy`}</Text>
-      </Animated.View>
-      <Space y={36} />
-
+    <ScrollViewScreenTemplate
+      title={`Security\n& privacy`}
+      navigationTitle="Security & privacy"
+      isModal
+      contentContainerStyle={{ padding: 16 }}>
       <GroupList
         data={connectedSitesData}
         titleSx={{
@@ -261,7 +228,7 @@ const SecurityAndPrivacyScreen = (): JSX.Element => {
         committed to protecting your privacy. We will never sell or share your
         data
       </Text>
-    </ScrollView>
+    </ScrollViewScreenTemplate>
   )
 }
 

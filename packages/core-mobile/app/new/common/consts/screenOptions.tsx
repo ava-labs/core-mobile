@@ -19,7 +19,7 @@ const BAR_BUTTONS_BOTTOM_MARGIN = Platform.OS === 'ios' ? 8 : 0
 
 const MODAL_TOP_MARGIN = Platform.OS === 'ios' ? 75 : 35
 const MODAL_BORDER_RADIUS = 40
-const MODAL_HEADER_HEIGHT = 100
+const MODAL_HEADER_HEIGHT = 72
 
 const commonNavigatorScreenOptions: StackNavigationOptions = {
   title: '',
@@ -53,6 +53,9 @@ export const modalScreensOptions: StackNavigationOptions = {
     marginTop: MODAL_TOP_MARGIN,
     borderTopLeftRadius: MODAL_BORDER_RADIUS,
     borderTopRightRadius: MODAL_BORDER_RADIUS
+  },
+  headerStyle: {
+    height: MODAL_HEADER_HEIGHT
   },
   gestureEnabled: true,
   gestureDirection: 'vertical',

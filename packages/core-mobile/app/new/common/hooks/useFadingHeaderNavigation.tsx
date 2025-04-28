@@ -30,7 +30,8 @@ export const useFadingHeaderNavigation = ({
   hasSeparator = true,
   shouldDelayBlurOniOS = false,
   hasParent = false,
-  headerStyle
+  headerStyle,
+  renderHeaderRight
 }: {
   header?: JSX.Element
   targetLayout?: LayoutRectangle
@@ -39,6 +40,7 @@ export const useFadingHeaderNavigation = ({
   shouldDelayBlurOniOS?: boolean
   hasParent?: boolean
   headerStyle?: StyleProp<ViewStyle>
+  renderHeaderRight?: () => JSX.Element
 }): {
   onScroll: (
     event: NativeSyntheticEvent<NativeScrollEvent> | NativeScrollEvent | number
@@ -113,6 +115,7 @@ export const useFadingHeaderNavigation = ({
 
   const navigationOptions = useMemo(() => {
     return {
+      ...(renderHeaderRight && { headerRight: renderHeaderRight }),
       headerStyle,
       headerBackground: () => (
         <BlurredBackgroundView
@@ -143,7 +146,15 @@ export const useFadingHeaderNavigation = ({
               justifyContent: 'center'
             }}
             onLayout={handleLayout}>
-            <Animated.View style={animatedHeaderStyle}>{header}</Animated.View>
+            <Animated.View
+              style={[
+                animatedHeaderStyle,
+                {
+                  height: '100%'
+                }
+              ]}>
+              {header}
+            </Animated.View>
           </View>
         </View>
       )
@@ -153,6 +164,7 @@ export const useFadingHeaderNavigation = ({
     hasSeparator,
     header,
     headerStyle,
+    renderHeaderRight,
     shouldDelayBlurOniOS,
     shouldHeaderHaveGrabber,
     targetHiddenProgress
@@ -161,8 +173,16 @@ export const useFadingHeaderNavigation = ({
   useEffect(() => {
     if (hasParent) {
       navigation.getParent()?.setOptions(navigationOptions)
+
+      return () => {
+        navigation.getParent()?.setOptions({})
+      }
     } else {
       navigation.setOptions(navigationOptions)
+
+      return () => {
+        navigation.setOptions({})
+      }
     }
   }, [hasParent, navigation, navigationOptions])
 
