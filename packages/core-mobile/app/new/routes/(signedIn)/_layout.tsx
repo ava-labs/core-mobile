@@ -1,4 +1,5 @@
 import { Confetti, ConfettiMethods } from '@avalabs/k2-alpine'
+import { LastTransactedNetworks } from 'common/components/LastTransactedNetworks'
 import { Stack } from 'common/components/Stack'
 import {
   formSheetScreensOptions,
@@ -125,6 +126,7 @@ export default function WalletLayout(): JSX.Element {
             />
           </Stack>
           <PolyfillCrypto />
+          <LastTransactedNetworks />
           <Confetti ref={confettiRef} />
         </CollectiblesProvider>
       </ConfettiContext.Provider>

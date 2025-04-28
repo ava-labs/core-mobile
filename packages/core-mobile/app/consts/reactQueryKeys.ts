@@ -15,6 +15,7 @@ export enum ReactQueryKeys {
   WATCHLIST_TRENDING_TOKENS_AND_CHARTS = 'watchlistTrendingTokensAndCharts',
   WATCHLIST_PRICES = 'watchlistPrices',
   WATCHLIST_TOKEN_SEARCH = 'watchlistTokenSearch',
+  LAST_TRANSACTED_ERC20_NETWORKS = 'lastTransactedErc20Networks',
 
   FEATURED_PROJECTS = 'featuredProjects',
   FEATURED_EDUCATION_ARTICLES = 'featuredEducationArticles',
