@@ -155,15 +155,11 @@ const TransactionHistory: FC<Props> = ({
     [handleExplorerLink, token, handlePendingBridge]
   )
 
-  const dataLength = combinedData.length
-
   const dropdowns = useMemo(() => {
-    if (dataLength === 0) return
-
     return (
       <DropdownSelections filter={filter} sort={sort} sx={styles.dropdown} />
     )
-  }, [dataLength, filter, sort])
+  }, [filter, sort])
 
   const renderSeparator = useCallback((): JSX.Element => {
     return <Separator sx={{ marginLeft: 63 }} />
