@@ -2,17 +2,17 @@ import { AlertWithTextInputs, Button, View } from '@avalabs/k2-alpine'
 import { AlertWithTextInputsHandle } from '@avalabs/k2-alpine/src/components/Alert/types'
 import React, { useRef, useCallback } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { selectAccountByIndex, setAccountTitle } from 'store/account'
+import { selectAccountByUuid, setAccountTitle } from 'store/account'
 import { selectWalletType } from 'store/app'
 
 export const AccountButtons = ({
-  accountIndex
+  accountUuid
 }: {
-  accountIndex: number
+  accountUuid: string
 }): React.JSX.Element => {
   const dispatch = useDispatch()
   const walletType = useSelector(selectWalletType)
-  const account = useSelector(selectAccountByIndex(accountIndex))
+  const account = useSelector(selectAccountByUuid(accountUuid))
   const alert = useRef<AlertWithTextInputsHandle>(null)
 
   const handleShowAlertWithTextInput = (): void => {
@@ -42,17 +42,18 @@ export const AccountButtons = ({
     (values: Record<string, string>): void => {
       if (values.accountName && values.accountName.length > 0) {
         alert.current?.hide()
-        values.accountName !== account?.name &&
+        if (account && values.accountName !== account.name) {
           dispatch(
             setAccountTitle({
-              accountIndex,
+              accountId: account.id,
               title: values.accountName,
               walletType
             })
           )
+        }
       }
     },
-    [account?.name, accountIndex, dispatch, walletType]
+    [account, dispatch, walletType]
   )
 
   return (
