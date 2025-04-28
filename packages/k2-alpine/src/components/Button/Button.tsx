@@ -10,10 +10,11 @@ import {
 } from 'react-native'
 import { Text, View } from '../Primitives'
 import { Icons } from '../../theme/tokens/Icons'
-import { darkModeColors, lightModeColors } from '../../theme/tokens/colors'
 import { TextVariant } from '../../theme/tokens/text'
-import { getButtonBackgroundColor } from '../../utils/colors'
-import { K2AlpineTheme } from '../../theme/theme'
+import {
+  getButtonBackgroundColor,
+  getButtonTintColor
+} from '../../utils/colors'
 import { useInversedTheme, useTheme } from '../../hooks'
 
 export type ButtonType = 'primary' | 'secondary' | 'tertiary'
@@ -66,7 +67,7 @@ export const Button = forwardRef<RNView, ButtonProps & PropsWithChildren>(
     )
 
     const tintColor = useMemo(
-      () => getTintColor(type, resultTheme, disabled),
+      () => getButtonTintColor(type, resultTheme, disabled),
       [disabled, type, resultTheme]
     )
 
@@ -183,27 +184,6 @@ const getIcon = (
 ): JSX.Element | undefined => {
   const IconComponent = iconComponents[type]
   return <IconComponent {...iconProps} />
-}
-
-export const getTintColor = (
-  type: ButtonType,
-  theme: K2AlpineTheme,
-  disabled: boolean | undefined
-): string => {
-  if (disabled) {
-    return theme.isDark
-      ? lightModeColors.$textPrimary
-      : darkModeColors.$textPrimary
-  }
-  switch (type) {
-    case 'primary':
-      return theme.isDark
-        ? lightModeColors.$textPrimary
-        : darkModeColors.$textPrimary
-    case 'secondary':
-    case 'tertiary':
-      return theme.colors.$textPrimary
-  }
 }
 
 Button.displayName = 'Button'
