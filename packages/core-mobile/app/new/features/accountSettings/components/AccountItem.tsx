@@ -32,8 +32,8 @@ export const AccountItem = memo(
     index: number
     isActive: boolean
     account: Account
-    onSelectAccount: (accountIndex: number) => void
-    gotoAccountDetails: (accountIndex: number) => void
+    onSelectAccount: (account: Account) => void
+    gotoAccountDetails: (accountUuid: string) => void
     testID?: string
   }): React.JSX.Element => {
     const isPrivacyModeEnabled = useSelector(selectIsPrivacyModeEnabled)
@@ -43,7 +43,7 @@ export const AccountItem = memo(
 
     const tokenVisibility = useSelector(selectTokenVisibility)
     const accountBalance = useSelector(
-      selectBalanceTotalInCurrencyForAccount(account.index, tokenVisibility)
+      selectBalanceTotalInCurrencyForAccount(account.id, tokenVisibility)
     )
     const { formatCurrency } = useFormatCurrency()
 
@@ -78,7 +78,7 @@ export const AccountItem = memo(
         entering={getItemEnteringAnimation(index)}
         layout={LinearTransition.springify()}>
         <AnimatedPressable
-          onPress={() => onSelectAccount(account.index)}
+          onPress={() => onSelectAccount(account)}
           style={{
             backgroundColor: containerBackgroundColor,
             width: ACCOUNT_CARD_SIZE,
@@ -108,7 +108,7 @@ export const AccountItem = memo(
               {truncateAddress(account.addressC)}
             </Text>
             <TouchableOpacity
-              onPress={() => gotoAccountDetails(account.index)}
+              onPress={() => gotoAccountDetails(account.id)}
               hitSlop={16}>
               <Icons.Alert.AlertCircle
                 color={iconColor}
