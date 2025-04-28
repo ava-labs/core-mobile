@@ -11,7 +11,7 @@ const BalanceChangeComponent = ({
   return (
     <View
       sx={{
-        marginVertical: 12,
+        marginTop: 12,
         paddingVertical: 16,
         justifyContent: 'space-between',
         alignItems: 'center',

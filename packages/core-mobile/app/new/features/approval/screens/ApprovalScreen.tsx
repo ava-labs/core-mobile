@@ -31,6 +31,7 @@ import ScreenHeader from 'new/common/components/ScreenHeader'
 import { NavigationPresentationMode } from 'new/common/types'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useSpendLimits } from 'hooks/useSpendLimits'
+import { Warning } from 'new/common/components/Warning'
 import { Details } from '../components/Details'
 import { Network } from '../components/Network'
 import { NetworkFeeSelectorWithGasless } from '../components/NetworkFeeSelectorWithGasless'
@@ -236,25 +237,14 @@ const ApprovalScreen = ({
   }, [validateEthSendTransaction, gaslessEnabled])
 
   const renderGaslessAlert = useCallback((): JSX.Element | null => {
-    if (!gaslessError) return null
+    if (gaslessError === null || gaslessError.length === 0) return null
 
     return (
-      <View style={{ marginVertical: 12 }}>
-        <Text>{gaslessError.details.description}</Text>
-      </View>
+      <Warning
+        message={gaslessError}
+        sx={{ marginBottom: 12, marginRight: 16 }}
+      />
     )
-    // return (
-    //   <View sx={{ marginVertical: 12 }}>
-    //     <AlertBanner
-    //       alert={gaslessError}
-    //       customStyle={{
-    //         borderColor: '$dangerLight',
-    //         backgroundColor: '$transparent',
-    //         iconColor: colors.$white
-    //       }}
-    //     />
-    //   </View>
-    // )
   }, [gaslessError])
 
   const renderTitle = useCallback(
