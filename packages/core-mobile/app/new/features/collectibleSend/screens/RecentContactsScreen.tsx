@@ -12,6 +12,7 @@ import { useNetworkFee } from 'hooks/useNetworkFee'
 import useCollectibleSend from 'screens/send/hooks/useCollectibleSend'
 import { useSendContext } from 'features/send/context/sendContext'
 import { ActivityIndicator, alpha, useTheme, View } from '@avalabs/k2-alpine'
+import { useNavigation } from '@react-navigation/native'
 import { useSendTransactionCallbacks } from '../hooks/useSendTransactionCallbacks'
 
 export const RecentContactsScreen = (): JSX.Element | null => {
@@ -20,6 +21,7 @@ export const RecentContactsScreen = (): JSX.Element | null => {
   } = useTheme()
   const { isSending } = useSendContext()
   const { navigate, canGoBack, back } = useRouter()
+  const { getState } = useNavigation()
   const { recentAddresses, contacts, accounts } = useContacts()
   const { getNetwork } = useNetworks()
   const fromAddress = useSelector(selectActiveAccount)?.addressC ?? ''
@@ -51,6 +53,11 @@ export const RecentContactsScreen = (): JSX.Element | null => {
           onDismiss: () => {
             // dismiss recent contacts modal
             canGoBack() && back()
+            // dismiss onboarding modal
+            const state = getState()
+            if (state?.routes[state?.index ?? 0]?.name === 'onboarding') {
+              canGoBack() && back()
+            }
             contact?.type &&
               dispatch(addRecentContact({ id: contact.id, type: contact.type }))
           }
@@ -59,7 +66,7 @@ export const RecentContactsScreen = (): JSX.Element | null => {
         onFailure(reason)
       }
     },
-    [back, canGoBack, dispatch, onFailure, onSuccess, send]
+    [back, canGoBack, dispatch, getState, onFailure, onSuccess, send]
   )
 
   const collectiblesContacts = useMemo(() => {
