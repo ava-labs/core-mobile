@@ -3,7 +3,6 @@ import { Module, Network, NetworkVMType } from '@avalabs/vm-module-types'
 import { noop } from 'lodash'
 import WalletConnectService from 'services/walletconnectv2/WalletConnectService'
 import { AppStartListening } from 'store/middleware/listener'
-import * as Snackbar from 'components/Snackbar'
 import * as Toast from 'utils/toast'
 import mockSession from 'tests/fixtures/walletConnect/session.json'
 import mockNetworks from 'tests/fixtures/networks.json'
@@ -14,6 +13,7 @@ import { selectIsDeveloperMode } from 'store/settings/advanced/slice'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import ModuleManager from 'vmModule/ModuleManager'
 import mockAccounts from 'tests/fixtures/accounts.json'
+import { transactionSnackbar } from 'new/common/utils/toast'
 import {
   rpcReducer,
   reducerName,
@@ -106,18 +106,15 @@ jest.mock('store/network/slice', () => {
 })
 mockSelectNetwork.mockImplementation(() => mockNetworks[43114])
 
-const mockShowDappConnectionSuccessToast = jest.fn()
-const mockShowDappToastError = jest.fn()
-jest
-  .spyOn(Snackbar, 'showDappToastError')
-  .mockImplementation(mockShowDappToastError)
-
-jest.spyOn(Toast, 'showTransactionPendingToast').mockImplementation(jest.fn())
-jest.spyOn(Toast, 'showTransactionSuccessToast').mockImplementation(jest.fn())
 jest.spyOn(Toast, 'showTransactionErrorToast').mockImplementation(jest.fn())
-jest
-  .spyOn(Toast, 'showDappConnectionSuccessToast')
-  .mockImplementation(mockShowDappConnectionSuccessToast)
+
+jest.mock('new/common/utils/toast', () => ({
+  transactionSnackbar: {
+    pending: jest.fn(),
+    success: jest.fn(),
+    error: jest.fn()
+  }
+}))
 
 jest.mock('services/walletconnectv2/WalletConnectService')
 
@@ -215,46 +212,15 @@ describe('rpc - listeners', () => {
 
         await jest.runOnlyPendingTimersAsync()
 
-        // expect(mockShowDappToastError).toHaveBeenCalledWith(
-        //   rpcErrors.methodNotSupported().message,
-        //   'Playground'
-        // )
-
-        expect(mockWCRejectRequest).toHaveBeenCalledWith(
-          '3a094bf511357e0f48ff266f0b8d5b846fd3f7de4bd0824d976fdf4c5279b261',
-          1677366383831712,
-          rpcErrors.methodNotSupported()
-        )
-      })
-
-      it('should show error message when failed to reject request', async () => {
-        mockHandlerMapGet.mockImplementationOnce(() => undefined)
-
-        const testError = new Error('test error')
-        mockWCRejectRequest.mockImplementationOnce(() => {
-          throw testError
+        expect(transactionSnackbar.error).toHaveBeenCalledWith({
+          error: rpcErrors.methodNotSupported().message
         })
 
-        const testRequest = ethSignRequest
-        store.dispatch(onRequest(testRequest))
-
-        await jest.runOnlyPendingTimersAsync()
-
-        // expect(mockShowDappToastError).toHaveBeenCalledWith(
-        //   rpcErrors.methodNotSupported().message,
-        //   'Playground'
-        // )
-
         expect(mockWCRejectRequest).toHaveBeenCalledWith(
           '3a094bf511357e0f48ff266f0b8d5b846fd3f7de4bd0824d976fdf4c5279b261',
           1677366383831712,
           rpcErrors.methodNotSupported()
         )
-
-        // expect(mockShowDappToastError).toHaveBeenCalledWith(
-        //   'Unable to reject request',
-        //   'Playground'
-        // )
       })
 
       it('should reject request when requested chain does not match developer mode', async () => {
@@ -266,10 +232,10 @@ describe('rpc - listeners', () => {
 
         await jest.runOnlyPendingTimersAsync()
 
-        // expect(mockShowDappToastError).toHaveBeenCalledWith(
-        //   'Invalid environment. Please turn off developer mode and try again',
-        //   'Playground'
-        // )
+        expect(transactionSnackbar.error).toHaveBeenCalledWith({
+          error:
+            'Invalid environment. Please turn off developer mode and try again'
+        })
 
         expect(mockWCRejectRequest).toHaveBeenCalledWith(
           '3a094bf511357e0f48ff266f0b8d5b846fd3f7de4bd0824d976fdf4c5279b261',
@@ -299,10 +265,10 @@ describe('rpc - listeners', () => {
 
         await jest.runOnlyPendingTimersAsync()
 
-        // expect(mockShowDappToastError).not.toHaveBeenCalledWith(
-        //   'Invalid environment. Please turn off developer mode and try again',
-        //   'Playground'
-        // )
+        expect(transactionSnackbar.error).not.toHaveBeenCalledWith({
+          error:
+            'Invalid environment. Please turn off developer mode and try again'
+        })
 
         expect(mockWCRejectRequest).not.toHaveBeenCalledWith(
           '3a094bf511357e0f48ff266f0b8d5b846fd3f7de4bd0824d976fdf4c5279b261',
@@ -331,16 +297,9 @@ describe('rpc - listeners', () => {
 
           expect(mockHandle).toHaveBeenCalledWith(testRequest, mockListenerApi)
 
-          // expect(mockShowDappToastError).toHaveBeenCalledWith(
-          //   'Invalid params',
-          //   'Playground'
-          // )
-
-          expect(mockWCRejectRequest).toHaveBeenCalledWith(
-            '3a094bf511357e0f48ff266f0b8d5b846fd3f7de4bd0824d976fdf4c5279b261',
-            1677366383831712,
-            testError
-          )
+          expect(transactionSnackbar.error).toHaveBeenCalledWith({
+            error: 'Invalid params'
+          })
         })
 
         it('should approve request immediately when request is not a deferred one', async () => {
@@ -393,10 +352,10 @@ describe('rpc - listeners', () => {
             [1, 2, 3]
           )
 
-          // expect(mockShowDappToastError).toHaveBeenCalledWith(
-          //   'Unable to approve request',
-          //   'Playground'
-          // )
+          expect(transactionSnackbar.error).toHaveBeenCalledWith({
+            message: 'Approval failed',
+            error: 'test error'
+          })
         })
 
         it('should approve request after user approves it', async () => {
@@ -512,10 +471,9 @@ describe('rpc - listeners', () => {
             mockListenerApi
           )
 
-          // expect(mockShowDappToastError).toHaveBeenCalledWith(
-          //   'Something went wrong',
-          //   'Playground'
-          // )
+          expect(transactionSnackbar.error).toHaveBeenCalledWith({
+            error: 'Something went wrong'
+          })
 
           expect(mockWCRejectRequest).toHaveBeenCalledWith(
             '3a094bf511357e0f48ff266f0b8d5b846fd3f7de4bd0824d976fdf4c5279b261',
@@ -553,7 +511,7 @@ describe('rpc - listeners', () => {
 
           await jest.runOnlyPendingTimersAsync()
 
-          //expect(mockShowDappToastError).not.toHaveBeenCalled()
+          expect(transactionSnackbar.error).not.toHaveBeenCalled()
 
           expect(mockWCRejectRequest).toHaveBeenCalledWith(
             '3a094bf511357e0f48ff266f0b8d5b846fd3f7de4bd0824d976fdf4c5279b261',
@@ -563,8 +521,7 @@ describe('rpc - listeners', () => {
         })
       })
 
-      // eslint-disable-next-line jest/no-disabled-tests
-      describe.skip('handle request with vm modules', () => {
+      describe('handle request with vm modules', () => {
         beforeEach(() => {
           mockHandlerMapGet.mockImplementationOnce(() => undefined)
           mockLoadModule.mockImplementationOnce(() => mockModule)
@@ -614,10 +571,9 @@ describe('rpc - listeners', () => {
 
           expect(mockOnRpcRequest).toHaveBeenCalledWith(request, network)
 
-          // expect(mockShowDappToastError).toHaveBeenCalledWith(
-          //   'Invalid params',
-          //   'Playground'
-          // )
+          expect(transactionSnackbar.error).toHaveBeenCalledWith({
+            error: 'Invalid params'
+          })
 
           expect(mockWCRejectRequest).toHaveBeenCalledWith(
             '3a094bf511357e0f48ff266f0b8d5b846fd3f7de4bd0824d976fdf4c5279b261',
@@ -656,7 +612,7 @@ describe('rpc - listeners', () => {
 
           await jest.runOnlyPendingTimersAsync()
 
-          //expect(mockShowDappToastError).not.toHaveBeenCalled()
+          expect(transactionSnackbar.error).not.toHaveBeenCalled()
 
           expect(mockWCRejectRequest).toHaveBeenCalledWith(
             '3a094bf511357e0f48ff266f0b8d5b846fd3f7de4bd0824d976fdf4c5279b261',
@@ -770,9 +726,9 @@ describe('rpc - listeners', () => {
           namespaces: { a: 1, b: 2 }
         })
 
-        // expect(mockShowDappConnectionSuccessToast).toHaveBeenCalledWith({
-        //   dappName: 'Playground'
-        // })
+        expect(transactionSnackbar.success).toHaveBeenCalledWith({
+          message: 'Connected to Playground'
+        })
 
         expect(AnalyticsService.capture).toHaveBeenCalledWith(
           'WalletConnectSessionApprovedV2',
@@ -826,10 +782,10 @@ describe('rpc - listeners', () => {
           }
         )
 
-        // expect(mockShowDappToastError).toHaveBeenCalledWith(
-        //   'Unable to approve session proposal',
-        //   'Playground'
-        // )
+        expect(transactionSnackbar.error).toHaveBeenCalledWith({
+          message: 'Approval failed',
+          error: 'test error'
+        })
       })
 
       it('should reject session request after user rejects it', async () => {
@@ -847,42 +803,9 @@ describe('rpc - listeners', () => {
 
         await jest.runOnlyPendingTimersAsync()
 
-        //expect(mockShowDappToastError).not.toHaveBeenCalled()
+        expect(transactionSnackbar.error).not.toHaveBeenCalled()
 
         expect(mockWCRejectSession).toHaveBeenCalledWith(1678303290160528)
-      })
-
-      it('should show error message when failed to reject session', async () => {
-        const testError1 = new Error('test error')
-        mockWCRejectSession.mockImplementation(() => {
-          throw testError1
-        })
-
-        store.dispatch(onRequest(testRequest))
-
-        await jest.runOnlyPendingTimersAsync()
-
-        expect(mockHandle).toHaveBeenCalledWith(testRequest, mockListenerApi)
-
-        const testError2 = providerErrors.userRejectedRequest()
-
-        store.dispatch(
-          onRequestRejected({ request: testRequest, error: testError2 })
-        )
-
-        await jest.runOnlyPendingTimersAsync()
-
-        // expect(mockShowDappToastError).not.toHaveBeenCalledWith(
-        //   testError2.message,
-        //   'Playground'
-        // )
-
-        expect(mockWCRejectSession).toHaveBeenCalledWith(1678303290160528)
-
-        // expect(mockShowDappToastError).toHaveBeenCalledWith(
-        //   'Unable to reject session proposal',
-        //   'Playground'
-        // )
       })
 
       it('should reject session request when there is an error approving the proposal', async () => {
@@ -908,10 +831,10 @@ describe('rpc - listeners', () => {
 
         await jest.runOnlyPendingTimersAsync()
 
-        // expect(mockShowDappToastError).toHaveBeenCalledWith(
-        //   testError.message,
-        //   'Playground'
-        // )
+        expect(transactionSnackbar.error).toHaveBeenCalledWith({
+          message: 'Connection failed',
+          error: testError.message
+        })
 
         expect(mockWCRejectSession).toHaveBeenCalledWith(1678303290160528)
       })

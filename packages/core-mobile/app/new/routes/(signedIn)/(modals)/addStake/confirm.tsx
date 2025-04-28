@@ -33,7 +33,7 @@ import NetworkService from 'services/network/NetworkService'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { useIssueDelegation } from 'hooks/earn/useIssueDelegation'
-import { showSnackbar } from 'common/utils/toast'
+import { transactionSnackbar } from 'common/utils/toast'
 import { scheduleStakingCompleteNotifications } from 'store/notifications'
 import { selectActiveAccount } from 'store/account'
 import { usePreventScreenRemoval } from 'common/hooks/usePreventScreenRemoval'
@@ -233,7 +233,7 @@ const StakeConfirmScreen = (): JSX.Element => {
   const onDelegationSuccess = useCallback(
     (txHash: string): void => {
       AnalyticsService.capture('StakeDelegationSuccess')
-      showSnackbar('Staking successful!')
+      transactionSnackbar.success({ message: 'Staking successful' })
 
       handleDismiss()
       navigate('/stake')
@@ -261,7 +261,7 @@ const StakeConfirmScreen = (): JSX.Element => {
 
   const onDelegationError = useCallback((e: Error): void => {
     AnalyticsService.capture('StakeDelegationFail')
-    showSnackbar(e.message)
+    transactionSnackbar.error({ error: e.message })
   }, [])
 
   function onFundsStuck(): void {

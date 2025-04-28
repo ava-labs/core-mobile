@@ -23,7 +23,7 @@ import { useAvaxTokenPriceInSelectedCurrency } from 'hooks/useAvaxTokenPriceInSe
 import { useClaimRewards } from 'hooks/earn/useClaimRewards'
 import { SendErrorMessage } from 'screens/send/utils/types'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
-import { showSnackbar } from 'common/utils/toast'
+import { transactionSnackbar } from 'common/utils/toast'
 import { TokenUnitInput, TokenUnitInputHandle } from '@avalabs/k2-alpine'
 import { useConfetti } from 'common/contexts/ConfettiContext'
 import { StakeTokenUnitValue } from 'features/stake/components/StakeTokenUnitValue'
@@ -42,7 +42,7 @@ const ClaimStakeRewardScreen = (): JSX.Element => {
     AnalyticsService.capture('StakeClaimSuccess')
 
     confetti.restart()
-    showSnackbar('Stake reward claimed')
+    transactionSnackbar.success({ message: 'Stake reward claimed' })
 
     // this is a workaround for the issue where back navigation is not working,
     // when it's called within the onSuccess callback of the mutation
@@ -53,7 +53,7 @@ const ClaimStakeRewardScreen = (): JSX.Element => {
 
   const onClaimError = (error: Error): void => {
     AnalyticsService.capture('StakeClaimFail')
-    showSnackbar(error.message)
+    transactionSnackbar.error({ error: error.message })
   }
 
   const onFundsStuck = (): void => {

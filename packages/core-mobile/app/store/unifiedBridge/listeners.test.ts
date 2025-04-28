@@ -10,11 +10,22 @@ import {
 } from './listeners'
 
 jest.mock('new/common/utils/toast', () => ({
-  showNotificationAlert: jest.fn()
+  transactionSnackbar: {
+    pending: jest.fn(),
+    success: jest.fn(),
+    error: jest.fn()
+  }
 }))
 
 jest.mock('services/bridge/UnifiedBridgeService')
 jest.mock('store/rpc/utils/createInAppRequest')
+jest.mock('store/network/slice', () => {
+  const actual = jest.requireActual('store/network/slice')
+  return {
+    ...actual,
+    selectNetworks: jest.fn().mockReturnValue({ 1: { chainId: '1' } })
+  }
+})
 
 const bitcoinProvider = {}
 jest.mock('services/network/utils/providerUtils', () => ({
@@ -139,9 +150,16 @@ describe('Unified Bridge Listeners', () => {
 
   describe('checkTransferStatus', () => {
     it('should remove completed transfers', async () => {
-      const transfer = { sourceTxHash: '0x123', completedAt: Date.now() }
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      await checkTransferStatus({ payload: transfer } as any, mockListenerApi)
+      const transfer = {
+        sourceTxHash: '0x123',
+        completedAt: Date.now(),
+        sourceChain: { chainId: 1 }
+      }
+      await checkTransferStatus(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        { payload: transfer } as any,
+        mockListenerApi
+      )
 
       expect(mockListenerApi.dispatch).toHaveBeenCalledWith({
         type: 'unifiedBridge/removePendingTransfer',
