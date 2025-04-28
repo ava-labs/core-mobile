@@ -100,9 +100,21 @@ export const All = (): JSX.Element => {
           rightIcon="expandMore"
           disabled={true}
           style={{
-            width: 300
+            width: 300,
+            marginBottom: 16
           }}>
           disabled
+        </Button>
+        <Button
+          type={'tertiary'}
+          size="large"
+          leftIcon="check"
+          rightIcon="expandMore"
+          disabled={true}
+          style={{
+            width: 300
+          }}>
+          tertiary-disabled
         </Button>
         <View
           style={{
