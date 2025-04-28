@@ -1,11 +1,13 @@
-import { useSelector } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import {
   NetworkWithCaip2ChainId,
   Networks,
   selectCustomNetworks as customNetworksSelector,
   defaultNetwork,
   selectActiveChainId,
-  selectEnabledChainIds
+  selectEnabledChainIds,
+  toggleDisabledLastTransactedChainId,
+  toggleEnabledChainId
 } from 'store/network'
 import { useCallback, useMemo } from 'react'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
@@ -18,12 +20,13 @@ import { useGetNetworks } from './useGetNetworks'
 
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export const useNetworks = () => {
+  const dispatch = useDispatch()
   const { data: rawNetworks } = useGetNetworks()
   const _customNetworks = useSelector(customNetworksSelector)
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const activeChainId = useSelector(selectActiveChainId)
   const enabledChainIds = useSelector(selectEnabledChainIds)
-  const { data: lastTransactedChains } = useLastTransactedNetworks({})
+  const { data: lastTransactedChains } = useLastTransactedNetworks()
 
   // all networks, including custom networks
   const allNetworks = useMemo((): Networks => {
@@ -112,6 +115,17 @@ export const useNetworks = () => {
     })
   }, [networks, lastTransactedChains, enabledChainIds, isDeveloperMode])
 
+  const toggleNetwork = useCallback(
+    (chainId: number) => {
+      if (!networks[chainId]) {
+        dispatch(toggleDisabledLastTransactedChainId(chainId))
+        return
+      }
+      dispatch(toggleEnabledChainId(chainId))
+    },
+    [networks, dispatch]
+  )
+
   const inactiveNetworks = useMemo(() => {
     return enabledNetworks.filter(network => network.chainId !== activeChainId)
   }, [enabledNetworks, activeChainId])
@@ -177,7 +191,8 @@ export const useNetworks = () => {
     getSomeNetworks,
     getNetwork,
     getNetworkByCaip2ChainId,
-    getFromPopulatedNetwork
+    getFromPopulatedNetwork,
+    toggleNetwork
   }
 }
 

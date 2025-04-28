@@ -130,7 +130,7 @@ describe('getNetworksToFetch', () => {
       enabledNetworks: enabledNetworks as unknown[] as Network[],
       isDeveloperMode,
       iteration: 0,
-      otherNetworksIteration: 0,
+      nonPrimaryNetworksIteration: 0,
       pullPrimaryNetworks: false,
       address
     })
@@ -145,7 +145,7 @@ describe('getNetworksToFetch', () => {
       enabledNetworks: enabledNetworks as unknown[] as Network[]
     })
     let iteration = 1
-    let otherNetworksIteration = 0
+    let nonPrimaryNetworksIteration = 0
     const allNetworksOperand =
       pollingConfig.allNetworks / pollingConfig.primaryNetworks
 
@@ -167,7 +167,7 @@ describe('getNetworksToFetch', () => {
       [ChainId.ETHEREUM_HOMESTEAD],
       [4321]
     ]
-    while (otherNetworksIteration < 3) {
+    while (nonPrimaryNetworksIteration < 3) {
       let pullPrimaryNetworks
 
       if (iteration > 0 && iteration % allNetworksOperand === 0) {
@@ -179,7 +179,7 @@ describe('getNetworksToFetch', () => {
         isDeveloperMode,
         enabledNetworks: enabledNetworks as unknown[] as Network[],
         iteration,
-        otherNetworksIteration,
+        nonPrimaryNetworksIteration,
         pullPrimaryNetworks,
         address
       })
@@ -189,7 +189,7 @@ describe('getNetworksToFetch', () => {
       iteration += 1
 
       if (pullPrimaryNetworks === false) {
-        otherNetworksIteration += 1
+        nonPrimaryNetworksIteration += 1
       }
     }
   })

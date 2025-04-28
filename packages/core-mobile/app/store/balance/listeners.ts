@@ -85,13 +85,13 @@ const onBalancePolling = async ({
   listenerApi,
   iteration,
   pullPrimaryNetworks,
-  otherNetworksIteration
+  nonPrimaryNetworksIteration
 }: {
   queryStatus: QueryStatus
   listenerApi: AppListenerEffectAPI
   iteration: number
   pullPrimaryNetworks: boolean
-  otherNetworksIteration: number
+  nonPrimaryNetworksIteration: number
 }): Promise<void> => {
   const { getState } = listenerApi
   const state = getState()
@@ -102,7 +102,7 @@ const onBalancePolling = async ({
     isDeveloperMode,
     enabledNetworks,
     iteration,
-    otherNetworksIteration,
+    nonPrimaryNetworksIteration,
     pullPrimaryNetworks,
     address: account?.addressC ?? ''
   })
@@ -187,7 +187,7 @@ const fetchBalancePeriodically = async (
   const isDeveloperMode = selectIsDeveloperMode(state)
   const enabledNetworks = selectEnabledNetworks(state)
   let iteration = 1
-  let otherNetworksIteration = 0
+  let nonPrimaryNetworksIteration = 0
 
   const pollingConfig = getPollingConfig({ isDeveloperMode, enabledNetworks })
   const allNetworksOperand =
@@ -215,13 +215,13 @@ const fetchBalancePeriodically = async (
             listenerApi,
             iteration,
             pullPrimaryNetworks,
-            otherNetworksIteration
+            nonPrimaryNetworksIteration
           })
         )
         iteration += 1
 
         if (pullPrimaryNetworks === false) {
-          otherNetworksIteration += 1
+          nonPrimaryNetworksIteration += 1
         }
 
         // cancellation-aware delay

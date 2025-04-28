@@ -11,23 +11,17 @@ import {
 } from '@avalabs/k2-alpine'
 import { ErrorState } from 'common/components/ErrorState'
 import { NetworkLogoWithChain } from 'common/components/NetworkLogoWithChain'
-import { useLastTransactedNetworks } from 'common/hooks/useLastTransactedNetworks'
 import { useFocusEffect, useNavigation, useRouter } from 'expo-router'
 import { useNetworks } from 'hooks/networks/useNetworks'
 import React, { useCallback, useMemo, useState } from 'react'
 import { FlatList, ListRenderItem } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { useDispatch } from 'react-redux'
 import {
   isAvalancheCChainId,
   isAvalancheChainId
 } from 'services/network/utils/isAvalancheNetwork'
 import { isEthereumChainId } from 'services/network/utils/isEthereumNetwork'
-import {
-  alwaysEnabledNetworks,
-  toggleDisabledLastTransactedChainId,
-  toggleEnabledChainId
-} from 'store/network'
+import { alwaysEnabledNetworks } from 'store/network'
 import { isPChain } from 'utils/network/isAvalancheNetwork'
 import { isXPChain } from 'utils/network/isAvalancheNetwork'
 import { isXChain } from 'utils/network/isAvalancheNetwork'
@@ -36,13 +30,12 @@ import { isBitcoinChainId } from 'utils/network/isBitcoinNetwork'
 export const ManageNetworksScreen = (): JSX.Element => {
   const { theme } = useTheme()
   const insets = useSafeAreaInsets()
-  const { networks, enabledNetworks, customNetworks } = useNetworks()
-  const dispatch = useDispatch()
+  const { networks, enabledNetworks, customNetworks, toggleNetwork } =
+    useNetworks()
   const [searchText, setSearchText] = useState('')
   const title = 'Networks'
   const { getParent } = useNavigation()
   const { navigate } = useRouter()
-  const { data: lastTransactedChains } = useLastTransactedNetworks({})
 
   const filterBySearchText = useCallback(
     (network: Network) =>
@@ -52,9 +45,9 @@ export const ManageNetworksScreen = (): JSX.Element => {
   )
 
   const availableNetworks = useMemo(() => {
-    const enabled = Object.values(networks)
-      .filter(network => enabledNetworks.includes(network))
-      .sort(sortPrimaryNetworks)
+    const enabled = Object.values(networks).filter(network =>
+      enabledNetworks.includes(network)
+    )
 
     const custom = Object.values(customNetworks).filter(
       network => !enabled.includes(network)
@@ -63,7 +56,7 @@ export const ManageNetworksScreen = (): JSX.Element => {
       network => !enabled.includes(network) && !custom.includes(network)
     )
 
-    return [...enabled, ...custom, ...disabled]
+    return [...enabled, ...custom, ...disabled].sort(sortPrimaryNetworks)
   }, [customNetworks, enabledNetworks, networks])
 
   const filteredNetworks = useMemo(() => {
@@ -72,20 +65,6 @@ export const ManageNetworksScreen = (): JSX.Element => {
     }
     return availableNetworks
   }, [availableNetworks, filterBySearchText, searchText.length])
-
-  const onToggle = useCallback(
-    (item: Network) => {
-      const chainIds =
-        lastTransactedChains &&
-        Object.values(lastTransactedChains).map(network => network.chainId)
-      if (chainIds && chainIds.includes(item.chainId)) {
-        dispatch(toggleDisabledLastTransactedChainId(item.chainId))
-        return
-      }
-      dispatch(toggleEnabledChainId(item.chainId))
-    },
-    [dispatch, lastTransactedChains]
-  )
 
   const renderNetwork: ListRenderItem<Network> = ({
     item,
@@ -153,7 +132,10 @@ export const ManageNetworksScreen = (): JSX.Element => {
           }}>
           <Text style={{ flex: 1 }}>{item.chainName}</Text>
           {!alwaysEnabledNetworks.includes(item.chainId) && (
-            <Toggle value={isEnabled} onValueChange={() => onToggle(item)} />
+            <Toggle
+              value={isEnabled}
+              onValueChange={() => toggleNetwork(item.chainId)}
+            />
           )}
         </View>
       </Pressable>

@@ -48,14 +48,14 @@ export function getNetworksToFetch({
   enabledNetworks,
   isDeveloperMode,
   iteration,
-  otherNetworksIteration,
+  nonPrimaryNetworksIteration,
   pullPrimaryNetworks,
   address
 }: {
   enabledNetworks: Network[]
   isDeveloperMode: boolean
   iteration: number
-  otherNetworksIteration: number
+  nonPrimaryNetworksIteration: number
   pullPrimaryNetworks: boolean
   address: string
 }): Network[] {
@@ -81,7 +81,7 @@ export function getNetworksToFetch({
       : []
     : getNetworksToUpdate(
         nonPrimaryNetworksToFetch,
-        otherNetworksIteration,
+        nonPrimaryNetworksIteration,
         UPDATE_PERIOD
       )
 }
