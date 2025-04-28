@@ -13,7 +13,7 @@ import { WalletScreenProps } from 'navigation/types'
 import React from 'react'
 import { Alert, View } from 'react-native'
 import { useDispatch } from 'react-redux'
-import { removeCustomNetwork, toggleFavorite } from 'store/network'
+import { removeCustomNetwork, toggleEnabledChainId } from 'store/network'
 import { showSnackBarCustom } from 'components/Snackbar'
 import GeneralToast from 'components/toast/GeneralToast'
 import { useNetworks } from 'hooks/networks/useNetworks'
@@ -25,7 +25,7 @@ export function NetworkDetailsAction(): JSX.Element {
 
   return (
     <Row style={{ alignItems: 'center', marginRight: 8 }}>
-      <ToggleFavoriteNetwork chainId={chainId} />
+      <ToggleEnabledNetwork chainId={chainId} />
       {isCustomNetwork && (
         <>
           <CustomNetworkDropdown />
@@ -43,15 +43,15 @@ type NetworkDetailsScreenProps = WalletScreenProps<
   typeof AppNavigation.Wallet.NetworkDetails
 >
 
-function ToggleFavoriteNetwork({ chainId }: { chainId: number }): JSX.Element {
-  const { favoriteNetworks } = useNetworks()
+function ToggleEnabledNetwork({ chainId }: { chainId: number }): JSX.Element {
+  const { enabledNetworks } = useNetworks()
   const dispatch = useDispatch()
-  const isFavorite = favoriteNetworks.some(
+  const isFavorite = enabledNetworks.some(
     network => network.chainId === chainId
   )
 
   return (
-    <AvaButton.Icon onPress={() => dispatch(toggleFavorite(chainId))}>
+    <AvaButton.Icon onPress={() => dispatch(toggleEnabledChainId(chainId))}>
       <StarSVG selected={isFavorite} testID="star_svg" />
     </AvaButton.Icon>
   )
