@@ -18,7 +18,7 @@ type Props = {
 
 export default function NetworkManager({ onShowInfo }: Props): JSX.Element {
   const { goBack } = useNavigation()
-  const { networks, favoriteNetworks, customNetworks } = useNetworks()
+  const { networks, enabledNetworks, customNetworks } = useNetworks()
   const dispatch = useDispatch()
   const [searchText, setSearchText] = useState('')
   const title = 'Networks'
@@ -48,8 +48,8 @@ export default function NetworkManager({ onShowInfo }: Props): JSX.Element {
     [customNetworks, filterBySearchText]
   )
   const favorites = useMemo(
-    () => favoriteNetworks.filter(filterBySearchText).sort(sortNetworks),
-    [favoriteNetworks, filterBySearchText]
+    () => enabledNetworks.filter(filterBySearchText).sort(sortNetworks),
+    [enabledNetworks, filterBySearchText]
   )
 
   const renderLabel = (
@@ -83,7 +83,7 @@ export default function NetworkManager({ onShowInfo }: Props): JSX.Element {
   }
 
   const renderNetwork = ({ item }: { item: Network }): JSX.Element => {
-    const isFavorite = favoriteNetworks.some(
+    const isFavorite = enabledNetworks.some(
       network => network.chainId === item.chainId
     )
 

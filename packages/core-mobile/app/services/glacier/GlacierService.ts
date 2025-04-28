@@ -2,8 +2,7 @@ import {
   Erc1155Token,
   Erc721Token,
   Glacier,
-  ListErc1155BalancesResponse,
-  ListErc721BalancesResponse
+  ListAddressChainsResponse
 } from '@avalabs/glacier-sdk'
 import Config from 'react-native-config'
 import Logger from 'utils/Logger'
@@ -88,41 +87,13 @@ class GlacierService {
     })
   }
 
-  async listErc721Balances({
-    chainId,
-    address,
-    pageSize,
-    pageToken
+  async listAddressChains({
+    address
   }: {
-    chainId: string
     address: string
-    pageSize: number
-    pageToken?: string
-  }): Promise<ListErc721BalancesResponse> {
-    return this.glacierSdk.evmBalances.listErc721Balances({
-      chainId,
-      address,
-      pageSize,
-      pageToken
-    })
-  }
-
-  async listErc1155Balances({
-    chainId,
-    address,
-    pageSize,
-    pageToken
-  }: {
-    chainId: string
-    address: string
-    pageSize: number
-    pageToken?: string
-  }): Promise<ListErc1155BalancesResponse> {
-    return this.glacierSdk.evmBalances.listErc1155Balances({
-      chainId,
-      address,
-      pageSize,
-      pageToken
+  }): Promise<ListAddressChainsResponse> {
+    return this.glacierSdk.evmChains.listAddressChains({
+      address
     })
   }
 }

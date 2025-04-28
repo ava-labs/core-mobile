@@ -15,25 +15,33 @@ import { onAppLocked, onAppUnlocked, onLogOut } from 'store/app'
 import { addCustomToken, selectAllCustomTokens } from 'store/customToken'
 import { AppStartListening } from 'store/middleware/listener'
 import {
+  addCustomNetwork,
   onNetworksFetched,
-  selectActiveNetwork,
-  selectFavoriteNetworks,
-  toggleFavorite
+  selectEnabledNetworks,
+  toggleEnabledChainId
 } from 'store/network/slice'
 import {
   selectSelectedCurrency,
   setSelectedCurrency
 } from 'store/settings/currency/slice'
 import Logger from 'utils/Logger'
-import { getLocalTokenId } from 'store/balance/utils'
+import {
+  getLocalTokenId,
+  getNetworksToFetch,
+  getPollingConfig
+} from 'store/balance/utils'
 import { selectHasBeenViewedOnce, setViewOnce } from 'store/viewOnce/slice'
 import { ViewOnceKey } from 'store/viewOnce/types'
 import NetworkService from 'services/network/NetworkService'
-import { selectIsDeveloperMode } from 'store/settings/advanced/slice'
+import {
+  selectIsDeveloperMode,
+  toggleDeveloperMode
+} from 'store/settings/advanced/slice'
 import { isPChain, isXChain } from 'utils/network/isAvalancheNetwork'
 import ActivityService from 'services/activity/ActivityService'
 import { uuid } from 'utils/uuid'
 import SentryWrapper from 'services/sentry/SentryWrapper'
+import { Balances, LocalTokenWithBalance, QueryStatus } from './types'
 import {
   fetchBalanceForAccount,
   getKey,
@@ -42,63 +50,68 @@ import {
   setBalances,
   setStatus
 } from './slice'
-import { Balances, LocalTokenWithBalance, QueryStatus } from './types'
-
-/**
- * In production:
- *  - Update balances every 2 seconds for the active network
- *  - Update balances for all networks and accounts every 30 seconds
- *
- * In development:
- *  - Update balances every 30 seconds for the active network
- *  - Update balances for all networks and accounts every 60 seconds
- */
-export const PollingConfig = {
-  activeNetwork: __DEV__ ? 30000 : 2000,
-  allNetworks: __DEV__ ? 60000 : 30000
-}
 
 export const AVAX_X_ID = 'AVAX-X'
 export const AVAX_P_ID = 'AVAX-P'
 
-const allNetworksOperand =
-  PollingConfig.allNetworks / PollingConfig.activeNetwork
-
 const onBalanceUpdate = async (
   queryStatus: QueryStatus,
-  listenerApi: AppListenerEffectAPI,
-  fetchActiveOnly: boolean
+  listenerApi: AppListenerEffectAPI
 ): Promise<void> => {
-  const state = listenerApi.getState()
-  const activeNetwork = selectActiveNetwork(state)
-
-  let networksToFetch: Network[]
-  const activeAccount = selectActiveAccount(state)
-  const accountsToFetch = activeAccount ? [activeAccount] : []
-
-  if (fetchActiveOnly) {
-    networksToFetch = [activeNetwork]
-  } else {
-    const favoriteNetworks = selectFavoriteNetworks(state)
-
-    if (
-      // in case the active network has not been favorited
-      !favoriteNetworks.map(n => n.chainId).includes(activeNetwork.chainId) ||
-      // or the active network is not the first in the list
-      favoriteNetworks[0]?.chainId !== activeNetwork.chainId
-    ) {
-      // move the active network to the front of the list
-      networksToFetch = [activeNetwork, ...favoriteNetworks]
-    }
-
-    networksToFetch = favoriteNetworks
-  }
+  const { getState } = listenerApi
+  const state = getState()
+  const account = selectActiveAccount(state)
+  const isDeveloperMode = selectIsDeveloperMode(state)
+  const enabledNetworks = selectEnabledNetworks(state)
+  const networks = getNetworksToFetch({
+    isDeveloperMode,
+    enabledNetworks,
+    iteration: 0,
+    allNetworksIteration: 0,
+    pullPrimaryNetworks: true,
+    address: account?.addressC ?? ''
+  })
 
   onBalanceUpdateCore({
     queryStatus,
     listenerApi,
-    networks: networksToFetch,
-    accounts: accountsToFetch
+    networks,
+    account
+  }).catch(Logger.error)
+}
+
+const onBalancePolling = async ({
+  queryStatus,
+  listenerApi,
+  iteration,
+  pullPrimaryNetworks,
+  nonPrimaryNetworksIteration
+}: {
+  queryStatus: QueryStatus
+  listenerApi: AppListenerEffectAPI
+  iteration: number
+  pullPrimaryNetworks: boolean
+  nonPrimaryNetworksIteration: number
+}): Promise<void> => {
+  const { getState } = listenerApi
+  const state = getState()
+  const account = selectActiveAccount(state)
+  const isDeveloperMode = selectIsDeveloperMode(state)
+  const enabledNetworks = selectEnabledNetworks(state)
+  const networks = getNetworksToFetch({
+    isDeveloperMode,
+    enabledNetworks,
+    iteration,
+    nonPrimaryNetworksIteration,
+    pullPrimaryNetworks,
+    address: account?.addressC ?? ''
+  })
+
+  onBalanceUpdateCore({
+    queryStatus,
+    listenerApi,
+    networks,
+    account
   }).catch(Logger.error)
 }
 
@@ -106,14 +119,14 @@ const onBalanceUpdateCore = async ({
   queryStatus,
   listenerApi,
   networks,
-  accounts
+  account
 }: {
   queryStatus: QueryStatus
   listenerApi: AppListenerEffectAPI
   networks: Network[]
-  accounts: Account[]
+  account?: Account
 }): Promise<void> => {
-  if (networks.length === 0) return
+  if (networks.length === 0 || account === undefined) return
 
   const { getState, dispatch } = listenerApi
   const state = getState()
@@ -133,59 +146,31 @@ const onBalanceUpdateCore = async ({
 
   const currency = selectSelectedCurrency(state).toLowerCase()
 
-  const [firstNetwork, ...restNetworks] = networks
-
-  // fetch the first network balances first
-  if (firstNetwork === undefined) return
-
   SentryWrapper.startSpan(
     { name: 'get-balances', contextName: 'svc.balance.get_for_account' },
     async span => {
-      const balanceKeyedPromises = accounts.map(account => {
-        return {
-          key: getKey(firstNetwork.chainId, account.index),
+      // fetch all network balances
+      const customTokens = selectAllCustomTokens(state)
+      const networkPromises: {
+        key: string
+        promise: Promise<BalancesForAccount>
+      }[] = []
+
+      for (const n of networks) {
+        const customTokensByChainIdAndNetwork =
+          customTokens[n.chainId.toString()] ?? []
+        networkPromises.push({
+          key: getKey(n.chainId, account.index),
           promise: BalanceService.getBalancesForAccount({
-            network: firstNetwork,
+            network: n,
             account,
-            currency
+            currency,
+            customTokens: customTokensByChainIdAndNetwork
           })
-        }
-      })
-      const balances = await fetchBalanceForAccounts(balanceKeyedPromises)
-
-      dispatch(setBalances(balances))
-
-      // fetch all other network balances
-      if (restNetworks.length > 0) {
-        const customTokens = selectAllCustomTokens(state)
-        const inactiveNetworkPromises: {
-          key: string
-          promise: Promise<BalancesForAccount>
-        }[] = []
-
-        for (const n of restNetworks) {
-          const customTokensByChainIdAndNetwork =
-            customTokens[n.chainId.toString()] ?? []
-          inactiveNetworkPromises.push(
-            ...accounts.map(account => {
-              return {
-                key: getKey(n.chainId, account.index),
-                promise: BalanceService.getBalancesForAccount({
-                  network: n,
-                  account,
-                  currency,
-                  customTokens: customTokensByChainIdAndNetwork
-                })
-              }
-            })
-          )
-        }
-        const inactiveNetworkBalances = await fetchBalanceForAccounts(
-          inactiveNetworkPromises
-        )
-        dispatch(setBalances(inactiveNetworkBalances))
+        })
       }
-
+      const networkBalances = await fetchBalanceForNetworks(networkPromises)
+      dispatch(setBalances(networkBalances))
       dispatch(setStatus(QueryStatus.IDLE))
       span?.end()
     }
@@ -193,39 +178,54 @@ const onBalanceUpdateCore = async ({
 }
 
 const fetchBalancePeriodically = async (
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  action: any,
+  _: Action,
   listenerApi: AppListenerEffectAPI
 ): Promise<void> => {
-  const { condition } = listenerApi
-  onBalanceUpdate(QueryStatus.LOADING, listenerApi, false)
+  onBalanceUpdate(QueryStatus.LOADING, listenerApi).catch(Logger.error)
+  const { condition, getState } = listenerApi
+  const state = getState()
+  const isDeveloperMode = selectIsDeveloperMode(state)
+  const enabledNetworks = selectEnabledNetworks(state)
+  let iteration = 1
+  let nonPrimaryNetworksIteration = 0
+
+  const pollingConfig = getPollingConfig({ isDeveloperMode, enabledNetworks })
+  const allNetworksOperand =
+    pollingConfig.allNetworks / pollingConfig.primaryNetworks
 
   const pollingTask = listenerApi.fork(async forkApi => {
     const taskId = uuid().slice(0, 8)
     Logger.info(`started task ${taskId}`, 'fetch balance periodically')
 
-    let intervalCount = 1
-
     try {
       // eslint-disable-next-line no-constant-condition
       while (true) {
-        let fetchActiveOnly
+        let pullPrimaryNetworks
 
-        if (intervalCount % allNetworksOperand === 0) {
-          fetchActiveOnly = false
+        if (iteration % allNetworksOperand === 0) {
+          pullPrimaryNetworks = false
         } else {
-          fetchActiveOnly = true
+          pullPrimaryNetworks = true
         }
 
         // cancellation-aware wait for the balance update to be done
         await forkApi.pause(
-          onBalanceUpdate(QueryStatus.POLLING, listenerApi, fetchActiveOnly)
+          onBalancePolling({
+            queryStatus: QueryStatus.POLLING,
+            listenerApi,
+            iteration,
+            pullPrimaryNetworks,
+            nonPrimaryNetworksIteration
+          })
         )
+        iteration += 1
 
-        intervalCount += 1
+        if (pullPrimaryNetworks === false) {
+          nonPrimaryNetworksIteration += 1
+        }
 
         // cancellation-aware delay
-        await forkApi.delay(PollingConfig.activeNetwork)
+        await forkApi.delay(pollingConfig.primaryNetworks)
       }
     } catch (err) {
       if (err instanceof TaskAbortError) {
@@ -244,26 +244,28 @@ const handleFetchBalanceForAccount = async (
   accountIndex: number
 ): Promise<void> => {
   const state = listenerApi.getState()
-  const activeNetwork = selectActiveNetwork(state)
-
   const accounts = selectAccounts(state)
+  const isDeveloperMode = selectIsDeveloperMode(state)
+  const enabledNetworks = selectEnabledNetworks(state)
   const accountToFetchFor = accounts[accountIndex]
-  const accountsToFetch = accountToFetchFor ? [accountToFetchFor] : []
-  const networksToFetch = selectFavoriteNetworks(state)
-  // Just in case the active network has not been favorited
-  if (!networksToFetch.map(n => n.chainId).includes(activeNetwork.chainId)) {
-    networksToFetch.push(activeNetwork)
-  }
+  const networks = getNetworksToFetch({
+    isDeveloperMode,
+    enabledNetworks,
+    iteration: 0,
+    allNetworksIteration: 0,
+    pullPrimaryNetworks: true,
+    address: accountToFetchFor?.addressC ?? ''
+  })
 
   onBalanceUpdateCore({
     queryStatus: QueryStatus.LOADING,
     listenerApi,
-    networks: networksToFetch,
-    accounts: accountsToFetch
+    networks,
+    account: accountToFetchFor
   }).catch(Logger.error)
 }
 
-const fetchBalanceForAccounts = async (
+const fetchBalanceForNetworks = async (
   keyedPromises: { promise: Promise<BalancesForAccount>; key: string }[]
 ): Promise<Balances> => {
   const keys = keyedPromises.map(value => value.key)
@@ -337,30 +339,30 @@ const fetchBalanceForAccounts = async (
   }, {})
 }
 
-const addPChainToFavoritesIfNeeded = async (
+const addPChainToEnabledChainIdsIfNeeded = async (
   _: Action,
   listenerApi: AppListenerEffectAPI
 ): Promise<void> => {
   const { getState, dispatch } = listenerApi
   const state = getState()
   //check if we've added P chain before
-  const hadAddedPChainToFavorites = selectHasBeenViewedOnce(
+  const hadAddedPChainToEnabledChainIds = selectHasBeenViewedOnce(
     ViewOnceKey.P_CHAIN_FAVORITE
   )(state)
-  if (hadAddedPChainToFavorites) {
-    Logger.trace('Already added P-chain to favorites')
+  if (hadAddedPChainToEnabledChainIds) {
+    Logger.trace('Already added P-chain to enabled chain ids')
     return
   }
-  //check if P chain already in favorites list
+  //check if P chain already in enabled chain id list
   const isDeveloperMode = selectIsDeveloperMode(state)
   const avalancheNetworkP = NetworkService.getAvalancheNetworkP(isDeveloperMode)
-  const favoriteNetworks = selectFavoriteNetworks(state)
+  const enabledNetworks = selectEnabledNetworks(state)
   if (
-    favoriteNetworks.find(
+    enabledNetworks.find(
       value => value.chainId === avalancheNetworkP.chainId
     ) !== undefined
   ) {
-    Logger.trace('P-chain already in fav list')
+    Logger.trace('P-chain already in enabled chain id list')
     return
   }
 
@@ -381,12 +383,12 @@ const addPChainToFavoritesIfNeeded = async (
     return
   }
 
-  Logger.info('Adding P-Chain to favorites')
-  dispatch(toggleFavorite(avalancheNetworkP.chainId))
+  Logger.info('Adding P-Chain to enabled chain ids')
+  dispatch(toggleEnabledChainId(avalancheNetworkP.chainId))
   dispatch(setViewOnce(ViewOnceKey.P_CHAIN_FAVORITE))
 }
 
-const addXChainToFavoritesIfNeeded = async (
+const addXChainToEnabledChainIdsIfNeeded = async (
   _: Action,
   listenerApi: AppListenerEffectAPI
 ): Promise<void> => {
@@ -394,25 +396,25 @@ const addXChainToFavoritesIfNeeded = async (
   const state = getState()
 
   //check if we've added X chain before
-  const hadAddedXChainToFavorites = selectHasBeenViewedOnce(
+  const hadAddedXChainToEnabledChainIds = selectHasBeenViewedOnce(
     ViewOnceKey.X_CHAIN_FAVORITE
   )(state)
 
-  if (hadAddedXChainToFavorites) {
-    Logger.trace('Already added X-chain to favorites')
+  if (hadAddedXChainToEnabledChainIds) {
+    Logger.trace('Already added X-chain to enabled chain ids')
     return
   }
-  //check if X chain already in favorites list
+  //check if X chain already in enabled chain id list
   const isDeveloperMode = selectIsDeveloperMode(state)
   const avalancheNetworkX = NetworkService.getAvalancheNetworkX(isDeveloperMode)
-  const favoriteNetworks = selectFavoriteNetworks(state)
+  const enabledNetworks = selectEnabledNetworks(state)
 
   if (
-    favoriteNetworks.find(
+    enabledNetworks.find(
       value => value.chainId === avalancheNetworkX.chainId
     ) !== undefined
   ) {
-    Logger.trace('X-chain already in fav list')
+    Logger.trace('X-chain already in enabled chain id list')
     return
   }
 
@@ -433,8 +435,8 @@ const addXChainToFavoritesIfNeeded = async (
     return
   }
 
-  Logger.info('Adding X-Chain to favorites')
-  dispatch(toggleFavorite(avalancheNetworkX.chainId))
+  Logger.info('Adding X-Chain to enabled chain ids')
+  dispatch(toggleEnabledChainId(avalancheNetworkX.chainId))
   dispatch(setViewOnce(ViewOnceKey.X_CHAIN_FAVORITE))
 }
 
@@ -448,8 +450,8 @@ export const addBalanceListeners = (
 
   startListening({
     actionCreator: refetchBalance,
-    effect: async (action, listenerApi) =>
-      onBalanceUpdate(QueryStatus.REFETCHING, listenerApi, false)
+    effect: async (_, listenerApi) =>
+      onBalanceUpdate(QueryStatus.REFETCHING, listenerApi)
   })
 
   startListening({
@@ -459,10 +461,12 @@ export const addBalanceListeners = (
       setActiveAccountIndex,
       addCustomToken,
       onNetworksFetched,
-      toggleFavorite
+      toggleEnabledChainId,
+      addCustomNetwork,
+      toggleDeveloperMode
     ),
-    effect: async (action, listenerApi) =>
-      onBalanceUpdate(QueryStatus.LOADING, listenerApi, false)
+    effect: async (_, listenerApi) =>
+      onBalanceUpdate(QueryStatus.LOADING, listenerApi)
   })
 
   startListening({
@@ -474,11 +478,11 @@ export const addBalanceListeners = (
 
   startListening({
     matcher: isAnyOf(onAppUnlocked, setAccounts),
-    effect: addPChainToFavoritesIfNeeded
+    effect: addPChainToEnabledChainIdsIfNeeded
   })
 
   startListening({
     matcher: isAnyOf(onAppUnlocked, setAccounts),
-    effect: addXChainToFavoritesIfNeeded
+    effect: addXChainToEnabledChainIdsIfNeeded
   })
 }

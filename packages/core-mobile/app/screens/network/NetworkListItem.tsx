@@ -5,7 +5,7 @@ import AvaButton from 'components/AvaButton'
 import StarSVG from 'components/svg/StarSVG'
 import InfoSVG from 'components/svg/InfoSVG'
 import { useApplicationContext } from 'contexts/ApplicationContext'
-import { alwaysFavoriteNetworks } from 'store/network'
+import { alwaysEnabledNetworks } from 'store/network'
 import { NetworkLogo } from './NetworkLogo'
 
 type Props = {
@@ -33,7 +33,7 @@ export function NetworkListItem({
   function getButtons(): JSX.Element {
     return (
       <Row style={{ alignItems: 'center' }}>
-        {!alwaysFavoriteNetworks.includes(networkChainId) && (
+        {!alwaysEnabledNetworks.includes(networkChainId) && (
           <AvaButton.Icon
             testID={`star_svg__${networkName}`}
             onPress={() => onFavorite(networkChainId)}>
