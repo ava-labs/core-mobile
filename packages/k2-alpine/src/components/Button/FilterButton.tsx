@@ -1,8 +1,9 @@
 import React from 'react'
 import { ViewStyle } from 'react-native'
+import { getButtonTintColor } from 'src/utils'
 import { Icons } from '../../theme/tokens/Icons'
 import { useTheme } from '../../hooks'
-import { Button, getTintColor } from './Button'
+import { Button } from './Button'
 
 export const FilterButton = ({
   title,
@@ -16,7 +17,7 @@ export const FilterButton = ({
   onPress?: () => void
 }): JSX.Element => {
   const { theme } = useTheme()
-  const tintColor = getTintColor('secondary', theme, disabled)
+  const tintColor = getButtonTintColor('secondary', theme, disabled)
 
   return (
     <Button
