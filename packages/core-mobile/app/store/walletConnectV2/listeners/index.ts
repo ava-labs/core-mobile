@@ -2,7 +2,7 @@ import { isAnyOf } from '@reduxjs/toolkit'
 import { onLogIn, onLogOut, onRehydrationComplete } from 'store/app/slice'
 import { AppStartListening } from 'store/types'
 import { setActive } from 'store/network/slice'
-import { setAccounts, setActiveAccountIndex } from 'store/account/slice'
+import { setAccounts, setActiveAccountId } from 'store/account/slice'
 import { killSessions, newSession, onDisconnect } from '../slice'
 import {
   handleAccountChange,
@@ -47,12 +47,12 @@ export const addWCListeners = (startListening: AppStartListening): void => {
   })
 
   startListening({
-    actionCreator: setActiveAccountIndex,
+    actionCreator: setActiveAccountId,
     effect: handleAccountChange
   })
 
   startListening({
-    matcher: isAnyOf(setAccounts, setActiveAccountIndex),
+    matcher: isAnyOf(setAccounts, setActiveAccountId),
     effect: handleNonEvmAccountsChange
   })
 }
