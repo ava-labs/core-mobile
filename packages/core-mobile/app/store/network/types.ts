@@ -9,6 +9,7 @@ export type Networks = { [chainId: ChainID]: NetworkWithCaip2ChainId }
 export type NetworkState = {
   customNetworks: Networks
   enabledChainIds: ChainID[]
+  disabledLastTransactedChainIds: ChainID[]
   active: ChainID
 }
 

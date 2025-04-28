@@ -89,6 +89,10 @@ describe('getNetworksToFetch', () => {
     {
       chainId: 4321,
       isTestnet: false
+    },
+    {
+      chainId: ChainId.ETHEREUM_HOMESTEAD,
+      isTestnet: false
     }
   ]
   jest.spyOn(queryClient, 'getQueryData').mockReturnValue({
@@ -126,7 +130,7 @@ describe('getNetworksToFetch', () => {
       enabledNetworks: enabledNetworks as unknown[] as Network[],
       isDeveloperMode,
       iteration: 0,
-      allNetworksIteration: 0,
+      otherNetworksIteration: 0,
       pullPrimaryNetworks: false,
       address
     })
@@ -141,7 +145,7 @@ describe('getNetworksToFetch', () => {
       enabledNetworks: enabledNetworks as unknown[] as Network[]
     })
     let iteration = 1
-    let allNetworksIteration = 0
+    let otherNetworksIteration = 0
     const allNetworksOperand =
       pollingConfig.allNetworks / pollingConfig.primaryNetworks
 
@@ -163,7 +167,7 @@ describe('getNetworksToFetch', () => {
       [ChainId.ETHEREUM_HOMESTEAD],
       [4321]
     ]
-    while (allNetworksIteration < 3) {
+    while (otherNetworksIteration < 3) {
       let pullPrimaryNetworks
 
       if (iteration > 0 && iteration % allNetworksOperand === 0) {
@@ -175,7 +179,7 @@ describe('getNetworksToFetch', () => {
         isDeveloperMode,
         enabledNetworks: enabledNetworks as unknown[] as Network[],
         iteration,
-        allNetworksIteration,
+        otherNetworksIteration,
         pullPrimaryNetworks,
         address
       })
@@ -185,7 +189,7 @@ describe('getNetworksToFetch', () => {
       iteration += 1
 
       if (pullPrimaryNetworks === false) {
-        allNetworksIteration += 1
+        otherNetworksIteration += 1
       }
     }
   })

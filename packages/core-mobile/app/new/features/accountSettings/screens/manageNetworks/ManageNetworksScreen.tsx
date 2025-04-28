@@ -11,6 +11,7 @@ import {
 } from '@avalabs/k2-alpine'
 import { ErrorState } from 'common/components/ErrorState'
 import { NetworkLogoWithChain } from 'common/components/NetworkLogoWithChain'
+import { useLastTransactedNetworks } from 'common/hooks/useLastTransactedNetworks'
 import { useFocusEffect, useNavigation, useRouter } from 'expo-router'
 import { useNetworks } from 'hooks/networks/useNetworks'
 import React, { useCallback, useMemo, useState } from 'react'
@@ -22,7 +23,11 @@ import {
   isAvalancheChainId
 } from 'services/network/utils/isAvalancheNetwork'
 import { isEthereumChainId } from 'services/network/utils/isEthereumNetwork'
-import { alwaysEnabledNetworks, toggleEnabledChainId } from 'store/network'
+import {
+  alwaysEnabledNetworks,
+  toggleDisabledLastTransactedChainId,
+  toggleEnabledChainId
+} from 'store/network'
 import { isPChain } from 'utils/network/isAvalancheNetwork'
 import { isXPChain } from 'utils/network/isAvalancheNetwork'
 import { isXChain } from 'utils/network/isAvalancheNetwork'
@@ -37,6 +42,7 @@ export const ManageNetworksScreen = (): JSX.Element => {
   const title = 'Networks'
   const { getParent } = useNavigation()
   const { navigate } = useRouter()
+  const { data: lastTransactedChains } = useLastTransactedNetworks({})
 
   const filterBySearchText = useCallback(
     (network: Network) =>
@@ -67,11 +73,18 @@ export const ManageNetworksScreen = (): JSX.Element => {
     return availableNetworks
   }, [availableNetworks, filterBySearchText, searchText.length])
 
-  const onFavorite = useCallback(
+  const onToggle = useCallback(
     (item: Network) => {
+      const chainIds =
+        lastTransactedChains &&
+        Object.values(lastTransactedChains).map(network => network.chainId)
+      if (chainIds && chainIds.includes(item.chainId)) {
+        dispatch(toggleDisabledLastTransactedChainId(item.chainId))
+        return
+      }
       dispatch(toggleEnabledChainId(item.chainId))
     },
-    [dispatch]
+    [dispatch, lastTransactedChains]
   )
 
   const renderNetwork: ListRenderItem<Network> = ({
@@ -140,7 +153,7 @@ export const ManageNetworksScreen = (): JSX.Element => {
           }}>
           <Text style={{ flex: 1 }}>{item.chainName}</Text>
           {!alwaysEnabledNetworks.includes(item.chainId) && (
-            <Toggle value={isEnabled} onValueChange={() => onFavorite(item)} />
+            <Toggle value={isEnabled} onValueChange={() => onToggle(item)} />
           )}
         </View>
       </Pressable>

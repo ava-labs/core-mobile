@@ -23,7 +23,7 @@ export const useNetworks = () => {
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const activeChainId = useSelector(selectActiveChainId)
   const enabledChainIds = useSelector(selectEnabledChainIds)
-  const { data: lastTransactedChains } = useLastTransactedNetworks()
+  const { data: lastTransactedChains } = useLastTransactedNetworks({})
 
   // all networks, including custom networks
   const allNetworks = useMemo((): Networks => {
@@ -90,7 +90,7 @@ export const useNetworks = () => {
       ? Object.values(lastTransactedChains).map(chain => chain.chainId)
       : []
 
-    const allChainIds = uniq([...enabledChainIds, ...lastTransactedChainIds])
+    const allChainIds = uniq([...lastTransactedChainIds, ...enabledChainIds])
 
     const enabled = allChainIds.reduce((acc, chainId) => {
       const network = networks[chainId]

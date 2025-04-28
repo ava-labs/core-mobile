@@ -28,6 +28,7 @@ const initialState: NetworkState = {
     ChainsSDKChainId.BITCOIN_TESTNET,
     ChainsSDKChainId.ETHEREUM_HOMESTEAD
   ],
+  disabledLastTransactedChainIds: [],
   active: noActiveNetwork
 }
 
@@ -52,6 +53,26 @@ export const networkSlice = createSlice({
         state.enabledChainIds = newEnabled
       }
     },
+    toggleDisabledLastTransactedChainId: (
+      state,
+      action: PayloadAction<number>
+    ) => {
+      const chainId = action.payload
+      if (!state.disabledLastTransactedChainIds.includes(chainId)) {
+        // set disabledLastTransactedChainIds
+        state.disabledLastTransactedChainIds.push(chainId)
+      } else {
+        if (alwaysEnabledNetworks.includes(chainId)) {
+          return
+        }
+        // unset disabledLastTransactedChainIds
+        const newDisabled = state.disabledLastTransactedChainIds.filter(
+          id => id !== chainId
+        )
+        state.disabledLastTransactedChainIds = newDisabled
+      }
+    },
+
     addCustomNetwork: (state, action: PayloadAction<Network>) => {
       const network = action.payload
       state.customNetworks[network.chainId] = network
@@ -168,6 +189,7 @@ export const onNetworksFetched = createAction(
 export const {
   setActive,
   toggleEnabledChainId,
+  toggleDisabledLastTransactedChainId,
   addCustomNetwork,
   removeCustomNetwork,
   updateCustomNetwork
