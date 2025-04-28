@@ -5,6 +5,7 @@ import {
   GroupList,
   GroupListItem,
   Icons,
+  SafeAreaView,
   ScrollView,
   showAlert,
   Text,
@@ -42,7 +43,6 @@ import { truncateNodeId } from 'utils/Utils'
 import { copyToClipboard } from 'common/utils/clipboard'
 import { useSimpleFadingHeader } from 'common/hooks/useSimpleFadingHeader'
 import Animated from 'react-native-reanimated'
-import { BottomButtonsContainer } from 'common/components/BottomButtonsContainer'
 
 const StakeConfirmScreen = (): JSX.Element => {
   const { theme } = useTheme()
@@ -357,7 +357,7 @@ const StakeConfirmScreen = (): JSX.Element => {
   }
 
   return (
-    <View sx={{ flex: 1 }}>
+    <SafeAreaView sx={{ flex: 1 }}>
       <ScrollView
         style={{ flex: 1 }}
         contentContainerSx={{ padding: 16, paddingTop: 0 }}
@@ -377,7 +377,12 @@ const StakeConfirmScreen = (): JSX.Element => {
           <GroupList data={stakeSection} />
         </View>
       </ScrollView>
-      <BottomButtonsContainer>
+      <View
+        sx={{
+          padding: 16,
+          gap: 16,
+          backgroundColor: '$surfacePrimary'
+        }}>
         <View
           sx={{
             flexDirection: 'row',
@@ -408,8 +413,8 @@ const StakeConfirmScreen = (): JSX.Element => {
           disabled={issueDelegationMutation.isPending}>
           Cancel
         </Button>
-      </BottomButtonsContainer>
-    </View>
+      </View>
+    </SafeAreaView>
   )
 }
 

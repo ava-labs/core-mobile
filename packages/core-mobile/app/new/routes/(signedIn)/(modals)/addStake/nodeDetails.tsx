@@ -3,6 +3,7 @@ import {
   Button,
   GroupList,
   GroupListItem,
+  SafeAreaView,
   ScrollView,
   Tooltip,
   View
@@ -19,7 +20,6 @@ import { useSelector } from 'react-redux'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import NetworkService from 'services/network/NetworkService'
 import { getAvailableDelegationWeight } from 'services/earn/utils'
-import { BottomButtonsContainer } from 'common/components/BottomButtonsContainer'
 
 const StakeNodeDetails = (): JSX.Element => {
   const { navigate } = useRouter()
@@ -145,7 +145,7 @@ const StakeNodeDetails = (): JSX.Element => {
   }, [validator, validatorWeight, availableDelegationWeight])
 
   return (
-    <View sx={{ flex: 1 }}>
+    <SafeAreaView sx={{ flex: 1 }}>
       <ScrollView
         sx={{ paddingHorizontal: 16, paddingBottom: 16 }}
         contentContainerSx={{ gap: 16 }}>
@@ -153,13 +153,18 @@ const StakeNodeDetails = (): JSX.Element => {
         <GroupList data={details} />
       </ScrollView>
       <LinearGradientBottomWrapper>
-        <BottomButtonsContainer>
+        <View
+          sx={{
+            padding: 16,
+            gap: 16,
+            backgroundColor: '$surfacePrimary'
+          }}>
           <Button type="primary" size="large" onPress={handlePressNext}>
             Select this node
           </Button>
-        </BottomButtonsContainer>
+        </View>
       </LinearGradientBottomWrapper>
-    </View>
+    </SafeAreaView>
   )
 }
 

@@ -4,10 +4,12 @@ import {
   alpha,
   Button,
   normalizeErrorMessage,
+  SafeAreaView,
   ScrollView,
   Text,
   TokenUnitInputWidget,
-  useTheme
+  useTheme,
+  View
 } from '@avalabs/k2-alpine'
 import ScreenHeader from 'common/components/ScreenHeader'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
@@ -24,7 +26,6 @@ import { useAvaxTokenPriceInSelectedCurrency } from 'hooks/useAvaxTokenPriceInSe
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { useSimpleFadingHeader } from 'common/hooks/useSimpleFadingHeader'
 import Animated from 'react-native-reanimated'
-import { BottomButtonsContainer } from 'common/components/BottomButtonsContainer'
 
 const StakeAmountScreen = (): JSX.Element => {
   const {
@@ -145,37 +146,42 @@ const StakeAmountScreen = (): JSX.Element => {
 
   return (
     <KeyboardAvoidingView>
-      <ScrollView
-        style={{ flex: 1 }}
-        contentContainerSx={{ padding: 16, paddingTop: 0 }}
-        onScroll={onScroll}>
-        <Animated.View
-          onLayout={handleHeaderLayout}
-          style={animatedHeaderStyle}>
-          <ScreenHeader title="How much would you like to stake?" />
-        </Animated.View>
-        <TokenUnitInputWidget
+      <SafeAreaView sx={{ flex: 1 }}>
+        <ScrollView
+          style={{ flex: 1 }}
+          contentContainerSx={{ padding: 16, paddingTop: 0 }}
+          onScroll={onScroll}>
+          <Animated.View
+            onLayout={handleHeaderLayout}
+            style={animatedHeaderStyle}>
+            <ScreenHeader title="How much would you like to stake?" />
+          </Animated.View>
+          <TokenUnitInputWidget
+            sx={{
+              marginTop: 16
+            }}
+            disabled={isComputing}
+            balance={cumulativeBalance}
+            token={xpChainToken}
+            formatInCurrency={formatInCurrency}
+            onChange={handleAmountChange}
+            maxPercentage={STAKING_MAX_BALANCE_PERCENTAGE}
+          />
+          {renderCaption()}
+        </ScrollView>
+        <View
           sx={{
-            marginTop: 16
-          }}
-          disabled={isComputing}
-          balance={cumulativeBalance}
-          token={xpChainToken}
-          formatInCurrency={formatInCurrency}
-          onChange={handleAmountChange}
-          maxPercentage={STAKING_MAX_BALANCE_PERCENTAGE}
-        />
-        {renderCaption()}
-      </ScrollView>
-      <BottomButtonsContainer>
-        <Button
-          type="primary"
-          size="large"
-          disabled={isComputing || !inputValid}
-          onPress={handlePressNext}>
-          {isComputing ? <ActivityIndicator /> : 'Next'}
-        </Button>
-      </BottomButtonsContainer>
+            padding: 16
+          }}>
+          <Button
+            type="primary"
+            size="large"
+            disabled={isComputing || !inputValid}
+            onPress={handlePressNext}>
+            {isComputing ? <ActivityIndicator /> : 'Next'}
+          </Button>
+        </View>
+      </SafeAreaView>
     </KeyboardAvoidingView>
   )
 }

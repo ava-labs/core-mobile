@@ -1,10 +1,9 @@
 import React, { useCallback } from 'react'
-import { Button, ScrollView, View } from '@avalabs/k2-alpine'
+import { Button, SafeAreaView, ScrollView, View } from '@avalabs/k2-alpine'
 import ScreenHeader from 'common/components/ScreenHeader'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { NodeParameterWidget } from 'features/stake/components/NodeParameterWidget'
 import { useSharedValue } from 'react-native-reanimated'
-import { BottomButtonsContainer } from 'common/components/BottomButtonsContainer'
 
 const StakeNodeParameter = (): JSX.Element => {
   const { navigate } = useRouter()
@@ -28,7 +27,7 @@ const StakeNodeParameter = (): JSX.Element => {
   }, [navigate, minimumUptime, maximumDelegationFee, stakeEndTime])
 
   return (
-    <View sx={{ flex: 1 }}>
+    <SafeAreaView sx={{ flex: 1 }}>
       <ScrollView
         style={{ flex: 1 }}
         contentContainerSx={{ padding: 16, paddingTop: 0 }}>
@@ -50,12 +49,17 @@ const StakeNodeParameter = (): JSX.Element => {
           />
         </View>
       </ScrollView>
-      <BottomButtonsContainer>
+      <View
+        sx={{
+          padding: 16,
+          gap: 16,
+          backgroundColor: '$surfacePrimary'
+        }}>
         <Button type="primary" size="large" onPress={handlePressNext}>
           Next
         </Button>
-      </BottomButtonsContainer>
-    </View>
+      </View>
+    </SafeAreaView>
   )
 }
 
