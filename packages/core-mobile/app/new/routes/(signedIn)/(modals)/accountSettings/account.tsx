@@ -17,7 +17,7 @@ import { LayoutChangeEvent, LayoutRectangle } from 'react-native'
 import { ScrollView } from 'react-native-gesture-handler'
 import Animated, { useAnimatedStyle } from 'react-native-reanimated'
 import { useSelector } from 'react-redux'
-import { selectAccountByIndex } from 'store/account'
+import { selectAccountByUuid } from 'store/account'
 import {
   selectBalanceForAccountIsAccurate,
   selectBalanceTotalInCurrencyForAccount,
@@ -30,27 +30,24 @@ import { selectSelectedCurrency } from 'store/settings/currency'
 import { selectIsPrivacyModeEnabled } from 'store/settings/securityPrivacy'
 
 const AccountScreen = (): JSX.Element => {
-  const { accountIndex } = useLocalSearchParams<{ accountIndex: string }>()
+  const { accountUuid } = useLocalSearchParams<{ accountUuid: string }>()
   const { navigate } = useRouter()
   const isPrivacyModeEnabled = useSelector(selectIsPrivacyModeEnabled)
   const { theme } = useTheme()
   const [balanceHeaderLayout, setBalanceHeaderLayout] = useState<
     LayoutRectangle | undefined
   >()
-  const accountIndexNumber = isNaN(Number(accountIndex))
-    ? 0
-    : Number(accountIndex)
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
-  const account = useSelector(selectAccountByIndex(accountIndexNumber))
+  const account = useSelector(selectAccountByUuid(accountUuid ?? ''))
   const isBalanceLoading = useSelector(selectIsLoadingBalances)
   const isRefetchingBalance = useSelector(selectIsRefetchingBalances)
   const tokenVisibility = useSelector(selectTokenVisibility)
   const balanceTotalInCurrency = useSelector(
-    selectBalanceTotalInCurrencyForAccount(account?.index ?? 0, tokenVisibility)
+    selectBalanceTotalInCurrencyForAccount(accountUuid, tokenVisibility)
   )
   const isLoading = isBalanceLoading || isRefetchingBalance
   const balanceAccurate = useSelector(
-    selectBalanceForAccountIsAccurate(account?.index ?? 0)
+    selectBalanceForAccountIsAccurate(accountUuid)
   )
   const selectedCurrency = useSelector(selectSelectedCurrency)
   const { formatCurrency } = useFormatCurrency()
@@ -149,7 +146,7 @@ const AccountScreen = (): JSX.Element => {
         <WalletInfo showPrivateKey={handleShowPrivateKey} />
       </View>
       <Space y={32} />
-      <AccountButtons accountIndex={account.index} />
+      <AccountButtons accountUuid={account.id} />
     </ScrollView>
   )
 }

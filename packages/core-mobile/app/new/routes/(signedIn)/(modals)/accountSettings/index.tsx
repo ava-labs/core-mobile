@@ -50,7 +50,7 @@ const AccountSettingsScreen = (): JSX.Element => {
   const isPrivacyModeEnabled = useSelector(selectIsPrivacyModeEnabled)
   const activeAccount = useSelector(selectActiveAccount)
   const totalBalanceInCurrency = useTotalBalanceInCurrencyForAccount(
-    activeAccount?.index ?? 0
+    activeAccount?.id ?? ''
   )
   const selectedCurrency = useSelector(selectSelectedCurrency)
   const {
