@@ -58,6 +58,7 @@ import { BridgeTransfer } from '@avalabs/bridge-unified'
 import { getSourceChainId } from 'features/bridge/utils/bridgeUtils'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { useAssetBalances } from 'features/bridge/hooks/useAssetBalances'
+import { useSendSelectedToken } from 'features/send/store'
 
 const TokenDetailScreen = (): React.JSX.Element => {
   const {
@@ -69,6 +70,7 @@ const TokenDetailScreen = (): React.JSX.Element => {
   const botomInset = useSafeAreaInsets().bottom
   const tabViewRef = useRef<CollapsibleTabsRef>(null)
   const { openUrl } = useCoreBrowser()
+  const [_, setSelectedToken] = useSendSelectedToken()
   const [tokenHeaderLayout, setTokenHeaderLayout] = useState<
     LayoutRectangle | undefined
   >()
@@ -151,8 +153,9 @@ const TokenDetailScreen = (): React.JSX.Element => {
   }, [navigate])
 
   const handleSend = useCallback((): void => {
+    setSelectedToken(token)
     navigate('/send')
-  }, [navigate])
+  }, [navigate, setSelectedToken, token])
 
   const actionButtons: ActionButton[] = useMemo(() => {
     const buttons: ActionButton[] = [
