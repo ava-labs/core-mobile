@@ -154,11 +154,18 @@ const TrackTokenDetailScreen = (): JSX.Element => {
 
   const handlePressTwitter = useCallback(() => {
     tokenInfo?.twitterHandle &&
-      openUrl(`https://x.com/${tokenInfo.twitterHandle}`)
+      openUrl({
+        url: `https://x.com/${tokenInfo.twitterHandle}`,
+        title: 'X'
+      })
   }, [openUrl, tokenInfo?.twitterHandle])
 
   const handlePressWebsite = useCallback(() => {
-    tokenInfo?.urlHostname && openUrl(tokenInfo.urlHostname)
+    tokenInfo?.urlHostname &&
+      openUrl({
+        url: tokenInfo.urlHostname,
+        title: 'Website'
+      })
   }, [openUrl, tokenInfo?.urlHostname])
 
   const handleBuy = useCallback((): void => {

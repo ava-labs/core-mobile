@@ -1,4 +1,4 @@
-import { showSnackbar } from 'common/utils/toast'
+import { transactionSnackbar } from 'common/utils/toast'
 import { useSendSelectedToken } from 'features/send/store'
 import { useCallback } from 'react'
 import AnalyticsService from 'services/analytics/AnalyticsService'
@@ -42,7 +42,7 @@ export const useSendTransactionCallbacks = (): {
   const onFailure = useCallback(
     (error: unknown): void => {
       if (error instanceof Error && !isUserRejectedError(error)) {
-        showSnackbar(getJsonRpcErrorMessage(error))
+        transactionSnackbar.error({ error: getJsonRpcErrorMessage(error) })
         selectedToken &&
           AnalyticsService.capture('SendTransactionFailed', {
             errorMessage: error.message,

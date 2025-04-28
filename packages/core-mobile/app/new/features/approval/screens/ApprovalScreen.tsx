@@ -30,13 +30,14 @@ import { ActionSheet } from 'new/common/components/ActionSheet'
 import ScreenHeader from 'new/common/components/ScreenHeader'
 import { NavigationPresentationMode } from 'new/common/types'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { useSpendLimits } from 'hooks/useSpendLimits'
+import { Warning } from 'new/common/components/Warning'
 import { Details } from '../components/Details'
 import { Network } from '../components/Network'
 import { NetworkFeeSelectorWithGasless } from '../components/NetworkFeeSelectorWithGasless'
 import { Account } from '../components/Account'
-import BalanceChange from '../components/BalanceChange'
-
-// import { SpendLimits } from '../components/SpendLimits'
+import BalanceChange from '../components/BalanceChange/BalanceChange'
+import { SpendLimits } from '../components/SpendLimits/SpendLimits'
 
 const ApprovalScreenWrapper = (): JSX.Element | null => {
   const [params, setParams] = useState<ApprovalParams>()
@@ -100,8 +101,8 @@ const ApprovalScreen = ({
     submitting ||
     amountError !== undefined
 
-  //   const { spendLimits, canEdit, updateSpendLimit, hashedCustomSpend } =
-  //     useSpendLimits(displayData.tokenApprovals)
+  const { spendLimits, canEdit, updateSpendLimit, hashedCustomSpend } =
+    useSpendLimits(displayData.tokenApprovals)
 
   const filteredSections = useMemo(() => {
     return displayData.details.map(detailSection => {
@@ -152,8 +153,8 @@ const ApprovalScreen = ({
         network,
         account,
         maxFeePerGas,
-        maxPriorityFeePerGas
-        //overrideData: hashedCustomSpend
+        maxPriorityFeePerGas,
+        overrideData: hashedCustomSpend
       })
       router.canGoBack() && router.back()
     } catch (error: unknown) {
@@ -170,7 +171,8 @@ const ApprovalScreen = ({
     maxPriorityFeePerGas,
     network,
     onApprove,
-    shouldShowGaslessSwitch
+    shouldShowGaslessSwitch,
+    hashedCustomSpend
   ])
 
   const validateEthSendTransaction = useCallback(() => {
@@ -205,8 +207,6 @@ const ApprovalScreen = ({
     }
   }, [signingData, network, maxFeePerGas, nativeToken])
 
-  // const handleEditSpendLimit = () => {}
-
   const handleFeesChange = useCallback((fees: Eip1559Fees) => {
     setMaxFeePerGas(fees.maxFeePerGas)
     setMaxPriorityFeePerGas(fees.maxPriorityFeePerGas)
@@ -237,25 +237,14 @@ const ApprovalScreen = ({
   }, [validateEthSendTransaction, gaslessEnabled])
 
   const renderGaslessAlert = useCallback((): JSX.Element | null => {
-    if (!gaslessError) return null
+    if (gaslessError === null || gaslessError.length === 0) return null
 
     return (
-      <View style={{ marginVertical: 12 }}>
-        <Text>{gaslessError.details.description}</Text>
-      </View>
+      <Warning
+        message={gaslessError}
+        sx={{ marginBottom: 12, marginRight: 16 }}
+      />
     )
-    // return (
-    //   <View sx={{ marginVertical: 12 }}>
-    //     <AlertBanner
-    //       alert={gaslessError}
-    //       customStyle={{
-    //         borderColor: '$dangerLight',
-    //         backgroundColor: '$transparent',
-    //         iconColor: colors.$white
-    //       }}
-    //     />
-    //   </View>
-    // )
   }, [gaslessError])
 
   const renderTitle = useCallback(
@@ -400,18 +389,18 @@ const ApprovalScreen = ({
     return <BalanceChange balanceChange={balanceChange} />
   }, [balanceChange, hasBalanceChange])
 
-  // const renderSpendLimit = (): JSX.Element | null => {
-  //   // if (spendLimits.length === 0 || hasBalanceChange) {
-  //   //   return null
-  //   // }
+  const renderSpendLimits = (): JSX.Element | null => {
+    if (spendLimits.length === 0 || hasBalanceChange) {
+      return null
+    }
 
-  //   return (
-  //     <SpendLimits
-  //       spendLimits={spendLimits}
-  //       onEdit={canEdit ? handleEditSpendLimit : undefined}
-  //     />
-  //   )
-  // }
+    return (
+      <SpendLimits
+        spendLimits={spendLimits}
+        onSelect={canEdit ? updateSpendLimit : undefined}
+      />
+    )
+  }
 
   const renderNetworkFeeSelectorWithGasless =
     useCallback((): JSX.Element | null => {
@@ -485,8 +474,8 @@ const ApprovalScreen = ({
             {renderGaslessAlert()}
             {renderAccountAndNetwork()}
             {renderBalanceChange()}
-            {/* {renderSpendLimit()} */}
             {renderDetails()}
+            {renderSpendLimits()}
             {renderNetworkFeeSelectorWithGasless()}
           </>
         )
