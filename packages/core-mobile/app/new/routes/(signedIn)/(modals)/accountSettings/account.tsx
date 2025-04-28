@@ -7,11 +7,9 @@ import {
 import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
 import { Space } from 'components/Space'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
-import { useLocalSearchParams, useRouter } from 'expo-router'
+import { useLocalSearchParams } from 'expo-router'
 import { AccountAddresses } from 'features/accountSettings/components/accountAddresses'
 import { AccountButtons } from 'features/accountSettings/components/AccountButtons'
-import { WalletInfo } from 'features/accountSettings/components/WalletInfo'
-import { useFormatCurrency } from 'new/common/hooks/useFormatCurrency'
 import React, { useCallback, useMemo, useState } from 'react'
 import { LayoutChangeEvent, LayoutRectangle } from 'react-native'
 import { ScrollView } from 'react-native-gesture-handler'
@@ -31,7 +29,6 @@ import { selectIsPrivacyModeEnabled } from 'store/settings/securityPrivacy'
 
 const AccountScreen = (): JSX.Element => {
   const { accountIndex } = useLocalSearchParams<{ accountIndex: string }>()
-  const { navigate } = useRouter()
   const isPrivacyModeEnabled = useSelector(selectIsPrivacyModeEnabled)
   const { theme } = useTheme()
   const [balanceHeaderLayout, setBalanceHeaderLayout] = useState<
@@ -71,11 +68,6 @@ const AccountScreen = (): JSX.Element => {
     },
     []
   )
-
-  const handleShowPrivateKey = (): void => {
-    // TODO: CP-10070
-    navigate('/accountSettings/privateKey')
-  }
 
   const header = useMemo(
     () => <NavigationTitleHeader title={account?.name ?? ''} />,
@@ -139,18 +131,20 @@ const AccountScreen = (): JSX.Element => {
   }
 
   return (
-    <ScrollView
-      onScroll={onScroll}
-      contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 60 }}>
-      {renderHeader()}
-      <Space y={32} />
-      <View sx={{ gap: 12 }}>
-        <AccountAddresses account={account} />
-        <WalletInfo showPrivateKey={handleShowPrivateKey} />
-      </View>
-      <Space y={32} />
+    <View sx={{ flex: 1, marginBottom: 60, paddingHorizontal: 16 }}>
+      <ScrollView
+        onScroll={onScroll}
+        contentContainerStyle={{ paddingBottom: 60 }}>
+        {renderHeader()}
+        <Space y={32} />
+        <View sx={{ gap: 12 }}>
+          <AccountAddresses account={account} />
+          {/* <WalletInfo showPrivateKey={handleShowPrivateKey} /> */}
+        </View>
+        <Space y={32} />
+      </ScrollView>
       <AccountButtons accountIndex={account.index} />
-    </ScrollView>
+    </View>
   )
 }
 
