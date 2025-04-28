@@ -43,12 +43,14 @@ import { PARASWAP_PARTNER_FEE_BPS } from 'contexts/SwapContext/consts'
 import { useAvalancheErc20ContractTokens } from 'common/hooks/useErc20ContractTokens'
 import { usePreventScreenRemoval } from 'common/hooks/usePreventScreenRemoval'
 import { useSimpleFadingHeader } from 'common/hooks/useSimpleFadingHeader'
+import { useNavigation } from '@react-navigation/native'
 import { useSwapContext } from '../contexts/SwapContext'
 import { SlippageInput } from '../components.tsx/SlippageInput'
 
 export const SwapScreen = (): JSX.Element => {
   const { theme } = useTheme()
-  const { navigate, back } = useRouter()
+  const { navigate, back, canGoBack } = useRouter()
+  const { getState } = useNavigation()
   const params = useGlobalSearchParams<{
     initialTokenIdFrom?: string
     initialTokenIdTo?: string
@@ -400,8 +402,12 @@ export const SwapScreen = (): JSX.Element => {
   useEffect(() => {
     if (swapStatus === 'Success') {
       back()
+      const state = getState()
+      if (state?.routes[state?.index ?? 0]?.name === 'onboarding') {
+        canGoBack() && back()
+      }
     }
-  }, [back, swapStatus])
+  }, [back, canGoBack, getState, swapStatus])
 
   useEffect(validateInputsFx, [validateInputsFx])
   useEffect(applyOptimalRateFx, [applyOptimalRateFx])

@@ -60,6 +60,7 @@ import { getJsonRpcErrorMessage } from 'utils/getJsonRpcErrorMessage/getJsonRpcE
 import { audioFeedback, Audios } from 'utils/AudioFeedback'
 import { usePreventScreenRemoval } from 'common/hooks/usePreventScreenRemoval'
 import { useSimpleFadingHeader } from 'common/hooks/useSimpleFadingHeader'
+import { useNavigation } from '@react-navigation/native'
 import useBridge from '../hooks/useBridge'
 
 export const BridgeScreen = (): JSX.Element => {
@@ -71,7 +72,8 @@ export const BridgeScreen = (): JSX.Element => {
       initialSourceNetworkChainId?: string
       initialTokenSymbol?: string
     }>()
-  const { navigate, back } = useRouter()
+  const { navigate, back, canGoBack } = useRouter()
+  const { getState } = useNavigation()
   const { openUrl } = useCoreBrowser()
   const {
     sourceNetworks,
@@ -208,12 +210,16 @@ export const BridgeScreen = (): JSX.Element => {
     if (bridgeResult) {
       audioFeedback(Audios.Send)
       back()
+      const state = getState()
+      if (state?.routes[state?.index ?? 0]?.name === 'onboarding') {
+        canGoBack() && back()
+      }
       navigate({
         pathname: '/bridgeStatus',
         params: bridgeResult
       })
     }
-  }, [bridgeResult, back, navigate])
+  }, [bridgeResult, back, navigate, getState, canGoBack])
 
   const handleTransfer = useCallback(async () => {
     if (

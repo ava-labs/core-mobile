@@ -1,4 +1,3 @@
-import { noop } from '@avalabs/core-utils-sdk'
 import {
   NavigationTitleHeader,
   SegmentedControl,
@@ -59,6 +58,7 @@ import { BridgeTransfer } from '@avalabs/bridge-unified'
 import { getSourceChainId } from 'features/bridge/utils/bridgeUtils'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { useAssetBalances } from 'features/bridge/hooks/useAssetBalances'
+import { useSendSelectedToken } from 'features/send/store'
 
 const TokenDetailScreen = (): React.JSX.Element => {
   const {
@@ -70,6 +70,7 @@ const TokenDetailScreen = (): React.JSX.Element => {
   const botomInset = useSafeAreaInsets().bottom
   const tabViewRef = useRef<CollapsibleTabsRef>(null)
   const { openUrl } = useCoreBrowser()
+  const [_, setSelectedToken] = useSendSelectedToken()
   const [tokenHeaderLayout, setTokenHeaderLayout] = useState<
     LayoutRectangle | undefined
   >()
@@ -151,9 +152,14 @@ const TokenDetailScreen = (): React.JSX.Element => {
     })
   }, [navigate])
 
+  const handleSend = useCallback((): void => {
+    setSelectedToken(token)
+    navigate('/send')
+  }, [navigate, setSelectedToken, token])
+
   const actionButtons: ActionButton[] = useMemo(() => {
     const buttons: ActionButton[] = [
-      { title: ActionButtonTitle.Send, icon: 'send', onPress: noop }
+      { title: ActionButtonTitle.Send, icon: 'send', onPress: handleSend }
     ]
 
     if (!isSwapDisabled) {
@@ -189,16 +195,17 @@ const TokenDetailScreen = (): React.JSX.Element => {
 
     return buttons
   }, [
+    handleSend,
     isSwapDisabled,
+    handleBuy,
+    isTokenStakable,
     isBridgeDisabled,
     isTokenBridgeable,
-    handleBridge,
-    handleBuy,
     navigateToSwap,
-    token,
+    token?.localId,
     canAddStake,
-    isTokenStakable,
-    addStake
+    addStake,
+    handleBridge
   ])
 
   const { onScroll, targetHiddenProgress } = useFadingHeaderNavigation({

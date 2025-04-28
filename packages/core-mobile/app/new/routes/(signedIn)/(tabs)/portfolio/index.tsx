@@ -56,11 +56,13 @@ import { selectSelectedCurrency } from 'store/settings/currency'
 import { selectIsPrivacyModeEnabled } from 'store/settings/securityPrivacy'
 import { useFocusedSelector } from 'utils/performance/useFocusedSelector'
 import { useNavigateToSwap } from 'features/swap/hooks/useNavigateToSwap'
+import { useSendSelectedToken } from 'features/send/store'
 
 const SEGMENT_ITEMS = ['Assets', 'Collectibles', 'DeFi']
 
 const PortfolioHomeScreen = (): JSX.Element => {
   const isPrivacyModeEnabled = useFocusedSelector(selectIsPrivacyModeEnabled)
+  const [_, setSelectedToken] = useSendSelectedToken()
   const { theme } = useTheme()
   const { navigate } = useRouter()
   const { navigateToSwap } = useNavigateToSwap()
@@ -142,8 +144,9 @@ const PortfolioHomeScreen = (): JSX.Element => {
   )
 
   const handleSend = useCallback((): void => {
+    setSelectedToken(undefined)
     navigate('/send')
-  }, [navigate])
+  }, [navigate, setSelectedToken])
 
   const handleConnect = useCallback((): void => {
     navigate('/walletConnectScan')
