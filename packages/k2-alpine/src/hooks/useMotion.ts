@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { AppState } from 'react-native'
+import { AppState, Platform } from 'react-native'
 import {
   SharedValue,
   useAnimatedSensor,
@@ -24,7 +24,14 @@ export const useMotion = (): Motion | undefined => {
     }
   }, [])
 
-  return shouldAnimate
+  useEffect(() => {
+    if (Platform.OS === 'android') {
+      rotation.unregister()
+      accelerometer.unregister()
+    }
+  }, [accelerometer, rotation])
+
+  return shouldAnimate && Platform.OS !== 'android'
     ? {
         rotation: rotation.sensor,
         accelerometer: accelerometer.sensor
