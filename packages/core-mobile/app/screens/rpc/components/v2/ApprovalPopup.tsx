@@ -190,7 +190,7 @@ const ApprovalPopup = (): JSX.Element => {
   }, [])
 
   const onHandleApprove = async (): Promise<void> => {
-    if (approveDisabled) return
+    if (approveDisabled || !account) return
     setSubmitting(true)
 
     if (shouldShowGaslessSwitch && gaslessEnabled) {
