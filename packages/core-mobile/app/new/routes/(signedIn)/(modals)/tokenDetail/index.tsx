@@ -1,4 +1,3 @@
-import { noop } from '@avalabs/core-utils-sdk'
 import {
   NavigationTitleHeader,
   SegmentedControl,
@@ -151,9 +150,13 @@ const TokenDetailScreen = (): React.JSX.Element => {
     })
   }, [navigate])
 
+  const handleSend = useCallback((): void => {
+    navigate('/send')
+  }, [navigate])
+
   const actionButtons: ActionButton[] = useMemo(() => {
     const buttons: ActionButton[] = [
-      { title: ActionButtonTitle.Send, icon: 'send', onPress: noop }
+      { title: ActionButtonTitle.Send, icon: 'send', onPress: handleSend }
     ]
 
     if (!isSwapDisabled) {
@@ -189,16 +192,17 @@ const TokenDetailScreen = (): React.JSX.Element => {
 
     return buttons
   }, [
+    handleSend,
     isSwapDisabled,
+    handleBuy,
+    isTokenStakable,
     isBridgeDisabled,
     isTokenBridgeable,
-    handleBridge,
-    handleBuy,
     navigateToSwap,
-    token,
+    token?.localId,
     canAddStake,
-    isTokenStakable,
-    addStake
+    addStake,
+    handleBridge
   ])
 
   const { onScroll, targetHiddenProgress } = useFadingHeaderNavigation({
