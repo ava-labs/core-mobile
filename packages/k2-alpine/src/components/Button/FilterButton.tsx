@@ -1,6 +1,6 @@
 import React from 'react'
 import { ViewStyle } from 'react-native'
-import { getButtonTintColor } from 'src/utils'
+import { getButtonTintColor } from '../../utils/colors'
 import { Icons } from '../../theme/tokens/Icons'
 import { useTheme } from '../../hooks'
 import { Button } from './Button'
