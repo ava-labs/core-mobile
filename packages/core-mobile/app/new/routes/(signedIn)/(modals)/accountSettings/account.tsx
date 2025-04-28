@@ -8,7 +8,7 @@ import { AccountAddresses } from 'features/accountSettings/components/accountAdd
 import { AccountButtons } from 'features/accountSettings/components/AccountButtons'
 import React, { useCallback, useMemo } from 'react'
 import { useSelector } from 'react-redux'
-import { selectAccountByIndex } from 'store/account'
+import { selectAccountByUuid } from 'store/account'
 import {
   selectBalanceForAccountIsAccurate,
   selectBalanceTotalInCurrencyForAccount,
@@ -21,23 +21,20 @@ import { selectSelectedCurrency } from 'store/settings/currency'
 import { selectIsPrivacyModeEnabled } from 'store/settings/securityPrivacy'
 
 const AccountScreen = (): JSX.Element => {
-  const { accountIndex } = useLocalSearchParams<{ accountIndex: string }>()
+  const { accountUuid } = useLocalSearchParams<{ accountUuid: string }>()
   const isPrivacyModeEnabled = useSelector(selectIsPrivacyModeEnabled)
 
-  const accountIndexNumber = isNaN(Number(accountIndex))
-    ? 0
-    : Number(accountIndex)
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
-  const account = useSelector(selectAccountByIndex(accountIndexNumber))
+  const account = useSelector(selectAccountByUuid(accountUuid ?? ''))
   const isBalanceLoading = useSelector(selectIsLoadingBalances)
   const isRefetchingBalance = useSelector(selectIsRefetchingBalances)
   const tokenVisibility = useSelector(selectTokenVisibility)
   const balanceTotalInCurrency = useSelector(
-    selectBalanceTotalInCurrencyForAccount(account?.index ?? 0, tokenVisibility)
+    selectBalanceTotalInCurrencyForAccount(accountUuid, tokenVisibility)
   )
   const isLoading = isBalanceLoading || isRefetchingBalance
   const balanceAccurate = useSelector(
-    selectBalanceForAccountIsAccurate(account?.index ?? 0)
+    selectBalanceForAccountIsAccurate(accountUuid)
   )
   const selectedCurrency = useSelector(selectSelectedCurrency)
   const { formatCurrency } = useFormatCurrency()

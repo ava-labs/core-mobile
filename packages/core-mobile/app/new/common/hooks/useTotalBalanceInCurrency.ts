@@ -1,6 +1,5 @@
 import { UNKNOWN_AMOUNT } from 'consts/amount'
 import { useSelector } from 'react-redux'
-import { selectAccountByIndex } from 'store/account'
 import {
   selectBalanceForAccountIsAccurate,
   selectBalanceTotalInCurrencyForAccount
@@ -10,17 +9,16 @@ import { selectSelectedCurrency } from 'store/settings/currency'
 import { useFormatCurrency } from './useFormatCurrency'
 
 export const useTotalBalanceInCurrencyForAccount = (
-  accountIndex: number
+  accountUuid: string
 ): string => {
   const { formatCurrency } = useFormatCurrency()
   const selectedCurrency = useSelector(selectSelectedCurrency)
-  const account = useSelector(selectAccountByIndex(accountIndex))
   const tokenVisibility = useSelector(selectTokenVisibility)
   const balanceTotalInCurrency = useSelector(
-    selectBalanceTotalInCurrencyForAccount(account?.index ?? 0, tokenVisibility)
+    selectBalanceTotalInCurrencyForAccount(accountUuid, tokenVisibility)
   )
   const balanceAccurate = useSelector(
-    selectBalanceForAccountIsAccurate(account?.index ?? 0)
+    selectBalanceForAccountIsAccurate(accountUuid)
   )
   const currencyBalance =
     !balanceAccurate || balanceTotalInCurrency === 0
