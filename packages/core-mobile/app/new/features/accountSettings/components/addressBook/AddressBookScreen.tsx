@@ -62,22 +62,9 @@ export const AddressBookScreen = (): JSX.Element => {
     )
   }, [colors.$textPrimary, goToAddContact])
 
-  useFocusEffect(
-    useCallback(() => {
-      getParent()?.setOptions({
-        headerRight: renderHeaderRight
-      })
-      return () => {
-        getParent()?.setOptions({
-          headerRight: undefined
-        })
-      }
-    }, [getParent, renderHeaderRight])
-  )
-
   const renderListHeader = useCallback(() => {
     return contacts.length > 0 ? (
-      <View sx={{ marginTop: 8 }}>
+      <View>
         <SimpleDropdown
           from={
             <Chip size="large" hitSlop={8} rightIcon={'expandMore'}>

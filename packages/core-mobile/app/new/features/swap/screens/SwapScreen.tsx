@@ -7,7 +7,6 @@ import {
   GroupList,
   GroupListItem,
   Icons,
-  SafeAreaView,
   Separator,
   Text,
   useTheme,
@@ -15,20 +14,17 @@ import {
 } from '@avalabs/k2-alpine'
 import { TokenType, TokenWithBalance } from '@avalabs/vm-module-types'
 import { SwapSide } from '@paraswap/sdk'
-import { KeyboardAvoidingView } from 'common/components/KeyboardAvoidingView'
-import ScreenHeader from 'common/components/ScreenHeader'
+import { ScrollViewScreenTemplate } from 'common/components/ScrollViewScreenTemplate'
 import { TokenInputWidget } from 'common/components/TokenInputWidget'
 import { useAvalancheErc20ContractTokens } from 'common/hooks/useErc20ContractTokens'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import { usePreventScreenRemoval } from 'common/hooks/usePreventScreenRemoval'
 import { useSearchableTokenList } from 'common/hooks/useSearchableTokenList'
-import { useSimpleFadingHeader } from 'common/hooks/useSimpleFadingHeader'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
 import { PARASWAP_PARTNER_FEE_BPS } from 'contexts/SwapContext/consts'
 import { useGlobalSearchParams, useRouter } from 'expo-router'
 import useCChainNetwork from 'hooks/earn/useCChainNetwork'
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { KeyboardAwareScrollView } from 'react-native-keyboard-controller'
 import Animated, {
   FadeIn,
   FadeOut,
@@ -51,11 +47,6 @@ export const SwapScreen = (): JSX.Element => {
     initialTokenIdFrom?: string
     initialTokenIdTo?: string
   }>()
-  const { onScroll, handleHeaderLayout, animatedHeaderStyle } =
-    useSimpleFadingHeader({
-      title: 'Swap',
-      shouldHeaderHaveGrabber: true
-    })
 
   const { formatCurrency } = useFormatCurrency()
   const avalancheErc20ContractTokens = useAvalancheErc20ContractTokens()
@@ -436,104 +427,92 @@ export const SwapScreen = (): JSX.Element => {
 
   usePreventScreenRemoval(swapInProcess)
 
+  const renderFooter = useCallback(() => {
+    return (
+      <Button
+        type="primary"
+        size="large"
+        onPress={handleSwap}
+        disabled={!canSwap || swapInProcess}>
+        {swapInProcess ? <ActivityIndicator size="small" /> : 'Next'}
+      </Button>
+    )
+  }, [canSwap, handleSwap, swapInProcess])
+
   return (
-    <KeyboardAvoidingView>
-      <SafeAreaView sx={{ flex: 1 }} edges={['bottom']}>
-        <KeyboardAwareScrollView
-          contentContainerStyle={{ padding: 16, paddingTop: 0 }}
-          keyboardDismissMode="interactive"
-          keyboardShouldPersistTaps="handled"
-          onScroll={onScroll}>
-          <Animated.View
-            onLayout={handleHeaderLayout}
-            style={animatedHeaderStyle}>
-            <ScreenHeader title="Swap" />
-          </Animated.View>
-
-          <Animated.View style={{ marginTop: 16 }} layout={LinearTransition}>
-            {renderFromSection()}
+    <ScrollViewScreenTemplate
+      title="Swap"
+      renderFooter={renderFooter}
+      isModal
+      contentContainerStyle={{ padding: 16 }}>
+      <Animated.View layout={LinearTransition}>
+        {renderFromSection()}
+        <Animated.View
+          style={{
+            backgroundColor: theme.colors.$surfaceSecondary,
+            zIndex: 100
+          }}>
+          <View sx={{ flexDirection: 'row', alignItems: 'center' }}>
+            <Separator
+              sx={{
+                marginLeft: 16,
+                marginRight: isInputFocused ? 0 : 20,
+                flex: 1
+              }}
+            />
+            <Separator
+              sx={{
+                marginLeft: isInputFocused ? 0 : 20,
+                marginRight: 16,
+                flex: 1
+              }}
+            />
+          </View>
+          {isInputFocused === false && (
             <Animated.View
+              entering={FadeIn}
+              exiting={FadeOut}
               style={{
-                backgroundColor: theme.colors.$surfaceSecondary,
-                zIndex: 100
+                position: 'absolute',
+                top: -20,
+                left: 0,
+                right: 0
               }}>
-              <View sx={{ flexDirection: 'row', alignItems: 'center' }}>
-                <Separator
-                  sx={{
-                    marginLeft: 16,
-                    marginRight: isInputFocused ? 0 : 20,
-                    flex: 1
-                  }}
-                />
-                <Separator
-                  sx={{
-                    marginLeft: isInputFocused ? 0 : 20,
-                    marginRight: 16,
-                    flex: 1
-                  }}
-                />
-              </View>
-              {isInputFocused === false && (
-                <Animated.View
-                  entering={FadeIn}
-                  exiting={FadeOut}
-                  style={{
-                    position: 'absolute',
-                    top: -20,
-                    left: 0,
-                    right: 0
-                  }}>
-                  <CircularButton
-                    backgroundColor={swapButtonBackgroundColor}
-                    style={{
-                      width: 40,
-                      height: 40,
-                      alignSelf: 'center'
-                    }}
-                    onPress={handleToggleTokens}>
-                    <Icons.Custom.SwapVertical />
-                  </CircularButton>
-                </Animated.View>
-              )}
-            </Animated.View>
-            {renderToSection()}
-          </Animated.View>
-
-          {errorMessage && (
-            <Animated.View entering={FadeIn} exiting={FadeOut}>
-              <Text
-                variant="caption"
-                sx={{
-                  color: '$textDanger',
-                  alignSelf: 'center',
-                  marginVertical: 8
-                }}>
-                {errorMessage}
-              </Text>
+              <CircularButton
+                backgroundColor={swapButtonBackgroundColor}
+                style={{
+                  width: 40,
+                  height: 40,
+                  alignSelf: 'center'
+                }}
+                onPress={handleToggleTokens}>
+                <Icons.Custom.SwapVertical />
+              </CircularButton>
             </Animated.View>
           )}
-          <View style={{ marginTop: 24 }}>
-            <GroupList data={data} separatorMarginRight={16} />
-            <Text variant="caption" sx={{ marginTop: 6, alignSelf: 'center' }}>
-              {coreFeeMessage}
-            </Text>
-          </View>
-        </KeyboardAwareScrollView>
+        </Animated.View>
+        {renderToSection()}
+      </Animated.View>
 
-        <View
-          sx={{
-            padding: 16,
-            gap: 20
-          }}>
-          <Button
-            type="primary"
-            size="large"
-            onPress={handleSwap}
-            disabled={!canSwap || swapInProcess}>
-            {swapInProcess ? <ActivityIndicator /> : 'Next'}
-          </Button>
-        </View>
-      </SafeAreaView>
-    </KeyboardAvoidingView>
+      {errorMessage && (
+        <Animated.View entering={FadeIn} exiting={FadeOut}>
+          <Text
+            variant="caption"
+            sx={{
+              color: '$textDanger',
+              alignSelf: 'center',
+              marginVertical: 8
+            }}>
+            {errorMessage}
+          </Text>
+        </Animated.View>
+      )}
+      <View style={{ marginTop: 24 }}>
+        <GroupList data={data} separatorMarginRight={16} />
+        <Text variant="caption" sx={{ marginTop: 6, alignSelf: 'center' }}>
+          {coreFeeMessage}
+        </Text>
+      </View>
+    </ScrollViewScreenTemplate>
   )
 }

@@ -67,7 +67,7 @@ export default function Root(): JSX.Element | null {
   return (
     <K2AlpineThemeProvider colorScheme={colorScheme}>
       <NavigationThemeProvider>
-        <KeyboardProvider statusBarTranslucent navigationBarTranslucent>
+        <KeyboardProvider>
           <RecoveryMethodProvider>
             <NavigationRedirect />
             <Stack

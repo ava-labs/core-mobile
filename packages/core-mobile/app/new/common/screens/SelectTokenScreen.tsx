@@ -1,9 +1,7 @@
-import React from 'react'
-import { SearchBar, Text, View } from '@avalabs/k2-alpine'
-import { FlashList, ListRenderItem } from '@shopify/flash-list'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import Animated from 'react-native-reanimated'
-import { useSimpleFadingHeader } from '../hooks/useSimpleFadingHeader'
+import { SearchBar } from '@avalabs/k2-alpine'
+import { ListRenderItem } from '@shopify/flash-list'
+import { FlatListScreenTemplate } from 'common/components/FlatListScreenTemplate'
+import React, { useCallback } from 'react'
 
 export const SelectTokenScreen = <T,>({
   tokens,
@@ -18,39 +16,17 @@ export const SelectTokenScreen = <T,>({
   renderListItem: ListRenderItem<T>
   keyExtractor?: (item: T) => string
 }): JSX.Element => {
-  const { onScroll, handleHeaderLayout, animatedHeaderStyle } =
-    useSimpleFadingHeader({
-      title: 'Select a token',
-      shouldHeaderHaveGrabber: true
-    })
-  const insets = useSafeAreaInsets()
-
-  const renderHeader = (): React.JSX.Element => {
-    return (
-      <View sx={{ gap: 8, marginBottom: 16 }}>
-        <Animated.View
-          style={animatedHeaderStyle}
-          onLayout={handleHeaderLayout}>
-          <Text variant="heading2">Select a token</Text>
-        </Animated.View>
-        <SearchBar onTextChanged={onSearchText} searchText={searchText} />
-      </View>
-    )
-  }
+  const renderHeader = useCallback(() => {
+    return <SearchBar onTextChanged={onSearchText} searchText={searchText} />
+  }, [onSearchText, searchText])
 
   return (
-    <FlashList
-      onScroll={onScroll}
-      ListHeaderComponent={renderHeader()}
+    <FlatListScreenTemplate
+      title="Select a token"
       data={tokens}
-      estimatedItemSize={60}
-      contentContainerStyle={{
-        paddingBottom: insets.bottom + 60,
-        paddingHorizontal: 16
-      }}
-      showsVerticalScrollIndicator={false}
       renderItem={renderListItem}
       keyExtractor={keyExtractor}
+      renderHeader={renderHeader}
     />
   )
 }

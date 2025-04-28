@@ -1,34 +1,28 @@
 import {
   Icons,
-  NavigationTitleHeader,
-  SearchBar,
-  Text,
-  View,
-  FlatList,
+  Image,
   SPRING_LINEAR_TRANSITION,
+  SearchBar,
   Separator,
-  useTheme,
+  Text,
   TouchableOpacity,
-  Image
+  View,
+  useTheme
 } from '@avalabs/k2-alpine'
-import React, { useCallback, useState, useMemo } from 'react'
-import Animated, {
-  useAnimatedStyle,
-  useSharedValue
-} from 'react-native-reanimated'
-import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
-import { LayoutChangeEvent, LayoutRectangle } from 'react-native'
+import { CurrencyIcon } from 'common/components/CurrencyIcon'
+import { ErrorState } from 'common/components/ErrorState'
+import { FlatListScreenTemplate } from 'common/components/FlatListScreenTemplate'
+import { getListItemEnteringAnimation } from 'common/utils/animations'
+import { useRouter } from 'expo-router'
+import React, { useCallback, useMemo, useState } from 'react'
+import Animated from 'react-native-reanimated'
+import { useDispatch, useSelector } from 'react-redux'
 import {
   currencies,
   selectSelectedCurrency,
   setSelectedCurrency,
   type Currency
 } from 'store/settings/currency'
-import { getListItemEnteringAnimation } from 'common/utils/animations'
-import { CurrencyIcon } from 'common/components/CurrencyIcon'
-import { useDispatch, useSelector } from 'react-redux'
-import { useRouter } from 'expo-router'
-import { ErrorState } from 'common/components/ErrorState'
 
 const errorIcon = require('../../../../assets/icons/melting_face.png')
 
@@ -38,25 +32,9 @@ const SelectCurrencyScreen = (): JSX.Element => {
   } = useTheme()
   const { canGoBack, back } = useRouter()
   const [searchText, setSearchText] = useState('')
-  const headerOpacity = useSharedValue(1)
-  const [headerLayout, setHeaderLayout] = useState<
-    LayoutRectangle | undefined
-  >()
+
   const selectedCurrencySymbol = useSelector(selectSelectedCurrency)
   const dispatch = useDispatch()
-  const { onScroll, targetHiddenProgress } = useFadingHeaderNavigation({
-    header: <NavigationTitleHeader title={'Select a currency'} />,
-    targetLayout: headerLayout,
-    shouldHeaderHaveGrabber: true
-  })
-
-  const animatedHeaderStyle = useAnimatedStyle(() => ({
-    opacity: 1 - targetHiddenProgress.value
-  }))
-
-  const handleHeaderLayout = (event: LayoutChangeEvent): void => {
-    setHeaderLayout(event.nativeEvent.layout)
-  }
 
   const searchResults = useMemo(() => {
     if (searchText === '') {
@@ -155,14 +133,23 @@ const SelectCurrencyScreen = (): JSX.Element => {
     ]
   )
 
+  const renderHeader = useCallback(() => {
+    return (
+      <SearchBar
+        onTextChanged={setSearchText}
+        searchText={searchText}
+        placeholder="Search"
+        useDebounce={true}
+      />
+    )
+  }, [setSearchText, searchText])
+
   return (
-    <FlatList
-      showsVerticalScrollIndicator={false}
-      scrollEventThrottle={16}
-      onScroll={onScroll}
+    <FlatListScreenTemplate
+      title="Select a currency"
       data={searchResults}
-      contentContainerStyle={{ paddingBottom: 60, flexGrow: 1 }}
       keyExtractor={(item): string => (item as Currency).symbol}
+      renderItem={item => renderItem(item.item as Currency, item.index)}
       ListEmptyComponent={
         <ErrorState
           sx={{ flex: 1 }}
@@ -171,22 +158,7 @@ const SelectCurrencyScreen = (): JSX.Element => {
           description=""
         />
       }
-      ListHeaderComponent={
-        <View sx={{ gap: 16, marginHorizontal: 16, marginBottom: 16 }}>
-          <Animated.View
-            style={[{ opacity: headerOpacity }, animatedHeaderStyle]}
-            onLayout={handleHeaderLayout}>
-            <Text variant="heading2">Select a currency</Text>
-          </Animated.View>
-          <SearchBar
-            onTextChanged={setSearchText}
-            searchText={searchText}
-            placeholder="Search"
-            useDebounce={true}
-          />
-        </View>
-      }
-      renderItem={item => renderItem(item.item as Currency, item.index)}
+      renderHeader={renderHeader}
     />
   )
 }

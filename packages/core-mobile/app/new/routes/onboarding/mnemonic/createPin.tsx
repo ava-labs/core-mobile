@@ -1,14 +1,11 @@
-import React, { useCallback } from 'react'
+import { useStoredBiometrics } from 'common/hooks/useStoredBiometrics'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { CreatePin as Component } from 'features/onboarding/components/CreatePin'
 import { useWallet } from 'hooks/useWallet'
+import React, { useCallback } from 'react'
 import AnalyticsService from 'services/analytics/AnalyticsService'
-import Logger from 'utils/Logger'
-import BlurredBarsContentLayout from 'common/components/BlurredBarsContentLayout'
-import { KeyboardAvoidingView } from 'common/components/KeyboardAvoidingView'
 import BiometricsSDK from 'utils/BiometricsSDK'
-import { useStoredBiometrics } from 'common/hooks/useStoredBiometrics'
-import { SafeAreaView } from '@avalabs/k2-alpine'
+import Logger from 'utils/Logger'
 
 export default function CreatePin(): JSX.Element {
   const { navigate } = useRouter()
@@ -39,20 +36,14 @@ export default function CreatePin(): JSX.Element {
   )
 
   return (
-    <SafeAreaView sx={{ flex: 1 }}>
-      <BlurredBarsContentLayout>
-        <KeyboardAvoidingView>
-          <Component
-            onEnteredValidPin={handleEnteredValidPin}
-            useBiometrics={useBiometrics}
-            setUseBiometrics={setUseBiometrics}
-            newPinTitle={`Secure your wallet\nwith a PIN`}
-            newPinDescription="For extra security, avoid choosing a PIN that contains repeating digits in a sequential order"
-            confirmPinTitle={`Confirm your\nPIN code`}
-            isBiometricAvailable={isBiometricAvailable}
-          />
-        </KeyboardAvoidingView>
-      </BlurredBarsContentLayout>
-    </SafeAreaView>
+    <Component
+      onEnteredValidPin={handleEnteredValidPin}
+      useBiometrics={useBiometrics}
+      setUseBiometrics={setUseBiometrics}
+      newPinTitle={`Secure your wallet\nwith a PIN`}
+      newPinDescription="For extra security, avoid choosing a PIN that contains repeating digits in a sequential order"
+      confirmPinTitle={`Confirm your\nPIN code`}
+      isBiometricAvailable={isBiometricAvailable}
+    />
   )
 }

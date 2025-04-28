@@ -1,3 +1,9 @@
+import {
+  isTokenWithBalanceAVM,
+  isTokenWithBalancePVM
+} from '@avalabs/avalanche-module'
+import { BridgeTransfer } from '@avalabs/bridge-unified'
+import { BridgeTransaction } from '@avalabs/core-bridge-sdk'
 import { noop } from '@avalabs/core-utils-sdk'
 import {
   NavigationTitleHeader,
@@ -5,60 +11,54 @@ import {
   useTheme,
   View
 } from '@avalabs/k2-alpine'
-import { UNKNOWN_AMOUNT } from 'consts/amount'
-import { useLocalSearchParams, useRouter } from 'expo-router'
-import React, { useCallback, useMemo, useRef, useState } from 'react'
-import { useSelector } from 'react-redux'
-import {
-  selectIsBalancesAccurateByNetwork,
-  selectIsLoadingBalances
-} from 'store/balance'
-import { selectSelectedCurrency } from 'store/settings/currency'
-import { formatCurrency } from 'utils/FormatCurrency'
-import { useSearchableTokenList } from 'common/hooks/useSearchableTokenList'
-import AnalyticsService from 'services/analytics/AnalyticsService'
-import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
-import {
-  LayoutChangeEvent,
-  LayoutRectangle,
-  InteractionManager
-} from 'react-native'
-import Animated, {
-  useAnimatedStyle,
-  useSharedValue
-} from 'react-native-reanimated'
-import { ActionButtonTitle } from 'features/portfolio/assets/consts'
-import {
-  ActionButton,
-  ActionButtons
-} from 'features/portfolio/assets/components/ActionButtons'
-import { LinearGradientBottomWrapper } from 'common/components/LinearGradientBottomWrapper'
+import BlurredBarsContentLayout from 'common/components/BlurredBarsContentLayout'
 import {
   CollapsibleTabs,
   CollapsibleTabsRef,
   OnTabChange
 } from 'common/components/CollapsibleTabs'
-import BlurredBarsContentLayout from 'common/components/BlurredBarsContentLayout'
+import { LinearGradientBottomWrapper } from 'common/components/LinearGradientBottomWrapper'
 import { TokenHeader } from 'common/components/TokenHeader'
-import TransactionHistory from 'features/portfolio/assets/components/TransactionHistory'
-import TokenDetail from 'features/portfolio/assets/components/TokenDetail'
-import {
-  isTokenWithBalanceAVM,
-  isTokenWithBalancePVM
-} from '@avalabs/avalanche-module'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { UI, useIsUIDisabledForNetwork } from 'hooks/useIsUIDisabled'
 import { useCoreBrowser } from 'common/hooks/useCoreBrowser'
 import { useErc20ContractTokens } from 'common/hooks/useErc20ContractTokens'
-import { useNavigateToSwap } from 'features/swap/hooks/useNavigateToSwap'
-import { useAddStake } from 'features/stake/hooks/useAddStake'
-import useCChainNetwork from 'hooks/earn/useCChainNetwork'
-import { AVAX_TOKEN_ID } from 'features/swap/const'
-import { BridgeTransaction } from '@avalabs/core-bridge-sdk'
-import { BridgeTransfer } from '@avalabs/bridge-unified'
-import { getSourceChainId } from 'features/bridge/utils/bridgeUtils'
-import { selectIsDeveloperMode } from 'store/settings/advanced'
+import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
+import { useSearchableTokenList } from 'common/hooks/useSearchableTokenList'
+import { UNKNOWN_AMOUNT } from 'consts/amount'
+import { useLocalSearchParams, useRouter } from 'expo-router'
 import { useAssetBalances } from 'features/bridge/hooks/useAssetBalances'
+import { getSourceChainId } from 'features/bridge/utils/bridgeUtils'
+import {
+  ActionButton,
+  ActionButtons
+} from 'features/portfolio/assets/components/ActionButtons'
+import TokenDetail from 'features/portfolio/assets/components/TokenDetail'
+import TransactionHistory from 'features/portfolio/assets/components/TransactionHistory'
+import { ActionButtonTitle } from 'features/portfolio/assets/consts'
+import { useAddStake } from 'features/stake/hooks/useAddStake'
+import { AVAX_TOKEN_ID } from 'features/swap/const'
+import { useNavigateToSwap } from 'features/swap/hooks/useNavigateToSwap'
+import useCChainNetwork from 'hooks/earn/useCChainNetwork'
+import { UI, useIsUIDisabledForNetwork } from 'hooks/useIsUIDisabled'
+import React, { useCallback, useMemo, useRef, useState } from 'react'
+import {
+  InteractionManager,
+  LayoutChangeEvent,
+  LayoutRectangle
+} from 'react-native'
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue
+} from 'react-native-reanimated'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { useSelector } from 'react-redux'
+import AnalyticsService from 'services/analytics/AnalyticsService'
+import {
+  selectIsBalancesAccurateByNetwork,
+  selectIsLoadingBalances
+} from 'store/balance'
+import { selectIsDeveloperMode } from 'store/settings/advanced'
+import { selectSelectedCurrency } from 'store/settings/currency'
+import { formatCurrency } from 'utils/FormatCurrency'
 
 const TokenDetailScreen = (): React.JSX.Element => {
   const {

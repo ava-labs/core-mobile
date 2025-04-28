@@ -1,4 +1,4 @@
-import { Button, View } from '@avalabs/k2-alpine'
+import { Button, useKeyboardHeight, View } from '@avalabs/k2-alpine'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { ContactForm } from 'features/accountSettings/components/ContactForm'
 import { useNewContactAvatar } from 'features/accountSettings/store'
@@ -60,6 +60,7 @@ const AddContactScreen = (): React.JSX.Element => {
   return (
     <View sx={{ flex: 1, paddingHorizontal: 16, paddingBottom: 16 }}>
       <KeyboardAwareScrollView
+        keyboardDismissMode="interactive"
         keyboardShouldPersistTaps="handled"
         automaticallyAdjustKeyboardInsets
         showsVerticalScrollIndicator={false}

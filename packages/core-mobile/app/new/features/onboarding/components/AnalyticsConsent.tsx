@@ -1,15 +1,8 @@
-import React, { useEffect } from 'react'
-import BlurredBarsContentLayout from 'common/components/BlurredBarsContentLayout'
-import {
-  Button,
-  SafeAreaView,
-  ScrollView,
-  Text,
-  View
-} from '@avalabs/k2-alpine'
+import { Button, Text, View } from '@avalabs/k2-alpine'
+import { ScrollViewScreenTemplate } from 'common/components/ScrollViewScreenTemplate'
+import React, { useCallback, useEffect } from 'react'
 import { useDispatch } from 'react-redux'
 import { setViewOnce, ViewOnceKey } from 'store/viewOnce'
-import ScreenHeader from 'common/components/ScreenHeader'
 
 export const AnalyticsConsent = ({
   onAcceptAnalytics,
@@ -26,45 +19,42 @@ export const AnalyticsConsent = ({
     }
   }, [dispatch])
 
+  const renderFooter = useCallback(() => {
+    return (
+      <View
+        sx={{
+          gap: 20
+        }}>
+        <Button size="large" type="primary" onPress={onAcceptAnalytics}>
+          Unlock
+        </Button>
+        <Button size="large" type="tertiary" onPress={onRejectAnalytics}>
+          No thanks
+        </Button>
+      </View>
+    )
+  }, [onAcceptAnalytics, onRejectAnalytics])
+
   return (
-    <BlurredBarsContentLayout>
-      <SafeAreaView sx={{ flex: 1 }}>
-        <ScrollView sx={{ flex: 1 }} contentContainerSx={{ padding: 16 }}>
-          <ScreenHeader
-            title="Unlock airdrops"
-            description={
-              <View sx={{ gap: 20 }}>
-                <Text testID="anlaysticsContent" variant="subtitle1">
-                  As a Core user, you have the option to opt-in for{' '}
-                  <Text variant="body1" sx={{ fontWeight: '700' }}>
-                    airdrop rewards
-                  </Text>{' '}
-                  based on your activity and engagement. Core will collect
-                  anonymous interaction data to power this feature.
-                </Text>
-                <Text testID="anlaysticsContent" variant="subtitle1">
-                  Core is committed to protecting your privacy. We will never
-                  sell or share your data. If you wish, you can disable this at
-                  any time in the settings menu.
-                </Text>
-              </View>
-            }
-          />
-        </ScrollView>
-        <View
-          sx={{
-            padding: 16,
-            backgroundColor: '$surfacePrimary',
-            gap: 16
-          }}>
-          <Button size="large" type="primary" onPress={onAcceptAnalytics}>
-            Unlock
-          </Button>
-          <Button size="large" type="tertiary" onPress={onRejectAnalytics}>
-            No thanks
-          </Button>
-        </View>
-      </SafeAreaView>
-    </BlurredBarsContentLayout>
+    <ScrollViewScreenTemplate
+      title="Unlock airdrops"
+      renderFooter={renderFooter}
+      contentContainerStyle={{ padding: 16 }}>
+      <View sx={{ gap: 20 }}>
+        <Text testID="anlaysticsContent" variant="subtitle1">
+          As a Core user, you have the option to opt-in for{' '}
+          <Text variant="body1" sx={{ fontWeight: '700' }}>
+            airdrop rewards
+          </Text>{' '}
+          based on your activity and engagement. Core will collect anonymous
+          interaction data to power this feature.
+        </Text>
+        <Text testID="anlaysticsContent" variant="subtitle1">
+          Core is committed to protecting your privacy. We will never sell or
+          share your data. If you wish, you can disable this at any time in the
+          settings menu.
+        </Text>
+      </View>
+    </ScrollViewScreenTemplate>
   )
 }

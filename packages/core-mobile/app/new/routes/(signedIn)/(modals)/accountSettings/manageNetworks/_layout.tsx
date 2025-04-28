@@ -1,10 +1,14 @@
-import React from 'react'
 import { Stack } from 'common/components/Stack'
+import {
+  modalFirstScreenOptions,
+  modalStackNavigatorScreenOptions
+} from 'common/consts/screenOptions'
+import React from 'react'
 
 export default function ManageNetworksLayout(): JSX.Element {
   return (
-    <Stack screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="index" />
+    <Stack screenOptions={modalStackNavigatorScreenOptions}>
+      <Stack.Screen name="index" options={modalFirstScreenOptions} />
       <Stack.Screen name="addCustomNetwork" />
     </Stack>
   )

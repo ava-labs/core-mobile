@@ -9,13 +9,14 @@ import {
   useTheme,
   View
 } from '@avalabs/k2-alpine'
-import { ErrorState } from 'common/components/ErrorState'
+import { FlatListScreenTemplate } from 'common/components/FlatListScreenTemplate'
 import { NetworkLogoWithChain } from 'common/components/NetworkLogoWithChain'
-import { useFocusEffect, useNavigation, useRouter } from 'expo-router'
+import { getListItemEnteringAnimation } from 'common/utils/animations'
+import { useRouter } from 'expo-router'
 import { useNetworks } from 'hooks/networks/useNetworks'
 import React, { useCallback, useMemo, useState } from 'react'
-import { FlatList, ListRenderItem } from 'react-native'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { ListRenderItem } from 'react-native'
+import Animated, { LinearTransition } from 'react-native-reanimated'
 import { useDispatch } from 'react-redux'
 import {
   isAvalancheCChainId,
@@ -23,19 +24,15 @@ import {
 } from 'services/network/utils/isAvalancheNetwork'
 import { isEthereumChainId } from 'services/network/utils/isEthereumNetwork'
 import { alwaysFavoriteNetworks, toggleFavorite } from 'store/network'
-import { isPChain } from 'utils/network/isAvalancheNetwork'
-import { isXPChain } from 'utils/network/isAvalancheNetwork'
-import { isXChain } from 'utils/network/isAvalancheNetwork'
+import { isPChain, isXChain, isXPChain } from 'utils/network/isAvalancheNetwork'
 import { isBitcoinChainId } from 'utils/network/isBitcoinNetwork'
 
 export const ManageNetworksScreen = (): JSX.Element => {
   const { theme } = useTheme()
-  const insets = useSafeAreaInsets()
   const { networks, favoriteNetworks, customNetworks } = useNetworks()
   const dispatch = useDispatch()
   const [searchText, setSearchText] = useState('')
   const title = 'Networks'
-  const { getParent } = useNavigation()
   const { navigate } = useRouter()
 
   const filterBySearchText = useCallback(
@@ -53,9 +50,11 @@ export const ManageNetworksScreen = (): JSX.Element => {
     const custom = Object.values(customNetworks).filter(
       network => !enabled.includes(network)
     )
-    const disabled = Object.values(networks).filter(
-      network => !enabled.includes(network) && !custom.includes(network)
-    )
+    const disabled = Object.values(networks)
+      .filter(
+        network => !enabled.includes(network) && !custom.includes(network)
+      )
+      .sort(sortPrimaryNetworks)
 
     return [...enabled, ...custom, ...disabled]
   }, [customNetworks, favoriteNetworks, networks])
@@ -92,57 +91,63 @@ export const ManageNetworksScreen = (): JSX.Element => {
       isXChain(item.chainId)
 
     return (
-      <Pressable
-        style={{
-          flexDirection: 'row',
-          alignItems: 'center',
-          gap: 16,
-          height: 62,
-          paddingLeft: 16
-        }}
-        onPress={() => goToNetwork(item)}>
-        {isCustomNetwork ? (
+      <Pressable onPress={() => goToNetwork(item)}>
+        <Animated.View
+          // layout={LinearTransition.springify()}
+          // entering={getListItemEnteringAnimation(index + 5)}
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            gap: 16,
+            height: 62,
+            paddingLeft: 16
+          }}>
+          {isCustomNetwork ? (
+            <View
+              style={{
+                width: 36,
+                height: 36,
+                borderRadius: 18,
+                overflow: 'hidden',
+                backgroundColor: theme.colors.$surfaceSecondary,
+                borderWidth: 1,
+                borderColor: theme.colors.$borderPrimary,
+                justifyContent: 'center',
+                alignItems: 'center'
+              }}>
+              <Icons.Custom.Category
+                width={20}
+                height={20}
+                color={theme.colors.$textSecondary}
+              />
+            </View>
+          ) : (
+            <NetworkLogoWithChain
+              network={item}
+              networkSize={36}
+              showChainLogo={showChainLogo}
+              outerBorderColor={theme.colors.$surfacePrimary}
+            />
+          )}
           <View
             style={{
-              width: 36,
-              height: 36,
-              borderRadius: 18,
-              overflow: 'hidden',
-              backgroundColor: theme.colors.$surfaceSecondary,
-              borderWidth: 1,
+              flex: 1,
+              alignItems: 'center',
+              flexDirection: 'row',
+              borderBottomWidth: isLast ? 0 : 0.5,
+              height: '100%',
               borderColor: theme.colors.$borderPrimary,
-              justifyContent: 'center',
-              alignItems: 'center'
+              paddingRight: 16
             }}>
-            <Icons.Custom.Category
-              width={20}
-              height={20}
-              color={theme.colors.$textSecondary}
-            />
+            <Text style={{ flex: 1 }}>{item.chainName}</Text>
+            {!alwaysFavoriteNetworks.includes(item.chainId) && (
+              <Toggle
+                value={isEnabled}
+                onValueChange={() => onFavorite(item)}
+              />
+            )}
           </View>
-        ) : (
-          <NetworkLogoWithChain
-            network={item}
-            networkSize={36}
-            showChainLogo={showChainLogo}
-            outerBorderColor={theme.colors.$surfacePrimary}
-          />
-        )}
-        <View
-          style={{
-            flex: 1,
-            alignItems: 'center',
-            flexDirection: 'row',
-            borderBottomWidth: isLast ? 0 : 0.5,
-            height: '100%',
-            borderColor: theme.colors.$borderPrimary,
-            paddingRight: 16
-          }}>
-          <Text style={{ flex: 1 }}>{item.chainName}</Text>
-          {!alwaysFavoriteNetworks.includes(item.chainId) && (
-            <Toggle value={isEnabled} onValueChange={() => onFavorite(item)} />
-          )}
-        </View>
+        </Animated.View>
       </Pressable>
     )
   }
@@ -162,6 +167,17 @@ export const ManageNetworksScreen = (): JSX.Element => {
     },
     [navigate]
   )
+
+  const renderHeader = useCallback(() => {
+    return (
+      <SearchBar
+        onTextChanged={setSearchText}
+        searchText={searchText}
+        testID="network_manager__search_input"
+      />
+    )
+  }, [setSearchText, searchText])
+
   const renderHeaderRight = useCallback(() => {
     return (
       <TouchableOpacity
@@ -180,60 +196,19 @@ export const ManageNetworksScreen = (): JSX.Element => {
         />
       </TouchableOpacity>
     )
-  }, [theme.colors.$textPrimary, goToAddCustomNetwork])
-
-  useFocusEffect(
-    useCallback(() => {
-      getParent()?.setOptions({
-        headerRight: renderHeaderRight
-      })
-      return () => {
-        getParent()?.setOptions({
-          headerRight: undefined
-        })
-      }
-    }, [getParent, renderHeaderRight])
-  )
+  }, [goToAddCustomNetwork, theme.colors.$textPrimary])
 
   return (
-    <View
-      style={{
-        flex: 1
-      }}>
-      <View
-        style={{
-          paddingHorizontal: 16,
-          gap: 16
-        }}>
-        <Text variant="heading2">{title}</Text>
-        <SearchBar
-          onTextChanged={setSearchText}
-          searchText={searchText}
-          testID="network_manager__search_input"
-        />
-      </View>
-      <FlatList
-        data={filteredNetworks}
-        renderItem={renderNetwork}
-        keyExtractor={item => item.chainId.toString()}
-        contentContainerStyle={[
-          {
-            paddingBottom: insets.bottom
-          },
-          filteredNetworks.length === 0
-            ? {
-                justifyContent: 'center',
-                flex: 1
-              }
-            : {
-                paddingTop: 16
-              }
-        ]}
-        ListEmptyComponent={
-          <ErrorState title="No results" description="Try a different search" />
-        }
-      />
-    </View>
+    <FlatListScreenTemplate
+      title={title}
+      data={filteredNetworks}
+      hasParent
+      isModal
+      keyExtractor={item => item.chainId.toString()}
+      renderItem={renderNetwork}
+      renderHeaderRight={renderHeaderRight}
+      renderHeader={renderHeader}
+    />
   )
 }
 

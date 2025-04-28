@@ -13,6 +13,7 @@ import BlurredBarsContentLayout from 'common/components/BlurredBarsContentLayout
 import { KeyboardAvoidingView } from 'common/components/KeyboardAvoidingView'
 import BiometricsSDK from 'utils/BiometricsSDK'
 import { useStoredBiometrics } from 'common/hooks/useStoredBiometrics'
+import { SafeAreaView } from '@avalabs/k2-alpine'
 
 export default function CreatePin(): JSX.Element {
   const walletType = useSelector(selectWalletType)
@@ -62,18 +63,20 @@ export default function CreatePin(): JSX.Element {
   )
 
   return (
-    <BlurredBarsContentLayout sx={{ marginTop: 16 }}>
+    <SafeAreaView sx={{ flex: 1 }}>
       <KeyboardAvoidingView>
-        <Component
-          onEnteredValidPin={handleEnteredValidPin}
-          useBiometrics={useBiometrics}
-          setUseBiometrics={setUseBiometrics}
-          newPinTitle={`Secure your wallet\nwith a PIN`}
-          newPinDescription="For extra security, avoid choosing a PIN that contains repeating digits in a sequential order"
-          confirmPinTitle={`Confirm your\nPIN code`}
-          isBiometricAvailable={isBiometricAvailable}
-        />
+        <BlurredBarsContentLayout>
+          <Component
+            onEnteredValidPin={handleEnteredValidPin}
+            useBiometrics={useBiometrics}
+            setUseBiometrics={setUseBiometrics}
+            newPinTitle={`Secure your wallet\nwith a PIN`}
+            newPinDescription="For extra security, avoid choosing a PIN that contains repeating digits in a sequential order"
+            confirmPinTitle={`Confirm your\nPIN code`}
+            isBiometricAvailable={isBiometricAvailable}
+          />
+        </BlurredBarsContentLayout>
       </KeyboardAvoidingView>
-    </BlurredBarsContentLayout>
+    </SafeAreaView>
   )
 }

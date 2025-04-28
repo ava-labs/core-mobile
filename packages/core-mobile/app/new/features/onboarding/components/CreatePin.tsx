@@ -6,6 +6,7 @@ import {
   PinInputActions,
   SafeAreaView,
   ScrollView,
+  Text,
   Toggle,
   View
 } from '@avalabs/k2-alpine'
@@ -15,6 +16,7 @@ import ScreenHeader from 'common/components/ScreenHeader'
 import DeviceInfoService, {
   BiometricType
 } from 'services/deviceInfo/DeviceInfoService'
+import { ScrollViewScreenTemplate } from 'common/components/ScrollViewScreenTemplate'
 
 export const CreatePin = ({
   useBiometrics,
@@ -82,62 +84,54 @@ export const CreatePin = ({
 
   const renderBiometricToggle = useCallback((): React.JSX.Element => {
     return (
-      <View
-        sx={{
-          paddingHorizontal: 16,
-          paddingBottom: 16,
-          marginBottom: keyboardHeight,
-          backgroundColor: '$surfacePrimary'
-        }}>
-        <GroupList
-          data={[
-            {
-              title: `Unlock with ${biometricType}`,
-              accessory: (
-                <Toggle
-                  onValueChange={setUseBiometrics}
-                  value={useBiometrics}
-                  testID={
-                    useBiometrics
-                      ? 'toggle_biometrics_on'
-                      : 'toggle_biometrics_off'
-                  }
-                />
-              )
-            }
-          ]}
-        />
-      </View>
+      <GroupList
+        data={[
+          {
+            title: `Unlock with ${biometricType}`,
+            accessory: (
+              <Toggle
+                onValueChange={setUseBiometrics}
+                value={useBiometrics}
+                testID={
+                  useBiometrics
+                    ? 'toggle_biometrics_on'
+                    : 'toggle_biometrics_off'
+                }
+              />
+            )
+          }
+        ]}
+      />
     )
-  }, [useBiometrics, setUseBiometrics, biometricType, keyboardHeight])
+  }, [useBiometrics, setUseBiometrics, biometricType])
 
   return (
-    <SafeAreaView sx={{ flex: 1 }}>
-      <ScrollView
-        contentContainerSx={{
-          paddingHorizontal: 16,
-          flex: 1
+    <ScrollViewScreenTemplate
+      title={chosenPinEntered ? confirmPinTitle : newPinTitle}
+      contentContainerStyle={{ padding: 16, flex: 1 }}
+      renderFooter={
+        !chosenPinEntered && isBiometricAvailable
+          ? renderBiometricToggle
+          : undefined
+      }>
+      {chosenPinEntered ? undefined : (
+        <Text variant="subtitle1">{newPinDescription}</Text>
+      )}
+
+      <View
+        sx={{
+          flex: 1,
+          justifyContent: 'center'
         }}>
-        <ScreenHeader
-          title={chosenPinEntered ? confirmPinTitle : newPinTitle}
-          description={chosenPinEntered ? undefined : newPinDescription}
+        <PinInput
+          ref={ref}
+          length={6}
+          value={chosenPinEntered ? confirmedPin : chosenPin}
+          onChangePin={
+            chosenPinEntered ? onEnterConfirmedPin : onEnterChosenPin
+          }
         />
-        <View
-          sx={{
-            flex: 1,
-            justifyContent: 'center'
-          }}>
-          <PinInput
-            ref={ref}
-            length={6}
-            value={chosenPinEntered ? confirmedPin : chosenPin}
-            onChangePin={
-              chosenPinEntered ? onEnterConfirmedPin : onEnterChosenPin
-            }
-          />
-        </View>
-      </ScrollView>
-      {!chosenPinEntered && isBiometricAvailable && renderBiometricToggle()}
-    </SafeAreaView>
+      </View>
+    </ScrollViewScreenTemplate>
   )
 }

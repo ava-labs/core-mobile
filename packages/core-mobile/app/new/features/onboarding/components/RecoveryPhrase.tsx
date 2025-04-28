@@ -12,6 +12,7 @@ import {
 } from '@avalabs/k2-alpine'
 import MnemonicScreen from 'features/onboarding/components/MnemonicPhrase'
 import ScreenHeader from 'common/components/ScreenHeader'
+import { ScrollViewScreenTemplate } from 'common/components/ScrollViewScreenTemplate'
 
 export const RecoveryPhrase = ({
   onNext,
@@ -39,39 +40,36 @@ export const RecoveryPhrase = ({
     })
   }
 
+  const renderFooter = (): React.ReactNode => {
+    return (
+      <Button
+        size="large"
+        type="primary"
+        onPress={handleNext}
+        disabled={isLoading}>
+        Next
+      </Button>
+    )
+  }
+
   return (
-    <BlurredBarsContentLayout>
-      <SafeAreaView sx={{ flex: 1 }}>
-        <ScrollView sx={{ flex: 1 }} contentContainerSx={{ padding: 16 }}>
-          <ScreenHeader
-            title="Here is your wallet's recovery phrase"
-            description="This phrase is your access key to your wallet. Carefully write it
-              down and store it in a safe location"
-          />
-          <View sx={{ marginTop: 16, gap: 16 }}>
-            <View sx={{ flexDirection: 'row', gap: 10, alignItems: 'center' }}>
-              <Icons.Alert.ErrorOutline color={theme.colors.$textDanger} />
-              <Text variant="subtitle1" sx={{ color: '$textDanger' }}>
-                Losing this phrase will result in lost funds
-              </Text>
-            </View>
-            <MnemonicScreen isLoading={isLoading} mnemonic={mnemonic} />
-          </View>
-        </ScrollView>
-        <View
-          sx={{
-            padding: 16,
-            backgroundColor: '$surfacePrimary'
-          }}>
-          <Button
-            size="large"
-            type="primary"
-            onPress={handleNext}
-            disabled={isLoading}>
-            Next
-          </Button>
+    <ScrollViewScreenTemplate
+      renderFooter={renderFooter}
+      title="Here is your wallet's recovery phrase"
+      contentContainerStyle={{ padding: 16, flex: 1 }}>
+      <Text variant="body1">
+        This phrase is your access key to your wallet. Carefully write it down
+        and store it in a safe location
+      </Text>
+      <View sx={{ marginTop: 16, gap: 16 }}>
+        <View sx={{ flexDirection: 'row', gap: 10, alignItems: 'center' }}>
+          <Icons.Alert.ErrorOutline color={theme.colors.$textDanger} />
+          <Text variant="subtitle1" sx={{ color: '$textDanger' }}>
+            Losing this phrase will result in lost funds
+          </Text>
         </View>
-      </SafeAreaView>
-    </BlurredBarsContentLayout>
+        <MnemonicScreen isLoading={isLoading} mnemonic={mnemonic} />
+      </View>
+    </ScrollViewScreenTemplate>
   )
 }

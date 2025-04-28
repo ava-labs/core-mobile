@@ -1,15 +1,7 @@
-import {
-  Button,
-  SafeAreaView,
-  ScrollView,
-  showAlert,
-  View
-} from '@avalabs/k2-alpine'
+import { Button, showAlert, Text, View } from '@avalabs/k2-alpine'
 import * as bip39 from 'bip39'
-import BlurredBarsContentLayout from 'common/components/BlurredBarsContentLayout'
-import { KeyboardAvoidingView } from 'common/components/KeyboardAvoidingView'
-import ScreenHeader from 'common/components/ScreenHeader'
-import React, { useState } from 'react'
+import { ScrollViewScreenTemplate } from 'common/components/ScrollViewScreenTemplate'
+import React, { useCallback, useState } from 'react'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import WalletSDK from 'utils/WalletSDK'
 import RecoveryPhraseInput from './RecoveryPhraseInput'
@@ -22,7 +14,7 @@ export const EnterRecoveryPhrase = ({
   const [mnemonic, setMnemonic] = useState('')
   const testMnemonic = WalletSDK.testMnemonic()
 
-  function handleNext(): void {
+  const handleNext = useCallback(() => {
     const trimmed = mnemonic.toLowerCase().trim()
     const isValid = bip39.validateMnemonic(trimmed)
 
@@ -46,57 +38,53 @@ export const EnterRecoveryPhrase = ({
         ]
       })
     }
-  }
+  }, [mnemonic, onNext])
 
-  function handleEnterTestWallet(): void {
+  const handleEnterTestWallet = useCallback(() => {
     onNext(testMnemonic)
-  }
+  }, [onNext, testMnemonic])
+
+  const renderFooter = useCallback(() => {
+    return (
+      <View
+        sx={{
+          gap: 20
+        }}>
+        {__DEV__ && bip39.validateMnemonic(testMnemonic) && (
+          <Button size="large" type="tertiary" onPress={handleEnterTestWallet}>
+            Enter Test Wallet
+          </Button>
+        )}
+        <Button
+          size="large"
+          type="primary"
+          onPress={handleNext}
+          disabled={
+            !mnemonic ||
+            mnemonic.trim().split(/\s+/).length < MINIMUM_MNEMONIC_WORDS
+          }>
+          Import
+        </Button>
+      </View>
+    )
+  }, [handleEnterTestWallet, handleNext, mnemonic, testMnemonic])
 
   return (
-    <KeyboardAvoidingView>
-      <BlurredBarsContentLayout>
-        <SafeAreaView sx={{ flex: 1 }}>
-          <ScrollView
-            sx={{ flex: 1 }}
-            contentContainerSx={{ padding: 16 }}
-            keyboardShouldPersistTaps="always"
-            keyboardDismissMode="on-drag">
-            <ScreenHeader
-              title="Enter your recovery phrase"
-              description="This phrase should contain 12, 18, or 24 words. Use a space between each word."
-            />
-            <View sx={{ marginTop: 20 }}>
-              <RecoveryPhraseInput onChangeText={setMnemonic} />
-            </View>
-          </ScrollView>
-          <View
-            sx={{
-              padding: 16,
-              backgroundColor: '$surfacePrimary',
-              gap: 12
-            }}>
-            {__DEV__ && bip39.validateMnemonic(testMnemonic) && (
-              <Button
-                size="large"
-                type="tertiary"
-                onPress={handleEnterTestWallet}>
-                Enter Test Wallet
-              </Button>
-            )}
-            <Button
-              size="large"
-              type="primary"
-              onPress={handleNext}
-              disabled={
-                !mnemonic ||
-                mnemonic.trim().split(/\s+/).length < MINIMUM_MNEMONIC_WORDS
-              }>
-              Import
-            </Button>
-          </View>
-        </SafeAreaView>
-      </BlurredBarsContentLayout>
-    </KeyboardAvoidingView>
+    <ScrollViewScreenTemplate
+      title="Enter your recovery phrase"
+      contentContainerStyle={{ padding: 16 }}
+      disabled
+      renderFooter={renderFooter}>
+      <Text
+        variant="body2"
+        style={{
+          marginBottom: 20
+        }}>
+        This phrase should contain 12, 18, or 24 words. Use a space between each
+        word.
+      </Text>
+      <RecoveryPhraseInput onChangeText={setMnemonic} />
+    </ScrollViewScreenTemplate>
   )
 }
 

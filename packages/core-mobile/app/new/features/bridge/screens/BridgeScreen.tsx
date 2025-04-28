@@ -10,6 +10,7 @@ import {
   Separator,
   showAlert,
   Text,
+  useKeyboardHeight,
   useTheme,
   View
 } from '@avalabs/k2-alpine'
@@ -61,6 +62,8 @@ import { audioFeedback, Audios } from 'utils/AudioFeedback'
 import { getJsonRpcErrorMessage } from 'utils/getJsonRpcErrorMessage/getJsonRpcErrorMessage'
 import Logger from 'utils/Logger'
 import useBridge from '../hooks/useBridge'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { ScrollViewScreenTemplate } from 'common/components/ScrollViewScreenTemplate'
 
 export const BridgeScreen = (): JSX.Element => {
   const {
@@ -658,75 +661,72 @@ export const BridgeScreen = (): JSX.Element => {
 
   usePreventScreenRemoval(isPending)
 
+  const renderFooter = useCallback(() => {
+    return (
+      <View
+        sx={{
+          gap: 20
+        }}>
+        <Button
+          type="primary"
+          size="large"
+          onPress={handleTransfer}
+          disabled={transferDisabled}>
+          {isPending ? <ActivityIndicator /> : 'Next'}
+        </Button>
+        {bridgeType && <BridgeTypeFootnote bridgeType={bridgeType} />}
+      </View>
+    )
+  }, [handleTransfer, isPending, transferDisabled, bridgeType])
+
   return (
-    <KeyboardAvoidingView>
-      <SafeAreaView sx={{ flex: 1 }} edges={['bottom']}>
-        <KeyboardAwareScrollView
-          style={{ flex: 1 }}
-          contentContainerStyle={{ padding: 16, paddingTop: 0 }}
-          keyboardDismissMode="interactive"
-          keyboardShouldPersistTaps="handled"
-          onScroll={onScroll}>
-          <Animated.View
-            style={animatedHeaderStyle}
-            onLayout={handleHeaderLayout}>
-            <ScreenHeader title="Bridge" />
-          </Animated.View>
-          {shouldShowHallidayBanner && (
-            <View sx={{ marginTop: 16, marginBottom: 8 }}>
-              <HallidayBanner onPress={handlePressHallidayBanner} />
-            </View>
-          )}
-          <Animated.View style={{ marginTop: 16 }} layout={LinearTransition}>
-            {renderFromSection()}
-            {errorMessage && (
-              <Animated.View entering={FadeIn} exiting={FadeOut}>
-                <Text
-                  variant="caption"
-                  sx={{
-                    color: colors.$textDanger,
-                    alignSelf: 'center',
-                    marginVertical: 8
-                  }}>
-                  {errorMessage}
-                </Text>
-              </Animated.View>
-            )}
-            {isInputFocused ? (
-              <Animated.View style={{ height: 12 }} layout={LinearTransition} />
-            ) : (
-              <Animated.View layout={LinearTransition}>
-                <CircularButton
-                  style={{
-                    width: 40,
-                    height: 40,
-                    marginVertical: 8,
-                    alignSelf: 'center'
-                  }}
-                  disabled={isPending}
-                  onPress={handleToggleNetwork}>
-                  <Icons.Custom.SwapVertical />
-                </CircularButton>
-              </Animated.View>
-            )}
-            {renderToSection()}
-          </Animated.View>
-        </KeyboardAwareScrollView>
+    <ScrollViewScreenTemplate
+      title="Bridge"
+      renderFooter={renderFooter}
+      isModal
+      contentContainerStyle={{ padding: 16 }}>
+      {shouldShowHallidayBanner && (
         <View
-          sx={{
-            padding: 16,
-            gap: 20
+          style={{
+            marginBottom: 24
           }}>
-          <Button
-            type="primary"
-            size="large"
-            onPress={handleTransfer}
-            disabled={transferDisabled}>
-            {isPending ? <ActivityIndicator /> : 'Next'}
-          </Button>
-          {bridgeType && <BridgeTypeFootnote bridgeType={bridgeType} />}
+          <HallidayBanner onPress={handlePressHallidayBanner} />
         </View>
-      </SafeAreaView>
-    </KeyboardAvoidingView>
+      )}
+      <Animated.View layout={LinearTransition}>
+        {renderFromSection()}
+        {errorMessage && (
+          <Animated.View entering={FadeIn} exiting={FadeOut}>
+            <Text
+              variant="caption"
+              sx={{
+                color: colors.$textDanger,
+                alignSelf: 'center',
+                marginVertical: 8
+              }}>
+              {errorMessage}
+            </Text>
+          </Animated.View>
+        )}
+        {isInputFocused ? (
+          <Animated.View style={{ height: 12 }} layout={LinearTransition} />
+        ) : (
+          <Animated.View layout={LinearTransition}>
+            <CircularButton
+              style={{
+                width: 40,
+                height: 40,
+                marginVertical: 8,
+                alignSelf: 'center'
+              }}
+              disabled={isPending}
+              onPress={handleToggleNetwork}>
+              <Icons.Custom.SwapVertical />
+            </CircularButton>
+          </Animated.View>
+        )}
+        {renderToSection()}
+      </Animated.View>
+    </ScrollViewScreenTemplate>
   )
 }

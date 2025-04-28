@@ -10,20 +10,17 @@ import {
   Card,
   Icons,
   Pressable,
-  SafeAreaView,
   SendTokenUnitInputWidget,
   Text,
   useTheme,
   View
 } from '@avalabs/k2-alpine'
+import { ScrollViewScreenTemplate } from 'common/components/ScrollViewScreenTemplate'
 import { loadAvatar } from 'common/utils/loadAvatar'
 import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router'
 import { LogoWithNetwork } from 'features/portfolio/assets/components/LogoWithNetwork'
 import { useWatchlist } from 'hooks/watchlist/useWatchlist'
-import { useSimpleFadingHeader } from 'new/common/hooks/useSimpleFadingHeader'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
-import { KeyboardAwareScrollView } from 'react-native-keyboard-controller'
-import Animated from 'react-native-reanimated'
 import { useSelector } from 'react-redux'
 import { AddrBookItemType } from 'store/addressBook'
 import { selectSelectedCurrency } from 'store/settings/currency'
@@ -31,12 +28,6 @@ import { useSendContext } from '../context/sendContext'
 import { useSendSelectedToken } from '../store'
 
 export const SendToken = ({ onSend }: { onSend: () => void }): JSX.Element => {
-  const { onScroll, handleHeaderLayout, animatedHeaderStyle } =
-    useSimpleFadingHeader({
-      title: 'How much?',
-      shouldHeaderHaveGrabber: true
-    })
-
   const { to, recipientType } = useLocalSearchParams<{
     to: string // accountIndex | contactUID | address
     recipientType: AddrBookItemType | 'address'
@@ -147,144 +138,138 @@ export const SendToken = ({ onSend }: { onSend: () => void }): JSX.Element => {
     return loadAvatar(recipient?.avatar)
   }, [recipient?.avatar])
 
+  const renderFooter = useCallback(() => {
+    return (
+      <View
+        style={{
+          gap: 20
+        }}>
+        <Button
+          disabled={!canSubmit}
+          type="primary"
+          size="large"
+          onPress={onSend}>
+          {isSending ? <ActivityIndicator size="small" /> : 'Next'}
+        </Button>
+      </View>
+    )
+  }, [canSubmit, isSending, onSend])
+
   return (
-    <SafeAreaView
-      edges={['bottom']}
-      sx={{
-        flex: 1,
-        justifyContent: 'space-between',
-        marginHorizontal: 16
-      }}>
-      <KeyboardAwareScrollView onScroll={onScroll}>
-        <Animated.View
-          style={animatedHeaderStyle}
-          onLayout={handleHeaderLayout}>
-          <Text variant="heading2" style={{ marginBottom: 12 }}>
-            {`${'How much would\nyou like to send?'}`}
-          </Text>
-        </Animated.View>
-        {/* Send to */}
-        <Card
+    <ScrollViewScreenTemplate
+      title={'How much would\nyou like to send?'}
+      contentContainerStyle={{ padding: 16 }}
+      isModal
+      renderFooter={renderFooter}>
+      <Card
+        sx={{
+          flexDirection: 'row',
+          alignItems: 'center',
+          borderRadius: 12,
+          justifyContent: 'space-between'
+        }}>
+        <Text variant="body1" sx={{ fontSize: 16, lineHeight: 22 }}>
+          Send to
+        </Text>
+        <View
           sx={{
-            marginTop: 22,
             flexDirection: 'row',
             alignItems: 'center',
-            borderRadius: 12,
-            justifyContent: 'space-between'
+            gap: 8
           }}>
-          <Text variant="body1" sx={{ fontSize: 16, lineHeight: 22 }}>
-            Send to
-          </Text>
-          <View
-            sx={{
-              flexDirection: 'row',
-              alignItems: 'center',
-              gap: 8
-            }}>
-            <View sx={{ alignItems: 'flex-end' }}>
-              {recipient?.name && (
-                <Text
-                  variant="body1"
-                  sx={{
-                    fontSize: 16,
-                    lineHeight: 22,
-                    color: colors.$textPrimary
-                  }}>
-                  {recipient.name}
-                </Text>
-              )}
-              {addressToSend && (
-                <Text
-                  variant="mono"
-                  sx={{
-                    fontSize: 13,
-                    color: colors.$textSecondary
-                  }}>
-                  {truncateAddress(addressToSend)}
-                </Text>
-              )}
-            </View>
-            <Avatar
-              backgroundColor="transparent"
-              size={40}
-              source={recipientAvatar?.source}
-              hasLoading={false}
-            />
-          </View>
-        </Card>
-        {/* Select Token */}
-        <Pressable
-          onPress={handleSelectToken}
-          sx={{
-            marginTop: 12,
-            flexDirection: 'row',
-            alignItems: 'center',
-            borderRadius: 12,
-            justifyContent: 'space-between',
-            padding: 17,
-            backgroundColor: colors.$surfaceSecondary
-          }}>
-          <Text
-            variant="body1"
-            sx={{ fontSize: 16, lineHeight: 22, color: colors.$textPrimary }}>
-            Token
-          </Text>
-          <View sx={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-            {selectedToken && (
-              <>
-                <LogoWithNetwork
-                  token={selectedToken}
-                  outerBorderColor={colors.$surfaceSecondary}
-                />
-                <Text
-                  variant="body1"
-                  sx={{
-                    fontSize: 16,
-                    lineHeight: 22,
-                    color: colors.$textSecondary
-                  }}>
-                  {selectedToken.symbol}
-                </Text>
-              </>
+          <View sx={{ alignItems: 'flex-end' }}>
+            {recipient?.name && (
+              <Text
+                variant="body1"
+                sx={{
+                  fontSize: 16,
+                  lineHeight: 22,
+                  color: colors.$textPrimary
+                }}>
+                {recipient.name}
+              </Text>
             )}
-            <View sx={{ marginLeft: 8 }}>
-              <Icons.Navigation.ChevronRightV2 color={colors.$textPrimary} />
-            </View>
+            {addressToSend && (
+              <Text
+                variant="mono"
+                sx={{
+                  fontSize: 13,
+                  color: colors.$textSecondary
+                }}>
+                {truncateAddress(addressToSend)}
+              </Text>
+            )}
           </View>
-        </Pressable>
-
-        {/* Token amount input widget */}
-        {tokenBalance && (
-          <SendTokenUnitInputWidget
-            sx={{ marginTop: 12 }}
-            amount={amount}
-            token={{
-              maxDecimals:
-                selectedToken && 'decimals' in selectedToken
-                  ? selectedToken.decimals
-                  : 0,
-              symbol: selectedToken?.symbol ?? ''
-            }}
-            balance={tokenBalance}
-            formatInCurrency={amt =>
-              formatInCurrency(amt, selectedToken?.symbol ?? '')
-            }
-            onChange={setAmount}
-            validateAmount={validateSendAmount}
-            disabled={isSending || selectedToken === undefined}
+          <Avatar
+            backgroundColor="transparent"
+            size={40}
+            source={recipientAvatar?.source}
+            hasLoading={false}
           />
-        )}
-      </KeyboardAwareScrollView>
+        </View>
+      </Card>
+      {/* Select Token */}
+      <Pressable
+        onPress={handleSelectToken}
+        sx={{
+          marginTop: 12,
+          flexDirection: 'row',
+          alignItems: 'center',
+          borderRadius: 12,
+          justifyContent: 'space-between',
+          padding: 17,
+          backgroundColor: colors.$surfaceSecondary
+        }}>
+        <Text
+          variant="body1"
+          sx={{ fontSize: 16, lineHeight: 22, color: colors.$textPrimary }}>
+          Token
+        </Text>
+        <View sx={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+          {selectedToken && (
+            <>
+              <LogoWithNetwork
+                token={selectedToken}
+                outerBorderColor={colors.$surfaceSecondary}
+              />
+              <Text
+                variant="body1"
+                sx={{
+                  fontSize: 16,
+                  lineHeight: 22,
+                  color: colors.$textSecondary
+                }}>
+                {selectedToken.symbol}
+              </Text>
+            </>
+          )}
+          <View sx={{ marginLeft: 8 }}>
+            <Icons.Navigation.ChevronRightV2 color={colors.$textPrimary} />
+          </View>
+        </View>
+      </Pressable>
 
-      {/* Send */}
-      <Button
-        disabled={!canSubmit}
-        style={{ marginBottom: 16 }}
-        type="primary"
-        size="large"
-        onPress={onSend}>
-        {isSending ? <ActivityIndicator size="small" /> : 'Next'}
-      </Button>
-    </SafeAreaView>
+      {/* Token amount input widget */}
+      {tokenBalance && (
+        <SendTokenUnitInputWidget
+          sx={{ marginTop: 12 }}
+          amount={amount}
+          token={{
+            maxDecimals:
+              selectedToken && 'decimals' in selectedToken
+                ? selectedToken.decimals
+                : 0,
+            symbol: selectedToken?.symbol ?? ''
+          }}
+          balance={tokenBalance}
+          formatInCurrency={amt =>
+            formatInCurrency(amt, selectedToken?.symbol ?? '')
+          }
+          onChange={setAmount}
+          validateAmount={validateSendAmount}
+          disabled={isSending || selectedToken === undefined}
+        />
+      )}
+    </ScrollViewScreenTemplate>
   )
 }

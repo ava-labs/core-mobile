@@ -5,15 +5,14 @@ import {
   AvatarType,
   Button,
   isScreenSmall,
-  ScrollView,
+  Text,
   useTheme,
   View
 } from '@avalabs/k2-alpine'
-import ScreenHeader from 'common/components/ScreenHeader'
 import { loadAvatar } from 'common/utils/loadAvatar'
 import React, { memo, useMemo } from 'react'
 import Animated, { ZoomIn } from 'react-native-reanimated'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { ScrollViewScreenTemplate } from './ScrollViewScreenTemplate'
 
 export const SelectAvatar = memo(
   ({
@@ -36,7 +35,6 @@ export const SelectAvatar = memo(
     const {
       theme: { colors }
     } = useTheme()
-    const { bottom } = useSafeAreaInsets()
 
     const onSelect = (id: string): void => {
       const avatar = avatars.find(a => a.id === id)
@@ -49,50 +47,44 @@ export const SelectAvatar = memo(
       return loadAvatar(selectedAvatar)
     }, [selectedAvatar])
 
-    return (
-      <View sx={{ flex: 1 }}>
-        <ScrollView>
-          <View
-            style={{
-              padding: 16
-            }}>
-            <ScreenHeader title={title} description={description} />
-          </View>
-          <Animated.View entering={ZoomIn.delay(400)}>
-            <View
-              sx={{
-                alignItems: 'center',
-                justifyContent: 'center',
-                paddingVertical: AVATAR_BLURAREA_INSET
-              }}>
-              {avatar?.source && (
-                <Avatar
-                  backgroundColor={colors.$surfacePrimary}
-                  source={avatar?.source}
-                  size={isScreenSmall ? 100 : 'large'}
-                  testID="selected_avatar"
-                />
-              )}
-            </View>
-          </Animated.View>
+    const renderFooter = (): React.ReactNode => {
+      return (
+        <Button size="large" type="primary" onPress={onSubmit}>
+          {buttonText}
+        </Button>
+      )
+    }
 
-          <AvatarSelector
-            selectedId={selectedAvatar?.id}
-            avatars={avatars}
-            onSelect={onSelect}
-          />
-        </ScrollView>
-        <View
-          sx={{
-            padding: 16,
-            paddingBottom: bottom + 16,
-            backgroundColor: '$surfacePrimary'
-          }}>
-          <Button size="large" type="primary" onPress={onSubmit}>
-            {buttonText}
-          </Button>
-        </View>
-      </View>
+    return (
+      <ScrollViewScreenTemplate
+        title={title}
+        renderFooter={renderFooter}
+        contentContainerStyle={{ padding: 16, flex: 1 }}>
+        <Text variant="body2">{description}</Text>
+        <Animated.View entering={ZoomIn.delay(400)}>
+          <View
+            sx={{
+              alignItems: 'center',
+              justifyContent: 'center',
+              paddingVertical: AVATAR_BLURAREA_INSET
+            }}>
+            {avatar?.source && (
+              <Avatar
+                backgroundColor={colors.$surfacePrimary}
+                source={avatar?.source}
+                size={isScreenSmall ? 100 : 'large'}
+                testID="selected_avatar"
+              />
+            )}
+          </View>
+        </Animated.View>
+
+        <AvatarSelector
+          selectedId={selectedAvatar?.id}
+          avatars={avatars}
+          onSelect={onSelect}
+        />
+      </ScrollViewScreenTemplate>
     )
   }
 )

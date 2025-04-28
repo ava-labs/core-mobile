@@ -1,8 +1,7 @@
+import { truncateAddress } from '@avalabs/core-utils-sdk'
 import {
   Avatar,
-  FlatList,
   Icons,
-  NavigationTitleHeader,
   SearchBar,
   Separator,
   SPRING_LINEAR_TRANSITION,
@@ -11,18 +10,13 @@ import {
   useTheme,
   View
 } from '@avalabs/k2-alpine'
-import React, { useCallback, useState, useMemo } from 'react'
-import { LayoutRectangle, LayoutChangeEvent } from 'react-native'
-import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
-import Animated, {
-  useAnimatedStyle,
-  useSharedValue
-} from 'react-native-reanimated'
 import { getListItemEnteringAnimation } from 'common/utils/animations'
-import { truncateAddress } from '@avalabs/core-utils-sdk'
-import { Contact } from 'store/addressBook'
-import { getAddressFromContact } from 'features/accountSettings/utils/getAddressFromContact'
 import { loadAvatar } from 'common/utils/loadAvatar'
+import { getAddressFromContact } from 'features/accountSettings/utils/getAddressFromContact'
+import React, { useCallback, useMemo, useState } from 'react'
+import Animated from 'react-native-reanimated'
+import { Contact } from 'store/addressBook'
+import { FlatListScreenTemplate } from './FlatListScreenTemplate'
 
 export const ContactList = ({
   contacts,
@@ -41,27 +35,6 @@ export const ContactList = ({
     theme: { colors }
   } = useTheme()
   const [searchText, setSearchText] = useState('')
-  const [headerLayout, setHeaderLayout] = useState<
-    LayoutRectangle | undefined
-  >()
-  const headerOpacity = useSharedValue(1)
-
-  const Header = (): JSX.Element =>
-    useMemo(() => <NavigationTitleHeader title={title} />, [])
-
-  const { onScroll, targetHiddenProgress } = useFadingHeaderNavigation({
-    header: <Header />,
-    targetLayout: headerLayout,
-    shouldHeaderHaveGrabber: true
-  })
-
-  const animatedHeaderStyle = useAnimatedStyle(() => ({
-    opacity: 1 - targetHiddenProgress.value
-  }))
-
-  const handleHeaderLayout = (event: LayoutChangeEvent): void => {
-    setHeaderLayout(event.nativeEvent.layout)
-  }
 
   const searchResults = useMemo(() => {
     if (searchText === '' || contacts.length === 0) {
@@ -165,32 +138,29 @@ export const ContactList = ({
     [colors.$textSecondary, onPress, searchResults.length]
   )
 
+  const renderHeader = useCallback(() => {
+    return (
+      <View sx={{ gap: 16 }}>
+        <SearchBar
+          onTextChanged={setSearchText}
+          searchText={searchText}
+          placeholder="Search addresses"
+          useDebounce={true}
+        />
+        {ListHeader}
+      </View>
+    )
+  }, [ListHeader, searchText, setSearchText])
+
   return (
-    <FlatList
-      showsVerticalScrollIndicator={false}
-      scrollEventThrottle={16}
-      onScroll={onScroll}
-      data={searchResults}
-      contentContainerStyle={{ paddingBottom: 60, flexGrow: 1 }}
+    <FlatListScreenTemplate
+      title={title}
       keyExtractor={item => (item as Contact).id}
-      ListEmptyComponent={ListEmptyComponent}
-      ListHeaderComponent={
-        <View sx={{ gap: 16, marginHorizontal: 16 }}>
-          <Animated.View
-            style={[{ opacity: headerOpacity }, animatedHeaderStyle]}
-            onLayout={handleHeaderLayout}>
-            <Text variant="heading2">{title}</Text>
-          </Animated.View>
-          <SearchBar
-            onTextChanged={setSearchText}
-            searchText={searchText}
-            placeholder="Search addresses"
-            useDebounce={true}
-          />
-          {ListHeader}
-        </View>
-      }
+      data={searchResults}
+      hasParent
       renderItem={item => renderItem(item.item as Contact, item.index)}
+      renderHeader={renderHeader}
+      ListEmptyComponent={ListEmptyComponent}
     />
   )
 }

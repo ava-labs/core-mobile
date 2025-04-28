@@ -2,7 +2,7 @@ import { SearchBar, Text, Toggle, View } from '@avalabs/k2-alpine'
 import { ErrorState } from 'common/components/ErrorState'
 import { LoadingState } from 'common/components/LoadingState'
 import { portfolioTabContentHeight } from 'features/portfolio/utils'
-import React, { ReactNode, useMemo, useState } from 'react'
+import React, { ReactNode, useCallback, useMemo, useState } from 'react'
 import { ListRenderItem } from 'react-native'
 import { FlatList } from 'react-native-gesture-handler'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
@@ -15,6 +15,7 @@ import {
 import { useCollectiblesContext } from '../CollectiblesContext'
 import { HORIZONTAL_MARGIN } from '../consts'
 import { CollectibleManagementItem } from './CollectibleManagementItem'
+import { FlatListScreenTemplate } from 'common/components/FlatListScreenTemplate'
 
 export const CollectibleManagementScreen = (): ReactNode => {
   const insets = useSafeAreaInsets()
@@ -46,7 +47,7 @@ export const CollectibleManagementScreen = (): ReactNode => {
     return <CollectibleManagementItem index={index} collectible={item} />
   }
 
-  const renderEmpty = useMemo(() => {
+  const renderEmpty = useCallback(() => {
     if (isLoading || isRefetching) return <LoadingState />
     return (
       <ErrorState
@@ -57,42 +58,29 @@ export const CollectibleManagementScreen = (): ReactNode => {
     )
   }, [isLoading, isRefetching])
 
-  return (
-    <View
-      sx={{
-        flex: 1
-      }}>
+  const renderHeader = useCallback(() => {
+    return (
       <View
-        sx={{
-          flexDirection: 'row',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          paddingHorizontal: HORIZONTAL_MARGIN,
-          paddingBottom: HORIZONTAL_MARGIN
+        style={{
+          gap: 16
         }}>
-        <Text variant="heading2">Manage list</Text>
+        <SearchBar onTextChanged={handleSearch} searchText={searchText} />
+        <CollectibleManagementOptions />
       </View>
+    )
+  }, [handleSearch, searchText])
 
-      <SearchBar onTextChanged={handleSearch} searchText={searchText} />
-
-      <FlatList
-        keyExtractor={item => `collectibles-manage-${item.localId}`}
-        data={filteredCollectibles}
-        renderItem={renderItem}
-        ListEmptyComponent={renderEmpty}
-        onRefresh={refetch}
-        refreshing={isRefetching}
-        keyboardDismissMode="interactive"
-        showsVerticalScrollIndicator={false}
-        keyboardShouldPersistTaps="handled"
-        nestedScrollEnabled
-        ListHeaderComponent={<CollectibleManagementOptions />}
-        contentContainerStyle={{
-          paddingBottom: insets.bottom,
-          paddingTop: HORIZONTAL_MARGIN / 2
-        }}
-      />
-    </View>
+  return (
+    <FlatListScreenTemplate
+      title="Manage list"
+      keyExtractor={item => `collectibles-manage-${item.localId}`}
+      data={filteredCollectibles}
+      renderItem={renderItem}
+      renderHeader={renderHeader}
+      onRefresh={refetch}
+      refreshing={isRefetching}
+      ListEmptyComponent={renderEmpty}
+    />
   )
 }
 

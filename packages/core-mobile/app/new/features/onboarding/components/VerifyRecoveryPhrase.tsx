@@ -5,6 +5,7 @@ import {
   SafeAreaView,
   ScrollView,
   showAlert,
+  Text,
   View
 } from '@avalabs/k2-alpine'
 import ScreenHeader from 'common/components/ScreenHeader'
@@ -16,6 +17,7 @@ import Animated, {
   withTiming
 } from 'react-native-reanimated'
 import { useCheckMnemonic } from 'features/onboarding/hooks/useCheckMnemonic'
+import { ScrollViewScreenTemplate } from 'common/components/ScrollViewScreenTemplate'
 
 export const VerifyRecoveryPhrase = ({
   mnemonic,
@@ -118,55 +120,53 @@ export const VerifyRecoveryPhrase = ({
     setSelectedWord3Index(undefined)
   }, [mnemonics])
 
+  const renderFooter = (): React.ReactNode => {
+    return (
+      <Button
+        size="large"
+        type="primary"
+        disabled={canVerify === false}
+        onPress={handleNext}>
+        Next
+      </Button>
+    )
+  }
+
   return (
-    <BlurredBarsContentLayout>
-      <SafeAreaView sx={{ flex: 1 }}>
-        <ScrollView sx={{ flex: 1 }} contentContainerSx={{ padding: 16 }}>
-          <ScreenHeader
-            title="Verify your recovery phrase"
-            description="Select the words below to verify your recover phrase"
-          />
-          <Animated.View style={[{ gap: 36, marginTop: 66 }, animatedStyle]}>
-            <WordSelection
-              title={title1}
-              testID="firstWord"
-              wordIndex={firstWordSelection.index}
-              wordOptions={firstWordSelection.wordOptions}
-              selectedWordIndex={selectedWord1Index}
-              setSelectedWordIndex={setSelectedWord1Index}
-            />
-            <WordSelection
-              title={title2}
-              testID="secondWord"
-              wordIndex={secondWordSelection.index}
-              wordOptions={secondWordSelection.wordOptions}
-              selectedWordIndex={selectedWord2Index}
-              setSelectedWordIndex={setSelectedWord2Index}
-            />
-            <WordSelection
-              title={title3}
-              testID="thirdWord"
-              wordIndex={thirdWordSelection.index}
-              wordOptions={thirdWordSelection.wordOptions}
-              selectedWordIndex={selectedWord3Index}
-              setSelectedWordIndex={setSelectedWord3Index}
-            />
-          </Animated.View>
-        </ScrollView>
-        <View
-          sx={{
-            padding: 16,
-            backgroundColor: '$surfacePrimary'
-          }}>
-          <Button
-            size="large"
-            type="primary"
-            disabled={canVerify === false}
-            onPress={handleNext}>
-            Next
-          </Button>
-        </View>
-      </SafeAreaView>
-    </BlurredBarsContentLayout>
+    <ScrollViewScreenTemplate
+      title="Verify your recovery phrase"
+      renderFooter={renderFooter}
+      contentContainerStyle={{ padding: 16, flex: 1 }}>
+      <Text variant="body1">
+        {`Select the words below to verify your\nrecover phrase`}
+      </Text>
+      <Animated.View
+        style={[{ gap: 36, flex: 1, justifyContent: 'center' }, animatedStyle]}>
+        <WordSelection
+          title={title1}
+          testID="firstWord"
+          wordIndex={firstWordSelection.index}
+          wordOptions={firstWordSelection.wordOptions}
+          selectedWordIndex={selectedWord1Index}
+          setSelectedWordIndex={setSelectedWord1Index}
+        />
+        <WordSelection
+          title={title2}
+          testID="secondWord"
+          wordIndex={secondWordSelection.index}
+          wordOptions={secondWordSelection.wordOptions}
+          selectedWordIndex={selectedWord2Index}
+          setSelectedWordIndex={setSelectedWord2Index}
+        />
+        <WordSelection
+          title={title3}
+          testID="thirdWord"
+          wordIndex={thirdWordSelection.index}
+          wordOptions={thirdWordSelection.wordOptions}
+          selectedWordIndex={selectedWord3Index}
+          setSelectedWordIndex={setSelectedWord3Index}
+        />
+      </Animated.View>
+    </ScrollViewScreenTemplate>
   )
 }

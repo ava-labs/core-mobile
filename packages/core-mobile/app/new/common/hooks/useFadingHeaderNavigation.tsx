@@ -1,18 +1,19 @@
-import BlurredBackgroundView from 'common/components/BlurredBackgroundView'
-import React, { useEffect, useRef, useState } from 'react'
 import { View } from '@avalabs/k2-alpine'
+import BlurredBackgroundView from 'common/components/BlurredBackgroundView'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
 import {
   LayoutChangeEvent,
   LayoutRectangle,
   NativeScrollEvent,
   NativeSyntheticEvent,
-  Platform
+  StyleProp,
+  ViewStyle
 } from 'react-native'
 import Animated, {
-  useSharedValue,
-  useAnimatedStyle,
   SharedValue,
-  clamp
+  clamp,
+  useAnimatedStyle,
+  useSharedValue
 } from 'react-native-reanimated'
 /**
  * Temporarily import "useNavigation" from @react-navigation/native.
@@ -27,21 +28,27 @@ export const useFadingHeaderNavigation = ({
   targetLayout,
   shouldHeaderHaveGrabber = false,
   hasSeparator = true,
-  shouldDelayBlurOniOS = false
+  shouldDelayBlurOniOS = false,
+  hasParent = false,
+  headerStyle
 }: {
   header?: JSX.Element
   targetLayout?: LayoutRectangle
   shouldHeaderHaveGrabber?: boolean
   hasSeparator?: boolean
   shouldDelayBlurOniOS?: boolean
+  hasParent?: boolean
+  headerStyle?: StyleProp<ViewStyle>
 }): {
   onScroll: (
     event: NativeSyntheticEvent<NativeScrollEvent> | NativeScrollEvent | number
   ) => void
   scrollEventThrottle: number
+  scrollY: SharedValue<number>
   targetHiddenProgress: SharedValue<number>
 } => {
   const navigation = useNavigation()
+  const scrollY = useSharedValue(0)
   const [navigationHeaderLayout, setNavigationHeaderLayout] = useState<
     LayoutRectangle | undefined
   >(undefined)
@@ -84,6 +91,7 @@ export const useFadingHeaderNavigation = ({
         0,
         1
       )
+      scrollY.value = contentOffsetY
     }
   }
 
@@ -103,8 +111,9 @@ export const useFadingHeaderNavigation = ({
     }
   })
 
-  useEffect(() => {
-    navigation.setOptions({
+  const navigationOptions = useMemo(() => {
+    return {
+      headerStyle,
       headerBackground: () => (
         <BlurredBackgroundView
           shouldDelayBlurOniOS={shouldDelayBlurOniOS}
@@ -122,9 +131,10 @@ export const useFadingHeaderNavigation = ({
       title: header && (
         <View
           sx={{
-            paddingTop: shouldHeaderHaveGrabber ? 23 : 0,
+            paddingTop: shouldHeaderHaveGrabber ? 24 : 0,
             transform: [{ translateY: HEADER_BOTTOM_INSET }],
-            marginBottom: HEADER_BOTTOM_INSET
+            marginBottom: shouldHeaderHaveGrabber ? HEADER_BOTTOM_INSET : 0,
+            height: '100%'
           }}>
           <View
             sx={{
@@ -137,22 +147,31 @@ export const useFadingHeaderNavigation = ({
           </View>
         </View>
       )
-    })
+    }
   }, [
-    navigation,
-    header,
-    targetHiddenProgress,
     animatedHeaderStyle,
-    shouldHeaderHaveGrabber,
     hasSeparator,
-    shouldDelayBlurOniOS
+    header,
+    headerStyle,
+    shouldDelayBlurOniOS,
+    shouldHeaderHaveGrabber,
+    targetHiddenProgress
   ])
+
+  useEffect(() => {
+    if (hasParent) {
+      navigation.getParent()?.setOptions(navigationOptions)
+    } else {
+      navigation.setOptions(navigationOptions)
+    }
+  }, [hasParent, navigation, navigationOptions])
 
   return {
     onScroll: handleScroll,
     scrollEventThrottle: 16,
-    targetHiddenProgress
+    targetHiddenProgress,
+    scrollY
   }
 }
 
-const HEADER_BOTTOM_INSET = Platform.OS === 'ios' ? -4 : 0
+const HEADER_BOTTOM_INSET = -6

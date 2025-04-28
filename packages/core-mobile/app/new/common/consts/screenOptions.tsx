@@ -19,7 +19,7 @@ const BAR_BUTTONS_BOTTOM_MARGIN = Platform.OS === 'ios' ? 8 : 0
 
 const MODAL_TOP_MARGIN = Platform.OS === 'ios' ? 75 : 35
 const MODAL_BORDER_RADIUS = 40
-const MODAL_HEADER_HEIGHT = 72
+const MODAL_HEADER_HEIGHT = 100
 
 const commonNavigatorScreenOptions: StackNavigationOptions = {
   title: '',
@@ -41,6 +41,7 @@ export const modalStackNavigatorScreenOptions: StackNavigationOptions = {
   headerStyle: {
     height: MODAL_HEADER_HEIGHT
   },
+  headerTransparent: true,
   // on iOS,we need to set headerStatusBarHeight to 0 to
   // prevent the header from jumping when navigating
   ...(Platform.OS === 'ios' && { headerStatusBarHeight: 0 })

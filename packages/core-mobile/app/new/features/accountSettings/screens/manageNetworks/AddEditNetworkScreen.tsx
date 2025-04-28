@@ -3,6 +3,7 @@ import {
   AlertWithTextInputs,
   Button,
   Icons,
+  SafeAreaView,
   showAlert,
   Text,
   useTheme,
@@ -23,12 +24,9 @@ import {
 import { useNetworks } from 'hooks/networks/useNetworks'
 import React, { useCallback, useMemo, useRef } from 'react'
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useDispatch } from 'react-redux'
 import { removeCustomNetwork } from 'store/network'
-import { isXPChain } from 'utils/network/isAvalancheNetwork'
-import { isPChain } from 'utils/network/isAvalancheNetwork'
-import { isXChain } from 'utils/network/isAvalancheNetwork'
+import { isPChain, isXChain, isXPChain } from 'utils/network/isAvalancheNetwork'
 
 enum Mode {
   ADD = 'add',
@@ -39,7 +37,6 @@ export const AddEditNetworkScreen = (): JSX.Element => {
   const { canGoBack, back } = useRouter()
   const { theme } = useTheme()
   const dispatch = useDispatch()
-  const insets = useSafeAreaInsets()
   const { networks, customNetworks } = useNetworks()
   const params = useLocalSearchParams<{
     chainId: string
@@ -328,13 +325,13 @@ export const AddEditNetworkScreen = (): JSX.Element => {
   }, [formState.chainName, handleShowAlertWithTextInput, isCustomNetwork, mode])
 
   return (
-    <View sx={{ flex: 1, paddingHorizontal: 16, paddingBottom: 16 }}>
+    <SafeAreaView sx={{ flex: 1, paddingHorizontal: 16 }}>
       <KeyboardAwareScrollView
         keyboardShouldPersistTaps="handled"
+        keyboardDismissMode="interactive"
         automaticallyAdjustKeyboardInsets
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{
-          justifyContent: 'space-between',
           gap: 40
         }}>
         <View sx={{ alignItems: 'center', gap: 24 }}>
@@ -380,7 +377,7 @@ export const AddEditNetworkScreen = (): JSX.Element => {
           sx={{
             gap: 16,
             backgroundColor: '$surfacePrimary',
-            marginBottom: insets.bottom
+            paddingBottom: 16
           }}>
           <Button
             type="primary"
@@ -413,6 +410,6 @@ export const AddEditNetworkScreen = (): JSX.Element => {
       <View>
         <AlertWithTextInputs ref={alert} />
       </View>
-    </View>
+    </SafeAreaView>
   )
 }
