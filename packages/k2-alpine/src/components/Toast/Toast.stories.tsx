@@ -46,7 +46,6 @@ export const All = (): JSX.Element => {
           message="Transaction failed with no action"
           isActionable={false}
         />
-
         <Text variant="heading6">Notification Alert</Text>
         {notificationAlertTypes.map((type, index) => (
           <NotificationAlert
