@@ -24,7 +24,7 @@ export const useBridgeTransfer = ({
 }): (() => Promise<string | undefined>) => {
   const activeAccount = useSelector(selectActiveAccount)
   const dispatch = useDispatch()
-  const { data: networkFeeRate } = useNetworkFee()
+  const { data: networkFeeRate } = useNetworkFee(sourceNetwork)
 
   return useCallback(async () => {
     if (!bridgeAsset || !bridgeType) {
