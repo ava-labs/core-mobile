@@ -203,12 +203,14 @@ export const SendToken = ({ onSend }: { onSend: () => void }): JSX.Element => {
                 </Text>
               )}
             </View>
-            <Avatar
-              backgroundColor="transparent"
-              size={40}
-              source={recipientAvatar?.source}
-              hasLoading={false}
-            />
+            {recipientAvatar?.source !== undefined && (
+              <Avatar
+                backgroundColor="transparent"
+                size={40}
+                source={recipientAvatar?.source}
+                hasLoading={false}
+              />
+            )}
           </View>
         </Card>
         {/* Select Token */}

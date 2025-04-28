@@ -18,7 +18,7 @@ import {
 import { useTheme } from '../../hooks'
 import { Text, View } from '../Primitives'
 import { alpha } from '../../utils'
-import { getMaxDecimals, normalizeValue } from '../../utils/tokenUnitInput'
+import { normalizeValue } from '../../utils/tokenUnitInput'
 
 export type TokenUnitInputHandle = {
   setValue: (value: string) => void
@@ -54,15 +54,14 @@ export const TokenUnitInput = forwardRef<
   }>()
 
   const inputAmount = useMemo(() => {
-    return new TokenUnit(
-      !value ? 0 : Number(value) * 10 ** token.maxDecimals,
+    const sanitizedValue = value?.replace(/,/g, '')
+    const tokenUnitValue = new TokenUnit(
+      !sanitizedValue ? 0n : sanitizedValue,
       token.maxDecimals,
       token.symbol
     )
+    return tokenUnitValue.mul(10 ** token.maxDecimals)
   }, [value, token])
-  const maxDecimalDigits = useMemo(() => {
-    return getMaxDecimals(inputAmount) ?? inputAmount.getMaxDecimals()
-  }, [inputAmount])
 
   const handleValueChanged = useCallback(
     (rawValue: string): void => {
@@ -83,36 +82,32 @@ export const TokenUnitInput = forwardRef<
       // does not exceed the allowed maximum number of decimal digits.
       const isInputValid =
         frontValue !== undefined &&
-        !isNaN(Number(changedValue)) &&
-        (!endValue ||
-          endValue.length <= Math.min(maxDecimalDigits, token.maxDecimals))
+        !isNaN(Number(changedValue.replaceAll(',', ''))) &&
+        (!endValue || endValue.length <= token.maxDecimals)
 
       if (isInputValid) {
         const sanitizedFrontValue = frontValue.replace(/^0+(?!$)/, '')
 
         //setting maxLength to TextInput prevents flickering, see https://reactnative.dev/docs/textinput#value
         setMaxLength(
-          sanitizedFrontValue.length +
-            '.'.length +
-            Math.min(maxDecimalDigits, token.maxDecimals)
+          sanitizedFrontValue.length + '.'.length + token.maxDecimals
         )
 
         const normalizedValue = normalizeValue(changedValue)
+
         setValue(normalizedValue)
         onChange?.(
           new TokenUnit(
-            !normalizedValue
-              ? 0
-              : Number(normalizedValue) * 10 ** token.maxDecimals,
+            !normalizedValue ? 0 : Number(normalizedValue.replace(/,/g, '')),
             token.maxDecimals,
             token.symbol
-          )
+          ).mul(10 ** token.maxDecimals)
         )
       } else {
         setMaxLength(undefined)
       }
     },
-    [maxDecimalDigits, onChange, token.maxDecimals, token.symbol]
+    [onChange, token.maxDecimals, token.symbol]
   )
 
   const handlePress = (): void => {
