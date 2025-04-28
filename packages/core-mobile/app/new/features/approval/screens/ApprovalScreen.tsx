@@ -374,7 +374,8 @@ const ApprovalScreen = ({
     return (
       <View
         style={{
-          marginTop: 12
+          marginTop: 12,
+          gap: 12
         }}>
         {filteredSections.map((detailSection, index) => (
           <Details key={index} detailSection={detailSection} />
