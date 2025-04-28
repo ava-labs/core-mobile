@@ -4,6 +4,7 @@ import { LinearGradientBottomWrapper } from 'new/common/components/LinearGradien
 import { View, Button, Text, Icons, useTheme, Toggle } from '@avalabs/k2-alpine'
 import { HORIZONTAL_MARGIN } from 'new/common/consts'
 import { AlertType } from '@avalabs/vm-module-types'
+import { Platform } from 'react-native'
 
 type Alert = {
   type: AlertType
@@ -39,7 +40,7 @@ export const ActionButtons = ({
     () => ({
       paddingHorizontal: HORIZONTAL_MARGIN,
       backgroundColor: '$surfacePrimary',
-      paddingBottom: bottom + 16
+      paddingBottom: bottom + (Platform.OS === 'ios' ? 16 : 90)
     }),
     [bottom]
   )
