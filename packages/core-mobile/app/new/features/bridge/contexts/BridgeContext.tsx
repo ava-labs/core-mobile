@@ -23,7 +23,7 @@ import Logger from 'utils/Logger'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import BridgeService from 'services/bridge/BridgeService'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
-import { showSnackbar } from 'common/utils/toast'
+import { transactionSnackbar } from 'common/utils/toast'
 
 export type PartialBridgeTransaction = Pick<
   BridgeTransaction,
@@ -73,7 +73,7 @@ function LocalBridgeProvider({
       dispatch(popBridgeTransaction(tx.sourceTxHash))
       AnalyticsService.capture('BridgeTransferRequestSucceeded')
 
-      showSnackbar('Bridge Successful')
+      transactionSnackbar.success({ message: 'Bridge successful' })
     },
     [dispatch]
   )

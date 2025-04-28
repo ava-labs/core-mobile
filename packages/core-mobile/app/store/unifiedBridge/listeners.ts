@@ -24,19 +24,26 @@ import { getBitcoinProvider } from 'services/network/utils/providerUtils'
 import { getBitcoinCaip2ChainId, getEvmCaip2ChainId } from 'utils/caip2ChainIds'
 import { TransactionParams } from '@avalabs/evm-module'
 import { RpcMethod } from '@avalabs/vm-module-types'
-import { showNotificationAlert } from 'new/common/utils/toast'
+import { Network } from '@avalabs/core-chains-sdk'
+import { transactionSnackbar } from 'new/common/utils/toast'
+import { selectNetworks } from 'store/network/slice'
 import {
   removePendingTransfer,
   selectPendingTransfers,
   setPendingTransfer
 } from './slice'
 
-const showSuccessToast = (tx: BridgeTransfer): void => {
-  // TODO: use new toast
-  showNotificationAlert({
-    type: 'success',
-    title: 'Bridge Successful',
-    message: tx.sourceTxHash
+const showSuccessToast = (
+  sourceTxHash: string,
+  network: Network | undefined
+): void => {
+  const explorerLink = !network
+    ? undefined
+    : `${network.explorerUrl}/tx/${sourceTxHash}`
+
+  transactionSnackbar.success({
+    message: 'Bridge successful',
+    explorerLink
   })
 }
 
@@ -48,7 +55,11 @@ const trackPendingTransfers = (listenerApi: AppListenerEffectAPI): void => {
     try {
       if (transfer.completedAt) {
         listenerApi.dispatch(removePendingTransfer(transfer.sourceTxHash))
-        showSuccessToast(transfer)
+        const networks = selectNetworks(state)
+        const network = Object.values(networks).find(
+          item => item.chainId === Number(transfer.sourceChain.chainId)
+        )
+        showSuccessToast(transfer.sourceTxHash, network)
       } else {
         const updateListener = (updatedTransfer: BridgeTransfer): void => {
           listenerApi.dispatch(setPendingTransfer(updatedTransfer))
@@ -147,7 +158,11 @@ export const checkTransferStatus = async (
 
   if (transfer.completedAt) {
     listenerApi.dispatch(removePendingTransfer(transfer.sourceTxHash))
-    showSuccessToast(transfer)
+    const networks = selectNetworks(listenerApi.getState())
+    const network = Object.values(networks).find(
+      item => item.chainId === Number(transfer.sourceChain.chainId)
+    )
+    showSuccessToast(transfer.sourceTxHash, network)
   }
 
   if (transfer.errorCode) {
