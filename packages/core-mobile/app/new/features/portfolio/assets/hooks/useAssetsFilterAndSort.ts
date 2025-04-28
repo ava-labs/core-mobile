@@ -18,6 +18,7 @@ import {
   isTokenWithBalancePVM
 } from '@avalabs/avalanche-module'
 import { useErc20ContractTokens } from 'common/hooks/useErc20ContractTokens'
+import { sortedTokensWithBalance } from 'common/utils/sortTokensWithBalance'
 
 export const useAssetsFilterAndSort = (): {
   data: LocalTokenWithBalance[]
@@ -108,7 +109,8 @@ export const useAssetsFilterAndSort = (): {
 
   const filteredAndSorted = useMemo(() => {
     const filtered = getFiltered()
-    return getSorted(filtered)
+    const sorted = getSorted(filtered)
+    return sortedTokensWithBalance(sorted)
   }, [getFiltered, getSorted])
 
   const filter = useMemo(

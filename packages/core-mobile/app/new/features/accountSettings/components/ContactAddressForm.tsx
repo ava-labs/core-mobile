@@ -8,7 +8,7 @@ import {
   TextInput,
   Button
 } from '@avalabs/k2-alpine'
-import { Keyboard } from 'react-native'
+import { Keyboard, Platform } from 'react-native'
 import { truncateAddress } from '@avalabs/core-utils-sdk'
 import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router'
 import { copyToClipboard } from 'common/utils/clipboard'
@@ -68,7 +68,6 @@ export const ContactAddressForm = ({
       return (
         <TextInput
           autoFocus
-          numberOfLines={1}
           onSubmitEditing={e => {
             e.nativeEvent.text.length > 0 &&
               onUpdateAddress(title, e.nativeEvent.text)
@@ -84,7 +83,7 @@ export const ContactAddressForm = ({
           value={value}
           onChangeText={setValue}
           placeholder={placeholder}
-          textInputSx={{ height: undefined }}
+          textInputSx={{ height: Platform.OS === 'ios' ? undefined : 40 }}
           containerSx={{ paddingHorizontal: undefined }}
         />
       )
