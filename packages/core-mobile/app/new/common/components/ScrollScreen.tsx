@@ -5,6 +5,7 @@ import {
 } from '@avalabs/k2-alpine'
 import { useHeaderHeight } from '@react-navigation/elements'
 import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
+import { useIsAndroidWithBottomBar } from 'common/hooks/useIsAndroidWithBottomBar'
 import React, { useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { LayoutRectangle, Platform, View } from 'react-native'
 import {
@@ -21,7 +22,6 @@ import { BlurViewWithFallback } from './BlurViewWithFallback'
 import { KeyboardAvoidingView } from './KeyboardAvoidingView'
 import { LinearGradientBottomWrapper } from './LinearGradientBottomWrapper'
 import ScreenHeader from './ScreenHeader'
-import { useIsAndroidWithBottomBar } from 'common/hooks/useIsAndroidWithBottomBar'
 
 // Use this component when you need a scrollable screen with proper keyboard handling and header management.
 // It handles all the logic for the header and footer, including keyboard interactions and gestures.
