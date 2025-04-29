@@ -7,7 +7,9 @@
     "paths": {
       "tests/*": ["../tests/*"],
       "features/*": ["new/features/*"],
-      "common/*": ["new/common/*"]
+      "common/*": ["new/common/*"],
+      "@avalabs/core-utils-sdk": ["../node_modules/@avalabs/core-utils-sdk"],
+      "@avalabs/core-utils-sdk/*": ["../node_modules/@avalabs/core-utils-sdk/*"]
     }
   },
   "include": [
