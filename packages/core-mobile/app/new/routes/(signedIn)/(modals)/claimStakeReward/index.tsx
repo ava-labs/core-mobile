@@ -14,7 +14,7 @@ import { ScrollViewScreenTemplate } from 'common/components/ScrollViewScreenTemp
 import { useConfetti } from 'common/contexts/ConfettiContext'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import { usePreventScreenRemoval } from 'common/hooks/usePreventScreenRemoval'
-import { showSnackbar } from 'common/utils/toast'
+import { transactionSnackbar } from 'common/utils/toast'
 import { useRouter } from 'expo-router'
 import { StakeTokenUnitValue } from 'features/stake/components/StakeTokenUnitValue'
 import { useClaimRewards } from 'hooks/earn/useClaimRewards'
@@ -41,7 +41,7 @@ const ClaimStakeRewardScreen = (): JSX.Element => {
     AnalyticsService.capture('StakeClaimSuccess')
 
     confetti.restart()
-    showSnackbar('Stake reward claimed')
+    transactionSnackbar.success({ message: 'Stake reward claimed' })
 
     // this is a workaround for the issue where back navigation is not working,
     // when it's called within the onSuccess callback of the mutation
@@ -52,7 +52,7 @@ const ClaimStakeRewardScreen = (): JSX.Element => {
 
   const onClaimError = (error: Error): void => {
     AnalyticsService.capture('StakeClaimFail')
-    showSnackbar(error.message)
+    transactionSnackbar.error({ error: error.message })
   }
 
   const onFundsStuck = (): void => {

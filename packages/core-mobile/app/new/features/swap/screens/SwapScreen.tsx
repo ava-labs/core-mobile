@@ -14,6 +14,7 @@ import {
 } from '@avalabs/k2-alpine'
 import { TokenType, TokenWithBalance } from '@avalabs/vm-module-types'
 import { SwapSide } from '@paraswap/sdk'
+import { useNavigation } from '@react-navigation/native'
 import { ScrollViewScreenTemplate } from 'common/components/ScrollViewScreenTemplate'
 import { TokenInputWidget } from 'common/components/TokenInputWidget'
 import { useAvalancheErc20ContractTokens } from 'common/hooks/useErc20ContractTokens'
@@ -33,7 +34,10 @@ import Animated, {
 import { useSelector } from 'react-redux'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { selectActiveAccount } from 'store/account'
-import { selectTokensWithZeroBalance } from 'store/balance'
+import {
+  LocalTokenWithBalance,
+  selectTokensWithZeroBalance
+} from 'store/balance'
 import { getTokenAddress } from 'swap/getSwapRate'
 import { calculateRate } from 'swap/utils'
 import { basisPointsToPercentage } from 'utils/basisPointsToPercentage'
@@ -42,7 +46,8 @@ import { useSwapContext } from '../contexts/SwapContext'
 
 export const SwapScreen = (): JSX.Element => {
   const { theme } = useTheme()
-  const { navigate, back } = useRouter()
+  const { navigate, back, canGoBack } = useRouter()
+  const { getState } = useNavigation()
   const params = useGlobalSearchParams<{
     initialTokenIdFrom?: string
     initialTokenIdTo?: string
@@ -51,7 +56,8 @@ export const SwapScreen = (): JSX.Element => {
   const { formatCurrency } = useFormatCurrency()
   const avalancheErc20ContractTokens = useAvalancheErc20ContractTokens()
   const { filteredTokenList } = useSearchableTokenList({
-    tokens: avalancheErc20ContractTokens
+    tokens: avalancheErc20ContractTokens,
+    hideZeroBalance: false
   })
   const tokensWithZeroBalance = useSelector(selectTokensWithZeroBalance)
   const activeAccount = useSelector(selectActiveAccount)
@@ -170,30 +176,23 @@ export const SwapScreen = (): JSX.Element => {
       initialized.current = true
     }
 
+    let initialFromToken: LocalTokenWithBalance | undefined
     if (params?.initialTokenIdFrom) {
-      const token = filteredTokenList.find(
+      initialFromToken = filteredTokenList.find(
         tk =>
           tk.localId.toLowerCase() === params.initialTokenIdFrom?.toLowerCase()
       )
-
-      if (token) {
-        setFromToken(token)
-      }
-    } else {
-      setFromToken(undefined)
     }
+    setFromToken(initialFromToken)
 
+    let initialToToken: LocalTokenWithBalance | undefined
     if (params?.initialTokenIdTo) {
-      const token = filteredTokenList.find(
+      initialToToken = filteredTokenList.find(
         tk =>
           tk.localId.toLowerCase() === params.initialTokenIdTo?.toLowerCase()
       )
-      if (token) {
-        setToToken(token)
-      }
-    } else {
-      setToToken(undefined)
     }
+    setToToken(initialToToken)
   }, [params, filteredTokenList, setFromToken, setToToken])
 
   const handleSwap = useCallback(() => {
@@ -389,8 +388,12 @@ export const SwapScreen = (): JSX.Element => {
   useEffect(() => {
     if (swapStatus === 'Success') {
       back()
+      const state = getState()
+      if (state?.routes[state?.index ?? 0]?.name === 'onboarding') {
+        canGoBack() && back()
+      }
     }
-  }, [back, swapStatus])
+  }, [back, canGoBack, getState, swapStatus])
 
   useEffect(validateInputsFx, [validateInputsFx])
   useEffect(applyOptimalRateFx, [applyOptimalRateFx])

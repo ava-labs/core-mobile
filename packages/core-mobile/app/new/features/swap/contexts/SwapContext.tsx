@@ -22,7 +22,6 @@ import { Account, selectActiveAccount } from 'store/account'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { useInAppRequest } from 'hooks/useInAppRequest'
 import { getEvmCaip2ChainId } from 'utils/caip2ChainIds'
-import { showTransactionErrorToast } from 'utils/toast'
 import { audioFeedback, Audios } from 'utils/AudioFeedback'
 import { RpcMethod } from '@avalabs/vm-module-types'
 import { isUserRejectedError } from 'store/rpc/providers/walletConnect/utils'
@@ -32,6 +31,7 @@ import { selectIsSwapFeesBlocked } from 'store/posthog'
 import { performSwap } from 'contexts/SwapContext/performSwap/performSwap'
 import { LocalTokenWithBalance } from 'store/balance'
 import useCChainNetwork from 'hooks/earn/useCChainNetwork'
+import { transactionSnackbar } from 'new/common/utils/toast'
 import { useSwapSelectedFromToken, useSwapSelectedToToken } from '../store'
 
 const DEFAULT_DEBOUNCE_MILLISECONDS = 150
@@ -179,7 +179,7 @@ export const SwapContextProvider = ({
       const originalError =
         err instanceof JsonRpcError ? err.data.cause : undefined
 
-      showTransactionErrorToast({ message: readableErrorMessage })
+      transactionSnackbar.error({ error: readableErrorMessage })
       Logger.error(readableErrorMessage, originalError)
     },
     [cChainNetwork]

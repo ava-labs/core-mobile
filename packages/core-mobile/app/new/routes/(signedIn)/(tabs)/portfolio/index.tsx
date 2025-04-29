@@ -25,6 +25,7 @@ import { ActionButtonTitle } from 'features/portfolio/assets/consts'
 import { CollectiblesScreen } from 'features/portfolio/collectibles/components/CollectiblesScreen'
 import { CollectibleFilterAndSortInitialState } from 'features/portfolio/collectibles/hooks/useCollectiblesFilterAndSort'
 import { DeFiScreen } from 'features/portfolio/defi/components/DeFiScreen'
+import { useSendSelectedToken } from 'features/send/store'
 import { useAddStake } from 'features/stake/hooks/useAddStake'
 import { useNavigateToSwap } from 'features/swap/hooks/useNavigateToSwap'
 import { useWatchlist } from 'hooks/watchlist/useWatchlist'
@@ -61,6 +62,7 @@ const SEGMENT_ITEMS = ['Assets', 'Collectibles', 'DeFi']
 
 const PortfolioHomeScreen = (): JSX.Element => {
   const isPrivacyModeEnabled = useFocusedSelector(selectIsPrivacyModeEnabled)
+  const [_, setSelectedToken] = useSendSelectedToken()
   const { theme } = useTheme()
   const { navigate } = useRouter()
   const { navigateToSwap } = useNavigateToSwap()
@@ -142,8 +144,9 @@ const PortfolioHomeScreen = (): JSX.Element => {
   )
 
   const handleSend = useCallback((): void => {
+    setSelectedToken(undefined)
     navigate('/send')
-  }, [navigate])
+  }, [navigate, setSelectedToken])
 
   const handleConnect = useCallback((): void => {
     navigate('/walletConnectScan')

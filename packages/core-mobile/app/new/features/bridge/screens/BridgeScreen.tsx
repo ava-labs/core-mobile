@@ -13,6 +13,7 @@ import {
   View
 } from '@avalabs/k2-alpine'
 import { NetworkVMType } from '@avalabs/vm-module-types'
+import { useNavigation } from '@react-navigation/native'
 import { ScrollViewScreenTemplate } from 'common/components/ScrollViewScreenTemplate'
 import { TokenInputWidget } from 'common/components/TokenInputWidget'
 import { useCoreBrowser } from 'common/hooks/useCoreBrowser'
@@ -54,8 +55,8 @@ import {
 import { isUserRejectedError } from 'store/rpc/providers/walletConnect/utils'
 import { selectHasBeenViewedOnce, ViewOnceKey } from 'store/viewOnce'
 import { audioFeedback, Audios } from 'utils/AudioFeedback'
-import { getJsonRpcErrorMessage } from 'utils/getJsonRpcErrorMessage/getJsonRpcErrorMessage'
 import Logger from 'utils/Logger'
+import { getJsonRpcErrorMessage } from 'utils/getJsonRpcErrorMessage/getJsonRpcErrorMessage'
 import useBridge from '../hooks/useBridge'
 
 export const BridgeScreen = (): JSX.Element => {
@@ -67,7 +68,8 @@ export const BridgeScreen = (): JSX.Element => {
       initialSourceNetworkChainId?: string
       initialTokenSymbol?: string
     }>()
-  const { navigate, back } = useRouter()
+  const { navigate, back, canGoBack } = useRouter()
+  const { getState } = useNavigation()
   const { openUrl } = useCoreBrowser()
   const {
     sourceNetworks,
@@ -199,12 +201,16 @@ export const BridgeScreen = (): JSX.Element => {
     if (bridgeResult) {
       audioFeedback(Audios.Send)
       back()
+      const state = getState()
+      if (state?.routes[state?.index ?? 0]?.name === 'onboarding') {
+        canGoBack() && back()
+      }
       navigate({
         pathname: '/bridgeStatus',
         params: bridgeResult
       })
     }
-  }, [bridgeResult, back, navigate])
+  }, [bridgeResult, back, navigate, getState, canGoBack])
 
   const handleTransfer = useCallback(async () => {
     if (

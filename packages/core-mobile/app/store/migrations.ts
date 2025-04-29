@@ -308,5 +308,16 @@ export const migrations = {
     }
     delete newState.portfolio.tokenBlacklist
     return newState
+  },
+  18: (state: any) => {
+    const enabledChainIds = state.network.favorites
+    return {
+      ...state,
+      network: {
+        ...state.network,
+        enabledChainIds,
+        disabledLastTransactedChainIds: []
+      }
+    }
   }
 }

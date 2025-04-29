@@ -43,7 +43,7 @@ const AccountSettingsScreen = (): JSX.Element => {
   const {
     theme: { colors }
   } = useTheme()
-  const { favoriteNetworks } = useNetworks()
+  const { enabledNetworks } = useNetworks()
   const contacts = useSelector(selectContacts)
   const { navigate } = useRouter()
 
@@ -202,7 +202,7 @@ const AccountSettingsScreen = (): JSX.Element => {
                           lineHeight: 22,
                           marginLeft: 9
                         }}>
-                        {favoriteNetworks.length}
+                        {enabledNetworks.length}
                       </Text>
                     )
                   }

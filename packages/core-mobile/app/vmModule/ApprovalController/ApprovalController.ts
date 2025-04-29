@@ -11,7 +11,7 @@ import {
 import { providerErrors, rpcErrors } from '@metamask/rpc-errors'
 import { btcSignTransaction } from 'vmModule/handlers/btcSignTransaction'
 import { walletConnectCache } from 'services/walletconnectv2/walletConnectCache/walletConnectCache'
-import { showSnackbar } from 'new/common/utils/toast'
+import { transactionSnackbar } from 'new/common/utils/toast'
 import { isInAppRequest } from 'store/rpc/utils/isInAppRequest'
 import { NavigationPresentationMode } from 'new/common/types'
 import { avalancheSignTransaction } from '../handlers/avalancheSignTransaction'
@@ -25,19 +25,21 @@ class ApprovalController implements VmModuleApprovalController {
     return Promise.reject(providerErrors.unsupportedMethod('requestPublicKey'))
   }
 
-  onTransactionConfirmed(_txHash: Hex): void {
-    // TODO: use new toast
-    showSnackbar('Transaction Successful')
-    // showTransactionSuccessToast({
-    //   message: 'Transaction Successful',
-    //   txHash
-    // })
+  onTransactionPending(): void {
+    transactionSnackbar.pending()
   }
 
-  onTransactionReverted(_txHash: Hex): void {
-    // TODO: use new toast
-    showSnackbar('Transaction Reverted')
-    //showTransactionErrorToast({ message: 'Transaction Reverted' })
+  onTransactionConfirmed({
+    explorerLink
+  }: {
+    explorerLink: string
+    requestId: string
+  }): void {
+    transactionSnackbar.success({ explorerLink })
+  }
+
+  onTransactionReverted(): void {
+    transactionSnackbar.error({ message: 'Transaction reverted' })
   }
 
   async requestApproval({

@@ -3,7 +3,7 @@ import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { audioFeedback, Audios } from 'utils/AudioFeedback'
 import { isUserRejectedError } from 'store/rpc/providers/walletConnect/utils'
-import { showSnackbar } from 'common/utils/toast'
+import { transactionSnackbar } from 'common/utils/toast'
 import { getJsonRpcErrorMessage } from 'utils/getJsonRpcErrorMessage/getJsonRpcErrorMessage'
 import { useDispatch, useSelector } from 'react-redux'
 import { selectActiveAccount } from 'store/account'
@@ -69,6 +69,11 @@ export const SendScreen = (): JSX.Element => {
       ) {
         canGoBack() && back()
       }
+      // dismiss onboarding modal
+      const state = getState()
+      if (state?.routes[state?.index ?? 0]?.name === 'onboarding') {
+        canGoBack() && back()
+      }
     },
     [
       back,
@@ -86,7 +91,7 @@ export const SendScreen = (): JSX.Element => {
   const handleFailure = useCallback(
     (error: unknown): void => {
       if (error instanceof Error && !isUserRejectedError(error)) {
-        showSnackbar(getJsonRpcErrorMessage(error))
+        transactionSnackbar.error({ error: getJsonRpcErrorMessage(error) })
         network &&
           AnalyticsService.capture('SendTransactionFailed', {
             errorMessage: error.message,

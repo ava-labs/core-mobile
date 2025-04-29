@@ -11,7 +11,7 @@ const BalanceChangeComponent = ({
   return (
     <View
       sx={{
-        marginVertical: 12,
+        marginTop: 12,
         paddingVertical: 16,
         justifyContent: 'space-between',
         alignItems: 'center',
@@ -30,7 +30,9 @@ const BalanceChangeComponent = ({
             isOut={true}
           />
         ))}
-        <Separator sx={{ marginVertical: 16, marginHorizontal: 16 }} />
+        {balanceChange.ins.length > 0 && (
+          <Separator sx={{ marginVertical: 16, marginHorizontal: 16 }} />
+        )}
         {balanceChange.ins.map((inTokenDiff, index) => (
           <TokenDiffGroup
             key={index.toString()}

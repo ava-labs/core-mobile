@@ -6,15 +6,10 @@ import {
   useTheme,
   View
 } from '@avalabs/k2-alpine'
-import React, { useCallback, useMemo } from 'react'
+import React, { useCallback, useMemo, useState } from 'react'
 import { SvgProps } from 'react-native-svg'
-import { useDispatch, useSelector } from 'react-redux'
-import {
-  resetViewOnce,
-  selectHasBeenViewedOnce,
-  setViewOnce,
-  ViewOnceKey
-} from 'store/viewOnce'
+import { useDispatch } from 'react-redux'
+import { resetViewOnce, setViewOnce, ViewOnceKey } from 'store/viewOnce'
 import { ScrollViewScreenTemplate } from './ScrollViewScreenTemplate'
 
 export const TransactionOnboarding = ({
@@ -37,32 +32,25 @@ export const TransactionOnboarding = ({
 }): JSX.Element => {
   const { theme } = useTheme()
   const dispatch = useDispatch()
-  const shouldHideOnboarding = useSelector(selectHasBeenViewedOnce(viewOnceKey))
+  const [hide, setHide] = useState(true)
 
-  const handleToggleShouldHide = useCallback(
-    (value: boolean): void => {
-      if (value) {
-        dispatch(setViewOnce(viewOnceKey))
-      } else {
-        dispatch(resetViewOnce(viewOnceKey))
-      }
-    },
-    [viewOnceKey, dispatch]
-  )
+  const handlePressNext = useCallback(() => {
+    if (hide) {
+      dispatch(setViewOnce(viewOnceKey))
+    } else {
+      dispatch(resetViewOnce(viewOnceKey))
+    }
+    onPressNext()
+  }, [dispatch, hide, onPressNext, viewOnceKey])
 
   const groupListData = useMemo(() => {
     return [
       {
         title: 'Hide this screen next time',
-        accessory: (
-          <Toggle
-            value={shouldHideOnboarding}
-            onValueChange={handleToggleShouldHide}
-          />
-        )
+        accessory: <Toggle value={hide} onValueChange={setHide} />
       }
     ]
-  }, [shouldHideOnboarding, handleToggleShouldHide])
+  }, [hide, setHide])
 
   const renderFooter = useCallback(() => {
     return (
@@ -74,12 +62,12 @@ export const TransactionOnboarding = ({
             paddingVertical: 4
           }}
         />
-        <Button type="primary" size="large" onPress={onPressNext}>
+        <Button type="primary" size="large" onPress={handlePressNext}>
           {buttonTitle ?? "Let's go!"}
         </Button>
       </View>
     )
-  }, [groupListData, onPressNext, buttonTitle])
+  }, [groupListData, handlePressNext, buttonTitle])
 
   return (
     <ScrollViewScreenTemplate

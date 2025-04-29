@@ -2,8 +2,10 @@ import { Separator, showAlert, Text, View } from '@avalabs/k2-alpine'
 import { router, useLocalSearchParams } from 'expo-router'
 import { useNetworks } from 'hooks/networks/useNetworks'
 import { useGasless } from 'hooks/useGasless'
+import { useSpendLimits } from 'hooks/useSpendLimits'
 import { ActionSheet } from 'new/common/components/ActionSheet'
 import { TokenLogo } from 'new/common/components/TokenLogo'
+import { Warning } from 'new/common/components/Warning'
 import { NavigationPresentationMode } from 'new/common/types'
 import React, {
   useCallback,
@@ -30,12 +32,11 @@ import { getChainIdFromCaip2 } from 'utils/caip2ChainIds'
 import Logger from 'utils/Logger'
 import { Eip1559Fees } from 'utils/Utils'
 import { Account } from '../components/Account'
-import BalanceChange from '../components/BalanceChange'
+import BalanceChange from '../components/BalanceChange/BalanceChange'
 import { Details } from '../components/Details'
 import { Network } from '../components/Network'
 import { NetworkFeeSelectorWithGasless } from '../components/NetworkFeeSelectorWithGasless'
-
-// import { SpendLimits } from '../components/SpendLimits'
+import { SpendLimits } from '../components/SpendLimits/SpendLimits'
 
 const ApprovalScreenWrapper = (): JSX.Element | null => {
   const [params, setParams] = useState<ApprovalParams>()
@@ -99,8 +100,8 @@ const ApprovalScreen = ({
     submitting ||
     amountError !== undefined
 
-  //   const { spendLimits, canEdit, updateSpendLimit, hashedCustomSpend } =
-  //     useSpendLimits(displayData.tokenApprovals)
+  const { spendLimits, canEdit, updateSpendLimit, hashedCustomSpend } =
+    useSpendLimits(displayData.tokenApprovals)
 
   const filteredSections = useMemo(() => {
     return displayData.details.map(detailSection => {
@@ -151,8 +152,8 @@ const ApprovalScreen = ({
         network,
         account,
         maxFeePerGas,
-        maxPriorityFeePerGas
-        //overrideData: hashedCustomSpend
+        maxPriorityFeePerGas,
+        overrideData: hashedCustomSpend
       })
       router.canGoBack() && router.back()
     } catch (error: unknown) {
@@ -169,7 +170,8 @@ const ApprovalScreen = ({
     maxPriorityFeePerGas,
     network,
     onApprove,
-    shouldShowGaslessSwitch
+    shouldShowGaslessSwitch,
+    hashedCustomSpend
   ])
 
   const validateEthSendTransaction = useCallback(() => {
@@ -204,8 +206,6 @@ const ApprovalScreen = ({
     }
   }, [signingData, network, maxFeePerGas, nativeToken])
 
-  // const handleEditSpendLimit = () => {}
-
   const handleFeesChange = useCallback((fees: Eip1559Fees) => {
     setMaxFeePerGas(fees.maxFeePerGas)
     setMaxPriorityFeePerGas(fees.maxPriorityFeePerGas)
@@ -236,25 +236,14 @@ const ApprovalScreen = ({
   }, [validateEthSendTransaction, gaslessEnabled])
 
   const renderGaslessAlert = useCallback((): JSX.Element | null => {
-    if (!gaslessError) return null
+    if (gaslessError === null || gaslessError.length === 0) return null
 
     return (
-      <View style={{ marginVertical: 12 }}>
-        <Text>{gaslessError.details.description}</Text>
-      </View>
+      <Warning
+        message={gaslessError}
+        sx={{ marginBottom: 12, marginRight: 16 }}
+      />
     )
-    // return (
-    //   <View sx={{ marginVertical: 12 }}>
-    //     <AlertBanner
-    //       alert={gaslessError}
-    //       customStyle={{
-    //         borderColor: '$dangerLight',
-    //         backgroundColor: '$transparent',
-    //         iconColor: colors.$white
-    //       }}
-    //     />
-    //   </View>
-    // )
   }, [gaslessError])
 
   const renderDappInfo = useCallback(
@@ -341,7 +330,8 @@ const ApprovalScreen = ({
     return (
       <View
         style={{
-          marginTop: 12
+          marginTop: 12,
+          gap: 12
         }}>
         {filteredSections.map((detailSection, index) => (
           <Details key={index} detailSection={detailSection} />
@@ -356,18 +346,18 @@ const ApprovalScreen = ({
     return <BalanceChange balanceChange={balanceChange} />
   }, [balanceChange, hasBalanceChange])
 
-  // const renderSpendLimit = (): JSX.Element | null => {
-  //   // if (spendLimits.length === 0 || hasBalanceChange) {
-  //   //   return null
-  //   // }
+  const renderSpendLimits = (): JSX.Element | null => {
+    if (spendLimits.length === 0 || hasBalanceChange) {
+      return null
+    }
 
-  //   return (
-  //     <SpendLimits
-  //       spendLimits={spendLimits}
-  //       onEdit={canEdit ? handleEditSpendLimit : undefined}
-  //     />
-  //   )
-  // }
+    return (
+      <SpendLimits
+        spendLimits={spendLimits}
+        onSelect={canEdit ? updateSpendLimit : undefined}
+      />
+    )
+  }
 
   const renderNetworkFeeSelectorWithGasless =
     useCallback((): JSX.Element | null => {
@@ -437,15 +427,13 @@ const ApprovalScreen = ({
         onPress: rejectAndClose,
         disabled: submitting
       }}>
-      <>
-        {renderDappInfoOrTitle()}
-        {renderGaslessAlert()}
-        {renderAccountAndNetwork()}
-        {renderBalanceChange()}
-        {/* {renderSpendLimit()} */}
-        {renderDetails()}
-        {renderNetworkFeeSelectorWithGasless()}
-      </>
+      {renderDappInfoOrTitle()}
+      {renderGaslessAlert()}
+      {renderAccountAndNetwork()}
+      {renderBalanceChange()}
+      {renderDetails()}
+      {renderSpendLimits()}
+      {renderNetworkFeeSelectorWithGasless()}
     </ActionSheet>
   )
 }

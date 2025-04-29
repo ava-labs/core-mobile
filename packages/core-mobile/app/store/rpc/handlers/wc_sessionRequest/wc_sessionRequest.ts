@@ -7,7 +7,7 @@ import { WCSessionProposal } from 'store/walletConnectV2/types'
 import {
   selectActiveNetwork,
   selectAllNetworks,
-  selectFavoriteNetworks
+  selectEnabledNetworks
 } from 'store/network/slice'
 import { selectIsBlockaidDappScanBlocked } from 'store/posthog/slice'
 import { createInAppRequest } from 'store/rpc/utils/createInAppRequest'
@@ -107,14 +107,14 @@ class WCSessionRequestHandler implements RpcRequestHandler<WCSessionProposal> {
       return
     }
 
-    const favoritedNetworksChainIds = selectFavoriteNetworks(state).map(
+    const enabledNetworksChainIds = selectEnabledNetworks(state).map(
       network => network.chainId
     )
     const supportedChainIds = [
-      ...favoritedNetworksChainIds,
+      ...enabledNetworksChainIds,
       ...Object.values(supportedNetworks)
         .map(network => network.chainId)
-        .filter(chainId => !favoritedNetworksChainIds.includes(chainId))
+        .filter(chainId => !enabledNetworksChainIds.includes(chainId))
     ]
 
     const chainIdtoSwitch =

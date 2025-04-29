@@ -25,6 +25,9 @@ import { ShareBarButton } from 'common/components/ShareBarButton'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import { copyToClipboard } from 'common/utils/clipboard'
 import { format } from 'date-fns'
+import { useAddStake } from 'features/stake/hooks/useAddStake'
+import { AVAX_TOKEN_ID } from 'features/swap/const'
+import { useNavigateToSwap } from 'features/swap/hooks/useNavigateToSwap'
 import { SelectedChartDataIndicator } from 'features/track/components/SelectedChartDataIndicator'
 import { TokenDetailChart } from 'features/track/components/TokenDetailChart'
 import { TokenDetailFooter } from 'features/track/components/TokenDetailFooter'
@@ -46,6 +49,8 @@ const TrackTokenDetailScreen = (): JSX.Element => {
   const { tokenId } = useLocalSearchParams<{ tokenId: string }>()
   const [isChartInteracting, setIsChartInteracting] = useState(false)
   const { navigate } = useRouter()
+  const { navigateToSwap } = useNavigateToSwap()
+  const { addStake } = useAddStake()
   const headerOpacity = useSharedValue(1)
   const selectedDataIndicatorOpacity = useDerivedValue(
     () => 1 - headerOpacity.value
@@ -131,11 +136,18 @@ const TrackTokenDetailScreen = (): JSX.Element => {
 
   const handlePressTwitter = useCallback(() => {
     tokenInfo?.twitterHandle &&
-      openUrl(`https://x.com/${tokenInfo.twitterHandle}`)
+      openUrl({
+        url: `https://x.com/${tokenInfo.twitterHandle}`,
+        title: 'X'
+      })
   }, [openUrl, tokenInfo?.twitterHandle])
 
   const handlePressWebsite = useCallback(() => {
-    tokenInfo?.urlHostname && openUrl(tokenInfo.urlHostname)
+    tokenInfo?.urlHostname &&
+      openUrl({
+        url: tokenInfo.urlHostname,
+        title: 'Website'
+      })
   }, [openUrl, tokenInfo?.urlHostname])
 
   const handleBuy = useCallback((): void => {
@@ -145,22 +157,12 @@ const TrackTokenDetailScreen = (): JSX.Element => {
     })
   }, [navigate])
 
-  const handleStake = useCallback((): void => {
-    // @ts-ignore
-    // navigate(AppNavigation.Wallet.Earn, {
-    //   screen: AppNavigation.Earn.StakeSetup
-    // })
-  }, [])
-
-  const handleSwap = useCallback((_?: string): void => {
-    // navigate(AppNavigation.Wallet.Swap, {
-    //   screen: AppNavigation.Swap.Swap,
-    //   params: {
-    //     initialTokenIdFrom: AVAX_TOKEN_ID,
-    //     initialTokenIdTo
-    //   }
-    // })
-  }, [])
+  const handleSwap = useCallback(
+    (initialTokenIdTo?: string): void => {
+      navigateToSwap(AVAX_TOKEN_ID, initialTokenIdTo)
+    },
+    [navigateToSwap]
+  )
 
   const handleShare = useCallback(() => {
     navigate({ pathname: '/trackTokenDetail/share', params: { tokenId } })
@@ -282,11 +284,11 @@ const TrackTokenDetailScreen = (): JSX.Element => {
         tokenId={tokenId}
         tokenInfo={tokenInfo}
         onBuy={handleBuy}
-        onStake={handleStake}
+        onStake={addStake}
         onSwap={handleSwap}
       />
     )
-  }, [tokenId, tokenInfo, handleBuy, handleStake, handleSwap])
+  }, [tokenId, tokenInfo, handleBuy, addStake, handleSwap])
 
   const renderHeader = useCallback(() => {
     if (!tokenInfo) {

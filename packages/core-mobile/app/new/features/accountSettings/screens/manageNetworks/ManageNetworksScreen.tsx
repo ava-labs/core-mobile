@@ -15,21 +15,21 @@ import { useRouter } from 'expo-router'
 import { useNetworks } from 'hooks/networks/useNetworks'
 import React, { useCallback, useMemo, useState } from 'react'
 import { ListRenderItem } from 'react-native'
-import Animated from 'react-native-reanimated'
-import { useDispatch } from 'react-redux'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import {
   isAvalancheCChainId,
   isAvalancheChainId
 } from 'services/network/utils/isAvalancheNetwork'
 import { isEthereumChainId } from 'services/network/utils/isEthereumNetwork'
-import { alwaysFavoriteNetworks, toggleFavorite } from 'store/network'
+import { alwaysEnabledNetworks } from 'store/network'
 import { isPChain, isXChain, isXPChain } from 'utils/network/isAvalancheNetwork'
 import { isBitcoinChainId } from 'utils/network/isBitcoinNetwork'
 
 export const ManageNetworksScreen = (): JSX.Element => {
   const { theme } = useTheme()
-  const { networks, favoriteNetworks, customNetworks } = useNetworks()
-  const dispatch = useDispatch()
+  const insets = useSafeAreaInsets()
+  const { networks, enabledNetworks, customNetworks, toggleNetwork } =
+    useNetworks()
   const [searchText, setSearchText] = useState('')
   const title = 'Networks'
   const { navigate } = useRouter()
@@ -41,9 +41,9 @@ export const ManageNetworksScreen = (): JSX.Element => {
   )
 
   const availableNetworks = useMemo(() => {
-    const enabled = Object.values(networks)
-      .filter(network => favoriteNetworks.includes(network))
-      .sort(sortPrimaryNetworks)
+    const enabled = Object.values(networks).filter(network =>
+      enabledNetworks.includes(network)
+    )
 
     const custom = Object.values(customNetworks).filter(
       network => !enabled.includes(network)
@@ -54,8 +54,8 @@ export const ManageNetworksScreen = (): JSX.Element => {
       )
       .sort(sortPrimaryNetworks)
 
-    return [...enabled, ...custom, ...disabled]
-  }, [customNetworks, favoriteNetworks, networks])
+    return [...enabled, ...custom, ...disabled].sort(sortPrimaryNetworks)
+  }, [customNetworks, enabledNetworks, networks])
 
   const filteredNetworks = useMemo(() => {
     if (searchText.length) {
@@ -64,18 +64,11 @@ export const ManageNetworksScreen = (): JSX.Element => {
     return availableNetworks
   }, [availableNetworks, filterBySearchText, searchText.length])
 
-  const onFavorite = useCallback(
-    (item: Network) => {
-      dispatch(toggleFavorite(item.chainId))
-    },
-    [dispatch]
-  )
-
   const renderNetwork: ListRenderItem<Network> = ({
     item,
     index
   }): JSX.Element => {
-    const isEnabled = favoriteNetworks.some(
+    const isEnabled = enabledNetworks.some(
       network => network.chainId === item.chainId
     )
     const isLast = index === filteredNetworks.length - 1
@@ -89,61 +82,60 @@ export const ManageNetworksScreen = (): JSX.Element => {
       isXChain(item.chainId)
 
     return (
-      <Pressable onPress={() => goToNetwork(item)}>
-        <Animated.View
-          style={{
-            flexDirection: 'row',
-            alignItems: 'center',
-            gap: 16,
-            height: 62,
-            paddingLeft: 16
-          }}>
-          {isCustomNetwork ? (
-            <View
-              style={{
-                width: 36,
-                height: 36,
-                borderRadius: 18,
-                overflow: 'hidden',
-                backgroundColor: theme.colors.$surfaceSecondary,
-                borderWidth: 1,
-                borderColor: theme.colors.$borderPrimary,
-                justifyContent: 'center',
-                alignItems: 'center'
-              }}>
-              <Icons.Custom.Category
-                width={20}
-                height={20}
-                color={theme.colors.$textSecondary}
-              />
-            </View>
-          ) : (
-            <NetworkLogoWithChain
-              network={item}
-              networkSize={36}
-              showChainLogo={showChainLogo}
-              outerBorderColor={theme.colors.$surfacePrimary}
-            />
-          )}
+      <Pressable
+        style={{
+          flexDirection: 'row',
+          alignItems: 'center',
+          gap: 16,
+          height: 62,
+          paddingLeft: 16
+        }}
+        onPress={() => goToNetwork(item)}>
+        {isCustomNetwork ? (
           <View
             style={{
-              flex: 1,
-              alignItems: 'center',
-              flexDirection: 'row',
-              borderBottomWidth: isLast ? 0 : 0.5,
-              height: '100%',
+              width: 36,
+              height: 36,
+              borderRadius: 18,
+              overflow: 'hidden',
+              backgroundColor: theme.colors.$surfaceSecondary,
+              borderWidth: 1,
               borderColor: theme.colors.$borderPrimary,
-              paddingRight: 16
+              justifyContent: 'center',
+              alignItems: 'center'
             }}>
-            <Text style={{ flex: 1 }}>{item.chainName}</Text>
-            {!alwaysFavoriteNetworks.includes(item.chainId) && (
-              <Toggle
-                value={isEnabled}
-                onValueChange={() => onFavorite(item)}
-              />
-            )}
+            <Icons.Custom.Category
+              width={20}
+              height={20}
+              color={theme.colors.$textSecondary}
+            />
           </View>
-        </Animated.View>
+        ) : (
+          <NetworkLogoWithChain
+            network={item}
+            networkSize={36}
+            showChainLogo={showChainLogo}
+            outerBorderColor={theme.colors.$surfacePrimary}
+          />
+        )}
+        <View
+          style={{
+            flex: 1,
+            alignItems: 'center',
+            flexDirection: 'row',
+            borderBottomWidth: isLast ? 0 : 0.5,
+            height: '100%',
+            borderColor: theme.colors.$borderPrimary,
+            paddingRight: 16
+          }}>
+          <Text style={{ flex: 1 }}>{item.chainName}</Text>
+          {!alwaysEnabledNetworks.includes(item.chainId) && (
+            <Toggle
+              value={isEnabled}
+              onValueChange={() => toggleNetwork(item.chainId)}
+            />
+          )}
+        </View>
       </Pressable>
     )
   }

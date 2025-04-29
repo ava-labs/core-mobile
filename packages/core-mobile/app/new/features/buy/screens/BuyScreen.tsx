@@ -12,6 +12,7 @@ import { generateOnRampURL } from '@coinbase/cbpay-js'
 import { ScrollViewScreenTemplate } from 'common/components/ScrollViewScreenTemplate'
 import { useCoreBrowser } from 'common/hooks/useCoreBrowser'
 import { useLocalSearchParams, useRouter } from 'expo-router'
+import { Warning } from 'new/common/components/Warning'
 import React, { FC, useCallback, useMemo } from 'react'
 import Config from 'react-native-config'
 import { useSelector } from 'react-redux'
@@ -122,25 +123,7 @@ export const BuyScreen: FC = () => {
   const renderAvaxWarning = (): React.JSX.Element | undefined => {
     if (showAvaxWarning === 'true')
       return (
-        <View
-          sx={{
-            borderRadius: 8,
-            flexDirection: 'row',
-            alignItems: 'center',
-            gap: 8
-          }}>
-          <Icons.Alert.ErrorOutline color={theme.colors.$textDanger} />
-          <View sx={{ flex: 1 }}>
-            <Text
-              style={{
-                color: theme.colors.$textDanger,
-                fontFamily: 'Inter-Medium',
-                fontSize: 15
-              }}>
-              Make sure to buy AVAX native token for transactions
-            </Text>
-          </View>
-        </View>
+        <Warning message="Make sure to buy AVAX native token for transactions" />
       )
   }
 

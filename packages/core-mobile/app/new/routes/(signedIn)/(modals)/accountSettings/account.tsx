@@ -1,11 +1,10 @@
 import { BalanceHeader, View } from '@avalabs/k2-alpine'
 import { ScrollViewScreenTemplate } from 'common/components/ScrollViewScreenTemplate'
+import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
 import { useLocalSearchParams } from 'expo-router'
 import { AccountAddresses } from 'features/accountSettings/components/accountAddresses'
 import { AccountButtons } from 'features/accountSettings/components/AccountButtons'
-import { WalletInfo } from 'features/accountSettings/components/WalletInfo'
-import { useFormatCurrency } from 'new/common/hooks/useFormatCurrency'
 import React, { useCallback, useMemo } from 'react'
 import { useSelector } from 'react-redux'
 import { selectAccountByIndex } from 'store/account'
@@ -52,11 +51,6 @@ const AccountScreen = (): JSX.Element => {
     [currencyBalance, selectedCurrency]
   )
 
-  const handleShowPrivateKey = (): void => {
-    // TODO: CP-10070
-    // navigate('/accountSettings/privateKey')
-  }
-
   const renderHeader = useCallback((): JSX.Element => {
     return (
       <BalanceHeader
@@ -98,7 +92,7 @@ const AccountScreen = (): JSX.Element => {
       contentContainerStyle={{ padding: 16 }}>
       <View sx={{ gap: 12 }}>
         <AccountAddresses account={account} />
-        <WalletInfo showPrivateKey={handleShowPrivateKey} />
+        {/* <WalletInfo showPrivateKey={handleShowPrivateKey} /> */}
       </View>
     </ScrollViewScreenTemplate>
   )

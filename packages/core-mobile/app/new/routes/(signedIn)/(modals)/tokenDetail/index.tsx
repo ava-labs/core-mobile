@@ -4,7 +4,6 @@ import {
 } from '@avalabs/avalanche-module'
 import { BridgeTransfer } from '@avalabs/bridge-unified'
 import { BridgeTransaction } from '@avalabs/core-bridge-sdk'
-import { noop } from '@avalabs/core-utils-sdk'
 import {
   NavigationTitleHeader,
   SegmentedControl,
@@ -34,6 +33,7 @@ import {
 import TokenDetail from 'features/portfolio/assets/components/TokenDetail'
 import TransactionHistory from 'features/portfolio/assets/components/TransactionHistory'
 import { ActionButtonTitle } from 'features/portfolio/assets/consts'
+import { useSendSelectedToken } from 'features/send/store'
 import { useAddStake } from 'features/stake/hooks/useAddStake'
 import { AVAX_TOKEN_ID } from 'features/swap/const'
 import { useNavigateToSwap } from 'features/swap/hooks/useNavigateToSwap'
@@ -70,6 +70,7 @@ const TokenDetailScreen = (): React.JSX.Element => {
   const botomInset = useSafeAreaInsets().bottom
   const tabViewRef = useRef<CollapsibleTabsRef>(null)
   const { openUrl } = useCoreBrowser()
+  const [_, setSelectedToken] = useSendSelectedToken()
   const [tokenHeaderLayout, setTokenHeaderLayout] = useState<
     LayoutRectangle | undefined
   >()
@@ -151,9 +152,14 @@ const TokenDetailScreen = (): React.JSX.Element => {
     })
   }, [navigate])
 
+  const handleSend = useCallback((): void => {
+    setSelectedToken(token)
+    navigate('/send')
+  }, [navigate, setSelectedToken, token])
+
   const actionButtons: ActionButton[] = useMemo(() => {
     const buttons: ActionButton[] = [
-      { title: ActionButtonTitle.Send, icon: 'send', onPress: noop }
+      { title: ActionButtonTitle.Send, icon: 'send', onPress: handleSend }
     ]
 
     if (!isSwapDisabled) {
@@ -189,16 +195,17 @@ const TokenDetailScreen = (): React.JSX.Element => {
 
     return buttons
   }, [
+    handleSend,
     isSwapDisabled,
+    handleBuy,
+    isTokenStakable,
     isBridgeDisabled,
     isTokenBridgeable,
-    handleBridge,
-    handleBuy,
     navigateToSwap,
-    token,
+    token?.localId,
     canAddStake,
-    isTokenStakable,
-    addStake
+    addStake,
+    handleBridge
   ])
 
   const { onScroll, targetHiddenProgress } = useFadingHeaderNavigation({

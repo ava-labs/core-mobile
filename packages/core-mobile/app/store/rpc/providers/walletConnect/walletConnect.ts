@@ -10,7 +10,7 @@ import { UPDATE_SESSION_DELAY } from 'consts/walletConnect'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { getChainIdFromCaip2 } from 'utils/caip2ChainIds'
 import { getJsonRpcErrorMessage } from 'utils/getJsonRpcErrorMessage/getJsonRpcErrorMessage'
-import { showSnackbar } from 'new/common/utils/toast'
+import { transactionSnackbar } from 'new/common/utils/toast'
 import { AgnosticRpcProvider, RpcMethod, RpcProvider } from '../../types'
 import { isSessionProposal, isUserRejectedError } from './utils'
 
@@ -36,29 +36,23 @@ class WalletConnectProvider implements AgnosticRpcProvider {
     const shouldShowErrorToast = !isUserRejectedError(error)
 
     if (isSessionProposal(request)) {
-      // const dappName = request.data.params.proposer.metadata.name
-
-      // TODO: use new toast
-      // shouldShowErrorToast && showDappToastError(error.message, dappName)
-      shouldShowErrorToast && showSnackbar(error.message)
+      shouldShowErrorToast &&
+        transactionSnackbar.error({
+          message: 'Connection failed',
+          error: error.message
+        })
 
       try {
         await WalletConnectService.rejectSession(request.data.id)
       } catch (e) {
         Logger.error('Unable to reject session proposal', e)
-
-        // TODO: use new toast
-        // showDappToastError('Unable to reject session proposal', dappName)
-        showSnackbar('Unable to reject session proposal')
       }
     } else {
       const topic = request.data.topic
       const requestId = request.data.id
-      // const dappName = request.peerMeta.name
 
-      // TODO: use new toast
-      // shouldShowErrorToast && showDappToastError(getJsonRpcErrorMessage(error), dappName)
-      shouldShowErrorToast && showSnackbar(getJsonRpcErrorMessage(error))
+      shouldShowErrorToast &&
+        transactionSnackbar.error({ error: getJsonRpcErrorMessage(error) })
 
       try {
         await WalletConnectService.rejectRequest(
@@ -68,9 +62,6 @@ class WalletConnectProvider implements AgnosticRpcProvider {
         )
       } catch (e) {
         Logger.error('Unable to reject request', e)
-        // TODO: use new toast
-        // showDappToastError('Unable to reject request', dappName)
-        showSnackbar('Unable to reject request')
       }
     }
   }
@@ -100,9 +91,7 @@ class WalletConnectProvider implements AgnosticRpcProvider {
         const requiredNamespaces = JSON.stringify(session.requiredNamespaces)
         const optionalNamespaces = JSON.stringify(session.optionalNamespaces)
 
-        // TODO: use new toast
-        // showDappConnectionSuccessToast({ dappName: name })
-        showSnackbar(`connect to ${name} successfully`)
+        transactionSnackbar.success({ message: `Connected to ${name}` })
 
         AnalyticsService.capture('WalletConnectSessionApprovedV2', {
           namespaces,
@@ -133,12 +122,10 @@ class WalletConnectProvider implements AgnosticRpcProvider {
       } catch (e) {
         Logger.error('Unable to approve session proposal', e)
 
-        // TODO: use new toast
-        // showDappToastError(
-        //  'Unable to approve session proposal',
-        //  request.data.params.proposer.metadata.name
-        // )
-        showSnackbar('Unable to approve session proposal')
+        transactionSnackbar.error({
+          message: 'Approval failed',
+          error: (e as Error).message
+        })
       }
     } else {
       const topic = request.data.topic
@@ -148,10 +135,11 @@ class WalletConnectProvider implements AgnosticRpcProvider {
         await WalletConnectService.approveRequest(topic, requestId, result)
       } catch (e) {
         Logger.error('Unable to approve request', e)
-        // const dappName = request.peerMeta.name
-        // TODO: use new toast
-        // showDappToastError('Unable to approve request', dappName)
-        showSnackbar('Unable to approve request')
+
+        transactionSnackbar.error({
+          message: 'Approval failed',
+          error: (e as Error).message
+        })
       }
     }
   }

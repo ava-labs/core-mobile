@@ -14,7 +14,7 @@ import { UTCDate } from '@date-fns/utc'
 import { ScrollViewScreenTemplate } from 'common/components/ScrollViewScreenTemplate'
 import { usePreventScreenRemoval } from 'common/hooks/usePreventScreenRemoval'
 import { copyToClipboard } from 'common/utils/clipboard'
-import { showSnackbar } from 'common/utils/toast'
+import { transactionSnackbar } from 'common/utils/toast'
 import { useDelegationContext } from 'contexts/DelegationContext'
 import {
   differenceInDays,
@@ -224,7 +224,7 @@ const StakeConfirmScreen = (): JSX.Element => {
   const onDelegationSuccess = useCallback(
     (txHash: string): void => {
       AnalyticsService.capture('StakeDelegationSuccess')
-      showSnackbar('Staking successful!')
+      transactionSnackbar.success({ message: 'Staking successful' })
 
       handleDismiss()
       navigate('/stake')
@@ -252,7 +252,7 @@ const StakeConfirmScreen = (): JSX.Element => {
 
   const onDelegationError = useCallback((e: Error): void => {
     AnalyticsService.capture('StakeDelegationFail')
-    showSnackbar(e.message)
+    transactionSnackbar.error({ error: e.message })
   }, [])
 
   function onFundsStuck(): void {
