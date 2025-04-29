@@ -1,13 +1,13 @@
 import React, { useRef, useState, useMemo, useEffect, useCallback } from 'react'
 import { SxProp } from 'dripsy'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
+import { ReturnKeyTypeOptions } from 'react-native'
 import { normalizeErrorMessage } from '../../utils/tokenUnitInput'
 import { useTheme } from '../../hooks'
 import { Text, View } from '../Primitives'
 import { alpha } from '../../utils'
 import { Button } from '../Button/Button'
 import { TokenUnitInput, TokenUnitInputHandle } from './TokenUnitInput'
-import { ReturnKeyTypeOptions } from 'react-native'
 
 interface PresetAmount {
   text: string
