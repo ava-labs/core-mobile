@@ -22,5 +22,7 @@ export enum ReactQueryKeys {
   ECOSYSTEM_PROJECTS = 'ecosystemProjects',
 
   // seedless
-  USER_MFA = 'userMfa'
+  USER_MFA = 'userMfa',
+
+  SIMPLE_PRICES = 'simplePrices'
 }
