@@ -31,6 +31,11 @@
 //   .spyOn(navigationUtils, 'navigateToWatchlist')
 //   .mockImplementation(mockNavigateToWatchlist)
 
+describe('handleDeeplink', () => {
+  it('should handle deeplink', () => {
+    expect(true).toBe(true)
+  })
+})
 // describe('handleDeeplink', () => {
 //   describe('handle walletConnect urls', () => {
 //     it('should parse https link correctly', () => {

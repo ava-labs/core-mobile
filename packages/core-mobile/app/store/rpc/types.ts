@@ -43,11 +43,9 @@ export enum RpcMethod {
   PERSONAL_SIGN = 'personal_sign',
   ETH_SIGN = 'eth_sign',
   WALLET_ADD_ETHEREUM_CHAIN = 'wallet_addEthereumChain',
-  WALLET_SWITCH_ETHEREUM_CHAIN = 'wallet_switchEthereumChain',
   WALLET_GET_ETHEREUM_CHAIN = 'wallet_getEthereumChain',
 
   /* custom methods that are proprietary to Core */
-  AVALANCHE_BRIDGE_ASSET = 'avalanche_bridgeAsset',
   AVALANCHE_CREATE_CONTACT = 'avalanche_createContact',
   AVALANCHE_GET_ACCOUNTS = 'avalanche_getAccounts',
   AVALANCHE_GET_ACCOUNT_PUB_KEY = 'avalanche_getAccountPubKey',
@@ -70,7 +68,6 @@ export enum RpcMethod {
 }
 
 export const CORE_EVM_METHODS = [
-  RpcMethod.AVALANCHE_BRIDGE_ASSET,
   RpcMethod.AVALANCHE_CREATE_CONTACT,
   RpcMethod.AVALANCHE_GET_ACCOUNT_PUB_KEY,
   RpcMethod.AVALANCHE_GET_ACCOUNTS,

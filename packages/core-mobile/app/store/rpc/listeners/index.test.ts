@@ -644,14 +644,12 @@ describe('rpc - listeners', () => {
                   'eth_sign',
                   'personal_sign',
                   'wallet_addEthereumChain',
-                  'wallet_switchEthereumChain',
                   'avalanche_getContacts',
                   'avalanche_createContact',
                   'avalanche_removeContact',
                   'avalanche_updateContact',
                   'avalanche_selectAccount',
-                  'avalanche_getAccounts',
-                  'avalanche_bridgeAsset'
+                  'avalanche_getAccounts'
                 ],
                 chains: ['eip155:43114', 'eip155:1'],
                 events: ['chainChanged', 'accountsChanged'],

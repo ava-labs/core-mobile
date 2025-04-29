@@ -10,12 +10,10 @@ import {
   selectEnabledNetworks
 } from 'store/network/slice'
 import { selectIsBlockaidDappScanBlocked } from 'store/posthog/slice'
-import { createInAppRequest } from 'store/rpc/utils/createInAppRequest'
 import { getChainIdFromCaip2 } from 'utils/caip2ChainIds'
 import mergeWith from 'lodash/mergeWith'
 import isArray from 'lodash/isArray'
 import union from 'lodash/union'
-import { RpcMethod as VmModuleRpcMethod } from '@avalabs/vm-module-types'
 import { RpcMethod, CORE_EVM_METHODS } from '../../types'
 import {
   RpcRequestHandler,
@@ -45,7 +43,6 @@ const supportedMethods = [
   RpcMethod.PERSONAL_SIGN,
   RpcMethod.ETH_SIGN,
   RpcMethod.WALLET_ADD_ETHEREUM_CHAIN,
-  RpcMethod.WALLET_SWITCH_ETHEREUM_CHAIN,
   RpcMethod.WALLET_GET_ETHEREUM_CHAIN
 ]
 
@@ -126,22 +123,22 @@ class WCSessionRequestHandler implements RpcRequestHandler<WCSessionProposal> {
       throw new Error('No supported network found')
     }
 
-    try {
-      const chainId = chainIdtoSwitch.toString()
-      const request = createInAppRequest(listenerApi.dispatch)
-      await request({
-        method:
-          RpcMethod.WALLET_SWITCH_ETHEREUM_CHAIN as unknown as VmModuleRpcMethod,
-        params: [
-          {
-            chainId
-          }
-        ],
-        chainId: `${BlockchainNamespace.EIP155}:${chainId}`
-      })
-    } catch (error) {
-      throw new Error(`Failed to switch to network ${chainIdtoSwitch}`)
-    }
+    // try {
+    //   const chainId = chainIdtoSwitch.toString()
+    //   const request = createInAppRequest(listenerApi.dispatch)
+    //   await request({
+    //     method:
+    //       RpcMethod.WALLET_SWITCH_ETHEREUM_CHAIN as unknown as VmModuleRpcMethod,
+    //     params: [
+    //       {
+    //         chainId
+    //       }
+    //     ],
+    //     chainId: `${BlockchainNamespace.EIP155}:${chainId}`
+    //   })
+    // } catch (error) {
+    //   throw new Error(`Failed to switch to network ${chainIdtoSwitch}`)
+    // }
   }
 
   private getNamespacesToApprove = (

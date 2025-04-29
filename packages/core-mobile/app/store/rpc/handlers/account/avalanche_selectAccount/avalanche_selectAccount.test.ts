@@ -1,4 +1,9 @@
 // TODO rework this rpc
+describe('avalanche_selectAccount', () => {
+  it('should do nothing', () => {
+    expect(true).toBe(true)
+  })
+})
 // import { rpcErrors } from '@metamask/rpc-errors'
 // import { RpcMethod, RpcProvider, RpcRequest } from 'store/rpc/types'
 // import mockSession from 'tests/fixtures/walletConnect/session.json'

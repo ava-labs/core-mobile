@@ -1,11 +1,12 @@
 import { bigIntToHex } from '@ethereumjs/util'
 import { AppListenerEffectAPI, RootState } from 'store'
-import { WalletState, onAppUnlocked, selectWalletState } from 'store/app'
+import { WalletState } from 'store/app/types'
+import { onAppUnlocked, selectWalletState } from 'store/app/slice'
 import { AppStartListening } from 'store/middleware/listener'
 import {
   selectIsDeveloperMode,
   toggleDeveloperMode
-} from 'store/settings/advanced'
+} from 'store/settings/advanced/slice'
 import { isAnyOf } from '@reduxjs/toolkit'
 import UnifiedBridgeService from 'services/bridge/UnifiedBridgeService'
 import {
@@ -16,7 +17,7 @@ import {
   EvmSigner,
   Hex
 } from '@avalabs/bridge-unified'
-import { selectIsFeatureBlocked, setFeatureFlags } from 'store/posthog'
+import { selectIsFeatureBlocked, setFeatureFlags } from 'store/posthog/slice'
 import Logger from 'utils/Logger'
 import { createInAppRequest, Request } from 'store/rpc/utils/createInAppRequest'
 import { FeatureGates } from 'services/posthog/types'

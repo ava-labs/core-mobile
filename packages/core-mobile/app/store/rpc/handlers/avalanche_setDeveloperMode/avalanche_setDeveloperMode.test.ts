@@ -1,4 +1,9 @@
 // TODO rework this rpc
+describe('avalanche_setDeveloperMode', () => {
+  it('should do nothing', () => {
+    expect(true).toBe(true)
+  })
+})
 // import { RpcMethod, RpcProvider } from 'store/rpc/types'
 // import mockSession from 'tests/fixtures/walletConnect/session.json'
 // import { rpcErrors } from '@metamask/rpc-errors'

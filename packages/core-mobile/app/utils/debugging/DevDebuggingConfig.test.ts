@@ -21,9 +21,5 @@ describe('DevDebuggingConfig', () => {
     it('should not enable Sentry Spotlight', () => {
       expect(config.SENTRY_SPOTLIGHT).toBe(false)
     })
-
-    it('should not enable new design', () => {
-      expect(config.K2_ALPINE).toBe(false)
-    })
   })
 })

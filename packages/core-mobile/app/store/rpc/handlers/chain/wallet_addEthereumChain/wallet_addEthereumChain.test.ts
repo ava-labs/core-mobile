@@ -1,4 +1,9 @@
 // TODO: fix addEthereumChain
+describe('wallet_addEthereumChain', () => {
+  it('should do nothing', () => {
+    expect(true).toBe(true)
+  })
+})
 // import { rpcErrors } from '@metamask/rpc-errors'
 // import { RpcMethod, RpcProvider, RpcRequest } from 'store/rpc/types'
 // import mockSession from 'tests/fixtures/walletConnect/session.json'

@@ -8,8 +8,7 @@ const DevDebuggingConfig = {
   LOGBOX_DISABLED: false,
   SHOW_DEMO_NFTS: false,
   API_MOCKING: false,
-  SENTRY_SPOTLIGHT: false,
-  K2_ALPINE: false
+  SENTRY_SPOTLIGHT: false
 }
 
 export default DevDebuggingConfig
