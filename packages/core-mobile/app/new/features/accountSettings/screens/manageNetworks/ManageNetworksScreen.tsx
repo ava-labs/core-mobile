@@ -5,33 +5,27 @@ import {
   SearchBar,
   Text,
   Toggle,
-  TouchableOpacity,
   useTheme,
   View
 } from '@avalabs/k2-alpine'
-import { ErrorState } from 'common/components/ErrorState'
+import { ListScreen } from 'common/components/ListScreen'
+import NavigationBarButton from 'common/components/NavigationBarButton'
 import { NetworkLogoWithChain } from 'common/components/NetworkLogoWithChain'
 import { sortPrimaryNetworks } from 'common/utils/sortPrimaryNetworks'
-import { useFocusEffect, useNavigation, useRouter } from 'expo-router'
+import { useRouter } from 'expo-router'
 import { useNetworks } from 'hooks/networks/useNetworks'
 import React, { useCallback, useMemo, useState } from 'react'
-import { FlatList, ListRenderItem } from 'react-native'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { ListRenderItem } from 'react-native'
 import { alwaysEnabledNetworks } from 'store/network'
-import { isPChain } from 'utils/network/isAvalancheNetwork'
-import { isXPChain } from 'utils/network/isAvalancheNetwork'
-import { isXChain } from 'utils/network/isAvalancheNetwork'
+import { isPChain, isXChain, isXPChain } from 'utils/network/isAvalancheNetwork'
 
 export const ManageNetworksScreen = (): JSX.Element => {
   const { theme } = useTheme()
-  const insets = useSafeAreaInsets()
   const { networks, enabledNetworks, customNetworks, toggleNetwork } =
     useNetworks()
   const [searchText, setSearchText] = useState('')
   const title = 'Networks'
-  const { getParent } = useNavigation()
   const { navigate } = useRouter()
-
   const filterBySearchText = useCallback(
     (network: Network) =>
       network.chainName.toLowerCase().includes(searchText.toLowerCase()) ||
@@ -47,9 +41,11 @@ export const ManageNetworksScreen = (): JSX.Element => {
     const custom = Object.values(customNetworks).filter(
       network => !enabled.includes(network)
     )
-    const disabled = Object.values(networks).filter(
-      network => !enabled.includes(network) && !custom.includes(network)
-    )
+    const disabled = Object.values(networks)
+      .filter(
+        network => !enabled.includes(network) && !custom.includes(network)
+      )
+      .sort(sortPrimaryNetworks)
 
     return [...enabled, ...custom, ...disabled].sort(sortPrimaryNetworks)
   }, [customNetworks, enabledNetworks, networks])
@@ -152,77 +148,35 @@ export const ManageNetworksScreen = (): JSX.Element => {
     },
     [navigate]
   )
+
+  const renderHeader = useCallback(() => {
+    return (
+      <SearchBar
+        onTextChanged={setSearchText}
+        searchText={searchText}
+        testID="network_manager__search_input"
+      />
+    )
+  }, [setSearchText, searchText])
+
   const renderHeaderRight = useCallback(() => {
     return (
-      <TouchableOpacity
-        onPress={goToAddCustomNetwork}
-        sx={{
-          flexDirection: 'row',
-          gap: 16,
-          marginRight: 18,
-          alignItems: 'center'
-        }}>
-        <Icons.Content.Add
-          testID="add_custon_network_btn"
-          width={25}
-          height={25}
-          color={theme.colors.$textPrimary}
-        />
-      </TouchableOpacity>
+      <NavigationBarButton isModal onPress={goToAddCustomNetwork}>
+        <Icons.Content.Add color={theme.colors.$textPrimary} />
+      </NavigationBarButton>
     )
-  }, [theme.colors.$textPrimary, goToAddCustomNetwork])
-
-  useFocusEffect(
-    useCallback(() => {
-      getParent()?.setOptions({
-        headerRight: renderHeaderRight
-      })
-      return () => {
-        getParent()?.setOptions({
-          headerRight: undefined
-        })
-      }
-    }, [getParent, renderHeaderRight])
-  )
+  }, [goToAddCustomNetwork, theme.colors.$textPrimary])
 
   return (
-    <View
-      style={{
-        flex: 1
-      }}>
-      <View
-        style={{
-          paddingHorizontal: 16,
-          gap: 16
-        }}>
-        <Text variant="heading2">{title}</Text>
-        <SearchBar
-          onTextChanged={setSearchText}
-          searchText={searchText}
-          testID="network_manager__search_input"
-        />
-      </View>
-      <FlatList
-        data={filteredNetworks}
-        renderItem={renderNetwork}
-        keyExtractor={item => item.chainId.toString()}
-        contentContainerStyle={[
-          {
-            paddingBottom: insets.bottom
-          },
-          filteredNetworks.length === 0
-            ? {
-                justifyContent: 'center',
-                flex: 1
-              }
-            : {
-                paddingTop: 16
-              }
-        ]}
-        ListEmptyComponent={
-          <ErrorState title="No results" description="Try a different search" />
-        }
-      />
-    </View>
+    <ListScreen
+      title={title}
+      data={filteredNetworks}
+      isModal
+      hasParent
+      keyExtractor={item => item.chainId.toString()}
+      renderItem={renderNetwork}
+      renderHeaderRight={renderHeaderRight}
+      renderHeader={renderHeader}
+    />
   )
 }

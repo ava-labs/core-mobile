@@ -63,14 +63,16 @@ export const SelectSwapTokenScreen = ({
       <TouchableOpacity
         onPress={() => handleSelectToken(item)}
         sx={{
-          marginTop: 10
+          marginTop: 10,
+          paddingLeft: 16
         }}>
         <View
           sx={{
             width: '100%',
             flexDirection: 'row',
             alignItems: 'center',
-            justifyContent: 'space-between'
+            justifyContent: 'space-between',
+            paddingRight: 16
           }}>
           <View sx={{ flexDirection: 'row', gap: 10 }}>
             <LogoWithNetwork

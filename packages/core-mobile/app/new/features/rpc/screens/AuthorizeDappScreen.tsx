@@ -104,42 +104,38 @@ const AuthorizeDappScreen = ({
         label: 'Cancel',
         onPress: rejectAndClose
       }}>
-      {({ handleHeaderLayout }) => (
-        <>
-          <View style={styles.iconContainer}>
-            <View onLayout={handleHeaderLayout}>
-              <TokenLogo logoUri={getLogoIconUrl(peerMeta.icons)} size={62} />
-            </View>
-            <View style={styles.domainUrlContainer}>
-              <Text
-                variant="heading6"
-                style={{
-                  textAlign: 'center',
-                  width: SCREEN_WIDTH * 0.7,
-                  marginBottom: 24
-                }}
-                numberOfLines={2}>
-                {peerMeta.name}
-              </Text>
-              <Text
-                variant="body1"
-                style={{ textAlign: 'center', width: SCREEN_WIDTH * 0.85 }}>
-                Do you want to allow{' '}
-                <Text variant="body1" style={{ fontWeight: '600' }}>
-                  {peerMeta.url}
-                </Text>{' '}
-                to access your wallet? Tapping “Connect” will grant full access
-                to the accounts selected
-              </Text>
-            </View>
+      <>
+        <View style={styles.iconContainer}>
+          <TokenLogo logoUri={getLogoIconUrl(peerMeta.icons)} size={62} />
+          <View style={styles.domainUrlContainer}>
+            <Text
+              variant="heading6"
+              style={{
+                textAlign: 'center',
+                width: SCREEN_WIDTH * 0.7,
+                marginBottom: 24
+              }}
+              numberOfLines={2}>
+              {peerMeta.name}
+            </Text>
+            <Text
+              variant="body1"
+              style={{ textAlign: 'center', width: SCREEN_WIDTH * 0.85 }}>
+              Do you want to allow{' '}
+              <Text variant="body1" style={{ fontWeight: '600' }}>
+                {peerMeta.url}
+              </Text>{' '}
+              to access your wallet? Tapping “Connect” will grant full access to
+              the accounts selected
+            </Text>
           </View>
-          <SelectAccounts
-            onSelect={onSelect}
-            selectedAccounts={selectedAccounts}
-            accounts={allAccounts}
-          />
-        </>
-      )}
+        </View>
+        <SelectAccounts
+          onSelect={onSelect}
+          selectedAccounts={selectedAccounts}
+          accounts={allAccounts}
+        />
+      </>
     </ActionSheet>
   )
 }

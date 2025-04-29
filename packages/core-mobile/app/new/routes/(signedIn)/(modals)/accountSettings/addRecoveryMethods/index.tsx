@@ -1,22 +1,17 @@
-import React, { useCallback } from 'react'
+import { Icons, ScrollView, showAlert, useTheme } from '@avalabs/k2-alpine'
+import { useNavigation } from '@react-navigation/native'
+import NavigationBarButton from 'common/components/NavigationBarButton'
+import ScreenHeader from 'common/components/ScreenHeader'
+import { useUserMfa } from 'common/hooks/useUserMfa'
 import { useFocusEffect, useRouter } from 'expo-router'
-import {
-  Icons,
-  ScrollView,
-  showAlert,
-  TouchableOpacity,
-  useTheme
-} from '@avalabs/k2-alpine'
-import { useRegisteredRecoveryMethods } from 'features/onboarding/hooks/useRegisteredRecoveryMethods'
+import { useRecoveryMethodsContext } from 'features/accountSettings/context/RecoverMethodsProvider'
+import { ManageRecoveryMethods } from 'features/onboarding/components/ManageRecoveryMethods'
 import {
   RecoveryMethod,
   RecoveryMethods
 } from 'features/onboarding/hooks/useAvailableRecoveryMethods'
-import { ManageRecoveryMethods } from 'features/onboarding/components/ManageRecoveryMethods'
-import ScreenHeader from 'common/components/ScreenHeader'
-import { useNavigation } from '@react-navigation/native'
-import { useRecoveryMethodsContext } from 'features/accountSettings/context/RecoverMethodsProvider'
-import { useUserMfa } from 'common/hooks/useUserMfa'
+import { useRegisteredRecoveryMethods } from 'features/onboarding/hooks/useRegisteredRecoveryMethods'
+import React, { useCallback } from 'react'
 import { Loader } from '../../../../../common/components/Loader'
 
 const ManageRecoveryMethodsScreen = (): JSX.Element => {
@@ -37,19 +32,13 @@ const ManageRecoveryMethodsScreen = (): JSX.Element => {
 
   const renderHeaderRight = useCallback(() => {
     return (
-      <TouchableOpacity
+      <NavigationBarButton
+        isModal
         onPress={() =>
           navigate('/accountSettings/addRecoveryMethods/available')
-        }
-        sx={{
-          flexDirection: 'row',
-          gap: 16,
-          marginTop: 14,
-          marginRight: 18,
-          alignItems: 'center'
-        }}>
+        }>
         <Icons.Content.Add color={colors.$textPrimary} />
-      </TouchableOpacity>
+      </NavigationBarButton>
     )
   }, [colors.$textPrimary, navigate])
 

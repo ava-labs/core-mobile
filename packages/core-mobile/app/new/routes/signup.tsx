@@ -1,4 +1,4 @@
-import { View, Button, useTheme, SafeAreaView, Logos } from '@avalabs/k2-alpine'
+import { View, Button, useTheme, Logos, SafeAreaView } from '@avalabs/k2-alpine'
 import React, { useEffect } from 'react'
 import { useSelector } from 'react-redux'
 import {
@@ -161,7 +161,7 @@ export default function Signup(): JSX.Element {
 
   return (
     <SafeAreaView
-      sx={{
+      style={{
         flex: 1
       }}>
       <View sx={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>

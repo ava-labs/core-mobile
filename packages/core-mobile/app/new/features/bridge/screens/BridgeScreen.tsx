@@ -1,66 +1,62 @@
-import React, { useMemo, useCallback, useState, useEffect } from 'react'
+import { BridgeAsset, TokenType } from '@avalabs/bridge-unified'
+import { Network } from '@avalabs/core-chains-sdk'
+import { bigintToBig, resolve } from '@avalabs/core-utils-sdk'
 import {
   ActivityIndicator,
   Button,
   CircularButton,
   Icons,
-  SafeAreaView,
-  ScrollView,
   Separator,
   showAlert,
   Text,
   useTheme,
   View
 } from '@avalabs/k2-alpine'
-import ScreenHeader from 'common/components/ScreenHeader'
-import { bigintToBig, resolve } from '@avalabs/core-utils-sdk'
-import { KeyboardAvoidingView } from 'common/components/KeyboardAvoidingView'
-import { useGlobalSearchParams, useRouter } from 'expo-router'
-import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
-import { TokenInputWidget } from 'common/components/TokenInputWidget'
-import useCChainNetwork from 'hooks/earn/useCChainNetwork'
-import Logger from 'utils/Logger'
-import { UNKNOWN_AMOUNT } from 'consts/amount'
-import {
-  selectIsHallidayBridgeBannerBlocked,
-  selectIsGaslessBlocked
-} from 'store/posthog'
-import { useSelector } from 'react-redux'
-import { SelectNetworkRow } from 'features/bridge/components/SelectNetworkRow'
-import { BridgeAsset, TokenType } from '@avalabs/bridge-unified'
-import { Network } from '@avalabs/core-chains-sdk'
-import {
-  unwrapAssetSymbol,
-  wrapAssetSymbol
-} from 'screens/bridge/utils/bridgeUtils'
 import { NetworkVMType } from '@avalabs/vm-module-types'
-import Animated, {
-  FadeIn,
-  FadeOut,
-  LinearTransition
-} from 'react-native-reanimated'
-import { RootState } from 'store'
-import { selectAvailableNativeTokenBalanceForNetworkAndAccount } from 'store/balance'
-import { selectActiveAccount } from 'store/account'
-import GaslessService from 'services/gasless/GaslessService'
-import { AssetBalance } from 'screens/bridge/utils/types'
+import { useNavigation } from '@react-navigation/native'
+import { ScrollScreen } from 'common/components/ScrollScreen'
+import { TokenInputWidget } from 'common/components/TokenInputWidget'
+import { useCoreBrowser } from 'common/hooks/useCoreBrowser'
+import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
+import { usePreventScreenRemoval } from 'common/hooks/usePreventScreenRemoval'
+import { UNKNOWN_AMOUNT } from 'consts/amount'
+import { useGlobalSearchParams, useRouter } from 'expo-router'
 import BridgeTypeFootnote from 'features/bridge/components/BridgeTypeFootnote'
+import { HallidayBanner } from 'features/bridge/components/HallidayBanner'
+import { SelectNetworkRow } from 'features/bridge/components/SelectNetworkRow'
+import { HALLIDAY_BRIDGE_URL } from 'features/bridge/const'
 import {
   useBridgeSelectedAsset,
   useBridgeSelectedSourceNetwork,
   useBridgeSelectedTargetNetwork
 } from 'features/bridge/store/store'
-import { selectHasBeenViewedOnce, ViewOnceKey } from 'store/viewOnce'
-import { HallidayBanner } from 'features/bridge/components/HallidayBanner'
+import useCChainNetwork from 'hooks/earn/useCChainNetwork'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import Animated, {
+  FadeIn,
+  FadeOut,
+  LinearTransition
+} from 'react-native-reanimated'
+import { useSelector } from 'react-redux'
+import {
+  unwrapAssetSymbol,
+  wrapAssetSymbol
+} from 'screens/bridge/utils/bridgeUtils'
+import { AssetBalance } from 'screens/bridge/utils/types'
 import AnalyticsService from 'services/analytics/AnalyticsService'
-import { HALLIDAY_BRIDGE_URL } from 'features/bridge/const'
-import { useCoreBrowser } from 'common/hooks/useCoreBrowser'
+import GaslessService from 'services/gasless/GaslessService'
+import { RootState } from 'store'
+import { selectActiveAccount } from 'store/account'
+import { selectAvailableNativeTokenBalanceForNetworkAndAccount } from 'store/balance'
+import {
+  selectIsGaslessBlocked,
+  selectIsHallidayBridgeBannerBlocked
+} from 'store/posthog'
 import { isUserRejectedError } from 'store/rpc/providers/walletConnect/utils'
-import { getJsonRpcErrorMessage } from 'utils/getJsonRpcErrorMessage/getJsonRpcErrorMessage'
+import { selectHasBeenViewedOnce, ViewOnceKey } from 'store/viewOnce'
 import { audioFeedback, Audios } from 'utils/AudioFeedback'
-import { usePreventScreenRemoval } from 'common/hooks/usePreventScreenRemoval'
-import { useSimpleFadingHeader } from 'common/hooks/useSimpleFadingHeader'
-import { useNavigation } from '@react-navigation/native'
+import Logger from 'utils/Logger'
+import { getJsonRpcErrorMessage } from 'utils/getJsonRpcErrorMessage/getJsonRpcErrorMessage'
 import useBridge from '../hooks/useBridge'
 
 export const BridgeScreen = (): JSX.Element => {
@@ -103,11 +99,6 @@ export const BridgeScreen = (): JSX.Element => {
     selectedAssetInTargetNetwork
   } = useBridge()
   const [bridgeError, setBridgeError] = useState('')
-  const { onScroll, handleHeaderLayout, animatedHeaderStyle } =
-    useSimpleFadingHeader({
-      title: 'Bridge',
-      shouldHeaderHaveGrabber: true
-    })
 
   const [isPending, setIsPending] = useState<boolean>(false)
   const [isInputFocused, setIsInputFocused] = useState<boolean>(false)
@@ -664,75 +655,73 @@ export const BridgeScreen = (): JSX.Element => {
 
   usePreventScreenRemoval(isPending)
 
+  const renderFooter = useCallback(() => {
+    return (
+      <View
+        sx={{
+          gap: 20,
+          paddingBottom: 16
+        }}>
+        <Button
+          type="primary"
+          size="large"
+          onPress={handleTransfer}
+          disabled={transferDisabled}>
+          {isPending ? <ActivityIndicator /> : 'Next'}
+        </Button>
+        {bridgeType && <BridgeTypeFootnote bridgeType={bridgeType} />}
+      </View>
+    )
+  }, [handleTransfer, isPending, transferDisabled, bridgeType])
+
   return (
-    <KeyboardAvoidingView>
-      <SafeAreaView sx={{ flex: 1 }}>
-        <ScrollView
-          style={{ flex: 1 }}
-          contentContainerSx={{ padding: 16, paddingTop: 0 }}
-          keyboardDismissMode="on-drag"
-          keyboardShouldPersistTaps="always"
-          onScroll={onScroll}>
-          <Animated.View
-            style={animatedHeaderStyle}
-            onLayout={handleHeaderLayout}>
-            <ScreenHeader title="Bridge" />
-          </Animated.View>
-          {shouldShowHallidayBanner && (
-            <View sx={{ marginTop: 16, marginBottom: 8 }}>
-              <HallidayBanner onPress={handlePressHallidayBanner} />
-            </View>
-          )}
-          <Animated.View style={{ marginTop: 16 }} layout={LinearTransition}>
-            {renderFromSection()}
-            {errorMessage && (
-              <Animated.View entering={FadeIn} exiting={FadeOut}>
-                <Text
-                  variant="caption"
-                  sx={{
-                    color: colors.$textDanger,
-                    alignSelf: 'center',
-                    marginVertical: 8
-                  }}>
-                  {errorMessage}
-                </Text>
-              </Animated.View>
-            )}
-            {isInputFocused ? (
-              <Animated.View style={{ height: 12 }} layout={LinearTransition} />
-            ) : (
-              <Animated.View layout={LinearTransition}>
-                <CircularButton
-                  style={{
-                    width: 40,
-                    height: 40,
-                    marginVertical: 8,
-                    alignSelf: 'center'
-                  }}
-                  disabled={isPending}
-                  onPress={handleToggleNetwork}>
-                  <Icons.Custom.SwapVertical />
-                </CircularButton>
-              </Animated.View>
-            )}
-            {renderToSection()}
-          </Animated.View>
-        </ScrollView>
+    <ScrollScreen
+      title="Bridge"
+      renderFooter={renderFooter}
+      isModal
+      contentContainerStyle={{ padding: 16 }}>
+      {shouldShowHallidayBanner && (
         <View
-          sx={{
-            padding: 16,
-            gap: 20
+          style={{
+            marginBottom: 24
           }}>
-          <Button
-            type="primary"
-            size="large"
-            onPress={handleTransfer}
-            disabled={transferDisabled}>
-            {isPending ? <ActivityIndicator /> : 'Next'}
-          </Button>
-          {bridgeType && <BridgeTypeFootnote bridgeType={bridgeType} />}
+          <HallidayBanner onPress={handlePressHallidayBanner} />
         </View>
-      </SafeAreaView>
-    </KeyboardAvoidingView>
+      )}
+      <Animated.View layout={LinearTransition}>
+        {renderFromSection()}
+        {errorMessage && (
+          <Animated.View entering={FadeIn} exiting={FadeOut}>
+            <Text
+              variant="caption"
+              sx={{
+                color: colors.$textDanger,
+                alignSelf: 'center',
+                marginVertical: 8
+              }}>
+              {errorMessage}
+            </Text>
+          </Animated.View>
+        )}
+        {isInputFocused ? (
+          <Animated.View style={{ height: 12 }} layout={LinearTransition} />
+        ) : (
+          <Animated.View layout={LinearTransition}>
+            <CircularButton
+              style={{
+                width: 40,
+                height: 40,
+                marginVertical: 8,
+                alignSelf: 'center'
+              }}
+              disabled={isPending}
+              onPress={handleToggleNetwork}>
+              <Icons.Custom.SwapVertical />
+            </CircularButton>
+          </Animated.View>
+        )}
+        {renderToSection()}
+      </Animated.View>
+    </ScrollScreen>
   )
 }

@@ -1,26 +1,20 @@
 import {
-  NavigationTitleHeader,
+  Button,
   SearchBar,
-  Text,
-  View,
-  FlatList,
   SPRING_LINEAR_TRANSITION,
-  useTheme,
+  Text,
   TouchableOpacity,
-  Button
+  useTheme,
+  View
 } from '@avalabs/k2-alpine'
-import React, { useCallback, useState, useMemo } from 'react'
-import Animated, {
-  useAnimatedStyle,
-  useSharedValue
-} from 'react-native-reanimated'
-import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
-import { LayoutChangeEvent, LayoutRectangle } from 'react-native'
+import { ListScreen } from 'common/components/ListScreen'
+import { Logo } from 'common/components/Logo'
 import { getListItemEnteringAnimation } from 'common/utils/animations'
 import { useConnectedDapps } from 'features/accountSettings/hooks/useConnectedDapps'
-import { Dapp } from 'screens/rpc/ConnectedDapps/types'
-import { Logo } from 'common/components/Logo'
+import React, { useCallback, useMemo, useState } from 'react'
+import Animated from 'react-native-reanimated'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { Dapp } from 'screens/rpc/ConnectedDapps/types'
 
 const ConnectedSitesScreen = (): JSX.Element => {
   const {
@@ -29,33 +23,10 @@ const ConnectedSitesScreen = (): JSX.Element => {
   const bottomInset = useSafeAreaInsets().bottom
   const { allApprovedDapps, killSession, killAllSessions } = useConnectedDapps()
   const [searchText, setSearchText] = useState('')
-  const headerOpacity = useSharedValue(1)
-  const [headerLayout, setHeaderLayout] = useState<
-    LayoutRectangle | undefined
-  >()
 
   const navigationTitle = `${allApprovedDapps.length} connected ${
     allApprovedDapps.length < 2 ? 'site' : 'sites'
   }`
-
-  const navigationHeader = useMemo(
-    () => <NavigationTitleHeader title={navigationTitle} />,
-    [navigationTitle]
-  )
-
-  const { onScroll, targetHiddenProgress } = useFadingHeaderNavigation({
-    header: navigationHeader,
-    targetLayout: headerLayout,
-    shouldHeaderHaveGrabber: true
-  })
-
-  const animatedHeaderStyle = useAnimatedStyle(() => ({
-    opacity: 1 - targetHiddenProgress.value
-  }))
-
-  const handleHeaderLayout = (event: LayoutChangeEvent): void => {
-    setHeaderLayout(event.nativeEvent.layout)
-  }
 
   const disconnectDapp = useCallback(
     async (topic: string): Promise<void> => {
@@ -161,38 +132,9 @@ const ConnectedSitesScreen = (): JSX.Element => {
 
   const renderSeparator = (): JSX.Element => <View sx={{ height: 12 }} />
 
-  return (
-    <View
-      sx={{ flex: 1, paddingHorizontal: 16, justifyContent: 'space-between' }}>
-      <FlatList
-        showsVerticalScrollIndicator={false}
-        scrollEventThrottle={16}
-        onScroll={onScroll}
-        data={searchResults}
-        contentContainerStyle={{
-          paddingBottom: 60,
-          flexGrow: 1
-        }}
-        keyExtractor={(item): string => (item as Dapp).id}
-        ItemSeparatorComponent={renderSeparator}
-        ListHeaderComponent={
-          <View sx={{ gap: 16, marginBottom: 16 }}>
-            <Animated.View
-              style={[{ opacity: headerOpacity }, animatedHeaderStyle]}
-              onLayout={handleHeaderLayout}>
-              <Text variant="heading2">{navigationTitle}</Text>
-            </Animated.View>
-            <SearchBar
-              onTextChanged={setSearchText}
-              searchText={searchText}
-              placeholder="Search"
-              useDebounce={true}
-            />
-          </View>
-        }
-        renderItem={item => renderItem(item.item as Dapp, item.index)}
-      />
-      {allApprovedDapps.length > 1 && (
+  const renderFooter = useCallback(() => {
+    if (allApprovedDapps.length > 1) {
+      return (
         <Button
           type="primary"
           size="large"
@@ -200,8 +142,33 @@ const ConnectedSitesScreen = (): JSX.Element => {
           onPress={() => disconnectAllDapps()}>
           Disconnect all
         </Button>
-      )}
-    </View>
+      )
+    }
+    return undefined
+  }, [allApprovedDapps.length, bottomInset, disconnectAllDapps])
+
+  const renderHeader = useCallback(() => {
+    return (
+      <SearchBar
+        onTextChanged={setSearchText}
+        searchText={searchText}
+        placeholder="Search"
+        useDebounce={true}
+      />
+    )
+  }, [searchText])
+
+  return (
+    <ListScreen
+      isModal
+      title={navigationTitle}
+      ItemSeparatorComponent={renderSeparator}
+      renderItem={item => renderItem(item.item as Dapp, item.index)}
+      renderHeader={renderHeader}
+      data={searchResults}
+      keyExtractor={(item): string => (item as Dapp).id}
+      renderFooter={renderFooter}
+    />
   )
 }
 

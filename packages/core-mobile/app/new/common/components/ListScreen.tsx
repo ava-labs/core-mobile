@@ -1,0 +1,242 @@
+import { ANIMATED, NavigationTitleHeader } from '@avalabs/k2-alpine'
+import { useHeaderHeight } from '@react-navigation/elements'
+import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
+import { getListItemEnteringAnimation } from 'common/utils/animations'
+import React, {
+  useCallback,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState
+} from 'react'
+import {
+  LayoutRectangle,
+  NativeScrollEvent,
+  NativeSyntheticEvent,
+  Platform,
+  StyleProp,
+  View,
+  ViewStyle
+} from 'react-native'
+import { FlatList } from 'react-native-gesture-handler'
+import Animated, {
+  FlatListPropsWithLayout,
+  interpolate,
+  LinearTransition,
+  useAnimatedStyle,
+  useSharedValue,
+  withSpring
+} from 'react-native-reanimated'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { BlurViewWithFallback } from './BlurViewWithFallback'
+import { ErrorState } from './ErrorState'
+import { KeyboardAvoidingView } from './KeyboardAvoidingView'
+import ScreenHeader from './ScreenHeader'
+
+// Use this component when you need to display a list of items in a screen.
+// It handles all the logic for the header and footer, including keyboard interactions and gestures.
+
+// It provides:
+// - A navigation bar with a title
+// - A header with a title
+// - Custom sticky header and footer components
+// - Custom empty state component
+// - Proper keyboard avoidance and handling
+
+// Used by all screens that display a list of items
+
+interface ListScreenProps<T>
+  extends Omit<
+    FlatListPropsWithLayout<T>,
+    'ListHeaderComponent' | 'ListFooterComponent'
+  > {
+  /** The title displayed in the screen header */
+  title: string
+  /** Optional title to display in the navigation bar */
+  navigationTitle?: string
+  /** Array of data items to be rendered in the list */
+  data: T[]
+  /** Whether this screen has a parent screen in the navigation stack */
+  hasParent?: boolean
+  /** Whether this screen is presented as a modal */
+  isModal?: boolean
+  /** Optional function to render a custom sticky header component */
+  renderHeader?: () => React.ReactNode
+  /** Optional function to render content in the navigation bar's right side */
+  renderHeaderRight?: () => React.ReactNode
+  /** Optional function to render content when the list is empty */
+  renderEmpty?: () => React.ReactNode
+}
+
+const AnimatedFlatList = Animated.createAnimatedComponent(FlatList)
+
+export const ListScreen = <T,>({
+  data,
+  title,
+  navigationTitle,
+  hasParent = false,
+  isModal = false,
+  renderEmpty,
+  renderHeader,
+  renderHeaderRight,
+  ...props
+}: ListScreenProps<T>): JSX.Element => {
+  const insets = useSafeAreaInsets()
+
+  const [headerLayout, setHeaderLayout] = useState<
+    LayoutRectangle | undefined
+  >()
+  const headerRef = useRef<View>(null)
+  const contentHeaderHeight = useSharedValue<number>(0)
+
+  const { onScroll, scrollY, targetHiddenProgress } = useFadingHeaderNavigation(
+    {
+      header: <NavigationTitleHeader title={navigationTitle ?? title ?? ''} />,
+      targetLayout: headerLayout,
+      shouldHeaderHaveGrabber: isModal ? true : false,
+      hasParent,
+      renderHeaderRight
+    }
+  )
+
+  const animatedHeaderStyle = useAnimatedStyle(() => {
+    const scale = interpolate(
+      scrollY.value,
+      [-contentHeaderHeight.value, 0, contentHeaderHeight.value],
+      [0.95, 1, 0.95]
+    )
+    return {
+      opacity: 1 - targetHiddenProgress.value * 2,
+      transform: [{ scale: data.length === 0 ? 1 : scale }]
+    }
+  })
+
+  useLayoutEffect(() => {
+    if (headerRef.current) {
+      headerRef.current.measure((x, y, width, height) => {
+        contentHeaderHeight.value = height
+        setHeaderLayout({ x, y, width, height: height / 2 })
+      })
+    }
+  }, [contentHeaderHeight])
+
+  const onScrollEvent = useCallback(
+    (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+      onScroll(event)
+    },
+    [onScroll]
+  )
+  const headerHeight = useHeaderHeight()
+
+  const animatedHeaderContainerStyle = useAnimatedStyle(() => {
+    const translateY = interpolate(
+      scrollY.value,
+      [0, contentHeaderHeight.value],
+      [0, -contentHeaderHeight.value],
+      'clamp'
+    )
+
+    return {
+      transform: [
+        {
+          translateY: withSpring(translateY, {
+            ...ANIMATED.SPRING_CONFIG,
+            stiffness: 100
+          })
+        }
+      ]
+    }
+  })
+
+  const ListHeaderComponent = useMemo(() => {
+    return (
+      <Animated.View style={[animatedHeaderContainerStyle]}>
+        <BlurViewWithFallback
+          style={{
+            paddingBottom: 12,
+            paddingHorizontal: 16,
+            paddingTop: 12
+          }}>
+          <Animated.View
+            style={[
+              animatedHeaderStyle,
+              {
+                paddingTop: headerHeight
+              }
+            ]}>
+            <View ref={headerRef}>
+              <ScreenHeader title={title} />
+            </View>
+          </Animated.View>
+
+          {renderHeader?.()}
+        </BlurViewWithFallback>
+      </Animated.View>
+    )
+  }, [
+    animatedHeaderContainerStyle,
+    animatedHeaderStyle,
+    headerHeight,
+    renderHeader,
+    title
+  ])
+
+  const ListEmptyComponent = useMemo(() => {
+    if (renderEmpty) {
+      return <>{renderEmpty()}</>
+    }
+    return (
+      <ErrorState
+        sx={{ flex: 1 }}
+        title="No results"
+        description="Try a different search"
+      />
+    )
+  }, [renderEmpty])
+
+  const contentContainerStyle = useMemo(() => {
+    return [
+      props?.contentContainerStyle,
+      data.length === 0
+        ? {
+            justifyContent: 'center',
+            flex: 1
+          }
+        : {},
+      {
+        paddingBottom: insets.bottom
+      }
+    ] as StyleProp<ViewStyle>[]
+  }, [props?.contentContainerStyle, data.length, insets.bottom])
+
+  return (
+    <KeyboardAvoidingView
+      keyboardVerticalOffset={insets.bottom}
+      style={{
+        flex: 1
+      }}>
+      <AnimatedFlatList
+        data={data}
+        onScroll={onScrollEvent}
+        keyboardDismissMode="interactive"
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+        stickyHeaderIndices={[0]}
+        removeClippedSubviews={Platform.OS === 'android'}
+        maxToRenderPerBatch={15}
+        windowSize={5}
+        initialNumToRender={15}
+        updateCellsBatchingPeriod={50}
+        layout={LinearTransition.springify()}
+        entering={getListItemEnteringAnimation(0)}
+        style={{
+          flex: 1
+        }}
+        {...props}
+        contentContainerStyle={contentContainerStyle}
+        ListHeaderComponent={ListHeaderComponent}
+        ListEmptyComponent={ListEmptyComponent}
+      />
+    </KeyboardAvoidingView>
+  )
+}

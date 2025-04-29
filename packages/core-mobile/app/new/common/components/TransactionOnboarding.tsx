@@ -1,17 +1,16 @@
 import {
   Button,
   GroupList,
-  ScrollView,
   Text,
   Toggle,
   useTheme,
   View
 } from '@avalabs/k2-alpine'
-import React, { useMemo, useCallback, useState } from 'react'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import React, { useCallback, useMemo, useState } from 'react'
 import { SvgProps } from 'react-native-svg'
 import { useDispatch } from 'react-redux'
 import { resetViewOnce, setViewOnce, ViewOnceKey } from 'store/viewOnce'
+import { ScrollScreen } from './ScrollScreen'
 
 export const TransactionOnboarding = ({
   icon,
@@ -32,7 +31,6 @@ export const TransactionOnboarding = ({
   onPressNext: () => void
 }): JSX.Element => {
   const { theme } = useTheme()
-  const { bottom } = useSafeAreaInsets()
   const dispatch = useDispatch()
   const [hide, setHide] = useState(true)
 
@@ -54,33 +52,9 @@ export const TransactionOnboarding = ({
     ]
   }, [hide, setHide])
 
-  return (
-    <View sx={{ flex: 1 }}>
-      <ScrollView sx={{ flex: 1 }} contentContainerSx={{ padding: 16 }}>
-        <View sx={{ marginTop: 50, alignItems: 'center' }}>
-          {icon.component({
-            width: icon.size ?? ICON_DEFAULT_SIZE,
-            height: icon.size ?? ICON_DEFAULT_SIZE,
-            color: theme.colors.$textPrimary
-          })}
-          <Text
-            variant="heading3"
-            sx={{
-              textAlign: 'center',
-              marginTop: 24,
-              lineHeight: 30,
-              maxWidth: 300
-            }}>
-            {title}
-          </Text>
-          <Text
-            variant="subtitle1"
-            sx={{ textAlign: 'center', marginTop: 14, maxWidth: 320 }}>
-            {subtitle}
-          </Text>
-        </View>
-      </ScrollView>
-      <View sx={{ paddingHorizontal: 16, paddingBottom: bottom + 20, gap: 22 }}>
+  const renderFooter = useCallback(() => {
+    return (
+      <View sx={{ gap: 20 }}>
         <GroupList
           data={groupListData}
           titleSx={{ fontFamily: 'Inter-regular', fontSize: 15 }}
@@ -92,7 +66,40 @@ export const TransactionOnboarding = ({
           {buttonTitle ?? "Let's go!"}
         </Button>
       </View>
-    </View>
+    )
+  }, [groupListData, handlePressNext, buttonTitle])
+
+  return (
+    <ScrollScreen
+      isModal
+      scrollEnabled={false}
+      renderFooter={renderFooter}
+      contentContainerStyle={{
+        padding: 16
+      }}>
+      <View sx={{ marginTop: 50, alignItems: 'center' }}>
+        {icon.component({
+          width: icon.size ?? ICON_DEFAULT_SIZE,
+          height: icon.size ?? ICON_DEFAULT_SIZE,
+          color: theme.colors.$textPrimary
+        })}
+        <Text
+          variant="heading3"
+          sx={{
+            textAlign: 'center',
+            marginTop: 24,
+            lineHeight: 30,
+            maxWidth: 300
+          }}>
+          {title}
+        </Text>
+        <Text
+          variant="subtitle1"
+          sx={{ textAlign: 'center', marginTop: 14, maxWidth: 320 }}>
+          {subtitle}
+        </Text>
+      </View>
+    </ScrollScreen>
   )
 }
 

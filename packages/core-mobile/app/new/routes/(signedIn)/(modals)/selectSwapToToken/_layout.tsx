@@ -1,14 +1,11 @@
-import React from 'react'
 import { Stack } from 'common/components/Stack'
-import {
-  modalFirstScreenOptions,
-  modalStackNavigatorScreenOptions
-} from 'common/consts/screenOptions'
+import { modalStackNavigatorScreenOptions } from 'common/consts/screenOptions'
+import React from 'react'
 
 export default function SelectSwapToTokenLayout(): JSX.Element {
   return (
     <Stack screenOptions={modalStackNavigatorScreenOptions}>
-      <Stack.Screen name="index" options={modalFirstScreenOptions} />
+      <Stack.Screen name="index" />
     </Stack>
   )
 }

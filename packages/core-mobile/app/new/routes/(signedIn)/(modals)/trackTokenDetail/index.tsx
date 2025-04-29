@@ -3,7 +3,6 @@ import {
   GroupList,
   GroupListItem,
   Icons,
-  NavigationTitleHeader,
   SegmentedControl,
   showAlert,
   Text,
@@ -19,40 +18,36 @@ import { useLocalSearchParams, useRouter } from 'expo-router'
  * See: https://github.com/expo/expo/issues/35383
  * TODO: Adjust import back to expo-router once the bug is resolved.
  */
-import { useNavigation } from '@react-navigation/native'
+import { truncateAddress } from '@avalabs/core-utils-sdk'
+import { FavoriteBarButton } from 'common/components/FavoriteBarButton'
+import { ScrollScreen } from 'common/components/ScrollScreen'
+import { ShareBarButton } from 'common/components/ShareBarButton'
+import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
+import { copyToClipboard } from 'common/utils/clipboard'
+import { format } from 'date-fns'
+import { useAddStake } from 'features/stake/hooks/useAddStake'
+import { AVAX_TOKEN_ID } from 'features/swap/const'
+import { useNavigateToSwap } from 'features/swap/hooks/useNavigateToSwap'
+import { SelectedChartDataIndicator } from 'features/track/components/SelectedChartDataIndicator'
 import { TokenDetailChart } from 'features/track/components/TokenDetailChart'
+import { TokenDetailFooter } from 'features/track/components/TokenDetailFooter'
 import { TokenHeader } from 'features/track/components/TokenHeader'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import { StyleSheet } from 'react-native'
 import Animated, {
   useDerivedValue,
   useSharedValue,
   withTiming
 } from 'react-native-reanimated'
 import { useTokenDetails } from 'screens/watchlist/useTokenDetails'
-import { formatLargeCurrency } from 'utils/Utils'
-import { format } from 'date-fns'
-import { LayoutRectangle, StyleSheet } from 'react-native'
-import { SelectedChartDataIndicator } from 'features/track/components/SelectedChartDataIndicator'
-import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import { getDomainFromUrl } from 'utils/getDomainFromUrl/getDomainFromUrl'
 import { isPositiveNumber } from 'utils/isPositiveNumber/isPositiveNumber'
-import { copyToClipboard } from 'common/utils/clipboard'
-import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
-import { LayoutChangeEvent } from 'react-native'
-import { ShareBarButton } from 'common/components/ShareBarButton'
-import { FavoriteBarButton } from 'common/components/FavoriteBarButton'
-import { TokenDetailFooter } from 'features/track/components/TokenDetailFooter'
-import { ScrollView } from 'react-native-gesture-handler'
-import { truncateAddress } from '@avalabs/core-utils-sdk'
-import { useAddStake } from 'features/stake/hooks/useAddStake'
-import { AVAX_TOKEN_ID } from 'features/swap/const'
-import { useNavigateToSwap } from 'features/swap/hooks/useNavigateToSwap'
+import { formatLargeCurrency } from 'utils/Utils'
 
 const TrackTokenDetailScreen = (): JSX.Element => {
   const { theme } = useTheme()
   const { tokenId } = useLocalSearchParams<{ tokenId: string }>()
   const [isChartInteracting, setIsChartInteracting] = useState(false)
-  const navigation = useNavigation()
   const { navigate } = useRouter()
   const { navigateToSwap } = useNavigateToSwap()
   const { addStake } = useAddStake()
@@ -65,9 +60,7 @@ const TrackTokenDetailScreen = (): JSX.Element => {
     date: Date
   }>()
   const { formatCurrency } = useFormatCurrency()
-  const [headerLayout, setHeaderLayout] = useState<
-    LayoutRectangle | undefined
-  >()
+
   const {
     chartData,
     ranges,
@@ -80,18 +73,6 @@ const TrackTokenDetailScreen = (): JSX.Element => {
 
   const selectedSegmentIndex = useSharedValue(0)
 
-  const header = useMemo(
-    () => (
-      <NavigationTitleHeader title={tokenInfo?.symbol.toUpperCase() ?? ''} />
-    ),
-    [tokenInfo?.symbol]
-  )
-
-  const scrollViewProps = useFadingHeaderNavigation({
-    header,
-    targetLayout: headerLayout,
-    shouldHeaderHaveGrabber: true
-  })
   const lastUpdatedDate = chartData?.[chartData.length - 1]?.date
 
   const formatMarketNumbers = useCallback(
@@ -102,10 +83,6 @@ const TrackTokenDetailScreen = (): JSX.Element => {
     },
     [formatCurrency]
   )
-
-  const handleHeaderLayout = useCallback((event: LayoutChangeEvent): void => {
-    setHeaderLayout(event.nativeEvent.layout)
-  }, [])
 
   const handleDataSelected = useCallback(
     (point: { value: number; date: Date }): void => {
@@ -301,112 +278,8 @@ const TrackTokenDetailScreen = (): JSX.Element => {
     })
   }, [isChartInteracting, headerOpacity])
 
-  useEffect(() => {
-    navigation.setOptions({
-      headerRight: renderHeaderRight
-    })
-  }, [renderHeaderRight, navigation])
-
-  if (!tokenId || !tokenInfo) {
-    return <LoadingState sx={styles.container} />
-  }
-
-  return (
-    <View style={styles.container}>
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        style={styles.container}
-        contentContainerStyle={styles.scrollviewContent}
-        {...scrollViewProps}>
-        <View style={styles.chartContainer}>
-          <Animated.View
-            style={{ opacity: headerOpacity }}
-            onLayout={handleHeaderLayout}>
-            <TokenHeader
-              logoUri={tokenInfo.logoUri}
-              symbol={tokenInfo.symbol ?? ''}
-              currentPrice={tokenInfo.currentPrice}
-              ranges={
-                ranges.minDate === 0 && ranges.maxDate === 0
-                  ? undefined
-                  : ranges
-              }
-              rank={tokenInfo?.marketCapRank}
-            />
-          </Animated.View>
-          {isChartInteracting && (
-            <>
-              <Animated.View
-                style={[
-                  StyleSheet.absoluteFill,
-                  {
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    opacity: selectedDataIndicatorOpacity
-                  }
-                ]}>
-                <SelectedChartDataIndicator
-                  selectedData={selectedData}
-                  currentPrice={chartData?.[0]?.value}
-                />
-              </Animated.View>
-            </>
-          )}
-        </View>
-        <TokenDetailChart
-          chartData={chartData}
-          negative={ranges.diffValue < 0}
-          onDataSelected={handleDataSelected}
-          onGestureStart={handleChartGestureStart}
-          onGestureEnd={handleChartGestureEnd}
-        />
-        <View sx={styles.lastUpdatedContainer}>
-          {lastUpdatedDate && (
-            <Animated.View
-              style={{
-                alignSelf: 'center',
-                position: 'absolute',
-                opacity: headerOpacity
-              }}>
-              <Text
-                variant="caption"
-                sx={{
-                  color: '$textSecondary'
-                }}>
-                Last updated:{' '}
-                {format(lastUpdatedDate, 'E, MMM dd, yyyy, h:mm aa')}
-              </Text>
-            </Animated.View>
-          )}
-        </View>
-        {tokenInfo?.has24hChartDataOnly === false && (
-          <SegmentedControl
-            type="thin"
-            dynamicItemWidth={false}
-            items={SEGMENT_ITEMS}
-            style={styles.segmentedControl}
-            selectedSegmentIndex={selectedSegmentIndex}
-            onSelectSegment={handleSelectSegment}
-          />
-        )}
-        <View sx={styles.aboutContainer}>
-          {tokenInfo?.description && (
-            <TouchableOpacity onPress={handlePressAbout}>
-              <Card sx={styles.aboutCard}>
-                <Text variant="heading4">About</Text>
-                <Text
-                  variant="subtitle2"
-                  sx={{ color: '$textSecondary' }}
-                  numberOfLines={6}>
-                  {tokenInfo?.description}
-                </Text>
-              </Card>
-            </TouchableOpacity>
-          )}
-          {marketData.length > 0 && <GroupList data={marketData} />}
-          {metaData.length > 0 && <GroupList data={metaData} />}
-        </View>
-      </ScrollView>
+  const renderFooter = useCallback(() => {
+    return (
       <TokenDetailFooter
         tokenId={tokenId}
         tokenInfo={tokenInfo}
@@ -414,7 +287,116 @@ const TrackTokenDetailScreen = (): JSX.Element => {
         onStake={addStake}
         onSwap={handleSwap}
       />
-    </View>
+    )
+  }, [tokenId, tokenInfo, handleBuy, addStake, handleSwap])
+
+  const renderHeader = useCallback(() => {
+    if (!tokenInfo) {
+      return <></>
+    }
+    return (
+      <View
+        style={{
+          paddingHorizontal: 16
+        }}>
+        <TokenHeader
+          logoUri={tokenInfo.logoUri}
+          symbol={tokenInfo.symbol ?? ''}
+          currentPrice={tokenInfo.currentPrice}
+          ranges={
+            ranges.minDate === 0 && ranges.maxDate === 0 ? undefined : ranges
+          }
+          rank={tokenInfo?.marketCapRank}
+        />
+      </View>
+    )
+  }, [tokenInfo, ranges])
+
+  if (!tokenId || !tokenInfo) {
+    return <LoadingState sx={styles.container} />
+  }
+
+  return (
+    <ScrollScreen
+      renderFooter={renderFooter}
+      navigationTitle={tokenInfo?.symbol.toUpperCase() ?? ''}
+      isModal
+      renderHeader={renderHeader}
+      renderHeaderRight={renderHeaderRight}>
+      <View style={styles.chartContainer}>
+        {isChartInteracting && (
+          <>
+            <Animated.View
+              style={[
+                StyleSheet.absoluteFill,
+                {
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  opacity: selectedDataIndicatorOpacity
+                }
+              ]}>
+              <SelectedChartDataIndicator
+                selectedData={selectedData}
+                currentPrice={chartData?.[0]?.value}
+              />
+            </Animated.View>
+          </>
+        )}
+      </View>
+      <TokenDetailChart
+        chartData={chartData}
+        negative={ranges.diffValue < 0}
+        onDataSelected={handleDataSelected}
+        onGestureStart={handleChartGestureStart}
+        onGestureEnd={handleChartGestureEnd}
+      />
+      <View sx={styles.lastUpdatedContainer}>
+        {lastUpdatedDate && (
+          <Animated.View
+            style={{
+              alignSelf: 'center',
+              position: 'absolute',
+              opacity: headerOpacity
+            }}>
+            <Text
+              variant="caption"
+              sx={{
+                color: '$textSecondary'
+              }}>
+              Last updated:{' '}
+              {format(lastUpdatedDate, 'E, MMM dd, yyyy, h:mm aa')}
+            </Text>
+          </Animated.View>
+        )}
+      </View>
+      {tokenInfo?.has24hChartDataOnly === false && (
+        <SegmentedControl
+          type="thin"
+          dynamicItemWidth={false}
+          items={SEGMENT_ITEMS}
+          style={styles.segmentedControl}
+          selectedSegmentIndex={selectedSegmentIndex}
+          onSelectSegment={handleSelectSegment}
+        />
+      )}
+      <View sx={styles.aboutContainer}>
+        {tokenInfo?.description && (
+          <TouchableOpacity onPress={handlePressAbout}>
+            <Card sx={styles.aboutCard}>
+              <Text variant="heading4">About</Text>
+              <Text
+                variant="subtitle2"
+                sx={{ color: '$textSecondary' }}
+                numberOfLines={6}>
+                {tokenInfo?.description}
+              </Text>
+            </Card>
+          </TouchableOpacity>
+        )}
+        {marketData.length > 0 && <GroupList data={marketData} />}
+        {metaData.length > 0 && <GroupList data={metaData} />}
+      </View>
+    </ScrollScreen>
   )
 }
 

@@ -1,8 +1,8 @@
-import React, { useCallback } from 'react'
-import { Button, SafeAreaView, ScrollView, View } from '@avalabs/k2-alpine'
-import ScreenHeader from 'common/components/ScreenHeader'
+import { Button, View } from '@avalabs/k2-alpine'
+import { ScrollScreen } from 'common/components/ScrollScreen'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { NodeParameterWidget } from 'features/stake/components/NodeParameterWidget'
+import React, { useCallback } from 'react'
 import { useSharedValue } from 'react-native-reanimated'
 
 const StakeNodeParameter = (): JSX.Element => {
@@ -26,40 +26,38 @@ const StakeNodeParameter = (): JSX.Element => {
     })
   }, [navigate, minimumUptime, maximumDelegationFee, stakeEndTime])
 
+  const renderFooter = useCallback(() => {
+    return (
+      <Button type="primary" size="large" onPress={handlePressNext}>
+        Next
+      </Button>
+    )
+  }, [handlePressNext])
+
   return (
-    <SafeAreaView sx={{ flex: 1 }}>
-      <ScrollView
-        style={{ flex: 1 }}
-        contentContainerSx={{ padding: 16, paddingTop: 0 }}>
-        <ScreenHeader title="Choose the parameters for your staking node" />
-        <View sx={{ gap: 12, marginTop: 16 }}>
-          <NodeParameterWidget
-            title="Minimum uptime"
-            value={minimumUptime}
-            tooltipMessage="This is a validator's uptime, the minimum threshold for rewards is 80%"
-            minimumValue={1}
-            maximumValue={99}
-          />
-          <NodeParameterWidget
-            title="Maximum delegation fee"
-            value={maximumDelegationFee}
-            tooltipMessage="This is a range set by the protocol."
-            minimumValue={2}
-            maximumValue={20}
-          />
-        </View>
-      </ScrollView>
-      <View
-        sx={{
-          padding: 16,
-          gap: 16,
-          backgroundColor: '$surfacePrimary'
-        }}>
-        <Button type="primary" size="large" onPress={handlePressNext}>
-          Next
-        </Button>
+    <ScrollScreen
+      isModal
+      title="Choose the parameters for your staking node"
+      navigationTitle="Node parameters"
+      renderFooter={renderFooter}
+      contentContainerStyle={{ padding: 16 }}>
+      <View sx={{ gap: 12, marginTop: 16 }}>
+        <NodeParameterWidget
+          title="Minimum uptime"
+          value={minimumUptime}
+          tooltipMessage="This is a validator's uptime, the minimum threshold for rewards is 80%"
+          minimumValue={1}
+          maximumValue={99}
+        />
+        <NodeParameterWidget
+          title="Maximum delegation fee"
+          value={maximumDelegationFee}
+          tooltipMessage="This is a range set by the protocol."
+          minimumValue={2}
+          maximumValue={20}
+        />
       </View>
-    </SafeAreaView>
+    </ScrollScreen>
   )
 }
 
