@@ -14,7 +14,7 @@ export const useBridgeSourceNetworks = (): Network[] => {
   )
 
   return useMemo(() => {
-    return networks.sort((a, b) => {
+    return networks.toSorted((a, b) => {
       return getNetworkPriority(a.chainId) - getNetworkPriority(b.chainId)
     })
   }, [networks])
