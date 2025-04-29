@@ -8,17 +8,18 @@ import { useSendContext } from '../context/sendContext'
 export const RecentContactsScreen = (): JSX.Element => {
   const { navigate } = useRouter()
   const { recentAddresses, contacts, accounts } = useContacts()
-  const { resetAmount } = useSendContext()
+  const { resetAmount, setToAddress } = useSendContext()
 
   const handleSelectContact = useCallback(
     (contact: Contact): void => {
+      setToAddress({ to: contact.id, recipientType: contact.type })
       resetAmount()
       navigate({
         pathname: '/send/send',
         params: { to: contact.id, recipientType: contact.type }
       })
     },
-    [navigate, resetAmount]
+    [navigate, resetAmount, setToAddress]
   )
 
   const handleGoToQrCode = useCallback((): void => {
@@ -28,12 +29,14 @@ export const RecentContactsScreen = (): JSX.Element => {
 
   const handleSumbitEditing = useCallback(
     (text: string): void => {
+      setToAddress({ to: text, recipientType: 'address' })
+      resetAmount()
       navigate({
         pathname: '/send/send',
         params: { to: text, recipientType: 'address' }
       })
     },
-    [navigate]
+    [navigate, resetAmount, setToAddress]
   )
 
   return (

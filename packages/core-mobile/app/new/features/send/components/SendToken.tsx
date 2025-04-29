@@ -90,9 +90,6 @@ export const SendToken = ({ onSend }: { onSend: () => void }): JSX.Element => {
     setCanValidate(isAllFieldsTouched)
   }, [isAllFieldsTouched, setCanValidate])
 
-  const canSubmit =
-    !isSending && amount && amount.gt(0) && selectedToken !== undefined
-
   const tokenBalance = useMemo(() => {
     if (selectedToken === undefined) {
       return undefined
@@ -118,6 +115,15 @@ export const SendToken = ({ onSend }: { onSend: () => void }): JSX.Element => {
       selectedToken?.symbol ?? ''
     )
   }, [network.networkToken.decimals, selectedToken])
+
+  const canSubmit =
+    !isSending &&
+    amount &&
+    amount.gt(0) &&
+    selectedToken !== undefined &&
+    addressToSend !== undefined &&
+    tokenBalance &&
+    amount.lt(tokenBalance)
 
   const handleSelectToken = useCallback((): void => {
     navigate({ pathname: '/selectSendToken', params: { to, recipientType } })
@@ -203,12 +209,14 @@ export const SendToken = ({ onSend }: { onSend: () => void }): JSX.Element => {
                 </Text>
               )}
             </View>
-            <Avatar
-              backgroundColor="transparent"
-              size={40}
-              source={recipientAvatar?.source}
-              hasLoading={false}
-            />
+            {recipientAvatar?.source !== undefined && (
+              <Avatar
+                backgroundColor="transparent"
+                size={40}
+                source={recipientAvatar?.source}
+                hasLoading={false}
+              />
+            )}
           </View>
         </Card>
         {/* Select Token */}
