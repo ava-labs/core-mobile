@@ -1,10 +1,9 @@
-import { AppStartListening } from 'store/middleware/listener'
 import accountService from 'services/account/AccountsService'
 import {
   selectIsDeveloperMode,
   toggleDeveloperMode
 } from 'store/settings/advanced'
-import { AppListenerEffectAPI } from 'store'
+import { AppListenerEffectAPI, AppStartListening } from 'store/types'
 import { AnyAction, isAnyOf } from '@reduxjs/toolkit'
 import { onLogIn, selectWalletType } from 'store/app/slice'
 import { WalletType } from 'services/wallet/types'

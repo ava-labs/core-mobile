@@ -1,10 +1,4 @@
-import {
-  addListener,
-  createListenerMiddleware,
-  TypedAddListener,
-  TypedStartListening
-} from '@reduxjs/toolkit'
-import type { AppDispatch, RootState } from 'store'
+import { addListener, createListenerMiddleware } from '@reduxjs/toolkit'
 import { addAppListeners } from 'store/app/listeners'
 import { addBalanceListeners } from 'store/balance/listeners'
 import { addAccountListeners } from 'store/account/listeners'
@@ -19,10 +13,8 @@ import { addNotificationsListeners } from 'store/notifications/listeners/listene
 import { addSeedlessListeners } from 'seedless/store/listeners'
 import { addWatchlistListeners } from 'store/watchlist/listeners'
 import { addAppearanceListeners } from 'store/settings/appearance/listeners'
-//import { addUnifiedBridgeListeners } from 'store/unifiedBridge/listeners'
-
-export type AppStartListening = TypedStartListening<RootState, AppDispatch>
-export type AppAddListener = TypedAddListener<RootState, AppDispatch>
+import { addUnifiedBridgeListeners } from 'store/unifiedBridge/listeners'
+import { AppAddListener, AppStartListening } from 'store/types'
 
 const listener = createListenerMiddleware({
   onError: (error, errorInfo) => {
@@ -43,7 +35,7 @@ addNetworkListeners(startListening)
 
 addBridgeListeners(startListening)
 
-// addUnifiedBridgeListeners(startListening)
+addUnifiedBridgeListeners(startListening)
 
 addPosthogListeners(startListening)
 

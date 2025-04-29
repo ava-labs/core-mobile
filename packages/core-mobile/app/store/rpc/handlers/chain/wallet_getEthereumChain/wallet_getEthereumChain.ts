@@ -1,5 +1,5 @@
 import { rpcErrors } from '@metamask/rpc-errors'
-import { AppListenerEffectAPI } from 'store'
+import { AppListenerEffectAPI } from 'store/types'
 import { selectActiveNetwork } from 'store/network'
 import { RpcMethod, RpcRequest } from '../../../types'
 import { HandleResponse, RpcRequestHandler } from '../../types'

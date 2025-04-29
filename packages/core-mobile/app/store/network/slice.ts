@@ -6,7 +6,7 @@ import {
 import { createAction, createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { getNetworksFromCache } from 'hooks/networks/utils/getNetworksFromCache'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
-import { RootState } from '../index'
+import { RootState } from '../types'
 import { ChainID, Networks, NetworkState } from './types'
 
 export const defaultNetwork = BITCOIN_NETWORK

@@ -3,7 +3,7 @@ import {
   Module,
   RpcMethod as VmModuleRpcMethod
 } from '@avalabs/vm-module-types'
-import { AppListenerEffectAPI } from 'store'
+import { AppListenerEffectAPI } from 'store/types'
 import Logger from 'utils/Logger'
 import { selectNetwork } from 'store/network/slice'
 import { isRpcRequest } from 'store/rpc/utils/isRpcRequest'

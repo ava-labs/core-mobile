@@ -1,4 +1,4 @@
-import { AppListenerEffectAPI } from 'store'
+import { AppListenerEffectAPI } from 'store/types'
 import { selectContacts } from 'store/addressBook'
 import { RpcMethod, RpcRequest } from '../../types'
 import { HandleResponse, RpcRequestHandler } from '../types'

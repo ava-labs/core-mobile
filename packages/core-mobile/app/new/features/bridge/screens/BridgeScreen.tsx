@@ -43,7 +43,7 @@ import {
 } from 'common/utils/bridgeUtils'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import GaslessService from 'services/gasless/GaslessService'
-import { RootState } from 'store'
+import { RootState } from 'store/types'
 import { selectActiveAccount } from 'store/account'
 import { selectAvailableNativeTokenBalanceForNetworkAndAccount } from 'store/balance'
 import {

@@ -1,5 +1,5 @@
 import { RpcError } from '@avalabs/vm-module-types'
-import { AppListenerEffectAPI } from 'store'
+import { AppListenerEffectAPI } from 'store/types'
 import { Result } from 'types/result'
 import { SiteScanResponse } from 'services/blockaid/types'
 import { WCSessionProposal } from 'store/walletConnectV2/types'

@@ -1,7 +1,7 @@
 import { BridgeTransaction } from '@avalabs/core-bridge-sdk'
 import { createTransform } from 'redux-persist'
 import Big from 'big.js'
-import { RawRootState } from 'store'
+import { RawRootState } from 'store/types'
 import { BridgeState, reducerName } from 'store/bridge'
 
 // a transform for bridge that:

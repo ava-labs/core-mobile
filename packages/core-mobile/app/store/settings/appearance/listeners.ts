@@ -1,7 +1,6 @@
-import { AppStartListening } from 'store/middleware/listener'
+import { AppListenerEffectAPI, AppStartListening } from 'store/types'
 import { AnyAction, isAnyOf } from '@reduxjs/toolkit'
 import { Appearance as RnAppearance } from 'react-native'
-import { AppListenerEffectAPI } from 'store'
 import { onRehydrationComplete } from 'store/app'
 import { selectIsDeveloperMode, toggleDeveloperMode } from '../advanced'
 import {

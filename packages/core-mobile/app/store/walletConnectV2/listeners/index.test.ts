@@ -1,7 +1,7 @@
 import { configureStore, createListenerMiddleware } from '@reduxjs/toolkit'
 import { noop } from 'lodash'
 import WalletConnectService from 'services/walletconnectv2/WalletConnectService'
-import { AppStartListening } from 'store/middleware/listener'
+import { AppStartListening } from 'store/types'
 import { showSnackbar, transactionSnackbar } from 'common/utils/toast'
 import mockSessions from 'tests/fixtures/walletConnect/sessions'
 import mockNetworks from 'tests/fixtures/networks.json'

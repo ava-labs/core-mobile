@@ -1,4 +1,4 @@
-import { AppListenerEffectAPI } from 'store'
+import { AppListenerEffectAPI } from 'store/types'
 import { rpcErrors } from '@metamask/rpc-errors'
 // import { addContact } from 'store/addressBook'
 // import * as Navigation from 'utils/Navigation'

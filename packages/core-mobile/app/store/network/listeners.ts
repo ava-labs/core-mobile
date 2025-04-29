@@ -1,7 +1,6 @@
 import { ChainId, Network } from '@avalabs/core-chains-sdk'
-import { AppListenerEffectAPI } from 'store'
+import { AppListenerEffectAPI, AppStartListening } from 'store/types'
 import { onAppUnlocked } from 'store/app'
-import { AppStartListening } from 'store/middleware/listener'
 import {
   noActiveNetwork,
   selectCustomNetworks,

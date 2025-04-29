@@ -1,4 +1,4 @@
-import { AppListenerEffectAPI } from 'store/index'
+import { AppListenerEffectAPI } from 'store/types'
 import WalletConnectService from 'services/walletconnectv2/WalletConnectService'
 import { InteractionManager } from 'react-native'
 import Logger from 'utils/Logger'

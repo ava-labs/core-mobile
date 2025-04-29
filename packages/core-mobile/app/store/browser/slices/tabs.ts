@@ -4,7 +4,7 @@ import {
   EntityState,
   PayloadAction
 } from '@reduxjs/toolkit'
-import { RootState } from 'store/index'
+import { RootState } from 'store/types'
 import { getUnixTime } from 'date-fns'
 import { createHash } from 'utils/createHash'
 import {

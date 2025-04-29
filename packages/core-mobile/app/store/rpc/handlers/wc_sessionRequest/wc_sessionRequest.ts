@@ -1,5 +1,5 @@
 import { ProposalTypes, SessionTypes } from '@walletconnect/types'
-import { AppListenerEffectAPI } from 'store'
+import { AppListenerEffectAPI } from 'store/types'
 import { rpcErrors } from '@metamask/rpc-errors'
 import { normalizeNamespaces } from '@walletconnect/utils'
 import { BlockchainNamespace } from '@avalabs/core-chains-sdk'

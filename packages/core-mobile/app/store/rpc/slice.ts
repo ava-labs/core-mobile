@@ -1,6 +1,6 @@
 import { createAction, createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { RpcError } from '@avalabs/vm-module-types'
-import { RootState } from 'store/index'
+import { RootState } from 'store/types'
 import { Request, RequestStatus, RpcState } from './types'
 
 export const reducerName = 'rpc'

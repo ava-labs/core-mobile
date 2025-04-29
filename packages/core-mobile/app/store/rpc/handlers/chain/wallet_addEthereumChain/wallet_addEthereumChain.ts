@@ -3,7 +3,7 @@
 import { Network, NetworkVMType } from '@avalabs/core-chains-sdk'
 import { rpcErrors } from '@metamask/rpc-errors'
 import { isValidRPCUrl } from 'services/network/utils/isValidRpcUrl'
-import { AppListenerEffectAPI } from 'store'
+import { AppListenerEffectAPI } from 'store/types'
 import {
   addCustomNetwork,
   selectActiveNetwork,

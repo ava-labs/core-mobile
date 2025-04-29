@@ -43,7 +43,7 @@ import Animated, {
   useSharedValue
 } from 'react-native-reanimated'
 import { useSelector } from 'react-redux'
-import { RootState } from 'store'
+import { RootState } from 'store/types'
 import { selectActiveAccount } from 'store/account'
 import {
   selectBalanceForAccountIsAccurate,

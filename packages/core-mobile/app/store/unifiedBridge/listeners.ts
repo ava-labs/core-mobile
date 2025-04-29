@@ -1,8 +1,7 @@
 import { bigIntToHex } from '@ethereumjs/util'
-import { AppListenerEffectAPI, RootState } from 'store'
+import { AppListenerEffectAPI, AppStartListening, RootState } from 'store/types'
 import { WalletState } from 'store/app/types'
 import { onAppUnlocked, selectWalletState } from 'store/app/slice'
-import { AppStartListening } from 'store/middleware/listener'
 import {
   selectIsDeveloperMode,
   toggleDeveloperMode

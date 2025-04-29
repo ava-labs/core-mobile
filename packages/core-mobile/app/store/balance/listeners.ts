@@ -3,7 +3,7 @@ import { Action, isAnyOf, TaskAbortError } from '@reduxjs/toolkit'
 import BalanceService, {
   BalancesForAccount
 } from 'services/balance/BalanceService'
-import { AppListenerEffectAPI } from 'store'
+import { AppListenerEffectAPI, AppStartListening } from 'store/types'
 import { Account } from 'store/account/types'
 import {
   selectAccounts,
@@ -13,7 +13,6 @@ import {
 } from 'store/account'
 import { onAppLocked, onAppUnlocked, onLogOut } from 'store/app'
 import { addCustomToken, selectAllCustomTokens } from 'store/customToken'
-import { AppStartListening } from 'store/middleware/listener'
 import {
   addCustomNetwork,
   onNetworksFetched,

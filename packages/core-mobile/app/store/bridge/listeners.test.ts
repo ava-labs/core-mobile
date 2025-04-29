@@ -5,7 +5,7 @@ import {
 } from '@reduxjs/toolkit'
 import { noop } from 'lodash'
 import { onAppLocked, onAppUnlocked, onLogOut } from 'store/app'
-import { AppStartListening } from 'store/middleware/listener'
+import { AppStartListening } from 'store/types'
 import BridgeService from 'services/bridge/BridgeService'
 import { toggleDeveloperMode } from 'store/settings/advanced'
 import testConfig from 'tests/fixtures/bridgeConfig'

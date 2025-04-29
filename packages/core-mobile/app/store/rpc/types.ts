@@ -1,5 +1,5 @@
 import { WCSessionProposal } from 'store/walletConnectV2/types'
-import { AppListenerEffectAPI } from 'store'
+import { AppListenerEffectAPI } from 'store/types'
 import { RpcError } from '@avalabs/vm-module-types'
 import { uuid } from 'utils/uuid'
 

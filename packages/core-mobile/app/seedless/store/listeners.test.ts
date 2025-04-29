@@ -1,6 +1,6 @@
 import { configureStore, createListenerMiddleware } from '@reduxjs/toolkit'
 import { noop } from 'lodash'
-import { AppStartListening } from 'store/middleware/listener'
+import { AppStartListening } from 'store/types'
 import {
   onAppUnlocked,
   onLogOut,

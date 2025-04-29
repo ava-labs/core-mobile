@@ -1,6 +1,6 @@
 import { AvatarType } from '@avalabs/k2-alpine'
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
-import { RootState } from 'store'
+import { RootState } from 'store/types'
 import { AVATARS, initialState } from './types'
 
 const reducerName = 'avatar'
