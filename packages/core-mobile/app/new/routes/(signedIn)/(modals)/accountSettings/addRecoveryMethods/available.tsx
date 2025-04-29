@@ -1,7 +1,6 @@
-import { Text, View } from '@avalabs/k2-alpine'
 import { Loader } from 'common/components/Loader'
+import { ScrollScreen } from 'common/components/ScrollScreen'
 import { useUserMfa } from 'common/hooks/useUserMfa'
-import { Space } from 'components/Space'
 import { useRouter } from 'expo-router'
 import { useRecoveryMethodsContext } from 'features/accountSettings/context/RecoverMethodsProvider'
 import { RecoveryMethodList } from 'features/onboarding/components/RecoveryMethodList'
@@ -11,7 +10,6 @@ import {
   useAvailableRecoveryMethods
 } from 'features/onboarding/hooks/useAvailableRecoveryMethods'
 import React, { useCallback } from 'react'
-import { ScrollView } from 'react-native-gesture-handler'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { FidoType } from 'services/passkey/types'
 
@@ -53,22 +51,20 @@ const AvailableRecoveryMethodScreen = (): React.JSX.Element => {
     [navigate, totpResetInit]
   )
 
-  return isLoading ? (
-    <Loader />
-  ) : (
-    <ScrollView
-      showsVerticalScrollIndicator={false}
-      contentContainerStyle={{ paddingBottom: 60, paddingHorizontal: 16 }}>
-      <View sx={{ gap: 16 }}>
-        <Text variant="heading2">{`Add a recovery\nmethod`}</Text>
-        <Text variant="body1" sx={{ color: '$textPrimary', marginVertical: 8 }}>
-          Add recovery methods to securely restore access in case you lose your
-          credentials.
-        </Text>
-      </View>
-      <Space y={16} />
-      <RecoveryMethodList data={available} onPress={handleAddRecoveryMethod} />
-    </ScrollView>
+  return (
+    <ScrollScreen
+      title="Add a recovery method"
+      subtitle="Add recovery methods to securely restore access in case you lose your credentials."
+      contentContainerStyle={{ flex: 1, padding: 16 }}>
+      {isLoading ? (
+        <Loader />
+      ) : (
+        <RecoveryMethodList
+          data={available}
+          onPress={handleAddRecoveryMethod}
+        />
+      )}
+    </ScrollScreen>
   )
 }
 

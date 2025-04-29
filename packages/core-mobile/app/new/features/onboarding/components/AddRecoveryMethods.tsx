@@ -1,10 +1,9 @@
-import React from 'react'
-import { View, Button, ScrollView } from '@avalabs/k2-alpine'
-import BlurredBarsContentLayout from 'common/components/BlurredBarsContentLayout'
+import { Button, View } from '@avalabs/k2-alpine'
+import { ScrollScreen } from 'common/components/ScrollScreen'
+import { RecoveryMethodList } from 'features/onboarding/components/RecoveryMethodList'
 import { RecoveryMethod } from 'features/onboarding/hooks/useAvailableRecoveryMethods'
 import { OidcAuth } from 'features/onboarding/types/types'
-import { RecoveryMethodList } from 'features/onboarding/components/RecoveryMethodList'
-import ScreenHeader from 'common/components/ScreenHeader'
+import React, { useCallback } from 'react'
 
 export const AddRecoveryMethods = ({
   oidcAuth,
@@ -19,22 +18,8 @@ export const AddRecoveryMethods = ({
   onNext: (method: RecoveryMethod) => void
   onSkip: () => void
 }): JSX.Element => {
-  return (
-    <BlurredBarsContentLayout>
-      <ScrollView
-        sx={{
-          flex: 1,
-          paddingTop: 25,
-          paddingHorizontal: 16
-        }}
-        contentContainerSx={{ gap: 40 }}>
-        <ScreenHeader
-          title="Add a recovery method"
-          description="Add recovery methods to securely restore access in case you lose
-            your credentials."
-        />
-        <RecoveryMethodList data={availableRecoveryMethods} onPress={onNext} />
-      </ScrollView>
+  const renderFooter = useCallback(() => {
+    return (
       <View sx={{ paddingHorizontal: 16, paddingBottom: 60 }}>
         {oidcAuth === undefined && allowsUserToAddLater && (
           <Button type="tertiary" size="large" onPress={onSkip}>
@@ -42,6 +27,17 @@ export const AddRecoveryMethods = ({
           </Button>
         )}
       </View>
-    </BlurredBarsContentLayout>
+    )
+  }, [oidcAuth, allowsUserToAddLater, onSkip])
+
+  return (
+    <ScrollScreen
+      title="Add a recovery method"
+      isModal
+      subtitle="Add recovery methods to securely restore access in case you lose your credentials."
+      renderFooter={renderFooter}
+      contentContainerStyle={{ padding: 16 }}>
+      <RecoveryMethodList data={availableRecoveryMethods} onPress={onNext} />
+    </ScrollScreen>
   )
 }
