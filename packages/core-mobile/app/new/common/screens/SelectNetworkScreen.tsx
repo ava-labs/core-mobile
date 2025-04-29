@@ -2,10 +2,11 @@ import { Network } from '@avalabs/core-chains-sdk'
 import { Icons, Pressable, Text, useTheme, View } from '@avalabs/k2-alpine'
 import { useRouter } from 'expo-router'
 import React from 'react'
-import { FlatList, ListRenderItem } from 'react-native'
+import { ListRenderItem } from 'react-native'
 import { isPChain, isXChain, isXPChain } from 'utils/network/isAvalancheNetwork'
 import { HORIZONTAL_MARGIN } from 'common/consts'
 import { NetworkLogoWithChain } from 'common/components/NetworkLogoWithChain'
+import { ListScreen } from 'common/components/ListScreen'
 
 export const SelectNetworkScreen = ({
   networks,
@@ -75,25 +76,13 @@ export const SelectNetworkScreen = ({
   }
 
   return (
-    <View
-      style={{
-        flex: 1,
-        marginTop: 12
-      }}>
-      <Text
-        variant="heading2"
-        style={{
-          marginBottom: 12,
-          paddingLeft: HORIZONTAL_MARGIN
-        }}>
-        Select a network
-      </Text>
-
-      <FlatList
-        data={networks}
-        renderItem={renderItem}
-        keyExtractor={item => item?.chainId?.toString()}
-      />
-    </View>
+    <ListScreen
+      title="Select a network"
+      data={networks}
+      isModal
+      // @ts-ignore TODO: ListScreen improvement
+      renderItem={renderItem}
+      keyExtractor={item => item?.chainId?.toString()}
+    />
   )
 }

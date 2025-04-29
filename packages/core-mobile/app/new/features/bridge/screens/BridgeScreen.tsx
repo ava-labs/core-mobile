@@ -57,7 +57,7 @@ import Logger from 'utils/Logger'
 import { getJsonRpcErrorMessage } from 'utils/getJsonRpcErrorMessage/getJsonRpcErrorMessage'
 import { ScrollScreen } from 'common/components/ScrollScreen'
 import { useCoreBrowser } from 'common/hooks/useCoreBrowser'
-import useBridge from '../hooks/useBridge'
+import useBridge, { TokenWithBalanceInNetwork } from '../hooks/useBridge'
 
 export const BridgeScreen = (): JSX.Element => {
   const {
@@ -78,7 +78,6 @@ export const BridgeScreen = (): JSX.Element => {
     setInputAmount,
     assetsWithBalances,
     networkFee,
-    price,
     maximum,
     minimum,
     transfer,
@@ -309,21 +308,33 @@ export const BridgeScreen = (): JSX.Element => {
   )
 
   const formatInCurrency = useCallback(
-    (value: bigint | undefined): string => {
-      if (selectedBridgeAsset && !price) {
+    (
+      value: bigint | undefined,
+      assetInNetwork?: TokenWithBalanceInNetwork
+    ): string => {
+      if (selectedBridgeAsset === undefined) {
         return UNKNOWN_AMOUNT
       }
 
+      if (
+        assetInNetwork?.balanceInCurrency === undefined ||
+        assetInNetwork?.balance === undefined
+      ) {
+        return UNKNOWN_AMOUNT
+      }
+      const amt =
+        (assetInNetwork.balanceInCurrency /
+          bigintToBig(
+            assetInNetwork.balance ?? 0n,
+            selectedBridgeAsset.decimals
+          ).toNumber()) *
+        bigintToBig(value ?? 0n, selectedBridgeAsset.decimals).toNumber()
+
       return formatCurrency({
-        amount:
-          selectedBridgeAsset && price
-            ? price
-                .mul(bigintToBig(value ?? 0n, selectedBridgeAsset.decimals))
-                .toNumber()
-            : 0
+        amount: amt
       })
     },
-    [formatCurrency, price, selectedBridgeAsset]
+    [selectedBridgeAsset, formatCurrency]
   )
 
   const handleSelectSourceNetwork = useCallback((): void => {
@@ -421,7 +432,9 @@ export const BridgeScreen = (): JSX.Element => {
           title="You pay"
           token={selectedAssetInSourceNetwork}
           network={sourceNetwork}
-          formatInCurrency={formatInCurrency}
+          formatInCurrency={() =>
+            formatInCurrency(inputAmount, selectedAssetInSourceNetwork)
+          }
           onAmountChange={handleAmountChange}
           onFocus={() => setIsInputFocused(true)}
           onBlur={() => setIsInputFocused(false)}
@@ -472,7 +485,9 @@ export const BridgeScreen = (): JSX.Element => {
           title="You receive"
           token={selectedAssetInTargetNetwork}
           network={targetNetwork}
-          formatInCurrency={formatInCurrency}
+          formatInCurrency={() =>
+            formatInCurrency(receiveAmount, selectedAssetInTargetNetwork)
+          }
           onAmountChange={handleAmountChange}
           editable={false}
         />

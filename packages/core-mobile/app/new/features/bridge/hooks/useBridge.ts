@@ -1,10 +1,10 @@
 import { useEffect, useMemo, useState } from 'react'
-import Big from 'big.js'
 import Logger from 'utils/Logger'
 import { Network } from '@avalabs/core-chains-sdk'
 import { BridgeAsset, BridgeType } from '@avalabs/bridge-unified'
 import { useNetworkFee } from 'hooks/useNetworkFee'
 import { NetworkVMType } from '@avalabs/vm-module-types'
+import { bigintToBig } from 'utils/bigNumbers/bigintToBig'
 import {
   AssetBalance,
   getAssetBalance,
@@ -17,7 +17,6 @@ import {
   useGetBridgeFees,
   useGetMinimumTransferAmount
 } from './useGetBridgeFees'
-import { useBridgeAssetPrice } from './useBridgeAssetPrice'
 import { useBridgeType } from './useBridgeType'
 import { useBridgeTransfer } from './useBridgeTransfer'
 import {
@@ -26,6 +25,8 @@ import {
 } from './useBridgeNetworks'
 import useMaxTransferAmount from './useMaxTransferAmount'
 import { useEstimatedReceiveAmount } from './useEstimatedReceiveAmount'
+
+export type Prices = Record<string, number | undefined>
 
 interface Bridge {
   assetBalance?: AssetBalance
@@ -57,7 +58,6 @@ interface Bridge {
   inputAmount: bigint | undefined
   setInputAmount: (amount: bigint | undefined) => void
   amount: bigint
-  price: Big | undefined
   estimatedReceiveAmount: bigint | undefined
   selectedAssetInSourceNetwork?: TokenWithBalanceInNetwork
   selectedAssetInTargetNetwork?: TokenWithBalanceInNetwork
@@ -74,15 +74,16 @@ export default function useBridge(): Bridge {
   const [inputAmount, setInputAmount] = useState<bigint>()
   const amount = useMemo(() => inputAmount ?? 0n, [inputAmount])
   const { assetsWithBalances } = useAssetBalances(sourceNetwork?.chainId)
+
   const { assetsWithBalances: assetsWithBalancesOnTargetNetwork } =
     useAssetBalances(targetNetwork?.chainId)
+
   const { data: networkFeeRate } = useNetworkFee(sourceNetwork)
 
   const assetBalance = useMemo(
     () => getAssetBalance(selectedBridgeAsset?.symbol, assetsWithBalances),
     [selectedBridgeAsset, assetsWithBalances]
   )
-
   const sourceNetworks = useBridgeSourceNetworks()
   const targetNetworks = useBridgeTargetNetworks(selectedBridgeAsset)
 
@@ -92,7 +93,6 @@ export default function useBridge(): Bridge {
 
     return networkFeeRate.low.maxFeePerGas * gasLimit
   }, [gasLimit, networkFeeRate])
-  const price = useBridgeAssetPrice(selectedBridgeAsset)
   const bridgeType = useBridgeType(selectedBridgeAsset, targetNetwork?.chainId)
   const transfer = useBridgeTransfer({
     amount,
@@ -136,7 +136,14 @@ export default function useBridge(): Bridge {
           balance: assetBalance?.balance,
           symbol: selectedBridgeAsset.symbol,
           logoUri: assetBalance?.logoUri,
-          decimals: selectedBridgeAsset.decimals
+          decimals: selectedBridgeAsset.decimals,
+          balanceInCurrency:
+            assetBalance?.priceInCurrency && assetBalance?.balance
+              ? bigintToBig(
+                  assetBalance.balance,
+                  assetBalance.asset.decimals
+                ).toNumber() * assetBalance.priceInCurrency
+              : undefined
         }
       : undefined
   }, [selectedBridgeAsset, assetBalance])
@@ -161,7 +168,14 @@ export default function useBridge(): Bridge {
         symbol: bridgeAsset.symbolOnNetwork ?? bridgeAsset.symbol,
         logoUri: bridgeAsset?.logoUri,
         decimals: bridgeAsset.asset.decimals,
-        balance: bridgeAsset.balance
+        balance: bridgeAsset.balance,
+        balanceInCurrency:
+          bridgeAsset.priceInCurrency && bridgeAsset.balance
+            ? bigintToBig(
+                bridgeAsset.balance,
+                bridgeAsset.asset.decimals
+              ).toNumber() * bridgeAsset.priceInCurrency
+            : undefined
       }
     }
 
@@ -281,16 +295,16 @@ export default function useBridge(): Bridge {
     setInputAmount,
     amount,
     networkFee,
-    price,
     estimatedReceiveAmount,
     selectedAssetInSourceNetwork,
     selectedAssetInTargetNetwork
   }
 }
 
-type TokenWithBalanceInNetwork = {
+export type TokenWithBalanceInNetwork = {
   symbol: string
   logoUri?: string
   decimals: number
   balance?: bigint
+  balanceInCurrency?: number
 }
