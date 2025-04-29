@@ -4,7 +4,6 @@ import {
   Icons,
   Logos,
   showAlert,
-  Text,
   useTheme,
   View
 } from '@avalabs/k2-alpine'
@@ -22,6 +21,7 @@ import {
   selectIsCoinbasePayBlocked,
   selectIsHallidayBridgeBannerBlocked
 } from 'store/posthog/slice'
+
 enum Provider {
   MOONPAY = 'Moonpay',
   COINBASE = 'Coinbase',

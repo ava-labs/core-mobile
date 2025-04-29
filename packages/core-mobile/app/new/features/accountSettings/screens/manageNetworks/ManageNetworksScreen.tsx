@@ -15,7 +15,6 @@ import { useRouter } from 'expo-router'
 import { useNetworks } from 'hooks/networks/useNetworks'
 import React, { useCallback, useMemo, useState } from 'react'
 import { ListRenderItem } from 'react-native'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import {
   isAvalancheCChainId,
   isAvalancheChainId
@@ -27,7 +26,6 @@ import { isBitcoinChainId } from 'utils/network/isBitcoinNetwork'
 
 export const ManageNetworksScreen = (): JSX.Element => {
   const { theme } = useTheme()
-  const insets = useSafeAreaInsets()
   const { networks, enabledNetworks, customNetworks, toggleNetwork } =
     useNetworks()
   const [searchText, setSearchText] = useState('')

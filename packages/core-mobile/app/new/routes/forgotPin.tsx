@@ -1,22 +1,13 @@
-import React from 'react'
-import {
-  Button,
-  SafeAreaView,
-  ScrollView,
-  Text,
-  View,
-  Icons,
-  useTheme
-} from '@avalabs/k2-alpine'
-import BlurredBarsContentLayout from 'common/components/BlurredBarsContentLayout'
-import { useRouter } from 'expo-router'
+import { Button, Icons, Text, useTheme, View } from '@avalabs/k2-alpine'
+import { ScrollScreen } from 'common/components/ScrollScreen'
 import SlideToConfirm from 'common/components/SlideToConfirm'
-import { selectWalletType } from 'store/app'
+import { useRouter } from 'expo-router'
+import { useDeleteWallet } from 'new/common/hooks/useDeleteWallet'
+import React from 'react'
 import { useSelector } from 'react-redux'
 import { WalletType } from 'services/wallet/types'
+import { selectWalletType } from 'store/app'
 import { setPinRecovery } from 'utils/Navigation'
-import { useDeleteWallet } from 'new/common/hooks/useDeleteWallet'
-import { ScrollScreen } from 'common/components/ScrollScreen'
 
 const ForgotPin = (): JSX.Element => {
   const router = useRouter()

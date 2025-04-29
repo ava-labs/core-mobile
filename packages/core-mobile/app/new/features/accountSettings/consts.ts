@@ -1,6 +1,5 @@
 import { ChainName } from 'services/network/consts'
 
-
 export enum AddressType {
   EVM = ChainName.AVALANCHE_C_EVM,
   EVM_TESTNET = ChainName.AVALANCHE_C_EVM_TESTNET,

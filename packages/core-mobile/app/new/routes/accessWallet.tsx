@@ -1,16 +1,8 @@
-import React from 'react'
-import {
-  GroupList,
-  Icons,
-  ScrollView,
-  Text,
-  useTheme,
-  View
-} from '@avalabs/k2-alpine'
+import { GroupList, Icons, useTheme } from '@avalabs/k2-alpine'
 import Encrypted from 'assets/icons/encrypted.svg'
-import BlurredBarsContentLayout from 'common/components/BlurredBarsContentLayout'
-import { useRouter } from 'expo-router'
 import { ScrollScreen } from 'common/components/ScrollScreen'
+import { useRouter } from 'expo-router'
+import React from 'react'
 
 const AccessWalletScreen = (): JSX.Element => {
   const { theme } = useTheme()
