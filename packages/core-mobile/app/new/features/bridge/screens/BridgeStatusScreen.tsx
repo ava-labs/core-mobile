@@ -71,7 +71,7 @@ export const BridgeStatusScreen = (): JSX.Element => {
 
   const coingeckoId = useCoinGeckoId(symbol)
 
-  const assetPrices = useSimplePrices(
+  const { data: assetPrices } = useSimplePrices(
     coingeckoId ? [coingeckoId] : [],
     selectedCurrency.toLowerCase() as VsCurrencyType
   )
