@@ -25,8 +25,6 @@ import { Contact } from 'store/addressBook'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import EMPTY_ADDRESS_BOOK_ICON from '../../../assets/icons/address_book_empty.png'
 
-const TITLE = `First, enter the\nrecipient's address`
-
 interface Props {
   recentAddresses: Contact[]
   contacts: Contact[]
@@ -229,7 +227,8 @@ export const RecentContacts = ({
 
   return (
     <FlatListScreenTemplate
-      title={TITLE}
+      title={`First, enter the\nrecipient's address`}
+      navigationTitle="Enter the recipient's address"
       data={searchResults}
       isModal
       renderHeader={renderHeader}
