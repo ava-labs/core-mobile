@@ -267,7 +267,7 @@ __metadata:
     "@storybook/addon-ondevice-controls": 7.6.20
     "@storybook/react-native": 7.6.20
     "@tanstack/query-sync-storage-persister": 5.59.6
-    "@tanstack/react-query": 5.59.8
+    "@tanstack/react-query": 5.74.11
     "@tanstack/react-query-persist-client": 5.59.6
     "@tradle/react-native-http": 2.0.1
     "@typechain/ethers-v6": 0.5.1
@@ -11925,6 +11925,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@tanstack/query-core@npm:5.74.9":
+  version: 5.74.9
+  resolution: "@tanstack/query-core@npm:5.74.9"
+  checksum: d2c3459ba57bbd946dd5996b267ccf0afedc0fbc55ade6f152201382a14c895b1ba676bbef682b6472c53c2672b98daf67f9f34d2f68e3a8b55f626071e47179
+  languageName: node
+  linkType: hard
+
 "@tanstack/query-persist-client-core@npm:5.59.6":
   version: 5.59.6
   resolution: "@tanstack/query-persist-client-core@npm:5.59.6"
@@ -11956,14 +11963,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@tanstack/react-query@npm:5.59.8":
-  version: 5.59.8
-  resolution: "@tanstack/react-query@npm:5.59.8"
+"@tanstack/react-query@npm:5.74.11":
+  version: 5.74.11
+  resolution: "@tanstack/react-query@npm:5.74.11"
   dependencies:
-    "@tanstack/query-core": 5.59.6
+    "@tanstack/query-core": 5.74.9
   peerDependencies:
     react: ^18 || ^19
-  checksum: 584fa340f197d3afd8dc9639ab5fa0238eea41050b2ddd642f3be94d5c8a16cb7773da3fc6e90b3c1b473c9170fb4eedd83460270ce014a004cf97df3ab36f15
+  checksum: 97426a1ff2d75267bc790dee70473ec30daee3082eec2d12e43a5bcbef9a9d8286e49089d403cc125cbb76d5722d0e80a6bb40e88e5efc4bee95a0271db31740
   languageName: node
   linkType: hard
 
@@ -27540,7 +27547,7 @@ react-native-webview@ava-labs/react-native-webview:
   peerDependencies:
     react: "*"
     react-native: "*"
-  checksum: 77324747a8b5df0a5558bb99a9a0804a5575d328e84f480e462c56417af97213f38a9930e4582fb749bec374dc4d1a8910a45b006e77af9b14a8e64057b932bf
+  checksum: 412c9b11914f982a6f0498272eba1fd07924dbc1294e368ac4b99ed23982c626610899afcc8ae98a11484b4c4c7cf4d05127051285f15ca742b2893d2a6c7c0f
   languageName: node
   linkType: hard
 
