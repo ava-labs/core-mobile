@@ -19,6 +19,7 @@ const AddRecoveryMethods = (): JSX.Element => {
     if (selectedMethod?.type === RecoveryMethods.Passkey) {
       AnalyticsService.capture('SeedlessAddMfa', { type: FidoType.PASS_KEY })
       navigate({
+        // @ts-ignore TODO: make routes typesafe
         pathname: '/onboarding/seedless/fidoNameInput',
         params: {
           title: 'How would you like to name your passkey?',
@@ -32,6 +33,7 @@ const AddRecoveryMethods = (): JSX.Element => {
     if (selectedMethod?.type === RecoveryMethods.Yubikey) {
       AnalyticsService.capture('SeedlessAddMfa', { type: FidoType.YUBI_KEY })
       navigate({
+        // @ts-ignore TODO: make routes typesafe
         pathname: '/onboarding/seedless/fidoNameInput',
         params: {
           title: 'How would you like to name your YubiKey?',
@@ -43,12 +45,14 @@ const AddRecoveryMethods = (): JSX.Element => {
       return
     }
     if (selectedMethod?.type === RecoveryMethods.Authenticator) {
+      // @ts-ignore TODO: make routes typesafe
       navigate('/onboarding/seedless/authenticatorSetup')
       AnalyticsService.capture('SeedlessAddMfa', { type: 'Authenticator' })
     }
   }
 
   const handleOnSkip = (): void => {
+    // @ts-ignore TODO: make routes typesafe
     navigate('/onboarding/seedless/analyticsConsent')
   }
 

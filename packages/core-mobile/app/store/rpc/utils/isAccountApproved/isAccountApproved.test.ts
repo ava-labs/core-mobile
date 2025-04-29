@@ -17,14 +17,12 @@ describe('isAccountApproved', () => {
           'eth_sign',
           'personal_sign',
           'wallet_addEthereumChain',
-          'wallet_switchEthereumChain',
           'avalanche_getContacts',
           'avalanche_createContact',
           'avalanche_removeContact',
           'avalanche_updateContact',
           'avalanche_selectAccount',
-          'avalanche_getAccounts',
-          'avalanche_bridgeAsset'
+          'avalanche_getAccounts'
         ],
         events: ['chainChanged', 'accountsChanged']
       }
@@ -58,14 +56,12 @@ describe('isAccountApproved', () => {
           'eth_sign',
           'personal_sign',
           'wallet_addEthereumChain',
-          'wallet_switchEthereumChain',
           'avalanche_getContacts',
           'avalanche_createContact',
           'avalanche_removeContact',
           'avalanche_updateContact',
           'avalanche_selectAccount',
-          'avalanche_getAccounts',
-          'avalanche_bridgeAsset'
+          'avalanche_getAccounts'
         ],
         events: ['chainChanged', 'accountsChanged']
       }

@@ -25,6 +25,7 @@ export const AddressBookScreen = (): JSX.Element => {
 
   const goToAddContact = useCallback((): void => {
     navigate({
+      // @ts-ignore TODO: make routes typesafe
       pathname: '/accountSettings/addressBook/addContact',
       params: { contactId: uuid() }
     })
@@ -33,6 +34,7 @@ export const AddressBookScreen = (): JSX.Element => {
   const goToContactDetail = useCallback(
     (contactId: string): void => {
       navigate({
+        // @ts-ignore TODO: make routes typesafe
         pathname: '/accountSettings/addressBook/contactDetail',
         params: { contactId }
       })

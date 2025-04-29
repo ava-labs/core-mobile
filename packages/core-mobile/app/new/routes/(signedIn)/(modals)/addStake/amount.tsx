@@ -74,6 +74,7 @@ const StakeAmountScreen = (): JSX.Element => {
       await compute(stakeAmount.toSubUnit())
 
       AnalyticsService.capture('StakeOpenDurationSelect')
+      // @ts-ignore TODO: make routes typesafe
       navigate('/addStake/duration')
     } catch (e) {
       setError(e as Error)

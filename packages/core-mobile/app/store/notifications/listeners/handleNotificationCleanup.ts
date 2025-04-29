@@ -1,4 +1,4 @@
-import { AppListenerEffectAPI } from 'store'
+import { AppListenerEffectAPI } from 'store/types'
 import NotificationsService from 'services/notifications/NotificationsService'
 import Logger from 'utils/Logger'
 import { selectIsEarnBlocked } from 'store/posthog'
@@ -6,7 +6,7 @@ import { isStakeCompleteNotificationDisabled } from './utils'
 
 export const handleNotificationCleanup = async (
   listenerApi: AppListenerEffectAPI
-) => {
+): Promise<void> => {
   // generic notification clean up
   await NotificationsService.setBadgeCount(0)
 
@@ -15,7 +15,7 @@ export const handleNotificationCleanup = async (
 
 export const handleStakeCompleteNotificationCleanup = async (
   listenerApi: AppListenerEffectAPI
-) => {
+): Promise<void> => {
   const state = listenerApi.getState()
 
   const isEarnBlocked = selectIsEarnBlocked(state)

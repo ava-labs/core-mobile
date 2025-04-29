@@ -7,11 +7,11 @@ import {
   stackNavigatorScreenOptions
 } from 'common/consts/screenOptions'
 import NavigationThemeProvider from 'common/contexts/NavigationThemeProvider'
+import { useBgDetect } from 'common/hooks/useBgDetect'
 import { useLoadFonts } from 'common/hooks/useLoadFonts'
 import { GlobalToast } from 'common/utils/toast'
 import { useFocusEffect } from 'expo-router'
 import { RecoveryMethodProvider } from 'features/onboarding/contexts/RecoveryMethodProvider'
-import { useBgDetect } from 'navigation/useBgDetect'
 import { NavigationRedirect } from 'new/common/components/NavigationRedirect'
 import React, { useCallback, useEffect, useState } from 'react'
 import { Platform, Appearance as RnAppearance } from 'react-native'

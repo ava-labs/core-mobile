@@ -11,7 +11,7 @@ import {
 } from '@avalabs/k2-alpine'
 import { useWatchlist } from 'hooks/watchlist/useWatchlist'
 import React from 'react'
-import { useTokenDetails } from 'screens/watchlist/useTokenDetails'
+import { useTokenDetails } from 'common/hooks/useTokenDetails'
 import { formatLargeCurrency } from 'utils/Utils'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import { TokenLogo } from 'common/components/TokenLogo'

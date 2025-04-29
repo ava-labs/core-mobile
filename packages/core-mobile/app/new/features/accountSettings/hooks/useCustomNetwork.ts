@@ -1,4 +1,8 @@
-import { ChainID, toggleFavorite, updateCustomNetwork } from 'store/network'
+import {
+  ChainID,
+  toggleEnabledChainId,
+  updateCustomNetwork
+} from 'store/network'
 
 import { useCallback } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
@@ -28,7 +32,7 @@ export function useCustomNetwork(): {
       const newNetwork = constructCustomNetwork(formState, isTestnet)
 
       dispatch(addCustomNetwork(newNetwork))
-      dispatch(toggleFavorite(newNetwork.chainId))
+      dispatch(toggleEnabledChainId(newNetwork.chainId))
     },
     [dispatch, isTestnet]
   )

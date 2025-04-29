@@ -165,6 +165,7 @@ const StakeDurationScreen = (): JSX.Element => {
   const handlePressNext = useCallback(async () => {
     if (stakeEndTime) {
       navigate({
+        // @ts-ignore TODO: make routes typesafe
         pathname: '/addStake/confirm',
         params: {
           stakeEndTime
@@ -175,6 +176,7 @@ const StakeDurationScreen = (): JSX.Element => {
 
   const handleAdvancedSetup = useCallback(() => {
     navigate({
+      // @ts-ignore TODO: make routes typesafe
       pathname: '/addStake/nodeParameters',
       params: {
         stakeEndTime

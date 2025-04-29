@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
-import { RootState } from 'store'
+import { RootState } from 'store/types'
 import { FeatureGates, FeatureFlags, FeatureVars } from 'services/posthog/types'
 import { WalletType } from 'services/wallet/types'
 import { uuid } from 'utils/uuid'

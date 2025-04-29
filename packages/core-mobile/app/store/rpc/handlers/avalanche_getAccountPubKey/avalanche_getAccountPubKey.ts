@@ -1,4 +1,4 @@
-import { AppListenerEffectAPI } from 'store'
+import { AppListenerEffectAPI } from 'store/types'
 import { selectActiveAccount } from 'store/account'
 import walletService from 'services/wallet/WalletService'
 import { rpcErrors } from '@metamask/rpc-errors'

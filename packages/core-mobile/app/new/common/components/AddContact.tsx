@@ -1,3 +1,4 @@
+import { noop } from '@avalabs/core-utils-sdk'
 import { Button, View } from '@avalabs/k2-alpine'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { ContactForm } from 'features/accountSettings/components/ContactForm'
@@ -12,7 +13,11 @@ export const AddContact = (): React.JSX.Element => {
   const { bottom } = useSafeAreaInsets()
   const { canGoBack, back } = useRouter()
   const { contactId } = useLocalSearchParams<{ contactId: string }>()
-  const [contact, setContact] = useState<Contact>({ id: contactId, name: '' })
+  const [contact, setContact] = useState<Contact>({
+    id: contactId,
+    name: '',
+    type: 'contact'
+  })
 
   const handleUpdateContact = (updated: Contact): void => {
     setContact(updated)
@@ -42,7 +47,12 @@ export const AddContact = (): React.JSX.Element => {
           justifyContent: 'space-between'
         }}>
         {contact && (
-          <ContactForm contact={contact} onUpdate={handleUpdateContact} />
+          <ContactForm
+            contact={contact}
+            onUpdate={handleUpdateContact}
+            // TODO: implement onSelectAvatar
+            onSelectAvatar={noop}
+          />
         )}
       </ScrollView>
       <View sx={{ gap: 16, backgroundColor: '$surfacePrimary' }}>

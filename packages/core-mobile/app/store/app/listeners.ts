@@ -6,7 +6,7 @@ import {
   Platform,
   Appearance as RnAppearance
 } from 'react-native'
-import { AppListenerEffectAPI } from 'store'
+import { AppListenerEffectAPI, AppStartListening } from 'store/types'
 import {
   onRehydrationComplete,
   selectWalletState,
@@ -16,7 +16,6 @@ import {
   setWalletState,
   WalletState
 } from 'store/app'
-import { AppStartListening } from 'store/middleware/listener'
 import BiometricsSDK from 'utils/BiometricsSDK'
 import Logger from 'utils/Logger'
 import DeviceInfo from 'react-native-device-info'

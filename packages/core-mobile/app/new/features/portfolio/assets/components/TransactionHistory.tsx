@@ -15,19 +15,20 @@ import {
   isTokenWithBalancePVM
 } from '@avalabs/avalanche-module'
 import usePendingBridgeTransactions from 'features/bridge/hooks/usePendingBridgeTransactions'
-import {
-  getBridgeAssetSymbol,
-  isPendingBridgeTransaction
-} from 'features/bridge/utils/bridgeUtils'
 import { BridgeTransaction } from '@avalabs/core-bridge-sdk'
 import { BridgeTransfer } from '@avalabs/bridge-unified'
 import { TransactionType } from '@avalabs/vm-module-types'
+import {
+  getBridgeAssetSymbol,
+  isPendingBridgeTransaction
+} from 'common/utils/bridgeUtils'
 import { useTokenDetailFilterAndSort } from '../hooks/useTokenDetailFilterAndSort'
 import { XpActivityListItem } from './XpActivityListItem'
 import { TokenActivityListItem } from './TokenActivityListItem'
 import { PendingBridgeTransactionItem } from './PendingBridgeTransactionItem'
 
 const errorIcon = require('../../../../assets/icons/unamused_emoji.png')
+
 interface Props {
   token?: LocalTokenWithBalance
   handleExplorerLink: (explorerLink: string) => void
@@ -155,15 +156,11 @@ const TransactionHistory: FC<Props> = ({
     [handleExplorerLink, token, handlePendingBridge]
   )
 
-  const dataLength = combinedData.length
-
   const dropdowns = useMemo(() => {
-    if (dataLength === 0) return
-
     return (
       <DropdownSelections filter={filter} sort={sort} sx={styles.dropdown} />
     )
-  }, [dataLength, filter, sort])
+  }, [filter, sort])
 
   const renderSeparator = useCallback((): JSX.Element => {
     return <Separator sx={{ marginLeft: 63 }} />

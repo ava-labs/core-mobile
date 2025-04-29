@@ -7,7 +7,7 @@ import { useWatchlist } from 'hooks/watchlist/useWatchlist'
 import { useSelector } from 'react-redux'
 import { selectSelectedCurrency } from 'store/settings/currency'
 import { formatCurrency } from 'utils/FormatCurrency'
-import { useBlockchainNames } from 'screens/activity/hooks/useBlockchainNames'
+import { useBlockchainNames } from 'common/utils/useBlockchainNames'
 import ActivityListItem from './ActivityListItem'
 import { TransactionTypeIcon } from './TransactionTypeIcon'
 

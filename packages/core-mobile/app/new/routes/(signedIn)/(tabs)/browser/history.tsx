@@ -70,6 +70,7 @@ const HistoryScreen = (): JSX.Element => {
     dispatch(addTab())
     if (activeTab) {
       dispatch(addHistoryForActiveTab(item))
+      // @ts-ignore TODO: make routes typesafe
       navigate('index')
     }
   }

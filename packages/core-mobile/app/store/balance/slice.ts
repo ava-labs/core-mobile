@@ -4,7 +4,7 @@ import {
   createSlice,
   PayloadAction
 } from '@reduxjs/toolkit'
-import { RootState } from 'store'
+import { RootState } from 'store/types'
 import { selectActiveAccount } from 'store/account'
 import {
   selectActiveNetwork,

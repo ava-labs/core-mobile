@@ -5,7 +5,10 @@ import { useNetworkContractTokens } from 'hooks/networks/useNetworkContractToken
 import { useNetworks } from 'hooks/networks/useNetworks'
 import { useMemo } from 'react'
 import { BridgeTransaction } from '@avalabs/core-bridge-sdk'
-import { getSourceChainId, isUnifiedBridgeTransfer } from '../utils/bridgeUtils'
+import {
+  getSourceChainId,
+  isUnifiedBridgeTransfer
+} from 'common/utils/bridgeUtils'
 
 export function useTokenForBridgeTransaction(
   bridgeTransaction: BridgeTransaction | BridgeTransfer | undefined,

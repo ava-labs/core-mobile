@@ -9,10 +9,12 @@ import {
 import { ListScreen } from 'common/components/ListScreen'
 import { Logo } from 'common/components/Logo'
 import { getListItemEnteringAnimation } from 'common/utils/animations'
-import { useConnectedDapps } from 'features/accountSettings/hooks/useConnectedDapps'
+import {
+  Dapp,
+  useConnectedDapps
+} from 'features/accountSettings/hooks/useConnectedDapps'
 import React, { useCallback, useMemo, useState } from 'react'
 import Animated from 'react-native-reanimated'
-import { Dapp } from 'screens/rpc/ConnectedDapps/types'
 
 const ConnectedSitesScreen = (): JSX.Element => {
   const {

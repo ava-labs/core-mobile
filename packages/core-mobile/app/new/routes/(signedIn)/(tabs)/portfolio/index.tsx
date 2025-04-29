@@ -43,7 +43,7 @@ import Animated, {
   useSharedValue
 } from 'react-native-reanimated'
 import { useSelector } from 'react-redux'
-import { RootState } from 'store'
+import { RootState } from 'store/types'
 import { selectActiveAccount } from 'store/account'
 import {
   selectBalanceForAccountIsAccurate,
@@ -145,14 +145,17 @@ const PortfolioHomeScreen = (): JSX.Element => {
 
   const handleSend = useCallback((): void => {
     setSelectedToken(undefined)
+    // @ts-ignore TODO: make routes typesafe
     navigate('/send')
   }, [navigate, setSelectedToken])
 
   const handleConnect = useCallback((): void => {
+    // @ts-ignore TODO: make routes typesafe
     navigate('/walletConnectScan')
   }, [navigate])
 
   const handleBuy = useCallback((): void => {
+    // @ts-ignore TODO: make routes typesafe
     navigate('/buy')
   }, [navigate])
 
@@ -187,6 +190,7 @@ const PortfolioHomeScreen = (): JSX.Element => {
 
   const handleBridge = useCallback(() => {
     navigate({
+      // @ts-ignore TODO: make routes typesafe
       pathname: '/bridge'
     })
   }, [navigate])
@@ -321,18 +325,21 @@ const PortfolioHomeScreen = (): JSX.Element => {
 
   const handleGoToTokenDetail = useCallback(
     (localId: string): void => {
+      // @ts-ignore TODO: make routes typesafe
       navigate({ pathname: '/tokenDetail', params: { localId } })
     },
     [navigate]
   )
 
   const handleGoToTokenManagement = useCallback((): void => {
+    // @ts-ignore TODO: make routes typesafe
     navigate('/tokenManagement')
   }, [navigate])
 
   const handleGoToCollectibleDetail = useCallback(
     (localId: string, initial: CollectibleFilterAndSortInitialState): void => {
       navigate({
+        // @ts-ignore TODO: make routes typesafe
         pathname: '/collectibleDetail',
         params: { localId, initial: JSON.stringify(initial) }
       })
@@ -341,11 +348,13 @@ const PortfolioHomeScreen = (): JSX.Element => {
   )
 
   const handleGoToCollectibleManagement = useCallback((): void => {
+    // @ts-ignore TODO: make routes typesafe
     navigate('/collectibleManagement')
   }, [navigate])
 
   const handleGoToDiscoverCollectibles = useCallback((): void => {
     navigate({
+      // @ts-ignore TODO: make routes typesafe
       pathname: '/discoverCollectibles'
     })
   }, [navigate])

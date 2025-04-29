@@ -52,6 +52,7 @@ const ManageAccountsScreen = (): React.JSX.Element => {
   const gotoAccountDetails = useCallback(
     (accountIndex: number): void => {
       navigate({
+        // @ts-ignore TODO: make routes typesafe
         pathname: '/accountSettings/account',
         params: { accountIndex: accountIndex.toString() }
       })

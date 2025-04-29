@@ -1,6 +1,6 @@
 import { Button, Icons, Text, useTheme, View } from '@avalabs/k2-alpine'
 import { ScrollScreen } from 'common/components/ScrollScreen'
-import { Space } from 'components/Space'
+import { Space } from 'common/components/Space'
 import NotificationToggle from 'features/accountSettings/components/NotificationToggle'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'

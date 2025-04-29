@@ -1,7 +1,7 @@
 import Crypto from 'react-native-quick-crypto'
 import { createTransform } from 'redux-persist'
 import { encryptTransform } from 'redux-persist-transform-encrypt'
-import { RawRootState } from 'store'
+import { RawRootState } from 'store/types'
 import Logger from 'utils/Logger'
 import { Transform } from 'redux-persist/es/types'
 import { serializeJson } from 'utils/serialization/serialize'

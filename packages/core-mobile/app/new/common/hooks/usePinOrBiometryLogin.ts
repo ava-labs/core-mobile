@@ -11,11 +11,10 @@ import {
   NoSaltError
 } from 'utils/EncryptionHelper'
 import Logger from 'utils/Logger'
-import { useRateLimiter } from 'screens/login/hooks/useRateLimiter'
 import { formatTimer } from 'utils/Utils'
 import { BiometricType } from 'services/deviceInfo/DeviceInfoService'
 import { useDeleteWallet } from './useDeleteWallet'
-
+import { useRateLimiter } from './useRateLimiter'
 export function usePinOrBiometryLogin({
   onStartLoading,
   onStopLoading,

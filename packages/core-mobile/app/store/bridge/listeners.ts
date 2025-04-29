@@ -1,6 +1,5 @@
-import { AppListenerEffectAPI } from 'store'
+import { AppListenerEffectAPI, AppStartListening } from 'store/types'
 import { onAppLocked, onAppUnlocked, onLogOut } from 'store/app'
-import { AppStartListening } from 'store/middleware/listener'
 import { toggleDeveloperMode } from 'store/settings/advanced'
 import { isAnyOf, TaskAbortError } from '@reduxjs/toolkit'
 import Logger from 'utils/Logger'

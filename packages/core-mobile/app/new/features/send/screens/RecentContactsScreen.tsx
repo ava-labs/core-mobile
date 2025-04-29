@@ -15,6 +15,7 @@ export const RecentContactsScreen = (): JSX.Element => {
       setToAddress({ to: contact.id, recipientType: contact.type })
       resetAmount()
       navigate({
+        // @ts-ignore TODO: make routes typesafe
         pathname: '/send/send',
         params: { to: contact.id, recipientType: contact.type }
       })
@@ -24,6 +25,7 @@ export const RecentContactsScreen = (): JSX.Element => {
 
   const handleGoToQrCode = useCallback((): void => {
     resetAmount()
+    // @ts-ignore TODO: make routes typesafe
     navigate('/send/scanQrCode')
   }, [navigate, resetAmount])
 
@@ -32,6 +34,7 @@ export const RecentContactsScreen = (): JSX.Element => {
       setToAddress({ to: text, recipientType: 'address' })
       resetAmount()
       navigate({
+        // @ts-ignore TODO: make routes typesafe
         pathname: '/send/send',
         params: { to: text, recipientType: 'address' }
       })

@@ -27,6 +27,7 @@ const AvailableRecoveryMethodScreen = (): React.JSX.Element => {
       } else if (recoveryMethod.type === RecoveryMethods.Passkey) {
         AnalyticsService.capture('SeedlessAddMfa', { type: FidoType.PASS_KEY })
         navigate({
+          // @ts-ignore TODO: make routes typesafe
           pathname: '/accountSettings/addRecoveryMethods/fidoNameInput',
           params: {
             title: 'How would you like to name your passkey?',
@@ -38,6 +39,7 @@ const AvailableRecoveryMethodScreen = (): React.JSX.Element => {
       } else if (recoveryMethod.type === RecoveryMethods.Yubikey) {
         AnalyticsService.capture('SeedlessAddMfa', { type: FidoType.YUBI_KEY })
         navigate({
+          // @ts-ignore TODO: make routes typesafe
           pathname: '/accountSettings/addRecoveryMethods/fidoNameInput',
           params: {
             title: 'How would you like to name your YubiKey?',

@@ -124,6 +124,7 @@ const LoginWithPinOrBiometry = (): JSX.Element => {
   }
 
   const handleForgotPin = (): void => {
+    // @ts-ignore TODO: make routes typesafe
     router.navigate('/forgotPin')
   }
 

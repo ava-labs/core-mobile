@@ -1,4 +1,4 @@
-import { AppListenerEffectAPI } from 'store'
+import { AppListenerEffectAPI } from 'store/types'
 import { selectIsEarnBlocked } from 'store/posthog'
 import Logger from 'utils/Logger'
 import NotificationsService from 'services/notifications/NotificationsService'
@@ -8,7 +8,7 @@ import { isStakeCompleteNotificationDisabled } from './utils'
 export const handleScheduleStakingCompleteNotifications = async (
   listenerApi: AppListenerEffectAPI,
   stakeCompleteNotification: StakeCompleteNotification[]
-) => {
+): Promise<void> => {
   const state = listenerApi.getState()
   const isEarnBlocked = selectIsEarnBlocked(state)
   if (isEarnBlocked) {

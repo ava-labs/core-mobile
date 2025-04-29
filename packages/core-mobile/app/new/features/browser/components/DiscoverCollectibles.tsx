@@ -11,6 +11,7 @@ export const DiscoverCollectibles = (): JSX.Element => {
   const { navigate } = useRouter()
 
   const openDiscoverCollectibles = (): void => {
+    // @ts-ignore TODO: make routes typesafe
     navigate('/discoverCollectibles')
   }
 

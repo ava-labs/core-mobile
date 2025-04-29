@@ -14,9 +14,7 @@ import {
 } from '@avalabs/k2-alpine'
 import { NetworkVMType } from '@avalabs/vm-module-types'
 import { useNavigation } from '@react-navigation/native'
-import { ScrollScreen } from 'common/components/ScrollScreen'
 import { TokenInputWidget } from 'common/components/TokenInputWidget'
-import { useCoreBrowser } from 'common/hooks/useCoreBrowser'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import { usePreventScreenRemoval } from 'common/hooks/usePreventScreenRemoval'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
@@ -40,12 +38,12 @@ import Animated, {
 import { useSelector } from 'react-redux'
 import {
   unwrapAssetSymbol,
-  wrapAssetSymbol
-} from 'screens/bridge/utils/bridgeUtils'
-import { AssetBalance } from 'screens/bridge/utils/types'
+  wrapAssetSymbol,
+  AssetBalance
+} from 'common/utils/bridgeUtils'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import GaslessService from 'services/gasless/GaslessService'
-import { RootState } from 'store'
+import { RootState } from 'store/types'
 import { selectActiveAccount } from 'store/account'
 import { selectAvailableNativeTokenBalanceForNetworkAndAccount } from 'store/balance'
 import {
@@ -57,6 +55,8 @@ import { selectHasBeenViewedOnce, ViewOnceKey } from 'store/viewOnce'
 import { audioFeedback, Audios } from 'utils/AudioFeedback'
 import Logger from 'utils/Logger'
 import { getJsonRpcErrorMessage } from 'utils/getJsonRpcErrorMessage/getJsonRpcErrorMessage'
+import { ScrollScreen } from 'common/components/ScrollScreen'
+import { useCoreBrowser } from 'common/hooks/useCoreBrowser'
 import useBridge from '../hooks/useBridge'
 
 export const BridgeScreen = (): JSX.Element => {
@@ -206,6 +206,7 @@ export const BridgeScreen = (): JSX.Element => {
         canGoBack() && back()
       }
       navigate({
+        // @ts-ignore TODO: make routes typesafe
         pathname: '/bridgeStatus',
         params: bridgeResult
       })
@@ -294,6 +295,7 @@ export const BridgeScreen = (): JSX.Element => {
 
     setSelectedAsset(selectedBridgeAsset)
     navigate({
+      // @ts-ignore TODO: make routes typesafe
       pathname: '/selectBridgeToken',
       params: { sourceNetworkChainId: sourceNetwork.chainId }
     })
@@ -326,6 +328,7 @@ export const BridgeScreen = (): JSX.Element => {
 
   const handleSelectSourceNetwork = useCallback((): void => {
     setSelectedSourceNetwork(sourceNetwork)
+    // @ts-ignore TODO: make routes typesafe
     navigate({ pathname: '/selectBridgeSourceNetwork' })
   }, [setSelectedSourceNetwork, sourceNetwork, navigate])
 
@@ -336,6 +339,7 @@ export const BridgeScreen = (): JSX.Element => {
 
     setSelectedTargetNetwork(targetNetwork)
     navigate({
+      // @ts-ignore TODO: make routes typesafe
       pathname: '/selectBridgeTargetNetwork',
       params: {
         targetChainIds: JSON.stringify(

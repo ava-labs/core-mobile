@@ -1,4 +1,4 @@
-import { AppListenerEffectAPI } from 'store/index'
+import { AppListenerEffectAPI } from 'store/types'
 import { NotificationData } from 'contexts/DeeplinkContext/types'
 import {
   selectIsDeveloperMode,

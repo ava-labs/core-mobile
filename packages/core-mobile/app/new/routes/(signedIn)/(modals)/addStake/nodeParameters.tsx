@@ -17,6 +17,7 @@ const StakeNodeParameter = (): JSX.Element => {
 
   const handlePressNext = useCallback(() => {
     navigate({
+      // @ts-ignore TODO: make routes typesafe
       pathname: '/addStake/selectNode',
       params: {
         minUptime: Math.round(minimumUptime.get()),

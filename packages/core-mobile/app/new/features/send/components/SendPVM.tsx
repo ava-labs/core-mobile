@@ -1,7 +1,7 @@
 import React from 'react'
 import { TokenWithBalancePVM } from '@avalabs/vm-module-types'
 import { Account } from 'store/account'
-import usePVMSend from 'screens/send/hooks/usePVMSend'
+import usePVMSend from 'common/hooks/send/usePVMSend'
 import { Network } from '@avalabs/core-chains-sdk'
 import { useSendSelectedToken } from '../store'
 import { useSendContext } from '../context/sendContext'

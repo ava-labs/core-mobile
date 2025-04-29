@@ -13,8 +13,8 @@ export const useNavigateToSwap = (): {
     }
 
     navigate({
+      // @ts-ignore TODO: make routes typesafe
       pathname: '/swap',
-
       params: { initialTokenIdFrom: fromTokenId, initialTokenIdTo: toTokenId }
     })
   }

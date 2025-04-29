@@ -1,8 +1,8 @@
 import React from 'react'
 import { SelectNetworkScreen } from 'common/screens/SelectNetworkScreen'
-import { useNetworksFromCaip2ChainIds } from 'screens/bridge/hooks/useBridgeNetworks'
 import { useLocalSearchParams } from 'expo-router'
 import { useBridgeSelectedTargetNetwork } from '../store/store'
+import { useNetworksFromCaip2ChainIds } from '../hooks/useBridgeNetworks'
 
 export const SelectTargetNetworkScreen = (): JSX.Element => {
   const { targetChainIds } = useLocalSearchParams<{ targetChainIds: string }>()

@@ -112,6 +112,7 @@ export const ListScreen = <T,>({
 
   useLayoutEffect(() => {
     if (headerRef.current) {
+      // eslint-disable-next-line max-params
       headerRef.current.measure((x, y, width, height) => {
         contentHeaderHeight.value = height
         setHeaderLayout({ x, y, width, height: height / 2 })
@@ -221,6 +222,7 @@ export const ListScreen = <T,>({
       style={{
         flex: 1
       }}>
+      {/* @ts-ignore TODO: ListScreen improvement */}
       <AnimatedFlatList
         data={data}
         onScroll={onScrollEvent}

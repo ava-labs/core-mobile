@@ -21,7 +21,8 @@ const AddContactScreen = (): React.JSX.Element => {
 
   const [contact, setContact] = useState<Contact>({
     id: contactId,
-    name: ''
+    name: '',
+    type: 'contact'
   })
 
   const contactWithAvatar = useMemo(() => {
@@ -48,6 +49,7 @@ const AddContactScreen = (): React.JSX.Element => {
 
   const handleSelectAvatar = useCallback(() => {
     navigate({
+      // @ts-ignore TODO: make routes typesafe
       pathname: '/accountSettings/addressBook/selectContactAvatar',
       params: {
         name: contact?.name

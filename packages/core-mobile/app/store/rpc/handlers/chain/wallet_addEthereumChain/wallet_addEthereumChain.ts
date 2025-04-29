@@ -1,15 +1,17 @@
+// TODO: fix addEthereumChain
+
 import { Network, NetworkVMType } from '@avalabs/core-chains-sdk'
 import { rpcErrors } from '@metamask/rpc-errors'
 import { isValidRPCUrl } from 'services/network/utils/isValidRpcUrl'
-import { AppListenerEffectAPI } from 'store'
+import { AppListenerEffectAPI } from 'store/types'
 import {
   addCustomNetwork,
   selectActiveNetwork,
   selectAllNetworks,
   setActive
 } from 'store/network'
-import * as Navigation from 'utils/Navigation'
-import AppNavigation from 'navigation/AppNavigation'
+// import * as Navigation from 'utils/Navigation'
+// import AppNavigation from 'navigation/AppNavigation'
 import Logger from 'utils/Logger'
 import {
   selectIsDeveloperMode,
@@ -114,13 +116,13 @@ class WalletAddEthereumChainHandler
       requestedChain && supportedChainIds.includes(requestedChainId.toString())
 
     if (chainRequestedIsSupported) {
-      Navigation.navigate({
-        name: AppNavigation.Root.Wallet,
-        params: {
-          screen: AppNavigation.Modal.AddEthereumChainV2,
-          params: { request, network: customNetwork, isExisting: true }
-        }
-      })
+      //   Navigation.navigate({
+      //     name: AppNavigation.Root.Wallet,
+      //     params: {
+      //       screen: AppNavigation.Modal.AddEthereumChainV2,
+      //       params: { request, network: customNetwork, isExisting: true }
+      //     }
+      //   })
 
       return { success: true, value: DEFERRED_RESULT }
     }
@@ -136,13 +138,13 @@ class WalletAddEthereumChainHandler
       }
     }
 
-    Navigation.navigate({
-      name: AppNavigation.Root.Wallet,
-      params: {
-        screen: AppNavigation.Modal.AddEthereumChainV2,
-        params: { request, network: customNetwork, isExisting: false }
-      }
-    })
+    // Navigation.navigate({
+    //   name: AppNavigation.Root.Wallet,
+    //   params: {
+    //     screen: AppNavigation.Modal.AddEthereumChainV2,
+    //     params: { request, network: customNetwork, isExisting: false }
+    //   }
+    // })
 
     return { success: true, value: DEFERRED_RESULT }
   }

@@ -2,12 +2,11 @@ import { Button, Icons, Text, useTheme, View } from '@avalabs/k2-alpine'
 import { ScrollScreen } from 'common/components/ScrollScreen'
 import SlideToConfirm from 'common/components/SlideToConfirm'
 import { useRouter } from 'expo-router'
-import { useDeleteWallet } from 'new/common/hooks/useDeleteWallet'
 import React, { useCallback } from 'react'
 import { useSelector } from 'react-redux'
 import { WalletType } from 'services/wallet/types'
+import { useDeleteWallet } from 'new/common/hooks/useDeleteWallet'
 import { selectWalletType } from 'store/app'
-import { setPinRecovery } from 'utils/Navigation'
 
 const ForgotPin = (): JSX.Element => {
   const router = useRouter()
@@ -20,10 +19,10 @@ const ForgotPin = (): JSX.Element => {
   }, [router])
 
   const handleConfirm = useCallback(() => {
-    if (walletType === WalletType.MNEMONIC) {
-      deleteWallet()
-    } else if (walletType === WalletType.SEEDLESS) {
-      setPinRecovery(true)
+    if (
+      walletType === WalletType.MNEMONIC ||
+      walletType === WalletType.SEEDLESS
+    ) {
       deleteWallet()
     }
   }, [deleteWallet, walletType])

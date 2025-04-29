@@ -124,6 +124,7 @@ export const RecoverMethodsProvider = ({
             type: 'Fido'
           })
           router.navigate(
+            // @ts-ignore TODO: make routes typesafe
             '/accountSettings/addRecoveryMethods/authenticatorSetup'
           )
         },
@@ -131,6 +132,7 @@ export const RecoverMethodsProvider = ({
       })
     } else {
       setVerifiedTotpChallenge(totpResetInitResponse.data())
+      // @ts-ignore TODO: make routes typesafe
       router.navigate('/accountSettings/addRecoveryMethods/authenticatorSetup')
     }
   }, [verifyMFA, router])
@@ -229,7 +231,9 @@ export const RecoverMethodsProvider = ({
         (mfaChallenge as TotpChallenge).url
       ) {
         setVerifiedTotpChallenge(mfaChallenge as TotpChallenge)
+
         router.navigate(
+          // @ts-ignore TODO: make routes typesafe
           '/accountSettings/addRecoveryMethods/authenticatorSetup'
         )
         return
