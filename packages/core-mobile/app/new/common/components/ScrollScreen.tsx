@@ -16,7 +16,7 @@ import Animated, {
   useAnimatedStyle,
   useSharedValue
 } from 'react-native-reanimated'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { EdgeInsets, useSafeAreaInsets } from 'react-native-safe-area-context'
 import { BlurViewWithFallback } from './BlurViewWithFallback'
 import { KeyboardAvoidingView } from './KeyboardAvoidingView'
 import { LinearGradientBottomWrapper } from './LinearGradientBottomWrapper'
@@ -58,6 +58,14 @@ interface ScrollScreenProps extends KeyboardAwareScrollViewProps {
   renderHeaderRight?: () => React.ReactNode
 }
 
+function useIsAndroidWithBottomBar(): boolean {
+  const insets = useSafeAreaInsets()
+  if (Platform.OS !== 'android') {
+    return false
+  }
+  return insets.bottom > 24
+}
+
 export const ScrollScreen = ({
   title,
   subtitle,
@@ -74,7 +82,7 @@ export const ScrollScreen = ({
   const insets = useSafeAreaInsets()
   const headerHeight = useHeaderHeight()
   const keyboardHeight = useKeyboardHeight()
-
+  const isAndroidWithBottomBar = useIsAndroidWithBottomBar()
   const [headerLayout, setHeaderLayout] = useState<
     LayoutRectangle | undefined
   >()
@@ -116,10 +124,16 @@ export const ScrollScreen = ({
 
   const keyboardVerticalOffset = useMemo(() => {
     if (isModal) {
-      return insets.bottom - (Platform.OS === 'ios' ? 0 : 16)
+      if (Platform.OS === 'ios') {
+        return 0
+      }
+      if (isAndroidWithBottomBar) {
+        return -8
+      }
+      return 16
     }
     return -insets.bottom
-  }, [isModal, insets.bottom])
+  }, [isModal, insets.bottom, isAndroidWithBottomBar])
 
   return (
     <KeyboardAvoidingView
