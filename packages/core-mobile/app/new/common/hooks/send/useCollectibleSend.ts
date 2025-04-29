@@ -27,12 +27,20 @@ const useCollectibleSend: SendAdapterCollectible = ({
   nativeToken,
   maxFee,
   network
+  // eslint-disable-next-line sonarjs/cognitive-complexity
 }) => {
   const { request } = useInAppRequest()
   const { setIsSending } = useSendContext()
   const [selectedToken] = useSendSelectedToken()
   const provider = useEVMProvider(network)
   const isGaslessBlocked = useSelector(selectIsGaslessBlocked)
+
+  if (
+    selectedToken?.type !== TokenType.ERC721 &&
+    selectedToken?.type !== TokenType.ERC1155
+  ) {
+    throw new Error('Selected token is not a collectible')
+  }
 
   const handleError = useCallback(
     (err: unknown) => {
@@ -110,7 +118,7 @@ const useCollectibleSend: SendAdapterCollectible = ({
         validate({
           toAddress,
           from: fromAddress,
-          token: selectedToken as NftItem,
+          token: selectedToken,
           p: provider,
           nt: nativeToken,
           fee: maxFee

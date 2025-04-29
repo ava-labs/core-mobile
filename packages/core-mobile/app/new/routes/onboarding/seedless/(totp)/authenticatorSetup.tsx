@@ -29,7 +29,7 @@ export default function AuthenticatorSetup(): JSX.Element {
       try {
         totpResetInit(challenge => {
           setTotpChallenge(challenge)
-        })
+        }, '')
       } catch (e) {
         Logger.error('registerTotp error', e)
         AnalyticsService.capture('SeedlessRegisterTOTPStartFailed')
