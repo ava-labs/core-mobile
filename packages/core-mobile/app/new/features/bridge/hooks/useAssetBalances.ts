@@ -1,13 +1,14 @@
 import { useMemo } from 'react'
 import { useSelector } from 'react-redux'
 import { selectTokensWithBalanceByNetwork } from 'store/balance/slice'
-import { bigintToBig } from 'utils/bigNumbers/bigintToBig'
 import { useTokenInfoContext } from '@avalabs/core-bridge-sdk'
 import { selectTokenVisibility } from 'store/portfolio'
 import { isTokenVisible } from 'store/balance/utils'
 import { AssetBalance, unwrapAssetSymbol } from 'common/utils/bridgeUtils'
 import { getAssetBalances } from 'features/bridge/utils/getAssetBalances'
+import { getCoingeckoId } from 'common/utils/getCoingeckoId'
 import { useBridgeAssets } from './useBridgeAssets'
+import { useAssetBalancePrices } from './useAssetBalancePrices'
 /**
  * Get a list of bridge supported assets with the balances.
  * The list is sorted by balance.
@@ -43,18 +44,20 @@ export function useAssetBalances(sourceNetworkChainId?: number): {
     [bridgeAssets, visibleTokens, tokenInfoData]
   )
 
-  const sortedAssetsWithBalances = assetsWithBalances.sort((asset1, asset2) => {
-    const asset1Balance = bigintToBig(
-      asset1.balance || 0n,
-      asset1.asset.decimals
-    )
-    const asset2Balance = bigintToBig(
-      asset2.balance || 0n,
-      asset2.asset.decimals
-    )
+  const prices = useAssetBalancePrices(assetsWithBalances)
 
-    return asset2Balance.cmp(asset1Balance)
-  })
+  const sortedAssetsWithBalances = useMemo(() => {
+    return assetsWithBalances.toSorted((a, b) => {
+      const coingeckoIdA = getCoingeckoId(a.symbol, tokenInfoData)
+      const coingeckoIdB = getCoingeckoId(b.symbol, tokenInfoData)
+      const aPrice = coingeckoIdA ? prices?.[coingeckoIdA] : undefined
+      const bPrice = coingeckoIdB ? prices?.[coingeckoIdB] : undefined
+      if (aPrice && bPrice) {
+        return bPrice - aPrice
+      }
+      return 0
+    })
+  }, [assetsWithBalances, prices, tokenInfoData])
 
   return { assetsWithBalances: sortedAssetsWithBalances }
 }
