@@ -16,7 +16,7 @@ import { LayoutChangeEvent, LayoutRectangle } from 'react-native'
 import { useFocusEffect, useRouter } from 'expo-router'
 import { ScrollView } from 'react-native-gesture-handler'
 import { useConnectedDapps } from 'features/accountSettings/hooks/useConnectedDapps'
-import { Space } from 'components/Space'
+import { Space } from 'common/components/Space'
 import {
   selectCoreAnalyticsConsent,
   setCoreAnalytics
@@ -90,6 +90,7 @@ const SecurityAndPrivacyScreen = (): JSX.Element => {
     (value: boolean): void => {
       setIsBiometricSwitchEnabled(value)
       if (value) {
+        // @ts-ignore TODO: make routes typesafe
         navigate('/accountSettings/biometricVerifyPin')
       } else {
         commonStorage.set(StorageKey.SECURE_ACCESS_SET, 'PIN')
@@ -103,6 +104,7 @@ const SecurityAndPrivacyScreen = (): JSX.Element => {
       {
         title: 'Connected sites',
         onPress: () => {
+          // @ts-ignore TODO: make routes typesafe
           navigate('/accountSettings/connectedSites')
         },
         value: allApprovedDapps.length.toString()
@@ -115,6 +117,7 @@ const SecurityAndPrivacyScreen = (): JSX.Element => {
       {
         title: 'Change PIN',
         onPress: () => {
+          // @ts-ignore TODO: make routes typesafe
           navigate('/accountSettings/verifyChangePin')
         }
       }
@@ -146,9 +149,11 @@ const SecurityAndPrivacyScreen = (): JSX.Element => {
         title: 'Show recovery phrase',
         onPress: () => {
           if (walletType === WalletType.SEEDLESS) {
+            // @ts-ignore TODO: make routes typesafe
             navigate('/accountSettings/seedlessExportPhrase')
             return
           }
+          // @ts-ignore TODO: make routes typesafe
           navigate('/accountSettings/recoveryPhraseVerifyPin')
         }
       }
@@ -158,6 +163,7 @@ const SecurityAndPrivacyScreen = (): JSX.Element => {
       data.push({
         title: 'Recovery methods',
         onPress: () => {
+          // @ts-ignore TODO: make routes typesafe
           navigate('/accountSettings/addRecoveryMethods')
         }
       })

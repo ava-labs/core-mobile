@@ -1,6 +1,4 @@
 import { AppListenerEffectAPI } from 'store'
-import AppNavigation from 'navigation/AppNavigation'
-import * as Navigation from 'utils/Navigation'
 import { AnyAction } from '@reduxjs/toolkit'
 import { selectHasBeenViewedOnce, setViewOnce } from 'store/viewOnce/slice'
 import { ViewOnceKey } from 'store/viewOnce/types'
@@ -51,8 +49,8 @@ export const handlePromptNotifications = async (
     return
   }
 
-  // @ts-ignore
-  Navigation.navigate(AppNavigation.Modal.EnableNotificationsPrompt)
+  // TODO: fix enable notifications prompt
+  // Navigation.navigate(AppNavigation.Modal.EnableNotificationsPrompt)
   listenerApi.dispatch(setViewOnce(ViewOnceKey.NOTIFICATIONS_PROMPT))
 }
 

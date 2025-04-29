@@ -59,7 +59,8 @@
     "react-native-gesture-handler": "2.20.0",
     "react-native-modal-datetime-picker": "18.0.0",
     "react-native-reanimated": "3.16.7",
-    "react-native-safe-area-context": "5.3.0"
+    "react-native-safe-area-context": "5.3.0",
+    "react-native-svg": "15.8.0"
   },
   "devDependencies": {
     "@avalabs/tsconfig-mobile": "workspace:*",

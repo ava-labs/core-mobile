@@ -120,6 +120,7 @@ export const SendToken = ({ onSend }: { onSend: () => void }): JSX.Element => {
   }, [network.networkToken.decimals, selectedToken])
 
   const handleSelectToken = useCallback((): void => {
+    // @ts-ignore TODO: make routes typesafe
     navigate({ pathname: '/selectSendToken', params: { to, recipientType } })
   }, [navigate, recipientType, to])
 
@@ -229,7 +230,7 @@ export const SendToken = ({ onSend }: { onSend: () => void }): JSX.Element => {
             Token
           </Text>
           <View sx={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-            {selectedToken && (
+            {selectedToken && 'isDataAccurate' in selectedToken && (
               <>
                 <LogoWithNetwork
                   token={selectedToken}

@@ -1,10 +1,10 @@
 import { AppListenerEffectAPI } from 'store'
 import { rpcErrors } from '@metamask/rpc-errors'
-import { addContact } from 'store/addressBook'
-import * as Navigation from 'utils/Navigation'
-import AppNavigation from 'navigation/AppNavigation'
+// import { addContact } from 'store/addressBook'
+// import * as Navigation from 'utils/Navigation'
+// import AppNavigation from 'navigation/AppNavigation'
 import Logger from 'utils/Logger'
-import { uuid } from 'utils/uuid'
+// import { uuid } from 'utils/uuid'
 import { RpcMethod, RpcRequest } from '../../../types'
 import {
   ApproveResponse,
@@ -35,22 +35,23 @@ class AvalancheCreateContactHandler
       }
     }
 
-    const contact = {
-      ...result.data[0],
-      id: uuid()
-    }
+    // TODO: fix contact creation
+    // const contact = {
+    //   ...result.data[0],
+    //   id: uuid()
+    // }
 
-    Navigation.navigate({
-      name: AppNavigation.Root.Wallet,
-      params: {
-        screen: AppNavigation.Modal.CreateRemoveContactV2,
-        params: {
-          request,
-          contact,
-          action: 'create'
-        }
-      }
-    })
+    // Navigation.navigate({
+    //   name: AppNavigation.Root.Wallet,
+    //   params: {
+    //     screen: AppNavigation.Modal.CreateRemoveContactV2,
+    //     params: {
+    //       request,
+    //       contact,
+    //       action: 'create'
+    //     }
+    //   }
+    // })
 
     return { success: true, value: DEFERRED_RESULT }
   }
@@ -60,9 +61,9 @@ class AvalancheCreateContactHandler
       request: AvalancheCreateContactRequest
       data?: unknown
     },
-    listenerApi: AppListenerEffectAPI
+    _listenerApi: AppListenerEffectAPI
   ): ApproveResponse => {
-    const { dispatch } = listenerApi
+    //const { dispatch } = listenerApi
     const result = parseApproveData(payload.data)
 
     if (!result.success) {
@@ -72,17 +73,17 @@ class AvalancheCreateContactHandler
       }
     }
 
-    const contact = result.data.contact
+    //const contact = result.data.contact
 
-    dispatch(
-      addContact({
-        address: contact.address,
-        addressBTC: contact.addressBTC || '',
-        addressXP: contact.addressXP || '',
-        name: contact.name,
-        id: contact.id
-      })
-    )
+    // dispatch(
+    //   addContact({
+    //     address: contact.address,
+    //     addressBTC: contact.addressBTC || '',
+    //     addressXP: contact.addressXP || '',
+    //     name: contact.name,
+    //     id: contact.id
+    //   })
+    // )
 
     return { success: true, value: [] }
   }

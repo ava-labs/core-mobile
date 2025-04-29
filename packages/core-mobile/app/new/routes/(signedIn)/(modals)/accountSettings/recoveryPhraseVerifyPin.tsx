@@ -7,6 +7,7 @@ const RecoveryPhraseVerifyPinScreen = (): JSX.Element => {
 
   const handleLoginSuccess = (mnemonic: string): void => {
     replace({
+      // @ts-ignore TODO: make routes typesafe
       pathname: '/accountSettings/showRecoveryPhrase',
       params: { mnemonic }
     })

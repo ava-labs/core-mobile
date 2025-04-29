@@ -67,7 +67,7 @@ const onBalanceUpdate = async (
     isDeveloperMode,
     enabledNetworks,
     iteration: 0,
-    allNetworksIteration: 0,
+    nonPrimaryNetworksIteration: 0,
     pullPrimaryNetworks: true,
     address: account?.addressC ?? ''
   })
@@ -252,7 +252,7 @@ const handleFetchBalanceForAccount = async (
     isDeveloperMode,
     enabledNetworks,
     iteration: 0,
-    allNetworksIteration: 0,
+    nonPrimaryNetworksIteration: 0,
     pullPrimaryNetworks: true,
     address: accountToFetchFor?.addressC ?? ''
   })

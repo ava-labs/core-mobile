@@ -11,12 +11,12 @@ import { QrCodeScanner } from 'common/components/QrCodeScanner'
 import { useSendSelectedToken } from 'features/send/store'
 import { useNetworks } from 'hooks/networks/useNetworks'
 import { useNativeTokenWithBalanceByNetwork } from 'features/send/hooks/useNativeTokenWithBalanceByNetwork'
-import useCollectibleSend from 'screens/send/hooks/useCollectibleSend'
 import { selectActiveAccount } from 'store/account'
 import { useSelector } from 'react-redux'
 import { useNetworkFee } from 'hooks/useNetworkFee'
 import { useNavigation } from '@react-navigation/native'
 import { useSendContext } from 'features/send/context/sendContext'
+import useCollectibleSend from 'common/hooks/send/useCollectibleSend'
 import { useSendTransactionCallbacks } from '../hooks/useSendTransactionCallbacks'
 
 export const ScanQrCodeScreen = (): JSX.Element => {

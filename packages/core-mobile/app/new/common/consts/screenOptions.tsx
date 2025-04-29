@@ -101,6 +101,7 @@ export const homeScreenOptions: StackNavigationOptions = {
         marginBottom: BAR_BUTTONS_BOTTOM_MARGIN,
         alignItems: 'center'
       }}>
+      {/* @ts-ignore */}
       <Link href="/accountSettings/" asChild>
         <AccountSettingBarButton />
       </Link>
@@ -116,6 +117,7 @@ export const homeScreenOptions: StackNavigationOptions = {
           marginBottom: BAR_BUTTONS_BOTTOM_MARGIN,
           alignItems: 'center'
         }}>
+        {/* @ts-ignore */}
         <Link href="/receive/" asChild>
           <ReceiveBarButton />
         </Link>

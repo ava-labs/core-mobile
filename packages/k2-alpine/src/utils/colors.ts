@@ -1,6 +1,6 @@
-import { ButtonType } from 'src/components'
-import { K2AlpineTheme } from 'src/theme/theme'
 import tinycolor from 'tinycolor2'
+import { ButtonType } from '../components'
+import { K2AlpineTheme } from '../theme/theme'
 import { colors, darkModeColors, lightModeColors } from '../theme/tokens/colors'
 
 export function alpha(color: string, value: number): string {
@@ -63,7 +63,7 @@ export const getButtonTintColor = (
   type: ButtonType,
   theme: K2AlpineTheme,
   disabled: boolean | undefined
-): string => {
+): string | undefined => {
   if (type === 'tertiary') {
     return alpha(theme.colors.$textPrimary, disabled ? 0.4 : 1)
   }

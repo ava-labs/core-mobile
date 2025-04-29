@@ -2,7 +2,7 @@ import { configureStore, createListenerMiddleware } from '@reduxjs/toolkit'
 import { noop } from 'lodash'
 import WalletConnectService from 'services/walletconnectv2/WalletConnectService'
 import { AppStartListening } from 'store/middleware/listener'
-import * as Snackbar from 'components/Snackbar'
+import { transactionSnackbar } from 'common/utils/toast'
 import mockSessions from 'tests/fixtures/walletConnect/sessions'
 import mockNetworks from 'tests/fixtures/networks.json'
 import { WalletState } from 'store/app/types'
@@ -63,12 +63,10 @@ jest.mock('store/network/slice', () => {
 })
 mockSelectNetwork.mockImplementation(() => mockNetworks[43114])
 
-const mockShowSimpleToast = jest.fn()
-const mockShowDappToastError = jest.fn()
-jest
-  .spyOn(Snackbar, 'showDappToastError')
-  .mockImplementation(mockShowDappToastError)
-jest.spyOn(Snackbar, 'showSimpleToast').mockImplementation(mockShowSimpleToast)
+const mockSuccessToast = jest.fn()
+const mockErrorToast = jest.fn()
+jest.spyOn(transactionSnackbar, 'error').mockImplementation(mockErrorToast)
+jest.spyOn(transactionSnackbar, 'success').mockImplementation(mockSuccessToast)
 
 const mockSelectWalletState = jest.fn()
 jest
@@ -182,9 +180,7 @@ describe('walletConnect - listeners', () => {
       store.dispatch(newSession(uri))
 
       expect(mockWCPair).toHaveBeenCalledWith(uri)
-      expect(mockShowSimpleToast).toHaveBeenCalledWith(
-        'Unable to pair with dapp'
-      )
+      expect(mockErrorToast).toHaveBeenCalledWith('Unable to pair with dapp')
     })
   })
 
@@ -217,9 +213,7 @@ describe('walletConnect - listeners', () => {
 
       store.dispatch(onDisconnect(peerMeta))
 
-      expect(mockShowSimpleToast).toHaveBeenCalledWith(
-        'dapp name was disconnected'
-      )
+      expect(mockErrorToast).toHaveBeenCalledWith('dapp name was disconnected')
     })
   })
 })

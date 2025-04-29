@@ -5,27 +5,25 @@
     "module": "esnext",
     "baseUrl": "./app",
     "paths": {
-      "tests/*": [
-        "../tests/*"
-      ]
+      "tests/*": ["../tests/*"],
+      "features/*": ["new/features/*"],
+      "common/*": ["new/common/*"]
     }
   },
   "include": [
     "**/*.ts",
     "**/*.tsx",
     "**/*.js",
-    "*.d.ts",
     "./.storybook/*.js",
     ".eslintrc.js",
     "jest.config.js",
     ".prettierrc.js",
-    "../k2-mobile/src/theme.d.ts",
+    "./index.d.ts",
+    "./declarations.d.ts",
+    "../k2-alpine/src/theme.d.ts",
+    "../k2-alpine/src/components/Video/Video.tsx",
     ".expo/types/**/*.ts",
     "expo-env.d.ts"
   ],
-  "exclude": [
-    "node_modules",
-    "./e2e/artifacts/*",
-    "./ios/DerivedData"
-  ]
+  "exclude": ["node_modules", "./e2e/artifacts/*", "./ios/DerivedData", "e2e/*"]
 }

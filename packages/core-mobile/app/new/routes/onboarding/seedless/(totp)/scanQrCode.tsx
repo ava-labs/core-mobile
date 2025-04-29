@@ -9,10 +9,12 @@ export default function ScanQrCode(): JSX.Element {
   const router = useRouter()
 
   const goToVerifyCode = (): void => {
+    // @ts-ignore TODO: make routes typesafe
     router.push('/onboarding/seedless/verifyCode')
   }
 
   const goToEnterCodeManually = (): void => {
+    // @ts-ignore TODO: make routes typesafe
     router.navigate('/onboarding/seedless/copyCode')
   }
 

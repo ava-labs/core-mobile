@@ -61,6 +61,7 @@ const SeedlessExportPendingScreen = (): JSX.Element => {
       )
     } else if (isReadyToDecrypt) {
       setTimeout(() => {
+        // @ts-ignore TODO: make routes typesafe
         replace('/accountSettings/seedlessExportPhrase/readyToExport')
       }, 100)
     } else {

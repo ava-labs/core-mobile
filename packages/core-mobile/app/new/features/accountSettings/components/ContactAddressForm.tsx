@@ -52,6 +52,7 @@ export const ContactAddressForm = ({
 
   const handleScanQrCode = useCallback(() => {
     navigate({
+      // @ts-ignore TODO: make routes typesafe
       pathname: '/accountSettings/addressBook/scanQrCode',
       params: { addressType: title }
     })

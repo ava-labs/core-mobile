@@ -1,189 +1,191 @@
-import { Network, NetworkVMType } from '@avalabs/core-chains-sdk'
-import { rpcErrors } from '@metamask/rpc-errors'
-import { isValidRPCUrl } from 'services/network/utils/isValidRpcUrl'
-import { AppListenerEffectAPI } from 'store'
-import {
-  addCustomNetwork,
-  selectActiveNetwork,
-  selectAllNetworks,
-  setActive
-} from 'store/network'
-import * as Navigation from 'utils/Navigation'
-import AppNavigation from 'navigation/AppNavigation'
-import Logger from 'utils/Logger'
-import {
-  selectIsDeveloperMode,
-  toggleDeveloperMode
-} from 'store/settings/advanced'
-import { RpcMethod, RpcRequest } from '../../../types'
-import {
-  ApproveResponse,
-  DEFERRED_RESULT,
-  HandleResponse,
-  RpcRequestHandler
-} from '../../types'
-import { parseApproveData, parseRequestParams } from './utils'
+// TODO: fix addEthereumChain
 
-export type WalletAddEthereumChainRpcRequest =
-  RpcRequest<RpcMethod.WALLET_ADD_ETHEREUM_CHAIN>
+// import { Network, NetworkVMType } from '@avalabs/core-chains-sdk'
+// import { rpcErrors } from '@metamask/rpc-errors'
+// import { isValidRPCUrl } from 'services/network/utils/isValidRpcUrl'
+// import { AppListenerEffectAPI } from 'store'
+// import {
+//   addCustomNetwork,
+//   selectActiveNetwork,
+//   selectAllNetworks,
+//   setActive
+// } from 'store/network'
+// // import * as Navigation from 'utils/Navigation'
+// // import AppNavigation from 'navigation/AppNavigation'
+// import Logger from 'utils/Logger'
+// import {
+//   selectIsDeveloperMode,
+//   toggleDeveloperMode
+// } from 'store/settings/advanced'
+// import { RpcMethod, RpcRequest } from '../../../types'
+// import {
+//   ApproveResponse,
+//   DEFERRED_RESULT,
+//   HandleResponse,
+//   RpcRequestHandler
+// } from '../../types'
+// import { parseApproveData, parseRequestParams } from './utils'
 
-class WalletAddEthereumChainHandler
-  implements RpcRequestHandler<WalletAddEthereumChainRpcRequest>
-{
-  methods = [RpcMethod.WALLET_ADD_ETHEREUM_CHAIN]
+// export type WalletAddEthereumChainRpcRequest =
+//   RpcRequest<RpcMethod.WALLET_ADD_ETHEREUM_CHAIN>
 
-  handle = async (
-    request: WalletAddEthereumChainRpcRequest,
-    listenerApi: AppListenerEffectAPI
-  ): HandleResponse => {
-    const state = listenerApi.getState()
-    const { params } = request.data.params.request
-    const result = parseRequestParams(params)
+// class WalletAddEthereumChainHandler
+//   implements RpcRequestHandler<WalletAddEthereumChainRpcRequest>
+// {
+//   methods = [RpcMethod.WALLET_ADD_ETHEREUM_CHAIN]
 
-    if (!result.success) {
-      Logger.error('invalid params', result.error)
-      return {
-        success: false,
-        error: rpcErrors.invalidParams('Chain info is invalid')
-      }
-    }
+//   handle = async (
+//     request: WalletAddEthereumChainRpcRequest,
+//     listenerApi: AppListenerEffectAPI
+//   ): HandleResponse => {
+//     const state = listenerApi.getState()
+//     const { params } = request.data.params.request
+//     const result = parseRequestParams(params)
 
-    const requestedChain = result.data[0]
+//     if (!result.success) {
+//       Logger.error('invalid params', result.error)
+//       return {
+//         success: false,
+//         error: rpcErrors.invalidParams('Chain info is invalid')
+//       }
+//     }
 
-    const chains = selectAllNetworks(state)
-    const currentActiveNetwork = selectActiveNetwork(state)
-    const requestedChainId = Number(requestedChain.chainId)
+//     const requestedChain = result.data[0]
 
-    const isSameNetwork = requestedChainId === currentActiveNetwork?.chainId
+//     const chains = selectAllNetworks(state)
+//     const currentActiveNetwork = selectActiveNetwork(state)
+//     const requestedChainId = Number(requestedChain.chainId)
 
-    if (isSameNetwork) {
-      return {
-        success: true,
-        value: null
-      }
-    }
+//     const isSameNetwork = requestedChainId === currentActiveNetwork?.chainId
 
-    const rpcUrl = requestedChain.rpcUrls?.[0]
-    if (!rpcUrl) {
-      return {
-        success: false,
-        error: rpcErrors.invalidParams('RPC url is missing')
-      }
-    }
+//     if (isSameNetwork) {
+//       return {
+//         success: true,
+//         value: null
+//       }
+//     }
 
-    if (!requestedChain.nativeCurrency) {
-      return {
-        success: false,
-        error: rpcErrors.invalidParams(
-          'Expected nativeCurrency param to be defined'
-        )
-      }
-    }
+//     const rpcUrl = requestedChain.rpcUrls?.[0]
+//     if (!rpcUrl) {
+//       return {
+//         success: false,
+//         error: rpcErrors.invalidParams('RPC url is missing')
+//       }
+//     }
 
-    // use the requested chain's isTestnet value or fall back to the current active network's
-    const isTestnet =
-      requestedChain.isTestnet !== undefined
-        ? requestedChain.isTestnet
-        : Boolean(currentActiveNetwork.isTestnet)
+//     if (!requestedChain.nativeCurrency) {
+//       return {
+//         success: false,
+//         error: rpcErrors.invalidParams(
+//           'Expected nativeCurrency param to be defined'
+//         )
+//       }
+//     }
 
-    const customNetwork: Network = {
-      chainId: requestedChainId,
-      chainName: requestedChain.chainName || '',
-      description: '',
-      explorerUrl: requestedChain.blockExplorerUrls?.[0] || '',
-      isTestnet,
-      logoUri: requestedChain.iconUrls?.[0] || '',
-      mainnetChainId: 0,
-      networkToken: {
-        symbol: requestedChain.nativeCurrency.symbol,
-        name: requestedChain.nativeCurrency.name,
-        description: '',
-        decimals: requestedChain.nativeCurrency.decimals,
-        logoUri: requestedChain.iconUrls?.[0] || ''
-      },
-      platformChainId: '',
-      rpcUrl,
-      subnetId: '',
-      vmId: '',
-      primaryColor: '',
-      vmName: NetworkVMType.EVM
-    }
+//     // use the requested chain's isTestnet value or fall back to the current active network's
+//     const isTestnet =
+//       requestedChain.isTestnet !== undefined
+//         ? requestedChain.isTestnet
+//         : Boolean(currentActiveNetwork.isTestnet)
 
-    const supportedChainIds = Object.keys(chains ?? {})
-    const chainRequestedIsSupported =
-      requestedChain && supportedChainIds.includes(requestedChainId.toString())
+//     const customNetwork: Network = {
+//       chainId: requestedChainId,
+//       chainName: requestedChain.chainName || '',
+//       description: '',
+//       explorerUrl: requestedChain.blockExplorerUrls?.[0] || '',
+//       isTestnet,
+//       logoUri: requestedChain.iconUrls?.[0] || '',
+//       mainnetChainId: 0,
+//       networkToken: {
+//         symbol: requestedChain.nativeCurrency.symbol,
+//         name: requestedChain.nativeCurrency.name,
+//         description: '',
+//         decimals: requestedChain.nativeCurrency.decimals,
+//         logoUri: requestedChain.iconUrls?.[0] || ''
+//       },
+//       platformChainId: '',
+//       rpcUrl,
+//       subnetId: '',
+//       vmId: '',
+//       primaryColor: '',
+//       vmName: NetworkVMType.EVM
+//     }
 
-    if (chainRequestedIsSupported) {
-      Navigation.navigate({
-        name: AppNavigation.Root.Wallet,
-        params: {
-          screen: AppNavigation.Modal.AddEthereumChainV2,
-          params: { request, network: customNetwork, isExisting: true }
-        }
-      })
+//     const supportedChainIds = Object.keys(chains ?? {})
+//     const chainRequestedIsSupported =
+//       requestedChain && supportedChainIds.includes(requestedChainId.toString())
 
-      return { success: true, value: DEFERRED_RESULT }
-    }
+//     if (chainRequestedIsSupported) {
+//       Navigation.navigate({
+//         name: AppNavigation.Root.Wallet,
+//         params: {
+//           screen: AppNavigation.Modal.AddEthereumChainV2,
+//           params: { request, network: customNetwork, isExisting: true }
+//         }
+//       })
 
-    const isValid = await isValidRPCUrl(
-      customNetwork.chainId,
-      customNetwork.rpcUrl
-    )
-    if (!isValid) {
-      return {
-        success: false,
-        error: rpcErrors.invalidParams('ChainID does not match the rpc url')
-      }
-    }
+//       return { success: true, value: DEFERRED_RESULT }
+//     }
 
-    Navigation.navigate({
-      name: AppNavigation.Root.Wallet,
-      params: {
-        screen: AppNavigation.Modal.AddEthereumChainV2,
-        params: { request, network: customNetwork, isExisting: false }
-      }
-    })
+//     const isValid = await isValidRPCUrl(
+//       customNetwork.chainId,
+//       customNetwork.rpcUrl
+//     )
+//     if (!isValid) {
+//       return {
+//         success: false,
+//         error: rpcErrors.invalidParams('ChainID does not match the rpc url')
+//       }
+//     }
 
-    return { success: true, value: DEFERRED_RESULT }
-  }
+//     Navigation.navigate({
+//       name: AppNavigation.Root.Wallet,
+//       params: {
+//         screen: AppNavigation.Modal.AddEthereumChainV2,
+//         params: { request, network: customNetwork, isExisting: false }
+//       }
+//     })
 
-  approve = async (
-    payload: { request: WalletAddEthereumChainRpcRequest; data?: unknown },
-    listenerApi: AppListenerEffectAPI
-  ): ApproveResponse => {
-    const { dispatch, getState } = listenerApi
+//     return { success: true, value: DEFERRED_RESULT }
+//   }
 
-    const result = parseApproveData(payload.data)
+//   approve = async (
+//     payload: { request: WalletAddEthereumChainRpcRequest; data?: unknown },
+//     listenerApi: AppListenerEffectAPI
+//   ): ApproveResponse => {
+//     const { dispatch, getState } = listenerApi
 
-    if (!result.success) {
-      return {
-        success: false,
-        error: rpcErrors.internal('Invalid approve data')
-      }
-    }
+//     const result = parseApproveData(payload.data)
 
-    const data = result.data
+//     if (!result.success) {
+//       return {
+//         success: false,
+//         error: rpcErrors.internal('Invalid approve data')
+//       }
+//     }
 
-    if (!data.isExisting) {
-      dispatch(addCustomNetwork(data.network))
-    }
+//     const data = result.data
 
-    const state = getState()
-    const isDeveloperMode = selectIsDeveloperMode(state)
+//     if (!data.isExisting) {
+//       dispatch(addCustomNetwork(data.network))
+//     }
 
-    // validate network against the current developer mode
-    const chainId = data.network.chainId
-    const isTestnet = Boolean(data.network?.isTestnet)
+//     const state = getState()
+//     const isDeveloperMode = selectIsDeveloperMode(state)
 
-    // switch to correct dev mode
-    if (isTestnet !== isDeveloperMode) {
-      dispatch(toggleDeveloperMode())
-    }
+//     // validate network against the current developer mode
+//     const chainId = data.network.chainId
+//     const isTestnet = Boolean(data.network?.isTestnet)
 
-    dispatch(setActive(chainId))
+//     // switch to correct dev mode
+//     if (isTestnet !== isDeveloperMode) {
+//       dispatch(toggleDeveloperMode())
+//     }
 
-    return { success: true, value: null }
-  }
-}
+//     dispatch(setActive(chainId))
 
-export const walletAddEthereumChainHandler = new WalletAddEthereumChainHandler()
+//     return { success: true, value: null }
+//   }
+// }
+
+// export const walletAddEthereumChainHandler = new WalletAddEthereumChainHandler()

@@ -14,7 +14,6 @@ import SlideToConfirm from 'common/components/SlideToConfirm'
 import { selectWalletType } from 'store/app'
 import { useSelector } from 'react-redux'
 import { WalletType } from 'services/wallet/types'
-import { setPinRecovery } from 'utils/Navigation'
 import { useDeleteWallet } from 'new/common/hooks/useDeleteWallet'
 
 const ForgotPin = (): JSX.Element => {
@@ -28,10 +27,10 @@ const ForgotPin = (): JSX.Element => {
   }
 
   const handleConfirm = (): void => {
-    if (walletType === WalletType.MNEMONIC) {
-      deleteWallet()
-    } else if (walletType === WalletType.SEEDLESS) {
-      setPinRecovery(true)
+    if (
+      walletType === WalletType.MNEMONIC ||
+      walletType === WalletType.SEEDLESS
+    ) {
       deleteWallet()
     }
   }

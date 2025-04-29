@@ -17,7 +17,7 @@ import { useAvatar } from 'common/hooks/useAvatar'
 import { useDeleteWallet } from 'common/hooks/useDeleteWallet'
 import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
 import { showSnackbar } from 'common/utils/toast'
-import { Space } from 'components/Space'
+import { Space } from 'common/components/Space'
 import { useRouter } from 'expo-router'
 import { About } from 'features/accountSettings/components/About'
 import { AccountList } from 'features/accountSettings/components/AcccountList'
@@ -90,6 +90,7 @@ const AccountSettingsScreen = (): JSX.Element => {
   }, [renderHeaderRight, setOptions])
 
   const goToSelectAvatar = useCallback(() => {
+    // @ts-ignore TODO: make routes typesafe
     navigate('/accountSettings/selectAvatar')
   }, [navigate])
 
@@ -108,18 +109,22 @@ const AccountSettingsScreen = (): JSX.Element => {
       })
       return
     }
+    // @ts-ignore TODO: make routes typesafe
     navigate('/accountSettings/selectAppearance')
   }, [isDeveloperMode, navigate])
 
   const goToCurrency = useCallback(() => {
+    // @ts-ignore TODO: make routes typesafe
     navigate('/accountSettings/selectCurrency')
   }, [navigate])
 
   const goToNotificationPreferences = useCallback(() => {
+    // @ts-ignore TODO: make routes typesafe
     navigate('/accountSettings/notificationPreferences')
   }, [navigate])
 
   const goToSecurityPrivacy = useCallback(() => {
+    // @ts-ignore TODO: make routes typesafe
     navigate('/accountSettings/securityAndPrivacy')
   }, [navigate])
 
@@ -204,6 +209,7 @@ const AccountSettingsScreen = (): JSX.Element => {
                 data={[
                   {
                     title: 'Contacts',
+                    // @ts-ignore TODO: make routes typesafe
                     onPress: () => navigate('/accountSettings/addressBook'),
                     value: (
                       <Text
@@ -233,6 +239,7 @@ const AccountSettingsScreen = (): JSX.Element => {
                 data={[
                   {
                     title: 'Networks',
+                    // @ts-ignore TODO: make routes typesafe
                     onPress: () => navigate('/accountSettings/manageNetworks'),
                     value: (
                       <Text

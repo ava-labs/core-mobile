@@ -17,8 +17,10 @@ import Animated, {
 import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
 import { LayoutChangeEvent, LayoutRectangle } from 'react-native'
 import { getListItemEnteringAnimation } from 'common/utils/animations'
-import { useConnectedDapps } from 'features/accountSettings/hooks/useConnectedDapps'
-import { Dapp } from 'screens/rpc/ConnectedDapps/types'
+import {
+  Dapp,
+  useConnectedDapps
+} from 'features/accountSettings/hooks/useConnectedDapps'
 import { Logo } from 'common/components/Logo'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 

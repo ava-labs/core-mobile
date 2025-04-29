@@ -17,7 +17,7 @@ import { addRpcListeners } from 'store/rpc/listeners'
 import Logger from 'utils/Logger'
 import { addNotificationsListeners } from 'store/notifications/listeners/listeners'
 import { addSeedlessListeners } from 'seedless/store/listeners'
-import { addUnifiedBridgeListeners } from 'store/unifiedBridge/listeners'
+// import { addUnifiedBridgeListeners } from 'store/unifiedBridge/listeners'
 import { addWatchlistListeners } from 'store/watchlist/listeners'
 import { addAppearanceListeners } from 'store/settings/appearance/listener'
 
@@ -43,7 +43,7 @@ addNetworkListeners(startListening)
 
 addBridgeListeners(startListening)
 
-addUnifiedBridgeListeners(startListening)
+//addUnifiedBridgeListeners(startListening)
 
 addPosthogListeners(startListening)
 

@@ -28,7 +28,6 @@ import {
 } from 'date-fns'
 import { StakeTokenUnitValue } from 'features/stake/components/StakeTokenUnitValue'
 import { useStakeEstimatedReward } from 'features/stake/hooks/useStakeEstimatedReward'
-import { useValidateStakingEndTime } from 'screens/earn/Confirmation/useValidateStakingEndTime'
 import NetworkService from 'services/network/NetworkService'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
 import AnalyticsService from 'services/analytics/AnalyticsService'
@@ -43,6 +42,7 @@ import { truncateNodeId } from 'utils/Utils'
 import { copyToClipboard } from 'common/utils/clipboard'
 import { useSimpleFadingHeader } from 'common/hooks/useSimpleFadingHeader'
 import Animated from 'react-native-reanimated'
+import { useValidateStakingEndTime } from 'features/stake/utils/useValidateStakingEndTime'
 
 const StakeConfirmScreen = (): JSX.Element => {
   const { theme } = useTheme()
@@ -236,6 +236,7 @@ const StakeConfirmScreen = (): JSX.Element => {
       transactionSnackbar.success({ message: 'Staking successful' })
 
       handleDismiss()
+      // @ts-ignore TODO: make routes typesafe
       navigate('/stake')
 
       dispatch(

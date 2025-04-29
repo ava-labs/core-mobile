@@ -38,9 +38,10 @@ const ManageRecoveryMethodsScreen = (): JSX.Element => {
   const renderHeaderRight = useCallback(() => {
     return (
       <TouchableOpacity
-        onPress={() =>
+        onPress={() => {
+          // @ts-ignore TODO: make routes typesafe
           navigate('/accountSettings/addRecoveryMethods/available')
-        }
+        }}
         sx={{
           flexDirection: 'row',
           gap: 16,

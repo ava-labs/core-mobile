@@ -70,6 +70,7 @@ const ContactDetailScreen = (): React.JSX.Element => {
 
   const handleSelectAvatar = useCallback(() => {
     navigate({
+      // @ts-ignore TODO: make routes typesafe
       pathname: '/accountSettings/addressBook/editContactAvatar',
       params: { contactId }
     })

@@ -4,7 +4,7 @@ import { selectTokenVisibility, toggleTokenVisibility } from 'store/portfolio'
 import { isTokenVisible } from 'store/balance/utils'
 import { LocalTokenWithBalance } from 'store/balance'
 import { Text, Toggle, useTheme, View } from '@avalabs/k2-alpine'
-import { Space } from 'components/Space'
+import { Space } from 'common/components/Space'
 import { LogoWithNetwork } from './LogoWithNetwork'
 
 type Props = {

@@ -15,19 +15,20 @@ import {
   isTokenWithBalancePVM
 } from '@avalabs/avalanche-module'
 import usePendingBridgeTransactions from 'features/bridge/hooks/usePendingBridgeTransactions'
-import {
-  getBridgeAssetSymbol,
-  isPendingBridgeTransaction
-} from 'features/bridge/utils/bridgeUtils'
 import { BridgeTransaction } from '@avalabs/core-bridge-sdk'
 import { BridgeTransfer } from '@avalabs/bridge-unified'
 import { TransactionType } from '@avalabs/vm-module-types'
+import {
+  getBridgeAssetSymbol,
+  isPendingBridgeTransaction
+} from 'common/utils/bridgeUtils'
 import { useTokenDetailFilterAndSort } from '../hooks/useTokenDetailFilterAndSort'
 import { XpActivityListItem } from './XpActivityListItem'
 import { TokenActivityListItem } from './TokenActivityListItem'
 import { PendingBridgeTransactionItem } from './PendingBridgeTransactionItem'
 
 const errorIcon = require('../../../../assets/icons/unamused_emoji.png')
+
 interface Props {
   token?: LocalTokenWithBalance
   handleExplorerLink: (explorerLink: string) => void

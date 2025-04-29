@@ -12,6 +12,7 @@ import {
 } from '@avalabs/k2-alpine'
 import {
   AddressItem,
+  AddressListItem,
   CurrencyItem,
   DataItem,
   DateItem,
@@ -272,7 +273,9 @@ export const Details = ({
         | DataItem
         | DateItem
         | FundsRecipientItem
-    ): JSX.Element => {
+        | AddressListItem
+      // eslint-disable-next-line sonarjs/cognitive-complexity
+    ): JSX.Element | null => {
       return item.type === DetailItemType.ADDRESS ? (
         renderAddressItem(item)
       ) : item.type === DetailItemType.NODE_ID ? (
@@ -291,7 +294,7 @@ export const Details = ({
         </Text>
       ) : item.type === DetailItemType.CURRENCY ? (
         renderCurrencyValue(item.value, item.maxDecimals, item.symbol)
-      ) : (
+      ) : item.type === DetailItemType.ADDRESS_LIST ? null : (
         renderCurrencyValue(item.amount, item.maxDecimals, item.symbol)
       )
     },

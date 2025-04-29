@@ -4,8 +4,8 @@ import {
   useTheme,
   View
 } from '@avalabs/k2-alpine'
+import { Space } from 'common/components/Space'
 import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
-import { Space } from 'components/Space'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { AccountAddresses } from 'features/accountSettings/components/accountAddresses'
@@ -74,6 +74,7 @@ const AccountScreen = (): JSX.Element => {
 
   const handleShowPrivateKey = (): void => {
     // TODO: CP-10070
+    // @ts-ignore TODO: make routes typesafe
     navigate('/accountSettings/privateKey')
   }
 

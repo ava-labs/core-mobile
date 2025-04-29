@@ -216,7 +216,6 @@ __metadata:
     "@avalabs/evm-module": 1.9.3
     "@avalabs/glacier-sdk": 3.1.0-alpha.51
     "@avalabs/k2-alpine": "workspace:*"
-    "@avalabs/k2-mobile": "workspace:*"
     "@avalabs/tsconfig-mobile": "workspace:*"
     "@avalabs/types": 3.1.0-alpha.44
     "@avalabs/vm-module-types": 1.9.3
@@ -691,10 +690,11 @@ __metadata:
     react-native-modal-datetime-picker: 18.0.0
     react-native-reanimated: 3.16.7
     react-native-safe-area-context: 5.3.0
+    react-native-svg: 15.8.0
   languageName: unknown
   linkType: soft
 
-"@avalabs/k2-mobile@workspace:*, @avalabs/k2-mobile@workspace:packages/k2-mobile":
+"@avalabs/k2-mobile@workspace:packages/k2-mobile":
   version: 0.0.0-use.local
   resolution: "@avalabs/k2-mobile@workspace:packages/k2-mobile"
   dependencies:
@@ -27636,7 +27636,7 @@ react-native-webview@ava-labs/react-native-webview:
   peerDependencies:
     react: "*"
     react-native: "*"
-  checksum: ae658f8c94177d1b419ffb73d26bd70474b6c688af507daaabc11451f983f77a906b2aafcdfdd09c96cab846d9722dcaf26a7c22ee7d19fb4cf70578c8812ac5
+  checksum: 77324747a8b5df0a5558bb99a9a0804a5575d328e84f480e462c56417af97213f38a9930e4582fb749bec374dc4d1a8910a45b006e77af9b14a8e64057b932bf
   languageName: node
   linkType: hard
 

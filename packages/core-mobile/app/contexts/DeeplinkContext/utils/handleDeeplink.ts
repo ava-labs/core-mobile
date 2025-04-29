@@ -2,14 +2,9 @@ import { CORE_UNIVERSAL_LINK_HOSTS } from 'resources/Constants'
 import { AnyAction, Dispatch } from '@reduxjs/toolkit'
 import Logger from 'utils/Logger'
 import { parseUri } from '@walletconnect/utils'
-import { showSimpleToast } from 'components/Snackbar'
 import { WalletConnectVersions } from 'store/walletConnectV2/types'
 import { newSession } from 'store/walletConnectV2/slice'
-import {
-  navigateToChainPortfolio,
-  navigateToClaimRewards,
-  navigateToWatchlist
-} from 'navigation/utils'
+import { showSnackbar } from 'new/common/utils/toast'
 import { ACTIONS, DeepLink, PROTOCOLS } from '../types'
 
 export const handleDeeplink = ({
@@ -57,14 +52,15 @@ export const handleDeeplink = ({
         startWalletConnectSession({ url, dispatch, deeplink })
       } else if (action === ACTIONS.Portfolio) {
         deeplink.callback?.()
-        navigateToChainPortfolio()
+        // TODO fix deeplink
+        // navigateToChainPortfolio()
       } else if (action === ACTIONS.StakeComplete) {
         if (isEarnBlocked) return
         deeplink.callback?.()
-        navigateToClaimRewards()
+        //navigateToClaimRewards()
       } else if (action === ACTIONS.WatchList) {
-        const coingeckoId = url.pathname.split('/')[1]
-        navigateToWatchlist(coingeckoId)
+        //const coingeckoId = url.pathname.split('/')[1]
+        // navigateToWatchlist(coingeckoId)
       }
 
       break
@@ -106,7 +102,7 @@ const dispatchWalletConnectSession = (
   // link is a valid wallet connect uri
   const versionStr = version.toString()
   if (versionStr === WalletConnectVersions.V1) {
-    showSimpleToast('WalletConnect V1 is not supported')
+    showSnackbar('WalletConnect V1 is not supported')
   } else if (versionStr === WalletConnectVersions.V2) {
     dispatch(newSession(uri))
   }

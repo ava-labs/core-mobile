@@ -10,7 +10,6 @@ import { SafeParseError, SafeParseSuccess, z, ZodArray } from 'zod'
 import { WCSessionProposal } from 'store/walletConnectV2/types'
 import Logger from 'utils/Logger'
 import BlockaidService from 'services/blockaid/BlockaidService'
-import { SessionProposalV2Params } from 'navigation/types'
 import { SiteScanResponse } from 'services/blockaid/types'
 import { ProposalTypes } from '@walletconnect/types'
 import {
@@ -21,6 +20,7 @@ import {
 } from 'utils/caip2ChainIds'
 import { router } from 'expo-router'
 import { walletConnectCache } from 'services/walletconnectv2/walletConnectCache/walletConnectCache'
+import { SessionProposalV2Params } from '../types'
 
 const CORE_WEB_HOSTNAMES = [
   'localhost',
@@ -183,6 +183,7 @@ export const navigateToSessionProposal = (
   params: SessionProposalV2Params
 ): void => {
   walletConnectCache.sessionProposalParams.set(params)
+  // @ts-ignore
   router.navigate('/authorizeDapp')
 }
 

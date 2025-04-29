@@ -87,6 +87,7 @@ const TokenManagementScreen = (): JSX.Element => {
   }, [isLoading, isRefetching, tokenList, refetch, renderSeparator])
 
   const addCustomToken = (): void => {
+    // @ts-ignore TODO: make routes typesafe
     push('/tokenManagement/addCustomToken')
   }
 

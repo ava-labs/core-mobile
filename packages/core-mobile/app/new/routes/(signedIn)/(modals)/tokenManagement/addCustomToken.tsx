@@ -9,7 +9,7 @@ import {
 } from '@avalabs/k2-alpine'
 import { showSnackbar } from 'common/utils/toast'
 import React, { useCallback, useEffect } from 'react'
-import useAddCustomToken from 'screens/tokenManagement/hooks/useAddCustomToken'
+import useAddCustomToken from 'common/hooks/useAddCustomToken'
 import { LocalTokenWithBalance } from 'store/balance'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { LogoWithNetwork } from 'features/portfolio/assets/components/LogoWithNetwork'
@@ -46,6 +46,7 @@ const AddCustomTokenScreen = (): JSX.Element => {
   const disabled = !!(errorMessage || !token || isLoading)
 
   const goToScanQrCode = (): void => {
+    // @ts-ignore TODO: make routes typesafe
     push('/tokenManagement/scanQrCode')
   }
 

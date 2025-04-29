@@ -4,9 +4,9 @@ import { avalancheUpdateContactHandler } from './contact/avalanche_updateContact
 import { avalancheCreateContactHandler } from './contact/avalanche_createContact/avalanche_createContact'
 import { avalancheRemoveContactHandler } from './contact/avalanche_removeContact/avalanche_removeContact'
 import { wcSessionRequestHandler } from './wc_sessionRequest/wc_sessionRequest'
-import { walletAddEthereumChainHandler } from './chain/wallet_addEthereumChain/wallet_addEthereumChain'
-import { walletSwitchEthereumChainHandler } from './chain/wallet_switchEthereumChain/wallet_switchEthereumChain'
-import { avalancheBridgeAssetHandler } from './avalanche_bridgeAsset/avalanche_bridgeAsset'
+// TODO: reenable these rpc handlers
+// import { walletAddEthereumChainHandler } from './chain/wallet_addEthereumChain/wallet_addEthereumChain'
+// import { avalancheBridgeAssetHandler } from './avalanche_bridgeAsset/avalanche_bridgeAsset'
 import { avalancheSelectAccountHandler } from './account/avalanche_selectAccount/avalanche_selectAccount'
 import { RpcRequestHandler } from './types'
 import { avalancheGetAccountPubKeyHandler } from './avalanche_getAccountPubKey/avalanche_getAccountPubKey'
@@ -17,15 +17,15 @@ import { avalancheRenameAccountHandler } from './account/avalanche_renameAccount
 
 const handlerMap = [
   avalancheSelectAccountHandler,
-  avalancheBridgeAssetHandler,
+  // avalancheBridgeAssetHandler,
   avalancheCreateContactHandler,
   avalancheRemoveContactHandler,
   avalancheUpdateContactHandler,
   avalancheGetAccountsHandler,
   avalancheGetContactsHandler,
   wcSessionRequestHandler,
-  walletAddEthereumChainHandler,
-  walletSwitchEthereumChainHandler,
+  // walletAddEthereumChainHandler,
+  // walletSwitchEthereumChainHandler,
   walletGetEthereumChainHandler,
   avalancheGetAccountPubKeyHandler,
   avalancheSetDeveloperModeHandler,

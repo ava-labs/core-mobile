@@ -3,7 +3,6 @@ import { Module, Network, NetworkVMType } from '@avalabs/vm-module-types'
 import { noop } from 'lodash'
 import WalletConnectService from 'services/walletconnectv2/WalletConnectService'
 import { AppStartListening } from 'store/middleware/listener'
-import * as Toast from 'utils/toast'
 import mockSession from 'tests/fixtures/walletConnect/session.json'
 import mockNetworks from 'tests/fixtures/networks.json'
 import * as appSlice from 'store/app/slice'
@@ -105,8 +104,6 @@ jest.mock('store/network/slice', () => {
   }
 })
 mockSelectNetwork.mockImplementation(() => mockNetworks[43114])
-
-jest.spyOn(Toast, 'showTransactionErrorToast').mockImplementation(jest.fn())
 
 jest.mock('new/common/utils/toast', () => ({
   transactionSnackbar: {

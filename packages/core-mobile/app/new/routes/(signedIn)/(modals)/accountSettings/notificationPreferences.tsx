@@ -29,7 +29,7 @@ import { setNotificationSubscriptions } from 'store/notifications'
 import NotificationsService from 'services/notifications/NotificationsService'
 import Logger from 'utils/Logger'
 import NotificationToggle from 'features/accountSettings/components/NotificationToggle'
-import { Space } from 'components/Space'
+import { Space } from 'common/components/Space'
 
 const navigationHeader = (
   <NavigationTitleHeader title={'Notification preferences'} />

@@ -28,6 +28,7 @@ export default function CreatePin(): JSX.Element {
             BiometricsSDK.storeWalletWithBiometry(mnemonic)
           }
           navigate({
+            // @ts-ignore TODO: make routes typesafe
             pathname: '/onboarding/mnemonic/setWalletName',
             params: { mnemonic }
           })

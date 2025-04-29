@@ -38,6 +38,7 @@ export const TrendingTokenListView = memo(
     const { navigate } = useRouter()
     const handleBuy = useCallback(() => {
       navigate({
+        // @ts-ignore TODO: make routes typesafe
         pathname: '/buy',
         params: { showAvaxWarning: 'true' }
       })

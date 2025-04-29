@@ -29,10 +29,6 @@ import { useSelector } from 'react-redux'
 import { SelectNetworkRow } from 'features/bridge/components/SelectNetworkRow'
 import { BridgeAsset, TokenType } from '@avalabs/bridge-unified'
 import { Network } from '@avalabs/core-chains-sdk'
-import {
-  unwrapAssetSymbol,
-  wrapAssetSymbol
-} from 'screens/bridge/utils/bridgeUtils'
 import { NetworkVMType } from '@avalabs/vm-module-types'
 import Animated, {
   FadeIn,
@@ -43,7 +39,6 @@ import { RootState } from 'store'
 import { selectAvailableNativeTokenBalanceForNetworkAndAccount } from 'store/balance'
 import { selectActiveAccount } from 'store/account'
 import GaslessService from 'services/gasless/GaslessService'
-import { AssetBalance } from 'screens/bridge/utils/types'
 import BridgeTypeFootnote from 'features/bridge/components/BridgeTypeFootnote'
 import {
   useBridgeSelectedAsset,
@@ -60,6 +55,11 @@ import { getJsonRpcErrorMessage } from 'utils/getJsonRpcErrorMessage/getJsonRpcE
 import { audioFeedback, Audios } from 'utils/AudioFeedback'
 import { usePreventScreenRemoval } from 'common/hooks/usePreventScreenRemoval'
 import { useSimpleFadingHeader } from 'common/hooks/useSimpleFadingHeader'
+import {
+  AssetBalance,
+  unwrapAssetSymbol,
+  wrapAssetSymbol
+} from 'common/utils/bridgeUtils'
 import { useNavigation } from '@react-navigation/native'
 import useBridge from '../hooks/useBridge'
 
@@ -215,6 +215,7 @@ export const BridgeScreen = (): JSX.Element => {
         canGoBack() && back()
       }
       navigate({
+        // @ts-ignore TODO: make routes typesafe
         pathname: '/bridgeStatus',
         params: bridgeResult
       })
@@ -303,6 +304,7 @@ export const BridgeScreen = (): JSX.Element => {
 
     setSelectedAsset(selectedBridgeAsset)
     navigate({
+      // @ts-ignore TODO: make routes typesafe
       pathname: '/selectBridgeToken',
       params: { sourceNetworkChainId: sourceNetwork.chainId }
     })
@@ -335,6 +337,7 @@ export const BridgeScreen = (): JSX.Element => {
 
   const handleSelectSourceNetwork = useCallback((): void => {
     setSelectedSourceNetwork(sourceNetwork)
+    // @ts-ignore TODO: make routes typesafe
     navigate({ pathname: '/selectBridgeSourceNetwork' })
   }, [setSelectedSourceNetwork, sourceNetwork, navigate])
 
@@ -345,6 +348,7 @@ export const BridgeScreen = (): JSX.Element => {
 
     setSelectedTargetNetwork(targetNetwork)
     navigate({
+      // @ts-ignore TODO: make routes typesafe
       pathname: '/selectBridgeTargetNetwork',
       params: {
         targetChainIds: JSON.stringify(

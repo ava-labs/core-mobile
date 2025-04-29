@@ -55,7 +55,7 @@ import useCChainNetwork from 'hooks/earn/useCChainNetwork'
 import { AVAX_TOKEN_ID } from 'features/swap/const'
 import { BridgeTransaction } from '@avalabs/core-bridge-sdk'
 import { BridgeTransfer } from '@avalabs/bridge-unified'
-import { getSourceChainId } from 'features/bridge/utils/bridgeUtils'
+import { getSourceChainId } from 'common/utils/bridgeUtils'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { useAssetBalances } from 'features/bridge/hooks/useAssetBalances'
 import { useSendSelectedToken } from 'features/send/store'
@@ -136,6 +136,7 @@ const TokenDetailScreen = (): React.JSX.Element => {
 
   const handleBridge = useCallback(() => {
     navigate({
+      // @ts-ignore TODO: make routes typesafe
       pathname: '/bridge',
       params: token
         ? {
@@ -148,12 +149,14 @@ const TokenDetailScreen = (): React.JSX.Element => {
 
   const handleBuy = useCallback(() => {
     navigate({
+      // @ts-ignore TODO: make routes typesafe
       pathname: '/buy'
     })
   }, [navigate])
 
   const handleSend = useCallback((): void => {
     setSelectedToken(token)
+    // @ts-ignore TODO: make routes typesafe
     navigate('/send')
   }, [navigate, setSelectedToken, token])
 
@@ -238,6 +241,7 @@ const TokenDetailScreen = (): React.JSX.Element => {
   const handlePendingBridge = useCallback(
     (pendingBridge: BridgeTransaction | BridgeTransfer): void => {
       navigate({
+        // @ts-ignore TODO: make routes typesafe
         pathname: '/bridgeStatus',
         params: {
           txHash: pendingBridge.sourceTxHash,

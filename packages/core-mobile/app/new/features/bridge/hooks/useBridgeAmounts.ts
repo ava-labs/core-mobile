@@ -3,7 +3,7 @@ import { BridgeTransfer } from '@avalabs/bridge-unified'
 import { bigintToBig } from '@avalabs/core-utils-sdk'
 import Big from 'big.js'
 import { BridgeTransaction } from '@avalabs/core-bridge-sdk'
-import { isUnifiedBridgeTransfer } from '../utils/bridgeUtils'
+import { isUnifiedBridgeTransfer } from 'common/utils/bridgeUtils'
 
 export const useBridgeAmounts = (
   bridgeTx?: BridgeTransaction | BridgeTransfer

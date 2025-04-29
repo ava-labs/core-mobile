@@ -9,6 +9,7 @@ export const ScanQrCodeScreen = (): JSX.Element => {
   const handleOnSuccess = useCallback(
     (address: string): void => {
       replace({
+        // @ts-ignore TODO: make routes typesafe
         pathname: '/send/send',
         params: { to: address, recipientType: 'address' }
       })

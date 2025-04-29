@@ -1,9 +1,8 @@
-import { Row } from 'components/Row'
-import { StackedImages } from 'components/StackedImages'
 import React from 'react'
 import { Separator, Text, useTheme, View } from '@avalabs/k2-alpine'
 import { DeFiToken } from 'services/defi/types'
 import { useExchangedAmount } from 'new/common/hooks/useExchangedAmount'
+import { StackedImages } from './StackedImages'
 
 export const DeFiCommonRow = ({
   header,
@@ -30,18 +29,19 @@ export const DeFiCommonRow = ({
 
   return (
     <View>
-      <Row
+      <View
         style={{
+          flexDirection: 'row',
           paddingHorizontal: 16,
           paddingVertical: 13,
           minHeight: 48,
           alignItems: 'center'
         }}>
         <Text variant="body1">{header}</Text>
-      </Row>
+      </View>
       <Separator sx={{ marginHorizontal: 16 }} />
       <View sx={{ paddingHorizontal: 16, paddingVertical: 13 }}>
-        <Row style={{ gap: 10, alignItems: 'center' }}>
+        <View style={{ gap: 10, flexDirection: 'row', alignItems: 'center' }}>
           <View sx={{ width: tokenWidth }}>
             <StackedImages
               imageUrls={maxDisplayedTokens}
@@ -53,13 +53,15 @@ export const DeFiCommonRow = ({
               }}
             />
           </View>
-          <Row
+          <View
             style={{
-              flex: 1
+              flex: 1,
+              flexDirection: 'row'
             }}>
             <View sx={{ flex: 1 }}>
-              <Row
+              <View
                 style={{
+                  flexDirection: 'row',
                   justifyContent: 'space-between'
                 }}>
                 <Text
@@ -76,10 +78,10 @@ export const DeFiCommonRow = ({
                   ellipsizeMode="tail">
                   {getAmount(suppliedValue, 'compact')}
                 </Text>
-              </Row>
+              </View>
             </View>
-          </Row>
-        </Row>
+          </View>
+        </View>
       </View>
     </View>
   )

@@ -10,7 +10,7 @@ import Animated, {
   useSharedValue,
   withTiming
 } from 'react-native-reanimated'
-import { TextVariant } from 'src/theme/tokens/text'
+import { TextVariant } from '../../theme/tokens/text'
 import { useTheme } from '../../hooks'
 import { Icons } from '../../theme/tokens/Icons'
 import { Text, TouchableOpacity, View } from '../Primitives'

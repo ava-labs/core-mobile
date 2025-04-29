@@ -33,13 +33,13 @@ import Animated, {
   FadeOut,
   useSharedValue
 } from 'react-native-reanimated'
-import usePendingBridgeTransactions from '../hooks/usePendingBridgeTransactions'
 import {
   getNativeTokenSymbol,
   getSourceChainId,
   getTargetChainId,
   isUnifiedBridgeTransfer
-} from '../utils/bridgeUtils'
+} from 'common/utils/bridgeUtils'
+import usePendingBridgeTransactions from '../hooks/usePendingBridgeTransactions'
 import { useBridgeNetworkPrice } from '../hooks/useBridgeNetworkPrice'
 import { useBridgeAmounts } from '../hooks/useBridgeAmounts'
 import { useBridgeTransferStatus } from '../hooks/useBridgeTransferStatus'

@@ -10,7 +10,7 @@ import {
 import { ListRenderItem } from '@shopify/flash-list'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { SelectTokenScreen } from 'common/screens/SelectTokenScreen'
-import { AssetBalance } from 'screens/bridge/utils/types'
+import { AssetBalance } from 'common/utils/bridgeUtils'
 import { LogoWithNetwork } from 'common/components/LogoWithNetwork'
 import { useNetworks } from 'hooks/networks/useNetworks'
 import { formatTokenAmount } from '@avalabs/core-bridge-sdk'

@@ -79,6 +79,7 @@ export const ReceiveScreen = (): ReactNode => {
 
   const openSelectTokenScreen = useCallback(() => {
     router.push({
+      // @ts-ignore TODO: make routes typesafe
       pathname: '/selectReceiveNetwork'
     })
   }, [])

@@ -28,7 +28,7 @@ import Animated, {
   useSharedValue,
   withTiming
 } from 'react-native-reanimated'
-import { useTokenDetails } from 'screens/watchlist/useTokenDetails'
+import { useTokenDetails } from 'common/hooks/useTokenDetails'
 import { formatLargeCurrency } from 'utils/Utils'
 import { format } from 'date-fns'
 import { LayoutRectangle, StyleSheet } from 'react-native'
@@ -170,6 +170,7 @@ const TrackTokenDetailScreen = (): JSX.Element => {
 
   const handleBuy = useCallback((): void => {
     navigate({
+      // @ts-ignore TODO: make routes typesafe
       pathname: '/buy',
       params: { showAvaxWarning: 'true' }
     })
@@ -193,6 +194,7 @@ const TrackTokenDetailScreen = (): JSX.Element => {
   }, [])
 
   const handleShare = useCallback(() => {
+    // @ts-ignore TODO: make routes typesafe
     navigate({ pathname: '/trackTokenDetail/share', params: { tokenId } })
   }, [navigate, tokenId])
 

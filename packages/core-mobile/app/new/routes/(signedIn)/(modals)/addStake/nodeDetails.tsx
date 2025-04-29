@@ -65,6 +65,7 @@ const StakeNodeDetails = (): JSX.Element => {
 
   const handlePressNext = useCallback(() => {
     navigate({
+      // @ts-ignore TODO: make routes typesafe
       pathname: '/addStake/confirm',
       params: {
         stakeEndTime,
