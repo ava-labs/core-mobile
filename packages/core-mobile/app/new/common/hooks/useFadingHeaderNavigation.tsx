@@ -156,12 +156,14 @@ export const useFadingHeaderNavigation = ({
       )
     }
 
+    // If a custom header right component is provided, set it
     if (renderHeaderRight) {
       navigationOptions.headerRight = renderHeaderRight
 
       if (hasParent) {
         navigation.getParent()?.setOptions(navigationOptions)
 
+        // Clean up the header right component when the screen is unmounted
         return () => {
           navigation.getParent()?.setOptions({
             headerRight: undefined
@@ -170,6 +172,7 @@ export const useFadingHeaderNavigation = ({
       } else {
         navigation.setOptions(navigationOptions)
 
+        // Clean up the header right component when the screen is unmounted
         return () => {
           navigation.setOptions({
             headerRight: undefined
@@ -178,6 +181,7 @@ export const useFadingHeaderNavigation = ({
       }
     }
 
+    // Set the navigation options
     if (hasParent) {
       navigation.getParent()?.setOptions(navigationOptions)
     } else {

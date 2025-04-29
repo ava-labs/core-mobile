@@ -33,15 +33,38 @@ import { ErrorState } from './ErrorState'
 import { KeyboardAvoidingView } from './KeyboardAvoidingView'
 import ScreenHeader from './ScreenHeader'
 
+// Use this component when you need to display a list of items in a screen.
+// It handles all the logic for the header and footer, including keyboard interactions and gestures.
+
+// It provides:
+// - A navigation bar with a title
+// - A header with a title
+// - Custom sticky header and footer components
+// - Custom empty state component
+// - Proper keyboard avoidance and handling
+
+// Used by all screens that display a list of items
+
 interface ListScreenProps<T>
-  extends Omit<FlatListPropsWithLayout<T>, 'ListHeaderComponent'> {
+  extends Omit<
+    FlatListPropsWithLayout<T>,
+    'ListHeaderComponent' | 'ListFooterComponent'
+  > {
+  /** The title displayed in the screen header */
   title: string
+  /** Optional title to display in the navigation bar */
   navigationTitle?: string
+  /** Array of data items to be rendered in the list */
   data: T[]
+  /** Whether this screen has a parent screen in the navigation stack */
   hasParent?: boolean
+  /** Whether this screen is presented as a modal */
   isModal?: boolean
+  /** Optional function to render a custom sticky header component */
   renderHeader?: () => React.ReactNode
+  /** Optional function to render content in the navigation bar's right side */
   renderHeaderRight?: () => React.ReactNode
+  /** Optional function to render content when the list is empty */
   renderEmpty?: () => React.ReactNode
 }
 

@@ -1,12 +1,12 @@
 import { Text, View } from '@avalabs/k2-alpine'
+import { useHeaderHeight } from '@react-navigation/elements'
 import { QrCodeScanner } from 'common/components/QrCodeScanner'
 import { useRouter } from 'expo-router'
 import React, { useCallback } from 'react'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useSendContext } from '../context/sendContext'
 
 export const ScanQrCodeScreen = (): JSX.Element => {
-  const insets = useSafeAreaInsets()
+  const headerHeight = useHeaderHeight()
   const { replace } = useRouter()
   const { resetAmount, setToAddress } = useSendContext()
 
@@ -23,7 +23,8 @@ export const ScanQrCodeScreen = (): JSX.Element => {
   )
 
   return (
-    <View sx={{ paddingHorizontal: 16, paddingTop: insets.top + 16, flex: 1 }}>
+    <View
+      sx={{ paddingHorizontal: 16, paddingTop: headerHeight + 16, flex: 1 }}>
       <Text variant="heading2">Scan a QR code</Text>
       <QrCodeScanner
         onSuccess={handleOnSuccess}

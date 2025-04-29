@@ -22,16 +22,39 @@ import { KeyboardAvoidingView } from './KeyboardAvoidingView'
 import { LinearGradientBottomWrapper } from './LinearGradientBottomWrapper'
 import ScreenHeader from './ScreenHeader'
 
+// Use this component when you need a scrollable screen with proper keyboard handling and header management.
+// It handles all the logic for the header and footer, including keyboard interactions and gestures.
+
+// It provides:
+// - A navigation bar with a title
+// - A header with a title and subtitle
+// - A footer with a loading indicator
+// - Custom sticky header and footer components
+// - Custom empty state component
+// - Proper keyboard avoidance and handling
+
+// Used by screens that need scrollable content with keyboard and header management
+
 interface ScrollScreenProps extends KeyboardAwareScrollViewProps {
+  /** The main title displayed at the top of the screen */
   title?: string
+  /** Optional subtitle displayed below the title */
   subtitle?: string
+  /** The main content to be displayed in the scrollable area */
   children: React.ReactNode
+  /** Whether this screen has a parent screen in the navigation stack */
   hasParent?: boolean
+  /** Whether this screen is presented as a modal */
   isModal?: boolean
+  /** Whether the screen should adjust its layout when the keyboard appears */
   shouldAvoidKeyboard?: boolean
+  /** Title to be displayed in the navigation header */
   navigationTitle?: string
+  /** Custom header component to be rendered */
   renderHeader?: () => JSX.Element
+  /** Custom footer component to be rendered at the bottom of the screen */
   renderFooter?: () => JSX.Element
+  /** Custom component to be rendered on the right side of the header */
   renderHeaderRight?: () => JSX.Element
 }
 

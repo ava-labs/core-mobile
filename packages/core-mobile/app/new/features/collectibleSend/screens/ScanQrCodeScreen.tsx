@@ -5,6 +5,7 @@ import {
   useTheme,
   View
 } from '@avalabs/k2-alpine'
+import { useHeaderHeight } from '@react-navigation/elements'
 import { useNavigation } from '@react-navigation/native'
 import { QrCodeScanner } from 'common/components/QrCodeScanner'
 import { useRouter } from 'expo-router'
@@ -14,7 +15,6 @@ import { useSendSelectedToken } from 'features/send/store'
 import { useNetworks } from 'hooks/networks/useNetworks'
 import { useNetworkFee } from 'hooks/useNetworkFee'
 import React, { useCallback, useMemo } from 'react'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useSelector } from 'react-redux'
 import useCollectibleSend from 'screens/send/hooks/useCollectibleSend'
 import { selectActiveAccount } from 'store/account'
@@ -23,7 +23,7 @@ export const ScanQrCodeScreen = (): JSX.Element => {
   const {
     theme: { colors }
   } = useTheme()
-  const insets = useSafeAreaInsets()
+  const headerHeight = useHeaderHeight()
   const { isSending } = useSendContext()
   const { getNetwork } = useNetworks()
   const { canGoBack, back } = useRouter()
@@ -74,7 +74,8 @@ export const ScanQrCodeScreen = (): JSX.Element => {
   )
 
   return (
-    <View sx={{ paddingHorizontal: 16, paddingTop: insets.top + 16, flex: 1 }}>
+    <View
+      sx={{ paddingHorizontal: 16, paddingTop: headerHeight + 16, flex: 1 }}>
       <Text variant="heading2">Scan a QR code</Text>
       <QrCodeScanner
         onSuccess={handleSend}

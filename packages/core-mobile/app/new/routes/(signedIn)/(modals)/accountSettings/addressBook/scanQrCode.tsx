@@ -3,11 +3,12 @@ import React, { useCallback } from 'react'
 import { View, Text } from '@avalabs/k2-alpine'
 import { QrCodeScanner } from 'common/components/QrCodeScanner'
 import { AddressType } from 'features/accountSettings/consts'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { useHeaderHeight } from '@react-navigation/elements'
+
 const ScanQrCodeScreen = (): React.JSX.Element => {
   const { addressType } = useLocalSearchParams<{ addressType: AddressType }>()
   const { dismiss, setParams } = useRouter()
-  const insets = useSafeAreaInsets()
+  const headerHeight = useHeaderHeight()
   const handleOnSuccess = useCallback(
     (address: string): void => {
       dismiss()
@@ -17,7 +18,8 @@ const ScanQrCodeScreen = (): React.JSX.Element => {
   )
 
   return (
-    <View sx={{ paddingHorizontal: 16, paddingTop: insets.top + 16, flex: 1 }}>
+    <View
+      sx={{ paddingHorizontal: 16, paddingTop: headerHeight + 16, flex: 1 }}>
       <Text variant="heading2">Scan a QR code</Text>
       <QrCodeScanner
         onSuccess={handleOnSuccess}

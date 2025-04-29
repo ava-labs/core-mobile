@@ -1,16 +1,16 @@
-import React, { useCallback, useState } from 'react'
-import { View, Text, TextInput, Tooltip } from '@avalabs/k2-alpine'
+import { Text, TextInput, Tooltip, View } from '@avalabs/k2-alpine'
+import { useHeaderHeight } from '@react-navigation/elements'
 import { QrCodeScanner } from 'common/components/QrCodeScanner'
 import { useDeeplink } from 'contexts/DeeplinkContext/DeeplinkContext'
 import { DeepLinkOrigin } from 'contexts/DeeplinkContext/types'
 import { useRouter } from 'expo-router'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import React, { useCallback, useState } from 'react'
 
 export const WalletConnectScanScreen = (): React.JSX.Element => {
   const router = useRouter()
   const { setPendingDeepLink } = useDeeplink()
   const [wcLink, setWcLink] = useState('')
-  const insets = useSafeAreaInsets()
+  const headerHeight = useHeaderHeight()
 
   const handleOnChangeText = useCallback(
     (value: string) => {
@@ -28,7 +28,7 @@ export const WalletConnectScanScreen = (): React.JSX.Element => {
     <View
       sx={{
         paddingHorizontal: 16,
-        paddingTop: insets.top + 16,
+        paddingTop: headerHeight + 16,
         flex: 1,
         marginBottom: 80
       }}>

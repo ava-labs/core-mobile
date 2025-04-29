@@ -165,8 +165,11 @@ export const SendToken = ({ onSend }: { onSend: () => void }): JSX.Element => {
     <ScrollScreen
       isModal
       title={`${'How much would\nyou like to send?'}`}
-      navigationTitle={'How much would you like to send?'}
-      renderFooter={renderFooter}>
+      navigationTitle={`${'How much would you like to send?'}`}
+      renderFooter={renderFooter}
+      contentContainerStyle={{
+        padding: 16
+      }}>
       <Card
         sx={{
           marginTop: 22,
