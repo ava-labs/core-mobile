@@ -118,6 +118,7 @@ android {
     buildTypes {
         debug {
             signingConfig signingConfigs.debug
+            // necessary for old versions of Android to run on dev mode
             dexOptions {
                 javaMaxHeapSize "4g"
                 preDexLibraries true

@@ -10,4 +10,5 @@
         tools:ignore="GoogleAppIndexingWarning"
         android:networkSecurityConfig="@xml/network_security_config"
         android:largeHeap="true"/>
+        <!-- largeHeap is necessary for old versions of Android to run on dev mode -->
 </manifest>
