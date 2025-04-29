@@ -290,7 +290,7 @@ const TrackTokenDetailScreen = (): JSX.Element => {
 
   const renderHeader = useCallback(() => {
     if (!tokenInfo) {
-      return null
+      return <></>
     }
     return (
       <View

@@ -24,6 +24,7 @@ export const SelectTokenScreen = <T,>({
     <FlatListScreenTemplate
       title="Select a token"
       data={tokens}
+      isModal
       renderItem={renderListItem}
       keyExtractor={keyExtractor}
       renderHeader={renderHeader}

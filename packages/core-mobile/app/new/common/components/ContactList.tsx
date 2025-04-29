@@ -154,17 +154,21 @@ export const ContactList = ({
     )
   }, [ListHeader, searchText, setSearchText])
 
+  const renderEmpty = useCallback(() => {
+    return ListEmptyComponent
+  }, [ListEmptyComponent])
+
   return (
     <FlatListScreenTemplate
       title={title}
       keyExtractor={item => (item as Contact).id}
       data={searchResults}
-      hasParent
       isModal
+      hasParent
       renderItem={item => renderItem(item.item as Contact, item.index)}
       renderHeader={renderHeader}
       renderHeaderRight={renderHeaderRight}
-      ListEmptyComponent={ListEmptyComponent}
+      renderEmpty={renderEmpty}
     />
   )
 }

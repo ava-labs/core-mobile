@@ -1,14 +1,9 @@
-import {
-  Icons,
-  SearchBar,
-  Separator,
-  TouchableOpacity,
-  useTheme
-} from '@avalabs/k2-alpine'
+import { Icons, SearchBar, Separator, useTheme } from '@avalabs/k2-alpine'
 import { TokenType } from '@avalabs/vm-module-types'
 import { ErrorState } from 'common/components/ErrorState'
 import { FlatListScreenTemplate } from 'common/components/FlatListScreenTemplate'
 import { LoadingState } from 'common/components/LoadingState'
+import NavigationBarButton from 'common/components/NavigationBarButton'
 import { useSearchableTokenList } from 'common/hooks/useSearchableTokenList'
 import { useRouter } from 'expo-router'
 import TokenManagementItem from 'features/portfolio/assets/components/TokenManagementItem'
@@ -76,21 +71,12 @@ const TokenManagementScreen = (): JSX.Element => {
 
   const renderHeaderRight = useCallback(() => {
     return (
-      <TouchableOpacity
-        onPress={addCustomToken}
-        sx={{
-          flexDirection: 'row',
-          gap: 16,
-          marginRight: 18,
-          alignItems: 'center'
-        }}>
-        <Icons.Content.Add
-          testID="add_custon_network_btn"
-          width={25}
-          height={25}
-          color={colors.$textPrimary}
-        />
-      </TouchableOpacity>
+      <NavigationBarButton
+        testID="add_custon_network_btn"
+        isModal
+        onPress={addCustomToken}>
+        <Icons.Content.Add color={colors.$textPrimary} />
+      </NavigationBarButton>
     )
   }, [addCustomToken, colors.$textPrimary])
 

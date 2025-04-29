@@ -1,4 +1,8 @@
-import { NavigationTitleHeader, useKeyboardHeight } from '@avalabs/k2-alpine'
+import {
+  NavigationTitleHeader,
+  Text,
+  useKeyboardHeight
+} from '@avalabs/k2-alpine'
 import { useHeaderHeight } from '@react-navigation/elements'
 import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
 import React, { useLayoutEffect, useRef, useState } from 'react'
@@ -20,6 +24,7 @@ import ScreenHeader from './ScreenHeader'
 
 interface FlatListScreenTemplateProps extends KeyboardAwareScrollViewProps {
   title?: string
+  subtitle?: string
   children: React.ReactNode
   hasParent?: boolean
   isModal?: boolean
@@ -32,6 +37,7 @@ interface FlatListScreenTemplateProps extends KeyboardAwareScrollViewProps {
 
 export const ScrollViewScreenTemplate = ({
   title,
+  subtitle,
   children,
   hasParent,
   isModal,
@@ -64,7 +70,7 @@ export const ScrollViewScreenTemplate = ({
     const scale = interpolate(
       scrollY.value,
       [-headerHeight, 0, headerHeight],
-      [1.05, 1, 0.95]
+      [0.95, 1, 0.95]
     )
     return {
       opacity: 1 - targetHiddenProgress.value * 2,
@@ -87,7 +93,7 @@ export const ScrollViewScreenTemplate = ({
   return (
     <KeyboardAvoidingView
       enabled={!disabled}
-      keyboardVerticalOffset={isModal ? insets.bottom : -insets.bottom}>
+      keyboardVerticalOffset={isModal ? insets.bottom - 16 : -insets.bottom}>
       <BlurViewWithFallback
         style={{
           position: 'absolute',
@@ -118,11 +124,18 @@ export const ScrollViewScreenTemplate = ({
             paddingBottom: 12,
             paddingTop: headerHeight
           }}>
-          {title ? (
-            <Animated.View style={[animatedHeaderStyle]} ref={headerRef}>
-              <ScreenHeader title={title ?? ''} />
-            </Animated.View>
-          ) : null}
+          <View
+            style={{
+              gap: 8
+            }}>
+            {title ? (
+              <Animated.View style={[animatedHeaderStyle]} ref={headerRef}>
+                <ScreenHeader title={title ?? ''} />
+              </Animated.View>
+            ) : null}
+
+            {subtitle ? <Text variant="body1">{subtitle}</Text> : null}
+          </View>
 
           {renderHeader?.()}
         </View>

@@ -105,7 +105,6 @@ export const VerifyWithPinOrBiometry = ({
   return (
     <ScrollViewScreenTemplate
       title={`Enter your\ncurrent PIN`}
-      hasParent
       isModal
       contentContainerStyle={{
         padding: 16,

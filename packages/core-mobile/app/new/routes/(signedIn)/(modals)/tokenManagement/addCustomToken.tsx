@@ -113,13 +113,11 @@ const AddCustomTokenScreen = (): JSX.Element => {
       renderHeader={renderHeader}
       contentContainerStyle={{ padding: 16 }}
       isModal>
-      <View>
-        <Text
-          variant="subtitle1"
-          sx={{ color: colors.$textDanger, marginTop: 8, marginLeft: 8 }}>
-          {errorMessage}
-        </Text>
-      </View>
+      <Text
+        variant="subtitle1"
+        sx={{ color: colors.$textDanger, marginTop: 8, marginLeft: 8 }}>
+        {errorMessage}
+      </Text>
 
       {renderToken()}
     </ScrollViewScreenTemplate>

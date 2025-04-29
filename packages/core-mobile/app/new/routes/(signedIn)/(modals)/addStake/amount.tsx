@@ -6,8 +6,7 @@ import {
   normalizeErrorMessage,
   Text,
   TokenUnitInputWidget,
-  useTheme,
-  View
+  useTheme
 } from '@avalabs/k2-alpine'
 import { ScrollViewScreenTemplate } from 'common/components/ScrollViewScreenTemplate'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'

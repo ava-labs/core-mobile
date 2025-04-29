@@ -357,7 +357,7 @@ export const AddEditNetworkScreen = (): JSX.Element => {
           )}
         </View>
       )
-    return null
+    return <></>
   }, [
     back,
     canGoBack,

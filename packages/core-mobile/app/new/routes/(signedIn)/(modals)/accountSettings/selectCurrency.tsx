@@ -144,6 +144,17 @@ const SelectCurrencyScreen = (): JSX.Element => {
     )
   }, [setSearchText, searchText])
 
+  const renderEmpty = useCallback(() => {
+    return (
+      <ErrorState
+        sx={{ flex: 1 }}
+        icon={<Image source={errorIcon} sx={{ width: 42, height: 42 }} />}
+        title="No currency found"
+        description=""
+      />
+    )
+  }, [])
+
   return (
     <FlatListScreenTemplate
       title="Select a currency"
@@ -151,14 +162,7 @@ const SelectCurrencyScreen = (): JSX.Element => {
       isModal
       keyExtractor={(item): string => (item as Currency).symbol}
       renderItem={item => renderItem(item.item as Currency, item.index)}
-      ListEmptyComponent={
-        <ErrorState
-          sx={{ flex: 1 }}
-          icon={<Image source={errorIcon} sx={{ width: 42, height: 42 }} />}
-          title="No currency found"
-          description=""
-        />
-      }
+      renderEmpty={renderEmpty}
       renderHeader={renderHeader}
     />
   )

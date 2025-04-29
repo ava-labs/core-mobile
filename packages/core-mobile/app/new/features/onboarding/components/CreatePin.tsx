@@ -22,7 +22,8 @@ export const CreatePin = ({
   newPinTitle,
   newPinDescription,
   confirmPinTitle,
-  isBiometricAvailable = false
+  isBiometricAvailable = false,
+  isModal = false
 }: {
   useBiometrics: boolean
   setUseBiometrics: (value: boolean) => void
@@ -31,6 +32,7 @@ export const CreatePin = ({
   newPinDescription?: string
   confirmPinTitle: string
   isBiometricAvailable?: boolean
+  isModal?: boolean
 }): React.JSX.Element => {
   const ref = useRef<PinInputActions>(null)
   const [biometricType, setBiometricType] = useState<BiometricType>(
@@ -102,6 +104,7 @@ export const CreatePin = ({
 
   return (
     <ScrollViewScreenTemplate
+      isModal={isModal}
       title={chosenPinEntered ? confirmPinTitle : newPinTitle}
       navigationTitle={chosenPinEntered ? confirmPinTitle : newPinTitle}
       contentContainerStyle={{ padding: 16, flex: 1 }}

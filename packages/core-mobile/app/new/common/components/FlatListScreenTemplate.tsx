@@ -1,14 +1,21 @@
 import { NavigationTitleHeader } from '@avalabs/k2-alpine'
-import { useHeaderHeight } from '@react-navigation/elements'
 import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
 import { getListItemEnteringAnimation } from 'common/utils/animations'
-import React, { useCallback, useLayoutEffect, useRef, useState } from 'react'
+import React, {
+  useCallback,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState
+} from 'react'
 import {
   LayoutRectangle,
   NativeScrollEvent,
   NativeSyntheticEvent,
   Platform,
-  View
+  StyleProp,
+  View,
+  ViewStyle
 } from 'react-native'
 import { FlatList } from 'react-native-gesture-handler'
 import Animated, {
@@ -31,8 +38,9 @@ interface FlatListScreenTemplateProps<T>
   data: T[]
   hasParent?: boolean
   isModal?: boolean
-  renderHeader: () => JSX.Element
-  renderHeaderRight?: () => JSX.Element
+  renderHeader?: () => React.ReactNode
+  renderHeaderRight?: () => React.ReactNode
+  renderEmpty?: () => React.ReactNode
 }
 
 const AnimatedFlatList = Animated.createAnimatedComponent(FlatList)
@@ -43,12 +51,11 @@ export const FlatListScreenTemplate = <T,>({
   navigationTitle,
   hasParent = false,
   isModal = false,
-  ListEmptyComponent,
+  renderEmpty,
   renderHeader,
   renderHeaderRight,
   ...props
 }: FlatListScreenTemplateProps<T>): JSX.Element => {
-  const headerHeight = useHeaderHeight()
   const insets = useSafeAreaInsets()
 
   const [headerLayout, setHeaderLayout] = useState<
@@ -71,10 +78,10 @@ export const FlatListScreenTemplate = <T,>({
     const scale = interpolate(
       scrollY.value,
       [-contentHeaderHeight.value, 0, contentHeaderHeight.value],
-      [1.05, 1, 0.95]
+      [0.95, 1, 0.95]
     )
     return {
-      opacity: data.length === 0 ? 1 : 1 - targetHiddenProgress.value * 2,
+      opacity: 1 - targetHiddenProgress.value * 2,
       transform: [{ scale: data.length === 0 ? 1 : scale }]
     }
   })
@@ -90,21 +97,71 @@ export const FlatListScreenTemplate = <T,>({
 
   const onScrollEvent = useCallback(
     (event: NativeSyntheticEvent<NativeScrollEvent>) => {
-      if (data.length > 0) {
-        onScroll(event)
-      }
+      onScroll(event)
     },
-    [data.length, onScroll]
+    [onScroll]
   )
+
+  const paddingTop = useMemo(() => {
+    return (headerLayout?.height ?? 0) - 16
+  }, [headerLayout?.height])
+
+  const ListHeaderComponent = useMemo(() => {
+    return (
+      <BlurViewWithFallback
+        style={{
+          paddingBottom: 12,
+          paddingHorizontal: 16,
+          paddingTop: 0
+        }}>
+        <Animated.View
+          style={[
+            animatedHeaderStyle,
+            {
+              paddingTop: 14
+            }
+          ]}
+          ref={headerRef}>
+          <ScreenHeader title={title} />
+        </Animated.View>
+
+        {renderHeader?.()}
+      </BlurViewWithFallback>
+    )
+  }, [animatedHeaderStyle, renderHeader, title])
+
+  const ListEmptyComponent = useMemo(() => {
+    if (renderEmpty) {
+      return <>{renderEmpty()}</>
+    }
+    return (
+      <ErrorState
+        sx={{ flex: 1 }}
+        title="No results"
+        description="Try a different search"
+      />
+    )
+  }, [renderEmpty])
+
+  const contentContainerStyle = useMemo(() => {
+    return [
+      props?.contentContainerStyle,
+      data.length === 0
+        ? {
+            justifyContent: 'center',
+            flex: 1
+          }
+        : {},
+      {
+        paddingTop,
+        paddingBottom: insets.bottom
+      }
+    ] as StyleProp<ViewStyle>[]
+  }, [props?.contentContainerStyle, data.length, paddingTop, insets.bottom])
 
   return (
     <KeyboardAvoidingView keyboardVerticalOffset={insets.bottom}>
       <AnimatedFlatList
-        style={{
-          flex: 1
-        }}
-        layout={LinearTransition.springify()}
-        entering={getListItemEnteringAnimation(0)}
         data={data}
         onScroll={onScrollEvent}
         keyboardDismissMode="interactive"
@@ -116,51 +173,15 @@ export const FlatListScreenTemplate = <T,>({
         windowSize={5}
         initialNumToRender={15}
         updateCellsBatchingPeriod={50}
+        layout={LinearTransition.springify()}
+        entering={getListItemEnteringAnimation(0)}
+        style={{
+          flex: 1
+        }}
         {...props}
-        ListHeaderComponent={
-          <BlurViewWithFallback
-            style={{
-              paddingBottom: 12,
-              paddingHorizontal: 16,
-              paddingTop: data.length === 0 ? headerHeight : 0
-            }}>
-            <Animated.View
-              style={[
-                animatedHeaderStyle,
-                {
-                  paddingTop: 14
-                }
-              ]}
-              ref={headerRef}>
-              <ScreenHeader title={title} />
-            </Animated.View>
-
-            {renderHeader()}
-          </BlurViewWithFallback>
-        }
-        contentContainerStyle={[
-          props?.contentContainerStyle,
-          data.length === 0
-            ? {
-                justifyContent: 'center',
-                flex: 1
-              }
-            : {
-                paddingTop: headerLayout?.height ? headerLayout.height - 16 : 0
-              },
-          {
-            paddingBottom: insets.bottom
-          }
-        ]}
-        ListEmptyComponent={
-          ListEmptyComponent ?? (
-            <ErrorState
-              sx={{ flex: 1 }}
-              title="No results"
-              description="Try a different search"
-            />
-          )
-        }
+        contentContainerStyle={contentContainerStyle}
+        ListHeaderComponent={ListHeaderComponent}
+        ListEmptyComponent={ListEmptyComponent}
       />
     </KeyboardAvoidingView>
   )

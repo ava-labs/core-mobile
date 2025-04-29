@@ -1,11 +1,11 @@
 import { NetworkVMType } from '@avalabs/core-chains-sdk'
 import { Icons, Text, TouchableOpacity, useTheme } from '@avalabs/k2-alpine'
+import { ScrollViewScreenTemplate } from 'common/components/ScrollViewScreenTemplate'
 import { TokenLogo } from 'common/components/TokenLogo'
 import { usePrimaryNetworks } from 'common/hooks/usePrimaryNetworks'
 import { router } from 'expo-router'
 import React, { ReactNode, useCallback, useEffect, useMemo } from 'react'
 import { View } from 'react-native'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useSelector } from 'react-redux'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { selectActiveAccount } from 'store/account'
@@ -13,11 +13,9 @@ import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { isXPChain } from 'utils/network/isAvalancheNetwork'
 import { AccountAddresses } from '../components/AccountAddresses'
 import { QRCode } from '../components/QRCode'
-import { HORIZONTAL_MARGIN } from '../consts'
 import { useReceiveSelectedNetwork } from '../store'
 
 export const ReceiveScreen = (): ReactNode => {
-  const insets = useSafeAreaInsets()
   const { theme } = useTheme()
   const { networks } = usePrimaryNetworks()
 
@@ -83,24 +81,21 @@ export const ReceiveScreen = (): ReactNode => {
     })
   }, [])
 
-  return (
-    <View
-      style={{
-        flex: 1,
-        paddingHorizontal: HORIZONTAL_MARGIN,
-        paddingBottom: insets.bottom + HORIZONTAL_MARGIN * 2
-      }}>
-      <View
-        style={{
-          gap: 4
-        }}>
-        <Text variant="heading2">Receive crypto</Text>
-        <Text variant="subtitle1">
-          To receive funds you can choose to share your unique QR code or
-          address below with the sender
-        </Text>
-      </View>
+  const renderFooter = useCallback(() => {
+    return <AccountAddresses address={address} />
+  }, [address])
 
+  return (
+    <ScrollViewScreenTemplate
+      title="Receive crypto"
+      subtitle="To receive funds you can choose to share your unique QR code or address below with the sender"
+      isModal
+      renderFooter={renderFooter}
+      contentContainerStyle={{
+        flex: 1,
+        padding: 16,
+        paddingTop: 0
+      }}>
       <View
         style={{
           justifyContent: 'flex-start',
@@ -153,8 +148,6 @@ export const ReceiveScreen = (): ReactNode => {
           }}
         />
       </View>
-
-      <AccountAddresses address={address} />
-    </View>
+    </ScrollViewScreenTemplate>
   )
 }

@@ -6,22 +6,18 @@ import {
   Button,
   CircularButton,
   Icons,
-  SafeAreaView,
   Separator,
   showAlert,
   Text,
-  useKeyboardHeight,
   useTheme,
   View
 } from '@avalabs/k2-alpine'
 import { NetworkVMType } from '@avalabs/vm-module-types'
-import { KeyboardAvoidingView } from 'common/components/KeyboardAvoidingView'
-import ScreenHeader from 'common/components/ScreenHeader'
+import { ScrollViewScreenTemplate } from 'common/components/ScrollViewScreenTemplate'
 import { TokenInputWidget } from 'common/components/TokenInputWidget'
 import { useCoreBrowser } from 'common/hooks/useCoreBrowser'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import { usePreventScreenRemoval } from 'common/hooks/usePreventScreenRemoval'
-import { useSimpleFadingHeader } from 'common/hooks/useSimpleFadingHeader'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
 import { useGlobalSearchParams, useRouter } from 'expo-router'
 import BridgeTypeFootnote from 'features/bridge/components/BridgeTypeFootnote'
@@ -35,7 +31,6 @@ import {
 } from 'features/bridge/store/store'
 import useCChainNetwork from 'hooks/earn/useCChainNetwork'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
-import { KeyboardAwareScrollView } from 'react-native-keyboard-controller'
 import Animated, {
   FadeIn,
   FadeOut,
@@ -62,8 +57,6 @@ import { audioFeedback, Audios } from 'utils/AudioFeedback'
 import { getJsonRpcErrorMessage } from 'utils/getJsonRpcErrorMessage/getJsonRpcErrorMessage'
 import Logger from 'utils/Logger'
 import useBridge from '../hooks/useBridge'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { ScrollViewScreenTemplate } from 'common/components/ScrollViewScreenTemplate'
 
 export const BridgeScreen = (): JSX.Element => {
   const {
@@ -104,11 +97,6 @@ export const BridgeScreen = (): JSX.Element => {
     selectedAssetInTargetNetwork
   } = useBridge()
   const [bridgeError, setBridgeError] = useState('')
-  const { onScroll, handleHeaderLayout, animatedHeaderStyle } =
-    useSimpleFadingHeader({
-      title: 'Bridge',
-      shouldHeaderHaveGrabber: true
-    })
 
   const [isPending, setIsPending] = useState<boolean>(false)
   const [isInputFocused, setIsInputFocused] = useState<boolean>(false)
@@ -665,7 +653,8 @@ export const BridgeScreen = (): JSX.Element => {
     return (
       <View
         sx={{
-          gap: 20
+          gap: 20,
+          paddingBottom: 16
         }}>
         <Button
           type="primary"

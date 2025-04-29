@@ -5,13 +5,12 @@ import {
   LayoutChangeEvent,
   LayoutRectangle,
   NativeScrollEvent,
-  NativeSyntheticEvent,
-  StyleProp,
-  ViewStyle
+  NativeSyntheticEvent
 } from 'react-native'
 import Animated, {
   SharedValue,
   clamp,
+  interpolate,
   useAnimatedStyle,
   useSharedValue
 } from 'react-native-reanimated'
@@ -21,7 +20,7 @@ import Animated, {
  * See: https://github.com/expo/expo/issues/35383
  * TODO: Adjust import back to expo-router once the bug is resolved.
  */
-import { useNavigation } from '@react-navigation/native'
+import { useFocusEffect, useNavigation } from '@react-navigation/native'
 
 export const useFadingHeaderNavigation = ({
   header,
@@ -30,17 +29,15 @@ export const useFadingHeaderNavigation = ({
   hasSeparator = true,
   shouldDelayBlurOniOS = false,
   hasParent = false,
-  headerStyle,
   renderHeaderRight
 }: {
-  header?: JSX.Element
+  header?: React.ReactNode
   targetLayout?: LayoutRectangle
   shouldHeaderHaveGrabber?: boolean
   hasSeparator?: boolean
   shouldDelayBlurOniOS?: boolean
   hasParent?: boolean
-  headerStyle?: StyleProp<ViewStyle>
-  renderHeaderRight?: () => JSX.Element
+  renderHeaderRight?: () => React.ReactNode
 }): {
   onScroll: (
     event: NativeSyntheticEvent<NativeScrollEvent> | NativeScrollEvent | number
@@ -97,17 +94,21 @@ export const useFadingHeaderNavigation = ({
     }
   }
 
+  const headerHeight = navigationHeaderLayout?.height ?? 0
+
   // Animated styles for header transformation
   const animatedHeaderStyle = useAnimatedStyle(() => {
-    const targetHiddenProgressValue = targetHiddenProgress.value
+    const translateY = interpolate(
+      targetHiddenProgress.value,
+      [0, 1],
+      [headerHeight, 0]
+    )
 
     return {
-      opacity: targetHiddenProgressValue,
+      opacity: targetHiddenProgress.value,
       transform: [
         {
-          translateY:
-            (navigationHeaderLayout?.height ?? 0) *
-            (1 - targetHiddenProgressValue)
+          translateY
         }
       ]
     }
@@ -116,7 +117,6 @@ export const useFadingHeaderNavigation = ({
   const navigationOptions = useMemo(() => {
     return {
       ...(renderHeaderRight && { headerRight: renderHeaderRight }),
-      headerStyle,
       headerBackground: () => (
         <BlurredBackgroundView
           shouldDelayBlurOniOS={shouldDelayBlurOniOS}
@@ -134,9 +134,7 @@ export const useFadingHeaderNavigation = ({
       title: header && (
         <View
           sx={{
-            paddingTop: shouldHeaderHaveGrabber ? 24 : 0,
-            transform: [{ translateY: HEADER_BOTTOM_INSET }],
-            marginBottom: shouldHeaderHaveGrabber ? HEADER_BOTTOM_INSET : 0,
+            paddingTop: shouldHeaderHaveGrabber ? 20 : 0,
             height: '100%'
           }}>
           <View
@@ -146,13 +144,7 @@ export const useFadingHeaderNavigation = ({
               justifyContent: 'center'
             }}
             onLayout={handleLayout}>
-            <Animated.View
-              style={[
-                animatedHeaderStyle,
-                {
-                  height: '100%'
-                }
-              ]}>
+            <Animated.View style={[animatedHeaderStyle]}>
               {header}
             </Animated.View>
           </View>
@@ -163,28 +155,33 @@ export const useFadingHeaderNavigation = ({
     animatedHeaderStyle,
     hasSeparator,
     header,
-    headerStyle,
     renderHeaderRight,
     shouldDelayBlurOniOS,
     shouldHeaderHaveGrabber,
     targetHiddenProgress
   ])
 
-  useEffect(() => {
-    if (hasParent) {
-      navigation.getParent()?.setOptions(navigationOptions)
+  useFocusEffect(() => {
+    if (renderHeaderRight) {
+      if (hasParent) {
+        navigation.getParent()?.setOptions(navigationOptions)
 
-      return () => {
-        navigation.getParent()?.setOptions({})
-      }
-    } else {
-      navigation.setOptions(navigationOptions)
+        return () => {
+          navigation.getParent()?.setOptions({
+            headerRight: undefined
+          })
+        }
+      } else {
+        navigation.setOptions(navigationOptions)
 
-      return () => {
-        navigation.setOptions({})
+        return () => {
+          navigation.setOptions({
+            headerRight: undefined
+          })
+        }
       }
     }
-  }, [hasParent, navigation, navigationOptions])
+  })
 
   return {
     onScroll: handleScroll,
@@ -193,5 +190,3 @@ export const useFadingHeaderNavigation = ({
     scrollY
   }
 }
-
-const HEADER_BOTTOM_INSET = -6

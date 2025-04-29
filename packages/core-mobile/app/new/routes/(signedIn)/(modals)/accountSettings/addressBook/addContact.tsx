@@ -83,7 +83,6 @@ const AddContactScreen = (): React.JSX.Element => {
       isModal
       renderFooter={renderFooter}
       disabled
-      hasParent
       navigationTitle="Add contact"
       contentContainerStyle={{
         padding: 16

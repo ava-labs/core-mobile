@@ -1,8 +1,8 @@
-import { Button, showAlert, useTheme, View } from '@avalabs/k2-alpine'
+import { Button, showAlert, useTheme } from '@avalabs/k2-alpine'
+import { ScrollViewScreenTemplate } from 'common/components/ScrollViewScreenTemplate'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { ContactForm } from 'features/accountSettings/components/ContactForm'
 import React, { useCallback } from 'react'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useDispatch, useSelector } from 'react-redux'
 import {
   Contact,
@@ -10,14 +10,12 @@ import {
   removeContact,
   selectContact
 } from 'store/addressBook'
-import { ScrollView } from 'react-native-gesture-handler'
 
 const ContactDetailScreen = (): React.JSX.Element => {
   const dispatch = useDispatch()
   const {
     theme: { colors }
   } = useTheme()
-  const { bottom } = useSafeAreaInsets()
   const { canGoBack, back, navigate } = useRouter()
   const { contactId } = useLocalSearchParams<{ contactId: string }>()
   const contact = useSelector(selectContact(contactId))
@@ -75,35 +73,31 @@ const ContactDetailScreen = (): React.JSX.Element => {
     })
   }, [navigate, contactId])
 
-  return (
-    <View sx={{ flex: 1, paddingHorizontal: 16, paddingBottom: 16 }}>
-      <ScrollView
-        keyboardShouldPersistTaps="handled"
-        automaticallyAdjustKeyboardInsets
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={{
-          justifyContent: 'space-between'
-        }}>
-        {contact && (
-          <ContactForm
-            onSelectAvatar={handleSelectAvatar}
-            contact={contact}
-            onUpdate={handleUpdate}
-          />
-        )}
-      </ScrollView>
+  const renderFooter = useCallback(() => {
+    return (
       <Button
         type="secondary"
         size="large"
         onPress={handleDelete}
-        style={{
-          marginBottom: bottom,
-          backgroundColor: colors.$surfacePrimary
-        }}
         textStyle={{ color: colors.$textDanger }}>
         Delete
       </Button>
-    </View>
+    )
+  }, [handleDelete, colors.$textDanger])
+
+  return (
+    <ScrollViewScreenTemplate
+      renderFooter={renderFooter}
+      isModal
+      contentContainerStyle={{ padding: 16 }}>
+      {contact && (
+        <ContactForm
+          onSelectAvatar={handleSelectAvatar}
+          contact={contact}
+          onUpdate={handleUpdate}
+        />
+      )}
+    </ScrollViewScreenTemplate>
   )
 }
 

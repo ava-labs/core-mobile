@@ -8,7 +8,7 @@ import {
 } from '@avalabs/k2-alpine'
 import { ScrollViewScreenTemplate } from 'common/components/ScrollViewScreenTemplate'
 import MnemonicScreen from 'features/onboarding/components/MnemonicPhrase'
-import React from 'react'
+import React, { useCallback } from 'react'
 
 export const RecoveryPhrase = ({
   onNext,
@@ -21,7 +21,7 @@ export const RecoveryPhrase = ({
 }): React.JSX.Element => {
   const { theme } = useTheme()
 
-  function handleNext(): void {
+  const handleNext = useCallback(() => {
     showAlert({
       title: 'Security warning',
       description:
@@ -34,9 +34,9 @@ export const RecoveryPhrase = ({
         }
       ]
     })
-  }
+  }, [onNext])
 
-  const renderFooter = (): React.ReactNode => {
+  const renderFooter = useCallback(() => {
     return (
       <Button
         size="large"
@@ -46,17 +46,14 @@ export const RecoveryPhrase = ({
         Next
       </Button>
     )
-  }
+  }, [handleNext, isLoading])
 
   return (
     <ScrollViewScreenTemplate
-      renderFooter={renderFooter}
       title="Here is your wallet's recovery phrase"
+      subtitle="This phrase is your access key to your wallet. Carefully write it down and store it in a safe location"
+      renderFooter={renderFooter}
       contentContainerStyle={{ padding: 16, flex: 1 }}>
-      <Text variant="body1">
-        This phrase is your access key to your wallet. Carefully write it down
-        and store it in a safe location
-      </Text>
       <View sx={{ marginTop: 16, gap: 16 }}>
         <View sx={{ flexDirection: 'row', gap: 10, alignItems: 'center' }}>
           <Icons.Alert.ErrorOutline color={theme.colors.$textDanger} />

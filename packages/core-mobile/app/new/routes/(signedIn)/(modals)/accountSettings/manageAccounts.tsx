@@ -12,7 +12,7 @@ import {
   useTheme,
   View
 } from '@avalabs/k2-alpine'
-import { useNavigation } from '@react-navigation/native'
+import NavigationBarButton from 'common/components/NavigationBarButton'
 import { ScrollViewScreenTemplate } from 'common/components/ScrollViewScreenTemplate'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import { showSnackbar } from 'common/utils/toast'
@@ -158,21 +158,12 @@ const ManageAccountsScreen = (): React.JSX.Element => {
 
   const renderHeaderRight = useCallback(() => {
     return (
-      <TouchableOpacity
-        onPress={handleAddAccount}
-        sx={{
-          flexDirection: 'row',
-          gap: 16,
-          marginRight: 18,
-          alignItems: 'center'
-        }}>
-        <Icons.Content.Add
-          testID="add_account_btn"
-          width={25}
-          height={25}
-          color={colors.$textPrimary}
-        />
-      </TouchableOpacity>
+      <NavigationBarButton
+        isModal
+        testID="add_account_btn"
+        onPress={handleAddAccount}>
+        <Icons.Content.Add color={colors.$textPrimary} />
+      </NavigationBarButton>
     )
   }, [colors.$textPrimary, handleAddAccount])
 
@@ -189,6 +180,7 @@ const ManageAccountsScreen = (): React.JSX.Element => {
   return (
     <ScrollViewScreenTemplate
       title="Manage accounts"
+      isModal
       renderHeader={renderHeader}
       renderHeaderRight={renderHeaderRight}
       contentContainerStyle={{ padding: 16 }}>

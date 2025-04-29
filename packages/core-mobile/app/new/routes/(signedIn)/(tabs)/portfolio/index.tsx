@@ -26,6 +26,7 @@ import { CollectiblesScreen } from 'features/portfolio/collectibles/components/C
 import { CollectibleFilterAndSortInitialState } from 'features/portfolio/collectibles/hooks/useCollectiblesFilterAndSort'
 import { DeFiScreen } from 'features/portfolio/defi/components/DeFiScreen'
 import { useAddStake } from 'features/stake/hooks/useAddStake'
+import { useNavigateToSwap } from 'features/swap/hooks/useNavigateToSwap'
 import { useWatchlist } from 'hooks/watchlist/useWatchlist'
 import { useFormatCurrency } from 'new/common/hooks/useFormatCurrency'
 import React, { useCallback, useMemo, useRef, useState } from 'react'
@@ -55,7 +56,6 @@ import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { selectSelectedCurrency } from 'store/settings/currency'
 import { selectIsPrivacyModeEnabled } from 'store/settings/securityPrivacy'
 import { useFocusedSelector } from 'utils/performance/useFocusedSelector'
-import { useNavigateToSwap } from 'features/swap/hooks/useNavigateToSwap'
 
 const SEGMENT_ITEMS = ['Assets', 'Collectibles', 'DeFi']
 

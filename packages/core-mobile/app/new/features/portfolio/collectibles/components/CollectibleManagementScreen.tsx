@@ -1,11 +1,10 @@
 import { SearchBar, Text, Toggle, View } from '@avalabs/k2-alpine'
 import { ErrorState } from 'common/components/ErrorState'
+import { FlatListScreenTemplate } from 'common/components/FlatListScreenTemplate'
 import { LoadingState } from 'common/components/LoadingState'
 import { portfolioTabContentHeight } from 'features/portfolio/utils'
 import React, { ReactNode, useCallback, useMemo, useState } from 'react'
 import { ListRenderItem } from 'react-native'
-import { FlatList } from 'react-native-gesture-handler'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useDispatch, useSelector } from 'react-redux'
 import { NftItem } from 'services/nft/types'
 import {
@@ -15,10 +14,8 @@ import {
 import { useCollectiblesContext } from '../CollectiblesContext'
 import { HORIZONTAL_MARGIN } from '../consts'
 import { CollectibleManagementItem } from './CollectibleManagementItem'
-import { FlatListScreenTemplate } from 'common/components/FlatListScreenTemplate'
 
 export const CollectibleManagementScreen = (): ReactNode => {
-  const insets = useSafeAreaInsets()
   const { collectibles, isLoading, isRefetching, refetch } =
     useCollectiblesContext()
 
@@ -36,9 +33,9 @@ export const CollectibleManagementScreen = (): ReactNode => {
     return collectibles
   }, [collectibles, searchText])
 
-  const handleSearch = (text: string): void => {
+  const handleSearch = useCallback((text: string): void => {
     setSearchText(text)
-  }
+  }, [])
 
   const renderItem: ListRenderItem<NftItem> = ({
     item,
@@ -79,7 +76,7 @@ export const CollectibleManagementScreen = (): ReactNode => {
       renderHeader={renderHeader}
       onRefresh={refetch}
       refreshing={isRefetching}
-      ListEmptyComponent={renderEmpty}
+      renderEmpty={renderEmpty}
     />
   )
 }

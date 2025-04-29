@@ -218,18 +218,16 @@ export const BuyScreen: FC = () => {
   return (
     <ScrollViewScreenTemplate
       title="Buy crypto"
+      subtitle="Buy tokens with fiat currency using your debit card or bank account leveraging one of our many partners"
       isModal
       contentContainerStyle={{
         padding: 16
       }}>
       <View
         style={{
-          gap: 24
+          gap: 24,
+          paddingTop: 16
         }}>
-        <Text variant="body1">
-          {`Buy tokens with fiat currency using your debit card or bank account leveraging one of our many partners`}
-        </Text>
-
         {renderAvaxWarning()}
         <GroupList data={data} subtitleVariant="body1" />
       </View>

@@ -3,12 +3,12 @@ import {
   Icons,
   Image,
   SimpleDropdown,
-  TouchableOpacity,
   useTheme,
   View
 } from '@avalabs/k2-alpine'
 import { ContactList } from 'common/components/ContactList'
 import { ErrorState } from 'common/components/ErrorState'
+import NavigationBarButton from 'common/components/NavigationBarButton'
 import { useRouter } from 'expo-router'
 import { useSortedContacts } from 'features/accountSettings/hooks/useSortedContacts'
 import React, { useCallback } from 'react'
@@ -42,21 +42,12 @@ export const AddressBookScreen = (): JSX.Element => {
 
   const renderHeaderRight = useCallback(() => {
     return (
-      <TouchableOpacity
-        onPress={goToAddContact}
-        sx={{
-          flexDirection: 'row',
-          gap: 16,
-          marginRight: 18,
-          alignItems: 'center'
-        }}>
-        <Icons.Content.Add
-          testID="add_contact_btn"
-          width={25}
-          height={25}
-          color={colors.$textPrimary}
-        />
-      </TouchableOpacity>
+      <NavigationBarButton
+        isModal
+        testID="add_contact_btn"
+        onPress={goToAddContact}>
+        <Icons.Content.Add width={24} height={24} color={colors.$textPrimary} />
+      </NavigationBarButton>
     )
   }, [colors.$textPrimary, goToAddContact])
 

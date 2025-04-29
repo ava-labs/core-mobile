@@ -19,7 +19,7 @@ const BAR_BUTTONS_BOTTOM_MARGIN = Platform.OS === 'ios' ? 8 : 0
 
 const MODAL_TOP_MARGIN = Platform.OS === 'ios' ? 75 : 35
 const MODAL_BORDER_RADIUS = 40
-const MODAL_HEADER_HEIGHT = 72
+const MODAL_HEADER_HEIGHT = 60
 
 const commonNavigatorScreenOptions: StackNavigationOptions = {
   title: '',
@@ -32,16 +32,18 @@ const commonNavigatorScreenOptions: StackNavigationOptions = {
 
 export const stackNavigatorScreenOptions: StackNavigationOptions = {
   ...commonNavigatorScreenOptions,
+
   headerTransparent: true
 }
 
 export const modalStackNavigatorScreenOptions: StackNavigationOptions = {
   ...commonNavigatorScreenOptions,
   headerBackground: () => <BlurredBackgroundView hasGrabber={true} />,
+  headerBackImage: () => <BackBarButton isModal />,
+  headerTransparent: true,
   headerStyle: {
     height: MODAL_HEADER_HEIGHT
   },
-  headerTransparent: true,
   // on iOS,we need to set headerStatusBarHeight to 0 to
   // prevent the header from jumping when navigating
   ...(Platform.OS === 'ios' && { headerStatusBarHeight: 0 })
@@ -54,12 +56,12 @@ export const modalScreensOptions: StackNavigationOptions = {
     borderTopLeftRadius: MODAL_BORDER_RADIUS,
     borderTopRightRadius: MODAL_BORDER_RADIUS
   },
-  headerStyle: {
-    height: MODAL_HEADER_HEIGHT
-  },
   gestureEnabled: true,
   gestureDirection: 'vertical',
   headerShown: false,
+  headerStyle: {
+    height: MODAL_HEADER_HEIGHT
+  },
 
   // we are using a custom modal transition interpolator
   // to match design
@@ -87,14 +89,8 @@ export const modalFirstScreenOptions: StackNavigationOptions = {
   headerBackImage: () => null
 }
 
-const HeaderBack = (): JSX.Element => (
-  <View sx={{ marginTop: 39 }}>
-    <BackBarButton />
-  </View>
-)
-
 export const modalScreenOptionsWithHeaderBack: StackNavigationOptions = {
-  headerBackImage: HeaderBack
+  headerBackImage: () => <BackBarButton isModal />
 }
 
 export const homeScreenOptions: StackNavigationOptions = {
@@ -128,8 +124,7 @@ export const homeScreenOptions: StackNavigationOptions = {
         </Link> */}
       </View>
     )
-  },
-  animation: 'none'
+  }
 }
 
 export function forNoAnimation(): StackCardInterpolatedStyle {

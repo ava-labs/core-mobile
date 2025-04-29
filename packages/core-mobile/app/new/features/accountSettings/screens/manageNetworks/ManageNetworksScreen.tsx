@@ -5,12 +5,11 @@ import {
   SearchBar,
   Text,
   Toggle,
-  TouchableOpacity,
   useTheme,
   View
 } from '@avalabs/k2-alpine'
-import { useHeaderHeight } from '@react-navigation/elements'
 import { FlatListScreenTemplate } from 'common/components/FlatListScreenTemplate'
+import NavigationBarButton from 'common/components/NavigationBarButton'
 import { NetworkLogoWithChain } from 'common/components/NetworkLogoWithChain'
 import { useRouter } from 'expo-router'
 import { useNetworks } from 'hooks/networks/useNetworks'
@@ -34,7 +33,6 @@ export const ManageNetworksScreen = (): JSX.Element => {
   const [searchText, setSearchText] = useState('')
   const title = 'Networks'
   const { navigate } = useRouter()
-  const headerHeight = useHeaderHeight()
   const filterBySearchText = useCallback(
     (network: Network) =>
       network.chainName.toLowerCase().includes(searchText.toLowerCase()) ||
@@ -93,8 +91,6 @@ export const ManageNetworksScreen = (): JSX.Element => {
     return (
       <Pressable onPress={() => goToNetwork(item)}>
         <Animated.View
-          // layout={LinearTransition.springify()}
-          // entering={getListItemEnteringAnimation(index + 5)}
           style={{
             flexDirection: 'row',
             alignItems: 'center',
@@ -180,24 +176,11 @@ export const ManageNetworksScreen = (): JSX.Element => {
 
   const renderHeaderRight = useCallback(() => {
     return (
-      <TouchableOpacity
-        onPress={goToAddCustomNetwork}
-        sx={{
-          flexDirection: 'row',
-          gap: 16,
-          marginRight: 18,
-          alignItems: 'center',
-          height: headerHeight
-        }}>
-        <Icons.Content.Add
-          testID="add_custon_network_btn"
-          width={25}
-          height={25}
-          color={theme.colors.$textPrimary}
-        />
-      </TouchableOpacity>
+      <NavigationBarButton isModal onPress={goToAddCustomNetwork}>
+        <Icons.Content.Add color={theme.colors.$textPrimary} />
+      </NavigationBarButton>
     )
-  }, [goToAddCustomNetwork, headerHeight, theme.colors.$textPrimary])
+  }, [goToAddCustomNetwork, theme.colors.$textPrimary])
 
   return (
     <FlatListScreenTemplate

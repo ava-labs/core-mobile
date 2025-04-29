@@ -41,6 +41,7 @@ const ChangePinScreen = (): React.JSX.Element => {
       newPinTitle={`Enter your\nnew PIN`}
       confirmPinTitle={`Confirm your\nnew PIN`}
       isBiometricAvailable={isBiometricAvailable}
+      isModal
     />
   )
 }

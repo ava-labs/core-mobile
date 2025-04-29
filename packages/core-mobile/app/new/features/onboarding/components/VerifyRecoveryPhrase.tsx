@@ -1,4 +1,4 @@
-import { Button, showAlert, Text } from '@avalabs/k2-alpine'
+import { Button, showAlert } from '@avalabs/k2-alpine'
 import { ScrollViewScreenTemplate } from 'common/components/ScrollViewScreenTemplate'
 import WordSelection from 'features/onboarding/components/WordSelection'
 import { useCheckMnemonic } from 'features/onboarding/hooks/useCheckMnemonic'
@@ -111,7 +111,7 @@ export const VerifyRecoveryPhrase = ({
     setSelectedWord3Index(undefined)
   }, [mnemonics])
 
-  const renderFooter = (): React.ReactNode => {
+  const renderFooter = useCallback(() => {
     return (
       <Button
         size="large"
@@ -121,16 +121,14 @@ export const VerifyRecoveryPhrase = ({
         Next
       </Button>
     )
-  }
+  }, [canVerify, handleNext])
 
   return (
     <ScrollViewScreenTemplate
       title="Verify your recovery phrase"
+      subtitle={`Select the words below to verify your\nrecover phrase`}
       renderFooter={renderFooter}
       contentContainerStyle={{ padding: 16, flex: 1 }}>
-      <Text variant="body1">
-        {`Select the words below to verify your\nrecover phrase`}
-      </Text>
       <Animated.View
         style={[{ gap: 36, flex: 1, justifyContent: 'center' }, animatedStyle]}>
         <WordSelection

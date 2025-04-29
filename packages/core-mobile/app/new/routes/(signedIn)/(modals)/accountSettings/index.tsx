@@ -51,18 +51,13 @@ const AccountSettingsScreen = (): JSX.Element => {
 
   const renderHeaderRight = useCallback(() => {
     return (
-      <View
-        sx={{
-          marginTop: 14,
-          marginRight: 18
-        }}>
-        <VisibilityBarButton
-          isPrivacyModeEnabled={isPrivacyModeEnabled}
-          onPress={() => dispatch(togglePrivacyMode())}
-        />
-      </View>
+      <VisibilityBarButton
+        isModal
+        isPrivacyModeEnabled={isPrivacyModeEnabled}
+        onPress={() => dispatch(togglePrivacyMode())}
+      />
     )
-  }, [dispatch, isPrivacyModeEnabled])
+  }, [isPrivacyModeEnabled, dispatch])
 
   const goToSelectAvatar = useCallback(() => {
     navigate('/accountSettings/selectAvatar')
@@ -113,7 +108,7 @@ const AccountSettingsScreen = (): JSX.Element => {
       renderHeaderRight={renderHeaderRight}
       testID="settings_scroll_view"
       contentContainerStyle={{
-        paddingTop: 0
+        paddingTop: 16
       }}>
       <View sx={{ gap: 48 }}>
         <View

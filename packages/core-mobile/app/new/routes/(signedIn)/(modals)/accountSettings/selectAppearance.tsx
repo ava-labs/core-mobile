@@ -1,10 +1,4 @@
-import {
-  AnimatedPressable,
-  Text,
-  TouchableOpacity,
-  useTheme,
-  View
-} from '@avalabs/k2-alpine'
+import { AnimatedPressable, Text, useTheme, View } from '@avalabs/k2-alpine'
 import { ScrollViewScreenTemplate } from 'common/components/ScrollViewScreenTemplate'
 import React, { FC } from 'react'
 import { SvgProps } from 'react-native-svg'

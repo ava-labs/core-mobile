@@ -1,12 +1,5 @@
-import React, { useEffect } from 'react'
-import { LayoutChangeEvent, ViewStyle } from 'react-native'
-import {
-  View,
-  ScrollView,
-  useTheme,
-  SCREEN_HEIGHT,
-  SxProp
-} from '@avalabs/k2-alpine'
+import { SxProp, View } from '@avalabs/k2-alpine'
+import React, { useCallback, useEffect } from 'react'
 /**
  * Temporarily import "useNavigation" from @react-navigation/native.
  * This is a workaround due to a render bug in the expo-router version.
@@ -18,7 +11,8 @@ import {
   ActionButtons,
   ActionButtonsProps
 } from 'new/features/approval/components/ActionButtons'
-import { useSimpleFadingHeader } from '../hooks/useSimpleFadingHeader'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { ScrollViewScreenTemplate } from './ScrollViewScreenTemplate'
 
 /**
  * A customizable bottom sheet component (used with expo-router/react-navigation modal) that includes:
@@ -30,6 +24,7 @@ import { useSimpleFadingHeader } from '../hooks/useSimpleFadingHeader'
  */
 export const ActionSheet = ({
   title,
+  navigationTitle,
   onClose,
   confirm,
   cancel,
@@ -37,24 +32,14 @@ export const ActionSheet = ({
   alert,
   sx
 }: {
-  title: string
+  title?: string
+  navigationTitle?: string
   onClose: () => void
-  children: (props: {
-    handleHeaderLayout: (event: LayoutChangeEvent) => void
-    animatedHeaderStyle: ViewStyle
-  }) => React.ReactNode
+  children: React.ReactNode
   sx?: SxProp
 } & ActionButtonsProps): JSX.Element => {
-  const {
-    theme: { colors }
-  } = useTheme()
   const navigation = useNavigation()
-
-  const { onScroll, handleHeaderLayout, animatedHeaderStyle } =
-    useSimpleFadingHeader({
-      title,
-      shouldHeaderHaveGrabber: true
-    })
+  const insets = useSafeAreaInsets()
 
   useEffect(() => {
     return navigation.addListener('beforeRemove', e => {
@@ -65,18 +50,28 @@ export const ActionSheet = ({
     })
   }, [navigation, onClose])
 
-  return (
-    <View sx={{ flex: 1, ...sx }}>
-      <ScrollView
-        onScroll={onScroll}
-        contentInset={{ bottom: SCREEN_HEIGHT * 0.4 }}
-        contentContainerStyle={{
-          backgroundColor: colors.$surfacePrimary,
-          paddingHorizontal: 16
+  const renderFooter = useCallback(() => {
+    return (
+      <View
+        style={{
+          paddingBottom: insets.bottom + 16
         }}>
-        {children({ handleHeaderLayout, animatedHeaderStyle })}
-      </ScrollView>
-      <ActionButtons confirm={confirm} cancel={cancel} alert={alert} />
-    </View>
+        <ActionButtons confirm={confirm} cancel={cancel} alert={alert} />
+      </View>
+    )
+  }, [insets.bottom, confirm, cancel, alert])
+
+  return (
+    <ScrollViewScreenTemplate
+      title={title}
+      isModal
+      navigationTitle={navigationTitle}
+      renderFooter={renderFooter}
+      contentContainerStyle={{
+        padding: 16,
+        paddingTop: 0
+      }}>
+      <View sx={{ flex: 1, ...sx }}>{children}</View>
+    </ScrollViewScreenTemplate>
   )
 }

@@ -211,6 +211,22 @@ export const RecentContacts = ({
     )
   }, [colors.$textSecondary, handleSumbitEditing, onGoToQrCode, searchText])
 
+  const renderEmpty = useCallback(() => {
+    return (
+      <ErrorState
+        sx={{ flex: 1 }}
+        icon={
+          <Image
+            source={EMPTY_ADDRESS_BOOK_ICON}
+            sx={{ width: 42, height: 42 }}
+          />
+        }
+        title="No recent addresses"
+        description="Search address or scan QR code to send funds"
+      />
+    )
+  }, [])
+
   return (
     <FlatListScreenTemplate
       title={TITLE}
@@ -219,19 +235,7 @@ export const RecentContacts = ({
       renderHeader={renderHeader}
       keyExtractor={item => `recent-contact-${item.id}`}
       renderItem={item => renderItem(item.item as Contact, item.index)}
-      ListEmptyComponent={
-        <ErrorState
-          sx={{ flex: 1 }}
-          icon={
-            <Image
-              source={EMPTY_ADDRESS_BOOK_ICON}
-              sx={{ width: 42, height: 42 }}
-            />
-          }
-          title="No recent addresses"
-          description="Search address or scan QR code to send funds"
-        />
-      }
+      renderEmpty={renderEmpty}
     />
   )
 }

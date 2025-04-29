@@ -1,7 +1,6 @@
 import { Icons, Text, useTheme, View } from '@avalabs/k2-alpine'
 import { ScrollViewScreenTemplate } from 'common/components/ScrollViewScreenTemplate'
 import { useLocalSearchParams } from 'expo-router'
-import { SHOW_RECOVERY_PHRASE } from 'features/accountSettings/consts'
 import MnemonicScreen from 'features/onboarding/components/MnemonicPhrase'
 import React from 'react'
 
@@ -13,7 +12,8 @@ const ShowRecoveryPhraseScreen = (): JSX.Element => {
 
   return (
     <ScrollViewScreenTemplate
-      title={SHOW_RECOVERY_PHRASE}
+      title={'Show recovery\nphrase'}
+      navigationTitle="Show recovery phrase"
       isModal
       contentContainerStyle={{
         padding: 16

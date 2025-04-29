@@ -1,9 +1,7 @@
-import React, { useState, useCallback, useMemo } from 'react'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { LinearGradientBottomWrapper } from 'new/common/components/LinearGradientBottomWrapper'
-import { View, Button, Text, Icons, useTheme, Toggle } from '@avalabs/k2-alpine'
-import { HORIZONTAL_MARGIN } from 'new/common/consts'
+import { Button, Icons, Text, Toggle, useTheme, View } from '@avalabs/k2-alpine'
 import { AlertType } from '@avalabs/vm-module-types'
+import { HORIZONTAL_MARGIN } from 'new/common/consts'
+import React, { useCallback, useMemo, useState } from 'react'
 
 type Alert = {
   type: AlertType
@@ -32,16 +30,13 @@ export const ActionButtons = ({
   const {
     theme: { colors }
   } = useTheme()
-  const { bottom } = useSafeAreaInsets()
   const [alertConfirmed, setAlertConfirmed] = useState(false)
 
   const containerStyle = useMemo(
     () => ({
-      paddingHorizontal: HORIZONTAL_MARGIN,
-      backgroundColor: '$surfacePrimary',
-      paddingBottom: bottom + 16
+      gap: 16
     }),
-    [bottom]
+    []
   )
 
   const renderButtons = useCallback(() => {
@@ -50,7 +45,7 @@ export const ActionButtons = ({
       confirm.disabled
 
     return (
-      <>
+      <View>
         <Button
           size="large"
           type="primary"
@@ -66,7 +61,7 @@ export const ActionButtons = ({
           disabled={cancel.disabled}>
           {cancel.label}
         </Button>
-      </>
+      </View>
     )
   }, [confirm, cancel, alert, alertConfirmed])
 
@@ -100,7 +95,7 @@ export const ActionButtons = ({
       const isDangerAlert = alertData.type === AlertType.DANGER
 
       return (
-        <View sx={containerStyle}>
+        <View>
           <View
             sx={{
               borderTopWidth: 1,
@@ -141,30 +136,20 @@ export const ActionButtons = ({
               />
             )}
           </View>
-          <View>{renderButtons()}</View>
+          {renderButtons()}
         </View>
       )
     },
-    [renderButtons, alertConfirmed, containerStyle, renderIcon]
+    [renderButtons, alertConfirmed, renderIcon]
   )
 
   const renderDefaultSection = useCallback(
-    () => (
-      <LinearGradientBottomWrapper>
-        <View sx={containerStyle}>{renderButtons()}</View>
-      </LinearGradientBottomWrapper>
-    ),
-    [renderButtons, containerStyle]
+    () => renderButtons(),
+    [renderButtons]
   )
 
   return (
-    <View
-      style={{
-        width: '100%',
-        position: 'absolute',
-        bottom: 0,
-        left: 0
-      }}>
+    <View sx={containerStyle}>
       {alert ? renderAlertSection(alert) : renderDefaultSection()}
     </View>
   )
