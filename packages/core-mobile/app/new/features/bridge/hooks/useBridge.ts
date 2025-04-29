@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useState } from 'react'
-import Big from 'big.js'
 import Logger from 'utils/Logger'
 import { Network } from '@avalabs/core-chains-sdk'
 import { BridgeAsset, BridgeType } from '@avalabs/bridge-unified'
@@ -17,7 +16,6 @@ import {
   useGetBridgeFees,
   useGetMinimumTransferAmount
 } from './useGetBridgeFees'
-import { useBridgeAssetPrice } from './useBridgeAssetPrice'
 import { useBridgeType } from './useBridgeType'
 import { useBridgeTransfer } from './useBridgeTransfer'
 import {
@@ -26,6 +24,9 @@ import {
 } from './useBridgeNetworks'
 import useMaxTransferAmount from './useMaxTransferAmount'
 import { useEstimatedReceiveAmount } from './useEstimatedReceiveAmount'
+import { useAssetBalancePrices } from './useAssetBalancePrices'
+
+export type Prices = Record<string, number | undefined>
 
 interface Bridge {
   assetBalance?: AssetBalance
@@ -57,7 +58,7 @@ interface Bridge {
   inputAmount: bigint | undefined
   setInputAmount: (amount: bigint | undefined) => void
   amount: bigint
-  price: Big | undefined
+  prices?: Prices
   estimatedReceiveAmount: bigint | undefined
   selectedAssetInSourceNetwork?: TokenWithBalanceInNetwork
   selectedAssetInTargetNetwork?: TokenWithBalanceInNetwork
@@ -82,7 +83,6 @@ export default function useBridge(): Bridge {
     () => getAssetBalance(selectedBridgeAsset?.symbol, assetsWithBalances),
     [selectedBridgeAsset, assetsWithBalances]
   )
-
   const sourceNetworks = useBridgeSourceNetworks()
   const targetNetworks = useBridgeTargetNetworks(selectedBridgeAsset)
 
@@ -92,7 +92,7 @@ export default function useBridge(): Bridge {
 
     return networkFeeRate.low.maxFeePerGas * gasLimit
   }, [gasLimit, networkFeeRate])
-  const price = useBridgeAssetPrice(selectedBridgeAsset)
+  const prices = useAssetBalancePrices(assetsWithBalances)
   const bridgeType = useBridgeType(selectedBridgeAsset, targetNetwork?.chainId)
   const transfer = useBridgeTransfer({
     amount,
@@ -281,7 +281,7 @@ export default function useBridge(): Bridge {
     setInputAmount,
     amount,
     networkFee,
-    price,
+    prices,
     estimatedReceiveAmount,
     selectedAssetInSourceNetwork,
     selectedAssetInTargetNetwork

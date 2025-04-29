@@ -13,12 +13,17 @@ import { SelectTokenScreen } from 'common/screens/SelectTokenScreen'
 import { AssetBalance } from 'common/utils/bridgeUtils'
 import { LogoWithNetwork } from 'common/components/LogoWithNetwork'
 import { useNetworks } from 'hooks/networks/useNetworks'
-import { formatTokenAmount } from '@avalabs/core-bridge-sdk'
+import {
+  formatTokenAmount,
+  useTokenInfoContext
+} from '@avalabs/core-bridge-sdk'
 import { bigintToBig } from '@avalabs/core-utils-sdk'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
+import { getCoingeckoId } from 'common/utils/getCoingeckoId'
 import { useBridgeSelectedAsset } from '../store/store'
 import { useBridgeAssets } from '../hooks/useBridgeAssets'
 import { useAssetBalances } from '../hooks/useAssetBalances'
+import { useAssetBalancePrices } from '../hooks/useAssetBalancePrices'
 
 export const SelectBridgeTokenScreen = (): JSX.Element => {
   const {
@@ -41,6 +46,9 @@ export const SelectBridgeTokenScreen = (): JSX.Element => {
 
   const bridgeAssets = useBridgeAssets(sourceNetworkChainId)
   const { assetsWithBalances } = useAssetBalances(sourceNetworkChainId)
+  const tokenInfoData = useTokenInfoContext()
+  const prices = useAssetBalancePrices(assetsWithBalances)
+
   const tokens = useMemo(
     () =>
       (assetsWithBalances ?? []).filter(asset =>
@@ -61,6 +69,23 @@ export const SelectBridgeTokenScreen = (): JSX.Element => {
         token.symbol.toLowerCase().includes(searchText.toLowerCase())
     )
   }, [tokens, searchText])
+
+  const sortedSearchResults = useMemo(() => {
+    if (prices === undefined) {
+      return searchResults
+    }
+
+    return searchResults.toSorted((a, b) => {
+      const coingeckoIdA = getCoingeckoId(a.symbol, tokenInfoData)
+      const coingeckoIdB = getCoingeckoId(b.symbol, tokenInfoData)
+      const aPrice = coingeckoIdA ? prices[coingeckoIdA] : undefined
+      const bPrice = coingeckoIdB ? prices[coingeckoIdB] : undefined
+      if (aPrice && bPrice) {
+        return bPrice - aPrice
+      }
+      return 0
+    })
+  }, [prices, searchResults, tokenInfoData])
 
   const renderItem: ListRenderItem<AssetBalance> = ({
     item,
@@ -126,7 +151,7 @@ export const SelectBridgeTokenScreen = (): JSX.Element => {
     <SelectTokenScreen
       onSearchText={setSearchText}
       searchText={searchText}
-      tokens={searchResults}
+      tokens={sortedSearchResults}
       renderListItem={renderItem}
     />
   )

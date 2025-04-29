@@ -3,7 +3,7 @@ import { BridgeTransaction } from '@avalabs/core-bridge-sdk'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import React, { useState, useEffect, useMemo } from 'react'
 import { useCoinGeckoId } from 'hooks/useCoinGeckoId'
-import { useSimplePrice } from 'hooks/useSimplePrice'
+import { useSimplePrices } from 'hooks/useSimplePrices'
 import { VsCurrencyType } from '@avalabs/core-coingecko-sdk'
 import Logger from 'utils/Logger'
 import { useSelector } from 'react-redux'
@@ -71,8 +71,8 @@ export const BridgeStatusScreen = (): JSX.Element => {
 
   const coingeckoId = useCoinGeckoId(symbol)
 
-  const assetPrice = useSimplePrice(
-    coingeckoId,
+  const assetPrices = useSimplePrices(
+    coingeckoId ? [coingeckoId] : [],
     selectedCurrency.toLowerCase() as VsCurrencyType
   )
 
@@ -275,12 +275,14 @@ export const BridgeStatusScreen = (): JSX.Element => {
                 {symbol}
               </Text>
             </View>
-            {assetPrice !== undefined && (
+            {coingeckoId && assetPrices?.[coingeckoId] !== undefined && (
               <Text
                 variant="subtitle2"
                 sx={{ marginTop: 0, color: alpha(colors.$textPrimary, 0.9) }}>
                 {amount &&
-                  formatCurrency({ amount: assetPrice.mul(amount).toNumber() })}
+                  formatCurrency({
+                    amount: assetPrices[coingeckoId] * amount.toNumber()
+                  })}
               </Text>
             )}
           </View>
