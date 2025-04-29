@@ -5,6 +5,7 @@ import {
   View
 } from '@avalabs/k2-alpine'
 import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
+import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import { Space } from 'components/Space'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
 import { useLocalSearchParams } from 'expo-router'
@@ -133,6 +134,7 @@ const AccountScreen = (): JSX.Element => {
   return (
     <View sx={{ flex: 1, marginBottom: 60, paddingHorizontal: 16 }}>
       <ScrollView
+        keyboardShouldPersistTaps="handled"
         onScroll={onScroll}
         contentContainerStyle={{ paddingBottom: 60 }}>
         {renderHeader()}
