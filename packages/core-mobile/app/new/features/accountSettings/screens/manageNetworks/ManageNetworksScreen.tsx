@@ -11,18 +11,13 @@ import {
 import { ListScreen } from 'common/components/ListScreen'
 import NavigationBarButton from 'common/components/NavigationBarButton'
 import { NetworkLogoWithChain } from 'common/components/NetworkLogoWithChain'
+import { sortPrimaryNetworks } from 'common/utils/sortPrimaryNetworks'
 import { useRouter } from 'expo-router'
 import { useNetworks } from 'hooks/networks/useNetworks'
 import React, { useCallback, useMemo, useState } from 'react'
 import { ListRenderItem } from 'react-native'
-import {
-  isAvalancheCChainId,
-  isAvalancheChainId
-} from 'services/network/utils/isAvalancheNetwork'
-import { isEthereumChainId } from 'services/network/utils/isEthereumNetwork'
 import { alwaysEnabledNetworks } from 'store/network'
 import { isPChain, isXChain, isXPChain } from 'utils/network/isAvalancheNetwork'
-import { isBitcoinChainId } from 'utils/network/isBitcoinNetwork'
 
 export const ManageNetworksScreen = (): JSX.Element => {
   const { theme } = useTheme()
@@ -184,16 +179,4 @@ export const ManageNetworksScreen = (): JSX.Element => {
       renderHeader={renderHeader}
     />
   )
-}
-
-function sortPrimaryNetworks(a: Network, b: Network): number {
-  if (isAvalancheCChainId(a.chainId)) return -1
-  if (isAvalancheCChainId(b.chainId)) return 1
-  if (isAvalancheChainId(a.chainId)) return -1
-  if (isAvalancheChainId(b.chainId)) return 1
-  if (isBitcoinChainId(a.chainId)) return -1
-  if (isBitcoinChainId(b.chainId)) return 1
-  if (isEthereumChainId(a.chainId)) return -1
-  if (isEthereumChainId(b.chainId)) return 1
-  return 0
 }

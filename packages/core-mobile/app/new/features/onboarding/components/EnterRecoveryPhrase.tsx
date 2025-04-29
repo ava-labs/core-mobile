@@ -48,7 +48,7 @@ export const EnterRecoveryPhrase = ({
     return (
       <View
         sx={{
-          gap: 20
+          gap: 12
         }}>
         {__DEV__ && bip39.validateMnemonic(testMnemonic) && (
           <Button size="large" type="tertiary" onPress={handleEnterTestWallet}>
