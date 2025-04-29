@@ -1,8 +1,8 @@
-import { ScrollView, Text, useTheme, View } from '@avalabs/k2-alpine'
+import { Text, useTheme, View } from '@avalabs/k2-alpine'
 import { LoadingState } from 'common/components/LoadingState'
 import { useLocalSearchParams } from 'expo-router'
 import { useWatchlist } from 'hooks/watchlist/useWatchlist'
-import React, { useRef, useState } from 'react'
+import React, { useCallback, useRef, useState } from 'react'
 import { LayoutChangeEvent, PixelRatio, Platform } from 'react-native'
 import {
   ShareChart,
@@ -20,6 +20,7 @@ import Logger from 'utils/Logger'
 import { copyToClipboard } from 'common/utils/clipboard'
 import * as SMS from 'expo-sms'
 import { CORE_WEB_URL } from 'common/consts'
+import { ScrollScreen } from 'common/components/ScrollScreen'
 
 const ShareMarketTokenScreen = (): JSX.Element => {
   const { theme } = useTheme()
@@ -43,36 +44,56 @@ const ShareMarketTokenScreen = (): JSX.Element => {
   const urlToShare = CORE_WEB_URL
   const message = `Don't miss out on ${tokenInfo?.name} price changes. Download Core from the App Store or Google Play store to receive alerts on ${tokenInfo?.name} and other popular tokens. ${urlToShare}`
 
-  const handleMore = async (): Promise<void> => {
+  const captureImage = async (): Promise<string> => {
+    const imageSize = CHART_IMAGE_SIZE / PixelRatio.get()
+    return await captureRef(viewShotRef, {
+      width: imageSize,
+      height: imageSize
+    })
+  }
+
+  const captureImageInBase64Url = useCallback(async (): Promise<string> => {
+    const uri = await captureImage()
+
+    const data = await FileSystem.readAsStringAsync(uri, {
+      encoding: FileSystem.EncodingType.Base64
+    })
+
+    return `data:image/png;base64,${data}`
+  }, [])
+  const handleMore = useCallback(async (): Promise<void> => {
     const url = await captureImageInBase64Url()
 
     Share.open({
       url,
       message
     })
-  }
+  }, [captureImageInBase64Url, message])
 
-  const handleCopyLink = (link: string | undefined): void => {
+  const handleCopyLink = useCallback((link: string | undefined): void => {
     if (link) {
       copyToClipboard(link)
     }
-  }
+  }, [])
 
-  const handleShare = async (social: AvailableSocial): Promise<void> => {
-    try {
-      const url = await captureImageInBase64Url()
+  const handleShare = useCallback(
+    async (social: AvailableSocial): Promise<void> => {
+      try {
+        const url = await captureImageInBase64Url()
 
-      await Share.shareSingle({
-        message,
-        url,
-        social
-      })
-    } catch (error) {
-      Logger.error('Error sharing', error)
-    }
-  }
+        await Share.shareSingle({
+          message,
+          url,
+          social
+        })
+      } catch (error) {
+        Logger.error('Error sharing', error)
+      }
+    },
+    [captureImageInBase64Url, message]
+  )
 
-  const handleSendMessage = async (): Promise<void> => {
+  const handleSendMessage = useCallback(async (): Promise<void> => {
     const uri = await captureImage()
 
     const fileUri =
@@ -87,65 +108,10 @@ const ShareMarketTokenScreen = (): JSX.Element => {
         filename: `${tokenInfo?.name ?? 'token'}.png`
       }
     })
-  }
+  }, [message, tokenInfo])
 
-  const captureImage = async (): Promise<string> => {
-    const imageSize = CHART_IMAGE_SIZE / PixelRatio.get()
-    return await captureRef(viewShotRef, {
-      width: imageSize,
-      height: imageSize
-    })
-  }
-
-  const captureImageInBase64Url = async (): Promise<string> => {
-    const uri = await captureImage()
-
-    const data = await FileSystem.readAsStringAsync(uri, {
-      encoding: FileSystem.EncodingType.Base64
-    })
-
-    return `data:image/png;base64,${data}`
-  }
-
-  if (!tokenId || !token) {
-    return <LoadingState sx={{ flex: 1 }} />
-  }
-
-  return (
-    <View sx={{ flex: 1 }} onLayout={handleLayout}>
-      <ScrollView sx={{ flex: 1 }} contentContainerSx={{ paddingBottom: 60 }}>
-        {actualViewWidth !== undefined && (
-          <>
-            <View
-              sx={{
-                transform: [{ scale: scale }],
-                alignItems: 'center',
-                marginTop: -cancellingVerticalMargin + 30
-              }}>
-              <View
-                sx={{
-                  borderRadius: 18 / scale,
-                  borderWidth: 1,
-                  borderColor: theme.colors.$borderPrimary,
-                  overflow: 'hidden'
-                }}>
-                <ViewShot ref={viewShotRef}>
-                  <ShareChart tokenId={tokenId} />
-                </ViewShot>
-              </View>
-            </View>
-            <View
-              sx={{
-                marginTop: -cancellingVerticalMargin + 26,
-                marginHorizontal: 33
-              }}>
-              <Text variant="body1" sx={{ color: '$textSecondary' }}>
-                {message}
-              </Text>
-            </View>
-          </>
-        )}
-      </ScrollView>
+  const renderFooter = useCallback(
+    () => (
       <ShareFooter
         url={urlToShare}
         onSendMessage={handleSendMessage}
@@ -153,7 +119,51 @@ const ShareMarketTokenScreen = (): JSX.Element => {
         onCopyLink={handleCopyLink}
         onShare={handleShare}
       />
-    </View>
+    ),
+    [urlToShare, handleSendMessage, handleMore, handleCopyLink, handleShare]
+  )
+
+  if (!tokenId || !token) {
+    return <LoadingState sx={{ flex: 1 }} />
+  }
+
+  return (
+    <ScrollScreen
+      onLayout={handleLayout}
+      contentContainerStyle={{ paddingBottom: 60 }}
+      renderFooter={renderFooter}>
+      {actualViewWidth !== undefined && (
+        <>
+          <View
+            sx={{
+              transform: [{ scale: scale }],
+              alignItems: 'center',
+              marginTop: -cancellingVerticalMargin
+            }}>
+            <View
+              sx={{
+                borderRadius: 18 / scale,
+                borderWidth: 1,
+                borderColor: theme.colors.$borderPrimary,
+                overflow: 'hidden'
+              }}>
+              <ViewShot ref={viewShotRef}>
+                <ShareChart tokenId={tokenId} />
+              </ViewShot>
+            </View>
+          </View>
+          <View
+            sx={{
+              marginTop: -cancellingVerticalMargin + 26,
+              marginHorizontal: 33
+            }}>
+            <Text variant="body1" sx={{ color: '$textSecondary' }}>
+              {message}
+            </Text>
+          </View>
+        </>
+      )}
+    </ScrollScreen>
   )
 }
 
