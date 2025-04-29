@@ -1,4 +1,5 @@
-import { NavigationTitleHeader } from '@avalabs/k2-alpine'
+import { ANIMATED, NavigationTitleHeader } from '@avalabs/k2-alpine'
+import { useHeaderHeight } from '@react-navigation/elements'
 import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
 import { getListItemEnteringAnimation } from 'common/utils/animations'
 import React, {
@@ -23,7 +24,8 @@ import Animated, {
   interpolate,
   LinearTransition,
   useAnimatedStyle,
-  useSharedValue
+  useSharedValue,
+  withSpring
 } from 'react-native-reanimated'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { BlurViewWithFallback } from './BlurViewWithFallback'
@@ -90,7 +92,7 @@ export const FlatListScreenTemplate = <T,>({
     if (headerRef.current) {
       headerRef.current.measure((x, y, width, height) => {
         contentHeaderHeight.value = height
-        setHeaderLayout({ x, y, width, height })
+        setHeaderLayout({ x, y, width, height: height / 2 })
       })
     }
   }, [contentHeaderHeight])
@@ -101,34 +103,60 @@ export const FlatListScreenTemplate = <T,>({
     },
     [onScroll]
   )
+  const headerHeight = useHeaderHeight()
 
-  const paddingTop = useMemo(() => {
-    return (headerLayout?.height ?? 0) - 16
-  }, [headerLayout?.height])
+  const animatedHeaderContainerStyle = useAnimatedStyle(() => {
+    const translateY = interpolate(
+      scrollY.value,
+      [0, contentHeaderHeight.value],
+      [0, -contentHeaderHeight.value],
+      'clamp'
+    )
+
+    return {
+      transform: [
+        {
+          translateY: withSpring(translateY, {
+            ...ANIMATED.SPRING_CONFIG,
+            stiffness: 100
+          })
+        }
+      ]
+    }
+  })
 
   const ListHeaderComponent = useMemo(() => {
     return (
-      <BlurViewWithFallback
-        style={{
-          paddingBottom: 12,
-          paddingHorizontal: 16,
-          paddingTop: 0
-        }}>
-        <Animated.View
-          style={[
-            animatedHeaderStyle,
-            {
-              paddingTop: 14
-            }
-          ]}
-          ref={headerRef}>
-          <ScreenHeader title={title} />
-        </Animated.View>
+      <Animated.View style={[animatedHeaderContainerStyle]}>
+        <BlurViewWithFallback
+          style={{
+            paddingBottom: 12,
+            paddingHorizontal: 16,
+            paddingTop: 12
+          }}>
+          <Animated.View
+            style={[
+              animatedHeaderStyle,
+              {
+                paddingTop: headerHeight
+              }
+            ]}>
+            <View ref={headerRef}>
+              <ScreenHeader title={title} />
+            </View>
+          </Animated.View>
 
-        {renderHeader?.()}
-      </BlurViewWithFallback>
+          {renderHeader?.()}
+        </BlurViewWithFallback>
+      </Animated.View>
     )
-  }, [animatedHeaderStyle, renderHeader, title])
+  }, [
+    animatedHeaderContainerStyle,
+    animatedHeaderStyle,
+    headerHeight,
+    renderHeader,
+    title
+  ])
 
   const ListEmptyComponent = useMemo(() => {
     if (renderEmpty) {
@@ -153,14 +181,17 @@ export const FlatListScreenTemplate = <T,>({
           }
         : {},
       {
-        paddingTop,
         paddingBottom: insets.bottom
       }
     ] as StyleProp<ViewStyle>[]
-  }, [props?.contentContainerStyle, data.length, paddingTop, insets.bottom])
+  }, [props?.contentContainerStyle, data.length, insets.bottom])
 
   return (
-    <KeyboardAvoidingView keyboardVerticalOffset={insets.bottom}>
+    <KeyboardAvoidingView
+      keyboardVerticalOffset={insets.bottom}
+      style={{
+        flex: 1
+      }}>
       <AnimatedFlatList
         data={data}
         onScroll={onScrollEvent}

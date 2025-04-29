@@ -160,7 +160,6 @@ const SelectCurrencyScreen = (): JSX.Element => {
       title="Select a currency"
       data={searchResults}
       isModal
-      hasParent
       keyExtractor={(item): string => (item as Currency).symbol}
       renderItem={item => renderItem(item.item as Currency, item.index)}
       renderEmpty={renderEmpty}

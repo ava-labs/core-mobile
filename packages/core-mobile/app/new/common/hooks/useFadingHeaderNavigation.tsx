@@ -94,7 +94,8 @@ export const useFadingHeaderNavigation = ({
     }
   }
 
-  const headerHeight = navigationHeaderLayout?.height ?? 0
+  const headerHeight =
+    targetLayout?.height ?? navigationHeaderLayout?.height ?? 0
 
   // Animated styles for header transformation
   const animatedHeaderStyle = useAnimatedStyle(() => {
@@ -175,6 +176,12 @@ export const useFadingHeaderNavigation = ({
           })
         }
       }
+    }
+
+    if (hasParent) {
+      navigation.getParent()?.setOptions(navigationOptions)
+    } else {
+      navigation.setOptions(navigationOptions)
     }
   })
 

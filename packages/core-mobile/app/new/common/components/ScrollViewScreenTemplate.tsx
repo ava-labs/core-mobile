@@ -56,6 +56,9 @@ export const ScrollViewScreenTemplate = ({
     LayoutRectangle | undefined
   >()
 
+  const headerRef = useRef<View>(null)
+  const contentHeaderHeight = useSharedValue<number>(0)
+
   const { onScroll, scrollY, targetHiddenProgress } = useFadingHeaderNavigation(
     {
       header: <NavigationTitleHeader title={navigationTitle ?? title ?? ''} />,
@@ -77,9 +80,6 @@ export const ScrollViewScreenTemplate = ({
       transform: [{ scale }]
     }
   })
-
-  const headerRef = useRef<View>(null)
-  const contentHeaderHeight = useSharedValue<number>(0)
 
   useLayoutEffect(() => {
     if (headerRef.current) {
@@ -115,21 +115,23 @@ export const ScrollViewScreenTemplate = ({
         contentContainerStyle={[
           props?.contentContainerStyle,
           {
-            paddingBottom: insets.bottom
+            paddingBottom: insets.bottom,
+            paddingTop: headerHeight
           }
         ]}
         onScroll={onScroll}>
         <View
           style={{
-            paddingBottom: 12,
-            paddingTop: headerHeight
+            paddingBottom: 12
           }}>
           <View
+            ref={headerRef}
             style={{
-              gap: 8
+              gap: 8,
+              paddingTop: 12
             }}>
             {title ? (
-              <Animated.View style={[animatedHeaderStyle]} ref={headerRef}>
+              <Animated.View style={[animatedHeaderStyle]}>
                 <ScreenHeader title={title ?? ''} />
               </Animated.View>
             ) : null}
