@@ -1,13 +1,15 @@
 import { useMemo } from 'react'
 import { useSelector } from 'react-redux'
 import { selectTokensWithBalanceByNetwork } from 'store/balance/slice'
-import { bigintToBig } from 'utils/bigNumbers/bigintToBig'
 import { useTokenInfoContext } from '@avalabs/core-bridge-sdk'
 import { selectTokenVisibility } from 'store/portfolio'
 import { isTokenVisible } from 'store/balance/utils'
 import { AssetBalance, unwrapAssetSymbol } from 'common/utils/bridgeUtils'
 import { getAssetBalances } from 'features/bridge/utils/getAssetBalances'
+import { getCoingeckoId } from 'common/utils/getCoingeckoId'
+import { bigintToBig } from 'utils/bigNumbers/bigintToBig'
 import { useBridgeAssets } from './useBridgeAssets'
+import { useAssetBalancePrices } from './useAssetBalancePrices'
 /**
  * Get a list of bridge supported assets with the balances.
  * The list is sorted by balance.
@@ -43,18 +45,40 @@ export function useAssetBalances(sourceNetworkChainId?: number): {
     [bridgeAssets, visibleTokens, tokenInfoData]
   )
 
-  const sortedAssetsWithBalances = assetsWithBalances.sort((asset1, asset2) => {
-    const asset1Balance = bigintToBig(
-      asset1.balance || 0n,
-      asset1.asset.decimals
-    )
-    const asset2Balance = bigintToBig(
-      asset2.balance || 0n,
-      asset2.asset.decimals
-    )
+  const prices = useAssetBalancePrices(assetsWithBalances)
 
-    return asset2Balance.cmp(asset1Balance)
-  })
+  const assetsWithBalancesInCurrency = useMemo(() => {
+    return assetsWithBalances.map(asset => {
+      const coingeckoId = getCoingeckoId(asset.symbol, tokenInfoData)
+      const priceInCurrency = coingeckoId ? prices?.[coingeckoId] : undefined
+      return {
+        ...asset,
+        priceInCurrency
+      }
+    })
+  }, [assetsWithBalances, prices, tokenInfoData])
+
+  const sortedAssetsWithBalances = useMemo(() => {
+    return assetsWithBalancesInCurrency.toSorted((a, b) => {
+      const balanceInCurrencyA =
+        a.priceInCurrency && a.balance
+          ? bigintToBig(a.balance, a.asset.decimals).toNumber() *
+            a.priceInCurrency
+          : undefined
+      const balanceInCurrencyB =
+        b.priceInCurrency && b.balance
+          ? bigintToBig(b.balance, b.asset.decimals).toNumber() *
+            b.priceInCurrency
+          : undefined
+      if (balanceInCurrencyA === undefined) {
+        return 1
+      }
+      if (balanceInCurrencyB === undefined) {
+        return -1
+      }
+      return balanceInCurrencyB - balanceInCurrencyA
+    })
+  }, [assetsWithBalancesInCurrency])
 
   return { assetsWithBalances: sortedAssetsWithBalances }
 }

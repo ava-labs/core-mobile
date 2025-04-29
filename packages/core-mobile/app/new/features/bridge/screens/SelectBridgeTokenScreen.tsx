@@ -41,6 +41,7 @@ export const SelectBridgeTokenScreen = (): JSX.Element => {
 
   const bridgeAssets = useBridgeAssets(sourceNetworkChainId)
   const { assetsWithBalances } = useAssetBalances(sourceNetworkChainId)
+
   const tokens = useMemo(
     () =>
       (assetsWithBalances ?? []).filter(asset =>
