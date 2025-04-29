@@ -1,7 +1,7 @@
 import { Icons, SearchBar, Separator, useTheme } from '@avalabs/k2-alpine'
 import { TokenType } from '@avalabs/vm-module-types'
 import { ErrorState } from 'common/components/ErrorState'
-import { FlatListScreenTemplate } from 'common/components/FlatListScreenTemplate'
+import { ListScreen } from 'common/components/ListScreen'
 import { LoadingState } from 'common/components/LoadingState'
 import NavigationBarButton from 'common/components/NavigationBarButton'
 import { useSearchableTokenList } from 'common/hooks/useSearchableTokenList'
@@ -85,7 +85,7 @@ const TokenManagementScreen = (): JSX.Element => {
   }, [handleSearch, searchText])
 
   return (
-    <FlatListScreenTemplate
+    <ListScreen
       title="Manage list"
       data={tokenList}
       isModal

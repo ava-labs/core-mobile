@@ -9,7 +9,7 @@ import {
   View
 } from '@avalabs/k2-alpine'
 import { generateOnRampURL } from '@coinbase/cbpay-js'
-import { ScrollViewScreenTemplate } from 'common/components/ScrollViewScreenTemplate'
+import { ScrollScreen } from 'common/components/ScrollScreen'
 import { useCoreBrowser } from 'common/hooks/useCoreBrowser'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { Warning } from 'new/common/components/Warning'
@@ -199,7 +199,7 @@ export const BuyScreen: FC = () => {
   ])
 
   return (
-    <ScrollViewScreenTemplate
+    <ScrollScreen
       title="Buy crypto"
       subtitle="Buy tokens with fiat currency using your debit card or bank account leveraging one of our many partners"
       isModal
@@ -214,6 +214,6 @@ export const BuyScreen: FC = () => {
         {renderAvaxWarning()}
         <GroupList data={data} subtitleVariant="body1" />
       </View>
-    </ScrollViewScreenTemplate>
+    </ScrollScreen>
   )
 }

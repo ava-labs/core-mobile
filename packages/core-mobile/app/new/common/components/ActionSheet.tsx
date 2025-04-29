@@ -12,7 +12,7 @@ import {
   ActionButtonsProps
 } from 'new/features/approval/components/ActionButtons'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { ScrollViewScreenTemplate } from './ScrollViewScreenTemplate'
+import { ScrollScreen } from './ScrollScreen'
 
 /**
  * A customizable bottom sheet component (used with expo-router/react-navigation modal) that includes:
@@ -62,7 +62,7 @@ export const ActionSheet = ({
   }, [insets.bottom, confirm, cancel, alert])
 
   return (
-    <ScrollViewScreenTemplate
+    <ScrollScreen
       title={title}
       isModal
       navigationTitle={navigationTitle}
@@ -72,6 +72,6 @@ export const ActionSheet = ({
         paddingTop: 0
       }}>
       <View sx={{ flex: 1, ...sx }}>{children}</View>
-    </ScrollViewScreenTemplate>
+    </ScrollScreen>
   )
 }

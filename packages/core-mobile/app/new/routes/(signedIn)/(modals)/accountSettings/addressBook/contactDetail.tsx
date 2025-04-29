@@ -1,5 +1,5 @@
 import { Button, showAlert, useTheme } from '@avalabs/k2-alpine'
-import { ScrollViewScreenTemplate } from 'common/components/ScrollViewScreenTemplate'
+import { ScrollScreen } from 'common/components/ScrollScreen'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { ContactForm } from 'features/accountSettings/components/ContactForm'
 import React, { useCallback } from 'react'
@@ -86,7 +86,7 @@ const ContactDetailScreen = (): React.JSX.Element => {
   }, [handleDelete, colors.$textDanger])
 
   return (
-    <ScrollViewScreenTemplate
+    <ScrollScreen
       renderFooter={renderFooter}
       isModal
       contentContainerStyle={{ padding: 16 }}>
@@ -97,7 +97,7 @@ const ContactDetailScreen = (): React.JSX.Element => {
           onUpdate={handleUpdate}
         />
       )}
-    </ScrollViewScreenTemplate>
+    </ScrollScreen>
   )
 }
 

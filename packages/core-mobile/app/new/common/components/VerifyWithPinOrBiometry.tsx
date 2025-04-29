@@ -6,7 +6,7 @@ import { InteractionManager, Keyboard, Platform } from 'react-native'
 import { Subscription } from 'rxjs'
 import { BiometricType } from 'services/deviceInfo/DeviceInfoService'
 import Logger from 'utils/Logger'
-import { ScrollViewScreenTemplate } from './ScrollViewScreenTemplate'
+import { ScrollScreen } from './ScrollScreen'
 
 export const VerifyWithPinOrBiometry = ({
   onLoginSuccess
@@ -103,7 +103,7 @@ export const VerifyWithPinOrBiometry = ({
   }, [mnemonic, onLoginSuccess])
 
   return (
-    <ScrollViewScreenTemplate
+    <ScrollScreen
       title={`Enter your\ncurrent PIN`}
       isModal
       contentContainerStyle={{
@@ -135,6 +135,6 @@ export const VerifyWithPinOrBiometry = ({
           value={enteredPin}
         />
       </View>
-    </ScrollViewScreenTemplate>
+    </ScrollScreen>
   )
 }

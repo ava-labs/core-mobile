@@ -8,7 +8,7 @@ import {
   View
 } from '@avalabs/k2-alpine'
 import { UTCDate } from '@date-fns/utc'
-import { ScrollViewScreenTemplate } from 'common/components/ScrollViewScreenTemplate'
+import { ScrollScreen } from 'common/components/ScrollScreen'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import { useDelegationContext } from 'contexts/DelegationContext'
 import { differenceInDays, getUnixTime, millisecondsToSeconds } from 'date-fns'
@@ -321,7 +321,7 @@ const StakeDurationScreen = (): JSX.Element => {
   }, [handlePressNext, handleAdvancedSetup])
   return (
     <>
-      <ScrollViewScreenTemplate
+      <ScrollScreen
         title="For how long would you like to stake?"
         navigationTitle="How long?"
         isModal
@@ -350,7 +350,7 @@ const StakeDurationScreen = (): JSX.Element => {
             }}
           />
         </View>
-      </ScrollViewScreenTemplate>
+      </ScrollScreen>
       <StakeCustomEndDatePicker
         customEndDate={customEndDate}
         isVisible={isCustomEndDatePickerVisible}

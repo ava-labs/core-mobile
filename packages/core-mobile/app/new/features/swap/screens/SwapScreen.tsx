@@ -15,7 +15,7 @@ import {
 import { TokenType, TokenWithBalance } from '@avalabs/vm-module-types'
 import { SwapSide } from '@paraswap/sdk'
 import { useNavigation } from '@react-navigation/native'
-import { ScrollViewScreenTemplate } from 'common/components/ScrollViewScreenTemplate'
+import { ScrollScreen } from 'common/components/ScrollScreen'
 import { TokenInputWidget } from 'common/components/TokenInputWidget'
 import { useAvalancheErc20ContractTokens } from 'common/hooks/useErc20ContractTokens'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
@@ -443,7 +443,7 @@ export const SwapScreen = (): JSX.Element => {
   }, [canSwap, handleSwap, swapInProcess])
 
   return (
-    <ScrollViewScreenTemplate
+    <ScrollScreen
       title="Swap"
       renderFooter={renderFooter}
       isModal
@@ -516,6 +516,6 @@ export const SwapScreen = (): JSX.Element => {
           {coreFeeMessage}
         </Text>
       </View>
-    </ScrollViewScreenTemplate>
+    </ScrollScreen>
   )
 }

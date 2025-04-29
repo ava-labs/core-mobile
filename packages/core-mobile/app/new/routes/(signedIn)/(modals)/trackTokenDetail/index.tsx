@@ -20,7 +20,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router'
  */
 import { truncateAddress } from '@avalabs/core-utils-sdk'
 import { FavoriteBarButton } from 'common/components/FavoriteBarButton'
-import { ScrollViewScreenTemplate } from 'common/components/ScrollViewScreenTemplate'
+import { ScrollScreen } from 'common/components/ScrollScreen'
 import { ShareBarButton } from 'common/components/ShareBarButton'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import { copyToClipboard } from 'common/utils/clipboard'
@@ -317,7 +317,7 @@ const TrackTokenDetailScreen = (): JSX.Element => {
   }
 
   return (
-    <ScrollViewScreenTemplate
+    <ScrollScreen
       renderFooter={renderFooter}
       navigationTitle={tokenInfo?.symbol.toUpperCase() ?? ''}
       isModal
@@ -396,7 +396,7 @@ const TrackTokenDetailScreen = (): JSX.Element => {
         {marketData.length > 0 && <GroupList data={marketData} />}
         {metaData.length > 0 && <GroupList data={metaData} />}
       </View>
-    </ScrollViewScreenTemplate>
+    </ScrollScreen>
   )
 }
 

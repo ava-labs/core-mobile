@@ -5,7 +5,7 @@ import {
   Toggle,
   useTheme
 } from '@avalabs/k2-alpine'
-import { ScrollViewScreenTemplate } from 'common/components/ScrollViewScreenTemplate'
+import { ScrollScreen } from 'common/components/ScrollScreen'
 import { Space } from 'components/Space'
 import { useFocusEffect, useRouter } from 'expo-router'
 import { useConnectedDapps } from 'features/accountSettings/hooks/useConnectedDapps'
@@ -177,7 +177,7 @@ const SecurityAndPrivacyScreen = (): JSX.Element => {
   }, [])
 
   return (
-    <ScrollViewScreenTemplate
+    <ScrollScreen
       title={`Security\n& privacy`}
       navigationTitle="Security & privacy"
       isModal
@@ -228,7 +228,7 @@ const SecurityAndPrivacyScreen = (): JSX.Element => {
         committed to protecting your privacy. We will never sell or share your
         data
       </Text>
-    </ScrollViewScreenTemplate>
+    </ScrollScreen>
   )
 }
 

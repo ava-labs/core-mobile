@@ -1,6 +1,6 @@
 import { SearchBar } from '@avalabs/k2-alpine'
 import { ListRenderItem } from '@shopify/flash-list'
-import { FlatListScreenTemplate } from 'common/components/FlatListScreenTemplate'
+import { ListScreen } from 'common/components/ListScreen'
 import React, { useCallback } from 'react'
 
 export const SelectTokenScreen = <T,>({
@@ -21,7 +21,7 @@ export const SelectTokenScreen = <T,>({
   }, [onSearchText, searchText])
 
   return (
-    <FlatListScreenTemplate
+    <ListScreen
       title="Select a token"
       data={tokens}
       isModal

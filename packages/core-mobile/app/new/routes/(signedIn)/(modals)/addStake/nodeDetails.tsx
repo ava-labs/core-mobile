@@ -1,6 +1,6 @@
 import { TokenUnit } from '@avalabs/core-utils-sdk'
 import { Button, GroupList, GroupListItem, Tooltip } from '@avalabs/k2-alpine'
-import { ScrollViewScreenTemplate } from 'common/components/ScrollViewScreenTemplate'
+import { ScrollScreen } from 'common/components/ScrollScreen'
 import { copyToClipboard } from 'common/utils/clipboard'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { useGetValidatorByNodeId } from 'hooks/earn/useGetValidatorByNodeId'
@@ -148,14 +148,14 @@ const StakeNodeDetails = (): JSX.Element => {
   }, [handlePressNext])
 
   return (
-    <ScrollViewScreenTemplate
+    <ScrollScreen
       isModal
       title="Node details"
       renderFooter={renderFooter}
       renderHeader={renderHeader}
       contentContainerStyle={{ padding: 16 }}>
       <GroupList data={details} />
-    </ScrollViewScreenTemplate>
+    </ScrollScreen>
   )
 }
 

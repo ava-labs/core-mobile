@@ -13,7 +13,7 @@ import {
   useTheme
 } from '@avalabs/k2-alpine'
 import { ErrorState } from 'common/components/ErrorState'
-import { FlatListScreenTemplate } from 'common/components/FlatListScreenTemplate'
+import { ListScreen } from 'common/components/ListScreen'
 import { getListItemEnteringAnimation } from 'common/utils/animations'
 import { loadAvatar } from 'common/utils/loadAvatar'
 import { getAddressFromContact } from 'features/accountSettings/utils/getAddressFromContact'
@@ -226,7 +226,7 @@ export const RecentContacts = ({
   }, [])
 
   return (
-    <FlatListScreenTemplate
+    <ListScreen
       title={`First, enter the\nrecipient's address`}
       navigationTitle="Enter the recipient's address"
       data={searchResults}

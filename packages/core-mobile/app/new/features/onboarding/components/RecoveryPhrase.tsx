@@ -6,7 +6,7 @@ import {
   useTheme,
   View
 } from '@avalabs/k2-alpine'
-import { ScrollViewScreenTemplate } from 'common/components/ScrollViewScreenTemplate'
+import { ScrollScreen } from 'common/components/ScrollScreen'
 import MnemonicScreen from 'features/onboarding/components/MnemonicPhrase'
 import React, { useCallback } from 'react'
 
@@ -49,7 +49,7 @@ export const RecoveryPhrase = ({
   }, [handleNext, isLoading])
 
   return (
-    <ScrollViewScreenTemplate
+    <ScrollScreen
       title="Here is your wallet's recovery phrase"
       subtitle="This phrase is your access key to your wallet. Carefully write it down and store it in a safe location"
       renderFooter={renderFooter}
@@ -63,6 +63,6 @@ export const RecoveryPhrase = ({
         </View>
         <MnemonicScreen isLoading={isLoading} mnemonic={mnemonic} />
       </View>
-    </ScrollViewScreenTemplate>
+    </ScrollScreen>
   )
 }

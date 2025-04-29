@@ -11,7 +11,7 @@ import {
 } from '@avalabs/k2-alpine'
 import { CurrencyIcon } from 'common/components/CurrencyIcon'
 import { ErrorState } from 'common/components/ErrorState'
-import { FlatListScreenTemplate } from 'common/components/FlatListScreenTemplate'
+import { ListScreen } from 'common/components/ListScreen'
 import { getListItemEnteringAnimation } from 'common/utils/animations'
 import { useRouter } from 'expo-router'
 import React, { useCallback, useMemo, useState } from 'react'
@@ -156,7 +156,7 @@ const SelectCurrencyScreen = (): JSX.Element => {
   }, [])
 
   return (
-    <FlatListScreenTemplate
+    <ListScreen
       title="Select a currency"
       data={searchResults}
       isModal

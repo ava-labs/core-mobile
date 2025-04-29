@@ -22,7 +22,7 @@ import { KeyboardAvoidingView } from './KeyboardAvoidingView'
 import { LinearGradientBottomWrapper } from './LinearGradientBottomWrapper'
 import ScreenHeader from './ScreenHeader'
 
-interface FlatListScreenTemplateProps extends KeyboardAwareScrollViewProps {
+interface ScrollScreenProps extends KeyboardAwareScrollViewProps {
   title?: string
   subtitle?: string
   children: React.ReactNode
@@ -35,7 +35,7 @@ interface FlatListScreenTemplateProps extends KeyboardAwareScrollViewProps {
   renderHeaderRight?: () => JSX.Element
 }
 
-export const ScrollViewScreenTemplate = ({
+export const ScrollScreen = ({
   title,
   subtitle,
   children,
@@ -47,7 +47,7 @@ export const ScrollViewScreenTemplate = ({
   renderFooter,
   renderHeaderRight,
   ...props
-}: FlatListScreenTemplateProps): JSX.Element => {
+}: ScrollScreenProps): JSX.Element => {
   const insets = useSafeAreaInsets()
   const headerHeight = useHeaderHeight()
   const keyboardHeight = useKeyboardHeight()

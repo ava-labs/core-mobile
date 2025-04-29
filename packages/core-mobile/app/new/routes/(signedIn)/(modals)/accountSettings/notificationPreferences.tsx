@@ -1,5 +1,5 @@
 import { Button, Icons, Text, useTheme, View } from '@avalabs/k2-alpine'
-import { ScrollViewScreenTemplate } from 'common/components/ScrollViewScreenTemplate'
+import { ScrollScreen } from 'common/components/ScrollScreen'
 import { Space } from 'components/Space'
 import NotificationToggle from 'features/accountSettings/components/NotificationToggle'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
@@ -83,7 +83,7 @@ const NotificationPreferencesScreen = (): JSX.Element => {
   }, [blockedChannels, disabledChannels])
 
   return (
-    <ScrollViewScreenTemplate
+    <ScrollScreen
       title={`Notification\npreferences`}
       navigationTitle="Notification preferences"
       // hasParent
@@ -121,7 +121,7 @@ const NotificationPreferencesScreen = (): JSX.Element => {
       )}
       <Space y={16} />
       <View sx={{ gap: 12 }}>{renderNotificationToggles()}</View>
-    </ScrollViewScreenTemplate>
+    </ScrollScreen>
   )
 }
 

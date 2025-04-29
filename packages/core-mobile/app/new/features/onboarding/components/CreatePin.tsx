@@ -6,7 +6,7 @@ import {
   Toggle,
   View
 } from '@avalabs/k2-alpine'
-import { ScrollViewScreenTemplate } from 'common/components/ScrollViewScreenTemplate'
+import { ScrollScreen } from 'common/components/ScrollScreen'
 import { useFocusEffect } from 'expo-router'
 import { useCreatePin } from 'features/onboarding/hooks/useCreatePin'
 import React, { useCallback, useEffect, useRef, useState } from 'react'
@@ -103,7 +103,7 @@ export const CreatePin = ({
   }, [useBiometrics, setUseBiometrics, biometricType])
 
   return (
-    <ScrollViewScreenTemplate
+    <ScrollScreen
       isModal={isModal}
       title={chosenPinEntered ? confirmPinTitle : newPinTitle}
       navigationTitle={chosenPinEntered ? confirmPinTitle : newPinTitle}
@@ -131,6 +131,6 @@ export const CreatePin = ({
           }
         />
       </View>
-    </ScrollViewScreenTemplate>
+    </ScrollScreen>
   )
 }

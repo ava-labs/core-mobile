@@ -10,7 +10,7 @@ import {
   useTheme,
   View
 } from '@avalabs/k2-alpine'
-import { ScrollViewScreenTemplate } from 'common/components/ScrollViewScreenTemplate'
+import { ScrollScreen } from 'common/components/ScrollScreen'
 import { VisibilityBarButton } from 'common/components/VisibilityBarButton'
 import { useAvatar } from 'common/hooks/useAvatar'
 import { useDeleteWallet } from 'common/hooks/useDeleteWallet'
@@ -102,7 +102,7 @@ const AccountSettingsScreen = (): JSX.Element => {
   }
 
   return (
-    <ScrollViewScreenTemplate
+    <ScrollScreen
       isModal
       navigationTitle="Account Settings"
       renderHeaderRight={renderHeaderRight}
@@ -268,7 +268,7 @@ const AccountSettingsScreen = (): JSX.Element => {
           <Icons.Custom.AvalabsTrademark color={colors.$textSecondary} />
         </View>
       </View>
-    </ScrollViewScreenTemplate>
+    </ScrollScreen>
   )
 }
 

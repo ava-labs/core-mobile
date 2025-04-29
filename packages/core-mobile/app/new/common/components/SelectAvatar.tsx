@@ -12,7 +12,7 @@ import {
 import { loadAvatar } from 'common/utils/loadAvatar'
 import React, { memo, useMemo } from 'react'
 import Animated, { ZoomIn } from 'react-native-reanimated'
-import { ScrollViewScreenTemplate } from './ScrollViewScreenTemplate'
+import { ScrollScreen } from './ScrollScreen'
 
 export const SelectAvatar = memo(
   ({
@@ -56,7 +56,7 @@ export const SelectAvatar = memo(
     }
 
     return (
-      <ScrollViewScreenTemplate
+      <ScrollScreen
         title={title}
         renderFooter={renderFooter}
         contentContainerStyle={{ padding: 16, flex: 1 }}>
@@ -84,7 +84,7 @@ export const SelectAvatar = memo(
           avatars={avatars}
           onSelect={onSelect}
         />
-      </ScrollViewScreenTemplate>
+      </ScrollScreen>
     )
   }
 )

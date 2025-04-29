@@ -16,7 +16,7 @@ import { useSelector } from 'react-redux'
 import { WalletType } from 'services/wallet/types'
 import { setPinRecovery } from 'utils/Navigation'
 import { useDeleteWallet } from 'new/common/hooks/useDeleteWallet'
-import { ScrollViewScreenTemplate } from 'common/components/ScrollViewScreenTemplate'
+import { ScrollScreen } from 'common/components/ScrollScreen'
 
 const ForgotPin = (): JSX.Element => {
   const router = useRouter()
@@ -53,7 +53,7 @@ const ForgotPin = (): JSX.Element => {
   }
 
   return (
-    <ScrollViewScreenTemplate
+    <ScrollScreen
       title={`Do you want to\nreset your PIN?`}
       renderFooter={renderFooter}
       contentContainerStyle={{ padding: 16, flex: 1 }}>
@@ -74,7 +74,7 @@ const ForgotPin = (): JSX.Element => {
           </Text>
         </View>
       </View>
-    </ScrollViewScreenTemplate>
+    </ScrollScreen>
   )
 }
 

@@ -14,7 +14,7 @@ import { LocalTokenWithBalance } from 'store/balance'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { LogoWithNetwork } from 'features/portfolio/assets/components/LogoWithNetwork'
 import { LoadingState } from 'common/components/LoadingState'
-import { ScrollViewScreenTemplate } from 'common/components/ScrollViewScreenTemplate'
+import { ScrollScreen } from 'common/components/ScrollScreen'
 
 const AddCustomTokenScreen = (): JSX.Element => {
   const {
@@ -108,7 +108,7 @@ const AddCustomTokenScreen = (): JSX.Element => {
   }, [setTokenAddress, tokenAddress, goToScanQrCode, colors.$textSecondary])
 
   return (
-    <ScrollViewScreenTemplate
+    <ScrollScreen
       title="Add a custom token"
       renderHeader={renderHeader}
       contentContainerStyle={{ padding: 16 }}
@@ -120,7 +120,7 @@ const AddCustomTokenScreen = (): JSX.Element => {
       </Text>
 
       {renderToken()}
-    </ScrollViewScreenTemplate>
+    </ScrollScreen>
   )
 }
 

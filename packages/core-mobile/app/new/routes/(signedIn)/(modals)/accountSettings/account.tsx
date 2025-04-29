@@ -1,5 +1,5 @@
 import { BalanceHeader, View } from '@avalabs/k2-alpine'
-import { ScrollViewScreenTemplate } from 'common/components/ScrollViewScreenTemplate'
+import { ScrollScreen } from 'common/components/ScrollScreen'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
 import { useLocalSearchParams } from 'expo-router'
@@ -84,7 +84,7 @@ const AccountScreen = (): JSX.Element => {
   }
 
   return (
-    <ScrollViewScreenTemplate
+    <ScrollScreen
       renderHeader={renderHeader}
       renderFooter={renderFooter}
       isModal
@@ -94,7 +94,7 @@ const AccountScreen = (): JSX.Element => {
         <AccountAddresses account={account} />
         {/* <WalletInfo showPrivateKey={handleShowPrivateKey} /> */}
       </View>
-    </ScrollViewScreenTemplate>
+    </ScrollScreen>
   )
 }
 

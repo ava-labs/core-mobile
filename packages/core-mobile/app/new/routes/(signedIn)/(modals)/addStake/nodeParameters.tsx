@@ -1,5 +1,5 @@
 import { Button, View } from '@avalabs/k2-alpine'
-import { ScrollViewScreenTemplate } from 'common/components/ScrollViewScreenTemplate'
+import { ScrollScreen } from 'common/components/ScrollScreen'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { NodeParameterWidget } from 'features/stake/components/NodeParameterWidget'
 import React, { useCallback } from 'react'
@@ -35,7 +35,7 @@ const StakeNodeParameter = (): JSX.Element => {
   }, [handlePressNext])
 
   return (
-    <ScrollViewScreenTemplate
+    <ScrollScreen
       isModal
       title="Choose the parameters for your staking node"
       navigationTitle="Node parameters"
@@ -57,7 +57,7 @@ const StakeNodeParameter = (): JSX.Element => {
           maximumValue={20}
         />
       </View>
-    </ScrollViewScreenTemplate>
+    </ScrollScreen>
   )
 }
 

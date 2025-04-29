@@ -8,7 +8,7 @@ import {
   TokenUnitInputWidget,
   useTheme
 } from '@avalabs/k2-alpine'
-import { ScrollViewScreenTemplate } from 'common/components/ScrollViewScreenTemplate'
+import { ScrollScreen } from 'common/components/ScrollScreen'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import { useDelegationContext } from 'contexts/DelegationContext'
 import { useRouter } from 'expo-router'
@@ -146,7 +146,7 @@ const StakeAmountScreen = (): JSX.Element => {
   }
 
   return (
-    <ScrollViewScreenTemplate
+    <ScrollScreen
       title={`How much would\nyou like to stake?`}
       navigationTitle="How much would you like to stake?"
       renderFooter={renderFooter}
@@ -161,7 +161,7 @@ const StakeAmountScreen = (): JSX.Element => {
         maxPercentage={STAKING_MAX_BALANCE_PERCENTAGE}
       />
       {renderCaption()}
-    </ScrollViewScreenTemplate>
+    </ScrollScreen>
   )
 }
 

@@ -10,7 +10,7 @@ import {
 } from '@avalabs/k2-alpine'
 import { AlertWithTextInputsHandle } from '@avalabs/k2-alpine/src/components/Alert/types'
 import { NetworkLogoWithChain } from 'common/components/NetworkLogoWithChain'
-import { ScrollViewScreenTemplate } from 'common/components/ScrollViewScreenTemplate'
+import { ScrollScreen } from 'common/components/ScrollScreen'
 import { useFormState } from 'common/hooks/useFormState'
 import { isValidContactName } from 'common/utils/isValidContactName'
 import { useLocalSearchParams, useRouter } from 'expo-router'
@@ -372,7 +372,7 @@ export const AddEditNetworkScreen = (): JSX.Element => {
 
   return (
     <>
-      <ScrollViewScreenTemplate
+      <ScrollScreen
         isModal
         disabled
         renderFooter={renderFooter}
@@ -417,7 +417,7 @@ export const AddEditNetworkScreen = (): JSX.Element => {
         </View>
 
         <AdvancedForm data={data} />
-      </ScrollViewScreenTemplate>
+      </ScrollScreen>
 
       <View>
         <AlertWithTextInputs ref={alert} />

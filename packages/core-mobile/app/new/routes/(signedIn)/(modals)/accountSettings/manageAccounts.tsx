@@ -13,7 +13,7 @@ import {
   View
 } from '@avalabs/k2-alpine'
 import NavigationBarButton from 'common/components/NavigationBarButton'
-import { ScrollViewScreenTemplate } from 'common/components/ScrollViewScreenTemplate'
+import { ScrollScreen } from 'common/components/ScrollScreen'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import { showSnackbar } from 'common/utils/toast'
 import { useRouter } from 'expo-router'
@@ -178,7 +178,7 @@ const ManageAccountsScreen = (): React.JSX.Element => {
   }, [searchText])
 
   return (
-    <ScrollViewScreenTemplate
+    <ScrollScreen
       title="Manage accounts"
       isModal
       renderHeader={renderHeader}
@@ -186,7 +186,7 @@ const ManageAccountsScreen = (): React.JSX.Element => {
       contentContainerStyle={{ padding: 16 }}>
       <GroupList itemHeight={ITEM_HEIGHT} data={data} />
       <ActivityIndicator animating={isAddingAccount} sx={{ marginTop: 16 }} />
-    </ScrollViewScreenTemplate>
+    </ScrollScreen>
   )
 }
 

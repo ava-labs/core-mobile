@@ -8,7 +8,7 @@ import {
 } from '@avalabs/k2-alpine'
 import { UTCDate } from '@date-fns/utc'
 import { ErrorState } from 'common/components/ErrorState'
-import { FlatListScreenTemplate } from 'common/components/FlatListScreenTemplate'
+import { ListScreen } from 'common/components/ListScreen'
 import { advancedFilterDropDownItems } from 'consts/earn'
 import { useDelegationContext } from 'contexts/DelegationContext'
 import { secondsToMilliseconds } from 'date-fns'
@@ -111,7 +111,7 @@ const StakeSelectNode = (): JSX.Element => {
   }, [isFetching, error, useAdvancedSearchNodesError, validators, searchText])
 
   return (
-    <FlatListScreenTemplate
+    <ListScreen
       title="Which node would you like to use?"
       data={validators ?? []}
       renderItem={renderItem}

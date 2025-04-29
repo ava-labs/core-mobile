@@ -1,5 +1,5 @@
 import { Icons, Text, useTheme, View } from '@avalabs/k2-alpine'
-import { ScrollViewScreenTemplate } from 'common/components/ScrollViewScreenTemplate'
+import { ScrollScreen } from 'common/components/ScrollScreen'
 import { useLocalSearchParams } from 'expo-router'
 import MnemonicScreen from 'features/onboarding/components/MnemonicPhrase'
 import React from 'react'
@@ -11,7 +11,7 @@ const ShowRecoveryPhraseScreen = (): JSX.Element => {
   const { mnemonic } = useLocalSearchParams<{ mnemonic: string }>()
 
   return (
-    <ScrollViewScreenTemplate
+    <ScrollScreen
       title={'Show recovery\nphrase'}
       navigationTitle="Show recovery phrase"
       isModal
@@ -31,7 +31,7 @@ const ShowRecoveryPhraseScreen = (): JSX.Element => {
         </View>
         <MnemonicScreen mnemonic={mnemonic} />
       </View>
-    </ScrollViewScreenTemplate>
+    </ScrollScreen>
   )
 }
 

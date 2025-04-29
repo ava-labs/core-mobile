@@ -10,7 +10,7 @@ import React, { useCallback, useMemo, useState } from 'react'
 import { SvgProps } from 'react-native-svg'
 import { useDispatch } from 'react-redux'
 import { resetViewOnce, setViewOnce, ViewOnceKey } from 'store/viewOnce'
-import { ScrollViewScreenTemplate } from './ScrollViewScreenTemplate'
+import { ScrollScreen } from './ScrollScreen'
 
 export const TransactionOnboarding = ({
   icon,
@@ -70,7 +70,7 @@ export const TransactionOnboarding = ({
   }, [groupListData, handlePressNext, buttonTitle])
 
   return (
-    <ScrollViewScreenTemplate
+    <ScrollScreen
       isModal
       scrollEnabled={false}
       renderFooter={renderFooter}
@@ -99,7 +99,7 @@ export const TransactionOnboarding = ({
           {subtitle}
         </Text>
       </View>
-    </ScrollViewScreenTemplate>
+    </ScrollScreen>
   )
 }
 

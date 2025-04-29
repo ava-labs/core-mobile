@@ -10,7 +10,7 @@ import {
   Tooltip,
   View
 } from '@avalabs/k2-alpine'
-import { ScrollViewScreenTemplate } from 'common/components/ScrollViewScreenTemplate'
+import { ScrollScreen } from 'common/components/ScrollScreen'
 import { useConfetti } from 'common/contexts/ConfettiContext'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import { usePreventScreenRemoval } from 'common/hooks/usePreventScreenRemoval'
@@ -203,7 +203,7 @@ const ClaimStakeRewardScreen = (): JSX.Element => {
   ])
 
   return (
-    <ScrollViewScreenTemplate
+    <ScrollScreen
       title="Claim your staking reward"
       isModal
       renderFooter={renderFooter}
@@ -237,7 +237,7 @@ const ClaimStakeRewardScreen = (): JSX.Element => {
           }}
         />
       </View>
-    </ScrollViewScreenTemplate>
+    </ScrollScreen>
   )
 }
 

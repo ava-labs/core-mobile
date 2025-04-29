@@ -1,5 +1,5 @@
 import { Button, View } from '@avalabs/k2-alpine'
-import { ScrollViewScreenTemplate } from 'common/components/ScrollViewScreenTemplate'
+import { ScrollScreen } from 'common/components/ScrollScreen'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { ContactForm } from 'features/accountSettings/components/ContactForm'
 import { useNewContactAvatar } from 'features/accountSettings/store'
@@ -79,7 +79,7 @@ const AddContactScreen = (): React.JSX.Element => {
   }, [back, canGoBack, handleSave, isSaveDisabled])
 
   return (
-    <ScrollViewScreenTemplate
+    <ScrollScreen
       isModal
       renderFooter={renderFooter}
       disabled
@@ -94,7 +94,7 @@ const AddContactScreen = (): React.JSX.Element => {
           onSelectAvatar={handleSelectAvatar}
         />
       )}
-    </ScrollViewScreenTemplate>
+    </ScrollScreen>
   )
 }
 

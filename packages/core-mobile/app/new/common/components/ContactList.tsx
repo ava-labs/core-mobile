@@ -16,7 +16,7 @@ import { getAddressFromContact } from 'features/accountSettings/utils/getAddress
 import React, { useCallback, useMemo, useState } from 'react'
 import Animated from 'react-native-reanimated'
 import { Contact } from 'store/addressBook'
-import { FlatListScreenTemplate } from './FlatListScreenTemplate'
+import { ListScreen } from './ListScreen'
 
 export const ContactList = ({
   contacts,
@@ -159,7 +159,7 @@ export const ContactList = ({
   }, [ListEmptyComponent])
 
   return (
-    <FlatListScreenTemplate
+    <ListScreen
       title={title}
       keyExtractor={item => (item as Contact).id}
       data={searchResults}

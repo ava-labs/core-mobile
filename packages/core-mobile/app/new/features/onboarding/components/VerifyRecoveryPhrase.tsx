@@ -1,5 +1,5 @@
 import { Button, showAlert } from '@avalabs/k2-alpine'
-import { ScrollViewScreenTemplate } from 'common/components/ScrollViewScreenTemplate'
+import { ScrollScreen } from 'common/components/ScrollScreen'
 import WordSelection from 'features/onboarding/components/WordSelection'
 import { useCheckMnemonic } from 'features/onboarding/hooks/useCheckMnemonic'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
@@ -124,7 +124,7 @@ export const VerifyRecoveryPhrase = ({
   }, [canVerify, handleNext])
 
   return (
-    <ScrollViewScreenTemplate
+    <ScrollScreen
       title="Verify your recovery phrase"
       subtitle={`Select the words below to verify your\nrecover phrase`}
       renderFooter={renderFooter}
@@ -156,6 +156,6 @@ export const VerifyRecoveryPhrase = ({
           setSelectedWordIndex={setSelectedWord3Index}
         />
       </Animated.View>
-    </ScrollViewScreenTemplate>
+    </ScrollScreen>
   )
 }

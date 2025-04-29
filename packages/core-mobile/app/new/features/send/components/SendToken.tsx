@@ -15,7 +15,7 @@ import {
   useTheme,
   View
 } from '@avalabs/k2-alpine'
-import { ScrollViewScreenTemplate } from 'common/components/ScrollViewScreenTemplate'
+import { ScrollScreen } from 'common/components/ScrollScreen'
 import { loadAvatar } from 'common/utils/loadAvatar'
 import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router'
 import { LogoWithNetwork } from 'features/portfolio/assets/components/LogoWithNetwork'
@@ -162,7 +162,7 @@ export const SendToken = ({ onSend }: { onSend: () => void }): JSX.Element => {
   }, [canSubmit, isSending, onSend])
 
   return (
-    <ScrollViewScreenTemplate
+    <ScrollScreen
       isModal
       title={`${'How much would\nyou like to send?'}`}
       navigationTitle={`${'How much would you like to send?'}`}
@@ -279,6 +279,6 @@ export const SendToken = ({ onSend }: { onSend: () => void }): JSX.Element => {
           disabled={isSending || selectedToken === undefined}
         />
       )}
-    </ScrollViewScreenTemplate>
+    </ScrollScreen>
   )
 }

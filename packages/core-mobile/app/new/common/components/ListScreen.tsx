@@ -33,7 +33,7 @@ import { ErrorState } from './ErrorState'
 import { KeyboardAvoidingView } from './KeyboardAvoidingView'
 import ScreenHeader from './ScreenHeader'
 
-interface FlatListScreenTemplateProps<T>
+interface ListScreenProps<T>
   extends Omit<FlatListPropsWithLayout<T>, 'ListHeaderComponent'> {
   title: string
   navigationTitle?: string
@@ -47,7 +47,7 @@ interface FlatListScreenTemplateProps<T>
 
 const AnimatedFlatList = Animated.createAnimatedComponent(FlatList)
 
-export const FlatListScreenTemplate = <T,>({
+export const ListScreen = <T,>({
   data,
   title,
   navigationTitle,
@@ -57,7 +57,7 @@ export const FlatListScreenTemplate = <T,>({
   renderHeader,
   renderHeaderRight,
   ...props
-}: FlatListScreenTemplateProps<T>): JSX.Element => {
+}: ListScreenProps<T>): JSX.Element => {
   const insets = useSafeAreaInsets()
 
   const [headerLayout, setHeaderLayout] = useState<

@@ -14,7 +14,7 @@ import {
 } from '@avalabs/k2-alpine'
 import { NetworkVMType } from '@avalabs/vm-module-types'
 import { useNavigation } from '@react-navigation/native'
-import { ScrollViewScreenTemplate } from 'common/components/ScrollViewScreenTemplate'
+import { ScrollScreen } from 'common/components/ScrollScreen'
 import { TokenInputWidget } from 'common/components/TokenInputWidget'
 import { useCoreBrowser } from 'common/hooks/useCoreBrowser'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
@@ -675,7 +675,7 @@ export const BridgeScreen = (): JSX.Element => {
   }, [handleTransfer, isPending, transferDisabled, bridgeType])
 
   return (
-    <ScrollViewScreenTemplate
+    <ScrollScreen
       title="Bridge"
       renderFooter={renderFooter}
       isModal
@@ -722,6 +722,6 @@ export const BridgeScreen = (): JSX.Element => {
         )}
         {renderToSection()}
       </Animated.View>
-    </ScrollViewScreenTemplate>
+    </ScrollScreen>
   )
 }

@@ -1,5 +1,5 @@
 import { AnimatedPressable, Text, useTheme, View } from '@avalabs/k2-alpine'
-import { ScrollViewScreenTemplate } from 'common/components/ScrollViewScreenTemplate'
+import { ScrollScreen } from 'common/components/ScrollScreen'
 import React, { FC } from 'react'
 import { SvgProps } from 'react-native-svg'
 import { useDispatch, useSelector } from 'react-redux'
@@ -17,7 +17,7 @@ const SelectAppearanceScreen = (): JSX.Element => {
   const dispatch = useDispatch()
 
   return (
-    <ScrollViewScreenTemplate
+    <ScrollScreen
       title={`Customize the\napp appearance`}
       navigationTitle="Customize the app appearance"
       isModal
@@ -51,7 +51,7 @@ const SelectAppearanceScreen = (): JSX.Element => {
           Icon={DarkAppearanceIcon}
         />
       </View>
-    </ScrollViewScreenTemplate>
+    </ScrollScreen>
   )
 }
 

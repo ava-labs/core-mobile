@@ -1,6 +1,6 @@
 import { Button, showAlert, View } from '@avalabs/k2-alpine'
 import * as bip39 from 'bip39'
-import { ScrollViewScreenTemplate } from 'common/components/ScrollViewScreenTemplate'
+import { ScrollScreen } from 'common/components/ScrollScreen'
 import React, { useCallback, useState } from 'react'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import WalletSDK from 'utils/WalletSDK'
@@ -70,7 +70,7 @@ export const EnterRecoveryPhrase = ({
   }, [handleEnterTestWallet, handleNext, mnemonic, testMnemonic])
 
   return (
-    <ScrollViewScreenTemplate
+    <ScrollScreen
       title={'Enter your\nrecovery phrase'}
       navigationTitle="Enter your recovery phrase"
       subtitle="This phrase should contain 12, 18, or 24 words. Use a space between each word."
@@ -83,7 +83,7 @@ export const EnterRecoveryPhrase = ({
         }}>
         <RecoveryPhraseInput onChangeText={setMnemonic} />
       </View>
-    </ScrollViewScreenTemplate>
+    </ScrollScreen>
   )
 }
 

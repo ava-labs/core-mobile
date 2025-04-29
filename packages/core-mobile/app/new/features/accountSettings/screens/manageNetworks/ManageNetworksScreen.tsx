@@ -8,7 +8,7 @@ import {
   useTheme,
   View
 } from '@avalabs/k2-alpine'
-import { FlatListScreenTemplate } from 'common/components/FlatListScreenTemplate'
+import { ListScreen } from 'common/components/ListScreen'
 import NavigationBarButton from 'common/components/NavigationBarButton'
 import { NetworkLogoWithChain } from 'common/components/NetworkLogoWithChain'
 import { useRouter } from 'expo-router'
@@ -175,7 +175,7 @@ export const ManageNetworksScreen = (): JSX.Element => {
   }, [goToAddCustomNetwork, theme.colors.$textPrimary])
 
   return (
-    <FlatListScreenTemplate
+    <ListScreen
       title={title}
       data={filteredNetworks}
       isModal

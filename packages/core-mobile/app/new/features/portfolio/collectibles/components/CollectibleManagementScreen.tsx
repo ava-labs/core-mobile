@@ -1,6 +1,6 @@
 import { SearchBar, Text, Toggle, View } from '@avalabs/k2-alpine'
 import { ErrorState } from 'common/components/ErrorState'
-import { FlatListScreenTemplate } from 'common/components/FlatListScreenTemplate'
+import { ListScreen } from 'common/components/ListScreen'
 import { LoadingState } from 'common/components/LoadingState'
 import { portfolioTabContentHeight } from 'features/portfolio/utils'
 import React, { ReactNode, useCallback, useMemo, useState } from 'react'
@@ -68,7 +68,7 @@ export const CollectibleManagementScreen = (): ReactNode => {
   }, [handleSearch, searchText])
 
   return (
-    <FlatListScreenTemplate
+    <ListScreen
       title="Manage list"
       keyExtractor={item => `collectibles-manage-${item.localId}`}
       data={filteredCollectibles}

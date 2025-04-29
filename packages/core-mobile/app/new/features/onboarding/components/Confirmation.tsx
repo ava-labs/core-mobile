@@ -1,5 +1,5 @@
 import { Avatar, Button, Text, View, useTheme } from '@avalabs/k2-alpine'
-import { ScrollViewScreenTemplate } from 'common/components/ScrollViewScreenTemplate'
+import { ScrollScreen } from 'common/components/ScrollScreen'
 import React from 'react'
 import { useSelector } from 'react-redux'
 import { selectSelectedAvatar } from 'store/settings/avatar'
@@ -23,7 +23,7 @@ export const Confirmation = ({
   }
 
   return (
-    <ScrollViewScreenTemplate
+    <ScrollScreen
       renderFooter={renderFooter}
       contentContainerStyle={{ padding: 16, flex: 1 }}>
       <View sx={{ alignItems: 'center', marginTop: 100 }}>
@@ -60,6 +60,6 @@ export const Confirmation = ({
           collectibles with no added fees
         </Text>
       </View>
-    </ScrollViewScreenTemplate>
+    </ScrollScreen>
   )
 }

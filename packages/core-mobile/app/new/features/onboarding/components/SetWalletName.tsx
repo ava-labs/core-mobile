@@ -1,5 +1,5 @@
 import { Button } from '@avalabs/k2-alpine'
-import { ScrollViewScreenTemplate } from 'common/components/ScrollViewScreenTemplate'
+import { ScrollScreen } from 'common/components/ScrollScreen'
 import { SimpleTextInput } from 'common/components/SimpleTextInput'
 import React, { useCallback } from 'react'
 
@@ -25,11 +25,11 @@ export const SetWalletName = ({
   }, [name, onNext])
 
   return (
-    <ScrollViewScreenTemplate
+    <ScrollScreen
       title="How would you like to name your wallet?"
       renderFooter={renderFooter}
       contentContainerStyle={{ padding: 16, flex: 1 }}>
       <SimpleTextInput autoFocus value={name} onChangeText={setName} />
-    </ScrollViewScreenTemplate>
+    </ScrollScreen>
   )
 }

@@ -7,7 +7,7 @@ import {
   useTheme,
   View
 } from '@avalabs/k2-alpine'
-import { FlatListScreenTemplate } from 'common/components/FlatListScreenTemplate'
+import { ListScreen } from 'common/components/ListScreen'
 import { Logo } from 'common/components/Logo'
 import { getListItemEnteringAnimation } from 'common/utils/animations'
 import { useConnectedDapps } from 'features/accountSettings/hooks/useConnectedDapps'
@@ -159,7 +159,7 @@ const ConnectedSitesScreen = (): JSX.Element => {
   }, [searchText])
 
   return (
-    <FlatListScreenTemplate
+    <ListScreen
       isModal
       title={navigationTitle}
       ItemSeparatorComponent={renderSeparator}

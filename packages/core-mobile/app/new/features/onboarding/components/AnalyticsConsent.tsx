@@ -1,5 +1,5 @@
 import { Button, Text, View } from '@avalabs/k2-alpine'
-import { ScrollViewScreenTemplate } from 'common/components/ScrollViewScreenTemplate'
+import { ScrollScreen } from 'common/components/ScrollScreen'
 import React, { useCallback, useEffect } from 'react'
 import { useDispatch } from 'react-redux'
 import { setViewOnce, ViewOnceKey } from 'store/viewOnce'
@@ -36,7 +36,7 @@ export const AnalyticsConsent = ({
   }, [onAcceptAnalytics, onRejectAnalytics])
 
   return (
-    <ScrollViewScreenTemplate
+    <ScrollScreen
       title="Unlock airdrops"
       renderFooter={renderFooter}
       contentContainerStyle={{ padding: 16 }}>
@@ -55,6 +55,6 @@ export const AnalyticsConsent = ({
           settings menu.
         </Text>
       </View>
-    </ScrollViewScreenTemplate>
+    </ScrollScreen>
   )
 }

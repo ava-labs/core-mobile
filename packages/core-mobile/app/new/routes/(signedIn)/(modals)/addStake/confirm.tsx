@@ -11,7 +11,7 @@ import {
   View
 } from '@avalabs/k2-alpine'
 import { UTCDate } from '@date-fns/utc'
-import { ScrollViewScreenTemplate } from 'common/components/ScrollViewScreenTemplate'
+import { ScrollScreen } from 'common/components/ScrollScreen'
 import { usePreventScreenRemoval } from 'common/hooks/usePreventScreenRemoval'
 import { copyToClipboard } from 'common/utils/clipboard'
 import { transactionSnackbar } from 'common/utils/toast'
@@ -396,7 +396,7 @@ const StakeConfirmScreen = (): JSX.Element => {
   }
 
   return (
-    <ScrollViewScreenTemplate
+    <ScrollScreen
       isModal
       title={`That's it!\nReview your staking`}
       navigationTitle="Review"
@@ -411,7 +411,7 @@ const StakeConfirmScreen = (): JSX.Element => {
         />
         <GroupList data={stakeSection} />
       </View>
-    </ScrollViewScreenTemplate>
+    </ScrollScreen>
   )
 }
 

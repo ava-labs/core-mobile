@@ -1,5 +1,5 @@
 import { Button, Text, View } from '@avalabs/k2-alpine'
-import { ScrollViewScreenTemplate } from 'common/components/ScrollViewScreenTemplate'
+import { ScrollScreen } from 'common/components/ScrollScreen'
 import React from 'react'
 
 export const TermsAndConditions = ({
@@ -16,7 +16,7 @@ export const TermsAndConditions = ({
   }
 
   return (
-    <ScrollViewScreenTemplate
+    <ScrollScreen
       title="Terms and conditions"
       contentContainerStyle={{ padding: 16 }}
       renderFooter={renderFooter}>
@@ -80,6 +80,6 @@ export const TermsAndConditions = ({
           connection with your use of the App and other scenarios.
         </Text>
       </View>
-    </ScrollViewScreenTemplate>
+    </ScrollScreen>
   )
 }

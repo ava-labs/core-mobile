@@ -1,6 +1,6 @@
 import { NetworkVMType } from '@avalabs/core-chains-sdk'
 import { Icons, Text, TouchableOpacity, useTheme } from '@avalabs/k2-alpine'
-import { ScrollViewScreenTemplate } from 'common/components/ScrollViewScreenTemplate'
+import { ScrollScreen } from 'common/components/ScrollScreen'
 import { TokenLogo } from 'common/components/TokenLogo'
 import { usePrimaryNetworks } from 'common/hooks/usePrimaryNetworks'
 import { router } from 'expo-router'
@@ -86,7 +86,7 @@ export const ReceiveScreen = (): ReactNode => {
   }, [address])
 
   return (
-    <ScrollViewScreenTemplate
+    <ScrollScreen
       title="Receive crypto"
       subtitle="To receive funds you can choose to share your unique QR code or address below with the sender"
       isModal
@@ -148,6 +148,6 @@ export const ReceiveScreen = (): ReactNode => {
           }}
         />
       </View>
-    </ScrollViewScreenTemplate>
+    </ScrollScreen>
   )
 }

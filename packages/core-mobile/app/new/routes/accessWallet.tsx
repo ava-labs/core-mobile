@@ -10,7 +10,7 @@ import {
 import Encrypted from 'assets/icons/encrypted.svg'
 import BlurredBarsContentLayout from 'common/components/BlurredBarsContentLayout'
 import { useRouter } from 'expo-router'
-import { ScrollViewScreenTemplate } from 'common/components/ScrollViewScreenTemplate'
+import { ScrollScreen } from 'common/components/ScrollScreen'
 
 const AccessWalletScreen = (): JSX.Element => {
   const { theme } = useTheme()
@@ -30,7 +30,7 @@ const AccessWalletScreen = (): JSX.Element => {
   }
 
   return (
-    <ScrollViewScreenTemplate
+    <ScrollScreen
       title="How would you like to access your existing wallet?"
       contentContainerStyle={{ padding: 16 }}>
       <GroupList
@@ -48,7 +48,7 @@ const AccessWalletScreen = (): JSX.Element => {
         ]}
         itemHeight={60}
       />
-    </ScrollViewScreenTemplate>
+    </ScrollScreen>
   )
 }
 
