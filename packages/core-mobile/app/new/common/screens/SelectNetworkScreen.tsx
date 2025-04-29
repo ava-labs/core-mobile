@@ -78,8 +78,9 @@ export const SelectNetworkScreen = ({
   return (
     <ListScreen
       title="Select a network"
-      isModal
       data={networks}
+      isModal
+      // @ts-ignore TODO: ListScreen improvement
       renderItem={renderItem}
       keyExtractor={item => item?.chainId?.toString()}
     />
