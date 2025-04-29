@@ -16,7 +16,7 @@ import Animated, {
   useAnimatedStyle,
   useSharedValue
 } from 'react-native-reanimated'
-import { EdgeInsets, useSafeAreaInsets } from 'react-native-safe-area-context'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { BlurViewWithFallback } from './BlurViewWithFallback'
 import { KeyboardAvoidingView } from './KeyboardAvoidingView'
 import { LinearGradientBottomWrapper } from './LinearGradientBottomWrapper'
