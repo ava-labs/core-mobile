@@ -82,7 +82,7 @@ const AddContactScreen = (): React.JSX.Element => {
     <ScrollScreen
       isModal
       renderFooter={renderFooter}
-      disabled
+      shouldAvoidKeyboard={false}
       navigationTitle="Add contact"
       contentContainerStyle={{
         padding: 16

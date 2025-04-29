@@ -28,7 +28,7 @@ interface ScrollScreenProps extends KeyboardAwareScrollViewProps {
   children: React.ReactNode
   hasParent?: boolean
   isModal?: boolean
-  disabled?: boolean
+  shouldAvoidKeyboard?: boolean
   navigationTitle?: string
   renderHeader?: () => JSX.Element
   renderFooter?: () => JSX.Element
@@ -41,7 +41,7 @@ export const ScrollScreen = ({
   children,
   hasParent,
   isModal,
-  disabled,
+  shouldAvoidKeyboard = true,
   navigationTitle,
   renderHeader,
   renderFooter,
@@ -92,7 +92,7 @@ export const ScrollScreen = ({
 
   return (
     <KeyboardAvoidingView
-      enabled={!disabled}
+      enabled={shouldAvoidKeyboard}
       keyboardVerticalOffset={isModal ? insets.bottom - 16 : -insets.bottom}>
       <BlurViewWithFallback
         style={{

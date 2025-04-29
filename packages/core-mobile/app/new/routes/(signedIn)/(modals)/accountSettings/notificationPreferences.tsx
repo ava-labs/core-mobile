@@ -86,7 +86,6 @@ const NotificationPreferencesScreen = (): JSX.Element => {
     <ScrollScreen
       title={`Notification\npreferences`}
       navigationTitle="Notification preferences"
-      // hasParent
       isModal
       contentContainerStyle={{
         padding: 16
