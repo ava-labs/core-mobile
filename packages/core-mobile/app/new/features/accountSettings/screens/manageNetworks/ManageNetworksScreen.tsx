@@ -11,21 +11,16 @@ import {
 } from '@avalabs/k2-alpine'
 import { ErrorState } from 'common/components/ErrorState'
 import { NetworkLogoWithChain } from 'common/components/NetworkLogoWithChain'
+import { sortPrimaryNetworks } from 'common/utils/sortPrimaryNetworks'
 import { useFocusEffect, useNavigation, useRouter } from 'expo-router'
 import { useNetworks } from 'hooks/networks/useNetworks'
 import React, { useCallback, useMemo, useState } from 'react'
 import { FlatList, ListRenderItem } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import {
-  isAvalancheCChainId,
-  isAvalancheChainId
-} from 'services/network/utils/isAvalancheNetwork'
-import { isEthereumChainId } from 'services/network/utils/isEthereumNetwork'
 import { alwaysEnabledNetworks } from 'store/network'
 import { isPChain } from 'utils/network/isAvalancheNetwork'
 import { isXPChain } from 'utils/network/isAvalancheNetwork'
 import { isXChain } from 'utils/network/isAvalancheNetwork'
-import { isBitcoinChainId } from 'utils/network/isBitcoinNetwork'
 
 export const ManageNetworksScreen = (): JSX.Element => {
   const { theme } = useTheme()
@@ -230,16 +225,4 @@ export const ManageNetworksScreen = (): JSX.Element => {
       />
     </View>
   )
-}
-
-function sortPrimaryNetworks(a: Network, b: Network): number {
-  if (isAvalancheCChainId(a.chainId)) return -1
-  if (isAvalancheCChainId(b.chainId)) return 1
-  if (isAvalancheChainId(a.chainId)) return -1
-  if (isAvalancheChainId(b.chainId)) return 1
-  if (isBitcoinChainId(a.chainId)) return -1
-  if (isBitcoinChainId(b.chainId)) return 1
-  if (isEthereumChainId(a.chainId)) return -1
-  if (isEthereumChainId(b.chainId)) return 1
-  return 0
 }
