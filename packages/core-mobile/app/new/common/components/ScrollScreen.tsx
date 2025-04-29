@@ -125,7 +125,7 @@ export const ScrollScreen = ({
   const keyboardVerticalOffset = useMemo(() => {
     if (isModal) {
       if (Platform.OS === 'ios') {
-        return 0
+        return insets.bottom + 8
       }
       if (isAndroidWithBottomBar) {
         return -8
