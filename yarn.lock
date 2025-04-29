@@ -386,7 +386,7 @@ __metadata:
     react-native-collapsible-tab-view: 8.0.0
     react-native-config: 1.5.3
     react-native-device-info: 13.0.0
-    react-native-edge-to-edge: ^1.6.0
+    react-native-edge-to-edge: 1.6.0
     react-native-fs: 2.20.0
     react-native-gesture-handler: 2.24.0
     react-native-get-random-values: 1.11.0
@@ -26981,7 +26981,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-native-edge-to-edge@npm:^1.6.0":
+"react-native-edge-to-edge@npm:1.6.0":
   version: 1.6.0
   resolution: "react-native-edge-to-edge@npm:1.6.0"
   peerDependencies:
