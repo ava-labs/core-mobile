@@ -295,20 +295,15 @@ const TrackTokenDetailScreen = (): JSX.Element => {
       return <></>
     }
     return (
-      <View
-        style={{
-          paddingHorizontal: 16
-        }}>
-        <TokenHeader
-          logoUri={tokenInfo.logoUri}
-          symbol={tokenInfo.symbol ?? ''}
-          currentPrice={tokenInfo.currentPrice}
-          ranges={
-            ranges.minDate === 0 && ranges.maxDate === 0 ? undefined : ranges
-          }
-          rank={tokenInfo?.marketCapRank}
-        />
-      </View>
+      <TokenHeader
+        logoUri={tokenInfo.logoUri}
+        symbol={tokenInfo.symbol ?? ''}
+        currentPrice={tokenInfo.currentPrice}
+        ranges={
+          ranges.minDate === 0 && ranges.maxDate === 0 ? undefined : ranges
+        }
+        rank={tokenInfo?.marketCapRank}
+      />
     )
   }, [tokenInfo, ranges])
 
@@ -321,26 +316,26 @@ const TrackTokenDetailScreen = (): JSX.Element => {
       renderFooter={renderFooter}
       navigationTitle={tokenInfo?.symbol.toUpperCase() ?? ''}
       isModal
-      renderHeader={renderHeader}
       renderHeaderRight={renderHeaderRight}>
       <View style={styles.chartContainer}>
+        <Animated.View style={{ opacity: headerOpacity }}>
+          {renderHeader()}
+        </Animated.View>
         {isChartInteracting && (
-          <>
-            <Animated.View
-              style={[
-                StyleSheet.absoluteFill,
-                {
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  opacity: selectedDataIndicatorOpacity
-                }
-              ]}>
-              <SelectedChartDataIndicator
-                selectedData={selectedData}
-                currentPrice={chartData?.[0]?.value}
-              />
-            </Animated.View>
-          </>
+          <Animated.View
+            style={[
+              StyleSheet.absoluteFill,
+              {
+                alignItems: 'center',
+                justifyContent: 'center',
+                opacity: selectedDataIndicatorOpacity
+              }
+            ]}>
+            <SelectedChartDataIndicator
+              selectedData={selectedData}
+              currentPrice={chartData?.[0]?.value}
+            />
+          </Animated.View>
         )}
       </View>
       <TokenDetailChart
