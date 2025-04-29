@@ -84,6 +84,7 @@ export const SeedlessMnemonicExportProvider = ({
     (response: UserExportInitResponse) => {
       setPendingRequest(response)
       setTimeout(() => {
+        // @ts-ignore TODO: make routes typesafe
         replace('/accountSettings/seedlessExportPhrase/pending')
       }, 100)
     },
@@ -129,19 +130,23 @@ export const SeedlessMnemonicExportProvider = ({
         pendingExport.exp_epoch
       )
       if (progress.isInProgress) {
+        // @ts-ignore TODO: make routes typesafe
         replace('/accountSettings/seedlessExportPhrase/pending')
         return
       }
       if (progress.isReadyToDecrypt) {
+        // @ts-ignore TODO: make routes typesafe
         replace('/accountSettings/seedlessExportPhrase/readyToExport')
         return
       }
       if (progress.isExpired) {
         deleteExport()
         setPendingRequest(undefined)
+        // @ts-ignore TODO: make routes typesafe
         replace('/accountSettings/seedlessExportPhrase/notInitiated')
       }
     } else {
+      // @ts-ignore TODO: make routes typesafe
       replace('/accountSettings/seedlessExportPhrase/notInitiated')
     }
   }, [deleteExport, replace, seedlessExportService])
@@ -174,6 +179,7 @@ export const SeedlessMnemonicExportProvider = ({
         const mfa = mfaMethods[0]
         if (mfa?.type === 'totp') {
           navigate(
+            // @ts-ignore TODO: make routes typesafe
             '/accountSettings/seedlessExportPhrase/refreshSeedlessToken/verifyTotpCode'
           )
           return
@@ -188,6 +194,7 @@ export const SeedlessMnemonicExportProvider = ({
         }
       }
       navigate(
+        // @ts-ignore TODO: make routes typesafe
         '/accountSettings/seedlessExportPhrase/refreshSeedlessToken/selectMfaMethod'
       )
       return

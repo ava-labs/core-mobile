@@ -1,7 +1,6 @@
-import { AppListenerEffectAPI } from 'store/index'
+import { AppListenerEffectAPI } from 'store/types'
 import WalletConnectService from 'services/walletconnectv2/WalletConnectService'
 import { InteractionManager } from 'react-native'
-import { showSimpleToast } from 'components/Snackbar'
 import Logger from 'utils/Logger'
 import {
   onRehydrationComplete,
@@ -17,6 +16,7 @@ import { onRequest } from 'store/rpc/slice'
 import { CorePrimaryAccount } from '@avalabs/types'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { isCoreDomain } from 'store/rpc/handlers/wc_sessionRequest/utils'
+import { showSnackbar, transactionSnackbar } from 'new/common/utils/toast'
 import { killSessions, newSession, onDisconnect } from '../slice'
 import { RpcMethod, RpcProvider } from '../../rpc/types'
 
@@ -113,7 +113,10 @@ export const startSession = async (
     await WalletConnectService.pair(uri)
   } catch (e) {
     Logger.error('Unable to pair with dapp', e)
-    showSimpleToast('Unable to pair with dapp')
+    transactionSnackbar.error({
+      message: 'Failed to pair with dApp',
+      error: (e as Error).message
+    })
   }
 }
 
@@ -135,7 +138,7 @@ export const handleDisconnect = async (
   const peerMeta = action.payload
 
   InteractionManager.runAfterInteractions(() => {
-    showSimpleToast(`${peerMeta.name} was disconnected`)
+    showSnackbar(`${peerMeta.name} was disconnected`)
   })
 }
 

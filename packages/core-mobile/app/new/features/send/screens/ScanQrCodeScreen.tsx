@@ -15,6 +15,7 @@ export const ScanQrCodeScreen = (): JSX.Element => {
       setToAddress({ to: address, recipientType: 'address' })
       resetAmount()
       replace({
+        // @ts-ignore TODO: make routes typesafe
         pathname: '/send/send',
         params: { to: address, recipientType: 'address' }
       })

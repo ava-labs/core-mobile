@@ -4,7 +4,7 @@ import { useSelector } from 'react-redux'
 import { selectSelectedCurrency } from 'store/settings/currency'
 import { useSimplePrice } from 'hooks/useSimplePrice'
 import { VsCurrencyType } from '@avalabs/core-coingecko-sdk'
-import { getOriginalSymbol } from '../utils/bridgeUtils'
+import { getOriginalSymbol } from 'common/utils/bridgeUtils'
 
 export const useBridgeAssetPrice = (
   bridgeAsset: BridgeAsset | undefined

@@ -4,7 +4,7 @@ import Big from 'big.js'
 import { useMemo } from 'react'
 import { useNetworks } from 'hooks/networks/useNetworks'
 import { getChainIdFromCaip2 } from 'utils/caip2ChainIds'
-import { networkToBlockchain } from '../utils/bridgeUtils'
+import { networkToBlockchain } from 'common/utils/bridgeUtils'
 
 export const useBridgeNetworkPrice = (chain?: Blockchain | Chain): Big => {
   const { networks } = useNetworks()

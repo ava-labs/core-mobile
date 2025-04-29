@@ -1,11 +1,10 @@
 import React from 'react'
 import { DeFiRewardItem } from 'services/defi/types'
-import { Row } from 'components/Row'
 import { useExchangedAmount } from 'new/common/hooks/useExchangedAmount'
-import { StackedImages } from 'components/StackedImages'
 import { Card, Separator, Text, useTheme, View } from '@avalabs/k2-alpine'
 import { IMAGE_SIZE, MAX_TOKEN_COUNT } from '../consts'
 import { DeFiRowItem } from './DeFiRowItem'
+import { StackedImages } from './StackedImages'
 
 export const DeFiPortfolioReward = ({
   items
@@ -39,7 +38,7 @@ export const DeFiPortfolioReward = ({
             </DeFiRowItem>
             <Separator sx={{ marginHorizontal: 16 }} />
             <DeFiRowItem>
-              <Row style={{ marginRight: 8 }}>
+              <View style={{ flexDirection: 'row', marginRight: 8 }}>
                 <StackedImages
                   imageUrls={logos}
                   size={IMAGE_SIZE}
@@ -49,10 +48,11 @@ export const DeFiPortfolioReward = ({
                     backgroundColor: theme.colors.$surfaceSecondary
                   }}
                 />
-              </Row>
-              <Row
+              </View>
+              <View
                 style={{
                   flex: 1,
+                  flexDirection: 'row',
                   marginRight: 10,
                   maxWidth: '70%'
                 }}>
@@ -63,12 +63,16 @@ export const DeFiPortfolioReward = ({
                   sx={{ color: '$textSecondary' }}>
                   {symbols}
                 </Text>
-              </Row>
-              <Row>
+              </View>
+              <View
+                style={{
+                  flexDirection: 'row',
+                  justifyContent: 'flex-end'
+                }}>
                 <Text variant="body1" sx={{ color: '$textSecondary' }}>
                   {getAmount(netUsdValue)}
                 </Text>
-              </Row>
+              </View>
             </DeFiRowItem>
           </Card>
         )

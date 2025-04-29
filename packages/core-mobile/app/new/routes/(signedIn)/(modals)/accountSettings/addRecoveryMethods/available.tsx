@@ -1,7 +1,7 @@
 import { Text, View } from '@avalabs/k2-alpine'
 import { Loader } from 'common/components/Loader'
 import { useUserMfa } from 'common/hooks/useUserMfa'
-import { Space } from 'components/Space'
+import { Space } from 'common/components/Space'
 import { useRouter } from 'expo-router'
 import { useRecoveryMethodsContext } from 'features/accountSettings/context/RecoverMethodsProvider'
 import { RecoveryMethodList } from 'features/onboarding/components/RecoveryMethodList'
@@ -29,6 +29,7 @@ const AvailableRecoveryMethodScreen = (): React.JSX.Element => {
       } else if (recoveryMethod.type === RecoveryMethods.Passkey) {
         AnalyticsService.capture('SeedlessAddMfa', { type: FidoType.PASS_KEY })
         navigate({
+          // @ts-ignore TODO: make routes typesafe
           pathname: '/accountSettings/addRecoveryMethods/fidoNameInput',
           params: {
             title: 'How would you like to name your passkey?',
@@ -40,6 +41,7 @@ const AvailableRecoveryMethodScreen = (): React.JSX.Element => {
       } else if (recoveryMethod.type === RecoveryMethods.Yubikey) {
         AnalyticsService.capture('SeedlessAddMfa', { type: FidoType.YUBI_KEY })
         navigate({
+          // @ts-ignore TODO: make routes typesafe
           pathname: '/accountSettings/addRecoveryMethods/fidoNameInput',
           params: {
             title: 'How would you like to name your YubiKey?',

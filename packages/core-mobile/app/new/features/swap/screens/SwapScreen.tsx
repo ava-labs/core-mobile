@@ -234,10 +234,12 @@ export const SwapScreen = (): JSX.Element => {
   )
 
   const handleSelectFromToken = useCallback((): void => {
+    // @ts-ignore TODO: make routes typesafe
     navigate({ pathname: '/selectSwapFromToken' })
   }, [navigate])
 
   const handleSelectToToken = useCallback((): void => {
+    // @ts-ignore TODO: make routes typesafe
     navigate({ pathname: '/selectSwapToToken' })
   }, [navigate])
 

@@ -8,6 +8,7 @@ const SendOnboardingScreen = (): JSX.Element => {
   const { navigate } = useRouter()
 
   const handlePressNext = useCallback(() => {
+    // @ts-ignore TODO: make routes typesafe
     navigate('collectibleSend/recentContacts')
   }, [navigate])
 

@@ -36,8 +36,10 @@ export const NavigationRedirect = (): null => {
       if (router.canGoBack()) {
         navigation.dispatch(StackActions.popToTop())
       }
+      // @ts-ignore TODO: make routes typesafe
       router.replace('/signup')
     } else if (walletState === WalletState.INACTIVE) {
+      // @ts-ignore TODO: make routes typesafe
       router.navigate('/loginWithPinOrBiometry')
     }
   }, [walletState, router, navigation, isNavigationReady])
@@ -67,6 +69,7 @@ export const NavigationRedirect = (): null => {
         pathName === '/onboarding/seedless/confirmation' ||
         (pathName === '/loginWithPinOrBiometry' && !isSignedIn)
       ) {
+        // @ts-ignore
         router.replace('/portfolio')
       }
     }

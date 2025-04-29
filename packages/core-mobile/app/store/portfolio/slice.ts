@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
-import { RootState } from 'store'
+import { RootState } from 'store/types'
 import { CollectibleVisibility, initialState, TokenVisibility } from './types'
 
 const reducerName = 'portfolio'

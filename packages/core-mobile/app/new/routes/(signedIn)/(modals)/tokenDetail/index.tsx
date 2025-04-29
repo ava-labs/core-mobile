@@ -25,7 +25,7 @@ import { useSearchableTokenList } from 'common/hooks/useSearchableTokenList'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { useAssetBalances } from 'features/bridge/hooks/useAssetBalances'
-import { getSourceChainId } from 'features/bridge/utils/bridgeUtils'
+import { getSourceChainId } from 'common/utils/bridgeUtils'
 import {
   ActionButton,
   ActionButtons
@@ -136,6 +136,7 @@ const TokenDetailScreen = (): React.JSX.Element => {
 
   const handleBridge = useCallback(() => {
     navigate({
+      // @ts-ignore TODO: make routes typesafe
       pathname: '/bridge',
       params: token
         ? {
@@ -148,12 +149,14 @@ const TokenDetailScreen = (): React.JSX.Element => {
 
   const handleBuy = useCallback(() => {
     navigate({
+      // @ts-ignore TODO: make routes typesafe
       pathname: '/buy'
     })
   }, [navigate])
 
   const handleSend = useCallback((): void => {
     setSelectedToken(token)
+    // @ts-ignore TODO: make routes typesafe
     navigate('/send')
   }, [navigate, setSelectedToken, token])
 
@@ -238,6 +241,7 @@ const TokenDetailScreen = (): React.JSX.Element => {
   const handlePendingBridge = useCallback(
     (pendingBridge: BridgeTransaction | BridgeTransfer): void => {
       navigate({
+        // @ts-ignore TODO: make routes typesafe
         pathname: '/bridgeStatus',
         params: {
           txHash: pendingBridge.sourceTxHash,

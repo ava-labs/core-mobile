@@ -278,46 +278,6 @@ describe('session_request handler', () => {
       })
     })
 
-    it(`should ask user to switch to required network when active network is not one of them`, async () => {
-      const testRequiredNamespaces = {
-        eip155: {
-          methods: ['eth_sendTransaction'],
-          chains: ['eip155:43114', 'eip155:1'],
-          events: [
-            'chainChanged',
-            'accountsChanged',
-            'message',
-            'disconnect',
-            'connect'
-          ]
-        }
-      }
-      const testRequest = createRequest(testRequiredNamespaces)
-
-      jest
-        .spyOn(require('store/network/slice'), 'selectActiveNetwork')
-        .mockReturnValueOnce(mockNetworks[432204])
-
-      const mockRequest = jest.fn().mockResolvedValue({})
-      const {
-        createInAppRequest
-      } = require('store/rpc/utils/createInAppRequest')
-
-      createInAppRequest.mockReturnValue(mockRequest)
-
-      await handler.handle(testRequest, mockListenerApi)
-
-      expect(mockRequest).toHaveBeenCalledWith({
-        chainId: 'eip155:43114',
-        method: RpcMethod.WALLET_SWITCH_ETHEREUM_CHAIN,
-        params: [
-          {
-            chainId: '43114'
-          }
-        ]
-      })
-    })
-
     it('should return error when required EIP155 namespace specifies Core methods while dApp is not Core', async () => {
       const testRequiredNamespaces = {
         eip155: {
@@ -444,7 +404,6 @@ describe('session_request handler', () => {
             'personal_sign',
             'eth_sign',
             'wallet_addEthereumChain',
-            'wallet_switchEthereumChain',
             'wallet_getEthereumChain'
           ],
           // all requested events
@@ -506,9 +465,7 @@ describe('session_request handler', () => {
             'personal_sign',
             'eth_sign',
             'wallet_addEthereumChain',
-            'wallet_switchEthereumChain',
             'wallet_getEthereumChain',
-            'avalanche_bridgeAsset',
             'avalanche_createContact',
             'avalanche_getAccountPubKey',
             'avalanche_getAccounts',

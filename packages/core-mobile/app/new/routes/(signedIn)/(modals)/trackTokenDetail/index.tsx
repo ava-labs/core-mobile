@@ -39,10 +39,10 @@ import Animated, {
   useSharedValue,
   withTiming
 } from 'react-native-reanimated'
-import { useTokenDetails } from 'screens/watchlist/useTokenDetails'
 import { getDomainFromUrl } from 'utils/getDomainFromUrl/getDomainFromUrl'
 import { isPositiveNumber } from 'utils/isPositiveNumber/isPositiveNumber'
 import { formatLargeCurrency } from 'utils/Utils'
+import { useTokenDetails } from 'common/hooks/useTokenDetails'
 
 const TrackTokenDetailScreen = (): JSX.Element => {
   const { theme } = useTheme()
@@ -152,6 +152,7 @@ const TrackTokenDetailScreen = (): JSX.Element => {
 
   const handleBuy = useCallback((): void => {
     navigate({
+      // @ts-ignore TODO: make routes typesafe
       pathname: '/buy',
       params: { showAvaxWarning: 'true' }
     })
@@ -165,6 +166,7 @@ const TrackTokenDetailScreen = (): JSX.Element => {
   )
 
   const handleShare = useCallback(() => {
+    // @ts-ignore TODO: make routes typesafe
     navigate({ pathname: '/trackTokenDetail/share', params: { tokenId } })
   }, [navigate, tokenId])
 

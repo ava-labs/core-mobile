@@ -3,8 +3,7 @@ import { NetworkFees } from '@avalabs/vm-module-types'
 import { BridgeAsset, TokenType } from '@avalabs/bridge-unified'
 import { Network } from '@avalabs/core-chains-sdk'
 import Logger from 'utils/Logger'
-import { getAssetBalance } from '../utils/bridgeUtils'
-import { AssetBalance } from '../utils/types'
+import { AssetBalance, getAssetBalance } from 'common/utils/bridgeUtils'
 import { useGetBridgeFees } from './useGetBridgeFees'
 
 const useMaxTransferAmount = ({

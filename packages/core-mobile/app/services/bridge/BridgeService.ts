@@ -18,7 +18,7 @@ import {
   getEthereumProvider
 } from 'services/network/utils/providerUtils'
 import { Networks } from 'store/network/types'
-import { blockchainToNetwork } from 'screens/bridge/utils/bridgeUtils'
+import { blockchainToNetwork } from 'common/utils/bridgeUtils'
 import { Request } from 'store/rpc/utils/createInAppRequest'
 import { bnToBig, noop, stringToBN } from '@avalabs/core-utils-sdk'
 import { transactionRequestToTransactionParams } from 'store/rpc/utils/transactionRequestToTransactionParams'

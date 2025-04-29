@@ -13,7 +13,7 @@ import {
   ShareFooter
 } from 'features/track/components/ShareFooter'
 import ViewShot, { captureRef } from 'react-native-view-shot'
-import { useTokenDetails } from 'screens/watchlist/useTokenDetails'
+import { useTokenDetails } from 'common/hooks/useTokenDetails'
 import Share from 'react-native-share'
 import * as FileSystem from 'expo-file-system'
 import Logger from 'utils/Logger'

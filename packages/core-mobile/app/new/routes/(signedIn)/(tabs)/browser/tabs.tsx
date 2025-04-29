@@ -142,6 +142,7 @@ const TabsScreen = (): JSX.Element => {
   }, [handleConfirmCloseAll])
 
   const handleViewHistory = useCallback((): void => {
+    // @ts-ignore TODO: make routes typesafe
     navigation.navigate('history')
   }, [navigation])
 

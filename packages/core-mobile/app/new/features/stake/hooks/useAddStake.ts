@@ -16,6 +16,7 @@ export const useAddStake = (): {
   const { navigateToSwap } = useNavigateToSwap()
 
   const handleBuy = useCallback((): void => {
+    // @ts-ignore TODO: make routes typesafe
     navigate({ pathname: '/buy' })
   }, [navigate])
 
@@ -48,6 +49,7 @@ export const useAddStake = (): {
     if (!canAddStake) return
 
     if (hasEnoughAvax) {
+      // @ts-ignore TODO: make routes typesafe
       navigate({ pathname: '/addStake' })
     } else {
       showNotEnoughAvaxAlert()

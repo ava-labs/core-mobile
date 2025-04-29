@@ -1,4 +1,7 @@
 import { Separator, showAlert, Text, View } from '@avalabs/k2-alpine'
+import { useNativeTokenWithBalance } from 'common/hooks/send/useNativeTokenWithBalance'
+import { validateFee } from 'common/hooks/send/utils/evm/validate'
+import { SendErrorMessage } from 'common/hooks/send/utils/types'
 import { router, useLocalSearchParams } from 'expo-router'
 import { useNetworks } from 'hooks/networks/useNetworks'
 import { useGasless } from 'hooks/useGasless'
@@ -16,9 +19,6 @@ import React, {
 } from 'react'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useSelector } from 'react-redux'
-import { useNativeTokenWithBalance } from 'screens/send/hooks/useNativeTokenWithBalance'
-import { validateFee } from 'screens/send/utils/evm/validate'
-import { SendErrorMessage } from 'screens/send/utils/types'
 import { ApprovalParams } from 'services/walletconnectv2/walletConnectCache/types'
 import { walletConnectCache } from 'services/walletconnectv2/walletConnectCache/walletConnectCache'
 import {

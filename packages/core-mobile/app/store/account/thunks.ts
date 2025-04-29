@@ -1,5 +1,5 @@
 import { createAsyncThunk } from '@reduxjs/toolkit'
-import { ThunkApi } from 'store'
+import { ThunkApi } from 'store/types'
 import { selectIsDeveloperMode } from 'store/settings/advanced/slice'
 import AccountsService from 'services/account/AccountsService'
 import AnalyticsService from 'services/analytics/AnalyticsService'

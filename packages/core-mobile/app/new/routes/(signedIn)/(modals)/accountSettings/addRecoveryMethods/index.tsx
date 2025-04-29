@@ -35,6 +35,7 @@ const ManageRecoveryMethodsScreen = (): JSX.Element => {
       <NavigationBarButton
         isModal
         onPress={() =>
+          // @ts-ignore TODO: make routes typesafe
           navigate('/accountSettings/addRecoveryMethods/available')
         }>
         <Icons.Content.Add color={colors.$textPrimary} />

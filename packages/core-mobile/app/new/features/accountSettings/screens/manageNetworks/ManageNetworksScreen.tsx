@@ -134,12 +134,14 @@ export const ManageNetworksScreen = (): JSX.Element => {
   }
 
   const goToAddCustomNetwork = useCallback(() => {
+    // @ts-ignore TODO: make routes typesafe
     navigate('/accountSettings/manageNetworks/addCustomNetwork')
   }, [navigate])
 
   const goToNetwork = useCallback(
     (item: Network) => {
       navigate({
+        // @ts-ignore TODO: make routes typesafe
         pathname: '/accountSettings/manageNetworks/addCustomNetwork',
         params: {
           chainId: item.chainId.toString()

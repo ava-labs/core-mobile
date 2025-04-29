@@ -1,5 +1,5 @@
+import GlobeSVG from 'new/assets/globalSVG'
 import React from 'react'
-import GlobeSVG from 'components/svg/GlobeSVG'
 import { Image, ImageStyle, StyleProp, View, ViewStyle } from 'react-native'
 import { formatUriImageToPng } from 'utils/Contentful'
 

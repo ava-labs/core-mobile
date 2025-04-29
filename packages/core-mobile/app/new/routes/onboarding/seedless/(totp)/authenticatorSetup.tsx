@@ -15,10 +15,12 @@ export default function AuthenticatorSetup(): JSX.Element {
   const { totpResetInit } = useSeedlessManageMFA()
 
   const goToVerifyCode = (): void => {
+    // @ts-ignore TODO: make routes typesafe
     router.push('/onboarding/seedless/verifyCode')
   }
 
   const goToScanQrCode = (): void => {
+    // @ts-ignore TODO: make routes typesafe
     router.navigate('/onboarding/seedless/scanQrCode')
   }
 
@@ -27,7 +29,7 @@ export default function AuthenticatorSetup(): JSX.Element {
       try {
         totpResetInit(challenge => {
           setTotpChallenge(challenge)
-        })
+        }, '')
       } catch (e) {
         Logger.error('registerTotp error', e)
         AnalyticsService.capture('SeedlessRegisterTOTPStartFailed')

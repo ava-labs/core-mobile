@@ -12,7 +12,7 @@ import { selectTokenVisibility, TokenVisibility } from 'store/portfolio'
 import { getLocalTokenId, isTokenVisible } from 'store/balance/utils'
 import { NetworkContractToken, TokenType } from '@avalabs/vm-module-types'
 import { selectActiveAccount } from 'store/account'
-import { RootState } from 'store'
+import { RootState } from 'store/types'
 
 const isGreaterThanZero = (token: LocalTokenWithBalance): boolean =>
   token.balance > 0n

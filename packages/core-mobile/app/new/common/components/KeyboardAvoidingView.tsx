@@ -7,6 +7,8 @@ import {
 
 export const KeyboardAvoidingView = ({
   children,
+  behavior: _behavior,
+  contentContainerStyle: _contentContainerStyle,
   ...props
 }: KeyboardAvoidingViewProps): JSX.Element => {
   return (
