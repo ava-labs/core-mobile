@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useCallback } from 'react'
 import { View } from '@avalabs/k2-alpine'
 import { hapticFeedback } from 'utils/HapticFeedback'
 import { GraphPoint } from 'react-native-graph'
@@ -30,15 +30,15 @@ export const TokenDetailChart = ({
 
   const dispatch = useDispatch()
 
-  const handleGestureStart = (): void => {
+  const handleGestureStart = useCallback((): void => {
     hapticFeedback()
     onGestureStart?.()
-  }
+  }, [onGestureStart])
 
-  const handleGestureEnd = (): void => {
+  const handleGestureEnd = useCallback((): void => {
     hapticFeedback()
     onGestureEnd?.()
-  }
+  }, [onGestureEnd])
 
   const handleInstructionRead = (): void => {
     dispatch(setViewOnce(ViewOnceKey.CHART_INTERACTION))
