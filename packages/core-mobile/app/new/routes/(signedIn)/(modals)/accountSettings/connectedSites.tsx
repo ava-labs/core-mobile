@@ -1,5 +1,5 @@
 import {
-  Button,
+  //Button,
   SearchBar,
   SPRING_LINEAR_TRANSITION,
   Text,
@@ -13,15 +13,15 @@ import { getListItemEnteringAnimation } from 'common/utils/animations'
 import { useConnectedDapps } from 'features/accountSettings/hooks/useConnectedDapps'
 import React, { useCallback, useMemo, useState } from 'react'
 import Animated from 'react-native-reanimated'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
+//import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { Dapp } from 'features/accountSettings/hooks/useConnectedDapps'
 
 const ConnectedSitesScreen = (): JSX.Element => {
   const {
     theme: { colors }
   } = useTheme()
-  const bottomInset = useSafeAreaInsets().bottom
-  const { allApprovedDapps, killSession, killAllSessions } = useConnectedDapps()
+  //const bottomInset = useSafeAreaInsets().bottom
+  const { allApprovedDapps, killSession } = useConnectedDapps()
   const [searchText, setSearchText] = useState('')
 
   const navigationTitle = `${allApprovedDapps.length} connected ${
@@ -35,9 +35,9 @@ const ConnectedSitesScreen = (): JSX.Element => {
     [killSession]
   )
 
-  const disconnectAllDapps = useCallback(async (): Promise<void> => {
-    killAllSessions()
-  }, [killAllSessions])
+  // const disconnectAllDapps = useCallback(async (): Promise<void> => {
+  //   killAllSessions()
+  // }, [killAllSessions])
 
   const searchResults = useMemo(() => {
     if (searchText === '') {
