@@ -3,7 +3,7 @@ import { BridgeAsset } from '@avalabs/bridge-unified'
 import { useNetworks } from 'hooks/networks/useNetworks'
 import { getChainIdFromCaip2 } from 'utils/caip2ChainIds'
 import { useMemo } from 'react'
-import { getNetworkPriority } from '../utils/bridgeUtils'
+import { sortPrimaryNetworks } from 'common/utils/sortPrimaryNetworks'
 import { useBridgeAssetMap } from './useBridgeAssets'
 
 export const useBridgeSourceNetworks = (): Network[] => {
@@ -14,9 +14,7 @@ export const useBridgeSourceNetworks = (): Network[] => {
   )
 
   return useMemo(() => {
-    return networks.toSorted((a, b) => {
-      return getNetworkPriority(a.chainId) - getNetworkPriority(b.chainId)
-    })
+    return networks.toSorted(sortPrimaryNetworks)
   }, [networks])
 }
 

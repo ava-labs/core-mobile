@@ -200,13 +200,3 @@ export function getBridgeAssetSymbol(
     return bridgeTransaction?.symbol
   }
 }
-
-export function getNetworkPriority(chainId: number): number {
-  if (isAvalancheChainId(chainId)) return 0
-
-  if (isBitcoinChainId(chainId)) return 1
-
-  if (isEthereumChainId(chainId)) return 2
-
-  return 3
-}
