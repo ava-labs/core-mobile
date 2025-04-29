@@ -1,40 +1,31 @@
-import { useEffect, useState } from 'react'
 import { VsCurrencyType } from '@avalabs/core-coingecko-sdk'
 import TokenService from 'services/token/TokenService'
-import Logger from 'utils/Logger'
 import { Prices } from 'features/bridge/hooks/useBridge'
+import { useQuery, UseQueryResult } from '@tanstack/react-query'
+import { ReactQueryKeys } from 'consts/reactQueryKeys'
 
 export const useSimplePrices = (
   coinIds: string[],
   currency: VsCurrencyType
-): Prices | undefined => {
-  const [prices, setPrices] = useState<Prices>()
-
-  useEffect(() => {
-    if (coinIds.length === 0) {
-      setPrices(undefined)
-      return
+): UseQueryResult<Prices | undefined, Error> => {
+  return useQuery({
+    enabled: coinIds.length > 0,
+    queryKey: [ReactQueryKeys.SIMPLE_PRICES, coinIds, currency],
+    queryFn: async () =>
+      TokenService.getSimplePrice({
+        coinIds,
+        currency: currency.toLowerCase() as VsCurrencyType
+      }),
+    select: data => {
+      if (data === undefined) {
+        return undefined
+      }
+      return Object.fromEntries(
+        Object.entries(data).map(([key, value]) => [
+          key,
+          value[currency]?.price ?? undefined
+        ])
+      )
     }
-
-    TokenService.getSimplePrice({
-      coinIds,
-      currency: currency.toLowerCase() as VsCurrencyType
-    })
-      .then(data => {
-        if (data === undefined) {
-          setPrices(undefined)
-          return
-        }
-        const pricesByCoinIds = Object.fromEntries(
-          Object.entries(data).map(([key, value]) => [
-            key,
-            value[currency]?.price ?? undefined
-          ])
-        )
-        setPrices(pricesByCoinIds)
-      })
-      .catch(Logger.error)
-  }, [coinIds, currency])
-
-  return prices
+  })
 }

@@ -29,5 +29,10 @@ export const useAssetBalancePrices = (
 
   const currency = useSelector(selectSelectedCurrency)
 
-  return useSimplePrices(coingeckoIds, currency.toLowerCase() as VsCurrencyType)
+  const { data } = useSimplePrices(
+    coingeckoIds,
+    currency.toLowerCase() as VsCurrencyType
+  )
+
+  return data
 }

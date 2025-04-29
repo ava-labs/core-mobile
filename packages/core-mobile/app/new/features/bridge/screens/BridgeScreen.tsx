@@ -57,8 +57,7 @@ import Logger from 'utils/Logger'
 import { getJsonRpcErrorMessage } from 'utils/getJsonRpcErrorMessage/getJsonRpcErrorMessage'
 import { ScrollScreen } from 'common/components/ScrollScreen'
 import { useCoreBrowser } from 'common/hooks/useCoreBrowser'
-import { useCoinGeckoId } from 'hooks/useCoinGeckoId'
-import useBridge from '../hooks/useBridge'
+import useBridge, { TokenWithBalanceInNetwork } from '../hooks/useBridge'
 
 export const BridgeScreen = (): JSX.Element => {
   const {
@@ -79,7 +78,6 @@ export const BridgeScreen = (): JSX.Element => {
     setInputAmount,
     assetsWithBalances,
     networkFee,
-    prices,
     maximum,
     minimum,
     transfer,
@@ -103,7 +101,6 @@ export const BridgeScreen = (): JSX.Element => {
 
   const [isPending, setIsPending] = useState<boolean>(false)
   const [isInputFocused, setIsInputFocused] = useState<boolean>(false)
-  const coingeckoId = useCoinGeckoId(assetBalance?.symbol)
 
   const isAmountTooLow = amount !== 0n && minimum && amount < minimum
   const isAmountTooLarge = amount !== 0n && maximum && amount > maximum
@@ -311,25 +308,33 @@ export const BridgeScreen = (): JSX.Element => {
   )
 
   const formatInCurrency = useCallback(
-    (value: bigint | undefined): string => {
-      if (
-        selectedBridgeAsset === undefined ||
-        prices === undefined ||
-        coingeckoId === undefined ||
-        prices[coingeckoId] === undefined
-      ) {
+    (
+      value: bigint | undefined,
+      assetInNetwork?: TokenWithBalanceInNetwork
+    ): string => {
+      if (selectedBridgeAsset === undefined) {
         return UNKNOWN_AMOUNT
       }
 
+      if (
+        assetInNetwork?.balanceInCurrency === undefined ||
+        assetInNetwork?.balance === undefined
+      ) {
+        return UNKNOWN_AMOUNT
+      }
       const amt =
-        prices[coingeckoId] *
+        (assetInNetwork.balanceInCurrency /
+          bigintToBig(
+            assetInNetwork.balance ?? 0n,
+            selectedBridgeAsset.decimals
+          ).toNumber()) *
         bigintToBig(value ?? 0n, selectedBridgeAsset.decimals).toNumber()
 
       return formatCurrency({
         amount: amt
       })
     },
-    [formatCurrency, coingeckoId, prices, selectedBridgeAsset]
+    [selectedBridgeAsset, formatCurrency]
   )
 
   const handleSelectSourceNetwork = useCallback((): void => {
@@ -427,7 +432,9 @@ export const BridgeScreen = (): JSX.Element => {
           title="You pay"
           token={selectedAssetInSourceNetwork}
           network={sourceNetwork}
-          formatInCurrency={formatInCurrency}
+          formatInCurrency={() =>
+            formatInCurrency(inputAmount, selectedAssetInSourceNetwork)
+          }
           onAmountChange={handleAmountChange}
           onFocus={() => setIsInputFocused(true)}
           onBlur={() => setIsInputFocused(false)}
@@ -478,7 +485,9 @@ export const BridgeScreen = (): JSX.Element => {
           title="You receive"
           token={selectedAssetInTargetNetwork}
           network={targetNetwork}
-          formatInCurrency={formatInCurrency}
+          formatInCurrency={() =>
+            formatInCurrency(receiveAmount, selectedAssetInTargetNetwork)
+          }
           onAmountChange={handleAmountChange}
           editable={false}
         />

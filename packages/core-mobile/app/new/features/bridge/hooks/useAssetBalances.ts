@@ -7,6 +7,7 @@ import { isTokenVisible } from 'store/balance/utils'
 import { AssetBalance, unwrapAssetSymbol } from 'common/utils/bridgeUtils'
 import { getAssetBalances } from 'features/bridge/utils/getAssetBalances'
 import { getCoingeckoId } from 'common/utils/getCoingeckoId'
+import { bigintToBig } from 'utils/bigNumbers/bigintToBig'
 import { useBridgeAssets } from './useBridgeAssets'
 import { useAssetBalancePrices } from './useAssetBalancePrices'
 /**
@@ -46,18 +47,38 @@ export function useAssetBalances(sourceNetworkChainId?: number): {
 
   const prices = useAssetBalancePrices(assetsWithBalances)
 
-  const sortedAssetsWithBalances = useMemo(() => {
-    return assetsWithBalances.toSorted((a, b) => {
-      const coingeckoIdA = getCoingeckoId(a.symbol, tokenInfoData)
-      const coingeckoIdB = getCoingeckoId(b.symbol, tokenInfoData)
-      const aPrice = coingeckoIdA ? prices?.[coingeckoIdA] : undefined
-      const bPrice = coingeckoIdB ? prices?.[coingeckoIdB] : undefined
-      if (aPrice && bPrice) {
-        return bPrice - aPrice
+  const assetsWithBalancesInCurrency = useMemo(() => {
+    return assetsWithBalances.map(asset => {
+      const coingeckoId = getCoingeckoId(asset.symbol, tokenInfoData)
+      const priceInCurrency = coingeckoId ? prices?.[coingeckoId] : undefined
+      return {
+        ...asset,
+        priceInCurrency
       }
-      return 0
     })
   }, [assetsWithBalances, prices, tokenInfoData])
+
+  const sortedAssetsWithBalances = useMemo(() => {
+    return assetsWithBalancesInCurrency.toSorted((a, b) => {
+      const balanceInCurrencyA =
+        a.priceInCurrency && a.balance
+          ? bigintToBig(a.balance, a.asset.decimals).toNumber() *
+            a.priceInCurrency
+          : undefined
+      const balanceInCurrencyB =
+        b.priceInCurrency && b.balance
+          ? bigintToBig(b.balance, b.asset.decimals).toNumber() *
+            b.priceInCurrency
+          : undefined
+      if (balanceInCurrencyA === undefined) {
+        return 1
+      }
+      if (balanceInCurrencyB === undefined) {
+        return -1
+      }
+      return balanceInCurrencyB - balanceInCurrencyA
+    })
+  }, [assetsWithBalancesInCurrency])
 
   return { assetsWithBalances: sortedAssetsWithBalances }
 }
