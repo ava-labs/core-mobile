@@ -109,7 +109,9 @@ export const useAssetsFilterAndSort = (): {
 
   const filteredAndSorted = useMemo(() => {
     const filtered = getFiltered()
+    // Sort the tokens with balance
     const sorted = getSorted(filtered)
+    // Pin the primary tokens to the top of the list
     return sortedTokensWithBalance(sorted)
   }, [getFiltered, getSorted])
 
