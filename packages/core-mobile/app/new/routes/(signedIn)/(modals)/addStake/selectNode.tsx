@@ -1,26 +1,24 @@
-import React, { useCallback, useState, useMemo } from 'react'
 import {
   ActivityIndicator,
   Chip,
   Image,
-  SafeAreaView,
   SearchBar,
   SimpleDropdown,
   View
 } from '@avalabs/k2-alpine'
-import ScreenHeader from 'common/components/ScreenHeader'
-import { useLocalSearchParams, useRouter } from 'expo-router'
-import { useDelegationContext } from 'contexts/DelegationContext'
-import { advancedFilterDropDownItems } from 'consts/earn'
-import { NodeValidator } from 'types/earn'
-import { useNodes } from 'hooks/earn/useNodes'
-import { useAdvancedSearchNodes } from 'hooks/earn/useAdvancedSearchNodes'
-import { secondsToMilliseconds } from 'date-fns'
 import { UTCDate } from '@date-fns/utc'
-import { NodeItem } from 'features/stake/components/NodeItem'
-import { FlatList } from 'react-native'
-import { useNodeSort } from 'features/stake/hooks/useNodeSort'
 import { ErrorState } from 'common/components/ErrorState'
+import { ListScreen } from 'common/components/ListScreen'
+import { advancedFilterDropDownItems } from 'consts/earn'
+import { useDelegationContext } from 'contexts/DelegationContext'
+import { secondsToMilliseconds } from 'date-fns'
+import { useLocalSearchParams, useRouter } from 'expo-router'
+import { NodeItem } from 'features/stake/components/NodeItem'
+import { useNodeSort } from 'features/stake/hooks/useNodeSort'
+import { useAdvancedSearchNodes } from 'hooks/earn/useAdvancedSearchNodes'
+import { useNodes } from 'hooks/earn/useNodes'
+import React, { useCallback, useMemo, useState } from 'react'
+import { NodeValidator } from 'types/earn'
 
 const errorIcon = require('../../../../assets/icons/melting_face.png')
 
@@ -66,67 +64,63 @@ const StakeSelectNode = (): JSX.Element => {
     return <NodeItem node={item} onPress={() => handlePressNode(item)} />
   }
 
-  const sortButton = useMemo(
-    () => (
-      <SimpleDropdown
-        from={
-          <Chip size="large" hitSlop={8} rightIcon={'expandMore'}>
-            Sort
-          </Chip>
-        }
-        sections={sort.data}
-        selectedRows={[sort.selected]}
-        onSelectRow={sort.onSelected}
-      />
-    ),
-    [sort]
-  )
-
-  if (isFetching) {
+  const renderHeader = useCallback(() => {
     return (
-      <View
-        sx={{
-          flex: 1,
-          alignItems: 'center',
-          justifyContent: 'center'
-        }}>
-        <ActivityIndicator size="large" />
+      <View style={{ gap: 12 }}>
+        <SearchBar searchText={searchText} onTextChanged={setSearchText} />
+        <SimpleDropdown
+          from={
+            <Chip size="large" hitSlop={8} rightIcon={'expandMore'}>
+              Sort
+            </Chip>
+          }
+          sections={sort.data}
+          selectedRows={[sort.selected]}
+          onSelectRow={sort.onSelected}
+        />
       </View>
     )
-  }
+  }, [searchText, setSearchText, sort])
 
-  if (
-    (error || useAdvancedSearchNodesError || validators?.length === 0) &&
-    searchText.length === 0
-  ) {
-    return (
-      <ErrorState
-        sx={{ flex: 1 }}
-        icon={<Image source={errorIcon} sx={{ width: 42, height: 42 }} />}
-        title="We Couldn't Find a Match"
-        description="Please start over or try again later."
-      />
-    )
-  }
+  const renderEmpty = useCallback(() => {
+    if (isFetching) {
+      return (
+        <View
+          sx={{
+            flex: 1,
+            alignItems: 'center',
+            justifyContent: 'center'
+          }}>
+          <ActivityIndicator size="large" />
+        </View>
+      )
+    }
+
+    if (
+      (error || useAdvancedSearchNodesError || validators?.length === 0) &&
+      searchText.length === 0
+    ) {
+      return (
+        <ErrorState
+          sx={{ flex: 1 }}
+          icon={<Image source={errorIcon} sx={{ width: 42, height: 42 }} />}
+          title="We Couldn't Find a Match"
+          description="Please start over or try again later."
+        />
+      )
+    }
+  }, [isFetching, error, useAdvancedSearchNodesError, validators, searchText])
 
   return (
-    <SafeAreaView sx={{ flex: 1 }}>
-      <View sx={{ paddingHorizontal: 16, paddingBottom: 16, gap: 16 }}>
-        <ScreenHeader title="Which node would you like to use?" />
-        <SearchBar searchText={searchText} onTextChanged={setSearchText} />
-      </View>
-      <FlatList
-        ListHeaderComponent={sortButton}
-        data={validators}
-        renderItem={renderItem}
-        keyExtractor={item => item.nodeID}
-        contentContainerStyle={{
-          paddingHorizontal: 16,
-          paddingBottom: 32,
-          gap: 10
-        }}
-      />
-    </SafeAreaView>
+    <ListScreen
+      title="Which node would you like to use?"
+      data={validators ?? []}
+      renderItem={renderItem}
+      keyExtractor={item => item.nodeID}
+      contentContainerStyle={{ padding: 16 }}
+      renderHeader={renderHeader}
+      renderEmpty={renderEmpty}
+    />
   )
 }
 

@@ -18,6 +18,7 @@ import {
   isTokenWithBalancePVM
 } from '@avalabs/avalanche-module'
 import { useErc20ContractTokens } from 'common/hooks/useErc20ContractTokens'
+import { sortedTokensWithBalance } from 'common/utils/sortTokensWithBalance'
 
 export const useAssetsFilterAndSort = (): {
   data: LocalTokenWithBalance[]
@@ -94,12 +95,12 @@ export const useAssetsFilterAndSort = (): {
   const getSorted = useCallback(
     (filtered: LocalTokenWithBalance[]) => {
       if (sortOption === AssetBalanceSort.LowToHigh) {
-        return filtered?.sort((a, b) =>
+        return filtered?.toSorted((a, b) =>
           sortUndefined(a.balanceInCurrency, b.balanceInCurrency)
         )
       }
 
-      return filtered?.sort((a, b) =>
+      return filtered?.toSorted((a, b) =>
         sortUndefined(b.balanceInCurrency, a.balanceInCurrency)
       )
     },
@@ -108,7 +109,10 @@ export const useAssetsFilterAndSort = (): {
 
   const filteredAndSorted = useMemo(() => {
     const filtered = getFiltered()
-    return getSorted(filtered)
+    // Sort the tokens with balance
+    const sorted = getSorted(filtered)
+    // Pin the primary tokens to the top of the list
+    return sortedTokensWithBalance(sorted)
   }, [getFiltered, getSorted])
 
   const filter = useMemo(

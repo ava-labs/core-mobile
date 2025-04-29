@@ -1,21 +1,38 @@
-import React, { useMemo, useCallback, useState, useRef, useEffect } from 'react'
 import {
   Button,
   GroupList,
   GroupListItem,
-  SafeAreaView,
-  ScrollView,
   StakeRewardChart,
   StakeRewardChartHandle,
   Text,
   View
 } from '@avalabs/k2-alpine'
-import ScreenHeader from 'common/components/ScreenHeader'
+import { UTCDate } from '@date-fns/utc'
+import { ScrollScreen } from 'common/components/ScrollScreen'
+import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import { useDelegationContext } from 'contexts/DelegationContext'
+import { differenceInDays, getUnixTime, millisecondsToSeconds } from 'date-fns'
 import { useRouter } from 'expo-router'
-import { useSelector } from 'react-redux'
-import { selectIsDeveloperMode } from 'store/settings/advanced'
+import {
+  DurationOptions,
+  getCustomDurationIndex,
+  getDefaultDurationIndex
+} from 'features/stake/components/DurationOptions'
+import { StakeCustomEndDatePicker } from 'features/stake/components/StakeCustomEndDatePicker'
+import { StakeTokenUnitValue } from 'features/stake/components/StakeTokenUnitValue'
+import { useStakeEstimatedReward } from 'features/stake/hooks/useStakeEstimatedReward'
 import { useStakeEstimatedRewards } from 'features/stake/hooks/useStakeEstimatedRewards'
+import { convertToDurationInSeconds } from 'features/stake/utils'
+import { useNow } from 'hooks/time/useNow'
+import { useAvaxTokenPriceInSelectedCurrency } from 'hooks/useAvaxTokenPriceInSelectedCurrency'
+import { useDebounce } from 'hooks/useDebounce'
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import {
+  runOnJS,
+  useAnimatedReaction,
+  useSharedValue
+} from 'react-native-reanimated'
+import { useSelector } from 'react-redux'
 import {
   DURATION_OPTIONS_WITH_DAYS_FUJI,
   DURATION_OPTIONS_WITH_DAYS_MAINNET,
@@ -23,36 +40,12 @@ import {
   getStakeEndDate,
   THREE_MONTHS
 } from 'services/earn/getStakeEndDate'
-import Animated, {
-  runOnJS,
-  useAnimatedReaction,
-  useSharedValue
-} from 'react-native-reanimated'
-import { StakeTokenUnitValue } from 'features/stake/components/StakeTokenUnitValue'
-import {
-  DurationOptions,
-  getCustomDurationIndex,
-  getDefaultDurationIndex
-} from 'features/stake/components/DurationOptions'
-import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import { UnixTime } from 'services/earn/types'
-import { useNow } from 'hooks/time/useNow'
-import { differenceInDays, getUnixTime, millisecondsToSeconds } from 'date-fns'
-import { UTCDate } from '@date-fns/utc'
-import { useStakeEstimatedReward } from 'features/stake/hooks/useStakeEstimatedReward'
-import { useDebounce } from 'hooks/useDebounce'
-import { StakeCustomEndDatePicker } from 'features/stake/components/StakeCustomEndDatePicker'
-import { useAvaxTokenPriceInSelectedCurrency } from 'hooks/useAvaxTokenPriceInSelectedCurrency'
-import { convertToDurationInSeconds } from 'features/stake/utils'
-import { useSimpleFadingHeader } from 'common/hooks/useSimpleFadingHeader'
+import { selectIsDeveloperMode } from 'store/settings/advanced'
 
 const StakeDurationScreen = (): JSX.Element => {
   const { navigate } = useRouter()
-  const { onScroll, handleHeaderLayout, animatedHeaderStyle } =
-    useSimpleFadingHeader({
-      title: 'How long?',
-      shouldHeaderHaveGrabber: true
-    })
+
   const { stakeAmount } = useDelegationContext()
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const avaxPrice = useAvaxTokenPriceInSelectedCurrency()
@@ -313,17 +306,29 @@ const StakeDurationScreen = (): JSX.Element => {
     customEndDate
   ])
 
+  const renderFooter = useCallback(() => {
+    return (
+      <View
+        sx={{
+          gap: 16
+        }}>
+        <Button type="primary" size="large" onPress={handlePressNext}>
+          Next
+        </Button>
+        <Button type="tertiary" size="large" onPress={handleAdvancedSetup}>
+          Advanced setup
+        </Button>
+      </View>
+    )
+  }, [handlePressNext, handleAdvancedSetup])
   return (
-    <SafeAreaView sx={{ flex: 1 }}>
-      <ScrollView
-        style={{ flex: 1 }}
-        contentContainerSx={{ padding: 16, paddingTop: 0 }}
-        onScroll={onScroll}>
-        <Animated.View
-          onLayout={handleHeaderLayout}
-          style={animatedHeaderStyle}>
-          <ScreenHeader title="For how long would you like to stake?" />
-        </Animated.View>
+    <>
+      <ScrollScreen
+        title="For how long would you like to stake?"
+        navigationTitle="How long?"
+        isModal
+        renderFooter={renderFooter}
+        contentContainerStyle={{ padding: 16 }}>
         <View sx={{ gap: 12, marginTop: 16 }}>
           <StakeRewardChart
             ref={rewardChartRef}
@@ -347,20 +352,7 @@ const StakeDurationScreen = (): JSX.Element => {
             }}
           />
         </View>
-      </ScrollView>
-      <View
-        sx={{
-          padding: 16,
-          gap: 16,
-          backgroundColor: '$surfacePrimary'
-        }}>
-        <Button type="primary" size="large" onPress={handlePressNext}>
-          Next
-        </Button>
-        <Button type="tertiary" size="large" onPress={handleAdvancedSetup}>
-          Advanced setup
-        </Button>
-      </View>
+      </ScrollScreen>
       <StakeCustomEndDatePicker
         customEndDate={customEndDate}
         isVisible={isCustomEndDatePickerVisible}
@@ -368,7 +360,7 @@ const StakeDurationScreen = (): JSX.Element => {
         onDateSelected={handleDateSelected}
         onCancel={handleCancelSelectingCustomEndDate}
       />
-    </SafeAreaView>
+    </>
   )
 }
 

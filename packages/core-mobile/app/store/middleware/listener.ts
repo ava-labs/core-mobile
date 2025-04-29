@@ -43,7 +43,7 @@ addNetworkListeners(startListening)
 
 addBridgeListeners(startListening)
 
-addUnifiedBridgeListeners(startListening)
+// addUnifiedBridgeListeners(startListening)
 
 addPosthogListeners(startListening)
 

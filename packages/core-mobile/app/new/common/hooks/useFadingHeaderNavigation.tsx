@@ -1,18 +1,18 @@
+import { View } from '@avalabs/k2-alpine'
 import BlurredBackgroundView from 'common/components/BlurredBackgroundView'
 import React, { useEffect, useRef, useState } from 'react'
-import { View } from '@avalabs/k2-alpine'
 import {
   LayoutChangeEvent,
   LayoutRectangle,
   NativeScrollEvent,
-  NativeSyntheticEvent,
-  Platform
+  NativeSyntheticEvent
 } from 'react-native'
 import Animated, {
-  useSharedValue,
-  useAnimatedStyle,
   SharedValue,
-  clamp
+  clamp,
+  interpolate,
+  useAnimatedStyle,
+  useSharedValue
 } from 'react-native-reanimated'
 /**
  * Temporarily import "useNavigation" from @react-navigation/native.
@@ -20,28 +20,34 @@ import Animated, {
  * See: https://github.com/expo/expo/issues/35383
  * TODO: Adjust import back to expo-router once the bug is resolved.
  */
-import { useNavigation } from '@react-navigation/native'
+import { useFocusEffect, useNavigation } from '@react-navigation/native'
 
 export const useFadingHeaderNavigation = ({
   header,
   targetLayout,
   shouldHeaderHaveGrabber = false,
   hasSeparator = true,
-  shouldDelayBlurOniOS = false
+  shouldDelayBlurOniOS = false,
+  hasParent = false,
+  renderHeaderRight
 }: {
-  header?: JSX.Element
+  header?: React.ReactNode
   targetLayout?: LayoutRectangle
   shouldHeaderHaveGrabber?: boolean
   hasSeparator?: boolean
   shouldDelayBlurOniOS?: boolean
+  hasParent?: boolean
+  renderHeaderRight?: () => React.ReactNode
 }): {
   onScroll: (
     event: NativeSyntheticEvent<NativeScrollEvent> | NativeScrollEvent | number
   ) => void
   scrollEventThrottle: number
+  scrollY: SharedValue<number>
   targetHiddenProgress: SharedValue<number>
 } => {
   const navigation = useNavigation()
+  const scrollY = useSharedValue(0)
   const [navigationHeaderLayout, setNavigationHeaderLayout] = useState<
     LayoutRectangle | undefined
   >(undefined)
@@ -84,27 +90,37 @@ export const useFadingHeaderNavigation = ({
         0,
         1
       )
+      scrollY.value = contentOffsetY
     }
   }
 
+  const headerHeight =
+    targetLayout?.height ?? navigationHeaderLayout?.height ?? 0
+
   // Animated styles for header transformation
   const animatedHeaderStyle = useAnimatedStyle(() => {
-    const targetHiddenProgressValue = targetHiddenProgress.value
+    const translateY = interpolate(
+      targetHiddenProgress.value,
+      [0, 1],
+      [headerHeight, 0]
+    )
 
     return {
-      opacity: targetHiddenProgressValue,
+      opacity: targetHiddenProgress.value,
       transform: [
         {
-          translateY:
-            (navigationHeaderLayout?.height ?? 0) *
-            (1 - targetHiddenProgressValue)
+          translateY
         }
       ]
     }
   })
 
-  useEffect(() => {
-    navigation.setOptions({
+  useFocusEffect(() => {
+    const navigationOptions: {
+      title?: React.ReactNode
+      headerRight?: () => React.ReactNode
+      headerBackground?: () => React.ReactNode
+    } = {
       headerBackground: () => (
         <BlurredBackgroundView
           shouldDelayBlurOniOS={shouldDelayBlurOniOS}
@@ -122,9 +138,8 @@ export const useFadingHeaderNavigation = ({
       title: header && (
         <View
           sx={{
-            paddingTop: shouldHeaderHaveGrabber ? 23 : 0,
-            transform: [{ translateY: HEADER_BOTTOM_INSET }],
-            marginBottom: HEADER_BOTTOM_INSET
+            paddingTop: shouldHeaderHaveGrabber ? 20 : 0,
+            height: '100%'
           }}>
           <View
             sx={{
@@ -133,26 +148,51 @@ export const useFadingHeaderNavigation = ({
               justifyContent: 'center'
             }}
             onLayout={handleLayout}>
-            <Animated.View style={animatedHeaderStyle}>{header}</Animated.View>
+            <Animated.View style={[animatedHeaderStyle]}>
+              {header}
+            </Animated.View>
           </View>
         </View>
       )
-    })
-  }, [
-    navigation,
-    header,
-    targetHiddenProgress,
-    animatedHeaderStyle,
-    shouldHeaderHaveGrabber,
-    hasSeparator,
-    shouldDelayBlurOniOS
-  ])
+    }
+
+    // If a custom header right component is provided, set it
+    if (renderHeaderRight) {
+      navigationOptions.headerRight = renderHeaderRight
+
+      if (hasParent) {
+        navigation.getParent()?.setOptions(navigationOptions)
+
+        // Clean up the header right component when the screen is unmounted
+        return () => {
+          navigation.getParent()?.setOptions({
+            headerRight: undefined
+          })
+        }
+      } else {
+        navigation.setOptions(navigationOptions)
+
+        // Clean up the header right component when the screen is unmounted
+        return () => {
+          navigation.setOptions({
+            headerRight: undefined
+          })
+        }
+      }
+    }
+
+    // Set the navigation options
+    if (hasParent) {
+      navigation.getParent()?.setOptions(navigationOptions)
+    } else {
+      navigation.setOptions(navigationOptions)
+    }
+  })
 
   return {
     onScroll: handleScroll,
     scrollEventThrottle: 16,
-    targetHiddenProgress
+    targetHiddenProgress,
+    scrollY
   }
 }
-
-const HEADER_BOTTOM_INSET = Platform.OS === 'ios' ? -4 : 0

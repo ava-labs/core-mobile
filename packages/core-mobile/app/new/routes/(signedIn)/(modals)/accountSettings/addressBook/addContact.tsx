@@ -1,16 +1,14 @@
 import { Button, View } from '@avalabs/k2-alpine'
+import { ScrollScreen } from 'common/components/ScrollScreen'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { ContactForm } from 'features/accountSettings/components/ContactForm'
 import { useNewContactAvatar } from 'features/accountSettings/store'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
-import { KeyboardAwareScrollView } from 'react-native-keyboard-controller'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useDispatch } from 'react-redux'
 import { addContact, Contact } from 'store/addressBook'
 
 const AddContactScreen = (): React.JSX.Element => {
   const dispatch = useDispatch()
-  const { bottom } = useSafeAreaInsets()
   const { canGoBack, back, navigate } = useRouter()
   const { contactId } = useLocalSearchParams<{ contactId: string }>()
   const [newContactAvatar, setNewContactAvatar] = useNewContactAvatar()
@@ -59,28 +57,11 @@ const AddContactScreen = (): React.JSX.Element => {
     })
   }, [navigate, contact?.name])
 
-  return (
-    <View sx={{ flex: 1, paddingHorizontal: 16, paddingBottom: 16 }}>
-      <KeyboardAwareScrollView
-        keyboardShouldPersistTaps="handled"
-        automaticallyAdjustKeyboardInsets
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={{
-          justifyContent: 'space-between'
-        }}>
-        {contact && (
-          <ContactForm
-            contact={contactWithAvatar}
-            onUpdate={handleUpdateContact}
-            onSelectAvatar={handleSelectAvatar}
-          />
-        )}
-      </KeyboardAwareScrollView>
+  const renderFooter = useCallback(() => {
+    return (
       <View
         sx={{
-          gap: 16,
-          backgroundColor: '$surfacePrimary',
-          marginBottom: bottom
+          gap: 16
         }}>
         <Button
           type="primary"
@@ -96,7 +77,26 @@ const AddContactScreen = (): React.JSX.Element => {
           Cancel
         </Button>
       </View>
-    </View>
+    )
+  }, [back, canGoBack, handleSave, isSaveDisabled])
+
+  return (
+    <ScrollScreen
+      isModal
+      renderFooter={renderFooter}
+      shouldAvoidKeyboard={false}
+      navigationTitle="Add contact"
+      contentContainerStyle={{
+        padding: 16
+      }}>
+      {contact && (
+        <ContactForm
+          contact={contactWithAvatar}
+          onUpdate={handleUpdateContact}
+          onSelectAvatar={handleSelectAvatar}
+        />
+      )}
+    </ScrollScreen>
   )
 }
 

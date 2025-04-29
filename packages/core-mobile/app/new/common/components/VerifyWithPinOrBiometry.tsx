@@ -1,12 +1,12 @@
+import { PinInput, PinInputActions, Text, View } from '@avalabs/k2-alpine'
+import { usePinOrBiometryLogin } from 'common/hooks/usePinOrBiometryLogin'
+import { useFocusEffect } from 'expo-router'
 import React, { useCallback, useEffect, useRef } from 'react'
 import { InteractionManager, Keyboard, Platform } from 'react-native'
 import { Subscription } from 'rxjs'
-import Logger from 'utils/Logger'
-import { Text, View, PinInput, PinInputActions } from '@avalabs/k2-alpine'
-import { usePinOrBiometryLogin } from 'common/hooks/usePinOrBiometryLogin'
-import { useFocusEffect } from 'expo-router'
-import { KeyboardAvoidingView } from 'common/components/KeyboardAvoidingView'
 import { BiometricType } from 'services/deviceInfo/DeviceInfoService'
+import Logger from 'utils/Logger'
+import { ScrollScreen } from './ScrollScreen'
 
 export const VerifyWithPinOrBiometry = ({
   onLoginSuccess
@@ -103,10 +103,13 @@ export const VerifyWithPinOrBiometry = ({
   }, [mnemonic, onLoginSuccess])
 
   return (
-    <KeyboardAvoidingView>
-      <Text variant="heading2" sx={{ marginLeft: 16, marginRight: 100 }}>
-        Enter your current PIN
-      </Text>
+    <ScrollScreen
+      title={`Enter your\ncurrent PIN`}
+      isModal
+      contentContainerStyle={{
+        padding: 16,
+        flex: 1
+      }}>
       <View
         sx={{
           flex: 1,
@@ -132,6 +135,6 @@ export const VerifyWithPinOrBiometry = ({
           value={enteredPin}
         />
       </View>
-    </KeyboardAvoidingView>
+    </ScrollScreen>
   )
 }

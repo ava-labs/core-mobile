@@ -1,31 +1,34 @@
+import { AnimatedPressable, Text, useTheme, View } from '@avalabs/k2-alpine'
+import { ScrollScreen } from 'common/components/ScrollScreen'
 import React, { FC } from 'react'
-import { View, Text, TouchableOpacity, useTheme } from '@avalabs/k2-alpine'
+import { SvgProps } from 'react-native-svg'
 import { useDispatch, useSelector } from 'react-redux'
 import {
   Appearance,
   selectSelectedAppearance,
   setSelectedAppearance
 } from 'store/settings/appearance'
-import { SvgProps } from 'react-native-svg'
-import SystemAppearanceIcon from '../../../../assets/icons/system_appearance.svg'
-import LightAppearanceIcon from '../../../../assets/icons/light_appearance.svg'
 import DarkAppearanceIcon from '../../../../assets/icons/dark_appearance.svg'
+import LightAppearanceIcon from '../../../../assets/icons/light_appearance.svg'
+import SystemAppearanceIcon from '../../../../assets/icons/system_appearance.svg'
 
 const SelectAppearanceScreen = (): JSX.Element => {
   const selectedAppearance = useSelector(selectSelectedAppearance)
   const dispatch = useDispatch()
 
   return (
-    <View
-      sx={{
-        gap: 85,
-        marginHorizontal: 16
+    <ScrollScreen
+      title={`Customize the\napp appearance`}
+      navigationTitle="Customize the app appearance"
+      isModal
+      contentContainerStyle={{
+        padding: 16
       }}>
-      <Text variant="heading2">{`Customize the\napp theme`}</Text>
       <View
         sx={{
           flexDirection: 'row',
           marginHorizontal: 16,
+          paddingTop: 64,
           justifyContent: 'space-between',
           alignItems: 'center'
         }}>
@@ -48,7 +51,7 @@ const SelectAppearanceScreen = (): JSX.Element => {
           Icon={DarkAppearanceIcon}
         />
       </View>
-    </View>
+    </ScrollScreen>
   )
 }
 
@@ -65,18 +68,20 @@ const AppearanceComponent = ({
 }): JSX.Element => {
   return (
     <View sx={{ gap: 12 }}>
-      <TouchableOpacity
+      <AnimatedPressable
         testID={
           isSelected ? `${appearance}_selected` : `${appearance}_unselected`
         }
-        sx={{
+        style={{
           height: 194,
           justifyContent: 'center'
         }}
         onPress={onPress}>
         <Icon />
-      </TouchableOpacity>
-      <TextLabel isSelected={isSelected}>{appearance}</TextLabel>
+      </AnimatedPressable>
+      <AnimatedPressable onPress={onPress}>
+        <TextLabel isSelected={isSelected}>{appearance}</TextLabel>
+      </AnimatedPressable>
     </View>
   )
 }
@@ -96,6 +101,7 @@ const TextLabel = ({
       sx={{
         alignItems: 'center',
         justifyContent: 'center',
+        alignSelf: 'center',
         paddingVertical: 6,
         paddingHorizontal: 20,
         borderRadius: 20,

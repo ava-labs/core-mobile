@@ -14,6 +14,7 @@ import { LocalTokenWithBalance } from 'store/balance'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { LogoWithNetwork } from 'features/portfolio/assets/components/LogoWithNetwork'
 import { LoadingState } from 'common/components/LoadingState'
+import { ScrollScreen } from 'common/components/ScrollScreen'
 
 const AddCustomTokenScreen = (): JSX.Element => {
   const {
@@ -45,10 +46,10 @@ const AddCustomTokenScreen = (): JSX.Element => {
   // only enable button if we have token and no error message
   const disabled = !!(errorMessage || !token || isLoading)
 
-  const goToScanQrCode = (): void => {
+  const goToScanQrCode = useCallback((): void => {
     // @ts-ignore TODO: make routes typesafe
     push('/tokenManagement/scanQrCode')
-  }
+  }, [push])
 
   const renderToken = (): JSX.Element | undefined => {
     if (isLoading) {
@@ -81,41 +82,46 @@ const AddCustomTokenScreen = (): JSX.Element => {
     )
   }
 
+  const renderHeader = useCallback(() => {
+    return (
+      <SearchBar
+        onTextChanged={setTokenAddress}
+        searchText={tokenAddress}
+        placeholder="Token contract address"
+        rightComponent={
+          <TouchableOpacity
+            onPress={goToScanQrCode}
+            hitSlop={16}
+            sx={{
+              marginRight: 9,
+              justifyContent: 'center',
+              alignItems: 'center'
+            }}>
+            <Icons.Custom.QRCodeScanner
+              color={colors.$textSecondary}
+              width={20}
+              height={20}
+            />
+          </TouchableOpacity>
+        }
+      />
+    )
+  }, [setTokenAddress, tokenAddress, goToScanQrCode, colors.$textSecondary])
+
   return (
-    <View sx={{ justifyContent: 'space-between', padding: 16, flex: 1 }}>
-      <View sx={{ gap: 16 }}>
-        <Text variant="heading2">Add a custom token</Text>
-        <View>
-          <SearchBar
-            onTextChanged={setTokenAddress}
-            searchText={tokenAddress}
-            placeholder="Token contract address"
-            rightComponent={
-              <TouchableOpacity
-                onPress={goToScanQrCode}
-                hitSlop={16}
-                sx={{
-                  marginRight: 9,
-                  justifyContent: 'center',
-                  alignItems: 'center'
-                }}>
-                <Icons.Custom.QRCodeScanner
-                  color={colors.$textSecondary}
-                  width={20}
-                  height={20}
-                />
-              </TouchableOpacity>
-            }
-          />
-          <Text
-            variant="subtitle1"
-            sx={{ color: colors.$textDanger, marginTop: 8, marginLeft: 8 }}>
-            {errorMessage}
-          </Text>
-        </View>
-      </View>
+    <ScrollScreen
+      title="Add a custom token"
+      renderHeader={renderHeader}
+      contentContainerStyle={{ padding: 16 }}
+      isModal>
+      <Text
+        variant="subtitle1"
+        sx={{ color: colors.$textDanger, marginTop: 8, marginLeft: 8 }}>
+        {errorMessage}
+      </Text>
+
       {renderToken()}
-    </View>
+    </ScrollScreen>
   )
 }
 

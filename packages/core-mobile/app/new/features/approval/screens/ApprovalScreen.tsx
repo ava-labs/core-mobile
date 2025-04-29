@@ -1,42 +1,41 @@
-import React, {
-  useCallback,
-  useState,
-  useEffect,
-  useLayoutEffect,
-  useMemo
-} from 'react'
-import { LayoutChangeEvent, ViewStyle } from 'react-native'
-import Animated from 'react-native-reanimated'
 import { Separator, showAlert, Text, View } from '@avalabs/k2-alpine'
-import { TokenLogo } from 'new/common/components/TokenLogo'
-import { ApprovalParams } from 'services/walletconnectv2/walletConnectCache/types'
-import { walletConnectCache } from 'services/walletconnectv2/walletConnectCache/walletConnectCache'
-import Logger from 'utils/Logger'
-import { useGasless } from 'hooks/useGasless'
-import { selectAccountByIndex } from 'store/account/slice'
-import { selectAccountByAddress } from 'store/account/slice'
 import { useNativeTokenWithBalance } from 'common/hooks/send/useNativeTokenWithBalance'
-import { getChainIdFromCaip2 } from 'utils/caip2ChainIds'
-import { selectActiveAccount } from 'store/account/slice'
-import { selectIsSeedlessSigningBlocked } from 'store/posthog/slice'
-import { useSelector } from 'react-redux'
-import { useNetworks } from 'hooks/networks/useNetworks'
-import { isInAppRequest } from 'store/rpc/utils/isInAppRequest'
 import { validateFee } from 'common/hooks/send/utils/evm/validate'
 import { SendErrorMessage } from 'common/hooks/send/utils/types'
 import { router, useLocalSearchParams } from 'expo-router'
-import { Eip1559Fees } from 'utils/Utils'
-import { ActionSheet } from 'new/common/components/ActionSheet'
-import ScreenHeader from 'new/common/components/ScreenHeader'
-import { NavigationPresentationMode } from 'new/common/types'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { useNetworks } from 'hooks/networks/useNetworks'
+import { useGasless } from 'hooks/useGasless'
 import { useSpendLimits } from 'hooks/useSpendLimits'
+import { ActionSheet } from 'new/common/components/ActionSheet'
+import { TokenLogo } from 'new/common/components/TokenLogo'
 import { Warning } from 'new/common/components/Warning'
+import { NavigationPresentationMode } from 'new/common/types'
+import React, {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useState
+} from 'react'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { useSelector } from 'react-redux'
+import { ApprovalParams } from 'services/walletconnectv2/walletConnectCache/types'
+import { walletConnectCache } from 'services/walletconnectv2/walletConnectCache/walletConnectCache'
+import {
+  selectAccountByAddress,
+  selectAccountByIndex,
+  selectActiveAccount
+} from 'store/account/slice'
+import { selectIsSeedlessSigningBlocked } from 'store/posthog/slice'
+import { isInAppRequest } from 'store/rpc/utils/isInAppRequest'
+import { getChainIdFromCaip2 } from 'utils/caip2ChainIds'
+import Logger from 'utils/Logger'
+import { Eip1559Fees } from 'utils/Utils'
+import { Account } from '../components/Account'
+import BalanceChange from '../components/BalanceChange/BalanceChange'
 import { Details } from '../components/Details'
 import { Network } from '../components/Network'
 import { NetworkFeeSelectorWithGasless } from '../components/NetworkFeeSelectorWithGasless'
-import { Account } from '../components/Account'
-import BalanceChange from '../components/BalanceChange/BalanceChange'
 import { SpendLimits } from '../components/SpendLimits/SpendLimits'
 
 const ApprovalScreenWrapper = (): JSX.Element | null => {
@@ -247,39 +246,12 @@ const ApprovalScreen = ({
     )
   }, [gaslessError])
 
-  const renderTitle = useCallback(
-    (
-      title: string,
-      handleHeaderLayout: (event: LayoutChangeEvent) => void,
-      animatedHeaderStyle: ViewStyle
-    ): JSX.Element | null => {
-      return (
-        <Animated.View
-          onLayout={handleHeaderLayout}
-          style={[
-            {
-              marginBottom: 32,
-              marginTop: -10,
-              width: '80%'
-            },
-            animatedHeaderStyle
-          ]}>
-          <ScreenHeader title={title} />
-        </Animated.View>
-      )
-    },
-    []
-  )
-
   const renderDappInfo = useCallback(
-    (
-      dAppInfo: {
-        name: string
-        action: string
-        logoUri?: string
-      },
-      handleHeaderLayout: (event: LayoutChangeEvent) => void
-    ): JSX.Element | null => {
+    (dAppInfo: {
+      name: string
+      action: string
+      logoUri?: string
+    }): JSX.Element | null => {
       const { action, logoUri } = dAppInfo
 
       return (
@@ -289,9 +261,7 @@ const ApprovalScreen = ({
             alignItems: 'center',
             marginBottom: 36
           }}>
-          <View onLayout={handleHeaderLayout}>
-            <TokenLogo logoUri={logoUri} size={62} />
-          </View>
+          <TokenLogo logoUri={logoUri} size={62} />
           <View
             style={{
               alignItems: 'center',
@@ -316,27 +286,13 @@ const ApprovalScreen = ({
     []
   )
 
-  const renderDappInfoOrTitle = useCallback(
-    (
-      handleHeaderLayout: (event: LayoutChangeEvent) => void,
-      animatedHeaderStyle: ViewStyle
-    ): JSX.Element | null => {
-      // prioritize rendering dAppInfo over title if both are present
-      // we only want to render one of them
-      if (displayData.dAppInfo)
-        return renderDappInfo(displayData.dAppInfo, handleHeaderLayout)
+  const renderDappInfoOrTitle = useCallback((): JSX.Element | null => {
+    // prioritize rendering dAppInfo over title if both are present
+    // we only want to render one of them
+    if (displayData.dAppInfo) return renderDappInfo(displayData.dAppInfo)
 
-      if (displayData.title)
-        return renderTitle(
-          displayData.title,
-          handleHeaderLayout,
-          animatedHeaderStyle
-        )
-
-      return null
-    },
-    [displayData.dAppInfo, displayData.title, renderDappInfo, renderTitle]
-  )
+    return null
+  }, [displayData.dAppInfo, renderDappInfo])
 
   const renderAccountAndNetwork = useCallback((): JSX.Element | undefined => {
     if (displayData.account && displayData.network) {
@@ -374,7 +330,8 @@ const ApprovalScreen = ({
     return (
       <View
         style={{
-          marginTop: 12
+          marginTop: 12,
+          gap: 12
         }}>
         {filteredSections.map((detailSection, index) => (
           <Details key={index} detailSection={detailSection} />
@@ -454,7 +411,10 @@ const ApprovalScreen = ({
       sx={{
         marginBottom
       }}
-      title={displayData.title}
+      title={displayData.dAppInfo ? undefined : displayData.title}
+      navigationTitle={
+        displayData.dAppInfo ? displayData?.dAppInfo?.name : displayData.title
+      }
       onClose={onReject}
       alert={alert}
       confirm={{
@@ -467,19 +427,13 @@ const ApprovalScreen = ({
         onPress: rejectAndClose,
         disabled: submitting
       }}>
-      {({ handleHeaderLayout, animatedHeaderStyle }) => {
-        return (
-          <>
-            {renderDappInfoOrTitle(handleHeaderLayout, animatedHeaderStyle)}
-            {renderGaslessAlert()}
-            {renderAccountAndNetwork()}
-            {renderBalanceChange()}
-            {renderDetails()}
-            {renderSpendLimits()}
-            {renderNetworkFeeSelectorWithGasless()}
-          </>
-        )
-      }}
+      {renderDappInfoOrTitle()}
+      {renderGaslessAlert()}
+      {renderAccountAndNetwork()}
+      {renderBalanceChange()}
+      {renderDetails()}
+      {renderSpendLimits()}
+      {renderNetworkFeeSelectorWithGasless()}
     </ActionSheet>
   )
 }

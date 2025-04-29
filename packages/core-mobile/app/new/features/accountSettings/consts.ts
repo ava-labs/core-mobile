@@ -1,7 +1,5 @@
 import { ChainName } from 'services/network/consts'
 
-export const SHOW_RECOVERY_PHRASE = `Show recovery\nphrase`
-
 export enum AddressType {
   EVM = ChainName.AVALANCHE_C_EVM,
   EVM_TESTNET = ChainName.AVALANCHE_C_EVM_TESTNET,

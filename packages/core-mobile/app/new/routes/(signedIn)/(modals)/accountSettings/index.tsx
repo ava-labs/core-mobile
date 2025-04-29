@@ -3,7 +3,6 @@ import {
   GroupList,
   Icons,
   Logos,
-  NavigationTitleHeader,
   showAlert,
   Text,
   Toggle,
@@ -11,11 +10,10 @@ import {
   useTheme,
   View
 } from '@avalabs/k2-alpine'
-import { useNavigation } from '@react-navigation/native'
+import { ScrollScreen } from 'common/components/ScrollScreen'
 import { VisibilityBarButton } from 'common/components/VisibilityBarButton'
 import { useAvatar } from 'common/hooks/useAvatar'
 import { useDeleteWallet } from 'common/hooks/useDeleteWallet'
-import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
 import { showSnackbar } from 'common/utils/toast'
 import { Space } from 'common/components/Space'
 import { useRouter } from 'expo-router'
@@ -24,10 +22,7 @@ import { AccountList } from 'features/accountSettings/components/AcccountList'
 import { AppAppearance } from 'features/accountSettings/components/AppAppearance'
 import { UserPreferences } from 'features/accountSettings/components/UserPreferences'
 import { useNetworks } from 'hooks/networks/useNetworks'
-import React, { useCallback, useEffect, useState } from 'react'
-import { LayoutChangeEvent, LayoutRectangle } from 'react-native'
-import { ScrollView } from 'react-native-gesture-handler'
-import Animated, { useSharedValue } from 'react-native-reanimated'
+import React, { useCallback } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { selectContacts } from 'store/addressBook'
@@ -51,43 +46,18 @@ const AccountSettingsScreen = (): JSX.Element => {
   const { enabledNetworks } = useNetworks()
   const contacts = useSelector(selectContacts)
   const { navigate } = useRouter()
-  const { setOptions } = useNavigation()
-  const headerOpacity = useSharedValue(1)
-  const [headerLayout, setHeaderLayout] = useState<
-    LayoutRectangle | undefined
-  >()
-  const scrollViewProps = useFadingHeaderNavigation({
-    header: <NavigationTitleHeader title={'Settings and accounts'} />,
-    targetLayout: headerLayout,
-    shouldHeaderHaveGrabber: true
-  })
 
   const { avatar } = useAvatar()
 
-  const handleHeaderLayout = (event: LayoutChangeEvent): void => {
-    setHeaderLayout(event.nativeEvent.layout)
-  }
-
   const renderHeaderRight = useCallback(() => {
     return (
-      <View
-        sx={{
-          marginTop: 14,
-          marginRight: 18
-        }}>
-        <VisibilityBarButton
-          isPrivacyModeEnabled={isPrivacyModeEnabled}
-          onPress={() => dispatch(togglePrivacyMode())}
-        />
-      </View>
+      <VisibilityBarButton
+        isModal
+        isPrivacyModeEnabled={isPrivacyModeEnabled}
+        onPress={() => dispatch(togglePrivacyMode())}
+      />
     )
-  }, [dispatch, isPrivacyModeEnabled])
-
-  useEffect(() => {
-    setOptions({
-      headerRight: renderHeaderRight
-    })
-  }, [renderHeaderRight, setOptions])
+  }, [isPrivacyModeEnabled, dispatch])
 
   const goToSelectAvatar = useCallback(() => {
     // @ts-ignore TODO: make routes typesafe
@@ -137,46 +107,35 @@ const AccountSettingsScreen = (): JSX.Element => {
   }
 
   return (
-    <ScrollView
+    <ScrollScreen
+      isModal
+      navigationTitle="Account settings"
+      renderHeaderRight={renderHeaderRight}
       testID="settings_scroll_view"
-      showsVerticalScrollIndicator={false}
-      contentContainerStyle={{ paddingBottom: 60 }}
-      {...scrollViewProps}>
-      <View
-        sx={{
-          paddingHorizontal: 16,
-          paddingBottom: 4,
-          gap: 48
-        }}>
-        {/* Header */}
+      contentContainerStyle={{
+        paddingTop: 16
+      }}>
+      <View sx={{ gap: 48 }}>
         <View
           sx={{
-            justifyContent: 'center',
             alignItems: 'center'
           }}>
-          <Animated.View
-            style={{ opacity: headerOpacity }}
-            onLayout={handleHeaderLayout}>
-            <TouchableOpacity
-              onPress={goToSelectAvatar}
-              disabled={isDeveloperMode}
-              sx={{ marginTop: 5, height: 150 }}>
-              <Avatar
-                testID={isDeveloperMode ? 'testnet_avatar' : 'mainnet_avatar'}
-                size={150}
-                source={avatar.source}
-                hasLoading={false}
-                isDeveloperMode={isDeveloperMode}
-              />
-            </TouchableOpacity>
-          </Animated.View>
+          <TouchableOpacity
+            onPress={goToSelectAvatar}
+            disabled={isDeveloperMode}>
+            <Avatar
+              testID={isDeveloperMode ? 'testnet_avatar' : 'mainnet_avatar'}
+              size={150}
+              source={avatar.source}
+              hasLoading={false}
+              isDeveloperMode={isDeveloperMode}
+            />
+          </TouchableOpacity>
         </View>
 
-        {/* Account list */}
         <AccountList />
 
-        {/* Settings */}
-        <View sx={{ gap: 24 }}>
+        <View sx={{ gap: 24, paddingHorizontal: 16 }}>
           <View sx={{ gap: 12 }}>
             {/* Testnet mode */}
             <GroupList
@@ -316,7 +275,7 @@ const AccountSettingsScreen = (): JSX.Element => {
           <Icons.Custom.AvalabsTrademark color={colors.$textSecondary} />
         </View>
       </View>
-    </ScrollView>
+    </ScrollScreen>
   )
 }
 

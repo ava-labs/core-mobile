@@ -1,6 +1,7 @@
 import React, { useRef, useState, useMemo, useEffect, useCallback } from 'react'
 import { SxProp } from 'dripsy'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
+import { ReturnKeyTypeOptions } from 'react-native'
 import { normalizeErrorMessage } from '../../utils/tokenUnitInput'
 import { useTheme } from '../../hooks'
 import { Text, View } from '../Primitives'
@@ -23,7 +24,8 @@ export const SendTokenUnitInputWidget = ({
   validateAmount,
   accessory,
   sx,
-  disabled
+  disabled,
+  returnKeyType
 }: {
   amount?: TokenUnit
   balance: TokenUnit
@@ -37,6 +39,7 @@ export const SendTokenUnitInputWidget = ({
   accessory?: JSX.Element
   sx?: SxProp
   disabled?: boolean
+  returnKeyType?: ReturnKeyTypeOptions
 }): JSX.Element => {
   const {
     theme: { colors }
@@ -143,6 +146,7 @@ export const SendTokenUnitInputWidget = ({
           paddingBottom: 22
         }}>
         <TokenUnitInput
+          returnKeyType={returnKeyType}
           editable={!disabled}
           ref={textInputRef}
           token={token}

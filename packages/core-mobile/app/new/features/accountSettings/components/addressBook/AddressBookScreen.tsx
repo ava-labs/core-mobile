@@ -3,17 +3,16 @@ import {
   Icons,
   Image,
   SimpleDropdown,
-  TouchableOpacity,
   useTheme,
   View
 } from '@avalabs/k2-alpine'
-import React, { useCallback } from 'react'
-import { useRouter } from 'expo-router'
-import { ErrorState } from 'common/components/ErrorState'
-import { useFocusEffect, useNavigation } from '@react-navigation/native'
-import { uuid } from 'utils/uuid'
-import { useSortedContacts } from 'features/accountSettings/hooks/useSortedContacts'
 import { ContactList } from 'common/components/ContactList'
+import { ErrorState } from 'common/components/ErrorState'
+import NavigationBarButton from 'common/components/NavigationBarButton'
+import { useRouter } from 'expo-router'
+import { useSortedContacts } from 'features/accountSettings/hooks/useSortedContacts'
+import React, { useCallback } from 'react'
+import { uuid } from 'utils/uuid'
 import EMPTY_ADDRESS_BOOK_ICON from '../../../../assets/icons/address_book_empty.png'
 
 export const AddressBookScreen = (): JSX.Element => {
@@ -23,7 +22,6 @@ export const AddressBookScreen = (): JSX.Element => {
   const { data: contacts, sort } = useSortedContacts()
 
   const { navigate } = useRouter()
-  const { getParent } = useNavigation()
 
   const goToAddContact = useCallback((): void => {
     navigate({
@@ -46,40 +44,18 @@ export const AddressBookScreen = (): JSX.Element => {
 
   const renderHeaderRight = useCallback(() => {
     return (
-      <TouchableOpacity
-        onPress={goToAddContact}
-        sx={{
-          flexDirection: 'row',
-          gap: 16,
-          marginRight: 18,
-          alignItems: 'center'
-        }}>
-        <Icons.Content.Add
-          testID="add_contact_btn"
-          width={25}
-          height={25}
-          color={colors.$textPrimary}
-        />
-      </TouchableOpacity>
+      <NavigationBarButton
+        isModal
+        testID="add_contact_btn"
+        onPress={goToAddContact}>
+        <Icons.Content.Add width={24} height={24} color={colors.$textPrimary} />
+      </NavigationBarButton>
     )
   }, [colors.$textPrimary, goToAddContact])
 
-  useFocusEffect(
-    useCallback(() => {
-      getParent()?.setOptions({
-        headerRight: renderHeaderRight
-      })
-      return () => {
-        getParent()?.setOptions({
-          headerRight: undefined
-        })
-      }
-    }, [getParent, renderHeaderRight])
-  )
-
   const renderListHeader = useCallback(() => {
     return contacts.length > 0 ? (
-      <View sx={{ marginTop: 8 }}>
+      <View>
         <SimpleDropdown
           from={
             <Chip size="large" hitSlop={8} rightIcon={'expandMore'}>
@@ -99,6 +75,7 @@ export const AddressBookScreen = (): JSX.Element => {
       title="Contacts"
       contacts={contacts}
       onPress={contact => goToContactDetail(contact.id)}
+      renderHeaderRight={renderHeaderRight}
       ListEmptyComponent={
         <ErrorState
           sx={{ flex: 1 }}

@@ -37,6 +37,7 @@ import { useFormatCurrency } from 'new/common/hooks/useFormatCurrency'
 import { copyToClipboard } from 'new/common/utils/clipboard'
 import { truncateNodeId } from 'utils/Utils'
 import { getHexStringToBytes } from 'utils/getHexStringToBytes'
+import { toSentenceCase } from 'common/utils/toSentenceCase'
 
 export const Details = ({
   detailSection
@@ -119,11 +120,11 @@ export const Details = ({
     [valueTextColor]
   )
 
-  const renderAddressItem = useCallback(
-    (item: AddressItem): JSX.Element => (
+  const renderAddress = useCallback(
+    (address: string): JSX.Element => (
       <Pressable
         onPress={() => {
-          copyToClipboard(item.value, 'Address copied')
+          copyToClipboard(address, 'Address copied')
         }}>
         <Text
           variant="mono"
@@ -133,7 +134,7 @@ export const Details = ({
             lineHeight: 22,
             color: valueTextColor
           }}>
-          {truncateAddress(item.value, 8)}
+          {truncateAddress(address, 8)}
         </Text>
       </Pressable>
     ),
@@ -277,7 +278,7 @@ export const Details = ({
       // eslint-disable-next-line sonarjs/cognitive-complexity
     ): JSX.Element | null => {
       return item.type === DetailItemType.ADDRESS ? (
-        renderAddressItem(item)
+        renderAddress(item.value)
       ) : item.type === DetailItemType.NODE_ID ? (
         renderNodeIDItem(item)
       ) : item.type === DetailItemType.DATA ? (
@@ -300,16 +301,43 @@ export const Details = ({
     },
     [
       renderCurrencyValue,
-      renderAddressItem,
+      renderAddress,
       renderNodeIDItem,
       renderDataValue,
       valueTextColor
     ]
   )
 
-  const renderSeparator = useCallback(
-    (): JSX.Element => <Separator sx={{ marginVertical: 13 }} />,
-    []
+  const renderSeparator = useCallback((): JSX.Element => <Separator />, [])
+
+  const renderFundReceipientItem = useCallback(
+    (item: FundsRecipientItem, key: React.Key): JSX.Element => (
+      <View key={key}>
+        <View
+          style={{
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            flexDirection: 'row',
+            paddingBottom: VERTICAL_PADDING
+          }}>
+          <Text
+            variant="body1"
+            sx={{
+              fontSize: 16,
+              lineHeight: 22,
+              color: '$textPrimary'
+            }}>
+            Recipient
+          </Text>
+          {renderAddress(item.label)}
+        </View>
+        {renderSeparator()}
+        <View sx={{ paddingTop: VERTICAL_PADDING }}>
+          {renderCurrencyValue(item.amount, item.maxDecimals, item.symbol)}
+        </View>
+      </View>
+    ),
+    [renderSeparator, renderCurrencyValue, renderAddress]
   )
 
   const renderItem = useCallback(
@@ -322,6 +350,8 @@ export const Details = ({
         content = renderTextItem(item, index)
       } else if (item.type === DetailItemType.LINK) {
         content = renderLinkItem(item, index)
+      } else if (item.type === DetailItemType.FUNDS_RECIPIENT) {
+        content = renderFundReceipientItem(item, index)
       } else {
         content = (
           <View
@@ -346,7 +376,7 @@ export const Details = ({
                   lineHeight: 22,
                   color: '$textPrimary'
                 }}>
-                {item.label}
+                {toSentenceCase(item.label)}
               </Text>
             </View>
             <View
@@ -364,7 +394,7 @@ export const Details = ({
 
       return (
         <View>
-          {content}
+          <View sx={{ paddingVertical: VERTICAL_PADDING }}>{content}</View>
           {!isLastItem && renderSeparator()}
         </View>
       )
@@ -375,6 +405,7 @@ export const Details = ({
       renderTextItem,
       renderLinkItem,
       renderValue,
+      renderFundReceipientItem,
       detailSection.items.length
     ]
   )
@@ -383,7 +414,6 @@ export const Details = ({
     <View
       style={{
         backgroundColor: colors.$surfaceSecondary,
-        paddingVertical: 13,
         paddingHorizontal: 16,
         borderRadius: 12
       }}>
@@ -393,3 +423,5 @@ export const Details = ({
     </View>
   )
 }
+
+const VERTICAL_PADDING = 13

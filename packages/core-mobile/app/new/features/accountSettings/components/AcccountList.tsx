@@ -104,7 +104,8 @@ export const AccountList = (): React.JSX.Element => {
         onContentSizeChange={onContentSizeChange}
         contentContainerStyle={{
           flexGrow: 1,
-          justifyContent: contentContainerJustifyContent
+          justifyContent: contentContainerJustifyContent,
+          paddingHorizontal: 16
         }}
         ref={flatListRef}
         scrollEventThrottle={16}
