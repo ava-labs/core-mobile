@@ -1,6 +1,6 @@
 import { View } from '@avalabs/k2-alpine'
 import BlurredBackgroundView from 'common/components/BlurredBackgroundView'
-import React, { useEffect, useMemo, useRef, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import {
   LayoutChangeEvent,
   LayoutRectangle,
@@ -114,9 +114,12 @@ export const useFadingHeaderNavigation = ({
     }
   })
 
-  const navigationOptions = useMemo(() => {
-    return {
-      ...(renderHeaderRight && { headerRight: renderHeaderRight }),
+  useFocusEffect(() => {
+    const navigationOptions: {
+      title?: React.ReactNode
+      headerRight?: () => React.ReactNode
+      headerBackground?: () => React.ReactNode
+    } = {
       headerBackground: () => (
         <BlurredBackgroundView
           shouldDelayBlurOniOS={shouldDelayBlurOniOS}
@@ -151,18 +154,10 @@ export const useFadingHeaderNavigation = ({
         </View>
       )
     }
-  }, [
-    animatedHeaderStyle,
-    hasSeparator,
-    header,
-    renderHeaderRight,
-    shouldDelayBlurOniOS,
-    shouldHeaderHaveGrabber,
-    targetHiddenProgress
-  ])
 
-  useFocusEffect(() => {
     if (renderHeaderRight) {
+      navigationOptions.headerRight = renderHeaderRight
+
       if (hasParent) {
         navigation.getParent()?.setOptions(navigationOptions)
 
