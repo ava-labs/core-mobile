@@ -44,6 +44,9 @@ import { FavoriteBarButton } from 'common/components/FavoriteBarButton'
 import { TokenDetailFooter } from 'features/track/components/TokenDetailFooter'
 import { ScrollView } from 'react-native-gesture-handler'
 import { truncateAddress } from '@avalabs/core-utils-sdk'
+import { useAddStake } from 'features/stake/hooks/useAddStake'
+import { AVAX_TOKEN_ID } from 'features/swap/const'
+import { useNavigateToSwap } from 'features/swap/hooks/useNavigateToSwap'
 
 const TrackTokenDetailScreen = (): JSX.Element => {
   const { theme } = useTheme()
@@ -51,6 +54,8 @@ const TrackTokenDetailScreen = (): JSX.Element => {
   const [isChartInteracting, setIsChartInteracting] = useState(false)
   const navigation = useNavigation()
   const { navigate } = useRouter()
+  const { navigateToSwap } = useNavigateToSwap()
+  const { addStake } = useAddStake()
   const headerOpacity = useSharedValue(1)
   const selectedDataIndicatorOpacity = useDerivedValue(
     () => 1 - headerOpacity.value
@@ -175,22 +180,12 @@ const TrackTokenDetailScreen = (): JSX.Element => {
     })
   }, [navigate])
 
-  const handleStake = useCallback((): void => {
-    // @ts-ignore
-    // navigate(AppNavigation.Wallet.Earn, {
-    //   screen: AppNavigation.Earn.StakeSetup
-    // })
-  }, [])
-
-  const handleSwap = useCallback((_?: string): void => {
-    // navigate(AppNavigation.Wallet.Swap, {
-    //   screen: AppNavigation.Swap.Swap,
-    //   params: {
-    //     initialTokenIdFrom: AVAX_TOKEN_ID,
-    //     initialTokenIdTo
-    //   }
-    // })
-  }, [])
+  const handleSwap = useCallback(
+    (initialTokenIdTo?: string): void => {
+      navigateToSwap(AVAX_TOKEN_ID, initialTokenIdTo)
+    },
+    [navigateToSwap]
+  )
 
   const handleShare = useCallback(() => {
     navigate({ pathname: '/trackTokenDetail/share', params: { tokenId } })
@@ -416,7 +411,7 @@ const TrackTokenDetailScreen = (): JSX.Element => {
         tokenId={tokenId}
         tokenInfo={tokenInfo}
         onBuy={handleBuy}
-        onStake={handleStake}
+        onStake={addStake}
         onSwap={handleSwap}
       />
     </View>
