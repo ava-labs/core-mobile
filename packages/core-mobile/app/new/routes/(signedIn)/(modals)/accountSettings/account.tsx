@@ -1,20 +1,11 @@
-import {
-  BalanceHeader,
-  NavigationTitleHeader,
-  useTheme,
-  View
-} from '@avalabs/k2-alpine'
-import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
+import { BalanceHeader, View } from '@avalabs/k2-alpine'
+import { ScrollScreen } from 'common/components/ScrollScreen'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
-import { Space } from 'components/Space'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
 import { useLocalSearchParams } from 'expo-router'
 import { AccountAddresses } from 'features/accountSettings/components/accountAddresses'
 import { AccountButtons } from 'features/accountSettings/components/AccountButtons'
-import React, { useCallback, useMemo, useState } from 'react'
-import { LayoutChangeEvent, LayoutRectangle } from 'react-native'
-import { ScrollView } from 'react-native-gesture-handler'
-import Animated, { useAnimatedStyle } from 'react-native-reanimated'
+import React, { useCallback, useMemo } from 'react'
 import { useSelector } from 'react-redux'
 import { selectAccountByIndex } from 'store/account'
 import {
@@ -31,10 +22,7 @@ import { selectIsPrivacyModeEnabled } from 'store/settings/securityPrivacy'
 const AccountScreen = (): JSX.Element => {
   const { accountIndex } = useLocalSearchParams<{ accountIndex: string }>()
   const isPrivacyModeEnabled = useSelector(selectIsPrivacyModeEnabled)
-  const { theme } = useTheme()
-  const [balanceHeaderLayout, setBalanceHeaderLayout] = useState<
-    LayoutRectangle | undefined
-  >()
+
   const accountIndexNumber = isNaN(Number(accountIndex))
     ? 0
     : Number(accountIndex)
@@ -63,61 +51,21 @@ const AccountScreen = (): JSX.Element => {
     [currencyBalance, selectedCurrency]
   )
 
-  const handleBalanceHeaderLayout = useCallback(
-    (event: LayoutChangeEvent): void => {
-      setBalanceHeaderLayout(event.nativeEvent.layout)
-    },
-    []
-  )
-
-  const header = useMemo(
-    () => <NavigationTitleHeader title={account?.name ?? ''} />,
-    [account?.name]
-  )
-
-  const { onScroll, targetHiddenProgress } = useFadingHeaderNavigation({
-    header,
-    targetLayout: balanceHeaderLayout,
-    shouldHeaderHaveGrabber: true
-  })
-
-  const animatedHeaderStyle = useAnimatedStyle(() => ({
-    opacity: 1 - targetHiddenProgress.value
-  }))
-
   const renderHeader = useCallback((): JSX.Element => {
     return (
-      <View
-        style={{
-          backgroundColor: theme.colors.$surfacePrimary
-        }}>
-        <View onLayout={handleBalanceHeaderLayout}>
-          <Animated.View
-            style={[
-              {
-                backgroundColor: theme.colors.$surfacePrimary
-              },
-              animatedHeaderStyle
-            ]}>
-            <BalanceHeader
-              accountName={account?.name ?? ''}
-              formattedBalance={formattedBalance}
-              currency={selectedCurrency}
-              errorMessage={
-                balanceAccurate ? undefined : 'Unable to load all balances'
-              }
-              isLoading={isLoading}
-              isPrivacyModeEnabled={isPrivacyModeEnabled}
-              isDeveloperModeEnabled={isDeveloperMode}
-            />
-          </Animated.View>
-        </View>
-      </View>
+      <BalanceHeader
+        accountName={account?.name ?? ''}
+        formattedBalance={formattedBalance}
+        currency={selectedCurrency}
+        errorMessage={
+          balanceAccurate ? undefined : 'Unable to load all balances'
+        }
+        isLoading={isLoading}
+        isPrivacyModeEnabled={isPrivacyModeEnabled}
+        isDeveloperModeEnabled={isDeveloperMode}
+      />
     )
   }, [
-    theme.colors.$surfacePrimary,
-    handleBalanceHeaderLayout,
-    animatedHeaderStyle,
     account?.name,
     formattedBalance,
     selectedCurrency,
@@ -127,26 +75,26 @@ const AccountScreen = (): JSX.Element => {
     isDeveloperMode
   ])
 
+  const renderFooter = useCallback(() => {
+    return <AccountButtons accountIndex={account?.index ?? 0} />
+  }, [account?.index])
+
   if (account === undefined) {
     return <></>
   }
 
   return (
-    <View sx={{ flex: 1, marginBottom: 60, paddingHorizontal: 16 }}>
-      <ScrollView
-        keyboardShouldPersistTaps="handled"
-        onScroll={onScroll}
-        contentContainerStyle={{ paddingBottom: 60 }}>
-        {renderHeader()}
-        <Space y={32} />
-        <View sx={{ gap: 12 }}>
-          <AccountAddresses account={account} />
-          {/* <WalletInfo showPrivateKey={handleShowPrivateKey} /> */}
-        </View>
-        <Space y={32} />
-      </ScrollView>
-      <AccountButtons accountIndex={account.index} />
-    </View>
+    <ScrollScreen
+      renderHeader={renderHeader}
+      renderFooter={renderFooter}
+      isModal
+      navigationTitle={account?.name ?? ''}
+      contentContainerStyle={{ padding: 16 }}>
+      <View sx={{ gap: 12 }}>
+        <AccountAddresses account={account} />
+        {/* <WalletInfo showPrivateKey={handleShowPrivateKey} /> */}
+      </View>
+    </ScrollScreen>
   )
 }
 

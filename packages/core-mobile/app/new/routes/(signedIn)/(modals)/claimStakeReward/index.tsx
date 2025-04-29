@@ -1,32 +1,31 @@
-import React, { useState, useEffect, useRef, useMemo } from 'react'
+import { TokenUnit } from '@avalabs/core-utils-sdk'
 import {
   ActivityIndicator,
   Button,
   GroupList,
   GroupListItem,
-  SafeAreaView,
-  ScrollView,
   showAlert,
+  TokenUnitInput,
+  TokenUnitInputHandle,
   Tooltip,
   View
 } from '@avalabs/k2-alpine'
-import ScreenHeader from 'common/components/ScreenHeader'
-import { useSelector } from 'react-redux'
-import { selectIsDeveloperMode } from 'store/settings/advanced'
-import NetworkService from 'services/network/NetworkService'
-import { TokenUnit } from '@avalabs/core-utils-sdk'
-import AnalyticsService from 'services/analytics/AnalyticsService'
+import { ScrollScreen } from 'common/components/ScrollScreen'
+import { useConfetti } from 'common/contexts/ConfettiContext'
+import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import { usePreventScreenRemoval } from 'common/hooks/usePreventScreenRemoval'
+import { transactionSnackbar } from 'common/utils/toast'
 import { useRouter } from 'expo-router'
+import { StakeTokenUnitValue } from 'features/stake/components/StakeTokenUnitValue'
+import { useClaimRewards } from 'hooks/earn/useClaimRewards'
 import { usePChainBalance } from 'hooks/earn/usePChainBalance'
 import { useAvaxTokenPriceInSelectedCurrency } from 'hooks/useAvaxTokenPriceInSelectedCurrency'
-import { useClaimRewards } from 'hooks/earn/useClaimRewards'
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useSelector } from 'react-redux'
 import { SendErrorMessage } from 'screens/send/utils/types'
-import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
-import { transactionSnackbar } from 'common/utils/toast'
-import { TokenUnitInput, TokenUnitInputHandle } from '@avalabs/k2-alpine'
-import { useConfetti } from 'common/contexts/ConfettiContext'
-import { StakeTokenUnitValue } from 'features/stake/components/StakeTokenUnitValue'
+import AnalyticsService from 'services/analytics/AnalyticsService'
+import NetworkService from 'services/network/NetworkService'
+import { selectIsDeveloperMode } from 'store/settings/advanced'
 
 const ClaimStakeRewardScreen = (): JSX.Element => {
   const { navigate, back } = useRouter()
@@ -112,25 +111,28 @@ const ClaimStakeRewardScreen = (): JSX.Element => {
     claimRewardsMutation.isPending
   ])
 
-  const handleCancel = (): void => {
+  const handleCancel = useCallback(() => {
     AnalyticsService.capture('StakeCancelClaim')
 
     // we call back() first and then navigate() to prevent rerendering the stake home screen when user is already on it.
     back()
 
     navigate('/stake')
-  }
+  }, [back, navigate])
 
-  const issueClaimRewards = (): void => {
+  const issueClaimRewards = useCallback(() => {
     AnalyticsService.capture('StakeIssueClaim')
     claimRewardsMutation.mutate()
-  }
+  }, [claimRewardsMutation])
 
-  const formatInCurrency = (amount: TokenUnit): string => {
-    return formatTokenInCurrency({
-      amount: amount.mul(avaxPrice).toDisplay({ asNumber: true })
-    })
-  }
+  const formatInCurrency = useCallback(
+    (amount: TokenUnit): string => {
+      return formatTokenInCurrency({
+        amount: amount.mul(avaxPrice).toDisplay({ asNumber: true })
+      })
+    },
+    [avaxPrice, formatTokenInCurrency]
+  )
 
   const feeData: GroupListItem[] = useMemo(
     () => [
@@ -171,45 +173,11 @@ const ClaimStakeRewardScreen = (): JSX.Element => {
     }
   }, [data, back])
 
-  return (
-    <SafeAreaView sx={{ flex: 1 }}>
-      <ScrollView
-        style={{ flex: 1 }}
-        contentContainerSx={{ padding: 16, paddingTop: 0 }}>
-        <ScreenHeader title="Claim your staking reward" />
-        <View sx={{ gap: 12, marginTop: 16 }}>
-          <View
-            sx={{
-              backgroundColor: '$surfaceSecondary',
-              paddingVertical: 30,
-              paddingHorizontal: 16,
-              borderRadius: 12
-            }}>
-            <TokenUnitInput
-              ref={ref}
-              amount={claimableAmountInAvax}
-              editable={false}
-              token={{
-                maxDecimals: pNetwork.networkToken.decimals,
-                symbol: pNetwork.networkToken.symbol
-              }}
-              formatInCurrency={formatInCurrency}
-            />
-          </View>
-          <GroupList
-            itemHeight={60}
-            data={feeData}
-            textContainerSx={{
-              marginTop: 0
-            }}
-          />
-        </View>
-      </ScrollView>
+  const renderFooter = useCallback(() => {
+    return (
       <View
         sx={{
-          padding: 16,
-          gap: 16,
-          backgroundColor: '$surfacePrimary'
+          gap: 16
         }}>
         <Button
           type="primary"
@@ -226,7 +194,50 @@ const ClaimStakeRewardScreen = (): JSX.Element => {
           Cancel
         </Button>
       </View>
-    </SafeAreaView>
+    )
+  }, [
+    claimRewardsMutation.isPending,
+    handleCancel,
+    issueClaimRewards,
+    shouldDisableClaimButton
+  ])
+
+  return (
+    <ScrollScreen
+      title="Claim your staking reward"
+      isModal
+      renderFooter={renderFooter}
+      contentContainerStyle={{
+        padding: 16
+      }}>
+      <View sx={{ gap: 12 }}>
+        <View
+          sx={{
+            backgroundColor: '$surfaceSecondary',
+            paddingVertical: 30,
+            paddingHorizontal: 16,
+            borderRadius: 12
+          }}>
+          <TokenUnitInput
+            ref={ref}
+            amount={claimableAmountInAvax}
+            editable={false}
+            token={{
+              maxDecimals: pNetwork.networkToken.decimals,
+              symbol: pNetwork.networkToken.symbol
+            }}
+            formatInCurrency={formatInCurrency}
+          />
+        </View>
+        <GroupList
+          itemHeight={60}
+          data={feeData}
+          textContainerSx={{
+            marginTop: 0
+          }}
+        />
+      </View>
+    </ScrollScreen>
   )
 }
 

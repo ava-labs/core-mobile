@@ -1,4 +1,3 @@
-import React, { useCallback, useMemo } from 'react'
 import {
   ActivityIndicator,
   alpha,
@@ -6,23 +5,25 @@ import {
   useTheme,
   View
 } from '@avalabs/k2-alpine'
-import { useRouter } from 'expo-router'
+import { useHeaderHeight } from '@react-navigation/elements'
+import { useNavigation } from '@react-navigation/native'
 import { QrCodeScanner } from 'common/components/QrCodeScanner'
+import { useRouter } from 'expo-router'
+import { useSendContext } from 'features/send/context/sendContext'
+import { useNativeTokenWithBalanceByNetwork } from 'features/send/hooks/useNativeTokenWithBalanceByNetwork'
 import { useSendSelectedToken } from 'features/send/store'
 import { useNetworks } from 'hooks/networks/useNetworks'
-import { useNativeTokenWithBalanceByNetwork } from 'features/send/hooks/useNativeTokenWithBalanceByNetwork'
+import { useNetworkFee } from 'hooks/useNetworkFee'
+import React, { useCallback, useMemo } from 'react'
+import { useSelector } from 'react-redux'
 import useCollectibleSend from 'screens/send/hooks/useCollectibleSend'
 import { selectActiveAccount } from 'store/account'
-import { useSelector } from 'react-redux'
-import { useNetworkFee } from 'hooks/useNetworkFee'
-import { useNavigation } from '@react-navigation/native'
-import { useSendContext } from 'features/send/context/sendContext'
 import { useSendTransactionCallbacks } from '../hooks/useSendTransactionCallbacks'
-
 export const ScanQrCodeScreen = (): JSX.Element => {
   const {
     theme: { colors }
   } = useTheme()
+  const headerHeight = useHeaderHeight()
   const { isSending } = useSendContext()
   const { getNetwork } = useNetworks()
   const { canGoBack, back } = useRouter()
@@ -73,7 +74,8 @@ export const ScanQrCodeScreen = (): JSX.Element => {
   )
 
   return (
-    <View sx={{ paddingHorizontal: 16, paddingTop: 16, flex: 1 }}>
+    <View
+      sx={{ paddingHorizontal: 16, paddingTop: headerHeight + 16, flex: 1 }}>
       <Text variant="heading2">Scan a QR code</Text>
       <QrCodeScanner
         onSuccess={handleSend}

@@ -1,9 +1,7 @@
-import React from 'react'
-import BlurredBarsContentLayout from 'common/components/BlurredBarsContentLayout'
-import { Button, SafeAreaView, ScrollView, View } from '@avalabs/k2-alpine'
-import ScreenHeader from 'common/components/ScreenHeader'
+import { Button } from '@avalabs/k2-alpine'
+import { ScrollScreen } from 'common/components/ScrollScreen'
 import { SimpleTextInput } from 'common/components/SimpleTextInput'
-import { KeyboardAvoidingView } from 'common/components/KeyboardAvoidingView'
+import React, { useCallback } from 'react'
 
 export const SetWalletName = ({
   name,
@@ -14,36 +12,24 @@ export const SetWalletName = ({
   setName: (value: string) => void
   onNext: () => void
 }): React.JSX.Element => {
+  const renderFooter = useCallback(() => {
+    return (
+      <Button
+        size="large"
+        type="primary"
+        onPress={onNext}
+        disabled={name.length === 0}>
+        Next
+      </Button>
+    )
+  }, [name, onNext])
+
   return (
-    <BlurredBarsContentLayout>
-      <KeyboardAvoidingView>
-        <SafeAreaView sx={{ flex: 1 }}>
-          <ScrollView
-            sx={{ flex: 1 }}
-            contentContainerSx={{ padding: 16, gap: 27 }}
-            keyboardShouldPersistTaps="always"
-            keyboardDismissMode="on-drag">
-            <ScreenHeader
-              title="How would you like to name your wallet?"
-              description="Add a display name for your wallet. You can change it at any time in the app’s settings"
-            />
-            <SimpleTextInput value={name} onChangeText={setName} />
-          </ScrollView>
-          <View
-            sx={{
-              padding: 16,
-              backgroundColor: '$surfacePrimary'
-            }}>
-            <Button
-              size="large"
-              type="primary"
-              onPress={onNext}
-              disabled={name.length === 0}>
-              Next
-            </Button>
-          </View>
-        </SafeAreaView>
-      </KeyboardAvoidingView>
-    </BlurredBarsContentLayout>
+    <ScrollScreen
+      title="How would you like to name your wallet?"
+      renderFooter={renderFooter}
+      contentContainerStyle={{ padding: 16, flex: 1 }}>
+      <SimpleTextInput autoFocus value={name} onChangeText={setName} />
+    </ScrollScreen>
   )
 }

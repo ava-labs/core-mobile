@@ -108,6 +108,7 @@ export const CollectibleRenderer = memo(
               }}
               onLoad={onLoadEnd}
               onError={onImageError}
+              renderToHardwareTextureAndroid={false}
               style={{
                 width: '100%',
                 flex: 1

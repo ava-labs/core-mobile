@@ -10,6 +10,7 @@ import {
 } from '@avalabs/k2-alpine'
 import { AlertWithTextInputsHandle } from '@avalabs/k2-alpine/src/components/Alert/types'
 import { NetworkLogoWithChain } from 'common/components/NetworkLogoWithChain'
+import { ScrollScreen } from 'common/components/ScrollScreen'
 import { useFormState } from 'common/hooks/useFormState'
 import { isValidContactName } from 'common/utils/isValidContactName'
 import { useLocalSearchParams, useRouter } from 'expo-router'
@@ -22,13 +23,9 @@ import {
 } from 'features/accountSettings/hooks/useCustomNetwork'
 import { useNetworks } from 'hooks/networks/useNetworks'
 import React, { useCallback, useMemo, useRef } from 'react'
-import { KeyboardAwareScrollView } from 'react-native-keyboard-controller'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useDispatch } from 'react-redux'
 import { removeCustomNetwork } from 'store/network'
-import { isXPChain } from 'utils/network/isAvalancheNetwork'
-import { isPChain } from 'utils/network/isAvalancheNetwork'
-import { isXChain } from 'utils/network/isAvalancheNetwork'
+import { isPChain, isXChain, isXPChain } from 'utils/network/isAvalancheNetwork'
 
 enum Mode {
   ADD = 'add',
@@ -39,7 +36,6 @@ export const AddEditNetworkScreen = (): JSX.Element => {
   const { canGoBack, back } = useRouter()
   const { theme } = useTheme()
   const dispatch = useDispatch()
-  const insets = useSafeAreaInsets()
   const { networks, customNetworks } = useNetworks()
   const params = useLocalSearchParams<{
     chainId: string
@@ -327,15 +323,63 @@ export const AddEditNetworkScreen = (): JSX.Element => {
     )
   }, [formState.chainName, handleShowAlertWithTextInput, isCustomNetwork, mode])
 
+  const renderFooter = useCallback(() => {
+    if (isCustomNetwork || mode === Mode.ADD)
+      return (
+        <View
+          sx={{
+            gap: 16
+          }}>
+          <Button
+            type="primary"
+            size="large"
+            onPress={handleSubmit}
+            disabled={isSaveDisabled}>
+            Save
+          </Button>
+          {foundNetwork ? (
+            <Button
+              type="secondary"
+              textStyle={{
+                color: theme.colors.$textDanger
+              }}
+              size="large"
+              onPress={handleDelete}>
+              Delete
+            </Button>
+          ) : (
+            <Button
+              type="tertiary"
+              size="large"
+              onPress={() => canGoBack() && back()}>
+              Cancel
+            </Button>
+          )}
+        </View>
+      )
+    return <></>
+  }, [
+    back,
+    canGoBack,
+    foundNetwork,
+    handleDelete,
+    handleSubmit,
+    isCustomNetwork,
+    isSaveDisabled,
+    mode,
+    theme.colors.$textDanger
+  ])
+
   return (
-    <View sx={{ flex: 1, paddingHorizontal: 16, paddingBottom: 16 }}>
-      <KeyboardAwareScrollView
-        keyboardShouldPersistTaps="handled"
-        automaticallyAdjustKeyboardInsets
-        showsVerticalScrollIndicator={false}
+    <>
+      <ScrollScreen
+        isModal
+        shouldAvoidKeyboard={false}
+        renderFooter={renderFooter}
         contentContainerStyle={{
-          justifyContent: 'space-between',
-          gap: 40
+          padding: 16,
+          gap: 40,
+          flex: 1
         }}>
         <View sx={{ alignItems: 'center', gap: 24 }}>
           {formState.logoUri ? (
@@ -373,46 +417,11 @@ export const AddEditNetworkScreen = (): JSX.Element => {
         </View>
 
         <AdvancedForm data={data} />
-      </KeyboardAwareScrollView>
-
-      {(isCustomNetwork || mode === Mode.ADD) && (
-        <View
-          sx={{
-            gap: 16,
-            backgroundColor: '$surfacePrimary',
-            marginBottom: insets.bottom
-          }}>
-          <Button
-            type="primary"
-            size="large"
-            onPress={handleSubmit}
-            disabled={isSaveDisabled}>
-            Save
-          </Button>
-          {foundNetwork ? (
-            <Button
-              type="secondary"
-              textStyle={{
-                color: theme.colors.$textDanger
-              }}
-              size="large"
-              onPress={handleDelete}>
-              Delete
-            </Button>
-          ) : (
-            <Button
-              type="tertiary"
-              size="large"
-              onPress={() => canGoBack() && back()}>
-              Cancel
-            </Button>
-          )}
-        </View>
-      )}
+      </ScrollScreen>
 
       <View>
         <AlertWithTextInputs ref={alert} />
       </View>
-    </View>
+    </>
   )
 }

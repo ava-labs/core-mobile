@@ -1,25 +1,16 @@
-import React, { useCallback, useMemo } from 'react'
-import {
-  Button,
-  GroupList,
-  GroupListItem,
-  SafeAreaView,
-  ScrollView,
-  Tooltip,
-  View
-} from '@avalabs/k2-alpine'
-import ScreenHeader from 'common/components/ScreenHeader'
-import { useLocalSearchParams, useRouter } from 'expo-router'
-import { LinearGradientBottomWrapper } from 'common/components/LinearGradientBottomWrapper'
-import { useGetValidatorByNodeId } from 'hooks/earn/useGetValidatorByNodeId'
-import { truncateNodeId } from 'utils/Utils'
-import { copyToClipboard } from 'common/utils/clipboard'
-import { formatNumber } from 'utils/formatNumber/formatNumber'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
+import { Button, GroupList, GroupListItem, Tooltip } from '@avalabs/k2-alpine'
+import { ScrollScreen } from 'common/components/ScrollScreen'
+import { copyToClipboard } from 'common/utils/clipboard'
+import { useLocalSearchParams, useRouter } from 'expo-router'
+import { useGetValidatorByNodeId } from 'hooks/earn/useGetValidatorByNodeId'
+import React, { useCallback, useMemo } from 'react'
 import { useSelector } from 'react-redux'
-import { selectIsDeveloperMode } from 'store/settings/advanced'
-import NetworkService from 'services/network/NetworkService'
 import { getAvailableDelegationWeight } from 'services/earn/utils'
+import NetworkService from 'services/network/NetworkService'
+import { selectIsDeveloperMode } from 'store/settings/advanced'
+import { formatNumber } from 'utils/formatNumber/formatNumber'
+import { truncateNodeId } from 'utils/Utils'
 
 const StakeNodeDetails = (): JSX.Element => {
   const { navigate } = useRouter()
@@ -144,27 +135,27 @@ const StakeNodeDetails = (): JSX.Element => {
     return section
   }, [validator, validatorWeight, availableDelegationWeight])
 
+  const renderHeader = useCallback(() => {
+    return <GroupList data={details} />
+  }, [details])
+
+  const renderFooter = useCallback(() => {
+    return (
+      <Button type="primary" size="large" onPress={handlePressNext}>
+        Select this node
+      </Button>
+    )
+  }, [handlePressNext])
+
   return (
-    <SafeAreaView sx={{ flex: 1 }}>
-      <ScrollView
-        sx={{ paddingHorizontal: 16, paddingBottom: 16 }}
-        contentContainerSx={{ gap: 16 }}>
-        <ScreenHeader title="Node details" />
-        <GroupList data={details} />
-      </ScrollView>
-      <LinearGradientBottomWrapper>
-        <View
-          sx={{
-            padding: 16,
-            gap: 16,
-            backgroundColor: '$surfacePrimary'
-          }}>
-          <Button type="primary" size="large" onPress={handlePressNext}>
-            Select this node
-          </Button>
-        </View>
-      </LinearGradientBottomWrapper>
-    </SafeAreaView>
+    <ScrollScreen
+      isModal
+      title="Node details"
+      renderFooter={renderFooter}
+      renderHeader={renderHeader}
+      contentContainerStyle={{ padding: 16 }}>
+      <GroupList data={details} />
+    </ScrollScreen>
   )
 }
 

@@ -225,12 +225,7 @@ export const BrowserControls = (): ReactNode => {
               gestureControlStyle,
               {
                 flex: 1,
-                marginBottom:
-                  keyboardHeight > 0
-                    ? Platform.OS === 'ios'
-                      ? 24
-                      : insets.bottom + 24
-                    : 0
+                marginBottom: 24
               }
             ]}>
             <Animated.View

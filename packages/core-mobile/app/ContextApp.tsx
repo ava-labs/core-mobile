@@ -12,7 +12,7 @@ import { RootSiblingParent } from 'react-native-root-siblings'
 import { K2ThemeProvider } from '@avalabs/k2-mobile'
 import JailbrokenWarning from 'screens/onboarding/JailbrokenWarning'
 import { PosthogContextProvider } from 'contexts/PosthogContext'
-import { StatusBar, View } from 'react-native'
+import { View } from 'react-native'
 import { DeeplinkContextProvider } from 'contexts/DeeplinkContext/DeeplinkContext'
 import { EncryptedStoreProvider } from 'contexts/EncryptedStoreProvider'
 import { TopLevelErrorFallback } from 'components/TopLevelErrorFallback'
@@ -47,7 +47,6 @@ const ContextApp = (): JSX.Element => {
 
   return (
     <Sentry.ErrorBoundary fallback={<TopLevelErrorFallback />}>
-      <StatusBar barStyle={'light-content'} backgroundColor="black" />
       {hasMigrated ? (
         <ContextProviders>
           <JailBrokenCheck>

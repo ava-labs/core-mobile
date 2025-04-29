@@ -1,22 +1,15 @@
+import { Icons, SearchBar, Separator, useTheme } from '@avalabs/k2-alpine'
+import { TokenType } from '@avalabs/vm-module-types'
+import { ErrorState } from 'common/components/ErrorState'
+import { ListScreen } from 'common/components/ListScreen'
+import { LoadingState } from 'common/components/LoadingState'
+import NavigationBarButton from 'common/components/NavigationBarButton'
+import { useSearchableTokenList } from 'common/hooks/useSearchableTokenList'
+import { useRouter } from 'expo-router'
+import TokenManagementItem from 'features/portfolio/assets/components/TokenManagementItem'
 import React, { useCallback } from 'react'
 import { ListRenderItemInfo } from 'react-native'
 import { LocalTokenWithBalance } from 'store/balance/types'
-import {
-  Icons,
-  SearchBar,
-  Separator,
-  Text,
-  TouchableOpacity,
-  useTheme,
-  View
-} from '@avalabs/k2-alpine'
-import { TokenType } from '@avalabs/vm-module-types'
-import { useRouter } from 'expo-router'
-import { useSearchableTokenList } from 'common/hooks/useSearchableTokenList'
-import { FlatList } from 'react-native-gesture-handler'
-import TokenManagementItem from 'features/portfolio/assets/components/TokenManagementItem'
-import { LoadingState } from 'common/components/LoadingState'
-import { ErrorState } from 'common/components/ErrorState'
 
 const TokenManagementScreen = (): JSX.Element => {
   const {
@@ -44,15 +37,18 @@ const TokenManagementScreen = (): JSX.Element => {
     return <TokenManagementItem token={token} />
   }
 
-  const handleSearch = (text: string): void => {
-    setSearchText(text)
-  }
+  const handleSearch = useCallback(
+    (text: string): void => {
+      setSearchText(text)
+    },
+    [setSearchText]
+  )
 
   const renderSeparator = useCallback((): JSX.Element => {
     return <Separator sx={{ marginLeft: 52, marginRight: -16 }} />
   }, [])
 
-  const renderContent = useCallback(() => {
+  const ListEmptyComponent = useCallback(() => {
     if (isLoading || isRefetching) {
       return <LoadingState sx={{ flex: 1 }} />
     }
@@ -67,55 +63,43 @@ const TokenManagementScreen = (): JSX.Element => {
         />
       )
     }
+  }, [isLoading, isRefetching, tokenList])
 
-    return (
-      <FlatList
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingHorizontal: 16 }}
-        style={{ width: '100%' }}
-        data={tokenList}
-        ItemSeparatorComponent={renderSeparator}
-        renderItem={item =>
-          renderItem(item as ListRenderItemInfo<LocalTokenWithBalance>)
-        }
-        onRefresh={refetch}
-        refreshing={false}
-        keyExtractor={item => (item as LocalTokenWithBalance).localId}
-        keyboardDismissMode="interactive"
-      />
-    )
-  }, [isLoading, isRefetching, tokenList, refetch, renderSeparator])
-
-  const addCustomToken = (): void => {
+  const addCustomToken = useCallback(() => {
     push('/tokenManagement/addCustomToken')
-  }
+  }, [push])
+
+  const renderHeaderRight = useCallback(() => {
+    return (
+      <NavigationBarButton
+        testID="add_custon_network_btn"
+        isModal
+        onPress={addCustomToken}>
+        <Icons.Content.Add color={colors.$textPrimary} />
+      </NavigationBarButton>
+    )
+  }, [addCustomToken, colors.$textPrimary])
+
+  const renderHeader = useCallback(() => {
+    return <SearchBar onTextChanged={handleSearch} searchText={searchText} />
+  }, [handleSearch, searchText])
 
   return (
-    <View
-      sx={{
-        flex: 1,
-        gap: 16
-      }}>
-      <View
-        sx={{
-          flexDirection: 'row',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          paddingHorizontal: 16
-        }}>
-        <Text variant="heading2">Manage list</Text>
-        <TouchableOpacity onPress={addCustomToken} hitSlop={16}>
-          <Icons.Content.Add color={colors.$textPrimary} />
-        </TouchableOpacity>
-      </View>
-      <View
-        style={{
-          paddingHorizontal: 16
-        }}>
-        <SearchBar onTextChanged={handleSearch} searchText={searchText} />
-      </View>
-      {renderContent()}
-    </View>
+    <ListScreen
+      title="Manage list"
+      data={tokenList}
+      isModal
+      renderHeaderRight={renderHeaderRight}
+      ItemSeparatorComponent={renderSeparator}
+      renderItem={item =>
+        renderItem(item as ListRenderItemInfo<LocalTokenWithBalance>)
+      }
+      onRefresh={refetch}
+      refreshing={false}
+      ListEmptyComponent={ListEmptyComponent}
+      keyExtractor={item => (item as LocalTokenWithBalance).localId}
+      renderHeader={renderHeader}
+    />
   )
 }
 

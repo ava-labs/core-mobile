@@ -1,7 +1,6 @@
 import { truncateAddress } from '@avalabs/core-utils-sdk'
 import {
   Avatar,
-  FlatList,
   Icons,
   Image,
   SPRING_LINEAR_TRANSITION,
@@ -14,20 +13,17 @@ import {
   useTheme
 } from '@avalabs/k2-alpine'
 import { ErrorState } from 'common/components/ErrorState'
+import { ListScreen } from 'common/components/ListScreen'
 import { getListItemEnteringAnimation } from 'common/utils/animations'
 import { loadAvatar } from 'common/utils/loadAvatar'
 import { getAddressFromContact } from 'features/accountSettings/utils/getAddressFromContact'
 import { isValidAddress } from 'features/accountSettings/utils/isValidAddress'
-import { portfolioTabContentHeight } from 'features/portfolio/utils'
 import React, { useCallback, useMemo, useState } from 'react'
 import Animated from 'react-native-reanimated'
 import { useSelector } from 'react-redux'
 import { Contact } from 'store/addressBook'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
-import { useSimpleFadingHeader } from 'new/common/hooks/useSimpleFadingHeader'
 import EMPTY_ADDRESS_BOOK_ICON from '../../../assets/icons/address_book_empty.png'
-
-const TITLE = `First, enter the\nrecipient’s address`
 
 interface Props {
   recentAddresses: Contact[]
@@ -44,11 +40,6 @@ export const RecentContacts = ({
   onSubmitEditing,
   onGoToQrCode
 }: Props): JSX.Element => {
-  const { onScroll, handleHeaderLayout, animatedHeaderStyle } =
-    useSimpleFadingHeader({
-      title: 'Recipient’s address',
-      shouldHeaderHaveGrabber: true
-    })
   const {
     theme: { colors }
   } = useTheme()
@@ -102,7 +93,6 @@ export const RecentContacts = ({
 
       return (
         <Animated.View
-          key={item.id}
           entering={getListItemEnteringAnimation(index)}
           layout={SPRING_LINEAR_TRANSITION}>
           <TouchableOpacity
@@ -183,63 +173,68 @@ export const RecentContacts = ({
     [colors.$textSecondary, searchResults.length, onSelectContact]
   )
 
-  return (
-    <FlatList
-      showsVerticalScrollIndicator={false}
-      scrollEventThrottle={16}
-      onScroll={onScroll}
-      data={searchResults}
-      contentContainerStyle={{ paddingBottom: 60, flexGrow: 1 }}
-      keyExtractor={item => (item as Contact).id}
-      ListEmptyComponent={
-        <ErrorState
-          sx={{ height: portfolioTabContentHeight }}
-          icon={
-            <Image
-              source={EMPTY_ADDRESS_BOOK_ICON}
-              sx={{ width: 42, height: 42 }}
-            />
+  const renderHeader = useCallback(() => {
+    return (
+      <View
+        style={{
+          gap: 16
+        }}>
+        <SearchBar
+          onTextChanged={setSearchText}
+          searchText={searchText}
+          placeholder="Type in address or search contact"
+          useDebounce={true}
+          onSubmitEditing={e => handleSumbitEditing(e.nativeEvent.text)}
+          rightComponent={
+            <TouchableOpacity
+              onPress={onGoToQrCode}
+              hitSlop={16}
+              sx={{
+                marginRight: 9,
+                justifyContent: 'center',
+                alignItems: 'center'
+              }}>
+              <Icons.Custom.QRCodeScanner
+                color={colors.$textSecondary}
+                width={20}
+                height={20}
+              />
+            </TouchableOpacity>
           }
-          title="No recent addresses"
-          description="Search address or scan QR code to send funds"
         />
-      }
-      ListHeaderComponent={
-        <View sx={{ gap: 16, marginHorizontal: 16 }}>
-          <Animated.View
-            style={animatedHeaderStyle}
-            onLayout={handleHeaderLayout}>
-            <Text variant="heading2">{TITLE}</Text>
-          </Animated.View>
-          <SearchBar
-            onTextChanged={setSearchText}
-            searchText={searchText}
-            placeholder="Type in address or search contact"
-            useDebounce={true}
-            onSubmitEditing={e => handleSumbitEditing(e.nativeEvent.text)}
-            rightComponent={
-              <TouchableOpacity
-                onPress={onGoToQrCode}
-                hitSlop={16}
-                sx={{
-                  marginRight: 9,
-                  justifyContent: 'center',
-                  alignItems: 'center'
-                }}>
-                <Icons.Custom.QRCodeScanner
-                  color={colors.$textSecondary}
-                  width={20}
-                  height={20}
-                />
-              </TouchableOpacity>
-            }
+        <Text variant="heading6" sx={{ color: '$textPrimary' }}>
+          {searchText.trim().length > 0 ? 'Contacts' : 'Recents'}
+        </Text>
+      </View>
+    )
+  }, [colors.$textSecondary, handleSumbitEditing, onGoToQrCode, searchText])
+
+  const renderEmpty = useCallback(() => {
+    return (
+      <ErrorState
+        sx={{ flex: 1 }}
+        icon={
+          <Image
+            source={EMPTY_ADDRESS_BOOK_ICON}
+            sx={{ width: 42, height: 42 }}
           />
-          <Text variant="heading6" sx={{ color: '$textPrimary' }}>
-            {searchText.trim().length > 0 ? 'Contacts' : 'Recents'}
-          </Text>
-        </View>
-      }
+        }
+        title="No recent addresses"
+        description="Search address or scan QR code to send funds"
+      />
+    )
+  }, [])
+
+  return (
+    <ListScreen
+      title={`First, enter the\nrecipient's address`}
+      navigationTitle="Enter the recipient's address"
+      data={searchResults}
+      isModal
+      renderHeader={renderHeader}
+      keyExtractor={item => `recent-contact-${item.id}`}
       renderItem={item => renderItem(item.item as Contact, item.index)}
+      renderEmpty={renderEmpty}
     />
   )
 }

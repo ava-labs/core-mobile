@@ -345,10 +345,8 @@ __metadata:
     expo-linear-gradient: 14.0.2
     expo-linking: 7.0.5
     expo-local-authentication: 15.0.2
-    expo-navigation-bar: 4.0.8
     expo-router: 4.0.18
     expo-sms: 13.0.1
-    expo-status-bar: 2.0.1
     expo-video: 2.0.5
     https-browserify: 1.0.0
     hypersdk-client: 0.4.16
@@ -388,6 +386,7 @@ __metadata:
     react-native-collapsible-tab-view: 8.0.0
     react-native-config: 1.5.3
     react-native-device-info: 13.0.0
+    react-native-edge-to-edge: 1.6.0
     react-native-fs: 2.20.0
     react-native-gesture-handler: 2.24.0
     react-native-get-random-values: 1.11.0
@@ -654,7 +653,6 @@ __metadata:
     expo-image: 2.0.4
     expo-linear-gradient: 14.0.2
     expo-splash-screen: 0.29.18
-    expo-status-bar: 2.0.1
     expo-video: 2.0.5
     jest: 29.7.0
     json-stringify-pretty-compact: 4.0.0
@@ -19123,20 +19121,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"expo-navigation-bar@npm:4.0.8":
-  version: 4.0.8
-  resolution: "expo-navigation-bar@npm:4.0.8"
-  dependencies:
-    "@react-native/normalize-colors": 0.76.7
-    debug: ^4.3.2
-  peerDependencies:
-    expo: "*"
-    react: "*"
-    react-native: "*"
-  checksum: cb43df98f075945c8699ec3eafc0deb3fb3a77d025418ac349e1571e23a49664d212b14644c53512e48977654971a5255bba376a44b737909a22d80f74cdbcbb
-  languageName: node
-  linkType: hard
-
 "expo-router@npm:4.0.18":
   version: 4.0.18
   resolution: "expo-router@npm:4.0.18"
@@ -19190,16 +19174,6 @@ __metadata:
   peerDependencies:
     expo: "*"
   checksum: 75dc763b17fc38d599cf4a557190e3c9b661d454dc87096f2ca628fdf2430fbeb83b6b43baf07a29adf3142e8c33fcaf52b74c595a71d806cc687d363415b74a
-  languageName: node
-  linkType: hard
-
-"expo-status-bar@npm:2.0.1":
-  version: 2.0.1
-  resolution: "expo-status-bar@npm:2.0.1"
-  peerDependencies:
-    react: "*"
-    react-native: "*"
-  checksum: 7e9c38c0e2a7a593958756572369fe515dc7bc7eb774eecbd2c008f994c420fa7196796c3ba32117bd801677b84b3335918c18e7e276981d49f1b7b8ebbbde95
   languageName: node
   linkType: hard
 
@@ -27007,6 +26981,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"react-native-edge-to-edge@npm:1.6.0":
+  version: 1.6.0
+  resolution: "react-native-edge-to-edge@npm:1.6.0"
+  peerDependencies:
+    react: "*"
+    react-native: "*"
+  checksum: 624893661f8708b6924faafb0586edc1f42b3741930866efd2dd263c9592e5abc8a4615d7a3ee41e8aa4da9486bda56c84385bc35a168269f22ec0a8432aa5de
+  languageName: node
+  linkType: hard
+
 "react-native-fast-confetti@npm:0.8.2":
   version: 0.8.2
   resolution: "react-native-fast-confetti@npm:0.8.2"
@@ -27636,7 +27620,7 @@ react-native-webview@ava-labs/react-native-webview:
   peerDependencies:
     react: "*"
     react-native: "*"
-  checksum: ae658f8c94177d1b419ffb73d26bd70474b6c688af507daaabc11451f983f77a906b2aafcdfdd09c96cab846d9722dcaf26a7c22ee7d19fb4cf70578c8812ac5
+  checksum: f7ac158dbe58d410185c45bcdd1ae1bbdab3d3548940e2e1e1ef792a33996713d40bb4ee7c7420f078f013954c78d43b11eb5884ab0d786da781936be78a41cd
   languageName: node
   linkType: hard
 

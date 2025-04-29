@@ -1,18 +1,16 @@
-import React, { useCallback, useState, useEffect } from 'react'
+import { useStoredBiometrics } from 'common/hooks/useStoredBiometrics'
 import { useRouter } from 'expo-router'
 import { CreatePin as Component } from 'features/onboarding/components/CreatePin'
-import Logger from 'utils/Logger'
-import AnalyticsService from 'services/analytics/AnalyticsService'
 import { useWallet } from 'hooks/useWallet'
-import { SEEDLESS_MNEMONIC_STUB } from 'seedless/consts'
-import { WalletType } from 'services/wallet/types'
-import SeedlessService from 'seedless/services/SeedlessService'
+import React, { useCallback, useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
+import { SEEDLESS_MNEMONIC_STUB } from 'seedless/consts'
+import SeedlessService from 'seedless/services/SeedlessService'
+import AnalyticsService from 'services/analytics/AnalyticsService'
+import { WalletType } from 'services/wallet/types'
 import { selectWalletType } from 'store/app'
-import BlurredBarsContentLayout from 'common/components/BlurredBarsContentLayout'
-import { KeyboardAvoidingView } from 'common/components/KeyboardAvoidingView'
 import BiometricsSDK from 'utils/BiometricsSDK'
-import { useStoredBiometrics } from 'common/hooks/useStoredBiometrics'
+import Logger from 'utils/Logger'
 
 export default function CreatePin(): JSX.Element {
   const walletType = useSelector(selectWalletType)
@@ -62,18 +60,14 @@ export default function CreatePin(): JSX.Element {
   )
 
   return (
-    <BlurredBarsContentLayout sx={{ marginTop: 16 }}>
-      <KeyboardAvoidingView>
-        <Component
-          onEnteredValidPin={handleEnteredValidPin}
-          useBiometrics={useBiometrics}
-          setUseBiometrics={setUseBiometrics}
-          newPinTitle={`Secure your wallet\nwith a PIN`}
-          newPinDescription="For extra security, avoid choosing a PIN that contains repeating digits in a sequential order"
-          confirmPinTitle={`Confirm your\nPIN code`}
-          isBiometricAvailable={isBiometricAvailable}
-        />
-      </KeyboardAvoidingView>
-    </BlurredBarsContentLayout>
+    <Component
+      onEnteredValidPin={handleEnteredValidPin}
+      useBiometrics={useBiometrics}
+      setUseBiometrics={setUseBiometrics}
+      newPinTitle={`Secure your wallet\nwith a PIN`}
+      newPinDescription="For extra security, avoid choosing a PIN that contains repeating digits in a sequential order"
+      confirmPinTitle={`Confirm your\nPIN code`}
+      isBiometricAvailable={isBiometricAvailable}
+    />
   )
 }
