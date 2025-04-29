@@ -5,8 +5,8 @@ import {
 } from '@avalabs/k2-alpine'
 import { useHeaderHeight } from '@react-navigation/elements'
 import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
-import React, { useLayoutEffect, useRef, useState } from 'react'
-import { LayoutRectangle, View } from 'react-native'
+import React, { useLayoutEffect, useMemo, useRef, useState } from 'react'
+import { LayoutRectangle, Platform, View } from 'react-native'
 import {
   KeyboardAwareScrollView,
   KeyboardAwareScrollViewProps
@@ -114,10 +114,20 @@ export const ScrollScreen = ({
     }
   }, [contentHeaderHeight])
 
+  const keyboardVerticalOffset = useMemo(() => {
+    if (isModal) {
+      if (Platform.OS === 'android' && insets.bottom > 30) {
+        return -12
+      }
+      return insets.bottom - 12
+    }
+    return -insets.bottom
+  }, [isModal, insets.bottom])
+
   return (
     <KeyboardAvoidingView
       enabled={shouldAvoidKeyboard}
-      keyboardVerticalOffset={isModal ? insets.bottom - 16 : -insets.bottom}>
+      keyboardVerticalOffset={keyboardVerticalOffset}>
       <BlurViewWithFallback
         style={{
           position: 'absolute',

@@ -266,7 +266,9 @@ const AccountSettingsScreen = (): JSX.Element => {
         </View>
 
         {/* Footer */}
-        <View testID="settings_footer" sx={{ gap: 8, alignItems: 'center' }}>
+        <View
+          testID="settings_footer"
+          sx={{ gap: 8, alignItems: 'center', paddingBottom: 24 }}>
           <Logos.AppIcons.Core
             color={colors.$textSecondary}
             width={79}
