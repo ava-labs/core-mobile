@@ -95,12 +95,12 @@ export const useAssetsFilterAndSort = (): {
   const getSorted = useCallback(
     (filtered: LocalTokenWithBalance[]) => {
       if (sortOption === AssetBalanceSort.LowToHigh) {
-        return filtered?.sort((a, b) =>
+        return filtered?.toSorted((a, b) =>
           sortUndefined(a.balanceInCurrency, b.balanceInCurrency)
         )
       }
 
-      return filtered?.sort((a, b) =>
+      return filtered?.toSorted((a, b) =>
         sortUndefined(b.balanceInCurrency, a.balanceInCurrency)
       )
     },

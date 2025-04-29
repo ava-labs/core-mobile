@@ -43,7 +43,7 @@ export const sortedTokensWithBalance = (
       token.symbol !== TokenSymbol.ETH &&
       token.symbol !== TokenSymbol.BTC
   )
-  const sorted = rest.sort(
+  const sorted = rest.toSorted(
     (a, b) => Number(b.balanceInCurrency) - Number(a.balanceInCurrency)
   )
   return [...primaryTokens, ...sorted]
