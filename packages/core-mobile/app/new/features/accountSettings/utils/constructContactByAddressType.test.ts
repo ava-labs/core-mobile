@@ -7,6 +7,7 @@ describe('constructContactByAddressType', () => {
   const contact: Contact = {
     id: '1',
     name: 'John Doe',
+    type: 'contact',
     address: undefined,
     addressXP: undefined,
     addressBTC: undefined

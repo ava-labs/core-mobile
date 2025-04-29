@@ -1,11 +1,10 @@
 import { DeFiPerpetualItem } from 'services/defi/types'
 import React from 'react'
-import { Row } from 'components/Row'
-import { StackedImages } from 'components/StackedImages'
 import { useExchangedAmount } from 'new/common/hooks/useExchangedAmount'
 import { Card, Separator, Text, useTheme, View } from '@avalabs/k2-alpine'
 import { IMAGE_SIZE } from '../consts'
 import { DeFiRowItem } from './DeFiRowItem'
+import { StackedImages } from './StackedImages'
 
 export const DeFiPortfolioPerpetual = ({
   items
@@ -39,9 +38,10 @@ export const DeFiPortfolioPerpetual = ({
               </DeFiRowItem>
               <Separator sx={{ marginHorizontal: 16 }} />
               <DeFiRowItem>
-                <Row
+                <View
                   style={{
                     gap: 8,
+                    flexDirection: 'row',
                     alignItems: 'center',
                     flexShrink: 1,
                     marginRight: 10
@@ -60,7 +60,7 @@ export const DeFiPortfolioPerpetual = ({
                     sx={{ color: '$textSecondary', flexShrink: 1 }}>
                     {positionToken.symbol}/{marginToken.symbol}
                   </Text>
-                </Row>
+                </View>
                 <Text variant="body1" sx={{ color: '$textSecondary' }}>
                   {getAmount(netUsdValue, 'compact')}
                 </Text>

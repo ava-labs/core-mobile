@@ -51,11 +51,11 @@ interface ScrollScreenProps extends KeyboardAwareScrollViewProps {
   /** Title to be displayed in the navigation header */
   navigationTitle?: string
   /** Custom header component to be rendered */
-  renderHeader?: () => JSX.Element
+  renderHeader?: () => React.ReactNode
   /** Custom footer component to be rendered at the bottom of the screen */
-  renderFooter?: () => JSX.Element
+  renderFooter?: () => React.ReactNode
   /** Custom component to be rendered on the right side of the header */
-  renderHeaderRight?: () => JSX.Element
+  renderHeaderRight?: () => React.ReactNode
 }
 
 export const ScrollScreen = ({
@@ -106,6 +106,7 @@ export const ScrollScreen = ({
 
   useLayoutEffect(() => {
     if (headerRef.current) {
+      // eslint-disable-next-line max-params
       headerRef.current.measure((x, y, width, height) => {
         contentHeaderHeight.value = height
         setHeaderLayout({ x, y, width, height })

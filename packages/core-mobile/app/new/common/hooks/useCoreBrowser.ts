@@ -9,6 +9,7 @@ export function useCoreBrowser(): {
   const dispatch = useDispatch()
 
   const openUrl = (history: Pick<History, 'url' | 'title'>): void => {
+    // @ts-ignore TODO: make routes typesafe
     navigate('browser')
     dispatch(addTab())
     dispatch(addHistoryForActiveTab(history))

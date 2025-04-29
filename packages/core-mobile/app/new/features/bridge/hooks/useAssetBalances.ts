@@ -1,15 +1,13 @@
 import { useMemo } from 'react'
-import { AssetBalance } from 'screens/bridge/utils/types'
 import { useSelector } from 'react-redux'
 import { selectTokensWithBalanceByNetwork } from 'store/balance/slice'
 import { bigintToBig } from 'utils/bigNumbers/bigintToBig'
 import { useTokenInfoContext } from '@avalabs/core-bridge-sdk'
 import { selectTokenVisibility } from 'store/portfolio'
 import { isTokenVisible } from 'store/balance/utils'
-import { getAssetBalances } from 'screens/bridge/handlers/getAssetBalances'
-import { unwrapAssetSymbol } from '../utils/bridgeUtils'
+import { AssetBalance, unwrapAssetSymbol } from 'common/utils/bridgeUtils'
+import { getAssetBalances } from 'features/bridge/utils/getAssetBalances'
 import { useBridgeAssets } from './useBridgeAssets'
-
 /**
  * Get a list of bridge supported assets with the balances.
  * The list is sorted by balance.

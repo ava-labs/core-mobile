@@ -1,5 +1,4 @@
 import { ChainId } from '@avalabs/core-chains-sdk'
-import StorageTools from 'repository/StorageTools'
 import BiometricsSDK from 'utils/BiometricsSDK'
 import {
   Contact,
@@ -92,24 +91,7 @@ export const migrations = {
     }
   },
   6: async (state: any) => {
-    const map = await StorageTools.loadFromStorageAsMap<
-      'CoreAnalytics' | 'ConsentToTOU&PP',
-      boolean | undefined
-    >('USER_SETTINGS')
-
-    const coreAnalytics = map.get('CoreAnalytics')
-    const consentToTOUnPP = Boolean(map.get('ConsentToTOU&PP'))
-
-    return {
-      ...state,
-      settings: {
-        ...state.settings,
-        securityPrivacy: {
-          coreAnalytics: coreAnalytics,
-          consentToTOUnPP
-        }
-      }
-    }
+    return state
   },
   7: (state: any) => {
     if (state.posthog.featureFlags === undefined) {
@@ -252,6 +234,7 @@ export const migrations = {
 
     Object.entries(addressBookState.contacts).forEach(([uid, contact]) => {
       const oldContact = contact as unknown as OldContactType
+      // @ts-ignore
       addressBookState.contacts[uid] = {
         id: oldContact.id,
         name: oldContact.title,

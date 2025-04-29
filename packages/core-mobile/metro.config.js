@@ -21,11 +21,7 @@ const baseConfig = {
   },
   resolver: {
     // mute warnings about circular dependencies
-    requireCycleIgnorePatterns: [
-      /^app\/.*/,
-      /k2-mobile\/.*/,
-      /^node_modules\/.*/
-    ],
+    requireCycleIgnorePatterns: [/^app\/.*/, /^node_modules\/.*/],
     extraNodeModules: {
       stream: require.resolve('./node_modules/stream-browserify')
     },

@@ -1,6 +1,6 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { NftLocalId } from 'services/nft/types'
-import { RootState } from 'store'
+import { RootState } from 'store/types'
 
 import { initialState } from './types'
 

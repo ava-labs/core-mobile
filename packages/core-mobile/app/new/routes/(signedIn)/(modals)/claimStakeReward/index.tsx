@@ -12,6 +12,7 @@ import {
 } from '@avalabs/k2-alpine'
 import { ScrollScreen } from 'common/components/ScrollScreen'
 import { useConfetti } from 'common/contexts/ConfettiContext'
+import { SendErrorMessage } from 'common/hooks/send/utils/types'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import { usePreventScreenRemoval } from 'common/hooks/usePreventScreenRemoval'
 import { transactionSnackbar } from 'common/utils/toast'
@@ -22,7 +23,6 @@ import { usePChainBalance } from 'hooks/earn/usePChainBalance'
 import { useAvaxTokenPriceInSelectedCurrency } from 'hooks/useAvaxTokenPriceInSelectedCurrency'
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useSelector } from 'react-redux'
-import { SendErrorMessage } from 'screens/send/utils/types'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import NetworkService from 'services/network/NetworkService'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
@@ -116,7 +116,7 @@ const ClaimStakeRewardScreen = (): JSX.Element => {
 
     // we call back() first and then navigate() to prevent rerendering the stake home screen when user is already on it.
     back()
-
+    // @ts-ignore TODO: make routes typesafe
     navigate('/stake')
   }, [back, navigate])
 

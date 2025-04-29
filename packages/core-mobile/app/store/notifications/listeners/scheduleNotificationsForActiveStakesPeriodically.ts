@@ -1,5 +1,5 @@
 import { Action } from '@reduxjs/toolkit'
-import { AppListenerEffectAPI } from 'store'
+import { AppListenerEffectAPI } from 'store/types'
 import { selectIsEarnBlocked } from 'store/posthog'
 import Logger from 'utils/Logger'
 import { selectAccounts } from 'store/account'

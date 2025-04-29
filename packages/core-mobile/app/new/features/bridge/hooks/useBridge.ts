@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useState } from 'react'
-import { AssetBalance } from 'screens/bridge/utils/types'
 import Big from 'big.js'
 import Logger from 'utils/Logger'
 import { Network } from '@avalabs/core-chains-sdk'
@@ -7,10 +6,11 @@ import { BridgeAsset, BridgeType } from '@avalabs/bridge-unified'
 import { useNetworkFee } from 'hooks/useNetworkFee'
 import { NetworkVMType } from '@avalabs/vm-module-types'
 import {
+  AssetBalance,
   getAssetBalance,
   unwrapAssetSymbol,
   wrapAssetSymbol
-} from '../utils/bridgeUtils'
+} from 'common/utils/bridgeUtils'
 import { useAssetBalances } from './useAssetBalances'
 import { useBridgeAssets } from './useBridgeAssets'
 import {

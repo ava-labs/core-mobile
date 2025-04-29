@@ -1,6 +1,6 @@
 import { Button, Text, View, useTheme } from '@avalabs/k2-alpine'
 import React from 'react'
-import { Space } from 'components/Space'
+import { Space } from 'common/components/Space'
 import { AnimatedCircularProgress } from 'react-native-circular-progress'
 import { SHOW_RECOVERY_PHRASE } from '../consts'
 

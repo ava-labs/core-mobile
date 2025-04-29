@@ -100,6 +100,7 @@ export const BrowserInput = ({
 
   const navigateToTabs = useCallback((): void => {
     AnalyticsService.capture('BrowserTabsOpened').catch(Logger.error)
+    // @ts-ignore TODO: make routes typesafe
     navigate('tabs')
   }, [navigate])
 

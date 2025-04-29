@@ -111,12 +111,14 @@ const StakeHomeScreen = (): JSX.Element => {
 
   const handlePressStake = useCallback(
     (txHash: string) => {
+      // @ts-ignore TODO: make routes typesafe
       navigate({ pathname: '/stakeDetail', params: { txHash } })
     },
     [navigate]
   )
 
   const handleClaim = useCallback(() => {
+    // @ts-ignore TODO: make routes typesafe
     navigate('/claimStakeReward')
   }, [navigate])
 

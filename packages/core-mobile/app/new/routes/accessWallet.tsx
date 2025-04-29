@@ -10,6 +10,7 @@ const AccessWalletScreen = (): JSX.Element => {
 
   const handleEnterRecoveryPhrase = (): void => {
     navigate({
+      // @ts-ignore TODO: make routes typesafe
       pathname: '/onboarding/mnemonic/',
       params: { recovering: 'true' }
     })
@@ -17,6 +18,7 @@ const AccessWalletScreen = (): JSX.Element => {
 
   const handleCreateMnemonicWallet = (): void => {
     navigate({
+      // @ts-ignore TODO: make routes typesafe
       pathname: '/onboarding/mnemonic/'
     })
   }

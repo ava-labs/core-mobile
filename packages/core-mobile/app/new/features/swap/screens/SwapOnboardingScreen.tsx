@@ -8,6 +8,7 @@ export const SwapOnboardingScreen = (): JSX.Element => {
   const { navigate } = useRouter()
 
   const handlePressNext = useCallback(() => {
+    // @ts-ignore TODO: make routes typesafe
     navigate('/swap/swap')
   }, [navigate])
 

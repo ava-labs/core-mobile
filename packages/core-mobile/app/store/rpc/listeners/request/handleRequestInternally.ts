@@ -1,5 +1,5 @@
 import { AnyAction } from '@reduxjs/toolkit'
-import { AppListenerEffectAPI } from 'store'
+import { AppListenerEffectAPI } from 'store/types'
 import Logger from 'utils/Logger'
 import { DEFERRED_RESULT, RpcRequestHandler } from '../../handlers/types'
 import { AgnosticRpcProvider, Request } from '../../types'

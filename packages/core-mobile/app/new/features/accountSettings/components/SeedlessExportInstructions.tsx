@@ -1,6 +1,6 @@
 import { Button, Icons, Text, useTheme, View } from '@avalabs/k2-alpine'
 import React from 'react'
-import { Space } from 'components/Space'
+import { Space } from 'common/components/Space'
 import {
   getDelayInstruction,
   getDelayWarningDescription

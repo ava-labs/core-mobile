@@ -1,4 +1,4 @@
-import { AppListenerEffectAPI } from 'store'
+import { AppListenerEffectAPI } from 'store/types'
 import { rpcErrors } from '@metamask/rpc-errors'
 import { RpcMethod } from 'store/rpc/types'
 import {
@@ -6,8 +6,6 @@ import {
   toggleDeveloperMode
 } from 'store/settings/advanced'
 import Logger from 'utils/Logger'
-import * as Navigation from 'utils/Navigation'
-import AppNavigation from 'navigation/AppNavigation'
 import {
   ApproveResponse,
   DEFERRED_RESULT,
@@ -56,17 +54,18 @@ class AvalancheSetDeveloperModeHandler
       }
     }
 
-    const data: AvalancheSetDeveloperModeApproveData = {
-      enabled
-    }
+    // const data: AvalancheSetDeveloperModeApproveData = {
+    //   enabled
+    // }
 
-    Navigation.navigate({
-      name: AppNavigation.Root.Wallet,
-      params: {
-        screen: AppNavigation.Modal.AvalancheSetDeveloperMode,
-        params: { request, data }
-      }
-    })
+    // TODO: reenable this rpc handler
+    // Navigation.navigate({
+    //   name: AppNavigation.Root.Wallet,
+    //   params: {
+    //     screen: AppNavigation.Modal.AvalancheSetDeveloperMode,
+    //     params: { request, data }
+    //   }
+    // })
     return { success: true, value: DEFERRED_RESULT }
   }
 

@@ -1,6 +1,6 @@
 import React from 'react'
 import { NetworkTokenWithBalance } from '@avalabs/vm-module-types'
-import useEVMSend from 'screens/send/hooks/useEVMSend'
+import useEVMSend from 'common/hooks/send/useEVMSend'
 import { Account } from 'store/account'
 import { Network } from '@avalabs/core-chains-sdk'
 import { useSendSelectedToken } from '../store'

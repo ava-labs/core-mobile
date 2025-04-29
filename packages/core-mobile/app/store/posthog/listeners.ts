@@ -1,5 +1,5 @@
 import { Action, isAnyOf } from '@reduxjs/toolkit'
-import { AppStartListening } from 'store/middleware/listener'
+import { AppStartListening, AppListenerEffectAPI } from 'store/types'
 import { onLogIn, onLogOut, onRehydrationComplete } from 'store/app/slice'
 import {
   regenerateUserId,
@@ -12,7 +12,6 @@ import {
 } from 'store/posthog/slice'
 import PostHogService from 'services/posthog/PostHogService'
 import AnalyticsService from 'services/analytics/AnalyticsService'
-import { AppListenerEffectAPI } from 'store'
 import Logger from 'utils/Logger'
 
 const FEATURE_FLAGS_FETCH_INTERVAL = 30000 // 30 seconds

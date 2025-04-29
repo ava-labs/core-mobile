@@ -1,8 +1,8 @@
 import { useIsFocused } from '@react-navigation/native'
 import { Selector, shallowEqual, useSelector } from 'react-redux'
-import { RootState } from 'store'
+import { RootState } from 'store/types'
 
-const returnTrueFn = () => true
+const returnTrueFn = (): boolean => true
 
 /**
  * an enhanced useSelector that subscribes to/unsubscribes from store updates
@@ -10,7 +10,7 @@ const returnTrueFn = () => true
  */
 export const useFocusedSelector = <Result>(
   selectorFn: Selector<RootState, Result>
-) => {
+): Result => {
   const isFocused = useIsFocused()
   const equalityFn = isFocused ? shallowEqual : returnTrueFn
   return useSelector(selectorFn, equalityFn)

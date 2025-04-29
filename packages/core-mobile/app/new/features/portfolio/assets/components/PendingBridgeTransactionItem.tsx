@@ -1,9 +1,9 @@
 import React, { FC, useMemo } from 'react'
-import { isUnifiedBridgeTransfer } from 'screens/bridge/utils/bridgeUtils'
 import { BridgeTransfer } from '@avalabs/bridge-unified'
 import { bigintToBig } from '@avalabs/core-utils-sdk'
 import { BridgeTransaction } from '@avalabs/core-bridge-sdk'
 import { Icons, useTheme, View } from '@avalabs/k2-alpine'
+import { isUnifiedBridgeTransfer } from 'common/utils/bridgeUtils'
 import ActivityListItem from './ActivityListItem'
 
 interface PendingBridgeTransactionItemProps {

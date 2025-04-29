@@ -9,10 +9,12 @@ export default function AuthenticatorSetup(): JSX.Element {
   const router = useRouter()
 
   const goToVerifyCode = useCallback((): void => {
+    // @ts-ignore TODO: make routes typesafe
     router.push('/accountSettings/addRecoveryMethods/verifyCode')
   }, [router])
 
   const goToScanQrCode = useCallback((): void => {
+    // @ts-ignore TODO: make routes typesafe
     router.navigate('/accountSettings/addRecoveryMethods/scanQrCode')
   }, [router])
 

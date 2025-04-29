@@ -2,8 +2,7 @@ import { configureStore, createListenerMiddleware } from '@reduxjs/toolkit'
 import { Module, Network, NetworkVMType } from '@avalabs/vm-module-types'
 import { noop } from 'lodash'
 import WalletConnectService from 'services/walletconnectv2/WalletConnectService'
-import { AppStartListening } from 'store/middleware/listener'
-import * as Toast from 'utils/toast'
+import { AppStartListening } from 'store/types'
 import mockSession from 'tests/fixtures/walletConnect/session.json'
 import mockNetworks from 'tests/fixtures/networks.json'
 import * as appSlice from 'store/app/slice'
@@ -105,8 +104,6 @@ jest.mock('store/network/slice', () => {
   }
 })
 mockSelectNetwork.mockImplementation(() => mockNetworks[43114])
-
-jest.spyOn(Toast, 'showTransactionErrorToast').mockImplementation(jest.fn())
 
 jest.mock('new/common/utils/toast', () => ({
   transactionSnackbar: {
@@ -647,14 +644,12 @@ describe('rpc - listeners', () => {
                   'eth_sign',
                   'personal_sign',
                   'wallet_addEthereumChain',
-                  'wallet_switchEthereumChain',
                   'avalanche_getContacts',
                   'avalanche_createContact',
                   'avalanche_removeContact',
                   'avalanche_updateContact',
                   'avalanche_selectAccount',
-                  'avalanche_getAccounts',
-                  'avalanche_bridgeAsset'
+                  'avalanche_getAccounts'
                 ],
                 chains: ['eip155:43114', 'eip155:1'],
                 events: ['chainChanged', 'accountsChanged'],

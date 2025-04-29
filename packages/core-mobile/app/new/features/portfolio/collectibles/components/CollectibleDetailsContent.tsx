@@ -111,6 +111,7 @@ export const CollectibleDetailsContent = ({
 
   const handleSend = useCallback(() => {
     setSelectedToken(collectible)
+    // @ts-ignore TODO: make routes typesafe
     navigate('/collectibleSend')
   }, [collectible, navigate, setSelectedToken])
 

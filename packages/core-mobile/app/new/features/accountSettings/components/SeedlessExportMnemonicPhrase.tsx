@@ -1,6 +1,6 @@
 import React, { useCallback } from 'react'
 import { StyleSheet } from 'react-native'
-import { Space } from 'components/Space'
+import { Space } from 'common/components/Space'
 import {
   Button,
   Text,

@@ -1,5 +1,5 @@
 import { createTransform } from 'redux-persist'
-import { RawRootState } from 'store'
+import { RawRootState } from 'store/types'
 import { AppState, initialState, reducerName } from 'store/app'
 
 // a transform for app to blacklist everything except walletState and walletType

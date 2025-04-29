@@ -1,5 +1,5 @@
 import React from 'react'
-import { Space } from 'components/Space'
+import { Space } from 'common/components/Space'
 import {
   Text,
   useTheme,

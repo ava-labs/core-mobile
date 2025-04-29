@@ -25,6 +25,7 @@ import {
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { StakeTokenUnitValue } from 'features/stake/components/StakeTokenUnitValue'
 import { useStakeEstimatedReward } from 'features/stake/hooks/useStakeEstimatedReward'
+import { useValidateStakingEndTime } from 'features/stake/utils/useValidateStakingEndTime'
 import { useGetValidatorByNodeId } from 'hooks/earn/useGetValidatorByNodeId'
 import { useIssueDelegation } from 'hooks/earn/useIssueDelegation'
 import { useNodes } from 'hooks/earn/useNodes'
@@ -32,7 +33,6 @@ import { useSearchNode } from 'hooks/earn/useSearchNode'
 import { useNow } from 'hooks/time/useNow'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { useValidateStakingEndTime } from 'screens/earn/Confirmation/useValidateStakingEndTime'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import NetworkService from 'services/network/NetworkService'
 import { selectActiveAccount } from 'store/account'
@@ -227,6 +227,7 @@ const StakeConfirmScreen = (): JSX.Element => {
       transactionSnackbar.success({ message: 'Staking successful' })
 
       handleDismiss()
+      // @ts-ignore TODO: make routes typesafe
       navigate('/stake')
 
       dispatch(
