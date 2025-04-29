@@ -8,7 +8,7 @@ export const getCoingeckoId = (
 ): string | undefined => {
   const originalSymbol = getOriginalSymbol(symbol)
 
-  if (originalSymbol === undefined) {
+  if (tokenInfoData === undefined) {
     return undefined
   }
 
