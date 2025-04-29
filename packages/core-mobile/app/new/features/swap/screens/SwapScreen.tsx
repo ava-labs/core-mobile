@@ -24,7 +24,10 @@ import { UNKNOWN_AMOUNT } from 'consts/amount'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import { useSearchableTokenList } from 'common/hooks/useSearchableTokenList'
 import { useSelector } from 'react-redux'
-import { selectTokensWithZeroBalance } from 'store/balance'
+import {
+  LocalTokenWithBalance,
+  selectTokensWithZeroBalance
+} from 'store/balance'
 import { selectActiveAccount } from 'store/account'
 import { SwapSide } from '@paraswap/sdk'
 import AnalyticsService from 'services/analytics/AnalyticsService'
@@ -64,7 +67,8 @@ export const SwapScreen = (): JSX.Element => {
   const { formatCurrency } = useFormatCurrency()
   const avalancheErc20ContractTokens = useAvalancheErc20ContractTokens()
   const { filteredTokenList } = useSearchableTokenList({
-    tokens: avalancheErc20ContractTokens
+    tokens: avalancheErc20ContractTokens,
+    hideZeroBalance: false
   })
   const tokensWithZeroBalance = useSelector(selectTokensWithZeroBalance)
   const activeAccount = useSelector(selectActiveAccount)
@@ -183,30 +187,23 @@ export const SwapScreen = (): JSX.Element => {
       initialized.current = true
     }
 
+    let initialFromToken: LocalTokenWithBalance | undefined
     if (params?.initialTokenIdFrom) {
-      const token = filteredTokenList.find(
+      initialFromToken = filteredTokenList.find(
         tk =>
           tk.localId.toLowerCase() === params.initialTokenIdFrom?.toLowerCase()
       )
-
-      if (token) {
-        setFromToken(token)
-      }
-    } else {
-      setFromToken(undefined)
     }
+    setFromToken(initialFromToken)
 
+    let initialToToken: LocalTokenWithBalance | undefined
     if (params?.initialTokenIdTo) {
-      const token = filteredTokenList.find(
+      initialToToken = filteredTokenList.find(
         tk =>
           tk.localId.toLowerCase() === params.initialTokenIdTo?.toLowerCase()
       )
-      if (token) {
-        setToToken(token)
-      }
-    } else {
-      setToToken(undefined)
     }
+    setToToken(initialToToken)
   }, [params, filteredTokenList, setFromToken, setToToken])
 
   const handleSwap = useCallback(() => {
