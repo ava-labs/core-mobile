@@ -102,7 +102,7 @@ describe('avalanche_selectAccount', () => {
 
 //       const result = await handler.handle(testRequest, mockListenerApi)
 
-//       expect(mockDispatch).toHaveBeenCalledWith(setActiveAccountIndex(1))
+//       expect(mockDispatch).toHaveBeenCalledWith(setActiveAccountId('1'))
 
 //       expect(result).toEqual({ success: true, value: [] })
 //     })
