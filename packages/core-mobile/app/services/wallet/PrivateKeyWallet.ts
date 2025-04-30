@@ -2,11 +2,8 @@ import {
   Avalanche,
   BitcoinWallet,
   BitcoinProvider,
-  DerivationPath,
   JsonRpcBatchInternal,
-  getAddressPublicKeyFromXPub,
-  getWalletFromMnemonic,
-  getAddressDerivationPath
+  getAddressPublicKeyFromXPub
 } from '@avalabs/core-wallets-sdk'
 import { now } from 'moment'
 import {
@@ -15,7 +12,7 @@ import {
   PubKeyType,
   Wallet
 } from 'services/wallet/types'
-import { BaseWallet, TransactionRequest } from 'ethers'
+import { BaseWallet, TransactionRequest, Wallet as EthersWallet } from 'ethers'
 import { Network, NetworkVMType } from '@avalabs/core-chains-sdk'
 import {
   personalSign,
@@ -36,9 +33,10 @@ import {
 import { isTypedData } from '@avalabs/evm-module'
 import ModuleManager from 'vmModule/ModuleManager'
 import { mapToVmNetwork } from 'vmModule/utils/mapToVmNetwork'
+import { DerivationPath } from '@avalabs/core-wallets-sdk'
 
-export class MnemonicWallet implements Wallet {
-  #mnemonic?: string
+export class PrivateKeyWallet implements Wallet {
+  #privateKey?: string
 
   /**
    * Derivation path: m/44'/60'/0'
@@ -53,29 +51,23 @@ export class MnemonicWallet implements Wallet {
   #xpubXP?: string
 
   private async getBtcSigner(
-    accountIndex: number,
     provider: BitcoinProvider
   ): Promise<BitcoinWallet> {
     Logger.info('btcWallet', now())
-    const btcWallet = await BitcoinWallet.fromMnemonic(
-      this.mnemonic,
-      accountIndex,
+    const btcWallet = new BitcoinWallet(
+      Buffer.from(this.privateKey, 'hex'),
       provider
     )
     Logger.info('btcWallet end', now())
     return btcWallet
   }
 
-  private getEvmSigner(accountIndex: number): BaseWallet {
+  private getEvmSigner(provider: JsonRpcBatchInternal): BaseWallet {
     const start = now()
 
-    const wallet = getWalletFromMnemonic(
-      this.mnemonic,
-      accountIndex,
-      DerivationPath.BIP44
-    )
+    const wallet = new EthersWallet(this.privateKey, provider)
 
-    Logger.info('evmWallet getWalletFromMnemonic', now() - start)
+    Logger.info('evmWallet getWalletFromPrivateKey', now() - start)
 
     return wallet
   }
@@ -85,14 +77,13 @@ export class MnemonicWallet implements Wallet {
     provider?: Avalanche.JsonRpcProvider
   ): Promise<Avalanche.StaticSigner | Avalanche.SimpleSigner> {
     if (provider) {
-      return Avalanche.StaticSigner.fromMnemonic(
-        this.mnemonic,
-        getAddressDerivationPath(accountIndex, DerivationPath.BIP44, 'AVM'),
-        getAddressDerivationPath(accountIndex, DerivationPath.BIP44, 'EVM'),
+      return new Avalanche.StaticSigner(
+        Buffer.from(this.privateKey, 'hex'),
+        Buffer.from(this.privateKey, 'hex'),
         provider
       )
     }
-    return new Avalanche.SimpleSigner(this.mnemonic, accountIndex)
+    return new Avalanche.SimpleSigner(this.privateKey, accountIndex)
   }
 
   private async getSigner({
@@ -106,14 +97,19 @@ export class MnemonicWallet implements Wallet {
   }): Promise<BitcoinWallet | BaseWallet | Avalanche.SimpleSigner> {
     switch (network.vmName) {
       case NetworkVMType.EVM:
-        return this.getEvmSigner(accountIndex)
+        if (!(provider instanceof JsonRpcBatchInternal)) {
+          throw new Error(
+            `Unable to get signer: wrong provider obtained for network ${network.vmName}`
+          )
+        }
+        return this.getEvmSigner(provider)
       case NetworkVMType.BITCOIN:
         if (!(provider instanceof BitcoinProvider)) {
           throw new Error(
             'Unable to get signer: wrong provider obtained for BTC network'
           )
         }
-        return this.getBtcSigner(accountIndex, provider)
+        return this.getBtcSigner(provider)
       case NetworkVMType.AVM:
       case NetworkVMType.PVM:
         if (!(provider instanceof Avalanche.JsonRpcProvider)) {
@@ -127,13 +123,13 @@ export class MnemonicWallet implements Wallet {
     }
   }
 
-  public get mnemonic(): string {
-    assertNotUndefined(this.#mnemonic, 'no mnemonic available')
-    return this.#mnemonic
+  public get privateKey(): string {
+    assertNotUndefined(this.#privateKey, 'no private key available')
+    return this.#privateKey
   }
 
-  public set mnemonic(mnemonic: string | undefined) {
-    this.#mnemonic = mnemonic
+  public set privateKey(privateKey: string | undefined) {
+    this.#privateKey = privateKey
   }
 
   public get xpub(): string {
@@ -414,8 +410,8 @@ export class MnemonicWallet implements Wallet {
 }
 
 /**
- * Unlike SeedlessWallet, MnemonicWallet cannot be created on demand
- * as we need the user to enter PIN to decrypt the mnemonic phrase.
- * Thus, we are exporting a single instance of MnemonicWallet
+ * Unlike SeedlessWallet, PrivateKeyWallet cannot be created on demand
+ * as we need the user to enter PIN to decrypt the private key.
+ * Thus, we are exporting a single instance of PrivateKeyWallet
  */
-export default new MnemonicWallet()
+export default new PrivateKeyWallet()

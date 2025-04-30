@@ -13,7 +13,7 @@ import { RpcRequest } from '@avalabs/vm-module-types'
 import { AdvancedStackParamList } from 'navigation/wallet/AdvancedStackScreen'
 import { AvalancheCreateContactRequest as AvalancheCreateContactRequestV2 } from 'store/rpc/handlers/contact/avalanche_createContact/avalanche_createContact'
 import { AvalancheRemoveContactRequest as AvalancheRemoveContactRequestV2 } from 'store/rpc/handlers/contact/avalanche_removeContact/avalanche_removeContact'
-import { CorePrimaryAccount, Contact as SharedContact } from '@avalabs/types'
+import { Contact as SharedContact } from '@avalabs/types'
 import { AvalancheUpdateContactRequest as AvalancheUpdateContactRequestV2 } from 'store/rpc/handlers/contact/avalanche_updateContact/avalanche_updateContact'
 import { AvalancheBridgeAssetRequest as AvalancheBridgeAssetRequestV2 } from 'store/rpc/handlers/avalanche_bridgeAsset/avalanche_bridgeAsset'
 import { Asset, Blockchain } from '@avalabs/core-bridge-sdk'
@@ -34,6 +34,7 @@ import { SiteScanResponse } from 'services/blockaid/types'
 import { SpendLimit } from 'hooks/useSpendLimits'
 import { ProposalTypes } from '@walletconnect/types'
 import { DebugStackParamList } from 'debug/navigation/DebugStack'
+import { Account } from 'store/account'
 import { RootScreenStackParamList } from './RootScreenStack'
 import { OnboardingScreenStackParamList } from './OnboardScreenStack'
 import { WelcomeScreenStackParamList } from './onboarding/WelcomeScreenStack'
@@ -125,7 +126,7 @@ export type ApprovalPopupParams = {
     overrideData
   }: {
     network: Network
-    account: CorePrimaryAccount
+    account: Account
     maxFeePerGas?: bigint
     maxPriorityFeePerGas?: bigint
     overrideData?: string

@@ -3,7 +3,7 @@ import { RpcMethod, RpcProvider, RpcRequest } from 'store/rpc/types'
 import mockSession from 'tests/fixtures/walletConnect/session.json'
 import mockAccounts from 'tests/fixtures/accounts.json'
 import * as Navigation from 'utils/Navigation'
-import { setActiveAccountIndex } from 'store/account/slice'
+import { setActiveAccountId } from 'store/account/slice'
 import { avalancheSelectAccountHandler as handler } from './avalanche_selectAccount'
 
 jest.mock('store/account/slice', () => {
@@ -97,7 +97,7 @@ describe('avalanche_selectAccount handler', () => {
 
       const result = await handler.handle(testRequest, mockListenerApi)
 
-      expect(mockDispatch).toHaveBeenCalledWith(setActiveAccountIndex(1))
+      expect(mockDispatch).toHaveBeenCalledWith(setActiveAccountId('1'))
 
       expect(result).toEqual({ success: true, value: [] })
     })

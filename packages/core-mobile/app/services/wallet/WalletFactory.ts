@@ -1,8 +1,9 @@
 import { SeedlessPubKeysStorage } from 'seedless/services/storage/SeedlessPubKeysStorage'
 import SeedlessWallet from 'seedless/services/wallet/SeedlessWallet'
 import SeedlessService from 'seedless/services/SeedlessService'
-import { Wallet, WalletType } from './types'
+import PrivateKeyWalletInstance from './PrivateKeyWallet'
 import MnemonicWalletInstance from './MnemonicWallet'
+import { Wallet, WalletType } from './types'
 
 class WalletFactory {
   async createWallet(
@@ -28,6 +29,8 @@ class WalletFactory {
       }
       case WalletType.MNEMONIC:
         return MnemonicWalletInstance
+      case WalletType.PRIVATE_KEY:
+        return PrivateKeyWalletInstance
       default:
         throw new Error(
           `Unable to create wallet: unsupported wallet type ${walletType}`

@@ -6,12 +6,13 @@ import {
   Account,
   selectAccounts,
   selectActiveAccount,
-  setActiveAccountIndex
+  setActiveAccountId
 } from 'store/account'
 import Animated, { LinearTransition } from 'react-native-reanimated'
 import { getItemEnteringAnimation } from 'common/utils/animations'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { FlatList } from 'react-native-gesture-handler'
+import { getAccountIndex } from 'store/account/utils'
 import { AccountItem } from './AccountItem'
 
 export const ACCOUNT_CARD_SIZE = 140
@@ -38,20 +39,21 @@ export const AccountList = (): React.JSX.Element => {
   }, [accounts])
 
   const onSelectAccount = useCallback(
-    (accountIndex: number): void => {
+    (account: Account): void => {
+      const accountUuid = account.id
       AnalyticsService.capture('AccountSelectorAccountSwitched', {
-        accountIndex
+        accountIndex: getAccountIndex(account)
       })
-      dispatch(setActiveAccountIndex(accountIndex))
+      dispatch(setActiveAccountId(accountUuid))
     },
     [dispatch]
   )
 
   const gotoAccountDetails = useCallback(
-    (accountIndex: number): void => {
+    (accountUuid: string): void => {
       navigate({
         pathname: './accountSettings/account',
-        params: { accountIndex: accountIndex.toString() }
+        params: { accountUuid }
       })
     },
     [navigate]
@@ -71,23 +73,23 @@ export const AccountList = (): React.JSX.Element => {
     ({ item, index }: { item: Account; index: number }) => (
       <AccountItem
         index={index}
-        isActive={index === activeAccount?.index}
+        isActive={item.id === activeAccount?.id}
         account={item as Account}
         onSelectAccount={onSelectAccount}
         gotoAccountDetails={gotoAccountDetails}
         testID={`account #${index + 1}`}
       />
     ),
-    [activeAccount?.index, gotoAccountDetails, onSelectAccount]
+    [activeAccount?.id, gotoAccountDetails, onSelectAccount]
   )
 
   const onContentSizeChange = useCallback(() => {
     flatListRef.current?.scrollToOffset({
       offset:
         (ACCOUNT_CARD_SIZE + 16) *
-        (activeAccount?.index ?? accountsToDisplay.length)
+        (getAccountIndex(activeAccount) ?? accountsToDisplay.length)
     })
-  }, [activeAccount?.index, accountsToDisplay.length])
+  }, [activeAccount, accountsToDisplay.length])
 
   return (
     <View sx={{ flexDirection: 'row', height: ACCOUNT_CARD_SIZE }}>
@@ -108,7 +110,7 @@ export const AccountList = (): React.JSX.Element => {
         renderItem={item =>
           renderItem({
             item: item.item as Account,
-            index: item.index
+            index: getAccountIndex(item.item as Account)
           })
         }
         getItemLayout={(_, index) => ({

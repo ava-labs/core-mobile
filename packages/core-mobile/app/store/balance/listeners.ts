@@ -6,10 +6,10 @@ import BalanceService, {
 import { AppListenerEffectAPI } from 'store'
 import { Account } from 'store/account/types'
 import {
-  selectAccounts,
+  selectAccountByUuid,
   selectActiveAccount,
   setAccounts,
-  setActiveAccountIndex
+  setActiveAccountId
 } from 'store/account'
 import { onAppLocked, onAppUnlocked, onLogOut } from 'store/app'
 import { addCustomToken, selectAllCustomTokens } from 'store/customToken'
@@ -143,7 +143,7 @@ const onBalanceUpdateCore = async ({
     async span => {
       const balanceKeyedPromises = accounts.map(account => {
         return {
-          key: getKey(firstNetwork.chainId, account.index),
+          key: getKey(firstNetwork.chainId, account.id),
           promise: BalanceService.getBalancesForAccount({
             network: firstNetwork,
             account,
@@ -169,7 +169,7 @@ const onBalanceUpdateCore = async ({
           inactiveNetworkPromises.push(
             ...accounts.map(account => {
               return {
-                key: getKey(n.chainId, account.index),
+                key: getKey(n.chainId, account.id),
                 promise: BalanceService.getBalancesForAccount({
                   network: n,
                   account,
@@ -241,13 +241,12 @@ const fetchBalancePeriodically = async (
 
 const handleFetchBalanceForAccount = async (
   listenerApi: AppListenerEffectAPI,
-  accountIndex: number
+  accountUuid: string
 ): Promise<void> => {
   const state = listenerApi.getState()
   const activeNetwork = selectActiveNetwork(state)
 
-  const accounts = selectAccounts(state)
-  const accountToFetchFor = accounts[accountIndex]
+  const accountToFetchFor = selectAccountByUuid(accountUuid)(state)
   const accountsToFetch = accountToFetchFor ? [accountToFetchFor] : []
   const networksToFetch = selectFavoriteNetworks(state)
   // Just in case the active network has not been favorited
@@ -275,17 +274,17 @@ const fetchBalanceForAccounts = async (
       const key: string = keys[i] ?? ''
       acc[key] = {
         dataAccurate: false,
-        accountIndex: -1,
+        accountUuid: undefined,
         chainId: 0,
         tokens: []
       }
       return acc
     }
 
-    const { accountIndex, chainId, tokens } = result.value
+    const { accountUuid, chainId, tokens } = result.value
     const balances = {
       dataAccurate: true,
-      accountIndex,
+      accountUuid,
       chainId,
       tokens: [] as LocalTokenWithBalance[]
     }
@@ -332,7 +331,7 @@ const fetchBalanceForAccounts = async (
       ]
     }, [] as LocalTokenWithBalance[])
 
-    acc[getKey(chainId, accountIndex)] = balances
+    acc[getKey(chainId, accountUuid)] = balances
     return acc
   }, {})
 }
@@ -456,7 +455,7 @@ export const addBalanceListeners = (
     matcher: isAnyOf(
       setSelectedCurrency,
       setAccounts,
-      setActiveAccountIndex,
+      setActiveAccountId,
       addCustomToken,
       onNetworksFetched,
       toggleFavorite
@@ -468,7 +467,7 @@ export const addBalanceListeners = (
   startListening({
     actionCreator: fetchBalanceForAccount,
     effect: async (action, listenerApi) => {
-      handleFetchBalanceForAccount(listenerApi, action.payload.accountIndex)
+      handleFetchBalanceForAccount(listenerApi, action.payload.accountUuid)
     }
   })
 

@@ -26,7 +26,7 @@ class AvalancheGetAccountPubKeyHandler
       }
     }
 
-    const publicKey = await walletService.getPublicKey(activeAccount)
+    const publicKey = await walletService.getPublicKey(activeAccount.index)
 
     return { success: true, value: publicKey }
   }
