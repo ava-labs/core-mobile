@@ -35,6 +35,8 @@ export const NodeItem = ({
           borderRadius: 18,
           paddingLeft: 16,
           paddingRight: 8,
+          marginHorizontal: 16,
+          marginBottom: 12,
           paddingVertical: 12,
           justifyContent: 'space-between',
           flexDirection: 'row',
