@@ -3,7 +3,7 @@ import { rpcErrors } from '@metamask/rpc-errors'
 import {
   selectAccounts,
   selectActiveAccount,
-  setActiveAccountIndex
+  setActiveAccountId
 } from 'store/account/slice'
 import Logger from 'utils/Logger'
 import { RpcMethod, RpcRequest } from '../../../types'
@@ -57,7 +57,7 @@ class AvalancheSelectAccountHandler
       }
     }
 
-    dispatch(setActiveAccountIndex(requestedAccount.index))
+    dispatch(setActiveAccountId(requestedAccount.id))
 
     return { success: true, value: [] }
   }
