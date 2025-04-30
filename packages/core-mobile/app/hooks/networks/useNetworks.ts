@@ -126,10 +126,6 @@ export const useNetworks = () => {
     [networks, dispatch]
   )
 
-  const inactiveNetworks = useMemo(() => {
-    return enabledNetworks.filter(network => network.chainId !== activeChainId)
-  }, [enabledNetworks, activeChainId])
-
   const getIsTestnet = useCallback(
     (chainId: number) => {
       const network = allNetworks[chainId]
@@ -185,7 +181,6 @@ export const useNetworks = () => {
     networks,
     activeNetwork,
     enabledNetworks,
-    inactiveNetworks,
     getIsTestnet,
     getIsCustomNetwork,
     getSomeNetworks,

@@ -18,7 +18,8 @@ export const BalanceHeader = ({
   onLayout,
   isLoading,
   isPrivacyModeEnabled = false,
-  isDeveloperModeEnabled = false
+  isDeveloperModeEnabled = false,
+  renderMaskView
 }: {
   accountName: string
   formattedBalance: string
@@ -29,6 +30,7 @@ export const BalanceHeader = ({
   isLoading?: boolean
   isPrivacyModeEnabled?: boolean
   isDeveloperModeEnabled?: boolean
+  renderMaskView?: () => React.JSX.Element
 }): React.JSX.Element => {
   const { theme } = useTheme()
   const renderPriceChangeIndicator = useCallback((): React.JSX.Element => {
@@ -118,7 +120,7 @@ export const BalanceHeader = ({
           balance={formattedBalance}
           currency={` ${currency}`}
           shouldMask={isPrivacyModeEnabled}
-          maskWidth={200}
+          renderMaskView={renderMaskView}
           balanceSx={{ lineHeight: 38 }}
           currencySx={{
             fontFamily: 'Aeonik-Medium',
@@ -140,6 +142,7 @@ export const BalanceHeader = ({
     formattedBalance,
     isLoading,
     isPrivacyModeEnabled,
+    renderMaskView,
     renderPriceChangeIndicator
   ])
 
