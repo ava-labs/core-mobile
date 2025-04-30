@@ -1,4 +1,4 @@
-import { Icons, showAlert, Text, useTheme, View } from '@avalabs/k2-alpine'
+import { Icons, showAlert, useTheme, View } from '@avalabs/k2-alpine'
 import NavigationBarButton from 'common/components/NavigationBarButton'
 import { ScrollScreen } from 'common/components/ScrollScreen'
 import { useUserMfa } from 'common/hooks/useUserMfa'
