@@ -20,6 +20,7 @@ import { NetworkFees } from '@avalabs/vm-module-types'
 import { AlertWithTextInputsHandle } from '@avalabs/k2-alpine/src/components/Alert/types'
 import { sanitizeDecimalInput } from 'utils/units/sanitize'
 import { NetworkWithCaip2ChainId } from 'store/network/types'
+import { isAvalancheCChainId } from 'services/network/utils/isAvalancheNetwork'
 import { FeePreset } from '../types'
 import {
   DEFAULT_NETWORK_TOKEN_SYMBOL,
@@ -58,6 +59,7 @@ export const useNetworkFeeSelector = ({
   selectedPreset: FeePreset
   handleSelectedPreset: (preset: FeePreset) => void
   isBaseUnitRate: boolean
+  // eslint-disable-next-line sonarjs/cognitive-complexity
 } => {
   const alertRef = useRef<AlertWithTextInputsHandle>(null)
   const selectedCurrency = useSelector(selectSelectedCurrency)
@@ -78,7 +80,12 @@ export const useNetworkFeeSelector = ({
     selectedCurrency.toLowerCase() as VsCurrencyType
   )
 
-  const [selectedPreset, setSelectedPreset] = useState(FeePreset.FAST)
+  const isAvalancheCChain = network
+    ? isAvalancheCChainId(network.chainId)
+    : false
+
+  const initialPreset = isAvalancheCChain ? FeePreset.FAST : FeePreset.SLOW
+  const [selectedPreset, setSelectedPreset] = useState(initialPreset)
   const [calculatedFees, setCalculatedFees] = useState<GasAndFees>()
 
   const isAVM = isAvmNetwork(network)
@@ -132,10 +139,20 @@ export const useNetworkFeeSelector = ({
       setCalculatedFees(updatedFees)
       updatedFees && onFeesChange(updatedFees, selectedPreset)
 
-      const normalFees = getFeesForPreset(networkFee, FeePreset.FAST)
+      const normalFees = getFeesForPreset(
+        networkFee,
+        isAvalancheCChain ? FeePreset.FAST : FeePreset.NORMAL
+      )
       normalFees && setCustomFees(normalFees)
     }
-  }, [gasLimit, getFeesForPreset, networkFee, onFeesChange, selectedPreset])
+  }, [
+    gasLimit,
+    getFeesForPreset,
+    networkFee,
+    onFeesChange,
+    selectedPreset,
+    isAvalancheCChain
+  ])
 
   const handleSelectedPreset = useCallback(
     (preset: FeePreset): void => {
