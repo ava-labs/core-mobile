@@ -3,7 +3,6 @@ import { Confirmation as Component } from 'features/onboarding/components/Confir
 import { useWallet } from 'hooks/useWallet'
 import Logger from 'utils/Logger'
 import { WalletType } from 'services/wallet/types'
-import { SEEDLESS_MNEMONIC_STUB } from 'seedless/consts'
 import { uuid } from 'utils/uuid'
 
 export default function Confirmation(): JSX.Element {

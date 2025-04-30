@@ -2,7 +2,7 @@ import { createAsyncThunk } from '@reduxjs/toolkit'
 import BiometricsSDK from 'utils/BiometricsSDK'
 import { reducerName, selectWallets } from 'store/wallet/slice'
 import { StoreWalletWithPinParams, Wallet } from 'store/wallet/types'
-import { ThunkApi } from 'store/index'
+import { ThunkApi } from 'store/types'
 import { generateWalletName } from './utils'
 
 export const storeWalletWithPin = createAsyncThunk<

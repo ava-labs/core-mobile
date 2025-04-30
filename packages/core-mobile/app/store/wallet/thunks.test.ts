@@ -1,6 +1,6 @@
 import { WalletType } from 'services/wallet/types'
 import BiometricsSDK from 'utils/BiometricsSDK'
-import { RootState } from 'store'
+import { RootState } from 'store/types'
 import { storeWalletWithPin } from './thunks'
 
 jest.mock('utils/BiometricsSDK')
