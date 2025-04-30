@@ -39,7 +39,8 @@ export const TokenInputWidget = ({
   disabled,
   editable = true,
   inputTextColor,
-  isLoadingAmount = false
+  isLoadingAmount = false,
+  autoFocus
 }: {
   title: string
   amount?: bigint
@@ -58,6 +59,7 @@ export const TokenInputWidget = ({
   editable?: boolean
   inputTextColor?: string
   isLoadingAmount?: boolean
+  autoFocus?: boolean
 }): JSX.Element => {
   const {
     theme: { colors }
@@ -200,6 +202,7 @@ export const TokenInputWidget = ({
                     sx={{ alignItems: 'flex-end' }}
                     pointerEvents={token === undefined ? 'none' : 'auto'}>
                     <TokenAmountInput
+                      autoFocus={autoFocus}
                       editable={editable}
                       denomination={token?.decimals ?? 0}
                       style={{
