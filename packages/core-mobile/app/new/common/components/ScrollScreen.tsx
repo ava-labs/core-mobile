@@ -5,6 +5,7 @@ import {
 } from '@avalabs/k2-alpine'
 import { useHeaderHeight } from '@react-navigation/elements'
 import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
+import { useIsAndroidWithBottomBar } from 'common/hooks/useIsAndroidWithBottomBar'
 import React, { useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { LayoutRectangle, Platform, View } from 'react-native'
 import {
@@ -74,7 +75,7 @@ export const ScrollScreen = ({
   const insets = useSafeAreaInsets()
   const headerHeight = useHeaderHeight()
   const keyboardHeight = useKeyboardHeight()
-
+  const isAndroidWithBottomBar = useIsAndroidWithBottomBar()
   const [headerLayout, setHeaderLayout] = useState<
     LayoutRectangle | undefined
   >()
@@ -116,13 +117,16 @@ export const ScrollScreen = ({
 
   const keyboardVerticalOffset = useMemo(() => {
     if (isModal) {
-      if (Platform.OS === 'android' && insets.bottom > 30) {
-        return -12
+      if (Platform.OS === 'ios') {
+        return insets.bottom + 8
       }
-      return insets.bottom - 12
+      if (isAndroidWithBottomBar) {
+        return -8
+      }
+      return 16
     }
     return -insets.bottom
-  }, [isModal, insets.bottom])
+  }, [isModal, insets.bottom, isAndroidWithBottomBar])
 
   return (
     <KeyboardAvoidingView
