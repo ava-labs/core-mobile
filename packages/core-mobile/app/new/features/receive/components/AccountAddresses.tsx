@@ -31,17 +31,13 @@ export const AccountAddresses = memo(
       if (isXPChain(selectedNetwork.chainId)) {
         const networkX = selectedNetwork.isTestnet ? NETWORK_X_TEST : NETWORK_X
         const networkP = selectedNetwork.isTestnet ? NETWORK_P_TEST : NETWORK_P
-        const addressP = activeAccount?.addressPVM
-          ? truncateAddress(activeAccount.addressPVM)
-          : ''
-        const addressX = activeAccount?.addressAVM
-          ? truncateAddress(activeAccount?.addressAVM)
-          : ''
+        const addressP = activeAccount?.addressPVM ?? ''
+        const addressX = activeAccount?.addressAVM ?? ''
 
         return [
           {
             title: networkX.chainName.replace('-', '\u2011'),
-            subtitle: addressX.replace('-', '\u2011'), // to prevent word wrap because of the dash
+            subtitle: truncateAddress(addressX).replace('-', '\u2011'), // to prevent word wrap because of the dash
             leftIcon: (
               <NetworkLogoWithChain
                 network={networkX}
@@ -65,7 +61,7 @@ export const AccountAddresses = memo(
           },
           {
             title: networkP.chainName.replace('-', '\u2011'),
-            subtitle: addressP.replace('-', '\u2011'), // to prevent word wrap because of the dash
+            subtitle: truncateAddress(addressP).replace('-', '\u2011'), // to prevent word wrap because of the dash
             leftIcon: (
               <NetworkLogoWithChain
                 network={networkP}
