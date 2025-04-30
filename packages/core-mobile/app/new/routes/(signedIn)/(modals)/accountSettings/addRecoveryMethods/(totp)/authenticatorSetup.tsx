@@ -1,8 +1,7 @@
-import React, { useCallback } from 'react'
 import { useRouter } from 'expo-router'
-import { Loader } from 'common/components/Loader'
-import { AuthenticatorSetup as AuthenticatorSetupComponent } from 'features/onboarding/components/AuthenticatorSetup'
 import { useRecoveryMethodsContext } from 'features/accountSettings/context/RecoverMethodsProvider'
+import { AuthenticatorSetup as AuthenticatorSetupComponent } from 'features/onboarding/components/AuthenticatorSetup'
+import React, { useCallback } from 'react'
 
 export default function AuthenticatorSetup(): JSX.Element {
   const { totpKey, handleCopyCode } = useRecoveryMethodsContext()
@@ -18,14 +17,13 @@ export default function AuthenticatorSetup(): JSX.Element {
     router.navigate('/accountSettings/addRecoveryMethods/scanQrCode')
   }, [router])
 
-  return totpKey === undefined ? (
-    <Loader />
-  ) : (
+  return (
     <AuthenticatorSetupComponent
       totpKey={totpKey}
       onScanQrCode={goToScanQrCode}
       onCopyCode={handleCopyCode}
       onVerifyCode={goToVerifyCode}
+      isLoading={totpKey === undefined}
     />
   )
 }

@@ -8,9 +8,10 @@ import {
   View
 } from '@avalabs/k2-alpine'
 import { BlurViewWithFallback } from 'common/components/BlurViewWithFallback'
+import { KeyboardAvoidingView } from 'common/components/KeyboardAvoidingView'
 import { LinearGradient } from 'expo-linear-gradient'
 import React, { ReactNode, useMemo, useState } from 'react'
-import { KeyboardAvoidingView, Platform } from 'react-native'
+import { Platform } from 'react-native'
 import { useBottomTabBarHeight } from 'react-native-bottom-tabs'
 import { Gesture, GestureDetector } from 'react-native-gesture-handler'
 import Animated, {
@@ -121,11 +122,11 @@ export const BrowserControls = (): ReactNode => {
           {
             translateY: withTiming(
               keyboardHeight > 0
-                ? -keyboardHeight + tabBarHeight - insets.bottom
+                ? tabBarHeight - keyboardHeight - insets.bottom
                 : 0,
               {
                 ...ANIMATED.TIMING_CONFIG,
-                duration: 10
+                duration: 100
               }
             )
           }
@@ -162,7 +163,6 @@ export const BrowserControls = (): ReactNode => {
   return (
     <>
       <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={{
           zIndex: 11
         }}>
@@ -217,9 +217,7 @@ export const BrowserControls = (): ReactNode => {
           />
         </Animated.View>
 
-        <KeyboardAvoidingView
-          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-          style={{ flex: 1 }}>
+        <KeyboardAvoidingView>
           <Animated.View
             style={[
               gestureControlStyle,
@@ -307,23 +305,22 @@ export const BrowserControls = (): ReactNode => {
               top: insets.top,
               left: 0,
               right: 0,
-              zIndex: 2,
-              alignItems: 'center'
+              zIndex: 2
             }
           ]}>
           <GestureDetector gesture={panGesture}>
-            <Pressable
-              onPress={onCollapse}
-              style={{
-                width: 44,
-                height: 44,
-                alignItems: 'center',
-                justifyContent: 'center'
-              }}>
-              <Icons.Custom.ArrowDownHandleBar
-                color={theme.colors.$textSecondary}
-                width={40}
-              />
+            <Pressable onPress={onCollapse}>
+              <View
+                style={{
+                  height: 44,
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}>
+                <Icons.Custom.ArrowDownHandleBar
+                  color={theme.colors.$textSecondary}
+                  width={40}
+                />
+              </View>
             </Pressable>
           </GestureDetector>
         </Animated.View>

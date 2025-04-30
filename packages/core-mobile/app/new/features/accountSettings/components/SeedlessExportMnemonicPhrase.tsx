@@ -1,17 +1,17 @@
-import React, { useCallback } from 'react'
-import { StyleSheet } from 'react-native'
-import { Space } from 'common/components/Space'
 import {
   Button,
-  Text,
-  showAlert,
-  useTheme,
-  View,
   Icons,
-  ScrollView
+  showAlert,
+  Text,
+  useTheme,
+  View
 } from '@avalabs/k2-alpine'
 import { MnemonicText } from 'common/components/MnemonicText'
-import { useFocusEffect, useNavigation } from '@react-navigation/native'
+import NavigationBarButton from 'common/components/NavigationBarButton'
+import { ScrollScreen } from 'common/components/ScrollScreen'
+import { Space } from 'common/components/Space'
+import React, { useCallback } from 'react'
+import { StyleSheet } from 'react-native'
 import { SHOW_RECOVERY_PHRASE } from '../consts'
 
 const EMPTY_MNEMONIC = [...Array(24).values()] as string[]
@@ -33,7 +33,6 @@ export const SeedlessExportMnemonicPhrase = ({
   const {
     theme: { colors }
   } = useTheme()
-  const { getParent } = useNavigation()
   const mnemonics = (): JSX.Element => {
     const mnemonicColumns: JSX.Element[][] = [[], [], []]
 
@@ -55,7 +54,7 @@ export const SeedlessExportMnemonicPhrase = ({
     )
   }
 
-  function handleCopyPhrase(): void {
+  const handleCopyPhrase = useCallback(() => {
     showAlert({
       title: 'Security Warning',
       description:
@@ -72,15 +71,11 @@ export const SeedlessExportMnemonicPhrase = ({
         }
       ]
     })
-  }
+  }, [mnemonic, onCopyPhrase])
 
   const renderHeaderRight = useCallback(() => {
     return (
-      <View
-        sx={{
-          marginTop: 14,
-          marginRight: 18
-        }}>
+      <NavigationBarButton>
         {hideMnemonic ? (
           <Icons.Action.VisibilityOff
             color={colors.$textSecondary}
@@ -94,7 +89,7 @@ export const SeedlessExportMnemonicPhrase = ({
             hitSlop={16}
           />
         )}
-      </View>
+      </NavigationBarButton>
     )
   }, [
     colors.$textPrimary,
@@ -103,35 +98,31 @@ export const SeedlessExportMnemonicPhrase = ({
     toggleRecoveryPhrase
   ])
 
-  useFocusEffect(
-    useCallback(() => {
-      getParent()?.setOptions({
-        headerRight: renderHeaderRight
-      })
-      return () => {
-        getParent()?.setOptions({
-          headerRight: undefined
-        })
-      }
-    }, [renderHeaderRight, getParent])
-  )
+  const renderFooter = useCallback(() => {
+    return (
+      <Button
+        size="medium"
+        type="secondary"
+        disabled={!mnemonic}
+        onPress={handleCopyPhrase}
+        style={{ width: 120 }}
+        testID="mnemonic_screen__copy_phrase_button">
+        Copy phrase
+      </Button>
+    )
+  }, [mnemonic, handleCopyPhrase])
 
   return (
-    <ScrollView
+    <ScrollScreen
+      title={SHOW_RECOVERY_PHRASE}
+      renderHeaderRight={renderHeaderRight}
+      renderFooter={renderFooter}
+      //  testID="menemonic_screen__new_recovery_phrase_instructions"
+      subtitle="This phrase is your access key to your wallet. Carefully write it down and store it in a safe location"
       showsVerticalScrollIndicator={false}
-      style={{
-        flex: 1,
-        marginHorizontal: 16
+      contentContainerStyle={{
+        padding: 16
       }}>
-      <Text variant="heading2">{SHOW_RECOVERY_PHRASE}</Text>
-      <Text
-        variant="body1"
-        sx={{ marginTop: 24, marginRight: 64 }}
-        testID="menemonic_screen__new_recovery_phrase_instructions">
-        This phrase is your access key to your wallet. Carefully write it down
-        and store it in a safe location
-      </Text>
-      <Space y={21} />
       <View
         sx={{
           borderRadius: 8,
@@ -169,26 +160,7 @@ export const SeedlessExportMnemonicPhrase = ({
           {mnemonics()}
         </View>
       </View>
-      <View
-        sx={{
-          marginTop: 16,
-          marginBottom: 60,
-          gap: 16,
-          flexDirection: 'row',
-          justifyContent: 'center',
-          alignItems: 'center'
-        }}>
-        <Button
-          size="medium"
-          type="secondary"
-          disabled={!mnemonic}
-          onPress={handleCopyPhrase}
-          style={{ width: 120 }}
-          testID="mnemonic_screen__copy_phrase_button">
-          Copy phrase
-        </Button>
-      </View>
-    </ScrollView>
+    </ScrollScreen>
   )
 }
 

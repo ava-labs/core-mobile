@@ -2,11 +2,11 @@ import { noop } from '@avalabs/core-utils-sdk'
 import { Button, View } from '@avalabs/k2-alpine'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { ContactForm } from 'features/accountSettings/components/ContactForm'
-import React, { useCallback, useState, useMemo } from 'react'
-import { ScrollView } from 'react-native-gesture-handler'
+import React, { useCallback, useMemo, useState } from 'react'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useDispatch } from 'react-redux'
 import { addContact, Contact } from 'store/addressBook'
+import { ScrollScreen } from './ScrollScreen'
 
 export const AddContact = (): React.JSX.Element => {
   const dispatch = useDispatch()
@@ -37,25 +37,9 @@ export const AddContact = (): React.JSX.Element => {
     canGoBack() && back()
   }, [back, canGoBack, contact, contactId, dispatch])
 
-  return (
-    <View sx={{ flex: 1, paddingHorizontal: 16, paddingBottom: 16 }}>
-      <ScrollView
-        keyboardShouldPersistTaps="handled"
-        automaticallyAdjustKeyboardInsets
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={{
-          justifyContent: 'space-between'
-        }}>
-        {contact && (
-          <ContactForm
-            contact={contact}
-            onUpdate={handleUpdateContact}
-            // TODO: implement onSelectAvatar
-            onSelectAvatar={noop}
-          />
-        )}
-      </ScrollView>
-      <View sx={{ gap: 16, backgroundColor: '$surfacePrimary' }}>
+  const renderFooter = useCallback(() => {
+    return (
+      <View sx={{ gap: 16 }}>
         <Button
           type="primary"
           size="large"
@@ -71,6 +55,21 @@ export const AddContact = (): React.JSX.Element => {
           Cancel
         </Button>
       </View>
-    </View>
+    )
+  }, [back, bottom, canGoBack, handleSave, isSaveDisabled])
+
+  return (
+    <ScrollScreen
+      renderFooter={renderFooter}
+      contentContainerStyle={{ padding: 16 }}>
+      {contact && (
+        <ContactForm
+          contact={contact}
+          onUpdate={handleUpdateContact}
+          // TODO: implement onSelectAvatar
+          onSelectAvatar={noop}
+        />
+      )}
+    </ScrollScreen>
   )
 }

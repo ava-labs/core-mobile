@@ -1,5 +1,6 @@
-import { Text, View } from '@avalabs/k2-alpine'
+import { View } from '@avalabs/k2-alpine'
 import { Loader } from 'common/components/Loader'
+import { ScrollScreen } from 'common/components/ScrollScreen'
 import { useUserMfa } from 'common/hooks/useUserMfa'
 import { useRouter } from 'expo-router'
 import { useRecoveryMethodsContext } from 'features/accountSettings/context/RecoverMethodsProvider'
@@ -7,9 +8,6 @@ import { RecoveryMethodList } from 'features/onboarding/components/RecoveryMetho
 import { RecoveryMethod } from 'features/onboarding/hooks/useAvailableRecoveryMethods'
 import { useRegisteredRecoveryMethods } from 'features/onboarding/hooks/useRegisteredRecoveryMethods'
 import React, { useCallback } from 'react'
-import { ScrollView } from 'react-native-gesture-handler'
-
-const TITLE = 'Verify recovery method'
 
 const SelectRecoveryMethodScreen = (): React.JSX.Element => {
   const { navigate } = useRouter()
@@ -32,27 +30,28 @@ const SelectRecoveryMethodScreen = (): React.JSX.Element => {
     [navigate, onVerifyFido]
   )
 
-  return isLoading ? (
-    <Loader />
-  ) : (
-    <ScrollView
-      showsVerticalScrollIndicator={false}
+  return (
+    <ScrollScreen
+      title="Verify recovery method"
+      subtitle="Verify your recovery method(s) to continue."
       contentContainerStyle={{
-        paddingBottom: 60,
-        paddingHorizontal: 16,
-        gap: 16
+        flex: 1,
+        padding: 16
       }}>
-      <View sx={{ gap: 8 }}>
-        <Text variant="heading2">{TITLE}</Text>
-        <Text variant="body1" sx={{ color: '$textPrimary', marginVertical: 8 }}>
-          Verify your recovery method(s) to continue.
-        </Text>
-      </View>
-      <RecoveryMethodList
-        data={registeredRecoveryMethods}
-        onPress={handleSelectMfa}
-      />
-    </ScrollView>
+      {isLoading ? (
+        <Loader />
+      ) : (
+        <View
+          style={{
+            marginTop: 24
+          }}>
+          <RecoveryMethodList
+            data={registeredRecoveryMethods}
+            onPress={handleSelectMfa}
+          />
+        </View>
+      )}
+    </ScrollScreen>
   )
 }
 

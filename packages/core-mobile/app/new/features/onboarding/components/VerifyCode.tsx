@@ -98,7 +98,8 @@ export const VerifyCode = <T,>({
       contentContainerStyle={{ padding: 16, flex: 1 }}>
       <Card
         sx={{
-          marginTop: 24
+          marginTop: 24,
+          height: 150
         }}>
         <TextInput
           ref={inputRef}
