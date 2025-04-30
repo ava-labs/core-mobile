@@ -1,10 +1,8 @@
-import React, { useEffect, useState } from 'react'
-import { View, Button, ScrollView, SafeAreaView } from '@avalabs/k2-alpine'
-import { FIDONameInputProps } from 'new/routes/onboarding/seedless/(fido)/fidoNameInput'
+import { Button, View } from '@avalabs/k2-alpine'
+import { ScrollScreen } from 'common/components/ScrollScreen'
 import { SimpleTextInput } from 'common/components/SimpleTextInput'
-import ScreenHeader from 'common/components/ScreenHeader'
-import { Platform, Keyboard, KeyboardEvent } from 'react-native'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { FIDONameInputProps } from 'new/routes/onboarding/seedless/(fido)/fidoNameInput'
+import React, { useCallback } from 'react'
 
 const FidoNameInput = ({
   title,
@@ -18,56 +16,35 @@ const FidoNameInput = ({
   setName: (value: string) => void
   handleSave: () => void
 }): JSX.Element => {
-  const [keyboardHeight, setKeyboardHeight] = useState(0)
-  const { bottom } = useSafeAreaInsets()
-
-  // Configure keyboard listeners
-  // keyboardAvoidingView is not working on iOS
-  // so we need to manually adjust the bottom margin
-  // when the keyboard is shown
-  useEffect(() => {
-    if (Platform.OS !== 'ios') return
-    const keyboardDidShow = (e: KeyboardEvent): void => {
-      setKeyboardHeight(e.endCoordinates.height - bottom + 24)
-    }
-    const keyboardDidHide = (): void => {
-      setKeyboardHeight(0)
-    }
-
-    const showSub = Keyboard.addListener('keyboardDidShow', keyboardDidShow)
-    const hideSub = Keyboard.addListener('keyboardDidHide', keyboardDidHide)
-
-    return () => {
-      showSub.remove()
-      hideSub.remove()
-    }
-  }, [bottom])
+  const renderFooter = useCallback(() => {
+    return (
+      <Button
+        type="primary"
+        size="large"
+        disabled={name === ''}
+        onPress={handleSave}>
+        Next
+      </Button>
+    )
+  }, [handleSave, name])
 
   return (
-    <SafeAreaView sx={{ flex: 1, marginBottom: keyboardHeight }}>
-      <ScrollView
-        sx={{ flex: 1 }}
-        contentContainerStyle={{
-          paddingHorizontal: 16,
-          gap: 27
+    <ScrollScreen
+      title={title}
+      subtitle={description}
+      contentContainerStyle={{ padding: 16, flex: 1 }}
+      renderFooter={renderFooter}>
+      <View
+        style={{
+          marginTop: 24
         }}>
-        <ScreenHeader title={title} description={description} />
         <SimpleTextInput
           value={name}
           placeholder={textInputPlaceholder}
           onChangeText={setName}
         />
-      </ScrollView>
-      <View sx={{ padding: 16, backgroundColor: '$surfacePrimary' }}>
-        <Button
-          type="primary"
-          size="large"
-          disabled={name === ''}
-          onPress={handleSave}>
-          Next
-        </Button>
       </View>
-    </SafeAreaView>
+    </ScrollScreen>
   )
 }
 

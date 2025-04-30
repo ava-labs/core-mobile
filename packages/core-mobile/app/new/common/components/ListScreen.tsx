@@ -1,4 +1,4 @@
-import { ANIMATED, NavigationTitleHeader } from '@avalabs/k2-alpine'
+import { ANIMATED, NavigationTitleHeader, Text } from '@avalabs/k2-alpine'
 import { useHeaderHeight } from '@react-navigation/elements'
 import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
 import { getListItemEnteringAnimation } from 'common/utils/animations'
@@ -31,7 +31,6 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { BlurViewWithFallback } from './BlurViewWithFallback'
 import { ErrorState } from './ErrorState'
 import { KeyboardAvoidingView } from './KeyboardAvoidingView'
-import ScreenHeader from './ScreenHeader'
 
 // Use this component when you need to display a list of items in a screen.
 // It handles all the logic for the header and footer, including keyboard interactions and gestures.
@@ -151,26 +150,33 @@ export const ListScreen = <T,>({
 
   const ListHeaderComponent = useMemo(() => {
     return (
-      <Animated.View style={[animatedHeaderContainerStyle]}>
+      <Animated.View style={[animatedHeaderContainerStyle, { gap: 12 }]}>
         <BlurViewWithFallback
           style={{
-            paddingBottom: 12,
             paddingHorizontal: 16,
-            paddingTop: 12
+            paddingTop: renderHeader ? 12 : 0
           }}>
-          <Animated.View
-            style={[
-              animatedHeaderStyle,
-              {
-                paddingTop: headerHeight
-              }
-            ]}>
-            <View ref={headerRef}>
-              <ScreenHeader title={title} />
-            </View>
-          </Animated.View>
+          {title ? (
+            <Animated.View
+              style={[
+                animatedHeaderStyle,
+                {
+                  paddingTop: headerHeight
+                }
+              ]}>
+              <View
+                ref={headerRef}
+                style={{
+                  paddingBottom: 12
+                }}>
+                <Text variant="heading2">{title}</Text>
+              </View>
+            </Animated.View>
+          ) : null}
 
-          {renderHeader?.()}
+          <View style={{ paddingBottom: renderHeader ? 12 : 0 }}>
+            {renderHeader?.()}
+          </View>
         </BlurViewWithFallback>
       </Animated.View>
     )

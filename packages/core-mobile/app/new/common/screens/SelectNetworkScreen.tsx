@@ -1,12 +1,12 @@
 import { Network } from '@avalabs/core-chains-sdk'
 import { Icons, Pressable, Text, useTheme, View } from '@avalabs/k2-alpine'
+import { ListScreen } from 'common/components/ListScreen'
+import { NetworkLogoWithChain } from 'common/components/NetworkLogoWithChain'
+import { HORIZONTAL_MARGIN } from 'common/consts'
 import { useRouter } from 'expo-router'
 import React from 'react'
 import { ListRenderItem } from 'react-native'
 import { isPChain, isXChain, isXPChain } from 'utils/network/isAvalancheNetwork'
-import { HORIZONTAL_MARGIN } from 'common/consts'
-import { NetworkLogoWithChain } from 'common/components/NetworkLogoWithChain'
-import { ListScreen } from 'common/components/ListScreen'
 
 export const SelectNetworkScreen = ({
   networks,

@@ -1,12 +1,11 @@
-import React, { useEffect } from 'react'
+import { Loader } from 'common/components/Loader'
+import { useRouter } from 'expo-router'
+import { AuthenticatorSetup as AuthenticatorSetupComponent } from 'features/onboarding/components/AuthenticatorSetup'
 import { useRecoveryMethodContext } from 'features/onboarding/contexts/RecoveryMethodProvider'
 import useSeedlessManageMFA from 'features/onboarding/hooks/useSeedlessManageMFA'
+import React, { useEffect } from 'react'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import Logger from 'utils/Logger'
-import { useRouter } from 'expo-router'
-import { Loader } from 'common/components/Loader'
-import { AuthenticatorSetup as AuthenticatorSetupComponent } from 'features/onboarding/components/AuthenticatorSetup'
-import BlurredBarsContentLayout from 'common/components/BlurredBarsContentLayout'
 
 export default function AuthenticatorSetup(): JSX.Element {
   const { totpKey, handleCopyCode, totpChallenge, setTotpChallenge } =
@@ -46,13 +45,11 @@ export default function AuthenticatorSetup(): JSX.Element {
   }
 
   return (
-    <BlurredBarsContentLayout>
-      <AuthenticatorSetupComponent
-        totpKey={totpKey}
-        onScanQrCode={goToScanQrCode}
-        onCopyCode={handleCopyCode}
-        onVerifyCode={goToVerifyCode}
-      />
-    </BlurredBarsContentLayout>
+    <AuthenticatorSetupComponent
+      totpKey={totpKey}
+      onScanQrCode={goToScanQrCode}
+      onCopyCode={handleCopyCode}
+      onVerifyCode={goToVerifyCode}
+    />
   )
 }
