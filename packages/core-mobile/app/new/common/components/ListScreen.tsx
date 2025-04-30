@@ -1,6 +1,8 @@
 import { ANIMATED, NavigationTitleHeader, Text } from '@avalabs/k2-alpine'
 import { useHeaderHeight } from '@react-navigation/elements'
 import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
+import { useIsAndroidWithBottomBar } from 'common/hooks/useIsAndroidWithBottomBar'
+import { useModalScreenOptions } from 'common/hooks/useModalScreenOptions'
 import { getListItemEnteringAnimation } from 'common/utils/animations'
 import React, {
   useCallback,
@@ -31,7 +33,6 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { BlurViewWithFallback } from './BlurViewWithFallback'
 import { ErrorState } from './ErrorState'
 import { KeyboardAvoidingView } from './KeyboardAvoidingView'
-
 // Use this component when you need to display a list of items in a screen.
 // It handles all the logic for the header and footer, including keyboard interactions and gestures.
 
@@ -59,6 +60,8 @@ interface ListScreenProps<T>
   hasParent?: boolean
   /** Whether this screen is presented as a modal */
   isModal?: boolean
+  /** Whether this screen is presented as a secondary modal (ActionSheet) */
+  isSecondaryModal?: boolean
   /** Optional function to render a custom sticky header component */
   renderHeader?: () => React.ReactNode
   /** Optional function to render content in the navigation bar's right side */
@@ -75,6 +78,7 @@ export const ListScreen = <T,>({
   navigationTitle,
   hasParent = false,
   isModal = false,
+  isSecondaryModal = false,
   renderEmpty,
   renderHeader,
   renderHeaderRight,
@@ -87,12 +91,13 @@ export const ListScreen = <T,>({
   >()
   const headerRef = useRef<View>(null)
   const contentHeaderHeight = useSharedValue<number>(0)
+  const { topMarginOffset } = useModalScreenOptions()
 
   const { onScroll, scrollY, targetHiddenProgress } = useFadingHeaderNavigation(
     {
       header: <NavigationTitleHeader title={navigationTitle ?? title ?? ''} />,
       targetLayout: headerLayout,
-      shouldHeaderHaveGrabber: isModal ? true : false,
+      shouldHeaderHaveGrabber: isModal || isSecondaryModal ? true : false,
       hasParent,
       renderHeaderRight
     }
@@ -201,6 +206,14 @@ export const ListScreen = <T,>({
     )
   }, [renderEmpty])
 
+  const paddingBottom = useMemo(() => {
+    if (Platform.OS === 'android' && isSecondaryModal) {
+      return topMarginOffset + insets.bottom + insets.top + 24
+    }
+
+    return insets.bottom
+  }, [isSecondaryModal, insets.bottom, insets.top, topMarginOffset])
+
   const contentContainerStyle = useMemo(() => {
     return [
       props?.contentContainerStyle,
@@ -211,14 +224,26 @@ export const ListScreen = <T,>({
           }
         : {},
       {
-        paddingBottom: insets.bottom
+        paddingBottom
       }
     ] as StyleProp<ViewStyle>[]
-  }, [props?.contentContainerStyle, data.length, insets.bottom])
+  }, [props?.contentContainerStyle, data.length, paddingBottom])
+
+  const isAndroidWithBottomBar = useIsAndroidWithBottomBar()
+
+  const keyboardVerticalOffset = useMemo(() => {
+    if (Platform.OS === 'android' && isSecondaryModal) {
+      return -insets.bottom + 8
+    }
+    if (isAndroidWithBottomBar) {
+      return 16
+    }
+    return insets.bottom
+  }, [insets.bottom, isAndroidWithBottomBar, isSecondaryModal])
 
   return (
     <KeyboardAvoidingView
-      keyboardVerticalOffset={insets.bottom}
+      keyboardVerticalOffset={keyboardVerticalOffset}
       style={{
         flex: 1
       }}>
