@@ -1,3 +1,4 @@
+import { View } from '@avalabs/k2-alpine'
 import { Loader } from 'common/components/Loader'
 import { ScrollScreen } from 'common/components/ScrollScreen'
 import { useUserMfa } from 'common/hooks/useUserMfa'
@@ -55,16 +56,22 @@ const AvailableRecoveryMethodScreen = (): React.JSX.Element => {
 
   return (
     <ScrollScreen
+      isModal
       title="Add a recovery method"
       subtitle="Add recovery methods to securely restore access in case you lose your credentials."
       contentContainerStyle={{ flex: 1, padding: 16 }}>
       {isLoading ? (
         <Loader />
       ) : (
-        <RecoveryMethodList
-          data={available}
-          onPress={handleAddRecoveryMethod}
-        />
+        <View
+          style={{
+            marginTop: 24
+          }}>
+          <RecoveryMethodList
+            data={available}
+            onPress={handleAddRecoveryMethod}
+          />
+        </View>
       )}
     </ScrollScreen>
   )

@@ -1,4 +1,3 @@
-import { Loader } from 'common/components/Loader'
 import { useRouter } from 'expo-router'
 import { AuthenticatorSetup as AuthenticatorSetupComponent } from 'features/onboarding/components/AuthenticatorSetup'
 import { useRecoveryMethodContext } from 'features/onboarding/contexts/RecoveryMethodProvider'
@@ -40,16 +39,13 @@ export default function AuthenticatorSetup(): JSX.Element {
     }
   }, [totpResetInit, totpChallenge, setTotpChallenge])
 
-  if (totpChallenge === undefined || totpKey === undefined) {
-    return <Loader />
-  }
-
   return (
     <AuthenticatorSetupComponent
       totpKey={totpKey}
       onScanQrCode={goToScanQrCode}
       onCopyCode={handleCopyCode}
       onVerifyCode={goToVerifyCode}
+      isLoading={totpChallenge === undefined || totpKey === undefined}
     />
   )
 }

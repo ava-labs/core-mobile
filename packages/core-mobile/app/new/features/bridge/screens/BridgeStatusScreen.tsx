@@ -1,13 +1,7 @@
 import { BridgeTransfer } from '@avalabs/bridge-unified'
 import { BridgeTransaction } from '@avalabs/core-bridge-sdk'
-import { useLocalSearchParams, useRouter } from 'expo-router'
-import React, { useState, useEffect, useMemo } from 'react'
-import { useCoinGeckoId } from 'hooks/useCoinGeckoId'
-import { useSimplePrices } from 'hooks/useSimplePrices'
+import { Network } from '@avalabs/core-chains-sdk'
 import { VsCurrencyType } from '@avalabs/core-coingecko-sdk'
-import Logger from 'utils/Logger'
-import { useSelector } from 'react-redux'
-import { selectSelectedCurrency } from 'store/settings/currency'
 import {
   ActivityIndicator,
   alpha,
@@ -16,33 +10,37 @@ import {
   GroupListItem,
   Icons,
   ProgressBar,
-  SafeAreaView,
-  ScrollView,
   Text,
   useTheme,
   View
 } from '@avalabs/k2-alpine'
-import ScreenHeader from 'common/components/ScreenHeader'
-import { selectIsDeveloperMode } from 'store/settings/advanced'
-import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import { NetworkLogo } from 'common/components/NetworkLogo'
-import { useNetworks } from 'hooks/networks/useNetworks'
-import { Network } from '@avalabs/core-chains-sdk'
-import Animated, {
-  FadeIn,
-  FadeOut,
-  useSharedValue
-} from 'react-native-reanimated'
+import { ScrollScreen } from 'common/components/ScrollScreen'
+import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import {
   getNativeTokenSymbol,
   getSourceChainId,
   getTargetChainId,
   isUnifiedBridgeTransfer
 } from 'common/utils/bridgeUtils'
-import usePendingBridgeTransactions from '../hooks/usePendingBridgeTransactions'
-import { useBridgeNetworkPrice } from '../hooks/useBridgeNetworkPrice'
+import { useLocalSearchParams, useRouter } from 'expo-router'
+import { useNetworks } from 'hooks/networks/useNetworks'
+import { useCoinGeckoId } from 'hooks/useCoinGeckoId'
+import { useSimplePrices } from 'hooks/useSimplePrices'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import Animated, {
+  FadeIn,
+  FadeOut,
+  useSharedValue
+} from 'react-native-reanimated'
+import { useSelector } from 'react-redux'
+import { selectIsDeveloperMode } from 'store/settings/advanced'
+import { selectSelectedCurrency } from 'store/settings/currency'
+import Logger from 'utils/Logger'
 import { useBridgeAmounts } from '../hooks/useBridgeAmounts'
+import { useBridgeNetworkPrice } from '../hooks/useBridgeNetworkPrice'
 import { useBridgeTransferStatus } from '../hooks/useBridgeTransferStatus'
+import usePendingBridgeTransactions from '../hooks/usePendingBridgeTransactions'
 
 export const BridgeStatusScreen = (): JSX.Element => {
   const {
@@ -235,79 +233,75 @@ export const BridgeStatusScreen = (): JSX.Element => {
     [bridgeTransaction, isComplete, sourceCurrentConfirmations]
   )
 
+  const renderFooter = useCallback(() => {
+    return (
+      <Button type="primary" size="large" onPress={back}>
+        {isComplete ? 'Close' : 'Hide'}
+      </Button>
+    )
+  }, [back, isComplete])
+
   return (
-    <SafeAreaView sx={{ flex: 1 }}>
-      <ScrollView
-        style={{ flex: 1 }}
-        contentContainerSx={{ padding: 16, paddingTop: 0 }}
-        keyboardDismissMode="on-drag"
-        keyboardShouldPersistTaps="always">
-        <ScreenHeader title={`Bridging\nin progress...`} />
-        <View sx={{ gap: 12, marginTop: 16 }}>
+    <ScrollScreen
+      title={`Bridging\nin progress...`}
+      navigationTitle="Bridging in progress..."
+      renderFooter={renderFooter}
+      contentContainerStyle={{ padding: 16, flex: 1 }}>
+      <View sx={{ gap: 12, marginTop: 24 }}>
+        <View
+          sx={{
+            backgroundColor: '$surfaceSecondary',
+            paddingVertical: 30,
+            paddingHorizontal: 16,
+            borderRadius: 12,
+            alignItems: 'center'
+          }}>
           <View
             sx={{
-              backgroundColor: '$surfaceSecondary',
-              paddingVertical: 30,
-              paddingHorizontal: 16,
-              borderRadius: 12,
-              alignItems: 'center'
+              flexDirection: 'row',
+              alignItems: 'flex-start',
+              gap: 5
             }}>
-            <View
+            <Text
+              variant="heading1"
               sx={{
-                flexDirection: 'row',
-                alignItems: 'flex-start',
-                gap: 5
+                color: '$textPrimary'
               }}>
-              <Text
-                variant="heading1"
-                sx={{
-                  color: '$textPrimary'
-                }}>
-                {amount?.toNumber()}
-              </Text>
-              <Text
-                sx={{
-                  fontFamily: 'Aeonik-Medium',
-                  fontSize: 24,
-                  lineHeight: 24,
-                  marginTop: 4
-                }}>
-                {symbol}
-              </Text>
-            </View>
-            {coingeckoId && assetPrices?.[coingeckoId] !== undefined && (
-              <Text
-                variant="subtitle2"
-                sx={{ marginTop: 0, color: alpha(colors.$textPrimary, 0.9) }}>
-                {amount &&
-                  formatCurrency({
-                    amount: assetPrices[coingeckoId] * amount.toNumber()
-                  })}
-              </Text>
-            )}
+              {amount?.toNumber()}
+            </Text>
+            <Text
+              sx={{
+                fontFamily: 'Aeonik-Medium',
+                fontSize: 24,
+                lineHeight: 24,
+                marginTop: 4
+              }}>
+              {symbol}
+            </Text>
           </View>
-          <GroupList
-            itemHeight={48}
-            data={sourceData}
-            separatorMarginRight={16}
-          />
-          <GroupList
-            itemHeight={48}
-            data={targetData}
-            separatorMarginRight={16}
-          />
+          {coingeckoId && assetPrices?.[coingeckoId] !== undefined && (
+            <Text
+              variant="subtitle2"
+              sx={{ marginTop: 0, color: alpha(colors.$textPrimary, 0.9) }}>
+              {amount &&
+                formatCurrency({
+                  amount: assetPrices[coingeckoId] * amount.toNumber()
+                })}
+            </Text>
+          )}
         </View>
-      </ScrollView>
-      <View
-        sx={{
-          padding: 16,
-          gap: 20
-        }}>
-        <Button type="primary" size="large" onPress={back}>
-          {isComplete ? 'Close' : 'Hide'}
-        </Button>
+        <GroupList
+          itemHeight={48}
+          data={sourceData}
+          separatorMarginRight={16}
+        />
+        <GroupList
+          itemHeight={48}
+          data={targetData}
+          separatorMarginRight={16}
+        />
       </View>
-    </SafeAreaView>
+    </ScrollScreen>
   )
 }
 

@@ -1,12 +1,10 @@
-import { SelectRecoveryMethods } from 'features/accountSettings/components/SelectRecoveryMethods'
-import React from 'react'
-import { useCallback } from 'react'
-import { RecoveryMethod } from 'features/onboarding/hooks/useAvailableRecoveryMethods'
-import { useLocalSearchParams, useRouter } from 'expo-router'
-import SeedlessService from 'seedless/services/SeedlessService'
 import { useInitSeedlessWalletAndUnlock } from 'common/hooks/useInitSeedlessWalletAndUnlock'
 import { useUserMfa } from 'common/hooks/useUserMfa'
-import { Loader } from 'common/components/Loader'
+import { useLocalSearchParams, useRouter } from 'expo-router'
+import { SelectRecoveryMethods } from 'features/accountSettings/components/SelectRecoveryMethods'
+import { RecoveryMethod } from 'features/onboarding/hooks/useAvailableRecoveryMethods'
+import React, { useCallback } from 'react'
+import SeedlessService from 'seedless/services/SeedlessService'
 
 const SelectMfaMethodScreen = (): React.JSX.Element => {
   const { initSeedlessWalletAndUnlock } = useInitSeedlessWalletAndUnlock()
@@ -42,13 +40,11 @@ const SelectMfaMethodScreen = (): React.JSX.Element => {
     [oidcToken, mfaId, navigate, canGoBack, back, initSeedlessWalletAndUnlock]
   )
 
-  return isLoading ? (
-    <Loader />
-  ) : (
+  return (
     <SelectRecoveryMethods
       mfaMethods={mfaMethods ?? []}
       onSelectMfa={type => handleSelectMfa(type)}
-      sx={{ marginHorizontal: 16 }}
+      isLoading={isLoading}
     />
   )
 }

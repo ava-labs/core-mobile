@@ -1,2 +1,0 @@
-export const AVAX_TOKEN_ID = 'AvalancheAVAX'
-export const USDC_TOKEN_ID = '0xB97EF9Ef8734C71904D8002F8b6Bc66Dd9c48a6E'
