@@ -1,33 +1,36 @@
-import React from 'react'
-import { SxProp, Text, View } from '@avalabs/k2-alpine'
+import { Loader } from 'common/components/Loader'
+import { ScrollScreen } from 'common/components/ScrollScreen'
 import { RecoveryMethodList } from 'features/onboarding/components/RecoveryMethodList'
-import { useRegisteredRecoveryMethods } from 'features/onboarding/hooks/useRegisteredRecoveryMethods'
 import { RecoveryMethod } from 'features/onboarding/hooks/useAvailableRecoveryMethods'
+import { useRegisteredRecoveryMethods } from 'features/onboarding/hooks/useRegisteredRecoveryMethods'
+import React from 'react'
 import { MFA } from 'seedless/types'
 
 export const SelectRecoveryMethods = ({
   mfaMethods,
   onSelectMfa,
-  sx
+  isLoading
 }: {
   mfaMethods: MFA[]
   onSelectMfa: (type: RecoveryMethod) => void
-  sx?: SxProp
+  isLoading: boolean
 }): JSX.Element => {
   const registeredRecoveryMethods = useRegisteredRecoveryMethods(mfaMethods)
 
   return (
-    <View sx={sx}>
-      <View sx={{ marginBottom: 24 }}>
-        <Text variant="heading3">{`Verify recovery\nmethods`}</Text>
-        <Text variant="body1" sx={{ color: '$textPrimary', marginVertical: 8 }}>
-          Verify your recovery method(s) to continue.
-        </Text>
-      </View>
-      <RecoveryMethodList
-        data={registeredRecoveryMethods}
-        onPress={onSelectMfa}
-      />
-    </View>
+    <ScrollScreen
+      title={`Verify recovery\nmethods`}
+      navigationTitle="Verify recovery methods"
+      subtitle="Verify your recovery method(s) to continue."
+      contentContainerStyle={{ padding: 16, flex: 1 }}>
+      {isLoading ? (
+        <Loader />
+      ) : (
+        <RecoveryMethodList
+          data={registeredRecoveryMethods}
+          onPress={onSelectMfa}
+        />
+      )}
+    </ScrollScreen>
   )
 }

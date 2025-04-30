@@ -1,5 +1,4 @@
 import { Icons, showAlert, useTheme } from '@avalabs/k2-alpine'
-import { useNavigation } from '@react-navigation/native'
 import NavigationBarButton from 'common/components/NavigationBarButton'
 import { ScrollScreen } from 'common/components/ScrollScreen'
 import { useUserMfa } from 'common/hooks/useUserMfa'
@@ -19,7 +18,6 @@ const ManageRecoveryMethodsScreen = (): JSX.Element => {
   const {
     theme: { colors }
   } = useTheme()
-  const { getParent } = useNavigation()
   const { data: mfaMethods, isLoading, refetch } = useUserMfa()
   const registeredRecoveryMethods = useRegisteredRecoveryMethods(mfaMethods)
   const { totpResetInit, fidoDelete } = useRecoveryMethodsContext()
@@ -29,31 +27,6 @@ const ManageRecoveryMethodsScreen = (): JSX.Element => {
       refetch()
     }, [refetch])
   )
-
-  const renderHeaderRight = useCallback(() => {
-    return (
-      <NavigationBarButton
-        isModal
-        onPress={() =>
-          // @ts-ignore TODO: make routes typesafe
-          navigate('/accountSettings/addRecoveryMethods/available')
-        }>
-        <Icons.Content.Add color={colors.$textPrimary} />
-      </NavigationBarButton>
-    )
-  }, [colors.$textPrimary, navigate])
-
-  useFocusEffect(() => {
-    getParent()?.setOptions({
-      headerRight: renderHeaderRight
-    })
-
-    return () => {
-      getParent()?.setOptions({
-        headerRight: undefined
-      })
-    }
-  })
 
   const handleChangeAuthenticator = useCallback((): void => {
     showAlert({
@@ -127,10 +100,24 @@ const ManageRecoveryMethodsScreen = (): JSX.Element => {
     [handleChangeAuthenticator, handleRemoveFido]
   )
 
+  const renderHeaderRight = useCallback(() => {
+    return (
+      <NavigationBarButton
+        isModal
+        onPress={() =>
+          // @ts-ignore TODO: make routes typesafe
+          navigate('/accountSettings/addRecoveryMethods/available')
+        }>
+        <Icons.Content.Add color={colors.$textPrimary} />
+      </NavigationBarButton>
+    )
+  }, [colors.$textPrimary, navigate])
+
   return (
     <ScrollScreen
       title={`Manage recovery\nmethods`}
       navigationTitle="Manage recovery methods"
+      renderHeaderRight={renderHeaderRight}
       contentContainerStyle={{ padding: 16 }}>
       {isLoading ? (
         <Loader />

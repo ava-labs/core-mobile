@@ -1,12 +1,10 @@
-import { SelectRecoveryMethods } from 'features/accountSettings/components/SelectRecoveryMethods'
-import React from 'react'
-import { useCallback } from 'react'
-import { RecoveryMethod } from 'features/onboarding/hooks/useAvailableRecoveryMethods'
-import { useRouter } from 'expo-router'
-import { useSeedlessMnemonicExportContext } from 'features/accountSettings/context/SeedlessMnemonicExportProvider'
-import { useVerifyRecoveryMethods } from 'common/hooks/useVerifyRecoveryMethods'
 import { useUserMfa } from 'common/hooks/useUserMfa'
-import { Loader } from 'common/components/Loader'
+import { useVerifyRecoveryMethods } from 'common/hooks/useVerifyRecoveryMethods'
+import { useRouter } from 'expo-router'
+import { SelectRecoveryMethods } from 'features/accountSettings/components/SelectRecoveryMethods'
+import { useSeedlessMnemonicExportContext } from 'features/accountSettings/context/SeedlessMnemonicExportProvider'
+import { RecoveryMethod } from 'features/onboarding/hooks/useAvailableRecoveryMethods'
+import React, { useCallback } from 'react'
 
 const SelectMfaMethodScreen = (): React.JSX.Element => {
   const { navigate } = useRouter()
@@ -55,13 +53,11 @@ const SelectMfaMethodScreen = (): React.JSX.Element => {
     ]
   )
 
-  return isLoading ? (
-    <Loader />
-  ) : (
+  return (
     <SelectRecoveryMethods
       mfaMethods={mfaMethods ?? []}
       onSelectMfa={handleSelectMfa}
-      sx={{ marginHorizontal: 16 }}
+      isLoading={isLoading}
     />
   )
 }

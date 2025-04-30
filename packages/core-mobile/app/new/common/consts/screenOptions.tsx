@@ -77,7 +77,9 @@ export const formSheetScreensOptions: StackNavigationOptions = {
   },
   gestureEnabled: true,
   gestureDirection: 'vertical',
-
+  headerStyle: {
+    height: MODAL_HEADER_HEIGHT
+  },
   // we patched @react-navigation/stack to support a custom "formSheet" effect
   // for modals on both iOS and Android
   cardStyleInterpolator: CardStyleInterpolators.forModalPresentationIOS
