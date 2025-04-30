@@ -1,10 +1,9 @@
-import React, { useCallback, useState } from 'react'
 import { useLocalSearchParams, useRouter } from 'expo-router'
-import { FidoType } from 'services/passkey/types'
-import { useRegisterAndAuthenticateFido } from 'features/onboarding/hooks/useRegisterAndAuthenticateFido'
 import Component from 'features/onboarding/components/FidoNameInput'
+import { useRegisterAndAuthenticateFido } from 'features/onboarding/hooks/useRegisterAndAuthenticateFido'
+import React, { useCallback, useState } from 'react'
 import AnalyticsService from 'services/analytics/AnalyticsService'
-import BlurredBarsContentLayout from 'common/components/BlurredBarsContentLayout'
+import { FidoType } from 'services/passkey/types'
 
 export type FIDONameInputProps = {
   fidoType: FidoType
@@ -45,16 +44,14 @@ const FidoNameInput = (): JSX.Element => {
   }
 
   return (
-    <BlurredBarsContentLayout>
-      <Component
-        title={title ?? ''}
-        description={description ?? ''}
-        textInputPlaceholder={textInputPlaceholder ?? ''}
-        name={name}
-        setName={setName}
-        handleSave={handleSave}
-      />
-    </BlurredBarsContentLayout>
+    <Component
+      title={title ?? ''}
+      description={description ?? ''}
+      textInputPlaceholder={textInputPlaceholder ?? ''}
+      name={name}
+      setName={setName}
+      handleSave={handleSave}
+    />
   )
 }
 

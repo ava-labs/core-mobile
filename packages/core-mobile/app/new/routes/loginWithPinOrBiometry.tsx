@@ -218,12 +218,12 @@ const LoginWithPinOrBiometry = (): JSX.Element => {
   }, [isEnteringPin, pinInputOpacity, buttonContainerPaddingBottom])
 
   return (
-    <SafeAreaView sx={{ flex: 1 }}>
-      <KeyboardAvoidingView>
+    <KeyboardAvoidingView contentContainerStyle={{ flex: 1 }}>
+      <SafeAreaView sx={{ flex: 1 }}>
         <TouchableWithoutFeedback
           style={{ flex: 1 }}
           onPress={handlePressBackground}>
-          <View sx={{ flex: 1 }}>
+          <View sx={{ flex: 1, paddingBottom: 16 }}>
             <View sx={{ flex: 1, alignItems: 'center' }}>
               <View
                 sx={{
@@ -301,8 +301,8 @@ const LoginWithPinOrBiometry = (): JSX.Element => {
             </Reanimated.View>
           </View>
         </TouchableWithoutFeedback>
-      </KeyboardAvoidingView>
-    </SafeAreaView>
+      </SafeAreaView>
+    </KeyboardAvoidingView>
   )
 }
 

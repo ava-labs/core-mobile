@@ -1,7 +1,7 @@
-import { Icons, ScrollView, showAlert, useTheme } from '@avalabs/k2-alpine'
+import { Icons, showAlert, useTheme } from '@avalabs/k2-alpine'
 import { useNavigation } from '@react-navigation/native'
 import NavigationBarButton from 'common/components/NavigationBarButton'
-import ScreenHeader from 'common/components/ScreenHeader'
+import { ScrollScreen } from 'common/components/ScrollScreen'
 import { useUserMfa } from 'common/hooks/useUserMfa'
 import { useFocusEffect, useRouter } from 'expo-router'
 import { useRecoveryMethodsContext } from 'features/accountSettings/context/RecoverMethodsProvider'
@@ -127,20 +127,20 @@ const ManageRecoveryMethodsScreen = (): JSX.Element => {
     [handleChangeAuthenticator, handleRemoveFido]
   )
 
-  return isLoading ? (
-    <Loader />
-  ) : (
-    <ScrollView
-      showsVerticalScrollIndicator={false}
-      scrollEventThrottle={16}
-      contentContainerStyle={{ paddingBottom: 60, paddingHorizontal: 16 }}>
-      <ScreenHeader title={`Manage recovery\nmethods`} />
-      <ManageRecoveryMethods
-        data={registeredRecoveryMethods}
-        onPress={handleSelectedMfa}
-        sx={{ marginTop: 16 }}
-      />
-    </ScrollView>
+  return (
+    <ScrollScreen
+      title={`Manage recovery\nmethods`}
+      navigationTitle="Manage recovery methods"
+      contentContainerStyle={{ padding: 16 }}>
+      {isLoading ? (
+        <Loader />
+      ) : (
+        <ManageRecoveryMethods
+          data={registeredRecoveryMethods}
+          onPress={handleSelectedMfa}
+        />
+      )}
+    </ScrollScreen>
   )
 }
 

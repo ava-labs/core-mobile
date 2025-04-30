@@ -1,29 +1,20 @@
-import React, { useCallback, useEffect, useMemo, useState, useRef } from 'react'
-import {
-  View,
-  Text,
-  useTheme,
-  Card,
-  TextInput,
-  showAlert,
-  SxProp
-} from '@avalabs/k2-alpine'
-import AnalyticsService from 'services/analytics/AnalyticsService'
-import Logger from 'utils/Logger'
-import { TextInput as RNTextInput } from 'react-native'
-import { Result } from 'types/result'
-import { TotpErrors } from 'seedless/errors'
+import { Card, showAlert, TextInput, useTheme } from '@avalabs/k2-alpine'
 import { Empty } from '@cubist-labs/cubesigner-sdk'
 import { useFocusEffect } from '@react-navigation/native'
+import { ScrollScreen } from 'common/components/ScrollScreen'
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { TextInput as RNTextInput } from 'react-native'
+import { TotpErrors } from 'seedless/errors'
+import AnalyticsService from 'services/analytics/AnalyticsService'
+import { Result } from 'types/result'
+import Logger from 'utils/Logger'
 
 export const VerifyCode = <T,>({
   onVerifyCode,
-  onVerifySuccess,
-  sx
+  onVerifySuccess
 }: {
   onVerifyCode: (code: string) => Promise<Result<T, TotpErrors>>
   onVerifySuccess: (response: T | Empty) => void
-  sx?: SxProp
 }): React.JSX.Element => {
   const [code, setCode] = useState('')
   const [showError, setShowError] = useState(false)
@@ -101,51 +92,41 @@ export const VerifyCode = <T,>({
   }, [handleRetry, showError])
 
   return (
-    <View
-      sx={{
-        flex: 1,
-        paddingHorizontal: 16,
-        justifyContent: 'space-between',
-        ...sx
-      }}>
-      <View>
-        <Text variant="heading2">Verify code</Text>
-        <Text variant="body1" sx={{ marginTop: 8 }}>
-          Enter the code generated from your authenticator app
-        </Text>
-        <Card
-          sx={{
-            marginTop: 34,
-            height: 150
-          }}>
-          <TextInput
-            ref={inputRef}
-            containerSx={{
-              flex: 1,
-              height: 44,
-              justifyContent: 'center',
-              alignItems: 'center'
-            }}
-            textInputSx={{
-              flex: 1,
-              fontFamily: 'Aeonik-Medium',
-              fontSize: 60,
-              lineHeight: 60,
-              color: colors.$textPrimary
-            }}
-            textAlign="center"
-            onBlur={() => inputRef.current?.focus()}
-            maxLength={7}
-            value={formattedCode}
-            keyboardType="number-pad"
-            onChangeText={changedText => {
-              handleVerifyCode(changedText).catch(error =>
-                Logger.error('handleVerifyCode', error)
-              )
-            }}
-          />
-        </Card>
-      </View>
-    </View>
+    <ScrollScreen
+      title="Verify code"
+      subtitle="Enter the code generated from your authenticator app"
+      contentContainerStyle={{ padding: 16, flex: 1 }}>
+      <Card
+        sx={{
+          marginTop: 24
+        }}>
+        <TextInput
+          ref={inputRef}
+          containerSx={{
+            flex: 1,
+            height: 44,
+            justifyContent: 'center',
+            alignItems: 'center'
+          }}
+          textInputSx={{
+            flex: 1,
+            fontFamily: 'Aeonik-Medium',
+            fontSize: 60,
+            lineHeight: 60,
+            color: colors.$textPrimary
+          }}
+          textAlign="center"
+          onBlur={() => inputRef.current?.focus()}
+          maxLength={7}
+          value={formattedCode}
+          keyboardType="number-pad"
+          onChangeText={changedText => {
+            handleVerifyCode(changedText).catch(error =>
+              Logger.error('handleVerifyCode', error)
+            )
+          }}
+        />
+      </Card>
+    </ScrollScreen>
   )
 }
