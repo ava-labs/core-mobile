@@ -1,5 +1,5 @@
 import { useRouter } from 'expo-router'
-import { AVAX_TOKEN_ID, USDC_TOKEN_ID } from '../const'
+import { AVAX_TOKEN_ID, USDC_TOKEN_ID } from 'common/consts/swap'
 
 export const useNavigateToSwap = (): {
   navigateToSwap: (fromTokenId?: string, toTokenId?: string) => void
