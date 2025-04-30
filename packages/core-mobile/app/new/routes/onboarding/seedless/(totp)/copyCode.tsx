@@ -1,9 +1,8 @@
-import React from 'react'
-import { useRecoveryMethodContext } from 'features/onboarding/contexts/RecoveryMethodProvider'
+import { Loader } from 'common/components/Loader'
 import { useRouter } from 'expo-router'
 import { CopyCode as CopyCodeComponent } from 'features/onboarding/components/CopyCode'
-import { Loader } from 'common/components/Loader'
-import BlurredBarsContentLayout from 'common/components/BlurredBarsContentLayout'
+import { useRecoveryMethodContext } from 'features/onboarding/contexts/RecoveryMethodProvider'
+import React from 'react'
 
 export default function CopyCode(): JSX.Element {
   const { handleCopyCode, totpKey } = useRecoveryMethodContext()
@@ -18,12 +17,10 @@ export default function CopyCode(): JSX.Element {
   }
 
   return (
-    <BlurredBarsContentLayout>
-      <CopyCodeComponent
-        totpKey={totpKey}
-        onCopyCode={handleCopyCode}
-        onBack={handleBack}
-      />
-    </BlurredBarsContentLayout>
+    <CopyCodeComponent
+      totpKey={totpKey}
+      onCopyCode={handleCopyCode}
+      onBack={handleBack}
+    />
   )
 }

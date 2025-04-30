@@ -19,25 +19,28 @@ export const AddRecoveryMethods = ({
   onSkip: () => void
 }): JSX.Element => {
   const renderFooter = useCallback(() => {
-    return (
-      <View sx={{ paddingHorizontal: 16, paddingBottom: 60 }}>
-        {oidcAuth === undefined && allowsUserToAddLater && (
-          <Button type="tertiary" size="large" onPress={onSkip}>
-            Skip
-          </Button>
-        )}
-      </View>
-    )
+    if (oidcAuth === undefined && allowsUserToAddLater) {
+      return (
+        <Button type="tertiary" size="large" onPress={onSkip}>
+          Skip
+        </Button>
+      )
+    }
+    return <></>
   }, [oidcAuth, allowsUserToAddLater, onSkip])
 
   return (
     <ScrollScreen
       title="Add a recovery method"
-      isModal
       subtitle="Add recovery methods to securely restore access in case you lose your credentials."
       renderFooter={renderFooter}
-      contentContainerStyle={{ padding: 16 }}>
-      <RecoveryMethodList data={availableRecoveryMethods} onPress={onNext} />
+      contentContainerStyle={{ padding: 16, flex: 1 }}>
+      <View
+        style={{
+          marginTop: 24
+        }}>
+        <RecoveryMethodList data={availableRecoveryMethods} onPress={onNext} />
+      </View>
     </ScrollScreen>
   )
 }
