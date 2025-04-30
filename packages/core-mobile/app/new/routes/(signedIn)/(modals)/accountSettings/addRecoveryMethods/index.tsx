@@ -116,6 +116,8 @@ const ManageRecoveryMethodsScreen = (): JSX.Element => {
   return (
     <ScrollScreen
       title={`Manage recovery\nmethods`}
+      isModal
+      hasParent
       navigationTitle="Manage recovery methods"
       renderHeaderRight={renderHeaderRight}
       contentContainerStyle={{ padding: 16, flex: 1 }}>
