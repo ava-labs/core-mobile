@@ -5,28 +5,25 @@ import { TextVariant } from '../../theme/tokens/text'
 import { Text, View } from '../Primitives'
 import { AnimateFadeScale } from '../AnimatedFadeScale/AnimatedFadeScale'
 import { SPRING_LINEAR_TRANSITION } from '../../utils'
-import { MaskedText } from '../MaskedText/MaskedText'
 
 export const AnimatedBalance = ({
   variant = 'heading2',
   balance,
   currency,
   shouldMask = false,
-  maskWidth = 60,
   balanceSx,
   currencySx,
-  maskBackgroundColor,
-  shouldAnimate = true
+  shouldAnimate = true,
+  renderMaskView
 }: {
   balance: string
   currency?: string
   variant?: TextVariant
   shouldMask?: boolean
-  maskWidth?: number
   balanceSx?: SxProp
   currencySx?: SxProp
-  maskBackgroundColor?: string
   shouldAnimate?: boolean
+  renderMaskView?: () => React.JSX.Element
 }): JSX.Element => {
   const animatedBalance = useMemo(() => {
     if (shouldMask) return
@@ -63,17 +60,8 @@ export const AnimatedBalance = ({
       })
   }, [balance.length, currency, currencySx, shouldMask, variant])
 
-  if (shouldMask) {
-    return (
-      <MaskedText
-        sx={balanceSx}
-        variant={variant}
-        shouldMask={shouldMask}
-        maskWidth={maskWidth}
-        numberOfLines={1}
-        maskBackgroundColor={maskBackgroundColor}
-      />
-    )
+  if (shouldMask && renderMaskView) {
+    return renderMaskView()
   }
 
   return shouldAnimate === false ? (

@@ -57,6 +57,7 @@ import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { selectSelectedCurrency } from 'store/settings/currency'
 import { selectIsPrivacyModeEnabled } from 'store/settings/securityPrivacy'
 import { useFocusedSelector } from 'utils/performance/useFocusedSelector'
+import { HiddenBalanceText } from 'common/components/HiddenBalanceText'
 
 const SEGMENT_ITEMS = ['Assets', 'Collectibles', 'DeFi']
 
@@ -239,6 +240,10 @@ const PortfolioHomeScreen = (): JSX.Element => {
     navigateToSwap
   ])
 
+  const renderMaskView = useCallback((): JSX.Element => {
+    return <HiddenBalanceText variant={'heading2'} sx={{ lineHeight: 38 }} />
+  }, [])
+
   const renderHeader = useCallback((): JSX.Element => {
     return (
       <View
@@ -278,6 +283,7 @@ const PortfolioHomeScreen = (): JSX.Element => {
               isLoading={isLoading}
               isPrivacyModeEnabled={isPrivacyModeEnabled}
               isDeveloperModeEnabled={isDeveloperMode}
+              renderMaskView={renderMaskView}
             />
           </Animated.View>
         </View>
@@ -285,6 +291,7 @@ const PortfolioHomeScreen = (): JSX.Element => {
       </View>
     )
   }, [
+    renderMaskView,
     theme.colors.$surfacePrimary,
     handleBalanceHeaderLayout,
     animatedHeaderStyle,
