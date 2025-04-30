@@ -174,6 +174,19 @@ export const selectTokensWithBalanceForAccount = createSelector(
   }
 )
 
+export const selectBalanceTotalForAccount =
+  (accountIndex: number, tokenVisibility: TokenVisibility) =>
+  (state: RootState) => {
+    const tokens = selectTokensWithBalanceForAccount(state, accountIndex)
+
+    return tokens
+      .filter(token => isTokenVisible(tokenVisibility, token))
+      .reduce((total, token) => {
+        total += token.balance ?? 0n
+        return total
+      }, 0n)
+  }
+
 export const selectBalanceTotalInCurrencyForAccount =
   (accountIndex: number, tokenVisibility: TokenVisibility) =>
   (state: RootState) => {

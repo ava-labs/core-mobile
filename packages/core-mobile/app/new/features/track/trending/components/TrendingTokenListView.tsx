@@ -14,7 +14,7 @@ import Animated from 'react-native-reanimated'
 import { getListItemEnteringAnimation } from 'common/utils/animations'
 import { MarketToken } from 'store/watchlist'
 import { TokenLogo } from 'common/components/TokenLogo'
-import { useRouter } from 'expo-router'
+
 const logoSize = 36
 
 export const TrendingTokenListView = memo(
@@ -23,6 +23,7 @@ export const TrendingTokenListView = memo(
     isFavorite,
     index,
     onPress,
+    onBuyPress,
     formattedPrice,
     formattedPercentChange,
     status
@@ -34,16 +35,8 @@ export const TrendingTokenListView = memo(
     formattedPercentChange?: string
     status: PriceChangeStatus
     onPress: () => void
+    onBuyPress: (initialTokenIdTo?: string) => void
   }) => {
-    const { navigate } = useRouter()
-    const handleBuy = useCallback(() => {
-      navigate({
-        // @ts-ignore TODO: make routes typesafe
-        pathname: '/buy',
-        params: { showAvaxWarning: 'true' }
-      })
-    }, [navigate])
-
     const renderLogo = useCallback(() => {
       if (index === 0) {
         return (
@@ -152,7 +145,7 @@ export const TrendingTokenListView = memo(
                 type="secondary"
                 size="small"
                 style={styles.buyButton}
-                onPress={handleBuy}>
+                onPress={() => onBuyPress(token.id)}>
                 Buy
               </Button>
             </View>
