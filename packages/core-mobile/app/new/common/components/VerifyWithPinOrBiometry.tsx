@@ -4,8 +4,8 @@ import { useFocusEffect } from 'expo-router'
 import React, { useCallback, useEffect, useRef } from 'react'
 import { InteractionManager, Keyboard, Platform } from 'react-native'
 import { Subscription } from 'rxjs'
-import { BiometricType } from 'services/deviceInfo/DeviceInfoService'
 import Logger from 'utils/Logger'
+import { BiometricType } from 'utils/BiometricsSDK'
 import { ScrollScreen } from './ScrollScreen'
 
 export const VerifyWithPinOrBiometry = ({

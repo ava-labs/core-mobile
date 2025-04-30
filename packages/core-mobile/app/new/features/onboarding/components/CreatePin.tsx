@@ -11,9 +11,6 @@ import { useFocusEffect } from 'expo-router'
 import { useCreatePin } from 'features/onboarding/hooks/useCreatePin'
 import React, { useCallback, useRef } from 'react'
 import { InteractionManager } from 'react-native'
-import DeviceInfoService, {
-  BiometricType
-} from 'services/deviceInfo/DeviceInfoService'
 import { useStoredBiometrics } from 'common/hooks/useStoredBiometrics'
 
 export const CreatePin = ({

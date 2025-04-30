@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
-import { RootState } from 'store/index'
+import { RootState } from 'store/types'
 import { Wallet, WalletsState } from 'store/wallet/types'
 import { storeWalletWithPin } from './thunks'
 
