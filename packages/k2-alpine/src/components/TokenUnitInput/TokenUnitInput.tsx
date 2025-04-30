@@ -69,19 +69,18 @@ export const TokenUnitInput = forwardRef<
 
     const inputAmount = useMemo(() => {
       const sanitizedValue = value?.replace(/,/g, '')
-      const tokenUnitValue = new TokenUnit(
-        !sanitizedValue ? 0n : sanitizedValue,
+      return new TokenUnit(
+        !sanitizedValue ? 0n : Number(sanitizedValue) * 10 ** token.maxDecimals,
         token.maxDecimals,
         token.symbol
       )
-      return tokenUnitValue.mul(10 ** token.maxDecimals)
     }, [value, token])
 
     const handleValueChanged = useCallback(
       (rawValue: string): void => {
         if (!rawValue) {
           setValue('')
-          onChange?.(new TokenUnit(0, token.maxDecimals, token.symbol))
+          onChange?.(new TokenUnit(0n, token.maxDecimals, token.symbol))
           return
         }
         const changedValue = rawValue.startsWith('.') ? '0.' : rawValue
@@ -112,10 +111,11 @@ export const TokenUnitInput = forwardRef<
           setValue(normalizedValue)
           onChange?.(
             new TokenUnit(
-              !normalizedValue ? 0 : Number(normalizedValue.replace(/,/g, '')),
+              Number(normalizedValue.replace(/,/g, '')) *
+                10 ** token.maxDecimals,
               token.maxDecimals,
               token.symbol
-            ).mul(10 ** token.maxDecimals)
+            )
           )
         } else {
           setMaxLength(undefined)

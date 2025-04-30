@@ -114,7 +114,7 @@ export const SendToken = ({ onSend }: { onSend: () => void }): JSX.Element => {
     selectedToken !== undefined &&
     addressToSend !== undefined &&
     tokenBalance &&
-    amount.lt(tokenBalance)
+    (amount.lt(tokenBalance) || amount?.eq(tokenBalance))
 
   const handleSelectToken = useCallback((): void => {
     // @ts-ignore TODO: make routes typesafe

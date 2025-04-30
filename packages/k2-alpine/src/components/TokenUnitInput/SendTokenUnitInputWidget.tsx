@@ -101,6 +101,8 @@ export const SendTokenUnitInputWidget = ({
   const handlePressPresetButton = (amt: TokenUnit, index: number): void => {
     textInputRef.current?.setValue(amt.toDisplay())
 
+    onChange?.(amt)
+
     setPresetAmonuntButtons(prevButtons =>
       prevButtons.map((b, i) =>
         i === index ? { ...b, isSelected: true } : { ...b, isSelected: false }
@@ -113,7 +115,7 @@ export const SendTokenUnitInputWidget = ({
       setPresetAmonuntButtons(prevButtons =>
         prevButtons.map(b => ({
           ...b,
-          isSelected: value.toDisplay() === balance.mul(b.amount).toDisplay()
+          isSelected: value.eq(balance.mul(b.amount))
         }))
       )
 
