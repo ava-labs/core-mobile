@@ -1,3 +1,4 @@
+import { View } from '@avalabs/k2-alpine'
 import { Loader } from 'common/components/Loader'
 import { ScrollScreen } from 'common/components/ScrollScreen'
 import { RecoveryMethodList } from 'features/onboarding/components/RecoveryMethodList'
@@ -26,10 +27,15 @@ export const SelectRecoveryMethods = ({
       {isLoading ? (
         <Loader />
       ) : (
-        <RecoveryMethodList
-          data={registeredRecoveryMethods}
-          onPress={onSelectMfa}
-        />
+        <View
+          style={{
+            marginTop: 24
+          }}>
+          <RecoveryMethodList
+            data={registeredRecoveryMethods}
+            onPress={onSelectMfa}
+          />
+        </View>
       )}
     </ScrollScreen>
   )

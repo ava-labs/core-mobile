@@ -41,7 +41,7 @@ export const CopyCode = ({
         <View>
           <Card
             sx={{
-              marginTop: 34,
+              marginTop: 24,
               flexDirection: 'row',
               justifyContent: 'space-between',
               alignItems: 'center',
@@ -60,7 +60,7 @@ export const CopyCode = ({
             </View>
 
             <Button type="secondary" size="small" onPress={onCopyCode}>
-              copy
+              Copy
             </Button>
           </Card>
 

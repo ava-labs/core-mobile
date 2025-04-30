@@ -1,3 +1,4 @@
+import { View } from '@avalabs/k2-alpine'
 import { Loader } from 'common/components/Loader'
 import { ScrollScreen } from 'common/components/ScrollScreen'
 import { useUserMfa } from 'common/hooks/useUserMfa'
@@ -40,10 +41,15 @@ const SelectRecoveryMethodScreen = (): React.JSX.Element => {
       {isLoading ? (
         <Loader />
       ) : (
-        <RecoveryMethodList
-          data={registeredRecoveryMethods}
-          onPress={handleSelectMfa}
-        />
+        <View
+          style={{
+            marginTop: 24
+          }}>
+          <RecoveryMethodList
+            data={registeredRecoveryMethods}
+            onPress={handleSelectMfa}
+          />
+        </View>
       )}
     </ScrollScreen>
   )

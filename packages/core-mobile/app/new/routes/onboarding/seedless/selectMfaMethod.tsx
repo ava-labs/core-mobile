@@ -1,4 +1,5 @@
 import { ScrollScreen } from 'common/components/ScrollScreen'
+import { View } from '@avalabs/k2-alpine'
 import { useRouter } from 'expo-router'
 import { RecoveryMethodList } from 'features/onboarding/components/RecoveryMethodList'
 import { useRecoveryMethodContext } from 'features/onboarding/contexts/RecoveryMethodProvider'
@@ -42,10 +43,15 @@ const SelectMfaMethodScreen = (): JSX.Element => {
       navigationTitle="Verify recovery methods"
       subtitle="Verify your recovery method(s) to continue."
       contentContainerStyle={{ padding: 16, flex: 1 }}>
-      <RecoveryMethodList
-        data={registeredRecoveryMethods}
-        onPress={handleSelectMFA}
-      />
+      <View
+        style={{
+          marginTop: 24
+        }}>
+        <RecoveryMethodList
+          data={registeredRecoveryMethods}
+          onPress={handleSelectMFA}
+        />
+      </View>
     </ScrollScreen>
   )
 }

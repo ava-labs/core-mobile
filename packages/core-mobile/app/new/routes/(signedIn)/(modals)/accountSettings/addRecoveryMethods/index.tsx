@@ -1,4 +1,4 @@
-import { Icons, showAlert, useTheme } from '@avalabs/k2-alpine'
+import { Icons, showAlert, Text, useTheme, View } from '@avalabs/k2-alpine'
 import NavigationBarButton from 'common/components/NavigationBarButton'
 import { ScrollScreen } from 'common/components/ScrollScreen'
 import { useUserMfa } from 'common/hooks/useUserMfa'
@@ -118,14 +118,19 @@ const ManageRecoveryMethodsScreen = (): JSX.Element => {
       title={`Manage recovery\nmethods`}
       navigationTitle="Manage recovery methods"
       renderHeaderRight={renderHeaderRight}
-      contentContainerStyle={{ padding: 16 }}>
+      contentContainerStyle={{ padding: 16, flex: 1 }}>
       {isLoading ? (
         <Loader />
       ) : (
-        <ManageRecoveryMethods
-          data={registeredRecoveryMethods}
-          onPress={handleSelectedMfa}
-        />
+        <View
+          style={{
+            marginTop: 24
+          }}>
+          <ManageRecoveryMethods
+            data={registeredRecoveryMethods}
+            onPress={handleSelectedMfa}
+          />
+        </View>
       )}
     </ScrollScreen>
   )
