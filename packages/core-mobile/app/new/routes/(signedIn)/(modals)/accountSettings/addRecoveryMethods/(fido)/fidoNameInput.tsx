@@ -26,6 +26,7 @@ const FidoNameInput = (): JSX.Element => {
 
   return (
     <Component
+      isModal
       title={title ?? ''}
       description={description ?? ''}
       textInputPlaceholder={textInputPlaceholder ?? ''}
