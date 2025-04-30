@@ -12,6 +12,7 @@ import {
   useTheme,
   View
 } from '@avalabs/k2-alpine'
+import { HiddenBalanceText } from 'common/components/HiddenBalanceText'
 import NavigationBarButton from 'common/components/NavigationBarButton'
 import { ScrollScreen } from 'common/components/ScrollScreen'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
@@ -216,6 +217,20 @@ const AccountBalance = ({
     return formatCurrency({ amount: accountBalance })
   }, [accountBalance, formatCurrency])
 
+  const renderMaskView = useCallback(() => {
+    return (
+      <HiddenBalanceText
+        variant={'heading6'}
+        sx={{
+          color: isActive
+            ? colors.$textPrimary
+            : alpha(colors.$textPrimary, 0.6),
+          lineHeight: 18
+        }}
+      />
+    )
+  }, [colors.$textPrimary, isActive])
+
   if (isFetchingBalance) {
     return <ActivityIndicator size="small" sx={{ marginRight: 4 }} />
   }
@@ -237,6 +252,7 @@ const AccountBalance = ({
         color: isActive ? colors.$textPrimary : alpha(colors.$textPrimary, 0.6),
         lineHeight: 18
       }}
+      renderMaskView={renderMaskView}
       shouldAnimate={false}
     />
   )

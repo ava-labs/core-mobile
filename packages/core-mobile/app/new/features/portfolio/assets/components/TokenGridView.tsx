@@ -12,6 +12,7 @@ import { Dimensions } from 'react-native'
 import { GRID_GAP } from 'common/consts'
 import { selectIsPrivacyModeEnabled } from 'store/settings/securityPrivacy'
 import { useSelector } from 'react-redux'
+import { HiddenBalanceText } from 'common/components/HiddenBalanceText'
 import { TokenListViewProps } from '../types'
 import { LogoWithNetwork } from './LogoWithNetwork'
 
@@ -82,15 +83,20 @@ export const TokenGridView = ({
                     color={colors.$textDanger}
                   />
                 )}
-                <MaskedText
-                  testID={`grid_fiat_balance__${index}`}
-                  variant="buttonLarge"
-                  shouldMask={isPrivacyModeEnabled}
-                  maskWidth={85}
-                  numberOfLines={1}
-                  sx={{ lineHeight: 21 }}>
-                  {formattedBalance}
-                </MaskedText>
+                {isPrivacyModeEnabled ? (
+                  <HiddenBalanceText
+                    variant="buttonLarge"
+                    sx={{ lineHeight: 21 }}
+                  />
+                ) : (
+                  <Text
+                    testID={`grid_fiat_balance__${index}`}
+                    variant="buttonLarge"
+                    numberOfLines={1}
+                    sx={{ lineHeight: 21 }}>
+                    {formattedBalance}
+                  </Text>
+                )}
               </View>
               <PriceChangeIndicator
                 shouldMask={isPrivacyModeEnabled}
