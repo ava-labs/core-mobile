@@ -1,3 +1,4 @@
+import { StateDebugPanel } from 'components/debug/StateDebugPanel'
 import OldApp from 'ContextApp'
 import NewApp from 'new/ContextApp'
 import React, { useCallback, useState } from 'react'
@@ -59,6 +60,7 @@ export const AppSwitcher = (): React.JSX.Element => {
       <GestureDetector gesture={composedGestures}>
         <View style={{ flex: 1, backgroundColor: '#000000' }}>
           {DevDebuggingConfig.K2_ALPINE || isNewApp ? <NewApp /> : <OldApp />}
+          {__DEV__ && <StateDebugPanel />}
         </View>
       </GestureDetector>
     </GestureHandlerRootView>
