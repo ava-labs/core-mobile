@@ -33,7 +33,6 @@ import Animated, {
 } from 'react-native-reanimated'
 import { useSelector } from 'react-redux'
 import AnalyticsService from 'services/analytics/AnalyticsService'
-import { selectActiveAccount } from 'store/account'
 import {
   LocalTokenWithBalance,
   selectTokensWithZeroBalance
@@ -60,7 +59,7 @@ export const SwapScreen = (): JSX.Element => {
     hideZeroBalance: false
   })
   const tokensWithZeroBalance = useSelector(selectTokensWithZeroBalance)
-  const activeAccount = useSelector(selectActiveAccount)
+
   const {
     swap,
     fromToken,
@@ -272,6 +271,7 @@ export const SwapScreen = (): JSX.Element => {
           paddingBottom: 4
         }}>
         <TokenInputWidget
+          autoFocus={true}
           amount={fromTokenValue}
           balance={fromToken?.balance}
           shouldShowBalance={true}
@@ -355,11 +355,6 @@ export const SwapScreen = (): JSX.Element => {
   const data = useMemo(() => {
     const items: GroupListItem[] = []
 
-    items.push({
-      title: 'Account',
-      value: activeAccount?.name
-    })
-
     const rate = optimalRate ? calculateRate(optimalRate) : 0
 
     if (fromToken && toToken) {
@@ -378,7 +373,6 @@ export const SwapScreen = (): JSX.Element => {
 
     return items
   }, [
-    activeAccount,
     toToken,
     fromToken,
     optimalRate,
@@ -449,6 +443,10 @@ export const SwapScreen = (): JSX.Element => {
       title="Swap"
       renderFooter={renderFooter}
       isModal
+      // TODO: remove this hard coded value
+      // this is a workaround to prevent the content
+      // from being pushed up too much when the keyboard appears
+      bottomOffset={-2000}
       contentContainerStyle={{ padding: 16 }}>
       <Animated.View layout={LinearTransition}>
         {renderFromSection()}
