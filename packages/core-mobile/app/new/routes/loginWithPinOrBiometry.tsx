@@ -34,8 +34,12 @@ import { BiometricType } from 'services/deviceInfo/DeviceInfoService'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { useSelector } from 'react-redux'
 import { selectSelectedAvatar } from 'store/settings/avatar'
+import { usePreventScreenRemoval } from 'common/hooks/usePreventScreenRemoval'
+import { selectWalletState, WalletState } from 'store/app'
 
 const LoginWithPinOrBiometry = (): JSX.Element => {
+  const walletState = useSelector(selectWalletState)
+  usePreventScreenRemoval(walletState === WalletState.INACTIVE)
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const avatar = useSelector(selectSelectedAvatar)
   const { theme } = useTheme()
