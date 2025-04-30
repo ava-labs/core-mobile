@@ -33,7 +33,6 @@ import Animated, {
 } from 'react-native-reanimated'
 import { useSelector } from 'react-redux'
 import AnalyticsService from 'services/analytics/AnalyticsService'
-import { selectActiveAccount } from 'store/account'
 import {
   LocalTokenWithBalance,
   selectTokensWithZeroBalance
@@ -60,7 +59,7 @@ export const SwapScreen = (): JSX.Element => {
     hideZeroBalance: false
   })
   const tokensWithZeroBalance = useSelector(selectTokensWithZeroBalance)
-  const activeAccount = useSelector(selectActiveAccount)
+
   const {
     swap,
     fromToken,
@@ -355,11 +354,6 @@ export const SwapScreen = (): JSX.Element => {
   const data = useMemo(() => {
     const items: GroupListItem[] = []
 
-    items.push({
-      title: 'Account',
-      value: activeAccount?.name
-    })
-
     const rate = optimalRate ? calculateRate(optimalRate) : 0
 
     if (fromToken && toToken) {
@@ -378,7 +372,6 @@ export const SwapScreen = (): JSX.Element => {
 
     return items
   }, [
-    activeAccount,
     toToken,
     fromToken,
     optimalRate,
