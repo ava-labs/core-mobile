@@ -13,6 +13,8 @@ import {
   getEvmProvider
 } from 'services/network/utils/providerUtils'
 import Logger from 'utils/Logger'
+import { useSelector } from 'react-redux'
+import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { useNetworks } from './useNetworks'
 
 // this will return an EVM provider (that uses the network.rpcUrl)
@@ -31,8 +33,9 @@ export function useEVMProvider(
 export function useEthereumProvider(
   isTestnet?: boolean
 ): JsonRpcBatchInternal | undefined {
-  const { activeNetwork, networks } = useNetworks()
-  const _isTestnet = isTestnet ?? activeNetwork.isTestnet
+  const { networks } = useNetworks()
+  const isDeveloperMode = useSelector(selectIsDeveloperMode)
+  const _isTestnet = isTestnet ?? isDeveloperMode
 
   const [ethereumProvider, setEthereumProvider] =
     useState<JsonRpcBatchInternal>()
@@ -40,7 +43,7 @@ export function useEthereumProvider(
     getEthereumProvider(networks, _isTestnet)
       .then(setEthereumProvider)
       .catch(Logger.error)
-  }, [networks, activeNetwork, _isTestnet])
+  }, [networks, _isTestnet])
 
   return ethereumProvider
 }
@@ -48,12 +51,12 @@ export function useEthereumProvider(
 export function useBitcoinProvider(
   isTestnet?: boolean
 ): BitcoinProvider | undefined {
-  const { activeNetwork } = useNetworks()
-  const _isTestnet = isTestnet ?? activeNetwork.isTestnet
+  const isDeveloperMode = useSelector(selectIsDeveloperMode)
+  const _isTestnet = isTestnet ?? isDeveloperMode
   const [bitcoinProvider, setBitcoinProvider] = useState<BitcoinProvider>()
   useEffect(() => {
     getBitcoinProvider(_isTestnet).then(setBitcoinProvider).catch(Logger.error)
-  }, [activeNetwork, _isTestnet])
+  }, [_isTestnet])
 
   return bitcoinProvider
 }
@@ -61,29 +64,30 @@ export function useBitcoinProvider(
 export function useAvalancheProvider(
   isTestnet?: boolean
 ): JsonRpcBatchInternal | undefined {
-  const { activeNetwork, networks } = useNetworks()
-  const _isTestnet = isTestnet ?? activeNetwork.isTestnet
+  const { networks } = useNetworks()
+  const isDeveloperMode = useSelector(selectIsDeveloperMode)
+  const _isTestnet = isTestnet ?? isDeveloperMode
   const [avalancheProvider, setAvalancheProvider] =
     useState<JsonRpcBatchInternal>()
   useEffect(() => {
     getAvalancheEvmProvider(networks, _isTestnet)
       .then(setAvalancheProvider)
       .catch(Logger.error)
-  }, [networks, activeNetwork, _isTestnet])
+  }, [networks, _isTestnet])
   return avalancheProvider
 }
 
 export function useAvalancheXpProvider(
   isTestnet?: boolean
 ): Avalanche.JsonRpcProvider | undefined {
-  const { activeNetwork } = useNetworks()
-  const _isTestnet = isTestnet ?? activeNetwork.isTestnet
+  const isDeveloperMode = useSelector(selectIsDeveloperMode)
+  const _isTestnet = isTestnet ?? isDeveloperMode
   const [avalancheXpProvider, setAvalancheXpProvider] =
     useState<Avalanche.JsonRpcProvider>()
   useEffect(() => {
     getAvalancheXpProvider(!!_isTestnet)
       .then(setAvalancheXpProvider)
       .catch(Logger.error)
-  }, [activeNetwork, _isTestnet])
+  }, [_isTestnet])
   return avalancheXpProvider
 }
