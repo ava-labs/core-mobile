@@ -1,4 +1,4 @@
-import { SxProp, Text } from '@avalabs/k2-alpine'
+import { SxProp, Text, TextVariant } from '@avalabs/k2-alpine'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import React from 'react'
 
