@@ -35,7 +35,7 @@ import TransactionHistory from 'features/portfolio/assets/components/Transaction
 import { ActionButtonTitle } from 'features/portfolio/assets/consts'
 import { useSendSelectedToken } from 'features/send/store'
 import { useAddStake } from 'features/stake/hooks/useAddStake'
-import { AVAX_TOKEN_ID } from 'features/swap/const'
+import { AVAX_TOKEN_ID } from 'common/consts/swap'
 import { useNavigateToSwap } from 'features/swap/hooks/useNavigateToSwap'
 import useCChainNetwork from 'hooks/earn/useCChainNetwork'
 import { UI, useIsUIDisabledForNetwork } from 'hooks/useIsUIDisabled'

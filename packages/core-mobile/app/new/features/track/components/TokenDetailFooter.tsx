@@ -1,11 +1,11 @@
 import { Button, View } from '@avalabs/k2-alpine'
 import { AVAX_COINGECKO_ID } from 'consts/coingecko'
-import { USDC_TOKEN_ID } from 'consts/swap'
+import { USDC_TOKEN_ID } from 'common/consts/swap'
 import { useHasEnoughAvaxToStake } from 'hooks/earn/useHasEnoughAvaxToStake'
 import React from 'react'
 import { useSelector } from 'react-redux'
 import { selectActiveAccount } from 'store/account'
-import { selectBalanceTotalInCurrencyForAccount } from 'store/balance'
+import { selectBalanceTotalForAccount } from 'store/balance'
 import { selectTokenVisibility } from 'store/portfolio'
 import { selectIsEarnBlocked } from 'store/posthog'
 import { MarketType } from 'store/watchlist'
@@ -25,13 +25,10 @@ export const TokenDetailFooter = ({
 }): JSX.Element | null => {
   const activeAccount = useSelector(selectActiveAccount)
   const tokenVisibility = useSelector(selectTokenVisibility)
-  const balanceTotalInCurrency = useSelector(
-    selectBalanceTotalInCurrencyForAccount(
-      activeAccount?.index ?? 0,
-      tokenVisibility
-    )
+  const balanceTotal = useSelector(
+    selectBalanceTotalForAccount(activeAccount?.index ?? 0, tokenVisibility)
   )
-  const isZeroBalance = balanceTotalInCurrency === 0
+  const isZeroBalance = balanceTotal === 0n
   const { hasEnoughAvax } = useHasEnoughAvaxToStake()
   const earnBlocked = useSelector(selectIsEarnBlocked)
 
@@ -88,8 +85,9 @@ export const TokenDetailFooter = ({
     // however, only show swap button if the token is a trending one
     // as we currently only support swapping on Avanlanche network
     // (all trending tokens are on Avalanche network)
-    tokenInfo?.marketType === MarketType.TRENDING &&
-      actions.push(generateSwapButton(tokenInfo?.contractAddress))
+    tokenInfo &&
+      tokenInfo.marketType === MarketType.TRENDING &&
+      actions.push(generateSwapButton(tokenInfo.contractAddress))
   }
 
   if (actions.length === 0) {
