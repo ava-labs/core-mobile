@@ -19,6 +19,7 @@ import { truncateAddress } from '@avalabs/core-utils-sdk'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import { selectIsPrivacyModeEnabled } from 'store/settings/securityPrivacy'
 import { useBalanceForAccount } from 'new/common/contexts/useBalanceForAccount'
+import { HiddenBalanceText } from 'common/components/HiddenBalanceText'
 import { ACCOUNT_CARD_SIZE } from './AcccountList'
 
 export const AccountItem = memo(
@@ -36,7 +37,6 @@ export const AccountItem = memo(
     onSelectAccount: (accountIndex: number) => void
     gotoAccountDetails: (accountIndex: number) => void
     testID?: string
-    // eslint-disable-next-line sonarjs/cognitive-complexity
   }): React.JSX.Element => {
     const {
       balance: accountBalance,
@@ -70,15 +70,16 @@ export const AccountItem = memo(
       ? alpha('#FFFFFF', 0.6)
       : alpha('#28282E', 0.6)
 
-    const backgroundColor = isActive
-      ? isDark
-        ? alpha('#28282E', 0.1)
-        : alpha('#FFFFFF', 0.1)
-      : isDark // inactive
-      ? alpha('#FFFFFF', 0.1)
-      : alpha('#28282E', 0.1)
-
     const iconColor = isActive ? colors.$surfacePrimary : colors.$textPrimary
+
+    const renderMaskView = useCallback(() => {
+      return (
+        <HiddenBalanceText
+          variant={'heading6'}
+          sx={{ color: alpha(accountNameColor, 0.6), lineHeight: 18 }}
+        />
+      )
+    }, [accountNameColor])
 
     const renderBalance = useCallback(() => {
       if (isFetchingBalance) {
@@ -117,14 +118,14 @@ export const AccountItem = memo(
           variant="heading6"
           balance={balance}
           shouldMask={isPrivacyModeEnabled}
+          renderMaskView={renderMaskView}
           balanceSx={{ color: alpha(accountNameColor, 0.6), lineHeight: 18 }}
-          maskBackgroundColor={backgroundColor}
           shouldAnimate={false}
         />
       )
     }, [
+      renderMaskView,
       accountNameColor,
-      backgroundColor,
       balance,
       fetchBalance,
       isBalanceLoaded,
