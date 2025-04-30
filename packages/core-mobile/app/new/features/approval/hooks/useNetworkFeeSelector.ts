@@ -78,7 +78,7 @@ export const useNetworkFeeSelector = ({
     selectedCurrency.toLowerCase() as VsCurrencyType
   )
 
-  const [selectedPreset, setSelectedPreset] = useState(FeePreset.SLOW)
+  const [selectedPreset, setSelectedPreset] = useState(FeePreset.FAST)
   const [calculatedFees, setCalculatedFees] = useState<GasAndFees>()
 
   const isAVM = isAvmNetwork(network)
@@ -132,7 +132,7 @@ export const useNetworkFeeSelector = ({
       setCalculatedFees(updatedFees)
       updatedFees && onFeesChange(updatedFees, selectedPreset)
 
-      const normalFees = getFeesForPreset(networkFee, FeePreset.NORMAL)
+      const normalFees = getFeesForPreset(networkFee, FeePreset.FAST)
       normalFees && setCustomFees(normalFees)
     }
   }, [gasLimit, getFeesForPreset, networkFee, onFeesChange, selectedPreset])
