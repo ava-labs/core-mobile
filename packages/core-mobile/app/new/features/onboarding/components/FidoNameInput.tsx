@@ -9,12 +9,14 @@ const FidoNameInput = ({
   description,
   textInputPlaceholder,
   name,
+  isModal,
   setName,
   handleSave
 }: Omit<FIDONameInputProps, 'fidoType'> & {
   name: string
   setName: (value: string) => void
   handleSave: () => void
+  isModal?: boolean
 }): JSX.Element => {
   const renderFooter = useCallback(() => {
     return (
@@ -30,6 +32,7 @@ const FidoNameInput = ({
 
   return (
     <ScrollScreen
+      isModal={isModal}
       title={title}
       subtitle={description}
       contentContainerStyle={{ padding: 16, flex: 1 }}
