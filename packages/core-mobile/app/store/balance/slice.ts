@@ -78,31 +78,6 @@ export const selectIsBalanceLoadedForAccount =
     return !!foundBalance
   }
 
-export const selectIsBalanceLoadedForActiveNetwork = (
-  state: RootState
-): boolean => {
-  const activeNetwork = selectActiveNetwork(state)
-  const activeAccount = selectActiveAccount(state)
-
-  if (!activeAccount) return false
-
-  return !!state.balance.balances[
-    getKey(activeNetwork.chainId, activeAccount.index)
-  ]
-}
-
-export const selectIsBalanceLoadedForNetworks =
-  (chainIds: number[]) =>
-  (state: RootState): boolean => {
-    const activeAccount = selectActiveAccount(state)
-
-    if (!activeAccount) return false
-
-    return chainIds.every(chainId => {
-      return !!state.balance.balances[getKey(chainId, activeAccount.index)]
-    })
-  }
-
 export const selectIsLoadingBalances = (state: RootState): boolean =>
   state.balance.status === QueryStatus.LOADING
 
@@ -165,17 +140,6 @@ export const selectAvaxPrice = (state: RootState): number => {
   return 0
 }
 
-export const selectTokenByAddress = (address: string) => (state: RootState) => {
-  const balances = Object.values(state.balance.balances)
-
-  for (const balance of balances) {
-    for (const token of balance.tokens) {
-      if ('address' in token && token.address === address) return token
-    }
-  }
-  return undefined
-}
-
 const _selectAccountIndex = (
   _: RootState,
   accountIndex: number | undefined
@@ -230,32 +194,6 @@ export const selectBalanceForAccountIsAccurate =
     return !Object.values(state.balance.balances).some(
       balance => !balance.dataAccurate
     )
-  }
-
-export const selectBalanceTotalInCurrencyForNetworkAndAccount =
-  (
-    chainId: number,
-    accountIndex: number | undefined,
-    tokenVisibility: TokenVisibility
-  ) =>
-  (state: RootState) => {
-    if (accountIndex === undefined) return 0
-
-    const balances = Object.values(state.balance.balances).filter(
-      balance =>
-        balance.chainId === chainId && balance.accountIndex === accountIndex
-    )
-
-    let totalInCurrency = 0
-
-    for (const balance of balances) {
-      for (const token of balance.tokens) {
-        if (!isTokenVisible(tokenVisibility, token)) continue
-        totalInCurrency += token.balanceInCurrency ?? 0
-      }
-    }
-
-    return totalInCurrency
   }
 
 const _selectBalanceKeyForNetworkAndAccount = (

@@ -2,7 +2,6 @@ import { Button, View } from '@avalabs/k2-alpine'
 import { AVAX_COINGECKO_ID } from 'consts/coingecko'
 import { USDC_TOKEN_ID } from 'consts/swap'
 import { useHasEnoughAvaxToStake } from 'hooks/earn/useHasEnoughAvaxToStake'
-import { UI, useIsUIDisabled } from 'hooks/useIsUIDisabled'
 import React from 'react'
 import { useSelector } from 'react-redux'
 import { selectActiveAccount } from 'store/account'
@@ -34,8 +33,6 @@ export const TokenDetailFooter = ({
   )
   const isZeroBalance = balanceTotalInCurrency === 0
   const { hasEnoughAvax } = useHasEnoughAvaxToStake()
-  const buyDisabled = useIsUIDisabled(UI.Buy)
-  const swapDisabled = useIsUIDisabled(UI.Swap)
   const earnBlocked = useSelector(selectIsEarnBlocked)
 
   const buyButton = (
@@ -75,24 +72,23 @@ export const TokenDetailFooter = ({
 
   if (isZeroBalance) {
     // only show buy button if the user has zero balance
-    !buyDisabled && actions.push(buyButton)
+    actions.push(buyButton)
   } else if (tokenId === AVAX_COINGECKO_ID) {
     // for AVAX, show stake instead of buy button if user has enough AVAX
     hasEnoughAvax
       ? !earnBlocked && actions.push(stakeButton)
-      : !buyDisabled && actions.push(buyButton)
+      : actions.push(buyButton)
 
     // always show swap button for AVAX
-    !swapDisabled && actions.push(generateSwapButton(USDC_TOKEN_ID))
+    actions.push(generateSwapButton(USDC_TOKEN_ID))
   } else {
     // user has some balance, show both buy and swap button for all other tokens
-    !buyDisabled && actions.push(buyButton)
+    actions.push(buyButton)
 
     // however, only show swap button if the token is a trending one
     // as we currently only support swapping on Avanlanche network
     // (all trending tokens are on Avalanche network)
     tokenInfo?.marketType === MarketType.TRENDING &&
-      !swapDisabled &&
       actions.push(generateSwapButton(tokenInfo?.contractAddress))
   }
 
