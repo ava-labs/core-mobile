@@ -59,6 +59,8 @@ interface ScrollScreenProps extends KeyboardAwareScrollViewProps {
   renderFooter?: () => React.ReactNode
   /** Custom component to be rendered on the right side of the header */
   renderHeaderRight?: () => React.ReactNode
+  /** The distance between keyboard and focused TextInput when keyboard is shown. Default is 0. */
+  bottomOffset?: number
 }
 
 export const ScrollScreen = ({
@@ -73,6 +75,7 @@ export const ScrollScreen = ({
   renderHeader,
   renderFooter,
   renderHeaderRight,
+  bottomOffset,
   ...props
 }: ScrollScreenProps): JSX.Element => {
   const insets = useSafeAreaInsets()
@@ -166,6 +169,7 @@ export const ScrollScreen = ({
         keyboardDismissMode="interactive"
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
+        bottomOffset={bottomOffset}
         extraKeyboardSpace={-keyboardHeight}
         {...props}
         contentContainerStyle={[

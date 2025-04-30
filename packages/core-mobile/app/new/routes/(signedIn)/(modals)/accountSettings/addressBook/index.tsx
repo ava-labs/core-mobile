@@ -1,3 +1,3 @@
-import { AddressBookScreen } from 'features/accountSettings/components/addressBook/AddressBookScreen'
+import { AddressBookScreen } from 'features/accountSettings/screens/addressBook/AddressBookScreen'
 
 export { AddressBookScreen as default }

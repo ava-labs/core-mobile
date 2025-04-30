@@ -56,6 +56,7 @@ const AvailableRecoveryMethodScreen = (): React.JSX.Element => {
 
   return (
     <ScrollScreen
+      isModal
       title="Add a recovery method"
       subtitle="Add recovery methods to securely restore access in case you lose your credentials."
       contentContainerStyle={{ flex: 1, padding: 16 }}>

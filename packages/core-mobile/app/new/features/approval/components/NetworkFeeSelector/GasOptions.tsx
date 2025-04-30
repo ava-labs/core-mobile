@@ -44,13 +44,6 @@ export const GasOptions = ({
           ? inversedColors.$surfaceTertiary
           : alpha(colors.$textPrimary, 0.1)
 
-        // ? alpha(
-        //   (!isSelected ? colors : colors).$textPrimary,
-        //   0.1
-        // )
-
-        // 10% 850
-
         const textColor = (!isSelected ? colors : inversedColors).$textPrimary
 
         return (
