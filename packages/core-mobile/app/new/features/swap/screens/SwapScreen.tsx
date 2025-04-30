@@ -271,6 +271,7 @@ export const SwapScreen = (): JSX.Element => {
           paddingBottom: 4
         }}>
         <TokenInputWidget
+          autoFocus={true}
           amount={fromTokenValue}
           balance={fromToken?.balance}
           shouldShowBalance={true}
@@ -442,6 +443,10 @@ export const SwapScreen = (): JSX.Element => {
       title="Swap"
       renderFooter={renderFooter}
       isModal
+      // TODO: remove this hard coded value
+      // this is a workaround to prevent the content
+      // from being pushed up too much when the keyboard appears
+      bottomOffset={-2000}
       contentContainerStyle={{ padding: 16 }}>
       <Animated.View layout={LinearTransition}>
         {renderFromSection()}
