@@ -1,4 +1,3 @@
-import { Loader } from 'common/components/Loader'
 import { useRouter } from 'expo-router'
 import { CopyCode as CopyCodeComponent } from 'features/onboarding/components/CopyCode'
 import { useRecoveryMethodContext } from 'features/onboarding/contexts/RecoveryMethodProvider'
@@ -12,15 +11,12 @@ export default function CopyCode(): JSX.Element {
     router.canGoBack() && router.back()
   }
 
-  if (totpKey === undefined) {
-    return <Loader />
-  }
-
   return (
     <CopyCodeComponent
       totpKey={totpKey}
       onCopyCode={handleCopyCode}
       onBack={handleBack}
+      isLoading={totpKey === undefined}
     />
   )
 }

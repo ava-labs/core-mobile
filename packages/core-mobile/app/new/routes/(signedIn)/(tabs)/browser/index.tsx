@@ -1,5 +1,6 @@
 import { AlertWithTextInputs, ANIMATED, View } from '@avalabs/k2-alpine'
 import { useFocusEffect } from '@react-navigation/native'
+import { useIsAndroidWithBottomBar } from 'common/hooks/useIsAndroidWithBottomBar'
 import { useBrowserContext } from 'features/browser/BrowserContext'
 import { BrowserControls } from 'features/browser/components/BrowserControls'
 import { BrowserSnapshot } from 'features/browser/components/BrowserSnapshot'
@@ -76,17 +77,21 @@ const Browser = (): React.ReactNode => {
     }
   })
 
+  const isAndroidBottomBar = useIsAndroidWithBottomBar()
+
   useFocusEffect(() => {
-    if (!KeyboardController.isVisible()) {
-      KeyboardController.setInputMode(
-        AndroidSoftInputModes.SOFT_INPUT_ADJUST_NOTHING
-      )
-    }
-    return () => {
+    if (!isAndroidBottomBar) {
       if (!KeyboardController.isVisible()) {
         KeyboardController.setInputMode(
-          AndroidSoftInputModes.SOFT_INPUT_ADJUST_RESIZE
+          AndroidSoftInputModes.SOFT_INPUT_ADJUST_NOTHING
         )
+      }
+      return () => {
+        if (!KeyboardController.isVisible()) {
+          KeyboardController.setInputMode(
+            AndroidSoftInputModes.SOFT_INPUT_ADJUST_RESIZE
+          )
+        }
       }
     }
   })
