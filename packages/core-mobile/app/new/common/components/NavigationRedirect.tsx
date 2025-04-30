@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useCallback, useEffect } from 'react'
 import 'react-native-reanimated'
 import { selectWalletState, WalletState } from 'store/app'
 import { useSelector } from 'react-redux'
@@ -9,8 +9,10 @@ import { useRootNavigationState, useRouter, usePathname } from 'expo-router'
  * See: https://github.com/expo/expo/issues/35383
  * TODO: Adjust import back to expo-router once the bug is resolved.
  */
-import { useNavigation } from '@react-navigation/native'
+import { useNavigation, useFocusEffect } from '@react-navigation/native'
 import { StackActions } from '@react-navigation/native'
+import { BackHandler } from 'react-native'
+import { showAlert } from '@avalabs/k2-alpine'
 
 export const NavigationRedirect = (): null => {
   const router = useRouter()
@@ -69,11 +71,48 @@ export const NavigationRedirect = (): null => {
         pathName === '/onboarding/seedless/confirmation' ||
         (pathName === '/loginWithPinOrBiometry' && !isSignedIn)
       ) {
-        // @ts-ignore
+        // must call dismissAll() here
+        // otherwise, pressing the back button will either take users:
+        // - to a blank screen (if they are already logged in)
+        // - back to the onboarding flow (when they just completed onboarding)
+        while (router.canGoBack()) {
+          router.dismissAll()
+        }
+        // @ts-ignore TODO: make routes typesafe
         router.replace('/portfolio')
       }
     }
   }, [walletState, router, isSignedIn, pathName, isNavigationReady])
+
+  useFocusEffect(
+    useCallback(() => {
+      const onBackPress = (): boolean => {
+        if (!router.canGoBack()) {
+          showAlert({
+            title: 'Are you sure?',
+            description: 'You will exit the app',
+            buttons: [
+              { text: 'Cancel', style: 'cancel' },
+              {
+                text: 'Got it',
+                onPress: () => {
+                  BackHandler.exitApp()
+                }
+              }
+            ]
+          })
+          return true
+        } else {
+          return false
+        }
+      }
+      BackHandler.addEventListener('hardwareBackPress', onBackPress)
+
+      return () =>
+        BackHandler.removeEventListener('hardwareBackPress', onBackPress)
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [])
+  )
 
   return null
 }
