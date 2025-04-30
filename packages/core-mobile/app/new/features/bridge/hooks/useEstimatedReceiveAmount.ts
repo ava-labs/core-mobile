@@ -20,7 +20,7 @@ export const useEstimatedReceiveAmount = ({
   targetNetwork: Network | undefined
 }): bigint | undefined => {
   const activeAccount = useSelector(selectActiveAccount)
-  const { data: networkFeeRate } = useNetworkFee()
+  const { data: networkFeeRate } = useNetworkFee(sourceNetwork)
 
   const [estimatedAmount, setEstimatedAmount] = useState<bigint | undefined>()
 
