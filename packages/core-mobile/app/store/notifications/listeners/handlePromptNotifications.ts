@@ -51,7 +51,11 @@ export const handlePromptNotifications = async (
       'Get notified about market updates, special offers, airdrops, balance changes and more',
     buttons: [
       {
+        text: 'Not now'
+      },
+      {
         text: 'Turn on',
+        style: 'cancel',
         onPress: async () => {
           const { permission } = await NotificationsService.getAllPermissions(
             false
@@ -62,10 +66,6 @@ export const handlePromptNotifications = async (
           }
           listenerApi.dispatch(turnOnAllNotifications())
         }
-      },
-      {
-        text: 'Not Now',
-        style: 'cancel'
       }
     ]
   })
