@@ -5,6 +5,8 @@ import { parseUri } from '@walletconnect/utils'
 import { WalletConnectVersions } from 'store/walletConnectV2/types'
 import { newSession } from 'store/walletConnectV2/slice'
 import { showSnackbar } from 'new/common/utils/toast'
+import { router } from 'expo-router'
+import { History } from 'store/browser'
 import { ACTIONS, DeepLink, PROTOCOLS } from '../types'
 
 export const handleDeeplink = ({
@@ -16,7 +18,8 @@ export const handleDeeplink = ({
   deeplink: DeepLink
   dispatch: Dispatch
   isEarnBlocked: boolean
-  openUrl: (url: string) => Promise<void>
+  openUrl: (history: Pick<History, 'url' | 'title'>) => void
+  // eslint-disable-next-line sonarjs/cognitive-complexity
 }): void => {
   let url
   try {
@@ -42,27 +45,39 @@ export const handleDeeplink = ({
       }
 
       // if not a wc link, just open the url in the in-app browser
-      openUrl(deeplink.url)
+      openUrl({
+        url: deeplink.url,
+        title: ''
+      })
       break
     }
     case PROTOCOLS.CORE: {
-      const action = url.host
-
+      const { host: action, pathname } = url
       if (action === ACTIONS.WC) {
         startWalletConnectSession({ url, dispatch, deeplink })
       } else if (action === ACTIONS.Portfolio) {
         deeplink.callback?.()
-        // TODO fix deeplink
-        // navigateToChainPortfolio()
+        // @ts-ignore TODO: make routes typesafe
+        router.navigate('/portfolio')
       } else if (action === ACTIONS.StakeComplete) {
         if (isEarnBlocked) return
         deeplink.callback?.()
-        //navigateToClaimRewards()
+        // @ts-ignore TODO: make routes typesafe
+        router.navigate('/portfolio')
+        setTimeout(() => {
+          // @ts-ignore TODO: make routes typesafe
+          router.navigate('/claimStakeReward')
+        }, 100)
       } else if (action === ACTIONS.WatchList) {
-        //const coingeckoId = url.pathname.split('/')[1]
-        // navigateToWatchlist(coingeckoId)
+        const coingeckoId = pathname.split('/')[1]
+        // @ts-ignore TODO: make routes typesafe
+        router.navigate('/portfolio')
+        setTimeout(() => {
+          coingeckoId &&
+            // @ts-ignore TODO: make routes typesafe
+            router.navigate(`/trackTokenDetail?tokenId=${coingeckoId}`)
+        }, 100)
       }
-
       break
     }
     default:

@@ -1,10 +1,15 @@
-import { K2AlpineThemeProvider } from '@avalabs/k2-alpine'
+import {
+  Confetti,
+  ConfettiMethods,
+  K2AlpineThemeProvider
+} from '@avalabs/k2-alpine'
 import { LogoModal } from 'common/components/LogoModal'
 import { Stack } from 'common/components/Stack'
 import {
   forNoAnimation,
   stackNavigatorScreenOptions
 } from 'common/consts/screenOptions'
+import { ConfettiContext } from 'common/contexts/ConfettiContext'
 import NavigationThemeProvider from 'common/contexts/NavigationThemeProvider'
 import { useBgDetect } from 'common/hooks/useBgDetect'
 import { useLoadFonts } from 'common/hooks/useLoadFonts'
@@ -14,7 +19,7 @@ import { GlobalAlertWithTextInput } from 'common/utils/alertWithTextInput'
 import { useFocusEffect } from 'expo-router'
 import { RecoveryMethodProvider } from 'features/onboarding/contexts/RecoveryMethodProvider'
 import { NavigationRedirect } from 'new/common/components/NavigationRedirect'
-import React, { useCallback, useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useState, useRef } from 'react'
 import { Platform, Appearance as RnAppearance } from 'react-native'
 import Bootsplash from 'react-native-bootsplash'
 import { SystemBars } from 'react-native-edge-to-edge'
@@ -30,6 +35,8 @@ import {
 
 export default function Root(): JSX.Element | null {
   const dispatch = useDispatch()
+  const confettiRef = useRef<ConfettiMethods>(null)
+
   const selectedAppearance = useSelector(selectSelectedAppearance)
   const { inBackground } = useBgDetect()
   const [enabledPrivacyScreen, setEnabledPrivacyScreen] = useState(false)
@@ -70,51 +77,57 @@ export default function Root(): JSX.Element | null {
   return (
     <K2AlpineThemeProvider colorScheme={colorScheme}>
       <NavigationThemeProvider>
-        <KeyboardProvider>
-          <RecoveryMethodProvider>
-            <NavigationRedirect />
-            <Stack
-              screenOptions={{
-                ...stackNavigatorScreenOptions,
-                headerShown: false
-              }}>
-              <Stack.Screen name="index" options={{ animation: 'none' }} />
-              <Stack.Screen name="signup" options={{ animation: 'none' }} />
-              <Stack.Screen
-                name="accessWallet"
-                options={{ headerShown: true }}
-              />
-              <Stack.Screen
-                name="(signedIn)"
-                options={{
-                  headerShown: false,
-                  animation: 'none',
-                  gestureEnabled: false
-                }}
-              />
-              <Stack.Screen
-                name="loginWithPinOrBiometry"
-                options={{
-                  presentation: 'modal',
-                  headerShown: false,
-                  gestureEnabled: false,
-                  cardStyleInterpolator: forNoAnimation
-                }}
-              />
-              <Stack.Screen name="forgotPin" options={{ headerShown: true }} />
-              <Stack.Screen name="+not-found" />
-              <Stack.Screen name="onboarding" />
-              <Stack.Screen
-                name="sessionExpired"
-                options={{
-                  ...modalScreensOptions,
-                  gestureEnabled: false
-                }}
-              />
-            </Stack>
-            {enabledPrivacyScreen && <LogoModal />}
-          </RecoveryMethodProvider>
-        </KeyboardProvider>
+        <ConfettiContext.Provider value={confettiRef.current}>
+          <KeyboardProvider>
+            <RecoveryMethodProvider>
+              <NavigationRedirect />
+              <Stack
+                screenOptions={{
+                  ...stackNavigatorScreenOptions,
+                  headerShown: false
+                }}>
+                <Stack.Screen name="index" options={{ animation: 'none' }} />
+                <Stack.Screen name="signup" options={{ animation: 'none' }} />
+                <Stack.Screen
+                  name="accessWallet"
+                  options={{ headerShown: true }}
+                />
+                <Stack.Screen
+                  name="(signedIn)"
+                  options={{
+                    headerShown: false,
+                    animation: 'none',
+                    gestureEnabled: false
+                  }}
+                />
+                <Stack.Screen
+                  name="loginWithPinOrBiometry"
+                  options={{
+                    presentation: 'modal',
+                    headerShown: false,
+                    gestureEnabled: false,
+                    cardStyleInterpolator: forNoAnimation
+                  }}
+                />
+                <Stack.Screen
+                  name="forgotPin"
+                  options={{ headerShown: true }}
+                />
+                <Stack.Screen name="+not-found" />
+                <Stack.Screen name="onboarding" />
+                <Stack.Screen
+                  name="sessionExpired"
+                  options={{
+                    ...modalScreensOptions,
+                    gestureEnabled: false
+                  }}
+                />
+              </Stack>
+              {enabledPrivacyScreen && <LogoModal />}
+            </RecoveryMethodProvider>
+          </KeyboardProvider>
+          <Confetti ref={confettiRef} />
+        </ConfettiContext.Provider>
       </NavigationThemeProvider>
       <GlobalToast />
       <GlobalAlertWithTextInput />
