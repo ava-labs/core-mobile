@@ -338,55 +338,6 @@ const fetchBalanceForNetworks = async (
   }, {})
 }
 
-const addPChainToEnabledChainIdsIfNeeded = async (
-  _: Action,
-  listenerApi: AppListenerEffectAPI
-): Promise<void> => {
-  const { getState, dispatch } = listenerApi
-  const state = getState()
-  //check if we've added P chain before
-  const hadAddedPChainToEnabledChainIds = selectHasBeenViewedOnce(
-    ViewOnceKey.P_CHAIN_FAVORITE
-  )(state)
-  if (hadAddedPChainToEnabledChainIds) {
-    Logger.trace('Already added P-chain to enabled chain ids')
-    return
-  }
-  //check if P chain already in enabled chain id list
-  const isDeveloperMode = selectIsDeveloperMode(state)
-  const avalancheNetworkP = NetworkService.getAvalancheNetworkP(isDeveloperMode)
-  const enabledNetworks = selectEnabledNetworks(state)
-  if (
-    enabledNetworks.find(
-      value => value.chainId === avalancheNetworkP.chainId
-    ) !== undefined
-  ) {
-    Logger.trace('P-chain already in enabled chain id list')
-    return
-  }
-
-  //check if any activity on P chain
-  const activeAccount = selectActiveAccount(state)
-
-  if (activeAccount === undefined) {
-    Logger.trace('No active account, skipping add for P-chain')
-    return
-  }
-  const activities = await ActivityService.getActivities({
-    network: avalancheNetworkP,
-    account: activeAccount,
-    shouldAnalyzeBridgeTxs: false
-  })
-  if (activities.transactions.length === 0) {
-    Logger.trace('No activities, skipping add for P-chain')
-    return
-  }
-
-  Logger.info('Adding P-Chain to enabled chain ids')
-  dispatch(toggleEnabledChainId(avalancheNetworkP.chainId))
-  dispatch(setViewOnce(ViewOnceKey.P_CHAIN_FAVORITE))
-}
-
 const addXChainToEnabledChainIdsIfNeeded = async (
   _: Action,
   listenerApi: AppListenerEffectAPI
@@ -473,11 +424,6 @@ export const addBalanceListeners = (
     effect: async (action, listenerApi) => {
       handleFetchBalanceForAccount(listenerApi, action.payload.accountIndex)
     }
-  })
-
-  startListening({
-    matcher: isAnyOf(onAppUnlocked, setAccounts),
-    effect: addPChainToEnabledChainIdsIfNeeded
   })
 
   startListening({
