@@ -117,7 +117,6 @@ const StakeSelectNode = (): JSX.Element => {
       data={validators ?? []}
       renderItem={renderItem}
       keyExtractor={item => item.nodeID}
-      contentContainerStyle={{ padding: 16 }}
       renderHeader={renderHeader}
       renderEmpty={renderEmpty}
     />
