@@ -39,7 +39,7 @@ class ApprovalController implements VmModuleApprovalController {
   }
 
   onTransactionReverted(): void {
-    transactionSnackbar.error({ message: 'Transaction reverted' })
+    transactionSnackbar.error({ error: 'Transaction reverted' })
   }
 
   async requestApproval({
