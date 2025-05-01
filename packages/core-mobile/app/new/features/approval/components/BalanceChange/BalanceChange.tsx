@@ -11,13 +11,13 @@ const BalanceChangeComponent = ({
   return (
     <View
       sx={{
-        marginTop: 12,
         paddingVertical: 16,
         justifyContent: 'space-between',
         alignItems: 'center',
         flexDirection: 'row',
         backgroundColor: '$surfaceSecondary',
-        borderRadius: 12
+        borderRadius: 12,
+        marginBottom: 24
       }}>
       <View
         sx={{

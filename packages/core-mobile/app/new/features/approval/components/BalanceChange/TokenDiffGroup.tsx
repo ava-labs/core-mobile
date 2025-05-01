@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react'
+import React, { useCallback, useMemo, useState } from 'react'
 import {
   Text,
   View,
@@ -12,7 +12,8 @@ import {
   NetworkContractToken,
   NetworkToken,
   TokenDiff,
-  TokenDiffItem
+  TokenDiffItem,
+  TokenType
 } from '@avalabs/vm-module-types'
 import { TokenLogo } from 'new/common/components/TokenLogo'
 import { useFormatCurrency } from 'new/common/hooks/useFormatCurrency'
@@ -115,6 +116,10 @@ const TokenDiffItemComponent = ({
   diffItem: TokenDiffItem
   isOut: boolean
 }): JSX.Element => {
+  const isNft =
+    'type' in token &&
+    (token.type === TokenType.ERC721 || token.type === TokenType.ERC1155)
+
   const { formatCurrency } = useFormatCurrency()
   const {
     theme: { colors }
@@ -129,6 +134,21 @@ const TokenDiffItemComponent = ({
       ? colors.$textDanger
       : lightTextPrimary
   }, [diffItem.displayValue, isOut, colors.$textDanger, colors.$textPrimary])
+
+  const renderTokenLogo = useCallback((): JSX.Element | null => {
+    if (token.name !== undefined && token.symbol !== undefined) {
+      return (
+        <TokenLogo
+          symbol={token.symbol}
+          logoUri={token.logoUri}
+          size={42}
+          isNft={isNft}
+        />
+      )
+    }
+
+    return null
+  }, [token.name, token.symbol, token.logoUri, isNft])
 
   return (
     <View
@@ -146,15 +166,13 @@ const TokenDiffItemComponent = ({
           gap: 12,
           width: '35%'
         }}>
-        {token.name !== undefined && token.symbol !== undefined && (
-          <TokenLogo symbol={token.symbol} logoUri={token.logoUri} size={42} />
-        )}
+        {renderTokenLogo()}
         <Text
           variant="heading1"
           numberOfLines={1}
           sx={{
             fontSize: 18,
-            lineHeight: 18,
+            lineHeight: 21,
             color: '$textPrimary'
           }}>
           {token.symbol}
@@ -170,8 +188,8 @@ const TokenDiffItemComponent = ({
             variant="heading1"
             numberOfLines={1}
             sx={{
-              fontSize: 42,
-              lineHeight: 42,
+              fontSize: 36,
+              lineHeight: 36,
               color: displayValueColor
             }}>
             {isOut ? '-' : '+'}

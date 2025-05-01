@@ -12,6 +12,7 @@ interface LogoProps {
   testID?: string
   backgroundColor?: string
   borderColor?: string
+  borderRadius?: number
 }
 
 const DEFAULT_SIZE = 32
@@ -20,12 +21,13 @@ export const Logo: FC<LogoProps> = ({
   logoUri,
   borderColor,
   size = DEFAULT_SIZE,
-  backgroundColor
+  backgroundColor,
+  borderRadius
 }) => {
   const [failedToLoad, setFailedToLoad] = useState(false)
 
   const borderWidth = borderColor ? 1 : 0
-
+  const borderRadiusValue = borderRadius ?? size
   const hasValidLogoUri =
     !!logoUri &&
     (logoUri.startsWith('http') ||
@@ -50,7 +52,7 @@ export const Logo: FC<LogoProps> = ({
       width={size}
       height={size}
       style={{
-        borderRadius: size,
+        borderRadius: borderRadiusValue,
         backgroundColor,
         borderWidth,
         borderColor
@@ -62,7 +64,7 @@ export const Logo: FC<LogoProps> = ({
   ) : (
     <Image
       style={{
-        borderRadius: size,
+        borderRadius: borderRadiusValue,
         width: size,
         height: size,
         backgroundColor: backgroundColor,
