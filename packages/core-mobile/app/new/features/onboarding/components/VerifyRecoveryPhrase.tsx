@@ -40,7 +40,7 @@ export const VerifyRecoveryPhrase = ({
     [selectedWord1Index, selectedWord2Index, selectedWord3Index]
   )
 
-  function handleNext(): void {
+  const handleNext = useCallback(() => {
     if (
       selectedWord1Index === undefined ||
       selectedWord2Index === undefined ||
@@ -64,7 +64,16 @@ export const VerifyRecoveryPhrase = ({
         buttons: [{ text: 'Dismiss', style: 'cancel' }]
       })
     }
-  }
+  }, [
+    firstWordSelection.wordOptions,
+    onVerified,
+    secondWordSelection.wordOptions,
+    selectedWord1Index,
+    selectedWord2Index,
+    selectedWord3Index,
+    thirdWordSelection.wordOptions,
+    verify
+  ])
 
   const getTitleForWordSelection = useCallback(
     (index: number): string | undefined => {

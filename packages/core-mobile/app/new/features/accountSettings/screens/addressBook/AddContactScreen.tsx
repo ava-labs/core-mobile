@@ -1,17 +1,16 @@
-import { noop } from '@avalabs/core-utils-sdk'
 import { Button, View } from '@avalabs/k2-alpine'
+import { ScrollScreen } from 'common/components/ScrollScreen'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { ContactForm } from 'features/accountSettings/components/ContactForm'
 import React, { useCallback, useMemo, useState } from 'react'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useDispatch } from 'react-redux'
 import { addContact, Contact } from 'store/addressBook'
-import { ScrollScreen } from './ScrollScreen'
 
-export const AddContact = (): React.JSX.Element => {
+export const AddContactScreen = (): React.JSX.Element => {
   const dispatch = useDispatch()
   const { bottom } = useSafeAreaInsets()
-  const { canGoBack, back } = useRouter()
+  const { canGoBack, back, navigate } = useRouter()
   const { contactId } = useLocalSearchParams<{ contactId: string }>()
   const [contact, setContact] = useState<Contact>({
     id: contactId,
@@ -36,6 +35,16 @@ export const AddContact = (): React.JSX.Element => {
     dispatch(addContact({ ...contact, id: contactId }))
     canGoBack() && back()
   }, [back, canGoBack, contact, contactId, dispatch])
+
+  const handleSelectAvatar = useCallback(() => {
+    navigate({
+      // @ts-ignore TODO: make routes typesafe
+      pathname: '/accountSettings/addressBook/selectContactAvatar',
+      params: {
+        name: contact?.name
+      }
+    })
+  }, [navigate, contact?.name])
 
   const renderFooter = useCallback(() => {
     return (
@@ -66,8 +75,7 @@ export const AddContact = (): React.JSX.Element => {
         <ContactForm
           contact={contact}
           onUpdate={handleUpdateContact}
-          // TODO: implement onSelectAvatar
-          onSelectAvatar={noop}
+          onSelectAvatar={handleSelectAvatar}
         />
       )}
     </ScrollScreen>

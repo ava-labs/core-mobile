@@ -3,12 +3,12 @@ import { LogoModal } from 'common/components/LogoModal'
 import { Stack } from 'common/components/Stack'
 import {
   forNoAnimation,
-  modalScreensOptions,
   stackNavigatorScreenOptions
 } from 'common/consts/screenOptions'
 import NavigationThemeProvider from 'common/contexts/NavigationThemeProvider'
 import { useBgDetect } from 'common/hooks/useBgDetect'
 import { useLoadFonts } from 'common/hooks/useLoadFonts'
+import { useModalScreenOptions } from 'common/hooks/useModalScreenOptions'
 import { GlobalToast } from 'common/utils/toast'
 import { useFocusEffect } from 'expo-router'
 import { RecoveryMethodProvider } from 'features/onboarding/contexts/RecoveryMethodProvider'
@@ -33,6 +33,8 @@ export default function Root(): JSX.Element | null {
   const { inBackground } = useBgDetect()
   const [enabledPrivacyScreen, setEnabledPrivacyScreen] = useState(false)
   const colorScheme = useSelector(selectSelectedColorScheme)
+
+  const { modalScreensOptions } = useModalScreenOptions()
 
   useEffect(() => {
     const subscription = RnAppearance.addChangeListener(
