@@ -16,6 +16,8 @@ export const noActiveNetwork = 0
 export const alwaysEnabledNetworks = [
   ChainsSDKChainId.AVALANCHE_MAINNET_ID,
   ChainsSDKChainId.AVALANCHE_TESTNET_ID,
+  ChainsSDKChainId.AVALANCHE_P,
+  ChainsSDKChainId.AVALANCHE_TEST_P,
   ChainsSDKChainId.BITCOIN,
   ChainsSDKChainId.BITCOIN_TESTNET,
   ChainsSDKChainId.ETHEREUM_HOMESTEAD,
