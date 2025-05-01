@@ -15,19 +15,20 @@ export const noActiveNetwork = 0
 
 export const alwaysEnabledNetworks = [
   ChainsSDKChainId.AVALANCHE_MAINNET_ID,
-  ChainsSDKChainId.AVALANCHE_TESTNET_ID
+  ChainsSDKChainId.AVALANCHE_TESTNET_ID,
+  ChainsSDKChainId.BITCOIN,
+  ChainsSDKChainId.BITCOIN_TESTNET,
+  ChainsSDKChainId.ETHEREUM_HOMESTEAD,
+  ChainsSDKChainId.ETHEREUM_TEST_GOERLY,
+  ChainsSDKChainId.ETHEREUM_TEST_RINKEBY,
+  ChainsSDKChainId.ETHEREUM_TEST_SEPOLIA
 ]
 
 export const reducerName = 'network'
 
 const initialState: NetworkState = {
   customNetworks: {},
-  enabledChainIds: [
-    ...alwaysEnabledNetworks,
-    ChainsSDKChainId.BITCOIN,
-    ChainsSDKChainId.BITCOIN_TESTNET,
-    ChainsSDKChainId.ETHEREUM_HOMESTEAD
-  ],
+  enabledChainIds: alwaysEnabledNetworks,
   disabledLastTransactedChainIds: [],
   active: noActiveNetwork
 }
