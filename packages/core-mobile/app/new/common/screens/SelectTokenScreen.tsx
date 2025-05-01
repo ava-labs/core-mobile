@@ -25,6 +25,7 @@ export const SelectTokenScreen = <T,>({
       title="Select a token"
       data={tokens}
       isModal
+      isSecondaryModal
       // @ts-ignore TODO: ListScreen improvement
       renderItem={renderListItem}
       keyExtractor={keyExtractor}

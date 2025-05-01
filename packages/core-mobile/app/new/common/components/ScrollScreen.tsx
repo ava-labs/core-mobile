@@ -6,6 +6,7 @@ import {
 import { useHeaderHeight } from '@react-navigation/elements'
 import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
 import { useIsAndroidWithBottomBar } from 'common/hooks/useIsAndroidWithBottomBar'
+import { useModalScreenOptions } from 'common/hooks/useModalScreenOptions'
 import React, { useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { LayoutRectangle, Platform, View } from 'react-native'
 import {
@@ -22,7 +23,6 @@ import { BlurViewWithFallback } from './BlurViewWithFallback'
 import { KeyboardAvoidingView } from './KeyboardAvoidingView'
 import { LinearGradientBottomWrapper } from './LinearGradientBottomWrapper'
 import ScreenHeader from './ScreenHeader'
-
 // Use this component when you need a scrollable screen with proper keyboard handling and header management.
 // It handles all the logic for the header and footer, including keyboard interactions and gestures.
 
@@ -47,6 +47,8 @@ interface ScrollScreenProps extends KeyboardAwareScrollViewProps {
   hasParent?: boolean
   /** Whether this screen is presented as a modal */
   isModal?: boolean
+  /** Whether this screen is presented as a secondary modal (ActionSheet) */
+  isSecondaryModal?: boolean
   /** Whether the screen should adjust its layout when the keyboard appears */
   shouldAvoidKeyboard?: boolean
   /** Title to be displayed in the navigation header */
@@ -67,6 +69,7 @@ export const ScrollScreen = ({
   children,
   hasParent,
   isModal,
+  isSecondaryModal,
   shouldAvoidKeyboard = true,
   navigationTitle,
   renderHeader,
@@ -85,12 +88,13 @@ export const ScrollScreen = ({
 
   const headerRef = useRef<View>(null)
   const contentHeaderHeight = useSharedValue<number>(0)
+  const { topMarginOffset } = useModalScreenOptions()
 
   const { onScroll, scrollY, targetHiddenProgress } = useFadingHeaderNavigation(
     {
       header: <NavigationTitleHeader title={navigationTitle ?? title ?? ''} />,
       targetLayout: headerLayout,
-      shouldHeaderHaveGrabber: isModal ? true : false,
+      shouldHeaderHaveGrabber: isModal || isSecondaryModal ? true : false,
       hasParent,
       renderHeaderRight
     }
@@ -120,16 +124,30 @@ export const ScrollScreen = ({
 
   const keyboardVerticalOffset = useMemo(() => {
     if (isModal) {
-      if (Platform.OS === 'ios') {
-        return insets.bottom + 8
-      }
       if (isAndroidWithBottomBar) {
-        return -8
+        return 8
       }
-      return 16
+      return insets.bottom + 8
     }
     return -insets.bottom
   }, [isModal, insets.bottom, isAndroidWithBottomBar])
+
+  const paddingBottom = useMemo(() => {
+    if (Platform.OS === 'android' && isSecondaryModal) {
+      if (isAndroidWithBottomBar) {
+        return topMarginOffset + insets.bottom
+      }
+
+      return topMarginOffset + insets.top + insets.bottom
+    }
+    return insets.bottom + 16
+  }, [
+    isSecondaryModal,
+    insets.bottom,
+    insets.top,
+    isAndroidWithBottomBar,
+    topMarginOffset
+  ])
 
   return (
     <KeyboardAvoidingView
@@ -193,7 +211,7 @@ export const ScrollScreen = ({
             style={{
               padding: 16,
               paddingTop: 0,
-              paddingBottom: insets.bottom + 16
+              paddingBottom
             }}>
             {renderFooter?.()}
           </View>
