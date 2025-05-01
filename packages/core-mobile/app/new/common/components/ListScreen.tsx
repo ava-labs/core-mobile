@@ -92,6 +92,7 @@ export const ListScreen = <T,>({
   const headerRef = useRef<View>(null)
   const contentHeaderHeight = useSharedValue<number>(0)
   const { topMarginOffset } = useModalScreenOptions()
+  const isAndroidWithBottomBar = useIsAndroidWithBottomBar()
 
   const { onScroll, scrollY, targetHiddenProgress } = useFadingHeaderNavigation(
     {
@@ -235,8 +236,6 @@ export const ListScreen = <T,>({
       }
     ] as StyleProp<ViewStyle>[]
   }, [props?.contentContainerStyle, data.length, paddingBottom])
-
-  const isAndroidWithBottomBar = useIsAndroidWithBottomBar()
 
   const keyboardVerticalOffset = useMemo(() => {
     if (isSecondaryModal) {
