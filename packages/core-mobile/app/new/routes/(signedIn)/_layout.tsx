@@ -3,10 +3,10 @@ import { LastTransactedNetworks } from 'common/components/LastTransactedNetworks
 import { Stack } from 'common/components/Stack'
 import {
   formSheetScreensOptions,
-  modalScreensOptions,
   stackNavigatorScreenOptions
 } from 'common/consts/screenOptions'
 import { ConfettiContext } from 'common/contexts/ConfettiContext'
+import { useModalScreenOptions } from 'common/hooks/useModalScreenOptions'
 import { BridgeProvider } from 'features/bridge/contexts/BridgeContext'
 import { CollectiblesProvider } from 'features/portfolio/collectibles/CollectiblesContext'
 import { NavigationPresentationMode } from 'new/common/types'
@@ -16,6 +16,7 @@ const PolyfillCrypto = React.lazy(() => import('react-native-webview-crypto'))
 
 export default function WalletLayout(): JSX.Element {
   const confettiRef = useRef<ConfettiMethods>(null)
+  const { modalScreensOptions } = useModalScreenOptions()
 
   return (
     <BridgeProvider>

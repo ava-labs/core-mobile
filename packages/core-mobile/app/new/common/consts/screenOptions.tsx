@@ -1,25 +1,25 @@
-import React from 'react'
+import { View } from '@avalabs/k2-alpine'
 import {
   CardStyleInterpolators,
   StackCardInterpolatedStyle,
-  StackCardInterpolationProps,
   StackNavigationOptions,
   TransitionPresets
 } from '@react-navigation/stack'
-import { Animated, Platform } from 'react-native'
 import BackBarButton from 'common/components/BackBarButton'
 import BlurredBackgroundView from 'common/components/BlurredBackgroundView'
-import { View } from '@avalabs/k2-alpine'
-import { Link } from 'expo-router'
 import { ReceiveBarButton } from 'common/components/ReceiveBarButton'
+import { Link } from 'expo-router'
+import React from 'react'
+import { Platform } from 'react-native'
 //import { NotificationBarButton } from 'common/components/NotificationBarButton'
 import { AccountSettingBarButton } from 'common/components/AccountSettingBarButton'
+import {
+  MODAL_BORDER_RADIUS,
+  MODAL_HEADER_HEIGHT,
+  MODAL_TOP_MARGIN
+} from 'common/hooks/useModalScreenOptions'
 
 const BAR_BUTTONS_BOTTOM_MARGIN = Platform.OS === 'ios' ? 8 : 0
-
-const MODAL_TOP_MARGIN = Platform.OS === 'ios' ? 75 : 35
-const MODAL_BORDER_RADIUS = 40
-const MODAL_HEADER_HEIGHT = 60
 
 const commonNavigatorScreenOptions: StackNavigationOptions = {
   title: '',
@@ -32,7 +32,6 @@ const commonNavigatorScreenOptions: StackNavigationOptions = {
 
 export const stackNavigatorScreenOptions: StackNavigationOptions = {
   ...commonNavigatorScreenOptions,
-
   headerTransparent: true
 }
 
@@ -47,25 +46,6 @@ export const modalStackNavigatorScreenOptions: StackNavigationOptions = {
   // on iOS,we need to set headerStatusBarHeight to 0 to
   // prevent the header from jumping when navigating
   ...(Platform.OS === 'ios' && { headerStatusBarHeight: 0 })
-}
-
-export const modalScreensOptions: StackNavigationOptions = {
-  presentation: 'modal',
-  cardStyle: {
-    marginTop: MODAL_TOP_MARGIN,
-    borderTopLeftRadius: MODAL_BORDER_RADIUS,
-    borderTopRightRadius: MODAL_BORDER_RADIUS
-  },
-  gestureEnabled: true,
-  gestureDirection: 'vertical',
-  headerShown: false,
-  headerStyle: {
-    height: MODAL_HEADER_HEIGHT
-  },
-
-  // we are using a custom modal transition interpolator
-  // to match design
-  cardStyleInterpolator: forModalPresentationIOS
 }
 
 export const formSheetScreensOptions: StackNavigationOptions = {
@@ -133,57 +113,4 @@ export const homeScreenOptions: StackNavigationOptions = {
 
 export function forNoAnimation(): StackCardInterpolatedStyle {
   return {}
-}
-
-/**
- * Custom card transition interpolator for modal presentations.
- *
- * This function defines the animations for modal screens, making them slide in
- * from the bottom and adding an overlay fade effect. It calculates the progress
- * of the transition between screens and applies vertical translation and opacity
- * to achieve smooth animations.
- *
- * This is different from CardStyleInterpolators.forModalPresentationIOS
- */
-function forModalPresentationIOS({
-  current,
-  next,
-  inverted,
-  layouts: { screen }
-}: StackCardInterpolationProps): StackCardInterpolatedStyle {
-  const progress = Animated.add(
-    current.progress.interpolate({
-      inputRange: [0, 1],
-      outputRange: [0, 1],
-      extrapolate: 'clamp'
-    }),
-    next
-      ? next.progress.interpolate({
-          inputRange: [0, 1],
-          outputRange: [0, 1],
-          extrapolate: 'clamp'
-        })
-      : 0
-  )
-
-  const translateY = Animated.multiply(
-    progress.interpolate({
-      inputRange: [0, 1, 2],
-      outputRange: [screen.height, 0, 0]
-    }),
-    inverted
-  )
-
-  const overlayOpacity = progress.interpolate({
-    inputRange: [0, 1, 1.0001, 2],
-    outputRange: [0, 0.5, 0.5, 0.5]
-  })
-
-  return {
-    cardStyle: {
-      overflow: 'hidden',
-      transform: [{ translateY }]
-    },
-    overlayStyle: { opacity: overlayOpacity }
-  }
 }

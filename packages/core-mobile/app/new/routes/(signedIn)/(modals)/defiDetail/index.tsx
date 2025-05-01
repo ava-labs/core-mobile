@@ -56,7 +56,6 @@ const DeFiDetailScreen = (): JSX.Element => {
   const renderFooter = useCallback(() => {
     return (
       <Button
-        style={{ marginHorizontal: 16, marginBottom: 52 }}
         size="large"
         type="primary"
         rightIcon={

@@ -64,7 +64,7 @@ export const ActionSheet = ({
   return (
     <ScrollScreen
       title={title}
-      isModal
+      isSecondaryModal
       navigationTitle={navigationTitle}
       renderFooter={renderFooter}
       contentContainerStyle={{
