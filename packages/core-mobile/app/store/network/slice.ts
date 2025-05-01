@@ -19,8 +19,6 @@ export const alwaysEnabledNetworks = [
   ChainsSDKChainId.BITCOIN,
   ChainsSDKChainId.BITCOIN_TESTNET,
   ChainsSDKChainId.ETHEREUM_HOMESTEAD,
-  ChainsSDKChainId.ETHEREUM_TEST_GOERLY,
-  ChainsSDKChainId.ETHEREUM_TEST_RINKEBY,
   ChainsSDKChainId.ETHEREUM_TEST_SEPOLIA
 ]
 
