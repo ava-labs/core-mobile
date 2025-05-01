@@ -192,7 +192,7 @@ class FCMService {
         dispatch: action => action,
         isEarnBlocked: false,
         openUrl: link =>
-          openInAppBrowser(link, {
+          openInAppBrowser(link.url, {
             // iOS Properties
             dismissButtonStyle: 'close',
             preferredBarTintColor: '#000000',
