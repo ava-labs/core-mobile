@@ -30,7 +30,7 @@ import { useAddStake } from 'features/stake/hooks/useAddStake'
 import { useNavigateToSwap } from 'features/swap/hooks/useNavigateToSwap'
 import { useWatchlist } from 'hooks/watchlist/useWatchlist'
 import { useFormatCurrency } from 'new/common/hooks/useFormatCurrency'
-import React, { useCallback, useMemo, useRef, useState } from 'react'
+import React, { useCallback, useMemo, useRef, useState, useEffect } from 'react'
 import {
   InteractionManager,
   LayoutChangeEvent,
@@ -42,7 +42,7 @@ import Animated, {
   useAnimatedStyle,
   useSharedValue
 } from 'react-native-reanimated'
-import { useSelector } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import { RootState } from 'store/types'
 import { selectActiveAccount } from 'store/account'
 import {
@@ -58,6 +58,7 @@ import { selectSelectedCurrency } from 'store/settings/currency'
 import { selectIsPrivacyModeEnabled } from 'store/settings/securityPrivacy'
 import { useFocusedSelector } from 'utils/performance/useFocusedSelector'
 import { HiddenBalanceText } from 'common/components/HiddenBalanceText'
+import { promptEnableNotifications } from 'store/notifications'
 
 const SEGMENT_ITEMS = ['Assets', 'Collectibles', 'DeFi']
 
@@ -65,6 +66,7 @@ const PortfolioHomeScreen = (): JSX.Element => {
   const isPrivacyModeEnabled = useFocusedSelector(selectIsPrivacyModeEnabled)
   const [_, setSelectedToken] = useSendSelectedToken()
   const { theme } = useTheme()
+  const dispatch = useDispatch()
   const { navigate } = useRouter()
   const { navigateToSwap } = useNavigateToSwap()
   const { addStake, canAddStake } = useAddStake()
@@ -143,6 +145,10 @@ const PortfolioHomeScreen = (): JSX.Element => {
     },
     []
   )
+
+  useEffect(() => {
+    dispatch(promptEnableNotifications)
+  }, [dispatch])
 
   const handleSend = useCallback((): void => {
     setSelectedToken(undefined)
