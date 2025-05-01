@@ -74,6 +74,7 @@ e2e/tests/performance/testResults/
 
 # generated openzeppelin contract types
 app/contracts/openzeppelin
+app/contracts/summitLondon2025
 
 # generated metro monorepo config
 metro.monorepo.config.js

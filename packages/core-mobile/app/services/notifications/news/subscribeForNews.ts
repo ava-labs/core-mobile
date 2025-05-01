@@ -23,13 +23,13 @@ export async function subscribeForNews({
       return channelIdToNewsEventMap[channelId]
     })
     .filter(item => item !== undefined)
-  const response = await fetchWithAppCheck(
-    Config.NOTIFICATION_SENDER_API_URL + '/v1/push/news/subscribe',
-    JSON.stringify({
+  const response = await fetchWithAppCheck({
+    url: Config.NOTIFICATION_SENDER_API_URL + '/v1/push/news/subscribe',
+    bodyJson: JSON.stringify({
       deviceArn,
       events
     })
-  ).catch(error => {
+  }).catch(error => {
     Logger.error(`[subscribeForNews.ts][subscribe]${error}`)
     throw new Error(error)
   })

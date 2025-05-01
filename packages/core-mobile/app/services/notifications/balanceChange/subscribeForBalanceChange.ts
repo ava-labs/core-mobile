@@ -11,14 +11,15 @@ export async function subscribeForBalanceChange({
   chainIds: string[]
   addresses: string[]
 }): Promise<{ message: 'ok' }> {
-  const response = await fetchWithAppCheck(
-    Config.NOTIFICATION_SENDER_API_URL + '/v1/push/balance-changes/subscribe',
-    JSON.stringify({
+  const response = await fetchWithAppCheck({
+    url:
+      Config.NOTIFICATION_SENDER_API_URL + '/v1/push/balance-changes/subscribe',
+    bodyJson: JSON.stringify({
       deviceArn,
       chainIds,
       addresses
     })
-  ).catch(error => {
+  }).catch(error => {
     Logger.error(`[subscribeForBalanceChange.ts][subscribe]${error}`)
     throw new Error(error)
   })
