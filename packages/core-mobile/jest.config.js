@@ -31,7 +31,12 @@ module.exports = {
         'map-obj',
         'camelcase',
         'quick-lru',
-        'react-redux'
+        'react-redux',
+        'd3',
+        'd3-array',
+        'internmap',
+        'delaunator',
+        'robust-predicates'
       ].join('|') +
       ')'
   ]
