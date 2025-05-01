@@ -134,11 +134,14 @@ export const ScrollScreen = ({
 
   const paddingBottom = useMemo(() => {
     if (Platform.OS === 'android' && isSecondaryModal) {
+      const topOffset = __DEV__ ? topMarginOffset : 0
+      // Dev mode needs the top offset
+      // React Natives's hot reloading might be breaking the top offset
       if (isAndroidWithBottomBar) {
-        return topMarginOffset + insets.bottom
+        return topOffset + insets.bottom
       }
 
-      return topMarginOffset + insets.top + insets.bottom
+      return topOffset + insets.top + insets.bottom
     }
     return insets.bottom + 16
   }, [

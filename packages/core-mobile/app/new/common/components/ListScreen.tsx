@@ -208,7 +208,10 @@ export const ListScreen = <T,>({
 
   const paddingBottom = useMemo(() => {
     if (Platform.OS === 'android' && isSecondaryModal) {
-      return topMarginOffset + insets.bottom + insets.top + 24
+      // Dev mode needs the top offset
+      // React Natives's hot reloading might be breaking the top offset
+      const topOffset = __DEV__ ? topMarginOffset : 0
+      return topOffset + insets.bottom + insets.top + 24
     }
 
     return insets.bottom
