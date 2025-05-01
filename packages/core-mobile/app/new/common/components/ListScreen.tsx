@@ -92,6 +92,7 @@ export const ListScreen = <T,>({
   const headerRef = useRef<View>(null)
   const contentHeaderHeight = useSharedValue<number>(0)
   const { topMarginOffset } = useModalScreenOptions()
+  const isAndroidWithBottomBar = useIsAndroidWithBottomBar()
 
   const { onScroll, scrollY, targetHiddenProgress } = useFadingHeaderNavigation(
     {
@@ -207,8 +208,15 @@ export const ListScreen = <T,>({
   }, [renderEmpty])
 
   const paddingBottom = useMemo(() => {
-    if (Platform.OS === 'android' && isSecondaryModal) {
-      return topMarginOffset + insets.bottom + insets.top + 24
+    if (isSecondaryModal) {
+      if (Platform.OS === 'android') {
+        // Dev mode needs the top offset
+        // React Natives's hot reloading might be breaking the top offset
+        const topOffset = __DEV__ ? topMarginOffset : 0
+        return topOffset + insets.bottom + insets.top + 24
+      }
+
+      return insets.bottom + topMarginOffset
     }
 
     return insets.bottom
@@ -229,16 +237,17 @@ export const ListScreen = <T,>({
     ] as StyleProp<ViewStyle>[]
   }, [props?.contentContainerStyle, data.length, paddingBottom])
 
-  const isAndroidWithBottomBar = useIsAndroidWithBottomBar()
-
   const keyboardVerticalOffset = useMemo(() => {
-    if (Platform.OS === 'android' && isSecondaryModal) {
-      return -insets.bottom + 8
+    if (isSecondaryModal) {
+      if (Platform.OS === 'android') {
+        return -insets.bottom + 8
+      }
+      return insets.bottom
     }
     if (isAndroidWithBottomBar) {
       return 16
     }
-    return insets.bottom
+    return insets.bottom + 16
   }, [insets.bottom, isAndroidWithBottomBar, isSecondaryModal])
 
   return (
