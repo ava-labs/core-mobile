@@ -5,18 +5,14 @@ import { ViewOnceKey } from 'store/viewOnce/types'
 import NotificationsService from 'services/notifications/NotificationsService'
 import { AuthorizationStatus } from '@notifee/react-native'
 import { selectIsEnableNotificationPromptBlocked } from 'store/posthog'
+import { showAlert } from '@avalabs/k2-alpine'
 import { turnOnAllNotifications } from '../slice'
-
-let isWaitingForIntroMux = false
 
 export const handlePromptNotifications = async (
   _: AnyAction,
   listenerApi: AppListenerEffectAPI
 ): Promise<void> => {
   const state = listenerApi.getState()
-  if (isWaitingForIntroMux) return //if already waiting ignore this handler
-  await waitIfIntroScreenIsYetNotDismissed(listenerApi)
-  isWaitingForIntroMux = false
   const isEnableNotificationPromptBlocked =
     selectIsEnableNotificationPromptBlocked(state)
   const hasPromptedForNotifications = selectHasBeenViewedOnce(
@@ -49,20 +45,29 @@ export const handlePromptNotifications = async (
     return
   }
 
-  // TODO: fix enable notifications prompt
-  // Navigation.navigate(AppNavigation.Modal.EnableNotificationsPrompt)
+  showAlert({
+    title: 'Enable push notifications',
+    description:
+      'Get notified about market updates, special offers, airdrops, balance changes and more',
+    buttons: [
+      {
+        text: 'Turn on',
+        onPress: async () => {
+          const { permission } = await NotificationsService.getAllPermissions(
+            false
+          )
+          if (permission !== 'authorized') {
+            NotificationsService.openSystemSettings()
+            return
+          }
+          listenerApi.dispatch(turnOnAllNotifications())
+        }
+      },
+      {
+        text: 'Not Now',
+        style: 'cancel'
+      }
+    ]
+  })
   listenerApi.dispatch(setViewOnce(ViewOnceKey.NOTIFICATIONS_PROMPT))
-}
-
-async function waitIfIntroScreenIsYetNotDismissed(
-  listenerApi: AppListenerEffectAPI
-): Promise<void> {
-  const { take } = listenerApi
-  const state = listenerApi.getState()
-  let hasSeenIntro = selectHasBeenViewedOnce(ViewOnceKey.CORE_INTRO)(state)
-  while (!hasSeenIntro) {
-    isWaitingForIntroMux = true
-    const [{ payload }] = await take(setViewOnce.match)
-    hasSeenIntro = payload === ViewOnceKey.CORE_INTRO
-  }
 }
