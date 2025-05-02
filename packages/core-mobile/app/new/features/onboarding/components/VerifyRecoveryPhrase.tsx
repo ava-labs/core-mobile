@@ -138,8 +138,7 @@ export const VerifyRecoveryPhrase = ({
       subtitle={`Select the words below to verify your\nrecover phrase`}
       renderFooter={renderFooter}
       contentContainerStyle={{ padding: 16, flex: 1 }}>
-      <Animated.View
-        style={[{ gap: 36, flex: 1, justifyContent: 'center' }, animatedStyle]}>
+      <Animated.View style={[{ gap: 36, marginTop: 66 }, animatedStyle]}>
         <WordSelection
           title={title1}
           testID="firstWord"
