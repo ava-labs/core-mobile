@@ -29,6 +29,7 @@ import { isAddress } from 'viem'
 import { useRouter } from 'expo-router'
 import { useSendSelectedToken } from 'features/send/store'
 import { NftContentType } from 'store/nft'
+import { getDateInMmmDdYyyyHhMmA } from 'utils/date/getDateInMmmDdYyyyHhMmA'
 import { useCollectiblesContext } from '../CollectiblesContext'
 import { HORIZONTAL_MARGIN } from '../consts'
 
@@ -65,14 +66,24 @@ export const CollectibleDetailsContent = ({
 
   const attributes: GroupListItem[] = useMemo(
     () =>
-      collectible?.processedMetadata?.attributes?.map(item => ({
-        title: item.trait_type
-          .replace(/([A-Z])/g, ' $1')
-          .replace(/^./, function (str) {
-            return str.toUpperCase().trim()
-          }),
-        value: item.value
-      })) || [],
+      collectible?.processedMetadata?.attributes
+        ?.map(item => {
+          if (item.trait_type.length === 0 && item.value.length === 0) {
+            return
+          }
+          return {
+            title: item.trait_type
+              .replace(/([A-Z])/g, ' $1')
+              .replace(/^./, function (str) {
+                return str.toUpperCase().trim()
+              }),
+            value:
+              item.display_type === 'date'
+                ? getDateInMmmDdYyyyHhMmA(Number(item.value))
+                : item.value
+          }
+        })
+        .filter(item => item !== undefined) || [],
     [collectible?.processedMetadata?.attributes]
   )
 
