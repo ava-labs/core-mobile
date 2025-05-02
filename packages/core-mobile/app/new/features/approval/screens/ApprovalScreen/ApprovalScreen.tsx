@@ -26,16 +26,17 @@ import {
   selectActiveAccount
 } from 'store/account/slice'
 import { selectIsSeedlessSigningBlocked } from 'store/posthog/slice'
-import { isInAppRequest } from 'store/rpc/utils/isInAppRequest'
 import { getChainIdFromCaip2 } from 'utils/caip2ChainIds'
 import Logger from 'utils/Logger'
 import { Eip1559Fees } from 'utils/Utils'
-import { Account } from '../components/Account'
-import BalanceChange from '../components/BalanceChange/BalanceChange'
-import { Details } from '../components/Details'
-import { Network } from '../components/Network'
-import { NetworkFeeSelectorWithGasless } from '../components/NetworkFeeSelectorWithGasless'
-import { SpendLimits } from '../components/SpendLimits/SpendLimits'
+import { RpcMethod } from '@avalabs/vm-module-types'
+import { Account } from '../../components/Account'
+import BalanceChange from '../../components/BalanceChange/BalanceChange'
+import { Details } from '../../components/Details'
+import { Network } from '../../components/Network'
+import { NetworkFeeSelectorWithGasless } from '../../components/NetworkFeeSelectorWithGasless'
+import { SpendLimits } from '../../components/SpendLimits/SpendLimits'
+import { overrideContractItem, removeWebsiteItemIfNecessary } from './utils'
 
 const ApprovalScreenWrapper = (): JSX.Element | null => {
   const [params, setParams] = useState<ApprovalParams>()
@@ -107,14 +108,9 @@ const ApprovalScreen = ({
         return detailSection
       }
 
-      const filteredItems = detailSection.items.filter(item => {
-        if (typeof item === 'string') return true
-
-        const isInAppWebsite =
-          item.label.toLowerCase() === 'website' && isInAppRequest(request)
-
-        return !isInAppWebsite
-      })
+      const filteredItems = detailSection.items
+        .filter(item => removeWebsiteItemIfNecessary(item, request))
+        .map(item => overrideContractItem(item, request))
 
       return { ...detailSection, items: filteredItems }
     })
@@ -177,7 +173,7 @@ const ApprovalScreen = ({
       !signingData ||
       !network?.networkToken ||
       !nativeToken ||
-      signingData.type !== 'eth_sendTransaction'
+      signingData.type !== RpcMethod.ETH_SEND_TRANSACTION
     )
       return
     const ethSendTx = signingData.data

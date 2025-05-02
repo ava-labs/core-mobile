@@ -1,1 +1,1 @@
-export { default } from 'features/approval/screens/ApprovalScreen'
+export { default } from 'features/approval/screens/ApprovalScreen/ApprovalScreen'

@@ -147,5 +147,10 @@ export const CORE_MOBILE_META: PeerMeta = {
 
 // request context keys for in-app requests
 export enum RequestContext {
-  CONFETTI_DISABLED = 'confettiDisabled'
+  // used to disable confetti on transaction confirmation
+  CONFETTI_DISABLED = 'confettiDisabled',
+
+  // used to determine if the recipient/to address is a contract
+  // if true, we will show "To" instead of "Contract" in the approval screen
+  NON_CONTRACT_RECIPIENT = 'nonContractRecipient'
 }
