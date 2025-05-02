@@ -15,6 +15,7 @@ import React, {
   useState
 } from 'react'
 import { LayoutRectangle, Platform, View } from 'react-native'
+import { ScrollView } from 'react-native-gesture-handler'
 import {
   KeyboardAwareScrollView,
   KeyboardAwareScrollViewProps
@@ -29,7 +30,6 @@ import { BlurViewWithFallback } from './BlurViewWithFallback'
 import { KeyboardAvoidingView } from './KeyboardAvoidingView'
 import { LinearGradientBottomWrapper } from './LinearGradientBottomWrapper'
 import ScreenHeader from './ScreenHeader'
-import { ScrollView } from 'react-native-gesture-handler'
 // Use this component when you need a scrollable screen with proper keyboard handling and header management.
 // It handles all the logic for the header and footer, including keyboard interactions and gestures.
 
