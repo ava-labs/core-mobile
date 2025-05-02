@@ -15,7 +15,7 @@ export const NetworkLogoWithChain = ({
 }: {
   network: Network
   networkSize?: number
-  outerBorderColor: string
+  outerBorderColor?: string // only needed if showChainLogo is true
   showChainLogo?: boolean
   chainLogoSize?: number
   chainLogoStyle?: ViewStyle
