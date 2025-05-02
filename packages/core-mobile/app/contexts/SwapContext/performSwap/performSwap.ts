@@ -8,6 +8,7 @@ import { bigIntToHex } from '@ethereumjs/util'
 import SwapService from 'services/swap/SwapService'
 import { swapError } from 'errors/swapError'
 import { ERC20__factory } from 'contracts/openzeppelin'
+import { RequestContext } from 'store/rpc/types'
 import { EVM_NATIVE_TOKEN_ADDRESS, PARTNER_FEE_PARAMS } from '../consts'
 
 export type PerformSwapParams = {
@@ -20,7 +21,10 @@ export type PerformSwapParams = {
   activeNetwork: Network | undefined
   provider: JsonRpcBatchInternal
   userAddress: string | undefined
-  signAndSend: (txParams: [TransactionParams]) => Promise<string>
+  signAndSend: (
+    txParams: [TransactionParams],
+    context?: Record<string, unknown>
+  ) => Promise<string>
   isSwapFeesEnabled: boolean
 }
 
@@ -127,7 +131,10 @@ export async function performSwap({
       const gas = bigIntToHex(approveGasLimit)
 
       const [approvalTxHash, approvalTxError] = await resolve(
-        signAndSend([{ ...tx, gas }])
+        signAndSend([{ ...tx, gas }], {
+          // we don't want to show confetti for token spend limit approvals
+          [RequestContext.CONFETTI_DISABLED]: true
+        })
       )
 
       if (!approvalTxHash || approvalTxError) {

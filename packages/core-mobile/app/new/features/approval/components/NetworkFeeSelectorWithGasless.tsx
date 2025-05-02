@@ -1,13 +1,6 @@
 import React from 'react'
 import { Space } from 'common/components/Space'
-import {
-  Text,
-  useTheme,
-  View,
-  Toggle,
-  Tooltip,
-  alpha
-} from '@avalabs/k2-alpine'
+import { Text, useTheme, View, Toggle, alpha } from '@avalabs/k2-alpine'
 import { Eip1559Fees } from 'utils/Utils'
 import { getChainIdFromCaip2 } from 'utils/caip2ChainIds'
 import { NetworkFeeSelector } from './NetworkFeeSelector/NetworkFeeSelector'
@@ -60,10 +53,6 @@ export const NetworkFeeSelectorWithGasless = ({
                 sx={{ fontSize: 16, lineHeight: 22, color: '$textPrimary' }}>
                 Get free gas{' '}
               </Text>
-              <Tooltip
-                title="Get free gas"
-                description="When toggled Core will pay the network fee for this transaction."
-              />
             </View>
             <Text
               variant="body1"

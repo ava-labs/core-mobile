@@ -64,6 +64,9 @@ export const ActionSheet = ({
       isModal={isModal}
       isSecondaryModal={isSecondaryModal}
       shouldAvoidKeyboard={shouldAvoidKeyboard}
+      titleSx={{
+        maxWidth: '80%'
+      }}
       navigationTitle={navigationTitle}
       renderFooter={renderFooter}
       contentContainerStyle={{

@@ -41,6 +41,7 @@ export const Logo: FC<LogoProps> = ({
         size={size}
         borderColor={borderColor}
         backgroundColor={backgroundColor}
+        borderRadius={borderRadius}
         testID="fallback_logo"
       />
     )

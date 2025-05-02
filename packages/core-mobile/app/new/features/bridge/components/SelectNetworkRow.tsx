@@ -7,7 +7,7 @@ import {
   View
 } from '@avalabs/k2-alpine'
 import { Network } from '@avalabs/core-chains-sdk'
-import { NetworkLogo } from 'common/components/NetworkLogo'
+import { NetworkLogoWithChain } from 'common/components/NetworkLogoWithChain'
 
 export const SelectNetworkRow = ({
   title,
@@ -34,8 +34,13 @@ export const SelectNetworkRow = ({
         }}>
         <Text sx={{ fontWeight: 500 }}>{title}</Text>
         <View sx={{ gap: 8, flexDirection: 'row', alignItems: 'center' }}>
-          {network?.networkToken.symbol && (
-            <NetworkLogo logoUri={network?.logoUri} size={24} />
+          {network && (
+            <NetworkLogoWithChain
+              network={network}
+              networkSize={24}
+              outerBorderColor={colors.$surfaceSecondary}
+              showChainLogo={false}
+            />
           )}
           <Text sx={{ color: '$textSecondary' }}>{network?.chainName}</Text>
           {onPress && (
