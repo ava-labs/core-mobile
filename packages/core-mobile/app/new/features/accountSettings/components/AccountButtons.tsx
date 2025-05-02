@@ -1,6 +1,9 @@
-import { AlertWithTextInputs, Button, View } from '@avalabs/k2-alpine'
-import { AlertWithTextInputsHandle } from '@avalabs/k2-alpine/src/components/Alert/types'
-import React, { useRef, useCallback } from 'react'
+import { Button, View } from '@avalabs/k2-alpine'
+import {
+  dismissAlertWithTextInput,
+  showAlertWithTextInput
+} from 'common/utils/alertWithTextInput'
+import React, { useCallback } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { selectAccountByIndex, setAccountTitle } from 'store/account'
 import { selectWalletType } from 'store/app'
@@ -13,19 +16,16 @@ export const AccountButtons = ({
   const dispatch = useDispatch()
   const walletType = useSelector(selectWalletType)
   const account = useSelector(selectAccountByIndex(accountIndex))
-  const alert = useRef<AlertWithTextInputsHandle>(null)
 
   const handleShowAlertWithTextInput = (): void => {
-    alert.current?.show({
+    showAlertWithTextInput({
       title: 'Rename account',
       inputs: [{ key: 'accountName', defaultValue: account?.name }],
       buttons: [
         {
           text: 'Cancel',
           style: 'cancel',
-          onPress: () => {
-            alert.current?.hide()
-          }
+          onPress: dismissAlertWithTextInput
         },
         {
           text: 'Save',
@@ -41,7 +41,7 @@ export const AccountButtons = ({
   const handleSaveAccountName = useCallback(
     (values: Record<string, string>): void => {
       if (values.accountName && values.accountName.length > 0) {
-        alert.current?.hide()
+        dismissAlertWithTextInput()
         values.accountName !== account?.name &&
           dispatch(
             setAccountTitle({
@@ -80,8 +80,6 @@ export const AccountButtons = ({
         onPress={noop}>
         Hide account
       </Button> */}
-
-      <AlertWithTextInputs ref={alert} />
     </View>
   )
 }
