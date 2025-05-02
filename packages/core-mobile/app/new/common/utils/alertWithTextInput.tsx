@@ -1,4 +1,4 @@
-import { AlertWithTextInputs, View } from '@avalabs/k2-alpine'
+import { AlertWithTextInputs } from '@avalabs/k2-alpine'
 import { ShowAlertWithTextInputsConfig } from '@avalabs/k2-alpine/src/components/Alert/types'
 import React from 'react'
 
