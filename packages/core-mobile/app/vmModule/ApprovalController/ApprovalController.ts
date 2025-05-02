@@ -6,13 +6,15 @@ import {
   ApprovalController as VmModuleApprovalController,
   ApprovalParams,
   ApprovalResponse,
-  RpcMethod
+  RpcMethod,
+  RpcRequest
 } from '@avalabs/vm-module-types'
 import { providerErrors, rpcErrors } from '@metamask/rpc-errors'
 import { btcSignTransaction } from 'vmModule/handlers/btcSignTransaction'
 import { walletConnectCache } from 'services/walletconnectv2/walletConnectCache/walletConnectCache'
 import { transactionSnackbar } from 'new/common/utils/toast'
 import { isInAppRequest } from 'store/rpc/utils/isInAppRequest'
+import { RequestContext } from 'store/rpc/types'
 import { NavigationPresentationMode } from 'new/common/types'
 import { avalancheSignTransaction } from '../handlers/avalancheSignTransaction'
 import { ethSendTransaction } from '../handlers/ethSendTransaction'
@@ -25,17 +27,27 @@ class ApprovalController implements VmModuleApprovalController {
     return Promise.reject(providerErrors.unsupportedMethod('requestPublicKey'))
   }
 
-  onTransactionPending(): void {
-    transactionSnackbar.pending()
+  onTransactionPending({ request }: { request: RpcRequest }): void {
+    transactionSnackbar.pending(request.requestId)
   }
 
   onTransactionConfirmed({
-    explorerLink
+    explorerLink,
+    request
   }: {
     explorerLink: string
-    requestId: string
+    request: RpcRequest
   }): void {
-    transactionSnackbar.success({ explorerLink })
+    transactionSnackbar.success({ explorerLink, toastId: request.requestId })
+
+    const confettiDisabled = request.context?.[RequestContext.CONFETTI_DISABLED]
+
+    // only show confetti for in-app requests
+    if (isInAppRequest(request) && !confettiDisabled) {
+      setTimeout(() => {
+        confetti.restart()
+      }, 100)
+    }
   }
 
   onTransactionReverted(): void {

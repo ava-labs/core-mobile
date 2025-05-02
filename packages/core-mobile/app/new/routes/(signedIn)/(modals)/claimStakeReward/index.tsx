@@ -11,7 +11,6 @@ import {
   View
 } from '@avalabs/k2-alpine'
 import { ScrollScreen } from 'common/components/ScrollScreen'
-import { useConfetti } from 'common/contexts/ConfettiContext'
 import { SendErrorMessage } from 'common/hooks/send/utils/types'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import { usePreventScreenRemoval } from 'common/hooks/usePreventScreenRemoval'
@@ -40,9 +39,10 @@ const ClaimStakeRewardScreen = (): JSX.Element => {
   const onClaimSuccess = (): void => {
     AnalyticsService.capture('StakeClaimSuccess')
 
-    confetti.restart()
     transactionSnackbar.success({ message: 'Stake reward claimed' })
-
+    setTimeout(() => {
+      confetti.restart()
+    }, 100)
     // this is a workaround for the issue where back navigation is not working,
     // when it's called within the onSuccess callback of the mutation
     setTimeout(() => {
@@ -78,7 +78,7 @@ const ClaimStakeRewardScreen = (): JSX.Element => {
     totalFees,
     feeCalculationError
   } = useClaimRewards(onClaimSuccess, onClaimError, onFundsStuck)
-  const confetti = useConfetti()
+
   const unableToGetFees = totalFees === undefined
 
   const insufficientBalanceForFee =

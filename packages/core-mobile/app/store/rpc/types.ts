@@ -25,6 +25,10 @@ export type RpcRequest<Method extends RpcMethod> = {
   method: Method
   peerMeta: PeerMeta
   provider: RpcProvider
+
+  // only used by in-app requests to pass additional context
+  // to display in the approval screen
+  context?: Record<string, unknown>
 }
 
 export type Request = RpcRequest<RpcMethod> | WCSessionProposal
@@ -139,4 +143,9 @@ export const CORE_MOBILE_META: PeerMeta = {
   description: 'Core Mobile Wallet',
   url: 'https://core.app/',
   icons: []
+}
+
+// request context keys for in-app requests
+export enum RequestContext {
+  CONFETTI_DISABLED = 'confettiDisabled'
 }

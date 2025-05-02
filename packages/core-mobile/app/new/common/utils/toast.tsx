@@ -12,6 +12,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { Platform } from 'react-native'
 import { useCoreBrowser } from '../hooks/useCoreBrowser'
 
+const DURATION_INDEFINITE = 0 // 0 means indefinite in react-native-toast-notifications
 const DURATION_SHORT = 3000
 const DURATION_LONG = 6000
 
@@ -141,21 +142,44 @@ type ToastConfig = {
   duration?: number
 }
 
+const getDuration = (props: ToastProps, config?: ToastConfig): number => {
+  return config && 'duration' in config && typeof config.duration === 'number'
+    ? config.duration
+    : props.toastType === ToastType.SNACKBAR
+    ? DURATION_SHORT
+    : DURATION_LONG
+}
+
 function showToast(props: ToastProps, config?: ToastConfig): void {
   global.toast?.hideAll()
 
   const _toastId = props.toastId ?? uuid()
 
-  const duration = config?.duration
-    ? config.duration
-    : props.toastType === ToastType.SNACKBAR
-    ? DURATION_SHORT
-    : DURATION_LONG
+  const duration = getDuration(props, config)
 
   global?.toast?.show('', {
     type: props.toastType,
     duration,
     id: _toastId,
+    data: props.content
+  })
+}
+
+function updateToast({
+  toastId,
+  props,
+  config
+}: {
+  toastId: string
+  props: ToastProps
+  config?: ToastConfig
+}): void {
+  const duration = getDuration(props, config)
+
+  global?.toast?.update(toastId, '', {
+    type: props.toastType,
+    duration,
+    id: toastId,
     data: props.content
   })
 }
@@ -190,14 +214,15 @@ export const transactionSnackbar = {
   /*
    * Displays a pending snackbar with a short duration.
    */
-  pending: () =>
+  pending: (toastId?: string) =>
     showToast(
       {
+        toastId,
         toastType: ToastType.TRANSACTION_SNACKBAR,
         content: { type: 'pending' }
       },
       {
-        duration: DURATION_SHORT
+        duration: DURATION_INDEFINITE
       }
     ),
   /*
@@ -207,21 +232,27 @@ export const transactionSnackbar = {
    * `explorerLink` is an optional link to a blockchain explorer or related page.
    */
   success: ({
+    toastId,
     message,
     explorerLink
   }: {
+    toastId?: string
     message?: string
     explorerLink?: string
-  }) =>
-    showToast(
-      {
-        toastType: ToastType.TRANSACTION_SNACKBAR,
-        content: { type: 'success', explorerLink, message }
-      },
-      {
-        duration: DURATION_LONG
-      }
-    ),
+  }) => {
+    const props: ToastProps = {
+      toastType: ToastType.TRANSACTION_SNACKBAR,
+      content: { type: 'success', explorerLink, message }
+    }
+    if (toastId) {
+      updateToast({
+        toastId,
+        props
+      })
+    } else {
+      showToast(props)
+    }
+  },
   /*
    * Displays an error snackbar.
    *
