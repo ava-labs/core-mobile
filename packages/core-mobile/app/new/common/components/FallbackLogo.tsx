@@ -8,12 +8,14 @@ interface FallbackLogoProps {
   testID?: string
   backgroundColor?: string
   borderColor?: string
+  borderRadius?: number
 }
 
 export const FallbackLogo = ({
   size = DEFAULT_SIZE,
   backgroundColor,
   borderColor,
+  borderRadius,
   testID
 }: FallbackLogoProps): JSX.Element => {
   return (
@@ -22,7 +24,7 @@ export const FallbackLogo = ({
       sx={{
         width: size,
         height: size,
-        borderRadius: size,
+        borderRadius: borderRadius ?? size,
         justifyContent: 'center',
         alignItems: 'center',
         backgroundColor,

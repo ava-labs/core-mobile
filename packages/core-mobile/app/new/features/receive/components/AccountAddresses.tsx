@@ -93,7 +93,6 @@ export const AccountAddresses = memo(
           leftIcon: (
             <NetworkLogoWithChain
               network={selectedNetwork}
-              outerBorderColor={theme.colors.$surfaceSecondary}
               showChainLogo={false}
             />
           ),

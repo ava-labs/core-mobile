@@ -9,6 +9,7 @@ import { selectIsGaslessBlocked } from 'store/posthog'
 import { useSelector } from 'react-redux'
 import { useSendContext } from 'new/features/send/context/sendContext'
 import { useSendSelectedToken } from 'new/features/send/store'
+import { RequestContext } from 'store/rpc/types'
 import { SendAdapterEVM, SendErrorMessage } from './utils/types'
 import { send as sendEVM } from './utils/evm/send'
 import { getGasLimit } from './utils/evm/getGasLimit'
@@ -60,7 +61,10 @@ const useEVMSend: SendAdapterEVM = ({
         provider,
         token: selectedToken,
         toAddress: addressToSend,
-        amount: amount?.toSubUnit()
+        amount: amount?.toSubUnit(),
+        context: {
+          [RequestContext.NON_CONTRACT_RECIPIENT]: true
+        }
       })
     } finally {
       setIsSending(false)

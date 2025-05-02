@@ -85,7 +85,7 @@ export const handleRequestViaVMModule = async ({
       },
       method,
       params,
-      context: getContext(method, params, activeAccount)
+      context: request.context ?? getContext(method, params, activeAccount)
     },
     mapToVmNetwork(network)
   )

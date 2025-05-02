@@ -1,5 +1,6 @@
 import {
   NavigationTitleHeader,
+  SxProp,
   Text,
   useKeyboardHeight
 } from '@avalabs/k2-alpine'
@@ -50,6 +51,7 @@ import ScreenHeader from './ScreenHeader'
 interface ScrollScreenProps extends KeyboardAwareScrollViewProps {
   /** The main title displayed at the top of the screen */
   title?: string
+  titleSx?: SxProp
   /** Optional subtitle displayed below the title */
   subtitle?: string
   /** The main content to be displayed in the scrollable area */
@@ -76,6 +78,7 @@ interface ScrollScreenProps extends KeyboardAwareScrollViewProps {
 
 export const ScrollScreen = ({
   title,
+  titleSx,
   subtitle,
   children,
   hasParent,
@@ -154,17 +157,17 @@ export const ScrollScreen = ({
       <>
         <View
           style={{
-            paddingBottom: 12
+            paddingBottom: 0
           }}>
           <View
             ref={headerRef}
             style={{
               gap: 8,
-              paddingTop: 12
+              paddingTop: 0
             }}>
             {title ? (
               <Animated.View style={[animatedHeaderStyle]}>
-                <ScreenHeader title={title ?? ''} />
+                <ScreenHeader title={title ?? ''} titleSx={titleSx} />
               </Animated.View>
             ) : null}
 
