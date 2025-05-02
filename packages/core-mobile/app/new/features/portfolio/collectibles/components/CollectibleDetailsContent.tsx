@@ -64,28 +64,33 @@ export const CollectibleDetailsContent = ({
   }
   const [_, setSelectedToken] = useSendSelectedToken()
 
-  const attributes: GroupListItem[] = useMemo(
-    () =>
-      collectible?.processedMetadata?.attributes
-        ?.map(item => {
-          if (item.trait_type.length === 0 && item.value.length === 0) {
-            return
-          }
-          return {
-            title: item.trait_type
-              .replace(/([A-Z])/g, ' $1')
-              .replace(/^./, function (str) {
-                return str.toUpperCase().trim()
-              }),
-            value:
-              item.display_type === 'date'
-                ? getDateInMmmDdYyyyHhMmA(Number(item.value))
-                : item.value
-          }
-        })
-        .filter(item => item !== undefined) || [],
-    [collectible?.processedMetadata?.attributes]
-  )
+  const attributes: GroupListItem[] = useMemo(() => {
+    if (
+      collectible?.processedMetadata?.attributes === undefined ||
+      collectible?.processedMetadata?.attributes.length === 0 ||
+      !Array.isArray(collectible?.processedMetadata?.attributes.length)
+    )
+      return []
+
+    return collectible.processedMetadata.attributes
+      .map(item => {
+        if (item.trait_type.length === 0 && item.value.length === 0) {
+          return
+        }
+        return {
+          title: item.trait_type
+            .replace(/([A-Z])/g, ' $1')
+            .replace(/^./, function (str) {
+              return str.toUpperCase().trim()
+            }),
+          value:
+            item.display_type === 'date'
+              ? getDateInMmmDdYyyyHhMmA(Number(item.value))
+              : item.value
+        }
+      })
+      .filter(item => item !== undefined)
+  }, [collectible?.processedMetadata?.attributes])
 
   const createdBy = useMemo(() => {
     return collectible?.address
