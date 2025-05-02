@@ -1,11 +1,10 @@
-import React from 'react'
 import { Stack } from 'common/components/Stack'
-import {
-  modalFirstScreenOptions,
-  modalStackNavigatorScreenOptions
-} from 'common/consts/screenOptions'
+import { useModalScreenOptions } from 'common/hooks/useModalScreenOptions'
+import React from 'react'
 
 export default function ReceiveLayout(): JSX.Element {
+  const { modalStackNavigatorScreenOptions, modalFirstScreenOptions } =
+    useModalScreenOptions()
   return (
     <Stack screenOptions={modalStackNavigatorScreenOptions}>
       <Stack.Screen name="index" options={modalFirstScreenOptions} />

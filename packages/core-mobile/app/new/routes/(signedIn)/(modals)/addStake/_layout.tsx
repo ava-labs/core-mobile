@@ -1,14 +1,13 @@
 import React from 'react'
 import { Stack } from 'common/components/Stack'
-import {
-  modalFirstScreenOptions,
-  modalStackNavigatorScreenOptions
-} from 'common/consts/screenOptions'
 import { useSelector } from 'react-redux'
 import { selectHasBeenViewedOnce, ViewOnceKey } from 'store/viewOnce'
 import { DelegationContextProvider } from 'contexts/DelegationContext'
+import { useModalScreenOptions } from 'common/hooks/useModalScreenOptions'
 
 export default function StakeLayout(): JSX.Element {
+  const { modalStackNavigatorScreenOptions, modalFirstScreenOptions } =
+    useModalScreenOptions()
   const shouldHideOnboarding = useSelector(
     selectHasBeenViewedOnce(ViewOnceKey.STAKE_ONBOARDING)
   )

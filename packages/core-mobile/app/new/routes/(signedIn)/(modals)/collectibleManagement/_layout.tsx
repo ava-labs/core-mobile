@@ -1,23 +1,13 @@
-import { useTheme } from '@avalabs/k2-alpine'
 import { Stack } from 'common/components/Stack'
-import {
-  modalFirstScreenOptions,
-  modalStackNavigatorScreenOptions
-} from 'common/consts/screenOptions'
+import { useModalScreenOptions } from 'common/hooks/useModalScreenOptions'
 import React from 'react'
 
 export default function CollectibleManagementLayout(): JSX.Element {
-  const {
-    theme: { colors }
-  } = useTheme()
+  const { modalStackNavigatorScreenOptions, modalFirstScreenOptions } =
+    useModalScreenOptions()
+
   return (
-    <Stack
-      screenOptions={{
-        ...modalStackNavigatorScreenOptions,
-        headerStyle: {
-          backgroundColor: colors.$surfacePrimary
-        }
-      }}>
+    <Stack screenOptions={modalStackNavigatorScreenOptions}>
       <Stack.Screen name="index" options={modalFirstScreenOptions} />
     </Stack>
   )
