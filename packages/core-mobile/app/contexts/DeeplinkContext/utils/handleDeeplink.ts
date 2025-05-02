@@ -77,6 +77,14 @@ export const handleDeeplink = ({
             // @ts-ignore TODO: make routes typesafe
             router.navigate(`/trackTokenDetail?tokenId=${coingeckoId}`)
         }, 100)
+      } else {
+        // @ts-ignore TODO: make routes typesafe
+        router.navigate('/portfolio')
+        setTimeout(() => {
+          const path = deeplink.url.split(':/')[1]
+          // @ts-ignore TODO: make routes typesafe
+          router.navigate(path)
+        }, 100)
       }
       break
     }

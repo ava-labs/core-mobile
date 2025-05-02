@@ -82,11 +82,6 @@ export const NavigationRedirect = (): null => {
         router.replace('/portfolio')
       }
     }
-
-    if (walletState === WalletState.INACTIVE) {
-      // @ts-ignore TODO: make routes typesafe
-      router.replace('/loginWithPinOrBiometry')
-    }
   }, [walletState, router, isSignedIn, pathName, isNavigationReady])
 
   useFocusEffect(
