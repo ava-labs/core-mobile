@@ -44,7 +44,7 @@ export const handleDeeplink = ({
         }
       }
 
-      // if not a wc link, just open the url in the in-app browser
+      // if not a wc link, just open the url in the browser tab
       openUrl({
         url: deeplink.url,
         title: ''
