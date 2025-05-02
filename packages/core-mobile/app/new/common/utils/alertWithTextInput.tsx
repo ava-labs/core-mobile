@@ -9,6 +9,7 @@ export const GlobalAlertWithTextInput = (): JSX.Element => {
       <AlertWithTextInputs
         ref={ref => {
           if (ref) {
+            // @ts-ignore TODO: fix types
             global.alertWithTextInput = ref
           }
         }}
@@ -20,9 +21,11 @@ export const GlobalAlertWithTextInput = (): JSX.Element => {
 export function showAlertWithTextInput(
   props: ShowAlertWithTextInputsConfig
 ): void {
+  // @ts-ignore TODO: fix types
   global?.alertWithTextInput?.show(props)
 }
 
 export function dismissAlertWithTextInput(): void {
+  // @ts-ignore TODO: fix types
   global?.alertWithTextInput?.hide()
 }
