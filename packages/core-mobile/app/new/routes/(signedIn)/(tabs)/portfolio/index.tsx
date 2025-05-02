@@ -16,7 +16,7 @@ import { HiddenBalanceText } from 'common/components/HiddenBalanceText'
 import { LinearGradientBottomWrapper } from 'common/components/LinearGradientBottomWrapper'
 import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
-import { useRouter } from 'expo-router'
+import { useLocalSearchParams, useRouter } from 'expo-router'
 import {
   ActionButton,
   ActionButtons
@@ -59,9 +59,10 @@ import { selectIsPrivacyModeEnabled } from 'store/settings/securityPrivacy'
 import { RootState } from 'store/types'
 import { useFocusedSelector } from 'utils/performance/useFocusedSelector'
 
-const SEGMENT_ITEMS = ['Assets', 'Collectibles', 'DeFi']
-
 const PortfolioHomeScreen = (): JSX.Element => {
+  const { initialTab } = useLocalSearchParams<{
+    initialTab?: PortfolioHomeScreenTab
+  }>()
   const isPrivacyModeEnabled = useFocusedSelector(selectIsPrivacyModeEnabled)
   const [_, setSelectedToken] = useSendSelectedToken()
   const { theme } = useTheme()
@@ -409,6 +410,15 @@ const PortfolioHomeScreen = (): JSX.Element => {
     handleGoToDiscoverCollectibles
   ])
 
+  useEffect(() => {
+    if (initialTab) {
+      const index = SEGMENT_ITEMS.indexOf(initialTab)
+      if (index !== -1) {
+        tabViewRef.current?.setIndex(index)
+      }
+    }
+  }, [initialTab])
+
   return (
     <BlurredBarsContentLayout>
       <CollapsibleTabs.Container
@@ -438,9 +448,15 @@ const styles = StyleSheet.create({
 })
 
 export enum PortfolioHomeScreenTab {
-  Assets = 0,
-  Collectibles = 1,
-  DeFi = 2
+  Assets = 'Assets',
+  Collectibles = 'Collectibles',
+  DeFi = 'DeFi'
 }
+
+const SEGMENT_ITEMS = [
+  PortfolioHomeScreenTab.Assets,
+  PortfolioHomeScreenTab.Collectibles,
+  PortfolioHomeScreenTab.DeFi
+]
 
 export default PortfolioHomeScreen

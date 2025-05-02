@@ -23,11 +23,12 @@ import { selectIsDeveloperMode } from 'store/settings/advanced'
 import useCChainNetwork from 'hooks/earn/useCChainNetwork'
 import { useInAppRequest } from 'hooks/useInAppRequest'
 import { isUserRejectedError } from 'store/rpc/providers/walletConnect/utils'
+import { PortfolioHomeScreenTab } from 'new/routes/(signedIn)/(tabs)/portfolio'
 import { MintNftService } from '../service/MintNftService'
 
 export const MintNftScreen = (): ReactNode => {
   const { theme } = useTheme()
-  const { back } = useRouter()
+  const { back, navigate } = useRouter()
   const [parentWidth, setParentWidth] = useState(0)
   const activeAccount = useSelector(selectActiveAccount)
   const address = activeAccount?.addressC
@@ -40,9 +41,15 @@ export const MintNftScreen = (): ReactNode => {
 
   const handleSuccess = useCallback(() => {
     back()
-
     confetti.restart()
-  }, [back, confetti])
+    navigate({
+      // @ts-ignore TODO: make routes typesafe
+      pathname: '/portfolio',
+      params: {
+        initialTab: PortfolioHomeScreenTab.Collectibles
+      }
+    })
+  }, [back, confetti, navigate])
 
   const handleMintNft = useCallback(async () => {
     if (!address || !provider) return

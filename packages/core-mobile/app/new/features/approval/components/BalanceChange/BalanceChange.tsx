@@ -19,7 +19,8 @@ const BalanceChangeComponent = ({
       }}>
       <View
         sx={{
-          flexDirection: 'column'
+          flexDirection: 'column',
+          gap: 16
         }}>
         {balanceChange.outs.map((outTokenDiff, index) => (
           <View key={index.toString()} sx={{ paddingVertical: 16 }}>
