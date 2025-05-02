@@ -15,6 +15,7 @@ interface TokenAvatarProps {
   testID?: string
   isMalicious?: boolean
   isNetworkToken?: boolean
+  isNft?: boolean
 }
 
 const DEFAULT_SIZE = 32
@@ -25,7 +26,8 @@ export const TokenLogo: FC<TokenAvatarProps> = ({
   logoUri,
   size = DEFAULT_SIZE,
   isMalicious,
-  isNetworkToken = false
+  isNetworkToken = false,
+  isNft
 }) => {
   const {
     theme: { colors, isDark }
@@ -36,6 +38,8 @@ export const TokenLogo: FC<TokenAvatarProps> = ({
   const useLocalNetworkTokenLogo = Boolean(
     symbol && isNetworkToken && hasLocalNetworkTokenLogo(symbol)
   )
+
+  const borderRadiusValue = isNft ? 12 : size
 
   // border color is the same no matter where the logo is used
   const borderColor = useMemo(() => {
@@ -49,7 +53,7 @@ export const TokenLogo: FC<TokenAvatarProps> = ({
     const baseStyle = {
       width: size,
       height: size,
-      borderRadius: size,
+      borderRadius: borderRadiusValue,
       justifyContent: 'center',
       alignItems: 'center',
       overflow: 'hidden',
@@ -63,7 +67,7 @@ export const TokenLogo: FC<TokenAvatarProps> = ({
           borderWidth: BORDER_WIDTH
         }
       : baseStyle
-  }, [backgroundColor, borderColor, size])
+  }, [backgroundColor, borderColor, size, borderRadiusValue])
 
   // Android-specific border overlay (not needed for iOS)
   const androidBorderOverlay = useMemo(() => {
@@ -75,14 +79,14 @@ export const TokenLogo: FC<TokenAvatarProps> = ({
           position: 'absolute',
           width: size,
           height: size,
-          borderRadius: size,
+          borderRadius: borderRadiusValue,
           backgroundColor: 'transparent',
           borderColor: borderColor,
           borderWidth: BORDER_WIDTH
         }}
       />
     )
-  }, [size, borderColor])
+  }, [size, borderRadiusValue, borderColor])
 
   if (isMalicious) {
     return (
@@ -108,7 +112,12 @@ export const TokenLogo: FC<TokenAvatarProps> = ({
 
   return (
     <View sx={containerStyle}>
-      <Logo logoUri={logoUri} size={size} backgroundColor={backgroundColor} />
+      <Logo
+        logoUri={logoUri}
+        size={size}
+        backgroundColor={backgroundColor}
+        borderRadius={borderRadiusValue}
+      />
       {androidBorderOverlay}
     </View>
   )

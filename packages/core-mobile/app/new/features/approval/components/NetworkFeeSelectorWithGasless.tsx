@@ -58,10 +58,10 @@ export const NetworkFeeSelectorWithGasless = ({
               <Text
                 variant="body1"
                 sx={{ fontSize: 16, lineHeight: 22, color: '$textPrimary' }}>
-                Enable free gas{' '}
+                Get free gas{' '}
               </Text>
               <Tooltip
-                title="Enable free gas"
+                title="Get free gas"
                 description="When toggled Core will pay the network fee for this transaction."
               />
             </View>
@@ -72,7 +72,7 @@ export const NetworkFeeSelectorWithGasless = ({
                 lineHeight: 16,
                 color: alpha(theme.colors.$textSecondary, 0.6)
               }}>
-              Remove gas fees for this transaction
+              Gas fees paid by Core
             </Text>
           </View>
 

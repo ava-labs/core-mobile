@@ -429,10 +429,10 @@ const ApprovalScreen = ({
       }}>
       {renderDappInfoOrTitle()}
       {renderGaslessAlert()}
-      {renderAccountAndNetwork()}
       {renderBalanceChange()}
-      {renderDetails()}
       {renderSpendLimits()}
+      {renderAccountAndNetwork()}
+      {renderDetails()}
       {renderNetworkFeeSelectorWithGasless()}
     </ActionSheet>
   )
