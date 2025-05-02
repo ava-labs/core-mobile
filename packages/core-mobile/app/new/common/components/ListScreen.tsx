@@ -207,16 +207,25 @@ export const ListScreen = <T,>({
     )
   }, [renderEmpty])
 
-  const paddingBottom = useMemo(() => {
+  const keyboardVerticalOffset = useMemo(() => {
     if (isSecondaryModal) {
       if (Platform.OS === 'android') {
-        // Dev mode needs the top offset
-        // React Natives's hot reloading might be breaking the top offset
-        const topOffset = __DEV__ ? topMarginOffset : 0
-        return topOffset + insets.bottom + insets.top + 24
+        return -insets.bottom + 8
       }
+      return insets.bottom
+    }
+    if (isAndroidWithBottomBar) {
+      return 16
+    }
+    return insets.bottom + 16
+  }, [insets.bottom, isAndroidWithBottomBar, isSecondaryModal])
 
-      return insets.bottom + topMarginOffset
+  const paddingBottom = useMemo(() => {
+    if (isSecondaryModal) {
+      return Platform.select({
+        ios: topMarginOffset + 24,
+        android: topMarginOffset + insets.bottom + insets.top + 32
+      })
     }
 
     return insets.bottom
@@ -236,19 +245,6 @@ export const ListScreen = <T,>({
       }
     ] as StyleProp<ViewStyle>[]
   }, [props?.contentContainerStyle, data.length, paddingBottom])
-
-  const keyboardVerticalOffset = useMemo(() => {
-    if (isSecondaryModal) {
-      if (Platform.OS === 'android') {
-        return -insets.bottom + 8
-      }
-      return insets.bottom
-    }
-    if (isAndroidWithBottomBar) {
-      return 16
-    }
-    return insets.bottom + 16
-  }, [insets.bottom, isAndroidWithBottomBar, isSecondaryModal])
 
   return (
     <KeyboardAvoidingView

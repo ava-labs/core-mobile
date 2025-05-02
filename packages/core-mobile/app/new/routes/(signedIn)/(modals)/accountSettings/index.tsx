@@ -109,6 +109,7 @@ const AccountSettingsScreen = (): JSX.Element => {
   return (
     <ScrollScreen
       isModal
+      // shouldAvoidKeyboard
       navigationTitle="Account settings"
       renderHeaderRight={renderHeaderRight}
       testID="settings_scroll_view"

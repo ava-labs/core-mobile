@@ -447,6 +447,7 @@ export const SwapScreen = (): JSX.Element => {
       // this is a workaround to prevent the content
       // from being pushed up too much when the keyboard appears
       bottomOffset={-2000}
+      shouldAvoidKeyboard
       contentContainerStyle={{ padding: 16 }}>
       <Animated.View layout={LinearTransition}>
         {renderFromSection()}

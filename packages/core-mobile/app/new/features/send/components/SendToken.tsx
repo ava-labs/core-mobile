@@ -168,6 +168,7 @@ export const SendToken = ({ onSend }: { onSend: () => void }): JSX.Element => {
       title={`${'How much would\nyou like to send?'}`}
       navigationTitle="How much would you like to send?"
       renderFooter={renderFooter}
+      shouldAvoidKeyboard
       contentContainerStyle={{
         padding: 16
       }}>

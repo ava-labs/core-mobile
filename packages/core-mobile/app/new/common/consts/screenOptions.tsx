@@ -6,22 +6,20 @@ import {
   TransitionPresets
 } from '@react-navigation/stack'
 import BackBarButton from 'common/components/BackBarButton'
-import BlurredBackgroundView from 'common/components/BlurredBackgroundView'
 import { ReceiveBarButton } from 'common/components/ReceiveBarButton'
 import { Link } from 'expo-router'
 import React from 'react'
 import { Platform } from 'react-native'
 //import { NotificationBarButton } from 'common/components/NotificationBarButton'
 import { AccountSettingBarButton } from 'common/components/AccountSettingBarButton'
-import {
-  MODAL_BORDER_RADIUS,
-  MODAL_HEADER_HEIGHT,
-  MODAL_TOP_MARGIN
-} from 'common/hooks/useModalScreenOptions'
+import BlurredBackgroundView from 'common/components/BlurredBackgroundView'
 
-const BAR_BUTTONS_BOTTOM_MARGIN = Platform.OS === 'ios' ? 8 : 0
+export const MODAL_TOP_MARGIN = Platform.OS === 'ios' ? 77 : 35
+export const MODAL_BORDER_RADIUS = 40
+export const MODAL_HEADER_HEIGHT = 62
+export const BAR_BUTTONS_BOTTOM_MARGIN = Platform.OS === 'ios' ? 8 : 0
 
-const commonNavigatorScreenOptions: StackNavigationOptions = {
+export const commonNavigatorScreenOptions: StackNavigationOptions = {
   title: '',
   headerBackButtonDisplayMode: 'minimal',
   headerShadowVisible: false,
@@ -63,12 +61,6 @@ export const formSheetScreensOptions: StackNavigationOptions = {
   // we patched @react-navigation/stack to support a custom "formSheet" effect
   // for modals on both iOS and Android
   cardStyleInterpolator: CardStyleInterpolators.forModalPresentationIOS
-}
-
-// Options for the first screen of a modal stack navigator.
-// This screen does not have a back button, so we need to hide it.
-export const modalFirstScreenOptions: StackNavigationOptions = {
-  headerBackImage: () => null
 }
 
 export const modalScreenOptionsWithHeaderBack: StackNavigationOptions = {

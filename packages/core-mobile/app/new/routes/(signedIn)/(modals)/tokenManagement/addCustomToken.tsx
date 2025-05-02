@@ -113,6 +113,7 @@ const AddCustomTokenScreen = (): JSX.Element => {
       title="Add a custom token"
       renderHeader={renderHeader}
       contentContainerStyle={{ padding: 16 }}
+      shouldAvoidKeyboard
       isModal>
       <Text
         variant="subtitle1"
