@@ -21,6 +21,7 @@ import {
   DetailSection,
   FundsRecipientItem,
   LinkItem,
+  NetworkItem,
   NodeIDItem,
   TextItem
 } from '@avalabs/vm-module-types'
@@ -38,6 +39,8 @@ import { copyToClipboard } from 'new/common/utils/clipboard'
 import { truncateNodeId } from 'utils/Utils'
 import { getHexStringToBytes } from 'utils/getHexStringToBytes'
 import { toSentenceCase } from 'common/utils/toSentenceCase'
+import { TokenLogo } from 'common/components/TokenLogo'
+import { FlatList } from 'react-native'
 
 export const Details = ({
   detailSection
@@ -224,7 +227,6 @@ export const Details = ({
   const renderCurrencyValue = useCallback(
     (value: bigint, decimals: number, symbol: string): JSX.Element => {
       const marketToken = getMarketTokenBySymbol(symbol)
-
       return (
         <View sx={{ alignItems: 'flex-end' }}>
           <Text
@@ -265,6 +267,35 @@ export const Details = ({
     ]
   )
 
+  const renderNetworkValue = useCallback(
+    (item: NetworkItem): JSX.Element => {
+      return (
+        <View
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            gap: 8,
+            maxWidth: '80%',
+            flex: 1,
+            justifyContent: 'flex-end'
+          }}>
+          <TokenLogo logoUri={item.value.logoUri} size={24} />
+          <Text
+            variant="body1"
+            numberOfLines={1}
+            sx={{
+              fontSize: 16,
+              lineHeight: 22,
+              color: alpha(colors.$textPrimary, 0.6)
+            }}>
+            {item.value.name}
+          </Text>
+        </View>
+      )
+    },
+    [colors.$textPrimary]
+  )
+
   const renderValue = useCallback(
     (
       item:
@@ -275,6 +306,7 @@ export const Details = ({
         | DateItem
         | FundsRecipientItem
         | AddressListItem
+        | NetworkItem
       // eslint-disable-next-line sonarjs/cognitive-complexity
     ): JSX.Element | null => {
       return item.type === DetailItemType.ADDRESS ? (
@@ -295,16 +327,19 @@ export const Details = ({
         </Text>
       ) : item.type === DetailItemType.CURRENCY ? (
         renderCurrencyValue(item.value, item.maxDecimals, item.symbol)
-      ) : item.type === DetailItemType.ADDRESS_LIST ? null : (
+      ) : item.type === DetailItemType.FUNDS_RECIPIENT ? (
         renderCurrencyValue(item.amount, item.maxDecimals, item.symbol)
-      )
+      ) : item.type === DetailItemType.NETWORK ? (
+        renderNetworkValue(item)
+      ) : null
     },
     [
       renderCurrencyValue,
       renderAddress,
       renderNodeIDItem,
       renderDataValue,
-      valueTextColor
+      valueTextColor,
+      renderNetworkValue
     ]
   )
 
@@ -390,36 +425,36 @@ export const Details = ({
         )
       }
 
-      const isLastItem = index === detailSection.items.length - 1
-
       return (
         <View>
           <View sx={{ paddingVertical: VERTICAL_PADDING }}>{content}</View>
-          {!isLastItem && renderSeparator()}
         </View>
       )
     },
     [
       renderPlainText,
-      renderSeparator,
       renderTextItem,
       renderLinkItem,
       renderValue,
-      renderFundReceipientItem,
-      detailSection.items.length
+      renderFundReceipientItem
     ]
   )
 
   return (
     <View
-      style={{
+      sx={{
         backgroundColor: colors.$surfaceSecondary,
+        borderRadius: 12,
         paddingHorizontal: 16,
-        borderRadius: 12
+        marginTop: 12
       }}>
-      {detailSection.items.map((item, index) => (
-        <View key={index}>{renderItem(item, index)}</View>
-      ))}
+      <FlatList
+        scrollEnabled={false}
+        data={detailSection.items}
+        renderItem={({ item, index }) => renderItem(item, index)}
+        keyExtractor={(_item, index) => index.toString()}
+        ItemSeparatorComponent={renderSeparator}
+      />
     </View>
   )
 }

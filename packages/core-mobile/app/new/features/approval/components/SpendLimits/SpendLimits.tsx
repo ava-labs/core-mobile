@@ -123,7 +123,7 @@ export const SpendLimits = ({
   ])
 
   return (
-    <View style={{ marginBottom: 12 }}>
+    <View>
       <View
         sx={{
           backgroundColor: '$surfaceSecondary',

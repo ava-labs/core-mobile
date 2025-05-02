@@ -326,11 +326,7 @@ const ApprovalScreen = ({
 
   const renderDetails = useCallback((): JSX.Element => {
     return (
-      <View
-        style={{
-          marginTop: 12,
-          gap: 12
-        }}>
+      <View>
         {filteredSections.map((detailSection, index) => (
           <Details key={index} detailSection={detailSection} />
         ))}
