@@ -59,8 +59,7 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
     alignItems: 'center',
-    maxWidth: '70%',
-    overflow: 'visible'
+    maxWidth: '70%'
   },
   subTextSmall: {
     fontWeight: '500',
