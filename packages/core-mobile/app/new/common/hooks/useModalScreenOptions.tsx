@@ -1,5 +1,4 @@
 import {
-  CardStyleInterpolators,
   StackCardInterpolatedStyle,
   StackCardInterpolationProps,
   StackNavigationOptions
@@ -11,7 +10,7 @@ import {
   modalStackNavigatorScreenOptions
 } from 'common/consts/screenOptions'
 import { useMemo } from 'react'
-import { Animated, Platform } from 'react-native'
+import { Animated } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 export function useModalScreenOptions(): {
@@ -49,8 +48,7 @@ export function useModalScreenOptions(): {
   const formSheetScreensOptions: StackNavigationOptions = {
     presentation: 'modal',
     cardStyle: {
-      // formsheet behaves differently on iOS and Android
-      marginTop: Platform.OS === 'ios' ? topMarginOffset : MODAL_TOP_MARGIN,
+      marginTop: topMarginOffset + 24,
       borderTopLeftRadius: MODAL_BORDER_RADIUS,
       borderTopRightRadius: MODAL_BORDER_RADIUS
     },
@@ -61,7 +59,7 @@ export function useModalScreenOptions(): {
     },
     // we patched @react-navigation/stack to support a custom "formSheet" effect
     // for modals on both iOS and Android
-    cardStyleInterpolator: CardStyleInterpolators.forModalPresentationIOS
+    cardStyleInterpolator: forModalPresentationIOS
   }
 
   // Options for the first screen of a modal stack navigator.
