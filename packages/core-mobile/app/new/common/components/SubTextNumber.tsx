@@ -40,7 +40,7 @@ export const SubTextNumber: React.FC<Props> = ({
       {subText && (
         <Text
           style={[
-            styles.subTextSmall,
+            styles.subText,
             { color: _textColor, fontSize: subTextSize }
           ]}>
           {subText}
@@ -61,7 +61,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     maxWidth: '70%'
   },
-  subTextSmall: {
+  subText: {
     fontWeight: '500',
     position: 'relative',
     top: 4
