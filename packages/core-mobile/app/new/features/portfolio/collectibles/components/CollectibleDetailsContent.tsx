@@ -67,29 +67,48 @@ export const CollectibleDetailsContent = ({
   const attributes: GroupListItem[] = useMemo(() => {
     if (
       collectible?.processedMetadata?.attributes === undefined ||
-      collectible?.processedMetadata?.attributes.length === 0 ||
-      !Array.isArray(collectible?.processedMetadata?.attributes.length)
+      collectible?.processedMetadata?.attributes.length === 0
     )
       return []
 
-    return collectible.processedMetadata.attributes
-      .map(item => {
-        if (item.trait_type.length === 0 && item.value.length === 0) {
-          return
-        }
-        return {
-          title: item.trait_type
-            .replace(/([A-Z])/g, ' $1')
-            .replace(/^./, function (str) {
-              return str.toUpperCase().trim()
-            }),
-          value:
-            item.display_type === 'date'
-              ? getDateInMmmDdYyyyHhMmA(Number(item.value))
-              : item.value
-        }
-      })
-      .filter(item => item !== undefined)
+    if (Array.isArray(collectible.processedMetadata.attributes)) {
+      return collectible.processedMetadata.attributes
+        .map(item => {
+          if (item.trait_type.length === 0 && item.value.length === 0) {
+            return
+          }
+          return {
+            title: item.trait_type
+              .replace(/([A-Z])/g, ' $1')
+              .replace(/^./, function (str) {
+                return str.toUpperCase().trim()
+              }),
+            value:
+              item.display_type === 'date'
+                ? getDateInMmmDdYyyyHhMmA(Number(item.value))
+                : item.value
+          }
+        })
+        .filter(item => item !== undefined)
+    }
+
+    if (typeof collectible.processedMetadata.attributes === 'object') {
+      return Object.entries(collectible.processedMetadata.attributes).reduce(
+        (acc, [key, value]) => {
+          const stringValue = value as unknown as string
+          if (key.length === 0 && stringValue.length === 0) {
+            return acc
+          }
+          acc.push({
+            title: key,
+            value: stringValue
+          })
+          return acc
+        },
+        [] as GroupListItem[]
+      )
+    }
+    return []
   }, [collectible?.processedMetadata?.attributes])
 
   const createdBy = useMemo(() => {
