@@ -63,6 +63,12 @@ function useBrowserContextValue(): BrowserContextType {
     if (isValidHttpUrl(normalized)) {
       setUrlEntry(normalized)
       if (activeTab?.id && browserRefs.current[activeTab.id]?.current) {
+        dispatch(
+          addHistoryForActiveTab({
+            title: normalized,
+            url: normalized
+          })
+        )
         browserRefs.current[activeTab.id]?.current?.loadUrl(normalized)
       }
     } else {
