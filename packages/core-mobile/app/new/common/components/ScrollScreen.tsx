@@ -34,8 +34,11 @@ import ScreenHeader from './ScreenHeader'
 // Use this component when you need a scrollable screen with proper keyboard handling and header management.
 // It handles all the logic for the header and footer, including keyboard interactions and gestures.
 
+// *** Always use this component for most scrollable screens
 // *** All screens are usually scrollable (android won't scroll if the contents are smaller than the screen)
 // *** We never display a View as a wrapper, it's always a ScrollView or KeyboardAwareScrollView
+// *** If you have an input on the screen, you need to enable keyboard avoiding
+// *** Never use a view to wrap your route content, use this instead
 
 // It provides:
 // - A navigation bar with a title
@@ -44,8 +47,6 @@ import ScreenHeader from './ScreenHeader'
 // - Custom sticky header and footer components
 // - Custom empty state component
 // - Proper keyboard avoidance and handling
-
-// Used by screens that need scrollable content with keyboard and header management
 
 interface ScrollScreenProps extends KeyboardAwareScrollViewProps {
   /** The main title displayed at the top of the screen */
@@ -146,12 +147,6 @@ export const ScrollScreen = ({
       }
       return insets.bottom + 16
     }
-    // if (isModal) {
-    //   if (isAndroidWithBottomBar) {
-    //     return 0
-    //   }
-    //   return insets.bottom
-    // }
 
     return insets.bottom
   }, [isSecondaryModal, isModal, insets.bottom, isAndroidWithBottomBar])
@@ -213,7 +208,8 @@ export const ScrollScreen = ({
     )
   }, [animatedHeaderStyle, children, renderHeader, subtitle, title])
 
-  // If we have an input on the screen then we should enable keyboard avoiding
+  // 90% of our screens reuse this component but only some need keyboard avoiding
+  // If you have an input on the screen, you need to enable this prop
   if (shouldAvoidKeyboard) {
     return (
       <KeyboardAvoidingView keyboardVerticalOffset={keyboardVerticalOffset}>
@@ -263,6 +259,7 @@ export const ScrollScreen = ({
     )
   }
 
+  // All of our screens have to be scrollable
   // If we don't have an input on the screen then we should not enable keyboard avoiding
   return (
     <KeyboardAvoidingView enabled={false} style={{ flex: 1 }}>
