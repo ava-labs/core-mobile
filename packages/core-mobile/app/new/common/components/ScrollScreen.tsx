@@ -30,8 +30,12 @@ import { BlurViewWithFallback } from './BlurViewWithFallback'
 import { KeyboardAvoidingView } from './KeyboardAvoidingView'
 import { LinearGradientBottomWrapper } from './LinearGradientBottomWrapper'
 import ScreenHeader from './ScreenHeader'
+
 // Use this component when you need a scrollable screen with proper keyboard handling and header management.
 // It handles all the logic for the header and footer, including keyboard interactions and gestures.
+
+// *** All screens are usually scrollable (android won't scroll if the contents are smaller than the screen)
+// *** We never display a View as a wrapper, it's always a ScrollView or KeyboardAwareScrollView
 
 // It provides:
 // - A navigation bar with a title
@@ -209,6 +213,7 @@ export const ScrollScreen = ({
     )
   }, [animatedHeaderStyle, children, renderHeader, subtitle, title])
 
+  // If we have an input on the screen then we should enable keyboard avoiding
   if (shouldAvoidKeyboard) {
     return (
       <KeyboardAvoidingView keyboardVerticalOffset={keyboardVerticalOffset}>
@@ -258,6 +263,7 @@ export const ScrollScreen = ({
     )
   }
 
+  // If we don't have an input on the screen then we should not enable keyboard avoiding
   return (
     <KeyboardAvoidingView enabled={false} style={{ flex: 1 }}>
       <BlurViewWithFallback
