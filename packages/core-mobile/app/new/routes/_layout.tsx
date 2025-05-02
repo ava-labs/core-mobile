@@ -10,6 +10,7 @@ import { useBgDetect } from 'common/hooks/useBgDetect'
 import { useLoadFonts } from 'common/hooks/useLoadFonts'
 import { useModalScreenOptions } from 'common/hooks/useModalScreenOptions'
 import { GlobalToast } from 'common/utils/toast'
+import { GlobalAlertWithTextInput } from 'common/utils/alertWithTextInput'
 import { useFocusEffect } from 'expo-router'
 import { RecoveryMethodProvider } from 'features/onboarding/contexts/RecoveryMethodProvider'
 import { NavigationRedirect } from 'new/common/components/NavigationRedirect'
@@ -116,6 +117,7 @@ export default function Root(): JSX.Element | null {
         </KeyboardProvider>
       </NavigationThemeProvider>
       <GlobalToast />
+      <GlobalAlertWithTextInput />
     </K2AlpineThemeProvider>
   )
 }
