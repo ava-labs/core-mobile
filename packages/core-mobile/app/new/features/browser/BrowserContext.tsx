@@ -1,4 +1,3 @@
-import { AlertWithTextInputsHandle } from '@avalabs/k2-alpine/src/components/Alert/types'
 import React, { RefObject, useEffect, useRef, useState } from 'react'
 import { TextInput } from 'react-native'
 import { SharedValue, useSharedValue } from 'react-native-reanimated'
