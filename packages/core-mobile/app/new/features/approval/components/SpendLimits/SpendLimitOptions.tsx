@@ -1,21 +1,17 @@
-import { TokenType } from '@avalabs/vm-module-types'
-import { Limit, SpendLimit } from 'hooks/useSpendLimits'
-import React, { useMemo, useState, useCallback, useRef } from 'react'
-import {
-  View,
-  Text,
-  alpha,
-  useTheme,
-  Icons,
-  AlertWithTextInputs
-} from '@avalabs/k2-alpine'
-import { DropdownGroup, DropdownMenu } from 'new/common/components/DropdownMenu'
-import { AlertWithTextInputsHandle } from '@avalabs/k2-alpine/src/components/Alert/types'
 import { bigToBigInt } from '@avalabs/core-utils-sdk'
+import { Icons, Text, View, alpha, useTheme } from '@avalabs/k2-alpine'
+import { TokenType } from '@avalabs/vm-module-types'
 import Big from 'big.js'
-import { getDefaultSpendLimitValue, sanitizeAmountInput } from './utils'
-import { getSpendLimitValueBasedOnCurrentLimitType } from './utils'
+import { showAlertWithTextInput } from 'common/utils/alertWithTextInput'
+import { Limit, SpendLimit } from 'hooks/useSpendLimits'
+import { DropdownGroup, DropdownMenu } from 'new/common/components/DropdownMenu'
+import React, { useCallback, useMemo, useState } from 'react'
 import { MenuId } from './types'
+import {
+  getDefaultSpendLimitValue,
+  getSpendLimitValueBasedOnCurrentLimitType,
+  sanitizeAmountInput
+} from './utils'
 
 export const SpendLimitOptions = ({
   spendLimit,
@@ -29,7 +25,6 @@ export const SpendLimitOptions = ({
   const {
     theme: { colors }
   } = useTheme()
-  const alert = useRef<AlertWithTextInputsHandle>(null)
   const [customSpendLimit, setCustomSpendLimit] = useState<SpendLimit>({
     ...spendLimit
   })
@@ -72,7 +67,7 @@ export const SpendLimitOptions = ({
           break
         }
         case MenuId.CUSTOM: {
-          alert.current?.show({
+          showAlertWithTextInput({
             title: 'Define a custom spend limit',
             inputs: [
               {
@@ -132,33 +127,30 @@ export const SpendLimitOptions = ({
   )
 
   return (
-    <>
-      <DropdownMenu onPressAction={onPressAction} groups={menuItems}>
-        <View
-          style={{
-            flexDirection: 'row',
-            alignItems: 'center'
+    <DropdownMenu onPressAction={onPressAction} groups={menuItems}>
+      <View
+        style={{
+          flexDirection: 'row',
+          alignItems: 'center'
+        }}>
+        <Text
+          variant="body1"
+          numberOfLines={1}
+          sx={{
+            ...sharedValueStyle,
+            flexGrow: 1,
+            width: '70%',
+            textAlign: 'right'
           }}>
-          <Text
-            variant="body1"
-            numberOfLines={1}
-            sx={{
-              ...sharedValueStyle,
-              flexGrow: 1,
-              width: '70%',
-              textAlign: 'right'
-            }}>
-            {displayValue}
+          {displayValue}
+        </Text>
+        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+          <Text variant="body1" sx={sharedValueStyle}>
+            {' ' + token.symbol}
           </Text>
-          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-            <Text variant="body1" sx={sharedValueStyle}>
-              {' ' + token.symbol}
-            </Text>
-            <Icons.Navigation.ChevronRight color={colors.$textSecondary} />
-          </View>
+          <Icons.Navigation.ChevronRight color={colors.$textSecondary} />
         </View>
-      </DropdownMenu>
-      <AlertWithTextInputs ref={alert} />
-    </>
+      </View>
+    </DropdownMenu>
   )
 }

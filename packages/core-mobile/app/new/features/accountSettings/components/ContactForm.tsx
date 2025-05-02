@@ -1,5 +1,4 @@
 import {
-  AlertWithTextInputs,
   Avatar,
   Button,
   Text,
@@ -7,13 +6,16 @@ import {
   View,
   showAlert
 } from '@avalabs/k2-alpine'
-import { AlertWithTextInputsHandle } from '@avalabs/k2-alpine/src/components/Alert/types'
 import { NetworkVMType } from '@avalabs/vm-module-types'
+import { Space } from 'common/components/Space'
 import { usePrimaryNetworks } from 'common/hooks/usePrimaryNetworks'
+import {
+  dismissAlertWithTextInput,
+  showAlertWithTextInput
+} from 'common/utils/alertWithTextInput'
 import { isValidContactName } from 'common/utils/isValidContactName'
 import { loadAvatar } from 'common/utils/loadAvatar'
-import { Space } from 'common/components/Space'
-import React, { useCallback, useMemo, useRef } from 'react'
+import React, { useCallback, useMemo } from 'react'
 import { useSelector } from 'react-redux'
 import { Contact } from 'store/addressBook'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
@@ -32,20 +34,17 @@ export const ContactForm = ({
   onSelectAvatar: () => void
 }): React.JSX.Element => {
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
-  const alert = useRef<AlertWithTextInputsHandle>(null)
   const { networks } = usePrimaryNetworks()
 
   const handleShowAlertWithTextInput = useCallback((): void => {
-    alert.current?.show({
+    showAlertWithTextInput({
       title: 'Name this contact',
       inputs: [{ key: 'save' }],
       buttons: [
         {
           text: 'Cancel',
           style: 'cancel',
-          onPress: () => {
-            alert.current?.hide()
-          }
+          onPress: dismissAlertWithTextInput
         },
         {
           text: 'Save',
@@ -59,7 +58,7 @@ export const ContactForm = ({
                 ...contact,
                 name: values.save?.trim()
               })
-              alert.current?.hide()
+              dismissAlertWithTextInput()
             }
           }
         }
@@ -209,9 +208,6 @@ export const ContactForm = ({
             )}
           </View>
         ))}
-      </View>
-      <View>
-        <AlertWithTextInputs ref={alert} />
       </View>
     </View>
   )
