@@ -1,12 +1,9 @@
-import React, { useRef, useCallback } from 'react'
+import { Pressable, Text, useTheme, View } from '@avalabs/k2-alpine'
 import {
-  AlertWithTextInputs,
-  Text,
-  useTheme,
-  View,
-  Pressable
-} from '@avalabs/k2-alpine'
-import { AlertWithTextInputsHandle } from '@avalabs/k2-alpine/src/components/Alert/types'
+  dismissAlertWithTextInput,
+  showAlertWithTextInput
+} from 'common/utils/alertWithTextInput'
+import React, { useCallback } from 'react'
 import { isSlippageValid } from '../utils'
 
 const inputKey = 'slippage'
@@ -19,7 +16,6 @@ export const SlippageInput = ({
   setSlippage: (slippage: number) => void
 }): JSX.Element => {
   const { theme } = useTheme()
-  const alert = useRef<AlertWithTextInputsHandle>(null)
 
   const sanitize = useCallback(
     ({ text }: { text: string; key: string }): string => {
@@ -29,7 +25,7 @@ export const SlippageInput = ({
   )
 
   const handlePress = useCallback(() => {
-    alert.current?.show({
+    showAlertWithTextInput({
       title: 'Edit slippage',
       inputs: [
         {
@@ -43,9 +39,7 @@ export const SlippageInput = ({
         {
           text: 'Cancel',
           style: 'cancel',
-          onPress: () => {
-            alert.current?.hide()
-          }
+          onPress: dismissAlertWithTextInput
         },
         {
           text: 'Save',
@@ -83,7 +77,6 @@ export const SlippageInput = ({
           {slippage.toString() + ' %'}
         </Text>
       </Pressable>
-      <AlertWithTextInputs ref={alert} />
     </View>
   )
 }

@@ -1,6 +1,5 @@
 import { Network } from '@avalabs/core-chains-sdk'
 import {
-  AlertWithTextInputs,
   Button,
   Icons,
   showAlert,
@@ -8,10 +7,13 @@ import {
   useTheme,
   View
 } from '@avalabs/k2-alpine'
-import { AlertWithTextInputsHandle } from '@avalabs/k2-alpine/src/components/Alert/types'
 import { NetworkLogoWithChain } from 'common/components/NetworkLogoWithChain'
 import { ScrollScreen } from 'common/components/ScrollScreen'
 import { useFormState } from 'common/hooks/useFormState'
+import {
+  dismissAlertWithTextInput,
+  showAlertWithTextInput
+} from 'common/utils/alertWithTextInput'
 import { isValidContactName } from 'common/utils/isValidContactName'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { AdvancedFieldProps } from 'features/accountSettings/components/AdvancedField'
@@ -22,7 +24,7 @@ import {
   useCustomNetwork
 } from 'features/accountSettings/hooks/useCustomNetwork'
 import { useNetworks } from 'hooks/networks/useNetworks'
-import React, { useCallback, useMemo, useRef } from 'react'
+import React, { useCallback, useMemo } from 'react'
 import { useDispatch } from 'react-redux'
 import { removeCustomNetwork } from 'store/network'
 import { isPChain, isXChain, isXPChain } from 'utils/network/isAvalancheNetwork'
@@ -42,8 +44,6 @@ export const AddEditNetworkScreen = (): JSX.Element => {
   }>()
 
   const { handleAddNetwork, handleUpdateNetwork } = useCustomNetwork()
-
-  const alert = useRef<AlertWithTextInputsHandle>(null)
 
   const foundNetwork: Network | null = useMemo(() => {
     if (params.chainId) {
@@ -115,9 +115,7 @@ export const AddEditNetworkScreen = (): JSX.Element => {
         {
           text: 'Cancel',
           style: 'cancel',
-          onPress: () => {
-            alert.current?.hide()
-          }
+          onPress: dismissAlertWithTextInput
         },
         {
           text: 'Delete',
@@ -181,16 +179,14 @@ export const AddEditNetworkScreen = (): JSX.Element => {
   ])
 
   const handleShowAlertWithTextInput = useCallback((): void => {
-    alert.current?.show({
+    showAlertWithTextInput({
       title: 'Name this network',
       inputs: [{ key: 'save', defaultValue: formState.chainName }],
       buttons: [
         {
           text: 'Cancel',
           style: 'cancel',
-          onPress: () => {
-            alert.current?.hide()
-          }
+          onPress: dismissAlertWithTextInput
         },
         {
           text: 'Save',
@@ -201,7 +197,7 @@ export const AddEditNetworkScreen = (): JSX.Element => {
           onPress: (values: Record<string, string>) => {
             if (values.save !== '' && values.save !== undefined) {
               handleUpdate('chainName', values.save?.trim())
-              alert.current?.hide()
+              dismissAlertWithTextInput()
             }
           }
         }
@@ -417,10 +413,6 @@ export const AddEditNetworkScreen = (): JSX.Element => {
 
         <AdvancedForm data={data} />
       </ScrollScreen>
-
-      <View>
-        <AlertWithTextInputs ref={alert} />
-      </View>
     </>
   )
 }

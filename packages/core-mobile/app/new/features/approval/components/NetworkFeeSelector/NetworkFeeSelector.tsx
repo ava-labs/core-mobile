@@ -6,8 +6,7 @@ import {
   GroupList,
   alpha,
   useTheme,
-  GroupListItem,
-  AlertWithTextInputs
+  GroupListItem
 } from '@avalabs/k2-alpine'
 import { Eip1559Fees } from 'utils/Utils'
 import { SubTextNumber } from 'new/common/components/SubTextNumber'
@@ -38,7 +37,6 @@ export const NetworkFeeSelector = ({
     feeDecimals,
     customFees,
     handleSetCustomFees,
-    alertRef,
     showFeeEditAlert,
     selectedPreset,
     handleSelectedPreset,
@@ -179,7 +177,6 @@ export const NetworkFeeSelector = ({
           color: '$textPrimary'
         }}
       />
-      <AlertWithTextInputs ref={alertRef} />
     </View>
   )
 }

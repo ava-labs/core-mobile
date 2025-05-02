@@ -1,18 +1,18 @@
 /**
  * Context wrapper for App
  **/
-import React, { FC, PropsWithChildren } from 'react'
 import * as Sentry from '@sentry/react-native'
-import Toast from 'react-native-toast-notifications'
-import { RootSiblingParent } from 'react-native-root-siblings'
-import { PosthogContextProvider } from 'contexts/PosthogContext'
-import { EncryptedStoreProvider } from 'contexts/EncryptedStoreProvider'
-import { ReactQueryProvider } from 'contexts/ReactQueryProvider'
 import { DeeplinkContextProvider } from 'contexts/DeeplinkContext/DeeplinkContext'
+import { EncryptedStoreProvider } from 'contexts/EncryptedStoreProvider'
+import { PosthogContextProvider } from 'contexts/PosthogContext'
+import { ReactQueryProvider } from 'contexts/ReactQueryProvider'
+import React, { FC, PropsWithChildren } from 'react'
+import { RootSiblingParent } from 'react-native-root-siblings'
+import Toast from 'react-native-toast-notifications'
 import SentryService from 'services/sentry/SentryService'
-import TopLevelErrorFallback from './common/components/TopLevelErrorFallback'
 import { App } from './App'
 import JailbreakCheck from './common/components/JailbreakCheck'
+import TopLevelErrorFallback from './common/components/TopLevelErrorFallback'
 
 function setToast(toast: Toast): void {
   global.toast = toast

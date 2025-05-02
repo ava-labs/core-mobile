@@ -1,4 +1,4 @@
-import { AlertWithTextInputs, ANIMATED, View } from '@avalabs/k2-alpine'
+import { ANIMATED, View } from '@avalabs/k2-alpine'
 import { useFocusEffect } from '@react-navigation/native'
 import { useIsAndroidWithBottomBar } from 'common/hooks/useIsAndroidWithBottomBar'
 import { useBrowserContext } from 'features/browser/BrowserContext'
@@ -22,7 +22,7 @@ import { useSelector } from 'react-redux'
 import { selectActiveTab, selectAllTabs, selectIsTabEmpty } from 'store/browser'
 
 const Browser = (): React.ReactNode => {
-  const { browserRefs, alertRef } = useBrowserContext()
+  const { browserRefs } = useBrowserContext()
   const activeTab = useSelector(selectActiveTab)
   const allTabs = useSelector(selectAllTabs)
   const showEmptyTab = useSelector(selectIsTabEmpty)
@@ -134,10 +134,6 @@ const Browser = (): React.ReactNode => {
         </Animated.View>
 
         <BrowserControls />
-      </View>
-
-      <View>
-        <AlertWithTextInputs ref={alertRef} />
       </View>
     </BrowserSnapshot>
   )
