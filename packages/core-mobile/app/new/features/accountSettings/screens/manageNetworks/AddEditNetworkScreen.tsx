@@ -374,7 +374,6 @@ export const AddEditNetworkScreen = (): JSX.Element => {
     <>
       <ScrollScreen
         isModal
-        shouldAvoidKeyboard={false}
         renderFooter={renderFooter}
         contentContainerStyle={{
           padding: 16,

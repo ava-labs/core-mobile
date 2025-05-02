@@ -53,33 +53,38 @@ export const WalletConnectScanScreen = (): React.JSX.Element => {
     )
   }, [handleOnChangeText, wcLink])
 
+  const renderHeader = useCallback((): JSX.Element => {
+    return (
+      <View
+        style={{
+          gap: 16
+        }}>
+        <ScreenHeader title="Scan a QR code" />
+        <View
+          style={{
+            paddingHorizontal: 4
+          }}>
+          <QrCodeScanner
+            onSuccess={handleOnChangeText}
+            vibrate={true}
+            sx={{
+              height: SCANNER_WIDTH * 1.3,
+              width: SCANNER_WIDTH
+            }}
+          />
+        </View>
+      </View>
+    )
+  }, [handleOnChangeText])
+
   return (
     <ScrollScreen
       isModal
+      shouldAvoidKeyboard
       renderFooter={renderFooter}
       scrollEnabled={false}
-      renderHeader={() => (
-        <View
-          style={{
-            gap: 16
-          }}>
-          <ScreenHeader title="Scan a QR code" />
-          <View
-            style={{
-              paddingHorizontal: 4
-            }}>
-            <QrCodeScanner
-              onSuccess={handleOnChangeText}
-              vibrate={true}
-              sx={{
-                height: SCANNER_WIDTH * 1.3,
-                width: SCANNER_WIDTH
-              }}
-            />
-          </View>
-        </View>
-      )}
-      contentContainerStyle={{ padding: 16, flex: 1 }}>
+      contentContainerStyle={{ padding: 16, flex: 1 }}
+      renderHeader={renderHeader}>
       <View style={{ flex: 1 }} />
     </ScrollScreen>
   )

@@ -94,6 +94,7 @@ export const VerifyCode = <T,>({
   return (
     <ScrollScreen
       title="Verify code"
+      shouldAvoidKeyboard
       subtitle="Enter the code generated from your authenticator app"
       contentContainerStyle={{ padding: 16, flex: 1 }}>
       <Card

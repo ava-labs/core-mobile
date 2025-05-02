@@ -77,7 +77,7 @@ export const ScrollScreen = ({
   hasParent,
   isModal,
   isSecondaryModal,
-  shouldAvoidKeyboard = true,
+  shouldAvoidKeyboard,
   navigationTitle,
   renderHeader,
   renderFooter,
@@ -259,7 +259,7 @@ export const ScrollScreen = ({
   }
 
   return (
-    <View style={{ flex: 1 }}>
+    <KeyboardAvoidingView enabled={false} style={{ flex: 1 }}>
       <BlurViewWithFallback
         style={{
           position: 'absolute',
@@ -298,6 +298,6 @@ export const ScrollScreen = ({
           </View>
         </LinearGradientBottomWrapper>
       ) : null}
-    </View>
+    </KeyboardAvoidingView>
   )
 }

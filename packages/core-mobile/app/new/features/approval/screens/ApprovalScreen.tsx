@@ -408,7 +408,6 @@ const ApprovalScreen = ({
 
   return (
     <ActionSheet
-      shouldAvoidKeyboard={false}
       sx={{
         marginBottom
       }}

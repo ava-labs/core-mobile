@@ -35,6 +35,7 @@ const FidoNameInput = ({
       isModal={isModal}
       title={title}
       subtitle={description}
+      shouldAvoidKeyboard
       contentContainerStyle={{ padding: 16, flex: 1 }}
       renderFooter={renderFooter}>
       <View

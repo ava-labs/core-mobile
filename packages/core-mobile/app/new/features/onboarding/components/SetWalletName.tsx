@@ -28,6 +28,7 @@ export const SetWalletName = ({
     <ScrollScreen
       title="How would you like to name your wallet?"
       renderFooter={renderFooter}
+      shouldAvoidKeyboard
       contentContainerStyle={{ padding: 16, flex: 1 }}>
       <SimpleTextInput autoFocus value={name} onChangeText={setName} />
     </ScrollScreen>

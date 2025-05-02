@@ -106,6 +106,7 @@ export const VerifyWithPinOrBiometry = ({
     <ScrollScreen
       title={`Enter your\ncurrent PIN`}
       isModal
+      shouldAvoidKeyboard
       contentContainerStyle={{
         padding: 16,
         flex: 1
