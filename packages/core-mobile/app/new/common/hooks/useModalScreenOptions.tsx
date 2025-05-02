@@ -6,14 +6,21 @@ import {
 import { useMemo } from 'react'
 import { Animated, Platform } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-
-export const MODAL_TOP_MARGIN = Platform.OS === 'ios' ? 77 : 35
-export const MODAL_BORDER_RADIUS = 40
-export const MODAL_HEADER_HEIGHT = 62
+import BlurredBackgroundView from 'common/components/BlurredBackgroundView'
+import React from 'react'
+import {
+  commonNavigatorScreenOptions,
+  MODAL_BORDER_RADIUS,
+  MODAL_HEADER_HEIGHT,
+  MODAL_TOP_MARGIN
+} from 'common/consts/screenOptions'
+import BackBarButton from 'common/components/BackBarButton'
 
 export function useModalScreenOptions(): {
   modalScreensOptions: StackNavigationOptions
   topMarginOffset: number
+  modalStackNavigatorScreenOptions: StackNavigationOptions
+  modalFirstScreenOptions: StackNavigationOptions
 } {
   const insets = useSafeAreaInsets()
 
@@ -43,9 +50,30 @@ export function useModalScreenOptions(): {
     cardStyleInterpolator: forModalPresentationIOS
   }
 
+  const modalStackNavigatorScreenOptions: StackNavigationOptions = {
+    ...commonNavigatorScreenOptions,
+    headerBackground: () => <BlurredBackgroundView hasGrabber={true} />,
+    headerBackImage: () => <BackBarButton isModal />,
+    headerTransparent: true,
+    headerStyle: {
+      height: MODAL_HEADER_HEIGHT
+    },
+    // on iOS,we need to set headerStatusBarHeight to 0 to
+    // prevent the header from jumping when navigating
+    ...(Platform.OS === 'ios' && { headerStatusBarHeight: 0 })
+  }
+
+  // Options for the first screen of a modal stack navigator.
+  // This screen does not have a back button, so we need to hide it.
+  const modalFirstScreenOptions: StackNavigationOptions = {
+    headerBackImage: () => null
+  }
+
   return {
     modalScreensOptions,
-    topMarginOffset
+    modalStackNavigatorScreenOptions,
+    topMarginOffset,
+    modalFirstScreenOptions
   }
 }
 

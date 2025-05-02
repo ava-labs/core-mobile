@@ -678,8 +678,7 @@ export const BridgeScreen = (): JSX.Element => {
     return (
       <View
         sx={{
-          gap: 20,
-          paddingBottom: 16
+          gap: 16
         }}>
         <Button
           type="primary"
