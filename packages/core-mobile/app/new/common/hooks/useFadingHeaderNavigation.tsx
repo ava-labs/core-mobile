@@ -5,7 +5,8 @@ import {
   LayoutChangeEvent,
   LayoutRectangle,
   NativeScrollEvent,
-  NativeSyntheticEvent
+  NativeSyntheticEvent,
+  Platform
 } from 'react-native'
 import Animated, {
   SharedValue,
@@ -109,7 +110,7 @@ export const useFadingHeaderNavigation = ({
       opacity: targetHiddenProgress.value,
       transform: [
         {
-          translateY
+          translateY: translateY + HEADER_BOTTOM_INSET
         }
       ]
     }
@@ -196,3 +197,5 @@ export const useFadingHeaderNavigation = ({
     scrollY
   }
 }
+
+const HEADER_BOTTOM_INSET = Platform.OS === 'ios' ? -4 : 0

@@ -1,3 +1,4 @@
+import React, { FC, memo, ReactNode } from 'react'
 import {
   Icons,
   PriceChangeStatus,
@@ -6,10 +7,9 @@ import {
   useTheme,
   View
 } from '@avalabs/k2-alpine'
-import React, { FC, memo } from 'react'
 
 type Props = {
-  title: string
+  title: ReactNode
   subtitle: string
   icon?: React.JSX.Element
   status?: PriceChangeStatus
