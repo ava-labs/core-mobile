@@ -6,26 +6,24 @@ import {
 import {
   MODAL_BORDER_RADIUS,
   MODAL_HEADER_HEIGHT,
-  MODAL_TOP_MARGIN
+  MODAL_TOP_MARGIN,
+  modalStackNavigatorScreenOptions
 } from 'common/consts/screenOptions'
 import { useMemo } from 'react'
-import { Animated, Platform } from 'react-native'
+import { Animated } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { modalStackNavigatorScreenOptions } from 'common/consts/screenOptions'
 
 export function useModalScreenOptions(): {
-  modalScreensOptions: StackNavigationOptions
   topMarginOffset: number
+  modalScreensOptions: StackNavigationOptions
+  formSheetScreensOptions: StackNavigationOptions
   modalStackNavigatorScreenOptions: StackNavigationOptions
   modalFirstScreenOptions: StackNavigationOptions
 } {
   const insets = useSafeAreaInsets()
 
   const topMarginOffset = useMemo(() => {
-    if (Platform.OS === 'android') {
-      return insets.top + MODAL_TOP_MARGIN
-    }
-    return MODAL_TOP_MARGIN
+    return insets.top + MODAL_TOP_MARGIN
   }, [insets])
 
   const modalScreensOptions: StackNavigationOptions = {
@@ -47,6 +45,23 @@ export function useModalScreenOptions(): {
     cardStyleInterpolator: forModalPresentationIOS
   }
 
+  const formSheetScreensOptions: StackNavigationOptions = {
+    presentation: 'modal',
+    cardStyle: {
+      marginTop: topMarginOffset + 24,
+      borderTopLeftRadius: MODAL_BORDER_RADIUS,
+      borderTopRightRadius: MODAL_BORDER_RADIUS
+    },
+    gestureEnabled: true,
+    gestureDirection: 'vertical',
+    headerStyle: {
+      height: MODAL_HEADER_HEIGHT
+    },
+    // we patched @react-navigation/stack to support a custom "formSheet" effect
+    // for modals on both iOS and Android
+    cardStyleInterpolator: forModalPresentationIOS
+  }
+
   // Options for the first screen of a modal stack navigator.
   // This screen does not have a back button, so we need to hide it.
   const modalFirstScreenOptions: StackNavigationOptions = {
@@ -55,6 +70,7 @@ export function useModalScreenOptions(): {
 
   return {
     modalScreensOptions,
+    formSheetScreensOptions,
     modalStackNavigatorScreenOptions,
     topMarginOffset,
     modalFirstScreenOptions

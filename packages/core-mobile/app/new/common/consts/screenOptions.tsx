@@ -1,6 +1,5 @@
 import { View } from '@avalabs/k2-alpine'
 import {
-  CardStyleInterpolators,
   StackCardInterpolatedStyle,
   StackNavigationOptions,
   TransitionPresets
@@ -14,7 +13,7 @@ import { Platform } from 'react-native'
 import { AccountSettingBarButton } from 'common/components/AccountSettingBarButton'
 import BlurredBackgroundView from 'common/components/BlurredBackgroundView'
 
-export const MODAL_TOP_MARGIN = Platform.OS === 'ios' ? 77 : 35
+export const MODAL_TOP_MARGIN = Platform.OS === 'ios' ? 22 : 35
 export const MODAL_BORDER_RADIUS = 40
 export const MODAL_HEADER_HEIGHT = 62
 export const BAR_BUTTONS_BOTTOM_MARGIN = Platform.OS === 'ios' ? 8 : 0
@@ -44,23 +43,6 @@ export const modalStackNavigatorScreenOptions: StackNavigationOptions = {
   // on iOS,we need to set headerStatusBarHeight to 0 to
   // prevent the header from jumping when navigating
   ...(Platform.OS === 'ios' && { headerStatusBarHeight: 0 })
-}
-
-export const formSheetScreensOptions: StackNavigationOptions = {
-  presentation: 'modal',
-  cardStyle: {
-    marginTop: MODAL_TOP_MARGIN,
-    borderTopLeftRadius: MODAL_BORDER_RADIUS,
-    borderTopRightRadius: MODAL_BORDER_RADIUS
-  },
-  gestureEnabled: true,
-  gestureDirection: 'vertical',
-  headerStyle: {
-    height: MODAL_HEADER_HEIGHT
-  },
-  // we patched @react-navigation/stack to support a custom "formSheet" effect
-  // for modals on both iOS and Android
-  cardStyleInterpolator: CardStyleInterpolators.forModalPresentationIOS
 }
 
 export const modalScreenOptionsWithHeaderBack: StackNavigationOptions = {

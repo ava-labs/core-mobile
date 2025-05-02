@@ -209,27 +209,31 @@ export const ListScreen = <T,>({
 
   const keyboardVerticalOffset = useMemo(() => {
     if (isSecondaryModal) {
-      if (Platform.OS === 'android') {
-        return -insets.bottom + 8
+      if (isAndroidWithBottomBar) {
+        return insets.bottom
+      }
+      return topMarginOffset + 16
+    }
+
+    if (isModal) {
+      if (isAndroidWithBottomBar) {
+        return 0
       }
       return insets.bottom
     }
-    if (isAndroidWithBottomBar) {
-      return 16
-    }
+
     return insets.bottom + 16
-  }, [insets.bottom, isAndroidWithBottomBar, isSecondaryModal])
+  }, [
+    insets.bottom,
+    isAndroidWithBottomBar,
+    isModal,
+    isSecondaryModal,
+    topMarginOffset
+  ])
 
   const paddingBottom = useMemo(() => {
-    if (isSecondaryModal) {
-      return Platform.select({
-        ios: topMarginOffset + 24,
-        android: topMarginOffset + insets.bottom + insets.top + 32
-      })
-    }
-
-    return insets.bottom
-  }, [isSecondaryModal, insets.bottom, insets.top, topMarginOffset])
+    return insets.bottom + 16
+  }, [insets.bottom])
 
   const contentContainerStyle = useMemo(() => {
     return [

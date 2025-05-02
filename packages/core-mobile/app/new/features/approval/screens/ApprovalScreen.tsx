@@ -17,7 +17,6 @@ import React, {
   useMemo,
   useState
 } from 'react'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useSelector } from 'react-redux'
 import { ApprovalParams } from 'services/walletconnectv2/walletConnectCache/types'
 import { walletConnectCache } from 'services/walletconnectv2/walletConnectCache/walletConnectCache'
@@ -57,7 +56,6 @@ const ApprovalScreen = ({
 }: {
   params: ApprovalParams
 }): JSX.Element => {
-  const insets = useSafeAreaInsets()
   const { presentationMode } = useLocalSearchParams()
   const isSeedlessSigningBlocked = useSelector(selectIsSeedlessSigningBlocked)
   const { getNetwork } = useNetworks()
@@ -401,16 +399,11 @@ const ApprovalScreen = ({
       }
     : undefined
 
-  const marginBottom =
-    presentationMode === NavigationPresentationMode.FORM_SHEET
-      ? insets.bottom
-      : 0
-
   return (
     <ActionSheet
-      sx={{
-        marginBottom
-      }}
+      isSecondaryModal={
+        presentationMode === NavigationPresentationMode.FORM_SHEET
+      }
       title={displayData.dAppInfo ? undefined : displayData.title}
       navigationTitle={
         displayData.dAppInfo ? displayData?.dAppInfo?.name : displayData.title
