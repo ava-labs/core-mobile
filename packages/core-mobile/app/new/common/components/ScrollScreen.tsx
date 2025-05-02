@@ -7,8 +7,15 @@ import { useHeaderHeight } from '@react-navigation/elements'
 import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
 import { useIsAndroidWithBottomBar } from 'common/hooks/useIsAndroidWithBottomBar'
 import { useModalScreenOptions } from 'common/hooks/useModalScreenOptions'
-import React, { useLayoutEffect, useMemo, useRef, useState } from 'react'
+import React, {
+  useCallback,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState
+} from 'react'
 import { LayoutRectangle, Platform, View } from 'react-native'
+import { ScrollView } from 'react-native-gesture-handler'
 import {
   KeyboardAwareScrollView,
   KeyboardAwareScrollViewProps
@@ -23,8 +30,15 @@ import { BlurViewWithFallback } from './BlurViewWithFallback'
 import { KeyboardAvoidingView } from './KeyboardAvoidingView'
 import { LinearGradientBottomWrapper } from './LinearGradientBottomWrapper'
 import ScreenHeader from './ScreenHeader'
+
 // Use this component when you need a scrollable screen with proper keyboard handling and header management.
 // It handles all the logic for the header and footer, including keyboard interactions and gestures.
+
+// *** Always use this component for most scrollable screens
+// *** All screens are usually scrollable (android won't scroll if the contents are smaller than the screen)
+// *** We never display a View as a wrapper, it's always a ScrollView or KeyboardAwareScrollView
+// *** If you have an input on the screen, you need to enable keyboard avoiding
+// *** Never use a view to wrap your route content, use this instead
 
 // It provides:
 // - A navigation bar with a title
@@ -33,8 +47,6 @@ import ScreenHeader from './ScreenHeader'
 // - Custom sticky header and footer components
 // - Custom empty state component
 // - Proper keyboard avoidance and handling
-
-// Used by screens that need scrollable content with keyboard and header management
 
 interface ScrollScreenProps extends KeyboardAwareScrollViewProps {
   /** The main title displayed at the top of the screen */
@@ -70,7 +82,7 @@ export const ScrollScreen = ({
   hasParent,
   isModal,
   isSecondaryModal,
-  shouldAvoidKeyboard = true,
+  shouldAvoidKeyboard,
   navigationTitle,
   renderHeader,
   renderFooter,
@@ -123,66 +135,52 @@ export const ScrollScreen = ({
   }, [contentHeaderHeight])
 
   const keyboardVerticalOffset = useMemo(() => {
+    if (isSecondaryModal) {
+      if (Platform.OS === 'android') {
+        return -insets.bottom - 8
+      }
+      return insets.bottom
+    }
     if (isModal) {
       if (isAndroidWithBottomBar) {
-        return 8
+        return 16
       }
-      return insets.bottom + 8
+      return insets.bottom + 16
     }
-    return -insets.bottom
-  }, [isModal, insets.bottom, isAndroidWithBottomBar])
+
+    return insets.bottom
+  }, [isSecondaryModal, isModal, insets.bottom, isAndroidWithBottomBar])
 
   const paddingBottom = useMemo(() => {
-    if (Platform.OS === 'android' && isSecondaryModal) {
-      const topOffset = __DEV__ ? topMarginOffset : 0
-      // Dev mode needs the top offset
-      // React Natives's hot reloading might be breaking the top offset
-      if (isAndroidWithBottomBar) {
-        return topOffset + insets.bottom
-      }
-
-      return topOffset + insets.top + insets.bottom
+    if (isSecondaryModal) {
+      return Platform.select({
+        ios: topMarginOffset + 16,
+        android: isAndroidWithBottomBar
+          ? topMarginOffset + insets.bottom + 16
+          : topMarginOffset + insets.bottom + insets.top + 48
+      })
     }
-    return insets.bottom + 16
+
+    if (isModal) {
+      return Platform.select({
+        ios: insets.bottom + 8,
+        android: insets.bottom + 16
+      })
+    }
+
+    return insets.bottom
   }, [
     isSecondaryModal,
+    isModal,
     insets.bottom,
     insets.top,
-    isAndroidWithBottomBar,
-    topMarginOffset
+    topMarginOffset,
+    isAndroidWithBottomBar
   ])
 
-  return (
-    <KeyboardAvoidingView
-      enabled={shouldAvoidKeyboard}
-      keyboardVerticalOffset={keyboardVerticalOffset}>
-      <BlurViewWithFallback
-        style={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          height: headerHeight,
-          zIndex: 100
-        }}
-      />
-      <KeyboardAwareScrollView
-        style={{ flex: 1 }}
-        keyboardDismissMode="interactive"
-        keyboardShouldPersistTaps="handled"
-        showsVerticalScrollIndicator={false}
-        bottomOffset={bottomOffset}
-        extraKeyboardSpace={-keyboardHeight}
-        {...props}
-        contentContainerStyle={[
-          props?.contentContainerStyle,
-          {
-            paddingBottom: insets.bottom,
-            paddingTop: headerHeight
-          }
-        ]}
-        onScroll={onScroll}>
+  const renderContent = useCallback(() => {
+    return (
+      <>
         <View
           style={{
             paddingBottom: 12
@@ -206,7 +204,90 @@ export const ScrollScreen = ({
         </View>
 
         {children}
-      </KeyboardAwareScrollView>
+      </>
+    )
+  }, [animatedHeaderStyle, children, renderHeader, subtitle, title])
+
+  // 90% of our screens reuse this component but only some need keyboard avoiding
+  // If you have an input on the screen, you need to enable this prop
+  if (shouldAvoidKeyboard) {
+    return (
+      <KeyboardAvoidingView keyboardVerticalOffset={keyboardVerticalOffset}>
+        <BlurViewWithFallback
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            height: headerHeight,
+            zIndex: 100
+          }}
+        />
+        <KeyboardAwareScrollView
+          style={{ flex: 1 }}
+          keyboardDismissMode="interactive"
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+          bottomOffset={bottomOffset}
+          extraKeyboardSpace={-keyboardHeight}
+          {...props}
+          contentContainerStyle={[
+            props?.contentContainerStyle,
+            {
+              paddingBottom: insets.bottom,
+              paddingTop: headerHeight
+            }
+          ]}
+          onScroll={onScroll}>
+          {renderContent()}
+        </KeyboardAwareScrollView>
+
+        {renderFooter ? (
+          <LinearGradientBottomWrapper>
+            <View
+              style={{
+                padding: 16,
+                paddingTop: 0,
+                paddingBottom
+              }}>
+              {renderFooter?.()}
+            </View>
+          </LinearGradientBottomWrapper>
+        ) : null}
+      </KeyboardAvoidingView>
+    )
+  }
+
+  // All of our screens have to be scrollable
+  // If we don't have an input on the screen then we should not enable keyboard avoiding
+  return (
+    <KeyboardAvoidingView enabled={false} style={{ flex: 1 }}>
+      <BlurViewWithFallback
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          height: headerHeight,
+          zIndex: 100
+        }}
+      />
+      <ScrollView
+        style={{ flex: 1 }}
+        showsVerticalScrollIndicator={false}
+        {...props}
+        contentContainerStyle={[
+          props?.contentContainerStyle,
+          {
+            paddingBottom: insets.bottom,
+            paddingTop: headerHeight
+          }
+        ]}
+        onScroll={onScroll}>
+        {renderContent()}
+      </ScrollView>
 
       {renderFooter ? (
         <LinearGradientBottomWrapper>

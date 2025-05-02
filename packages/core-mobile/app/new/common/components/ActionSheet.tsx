@@ -11,7 +11,6 @@ import {
   ActionButtons,
   ActionButtonsProps
 } from 'new/features/approval/components/ActionButtons'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { ScrollScreen } from './ScrollScreen'
 
 /**
@@ -30,16 +29,17 @@ export const ActionSheet = ({
   cancel,
   children,
   alert,
-  sx
+  sx,
+  shouldAvoidKeyboard
 }: {
   title?: string
   navigationTitle?: string
   onClose: () => void
   children: React.ReactNode
   sx?: SxProp
+  shouldAvoidKeyboard?: boolean
 } & ActionButtonsProps): JSX.Element => {
   const navigation = useNavigation()
-  const insets = useSafeAreaInsets()
 
   useEffect(() => {
     return navigation.addListener('beforeRemove', e => {
@@ -51,20 +51,14 @@ export const ActionSheet = ({
   }, [navigation, onClose])
 
   const renderFooter = useCallback(() => {
-    return (
-      <View
-        style={{
-          paddingBottom: insets.bottom + 16
-        }}>
-        <ActionButtons confirm={confirm} cancel={cancel} alert={alert} />
-      </View>
-    )
-  }, [insets.bottom, confirm, cancel, alert])
+    return <ActionButtons confirm={confirm} cancel={cancel} alert={alert} />
+  }, [confirm, cancel, alert])
 
   return (
     <ScrollScreen
       title={title}
       isSecondaryModal
+      shouldAvoidKeyboard={shouldAvoidKeyboard}
       navigationTitle={navigationTitle}
       renderFooter={renderFooter}
       contentContainerStyle={{

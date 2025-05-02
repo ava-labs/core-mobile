@@ -207,6 +207,7 @@ const ClaimStakeRewardScreen = (): JSX.Element => {
       title="Claim your staking reward"
       isModal
       renderFooter={renderFooter}
+      shouldAvoidKeyboard
       contentContainerStyle={{
         padding: 16
       }}>

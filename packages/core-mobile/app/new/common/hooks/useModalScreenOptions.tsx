@@ -3,17 +3,21 @@ import {
   StackCardInterpolationProps,
   StackNavigationOptions
 } from '@react-navigation/stack'
+import {
+  MODAL_BORDER_RADIUS,
+  MODAL_HEADER_HEIGHT,
+  MODAL_TOP_MARGIN
+} from 'common/consts/screenOptions'
 import { useMemo } from 'react'
 import { Animated, Platform } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-
-export const MODAL_TOP_MARGIN = Platform.OS === 'ios' ? 77 : 35
-export const MODAL_BORDER_RADIUS = 40
-export const MODAL_HEADER_HEIGHT = 62
+import { modalStackNavigatorScreenOptions } from 'common/consts/screenOptions'
 
 export function useModalScreenOptions(): {
   modalScreensOptions: StackNavigationOptions
   topMarginOffset: number
+  modalStackNavigatorScreenOptions: StackNavigationOptions
+  modalFirstScreenOptions: StackNavigationOptions
 } {
   const insets = useSafeAreaInsets()
 
@@ -43,9 +47,17 @@ export function useModalScreenOptions(): {
     cardStyleInterpolator: forModalPresentationIOS
   }
 
+  // Options for the first screen of a modal stack navigator.
+  // This screen does not have a back button, so we need to hide it.
+  const modalFirstScreenOptions: StackNavigationOptions = {
+    headerBackImage: () => null
+  }
+
   return {
     modalScreensOptions,
-    topMarginOffset
+    modalStackNavigatorScreenOptions,
+    topMarginOffset,
+    modalFirstScreenOptions
   }
 }
 

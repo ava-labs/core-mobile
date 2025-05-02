@@ -152,6 +152,7 @@ const StakeAmountScreen = (): JSX.Element => {
       navigationTitle="How much would you like to stake?"
       renderFooter={renderFooter}
       isModal
+      shouldAvoidKeyboard
       contentContainerStyle={{ padding: 16 }}>
       <TokenUnitInputWidget
         disabled={isComputing}

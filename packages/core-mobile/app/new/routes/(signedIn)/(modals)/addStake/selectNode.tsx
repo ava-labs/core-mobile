@@ -116,6 +116,7 @@ const StakeSelectNode = (): JSX.Element => {
       title="Which node would you like to use?"
       data={validators ?? []}
       renderItem={renderItem}
+      isModal
       keyExtractor={item => item.nodeID}
       renderHeader={renderHeader}
       renderEmpty={renderEmpty}
