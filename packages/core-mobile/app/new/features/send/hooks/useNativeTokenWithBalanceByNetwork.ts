@@ -16,7 +16,12 @@ export const useNativeTokenWithBalanceByNetwork = (
     const updatedNativeToken = tokens.find(
       t => t.type === TokenType.NATIVE
     ) as NetworkTokenWithBalance
-    if (!nativeToken || updatedNativeToken?.balance !== nativeToken.balance) {
+
+    if (
+      !nativeToken ||
+      (updatedNativeToken?.balance &&
+        updatedNativeToken.balance !== nativeToken.balance)
+    ) {
       setNativeToken(updatedNativeToken)
     }
   }, [tokens, nativeToken])

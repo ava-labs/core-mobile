@@ -9,7 +9,7 @@ import { useNetworks } from 'hooks/networks/useNetworks'
 import { useNativeTokenWithBalanceByNetwork } from 'features/send/hooks/useNativeTokenWithBalanceByNetwork'
 import { useSendSelectedToken } from 'features/send/store'
 import { useNetworkFee } from 'hooks/useNetworkFee'
-import useCollectibleSend from 'common/hooks/send/useCollectibleSend'
+import { useCollectibleSend } from 'common/hooks/send/useCollectibleSend'
 import { useSendContext } from 'features/send/context/sendContext'
 import { ActivityIndicator, alpha, useTheme, View } from '@avalabs/k2-alpine'
 import { useNavigation } from '@react-navigation/native'
@@ -31,6 +31,7 @@ export const RecentContactsScreen = (): JSX.Element | null => {
   const selectedNetwork = useMemo(() => {
     return getNetwork(selectedToken?.networkChainId)
   }, [selectedToken?.networkChainId, getNetwork])
+
   const { data: networkFee } = useNetworkFee(selectedNetwork)
   const dispatch = useDispatch()
   const nativeToken = useNativeTokenWithBalanceByNetwork(selectedNetwork)

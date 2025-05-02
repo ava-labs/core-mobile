@@ -4,7 +4,7 @@ import {
   Erc721TokenBalance,
   Erc721TokenMetadata
 } from '@avalabs/glacier-sdk'
-import { NftLocalId } from 'services/nft/types'
+import { NftItemExternalDataAttribute, NftLocalId } from 'services/nft/types'
 
 export const initialState = {
   hiddenNfts: {}
@@ -39,7 +39,7 @@ export type NFTImageData = {
 }
 
 export type NFTMetadata = (Erc721TokenMetadata | Erc1155TokenMetadata) & {
-  attributes: NFTItemExternalDataAttribute[]
+  attributes: NftItemExternalDataAttribute[]
 }
 
 export type NFTItem = NFTItemData & {
@@ -51,16 +51,10 @@ export type NFTItemExternalData = {
   name: string
   image: string
   image_256: string
-  attributes: NFTItemExternalDataAttribute[]
+  attributes: NftItemExternalDataAttribute[]
   description: string
   external_url: string
   animation_url: string | null
-}
-
-export type NFTItemExternalDataAttribute = {
-  trait_type: string
-  value: string
-  percentOwned: number
 }
 
 export type NftResponse = {
