@@ -5,7 +5,7 @@ import {
 } from '@avalabs/k2-alpine'
 import { useHeaderHeight } from '@react-navigation/elements'
 import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
-import { useIsAndroidWithBottomBar } from 'common/hooks/useIsAndroidWithBottomBar'
+import { useModalScreenOptions } from 'common/hooks/useModalScreenOptions'
 import React, {
   useCallback,
   useLayoutEffect,
@@ -29,7 +29,6 @@ import { BlurViewWithFallback } from './BlurViewWithFallback'
 import { KeyboardAvoidingView } from './KeyboardAvoidingView'
 import { LinearGradientBottomWrapper } from './LinearGradientBottomWrapper'
 import ScreenHeader from './ScreenHeader'
-import { useModalScreenOptions } from 'common/hooks/useModalScreenOptions'
 
 // Use this component when you need a scrollable screen with proper keyboard handling and header management.
 // It handles all the logic for the header and footer, including keyboard interactions and gestures.
@@ -93,7 +92,6 @@ export const ScrollScreen = ({
   const insets = useSafeAreaInsets()
   const headerHeight = useHeaderHeight()
   const keyboardHeight = useKeyboardHeight()
-  const isAndroidWithBottomBar = useIsAndroidWithBottomBar()
   const [headerLayout, setHeaderLayout] = useState<
     LayoutRectangle | undefined
   >()
