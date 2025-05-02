@@ -39,6 +39,7 @@ export type NftItemExternalData = {
 }
 
 export type NftItemExternalDataAttribute = {
+  display_type: string
   trait_type: string
   value: string
   percentOwned: number
