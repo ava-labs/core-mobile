@@ -92,6 +92,7 @@ const AuthorizeDappScreen = ({
 
   return (
     <ActionSheet
+      isModal
       title="Connect wallet?"
       onClose={() => onReject(request)}
       alert={alert}

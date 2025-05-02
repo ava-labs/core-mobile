@@ -5,7 +5,6 @@ import {
 } from '@avalabs/k2-alpine'
 import { useHeaderHeight } from '@react-navigation/elements'
 import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
-import { useIsAndroidWithBottomBar } from 'common/hooks/useIsAndroidWithBottomBar'
 import { useModalScreenOptions } from 'common/hooks/useModalScreenOptions'
 import React, {
   useCallback,
@@ -14,7 +13,7 @@ import React, {
   useRef,
   useState
 } from 'react'
-import { LayoutRectangle, Platform, View } from 'react-native'
+import { LayoutRectangle, View } from 'react-native'
 import { ScrollView } from 'react-native-gesture-handler'
 import {
   KeyboardAwareScrollView,
@@ -93,14 +92,12 @@ export const ScrollScreen = ({
   const insets = useSafeAreaInsets()
   const headerHeight = useHeaderHeight()
   const keyboardHeight = useKeyboardHeight()
-  const isAndroidWithBottomBar = useIsAndroidWithBottomBar()
   const [headerLayout, setHeaderLayout] = useState<
     LayoutRectangle | undefined
   >()
 
   const headerRef = useRef<View>(null)
   const contentHeaderHeight = useSharedValue<number>(0)
-  const { topMarginOffset } = useModalScreenOptions()
 
   const { onScroll, scrollY, targetHiddenProgress } = useFadingHeaderNavigation(
     {
@@ -134,49 +131,23 @@ export const ScrollScreen = ({
     }
   }, [contentHeaderHeight])
 
+  const { topMarginOffset } = useModalScreenOptions()
+
   const keyboardVerticalOffset = useMemo(() => {
     if (isSecondaryModal) {
-      if (Platform.OS === 'android') {
-        return -insets.bottom - 8
-      }
       return insets.bottom
     }
+
     if (isModal) {
-      if (isAndroidWithBottomBar) {
-        return 16
-      }
-      return insets.bottom + 16
+      return topMarginOffset - insets.bottom
     }
 
-    return insets.bottom
-  }, [isSecondaryModal, isModal, insets.bottom, isAndroidWithBottomBar])
+    return -insets.bottom
+  }, [isSecondaryModal, isModal, insets.bottom, topMarginOffset])
 
   const paddingBottom = useMemo(() => {
-    if (isSecondaryModal) {
-      return Platform.select({
-        ios: topMarginOffset + 16,
-        android: isAndroidWithBottomBar
-          ? topMarginOffset + insets.bottom + 16
-          : topMarginOffset + insets.bottom + insets.top + 48
-      })
-    }
-
-    if (isModal) {
-      return Platform.select({
-        ios: insets.bottom + 8,
-        android: insets.bottom + 16
-      })
-    }
-
-    return insets.bottom
-  }, [
-    isSecondaryModal,
-    isModal,
-    insets.bottom,
-    insets.top,
-    topMarginOffset,
-    isAndroidWithBottomBar
-  ])
+    return insets.bottom + 16
+  }, [insets.bottom])
 
   const renderContent = useCallback(() => {
     return (

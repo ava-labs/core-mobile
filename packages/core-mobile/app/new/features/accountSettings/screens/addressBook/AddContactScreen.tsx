@@ -69,6 +69,7 @@ export const AddContactScreen = (): React.JSX.Element => {
 
   return (
     <ScrollScreen
+      isModal
       renderFooter={renderFooter}
       contentContainerStyle={{ padding: 16 }}>
       {contact && (
