@@ -1,31 +1,27 @@
-import {
-  RefObject,
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState
-} from 'react'
-import { TokenUnit } from '@avalabs/core-utils-sdk'
-import { useSelector } from 'react-redux'
-import { selectSelectedCurrency } from 'store/settings/currency'
-import { calculateGasAndFees, Eip1559Fees, GasAndFees } from 'utils/Utils'
-import { useNetworkFee } from 'hooks/useNetworkFee'
-import { useNetworks } from 'hooks/networks/useNetworks'
-import { useNativeTokenPriceForNetwork } from 'hooks/networks/useNativeTokenPriceForNetwork'
 import { VsCurrencyType } from '@avalabs/core-coingecko-sdk'
-import { GAS_LIMIT_FOR_X_CHAIN } from 'consts/fees'
-import { isAvmNetwork } from 'utils/network/isAvalancheNetwork'
+import { TokenUnit } from '@avalabs/core-utils-sdk'
 import { NetworkFees } from '@avalabs/vm-module-types'
-import { AlertWithTextInputsHandle } from '@avalabs/k2-alpine/src/components/Alert/types'
-import { sanitizeDecimalInput } from 'utils/units/sanitize'
-import { NetworkWithCaip2ChainId } from 'store/network/types'
-import { isAvalancheCChainId } from 'services/network/utils/isAvalancheNetwork'
-import { FeePreset } from '../types'
 import {
-  DEFAULT_NETWORK_TOKEN_SYMBOL,
-  DEFAULT_NETWORK_TOKEN_DECIMALS
+  dismissAlertWithTextInput,
+  showAlertWithTextInput
+} from 'common/utils/alertWithTextInput'
+import { GAS_LIMIT_FOR_X_CHAIN } from 'consts/fees'
+import { useNativeTokenPriceForNetwork } from 'hooks/networks/useNativeTokenPriceForNetwork'
+import { useNetworks } from 'hooks/networks/useNetworks'
+import { useNetworkFee } from 'hooks/useNetworkFee'
+import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useSelector } from 'react-redux'
+import { isAvalancheCChainId } from 'services/network/utils/isAvalancheNetwork'
+import { NetworkWithCaip2ChainId } from 'store/network/types'
+import { selectSelectedCurrency } from 'store/settings/currency'
+import { isAvmNetwork } from 'utils/network/isAvalancheNetwork'
+import { sanitizeDecimalInput } from 'utils/units/sanitize'
+import { calculateGasAndFees, Eip1559Fees, GasAndFees } from 'utils/Utils'
+import {
+  DEFAULT_NETWORK_TOKEN_DECIMALS,
+  DEFAULT_NETWORK_TOKEN_SYMBOL
 } from '../consts'
+import { FeePreset } from '../types'
 
 enum FeeType {
   MAX_FEE_PER_GAS = 'maxFeePerGas',
@@ -49,7 +45,6 @@ export const useNetworkFeeSelector = ({
   feeDecimals: number | undefined
   customFees: GasAndFees | undefined
   handleSetCustomFees: (fees: Eip1559Fees) => void
-  alertRef: RefObject<AlertWithTextInputsHandle> | null
   showFeeEditAlert: (options: {
     key: FeeType
     title: string
@@ -61,7 +56,6 @@ export const useNetworkFeeSelector = ({
   isBaseUnitRate: boolean
   // eslint-disable-next-line sonarjs/cognitive-complexity
 } => {
-  const alertRef = useRef<AlertWithTextInputsHandle>(null)
   const selectedCurrency = useSelector(selectSelectedCurrency)
 
   const { getNetwork } = useNetworks()
@@ -226,7 +220,7 @@ export const useNetworkFeeSelector = ({
       initialValue: string
       onSave: (values: Record<string, string>) => void
     }): void => {
-      alertRef.current?.show({
+      showAlertWithTextInput({
         title: title,
         inputs: [
           {
@@ -240,9 +234,7 @@ export const useNetworkFeeSelector = ({
           {
             text: 'Cancel',
             style: 'cancel',
-            onPress: () => {
-              alertRef.current?.hide()
-            }
+            onPress: dismissAlertWithTextInput
           },
           {
             text: 'Save',
@@ -285,7 +277,6 @@ export const useNetworkFeeSelector = ({
     feeDecimals,
     customFees,
     handleSetCustomFees,
-    alertRef,
     showFeeEditAlert,
     selectedPreset,
     handleSelectedPreset,

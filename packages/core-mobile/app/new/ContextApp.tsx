@@ -1,8 +1,6 @@
 /**
  * Context wrapper for App
  **/
-import { AlertWithTextInputs } from '@avalabs/k2-alpine'
-import { AlertWithTextInputsHandle } from '@avalabs/k2-alpine/src/components/Alert/types'
 import * as Sentry from '@sentry/react-native'
 import { DeeplinkContextProvider } from 'contexts/DeeplinkContext/DeeplinkContext'
 import { EncryptedStoreProvider } from 'contexts/EncryptedStoreProvider'
@@ -18,10 +16,6 @@ import TopLevelErrorFallback from './common/components/TopLevelErrorFallback'
 
 function setToast(toast: Toast): void {
   global.toast = toast
-}
-
-function setAlertWithTextInput(alert: AlertWithTextInputsHandle): void {
-  global.alertWithTextInput = alert
 }
 
 /**
@@ -51,11 +45,6 @@ const ContextApp = (): JSX.Element => {
           }}
           offsetTop={30}
           normalColor={'00FFFFFF'}
-        />
-        <AlertWithTextInputs
-          ref={ref => {
-            ref && setAlertWithTextInput(ref)
-          }}
         />
       </ContextProviders>
     </Sentry.ErrorBoundary>

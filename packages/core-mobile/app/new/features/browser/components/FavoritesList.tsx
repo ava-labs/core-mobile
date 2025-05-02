@@ -1,4 +1,8 @@
 import { DropdownItem, DropdownMenu } from 'common/components/DropdownMenu'
+import {
+  dismissAlertWithTextInput,
+  showAlertWithTextInput
+} from 'common/utils/alertWithTextInput'
 import { showSnackbar } from 'common/utils/toast'
 import React, { ReactNode, useCallback, useMemo, useState } from 'react'
 import {
@@ -126,7 +130,7 @@ const FavoriteItem = ({
   onPress: (item: Favorite) => void
 }): ReactNode => {
   const dispatch = useDispatch()
-  const { alertRef, inputRef, isRenameFavoriteVisible } = useBrowserContext()
+  const { inputRef, isRenameFavoriteVisible } = useBrowserContext()
 
   const [isLongPressActive, setIsLongPressActive] = useState(false)
 
@@ -142,8 +146,8 @@ const FavoriteItem = ({
   const handleHideFavoriteAlert = useCallback((): void => {
     inputRef?.current?.focus()
     isRenameFavoriteVisible.value = false
-    alertRef.current?.hide()
-  }, [alertRef, inputRef, isRenameFavoriteVisible])
+    dismissAlertWithTextInput()
+  }, [inputRef, isRenameFavoriteVisible])
 
   const handleSaveFavoriteTitle = useCallback(
     (values: Record<string, string>): void => {
@@ -161,7 +165,7 @@ const FavoriteItem = ({
   const handleRenameFavorite = useCallback(() => {
     inputRef?.current?.blur()
     isRenameFavoriteVisible.value = true
-    alertRef.current?.show({
+    showAlertWithTextInput({
       title: 'Rename favorite',
       description: 'Enter a new name for this favorite',
       inputs: [{ key: 'favoriteTitle', defaultValue: item?.title }],
@@ -169,10 +173,7 @@ const FavoriteItem = ({
         {
           text: 'Cancel',
           style: 'cancel',
-          onPress: () => {
-            handleHideFavoriteAlert()
-            alertRef.current?.hide()
-          }
+          onPress: handleHideFavoriteAlert
         },
         {
           style: 'default',
@@ -186,7 +187,6 @@ const FavoriteItem = ({
       ]
     })
   }, [
-    alertRef,
     handleHideFavoriteAlert,
     handleSaveFavoriteTitle,
     inputRef,

@@ -11,7 +11,6 @@ import { isValidHttpUrl, normalizeUrlWithHttps } from './utils'
 export type BrowserContextType = {
   urlEntry: string
   progress: SharedValue<number>
-  alertRef: React.RefObject<AlertWithTextInputsHandle>
   inputRef?: React.RefObject<TextInput>
   browserRefs: React.MutableRefObject<
     Record<string, React.RefObject<BrowserTabRef> | null>
@@ -34,7 +33,6 @@ function useBrowserContextValue(): BrowserContextType {
     activeTab?.activeHistory?.url ?? ''
   )
 
-  const alertRef = useRef<AlertWithTextInputsHandle>(null)
   const inputRef = useRef<TextInput>(null)
   const browserRefs = useRef<Record<string, RefObject<BrowserTabRef> | null>>(
     {}
@@ -102,7 +100,6 @@ function useBrowserContextValue(): BrowserContextType {
   }
 
   return {
-    alertRef,
     inputRef,
     browserRefs,
     progress,
