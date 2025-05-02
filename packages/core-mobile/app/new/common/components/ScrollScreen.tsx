@@ -155,9 +155,7 @@ export const ScrollScreen = ({
     if (isSecondaryModal) {
       return Platform.select({
         ios: topMarginOffset + 16,
-        android: isAndroidWithBottomBar
-          ? topMarginOffset + insets.bottom + 16
-          : topMarginOffset + insets.bottom + insets.top + 48
+        android: topMarginOffset + insets.bottom + insets.top + 48
       })
     }
 
