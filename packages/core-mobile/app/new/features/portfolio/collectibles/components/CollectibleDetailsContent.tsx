@@ -64,10 +64,16 @@ export const CollectibleDetailsContent = ({
   }
   const [_, setSelectedToken] = useSendSelectedToken()
 
-  const attributes: GroupListItem[] = useMemo(
-    () =>
-      collectible?.processedMetadata?.attributes
-        ?.map(item => {
+  const attributes: GroupListItem[] = useMemo(() => {
+    if (
+      collectible?.processedMetadata?.attributes === undefined ||
+      collectible?.processedMetadata?.attributes.length === 0
+    )
+      return []
+
+    if (Array.isArray(collectible.processedMetadata.attributes)) {
+      return collectible.processedMetadata.attributes
+        .map(item => {
           if (item.trait_type.length === 0 && item.value.length === 0) {
             return
           }
@@ -83,9 +89,27 @@ export const CollectibleDetailsContent = ({
                 : item.value
           }
         })
-        .filter(item => item !== undefined) || [],
-    [collectible?.processedMetadata?.attributes]
-  )
+        .filter(item => item !== undefined)
+    }
+
+    if (typeof collectible.processedMetadata.attributes === 'object') {
+      return Object.entries(collectible.processedMetadata.attributes).reduce(
+        (acc, [key, value]) => {
+          const stringValue = value as unknown as string
+          if (key.length === 0 && stringValue.length === 0) {
+            return acc
+          }
+          acc.push({
+            title: key,
+            value: stringValue
+          })
+          return acc
+        },
+        [] as GroupListItem[]
+      )
+    }
+    return []
+  }, [collectible?.processedMetadata?.attributes])
 
   const createdBy = useMemo(() => {
     return collectible?.address
