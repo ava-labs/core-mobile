@@ -171,7 +171,7 @@ export const TokenInputWidget = ({
                 }}>
                 <TouchableOpacity
                   onPress={onSelectToken}
-                  disabled={!isTokenSelectable}>
+                  disabled={!isTokenSelectable || disabled}>
                   <View sx={{ gap: 1 }}>
                     {token && <Text variant="subtitle2">{title}</Text>}
                     <View sx={{ flexDirection: 'row', alignItems: 'center' }}>
