@@ -46,7 +46,7 @@ describe('formats normal numbers', () => {
 })
 
 describe('formats small numbers with boostSmallNumberPrecision', () => {
-  it('should display numbers >= 1 with max 2 fraction digits', () => {
+  it('should display numbers >= 0.1 with max 2 fraction digits', () => {
     let result = formatCurrency({
       amount: 13.123424352342212,
       currency: 'USD',
@@ -62,7 +62,7 @@ describe('formats small numbers with boostSmallNumberPrecision', () => {
     expect(result).toBe('$130,000.12')
   })
 
-  it('should display numbers >= 1 with min 2 fraction digits', () => {
+  it('should display numbers >= 0.1 with min 2 fraction digits', () => {
     const result = formatCurrency({
       amount: 1,
       currency: 'USD',
@@ -71,14 +71,14 @@ describe('formats small numbers with boostSmallNumberPrecision', () => {
     expect(result).toBe('$1.00')
   })
 
-  it('should display numbers < 1 with min 2 fraction digits', () => {
+  it('should display numbers < 0.1 with min 2 fraction digits', () => {
     expect(
       formatCurrency({
-        amount: 0.9,
+        amount: 0.09,
         currency: 'USD',
         boostSmallNumberPrecision: true
       })
-    ).toBe('$0.90')
+    ).toBe('$0.09')
 
     expect(
       formatCurrency({
@@ -89,13 +89,13 @@ describe('formats small numbers with boostSmallNumberPrecision', () => {
     ).toBe('$0.10')
   })
 
-  it('should display numbers < 1 with max 8 fraction digits', () => {
+  it('should display numbers < 0.1 with max 6 fraction digits', () => {
     const result = formatCurrency({
-      amount: 0.9923424352342212,
+      amount: 0.09923424352342212,
       currency: 'USD',
       boostSmallNumberPrecision: true
     })
-    expect(result).toBe('$0.99234244')
+    expect(result).toBe('$0.099234')
   })
 })
 

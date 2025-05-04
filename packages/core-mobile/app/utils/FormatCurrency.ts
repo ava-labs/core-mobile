@@ -67,7 +67,7 @@ const selectCurrencyFormat = ({
 
   const absAmount = Math.abs(amount)
 
-  if (boostSmallNumberPrecision && absAmount < 1) {
+  if (boostSmallNumberPrecision && absAmount < 0.1) {
     return getHighPrecisionFormat(currency)
   }
 
@@ -104,7 +104,8 @@ const getHighPrecisionFormat = memoize(
   (currency: string) =>
     new Intl.NumberFormat('en-US', {
       ...commonNumberFormat(currency),
-      maximumFractionDigits: 8
+      maximumFractionDigits: 6,
+      roundingMode: 'floor'
     })
 )
 
