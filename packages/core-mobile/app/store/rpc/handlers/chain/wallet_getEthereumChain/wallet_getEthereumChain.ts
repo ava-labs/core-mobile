@@ -1,6 +1,7 @@
 import { rpcErrors } from '@metamask/rpc-errors'
 import { AppListenerEffectAPI } from 'store/types'
-import { selectActiveNetwork } from 'store/network'
+import { selectEnabledNetworks } from 'store/network/slice'
+import { isAvalancheCChainId } from 'services/network/utils/isAvalancheNetwork'
 import { RpcMethod, RpcRequest } from '../../../types'
 import { HandleResponse, RpcRequestHandler } from '../../types'
 import { networkToGetEthChainResponse } from './utils'
@@ -18,14 +19,22 @@ class WalletGetEthereumChainHandler
     listenerApi: AppListenerEffectAPI
   ): HandleResponse => {
     const state = listenerApi.getState()
-    const activeNetwork = selectActiveNetwork(state)
-    if (!activeNetwork) {
+    const networks = selectEnabledNetworks(state)
+
+    // always return the C-Chain network since we don't have an active network anymore
+    const cChainNetwork = networks.find(network =>
+      isAvalancheCChainId(network.chainId)
+    )
+
+    if (!cChainNetwork) {
       return {
         success: false,
-        error: rpcErrors.resourceUnavailable('no active network')
+        error: rpcErrors.resourceUnavailable('no C-Chain network')
       }
     }
-    const response = networkToGetEthChainResponse(activeNetwork)
+
+    const response = networkToGetEthChainResponse(cChainNetwork)
+
     return { success: true, value: response }
   }
 }
