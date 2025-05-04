@@ -1,4 +1,4 @@
-import { useTheme, View } from '@avalabs/k2-alpine'
+import { showAlert, useTheme, View } from '@avalabs/k2-alpine'
 import { ErrorState } from 'common/components/ErrorState'
 import { useDeeplink } from 'contexts/DeeplinkContext/DeeplinkContext'
 import { DeepLink, DeepLinkOrigin } from 'contexts/DeeplinkContext/types'
@@ -200,12 +200,12 @@ export const BrowserTab = forwardRef<BrowserTabRef, { tabId: string }>(
     )
 
     const showWalletConnectDialog = useCallback(() => {
-      // TODO: Not sure if we want this?
-      // navigate(AppNavigation.Modal.UseWalletConnect, {
-      //   onContinue: () => {
-      //     //noop, for now
-      //   }
-      // })
+      showAlert({
+        title: 'Use Wallet Connect ',
+        description:
+          'Core uses Wallet Connect on mobile devices. Return to the dApp and tap the Wallet Connect option to continue.',
+        buttons: [{ text: 'Got it' }]
+      })
     }, [])
 
     const onMessageHandler = useCallback(
