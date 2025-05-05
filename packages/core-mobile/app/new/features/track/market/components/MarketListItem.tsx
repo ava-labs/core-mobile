@@ -93,7 +93,6 @@ export const MarketListItem = ({
   ) : (
     <MarketListView
       token={token}
-      index={index}
       onPress={onPress}
       formattedPriceChange={formattedPriceChange}
       formattedPercentChange={formattedPercent}

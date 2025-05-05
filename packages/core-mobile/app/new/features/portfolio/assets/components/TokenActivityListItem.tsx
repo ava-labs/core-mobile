@@ -19,7 +19,7 @@ type Props = {
   onPress?: () => void
 }
 
-export const TokenActivityListItem: FC<Props> = ({ tx, onPress, index }) => {
+export const TokenActivityListItem: FC<Props> = ({ tx, onPress }) => {
   const {
     theme: { colors }
   } = useTheme()
@@ -120,7 +120,6 @@ export const TokenActivityListItem: FC<Props> = ({ tx, onPress, index }) => {
         </View>
       }
       onPress={onPress}
-      index={index}
       status={status}
     />
   )

@@ -11,7 +11,6 @@ import {
 import { getListItemEnteringAnimation } from 'common/utils/animations'
 import React, { memo, ReactNode } from 'react'
 import { Pressable, ViewStyle } from 'react-native'
-import Animated, { LinearTransition } from 'react-native-reanimated'
 import { NftItem } from 'services/nft/types'
 import { CollectibleView } from 'store/balance'
 import {
@@ -98,96 +97,90 @@ export const CollectibleListItem = memo(
     const collectibleCollectionName = getCollectibleCollectionName(collectible)
 
     return (
-      <Animated.View
-        entering={getListItemEnteringAnimation(0)}
-        layout={LinearTransition.springify()}>
-        <Pressable
-          onPress={onPress}
+      <Pressable
+        onPress={onPress}
+        style={{
+          height,
+          flexDirection: 'row',
+          alignItems: 'center',
+          gap: HORIZONTAL_ITEM_GAP,
+          paddingLeft: HORIZONTAL_MARGIN
+        }}>
+        <CardContainer
           style={{
-            height,
-            flexDirection: 'row',
-            alignItems: 'center',
-            gap: HORIZONTAL_ITEM_GAP,
-            paddingLeft: HORIZONTAL_MARGIN
+            height: 48,
+            width: 48,
+            borderRadius: 12
           }}>
-          <CardContainer
-            style={{
-              height: 48,
-              width: 48,
-              borderRadius: 12
-            }}>
-            <CollectibleRenderer
-              videoProps={{
-                hideControls: true
-              }}
-              collectible={collectible}
-            />
-          </CardContainer>
+          <CollectibleRenderer
+            videoProps={{
+              hideControls: true
+            }}
+            collectible={collectible}
+          />
+        </CardContainer>
+        <View
+          sx={{
+            flex: 1,
+            height: '100%',
+            borderBottomWidth: 0.5,
+            borderColor: '$borderPrimary',
+            alignItems: 'center',
+            flexDirection: 'row',
+            gap: HORIZONTAL_ITEM_GAP,
+            paddingRight: HORIZONTAL_MARGIN
+          }}>
           <View
-            sx={{
+            style={{
               flex: 1,
-              height: '100%',
-              borderBottomWidth: 0.5,
-              borderColor: '$borderPrimary',
-              alignItems: 'center',
+              justifyContent: 'space-between',
               flexDirection: 'row',
-              gap: HORIZONTAL_ITEM_GAP,
-              paddingRight: HORIZONTAL_MARGIN
+              alignItems: 'center',
+              gap: 10
             }}>
             <View
               style={{
-                flex: 1,
-                justifyContent: 'space-between',
-                flexDirection: 'row',
-                alignItems: 'center',
-                gap: 10
+                flex: 1
               }}>
-              <View
-                style={{
-                  flex: 1
+              <Text variant="buttonMedium" numberOfLines={1}>
+                {collectibleName}
+              </Text>
+              <Text
+                variant="subtitle2"
+                numberOfLines={1}
+                sx={{
+                  color: '$textSecondary'
                 }}>
-                <Text variant="buttonMedium" numberOfLines={1}>
-                  {collectibleName}
-                </Text>
-                <Text
-                  variant="subtitle2"
-                  numberOfLines={1}
-                  sx={{
-                    color: '$textSecondary'
-                  }}>
-                  {collectibleCollectionName}
-                </Text>
-              </View>
-              <View>
-                {collectible.balance ? (
-                  <View
-                    style={{
-                      maxWidth: 100,
-                      minWidth: 30,
-                      backgroundColor: alpha(theme.colors.$textPrimary, 0.3),
-                      borderRadius: 100,
-                      height: 20,
-                      justifyContent: 'center',
-                      alignItems: 'center',
-                      paddingHorizontal: 10
-                    }}>
-                    <Text
-                      variant="buttonSmall"
-                      style={{
-                        color: theme.colors?.$textSecondary
-                      }}>
-                      {collectible.balance.toString()}
-                    </Text>
-                  </View>
-                ) : null}
-              </View>
+                {collectibleCollectionName}
+              </Text>
             </View>
-            <Icons.Navigation.ChevronRightV2
-              color={theme.colors.$textPrimary}
-            />
+            <View>
+              {collectible.balance ? (
+                <View
+                  style={{
+                    maxWidth: 100,
+                    minWidth: 30,
+                    backgroundColor: alpha(theme.colors.$textPrimary, 0.3),
+                    borderRadius: 100,
+                    height: 20,
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    paddingHorizontal: 10
+                  }}>
+                  <Text
+                    variant="buttonSmall"
+                    style={{
+                      color: theme.colors?.$textSecondary
+                    }}>
+                    {collectible.balance.toString()}
+                  </Text>
+                </View>
+              ) : null}
+            </View>
           </View>
-        </Pressable>
-      </Animated.View>
+          <Icons.Navigation.ChevronRightV2 color={theme.colors.$textPrimary} />
+        </View>
+      </Pressable>
     )
   }
 )

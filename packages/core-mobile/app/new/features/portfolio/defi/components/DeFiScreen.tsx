@@ -1,23 +1,30 @@
-import React, { useEffect, useMemo, useCallback } from 'react'
-import { View, Image, Separator } from '@avalabs/k2-alpine'
+import {
+  Image,
+  Separator,
+  SPRING_LINEAR_TRANSITION,
+  View
+} from '@avalabs/k2-alpine'
 import { CollapsibleTabs } from 'common/components/CollapsibleTabs'
-import { useRouter } from 'expo-router'
-import { StyleSheet } from 'react-native'
-import { useExchangedAmount } from 'new/common/hooks/useExchangedAmount'
-import AnalyticsService from 'services/analytics/AnalyticsService'
-import { openURL } from 'utils/openURL'
-import Logger from 'utils/Logger'
-import { Placeholder } from 'common/components/Placeholder'
-import { ListRenderItemInfo } from 'react-native'
-import { DeFiSimpleProtocol } from 'services/defi/types'
-import { LoadingState } from 'common/components/LoadingState'
-import { ErrorState } from 'common/components/ErrorState'
 import { DropdownSelections } from 'common/components/DropdownSelections'
+import { ErrorState } from 'common/components/ErrorState'
+import { LoadingState } from 'common/components/LoadingState'
+import { Placeholder } from 'common/components/Placeholder'
 import { Space } from 'common/components/Space'
+import { getListItemEnteringAnimation } from 'common/utils/animations'
+import { useRouter } from 'expo-router'
+import { useExchangedAmount } from 'new/common/hooks/useExchangedAmount'
+import React, { useCallback, useEffect, useMemo } from 'react'
+import { ListRenderItemInfo, StyleSheet } from 'react-native'
+import Animated from 'react-native-reanimated'
+import AnalyticsService from 'services/analytics/AnalyticsService'
+import { DeFiSimpleProtocol } from 'services/defi/types'
+import Logger from 'utils/Logger'
+import { openURL } from 'utils/openURL'
 import { portfolioTabContentHeight } from '../../utils'
-import { DeFiViewOption } from '../types'
 import { useDeFiProtocols } from '../hooks/useDeFiProtocols'
+import { DeFiViewOption } from '../types'
 import { DeFiListItem } from './DeFiListItem'
+
 const placeholderIcon = require('../../../../assets/icons/bar_chart_emoji.png')
 
 export const DeFiScreen = (): JSX.Element => {
@@ -163,21 +170,28 @@ export const DeFiScreen = (): JSX.Element => {
   }, [isGridView])
 
   return (
-    <CollapsibleTabs.FlatList
-      contentContainerStyle={styles.container}
-      data={data}
-      numColumns={isGridView ? 2 : 1}
-      renderItem={renderItem}
-      ListHeaderComponent={header}
-      ListEmptyComponent={emptyComponent}
-      ItemSeparatorComponent={renderSeparator}
-      showsVerticalScrollIndicator={false}
-      refreshing={isRefreshing}
-      onRefresh={pullToRefresh}
-      key={isGridView ? 'grid' : 'list'}
-      keyExtractor={item => item.id}
-      columnWrapperStyle={columnWrapperStyle}
-    />
+    <Animated.View
+      entering={getListItemEnteringAnimation(0)}
+      layout={SPRING_LINEAR_TRANSITION}
+      style={{
+        flex: 1
+      }}>
+      <CollapsibleTabs.FlatList
+        contentContainerStyle={styles.container}
+        data={data}
+        numColumns={isGridView ? 2 : 1}
+        renderItem={renderItem}
+        ListHeaderComponent={header}
+        ListEmptyComponent={emptyComponent}
+        ItemSeparatorComponent={renderSeparator}
+        showsVerticalScrollIndicator={false}
+        refreshing={isRefreshing}
+        onRefresh={pullToRefresh}
+        key={isGridView ? 'grid' : 'list'}
+        keyExtractor={item => item.id}
+        columnWrapperStyle={columnWrapperStyle}
+      />
+    </Animated.View>
   )
 }
 

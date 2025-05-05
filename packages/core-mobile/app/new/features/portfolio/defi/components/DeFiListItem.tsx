@@ -33,7 +33,6 @@ export const DeFiListItem = ({
     <DeFiListView
       item={item}
       chain={chain}
-      index={index}
       formattedPrice={formattedPrice}
       onPress={onPress}
       onPressArrow={onPressArrow}

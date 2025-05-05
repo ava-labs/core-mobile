@@ -3,7 +3,6 @@ import {
   Avatar,
   Icons,
   Image,
-  SPRING_LINEAR_TRANSITION,
   SearchBar,
   Separator,
   Text,
@@ -14,12 +13,10 @@ import {
 } from '@avalabs/k2-alpine'
 import { ErrorState } from 'common/components/ErrorState'
 import { ListScreen } from 'common/components/ListScreen'
-import { getListItemEnteringAnimation } from 'common/utils/animations'
 import { loadAvatar } from 'common/utils/loadAvatar'
 import { getAddressFromContact } from 'features/accountSettings/utils/getAddressFromContact'
 import { isValidAddress } from 'features/accountSettings/utils/isValidAddress'
 import React, { useCallback, useMemo, useState } from 'react'
-import Animated from 'react-native-reanimated'
 import { useSelector } from 'react-redux'
 import { Contact } from 'store/addressBook'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
@@ -92,9 +89,7 @@ export const RecentContacts = ({
       const avatar = loadAvatar(item.avatar)
 
       return (
-        <Animated.View
-          entering={getListItemEnteringAnimation(index)}
-          layout={SPRING_LINEAR_TRANSITION}>
+        <View>
           <TouchableOpacity
             sx={{
               marginTop: 12,
@@ -167,7 +162,7 @@ export const RecentContacts = ({
               <Separator />
             </View>
           )}
-        </Animated.View>
+        </View>
       )
     },
     [colors.$textSecondary, searchResults.length, onSelectContact]

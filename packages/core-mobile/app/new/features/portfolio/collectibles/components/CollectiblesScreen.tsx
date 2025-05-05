@@ -3,6 +3,7 @@ import {
   Icons,
   IndexPath,
   SCREEN_WIDTH,
+  SPRING_LINEAR_TRANSITION,
   useTheme,
   View
 } from '@avalabs/k2-alpine'
@@ -295,35 +296,42 @@ export const CollectiblesScreen = ({
   }
 
   return (
-    <CollapsibleTabs.MasonryList
-      data={filteredAndSorted}
-      extraData={{
-        view,
-        sort,
-        filter
-      }}
-      key={`collectibles-list-${listType}`}
-      keyExtractor={(item: NftItem) =>
-        `collectibles-list-${item.localId}-${item.address}`
-      }
-      renderItem={renderItem}
-      ListEmptyComponent={renderEmpty}
-      ListHeaderComponent={renderHeader}
-      numColumns={columns}
+    <Animated.View
+      entering={getListItemEnteringAnimation(0)}
+      layout={SPRING_LINEAR_TRANSITION}
       style={{
-        overflow: 'visible'
-      }}
-      overrideProps={{
-        contentContainerStyle
-      }}
-      onRefresh={pullToRefresh}
-      refreshing={isRefreshing}
-      contentContainerStyle={contentContainerStyle}
-      scrollEnabled={filteredAndSorted?.length > 0}
-      estimatedItemSize={220}
-      removeClippedSubviews={Platform.OS === 'android'}
-      showsVerticalScrollIndicator={false}
-      nestedScrollEnabled
-    />
+        flex: 1
+      }}>
+      <CollapsibleTabs.MasonryList
+        data={filteredAndSorted}
+        extraData={{
+          view,
+          sort,
+          filter
+        }}
+        key={`collectibles-list-${listType}`}
+        keyExtractor={(item: NftItem) =>
+          `collectibles-list-${item.localId}-${item.address}`
+        }
+        renderItem={renderItem}
+        ListEmptyComponent={renderEmpty}
+        ListHeaderComponent={renderHeader}
+        numColumns={columns}
+        style={{
+          overflow: 'visible'
+        }}
+        overrideProps={{
+          contentContainerStyle
+        }}
+        onRefresh={pullToRefresh}
+        refreshing={isRefreshing}
+        contentContainerStyle={contentContainerStyle}
+        scrollEnabled={filteredAndSorted?.length > 0}
+        estimatedItemSize={220}
+        removeClippedSubviews={Platform.OS === 'android'}
+        showsVerticalScrollIndicator={false}
+        nestedScrollEnabled
+      />
+    </Animated.View>
   )
 }

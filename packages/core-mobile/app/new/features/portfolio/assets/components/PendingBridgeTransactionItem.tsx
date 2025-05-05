@@ -14,7 +14,7 @@ interface PendingBridgeTransactionItemProps {
 
 export const PendingBridgeTransactionItem: FC<
   PendingBridgeTransactionItemProps
-> = ({ item, index, onPress }) => {
+> = ({ item, onPress }) => {
   const {
     theme: { colors }
   } = useTheme()
@@ -32,7 +32,6 @@ export const PendingBridgeTransactionItem: FC<
 
   return (
     <ActivityListItem
-      index={index}
       icon={
         <View
           sx={{

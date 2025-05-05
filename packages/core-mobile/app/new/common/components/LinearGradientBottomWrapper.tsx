@@ -26,6 +26,7 @@ export const LinearGradientBottomWrapper = ({
   return (
     <View style={styles.container}>
       <LinearGradient
+        pointerEvents="none"
         colors={colors}
         style={styles.gradient}
         start={start}

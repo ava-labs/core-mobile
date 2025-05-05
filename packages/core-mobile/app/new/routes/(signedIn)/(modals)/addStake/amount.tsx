@@ -161,6 +161,7 @@ const StakeAmountScreen = (): JSX.Element => {
         formatInCurrency={formatInCurrency}
         onChange={handleAmountChange}
         maxPercentage={STAKING_MAX_BALANCE_PERCENTAGE}
+        autoFocus
       />
       {renderCaption()}
     </ScrollScreen>
