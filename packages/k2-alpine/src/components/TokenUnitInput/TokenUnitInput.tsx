@@ -1,6 +1,7 @@
 import React, {
   forwardRef,
   useCallback,
+  useEffect,
   useImperativeHandle,
   useMemo,
   useRef,
@@ -9,6 +10,7 @@ import React, {
 import { SxProp } from 'dripsy'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
 import {
+  InteractionManager,
   LayoutChangeEvent,
   Platform,
   ReturnKeyTypeOptions,
@@ -37,6 +39,7 @@ type TokenUnitInputProps = {
   sx?: SxProp
   editable?: boolean
   onChange?(amount: TokenUnit): void
+  autoFocus?: boolean
   returnKeyType?: ReturnKeyTypeOptions
 }
 
@@ -52,7 +55,8 @@ export const TokenUnitInput = forwardRef<
       formatInCurrency,
       sx,
       editable,
-      returnKeyType = 'done'
+      returnKeyType = 'done',
+      autoFocus
     },
     ref
   ) => {
@@ -138,6 +142,14 @@ export const TokenUnitInput = forwardRef<
       blur: () => textInputRef.current?.blur()
     }))
 
+    useEffect(() => {
+      if (autoFocus) {
+        InteractionManager.runAfterInteractions(() => {
+          textInputRef.current?.focus()
+        })
+      }
+    }, [autoFocus])
+
     return (
       <View
         sx={{
@@ -175,7 +187,6 @@ export const TokenUnitInput = forwardRef<
               keyboardType="numeric"
               placeholder={PLACEHOLDER}
               placeholderTextColor={alpha(colors.$textSecondary, 0.2)}
-              autoFocus={true}
               value={value}
               onChangeText={handleValueChanged}
               maxLength={maxLength}

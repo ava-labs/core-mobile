@@ -186,8 +186,13 @@ const ManageAccountsScreen = (): React.JSX.Element => {
       renderHeader={renderHeader}
       renderHeaderRight={renderHeaderRight}
       contentContainerStyle={{ padding: 16 }}>
-      <GroupList itemHeight={ITEM_HEIGHT} data={data} />
-      <ActivityIndicator animating={isAddingAccount} sx={{ marginTop: 16 }} />
+      <View
+        style={{
+          marginTop: 16
+        }}>
+        <GroupList itemHeight={ITEM_HEIGHT} data={data} />
+        <ActivityIndicator animating={isAddingAccount} sx={{ marginTop: 16 }} />
+      </View>
     </ScrollScreen>
   )
 }

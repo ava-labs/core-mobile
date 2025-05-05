@@ -3,13 +3,11 @@ import { ScrollScreen } from 'common/components/ScrollScreen'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { ContactForm } from 'features/accountSettings/components/ContactForm'
 import React, { useCallback, useMemo, useState } from 'react'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useDispatch } from 'react-redux'
 import { addContact, Contact } from 'store/addressBook'
 
 export const AddContactScreen = (): React.JSX.Element => {
   const dispatch = useDispatch()
-  const { bottom } = useSafeAreaInsets()
   const { canGoBack, back, navigate } = useRouter()
   const { contactId } = useLocalSearchParams<{ contactId: string }>()
   const [contact, setContact] = useState<Contact>({
@@ -59,13 +57,12 @@ export const AddContactScreen = (): React.JSX.Element => {
         <Button
           type="tertiary"
           size="large"
-          onPress={() => canGoBack() && back()}
-          style={{ marginBottom: bottom }}>
+          onPress={() => canGoBack() && back()}>
           Cancel
         </Button>
       </View>
     )
-  }, [back, bottom, canGoBack, handleSave, isSaveDisabled])
+  }, [back, canGoBack, handleSave, isSaveDisabled])
 
   return (
     <ScrollScreen

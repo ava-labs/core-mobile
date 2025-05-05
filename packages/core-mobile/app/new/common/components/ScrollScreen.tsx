@@ -156,25 +156,13 @@ export const ScrollScreen = ({
         {children}
       </>
     )
-  }, [animatedHeaderStyle, children, renderHeader, subtitle, title])
+  }, [animatedHeaderStyle, children, renderHeader, subtitle, title, titleSx])
 
   // 90% of our screens reuse this component but only some need keyboard avoiding
   // If you have an input on the screen, you need to enable this prop
   if (shouldAvoidKeyboard) {
     return (
       <SafeAreaView edges={['top']} style={{ flex: 1 }}>
-        <BlurViewWithFallback
-          style={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            height: headerHeight,
-            zIndex: 100
-          }}
-        />
-
         <KeyboardAwareScrollView
           extraKeyboardSpace={-insets.bottom + 32}
           keyboardDismissMode="interactive"
@@ -210,6 +198,18 @@ export const ScrollScreen = ({
             </LinearGradientBottomWrapper>
           </KeyboardStickyView>
         ) : null}
+
+        <BlurViewWithFallback
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            height: headerHeight,
+            zIndex: 100
+          }}
+        />
       </SafeAreaView>
     )
   }
@@ -217,18 +217,7 @@ export const ScrollScreen = ({
   // All of our screens have to be scrollable
   // If we don't have an input on the screen then we should not enable keyboard avoiding
   return (
-    <SafeAreaView edges={['top']} style={{ flex: 1 }}>
-      <BlurViewWithFallback
-        style={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          height: headerHeight,
-          zIndex: 100
-        }}
-      />
+    <>
       <ScrollView
         style={{ flex: 1 }}
         showsVerticalScrollIndicator={false}
@@ -239,12 +228,23 @@ export const ScrollScreen = ({
           props?.contentContainerStyle,
           {
             paddingBottom: insets.bottom,
-            paddingTop: headerHeight - insets.top
+            paddingTop: headerHeight
           }
         ]}
         onScroll={onScroll}>
         {renderContent()}
       </ScrollView>
+
+      <BlurViewWithFallback
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          height: headerHeight
+        }}
+      />
 
       {renderFooter ? (
         <LinearGradientBottomWrapper>
@@ -258,6 +258,6 @@ export const ScrollScreen = ({
           </View>
         </LinearGradientBottomWrapper>
       ) : null}
-    </SafeAreaView>
+    </>
   )
 }

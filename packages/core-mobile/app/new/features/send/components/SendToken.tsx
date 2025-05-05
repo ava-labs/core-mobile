@@ -282,6 +282,7 @@ export const SendToken = ({ onSend }: { onSend: () => void }): JSX.Element => {
           onChange={setAmount}
           validateAmount={validateSendAmount}
           disabled={isSending || selectedToken === undefined}
+          autoFocus
         />
       )}
     </ScrollScreen>

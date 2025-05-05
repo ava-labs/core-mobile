@@ -1,3 +1,21 @@
+import {
+  Avatar,
+  Button,
+  CIRCULAR_BUTTON_WIDTH,
+  CircularButton,
+  Icons,
+  Logos,
+  PinInput,
+  PinInputActions,
+  Text,
+  useTheme,
+  View
+} from '@avalabs/k2-alpine'
+import { ScrollScreen } from 'common/components/ScrollScreen'
+import { usePinOrBiometryLogin } from 'common/hooks/usePinOrBiometryLogin'
+import { usePreventScreenRemoval } from 'common/hooks/usePreventScreenRemoval'
+import { useFocusEffect, useRouter } from 'expo-router'
+import { useWallet } from 'hooks/useWallet'
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   InteractionManager,
@@ -5,37 +23,18 @@ import {
   Platform,
   TouchableWithoutFeedback
 } from 'react-native'
-import { Subscription } from 'rxjs'
 import Reanimated, {
   useAnimatedStyle,
   useSharedValue,
   withTiming
 } from 'react-native-reanimated'
-import Logger from 'utils/Logger'
-import {
-  CircularButton,
-  Icons,
-  SafeAreaView,
-  Text,
-  View,
-  Avatar,
-  useTheme,
-  Logos,
-  PinInput,
-  Button,
-  PinInputActions,
-  CIRCULAR_BUTTON_WIDTH
-} from '@avalabs/k2-alpine'
-import { usePinOrBiometryLogin } from 'common/hooks/usePinOrBiometryLogin'
-import { useWallet } from 'hooks/useWallet'
-import { useFocusEffect, useRouter } from 'expo-router'
-import { KeyboardAvoidingView } from 'common/components/KeyboardAvoidingView'
-import { BiometricType } from 'services/deviceInfo/DeviceInfoService'
-import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { useSelector } from 'react-redux'
-import { selectSelectedAvatar } from 'store/settings/avatar'
-import { usePreventScreenRemoval } from 'common/hooks/usePreventScreenRemoval'
+import { Subscription } from 'rxjs'
+import { BiometricType } from 'services/deviceInfo/DeviceInfoService'
 import { selectWalletState, WalletState } from 'store/app'
+import { selectIsDeveloperMode } from 'store/settings/advanced'
+import { selectSelectedAvatar } from 'store/settings/avatar'
+import Logger from 'utils/Logger'
 
 const LoginWithPinOrBiometry = (): JSX.Element => {
   const walletState = useSelector(selectWalletState)
@@ -222,91 +221,89 @@ const LoginWithPinOrBiometry = (): JSX.Element => {
   }, [isEnteringPin, pinInputOpacity, buttonContainerPaddingBottom])
 
   return (
-    <KeyboardAvoidingView contentContainerStyle={{ flex: 1 }}>
-      <SafeAreaView sx={{ flex: 1 }}>
-        <TouchableWithoutFeedback
-          style={{ flex: 1 }}
-          onPress={handlePressBackground}>
-          <View sx={{ flex: 1, paddingBottom: 16 }}>
-            <View sx={{ flex: 1, alignItems: 'center' }}>
-              <View
-                sx={{
-                  flex: 1,
-                  width: '100%',
-                  alignItems: 'center',
-                  justifyContent: 'center'
-                }}>
-                <Logos.AppIcons.Core color={theme.colors.$textPrimary} />
-                {disableKeypad && (
-                  <View
-                    style={{
-                      position: 'absolute',
-                      bottom: 24,
-                      gap: 8,
-                      alignItems: 'center'
-                    }}>
-                    <Text variant="heading5">Login Disabled</Text>
-                    <Text variant="body2">Try again in {timeRemaining}</Text>
-                  </View>
-                )}
-              </View>
-              <Reanimated.View style={[{ zIndex: -100, marginTop: 10 }]}>
-                <Avatar
-                  size="small"
-                  source={avatar.source}
-                  backgroundColor={theme.colors.$surfacePrimary}
-                  isDeveloperMode={isDeveloperMode}
-                />
-              </Reanimated.View>
-              <Reanimated.View style={[pinInputOpacityStyle]}>
-                {disableKeypad === false && (
-                  <PinInput
-                    ref={pinInputRef}
-                    style={{ paddingTop: 40, paddingBottom: 20 }}
-                    length={6}
-                    onChangePin={onEnterPin}
-                    value={enteredPin}
-                  />
-                )}
-              </Reanimated.View>
-              <Reanimated.View
-                style={[
-                  disableKeypad ? { marginTop: 60 } : {},
-                  forgotPinButtonOpacityStyle
-                ]}>
-                <Button size="medium" type="tertiary" onPress={handleForgotPin}>
-                  Forgot PIN?
-                </Button>
-              </Reanimated.View>
+    <ScrollScreen shouldAvoidKeyboard contentContainerStyle={{ flex: 1 }}>
+      <TouchableWithoutFeedback
+        style={{ flex: 1 }}
+        onPress={handlePressBackground}>
+        <View sx={{ flex: 1, paddingBottom: 16 }}>
+          <View sx={{ flex: 1, alignItems: 'center' }}>
+            <View
+              sx={{
+                flex: 1,
+                width: '100%',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}>
+              <Logos.AppIcons.Core color={theme.colors.$textPrimary} />
+              {disableKeypad && (
+                <View
+                  style={{
+                    position: 'absolute',
+                    bottom: 24,
+                    gap: 8,
+                    alignItems: 'center'
+                  }}>
+                  <Text variant="heading5">Login Disabled</Text>
+                  <Text variant="body2">Try again in {timeRemaining}</Text>
+                </View>
+              )}
             </View>
-            <Reanimated.View style={buttonContainerStyle}>
-              <View
-                sx={{
-                  height: CIRCULAR_BUTTON_WIDTH,
-                  flexDirection: 'row',
-                  justifyContent: 'center',
-                  gap: 30
-                }}>
-                {bioType !== BiometricType.NONE && (
-                  <CircularButton onPress={handlePromptBioLogin}>
-                    {bioType === BiometricType.FACE_ID ? (
-                      <Icons.Custom.FaceID width={26} height={26} />
-                    ) : (
-                      <Icons.Custom.TouchID width={26} height={26} />
-                    )}
-                  </CircularButton>
-                )}
-                {isEnteringPin === false && !disableKeypad && (
-                  <CircularButton onPress={handleTogglePinInput}>
-                    <Icons.Custom.Pin width={26} height={26} />
-                  </CircularButton>
-                )}
-              </View>
+            <Reanimated.View style={[{ zIndex: -100, marginTop: 10 }]}>
+              <Avatar
+                size="small"
+                source={avatar.source}
+                backgroundColor={theme.colors.$surfacePrimary}
+                isDeveloperMode={isDeveloperMode}
+              />
+            </Reanimated.View>
+            <Reanimated.View style={[pinInputOpacityStyle]}>
+              {disableKeypad === false && (
+                <PinInput
+                  ref={pinInputRef}
+                  style={{ paddingTop: 40, paddingBottom: 20 }}
+                  length={6}
+                  onChangePin={onEnterPin}
+                  value={enteredPin}
+                />
+              )}
+            </Reanimated.View>
+            <Reanimated.View
+              style={[
+                disableKeypad ? { marginTop: 60 } : {},
+                forgotPinButtonOpacityStyle
+              ]}>
+              <Button size="medium" type="tertiary" onPress={handleForgotPin}>
+                Forgot PIN?
+              </Button>
             </Reanimated.View>
           </View>
-        </TouchableWithoutFeedback>
-      </SafeAreaView>
-    </KeyboardAvoidingView>
+          <Reanimated.View style={buttonContainerStyle}>
+            <View
+              sx={{
+                height: CIRCULAR_BUTTON_WIDTH,
+                flexDirection: 'row',
+                justifyContent: 'center',
+                gap: 30
+              }}>
+              {bioType !== BiometricType.NONE && (
+                <CircularButton onPress={handlePromptBioLogin}>
+                  {bioType === BiometricType.FACE_ID ? (
+                    <Icons.Custom.FaceID width={26} height={26} />
+                  ) : (
+                    <Icons.Custom.TouchID width={26} height={26} />
+                  )}
+                </CircularButton>
+              )}
+              {isEnteringPin === false && !disableKeypad && (
+                <CircularButton onPress={handleTogglePinInput}>
+                  <Icons.Custom.Pin width={26} height={26} />
+                </CircularButton>
+              )}
+            </View>
+          </Reanimated.View>
+        </View>
+      </TouchableWithoutFeedback>
+    </ScrollScreen>
   )
 }
 
