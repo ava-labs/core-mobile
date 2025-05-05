@@ -12,6 +12,7 @@ import { Keyboard, Platform } from 'react-native'
 import { truncateAddress } from '@avalabs/core-utils-sdk'
 import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router'
 import { copyToClipboard } from 'common/utils/clipboard'
+import { TRUNCATE_ADDRESS_LENGTH } from 'common/consts/text'
 import { AddressType } from '../consts'
 import { ContactAddressMenu } from './ContactAddressMenu'
 
@@ -136,7 +137,7 @@ export const ContactAddressForm = ({
                 fontSize: 13,
                 lineHeight: 18
               }}>
-              {truncateAddress(address)}
+              {truncateAddress(address, TRUNCATE_ADDRESS_LENGTH)}
             </Text>
           </View>
         </TouchableOpacity>

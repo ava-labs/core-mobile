@@ -7,6 +7,7 @@ import { usePrimaryNetworks } from 'common/hooks/usePrimaryNetworks'
 import { NetworkLogoWithChain } from 'common/components/NetworkLogoWithChain'
 import { isXPChain } from 'utils/network/isAvalancheNetwork'
 import { NetworkVMType } from '@avalabs/vm-module-types'
+import { TRUNCATE_ADDRESS_LENGTH } from 'common/consts/text'
 
 export const AccountAddresses = ({
   account
@@ -35,7 +36,9 @@ export const AccountAddresses = ({
           : undefined
 
       return {
-        subtitle: address ? truncateAddress(address, 12) : '',
+        subtitle: address
+          ? truncateAddress(address, TRUNCATE_ADDRESS_LENGTH)
+          : '',
         title: network.chainName,
         leftIcon: (
           <NetworkLogoWithChain

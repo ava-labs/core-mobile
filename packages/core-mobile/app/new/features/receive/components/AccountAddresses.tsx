@@ -1,18 +1,12 @@
 import { useSelector } from 'react-redux'
-
 import { Button, GroupList, useTheme } from '@avalabs/k2-alpine'
 import { copyToClipboard } from 'common/utils/clipboard'
 import React, { memo, useMemo } from 'react'
-import {
-  NETWORK_P,
-  NETWORK_P_TEST,
-  NETWORK_X,
-  NETWORK_X_TEST
-} from 'services/network/consts'
 import { selectActiveAccount } from 'store/account'
 import { NetworkLogoWithChain } from 'common/components/NetworkLogoWithChain'
 import { isXPChain } from 'utils/network/isAvalancheNetwork'
 import { truncateAddress } from '@avalabs/core-utils-sdk'
+import { TRUNCATE_ADDRESS_LENGTH } from 'common/consts/text'
 import { useReceiveSelectedNetwork } from '../store'
 
 export const AccountAddresses = memo(
@@ -28,72 +22,15 @@ export const AccountAddresses = memo(
     const walletAddreses = useMemo(() => {
       if (!activeAccount) return []
 
-      if (isXPChain(selectedNetwork.chainId)) {
-        const networkX = selectedNetwork.isTestnet ? NETWORK_X_TEST : NETWORK_X
-        const networkP = selectedNetwork.isTestnet ? NETWORK_P_TEST : NETWORK_P
-        const addressP = activeAccount?.addressPVM ?? ''
-        const addressX = activeAccount?.addressAVM ?? ''
-
-        return [
-          {
-            title: networkX.chainName.replace('-', '\u2011'),
-            subtitle: truncateAddress(addressX).replace('-', '\u2011'), // to prevent word wrap because of the dash
-            leftIcon: (
-              <NetworkLogoWithChain
-                network={networkX}
-                outerBorderColor={theme.colors.$surfaceSecondary}
-                showChainLogo
-              />
-            ),
-            value: (
-              <Button
-                type="secondary"
-                size="small"
-                onPress={() =>
-                  onCopyAddress(
-                    addressX,
-                    `${networkX.chainName} address copied`
-                  )
-                }>
-                Copy
-              </Button>
-            )
-          },
-          {
-            title: networkP.chainName.replace('-', '\u2011'),
-            subtitle: truncateAddress(addressP).replace('-', '\u2011'), // to prevent word wrap because of the dash
-            leftIcon: (
-              <NetworkLogoWithChain
-                network={networkP}
-                outerBorderColor={theme.colors.$surfaceSecondary}
-                showChainLogo
-              />
-            ),
-            value: (
-              <Button
-                type="secondary"
-                size="small"
-                onPress={() =>
-                  onCopyAddress(
-                    addressP,
-                    `${networkP.chainName} address copied`
-                  )
-                }>
-                Copy
-              </Button>
-            )
-          }
-        ]
-      }
-
       return [
         {
           title: selectedNetwork.chainName.replace('-', '\u2011'),
-          subtitle: truncateAddress(address).replace('-', '\u2011'),
+          subtitle: truncateAddress(address, TRUNCATE_ADDRESS_LENGTH),
           leftIcon: (
             <NetworkLogoWithChain
               network={selectedNetwork}
-              showChainLogo={false}
+              outerBorderColor={theme.colors.$surfaceSecondary}
+              showChainLogo={isXPChain(selectedNetwork.chainId)}
             />
           ),
           value: (
@@ -118,6 +55,13 @@ export const AccountAddresses = memo(
       theme.colors.$surfaceSecondary
     ])
 
-    return <GroupList data={walletAddreses} textContainerSx={{ flex: 2 }} />
+    return (
+      <GroupList
+        data={walletAddreses}
+        textContainerSx={{
+          width: '65%'
+        }}
+      />
+    )
   }
 )
