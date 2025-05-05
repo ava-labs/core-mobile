@@ -22,8 +22,8 @@ import {
   DEFAULT_ANDROID_CHANNEL
 } from 'services/notifications/channels'
 import { handleDeeplink } from 'contexts/DeeplinkContext/utils/handleDeeplink'
-import { openInAppBrowser } from 'utils/openInAppBrowser'
 import { CORE_UNIVERSAL_LINK_HOSTS } from 'resources/Constants'
+import { router } from 'expo-router'
 
 type UnsubscribeFunc = () => void
 
@@ -192,17 +192,10 @@ class FCMService {
         dispatch: action => action,
         isEarnBlocked: false,
         openUrl: link =>
-          openInAppBrowser(link, {
-            // iOS Properties
-            dismissButtonStyle: 'close',
-            preferredBarTintColor: '#000000',
-            preferredControlTintColor: '#F8F8FB',
-            readerMode: false,
-            animated: true,
-            modalPresentationStyle: 'fullScreen',
-            modalTransitionStyle: 'coverVertical',
-            modalEnabled: true,
-            enableBarCollapsing: false
+          router.navigate({
+            // @ts-ignore TODO: make routes typesafe
+            pathname: '/browser',
+            params: { deeplinkUrl: link.url }
           })
       })
     })

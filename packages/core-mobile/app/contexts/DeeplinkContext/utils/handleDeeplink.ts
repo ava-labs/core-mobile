@@ -5,6 +5,9 @@ import { parseUri } from '@walletconnect/utils'
 import { WalletConnectVersions } from 'store/walletConnectV2/types'
 import { newSession } from 'store/walletConnectV2/slice'
 import { showSnackbar } from 'new/common/utils/toast'
+import { router } from 'expo-router'
+import { History } from 'store/browser'
+import { navigateFromDeeplinkUrl } from 'utils/navigateFromDeeplink'
 import { ACTIONS, DeepLink, PROTOCOLS } from '../types'
 
 export const handleDeeplink = ({
@@ -16,7 +19,8 @@ export const handleDeeplink = ({
   deeplink: DeepLink
   dispatch: Dispatch
   isEarnBlocked: boolean
-  openUrl: (url: string) => Promise<void>
+  openUrl: (history: Pick<History, 'url' | 'title'>) => void
+  // eslint-disable-next-line sonarjs/cognitive-complexity
 }): void => {
   let url
   try {
@@ -41,28 +45,32 @@ export const handleDeeplink = ({
         }
       }
 
-      // if not a wc link, just open the url in the in-app browser
-      openUrl(deeplink.url)
+      // if not a wc link, just open the url in the browser tab
+      openUrl({
+        url: deeplink.url,
+        title: ''
+      })
       break
     }
     case PROTOCOLS.CORE: {
-      const action = url.host
-
+      const { host: action, pathname } = url
       if (action === ACTIONS.WC) {
         startWalletConnectSession({ url, dispatch, deeplink })
       } else if (action === ACTIONS.Portfolio) {
         deeplink.callback?.()
-        // TODO fix deeplink
-        // navigateToChainPortfolio()
+        // @ts-ignore TODO: make routes typesafe
+        router.navigate('/portfolio')
       } else if (action === ACTIONS.StakeComplete) {
         if (isEarnBlocked) return
         deeplink.callback?.()
-        //navigateToClaimRewards()
+        navigateFromDeeplinkUrl('/claimStakeReward')
       } else if (action === ACTIONS.WatchList) {
-        //const coingeckoId = url.pathname.split('/')[1]
-        // navigateToWatchlist(coingeckoId)
+        const coingeckoId = pathname.split('/')[1]
+        navigateFromDeeplinkUrl(`/trackTokenDetail?tokenId=${coingeckoId}`)
+      } else {
+        const path = deeplink.url.split(':/')[1]
+        path && navigateFromDeeplinkUrl(path)
       }
-
       break
     }
     default:
