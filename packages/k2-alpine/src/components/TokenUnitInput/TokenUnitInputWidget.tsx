@@ -14,7 +14,8 @@ export const TokenUnitInputWidget = ({
   formatInCurrency,
   accessory,
   sx,
-  disabled
+  disabled,
+  autoFocus
 }: {
   amount?: TokenUnit
   maxPercentage?: number
@@ -29,6 +30,7 @@ export const TokenUnitInputWidget = ({
   accessory?: JSX.Element
   sx?: SxProp
   disabled?: boolean
+  autoFocus?: boolean
 }): JSX.Element => {
   const [percentageButtons, setPercentageButtons] = useState<
     { text: string; percent: number; isSelected: boolean }[]
@@ -103,6 +105,7 @@ export const TokenUnitInputWidget = ({
           ref={textInputRef}
           token={token}
           amount={amount}
+          autoFocus={autoFocus}
           onChange={handleChange}
           formatInCurrency={formatInCurrency}
         />

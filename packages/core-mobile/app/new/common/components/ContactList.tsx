@@ -4,17 +4,14 @@ import {
   Icons,
   SearchBar,
   Separator,
-  SPRING_LINEAR_TRANSITION,
   Text,
   TouchableOpacity,
   useTheme,
   View
 } from '@avalabs/k2-alpine'
-import { getListItemEnteringAnimation } from 'common/utils/animations'
 import { loadAvatar } from 'common/utils/loadAvatar'
 import { getAddressFromContact } from 'features/accountSettings/utils/getAddressFromContact'
 import React, { useCallback, useMemo, useState } from 'react'
-import Animated from 'react-native-reanimated'
 import { Contact } from 'store/addressBook'
 import { ListScreen } from './ListScreen'
 
@@ -59,9 +56,7 @@ export const ContactList = ({
       const avatar = loadAvatar(item.avatar)
 
       return (
-        <Animated.View
-          entering={getListItemEnteringAnimation(index)}
-          layout={SPRING_LINEAR_TRANSITION}>
+        <View>
           <TouchableOpacity
             sx={{
               marginTop: 12,
@@ -134,7 +129,7 @@ export const ContactList = ({
               <Separator />
             </View>
           )}
-        </Animated.View>
+        </View>
       )
     },
     [colors.$textSecondary, onPress, searchResults.length]

@@ -90,7 +90,7 @@ const AccountScreen = (): JSX.Element => {
       isModal
       navigationTitle={account?.name ?? ''}
       contentContainerStyle={{ padding: 16 }}>
-      <View sx={{ gap: 12 }}>
+      <View sx={{ gap: 12, marginTop: 24 }}>
         <AccountAddresses account={account} />
         {/* <WalletInfo showPrivateKey={handleShowPrivateKey} /> */}
       </View>

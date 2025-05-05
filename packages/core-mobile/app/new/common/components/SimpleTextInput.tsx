@@ -1,11 +1,12 @@
-import React from 'react'
 import {
   Icons,
   TextInput,
+  TextInputRef,
   TouchableOpacity,
   useTheme,
   View
 } from '@avalabs/k2-alpine'
+import React, { useRef } from 'react'
 
 export const SimpleTextInput = ({
   value,
@@ -23,6 +24,8 @@ export const SimpleTextInput = ({
   const {
     theme: { colors }
   } = useTheme()
+  const ref = useRef<TextInputRef>(null)
+
   return (
     <View
       sx={{
@@ -35,6 +38,7 @@ export const SimpleTextInput = ({
         height: 44
       }}>
       <TextInput
+        ref={ref}
         containerSx={{
           flex: 1,
           backgroundColor: 'transparent',
@@ -50,8 +54,8 @@ export const SimpleTextInput = ({
         onChangeText={onChangeText}
         placeholder={placeholder}
         maxLength={maxLength}
-        testID="text_input"
         autoFocus={autoFocus}
+        testID="text_input"
       />
       {value.length !== 0 && (
         <TouchableOpacity onPress={() => onChangeText('')}>

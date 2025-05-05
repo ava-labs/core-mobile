@@ -17,7 +17,7 @@ type Props = {
   onPress?: () => void
 }
 
-export const XpActivityListItem: FC<Props> = ({ tx, onPress, index }) => {
+export const XpActivityListItem: FC<Props> = ({ tx, onPress }) => {
   const {
     theme: { isDark, colors }
   } = useTheme()
@@ -97,7 +97,6 @@ export const XpActivityListItem: FC<Props> = ({ tx, onPress, index }) => {
       subtitle={subtitle}
       icon={transactionTypeIcon}
       onPress={onPress}
-      index={index}
       status={PriceChangeStatus.Neutral}
     />
   )

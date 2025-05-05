@@ -25,7 +25,8 @@ export const SendTokenUnitInputWidget = ({
   accessory,
   sx,
   disabled,
-  returnKeyType
+  returnKeyType,
+  autoFocus
 }: {
   amount?: TokenUnit
   balance: TokenUnit
@@ -40,6 +41,7 @@ export const SendTokenUnitInputWidget = ({
   sx?: SxProp
   disabled?: boolean
   returnKeyType?: ReturnKeyTypeOptions
+  autoFocus?: boolean
 }): JSX.Element => {
   const {
     theme: { colors }
@@ -155,6 +157,7 @@ export const SendTokenUnitInputWidget = ({
           amount={amount}
           formatInCurrency={formatInCurrency}
           onChange={handleChange}
+          autoFocus={autoFocus}
         />
         <View sx={{ flexDirection: 'row', gap: 7, marginTop: 25 }}>
           {presetAmonuntButtons.map((button, index) => (

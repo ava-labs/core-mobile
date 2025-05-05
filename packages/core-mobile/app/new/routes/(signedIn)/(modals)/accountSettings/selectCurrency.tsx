@@ -1,7 +1,6 @@
 import {
   Icons,
   Image,
-  SPRING_LINEAR_TRANSITION,
   SearchBar,
   Separator,
   Text,
@@ -12,10 +11,8 @@ import {
 import { CurrencyIcon } from 'common/components/CurrencyIcon'
 import { ErrorState } from 'common/components/ErrorState'
 import { ListScreen } from 'common/components/ListScreen'
-import { getListItemEnteringAnimation } from 'common/utils/animations'
 import { useRouter } from 'expo-router'
 import React, { useCallback, useMemo, useState } from 'react'
-import Animated from 'react-native-reanimated'
 import { useDispatch, useSelector } from 'react-redux'
 import {
   currencies,
@@ -53,74 +50,67 @@ const SelectCurrencyScreen = (): JSX.Element => {
       const isLastItem = index === searchResults.length - 1
       const isSelected = symbol === selectedCurrencySymbol
       return (
-        <Animated.View
-          entering={getListItemEnteringAnimation(index)}
-          layout={SPRING_LINEAR_TRANSITION}>
-          <TouchableOpacity
-            sx={{ marginTop: 12 }}
-            onPress={() => {
-              dispatch(setSelectedCurrency(symbol))
-              canGoBack() && back()
+        <TouchableOpacity
+          sx={{ marginTop: 12 }}
+          onPress={() => {
+            dispatch(setSelectedCurrency(symbol))
+            canGoBack() && back()
+          }}>
+          <View
+            sx={{
+              paddingLeft: 16,
+              paddingRight: 12,
+              flexDirection: 'row',
+              alignItems: 'center',
+              marginBottom: 12
             }}>
             <View
               sx={{
-                paddingLeft: 16,
-                paddingRight: 12,
+                width: 36,
+                height: 36,
+                borderRadius: 18,
+                overflow: 'hidden'
+              }}>
+              <CurrencyIcon symbol={symbol} />
+            </View>
+            <View
+              sx={{
+                flexGrow: 1,
+                marginHorizontal: 12,
                 flexDirection: 'row',
                 alignItems: 'center',
-                marginBottom: 12
+                justifyContent: 'space-between'
               }}>
               <View
                 sx={{
-                  width: 36,
-                  height: 36,
-                  borderRadius: 18,
-                  overflow: 'hidden'
+                  flexShrink: 1
                 }}>
-                <CurrencyIcon symbol={symbol} />
+                <Text variant="buttonMedium" numberOfLines={1} sx={{ flex: 1 }}>
+                  {name}
+                </Text>
+                <Text
+                  testID={`currency__${symbol}`}
+                  variant="body2"
+                  sx={{ lineHeight: 16, flex: 1 }}
+                  ellipsizeMode="tail"
+                  numberOfLines={1}>
+                  {symbol}
+                </Text>
               </View>
-              <View
-                sx={{
-                  flexGrow: 1,
-                  marginHorizontal: 12,
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  justifyContent: 'space-between'
-                }}>
-                <View
-                  sx={{
-                    flexShrink: 1
-                  }}>
-                  <Text
-                    variant="buttonMedium"
-                    numberOfLines={1}
-                    sx={{ flex: 1 }}>
-                    {name}
-                  </Text>
-                  <Text
-                    testID={`currency__${symbol}`}
-                    variant="body2"
-                    sx={{ lineHeight: 16, flex: 1 }}
-                    ellipsizeMode="tail"
-                    numberOfLines={1}>
-                    {symbol}
-                  </Text>
-                </View>
-                {isSelected && (
-                  <Icons.Navigation.Check
-                    testID={`selected_currency__${symbol}`}
-                    color={colors.$textPrimary}
-                  />
-                )}
-              </View>
+              {isSelected && (
+                <Icons.Navigation.Check
+                  testID={`selected_currency__${symbol}`}
+                  color={colors.$textPrimary}
+                />
+              )}
             </View>
-            {!isLastItem && (
-              <View sx={{ marginLeft: 62 }}>
-                <Separator />
-              </View>
-            )}
-          </TouchableOpacity>
-        </Animated.View>
+          </View>
+          {!isLastItem && (
+            <View sx={{ marginLeft: 62 }}>
+              <Separator />
+            </View>
+          )}
+        </TouchableOpacity>
       )
     },
     [

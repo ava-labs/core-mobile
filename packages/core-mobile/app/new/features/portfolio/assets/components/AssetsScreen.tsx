@@ -1,11 +1,18 @@
-import { Image, IndexPath, View } from '@avalabs/k2-alpine'
+import {
+  Image,
+  IndexPath,
+  SPRING_LINEAR_TRANSITION,
+  View
+} from '@avalabs/k2-alpine'
 import { CollapsibleTabs } from 'common/components/CollapsibleTabs'
 import { DropdownSelections } from 'common/components/DropdownSelections'
 import { ErrorState } from 'common/components/ErrorState'
 import { LoadingState } from 'common/components/LoadingState'
 import { Space } from 'common/components/Space'
+import { getListItemEnteringAnimation } from 'common/utils/animations'
 import React, { FC, memo, useCallback, useMemo } from 'react'
 import { StyleSheet } from 'react-native'
+import Animated from 'react-native-reanimated'
 import { useSelector } from 'react-redux'
 import { selectActiveAccount } from 'store/account'
 import {
@@ -16,9 +23,9 @@ import {
   selectIsLoadingBalances,
   selectIsRefetchingBalances
 } from 'store/balance'
+import errorIcon from '../../../../assets/icons/rocket.png'
 import { portfolioTabContentHeight } from '../../utils'
 import { useAssetsFilterAndSort } from '../hooks/useAssetsFilterAndSort'
-import errorIcon from '../../../../assets/icons/rocket.png'
 import { TokenListItem } from './TokenListItem'
 
 interface Props {
@@ -146,21 +153,28 @@ const AssetsScreen: FC<Props> = ({
   }, [filter, sort, view, handleManageList])
 
   return (
-    <CollapsibleTabs.FlashList
-      contentContainerStyle={{ paddingBottom: 16 }}
-      data={data}
-      numColumns={numColumns}
-      estimatedItemSize={isGridView ? 183 : 73} // these numbers are suggested by FlashList at runtime
-      renderItem={item => renderItem(item.item, item.index)}
-      ListHeaderComponent={header}
-      ListEmptyComponent={emptyComponent}
-      ItemSeparatorComponent={renderSeparator}
-      showsVerticalScrollIndicator={false}
-      refreshing={isRefetching}
-      onRefresh={refetch}
-      key={isGridView ? 'grid' : 'list'}
-      keyExtractor={item => item.localId}
-    />
+    <Animated.View
+      entering={getListItemEnteringAnimation(0)}
+      layout={SPRING_LINEAR_TRANSITION}
+      style={{
+        flex: 1
+      }}>
+      <CollapsibleTabs.FlashList
+        contentContainerStyle={{ paddingBottom: 16 }}
+        data={data}
+        numColumns={numColumns}
+        estimatedItemSize={isGridView ? 183 : 73} // these numbers are suggested by FlashList at runtime
+        renderItem={item => renderItem(item.item, item.index)}
+        ListHeaderComponent={header}
+        ListEmptyComponent={emptyComponent}
+        ItemSeparatorComponent={renderSeparator}
+        showsVerticalScrollIndicator={false}
+        refreshing={isRefetching}
+        onRefresh={refetch}
+        key={isGridView ? 'grid' : 'list'}
+        keyExtractor={item => item.localId}
+      />
+    </Animated.View>
   )
 }
 

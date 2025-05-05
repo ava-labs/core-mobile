@@ -228,6 +228,7 @@ const ClaimStakeRewardScreen = (): JSX.Element => {
               symbol: pNetwork.networkToken.symbol
             }}
             formatInCurrency={formatInCurrency}
+            autoFocus
           />
         </View>
         <GroupList

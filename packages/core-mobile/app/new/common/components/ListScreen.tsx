@@ -1,4 +1,9 @@
-import { ANIMATED, NavigationTitleHeader, Text } from '@avalabs/k2-alpine'
+import {
+  ANIMATED,
+  NavigationTitleHeader,
+  SPRING_LINEAR_TRANSITION,
+  Text
+} from '@avalabs/k2-alpine'
 import { useHeaderHeight } from '@react-navigation/elements'
 import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
 import { getListItemEnteringAnimation } from 'common/utils/animations'
@@ -26,7 +31,6 @@ import {
 } from 'react-native-keyboard-controller'
 import Animated, {
   interpolate,
-  LinearTransition,
   useAnimatedStyle,
   useSharedValue,
   withSpring,
@@ -235,7 +239,7 @@ export const ListScreen = <T,>({
   return (
     <Animated.View
       style={[animatedContainerStyle, { flex: 1 }]}
-      layout={LinearTransition.springify()}
+      layout={SPRING_LINEAR_TRANSITION}
       entering={getListItemEnteringAnimation(0)}>
       {/* @ts-expect-error */}
       <AnimatedFlatList
@@ -247,7 +251,7 @@ export const ListScreen = <T,>({
         showsVerticalScrollIndicator={false}
         stickyHeaderIndices={[0]}
         maxToRenderPerBatch={15}
-        windowSize={5}
+        windowSize={12}
         initialNumToRender={15}
         contentContainerStyle={contentContainerStyle}
         updateCellsBatchingPeriod={50}
