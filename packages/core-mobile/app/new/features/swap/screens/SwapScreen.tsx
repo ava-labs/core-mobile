@@ -271,6 +271,8 @@ export const SwapScreen = (): JSX.Element => {
           paddingBottom: 4
         }}>
         <TokenInputWidget
+          disabled={swapInProcess}
+          editable={!swapInProcess}
           autoFocus={true}
           amount={fromTokenValue}
           balance={fromToken?.balance}
@@ -304,7 +306,8 @@ export const SwapScreen = (): JSX.Element => {
     cChainNetwork,
     fromToken,
     localError,
-    fromTokenValue
+    fromTokenValue,
+    swapInProcess
   ])
 
   const renderToSection = useCallback((): JSX.Element => {
@@ -318,6 +321,8 @@ export const SwapScreen = (): JSX.Element => {
           backgroundColor: theme.colors.$surfaceSecondary
         }}>
         <TokenInputWidget
+          disabled={swapInProcess}
+          editable={!swapInProcess}
           amount={toTokenValue}
           balance={toToken?.balance}
           shouldShowBalance={true}
@@ -349,7 +354,8 @@ export const SwapScreen = (): JSX.Element => {
     cChainNetwork,
     toTokenValue,
     isFetchingOptimalRate,
-    handleSelectToToken
+    handleSelectToToken,
+    swapInProcess
   ])
 
   const data = useMemo(() => {
@@ -368,7 +374,13 @@ export const SwapScreen = (): JSX.Element => {
 
     items.push({
       title: 'Slippage tolerance',
-      accessory: <SlippageInput slippage={slippage} setSlippage={setSlippage} />
+      accessory: (
+        <SlippageInput
+          slippage={slippage}
+          setSlippage={setSlippage}
+          disabled={swapInProcess}
+        />
+      )
     })
 
     return items
@@ -378,6 +390,7 @@ export const SwapScreen = (): JSX.Element => {
     optimalRate,
     slippage,
     setSlippage,
+    swapInProcess,
     isFetchingOptimalRate
   ])
 
@@ -489,6 +502,7 @@ export const SwapScreen = (): JSX.Element => {
                   height: 40,
                   alignSelf: 'center'
                 }}
+                disabled={swapInProcess}
                 onPress={handleToggleTokens}>
                 <Icons.Custom.SwapVertical />
               </CircularButton>
