@@ -10,10 +10,12 @@ const inputKey = 'slippage'
 
 export const SlippageInput = ({
   slippage,
-  setSlippage
+  setSlippage,
+  disabled
 }: {
   slippage: number
   setSlippage: (slippage: number) => void
+  disabled?: boolean
 }): JSX.Element => {
   const { theme } = useTheme()
 
@@ -26,7 +28,8 @@ export const SlippageInput = ({
 
   const handlePress = useCallback(() => {
     showAlertWithTextInput({
-      title: 'Edit slippage',
+      title: 'Custom slippage',
+      description: 'Allowed range: 0.1% - 100%',
       inputs: [
         {
           key: inputKey,
@@ -43,6 +46,7 @@ export const SlippageInput = ({
         },
         {
           text: 'Save',
+          style: 'default',
           shouldDisable: (values: Record<string, string>) => {
             const isEmpty = values[inputKey]?.length === 0
             const isInvalid = Boolean(
@@ -66,7 +70,7 @@ export const SlippageInput = ({
         alignItems: 'center',
         gap: 4
       }}>
-      <Pressable onPress={handlePress} hitSlop={20}>
+      <Pressable onPress={handlePress} hitSlop={20} disabled={disabled}>
         <Text
           variant="mono"
           sx={{

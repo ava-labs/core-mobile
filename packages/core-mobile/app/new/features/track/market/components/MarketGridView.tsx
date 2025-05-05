@@ -38,7 +38,7 @@ export const MarketGridView = memo(
     index: number
     onPress: () => void
     formattedPrice: string
-    formattedPriceChange: string
+    formattedPriceChange?: string
     formattedPercentChange?: string
     status: PriceChangeStatus
     isFavorite?: boolean

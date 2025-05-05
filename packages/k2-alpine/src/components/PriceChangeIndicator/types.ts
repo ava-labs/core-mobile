@@ -1,5 +1,5 @@
 export type PriceChange = {
-  formattedPrice: string
+  formattedPrice?: string
   status: PriceChangeStatus
   formattedPercent?: string
 }
