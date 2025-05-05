@@ -6,8 +6,8 @@ import { PriceChangeIndicator } from '../PriceChangeIndicator/PriceChangeIndicat
 import { Text, View } from '../Primitives'
 import { PriceChange } from '../PriceChangeIndicator/types'
 import { AnimatedBalance } from '../AnimatedBalance/AnimatedBalance'
-import { useTheme } from '../../hooks'
 import { BalanceLoader } from './BalanceHeaderLoader'
+import { PrivacyModeAlert } from './PrivacyModeAlert'
 
 export const BalanceHeader = ({
   accountName,
@@ -32,7 +32,6 @@ export const BalanceHeader = ({
   isDeveloperModeEnabled?: boolean
   renderMaskView?: () => React.JSX.Element
 }): React.JSX.Element => {
-  const { theme } = useTheme()
   const renderPriceChangeIndicator = useCallback((): React.JSX.Element => {
     if (isDeveloperModeEnabled) {
       return (
@@ -51,24 +50,7 @@ export const BalanceHeader = ({
       )
     }
     if (isPrivacyModeEnabled) {
-      return (
-        <View sx={{ gap: 4, alignItems: 'center', flexDirection: 'row' }}>
-          <Icons.Action.VisibilityOff
-            width={16}
-            height={16}
-            color={theme.colors.$textSecondary}
-          />
-          <Text
-            variant="buttonMedium"
-            sx={{
-              color: theme.colors.$textSecondary,
-              fontSize: 14,
-              lineHeight: 17
-            }}>
-            Privacy mode is on
-          </Text>
-        </View>
-      )
+      return <PrivacyModeAlert />
     }
     if (errorMessage) {
       return (
@@ -97,13 +79,7 @@ export const BalanceHeader = ({
         animated={true}
       />
     )
-  }, [
-    errorMessage,
-    isDeveloperModeEnabled,
-    isPrivacyModeEnabled,
-    priceChange,
-    theme.colors.$textSecondary
-  ])
+  }, [errorMessage, isDeveloperModeEnabled, isPrivacyModeEnabled, priceChange])
 
   const renderBalance = useCallback((): React.JSX.Element => {
     if (isLoading) {
