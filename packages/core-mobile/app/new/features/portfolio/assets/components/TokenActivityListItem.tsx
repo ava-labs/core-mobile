@@ -4,66 +4,21 @@ import { TransactionType, Transaction } from '@avalabs/vm-module-types'
 import { useTheme, View, PriceChangeStatus } from '@avalabs/k2-alpine'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
 import { useWatchlist } from 'hooks/watchlist/useWatchlist'
-import { useSelector } from 'react-redux'
-import { selectSelectedCurrency } from 'store/settings/currency'
-import { formatCurrency } from 'utils/FormatCurrency'
-import { useBlockchainNames } from 'common/utils/useBlockchainNames'
+import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import ActivityListItem from './ActivityListItem'
 import { TransactionTypeIcon } from './TransactionTypeIcon'
-
-const ICON_SIZE = 36
-
-type Props = {
-  tx: Omit<Transaction, 'txType'> & { txType: ActivityTransactionType }
-  index: number
-  onPress?: () => void
-}
+import { TokenActivityListItemTitle } from './TokenActivityListItemTitle'
 
 export const TokenActivityListItem: FC<Props> = ({ tx, onPress }) => {
   const {
     theme: { colors }
   } = useTheme()
+  const { formatCurrency } = useFormatCurrency()
   const { getMarketTokenBySymbol } = useWatchlist()
-  const { sourceBlockchain, targetBlockchain } = useBlockchainNames(tx)
 
-  const currency = useSelector(selectSelectedCurrency)
   const currentPrice = tx.tokens[0]?.symbol
     ? getMarketTokenBySymbol(tx.tokens[0].symbol)?.currentPrice
     : undefined
-
-  const title = useMemo(() => {
-    switch (tx.txType) {
-      case TransactionType.BRIDGE:
-        return `${sourceBlockchain ?? 'Unknown'} → ${
-          targetBlockchain ?? 'Unknown'
-        }`
-      case TransactionType.SWAP:
-        return `${tx.tokens[0]?.amount ?? UNKNOWN_AMOUNT} ${
-          tx.tokens[0]?.symbol
-        } swapped for ${tx.tokens[1]?.symbol ?? UNKNOWN_AMOUNT}`
-      case TransactionType.SEND:
-        return `${tx.tokens[0]?.amount ?? UNKNOWN_AMOUNT} ${
-          tx.tokens[0]?.symbol
-        } sent`
-      case TransactionType.RECEIVE:
-        return `${tx.tokens[0]?.amount ?? UNKNOWN_AMOUNT} ${
-          tx.tokens[0]?.symbol
-        } received`
-      case TransactionType.TRANSFER:
-        return `${tx.tokens[0]?.amount ?? UNKNOWN_AMOUNT} ${
-          tx.tokens[0]?.symbol
-        } transferred`
-      default:
-        if (tx.isContractCall) {
-          return tx.tokens.length > 1
-            ? `${tx.tokens[0]?.amount ?? UNKNOWN_AMOUNT} ${
-                tx.tokens[0]?.symbol
-              } swapped for ${tx.tokens[1]?.symbol ?? UNKNOWN_AMOUNT}`
-            : 'Contract Call'
-        }
-        return 'Unknown'
-    }
-  }, [tx, sourceBlockchain, targetBlockchain])
 
   const status = useMemo(() => {
     switch (tx.txType) {
@@ -84,9 +39,7 @@ export const TokenActivityListItem: FC<Props> = ({ tx, onPress }) => {
     const amountInCurrency = Number(tx.tokens[0]?.amount) * currentPrice
 
     const formattedAmount = formatCurrency({
-      amount: amountInCurrency,
-      currency,
-      boostSmallNumberPrecision: true
+      amount: amountInCurrency
     })
     const amountPrefix =
       status === PriceChangeStatus.Up
@@ -94,12 +47,12 @@ export const TokenActivityListItem: FC<Props> = ({ tx, onPress }) => {
         : status === PriceChangeStatus.Down
         ? '-'
         : ''
-    return amountPrefix + formattedAmount + ' ' + currency
-  }, [status, currency, currentPrice, tx.tokens])
+    return amountPrefix + formattedAmount
+  }, [status, currentPrice, tx.tokens, formatCurrency])
 
   return (
     <ActivityListItem
-      title={title}
+      title={<TokenActivityListItemTitle tx={tx} />}
       subtitle={subtitle}
       icon={
         <View
@@ -123,4 +76,16 @@ export const TokenActivityListItem: FC<Props> = ({ tx, onPress }) => {
       status={status}
     />
   )
+}
+
+const ICON_SIZE = 36
+
+export type TokenActivityTransaction = Omit<Transaction, 'txType'> & {
+  txType: ActivityTransactionType
+}
+
+type Props = {
+  tx: TokenActivityTransaction
+  index: number
+  onPress?: () => void
 }

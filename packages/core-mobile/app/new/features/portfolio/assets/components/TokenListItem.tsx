@@ -33,11 +33,9 @@ export const TokenListItem = ({
     percentChange && balanceInCurrency
       ? (balanceInCurrency * percentChange) / 100
       : undefined
-  const formattedPrice =
-    '$' +
-    (priceChange
-      ? Math.abs(priceChange)?.toFixed(2).toString()
-      : UNKNOWN_AMOUNT)
+  const formattedPrice = priceChange
+    ? formatCurrency({ amount: Math.abs(priceChange) })
+    : UNKNOWN_AMOUNT
 
   const status = priceChange
     ? priceChange > 0

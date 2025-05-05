@@ -14,7 +14,11 @@ export function useFormatCurrency(): {
    * Localized currency formatter
    */
   const formatCurrency = useCallback(
-    ({ amount, notation, withCurrencySuffix = false }: FormatCurrencyProps) => {
+    ({
+      amount,
+      notation,
+      withoutCurrencySuffix = false
+    }: FormatCurrencyProps) => {
       const formattedText = _formatCurrency({
         amount,
         currency: selectedCurrency,
@@ -22,8 +26,8 @@ export function useFormatCurrency(): {
         notation
       })
 
-      if (withCurrencySuffix && !formattedText.endsWith(selectedCurrency)) {
-        return [formattedText, selectedCurrency].join(' ')
+      if (withoutCurrencySuffix && formattedText.endsWith(selectedCurrency)) {
+        return formattedText.replace(selectedCurrency, '').trim()
       }
 
       return formattedText
@@ -35,7 +39,11 @@ export function useFormatCurrency(): {
    * When displaying token value in currency we keep max 8 fraction digits
    */
   const formatTokenInCurrency = useCallback(
-    ({ amount, notation, withCurrencySuffix = false }: FormatCurrencyProps) => {
+    ({
+      amount,
+      notation,
+      withoutCurrencySuffix = false
+    }: FormatCurrencyProps) => {
       const formattedText = _formatCurrency({
         amount,
         currency: selectedCurrency,
@@ -43,8 +51,8 @@ export function useFormatCurrency(): {
         notation
       })
 
-      if (withCurrencySuffix && !formattedText.endsWith(selectedCurrency)) {
-        return [formattedText, selectedCurrency].join(' ')
+      if (withoutCurrencySuffix && formattedText.endsWith(selectedCurrency)) {
+        return formattedText.replace(selectedCurrency, '').trim()
       }
 
       return formattedText
@@ -61,5 +69,5 @@ export function useFormatCurrency(): {
 type FormatCurrencyProps = {
   amount: number
   notation?: NotationTypes
-  withCurrencySuffix?: boolean
+  withoutCurrencySuffix?: boolean
 }
