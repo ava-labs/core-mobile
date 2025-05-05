@@ -4,6 +4,8 @@ import { ProposalTypes } from '@walletconnect/types'
 import { SiteScanResponse } from 'services/blockaid/types'
 import { WCSessionProposal } from 'store/walletConnectV2/types'
 import { Network } from '@avalabs/core-chains-sdk'
+import { AvalancheSetDeveloperModeRpcRequest } from 'store/rpc/handlers/avalanche_setDeveloperMode/types'
+import { AvalancheSetDeveloperModeApproveData } from 'store/rpc/handlers/avalanche_setDeveloperMode/types'
 
 export type SessionProposalParams = {
   request: WCSessionProposal
@@ -29,4 +31,9 @@ export type ApprovalParams = {
     overrideData?: string
   }) => Promise<void>
   onReject: (message?: string) => void
+}
+
+export type SetDeveloperModeParams = {
+  request: AvalancheSetDeveloperModeRpcRequest
+  data: AvalancheSetDeveloperModeApproveData
 }

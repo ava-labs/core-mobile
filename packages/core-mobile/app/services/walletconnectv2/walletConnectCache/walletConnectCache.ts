@@ -1,7 +1,12 @@
-import { ApprovalParams, SessionProposalParams } from './types'
+import {
+  ApprovalParams,
+  SetDeveloperModeParams,
+  SessionProposalParams
+} from './types'
 
 let sessionProposalParams: SessionProposalParams | null = null
 let approvalParams: ApprovalParams | null = null
+let setDeveloperModeParams: SetDeveloperModeParams | null = null
 
 // a simple in-memory cache (no reactivity or persistence support)
 // for wallet connect related data
@@ -28,9 +33,23 @@ export const walletConnectCache = {
       if (!approvalParams) {
         throw new Error('No approval params found')
       }
+      const data = approvalParams
+      approvalParams = null // auto-clear after retrieval
+      return data
+    }
+  },
+  setDeveloperModeParams: {
+    set: (data: SetDeveloperModeParams) => {
+      setDeveloperModeParams = data
+    },
+    get: () => {
+      if (!setDeveloperModeParams) {
+        throw new Error('No setdeveloper mode params found')
+      }
 
-      // approvalParams = null // auto-clear after retrieval
-      return approvalParams
+      const data = setDeveloperModeParams
+      setDeveloperModeParams = null // auto-clear after retrieval
+      return data
     }
   }
 }
