@@ -1,4 +1,5 @@
 import { ANIMATED, View } from '@avalabs/k2-alpine'
+import { useGlobalSearchParams, useRouter } from 'expo-router'
 import { useBrowserContext } from 'features/browser/BrowserContext'
 import { BrowserControls } from 'features/browser/components/BrowserControls'
 import { BrowserSnapshot } from 'features/browser/components/BrowserSnapshot'
@@ -12,11 +13,20 @@ import React, { useCallback, useEffect, useMemo } from 'react'
 import { Platform } from 'react-native'
 import { useBottomTabBarHeight } from 'react-native-bottom-tabs'
 import Animated, { useAnimatedStyle, withTiming } from 'react-native-reanimated'
-import { useSelector } from 'react-redux'
-import { selectActiveTab, selectAllTabs, selectIsTabEmpty } from 'store/browser'
+import { useDispatch, useSelector } from 'react-redux'
+import {
+  addHistoryForActiveTab,
+  addTab,
+  selectActiveTab,
+  selectAllTabs,
+  selectIsTabEmpty
+} from 'store/browser'
 
 const Browser = (): React.ReactNode => {
   const { browserRefs } = useBrowserContext()
+  const dispatch = useDispatch()
+  const router = useRouter()
+  const { deeplinkUrl } = useGlobalSearchParams<{ deeplinkUrl: string }>()
   const activeTab = useSelector(selectActiveTab)
   const allTabs = useSelector(selectAllTabs)
   const showEmptyTab = useSelector(selectIsTabEmpty)
@@ -28,6 +38,13 @@ const Browser = (): React.ReactNode => {
     const others = allTabs.filter(tab => tab.id !== activeTab.id).slice(0, 4)
     return [activeTab, ...others]
   }, [allTabs, activeTab])
+
+  useEffect(() => {
+    if (deeplinkUrl) {
+      dispatch(addTab())
+      dispatch(addHistoryForActiveTab({ url: deeplinkUrl, title: '' }))
+    }
+  }, [dispatch, deeplinkUrl, router])
 
   useEffect(() => {
     tabs.forEach(tab => {

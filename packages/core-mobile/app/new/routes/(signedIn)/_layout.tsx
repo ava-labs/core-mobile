@@ -9,6 +9,10 @@ import React from 'react'
 
 const PolyfillCrypto = React.lazy(() => import('react-native-webview-crypto'))
 
+export const unstable_settings = {
+  initialRouteName: '(tabs)' // Ensure tabs are rendered first
+}
+
 export default function WalletLayout(): JSX.Element {
   const { modalScreensOptions, formSheetScreensOptions } =
     useModalScreenOptions()
