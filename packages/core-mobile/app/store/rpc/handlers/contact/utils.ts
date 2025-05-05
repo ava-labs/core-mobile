@@ -7,8 +7,8 @@ export const sharedContactSchema = z.object({
   name: z.string().min(1),
   address: z
     .string()
-    .min(1)
-    .refine(val => isAddress(val), {
+    .optional()
+    .refine(val => (val ? isAddress(val) : true), {
       message: 'invalid EVM address'
     }),
   addressBTC: z

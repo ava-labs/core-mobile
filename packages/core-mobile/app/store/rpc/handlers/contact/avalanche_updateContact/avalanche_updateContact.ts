@@ -1,7 +1,9 @@
 import { AppListenerEffectAPI } from 'store/types'
 import { rpcErrors } from '@metamask/rpc-errors'
-import { selectContacts } from 'store/addressBook'
+import { addContact, AddrBookItemType, selectContacts } from 'store/addressBook'
 import Logger from 'utils/Logger'
+import { router } from 'expo-router'
+import { walletConnectCache } from 'services/walletconnectv2/walletConnectCache/walletConnectCache'
 import { RpcMethod, RpcRequest } from '../../../types'
 import {
   ApproveResponse,
@@ -36,7 +38,10 @@ class AvalancheUpdateContactHandler
       }
     }
 
-    const contact = result.data[0]
+    const contact = {
+      ...result.data[0],
+      type: 'contact' as AddrBookItemType
+    }
 
     const existingContacts = selectContacts(getState())
     const existingContact = existingContacts[contact.id]
@@ -48,26 +53,22 @@ class AvalancheUpdateContactHandler
       }
     }
 
-    // TODO use updated navigate
-    // Navigation.navigate({
-    //   name: AppNavigation.Root.Wallet,
-    //   params: {
-    //     screen: AppNavigation.Modal.UpdateContactV2,
-    //     params: {
-    //       request,
-    //       contact
-    //     }
-    //   }
-    // })
+    walletConnectCache.editContactParams.set({
+      request,
+      contact,
+      action: 'update'
+    })
 
+    // @ts-ignore TODO: make routes typesafe
+    router.navigate('/editContact')
     return { success: true, value: DEFERRED_RESULT }
   }
 
   approve = async (
     payload: { request: AvalancheUpdateContactRequest; data?: unknown },
-    _listenerApi: AppListenerEffectAPI
+    listenerApi: AppListenerEffectAPI
   ): ApproveResponse => {
-    //const { dispatch } = listenerApi
+    const { dispatch } = listenerApi
 
     const result = parseApproveData(payload.data)
 
@@ -78,16 +79,18 @@ class AvalancheUpdateContactHandler
       }
     }
 
-    // const contact = result.data.contact
+    const contact = result.data.contact
 
-    // TODO use updated addContact
-    // addContact({
-    //   address: contact.address,
-    //   addressBTC: contact.addressBTC || '',
-    //   addressXP: contact.addressXP || '',
-    //   name: contact.name,
-    //   id: contact.id
-    // })
+    dispatch(
+      addContact({
+        type: 'contact',
+        address: contact.address ? contact.address : undefined,
+        addressBTC: contact.addressBTC ? contact.addressBTC : undefined,
+        addressXP: contact.addressXP ? contact.addressXP : undefined,
+        name: contact.name,
+        id: contact.id
+      })
+    )
 
     return { success: true, value: [] }
   }

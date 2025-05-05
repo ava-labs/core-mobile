@@ -121,6 +121,10 @@ export default function WalletLayout(): JSX.Element {
             name="(modals)/toggleDeveloperMode"
             options={modalScreensOptions}
           />
+          <Stack.Screen
+            name="(modals)/editContact"
+            options={modalScreensOptions}
+          />
         </Stack>
         <PolyfillCrypto />
         <LastTransactedNetworks />

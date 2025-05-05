@@ -3,11 +3,10 @@ import React, { ReactNode, useCallback } from 'react'
 import { View } from 'react-native'
 import { SetDeveloperModeParams } from 'services/walletconnectv2/walletConnectCache/types'
 import { withWalletConnectCache } from 'common/components/withWalletConnectCache'
-
 import { ActionSheet } from 'common/components/ActionSheet'
 import { useDappConnectionV2 } from 'hooks/useDappConnectionV2'
 import { router } from 'expo-router'
-import { TokenLogo } from 'common/components/TokenLogo'
+import { DappLogo } from 'common/components/DappLogo'
 
 const ToggleDeveloperModeScreen = ({
   params: { request, data }
@@ -34,7 +33,6 @@ const ToggleDeveloperModeScreen = ({
   } testnet mode?`
 
   const renderDappInfo = useCallback((): JSX.Element | null => {
-    const logoUri = request.peerMeta.icons[0]
     const action =
       request.peerMeta.name +
       ` is requesting to ${
@@ -48,7 +46,7 @@ const ToggleDeveloperModeScreen = ({
           alignItems: 'center',
           marginBottom: 36
         }}>
-        <TokenLogo logoUri={logoUri} size={62} />
+        <DappLogo peerMeta={request.peerMeta} />
         <View
           style={{
             alignItems: 'center',
@@ -69,7 +67,7 @@ const ToggleDeveloperModeScreen = ({
         </View>
       </View>
     )
-  }, [enabledDeveloperMode, request.peerMeta.name, request.peerMeta.icons])
+  }, [enabledDeveloperMode, request.peerMeta])
 
   return (
     <ActionSheet

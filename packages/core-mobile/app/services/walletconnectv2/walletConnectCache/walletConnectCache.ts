@@ -1,12 +1,14 @@
 import {
   ApprovalParams,
   SetDeveloperModeParams,
-  SessionProposalParams
+  SessionProposalParams,
+  EditContactParams
 } from './types'
 
 let sessionProposalParams: SessionProposalParams | null = null
 let approvalParams: ApprovalParams | null = null
 let setDeveloperModeParams: SetDeveloperModeParams | null = null
+let editContactParams: EditContactParams | null = null
 
 // a simple in-memory cache (no reactivity or persistence support)
 // for wallet connect related data
@@ -49,6 +51,20 @@ export const walletConnectCache = {
 
       const data = setDeveloperModeParams
       setDeveloperModeParams = null // auto-clear after retrieval
+      return data
+    }
+  },
+  editContactParams: {
+    set: (data: EditContactParams) => {
+      editContactParams = data
+    },
+    get: () => {
+      if (!editContactParams) {
+        throw new Error('No edit contact params found')
+      }
+
+      const data = editContactParams
+      editContactParams = null // auto-clear after retrieval
       return data
     }
   }

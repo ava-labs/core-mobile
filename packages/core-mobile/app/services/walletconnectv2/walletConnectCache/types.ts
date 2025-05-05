@@ -6,6 +6,10 @@ import { WCSessionProposal } from 'store/walletConnectV2/types'
 import { Network } from '@avalabs/core-chains-sdk'
 import { AvalancheSetDeveloperModeRpcRequest } from 'store/rpc/handlers/avalanche_setDeveloperMode/types'
 import { AvalancheSetDeveloperModeApproveData } from 'store/rpc/handlers/avalanche_setDeveloperMode/types'
+import { AvalancheCreateContactRequest } from 'store/rpc/handlers/contact/avalanche_createContact/avalanche_createContact'
+import { AvalancheRemoveContactRequest } from 'store/rpc/handlers/contact/avalanche_removeContact/avalanche_removeContact'
+import { AvalancheUpdateContactRequest } from 'store/rpc/handlers/contact/avalanche_updateContact/avalanche_updateContact'
+import { Contact } from 'store/addressBook/types'
 
 export type SessionProposalParams = {
   request: WCSessionProposal
@@ -36,4 +40,13 @@ export type ApprovalParams = {
 export type SetDeveloperModeParams = {
   request: AvalancheSetDeveloperModeRpcRequest
   data: AvalancheSetDeveloperModeApproveData
+}
+
+export type EditContactParams = {
+  request:
+    | AvalancheCreateContactRequest
+    | AvalancheRemoveContactRequest
+    | AvalancheUpdateContactRequest
+  contact: Contact
+  action: 'create' | 'remove' | 'update'
 }
