@@ -62,10 +62,7 @@ export default function MnemonicPhrase({
 
   return (
     <View>
-      <View
-        style={{
-          flexGrow: 0
-        }}>
+      <View>
         <View
           sx={{
             borderRadius: 12,
@@ -96,6 +93,7 @@ export default function MnemonicPhrase({
           )}
         </View>
       </View>
+
       <View
         style={{
           marginTop: 16,

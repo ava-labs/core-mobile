@@ -3,7 +3,6 @@ import {
   ANIMATED,
   Icons,
   Pressable,
-  useKeyboardHeight,
   useTheme,
   View
 } from '@avalabs/k2-alpine'
@@ -14,6 +13,7 @@ import React, { ReactNode, useMemo, useState } from 'react'
 import { Platform } from 'react-native'
 import { useBottomTabBarHeight } from 'react-native-bottom-tabs'
 import { Gesture, GestureDetector } from 'react-native-gesture-handler'
+import { KeyboardStickyView } from 'react-native-keyboard-controller'
 import Animated, {
   runOnJS,
   useAnimatedStyle,
@@ -32,7 +32,6 @@ export const BrowserControls = (): ReactNode => {
   const { inputRef, isRenameFavoriteVisible, showRecentSearches } =
     useBrowserContext()
   const insets = useSafeAreaInsets()
-  const keyboardHeight = useKeyboardHeight()
   const tabBarHeight = useBottomTabBarHeight()
 
   const [isFocused, setIsFocused] = useState(false)
@@ -115,27 +114,6 @@ export const BrowserControls = (): ReactNode => {
     }
   })
 
-  const inputKeyboardPositioning = useAnimatedStyle(() => {
-    if (Platform.OS === 'android') {
-      return {
-        transform: [
-          {
-            translateY: withTiming(
-              keyboardHeight > 0
-                ? tabBarHeight - keyboardHeight - insets.bottom
-                : 0,
-              {
-                ...ANIMATED.TIMING_CONFIG,
-                duration: 100
-              }
-            )
-          }
-        ]
-      }
-    }
-    return {}
-  })
-
   const gestureControlStyle = useAnimatedStyle(() => {
     return {
       transform: [
@@ -162,28 +140,20 @@ export const BrowserControls = (): ReactNode => {
 
   return (
     <>
-      <KeyboardAvoidingView
+      <KeyboardStickyView
         style={{
           zIndex: 11
-        }}>
-        <Animated.View
-          style={[
-            inputKeyboardPositioning,
-            {
-              zIndex: 11,
-              height: BROWSER_CONTROLS_HEIGHT,
-              backgroundColor: isFocused ? 'transparent' : backgroundColor
-            }
-          ]}>
-          <View
-            style={{
-              padding: HORIZONTAL_MARGIN,
-              paddingVertical: 12
-            }}>
-            <BrowserInput isFocused={isFocused} setIsFocused={setIsFocused} />
-          </View>
-        </Animated.View>
-      </KeyboardAvoidingView>
+        }}
+        offset={{ opened: tabBarHeight, closed: 0 }}>
+        <View
+          style={{
+            padding: HORIZONTAL_MARGIN,
+            paddingVertical: 12,
+            backgroundColor: isFocused ? 'transparent' : backgroundColor
+          }}>
+          <BrowserInput isFocused={isFocused} setIsFocused={setIsFocused} />
+        </View>
+      </KeyboardStickyView>
 
       <View
         pointerEvents={isFocused ? 'auto' : 'none'}

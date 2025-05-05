@@ -14,14 +14,11 @@ const ShowRecoveryPhraseScreen = (): JSX.Element => {
     <ScrollScreen
       title={'Show recovery\nphrase'}
       navigationTitle="Show recovery phrase"
+      subtitle="This phrase is your access key to your wallet. Carefully write it down and store it in a safe location."
       isModal
       contentContainerStyle={{
         padding: 16
       }}>
-      <Text variant="body1">
-        This phrase is your access key to your wallet. Carefully write it down
-        and store it in a safe location.
-      </Text>
       <View sx={{ marginTop: 16, gap: 16 }}>
         <View sx={{ flexDirection: 'row', gap: 10, alignItems: 'center' }}>
           <Icons.Alert.ErrorOutline color={colors.$textDanger} />
@@ -29,6 +26,7 @@ const ShowRecoveryPhraseScreen = (): JSX.Element => {
             Losing this phrase will result in lost funds
           </Text>
         </View>
+
         <MnemonicScreen mnemonic={mnemonic} />
       </View>
     </ScrollScreen>
