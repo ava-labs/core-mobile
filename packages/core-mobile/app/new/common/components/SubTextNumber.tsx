@@ -1,31 +1,31 @@
 import React, { useMemo } from 'react'
-import { View, Text, alpha, useTheme } from '@avalabs/k2-alpine'
-import { StyleSheet, ViewStyle } from 'react-native'
+import { View, Text, alpha, useTheme, TextVariant } from '@avalabs/k2-alpine'
+import { StyleSheet, TextStyle, ViewStyle } from 'react-native'
 import { numberToSubscriptFormat } from 'utils/numberToSubscriptFormat/numberToSubscriptFormat'
 
-interface Props {
-  number: number | undefined
-  testID?: string
-  textColor?: string
-  style?: ViewStyle
-  textSize?: number | undefined
-  subTextSize?: number | undefined
-}
-
-export const SubTextNumber: React.FC<Props> = ({
+export const SubTextNumber = ({
   number,
   testID,
   textColor,
   style,
-  textSize = 16,
-  subTextSize = 13
-}) => {
+  textVariant = 'body1'
+}: {
+  number: number | undefined
+  testID?: string
+  textColor?: string
+  style?: ViewStyle
+  textVariant?: SubTextNumberVariant
+}): JSX.Element => {
   const {
     theme: { colors }
   } = useTheme()
   const { mainTextBefore, subText, mainTextAfter } = useMemo(
     () => numberToSubscriptFormat(number),
     [number]
+  )
+  const subTextStyle = useMemo(
+    () => getSubTextStyle(textVariant),
+    [textVariant]
   )
 
   const _textColor = textColor ?? alpha(colors.$textPrimary, 0.6)
@@ -34,20 +34,15 @@ export const SubTextNumber: React.FC<Props> = ({
     <View style={[styles.container, style]} testID={testID}>
       <Text
         numberOfLines={1}
-        style={[{ color: _textColor, fontSize: textSize }]}>
+        variant={textVariant}
+        style={[{ color: _textColor }]}>
         {mainTextBefore}
       </Text>
       {subText && (
-        <Text
-          style={[
-            styles.subText,
-            { color: _textColor, fontSize: subTextSize }
-          ]}>
-          {subText}
-        </Text>
+        <Text style={[subTextStyle, { color: _textColor }]}>{subText}</Text>
       )}
       {mainTextAfter && (
-        <Text style={[{ color: _textColor, fontSize: textSize }]}>
+        <Text variant={textVariant} style={[{ color: _textColor }]}>
           {mainTextAfter}
         </Text>
       )}
@@ -60,10 +55,18 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     maxWidth: '70%'
-  },
-  subText: {
-    fontWeight: '500',
-    position: 'relative',
-    top: 4
   }
 })
+
+type SubTextNumberVariant = Extract<TextVariant, 'body1'>
+
+const getSubTextStyle = (textVariant: SubTextNumberVariant): TextStyle => {
+  let style: TextStyle = {
+    position: 'relative'
+  }
+  if (textVariant === 'body1') {
+    style = { ...style, fontSize: 13, top: 4, fontWeight: '500' }
+  } // todo: add subtext styles for other variants when needed
+
+  return style
+}

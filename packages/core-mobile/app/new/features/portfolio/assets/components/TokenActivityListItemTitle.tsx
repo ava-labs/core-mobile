@@ -25,8 +25,6 @@ export const TokenActivityListItemTitle = ({
             key={`amt-${amount}`}
             number={num}
             textColor={colors.$textPrimary}
-            textSize={15}
-            subTextSize={12}
           />
         )
       }
