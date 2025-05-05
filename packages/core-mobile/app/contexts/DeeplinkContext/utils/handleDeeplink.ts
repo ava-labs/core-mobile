@@ -7,6 +7,7 @@ import { newSession } from 'store/walletConnectV2/slice'
 import { showSnackbar } from 'new/common/utils/toast'
 import { router } from 'expo-router'
 import { History } from 'store/browser'
+import { navigateFromDeeplinkUrl } from 'utils/navigateFromDeeplink'
 import { ACTIONS, DeepLink, PROTOCOLS } from '../types'
 
 export const handleDeeplink = ({
@@ -62,29 +63,13 @@ export const handleDeeplink = ({
       } else if (action === ACTIONS.StakeComplete) {
         if (isEarnBlocked) return
         deeplink.callback?.()
-        // @ts-ignore TODO: make routes typesafe
-        router.navigate('/portfolio')
-        setTimeout(() => {
-          // @ts-ignore TODO: make routes typesafe
-          router.navigate('/claimStakeReward')
-        }, 100)
+        navigateFromDeeplinkUrl('/claimStakeReward')
       } else if (action === ACTIONS.WatchList) {
         const coingeckoId = pathname.split('/')[1]
-        // @ts-ignore TODO: make routes typesafe
-        router.navigate('/portfolio')
-        setTimeout(() => {
-          coingeckoId &&
-            // @ts-ignore TODO: make routes typesafe
-            router.navigate(`/trackTokenDetail?tokenId=${coingeckoId}`)
-        }, 100)
+        navigateFromDeeplinkUrl(`/trackTokenDetail?tokenId=${coingeckoId}`)
       } else {
-        // @ts-ignore TODO: make routes typesafe
-        router.navigate('/portfolio')
-        setTimeout(() => {
-          const path = deeplink.url.split(':/')[1]
-          // @ts-ignore TODO: make routes typesafe
-          router.navigate(path)
-        }, 100)
+        const path = deeplink.url.split(':/')[1]
+        path && navigateFromDeeplinkUrl(path)
       }
       break
     }
