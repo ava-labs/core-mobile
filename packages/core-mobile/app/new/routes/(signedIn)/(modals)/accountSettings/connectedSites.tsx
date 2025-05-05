@@ -62,10 +62,14 @@ const ConnectedSitesScreen = (): JSX.Element => {
           }}>
           <View
             sx={{
-              width: 32,
-              height: 32,
-              borderRadius: 16,
-              overflow: 'hidden'
+              marginHorizontal: 16,
+              paddingLeft: 10,
+              paddingRight: 12,
+              paddingVertical: 14,
+              flexDirection: 'row',
+              alignItems: 'center',
+              borderRadius: 12,
+              backgroundColor: colors.$surfaceSecondary
             }}>
             <Logo
               logoUri={icons[0]}
