@@ -1,15 +1,15 @@
 import { Separator, showAlert, Text, View } from '@avalabs/k2-alpine'
+import { RpcMethod } from '@avalabs/vm-module-types'
 import { useNativeTokenWithBalance } from 'common/hooks/send/useNativeTokenWithBalance'
 import { validateFee } from 'common/hooks/send/utils/evm/validate'
 import { SendErrorMessage } from 'common/hooks/send/utils/types'
-import { router, useLocalSearchParams } from 'expo-router'
+import { router } from 'expo-router'
 import { useNetworks } from 'hooks/networks/useNetworks'
 import { useGasless } from 'hooks/useGasless'
 import { useSpendLimits } from 'hooks/useSpendLimits'
 import { ActionSheet } from 'new/common/components/ActionSheet'
 import { TokenLogo } from 'new/common/components/TokenLogo'
 import { Warning } from 'new/common/components/Warning'
-import { NavigationPresentationMode } from 'new/common/types'
 import React, {
   useCallback,
   useEffect,
@@ -29,7 +29,6 @@ import { selectIsSeedlessSigningBlocked } from 'store/posthog/slice'
 import { getChainIdFromCaip2 } from 'utils/caip2ChainIds'
 import Logger from 'utils/Logger'
 import { Eip1559Fees } from 'utils/Utils'
-import { RpcMethod } from '@avalabs/vm-module-types'
 import { Account } from '../../components/Account'
 import BalanceChange from '../../components/BalanceChange/BalanceChange'
 import { Details } from '../../components/Details'
@@ -57,7 +56,6 @@ const ApprovalScreen = ({
 }: {
   params: ApprovalParams
 }): JSX.Element => {
-  const { presentationMode } = useLocalSearchParams()
   const isSeedlessSigningBlocked = useSelector(selectIsSeedlessSigningBlocked)
   const { getNetwork } = useNetworks()
   const caip2ChainId = request.chainId
@@ -393,9 +391,7 @@ const ApprovalScreen = ({
 
   return (
     <ActionSheet
-      isSecondaryModal={
-        presentationMode === NavigationPresentationMode.FORM_SHEET
-      }
+      isModal
       title={displayData.dAppInfo ? undefined : displayData.title}
       navigationTitle={
         displayData.dAppInfo ? displayData?.dAppInfo?.name : displayData.title
