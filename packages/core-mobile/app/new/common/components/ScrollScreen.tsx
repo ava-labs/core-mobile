@@ -1,33 +1,21 @@
-import {
-  NavigationTitleHeader,
-  SxProp,
-  Text,
-  useKeyboardHeight
-} from '@avalabs/k2-alpine'
+import { NavigationTitleHeader, SxProp, Text } from '@avalabs/k2-alpine'
 import { useHeaderHeight } from '@react-navigation/elements'
 import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
-import { useModalScreenOptions } from 'common/hooks/useModalScreenOptions'
-import React, {
-  useCallback,
-  useLayoutEffect,
-  useMemo,
-  useRef,
-  useState
-} from 'react'
+import React, { useCallback, useLayoutEffect, useRef, useState } from 'react'
 import { LayoutRectangle, View } from 'react-native'
 import { ScrollView } from 'react-native-gesture-handler'
 import {
   KeyboardAwareScrollView,
-  KeyboardAwareScrollViewProps
+  KeyboardAwareScrollViewProps,
+  KeyboardStickyView
 } from 'react-native-keyboard-controller'
 import Animated, {
   interpolate,
   useAnimatedStyle,
   useSharedValue
 } from 'react-native-reanimated'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 import { BlurViewWithFallback } from './BlurViewWithFallback'
-import { KeyboardAvoidingView } from './KeyboardAvoidingView'
 import { LinearGradientBottomWrapper } from './LinearGradientBottomWrapper'
 import ScreenHeader from './ScreenHeader'
 
@@ -60,8 +48,6 @@ interface ScrollScreenProps extends KeyboardAwareScrollViewProps {
   hasParent?: boolean
   /** Whether this screen is presented as a modal */
   isModal?: boolean
-  /** Whether this screen is presented as a secondary modal (ActionSheet) */
-  isSecondaryModal?: boolean
   /** Whether the screen should adjust its layout when the keyboard appears */
   shouldAvoidKeyboard?: boolean
   /** Title to be displayed in the navigation header */
@@ -83,18 +69,15 @@ export const ScrollScreen = ({
   children,
   hasParent,
   isModal,
-  isSecondaryModal,
   shouldAvoidKeyboard,
   navigationTitle,
   renderHeader,
   renderFooter,
   renderHeaderRight,
-  bottomOffset,
   ...props
 }: ScrollScreenProps): JSX.Element => {
   const insets = useSafeAreaInsets()
   const headerHeight = useHeaderHeight()
-  const keyboardHeight = useKeyboardHeight()
   const [headerLayout, setHeaderLayout] = useState<
     LayoutRectangle | undefined
   >()
@@ -106,7 +89,7 @@ export const ScrollScreen = ({
     {
       header: <NavigationTitleHeader title={navigationTitle ?? title ?? ''} />,
       targetLayout: headerLayout,
-      shouldHeaderHaveGrabber: isModal || isSecondaryModal ? true : false,
+      shouldHeaderHaveGrabber: isModal ? true : false,
       hasParent,
       renderHeaderRight
     }
@@ -124,6 +107,17 @@ export const ScrollScreen = ({
     }
   })
 
+  const footerRef = useRef<View>(null)
+  const contentFooterHeight = useSharedValue<number>(0)
+
+  useLayoutEffect(() => {
+    if (footerRef.current) {
+      footerRef.current.measure((x, y, width, height) => {
+        contentFooterHeight.value = height
+      })
+    }
+  }, [contentFooterHeight])
+
   useLayoutEffect(() => {
     if (headerRef.current) {
       // eslint-disable-next-line max-params
@@ -133,24 +127,6 @@ export const ScrollScreen = ({
       })
     }
   }, [contentHeaderHeight])
-
-  const { topMarginOffset } = useModalScreenOptions()
-
-  const keyboardVerticalOffset = useMemo(() => {
-    if (isSecondaryModal) {
-      return insets.bottom
-    }
-
-    if (isModal) {
-      return topMarginOffset - insets.bottom
-    }
-
-    return -insets.bottom
-  }, [isSecondaryModal, isModal, insets.bottom, topMarginOffset])
-
-  const paddingBottom = useMemo(() => {
-    return insets.bottom + 16
-  }, [insets.bottom])
 
   const renderContent = useCallback(() => {
     return (
@@ -186,7 +162,7 @@ export const ScrollScreen = ({
   // If you have an input on the screen, you need to enable this prop
   if (shouldAvoidKeyboard) {
     return (
-      <KeyboardAvoidingView keyboardVerticalOffset={keyboardVerticalOffset}>
+      <SafeAreaView edges={['top']} style={{ flex: 1 }}>
         <BlurViewWithFallback
           style={{
             position: 'absolute',
@@ -198,19 +174,18 @@ export const ScrollScreen = ({
             zIndex: 100
           }}
         />
+
         <KeyboardAwareScrollView
-          style={{ flex: 1 }}
+          extraKeyboardSpace={-insets.bottom + 32}
           keyboardDismissMode="interactive"
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
-          bottomOffset={bottomOffset}
-          extraKeyboardSpace={-keyboardHeight}
           {...props}
           contentContainerStyle={[
             props?.contentContainerStyle,
             {
-              paddingBottom: insets.bottom,
-              paddingTop: headerHeight
+              paddingTop: headerHeight - insets.top,
+              paddingBottom: insets.bottom
             }
           ]}
           onScroll={onScroll}>
@@ -218,25 +193,31 @@ export const ScrollScreen = ({
         </KeyboardAwareScrollView>
 
         {renderFooter ? (
-          <LinearGradientBottomWrapper>
-            <View
-              style={{
-                padding: 16,
-                paddingTop: 0,
-                paddingBottom
-              }}>
-              {renderFooter?.()}
-            </View>
-          </LinearGradientBottomWrapper>
+          <KeyboardStickyView
+            offset={{
+              opened: 0,
+              closed: -insets.bottom
+            }}>
+            <LinearGradientBottomWrapper>
+              <View
+                ref={footerRef}
+                style={{
+                  padding: 16,
+                  paddingTop: 0
+                }}>
+                {renderFooter?.()}
+              </View>
+            </LinearGradientBottomWrapper>
+          </KeyboardStickyView>
         ) : null}
-      </KeyboardAvoidingView>
+      </SafeAreaView>
     )
   }
 
   // All of our screens have to be scrollable
   // If we don't have an input on the screen then we should not enable keyboard avoiding
   return (
-    <KeyboardAvoidingView enabled={false} style={{ flex: 1 }}>
+    <SafeAreaView edges={['top']} style={{ flex: 1 }}>
       <BlurViewWithFallback
         style={{
           position: 'absolute',
@@ -251,12 +232,14 @@ export const ScrollScreen = ({
       <ScrollView
         style={{ flex: 1 }}
         showsVerticalScrollIndicator={false}
+        keyboardDismissMode="interactive"
+        keyboardShouldPersistTaps="handled"
         {...props}
         contentContainerStyle={[
           props?.contentContainerStyle,
           {
             paddingBottom: insets.bottom,
-            paddingTop: headerHeight
+            paddingTop: headerHeight - insets.top
           }
         ]}
         onScroll={onScroll}>
@@ -269,12 +252,12 @@ export const ScrollScreen = ({
             style={{
               padding: 16,
               paddingTop: 0,
-              paddingBottom
+              paddingBottom: insets.bottom + 16
             }}>
             {renderFooter?.()}
           </View>
         </LinearGradientBottomWrapper>
       ) : null}
-    </KeyboardAvoidingView>
+    </SafeAreaView>
   )
 }

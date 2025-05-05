@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import Big from 'big.js'
 import { bigintToBig, bigToBigInt } from '@avalabs/core-utils-sdk'
-import { TextInput, TextInputProps } from 'react-native'
+import { InteractionManager, TextInput, TextInputProps } from 'react-native'
 import { alpha } from '../../utils'
 import {
   normalizeNumericTextInput,
@@ -20,11 +20,13 @@ export function TokenAmountInput({
   onChange,
   isLoading,
   hideErrorMessage,
+  autoFocus,
   ...props
 }: TokenAmountInputProps): JSX.Element {
   const { theme } = useTheme()
   const [valueAsString, setValueAsString] = useState('')
   const valueBig = value ? bigintToBig(value, denomination) : undefined
+  const ref = useRef<TextInput>(null)
 
   useEffect(() => {
     // When deleting zeros after decimal, all zeros delete without this check.
@@ -61,9 +63,18 @@ export function TokenAmountInput({
     }
   }
 
+  useEffect(() => {
+    if (autoFocus) {
+      InteractionManager.runAfterInteractions(() => {
+        ref.current?.focus()
+      })
+    }
+  }, [autoFocus])
+
   return (
     <TextInput
       {...props}
+      ref={ref}
       keyboardType="numeric"
       onChangeText={handleChangeText}
       value={valueAsString}
