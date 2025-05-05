@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useMemo } from 'react'
 import { LayoutChangeEvent } from 'react-native'
 import {
   PriceChange,
@@ -7,11 +7,12 @@ import {
   Text,
   View
 } from '@avalabs/k2-alpine'
+import Animated, { FadeIn } from 'react-native-reanimated'
 import { TokenLogo } from 'common/components/TokenLogo'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
 import { formatLargeCurrency } from 'utils/Utils'
-import Animated, { FadeIn } from 'react-native-reanimated'
+import { isEffectivelyZero } from '../utils'
 import { RankView } from './RankView'
 
 export const TokenHeader = ({
@@ -34,23 +35,30 @@ export const TokenHeader = ({
 }): React.JSX.Element => {
   const { formatTokenInCurrency } = useFormatCurrency()
 
-  const priceChange: PriceChange | undefined =
-    ranges === undefined
+  const priceChange: PriceChange | undefined = useMemo(() => {
+    if (ranges === undefined) {
+      return undefined
+    }
+
+    const absPriceChange = Math.abs(ranges.diffValue)
+
+    // for effectively zero price changes, return undefined
+    // this is to avoid displaying "0.00" in the price change column
+    const formattedPrice = isEffectivelyZero(absPriceChange)
       ? undefined
-      : {
-          formattedPrice: formatLargeCurrency(
-            formatTokenInCurrency({ amount: Math.abs(ranges.diffValue) })
-          ),
-          status:
-            ranges.diffValue < 0
-              ? PriceChangeStatus.Down
-              : ranges.diffValue === 0
-              ? PriceChangeStatus.Neutral
-              : PriceChangeStatus.Up,
-          formattedPercent: `${ranges.percentChange
-            .toFixed(2)
-            .replace('-', '')}%`
-        }
+      : formatLargeCurrency(formatTokenInCurrency({ amount: absPriceChange }))
+
+    return {
+      formattedPrice,
+      status:
+        ranges.diffValue < 0
+          ? PriceChangeStatus.Down
+          : ranges.diffValue === 0
+          ? PriceChangeStatus.Neutral
+          : PriceChangeStatus.Up,
+      formattedPercent: `${ranges.percentChange.toFixed(2).replace('-', '')}%`
+    }
+  }, [ranges, formatTokenInCurrency])
 
   return (
     <View onLayout={onLayout}>
@@ -92,9 +100,9 @@ export const TokenHeader = ({
       </View>
       <View sx={{ opacity: priceChange ? 1 : 0, marginTop: 5 }}>
         <PriceChangeIndicator
-          formattedPrice={priceChange?.formattedPrice ?? UNKNOWN_AMOUNT}
+          formattedPrice={priceChange?.formattedPrice}
           status={priceChange?.status ?? PriceChangeStatus.Neutral}
-          formattedPercent={priceChange?.formattedPercent ?? UNKNOWN_AMOUNT}
+          formattedPercent={priceChange?.formattedPercent}
           textVariant="buttonMedium"
           animated={true}
         />

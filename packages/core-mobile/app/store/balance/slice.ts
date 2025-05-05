@@ -9,6 +9,7 @@ import { selectActiveAccount } from 'store/account'
 import {
   selectActiveNetwork,
   selectAllNetworks,
+  selectEnabledChainIds,
   selectNetworks
 } from 'store/network'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
@@ -178,9 +179,14 @@ export const selectBalanceTotalForAccount =
   (accountIndex: number, tokenVisibility: TokenVisibility) =>
   (state: RootState) => {
     const tokens = selectTokensWithBalanceForAccount(state, accountIndex)
+    const enabledChainIds = selectEnabledChainIds(state)
 
     return tokens
-      .filter(token => isTokenVisible(tokenVisibility, token))
+      .filter(
+        token =>
+          isTokenVisible(tokenVisibility, token) &&
+          enabledChainIds.includes(token.networkChainId)
+      )
       .reduce((total, token) => {
         total += token.balance ?? 0n
         return total
@@ -191,9 +197,14 @@ export const selectBalanceTotalInCurrencyForAccount =
   (accountIndex: number, tokenVisibility: TokenVisibility) =>
   (state: RootState) => {
     const tokens = selectTokensWithBalanceForAccount(state, accountIndex)
+    const enabledChainIds = selectEnabledChainIds(state)
 
     return tokens
-      .filter(token => isTokenVisible(tokenVisibility, token))
+      .filter(
+        token =>
+          isTokenVisible(tokenVisibility, token) &&
+          enabledChainIds.includes(token.networkChainId)
+      )
       .reduce((total, token) => {
         total += token.balanceInCurrency ?? 0
         return total

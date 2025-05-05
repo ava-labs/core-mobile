@@ -25,6 +25,10 @@ export type RpcRequest<Method extends RpcMethod> = {
   method: Method
   peerMeta: PeerMeta
   provider: RpcProvider
+
+  // only used by in-app requests to pass additional context
+  // to display in the approval screen
+  context?: Record<string, unknown>
 }
 
 export type Request = RpcRequest<RpcMethod> | WCSessionProposal
@@ -139,4 +143,14 @@ export const CORE_MOBILE_META: PeerMeta = {
   description: 'Core Mobile Wallet',
   url: 'https://core.app/',
   icons: []
+}
+
+// request context keys for in-app requests
+export enum RequestContext {
+  // used to disable confetti on transaction confirmation
+  CONFETTI_DISABLED = 'confettiDisabled',
+
+  // used to determine if the recipient/to address is a contract
+  // if true, we will show "To" instead of "Contract" in the approval screen
+  NON_CONTRACT_RECIPIENT = 'nonContractRecipient'
 }

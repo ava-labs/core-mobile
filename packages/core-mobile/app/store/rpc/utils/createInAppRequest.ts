@@ -17,11 +17,13 @@ const EVENTS_TO_SUBSCRIBE = isAnyOf(
 export type Request = ({
   method,
   params,
-  chainId
+  chainId,
+  context
 }: {
   method: VmModuleRpcMethod
   params: unknown
   chainId?: string
+  context?: Record<string, unknown>
 }) => Promise<string>
 
 /**
@@ -47,13 +49,14 @@ export type Request = ({
  * })
  */
 export const createInAppRequest = (dispatch: Dispatch): Request => {
-  return ({ method, params, chainId }) => {
+  return ({ method, params, chainId, context }) => {
     return new Promise((resolve, reject) => {
       // create and dispatch the request
       const inAppRequest = generateInAppRequestPayload({
         method: method as unknown as RpcMethod,
         params,
-        chainId
+        chainId,
+        context
       })
       dispatch(onRequest(inAppRequest))
 

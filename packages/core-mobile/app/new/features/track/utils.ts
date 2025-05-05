@@ -9,3 +9,9 @@ export const compareTokenPriceChangePercentage24h = (
 
   return percentChange1 - percentChange2
 }
+
+const zeroThreshold = 0.000001
+
+export const isEffectivelyZero = (value: number): boolean => {
+  return Math.abs(value) < zeroThreshold
+}

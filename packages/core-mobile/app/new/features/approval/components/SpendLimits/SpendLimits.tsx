@@ -89,7 +89,7 @@ export const SpendLimits = ({
   const limitType = spendLimit?.limitType
 
   const [amount, amountInCurrency] = useMemo(() => {
-    if (limitType === Limit.UNLIMITED) return ['Unlimited', undefined]
+    if (limitType === Limit.UNLIMITED) return ['∞', undefined]
 
     if (!tokenValue || !tokenDecimals || !tokenSymbol)
       return [UNKNOWN_AMOUNT, undefined]
@@ -123,11 +123,11 @@ export const SpendLimits = ({
   ])
 
   return (
-    <View style={{ marginBottom: 12 }}>
+    <View>
       <View
         sx={{
           backgroundColor: '$surfaceSecondary',
-          marginBottom: 20,
+          marginBottom: 12,
           paddingHorizontal: 16,
           paddingBottom: 17,
           paddingTop: 25,
@@ -147,17 +147,19 @@ export const SpendLimits = ({
               {amount}
             </Text>
           </View>
-          <Text
-            variant="heading1"
-            sx={{
-              color: '$textPrimary',
-              marginLeft: 3,
-              marginTop: 3,
-              fontSize: 24,
-              lineHeight: 24
-            }}>
-            {tokenSymbol}
-          </Text>
+          {limitType !== Limit.UNLIMITED && (
+            <Text
+              variant="heading1"
+              sx={{
+                color: '$textPrimary',
+                marginLeft: 3,
+                marginTop: 3,
+                fontSize: 24,
+                lineHeight: 24
+              }}>
+              {tokenSymbol}
+            </Text>
+          )}
         </View>
         {amountInCurrency && (
           <View style={{ maxWidth: '70%' }}>

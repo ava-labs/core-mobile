@@ -1,17 +1,24 @@
-import { Text, View } from '@avalabs/k2-alpine'
+import { SxProp, Text, View } from '@avalabs/k2-alpine'
 import React from 'react'
 
 export default function ScreenHeader({
   title,
+  titleSx,
   description
 }: {
   title: string
+  titleSx?: SxProp
   description?: string | JSX.Element
 }): JSX.Element {
   return (
     <View>
       <Text
-        sx={{ marginRight: 10, marginTop: 8, marginBottom: 10 }}
+        sx={{
+          marginRight: 10,
+          marginTop: 8,
+          marginBottom: 10,
+          ...titleSx
+        }}
         variant="heading2">
         {title}
       </Text>

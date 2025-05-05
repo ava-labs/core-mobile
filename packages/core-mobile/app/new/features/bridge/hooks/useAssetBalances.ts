@@ -8,6 +8,7 @@ import { AssetBalance, unwrapAssetSymbol } from 'common/utils/bridgeUtils'
 import { getAssetBalances } from 'features/bridge/utils/getAssetBalances'
 import { getCoingeckoId } from 'common/utils/getCoingeckoId'
 import { bigintToBig } from 'utils/bigNumbers/bigintToBig'
+import { selectEnabledChainIds } from 'store/network'
 import { useBridgeAssets } from './useBridgeAssets'
 import { useAssetBalancePrices } from './useAssetBalancePrices'
 /**
@@ -23,10 +24,15 @@ export function useAssetBalances(sourceNetworkChainId?: number): {
   )
   const tokenInfoData = useTokenInfoContext()
   const bridgeAssets = useBridgeAssets(sourceNetworkChainId)
-
+  const enabledChainIds = useSelector(selectEnabledChainIds)
   const visibleTokens = useMemo(
-    () => tokens.filter(token => isTokenVisible(tokenVisibility, token)),
-    [tokens, tokenVisibility]
+    () =>
+      tokens.filter(
+        token =>
+          isTokenVisible(tokenVisibility, token) &&
+          enabledChainIds.includes(token.networkChainId)
+      ),
+    [tokens, tokenVisibility, enabledChainIds]
   )
 
   const assetsWithBalances = useMemo(

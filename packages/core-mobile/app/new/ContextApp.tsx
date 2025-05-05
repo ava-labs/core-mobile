@@ -10,12 +10,17 @@ import React, { FC, PropsWithChildren } from 'react'
 import { RootSiblingParent } from 'react-native-root-siblings'
 import Toast from 'react-native-toast-notifications'
 import SentryService from 'services/sentry/SentryService'
+import { Confetti, ConfettiMethods } from '@avalabs/k2-alpine'
 import { App } from './App'
 import JailbreakCheck from './common/components/JailbreakCheck'
 import TopLevelErrorFallback from './common/components/TopLevelErrorFallback'
 
-function setToast(toast: Toast): void {
+const setGlobalToast = (toast: Toast): void => {
   global.toast = toast
+}
+
+const setGlobalConfetti = (confetti: ConfettiMethods): void => {
+  global.confetti = confetti
 }
 
 /**
@@ -39,13 +44,8 @@ const ContextApp = (): JSX.Element => {
           <App />
         </RootSiblingParent>
         <JailbreakCheck />
-        <Toast
-          ref={ref => {
-            ref && setToast(ref)
-          }}
-          offsetTop={30}
-          normalColor={'00FFFFFF'}
-        />
+        <Toast ref={setGlobalToast} offsetTop={30} normalColor={'00FFFFFF'} />
+        <Confetti ref={setGlobalConfetti} />
       </ContextProviders>
     </Sentry.ErrorBoundary>
   )

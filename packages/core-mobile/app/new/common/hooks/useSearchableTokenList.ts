@@ -13,6 +13,7 @@ import { getLocalTokenId, isTokenVisible } from 'store/balance/utils'
 import { NetworkContractToken, TokenType } from '@avalabs/vm-module-types'
 import { selectActiveAccount } from 'store/account'
 import { RootState } from 'store/types'
+import { selectEnabledChainIds } from 'store/network'
 
 const isGreaterThanZero = (token: LocalTokenWithBalance): boolean =>
   token.balance > 0n
@@ -33,16 +34,22 @@ const containSearchText = (text: string) => (token: LocalTokenWithBalance) => {
   )
 }
 
+const isNotDisabled =
+  (enabledChainIds: number[]) => (token: LocalTokenWithBalance) =>
+    enabledChainIds.includes(token.networkChainId)
+
 export function useSearchableTokenList({
   tokens,
   hideZeroBalance = true,
   hideBlacklist = true,
+  hideDisabled = true,
   hideNft = true,
   chainId
 }: {
   tokens?: NetworkContractToken[]
   hideZeroBalance?: boolean
   hideBlacklist?: boolean
+  hideDisabled?: boolean
   hideNft?: boolean
   chainId?: number
 }): {
@@ -81,6 +88,7 @@ export function useSearchableTokenList({
   const isLoadingBalances = useSelector(selectIsLoadingBalances)
   const isRefetchingBalances = useSelector(selectIsRefetchingBalances)
   const activeAccount = useSelector(selectActiveAccount)
+  const enabledChainIds = useSelector(selectEnabledChainIds)
   const tokensWithBalance = useSelector((state: RootState) => {
     if (chainId) {
       return selectTokensWithBalanceForAccountAndNetwork(
@@ -125,6 +133,10 @@ export function useSearchableTokenList({
       filters.push(containSearchText(searchText))
     }
 
+    if (hideDisabled) {
+      filters.push(isNotDisabled(enabledChainIds))
+    }
+
     return filters.reduce(
       (_tokens, filter) => _tokens.filter(filter),
       mergedTokens
@@ -134,8 +146,10 @@ export function useSearchableTokenList({
     hideBlacklist,
     hideNft,
     searchText,
+    hideDisabled,
     mergedTokens,
-    tokenVisibility
+    tokenVisibility,
+    enabledChainIds
   ])
 
   // 3. sort tokens by amount

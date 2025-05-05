@@ -10,6 +10,7 @@ import { selectSelectedCurrency } from 'store/settings/currency'
 import { formatCurrency } from 'utils/FormatCurrency'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
 import { PriceChangeStatus } from '@avalabs/k2-alpine'
+import { isEffectivelyZero } from 'features/track/utils'
 import { MarketGridView } from './MarketGridView'
 import { MarketListView } from './MarketListView'
 
@@ -42,15 +43,21 @@ export const MarketListItem = ({
 
   const priceChange = token.priceChange24h ?? 0
 
-  const formattedPriceChange = useMemo(
-    () =>
-      formatCurrency({
-        amount: Math.abs(priceChange),
-        currency,
-        boostSmallNumberPrecision: true
-      }),
-    [currency, priceChange]
-  )
+  const formattedPriceChange = useMemo(() => {
+    const absPriceChange = Math.abs(priceChange)
+
+    // for effectively zero price changes, return undefined
+    // this is to avoid displaying "0.00" in the price change column
+    if (isEffectivelyZero(absPriceChange)) {
+      return undefined
+    }
+
+    return formatCurrency({
+      amount: Math.abs(priceChange),
+      currency,
+      boostSmallNumberPrecision: true
+    })
+  }, [currency, priceChange])
 
   const formattedPercent = useMemo(
     () =>

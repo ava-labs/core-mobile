@@ -228,11 +228,12 @@ export const SwapContextProvider = ({
             slippage: swapSlippage,
             activeNetwork: cChainNetwork,
             provider: avalancheProvider,
-            signAndSend: txParams =>
+            signAndSend: (txParams, context) =>
               request({
                 method: RpcMethod.ETH_SEND_TRANSACTION,
                 params: txParams,
-                chainId: getEvmCaip2ChainId(cChainNetwork.chainId)
+                chainId: getEvmCaip2ChainId(cChainNetwork.chainId),
+                context
               }),
             userAddress: activeAccount.addressC,
             isSwapFeesEnabled: !isSwapFeesBlocked

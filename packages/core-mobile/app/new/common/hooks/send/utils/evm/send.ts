@@ -17,7 +17,8 @@ export const send = async ({
   provider,
   token,
   toAddress,
-  amount
+  amount,
+  context
 }: {
   request: Request
   chainId: number
@@ -26,6 +27,7 @@ export const send = async ({
   token: TokenWithBalanceEVM
   toAddress: string
   amount?: bigint
+  context?: Record<string, unknown>
 }): Promise<string> => {
   const sentrySpanName = 'send-token'
   return SentryWrapper.startSpan(
@@ -48,7 +50,8 @@ export const send = async ({
           request({
             method: RpcMethod.ETH_SEND_TRANSACTION,
             params: [txParams],
-            chainId: getEvmCaip2ChainId(chainId)
+            chainId: getEvmCaip2ChainId(chainId),
+            context
           })
         )
 

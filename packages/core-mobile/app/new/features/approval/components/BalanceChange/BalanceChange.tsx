@@ -16,8 +16,7 @@ const BalanceChangeComponent = ({
         alignItems: 'center',
         flexDirection: 'row',
         backgroundColor: '$surfaceSecondary',
-        borderRadius: 12,
-        marginBottom: 24
+        borderRadius: 12
       }}>
       <View
         sx={{

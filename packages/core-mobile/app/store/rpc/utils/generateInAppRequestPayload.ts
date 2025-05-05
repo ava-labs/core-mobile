@@ -10,11 +10,13 @@ import {
 export const generateInAppRequestPayload = ({
   method,
   params,
-  chainId
+  chainId,
+  context
 }: {
   method: RpcMethod
   params: unknown
   chainId?: string
+  context?: Record<string, unknown>
 }): RpcRequest<RpcMethod> => ({
   provider: RpcProvider.CORE_MOBILE,
   method,
@@ -29,5 +31,6 @@ export const generateInAppRequestPayload = ({
       chainId: chainId ?? ''
     }
   },
-  peerMeta: CORE_MOBILE_META
+  peerMeta: CORE_MOBILE_META,
+  context
 })
