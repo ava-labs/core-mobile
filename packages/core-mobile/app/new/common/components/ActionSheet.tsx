@@ -31,7 +31,6 @@ export const ActionSheet = ({
   alert,
   sx,
   isModal,
-  isSecondaryModal,
   shouldAvoidKeyboard
 }: {
   title?: string
@@ -40,7 +39,6 @@ export const ActionSheet = ({
   children: React.ReactNode
   sx?: SxProp
   isModal?: boolean
-  isSecondaryModal?: boolean
   shouldAvoidKeyboard?: boolean
 } & ActionButtonsProps): JSX.Element => {
   const navigation = useNavigation()
@@ -62,7 +60,6 @@ export const ActionSheet = ({
     <ScrollScreen
       title={title}
       isModal={isModal}
-      isSecondaryModal={isSecondaryModal}
       shouldAvoidKeyboard={shouldAvoidKeyboard}
       navigationTitle={navigationTitle}
       renderFooter={renderFooter}

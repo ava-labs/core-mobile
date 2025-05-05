@@ -401,9 +401,7 @@ const ApprovalScreen = ({
 
   return (
     <ActionSheet
-      isSecondaryModal={
-        presentationMode === NavigationPresentationMode.FORM_SHEET
-      }
+      isModal={presentationMode === NavigationPresentationMode.FORM_SHEET}
       title={displayData.dAppInfo ? undefined : displayData.title}
       navigationTitle={
         displayData.dAppInfo ? displayData?.dAppInfo?.name : displayData.title

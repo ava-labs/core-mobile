@@ -1,8 +1,6 @@
 import { ANIMATED, NavigationTitleHeader, Text } from '@avalabs/k2-alpine'
 import { useHeaderHeight } from '@react-navigation/elements'
 import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
-import { useIsAndroidWithBottomBar } from 'common/hooks/useIsAndroidWithBottomBar'
-import { useModalScreenOptions } from 'common/hooks/useModalScreenOptions'
 import { getListItemEnteringAnimation } from 'common/utils/animations'
 import React, {
   useCallback,
@@ -12,27 +10,32 @@ import React, {
   useState
 } from 'react'
 import {
+  FlatListProps,
   LayoutRectangle,
   NativeScrollEvent,
   NativeSyntheticEvent,
-  Platform,
+  ScrollViewProps,
   StyleProp,
   View,
   ViewStyle
 } from 'react-native'
-import { FlatList } from 'react-native-gesture-handler'
+import { FlatList, ScrollView } from 'react-native-gesture-handler'
+import {
+  KeyboardAwareScrollView,
+  useKeyboardState
+} from 'react-native-keyboard-controller'
 import Animated, {
-  FlatListPropsWithLayout,
   interpolate,
   LinearTransition,
   useAnimatedStyle,
   useSharedValue,
-  withSpring
+  withSpring,
+  withTiming
 } from 'react-native-reanimated'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { BlurViewWithFallback } from './BlurViewWithFallback'
 import { ErrorState } from './ErrorState'
-import { KeyboardAvoidingView } from './KeyboardAvoidingView'
+
 // Use this component when you need to display a list of items in a screen.
 // It handles all the logic for the header and footer, including keyboard interactions and gestures.
 
@@ -47,7 +50,7 @@ import { KeyboardAvoidingView } from './KeyboardAvoidingView'
 
 interface ListScreenProps<T>
   extends Omit<
-    FlatListPropsWithLayout<T>,
+    FlatListProps<T>,
     'ListHeaderComponent' | 'ListFooterComponent'
   > {
   /** The title displayed in the screen header */
@@ -60,8 +63,6 @@ interface ListScreenProps<T>
   hasParent?: boolean
   /** Whether this screen is presented as a modal */
   isModal?: boolean
-  /** Whether this screen is presented as a secondary modal (ActionSheet) */
-  isSecondaryModal?: boolean
   /** Optional function to render a custom sticky header component */
   renderHeader?: () => React.ReactNode
   /** Optional function to render content in the navigation bar's right side */
@@ -78,11 +79,10 @@ export const ListScreen = <T,>({
   navigationTitle,
   hasParent = false,
   isModal = false,
-  isSecondaryModal = false,
   renderEmpty,
   renderHeader,
   renderHeaderRight,
-  ...props
+  ...rest
 }: ListScreenProps<T>): JSX.Element => {
   const insets = useSafeAreaInsets()
 
@@ -91,14 +91,13 @@ export const ListScreen = <T,>({
   >()
   const headerRef = useRef<View>(null)
   const contentHeaderHeight = useSharedValue<number>(0)
-  const { topMarginOffset } = useModalScreenOptions()
-  const isAndroidWithBottomBar = useIsAndroidWithBottomBar()
+  const { height } = useKeyboardState()
 
   const { onScroll, scrollY, targetHiddenProgress } = useFadingHeaderNavigation(
     {
       header: <NavigationTitleHeader title={navigationTitle ?? title ?? ''} />,
       targetLayout: headerLayout,
-      shouldHeaderHaveGrabber: isModal || isSecondaryModal ? true : false,
+      shouldHeaderHaveGrabber: isModal ? true : false,
       hasParent,
       renderHeaderRight
     }
@@ -207,37 +206,9 @@ export const ListScreen = <T,>({
     )
   }, [renderEmpty])
 
-  const keyboardVerticalOffset = useMemo(() => {
-    if (isSecondaryModal) {
-      if (isAndroidWithBottomBar) {
-        return insets.bottom
-      }
-      return topMarginOffset + 16
-    }
-
-    if (isModal) {
-      if (isAndroidWithBottomBar) {
-        return 0
-      }
-      return insets.bottom
-    }
-
-    return insets.bottom + 16
-  }, [
-    insets.bottom,
-    isAndroidWithBottomBar,
-    isModal,
-    isSecondaryModal,
-    topMarginOffset
-  ])
-
-  const paddingBottom = useMemo(() => {
-    return insets.bottom + 16
-  }, [insets.bottom])
-
   const contentContainerStyle = useMemo(() => {
     return [
-      props?.contentContainerStyle,
+      rest?.contentContainerStyle,
       data.length === 0
         ? {
             justifyContent: 'center',
@@ -245,40 +216,49 @@ export const ListScreen = <T,>({
           }
         : {},
       {
-        paddingBottom
+        paddingBottom: insets.bottom + 16
       }
     ] as StyleProp<ViewStyle>[]
-  }, [props?.contentContainerStyle, data.length, paddingBottom])
+  }, [rest?.contentContainerStyle, data.length, insets.bottom])
+
+  const animatedContainerStyle = useAnimatedStyle(() => {
+    return {
+      // TODO: Couldn't make Android work with keyboard avoidance, so we need to add a bottom offset
+      // iOS works with automaticallyAdjustKeyboardInsets but we do keep the same thing here for consistency
+      paddingBottom: withTiming(height - insets.bottom, {
+        ...ANIMATED.TIMING_CONFIG,
+        duration: 100
+      })
+    }
+  })
 
   return (
-    <KeyboardAvoidingView
-      keyboardVerticalOffset={keyboardVerticalOffset}
-      style={{
-        flex: 1
-      }}>
-      {/* @ts-ignore TODO: ListScreen improvement */}
+    <Animated.View
+      style={[animatedContainerStyle, { flex: 1 }]}
+      layout={LinearTransition.springify()}
+      entering={getListItemEnteringAnimation(0)}>
+      {/* @ts-expect-error */}
       <AnimatedFlatList
         data={data}
+        renderScrollComponent={RenderScrollComponent}
         onScroll={onScrollEvent}
         keyboardDismissMode="interactive"
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
         stickyHeaderIndices={[0]}
-        removeClippedSubviews={Platform.OS === 'android'}
         maxToRenderPerBatch={15}
         windowSize={5}
         initialNumToRender={15}
-        updateCellsBatchingPeriod={50}
-        layout={LinearTransition.springify()}
-        entering={getListItemEnteringAnimation(0)}
-        style={{
-          flex: 1
-        }}
-        {...props}
         contentContainerStyle={contentContainerStyle}
+        updateCellsBatchingPeriod={50}
+        {...rest}
         ListHeaderComponent={ListHeaderComponent}
         ListEmptyComponent={ListEmptyComponent}
       />
-    </KeyboardAvoidingView>
+    </Animated.View>
   )
 }
+
+const RenderScrollComponent = React.forwardRef<ScrollView, ScrollViewProps>(
+  (props, ref) => <KeyboardAwareScrollView {...props} ref={ref} />
+)
