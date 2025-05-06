@@ -58,6 +58,7 @@ export const DropdownSelections = ({
             selected={filter.selected}
             onSelected={filter.onSelected}
             onDeselect={filter.onDeselect}
+            scrollContentMaxHeight={filter.scrollContentMaxHeight}
           />
         )}
 
@@ -82,13 +83,15 @@ const Filters = memo(
     data,
     selected,
     onSelected,
-    onDeselect
+    onDeselect,
+    scrollContentMaxHeight
   }: {
     title: DropdownSelection['title']
     data: DropdownSelection['data']
     selected: DropdownSelection['selected']
     onSelected: DropdownSelection['onSelected']
     onDeselect: DropdownSelection['onDeselect']
+    scrollContentMaxHeight: DropdownSelection['scrollContentMaxHeight']
   }) => {
     const selectedRows = useMemo(
       () => (Array.isArray(selected) ? selected : [selected]),
@@ -115,6 +118,7 @@ const Filters = memo(
         onSelectRow={onSelected}
         onDeselectRow={onDeselect}
         minWidth={POPOVER_WIDTH}
+        scrollContentMaxHeight={scrollContentMaxHeight}
       />
     )
   }

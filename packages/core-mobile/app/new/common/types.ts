@@ -7,6 +7,7 @@ export type DropdownSelection = {
   onSelected: (index: IndexPath) => void
   onDeselect?: (index: IndexPath) => void
   useAnchorRect?: boolean
+  scrollContentMaxHeight?: number
 }
 
 export enum NavigationPresentationMode {

@@ -89,19 +89,8 @@ export enum AssetManageView {
 }
 
 export type AssetBalanceSorts = AssetBalanceSort[][]
-export type AssetNetworkFilters = AssetNetworkFilter[][]
 export type AssetManageViews = AssetManageView[][]
 
-export const ASSET_NETWORK_FILTERS: AssetNetworkFilters = [
-  [
-    AssetNetworkFilter.AllNetworks,
-    AssetNetworkFilter.AvalancheCChain,
-    AssetNetworkFilter.AvalanchePChain,
-    AssetNetworkFilter.AvalancheXChain,
-    AssetNetworkFilter.BitcoinNetwork,
-    AssetNetworkFilter.Ethereum
-  ]
-]
 export const ASSET_BALANCE_SORTS: AssetBalanceSorts = [
   [AssetBalanceSort.HighToLow, AssetBalanceSort.LowToHigh]
 ]
