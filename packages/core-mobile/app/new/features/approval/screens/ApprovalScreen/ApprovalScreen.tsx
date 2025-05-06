@@ -10,16 +10,9 @@ import { useSpendLimits } from 'hooks/useSpendLimits'
 import { ActionSheet } from 'new/common/components/ActionSheet'
 import { TokenLogo } from 'new/common/components/TokenLogo'
 import { Warning } from 'new/common/components/Warning'
-import React, {
-  useCallback,
-  useEffect,
-  useLayoutEffect,
-  useMemo,
-  useState
-} from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { ApprovalParams } from 'services/walletconnectv2/walletConnectCache/types'
-import { walletConnectCache } from 'services/walletconnectv2/walletConnectCache/walletConnectCache'
 import {
   selectAccountByAddress,
   selectAccountByIndex,
@@ -29,6 +22,7 @@ import { selectIsSeedlessSigningBlocked } from 'store/posthog/slice'
 import { getChainIdFromCaip2 } from 'utils/caip2ChainIds'
 import Logger from 'utils/Logger'
 import { Eip1559Fees } from 'utils/Utils'
+import { withWalletConnectCache } from 'common/components/withWalletConnectCache'
 import { Account } from '../../components/Account'
 import BalanceChange from '../../components/BalanceChange/BalanceChange'
 import { Details } from '../../components/Details'
@@ -36,20 +30,6 @@ import { Network } from '../../components/Network'
 import { NetworkFeeSelectorWithGasless } from '../../components/NetworkFeeSelectorWithGasless'
 import { SpendLimits } from '../../components/SpendLimits/SpendLimits'
 import { overrideContractItem, removeWebsiteItemIfNecessary } from './utils'
-
-const ApprovalScreenWrapper = (): JSX.Element | null => {
-  const [params, setParams] = useState<ApprovalParams>()
-
-  useLayoutEffect(() => {
-    setParams(walletConnectCache.approvalParams.get())
-  }, [])
-
-  if (!params) {
-    return null
-  }
-
-  return <ApprovalScreen params={params} />
-}
 
 const ApprovalScreen = ({
   params: { request, displayData, signingData, onApprove, onReject }
@@ -419,4 +399,4 @@ const ApprovalScreen = ({
   )
 }
 
-export default ApprovalScreenWrapper
+export default withWalletConnectCache('approvalParams')(ApprovalScreen)

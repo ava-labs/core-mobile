@@ -117,6 +117,18 @@ export default function WalletLayout(): JSX.Element {
             name="(modals)/claimStakeReward"
             options={modalScreensOptions}
           />
+          <Stack.Screen
+            name="(modals)/toggleDeveloperMode"
+            options={modalScreensOptions}
+          />
+          <Stack.Screen
+            name="(modals)/editContact"
+            options={modalScreensOptions}
+          />
+          <Stack.Screen
+            name="(modals)/addEthereumChain"
+            options={modalScreensOptions}
+          />
         </Stack>
         <PolyfillCrypto />
         <LastTransactedNetworks />

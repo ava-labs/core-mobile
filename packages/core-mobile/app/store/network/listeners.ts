@@ -7,7 +7,7 @@ import {
   setActive,
   selectEnabledChainIds,
   toggleEnabledChainId
-} from 'store/network'
+} from 'store/network/slice'
 import {
   selectIsDeveloperMode,
   toggleDeveloperMode

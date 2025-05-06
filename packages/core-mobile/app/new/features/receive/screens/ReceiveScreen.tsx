@@ -29,20 +29,14 @@ export const ReceiveScreen = (): ReactNode => {
       case NetworkVMType.BITCOIN:
         return activeAccount?.addressBTC ?? ''
       case NetworkVMType.AVM:
-        return activeAccount?.addressAVM ?? ''
+        return activeAccount?.addressAVM.split('-')[1] ?? ''
       case NetworkVMType.PVM:
-        return activeAccount?.addressPVM ?? ''
+        return activeAccount?.addressPVM.split('-')[1] ?? ''
       case NetworkVMType.EVM:
       default:
         return activeAccount?.addressC ?? ''
     }
   }, [activeAccount, selectedNetwork])
-
-  const qrCodeAddress = useMemo(() => {
-    if (selectedNetwork.chainId && isXPChain(selectedNetwork.chainId))
-      return address.split('-')[1]
-    return address
-  }, [address, selectedNetwork])
 
   const refreshSelectedNetwork = useCallback(() => {
     if (selectedNetwork.isTestnet && !isDeveloperMode) {
@@ -136,7 +130,7 @@ export const ReceiveScreen = (): ReactNode => {
         </View>
         <QRCode
           testID="receive_token_qr_code"
-          address={qrCodeAddress}
+          address={address}
           token={selectedNetwork.networkToken?.symbol ?? 'AVAX'}
           label={selectedNetwork.chainName}
         />

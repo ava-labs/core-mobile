@@ -3,13 +3,6 @@ import { TokenUnit } from '@avalabs/core-utils-sdk'
 import DeviceInfo from 'react-native-device-info'
 import { formatNumber } from './formatNumber/formatNumber'
 
-export const truncateAddress = (address: string, size = 6): string => {
-  const firstChunk = address.substring(0, size)
-  const lastChunk = address.substr(-(size / 1.5))
-
-  return `${firstChunk}...${lastChunk}`
-}
-
 export const truncateNodeId = (nodeId: string, size = 6): string => {
   if (size <= 0) {
     return 'NodeID-'

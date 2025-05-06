@@ -6,6 +6,9 @@ import {
   toggleDeveloperMode
 } from 'store/settings/advanced'
 import Logger from 'utils/Logger'
+import { router } from 'expo-router'
+import { walletConnectCache } from 'services/walletconnectv2/walletConnectCache/walletConnectCache'
+import { SetDeveloperModeParams } from 'services/walletconnectv2/walletConnectCache/types'
 import {
   ApproveResponse,
   DEFERRED_RESULT,
@@ -54,18 +57,19 @@ class AvalancheSetDeveloperModeHandler
       }
     }
 
-    // const data: AvalancheSetDeveloperModeApproveData = {
-    //   enabled
-    // }
+    const data: AvalancheSetDeveloperModeApproveData = {
+      enabled
+    }
+    const params: SetDeveloperModeParams = {
+      request,
+      data
+    }
 
-    // TODO: reenable this rpc handler
-    // Navigation.navigate({
-    //   name: AppNavigation.Root.Wallet,
-    //   params: {
-    //     screen: AppNavigation.Modal.AvalancheSetDeveloperMode,
-    //     params: { request, data }
-    //   }
-    // })
+    walletConnectCache.setDeveloperModeParams.set(params)
+
+    // @ts-ignore TODO: make routes typesafe
+    router.navigate('/toggleDeveloperMode')
+
     return { success: true, value: DEFERRED_RESULT }
   }
 

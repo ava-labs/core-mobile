@@ -15,6 +15,7 @@ import {
 import { HiddenBalanceText } from 'common/components/HiddenBalanceText'
 import NavigationBarButton from 'common/components/NavigationBarButton'
 import { ScrollScreen } from 'common/components/ScrollScreen'
+import { TRUNCATE_ADDRESS_LENGTH } from 'common/consts/text'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import { showSnackbar } from 'common/utils/toast'
 import { useRouter } from 'expo-router'
@@ -90,7 +91,7 @@ const ManageAccountsScreen = (): React.JSX.Element => {
             lineHeight: 16,
             fontWeight: '500'
           }}>
-          {truncateAddress(account.addressC)}
+          {truncateAddress(account.addressC, TRUNCATE_ADDRESS_LENGTH)}
         </Text>
       ),
       leftIcon: account.active ? (
