@@ -12,7 +12,6 @@ import BlurredBackgroundView from 'common/components/BlurredBackgroundView'
 export const MODAL_TOP_MARGIN = Platform.OS === 'ios' ? 24 : 35
 export const MODAL_BORDER_RADIUS = 40
 export const MODAL_HEADER_HEIGHT = 62
-export const BAR_BUTTONS_BOTTOM_MARGIN = Platform.OS === 'ios' ? 8 : 0
 
 export const commonNavigatorScreenOptions: StackNavigationOptions = {
   title: '',
