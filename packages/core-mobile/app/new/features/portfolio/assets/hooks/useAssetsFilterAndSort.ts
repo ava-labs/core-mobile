@@ -30,7 +30,7 @@ export const useAssetsFilterAndSort = (): {
   })
 
   const networkFilters = useMemo(() => {
-    const enabledNetwksFilter = enabledNetworks.map(network => {
+    const enabledNetworksFilter = enabledNetworks.map(network => {
       return { filterName: network.chainName, chainId: network.chainId }
     })
     return [
@@ -38,7 +38,7 @@ export const useAssetsFilterAndSort = (): {
         filterName: AssetNetworkFilter.AllNetworks as string,
         chainId: undefined
       },
-      ...enabledNetwksFilter
+      ...enabledNetworksFilter
     ]
   }, [enabledNetworks])
 
