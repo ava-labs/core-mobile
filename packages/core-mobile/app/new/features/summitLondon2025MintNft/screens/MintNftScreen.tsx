@@ -18,7 +18,6 @@ import { useSelector } from 'react-redux'
 import { selectActiveAccount } from 'store/account'
 import { useEVMProvider } from 'hooks/networks/networkProviderHooks'
 import Logger from 'utils/Logger'
-import { useConfetti } from 'common/contexts/ConfettiContext'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import useCChainNetwork from 'hooks/earn/useCChainNetwork'
 import { useInAppRequest } from 'hooks/useInAppRequest'
@@ -36,7 +35,6 @@ export const MintNftScreen = (): ReactNode => {
   const cChainNetwork = useCChainNetwork()
   const provider = useEVMProvider(cChainNetwork)
   const [isMinting, setIsMinting] = useState(false)
-  const confetti = useConfetti()
   const { request } = useInAppRequest()
 
   const handleSuccess = useCallback(() => {
@@ -49,7 +47,7 @@ export const MintNftScreen = (): ReactNode => {
         initialTab: PortfolioHomeScreenTab.Collectibles
       }
     })
-  }, [back, confetti, navigate])
+  }, [back, navigate])
 
   const handleMintNft = useCallback(async () => {
     if (!address || !provider) return
