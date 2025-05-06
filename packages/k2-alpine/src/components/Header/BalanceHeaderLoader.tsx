@@ -13,12 +13,12 @@ export const BalanceLoader = (): React.JSX.Element => {
     <ContentLoader
       speed={1}
       width={'100%'}
-      height={43}
-      viewBox="0 0 400 43"
+      height={61.5}
+      viewBox="0 0 400 61.5"
       backgroundColor={backgroundColor}
       foregroundColor={foregroundColor}>
       <Rect x="0" y="0" rx="12" ry="12" width="203" height="36" />
-      {/* <Rect x="0" y="40" rx="9" ry="9" width="93" height="18" /> */}
+      <Rect x="0" y="40" rx="9" ry="9" width="93" height="18" />
     </ContentLoader>
   )
 }
