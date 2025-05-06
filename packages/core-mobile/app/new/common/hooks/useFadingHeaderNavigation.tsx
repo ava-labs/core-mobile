@@ -138,13 +138,11 @@ export const useFadingHeaderNavigation = ({
       title: header && (
         <View
           sx={{
-            paddingTop: shouldHeaderHaveGrabber ? 20 : 0,
-            height: '100%'
+            paddingTop: shouldHeaderHaveGrabber ? 10 : 0
           }}>
           <View
             sx={{
               overflow: 'hidden',
-              height: '100%',
               justifyContent: 'center'
             }}
             onLayout={handleLayout}>

@@ -54,9 +54,7 @@ export function useModalScreenOptions(): {
       borderTopRightRadius: MODAL_BORDER_RADIUS,
       zIndex: 1000
     },
-    // cardOverlay: CardOverlay,
     gestureEnabled: true,
-    gestureDirection: 'vertical',
     headerShown: false,
     cardOverlayEnabled: true,
     headerStyle: {
@@ -75,7 +73,6 @@ export function useModalScreenOptions(): {
   const formSheetScreensOptions: StackNavigationOptions = {
     ...modalOptions,
     cardStyle: {
-      // formsheet behaves differently on iOS and Android
       marginTop: topMarginOffset + 24,
       borderTopLeftRadius: MODAL_BORDER_RADIUS,
       borderTopRightRadius: MODAL_BORDER_RADIUS

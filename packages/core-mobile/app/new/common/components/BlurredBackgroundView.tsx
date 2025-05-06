@@ -26,7 +26,8 @@ const BlurredBackgroundView = ({
   return (
     <View
       style={{
-        flex: 1
+        flex: 1,
+        display: hasGrabber ? 'none' : 'flex'
       }}>
       {separator?.position === 'top' && (
         <Animated.View style={animatedBorderStyle}>

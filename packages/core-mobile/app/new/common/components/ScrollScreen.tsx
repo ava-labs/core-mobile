@@ -89,7 +89,7 @@ export const ScrollScreen = ({
     {
       header: <NavigationTitleHeader title={navigationTitle ?? title ?? ''} />,
       targetLayout: headerLayout,
-      shouldHeaderHaveGrabber: isModal ? true : false,
+      shouldHeaderHaveGrabber: isModal,
       hasParent,
       renderHeaderRight
     }
