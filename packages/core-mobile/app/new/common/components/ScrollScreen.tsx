@@ -162,7 +162,7 @@ export const ScrollScreen = ({
             props?.contentContainerStyle,
             {
               paddingTop: headerHeight,
-              paddingBottom: insets.bottom
+              paddingBottom: insets.bottom + 32
             }
           ]}
           onScroll={onScroll}>
@@ -194,7 +194,7 @@ export const ScrollScreen = ({
             left: 0,
             right: 0,
             bottom: 0,
-            height: headerHeight,
+            height: isModal ? headerHeight : 0,
             zIndex: 100
           }}
         />
@@ -215,7 +215,7 @@ export const ScrollScreen = ({
         contentContainerStyle={[
           props?.contentContainerStyle,
           {
-            paddingBottom: insets.bottom,
+            paddingBottom: insets.bottom + 32,
             paddingTop: headerHeight
           }
         ]}

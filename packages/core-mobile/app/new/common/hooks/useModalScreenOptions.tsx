@@ -62,25 +62,19 @@ export function useModalScreenOptions(): {
 
   const modalScreensOptions: StackNavigationOptions = {
     ...modalOptions,
-    cardStyleInterpolator:
-      Platform.OS === 'ios'
-        ? forModalPresentationIOS
-        : CardStyleInterpolators.forBottomSheetAndroid
+    cardStyleInterpolator: forModalPresentationIOS
   }
 
   const formSheetScreensOptions: StackNavigationOptions = {
     ...modalOptions,
     cardStyle: {
-      marginTop: topMarginOffset + 24,
+      marginTop: Platform.OS === 'ios' ? topMarginOffset : MODAL_TOP_MARGIN,
       borderTopLeftRadius: MODAL_BORDER_RADIUS,
       borderTopRightRadius: MODAL_BORDER_RADIUS
     },
     // we patched @react-navigation/stack to support a custom "formSheet" effect
     // for modals on both iOS and Android
-    cardStyleInterpolator:
-      Platform.OS === 'ios'
-        ? forModalPresentationIOS
-        : CardStyleInterpolators.forBottomSheetAndroid
+    cardStyleInterpolator: CardStyleInterpolators.forModalPresentationIOS
   }
 
   // Options for the first screen of a modal stack navigator.
@@ -152,32 +146,3 @@ export function forModalPresentationIOS({
     overlayStyle: { opacity: overlayOpacity }
   }
 }
-
-// function forBottomSheetAndroid({
-//   current,
-//   inverted,
-//   layouts: { screen },
-//   closing
-// }: StackCardInterpolationProps): StackCardInterpolatedStyle {
-//   const translateY = Animated.multiply(
-//     current.progress.interpolate({
-//       inputRange: [0, 1],
-//       outputRange: [screen.height * 0.8, 0],
-//       extrapolate: 'clamp'
-//     }),
-//     inverted
-//   )
-
-//   const overlayOpacity = current.progress.interpolate({
-//     inputRange: [0, 1],
-//     outputRange: [0, 0.3],
-//     extrapolate: 'clamp'
-//   })
-
-//   return {
-//     cardStyle: {
-//       transform: [{ translateY }]
-//     },
-//     overlayStyle: { opacity: overlayOpacity }
-//   }
-// }

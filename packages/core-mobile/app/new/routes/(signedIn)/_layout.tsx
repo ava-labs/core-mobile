@@ -79,9 +79,12 @@ export default function WalletLayout(): JSX.Element {
           <Stack.Screen
             name="(modals)/tokenDetail"
             options={{
+              ...modalScreensOptions,
               presentation: 'card',
-              headerShown: false,
-              headerTransparent: false
+              cardStyle: {
+                marginTop: 0,
+                paddingTop: 24
+              }
             }}
           />
           <Stack.Screen
