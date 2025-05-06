@@ -141,7 +141,11 @@ export const useFadingHeaderNavigation = ({
         header && (
           <View
             sx={{
-              marginTop: shouldHeaderHaveGrabber ? 16 : 0,
+              marginTop: shouldHeaderHaveGrabber
+                ? Platform.OS === 'ios'
+                  ? 22
+                  : 16
+                : 0,
               justifyContent: 'center',
               overflow: 'hidden'
             }}>
