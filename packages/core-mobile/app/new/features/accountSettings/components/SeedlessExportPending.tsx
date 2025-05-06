@@ -65,7 +65,7 @@ export const SeedlessExportPending = ({
               textAlign: 'center',
               lineHeight: 18
             }}>
-            Your wallet’s recovery phrase will be visible in
+            {`Your wallet’s recovery phrase \nwill be visible in`}
           </Text>
 
           <Space y={11} />
