@@ -3,23 +3,14 @@ import { useQuery } from '@tanstack/react-query'
 import { ReactQueryKeys } from 'consts/reactQueryKeys'
 import { useSelector } from 'react-redux'
 import { selectAllCustomTokens } from 'store/customToken'
-import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { useMemo } from 'react'
 import { getNetworkContractTokens } from 'hooks/networks/utils/getNetworkContractTokens'
-import { useNetworks } from 'hooks/networks/useNetworks'
-import { isAvalancheNetwork } from 'services/network/utils/isAvalancheNetwork'
+import useCChainNetwork from 'hooks/earn/useCChainNetwork'
 
 export const useCChainContractTokens = (): NetworkContractToken[] => {
-  const { allNetworks } = useNetworks()
-
-  const cChainNetwork = useMemo(() => {
-    return Object.values(allNetworks).find(network =>
-      isAvalancheNetwork(network)
-    )
-  }, [allNetworks])
+  const cChainNetwork = useCChainNetwork()
 
   const allCustomTokens = useSelector(selectAllCustomTokens)
-  const isDeveloperMode = useSelector(selectIsDeveloperMode)
 
   const { data } = useQuery({
     enabled: cChainNetwork !== undefined,
@@ -30,15 +21,17 @@ export const useCChainContractTokens = (): NetworkContractToken[] => {
   })
 
   return useMemo(() => {
+    if (cChainNetwork === undefined) {
+      return []
+    }
+
     const t = data ?? []
 
-    // if network is testnet, merge with custom tokens if exists
-    if (cChainNetwork && cChainNetwork.isTestnet === isDeveloperMode) {
-      const customTokens = allCustomTokens[cChainNetwork.chainId]
-      if (customTokens && customTokens.length > 0) {
-        return [...t, ...customTokens]
-      }
+    const customTokens = allCustomTokens[cChainNetwork.chainId]
+    if (customTokens && customTokens.length > 0) {
+      return [...t, ...customTokens]
     }
+
     return t
-  }, [data, cChainNetwork, isDeveloperMode, allCustomTokens])
+  }, [data, cChainNetwork, allCustomTokens])
 }
