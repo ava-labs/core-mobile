@@ -13,6 +13,7 @@ import {
 import { useMemo } from 'react'
 import { Animated, Platform } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import * as stackModalInterpolator from '../utils/stackModalInterpolator'
 
 export function useModalScreenOptions(): {
   topMarginOffset: number
@@ -66,14 +67,14 @@ export function useModalScreenOptions(): {
   const stackModalScreensOptions: StackNavigationOptions | undefined =
     Platform.OS === 'android'
       ? {
-          ...modalScreensOptions,
           presentation: 'card',
-          gestureDirection: 'vertical',
-          gestureEnabled: false,
+          gestureDirection: 'horizontal',
+          gestureEnabled: true,
           cardStyle: {
             marginTop: 0,
             paddingTop: insets.top
-          }
+          },
+          cardStyleInterpolator: stackModalInterpolator.forModalPresentationIOS
         }
       : undefined
 
