@@ -111,7 +111,7 @@ export function useModalScreenOptions(): {
  * This is different from CardStyleInterpolators.forModalPresentationIOS
  */
 
-function forModalPresentationIOS({
+export function forModalPresentationIOS({
   current,
   next,
   inverted,

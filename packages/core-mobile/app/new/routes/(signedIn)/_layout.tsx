@@ -1,7 +1,14 @@
+import {
+  CardStyleInterpolators,
+  TransitionPresets
+} from '@react-navigation/stack'
 import { LastTransactedNetworks } from 'common/components/LastTransactedNetworks'
 import { Stack } from 'common/components/Stack'
 import { stackNavigatorScreenOptions } from 'common/consts/screenOptions'
-import { useModalScreenOptions } from 'common/hooks/useModalScreenOptions'
+import {
+  forModalPresentationIOS,
+  useModalScreenOptions
+} from 'common/hooks/useModalScreenOptions'
 import { BridgeProvider } from 'features/bridge/contexts/BridgeContext'
 import { CollectiblesProvider } from 'features/portfolio/collectibles/CollectiblesContext'
 import { NavigationPresentationMode } from 'new/common/types'
@@ -76,7 +83,16 @@ export default function WalletLayout(): JSX.Element {
             name="(modals)/tokenManagement"
             options={modalScreensOptions}
           />
-          <Stack.Screen name="(modals)/tokenDetail" />
+          <Stack.Screen
+            name="(modals)/tokenDetail"
+            options={{
+              ...modalScreensOptions,
+              cardStyle: {
+                marginTop: 0
+              }
+              // cardStyleInterpolator: CardStyleInterpolators.forHorizontalIOS
+            }}
+          />
           <Stack.Screen
             name="(modals)/trackTokenDetail"
             options={modalScreensOptions}
