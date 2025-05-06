@@ -25,6 +25,7 @@ export const All = (): JSX.Element => {
         <MultipleSectionMultipleSelectionDropdown />
         <LeftAlignedDropdown />
         <RightAlignedDropdown />
+        <SingleSectionSingleSelectionScrollableDropdown />
       </View>
     </ScrollView>
   )
@@ -265,6 +266,49 @@ const RightAlignedDropdown = (): JSX.Element => {
         selectedRows={[selectedRow]}
         onSelectRow={indexPath => setSelectedRow(indexPath)}
         onRequestClose={onHidePopover}
+      />
+    </View>
+  )
+}
+
+const SingleSectionSingleSelectionScrollableDropdown = (): JSX.Element => {
+  const sections = [
+    [
+      'All networks',
+      'Avalanche C-Chain',
+      'Bitcoin network',
+      'Ethereum',
+      'Cardano',
+      'Polkadot',
+      'Chainlink',
+      'Dogecoin',
+      'Solana',
+      'Polygon',
+      'Uniswap'
+    ]
+  ]
+  const [selectedRow, setSelectedRow] = useState<IndexPath>({
+    section: 0,
+    row: 0
+  })
+
+  return (
+    <View
+      style={{
+        gap: 12
+      }}>
+      <Text>Single section, Single selection</Text>
+      <SimpleDropdown
+        from={
+          <Button type="primary" size="medium">
+            {sections[selectedRow.section]?.[selectedRow.row]}
+          </Button>
+        }
+        offset={10}
+        sections={sections}
+        selectedRows={[selectedRow]}
+        onSelectRow={indexPath => setSelectedRow(indexPath)}
+        scrollContentMaxHeight={200}
       />
     </View>
   )
