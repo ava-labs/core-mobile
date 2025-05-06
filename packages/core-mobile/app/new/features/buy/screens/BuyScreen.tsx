@@ -13,6 +13,7 @@ import { useCoreBrowser } from 'common/hooks/useCoreBrowser'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { Warning } from 'new/common/components/Warning'
 import React, { FC, useCallback, useMemo } from 'react'
+import { Linking } from 'react-native'
 import Config from 'react-native-config'
 import { useSelector } from 'react-redux'
 import AnalyticsService from 'services/analytics/AnalyticsService'
@@ -21,6 +22,7 @@ import {
   selectIsCoinbasePayBlocked,
   selectIsHallidayBridgeBannerBlocked
 } from 'store/posthog/slice'
+import Logger from 'utils/Logger'
 
 enum Provider {
   MOONPAY = 'Moonpay',
@@ -70,11 +72,19 @@ export const BuyScreen: FC = () => {
     })
 
     back()
-    openUrl({
-      url,
-      title: 'Coinbase Pay'
-    })
-  }, [address, back, openUrl])
+
+    Linking.canOpenURL(url)
+      .then(supported => {
+        if (supported) {
+          Linking.openURL(url)
+        } else {
+          Logger.error('URL not supported', url)
+        }
+      })
+      .catch(err => {
+        Logger.error('Error opening URL', err)
+      })
+  }, [address, back])
 
   const openHalliday = useCallback((): void => {
     AnalyticsService.capture('HallidayBuyClicked')
