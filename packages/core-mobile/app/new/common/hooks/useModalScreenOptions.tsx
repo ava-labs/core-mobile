@@ -39,6 +39,7 @@ export function useModalScreenOptions(): {
   formSheetScreensOptions: StackNavigationOptions
   modalStackNavigatorScreenOptions: StackNavigationOptions
   modalFirstScreenOptions: StackNavigationOptions
+  tripleModalScreensOptions: StackNavigationOptions | undefined
 } {
   const insets = useSafeAreaInsets()
 
@@ -77,6 +78,20 @@ export function useModalScreenOptions(): {
     cardStyleInterpolator: CardStyleInterpolators.forModalPresentationIOS
   }
 
+  const tripleModalScreensOptions: StackNavigationOptions | undefined =
+    Platform.OS === 'android'
+      ? {
+          ...modalScreensOptions,
+          presentation: 'card',
+          gestureDirection: 'vertical',
+          gestureEnabled: false,
+          cardStyle: {
+            marginTop: 0,
+            paddingTop: insets.top
+          }
+        }
+      : undefined
+
   // Options for the first screen of a modal stack navigator.
   // This screen does not have a back button, so we need to hide it.
   const modalFirstScreenOptions: StackNavigationOptions = {
@@ -88,7 +103,8 @@ export function useModalScreenOptions(): {
     formSheetScreensOptions,
     modalStackNavigatorScreenOptions,
     topMarginOffset,
-    modalFirstScreenOptions
+    modalFirstScreenOptions,
+    tripleModalScreensOptions
   }
 }
 

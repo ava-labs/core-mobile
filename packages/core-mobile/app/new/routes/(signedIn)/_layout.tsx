@@ -6,15 +6,15 @@ import { BridgeProvider } from 'features/bridge/contexts/BridgeContext'
 import { CollectiblesProvider } from 'features/portfolio/collectibles/CollectiblesContext'
 import { NavigationPresentationMode } from 'new/common/types'
 import React from 'react'
-import { Platform } from 'react-native'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 const PolyfillCrypto = React.lazy(() => import('react-native-webview-crypto'))
 
 export default function WalletLayout(): JSX.Element {
-  const insets = useSafeAreaInsets()
-  const { modalScreensOptions, formSheetScreensOptions } =
-    useModalScreenOptions()
+  const {
+    modalScreensOptions,
+    formSheetScreensOptions,
+    tripleModalScreensOptions
+  } = useModalScreenOptions()
 
   return (
     <BridgeProvider>
@@ -81,35 +81,11 @@ export default function WalletLayout(): JSX.Element {
           />
           <Stack.Screen
             name="(modals)/tokenDetail"
-            options={Platform.select({
-              ios: undefined,
-              android: {
-                ...modalScreensOptions,
-                presentation: 'card',
-                gestureDirection: 'vertical',
-                gestureEnabled: false,
-                cardStyle: {
-                  marginTop: 0,
-                  paddingTop: insets.top
-                }
-              }
-            })}
+            options={tripleModalScreensOptions}
           />
           <Stack.Screen
             name="(modals)/collectibleDetail"
-            options={Platform.select({
-              ios: undefined,
-              android: {
-                ...modalScreensOptions,
-                presentation: 'card',
-                gestureDirection: 'vertical',
-                gestureEnabled: false,
-                cardStyle: {
-                  marginTop: 0,
-                  paddingTop: insets.top
-                }
-              }
-            })}
+            options={tripleModalScreensOptions}
           />
           <Stack.Screen
             name="(modals)/trackTokenDetail"
