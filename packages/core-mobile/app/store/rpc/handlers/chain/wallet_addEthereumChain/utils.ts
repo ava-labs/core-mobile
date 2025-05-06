@@ -20,8 +20,7 @@ const chainInfoSchema = z.object({
 const paramsSchema = z.tuple([chainInfoSchema])
 
 const approveDataSchema = z.object({
-  network: networkSchema,
-  isExisting: z.boolean()
+  network: networkSchema
 })
 
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type

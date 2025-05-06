@@ -5,10 +5,11 @@ import mockNetworks from 'tests/fixtures/networks.json'
 import * as NetworkSlice from 'store/network/slice'
 import { walletGetEthereumChainHandler as handler } from './wallet_getEthereumChain'
 
-const mockActiveNetwork = jest.fn()
+const mockEnabledNetworks = jest.fn()
+
 jest
-  .spyOn(NetworkSlice, 'selectActiveNetwork')
-  .mockImplementation(mockActiveNetwork)
+  .spyOn(NetworkSlice, 'selectEnabledNetworks')
+  .mockImplementation(mockEnabledNetworks)
 
 const mockListenerApi = {
   getState: jest.fn(),
@@ -39,18 +40,21 @@ const createRequest = (): RpcRequest<RpcMethod.WALLET_GET_ETHEREUM_CHAIN> => {
 
 describe('wallet_getEthereumChain handler', () => {
   describe('handle', () => {
-    it('should return resource unavailable when there is no active network', async () => {
-      mockActiveNetwork.mockReturnValue(undefined)
+    it('should return resource unavailable when there is no c-chain network', async () => {
+      mockEnabledNetworks.mockReturnValue([])
       const testRequest = createRequest()
       const result = await handler.handle(testRequest, mockListenerApi)
 
       expect(result).toEqual({
         success: false,
-        error: rpcErrors.resourceUnavailable('no active network')
+        error: rpcErrors.resourceUnavailable('no C-Chain network')
       })
     })
     it('should return success with response', async () => {
-      mockActiveNetwork.mockReturnValue(mockNetworks[43114])
+      mockEnabledNetworks.mockReturnValue([
+        mockNetworks[43114],
+        mockNetworks[1]
+      ])
       const testRequest = createRequest()
       const result = await handler.handle(testRequest, mockListenerApi)
 

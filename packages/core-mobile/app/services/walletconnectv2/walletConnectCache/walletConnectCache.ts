@@ -1,36 +1,40 @@
-import { ApprovalParams, SessionProposalParams } from './types'
-
-let sessionProposalParams: SessionProposalParams | null = null
-let approvalParams: ApprovalParams | null = null
+import {
+  ApprovalParams,
+  SetDeveloperModeParams,
+  SessionProposalParams,
+  EditContactParams,
+  AddEthereumChainParams
+} from './types'
 
 // a simple in-memory cache (no reactivity or persistence support)
 // for wallet connect related data
 export const walletConnectCache = {
-  sessionProposalParams: {
-    set: (data: SessionProposalParams) => {
-      sessionProposalParams = data
-    },
-    get: () => {
-      if (!sessionProposalParams) {
-        throw new Error('No session proposal params found')
-      }
+  sessionProposalParams: createCache<SessionProposalParams>('session proposal'),
+  approvalParams: createCache<ApprovalParams>('approval'),
+  setDeveloperModeParams:
+    createCache<SetDeveloperModeParams>('set developer mode'),
+  editContactParams: createCache<EditContactParams>('edit contact'),
+  addEthereumChainParams:
+    createCache<AddEthereumChainParams>('add ethereum chain')
+}
 
-      const data = sessionProposalParams
-      sessionProposalParams = null // auto-clear after retrieval
+function createCache<T>(key: string): {
+  set: (data: T) => void
+  get: () => T
+} {
+  let value: T | null = null
+
+  return {
+    set: (data: T) => {
+      value = data
+    },
+    get: (): T => {
+      if (!value) {
+        throw new Error(`No ${key} params found`)
+      }
+      const data = value
+      value = null // auto-clear after retrieval
       return data
-    }
-  },
-  approvalParams: {
-    set: (data: ApprovalParams) => {
-      approvalParams = data
-    },
-    get: () => {
-      if (!approvalParams) {
-        throw new Error('No approval params found')
-      }
-
-      // approvalParams = null // auto-clear after retrieval
-      return approvalParams
     }
   }
 }

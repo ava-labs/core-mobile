@@ -6,12 +6,12 @@ import {
   View
 } from '@avalabs/k2-alpine'
 import { ListScreen } from 'common/components/ListScreen'
-import { Logo } from 'common/components/Logo'
 import {
   Dapp,
   useConnectedDapps
 } from 'features/accountSettings/hooks/useConnectedDapps'
 import React, { useCallback, useMemo, useState } from 'react'
+import { DappLogo } from 'common/components/DappLogo'
 
 const ConnectedSitesScreen = (): JSX.Element => {
   const {
@@ -48,12 +48,11 @@ const ConnectedSitesScreen = (): JSX.Element => {
 
   const renderItem = useCallback(
     (item: Dapp): React.JSX.Element => {
-      const { name, url, icons } = item.dapp.peer.metadata
+      const { name, url } = item.dapp.peer.metadata
       return (
         <View
           sx={{
-            paddingLeft: 10,
-            paddingRight: 12,
+            marginHorizontal: 16,
             paddingVertical: 14,
             flexDirection: 'row',
             alignItems: 'center',
@@ -62,16 +61,47 @@ const ConnectedSitesScreen = (): JSX.Element => {
           }}>
           <View
             sx={{
-              width: 32,
-              height: 32,
-              borderRadius: 16,
-              overflow: 'hidden'
+              paddingHorizontal: 12,
+              flexDirection: 'row',
+              alignItems: 'center',
+              borderRadius: 12,
+              backgroundColor: colors.$surfaceSecondary
             }}>
-            <Logo
-              logoUri={icons[0]}
-              backgroundColor={colors.$borderPrimary}
-              borderColor={colors.$borderPrimary}
-            />
+            <DappLogo peerMeta={item.dapp.peer.metadata} size={32} />
+            <View
+              sx={{
+                flex: 1,
+                marginHorizontal: 12
+              }}>
+              <Text
+                variant="buttonMedium"
+                numberOfLines={1}
+                ellipsizeMode="tail"
+                sx={{ fontSize: 16, lineHeight: 16, flexGrow: 1 }}>
+                {name}
+              </Text>
+              <Text
+                variant="body2"
+                sx={{ lineHeight: 16, color: colors.$textSecondary }}
+                ellipsizeMode="tail"
+                numberOfLines={1}>
+                {url}
+              </Text>
+            </View>
+            <TouchableOpacity
+              onPress={() => disconnectDapp(item.dapp.topic)}
+              sx={{
+                width: 100,
+                alignItems: 'center',
+                justifyContent: 'center',
+                backgroundColor: colors.$borderPrimary,
+                height: 27,
+                borderRadius: 20,
+                paddingHorizontal: 12,
+                paddingVertical: 5
+              }}>
+              <Text variant="buttonSmall">Disconnect</Text>
+            </TouchableOpacity>
           </View>
           <View
             sx={{
