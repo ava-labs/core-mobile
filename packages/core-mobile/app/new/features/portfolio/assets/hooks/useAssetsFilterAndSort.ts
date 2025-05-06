@@ -3,22 +3,17 @@ import { useCallback, useMemo, useState } from 'react'
 import {
   ASSET_BALANCE_SORTS,
   ASSET_MANAGE_VIEWS,
-  ASSET_NETWORK_FILTERS,
   AssetBalanceSort,
   AssetNetworkFilter,
   LocalTokenWithBalance
 } from 'store/balance'
-import { isAvalancheCChainId } from 'services/network/utils/isAvalancheNetwork'
-import { ChainId } from '@avalabs/core-chains-sdk'
 import { sortUndefined } from 'common/utils/sortUndefined'
 import { useSearchableTokenList } from 'common/hooks/useSearchableTokenList'
 import { DropdownSelection } from 'common/types'
-import {
-  isTokenWithBalanceAVM,
-  isTokenWithBalancePVM
-} from '@avalabs/avalanche-module'
 import { useErc20ContractTokens } from 'common/hooks/useErc20ContractTokens'
 import { sortedTokensWithBalance } from 'common/utils/sortTokensWithBalance'
+import { useSelector } from 'react-redux'
+import { selectEnabledNetworks } from 'store/network'
 
 export const useAssetsFilterAndSort = (): {
   data: LocalTokenWithBalance[]
@@ -29,9 +24,23 @@ export const useAssetsFilterAndSort = (): {
   isRefetching: boolean
 } => {
   const erc20ContractTokens = useErc20ContractTokens()
+  const enabledNetworks = useSelector(selectEnabledNetworks)
   const { filteredTokenList, refetch, isRefetching } = useSearchableTokenList({
     tokens: erc20ContractTokens
   })
+
+  const networkFilters = useMemo(() => {
+    const enabledNetwksFilter = enabledNetworks.map(network => {
+      return { filterName: network.chainName, chainId: network.chainId }
+    })
+    return [
+      {
+        filterName: AssetNetworkFilter.AllNetworks as string,
+        chainId: undefined
+      },
+      ...enabledNetwksFilter
+    ]
+  }, [enabledNetworks])
 
   const [selectedFilter, setSelectedFilter] = useState<IndexPath>({
     section: 0,
@@ -47,11 +56,8 @@ export const useAssetsFilterAndSort = (): {
   })
 
   const filterOption = useMemo(() => {
-    return (
-      ASSET_NETWORK_FILTERS?.[selectedFilter.section]?.[selectedFilter.row] ??
-      AssetNetworkFilter.AllNetworks
-    )
-  }, [selectedFilter])
+    return [networkFilters]?.[selectedFilter.section]?.[selectedFilter.row]
+  }, [networkFilters, selectedFilter.row, selectedFilter.section])
 
   const sortOption = useMemo(() => {
     return (
@@ -64,32 +70,17 @@ export const useAssetsFilterAndSort = (): {
     if (filteredTokenList.length === 0) {
       return []
     }
-    switch (filterOption) {
-      case AssetNetworkFilter.AvalancheCChain:
-        return filteredTokenList.filter(
-          token =>
-            ('chainId' in token &&
-              token.chainId &&
-              isAvalancheCChainId(token.chainId)) ||
-            token.localId === 'AvalancheAVAX'
-        )
-      case AssetNetworkFilter.AvalanchePChain:
-        return filteredTokenList.filter(token => isTokenWithBalancePVM(token))
-      case AssetNetworkFilter.AvalancheXChain:
-        return filteredTokenList.filter(token => isTokenWithBalanceAVM(token))
-      case AssetNetworkFilter.Ethereum:
-        return filteredTokenList.filter(
-          token =>
-            'chainId' in token &&
-            (token.chainId === ChainId.ETHEREUM_HOMESTEAD ||
-              token.chainId === ChainId.ETHEREUM_TEST_GOERLY ||
-              token.chainId === ChainId.ETHEREUM_TEST_SEPOLIA)
-        )
-      case AssetNetworkFilter.BitcoinNetwork:
-        return filteredTokenList.filter(token => token.symbol === 'BTC')
-      default:
-        return filteredTokenList
+
+    if (filterOption?.filterName === AssetNetworkFilter.AllNetworks) {
+      return filteredTokenList
     }
+
+    const filteredResult = filteredTokenList.filter(
+      token => token.networkChainId === filterOption?.chainId
+    )
+    return filteredResult === undefined || filteredResult.length === 0
+      ? []
+      : filteredResult
   }, [filterOption, filteredTokenList])
 
   const getSorted = useCallback(
@@ -118,11 +109,12 @@ export const useAssetsFilterAndSort = (): {
   const filter = useMemo(
     () => ({
       title: 'Filter',
-      data: ASSET_NETWORK_FILTERS,
+      data: [networkFilters.map(f => f.filterName)],
       selected: selectedFilter,
-      onSelected: setSelectedFilter
+      onSelected: setSelectedFilter,
+      scrollContentMaxHeight: 250
     }),
-    [selectedFilter, setSelectedFilter]
+    [networkFilters, selectedFilter]
   )
 
   const sort = useMemo(

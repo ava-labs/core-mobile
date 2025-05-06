@@ -1,7 +1,7 @@
 import React, { useCallback, useMemo, useRef } from 'react'
 import Popover, { Rect } from 'react-native-popover-view'
 import { Platform, StyleSheet } from 'react-native'
-import { Text, View, TouchableOpacity } from '../Primitives'
+import { Text, View, TouchableOpacity, ScrollView } from '../Primitives'
 import { useTheme } from '../../hooks'
 import { Separator } from '../Separator/Separator'
 import { Icons } from '../../theme/tokens/Icons'
@@ -21,7 +21,8 @@ export const SimpleDropdown = <T extends { toString(): string }>({
   onRequestClose,
   isVisible,
   minWidth = 200,
-  displayArea
+  displayArea,
+  scrollContentMaxHeight
 }: {
   from?: React.ReactNode | Rect
   sections: T[][]
@@ -35,6 +36,7 @@ export const SimpleDropdown = <T extends { toString(): string }>({
   minWidth?: number
   displayArea?: Pick<Rect, 'height' | 'width' | 'x' | 'y'>
   testID?: string
+  scrollContentMaxHeight?: number
 }): JSX.Element => {
   const { theme } = useTheme()
   const popoverRef = useRef<Popover>()
@@ -134,7 +136,17 @@ export const SimpleDropdown = <T extends { toString(): string }>({
         popoverStyle={popoverStyle}
         arrowSize={styles.arrow}
         backgroundStyle={{ backgroundColor: 'transparent' }}>
-        <DropdownBackground>{content}</DropdownBackground>
+        <DropdownBackground>
+          <ScrollView
+            scrollEnabled={scrollContentMaxHeight !== undefined}
+            showsVerticalScrollIndicator={false}
+            sx={{
+              maxHeight: scrollContentMaxHeight,
+              backgroundColor: 'transparent'
+            }}>
+            {content}
+          </ScrollView>
+        </DropdownBackground>
       </Popover>
     </View>
   )
