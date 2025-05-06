@@ -44,7 +44,8 @@ export const SeedlessExportInstructions = ({ onNext }: Props): JSX.Element => {
           backgroundColor: '$surfacePrimary',
           flexDirection: 'row',
           alignItems: 'center',
-          gap: 12
+          gap: 12,
+          width: '80%'
         }}>
         <Icons.Action.Info color={colors.$textDanger} />
         <Text

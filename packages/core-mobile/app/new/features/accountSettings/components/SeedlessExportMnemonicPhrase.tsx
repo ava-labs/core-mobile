@@ -7,7 +7,6 @@ import {
   View
 } from '@avalabs/k2-alpine'
 import { MnemonicText } from 'common/components/MnemonicText'
-import NavigationBarButton from 'common/components/NavigationBarButton'
 import { ScrollScreen } from 'common/components/ScrollScreen'
 import { Space } from 'common/components/Space'
 import React, { useCallback } from 'react'
@@ -20,14 +19,12 @@ type Props = {
   mnemonic?: string
   hideMnemonic?: boolean
   testID?: string
-  toggleRecoveryPhrase?: () => void
   onCopyPhrase: (mnemonic?: string) => void
 }
 
 export const SeedlessExportMnemonicPhrase = ({
   mnemonic,
   hideMnemonic = false,
-  toggleRecoveryPhrase,
   onCopyPhrase
 }: Props): JSX.Element => {
   const {
@@ -73,31 +70,6 @@ export const SeedlessExportMnemonicPhrase = ({
     })
   }, [mnemonic, onCopyPhrase])
 
-  const renderHeaderRight = useCallback(() => {
-    return (
-      <NavigationBarButton>
-        {hideMnemonic ? (
-          <Icons.Action.VisibilityOff
-            color={colors.$textSecondary}
-            onPress={toggleRecoveryPhrase}
-            hitSlop={16}
-          />
-        ) : (
-          <Icons.Action.VisibilityOn
-            color={colors.$textPrimary}
-            onPress={toggleRecoveryPhrase}
-            hitSlop={16}
-          />
-        )}
-      </NavigationBarButton>
-    )
-  }, [
-    colors.$textPrimary,
-    colors.$textSecondary,
-    hideMnemonic,
-    toggleRecoveryPhrase
-  ])
-
   const renderFooter = useCallback(() => {
     return (
       <Button
@@ -115,9 +87,6 @@ export const SeedlessExportMnemonicPhrase = ({
   return (
     <ScrollScreen
       title={SHOW_RECOVERY_PHRASE}
-      renderHeaderRight={renderHeaderRight}
-      renderFooter={renderFooter}
-      //  testID="menemonic_screen__new_recovery_phrase_instructions"
       subtitle="This phrase is your access key to your wallet. Carefully write it down and store it in a safe location"
       showsVerticalScrollIndicator={false}
       contentContainerStyle={{
@@ -129,7 +98,8 @@ export const SeedlessExportMnemonicPhrase = ({
           backgroundColor: '$surfacePrimary',
           flexDirection: 'row',
           alignItems: 'center',
-          gap: 12
+          gap: 12,
+          marginTop: 21
         }}>
         <Icons.Action.Info color={colors.$textDanger} />
         <Text
@@ -160,6 +130,7 @@ export const SeedlessExportMnemonicPhrase = ({
           {mnemonics()}
         </View>
       </View>
+      <View sx={{ alignSelf: 'center', marginTop: 20 }}>{renderFooter()}</View>
     </ScrollScreen>
   )
 }
