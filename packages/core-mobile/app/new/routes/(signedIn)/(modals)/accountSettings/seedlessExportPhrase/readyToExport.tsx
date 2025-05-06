@@ -122,7 +122,8 @@ const SeedlessExportReadyScreen = (): JSX.Element => {
 
       return () => {
         getParent()?.setOptions({
-          headerLeft: undefined
+          headerLeft: undefined,
+          headerRight: undefined
         })
       }
     }, [getParent, renderCustomBackButton, renderHeaderRight])
