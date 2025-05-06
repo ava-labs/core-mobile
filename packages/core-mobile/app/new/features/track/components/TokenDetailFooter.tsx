@@ -14,7 +14,7 @@ import { MarketType } from 'store/watchlist'
 export const TokenDetailFooter = ({
   tokenId,
   tokenInfo,
-  //onBuy,
+  onBuy,
   onStake,
   onSwap
 }: {
@@ -33,16 +33,16 @@ export const TokenDetailFooter = ({
   const { hasEnoughAvax } = useHasEnoughAvaxToStake()
   const earnBlocked = useSelector(selectIsEarnBlocked)
 
-  // const buyButton = (
-  //   <Button
-  //     key="buy"
-  //     type={'primary'}
-  //     size={'large'}
-  //     onPress={onBuy}
-  //     style={{ flex: 1 }}>
-  //     Buy
-  //   </Button>
-  // )
+  const buyButton = (
+    <Button
+      key="buy"
+      type={'primary'}
+      size={'large'}
+      onPress={onBuy}
+      style={{ flex: 1 }}>
+      Buy
+    </Button>
+  )
 
   const stakeButton = (
     <Button
@@ -71,10 +71,12 @@ export const TokenDetailFooter = ({
   if (isZeroBalance) {
     // only show buy button if the user has zero balance
     // actions.push(buyButton)
+    tokenId === AVAX_COINGECKO_ID && actions.push(buyButton)
   } else if (tokenId === AVAX_COINGECKO_ID) {
     // for AVAX, show stake instead of buy button if user has enough AVAX
-    hasEnoughAvax && !earnBlocked && actions.push(stakeButton)
-    //  : actions.push(buyButton)
+    hasEnoughAvax
+      ? !earnBlocked && actions.push(stakeButton)
+      : actions.push(buyButton)
 
     // always show swap button for AVAX
     actions.push(generateSwapButton(USDC_TOKEN_ID))
