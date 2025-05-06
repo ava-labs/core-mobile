@@ -45,6 +45,8 @@ export const handlePromptNotifications = async (
     return
   }
 
+  listenerApi.dispatch(setViewOnce(ViewOnceKey.NOTIFICATIONS_PROMPT))
+
   showAlert({
     title: 'Enable push notifications',
     description:
@@ -69,5 +71,4 @@ export const handlePromptNotifications = async (
       }
     ]
   })
-  listenerApi.dispatch(setViewOnce(ViewOnceKey.NOTIFICATIONS_PROMPT))
 }
