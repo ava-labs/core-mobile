@@ -24,6 +24,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { AddrBookItemType } from 'store/addressBook'
 import { selectSelectedCurrency } from 'store/settings/currency'
+import { TRUNCATE_ADDRESS_LENGTH } from 'common/consts/text'
 import { useSendContext } from '../context/sendContext'
 import { useSendSelectedToken } from '../store'
 
@@ -164,6 +165,7 @@ export const SendToken = ({ onSend }: { onSend: () => void }): JSX.Element => {
 
   return (
     <ScrollScreen
+      bottomOffset={150}
       isModal
       title={`${'How much would\nyou like to send?'}`}
       navigationTitle="How much would you like to send?"
@@ -208,7 +210,7 @@ export const SendToken = ({ onSend }: { onSend: () => void }): JSX.Element => {
                   fontSize: 13,
                   color: colors.$textSecondary
                 }}>
-                {truncateAddress(addressToSend)}
+                {truncateAddress(addressToSend, TRUNCATE_ADDRESS_LENGTH)}
               </Text>
             )}
           </View>

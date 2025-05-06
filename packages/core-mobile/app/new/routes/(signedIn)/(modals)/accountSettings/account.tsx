@@ -40,16 +40,14 @@ const AccountScreen = (): JSX.Element => {
   )
   const selectedCurrency = useSelector(selectSelectedCurrency)
   const { formatCurrency } = useFormatCurrency()
-  const currencyBalance = useMemo(() => {
+  const formattedBalance = useMemo(() => {
     return !balanceAccurate || balanceTotalInCurrency === 0
-      ? '$' + UNKNOWN_AMOUNT
-      : formatCurrency({ amount: balanceTotalInCurrency })
+      ? UNKNOWN_AMOUNT
+      : formatCurrency({
+          amount: balanceTotalInCurrency,
+          withoutCurrencySuffix: true
+        })
   }, [balanceAccurate, balanceTotalInCurrency, formatCurrency])
-
-  const formattedBalance = useMemo(
-    () => currencyBalance.replace(selectedCurrency, ''),
-    [currencyBalance, selectedCurrency]
-  )
 
   const renderHeader = useCallback((): JSX.Element => {
     return (

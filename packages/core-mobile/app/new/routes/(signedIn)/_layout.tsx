@@ -9,6 +9,10 @@ import React from 'react'
 
 const PolyfillCrypto = React.lazy(() => import('react-native-webview-crypto'))
 
+export const unstable_settings = {
+  initialRouteName: '(tabs)' // Ensure tabs are rendered first
+}
+
 export default function WalletLayout(): JSX.Element {
   const {
     modalScreensOptions,
@@ -122,6 +126,18 @@ export default function WalletLayout(): JSX.Element {
           />
           <Stack.Screen
             name="(modals)/claimStakeReward"
+            options={modalScreensOptions}
+          />
+          <Stack.Screen
+            name="(modals)/toggleDeveloperMode"
+            options={modalScreensOptions}
+          />
+          <Stack.Screen
+            name="(modals)/editContact"
+            options={modalScreensOptions}
+          />
+          <Stack.Screen
+            name="(modals)/addEthereumChain"
             options={modalScreensOptions}
           />
         </Stack>

@@ -4,7 +4,7 @@ import {
   selectIsDeveloperMode,
   toggleDeveloperMode
 } from 'store/settings/advanced'
-import { selectNetwork, setActive } from 'store/network'
+import { selectNetwork } from 'store/network'
 import { selectAccountByAddress, setActiveAccountIndex } from 'store/account'
 
 export const handleProcessNotificationData = async (
@@ -15,7 +15,7 @@ export const handleProcessNotificationData = async (
   const dispatch = listenerApi.dispatch
   const isDeveloperMode = selectIsDeveloperMode(state)
 
-  //maybe set network
+  //maybe toggle testnet mode
   if ('chainId' in data && ['string', 'number'].includes(typeof data.chainId)) {
     const chainId = Number(data.chainId)
     const network = selectNetwork(chainId)(state)
@@ -23,7 +23,6 @@ export const handleProcessNotificationData = async (
     if (network && network.isTestnet !== isDeveloperMode) {
       dispatch(toggleDeveloperMode())
     }
-    dispatch(setActive(chainId))
   }
 
   //maybe set account

@@ -20,6 +20,7 @@ import React, { useCallback, useMemo, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { Contact } from 'store/addressBook'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
+import { TRUNCATE_ADDRESS_LENGTH } from 'common/consts/text'
 import EMPTY_ADDRESS_BOOK_ICON from '../../../assets/icons/address_book_empty.png'
 
 interface Props {
@@ -145,7 +146,7 @@ export const RecentContacts = ({
                       }}
                       ellipsizeMode="tail"
                       numberOfLines={1}>
-                      {truncateAddress(address)}
+                      {truncateAddress(address, TRUNCATE_ADDRESS_LENGTH)}
                     </Text>
                   )}
                 </View>

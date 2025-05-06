@@ -30,6 +30,7 @@ import {
 
 export default function Root(): JSX.Element | null {
   const dispatch = useDispatch()
+
   const selectedAppearance = useSelector(selectSelectedAppearance)
   const { inBackground } = useBgDetect()
   const [enabledPrivacyScreen, setEnabledPrivacyScreen] = useState(false)

@@ -21,7 +21,6 @@ import { About } from 'features/accountSettings/components/About'
 import { AccountList } from 'features/accountSettings/components/AcccountList'
 import { AppAppearance } from 'features/accountSettings/components/AppAppearance'
 import { UserPreferences } from 'features/accountSettings/components/UserPreferences'
-import { useNetworks } from 'hooks/networks/useNetworks'
 import React, { useCallback } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import AnalyticsService from 'services/analytics/AnalyticsService'
@@ -34,6 +33,7 @@ import {
   selectIsPrivacyModeEnabled,
   togglePrivacyMode
 } from 'store/settings/securityPrivacy'
+import { useCoreBrowser } from 'common/hooks/useCoreBrowser'
 
 const AccountSettingsScreen = (): JSX.Element => {
   const { deleteWallet } = useDeleteWallet()
@@ -43,9 +43,9 @@ const AccountSettingsScreen = (): JSX.Element => {
   const {
     theme: { colors }
   } = useTheme()
-  const { enabledNetworks } = useNetworks()
   const contacts = useSelector(selectContacts)
-  const { navigate } = useRouter()
+  const { navigate, back } = useRouter()
+  const { openUrl } = useCoreBrowser()
 
   const { avatar } = useAvatar()
 
@@ -105,6 +105,14 @@ const AccountSettingsScreen = (): JSX.Element => {
     dispatch(toggleDeveloperMode())
     showSnackbar('Testnet mode is now ' + (value ? 'on' : 'off'))
   }
+
+  const handlePressAboutItem = useCallback(
+    ({ url, title }: { url: string; title: string }) => {
+      back()
+      openUrl({ url, title })
+    },
+    [openUrl, back]
+  )
 
   return (
     <ScrollScreen
@@ -200,19 +208,7 @@ const AccountSettingsScreen = (): JSX.Element => {
                   {
                     title: 'Networks',
                     // @ts-ignore TODO: make routes typesafe
-                    onPress: () => navigate('/accountSettings/manageNetworks'),
-                    value: (
-                      <Text
-                        variant="body2"
-                        sx={{
-                          color: colors.$textSecondary,
-                          fontSize: 16,
-                          lineHeight: 22,
-                          marginLeft: 9
-                        }}>
-                        {enabledNetworks.length}
-                      </Text>
-                    )
+                    onPress: () => navigate('/accountSettings/manageNetworks')
                   }
                 ]}
                 titleSx={{
@@ -232,7 +228,7 @@ const AccountSettingsScreen = (): JSX.Element => {
               selectNotificationPreferences={goToNotificationPreferences}
               selectSecurityPrivacy={goToSecurityPrivacy}
             />
-            <About />
+            <About onPressItem={handlePressAboutItem} />
           </View>
           <TouchableOpacity
             sx={{

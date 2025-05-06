@@ -16,6 +16,7 @@ import { CorePrimaryAccount } from '@avalabs/types'
 import { AccountCollection } from 'store/account/types'
 import { useFormatCurrency } from 'new/common/hooks/useFormatCurrency'
 import { useBalanceForAccount } from 'new/common/contexts/useBalanceForAccount'
+import { TRUNCATE_ADDRESS_LENGTH } from 'common/consts/text'
 
 type Props = {
   onSelect: (account: CorePrimaryAccount) => void
@@ -184,7 +185,7 @@ const Account = ({
               fontSize: 12,
               color: alpha(colors.$textPrimary, 0.6)
             }}>
-            {truncateAddress(account.addressC, 8)}
+            {truncateAddress(account.addressC, TRUNCATE_ADDRESS_LENGTH)}
           </Text>
         </View>
         <View

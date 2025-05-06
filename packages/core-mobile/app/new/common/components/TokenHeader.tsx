@@ -7,7 +7,9 @@ import {
   isTokenWithBalanceAVM,
   isTokenWithBalancePVM
 } from '@avalabs/avalanche-module'
+import { PrivacyModeAlert } from '@avalabs/k2-alpine'
 import { LocalTokenWithBalance } from '../../../store/balance/types'
+import { HiddenBalanceText } from './HiddenBalanceText'
 
 export const TokenHeader = ({
   token,
@@ -15,7 +17,8 @@ export const TokenHeader = ({
   currency,
   errorMessage,
   onLayout,
-  isLoading
+  isLoading,
+  isPrivacyModeEnabled = false
 }: {
   token?: LocalTokenWithBalance
   formattedBalance: string
@@ -23,6 +26,7 @@ export const TokenHeader = ({
   errorMessage?: string
   onLayout?: (event: LayoutChangeEvent) => void
   isLoading?: boolean
+  isPrivacyModeEnabled?: boolean
 }): React.JSX.Element => {
   const {
     theme: { colors }
@@ -47,12 +51,17 @@ export const TokenHeader = ({
             alignItems: 'flex-end',
             gap: 4
           }}>
-          <Text
-            variant="heading2"
-            sx={{ lineHeight: 38, flexShrink: 1 }}
-            numberOfLines={1}>
-            {token?.balanceDisplayValue ?? UNKNOWN_AMOUNT}
-          </Text>
+          {isPrivacyModeEnabled ? (
+            <HiddenBalanceText isCurrency={false} sx={{ lineHeight: 38 }} />
+          ) : (
+            <Text
+              variant="heading2"
+              sx={{ lineHeight: 38, flexShrink: 1 }}
+              numberOfLines={1}>
+              {token?.balanceDisplayValue ?? UNKNOWN_AMOUNT}
+            </Text>
+          )}
+
           <Text
             sx={{ fontFamily: 'Aeonik-Medium', fontSize: 18, lineHeight: 28 }}>
             {token?.symbol}
@@ -70,11 +79,12 @@ export const TokenHeader = ({
                 {errorMessage}
               </Text>
             </View>
+          ) : isPrivacyModeEnabled ? (
+            <PrivacyModeAlert />
           ) : (
-            <View sx={{ flexDirection: 'row', alignItems: 'flex-end', gap: 4 }}>
-              <Text variant="body2">{formattedBalance}</Text>
-              <Text variant="body2">{currency}</Text>
-            </View>
+            <Text variant="body2">
+              {formattedBalance} {currency}
+            </Text>
           )}
         </View>
       </View>

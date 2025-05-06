@@ -86,8 +86,7 @@ const StakeAmountScreen = (): JSX.Element => {
   const formatInCurrency = useCallback(
     (amount: TokenUnit): string => {
       return formatCurrency({
-        amount: amount.mul(avaxPrice).toDisplay({ asNumber: true }),
-        withCurrencySuffix: true
+        amount: amount.mul(avaxPrice).toDisplay({ asNumber: true })
       })
     },
     [avaxPrice, formatCurrency]

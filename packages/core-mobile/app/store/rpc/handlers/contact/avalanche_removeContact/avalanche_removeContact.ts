@@ -2,6 +2,8 @@ import { AppListenerEffectAPI } from 'store/types'
 import { rpcErrors } from '@metamask/rpc-errors'
 import { removeContact, selectContacts } from 'store/addressBook'
 import Logger from 'utils/Logger'
+import { router } from 'expo-router'
+import { walletConnectCache } from 'services/walletconnectv2/walletConnectCache/walletConnectCache'
 import { RpcMethod, RpcRequest } from '../../../types'
 import {
   ApproveResponse,
@@ -47,18 +49,14 @@ class AvalancheRemoveContactHandler
       }
     }
 
-    // Navigation.navigate({
-    //   name: AppNavigation.Root.Wallet,
-    //   params: {
-    //     screen: AppNavigation.Modal.CreateRemoveContactV2,
-    //     params: {
-    //       request,
-    //       contact: existingContact,
-    //       action: 'remove'
-    //     }
-    //   }
-    // })
+    walletConnectCache.editContactParams.set({
+      request,
+      contact: existingContact,
+      action: 'remove'
+    })
 
+    // @ts-ignore TODO: make routes typesafe
+    router.navigate('/editContact')
     return { success: true, value: DEFERRED_RESULT }
   }
 

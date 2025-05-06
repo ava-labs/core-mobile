@@ -26,7 +26,8 @@ import { useSelector } from 'react-redux'
 import NetworkService from 'services/network/NetworkService'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { isOnGoing } from 'utils/earn/status'
-import { truncateAddress, truncateNodeId } from 'utils/Utils'
+import { truncateNodeId } from 'utils/Utils'
+import { truncateAddress } from '@avalabs/core-utils-sdk'
 
 const StakeDetailScreen = (): React.JSX.Element => {
   const { txHash } = useLocalSearchParams<{ txHash: string }>()
