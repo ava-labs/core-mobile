@@ -49,14 +49,28 @@ export function useTokenSearch({
       )
         return EMPTY_DATA
 
-      const tokens = items.filter(i => {
-        const lowerCaseSearchText = searchText.toLowerCase()
-        return (
-          i.name.toLowerCase().includes(lowerCaseSearchText) ||
-          i.symbol.toLowerCase().includes(lowerCaseSearchText) ||
-          i.id.toLowerCase().includes(lowerCaseSearchText)
-        )
-      })
+      const seenSymbols = new Set<string>()
+
+      const tokens: MarketToken[] = []
+
+      const lowerCaseSearchText = searchText.toLowerCase()
+
+      const matchesSearch = (token: MarketToken): boolean =>
+        token.name.toLowerCase().includes(lowerCaseSearchText) ||
+        token.symbol.toLowerCase().includes(lowerCaseSearchText) ||
+        token.id.toLowerCase().includes(lowerCaseSearchText)
+
+      for (const token of items) {
+        const symbol = token.symbol.toUpperCase()
+
+        // only add the token if it hasn't been seen before and matches the search
+        // to prevent duplicates
+        // TODO remove this workaround after backend work is done
+        if (!seenSymbols.has(symbol) && matchesSearch(token)) {
+          tokens.push(token)
+          seenSymbols.add(symbol)
+        }
+      }
 
       if (tokens.length > 0) {
         // we already have these tokens in the list

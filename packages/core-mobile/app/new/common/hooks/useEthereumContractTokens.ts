@@ -7,19 +7,14 @@ import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { useMemo } from 'react'
 import { getNetworkContractTokens } from 'hooks/networks/utils/getNetworkContractTokens'
 import { useNetworks } from 'hooks/networks/useNetworks'
-import { isEthereumNetwork } from 'services/network/utils/isEthereumNetwork'
+import { getEthereumNetwork } from 'services/network/utils/providerUtils'
 
 export const useEthereumContractTokens = (): NetworkContractToken[] => {
   const { allNetworks } = useNetworks()
-
-  const ethereumNetwork = useMemo(() => {
-    return Object.values(allNetworks).find(network =>
-      isEthereumNetwork(network)
-    )
-  }, [allNetworks])
+  const isDeveloperMode = useSelector(selectIsDeveloperMode)
+  const ethereumNetwork = getEthereumNetwork(allNetworks, isDeveloperMode)
 
   const allCustomTokens = useSelector(selectAllCustomTokens)
-  const isDeveloperMode = useSelector(selectIsDeveloperMode)
 
   const { data } = useQuery({
     enabled: ethereumNetwork !== undefined,
@@ -30,15 +25,17 @@ export const useEthereumContractTokens = (): NetworkContractToken[] => {
   })
 
   return useMemo(() => {
+    if (ethereumNetwork === undefined) {
+      return []
+    }
+
     const t = data ?? []
 
-    // if network is testnet, merge with custom tokens if exists
-    if (ethereumNetwork && ethereumNetwork.isTestnet === isDeveloperMode) {
-      const customTokens = allCustomTokens[ethereumNetwork.chainId]
-      if (customTokens && customTokens.length > 0) {
-        return [...t, ...customTokens]
-      }
+    const customTokens = allCustomTokens[ethereumNetwork.chainId]
+    if (customTokens && customTokens.length > 0) {
+      return [...t, ...customTokens]
     }
+
     return t
-  }, [allCustomTokens, data, isDeveloperMode, ethereumNetwork])
+  }, [allCustomTokens, data, ethereumNetwork])
 }
