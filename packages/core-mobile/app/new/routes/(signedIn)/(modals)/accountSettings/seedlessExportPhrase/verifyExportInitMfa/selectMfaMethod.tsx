@@ -22,7 +22,7 @@ const SelectMfaMethodScreen = (): React.JSX.Element => {
       if (recoveryMethod.mfa?.type === 'totp') {
         navigate(
           // @ts-ignore TODO: make routes typesafe
-          '/accountSettings/seedlessExportPhrase/verifyExportInit/verifyTotpCode'
+          '/accountSettings/seedlessExportPhrase/verifyExportInitMfa/verifyTotpCode'
         )
         return
       }

@@ -165,6 +165,7 @@ export const SendToken = ({ onSend }: { onSend: () => void }): JSX.Element => {
 
   return (
     <ScrollScreen
+      bottomOffset={150}
       isModal
       title={`${'How much would\nyou like to send?'}`}
       navigationTitle="How much would you like to send?"
