@@ -105,7 +105,7 @@ export const BrowserTab = forwardRef<BrowserTabRef, { tabId: string }>(
       pageStyles?.backgroundColor || theme.colors.$surfacePrimary
 
     useEffect(() => {
-      if (activeHistory?.url && activeHistory.url !== urlToLoad) {
+      if (activeHistory?.url && !urlToLoad) {
         setUrlToLoad(activeHistory.url)
       }
     }, [activeHistory?.url, urlToLoad])
