@@ -95,6 +95,13 @@ export const networkSlice = createSlice({
     removeCustomNetwork: (state, action: PayloadAction<ChainID>) => {
       const chainId = action.payload
       delete state.customNetworks[chainId]
+
+      // remove chainId from enabledChainIds if it exists
+      if (state.enabledChainIds.includes(chainId)) {
+        state.enabledChainIds = state.enabledChainIds.filter(
+          id => id !== chainId
+        )
+      }
     }
   }
 })

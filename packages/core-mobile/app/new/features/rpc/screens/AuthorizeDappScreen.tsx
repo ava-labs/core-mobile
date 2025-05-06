@@ -1,37 +1,22 @@
-import React, { useLayoutEffect, useCallback, useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import { StyleSheet, View } from 'react-native'
 import { CorePrimaryAccount } from '@avalabs/types'
 import { useDappConnectionV2 } from 'hooks/useDappConnectionV2'
 import { useSelector } from 'react-redux'
 import { selectAccounts, selectActiveAccount } from 'store/account/slice'
-import { getLogoIconUrl } from 'utils/getLogoIconUrl'
 import { showSnackbar } from 'new/common/utils/toast'
 import { router } from 'expo-router'
-import { walletConnectCache } from 'services/walletconnectv2/walletConnectCache/walletConnectCache'
-import { TokenLogo } from 'new/common/components/TokenLogo'
 import { SCREEN_WIDTH, Text } from '@avalabs/k2-alpine'
 import { SessionProposalParams } from 'services/walletconnectv2/walletConnectCache/types'
 import { ActionSheet } from 'new/common/components/ActionSheet'
 import { isSiteScanResponseMalicious } from 'store/rpc/handlers/wc_sessionRequest/utils'
 import { AlertType } from '@avalabs/vm-module-types'
+import { withWalletConnectCache } from 'common/components/withWalletConnectCache'
+import { DappLogo } from 'common/components/DappLogo'
 import { SelectAccounts } from '../components/SelectAccounts'
 
 const showNoActiveAccountMessage = (): void => {
   showSnackbar('There is no active account.')
-}
-
-const AuthorizeDappScreenWrapper = (): JSX.Element | null => {
-  const [params, setParams] = useState<SessionProposalParams>()
-
-  useLayoutEffect(() => {
-    setParams(walletConnectCache.sessionProposalParams.get())
-  }, [])
-
-  if (!params) {
-    return null
-  }
-
-  return <AuthorizeDappScreen params={params} />
 }
 
 const AuthorizeDappScreen = ({
@@ -41,7 +26,6 @@ const AuthorizeDappScreen = ({
 }): JSX.Element => {
   const { onUserApproved: onApprove, onUserRejected: onReject } =
     useDappConnectionV2()
-
   const activeAccount = useSelector(selectActiveAccount)
   const allAccounts = useSelector(selectAccounts)
   const [selectedAccounts, setSelectedAccounts] = useState<
@@ -93,7 +77,7 @@ const AuthorizeDappScreen = ({
   return (
     <ActionSheet
       isModal
-      title="Connect wallet?"
+      navigationTitle="Connect wallet?"
       onClose={() => onReject(request)}
       alert={alert}
       confirm={{
@@ -107,7 +91,7 @@ const AuthorizeDappScreen = ({
       }}>
       <>
         <View style={styles.iconContainer}>
-          <TokenLogo logoUri={getLogoIconUrl(peerMeta.icons)} size={62} />
+          <DappLogo peerMeta={peerMeta} />
           <View style={styles.domainUrlContainer}>
             <Text
               variant="heading6"
@@ -155,4 +139,6 @@ const styles = StyleSheet.create({
   }
 })
 
-export default AuthorizeDappScreenWrapper
+export default withWalletConnectCache('sessionProposalParams')(
+  AuthorizeDappScreen
+)

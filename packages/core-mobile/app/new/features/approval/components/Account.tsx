@@ -2,6 +2,7 @@ import React from 'react'
 import { View, Text, Pressable, alpha, useTheme } from '@avalabs/k2-alpine'
 import { copyToClipboard } from 'new/common/utils/clipboard'
 import { truncateAddress } from '@avalabs/core-utils-sdk'
+import { TRUNCATE_ADDRESS_LENGTH } from 'common/consts/text'
 
 export const Account = ({ address }: { address: string }): JSX.Element => {
   const {
@@ -35,7 +36,7 @@ export const Account = ({ address }: { address: string }): JSX.Element => {
               lineHeight: 22,
               color: alpha(colors.$textPrimary, 0.6)
             }}>
-            {truncateAddress(address, 8)}
+            {truncateAddress(address, TRUNCATE_ADDRESS_LENGTH)}
           </Text>
         </Pressable>
       </View>

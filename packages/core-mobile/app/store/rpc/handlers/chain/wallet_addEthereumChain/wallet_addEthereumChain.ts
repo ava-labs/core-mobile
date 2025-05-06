@@ -1,22 +1,19 @@
-// TODO: fix addEthereumChain
-
 import { Network, NetworkVMType } from '@avalabs/core-chains-sdk'
 import { rpcErrors } from '@metamask/rpc-errors'
 import { isValidRPCUrl } from 'services/network/utils/isValidRpcUrl'
 import { AppListenerEffectAPI } from 'store/types'
 import {
   addCustomNetwork,
-  selectActiveNetwork,
   selectAllNetworks,
-  setActive
-} from 'store/network'
-// import * as Navigation from 'utils/Navigation'
-// import AppNavigation from 'navigation/AppNavigation'
+  toggleEnabledChainId
+} from 'store/network/slice'
+import { router } from 'expo-router'
 import Logger from 'utils/Logger'
 import {
   selectIsDeveloperMode,
   toggleDeveloperMode
 } from 'store/settings/advanced'
+import { walletConnectCache } from 'services/walletconnectv2/walletConnectCache/walletConnectCache'
 import { RpcMethod, RpcRequest } from '../../../types'
 import {
   ApproveResponse,
@@ -41,7 +38,7 @@ class WalletAddEthereumChainHandler
     const state = listenerApi.getState()
     const { params } = request.data.params.request
     const result = parseRequestParams(params)
-
+    const isDeveloperMode = selectIsDeveloperMode(state)
     if (!result.success) {
       Logger.error('invalid params', result.error)
       return {
@@ -53,17 +50,7 @@ class WalletAddEthereumChainHandler
     const requestedChain = result.data[0]
 
     const chains = selectAllNetworks(state)
-    const currentActiveNetwork = selectActiveNetwork(state)
     const requestedChainId = Number(requestedChain.chainId)
-
-    const isSameNetwork = requestedChainId === currentActiveNetwork?.chainId
-
-    if (isSameNetwork) {
-      return {
-        success: true,
-        value: null
-      }
-    }
 
     const rpcUrl = requestedChain.rpcUrls?.[0]
     if (!rpcUrl) {
@@ -82,11 +69,19 @@ class WalletAddEthereumChainHandler
       }
     }
 
-    // use the requested chain's isTestnet value or fall back to the current active network's
+    const supportedChainIds = Object.keys(chains ?? {})
+    const chainAlreadyExists =
+      requestedChain && supportedChainIds.includes(requestedChainId.toString())
+
+    if (chainAlreadyExists) {
+      return { success: true, value: null }
+    }
+
+    // use the requested chain's isTestnet value or fall back to the current developer mode
     const isTestnet =
       requestedChain.isTestnet !== undefined
         ? requestedChain.isTestnet
-        : Boolean(currentActiveNetwork.isTestnet)
+        : isDeveloperMode
 
     const customNetwork: Network = {
       chainId: requestedChainId,
@@ -111,22 +106,6 @@ class WalletAddEthereumChainHandler
       vmName: NetworkVMType.EVM
     }
 
-    const supportedChainIds = Object.keys(chains ?? {})
-    const chainRequestedIsSupported =
-      requestedChain && supportedChainIds.includes(requestedChainId.toString())
-
-    if (chainRequestedIsSupported) {
-      //   Navigation.navigate({
-      //     name: AppNavigation.Root.Wallet,
-      //     params: {
-      //       screen: AppNavigation.Modal.AddEthereumChainV2,
-      //       params: { request, network: customNetwork, isExisting: true }
-      //     }
-      //   })
-
-      return { success: true, value: DEFERRED_RESULT }
-    }
-
     const isValid = await isValidRPCUrl(
       customNetwork.chainId,
       customNetwork.rpcUrl
@@ -138,14 +117,13 @@ class WalletAddEthereumChainHandler
       }
     }
 
-    // Navigation.navigate({
-    //   name: AppNavigation.Root.Wallet,
-    //   params: {
-    //     screen: AppNavigation.Modal.AddEthereumChainV2,
-    //     params: { request, network: customNetwork, isExisting: false }
-    //   }
-    // })
+    walletConnectCache.addEthereumChainParams.set({
+      request,
+      network: customNetwork
+    })
 
+    // @ts-ignore TODO: make routes typesafe
+    router.navigate('/addEthereumChain')
     return { success: true, value: DEFERRED_RESULT }
   }
 
@@ -166,23 +144,19 @@ class WalletAddEthereumChainHandler
 
     const data = result.data
 
-    if (!data.isExisting) {
-      dispatch(addCustomNetwork(data.network))
-    }
+    dispatch(addCustomNetwork(data.network))
+    dispatch(toggleEnabledChainId(data.network.chainId))
 
     const state = getState()
     const isDeveloperMode = selectIsDeveloperMode(state)
 
     // validate network against the current developer mode
-    const chainId = data.network.chainId
     const isTestnet = Boolean(data.network?.isTestnet)
 
     // switch to correct dev mode
     if (isTestnet !== isDeveloperMode) {
       dispatch(toggleDeveloperMode())
     }
-
-    dispatch(setActive(chainId))
 
     return { success: true, value: null }
   }

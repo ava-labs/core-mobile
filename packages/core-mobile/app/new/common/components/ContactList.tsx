@@ -13,6 +13,7 @@ import { loadAvatar } from 'common/utils/loadAvatar'
 import { getAddressFromContact } from 'features/accountSettings/utils/getAddressFromContact'
 import React, { useCallback, useMemo, useState } from 'react'
 import { Contact } from 'store/addressBook'
+import { TRUNCATE_ADDRESS_LENGTH } from 'common/consts/text'
 import { ListScreen } from './ListScreen'
 
 export const ContactList = ({
@@ -112,7 +113,7 @@ export const ContactList = ({
                       }}
                       ellipsizeMode="tail"
                       numberOfLines={1}>
-                      {truncateAddress(address)}
+                      {truncateAddress(address, TRUNCATE_ADDRESS_LENGTH)}
                     </Text>
                   )}
                 </View>

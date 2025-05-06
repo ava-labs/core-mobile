@@ -24,12 +24,13 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useSelector } from 'react-redux'
 import { isAvalancheCChainId } from 'services/network/utils/isAvalancheNetwork'
 import { selectSelectedAvatar } from 'store/settings/avatar'
-import { truncateAddress } from 'utils/Utils'
 import { isAddress } from 'viem'
 import { useRouter } from 'expo-router'
+import { truncateAddress } from '@avalabs/core-utils-sdk'
 import { useSendSelectedToken } from 'features/send/store'
 import { NftContentType } from 'store/nft'
 import { getDateInMmmDdYyyyHhMmA } from 'utils/date/getDateInMmmDdYyyyHhMmA'
+import { TRUNCATE_ADDRESS_LENGTH } from 'common/consts/text'
 import { useCollectiblesContext } from '../CollectiblesContext'
 import { HORIZONTAL_MARGIN } from '../consts'
 
@@ -114,7 +115,7 @@ export const CollectibleDetailsContent = ({
   const createdBy = useMemo(() => {
     return collectible?.address
       ? isAddress(collectible?.address)
-        ? truncateAddress(collectible?.address)
+        ? truncateAddress(collectible?.address, TRUNCATE_ADDRESS_LENGTH)
         : collectible?.address
       : 'Unknown'
   }, [collectible?.address])
