@@ -262,7 +262,7 @@ const PortfolioHomeScreen = (): JSX.Element => {
               {
                 paddingBottom: 16,
                 backgroundColor: theme.colors.$surfacePrimary,
-                marginTop: Platform.OS === 'ios' ? 24 : 8
+                marginTop: 16
               },
               animatedHeaderStyle
             ]}>
