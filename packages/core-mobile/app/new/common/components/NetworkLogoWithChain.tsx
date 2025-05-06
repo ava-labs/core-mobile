@@ -1,6 +1,7 @@
 import { Network } from '@avalabs/core-chains-sdk'
 import { Icons, useTheme, View } from '@avalabs/k2-alpine'
 import { TokenLogo } from 'common/components/TokenLogo'
+import { CHAIN_IDS_WITH_INCORRECT_SYMBOL } from 'consts/chainIdsWithIncorrectSymbol'
 import React from 'react'
 import { ViewStyle } from 'react-native'
 import { isPChain, isXChain, isXPChain } from 'utils/network/isAvalancheNetwork'
@@ -81,13 +82,13 @@ export const NetworkLogoWithChain = ({
     )
   }
 
+  const symbol = CHAIN_IDS_WITH_INCORRECT_SYMBOL.includes(network.chainId)
+    ? undefined
+    : network.networkToken.symbol
+
   return (
     <View>
-      <TokenLogo
-        size={networkSize}
-        symbol={network.networkToken.symbol ?? 'AVAX'}
-        logoUri={network.logoUri}
-      />
+      <TokenLogo size={networkSize} symbol={symbol} logoUri={network.logoUri} />
       {showChainLogo && (
         <View
           style={{
