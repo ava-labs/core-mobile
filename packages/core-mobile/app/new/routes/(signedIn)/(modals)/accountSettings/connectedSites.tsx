@@ -52,8 +52,7 @@ const ConnectedSitesScreen = (): JSX.Element => {
       return (
         <View
           sx={{
-            paddingLeft: 10,
-            paddingRight: 12,
+            marginHorizontal: 16,
             paddingVertical: 14,
             flexDirection: 'row',
             alignItems: 'center',
@@ -62,10 +61,7 @@ const ConnectedSitesScreen = (): JSX.Element => {
           }}>
           <View
             sx={{
-              marginHorizontal: 16,
-              paddingLeft: 10,
-              paddingRight: 12,
-              paddingVertical: 14,
+              paddingHorizontal: 12,
               flexDirection: 'row',
               alignItems: 'center',
               borderRadius: 12,
