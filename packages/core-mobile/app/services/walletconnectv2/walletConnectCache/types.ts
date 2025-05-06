@@ -10,6 +10,7 @@ import { AvalancheCreateContactRequest } from 'store/rpc/handlers/contact/avalan
 import { AvalancheRemoveContactRequest } from 'store/rpc/handlers/contact/avalanche_removeContact/avalanche_removeContact'
 import { AvalancheUpdateContactRequest } from 'store/rpc/handlers/contact/avalanche_updateContact/avalanche_updateContact'
 import { Contact } from 'store/addressBook/types'
+import { WalletAddEthereumChainRpcRequest } from 'store/rpc/handlers/chain/wallet_addEthereumChain/wallet_addEthereumChain'
 
 export type SessionProposalParams = {
   request: WCSessionProposal
@@ -49,4 +50,9 @@ export type EditContactParams = {
     | AvalancheUpdateContactRequest
   contact: Contact
   action: 'create' | 'remove' | 'update'
+}
+
+export type AddEthereumChainParams = {
+  request: WalletAddEthereumChainRpcRequest
+  network: Network
 }
