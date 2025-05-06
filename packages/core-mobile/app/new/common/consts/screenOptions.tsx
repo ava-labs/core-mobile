@@ -50,33 +50,18 @@ export const modalScreenOptionsWithHeaderBack: StackNavigationOptions = {
 }
 
 export const homeScreenOptions: StackNavigationOptions = {
-  headerLeft: () => (
-    <View
-      sx={{
-        marginLeft: 14,
-        marginBottom: BAR_BUTTONS_BOTTOM_MARGIN,
-        alignItems: 'center'
-      }}>
-      {/* @ts-ignore */}
-      <Link href="/accountSettings/" asChild>
-        <AccountSettingBarButton />
-      </Link>
-    </View>
-  ),
+  headerLeft: () => <AccountSettingBarButton />,
   headerRight: () => {
     return (
       <View
         sx={{
           flexDirection: 'row',
           gap: 12,
-          marginRight: 14,
-          marginBottom: BAR_BUTTONS_BOTTOM_MARGIN,
+          height: '100%',
           alignItems: 'center'
         }}>
         {/* @ts-ignore */}
-        <Link href="/receive/" asChild>
-          <ReceiveBarButton />
-        </Link>
+        <ReceiveBarButton />
         {/* <Link href="/notifications/" asChild>
           <NotificationBarButton />
         </Link> */}
