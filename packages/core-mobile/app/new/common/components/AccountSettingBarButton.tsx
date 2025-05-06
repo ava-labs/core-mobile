@@ -29,7 +29,7 @@ export const AccountSettingBarButton = forwardRef<RNView>(
           alignItems: 'center'
         }}>
         <Avatar
-          size={32}
+          size={34}
           source={avatar.source}
           hasBlur={false}
           hasLoading={false}
