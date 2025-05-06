@@ -157,6 +157,7 @@ export const ScrollScreen = ({
           keyboardDismissMode="interactive"
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
+          style={{ flex: 1 }}
           {...props}
           contentContainerStyle={[
             props?.contentContainerStyle,
@@ -194,8 +195,7 @@ export const ScrollScreen = ({
             left: 0,
             right: 0,
             bottom: 0,
-            height: isModal ? headerHeight : 0,
-            zIndex: 100
+            height: headerHeight
           }}
         />
       </View>
