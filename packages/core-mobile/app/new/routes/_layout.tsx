@@ -68,9 +68,9 @@ export default function Root(): JSX.Element | null {
   }, [])
 
   return (
-    <K2AlpineThemeProvider colorScheme={colorScheme}>
-      <NavigationThemeProvider>
-        <KeyboardProvider>
+    <KeyboardProvider>
+      <K2AlpineThemeProvider colorScheme={colorScheme}>
+        <NavigationThemeProvider>
           <RecoveryMethodProvider>
             <NavigationRedirect />
             <Stack
@@ -114,11 +114,11 @@ export default function Root(): JSX.Element | null {
             </Stack>
             {enabledPrivacyScreen && <LogoModal />}
           </RecoveryMethodProvider>
-        </KeyboardProvider>
-      </NavigationThemeProvider>
-      <GlobalToast />
-      <GlobalAlertWithTextInput />
-    </K2AlpineThemeProvider>
+        </NavigationThemeProvider>
+        <GlobalToast />
+        <GlobalAlertWithTextInput />
+      </K2AlpineThemeProvider>
+    </KeyboardProvider>
   )
 }
 

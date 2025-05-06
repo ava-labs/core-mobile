@@ -112,6 +112,7 @@ export const ScrollScreen = ({
 
   useLayoutEffect(() => {
     if (footerRef.current) {
+      // eslint-disable-next-line max-params
       footerRef.current.measure((x, y, width, height) => {
         contentFooterHeight.value = height
       })
@@ -217,7 +218,7 @@ export const ScrollScreen = ({
   // All of our screens have to be scrollable
   // If we don't have an input on the screen then we should not enable keyboard avoiding
   return (
-    <>
+    <View style={{ flex: 1 }}>
       <ScrollView
         style={{ flex: 1 }}
         showsVerticalScrollIndicator={false}
@@ -258,6 +259,6 @@ export const ScrollScreen = ({
           </View>
         </LinearGradientBottomWrapper>
       ) : null}
-    </>
+    </View>
   )
 }

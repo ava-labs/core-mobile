@@ -28,10 +28,15 @@ import {
 import { LinearGradientBottomWrapper } from 'common/components/LinearGradientBottomWrapper'
 import { TrendingScreen } from 'features/track/trending/components/TrendingScreen'
 import MarketScreen from 'features/track/market/components/MarketScreen'
-import { useRouter } from 'expo-router'
+import { useFocusEffect, useRouter } from 'expo-router'
 import FavoriteScreen from 'features/track/market/components/FavoriteScreen'
 import SearchResultScreen from 'features/track/market/components/SearchResultScreen'
 import { Platform } from 'react-native'
+import { useIsAndroidWithBottomBar } from 'common/hooks/useIsAndroidWithBottomBar'
+import {
+  AndroidSoftInputModes,
+  KeyboardController
+} from 'react-native-keyboard-controller'
 
 const SEARCH_BAR_MARGIN_TOP = Platform.OS === 'ios' ? 60 : 55
 
@@ -233,6 +238,23 @@ const TrackHomeScreen = (): JSX.Element => {
     selectedSegmentIndex,
     showSearchResults
   ])
+
+  const isAndroidBottomBar = useIsAndroidWithBottomBar()
+
+  useFocusEffect(() => {
+    if (!isAndroidBottomBar) {
+      if (!KeyboardController.isVisible()) {
+        KeyboardController.setInputMode(
+          AndroidSoftInputModes.SOFT_INPUT_ADJUST_NOTHING
+        )
+      }
+      return () => {
+        if (!KeyboardController.isVisible()) {
+          KeyboardController.setDefaultMode()
+        }
+      }
+    }
+  })
 
   return (
     <BlurredBarsContentLayout>

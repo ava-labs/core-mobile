@@ -1,4 +1,5 @@
 import {
+  CardStyleInterpolators,
   StackCardInterpolatedStyle,
   StackCardInterpolationProps,
   StackNavigationOptions
@@ -10,9 +11,28 @@ import {
   modalStackNavigatorScreenOptions
 } from 'common/consts/screenOptions'
 import { useMemo } from 'react'
-import { Animated } from 'react-native'
+import { Animated, Platform } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
+// const CardOverlay = ({
+//   style
+// }: {
+//   style: Animated.WithAnimatedValue<StyleProp<ViewStyle>>
+// }): JSX.Element => {
+//   return (
+//     <Animated.View
+//       style={[
+//         style,
+//         {
+//           opacity: 1,
+//           backgroundColor: 'red',
+//           height: StyleSheet.absoluteFill,
+//           width: StyleSheet.absoluteFill
+//         }
+//       ]}
+//     />
+//   )
+// }
 export function useModalScreenOptions(): {
   topMarginOffset: number
   modalScreensOptions: StackNavigationOptions
@@ -26,40 +46,46 @@ export function useModalScreenOptions(): {
     return insets.top + MODAL_TOP_MARGIN
   }, [insets])
 
-  const modalScreensOptions: StackNavigationOptions = {
+  const modalOptions: StackNavigationOptions = {
     presentation: 'modal',
     cardStyle: {
       marginTop: topMarginOffset,
       borderTopLeftRadius: MODAL_BORDER_RADIUS,
-      borderTopRightRadius: MODAL_BORDER_RADIUS
+      borderTopRightRadius: MODAL_BORDER_RADIUS,
+      zIndex: 1000
     },
+    // cardOverlay: CardOverlay,
     gestureEnabled: true,
     gestureDirection: 'vertical',
     headerShown: false,
+    cardOverlayEnabled: true,
     headerStyle: {
       height: MODAL_HEADER_HEIGHT
-    },
+    }
+  }
 
-    // we are using a custom modal transition interpolator
-    // to match design
-    cardStyleInterpolator: forModalPresentationIOS
+  const modalScreensOptions: StackNavigationOptions = {
+    ...modalOptions,
+    cardStyleInterpolator:
+      Platform.OS === 'ios'
+        ? forModalPresentationIOS
+        : CardStyleInterpolators.forBottomSheetAndroid
   }
 
   const formSheetScreensOptions: StackNavigationOptions = {
-    presentation: 'modal',
+    ...modalOptions,
     cardStyle: {
+      // formsheet behaves differently on iOS and Android
       marginTop: topMarginOffset + 24,
       borderTopLeftRadius: MODAL_BORDER_RADIUS,
       borderTopRightRadius: MODAL_BORDER_RADIUS
     },
-    gestureEnabled: true,
-    gestureDirection: 'vertical',
-    headerStyle: {
-      height: MODAL_HEADER_HEIGHT
-    },
     // we patched @react-navigation/stack to support a custom "formSheet" effect
     // for modals on both iOS and Android
-    cardStyleInterpolator: forModalPresentationIOS
+    cardStyleInterpolator:
+      Platform.OS === 'ios'
+        ? forModalPresentationIOS
+        : CardStyleInterpolators.forBottomSheetAndroid
   }
 
   // Options for the first screen of a modal stack navigator.
@@ -125,8 +151,38 @@ function forModalPresentationIOS({
   return {
     cardStyle: {
       overflow: 'hidden',
-      transform: [{ translateY }]
+      transform: [{ translateY }],
+      zIndex: 1000
     },
     overlayStyle: { opacity: overlayOpacity }
   }
 }
+
+// function forBottomSheetAndroid({
+//   current,
+//   inverted,
+//   layouts: { screen },
+//   closing
+// }: StackCardInterpolationProps): StackCardInterpolatedStyle {
+//   const translateY = Animated.multiply(
+//     current.progress.interpolate({
+//       inputRange: [0, 1],
+//       outputRange: [screen.height * 0.8, 0],
+//       extrapolate: 'clamp'
+//     }),
+//     inverted
+//   )
+
+//   const overlayOpacity = current.progress.interpolate({
+//     inputRange: [0, 1],
+//     outputRange: [0, 0.3],
+//     extrapolate: 'clamp'
+//   })
+
+//   return {
+//     cardStyle: {
+//       transform: [{ translateY }]
+//     },
+//     overlayStyle: { opacity: overlayOpacity }
+//   }
+// }

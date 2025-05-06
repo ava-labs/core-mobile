@@ -67,7 +67,7 @@ const PortfolioHomeScreen = (): JSX.Element => {
   const [_, setSelectedToken] = useSendSelectedToken()
   const { theme } = useTheme()
   const dispatch = useDispatch()
-  const { navigate } = useRouter()
+  const { navigate, push } = useRouter()
   const { navigateToSwap } = useNavigateToSwap()
   const { addStake, canAddStake } = useAddStake()
   const [balanceHeaderLayout, setBalanceHeaderLayout] = useState<
@@ -339,9 +339,9 @@ const PortfolioHomeScreen = (): JSX.Element => {
   const handleGoToTokenDetail = useCallback(
     (localId: string): void => {
       // @ts-ignore TODO: make routes typesafe
-      navigate({ pathname: '/tokenDetail', params: { localId } })
+      push({ pathname: '/tokenDetail', params: { localId } })
     },
-    [navigate]
+    [push]
   )
 
   const handleGoToTokenManagement = useCallback((): void => {

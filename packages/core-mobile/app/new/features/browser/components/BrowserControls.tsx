@@ -197,26 +197,6 @@ export const BrowserControls = (): ReactNode => {
               }
             ]}>
             <Animated.View
-              pointerEvents={showRecentSearches.value ? 'auto' : 'none'}
-              style={[
-                historyStyle,
-                scaleStyle,
-                {
-                  position: 'absolute',
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  bottom: 0
-                }
-              ]}>
-              <HistoryList
-                contentContainerStyle={{
-                  paddingTop: 30,
-                  paddingBottom: BROWSER_CONTROLS_HEIGHT
-                }}
-              />
-            </Animated.View>
-            <Animated.View
               style={[
                 favoritesStyle,
                 scaleStyle,
@@ -228,6 +208,27 @@ export const BrowserControls = (): ReactNode => {
                 contentContainerStyle={{
                   paddingTop: insets.top + 50,
                   paddingBottom: insets.top
+                }}
+              />
+            </Animated.View>
+            <Animated.View
+              pointerEvents={showRecentSearches.value ? 'auto' : 'none'}
+              style={[
+                historyStyle,
+                scaleStyle,
+                {
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  zIndex: 1
+                }
+              ]}>
+              <HistoryList
+                contentContainerStyle={{
+                  paddingTop: 30,
+                  paddingBottom: BROWSER_CONTROLS_HEIGHT
                 }}
               />
             </Animated.View>
