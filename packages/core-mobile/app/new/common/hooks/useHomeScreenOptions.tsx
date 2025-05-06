@@ -10,7 +10,7 @@ export function useHomeScreenOptions(): StackNavigationOptions {
 
   const homeScreenOptions: StackNavigationOptions = {
     headerStyle: {
-      height: insets.top + 44
+      height: insets.top + 50
     },
     headerLeft: () => <AccountSettingBarButton />,
     headerRight: () => {
