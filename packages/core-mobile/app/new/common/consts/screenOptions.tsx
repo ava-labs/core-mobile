@@ -1,15 +1,12 @@
-import { View } from '@avalabs/k2-alpine'
 import {
   StackCardInterpolatedStyle,
   StackNavigationOptions,
   TransitionPresets
 } from '@react-navigation/stack'
 import BackBarButton from 'common/components/BackBarButton'
-import { ReceiveBarButton } from 'common/components/ReceiveBarButton'
 import React from 'react'
 import { Platform } from 'react-native'
 //import { NotificationBarButton } from 'common/components/NotificationBarButton'
-import { AccountSettingBarButton } from 'common/components/AccountSettingBarButton'
 import BlurredBackgroundView from 'common/components/BlurredBackgroundView'
 
 export const MODAL_TOP_MARGIN = Platform.OS === 'ios' ? 24 : 35
@@ -46,27 +43,6 @@ export const modalStackNavigatorScreenOptions: StackNavigationOptions = {
 
 export const modalScreenOptionsWithHeaderBack: StackNavigationOptions = {
   headerBackImage: () => <BackBarButton isModal />
-}
-
-export const homeScreenOptions: StackNavigationOptions = {
-  headerLeft: () => <AccountSettingBarButton />,
-  headerRight: () => {
-    return (
-      <View
-        sx={{
-          flexDirection: 'row',
-          gap: 12,
-          height: '100%',
-          alignItems: 'center'
-        }}>
-        {/* @ts-ignore */}
-        <ReceiveBarButton />
-        {/* <Link href="/notifications/" asChild>
-          <NotificationBarButton />
-        </Link> */}
-      </View>
-    )
-  }
 }
 
 export function forNoAnimation(): StackCardInterpolatedStyle {

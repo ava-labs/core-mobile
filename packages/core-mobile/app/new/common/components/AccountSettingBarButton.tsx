@@ -23,10 +23,13 @@ export const AccountSettingBarButton = forwardRef<RNView>(
         ref={ref}
         onPress={handlePress}
         style={{
-          padding: 14
+          paddingHorizontal: 14,
+          height: '100%',
+          justifyContent: 'center',
+          alignItems: 'center'
         }}>
         <Avatar
-          size={34}
+          size={32}
           source={avatar.source}
           hasBlur={false}
           hasLoading={false}

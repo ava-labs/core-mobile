@@ -14,32 +14,17 @@ import { useMemo } from 'react'
 import { Animated, Platform } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
-// const CardOverlay = ({
-//   style
-// }: {
-//   style: Animated.WithAnimatedValue<StyleProp<ViewStyle>>
-// }): JSX.Element => {
-//   return (
-//     <Animated.View
-//       style={[
-//         style,
-//         {
-//           opacity: 1,
-//           backgroundColor: 'red',
-//           height: StyleSheet.absoluteFill,
-//           width: StyleSheet.absoluteFill
-//         }
-//       ]}
-//     />
-//   )
-// }
 export function useModalScreenOptions(): {
   topMarginOffset: number
   modalScreensOptions: StackNavigationOptions
   formSheetScreensOptions: StackNavigationOptions
   modalStackNavigatorScreenOptions: StackNavigationOptions
   modalFirstScreenOptions: StackNavigationOptions
-  tripleModalScreensOptions: StackNavigationOptions | undefined
+  // When opening a modal from a stacked navigator which is itself a modal we need to use a different effect
+  // This is because the modal effect is not supported on Android and the screen zIndex is not respected
+  // Use this when you have a detail screen that has to be on top of the tabbar
+  // Ex: TokenDetail/CollectibleDetail screen which opens a modal
+  stackModalScreensOptions: StackNavigationOptions | undefined
 } {
   const insets = useSafeAreaInsets()
 
@@ -78,7 +63,7 @@ export function useModalScreenOptions(): {
     cardStyleInterpolator: CardStyleInterpolators.forModalPresentationIOS
   }
 
-  const tripleModalScreensOptions: StackNavigationOptions | undefined =
+  const stackModalScreensOptions: StackNavigationOptions | undefined =
     Platform.OS === 'android'
       ? {
           ...modalScreensOptions,
@@ -104,7 +89,7 @@ export function useModalScreenOptions(): {
     modalStackNavigatorScreenOptions,
     topMarginOffset,
     modalFirstScreenOptions,
-    tripleModalScreensOptions
+    stackModalScreensOptions
   }
 }
 
@@ -119,7 +104,7 @@ export function useModalScreenOptions(): {
  * This is different from CardStyleInterpolators.forModalPresentationIOS
  */
 
-export function forModalPresentationIOS({
+function forModalPresentationIOS({
   current,
   next,
   inverted,
@@ -156,8 +141,7 @@ export function forModalPresentationIOS({
   return {
     cardStyle: {
       overflow: 'hidden',
-      transform: [{ translateY }],
-      zIndex: 1000
+      transform: [{ translateY }]
     },
     overlayStyle: { opacity: overlayOpacity }
   }

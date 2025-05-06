@@ -17,7 +17,7 @@ export default function WalletLayout(): JSX.Element {
   const {
     modalScreensOptions,
     formSheetScreensOptions,
-    tripleModalScreensOptions
+    stackModalScreensOptions
   } = useModalScreenOptions()
 
   return (
@@ -85,11 +85,11 @@ export default function WalletLayout(): JSX.Element {
           />
           <Stack.Screen
             name="(modals)/tokenDetail"
-            options={tripleModalScreensOptions}
+            options={stackModalScreensOptions}
           />
           <Stack.Screen
             name="(modals)/collectibleDetail"
-            options={tripleModalScreensOptions}
+            options={stackModalScreensOptions}
           />
           <Stack.Screen
             name="(modals)/trackTokenDetail"
