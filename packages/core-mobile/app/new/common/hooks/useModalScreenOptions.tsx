@@ -55,8 +55,6 @@ export function useModalScreenOptions(): {
       zIndex: 1000
     },
     gestureEnabled: true,
-    headerShown: false,
-    cardOverlayEnabled: true,
     headerStyle: {
       height: MODAL_HEADER_HEIGHT
     }

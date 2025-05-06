@@ -14,7 +14,7 @@ import Animated, {
   useAnimatedStyle,
   useSharedValue
 } from 'react-native-reanimated'
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { BlurViewWithFallback } from './BlurViewWithFallback'
 import { LinearGradientBottomWrapper } from './LinearGradientBottomWrapper'
 import ScreenHeader from './ScreenHeader'
@@ -107,18 +107,6 @@ export const ScrollScreen = ({
     }
   })
 
-  const footerRef = useRef<View>(null)
-  const contentFooterHeight = useSharedValue<number>(0)
-
-  useLayoutEffect(() => {
-    if (footerRef.current) {
-      // eslint-disable-next-line max-params
-      footerRef.current.measure((x, y, width, height) => {
-        contentFooterHeight.value = height
-      })
-    }
-  }, [contentFooterHeight])
-
   useLayoutEffect(() => {
     if (headerRef.current) {
       // eslint-disable-next-line max-params
@@ -163,7 +151,7 @@ export const ScrollScreen = ({
   // If you have an input on the screen, you need to enable this prop
   if (shouldAvoidKeyboard) {
     return (
-      <SafeAreaView edges={['top']} style={{ flex: 1 }}>
+      <View style={{ flex: 1 }}>
         <KeyboardAwareScrollView
           extraKeyboardSpace={-insets.bottom + 32}
           keyboardDismissMode="interactive"
@@ -173,7 +161,7 @@ export const ScrollScreen = ({
           contentContainerStyle={[
             props?.contentContainerStyle,
             {
-              paddingTop: headerHeight - insets.top,
+              paddingTop: headerHeight,
               paddingBottom: insets.bottom
             }
           ]}
@@ -189,7 +177,6 @@ export const ScrollScreen = ({
             }}>
             <LinearGradientBottomWrapper>
               <View
-                ref={footerRef}
                 style={{
                   padding: 16,
                   paddingTop: 0
@@ -211,7 +198,7 @@ export const ScrollScreen = ({
             zIndex: 100
           }}
         />
-      </SafeAreaView>
+      </View>
     )
   }
 
