@@ -16,6 +16,8 @@ import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import { TokenLogo } from 'common/components/TokenLogo'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
 import SparklineChart from 'features/track/components/SparklineChart'
+import { useGetPrices } from 'hooks/watchlist/useGetPrices'
+import { useIsFocused } from '@react-navigation/native'
 import { isEffectivelyZero } from '../utils'
 
 export const ShareChart = ({
@@ -31,6 +33,12 @@ export const ShareChart = ({
     tokenId: tokenId ?? '',
     searchText
   })
+  const isFocused = useIsFocused()
+
+  const { data: prices } = useGetPrices(
+    [tokenId],
+    isFocused && tokenInfo !== undefined && tokenInfo.currentPrice === undefined
+  )
 
   return (
     <View
@@ -62,7 +70,9 @@ export const ShareChart = ({
             <TokenHeader
               logoUri={tokenInfo.logoUri}
               symbol={tokenInfo.symbol}
-              currentPrice={tokenInfo.currentPrice}
+              currentPrice={
+                tokenInfo.currentPrice ?? prices?.[tokenId]?.priceInCurrency
+              }
               ranges={
                 ranges.minDate === 0 && ranges.maxDate === 0
                   ? undefined

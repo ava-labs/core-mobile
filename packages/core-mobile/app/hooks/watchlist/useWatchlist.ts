@@ -11,6 +11,7 @@ import {
 import { useSelector } from 'react-redux'
 import { ChartData } from 'services/token/types'
 import { transformTrendingTokens } from 'services/watchlist/utils/transform'
+import { useIsFocused } from '@react-navigation/native'
 import { useGetPrices } from './useGetPrices'
 import { useGetTokensAndCharts } from './useGetTokensAndCharts'
 import { useGetTrendingTokens } from './useGetTrendingTokens'
@@ -59,7 +60,12 @@ export const useWatchlist = (): UseWatchListReturnType => {
   const tokenIds = Object.values(topTokensResponse?.tokens ?? {}).map(
     token => token.id
   )
-  const { data: topTokenPrices } = useGetPrices(tokenIds)
+  const isFocused = useIsFocused()
+
+  const { data: topTokenPrices } = useGetPrices(
+    tokenIds,
+    isFocused && tokenIds.length > 0
+  )
 
   const isLoadingFavorites = favoriteIds.length > 0 && isLoading
 
