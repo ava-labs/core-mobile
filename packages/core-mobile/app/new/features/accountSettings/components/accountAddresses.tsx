@@ -1,5 +1,12 @@
 import React, { useMemo } from 'react'
-import { GroupList, useTheme, TouchableOpacity, Text } from '@avalabs/k2-alpine'
+import {
+  GroupList,
+  useTheme,
+  TouchableOpacity,
+  Text,
+  View,
+  SCREEN_WIDTH
+} from '@avalabs/k2-alpine'
 import { Account } from 'store/account'
 import { copyToClipboard } from 'common/utils/clipboard'
 import { truncateAddress } from '@avalabs/core-utils-sdk'
@@ -76,9 +83,12 @@ export const AccountAddresses = ({
       }}
       subtitleSx={{ fontSize: 13, lineHeight: 18 }}
       textContainerSx={{
-        width: '65%'
+        width: SCREEN_WIDTH * 0.4
       }}
-      valueSx={{ fontSize: 16, lineHeight: 22 }}
+      valueSx={{
+        fontSize: 16,
+        lineHeight: 22
+      }}
     />
   )
 }
@@ -94,17 +104,23 @@ const CopyButton = ({
     theme: { colors }
   } = useTheme()
   return (
-    <TouchableOpacity
-      onPress={onPress}
-      style={{
-        backgroundColor: colors.$borderPrimary,
-        paddingHorizontal: 17,
-        paddingVertical: 5,
-        borderRadius: 17
-      }}>
-      <Text testID={testID} variant="buttonMedium" sx={{ fontSize: 14 }}>
-        Copy
-      </Text>
-    </TouchableOpacity>
+    <View style={{ marginLeft: 16 }}>
+      <TouchableOpacity
+        onPress={onPress}
+        style={{
+          backgroundColor: colors.$borderPrimary,
+          paddingHorizontal: 17,
+          paddingVertical: 5,
+          borderRadius: 17
+        }}>
+        <Text
+          testID={testID}
+          variant="buttonMedium"
+          sx={{ fontSize: 14 }}
+          numberOfLines={1}>
+          Copy
+        </Text>
+      </TouchableOpacity>
+    </View>
   )
 }
