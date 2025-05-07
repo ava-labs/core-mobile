@@ -1,4 +1,5 @@
 import {
+  ANIMATED,
   Avatar,
   Button,
   CircularButton,
@@ -108,7 +109,10 @@ const LoginWithPinOrBiometry = (): JSX.Element => {
   )
   const buttonContainerStyle = useAnimatedStyle(() => {
     return {
-      paddingBottom: buttonContainerPaddingBottom.value
+      paddingBottom: withTiming(
+        isEnteringPin ? 0 : buttonContainerPaddingBottom.value,
+        ANIMATED.TIMING_CONFIG
+      )
     }
   })
 
