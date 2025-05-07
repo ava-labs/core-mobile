@@ -15,6 +15,7 @@ import { getSocialHandle } from 'utils/getSocialHandle/getSocialHandle'
 import { Ranges } from 'services/token/types'
 import { selectSelectedCurrency } from 'store/settings/currency'
 import { useCoreBrowser } from 'new/common/hooks/useCoreBrowser'
+import { useTokenSearch } from './useTokenSearch'
 
 const isTrendingToken = (token: MarketToken | undefined): boolean =>
   token !== undefined && token.marketType === MarketType.TRENDING
@@ -37,9 +38,13 @@ type TokenInfo = {
   currentPrice?: number
 }
 
-export const useTokenDetails = (
+export const useTokenDetails = ({
+  tokenId,
+  searchText
+}: {
   tokenId: string
-): {
+  searchText?: string
+}): {
   isFavorite: boolean
   openUrl: ({ url, title }: { url: string; title: string }) => void
   handleFavorite: () => void
@@ -59,13 +64,33 @@ export const useTokenDetails = (
   noData: boolean
   // eslint-disable-next-line sonarjs/cognitive-complexity
 } => {
-  const { getWatchlistPrice, getMarketTokenById, getWatchlistChart } =
-    useWatchlist()
+  const {
+    getWatchlistPrice,
+    getMarketTokenById,
+    getWatchlistChart,
+    isLoadingTopTokens,
+    isLoadingTrendingTokens,
+    allTokens
+  } = useWatchlist()
   const { data: trendingTokenData } = useGetTrendingToken(tokenId)
   const token = getMarketTokenById(tokenId)
+  const { data: searchResults } = useTokenSearch({
+    isFetchingTokens: isLoadingTopTokens || isLoadingTrendingTokens,
+    items: allTokens,
+    searchText
+  })
+  const tokenFromSearchByTokenId = searchResults?.tokens.find(
+    tk => tk.id === tokenId
+  )
   // only top tokens have coingeckoId and it is the same as the token id
   // trending tokens don't have them (the coingeckoId field is always empty)
-  const coingeckoId = token?.marketType === MarketType.TOP ? token.id : ''
+  const coingeckoId =
+    token?.marketType === MarketType.TOP
+      ? token.id
+      : tokenFromSearchByTokenId?.marketType === MarketType.TOP
+      ? tokenFromSearchByTokenId.id
+      : ''
+
   const dispatch = useDispatch()
   const isFavorite = useSelector(selectIsWatchlistFavorite(tokenId))
   const { openUrl } = useCoreBrowser()

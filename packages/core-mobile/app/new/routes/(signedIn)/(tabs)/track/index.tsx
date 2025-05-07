@@ -183,10 +183,10 @@ const TrackHomeScreen = (): JSX.Element => {
       navigate({
         // @ts-ignore TODO: make routes typesafe
         pathname: '/trackTokenDetail',
-        params: { tokenId }
+        params: { tokenId, searchText }
       })
     },
-    [navigate]
+    [navigate, searchText]
   )
 
   const renderEmptyTabBar = useCallback((): JSX.Element => <></>, [])
