@@ -46,9 +46,12 @@ import { useTokenDetails } from 'common/hooks/useTokenDetails'
 
 const TrackTokenDetailScreen = (): JSX.Element => {
   const { theme } = useTheme()
-  const { tokenId } = useLocalSearchParams<{ tokenId: string }>()
+  const { tokenId, searchText } = useLocalSearchParams<{
+    tokenId: string
+    searchText: string
+  }>()
+  const { back, navigate } = useRouter()
   const [isChartInteracting, setIsChartInteracting] = useState(false)
-  const { navigate } = useRouter()
   const { navigateToSwap } = useNavigateToSwap()
   const { addStake } = useAddStake()
   const headerOpacity = useSharedValue(1)
@@ -69,7 +72,7 @@ const TrackTokenDetailScreen = (): JSX.Element => {
     isFavorite,
     handleFavorite,
     openUrl
-  } = useTokenDetails(tokenId ?? '')
+  } = useTokenDetails({ tokenId: tokenId ?? '', searchText })
 
   const selectedSegmentIndex = useSharedValue(0)
 
@@ -135,20 +138,24 @@ const TrackTokenDetailScreen = (): JSX.Element => {
   }, [])
 
   const handlePressTwitter = useCallback(() => {
-    tokenInfo?.twitterHandle &&
+    if (tokenInfo?.twitterHandle) {
+      back()
       openUrl({
         url: `https://x.com/${tokenInfo.twitterHandle}`,
         title: 'X'
       })
-  }, [openUrl, tokenInfo?.twitterHandle])
+    }
+  }, [openUrl, tokenInfo?.twitterHandle, back])
 
   const handlePressWebsite = useCallback(() => {
-    tokenInfo?.urlHostname &&
+    if (tokenInfo?.urlHostname) {
+      back()
       openUrl({
         url: tokenInfo.urlHostname,
         title: 'Website'
       })
-  }, [openUrl, tokenInfo?.urlHostname])
+    }
+  }, [openUrl, tokenInfo?.urlHostname, back])
 
   const handleBuy = useCallback((): void => {
     navigate({
@@ -166,9 +173,12 @@ const TrackTokenDetailScreen = (): JSX.Element => {
   )
 
   const handleShare = useCallback(() => {
-    // @ts-ignore TODO: make routes typesafe
-    navigate({ pathname: '/trackTokenDetail/share', params: { tokenId } })
-  }, [navigate, tokenId])
+    navigate({
+      // @ts-ignore TODO: make routes typesafe
+      pathname: '/trackTokenDetail/share',
+      params: { tokenId, searchText }
+    })
+  }, [navigate, searchText, tokenId])
 
   const marketData = useMemo(() => {
     const data: GroupListItem[] = []

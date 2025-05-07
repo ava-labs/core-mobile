@@ -1,5 +1,4 @@
 import { isAddress } from 'ethers'
-import { isBech32Address } from '@avalabs/core-bridge-sdk'
 import { Avalanche } from '@avalabs/core-wallets-sdk'
 import { isBtcAddress } from 'utils/isBtcAddress'
 import { AddressType } from '../consts'
@@ -18,7 +17,6 @@ export const isValidAddress = ({
   if (addressType === undefined) {
     return (
       isAddress(address) ||
-      isBech32Address(address) ||
       isBtcAddress(address, !isDeveloperMode) ||
       (Avalanche.isBech32Address(addressWithoutPrefix, false) &&
         ((isDeveloperMode && addressWithoutPrefix.includes('fuji')) ||
@@ -29,7 +27,7 @@ export const isValidAddress = ({
   switch (addressType) {
     case AddressType.EVM:
     case AddressType.EVM_TESTNET:
-      return isAddress(address) || isBech32Address(address)
+      return isAddress(address)
     case AddressType.XP:
     case AddressType.XP_TESTNET: {
       return (
