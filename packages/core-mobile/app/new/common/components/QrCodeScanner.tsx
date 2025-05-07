@@ -1,6 +1,11 @@
 import React, { useEffect, useState, useCallback } from 'react'
 import { Icons, SxProp, useTheme, View, Text, Button } from '@avalabs/k2-alpine'
-import { CameraView, PermissionStatus, useCameraPermissions } from 'expo-camera'
+import {
+  BarcodeScanningResult,
+  CameraView,
+  PermissionStatus,
+  useCameraPermissions
+} from 'expo-camera'
 import { notificationAsync, NotificationFeedbackType } from 'expo-haptics'
 import { Platform, Linking } from 'react-native'
 import { check, PERMISSIONS, request } from 'react-native-permissions'
@@ -27,9 +32,9 @@ export const QrCodeScanner = ({
   )
   const [data, setData] = useState<string>()
 
-  const handleSuccess = (): void => {
+  const handleSuccess = (scanningResult: BarcodeScanningResult): void => {
     // expo-camera's onBarcodeScanned callback is not debounced, so we need to debounce it ourselves
-    setData('0x19E5ECB3F15197E7A72996259C2245919C9725dD')
+    setData(scanningResult.data)
   }
 
   useEffect(() => {

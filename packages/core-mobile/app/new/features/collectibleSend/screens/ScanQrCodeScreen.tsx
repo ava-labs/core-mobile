@@ -1,7 +1,6 @@
 import {
   ActivityIndicator,
   alpha,
-  Button,
   Text,
   useTheme,
   View
@@ -102,14 +101,6 @@ export const ScanQrCodeScreen = (): JSX.Element => {
     <View
       sx={{ paddingHorizontal: 16, paddingTop: headerHeight + 16, flex: 1 }}>
       <Text variant="heading2">Scan a QR code</Text>
-      <Button
-        type="primary"
-        size="large"
-        onPress={() =>
-          handleSend('0x19E5ECB3F15197E7A72996259C2245919C9725dD')
-        }>
-        Test
-      </Button>
       <QrCodeScanner
         onSuccess={handleSend}
         vibrate={true}
