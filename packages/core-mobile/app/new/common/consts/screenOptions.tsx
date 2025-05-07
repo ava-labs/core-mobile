@@ -9,7 +9,7 @@ import { Platform } from 'react-native'
 //import { NotificationBarButton } from 'common/components/NotificationBarButton'
 import BlurredBackgroundView from 'common/components/BlurredBackgroundView'
 
-export const MODAL_TOP_MARGIN = Platform.OS === 'ios' ? 24 : 35
+export const MODAL_TOP_MARGIN = 28
 export const MODAL_BORDER_RADIUS = 40
 export const MODAL_HEADER_HEIGHT = 62
 
