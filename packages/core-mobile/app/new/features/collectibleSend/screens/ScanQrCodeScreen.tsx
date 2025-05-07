@@ -71,6 +71,11 @@ export const ScanQrCodeScreen = (): JSX.Element => {
             ) {
               canGoBack() && back()
             }
+            // dismiss onboarding modal
+            const state = getState()
+            if (state?.routes[state?.index ?? 0]?.name === 'onboarding') {
+              canGoBack() && back()
+            }
           }
         })
       } catch (reason) {
