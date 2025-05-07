@@ -188,6 +188,7 @@ const SecurityAndPrivacyScreen = (): JSX.Element => {
       navigationTitle="Security & privacy"
       isModal
       contentContainerStyle={{ padding: 16 }}>
+      <Space y={24} />
       <GroupList
         data={connectedSitesData}
         titleSx={{
