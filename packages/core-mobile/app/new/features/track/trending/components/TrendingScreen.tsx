@@ -1,9 +1,12 @@
-import React, { useMemo } from 'react'
-import { Dimensions } from 'react-native'
+import { SPRING_LINEAR_TRANSITION } from '@avalabs/k2-alpine'
+import { getListItemEnteringAnimation } from 'common/utils/animations'
 import { portfolioTabContentHeight } from 'features/portfolio/utils'
 import { useWatchlist } from 'hooks/watchlist/useWatchlist'
-import { LoadingState } from 'new/common/components/LoadingState'
 import { ErrorState } from 'new/common/components/ErrorState'
+import { LoadingState } from 'new/common/components/LoadingState'
+import React, { useMemo } from 'react'
+import { Dimensions } from 'react-native'
+import Animated from 'react-native-reanimated'
 import TrendingTokensScreen from './TrendingTokensScreen'
 
 export const TrendingScreen = ({
@@ -19,7 +22,7 @@ export const TrendingScreen = ({
   } = useWatchlist()
 
   const emptyComponent = useMemo(() => {
-    if (isLoadingTrendingTokens || isRefetchingTrendingTokens) {
+    if (isRefetchingTrendingTokens) {
       return <LoadingState sx={{ height: portfolioTabContentHeight }} />
     }
 
@@ -32,18 +35,25 @@ export const TrendingScreen = ({
         }}
       />
     )
-  }, [
-    isLoadingTrendingTokens,
-    isRefetchingTrendingTokens,
-    refetchTrendingTokens
-  ])
+  }, [isRefetchingTrendingTokens, refetchTrendingTokens])
+
+  if (isLoadingTrendingTokens) {
+    return <LoadingState sx={{ height: portfolioTabContentHeight * 1.5 }} />
+  }
 
   return (
-    <TrendingTokensScreen
-      data={trendingTokens}
-      goToMarketDetail={goToMarketDetail}
-      emptyComponent={emptyComponent}
-    />
+    <Animated.View
+      entering={getListItemEnteringAnimation(5)}
+      layout={SPRING_LINEAR_TRANSITION}
+      style={{
+        flex: 1
+      }}>
+      <TrendingTokensScreen
+        data={trendingTokens}
+        goToMarketDetail={goToMarketDetail}
+        emptyComponent={emptyComponent}
+      />
+    </Animated.View>
   )
 }
 

@@ -1,9 +1,12 @@
-import React, { useMemo } from 'react'
-import { portfolioTabContentHeight } from 'features/portfolio/utils'
-import { LoadingState } from 'common/components/LoadingState'
+import { SPRING_LINEAR_TRANSITION } from '@avalabs/k2-alpine'
 import { ErrorState } from 'common/components/ErrorState'
+import { LoadingState } from 'common/components/LoadingState'
+import { getListItemEnteringAnimation } from 'common/utils/animations'
+import { portfolioTabContentHeight } from 'features/portfolio/utils'
 import { useWatchlist } from 'hooks/watchlist/useWatchlist'
+import React, { useMemo } from 'react'
 import { Dimensions } from 'react-native'
+import Animated from 'react-native-reanimated'
 import { useTrackSortAndView } from '../hooks/useTrackSortAndView'
 import MarketTokensScreen from './MarketTokensScreen'
 
@@ -24,7 +27,7 @@ const MarketScreen = ({
   const { data, sort, view } = useTrackSortAndView(topTokens, prices)
 
   const emptyComponent = useMemo(() => {
-    if (isLoadingTopTokens || isRefetchingTopTokens) {
+    if (isRefetchingTopTokens) {
       return <LoadingState sx={{ height: portfolioTabContentHeight }} />
     }
 
@@ -37,17 +40,28 @@ const MarketScreen = ({
         }}
       />
     )
-  }, [isRefetchingTopTokens, isLoadingTopTokens, refetchTopTokens])
+  }, [isRefetchingTopTokens, refetchTopTokens])
+
+  if (isLoadingTopTokens) {
+    return <LoadingState sx={{ height: portfolioTabContentHeight * 1.5 }} />
+  }
 
   return (
-    <MarketTokensScreen
-      data={data}
-      charts={charts}
-      sort={sort}
-      view={view}
-      goToMarketDetail={goToMarketDetail}
-      emptyComponent={emptyComponent}
-    />
+    <Animated.View
+      entering={getListItemEnteringAnimation(5)}
+      layout={SPRING_LINEAR_TRANSITION}
+      style={{
+        flex: 1
+      }}>
+      <MarketTokensScreen
+        data={data}
+        charts={charts}
+        sort={sort}
+        view={view}
+        goToMarketDetail={goToMarketDetail}
+        emptyComponent={emptyComponent}
+      />
+    </Animated.View>
   )
 }
 
