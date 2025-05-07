@@ -163,7 +163,10 @@ class WatchlistService {
           priceChangePercentage24h:
             typeof market.price_change_percentage_24h === 'number'
               ? market.price_change_percentage_24h
-              : undefined
+              : undefined,
+          currentPrice:
+            pricesRaw?.[market.id]?.[currency as VsCurrencyType]?.price ??
+            undefined
         })
 
         if (market.sparkline_in_7d?.price) {

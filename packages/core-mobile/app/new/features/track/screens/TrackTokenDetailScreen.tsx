@@ -43,6 +43,7 @@ import { getDomainFromUrl } from 'utils/getDomainFromUrl/getDomainFromUrl'
 import { isPositiveNumber } from 'utils/isPositiveNumber/isPositiveNumber'
 import { formatLargeCurrency } from 'utils/Utils'
 import { useTokenDetails } from 'common/hooks/useTokenDetails'
+import { useGetPrices } from 'hooks/watchlist/useGetPrices'
 
 const TrackTokenDetailScreen = (): JSX.Element => {
   const { theme } = useTheme()
@@ -73,6 +74,10 @@ const TrackTokenDetailScreen = (): JSX.Element => {
     handleFavorite,
     openUrl
   } = useTokenDetails({ tokenId: tokenId ?? '', searchText })
+  const { data: prices } = useGetPrices(
+    [tokenId],
+    tokenInfo && tokenInfo.currentPrice === undefined
+  )
 
   const selectedSegmentIndex = useSharedValue(0)
 
@@ -310,14 +315,16 @@ const TrackTokenDetailScreen = (): JSX.Element => {
       <TokenHeader
         logoUri={tokenInfo.logoUri}
         symbol={tokenInfo.symbol ?? ''}
-        currentPrice={tokenInfo.currentPrice}
+        currentPrice={
+          tokenInfo.currentPrice ?? prices?.[tokenId]?.priceInCurrency
+        }
         ranges={
           ranges.minDate === 0 && ranges.maxDate === 0 ? undefined : ranges
         }
         rank={tokenInfo?.marketCapRank}
       />
     )
-  }, [tokenInfo, ranges])
+  }, [tokenInfo, prices, tokenId, ranges])
 
   if (!tokenId || !tokenInfo) {
     return <LoadingState sx={styles.container} />
