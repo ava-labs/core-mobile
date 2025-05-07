@@ -122,9 +122,11 @@ export default class SeedlessWallet implements Wallet {
   }
 
   private async signEip191(address: string, data: string): Promise<string> {
-    const key = await this.getSigningKeyByAddress(address)
-    const rawAddress = key.key_id.replace('Key#', '')
-    const res = await this.#client.apiClient.signEip191(rawAddress, {
+    const key = (await this.getSigningKeyByAddress(address)).key_id.replace(
+      'Key#',
+      ''
+    )
+    const res = await this.#client.apiClient.signEip191(key, {
       data
     })
     return res.data().signature
