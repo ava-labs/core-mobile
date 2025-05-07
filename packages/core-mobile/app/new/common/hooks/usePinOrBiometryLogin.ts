@@ -31,7 +31,9 @@ export function usePinOrBiometryLogin({
   disableKeypad: boolean
   timeRemaining: string
   bioType: BiometricType
+  isBiometricAvailable: boolean
 } {
+  const [isBiometricAvailable, setIsBiometricAvailable] = useState(true)
   const [bioType, setBioType] = useState<BiometricType>(BiometricType.NONE)
   const [enteredPin, setEnteredPin] = useState('')
   const [mnemonic, setMnemonic] = useState<string | undefined>(undefined)
@@ -180,6 +182,7 @@ export function usePinOrBiometryLogin({
   useEffect(() => {
     async function getBiometryType(): Promise<void> {
       const canUseBiometry = await BiometricsSDK.canUseBiometry()
+      setIsBiometricAvailable(canUseBiometry)
 
       if (!canUseBiometry || BiometricsSDK.getAccessType() !== 'BIO') {
         return
@@ -204,7 +207,8 @@ export function usePinOrBiometryLogin({
     promptForWalletLoadingIfExists,
     disableKeypad,
     timeRemaining,
-    bioType
+    bioType,
+    isBiometricAvailable
   }
 }
 
