@@ -4,13 +4,14 @@ import {
   toggleDeveloperMode
 } from 'store/settings/advanced'
 import { AppListenerEffectAPI, AppStartListening } from 'store/types'
-import { AnyAction, isAnyOf } from '@reduxjs/toolkit'
+import { AnyAction } from '@reduxjs/toolkit'
 import { onLogIn, selectWalletType } from 'store/app/slice'
 import { WalletType } from 'services/wallet/types'
 import { SeedlessPubKeysStorage } from 'seedless/services/storage/SeedlessPubKeysStorage'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import SeedlessService from 'seedless/services/SeedlessService'
-import { selectActiveNetwork, setActive } from 'store/network'
+import { selectActiveNetwork } from 'store/network'
+import { Network } from '@avalabs/core-chains-sdk'
 import {
   selectAccounts,
   selectActiveAccount,
@@ -139,12 +140,17 @@ const reloadAccounts = async (
   listenerApi: AppListenerEffectAPI
 ): Promise<void> => {
   const state = listenerApi.getState()
-  const activeNetwork = selectActiveNetwork(state)
-  const accounts = selectAccounts(state)
+  const isDeveloperMode = selectIsDeveloperMode(state)
 
+  // all vm modules need is just the isTestnet flag
+  const network = {
+    isTestnet: isDeveloperMode
+  } as Network
+
+  const accounts = selectAccounts(state)
   const reloadedAccounts = await accountService.reloadAccounts(
     accounts,
-    activeNetwork
+    network as Network
   )
 
   listenerApi.dispatch(setAccounts(reloadedAccounts))
@@ -159,7 +165,7 @@ export const addAccountListeners = (
   })
 
   startListening({
-    matcher: isAnyOf(toggleDeveloperMode, setActive),
+    actionCreator: toggleDeveloperMode,
     effect: reloadAccounts
   })
 }
