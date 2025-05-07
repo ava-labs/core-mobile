@@ -102,10 +102,9 @@ const AssetsScreen: FC<Props> = ({
   }, [isGridView])
 
   const emptyComponent = useMemo(() => {
-    if (isBalanceLoading || isRefetchingBalance) {
+    if (isRefetchingBalance) {
       return <LoadingState sx={{ height: portfolioTabContentHeight }} />
     }
-
     if (isAllBalancesInaccurate) {
       return (
         <ErrorState
@@ -131,13 +130,7 @@ const AssetsScreen: FC<Props> = ({
         }}
       />
     )
-  }, [
-    isBalanceLoading,
-    isRefetchingBalance,
-    isAllBalancesInaccurate,
-    goToBuy,
-    refetch
-  ])
+  }, [isRefetchingBalance, isAllBalancesInaccurate, goToBuy, refetch])
 
   const header = useMemo(() => {
     return (
@@ -152,9 +145,13 @@ const AssetsScreen: FC<Props> = ({
     )
   }, [filter, sort, view, handleManageList])
 
+  if (isBalanceLoading) {
+    return <LoadingState sx={{ height: portfolioTabContentHeight * 2 }} />
+  }
+
   return (
     <Animated.View
-      entering={getListItemEnteringAnimation(0)}
+      entering={getListItemEnteringAnimation(10)}
       layout={SPRING_LINEAR_TRANSITION}
       style={{
         flex: 1
