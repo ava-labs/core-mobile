@@ -151,7 +151,7 @@ const AssetsScreen: FC<Props> = ({
 
   return (
     <Animated.View
-      entering={getListItemEnteringAnimation(5)}
+      entering={getListItemEnteringAnimation(10)}
       layout={SPRING_LINEAR_TRANSITION}
       style={{
         flex: 1
