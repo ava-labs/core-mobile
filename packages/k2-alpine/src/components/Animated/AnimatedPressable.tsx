@@ -1,11 +1,7 @@
 import { Pressable } from 'dripsy'
 import { throttle } from 'lodash'
 import React, { memo, useCallback, useRef } from 'react'
-import {
-  GestureResponderEvent,
-  InteractionManager,
-  PressableProps
-} from 'react-native'
+import { GestureResponderEvent, PressableProps } from 'react-native'
 import Animated, {
   AnimatedProps,
   runOnJS,
@@ -16,7 +12,7 @@ import Animated, {
 } from 'react-native-reanimated'
 import { ANIMATED } from '../../utils'
 
-const SCROLL_THRESHOLD = 2 // pixels
+const SCROLL_THRESHOLD = 1 // pixels
 
 export interface AnimatedPressableProps extends AnimatedProps<PressableProps> {
   onPress?: (event: GestureResponderEvent) => void
@@ -47,21 +43,10 @@ export const AnimatedPressable = memo(
 
     const onPressThrottled = useCallback(
       (event: GestureResponderEvent): void => {
-        InteractionManager.runAfterInteractions(() => {
-          throttledOnPress(event)
-        })
+        throttledOnPress(event)
       },
       [throttledOnPress]
     )
-
-    const onPressOut = (event: GestureResponderEvent): void => {
-      if (isScrolling.current) {
-        resetAnimation()
-        return
-      }
-
-      endAnimation(event)
-    }
 
     const onTouchStart = (event: GestureResponderEvent): void => {
       if (props.disabled) return
@@ -74,6 +59,7 @@ export const AnimatedPressable = memo(
       if (isScrolling.current) {
         return
       }
+
       if (onPress) startAnimation()
     }
 
@@ -91,7 +77,16 @@ export const AnimatedPressable = memo(
     }
 
     const onTouchCancel = (): void => {
+      isScrolling.current = false
       resetAnimation()
+    }
+
+    const onTouchEnd = (event: GestureResponderEvent): void => {
+      if (isScrolling.current) {
+        resetAnimation()
+        return
+      }
+      endAnimation(event)
     }
 
     const startAnimation = (): void => {
@@ -128,8 +123,8 @@ export const AnimatedPressable = memo(
         disabled={props.disabled}
         onTouchStart={onTouchStart}
         onTouchMove={onTouchMove}
-        onPressOut={onPressOut}
         onTouchCancel={onTouchCancel}
+        onTouchEnd={onTouchEnd}
         {...props}
         style={[props.style, animatedStyle]}>
         {children}
