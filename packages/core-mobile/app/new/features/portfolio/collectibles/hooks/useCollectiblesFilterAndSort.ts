@@ -21,6 +21,7 @@ import {
   selectCollectibleVisibility,
   toggleCollectibleUnprocessableVisibility
 } from 'store/portfolio'
+import { sortNftsByDateUpdated } from 'services/nft/utils'
 import { useCollectiblesContext } from '../CollectiblesContext'
 import { getCollectibleName } from '../consts'
 
@@ -211,14 +212,17 @@ export const useCollectiblesFilterAndSort = (
   const getSorted = useCallback(
     (filtered: NftItem[]) => {
       if (sortOption === CollectibleSort.NameAToZ)
-        return filtered?.sort((a, b) =>
+        return filtered.sort((a, b) =>
           getCollectibleName(a) > getCollectibleName(b) ? 1 : -1
         )
 
       if (sortOption === CollectibleSort.NameZToA)
-        return filtered?.sort((a, b) =>
+        return filtered.sort((a, b) =>
           getCollectibleName(a) < getCollectibleName(b) ? 1 : -1
         )
+
+      if (sortOption === CollectibleSort.DateAdded)
+        return filtered.sort(sortNftsByDateUpdated)
 
       return filtered
     },
