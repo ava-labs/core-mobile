@@ -100,76 +100,70 @@ const TokenDetail: FC<Props> = ({ token }): React.JSX.Element => {
         <Animated.View
           entering={getListItemEnteringAnimation(index)}
           layout={SPRING_LINEAR_TRANSITION}>
-          <View>
-            <View
-              sx={{
-                borderRadius: 18,
-                paddingLeft: 16,
-                paddingRight: 12,
-                paddingVertical: 12,
-                flexDirection: 'row',
-                alignItems: 'center',
-                backgroundColor: '$surfaceSecondary',
-                marginBottom: 12
-              }}>
-              {token && isAvailableBalanceType ? (
-                <LogoWithNetwork
-                  token={token}
-                  outerBorderColor={colors.$surfaceSecondary}
-                />
-              ) : (
-                <View
-                  sx={{
-                    width: 36,
-                    height: 36,
-                    borderRadius: 18,
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    overflow: 'hidden',
-                    backgroundColor: '$borderPrimary',
-                    borderColor: '$borderPrimary'
-                  }}>
-                  <Icons.Custom.Psychiatry
-                    width={24}
-                    height={24}
-                    color={colors.$textPrimary}
-                  />
-                </View>
-              )}
+          <View
+            sx={{
+              borderRadius: 18,
+              paddingLeft: 16,
+              paddingRight: 12,
+              paddingVertical: 12,
+              flexDirection: 'row',
+              alignItems: 'center',
+              backgroundColor: '$surfaceSecondary',
+              marginBottom: 12
+            }}>
+            {token && isAvailableBalanceType ? (
+              <LogoWithNetwork
+                token={token}
+                outerBorderColor={colors.$surfaceSecondary}
+              />
+            ) : (
               <View
                 sx={{
-                  flexGrow: 1,
-                  marginHorizontal: 12,
-                  flexDirection: 'row',
-                  justifyContent: 'space-between'
+                  width: 36,
+                  height: 36,
+                  borderRadius: 18,
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  overflow: 'hidden',
+                  backgroundColor: '$borderPrimary',
+                  borderColor: '$borderPrimary'
                 }}>
-                <View
-                  sx={{
-                    flexShrink: 1
-                  }}>
-                  <Text
-                    variant="buttonMedium"
-                    numberOfLines={1}
-                    sx={{ flex: 1 }}>
-                    {assetName}
-                  </Text>
-                  <Text
-                    variant="body2"
-                    sx={{ lineHeight: 16, flex: 1 }}
-                    ellipsizeMode="tail"
-                    numberOfLines={1}>
-                    {balanceInAvax?.toDisplay()} {xpChainToken.symbol}
-                  </Text>
-                </View>
-                <View
-                  sx={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-                  <Text
-                    variant="buttonMedium"
-                    numberOfLines={1}
-                    sx={{ lineHeight: 18, marginBottom: 1 }}>
-                    {formattedBalance}
-                  </Text>
-                </View>
+                <Icons.Custom.Psychiatry
+                  width={24}
+                  height={24}
+                  color={colors.$textPrimary}
+                />
+              </View>
+            )}
+            <View
+              sx={{
+                flexGrow: 1,
+                marginHorizontal: 12,
+                flexDirection: 'row',
+                justifyContent: 'space-between'
+              }}>
+              <View
+                sx={{
+                  flexShrink: 1
+                }}>
+                <Text variant="buttonMedium" numberOfLines={1} sx={{ flex: 1 }}>
+                  {assetName}
+                </Text>
+                <Text
+                  variant="body2"
+                  sx={{ lineHeight: 16, flex: 1 }}
+                  ellipsizeMode="tail"
+                  numberOfLines={1}>
+                  {balanceInAvax?.toDisplay()} {xpChainToken.symbol}
+                </Text>
+              </View>
+              <View sx={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                <Text
+                  variant="buttonMedium"
+                  numberOfLines={1}
+                  sx={{ lineHeight: 18, marginBottom: 1 }}>
+                  {formattedBalance}
+                </Text>
               </View>
             </View>
           </View>
@@ -193,20 +187,24 @@ const TokenDetail: FC<Props> = ({ token }): React.JSX.Element => {
   }
 
   return (
-    <CollapsibleTabs.FlatList
-      style={{
-        paddingTop: 4
-      }}
-      contentContainerStyle={{
-        paddingHorizontal: 16,
-        paddingBottom: 16
-      }}
-      data={assetTypes}
-      renderItem={item => renderItem(item.item, item.index)}
-      ListHeaderComponent={renderHeader()}
-      showsVerticalScrollIndicator={false}
-      keyExtractor={item => item}
-    />
+    <Animated.View
+      entering={getListItemEnteringAnimation(0)}
+      layout={SPRING_LINEAR_TRANSITION}>
+      <CollapsibleTabs.FlatList
+        style={{
+          paddingTop: 4
+        }}
+        contentContainerStyle={{
+          paddingHorizontal: 16,
+          paddingBottom: 16
+        }}
+        data={assetTypes}
+        renderItem={item => renderItem(item.item, item.index)}
+        ListHeaderComponent={renderHeader()}
+        showsVerticalScrollIndicator={false}
+        keyExtractor={item => item}
+      />
+    </Animated.View>
   )
 }
 

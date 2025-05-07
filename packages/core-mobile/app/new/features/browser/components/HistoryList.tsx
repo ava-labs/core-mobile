@@ -1,7 +1,16 @@
-import { Icons, Pressable, Text, useTheme, View } from '@avalabs/k2-alpine'
+import {
+  Icons,
+  Pressable,
+  SPRING_LINEAR_TRANSITION,
+  Text,
+  useTheme,
+  View
+} from '@avalabs/k2-alpine'
+import { getListItemEnteringAnimation } from 'common/utils/animations'
 import { useSearchHistory } from 'hooks/browser/useSearchHistory'
 import React, { ReactNode, useEffect } from 'react'
 import { FlatList, FlatListProps, ListRenderItem } from 'react-native'
+import Animated from 'react-native-reanimated'
 import { useDispatch } from 'react-redux'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { addHistoryForActiveTab, addTab, History } from 'store/browser'
@@ -134,15 +143,22 @@ export const HistoryList = (
   }
 
   return (
-    <FlatList
-      keyExtractor={item => item.id}
-      {...props}
-      inverted
-      ListHeaderComponent={renderSearchEngine}
-      data={filterHistories}
-      renderItem={renderItem}
-      showsVerticalScrollIndicator={false}
-      keyboardShouldPersistTaps="handled"
-    />
+    <Animated.View
+      entering={getListItemEnteringAnimation(0)}
+      layout={SPRING_LINEAR_TRANSITION}
+      style={{
+        flex: 1
+      }}>
+      <FlatList
+        keyExtractor={item => item.id}
+        {...props}
+        inverted
+        ListHeaderComponent={renderSearchEngine}
+        data={filterHistories}
+        renderItem={renderItem}
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+      />
+    </Animated.View>
   )
 }
