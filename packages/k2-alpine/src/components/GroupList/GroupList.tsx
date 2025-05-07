@@ -164,7 +164,7 @@ export const GroupList = ({
                     flexDirection: 'row',
                     alignItems: 'center',
                     justifyContent: 'space-between',
-                    gap: 28
+                    gap: 12
                   }}
                   onLayout={handleLayout}>
                   <View sx={{ marginVertical: 14, ...textContainerSx }}>
