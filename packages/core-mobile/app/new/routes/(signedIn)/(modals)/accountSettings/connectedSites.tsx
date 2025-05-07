@@ -1,4 +1,5 @@
 import {
+  Button,
   SearchBar,
   Text,
   TouchableOpacity,
@@ -17,7 +18,7 @@ const ConnectedSitesScreen = (): JSX.Element => {
   const {
     theme: { colors }
   } = useTheme()
-  const { allApprovedDapps, killSession } = useConnectedDapps()
+  const { allApprovedDapps, killSession, killAllSessions } = useConnectedDapps()
   const [searchText, setSearchText] = useState('')
 
   const navigationTitle = `${allApprovedDapps.length} connected ${
@@ -30,6 +31,10 @@ const ConnectedSitesScreen = (): JSX.Element => {
     },
     [killSession]
   )
+
+  const disconnectAll = useCallback(() => {
+    killAllSessions()
+  }, [killAllSessions])
 
   const searchResults = useMemo(() => {
     if (searchText === '') {
@@ -152,14 +157,23 @@ const ConnectedSitesScreen = (): JSX.Element => {
 
   const renderHeader = useCallback(() => {
     return (
-      <SearchBar
-        onTextChanged={setSearchText}
-        searchText={searchText}
-        placeholder="Search"
-        useDebounce={true}
-      />
+      <View sx={{ gap: 24, alignItems: 'flex-end' }}>
+        <SearchBar
+          onTextChanged={setSearchText}
+          searchText={searchText}
+          placeholder="Search"
+          useDebounce={true}
+        />
+        {allApprovedDapps.length ? (
+          <View>
+            <Button size="small" onPress={disconnectAll} type="secondary">
+              Disconnect all
+            </Button>
+          </View>
+        ) : null}
+      </View>
     )
-  }, [searchText])
+  }, [allApprovedDapps.length, disconnectAll, searchText])
 
   return (
     <ListScreen
