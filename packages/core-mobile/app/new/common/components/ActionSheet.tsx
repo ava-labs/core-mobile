@@ -1,5 +1,6 @@
 import { SxProp, View } from '@avalabs/k2-alpine'
 import React, { useCallback, useEffect } from 'react'
+import { Platform } from 'react-native'
 /**
  * Temporarily import "useNavigation" from @react-navigation/native.
  * This is a workaround due to a render bug in the expo-router version.
@@ -11,7 +12,6 @@ import {
   ActionButtons,
   ActionButtonsProps
 } from 'new/features/approval/components/ActionButtons'
-import { Alert } from 'react-native'
 import { ScrollScreen } from './ScrollScreen'
 
 /**
@@ -46,8 +46,10 @@ export const ActionSheet = ({
 
   useEffect(() => {
     return navigation.addListener('beforeRemove', e => {
-      setTimeout(() => Alert.alert(e.data.action.type), 2000)
-      if (e.data.action.type === 'POP') {
+      if (
+        e.data.action.type === 'POP' || // gesture dismissed
+        (Platform.OS === 'android' && e.data.action.type === 'GO_BACK') // physical back button pressed
+      ) {
         // modal is being dismissed via gesture or back button
         onClose()
       }
