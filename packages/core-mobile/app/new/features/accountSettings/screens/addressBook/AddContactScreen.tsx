@@ -2,7 +2,8 @@ import { Button, View } from '@avalabs/k2-alpine'
 import { ScrollScreen } from 'common/components/ScrollScreen'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { ContactForm } from 'features/accountSettings/components/ContactForm'
-import React, { useCallback, useMemo, useState } from 'react'
+import { useNewContactAvatar } from 'features/accountSettings/store'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { useDispatch } from 'react-redux'
 import { addContact, Contact } from 'store/addressBook'
 
@@ -10,11 +11,20 @@ export const AddContactScreen = (): React.JSX.Element => {
   const dispatch = useDispatch()
   const { canGoBack, back, navigate } = useRouter()
   const { contactId } = useLocalSearchParams<{ contactId: string }>()
+  const [newContactAvatar, setNewContactAvatar] = useNewContactAvatar()
+
   const [contact, setContact] = useState<Contact>({
     id: contactId,
     name: '',
-    type: 'contact'
+    type: 'contact',
+    avatar: newContactAvatar
   })
+
+  useEffect(() => {
+    if (newContactAvatar) {
+      setContact(prev => ({ ...prev, avatar: newContactAvatar }))
+    }
+  }, [newContactAvatar])
 
   const handleUpdateContact = (updated: Contact): void => {
     setContact(updated)
@@ -31,8 +41,9 @@ export const AddContactScreen = (): React.JSX.Element => {
 
   const handleSave = useCallback(() => {
     dispatch(addContact({ ...contact, id: contactId }))
+    setNewContactAvatar(undefined)
     canGoBack() && back()
-  }, [back, canGoBack, contact, contactId, dispatch])
+  }, [back, canGoBack, contact, contactId, dispatch, setNewContactAvatar])
 
   const handleSelectAvatar = useCallback(() => {
     navigate({
