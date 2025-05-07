@@ -70,6 +70,7 @@ export const CollectibleManagementScreen = (): ReactNode => {
   return (
     <ListScreen
       title="Manage list"
+      isModal
       keyExtractor={item => `collectibles-manage-${item.localId}`}
       data={filteredCollectibles}
       renderItem={renderItem}

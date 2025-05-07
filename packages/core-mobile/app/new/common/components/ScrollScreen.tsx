@@ -1,4 +1,9 @@
-import { NavigationTitleHeader, SxProp, Text } from '@avalabs/k2-alpine'
+import {
+  NavigationTitleHeader,
+  Separator,
+  SxProp,
+  Text
+} from '@avalabs/k2-alpine'
 import { useHeaderHeight } from '@react-navigation/elements'
 import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
 import React, { useCallback, useLayoutEffect, useRef, useState } from 'react'
@@ -117,6 +122,13 @@ export const ScrollScreen = ({
     }
   }, [contentHeaderHeight])
 
+  const animatedBorderStyle = useAnimatedStyle(() => {
+    const opacity = interpolate(scrollY.value, [0, headerHeight], [0, 1])
+    return {
+      opacity
+    }
+  })
+
   const renderContent = useCallback(() => {
     return (
       <>
@@ -188,7 +200,7 @@ export const ScrollScreen = ({
           </KeyboardStickyView>
         ) : null}
 
-        <BlurViewWithFallback
+        <View
           style={{
             position: 'absolute',
             top: 0,
@@ -196,8 +208,25 @@ export const ScrollScreen = ({
             right: 0,
             bottom: 0,
             height: headerHeight
-          }}
-        />
+          }}>
+          <BlurViewWithFallback
+            style={{
+              flex: 1
+            }}
+          />
+          <Animated.View
+            style={[
+              animatedBorderStyle,
+              {
+                position: 'absolute',
+                bottom: 0,
+                left: 0,
+                right: 0
+              }
+            ]}>
+            <Separator />
+          </Animated.View>
+        </View>
       </View>
     )
   }
@@ -223,7 +252,7 @@ export const ScrollScreen = ({
         {renderContent()}
       </ScrollView>
 
-      <BlurViewWithFallback
+      <View
         style={{
           position: 'absolute',
           top: 0,
@@ -231,8 +260,25 @@ export const ScrollScreen = ({
           right: 0,
           bottom: 0,
           height: headerHeight
-        }}
-      />
+        }}>
+        <BlurViewWithFallback
+          style={{
+            flex: 1
+          }}
+        />
+        <Animated.View
+          style={[
+            animatedBorderStyle,
+            {
+              position: 'absolute',
+              bottom: 0,
+              left: 0,
+              right: 0
+            }
+          ]}>
+          <Separator />
+        </Animated.View>
+      </View>
 
       {renderFooter ? (
         <LinearGradientBottomWrapper>

@@ -1,6 +1,7 @@
 import {
   ANIMATED,
   NavigationTitleHeader,
+  Separator,
   SPRING_LINEAR_TRANSITION,
   Text
 } from '@avalabs/k2-alpine'
@@ -157,6 +158,13 @@ export const ListScreen = <T,>({
     }
   })
 
+  const animatedBorderStyle = useAnimatedStyle(() => {
+    const opacity = interpolate(scrollY.value, [0, headerHeight], [0, 1])
+    return {
+      opacity
+    }
+  })
+
   const ListHeaderComponent = useMemo(() => {
     return (
       <Animated.View style={[animatedHeaderContainerStyle, { gap: 12 }]}>
@@ -186,10 +194,23 @@ export const ListScreen = <T,>({
           <View style={{ paddingBottom: renderHeader ? 12 : 0 }}>
             {renderHeader?.()}
           </View>
+          <Animated.View
+            style={[
+              animatedBorderStyle,
+              {
+                position: 'absolute',
+                bottom: 0,
+                left: 0,
+                right: 0
+              }
+            ]}>
+            <Separator />
+          </Animated.View>
         </BlurViewWithFallback>
       </Animated.View>
     )
   }, [
+    animatedBorderStyle,
     animatedHeaderContainerStyle,
     animatedHeaderStyle,
     headerHeight,

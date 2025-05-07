@@ -124,7 +124,7 @@ const AccountSettingsScreen = (): JSX.Element => {
       contentContainerStyle={{
         paddingTop: 16
       }}>
-      <View sx={{ gap: 48 }}>
+      <View sx={{ gap: 48, marginTop: 16 }}>
         <View
           sx={{
             alignItems: 'center'
