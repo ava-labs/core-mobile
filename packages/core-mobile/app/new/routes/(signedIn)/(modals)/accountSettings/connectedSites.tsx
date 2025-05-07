@@ -13,6 +13,7 @@ import {
 } from 'features/accountSettings/hooks/useConnectedDapps'
 import React, { useCallback, useMemo, useState } from 'react'
 import { DappLogo } from 'common/components/DappLogo'
+import { ErrorState } from 'common/components/ErrorState'
 
 const ConnectedSitesScreen = (): JSX.Element => {
   const {
@@ -175,6 +176,10 @@ const ConnectedSitesScreen = (): JSX.Element => {
     )
   }, [allApprovedDapps.length, disconnectAll, searchText])
 
+  const renderEmpty = useCallback(() => {
+    return <ErrorState sx={{ flex: 1 }} title="No site found" description="" />
+  }, [])
+
   return (
     <ListScreen
       isModal
@@ -184,6 +189,7 @@ const ConnectedSitesScreen = (): JSX.Element => {
       renderHeader={renderHeader}
       data={searchResults}
       keyExtractor={(item): string => (item as Dapp).id}
+      renderEmpty={renderEmpty}
     />
   )
 }
