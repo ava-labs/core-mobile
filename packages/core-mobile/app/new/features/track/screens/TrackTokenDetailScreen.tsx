@@ -44,6 +44,7 @@ import { isPositiveNumber } from 'utils/isPositiveNumber/isPositiveNumber'
 import { formatLargeCurrency } from 'utils/Utils'
 import { useTokenDetails } from 'common/hooks/useTokenDetails'
 import { useGetPrices } from 'hooks/watchlist/useGetPrices'
+import { useIsFocused } from '@react-navigation/native'
 
 const TrackTokenDetailScreen = (): JSX.Element => {
   const { theme } = useTheme()
@@ -74,9 +75,11 @@ const TrackTokenDetailScreen = (): JSX.Element => {
     handleFavorite,
     openUrl
   } = useTokenDetails({ tokenId: tokenId ?? '', searchText })
+  const isFocused = useIsFocused()
+
   const { data: prices } = useGetPrices(
     [tokenId],
-    tokenInfo && tokenInfo.currentPrice === undefined
+    isFocused && tokenInfo !== undefined && tokenInfo.currentPrice === undefined
   )
 
   const selectedSegmentIndex = useSharedValue(0)
