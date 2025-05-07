@@ -13,6 +13,7 @@ import { useCollectibleSend } from 'common/hooks/send/useCollectibleSend'
 import { useSendContext } from 'features/send/context/sendContext'
 import { ActivityIndicator, alpha, useTheme, View } from '@avalabs/k2-alpine'
 import { useNavigation } from '@react-navigation/native'
+import { isAddress } from 'ethers'
 import { useSendTransactionCallbacks } from '../hooks/useSendTransactionCallbacks'
 
 export const RecentContactsScreen = (): JSX.Element | null => {
@@ -47,6 +48,10 @@ export const RecentContactsScreen = (): JSX.Element | null => {
   const handleSend = useCallback(
     async (toAddress: string, contact?: Contact): Promise<void> => {
       try {
+        if (isAddress(toAddress) === false) {
+          onFailure(new Error('Invalid address'))
+          return
+        }
         const txHash = await send(toAddress)
 
         onSuccess({

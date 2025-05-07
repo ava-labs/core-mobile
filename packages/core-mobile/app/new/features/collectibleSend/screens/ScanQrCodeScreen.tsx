@@ -1,6 +1,8 @@
 import {
   ActivityIndicator,
   alpha,
+  Button,
+  showAlert,
   Text,
   useTheme,
   View
@@ -56,6 +58,17 @@ export const ScanQrCodeScreen = (): JSX.Element => {
           return
         }
 
+        showAlert({
+          title: `${toAddress}`,
+          buttons: [
+            {
+              text: 'Cancel',
+              style: 'cancel'
+            }
+          ]
+        })
+        return
+
         const txHash = await send(toAddress)
 
         onSuccess({
@@ -71,6 +84,10 @@ export const ScanQrCodeScreen = (): JSX.Element => {
             ) {
               canGoBack() && back()
             }
+            const state = getState()
+            if (state?.routes[state?.index ?? 0]?.name === 'onboarding') {
+              canGoBack() && back()
+            }
           }
         })
       } catch (reason) {
@@ -84,6 +101,14 @@ export const ScanQrCodeScreen = (): JSX.Element => {
     <View
       sx={{ paddingHorizontal: 16, paddingTop: headerHeight + 16, flex: 1 }}>
       <Text variant="heading2">Scan a QR code</Text>
+      <Button
+        size="large"
+        type="primary"
+        onPress={() =>
+          handleSend('0x6bD4f76e2c0453bFC6F7177542808E22A4Ee323F')
+        }>
+        test
+      </Button>
       <QrCodeScanner
         onSuccess={handleSend}
         vibrate={true}
