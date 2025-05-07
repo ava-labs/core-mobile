@@ -50,8 +50,8 @@ const TrackTokenDetailScreen = (): JSX.Element => {
     tokenId: string
     searchText: string
   }>()
+  const { back, navigate } = useRouter()
   const [isChartInteracting, setIsChartInteracting] = useState(false)
-  const { navigate } = useRouter()
   const { navigateToSwap } = useNavigateToSwap()
   const { addStake } = useAddStake()
   const headerOpacity = useSharedValue(1)
@@ -138,20 +138,24 @@ const TrackTokenDetailScreen = (): JSX.Element => {
   }, [])
 
   const handlePressTwitter = useCallback(() => {
-    tokenInfo?.twitterHandle &&
+    if (tokenInfo?.twitterHandle) {
+      back()
       openUrl({
         url: `https://x.com/${tokenInfo.twitterHandle}`,
         title: 'X'
       })
-  }, [openUrl, tokenInfo?.twitterHandle])
+    }
+  }, [openUrl, tokenInfo?.twitterHandle, back])
 
   const handlePressWebsite = useCallback(() => {
-    tokenInfo?.urlHostname &&
+    if (tokenInfo?.urlHostname) {
+      back()
       openUrl({
         url: tokenInfo.urlHostname,
         title: 'Website'
       })
-  }, [openUrl, tokenInfo?.urlHostname])
+    }
+  }, [openUrl, tokenInfo?.urlHostname, back])
 
   const handleBuy = useCallback((): void => {
     navigate({

@@ -65,7 +65,7 @@ export const TokenDetailScreen = (): React.JSX.Element => {
   const {
     theme: { colors }
   } = useTheme()
-  const { navigate } = useRouter()
+  const { navigate, back } = useRouter()
   const { navigateToSwap } = useNavigateToSwap()
   const { addStake, canAddStake } = useAddStake()
   const botomInset = useSafeAreaInsets().bottom
@@ -235,9 +235,10 @@ export const TokenDetailScreen = (): React.JSX.Element => {
   const handleExplorerLink = useCallback(
     (explorerLink: string): void => {
       AnalyticsService.capture('ActivityCardLinkClicked')
+      back()
       openUrl({ url: explorerLink, title: '' })
     },
-    [openUrl]
+    [openUrl, back]
   )
 
   const handlePendingBridge = useCallback(
