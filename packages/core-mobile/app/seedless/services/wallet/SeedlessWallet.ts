@@ -8,7 +8,7 @@ import {
   Wallet
 } from 'services/wallet/types'
 import { strip0x } from '@avalabs/core-utils-sdk'
-import { BytesLike, TransactionRequest, getBytes, hashMessage } from 'ethers'
+import { BytesLike, TransactionRequest, getBytes } from 'ethers'
 import {
   Avalanche,
   BitcoinProvider,
@@ -121,6 +121,17 @@ export default class SeedlessWallet implements Wallet {
     return res.data().signature
   }
 
+  private async signEip191(address: string, data: string): Promise<string> {
+    const key = (await this.getSigningKeyByAddress(address)).key_id.replace(
+      'Key#',
+      ''
+    )
+    const res = await this.#client.apiClient.signEip191(key, {
+      data
+    })
+    return res.data().signature
+  }
+
   public async addAccount(accountIndex: number): Promise<void> {
     if (accountIndex < 1) {
       // To add a new account, we must already know at least one
@@ -179,10 +190,7 @@ export default class SeedlessWallet implements Wallet {
         if (typeof data !== 'string')
           throw new Error(`Invalid message type ${typeof data}`)
 
-        return this.signBlob(
-          addressEVM,
-          hashMessage(Uint8Array.from(Buffer.from(strip0x(data), 'hex')))
-        )
+        return this.signEip191(addressEVM, data)
       case RpcMethod.SIGN_TYPED_DATA:
       case RpcMethod.SIGN_TYPED_DATA_V1:
         if (!isTypedDataV1(data)) throw new Error('Invalid typed data v1')
