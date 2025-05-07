@@ -55,7 +55,7 @@ export function useModalScreenOptions(): {
   const formSheetScreensOptions: StackNavigationOptions = {
     ...modalOptions,
     cardStyle: {
-      marginTop: Platform.OS === 'ios' ? topMarginOffset : MODAL_TOP_MARGIN,
+      marginTop: Platform.OS === 'ios' ? topMarginOffset - 4 : MODAL_TOP_MARGIN,
       borderTopLeftRadius: MODAL_BORDER_RADIUS,
       borderTopRightRadius: MODAL_BORDER_RADIUS
     },
