@@ -45,12 +45,14 @@ export const ActionSheet = ({
 
   useEffect(() => {
     return navigation.addListener('beforeRemove', e => {
+      // @ts-ignore
+      alert(e.data.action.type)
       if (e.data.action.type === 'POP') {
         // modal is being dismissed via gesture or back button
         onClose()
       }
     })
-  }, [navigation, onClose])
+  }, [navigation, onClose, alert])
 
   const renderFooter = useCallback(() => {
     return <ActionButtons confirm={confirm} cancel={cancel} alert={alert} />
