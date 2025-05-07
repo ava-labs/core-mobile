@@ -18,6 +18,7 @@ import { useNetworks } from 'hooks/networks/useNetworks'
 import { useNetworkFee } from 'hooks/useNetworkFee'
 import { useSelector } from 'react-redux'
 import { selectActiveAccount } from 'store/account'
+import { isAddress } from 'ethers'
 import { useSendTransactionCallbacks } from '../hooks/useSendTransactionCallbacks'
 
 export const ScanQrCodeScreen = (): JSX.Element => {
@@ -50,6 +51,11 @@ export const ScanQrCodeScreen = (): JSX.Element => {
   const handleSend = useCallback(
     async (toAddress: string): Promise<void> => {
       try {
+        if (isAddress(toAddress) === false) {
+          onFailure(new Error('Invalid address'))
+          return
+        }
+
         const txHash = await send(toAddress)
 
         onSuccess({
