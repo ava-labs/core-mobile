@@ -1,6 +1,7 @@
 import {
   Button,
   SearchBar,
+  showAlert,
   Text,
   TouchableOpacity,
   useTheme,
@@ -34,7 +35,18 @@ const ConnectedSitesScreen = (): JSX.Element => {
   )
 
   const disconnectAll = useCallback(() => {
-    killAllSessions()
+    showAlert({
+      title: 'Disconnect all sites',
+      description: 'Are you sure you want to disconnect all sites?',
+      buttons: [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Disconnect',
+          style: 'destructive',
+          onPress: () => killAllSessions()
+        }
+      ]
+    })
   }, [killAllSessions])
 
   const searchResults = useMemo(() => {
