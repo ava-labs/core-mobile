@@ -57,7 +57,9 @@ export const useCollectiblesFilterAndSort = (
   const [selectedContentTypeFilter, setSelectedContentTypeFilter] =
     useState<IndexPath>(
       initial?.filters?.contentType ?? {
-        section: 0,
+        // set to section 2 meaning "All" content type
+        // since there is no section 2 in filters
+        section: 2,
         row: 0
       }
     )
@@ -113,7 +115,7 @@ export const useCollectiblesFilterAndSort = (
         }
         if (value.section === 1)
           setSelectedContentTypeFilter({
-            section: 0,
+            section: 2,
             row: 0
           })
       }
