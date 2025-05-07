@@ -31,7 +31,7 @@ export const ScanQrCodeScreen = (): JSX.Element => {
   const { canGoBack, back } = useRouter()
   const { getState } = useNavigation()
   const fromAddress = useSelector(selectActiveAccount)?.addressC ?? ''
-  const [selectedToken] = useSendSelectedToken()
+  const [selectedToken, setSelectedToken] = useSendSelectedToken()
   const { onSuccess, onFailure } = useSendTransactionCallbacks()
 
   const selectedNetwork = useMemo(() => {
@@ -51,6 +51,8 @@ export const ScanQrCodeScreen = (): JSX.Element => {
   const handleSend = useCallback(
     async (toAddress: string): Promise<void> => {
       try {
+        if (selectedToken === undefined) return
+
         if (isAddress(toAddress) === false) {
           onFailure(new Error('Invalid address'))
           return
@@ -61,6 +63,7 @@ export const ScanQrCodeScreen = (): JSX.Element => {
         onSuccess({
           txHash,
           onDismiss: () => {
+            setSelectedToken(undefined)
             // dismiss QR code modal
             canGoBack() && back()
             // dismiss recent contacts modal
@@ -71,13 +74,27 @@ export const ScanQrCodeScreen = (): JSX.Element => {
             ) {
               canGoBack() && back()
             }
+            // dismiss onboarding modal
+            const state = getState()
+            if (state?.routes[state?.index ?? 0]?.name === 'onboarding') {
+              canGoBack() && back()
+            }
           }
         })
       } catch (reason) {
         onFailure(reason)
       }
     },
-    [back, canGoBack, getState, onFailure, onSuccess, send]
+    [
+      back,
+      canGoBack,
+      getState,
+      onFailure,
+      onSuccess,
+      selectedToken,
+      send,
+      setSelectedToken
+    ]
   )
 
   return (
