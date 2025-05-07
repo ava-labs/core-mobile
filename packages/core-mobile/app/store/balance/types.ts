@@ -102,10 +102,11 @@ export const ASSET_MANAGE_VIEWS: AssetManageViews = [
 
 // Collectibles
 export enum CollectibleStatus {
-  Hidden = 'Show hidden NFTS'
+  Hidden = 'Show hidden Nfts'
 }
 
 export enum CollectibleTypeFilter {
+  AllContents = 'All contents',
   Pictures = 'Pictures',
   GIFs = 'GIFs',
   Videos = 'Videos'
@@ -138,6 +139,7 @@ export const COLLECTIBLE_NETWORK_FILTERS = [
 ]
 
 export const COLLECTIBLE_TYPE_FILTERS = [
+  CollectibleTypeFilter.AllContents,
   CollectibleTypeFilter.Pictures,
   CollectibleTypeFilter.GIFs,
   CollectibleTypeFilter.Videos,

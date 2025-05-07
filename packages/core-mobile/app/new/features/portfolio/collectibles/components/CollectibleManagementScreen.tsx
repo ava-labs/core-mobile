@@ -93,25 +93,21 @@ const CollectibleManagementOptions = (): ReactNode => {
 
   return (
     <View
-      style={{
-        paddingLeft: HORIZONTAL_MARGIN
+      sx={{
+        marginVertical: -HORIZONTAL_MARGIN / 2,
+        borderColor: '$borderPrimary',
+        height: 56,
+        paddingRight: HORIZONTAL_MARGIN,
+        marginRight: -HORIZONTAL_MARGIN,
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        flexDirection: 'row'
       }}>
-      <View
-        sx={{
-          borderBottomWidth: 1,
-          borderColor: '$borderPrimary',
-          height: 56,
-          paddingRight: HORIZONTAL_MARGIN,
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          flexDirection: 'row'
-        }}>
-        <Text>Hide unreachable collectibles</Text>
-        <Toggle
-          value={collectibleUnprocessableVisibility}
-          onValueChange={handleChange}
-        />
-      </View>
+      <Text>Hide unreachable collectibles</Text>
+      <Toggle
+        value={collectibleUnprocessableVisibility}
+        onValueChange={handleChange}
+      />
     </View>
   )
 }

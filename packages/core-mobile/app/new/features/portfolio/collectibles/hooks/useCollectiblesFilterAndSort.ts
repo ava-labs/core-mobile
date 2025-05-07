@@ -57,9 +57,7 @@ export const useCollectiblesFilterAndSort = (
   const [selectedContentTypeFilter, setSelectedContentTypeFilter] =
     useState<IndexPath>(
       initial?.filters?.contentType ?? {
-        // set to section 2 meaning "All" content type
-        // since there is no section 2 in filters
-        section: 2,
+        section: 1,
         row: 0
       }
     )
@@ -115,7 +113,7 @@ export const useCollectiblesFilterAndSort = (
         }
         if (value.section === 1)
           setSelectedContentTypeFilter({
-            section: 2,
+            section: 1,
             row: 0
           })
       }
@@ -158,6 +156,7 @@ export const useCollectiblesFilterAndSort = (
         AssetNetworkFilter.Ethereum
       ]
       const availableContentTypes = [
+        CollectibleTypeFilter.AllContents,
         CollectibleTypeFilter.Pictures,
         CollectibleTypeFilter.GIFs,
         CollectibleTypeFilter.Videos
@@ -198,6 +197,7 @@ export const useCollectiblesFilterAndSort = (
               return nft.imageData?.type === NftContentType.GIF
             case CollectibleTypeFilter.Videos:
               return nft.imageData?.type === NftContentType.MP4
+            case CollectibleTypeFilter.AllContents:
             default:
               return true
           }
