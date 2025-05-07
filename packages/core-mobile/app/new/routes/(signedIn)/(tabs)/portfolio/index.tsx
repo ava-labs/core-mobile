@@ -12,6 +12,7 @@ import {
   CollapsibleTabsRef,
   OnTabChange
 } from 'common/components/CollapsibleTabs'
+import { HiddenBalanceText } from 'common/components/HiddenBalanceText'
 import { LinearGradientBottomWrapper } from 'common/components/LinearGradientBottomWrapper'
 import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
@@ -30,12 +31,11 @@ import { useAddStake } from 'features/stake/hooks/useAddStake'
 import { useNavigateToSwap } from 'features/swap/hooks/useNavigateToSwap'
 import { useWatchlist } from 'hooks/watchlist/useWatchlist'
 import { useFormatCurrency } from 'new/common/hooks/useFormatCurrency'
-import React, { useCallback, useMemo, useRef, useState, useEffect } from 'react'
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   InteractionManager,
   LayoutChangeEvent,
   LayoutRectangle,
-  Platform,
   StyleSheet
 } from 'react-native'
 import Animated, {
@@ -43,7 +43,6 @@ import Animated, {
   useSharedValue
 } from 'react-native-reanimated'
 import { useDispatch, useSelector } from 'react-redux'
-import { RootState } from 'store/types'
 import { selectActiveAccount } from 'store/account'
 import {
   selectBalanceForAccountIsAccurate,
@@ -52,13 +51,13 @@ import {
   selectIsRefetchingBalances,
   selectTokensWithBalanceForAccount
 } from 'store/balance'
+import { promptEnableNotifications } from 'store/notifications'
 import { selectTokenVisibility } from 'store/portfolio'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { selectSelectedCurrency } from 'store/settings/currency'
 import { selectIsPrivacyModeEnabled } from 'store/settings/securityPrivacy'
+import { RootState } from 'store/types'
 import { useFocusedSelector } from 'utils/performance/useFocusedSelector'
-import { HiddenBalanceText } from 'common/components/HiddenBalanceText'
-import { promptEnableNotifications } from 'store/notifications'
 
 const SEGMENT_ITEMS = ['Assets', 'Collectibles', 'DeFi']
 
@@ -67,7 +66,7 @@ const PortfolioHomeScreen = (): JSX.Element => {
   const [_, setSelectedToken] = useSendSelectedToken()
   const { theme } = useTheme()
   const dispatch = useDispatch()
-  const { navigate } = useRouter()
+  const { navigate, push } = useRouter()
   const { navigateToSwap } = useNavigateToSwap()
   const { addStake, canAddStake } = useAddStake()
   const [balanceHeaderLayout, setBalanceHeaderLayout] = useState<
@@ -262,7 +261,7 @@ const PortfolioHomeScreen = (): JSX.Element => {
               {
                 paddingBottom: 16,
                 backgroundColor: theme.colors.$surfacePrimary,
-                marginTop: Platform.OS === 'ios' ? 24 : 8
+                marginTop: 16
               },
               animatedHeaderStyle
             ]}>
@@ -337,9 +336,9 @@ const PortfolioHomeScreen = (): JSX.Element => {
   const handleGoToTokenDetail = useCallback(
     (localId: string): void => {
       // @ts-ignore TODO: make routes typesafe
-      navigate({ pathname: '/tokenDetail', params: { localId } })
+      push({ pathname: '/tokenDetail', params: { localId } })
     },
-    [navigate]
+    [push]
   )
 
   const handleGoToTokenManagement = useCallback((): void => {

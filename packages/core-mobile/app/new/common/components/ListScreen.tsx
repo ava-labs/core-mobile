@@ -81,8 +81,8 @@ export const ListScreen = <T,>({
   data,
   title,
   navigationTitle,
-  hasParent = false,
-  isModal = false,
+  hasParent,
+  isModal,
   renderEmpty,
   renderHeader,
   renderHeaderRight,
@@ -101,7 +101,7 @@ export const ListScreen = <T,>({
     {
       header: <NavigationTitleHeader title={navigationTitle ?? title ?? ''} />,
       targetLayout: headerLayout,
-      shouldHeaderHaveGrabber: isModal ? true : false,
+      shouldHeaderHaveGrabber: isModal,
       hasParent,
       renderHeaderRight
     }

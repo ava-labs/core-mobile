@@ -22,6 +22,7 @@ import Animated, {
  * TODO: Adjust import back to expo-router once the bug is resolved.
  */
 import { useFocusEffect, useNavigation } from '@react-navigation/native'
+import { StackNavigationOptions } from '@react-navigation/stack'
 
 export const useFadingHeaderNavigation = ({
   header,
@@ -117,11 +118,7 @@ export const useFadingHeaderNavigation = ({
   })
 
   useFocusEffect(() => {
-    const navigationOptions: {
-      title?: React.ReactNode
-      headerRight?: () => React.ReactNode
-      headerBackground?: () => React.ReactNode
-    } = {
+    const navigationOptions: StackNavigationOptions = {
       headerBackground: () => (
         <BlurredBackgroundView
           shouldDelayBlurOniOS={shouldDelayBlurOniOS}
@@ -136,25 +133,29 @@ export const useFadingHeaderNavigation = ({
           }
         />
       ),
-      title: header && (
-        <View
-          sx={{
-            paddingTop: shouldHeaderHaveGrabber ? 20 : 0,
-            height: '100%'
-          }}>
+      headerTitleStyle: {
+        height: '100%',
+        justifyContent: 'center'
+      },
+      headerTitle: () =>
+        header && (
           <View
             sx={{
-              overflow: 'hidden',
-              height: '100%',
-              justifyContent: 'center'
-            }}
-            onLayout={handleLayout}>
-            <Animated.View style={[animatedHeaderStyle]}>
-              {header}
-            </Animated.View>
+              marginTop: shouldHeaderHaveGrabber
+                ? Platform.OS === 'ios'
+                  ? 22
+                  : 16
+                : 0,
+              justifyContent: 'center',
+              overflow: 'hidden'
+            }}>
+            <View onLayout={handleLayout}>
+              <Animated.View style={[animatedHeaderStyle]}>
+                {header}
+              </Animated.View>
+            </View>
           </View>
-        </View>
-      )
+        )
     }
 
     // If a custom header right component is provided, set it

@@ -1,7 +1,6 @@
 import {
   Avatar,
   Button,
-  CIRCULAR_BUTTON_WIDTH,
   CircularButton,
   Icons,
   Logos,
@@ -277,10 +276,10 @@ const LoginWithPinOrBiometry = (): JSX.Element => {
               </Button>
             </Reanimated.View>
           </View>
+
           <Reanimated.View style={buttonContainerStyle}>
             <View
               sx={{
-                height: CIRCULAR_BUTTON_WIDTH,
                 flexDirection: 'row',
                 justifyContent: 'center',
                 gap: 30

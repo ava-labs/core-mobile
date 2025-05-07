@@ -6,23 +6,26 @@ const NavigationBarButton = ({
   onPress,
   children,
   isModal = false,
+  isLeft = false,
   testID
 }: {
   onPress?: () => void
   children: React.ReactNode
   testID?: string
   isModal?: boolean
+  isLeft?: boolean
 }): JSX.Element => {
   return (
     <Pressable
       onPress={onPress}
       testID={testID}
       sx={{
-        paddingLeft: Platform.OS === 'ios' ? 16 : 6,
+        marginLeft: isLeft ? (Platform.OS === 'ios' ? 0 : -12) : 0,
+        marginTop: -6,
+        paddingLeft: 16,
         paddingRight: 16,
         paddingVertical: 16,
-        height: '100%',
-        justifyContent: 'flex-end'
+        justifyContent: 'center'
       }}>
       <View
         style={
