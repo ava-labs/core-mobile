@@ -1,7 +1,6 @@
 import { Text, useTheme, View } from '@avalabs/k2-alpine'
 import { LoadingState } from 'common/components/LoadingState'
 import { useLocalSearchParams } from 'expo-router'
-import { useWatchlist } from 'hooks/watchlist/useWatchlist'
 import React, { useCallback, useRef, useState } from 'react'
 import { LayoutChangeEvent, PixelRatio, Platform } from 'react-native'
 import {
@@ -24,12 +23,13 @@ import { ScrollScreen } from 'common/components/ScrollScreen'
 
 const ShareMarketTokenScreen = (): JSX.Element => {
   const { theme } = useTheme()
-  const { tokenId } = useLocalSearchParams<{ tokenId: string }>()
-  const { getMarketTokenById } = useWatchlist()
-  const token = tokenId ? getMarketTokenById(tokenId) : undefined
+  const { tokenId, searchText } = useLocalSearchParams<{
+    tokenId: string
+    searchText: string
+  }>()
   const [viewWidth, setViewWidth] = useState<number>()
   const viewShotRef = useRef<ViewShot>(null)
-  const { tokenInfo } = useTokenDetails(tokenId ?? '')
+  const { tokenInfo } = useTokenDetails({ tokenId: tokenId ?? '', searchText })
 
   const handleLayout = (event: LayoutChangeEvent): void => {
     setViewWidth(event.nativeEvent.layout.width)
@@ -123,7 +123,7 @@ const ShareMarketTokenScreen = (): JSX.Element => {
     [urlToShare, handleSendMessage, handleMore, handleCopyLink, handleShare]
   )
 
-  if (!tokenId || !token) {
+  if (!tokenId || !tokenInfo) {
     return <LoadingState sx={{ flex: 1 }} />
   }
 
@@ -148,7 +148,7 @@ const ShareMarketTokenScreen = (): JSX.Element => {
                 overflow: 'hidden'
               }}>
               <ViewShot ref={viewShotRef}>
-                <ShareChart tokenId={tokenId} />
+                <ShareChart tokenId={tokenId} searchText={searchText} />
               </ViewShot>
             </View>
           </View>
