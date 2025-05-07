@@ -5,7 +5,6 @@ import {
   AvatarType,
   Button,
   isScreenSmall,
-  Text,
   useTheme,
   View
 } from '@avalabs/k2-alpine'
@@ -58,32 +57,41 @@ export const SelectAvatar = memo(
     return (
       <ScrollScreen
         title={title}
+        subtitle={description}
         renderFooter={renderFooter}
-        contentContainerStyle={{ padding: 16, flex: 1 }}>
-        <Text variant="body2">{description}</Text>
-        <Animated.View entering={ZoomIn.delay(400)}>
-          <View
-            sx={{
-              alignItems: 'center',
-              justifyContent: 'center',
-              paddingVertical: AVATAR_BLURAREA_INSET
-            }}>
-            {avatar?.source && (
-              <Avatar
-                backgroundColor={colors.$surfacePrimary}
-                source={avatar?.source}
-                size={isScreenSmall ? 100 : 'large'}
-                testID="selected_avatar"
-              />
-            )}
-          </View>
-        </Animated.View>
+        contentContainerStyle={{
+          padding: 16,
+          flex: 1
+        }}>
+        <View
+          style={{
+            justifyContent: 'center',
+            flex: 1
+          }}>
+          <Animated.View entering={ZoomIn.delay(400)}>
+            <View
+              sx={{
+                alignItems: 'center',
+                justifyContent: 'center',
+                paddingVertical: AVATAR_BLURAREA_INSET
+              }}>
+              {avatar?.source && (
+                <Avatar
+                  backgroundColor={colors.$surfacePrimary}
+                  source={avatar?.source}
+                  size={isScreenSmall ? 100 : 'large'}
+                  testID="selected_avatar"
+                />
+              )}
+            </View>
+          </Animated.View>
 
-        <AvatarSelector
-          selectedId={selectedAvatar?.id}
-          avatars={avatars}
-          onSelect={onSelect}
-        />
+          <AvatarSelector
+            selectedId={selectedAvatar?.id}
+            avatars={avatars}
+            onSelect={onSelect}
+          />
+        </View>
       </ScrollScreen>
     )
   }
