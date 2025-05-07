@@ -1,4 +1,5 @@
 import {
+  ANIMATED,
   Avatar,
   Button,
   CircularButton,
@@ -74,7 +75,8 @@ const LoginWithPinOrBiometry = (): JSX.Element => {
     promptForWalletLoadingIfExists,
     disableKeypad,
     timeRemaining,
-    bioType
+    bioType,
+    isBiometricAvailable
   } = usePinOrBiometryLogin({
     onWrongPin: handleWrongPin,
     onStartLoading: handleStartLoading,
@@ -107,7 +109,10 @@ const LoginWithPinOrBiometry = (): JSX.Element => {
   )
   const buttonContainerStyle = useAnimatedStyle(() => {
     return {
-      paddingBottom: buttonContainerPaddingBottom.value
+      paddingBottom: withTiming(
+        isEnteringPin ? 0 : buttonContainerPaddingBottom.value,
+        ANIMATED.TIMING_CONFIG
+      )
     }
   })
 
@@ -176,7 +181,7 @@ const LoginWithPinOrBiometry = (): JSX.Element => {
       InteractionManager.runAfterInteractions(() => {
         if (bioType !== BiometricType.NONE) {
           sub = handlePromptBioLogin()
-        } else {
+        } else if (!isBiometricAvailable) {
           focusPinInput()
         }
       })
@@ -185,7 +190,7 @@ const LoginWithPinOrBiometry = (): JSX.Element => {
         blurPinInput()
         sub?.unsubscribe()
       }
-    }, [bioType, handlePromptBioLogin, focusPinInput])
+    }, [bioType, isBiometricAvailable, handlePromptBioLogin, focusPinInput])
   )
 
   useEffect(() => {
@@ -220,7 +225,10 @@ const LoginWithPinOrBiometry = (): JSX.Element => {
   }, [isEnteringPin, pinInputOpacity, buttonContainerPaddingBottom])
 
   return (
-    <ScrollScreen shouldAvoidKeyboard contentContainerStyle={{ flex: 1 }}>
+    <ScrollScreen
+      shouldAvoidKeyboard
+      scrollEnabled={false}
+      contentContainerStyle={{ flex: 1 }}>
       <TouchableWithoutFeedback
         style={{ flex: 1 }}
         onPress={handlePressBackground}>
