@@ -11,6 +11,7 @@ import {
   ActionButtons,
   ActionButtonsProps
 } from 'new/features/approval/components/ActionButtons'
+import { Alert } from 'react-native'
 import { ScrollScreen } from './ScrollScreen'
 
 /**
@@ -45,8 +46,7 @@ export const ActionSheet = ({
 
   useEffect(() => {
     return navigation.addListener('beforeRemove', e => {
-      // @ts-ignore
-      alert(e.data.action.type)
+      setTimeout(() => Alert.alert(e.data.action.type), 2000)
       if (e.data.action.type === 'POP') {
         // modal is being dismissed via gesture or back button
         onClose()
