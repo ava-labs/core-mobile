@@ -13,6 +13,7 @@ import { useCollectibleSend } from 'common/hooks/send/useCollectibleSend'
 import { useSendContext } from 'features/send/context/sendContext'
 import { ActivityIndicator, alpha, useTheme, View } from '@avalabs/k2-alpine'
 import { useNavigation } from '@react-navigation/native'
+import { isAddress } from 'ethers'
 import { useSendTransactionCallbacks } from '../hooks/useSendTransactionCallbacks'
 
 export const RecentContactsScreen = (): JSX.Element | null => {
@@ -25,7 +26,7 @@ export const RecentContactsScreen = (): JSX.Element | null => {
   const { recentAddresses, contacts, accounts } = useContacts()
   const { getNetwork } = useNetworks()
   const fromAddress = useSelector(selectActiveAccount)?.addressC ?? ''
-  const [selectedToken] = useSendSelectedToken()
+  const [selectedToken, setSelectedToken] = useSendSelectedToken()
   const { onSuccess, onFailure } = useSendTransactionCallbacks()
 
   const selectedNetwork = useMemo(() => {
@@ -47,11 +48,18 @@ export const RecentContactsScreen = (): JSX.Element | null => {
   const handleSend = useCallback(
     async (toAddress: string, contact?: Contact): Promise<void> => {
       try {
+        if (selectedToken === undefined) return
+
+        if (isAddress(toAddress) === false) {
+          onFailure(new Error('Invalid address'))
+          return
+        }
         const txHash = await send(toAddress)
 
         onSuccess({
           txHash,
           onDismiss: () => {
+            setSelectedToken(undefined)
             // dismiss recent contacts modal
             canGoBack() && back()
             // dismiss onboarding modal
@@ -67,7 +75,17 @@ export const RecentContactsScreen = (): JSX.Element | null => {
         onFailure(reason)
       }
     },
-    [back, canGoBack, dispatch, getState, onFailure, onSuccess, send]
+    [
+      back,
+      canGoBack,
+      dispatch,
+      getState,
+      onFailure,
+      onSuccess,
+      selectedToken,
+      send,
+      setSelectedToken
+    ]
   )
 
   const collectiblesContacts = useMemo(() => {
