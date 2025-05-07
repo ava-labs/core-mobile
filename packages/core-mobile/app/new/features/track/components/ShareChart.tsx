@@ -9,7 +9,6 @@ import {
   useTheme,
   View
 } from '@avalabs/k2-alpine'
-import { useWatchlist } from 'hooks/watchlist/useWatchlist'
 import React, { useMemo } from 'react'
 import { useTokenDetails } from 'common/hooks/useTokenDetails'
 import { formatLargeCurrency } from 'utils/Utils'
@@ -19,12 +18,19 @@ import { UNKNOWN_AMOUNT } from 'consts/amount'
 import SparklineChart from 'features/track/components/SparklineChart'
 import { isEffectivelyZero } from '../utils'
 
-export const ShareChart = ({ tokenId }: { tokenId: string }): JSX.Element => {
+export const ShareChart = ({
+  tokenId,
+  searchText
+}: {
+  tokenId: string
+  searchText?: string
+}): JSX.Element => {
   const { theme } = useTheme()
   const { theme: inversedTheme } = useInversedTheme({ isDark: theme.isDark })
-  const { chartData, ranges } = useTokenDetails(tokenId ?? '')
-  const { getMarketTokenById } = useWatchlist()
-  const token = tokenId ? getMarketTokenById(tokenId) : undefined
+  const { chartData, ranges, tokenInfo } = useTokenDetails({
+    tokenId: tokenId ?? '',
+    searchText
+  })
 
   return (
     <View
@@ -32,7 +38,7 @@ export const ShareChart = ({ tokenId }: { tokenId: string }): JSX.Element => {
         width: CHART_IMAGE_SIZE,
         height: CHART_IMAGE_SIZE
       }}>
-      {!token || (chartData ?? []).length === 0 ? (
+      {!tokenInfo || (chartData ?? []).length === 0 ? (
         <View
           sx={{
             backgroundColor: theme.colors.$surfaceSecondary,
@@ -54,9 +60,9 @@ export const ShareChart = ({ tokenId }: { tokenId: string }): JSX.Element => {
               paddingBottom: 4
             }}>
             <TokenHeader
-              logoUri={token.logoUri}
-              symbol={token.symbol}
-              currentPrice={token.currentPrice}
+              logoUri={tokenInfo.logoUri}
+              symbol={tokenInfo.symbol}
+              currentPrice={tokenInfo.currentPrice}
               ranges={
                 ranges.minDate === 0 && ranges.maxDate === 0
                   ? undefined
