@@ -13,6 +13,16 @@ export const AddContactScreen = (): React.JSX.Element => {
   const { contactId } = useLocalSearchParams<{ contactId: string }>()
   const [newContactAvatar, setNewContactAvatar] = useNewContactAvatar()
 
+  const resetNewContactAvatar = useCallback(() => {
+    if (newContactAvatar) {
+      setNewContactAvatar(undefined)
+    }
+  }, [newContactAvatar, setNewContactAvatar])
+
+  useEffect(() => {
+    resetNewContactAvatar()
+  }, [resetNewContactAvatar])
+
   const [contact, setContact] = useState<Contact>({
     id: contactId,
     name: '',
