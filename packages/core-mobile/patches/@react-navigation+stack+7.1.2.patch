@@ -45,7 +45,7 @@ index 54a6395..a439074 100644
        borderBottomRightRadius: hasNotchIos ? borderRadius : 0,
        marginTop: isFirst ? 0 : statusBarHeight,
 -      marginBottom: isFirst ? 0 : topOffset,
-+      marginBottom: isFirst ? 0 : topOffset - 75,
++      marginBottom: isFirst ? 0 : _reactNative.Platform.OS === 'ios' ? -24 : 35,
        transform: [{
          translateY
        }, {

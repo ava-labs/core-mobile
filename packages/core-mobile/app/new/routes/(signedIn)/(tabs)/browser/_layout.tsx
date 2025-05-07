@@ -1,9 +1,6 @@
 import React from 'react'
 import { Stack } from 'common/components/Stack'
-import {
-  homeScreenOptions,
-  stackNavigatorScreenOptions
-} from 'common/consts/screenOptions'
+import { stackNavigatorScreenOptions } from 'common/consts/screenOptions'
 import { BrowserProvider } from 'features/browser/BrowserContext'
 
 export default function BrowserLayout(): JSX.Element {
@@ -13,7 +10,6 @@ export default function BrowserLayout(): JSX.Element {
         <Stack.Screen
           name="index"
           options={{
-            ...homeScreenOptions,
             headerShown: false
           }}
         />

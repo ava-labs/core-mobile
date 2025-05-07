@@ -1,18 +1,21 @@
-import React from 'react'
 import {
   AnimatedPressable,
   Icons,
-  PriceChangeIndicator,
   MaskedText,
+  PriceChangeIndicator,
+  SPRING_LINEAR_TRANSITION,
   Text,
   useTheme,
   View
 } from '@avalabs/k2-alpine'
-import { Dimensions } from 'react-native'
-import { GRID_GAP } from 'common/consts'
-import { selectIsPrivacyModeEnabled } from 'store/settings/securityPrivacy'
-import { useSelector } from 'react-redux'
 import { HiddenBalanceText } from 'common/components/HiddenBalanceText'
+import { GRID_GAP } from 'common/consts'
+import { getListItemEnteringAnimation } from 'common/utils/animations'
+import React from 'react'
+import { Dimensions } from 'react-native'
+import Animated from 'react-native-reanimated'
+import { useSelector } from 'react-redux'
+import { selectIsPrivacyModeEnabled } from 'store/settings/securityPrivacy'
 import { TokenListViewProps } from '../types'
 import { LogoWithNetwork } from './LogoWithNetwork'
 
@@ -33,7 +36,9 @@ export const TokenGridView = ({
   } = useTheme()
 
   return (
-    <View>
+    <Animated.View
+      entering={getListItemEnteringAnimation(index)}
+      layout={SPRING_LINEAR_TRANSITION}>
       <AnimatedPressable onPress={onPress}>
         <View
           sx={{
@@ -108,6 +113,6 @@ export const TokenGridView = ({
           </View>
         </View>
       </AnimatedPressable>
-    </View>
+    </Animated.View>
   )
 }

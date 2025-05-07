@@ -1,37 +1,41 @@
-import React, { useCallback, useRef, useState, useMemo } from 'react'
 import {
-  View,
   NavigationTitleHeader,
-  useTheme,
+  SearchBar,
   SegmentedControl,
   Text,
-  SearchBar
+  useTheme,
+  View
 } from '@avalabs/k2-alpine'
 import BlurredBarsContentLayout from 'common/components/BlurredBarsContentLayout'
-import {
-  LayoutChangeEvent,
-  LayoutRectangle,
-  StyleSheet,
-  InteractionManager
-} from 'react-native'
-import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
-import Animated, {
-  interpolate,
-  useAnimatedStyle,
-  useSharedValue
-} from 'react-native-reanimated'
 import {
   CollapsibleTabs,
   CollapsibleTabsRef,
   OnTabChange
 } from 'common/components/CollapsibleTabs'
 import { LinearGradientBottomWrapper } from 'common/components/LinearGradientBottomWrapper'
-import { TrendingScreen } from 'features/track/trending/components/TrendingScreen'
-import MarketScreen from 'features/track/market/components/MarketScreen'
-import { useRouter } from 'expo-router'
+import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
+import { useFocusEffect, useRouter } from 'expo-router'
 import FavoriteScreen from 'features/track/market/components/FavoriteScreen'
+import MarketScreen from 'features/track/market/components/MarketScreen'
 import SearchResultScreen from 'features/track/market/components/SearchResultScreen'
-import { Platform } from 'react-native'
+import { TrendingScreen } from 'features/track/trending/components/TrendingScreen'
+import React, { useCallback, useMemo, useRef, useState } from 'react'
+import {
+  InteractionManager,
+  LayoutChangeEvent,
+  LayoutRectangle,
+  Platform,
+  StyleSheet
+} from 'react-native'
+import {
+  AndroidSoftInputModes,
+  KeyboardController
+} from 'react-native-keyboard-controller'
+import Animated, {
+  interpolate,
+  useAnimatedStyle,
+  useSharedValue
+} from 'react-native-reanimated'
 
 const SEARCH_BAR_MARGIN_TOP = Platform.OS === 'ios' ? 60 : 55
 
@@ -233,6 +237,19 @@ const TrackHomeScreen = (): JSX.Element => {
     selectedSegmentIndex,
     showSearchResults
   ])
+
+  useFocusEffect(() => {
+    if (!KeyboardController.isVisible()) {
+      KeyboardController.setInputMode(
+        AndroidSoftInputModes.SOFT_INPUT_ADJUST_NOTHING
+      )
+    }
+    return () => {
+      if (!KeyboardController.isVisible()) {
+        KeyboardController.setDefaultMode()
+      }
+    }
+  })
 
   return (
     <BlurredBarsContentLayout>

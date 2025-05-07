@@ -1,31 +1,33 @@
-import { Image, Separator } from '@avalabs/k2-alpine'
-import React, { FC, useCallback, useMemo } from 'react'
-import { StyleSheet } from 'react-native'
-import { LocalTokenWithBalance } from 'store/balance'
-import { Transaction, useGetRecentTransactions } from 'store/transaction'
-import { isXpTransaction } from 'common/utils/isXpTransactions'
-import { ErrorState } from 'common/components/ErrorState'
-import { LoadingState } from 'common/components/LoadingState'
-import { portfolioTabContentHeight } from 'features/portfolio/utils'
-import { DropdownSelections } from 'common/components/DropdownSelections'
-import { useNetworks } from 'hooks/networks/useNetworks'
-import { CollapsibleTabs } from 'common/components/CollapsibleTabs'
 import {
   isTokenWithBalanceAVM,
   isTokenWithBalancePVM
 } from '@avalabs/avalanche-module'
-import usePendingBridgeTransactions from 'features/bridge/hooks/usePendingBridgeTransactions'
-import { BridgeTransaction } from '@avalabs/core-bridge-sdk'
 import { BridgeTransfer } from '@avalabs/bridge-unified'
+import { BridgeTransaction } from '@avalabs/core-bridge-sdk'
+import { Image, Separator, SPRING_LINEAR_TRANSITION } from '@avalabs/k2-alpine'
 import { TransactionType } from '@avalabs/vm-module-types'
+import { CollapsibleTabs } from 'common/components/CollapsibleTabs'
+import { DropdownSelections } from 'common/components/DropdownSelections'
+import { ErrorState } from 'common/components/ErrorState'
+import { LoadingState } from 'common/components/LoadingState'
+import { getListItemEnteringAnimation } from 'common/utils/animations'
 import {
   getBridgeAssetSymbol,
   isPendingBridgeTransaction
 } from 'common/utils/bridgeUtils'
+import { isXpTransaction } from 'common/utils/isXpTransactions'
+import usePendingBridgeTransactions from 'features/bridge/hooks/usePendingBridgeTransactions'
+import { portfolioTabContentHeight } from 'features/portfolio/utils'
+import { useNetworks } from 'hooks/networks/useNetworks'
+import React, { FC, useCallback, useMemo } from 'react'
+import { StyleSheet } from 'react-native'
+import Animated from 'react-native-reanimated'
+import { LocalTokenWithBalance } from 'store/balance'
+import { Transaction, useGetRecentTransactions } from 'store/transaction'
 import { useTokenDetailFilterAndSort } from '../hooks/useTokenDetailFilterAndSort'
-import { XpActivityListItem } from './XpActivityListItem'
-import { TokenActivityListItem } from './TokenActivityListItem'
 import { PendingBridgeTransactionItem } from './PendingBridgeTransactionItem'
+import { TokenActivityListItem } from './TokenActivityListItem'
+import { XpActivityListItem } from './XpActivityListItem'
 
 const errorIcon = require('../../../../assets/icons/unamused_emoji.png')
 
@@ -167,16 +169,20 @@ const TransactionHistory: FC<Props> = ({
   }, [])
 
   return (
-    <CollapsibleTabs.FlatList
-      contentContainerStyle={{ overflow: 'visible', paddingBottom: 16 }}
-      data={combinedData}
-      renderItem={item => renderItem(item.item, item.index)}
-      ListHeaderComponent={dropdowns}
-      ListEmptyComponent={emptyComponent}
-      ItemSeparatorComponent={renderSeparator}
-      showsVerticalScrollIndicator={false}
-      keyExtractor={keyExtractor}
-    />
+    <Animated.View
+      entering={getListItemEnteringAnimation(0)}
+      layout={SPRING_LINEAR_TRANSITION}>
+      <CollapsibleTabs.FlatList
+        contentContainerStyle={{ overflow: 'visible', paddingBottom: 16 }}
+        data={combinedData}
+        renderItem={item => renderItem(item.item, item.index)}
+        ListHeaderComponent={dropdowns}
+        ListEmptyComponent={emptyComponent}
+        ItemSeparatorComponent={renderSeparator}
+        showsVerticalScrollIndicator={false}
+        keyExtractor={keyExtractor}
+      />
+    </Animated.View>
   )
 }
 

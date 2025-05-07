@@ -14,8 +14,11 @@ export const unstable_settings = {
 }
 
 export default function WalletLayout(): JSX.Element {
-  const { modalScreensOptions, formSheetScreensOptions } =
-    useModalScreenOptions()
+  const {
+    modalScreensOptions,
+    formSheetScreensOptions,
+    stackModalScreensOptions
+  } = useModalScreenOptions()
 
   return (
     <BridgeProvider>
@@ -79,6 +82,18 @@ export default function WalletLayout(): JSX.Element {
           <Stack.Screen
             name="(modals)/tokenManagement"
             options={modalScreensOptions}
+          />
+          <Stack.Screen
+            name="(modals)/tokenDetail"
+            options={stackModalScreensOptions}
+          />
+          <Stack.Screen
+            name="(modals)/defiDetail"
+            options={stackModalScreensOptions}
+          />
+          <Stack.Screen
+            name="(modals)/collectibleDetail"
+            options={stackModalScreensOptions}
           />
           <Stack.Screen
             name="(modals)/trackTokenDetail"

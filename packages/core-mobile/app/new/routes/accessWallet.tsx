@@ -1,4 +1,4 @@
-import { GroupList, Icons, useTheme } from '@avalabs/k2-alpine'
+import { GroupList, Icons, useTheme, View } from '@avalabs/k2-alpine'
 import Encrypted from 'assets/icons/encrypted.svg'
 import { ScrollScreen } from 'common/components/ScrollScreen'
 import { useRouter } from 'expo-router'
@@ -27,21 +27,26 @@ const AccessWalletScreen = (): JSX.Element => {
     <ScrollScreen
       title="How would you like to access your existing wallet?"
       contentContainerStyle={{ padding: 16 }}>
-      <GroupList
-        data={[
-          {
-            title: 'Type in a recovery phrase',
-            leftIcon: <Encrypted color={theme.colors.$textPrimary} />,
-            onPress: handleEnterRecoveryPhrase
-          },
-          {
-            title: 'Create a new wallet',
-            leftIcon: <Icons.Content.Add color={theme.colors.$textPrimary} />,
-            onPress: handleCreateMnemonicWallet
-          }
-        ]}
-        itemHeight={60}
-      />
+      <View
+        style={{
+          marginTop: 24
+        }}>
+        <GroupList
+          data={[
+            {
+              title: 'Type in a recovery phrase',
+              leftIcon: <Encrypted color={theme.colors.$textPrimary} />,
+              onPress: handleEnterRecoveryPhrase
+            },
+            {
+              title: 'Create a new wallet',
+              leftIcon: <Icons.Content.Add color={theme.colors.$textPrimary} />,
+              onPress: handleCreateMnemonicWallet
+            }
+          ]}
+          itemHeight={60}
+        />
+      </View>
     </ScrollScreen>
   )
 }

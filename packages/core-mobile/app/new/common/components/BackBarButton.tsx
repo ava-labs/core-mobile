@@ -19,6 +19,7 @@ const BackBarButton = ({
   return (
     <NavigationBarButton
       isModal={isModal}
+      isLeft
       testID="header_back"
       onPress={handleBack}>
       <Icons.Custom.BackArrowCustom color={theme.colors.$textPrimary} />

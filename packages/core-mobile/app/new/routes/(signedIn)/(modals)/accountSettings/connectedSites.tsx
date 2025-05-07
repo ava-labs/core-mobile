@@ -1,5 +1,7 @@
 import {
+  Button,
   SearchBar,
+  showAlert,
   Text,
   TouchableOpacity,
   useTheme,
@@ -12,12 +14,13 @@ import {
 } from 'features/accountSettings/hooks/useConnectedDapps'
 import React, { useCallback, useMemo, useState } from 'react'
 import { DappLogo } from 'common/components/DappLogo'
+import { ErrorState } from 'common/components/ErrorState'
 
 const ConnectedSitesScreen = (): JSX.Element => {
   const {
     theme: { colors }
   } = useTheme()
-  const { allApprovedDapps, killSession } = useConnectedDapps()
+  const { allApprovedDapps, killSession, killAllSessions } = useConnectedDapps()
   const [searchText, setSearchText] = useState('')
 
   const navigationTitle = `${allApprovedDapps.length} connected ${
@@ -30,6 +33,21 @@ const ConnectedSitesScreen = (): JSX.Element => {
     },
     [killSession]
   )
+
+  const disconnectAll = useCallback(() => {
+    showAlert({
+      title: 'Disconnect all sites',
+      description: 'Are you sure you want to disconnect all sites?',
+      buttons: [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Disconnect',
+          style: 'destructive',
+          onPress: () => killAllSessions()
+        }
+      ]
+    })
+  }, [killAllSessions])
 
   const searchResults = useMemo(() => {
     if (searchText === '') {
@@ -152,14 +170,27 @@ const ConnectedSitesScreen = (): JSX.Element => {
 
   const renderHeader = useCallback(() => {
     return (
-      <SearchBar
-        onTextChanged={setSearchText}
-        searchText={searchText}
-        placeholder="Search"
-        useDebounce={true}
-      />
+      <View sx={{ gap: 24, alignItems: 'flex-end' }}>
+        <SearchBar
+          onTextChanged={setSearchText}
+          searchText={searchText}
+          placeholder="Search"
+          useDebounce={true}
+        />
+        {allApprovedDapps.length ? (
+          <View>
+            <Button size="small" onPress={disconnectAll} type="secondary">
+              Disconnect all
+            </Button>
+          </View>
+        ) : null}
+      </View>
     )
-  }, [searchText])
+  }, [allApprovedDapps.length, disconnectAll, searchText])
+
+  const renderEmpty = useCallback(() => {
+    return <ErrorState sx={{ flex: 1 }} title="No site found" description="" />
+  }, [])
 
   return (
     <ListScreen
@@ -170,6 +201,7 @@ const ConnectedSitesScreen = (): JSX.Element => {
       renderHeader={renderHeader}
       data={searchResults}
       keyExtractor={(item): string => (item as Dapp).id}
+      renderEmpty={renderEmpty}
     />
   )
 }

@@ -78,7 +78,7 @@ export const EnterRecoveryPhrase = ({
       renderFooter={renderFooter}>
       <View
         style={{
-          paddingTop: 16
+          marginTop: 24
         }}>
         <RecoveryPhraseInput onChangeText={setMnemonic} />
       </View>

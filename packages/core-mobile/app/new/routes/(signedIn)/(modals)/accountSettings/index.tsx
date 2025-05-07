@@ -33,6 +33,7 @@ import {
   selectIsPrivacyModeEnabled,
   togglePrivacyMode
 } from 'store/settings/securityPrivacy'
+import { useCoreBrowser } from 'common/hooks/useCoreBrowser'
 
 const AccountSettingsScreen = (): JSX.Element => {
   const { deleteWallet } = useDeleteWallet()
@@ -43,7 +44,8 @@ const AccountSettingsScreen = (): JSX.Element => {
     theme: { colors }
   } = useTheme()
   const contacts = useSelector(selectContacts)
-  const { navigate } = useRouter()
+  const { navigate, back } = useRouter()
+  const { openUrl } = useCoreBrowser()
 
   const { avatar } = useAvatar()
 
@@ -103,6 +105,14 @@ const AccountSettingsScreen = (): JSX.Element => {
     dispatch(toggleDeveloperMode())
     showSnackbar('Testnet mode is now ' + (value ? 'on' : 'off'))
   }
+
+  const handlePressAboutItem = useCallback(
+    ({ url, title }: { url: string; title: string }) => {
+      back()
+      openUrl({ url, title })
+    },
+    [openUrl, back]
+  )
 
   return (
     <ScrollScreen
@@ -218,7 +228,7 @@ const AccountSettingsScreen = (): JSX.Element => {
               selectNotificationPreferences={goToNotificationPreferences}
               selectSecurityPrivacy={goToSecurityPrivacy}
             />
-            <About />
+            <About onPressItem={handlePressAboutItem} />
           </View>
           <TouchableOpacity
             sx={{

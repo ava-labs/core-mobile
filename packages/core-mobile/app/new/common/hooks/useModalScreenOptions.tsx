@@ -1,4 +1,5 @@
 import {
+  CardStyleInterpolators,
   StackCardInterpolatedStyle,
   StackCardInterpolationProps,
   StackNavigationOptions
@@ -10,8 +11,9 @@ import {
   modalStackNavigatorScreenOptions
 } from 'common/consts/screenOptions'
 import { useMemo } from 'react'
-import { Animated } from 'react-native'
+import { Animated, Platform } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import * as stackModalInterpolator from '../utils/stackModalInterpolator'
 
 export function useModalScreenOptions(): {
   topMarginOffset: number
@@ -19,6 +21,11 @@ export function useModalScreenOptions(): {
   formSheetScreensOptions: StackNavigationOptions
   modalStackNavigatorScreenOptions: StackNavigationOptions
   modalFirstScreenOptions: StackNavigationOptions
+  // When opening a modal from a stacked navigator which is itself a modal we need to use a different effect
+  // This is because the modal effect is not supported on Android and the screen zIndex is not respected
+  // Use this when you have a detail screen that has to be on top of the tabbar
+  // Ex: TokenDetail/CollectibleDetail screen which opens a modal
+  stackModalScreensOptions: StackNavigationOptions | undefined
 } {
   const insets = useSafeAreaInsets()
 
@@ -26,41 +33,50 @@ export function useModalScreenOptions(): {
     return insets.top + MODAL_TOP_MARGIN
   }, [insets])
 
-  const modalScreensOptions: StackNavigationOptions = {
+  const modalOptions: StackNavigationOptions = {
     presentation: 'modal',
     cardStyle: {
       marginTop: topMarginOffset,
       borderTopLeftRadius: MODAL_BORDER_RADIUS,
-      borderTopRightRadius: MODAL_BORDER_RADIUS
+      borderTopRightRadius: MODAL_BORDER_RADIUS,
+      zIndex: 1000
     },
     gestureEnabled: true,
-    gestureDirection: 'vertical',
-    headerShown: false,
     headerStyle: {
       height: MODAL_HEADER_HEIGHT
-    },
+    }
+  }
 
-    // we are using a custom modal transition interpolator
-    // to match design
+  const modalScreensOptions: StackNavigationOptions = {
+    ...modalOptions,
     cardStyleInterpolator: forModalPresentationIOS
   }
 
   const formSheetScreensOptions: StackNavigationOptions = {
-    presentation: 'modal',
+    ...modalOptions,
     cardStyle: {
-      marginTop: topMarginOffset + 24,
+      marginTop: Platform.OS === 'ios' ? topMarginOffset : MODAL_TOP_MARGIN,
       borderTopLeftRadius: MODAL_BORDER_RADIUS,
       borderTopRightRadius: MODAL_BORDER_RADIUS
     },
-    gestureEnabled: true,
-    gestureDirection: 'vertical',
-    headerStyle: {
-      height: MODAL_HEADER_HEIGHT
-    },
     // we patched @react-navigation/stack to support a custom "formSheet" effect
     // for modals on both iOS and Android
-    cardStyleInterpolator: forModalPresentationIOS
+    cardStyleInterpolator: CardStyleInterpolators.forModalPresentationIOS
   }
+
+  const stackModalScreensOptions: StackNavigationOptions | undefined =
+    Platform.OS === 'android'
+      ? {
+          presentation: 'card',
+          gestureDirection: 'horizontal',
+          gestureEnabled: true,
+          cardStyle: {
+            marginTop: 0,
+            paddingTop: insets.top
+          },
+          cardStyleInterpolator: stackModalInterpolator.forModalPresentationIOS
+        }
+      : undefined
 
   // Options for the first screen of a modal stack navigator.
   // This screen does not have a back button, so we need to hide it.
@@ -73,7 +89,8 @@ export function useModalScreenOptions(): {
     formSheetScreensOptions,
     modalStackNavigatorScreenOptions,
     topMarginOffset,
-    modalFirstScreenOptions
+    modalFirstScreenOptions,
+    stackModalScreensOptions
   }
 }
 

@@ -14,7 +14,7 @@ import Animated, {
   useAnimatedStyle,
   useSharedValue
 } from 'react-native-reanimated'
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { BlurViewWithFallback } from './BlurViewWithFallback'
 import { LinearGradientBottomWrapper } from './LinearGradientBottomWrapper'
 import ScreenHeader from './ScreenHeader'
@@ -89,7 +89,7 @@ export const ScrollScreen = ({
     {
       header: <NavigationTitleHeader title={navigationTitle ?? title ?? ''} />,
       targetLayout: headerLayout,
-      shouldHeaderHaveGrabber: isModal ? true : false,
+      shouldHeaderHaveGrabber: isModal,
       hasParent,
       renderHeaderRight
     }
@@ -106,17 +106,6 @@ export const ScrollScreen = ({
       transform: [{ scale }]
     }
   })
-
-  const footerRef = useRef<View>(null)
-  const contentFooterHeight = useSharedValue<number>(0)
-
-  useLayoutEffect(() => {
-    if (footerRef.current) {
-      footerRef.current.measure((x, y, width, height) => {
-        contentFooterHeight.value = height
-      })
-    }
-  }, [contentFooterHeight])
 
   useLayoutEffect(() => {
     if (headerRef.current) {
@@ -162,18 +151,19 @@ export const ScrollScreen = ({
   // If you have an input on the screen, you need to enable this prop
   if (shouldAvoidKeyboard) {
     return (
-      <SafeAreaView edges={['top']} style={{ flex: 1 }}>
+      <View style={{ flex: 1 }}>
         <KeyboardAwareScrollView
           extraKeyboardSpace={-insets.bottom + 32}
           keyboardDismissMode="interactive"
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
+          style={{ flex: 1 }}
           {...props}
           contentContainerStyle={[
             props?.contentContainerStyle,
             {
-              paddingTop: headerHeight - insets.top,
-              paddingBottom: insets.bottom
+              paddingTop: headerHeight,
+              paddingBottom: insets.bottom + 32
             }
           ]}
           onScroll={onScroll}>
@@ -188,7 +178,6 @@ export const ScrollScreen = ({
             }}>
             <LinearGradientBottomWrapper>
               <View
-                ref={footerRef}
                 style={{
                   padding: 16,
                   paddingTop: 0
@@ -206,18 +195,17 @@ export const ScrollScreen = ({
             left: 0,
             right: 0,
             bottom: 0,
-            height: headerHeight,
-            zIndex: 100
+            height: headerHeight
           }}
         />
-      </SafeAreaView>
+      </View>
     )
   }
 
   // All of our screens have to be scrollable
   // If we don't have an input on the screen then we should not enable keyboard avoiding
   return (
-    <>
+    <View style={{ flex: 1 }}>
       <ScrollView
         style={{ flex: 1 }}
         showsVerticalScrollIndicator={false}
@@ -227,7 +215,7 @@ export const ScrollScreen = ({
         contentContainerStyle={[
           props?.contentContainerStyle,
           {
-            paddingBottom: insets.bottom,
+            paddingBottom: insets.bottom + 32,
             paddingTop: headerHeight
           }
         ]}
@@ -258,6 +246,6 @@ export const ScrollScreen = ({
           </View>
         </LinearGradientBottomWrapper>
       ) : null}
-    </>
+    </View>
   )
 }
