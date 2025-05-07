@@ -10,7 +10,6 @@ import { NftItem } from 'services/nft/types'
 import { JsonRpcBatchInternal } from '@avalabs/core-wallets-sdk'
 import { showSnackbar } from 'new/common/utils/toast'
 import { useSendContext } from 'new/features/send/context/sendContext'
-import { showAlert } from '@avalabs/k2-alpine'
 import { SendAdapterCollectible, SendErrorMessage } from './utils/types'
 import { send as sendEVM } from './utils/evm/send'
 import { getGasLimit } from './utils/evm/getGasLimit'
@@ -110,21 +109,6 @@ export const useCollectibleSend: SendAdapterCollectible = ({
   const send = useCallback(
     async (toAddress: string) => {
       try {
-        showAlert({
-          title: `selectedToken: ${selectedToken !== undefined} | toAddress: ${
-            toAddress !== undefined
-          } | provider: ${provider !== undefined} | chainId: ${
-            chainId !== undefined
-          } | nativeToken: ${nativeToken !== undefined} | maxFee: ${
-            maxFee !== undefined
-          }`,
-          buttons: [
-            {
-              text: 'OK'
-            }
-          ]
-        })
-
         assertNotUndefined(selectedToken)
         assertNotUndefined(toAddress)
         assertNotUndefined(provider)

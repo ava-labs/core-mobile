@@ -26,7 +26,7 @@ export const RecentContactsScreen = (): JSX.Element | null => {
   const { recentAddresses, contacts, accounts } = useContacts()
   const { getNetwork } = useNetworks()
   const fromAddress = useSelector(selectActiveAccount)?.addressC ?? ''
-  const [selectedToken] = useSendSelectedToken()
+  const [selectedToken, setSelectedToken] = useSendSelectedToken()
   const { onSuccess, onFailure } = useSendTransactionCallbacks()
 
   const selectedNetwork = useMemo(() => {
@@ -48,6 +48,8 @@ export const RecentContactsScreen = (): JSX.Element | null => {
   const handleSend = useCallback(
     async (toAddress: string, contact?: Contact): Promise<void> => {
       try {
+        if (selectedToken === undefined) return
+
         if (isAddress(toAddress) === false) {
           onFailure(new Error('Invalid address'))
           return
@@ -57,6 +59,7 @@ export const RecentContactsScreen = (): JSX.Element | null => {
         onSuccess({
           txHash,
           onDismiss: () => {
+            setSelectedToken(undefined)
             // dismiss recent contacts modal
             canGoBack() && back()
             // dismiss onboarding modal
@@ -72,7 +75,17 @@ export const RecentContactsScreen = (): JSX.Element | null => {
         onFailure(reason)
       }
     },
-    [back, canGoBack, dispatch, getState, onFailure, onSuccess, send]
+    [
+      back,
+      canGoBack,
+      dispatch,
+      getState,
+      onFailure,
+      onSuccess,
+      selectedToken,
+      send,
+      setSelectedToken
+    ]
   )
 
   const collectiblesContacts = useMemo(() => {
