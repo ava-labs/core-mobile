@@ -215,6 +215,7 @@ export const SendToken = ({ onSend }: { onSend: () => void }): JSX.Element => {
             {addressToSend && (
               <Text
                 variant="mono"
+                numberOfLines={1}
                 sx={{
                   fontSize: 13,
                   color: colors.$textSecondary
