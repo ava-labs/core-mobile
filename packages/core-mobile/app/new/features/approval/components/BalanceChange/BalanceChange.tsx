@@ -11,7 +11,6 @@ const BalanceChangeComponent = ({
   return (
     <View
       sx={{
-        paddingVertical: 16,
         justifyContent: 'space-between',
         alignItems: 'center',
         flexDirection: 'row',
@@ -23,21 +22,17 @@ const BalanceChangeComponent = ({
           flexDirection: 'column'
         }}>
         {balanceChange.outs.map((outTokenDiff, index) => (
-          <TokenDiffGroup
-            key={index.toString()}
-            tokenDiff={outTokenDiff}
-            isOut={true}
-          />
+          <View key={index.toString()} sx={{ paddingVertical: 16 }}>
+            <TokenDiffGroup tokenDiff={outTokenDiff} isOut={true} />
+          </View>
         ))}
-        {balanceChange.ins.length > 0 && (
-          <Separator sx={{ marginVertical: 16, marginHorizontal: 16 }} />
+        {balanceChange.outs.length > 0 && balanceChange.ins.length > 0 && (
+          <Separator sx={{ marginHorizontal: 16 }} />
         )}
         {balanceChange.ins.map((inTokenDiff, index) => (
-          <TokenDiffGroup
-            key={index.toString()}
-            tokenDiff={inTokenDiff}
-            isOut={false}
-          />
+          <View key={index.toString()} sx={{ paddingVertical: 16 }}>
+            <TokenDiffGroup tokenDiff={inTokenDiff} isOut={false} />
+          </View>
         ))}
       </View>
     </View>
