@@ -1,4 +1,5 @@
 import { showAlert, useTheme, View } from '@avalabs/k2-alpine'
+import { EdgeGesture } from 'common/components/EdgeGesture'
 import { ErrorState } from 'common/components/ErrorState'
 import { useDeeplink } from 'contexts/DeeplinkContext/DeeplinkContext'
 import { DeepLink, DeepLinkOrigin } from 'contexts/DeeplinkContext/types'
@@ -43,6 +44,7 @@ import {
 import Logger from 'utils/Logger'
 import ErrorIcon from '../../../assets/icons/melting_face.png'
 import { useBrowserContext } from '../BrowserContext'
+import { SWIPE_THRESHOLD } from '../consts'
 import { isSuggestedSiteName } from '../utils'
 import { WebView } from './Webview'
 
@@ -293,58 +295,67 @@ export const BrowserTab = forwardRef<BrowserTabRef, { tabId: string }>(
       setError(event.nativeEvent)
     }
 
+    const onGesture = (direction: 'left' | 'right'): void => {
+      if (direction === 'left') {
+        goBack()
+      } else {
+        goForward()
+      }
+    }
+
     return (
-      <View
-        style={[
-          {
-            flex: 1,
-            backgroundColor
-          }
-        ]}>
-        {error ? (
-          <ErrorState
-            sx={{ flex: 1, paddingTop: insets.top }}
-            icon={
-              <Image
-                source={ErrorIcon}
-                style={{ width: 42, height: 42 }}
-                renderToHardwareTextureAndroid={false}
-              />
-            }
-            title={'Failed to load'}
-            description={'Please hit refresh or try again later'}
-            button={{
-              title: 'Refresh',
-              onPress: () => {
-                setError(undefined)
-                reload()
+      <View style={{ flex: 1 }}>
+        <EdgeGesture
+          distance={SWIPE_THRESHOLD}
+          onGesture={onGesture}
+          direction="left-and-right">
+          {/* Main content */}
+          {error ? (
+            <ErrorState
+              sx={{ flex: 1, paddingTop: insets.top, backgroundColor }}
+              icon={
+                <Image
+                  source={ErrorIcon}
+                  style={{ width: 42, height: 42 }}
+                  renderToHardwareTextureAndroid={false}
+                />
               }
-            }}
-          />
-        ) : (
-          <WebView
-            key={tabId}
-            testID="myWebview"
-            webViewRef={webViewRef}
-            injectedJavaScript={injectedJavascript}
-            url={urlToLoad}
-            onLoad={onLoad}
-            onMessage={onMessageHandler}
-            onShouldStartLoadWithRequest={() => !disabled}
-            style={{
-              backgroundColor
-            }}
-            containerStyle={{
-              paddingTop: insets.top
-            }}
-            contentInset={{
-              bottom: 0
-            }}
-            onLoadProgress={onProgress}
-            onError={onError}
-            allowsBackForwardNavigationGestures
-          />
-        )}
+              title={'Failed to load'}
+              description={'Please hit refresh or try again later'}
+              button={{
+                title: 'Refresh',
+                onPress: () => {
+                  setError(undefined)
+                  reload()
+                }
+              }}
+            />
+          ) : (
+            <WebView
+              key={tabId}
+              testID="myWebview"
+              webViewRef={webViewRef}
+              injectedJavaScript={injectedJavascript}
+              url={urlToLoad}
+              onLoad={onLoad}
+              onMessage={onMessageHandler}
+              onShouldStartLoadWithRequest={() => !disabled}
+              nestedScrollEnabled
+              style={{
+                backgroundColor,
+                flex: 1
+              }}
+              containerStyle={{
+                paddingTop: insets.top
+              }}
+              contentInset={{
+                bottom: 0
+              }}
+              onLoadProgress={onProgress}
+              onError={onError}
+            />
+          )}
+        </EdgeGesture>
       </View>
     )
   }

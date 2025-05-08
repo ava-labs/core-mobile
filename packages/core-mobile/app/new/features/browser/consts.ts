@@ -1,2 +1,4 @@
 export const HORIZONTAL_MARGIN = 16
 export const BROWSER_CONTROLS_HEIGHT = 64
+
+export const SWIPE_THRESHOLD = 50

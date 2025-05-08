@@ -1,9 +1,14 @@
-import { alpha, ScrollView, Text, useTheme, View } from '@avalabs/k2-alpine'
+import { alpha, Text, useTheme, View } from '@avalabs/k2-alpine'
+import { EdgeGesture } from 'common/components/EdgeGesture'
 import { LinearGradient } from 'expo-linear-gradient'
 import React from 'react'
+import { ScrollView } from 'react-native-gesture-handler'
 import Animated from 'react-native-reanimated'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { HORIZONTAL_MARGIN } from '../consts'
+import { useSelector } from 'react-redux'
+import { selectActiveTab } from 'store/browser'
+import { useBrowserContext } from '../BrowserContext'
+import { HORIZONTAL_MARGIN, SWIPE_THRESHOLD } from '../consts'
 import { DiscoverCollectibles } from './DiscoverCollectibles'
 import { DiscoverEcosystemProjects } from './DiscoverEcosystemProjects'
 import { DiscoverFeaturedProjects } from './DiscoverFeaturedProjects'
@@ -12,77 +17,93 @@ import { DiscoverLearn } from './DiscoverLearn'
 export const Discover = (): JSX.Element => {
   const insets = useSafeAreaInsets()
   const { theme } = useTheme()
+  const { browserRefs } = useBrowserContext()
+  const activeTab = useSelector(selectActiveTab)
+
+  const onGesture = (direction: 'left' | 'right'): void => {
+    if (direction === 'right' && activeTab) {
+      browserRefs.current[activeTab.id]?.current?.goForward()
+    }
+  }
 
   return (
-    <ScrollView
-      showsVerticalScrollIndicator={false}
-      style={{
-        height: '100%'
-      }}
-      stickyHeaderIndices={[0]}
-      contentContainerStyle={{
-        paddingTop: insets.top + 62
-      }}>
-      <Animated.View
-        pointerEvents="none"
-        style={[
-          {
-            position: 'absolute',
-            top: -insets.top - 26,
-            left: 0,
-            right: 0,
-            zIndex: 1
-          }
-        ]}>
-        <LinearGradient
+    <View style={{ flex: 1 }}>
+      <EdgeGesture
+        distance={SWIPE_THRESHOLD}
+        onGesture={onGesture}
+        direction="right">
+        <ScrollView
+          showsVerticalScrollIndicator={false}
           style={{
-            height: insets.top + 26
+            height: '100%',
+            backgroundColor: theme.colors.$surfacePrimary
           }}
-          colors={[
-            theme.colors.$surfacePrimary,
-            alpha(theme.colors.$surfacePrimary, 0)
-          ]}
-          start={{
-            x: 0,
-            y: 0
-          }}
-          end={{
-            x: 0,
-            y: 1
-          }}
-        />
-      </Animated.View>
+          stickyHeaderIndices={[0]}
+          contentContainerStyle={{
+            paddingTop: 48
+          }}>
+          <Animated.View
+            pointerEvents="none"
+            style={[
+              {
+                position: 'absolute',
+                top: -26,
+                left: 0,
+                right: 0,
+                zIndex: 1
+              }
+            ]}>
+            <LinearGradient
+              style={{
+                height: insets.top + 26
+              }}
+              colors={[
+                theme.colors.$surfacePrimary,
+                alpha(theme.colors.$surfacePrimary, 0)
+              ]}
+              start={{
+                x: 0,
+                y: 0
+              }}
+              end={{
+                x: 0,
+                y: 1
+              }}
+            />
+          </Animated.View>
 
-      <View style={{ paddingHorizontal: HORIZONTAL_MARGIN, gap: 8 }}>
-        <Text variant="heading2">Discover</Text>
-        <Text variant="body1">
-          {`Discover a wide variety of apps built on\nthe Avalanche ecosystem`}
-        </Text>
-      </View>
+          <View style={{ paddingHorizontal: HORIZONTAL_MARGIN, gap: 8 }}>
+            <Text variant="heading2">Discover</Text>
+            <Text variant="body1">
+              {`Discover a wide variety of apps built on\nthe Avalanche ecosystem`}
+            </Text>
+          </View>
 
-      <DiscoverEcosystemProjects />
+          <DiscoverEcosystemProjects />
 
-      <View
-        style={{
-          gap: HORIZONTAL_MARGIN / 2
-        }}>
-        <View style={{ paddingHorizontal: HORIZONTAL_MARGIN }}>
-          <Text variant="heading3">Trending projects</Text>
-        </View>
-        <DiscoverFeaturedProjects />
-      </View>
+          <View
+            style={{
+              gap: HORIZONTAL_MARGIN / 2
+            }}>
+            <View style={{ paddingHorizontal: HORIZONTAL_MARGIN }}>
+              <Text variant="heading3">Trending projects</Text>
+            </View>
+            <DiscoverFeaturedProjects />
+          </View>
 
-      <DiscoverCollectibles />
+          <DiscoverCollectibles />
 
-      <View
-        style={{
-          gap: 12
-        }}>
-        <View style={{ paddingHorizontal: HORIZONTAL_MARGIN }}>
-          <Text variant="heading3">Learn</Text>
-        </View>
-        <DiscoverLearn />
-      </View>
-    </ScrollView>
+          <View
+            style={{
+              gap: 12
+            }}>
+            <View style={{ paddingHorizontal: HORIZONTAL_MARGIN }}>
+              <Text variant="heading3">Learn</Text>
+            </View>
+            <DiscoverLearn />
+          </View>
+        </ScrollView>
+      </EdgeGesture>
+    </View>
   )
 }
