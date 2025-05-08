@@ -1,6 +1,7 @@
 import { SxProp, View } from '@avalabs/k2-alpine'
 import React, { useCallback, useEffect } from 'react'
-import { Platform } from 'react-native'
+import { BackHandler } from 'react-native'
+
 /**
  * Temporarily import "useNavigation" from @react-navigation/native.
  * This is a workaround due to a render bug in the expo-router version.
@@ -44,11 +45,25 @@ export const ActionSheet = ({
 } & ActionButtonsProps): JSX.Element => {
   const navigation = useNavigation()
 
+  React.useEffect(() => {
+    const onBackPress = (): boolean => {
+      // modal is being dismissed via physical back button
+      onClose()
+      return false
+    }
+
+    const backHandler = BackHandler.addEventListener(
+      'hardwareBackPress',
+      onBackPress
+    )
+
+    return () => backHandler.remove()
+  }, [onClose])
+
   useEffect(() => {
     return navigation.addListener('beforeRemove', e => {
       if (
-        e.data.action.type === 'POP' || // gesture dismissed
-        (Platform.OS === 'android' && e.data.action.type === 'GO_BACK') // physical back button pressed
+        e.data.action.type === 'POP' // gesture dismissed
       ) {
         // modal is being dismissed via gesture or back button
         onClose()
