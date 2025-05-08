@@ -205,7 +205,7 @@ __metadata:
     "@babel/plugin-proposal-nullish-coalescing-operator": 7.18.6
     "@babel/plugin-syntax-object-rest-spread": 7.8.3
     "@babel/plugin-transform-class-static-block": 7.25.7
-    "@babel/plugin-transform-export-namespace-from": 7.25.7
+    "@babel/plugin-transform-export-namespace-from": 7.27.1
     "@babel/plugin-transform-private-methods": 7.25.7
     "@babel/preset-env": 7.25.7
     "@babel/preset-typescript": 7.25.7
@@ -1452,6 +1452,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@babel/helper-plugin-utils@npm:^7.27.1":
+  version: 7.27.1
+  resolution: "@babel/helper-plugin-utils@npm:7.27.1"
+  checksum: 5d715055301badab62bdb2336075a77f8dc8bd290cad2bc1b37ea3bf1b3efc40594d308082229f239deb4d6b5b80b0a73bce000e595ea74416e0339c11037047
+  languageName: node
+  linkType: hard
+
 "@babel/helper-remap-async-to-generator@npm:^7.24.7, @babel/helper-remap-async-to-generator@npm:^7.25.0":
   version: 7.25.0
   resolution: "@babel/helper-remap-async-to-generator@npm:7.25.0"
@@ -2671,15 +2678,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@babel/plugin-transform-export-namespace-from@npm:7.25.7, @babel/plugin-transform-export-namespace-from@npm:^7.25.7":
-  version: 7.25.7
-  resolution: "@babel/plugin-transform-export-namespace-from@npm:7.25.7"
+"@babel/plugin-transform-export-namespace-from@npm:7.27.1":
+  version: 7.27.1
+  resolution: "@babel/plugin-transform-export-namespace-from@npm:7.27.1"
   dependencies:
-    "@babel/helper-plugin-utils": ^7.25.7
-    "@babel/plugin-syntax-export-namespace-from": ^7.8.3
+    "@babel/helper-plugin-utils": ^7.27.1
   peerDependencies:
     "@babel/core": ^7.0.0-0
-  checksum: 201f018c222f4abc9565d82ddae8c244495834ee04cb34a9850a312510630d1f58a37246d967b0bd9f3176add63dbea902382500fe2cc12a249b9a16191e804e
+  checksum: 85082923eca317094f08f4953d8ea2a6558b3117826c0b740676983902b7236df1f4213ad844cb38c2dae104753dbe8f1cc51f01567835d476d32f5f544a4385
   languageName: node
   linkType: hard
 
@@ -2692,6 +2698,18 @@ __metadata:
   peerDependencies:
     "@babel/core": ^7.0.0-0
   checksum: 3bd3a10038f10ae0dea1ee42137f3edcf7036b5e9e570a0d1cbd0865f03658990c6c2d84fa2475f87a754e7dc5b46766c16f7ce5c9b32c3040150b6a21233a80
+  languageName: node
+  linkType: hard
+
+"@babel/plugin-transform-export-namespace-from@npm:^7.25.7":
+  version: 7.25.7
+  resolution: "@babel/plugin-transform-export-namespace-from@npm:7.25.7"
+  dependencies:
+    "@babel/helper-plugin-utils": ^7.25.7
+    "@babel/plugin-syntax-export-namespace-from": ^7.8.3
+  peerDependencies:
+    "@babel/core": ^7.0.0-0
+  checksum: 201f018c222f4abc9565d82ddae8c244495834ee04cb34a9850a312510630d1f58a37246d967b0bd9f3176add63dbea902382500fe2cc12a249b9a16191e804e
   languageName: node
   linkType: hard
 
@@ -27540,7 +27558,7 @@ react-native-webview@ava-labs/react-native-webview:
   peerDependencies:
     react: "*"
     react-native: "*"
-  checksum: 77324747a8b5df0a5558bb99a9a0804a5575d328e84f480e462c56417af97213f38a9930e4582fb749bec374dc4d1a8910a45b006e77af9b14a8e64057b932bf
+  checksum: 187e7653350a2bb2d45b18d39d6a7983d1d427af8933a56242b6a7633c896f051bbff30a64d2c2619f36cda19d85c417c20b9f46f5bdc13071ba557fbafe8fec
   languageName: node
   linkType: hard
 
