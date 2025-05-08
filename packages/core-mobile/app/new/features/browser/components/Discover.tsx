@@ -8,7 +8,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useSelector } from 'react-redux'
 import { selectActiveTab } from 'store/browser'
 import { useBrowserContext } from '../BrowserContext'
-import { HORIZONTAL_MARGIN, SWIPE_THRESHOLD } from '../consts'
+import { HORIZONTAL_MARGIN } from '../consts'
 import { DiscoverCollectibles } from './DiscoverCollectibles'
 import { DiscoverEcosystemProjects } from './DiscoverEcosystemProjects'
 import { DiscoverFeaturedProjects } from './DiscoverFeaturedProjects'
@@ -27,83 +27,79 @@ export const Discover = (): JSX.Element => {
   }
 
   return (
-    <View style={{ flex: 1 }}>
-      <EdgeGesture
-        distance={SWIPE_THRESHOLD}
-        onGesture={onGesture}
-        direction="right">
-        <ScrollView
-          showsVerticalScrollIndicator={false}
+    <EdgeGesture onGesture={onGesture} direction="right">
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        style={{
+          height: '100%',
+          backgroundColor: theme.colors.$surfacePrimary
+        }}
+        nestedScrollEnabled
+        stickyHeaderIndices={[0]}
+        contentContainerStyle={{
+          paddingTop: 48
+        }}>
+        <Animated.View
+          pointerEvents="none"
+          style={[
+            {
+              position: 'absolute',
+              top: -26,
+              left: 0,
+              right: 0,
+              zIndex: 1
+            }
+          ]}>
+          <LinearGradient
+            style={{
+              height: insets.top + 26
+            }}
+            colors={[
+              theme.colors.$surfacePrimary,
+              alpha(theme.colors.$surfacePrimary, 0)
+            ]}
+            start={{
+              x: 0,
+              y: 0
+            }}
+            end={{
+              x: 0,
+              y: 1
+            }}
+          />
+        </Animated.View>
+
+        <View style={{ paddingHorizontal: HORIZONTAL_MARGIN, gap: 8 }}>
+          <Text variant="heading2">Discover</Text>
+          <Text variant="body1">
+            {`Discover a wide variety of apps built on\nthe Avalanche ecosystem`}
+          </Text>
+        </View>
+
+        <DiscoverEcosystemProjects />
+
+        <View
           style={{
-            height: '100%',
-            backgroundColor: theme.colors.$surfacePrimary
-          }}
-          stickyHeaderIndices={[0]}
-          contentContainerStyle={{
-            paddingTop: 48
+            gap: HORIZONTAL_MARGIN / 2
           }}>
-          <Animated.View
-            pointerEvents="none"
-            style={[
-              {
-                position: 'absolute',
-                top: -26,
-                left: 0,
-                right: 0,
-                zIndex: 1
-              }
-            ]}>
-            <LinearGradient
-              style={{
-                height: insets.top + 26
-              }}
-              colors={[
-                theme.colors.$surfacePrimary,
-                alpha(theme.colors.$surfacePrimary, 0)
-              ]}
-              start={{
-                x: 0,
-                y: 0
-              }}
-              end={{
-                x: 0,
-                y: 1
-              }}
-            />
-          </Animated.View>
-
-          <View style={{ paddingHorizontal: HORIZONTAL_MARGIN, gap: 8 }}>
-            <Text variant="heading2">Discover</Text>
-            <Text variant="body1">
-              {`Discover a wide variety of apps built on\nthe Avalanche ecosystem`}
-            </Text>
+          <View style={{ paddingHorizontal: HORIZONTAL_MARGIN }}>
+            <Text variant="heading3">Trending projects</Text>
           </View>
+          <DiscoverFeaturedProjects />
+        </View>
 
-          <DiscoverEcosystemProjects />
+        <DiscoverCollectibles />
 
-          <View
-            style={{
-              gap: HORIZONTAL_MARGIN / 2
-            }}>
-            <View style={{ paddingHorizontal: HORIZONTAL_MARGIN }}>
-              <Text variant="heading3">Trending projects</Text>
-            </View>
-            <DiscoverFeaturedProjects />
+        <View
+          style={{
+            gap: 12
+          }}>
+          <View style={{ paddingHorizontal: HORIZONTAL_MARGIN }}>
+            <Text variant="heading3">Learn</Text>
           </View>
-
-          <DiscoverCollectibles />
-
-          <View
-            style={{
-              gap: 12
-            }}>
-            <View style={{ paddingHorizontal: HORIZONTAL_MARGIN }}>
-              <Text variant="heading3">Learn</Text>
-            </View>
-            <DiscoverLearn />
-          </View>
-        </ScrollView>
-      </EdgeGesture>
-    </View>
+          <DiscoverLearn />
+        </View>
+      </ScrollView>
+    </EdgeGesture>
   )
 }
