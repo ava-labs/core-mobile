@@ -14,7 +14,6 @@ import { ScrollScreen } from 'common/components/ScrollScreen'
 import { VisibilityBarButton } from 'common/components/VisibilityBarButton'
 import { useAvatar } from 'common/hooks/useAvatar'
 import { useDeleteWallet } from 'common/hooks/useDeleteWallet'
-import { showSnackbar } from 'common/utils/toast'
 import { Space } from 'common/components/Space'
 import { useRouter } from 'expo-router'
 import { About } from 'features/accountSettings/components/About'
@@ -23,17 +22,14 @@ import { AppAppearance } from 'features/accountSettings/components/AppAppearance
 import { UserPreferences } from 'features/accountSettings/components/UserPreferences'
 import React, { useCallback } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import AnalyticsService from 'services/analytics/AnalyticsService'
 import { selectContacts } from 'store/addressBook'
-import {
-  selectIsDeveloperMode,
-  toggleDeveloperMode
-} from 'store/settings/advanced'
+import { selectIsDeveloperMode } from 'store/settings/advanced'
 import {
   selectIsPrivacyModeEnabled,
   togglePrivacyMode
 } from 'store/settings/securityPrivacy'
 import { useCoreBrowser } from 'common/hooks/useCoreBrowser'
+import { setIsDeveloperMode } from 'common/utils/setIsDeveloperMode'
 
 const AccountSettingsScreen = (): JSX.Element => {
   const { deleteWallet } = useDeleteWallet()
@@ -98,11 +94,7 @@ const AccountSettingsScreen = (): JSX.Element => {
   }, [navigate])
 
   const onTestnetChange = (value: boolean): void => {
-    AnalyticsService.capture(
-      value ? 'DeveloperModeEnabled' : 'DeveloperModeDisabled'
-    )
-    dispatch(toggleDeveloperMode())
-    showSnackbar('Testnet mode is now ' + (value ? 'on' : 'off'))
+    setIsDeveloperMode(value, dispatch)
   }
 
   const handlePressAboutItem = useCallback(

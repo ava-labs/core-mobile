@@ -14,7 +14,7 @@ import { useRouter } from 'expo-router'
 import React, { ReactNode, useCallback, useEffect, useState } from 'react'
 import { Platform } from 'react-native'
 import Animated, { useSharedValue, withTiming } from 'react-native-reanimated'
-import { useSelector } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import { selectActiveAccount } from 'store/account'
 import { useEVMProvider } from 'hooks/networks/networkProviderHooks'
 import Logger from 'utils/Logger'
@@ -23,6 +23,7 @@ import useCChainNetwork from 'hooks/earn/useCChainNetwork'
 import { useInAppRequest } from 'hooks/useInAppRequest'
 import { isUserRejectedError } from 'store/rpc/providers/walletConnect/utils'
 import { PortfolioHomeScreenTab } from 'new/routes/(signedIn)/(tabs)/portfolio'
+import { setIsDeveloperMode } from 'common/utils/setIsDeveloperMode'
 import { MintNftService } from '../service/MintNftService'
 
 export const MintNftScreen = (): ReactNode => {
@@ -36,6 +37,7 @@ export const MintNftScreen = (): ReactNode => {
   const provider = useEVMProvider(cChainNetwork)
   const [isMinting, setIsMinting] = useState(false)
   const { request } = useInAppRequest()
+  const dispatch = useDispatch()
 
   const handleSuccess = useCallback(() => {
     back()
@@ -165,6 +167,31 @@ export const MintNftScreen = (): ReactNode => {
     }
   }, [parentWidth, opacity])
 
+  useEffect(() => {
+    if (isDeveloperMode) {
+      showAlert({
+        title: 'Switch to Mainnet',
+        description:
+          'This feature is only available on Mainnet. Would you like to switch to Mainnet?',
+        buttons: [
+          {
+            text: 'Switch',
+            onPress: () => {
+              setIsDeveloperMode(false, dispatch)
+            }
+          },
+          {
+            text: 'Cancel',
+            style: 'cancel',
+            onPress: () => {
+              back()
+            }
+          }
+        ]
+      })
+    }
+  }, [isDeveloperMode, dispatch, back])
+
   return (
     <ScrollScreen
       isModal
@@ -178,7 +205,7 @@ export const MintNftScreen = (): ReactNode => {
         onLayout={e => setParentWidth(e.nativeEvent.layout.width)}>
         <View
           sx={{
-            marginTop: 16,
+            marginTop: 32,
             width: imageWidth,
             aspectRatio: 1
           }}>

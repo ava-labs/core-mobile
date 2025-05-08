@@ -1,4 +1,4 @@
-import { createSlice } from '@reduxjs/toolkit'
+import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { RootState } from 'store/types'
 import { initialState } from './types'
 
@@ -10,6 +10,9 @@ export const advancedSlice = createSlice({
   reducers: {
     toggleDeveloperMode: state => {
       state.developerMode = !state.developerMode
+    },
+    setIsDeveloperMode: (state, action: PayloadAction<boolean>) => {
+      state.developerMode = action.payload
     },
     toggleLeftHanded: state => {
       state.isLeftHanded = !state.isLeftHanded
@@ -25,6 +28,7 @@ export const selectIsLeftHanded = (state: RootState): boolean =>
   state.settings.advanced.isLeftHanded
 
 // actions
-export const { toggleDeveloperMode, toggleLeftHanded } = advancedSlice.actions
+export const { toggleDeveloperMode, toggleLeftHanded, setIsDeveloperMode } =
+  advancedSlice.actions
 
 export const advancedReducer = advancedSlice.reducer
