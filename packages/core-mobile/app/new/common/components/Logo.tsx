@@ -1,5 +1,5 @@
 import React from 'react'
-import { Image } from '@avalabs/k2-alpine'
+import { Image } from 'expo-image'
 import { FC, useState } from 'react'
 import { formatUriImageToPng, isContentfulImageUri } from 'utils/Contentful'
 import { SvgUri } from 'react-native-svg'
