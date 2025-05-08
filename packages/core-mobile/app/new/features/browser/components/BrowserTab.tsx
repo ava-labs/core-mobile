@@ -341,6 +341,7 @@ export const BrowserTab = forwardRef<BrowserTabRef, { tabId: string }>(
             onMessage={onMessageHandler}
             onShouldStartLoadWithRequest={() => !disabled}
             nestedScrollEnabled
+            pullToRefreshEnabled
             style={{
               backgroundColor,
               flex: 1

@@ -1,4 +1,4 @@
-import { FlatList, ListRenderItem } from 'react-native'
+import { ListRenderItem } from 'react-native'
 
 import { Button, Icons, Pressable, useTheme, View } from '@avalabs/k2-alpine'
 import { ErrorState } from 'common/components/ErrorState'
@@ -13,6 +13,7 @@ import {
   useFeaturedProjects
 } from '../hooks/useFeaturedProjects'
 import { BrowserItem } from './BrowserItem'
+import { FlatList } from 'react-native-gesture-handler'
 
 export const DiscoverFeaturedProjects = (): JSX.Element | null => {
   const dispatch = useDispatch()
