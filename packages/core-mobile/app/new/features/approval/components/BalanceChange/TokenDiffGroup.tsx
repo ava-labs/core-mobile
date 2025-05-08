@@ -136,19 +136,15 @@ const TokenDiffItemComponent = ({
   }, [diffItem.displayValue, isOut, colors.$textDanger, colors.$textPrimary])
 
   const renderTokenLogo = useCallback((): JSX.Element | null => {
-    if (token.name !== undefined && token.symbol !== undefined) {
-      return (
-        <TokenLogo
-          symbol={token.symbol}
-          logoUri={token.logoUri}
-          size={42}
-          isNft={isNft}
-        />
-      )
-    }
-
-    return null
-  }, [token.name, token.symbol, token.logoUri, isNft])
+    return (
+      <TokenLogo
+        symbol={token.symbol}
+        logoUri={token.logoUri}
+        size={42}
+        isNft={isNft}
+      />
+    )
+  }, [token.symbol, token.logoUri, isNft])
 
   return (
     <View
