@@ -1,5 +1,4 @@
-import { showAlert, useTheme } from '@avalabs/k2-alpine'
-import { EdgeGesture } from 'common/components/EdgeGesture'
+import { showAlert, useTheme, View } from '@avalabs/k2-alpine'
 import { ErrorState } from 'common/components/ErrorState'
 import { useDeeplink } from 'contexts/DeeplinkContext/DeeplinkContext'
 import { DeepLink, DeepLinkOrigin } from 'contexts/DeeplinkContext/types'
@@ -44,7 +43,6 @@ import {
 import Logger from 'utils/Logger'
 import ErrorIcon from '../../../assets/icons/melting_face.png'
 import { useBrowserContext } from '../BrowserContext'
-import { SWIPE_GESTURE_DISTANCE } from '../consts'
 import { isSuggestedSiteName } from '../utils'
 import { WebView } from './Webview'
 
@@ -295,20 +293,8 @@ export const BrowserTab = forwardRef<BrowserTabRef, { tabId: string }>(
       setError(event.nativeEvent)
     }
 
-    const onGesture = (direction: 'left' | 'right'): void => {
-      if (direction === 'left') {
-        goBack()
-      } else {
-        goForward()
-      }
-    }
-
     return (
-      <EdgeGesture
-        distance={SWIPE_GESTURE_DISTANCE}
-        onGesture={onGesture}
-        direction="left-and-right"
-        showEdgeOverlay>
+      <View style={{ flex: 1 }}>
         {/* Main content */}
         {error ? (
           <ErrorState
@@ -356,7 +342,7 @@ export const BrowserTab = forwardRef<BrowserTabRef, { tabId: string }>(
             onError={onError}
           />
         )}
-      </EdgeGesture>
+      </View>
     )
   }
 )
