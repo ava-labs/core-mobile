@@ -5,13 +5,12 @@ import {
   useTheme,
   View
 } from '@avalabs/k2-alpine'
-import React, { useCallback, useMemo } from 'react'
+import React, { useCallback, useMemo, useState } from 'react'
 import { useHeaderHeight } from '@react-navigation/elements'
 import { useNavigation } from '@react-navigation/native'
 import { QrCodeScanner } from 'common/components/QrCodeScanner'
 import { useCollectibleSend } from 'common/hooks/send/useCollectibleSend'
 import { useRouter } from 'expo-router'
-import { useSendContext } from 'features/send/context/sendContext'
 import { useNativeTokenWithBalanceByNetwork } from 'features/send/hooks/useNativeTokenWithBalanceByNetwork'
 import { useSendSelectedToken } from 'features/send/store'
 import { useNetworks } from 'hooks/networks/useNetworks'
@@ -26,13 +25,13 @@ export const ScanQrCodeScreen = (): JSX.Element => {
     theme: { colors }
   } = useTheme()
   const headerHeight = useHeaderHeight()
-  const { isSending } = useSendContext()
   const { getNetwork } = useNetworks()
   const { canGoBack, back } = useRouter()
   const { getState } = useNavigation()
   const fromAddress = useSelector(selectActiveAccount)?.addressC ?? ''
-  const [selectedToken, setSelectedToken] = useSendSelectedToken()
+  const [selectedToken] = useSendSelectedToken()
   const { onSuccess, onFailure } = useSendTransactionCallbacks()
+  const [isSending, setIsSending] = useState(false)
 
   const selectedNetwork = useMemo(() => {
     return getNetwork(selectedToken?.networkChainId)
@@ -58,12 +57,12 @@ export const ScanQrCodeScreen = (): JSX.Element => {
           return
         }
 
+        setIsSending(true)
         const txHash = await send(toAddress)
 
         onSuccess({
           txHash,
           onDismiss: () => {
-            setSelectedToken(undefined)
             // dismiss QR code modal
             canGoBack() && back()
             // dismiss recent contacts modal
@@ -83,18 +82,11 @@ export const ScanQrCodeScreen = (): JSX.Element => {
         })
       } catch (reason) {
         onFailure(reason)
+      } finally {
+        setIsSending(false)
       }
     },
-    [
-      back,
-      canGoBack,
-      getState,
-      onFailure,
-      onSuccess,
-      selectedToken,
-      send,
-      setSelectedToken
-    ]
+    [back, canGoBack, getState, onFailure, onSuccess, selectedToken, send]
   )
 
   return (
