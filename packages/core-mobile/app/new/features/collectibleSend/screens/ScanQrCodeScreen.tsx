@@ -5,13 +5,12 @@ import {
   useTheme,
   View
 } from '@avalabs/k2-alpine'
-import React, { useCallback, useMemo } from 'react'
+import React, { useCallback, useMemo, useState } from 'react'
 import { useHeaderHeight } from '@react-navigation/elements'
 import { useNavigation } from '@react-navigation/native'
 import { QrCodeScanner } from 'common/components/QrCodeScanner'
 import { useCollectibleSend } from 'common/hooks/send/useCollectibleSend'
 import { useRouter } from 'expo-router'
-import { useSendContext } from 'features/send/context/sendContext'
 import { useNativeTokenWithBalanceByNetwork } from 'features/send/hooks/useNativeTokenWithBalanceByNetwork'
 import { useSendSelectedToken } from 'features/send/store'
 import { useNetworks } from 'hooks/networks/useNetworks'
@@ -26,7 +25,6 @@ export const ScanQrCodeScreen = (): JSX.Element => {
     theme: { colors }
   } = useTheme()
   const headerHeight = useHeaderHeight()
-  const { isSending } = useSendContext()
   const { getNetwork } = useNetworks()
   const { canGoBack, back } = useRouter()
   const { getState } = useNavigation()
@@ -39,6 +37,7 @@ export const ScanQrCodeScreen = (): JSX.Element => {
   }, [selectedToken?.networkChainId, getNetwork])
   const nativeToken = useNativeTokenWithBalanceByNetwork(selectedNetwork)
   const { data: networkFee } = useNetworkFee(selectedNetwork)
+  const [isSending, setIsSending] = useState(false)
 
   const { send } = useCollectibleSend({
     chainId: selectedToken?.networkChainId,
@@ -50,6 +49,7 @@ export const ScanQrCodeScreen = (): JSX.Element => {
 
   const handleSend = useCallback(
     async (toAddress: string): Promise<void> => {
+      setIsSending(true)
       try {
         if (selectedToken === undefined) return
 
@@ -82,6 +82,7 @@ export const ScanQrCodeScreen = (): JSX.Element => {
           }
         })
       } catch (reason) {
+        setIsSending(false)
         onFailure(reason)
       }
     },
