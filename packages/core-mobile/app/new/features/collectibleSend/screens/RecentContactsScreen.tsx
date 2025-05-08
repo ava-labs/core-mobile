@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo } from 'react'
+import React, { useCallback, useMemo, useState } from 'react'
 import { useRouter } from 'expo-router'
 import { addRecentContact, Contact } from 'store/addressBook'
 import { useContacts } from 'common/hooks/useContacts'
@@ -10,16 +10,16 @@ import { useNativeTokenWithBalanceByNetwork } from 'features/send/hooks/useNativ
 import { useSendSelectedToken } from 'features/send/store'
 import { useNetworkFee } from 'hooks/useNetworkFee'
 import { useCollectibleSend } from 'common/hooks/send/useCollectibleSend'
-import { useSendContext } from 'features/send/context/sendContext'
 import { ActivityIndicator, alpha, useTheme, View } from '@avalabs/k2-alpine'
 import { useNavigation } from '@react-navigation/native'
+import { isAddress } from 'ethers'
 import { useSendTransactionCallbacks } from '../hooks/useSendTransactionCallbacks'
 
 export const RecentContactsScreen = (): JSX.Element | null => {
   const {
     theme: { colors }
   } = useTheme()
-  const { isSending } = useSendContext()
+  const [isSending, setIsSending] = useState(false)
   const { navigate, canGoBack, back } = useRouter()
   const { getState } = useNavigation()
   const { recentAddresses, contacts, accounts } = useContacts()
@@ -47,6 +47,13 @@ export const RecentContactsScreen = (): JSX.Element | null => {
   const handleSend = useCallback(
     async (toAddress: string, contact?: Contact): Promise<void> => {
       try {
+        if (selectedToken === undefined) return
+
+        if (isAddress(toAddress) === false) {
+          onFailure(new Error('Invalid address'))
+          return
+        }
+        setIsSending(true)
         const txHash = await send(toAddress)
 
         onSuccess({
@@ -65,9 +72,20 @@ export const RecentContactsScreen = (): JSX.Element | null => {
         })
       } catch (reason) {
         onFailure(reason)
+      } finally {
+        setIsSending(false)
       }
     },
-    [back, canGoBack, dispatch, getState, onFailure, onSuccess, send]
+    [
+      back,
+      canGoBack,
+      dispatch,
+      getState,
+      onFailure,
+      onSuccess,
+      selectedToken,
+      send
+    ]
   )
 
   const collectiblesContacts = useMemo(() => {

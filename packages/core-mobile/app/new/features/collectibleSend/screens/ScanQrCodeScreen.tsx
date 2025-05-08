@@ -5,13 +5,12 @@ import {
   useTheme,
   View
 } from '@avalabs/k2-alpine'
-import React, { useCallback, useMemo } from 'react'
+import React, { useCallback, useMemo, useState } from 'react'
 import { useHeaderHeight } from '@react-navigation/elements'
 import { useNavigation } from '@react-navigation/native'
 import { QrCodeScanner } from 'common/components/QrCodeScanner'
 import { useCollectibleSend } from 'common/hooks/send/useCollectibleSend'
 import { useRouter } from 'expo-router'
-import { useSendContext } from 'features/send/context/sendContext'
 import { useNativeTokenWithBalanceByNetwork } from 'features/send/hooks/useNativeTokenWithBalanceByNetwork'
 import { useSendSelectedToken } from 'features/send/store'
 import { useNetworks } from 'hooks/networks/useNetworks'
@@ -26,13 +25,13 @@ export const ScanQrCodeScreen = (): JSX.Element => {
     theme: { colors }
   } = useTheme()
   const headerHeight = useHeaderHeight()
-  const { isSending } = useSendContext()
   const { getNetwork } = useNetworks()
   const { canGoBack, back } = useRouter()
   const { getState } = useNavigation()
   const fromAddress = useSelector(selectActiveAccount)?.addressC ?? ''
   const [selectedToken] = useSendSelectedToken()
   const { onSuccess, onFailure } = useSendTransactionCallbacks()
+  const [isSending, setIsSending] = useState(false)
 
   const selectedNetwork = useMemo(() => {
     return getNetwork(selectedToken?.networkChainId)
@@ -51,11 +50,14 @@ export const ScanQrCodeScreen = (): JSX.Element => {
   const handleSend = useCallback(
     async (toAddress: string): Promise<void> => {
       try {
+        if (selectedToken === undefined) return
+
         if (isAddress(toAddress) === false) {
           onFailure(new Error('Invalid address'))
           return
         }
 
+        setIsSending(true)
         const txHash = await send(toAddress)
 
         onSuccess({
@@ -71,13 +73,20 @@ export const ScanQrCodeScreen = (): JSX.Element => {
             ) {
               canGoBack() && back()
             }
+            // dismiss onboarding modal
+            const state = getState()
+            if (state?.routes[state?.index ?? 0]?.name === 'onboarding') {
+              canGoBack() && back()
+            }
           }
         })
       } catch (reason) {
         onFailure(reason)
+      } finally {
+        setIsSending(false)
       }
     },
-    [back, canGoBack, getState, onFailure, onSuccess, send]
+    [back, canGoBack, getState, onFailure, onSuccess, selectedToken, send]
   )
 
   return (
