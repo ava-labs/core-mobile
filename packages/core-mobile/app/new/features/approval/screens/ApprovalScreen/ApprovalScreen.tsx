@@ -381,7 +381,8 @@ const ApprovalScreen = ({
       confirm={{
         label: 'Approve',
         onPress: handleApprove,
-        disabled: approveDisabled
+        disabled: approveDisabled,
+        isLoading: submitting
       }}
       cancel={{
         label: 'Reject',

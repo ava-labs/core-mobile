@@ -1,4 +1,12 @@
-import { Button, Icons, Text, Toggle, useTheme, View } from '@avalabs/k2-alpine'
+import {
+  ActivityIndicator,
+  Button,
+  Icons,
+  Text,
+  Toggle,
+  useTheme,
+  View
+} from '@avalabs/k2-alpine'
 import { AlertType } from '@avalabs/vm-module-types'
 import { HORIZONTAL_MARGIN } from 'new/common/consts'
 import React, { useCallback, useMemo, useState } from 'react'
@@ -13,6 +21,7 @@ export type ActionButtonsProps = {
     label: string
     onPress: () => void
     disabled?: boolean
+    isLoading?: boolean
   }
   cancel: {
     label: string
@@ -51,7 +60,7 @@ export const ActionButtons = ({
           type="primary"
           onPress={() => confirm.onPress()}
           disabled={shouldDisableConfirm}>
-          {confirm.label}
+          {confirm.isLoading ? <ActivityIndicator /> : confirm.label}
         </Button>
         <Button
           size="large"
