@@ -3,6 +3,7 @@ import { ListRenderItem } from 'react-native'
 import { Button, Icons, Pressable, useTheme, View } from '@avalabs/k2-alpine'
 import { ErrorState } from 'common/components/ErrorState'
 import React, { ReactNode, useCallback, useMemo } from 'react'
+import { FlatList } from 'react-native-gesture-handler'
 import { useDispatch, useSelector } from 'react-redux'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { addHistoryForActiveTab, selectIsTabEmpty } from 'store/browser'
@@ -13,7 +14,6 @@ import {
   useFeaturedProjects
 } from '../hooks/useFeaturedProjects'
 import { BrowserItem } from './BrowserItem'
-import { FlatList } from 'react-native-gesture-handler'
 
 export const DiscoverFeaturedProjects = (): JSX.Element | null => {
   const dispatch = useDispatch()
