@@ -4,6 +4,7 @@ import InAppBrowser, {
 } from 'react-native-inappbrowser-reborn'
 import Logger from './Logger'
 
+// @deprecated use openUrl from useCoreBrowser hook instead
 export const openInAppBrowser = async (
   url: string,
   options: InAppBrowserOptions
