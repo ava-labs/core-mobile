@@ -15,7 +15,6 @@ import { useBottomTabBarHeight } from 'react-native-bottom-tabs'
 import { Gesture, GestureDetector } from 'react-native-gesture-handler'
 import { KeyboardStickyView } from 'react-native-keyboard-controller'
 import Animated, {
-  interpolateColor,
   runOnJS,
   useAnimatedStyle,
   useSharedValue,
