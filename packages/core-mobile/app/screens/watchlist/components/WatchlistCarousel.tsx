@@ -55,7 +55,8 @@ const WatchlistCarousel: FC<Props> = () => {
   }
 
   const goToWatchList = (): void => {
-    navigation.navigate(AppNavigation.Tabs.Watchlist)
+    navigation.navigate(AppNavigation.Modal.SummitLondon2025)
+    // navigation.navigate(AppNavigation.Tabs.Watchlist)
   }
 
   if (isLoadingFavorites) {
