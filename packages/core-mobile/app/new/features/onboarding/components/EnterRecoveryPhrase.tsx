@@ -73,7 +73,6 @@ export const EnterRecoveryPhrase = ({
     <ScrollScreen
       showNavigationHeaderTitle={false}
       title={'Enter your\nrecovery phrase'}
-      navigationTitle="Enter your recovery phrase"
       subtitle="This phrase should contain 12, 18, or 24 words. Use a space between each word."
       contentContainerStyle={{ padding: 16 }}
       renderFooter={renderFooter}>
