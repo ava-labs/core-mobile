@@ -128,7 +128,8 @@ export const RecentContacts = ({
                 <View
                   sx={{
                     justifyItems: 'center',
-                    justifyContent: 'center'
+                    justifyContent: 'center',
+                    width: '90%'
                   }}>
                   <Text
                     variant="buttonMedium"
