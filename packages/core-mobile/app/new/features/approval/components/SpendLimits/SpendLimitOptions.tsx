@@ -83,8 +83,7 @@ export const SpendLimitOptions = ({
             ],
             buttons: [
               {
-                text: 'Cancel',
-                style: 'cancel'
+                text: 'Cancel'
               },
               {
                 text: 'Save',

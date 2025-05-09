@@ -6,17 +6,19 @@ import {
   useTheme,
   View
 } from '@avalabs/k2-alpine'
+import { ErrorState } from 'common/components/ErrorState'
 import React, { ReactNode, useCallback, useMemo } from 'react'
-import { FlatList, ListRenderItem } from 'react-native'
+import { ListRenderItem } from 'react-native'
+import { FlatList } from 'react-native-gesture-handler'
 import { useDispatch } from 'react-redux'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { addHistoryForActiveTab } from 'store/browser'
-import { ErrorState } from 'common/components/ErrorState'
 import { useBrowserContext } from '../BrowserContext'
 import { HORIZONTAL_MARGIN } from '../consts'
+
 import {
-  useFeaturedEducationArticles,
-  ContentfulEducationArticle
+  ContentfulEducationArticle,
+  useFeaturedEducationArticles
 } from '../hooks/useEducationArticles'
 
 import GlowBackground1 from '../../../assets/glow-background-1.png'
@@ -128,6 +130,7 @@ export const DiscoverLearn = (): ReactNode => {
           paddingBottom: 36,
           gap: 12
         }}
+        nestedScrollEnabled
         horizontal
         ListEmptyComponent={renderEmpty}
       />

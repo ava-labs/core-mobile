@@ -92,7 +92,7 @@ export const NavigationRedirect = (): null => {
             title: 'Are you sure?',
             description: 'You will exit the app',
             buttons: [
-              { text: 'Cancel', style: 'cancel' },
+              { text: 'Cancel' },
               {
                 text: 'Got it',
                 onPress: () => {

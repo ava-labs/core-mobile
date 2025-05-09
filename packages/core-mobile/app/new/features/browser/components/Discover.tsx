@@ -1,6 +1,7 @@
-import { alpha, ScrollView, Text, useTheme, View } from '@avalabs/k2-alpine'
+import { alpha, Text, useTheme, View } from '@avalabs/k2-alpine'
 import { LinearGradient } from 'expo-linear-gradient'
 import React from 'react'
+import { ScrollView } from 'react-native-gesture-handler'
 import Animated from 'react-native-reanimated'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { HORIZONTAL_MARGIN } from '../consts'
@@ -17,18 +18,20 @@ export const Discover = (): JSX.Element => {
     <ScrollView
       showsVerticalScrollIndicator={false}
       style={{
-        height: '100%'
+        height: '100%',
+        backgroundColor: theme.colors.$surfacePrimary
       }}
+      nestedScrollEnabled
       stickyHeaderIndices={[0]}
       contentContainerStyle={{
-        paddingTop: insets.top + 62
+        paddingTop: 48
       }}>
       <Animated.View
         pointerEvents="none"
         style={[
           {
             position: 'absolute',
-            top: -insets.top - 26,
+            top: -26,
             left: 0,
             right: 0,
             zIndex: 1

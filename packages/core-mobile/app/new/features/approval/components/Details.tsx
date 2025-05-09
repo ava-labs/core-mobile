@@ -212,8 +212,7 @@ export const Details = ({
             description: data,
             buttons: [
               {
-                text: 'Got it',
-                style: 'cancel'
+                text: 'Got it'
               }
             ]
           })
