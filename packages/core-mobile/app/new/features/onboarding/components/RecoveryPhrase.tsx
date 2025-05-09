@@ -50,6 +50,7 @@ export const RecoveryPhrase = ({
 
   return (
     <ScrollScreen
+      showNavigationHeaderTitle={false}
       title="Here is your wallet's recovery phrase"
       subtitle="This phrase is your access key to your wallet. Carefully write it down and store it in a safe location"
       renderFooter={renderFooter}

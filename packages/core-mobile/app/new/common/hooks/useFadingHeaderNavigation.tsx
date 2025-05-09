@@ -31,7 +31,8 @@ export const useFadingHeaderNavigation = ({
   hasSeparator = true,
   shouldDelayBlurOniOS = false,
   hasParent = false,
-  renderHeaderRight
+  renderHeaderRight,
+  showNavigationHeaderTitle = true
 }: {
   header?: React.ReactNode
   targetLayout?: LayoutRectangle
@@ -40,6 +41,7 @@ export const useFadingHeaderNavigation = ({
   shouldDelayBlurOniOS?: boolean
   hasParent?: boolean
   renderHeaderRight?: () => React.ReactNode
+  showNavigationHeaderTitle?: boolean
 }): {
   onScroll: (
     event: NativeSyntheticEvent<NativeScrollEvent> | NativeScrollEvent | number
@@ -117,6 +119,7 @@ export const useFadingHeaderNavigation = ({
     }
   })
 
+  // eslint-disable-next-line sonarjs/cognitive-complexity
   useFocusEffect(() => {
     const navigationOptions: StackNavigationOptions = {
       headerBackground: () => (
@@ -136,26 +139,28 @@ export const useFadingHeaderNavigation = ({
       headerTitleStyle: {
         height: '100%',
         justifyContent: 'center'
-      },
-      headerTitle: () =>
-        header && (
-          <View
-            sx={{
-              marginTop: shouldHeaderHaveGrabber
-                ? Platform.OS === 'ios'
-                  ? 22
-                  : 16
-                : 0,
-              justifyContent: 'center',
-              overflow: 'hidden'
-            }}>
-            <View onLayout={handleLayout}>
-              <Animated.View style={[animatedHeaderStyle]}>
-                {header}
-              </Animated.View>
-            </View>
+      }
+    }
+
+    if (showNavigationHeaderTitle && header) {
+      navigationOptions.headerTitle = () => (
+        <View
+          sx={{
+            marginTop: shouldHeaderHaveGrabber
+              ? Platform.OS === 'ios'
+                ? 22
+                : 16
+              : 0,
+            justifyContent: 'center',
+            overflow: 'hidden'
+          }}>
+          <View onLayout={handleLayout}>
+            <Animated.View style={[animatedHeaderStyle]}>
+              {header}
+            </Animated.View>
           </View>
-        )
+        </View>
+      )
     }
 
     // If a custom header right component is provided, set it

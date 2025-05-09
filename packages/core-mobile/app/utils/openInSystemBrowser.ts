@@ -1,7 +1,7 @@
 import { Linking } from 'react-native'
 import Logger from './Logger'
 
-export const openURL = async (url?: string): Promise<void> => {
+export const openInSystemBrowser = async (url?: string): Promise<void> => {
   if (url === undefined) return
 
   try {
