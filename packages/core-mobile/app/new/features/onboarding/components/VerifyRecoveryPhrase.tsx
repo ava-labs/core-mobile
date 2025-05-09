@@ -61,7 +61,7 @@ export const VerifyRecoveryPhrase = ({
         title: 'Invalid phrase',
         description:
           "The words you selected don't match the recovery phrase. The exact order of each word matters. Please try again.",
-        buttons: [{ text: 'Dismiss', style: 'cancel' }]
+        buttons: [{ text: 'Dismiss' }]
       })
     }
   }, [

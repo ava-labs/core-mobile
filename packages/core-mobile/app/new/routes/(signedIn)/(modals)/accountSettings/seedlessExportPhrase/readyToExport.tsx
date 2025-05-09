@@ -31,16 +31,15 @@ const SeedlessExportReadyScreen = (): JSX.Element => {
         description,
         buttons: [
           {
+            text: 'Cancel'
+          },
+          {
             text: 'Next',
             style: 'default',
             onPress: async () => {
               canGoBack() && back()
               await deleteExport()
             }
-          },
-          {
-            text: 'Cancel',
-            style: 'cancel'
           }
         ]
       })

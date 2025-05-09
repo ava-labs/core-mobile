@@ -23,16 +23,15 @@ const SeedlessExportPendingScreen = (): JSX.Element => {
         description,
         buttons: [
           {
+            text: 'Cancel'
+          },
+          {
             text: 'Next',
             style: 'default',
             onPress: async () => {
               await deleteExport()
               canGoBack() && back()
             }
-          },
-          {
-            text: 'Cancel',
-            style: 'cancel'
           }
         ]
       })

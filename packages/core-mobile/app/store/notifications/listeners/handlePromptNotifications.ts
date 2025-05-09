@@ -57,7 +57,6 @@ export const handlePromptNotifications = async (
       },
       {
         text: 'Turn on',
-        style: 'cancel',
         onPress: async () => {
           const { permission } = await NotificationsService.getAllPermissions(
             false

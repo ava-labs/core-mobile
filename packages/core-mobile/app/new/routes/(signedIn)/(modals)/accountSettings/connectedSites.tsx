@@ -39,7 +39,7 @@ const ConnectedSitesScreen = (): JSX.Element => {
       title: 'Disconnect all sites',
       description: 'Are you sure you want to disconnect all sites?',
       buttons: [
-        { text: 'Cancel', style: 'cancel' },
+        { text: 'Cancel' },
         {
           text: 'Disconnect',
           style: 'destructive',

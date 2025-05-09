@@ -2,7 +2,7 @@ import { AlertOptions, KeyboardTypeOptions } from 'react-native'
 
 export type AlertButton<T> = {
   text: string
-  style?: 'default' | 'cancel' | 'destructive'
+  style?: 'default' | 'destructive'
   onPress?: (values: T) => void
   shouldDisable?: (values: T) => boolean
 }
