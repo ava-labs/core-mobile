@@ -294,16 +294,11 @@ export const BrowserTab = forwardRef<BrowserTabRef, { tabId: string }>(
     }
 
     return (
-      <View
-        style={[
-          {
-            flex: 1,
-            backgroundColor
-          }
-        ]}>
+      <View style={{ flex: 1 }}>
+        {/* Main content */}
         {error ? (
           <ErrorState
-            sx={{ flex: 1, paddingTop: insets.top }}
+            sx={{ flex: 1, paddingTop: insets.top, backgroundColor }}
             icon={
               <Image
                 source={ErrorIcon}
@@ -331,18 +326,17 @@ export const BrowserTab = forwardRef<BrowserTabRef, { tabId: string }>(
             onLoad={onLoad}
             onMessage={onMessageHandler}
             onShouldStartLoadWithRequest={() => !disabled}
+            nestedScrollEnabled
+            pullToRefreshEnabled
+            allowsBackForwardNavigationGestures
             style={{
               backgroundColor
             }}
             containerStyle={{
               paddingTop: insets.top
             }}
-            contentInset={{
-              bottom: 0
-            }}
             onLoadProgress={onProgress}
             onError={onError}
-            allowsBackForwardNavigationGestures
           />
         )}
       </View>

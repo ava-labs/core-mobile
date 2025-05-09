@@ -9,7 +9,7 @@ import {
 import { BlurViewWithFallback } from 'common/components/BlurViewWithFallback'
 import { KeyboardAvoidingView } from 'common/components/KeyboardAvoidingView'
 import { LinearGradient } from 'expo-linear-gradient'
-import React, { ReactNode, useMemo, useState } from 'react'
+import React, { ReactNode, useMemo } from 'react'
 import { Platform } from 'react-native'
 import { useBottomTabBarHeight } from 'react-native-bottom-tabs'
 import { Gesture, GestureDetector } from 'react-native-gesture-handler'
@@ -34,7 +34,7 @@ export const BrowserControls = (): ReactNode => {
   const insets = useSafeAreaInsets()
   const tabBarHeight = useBottomTabBarHeight()
 
-  const [isFocused, setIsFocused] = useState(false)
+  const isFocused = useSharedValue(false)
 
   const gestureProgress = useSharedValue(0)
 
@@ -68,11 +68,13 @@ export const BrowserControls = (): ReactNode => {
   const historyStyle = useAnimatedStyle(() => {
     return {
       opacity: withTiming(
-        showRecentSearches.value && (isFocused || isRenameFavoriteVisible.value)
+        showRecentSearches.value &&
+          (isFocused.value || isRenameFavoriteVisible.value)
           ? 1 - gestureProgress.value
           : 0,
         ANIMATED.TIMING_CONFIG
-      )
+      ),
+      zIndex: showRecentSearches.value ? 1 : -1
     }
   })
 
@@ -80,7 +82,7 @@ export const BrowserControls = (): ReactNode => {
     return {
       opacity: withTiming(
         !showRecentSearches.value &&
-          (isFocused || isRenameFavoriteVisible.value)
+          (isFocused.value || isRenameFavoriteVisible.value)
           ? 1 - gestureProgress.value
           : 0,
         ANIMATED.TIMING_CONFIG
@@ -93,7 +95,7 @@ export const BrowserControls = (): ReactNode => {
       transform: [
         {
           scale: withTiming(
-            isFocused || isRenameFavoriteVisible.value
+            isFocused.value || isRenameFavoriteVisible.value
               ? 1 - gestureProgress.value * 0.1
               : 0.9,
             ANIMATED.TIMING_CONFIG
@@ -106,7 +108,7 @@ export const BrowserControls = (): ReactNode => {
   const focusStyle = useAnimatedStyle(() => {
     return {
       opacity: withTiming(
-        isFocused || isRenameFavoriteVisible.value
+        isFocused.value || isRenameFavoriteVisible.value
           ? 1 - gestureProgress.value
           : 0,
         ANIMATED.TIMING_CONFIG
@@ -138,6 +140,19 @@ export const BrowserControls = (): ReactNode => {
       : alpha(theme.colors.$white, isIOS ? 0.8 : 1)
   }, [theme.isDark, theme.colors.$white])
 
+  const browserInputStyle = useAnimatedStyle(() => {
+    return {
+      backgroundColor: isFocused.value ? 'transparent' : backgroundColor
+    }
+  })
+
+  const contentStyle = useAnimatedStyle(() => {
+    return {
+      pointerEvents: isFocused.value ? 'auto' : 'none',
+      zIndex: isFocused.value ? 10 : -1
+    }
+  })
+
   return (
     <>
       <KeyboardStickyView
@@ -145,27 +160,31 @@ export const BrowserControls = (): ReactNode => {
           zIndex: 11
         }}
         offset={{ opened: tabBarHeight, closed: 0 }}>
-        <View
-          style={{
-            padding: HORIZONTAL_MARGIN,
-            paddingVertical: 12,
-            backgroundColor: isFocused ? 'transparent' : backgroundColor
-          }}>
-          <BrowserInput isFocused={isFocused} setIsFocused={setIsFocused} />
-        </View>
+        <Animated.View
+          style={[
+            browserInputStyle,
+            {
+              padding: HORIZONTAL_MARGIN,
+              paddingVertical: 12
+            }
+          ]}>
+          <BrowserInput
+            isFocused={isFocused}
+            setIsFocused={value => (isFocused.value = value)}
+          />
+        </Animated.View>
       </KeyboardStickyView>
 
-      <View
-        pointerEvents={isFocused ? 'auto' : 'none'}
+      <Animated.View
         style={[
+          contentStyle,
           {
             flex: 1,
             position: 'absolute',
             top: 0,
             left: 0,
             right: 0,
-            bottom: 0,
-            zIndex: 1
+            bottom: 0
           }
         ]}>
         <Animated.View
@@ -212,7 +231,6 @@ export const BrowserControls = (): ReactNode => {
               />
             </Animated.View>
             <Animated.View
-              pointerEvents={showRecentSearches.value ? 'auto' : 'none'}
               style={[
                 historyStyle,
                 scaleStyle,
@@ -221,8 +239,7 @@ export const BrowserControls = (): ReactNode => {
                   top: 0,
                   left: 0,
                   right: 0,
-                  bottom: 0,
-                  zIndex: 1
+                  bottom: 0
                 }
               ]}>
               <HistoryList
@@ -295,7 +312,7 @@ export const BrowserControls = (): ReactNode => {
             </Pressable>
           </GestureDetector>
         </Animated.View>
-      </View>
+      </Animated.View>
     </>
   )
 }
