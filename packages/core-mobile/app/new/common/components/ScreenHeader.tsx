@@ -4,10 +4,12 @@ import React from 'react'
 export default function ScreenHeader({
   title,
   titleSx,
+  titleNumberOfLines,
   description
 }: {
   title: string
   titleSx?: SxProp
+  titleNumberOfLines?: number
   description?: string | JSX.Element
 }): JSX.Element {
   return (
@@ -19,6 +21,7 @@ export default function ScreenHeader({
           marginBottom: 10,
           ...titleSx
         }}
+        numberOfLines={titleNumberOfLines}
         variant="heading2">
         {title}
       </Text>

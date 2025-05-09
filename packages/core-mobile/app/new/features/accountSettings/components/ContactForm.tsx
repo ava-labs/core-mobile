@@ -137,7 +137,10 @@ export const ContactForm = ({
     if (contact?.name) {
       return (
         <View sx={{ gap: 24, alignItems: 'center' }}>
-          <Text variant="heading2" sx={{ color: '$textPrimary' }}>
+          <Text
+            variant="heading2"
+            sx={{ color: '$textPrimary' }}
+            numberOfLines={4}>
             {contact.name}
           </Text>
           <Button

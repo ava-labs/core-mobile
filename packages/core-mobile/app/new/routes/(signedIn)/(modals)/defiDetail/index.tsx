@@ -2,6 +2,7 @@ import { Button, Icons, Text, useTheme, View } from '@avalabs/k2-alpine'
 import { ErrorState } from 'common/components/ErrorState'
 import { LoadingState } from 'common/components/LoadingState'
 import { ScrollScreen } from 'common/components/ScrollScreen'
+import { useCoreBrowser } from 'common/hooks/useCoreBrowser'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { mapPortfolioItems } from 'features/defi/utils/utils'
 import { DeFiPortfolioItemGroup } from 'features/portfolio/defi/components/DeFiPortfolioItemGroup'
@@ -12,10 +13,10 @@ import { useExchangedAmount } from 'new/common/hooks/useExchangedAmount'
 import { useFormatCurrency } from 'new/common/hooks/useFormatCurrency'
 import React, { useCallback, useMemo } from 'react'
 import AnalyticsService from 'services/analytics/AnalyticsService'
-import { openURL } from 'utils/openURL'
 
 const DeFiDetailScreen = (): JSX.Element => {
   const { back } = useRouter()
+  const { openUrl } = useCoreBrowser()
   const { protocolId } = useLocalSearchParams<{ protocolId: string }>()
 
   const { formatCurrency } = useFormatCurrency()
@@ -32,9 +33,12 @@ const DeFiDetailScreen = (): JSX.Element => {
   }, [chainList, data?.chain])
 
   const goToProtocolPage = useCallback(async () => {
-    openURL(data?.siteUrl)
-    AnalyticsService.capture('DeFiDetailLaunchButtonClicked')
-  }, [data?.siteUrl])
+    if (data?.siteUrl) {
+      back()
+      openUrl({ url: data?.siteUrl, title: data?.name || '' })
+      AnalyticsService.capture('DeFiDetailLaunchButtonClicked')
+    }
+  }, [data?.siteUrl, data?.name, openUrl, back])
 
   const calculatedTotalValueOfProtocolItems = useMemo(() => {
     if (!data?.portfolioItemList) return formatCurrency({ amount: 0 })
