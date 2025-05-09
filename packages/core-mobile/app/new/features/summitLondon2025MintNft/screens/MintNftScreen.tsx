@@ -179,7 +179,6 @@ export const MintNftScreen = (): ReactNode => {
           },
           {
             text: 'Cancel',
-            style: 'cancel',
             onPress: () => {
               back()
             }
