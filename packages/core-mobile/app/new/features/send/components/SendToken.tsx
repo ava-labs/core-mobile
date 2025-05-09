@@ -10,6 +10,7 @@ import {
   Card,
   Icons,
   Pressable,
+  SCREEN_WIDTH,
   SendTokenUnitInputWidget,
   Text,
   useTheme,
@@ -180,7 +181,8 @@ export const SendToken = ({ onSend }: { onSend: () => void }): JSX.Element => {
           flexDirection: 'row',
           alignItems: 'center',
           borderRadius: 12,
-          justifyContent: 'space-between'
+          justifyContent: 'space-between',
+          width: '100%'
         }}>
         <Text variant="body1" sx={{ fontSize: 16, lineHeight: 22 }}>
           Send to
@@ -189,12 +191,19 @@ export const SendToken = ({ onSend }: { onSend: () => void }): JSX.Element => {
           sx={{
             flexDirection: 'row',
             alignItems: 'center',
-            gap: 8
+            justifyContent: 'flex-end',
+            gap: 8,
+            flex: 1
           }}>
-          <View sx={{ alignItems: 'flex-end' }}>
+          <View
+            sx={{
+              alignItems: 'flex-end',
+              width: SCREEN_WIDTH * 0.5
+            }}>
             {recipient?.name && (
               <Text
                 variant="body1"
+                numberOfLines={1}
                 sx={{
                   fontSize: 16,
                   lineHeight: 22,
@@ -206,6 +215,7 @@ export const SendToken = ({ onSend }: { onSend: () => void }): JSX.Element => {
             {addressToSend && (
               <Text
                 variant="mono"
+                numberOfLines={1}
                 sx={{
                   fontSize: 13,
                   color: colors.$textSecondary

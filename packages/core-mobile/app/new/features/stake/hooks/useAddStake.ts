@@ -22,7 +22,7 @@ export const useAddStake = (): {
 
   const showNotEnoughAvaxAlert = useCallback((): void => {
     showAlert({
-      title: `${minStakeAmount} AVAX required`,
+      title: `${minStakeAmount} available AVAX required`,
       description:
         'Staking your AVAX in the Avalanche Network allows you to earn up to 10% APY.',
       buttons: [
