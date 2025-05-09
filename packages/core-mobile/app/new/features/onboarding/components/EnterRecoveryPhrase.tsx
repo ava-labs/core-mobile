@@ -32,8 +32,7 @@ export const EnterRecoveryPhrase = ({
           'The recovery phrase you entered is invalid. Please double check for spelling mistakes or the order of each word.',
         buttons: [
           {
-            text: 'Dismiss',
-            style: 'cancel'
+            text: 'Dismiss'
           }
         ]
       })

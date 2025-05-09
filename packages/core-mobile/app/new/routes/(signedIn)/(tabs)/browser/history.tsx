@@ -51,11 +51,11 @@ const HistoryScreen = (): JSX.Element => {
       description: 'You will permanently delete your historical browsing data',
       buttons: [
         {
-          text: 'Cancel',
-          style: 'cancel'
+          text: 'Cancel'
         },
         {
           text: 'Yes',
+          style: 'destructive',
           onPress: handleConfirmClearAll
         }
       ]

@@ -114,7 +114,6 @@ export const AddEditNetworkScreen = (): JSX.Element => {
       buttons: [
         {
           text: 'Cancel',
-          style: 'cancel',
           onPress: dismissAlertWithTextInput
         },
         {
@@ -185,7 +184,6 @@ export const AddEditNetworkScreen = (): JSX.Element => {
       buttons: [
         {
           text: 'Cancel',
-          style: 'cancel',
           onPress: dismissAlertWithTextInput
         },
         {
