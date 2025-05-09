@@ -6,7 +6,7 @@ export default {
   getStartedSubDescription: ' Learn more about how staking works ',
   getStartedItem1: 'Choose your desired timeline',
   getStartedItem2: 'Secure the Avalanche network',
-  getStartedItem3: 'Receive your staking rewards',
+  getStartedItem3: 'Receive your stake rewards',
   nextButton: 'next_btn',
   nextButtonText: 'Next',
   disclamerText: `Disclaimer: Delegating is a feature of Avalanche's staking mechanism that allows token holders to participate...`,

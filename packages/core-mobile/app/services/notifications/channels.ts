@@ -32,12 +32,12 @@ export interface AvaxAndroidChannel extends AndroidChannel {
 export const notificationChannels = [
   {
     id: ChannelId.STAKING_COMPLETE,
-    name: 'Staking Complete',
+    name: 'Stake Complete',
     lights: false,
     vibration: false,
     importance: AndroidImportance.DEFAULT,
     title: 'Stake',
-    subtitle: 'Staking complete alerts'
+    subtitle: 'Stake complete alerts'
   } as AvaxAndroidChannel,
   {
     id: ChannelId.BALANCE_CHANGES,

@@ -573,7 +573,7 @@ class WalletService {
     const oneAvax = BigInt(1e9)
     const minStakingAmount = isDevMode ? oneAvax : BigInt(25) * oneAvax
     if (stakeAmountInNAvax < minStakingAmount) {
-      throw Error('Staking amount less than minimum')
+      throw Error('Stake amount less than minimum')
     }
 
     const unixNow = getUnixTime(new Date())
@@ -587,7 +587,7 @@ class WalletService {
     )
 
     if (endDate < getUnixTime(minimalStakeEndDate)) {
-      throw Error('Staking duration too short')
+      throw Error('Stake duration too short')
     }
 
     if (
