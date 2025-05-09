@@ -16,7 +16,12 @@ import {
   TextInput,
   TextInputSubmitEditingEventData
 } from 'react-native'
-import Animated, { useAnimatedStyle, withTiming } from 'react-native-reanimated'
+import Animated, {
+  interpolateColor,
+  SharedValue,
+  useAnimatedStyle,
+  withTiming
+} from 'react-native-reanimated'
 import { useSelector } from 'react-redux'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { selectActiveTab } from 'store/browser'
@@ -29,11 +34,13 @@ import { BrowserInputMenu } from './BrowserInputMenu'
 
 const INPUT_HEIGHT = 40
 
+const AnimatedTextInput = Animated.createAnimatedComponent(TextInput)
+
 export const BrowserInput = ({
   isFocused,
   setIsFocused
 }: {
-  isFocused: boolean
+  isFocused: SharedValue<boolean>
   setIsFocused: (visible: boolean) => void
 }): ReactNode => {
   const { theme } = useTheme()
@@ -181,33 +188,57 @@ export const BrowserInput = ({
 
   const contentStyle = useAnimatedStyle(() => {
     return {
-      opacity: withTiming(isFocused ? 0 : 1, ANIMATED.TIMING_CONFIG)
+      zIndex: isFocused.value ? 0 : 10,
+      opacity: withTiming(isFocused.value ? 0 : 1, ANIMATED.TIMING_CONFIG)
     }
   })
 
   const inputStyle = useAnimatedStyle(() => {
     return {
-      opacity: withTiming(isFocused ? 1 : 0, ANIMATED.TIMING_CONFIG)
+      zIndex: isFocused.value ? 10 : 0,
+      opacity: withTiming(isFocused.value ? 1 : 0, ANIMATED.TIMING_CONFIG)
     }
   })
 
+  const animatedInputStyle = useAnimatedStyle(() => {
+    const color = interpolateColor(
+      isFocused.value ? 0 : 1,
+      [0, 1],
+      [theme.colors.$textPrimary, 'transparent']
+    )
+    return {
+      color
+    }
+  })
+
+  const boxShadowColor = alpha(theme.colors.$black, 0.25)
+
+  const wrapperStyle = useAnimatedStyle(() => {
+    // TODO make this a separate div and control it's opacity
+    if (isFocused.value)
+      return {
+        boxShadow: [
+          {
+            offsetX: 0,
+            offsetY: 5,
+            blurRadius: 15,
+            spreadDistance: 0,
+            color: boxShadowColor,
+            inset: false
+          }
+        ]
+      }
+    return {}
+  })
+
   return (
-    <View
-      style={{
-        borderRadius: 100,
-        boxShadow: isFocused
-          ? [
-              {
-                offsetX: 0,
-                offsetY: 5,
-                blurRadius: 15,
-                spreadDistance: 0,
-                color: alpha(theme.colors.$black, 0.25),
-                inset: false
-              }
-            ]
-          : undefined
-      }}>
+    <Animated.View
+      style={[
+        wrapperStyle,
+        {
+          borderRadius: 100
+        }
+      ]}>
       <View
         style={{
           height: INPUT_HEIGHT,
@@ -215,17 +246,16 @@ export const BrowserInput = ({
           overflow: 'hidden'
         }}>
         <Animated.View
-          pointerEvents={isFocused ? 'auto' : 'none'}
+          // pointerEvents={isFocused ? 'auto' : 'none'}
           style={[
             inputStyle,
             {
               flex: 1,
               flexDirection: 'row',
-              zIndex: isFocused ? 10 : 0,
               backgroundColor: theme.isDark ? '#555557' : theme.colors.$white
             }
           ]}>
-          <TextInput
+          <AnimatedTextInput
             ref={inputRef}
             value={urlEntry}
             placeholder="Search or type URL"
@@ -237,14 +267,16 @@ export const BrowserInput = ({
             keyboardType={Platform.OS === 'ios' ? 'web-search' : 'url'}
             autoCorrect={false}
             autoCapitalize="none"
-            style={{
-              flex: 1,
-              color: isFocused ? theme.colors.$textPrimary : 'transparent',
-              paddingHorizontal: HORIZONTAL_MARGIN,
-              fontSize: 16,
-              fontFamily: 'Inter-Regular',
-              paddingRight: HORIZONTAL_MARGIN / 2
-            }}
+            style={[
+              animatedInputStyle,
+              {
+                flex: 1,
+                paddingHorizontal: HORIZONTAL_MARGIN,
+                fontSize: 16,
+                fontFamily: 'Inter-Regular',
+                paddingRight: HORIZONTAL_MARGIN / 2
+              }
+            ]}
           />
           {urlEntry?.length > 0 && (
             <Pressable
@@ -262,7 +294,7 @@ export const BrowserInput = ({
         </Animated.View>
 
         <Animated.View
-          pointerEvents={isFocused ? 'none' : 'auto'}
+          // pointerEvents={isFocused ? 'none' : 'auto'}
           style={[
             contentStyle,
             {
@@ -271,7 +303,6 @@ export const BrowserInput = ({
               left: 0,
               right: 0,
               bottom: 0,
-              zIndex: isFocused ? 0 : 10,
               borderRadius: 100
             }
           ]}>
@@ -303,6 +334,6 @@ export const BrowserInput = ({
           </MaskedProgressBar>
         </Animated.View>
       </View>
-    </View>
+    </Animated.View>
   )
 }

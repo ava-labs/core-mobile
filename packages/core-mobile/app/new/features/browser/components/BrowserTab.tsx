@@ -328,15 +328,12 @@ export const BrowserTab = forwardRef<BrowserTabRef, { tabId: string }>(
             onShouldStartLoadWithRequest={() => !disabled}
             nestedScrollEnabled
             pullToRefreshEnabled
+            allowsBackForwardNavigationGestures
             style={{
-              backgroundColor,
-              flex: 1
+              backgroundColor
             }}
             containerStyle={{
               paddingTop: insets.top
-            }}
-            contentInset={{
-              bottom: 0
             }}
             onLoadProgress={onProgress}
             onError={onError}
