@@ -2,7 +2,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router'
 import { SelectAvatar } from 'common/components/SelectAvatar'
 import { useRandomAvatar } from 'features/onboarding/hooks/useRandomAvatar'
 import { useRandomizedAvatars } from 'features/onboarding/hooks/useRandomizedAvatars'
-import React, { useMemo, useState } from 'react'
+import React, { useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { editContact, selectContact } from 'store/addressBook'
 
@@ -33,16 +33,9 @@ const EditContactAvatarScreen = (): JSX.Element => {
     )
   }
 
-  const title = useMemo(() => {
-    if (contact?.name) {
-      return `Select ${contact.name}'s avatar`
-    }
-    return 'Select contact avatar'
-  }, [contact?.name])
-
   return (
     <SelectAvatar
-      title={title}
+      title={'Select\ncontact avatar'}
       avatars={randomizedAvatars}
       selectedAvatar={selectedAvatar}
       onSubmit={onSubmit}

@@ -172,7 +172,6 @@ const FavoriteItem = ({
       buttons: [
         {
           text: 'Cancel',
-          style: 'cancel',
           onPress: handleHideFavoriteAlert
         },
         {

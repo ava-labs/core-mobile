@@ -8,7 +8,7 @@ import { TouchableOpacity } from '../Primitives'
 interface TooltipProps {
   title: string
   description: string
-  button?: AlertButton
+  button?: Omit<AlertButton, 'style'> & { style?: 'default' | 'destructive' }
   options?: AlertOptions
   size?: number
   hitSlop?: Insets

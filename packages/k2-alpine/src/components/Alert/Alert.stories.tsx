@@ -19,8 +19,7 @@ export const All = (): JSX.Element => {
       description: 'Are you sure you want to delete your wallet?',
       buttons: [
         {
-          text: 'Cancel',
-          style: 'cancel'
+          text: 'Cancel'
         },
         {
           text: 'Delete',
@@ -38,7 +37,6 @@ export const All = (): JSX.Element => {
       buttons: [
         {
           text: 'Cancel',
-          style: 'cancel',
           onPress: () => {
             alert.current?.hide()
           }

@@ -105,8 +105,8 @@ const DeFiDetailScreen = (): JSX.Element => {
     <ScrollScreen
       navigationTitle={data.name}
       renderFooter={renderFooter}
-      contentContainerStyle={{ padding: 16, flex: 1 }}>
-      <View sx={{ gap: 10 }}>
+      contentContainerStyle={{ padding: 16 }}>
+      <View sx={{ gap: 10, marginTop: 5 }}>
         <LogoWithNetwork size="medium" item={data} chain={memoizedChain} />
         <View>
           <Text variant="heading2" sx={{ color: '$textSecondary' }}>

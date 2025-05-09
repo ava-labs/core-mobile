@@ -233,7 +233,6 @@ export const useNetworkFeeSelector = ({
         buttons: [
           {
             text: 'Cancel',
-            style: 'cancel',
             onPress: dismissAlertWithTextInput
           },
           {

@@ -58,13 +58,12 @@ export const SeedlessExportMnemonicPhrase = ({
         'Copying your phrase can expose it to other apps on your device. It is best to write down your phrase instead.',
       buttons: [
         {
+          text: 'Cancel'
+        },
+        {
           text: 'Copy Anyway',
           style: 'default',
           onPress: () => onCopyPhrase(mnemonic)
-        },
-        {
-          text: 'Cancel',
-          style: 'cancel'
         }
       ]
     })

@@ -72,8 +72,7 @@ const AccountSettingsScreen = (): JSX.Element => {
           'Change appearance is not available in testnet mode. Please turn off testnet mode to change appearance.',
         buttons: [
           {
-            text: 'OK',
-            style: 'cancel'
+            text: 'Got it'
           }
         ]
       })
@@ -243,12 +242,12 @@ const AccountSettingsScreen = (): JSX.Element => {
                   'Removing the account will delete all local information stored on this device. Your assets will remain on chain.',
                 buttons: [
                   {
-                    text: 'I understand, continue',
-                    onPress: deleteWallet
+                    text: 'Cancel'
                   },
                   {
-                    text: 'Cancel',
-                    style: 'cancel'
+                    text: 'I understand, continue',
+                    style: 'destructive',
+                    onPress: deleteWallet
                   }
                 ]
               })
