@@ -31,7 +31,6 @@ export const WebView = ({
       allowsInlineMediaPlayback={true}
       testID={testID}
       ref={webViewRef}
-      pullToRefreshEnabled={true}
       injectedJavaScriptForMainFrameOnly={false}
       injectedJavaScript={injectedJavaScript}
       source={{ uri: url }}
