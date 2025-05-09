@@ -11,15 +11,15 @@ export async function registerDeviceToNotificationSender(
   const storedDeviceArn = commonStorage.getString(
     StorageKey.NOTIFICATIONS_OPTIMIZATION
   )
-  const response = await fetchWithAppCheck(
-    Config.NOTIFICATION_SENDER_API_URL + '/v1/push/register',
-    JSON.stringify({
+  const response = await fetchWithAppCheck({
+    url: Config.NOTIFICATION_SENDER_API_URL + '/v1/push/register',
+    bodyJson: JSON.stringify({
       deviceToken: fcmToken,
       deviceArn: storedDeviceArn,
       appType: 'CORE_MOBILE_APP',
       osType: Platform.OS === 'ios' ? 'IOS' : 'ANDROID'
     })
-  ).catch(error => {
+  }).catch(error => {
     Logger.error(
       `[registerDeviceToNotificationSender.ts][registerDevice]${error}`
     )

@@ -7,12 +7,14 @@ export async function unSubscribeForBalanceChange({
 }: {
   deviceArn: string
 }): Promise<{ message: 'ok' }> {
-  const response = await fetchWithAppCheck(
-    Config.NOTIFICATION_SENDER_API_URL + '/v1/push/balance-changes/unsubscribe',
-    JSON.stringify({
+  const response = await fetchWithAppCheck({
+    url:
+      Config.NOTIFICATION_SENDER_API_URL +
+      '/v1/push/balance-changes/unsubscribe',
+    bodyJson: JSON.stringify({
       deviceArn
     })
-  ).catch(error => {
+  }).catch(error => {
     Logger.error(`[unsubscribeForBalanceChange.ts][unsubscribe]${error}`)
     throw error
   })

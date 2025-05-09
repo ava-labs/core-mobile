@@ -17,13 +17,13 @@ export async function unSubscribeForNews({
     })
     .filter(item => item !== undefined)
 
-  const response = await fetchWithAppCheck(
-    Config.NOTIFICATION_SENDER_API_URL + '/v1/push/news/unsubscribe',
-    JSON.stringify({
+  const response = await fetchWithAppCheck({
+    url: Config.NOTIFICATION_SENDER_API_URL + '/v1/push/news/unsubscribe',
+    bodyJson: JSON.stringify({
       deviceArn,
       events
     })
-  ).catch(error => {
+  }).catch(error => {
     Logger.error(`[unsubscribeForNews.ts][unsubscribe]${error}`)
     throw error
   })
