@@ -1,6 +1,13 @@
-import { Avatar, Button, Text, View, useTheme } from '@avalabs/k2-alpine'
+import {
+  ActivityIndicator,
+  Avatar,
+  Button,
+  Text,
+  View,
+  useTheme
+} from '@avalabs/k2-alpine'
 import { ScrollScreen } from 'common/components/ScrollScreen'
-import React from 'react'
+import React, { useCallback, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { selectSelectedAvatar } from 'store/settings/avatar'
 
@@ -12,15 +19,28 @@ export const Confirmation = ({
   const {
     theme: { colors }
   } = useTheme()
+  const [isLoading, setIsLoading] = useState(false)
   const avatar = useSelector(selectSelectedAvatar)
 
-  const renderFooter = (): React.ReactNode => {
+  const handleOnPress = useCallback((): void => {
+    setIsLoading(true)
+    setTimeout(() => {
+      onNext()
+    }, 100)
+  }, [onNext])
+
+  const renderFooter = useCallback((): React.ReactNode => {
     return (
-      <Button testID="lets_go_btn" size="large" type="primary" onPress={onNext}>
-        Let's go!
+      <Button
+        testID="lets_go_btn"
+        size="large"
+        type="primary"
+        onPress={handleOnPress}
+        disabled={isLoading}>
+        {isLoading ? <ActivityIndicator /> : `Let's go!`}
       </Button>
     )
-  }
+  }, [isLoading, handleOnPress])
 
   return (
     <ScrollScreen
