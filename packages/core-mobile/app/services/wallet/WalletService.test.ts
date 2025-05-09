@@ -72,7 +72,7 @@ describe('WalletService', () => {
         await WalletService.createAddDelegatorTx(params)
       }).rejects.toThrow('Invalid node id: InvalidNodeID-23420390293d9j09v')
     })
-    it('should throw if staking amount is less than 1Avax on Fuji', async () => {
+    it('should throw if stake amount is less than 1Avax on Fuji', async () => {
       const params = {
         nodeId: validNodeId,
         stakeAmountInNAvax: BigInt(1e8),
@@ -80,9 +80,9 @@ describe('WalletService', () => {
       } as AddDelegatorProps
       await expect(async () => {
         await WalletService.createAddDelegatorTx(params)
-      }).rejects.toThrow('Staking amount less than minimum')
+      }).rejects.toThrow('Stake amount less than minimum')
     })
-    it('should throw if staking amount is less than 25Avax on Mainnet', async () => {
+    it('should throw if stake amount is less than 25Avax on Mainnet', async () => {
       const params = {
         nodeId: validNodeId,
         stakeAmountInNAvax: BigInt(24e9),
@@ -90,7 +90,7 @@ describe('WalletService', () => {
       } as AddDelegatorProps
       await expect(async () => {
         await WalletService.createAddDelegatorTx(params)
-      }).rejects.toThrow('Staking amount less than minimum')
+      }).rejects.toThrow('Stake amount less than minimum')
     })
     it('should throw if staking date is in past', async () => {
       const params = {
@@ -115,9 +115,9 @@ describe('WalletService', () => {
       } as AddDelegatorProps
       await expect(async () => {
         await WalletService.createAddDelegatorTx(params)
-      }).rejects.toThrow('Staking duration too short')
+      }).rejects.toThrow('Stake duration too short')
     })
-    it('should throw if staking duration is less than 24 hours for Fuji', async () => {
+    it('should throw if stake duration is less than 24 hours for Fuji', async () => {
       const params = {
         nodeId: validNodeId,
         stakeAmountInNAvax: fujiValidStakeAmount,
@@ -127,7 +127,7 @@ describe('WalletService', () => {
       } as AddDelegatorProps
       await expect(async () => {
         await WalletService.createAddDelegatorTx(params)
-      }).rejects.toThrow('Staking duration too short')
+      }).rejects.toThrow('Stake duration too short')
     })
     it('should throw if reward address is not from P chain', async () => {
       const params = {
