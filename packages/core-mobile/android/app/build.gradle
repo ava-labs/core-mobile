@@ -127,6 +127,7 @@ android {
 
         release {
             minifyEnabled enableProguardInReleaseBuilds
+            signingConfig signingConfigs.debug
             proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
         }
 
@@ -145,9 +146,9 @@ android {
     flavorDimensions = ["version"]
 
     productFlavors {
-        internal {
-            applicationIdSuffix ".internal"
-        }
+        // internal {
+        //     applicationIdSuffix ".internal"
+        // }
         external {}
     }
 
