@@ -123,9 +123,9 @@ export const ListScreen = <T,>({
   useLayoutEffect(() => {
     if (headerRef.current) {
       // eslint-disable-next-line max-params
-      headerRef.current.measure((x, y, width, height) => {
-        contentHeaderHeight.value = height
-        setHeaderLayout({ x, y, width, height: height / 2 })
+      headerRef.current.measure((x, y, w, h) => {
+        contentHeaderHeight.value = h
+        setHeaderLayout({ x, y, width: w, height: h / 2 })
       })
     }
   }, [contentHeaderHeight])

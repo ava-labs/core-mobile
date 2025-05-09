@@ -39,6 +39,7 @@ const SelectMfaMethodScreen = (): JSX.Element => {
 
   return (
     <ScrollScreen
+      showNavigationHeaderTitle={false}
       title={`Verify recovery\nmethods`}
       navigationTitle="Verify recovery methods"
       subtitle="Verify your recovery method(s) to continue."

@@ -104,6 +104,7 @@ export const CreatePin = ({
 
   return (
     <ScrollScreen
+      showNavigationHeaderTitle={false}
       isModal={isModal}
       shouldAvoidKeyboard
       title={chosenPinEntered ? confirmPinTitle : newPinTitle}

@@ -11,10 +11,12 @@ import Logger from 'utils/Logger'
 
 export const VerifyCode = <T,>({
   onVerifyCode,
-  onVerifySuccess
+  onVerifySuccess,
+  showNavigationHeaderTitle
 }: {
   onVerifyCode: (code: string) => Promise<Result<T, TotpErrors>>
   onVerifySuccess: (response: T | Empty) => void
+  showNavigationHeaderTitle?: boolean
 }): React.JSX.Element => {
   const [code, setCode] = useState('')
   const [showError, setShowError] = useState(false)
@@ -93,6 +95,7 @@ export const VerifyCode = <T,>({
 
   return (
     <ScrollScreen
+      showNavigationHeaderTitle={showNavigationHeaderTitle}
       title="Verify code"
       shouldAvoidKeyboard
       subtitle="Enter the code generated from your authenticator app"
