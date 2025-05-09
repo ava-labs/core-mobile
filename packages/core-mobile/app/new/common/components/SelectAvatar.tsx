@@ -61,7 +61,8 @@ export const SelectAvatar = memo(
         subtitle={description}
         renderFooter={renderFooter}
         contentContainerStyle={{
-          padding: 16
+          padding: 16,
+          flex: 1
         }}>
         <View
           style={{
