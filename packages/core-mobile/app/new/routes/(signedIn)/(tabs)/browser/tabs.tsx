@@ -130,11 +130,11 @@ const TabsScreen = (): JSX.Element => {
       description: 'This will remove all of your active tabs',
       buttons: [
         {
-          text: 'Cancel',
-          style: 'cancel'
+          text: 'Cancel'
         },
         {
           text: 'Yes',
+          style: 'destructive',
           onPress: handleConfirmCloseAll
         }
       ]

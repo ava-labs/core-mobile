@@ -78,7 +78,6 @@ export const AlertWithTextInputs = forwardRef<
         ))}
         {buttons.map((button, index) => {
           const disabled = button.shouldDisable?.(values)
-          const bold = button.style === 'cancel'
 
           return (
             <Dialog.Button
@@ -91,7 +90,6 @@ export const AlertWithTextInputs = forwardRef<
                   ? 'red'
                   : undefined
               }
-              bold={bold}
               onPress={() => {
                 button.onPress?.(values)
                 setVisible(false)
