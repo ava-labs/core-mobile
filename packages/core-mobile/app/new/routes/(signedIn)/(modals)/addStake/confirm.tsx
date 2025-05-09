@@ -349,7 +349,7 @@ const StakeConfirmScreen = (): JSX.Element => {
           }}>
           <Icons.Action.Info color={theme.colors.$textPrimary} />
           <Text variant="body1" sx={{ flexShrink: 1, lineHeight: 20 }}>
-            By tapping "Confirm staking" you will lock your AVAX for the staking
+            By tapping "Confirm stake" you will lock your AVAX for the stake
             duration you selected
           </Text>
         </View>
@@ -361,7 +361,7 @@ const StakeConfirmScreen = (): JSX.Element => {
           {issueDelegationMutation.isPending ? (
             <ActivityIndicator />
           ) : (
-            'Confirm staking'
+            'Confirm stake'
           )}
         </Button>
         <Button
@@ -399,7 +399,7 @@ const StakeConfirmScreen = (): JSX.Element => {
   return (
     <ScrollScreen
       isModal
-      title={`That's it!\nReview your staking`}
+      title={`That's it!\nReview your stake`}
       navigationTitle="Review"
       renderFooter={renderFooter}
       contentContainerStyle={{ padding: 16 }}>

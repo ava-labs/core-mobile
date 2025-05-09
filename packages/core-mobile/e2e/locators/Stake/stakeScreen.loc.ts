@@ -19,7 +19,7 @@ export default {
   balanceTooltip: 'info_svg',
   balanceTooltipText: 'Final staking amount may be slightly lower due to fees',
   stakedAvaxText: 'Staked',
-  confirmationTitle: 'Confirm Staking',
+  confirmationTitle: 'Confirm Stake',
   claimableAvaxText: 'Claimable',
   claimableBalance: 'claimable_balance',
   stakeTitle: 'Stake',

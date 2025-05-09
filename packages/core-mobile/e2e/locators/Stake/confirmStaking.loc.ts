@@ -1,5 +1,5 @@
 export default {
-  confirmStakingTitle: 'Confirm Staking',
+  confirmStakingTitle: 'Confirm Stake',
   confirmStakingDescription:
     'By selecting “Stake Now”, you will lock your AVAX for the staking duration you selected.',
   avaLogo: 'ava_logo',
