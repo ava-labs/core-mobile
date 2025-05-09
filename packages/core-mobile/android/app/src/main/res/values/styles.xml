@@ -2,32 +2,46 @@
 
     <!-- Base application theme. -->
     <style name="AppTheme" parent="Theme.EdgeToEdge.Material3">
-        <!-- Customize your theme here. -->
+        <!-- Edge-to-edge support -->
         <item name="android:windowDrawsSystemBarBackgrounds">true</item>
-        <item name="android:editTextBackground">@drawable/rn_edit_text_material</item>
-        <item name="android:navigationBarColor">#000000</item>
-        <item name="android:colorBackground">#000000</item>
-        <item name="android:statusBarColor">#000000</item>
-         <!--style for react-native-coummunity/datetimepicker -->
-        <item name="android:datePickerDialogTheme">@style/MyDatePickerDialogTheme</item>
-        <item name="bottomNavigationStyle">@style/CustomBottomNavigationStyle</item>
-        <!-- style for react-native-edge-to-edge -->
+        <item name="android:navigationBarColor">@android:color/black</item>
+        <item name="android:statusBarColor">@android:color/black</item>
+        <item name="android:colorBackground">@android:color/black</item>
         <item name="enforceNavigationBarContrast">false</item>
+
+        <!-- React Native-specific -->
+        <item name="android:editTextBackground">@drawable/rn_edit_text_material</item>
+
+        <!-- Bottom navigation style -->
+        <item name="bottomNavigationStyle">@style/CustomBottomNavigationStyle</item>
+
+        <!-- Date Time picker dialog theme -->
+        <item name="android:datePickerDialogTheme">@style/AppTheme.DatePickerDialog</item>
+
+        <!-- Override the default tint color for dialog button text -->
+        <item name="android:colorPrimary">@color/neutral50</item>
+        <item name="colorPrimary">@color/neutral50</item>
     </style>
 
+    <!-- Bottom Tab style -->
     <style name="CustomBottomNavigationStyle" parent="Widget.Material3.BottomNavigationView">
         <item name="elevation">1dp</item>
         <item name="itemActiveIndicatorStyle">@null</item> <!--disable active indicator -->
         <item name="itemBackground">@null</item> <!--disable ripple effect -->
+        <!-- Reduce vertical spacing -->
+        <item name="itemPaddingTop">8dp</item>
+        <item name="itemPaddingBottom">12dp</item>
     </style>
 
-    <style name="MyDatePickerDialogTheme" parent="Theme.AppCompat.DayNight.Dialog">
+    <!-- Date picker dialog theme -->
+    <style name="AppTheme.DatePickerDialog" parent="Theme.Material3.DayNight.Dialog">
         <!--calender background color -->
         <item name="android:windowBackground">@color/neutral850</item>
         <!-- week textColor-->
         <item name="android:textColorSecondary">@color/neutral400</item>
         <!-- button text color -->
-        <item name="colorAccent">@color/neutral50</item> 
+        <item name="colorAccent">@color/neutral50</item>
+        <item name="colorPrimary">@color/neutral50</item>
         <!--selected item color-->
         <item name="colorControlActivated">@color/neutral50</item>
         <!-- primary text color -->
@@ -36,20 +50,19 @@
         <item name="android:textColorPrimaryInverse">@color/textPrimary</item>
         <!-- year-->
         <item name="android:textColorSecondaryInverse">@color/neutral400</item>
-         
-        <item name="android:datePickerStyle">@style/MyDatePickerStyle</item>
+        <!-- Date picker style -->
+        <item name="android:datePickerStyle">@style/AppTheme.MaterialCalendar</item>
     </style>
 
-    <style name="MyDatePickerStyle" parent="@android:style/Widget.Material.Light.DatePicker">
-        <!-- header backgrond color-->
+    <!-- Date picker widget style -->
+    <style name="AppTheme.MaterialCalendar" parent="Widget.Material3.MaterialCalendar">
         <item name="android:headerBackground">@color/white</item>
     </style>
 
-    <!-- BootTheme should inherit from Theme.BootSplash or Theme.BootSplash.EdgeToEdge -->
-    <style name="BootTheme" parent="Theme.BootSplash">
+    <!-- Boot splash theme -->
+    <style name="BootTheme" parent="Theme.BootSplash.EdgeToEdge">
         <item name="bootSplashBackground">@color/bootsplash_background</item>
         <item name="bootSplashLogo">@drawable/bootsplash_logo</item>
         <item name="postBootSplashTheme">@style/AppTheme</item>
     </style>
-
 </resources>
