@@ -89,7 +89,6 @@ export const MintNftScreen = (): ReactNode => {
     return (
       <View sx={{ gap: 16 }}>
         <Button
-          testID="manually_create_new_wallet_button"
           type="primary"
           size="large"
           disabled={isMinting}
@@ -97,7 +96,6 @@ export const MintNftScreen = (): ReactNode => {
           {isMinting ? <ActivityIndicator /> : 'Mint'}
         </Button>
         <Button
-          testID="accessExistingWallet"
           type="tertiary"
           size="large"
           disabled={isMinting}
