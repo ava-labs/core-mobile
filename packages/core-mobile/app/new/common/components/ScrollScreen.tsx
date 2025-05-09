@@ -144,7 +144,11 @@ export const ScrollScreen = ({
             }}>
             {title ? (
               <Animated.View style={[animatedHeaderStyle]}>
-                <ScreenHeader title={title ?? ''} titleSx={titleSx} />
+                <ScreenHeader
+                  title={title ?? ''}
+                  titleSx={titleSx}
+                  titleNumberOfLines={4}
+                />
               </Animated.View>
             ) : null}
 

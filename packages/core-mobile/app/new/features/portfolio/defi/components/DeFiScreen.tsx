@@ -18,8 +18,7 @@ import { ListRenderItemInfo, StyleSheet } from 'react-native'
 import Animated from 'react-native-reanimated'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { DeFiSimpleProtocol } from 'services/defi/types'
-import Logger from 'utils/Logger'
-import { openURL } from 'utils/openURL'
+import { useCoreBrowser } from 'common/hooks/useCoreBrowser'
 import { portfolioTabContentHeight } from '../../utils'
 import { useDeFiProtocols } from '../hooks/useDeFiProtocols'
 import { DeFiViewOption } from '../types'
@@ -29,6 +28,7 @@ const placeholderIcon = require('../../../../assets/icons/bar_chart_emoji.png')
 
 export const DeFiScreen = (): JSX.Element => {
   const { navigate } = useRouter()
+  const { openUrl } = useCoreBrowser()
   const {
     data,
     sort,
@@ -70,15 +70,17 @@ export const DeFiScreen = (): JSX.Element => {
 
   const handlePressDeFiItemArrow = useCallback(
     (item: DeFiSimpleProtocol): void => {
-      openURL(item.siteUrl)
+      if (item.siteUrl) {
+        openUrl({ url: item.siteUrl, title: item.name || '' })
+      }
       AnalyticsService.capture('DeFiCardLaunchButtonlicked')
     },
-    []
+    [openUrl]
   )
 
   const handleExplore = useCallback((): void => {
-    openURL('https://core.app/discover/').catch(Logger.error)
-  }, [])
+    openUrl({ url: 'https://core.app/discover/', title: 'Core Web' })
+  }, [openUrl])
 
   const emptyComponent = useMemo(() => {
     if (isLoading) {

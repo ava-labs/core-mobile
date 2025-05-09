@@ -95,7 +95,8 @@ export const ContactList = ({
                 <View
                   sx={{
                     justifyItems: 'center',
-                    justifyContent: 'center'
+                    justifyContent: 'center',
+                    width: '90%'
                   }}>
                   <Text
                     variant="buttonMedium"
