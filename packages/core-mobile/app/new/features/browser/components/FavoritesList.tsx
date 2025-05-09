@@ -1,3 +1,4 @@
+import { AnimatedPressable, usePressableGesture } from '@avalabs/k2-alpine'
 import { DropdownItem, DropdownMenu } from 'common/components/DropdownMenu'
 import {
   dismissAlertWithTextInput,
@@ -5,13 +6,9 @@ import {
 } from 'common/utils/alertWithTextInput'
 import { showSnackbar } from 'common/utils/toast'
 import React, { ReactNode, useCallback, useMemo, useState } from 'react'
-import {
-  FlatList,
-  FlatListProps,
-  ListRenderItem,
-  TouchableOpacity,
-  View
-} from 'react-native'
+import { FlatList, FlatListProps, ListRenderItem, View } from 'react-native'
+import { Gesture, GestureDetector } from 'react-native-gesture-handler'
+import Animated from 'react-native-reanimated'
 import { useDispatch, useSelector } from 'react-redux'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { addHistoryForActiveTab, Favorite } from 'store/browser'
@@ -60,13 +57,13 @@ export const FavoritesList = (
           style={{
             width: '25%'
           }}>
-          <TouchableOpacity onPress={() => onPress(item)}>
+          <AnimatedPressable onPress={() => onPress(item)}>
             <BrowserItem
               type="grid"
               title={item.title.length ? item.title : item.url}
               image={image}
             />
-          </TouchableOpacity>
+          </AnimatedPressable>
         </View>
       )
     }
@@ -215,25 +212,38 @@ const FavoriteItem = ({
     }
     setTimeout(() => {
       setIsLongPressActive(false)
-    }, 100)
+    }, 300)
   }, [isLongPressActive, onPress, item])
 
   const handleLongPress = useCallback(() => {
     setIsLongPressActive(true)
   }, [])
 
-  const handlePressOut = useCallback(() => {
-    setTimeout(() => {
-      setIsLongPressActive(false)
-    }, 100)
-  }, [])
+  const {
+    animatedStyle,
+    onTouchStart,
+    onTouchEnd,
+    onTouchMove,
+    onTouchCancel
+  } = usePressableGesture(handleLongPress)
+
+  const tapGesture = Gesture.Tap()
+    .numberOfTaps(1)
+    .onTouchesUp(handlePress)
+    .runOnJS(true)
+
+  const longPressGesture = Gesture.LongPress()
+    .minDuration(500)
+    .onTouchesDown(onTouchStart)
+    .onTouchesMove(onTouchMove)
+    .onTouchesUp(onTouchEnd)
+    .onTouchesCancelled(onTouchCancel)
+    .runOnJS(true)
+
+  const composedGesture = Gesture.Simultaneous(tapGesture, longPressGesture)
 
   return (
-    <TouchableOpacity
-      onPress={handlePress}
-      onLongPress={handleLongPress}
-      onPressOut={handlePressOut}
-      delayLongPress={200}>
+    <GestureDetector gesture={composedGesture}>
       <DropdownMenu
         groups={[
           {
@@ -244,13 +254,15 @@ const FavoriteItem = ({
         disabled={!isLongPressActive}
         onPressAction={onPressAction}
         triggerAction="longPress">
-        <BrowserItem
-          type="grid"
-          title={item.title.length ? item.title : item.url}
-          isFavorite
-          image={image}
-        />
+        <Animated.View style={animatedStyle}>
+          <BrowserItem
+            type="grid"
+            title={item.title.length ? item.title : item.url}
+            isFavorite
+            image={image}
+          />
+        </Animated.View>
       </DropdownMenu>
-    </TouchableOpacity>
+    </GestureDetector>
   )
 }
