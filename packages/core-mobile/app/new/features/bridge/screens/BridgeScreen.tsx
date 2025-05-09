@@ -244,7 +244,7 @@ export const BridgeScreen = (): JSX.Element => {
         showAlert({
           title: 'Error',
           description: getJsonRpcErrorMessage(transferError),
-          buttons: [{ text: 'OK', style: 'cancel' }]
+          buttons: [{ text: 'Got it' }]
         })
         Logger.error('[Bridge error]', transferError)
         AnalyticsService.capture('BridgeTransferRequestError', {
@@ -269,7 +269,7 @@ export const BridgeScreen = (): JSX.Element => {
       showAlert({
         title: 'Error Bridging',
         description: errorMessage,
-        buttons: [{ text: 'OK', style: 'cancel' }]
+        buttons: [{ text: 'Got it' }]
       })
       AnalyticsService.capture('BridgeTokenSelectError', {
         errorMessage

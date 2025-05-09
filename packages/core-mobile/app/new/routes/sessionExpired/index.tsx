@@ -88,8 +88,7 @@ const SessionExpiredScreen = (): React.JSX.Element => {
                 'Please log in with the email address you used when you created your wallet.',
               buttons: [
                 {
-                  text: 'OK',
-                  style: 'cancel'
+                  text: 'Got it'
                 }
               ]
             })

@@ -49,11 +49,11 @@ export const AdvancedField = ({
       description: 'This action can’t be undone',
       buttons: [
         {
-          text: 'Cancel',
-          style: 'cancel'
+          text: 'Cancel'
         },
         {
           text: 'Delete',
+          style: 'destructive',
           onPress: () => onUpdate(id, undefined)
         }
       ]

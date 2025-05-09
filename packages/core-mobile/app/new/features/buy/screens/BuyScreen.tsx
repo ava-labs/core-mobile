@@ -137,16 +137,18 @@ export const BuyScreen: FC = () => {
         onPress: () => onPaySelection(Provider.COINBASE),
         rightIcon: <Icons.Custom.Outbound color={theme.colors.$textPrimary} />,
         leftIcon: (
-          <Logos.PartnerLogos.CoinbasePay
-            accessibilityRole="image"
-            testID="coinbasePay_logo"
-            width={LOGO_SIZE}
-            height={LOGO_SIZE}
+          <View
             style={{
               borderRadius: 100,
               overflow: 'hidden'
-            }}
-          />
+            }}>
+            <Logos.PartnerLogos.CoinbasePay
+              accessibilityRole="image"
+              testID="coinbasePay_logo"
+              width={LOGO_SIZE}
+              height={LOGO_SIZE}
+            />
+          </View>
         )
       })
     }
@@ -157,16 +159,18 @@ export const BuyScreen: FC = () => {
       onPress: () => onPaySelection(Provider.MOONPAY),
       rightIcon: <Icons.Custom.Outbound color={theme.colors.$textPrimary} />,
       leftIcon: (
-        <Logos.PartnerLogos.Moonpay
-          accessibilityRole="image"
-          testID="moonPay_logo"
-          width={LOGO_SIZE}
-          height={LOGO_SIZE}
+        <View
           style={{
             borderRadius: 100,
             overflow: 'hidden'
-          }}
-        />
+          }}>
+          <Logos.PartnerLogos.Moonpay
+            accessibilityRole="image"
+            testID="moonPay_logo"
+            width={LOGO_SIZE}
+            height={LOGO_SIZE}
+          />
+        </View>
       )
     })
 
@@ -177,16 +181,18 @@ export const BuyScreen: FC = () => {
         onPress: () => onPaySelection(Provider.HALLIDAY),
         rightIcon: <Icons.Custom.Outbound color={theme.colors.$textPrimary} />,
         leftIcon: (
-          <Logos.PartnerLogos.Halliday
-            testID="halliday_logo"
-            accessibilityRole="image"
-            width={LOGO_SIZE}
-            height={LOGO_SIZE}
+          <View
             style={{
               borderRadius: 100,
               overflow: 'hidden'
-            }}
-          />
+            }}>
+            <Logos.PartnerLogos.Halliday
+              testID="halliday_logo"
+              accessibilityRole="image"
+              width={LOGO_SIZE}
+              height={LOGO_SIZE}
+            />
+          </View>
         )
       })
     }

@@ -27,11 +27,11 @@ const ContactDetailScreen = (): React.JSX.Element => {
         description,
         buttons: [
           {
-            text: 'Cancel',
-            style: 'cancel'
+            text: 'Cancel'
           },
           {
             text: buttonText,
+            style: 'destructive',
             onPress: () => {
               dispatch(removeContact(contactId))
               canGoBack() && back()

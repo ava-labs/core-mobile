@@ -16,13 +16,12 @@ const SeedlessExportNotInitiatedScreen = (): JSX.Element => {
       description: getWaitingPeriodDescription(),
       buttons: [
         {
+          text: 'Cancel'
+        },
+        {
           text: 'Next',
           style: 'default',
           onPress: () => initExport().catch(Logger.error)
-        },
-        {
-          text: 'Cancel',
-          style: 'cancel'
         }
       ]
     })

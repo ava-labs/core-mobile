@@ -62,12 +62,12 @@ const ClaimStakeRewardScreen = (): JSX.Element => {
         'Your transaction failed due to network issues. Would you like to try again?',
       buttons: [
         {
-          text: 'Try again',
-          onPress: issueClaimRewards
-        },
-        {
           text: 'Cancel',
           onPress: back
+        },
+        {
+          text: 'Try again',
+          onPress: issueClaimRewards
         }
       ]
     })
@@ -168,7 +168,7 @@ const ClaimStakeRewardScreen = (): JSX.Element => {
       showAlert({
         title: 'No claimable balance',
         description: 'You have no balance available for claiming.',
-        buttons: [{ text: 'Go back', style: 'cancel', onPress: back }]
+        buttons: [{ text: 'Go back', onPress: back }]
       })
     }
   }, [data, back])

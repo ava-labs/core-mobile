@@ -59,8 +59,8 @@ export const DeFiGridView = ({
                 numberOfLines={1}>
                 {formattedPrice}
               </Text>
-              <View onTouchStart={e => e.stopPropagation()} hitSlop={20}>
-                <TouchableOpacity onPress={onPressArrow} hitSlop={20}>
+              <View onTouchStart={e => e.stopPropagation()} hitSlop={50}>
+                <TouchableOpacity onPress={onPressArrow} hitSlop={50}>
                   <Icons.Custom.Outbound color={theme.colors.$textPrimary} />
                 </TouchableOpacity>
               </View>

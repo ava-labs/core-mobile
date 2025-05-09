@@ -208,14 +208,14 @@ const StakeConfirmScreen = (): JSX.Element => {
       description: 'Your stake setup will not go through if you close now',
       buttons: [
         {
+          text: 'Back'
+        },
+        {
           text: 'Cancel',
+          style: 'destructive',
           onPress: () => {
             handleDismiss()
           }
-        },
-        {
-          text: 'Back',
-          style: 'cancel'
         }
       ]
     })
@@ -263,15 +263,15 @@ const StakeConfirmScreen = (): JSX.Element => {
         'Your stake failed due to network issues. Would you like to keep trying to stake your funds?',
       buttons: [
         {
-          text: 'Try again',
-          onPress: () => {
-            issueDelegation(true)
-          }
-        },
-        {
           text: 'Cancel stake',
           onPress: () => {
             handleDismiss()
+          }
+        },
+        {
+          text: 'Try again',
+          onPress: () => {
+            issueDelegation(true)
           }
         }
       ]
@@ -298,12 +298,12 @@ const StakeConfirmScreen = (): JSX.Element => {
           'Core was unable to find a node that matches your requirements. Please start over or try again later',
         buttons: [
           {
-            text: 'Start over',
-            onPress: handleStartOver
-          },
-          {
             text: 'Cancel',
             onPress: handleDismiss
+          },
+          {
+            text: 'Start over',
+            onPress: handleStartOver
           }
         ]
       })
