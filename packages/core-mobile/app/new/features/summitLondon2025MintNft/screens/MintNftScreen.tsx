@@ -41,7 +41,6 @@ export const MintNftScreen = (): ReactNode => {
 
   const handleSuccess = useCallback(() => {
     back()
-    confetti.restart()
     navigate({
       // @ts-ignore TODO: make routes typesafe
       pathname: '/portfolio',
