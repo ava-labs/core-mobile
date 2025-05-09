@@ -16,6 +16,7 @@ import {
   TextInput,
   TextInputSubmitEditingEventData
 } from 'react-native'
+import { Gesture, GestureDetector } from 'react-native-gesture-handler'
 import Animated, {
   interpolateColor,
   SharedValue,
@@ -211,34 +212,47 @@ export const BrowserInput = ({
     }
   })
 
-  const boxShadowColor = alpha(theme.colors.$black, 0.25)
-
   const wrapperStyle = useAnimatedStyle(() => {
-    // TODO make this a separate div and control it's opacity
-    if (isFocused.value)
-      return {
-        boxShadow: [
-          {
-            offsetX: 0,
-            offsetY: 5,
-            blurRadius: 15,
-            spreadDistance: 0,
-            color: boxShadowColor,
-            inset: false
-          }
-        ]
-      }
-    return {}
+    return {
+      opacity: withTiming(isFocused.value ? 1 : 0, ANIMATED.TIMING_CONFIG)
+    }
   })
+
+  const onClearGesture = Gesture.Tap()
+    .onEnd(() => {
+      onClear()
+    })
+    .runOnJS(true)
 
   return (
     <Animated.View
-      style={[
-        wrapperStyle,
-        {
-          borderRadius: 100
-        }
-      ]}>
+      style={{
+        borderRadius: 100
+      }}>
+      <Animated.View
+        style={[
+          wrapperStyle,
+          {
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            borderRadius: 100,
+            boxShadow: [
+              {
+                offsetX: 0,
+                offsetY: 5,
+                blurRadius: 15,
+                spreadDistance: 0,
+                color: alpha(theme.colors.$black, 0.25),
+                inset: false
+              }
+            ]
+          }
+        ]}
+      />
+
       <View
         style={{
           height: INPUT_HEIGHT,
@@ -246,7 +260,6 @@ export const BrowserInput = ({
           overflow: 'hidden'
         }}>
         <Animated.View
-          // pointerEvents={isFocused ? 'auto' : 'none'}
           style={[
             inputStyle,
             {
@@ -279,17 +292,18 @@ export const BrowserInput = ({
             ]}
           />
           {urlEntry?.length > 0 && (
-            <Pressable
-              onPress={onClear}
-              style={{
-                height: '100%',
-                justifyContent: 'center',
-                alignItems: 'center',
-                opacity: 1,
-                paddingHorizontal: 12
-              }}>
-              <Icons.Action.Clear color={theme.colors.$textSecondary} />
-            </Pressable>
+            <GestureDetector gesture={onClearGesture}>
+              <View
+                style={{
+                  height: '100%',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  opacity: 1,
+                  paddingHorizontal: 12
+                }}>
+                <Icons.Action.Clear color={theme.colors.$textSecondary} />
+              </View>
+            </GestureDetector>
           )}
         </Animated.View>
 
