@@ -29,7 +29,6 @@ export const RecoveryPhrase = ({
       buttons: [
         {
           text: 'Dismiss',
-          style: 'cancel',
           onPress: onNext
         }
       ]

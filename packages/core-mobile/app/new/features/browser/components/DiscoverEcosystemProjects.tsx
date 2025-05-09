@@ -1,7 +1,8 @@
 import { Icons, Pressable, SCREEN_WIDTH, useTheme } from '@avalabs/k2-alpine'
 import { ErrorState } from 'common/components/ErrorState'
 import React, { ReactNode, useCallback, useMemo } from 'react'
-import { FlatList, ListRenderItem, View } from 'react-native'
+import { ListRenderItem, View } from 'react-native'
+import { FlatList } from 'react-native-gesture-handler'
 import { useDispatch, useSelector } from 'react-redux'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { addHistoryForActiveTab, selectIsTabEmpty } from 'store/browser'
@@ -103,6 +104,7 @@ export const DiscoverEcosystemProjects = (): ReactNode => {
         renderItem={renderItem}
         keyExtractor={item => item.name}
         showsHorizontalScrollIndicator={false}
+        nestedScrollEnabled
         contentContainerStyle={{
           paddingHorizontal: HORIZONTAL_MARGIN,
           paddingVertical: 36,

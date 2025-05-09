@@ -69,8 +69,7 @@ export const RecentContacts = ({
           description: 'Please enter a valid address',
           buttons: [
             {
-              text: 'Dismiss',
-              style: 'cancel'
+              text: 'Dismiss'
             }
           ]
         })

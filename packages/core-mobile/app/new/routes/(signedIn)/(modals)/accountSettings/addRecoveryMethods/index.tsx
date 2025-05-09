@@ -35,12 +35,12 @@ const ManageRecoveryMethodsScreen = (): JSX.Element => {
         'You will no longer be able to use this authenticator once your switch. You can always re-add an authenticator app.',
       buttons: [
         {
+          text: 'Cancel'
+        },
+
+        {
           text: 'Change',
           onPress: totpResetInit
-        },
-        {
-          text: 'Cancel',
-          style: 'cancel'
         }
       ]
     })
@@ -55,8 +55,7 @@ const ManageRecoveryMethodsScreen = (): JSX.Element => {
             'You need at least one recovery method to be able to recover your account.',
           buttons: [
             {
-              text: 'OK',
-              style: 'cancel'
+              text: 'Got it'
             }
           ]
         })
@@ -67,14 +66,15 @@ const ManageRecoveryMethodsScreen = (): JSX.Element => {
         description: 'Are you sure you want to remove this recovery method?',
         buttons: [
           {
+            text: 'Cancel'
+          },
+
+          {
             text: 'Remove',
+            style: 'destructive',
             onPress: () => {
               fidoDelete(mfaId)
             }
-          },
-          {
-            text: 'Cancel',
-            style: 'cancel'
           }
         ]
       })

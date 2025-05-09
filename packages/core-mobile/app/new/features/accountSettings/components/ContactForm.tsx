@@ -43,7 +43,6 @@ export const ContactForm = ({
       buttons: [
         {
           text: 'Cancel',
-          style: 'cancel',
           onPress: dismissAlertWithTextInput
         },
         {
@@ -80,11 +79,11 @@ export const ContactForm = ({
           description: 'This action can’t be undone',
           buttons: [
             {
-              text: 'Cancel',
-              style: 'cancel'
+              text: 'Cancel'
             },
             {
               text: 'Delete',
+              style: 'destructive',
               onPress: () => onUpdate(updatedContact)
             }
           ]

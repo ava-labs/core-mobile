@@ -41,7 +41,6 @@ export const SlippageInput = ({
       buttons: [
         {
           text: 'Cancel',
-          style: 'cancel',
           onPress: dismissAlertWithTextInput
         },
         {

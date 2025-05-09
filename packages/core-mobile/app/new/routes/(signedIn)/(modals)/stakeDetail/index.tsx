@@ -184,7 +184,7 @@ const StakeDetailScreen = (): React.JSX.Element => {
     <ScrollScreen
       title={title}
       navigationTitle="Stake detail"
-      contentContainerStyle={{ padding: 16, flex: 1 }}>
+      contentContainerStyle={{ padding: 16 }}>
       <View sx={{ marginTop: 24, gap: 12 }}>
         {groupListSections.map((section, index) => (
           <GroupList
