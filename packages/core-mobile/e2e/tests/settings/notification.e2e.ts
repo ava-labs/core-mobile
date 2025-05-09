@@ -5,7 +5,7 @@ import settingsPage from '../../pages/settings.page'
 describe('Settings - Notifications', () => {
   
   const notiData = {
-    'Stake': 'Staking complete alerts',
+    'Stake': 'Stake complete alerts',
     'Balance': 'Wallet balance change alerts',
     'Product Announcements': 'Learn about new features and changes',
     'Market News': 'News and market information alerts',

@@ -19,7 +19,7 @@ import {
 } from './utils'
 
 const INSUFFICIENT_BALANCE_ERROR = new Error(
-  'Insufficient balance for the staking amount and fees.\nKindly adjust the amount accordingly.'
+  'Insufficient balance for the stake amount and fees.\nKindly adjust the amount accordingly.'
 )
 
 export const computeDelegationSteps = async ({
