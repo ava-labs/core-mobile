@@ -374,8 +374,7 @@ export const AddEditNetworkScreen = (): JSX.Element => {
         renderFooter={renderFooter}
         contentContainerStyle={{
           padding: 16,
-          gap: 40,
-          flex: 1
+          gap: 40
         }}>
         <View sx={{ alignItems: 'center', gap: 24 }}>
           {formState.logoUri ? (
