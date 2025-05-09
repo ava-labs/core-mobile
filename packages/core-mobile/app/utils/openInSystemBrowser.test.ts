@@ -1,4 +1,4 @@
-import { openURL } from './openURL'
+import { openInSystemBrowser } from './openInSystemBrowser'
 
 const mockCanOpenURL = jest.fn()
 const mockOpenURL = jest.fn()
@@ -7,7 +7,7 @@ jest.mock('react-native/Libraries/Linking/Linking', () => ({
   canOpenURL: mockCanOpenURL
 }))
 
-describe('openURL', () => {
+describe('openInSystemBrowser', () => {
   beforeEach(() => {
     jest.clearAllMocks()
   })
@@ -15,15 +15,15 @@ describe('openURL', () => {
   it('should have called Linking.openURL', async () => {
     mockCanOpenURL.mockResolvedValueOnce(true)
     const url = 'https://core.app'
-    await openURL(url)
+    await openInSystemBrowser(url)
     expect(mockOpenURL).toHaveBeenCalledWith(url)
   })
   it('should not have called Linking.openURL when url is undefined', async () => {
-    await openURL(undefined)
+    await openInSystemBrowser(undefined)
     expect(mockOpenURL).not.toHaveBeenCalled()
   })
   it('should not have called Linking.openURL when url is invalid url', async () => {
-    await openURL('https://____coreeee____.app/')
+    await openInSystemBrowser('https://____coreeee____.app/')
     expect(mockOpenURL).not.toHaveBeenCalled()
   })
 })
