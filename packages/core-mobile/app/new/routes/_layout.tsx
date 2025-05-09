@@ -103,6 +103,7 @@ export default function Root(): JSX.Element | null {
                 }}
               />
               <Stack.Screen name="forgotPin" options={{ headerShown: true }} />
+              <Stack.Screen name="+not-found" />
               <Stack.Screen name="onboarding" />
               <Stack.Screen
                 name="sessionExpired"
