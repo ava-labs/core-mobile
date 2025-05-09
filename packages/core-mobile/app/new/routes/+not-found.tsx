@@ -1,16 +1,10 @@
-import { useRouter } from 'expo-router'
-import { useEffect } from 'react'
+import { Redirect } from 'expo-router'
+import React from 'react'
 
 // This component is used to redirect to the portfolio screen when the user tries to access a non-existing route.
 const NotFoundRedirect = (): null => {
-  const router = useRouter()
-
-  useEffect(() => {
-    // @ts-ignore TODO: make routes typesafe
-    router.replace('/portfolio')
-  }, [router])
-
-  return null
+  // @ts-ignore TODO: make routes typesafe
+  return <Redirect href="/portoflio" />
 }
 
 export default NotFoundRedirect
