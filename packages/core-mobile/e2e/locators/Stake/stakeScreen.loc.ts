@@ -63,7 +63,7 @@ export default {
   stakedAmountId: 'staked_amount',
   endDateId: 'end_date',
   earnedRewardsId: 'earned_rewards',
-  stakingSuccessful: 'Staking successful!',
+  stakingSuccessful: 'Stake successful!',
   customRadio: 'Custom',
   customInput: 'custom_network_fee_input',
   customSaveBtn: 'custom_network_fee_save_btn',

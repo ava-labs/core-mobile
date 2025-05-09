@@ -204,7 +204,7 @@ const ClaimStakeRewardScreen = (): JSX.Element => {
 
   return (
     <ScrollScreen
-      title="Claim your staking reward"
+      title="Claim your stake reward"
       isModal
       renderFooter={renderFooter}
       shouldAvoidKeyboard

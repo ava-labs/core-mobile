@@ -6,7 +6,7 @@ export default {
   networkFeeItem: 'network_fee',
   networkFeeText: 'Estimated Network Fee',
   stakingFeeItem: 'staking_fee',
-  stakingFeeText: 'Staking Fee',
+  stakingFeeText: 'Stake Fee',
   timeToUnlockText: 'Time to Unlock',
   estimatedRewardText: 'Estimated Reward',
   stakedAmnountText: 'Staked Amount',

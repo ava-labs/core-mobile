@@ -101,7 +101,7 @@ const StakeAmountScreen = (): JSX.Element => {
       )
     } else if (notEnoughBalance) {
       setError(
-        new Error('The specified staking amount exceeds the available balance')
+        new Error('The specified stake amount exceeds the available balance')
       )
     } else {
       setError(null)

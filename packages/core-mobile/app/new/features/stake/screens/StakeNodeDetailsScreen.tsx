@@ -85,10 +85,10 @@ export const StakeNodeDetails = (): JSX.Element => {
         }
       },
       {
-        title: 'Staking fee',
+        title: 'Stake fee',
         rightIcon: (
           <Tooltip
-            title="Staking fee"
+            title="Stake fee"
             description="Fee set and retained by the validator"
           />
         ),
