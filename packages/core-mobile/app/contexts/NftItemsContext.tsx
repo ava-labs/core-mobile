@@ -19,7 +19,7 @@ import {
   NftLocalId,
   NftItem
 } from 'services/nft/types'
-import { getTokenUri } from 'services/nft/utils'
+import { getTokenUri, sortNftsByDateUpdated } from 'services/nft/utils'
 import { selectHiddenNftLocalIds } from 'store/nft/slice'
 import { isPositiveNumber } from 'utils/isPositiveNumber/isPositiveNumber'
 import Logger from 'utils/Logger'
@@ -221,9 +221,11 @@ export const NftMetadataProvider = ({
   )
 
   const filteredNftItems = useMemo(() => {
-    return nftItems.filter(value => {
-      return !hiddenNfts[value.localId]
-    })
+    return nftItems
+      .filter(value => {
+        return !hiddenNfts[value.localId]
+      })
+      .sort(sortNftsByDateUpdated)
   }, [hiddenNfts, nftItems])
 
   useEffect(() => {

@@ -32,7 +32,8 @@ export const ACTIONS = {
   WC: 'wc',
   StakeComplete: StakeActions.StakeComplete,
   Portfolio: 'portfolio',
-  WatchList: 'watchlist'
+  WatchList: 'watchlist',
+  SummitLondon2025: 'summitLondon2025'
 }
 
 export type NotificationData = { [p: string]: string | number | object }

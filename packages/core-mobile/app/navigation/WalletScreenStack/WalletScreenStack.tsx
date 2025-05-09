@@ -183,6 +183,7 @@ export type WalletScreenStackParams = {
     onSuccess: (data: string) => void
     onCancel?: () => void
   }
+  [AppNavigation.Modal.SummitLondon2025]: undefined
 }
 
 const WalletScreenS = createStackNavigator<WalletScreenStackParams>()

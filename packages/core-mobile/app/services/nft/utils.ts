@@ -59,3 +59,22 @@ export const getNftTitle = (nftItem: NftItem): string => {
 export const getNftImage = (nftItem: NftItem): string | undefined => {
   return nftItem.imageData?.image
 }
+
+export const sortNftsByDateUpdated = (a: NftItem, b: NftItem): number => {
+  const aTS = a.metadata?.lastUpdatedTimestamp
+  const bTS = b.metadata?.lastUpdatedTimestamp
+
+  if (aTS !== undefined && bTS !== undefined) {
+    return bTS - aTS
+  }
+
+  if (aTS !== undefined) {
+    return -1
+  }
+
+  if (bTS !== undefined) {
+    return 1
+  }
+
+  return 0
+}

@@ -34,6 +34,7 @@ import TransactionDataScreen from 'screens/rpc/components/v2/TransactionDataScre
 import EnableNotificationsModal from 'screens/notifications/EnableNotificationsModal'
 import QRScannerScreen from 'screens/shared/QRScannerScreen'
 import { MainHeaderOptions } from 'navigation/NavUtils'
+import { MintNftScreen } from 'screens/summitLondon2025/MintNftScreen'
 import { SignOutModalScreen, WalletScreenSType } from './WalletScreenStack'
 
 export const createModals = (WalletScreenS: WalletScreenSType): JSX.Element => {
@@ -102,6 +103,10 @@ export const createModals = (WalletScreenS: WalletScreenSType): JSX.Element => {
           component={CoreIntroModal}
         />
       </WalletScreenS.Group>
+      <WalletScreenS.Screen
+        name={AppNavigation.Modal.SummitLondon2025}
+        component={MintNftScreen}
+      />
     </WalletScreenS.Group>
   )
 

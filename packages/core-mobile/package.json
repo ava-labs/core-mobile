@@ -16,7 +16,7 @@
     "postinstall": "node ${PROJECT_CWD}/scripts/generate-metro-monorepo-config.js; node_modules/.bin/patch-package; node_modules/.bin/rn-nodeify --install events,stream,vm,assert,https,http,os,zlib,path,fs --hack; yarn run gen:contracts",
     "storybook-generate": "sb-rn-get-stories --v6-store",
     "storybook-watch": "sb-rn-watcher",
-    "gen:contracts": "typechain --target=ethers-v6 --out-dir app/contracts/openzeppelin ./node_modules/@openzeppelin/contracts/build/contracts/ERC20.json ./node_modules/@openzeppelin/contracts/build/contracts/ERC721.json ./node_modules/@openzeppelin/contracts/build/contracts/ERC1155.json",
+    "gen:contracts": "typechain --target=ethers-v6 --out-dir app/contracts/openzeppelin ./node_modules/@openzeppelin/contracts/build/contracts/ERC20.json ./node_modules/@openzeppelin/contracts/build/contracts/ERC721.json ./node_modules/@openzeppelin/contracts/build/contracts/ERC1155.json && typechain --target=ethers-v6 --out-dir app/contracts/summitLondon2025 app/screens/summitLondon2025/CoreSummitNft.json",
     "gen:glacierApi": "npx openapi-zod-client 'https://glacier-api-dev.avax.network/api-json' -o './app/utils/network/glacierApi.client.ts'"
   },
   "dependencies": {

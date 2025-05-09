@@ -200,7 +200,8 @@ enum ModalScreens {
   UseWalletConnect = 'ModalScreens.UseWalletConnect',
   AlertScreen = 'ModalScreens.AlertScreen',
   EnableNotificationsPrompt = 'ModalScreens.EnableNotificationsPrompt',
-  QRScanner = 'ModalScreens.QRScanner'
+  QRScanner = 'ModalScreens.QRScanner',
+  SummitLondon2025 = 'ModalScreens.SummitLondon2025'
 }
 
 enum SendScreens {
