@@ -49,7 +49,7 @@ describe('computeDelegationSteps', () => {
     ;(getCChainBalance as jest.Mock).mockResolvedValue({ balance: 0 })
 
     await expect(computeDelegationSteps(defaultParams)).rejects.toThrow(
-      'Insufficient balance for the staking amount and fees.'
+      'Insufficient balance for the stake amount and fees.'
     )
   })
 
