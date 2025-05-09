@@ -18,6 +18,7 @@ export default function VerifyCode(): JSX.Element {
 
   return (
     <VerifyCodeComponent
+      showNavigationHeaderTitle={false}
       onVerifyCode={onVerifyCode}
       onVerifySuccess={onVerifySuccess}
     />

@@ -17,6 +17,7 @@ export const TermsAndConditions = ({
 
   return (
     <ScrollScreen
+      showNavigationHeaderTitle={false}
       title="Terms and conditions"
       contentContainerStyle={{ padding: 16 }}
       renderFooter={renderFooter}>

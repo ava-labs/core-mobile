@@ -31,6 +31,7 @@ export const AddRecoveryMethods = ({
 
   return (
     <ScrollScreen
+      showNavigationHeaderTitle={false}
       title="Add a recovery method"
       subtitle="Add recovery methods to securely restore access in case you lose your credentials."
       renderFooter={renderFooter}

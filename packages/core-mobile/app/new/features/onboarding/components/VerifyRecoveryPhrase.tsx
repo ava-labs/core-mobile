@@ -134,6 +134,7 @@ export const VerifyRecoveryPhrase = ({
 
   return (
     <ScrollScreen
+      showNavigationHeaderTitle={false}
       title="Verify your recovery phrase"
       subtitle={`Select the words below to verify your\nrecover phrase`}
       renderFooter={renderFooter}

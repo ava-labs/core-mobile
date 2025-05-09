@@ -56,6 +56,7 @@ export const SelectAvatar = memo(
 
     return (
       <ScrollScreen
+        showNavigationHeaderTitle={false}
         title={title}
         subtitle={description}
         renderFooter={renderFooter}
