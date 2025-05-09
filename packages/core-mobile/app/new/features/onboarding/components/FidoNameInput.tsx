@@ -32,6 +32,7 @@ const FidoNameInput = ({
 
   return (
     <ScrollScreen
+      showNavigationHeaderTitle={false}
       isModal={isModal}
       title={title}
       subtitle={description}

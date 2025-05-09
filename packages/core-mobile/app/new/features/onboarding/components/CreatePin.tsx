@@ -104,10 +104,10 @@ export const CreatePin = ({
 
   return (
     <ScrollScreen
+      showNavigationHeaderTitle={false}
       isModal={isModal}
       shouldAvoidKeyboard
       title={chosenPinEntered ? confirmPinTitle : newPinTitle}
-      navigationTitle={chosenPinEntered ? confirmPinTitle : newPinTitle}
       contentContainerStyle={{ padding: 16, flex: 1 }}
       renderFooter={
         !chosenPinEntered && isBiometricAvailable

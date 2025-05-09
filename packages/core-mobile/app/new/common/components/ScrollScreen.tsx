@@ -65,6 +65,8 @@ interface ScrollScreenProps extends KeyboardAwareScrollViewProps {
   renderHeaderRight?: () => React.ReactNode
   /** The distance between keyboard and focused TextInput when keyboard is shown. Default is 0. */
   bottomOffset?: number
+  /** Whether this screen should show navigation title when scroll. Default is true. */
+  showNavigationHeaderTitle?: boolean
 }
 
 export const ScrollScreen = ({
@@ -79,6 +81,7 @@ export const ScrollScreen = ({
   renderHeader,
   renderFooter,
   renderHeaderRight,
+  showNavigationHeaderTitle = true,
   ...props
 }: ScrollScreenProps): JSX.Element => {
   const insets = useSafeAreaInsets()
@@ -96,7 +99,8 @@ export const ScrollScreen = ({
       targetLayout: headerLayout,
       shouldHeaderHaveGrabber: isModal,
       hasParent,
-      renderHeaderRight
+      renderHeaderRight,
+      showNavigationHeaderTitle
     }
   )
 
