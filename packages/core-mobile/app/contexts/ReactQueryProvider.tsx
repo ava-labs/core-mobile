@@ -81,7 +81,7 @@ export const ReactQueryProvider: React.FC<PropsWithChildren> = ({
   }, [])
 
   // refetch networks on app unlock or developer mode toggle
-  useNetworksListener()
+  useNetworksListener(queryClient)
 
   // refetch watchlist on developer mode toggle or watchlist fetch
   useWatchlistListener()

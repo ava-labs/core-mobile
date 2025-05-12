@@ -13,7 +13,7 @@ export const defaultNetwork = BITCOIN_NETWORK
 
 export const noActiveNetwork = 0
 
-export const alwaysEnabledNetworks = [
+export const alwaysEnabledChainIds = [
   ChainsSDKChainId.AVALANCHE_MAINNET_ID,
   ChainsSDKChainId.AVALANCHE_TESTNET_ID,
   ChainsSDKChainId.AVALANCHE_P,
@@ -28,7 +28,7 @@ export const reducerName = 'network'
 
 const initialState: NetworkState = {
   customNetworks: {},
-  enabledChainIds: alwaysEnabledNetworks,
+  enabledChainIds: alwaysEnabledChainIds,
   disabledLastTransactedChainIds: [],
   active: noActiveNetwork
 }
@@ -46,7 +46,7 @@ export const networkSlice = createSlice({
         // set enabledChainIds
         state.enabledChainIds.push(chainId)
       } else {
-        if (alwaysEnabledNetworks.includes(chainId)) {
+        if (alwaysEnabledChainIds.includes(chainId)) {
           return
         }
         // unset enabledChainIds
@@ -63,7 +63,7 @@ export const networkSlice = createSlice({
         // set disabledLastTransactedChainIds
         state.disabledLastTransactedChainIds.push(chainId)
       } else {
-        if (alwaysEnabledNetworks.includes(chainId)) {
+        if (alwaysEnabledChainIds.includes(chainId)) {
           return
         }
         // unset disabledLastTransactedChainIds
@@ -190,8 +190,8 @@ export const selectIsTestnet = (chainId: number) => (state: RootState) => {
   return network?.isTestnet
 }
 
-export const onNetworksFetched = createAction(
-  `${reducerName}/onNetworksFetched`
+export const onNetworksFetchedSuccess = createAction(
+  `${reducerName}/onNetworksFetchedSuccess`
 )
 
 export const {
