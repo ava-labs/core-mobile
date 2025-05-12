@@ -114,7 +114,7 @@ export const ListScreen = <T,>({
       targetLayout: headerLayout,
       shouldHeaderHaveGrabber: isModal,
       hideHeaderBackground: renderHeader ? true : false,
-      hasSeparator: false,
+      hasSeparator: renderHeader ? false : true,
       hasParent,
       showNavigationHeaderTitle,
       renderHeaderRight
