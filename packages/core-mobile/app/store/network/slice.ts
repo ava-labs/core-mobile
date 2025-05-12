@@ -190,10 +190,6 @@ export const selectIsTestnet = (chainId: number) => (state: RootState) => {
   return network?.isTestnet
 }
 
-export const onNetworksFetched = createAction(
-  `${reducerName}/onNetworksFetched`
-)
-
 export const onNetworksFetchedSuccess = createAction(
   `${reducerName}/onNetworksFetchedSuccess`
 )

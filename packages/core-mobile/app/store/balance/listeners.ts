@@ -15,7 +15,6 @@ import { onAppLocked, onAppUnlocked, onLogOut } from 'store/app'
 import { addCustomToken, selectAllCustomTokens } from 'store/customToken'
 import {
   addCustomNetwork,
-  onNetworksFetched,
   onNetworksFetchedSuccess,
   selectEnabledNetworks,
   toggleEnabledChainId
@@ -195,6 +194,9 @@ const fetchBalancePeriodically = async (
   if (selectedEnabledNetworks.length > 0) {
     enabledNetworks = selectedEnabledNetworks
   } else {
+    // when the app is first launched, there are no networks cached yet,
+    // so we need to wait for the networks to be fetched
+    // before we can start polling
     await listenerApi.condition(isAnyOf(onNetworksFetchedSuccess))
     enabledNetworks = selectEnabledNetworks(state)
   }
@@ -422,7 +424,6 @@ export const addBalanceListeners = (
       setAccounts,
       setActiveAccountIndex,
       addCustomToken,
-      onNetworksFetched,
       toggleEnabledChainId,
       addCustomNetwork,
       toggleDeveloperMode
