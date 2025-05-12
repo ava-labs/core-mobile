@@ -1,26 +1,25 @@
-import { addListener, isAnyOf } from '@reduxjs/toolkit'
+import { QueryCacheNotifyEvent, QueryClient } from '@tanstack/react-query'
 import { ReactQueryKeys } from 'consts/reactQueryKeys'
-import { queryClient } from 'contexts/ReactQueryProvider'
-import { useEffect } from 'react'
+import { useCallback, useEffect } from 'react'
 import { useDispatch } from 'react-redux'
-import { onNetworksFetched } from 'store/network'
-import { toggleDeveloperMode } from 'store/settings/advanced'
+import { onNetworksFetchedSuccess } from 'store/network'
 
-export const useNetworksListener = (): void => {
+export const useNetworksListener = (queryClient: QueryClient): void => {
   const dispatch = useDispatch()
 
-  // @ts-ignore
+  const callback = useCallback(
+    (event: QueryCacheNotifyEvent): void => {
+      if (
+        event.query.queryKey?.[0] === ReactQueryKeys.NETWORKS &&
+        event.type === 'updated'
+      ) {
+        dispatch(onNetworksFetchedSuccess)
+      }
+    },
+    [dispatch]
+  )
+
   useEffect(() => {
-    return dispatch(
-      addListener({
-        matcher: isAnyOf(toggleDeveloperMode),
-        effect: async () => {
-          await queryClient.invalidateQueries({
-            queryKey: [ReactQueryKeys.NETWORKS]
-          })
-          dispatch(onNetworksFetched)
-        }
-      })
-    )
-  }, [dispatch])
+    return queryClient.getQueryCache().subscribe(callback)
+  }, [callback, queryClient])
 }
