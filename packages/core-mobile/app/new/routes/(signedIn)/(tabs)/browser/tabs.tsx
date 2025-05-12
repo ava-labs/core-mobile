@@ -7,12 +7,12 @@ import {
   showAlert,
   useTheme
 } from '@avalabs/k2-alpine'
-import { useBottomTabBarHeight } from 'react-native-bottom-tabs'
 import { useNavigation } from '@react-navigation/native'
 import { FlashList, ListRenderItem } from '@shopify/flash-list'
 import BlurredBackgroundView from 'common/components/BlurredBackgroundView'
 import { DropdownItem, DropdownMenu } from 'common/components/DropdownMenu'
 import { DropdownMenuIcon } from 'common/components/DropdownMenuIcons'
+import { useBottomTabBarHeight } from 'common/hooks/useBottomTabBarHeight'
 import { useBrowserContext } from 'features/browser/BrowserContext'
 import { TabItem } from 'features/browser/components/TabItem'
 import { HORIZONTAL_MARGIN } from 'features/browser/consts'
@@ -69,7 +69,6 @@ const TabsScreen = (): JSX.Element => {
   const dispatch = useDispatch()
   const insets = useSafeAreaInsets()
   const { theme } = useTheme()
-  const tabBarHeight = useBottomTabBarHeight()
   const { setUrlEntry, handleClearAndFocus, browserRefs } = useBrowserContext()
 
   const tabs = useSelector(selectAllTabs)
@@ -244,13 +243,18 @@ const TabsScreen = (): JSX.Element => {
     )
   }
 
+  const tabBarHeight = useBottomTabBarHeight()
+
   return (
     <View style={{ flex: 1 }}>
       <FlashList
         data={sortedTabs}
         contentContainerStyle={{
           paddingTop: insets.top + DEFAULT_HEADER_HEIGHT,
-          paddingBottom: tabBarHeight + DEFAULT_HEADER_HEIGHT,
+          paddingBottom:
+            Platform.OS === 'ios'
+              ? tabBarHeight + HORIZONTAL_MARGIN
+              : HORIZONTAL_MARGIN,
           paddingHorizontal: HORIZONTAL_MARGIN / 2
         }}
         showsVerticalScrollIndicator={false}

@@ -76,7 +76,12 @@ export function useModalScreenOptions(): {
           },
           cardStyleInterpolator: stackModalInterpolator.forModalPresentationIOS
         }
-      : undefined
+      : {
+          cardStyle: {
+            marginTop: 0,
+            paddingTop: 0
+          }
+        }
 
   // Options for the first screen of a modal stack navigator.
   // This screen does not have a back button, so we need to hide it.
