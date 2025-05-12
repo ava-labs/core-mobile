@@ -6,6 +6,7 @@ import {
   Text
 } from '@avalabs/k2-alpine'
 import { useHeaderHeight } from '@react-navigation/elements'
+import { useBottomTabBarHeight } from 'common/hooks/useBottomTabBarHeight'
 import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
 import { getListItemEnteringAnimation } from 'common/utils/animations'
 import React, {
@@ -20,6 +21,7 @@ import {
   LayoutRectangle,
   NativeScrollEvent,
   NativeSyntheticEvent,
+  Platform,
   ScrollViewProps,
   StyleProp,
   View,
@@ -68,6 +70,10 @@ interface ListScreenProps<T>
   hasParent?: boolean
   /** Whether this screen is presented as a modal */
   isModal?: boolean
+  /** Whether this screen has a tab bar */
+  hasTabBar?: boolean
+  /** Whether to show the navigation header title */
+  showNavigationHeaderTitle?: boolean
   /** Optional function to render a custom sticky header component */
   renderHeader?: () => React.ReactNode
   /** Optional function to render content in the navigation bar's right side */
@@ -84,6 +90,8 @@ export const ListScreen = <T,>({
   navigationTitle,
   hasParent,
   isModal,
+  hasTabBar,
+  showNavigationHeaderTitle = true,
   renderEmpty,
   renderHeader,
   renderHeaderRight,
@@ -96,14 +104,19 @@ export const ListScreen = <T,>({
   >()
   const headerRef = useRef<View>(null)
   const contentHeaderHeight = useSharedValue<number>(0)
-  const { height } = useKeyboardState()
+  const keyboard = useKeyboardState()
+
+  const tabBarHeight = useBottomTabBarHeight()
 
   const { onScroll, scrollY, targetHiddenProgress } = useFadingHeaderNavigation(
     {
       header: <NavigationTitleHeader title={navigationTitle ?? title ?? ''} />,
       targetLayout: headerLayout,
       shouldHeaderHaveGrabber: isModal,
+      hideHeaderBackground: renderHeader ? true : false,
+      hasSeparator: renderHeader ? false : true,
       hasParent,
+      showNavigationHeaderTitle,
       renderHeaderRight
     }
   )
@@ -142,7 +155,11 @@ export const ListScreen = <T,>({
     const translateY = interpolate(
       scrollY.value,
       [0, contentHeaderHeight.value],
-      [0, -contentHeaderHeight.value],
+      [
+        0,
+        -contentHeaderHeight.value -
+          (isModal ? 8 : Platform.OS === 'ios' ? 8 : 16)
+      ],
       'clamp'
     )
 
@@ -232,6 +249,12 @@ export const ListScreen = <T,>({
   }, [renderEmpty])
 
   const contentContainerStyle = useMemo(() => {
+    let paddingBottom = hasTabBar ? 16 : insets.bottom + 16
+
+    if (hasTabBar) {
+      paddingBottom = 16
+    }
+
     return [
       rest?.contentContainerStyle,
       data.length === 0
@@ -241,18 +264,29 @@ export const ListScreen = <T,>({
           }
         : {},
       {
-        paddingBottom: insets.bottom + 16
+        paddingBottom
       }
     ] as StyleProp<ViewStyle>[]
-  }, [rest?.contentContainerStyle, data.length, insets.bottom])
+  }, [insets.bottom, hasTabBar, rest?.contentContainerStyle, data.length])
 
   const animatedContainerStyle = useAnimatedStyle(() => {
+    let bottomOffset = keyboard.isVisible ? keyboard.height - insets.bottom : 0
+
+    if (hasTabBar) {
+      if (keyboard.isVisible) {
+        bottomOffset =
+          keyboard.height - (Platform.OS === 'ios' ? 0 : tabBarHeight)
+      } else {
+        bottomOffset = Platform.OS === 'ios' ? tabBarHeight : 0
+      }
+    }
+
     return {
       // TODO: Couldn't make Android work with keyboard avoidance, so we need to add a bottom offset
       // iOS works with automaticallyAdjustKeyboardInsets but we do keep the same thing here for consistency
-      paddingBottom: withTiming(height - insets.bottom, {
+      paddingBottom: withTiming(bottomOffset, {
         ...ANIMATED.TIMING_CONFIG,
-        duration: 100
+        duration: 50
       })
     }
   })

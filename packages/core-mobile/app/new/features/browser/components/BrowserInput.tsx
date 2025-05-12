@@ -19,7 +19,6 @@ import {
 import { Gesture, GestureDetector } from 'react-native-gesture-handler'
 import Animated, {
   interpolateColor,
-  SharedValue,
   useAnimatedStyle,
   withTiming
 } from 'react-native-reanimated'
@@ -37,13 +36,7 @@ const INPUT_HEIGHT = 40
 
 const AnimatedTextInput = Animated.createAnimatedComponent(TextInput)
 
-export const BrowserInput = ({
-  isFocused,
-  setIsFocused
-}: {
-  isFocused: SharedValue<boolean>
-  setIsFocused: (visible: boolean) => void
-}): ReactNode => {
+export const BrowserInput = (): ReactNode => {
   const { theme } = useTheme()
   const { navigate } = useNavigation()
   const activeTab = useSelector(selectActiveTab)
@@ -53,7 +46,9 @@ export const BrowserInput = ({
     inputRef,
     handleUrlSubmit,
     setUrlEntry,
-    showRecentSearches
+    showRecentSearches,
+    isRenameFavoriteVisible,
+    isFocused
   } = useBrowserContext()
 
   const isFavorited = useSelector(
@@ -99,11 +94,11 @@ export const BrowserInput = ({
   }
 
   const onFocus = (): void => {
-    setIsFocused(true)
+    isFocused.value = true
   }
 
   const onBlur = (): void => {
-    setIsFocused(false)
+    isFocused.value = false
   }
 
   const navigateToTabs = useCallback((): void => {
@@ -187,17 +182,33 @@ export const BrowserInput = ({
     urlEntry
   ])
 
+  const wrapperStyle = useAnimatedStyle(() => {
+    return {
+      opacity: withTiming(
+        isFocused.value || isRenameFavoriteVisible.value ? 1 : 0,
+        ANIMATED.TIMING_CONFIG
+      )
+    }
+  })
+
   const contentStyle = useAnimatedStyle(() => {
     return {
-      zIndex: isFocused.value ? 0 : 10,
-      opacity: withTiming(isFocused.value ? 0 : 1, ANIMATED.TIMING_CONFIG)
+      zIndex: isFocused.value || isRenameFavoriteVisible.value ? 0 : 10,
+      opacity: withTiming(
+        isFocused.value || isRenameFavoriteVisible.value ? 0 : 1,
+        ANIMATED.TIMING_CONFIG
+      ),
+      pointerEvents: isFocused.value ? 'none' : 'auto'
     }
   })
 
   const inputStyle = useAnimatedStyle(() => {
     return {
-      zIndex: isFocused.value ? 10 : 0,
-      opacity: withTiming(isFocused.value ? 1 : 0, ANIMATED.TIMING_CONFIG)
+      zIndex: isFocused.value || isRenameFavoriteVisible.value ? 10 : 0,
+      opacity: withTiming(
+        isFocused.value || isRenameFavoriteVisible.value ? 1 : 0,
+        ANIMATED.TIMING_CONFIG
+      )
     }
   })
 
@@ -209,12 +220,6 @@ export const BrowserInput = ({
     )
     return {
       color
-    }
-  })
-
-  const wrapperStyle = useAnimatedStyle(() => {
-    return {
-      opacity: withTiming(isFocused.value ? 1 : 0, ANIMATED.TIMING_CONFIG)
     }
   })
 
@@ -286,6 +291,7 @@ export const BrowserInput = ({
                 flex: 1,
                 paddingHorizontal: HORIZONTAL_MARGIN,
                 fontSize: 16,
+                paddingVertical: 0,
                 fontFamily: 'Inter-Regular',
                 paddingRight: HORIZONTAL_MARGIN / 2
               }
@@ -308,7 +314,6 @@ export const BrowserInput = ({
         </Animated.View>
 
         <Animated.View
-          // pointerEvents={isFocused ? 'none' : 'auto'}
           style={[
             contentStyle,
             {
