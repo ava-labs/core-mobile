@@ -1,4 +1,5 @@
 import { ANIMATED, View } from '@avalabs/k2-alpine'
+import { useBottomTabBarHeight } from 'common/hooks/useBottomTabBarHeight'
 import { useFocusEffect, useGlobalSearchParams, useRouter } from 'expo-router'
 import { useBrowserContext } from 'features/browser/BrowserContext'
 import { BrowserControls } from 'features/browser/components/BrowserControls'
@@ -11,7 +12,6 @@ import { Discover } from 'features/browser/components/Discover'
 import { BROWSER_CONTROLS_HEIGHT } from 'features/browser/consts'
 import React, { useCallback, useEffect, useMemo } from 'react'
 import { Platform } from 'react-native'
-import { useBottomTabBarHeight } from 'react-native-bottom-tabs'
 import {
   AndroidSoftInputModes,
   KeyboardController

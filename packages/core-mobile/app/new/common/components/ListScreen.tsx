@@ -5,8 +5,8 @@ import {
   SPRING_LINEAR_TRANSITION,
   Text
 } from '@avalabs/k2-alpine'
-import { useBottomTabBarHeight as useRNTabBarHeight } from '@react-navigation/bottom-tabs'
 import { useHeaderHeight } from '@react-navigation/elements'
+import { useBottomTabBarHeight } from 'common/hooks/useBottomTabBarHeight'
 import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
 import { getListItemEnteringAnimation } from 'common/utils/animations'
 import React, {
@@ -82,14 +82,6 @@ interface ListScreenProps<T>
   renderEmpty?: () => React.ReactNode
 }
 
-export function useSafeBottomTabBarHeight(fallback = 0): number {
-  try {
-    return useRNTabBarHeight()
-  } catch (e) {
-    return fallback
-  }
-}
-
 const AnimatedFlatList = Animated.createAnimatedComponent(FlatList)
 
 export const ListScreen = <T,>({
@@ -113,6 +105,8 @@ export const ListScreen = <T,>({
   const headerRef = useRef<View>(null)
   const contentHeaderHeight = useSharedValue<number>(0)
   const keyboard = useKeyboardState()
+
+  const tabBarHeight = useBottomTabBarHeight()
 
   const { onScroll, scrollY, targetHiddenProgress } = useFadingHeaderNavigation(
     {
@@ -249,8 +243,6 @@ export const ListScreen = <T,>({
       />
     )
   }, [renderEmpty])
-
-  const tabBarHeight = useSafeBottomTabBarHeight()
 
   const contentContainerStyle = useMemo(() => {
     let paddingBottom = insets.bottom + 16

@@ -8,10 +8,10 @@ import {
 } from '@avalabs/k2-alpine'
 import { BlurViewWithFallback } from 'common/components/BlurViewWithFallback'
 import { KeyboardAvoidingView } from 'common/components/KeyboardAvoidingView'
+import { useBottomTabBarHeight } from 'common/hooks/useBottomTabBarHeight'
 import { LinearGradient } from 'expo-linear-gradient'
 import React, { ReactNode, useMemo } from 'react'
 import { Platform } from 'react-native'
-import { useBottomTabBarHeight } from 'react-native-bottom-tabs'
 import { Gesture, GestureDetector } from 'react-native-gesture-handler'
 import { KeyboardStickyView } from 'react-native-keyboard-controller'
 import Animated, {
