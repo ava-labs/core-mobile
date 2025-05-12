@@ -177,7 +177,7 @@ const StakeConfirmScreen = (): JSX.Element => {
           value: `${networkFeesInAvax} AVAX`
         },
         {
-          title: 'Staking fee',
+          title: 'Stake fee',
           value: `${delegationFee?.toDisplay()} AVAX`
         }
       ]
@@ -204,8 +204,8 @@ const StakeConfirmScreen = (): JSX.Element => {
 
   const handleCancel = useCallback((): void => {
     showAlert({
-      title: 'Cancel Staking Setup?',
-      description: 'Your staking setup will not go through if you close now',
+      title: 'Cancel Stake Setup?',
+      description: 'Your stake setup will not go through if you close now',
       buttons: [
         {
           text: 'Back'
@@ -224,7 +224,7 @@ const StakeConfirmScreen = (): JSX.Element => {
   const onDelegationSuccess = useCallback(
     (txHash: string): void => {
       AnalyticsService.capture('StakeDelegationSuccess')
-      transactionSnackbar.success({ message: 'Staking successful' })
+      transactionSnackbar.success({ message: 'Stake successful' })
 
       handleDismiss()
       // @ts-ignore TODO: make routes typesafe
@@ -349,7 +349,7 @@ const StakeConfirmScreen = (): JSX.Element => {
           }}>
           <Icons.Action.Info color={theme.colors.$textPrimary} />
           <Text variant="body1" sx={{ flexShrink: 1, lineHeight: 20 }}>
-            By tapping "Confirm staking" you will lock your AVAX for the staking
+            By tapping "Confirm stake" you will lock your AVAX for the stake
             duration you selected
           </Text>
         </View>
@@ -361,7 +361,7 @@ const StakeConfirmScreen = (): JSX.Element => {
           {issueDelegationMutation.isPending ? (
             <ActivityIndicator />
           ) : (
-            'Confirm staking'
+            'Confirm stake'
           )}
         </Button>
         <Button
@@ -399,7 +399,7 @@ const StakeConfirmScreen = (): JSX.Element => {
   return (
     <ScrollScreen
       isModal
-      title={`That's it!\nReview your staking`}
+      title={`That's it!\nReview your stake`}
       navigationTitle="Review"
       renderFooter={renderFooter}
       contentContainerStyle={{ padding: 16 }}>
