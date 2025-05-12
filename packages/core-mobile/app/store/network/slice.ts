@@ -1,11 +1,20 @@
 import {
   BITCOIN_NETWORK,
+  BITCOIN_TEST_NETWORK,
   ChainId as ChainsSDKChainId,
   Network
 } from '@avalabs/core-chains-sdk'
 import { createAction, createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { getNetworksFromCache } from 'hooks/networks/utils/getNetworksFromCache'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
+import {
+  AVALANCHE_MAINNET_NETWORK,
+  AVALANCHE_TESTNET_NETWORK,
+  ETHEREUM_NETWORK,
+  ETHEREUM_NETWORK_TEST,
+  NETWORK_P,
+  NETWORK_P_TEST
+} from 'services/network/consts'
 import { RootState } from '../types'
 import { ChainID, Networks, NetworkState } from './types'
 
@@ -14,6 +23,17 @@ export const defaultNetwork = BITCOIN_NETWORK
 export const noActiveNetwork = 0
 
 export const alwaysEnabledNetworks = [
+  AVALANCHE_MAINNET_NETWORK,
+  AVALANCHE_TESTNET_NETWORK,
+  NETWORK_P,
+  NETWORK_P_TEST,
+  BITCOIN_NETWORK,
+  BITCOIN_TEST_NETWORK,
+  ETHEREUM_NETWORK,
+  ETHEREUM_NETWORK_TEST
+]
+
+export const alwaysEnabledChainIds = [
   ChainsSDKChainId.AVALANCHE_MAINNET_ID,
   ChainsSDKChainId.AVALANCHE_TESTNET_ID,
   ChainsSDKChainId.AVALANCHE_P,
@@ -28,7 +48,7 @@ export const reducerName = 'network'
 
 const initialState: NetworkState = {
   customNetworks: {},
-  enabledChainIds: alwaysEnabledNetworks,
+  enabledChainIds: alwaysEnabledChainIds,
   disabledLastTransactedChainIds: [],
   active: noActiveNetwork
 }
@@ -46,7 +66,7 @@ export const networkSlice = createSlice({
         // set enabledChainIds
         state.enabledChainIds.push(chainId)
       } else {
-        if (alwaysEnabledNetworks.includes(chainId)) {
+        if (alwaysEnabledChainIds.includes(chainId)) {
           return
         }
         // unset enabledChainIds
@@ -63,7 +83,7 @@ export const networkSlice = createSlice({
         // set disabledLastTransactedChainIds
         state.disabledLastTransactedChainIds.push(chainId)
       } else {
-        if (alwaysEnabledNetworks.includes(chainId)) {
+        if (alwaysEnabledChainIds.includes(chainId)) {
           return
         }
         // unset disabledLastTransactedChainIds
@@ -174,7 +194,7 @@ export const selectEnabledNetworks = (state: RootState): Network[] => {
   const isDeveloperMode = selectIsDeveloperMode(state)
   const networks = getNetworksFromCache()
 
-  if (networks === undefined) return []
+  if (networks === undefined) return alwaysEnabledNetworks
   return enabledChainIds.reduce((acc, chainId) => {
     const network = networks[chainId]
     if (network && network.isTestnet === isDeveloperMode) {
