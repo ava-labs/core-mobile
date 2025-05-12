@@ -113,7 +113,7 @@ export const ListScreen = <T,>({
       header: <NavigationTitleHeader title={navigationTitle ?? title ?? ''} />,
       targetLayout: headerLayout,
       shouldHeaderHaveGrabber: isModal,
-      hideHeaderBackground: true,
+      hideHeaderBackground: renderHeader ? true : false,
       hasSeparator: false,
       hasParent,
       showNavigationHeaderTitle,
@@ -155,7 +155,11 @@ export const ListScreen = <T,>({
     const translateY = interpolate(
       scrollY.value,
       [0, contentHeaderHeight.value],
-      [0, -contentHeaderHeight.value - 8],
+      [
+        0,
+        -contentHeaderHeight.value -
+          (isModal ? 8 : Platform.OS === 'ios' ? 8 : 16)
+      ],
       'clamp'
     )
 
@@ -245,10 +249,10 @@ export const ListScreen = <T,>({
   }, [renderEmpty])
 
   const contentContainerStyle = useMemo(() => {
-    let paddingBottom = insets.bottom + 16
+    let paddingBottom = hasTabBar ? 16 : insets.bottom + 16
 
     if (hasTabBar) {
-      paddingBottom = Platform.OS === 'ios' ? insets.bottom + 32 : 16
+      paddingBottom = 16
     }
 
     return [
@@ -271,11 +275,9 @@ export const ListScreen = <T,>({
     if (hasTabBar) {
       if (keyboard.isVisible) {
         bottomOffset =
-          keyboard.height -
-          insets.bottom -
-          (Platform.OS === 'ios' ? 16 : tabBarHeight - 16)
+          keyboard.height - (Platform.OS === 'ios' ? 0 : tabBarHeight)
       } else {
-        bottomOffset = Platform.OS === 'ios' ? insets.bottom : 0
+        bottomOffset = Platform.OS === 'ios' ? tabBarHeight : 0
       }
     }
 
