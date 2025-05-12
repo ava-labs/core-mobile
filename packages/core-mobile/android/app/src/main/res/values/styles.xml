@@ -8,11 +8,16 @@
         <item name="android:navigationBarColor">#000000</item>
         <item name="android:colorBackground">#000000</item>
         <item name="android:statusBarColor">#000000</item>
+
          <!--style for react-native-coummunity/datetimepicker -->
         <item name="android:datePickerDialogTheme">@style/MyDatePickerDialogTheme</item>
         <item name="bottomNavigationStyle">@style/CustomBottomNavigationStyle</item>
+
         <!-- style for react-native-edge-to-edge -->
         <item name="enforceNavigationBarContrast">false</item>
+
+        <!-- default tint color for dialog button text -->
+        <item name="android:colorPrimary">@color/neutral50</item>
     </style>
 
     <style name="CustomBottomNavigationStyle" parent="Widget.Material3.BottomNavigationView">
