@@ -15,6 +15,7 @@ import {
 import React, { useCallback, useMemo, useState } from 'react'
 import { DappLogo } from 'common/components/DappLogo'
 import { ErrorState } from 'common/components/ErrorState'
+import NavigationBarButton from 'common/components/NavigationBarButton'
 
 const ConnectedSitesScreen = (): JSX.Element => {
   const {
@@ -22,10 +23,6 @@ const ConnectedSitesScreen = (): JSX.Element => {
   } = useTheme()
   const { allApprovedDapps, killSession, killAllSessions } = useConnectedDapps()
   const [searchText, setSearchText] = useState('')
-
-  const navigationTitle = `${allApprovedDapps.length} connected ${
-    allApprovedDapps.length < 2 ? 'site' : 'sites'
-  }`
 
   const disconnectDapp = useCallback(
     async (topic: string): Promise<void> => {
@@ -168,25 +165,28 @@ const ConnectedSitesScreen = (): JSX.Element => {
 
   const renderSeparator = (): JSX.Element => <View sx={{ height: 12 }} />
 
+  const renderHeaderRight = (): JSX.Element => {
+    return (
+      <NavigationBarButton isModal>
+        {allApprovedDapps.length ? (
+          <Button size="small" onPress={disconnectAll} type="secondary">
+            Disconnect all
+          </Button>
+        ) : null}
+      </NavigationBarButton>
+    )
+  }
+
   const renderHeader = useCallback(() => {
     return (
-      <View sx={{ gap: 24, alignItems: 'flex-end' }}>
-        <SearchBar
-          onTextChanged={setSearchText}
-          searchText={searchText}
-          placeholder="Search"
-          useDebounce={true}
-        />
-        {allApprovedDapps.length ? (
-          <View>
-            <Button size="small" onPress={disconnectAll} type="secondary">
-              Disconnect all
-            </Button>
-          </View>
-        ) : null}
-      </View>
+      <SearchBar
+        onTextChanged={setSearchText}
+        searchText={searchText}
+        placeholder="Search"
+        useDebounce={true}
+      />
     )
-  }, [allApprovedDapps.length, disconnectAll, searchText])
+  }, [searchText])
 
   const renderEmpty = useCallback(() => {
     return <ErrorState sx={{ flex: 1 }} title="No site found" description="" />
@@ -195,10 +195,12 @@ const ConnectedSitesScreen = (): JSX.Element => {
   return (
     <ListScreen
       isModal
-      title={navigationTitle}
+      showNavigationHeaderTitle={false}
+      title="Connected sites"
       ItemSeparatorComponent={renderSeparator}
       renderItem={item => renderItem(item.item as Dapp)}
       renderHeader={renderHeader}
+      renderHeaderRight={renderHeaderRight}
       data={searchResults}
       keyExtractor={(item): string => (item as Dapp).id}
       renderEmpty={renderEmpty}

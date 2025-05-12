@@ -16,7 +16,7 @@ import { useRouter } from 'expo-router'
 import { useNetworks } from 'hooks/networks/useNetworks'
 import React, { useCallback, useMemo, useState } from 'react'
 import { ListRenderItem } from 'react-native'
-import { alwaysEnabledNetworks } from 'store/network'
+import { alwaysEnabledChainIds } from 'store/network'
 import { isPChain, isXChain, isXPChain } from 'utils/network/isAvalancheNetwork'
 
 export const ManageNetworksScreen = (): JSX.Element => {
@@ -122,7 +122,7 @@ export const ManageNetworksScreen = (): JSX.Element => {
             paddingRight: 16
           }}>
           <Text style={{ flex: 1 }}>{item.chainName}</Text>
-          {!alwaysEnabledNetworks.includes(item.chainId) && (
+          {!alwaysEnabledChainIds.includes(item.chainId) && (
             <Toggle
               value={isEnabled}
               onValueChange={() => toggleNetwork(item.chainId)}

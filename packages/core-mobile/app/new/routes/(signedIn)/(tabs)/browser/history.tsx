@@ -1,15 +1,17 @@
-import BlurredBarsContentLayout from 'common/components/BlurredBarsContentLayout'
-
-import { Button, SearchBar, showAlert, Text, View } from '@avalabs/k2-alpine'
+import { Button, SearchBar, showAlert } from '@avalabs/k2-alpine'
 import { useNavigation } from '@react-navigation/native'
 import { ErrorState } from 'common/components/ErrorState'
-import { getListItemEnteringAnimation } from 'common/utils/animations'
+import { ListScreen } from 'common/components/ListScreen'
+import NavigationBarButton from 'common/components/NavigationBarButton'
 import { BrowserItem } from 'features/browser/components/BrowserItem'
-import { HORIZONTAL_MARGIN } from 'features/browser/consts'
 import { useSearchHistory } from 'features/browser/hooks/useSearchHistory'
+import {
+  getSuggestedImage,
+  isSuggestedSiteName,
+  prepareFaviconToLoad
+} from 'features/browser/utils'
 import React from 'react'
-import { FlatList, ListRenderItem, Platform } from 'react-native'
-import Animated, { LinearTransition } from 'react-native-reanimated'
+import { ListRenderItem, Platform } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 import {
   addHistoryForActiveTab,
@@ -21,23 +23,13 @@ import {
   removeAllHistories,
   removeHistory
 } from 'store/browser/slices/globalHistory'
-import {
-  getSuggestedImage,
-  isSuggestedSiteName,
-  prepareFaviconToLoad
-} from 'features/browser/utils'
 
 const HistoryScreen = (): JSX.Element => {
   const { navigate } = useNavigation()
   const dispatch = useDispatch()
 
-  const {
-    searchText,
-    setSearchText,
-    filterHistories,
-    hasHistory,
-    hasSearchResult
-  } = useSearchHistory()
+  const { searchText, setSearchText, filterHistories, hasHistory } =
+    useSearchHistory()
 
   const activeTab = useSelector(selectActiveTab)
 
@@ -93,6 +85,41 @@ const HistoryScreen = (): JSX.Element => {
     )
   }
 
+  const renderHeader = (): JSX.Element => {
+    return (
+      <SearchBar
+        onTextChanged={setSearchText}
+        searchText={searchText}
+        placeholder="Search or Type URL"
+        keyboardType={Platform.OS === 'ios' ? 'web-search' : 'url'}
+      />
+    )
+  }
+
+  const renderEmpty = (): JSX.Element => {
+    return (
+      <ErrorState
+        sx={{
+          flex: 1
+        }}
+        title="No Search Results"
+        description="Try searching for something else."
+      />
+    )
+  }
+
+  const renderHeaderRight = (): JSX.Element => {
+    return (
+      <NavigationBarButton>
+        {hasHistory && (
+          <Button type="secondary" size="small" onPress={removeAll}>
+            Clear all
+          </Button>
+        )}
+      </NavigationBarButton>
+    )
+  }
+
   if (!hasHistory)
     return (
       <ErrorState
@@ -105,67 +132,16 @@ const HistoryScreen = (): JSX.Element => {
     )
 
   return (
-    <BlurredBarsContentLayout>
-      <View
-        style={{
-          flex: 1,
-          marginTop: HORIZONTAL_MARGIN
-        }}>
-        <View
-          style={{
-            gap: 14,
-            paddingHorizontal: HORIZONTAL_MARGIN
-          }}>
-          <View
-            sx={{
-              flexDirection: 'row',
-              justifyContent: 'space-between',
-              alignItems: 'center'
-            }}>
-            <Text variant="heading2">History</Text>
-            {hasHistory && (
-              <Button type="secondary" size="small" onPress={removeAll}>
-                Clear All
-              </Button>
-            )}
-          </View>
-          <SearchBar
-            onTextChanged={setSearchText}
-            searchText={searchText}
-            placeholder="Search or Type URL"
-            keyboardType={Platform.OS === 'ios' ? 'web-search' : 'url'}
-          />
-        </View>
-
-        {hasSearchResult ? (
-          <Animated.View
-            entering={getListItemEnteringAnimation(0)}
-            layout={LinearTransition.springify()}
-            style={{
-              flex: 1
-            }}>
-            <FlatList
-              keyboardShouldPersistTaps="always"
-              keyExtractor={item => (item as History).id}
-              data={filterHistories}
-              renderItem={renderItem}
-              showsVerticalScrollIndicator={false}
-              contentContainerStyle={{
-                paddingVertical: HORIZONTAL_MARGIN
-              }}
-            />
-          </Animated.View>
-        ) : (
-          <ErrorState
-            sx={{
-              flex: 1
-            }}
-            title="No Search Results"
-            description="Try searching for something else."
-          />
-        )}
-      </View>
-    </BlurredBarsContentLayout>
+    <ListScreen
+      title="History"
+      hasTabBar
+      data={filterHistories}
+      renderItem={renderItem}
+      renderHeader={renderHeader}
+      renderEmpty={renderEmpty}
+      renderHeaderRight={renderHeaderRight}
+      keyExtractor={item => (item as History).id}
+    />
   )
 }
 

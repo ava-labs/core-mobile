@@ -1,16 +1,9 @@
-import {
-  Dimensions,
-  LayoutAnimation,
-  Platform,
-  TextInputProps,
-  ViewStyle,
-  TextInput
-} from 'react-native'
-import React, { FC, useCallback, useEffect, useRef, useState } from 'react'
 import debounce from 'lodash.debounce'
-import { Text, TouchableOpacity, View } from '../Primitives'
+import React, { FC, useCallback, useEffect, useRef, useState } from 'react'
+import { TextInput, TextInputProps, ViewStyle } from 'react-native'
 import { useTheme } from '../../hooks'
 import { Icons } from '../../theme/tokens/Icons'
+import { Text, TouchableOpacity, View } from '../Primitives'
 
 interface Props extends Omit<TextInputProps, 'value' | 'onChangeText'> {
   onTextChanged: (value: string) => void
@@ -26,12 +19,8 @@ interface Props extends Omit<TextInputProps, 'value' | 'onChangeText'> {
   useCancel?: boolean
 }
 
-const SCREEN_WIDTH = Dimensions.get('window').width
-const INPUT_SIZE = SCREEN_WIDTH - 32
 const DEFAULT_DEBOUNCE_MILLISECONDS = 150
 const HEIGHT = 40
-
-const INPUT_SIZE_FOCUSED = SCREEN_WIDTH - 106
 
 /**
  * SearchBar component. Text state is handled outside the
@@ -113,8 +102,12 @@ export const SearchBar: FC<Props> = ({
       return (
         <TouchableOpacity
           onPress={clearText}
-          hitSlop={16}
-          sx={{ justifyContent: 'center', alignItems: 'center' }}>
+          sx={{
+            justifyContent: 'center',
+            alignItems: 'center',
+            paddingHorizontal: 12,
+            height: '100%'
+          }}>
           <Icons.Action.Clear color={colors.$textSecondary} />
         </TouchableOpacity>
       )
@@ -128,22 +121,14 @@ export const SearchBar: FC<Props> = ({
   }
 
   return (
-    <View
-      style={[
-        {
-          flexDirection: 'row',
-          justifyContent: 'flex-start'
-        },
-        containerStyle
-      ]}>
+    <View style={[{ flexDirection: 'row' }, containerStyle]}>
       <View
         style={{
           height: HEIGHT,
           borderRadius: 1000,
-          width: isFocused && useCancel ? INPUT_SIZE_FOCUSED : INPUT_SIZE,
+          flex: 1,
           backgroundColor: colors.$surfaceSecondary,
-          flexDirection: 'row',
-          paddingHorizontal: 12
+          flexDirection: 'row'
         }}>
         <View
           sx={{
@@ -152,7 +137,18 @@ export const SearchBar: FC<Props> = ({
             alignItems: 'center',
             flex: 1
           }}>
-          <Icons.Custom.Search color={colors.$textPrimary} />
+          <View
+            pointerEvents="none"
+            style={{
+              position: 'absolute',
+              left: 12,
+              top: 0,
+              bottom: 0,
+              justifyContent: 'center'
+            }}>
+            <Icons.Custom.Search color={colors.$textPrimary} />
+          </View>
+
           <TextInput
             testID="search_bar__search"
             autoCorrect={false}
@@ -161,18 +157,19 @@ export const SearchBar: FC<Props> = ({
             ref={textInputRef}
             style={{
               flex: 1,
-              color: colors.$textPrimary
+              height: '100%',
+              color: colors.$textPrimary,
+              paddingLeft: 36,
+              paddingVertical: 0
             }}
             placeholder={placeholder}
             placeholderTextColor={colors.$textSecondary}
             value={_searchText}
             onChangeText={handleTextChange}
             onBlur={() => {
-              Platform.OS === 'ios' && LayoutAnimation.easeInEaseOut()
               setIsFocused(false)
             }}
             onFocus={() => {
-              Platform.OS === 'ios' && LayoutAnimation.easeInEaseOut()
               setIsFocused(true)
             }}
             underlineColorAndroid="transparent"
@@ -183,7 +180,10 @@ export const SearchBar: FC<Props> = ({
           sx={{
             alignItems: 'center',
             justifyContent: 'center',
-            marginLeft: 8
+            position: 'absolute',
+            right: 0,
+            bottom: 0,
+            top: 0
           }}>
           {renderRightComponent()}
         </View>

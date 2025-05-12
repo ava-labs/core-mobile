@@ -7,43 +7,42 @@ interface ReturnProps {
   searchText: string
   setSearchText: (text: string) => void
   trimmedSearchText: string
-  filterHistories: History[]
+  filteredHistory: History[]
   hasHistory: boolean
-  hasSearchResult: boolean
 }
 
 export const useSearchHistory = (): ReturnProps => {
-  const histories = useSelector(selectAllHistories)
+  const history = useSelector(selectAllHistories)
 
   const [searchText, setSearchText] = useState('')
-  const [filterHistories, setFilterHistories] = useState(histories)
-  const hasHistory = histories.length > 0
-  const hasSearchResult = filterHistories.length > 0
+  const [filteredHistory, setFilteredHistory] = useState(history)
+  const hasHistory = history.length > 0
 
-  const trimmedSearchText = useMemo(() => searchText.trim(), [searchText])
+  const trimmedSearchText = useMemo(() => {
+    return searchText.trim()
+  }, [searchText])
 
   useEffect(() => {
-    const sortedHistories = [...histories].sort(
+    const sortedHistory = [...history].sort(
       (a, b) => b.lastVisited - a.lastVisited
     )
-    if (trimmedSearchText.length > 0 && sortedHistories.length > 0) {
-      const filteredHistories = sortedHistories.filter(history => {
+    if (trimmedSearchText.length > 0 && sortedHistory.length > 0) {
+      const newHistory = sortedHistory.filter(history => {
         return history.title
           .toLowerCase()
           .includes(trimmedSearchText.toLowerCase())
       })
-      setFilterHistories(filteredHistories)
+      setFilteredHistory(newHistory)
       return
     }
-    setFilterHistories(sortedHistories)
-  }, [histories, trimmedSearchText])
+    setFilteredHistory(sortedHistory)
+  }, [history, trimmedSearchText])
 
   return {
     searchText,
     setSearchText,
     trimmedSearchText,
-    filterHistories,
-    hasHistory,
-    hasSearchResult
+    filteredHistory,
+    hasHistory
   }
 }

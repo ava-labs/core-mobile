@@ -6,7 +6,13 @@ import {
 } from 'common/utils/alertWithTextInput'
 import { showSnackbar } from 'common/utils/toast'
 import React, { ReactNode, useCallback, useMemo, useState } from 'react'
-import { FlatList, FlatListProps, ListRenderItem, View } from 'react-native'
+import {
+  FlatList,
+  FlatListProps,
+  InteractionManager,
+  ListRenderItem,
+  View
+} from 'react-native'
 import { Gesture, GestureDetector } from 'react-native-gesture-handler'
 import Animated from 'react-native-reanimated'
 import { useDispatch, useSelector } from 'react-redux'
@@ -141,9 +147,12 @@ const FavoriteItem = ({
   }, [dispatch, item.url])
 
   const handleHideFavoriteAlert = useCallback((): void => {
-    inputRef?.current?.focus()
-    isRenameFavoriteVisible.value = false
     dismissAlertWithTextInput()
+    inputRef?.current?.focus()
+
+    InteractionManager.runAfterInteractions(() => {
+      isRenameFavoriteVisible.value = false
+    })
   }, [inputRef, isRenameFavoriteVisible])
 
   const handleSaveFavoriteTitle = useCallback(
@@ -160,8 +169,10 @@ const FavoriteItem = ({
   )
 
   const handleRenameFavorite = useCallback(() => {
-    inputRef?.current?.blur()
     isRenameFavoriteVisible.value = true
+    InteractionManager.runAfterInteractions(() => {
+      inputRef?.current?.blur()
+    })
     showAlertWithTextInput({
       title: 'Rename favorite',
       description: 'Enter a new name for this favorite',
@@ -175,10 +186,12 @@ const FavoriteItem = ({
           style: 'default',
           text: 'Save',
           shouldDisable: (values: Record<string, string>) => {
-            return values.favoriteTitle?.length === 0
+            return (
+              values.favoriteTitle?.length === 0 ||
+              values.favoriteTitle === item?.title
+            )
           },
-          onPress: (values: Record<string, string>) =>
-            handleSaveFavoriteTitle(values)
+          onPress: handleSaveFavoriteTitle
         }
       ]
     })
@@ -212,7 +225,7 @@ const FavoriteItem = ({
     }
     setTimeout(() => {
       setIsLongPressActive(false)
-    }, 300)
+    }, 200)
   }, [isLongPressActive, onPress, item])
 
   const handleLongPress = useCallback(() => {

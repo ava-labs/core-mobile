@@ -3,16 +3,16 @@ import {
   ANIMATED,
   AnimatedPressable,
   Icons,
-  Pressable,
   Text,
   useTheme,
   View
 } from '@avalabs/k2-alpine'
-import { BlurView } from 'expo-blur'
+import { BlurViewWithFallback } from 'common/components/BlurViewWithFallback'
 import { Image } from 'expo-image'
 import { useFocusEffect } from 'expo-router'
-import React, { useEffect, useState, useMemo } from 'react'
-import { ViewStyle } from 'react-native'
+import React, { useEffect, useMemo, useState } from 'react'
+import { Platform, ViewStyle } from 'react-native'
+import { Pressable } from 'react-native-gesture-handler'
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -135,11 +135,7 @@ export const TabItem = ({
               style={{ height: '100%' }}
             />
 
-            <BlurView
-              intensity={50}
-              tint={theme.isDark ? 'dark' : 'light'}
-              experimentalBlurMethod="dimezisBlurView"
-              renderToHardwareTextureAndroid={false}
+            <BlurViewWithFallback
               style={{
                 position: 'absolute',
                 top: 0,
@@ -150,8 +146,9 @@ export const TabItem = ({
                 justifyContent: 'space-between',
                 backgroundColor: alpha(
                   theme.isDark ? '#666666' : '#E6E6EA',
-                  0.6
+                  Platform.OS === 'ios' ? 0.6 : 1
                 ),
+
                 height: 36,
                 paddingLeft: 12,
                 paddingRight: 8
@@ -166,14 +163,18 @@ export const TabItem = ({
                 }}>
                 {title}
               </Text>
-              <Pressable hitSlop={10} onPress={onClose}>
+
+              <Pressable
+                hitSlop={10}
+                onTouchStart={e => e.stopPropagation()}
+                onPress={onClose}>
                 <Icons.Content.Close
                   color={theme.colors.$textPrimary}
                   height={24}
                   width={24}
                 />
               </Pressable>
-            </BlurView>
+            </BlurViewWithFallback>
           </View>
         </View>
       </Animated.View>

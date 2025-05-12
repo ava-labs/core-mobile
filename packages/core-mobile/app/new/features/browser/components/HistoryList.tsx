@@ -28,12 +28,18 @@ export const HistoryList = (
 ): ReactNode => {
   const dispatch = useDispatch()
   const { theme } = useTheme()
-  const { trimmedSearchText, setSearchText, filterHistories } =
+  const { trimmedSearchText, setSearchText, filteredHistory } =
     useSearchHistory()
   const { urlEntry, handleUrlSubmit } = useBrowserContext()
 
   useEffect(() => {
-    setSearchText(urlEntry)
+    if (urlEntry.length) {
+      setSearchText(urlEntry)
+    } else {
+      setTimeout(() => {
+        setSearchText('')
+      }, 300)
+    }
   }, [setSearchText, urlEntry])
 
   const handlePress = (item: History): void => {
@@ -103,8 +109,6 @@ export const HistoryList = (
   }
 
   function renderSearchEngine(): ReactNode {
-    if (!urlEntry) return null
-
     return (
       <Pressable
         onPress={handleSearchEngine}
@@ -154,7 +158,7 @@ export const HistoryList = (
         {...props}
         inverted
         ListHeaderComponent={renderSearchEngine}
-        data={filterHistories}
+        data={filteredHistory}
         renderItem={renderItem}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
