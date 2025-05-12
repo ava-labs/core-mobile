@@ -9,7 +9,7 @@
         <item name="android:colorBackground">#000000</item>
         <item name="android:statusBarColor">#000000</item>
 
-         <!--style for react-native-coummunity/datetimepicker -->
+         <!--style for react-native-community/datetimepicker -->
         <item name="android:datePickerDialogTheme">@style/MyDatePickerDialogTheme</item>
         <item name="bottomNavigationStyle">@style/CustomBottomNavigationStyle</item>
 
@@ -27,23 +27,25 @@
         <item name="itemBackground">@null</item> <!--disable ripple effect -->
     </style>
 
-    <style name="MyDatePickerDialogTheme" parent="Theme.AppCompat.DayNight.Dialog">
-        <!--calender background color -->
+    <style name="MyDatePickerDialogTheme" parent="Theme.Material3.Light.Dialog">
+        <!-- Calendar background color -->
         <item name="android:windowBackground">@color/neutral850</item>
-        <!-- week textColor-->
-        <item name="android:textColorSecondary">@color/neutral400</item>
-        <!-- button text color -->
-        <item name="colorAccent">@color/neutral50</item>
-        <item name="colorPrimary">@color/neutral50</item>
-        <!--selected item color-->
-        <item name="colorControlActivated">@color/neutral50</item>
-        <!-- primary text color -->
+
+        <!-- Text colors -->
         <item name="android:textColorPrimary">@color/neutral50</item>
-        <!--day , month-->
         <item name="android:textColorPrimaryInverse">@color/textPrimary</item>
-        <!-- year-->
+        <item name="android:textColorSecondary">@color/neutral400</item>
         <item name="android:textColorSecondaryInverse">@color/neutral400</item>
-         
+
+        <!-- Selected item color -->
+        <item name="colorControlActivated">@color/neutral50</item>
+
+        <!-- Dialog button text color -->
+        <item name="android:textColor">@color/neutral50</item>
+        <item name="colorAccent">@color/neutral50</item> <!-- May be needed for older Androids -->
+        <item name="colorPrimary">@color/neutral50</item>
+
+        <!-- Date picker style -->
         <item name="android:datePickerStyle">@style/MyDatePickerStyle</item>
     </style>
 
