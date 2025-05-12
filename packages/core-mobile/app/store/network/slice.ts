@@ -1,37 +1,17 @@
 import {
   BITCOIN_NETWORK,
-  BITCOIN_TEST_NETWORK,
   ChainId as ChainsSDKChainId,
   Network
 } from '@avalabs/core-chains-sdk'
 import { createAction, createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { getNetworksFromCache } from 'hooks/networks/utils/getNetworksFromCache'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
-import {
-  AVALANCHE_MAINNET_NETWORK,
-  AVALANCHE_TESTNET_NETWORK,
-  ETHEREUM_NETWORK,
-  ETHEREUM_NETWORK_TEST,
-  NETWORK_P,
-  NETWORK_P_TEST
-} from 'services/network/consts'
 import { RootState } from '../types'
 import { ChainID, Networks, NetworkState } from './types'
 
 export const defaultNetwork = BITCOIN_NETWORK
 
 export const noActiveNetwork = 0
-
-export const alwaysEnabledNetworks = [
-  AVALANCHE_MAINNET_NETWORK,
-  AVALANCHE_TESTNET_NETWORK,
-  NETWORK_P,
-  NETWORK_P_TEST,
-  BITCOIN_NETWORK,
-  BITCOIN_TEST_NETWORK,
-  ETHEREUM_NETWORK,
-  ETHEREUM_NETWORK_TEST
-]
 
 export const alwaysEnabledChainIds = [
   ChainsSDKChainId.AVALANCHE_MAINNET_ID,
@@ -194,7 +174,7 @@ export const selectEnabledNetworks = (state: RootState): Network[] => {
   const isDeveloperMode = selectIsDeveloperMode(state)
   const networks = getNetworksFromCache()
 
-  if (networks === undefined) return alwaysEnabledNetworks
+  if (networks === undefined) return []
   return enabledChainIds.reduce((acc, chainId) => {
     const network = networks[chainId]
     if (network && network.isTestnet === isDeveloperMode) {
