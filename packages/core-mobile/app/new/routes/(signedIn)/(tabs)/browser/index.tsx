@@ -93,11 +93,9 @@ const Browser = (): React.ReactNode => {
   })
 
   useFocusEffect(() => {
-    if (Number(Platform.Version) > 29) {
-      KeyboardController.setInputMode(
-        AndroidSoftInputModes.SOFT_INPUT_ADJUST_NOTHING
-      )
-    }
+    KeyboardController.setInputMode(
+      AndroidSoftInputModes.SOFT_INPUT_ADJUST_NOTHING
+    )
   })
 
   return (

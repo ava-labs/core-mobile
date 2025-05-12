@@ -1,9 +1,12 @@
 import { useBottomTabBarHeight as useRNTabBarHeight } from 'react-native-bottom-tabs'
 
-export function useBottomTabBarHeight(fallback = 0): number {
+// This hook throws an error if it's not under a Tab Navigator
+// Use this hook instead of importing react-native-bottom-tabs directly
+// In case there is no Tab Navigator, then tab bar has no height
+export function useBottomTabBarHeight(): number {
   try {
     return useRNTabBarHeight()
   } catch (e) {
-    return fallback
+    return 0
   }
 }

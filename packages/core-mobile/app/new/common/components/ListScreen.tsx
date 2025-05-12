@@ -273,8 +273,7 @@ export const ListScreen = <T,>({
         bottomOffset =
           keyboard.height -
           insets.bottom -
-          tabBarHeight -
-          (Platform.OS === 'ios' ? 16 : 56)
+          (Platform.OS === 'ios' ? 16 : tabBarHeight - 16)
       } else {
         bottomOffset = Platform.OS === 'ios' ? insets.bottom : 0
       }

@@ -226,7 +226,7 @@ export const BrowserControls = (): ReactNode => {
           />
         </Animated.View>
 
-        <KeyboardAvoidingView keyboardVerticalOffset={0}>
+        <KeyboardAvoidingView>
           <Animated.View
             style={[
               gestureControlStyle,
