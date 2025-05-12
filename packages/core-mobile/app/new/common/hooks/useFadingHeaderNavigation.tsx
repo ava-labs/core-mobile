@@ -23,11 +23,13 @@ import Animated, {
  */
 import { useFocusEffect, useNavigation } from '@react-navigation/native'
 import { StackNavigationOptions } from '@react-navigation/stack'
+import Grabber from 'common/components/Grabber'
 
 export const useFadingHeaderNavigation = ({
   header,
   targetLayout,
   shouldHeaderHaveGrabber = false,
+  hideHeaderBackground = false,
   hasSeparator = true,
   shouldDelayBlurOniOS = false,
   hasParent = false,
@@ -37,6 +39,7 @@ export const useFadingHeaderNavigation = ({
   header?: React.ReactNode
   targetLayout?: LayoutRectangle
   shouldHeaderHaveGrabber?: boolean
+  hideHeaderBackground?: boolean
   hasSeparator?: boolean
   shouldDelayBlurOniOS?: boolean
   hasParent?: boolean
@@ -122,20 +125,27 @@ export const useFadingHeaderNavigation = ({
   // eslint-disable-next-line sonarjs/cognitive-complexity
   useFocusEffect(() => {
     const navigationOptions: StackNavigationOptions = {
-      headerBackground: () => (
-        <BlurredBackgroundView
-          shouldDelayBlurOniOS={shouldDelayBlurOniOS}
-          hasGrabber={shouldHeaderHaveGrabber}
-          separator={
-            hasSeparator
-              ? {
-                  position: 'bottom',
-                  opacity: targetHiddenProgress
-                }
-              : undefined
-          }
-        />
-      ),
+      headerBackground: () =>
+        hideHeaderBackground ? (
+          shouldHeaderHaveGrabber ? (
+            shouldHeaderHaveGrabber === true && <Grabber />
+          ) : (
+            <View style={{ flex: 1 }} />
+          )
+        ) : (
+          <BlurredBackgroundView
+            shouldDelayBlurOniOS={shouldDelayBlurOniOS}
+            hasGrabber={shouldHeaderHaveGrabber}
+            separator={
+              hasSeparator
+                ? {
+                    position: 'bottom',
+                    opacity: targetHiddenProgress
+                  }
+                : undefined
+            }
+          />
+        ),
       headerTitleStyle: {
         height: '100%',
         justifyContent: 'center'

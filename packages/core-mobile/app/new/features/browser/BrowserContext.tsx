@@ -1,5 +1,5 @@
 import React, { RefObject, useEffect, useRef, useState } from 'react'
-import { TextInput } from 'react-native'
+import { InteractionManager, TextInput } from 'react-native'
 import { SharedValue, useSharedValue } from 'react-native-reanimated'
 import { WebViewProgressEvent } from 'react-native-webview/lib/WebViewTypes'
 import { useDispatch, useSelector } from 'react-redux'
@@ -15,6 +15,7 @@ export type BrowserContextType = {
     Record<string, React.RefObject<BrowserTabRef> | null>
   >
   showRecentSearches: SharedValue<boolean>
+  isFocused: SharedValue<boolean>
   isRenameFavoriteVisible: SharedValue<boolean>
   handleClearAndFocus: () => void
   handleUrlSubmit: (url?: string) => void
@@ -31,13 +32,13 @@ function useBrowserContextValue(): BrowserContextType {
   const [urlEntry, setUrlEntry] = useState<string>(
     activeTab?.activeHistory?.url ?? ''
   )
-
   const inputRef = useRef<TextInput>(null)
   const browserRefs = useRef<Record<string, RefObject<BrowserTabRef> | null>>(
     {}
   )
 
   const progress = useSharedValue(0)
+  const isFocused = useSharedValue(false)
   const isRenameFavoriteVisible = useSharedValue(false)
   const showRecentSearches = useSharedValue(false)
 
@@ -55,49 +56,43 @@ function useBrowserContextValue(): BrowserContextType {
     if (!url) return
 
     if (inputRef?.current?.isFocused()) {
-      inputRef?.current?.blur()
+      InteractionManager.runAfterInteractions(() => {
+        inputRef?.current?.blur()
+      })
     }
 
     const normalized = normalizeUrlWithHttps(url)
 
     if (isValidHttpUrl(normalized)) {
-      setUrlEntry(normalized)
-      if (activeTab?.id && browserRefs.current[activeTab.id]?.current) {
-        dispatch(
-          addHistoryForActiveTab({
-            title: normalized,
-            url: normalized
-          })
-        )
-        browserRefs.current[activeTab.id]?.current?.loadUrl(normalized)
-      }
+      openUrl(normalized)
     } else {
-      openGoogleSearch(url)
+      const googleUrl =
+        'https://www.google.com/search?q=' + encodeURIComponent(url)
+      openUrl(googleUrl)
+    }
+  }
+
+  const openUrl = (url: string): void => {
+    setUrlEntry(url)
+    if (activeTab?.id && browserRefs.current[activeTab.id]?.current) {
+      dispatch(
+        addHistoryForActiveTab({
+          title: url,
+          url: url
+        })
+      )
+
+      browserRefs.current[activeTab.id]?.current?.loadUrl(url)
     }
   }
 
   const handleClearAndFocus = (): void => {
     setUrlEntry('')
     if (!inputRef?.current?.isFocused()) {
-      inputRef?.current?.focus()
-    }
-  }
-
-  const openGoogleSearch = (url: string): void => {
-    if (!activeTab?.id) return
-
-    const googleUrl =
-      'https://www.google.com/search?q=' + encodeURIComponent(url)
-
-    dispatch(
-      addHistoryForActiveTab({
-        title: url,
-        url: googleUrl
+      InteractionManager.runAfterInteractions(() => {
+        inputRef?.current?.focus()
       })
-    )
-
-    setUrlEntry(googleUrl)
-    browserRefs.current[activeTab.id]?.current?.loadUrl(googleUrl)
+    }
   }
 
   const onProgress = (event: WebViewProgressEvent): void => {
@@ -109,6 +104,7 @@ function useBrowserContextValue(): BrowserContextType {
     browserRefs,
     progress,
     urlEntry,
+    isFocused,
     isRenameFavoriteVisible,
     showRecentSearches,
     handleClearAndFocus,

@@ -18,6 +18,7 @@ import Animated, {
   runOnJS,
   useAnimatedStyle,
   useSharedValue,
+  withDelay,
   withTiming
 } from 'react-native-reanimated'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
@@ -29,13 +30,10 @@ import { HistoryList } from './HistoryList'
 
 export const BrowserControls = (): ReactNode => {
   const { theme } = useTheme()
-  const { inputRef, isRenameFavoriteVisible, showRecentSearches } =
+  const { inputRef, isRenameFavoriteVisible, showRecentSearches, isFocused } =
     useBrowserContext()
   const insets = useSafeAreaInsets()
   const tabBarHeight = useBottomTabBarHeight()
-
-  const isFocused = useSharedValue(false)
-
   const gestureProgress = useSharedValue(0)
 
   const onCollapse = (): void => {
@@ -66,27 +64,48 @@ export const BrowserControls = (): ReactNode => {
     })
 
   const historyStyle = useAnimatedStyle(() => {
+    let opacity = 0
+
+    if (showRecentSearches.value) {
+      if (isRenameFavoriteVisible.value) {
+        opacity = 1
+      } else if (isFocused.value) {
+        opacity = 1 - gestureProgress.value
+      }
+    }
+
     return {
-      opacity: withTiming(
-        showRecentSearches.value &&
-          (isFocused.value || isRenameFavoriteVisible.value)
-          ? 1 - gestureProgress.value
-          : 0,
-        ANIMATED.TIMING_CONFIG
+      opacity: withDelay(
+        showRecentSearches.value && isFocused.value ? 250 : 0,
+        withTiming(opacity, {
+          ...ANIMATED.TIMING_CONFIG,
+          duration: 250
+        })
       ),
       zIndex: showRecentSearches.value ? 1 : -1
     }
   })
 
   const favoritesStyle = useAnimatedStyle(() => {
+    let opacity = 0
+
+    if (!showRecentSearches.value) {
+      if (isRenameFavoriteVisible.value) {
+        opacity = 1
+      } else if (isFocused.value) {
+        opacity = 1 - gestureProgress.value
+      }
+    }
+
     return {
-      opacity: withTiming(
-        !showRecentSearches.value &&
-          (isFocused.value || isRenameFavoriteVisible.value)
-          ? 1 - gestureProgress.value
-          : 0,
-        ANIMATED.TIMING_CONFIG
-      )
+      opacity: withDelay(
+        !showRecentSearches.value && isFocused.value ? 250 : 0,
+        withTiming(opacity, {
+          ...ANIMATED.TIMING_CONFIG,
+          duration: 250
+        })
+      ),
+      zIndex: showRecentSearches.value ? -1 : 1
     }
   })
 
@@ -95,7 +114,9 @@ export const BrowserControls = (): ReactNode => {
       transform: [
         {
           scale: withTiming(
-            isFocused.value || isRenameFavoriteVisible.value
+            isRenameFavoriteVisible.value
+              ? 1
+              : isFocused.value
               ? 1 - gestureProgress.value * 0.1
               : 0.9,
             ANIMATED.TIMING_CONFIG
@@ -108,10 +129,15 @@ export const BrowserControls = (): ReactNode => {
   const focusStyle = useAnimatedStyle(() => {
     return {
       opacity: withTiming(
-        isFocused.value || isRenameFavoriteVisible.value
+        isRenameFavoriteVisible.value
+          ? 1
+          : isFocused.value
           ? 1 - gestureProgress.value
           : 0,
-        ANIMATED.TIMING_CONFIG
+        {
+          ...ANIMATED.TIMING_CONFIG,
+          duration: 250
+        }
       )
     }
   })
@@ -142,39 +168,33 @@ export const BrowserControls = (): ReactNode => {
 
   const browserInputStyle = useAnimatedStyle(() => {
     return {
-      backgroundColor: isFocused.value ? 'transparent' : backgroundColor
+      backgroundColor:
+        isRenameFavoriteVisible.value || isFocused.value
+          ? 'transparent'
+          : backgroundColor
     }
   })
 
   const contentStyle = useAnimatedStyle(() => {
+    let zIndex = -1
+    if (
+      showRecentSearches.value ||
+      isRenameFavoriteVisible.value ||
+      isFocused.value
+    ) {
+      zIndex = 10
+    } else {
+      zIndex = 1
+    }
+
     return {
       pointerEvents: isFocused.value ? 'auto' : 'none',
-      zIndex: isFocused.value ? 10 : -1
+      zIndex
     }
   })
 
   return (
     <>
-      <KeyboardStickyView
-        style={{
-          zIndex: 11
-        }}
-        offset={{ opened: tabBarHeight, closed: 0 }}>
-        <Animated.View
-          style={[
-            browserInputStyle,
-            {
-              padding: HORIZONTAL_MARGIN,
-              paddingVertical: 12
-            }
-          ]}>
-          <BrowserInput
-            isFocused={isFocused}
-            setIsFocused={value => (isFocused.value = value)}
-          />
-        </Animated.View>
-      </KeyboardStickyView>
-
       <Animated.View
         style={[
           contentStyle,
@@ -206,30 +226,15 @@ export const BrowserControls = (): ReactNode => {
           />
         </Animated.View>
 
-        <KeyboardAvoidingView>
+        <KeyboardAvoidingView keyboardVerticalOffset={0}>
           <Animated.View
             style={[
               gestureControlStyle,
               {
                 flex: 1,
-                marginBottom: 24
+                marginBottom: BROWSER_CONTROLS_HEIGHT / 2
               }
             ]}>
-            <Animated.View
-              style={[
-                favoritesStyle,
-                scaleStyle,
-                {
-                  flex: 1
-                }
-              ]}>
-              <FavoritesList
-                contentContainerStyle={{
-                  paddingTop: insets.top + 50,
-                  paddingBottom: insets.top
-                }}
-              />
-            </Animated.View>
             <Animated.View
               style={[
                 historyStyle,
@@ -244,8 +249,23 @@ export const BrowserControls = (): ReactNode => {
               ]}>
               <HistoryList
                 contentContainerStyle={{
-                  paddingTop: 30,
-                  paddingBottom: BROWSER_CONTROLS_HEIGHT
+                  paddingTop: BROWSER_CONTROLS_HEIGHT / 3,
+                  paddingBottom: insets.top + 30
+                }}
+              />
+            </Animated.View>
+            <Animated.View
+              style={[
+                favoritesStyle,
+                scaleStyle,
+                {
+                  flex: 1
+                }
+              ]}>
+              <FavoritesList
+                contentContainerStyle={{
+                  paddingTop: insets.top + 50,
+                  paddingBottom: insets.top
                 }}
               />
             </Animated.View>
@@ -313,6 +333,23 @@ export const BrowserControls = (): ReactNode => {
           </GestureDetector>
         </Animated.View>
       </Animated.View>
+
+      <KeyboardStickyView
+        style={{
+          zIndex: 11
+        }}
+        offset={{ opened: tabBarHeight, closed: 0 }}>
+        <Animated.View
+          style={[
+            browserInputStyle,
+            {
+              padding: HORIZONTAL_MARGIN,
+              paddingVertical: 12
+            }
+          ]}>
+          <BrowserInput />
+        </Animated.View>
+      </KeyboardStickyView>
     </>
   )
 }

@@ -2,8 +2,11 @@ import React from 'react'
 import { Stack } from 'common/components/Stack'
 import { stackNavigatorScreenOptions } from 'common/consts/screenOptions'
 import { BrowserProvider } from 'features/browser/BrowserContext'
+import { View } from 'react-native'
+import { useModalScreenOptions } from 'common/hooks/useModalScreenOptions'
 
 export default function BrowserLayout(): JSX.Element {
+  const { modalScreensOptions } = useModalScreenOptions()
   return (
     <BrowserProvider>
       <Stack screenOptions={stackNavigatorScreenOptions}>
@@ -27,16 +30,14 @@ export default function BrowserLayout(): JSX.Element {
             }
           }}
         />
-        <Stack.Screen name="history" />
+        <Stack.Screen
+          name="history"
+          options={{
+            headerTransparent: true
+          }}
+        />
 
         {/* 
-          <Stack.Screen
-          name={AppNavigation.Modal.BrowserTabCloseAll}
-          options={{
-            presentation: 'transparentModal'
-          }}
-          component={AreYouSureModal}
-          />
           <Stack.Screen
           name={AppNavigation.Modal.UseWalletConnect}
           options={{

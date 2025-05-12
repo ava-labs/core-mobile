@@ -5,6 +5,7 @@ import {
   SPRING_LINEAR_TRANSITION,
   Text
 } from '@avalabs/k2-alpine'
+import { useBottomTabBarHeight as useRNTabBarHeight } from '@react-navigation/bottom-tabs'
 import { useHeaderHeight } from '@react-navigation/elements'
 import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
 import { getListItemEnteringAnimation } from 'common/utils/animations'
@@ -20,6 +21,7 @@ import {
   LayoutRectangle,
   NativeScrollEvent,
   NativeSyntheticEvent,
+  Platform,
   ScrollViewProps,
   StyleProp,
   View,
@@ -68,12 +70,24 @@ interface ListScreenProps<T>
   hasParent?: boolean
   /** Whether this screen is presented as a modal */
   isModal?: boolean
+  /** Whether this screen has a tab bar */
+  hasTabBar?: boolean
+  /** Whether to show the navigation header title */
+  showNavigationHeaderTitle?: boolean
   /** Optional function to render a custom sticky header component */
   renderHeader?: () => React.ReactNode
   /** Optional function to render content in the navigation bar's right side */
   renderHeaderRight?: () => React.ReactNode
   /** Optional function to render content when the list is empty */
   renderEmpty?: () => React.ReactNode
+}
+
+export function useSafeBottomTabBarHeight(fallback = 0): number {
+  try {
+    return useRNTabBarHeight()
+  } catch (e) {
+    return fallback
+  }
 }
 
 const AnimatedFlatList = Animated.createAnimatedComponent(FlatList)
@@ -84,6 +98,8 @@ export const ListScreen = <T,>({
   navigationTitle,
   hasParent,
   isModal,
+  hasTabBar,
+  showNavigationHeaderTitle = true,
   renderEmpty,
   renderHeader,
   renderHeaderRight,
@@ -96,14 +112,17 @@ export const ListScreen = <T,>({
   >()
   const headerRef = useRef<View>(null)
   const contentHeaderHeight = useSharedValue<number>(0)
-  const { height } = useKeyboardState()
+  const keyboard = useKeyboardState()
 
   const { onScroll, scrollY, targetHiddenProgress } = useFadingHeaderNavigation(
     {
       header: <NavigationTitleHeader title={navigationTitle ?? title ?? ''} />,
       targetLayout: headerLayout,
       shouldHeaderHaveGrabber: isModal,
+      hideHeaderBackground: true,
+      hasSeparator: false,
       hasParent,
+      showNavigationHeaderTitle,
       renderHeaderRight
     }
   )
@@ -142,7 +161,7 @@ export const ListScreen = <T,>({
     const translateY = interpolate(
       scrollY.value,
       [0, contentHeaderHeight.value],
-      [0, -contentHeaderHeight.value],
+      [0, -contentHeaderHeight.value - 8],
       'clamp'
     )
 
@@ -231,7 +250,15 @@ export const ListScreen = <T,>({
     )
   }, [renderEmpty])
 
+  const tabBarHeight = useSafeBottomTabBarHeight()
+
   const contentContainerStyle = useMemo(() => {
+    let paddingBottom = insets.bottom + 16
+
+    if (hasTabBar) {
+      paddingBottom = Platform.OS === 'ios' ? insets.bottom + 32 : 16
+    }
+
     return [
       rest?.contentContainerStyle,
       data.length === 0
@@ -241,18 +268,32 @@ export const ListScreen = <T,>({
           }
         : {},
       {
-        paddingBottom: insets.bottom + 16
+        paddingBottom
       }
     ] as StyleProp<ViewStyle>[]
-  }, [rest?.contentContainerStyle, data.length, insets.bottom])
+  }, [insets.bottom, hasTabBar, rest?.contentContainerStyle, data.length])
 
   const animatedContainerStyle = useAnimatedStyle(() => {
+    let bottomOffset = keyboard.isVisible ? keyboard.height - insets.bottom : 0
+
+    if (hasTabBar) {
+      if (keyboard.isVisible) {
+        bottomOffset =
+          keyboard.height -
+          insets.bottom -
+          tabBarHeight -
+          (Platform.OS === 'ios' ? 16 : 56)
+      } else {
+        bottomOffset = Platform.OS === 'ios' ? insets.bottom : 0
+      }
+    }
+
     return {
       // TODO: Couldn't make Android work with keyboard avoidance, so we need to add a bottom offset
       // iOS works with automaticallyAdjustKeyboardInsets but we do keep the same thing here for consistency
-      paddingBottom: withTiming(height - insets.bottom, {
+      paddingBottom: withTiming(bottomOffset, {
         ...ANIMATED.TIMING_CONFIG,
-        duration: 100
+        duration: 50
       })
     }
   })

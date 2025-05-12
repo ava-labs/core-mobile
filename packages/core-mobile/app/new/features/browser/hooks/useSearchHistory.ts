@@ -9,7 +9,6 @@ interface ReturnProps {
   trimmedSearchText: string
   filterHistories: History[]
   hasHistory: boolean
-  hasSearchResult: boolean
 }
 
 export const useSearchHistory = (): ReturnProps => {
@@ -18,7 +17,6 @@ export const useSearchHistory = (): ReturnProps => {
   const [searchText, setSearchText] = useState('')
   const [filterHistories, setFilterHistories] = useState(histories)
   const hasHistory = histories.length > 0
-  const hasSearchResult = filterHistories.length > 0
 
   const trimmedSearchText = useMemo(() => searchText.trim(), [searchText])
 
@@ -43,7 +41,6 @@ export const useSearchHistory = (): ReturnProps => {
     setSearchText,
     trimmedSearchText,
     filterHistories,
-    hasHistory,
-    hasSearchResult
+    hasHistory
   }
 }
