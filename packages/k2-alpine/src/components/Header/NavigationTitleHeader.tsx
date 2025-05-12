@@ -13,7 +13,13 @@ export const NavigationTitleHeader = memo(
     shouldMaskSubtitle?: boolean
   }): JSX.Element => {
     return (
-      <View style={[{ alignItems: 'center' }]}>
+      <View
+        style={[
+          {
+            alignItems: 'center',
+            justifyContent: 'center'
+          }
+        ]}>
         <Text
           numberOfLines={1}
           sx={{

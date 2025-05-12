@@ -1,4 +1,4 @@
-import { AppListenerEffectAPI } from 'store/index'
+import { AppListenerEffectAPI } from 'store/types'
 import { selectAccounts } from 'store/account'
 import { registerDeviceToNotificationSender } from 'services/notifications/registerDeviceToNotificationSender'
 import FCMService from 'services/fcm/FCMService'

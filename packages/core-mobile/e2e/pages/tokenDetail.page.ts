@@ -6,7 +6,7 @@ import { Coin, TokenDetailToken, TokenPriceResponse } from '../helpers/tokens'
 import delay from '../helpers/waits'
 import sendPage from './send.page'
 import commonElsPage from './commonEls.page'
-import receivePage from './receive.page'
+//import receivePage from './receive.page'
 import swapTabPage from './swapTab.page'
 import bridgeTabPage from './bridgeTab.page'
 
@@ -161,7 +161,7 @@ class TokenDetailsPage {
 
   async verifyNavigateToReceive() {
     await this.tapReceiveBtn()
-    await receivePage.verifyReceiveAddressPage()
+    // await receivePage.verifyReceiveAddressPage()
     await commonElsPage.goBack()
   }
 

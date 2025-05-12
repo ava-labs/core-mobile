@@ -8,3 +8,8 @@ export type DropdownSelection = {
   onDeselect?: (index: IndexPath) => void
   useAnchorRect?: boolean
 }
+
+export enum NavigationPresentationMode {
+  MODAL = 'modal',
+  FORM_SHEET = 'formSheet'
+}

@@ -1,5 +1,5 @@
 import { createSelector, createSlice, PayloadAction } from '@reduxjs/toolkit'
-import { RootState } from 'store'
+import { RootState } from 'store/types'
 import {
   AppConfig,
   BridgeConfig,

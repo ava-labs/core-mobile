@@ -14,6 +14,8 @@ import AnalyticsService from 'services/analytics/AnalyticsService'
 import { FlatList } from 'react-native-gesture-handler'
 import { AccountItem } from './AccountItem'
 
+const CARD_PADDING = 12
+
 export const ACCOUNT_CARD_SIZE = 140
 
 const AnimatedFlatList = Animated.createAnimatedComponent(FlatList)
@@ -50,7 +52,8 @@ export const AccountList = (): React.JSX.Element => {
   const gotoAccountDetails = useCallback(
     (accountIndex: number): void => {
       navigate({
-        pathname: './accountSettings/account',
+        // @ts-ignore TODO: make routes typesafe
+        pathname: '/accountSettings/account',
         params: { accountIndex: accountIndex.toString() }
       })
     },
@@ -58,10 +61,14 @@ export const AccountList = (): React.JSX.Element => {
   )
 
   const goToManageAccounts = useCallback(() => {
-    navigate('./accountSettings/manageAccounts')
+    // @ts-ignore TODO: make routes typesafe
+    navigate('/accountSettings/manageAccounts')
   }, [navigate])
 
-  const renderSeparator = useCallback(() => <View sx={{ width: 16 }} />, [])
+  const renderSeparator = useCallback(
+    () => <View sx={{ width: CARD_PADDING }} />,
+    []
+  )
 
   const contentContainerJustifyContent = useMemo(() => {
     return accountsToDisplay.length < 2 ? 'center' : undefined
@@ -84,7 +91,7 @@ export const AccountList = (): React.JSX.Element => {
   const onContentSizeChange = useCallback(() => {
     flatListRef.current?.scrollToOffset({
       offset:
-        (ACCOUNT_CARD_SIZE + 16) *
+        (ACCOUNT_CARD_SIZE + CARD_PADDING) *
         (activeAccount?.index ?? accountsToDisplay.length)
     })
   }, [activeAccount?.index, accountsToDisplay.length])
@@ -97,7 +104,8 @@ export const AccountList = (): React.JSX.Element => {
         onContentSizeChange={onContentSizeChange}
         contentContainerStyle={{
           flexGrow: 1,
-          justifyContent: contentContainerJustifyContent
+          justifyContent: contentContainerJustifyContent,
+          paddingHorizontal: 16
         }}
         ref={flatListRef}
         scrollEventThrottle={16}
@@ -124,7 +132,7 @@ export const AccountList = (): React.JSX.Element => {
             <AnimatedPressable
               onPress={goToManageAccounts}
               style={{
-                marginLeft: 16,
+                marginLeft: CARD_PADDING,
                 backgroundColor: colors.$surfaceSecondary,
                 width: ACCOUNT_CARD_SIZE,
                 height: ACCOUNT_CARD_SIZE,
@@ -136,6 +144,7 @@ export const AccountList = (): React.JSX.Element => {
                 testID="manage_accounts"
                 variant="body2"
                 sx={{
+                  fontWeight: '500',
                   paddingHorizontal: 30
                 }}>
                 {accounts.length > 1

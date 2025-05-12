@@ -1,5 +1,5 @@
 import React from 'react'
-import { Separator, useTheme, View } from '@avalabs/k2-alpine'
+import { Separator, View } from '@avalabs/k2-alpine'
 import Animated, {
   SharedValue,
   useAnimatedStyle
@@ -10,18 +10,15 @@ import Grabber from './Grabber'
 const BlurredBackgroundView = ({
   hasGrabber = false,
   separator,
-  backgroundColor
+  shouldDelayBlurOniOS = false
 }: {
   hasGrabber?: boolean
   separator?: {
     opacity: SharedValue<number>
     position: 'top' | 'bottom'
   }
-  backgroundColor?: string
+  shouldDelayBlurOniOS?: boolean
 }): JSX.Element => {
-  const {
-    theme: { colors }
-  } = useTheme()
   const animatedBorderStyle = useAnimatedStyle(() => ({
     opacity: separator?.opacity.value
   }))
@@ -29,8 +26,7 @@ const BlurredBackgroundView = ({
   return (
     <View
       style={{
-        flex: 1,
-        backgroundColor: backgroundColor ?? colors.$surfacePrimary
+        flex: 1
       }}>
       {separator?.position === 'top' && (
         <Animated.View style={animatedBorderStyle}>
@@ -39,6 +35,7 @@ const BlurredBackgroundView = ({
       )}
       {hasGrabber === false && (
         <BlurViewWithFallback
+          shouldDelayBlurOniOS={shouldDelayBlurOniOS}
           style={{
             flex: 1
           }}

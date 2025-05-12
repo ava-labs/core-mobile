@@ -1,6 +1,6 @@
 import { isAnyOf } from '@reduxjs/toolkit'
 import { rpcErrors, JsonRpcError } from '@metamask/rpc-errors'
-import { AppListenerEffectAPI } from 'store'
+import { AppListenerEffectAPI } from 'store/types'
 import Logger from 'utils/Logger'
 import { WalletState } from 'store/app/types'
 import { onAppUnlocked, selectWalletState } from 'store/app/slice'

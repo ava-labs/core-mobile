@@ -9,7 +9,6 @@ export default function VerifyTotpCodeScreen(): JSX.Element {
     <VerifyCodeComponent
       onVerifyCode={onVerifyCode}
       onVerifySuccess={onVerifySuccess}
-      sx={{ marginTop: 25 }}
     />
   )
 }

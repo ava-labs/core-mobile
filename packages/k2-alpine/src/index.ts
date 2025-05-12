@@ -6,6 +6,7 @@ export { Icons } from './theme/tokens/Icons'
 export { Logos } from './theme/tokens/Logos'
 export * from './utils'
 export * from './const'
+export type { TextVariant } from './theme/tokens/text'
 
 import Constants from 'expo-constants'
 

@@ -1,10 +1,9 @@
-import { noop } from '@avalabs/core-utils-sdk'
 import {
   BalanceHeader,
   NavigationTitleHeader,
+  PriceChangeStatus,
   SegmentedControl,
   useTheme,
-  PriceChangeStatus,
   View
 } from '@avalabs/k2-alpine'
 import BlurredBarsContentLayout from 'common/components/BlurredBarsContentLayout'
@@ -15,7 +14,6 @@ import {
 } from 'common/components/CollapsibleTabs'
 import { LinearGradientBottomWrapper } from 'common/components/LinearGradientBottomWrapper'
 import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
-import { useAddStake } from 'features/stake/hooks/useAddStake'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
 import { useRouter } from 'expo-router'
 import {
@@ -27,22 +25,25 @@ import { ActionButtonTitle } from 'features/portfolio/assets/consts'
 import { CollectiblesScreen } from 'features/portfolio/collectibles/components/CollectiblesScreen'
 import { CollectibleFilterAndSortInitialState } from 'features/portfolio/collectibles/hooks/useCollectiblesFilterAndSort'
 import { DeFiScreen } from 'features/portfolio/defi/components/DeFiScreen'
+import { useSendSelectedToken } from 'features/send/store'
+import { useAddStake } from 'features/stake/hooks/useAddStake'
+import { useNavigateToSwap } from 'features/swap/hooks/useNavigateToSwap'
 import { useWatchlist } from 'hooks/watchlist/useWatchlist'
 import { useFormatCurrency } from 'new/common/hooks/useFormatCurrency'
 import React, { useCallback, useMemo, useRef, useState } from 'react'
 import {
+  InteractionManager,
   LayoutChangeEvent,
   LayoutRectangle,
   Platform,
-  StyleSheet,
-  InteractionManager
+  StyleSheet
 } from 'react-native'
 import Animated, {
   useAnimatedStyle,
   useSharedValue
 } from 'react-native-reanimated'
 import { useSelector } from 'react-redux'
-import { RootState } from 'store'
+import { RootState } from 'store/types'
 import { selectActiveAccount } from 'store/account'
 import {
   selectBalanceForAccountIsAccurate,
@@ -56,18 +57,20 @@ import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { selectSelectedCurrency } from 'store/settings/currency'
 import { selectIsPrivacyModeEnabled } from 'store/settings/securityPrivacy'
 import { useFocusedSelector } from 'utils/performance/useFocusedSelector'
+import { HiddenBalanceText } from 'common/components/HiddenBalanceText'
 
 const SEGMENT_ITEMS = ['Assets', 'Collectibles', 'DeFi']
 
 const PortfolioHomeScreen = (): JSX.Element => {
   const isPrivacyModeEnabled = useFocusedSelector(selectIsPrivacyModeEnabled)
+  const [_, setSelectedToken] = useSendSelectedToken()
   const { theme } = useTheme()
   const { navigate } = useRouter()
+  const { navigateToSwap } = useNavigateToSwap()
   const { addStake, canAddStake } = useAddStake()
   const [balanceHeaderLayout, setBalanceHeaderLayout] = useState<
     LayoutRectangle | undefined
   >()
-
   const selectedSegmentIndex = useSharedValue(0)
   const activeAccount = useFocusedSelector(selectActiveAccount)
   const isBalanceLoading = useFocusedSelector(selectIsLoadingBalances)
@@ -87,7 +90,7 @@ const PortfolioHomeScreen = (): JSX.Element => {
   const selectedCurrency = useSelector(selectSelectedCurrency)
   const { formatCurrency } = useFormatCurrency()
   const currencyBalance = useMemo(() => {
-    return !balanceAccurate && balanceTotalInCurrency === 0
+    return !balanceAccurate || balanceTotalInCurrency === 0
       ? '$' + UNKNOWN_AMOUNT
       : formatCurrency({ amount: balanceTotalInCurrency })
   }, [balanceAccurate, balanceTotalInCurrency, formatCurrency])
@@ -141,6 +144,22 @@ const PortfolioHomeScreen = (): JSX.Element => {
     []
   )
 
+  const handleSend = useCallback((): void => {
+    setSelectedToken(undefined)
+    // @ts-ignore TODO: make routes typesafe
+    navigate('/send')
+  }, [navigate, setSelectedToken])
+
+  const handleConnect = useCallback((): void => {
+    // @ts-ignore TODO: make routes typesafe
+    navigate('/walletConnectScan')
+  }, [navigate])
+
+  const handleBuy = useCallback((): void => {
+    // @ts-ignore TODO: make routes typesafe
+    navigate('/buy')
+  }, [navigate])
+
   const header = useMemo(
     () => (
       <NavigationTitleHeader
@@ -154,29 +173,76 @@ const PortfolioHomeScreen = (): JSX.Element => {
 
   const { onScroll, targetHiddenProgress } = useFadingHeaderNavigation({
     header,
-    targetLayout: balanceHeaderLayout
+    targetLayout: balanceHeaderLayout,
+    /*
+     * there's a bug on the Portfolio screen where the BlurView
+     * in the navigation header doesn't render correctly on initial load.
+     * To work around it, we delay the BlurView's rendering slightly
+     * so it captures the correct content behind it.
+     *
+     * note: we are also applying the same solution to the linear gradient bottom wrapper below
+     */
+    shouldDelayBlurOniOS: true
   })
 
   const animatedHeaderStyle = useAnimatedStyle(() => ({
     opacity: 1 - targetHiddenProgress.value
   }))
 
-  const ACTION_BUTTONS: ActionButton[] = useMemo(
-    () => [
-      { title: ActionButtonTitle.Send, icon: 'send', onPress: noop },
-      { title: ActionButtonTitle.Swap, icon: 'swap', onPress: noop },
-      { title: ActionButtonTitle.Buy, icon: 'buy', onPress: noop },
-      {
-        title: ActionButtonTitle.Stake,
-        icon: 'stake',
-        onPress: addStake,
-        disabled: !canAddStake
-      },
-      { title: ActionButtonTitle.Bridge, icon: 'bridge', onPress: noop },
-      { title: ActionButtonTitle.Connect, icon: 'connect', onPress: noop }
-    ],
-    [addStake, canAddStake]
-  )
+  const handleBridge = useCallback(() => {
+    navigate({
+      // @ts-ignore TODO: make routes typesafe
+      pathname: '/bridge'
+    })
+  }, [navigate])
+
+  const actionButtons = useMemo(() => {
+    const buttons: ActionButton[] = [
+      { title: ActionButtonTitle.Send, icon: 'send', onPress: handleSend }
+    ]
+    if (!isDeveloperMode) {
+      buttons.push({
+        title: ActionButtonTitle.Swap,
+        icon: 'swap',
+        onPress: () => navigateToSwap()
+      })
+    }
+    buttons.push({
+      title: ActionButtonTitle.Buy,
+      icon: 'buy',
+      onPress: handleBuy
+    })
+    buttons.push({
+      title: ActionButtonTitle.Stake,
+      icon: 'stake',
+      onPress: addStake,
+      disabled: !canAddStake
+    })
+    buttons.push({
+      title: ActionButtonTitle.Bridge,
+      icon: 'bridge',
+      onPress: handleBridge
+    })
+    buttons.push({
+      title: ActionButtonTitle.Connect,
+      icon: 'connect',
+      onPress: handleConnect
+    })
+    return buttons
+  }, [
+    addStake,
+    canAddStake,
+    handleSend,
+    handleBridge,
+    handleConnect,
+    handleBuy,
+    isDeveloperMode,
+    navigateToSwap
+  ])
+
+  const renderMaskView = useCallback((): JSX.Element => {
+    return <HiddenBalanceText variant={'heading2'} sx={{ lineHeight: 38 }} />
+  }, [])
 
   const renderHeader = useCallback((): JSX.Element => {
     return (
@@ -200,24 +266,32 @@ const PortfolioHomeScreen = (): JSX.Element => {
               accountName={activeAccount?.name ?? ''}
               formattedBalance={formattedBalance}
               currency={selectedCurrency}
-              priceChange={{
-                formattedPrice: `$${Math.abs(totalPriceChanged).toFixed(2)}`,
-                status: indicatorStatus,
-                formattedPercent
-              }}
+              priceChange={
+                totalPriceChanged > 0
+                  ? {
+                      formattedPrice: `$${Math.abs(totalPriceChanged).toFixed(
+                        2
+                      )}`,
+                      status: indicatorStatus,
+                      formattedPercent
+                    }
+                  : undefined
+              }
               errorMessage={
                 balanceAccurate ? undefined : 'Unable to load all balances'
               }
               isLoading={isLoading}
               isPrivacyModeEnabled={isPrivacyModeEnabled}
               isDeveloperModeEnabled={isDeveloperMode}
+              renderMaskView={renderMaskView}
             />
           </Animated.View>
         </View>
-        <ActionButtons buttons={ACTION_BUTTONS} />
+        <ActionButtons buttons={actionButtons} />
       </View>
     )
   }, [
+    renderMaskView,
     theme.colors.$surfacePrimary,
     handleBalanceHeaderLayout,
     animatedHeaderStyle,
@@ -231,7 +305,7 @@ const PortfolioHomeScreen = (): JSX.Element => {
     isLoading,
     isPrivacyModeEnabled,
     isDeveloperMode,
-    ACTION_BUTTONS
+    actionButtons
   ])
 
   const handleSelectSegment = useCallback(
@@ -258,18 +332,21 @@ const PortfolioHomeScreen = (): JSX.Element => {
 
   const handleGoToTokenDetail = useCallback(
     (localId: string): void => {
+      // @ts-ignore TODO: make routes typesafe
       navigate({ pathname: '/tokenDetail', params: { localId } })
     },
     [navigate]
   )
 
   const handleGoToTokenManagement = useCallback((): void => {
+    // @ts-ignore TODO: make routes typesafe
     navigate('/tokenManagement')
   }, [navigate])
 
   const handleGoToCollectibleDetail = useCallback(
     (localId: string, initial: CollectibleFilterAndSortInitialState): void => {
       navigate({
+        // @ts-ignore TODO: make routes typesafe
         pathname: '/collectibleDetail',
         params: { localId, initial: JSON.stringify(initial) }
       })
@@ -278,11 +355,13 @@ const PortfolioHomeScreen = (): JSX.Element => {
   )
 
   const handleGoToCollectibleManagement = useCallback((): void => {
+    // @ts-ignore TODO: make routes typesafe
     navigate('/collectibleManagement')
   }, [navigate])
 
   const handleGoToDiscoverCollectibles = useCallback((): void => {
     navigate({
+      // @ts-ignore TODO: make routes typesafe
       pathname: '/discoverCollectibles'
     })
   }, [navigate])
@@ -299,6 +378,7 @@ const PortfolioHomeScreen = (): JSX.Element => {
           <AssetsScreen
             goToTokenDetail={handleGoToTokenDetail}
             goToTokenManagement={handleGoToTokenManagement}
+            goToBuy={handleBuy}
           />
         )
       },
@@ -320,6 +400,7 @@ const PortfolioHomeScreen = (): JSX.Element => {
   }, [
     handleGoToTokenDetail,
     handleGoToTokenManagement,
+    handleBuy,
     handleGoToCollectibleDetail,
     handleGoToCollectibleManagement,
     handleGoToDiscoverCollectibles
@@ -335,7 +416,8 @@ const PortfolioHomeScreen = (): JSX.Element => {
         onScrollY={onScroll}
         tabs={tabs}
       />
-      <LinearGradientBottomWrapper>
+
+      <LinearGradientBottomWrapper shouldDelayBlurOniOS={true}>
         <SegmentedControl
           dynamicItemWidth={false}
           items={SEGMENT_ITEMS}

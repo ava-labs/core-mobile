@@ -1,5 +1,5 @@
 import { PayloadAction, createSlice } from '@reduxjs/toolkit'
-import { RootState } from 'store'
+import { RootState } from 'store/types'
 import { ViewOnceKey, ViewOnceState, ViewOnceObjectType } from './types'
 
 export const initialState: ViewOnceState = {

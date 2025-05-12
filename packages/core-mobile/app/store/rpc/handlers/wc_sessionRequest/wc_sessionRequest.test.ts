@@ -1,16 +1,18 @@
 import { rpcErrors } from '@metamask/rpc-errors'
 import { RpcMethod, RpcProvider } from 'store/rpc/types'
 import mockNetworks from 'tests/fixtures/networks.json'
-import AppNavigation from 'navigation/AppNavigation'
-import * as Navigation from 'utils/Navigation'
 import { ProposalTypes } from '@walletconnect/types'
 import { WCSessionProposal } from 'store/walletConnectV2/types'
 import { selectIsBlockaidDappScanBlocked } from 'store/posthog/slice'
-import BlockaidService from 'services/blockaid/BlockaidService'
-import { SiteScanResponse } from 'services/blockaid/types'
-import { AlertType } from '@avalabs/vm-module-types'
 import { AvalancheCaip2ChainId } from '@avalabs/core-chains-sdk'
+import * as utils from './utils'
 import { wcSessionRequestHandler as handler } from './wc_sessionRequest'
+
+jest.mock('./utils', () => ({
+  ...jest.requireActual('./utils'),
+  navigateToSessionProposal: jest.fn(),
+  scanAndNavigateToSessionProposal: jest.fn()
+}))
 
 jest.mock('store/network/slice', () => {
   const actual = jest.requireActual('store/network/slice')
@@ -18,7 +20,7 @@ jest.mock('store/network/slice', () => {
     ...actual,
     selectAllNetworks: () => mockNetworks,
     selectActiveNetwork: () => mockNetworks[43114],
-    selectFavoriteNetworks: () => [mockNetworks[43114]]
+    selectEnabledNetworks: () => [mockNetworks[43114]]
   }
 })
 
@@ -34,9 +36,6 @@ const mockIsBlockaidDappScanBlocked =
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   selectIsBlockaidDappScanBlocked as jest.MockedFunction<any>
 mockIsBlockaidDappScanBlocked.mockReturnValue(true)
-
-const mockNavigate = jest.fn()
-jest.spyOn(Navigation, 'navigate').mockImplementation(mockNavigate)
 
 const mockDispatch = jest.fn()
 const mockListenerApi = {
@@ -168,28 +167,6 @@ const createRequest = (
   }
 }
 
-const scanDappMaliciousResponse: SiteScanResponse = {
-  status: 'hit',
-  is_malicious: true,
-  attack_types: {},
-  contract_read: {
-    contract_addresses: [],
-    functions: {}
-  },
-  contract_write: {
-    contract_addresses: [],
-    functions: {}
-  },
-  is_web3_site: true,
-  is_reachable: true,
-  json_rpc_operations: [],
-  malicious_score: 100,
-  network_operations: [],
-  scan_end_time: '',
-  scan_start_time: '',
-  url: ''
-}
-
 const testApproveInvalidData = async (data: unknown) => {
   const testRequest = createRequest(validRequiredNamespaces)
 
@@ -205,6 +182,10 @@ const testApproveInvalidData = async (data: unknown) => {
 }
 
 describe('session_request handler', () => {
+  beforeEach(() => {
+    jest.clearAllMocks()
+  })
+
   it('should contain correct methods', () => {
     expect(handler.methods).toEqual(['wc_sessionRequest'])
   })
@@ -297,46 +278,6 @@ describe('session_request handler', () => {
       })
     })
 
-    it(`should ask user to switch to required network when active network is not one of them`, async () => {
-      const testRequiredNamespaces = {
-        eip155: {
-          methods: ['eth_sendTransaction'],
-          chains: ['eip155:43114', 'eip155:1'],
-          events: [
-            'chainChanged',
-            'accountsChanged',
-            'message',
-            'disconnect',
-            'connect'
-          ]
-        }
-      }
-      const testRequest = createRequest(testRequiredNamespaces)
-
-      jest
-        .spyOn(require('store/network/slice'), 'selectActiveNetwork')
-        .mockReturnValueOnce(mockNetworks[432204])
-
-      const mockRequest = jest.fn().mockResolvedValue({})
-      const {
-        createInAppRequest
-      } = require('store/rpc/utils/createInAppRequest')
-
-      createInAppRequest.mockReturnValue(mockRequest)
-
-      await handler.handle(testRequest, mockListenerApi)
-
-      expect(mockRequest).toHaveBeenCalledWith({
-        chainId: 'eip155:43114',
-        method: RpcMethod.WALLET_SWITCH_ETHEREUM_CHAIN,
-        params: [
-          {
-            chainId: '43114'
-          }
-        ]
-      })
-    })
-
     it('should return error when required EIP155 namespace specifies Core methods while dApp is not Core', async () => {
       const testRequiredNamespaces = {
         eip155: {
@@ -362,87 +303,39 @@ describe('session_request handler', () => {
       })
     })
 
-    it('should navigate to session proposal screen and return success', async () => {
+    it('should navigate to session proposal screen', async () => {
       const testRequest = createRequest(validRequiredNamespaces)
 
       const result = await handler.handle(testRequest, mockListenerApi)
 
-      expect(mockNavigate).toHaveBeenCalledWith({
-        name: AppNavigation.Root.Wallet,
-        params: {
-          screen: AppNavigation.Modal.SessionProposalV2,
-          params: {
-            request: testRequest,
-            namespaces: {
-              ...testNamespacesToApprove,
-              ...testNonEVMNamespacesToApprove
-            }
-          }
+      expect(utils.navigateToSessionProposal).toHaveBeenCalledWith({
+        request: testRequest,
+        namespaces: {
+          ...testNamespacesToApprove,
+          ...testNonEVMNamespacesToApprove
         }
       })
 
       expect(result).toEqual({ success: true, value: expect.any(Symbol) })
     })
 
-    it('should navigate to malicious activity warning screen when dApp scan result is malicious', async () => {
+    it('should scan dApp and navigate to session proposal screen', async () => {
       mockIsBlockaidDappScanBlocked.mockReturnValue(false)
-      jest
-        .spyOn(BlockaidService, 'scanSite')
-        .mockResolvedValue(scanDappMaliciousResponse)
 
       const testRequest = createRequest(validRequiredNamespaces)
 
-      await handler.handle(testRequest, mockListenerApi)
+      const result = await handler.handle(testRequest, mockListenerApi)
 
-      expect(mockNavigate).toHaveBeenCalledWith({
-        name: AppNavigation.Root.Wallet,
-        params: {
-          screen: AppNavigation.Modal.AlertScreen,
-          params: {
-            alert: {
-              type: AlertType.DANGER,
-              details: {
-                title: 'Scam\nApplication',
-                description: 'This application is malicious, do not proceed.',
-                actionTitles: {
-                  proceed: 'Proceed Anyway',
-                  reject: 'Reject Connection'
-                }
-              }
-            },
-            onProceed: expect.any(Function),
-            onReject: expect.any(Function)
-          }
+      expect(utils.scanAndNavigateToSessionProposal).toHaveBeenCalledWith({
+        dappUrl: 'https://core.app',
+        request: testRequest,
+        namespaces: {
+          ...testNamespacesToApprove,
+          ...testNonEVMNamespacesToApprove
         }
       })
-    })
 
-    it('should navigate to session proposal screen when dApp scan result is not malicious', async () => {
-      mockIsBlockaidDappScanBlocked.mockReturnValue(false)
-      const scanResponse = {
-        ...scanDappMaliciousResponse,
-        is_malicious: false
-      }
-      jest.spyOn(BlockaidService, 'scanSite').mockResolvedValue(scanResponse)
-
-      const testRequest = createRequest(validRequiredNamespaces)
-
-      await handler.handle(testRequest, mockListenerApi)
-
-      expect(mockNavigate).toHaveBeenCalledWith({
-        name: AppNavigation.Root.Wallet,
-        params: {
-          screen: AppNavigation.Modal.SessionProposalV2,
-          params: {
-            request: testRequest,
-            namespaces: {
-              ...testNamespacesToApprove,
-              ...testNonEVMNamespacesToApprove
-            },
-            scanResponse
-          }
-        }
-      })
+      expect(result).toEqual({ success: true, value: expect.any(Symbol) })
     })
   })
 
@@ -511,7 +404,6 @@ describe('session_request handler', () => {
             'personal_sign',
             'eth_sign',
             'wallet_addEthereumChain',
-            'wallet_switchEthereumChain',
             'wallet_getEthereumChain'
           ],
           // all requested events
@@ -573,9 +465,7 @@ describe('session_request handler', () => {
             'personal_sign',
             'eth_sign',
             'wallet_addEthereumChain',
-            'wallet_switchEthereumChain',
             'wallet_getEthereumChain',
-            'avalanche_bridgeAsset',
             'avalanche_createContact',
             'avalanche_getAccountPubKey',
             'avalanche_getAccounts',

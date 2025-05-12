@@ -7,11 +7,12 @@ import {
   useTheme,
   View
 } from '@avalabs/k2-alpine'
-import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs'
 import { BlurViewWithFallback } from 'common/components/BlurViewWithFallback'
+import { KeyboardAvoidingView } from 'common/components/KeyboardAvoidingView'
 import { LinearGradient } from 'expo-linear-gradient'
-import React, { ReactNode, useState } from 'react'
-import { KeyboardAvoidingView, Platform } from 'react-native'
+import React, { ReactNode, useMemo, useState } from 'react'
+import { Platform } from 'react-native'
+import { useBottomTabBarHeight } from 'react-native-bottom-tabs'
 import { Gesture, GestureDetector } from 'react-native-gesture-handler'
 import Animated, {
   runOnJS,
@@ -28,12 +29,14 @@ import { HistoryList } from './HistoryList'
 
 export const BrowserControls = (): ReactNode => {
   const { theme } = useTheme()
-  const { urlEntry, inputRef } = useBrowserContext()
+  const { inputRef, isRenameFavoriteVisible, showRecentSearches } =
+    useBrowserContext()
   const insets = useSafeAreaInsets()
   const keyboardHeight = useKeyboardHeight()
   const tabBarHeight = useBottomTabBarHeight()
 
   const [isFocused, setIsFocused] = useState(false)
+
   const gestureProgress = useSharedValue(0)
 
   const onCollapse = (): void => {
@@ -66,7 +69,9 @@ export const BrowserControls = (): ReactNode => {
   const historyStyle = useAnimatedStyle(() => {
     return {
       opacity: withTiming(
-        urlEntry?.length && isFocused ? 1 - gestureProgress.value : 0,
+        showRecentSearches.value && (isFocused || isRenameFavoriteVisible.value)
+          ? 1 - gestureProgress.value
+          : 0,
         ANIMATED.TIMING_CONFIG
       )
     }
@@ -75,7 +80,10 @@ export const BrowserControls = (): ReactNode => {
   const favoritesStyle = useAnimatedStyle(() => {
     return {
       opacity: withTiming(
-        !urlEntry?.length && isFocused ? 1 - gestureProgress.value : 0,
+        !showRecentSearches.value &&
+          (isFocused || isRenameFavoriteVisible.value)
+          ? 1 - gestureProgress.value
+          : 0,
         ANIMATED.TIMING_CONFIG
       )
     }
@@ -86,7 +94,9 @@ export const BrowserControls = (): ReactNode => {
       transform: [
         {
           scale: withTiming(
-            isFocused ? 1 - gestureProgress.value * 0.1 : 0.9,
+            isFocused || isRenameFavoriteVisible.value
+              ? 1 - gestureProgress.value * 0.1
+              : 0.9,
             ANIMATED.TIMING_CONFIG
           )
         }
@@ -97,7 +107,9 @@ export const BrowserControls = (): ReactNode => {
   const focusStyle = useAnimatedStyle(() => {
     return {
       opacity: withTiming(
-        isFocused ? 1 - gestureProgress.value : 0,
+        isFocused || isRenameFavoriteVisible.value
+          ? 1 - gestureProgress.value
+          : 0,
         ANIMATED.TIMING_CONFIG
       )
     }
@@ -108,10 +120,15 @@ export const BrowserControls = (): ReactNode => {
       return {
         transform: [
           {
-            translateY: withTiming(keyboardHeight > 0 ? tabBarHeight : 0, {
-              ...ANIMATED.TIMING_CONFIG,
-              duration: 10
-            })
+            translateY: withTiming(
+              keyboardHeight > 0
+                ? tabBarHeight - keyboardHeight - insets.bottom
+                : 0,
+              {
+                ...ANIMATED.TIMING_CONFIG,
+                duration: 100
+              }
+            )
           }
         ]
       }
@@ -132,25 +149,31 @@ export const BrowserControls = (): ReactNode => {
     }
   })
 
+  // mostly copied from routes/(signedIn)/(tabs)/_layout.tsx
+  // as the background color of the browser controls
+  // needs to match the background color of the bottom tab bar
+  const backgroundColor = useMemo(() => {
+    const isIOS = Platform.OS === 'ios'
+
+    return theme.isDark
+      ? alpha('#121213', isIOS ? 0.8 : 1)
+      : alpha(theme.colors.$white, isIOS ? 0.8 : 1)
+  }, [theme.isDark, theme.colors.$white])
+
   return (
     <>
       <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={{
           zIndex: 11
         }}>
         <Animated.View
           style={[
             inputKeyboardPositioning,
-            [
-              {
-                zIndex: 11,
-                height: BROWSER_CONTROLS_HEIGHT,
-                backgroundColor: isFocused
-                  ? 'transparent'
-                  : alpha(theme.colors.$surfacePrimary, 0.6)
-              }
-            ]
+            {
+              zIndex: 11,
+              height: BROWSER_CONTROLS_HEIGHT,
+              backgroundColor: isFocused ? 'transparent' : backgroundColor
+            }
           ]}>
           <View
             style={{
@@ -194,57 +217,50 @@ export const BrowserControls = (): ReactNode => {
           />
         </Animated.View>
 
-        <KeyboardAvoidingView
-          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-          style={{ flex: 1 }}>
+        <KeyboardAvoidingView>
           <Animated.View
             style={[
               gestureControlStyle,
               {
                 flex: 1,
-                marginBottom:
-                  keyboardHeight > 0 ? (Platform.OS === 'ios' ? 24 : 48) : 0
+                marginBottom: 24
               }
             ]}>
-            {urlEntry.length ? (
-              <Animated.View
-                pointerEvents={urlEntry.length ? 'auto' : 'none'}
-                style={[
-                  historyStyle,
-                  scaleStyle,
-                  {
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    bottom: 0
-                  }
-                ]}>
-                <HistoryList
-                  contentContainerStyle={{
-                    paddingTop: 30,
-                    paddingBottom: BROWSER_CONTROLS_HEIGHT
-                  }}
-                />
-              </Animated.View>
-            ) : (
-              <Animated.View
-                pointerEvents={urlEntry.length ? 'none' : 'auto'}
-                style={[
-                  favoritesStyle,
-                  scaleStyle,
-                  {
-                    flex: 1
-                  }
-                ]}>
-                <FavoritesList
-                  contentContainerStyle={{
-                    paddingTop: insets.top + 50,
-                    paddingBottom: insets.top
-                  }}
-                />
-              </Animated.View>
-            )}
+            <Animated.View
+              pointerEvents={showRecentSearches.value ? 'auto' : 'none'}
+              style={[
+                historyStyle,
+                scaleStyle,
+                {
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0
+                }
+              ]}>
+              <HistoryList
+                contentContainerStyle={{
+                  paddingTop: 30,
+                  paddingBottom: BROWSER_CONTROLS_HEIGHT
+                }}
+              />
+            </Animated.View>
+            <Animated.View
+              style={[
+                favoritesStyle,
+                scaleStyle,
+                {
+                  flex: 1
+                }
+              ]}>
+              <FavoritesList
+                contentContainerStyle={{
+                  paddingTop: insets.top + 50,
+                  paddingBottom: insets.top
+                }}
+              />
+            </Animated.View>
           </Animated.View>
         </KeyboardAvoidingView>
 
@@ -289,23 +305,22 @@ export const BrowserControls = (): ReactNode => {
               top: insets.top,
               left: 0,
               right: 0,
-              zIndex: 2,
-              alignItems: 'center'
+              zIndex: 2
             }
           ]}>
           <GestureDetector gesture={panGesture}>
-            <Pressable
-              onPress={onCollapse}
-              style={{
-                width: 44,
-                height: 44,
-                alignItems: 'center',
-                justifyContent: 'center'
-              }}>
-              <Icons.Custom.ArrowDownHandleBar
-                color={theme.colors.$textSecondary}
-                width={40}
-              />
+            <Pressable onPress={onCollapse}>
+              <View
+                style={{
+                  height: 44,
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}>
+                <Icons.Custom.ArrowDownHandleBar
+                  color={theme.colors.$textSecondary}
+                  width={40}
+                />
+              </View>
             </Pressable>
           </GestureDetector>
         </Animated.View>

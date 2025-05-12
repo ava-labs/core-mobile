@@ -36,7 +36,8 @@ export const AnimatedText = ({
       layout={springTransition}
       style={{
         flexDirection: 'row',
-        alignItems: 'flex-end'
+        alignItems: 'flex-end',
+        flexWrap: 'wrap'
       }}>
       {content}
     </Animated.View>

@@ -1,6 +1,6 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { Account, AccountCollection, AccountsState } from 'store/account/types'
-import { RootState } from 'store/index'
+import { RootState } from 'store/types'
 import { WalletType } from 'services/wallet/types'
 import { mergeAccounts } from './utils'
 

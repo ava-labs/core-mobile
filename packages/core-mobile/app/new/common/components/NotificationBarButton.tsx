@@ -7,7 +7,7 @@ export const NotificationBarButton = forwardRef<RNView>(
     const { theme } = useTheme()
 
     return (
-      <TouchableOpacity ref={ref} onPress={onPress}>
+      <TouchableOpacity ref={ref} onPress={onPress} testID="notification_icon">
         <Icons.Social.Notifications color={theme.colors.$textPrimary} />
       </TouchableOpacity>
     )

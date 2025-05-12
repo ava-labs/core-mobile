@@ -23,6 +23,8 @@ import { addIdToPromise, settleAllIdPromises } from '@avalabs/evm-module'
 import { Module } from '@avalabs/vm-module-types'
 import { SpanName } from 'services/sentry/types'
 import { mapToVmNetwork } from 'vmModule/utils/mapToVmNetwork'
+import { ChainInfo } from '@avalabs/glacier-sdk'
+import GlacierService from 'services/glacier/GlacierService'
 import { NETWORK_P, NETWORK_P_TEST, NETWORK_X, NETWORK_X_TEST } from './consts'
 
 if (!Config.PROXY_URL)
@@ -213,6 +215,44 @@ class NetworkService {
     }
 
     return networksWithToken
+  }
+
+  async fetchLastTransactedERC20Networks({
+    address
+  }: {
+    address: string
+  }): Promise<Networks> {
+    const response = await GlacierService.listAddressChains({ address })
+    if (
+      response.indexedChains === undefined ||
+      response.indexedChains?.length === 0
+    ) {
+      return {}
+    }
+
+    return response.indexedChains.reduce((acc, chainInfo) => {
+      acc[Number(chainInfo.chainId)] = this.formatChainInfo(chainInfo)
+      return acc
+    }, {} as Networks)
+  }
+
+  private formatChainInfo(chainInfo: ChainInfo): Network {
+    return {
+      ...chainInfo,
+      chainId: Number(chainInfo.chainId),
+      logoUri: chainInfo.chainLogoUri ?? '',
+      explorerUrl: chainInfo.explorerUrl ?? '',
+      vmName: NetworkVMType.EVM,
+      description: chainInfo.description ?? '',
+      networkToken: {
+        ...chainInfo.networkToken,
+        description: chainInfo.description ?? '',
+        logoUri: chainInfo.networkToken?.logoUri ?? ''
+      },
+      utilityAddresses: {
+        multicall: chainInfo.utilityAddresses?.multicall ?? ''
+      }
+    }
   }
 }
 

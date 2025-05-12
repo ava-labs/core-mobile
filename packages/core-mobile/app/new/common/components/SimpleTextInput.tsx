@@ -11,12 +11,14 @@ export const SimpleTextInput = ({
   value,
   onChangeText,
   placeholder,
-  maxLength
+  maxLength,
+  autoFocus
 }: {
   value: string
   onChangeText: (name: string) => void
   placeholder?: string
   maxLength?: number
+  autoFocus?: boolean
 }): React.JSX.Element => {
   const {
     theme: { colors }
@@ -49,6 +51,7 @@ export const SimpleTextInput = ({
         placeholder={placeholder}
         maxLength={maxLength}
         testID="text_input"
+        autoFocus={autoFocus}
       />
       {value.length !== 0 && (
         <TouchableOpacity onPress={() => onChangeText('')}>

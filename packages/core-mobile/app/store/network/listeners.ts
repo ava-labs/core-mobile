@@ -1,15 +1,19 @@
 import { ChainId, Network } from '@avalabs/core-chains-sdk'
-import { AppListenerEffectAPI } from 'store'
+import { AppListenerEffectAPI, AppStartListening } from 'store/types'
 import { onAppUnlocked } from 'store/app'
-import { AppStartListening } from 'store/middleware/listener'
-import { noActiveNetwork, setActive, toggleFavorite } from 'store/network'
+import {
+  noActiveNetwork,
+  selectCustomNetworks,
+  setActive,
+  selectEnabledChainIds,
+  toggleEnabledChainId
+} from 'store/network'
 import {
   selectIsDeveloperMode,
   toggleDeveloperMode
 } from 'store/settings/advanced'
 import { AnyAction, isAnyOf } from '@reduxjs/toolkit'
 import AnalyticsService from 'services/analytics/AnalyticsService'
-import { selectCustomNetworks, selectFavorites } from './slice'
 
 const adjustActiveNetwork = (
   _: AnyAction,
@@ -37,7 +41,7 @@ const setActiveNetwork = async (
   }
 }
 
-const toggleFavoriteSideEffect = (
+const toggleEnabledChainIdSideEffect = (
   action: AnyAction,
   listenerApi: AppListenerEffectAPI
 ): void => {
@@ -45,14 +49,14 @@ const toggleFavoriteSideEffect = (
   const { getState } = listenerApi
   const state = getState()
   const customNetworks = selectCustomNetworks(state)
-  const favorites = selectFavorites(state)
+  const enabledChainIds = selectEnabledChainIds(state)
   const isCustomNetwork = Object.values(customNetworks)
     .map((n: Network) => n.chainId)
     .includes(chainId)
 
-  const event = favorites.includes(chainId)
-    ? 'NetworkFavoriteAdded'
-    : 'NetworkFavoriteRemoved'
+  const event = enabledChainIds.includes(chainId)
+    ? 'NetworkEnabled'
+    : 'NetworkDisabled'
 
   AnalyticsService.capture(event, {
     networkChainId: chainId,
@@ -74,7 +78,7 @@ export const addNetworkListeners = (
   })
 
   startListening({
-    matcher: isAnyOf(toggleFavorite),
-    effect: toggleFavoriteSideEffect
+    matcher: isAnyOf(toggleEnabledChainId),
+    effect: toggleEnabledChainIdSideEffect
   })
 }

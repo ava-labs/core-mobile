@@ -9,7 +9,6 @@ import {
   Text,
   View
 } from '@avalabs/k2-alpine'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import * as SMS from 'expo-sms'
 import Logger from 'utils/Logger'
 import { Social } from 'react-native-share'
@@ -31,7 +30,6 @@ export const ShareFooter = ({
   onSendMessage: () => void
   onShare: (social: AvailableSocial) => void
 }): JSX.Element | null => {
-  const { bottom } = useSafeAreaInsets()
   const [canSendSMS, setCanSendSMS] = useState(false)
   const [canShareTwitter, setCanShareTwitter] = useState(false)
 
@@ -130,7 +128,6 @@ export const ShareFooter = ({
       <View sx={{ alignItems: 'center' }}>
         <View
           sx={{
-            paddingBottom: bottom + 12,
             flexDirection: 'row',
             paddingHorizontal: 28,
             gap: 20

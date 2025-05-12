@@ -1,31 +1,33 @@
-import { alpha, Icons, TouchableOpacity, useTheme } from '@avalabs/k2-alpine'
+import { alpha, Icons, useTheme } from '@avalabs/k2-alpine'
 import React from 'react'
+import NavigationBarButton from './NavigationBarButton'
 
 export const VisibilityBarButton = ({
   isPrivacyModeEnabled,
+  isModal,
   onPress
 }: {
   isPrivacyModeEnabled: boolean
+  isModal?: boolean
   onPress?: () => void
 }): JSX.Element => {
   const { theme } = useTheme()
 
   return (
-    <TouchableOpacity onPress={onPress} hitSlop={16}>
+    <NavigationBarButton testID="eye_icon" isModal={isModal} onPress={onPress}>
       {isPrivacyModeEnabled ? (
         <Icons.Action.VisibilityOff
-          testID="eye_icon"
           color={alpha(theme.colors.$textPrimary, 0.6)}
-          width={22}
-          height={22}
+          width={24}
+          height={24}
         />
       ) : (
         <Icons.Action.VisibilityOn
           color={theme.colors.$textPrimary}
-          width={22}
-          height={22}
+          width={24}
+          height={24}
         />
       )}
-    </TouchableOpacity>
+    </NavigationBarButton>
   )
 }

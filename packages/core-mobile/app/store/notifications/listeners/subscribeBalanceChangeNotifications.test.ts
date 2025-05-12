@@ -8,7 +8,7 @@ import Logger from 'utils/Logger'
 import { ChannelId } from 'services/notifications/channels'
 import { ChainId } from '@avalabs/core-chains-sdk'
 import { subscribeBalanceChangeNotifications } from 'store/notifications/listeners/subscribeBalanceChangeNotifications'
-import { AppListenerEffectAPI } from 'store/index'
+import { AppListenerEffectAPI } from 'store/types'
 import { selectNotificationSubscription } from '../slice'
 
 jest.mock('../slice', () => ({

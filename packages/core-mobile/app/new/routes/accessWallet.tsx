@@ -1,15 +1,8 @@
-import React from 'react'
-import {
-  GroupList,
-  Icons,
-  ScrollView,
-  Text,
-  useTheme,
-  View
-} from '@avalabs/k2-alpine'
+import { GroupList, Icons, useTheme } from '@avalabs/k2-alpine'
 import Encrypted from 'assets/icons/encrypted.svg'
-import BlurredBarsContentLayout from 'common/components/BlurredBarsContentLayout'
+import { ScrollScreen } from 'common/components/ScrollScreen'
 import { useRouter } from 'expo-router'
+import React from 'react'
 
 const AccessWalletScreen = (): JSX.Element => {
   const { theme } = useTheme()
@@ -17,6 +10,7 @@ const AccessWalletScreen = (): JSX.Element => {
 
   const handleEnterRecoveryPhrase = (): void => {
     navigate({
+      // @ts-ignore TODO: make routes typesafe
       pathname: '/onboarding/mnemonic/',
       params: { recovering: 'true' }
     })
@@ -24,39 +18,31 @@ const AccessWalletScreen = (): JSX.Element => {
 
   const handleCreateMnemonicWallet = (): void => {
     navigate({
+      // @ts-ignore TODO: make routes typesafe
       pathname: '/onboarding/mnemonic/'
     })
   }
 
   return (
-    <BlurredBarsContentLayout>
-      <ScrollView sx={{ flex: 1 }} contentContainerSx={{ padding: 16 }}>
-        <Text
-          variant="heading2"
-          sx={{ marginRight: 10, marginTop: 9, marginBottom: 34 }}>
-          How would you like to access your existing wallet?
-        </Text>
-        <View sx={{ gap: 16, flexDirection: 'row' }}>
-          <GroupList
-            data={[
-              {
-                title: 'Type in a recovery phrase',
-                leftIcon: <Encrypted color={theme.colors.$textPrimary} />,
-                onPress: handleEnterRecoveryPhrase
-              },
-              {
-                title: 'Create a new wallet',
-                leftIcon: (
-                  <Icons.Content.Add color={theme.colors.$textPrimary} />
-                ),
-                onPress: handleCreateMnemonicWallet
-              }
-            ]}
-            itemHeight={60}
-          />
-        </View>
-      </ScrollView>
-    </BlurredBarsContentLayout>
+    <ScrollScreen
+      title="How would you like to access your existing wallet?"
+      contentContainerStyle={{ padding: 16 }}>
+      <GroupList
+        data={[
+          {
+            title: 'Type in a recovery phrase',
+            leftIcon: <Encrypted color={theme.colors.$textPrimary} />,
+            onPress: handleEnterRecoveryPhrase
+          },
+          {
+            title: 'Create a new wallet',
+            leftIcon: <Icons.Content.Add color={theme.colors.$textPrimary} />,
+            onPress: handleCreateMnemonicWallet
+          }
+        ]}
+        itemHeight={60}
+      />
+    </ScrollScreen>
   )
 }
 

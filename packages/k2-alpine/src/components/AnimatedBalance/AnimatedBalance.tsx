@@ -2,29 +2,28 @@ import React, { useMemo } from 'react'
 import { SxProp } from 'dripsy'
 import Animated from 'react-native-reanimated'
 import { TextVariant } from '../../theme/tokens/text'
-import { Text } from '../Primitives'
+import { Text, View } from '../Primitives'
 import { AnimateFadeScale } from '../AnimatedFadeScale/AnimatedFadeScale'
 import { SPRING_LINEAR_TRANSITION } from '../../utils'
-import { MaskedText } from '../MaskedText/MaskedText'
 
 export const AnimatedBalance = ({
   variant = 'heading2',
   balance,
   currency,
   shouldMask = false,
-  maskWidth = 60,
   balanceSx,
   currencySx,
-  maskBackgroundColor
+  shouldAnimate = true,
+  renderMaskView
 }: {
   balance: string
   currency?: string
   variant?: TextVariant
   shouldMask?: boolean
-  maskWidth?: number
   balanceSx?: SxProp
   currencySx?: SxProp
-  maskBackgroundColor?: string
+  shouldAnimate?: boolean
+  renderMaskView?: () => React.JSX.Element
 }): JSX.Element => {
   const animatedBalance = useMemo(() => {
     if (shouldMask) return
@@ -61,20 +60,26 @@ export const AnimatedBalance = ({
       })
   }, [balance.length, currency, currencySx, shouldMask, variant])
 
-  if (shouldMask) {
-    return (
-      <MaskedText
-        sx={balanceSx}
-        variant={variant}
-        shouldMask={shouldMask}
-        maskWidth={maskWidth}
-        numberOfLines={1}
-        maskBackgroundColor={maskBackgroundColor}
-      />
-    )
+  if (shouldMask && renderMaskView) {
+    return renderMaskView()
   }
 
-  return (
+  return shouldAnimate === false ? (
+    <View
+      testID="balance"
+      style={{
+        flexDirection: 'row',
+        alignItems: 'flex-end',
+        gap: 1
+      }}>
+      <Text variant={variant} sx={balanceSx} numberOfLines={1}>
+        {balance}
+      </Text>
+      <Text variant={variant} sx={currencySx}>
+        {currency}
+      </Text>
+    </View>
+  ) : (
     <Animated.View
       testID="animated_balance"
       layout={SPRING_LINEAR_TRANSITION}

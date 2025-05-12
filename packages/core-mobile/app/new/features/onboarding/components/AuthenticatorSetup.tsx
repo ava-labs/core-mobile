@@ -1,47 +1,56 @@
-import React from 'react'
 import {
-  View,
-  Text,
+  ActivityIndicator,
   Button,
   Card,
   Icons,
-  useTheme,
   Separator,
+  Text,
   TouchableOpacity,
-  ActivityIndicator
+  useTheme,
+  View
 } from '@avalabs/k2-alpine'
+import { Loader } from 'common/components/Loader'
+import { ScrollScreen } from 'common/components/ScrollScreen'
+import React, { useCallback } from 'react'
 
 export const AuthenticatorSetup = ({
   totpKey,
   onScanQrCode,
   onCopyCode,
-  onVerifyCode
+  onVerifyCode,
+  isLoading
 }: {
-  totpKey: string
+  totpKey?: string
   onScanQrCode: () => void
   onCopyCode: () => void
   onVerifyCode: () => void
+  isLoading: boolean
 }): JSX.Element => {
   const {
     theme: { colors }
   } = useTheme()
 
+  const renderFooter = useCallback(() => {
+    return (
+      <Button type="primary" size="large" onPress={onVerifyCode}>
+        Next
+      </Button>
+    )
+  }, [onVerifyCode])
+
   return (
-    <View
-      sx={{
-        flex: 1,
-        paddingTop: 25,
-        paddingHorizontal: 16,
-        justifyContent: 'space-between'
-      }}>
-      <View>
-        <Text variant="heading2" sx={{ marginRight: 37 }}>
-          Authenticator setup
-        </Text>
-        <Text variant="body1" sx={{ marginTop: 8, marginRight: 8 }}>
-          Open any authenticator app and use it to enter the code found below
-        </Text>
-        <Card sx={{ paddingRight: 0, marginTop: 34 }}>
+    <ScrollScreen
+      title="Authenticator setup"
+      subtitle="Open any authenticator app and use it to enter the code found below"
+      renderFooter={renderFooter}
+      contentContainerStyle={{ flex: 1, padding: 16 }}>
+      {isLoading ? (
+        <Loader />
+      ) : (
+        <Card
+          sx={{
+            marginTop: 24
+          }}>
           <TouchableOpacity
             onPress={onCopyCode}
             sx={{
@@ -128,12 +137,7 @@ export const AuthenticatorSetup = ({
             </View>
           </TouchableOpacity>
         </Card>
-      </View>
-      <View sx={{ marginBottom: 36 }}>
-        <Button type="primary" size="large" onPress={onVerifyCode}>
-          Next
-        </Button>
-      </View>
-    </View>
+      )}
+    </ScrollScreen>
   )
 }

@@ -46,7 +46,7 @@ const supportedTokenSymbols = [
 ]
 
 export const hasLocalTokenLogo = (symbol: string): boolean => {
-  return supportedTokenSymbols.includes(symbol.toUpperCase() as TokenSymbol)
+  return supportedTokenSymbols.includes(symbol?.toUpperCase() as TokenSymbol)
 }
 
 const supportedNetworkTokenSymbols = [
@@ -58,6 +58,6 @@ const supportedNetworkTokenSymbols = [
 
 export const hasLocalNetworkTokenLogo = (symbol: string): boolean => {
   return supportedNetworkTokenSymbols.includes(
-    symbol.toUpperCase() as TokenSymbol
+    symbol?.toUpperCase() as TokenSymbol
   )
 }

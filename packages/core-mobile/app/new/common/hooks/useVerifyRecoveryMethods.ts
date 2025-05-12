@@ -72,6 +72,7 @@ export const useVerifyRecoveryMethods = (
       } else if (mfaMethods.length === 1) {
         if (mfaMethods[0]) {
           if (mfaMethods[0].type === 'totp') {
+            // @ts-ignore TODO: make routes typesafe
             navigate(`${verifyMfaPath}/verifyTotpCode`)
             return
           }
@@ -90,6 +91,7 @@ export const useVerifyRecoveryMethods = (
           }
         }
       } else {
+        // @ts-ignore TODO: make routes typesafe
         navigate(`${verifyMfaPath}/selectMfaMethod`)
       }
     },

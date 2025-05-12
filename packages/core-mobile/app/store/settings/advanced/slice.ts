@@ -1,5 +1,5 @@
 import { createSlice } from '@reduxjs/toolkit'
-import { RootState } from 'store'
+import { RootState } from 'store/types'
 import { initialState } from './types'
 
 const reducerName = 'advanced'
@@ -18,10 +18,10 @@ export const advancedSlice = createSlice({
 })
 
 // selectors
-export const selectIsDeveloperMode = (state: RootState) =>
+export const selectIsDeveloperMode = (state: RootState): boolean =>
   state.settings.advanced.developerMode
 
-export const selectIsLeftHanded = (state: RootState) =>
+export const selectIsLeftHanded = (state: RootState): boolean =>
   state.settings.advanced.isLeftHanded
 
 // actions

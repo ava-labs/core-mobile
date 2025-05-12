@@ -9,7 +9,8 @@ module.exports = {
   testPathIgnorePatterns: ['<rootDir>/e2e/tests/dapps/playwright/'],
   setupFilesAfterEnv: [
     '<rootDir>/tests/msw/jestSetup.js',
-    '<rootDir>/tests/firebase/jestSetup.js',
+    '<rootDir>/tests/jestSetup/firebase.js',
+    '<rootDir>/tests/jestSetup/toast.js',
     './node_modules/@react-native-google-signin/google-signin/jest/build/jest/setup.js'
   ],
   transformIgnorePatterns: [

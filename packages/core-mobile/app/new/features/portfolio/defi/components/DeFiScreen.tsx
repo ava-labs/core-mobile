@@ -10,15 +10,14 @@ import Logger from 'utils/Logger'
 import { Placeholder } from 'common/components/Placeholder'
 import { ListRenderItemInfo } from 'react-native'
 import { DeFiSimpleProtocol } from 'services/defi/types'
-import { Space } from 'components/Space'
 import { LoadingState } from 'common/components/LoadingState'
 import { ErrorState } from 'common/components/ErrorState'
 import { DropdownSelections } from 'common/components/DropdownSelections'
+import { Space } from 'common/components/Space'
 import { portfolioTabContentHeight } from '../../utils'
 import { DeFiViewOption } from '../types'
 import { useDeFiProtocols } from '../hooks/useDeFiProtocols'
 import { DeFiListItem } from './DeFiListItem'
-
 const placeholderIcon = require('../../../../assets/icons/bar_chart_emoji.png')
 
 export const DeFiScreen = (): JSX.Element => {
@@ -53,6 +52,7 @@ export const DeFiScreen = (): JSX.Element => {
   const handlePressDeFiItem = useCallback(
     (item: DeFiSimpleProtocol): void => {
       navigate({
+        // @ts-ignore TODO: make routes typesafe
         pathname: '/defiDetail',
         params: { protocolId: item.id }
       })

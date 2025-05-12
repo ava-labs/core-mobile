@@ -7,9 +7,11 @@ import { BlurViewWithFallback } from './BlurViewWithFallback'
 const start = { x: 0.5, y: 0 }
 const end = { x: 0.5, y: 0.5 }
 export const LinearGradientBottomWrapper = ({
-  children
+  children,
+  shouldDelayBlurOniOS = false
 }: {
   children?: React.ReactNode
+  shouldDelayBlurOniOS?: boolean
 }): React.JSX.Element => {
   const { theme } = useTheme()
 
@@ -29,7 +31,9 @@ export const LinearGradientBottomWrapper = ({
         start={start}
         end={end}
       />
-      <BlurViewWithFallback>{children}</BlurViewWithFallback>
+      <BlurViewWithFallback shouldDelayBlurOniOS={shouldDelayBlurOniOS}>
+        {children}
+      </BlurViewWithFallback>
     </View>
   )
 }

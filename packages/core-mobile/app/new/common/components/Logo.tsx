@@ -1,9 +1,9 @@
 import React from 'react'
 import { Image } from '@avalabs/k2-alpine'
 import { FC, useState } from 'react'
-import { isBase64Png } from 'screens/browser/utils'
 import { formatUriImageToPng, isContentfulImageUri } from 'utils/Contentful'
 import { SvgUri } from 'react-native-svg'
+import { isBase64Png } from '../utils/isBase64Png'
 import { FallbackLogo } from './FallbackLogo'
 
 interface LogoProps {

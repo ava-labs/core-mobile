@@ -21,7 +21,11 @@ import {
   removeAllHistories,
   removeHistory
 } from 'store/browser/slices/globalHistory'
-import { prepareFaviconToLoad } from 'features/browser/utils'
+import {
+  getSuggestedImage,
+  isSuggestedSiteName,
+  prepareFaviconToLoad
+} from 'features/browser/utils'
 
 const HistoryScreen = (): JSX.Element => {
   const { navigate } = useNavigation()
@@ -66,11 +70,16 @@ const HistoryScreen = (): JSX.Element => {
     dispatch(addTab())
     if (activeTab) {
       dispatch(addHistoryForActiveTab(item))
+      // @ts-ignore TODO: make routes typesafe
       navigate('index')
     }
   }
 
   const renderItem: ListRenderItem<History> = ({ item, index }) => {
+    const image = isSuggestedSiteName(item.title)
+      ? getSuggestedImage(item.title)
+      : prepareFaviconToLoad(item.url, item.favicon)
+
     return (
       <BrowserItem
         type="list"
@@ -78,7 +87,7 @@ const HistoryScreen = (): JSX.Element => {
         onPress={() => handlePress(item)}
         title={item.title}
         subtitle={item.url}
-        image={prepareFaviconToLoad(item.url, item.favicon)}
+        image={image}
         isLast={index === filterHistories.length - 1}
       />
     )

@@ -1,36 +1,38 @@
 import { combineReducers } from 'redux'
-import { AnyAction, configureStore, ListenerEffectAPI } from '@reduxjs/toolkit'
+import { AnyAction, configureStore } from '@reduxjs/toolkit'
 import { createMigrate, persistReducer, persistStore } from 'redux-persist'
-import { bridgeReducer as bridge } from 'store/bridge'
-import { unifiedBridgeReducer as unifiedBridge } from 'store/unifiedBridge'
+import { bridgeReducer as bridge } from 'store/bridge/slice'
+import { unifiedBridgeReducer as unifiedBridge } from 'store/unifiedBridge/slice'
 import { migrations } from 'store/migrations'
 import DevDebuggingConfig from 'utils/debugging/DevDebuggingConfig'
 import { EncryptThenMacTransform } from 'store/transforms/EncryptThenMacTransform'
+import { StatePersistence } from 'utils/state/StatePersistence'
 import reactotron from '../../ReactotronConfig'
-import { networkReducer as network } from './network'
-import { balanceReducer as balance } from './balance'
-import { appReducer as app, onLogOut, onRehydrationComplete } from './app'
+import { networkReducer as network } from './network/slice'
+import { balanceReducer as balance } from './balance/slice'
+import { appReducer as app, onLogOut, onRehydrationComplete } from './app/slice'
 import { listener } from './middleware/listener'
-import { accountsReducer as account } from './account'
-import { notificationsReducer as notifications } from './notifications'
-import { watchlistReducer as watchlist } from './watchlist'
-import { portfolioReducer as portfolio } from './portfolio'
-import { customTokenReducer as customToken } from './customToken'
-import { securityReducer as security } from './security'
-import { posthogReducer as posthog } from './posthog'
-import { nftReducer as nft } from './nft'
-import { addressBookReducer as addressBook } from './addressBook'
-import { viewOnceReducer as viewOnce } from './viewOnce'
+import { accountsReducer as account } from './account/slice'
+import { notificationsReducer as notifications } from './notifications/slice'
+import { watchlistReducer as watchlist } from './watchlist/slice'
+import { portfolioReducer as portfolio } from './portfolio/slice'
+import { customTokenReducer as customToken } from './customToken/slice'
+import { securityReducer as security } from './security/slice'
+import { posthogReducer as posthog } from './posthog/slice'
+import { nftReducer as nft } from './nft/slice'
+import { addressBookReducer as addressBook } from './addressBook/slice'
+import { viewOnceReducer as viewOnce } from './viewOnce/slice'
 import settings from './settings'
 import { transactionApi } from './transaction'
-import { rpcReducer as rpc } from './rpc'
+import { rpcReducer as rpc } from './rpc/slice'
 import { BridgeBlacklistTransform } from './transforms/BridgeBlacklistTransform'
 import { AppBlacklistTransform } from './transforms/AppBlacklistTransform'
 import { combinedReducer as browser } from './browser'
 import { snapshotsReducer as snapshots } from './snapshots/slice'
 import { reduxStorage } from './reduxStorage'
+import { walletsReducer as wallet } from './wallet/slice'
 
-const VERSION = 17
+const VERSION = 19
 
 // list of reducers that don't need to be persisted
 // for nested/partial blacklist, please use transform
@@ -48,6 +50,7 @@ const combinedReducer = combineReducers({
   customToken,
   posthog,
   nft,
+  wallet,
   security,
   rpc,
   viewOnce,
@@ -64,7 +67,7 @@ const combinedReducer = combineReducers({
 })
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/explicit-function-return-type
-const rootReducer = (state: any, action: AnyAction) => {
+export const rootReducer = (state: any, action: AnyAction) => {
   if (action.type === onLogOut.type) {
     // reset state
     // except the following keys
@@ -117,20 +120,21 @@ export function configureEncryptedStore(secretKey: string, macSecret: string) {
     }
   })
 
-  const persistor = persistStore(store, null, () => {
-    // this block runs after rehydration is complete
-    store.dispatch(onRehydrationComplete())
-  })
+  const persistor = persistStore(
+    store,
+    {
+      // @ts-ignore
+      manualPersist: DevDebuggingConfig.STATE_PERSISTENCE_DEBUG
+    },
+    () => {
+      // this block runs after rehydration is complete
+      store.dispatch(onRehydrationComplete())
+    }
+  )
+  if (DevDebuggingConfig.STATE_PERSISTENCE_DEBUG) {
+    StatePersistence.setPersistor(persistor)
+    StatePersistence.setStore(store)
+  }
 
   return { store, persistor }
-}
-
-type ConfiguredStore = ReturnType<typeof configureEncryptedStore>['store']
-export type RawRootState = ReturnType<typeof rootReducer>
-export type RootState = ReturnType<ConfiguredStore['getState']>
-export type AppDispatch = ConfiguredStore['dispatch']
-export type AppListenerEffectAPI = ListenerEffectAPI<RootState, AppDispatch>
-export type ThunkApi = {
-  state: RootState
-  dispatch: AppDispatch
 }

@@ -1,21 +1,36 @@
 import { Button, View } from '@avalabs/k2-alpine'
+import { ScrollScreen } from 'common/components/ScrollScreen'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { ContactForm } from 'features/accountSettings/components/ContactForm'
-import React, { useCallback, useState, useMemo } from 'react'
-import { ScrollView } from 'react-native-gesture-handler'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { useNewContactAvatar } from 'features/accountSettings/store'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { useDispatch } from 'react-redux'
 import { addContact, Contact } from 'store/addressBook'
 
 const AddContactScreen = (): React.JSX.Element => {
   const dispatch = useDispatch()
-  const { bottom } = useSafeAreaInsets()
-  const { canGoBack, back } = useRouter()
+  const { canGoBack, back, navigate } = useRouter()
   const { contactId } = useLocalSearchParams<{ contactId: string }>()
-  const [contact, setContact] = useState<Contact>({ id: contactId, name: '' })
+  const [newContactAvatar, setNewContactAvatar] = useNewContactAvatar()
+
+  useEffect(() => {
+    return () => {
+      setNewContactAvatar(undefined)
+    }
+  }, [setNewContactAvatar])
+
+  const [contact, setContact] = useState<Contact>({
+    id: contactId,
+    name: '',
+    type: 'contact'
+  })
+
+  const contactWithAvatar = useMemo(() => {
+    return { ...contact, avatar: newContactAvatar }
+  }, [contact, newContactAvatar])
 
   const handleUpdateContact = (updated: Contact): void => {
-    setContact(updated)
+    setContact({ ...updated, avatar: newContactAvatar })
   }
 
   const isSaveDisabled = useMemo(() => {
@@ -32,20 +47,22 @@ const AddContactScreen = (): React.JSX.Element => {
     canGoBack() && back()
   }, [back, canGoBack, contact, contactId, dispatch])
 
-  return (
-    <View sx={{ flex: 1, paddingHorizontal: 16, paddingBottom: 16 }}>
-      <ScrollView
-        keyboardShouldPersistTaps="handled"
-        automaticallyAdjustKeyboardInsets
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={{
-          justifyContent: 'space-between'
+  const handleSelectAvatar = useCallback(() => {
+    navigate({
+      // @ts-ignore TODO: make routes typesafe
+      pathname: '/accountSettings/addressBook/selectContactAvatar',
+      params: {
+        name: contact?.name
+      }
+    })
+  }, [navigate, contact?.name])
+
+  const renderFooter = useCallback(() => {
+    return (
+      <View
+        sx={{
+          gap: 16
         }}>
-        {contact && (
-          <ContactForm contact={contact} onUpdate={handleUpdateContact} />
-        )}
-      </ScrollView>
-      <View sx={{ gap: 16, backgroundColor: '$surfacePrimary' }}>
         <Button
           type="primary"
           size="large"
@@ -56,12 +73,30 @@ const AddContactScreen = (): React.JSX.Element => {
         <Button
           type="tertiary"
           size="large"
-          onPress={() => canGoBack() && back()}
-          style={{ marginBottom: bottom }}>
+          onPress={() => canGoBack() && back()}>
           Cancel
         </Button>
       </View>
-    </View>
+    )
+  }, [back, canGoBack, handleSave, isSaveDisabled])
+
+  return (
+    <ScrollScreen
+      isModal
+      renderFooter={renderFooter}
+      shouldAvoidKeyboard={false}
+      navigationTitle="Add contact"
+      contentContainerStyle={{
+        padding: 16
+      }}>
+      {contact && (
+        <ContactForm
+          contact={contactWithAvatar}
+          onUpdate={handleUpdateContact}
+          onSelectAvatar={handleSelectAvatar}
+        />
+      )}
+    </ScrollScreen>
   )
 }
 

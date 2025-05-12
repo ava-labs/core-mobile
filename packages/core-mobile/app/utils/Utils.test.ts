@@ -9,12 +9,12 @@ describe('/app/utils/Utils', () => {
     })
 
     it('truncates NodeId to correct length', () => {
-      expect(truncateNodeId(nodeID)).toBe('NodeID-9zP...xr9')
-      expect(truncateNodeId(nodeID, 10)).toBe('NodeID-9zPtX...Twxr9')
+      expect(truncateNodeId(nodeID)).toBe('NodeID-9zP…xr9')
+      expect(truncateNodeId(nodeID, 10)).toBe('NodeID-9zPtX…Twxr9')
       expect(truncateNodeId(nodeID, 30)).toBe(
-        'NodeID-9zPtXnScuWRvoiT...98ZtjgoTXwTwxr9'
+        'NodeID-9zPtXnScuWRvoiT…98ZtjgoTXwTwxr9'
       )
-      expect(truncateNodeId(nodeID, 3)).toBe('NodeID-9z...9')
+      expect(truncateNodeId(nodeID, 3)).toBe('NodeID-9z…9')
     })
 
     it('handles empty strings', () => {

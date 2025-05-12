@@ -28,3 +28,25 @@ export const normalizeValue = (value: string): string => {
 export const normalizeErrorMessage = (errorMessage: string): string => {
   return errorMessage.replace(/\r?\n/g, ' ').replace(/ +/g, ' ')
 }
+
+export function splitIntegerAndFraction(val: string): (string | null)[] {
+  return val.includes('.') ? val.split('.') : [val, null]
+}
+
+export const normalizeNumericTextInput = (txt: string): string => {
+  txt = txt.replace(',', '.')
+  txt = txt.replace(/[^.\d]/g, '') //remove non-digits
+  txt = txt.replace(/^0+/g, '0') //remove starting double 0
+  txt = txt.replace(/^0(?=\d)/g, '') //remove starting 0 if next one is digit
+  let numOfDots = 0
+  txt = txt.replace(/\./g, substring => {
+    //remove extra decimal points
+    if (numOfDots === 0) {
+      numOfDots++
+      return substring
+    }
+    return ''
+  })
+
+  return txt
+}

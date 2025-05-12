@@ -1,22 +1,16 @@
-import React, { useCallback } from 'react'
+import { Icons, showAlert, useTheme, View } from '@avalabs/k2-alpine'
+import NavigationBarButton from 'common/components/NavigationBarButton'
+import { ScrollScreen } from 'common/components/ScrollScreen'
+import { useUserMfa } from 'common/hooks/useUserMfa'
 import { useFocusEffect, useRouter } from 'expo-router'
-import {
-  Icons,
-  ScrollView,
-  showAlert,
-  TouchableOpacity,
-  useTheme
-} from '@avalabs/k2-alpine'
-import { useRegisteredRecoveryMethods } from 'features/onboarding/hooks/useRegisteredRecoveryMethods'
+import { useRecoveryMethodsContext } from 'features/accountSettings/context/RecoverMethodsProvider'
+import { ManageRecoveryMethods } from 'features/onboarding/components/ManageRecoveryMethods'
 import {
   RecoveryMethod,
   RecoveryMethods
 } from 'features/onboarding/hooks/useAvailableRecoveryMethods'
-import { ManageRecoveryMethods } from 'features/onboarding/components/ManageRecoveryMethods'
-import ScreenHeader from 'common/components/ScreenHeader'
-import { useNavigation } from '@react-navigation/native'
-import { useRecoveryMethodsContext } from 'features/accountSettings/context/RecoverMethodsProvider'
-import { useUserMfa } from 'common/hooks/useUserMfa'
+import { useRegisteredRecoveryMethods } from 'features/onboarding/hooks/useRegisteredRecoveryMethods'
+import React, { useCallback } from 'react'
 import { Loader } from '../../../../../common/components/Loader'
 
 const ManageRecoveryMethodsScreen = (): JSX.Element => {
@@ -24,7 +18,6 @@ const ManageRecoveryMethodsScreen = (): JSX.Element => {
   const {
     theme: { colors }
   } = useTheme()
-  const { getParent } = useNavigation()
   const { data: mfaMethods, isLoading, refetch } = useUserMfa()
   const registeredRecoveryMethods = useRegisteredRecoveryMethods(mfaMethods)
   const { totpResetInit, fidoDelete } = useRecoveryMethodsContext()
@@ -34,36 +27,6 @@ const ManageRecoveryMethodsScreen = (): JSX.Element => {
       refetch()
     }, [refetch])
   )
-
-  const renderHeaderRight = useCallback(() => {
-    return (
-      <TouchableOpacity
-        onPress={() =>
-          navigate('/accountSettings/addRecoveryMethods/available')
-        }
-        sx={{
-          flexDirection: 'row',
-          gap: 16,
-          marginTop: 14,
-          marginRight: 18,
-          alignItems: 'center'
-        }}>
-        <Icons.Content.Add color={colors.$textPrimary} />
-      </TouchableOpacity>
-    )
-  }, [colors.$textPrimary, navigate])
-
-  useFocusEffect(() => {
-    getParent()?.setOptions({
-      headerRight: renderHeaderRight
-    })
-
-    return () => {
-      getParent()?.setOptions({
-        headerRight: undefined
-      })
-    }
-  })
 
   const handleChangeAuthenticator = useCallback((): void => {
     showAlert({
@@ -137,20 +100,39 @@ const ManageRecoveryMethodsScreen = (): JSX.Element => {
     [handleChangeAuthenticator, handleRemoveFido]
   )
 
-  return isLoading ? (
-    <Loader />
-  ) : (
-    <ScrollView
-      showsVerticalScrollIndicator={false}
-      scrollEventThrottle={16}
-      contentContainerStyle={{ paddingBottom: 60, paddingHorizontal: 16 }}>
-      <ScreenHeader title={`Manage recovery\nmethods`} />
-      <ManageRecoveryMethods
-        data={registeredRecoveryMethods}
-        onPress={handleSelectedMfa}
-        sx={{ marginTop: 16 }}
-      />
-    </ScrollView>
+  const renderHeaderRight = useCallback(() => {
+    return (
+      <NavigationBarButton
+        isModal
+        onPress={() =>
+          // @ts-ignore TODO: make routes typesafe
+          navigate('/accountSettings/addRecoveryMethods/available')
+        }>
+        <Icons.Content.Add color={colors.$textPrimary} />
+      </NavigationBarButton>
+    )
+  }, [colors.$textPrimary, navigate])
+
+  return (
+    <ScrollScreen
+      title={`Manage recovery\nmethods`}
+      navigationTitle="Manage recovery methods"
+      renderHeaderRight={renderHeaderRight}
+      contentContainerStyle={{ padding: 16, flex: 1 }}>
+      {isLoading ? (
+        <Loader />
+      ) : (
+        <View
+          style={{
+            marginTop: 24
+          }}>
+          <ManageRecoveryMethods
+            data={registeredRecoveryMethods}
+            onPress={handleSelectedMfa}
+          />
+        </View>
+      )}
+    </ScrollScreen>
   )
 }
 

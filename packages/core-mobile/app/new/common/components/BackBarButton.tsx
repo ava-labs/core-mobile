@@ -1,9 +1,15 @@
-import React from 'react'
-import { Icons, Pressable, useTheme } from '@avalabs/k2-alpine'
-import { Platform } from 'react-native'
+import { Icons, useTheme } from '@avalabs/k2-alpine'
 import { router } from 'expo-router'
+import React from 'react'
+import NavigationBarButton from './NavigationBarButton'
 
-const BackBarButton = ({ onBack }: { onBack?: () => void }): JSX.Element => {
+const BackBarButton = ({
+  onBack,
+  isModal
+}: {
+  onBack?: () => void
+  isModal?: boolean
+}): JSX.Element => {
   const { theme } = useTheme()
 
   const handleBack = (): void => {
@@ -11,18 +17,12 @@ const BackBarButton = ({ onBack }: { onBack?: () => void }): JSX.Element => {
   }
 
   return (
-    <Pressable
-      onPress={handleBack}
-      sx={{
-        paddingLeft: Platform.OS === 'ios' ? 16 : 6,
-        paddingRight: 16,
-        paddingVertical: 16
-      }}>
-      <Icons.Custom.BackArrowCustom
-        testID="header_back"
-        color={theme.colors.$textPrimary}
-      />
-    </Pressable>
+    <NavigationBarButton
+      isModal={isModal}
+      testID="header_back"
+      onPress={handleBack}>
+      <Icons.Custom.BackArrowCustom color={theme.colors.$textPrimary} />
+    </NavigationBarButton>
   )
 }
 

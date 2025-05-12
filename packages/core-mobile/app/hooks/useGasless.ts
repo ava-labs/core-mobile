@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { Alert, AlertType, SigningData } from '@avalabs/vm-module-types'
+import { SigningData } from '@avalabs/vm-module-types'
 import { useSelector } from 'react-redux'
 import { selectIsGaslessBlocked } from 'store/posthog'
 import { useNetworks } from 'hooks/networks/useNetworks'
@@ -21,7 +21,7 @@ type Return = {
   gaslessEnabled: boolean
   setGaslessEnabled: React.Dispatch<React.SetStateAction<boolean>>
   shouldShowGaslessSwitch: boolean
-  gaslessError: Alert | null
+  gaslessError: string | null
   handleGaslessTx: (addressFrom: string) => Promise<string | undefined>
 }
 
@@ -36,7 +36,7 @@ export const useGasless = ({
   const [isGaslessEligible, setIsGaslessEligible] = useState(false)
   const [gaslessEnabled, setGaslessEnabled] = useState(false)
   const isGaslessBlocked = useSelector(selectIsGaslessBlocked)
-  const [gaslessError, setGaslessError] = useState<Alert | null>(null)
+  const [gaslessError, setGaslessError] = useState<string | null>(null)
 
   const shouldShowGaslessSwitch = useMemo(() => {
     return !isGaslessBlocked && !gaslessError && isGaslessEligible
@@ -64,14 +64,9 @@ export const useGasless = ({
   }, [chainId, signingData])
 
   const showGaslessError = useCallback(() => {
-    setGaslessError({
-      type: AlertType.INFO,
-      details: {
-        title: 'Free Gas Error',
-        description:
-          'Core was unable to fund the gas. You will need to pay the gas fee to continue with this transaction. '
-      }
-    })
+    setGaslessError(
+      'Core was unable to fund the gas. You will need to pay the gas fee to continue with this transaction. '
+    )
   }, [])
 
   const handleGaslessTx = async (

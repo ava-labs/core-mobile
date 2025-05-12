@@ -1,12 +1,10 @@
-import React, { useEffect } from 'react'
+import { useRouter } from 'expo-router'
+import { AuthenticatorSetup as AuthenticatorSetupComponent } from 'features/onboarding/components/AuthenticatorSetup'
 import { useRecoveryMethodContext } from 'features/onboarding/contexts/RecoveryMethodProvider'
 import useSeedlessManageMFA from 'features/onboarding/hooks/useSeedlessManageMFA'
+import React, { useEffect } from 'react'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import Logger from 'utils/Logger'
-import { useRouter } from 'expo-router'
-import { Loader } from 'common/components/Loader'
-import { AuthenticatorSetup as AuthenticatorSetupComponent } from 'features/onboarding/components/AuthenticatorSetup'
-import BlurredBarsContentLayout from 'common/components/BlurredBarsContentLayout'
 
 export default function AuthenticatorSetup(): JSX.Element {
   const { totpKey, handleCopyCode, totpChallenge, setTotpChallenge } =
@@ -15,11 +13,13 @@ export default function AuthenticatorSetup(): JSX.Element {
   const { totpResetInit } = useSeedlessManageMFA()
 
   const goToVerifyCode = (): void => {
-    router.push('./verifyCode')
+    // @ts-ignore TODO: make routes typesafe
+    router.push('/onboarding/seedless/verifyCode')
   }
 
   const goToScanQrCode = (): void => {
-    router.navigate('./scanQrCode')
+    // @ts-ignore TODO: make routes typesafe
+    router.navigate('/onboarding/seedless/scanQrCode')
   }
 
   useEffect(() => {
@@ -27,7 +27,7 @@ export default function AuthenticatorSetup(): JSX.Element {
       try {
         totpResetInit(challenge => {
           setTotpChallenge(challenge)
-        })
+        }, '')
       } catch (e) {
         Logger.error('registerTotp error', e)
         AnalyticsService.capture('SeedlessRegisterTOTPStartFailed')
@@ -39,18 +39,13 @@ export default function AuthenticatorSetup(): JSX.Element {
     }
   }, [totpResetInit, totpChallenge, setTotpChallenge])
 
-  if (totpChallenge === undefined || totpKey === undefined) {
-    return <Loader />
-  }
-
   return (
-    <BlurredBarsContentLayout>
-      <AuthenticatorSetupComponent
-        totpKey={totpKey}
-        onScanQrCode={goToScanQrCode}
-        onCopyCode={handleCopyCode}
-        onVerifyCode={goToVerifyCode}
-      />
-    </BlurredBarsContentLayout>
+    <AuthenticatorSetupComponent
+      totpKey={totpKey}
+      onScanQrCode={goToScanQrCode}
+      onCopyCode={handleCopyCode}
+      onVerifyCode={goToVerifyCode}
+      isLoading={totpChallenge === undefined || totpKey === undefined}
+    />
   )
 }

@@ -1,5 +1,5 @@
 import { ProposalTypes, SessionTypes } from '@walletconnect/types'
-import { AppListenerEffectAPI } from 'store'
+import { AppListenerEffectAPI } from 'store/types'
 import { rpcErrors } from '@metamask/rpc-errors'
 import { normalizeNamespaces } from '@walletconnect/utils'
 import { BlockchainNamespace } from '@avalabs/core-chains-sdk'
@@ -7,15 +7,13 @@ import { WCSessionProposal } from 'store/walletConnectV2/types'
 import {
   selectActiveNetwork,
   selectAllNetworks,
-  selectFavoriteNetworks
+  selectEnabledNetworks
 } from 'store/network/slice'
 import { selectIsBlockaidDappScanBlocked } from 'store/posthog/slice'
-import { createInAppRequest } from 'store/rpc/utils/createInAppRequest'
 import { getChainIdFromCaip2 } from 'utils/caip2ChainIds'
 import mergeWith from 'lodash/mergeWith'
 import isArray from 'lodash/isArray'
 import union from 'lodash/union'
-import { RpcMethod as VmModuleRpcMethod } from '@avalabs/vm-module-types'
 import { RpcMethod, CORE_EVM_METHODS } from '../../types'
 import {
   RpcRequestHandler,
@@ -32,7 +30,7 @@ import {
   NamespaceToApprove,
   navigateToSessionProposal,
   parseApproveData,
-  scanAndSessionProposal
+  scanAndNavigateToSessionProposal
 } from './utils'
 import { COMMON_EVENTS, NON_EVM_OPTIONAL_NAMESPACES } from './namespaces'
 
@@ -45,7 +43,6 @@ const supportedMethods = [
   RpcMethod.PERSONAL_SIGN,
   RpcMethod.ETH_SIGN,
   RpcMethod.WALLET_ADD_ETHEREUM_CHAIN,
-  RpcMethod.WALLET_SWITCH_ETHEREUM_CHAIN,
   RpcMethod.WALLET_GET_ETHEREUM_CHAIN
 ]
 
@@ -107,14 +104,14 @@ class WCSessionRequestHandler implements RpcRequestHandler<WCSessionProposal> {
       return
     }
 
-    const favoritedNetworksChainIds = selectFavoriteNetworks(state).map(
+    const enabledNetworksChainIds = selectEnabledNetworks(state).map(
       network => network.chainId
     )
     const supportedChainIds = [
-      ...favoritedNetworksChainIds,
+      ...enabledNetworksChainIds,
       ...Object.values(supportedNetworks)
         .map(network => network.chainId)
-        .filter(chainId => !favoritedNetworksChainIds.includes(chainId))
+        .filter(chainId => !enabledNetworksChainIds.includes(chainId))
     ]
 
     const chainIdtoSwitch =
@@ -126,22 +123,22 @@ class WCSessionRequestHandler implements RpcRequestHandler<WCSessionProposal> {
       throw new Error('No supported network found')
     }
 
-    try {
-      const chainId = chainIdtoSwitch.toString()
-      const request = createInAppRequest(listenerApi.dispatch)
-      await request({
-        method:
-          RpcMethod.WALLET_SWITCH_ETHEREUM_CHAIN as unknown as VmModuleRpcMethod,
-        params: [
-          {
-            chainId
-          }
-        ],
-        chainId: `${BlockchainNamespace.EIP155}:${chainId}`
-      })
-    } catch (error) {
-      throw new Error(`Failed to switch to network ${chainIdtoSwitch}`)
-    }
+    // try {
+    //   const chainId = chainIdtoSwitch.toString()
+    //   const request = createInAppRequest(listenerApi.dispatch)
+    //   await request({
+    //     method:
+    //       RpcMethod.WALLET_SWITCH_ETHEREUM_CHAIN as unknown as VmModuleRpcMethod,
+    //     params: [
+    //       {
+    //         chainId
+    //       }
+    //     ],
+    //     chainId: `${BlockchainNamespace.EIP155}:${chainId}`
+    //   })
+    // } catch (error) {
+    //   throw new Error(`Failed to switch to network ${chainIdtoSwitch}`)
+    // }
   }
 
   private getNamespacesToApprove = (
@@ -250,11 +247,10 @@ class WCSessionRequestHandler implements RpcRequestHandler<WCSessionProposal> {
       if (isScanDisabled) {
         navigateToSessionProposal({ request, namespaces })
       } else {
-        scanAndSessionProposal({
+        scanAndNavigateToSessionProposal({
           dappUrl,
           request,
-          namespaces,
-          dispatch: listenerApi.dispatch
+          namespaces
         })
       }
       return { success: true, value: DEFERRED_RESULT }

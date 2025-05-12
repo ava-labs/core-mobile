@@ -20,7 +20,9 @@ export default function SetWalletName(): JSX.Element {
         accountIndex: 0
       })
     )
-    navigate('./selectAvatar')
+
+    // @ts-ignore TODO: make routes typesafe
+    navigate('/onboarding/seedless/selectAvatar')
   }
 
   return <Component name={name} setName={setName} onNext={handleNext} />

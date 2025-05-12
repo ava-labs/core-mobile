@@ -1,12 +1,17 @@
 import { useDappConnectionV2 } from 'hooks/useDappConnectionV2'
 import { useState, useEffect, useMemo } from 'react'
-import type { Dapp } from 'screens/rpc/ConnectedDapps/types'
 import { Session } from 'services/walletconnectv2/types'
 import WalletConnectService from 'services/walletconnectv2/WalletConnectService'
 import { WalletConnectVersions } from 'store/walletConnectV2/types'
 import Logger from 'utils/Logger'
 
 const GET_DAPPS_V2_INTERVAL = 5000 // 5s
+
+export type Dapp = {
+  id: string // the session topic
+  dapp: Session
+  version: WalletConnectVersions.V2
+}
 
 export const useConnectedDapps = (): {
   allApprovedDapps: Dapp[]

@@ -1,46 +1,44 @@
-import React, { useMemo, useCallback, useState, useEffect } from 'react'
+import { TokenUnit } from '@avalabs/core-utils-sdk'
 import {
   ActivityIndicator,
   Button,
   GroupList,
   GroupListItem,
   Icons,
-  SafeAreaView,
-  ScrollView,
   showAlert,
   Text,
   useTheme,
   View
 } from '@avalabs/k2-alpine'
-import ScreenHeader from 'common/components/ScreenHeader'
-import { useDelegationContext } from 'contexts/DelegationContext'
-import { useLocalSearchParams, useRouter } from 'expo-router'
-import { useDispatch, useSelector } from 'react-redux'
-import { selectIsDeveloperMode } from 'store/settings/advanced'
-import { useNodes } from 'hooks/earn/useNodes'
-import { useSearchNode } from 'hooks/earn/useSearchNode'
 import { UTCDate } from '@date-fns/utc'
+import { ScrollScreen } from 'common/components/ScrollScreen'
+import { usePreventScreenRemoval } from 'common/hooks/usePreventScreenRemoval'
+import { copyToClipboard } from 'common/utils/clipboard'
+import { transactionSnackbar } from 'common/utils/toast'
+import { useDelegationContext } from 'contexts/DelegationContext'
 import {
   differenceInDays,
   format,
   getUnixTime,
   secondsToMilliseconds
 } from 'date-fns'
+import { useLocalSearchParams, useRouter } from 'expo-router'
 import { StakeTokenUnitValue } from 'features/stake/components/StakeTokenUnitValue'
 import { useStakeEstimatedReward } from 'features/stake/hooks/useStakeEstimatedReward'
-import { useValidateStakingEndTime } from 'screens/earn/Confirmation/useValidateStakingEndTime'
-import NetworkService from 'services/network/NetworkService'
-import { TokenUnit } from '@avalabs/core-utils-sdk'
-import AnalyticsService from 'services/analytics/AnalyticsService'
-import { useIssueDelegation } from 'hooks/earn/useIssueDelegation'
-import { showSnackbar } from 'common/utils/toast'
-import { scheduleStakingCompleteNotifications } from 'store/notifications'
-import { selectActiveAccount } from 'store/account'
-import { usePreventScreenRemoval } from 'common/hooks/usePreventScreenRemoval'
-import { useNow } from 'hooks/time/useNow'
+import { useValidateStakingEndTime } from 'features/stake/utils/useValidateStakingEndTime'
 import { useGetValidatorByNodeId } from 'hooks/earn/useGetValidatorByNodeId'
+import { useIssueDelegation } from 'hooks/earn/useIssueDelegation'
+import { useNodes } from 'hooks/earn/useNodes'
+import { useSearchNode } from 'hooks/earn/useSearchNode'
+import { useNow } from 'hooks/time/useNow'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
+import AnalyticsService from 'services/analytics/AnalyticsService'
+import NetworkService from 'services/network/NetworkService'
+import { selectActiveAccount } from 'store/account'
+import { scheduleStakingCompleteNotifications } from 'store/notifications'
+import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { truncateNodeId } from 'utils/Utils'
-import { copyToClipboard } from 'common/utils/clipboard'
 
 const StakeConfirmScreen = (): JSX.Element => {
   const { theme } = useTheme()
@@ -226,9 +224,10 @@ const StakeConfirmScreen = (): JSX.Element => {
   const onDelegationSuccess = useCallback(
     (txHash: string): void => {
       AnalyticsService.capture('StakeDelegationSuccess')
-      showSnackbar('Staking successful!')
+      transactionSnackbar.success({ message: 'Staking successful' })
 
       handleDismiss()
+      // @ts-ignore TODO: make routes typesafe
       navigate('/stake')
 
       dispatch(
@@ -254,7 +253,7 @@ const StakeConfirmScreen = (): JSX.Element => {
 
   const onDelegationError = useCallback((e: Error): void => {
     AnalyticsService.capture('StakeDelegationFail')
-    showSnackbar(e.message)
+    transactionSnackbar.error({ error: e.message })
   }, [])
 
   function onFundsStuck(): void {
@@ -320,56 +319,27 @@ const StakeConfirmScreen = (): JSX.Element => {
     isFetchingNodes
   ])
 
-  if (selectedValidator === undefined && (isFetchingNodes || !validator)) {
+  const issueDelegation = useCallback(
+    (recomputeSteps = false): void => {
+      if (!validator) return
+
+      AnalyticsService.capture('StakeIssueDelegation')
+
+      issueDelegationMutation.mutate({
+        startDate: minStartTime,
+        endDate: validatedStakingEndTime,
+        nodeId: validator.nodeID,
+        recomputeSteps
+      })
+    },
+    [issueDelegationMutation, minStartTime, validatedStakingEndTime, validator]
+  )
+
+  const renderFooter = useCallback(() => {
     return (
       <View
         sx={{
-          flex: 1,
-          alignItems: 'center',
-          justifyContent: 'center',
-          gap: 20,
-          marginBottom: 60
-        }}>
-        <ActivityIndicator size="large" />
-        <Text>Searching for a node...</Text>
-      </View>
-    )
-  }
-
-  const issueDelegation = (recomputeSteps = false): void => {
-    if (!validator) return
-
-    AnalyticsService.capture('StakeIssueDelegation')
-
-    issueDelegationMutation.mutate({
-      startDate: minStartTime,
-      endDate: validatedStakingEndTime,
-      nodeId: validator.nodeID,
-      recomputeSteps
-    })
-  }
-
-  return (
-    <SafeAreaView sx={{ flex: 1 }}>
-      <ScrollView
-        style={{ flex: 1 }}
-        contentContainerSx={{ padding: 16, paddingTop: 0 }}>
-        <ScreenHeader title="That's it! Review your staking" />
-        <View sx={{ gap: 12, marginTop: 16 }}>
-          <GroupList
-            data={amountSection}
-            textContainerSx={{
-              marginTop: 0
-            }}
-          />
-          <GroupList data={stakeSection} />
-        </View>
-      </ScrollView>
-      <View
-        sx={{
-          padding: 16,
-          gap: 16,
-          backgroundColor: '$surfacePrimary'
+          gap: 16
         }}>
         <View
           sx={{
@@ -402,7 +372,47 @@ const StakeConfirmScreen = (): JSX.Element => {
           Cancel
         </Button>
       </View>
-    </SafeAreaView>
+    )
+  }, [
+    handleCancel,
+    issueDelegation,
+    issueDelegationMutation.isPending,
+    theme.colors.$textPrimary
+  ])
+
+  if (selectedValidator === undefined && (isFetchingNodes || !validator)) {
+    return (
+      <View
+        sx={{
+          flex: 1,
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: 20,
+          marginBottom: 60
+        }}>
+        <ActivityIndicator size="large" />
+        <Text>Searching for a node...</Text>
+      </View>
+    )
+  }
+
+  return (
+    <ScrollScreen
+      isModal
+      title={`That's it!\nReview your staking`}
+      navigationTitle="Review"
+      renderFooter={renderFooter}
+      contentContainerStyle={{ padding: 16 }}>
+      <View sx={{ gap: 12, marginTop: 16 }}>
+        <GroupList
+          data={amountSection}
+          textContainerSx={{
+            marginTop: 0
+          }}
+        />
+        <GroupList data={stakeSection} />
+      </View>
+    </ScrollScreen>
   )
 }
 

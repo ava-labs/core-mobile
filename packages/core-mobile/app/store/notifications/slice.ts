@@ -1,5 +1,5 @@
 import { createAction, createSlice, PayloadAction } from '@reduxjs/toolkit'
-import { RootState } from 'store/index'
+import { RootState } from 'store/types'
 import {
   NotificationsState,
   StakeCompleteNotification

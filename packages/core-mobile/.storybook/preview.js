@@ -1,12 +1,10 @@
 import React from 'react'
 import { withBackgrounds } from '@storybook/addon-ondevice-backgrounds'
 import { NavigationContainer } from '@react-navigation/native'
-import { ReactQueryProvider } from 'contexts/ReactQueryProvider'
-import { K2ThemeProvider } from '@avalabs/k2-mobile'
-import { EncryptedStoreProvider } from '../app/contexts/EncryptedStoreProvider'
-import { ApplicationContextProvider } from '../app/contexts/ApplicationContext'
-import { PosthogContextProvider } from '../app/contexts/PosthogContext'
-import { COLORS_NIGHT, COLORS_DAY } from '../app/resources/Constants'
+import { K2AlpineThemeProvider } from '@avalabs/k2-alpine'
+import { ReactQueryProvider } from '../app/new/common/contexts/ReactQueryProvider'
+import { EncryptedStoreProvider } from '../app/new/common/contexts/EncryptedStoreProvider'
+import { PosthogContextProvider } from '../app/new/common/contexts/PosthogContext'
 
 export const parameters = {
   controls: {
@@ -18,8 +16,8 @@ export const parameters = {
   backgrounds: {
     default: 'night',
     values: [
-      { name: 'night', value: COLORS_NIGHT.background },
-      { name: 'day', value: COLORS_DAY.background }
+      { name: 'night', value: '#000000' },
+      { name: 'day', value: '#FFFFFF' }
     ]
   }
 }
@@ -28,13 +26,11 @@ const withProviders = Story => (
   <EncryptedStoreProvider>
     <ReactQueryProvider>
       <PosthogContextProvider>
-        <K2ThemeProvider>
-          <ApplicationContextProvider>
-            <NavigationContainer>
-              <Story />
-            </NavigationContainer>
-          </ApplicationContextProvider>
-        </K2ThemeProvider>
+        <K2AlpineThemeProvider>
+          <NavigationContainer>
+            <Story />
+          </NavigationContainer>
+        </K2AlpineThemeProvider>
       </PosthogContextProvider>
     </ReactQueryProvider>
   </EncryptedStoreProvider>

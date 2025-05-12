@@ -4,15 +4,13 @@ import {
   Icons,
   PriceChangeIndicator,
   MaskedText,
-  SPRING_LINEAR_TRANSITION,
   Text,
   useTheme,
   View
 } from '@avalabs/k2-alpine'
-import Animated from 'react-native-reanimated'
-import { getListItemEnteringAnimation } from 'common/utils/animations'
 import { selectIsPrivacyModeEnabled } from 'store/settings/securityPrivacy'
 import { useSelector } from 'react-redux'
+import { HiddenBalanceText } from 'common/components/HiddenBalanceText'
 import { TokenListViewProps } from '../types'
 import { LogoWithNetwork } from './LogoWithNetwork'
 
@@ -30,9 +28,7 @@ export const TokenListView = ({
   const isPrivacyModeEnabled = useSelector(selectIsPrivacyModeEnabled)
 
   return (
-    <Animated.View
-      entering={getListItemEnteringAnimation(index)}
-      layout={SPRING_LINEAR_TRANSITION}>
+    <View>
       <AnimatedPressable onPress={onPress}>
         <View
           sx={{
@@ -83,15 +79,20 @@ export const TokenListView = ({
                     color={colors.$textDanger}
                   />
                 )}
-                <MaskedText
-                  variant="buttonMedium"
-                  shouldMask={isPrivacyModeEnabled}
-                  maskWidth={64}
-                  numberOfLines={1}
-                  sx={{ lineHeight: 18 }}
-                  testID={`list_fiat_balance__${index}`}>
-                  {formattedBalance}
-                </MaskedText>
+                {isPrivacyModeEnabled ? (
+                  <HiddenBalanceText
+                    variant="buttonMedium"
+                    sx={{ lineHeight: 18 }}
+                  />
+                ) : (
+                  <Text
+                    variant="buttonMedium"
+                    numberOfLines={1}
+                    sx={{ lineHeight: 18 }}
+                    testID={`list_fiat_balance__${index}`}>
+                    {formattedBalance}
+                  </Text>
+                )}
               </View>
             </View>
             <View
@@ -128,6 +129,6 @@ export const TokenListView = ({
           </View>
         </View>
       </AnimatedPressable>
-    </Animated.View>
+    </View>
   )
 }

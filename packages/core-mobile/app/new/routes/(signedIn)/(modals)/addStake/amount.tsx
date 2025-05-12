@@ -1,30 +1,34 @@
-import React, { useMemo, useCallback, useState } from 'react'
+import { TokenUnit } from '@avalabs/core-utils-sdk'
 import {
   ActivityIndicator,
+  alpha,
   Button,
-  SafeAreaView,
-  ScrollView,
-  TokenAmountInputWidget,
-  View
+  normalizeErrorMessage,
+  Text,
+  TokenUnitInputWidget,
+  useTheme
 } from '@avalabs/k2-alpine'
-import ScreenHeader from 'common/components/ScreenHeader'
-import { TokenUnit } from '@avalabs/core-utils-sdk'
-import { cChainToken, xpChainToken } from 'utils/units/knownTokens'
-import { KeyboardAvoidingView } from 'common/components/KeyboardAvoidingView'
+import { ScrollScreen } from 'common/components/ScrollScreen'
+import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
+import { useDelegationContext } from 'contexts/DelegationContext'
+import { useRouter } from 'expo-router'
 import { useCChainBalance } from 'hooks/earn/useCChainBalance'
 import { useGetClaimableBalance } from 'hooks/earn/useGetClaimableBalance'
 import { useGetStuckBalance } from 'hooks/earn/useGetStuckBalance'
-import { useDelegationContext } from 'contexts/DelegationContext'
 import useStakingParams from 'hooks/earn/useStakingParams'
-import { useRouter } from 'expo-router'
-import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import { useAvaxTokenPriceInSelectedCurrency } from 'hooks/useAvaxTokenPriceInSelectedCurrency'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import AnalyticsService from 'services/analytics/AnalyticsService'
+import { cChainToken, xpChainToken } from 'utils/units/knownTokens'
 
 const StakeAmountScreen = (): JSX.Element => {
+  const {
+    theme: { colors }
+  } = useTheme()
   const { navigate } = useRouter()
+
   const [isComputing, setIsComputing] = useState<boolean>(false)
-  const [computeError, setComputeError] = useState<Error | null>(null)
+  const [error, setError] = useState<Error | null>(null)
   const { compute, setStakeAmount, stakeAmount } = useDelegationContext()
   const { minStakeAmount } = useStakingParams()
   const cChainBalance = useCChainBalance()
@@ -54,45 +58,26 @@ const StakeAmountScreen = (): JSX.Element => {
   const avaxPrice = useAvaxTokenPriceInSelectedCurrency()
   const { formatCurrency } = useFormatCurrency()
 
-  const validateInputAmount = useCallback(async (): Promise<void> => {
-    if (amountNotEnough) {
-      throw new Error(
-        `Minimum amount to stake is ${minStakeAmount.toString()} AVAX`
-      )
-    }
-
-    if (notEnoughBalance) {
-      throw new Error(
-        'The specified staking amount exceeds the available balance'
-      )
-    }
-
-    if (computeError) {
-      throw computeError
-    }
-  }, [amountNotEnough, notEnoughBalance, minStakeAmount, computeError])
-
   const handleAmountChange = useCallback(
     (amount: TokenUnit) => {
       if (amount.eq(stakeAmount)) return
 
-      computeError && setComputeError(null)
       setStakeAmount(amount)
     },
-    [computeError, stakeAmount, setStakeAmount]
+    [stakeAmount, setStakeAmount]
   )
 
   const handlePressNext = useCallback(async () => {
     setIsComputing(true)
-    setComputeError(null)
 
     try {
       await compute(stakeAmount.toSubUnit())
 
       AnalyticsService.capture('StakeOpenDurationSelect')
+      // @ts-ignore TODO: make routes typesafe
       navigate('/addStake/duration')
     } catch (e) {
-      setComputeError(e as Error)
+      setError(e as Error)
     }
 
     setIsComputing(false)
@@ -108,44 +93,76 @@ const StakeAmountScreen = (): JSX.Element => {
     [avaxPrice, formatCurrency]
   )
 
+  useEffect(() => {
+    if (amountNotEnough) {
+      setError(
+        new Error(
+          `Minimum amount to stake is ${minStakeAmount.toString()} AVAX`
+        )
+      )
+    } else if (notEnoughBalance) {
+      setError(
+        new Error('The specified staking amount exceeds the available balance')
+      )
+    } else {
+      setError(null)
+    }
+  }, [amountNotEnough, notEnoughBalance, minStakeAmount])
+
+  const renderFooter = useCallback(() => {
+    return (
+      <Button
+        type="primary"
+        size="large"
+        disabled={isComputing || !inputValid}
+        onPress={handlePressNext}>
+        {isComputing ? <ActivityIndicator /> : 'Next'}
+      </Button>
+    )
+  }, [handlePressNext, inputValid, isComputing])
+
   if (fetchingBalance || cumulativeBalance === undefined) {
     return <ActivityIndicator sx={{ flex: 1 }} />
   }
 
+  const renderCaption = (): JSX.Element => {
+    const errorMessage = error?.message
+    return (
+      <Text
+        variant="caption"
+        sx={{
+          marginTop: 8,
+          paddingHorizontal: 36,
+          color: errorMessage
+            ? '$textDanger'
+            : alpha(colors.$textPrimary, 0.85),
+          alignSelf: 'center',
+          textAlign: 'center'
+        }}>
+        {errorMessage
+          ? normalizeErrorMessage(errorMessage)
+          : `Balance: ${cumulativeBalance.toDisplay()} ${xpChainToken.symbol}`}
+      </Text>
+    )
+  }
+
   return (
-    <KeyboardAvoidingView>
-      <SafeAreaView sx={{ flex: 1 }}>
-        <ScrollView
-          style={{ flex: 1 }}
-          contentContainerSx={{ padding: 16, paddingTop: 0 }}>
-          <ScreenHeader title="How much would you like to stake?" />
-          <TokenAmountInputWidget
-            sx={{
-              marginTop: 16
-            }}
-            disabled={isComputing}
-            balance={cumulativeBalance}
-            token={xpChainToken}
-            formatInCurrency={formatInCurrency}
-            validateAmount={validateInputAmount}
-            onChange={handleAmountChange}
-            maxPercentage={STAKING_MAX_BALANCE_PERCENTAGE}
-          />
-        </ScrollView>
-        <View
-          sx={{
-            padding: 16
-          }}>
-          <Button
-            type="primary"
-            size="large"
-            disabled={isComputing || !inputValid}
-            onPress={handlePressNext}>
-            {isComputing ? <ActivityIndicator /> : 'Next'}
-          </Button>
-        </View>
-      </SafeAreaView>
-    </KeyboardAvoidingView>
+    <ScrollScreen
+      title={`How much would\nyou like to stake?`}
+      navigationTitle="How much would you like to stake?"
+      renderFooter={renderFooter}
+      isModal
+      contentContainerStyle={{ padding: 16 }}>
+      <TokenUnitInputWidget
+        disabled={isComputing}
+        balance={cumulativeBalance}
+        token={xpChainToken}
+        formatInCurrency={formatInCurrency}
+        onChange={handleAmountChange}
+        maxPercentage={STAKING_MAX_BALANCE_PERCENTAGE}
+      />
+      {renderCaption()}
+    </ScrollScreen>
   )
 }
 

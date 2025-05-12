@@ -1,6 +1,6 @@
 import { configureStore, createListenerMiddleware } from '@reduxjs/toolkit'
 import { noop } from 'lodash'
-import { AppStartListening } from 'store/middleware/listener'
+import { AppStartListening } from 'store/types'
 import {
   onAppUnlocked,
   onLogOut,
@@ -9,7 +9,6 @@ import {
 } from 'store/app'
 import { WalletType } from 'services/wallet/types'
 import SeedlessService from 'seedless/services/SeedlessService'
-import * as Navigation from 'utils/Navigation'
 import GoogleSigninService from 'services/socialSignIn/google/GoogleSigninService'
 import { addSeedlessListeners } from './listeners'
 import { onTokenExpired, reducerName } from './slice'
@@ -37,9 +36,6 @@ jest.mock('seedless/services/SeedlessService', () => ({
 jest.mock('services/socialSignIn/google/GoogleSigninService', () => ({
   signOut: jest.fn()
 }))
-
-const mockNavigate = jest.fn()
-jest.spyOn(Navigation, 'navigate').mockImplementation(mockNavigate)
 
 // store utils
 const listenerMiddlewareInstance = createListenerMiddleware({

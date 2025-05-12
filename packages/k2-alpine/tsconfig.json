@@ -12,7 +12,12 @@
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
-      "@avalabs/core-utils-sdk": ["../core-mobile/node_modules/@avalabs/core-utils-sdk"]
+      "@avalabs/core-utils-sdk": [
+        "../core-mobile/node_modules/@avalabs/core-utils-sdk"
+      ],
+      "@avalabs/core-utils-sdk/*": [
+        "../core-mobile/node_modules/@avalabs/core-utils-sdk/*"
+      ]
     }
   },
   "exclude": ["node_modules"]

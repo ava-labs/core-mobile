@@ -5,7 +5,7 @@ import {
   Erc721TokenMetadata
 } from '@avalabs/glacier-sdk'
 import DevDebuggingConfig from 'utils/debugging/DevDebuggingConfig'
-import GlacierService from 'services/GlacierService'
+import GlacierService from 'services/glacier/GlacierService'
 import delay from 'utils/js/delay'
 
 const demoAddress = '0x188c30e9a6527f5f0c3f7fe59b72ac7253c62f28'

@@ -1,8 +1,6 @@
-import { AppListenerEffectAPI } from 'store'
+import { AppListenerEffectAPI } from 'store/types'
 import { rpcErrors } from '@metamask/rpc-errors'
-import { addContact, selectContacts } from 'store/addressBook'
-import * as Navigation from 'utils/Navigation'
-import AppNavigation from 'navigation/AppNavigation'
+import { selectContacts } from 'store/addressBook'
 import Logger from 'utils/Logger'
 import { RpcMethod, RpcRequest } from '../../../types'
 import {
@@ -50,25 +48,26 @@ class AvalancheUpdateContactHandler
       }
     }
 
-    Navigation.navigate({
-      name: AppNavigation.Root.Wallet,
-      params: {
-        screen: AppNavigation.Modal.UpdateContactV2,
-        params: {
-          request,
-          contact
-        }
-      }
-    })
+    // TODO use updated navigate
+    // Navigation.navigate({
+    //   name: AppNavigation.Root.Wallet,
+    //   params: {
+    //     screen: AppNavigation.Modal.UpdateContactV2,
+    //     params: {
+    //       request,
+    //       contact
+    //     }
+    //   }
+    // })
 
     return { success: true, value: DEFERRED_RESULT }
   }
 
   approve = async (
     payload: { request: AvalancheUpdateContactRequest; data?: unknown },
-    listenerApi: AppListenerEffectAPI
+    _listenerApi: AppListenerEffectAPI
   ): ApproveResponse => {
-    const { dispatch } = listenerApi
+    //const { dispatch } = listenerApi
 
     const result = parseApproveData(payload.data)
 
@@ -79,17 +78,16 @@ class AvalancheUpdateContactHandler
       }
     }
 
-    const contact = result.data.contact
+    // const contact = result.data.contact
 
-    dispatch(
-      addContact({
-        address: contact.address,
-        addressBTC: contact.addressBTC || '',
-        addressXP: contact.addressXP || '',
-        name: contact.name,
-        id: contact.id
-      })
-    )
+    // TODO use updated addContact
+    // addContact({
+    //   address: contact.address,
+    //   addressBTC: contact.addressBTC || '',
+    //   addressXP: contact.addressXP || '',
+    //   name: contact.name,
+    //   id: contact.id
+    // })
 
     return { success: true, value: [] }
   }

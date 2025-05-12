@@ -1,11 +1,13 @@
 import { useTokenInfoContext } from '@avalabs/core-bridge-sdk'
+import { getOriginalSymbol } from 'common/utils/bridgeUtils'
 import {
   AVAX_COINGECKO_ID,
   BITCOIN_COINGECKO_ID,
   ETHEREUM_COINGECKO_ID
 } from 'consts/coingecko'
+import { useMemo } from 'react'
 
-const KNOWN_IDS: { [key: string]: string } = {
+export const KNOWN_IDS: { [key: string]: string } = {
   BTC: BITCOIN_COINGECKO_ID,
   AVAX: AVAX_COINGECKO_ID,
   ETH: ETHEREUM_COINGECKO_ID
@@ -14,8 +16,12 @@ const KNOWN_IDS: { [key: string]: string } = {
 export const useCoinGeckoId = (tokenSymbol?: string): string | undefined => {
   const tokenInfoData = useTokenInfoContext()
 
+  const originalSymbol = useMemo(() => {
+    return tokenSymbol ? getOriginalSymbol(tokenSymbol) : undefined
+  }, [tokenSymbol])
+
   return (
-    tokenSymbol &&
-    (KNOWN_IDS[tokenSymbol] || tokenInfoData?.[tokenSymbol]?.coingeckoId)
+    originalSymbol &&
+    (KNOWN_IDS[originalSymbol] || tokenInfoData?.[originalSymbol]?.coingeckoId)
   )
 }

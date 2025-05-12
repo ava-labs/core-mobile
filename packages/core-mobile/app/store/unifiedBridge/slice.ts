@@ -1,5 +1,5 @@
 import { PayloadAction, createSlice } from '@reduxjs/toolkit'
-import { RootState } from 'store'
+import { RootState } from 'store/types'
 import { BridgeTransfer } from '@avalabs/bridge-unified'
 import { initialState, PendingTransfers, SourceTxHash } from './types'
 

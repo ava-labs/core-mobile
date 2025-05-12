@@ -1,10 +1,8 @@
 import {
-  AnimatedBalance,
   Avatar,
   GroupList,
   Icons,
   Logos,
-  NavigationTitleHeader,
   showAlert,
   Text,
   Toggle,
@@ -12,90 +10,58 @@ import {
   useTheme,
   View
 } from '@avalabs/k2-alpine'
-import { useNavigation } from '@react-navigation/native'
-import { useRouter } from 'expo-router'
-import React, { useCallback, useEffect, useState } from 'react'
-import Animated, { useSharedValue } from 'react-native-reanimated'
-import { LayoutRectangle } from 'react-native'
-import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
-import { LayoutChangeEvent } from 'react-native'
+import { ScrollScreen } from 'common/components/ScrollScreen'
 import { VisibilityBarButton } from 'common/components/VisibilityBarButton'
-import { useDispatch, useSelector } from 'react-redux'
-import { selectActiveAccount } from 'store/account'
-import { useTotalBalanceInCurrencyForAccount } from 'common/hooks/useTotalBalanceInCurrency'
-import { selectSelectedCurrency } from 'store/settings/currency'
-import { AccountList } from 'features/accountSettings/components/AcccountList'
+import { useAvatar } from 'common/hooks/useAvatar'
 import { useDeleteWallet } from 'common/hooks/useDeleteWallet'
-import { UserPreferences } from 'features/accountSettings/components/UserPreferences'
+import { showSnackbar } from 'common/utils/toast'
+import { Space } from 'common/components/Space'
+import { useRouter } from 'expo-router'
 import { About } from 'features/accountSettings/components/About'
+import { AccountList } from 'features/accountSettings/components/AcccountList'
 import { AppAppearance } from 'features/accountSettings/components/AppAppearance'
-import {
-  selectIsPrivacyModeEnabled,
-  togglePrivacyMode
-} from 'store/settings/securityPrivacy'
+import { UserPreferences } from 'features/accountSettings/components/UserPreferences'
+import { useNetworks } from 'hooks/networks/useNetworks'
+import React, { useCallback } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
+import AnalyticsService from 'services/analytics/AnalyticsService'
+import { selectContacts } from 'store/addressBook'
 import {
   selectIsDeveloperMode,
   toggleDeveloperMode
 } from 'store/settings/advanced'
-import AnalyticsService from 'services/analytics/AnalyticsService'
-import { ScrollView } from 'react-native-gesture-handler'
-import { selectContacts } from 'store/addressBook'
-import { Space } from 'components/Space'
-import { showSnackbar } from 'common/utils/toast'
+import {
+  selectIsPrivacyModeEnabled,
+  togglePrivacyMode
+} from 'store/settings/securityPrivacy'
 
 const AccountSettingsScreen = (): JSX.Element => {
   const { deleteWallet } = useDeleteWallet()
   const dispatch = useDispatch()
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const isPrivacyModeEnabled = useSelector(selectIsPrivacyModeEnabled)
-  const activeAccount = useSelector(selectActiveAccount)
-  const totalBalanceInCurrency = useTotalBalanceInCurrencyForAccount(
-    activeAccount?.index ?? 0
-  )
-  const selectedCurrency = useSelector(selectSelectedCurrency)
   const {
     theme: { colors }
   } = useTheme()
+  const { enabledNetworks } = useNetworks()
   const contacts = useSelector(selectContacts)
   const { navigate } = useRouter()
-  const { setOptions } = useNavigation()
-  const headerOpacity = useSharedValue(1)
-  const [headerLayout, setHeaderLayout] = useState<
-    LayoutRectangle | undefined
-  >()
-  const scrollViewProps = useFadingHeaderNavigation({
-    header: <NavigationTitleHeader title={'Settings and accounts'} />,
-    targetLayout: headerLayout,
-    shouldHeaderHaveGrabber: true
-  })
 
-  const handleHeaderLayout = (event: LayoutChangeEvent): void => {
-    setHeaderLayout(event.nativeEvent.layout)
-  }
+  const { avatar } = useAvatar()
 
   const renderHeaderRight = useCallback(() => {
     return (
-      <View
-        sx={{
-          marginTop: 14,
-          marginRight: 18
-        }}>
-        <VisibilityBarButton
-          isPrivacyModeEnabled={isPrivacyModeEnabled}
-          onPress={() => dispatch(togglePrivacyMode())}
-        />
-      </View>
+      <VisibilityBarButton
+        isModal
+        isPrivacyModeEnabled={isPrivacyModeEnabled}
+        onPress={() => dispatch(togglePrivacyMode())}
+      />
     )
-  }, [dispatch, isPrivacyModeEnabled])
-
-  useEffect(() => {
-    setOptions({
-      headerRight: renderHeaderRight
-    })
-  }, [renderHeaderRight, setOptions])
+  }, [isPrivacyModeEnabled, dispatch])
 
   const goToSelectAvatar = useCallback(() => {
-    navigate('./accountSettings/selectAvatar')
+    // @ts-ignore TODO: make routes typesafe
+    navigate('/accountSettings/selectAvatar')
   }, [navigate])
 
   const goToAppAppearance = useCallback(() => {
@@ -113,23 +79,23 @@ const AccountSettingsScreen = (): JSX.Element => {
       })
       return
     }
-    navigate('./accountSettings/selectAppearance')
+    // @ts-ignore TODO: make routes typesafe
+    navigate('/accountSettings/selectAppearance')
   }, [isDeveloperMode, navigate])
 
-  const goToAppIcon = useCallback(() => {
-    navigate('./accountSettings/appIcon')
-  }, [navigate])
-
   const goToCurrency = useCallback(() => {
-    navigate('./accountSettings/selectCurrency')
+    // @ts-ignore TODO: make routes typesafe
+    navigate('/accountSettings/selectCurrency')
   }, [navigate])
 
   const goToNotificationPreferences = useCallback(() => {
-    navigate('./accountSettings/notificationPreferences')
+    // @ts-ignore TODO: make routes typesafe
+    navigate('/accountSettings/notificationPreferences')
   }, [navigate])
 
   const goToSecurityPrivacy = useCallback(() => {
-    navigate('./accountSettings/securityAndPrivacy')
+    // @ts-ignore TODO: make routes typesafe
+    navigate('/accountSettings/securityAndPrivacy')
   }, [navigate])
 
   const onTestnetChange = (value: boolean): void => {
@@ -141,72 +107,35 @@ const AccountSettingsScreen = (): JSX.Element => {
   }
 
   return (
-    <ScrollView
+    <ScrollScreen
+      isModal
+      navigationTitle="Account settings"
+      renderHeaderRight={renderHeaderRight}
       testID="settings_scroll_view"
-      showsVerticalScrollIndicator={false}
-      contentContainerStyle={{ paddingBottom: 60 }}
-      {...scrollViewProps}>
-      <View
-        sx={{
-          paddingHorizontal: 16,
-          paddingBottom: 4,
-          gap: 48
-        }}>
-        {/* Header */}
+      contentContainerStyle={{
+        paddingTop: 16
+      }}>
+      <View sx={{ gap: 48 }}>
         <View
           sx={{
-            justifyContent: 'center',
             alignItems: 'center'
           }}>
-          <Animated.View
-            style={{ opacity: headerOpacity }}
-            onLayout={handleHeaderLayout}>
-            <TouchableOpacity
-              onPress={goToSelectAvatar}
-              sx={{ marginTop: 5, height: 150 }}>
-              <Avatar
-                testID={isDeveloperMode ? 'testnet_avatar' : 'mainnet_avatar'}
-                backgroundColor="transparent"
-                size={150}
-                // todo: replace with actual avatar
-                source={{
-                  uri: 'https://miro.medium.com/v2/resize:fit:1256/format:webp/1*xm2-adeU3YD4MsZikpc5UQ.png'
-                }}
-                hasBlur={false}
-                hasLoading={false}
-                isDeveloperMode={isDeveloperMode}
-              />
-            </TouchableOpacity>
-          </Animated.View>
-          <View style={{ marginTop: 23 }}>
-            <AnimatedBalance
-              balance={totalBalanceInCurrency}
-              currency={` ${selectedCurrency}`}
-              shouldMask={isPrivacyModeEnabled}
-              maskWidth={100}
-              balanceSx={{ lineHeight: 38 }}
-              currencySx={{
-                fontFamily: 'Aeonik-Medium',
-                fontSize: 18,
-                lineHeight: 28
-              }}
+          <TouchableOpacity
+            onPress={goToSelectAvatar}
+            disabled={isDeveloperMode}>
+            <Avatar
+              testID={isDeveloperMode ? 'testnet_avatar' : 'mainnet_avatar'}
+              size={150}
+              source={avatar.source}
+              hasLoading={false}
+              isDeveloperMode={isDeveloperMode}
             />
-          </View>
-          <Text
-            variant="body1"
-            sx={{
-              marginTop: 2,
-              color: isDeveloperMode ? '#27DAA6' : '$textSecondary'
-            }}>
-            {isDeveloperMode ? 'Fuji funds' : 'Total net worth'}
-          </Text>
+          </TouchableOpacity>
         </View>
 
-        {/* Account list */}
         <AccountList />
 
-        {/* Settings */}
-        <View sx={{ gap: 24 }}>
+        <View sx={{ gap: 24, paddingHorizontal: 16 }}>
           <View sx={{ gap: 12 }}>
             {/* Testnet mode */}
             <GroupList
@@ -232,14 +161,15 @@ const AccountSettingsScreen = (): JSX.Element => {
               valueSx={{ fontSize: 16, lineHeight: 22 }}
               separatorMarginRight={16}
             />
-            {/* Address book */}
+            {/* Contacts */}
             <View>
               <Space y={12} />
               <GroupList
                 data={[
                   {
-                    title: 'Address book',
-                    onPress: () => navigate('./accountSettings/addressBook'),
+                    title: 'Contacts',
+                    // @ts-ignore TODO: make routes typesafe
+                    onPress: () => navigate('/accountSettings/addressBook'),
                     value: (
                       <Text
                         variant="body2"
@@ -263,9 +193,38 @@ const AccountSettingsScreen = (): JSX.Element => {
                 separatorMarginRight={16}
               />
             </View>
+            <View>
+              <GroupList
+                data={[
+                  {
+                    title: 'Networks',
+                    // @ts-ignore TODO: make routes typesafe
+                    onPress: () => navigate('/accountSettings/manageNetworks'),
+                    value: (
+                      <Text
+                        variant="body2"
+                        sx={{
+                          color: colors.$textSecondary,
+                          fontSize: 16,
+                          lineHeight: 22,
+                          marginLeft: 9
+                        }}>
+                        {enabledNetworks.length}
+                      </Text>
+                    )
+                  }
+                ]}
+                titleSx={{
+                  fontSize: 16,
+                  lineHeight: 22,
+                  fontFamily: 'Inter-Regular'
+                }}
+                valueSx={{ fontSize: 16, lineHeight: 22 }}
+                separatorMarginRight={16}
+              />
+            </View>
             <AppAppearance
               selectAppAppearance={goToAppAppearance}
-              selectAppIcon={goToAppIcon}
               selectCurrency={goToCurrency}
             />
             <UserPreferences
@@ -307,7 +266,9 @@ const AccountSettingsScreen = (): JSX.Element => {
         </View>
 
         {/* Footer */}
-        <View testID="settings_footer" sx={{ gap: 8, alignItems: 'center' }}>
+        <View
+          testID="settings_footer"
+          sx={{ gap: 8, alignItems: 'center', paddingBottom: 24 }}>
           <Logos.AppIcons.Core
             color={colors.$textSecondary}
             width={79}
@@ -316,7 +277,7 @@ const AccountSettingsScreen = (): JSX.Element => {
           <Icons.Custom.AvalabsTrademark color={colors.$textSecondary} />
         </View>
       </View>
-    </ScrollView>
+    </ScrollScreen>
   )
 }
 

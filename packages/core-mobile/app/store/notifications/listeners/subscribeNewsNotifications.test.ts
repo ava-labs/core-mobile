@@ -4,7 +4,7 @@ import FCMService from 'services/fcm/FCMService'
 import NotificationsService from 'services/notifications/NotificationsService'
 import Logger from 'utils/Logger'
 import { ChannelId } from 'services/notifications/channels'
-import { AppListenerEffectAPI } from 'store/index'
+import { AppListenerEffectAPI } from 'store/types'
 import { subscribeForNews } from 'services/notifications/news/subscribeForNews'
 import {
   selectEnabledNewsNotificationSubscriptions,

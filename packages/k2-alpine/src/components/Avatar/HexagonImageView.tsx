@@ -1,6 +1,7 @@
 import MaskedView from '@react-native-masked-view/masked-view'
+import { Image } from 'expo-image'
 import React, { useEffect, useState } from 'react'
-import { ImageSourcePropType, Platform, ViewStyle } from 'react-native'
+import { Platform, ViewStyle } from 'react-native'
 import Animated, {
   Easing,
   interpolateColor,
@@ -12,27 +13,31 @@ import Animated, {
   withTiming
 } from 'react-native-reanimated'
 import Svg, { Path } from 'react-native-svg'
-import { Image } from 'expo-image'
-import { alpha } from '../../utils'
+import { useTheme } from '../../hooks'
 import {
   colors,
   darkModeColors,
   lightModeColors
 } from '../../theme/tokens/colors'
-import { useTheme } from '../../hooks'
+import { Icons } from '../../theme/tokens/Icons'
+import { alpha } from '../../utils'
+import { View } from '../Primitives'
+import { AvatarType } from './Avatar'
 
 export const HexagonImageView = ({
   source,
   height,
   backgroundColor,
   isSelected,
-  hasLoading = false
+  hasLoading = false,
+  showAddIcon = false
 }: {
-  source: ImageSourcePropType
+  source?: AvatarType['source']
   height: number
   backgroundColor: string
   isSelected?: boolean
   hasLoading?: boolean
+  showAddIcon?: boolean
 }): JSX.Element => {
   const { theme } = useTheme()
   const selectedAnimation = useSharedValue(0)
@@ -56,6 +61,8 @@ export const HexagonImageView = ({
     })
   }, [isSelected, selectedAnimation])
 
+  const isSvgComponent = typeof source === 'function'
+
   return (
     <MaskedView
       maskElement={
@@ -63,14 +70,22 @@ export const HexagonImageView = ({
           <Path d={hexagonPath.path} fill={theme.colors.$surfacePrimary} />
         </Svg>
       }>
-      <Image
-        key={`image-${source}`}
-        contentFit="cover"
-        source={source}
-        style={{ width: height, height: height, backgroundColor }}
-        onLoadStart={hasLoading ? handleLoadStart : undefined}
-        onLoadEnd={hasLoading ? handleLoadEnd : undefined}
-      />
+      {isSvgComponent ? (
+        // If source is a local SVG component
+        React.createElement(source, { width: height, height: height })
+      ) : (
+        // If source is a regular image
+        <Image
+          key={`image-${source}`}
+          recyclingKey={`image-recycling-${source}`}
+          contentFit="cover"
+          source={source}
+          style={{ width: height, height: height, backgroundColor }}
+          onLoadStart={hasLoading ? handleLoadStart : undefined}
+          onLoadEnd={hasLoading ? handleLoadEnd : undefined}
+          cachePolicy="memory-disk"
+        />
+      )}
       {isLoading && (
         <LoadingView
           style={{
@@ -101,6 +116,24 @@ export const HexagonImageView = ({
         ]}>
         <Arrow key={theme.isDark ? 'dark' : 'light'} isSelected={isSelected} />
       </Animated.View>
+      {showAddIcon && (
+        <View
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            alignItems: 'center',
+            justifyContent: 'center'
+          }}>
+          <Icons.Content.Add
+            color={theme.colors.$textPrimary}
+            width={40}
+            height={40}
+          />
+        </View>
+      )}
     </MaskedView>
   )
 }

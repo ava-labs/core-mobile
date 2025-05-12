@@ -1,5 +1,5 @@
 import React, { ReactNode } from 'react'
-import { View } from 'react-native'
+import { View, ViewStyle } from 'react-native'
 import Animated, {
   runOnJS,
   SharedValue,
@@ -11,9 +11,13 @@ import { useTheme } from '../../hooks'
 import { ANIMATED } from '../../utils'
 
 export const ProgressBar = ({
-  progress
+  progress,
+  progressBarStyle,
+  color
 }: {
   progress: SharedValue<number>
+  progressBarStyle?: ViewStyle
+  color?: string
 }): ReactNode => {
   const { theme } = useTheme()
   const opacity = useSharedValue(1)
@@ -58,9 +62,10 @@ export const ProgressBar = ({
       <Animated.View
         style={[
           progressStyle,
+          progressBarStyle,
           {
             height: '100%',
-            backgroundColor: theme.colors.$textPrimary
+            backgroundColor: color ?? theme.colors.$textPrimary
           }
         ]}
       />

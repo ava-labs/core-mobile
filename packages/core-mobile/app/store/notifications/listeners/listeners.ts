@@ -1,4 +1,4 @@
-import { AppStartListening } from 'store/middleware/listener'
+import { AppStartListening } from 'store/types'
 import { onAppUnlocked, onLogOut, onRehydrationComplete } from 'store/app'
 import { setAccount, setAccounts, setNonActiveAccounts } from 'store/account'
 import { subscribeBalanceChangeNotifications } from 'store/notifications/listeners/subscribeBalanceChangeNotifications'

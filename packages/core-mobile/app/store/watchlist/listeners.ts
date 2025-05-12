@@ -1,6 +1,5 @@
-import { AppListenerEffectAPI } from 'store'
+import { AppListenerEffectAPI, AppStartListening } from 'store/types'
 import { onLogIn } from 'store/app'
-import { AppStartListening } from 'store/middleware/listener'
 import { AnyAction } from '@reduxjs/toolkit'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import {

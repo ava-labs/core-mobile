@@ -1,6 +1,6 @@
 import { createAction, createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { AppStateStatus } from 'react-native'
-import { RootState } from 'store'
+import { RootState } from 'store/types'
 import { WalletType } from 'services/wallet/types'
 import { AppState, WalletState } from './types'
 

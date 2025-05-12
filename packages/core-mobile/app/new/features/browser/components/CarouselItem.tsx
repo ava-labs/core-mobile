@@ -90,6 +90,7 @@ export const CarouselItem = ({
               }}>
               <Image
                 source={image}
+                renderToHardwareTextureAndroid={false}
                 style={{ width: 150, height: 150, borderRadius: 100 }}
               />
             </View>
@@ -99,7 +100,9 @@ export const CarouselItem = ({
         <View style={{ zIndex: 10, gap: 8, padding: 22 }}>
           <Text variant="heading3">{title}</Text>
           {description ? (
-            <Text variant="subtitle1">{description}</Text>
+            <Text variant="subtitle1" numberOfLines={4}>
+              {description}
+            </Text>
           ) : (
             <Icons.Custom.ArrowOutward
               width={42}

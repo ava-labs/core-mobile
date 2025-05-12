@@ -2,14 +2,16 @@ import {
   Button,
   GroupList,
   GroupListItem,
-  ScrollView,
   SxProp,
   View
 } from '@avalabs/k2-alpine'
 import React, { useMemo } from 'react'
 
-import BlurredBarsContentLayout from 'common/components/BlurredBarsContentLayout'
-import ScreenHeader from 'common/components/ScreenHeader'
+import { ScrollScreen } from 'common/components/ScrollScreen'
+import { copyToClipboard } from 'common/utils/clipboard'
+import { format, fromUnixTime } from 'date-fns'
+import { useLocalSearchParams } from 'expo-router'
+import { StakeTokenUnitValue } from 'features/stake/components/StakeTokenUnitValue'
 import {
   getActiveStakeProgress,
   getEarnedRewardAmount,
@@ -18,17 +20,13 @@ import {
   getStakedAmount,
   getStakeTitle
 } from 'features/stake/utils'
+import { useStake } from 'hooks/earn/useStake'
+import { round } from 'lodash'
 import { useSelector } from 'react-redux'
 import NetworkService from 'services/network/NetworkService'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
-import { useStake } from 'hooks/earn/useStake'
 import { isOnGoing } from 'utils/earn/status'
-import { useLocalSearchParams } from 'expo-router'
-import { round } from 'lodash'
-import { format, fromUnixTime } from 'date-fns'
 import { truncateAddress, truncateNodeId } from 'utils/Utils'
-import { copyToClipboard } from 'common/utils/clipboard'
-import { StakeTokenUnitValue } from 'features/stake/components/StakeTokenUnitValue'
 
 const StakeDetailScreen = (): React.JSX.Element => {
   const { txHash } = useLocalSearchParams<{ txHash: string }>()
@@ -182,24 +180,20 @@ const StakeDetailScreen = (): React.JSX.Element => {
   }, [stake, isActive, pChainNetworkToken])
 
   return (
-    <BlurredBarsContentLayout>
-      <ScrollView
-        sx={{
-          flex: 1
-        }}
-        contentContainerSx={{ padding: 16, paddingTop: 8 }}>
-        <ScreenHeader title={title} />
-        <View sx={{ marginTop: 20, gap: 12 }}>
-          {groupListSections.map((section, index) => (
-            <GroupList
-              key={index}
-              data={section.items}
-              textContainerSx={section.textContainerSx}
-            />
-          ))}
-        </View>
-      </ScrollView>
-    </BlurredBarsContentLayout>
+    <ScrollScreen
+      title={title}
+      navigationTitle="Stake detail"
+      contentContainerStyle={{ padding: 16, flex: 1 }}>
+      <View sx={{ marginTop: 24, gap: 12 }}>
+        {groupListSections.map((section, index) => (
+          <GroupList
+            key={index}
+            data={section.items}
+            textContainerSx={section.textContainerSx}
+          />
+        ))}
+      </View>
+    </ScrollScreen>
   )
 }
 

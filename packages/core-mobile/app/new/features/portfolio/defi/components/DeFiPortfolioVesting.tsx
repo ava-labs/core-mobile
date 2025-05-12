@@ -1,4 +1,3 @@
-import { Row } from 'components/Row'
 import React from 'react'
 import { Card, Image, Separator, Text, View } from '@avalabs/k2-alpine'
 import { DeFiVestingItem } from 'services/defi/types'
@@ -27,8 +26,9 @@ export const DeFiPortfolioVesting = ({ items }: Props): JSX.Element => {
             </DeFiRowItem>
             <Separator sx={{ marginHorizontal: 16 }} />
             <DeFiRowItem>
-              <Row
+              <View
                 style={{
+                  flexDirection: 'row',
                   gap: 8,
                   alignItems: 'center',
                   flexShrink: 1,
@@ -44,9 +44,10 @@ export const DeFiPortfolioVesting = ({ items }: Props): JSX.Element => {
                   sx={{ color: '$textSecondary', flexShrink: 1 }}>
                   {token.name}
                 </Text>
-              </Row>
-              <Row
+              </View>
+              <View
                 style={{
+                  flexDirection: 'row',
                   justifyContent: 'flex-end'
                 }}>
                 <Text
@@ -56,7 +57,7 @@ export const DeFiPortfolioVesting = ({ items }: Props): JSX.Element => {
                   sx={{ color: '$textSecondary' }}>
                   {getAmount(netUsdValue, 'compact')}
                 </Text>
-              </Row>
+              </View>
             </DeFiRowItem>
             {endDate && (
               <>

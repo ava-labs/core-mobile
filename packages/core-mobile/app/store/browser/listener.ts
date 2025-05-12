@@ -1,5 +1,4 @@
-import { AppListenerEffectAPI } from 'store'
-import { AppStartListening } from 'store/middleware/listener'
+import { AppListenerEffectAPI, AppStartListening } from 'store/types'
 import { Action, isAnyOf } from '@reduxjs/toolkit'
 import { History } from 'store/browser/types'
 import {

@@ -3,7 +3,7 @@ import { CollapsibleTabs } from 'common/components/CollapsibleTabs'
 import { DropdownSelections } from 'common/components/DropdownSelections'
 import { ErrorState } from 'common/components/ErrorState'
 import { LoadingState } from 'common/components/LoadingState'
-import { Space } from 'components/Space'
+import { Space } from 'common/components/Space'
 import React, { FC, memo, useCallback, useMemo } from 'react'
 import { StyleSheet } from 'react-native'
 import { useSelector } from 'react-redux'
@@ -24,11 +24,13 @@ import { TokenListItem } from './TokenListItem'
 interface Props {
   goToTokenDetail: (localId: string) => void
   goToTokenManagement: () => void
+  goToBuy: () => void
 }
 
 const AssetsScreen: FC<Props> = ({
   goToTokenDetail,
-  goToTokenManagement
+  goToTokenManagement,
+  goToBuy
 }): JSX.Element => {
   const { data, filter, sort, view, refetch, isRefetching } =
     useAssetsFilterAndSort()
@@ -118,19 +120,19 @@ const AssetsScreen: FC<Props> = ({
         description="On-ramp using Core in two minutes"
         button={{
           title: 'Let’s go!',
-          onPress: () => {
-            // TODO: navigate to buy on-ramp
-          }
+          onPress: goToBuy
         }}
       />
     )
-  }, [isBalanceLoading, isRefetchingBalance, refetch, isAllBalancesInaccurate])
-
-  const dataLength = data.length
+  }, [
+    isBalanceLoading,
+    isRefetchingBalance,
+    isAllBalancesInaccurate,
+    goToBuy,
+    refetch
+  ])
 
   const header = useMemo(() => {
-    if (dataLength === 0) return
-
     return (
       <View sx={styles.dropdownContainer}>
         <DropdownSelections
@@ -141,7 +143,7 @@ const AssetsScreen: FC<Props> = ({
         />
       </View>
     )
-  }, [dataLength, filter, sort, view, handleManageList])
+  }, [filter, sort, view, handleManageList])
 
   return (
     <CollapsibleTabs.FlashList

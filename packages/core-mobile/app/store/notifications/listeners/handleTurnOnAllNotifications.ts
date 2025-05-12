@@ -1,4 +1,4 @@
-import { AppListenerEffectAPI } from 'store'
+import { AppListenerEffectAPI } from 'store/types'
 import { notificationChannels } from 'services/notifications/channels'
 import NotificationsService from 'services/notifications/NotificationsService'
 import { setNotificationSubscriptions } from '../slice'

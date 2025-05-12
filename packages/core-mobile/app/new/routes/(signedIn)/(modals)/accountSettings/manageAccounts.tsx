@@ -1,40 +1,36 @@
-import { useRouter } from 'expo-router'
-import { useNavigation } from '@react-navigation/native'
-import React, {
-  useLayoutEffect,
-  useCallback,
-  useState,
-  useMemo,
-  useRef
-} from 'react'
-import { useDispatch, useSelector } from 'react-redux'
+import { truncateAddress } from '@avalabs/core-utils-sdk'
 import {
   ActivityIndicator,
+  alpha,
   AnimatedBalance,
   GroupList,
   Icons,
-  ScrollView,
+  Pressable,
   SearchBar,
-  Separator,
+  Text,
   TouchableOpacity,
   useTheme,
   View
 } from '@avalabs/k2-alpine'
+import { HiddenBalanceText } from 'common/components/HiddenBalanceText'
+import NavigationBarButton from 'common/components/NavigationBarButton'
+import { ScrollScreen } from 'common/components/ScrollScreen'
+import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
+import { showSnackbar } from 'common/utils/toast'
+import { useRouter } from 'expo-router'
+import { useBalanceForAccount } from 'new/common/contexts/useBalanceForAccount'
+import React, { useCallback, useMemo, useRef, useState } from 'react'
+import { ScrollView as RnScrollView } from 'react-native'
+import { useDispatch, useSelector } from 'react-redux'
+import AnalyticsService from 'services/analytics/AnalyticsService'
+import WalletService from 'services/wallet/WalletService'
 import {
   addAccount,
   selectAccounts,
   setActiveAccountIndex
 } from 'store/account'
-import Logger from 'utils/Logger'
-import AnalyticsService from 'services/analytics/AnalyticsService'
-import WalletService from 'services/wallet/WalletService'
-import { showSnackbar } from 'common/utils/toast'
-import { truncateAddress } from '@avalabs/core-utils-sdk'
 import { selectIsPrivacyModeEnabled } from 'store/settings/securityPrivacy'
-import { selectTokenVisibility } from 'store/portfolio'
-import { selectBalanceTotalInCurrencyForAccount } from 'store/balance'
-import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
-import { ScrollView as RnScrollView } from 'react-native'
+import Logger from 'utils/Logger'
 
 const ITEM_HEIGHT = 50
 
@@ -42,7 +38,6 @@ const ManageAccountsScreen = (): React.JSX.Element => {
   const {
     theme: { colors }
   } = useTheme()
-  const { setOptions } = useNavigation()
   const dispatch = useDispatch()
   const { navigate } = useRouter()
   const [searchText, setSearchText] = useState('')
@@ -58,6 +53,7 @@ const ManageAccountsScreen = (): React.JSX.Element => {
   const gotoAccountDetails = useCallback(
     (accountIndex: number): void => {
       navigate({
+        // @ts-ignore TODO: make routes typesafe
         pathname: '/accountSettings/account',
         params: { accountIndex: accountIndex.toString() }
       })
@@ -73,8 +69,30 @@ const ManageAccountsScreen = (): React.JSX.Element => {
 
   const data = useMemo(() => {
     return accountSearchResults.map(account => ({
-      title: account.name,
-      subtitle: truncateAddress(account.addressC),
+      title: (
+        <Text
+          variant="body1"
+          sx={{
+            color: colors.$textPrimary,
+            fontSize: 14,
+            lineHeight: 16,
+            fontWeight: '500'
+          }}>
+          {account.name}
+        </Text>
+      ),
+      subtitle: (
+        <Text
+          variant="mono"
+          sx={{
+            color: alpha(colors.$textPrimary, 0.6),
+            fontSize: 13,
+            lineHeight: 16,
+            fontWeight: '500'
+          }}>
+          {truncateAddress(account.addressC)}
+        </Text>
+      ),
       leftIcon: account.active ? (
         <Icons.Custom.CheckSmall
           color={colors.$textPrimary}
@@ -84,12 +102,17 @@ const ManageAccountsScreen = (): React.JSX.Element => {
       ) : (
         <View sx={{ width: 24 }} />
       ),
-      value: <AccountBalance accountIndex={account.index} />,
+      value: (
+        <AccountBalance
+          accountIndex={account.index}
+          isActive={account.active}
+        />
+      ),
       onPress: () => dispatch(setActiveAccountIndex(account.index)),
       accessory: (
         <TouchableOpacity
           hitSlop={16}
-          sx={{ marginLeft: 13 }}
+          sx={{ marginLeft: 4 }}
           onPress={() => gotoAccountDetails(account.index)}>
           <Icons.Alert.AlertCircle
             color={colors.$textSecondary}
@@ -137,89 +160,100 @@ const ManageAccountsScreen = (): React.JSX.Element => {
 
   const renderHeaderRight = useCallback(() => {
     return (
-      <TouchableOpacity
-        onPress={handleAddAccount}
-        sx={{
-          flexDirection: 'row',
-          gap: 16,
-          marginRight: 18,
-          alignItems: 'center'
-        }}>
-        <Icons.Content.Add
-          testID="add_account_btn"
-          width={25}
-          height={25}
-          color={colors.$textPrimary}
-        />
-      </TouchableOpacity>
+      <NavigationBarButton
+        isModal
+        testID="add_account_btn"
+        onPress={handleAddAccount}>
+        <Icons.Content.Add color={colors.$textPrimary} />
+      </NavigationBarButton>
     )
   }, [colors.$textPrimary, handleAddAccount])
 
-  useLayoutEffect(() => {
-    setOptions({
-      headerRight: renderHeaderRight,
-      headerTitle: 'Manage accounts'
-    })
-  }, [renderHeaderRight, setOptions])
+  const renderHeader = useCallback(() => {
+    return (
+      <SearchBar
+        onTextChanged={setSearchText}
+        searchText={searchText}
+        useDebounce={true}
+      />
+    )
+  }, [searchText])
 
   return (
-    <View sx={{ flex: 1 }}>
-      <View sx={{ zIndex: 1000 }}>
-        <View sx={{ alignItems: 'center' }}>
-          <SearchBar
-            onTextChanged={setSearchText}
-            searchText={searchText}
-            useDebounce={true}
-          />
-        </View>
-        <Separator sx={{ marginTop: 11, marginBottom: 16 }} />
-      </View>
-      <ScrollView
-        ref={scrollViewRef}
-        sx={{ marginHorizontal: 16, overflow: 'hidden' }}
-        contentContainerStyle={{
-          paddingBottom: ITEM_HEIGHT
-        }}
-        showsVerticalScrollIndicator={false}>
-        <GroupList
-          itemHeight={ITEM_HEIGHT}
-          data={data}
-          titleSx={{
-            fontSize: 14,
-            lineHeight: 16,
-            fontFamily: 'Inter-Regular'
-          }}
-        />
-        <ActivityIndicator animating={isAddingAccount} sx={{ marginTop: 16 }} />
-      </ScrollView>
-    </View>
+    <ScrollScreen
+      title="Manage accounts"
+      isModal
+      renderHeader={renderHeader}
+      renderHeaderRight={renderHeaderRight}
+      contentContainerStyle={{ padding: 16 }}>
+      <GroupList itemHeight={ITEM_HEIGHT} data={data} />
+      <ActivityIndicator animating={isAddingAccount} sx={{ marginTop: 16 }} />
+    </ScrollScreen>
   )
 }
 
 export default ManageAccountsScreen
 
 const AccountBalance = ({
+  isActive,
   accountIndex
 }: {
+  isActive: boolean
   accountIndex: number
 }): React.JSX.Element => {
   const isPrivacyModeEnabled = useSelector(selectIsPrivacyModeEnabled)
   const {
     theme: { colors }
   } = useTheme()
-
-  const tokenVisibility = useSelector(selectTokenVisibility)
-  const accountBalance = useSelector(
-    selectBalanceTotalInCurrencyForAccount(accountIndex, tokenVisibility)
-  )
+  const {
+    balance: accountBalance,
+    fetchBalance,
+    isFetchingBalance,
+    isBalanceLoaded
+  } = useBalanceForAccount(accountIndex)
   const { formatCurrency } = useFormatCurrency()
+
+  const balance = useMemo(() => {
+    return formatCurrency({ amount: accountBalance })
+  }, [accountBalance, formatCurrency])
+
+  const renderMaskView = useCallback(() => {
+    return (
+      <HiddenBalanceText
+        variant={'heading6'}
+        sx={{
+          color: isActive
+            ? colors.$textPrimary
+            : alpha(colors.$textPrimary, 0.6),
+          lineHeight: 18
+        }}
+      />
+    )
+  }, [colors.$textPrimary, isActive])
+
+  if (isFetchingBalance) {
+    return <ActivityIndicator size="small" sx={{ marginRight: 4 }} />
+  }
+
+  if (!isBalanceLoaded) {
+    return (
+      <Pressable onPress={fetchBalance}>
+        <Icons.Custom.BalanceRefresh color={colors.$textPrimary} />
+      </Pressable>
+    )
+  }
 
   return (
     <AnimatedBalance
       variant="body1"
-      balance={formatCurrency({ amount: accountBalance })}
+      balance={balance}
       shouldMask={isPrivacyModeEnabled}
-      balanceSx={{ color: colors.$textSecondary, lineHeight: 18 }}
+      balanceSx={{
+        color: isActive ? colors.$textPrimary : alpha(colors.$textPrimary, 0.6),
+        lineHeight: 18
+      }}
+      renderMaskView={renderMaskView}
+      shouldAnimate={false}
     />
   )
 }

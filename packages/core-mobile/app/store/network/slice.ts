@@ -1,19 +1,19 @@
-import { createAction, createSlice, PayloadAction } from '@reduxjs/toolkit'
 import {
   BITCOIN_NETWORK,
   ChainId as ChainsSDKChainId,
   Network
 } from '@avalabs/core-chains-sdk'
-import { selectIsDeveloperMode } from 'store/settings/advanced'
+import { createAction, createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { getNetworksFromCache } from 'hooks/networks/utils/getNetworksFromCache'
-import { RootState } from '../index'
+import { selectIsDeveloperMode } from 'store/settings/advanced'
+import { RootState } from '../types'
 import { ChainID, Networks, NetworkState } from './types'
 
 export const defaultNetwork = BITCOIN_NETWORK
 
 export const noActiveNetwork = 0
 
-export const alwaysFavoriteNetworks = [
+export const alwaysEnabledNetworks = [
   ChainsSDKChainId.AVALANCHE_MAINNET_ID,
   ChainsSDKChainId.AVALANCHE_TESTNET_ID
 ]
@@ -22,12 +22,13 @@ export const reducerName = 'network'
 
 const initialState: NetworkState = {
   customNetworks: {},
-  favorites: [
-    ...alwaysFavoriteNetworks,
+  enabledChainIds: [
+    ...alwaysEnabledNetworks,
     ChainsSDKChainId.BITCOIN,
     ChainsSDKChainId.BITCOIN_TESTNET,
     ChainsSDKChainId.ETHEREUM_HOMESTEAD
   ],
+  disabledLastTransactedChainIds: [],
   active: noActiveNetwork
 }
 
@@ -38,23 +39,57 @@ export const networkSlice = createSlice({
     setActive: (state, action: PayloadAction<number>) => {
       state.active = action.payload
     },
-    toggleFavorite: (state, action: PayloadAction<number>) => {
+    toggleEnabledChainId: (state, action: PayloadAction<number>) => {
       const chainId = action.payload
-      if (!state.favorites.includes(chainId)) {
-        // set favorite
-        state.favorites.push(chainId)
+      if (!state.enabledChainIds.includes(chainId)) {
+        // set enabledChainIds
+        state.enabledChainIds.push(chainId)
       } else {
-        if (alwaysFavoriteNetworks.includes(chainId)) {
+        if (alwaysEnabledNetworks.includes(chainId)) {
           return
         }
-        // unset favorite
-        const newFavorites = state.favorites.filter(id => id !== chainId)
-        state.favorites = newFavorites
+        // unset enabledChainIds
+        const newEnabled = state.enabledChainIds.filter(id => id !== chainId)
+        state.enabledChainIds = newEnabled
       }
     },
+    toggleDisabledLastTransactedChainId: (
+      state,
+      action: PayloadAction<number>
+    ) => {
+      const chainId = action.payload
+      if (!state.disabledLastTransactedChainIds.includes(chainId)) {
+        // set disabledLastTransactedChainIds
+        state.disabledLastTransactedChainIds.push(chainId)
+      } else {
+        if (alwaysEnabledNetworks.includes(chainId)) {
+          return
+        }
+        // unset disabledLastTransactedChainIds
+        const newDisabled = state.disabledLastTransactedChainIds.filter(
+          id => id !== chainId
+        )
+        state.disabledLastTransactedChainIds = newDisabled
+      }
+    },
+
     addCustomNetwork: (state, action: PayloadAction<Network>) => {
       const network = action.payload
       state.customNetworks[network.chainId] = network
+    },
+    updateCustomNetwork: (
+      state,
+      action: PayloadAction<{ chainId: ChainID; network: Network }>
+    ) => {
+      const chainId = action.payload.chainId
+      const network = action.payload.network
+
+      if (chainId === network.chainId) {
+        state.customNetworks[chainId] = network
+      } else {
+        delete state.customNetworks[chainId]
+        state.customNetworks[network.chainId] = network
+      }
     },
     removeCustomNetwork: (state, action: PayloadAction<ChainID>) => {
       const chainId = action.payload
@@ -67,8 +102,8 @@ export const networkSlice = createSlice({
 export const selectActiveChainId = (state: RootState): number =>
   state.network.active
 
-export const selectFavorites = (state: RootState): number[] =>
-  state.network.favorites
+export const selectEnabledChainIds = (state: RootState): number[] =>
+  state.network.enabledChainIds
 
 export const selectCustomNetworks = (state: RootState): Networks =>
   state.network.customNetworks
@@ -126,13 +161,13 @@ export const selectNetworks = (state: RootState): Networks => {
   return { ...populatedNetworks, ...populatedCustomNetworks }
 }
 
-export const selectFavoriteNetworks = (state: RootState): Network[] => {
-  const favorites = selectFavorites(state)
+export const selectEnabledNetworks = (state: RootState): Network[] => {
+  const enabledChainIds = selectEnabledChainIds(state)
   const isDeveloperMode = selectIsDeveloperMode(state)
   const networks = getNetworksFromCache()
 
   if (networks === undefined) return []
-  return favorites.reduce((acc, chainId) => {
+  return enabledChainIds.reduce((acc, chainId) => {
     const network = networks[chainId]
     if (network && network.isTestnet === isDeveloperMode) {
       acc.push(network)
@@ -153,9 +188,11 @@ export const onNetworksFetched = createAction(
 
 export const {
   setActive,
-  toggleFavorite,
+  toggleEnabledChainId,
+  toggleDisabledLastTransactedChainId,
   addCustomNetwork,
-  removeCustomNetwork
+  removeCustomNetwork,
+  updateCustomNetwork
 } = networkSlice.actions
 
 export const networkReducer = networkSlice.reducer

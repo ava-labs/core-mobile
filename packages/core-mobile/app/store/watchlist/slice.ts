@@ -1,5 +1,5 @@
 import { createAction, createSlice, PayloadAction } from '@reduxjs/toolkit'
-import { RootState } from 'store'
+import { RootState } from 'store/types'
 import {
   AVAX_COINGECKO_ID,
   BITCOIN_COINGECKO_ID,

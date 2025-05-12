@@ -1,4 +1,4 @@
-import { AppStartListening } from 'store/middleware/listener'
+import { AppStartListening } from 'store/types'
 import { onRequest } from '../slice'
 
 import { processRequest } from './request/requests'

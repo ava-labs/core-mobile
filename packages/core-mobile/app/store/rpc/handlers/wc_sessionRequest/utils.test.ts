@@ -22,8 +22,7 @@ describe('isCoreMethod', () => {
       'avalanche_something',
       'eth_signTypedData_v3',
       'session_request',
-      'personal_sign',
-      'wallet_switchEthereumChain'
+      'personal_sign'
     ]
 
     for (const method of methods) {

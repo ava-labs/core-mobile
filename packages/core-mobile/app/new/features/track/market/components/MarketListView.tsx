@@ -103,7 +103,11 @@ export const MarketListView = memo(
                     {token.symbol.toUpperCase()}
                   </Text>
                   {isFavorite && (
-                    <Icons.Toggle.StarFilled width={12} height={12} />
+                    <Icons.Toggle.StarFilled
+                      width={12}
+                      height={12}
+                      color="#FFB24C"
+                    />
                   )}
                 </View>
 

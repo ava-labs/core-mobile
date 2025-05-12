@@ -30,12 +30,18 @@ import { usePinOrBiometryLogin } from 'common/hooks/usePinOrBiometryLogin'
 import { useWallet } from 'hooks/useWallet'
 import { useFocusEffect, useRouter } from 'expo-router'
 import { KeyboardAvoidingView } from 'common/components/KeyboardAvoidingView'
-import { BiometricType } from 'services/deviceInfo/DeviceInfoService'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { useSelector } from 'react-redux'
+import { selectSelectedAvatar } from 'store/settings/avatar'
+import { usePreventScreenRemoval } from 'common/hooks/usePreventScreenRemoval'
+import { selectWalletState, WalletState } from 'store/app'
+import { BiometricType } from 'utils/BiometricsSDK'
 
 const LoginWithPinOrBiometry = (): JSX.Element => {
+  const walletState = useSelector(selectWalletState)
+  usePreventScreenRemoval(walletState === WalletState.INACTIVE)
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
+  const avatar = useSelector(selectSelectedAvatar)
   const { theme } = useTheme()
   const pinInputRef = useRef<PinInputActions>(null)
   const { unlock } = useWallet()
@@ -122,6 +128,7 @@ const LoginWithPinOrBiometry = (): JSX.Element => {
   }
 
   const handleForgotPin = (): void => {
+    // @ts-ignore TODO: make routes typesafe
     router.navigate('/forgotPin')
   }
 
@@ -215,12 +222,12 @@ const LoginWithPinOrBiometry = (): JSX.Element => {
   }, [isEnteringPin, pinInputOpacity, buttonContainerPaddingBottom])
 
   return (
-    <SafeAreaView sx={{ flex: 1 }}>
-      <KeyboardAvoidingView>
+    <KeyboardAvoidingView contentContainerStyle={{ flex: 1 }}>
+      <SafeAreaView sx={{ flex: 1 }}>
         <TouchableWithoutFeedback
           style={{ flex: 1 }}
           onPress={handlePressBackground}>
-          <View sx={{ flex: 1 }}>
+          <View sx={{ flex: 1, paddingBottom: 16 }}>
             <View sx={{ flex: 1, alignItems: 'center' }}>
               <View
                 sx={{
@@ -246,11 +253,7 @@ const LoginWithPinOrBiometry = (): JSX.Element => {
               <Reanimated.View style={[{ zIndex: -100, marginTop: 10 }]}>
                 <Avatar
                   size="small"
-                  // todo: replace with actual avatar
-                  source={{
-                    uri: 'https://miro.medium.com/v2/resize:fit:1256/format:webp/1*xm2-adeU3YD4MsZikpc5UQ.png'
-                  }}
-                  hasBlur={Platform.OS !== 'android'}
+                  source={avatar.source}
                   backgroundColor={theme.colors.$surfacePrimary}
                   isDeveloperMode={isDeveloperMode}
                 />
@@ -276,36 +279,34 @@ const LoginWithPinOrBiometry = (): JSX.Element => {
                 </Button>
               </Reanimated.View>
             </View>
-            <Reanimated.View
-              style={[
-                {
+            <Reanimated.View style={buttonContainerStyle}>
+              <View
+                sx={{
+                  height: CIRCULAR_BUTTON_WIDTH,
                   flexDirection: 'row',
                   justifyContent: 'center',
                   gap: 30
-                },
-                buttonContainerStyle
-              ]}>
-              {bioType !== BiometricType.NONE && (
-                <CircularButton onPress={handlePromptBioLogin}>
-                  {bioType === BiometricType.FACE_ID ? (
-                    <Icons.Custom.FaceID width={26} height={26} />
-                  ) : (
-                    <Icons.Custom.TouchID width={26} height={26} />
-                  )}
-                </CircularButton>
-              )}
-              {isEnteringPin === false && !disableKeypad ? (
-                <CircularButton onPress={handleTogglePinInput}>
-                  <Icons.Custom.Pin width={26} height={26} />
-                </CircularButton>
-              ) : (
-                <View sx={{ height: CIRCULAR_BUTTON_WIDTH }} />
-              )}
+                }}>
+                {bioType !== BiometricType.NONE && (
+                  <CircularButton onPress={handlePromptBioLogin}>
+                    {bioType === BiometricType.FACE_ID ? (
+                      <Icons.Custom.FaceID width={26} height={26} />
+                    ) : (
+                      <Icons.Custom.TouchID width={26} height={26} />
+                    )}
+                  </CircularButton>
+                )}
+                {isEnteringPin === false && !disableKeypad && (
+                  <CircularButton onPress={handleTogglePinInput}>
+                    <Icons.Custom.Pin width={26} height={26} />
+                  </CircularButton>
+                )}
+              </View>
             </Reanimated.View>
           </View>
         </TouchableWithoutFeedback>
-      </KeyboardAvoidingView>
-    </SafeAreaView>
+      </SafeAreaView>
+    </KeyboardAvoidingView>
   )
 }
 

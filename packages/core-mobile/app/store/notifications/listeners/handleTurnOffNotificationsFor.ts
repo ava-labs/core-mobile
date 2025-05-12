@@ -1,4 +1,4 @@
-import { AppListenerEffectAPI } from 'store'
+import { AppListenerEffectAPI } from 'store/types'
 import { ChannelId } from 'services/notifications/channels'
 import { setNotificationSubscriptions } from '../slice'
 import { handleStakeCompleteNotificationCleanup } from './handleNotificationCleanup'

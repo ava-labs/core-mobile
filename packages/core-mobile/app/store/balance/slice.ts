@@ -4,10 +4,13 @@ import {
   createSlice,
   PayloadAction
 } from '@reduxjs/toolkit'
-import { RootState } from 'store'
+import { RootState } from 'store/types'
 import { selectActiveAccount } from 'store/account'
-import { selectActiveNetwork, selectAllNetworks } from 'store/network'
-import { Network } from '@avalabs/core-chains-sdk'
+import {
+  selectActiveNetwork,
+  selectAllNetworks,
+  selectNetworks
+} from 'store/network'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { TokenType } from '@avalabs/vm-module-types'
 import {
@@ -61,34 +64,18 @@ export const balanceSlice = createSlice({
 export const selectBalanceStatus = (state: RootState): QueryStatus =>
   state.balance.status
 
-export const selectIsBalanceLoadedForAddress =
-  (accountIndex: number, chainId: number) => (state: RootState) => {
-    return !!state.balance.balances[getKey(chainId, accountIndex)]
-  }
-
-export const selectIsBalanceLoadedForActiveNetwork = (
-  state: RootState
-): boolean => {
-  const activeNetwork = selectActiveNetwork(state)
-  const activeAccount = selectActiveAccount(state)
-
-  if (!activeAccount) return false
-
-  return !!state.balance.balances[
-    getKey(activeNetwork.chainId, activeAccount.index)
-  ]
-}
-
-export const selectIsBalanceLoadedForNetworks =
-  (chainIds: number[]) =>
-  (state: RootState): boolean => {
-    const activeAccount = selectActiveAccount(state)
-
-    if (!activeAccount) return false
-
-    return chainIds.every(chainId => {
-      return !!state.balance.balances[getKey(chainId, activeAccount.index)]
+export const selectIsBalanceLoadedForAccount =
+  (accountIndex: number) => (state: RootState) => {
+    const networks = selectNetworks(state)
+    const foundBalance = Object.values(state.balance.balances).find(balance => {
+      const network = networks[balance.chainId]
+      return (
+        balance.accountIndex === accountIndex &&
+        network?.chainId === balance.chainId
+      )
     })
+
+    return !!foundBalance
   }
 
 export const selectIsLoadingBalances = (state: RootState): boolean =>
@@ -113,17 +100,19 @@ export const selectTokensWithBalance = createSelector(
   }
 )
 
-export const selectTokensWithBalanceByNetwork =
-  (network?: Network) =>
-  (state: RootState): LocalTokenWithBalance[] => {
-    const activeAccount = selectActiveAccount(state)
+export const selectTokensWithBalanceByNetwork = (
+  chainId?: number
+): ((state: RootState) => LocalTokenWithBalance[]) =>
+  createSelector(
+    [selectActiveAccount, _selectAllBalances],
+    (activeAccount, balances): LocalTokenWithBalance[] => {
+      if (!chainId) return []
+      if (!activeAccount) return []
 
-    if (!network) return []
-    if (!activeAccount) return []
-
-    const key = getKey(network.chainId, activeAccount.index)
-    return state.balance.balances[key]?.tokens ?? []
-  }
+      const balanceKey = getKey(chainId, activeAccount.index)
+      return balances[balanceKey]?.tokens ?? []
+    }
+  )
 
 export const selectTokensWithZeroBalance = createSelector(
   selectTokensWithBalance,
@@ -149,17 +138,6 @@ export const selectAvaxPrice = (state: RootState): number => {
     }
   }
   return 0
-}
-
-export const selectTokenByAddress = (address: string) => (state: RootState) => {
-  const balances = Object.values(state.balance.balances)
-
-  for (const balance of balances) {
-    for (const token of balance.tokens) {
-      if ('address' in token && token.address === address) return token
-    }
-  }
-  return undefined
 }
 
 const _selectAccountIndex = (
@@ -196,6 +174,19 @@ export const selectTokensWithBalanceForAccount = createSelector(
   }
 )
 
+export const selectBalanceTotalForAccount =
+  (accountIndex: number, tokenVisibility: TokenVisibility) =>
+  (state: RootState) => {
+    const tokens = selectTokensWithBalanceForAccount(state, accountIndex)
+
+    return tokens
+      .filter(token => isTokenVisible(tokenVisibility, token))
+      .reduce((total, token) => {
+        total += token.balance ?? 0n
+        return total
+      }, 0n)
+  }
+
 export const selectBalanceTotalInCurrencyForAccount =
   (accountIndex: number, tokenVisibility: TokenVisibility) =>
   (state: RootState) => {
@@ -218,38 +209,12 @@ export const selectBalanceForAccountIsAccurate =
     )
   }
 
-export const selectBalanceTotalInCurrencyForNetworkAndAccount =
-  (
-    chainId: number,
-    accountIndex: number | undefined,
-    tokenVisibility: TokenVisibility
-  ) =>
-  (state: RootState) => {
-    if (accountIndex === undefined) return 0
-
-    const balances = Object.values(state.balance.balances).filter(
-      balance =>
-        balance.chainId === chainId && balance.accountIndex === accountIndex
-    )
-
-    let totalInCurrency = 0
-
-    for (const balance of balances) {
-      for (const token of balance.tokens) {
-        if (!isTokenVisible(tokenVisibility, token)) continue
-        totalInCurrency += token.balanceInCurrency ?? 0
-      }
-    }
-
-    return totalInCurrency
-  }
-
 const _selectBalanceKeyForNetworkAndAccount = (
   _state: RootState,
-  chainId: number,
+  chainId: number | undefined,
   accountIndex: number | undefined
 ): string | undefined => {
-  if (accountIndex === undefined) return undefined
+  if (accountIndex === undefined || chainId === undefined) return undefined
 
   return getKey(chainId, accountIndex)
 }
@@ -278,6 +243,15 @@ export const selectAvailableNativeTokenBalanceForNetworkAndAccount =
       return nativeToken?.balance ?? 0n
     }
   )
+
+export const selectTokensWithBalanceForAccountAndNetwork = createSelector(
+  [_selectAllBalances, _selectBalanceKeyForNetworkAndAccount],
+  (allBalances, key): LocalTokenWithBalance[] => {
+    if (key === undefined) return []
+
+    return allBalances[key]?.tokens ?? []
+  }
+)
 
 // use in k2-alpine
 export const selectIsAllBalancesInaccurate =

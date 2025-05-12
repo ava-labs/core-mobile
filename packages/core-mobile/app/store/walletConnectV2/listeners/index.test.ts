@@ -1,8 +1,8 @@
 import { configureStore, createListenerMiddleware } from '@reduxjs/toolkit'
 import { noop } from 'lodash'
 import WalletConnectService from 'services/walletconnectv2/WalletConnectService'
-import { AppStartListening } from 'store/middleware/listener'
-import * as Snackbar from 'components/Snackbar'
+import { AppStartListening } from 'store/types'
+import { showSnackbar, transactionSnackbar } from 'common/utils/toast'
 import mockSessions from 'tests/fixtures/walletConnect/sessions'
 import mockNetworks from 'tests/fixtures/networks.json'
 import { WalletState } from 'store/app/types'
@@ -15,6 +15,15 @@ import { addWCListeners } from './index'
 // mocks
 jest.mock('react-native/Libraries/Interaction/InteractionManager', () => ({
   runAfterInteractions: (callback: () => void) => callback()
+}))
+
+jest.mock('new/common/utils/toast', () => ({
+  showSnackbar: jest.fn(),
+  transactionSnackbar: {
+    pending: jest.fn(),
+    success: jest.fn(),
+    error: jest.fn()
+  }
 }))
 
 const mockWCPair = jest.fn()
@@ -62,13 +71,6 @@ jest.mock('store/network/slice', () => {
   }
 })
 mockSelectNetwork.mockImplementation(() => mockNetworks[43114])
-
-const mockShowSimpleToast = jest.fn()
-const mockShowDappToastError = jest.fn()
-jest
-  .spyOn(Snackbar, 'showDappToastError')
-  .mockImplementation(mockShowDappToastError)
-jest.spyOn(Snackbar, 'showSimpleToast').mockImplementation(mockShowSimpleToast)
 
 const mockSelectWalletState = jest.fn()
 jest
@@ -182,9 +184,10 @@ describe('walletConnect - listeners', () => {
       store.dispatch(newSession(uri))
 
       expect(mockWCPair).toHaveBeenCalledWith(uri)
-      expect(mockShowSimpleToast).toHaveBeenCalledWith(
-        'Unable to pair with dapp'
-      )
+      expect(transactionSnackbar.error).toHaveBeenCalledWith({
+        message: 'Failed to pair with dApp',
+        error: 'test error'
+      })
     })
   })
 
@@ -217,9 +220,7 @@ describe('walletConnect - listeners', () => {
 
       store.dispatch(onDisconnect(peerMeta))
 
-      expect(mockShowSimpleToast).toHaveBeenCalledWith(
-        'dapp name was disconnected'
-      )
+      expect(showSnackbar).toHaveBeenCalledWith('dapp name was disconnected')
     })
   })
 })

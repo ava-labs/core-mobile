@@ -14,7 +14,11 @@ export default function SetWalletName(): JSX.Element {
   const handleNext = (): void => {
     AnalyticsService.capture('Onboard:WalletNameSet')
     dispatch(setWalletName(name))
-    navigate({ pathname: './selectAvatar', params: { mnemonic } })
+    navigate({
+      // @ts-ignore TODO: make routes typesafe
+      pathname: '/onboarding/mnemonic/selectAvatar',
+      params: { mnemonic }
+    })
   }
 
   return <Component name={name} setName={setName} onNext={handleNext} />

@@ -12,7 +12,7 @@ import { AccountsState } from 'store/account'
 import { NotificationsState } from 'store/notifications'
 import { PosthogState } from 'store/posthog'
 import { NftState } from 'store/nft'
-import { RawRootState, RootState } from 'store/index'
+import { RawRootState, RootState } from 'store/types'
 import { encryptTransform } from 'redux-persist-transform-encrypt'
 import { Network } from '@avalabs/core-chains-sdk'
 import { CoreAccountType, WalletType } from '@avalabs/types'
@@ -96,6 +96,8 @@ const initialState = {
     active: 43114,
     customNetworks: {},
     favorites: [43114, 43113, 4503599627370475, 4503599627370474, 1],
+    enabledChainIds: [43114, 43113, 4503599627370475, 4503599627370474, 1],
+    disabledLastTransactedChainIds: [],
     networks: {
       '1': {
         chainId: 1,

@@ -1,11 +1,11 @@
 import { bigIntToHex } from '@ethereumjs/util'
-import { AppListenerEffectAPI, RootState } from 'store'
-import { WalletState, onAppUnlocked, selectWalletState } from 'store/app'
-import { AppStartListening } from 'store/middleware/listener'
+import { AppListenerEffectAPI, AppStartListening, RootState } from 'store/types'
+import { WalletState } from 'store/app/types'
+import { onAppUnlocked, selectWalletState } from 'store/app/slice'
 import {
   selectIsDeveloperMode,
   toggleDeveloperMode
-} from 'store/settings/advanced'
+} from 'store/settings/advanced/slice'
 import { isAnyOf } from '@reduxjs/toolkit'
 import UnifiedBridgeService from 'services/bridge/UnifiedBridgeService'
 import {
@@ -16,8 +16,7 @@ import {
   EvmSigner,
   Hex
 } from '@avalabs/bridge-unified'
-import { selectIsFeatureBlocked, setFeatureFlags } from 'store/posthog'
-import { showTransactionSuccessToast } from 'utils/toast'
+import { selectIsFeatureBlocked, setFeatureFlags } from 'store/posthog/slice'
 import Logger from 'utils/Logger'
 import { createInAppRequest, Request } from 'store/rpc/utils/createInAppRequest'
 import { FeatureGates } from 'services/posthog/types'
@@ -25,16 +24,26 @@ import { getBitcoinProvider } from 'services/network/utils/providerUtils'
 import { getBitcoinCaip2ChainId, getEvmCaip2ChainId } from 'utils/caip2ChainIds'
 import { TransactionParams } from '@avalabs/evm-module'
 import { RpcMethod } from '@avalabs/vm-module-types'
+import { Network } from '@avalabs/core-chains-sdk'
+import { transactionSnackbar } from 'new/common/utils/toast'
+import { selectNetworks } from 'store/network/slice'
 import {
   removePendingTransfer,
   selectPendingTransfers,
   setPendingTransfer
 } from './slice'
 
-const showSuccessToast = (tx: BridgeTransfer): void => {
-  showTransactionSuccessToast({
-    message: 'Bridge Successful',
-    txHash: tx.sourceTxHash
+const showSuccessToast = (
+  sourceTxHash: string,
+  network: Network | undefined
+): void => {
+  const explorerLink = !network
+    ? undefined
+    : `${network.explorerUrl}/tx/${sourceTxHash}`
+
+  transactionSnackbar.success({
+    message: 'Bridge successful',
+    explorerLink
   })
 }
 
@@ -46,17 +55,14 @@ const trackPendingTransfers = (listenerApi: AppListenerEffectAPI): void => {
     try {
       if (transfer.completedAt) {
         listenerApi.dispatch(removePendingTransfer(transfer.sourceTxHash))
-        showSuccessToast(transfer)
+        const networks = selectNetworks(state)
+        const network = Object.values(networks).find(
+          item => item.chainId === Number(transfer.sourceChain.chainId)
+        )
+        showSuccessToast(transfer.sourceTxHash, network)
       } else {
         const updateListener = (updatedTransfer: BridgeTransfer): void => {
-          // update the transaction, even if it's complete
-          // (we want to keep the tx up to date, because some Component(i.e. BridgeTransactionStatus) has local state that depends on it)
           listenerApi.dispatch(setPendingTransfer(updatedTransfer))
-
-          if (transfer.completedAt) {
-            listenerApi.dispatch(removePendingTransfer(transfer.sourceTxHash))
-            showSuccessToast(transfer)
-          }
         }
         UnifiedBridgeService.trackTransfer(transfer, updateListener)
       }
@@ -143,11 +149,20 @@ export const checkTransferStatus = async (
   action: ReturnType<typeof setPendingTransfer>,
   listenerApi: AppListenerEffectAPI
 ): Promise<void> => {
+  // delay 2 second to remove the completed transfer,
+  // to ensure that the component(i.e. BridgeStatusScreen) displaying the transfer
+  // has enough time to handle the completed status
+  await listenerApi.delay(2000)
+
   const transfer = action.payload
 
   if (transfer.completedAt) {
     listenerApi.dispatch(removePendingTransfer(transfer.sourceTxHash))
-    showSuccessToast(transfer)
+    const networks = selectNetworks(listenerApi.getState())
+    const network = Object.values(networks).find(
+      item => item.chainId === Number(transfer.sourceChain.chainId)
+    )
+    showSuccessToast(transfer.sourceTxHash, network)
   }
 
   if (transfer.errorCode) {

@@ -23,6 +23,7 @@ export const TrendingTokenListView = memo(
     isFavorite,
     index,
     onPress,
+    onBuyPress,
     formattedPrice,
     formattedPercentChange,
     status
@@ -34,6 +35,7 @@ export const TrendingTokenListView = memo(
     formattedPercentChange?: string
     status: PriceChangeStatus
     onPress: () => void
+    onBuyPress: (initialTokenIdTo?: string) => void
   }) => {
     const renderLogo = useCallback(() => {
       if (index === 0) {
@@ -125,7 +127,11 @@ export const TrendingTokenListView = memo(
                     {token.symbol.toUpperCase()}
                   </Text>
                   {isFavorite && (
-                    <Icons.Toggle.StarFilled width={12} height={12} />
+                    <Icons.Toggle.StarFilled
+                      width={12}
+                      height={12}
+                      color="#FFB24C"
+                    />
                   )}
                 </View>
                 <PriceChangeIndicator
@@ -135,7 +141,11 @@ export const TrendingTokenListView = memo(
               </View>
             </View>
             <View style={{ justifyContent: 'center' }}>
-              <Button type="secondary" size="small" style={styles.buyButton}>
+              <Button
+                type="secondary"
+                size="small"
+                style={styles.buyButton}
+                onPress={() => onBuyPress(token.id)}>
                 Buy
               </Button>
             </View>

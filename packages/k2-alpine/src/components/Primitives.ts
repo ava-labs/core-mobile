@@ -2,9 +2,9 @@ import {
   styled,
   Text as DripsyText,
   ScrollView as DripsyScrollView,
-  FlatList as DripsyFlatList,
-  SafeAreaView as DripsySafeAreaView
+  FlatList as DripsyFlatList
 } from 'dripsy'
+import { SafeAreaView as SafeAreaContextView } from 'react-native-safe-area-context'
 import {
   TouchableHighlight as RNTouchableHighlight,
   TouchableOpacity as RNTouchableOpacity
@@ -39,7 +39,7 @@ export const FlatList = styled(
 })
 
 export const SafeAreaView = styled(
-  DripsySafeAreaView,
+  SafeAreaContextView,
   {}
 )({
   backgroundColor: '$surfacePrimary'

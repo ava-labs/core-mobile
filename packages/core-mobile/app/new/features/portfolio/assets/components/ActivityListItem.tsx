@@ -16,7 +16,8 @@ type Props = {
   subtitle: string
   icon?: React.JSX.Element
   index: number
-  status: PriceChangeStatus
+  status?: PriceChangeStatus
+  accessoryType?: 'outbound' | 'chevron'
   onPress?: () => void
 }
 
@@ -25,7 +26,9 @@ const ActivityListItem: FC<Props> = ({
   subtitle,
   icon,
   onPress,
-  status,
+  accessoryType = 'outbound',
+  status = PriceChangeStatus.Neutral,
+
   index
 }) => {
   const {
@@ -65,7 +68,8 @@ const ActivityListItem: FC<Props> = ({
             <View
               sx={{
                 alignItems: 'flex-start',
-                flex: 1
+                flex: 1,
+                gap: 3
               }}>
               <Text
                 variant="body1"
@@ -85,7 +89,12 @@ const ActivityListItem: FC<Props> = ({
                 {subtitle}
               </Text>
             </View>
-            <Icons.Custom.Outbound color={colors.$textPrimary} />
+            {accessoryType === 'outbound' && (
+              <Icons.Custom.Outbound color={colors.$textPrimary} />
+            )}
+            {accessoryType === 'chevron' && (
+              <Icons.Navigation.ChevronRightV2 color={colors.$textPrimary} />
+            )}
           </View>
         </View>
       </TouchableOpacity>

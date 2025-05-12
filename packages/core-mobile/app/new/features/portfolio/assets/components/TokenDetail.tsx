@@ -194,8 +194,10 @@ const TokenDetail: FC<Props> = ({ token }): React.JSX.Element => {
 
   return (
     <CollapsibleTabs.FlatList
+      style={{
+        paddingTop: 4
+      }}
       contentContainerStyle={{
-        paddingTop: 4,
         paddingHorizontal: 16,
         paddingBottom: 16
       }}

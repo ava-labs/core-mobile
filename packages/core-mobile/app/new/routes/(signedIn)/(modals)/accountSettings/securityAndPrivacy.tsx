@@ -1,39 +1,27 @@
 import {
-  NavigationTitleHeader,
-  Text,
-  useTheme,
   GroupList,
+  GroupListItem,
+  Text,
   Toggle,
-  GroupListItem
+  useTheme
 } from '@avalabs/k2-alpine'
-import React, { useState, useMemo, useCallback, useEffect } from 'react'
-import Animated, {
-  useAnimatedStyle,
-  useSharedValue
-} from 'react-native-reanimated'
-import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
-import { LayoutChangeEvent, LayoutRectangle } from 'react-native'
-import { useFocusEffect, useRouter } from 'expo-router'
-import { ScrollView } from 'react-native-gesture-handler'
+import { ScrollScreen } from 'common/components/ScrollScreen'
+import { Space } from 'common/components/Space'
+import { useRouter } from 'expo-router'
 import { useConnectedDapps } from 'features/accountSettings/hooks/useConnectedDapps'
-import { Space } from 'components/Space'
+import React, { useCallback, useMemo } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
+import AnalyticsService from 'services/analytics/AnalyticsService'
+import { WalletType } from 'services/wallet/types'
+import { selectWalletType } from 'store/app'
 import {
   selectCoreAnalyticsConsent,
   setCoreAnalytics
 } from 'store/settings/securityPrivacy'
-import { useDispatch, useSelector } from 'react-redux'
-import AnalyticsService from 'services/analytics/AnalyticsService'
-import DeviceInfoService, {
-  BiometricType
-} from 'services/deviceInfo/DeviceInfoService'
-import { WalletType } from 'services/wallet/types'
-import { selectWalletType } from 'store/app'
+import { useStoredBiometrics } from 'common/hooks/useStoredBiometrics'
 import BiometricsSDK from 'utils/BiometricsSDK'
+import { selectActiveWalletId } from 'store/wallet/slice'
 import Logger from 'utils/Logger'
-import { commonStorage } from 'utils/mmkv'
-import { StorageKey } from 'resources/Constants'
-
-const navigationHeader = <NavigationTitleHeader title={'Security & privacy'} />
 
 const SecurityAndPrivacyScreen = (): JSX.Element => {
   const {
@@ -43,59 +31,28 @@ const SecurityAndPrivacyScreen = (): JSX.Element => {
   const coreAnalyticsConsent = useSelector(selectCoreAnalyticsConsent)
   const { allApprovedDapps } = useConnectedDapps()
   const walletType = useSelector(selectWalletType)
-  const [biometricType, setBiometricType] = useState<BiometricType>(
-    BiometricType.NONE
-  )
+  const activeWalletId = useSelector(selectActiveWalletId)
+  const {
+    biometricType,
+    isBiometricAvailable,
+    useBiometrics,
+    setUseBiometrics
+  } = useStoredBiometrics()
   const { navigate } = useRouter()
-  const headerOpacity = useSharedValue(1)
-  const [headerLayout, setHeaderLayout] = useState<
-    LayoutRectangle | undefined
-  >()
-  const { onScroll, targetHiddenProgress } = useFadingHeaderNavigation({
-    header: navigationHeader,
-    targetLayout: headerLayout,
-    shouldHeaderHaveGrabber: true
-  })
-
-  const animatedHeaderStyle = useAnimatedStyle(() => ({
-    opacity: 1 - targetHiddenProgress.value
-  }))
-
-  const handleHeaderLayout = (event: LayoutChangeEvent): void => {
-    setHeaderLayout(event.nativeEvent.layout)
-  }
-
-  const [isBiometricSwitchEnabled, setIsBiometricSwitchEnabled] =
-    useState(false)
-  const [isBiometricAvailable, setIsBiometricAvailable] = useState(false)
-
-  useFocusEffect(
-    useCallback(() => {
-      BiometricsSDK.canUseBiometry()
-        .then((biometricAvailable: boolean) => {
-          setIsBiometricAvailable(biometricAvailable)
-        })
-        .catch(Logger.error)
-
-      const type = commonStorage.getString(StorageKey.SECURE_ACCESS_SET)
-      if (type) {
-        setIsBiometricSwitchEnabled(type === 'BIO')
-      } else {
-        Logger.error('Secure access type not found')
-      }
-    }, [])
-  )
 
   const handleSwitchBiometric = useCallback(
     (value: boolean): void => {
-      setIsBiometricSwitchEnabled(value)
+      setUseBiometrics(value)
       if (value) {
-        navigate('./biometricVerifyPin')
+        // @ts-ignore TODO: make routes typesafe
+        navigate('/accountSettings/biometricVerifyPin')
       } else {
-        commonStorage.set(StorageKey.SECURE_ACCESS_SET, 'PIN')
+        if (activeWalletId) {
+          BiometricsSDK.disableBiometry(activeWalletId).catch(Logger.error)
+        }
       }
     },
-    [navigate]
+    [activeWalletId, navigate, setUseBiometrics]
   )
 
   const connectedSitesData = useMemo(() => {
@@ -103,7 +60,8 @@ const SecurityAndPrivacyScreen = (): JSX.Element => {
       {
         title: 'Connected sites',
         onPress: () => {
-          navigate('./connectedSites')
+          // @ts-ignore TODO: make routes typesafe
+          navigate('/accountSettings/connectedSites')
         },
         value: allApprovedDapps.length.toString()
       }
@@ -115,7 +73,8 @@ const SecurityAndPrivacyScreen = (): JSX.Element => {
       {
         title: 'Change PIN',
         onPress: () => {
-          navigate('./verifyChangePin')
+          // @ts-ignore TODO: make routes typesafe
+          navigate('/accountSettings/verifyChangePin')
         }
       }
     ]
@@ -124,10 +83,7 @@ const SecurityAndPrivacyScreen = (): JSX.Element => {
       data.push({
         title: `Use ${biometricType}`,
         value: (
-          <Toggle
-            onValueChange={handleSwitchBiometric}
-            value={isBiometricSwitchEnabled}
-          />
+          <Toggle onValueChange={handleSwitchBiometric} value={useBiometrics} />
         )
       })
     }
@@ -136,7 +92,7 @@ const SecurityAndPrivacyScreen = (): JSX.Element => {
     biometricType,
     handleSwitchBiometric,
     isBiometricAvailable,
-    isBiometricSwitchEnabled,
+    useBiometrics,
     navigate
   ])
 
@@ -146,10 +102,12 @@ const SecurityAndPrivacyScreen = (): JSX.Element => {
         title: 'Show recovery phrase',
         onPress: () => {
           if (walletType === WalletType.SEEDLESS) {
-            navigate('./seedlessExportPhrase')
+            // @ts-ignore TODO: make routes typesafe
+            navigate('/accountSettings/seedlessExportPhrase')
             return
           }
-          navigate('./recoveryPhraseVerifyPin')
+          // @ts-ignore TODO: make routes typesafe
+          navigate('/accountSettings/recoveryPhraseVerifyPin')
         }
       }
     ]
@@ -158,7 +116,8 @@ const SecurityAndPrivacyScreen = (): JSX.Element => {
       data.push({
         title: 'Recovery methods',
         onPress: () => {
-          navigate('./addRecoveryMethods')
+          // @ts-ignore TODO: make routes typesafe
+          navigate('/accountSettings/addRecoveryMethods')
         }
       })
     }
@@ -194,27 +153,12 @@ const SecurityAndPrivacyScreen = (): JSX.Element => {
     ]
   }, [coreAnalyticsConsent, handleToggleCoreAnalyticsConsent])
 
-  useEffect(() => {
-    const getBiometryType = async (): Promise<void> => {
-      const type = await DeviceInfoService.getBiometricType()
-      setBiometricType(type)
-    }
-    getBiometryType()
-  }, [])
-
   return (
-    <ScrollView
-      showsVerticalScrollIndicator={false}
-      contentContainerStyle={{ paddingBottom: 60, paddingHorizontal: 16 }}
-      onScroll={onScroll}>
-      {/* Header */}
-      <Animated.View
-        style={[{ opacity: headerOpacity }, animatedHeaderStyle]}
-        onLayout={handleHeaderLayout}>
-        <Text variant="heading2">{`Security\n& privacy`}</Text>
-      </Animated.View>
-      <Space y={36} />
-
+    <ScrollScreen
+      title={`Security\n& privacy`}
+      navigationTitle="Security & privacy"
+      isModal
+      contentContainerStyle={{ padding: 16 }}>
       <GroupList
         data={connectedSitesData}
         titleSx={{
@@ -261,7 +205,7 @@ const SecurityAndPrivacyScreen = (): JSX.Element => {
         committed to protecting your privacy. We will never sell or share your
         data
       </Text>
-    </ScrollView>
+    </ScrollScreen>
   )
 }
 

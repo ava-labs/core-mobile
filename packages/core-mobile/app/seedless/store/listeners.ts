@@ -1,4 +1,3 @@
-import { AppStartListening } from 'store/middleware/listener'
 import {
   onAppLocked,
   onAppUnlocked,
@@ -12,7 +11,7 @@ import GoogleSigninService from 'services/socialSignIn/google/GoogleSigninServic
 import WalletService from 'services/wallet/WalletService'
 import { WalletType } from 'services/wallet/types'
 import { Action } from '@reduxjs/toolkit'
-import { AppListenerEffectAPI } from 'store'
+import { AppStartListening, AppListenerEffectAPI } from 'store/types'
 import { onTokenExpired } from 'seedless/store/slice'
 import { setAccountTitle } from 'store/account/slice'
 import { router } from 'expo-router'

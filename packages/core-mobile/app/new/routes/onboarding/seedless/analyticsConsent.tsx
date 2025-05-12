@@ -9,12 +9,16 @@ export default function AnalyticsConsent(): JSX.Element {
 
   function handleAcceptAnalytics(): void {
     accept()
-    navigate('./createPin')
+
+    // @ts-ignore TODO: make routes typesafe
+    navigate('/onboarding/seedless/createPin')
   }
 
   function handleRejectAnalytics(): void {
     reject()
-    navigate('./createPin')
+
+    // @ts-ignore TODO: make routes typesafe
+    navigate('/onboarding/seedless/createPin')
   }
 
   return (

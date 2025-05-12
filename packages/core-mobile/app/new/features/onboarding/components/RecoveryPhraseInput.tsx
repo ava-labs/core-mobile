@@ -102,7 +102,6 @@ export default function RecoveryPhraseInput({
     e: NativeSyntheticEvent<TextInputSelectionChangeEventData>
   ): void => {
     setSelection(e.nativeEvent.selection)
-    updateCurrentWord(enteredText, e.nativeEvent.selection.start)
   }
 
   const handleSubmitEditing = (): void => {

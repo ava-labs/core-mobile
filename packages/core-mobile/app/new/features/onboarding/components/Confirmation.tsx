@@ -1,85 +1,65 @@
+import { Avatar, Button, Text, View, useTheme } from '@avalabs/k2-alpine'
+import { ScrollScreen } from 'common/components/ScrollScreen'
 import React from 'react'
-import BlurredBarsContentLayout from 'common/components/BlurredBarsContentLayout'
-import {
-  Avatar,
-  Button,
-  SafeAreaView,
-  ScrollView,
-  View,
-  useTheme,
-  Text
-} from '@avalabs/k2-alpine'
-import { AVATARS } from 'common/consts/avatars'
+import { useSelector } from 'react-redux'
+import { selectSelectedAvatar } from 'store/settings/avatar'
 
 export const Confirmation = ({
-  selectedAvatarId,
   onNext
 }: {
-  selectedAvatarId?: string
   onNext: () => void
 }): JSX.Element => {
   const {
     theme: { colors }
   } = useTheme()
+  const avatar = useSelector(selectSelectedAvatar)
 
-  const avatar = AVATARS.find(a => a.id === selectedAvatarId)
+  const renderFooter = (): React.ReactNode => {
+    return (
+      <Button testID="lets_go_btn" size="large" type="primary" onPress={onNext}>
+        Let's go!
+      </Button>
+    )
+  }
 
   return (
-    <BlurredBarsContentLayout>
-      <SafeAreaView sx={{ flex: 1 }}>
-        <ScrollView sx={{ flex: 1 }} contentContainerSx={{ padding: 16 }}>
-          <View sx={{ alignItems: 'center', marginTop: 100 }}>
-            {avatar?.source && (
-              <Avatar
-                backgroundColor={colors.$surfacePrimary}
-                source={avatar.source}
-                size="large"
-                hasBlur={true}
-                glowEffect={{
-                  imageSource: require('../../../../assets/glow.png'),
-                  size: 380,
-                  delay: 300
-                }}
-                testID="selected_avatar"
-              />
-            )}
-          </View>
-          <View
-            sx={{
-              paddingHorizontal: 12,
-              maxWidth: 320,
-              alignSelf: 'center'
-            }}>
-            <Text
-              sx={{ marginTop: 96, textAlign: 'center' }}
-              variant="heading3">
-              That’s it!{'\n'} Enjoy your wallet
-            </Text>
-            <Text
-              variant="subtitle1"
-              sx={{
-                textAlign: 'center',
-                marginTop: 20
-              }}>
-              You can now start buying, swapping, sending, receiving crypto and
-              collectibles with no added fees
-            </Text>
-          </View>
-        </ScrollView>
-        <View
-          sx={{
-            padding: 16,
-            backgroundColor: '$surfacePrimary'
-          }}>
-          <Button
-            testID="lets_go_btn"
+    <ScrollScreen
+      renderFooter={renderFooter}
+      contentContainerStyle={{ padding: 16, flex: 1 }}>
+      <View sx={{ alignItems: 'center', marginTop: 100 }}>
+        {avatar?.source && (
+          <Avatar
+            backgroundColor={colors.$surfacePrimary}
+            source={avatar.source}
             size="large"
-            type="primary"
-            onPress={onNext}>
-            Let’s go!
-          </Button>
-        </View>
-      </SafeAreaView>
-    </BlurredBarsContentLayout>
+            glowEffect={{
+              imageSource: require('../../../../assets/glow.png'),
+              size: 380,
+              delay: 300
+            }}
+            testID="selected_avatar"
+          />
+        )}
+      </View>
+      <View
+        sx={{
+          paddingHorizontal: 12,
+          maxWidth: 320,
+          alignSelf: 'center'
+        }}>
+        <Text sx={{ marginTop: 96, textAlign: 'center' }} variant="heading3">
+          {`That's it!\nEnjoy your wallet`}
+        </Text>
+        <Text
+          variant="subtitle1"
+          sx={{
+            textAlign: 'center',
+            marginTop: 20
+          }}>
+          You can now start buying, swapping, sending, receiving crypto and
+          collectibles with no added fees
+        </Text>
+      </View>
+    </ScrollScreen>
   )
 }

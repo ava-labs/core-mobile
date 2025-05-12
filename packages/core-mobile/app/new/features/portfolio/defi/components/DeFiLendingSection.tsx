@@ -1,7 +1,6 @@
 import { Image } from 'react-native'
 import { DeFiToken } from 'services/defi/types'
 import React from 'react'
-import { Row } from 'components/Row'
 import { useExchangedAmount } from 'new/common/hooks/useExchangedAmount'
 import { Separator, Text, useTheme, View } from '@avalabs/k2-alpine'
 import { IMAGE_SIZE } from '../consts'
@@ -34,7 +33,13 @@ export const DeFiLendingSection = ({
       {tokens.map((token, index) => (
         <View key={index}>
           <DeFiRowItem key={token.symbol}>
-            <Row style={{ flex: 1, alignItems: 'center', gap: 12 }}>
+            <View
+              style={{
+                flex: 1,
+                flexDirection: 'row',
+                alignItems: 'center',
+                gap: 12
+              }}>
               <Image
                 source={{ uri: token.logoUrl }}
                 style={{ width: IMAGE_SIZE, height: IMAGE_SIZE }}
@@ -46,7 +51,7 @@ export const DeFiLendingSection = ({
                 sx={{ color: '$textSecondary', flexShrink: 1 }}>
                 {token.symbol}
               </Text>
-            </Row>
+            </View>
             <Text variant="body1" sx={{ color: amountTextColor }}>
               {numberSign}
               {getAmount(token.amount * token.price, 'compact')}

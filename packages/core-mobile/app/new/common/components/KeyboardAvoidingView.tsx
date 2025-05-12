@@ -1,15 +1,21 @@
 import React from 'react'
-import { KeyboardAvoidingView as Component, Platform } from 'react-native'
+import { Platform } from 'react-native'
+import {
+  KeyboardAvoidingView as Component,
+  KeyboardAvoidingViewProps
+} from 'react-native-keyboard-controller'
 
 export const KeyboardAvoidingView = ({
-  children
-}: {
-  children: React.ReactNode
-}): JSX.Element => {
+  children,
+  behavior: _behavior,
+  contentContainerStyle: _contentContainerStyle,
+  ...props
+}: KeyboardAvoidingViewProps): JSX.Element => {
   return (
     <Component
       style={{ flex: 1 }}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      {...props}>
       {children}
     </Component>
   )

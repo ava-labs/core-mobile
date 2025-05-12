@@ -13,7 +13,7 @@ import { selectSelectedCurrency } from 'store/settings/currency/slice'
 import Logger from 'utils/Logger'
 import { FundsStuckError } from 'hooks/earn/errors'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
-import { SendErrorMessage } from 'screens/send/utils/types'
+import { SendErrorMessage } from 'errors/sendError'
 import { useClaimFees } from './useClaimFees'
 import { useGetFeeState } from './useGetFeeState'
 

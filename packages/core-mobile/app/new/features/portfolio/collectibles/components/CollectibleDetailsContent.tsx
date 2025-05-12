@@ -9,10 +9,9 @@ import {
   View
 } from '@avalabs/k2-alpine'
 import React, { ReactNode, useCallback, useMemo } from 'react'
-import { NftItem } from 'services/nft/types'
-
-import { noop } from '@avalabs/core-utils-sdk'
+import { NftItem, NftLocalStatus } from 'services/nft/types'
 import { LinearGradientBottomWrapper } from 'common/components/LinearGradientBottomWrapper'
+import { useAvatar } from 'common/hooks/useAvatar'
 import { showSnackbar } from 'common/utils/toast'
 import { LinearGradient } from 'expo-linear-gradient'
 import {
@@ -22,9 +21,14 @@ import {
 import { ActionButtonTitle } from 'features/portfolio/assets/consts'
 import { useNetworks } from 'hooks/networks/useNetworks'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { useSelector } from 'react-redux'
 import { isAvalancheCChainId } from 'services/network/utils/isAvalancheNetwork'
+import { selectSelectedAvatar } from 'store/settings/avatar'
 import { truncateAddress } from 'utils/Utils'
 import { isAddress } from 'viem'
+import { useRouter } from 'expo-router'
+import { useSendSelectedToken } from 'features/send/store'
+import { NftContentType } from 'store/nft'
 import { useCollectiblesContext } from '../CollectiblesContext'
 import { HORIZONTAL_MARGIN } from '../consts'
 
@@ -40,9 +44,24 @@ export const CollectibleDetailsContent = ({
   const {
     theme: { colors }
   } = useTheme()
+  const avatar = useSelector(selectSelectedAvatar)
+  const { navigate } = useRouter()
   const insets = useSafeAreaInsets()
   const networks = useNetworks()
   const { refreshMetadata, isCollectibleRefreshing } = useCollectiblesContext()
+  const { saveExternalAvatar } = useAvatar()
+
+  const isSupportedAvatar =
+    collectible?.imageData?.type !== NftContentType.MP4 &&
+    collectible?.imageData?.type !== NftContentType.Unknown &&
+    collectible?.imageData?.image !== undefined
+
+  const handleSaveAvatar = (): void => {
+    if (!collectible?.imageData?.image) return
+    saveExternalAvatar(collectible.localId, collectible.imageData.image)
+    showSnackbar('Avatar saved')
+  }
+  const [_, setSelectedToken] = useSendSelectedToken()
 
   const attributes: GroupListItem[] = useMemo(
     () =>
@@ -87,8 +106,14 @@ export const CollectibleDetailsContent = ({
       return
     }
 
-    await refreshMetadata(collectible, collectible.chainId)
+    await refreshMetadata(collectible, collectible.networkChainId)
   }, [canRefreshMetadata, collectible, refreshMetadata])
+
+  const handleSend = useCallback(() => {
+    setSelectedToken(collectible)
+    // @ts-ignore TODO: make routes typesafe
+    navigate('/collectibleSend')
+  }, [collectible, navigate, setSelectedToken])
 
   const ACTION_BUTTONS: ActionButton[] = useMemo(() => {
     const visibilityAction: ActionButton = {
@@ -98,10 +123,10 @@ export const CollectibleDetailsContent = ({
     }
 
     return [
-      { title: ActionButtonTitle.Send, icon: 'send', onPress: noop },
+      { title: ActionButtonTitle.Send, icon: 'send', onPress: handleSend },
       visibilityAction
     ]
-  }, [isVisible, onHide])
+  }, [isVisible, onHide, handleSend])
 
   return (
     <View
@@ -171,7 +196,7 @@ export const CollectibleDetailsContent = ({
               {
                 title: `Chain`,
                 value:
-                  networks.getNetwork(collectible?.chainId)?.chainName ||
+                  networks.getNetwork(collectible?.networkChainId)?.chainName ||
                   'Unknown network'
               }
             ]}
@@ -195,8 +220,8 @@ export const CollectibleDetailsContent = ({
               padding: HORIZONTAL_MARGIN,
               paddingBottom: insets.bottom + HORIZONTAL_MARGIN
             }}>
-            {collectible?.chainId &&
-            isAvalancheCChainId(collectible?.chainId) ? (
+            {collectible?.networkChainId &&
+            isAvalancheCChainId(collectible?.networkChainId) ? (
               <Button
                 disabled={isRefreshing}
                 type="secondary"
@@ -209,9 +234,16 @@ export const CollectibleDetailsContent = ({
                 )}
               </Button>
             ) : null}
-            <Button type="secondary" size="large">
-              Set as my avatar
-            </Button>
+            {collectible?.status === NftLocalStatus.Processed &&
+              isSupportedAvatar && (
+                <Button
+                  type="secondary"
+                  size="large"
+                  onPress={handleSaveAvatar}
+                  disabled={avatar.id === collectible?.localId}>
+                  Set as my avatar
+                </Button>
+              )}
           </View>
         </LinearGradientBottomWrapper>
       </View>

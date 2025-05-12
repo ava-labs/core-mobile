@@ -10,7 +10,7 @@ import {
   useTheme,
   View
 } from '@avalabs/k2-alpine'
-import { Space } from 'components/Space'
+import { Space } from 'common/components/Space'
 import { startRefreshSeedlessTokenFlow } from 'common/utils/startRefreshSeedlessTokenFlow'
 import SeedlessService from 'seedless/services/SeedlessService'
 import { useDispatch } from 'react-redux'
@@ -51,6 +51,7 @@ const SessionExpiredScreen = (): React.JSX.Element => {
             const mfa = mfaMethods[0]
             if (mfa?.type === 'totp') {
               router.navigate({
+                // @ts-ignore TODO: make routes typesafe
                 pathname: '/sessionExpired/verifyTotpCode',
                 params: {
                   mfaId: result.value.mfaId,
@@ -70,6 +71,7 @@ const SessionExpiredScreen = (): React.JSX.Element => {
             }
           }
           router.navigate({
+            // @ts-ignore TODO: make routes typesafe
             pathname: '/sessionExpired/selectMfaMethod',
             params: {
               mfaId: result.value.mfaId,

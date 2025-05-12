@@ -8,11 +8,13 @@ export default function ScanQrCode(): JSX.Element {
   const router = useRouter()
 
   const goToVerifyCode = (): void => {
-    router.push('./verifyCode')
+    // @ts-ignore TODO: make routes typesafe
+    router.push('/accountSettings/addRecoveryMethods/verifyCode')
   }
 
   const goToEnterCodeManually = (): void => {
-    router.navigate('./copyCode')
+    // @ts-ignore TODO: make routes typesafe
+    router.navigate('/accountSettings/addRecoveryMethods/copyCode')
   }
 
   return (

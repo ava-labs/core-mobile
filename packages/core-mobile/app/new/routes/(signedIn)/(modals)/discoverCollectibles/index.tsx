@@ -75,6 +75,7 @@ export default function DiscoverCollectiblesScreen(): JSX.Element {
     if (activeTab) {
       dispatch(addHistoryForActiveTab({ url: item.website, title: item.title }))
       back()
+      // @ts-ignore TODO: make routes typesafe
       navigate('/(signedIn)/(tabs)/browser')
     }
   }

@@ -1,6 +1,6 @@
 import { notificationChannels } from 'services/notifications/channels'
 import NotificationsService from 'services/notifications/NotificationsService'
-import { AppListenerEffectAPI } from 'store/index'
+import { AppListenerEffectAPI } from 'store/types'
 import { selectAllNotificationSubscriptions } from '../slice'
 
 export async function manageNotificationChannelsCreation(

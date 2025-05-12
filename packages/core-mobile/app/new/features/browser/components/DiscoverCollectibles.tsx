@@ -11,6 +11,7 @@ export const DiscoverCollectibles = (): JSX.Element => {
   const { navigate } = useRouter()
 
   const openDiscoverCollectibles = (): void => {
+    // @ts-ignore TODO: make routes typesafe
     navigate('/discoverCollectibles')
   }
 
@@ -58,6 +59,7 @@ export const DiscoverCollectibles = (): JSX.Element => {
             width: 180,
             height: 188
           }}
+          renderToHardwareTextureAndroid={false}
           contentFit="contain"
           source={NftCollectionImage}
         />

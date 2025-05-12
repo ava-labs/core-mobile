@@ -6,7 +6,7 @@ import {
   UpdateFavoritePayload
 } from 'store/browser/types'
 import { createHash } from 'utils/createHash'
-import { RootState } from 'store'
+import { RootState } from 'store/types'
 import { favoriteAdapter } from '../utils'
 
 const reducerName = 'browser/favorites'

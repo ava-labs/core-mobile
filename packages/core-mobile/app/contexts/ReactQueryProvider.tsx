@@ -45,7 +45,10 @@ const persistOptions = {
       if (query.queryKey.length === 0) return false
       if (query.state.status !== 'success') return false
 
-      return query.queryKey.includes(ReactQueryKeys.NETWORKS)
+      return (
+        query.queryKey.includes(ReactQueryKeys.NETWORKS) ||
+        query.queryKey.includes(ReactQueryKeys.LAST_TRANSACTED_ERC20_NETWORKS)
+      )
     }
   }
 }

@@ -44,7 +44,6 @@ export default function VerifyCode(): JSX.Element {
     <VerifyCodeComponent
       onVerifyCode={onVerifyCode}
       onVerifySuccess={onVerifySuccess}
-      sx={{ marginTop: 25 }}
     />
   )
 }

@@ -1,8 +1,6 @@
 import { useTheme } from '@avalabs/k2-alpine'
 import { DefaultTheme, ThemeProvider } from '@react-navigation/native'
-import React, { useEffect, useMemo } from 'react'
-import { Platform } from 'react-native'
-import { setBackgroundColorAsync } from 'expo-navigation-bar'
+import React, { useMemo } from 'react'
 import { useSelector } from 'react-redux'
 import { selectSelectedColorScheme } from 'store/settings/appearance'
 
@@ -15,11 +13,6 @@ const NavigationThemeProvider = ({
   const {
     theme: { colors }
   } = useTheme()
-
-  useEffect(() => {
-    if (Platform.OS === 'android')
-      setBackgroundColorAsync(colors?.$surfacePrimary)
-  }, [colors?.$surfacePrimary])
 
   const navContainerTheme = useMemo(() => {
     const isDark = colorScheme === 'dark'

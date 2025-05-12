@@ -4,17 +4,15 @@ import {
   Icons,
   PriceChangeIndicator,
   MaskedText,
-  SPRING_LINEAR_TRANSITION,
   Text,
   useTheme,
   View
 } from '@avalabs/k2-alpine'
 import { Dimensions } from 'react-native'
-import Animated from 'react-native-reanimated'
-import { getListItemEnteringAnimation } from 'common/utils/animations'
 import { GRID_GAP } from 'common/consts'
 import { selectIsPrivacyModeEnabled } from 'store/settings/securityPrivacy'
 import { useSelector } from 'react-redux'
+import { HiddenBalanceText } from 'common/components/HiddenBalanceText'
 import { TokenListViewProps } from '../types'
 import { LogoWithNetwork } from './LogoWithNetwork'
 
@@ -35,9 +33,7 @@ export const TokenGridView = ({
   } = useTheme()
 
   return (
-    <Animated.View
-      entering={getListItemEnteringAnimation(index)}
-      layout={SPRING_LINEAR_TRANSITION}>
+    <View>
       <AnimatedPressable onPress={onPress}>
         <View
           sx={{
@@ -87,15 +83,20 @@ export const TokenGridView = ({
                     color={colors.$textDanger}
                   />
                 )}
-                <MaskedText
-                  testID={`grid_fiat_balance__${index}`}
-                  variant="buttonLarge"
-                  shouldMask={isPrivacyModeEnabled}
-                  maskWidth={85}
-                  numberOfLines={1}
-                  sx={{ lineHeight: 21 }}>
-                  {formattedBalance}
-                </MaskedText>
+                {isPrivacyModeEnabled ? (
+                  <HiddenBalanceText
+                    variant="buttonLarge"
+                    sx={{ lineHeight: 21 }}
+                  />
+                ) : (
+                  <Text
+                    testID={`grid_fiat_balance__${index}`}
+                    variant="buttonLarge"
+                    numberOfLines={1}
+                    sx={{ lineHeight: 21 }}>
+                    {formattedBalance}
+                  </Text>
+                )}
               </View>
               <PriceChangeIndicator
                 shouldMask={isPrivacyModeEnabled}
@@ -107,6 +108,6 @@ export const TokenGridView = ({
           </View>
         </View>
       </AnimatedPressable>
-    </Animated.View>
+    </View>
   )
 }

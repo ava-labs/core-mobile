@@ -1,6 +1,6 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { createHash } from 'utils/createHash'
-import { RootState } from 'store'
+import { RootState } from 'store/types'
 import { getUnixTime } from 'date-fns'
 import {
   History,

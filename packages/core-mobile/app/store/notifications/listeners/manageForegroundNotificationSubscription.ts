@@ -1,5 +1,5 @@
 import FCMService from 'services/fcm/FCMService'
-import { AppListenerEffectAPI } from 'store/index'
+import { AppListenerEffectAPI } from 'store/types'
 import { onFcmTokenChange } from 'store/notifications/slice'
 
 export async function manageForegroundNotificationSubscription(
