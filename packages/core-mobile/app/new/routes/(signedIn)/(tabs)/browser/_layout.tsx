@@ -1,12 +1,9 @@
-import React from 'react'
 import { Stack } from 'common/components/Stack'
 import { stackNavigatorScreenOptions } from 'common/consts/screenOptions'
 import { BrowserProvider } from 'features/browser/BrowserContext'
-import { View } from 'react-native'
-import { useModalScreenOptions } from 'common/hooks/useModalScreenOptions'
+import React from 'react'
 
 export default function BrowserLayout(): JSX.Element {
-  const { modalScreensOptions } = useModalScreenOptions()
   return (
     <BrowserProvider>
       <Stack screenOptions={stackNavigatorScreenOptions}>

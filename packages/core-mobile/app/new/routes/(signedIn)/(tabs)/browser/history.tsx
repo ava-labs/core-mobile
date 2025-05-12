@@ -1,4 +1,4 @@
-import { Button, SearchBar, showAlert, View } from '@avalabs/k2-alpine'
+import { Button, SearchBar, showAlert } from '@avalabs/k2-alpine'
 import { useNavigation } from '@react-navigation/native'
 import { ErrorState } from 'common/components/ErrorState'
 import { ListScreen } from 'common/components/ListScreen'
@@ -87,17 +87,12 @@ const HistoryScreen = (): JSX.Element => {
 
   const renderHeader = (): JSX.Element => {
     return (
-      <View
-        style={{
-          gap: 14
-        }}>
-        <SearchBar
-          onTextChanged={setSearchText}
-          searchText={searchText}
-          placeholder="Search or Type URL"
-          keyboardType={Platform.OS === 'ios' ? 'web-search' : 'url'}
-        />
-      </View>
+      <SearchBar
+        onTextChanged={setSearchText}
+        searchText={searchText}
+        placeholder="Search or Type URL"
+        keyboardType={Platform.OS === 'ios' ? 'web-search' : 'url'}
+      />
     )
   }
 
