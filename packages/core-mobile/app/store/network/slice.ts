@@ -214,6 +214,10 @@ export const onNetworksFetched = createAction(
   `${reducerName}/onNetworksFetched`
 )
 
+export const onNetworksFetchedSuccess = createAction(
+  `${reducerName}/onNetworksFetchedSuccess`
+)
+
 export const {
   setActive,
   toggleEnabledChainId,

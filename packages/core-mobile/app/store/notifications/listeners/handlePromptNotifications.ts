@@ -24,8 +24,14 @@ export const handlePromptNotifications = async (
 
   // show prompt if any of the following is true
   //   - if user has not seen the prompt
-  //   - if ff is disabled
-  if (hasPromptedForNotifications || isEnableNotificationPromptBlocked) return
+  //   - if user has denied/not determined permissions and ff is enabled
+  if (
+    hasPromptedForNotifications &&
+    ((authorizationStatus !== AuthorizationStatus.DENIED &&
+      authorizationStatus !== AuthorizationStatus.NOT_DETERMINED) ||
+      isEnableNotificationPromptBlocked)
+  )
+    return
 
   // if user has not seen the prompt and has granted permissions
   // this means user is re-logging into wallet

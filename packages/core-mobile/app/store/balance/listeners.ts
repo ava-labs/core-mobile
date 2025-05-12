@@ -16,6 +16,7 @@ import { addCustomToken, selectAllCustomTokens } from 'store/customToken'
 import {
   addCustomNetwork,
   onNetworksFetched,
+  onNetworksFetchedSuccess,
   selectEnabledNetworks,
   toggleEnabledChainId
 } from 'store/network/slice'
@@ -179,16 +180,27 @@ const onBalanceUpdateCore = async ({
 const fetchBalancePeriodically = async (
   _: Action,
   listenerApi: AppListenerEffectAPI
+  // eslint-disable-next-line sonarjs/cognitive-complexity
 ): Promise<void> => {
   onBalanceUpdate(QueryStatus.LOADING, listenerApi).catch(Logger.error)
   const { condition, getState } = listenerApi
   const state = getState()
   const isDeveloperMode = selectIsDeveloperMode(state)
-  const enabledNetworks = selectEnabledNetworks(state)
+  const selectedEnabledNetworks = selectEnabledNetworks(state)
+
+  let enabledNetworks: Network[]
   let iteration = 1
   let nonPrimaryNetworksIteration = 0
 
+  if (selectedEnabledNetworks.length > 0) {
+    enabledNetworks = selectedEnabledNetworks
+  } else {
+    await listenerApi.condition(isAnyOf(onNetworksFetchedSuccess))
+    enabledNetworks = selectEnabledNetworks(state)
+  }
+
   const pollingConfig = getPollingConfig({ isDeveloperMode, enabledNetworks })
+
   const allNetworksOperand =
     pollingConfig.allNetworks / pollingConfig.primaryNetworks
 
