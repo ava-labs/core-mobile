@@ -71,3 +71,15 @@ export const navigateToClaimRewards = (): void => {
     })
   }, DELAY_NAVIGATION_CLAIM_REWARDS)
 }
+
+export const navigateToSummitLondon2025 = (): void => {
+  setTimeout(async () => {
+    Logger.info('navigating to summit london 2025')
+    navigate({
+      name: AppNavigation.Root.Wallet,
+      params: {
+        screen: AppNavigation.Modal.SummitLondon2025
+      }
+    })
+  }, DELAY_NAVIGATION)
+}

@@ -8,6 +8,7 @@ import { newSession } from 'store/walletConnectV2/slice'
 import {
   navigateToChainPortfolio,
   navigateToClaimRewards,
+  navigateToSummitLondon2025,
   navigateToWatchlist
 } from 'navigation/utils'
 import { ACTIONS, DeepLink, PROTOCOLS } from '../types'
@@ -16,12 +17,15 @@ export const handleDeeplink = ({
   deeplink,
   dispatch,
   isEarnBlocked,
+  isSummitLondon2025Blocked,
   openUrl
 }: {
   deeplink: DeepLink
   dispatch: Dispatch
   isEarnBlocked: boolean
+  isSummitLondon2025Blocked: boolean
   openUrl: (url: string) => Promise<void>
+  // eslint-disable-next-line sonarjs/cognitive-complexity
 }): void => {
   let url
   try {
@@ -62,6 +66,10 @@ export const handleDeeplink = ({
         if (isEarnBlocked) return
         deeplink.callback?.()
         navigateToClaimRewards()
+      } else if (action === ACTIONS.SummitLondon2025) {
+        if (isSummitLondon2025Blocked) return
+        deeplink.callback?.()
+        navigateToSummitLondon2025()
       } else if (action === ACTIONS.WatchList) {
         const coingeckoId = url.pathname.split('/')[1]
         navigateToWatchlist(coingeckoId)

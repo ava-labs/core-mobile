@@ -344,6 +344,14 @@ export const selectIsSwapFeesBlocked = (state: RootState): boolean => {
   )
 }
 
+export const selectIsSummitLondon2025Blocked = (state: RootState): boolean => {
+  const { featureFlags } = state.posthog
+  return (
+    !featureFlags[FeatureGates.SUMMIT_LONDON_2025] ||
+    !featureFlags[FeatureGates.EVERYTHING]
+  )
+}
+
 // actions
 export const { regenerateUserId, toggleAnalytics, setFeatureFlags } =
   posthogSlice.actions
