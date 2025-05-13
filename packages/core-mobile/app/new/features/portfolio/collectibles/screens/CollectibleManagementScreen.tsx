@@ -13,7 +13,7 @@ import {
 } from 'store/portfolio'
 import { useCollectiblesContext } from '../CollectiblesContext'
 import { HORIZONTAL_MARGIN } from '../consts'
-import { CollectibleManagementItem } from './CollectibleManagementItem'
+import { CollectibleManagementItem } from '../components/CollectibleManagementItem'
 
 export const CollectibleManagementScreen = (): ReactNode => {
   const { collectibles, isLoading, isRefetching, refetch } =

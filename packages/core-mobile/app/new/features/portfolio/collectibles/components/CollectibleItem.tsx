@@ -9,7 +9,7 @@ import {
   View
 } from '@avalabs/k2-alpine'
 import { getListItemEnteringAnimation } from 'common/utils/animations'
-import React, { memo, ReactNode } from 'react'
+import React, { memo, ReactNode, useCallback } from 'react'
 import { Pressable, ViewStyle } from 'react-native'
 import { NftItem } from 'services/nft/types'
 import { CollectibleView } from 'store/balance'
@@ -169,6 +169,7 @@ export const CollectibleListItem = memo(
                   }}>
                   <Text
                     variant="buttonSmall"
+                    numberOfLines={1}
                     style={{
                       color: theme.colors?.$textSecondary
                     }}>
@@ -208,8 +209,8 @@ export const CollectibleGridItem = memo(
   }: CollectibleGridItemProps): ReactNode => {
     const height = getGridCardHeight(type, index)
 
-    return (
-      <AnimatedPressable onPress={onPress} {...props}>
+    const renderCard = useCallback(() => {
+      return (
         <CardContainer
           style={[
             {
@@ -242,7 +243,15 @@ export const CollectibleGridItem = memo(
             </View>
           </CollectibleRenderer>
         </CardContainer>
-      </AnimatedPressable>
-    )
+      )
+    }, [collectible, height, onLoaded, rendererProps, style])
+
+    if (onPress)
+      return (
+        <AnimatedPressable onPress={onPress} {...props}>
+          {renderCard()}
+        </AnimatedPressable>
+      )
+    return renderCard()
   }
 )

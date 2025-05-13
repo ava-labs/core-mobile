@@ -87,6 +87,7 @@ export const Video = ({
         allowsFullscreen={false}
         allowsPictureInPicture={false}
         allowsVideoFrameAnalysis={false}
+        renderToHardwareTextureAndroid={false}
         {...props}
       />
 

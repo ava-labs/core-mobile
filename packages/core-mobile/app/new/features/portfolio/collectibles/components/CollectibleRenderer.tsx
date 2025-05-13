@@ -1,4 +1,4 @@
-import { Icons, Text, useTheme, Video, VideoProps } from '@avalabs/k2-alpine'
+import { Icons, useTheme, Video, VideoProps } from '@avalabs/k2-alpine'
 import { Image, ImageErrorEventData } from 'expo-image'
 import React, {
   memo,
@@ -58,7 +58,14 @@ export const CollectibleRenderer = memo(
     }, [])
 
     const renderEdgeCases = useCallback(() => {
-      if (error) return <Text variant="body2">{error}</Text>
+      if (error)
+        return (
+          <Icons.Content.HideImage
+            color={colors.$textPrimary}
+            width={24}
+            height={24}
+          />
+        )
       if (isLoading) return <CollectibleSkeleton />
       if (collectible?.status === NftLocalStatus.Processed) return null
 

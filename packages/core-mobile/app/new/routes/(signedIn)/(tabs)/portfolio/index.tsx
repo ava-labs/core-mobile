@@ -23,7 +23,7 @@ import {
 } from 'features/portfolio/assets/components/ActionButtons'
 import AssetsScreen from 'features/portfolio/assets/components/AssetsScreen'
 import { ActionButtonTitle } from 'features/portfolio/assets/consts'
-import { CollectiblesScreen } from 'features/portfolio/collectibles/components/CollectiblesScreen'
+import { CollectiblesScreen } from 'features/portfolio/collectibles/screens/CollectiblesScreen'
 import { CollectibleFilterAndSortInitialState } from 'features/portfolio/collectibles/hooks/useCollectiblesFilterAndSort'
 import { DeFiScreen } from 'features/portfolio/defi/components/DeFiScreen'
 import { useSendSelectedToken } from 'features/send/store'

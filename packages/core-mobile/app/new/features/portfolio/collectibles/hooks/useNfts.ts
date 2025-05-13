@@ -62,7 +62,12 @@ export const useNfts = (enabled: boolean) => {
   }, [activeAccount?.addressC, allNetworks, currency, isDeveloperMode])
 
   return useRefreshableQuery({
-    queryKey: [ReactQueryKeys.NFTS, activeAccount?.addressC || '', currency],
+    queryKey: [
+      ReactQueryKeys.NFTS,
+      activeAccount?.addressC || '',
+      currency,
+      isDeveloperMode
+    ],
     enabled,
     queryFn: fetchNfts
     // Disabled until we have a better way to handle this
