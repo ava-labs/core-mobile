@@ -88,25 +88,7 @@ export const MintNftScreen = (): JSX.Element => {
 
   useEffect(() => {
     if (isDeveloperMode) {
-      Alert.alert(
-        'Switch to Mainnet',
-        'This feature is only available on Mainnet. Would you like to switch to Mainnet?',
-        [
-          {
-            text: 'Switch',
-            onPress: () => {
-              dispatch(toggleDeveloperMode())
-            }
-          },
-          {
-            text: 'Cancel',
-            style: 'cancel',
-            onPress: () => {
-              goBack()
-            }
-          }
-        ]
-      )
+      dispatch(toggleDeveloperMode())
     }
   }, [isDeveloperMode, dispatch, goBack])
 
