@@ -301,7 +301,6 @@ export const ListScreen = <T,>({
         data={data}
         renderScrollComponent={RenderScrollComponent}
         onScroll={onScrollEvent}
-        overScrollMode="never"
         keyboardDismissMode="interactive"
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}

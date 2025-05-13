@@ -175,7 +175,6 @@ export const ScrollScreen = ({
       <View style={{ flex: 1 }}>
         <KeyboardAwareScrollView
           extraKeyboardSpace={-insets.bottom + 32}
-          overScrollMode="never"
           keyboardDismissMode="interactive"
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
@@ -250,7 +249,6 @@ export const ScrollScreen = ({
       <ScrollView
         style={{ flex: 1 }}
         showsVerticalScrollIndicator={false}
-        overScrollMode="never"
         keyboardDismissMode="interactive"
         keyboardShouldPersistTaps="handled"
         {...props}
