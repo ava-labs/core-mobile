@@ -55,6 +55,8 @@ interface ScrollScreenProps extends KeyboardAwareScrollViewProps {
   isModal?: boolean
   /** Whether the screen should adjust its layout when the keyboard appears */
   shouldAvoidKeyboard?: boolean
+  /** Whether the screen should avoid the footer when the keyboard appears */
+  disableStickyFooter?: boolean
   /** Title to be displayed in the navigation header */
   navigationTitle?: string
   /** Custom header component to be rendered */
@@ -76,12 +78,13 @@ export const ScrollScreen = ({
   children,
   hasParent,
   isModal,
-  shouldAvoidKeyboard,
   navigationTitle,
+  shouldAvoidKeyboard,
+  disableStickyFooter,
+  showNavigationHeaderTitle = true,
   renderHeader,
   renderFooter,
   renderHeaderRight,
-  showNavigationHeaderTitle = true,
   ...props
 }: ScrollScreenProps): JSX.Element => {
   const insets = useSafeAreaInsets()
@@ -133,9 +136,9 @@ export const ScrollScreen = ({
     }
   })
 
-  const renderContent = useCallback(() => {
-    return (
-      <>
+  const renderHeaderContent = useCallback(() => {
+    if (title || subtitle || renderHeader) {
+      return (
         <View
           style={{
             paddingBottom: 0
@@ -161,11 +164,9 @@ export const ScrollScreen = ({
 
           {renderHeader?.()}
         </View>
-
-        {children}
-      </>
-    )
-  }, [animatedHeaderStyle, children, renderHeader, subtitle, title, titleSx])
+      )
+    }
+  }, [animatedHeaderStyle, renderHeader, subtitle, title, titleSx])
 
   // 90% of our screens reuse this component but only some need keyboard avoiding
   // If you have an input on the screen, you need to enable this prop
@@ -187,11 +188,13 @@ export const ScrollScreen = ({
             }
           ]}
           onScroll={onScroll}>
-          {renderContent()}
+          {renderHeaderContent()}
+          {children}
         </KeyboardAwareScrollView>
 
-        {renderFooter ? (
+        {renderFooter && renderFooter() ? (
           <KeyboardStickyView
+            enabled={!disableStickyFooter}
             offset={{
               opened: 0,
               closed: -insets.bottom
@@ -202,7 +205,7 @@ export const ScrollScreen = ({
                   padding: 16,
                   paddingTop: 0
                 }}>
-                {renderFooter?.()}
+                {renderFooter()}
               </View>
             </LinearGradientBottomWrapper>
           </KeyboardStickyView>
@@ -257,7 +260,8 @@ export const ScrollScreen = ({
           }
         ]}
         onScroll={onScroll}>
-        {renderContent()}
+        {renderHeaderContent()}
+        {children}
       </ScrollView>
 
       <View
@@ -296,7 +300,7 @@ export const ScrollScreen = ({
               paddingTop: 0,
               paddingBottom: insets.bottom + 16
             }}>
-            {renderFooter?.()}
+            {renderFooter()}
           </View>
         </LinearGradientBottomWrapper>
       ) : null}

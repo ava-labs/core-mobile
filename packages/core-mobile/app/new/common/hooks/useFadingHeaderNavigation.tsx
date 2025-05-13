@@ -128,7 +128,11 @@ export const useFadingHeaderNavigation = ({
       headerBackground: () =>
         hideHeaderBackground ? (
           shouldHeaderHaveGrabber ? (
-            shouldHeaderHaveGrabber === true && <Grabber />
+            shouldHeaderHaveGrabber === true && (
+              <View style={{ flex: 1 }}>
+                <Grabber />
+              </View>
+            )
           ) : (
             <View style={{ flex: 1 }} />
           )

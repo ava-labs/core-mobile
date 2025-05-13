@@ -26,6 +26,7 @@ export const SetWalletName = ({
 
   return (
     <ScrollScreen
+      shouldAvoidKeyboard
       showNavigationHeaderTitle={false}
       title="How would you like to name your wallet?"
       renderFooter={renderFooter}
