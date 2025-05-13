@@ -25,6 +25,8 @@ import {
   CollectibleView
 } from 'store/balance'
 import { useCollectiblesContext } from '../CollectiblesContext'
+import { CardContainer } from '../components/CardContainer'
+import { CollectibleItem } from '../components/CollectibleItem'
 import {
   HORIZONTAL_ITEM_GAP,
   HORIZONTAL_MARGIN,
@@ -34,8 +36,6 @@ import {
   CollectibleFilterAndSortInitialState,
   useCollectiblesFilterAndSort
 } from '../hooks/useCollectiblesFilterAndSort'
-import { CardContainer } from './CardContainer'
-import { CollectibleItem } from './CollectibleItem'
 
 export const CollectiblesScreen = ({
   goToCollectibleDetail,
