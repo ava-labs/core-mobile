@@ -1,5 +1,5 @@
 import { useLocalSearchParams } from 'expo-router'
-import { CollectibleDetailsScreen } from 'features/portfolio/collectibles/components/CollectibleDetailsScreen'
+import { CollectibleDetailsScreen } from 'features/portfolio/collectibles/screens/CollectibleDetailsScreen'
 import React from 'react'
 
 export default (): React.ReactNode => {

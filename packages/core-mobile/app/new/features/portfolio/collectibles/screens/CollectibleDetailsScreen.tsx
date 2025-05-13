@@ -36,12 +36,12 @@ import {
   CollectibleFilterAndSortInitialState,
   useCollectiblesFilterAndSort
 } from '../hooks/useCollectiblesFilterAndSort'
-import { CollectibleDetailsContent } from './CollectibleDetailsContent'
+import { CollectibleDetailsContent } from '../components/CollectibleDetailsContent'
 import {
   CARD_SIZE_SMALL,
   CollectibleDetailsHero,
   SNAP_DISTANCE
-} from './CollectibleDetailsHero'
+} from '../components/CollectibleDetailsHero'
 
 type CollectibleDetailsScreenRouteParams = {
   localId?: string
