@@ -69,5 +69,5 @@ export class MintNftSigner extends AbstractSigner<Provider> {
 }
 
 function notImplemented(method: string): never {
-  throw new Error(`MyWalletSigner.${method}() not implemented`)
+  throw new Error(`MintNftSigner.${method}() not implemented`)
 }

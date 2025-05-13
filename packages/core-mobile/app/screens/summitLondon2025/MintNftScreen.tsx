@@ -54,10 +54,7 @@ export const MintNftScreen = (): JSX.Element => {
       }
       Alert.alert('Error', 'Failed to mint NFT', [
         {
-          text: 'OK',
-          onPress: () => {
-            setIsMinting(false)
-          }
+          text: 'OK'
         }
       ])
     } finally {
