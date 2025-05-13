@@ -49,7 +49,9 @@ export const ContactForm = ({
           text: 'Save',
           style: 'default',
           shouldDisable: (values: Record<string, string>) => {
-            return !isValidContactName(values.save)
+            return (
+              !isValidContactName(values.save) || values.save === contact.name
+            )
           },
           onPress: (values: Record<string, string>) => {
             if (values.save !== '' && values.save !== undefined) {
