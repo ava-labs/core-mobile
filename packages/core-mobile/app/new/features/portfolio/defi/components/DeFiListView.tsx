@@ -1,5 +1,6 @@
 import {
   Icons,
+  MaskedText,
   Text,
   TouchableOpacity,
   useTheme,
@@ -7,6 +8,8 @@ import {
 } from '@avalabs/k2-alpine'
 import React from 'react'
 import { DeFiChain, DeFiSimpleProtocol } from 'services/defi/types'
+import { useSelector } from 'react-redux'
+import { selectIsPrivacyModeEnabled } from 'store/settings/securityPrivacy'
 import { LogoWithNetwork } from './LogoWithNetwork'
 
 export const DeFiListView = ({
@@ -23,6 +26,7 @@ export const DeFiListView = ({
   onPressArrow: () => void
 }): React.JSX.Element => {
   const { theme } = useTheme()
+  const isPrivacyModeEnabled = useSelector(selectIsPrivacyModeEnabled)
 
   return (
     <TouchableOpacity
@@ -41,12 +45,12 @@ export const DeFiListView = ({
             {item.name}
           </Text>
           <View sx={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-            <Text
-              variant="body2"
+            <MaskedText
+              shouldMask={isPrivacyModeEnabled}
               sx={{ color: '$textSecondary', lineHeight: 18 }}
               numberOfLines={1}>
               {formattedPrice}
-            </Text>
+            </MaskedText>
             <TouchableOpacity onPress={onPressArrow} hitSlop={10}>
               <Icons.Custom.Outbound color={theme.colors.$textPrimary} />
             </TouchableOpacity>

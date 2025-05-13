@@ -77,7 +77,7 @@ export const Confirmation = ({
             marginTop: 20
           }}>
           You can now start buying, swapping, sending, receiving crypto and
-          collectibles with no added fees
+          collectibles
         </Text>
       </View>
     </ScrollScreen>
