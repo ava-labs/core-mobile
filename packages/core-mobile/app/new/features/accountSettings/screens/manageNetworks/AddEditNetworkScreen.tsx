@@ -75,7 +75,7 @@ export const AddEditNetworkScreen = (): JSX.Element => {
   }, [isCustomNetwork, foundNetwork])
 
   const isSaveDisabled = useMemo(() => {
-    if (isCustomNetwork && mode === Mode.EDIT && isInitialStateDifferent) {
+    if (isCustomNetwork && mode === Mode.EDIT && !isInitialStateDifferent) {
       return true
     }
     return (
@@ -351,7 +351,6 @@ export const AddEditNetworkScreen = (): JSX.Element => {
           )}
         </View>
       )
-    return <></>
   }, [
     back,
     canGoBack,
@@ -365,52 +364,52 @@ export const AddEditNetworkScreen = (): JSX.Element => {
   ])
 
   return (
-    <>
-      <ScrollScreen
-        isModal
-        hasParent
-        renderFooter={renderFooter}
-        contentContainerStyle={{
-          padding: 16,
-          gap: 40
-        }}>
-        <View sx={{ alignItems: 'center', gap: 24 }}>
-          {formState.logoUri ? (
-            <NetworkLogoWithChain
-              network={foundNetwork || (formState as unknown as Network)}
-              networkSize={96}
-              outerBorderColor={theme.colors.$surfacePrimary}
-              showChainLogo={showChainLogo}
-              chainLogoSize={24}
-              chainLogoStyle={{
-                borderWidth: 16
-              }}
+    <ScrollScreen
+      isModal
+      hasParent
+      shouldAvoidKeyboard
+      shouldAvoidFooter={false}
+      renderFooter={renderFooter}
+      contentContainerStyle={{
+        padding: 16,
+        gap: 40
+      }}>
+      <View sx={{ alignItems: 'center', gap: 24, marginTop: 16 }}>
+        {formState.logoUri ? (
+          <NetworkLogoWithChain
+            network={foundNetwork || (formState as unknown as Network)}
+            networkSize={96}
+            outerBorderColor={theme.colors.$surfacePrimary}
+            showChainLogo={showChainLogo}
+            chainLogoSize={24}
+            chainLogoStyle={{
+              borderWidth: 16
+            }}
+          />
+        ) : (
+          <View
+            style={{
+              width: 96,
+              height: 96,
+              borderRadius: 96,
+              overflow: 'hidden',
+              backgroundColor: theme.colors.$surfaceSecondary,
+              borderWidth: 1,
+              borderColor: theme.colors.$borderPrimary,
+              justifyContent: 'center',
+              alignItems: 'center'
+            }}>
+            <Icons.Custom.Category
+              width={40}
+              height={40}
+              color={theme.colors.$textSecondary}
             />
-          ) : (
-            <View
-              style={{
-                width: 96,
-                height: 96,
-                borderRadius: 96,
-                overflow: 'hidden',
-                backgroundColor: theme.colors.$surfaceSecondary,
-                borderWidth: 1,
-                borderColor: theme.colors.$borderPrimary,
-                justifyContent: 'center',
-                alignItems: 'center'
-              }}>
-              <Icons.Custom.Category
-                width={40}
-                height={40}
-                color={theme.colors.$textSecondary}
-              />
-            </View>
-          )}
-          {renderName()}
-        </View>
+          </View>
+        )}
+        {renderName()}
+      </View>
 
-        <AdvancedForm data={data} />
-      </ScrollScreen>
-    </>
+      <AdvancedForm data={data} />
+    </ScrollScreen>
   )
 }
