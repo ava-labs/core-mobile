@@ -71,7 +71,7 @@ export const MintNftScreen = (): JSX.Element => {
         <Button
           type="primary"
           size="large"
-          disabled={isMinting}
+          disabled={isMinting || isDeveloperMode}
           onPress={handleMintNft}>
           {isMinting ? 'Minting...' : 'Mint'}
         </Button>
@@ -84,13 +84,13 @@ export const MintNftScreen = (): JSX.Element => {
         </Button>
       </View>
     )
-  }, [handleMintNft, goBack, isMinting])
+  }, [handleMintNft, goBack, isMinting, isDeveloperMode])
 
   useEffect(() => {
     if (isDeveloperMode) {
       dispatch(toggleDeveloperMode())
     }
-  }, [isDeveloperMode, dispatch, goBack])
+  }, [isDeveloperMode, dispatch])
 
   return (
     <Sheet onClose={goBack}>
