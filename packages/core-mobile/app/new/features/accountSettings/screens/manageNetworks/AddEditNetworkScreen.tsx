@@ -190,7 +190,10 @@ export const AddEditNetworkScreen = (): JSX.Element => {
           text: 'Save',
           style: 'default',
           shouldDisable: (values: Record<string, string>) => {
-            return !isValidContactName(values.save)
+            return (
+              !isValidContactName(values.save) ||
+              values.save === formState.chainName
+            )
           },
           onPress: (values: Record<string, string>) => {
             if (values.save !== '' && values.save !== undefined) {
