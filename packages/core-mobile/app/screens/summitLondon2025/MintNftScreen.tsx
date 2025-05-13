@@ -1,7 +1,14 @@
 import React, { useCallback, useEffect, useState } from 'react'
 import { Sheet } from 'components/Sheet'
 import { useNavigation } from '@react-navigation/native'
-import { Button, Image, ScrollView, Text, View } from '@avalabs/k2-mobile'
+import {
+  ActivityIndicator,
+  Button,
+  Image,
+  ScrollView,
+  Text,
+  View
+} from '@avalabs/k2-mobile'
 import { selectActiveAccount } from 'store/account'
 import { useDispatch, useSelector } from 'react-redux'
 import {
@@ -70,7 +77,11 @@ export const MintNftScreen = (): JSX.Element => {
           size="large"
           disabled={isMinting || isDeveloperMode}
           onPress={handleMintNft}>
-          {isMinting ? 'Minting...' : 'Mint'}
+          {isMinting ? (
+            <ActivityIndicator sx={{ alignSelf: 'center' }} />
+          ) : (
+            'Mint'
+          )}
         </Button>
         <Button
           type="tertiary"
@@ -90,7 +101,7 @@ export const MintNftScreen = (): JSX.Element => {
   }, [isDeveloperMode, dispatch])
 
   return (
-    <Sheet onClose={goBack}>
+    <Sheet>
       <ScrollView
         sx={{ flex: 1 }}
         contentContainerSx={{ alignItems: 'center' }}>
@@ -98,7 +109,7 @@ export const MintNftScreen = (): JSX.Element => {
           source={IMAGE_SOURCE}
           resizeMode="contain"
           sx={{
-            marginTop: 32,
+            marginTop: 48,
             width: IMAGE_SIZE,
             height: IMAGE_SIZE,
             borderRadius: 16
