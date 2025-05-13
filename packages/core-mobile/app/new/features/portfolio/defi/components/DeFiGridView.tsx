@@ -2,6 +2,7 @@ import React from 'react'
 import {
   AnimatedPressable,
   Icons,
+  MaskedText,
   SPRING_LINEAR_TRANSITION,
   Text,
   TouchableOpacity,
@@ -13,6 +14,8 @@ import Animated from 'react-native-reanimated'
 import { DeFiChain, DeFiSimpleProtocol } from 'services/defi/types'
 import { getListItemEnteringAnimation } from 'common/utils/animations'
 import { GRID_GAP } from 'common/consts'
+import { useSelector } from 'react-redux'
+import { selectIsPrivacyModeEnabled } from 'store/settings/securityPrivacy'
 import { LogoWithNetwork } from './LogoWithNetwork'
 
 export const DeFiGridView = ({
@@ -31,6 +34,7 @@ export const DeFiGridView = ({
   onPressArrow: () => void
 }): React.JSX.Element => {
   const { theme } = useTheme()
+  const isPrivacyModeEnabled = useSelector(selectIsPrivacyModeEnabled)
 
   return (
     <Animated.View
@@ -53,12 +57,12 @@ export const DeFiGridView = ({
               {item.name}
             </Text>
             <View sx={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-              <Text
-                variant="body2"
+              <MaskedText
+                shouldMask={isPrivacyModeEnabled}
                 sx={{ color: '$textSecondary', lineHeight: 18 }}
                 numberOfLines={1}>
                 {formattedPrice}
-              </Text>
+              </MaskedText>
               <View onTouchStart={e => e.stopPropagation()} hitSlop={50}>
                 <TouchableOpacity onPress={onPressArrow} hitSlop={50}>
                   <Icons.Custom.Outbound color={theme.colors.$textPrimary} />
