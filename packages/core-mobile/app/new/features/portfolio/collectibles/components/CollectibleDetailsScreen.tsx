@@ -315,7 +315,6 @@ export const CollectibleDetailsScreen = ({
           bounces={false}
           showsVerticalScrollIndicator={false}
           scrollEventThrottle={16}
-          overScrollMode="never"
           stickyHeaderIndices={[0]}
           nestedScrollEnabled>
           <Animated.View

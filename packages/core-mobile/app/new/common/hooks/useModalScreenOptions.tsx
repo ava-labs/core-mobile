@@ -42,6 +42,11 @@ export function useModalScreenOptions(): {
       zIndex: 1000
     },
     gestureEnabled: true,
+    // Make the whole screen gestureable for dismissing the modal
+    // This breaks keyboard open interaction on Android
+    // Does work for Android when inside a scrollable screen if content height isn't greater than screen height
+    // Does not work for iOS when inside a scrollable screen only if scrollEnabled is false
+    // gestureResponseDistance: SCREEN_HEIGHT,
     headerStyle: {
       height: MODAL_HEADER_HEIGHT
     }

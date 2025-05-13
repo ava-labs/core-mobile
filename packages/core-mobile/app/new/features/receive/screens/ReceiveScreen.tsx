@@ -10,7 +10,6 @@ import { useSelector } from 'react-redux'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { selectActiveAccount } from 'store/account'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
-import { isXPChain } from 'utils/network/isAvalancheNetwork'
 import { AccountAddresses } from '../components/AccountAddresses'
 import { QRCode } from '../components/QRCode'
 import { useReceiveSelectedNetwork } from '../store'
@@ -136,10 +135,7 @@ export const ReceiveScreen = (): ReactNode => {
         />
         <View
           style={{
-            flex:
-              selectedNetwork.chainId && isXPChain(selectedNetwork.chainId)
-                ? 0.5
-                : 1
+            flex: 0.5
           }}
         />
       </View>
