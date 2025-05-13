@@ -38,7 +38,8 @@ export const DefaultFeatureFlagConfig = {
   [FeatureGates.UNIFIED_BRIDGE_AB_BTC_TO_AVA]: true,
   [FeatureGates.HALLIDAY_BRIDGE_BANNER]: true,
   [FeatureGates.GASLESS]: true,
-  [FeatureGates.SWAP_FEES]: true
+  [FeatureGates.SWAP_FEES]: true,
+  [FeatureGates.SUMMIT_LONDON_2025]: true
 }
 
 export const initialState = {

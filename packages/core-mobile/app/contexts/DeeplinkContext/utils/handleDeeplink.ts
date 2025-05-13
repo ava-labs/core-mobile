@@ -17,11 +17,13 @@ export const handleDeeplink = ({
   deeplink,
   dispatch,
   isEarnBlocked,
+  isSummitLondon2025Blocked,
   openUrl
 }: {
   deeplink: DeepLink
   dispatch: Dispatch
   isEarnBlocked: boolean
+  isSummitLondon2025Blocked: boolean
   openUrl: (url: string) => Promise<void>
   // eslint-disable-next-line sonarjs/cognitive-complexity
 }): void => {
@@ -65,6 +67,7 @@ export const handleDeeplink = ({
         deeplink.callback?.()
         navigateToClaimRewards()
       } else if (action === ACTIONS.SummitLondon2025) {
+        if (isSummitLondon2025Blocked) return
         deeplink.callback?.()
         navigateToSummitLondon2025()
       } else if (action === ACTIONS.WatchList) {
