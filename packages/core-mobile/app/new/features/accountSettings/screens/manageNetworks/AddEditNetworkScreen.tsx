@@ -371,7 +371,7 @@ export const AddEditNetworkScreen = (): JSX.Element => {
       isModal
       hasParent
       shouldAvoidKeyboard
-      shouldAvoidFooter={false}
+      disableStickyFooter
       renderFooter={renderFooter}
       contentContainerStyle={{
         padding: 16,

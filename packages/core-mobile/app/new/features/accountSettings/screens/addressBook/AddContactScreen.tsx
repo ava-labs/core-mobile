@@ -90,7 +90,7 @@ export const AddContactScreen = (): React.JSX.Element => {
       isModal
       renderFooter={renderFooter}
       shouldAvoidKeyboard
-      shouldAvoidFooter={false}
+      disableStickyFooter
       contentContainerStyle={{ padding: 16 }}>
       {contact && (
         <ContactForm

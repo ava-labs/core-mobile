@@ -56,7 +56,7 @@ interface ScrollScreenProps extends KeyboardAwareScrollViewProps {
   /** Whether the screen should adjust its layout when the keyboard appears */
   shouldAvoidKeyboard?: boolean
   /** Whether the screen should avoid the footer when the keyboard appears */
-  shouldAvoidFooter?: boolean
+  disableStickyFooter?: boolean
   /** Title to be displayed in the navigation header */
   navigationTitle?: string
   /** Custom header component to be rendered */
@@ -80,7 +80,7 @@ export const ScrollScreen = ({
   isModal,
   navigationTitle,
   shouldAvoidKeyboard,
-  shouldAvoidFooter = true,
+  disableStickyFooter,
   showNavigationHeaderTitle = true,
   renderHeader,
   renderFooter,
@@ -194,7 +194,7 @@ export const ScrollScreen = ({
 
         {renderFooter && renderFooter() ? (
           <KeyboardStickyView
-            enabled={shouldAvoidFooter}
+            enabled={!disableStickyFooter}
             offset={{
               opened: 0,
               closed: -insets.bottom
