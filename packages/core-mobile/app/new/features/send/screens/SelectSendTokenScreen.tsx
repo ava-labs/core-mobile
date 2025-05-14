@@ -24,7 +24,7 @@ import {
   isTokenWithBalanceAVM,
   isTokenWithBalancePVM
 } from '@avalabs/avalanche-module'
-import { sortedTokensWithBalance } from 'common/utils/sortTokensWithBalance'
+import { sortTokensWithPrimaryFirst } from 'common/utils/sortTokensWithPrimaryFirst'
 import { getNetworks } from '../utils/getNetworks'
 
 export const SelectSendTokenScreen = (): JSX.Element => {
@@ -84,7 +84,7 @@ export const SelectSendTokenScreen = (): JSX.Element => {
   }, [tokens, searchText])
 
   const sortedSearchResults = useMemo(() => {
-    return sortedTokensWithBalance(searchResults)
+    return sortTokensWithPrimaryFirst(searchResults)
   }, [searchResults])
 
   const renderItem: ListRenderItem<LocalTokenWithBalance> = ({
