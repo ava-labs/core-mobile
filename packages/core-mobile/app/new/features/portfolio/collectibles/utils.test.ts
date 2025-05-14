@@ -1,70 +1,80 @@
 import { NftItem } from 'services/nft/types'
 import { getCollectibleAttributes } from './utils'
+import { humanize } from 'utils/string/humanize'
 
-const mockedCollectible: Partial<NftItem> = {
-  name: 'Test Collectible',
-  description: 'Test Description',
+type Collectible = Omit<NftItem, 'processedMetadata'>
+
+const collectible: Partial<Collectible> = {}
+
+// Common type for all test fixtures
+type TestCollectible = Partial<Collectible> & {
   processedMetadata: {
-    name: 'Test Collectible',
-    description: 'Test Description',
-    image: 'https://test.com/image.png',
-    image_256: 'https://test.com/image_256.png',
-    external_url: 'https://test.com',
-    animation_url: 'https://test.com/animation.mp4',
-    attributes: [
-      {
-        trait_type: 'Test Attribute',
-        value: 'Test Value',
-        display_type: '',
-        percentOwned: 0
-      }
-    ]
+    attributes: Record<string, string>[] | Record<string, string>
   }
 }
-const mockedCollectibleWithObjectAttributes: Partial<
-  Omit<NftItem, 'processedMetadata'> & {
-    processedMetadata: {
-      attributes: {
-        trait_type: string
-        value: string
-      }
-    }
+
+// Create test fixtures with different attribute configurations
+const createTestFixture = (
+  attributes: Record<string, string>[] | Record<string, string>
+): TestCollectible => ({
+  ...collectible,
+  processedMetadata: { attributes }
+})
+
+const collectibleWithEmptyAttributesArray = createTestFixture([])
+const collectibleWithEmptyAttributesObject = createTestFixture({})
+const collectibleWithAttributesArray = createTestFixture([
+  {
+    trait_type: 'Trait Type',
+    value: 'Value'
   }
-> = {
-  name: 'Test Collectible',
-  description: 'Test Description',
-  processedMetadata: {
-    attributes: {
-      trait_type: 'Test Attribute',
-      value: 'Test Value'
-    }
-  }
-}
+])
+const collectibleWithAttributesObject = createTestFixture({
+  trait_type: 'Value'
+})
 
 describe('getCollectibleAttributes', () => {
-  it('should return an empty array if the collectible has no attributes', () => {
-    const attributes = getCollectibleAttributes(mockedCollectible as NftItem)
+  it('should return an empty array if the collectible attributes is undefined', () => {
+    const attributes = getCollectibleAttributes(
+      collectibleWithEmptyAttributesArray as unknown as NftItem
+    )
+    expect(attributes).toEqual([])
+  })
+
+  it('should return an empty array if the collectible attributes is an empty array', () => {
+    const attributes = getCollectibleAttributes(
+      collectibleWithEmptyAttributesArray as unknown as NftItem
+    )
+    expect(attributes).toEqual([])
+  })
+
+  it('should return an empty array if the collectible attributes is an empty object', () => {
+    const attributes = getCollectibleAttributes(
+      collectibleWithEmptyAttributesObject as unknown as NftItem
+    )
     expect(attributes).toEqual([])
   })
 
   it('should return the correct attributes for an attribute array', () => {
-    const attributes = getCollectibleAttributes(mockedCollectible as NftItem)
+    const attributes = getCollectibleAttributes(
+      collectibleWithAttributesArray as unknown as NftItem
+    )
     expect(attributes).toEqual([
       {
-        title: 'Test Attribute',
-        value: 'Test Value'
+        title: 'Trait Type',
+        value: 'Value'
       }
     ])
   })
 
   it('should return the correct attributes for an attribute object', () => {
     const attributes = getCollectibleAttributes(
-      mockedCollectibleWithObjectAttributes as NftItem
+      collectibleWithAttributesObject as unknown as NftItem
     )
     expect(attributes).toEqual([
       {
-        title: 'Test Attribute',
-        value: 'Test Value'
+        title: humanize('trait_type'),
+        value: 'Value'
       }
     ])
   })
