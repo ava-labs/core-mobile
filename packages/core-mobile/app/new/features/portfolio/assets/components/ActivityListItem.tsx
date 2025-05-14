@@ -7,6 +7,7 @@ import {
   useTheme,
   View
 } from '@avalabs/k2-alpine'
+import { BalanceText } from 'common/components/BalanceText'
 
 type Props = {
   title: ReactNode
@@ -15,6 +16,7 @@ type Props = {
   status?: PriceChangeStatus
   accessoryType?: 'outbound' | 'chevron'
   onPress?: () => void
+  subtitleType: 'amountInCurrency' | 'amountInToken' | 'text'
 }
 
 const ActivityListItem: FC<Props> = ({
@@ -23,7 +25,8 @@ const ActivityListItem: FC<Props> = ({
   icon,
   onPress,
   accessoryType = 'outbound',
-  status = PriceChangeStatus.Neutral
+  status = PriceChangeStatus.Neutral,
+  subtitleType
 }) => {
   const {
     theme: { colors }
@@ -69,16 +72,28 @@ const ActivityListItem: FC<Props> = ({
               ellipsizeMode="tail">
               {title}
             </Text>
-            <Text
-              variant="body2"
-              sx={{
-                color: textColor,
-                lineHeight: 16
-              }}
-              numberOfLines={1}
-              ellipsizeMode="tail">
-              {subtitle}
-            </Text>
+            {subtitleType === 'text' ? (
+              <Text
+                variant="body2"
+                sx={{
+                  color: textColor,
+                  lineHeight: 16
+                }}
+                numberOfLines={1}
+                ellipsizeMode="tail">
+                {subtitle}
+              </Text>
+            ) : (
+              <BalanceText
+                variant="body2"
+                sx={{ color: textColor, lineHeight: 16 }}
+                numberOfLines={1}
+                ellipsizeMode="tail"
+                isCurrency={subtitleType === 'amountInCurrency'}
+                maskType="covered">
+                {subtitle}
+              </BalanceText>
+            )}
           </View>
           {accessoryType === 'outbound' && (
             <Icons.Custom.Outbound color={colors.$textPrimary} />
