@@ -26,10 +26,13 @@ export const ScanQrCodeScreen = (): JSX.Element => {
       if (isValidAddress === false) {
         showAlert({
           title: 'Invalid address',
-          description: 'The address is not valid for the selected network.',
+          description:
+            vmName === undefined
+              ? undefined
+              : 'The address is not valid for the selected network.',
           buttons: [
             {
-              text: 'Dismiss'
+              text: 'Got it'
             }
           ]
         })
