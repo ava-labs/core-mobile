@@ -1,5 +1,3 @@
-// write test for isValidAddressByVmName
-
 import { NetworkVMType } from '@avalabs/vm-module-types'
 import { isValidAddressByVmName } from './isValidAddressByVmName'
 
