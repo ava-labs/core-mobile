@@ -14,7 +14,6 @@ import {
 import { ErrorState } from 'common/components/ErrorState'
 import { ListScreen } from 'common/components/ListScreen'
 import { loadAvatar } from 'common/utils/loadAvatar'
-import { getAddressFromContact } from 'features/accountSettings/utils/getAddressFromContact'
 import { isValidAddress } from 'features/accountSettings/utils/isValidAddress'
 import React, { useCallback, useMemo, useState } from 'react'
 import { useSelector } from 'react-redux'
@@ -22,6 +21,8 @@ import { Contact } from 'store/addressBook'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { TRUNCATE_ADDRESS_LENGTH } from 'common/consts/text'
 import EMPTY_ADDRESS_BOOK_ICON from '../../../assets/icons/address_book_empty.png'
+import { useSendSelectedToken } from '../store'
+import { getAddressByChainId } from '../utils/getAddressByChainId'
 
 interface Props {
   recentAddresses: Contact[]
@@ -43,6 +44,7 @@ export const RecentContacts = ({
   } = useTheme()
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const [searchText, setSearchText] = useState('')
+  const [selectedToken] = useSendSelectedToken()
 
   const searchResults = useMemo(() => {
     if (searchText.trim() === '') {
@@ -82,7 +84,11 @@ export const RecentContacts = ({
 
   const renderItem = useCallback(
     (item: Contact, index: number): React.JSX.Element => {
-      const address = getAddressFromContact(item)
+      const address = getAddressByChainId({
+        contact: item,
+        chainId: selectedToken?.networkChainId,
+        isDeveloperMode
+      })
       const { name } = item
       const isLastItem = index === searchResults.length - 1
 
@@ -166,7 +172,13 @@ export const RecentContacts = ({
         </View>
       )
     },
-    [colors.$textSecondary, searchResults.length, onSelectContact]
+    [
+      selectedToken?.networkChainId,
+      isDeveloperMode,
+      searchResults.length,
+      colors.$textSecondary,
+      onSelectContact
+    ]
   )
 
   const renderHeader = useCallback(() => {
