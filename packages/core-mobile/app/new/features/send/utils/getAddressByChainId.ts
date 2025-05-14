@@ -35,41 +35,29 @@ export const getAddressByChainId = ({
 
   if (
     contact.addressXP &&
+    isValidAddress({
+      addressType: isDeveloperMode ? AddressType.XP_TESTNET : AddressType.XP,
+      address: contact.addressXP,
+      isDeveloperMode
+    }) &&
     (((chainId === ChainId.AVALANCHE_P || chainId === ChainId.AVALANCHE_X) &&
-      isDeveloperMode === false &&
-      isValidAddress({
-        addressType: AddressType.XP,
-        address: contact.addressXP,
-        isDeveloperMode
-      })) ||
+      isDeveloperMode === false) ||
       ((chainId === ChainId.AVALANCHE_TEST_P ||
         chainId === ChainId.AVALANCHE_TEST_X) &&
-        isDeveloperMode === true &&
-        isValidAddress({
-          addressType: AddressType.XP_TESTNET,
-          address: contact.addressXP,
-          isDeveloperMode
-        })))
+        isDeveloperMode === true))
   ) {
     return contact.addressXP
   }
 
   if (
     contact.addressBTC &&
-    ((chainId === ChainId.BITCOIN &&
-      isDeveloperMode === false &&
-      isValidAddress({
-        addressType: AddressType.BTC,
-        address: contact.addressBTC,
-        isDeveloperMode
-      })) ||
-      (chainId === ChainId.BITCOIN_TESTNET &&
-        isDeveloperMode === true &&
-        isValidAddress({
-          addressType: AddressType.BTC_TESTNET,
-          address: contact.addressBTC,
-          isDeveloperMode
-        })))
+    isValidAddress({
+      addressType: isDeveloperMode ? AddressType.BTC_TESTNET : AddressType.BTC,
+      address: contact.addressBTC,
+      isDeveloperMode
+    }) &&
+    ((chainId === ChainId.BITCOIN && isDeveloperMode === false) ||
+      (chainId === ChainId.BITCOIN_TESTNET && isDeveloperMode === true))
   ) {
     return contact.addressBTC
   }
