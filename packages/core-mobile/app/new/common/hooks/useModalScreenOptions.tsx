@@ -2,10 +2,10 @@ import {
   CardStyleInterpolators,
   StackCardInterpolatedStyle,
   StackCardInterpolationProps,
-  StackNavigationOptions,
-  TransitionSpecs
+  StackNavigationOptions
 } from '@react-navigation/stack'
 import {
+  androidModalTransitionSpec,
   MODAL_BORDER_RADIUS,
   MODAL_HEADER_HEIGHT,
   MODAL_TOP_MARGIN,
@@ -39,17 +39,10 @@ export function useModalScreenOptions(): {
     cardStyle: {
       marginTop: topMarginOffset,
       borderTopLeftRadius: MODAL_BORDER_RADIUS,
-      borderTopRightRadius: MODAL_BORDER_RADIUS,
-      zIndex: 1000
+      borderTopRightRadius: MODAL_BORDER_RADIUS
     },
     ...(Platform.OS === 'android' && {
-      transitionSpec: {
-        open: TransitionSpecs.BottomSheetSlideInSpec,
-        close: {
-          animation: 'timing',
-          config: { duration: 0 }
-        }
-      }
+      transitionSpec: androidModalTransitionSpec
     }),
     gestureEnabled: true,
     // Make the whole screen gestureable for dismissing the modal
@@ -89,13 +82,7 @@ export function useModalScreenOptions(): {
             marginTop: 0,
             paddingTop: insets.top
           },
-          transitionSpec: {
-            open: TransitionSpecs.BottomSheetSlideInSpec,
-            close: {
-              animation: 'timing',
-              config: { duration: 0 }
-            }
-          },
+          transitionSpec: androidModalTransitionSpec,
           cardStyleInterpolator: stackModalInterpolator.forModalPresentationIOS
         }
       : {
