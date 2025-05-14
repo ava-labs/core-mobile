@@ -22,6 +22,7 @@ import {
   LocalTokenWithBalance
 } from 'store/balance'
 import { xpChainToken } from 'utils/units/knownTokens'
+import { BalanceText } from 'common/components/BalanceText'
 import { LogoWithNetwork } from './LogoWithNetwork'
 
 type PChainBalanceType = keyof PChainBalance
@@ -146,21 +147,23 @@ const TokenDetail: FC<Props> = ({ token }): React.JSX.Element => {
               <Text variant="buttonMedium" numberOfLines={1} sx={{ flex: 1 }}>
                 {assetName}
               </Text>
-              <Text
+              <BalanceText
                 variant="body2"
                 sx={{ lineHeight: 16, flex: 1 }}
                 ellipsizeMode="tail"
+                isCurrency={false}
+                maskType="covered"
                 numberOfLines={1}>
                 {balanceInAvax?.toDisplay()} {xpChainToken.symbol}
-              </Text>
+              </BalanceText>
             </View>
             <View sx={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-              <Text
+              <BalanceText
                 variant="buttonMedium"
                 numberOfLines={1}
                 sx={{ lineHeight: 18, marginBottom: 1 }}>
                 {formattedBalance}
-              </Text>
+              </BalanceText>
             </View>
           </View>
         </View>

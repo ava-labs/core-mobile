@@ -3,6 +3,7 @@ import { Card, Image, Separator, Text, View } from '@avalabs/k2-alpine'
 import { DeFiVestingItem } from 'services/defi/types'
 import { useExchangedAmount } from 'new/common/hooks/useExchangedAmount'
 import { getDateInMmmDdYyyyHhMmA } from 'utils/date/getDateInMmmDdYyyyHhMmA'
+import { BalanceText } from 'common/components/BalanceText'
 import { IMAGE_SIZE } from '../consts'
 import { DeFiRowItem } from './DeFiRowItem'
 
@@ -50,13 +51,13 @@ export const DeFiPortfolioVesting = ({ items }: Props): JSX.Element => {
                   flexDirection: 'row',
                   justifyContent: 'flex-end'
                 }}>
-                <Text
+                <BalanceText
                   variant="body1"
                   numberOfLines={1}
                   ellipsizeMode="tail"
                   sx={{ color: '$textSecondary' }}>
                   {getAmount(netUsdValue, 'compact')}
-                </Text>
+                </BalanceText>
               </View>
             </DeFiRowItem>
             {endDate && (
