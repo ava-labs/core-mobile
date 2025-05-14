@@ -34,7 +34,7 @@ const collectibleWithAttributesObject = createTestFixture({
 })
 
 describe('getCollectibleAttributes', () => {
-  it('should return an empty array if the collectible attributes is undefined', () => {
+  it('should return an empty array if the collectible attributes is an undefined', () => {
     const attributes = getCollectibleAttributes(
       collectibleWithEmptyAttributesArray as unknown as NftItem
     )
