@@ -1,6 +1,6 @@
 import { NftItem } from 'services/nft/types'
-import { getCollectibleAttributes } from './utils'
 import { humanize } from 'utils/string/humanize'
+import { getCollectibleAttributes } from './utils'
 
 type Collectible = Omit<NftItem, 'processedMetadata'>
 
