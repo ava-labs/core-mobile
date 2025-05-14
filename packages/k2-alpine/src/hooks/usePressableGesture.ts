@@ -10,7 +10,6 @@ import {
   withSpring,
   withTiming
 } from 'react-native-reanimated'
-import { AnimatedPressableProps } from '../components'
 import { ANIMATED } from '../utils'
 
 const SCROLL_THRESHOLD = 1 // pixels
@@ -26,7 +25,7 @@ const SCROLL_THRESHOLD = 1 // pixels
  */
 export function usePressableGesture(
   callback?: (event: GestureResponderEvent) => void,
-  props?: AnimatedPressableProps
+  disabled?: boolean
 ): {
   animatedStyle: AnimatedStyle<ViewStyle>
   onTouchStart: (event: GestureResponderEvent | GestureTouchEvent) => void
@@ -69,7 +68,7 @@ export function usePressableGesture(
   const onTouchStart = (
     event: GestureResponderEvent | GestureTouchEvent
   ): void => {
-    if (props?.disabled) return
+    if (disabled) return
     if ('nativeEvent' in event) {
       touchStartPosition.current = {
         x: event.nativeEvent.pageX,

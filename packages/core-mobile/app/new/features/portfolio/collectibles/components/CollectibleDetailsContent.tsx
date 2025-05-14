@@ -24,8 +24,9 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { NftItem } from 'services/nft/types'
 import { isAddress } from 'viem'
 import { useCollectiblesContext } from '../CollectiblesContext'
-import { getAttributes, HORIZONTAL_MARGIN } from '../consts'
+import { HORIZONTAL_MARGIN } from '../consts'
 import { CollectibleDetailsFooter } from './CollectibleDetailsFooter'
+import { getCollectibleAttributes } from '../utils'
 
 export const CollectibleDetailsContent = forwardRef<
   ScrollView,
@@ -52,7 +53,7 @@ export const CollectibleDetailsContent = forwardRef<
   const [_, setSelectedToken] = useSendSelectedToken()
 
   const attributes: GroupListItem[] = useMemo(() => {
-    return getAttributes(collectible)
+    return getCollectibleAttributes(collectible)
   }, [collectible])
 
   const createdBy = useMemo(() => {
