@@ -25,8 +25,8 @@ import { NftItem } from 'services/nft/types'
 import { isAddress } from 'viem'
 import { useCollectiblesContext } from '../CollectiblesContext'
 import { HORIZONTAL_MARGIN } from '../consts'
-import { CollectibleDetailsFooter } from './CollectibleDetailsFooter'
 import { getCollectibleAttributes } from '../utils'
+import { CollectibleDetailsFooter } from './CollectibleDetailsFooter'
 
 export const CollectibleDetailsContent = forwardRef<
   ScrollView,
