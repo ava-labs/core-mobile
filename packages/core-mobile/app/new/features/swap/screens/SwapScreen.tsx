@@ -118,7 +118,9 @@ export const SwapScreen = (): JSX.Element => {
   }, [fromTokenValue, maxFromValue])
 
   const applyOptimalRateFx = useCallback(() => {
-    if (optimalRate) {
+    if (!fromTokenValue) {
+      setToTokenValue(undefined)
+    } else if (optimalRate) {
       if (optimalRate.side === SwapSide.SELL) {
         if (fromTokenValue !== undefined) {
           setToTokenValue(BigInt(optimalRate.destAmount))
@@ -322,7 +324,7 @@ export const SwapScreen = (): JSX.Element => {
         }}>
         <TokenInputWidget
           disabled={swapInProcess}
-          editable={!swapInProcess}
+          editable={false}
           amount={toTokenValue}
           balance={toToken?.balance}
           shouldShowBalance={true}

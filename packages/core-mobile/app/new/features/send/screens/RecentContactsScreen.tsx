@@ -1,14 +1,20 @@
-import React, { useCallback } from 'react'
+import React, { useCallback, useMemo } from 'react'
 import { useRouter } from 'expo-router'
 import { Contact } from 'store/addressBook'
 import { useContacts } from 'common/hooks/useContacts'
+import { selectIsDeveloperMode } from 'store/settings/advanced'
+import { useSelector } from 'react-redux'
 import { RecentContacts } from '../components/RecentContacts'
 import { useSendContext } from '../context/sendContext'
+import { useSendSelectedToken } from '../store'
+import { getAddressByChainId } from '../utils/getAddressByChainId'
 
 export const RecentContactsScreen = (): JSX.Element => {
   const { navigate } = useRouter()
+  const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const { recentAddresses, contacts, accounts } = useContacts()
   const { resetAmount, setToAddress } = useSendContext()
+  const [selectedToken] = useSendSelectedToken()
 
   const handleSelectContact = useCallback(
     (contact: Contact): void => {
@@ -42,10 +48,40 @@ export const RecentContactsScreen = (): JSX.Element => {
     [navigate, resetAmount, setToAddress]
   )
 
+  const recentAddressesBySelectedToken = useMemo(
+    () =>
+      selectedToken
+        ? recentAddresses.filter(
+            address =>
+              getAddressByChainId({
+                contact: address,
+                chainId: selectedToken?.networkChainId,
+                isDeveloperMode
+              }) !== undefined
+          )
+        : recentAddresses,
+    [recentAddresses, selectedToken, isDeveloperMode]
+  )
+
+  const contactsBySelectedToken = useMemo(
+    () =>
+      selectedToken
+        ? [...contacts, ...accounts].filter(
+            contact =>
+              getAddressByChainId({
+                contact,
+                chainId: selectedToken?.networkChainId,
+                isDeveloperMode
+              }) !== undefined
+          )
+        : [...contacts, ...accounts],
+    [selectedToken, contacts, accounts, isDeveloperMode]
+  )
+
   return (
     <RecentContacts
-      recentAddresses={recentAddresses}
-      contacts={[...contacts, ...accounts]}
+      recentAddresses={recentAddressesBySelectedToken}
+      contacts={contactsBySelectedToken}
       onGoToQrCode={handleGoToQrCode}
       onSelectContact={handleSelectContact}
       onSubmitEditing={handleSumbitEditing}
