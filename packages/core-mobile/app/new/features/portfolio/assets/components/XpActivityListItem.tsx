@@ -63,7 +63,7 @@ export const XpActivityListItem: FC<Props> = ({ tx, onPress }) => {
     }
   }, [tx.txType])
 
-  const subtitle = useMemo(() => {
+  const formattedTokenAmount = useMemo(() => {
     const amount = isNaN(Number(tx.tokens[0]?.amount))
       ? UNKNOWN_AMOUNT
       : tx.tokens[0]?.amount
@@ -94,7 +94,8 @@ export const XpActivityListItem: FC<Props> = ({ tx, onPress }) => {
   return (
     <ActivityListItem
       title={title}
-      subtitle={subtitle}
+      subtitle={formattedTokenAmount}
+      subtitleType="amountInToken"
       icon={transactionTypeIcon}
       onPress={onPress}
       status={PriceChangeStatus.Neutral}

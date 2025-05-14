@@ -49,6 +49,7 @@ export const PendingBridgeTransactionItem: FC<
       }
       title={`Bridging in progress` + (amount ? `: ${amount} ${symbol}` : '')}
       subtitle="Tap for more details"
+      subtitleType="text"
       accessoryType="chevron"
       onPress={onPress}
     />

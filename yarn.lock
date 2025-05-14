@@ -594,7 +594,7 @@ __metadata:
     react-native-gesture-handler: 2.20.0
     react-native-modal-datetime-picker: 18.0.0
     react-native-popover-view: 6.1.0
-    react-native-reanimated: 3.16.7
+    react-native-reanimated: 3.17.1
     react-native-reanimated-carousel: v4.0.2
     react-native-safe-area-context: 5.3.0
     react-native-svg: 15.8.0
@@ -613,7 +613,7 @@ __metadata:
     react-native: 0.76.9
     react-native-gesture-handler: 2.20.0
     react-native-modal-datetime-picker: 18.0.0
-    react-native-reanimated: 3.16.7
+    react-native-reanimated: 3.17.1
     react-native-safe-area-context: 5.3.0
     react-native-svg: 15.8.0
   languageName: unknown
@@ -27293,29 +27293,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-native-reanimated@npm:3.16.7":
-  version: 3.16.7
-  resolution: "react-native-reanimated@npm:3.16.7"
-  dependencies:
-    "@babel/plugin-transform-arrow-functions": ^7.0.0-0
-    "@babel/plugin-transform-class-properties": ^7.0.0-0
-    "@babel/plugin-transform-classes": ^7.0.0-0
-    "@babel/plugin-transform-nullish-coalescing-operator": ^7.0.0-0
-    "@babel/plugin-transform-optional-chaining": ^7.0.0-0
-    "@babel/plugin-transform-shorthand-properties": ^7.0.0-0
-    "@babel/plugin-transform-template-literals": ^7.0.0-0
-    "@babel/plugin-transform-unicode-regex": ^7.0.0-0
-    "@babel/preset-typescript": ^7.16.7
-    convert-source-map: ^2.0.0
-    invariant: ^2.2.4
-  peerDependencies:
-    "@babel/core": ^7.0.0-0
-    react: "*"
-    react-native: "*"
-  checksum: 108095709cd7a3effc5b5d276d94e161b399bd2d06e32140834168a0051545401bb09228071447e5925571da3f86f335d2a82c76751cdae07f66faf50b25c97f
-  languageName: node
-  linkType: hard
-
 "react-native-reanimated@npm:3.17.1":
   version: 3.17.1
   resolution: "react-native-reanimated@npm:3.17.1"
@@ -27540,7 +27517,7 @@ react-native-webview@ava-labs/react-native-webview:
   peerDependencies:
     react: "*"
     react-native: "*"
-  checksum: 77324747a8b5df0a5558bb99a9a0804a5575d328e84f480e462c56417af97213f38a9930e4582fb749bec374dc4d1a8910a45b006e77af9b14a8e64057b932bf
+  checksum: 869028a5bb7a4a8a125d274753b703c2b3579b5efc7bb82db136a186fd88a11c5a4696505ebcd976d20fcdd41111abe229ae0e19c27c50bb30fe4f52bb6383bc
   languageName: node
   linkType: hard
 

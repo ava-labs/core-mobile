@@ -2,6 +2,7 @@ import React from 'react'
 import { DeFiRewardItem } from 'services/defi/types'
 import { useExchangedAmount } from 'new/common/hooks/useExchangedAmount'
 import { Card, Separator, Text, useTheme, View } from '@avalabs/k2-alpine'
+import { BalanceText } from 'common/components/BalanceText'
 import { IMAGE_SIZE, MAX_TOKEN_COUNT } from '../consts'
 import { DeFiRowItem } from './DeFiRowItem'
 import { StackedImages } from './StackedImages'
@@ -69,9 +70,9 @@ export const DeFiPortfolioReward = ({
                   flexDirection: 'row',
                   justifyContent: 'flex-end'
                 }}>
-                <Text variant="body1" sx={{ color: '$textSecondary' }}>
+                <BalanceText variant="body1" sx={{ color: '$textSecondary' }}>
                   {getAmount(netUsdValue)}
-                </Text>
+                </BalanceText>
               </View>
             </DeFiRowItem>
           </Card>

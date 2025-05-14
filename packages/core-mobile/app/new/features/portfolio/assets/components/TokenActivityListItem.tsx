@@ -32,7 +32,7 @@ export const TokenActivityListItem: FC<Props> = ({ tx, onPress }) => {
     }
   }, [tx.txType])
 
-  const subtitle = useMemo(() => {
+  const formattedAmountInCurrency = useMemo(() => {
     if (!currentPrice || isNaN(Number(tx.tokens[0]?.amount))) {
       return UNKNOWN_AMOUNT
     }
@@ -53,7 +53,8 @@ export const TokenActivityListItem: FC<Props> = ({ tx, onPress }) => {
   return (
     <ActivityListItem
       title={<TokenActivityListItemTitle tx={tx} />}
-      subtitle={subtitle}
+      subtitle={formattedAmountInCurrency}
+      subtitleType="amountInCurrency"
       icon={
         <View
           sx={{
