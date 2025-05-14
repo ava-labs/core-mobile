@@ -3,6 +3,7 @@ import { DeFiToken } from 'services/defi/types'
 import React from 'react'
 import { useExchangedAmount } from 'new/common/hooks/useExchangedAmount'
 import { Separator, Text, useTheme, View } from '@avalabs/k2-alpine'
+import { BalanceText } from 'common/components/BalanceText'
 import { IMAGE_SIZE } from '../consts'
 import { DeFiRowItem } from './DeFiRowItem'
 
@@ -52,10 +53,10 @@ export const DeFiLendingSection = ({
                 {token.symbol}
               </Text>
             </View>
-            <Text variant="body1" sx={{ color: amountTextColor }}>
+            <BalanceText variant="body1" sx={{ color: amountTextColor }}>
               {numberSign}
               {getAmount(token.amount * token.price, 'compact')}
-            </Text>
+            </BalanceText>
           </DeFiRowItem>
           {index !== tokens.length - 1 && (
             <Separator sx={{ marginHorizontal: 16 }} />

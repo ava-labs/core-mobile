@@ -4,6 +4,7 @@ import React from 'react'
 import { useExchangedAmount } from 'new/common/hooks/useExchangedAmount'
 import { getDateInMmmDdYyyyHhMmA } from 'utils/date/getDateInMmmDdYyyyHhMmA'
 import { Card, Separator, Text, View } from '@avalabs/k2-alpine'
+import { BalanceText } from 'common/components/BalanceText'
 import { DeFiRowItem } from './DeFiRowItem'
 
 interface Props {
@@ -39,13 +40,13 @@ export const DeFiPortfolioInsuranceBuyer: FC<Props> = ({ items }) => {
                 }}>
                 {description}
               </Text>
-              <Text
+              <BalanceText
                 variant="body2"
                 sx={{
                   color: '$textSecondary'
                 }}>
                 {getAmount(item.netUsdValue)}
-              </Text>
+              </BalanceText>
             </DeFiRowItem>
             <Separator sx={{ marginHorizontal: 16 }} />
             <DeFiRowItem>

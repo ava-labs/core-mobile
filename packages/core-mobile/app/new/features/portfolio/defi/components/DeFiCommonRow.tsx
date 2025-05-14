@@ -2,6 +2,7 @@ import React from 'react'
 import { Separator, Text, useTheme, View } from '@avalabs/k2-alpine'
 import { DeFiToken } from 'services/defi/types'
 import { useExchangedAmount } from 'new/common/hooks/useExchangedAmount'
+import { BalanceText } from 'common/components/BalanceText'
 import { StackedImages } from './StackedImages'
 
 export const DeFiCommonRow = ({
@@ -71,13 +72,13 @@ export const DeFiCommonRow = ({
                   sx={{ color: '$textSecondary' }}>
                   {symbols}
                 </Text>
-                <Text
+                <BalanceText
                   variant="body1"
                   sx={{ color: '$textSecondary' }}
                   numberOfLines={1}
                   ellipsizeMode="tail">
                   {getAmount(suppliedValue, 'compact')}
-                </Text>
+                </BalanceText>
               </View>
             </View>
           </View>
