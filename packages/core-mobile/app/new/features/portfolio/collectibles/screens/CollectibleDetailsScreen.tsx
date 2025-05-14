@@ -32,16 +32,16 @@ import {
   selectCollectibleVisibility,
   toggleCollectibleVisibility
 } from 'store/portfolio'
-import {
-  CollectibleFilterAndSortInitialState,
-  useCollectiblesFilterAndSort
-} from '../hooks/useCollectiblesFilterAndSort'
 import { CollectibleDetailsContent } from '../components/CollectibleDetailsContent'
 import {
   CARD_SIZE_SMALL,
   CollectibleDetailsHero,
   SNAP_DISTANCE
 } from '../components/CollectibleDetailsHero'
+import {
+  CollectibleFilterAndSortInitialState,
+  useCollectiblesFilterAndSort
+} from '../hooks/useCollectiblesFilterAndSort'
 
 type CollectibleDetailsScreenRouteParams = {
   localId?: string
@@ -94,6 +94,7 @@ export const CollectibleDetailsScreen = ({
 
   const onSeeMore = (): void => {
     'worklet'
+    // Also do the bounce animation
     bounceValue.value = withSequence(
       withTiming(-40, ANIMATED.TIMING_CONFIG),
       withTiming(0, ANIMATED.TIMING_CONFIG)
@@ -296,10 +297,7 @@ export const CollectibleDetailsScreen = ({
   })
 
   return (
-    <View
-      style={{
-        flex: 1
-      }}>
+    <View style={{ flex: 1 }}>
       {collectible ? (
         <Animated.ScrollView
           ref={scrollViewRef}
@@ -312,11 +310,11 @@ export const CollectibleDetailsScreen = ({
             paddingBottom: insets.bottom,
             minHeight: frame.height + SNAP_DISTANCE
           }}
+          nestedScrollEnabled
           bounces={false}
           showsVerticalScrollIndicator={false}
           scrollEventThrottle={16}
-          stickyHeaderIndices={[0]}
-          nestedScrollEnabled>
+          stickyHeaderIndices={[0]}>
           <Animated.View
             style={[
               {

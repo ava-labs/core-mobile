@@ -1,62 +1,48 @@
+import { truncateAddress } from '@avalabs/core-utils-sdk'
 import {
-  ActivityIndicator,
   alpha,
-  Button,
   GroupList,
   GroupListItem,
-  ScrollView,
   useTheme,
   View
 } from '@avalabs/k2-alpine'
-import React, { ReactNode, useCallback, useMemo } from 'react'
-import { NftItem, NftLocalStatus } from 'services/nft/types'
-import { LinearGradientBottomWrapper } from 'common/components/LinearGradientBottomWrapper'
+import { TRUNCATE_ADDRESS_LENGTH } from 'common/consts/text'
 import { useAvatar } from 'common/hooks/useAvatar'
 import { showSnackbar } from 'common/utils/toast'
 import { LinearGradient } from 'expo-linear-gradient'
+import { useRouter } from 'expo-router'
 import {
   ActionButton,
   ActionButtons
 } from 'features/portfolio/assets/components/ActionButtons'
 import { ActionButtonTitle } from 'features/portfolio/assets/consts'
-import { useNetworks } from 'hooks/networks/useNetworks'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { useSelector } from 'react-redux'
-import { isAvalancheCChainId } from 'services/network/utils/isAvalancheNetwork'
-import { selectSelectedAvatar } from 'store/settings/avatar'
-import { isAddress } from 'viem'
-import { useRouter } from 'expo-router'
-import { truncateAddress } from '@avalabs/core-utils-sdk'
 import { useSendSelectedToken } from 'features/send/store'
-import { NftContentType } from 'store/nft'
-import { getDateInMmmDdYyyyHhMmA } from 'utils/date/getDateInMmmDdYyyyHhMmA'
-import { TRUNCATE_ADDRESS_LENGTH } from 'common/consts/text'
+import { useNetworks } from 'hooks/networks/useNetworks'
+import React, { forwardRef, ReactNode, useCallback, useMemo } from 'react'
+import { ScrollView } from 'react-native-gesture-handler'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { NftItem } from 'services/nft/types'
+import { isAddress } from 'viem'
 import { useCollectiblesContext } from '../CollectiblesContext'
-import { HORIZONTAL_MARGIN } from '../consts'
+import { getAttributes, HORIZONTAL_MARGIN } from '../consts'
+import { CollectibleDetailsFooter } from './CollectibleDetailsFooter'
 
-export const CollectibleDetailsContent = ({
-  collectible,
-  isVisible,
-  onHide
-}: {
-  collectible: NftItem | undefined
-  isVisible: boolean
-  onHide: () => void
-}): ReactNode => {
+export const CollectibleDetailsContent = forwardRef<
+  ScrollView,
+  {
+    collectible: NftItem | undefined
+    isVisible: boolean
+    onHide: () => void
+  }
+>(({ collectible, isVisible, onHide }, ref): ReactNode => {
   const {
     theme: { colors }
   } = useTheme()
-  const avatar = useSelector(selectSelectedAvatar)
   const { navigate } = useRouter()
   const insets = useSafeAreaInsets()
   const networks = useNetworks()
   const { refreshMetadata, isCollectibleRefreshing } = useCollectiblesContext()
   const { saveExternalAvatar } = useAvatar()
-
-  const isSupportedAvatar =
-    collectible?.imageData?.type !== NftContentType.MP4 &&
-    collectible?.imageData?.type !== NftContentType.Unknown &&
-    collectible?.imageData?.image !== undefined
 
   const handleSaveAvatar = (): void => {
     if (!collectible?.imageData?.image) return
@@ -66,51 +52,8 @@ export const CollectibleDetailsContent = ({
   const [_, setSelectedToken] = useSendSelectedToken()
 
   const attributes: GroupListItem[] = useMemo(() => {
-    if (
-      collectible?.processedMetadata?.attributes === undefined ||
-      collectible?.processedMetadata?.attributes.length === 0
-    )
-      return []
-
-    if (Array.isArray(collectible.processedMetadata.attributes)) {
-      return collectible.processedMetadata.attributes
-        .map(item => {
-          if (item.trait_type.length === 0 && item.value.length === 0) {
-            return
-          }
-          return {
-            title: item.trait_type
-              .replace(/([A-Z])/g, ' $1')
-              .replace(/^./, function (str) {
-                return str.toUpperCase().trim()
-              }),
-            value:
-              item.display_type === 'date'
-                ? getDateInMmmDdYyyyHhMmA(Number(item.value))
-                : item.value
-          }
-        })
-        .filter(item => item !== undefined)
-    }
-
-    if (typeof collectible.processedMetadata.attributes === 'object') {
-      return Object.entries(collectible.processedMetadata.attributes).reduce(
-        (acc, [key, value]) => {
-          const stringValue = value as unknown as string
-          if (key.length === 0 && stringValue.length === 0) {
-            return acc
-          }
-          acc.push({
-            title: key,
-            value: stringValue
-          })
-          return acc
-        },
-        [] as GroupListItem[]
-      )
-    }
-    return []
-  }, [collectible?.processedMetadata?.attributes])
+    return getAttributes(collectible)
+  }, [collectible])
 
   const createdBy = useMemo(() => {
     return collectible?.address
@@ -203,14 +146,15 @@ export const CollectibleDetailsContent = ({
         />
 
         <ScrollView
-          showsVerticalScrollIndicator={false}
-          nestedScrollEnabled
+          ref={ref}
           contentContainerStyle={{
             paddingHorizontal: HORIZONTAL_MARGIN,
             gap: 12,
             paddingBottom: 150 + insets.bottom,
             paddingTop: 20
-          }}>
+          }}
+          bounces={false}
+          showsVerticalScrollIndicator={false}>
           <GroupList
             data={[
               {
@@ -249,40 +193,13 @@ export const CollectibleDetailsContent = ({
           left: 0,
           right: 0
         }}>
-        <LinearGradientBottomWrapper>
-          <View
-            style={{
-              gap: 10,
-              padding: HORIZONTAL_MARGIN,
-              paddingBottom: insets.bottom + HORIZONTAL_MARGIN
-            }}>
-            {collectible?.networkChainId &&
-            isAvalancheCChainId(collectible?.networkChainId) ? (
-              <Button
-                disabled={isRefreshing}
-                type="secondary"
-                size="large"
-                onPress={handleRefresh}>
-                {isRefreshing ? (
-                  <ActivityIndicator size="small" color={colors.$textPrimary} />
-                ) : (
-                  'Refresh'
-                )}
-              </Button>
-            ) : null}
-            {collectible?.status === NftLocalStatus.Processed &&
-              isSupportedAvatar && (
-                <Button
-                  type="secondary"
-                  size="large"
-                  onPress={handleSaveAvatar}
-                  disabled={avatar.id === collectible?.localId}>
-                  Set as my avatar
-                </Button>
-              )}
-          </View>
-        </LinearGradientBottomWrapper>
+        <CollectibleDetailsFooter
+          collectible={collectible}
+          isRefreshing={isRefreshing}
+          handleRefresh={handleRefresh}
+          handleSaveAvatar={handleSaveAvatar}
+        />
       </View>
     </View>
   )
-}
+})

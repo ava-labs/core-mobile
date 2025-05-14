@@ -103,7 +103,7 @@ export const DeFiScreen = (): JSX.Element => {
     return (
       <Placeholder
         icon={<Image source={placeholderIcon} sx={{ width: 42, height: 42 }} />}
-        title="No investments yet"
+        title="No positions yet"
         description="Discover a wide variety of apps, blockchains, wallets and explorers, built on the Avalanche ecosystem"
         button={{
           title: 'Explore DeFi',

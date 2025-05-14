@@ -1,6 +1,7 @@
 import { Dimensions } from 'react-native'
 import { NftItem } from 'services/nft/types'
 import { CollectibleView } from 'store/balance'
+import { getDateInMmmDdYyyyHhMmA } from 'utils/date/getDateInMmmDdYyyyHhMmA'
 
 export const HORIZONTAL_MARGIN = 16
 export const HORIZONTAL_ITEM_GAP = 14
@@ -75,4 +76,58 @@ export const getGridCardHeight = (
       return LIST_ITEM_HEIGHT
     }
   }
+}
+
+export function getAttributes(
+  collectible: NftItem | undefined
+): { title: string; value: string }[] {
+  if (
+    collectible?.processedMetadata?.attributes === undefined ||
+    collectible?.processedMetadata?.attributes.length === 0
+  )
+    return []
+
+  if (Array.isArray(collectible.processedMetadata.attributes)) {
+    return collectible.processedMetadata.attributes
+      .map(item => {
+        if (item.trait_type.length === 0 && item.value.length === 0) {
+          return
+        }
+        return {
+          title: capitalizeAndReplaceUnderscore(item.trait_type),
+          value:
+            item.display_type === 'date'
+              ? getDateInMmmDdYyyyHhMmA(Number(item.value))
+              : item.value
+        }
+      })
+      .filter(item => item !== undefined)
+  }
+
+  if (typeof collectible.processedMetadata.attributes === 'object') {
+    return Object.entries(collectible.processedMetadata.attributes).reduce(
+      (acc, [key, value]) => {
+        const stringValue = value as unknown as string
+        if (key.length === 0 && stringValue.length === 0) {
+          return acc
+        }
+        acc.push({
+          title: capitalizeAndReplaceUnderscore(key),
+          value: stringValue
+        })
+        return acc
+      },
+      [] as {
+        title: string
+        value: string
+      }[]
+    )
+  }
+  return []
+}
+
+function capitalizeAndReplaceUnderscore(str: string): string {
+  return str.replace(/([A-Z])|_/g, ' $1').replace(/^./, function (str) {
+    return str.toUpperCase().trim()
+  })
 }
