@@ -1,9 +1,4 @@
 import React from 'react'
-import Animated, {
-  FadeIn,
-  FadeOut,
-  LinearTransition
-} from 'react-native-reanimated'
 import { StyleSheet } from 'react-native'
 import { SxProp } from 'dripsy'
 import { useTheme } from '../../hooks'
@@ -13,6 +8,7 @@ import { AnimatedText } from '../Animated/AnimatedText'
 import { View, Text } from '../Primitives'
 import { K2AlpineTheme } from '../../theme/theme'
 import { MaskedView } from '../MaskedView/MaskedView'
+import { AnimateFadeScale } from '../AnimatedFadeScale/AnimatedFadeScale'
 import { PriceChangeStatus } from './types'
 
 export const PriceChangeIndicator = ({
@@ -110,7 +106,7 @@ const AnimatedComponent = ({
   const showArrow =
     status === PriceChangeStatus.Down || status === PriceChangeStatus.Up
   return (
-    <Animated.View exiting={FadeOut} entering={FadeIn} style={styles.container}>
+    <View style={styles.container}>
       {formattedPrice && (
         <AnimatedText
           variant={textVariant}
@@ -120,10 +116,12 @@ const AnimatedComponent = ({
           }}
         />
       )}
-      <Animated.View
-        layout={LinearTransition.springify().damping(100)}
-        style={styles.innerWrapper}>
-        {showArrow && <Arrow sx={arrowSx} status={status} size={arrowSize} />}
+      <View style={styles.innerWrapper}>
+        {showArrow && (
+          <AnimateFadeScale>
+            <Arrow sx={arrowSx} status={status} size={arrowSize} />
+          </AnimateFadeScale>
+        )}
         {formattedPercent !== undefined && (
           <AnimatedText
             variant={textVariant}
@@ -133,8 +131,8 @@ const AnimatedComponent = ({
             }}
           />
         )}
-      </Animated.View>
-    </Animated.View>
+      </View>
+    </View>
   )
 }
 

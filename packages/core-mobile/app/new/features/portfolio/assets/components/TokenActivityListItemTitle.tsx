@@ -4,6 +4,9 @@ import { useTheme, View, Text } from '@avalabs/k2-alpine'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
 import { useBlockchainNames } from 'common/utils/useBlockchainNames'
 import { SubTextNumber } from 'common/components/SubTextNumber'
+import { useSelector } from 'react-redux'
+import { selectIsPrivacyModeEnabled } from 'store/settings/securityPrivacy'
+import { HiddenBalanceText } from 'common/components/HiddenBalanceText'
 import { TokenActivityTransaction } from './TokenActivityListItem'
 
 export const TokenActivityListItemTitle = ({
@@ -15,9 +18,15 @@ export const TokenActivityListItemTitle = ({
     theme: { colors }
   } = useTheme()
   const { sourceBlockchain, targetBlockchain } = useBlockchainNames(tx)
+  const isPrivacyModeEnabled = useSelector(selectIsPrivacyModeEnabled)
+  const textVariant = 'body1'
 
   const renderAmount = useCallback(
     (amount?: string): ReactNode => {
+      if (isPrivacyModeEnabled) {
+        return <HiddenBalanceText variant={textVariant} isCurrency={false} />
+      }
+
       const num = Number(amount)
       if (!isNaN(num)) {
         return (
@@ -30,7 +39,7 @@ export const TokenActivityListItemTitle = ({
       }
       return amount ?? UNKNOWN_AMOUNT
     },
-    [colors]
+    [colors, isPrivacyModeEnabled]
   )
 
   // Build an array of nodes: strings and React elements
@@ -93,7 +102,7 @@ export const TokenActivityListItemTitle = ({
         typeof node === 'string' ? (
           <Text
             key={`txt-${i}`}
-            variant="body1"
+            variant={textVariant}
             sx={{ color: colors.$textPrimary }}>
             {node}
           </Text>
