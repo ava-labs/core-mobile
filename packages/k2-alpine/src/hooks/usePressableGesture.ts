@@ -10,7 +10,7 @@ import {
   withSpring,
   withTiming
 } from 'react-native-reanimated'
-import { AnimatedPressableProps } from 'src/components'
+import { AnimatedPressableProps } from '../components'
 import { ANIMATED } from '../utils'
 
 const SCROLL_THRESHOLD = 1 // pixels
