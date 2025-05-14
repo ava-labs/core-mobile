@@ -39,7 +39,7 @@ const AssetsScreen: FC<Props> = ({
   goToTokenManagement,
   goToBuy
 }): JSX.Element => {
-  const { data, filter, sort, view, refetch, isRefetching } =
+  const { data, filter, sort, view, refetch, isRefetching, isLoading } =
     useAssetsFilterAndSort()
   const activeAccount = useSelector(selectActiveAccount)
 
@@ -166,7 +166,7 @@ const AssetsScreen: FC<Props> = ({
         ListEmptyComponent={emptyComponent}
         ItemSeparatorComponent={renderSeparator}
         showsVerticalScrollIndicator={false}
-        refreshing={isRefetching}
+        refreshing={isRefetching || isLoading}
         onRefresh={refetch}
         key={isGridView ? 'grid' : 'list'}
         keyExtractor={item => item.localId}

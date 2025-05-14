@@ -22,12 +22,14 @@ export const useAssetsFilterAndSort = (): {
   view: DropdownSelection
   refetch: () => void
   isRefetching: boolean
+  isLoading: boolean
 } => {
   const erc20ContractTokens = useErc20ContractTokens()
   const enabledNetworks = useSelector(selectEnabledNetworks)
-  const { filteredTokenList, refetch, isRefetching } = useSearchableTokenList({
-    tokens: erc20ContractTokens
-  })
+  const { filteredTokenList, refetch, isRefetching, isLoading } =
+    useSearchableTokenList({
+      tokens: erc20ContractTokens
+    })
 
   const networkFilters = useMemo(() => {
     const enabledNetworksFilter = enabledNetworks.map(network => {
@@ -148,8 +150,9 @@ export const useAssetsFilterAndSort = (): {
       view,
       data: filteredAndSorted,
       refetch,
-      isRefetching
+      isRefetching,
+      isLoading
     }),
-    [filter, sort, view, filteredAndSorted, refetch, isRefetching]
+    [filter, sort, view, filteredAndSorted, refetch, isRefetching, isLoading]
   )
 }
