@@ -86,9 +86,9 @@ export const useAssetsFilterAndSort = (): {
   const getSorted = useCallback(
     (filtered: LocalTokenWithBalance[]) => {
       if (sortOption === AssetBalanceSort.LowToHigh) {
-        return filtered?.toSorted((a, b) => {
-          return sortUndefined(a.balanceInCurrency, b.balanceInCurrency)
-        })
+        return filtered?.toSorted((a, b) =>
+          sortUndefined(a.balanceInCurrency, b.balanceInCurrency)
+        )
       }
 
       return filtered?.toSorted((a, b) =>
@@ -103,7 +103,10 @@ export const useAssetsFilterAndSort = (): {
     // Sort the tokens with balance
     const sorted = getSorted(filtered)
     // Pin the primary tokens to the top of the list
-    return sortTokensWithPrimaryFirst(sorted, false)
+    return sortTokensWithPrimaryFirst({
+      tokens: sorted,
+      sortOthersByBalance: false
+    })
   }, [getFiltered, getSorted])
 
   const filter = useMemo(

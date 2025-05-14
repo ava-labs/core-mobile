@@ -2,10 +2,13 @@ import { TokenType } from '@avalabs/vm-module-types'
 import { AVAX_P_ID, AVAX_X_ID, LocalTokenWithBalance } from 'store/balance'
 import { TokenSymbol } from 'store/network'
 
-export const sortTokensWithPrimaryFirst = (
-  tokens: LocalTokenWithBalance[],
+export const sortTokensWithPrimaryFirst = ({
+  tokens,
   sortOthersByBalance = true
-): LocalTokenWithBalance[] => {
+}: {
+  tokens: LocalTokenWithBalance[]
+  sortOthersByBalance?: boolean
+}): LocalTokenWithBalance[] => {
   const primaryTokens: LocalTokenWithBalance[] = []
 
   const cChainToken = tokens.find(

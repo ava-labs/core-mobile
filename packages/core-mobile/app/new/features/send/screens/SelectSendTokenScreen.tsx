@@ -84,7 +84,7 @@ export const SelectSendTokenScreen = (): JSX.Element => {
   }, [tokens, searchText])
 
   const sortedSearchResults = useMemo(() => {
-    return sortTokensWithPrimaryFirst(searchResults)
+    return sortTokensWithPrimaryFirst({ tokens: searchResults })
   }, [searchResults])
 
   const renderItem: ListRenderItem<LocalTokenWithBalance> = ({
