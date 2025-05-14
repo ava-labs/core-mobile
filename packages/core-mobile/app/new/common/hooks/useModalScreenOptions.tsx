@@ -2,7 +2,8 @@ import {
   CardStyleInterpolators,
   StackCardInterpolatedStyle,
   StackCardInterpolationProps,
-  StackNavigationOptions
+  StackNavigationOptions,
+  TransitionSpecs
 } from '@react-navigation/stack'
 import {
   MODAL_BORDER_RADIUS,
@@ -41,6 +42,15 @@ export function useModalScreenOptions(): {
       borderTopRightRadius: MODAL_BORDER_RADIUS,
       zIndex: 1000
     },
+    ...(Platform.OS === 'android' && {
+      transitionSpec: {
+        open: TransitionSpecs.BottomSheetSlideInSpec,
+        close: {
+          animation: 'timing',
+          config: { duration: 0 }
+        }
+      }
+    }),
     gestureEnabled: true,
     // Make the whole screen gestureable for dismissing the modal
     // This breaks keyboard open interaction on Android
@@ -78,6 +88,13 @@ export function useModalScreenOptions(): {
           cardStyle: {
             marginTop: 0,
             paddingTop: insets.top
+          },
+          transitionSpec: {
+            open: TransitionSpecs.BottomSheetSlideInSpec,
+            close: {
+              animation: 'timing',
+              config: { duration: 0 }
+            }
           },
           cardStyleInterpolator: stackModalInterpolator.forModalPresentationIOS
         }
