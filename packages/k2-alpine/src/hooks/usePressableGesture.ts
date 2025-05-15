@@ -12,7 +12,7 @@ import {
 } from 'react-native-reanimated'
 import { ANIMATED } from '../utils'
 
-const SCROLL_THRESHOLD = 1 // pixels
+const SCROLL_THRESHOLD = 2 // pixels
 
 /**
  * Use this hook to handle pressable gestures.
