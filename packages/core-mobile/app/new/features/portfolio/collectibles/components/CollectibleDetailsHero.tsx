@@ -7,7 +7,8 @@ import {
   View
 } from '@avalabs/k2-alpine'
 import { LinearGradient } from 'expo-linear-gradient'
-import React, { ReactNode } from 'react'
+import React, { forwardRef, ReactNode } from 'react'
+import { ScrollView } from 'react-native-gesture-handler'
 import Animated, {
   Extrapolation,
   interpolate,
@@ -28,13 +29,13 @@ export const CARD_SIZE = SCREEN_WIDTH - HORIZONTAL_MARGIN * 4
 export const CARD_SIZE_SMALL = 120
 export const SNAP_DISTANCE = 160
 
-export const CollectibleDetailsHero = ({
-  collectible,
-  scrollY
-}: {
-  collectible: NftItem
-  scrollY: SharedValue<number>
-}): ReactNode => {
+export const CollectibleDetailsHero = forwardRef<
+  ScrollView,
+  {
+    collectible: NftItem
+    scrollY: SharedValue<number>
+  }
+>(({ collectible, scrollY }, ref): ReactNode => {
   const {
     theme: { colors }
   } = useTheme()
@@ -137,6 +138,7 @@ export const CollectibleDetailsHero = ({
             </Animated.View> */}
 
             <CollectibleGridItem
+              disabled
               collectible={collectible}
               index={0}
               onLoaded={animateGlow}
@@ -161,43 +163,48 @@ export const CollectibleDetailsHero = ({
             width: '100%',
             zIndex: 1
           }}>
-          <Animated.ScrollView
+          <Animated.View
             style={[
               opacityStyle,
               {
                 height: 170,
                 width: '100%'
               }
-            ]}
-            contentContainerStyle={{
-              justifyContent: 'center',
-              alignItems: 'center',
-              paddingBottom: 50,
-              paddingTop: 20
-            }}
-            nestedScrollEnabled
-            showsVerticalScrollIndicator={false}>
-            <View
-              style={{
-                width: CARD_SIZE
-              }}>
-              <Text
-                variant="buttonMedium"
+            ]}>
+            <ScrollView
+              ref={ref}
+              contentContainerStyle={{
+                justifyContent: 'center',
+                alignItems: 'center',
+                paddingBottom: 50,
+                paddingTop: 20
+              }}
+              bounces={false}
+              showsVerticalScrollIndicator={false}>
+              <View
                 style={{
-                  fontSize: 12
+                  width: CARD_SIZE
                 }}>
-                {`${getCollectibleName(collectible)} #${collectible?.tokenId} `}
-
                 <Text
-                  sx={{
-                    fontSize: 12,
-                    color: '$textSecondary'
+                  variant="buttonMedium"
+                  style={{
+                    fontSize: 12
                   }}>
-                  {getCollectibleDescription(collectible)}
+                  {`${getCollectibleName(collectible)} #${
+                    collectible?.tokenId
+                  } `}
+
+                  <Text
+                    sx={{
+                      fontSize: 12,
+                      color: '$textSecondary'
+                    }}>
+                    {getCollectibleDescription(collectible)}
+                  </Text>
                 </Text>
-              </Text>
-            </View>
-          </Animated.ScrollView>
+              </View>
+            </ScrollView>
+          </Animated.View>
           <LinearGradient
             colors={[
               alpha(colors.$surfacePrimary, 1),
@@ -234,4 +241,4 @@ export const CollectibleDetailsHero = ({
       </View>
     </View>
   )
-}
+})

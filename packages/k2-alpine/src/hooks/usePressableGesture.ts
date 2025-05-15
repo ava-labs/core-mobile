@@ -17,13 +17,15 @@ const SCROLL_THRESHOLD = 1 // pixels
 /**
  * Use this hook to handle pressable gestures.
  * @param callback - The callback to call when the gesture is completed.
+ * @param props - The props to pass to the component.
  * @returns An object with the animatedStyle, onTouchStart, onTouchMove, onTouchCancel, and onTouchEnd properties.
  *
  * **NOTE** can be used on any component that supports the GestureResponderEvent and GestureTouchEvent props.
  * **EXAMPLE** GestureDetector, Pressable, TouchableOpacity, etc.
  */
 export function usePressableGesture(
-  callback?: (event: GestureResponderEvent) => void
+  callback?: (event: GestureResponderEvent) => void,
+  disabled?: boolean
 ): {
   animatedStyle: AnimatedStyle<ViewStyle>
   onTouchStart: (event: GestureResponderEvent | GestureTouchEvent) => void
@@ -66,19 +68,21 @@ export function usePressableGesture(
   const onTouchStart = (
     event: GestureResponderEvent | GestureTouchEvent
   ): void => {
+    if (disabled) return
     if ('nativeEvent' in event) {
       touchStartPosition.current = {
         x: event.nativeEvent.pageX,
         y: event.nativeEvent.pageY
       }
     } else {
-      const x = event?.allTouches?.[0]?.x
-      const y = event?.allTouches?.[0]?.y
-      if (x && y) {
-        touchStartPosition.current = { x, y }
+      if ('allTouches' in event) {
+        const x = event?.allTouches?.[0]?.x
+        const y = event?.allTouches?.[0]?.y
+        if (x !== undefined && y !== undefined) {
+          touchStartPosition.current = { x, y }
+        }
       } else {
-        // Do nothing if the touch event is not supported
-        return
+        touchStartPosition.current = { x: 0, y: 0 }
       }
     }
 
