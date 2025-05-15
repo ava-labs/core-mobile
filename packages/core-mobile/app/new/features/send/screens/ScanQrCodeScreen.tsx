@@ -3,10 +3,10 @@ import { useHeaderHeight } from '@react-navigation/elements'
 import { QrCodeScanner } from 'common/components/QrCodeScanner'
 import { useGlobalSearchParams, useRouter } from 'expo-router'
 import React, { useCallback } from 'react'
-import { NetworkVMType } from '@avalabs/vm-module-types'
 import { isValidAddressByVmName } from 'features/accountSettings/utils/isValidAddressByVmName'
 import { useSelector } from 'react-redux'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
+import { NetworkVMType } from '@avalabs/vm-module-types'
 import { useSendContext } from '../context/sendContext'
 
 export const ScanQrCodeScreen = (): JSX.Element => {
@@ -39,12 +39,14 @@ export const ScanQrCodeScreen = (): JSX.Element => {
         return
       }
 
-      setToAddress({ to: address, recipientType: 'address' })
+      setToAddress({
+        to: address,
+        recipientType: 'address'
+      })
       resetAmount()
       replace({
         // @ts-ignore TODO: make routes typesafe
-        pathname: '/send/send',
-        params: { to: address, recipientType: 'address' }
+        pathname: '/send/send'
       })
     },
     [isDeveloperMode, replace, resetAmount, setToAddress, vmName]
