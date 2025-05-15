@@ -1,29 +1,31 @@
 import React, { useCallback, useMemo } from 'react'
-import { useRouter } from 'expo-router'
+import { useGlobalSearchParams, useRouter } from 'expo-router'
 import { Contact } from 'store/addressBook'
 import { useContacts } from 'common/hooks/useContacts'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { useSelector } from 'react-redux'
+import { NetworkVMType } from '@avalabs/vm-module-types'
 import { RecentContacts } from '../components/RecentContacts'
 import { useSendContext } from '../context/sendContext'
-import { useSendSelectedToken } from '../store'
-import { getAddressByChainId } from '../utils/getAddressByChainId'
+import { getAddressByVmName } from '../utils/getAddressByVmName'
 
 export const RecentContactsScreen = (): JSX.Element => {
   const { navigate } = useRouter()
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const { recentAddresses, contacts, accounts } = useContacts()
   const { resetAmount, setToAddress } = useSendContext()
-  const [selectedToken] = useSendSelectedToken()
+  const { vmName } = useGlobalSearchParams<{ vmName: NetworkVMType }>()
 
   const handleSelectContact = useCallback(
     (contact: Contact): void => {
-      setToAddress({ to: contact.id, recipientType: contact.type })
+      setToAddress({
+        to: contact.id,
+        recipientType: contact.type
+      })
       resetAmount()
       navigate({
         // @ts-ignore TODO: make routes typesafe
-        pathname: '/send/send',
-        params: { to: contact.id, recipientType: contact.type }
+        pathname: '/send/send'
       })
     },
     [navigate, resetAmount, setToAddress]
@@ -37,7 +39,10 @@ export const RecentContactsScreen = (): JSX.Element => {
 
   const handleSumbitEditing = useCallback(
     (text: string): void => {
-      setToAddress({ to: text, recipientType: 'address' })
+      setToAddress({
+        to: text,
+        recipientType: 'address'
+      })
       resetAmount()
       navigate({
         // @ts-ignore TODO: make routes typesafe
@@ -50,32 +55,32 @@ export const RecentContactsScreen = (): JSX.Element => {
 
   const recentAddressesBySelectedToken = useMemo(
     () =>
-      selectedToken
+      vmName
         ? recentAddresses.filter(
             address =>
-              getAddressByChainId({
+              getAddressByVmName({
                 contact: address,
-                chainId: selectedToken?.networkChainId,
+                vmName,
                 isDeveloperMode
               }) !== undefined
           )
         : recentAddresses,
-    [recentAddresses, selectedToken, isDeveloperMode]
+    [vmName, recentAddresses, isDeveloperMode]
   )
 
   const contactsBySelectedToken = useMemo(
     () =>
-      selectedToken
+      vmName
         ? [...contacts, ...accounts].filter(
             contact =>
-              getAddressByChainId({
+              getAddressByVmName({
                 contact,
-                chainId: selectedToken?.networkChainId,
+                vmName,
                 isDeveloperMode
               }) !== undefined
           )
         : [...contacts, ...accounts],
-    [selectedToken, contacts, accounts, isDeveloperMode]
+    [contacts, accounts, vmName, isDeveloperMode]
   )
 
   return (
