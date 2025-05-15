@@ -42,8 +42,8 @@ export const sortTokensWithPrimaryFirst = ({
       token.localId !== 'AvalancheAVAX' &&
       token.localId !== AVAX_P_ID &&
       token.localId !== AVAX_X_ID &&
-      token.symbol !== TokenSymbol.ETH &&
-      token.symbol !== TokenSymbol.BTC
+      token.localId !== 'ETHETH' &&
+      token.localId !== 'BitcoinBTC'
   )
 
   if (sortOthersByBalance) {
