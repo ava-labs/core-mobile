@@ -86,6 +86,8 @@ export function usePressableGesture(
       }
     }
 
+    isScrolling.current = false
+
     startAnimation()
   }
 
