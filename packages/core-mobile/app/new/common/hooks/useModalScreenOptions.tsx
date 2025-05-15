@@ -49,7 +49,7 @@ export function useModalScreenOptions(): {
     // This breaks keyboard open interaction on Android
     // Does work for Android when inside a scrollable screen if content height isn't greater than screen height
     // Does not work for iOS when inside a scrollable screen only if scrollEnabled is false
-    // gestureResponseDistance: SCREEN_HEIGHT,
+    gestureResponseDistance: MODAL_HEADER_HEIGHT + topMarginOffset,
     headerStyle: {
       height: MODAL_HEADER_HEIGHT
     }
@@ -62,6 +62,7 @@ export function useModalScreenOptions(): {
 
   const formSheetScreensOptions: StackNavigationOptions = {
     ...modalOptions,
+    gestureResponseDistance: MODAL_HEADER_HEIGHT * 2 + topMarginOffset,
     cardStyle: {
       marginTop: Platform.OS === 'ios' ? topMarginOffset - 4 : MODAL_TOP_MARGIN,
       borderTopLeftRadius: MODAL_BORDER_RADIUS,

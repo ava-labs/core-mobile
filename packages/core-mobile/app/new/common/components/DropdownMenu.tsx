@@ -163,7 +163,6 @@ const DropdownMenuSeparator = create(
   (props: React.ComponentProps<typeof Separator>) => (
     <Separator
       style={{
-        backgroundColor: 'red',
         height: 10
       }}
       {...props}

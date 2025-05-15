@@ -18,7 +18,7 @@ export const AnimatedPressable = memo(
       onTouchCancel,
       onTouchEnd,
       animatedStyle
-    } = usePressableGesture(onPress)
+    } = usePressableGesture(onPress, props?.disabled as boolean)
 
     return (
       <AnimatedPress
