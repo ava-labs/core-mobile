@@ -230,7 +230,8 @@ export const TokenDetailScreen = (): React.JSX.Element => {
   }))
 
   const formattedBalance = useMemo(() => {
-    if (token?.balanceInCurrency === undefined) return UNKNOWN_AMOUNT
+    if (token?.balanceInCurrency === undefined || token.balanceInCurrency === 0)
+      return UNKNOWN_AMOUNT
     return formatCurrency({
       amount: token?.balanceInCurrency,
       withoutCurrencySuffix: true
