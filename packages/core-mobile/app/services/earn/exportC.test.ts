@@ -94,7 +94,7 @@ describe('earn/exportC', () => {
         expect(WalletService.createExportCTx).toHaveBeenCalledWith({
           amountInNAvax: 1000000000n,
           baseFeeInNAvax: 1n,
-          accountIndex: undefined,
+          accountIndex: 0,
           avaxXPNetwork: NetworkService.getAvalancheNetworkP(false),
           destinationChain: 'P',
           destinationAddress: undefined

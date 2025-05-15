@@ -10,7 +10,7 @@
     "addressCoreEth": "C-fuji1y76a8lk4ym3af4u45f7fghuqc6ftfh7l4jsrgz",
     "active": true,
     "type": "primary",
-    "walletId":"" ,
+    "walletId":"0" ,
     "walletType": "mnemonic"
   },
   "1": {
@@ -24,7 +24,7 @@
     "addressCoreEth": "",
     "type": "primary",
     "active": false,
-    "walletId": "",
+    "walletId": "0",
     "walletType": "mnemonic"
   }
 }

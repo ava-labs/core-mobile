@@ -61,7 +61,7 @@ describe('avalanche_getAccounts handler', () => {
             addressCoreEth: 'C-fuji1y76a8lk4ym3af4u45f7fghuqc6ftfh7l4jsrgz',
             active: true,
             type: 'primary',
-            walletId: '',
+            walletId: '0',
             walletType: 'mnemonic'
           },
           {
@@ -75,7 +75,7 @@ describe('avalanche_getAccounts handler', () => {
             addressCoreEth: '',
             active: false,
             type: 'primary',
-            walletId: '',
+            walletId: '0',
             walletType: 'mnemonic'
           }
         ]

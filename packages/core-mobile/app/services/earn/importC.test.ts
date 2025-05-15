@@ -65,7 +65,7 @@ describe('earn/importC', () => {
         cBaseFeeMultiplier: testCBaseFeeMultiplier
       })
       expect(WalletService.createImportCTx).toHaveBeenCalledWith({
-        accountIndex: undefined,
+        accountIndex: 0,
         baseFeeInNAvax: BigInt(0.0005 * 10 ** 9),
         avaxXPNetwork: NetworkService.getAvalancheNetworkP(false),
         sourceChain: 'P',
