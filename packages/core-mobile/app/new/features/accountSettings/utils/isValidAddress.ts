@@ -6,11 +6,11 @@ import { AddressType } from '../consts'
 export const isValidAddress = ({
   addressType,
   address,
-  isDeveloperMode = false
+  isDeveloperMode
 }: {
   addressType?: AddressType
   address: string
-  isDeveloperMode?: boolean
+  isDeveloperMode: boolean
 }): boolean => {
   const addressWithoutPrefix = address.replace(/^[PX]-/, '')
 

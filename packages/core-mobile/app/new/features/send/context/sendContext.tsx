@@ -168,28 +168,40 @@ export const SendContextProvider = ({
     }
 
     if (
-      isValidAddress({ address: toAddress.to, addressType: AddressType.EVM })
+      isValidAddress({
+        address: toAddress.to,
+        addressType: AddressType.EVM,
+        isDeveloperMode
+      })
     ) {
       return {
         address: toAddress.to
       }
     }
     if (
-      isValidAddress({ address: toAddress.to, addressType: AddressType.XP })
+      isValidAddress({
+        address: toAddress.to,
+        addressType: AddressType.XP,
+        isDeveloperMode
+      })
     ) {
       return {
         addressXP: toAddress.to
       }
     }
     if (
-      isValidAddress({ address: toAddress.to, addressType: AddressType.BTC })
+      isValidAddress({
+        address: toAddress.to,
+        addressType: AddressType.BTC,
+        isDeveloperMode
+      })
     ) {
       return {
         addressBTC: toAddress.to
       }
     }
     return undefined
-  }, [accounts, contacts, toAddress])
+  }, [accounts, contacts, toAddress, isDeveloperMode])
 
   const addressToSend = useMemo(() => {
     if (selectedToken === undefined) {

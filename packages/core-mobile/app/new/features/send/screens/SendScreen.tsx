@@ -1,5 +1,5 @@
 import React, { useCallback } from 'react'
-import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router'
+import { useLocalSearchParams, useRouter } from 'expo-router'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { audioFeedback, Audios } from 'utils/AudioFeedback'
 import { isUserRejectedError } from 'store/rpc/providers/walletConnect/utils'
@@ -35,17 +35,11 @@ export const SendScreen = (): JSX.Element => {
   const { to, recipientType } = useLocalSearchParams<SendNavigationProps>()
   const { canGoBack, back } = useRouter()
   const dispatch = useDispatch()
-  const { setToAddress, network, resetAmount } = useSendContext()
+  const { network, resetAmount } = useSendContext()
   const nativeToken = useNativeTokenWithBalanceByNetwork(network)
   const activeAccount = useSelector(selectActiveAccount)
   const { getState } = useNavigation()
   const [_, setSelectedToken] = useSendSelectedToken()
-
-  useFocusEffect(
-    useCallback(() => {
-      setToAddress({ to, recipientType })
-    }, [recipientType, setToAddress, to])
-  )
 
   const handleSuccess = useCallback(
     (txHash: string): void => {
