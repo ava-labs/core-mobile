@@ -168,6 +168,17 @@ export const ScrollScreen = ({
     }
   }, [animatedHeaderStyle, renderHeader, subtitle, title, titleSx])
 
+  const footerRef = useRef<View>(null)
+  const footerHeight = useSharedValue<number>(0)
+
+  useLayoutEffect(() => {
+    if (footerRef.current) {
+      footerRef.current.measure((x, y, width, height) => {
+        footerHeight.value = height
+      })
+    }
+  }, [footerHeight])
+
   // 90% of our screens reuse this component but only some need keyboard avoiding
   // If you have an input on the screen, you need to enable this prop
   if (shouldAvoidKeyboard) {
@@ -178,13 +189,16 @@ export const ScrollScreen = ({
           keyboardDismissMode="interactive"
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
-          style={{ flex: 1 }}
+          style={{
+            flex: 1,
+            marginBottom: disableStickyFooter ? -footerHeight.value : 0
+          }}
           {...props}
           contentContainerStyle={[
             props?.contentContainerStyle,
             {
               paddingTop: headerHeight,
-              paddingBottom: insets.bottom + 32
+              paddingBottom: disableStickyFooter ? 0 : insets.bottom + 32
             }
           ]}
           onScroll={onScroll}>
@@ -201,6 +215,7 @@ export const ScrollScreen = ({
             }}>
             <LinearGradientBottomWrapper>
               <View
+                ref={footerRef}
                 style={{
                   padding: 16,
                   paddingTop: 0
