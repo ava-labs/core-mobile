@@ -48,7 +48,9 @@ export const getNetworks = ({
   if (address === undefined || to === undefined) return []
 
   if (typeof address === 'string') {
-    if (isValidAddress({ address, addressType: AddressType.EVM })) {
+    if (
+      isValidAddress({ address, addressType: AddressType.EVM, isDeveloperMode })
+    ) {
       const networks: Network[] = []
       const ethereumNetwork = getEthereumNetwork(allNetworks, isDeveloperMode)
       const avalancheCChain = getAvalancheNetwork(allNetworks, isDeveloperMode)
@@ -56,12 +58,16 @@ export const getNetworks = ({
       avalancheCChain && networks.push(avalancheCChain)
       return networks
     }
-    if (isValidAddress({ address, addressType: AddressType.XP })) {
+    if (
+      isValidAddress({ address, addressType: AddressType.XP, isDeveloperMode })
+    ) {
       return isDeveloperMode
         ? [NETWORK_P_TEST, NETWORK_X_TEST]
         : [NETWORK_P, NETWORK_X]
     }
-    if (isValidAddress({ address, addressType: AddressType.BTC })) {
+    if (
+      isValidAddress({ address, addressType: AddressType.BTC, isDeveloperMode })
+    ) {
       return [getBitcoinNetwork(isDeveloperMode)]
     }
     return []
