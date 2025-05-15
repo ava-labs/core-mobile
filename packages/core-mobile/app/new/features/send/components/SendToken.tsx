@@ -18,7 +18,7 @@ import {
 } from '@avalabs/k2-alpine'
 import { ScrollScreen } from 'common/components/ScrollScreen'
 import { loadAvatar } from 'common/utils/loadAvatar'
-import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router'
+import { useLocalSearchParams, useRouter } from 'expo-router'
 import { LogoWithNetwork } from 'features/portfolio/assets/components/LogoWithNetwork'
 import { useWatchlist } from 'hooks/watchlist/useWatchlist'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
@@ -35,7 +35,6 @@ export const SendToken = ({ onSend }: { onSend: () => void }): JSX.Element => {
     recipientType: AddrBookItemType | 'address'
   }>()
   const {
-    setToAddress,
     recipient,
     setError,
     addressToSend,
@@ -55,12 +54,6 @@ export const SendToken = ({ onSend }: { onSend: () => void }): JSX.Element => {
   const selectedCurrency = useSelector(selectSelectedCurrency)
   const [isTokenTouched, setIsTokenTouched] = useState(false)
   const [isAmountTouched, setIsAmountTouched] = useState(false)
-
-  useFocusEffect(
-    useCallback(() => {
-      setToAddress({ to, recipientType })
-    }, [recipientType, setToAddress, to])
-  )
 
   useEffect(() => {
     if (!isTokenTouched && selectedToken) {
