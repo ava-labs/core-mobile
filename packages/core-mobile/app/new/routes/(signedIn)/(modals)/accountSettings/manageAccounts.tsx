@@ -18,6 +18,7 @@ import { ScrollScreen } from 'common/components/ScrollScreen'
 import { TRUNCATE_ADDRESS_LENGTH } from 'common/consts/text'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import { showSnackbar } from 'common/utils/toast'
+import { UNKNOWN_AMOUNT } from 'consts/amount'
 import { useRouter } from 'expo-router'
 import { useBalanceForAccount } from 'new/common/contexts/useBalanceForAccount'
 import React, { useCallback, useMemo, useRef, useState } from 'react'
@@ -220,7 +221,9 @@ const AccountBalance = ({
   const { formatCurrency } = useFormatCurrency()
 
   const balance = useMemo(() => {
-    return formatCurrency({ amount: accountBalance })
+    return accountBalance === 0
+      ? formatCurrency({ amount: 0 }).replace(/[\d.,]+/g, UNKNOWN_AMOUNT)
+      : formatCurrency({ amount: accountBalance })
   }, [accountBalance, formatCurrency])
 
   const renderMaskView = useCallback(() => {
