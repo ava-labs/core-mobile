@@ -1,8 +1,6 @@
 import { router } from 'expo-router'
 import { Network } from '@avalabs/core-chains-sdk'
-import { CorePrimaryAccount } from '@avalabs/types'
 import {
-  Hex,
   ApprovalController as VmModuleApprovalController,
   ApprovalParams,
   ApprovalResponse,
@@ -16,6 +14,7 @@ import { walletConnectCache } from 'services/walletconnectv2/walletConnectCache/
 import { transactionSnackbar } from 'new/common/utils/toast'
 import { isInAppRequest } from 'store/rpc/utils/isInAppRequest'
 import { NavigationPresentationMode } from 'new/common/types'
+import { Account } from 'store/account'
 import { avalancheSignTransaction } from '../handlers/avalancheSignTransaction'
 import { ethSendTransaction } from '../handlers/ethSendTransaction'
 import { signMessage } from '../handlers/signMessage'
@@ -60,7 +59,7 @@ class ApprovalController implements VmModuleApprovalController {
         overrideData
       }: {
         network: Network
-        account: CorePrimaryAccount
+        account: Account
         maxFeePerGas?: bigint
         maxPriorityFeePerGas?: bigint
         overrideData?: string

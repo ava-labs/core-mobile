@@ -4,6 +4,7 @@ import WalletService from 'services/wallet/WalletService'
 import { rpcErrors } from '@metamask/rpc-errors'
 import { Account } from 'store/account/types'
 import { BtcTransactionRequest } from 'services/wallet/types'
+import { getAccountIndex } from 'store/account/utils'
 
 export const btcSignTransaction = async ({
   transactionData,
@@ -23,7 +24,7 @@ export const btcSignTransaction = async ({
 
     const signedTx = await WalletService.sign({
       transaction,
-      accountIndex: account.index,
+      accountIndex: getAccountIndex(account),
       network
     })
 

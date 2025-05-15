@@ -9,7 +9,7 @@ import {
 import WalletService from 'services/wallet/WalletService'
 import { rpcErrors } from '@metamask/rpc-errors'
 import { Account } from 'store/account/types'
-
+import { getAccountIndex } from 'store/account/utils'
 export const signMessage = async ({
   method,
   data,
@@ -27,7 +27,7 @@ export const signMessage = async ({
     const signedMessage = await WalletService.signMessage({
       rpcMethod: method,
       data,
-      accountIndex: account.index,
+      accountIndex: getAccountIndex(account),
       network
     })
 

@@ -37,7 +37,7 @@ const AssetsScreen: FC<Props> = ({
   const activeAccount = useSelector(selectActiveAccount)
 
   const isAllBalancesInaccurate = useSelector(
-    selectIsAllBalancesInaccurate(activeAccount?.index ?? 0)
+    selectIsAllBalancesInaccurate(activeAccount?.id ?? '')
   )
   const isBalanceLoading = useSelector(selectIsLoadingBalances)
   const isRefetchingBalance = useSelector(selectIsRefetchingBalances)

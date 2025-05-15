@@ -8,18 +8,20 @@ import {
 } from 'store/posthog/slice'
 import NetworkService from 'services/network/NetworkService'
 import { selectActiveAccount } from 'store/account/slice'
+import { Account } from 'store/account/types'
 import WalletService from 'services/wallet/WalletService'
 import Logger from 'utils/Logger'
 import { useCChainBaseFee } from 'hooks/useCChainBaseFee'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
 import { weiToNano } from 'utils/units/converter'
-import { CorePrimaryAccount } from '@avalabs/types'
+import { CorePrimaryAccount, CoreAccountType } from '@avalabs/types'
 import { Avalanche } from '@avalabs/core-wallets-sdk'
 import { Network } from '@avalabs/core-chains-sdk'
 import { pvm } from '@avalabs/avalanchejs'
 import { useAvalancheXpProvider } from 'hooks/networks/networkProviderHooks'
 import { getAssetId, addBufferToCChainBaseFee } from 'services/wallet/utils'
 import { SendErrorMessage } from 'errors/sendError'
+import { getAccountIndex } from 'store/account/utils'
 import { usePChainBalance } from './usePChainBalance'
 import { useGetFeeState } from './useGetFeeState'
 import { extractNeededAmount } from './utils/extractNeededAmount'
@@ -40,7 +42,7 @@ export const useClaimFees = (): {
   feeCalculationError?: SendErrorMessage
 } => {
   const isDevMode = useSelector(selectIsDeveloperMode)
-  const activeAccount = useSelector(selectActiveAccount)
+  const activeAccount: Account | undefined = useSelector(selectActiveAccount)
   const pFeeAdjustmentThreshold = useSelector(selectPFeeAdjustmentThreshold)
   const [totalFees, setTotalFees] = useState<TokenUnit>()
   const [amountToTransfer, setAmountToTransfer] = useState<TokenUnit>()
@@ -68,6 +70,7 @@ export const useClaimFees = (): {
     pChainBalance?.data?.balancePerType.unlockedUnstaked
   ])
 
+  // eslint-disable-next-line sonarjs/cognitive-complexity
   useEffect(() => {
     const calculateFees = async (): Promise<void> => {
       if (xpProvider === undefined) return
@@ -79,13 +82,16 @@ export const useClaimFees = (): {
 
       if (!activeAccount) throw new Error('No active account')
 
+      if (activeAccount.type === CoreAccountType.IMPORTED)
+        throw new Error('Invalid account type')
+
       const instantBaseFee = addBufferToCChainBaseFee(
         baseFee,
         cBaseFeeMultiplier
       )
 
       const unsignedTx = await WalletService.createImportCTx({
-        accountIndex: activeAccount.index,
+        accountIndex: getAccountIndex(activeAccount),
         baseFeeInNAvax: weiToNano(instantBaseFee.toSubUnit()),
         avaxXPNetwork,
         sourceChain: 'P',
