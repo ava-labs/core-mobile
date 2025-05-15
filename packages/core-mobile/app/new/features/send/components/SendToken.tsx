@@ -18,22 +18,17 @@ import {
 } from '@avalabs/k2-alpine'
 import { ScrollScreen } from 'common/components/ScrollScreen'
 import { loadAvatar } from 'common/utils/loadAvatar'
-import { useLocalSearchParams, useRouter } from 'expo-router'
+import { useRouter } from 'expo-router'
 import { LogoWithNetwork } from 'features/portfolio/assets/components/LogoWithNetwork'
 import { useWatchlist } from 'hooks/watchlist/useWatchlist'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { useSelector } from 'react-redux'
-import { AddrBookItemType } from 'store/addressBook'
 import { selectSelectedCurrency } from 'store/settings/currency'
 import { TRUNCATE_ADDRESS_LENGTH } from 'common/consts/text'
 import { useSendContext } from '../context/sendContext'
 import { useSendSelectedToken } from '../store'
 
 export const SendToken = ({ onSend }: { onSend: () => void }): JSX.Element => {
-  const { to, recipientType } = useLocalSearchParams<{
-    to: string // accountIndex | contactUID | address
-    recipientType: AddrBookItemType | 'address'
-  }>()
   const {
     recipient,
     setError,
@@ -113,8 +108,8 @@ export const SendToken = ({ onSend }: { onSend: () => void }): JSX.Element => {
 
   const handleSelectToken = useCallback((): void => {
     // @ts-ignore TODO: make routes typesafe
-    navigate({ pathname: '/selectSendToken', params: { to, recipientType } })
-  }, [navigate, recipientType, to])
+    navigate({ pathname: '/selectSendToken', params: toAddress })
+  }, [navigate])
 
   const validateSendAmount = useCallback(
     async (amt: TokenUnit) => {
