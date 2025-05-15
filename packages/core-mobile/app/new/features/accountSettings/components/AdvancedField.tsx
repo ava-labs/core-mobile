@@ -136,6 +136,11 @@ export const AdvancedField = ({
     }
   }, [type])
 
+  const onClear = useCallback(() => {
+    setInputValue('')
+    onEdit()
+  }, [onEdit])
+
   const renderContent = (): React.ReactNode => {
     if (isEditing) return null
     if (inputValue?.length)
@@ -149,7 +154,7 @@ export const AdvancedField = ({
           }}>
           {disabled ? null : (
             <TouchableOpacity
-              onPress={handleDelete}
+              onPress={type === 'address' ? handleDelete : onClear}
               style={{
                 paddingLeft: 16,
                 paddingRight: 14
