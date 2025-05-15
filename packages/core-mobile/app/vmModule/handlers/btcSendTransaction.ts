@@ -10,6 +10,7 @@ import { BtcTransactionRequest } from 'services/wallet/types'
 import { BitcoinInputUTXO, createTransferTx } from '@avalabs/core-wallets-sdk'
 import ModuleManager from 'vmModule/ModuleManager'
 import { mapToVmNetwork } from 'vmModule/utils/mapToVmNetwork'
+import { getAccountIndex } from 'store/account/utils'
 
 export const btcSendTransaction = async ({
   transactionData,
@@ -52,7 +53,7 @@ export const btcSendTransaction = async ({
 
     const signedTx = await WalletService.sign({
       transaction,
-      accountIndex: account.index,
+      accountIndex: getAccountIndex(account),
       network
     })
 

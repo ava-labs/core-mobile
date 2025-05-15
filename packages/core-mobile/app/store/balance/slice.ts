@@ -11,8 +11,6 @@ import {
   selectEnabledChainIds,
   selectNetworks
 } from 'store/network'
-import { getAccountIndex } from 'store/account/utils'
-import { Network } from '@avalabs/core-chains-sdk'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { TokenType } from '@avalabs/vm-module-types'
 import {
@@ -67,12 +65,12 @@ export const selectBalanceStatus = (state: RootState): QueryStatus =>
   state.balance.status
 
 export const selectIsBalanceLoadedForAccount =
-  (accountIndex: number) => (state: RootState) => {
+  (accountUuid: string) => (state: RootState) => {
     const networks = selectNetworks(state)
     const foundBalance = Object.values(state.balance.balances).find(balance => {
       const network = networks[balance.chainId]
       return (
-        balance.accountIndex === accountIndex &&
+        balance.accountUuid === accountUuid &&
         network?.chainId === balance.chainId
       )
     })
@@ -172,9 +170,9 @@ export const selectTokensWithBalanceForAccount = createSelector(
 )
 
 export const selectBalanceTotalForAccount =
-  (accountIndex: number, tokenVisibility: TokenVisibility) =>
+  (accountUuid: string, tokenVisibility: TokenVisibility) =>
   (state: RootState) => {
-    const tokens = selectTokensWithBalanceForAccount(state, accountIndex)
+    const tokens = selectTokensWithBalanceForAccount(state, accountUuid)
     const enabledChainIds = selectEnabledChainIds(state)
 
     return tokens

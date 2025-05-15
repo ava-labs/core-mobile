@@ -406,7 +406,7 @@ export const migrations = {
 
     return newState
   },
-  19: (state: any) => {
+  20: (state: any) => {
     Logger.info('state.account', state.account)
     // Check if migration is needed (presence of activeAccountIndex)
     if (state.account?.activeAccountIndex === undefined) {

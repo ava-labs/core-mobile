@@ -10,7 +10,7 @@ import {
 } from 'store/balance'
 
 export const useBalanceForAccount = (
-  accountIndex: number
+  accountUuid: string
 ): {
   isBalanceLoaded: boolean
   fetchBalance: () => void
@@ -23,17 +23,17 @@ export const useBalanceForAccount = (
   const [isFetchingBalance, setIsFetchingBalance] = useState(false)
   const tokenVisibility = useSelector(selectTokenVisibility)
   const accountBalance = useSelector(
-    selectBalanceTotalInCurrencyForAccount(accountIndex, tokenVisibility)
+    selectBalanceTotalInCurrencyForAccount(accountUuid, tokenVisibility)
   )
 
   const isBalanceLoaded = useSelector(
-    selectIsBalanceLoadedForAccount(accountIndex)
+    selectIsBalanceLoadedForAccount(accountUuid)
   )
 
   const fetchBalance = useCallback(() => {
-    dispatch(fetchBalanceForAccount({ accountIndex }))
+    dispatch(fetchBalanceForAccount({ accountUuid }))
     setIsFetchingBalance(true)
-  }, [dispatch, accountIndex])
+  }, [dispatch, accountUuid])
 
   useEffect(() => {
     if (!isBalanceLoading && isFetchingBalance) {

@@ -36,6 +36,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import NetworkService from 'services/network/NetworkService'
 import { selectActiveAccount } from 'store/account'
+import { getAccountIndex } from 'store/account/utils'
 import { scheduleStakingCompleteNotifications } from 'store/notifications'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { truncateNodeId } from 'utils/Utils'
@@ -235,14 +236,14 @@ const StakeConfirmScreen = (): JSX.Element => {
           {
             txHash,
             endTimestamp: getUnixTime(validatedStakingEndTime),
-            accountIndex: activeAccount?.index,
+            accountIndex: getAccountIndex(activeAccount),
             isDeveloperMode
           }
         ])
       )
     },
     [
-      activeAccount?.index,
+      activeAccount,
       dispatch,
       isDeveloperMode,
       validatedStakingEndTime,

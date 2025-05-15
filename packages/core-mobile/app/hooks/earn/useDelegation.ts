@@ -23,6 +23,7 @@ import { importP } from 'services/earn/importP'
 import EarnService from 'services/earn/EarnService'
 import { type Compute, type Delegate } from 'contexts/DelegationContext'
 import Logger from 'utils/Logger'
+import { getAccountIndex } from 'store/account/utils'
 import { useAvalancheXpProvider } from '../networks/networkProviderHooks'
 import useCChainNetwork from './useCChainNetwork'
 
@@ -72,7 +73,7 @@ export const useDelegation = (): {
         pAddress: activeAccount.addressPVM,
         cAddress: activeAccount.addressC,
         currency: selectedCurrency,
-        accountIndex: activeAccount.index,
+        accountIndex: getAccountIndex(activeAccount),
         avaxXPNetwork: network,
         cChainNetwork,
         provider: avaxProvider,

@@ -4,6 +4,7 @@ import walletService from 'services/wallet/WalletService'
 import { rpcErrors } from '@metamask/rpc-errors'
 import { RpcMethod, RpcRequest } from 'store/rpc/types'
 import { PubKeyType } from 'services/wallet/types'
+import { getAccountIndex } from 'store/account/utils'
 import { HandleResponse, RpcRequestHandler } from '../types'
 
 export type AvalancheGetAccountPubKeyRpcRequest =
@@ -26,7 +27,9 @@ class AvalancheGetAccountPubKeyHandler
       }
     }
 
-    const publicKey = await walletService.getPublicKey(activeAccount.index)
+    const publicKey = await walletService.getPublicKey(
+      getAccountIndex(activeAccount)
+    )
 
     return { success: true, value: publicKey }
   }

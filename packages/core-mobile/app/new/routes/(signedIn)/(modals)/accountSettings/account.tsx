@@ -81,8 +81,8 @@ const AccountScreen = (): JSX.Element => {
   ])
 
   const renderFooter = useCallback(() => {
-    return <AccountButtons accountIndex={account?.index ?? 0} />
-  }, [account?.index])
+    return <AccountButtons accountUuid={account?.id ?? ''} />
+  }, [account?.id])
 
   if (account === undefined) {
     return <></>

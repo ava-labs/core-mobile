@@ -9,9 +9,7 @@ import {
   View
 } from '@avalabs/k2-alpine'
 import { ScrollScreen } from 'common/components/ScrollScreen'
-import { useFocusEffect } from 'expo-router'
 import { useCreatePin } from 'features/onboarding/hooks/useCreatePin'
-import React, { useCallback, useRef } from 'react'
 import { InteractionManager } from 'react-native'
 import { useStoredBiometrics } from 'common/hooks/useStoredBiometrics'
 

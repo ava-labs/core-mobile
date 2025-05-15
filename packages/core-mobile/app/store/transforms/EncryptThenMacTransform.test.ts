@@ -132,7 +132,7 @@ const initialState = {
         walletName: 'Wallet 1'
       }
     },
-    activeAccountIndex: 0
+    activeAccountId: 'id0'
   } as AccountsState,
   notifications: {
     notificationSubscriptions: {}

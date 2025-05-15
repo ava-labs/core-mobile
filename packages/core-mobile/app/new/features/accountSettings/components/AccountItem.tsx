@@ -43,7 +43,7 @@ export const AccountItem = memo(
       fetchBalance,
       isFetchingBalance,
       isBalanceLoaded
-    } = useBalanceForAccount(account.index)
+    } = useBalanceForAccount(account.id)
     const isPrivacyModeEnabled = useSelector(selectIsPrivacyModeEnabled)
     const {
       theme: { colors, isDark }
@@ -169,7 +169,7 @@ export const AccountItem = memo(
             </Text>
             <View onTouchStart={e => e.stopPropagation()}>
               <TouchableOpacity
-              onPress={() => gotoAccountDetails(account.id)}
+                onPress={() => gotoAccountDetails(account.id)}
                 hitSlop={16}>
                 <Icons.Alert.AlertCircle
                   color={iconColor}

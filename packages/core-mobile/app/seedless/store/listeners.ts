@@ -13,8 +13,9 @@ import { WalletType } from 'services/wallet/types'
 import { Action } from '@reduxjs/toolkit'
 import { AppStartListening, AppListenerEffectAPI } from 'store/types'
 import { onTokenExpired } from 'seedless/store/slice'
-import { setAccountTitle } from 'store/account/slice'
+import { selectAccountByUuid, setAccountTitle } from 'store/account/slice'
 import { router } from 'expo-router'
+import { getAccountIndex } from 'store/account/utils'
 
 const refreshSeedlessToken = async (): Promise<void> => {
   if (WalletService.walletType !== WalletType.SEEDLESS) {
@@ -56,16 +57,21 @@ const handleTokenExpired = async (): Promise<void> => {
 }
 
 const handleSetAccountTitle = async ({
-  accountIndex,
+  accountId,
   name,
-  walletType = WalletType.UNSET
+  walletType = WalletType.UNSET,
+  listenerApi
 }: {
-  accountIndex: number
+  accountId: string
   name: string
   walletType?: WalletType
+  listenerApi: AppListenerEffectAPI
 }): Promise<void> => {
+  const { getState } = listenerApi
   if (walletType !== WalletType.SEEDLESS) return
-  SeedlessService.setAcountName(name, accountIndex)
+  const account = selectAccountByUuid(accountId)(getState())
+  if (!account) return
+  SeedlessService.setAcountName(name, getAccountIndex(account))
 }
 
 const signOutSocial = async (_: Action): Promise<void> => {
@@ -98,11 +104,12 @@ export const addSeedlessListeners = (
 
   startListening({
     actionCreator: setAccountTitle,
-    effect: async action => {
+    effect: async (action, listenerApi) => {
       handleSetAccountTitle({
-        accountIndex: action.payload.accountIndex,
+        accountId: action.payload.accountId,
         name: action.payload.title,
-        walletType: action.payload.walletType
+        walletType: action.payload.walletType,
+        listenerApi
       })
     }
   })

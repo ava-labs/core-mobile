@@ -7,6 +7,7 @@ import { pvm, UnsignedTx } from '@avalabs/avalanchejs'
 import NetworkService from 'services/network/NetworkService'
 import { FundsStuckError } from 'hooks/earn/errors'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
+import { getAccountIndex } from 'store/account/utils'
 import { maxTransactionStatusCheckRetries } from './utils'
 
 export type ExportPParams = {
@@ -33,7 +34,7 @@ export async function exportP({
 
   const unsignedTx = await WalletService.createExportPTx({
     amountInNAvax: requiredAmount.toSubUnit(),
-    accountIndex: activeAccount.index,
+    accountIndex: getAccountIndex(activeAccount),
     avaxXPNetwork,
     destinationChain: 'C',
     destinationAddress: activeAccount.addressCoreEth,
@@ -42,7 +43,7 @@ export async function exportP({
 
   const signedTxJson = await WalletService.sign({
     transaction: { tx: unsignedTx } as AvalancheTransactionRequest,
-    accountIndex: activeAccount.index,
+    accountIndex: getAccountIndex(activeAccount),
     network: avaxXPNetwork
   })
   const signedTx = UnsignedTx.fromJSON(signedTxJson).getSignedTx()
