@@ -12,7 +12,8 @@ import { ScrollView } from 'react-native-gesture-handler'
 import {
   KeyboardAwareScrollView,
   KeyboardAwareScrollViewProps,
-  KeyboardStickyView
+  KeyboardStickyView,
+  useKeyboardState
 } from 'react-native-keyboard-controller'
 import Animated, {
   interpolate,
@@ -89,6 +90,7 @@ export const ScrollScreen = ({
 }: ScrollScreenProps): JSX.Element => {
   const insets = useSafeAreaInsets()
   const headerHeight = useHeaderHeight()
+  const keyboard = useKeyboardState()
   const [headerLayout, setHeaderLayout] = useState<
     LayoutRectangle | undefined
   >()
@@ -191,14 +193,20 @@ export const ScrollScreen = ({
           showsVerticalScrollIndicator={false}
           style={{
             flex: 1,
-            marginBottom: disableStickyFooter ? -footerHeight.value : 0
+            marginBottom:
+              disableStickyFooter && keyboard?.isVisible
+                ? -footerHeight.value
+                : 0
           }}
           {...props}
           contentContainerStyle={[
             props?.contentContainerStyle,
             {
               paddingTop: headerHeight,
-              paddingBottom: disableStickyFooter ? 0 : insets.bottom + 32
+              paddingBottom:
+                disableStickyFooter && keyboard?.isVisible
+                  ? 0
+                  : insets.bottom + 32
             }
           ]}
           onScroll={onScroll}>
