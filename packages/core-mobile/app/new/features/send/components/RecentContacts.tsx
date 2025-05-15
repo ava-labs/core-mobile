@@ -20,9 +20,10 @@ import { useSelector } from 'react-redux'
 import { Contact } from 'store/addressBook'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { TRUNCATE_ADDRESS_LENGTH } from 'common/consts/text'
+import { useGlobalSearchParams } from 'expo-router'
+import { NetworkVMType } from '@avalabs/vm-module-types'
 import EMPTY_ADDRESS_BOOK_ICON from '../../../assets/icons/address_book_empty.png'
-import { useSendSelectedToken } from '../store'
-import { getAddressByChainId } from '../utils/getAddressByChainId'
+import { getAddressByVmName } from '../utils/getAddressByVmName'
 
 interface Props {
   recentAddresses: Contact[]
@@ -44,7 +45,7 @@ export const RecentContacts = ({
   } = useTheme()
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const [searchText, setSearchText] = useState('')
-  const [selectedToken] = useSendSelectedToken()
+  const { vmName } = useGlobalSearchParams<{ vmName: NetworkVMType }>()
 
   const searchResults = useMemo(() => {
     if (searchText.trim() === '') {
@@ -84,9 +85,9 @@ export const RecentContacts = ({
 
   const renderItem = useCallback(
     (item: Contact, index: number): React.JSX.Element => {
-      const address = getAddressByChainId({
+      const address = getAddressByVmName({
         contact: item,
-        chainId: selectedToken?.networkChainId,
+        vmName,
         isDeveloperMode
       })
       const { name } = item
@@ -173,7 +174,7 @@ export const RecentContacts = ({
       )
     },
     [
-      selectedToken?.networkChainId,
+      vmName,
       isDeveloperMode,
       searchResults.length,
       colors.$textSecondary,

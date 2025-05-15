@@ -60,12 +60,14 @@ import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { selectSelectedCurrency } from 'store/settings/currency'
 import { selectIsPrivacyModeEnabled } from 'store/settings/securityPrivacy'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
+import { useNetworks } from 'hooks/networks/useNetworks'
 
 export const TokenDetailScreen = (): React.JSX.Element => {
   const {
     theme: { colors }
   } = useTheme()
   const { navigate, back } = useRouter()
+  const { getNetwork } = useNetworks()
   const { navigateToSwap } = useNavigateToSwap()
   const { addStake, canAddStake } = useAddStake()
   const botomInset = useSafeAreaInsets().bottom
@@ -159,9 +161,12 @@ export const TokenDetailScreen = (): React.JSX.Element => {
 
   const handleSend = useCallback((): void => {
     setSelectedToken(token)
-    // @ts-ignore TODO: make routes typesafe
-    navigate('/send')
-  }, [navigate, setSelectedToken, token])
+    navigate({
+      // @ts-ignore TODO: make routes typesafe
+      pathname: '/send',
+      params: { vmName: getNetwork(token?.networkChainId)?.vmName }
+    })
+  }, [getNetwork, navigate, setSelectedToken, token])
 
   const actionButtons: ActionButton[] = useMemo(() => {
     const buttons: ActionButton[] = [
