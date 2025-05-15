@@ -18,26 +18,20 @@ export const isValidAddressByVmName = ({
     })
   }
 
-  if (
-    vmName === NetworkVMType.EVM &&
-    isValidAddress({
+  if (vmName === NetworkVMType.EVM) {
+    return isValidAddress({
       addressType: isDeveloperMode ? AddressType.EVM : AddressType.EVM_TESTNET,
       address,
       isDeveloperMode
     })
-  ) {
-    return true
   }
 
-  if (
-    (vmName === NetworkVMType.PVM || vmName === NetworkVMType.AVM) &&
-    isValidAddress({
+  if (vmName === NetworkVMType.PVM || vmName === NetworkVMType.AVM) {
+    return isValidAddress({
       addressType: isDeveloperMode ? AddressType.XP_TESTNET : AddressType.XP,
       address,
       isDeveloperMode
     })
-  ) {
-    return true
   }
 
   return (

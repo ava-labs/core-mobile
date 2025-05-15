@@ -10,7 +10,11 @@ const BTC_ADDRESS_TESTNET = 'tb1q0hchrw5nnru09292jz67zhzrq56tapgaftw7ps'
 describe('isValidAddress', () => {
   it('should return true for valid CChain address', () => {
     expect(
-      isValidAddress({ addressType: AddressType.EVM, address: C_ADDRESS })
+      isValidAddress({
+        addressType: AddressType.EVM,
+        address: C_ADDRESS,
+        isDeveloperMode: false
+      })
     ).toBe(true)
   })
 
@@ -18,7 +22,8 @@ describe('isValidAddress', () => {
     expect(
       isValidAddress({
         addressType: AddressType.EVM,
-        address: 'invalidCChainAddress'
+        address: 'invalidCChainAddress',
+        isDeveloperMode: false
       })
     ).toBe(false)
   })
@@ -81,14 +86,19 @@ describe('isValidAddress', () => {
   })
   it('should return true for valid BTC address in production mode', () => {
     expect(
-      isValidAddress({ addressType: AddressType.BTC, address: BTC_ADDRESS })
+      isValidAddress({
+        addressType: AddressType.BTC,
+        address: BTC_ADDRESS,
+        isDeveloperMode: false
+      })
     ).toBe(true)
   })
   it('should return false for invalid BTC address in production mode', () => {
     expect(
       isValidAddress({
         addressType: AddressType.BTC,
-        address: 'invalidBTCAddress'
+        address: 'invalidBTCAddress',
+        isDeveloperMode: false
       })
     ).toBe(false)
   })

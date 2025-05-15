@@ -18,12 +18,14 @@ export const RecentContactsScreen = (): JSX.Element => {
 
   const handleSelectContact = useCallback(
     (contact: Contact): void => {
-      setToAddress({ to: contact.id, recipientType: contact.type })
+      setToAddress({
+        to: contact.id,
+        recipientType: contact.type
+      })
       resetAmount()
       navigate({
         // @ts-ignore TODO: make routes typesafe
-        pathname: '/send/send',
-        params: { to: contact.id, recipientType: contact.type }
+        pathname: '/send/send'
       })
     },
     [navigate, resetAmount, setToAddress]
@@ -37,7 +39,10 @@ export const RecentContactsScreen = (): JSX.Element => {
 
   const handleSumbitEditing = useCallback(
     (text: string): void => {
-      setToAddress({ to: text, recipientType: 'address' })
+      setToAddress({
+        to: text,
+        recipientType: 'address'
+      })
       resetAmount()
       navigate({
         // @ts-ignore TODO: make routes typesafe
