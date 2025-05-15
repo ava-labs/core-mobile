@@ -1,6 +1,5 @@
 import React, { useLayoutEffect, useCallback, useEffect, useState } from 'react'
 import { StyleSheet, View } from 'react-native'
-import { CorePrimaryAccount } from '@avalabs/types'
 import { useDappConnectionV2 } from 'hooks/useDappConnectionV2'
 import { useSelector } from 'react-redux'
 import { selectAccounts, selectActiveAccount } from 'store/account/slice'
@@ -14,6 +13,7 @@ import { SessionProposalParams } from 'services/walletconnectv2/walletConnectCac
 import { ActionSheet } from 'new/common/components/ActionSheet'
 import { isSiteScanResponseMalicious } from 'store/rpc/handlers/wc_sessionRequest/utils'
 import { AlertType } from '@avalabs/vm-module-types'
+import { Account } from 'store/account'
 import { SelectAccounts } from '../components/SelectAccounts'
 
 const showNoActiveAccountMessage = (): void => {
@@ -44,9 +44,7 @@ const AuthorizeDappScreen = ({
 
   const activeAccount = useSelector(selectActiveAccount)
   const allAccounts = useSelector(selectAccounts)
-  const [selectedAccounts, setSelectedAccounts] = useState<
-    CorePrimaryAccount[]
-  >([])
+  const [selectedAccounts, setSelectedAccounts] = useState<Account[]>([])
   const peerMeta = request.data.params.proposer.metadata
   const approveDisabled = selectedAccounts.length === 0
 
@@ -68,7 +66,7 @@ const AuthorizeDappScreen = ({
   }, [activeAccount, request, rejectAndClose])
 
   const onSelect = useCallback(
-    (account: CorePrimaryAccount): void => {
+    (account: Account): void => {
       if (!selectedAccounts.find(item => item.addressC === account.addressC))
         setSelectedAccounts(current => [...current, account])
       else

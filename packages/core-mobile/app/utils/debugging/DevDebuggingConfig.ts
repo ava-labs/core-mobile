@@ -9,7 +9,7 @@ const DevDebuggingConfig = {
   SHOW_DEMO_NFTS: false,
   API_MOCKING: false,
   SENTRY_SPOTLIGHT: false,
-  STATE_PERSISTENCE_DEBUG: true
+  STATE_PERSISTENCE_DEBUG: false
 }
 
 export default DevDebuggingConfig

@@ -77,10 +77,11 @@ describe('earn/exportP', () => {
         })
         expect(WalletService.createExportPTx).toHaveBeenCalledWith({
           amountInNAvax: BigInt(10000000000),
-          accountIndex: undefined,
+          accountIndex: 0,
           avaxXPNetwork: NetworkService.getAvalancheNetworkP(false),
           destinationChain: 'C',
-          destinationAddress: undefined
+          destinationAddress: undefined,
+          feeState: undefined
         })
       }).not.toThrow()
     })

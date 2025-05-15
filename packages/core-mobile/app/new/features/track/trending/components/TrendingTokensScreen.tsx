@@ -29,7 +29,7 @@ const TrendingTokensScreen = ({
   const activeAccount = useSelector(selectActiveAccount)
   const tokenVisibility = useSelector(selectTokenVisibility)
   const balanceTotal = useSelector(
-    selectBalanceTotalForAccount(activeAccount?.index ?? 0, tokenVisibility)
+    selectBalanceTotalForAccount(activeAccount?.id ?? '', tokenVisibility)
   )
   const isZeroBalance = balanceTotal === 0n
 

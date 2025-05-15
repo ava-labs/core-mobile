@@ -12,7 +12,7 @@ import { mapToVmNetwork } from 'vmModule/utils/mapToVmNetwork'
 import { coingeckoInMemoryCache } from 'utils/coingeckoInMemoryCache'
 
 export type BalancesForAccount = {
-  accountIndex: number
+  accountUuid: string
   chainId: number
   accountAddress: string
   tokens: (TokenWithBalance | Error)[]
@@ -45,7 +45,7 @@ export class BalanceService {
     const balances = balancesResponse[accountAddress] ?? {}
     if ('error' in balances) {
       return {
-        accountIndex: account.index,
+        accountUuid: account.id,
         chainId: network.chainId,
         tokens: [],
         accountAddress
@@ -53,7 +53,7 @@ export class BalanceService {
     }
 
     return {
-      accountIndex: account.index,
+      accountUuid: account.id,
       chainId: network.chainId,
       tokens: Object.values(balances),
       accountAddress

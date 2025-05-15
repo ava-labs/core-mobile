@@ -1,18 +1,23 @@
 import { SeedlessPubKeysStorage } from 'seedless/services/storage/SeedlessPubKeysStorage'
 import Logger from 'utils/Logger'
 import { transformKeyInfosToPubKeys } from 'seedless/services/wallet/transformKeyInfosToPubkeys'
-import { Avalanche, getXpubFromMnemonic } from '@avalabs/core-wallets-sdk'
+import {
+  Avalanche,
+  getPublicKeyFromPrivateKey,
+  getXpubFromMnemonic
+} from '@avalabs/core-wallets-sdk'
 import SeedlessService from 'seedless/services/SeedlessService'
 import { WalletType } from './types'
 import MnemonicWalletInstance from './MnemonicWallet'
+import PrivateKeyWalletInstance from './PrivateKeyWallet'
 
 class WalletInitializer {
   async initialize({
-    mnemonic,
+    walletSecret,
     walletType,
     isLoggingIn
   }: {
-    mnemonic?: string
+    walletSecret?: string
     walletType: WalletType
     isLoggingIn: boolean
   }): Promise<void> {
@@ -33,13 +38,13 @@ class WalletInitializer {
         break
       }
       case WalletType.MNEMONIC: {
-        if (!mnemonic) throw new Error('Mnemonic not provided')
+        if (!walletSecret) throw new Error('Mnemonic not provided')
 
         Logger.info('getting xpub from mnemonic')
 
-        const xpubPromise = getXpubFromMnemonic(mnemonic)
+        const xpubPromise = getXpubFromMnemonic(walletSecret)
         const xpubXPPromise = new Promise<string>(resolve => {
-          resolve(Avalanche.getXpubFromMnemonic(mnemonic))
+          resolve(Avalanche.getXpubFromMnemonic(walletSecret))
         })
         const pubKeys = await Promise.allSettled([xpubPromise, xpubXPPromise])
         if (pubKeys[0].status === 'fulfilled') {
@@ -55,7 +60,19 @@ class WalletInitializer {
           )
         }
 
-        MnemonicWalletInstance.mnemonic = mnemonic
+        MnemonicWalletInstance.mnemonic = walletSecret
+        break
+      }
+      case WalletType.PRIVATE_KEY: {
+        if (!walletSecret) throw new Error('Private key not provided')
+
+        PrivateKeyWalletInstance.privateKey = walletSecret
+        const pubKey = getPublicKeyFromPrivateKey(
+          Buffer.from(walletSecret, 'hex')
+        )
+        PrivateKeyWalletInstance.xpub = pubKey.toString('hex')
+        PrivateKeyWalletInstance.xpubXP = pubKey.toString('hex')
+
         break
       }
       default:
@@ -74,6 +91,11 @@ class WalletInitializer {
         MnemonicWalletInstance.mnemonic = undefined
         MnemonicWalletInstance.xpub = undefined
         MnemonicWalletInstance.xpubXP = undefined
+        break
+      case WalletType.PRIVATE_KEY:
+        PrivateKeyWalletInstance.privateKey = undefined
+        PrivateKeyWalletInstance.xpub = undefined
+        PrivateKeyWalletInstance.xpubXP = undefined
         break
       default:
         throw new Error(

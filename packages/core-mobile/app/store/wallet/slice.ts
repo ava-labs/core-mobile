@@ -28,7 +28,14 @@ const walletsSlice = createSlice({
       }
     },
     setActiveWallet: (state, action: PayloadAction<string>) => {
-      state.activeWalletId = action.payload
+      const newActiveId = action.payload
+
+      // Update active flags
+      Object.values(state.wallets).forEach(wallet => {
+        wallet.isActive = wallet.id === newActiveId
+      })
+
+      state.activeWalletId = newActiveId
     },
     removeWallet: (state, action: PayloadAction<string>) => {
       const walletId = action.payload
@@ -47,6 +54,7 @@ const walletsSlice = createSlice({
         const nextWalletId = walletIds[currentIndex + 1] || walletIds[0]
         if (nextWalletId && state.wallets[nextWalletId]) {
           state.activeWalletId = nextWalletId
+          state.wallets[nextWalletId].isActive = true
         }
       }
     }

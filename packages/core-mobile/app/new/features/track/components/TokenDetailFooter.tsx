@@ -26,7 +26,7 @@ export const TokenDetailFooter = ({
   const activeAccount = useSelector(selectActiveAccount)
   const tokenVisibility = useSelector(selectTokenVisibility)
   const balanceTotal = useSelector(
-    selectBalanceTotalForAccount(activeAccount?.index ?? 0, tokenVisibility)
+    selectBalanceTotalForAccount(activeAccount?.id ?? '', tokenVisibility)
   )
   const isZeroBalance = balanceTotal === 0n
   const { hasEnoughAvax } = useHasEnoughAvaxToStake()
@@ -83,7 +83,7 @@ export const TokenDetailFooter = ({
     actions.push(buyButton)
 
     // however, only show swap button if the token is a trending one
-    // as we currently only support swapping on Avanlanche network
+    // as we currently only support swapping on Avalanche network
     // (all trending tokens are on Avalanche network)
     tokenInfo &&
       tokenInfo.marketType === MarketType.TRENDING &&

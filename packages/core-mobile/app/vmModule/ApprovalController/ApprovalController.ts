@@ -1,19 +1,20 @@
 import { router } from 'expo-router'
 import { Network } from '@avalabs/core-chains-sdk'
-import { CorePrimaryAccount } from '@avalabs/types'
 import {
-  Hex,
   ApprovalController as VmModuleApprovalController,
   ApprovalParams,
   ApprovalResponse,
-  RpcMethod
+  RpcMethod,
+  RequestPublicKeyParams
 } from '@avalabs/vm-module-types'
 import { providerErrors, rpcErrors } from '@metamask/rpc-errors'
+import walletService from 'services/wallet/WalletService'
 import { btcSignTransaction } from 'vmModule/handlers/btcSignTransaction'
 import { walletConnectCache } from 'services/walletconnectv2/walletConnectCache/walletConnectCache'
 import { transactionSnackbar } from 'new/common/utils/toast'
 import { isInAppRequest } from 'store/rpc/utils/isInAppRequest'
 import { NavigationPresentationMode } from 'new/common/types'
+import { Account } from 'store/account'
 import { avalancheSignTransaction } from '../handlers/avalancheSignTransaction'
 import { ethSendTransaction } from '../handlers/ethSendTransaction'
 import { signMessage } from '../handlers/signMessage'
@@ -21,8 +22,10 @@ import { btcSendTransaction } from '../handlers/btcSendTransaction'
 import { avalancheSendTransaction } from '../handlers/avalancheSendTransaction'
 
 class ApprovalController implements VmModuleApprovalController {
-  requestPublicKey(): Promise<Hex> {
-    return Promise.reject(providerErrors.unsupportedMethod('requestPublicKey'))
+  async requestPublicKey(params: RequestPublicKeyParams): Promise<string> {
+    const accountIndex = parseInt(params.secretId)
+    const pubKey = await walletService.getPublicKey(accountIndex)
+    return pubKey.evm
   }
 
   onTransactionPending(): void {
@@ -56,7 +59,7 @@ class ApprovalController implements VmModuleApprovalController {
         overrideData
       }: {
         network: Network
-        account: CorePrimaryAccount
+        account: Account
         maxFeePerGas?: bigint
         maxPriorityFeePerGas?: bigint
         overrideData?: string

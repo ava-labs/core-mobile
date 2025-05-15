@@ -6,6 +6,7 @@ import { avaxSerial, Credential, UnsignedTx, utils } from '@avalabs/avalanchejs'
 import { Avalanche } from '@avalabs/core-wallets-sdk'
 import Logger from 'utils/Logger'
 import { Network } from '@avalabs/core-chains-sdk'
+import { getAccountIndex } from 'store/account/utils'
 
 export const avalancheSignTransaction = async ({
   unsignedTxJson,
@@ -30,7 +31,7 @@ export const avalancheSignTransaction = async ({
       transaction: {
         tx: unsignedTx
       },
-      accountIndex: account.index,
+      accountIndex: getAccountIndex(account),
       network
     })
 

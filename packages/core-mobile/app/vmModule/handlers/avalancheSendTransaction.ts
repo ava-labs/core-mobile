@@ -5,6 +5,7 @@ import networkService from 'services/network/NetworkService'
 import { ApprovalResponse, Hex } from '@avalabs/vm-module-types'
 import { EVM, EVMUnsignedTx, UnsignedTx } from '@avalabs/avalanchejs'
 import { Avalanche } from '@avalabs/core-wallets-sdk'
+import { getAccountIndex } from 'store/account/utils'
 
 export const avalancheSendTransaction = async ({
   unsignedTxJson,
@@ -54,7 +55,7 @@ export const avalancheSendTransaction = async ({
         externalIndices,
         internalIndices
       },
-      accountIndex: account.index
+      accountIndex: getAccountIndex(account)
     })
 
     const signedTransaction =

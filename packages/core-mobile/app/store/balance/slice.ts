@@ -42,8 +42,8 @@ const updateBalanceForKey = (
   state.balances[key] = balance
 }
 
-export const getKey = (chainId: number, accountIndex: number): string =>
-  `${chainId}-${accountIndex}`
+export const getKey = (chainId: number, accountUuid: string): string =>
+  `${chainId}-${accountUuid}`
 
 export const balanceSlice = createSlice({
   name: reducerName,
@@ -65,12 +65,12 @@ export const selectBalanceStatus = (state: RootState): QueryStatus =>
   state.balance.status
 
 export const selectIsBalanceLoadedForAccount =
-  (accountIndex: number) => (state: RootState) => {
+  (accountUuid: string) => (state: RootState) => {
     const networks = selectNetworks(state)
     const foundBalance = Object.values(state.balance.balances).find(balance => {
       const network = networks[balance.chainId]
       return (
-        balance.accountIndex === accountIndex &&
+        balance.accountUuid === accountUuid &&
         network?.chainId === balance.chainId
       )
     })
@@ -95,7 +95,7 @@ export const selectTokensWithBalance = createSelector(
   (activeNetwork, activeAccount, allBalances): LocalTokenWithBalance[] => {
     if (!activeAccount) return []
 
-    const key = getKey(activeNetwork.chainId, activeAccount.index)
+    const key = getKey(activeNetwork.chainId, activeAccount.id)
     return allBalances[key]?.tokens ?? []
   }
 )
@@ -109,7 +109,7 @@ export const selectTokensWithBalanceByNetwork = (
       if (!chainId) return []
       if (!activeAccount) return []
 
-      const balanceKey = getKey(chainId, activeAccount.index)
+      const balanceKey = getKey(chainId, activeAccount.id)
       return balances[balanceKey]?.tokens ?? []
     }
   )
@@ -140,19 +140,19 @@ export const selectAvaxPrice = (state: RootState): number => {
   return 0
 }
 
-const _selectAccountIndex = (
+const _selectAccountUuid = (
   _: RootState,
-  accountIndex: number | undefined
-): number | undefined => accountIndex
+  accountUuid: string | undefined
+): string | undefined => accountUuid
 
 const _selectBalancesByAccountIndex = createSelector(
-  [_selectAllBalances, _selectAccountIndex],
-  (balances, accountIndex) => {
-    if (accountIndex === undefined) return []
+  [_selectAllBalances, _selectAccountUuid],
+  (balances, accountUuid) => {
+    if (accountUuid === undefined) return []
 
-    // Filter balances based on accountIndex and other conditions
+    // Filter balances based on accountUuid and other conditions
     return Object.values(balances).filter(
-      balance => balance.accountIndex === accountIndex
+      balance => balance.accountUuid === accountUuid
     )
   }
 )
@@ -175,9 +175,9 @@ export const selectTokensWithBalanceForAccount = createSelector(
 )
 
 export const selectBalanceTotalForAccount =
-  (accountIndex: number, tokenVisibility: TokenVisibility) =>
+  (accountUuid: string, tokenVisibility: TokenVisibility) =>
   (state: RootState) => {
-    const tokens = selectTokensWithBalanceForAccount(state, accountIndex)
+    const tokens = selectTokensWithBalanceForAccount(state, accountUuid)
 
     return tokens
       .filter(token => isTokenVisible(tokenVisibility, token))
@@ -188,9 +188,9 @@ export const selectBalanceTotalForAccount =
   }
 
 export const selectBalanceTotalInCurrencyForAccount =
-  (accountIndex: number, tokenVisibility: TokenVisibility) =>
+  (accountUuid: string, tokenVisibility: TokenVisibility) =>
   (state: RootState) => {
-    const tokens = selectTokensWithBalanceForAccount(state, accountIndex)
+    const tokens = selectTokensWithBalanceForAccount(state, accountUuid)
 
     return tokens
       .filter(token => isTokenVisible(tokenVisibility, token))
@@ -201,8 +201,8 @@ export const selectBalanceTotalInCurrencyForAccount =
   }
 
 export const selectBalanceForAccountIsAccurate =
-  (accountIndex: number) => (state: RootState) => {
-    const tokens = selectTokensWithBalanceForAccount(state, accountIndex)
+  (accountUuid: string) => (state: RootState) => {
+    const tokens = selectTokensWithBalanceForAccount(state, accountUuid)
     if (tokens.length === 0) return false
     return !Object.values(state.balance.balances).some(
       balance => !balance.dataAccurate
@@ -212,11 +212,11 @@ export const selectBalanceForAccountIsAccurate =
 const _selectBalanceKeyForNetworkAndAccount = (
   _state: RootState,
   chainId: number | undefined,
-  accountIndex: number | undefined
+  accountUuid: string | undefined
 ): string | undefined => {
-  if (accountIndex === undefined || chainId === undefined) return undefined
+  if (accountUuid === undefined || chainId === undefined) return undefined
 
-  return getKey(chainId, accountIndex)
+  return getKey(chainId, accountUuid)
 }
 
 export const selectAvailableNativeTokenBalanceForNetworkAndAccount =
@@ -255,8 +255,8 @@ export const selectTokensWithBalanceForAccountAndNetwork = createSelector(
 
 // use in k2-alpine
 export const selectIsAllBalancesInaccurate =
-  (accountIndex: number) => (state: RootState) => {
-    const tokens = selectTokensWithBalanceForAccount(state, accountIndex)
+  (accountUuid: string) => (state: RootState) => {
+    const tokens = selectTokensWithBalanceForAccount(state, accountUuid)
     return (
       tokens.length === 0 &&
       Object.values(state.balance.balances).every(
@@ -273,7 +273,7 @@ export const selectIsBalancesAccurateByNetwork =
     if (!chainId) return false
     if (!activeAccount) return false
 
-    const key = getKey(chainId, activeAccount.index)
+    const key = getKey(chainId, activeAccount.id)
     return state.balance.balances[key]?.dataAccurate ?? false
   }
 
@@ -282,7 +282,7 @@ export const { setStatus, setBalances } = balanceSlice.actions
 
 export const refetchBalance = createAction(`${reducerName}/refetchBalance`)
 
-export const fetchBalanceForAccount = createAction<{ accountIndex: number }>(
+export const fetchBalanceForAccount = createAction<{ accountUuid: string }>(
   `${reducerName}/fetchBalanceForAccount`
 )
 export const balanceReducer = balanceSlice.reducer
