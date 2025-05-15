@@ -41,6 +41,7 @@ const AccountScreen = (): JSX.Element => {
   const selectedCurrency = useSelector(selectSelectedCurrency)
   const { formatCurrency } = useFormatCurrency()
   const formattedBalance = useMemo(() => {
+    // CP-10570: Balances should never show $0.00
     return !balanceAccurate || balanceTotalInCurrency === 0
       ? UNKNOWN_AMOUNT
       : formatCurrency({
