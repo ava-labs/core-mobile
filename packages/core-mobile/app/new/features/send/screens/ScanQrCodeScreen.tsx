@@ -1,17 +1,44 @@
-import { Text, View } from '@avalabs/k2-alpine'
+import { showAlert, Text, View } from '@avalabs/k2-alpine'
 import { useHeaderHeight } from '@react-navigation/elements'
 import { QrCodeScanner } from 'common/components/QrCodeScanner'
-import { useRouter } from 'expo-router'
+import { useGlobalSearchParams, useRouter } from 'expo-router'
 import React, { useCallback } from 'react'
+import { NetworkVMType } from '@avalabs/vm-module-types'
+import { isValidAddressByVmName } from 'features/accountSettings/utils/isValidAddressByVmName'
+import { useSelector } from 'react-redux'
+import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { useSendContext } from '../context/sendContext'
 
 export const ScanQrCodeScreen = (): JSX.Element => {
   const headerHeight = useHeaderHeight()
   const { replace } = useRouter()
+  const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const { resetAmount, setToAddress } = useSendContext()
+  const { vmName } = useGlobalSearchParams<{ vmName: NetworkVMType }>()
 
   const handleOnSuccess = useCallback(
     (address: string): void => {
+      const isValidAddress = isValidAddressByVmName({
+        address,
+        vmName,
+        isDeveloperMode
+      })
+      if (isValidAddress === false) {
+        showAlert({
+          title: 'Invalid address',
+          description:
+            vmName === undefined
+              ? undefined
+              : 'The address is not valid for the selected network.',
+          buttons: [
+            {
+              text: 'Got it'
+            }
+          ]
+        })
+        return
+      }
+
       setToAddress({ to: address, recipientType: 'address' })
       resetAmount()
       replace({
@@ -20,7 +47,7 @@ export const ScanQrCodeScreen = (): JSX.Element => {
         params: { to: address, recipientType: 'address' }
       })
     },
-    [replace, resetAmount, setToAddress]
+    [isDeveloperMode, replace, resetAmount, setToAddress, vmName]
   )
 
   return (
