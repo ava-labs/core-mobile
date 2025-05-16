@@ -11,7 +11,6 @@ import { sortUndefined } from 'common/utils/sortUndefined'
 import { useSearchableTokenList } from 'common/hooks/useSearchableTokenList'
 import { DropdownSelection } from 'common/types'
 import { useErc20ContractTokens } from 'common/hooks/useErc20ContractTokens'
-import { sortTokensWithPrimaryFirst } from 'common/utils/sortTokensWithPrimaryFirst'
 import { useSelector } from 'react-redux'
 import { selectEnabledNetworks } from 'store/network'
 
@@ -103,12 +102,7 @@ export const useAssetsFilterAndSort = (): {
   const filteredAndSorted = useMemo(() => {
     const filtered = getFiltered()
     // Sort the tokens with balance
-    const sorted = getSorted(filtered)
-    // Pin the primary tokens to the top of the list
-    return sortTokensWithPrimaryFirst({
-      tokens: sorted,
-      sortOthersByBalance: false
-    })
+    return getSorted(filtered)
   }, [getFiltered, getSorted])
 
   const filter = useMemo(
