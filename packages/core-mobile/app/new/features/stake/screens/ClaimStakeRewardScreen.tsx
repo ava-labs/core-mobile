@@ -135,8 +135,12 @@ export const ClaimStakeRewardScreen = (): JSX.Element => {
     [avaxPrice, formatTokenInCurrency]
   )
 
-  const feeData: GroupListItem[] = useMemo(
-    () => [
+  const feeData: GroupListItem[] = useMemo(() => {
+    if (insufficientBalanceForFee) {
+      return []
+    }
+
+    return [
       {
         title: 'Network fee',
         rightIcon: (
@@ -145,16 +149,15 @@ export const ClaimStakeRewardScreen = (): JSX.Element => {
             description="Fees paid to execute the transaction"
           />
         ),
-        value: insufficientBalanceForFee ? undefined : totalFees ===
-          undefined ? (
-          <ActivityIndicator />
-        ) : (
-          <StakeTokenUnitValue value={totalFees} />
-        )
+        value:
+          totalFees === undefined ? (
+            <ActivityIndicator />
+          ) : (
+            <StakeTokenUnitValue value={totalFees} />
+          )
       }
-    ],
-    [totalFees, insufficientBalanceForFee]
-  )
+    ]
+  }, [totalFees, insufficientBalanceForFee])
 
   usePreventScreenRemoval(claimRewardsMutation.isPending)
 
