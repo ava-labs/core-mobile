@@ -1,34 +1,28 @@
 import {
   Button,
   Icons,
-  IndexPath,
   SearchBar,
-  SimpleDropdown,
   Text,
   TouchableOpacity,
   useTheme,
   View
 } from '@avalabs/k2-alpine'
 import { showSnackbar } from 'common/utils/toast'
-import React, { useCallback, useState } from 'react'
-import useAddCustomToken, {
-  CUSTOM_TOKEN_NETWORKS
-} from 'common/hooks/useAddCustomToken'
+import React, { useCallback } from 'react'
+import useAddCustomToken from 'common/hooks/useAddCustomToken'
 import { LocalTokenWithBalance } from 'store/balance'
 import { useRouter } from 'expo-router'
 import { LogoWithNetwork } from 'features/portfolio/assets/components/LogoWithNetwork'
 import { LoadingState } from 'common/components/LoadingState'
 import { ScrollScreen } from 'common/components/ScrollScreen'
+import { useNetwork } from '../store'
 
 export const AddCustomTokenScreen = (): JSX.Element => {
   const {
     theme: { colors }
   } = useTheme()
-  const { canGoBack, back, push } = useRouter()
-  const [selectedRow, setSelectedRow] = useState<IndexPath>({
-    section: 0,
-    row: 0
-  })
+  const [network] = useNetwork()
+  const { canGoBack, back, navigate } = useRouter()
 
   const showSuccess = useCallback(() => {
     showSnackbar('Added!')
@@ -41,8 +35,7 @@ export const AddCustomTokenScreen = (): JSX.Element => {
     errorMessage,
     token,
     addCustomToken,
-    isLoading,
-    changeNetwork
+    isLoading
   } = useAddCustomToken(showSuccess)
 
   // only enable button if we have token and no error message
@@ -50,10 +43,15 @@ export const AddCustomTokenScreen = (): JSX.Element => {
 
   const goToScanQrCode = useCallback((): void => {
     // @ts-ignore TODO: make routes typesafe
-    push('/tokenManagement/scanQrCode')
-  }, [push])
+    navigate('/tokenManagement/scanQrCode')
+  }, [navigate])
 
-  const renderToken = (): JSX.Element | undefined => {
+  const goToSelectNetwork = useCallback((): void => {
+    // @ts-ignore TODO: make routes typesafe
+    navigate('/tokenManagement/selectNetwork')
+  }, [navigate])
+
+  const renderToken = useCallback((): JSX.Element | undefined => {
     if (isLoading) {
       return <LoadingState sx={{ flex: 1 }} />
     }
@@ -82,7 +80,7 @@ export const AddCustomTokenScreen = (): JSX.Element => {
         </Button>
       </View>
     )
-  }
+  }, [token, colors.$surfacePrimary, addCustomToken, disabled, isLoading])
 
   const renderHeader = useCallback(() => {
     return (
@@ -112,24 +110,15 @@ export const AddCustomTokenScreen = (): JSX.Element => {
 
   const renderFooter = useCallback(() => {
     return (
-      <SimpleDropdown
-        from={
-          <Button type="primary" size="medium" disabled={token !== undefined}>
-            {CUSTOM_TOKEN_NETWORKS[selectedRow.section]?.[selectedRow.row]}
-          </Button>
-        }
-        offset={10}
-        sections={CUSTOM_TOKEN_NETWORKS}
-        selectedRows={[selectedRow]}
-        onSelectRow={indexPath => {
-          setSelectedRow(indexPath)
-          const network =
-            CUSTOM_TOKEN_NETWORKS?.[indexPath.section]?.[indexPath.row]
-          network && changeNetwork(network)
-        }}
-      />
+      <Button
+        type="primary"
+        size="medium"
+        disabled={token !== undefined}
+        onPress={goToSelectNetwork}>
+        {network?.chainName ?? 'Select a network'}
+      </Button>
     )
-  }, [changeNetwork, selectedRow, token])
+  }, [goToSelectNetwork, network?.chainName, token])
 
   return (
     <ScrollScreen

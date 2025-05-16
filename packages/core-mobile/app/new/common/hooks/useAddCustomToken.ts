@@ -13,18 +13,7 @@ import {
 } from '@avalabs/vm-module-types'
 import { useNetworkContractTokens } from 'hooks/networks/useNetworkContractTokens'
 import { selectTokensWithBalanceByNetwork } from 'store/balance'
-import useCChainNetwork from 'hooks/earn/useCChainNetwork'
-import { useEthereumNetwork } from 'hooks/networks/useEthereumNetwork'
-import { useTokenAddress } from 'features/tokenManagement/store'
-
-enum CustomTokenNetwork {
-  AVALANCHE = 'Avalanche C-Chain',
-  ETHEREUM = 'Ethereum'
-}
-
-export const CUSTOM_TOKEN_NETWORKS = [
-  [CustomTokenNetwork.AVALANCHE, CustomTokenNetwork.ETHEREUM]
-]
+import { useNetwork, useTokenAddress } from 'features/tokenManagement/store'
 
 enum AddressValidationStatus {
   Valid,
@@ -75,7 +64,6 @@ type CustomToken = {
   token: TokenWithBalanceERC20 | NetworkContractToken | undefined
   addCustomToken: () => void
   isLoading: boolean
-  changeNetwork: (network: CustomTokenNetwork) => void
 }
 
 const useAddCustomToken = (callback: () => void): CustomToken => {
@@ -84,32 +72,14 @@ const useAddCustomToken = (callback: () => void): CustomToken => {
   const [token, setToken] = useState<NetworkContractToken>()
   const dispatch = useDispatch()
   const [isLoading, setIsLoading] = useState(false)
-  const cChainNetwork = useCChainNetwork()
-  const ethereumNetwork = useEthereumNetwork()
-  const [selectedNetwork, setSelectedNetwork] = useState<Network | undefined>(
-    cChainNetwork
-  )
+  const [network] = useNetwork()
   const chainId = useMemo(() => {
-    return selectedNetwork?.chainId
-  }, [selectedNetwork])
+    return network?.chainId
+  }, [network])
 
-  const tokens = useNetworkContractTokens(selectedNetwork)
+  const tokens = useNetworkContractTokens(network)
   const tokensWithBalance = useSelector(
     selectTokensWithBalanceByNetwork(chainId)
-  )
-
-  const changeNetwork = useCallback(
-    (network: CustomTokenNetwork): void => {
-      setSelectedNetwork(
-        network === CustomTokenNetwork.ETHEREUM
-          ? ethereumNetwork
-          : cChainNetwork
-      )
-      setTokenAddress('')
-      setToken(undefined)
-      setErrorMessage('')
-    },
-    [ethereumNetwork, cChainNetwork, setTokenAddress]
   )
 
   const tokenAddresses = useMemo(
@@ -144,6 +114,20 @@ const useAddCustomToken = (callback: () => void): CustomToken => {
   )
 
   useEffect(() => {
+    if (tokenAddress === '') {
+      setErrorMessage('')
+      setToken(undefined)
+    }
+  }, [tokenAddress])
+
+  useEffect(() => {
+    if (network === undefined) {
+      if (tokenAddress) {
+        setErrorMessage('Please select a network first.')
+      }
+      return
+    }
+
     const validationStatus = validateAddress(tokenAddress, tokenAddresses)
     switch (validationStatus) {
       case AddressValidationStatus.Invalid:
@@ -156,13 +140,7 @@ const useAddCustomToken = (callback: () => void): CustomToken => {
         break
       case AddressValidationStatus.Valid:
         setIsLoading(true)
-
-        if (selectedNetwork === undefined) {
-          setErrorMessage('No network selected.')
-          setIsLoading(false)
-          return
-        }
-        fetchTokenData(selectedNetwork, tokenAddress)
+        fetchTokenData(network, tokenAddress)
           .then(t => {
             setToken(t)
             setErrorMessage('')
@@ -182,7 +160,7 @@ const useAddCustomToken = (callback: () => void): CustomToken => {
         setErrorMessage('')
         setToken(undefined)
     }
-  }, [selectedNetwork, tokenAddress, tokenAddresses, tokens])
+  }, [network, tokenAddress, tokenAddresses])
 
   const addCustomToken = useCallback((): void => {
     if (token && chainId) {
@@ -202,8 +180,7 @@ const useAddCustomToken = (callback: () => void): CustomToken => {
     errorMessage,
     token: tokenData,
     addCustomToken,
-    isLoading,
-    changeNetwork
+    isLoading
   }
 }
 

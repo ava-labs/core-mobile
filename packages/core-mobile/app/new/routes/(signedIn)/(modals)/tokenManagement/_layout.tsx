@@ -17,6 +17,10 @@ export default function TokenManagementLayout(): JSX.Element {
         name="scanQrCode"
         options={modalScreenOptionsWithHeaderBack}
       />
+      <Stack.Screen
+        name="selectNetwork"
+        options={modalScreenOptionsWithHeaderBack}
+      />
     </Stack>
   )
 }
