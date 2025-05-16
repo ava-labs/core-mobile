@@ -13,6 +13,10 @@ import { useRouter } from 'expo-router'
 import { isValidUrl } from 'features/browser/utils'
 import React, { useCallback, useMemo, useRef, useState } from 'react'
 import { ContactAddressMenu } from './ContactAddressMenu'
+import { useSelector } from 'react-redux'
+import { selectIsDeveloperMode } from 'store/settings/advanced'
+import { isValidAddress } from '../utils/isValidAddress'
+import { AddressType } from '../consts'
 
 export interface AdvancedFieldProps {
   id: string
@@ -90,12 +94,36 @@ export const AdvancedField = ({
     }
   }, [value, title])
 
+  const isDeveloperMode = useSelector(selectIsDeveloperMode)
+
   const onSubmit = useCallback(() => {
     if (!inputValue?.length) {
       onUpdate(id, undefined)
       setIsEditing(false)
       return
     }
+    if (
+      type === 'address' &&
+      !isValidAddress({
+        addressType: title as AddressType,
+        address: inputValue,
+        isDeveloperMode
+      })
+    ) {
+      showAlert({
+        title: 'Invalid address',
+        description:
+          'The address your entered is not valid for the selected chain',
+        buttons: [
+          {
+            text: 'Dismiss',
+            style: 'default'
+          }
+        ]
+      })
+      return
+    }
+
     if (!isValidField()) {
       showAlert({
         title: `Invalid field`,
@@ -115,7 +143,7 @@ export const AdvancedField = ({
     }
     onUpdate(id, inputValue)
     setIsEditing(false)
-  }, [inputValue, isValidField, onUpdate, id, type])
+  }, [inputValue, type, title, isDeveloperMode, isValidField, onUpdate, id])
 
   const onBlur = useCallback(() => {
     onSubmit()
@@ -230,10 +258,10 @@ export const AdvancedField = ({
     )
   }
 
-  if (value === undefined && type === 'address') {
+  if (inputValue === undefined && type === 'address') {
     return (
       <ContactAddressMenu
-        onTypeOrPaste={() => setIsEditing(true)}
+        onTypeOrPaste={onEdit}
         onScanQrCode={handleScanQrCode}>
         <View
           sx={{
