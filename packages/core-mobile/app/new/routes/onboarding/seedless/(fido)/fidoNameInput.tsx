@@ -30,17 +30,17 @@ const FidoNameInput = (): JSX.Element => {
     })
   }, [router, fidoType])
 
-  const handleSave = (): void => {
+  const handleSave = async (): Promise<void> => {
     if (router.canGoBack()) {
       router.back()
     }
     fidoType &&
-      registerAndAuthenticateFido({
+      (await registerAndAuthenticateFido({
         name,
         fidoType,
         onAccountVerified,
         verifyMfaPath: ''
-      })
+      }))
   }
 
   return (
@@ -50,7 +50,7 @@ const FidoNameInput = (): JSX.Element => {
       textInputPlaceholder={textInputPlaceholder ?? ''}
       name={name}
       setName={setName}
-      handleSave={handleSave}
+      onSave={handleSave}
     />
   )
 }
