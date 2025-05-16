@@ -8,6 +8,7 @@ export const sortTokensWithPrimaryFirst = ({
 }: {
   tokens: LocalTokenWithBalance[]
   sortOthersByBalance?: boolean
+  // eslint-disable-next-line sonarjs/cognitive-complexity
 }): LocalTokenWithBalance[] => {
   const primaryTokens: LocalTokenWithBalance[] = []
 
@@ -37,7 +38,12 @@ export const sortTokensWithPrimaryFirst = ({
   )
   if (btcToken) primaryTokens.push(btcToken)
 
-  let rest = tokens.filter(token => token.type !== TokenType.NATIVE)
+  let rest = tokens.filter(
+    token =>
+      (token.symbol !== TokenSymbol.AVAX && token.type !== TokenType.NATIVE) ||
+      (token.symbol !== TokenSymbol.ETH && token.type !== TokenType.NATIVE) ||
+      (token.symbol !== TokenSymbol.BTC && token.type !== TokenType.NATIVE)
+  )
 
   if (sortOthersByBalance) {
     rest = rest.toSorted(
