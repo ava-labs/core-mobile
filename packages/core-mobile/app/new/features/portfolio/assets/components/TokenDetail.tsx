@@ -23,6 +23,7 @@ import {
 } from 'store/balance'
 import { xpChainToken } from 'utils/units/knownTokens'
 import { BalanceText } from 'common/components/BalanceText'
+import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import { LogoWithNetwork } from './LogoWithNetwork'
 
 type PChainBalanceType = keyof PChainBalance
@@ -36,6 +37,8 @@ const TokenDetail: FC<Props> = ({ token }): React.JSX.Element => {
   const {
     theme: { colors }
   } = useTheme()
+  const { formatCurrency } = useFormatCurrency()
+
   const assetTypes = useMemo(() => {
     if (token && isTokenWithBalancePVM(token)) {
       return Object.keys(token.balancePerType)
@@ -88,10 +91,11 @@ const TokenDetail: FC<Props> = ({ token }): React.JSX.Element => {
         : undefined
       const formattedBalance =
         balanceInAvax && token?.priceInCurrency
-          ? '$' +
-            balanceInAvax
-              ?.mul(token?.priceInCurrency ?? 0)
-              .toDisplay({ fixedDp: 2 })
+          ? formatCurrency({
+              amount: balanceInAvax
+                .mul(token.priceInCurrency)
+                .toDisplay({ fixedDp: 2, asNumber: true })
+            })
           : UNKNOWN_AMOUNT
 
       const isAvailableBalanceType =
@@ -173,7 +177,8 @@ const TokenDetail: FC<Props> = ({ token }): React.JSX.Element => {
       colors.$textPrimary,
       colors.$surfaceSecondary,
       getBalanceAndAssetName,
-      token
+      token,
+      formatCurrency
     ]
   )
 
