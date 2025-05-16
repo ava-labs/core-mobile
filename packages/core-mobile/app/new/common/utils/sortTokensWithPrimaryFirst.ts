@@ -8,6 +8,7 @@ export const sortTokensWithPrimaryFirst = ({
 }: {
   tokens: LocalTokenWithBalance[]
   sortOthersByBalance?: boolean
+  // eslint-disable-next-line sonarjs/cognitive-complexity
 }): LocalTokenWithBalance[] => {
   const primaryTokens: LocalTokenWithBalance[] = []
 
@@ -39,11 +40,9 @@ export const sortTokensWithPrimaryFirst = ({
 
   let rest = tokens.filter(
     token =>
-      token.localId !== 'AvalancheAVAX' &&
-      token.localId !== AVAX_P_ID &&
-      token.localId !== AVAX_X_ID &&
-      token.symbol !== TokenSymbol.ETH &&
-      token.symbol !== TokenSymbol.BTC
+      (token.symbol !== TokenSymbol.AVAX && token.type !== TokenType.NATIVE) ||
+      (token.symbol !== TokenSymbol.ETH && token.type !== TokenType.NATIVE) ||
+      (token.symbol !== TokenSymbol.BTC && token.type !== TokenType.NATIVE)
   )
 
   if (sortOthersByBalance) {

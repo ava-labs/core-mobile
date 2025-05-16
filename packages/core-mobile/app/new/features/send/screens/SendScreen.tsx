@@ -1,5 +1,5 @@
 import React, { useCallback } from 'react'
-import { useLocalSearchParams, useRouter } from 'expo-router'
+import { useRouter } from 'expo-router'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { audioFeedback, Audios } from 'utils/AudioFeedback'
 import { isUserRejectedError } from 'store/rpc/providers/walletConnect/utils'
@@ -17,7 +17,7 @@ import {
 } from '@avalabs/vm-module-types'
 import { ErrorState } from 'common/components/ErrorState'
 import { useNavigation } from '@react-navigation/native'
-import { AddrBookItemType, addRecentContact } from 'store/addressBook'
+import { addRecentContact } from 'store/addressBook'
 import { useSendContext } from '../context/sendContext'
 import { SendAVM } from '../components/SendAVM'
 import { SendPVM } from '../components/SendPVM'
@@ -26,16 +26,10 @@ import { SendEVM } from '../components/SendEVM'
 import { useNativeTokenWithBalanceByNetwork } from '../hooks/useNativeTokenWithBalanceByNetwork'
 import { useSendSelectedToken } from '../store'
 
-export type SendNavigationProps = {
-  to: string // accountIndex | contactUID | address
-  recipientType: AddrBookItemType | 'address'
-}
-
 export const SendScreen = (): JSX.Element => {
-  const { to, recipientType } = useLocalSearchParams<SendNavigationProps>()
   const { canGoBack, back } = useRouter()
   const dispatch = useDispatch()
-  const { network, resetAmount } = useSendContext()
+  const { network, resetAmount, toAddress } = useSendContext()
   const nativeToken = useNativeTokenWithBalanceByNetwork(network)
   const activeAccount = useSelector(selectActiveAccount)
   const { getState } = useNavigation()
@@ -51,8 +45,14 @@ export const SendScreen = (): JSX.Element => {
       audioFeedback(Audios.Send)
       resetAmount()
       setSelectedToken(undefined)
-      recipientType !== 'address' &&
-        dispatch(addRecentContact({ id: to, type: recipientType }))
+      toAddress &&
+        toAddress?.recipientType !== 'address' &&
+        dispatch(
+          addRecentContact({
+            id: Number(toAddress.to),
+            type: toAddress.recipientType
+          })
+        )
 
       canGoBack() && back()
       // dismiss recent contacts modal
@@ -75,10 +75,9 @@ export const SendScreen = (): JSX.Element => {
       dispatch,
       getState,
       network,
-      recipientType,
       resetAmount,
       setSelectedToken,
-      to
+      toAddress
     ]
   )
 

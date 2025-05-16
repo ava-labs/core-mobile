@@ -59,6 +59,7 @@ interface SendContextState {
   amount: TokenUnit | undefined
   setAmount: Dispatch<TokenUnit | undefined>
   recipient?: Contact | TokenAddresses
+  toAddress?: ToAddress
   setToAddress: (valu: ToAddress) => void
   maxAmount: TokenUnit | undefined
   setMaxAmount: Dispatch<TokenUnit>
@@ -236,6 +237,7 @@ export const SendContextProvider = ({
     amount,
     setAmount,
     recipient,
+    toAddress,
     setToAddress,
     maxAmount,
     setMaxAmount,
