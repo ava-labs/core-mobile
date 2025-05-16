@@ -116,7 +116,7 @@ export const RecoverMethodsProvider = ({
     setVerifyMfaType('Authenticator')
 
     if (totpResetInitResponse.requiresMfa()) {
-      verifyMFA({
+      await verifyMFA({
         response: totpResetInitResponse,
         onVerifySuccess: (challenge: TotpChallenge) => {
           setVerifiedTotpChallenge(challenge)
@@ -151,7 +151,7 @@ export const RecoverMethodsProvider = ({
           showSnackbar('Passkey removed')
         }
 
-        verifyMFA({
+        await verifyMFA({
           response: fidoDeleteResponse,
           onVerifySuccess: handleVerifySuccess,
           excludeFidoMfaId: fidoId,
@@ -198,7 +198,7 @@ export const RecoverMethodsProvider = ({
         setMfaChallengeResponse(fidoRegisterInitResponse)
         setVerifyMfaType(fidoType)
         if (fidoRegisterInitResponse.requiresMfa()) {
-          verifyMFA({
+          await verifyMFA({
             response: fidoRegisterInitResponse,
             onVerifySuccess: response => {
               AnalyticsService.capture('SeedlessMfaVerified', {

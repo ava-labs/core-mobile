@@ -1,8 +1,8 @@
-import { Button, View } from '@avalabs/k2-alpine'
+import { ActivityIndicator, Button, View } from '@avalabs/k2-alpine'
 import { ScrollScreen } from 'common/components/ScrollScreen'
 import { SimpleTextInput } from 'common/components/SimpleTextInput'
 import { FIDONameInputProps } from 'new/routes/onboarding/seedless/(fido)/fidoNameInput'
-import React, { useCallback } from 'react'
+import React, { useCallback, useState } from 'react'
 
 const FidoNameInput = ({
   title,
@@ -11,24 +11,36 @@ const FidoNameInput = ({
   name,
   isModal,
   setName,
-  handleSave
+  onSave
 }: Omit<FIDONameInputProps, 'fidoType'> & {
   name: string
   setName: (value: string) => void
-  handleSave: () => void
+  onSave: () => Promise<void>
   isModal?: boolean
 }): JSX.Element => {
+  const [isSaving, setIsSaving] = useState(false)
+
+  const handleSave = useCallback(async () => {
+    setIsSaving(true)
+
+    try {
+      await onSave()
+    } finally {
+      setIsSaving(false)
+    }
+  }, [onSave])
+
   const renderFooter = useCallback(() => {
     return (
       <Button
         type="primary"
         size="large"
-        disabled={name === ''}
+        disabled={name === '' || isSaving}
         onPress={handleSave}>
-        Next
+        {isSaving ? <ActivityIndicator /> : 'Next'}
       </Button>
     )
-  }, [handleSave, name])
+  }, [handleSave, name, isSaving])
 
   return (
     <ScrollScreen

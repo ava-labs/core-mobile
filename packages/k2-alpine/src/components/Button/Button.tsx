@@ -93,7 +93,8 @@ export const Button = forwardRef<RNView, ButtonProps & PropsWithChildren>(
           {
             borderRadius: 1000,
             overflow: 'hidden',
-            alignItems: 'center'
+            alignItems: 'center',
+            backgroundColor
           },
           style
         ]}
@@ -103,8 +104,7 @@ export const Button = forwardRef<RNView, ButtonProps & PropsWithChildren>(
             alignItems: 'center',
             marginHorizontal: 8,
             justifyContent: 'center',
-            width: '100%',
-            backgroundColor
+            width: '100%'
           }}>
           <View
             style={{
