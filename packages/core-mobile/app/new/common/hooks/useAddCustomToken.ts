@@ -123,7 +123,7 @@ const useAddCustomToken = (callback: () => void): CustomToken => {
   useEffect(() => {
     if (network === undefined) {
       if (tokenAddress) {
-        setErrorMessage('Please select a network first.')
+        setErrorMessage('Please select a network.')
       }
       return
     }

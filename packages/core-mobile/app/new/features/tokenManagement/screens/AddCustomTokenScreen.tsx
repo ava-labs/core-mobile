@@ -48,7 +48,7 @@ export const AddCustomTokenScreen = (): JSX.Element => {
 
   const goToSelectNetwork = useCallback((): void => {
     // @ts-ignore TODO: make routes typesafe
-    navigate('/tokenManagement/selectNetwork')
+    navigate('/selectNetwork')
   }, [navigate])
 
   const renderToken = useCallback((): JSX.Element | undefined => {
