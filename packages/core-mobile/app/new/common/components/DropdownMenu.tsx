@@ -51,6 +51,7 @@ export function DropdownMenu({
   ...props
 }: DropdownMenuProps): React.ReactNode {
   const { theme } = useTheme()
+
   const colorScheme = useColorScheme()
 
   const renderItem = useCallback(
