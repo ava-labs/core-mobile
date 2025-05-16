@@ -16,17 +16,12 @@ import { HiddenBalanceText } from 'common/components/HiddenBalanceText'
 import NavigationBarButton from 'common/components/NavigationBarButton'
 import { ScrollScreen } from 'common/components/ScrollScreen'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
-import { showSnackbar } from 'common/utils/toast'
 import { useRouter } from 'expo-router'
 import { useBalanceForAccount } from 'new/common/contexts/useBalanceForAccount'
-import React, { useCallback, useMemo, useRef, useState } from 'react'
-import { ScrollView as RnScrollView } from 'react-native'
+import React, { useCallback, useMemo, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import AnalyticsService from 'services/analytics/AnalyticsService'
-import WalletService from 'services/wallet/WalletService'
-import { addAccount, selectAccounts, setActiveAccountId } from 'store/account'
+import { selectAccounts, setActiveAccountId } from 'store/account'
 import { selectIsPrivacyModeEnabled } from 'store/settings/securityPrivacy'
-import Logger from 'utils/Logger'
 
 const ITEM_HEIGHT = 50
 
@@ -37,9 +32,7 @@ const ManageAccountsScreen = (): React.JSX.Element => {
   const dispatch = useDispatch()
   const { navigate } = useRouter()
   const [searchText, setSearchText] = useState('')
-  const [isAddingAccount, setIsAddingAccount] = useState(false)
   const accountCollection = useSelector(selectAccounts)
-  const scrollViewRef = useRef<RnScrollView>(null)
 
   const accounts = useMemo(
     () => Object.values(accountCollection),
@@ -124,32 +117,11 @@ const ManageAccountsScreen = (): React.JSX.Element => {
   ])
 
   const handleAddAccount = useCallback(async (): Promise<void> => {
-    if (isAddingAccount) return
-
-    try {
-      AnalyticsService.capture('AccountSelectorAddAccount', {
-        accountNumber: Object.keys(accounts).length + 1
-      })
-
-      setIsAddingAccount(true)
-      // @ts-expect-error
-      // dispatch here is not typed correctly
-      await dispatch(addAccount()).unwrap()
-
-      AnalyticsService.capture('CreatedANewAccountSuccessfully', {
-        walletType: WalletService.walletType
-      })
-    } catch (error) {
-      Logger.error('Unable to add account', error)
-      showSnackbar('Unable to add account')
-    } finally {
-      setIsAddingAccount(false)
-      scrollViewRef.current?.scrollTo({
-        y: data.length * ITEM_HEIGHT,
-        animated: true
-      })
-    }
-  }, [accounts, data.length, dispatch, isAddingAccount])
+    navigate({
+      // @ts-ignore TODO: make routes typesafe
+      pathname: '/accountSettings/addOrConnectWallet'
+    })
+  }, [navigate])
 
   const renderHeaderRight = useCallback(() => {
     return (
@@ -180,7 +152,6 @@ const ManageAccountsScreen = (): React.JSX.Element => {
       renderHeaderRight={renderHeaderRight}
       contentContainerStyle={{ padding: 16 }}>
       <GroupList itemHeight={ITEM_HEIGHT} data={data} />
-      <ActivityIndicator animating={isAddingAccount} sx={{ marginTop: 16 }} />
     </ScrollScreen>
   )
 }
