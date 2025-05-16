@@ -32,6 +32,7 @@ export const SendToken = ({ onSend }: { onSend: () => void }): JSX.Element => {
   const {
     recipient,
     setError,
+    toAddress,
     addressToSend,
     setCanValidate,
     isSending,
@@ -109,7 +110,7 @@ export const SendToken = ({ onSend }: { onSend: () => void }): JSX.Element => {
   const handleSelectToken = useCallback((): void => {
     // @ts-ignore TODO: make routes typesafe
     navigate({ pathname: '/selectSendToken', params: toAddress })
-  }, [navigate])
+  }, [navigate, toAddress])
 
   const validateSendAmount = useCallback(
     async (amt: TokenUnit) => {
