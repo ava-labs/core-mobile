@@ -1,19 +1,19 @@
 import { useDispatch, useSelector } from 'react-redux'
 import { isAddress } from 'ethers'
 import { addCustomToken as addCustomTokenAction } from 'store/customToken'
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useCallback } from 'react'
 import { Network } from '@avalabs/core-chains-sdk'
 import Logger from 'utils/Logger'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import TokenService from 'services/token/TokenService'
-import { useNetworks } from 'hooks/networks/useNetworks'
 import {
   NetworkContractToken,
   TokenType,
   TokenWithBalanceERC20
 } from '@avalabs/vm-module-types'
 import { useNetworkContractTokens } from 'hooks/networks/useNetworkContractTokens'
-import { selectTokensWithBalance } from 'store/balance'
+import { selectTokensWithBalanceByNetwork } from 'store/balance'
+import { useNetwork, useTokenAddress } from 'features/tokenManagement/store'
 
 enum AddressValidationStatus {
   Valid,
@@ -67,15 +67,20 @@ type CustomToken = {
 }
 
 const useAddCustomToken = (callback: () => void): CustomToken => {
-  const { activeNetwork } = useNetworks()
-  const tokens = useNetworkContractTokens(activeNetwork)
-  const [tokenAddress, setTokenAddress] = useState('')
+  const [tokenAddress, setTokenAddress] = useTokenAddress()
   const [errorMessage, setErrorMessage] = useState('')
   const [token, setToken] = useState<NetworkContractToken>()
   const dispatch = useDispatch()
-  const chainId = activeNetwork.chainId
   const [isLoading, setIsLoading] = useState(false)
-  const tokensWithBalance = useSelector(selectTokensWithBalance)
+  const [network] = useNetwork()
+  const chainId = useMemo(() => {
+    return network?.chainId
+  }, [network])
+
+  const tokens = useNetworkContractTokens(network)
+  const tokensWithBalance = useSelector(
+    selectTokensWithBalanceByNetwork(chainId)
+  )
 
   const tokenAddresses = useMemo(
     () => [
@@ -109,6 +114,20 @@ const useAddCustomToken = (callback: () => void): CustomToken => {
   )
 
   useEffect(() => {
+    if (tokenAddress === '') {
+      setErrorMessage('')
+      setToken(undefined)
+    }
+  }, [tokenAddress])
+
+  useEffect(() => {
+    if (network === undefined) {
+      if (tokenAddress) {
+        setErrorMessage('Please select a network.')
+      }
+      return
+    }
+
     const validationStatus = validateAddress(tokenAddress, tokenAddresses)
     switch (validationStatus) {
       case AddressValidationStatus.Invalid:
@@ -121,7 +140,7 @@ const useAddCustomToken = (callback: () => void): CustomToken => {
         break
       case AddressValidationStatus.Valid:
         setIsLoading(true)
-        fetchTokenData(activeNetwork, tokenAddress)
+        fetchTokenData(network, tokenAddress)
           .then(t => {
             setToken(t)
             setErrorMessage('')
@@ -141,10 +160,10 @@ const useAddCustomToken = (callback: () => void): CustomToken => {
         setErrorMessage('')
         setToken(undefined)
     }
-  }, [activeNetwork, tokenAddress, tokenAddresses, tokens])
+  }, [network, tokenAddress, tokenAddresses])
 
-  const addCustomToken = (): void => {
-    if (token) {
+  const addCustomToken = useCallback((): void => {
+    if (token && chainId) {
       dispatch(addCustomTokenAction({ chainId, token }))
       setTokenAddress('')
       callback()
@@ -153,7 +172,7 @@ const useAddCustomToken = (callback: () => void): CustomToken => {
         address: token.address
       })
     }
-  }
+  }, [token, chainId, dispatch, setTokenAddress, callback])
 
   return {
     tokenAddress,
