@@ -1,6 +1,6 @@
 import { Text, useTheme } from '@avalabs/k2-alpine'
 import React, { CSSProperties, useCallback } from 'react'
-import { Platform, useColorScheme } from 'react-native'
+import { Platform } from 'react-native'
 import { Pressable } from 'react-native-gesture-handler'
 import {
   CheckboxItem,
@@ -52,13 +52,9 @@ export function DropdownMenu({
 }: DropdownMenuProps): React.ReactNode {
   const { theme } = useTheme()
 
-  const colorScheme = useColorScheme()
-
   const renderItem = useCallback(
     ({ title, id, icon, selected, ...rest }: DropdownItem) => {
-      const isDark = colorScheme === 'dark'
-
-      const platformIcon = getPlatformIcons(icon, isDark, {
+      const platformIcon = getPlatformIcons(icon, theme?.isDark, {
         disabled: rest.disabled,
         destructive: rest.destructive
       })
