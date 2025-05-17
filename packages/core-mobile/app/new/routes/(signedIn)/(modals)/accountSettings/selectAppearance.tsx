@@ -1,4 +1,5 @@
 import { AnimatedPressable, Text, useTheme, View } from '@avalabs/k2-alpine'
+import { setThemePreference } from '@vonovak/react-native-theme-control'
 import { ScrollScreen } from 'common/components/ScrollScreen'
 import React, { FC } from 'react'
 import { SvgProps } from 'react-native-svg'
@@ -15,6 +16,22 @@ import SystemAppearanceIcon from '../../../../assets/icons/system_appearance.svg
 const SelectAppearanceScreen = (): JSX.Element => {
   const selectedAppearance = useSelector(selectSelectedAppearance)
   const dispatch = useDispatch()
+
+  const handleAppearancePress = (appearance: Appearance): void => {
+    dispatch(setSelectedAppearance(appearance))
+
+    switch (appearance) {
+      case Appearance.System:
+        setThemePreference('system')
+        break
+      case Appearance.Dark:
+        setThemePreference('dark')
+        break
+      case Appearance.Light:
+        setThemePreference('light')
+        break
+    }
+  }
 
   return (
     <ScrollScreen
@@ -35,19 +52,19 @@ const SelectAppearanceScreen = (): JSX.Element => {
         <AppearanceComponent
           isSelected={selectedAppearance === Appearance.System}
           appearance="System"
-          onPress={() => dispatch(setSelectedAppearance(Appearance.System))}
+          onPress={() => handleAppearancePress(Appearance.System)}
           Icon={SystemAppearanceIcon}
         />
         <AppearanceComponent
           isSelected={selectedAppearance === Appearance.Light}
           appearance="Light"
-          onPress={() => dispatch(setSelectedAppearance(Appearance.Light))}
+          onPress={() => handleAppearancePress(Appearance.Light)}
           Icon={LightAppearanceIcon}
         />
         <AppearanceComponent
           isSelected={selectedAppearance === Appearance.Dark}
           appearance="Dark"
-          onPress={() => dispatch(setSelectedAppearance(Appearance.Dark))}
+          onPress={() => handleAppearancePress(Appearance.Dark)}
           Icon={DarkAppearanceIcon}
         />
       </View>

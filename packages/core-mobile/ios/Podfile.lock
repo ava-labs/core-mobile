@@ -2146,6 +2146,27 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
+  - react-native-theme-control (6.1.0):
+    - DoubleConversion
+    - glog
+    - hermes-engine
+    - RCT-Folly (= 2024.10.14.00)
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Core
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
+    - React-ImageManager
+    - React-NativeModulesApple
+    - React-RCTFabric
+    - React-rendererdebug
+    - React-utils
+    - ReactCodegen
+    - ReactCommon/turbomodule/bridging
+    - ReactCommon/turbomodule/core
+    - Yoga
   - react-native-view-shot (4.0.3):
     - DoubleConversion
     - glog
@@ -3073,6 +3094,7 @@ DEPENDENCIES:
   - react-native-safe-area-context (from `../node_modules/react-native-safe-area-context`)
   - "react-native-skia (from `../node_modules/@shopify/react-native-skia`)"
   - "react-native-slider (from `../node_modules/@react-native-community/slider`)"
+  - "react-native-theme-control (from `../node_modules/@vonovak/react-native-theme-control`)"
   - react-native-view-shot (from `../node_modules/react-native-view-shot`)
   - react-native-webview (from `../node_modules/react-native-webview`)
   - React-nativeconfig (from `../node_modules/react-native/ReactCommon`)
@@ -3349,6 +3371,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/@shopify/react-native-skia"
   react-native-slider:
     :path: "../node_modules/@react-native-community/slider"
+  react-native-theme-control:
+    :path: "../node_modules/@vonovak/react-native-theme-control"
   react-native-view-shot:
     :path: "../node_modules/react-native-view-shot"
   react-native-webview:
@@ -3590,6 +3614,7 @@ SPEC CHECKSUMS:
   react-native-safe-area-context: ac66ae671d8110cf9fecd766ece62b80f8e4d792
   react-native-skia: bb9f430440dac522381ffbb0535349886dd53a28
   react-native-slider: e500e3bac6ce86f2368bfc376e260a1957f6f5d9
+  react-native-theme-control: ad027b8e134660a1151ce412cf9718f786e7ee3f
   react-native-view-shot: 122943472b0b17ccab997d1caedbb4e83b80787f
   react-native-webview: 66c39306310ecea6d6ab193759f217eed3837faa
   React-nativeconfig: 8efdb1ef1e9158c77098a93085438f7e7b463678

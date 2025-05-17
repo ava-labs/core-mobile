@@ -283,6 +283,7 @@ __metadata:
     "@types/react-dom": 18.3.1
     "@types/react-test-renderer": 18.3.0
     "@types/semver": 7.5.4
+    "@vonovak/react-native-theme-control": 6.1.0
     "@walletconnect/react-native-compat": 2.11.0
     "@walletconnect/types": 2.17.2
     "@walletconnect/utils": 2.17.2
@@ -13153,6 +13154,20 @@ __metadata:
   peerDependencies:
     "@urql/core": ^5.0.0
   checksum: a4da1866406b2244bd28ecd01881aded10d1da7728792d6d9e9c9e718080afd41a3a8694e87c59002ab2ffc823a52662e933a3ef9e7102fd3b2c4f008615ab14
+  languageName: node
+  linkType: hard
+
+"@vonovak/react-native-theme-control@npm:6.1.0":
+  version: 6.1.0
+  resolution: "@vonovak/react-native-theme-control@npm:6.1.0"
+  peerDependencies:
+    expo: ">=49.0.0"
+    react: "*"
+    react-native: ">=0.72.0"
+  peerDependenciesMeta:
+    expo:
+      optional: true
+  checksum: 63c39ffaff4188317ea572c7fb6abe4c11e66a7bcda06df33d7d8ab7372d702d7e67db5f24fa3cd5091f2fe40a2785981911c1ca5dd0a1c080ea65e78cdae029
   languageName: node
   linkType: hard
 
@@ -27517,7 +27532,7 @@ react-native-webview@ava-labs/react-native-webview:
   peerDependencies:
     react: "*"
     react-native: "*"
-  checksum: ae658f8c94177d1b419ffb73d26bd70474b6c688af507daaabc11451f983f77a906b2aafcdfdd09c96cab846d9722dcaf26a7c22ee7d19fb4cf70578c8812ac5
+  checksum: f7ac158dbe58d410185c45bcdd1ae1bbdab3d3548940e2e1e1ef792a33996713d40bb4ee7c7420f078f013954c78d43b11eb5884ab0d786da781936be78a41cd
   languageName: node
   linkType: hard
 

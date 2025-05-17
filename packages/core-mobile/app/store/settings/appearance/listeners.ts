@@ -17,6 +17,7 @@ const handleAppearanceChange = (
 ): void => {
   const { getState, dispatch } = listenerApi
   const state = getState()
+
   const isDeveloperMode = selectIsDeveloperMode(state)
   const appearance = selectSelectedAppearance(state)
   const currentColorScheme = selectSelectedColorScheme(state)
