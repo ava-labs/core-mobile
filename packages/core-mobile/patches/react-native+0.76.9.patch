@@ -2,7 +2,7 @@ diff --git a/node_modules/react-native/Libraries/AppDelegate/RCTAppDelegate.mm b
 index 3f1370f5fc89b0e2db1ee951fa8e1c65978de7cc..2bc6004 100644
 --- a/node_modules/react-native/Libraries/AppDelegate/RCTAppDelegate.mm
 +++ b/node_modules/react-native/Libraries/AppDelegate/RCTAppDelegate.mm
-@@ -36,0 +36,5 @@
+@@ -35,0 +35,5 @@
 +#if __has_include(<RNThemeControl.h>)
 +#import <RNThemeControl.h>
 +#else
