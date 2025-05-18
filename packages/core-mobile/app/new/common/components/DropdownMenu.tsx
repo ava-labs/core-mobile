@@ -102,7 +102,6 @@ export function DropdownMenu({
       )
     },
     [
-      colorScheme,
       onPressAction,
       theme.colors?.$textDanger,
       theme.colors?.$textPrimary,
