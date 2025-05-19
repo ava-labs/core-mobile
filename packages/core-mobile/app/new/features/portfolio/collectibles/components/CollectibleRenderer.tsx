@@ -1,4 +1,5 @@
 import { Icons, useTheme, Video, VideoProps } from '@avalabs/k2-alpine'
+import { useIsFocused } from '@react-navigation/native'
 import { Image, ImageErrorEventData } from 'expo-image'
 import React, {
   memo,
@@ -33,6 +34,8 @@ export const CollectibleRenderer = memo(
     const {
       theme: { colors }
     } = useTheme()
+
+    const isFocused = useIsFocused()
 
     const [isLoading, setIsLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
@@ -89,13 +92,15 @@ export const CollectibleRenderer = memo(
                 zIndex: 1
               }
             ]}>
-            <Video
-              source={collectible?.imageData?.video}
-              thumbnail={collectible?.imageData?.image}
-              onLoadEnd={onLoadEnd}
-              onError={onVideoError}
-              {...videoProps}
-            />
+            {isFocused ? (
+              <Video
+                source={collectible?.imageData?.video}
+                thumbnail={collectible?.imageData?.image}
+                onLoadEnd={onLoadEnd}
+                onError={onVideoError}
+                {...videoProps}
+              />
+            ) : null}
           </Animated.View>
         )
 
