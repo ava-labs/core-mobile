@@ -1,9 +1,16 @@
-import React from 'react'
-import { useTheme, Text, View, GroupList } from '@avalabs/k2-alpine'
+import React, { useMemo } from 'react'
+import {
+  useTheme,
+  Text,
+  View,
+  GroupList,
+  GroupListItem
+} from '@avalabs/k2-alpine'
 import { useSelector } from 'react-redux'
 import { selectSelectedCurrency } from 'store/settings/currency'
 import { CurrencyIcon } from 'common/components/CurrencyIcon'
 import { selectSelectedAppearance } from 'store/settings/appearance'
+import { selectIsDeveloperMode } from 'store/settings/advanced'
 
 export const AppAppearance = ({
   selectAppAppearance,
@@ -15,44 +22,57 @@ export const AppAppearance = ({
   const {
     theme: { colors }
   } = useTheme()
+  const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const currency = useSelector(selectSelectedCurrency)
   const appearance = useSelector(selectSelectedAppearance)
 
-  const data = [
-    {
-      title: 'Currency',
-      onPress: selectCurrency,
-      value: (
-        <View sx={{ flexDirection: 'row', alignItems: 'center' }}>
-          <View
-            sx={{
-              width: 21,
-              height: 21,
-              borderRadius: 21,
-              overflow: 'hidden'
-            }}>
-            <CurrencyIcon symbol={currency} size={21} />
+  const data = useMemo(() => {
+    const _data: GroupListItem[] = [
+      {
+        title: 'Currency',
+        onPress: selectCurrency,
+        value: (
+          <View sx={{ flexDirection: 'row', alignItems: 'center' }}>
+            <View
+              sx={{
+                width: 21,
+                height: 21,
+                borderRadius: 21,
+                overflow: 'hidden'
+              }}>
+              <CurrencyIcon symbol={currency} size={21} />
+            </View>
+            <Text
+              testID="right_value__Currency"
+              variant="body2"
+              sx={{
+                color: colors.$textSecondary,
+                fontSize: 16,
+                lineHeight: 22,
+                marginLeft: 9
+              }}>
+              {currency.toUpperCase()}
+            </Text>
           </View>
-          <Text
-            testID="right_value__Currency"
-            variant="body2"
-            sx={{
-              color: colors.$textSecondary,
-              fontSize: 16,
-              lineHeight: 22,
-              marginLeft: 9
-            }}>
-            {currency.toUpperCase()}
-          </Text>
-        </View>
-      )
-    },
-    {
-      title: 'Theme',
-      onPress: selectAppAppearance,
-      value: appearance
+        )
+      }
+    ]
+    if (isDeveloperMode === false) {
+      _data.push({
+        title: 'Theme',
+        onPress: selectAppAppearance,
+        value: appearance
+      })
     }
-  ]
+    return _data
+  }, [
+    selectCurrency,
+    currency,
+    colors.$textSecondary,
+    isDeveloperMode,
+    selectAppAppearance,
+    appearance
+  ])
 
   return (
     <GroupList

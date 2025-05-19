@@ -65,22 +65,9 @@ const AccountSettingsScreen = (): JSX.Element => {
   }, [navigate])
 
   const goToAppAppearance = useCallback(() => {
-    if (isDeveloperMode) {
-      showAlert({
-        title: 'Testnet mode is on',
-        description:
-          'Change appearance is not available in testnet mode. Please turn off testnet mode to change appearance.',
-        buttons: [
-          {
-            text: 'Got it'
-          }
-        ]
-      })
-      return
-    }
     // @ts-ignore TODO: make routes typesafe
     navigate('/accountSettings/selectAppearance')
-  }, [isDeveloperMode, navigate])
+  }, [navigate])
 
   const goToCurrency = useCallback(() => {
     // @ts-ignore TODO: make routes typesafe
