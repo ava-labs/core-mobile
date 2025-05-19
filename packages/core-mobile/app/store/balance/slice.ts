@@ -288,7 +288,7 @@ export const { setStatus, setBalances } = balanceSlice.actions
 
 export const refetchBalance = createAction(`${reducerName}/refetchBalance`)
 
-export const fetchBalanceForAccount = createAction<{ accountUuid: string }>(
+export const fetchBalanceForAccount = createAction<{ account: Account }>(
   `${reducerName}/fetchBalanceForAccount`
 )
 export const balanceReducer = balanceSlice.reducer
