@@ -5,7 +5,7 @@ import {
   PayloadAction
 } from '@reduxjs/toolkit'
 import { RootState } from 'store/types'
-import { selectActiveAccount } from 'store/account'
+import { Account, selectActiveAccount } from 'store/account'
 import {
   selectActiveNetwork,
   selectAllNetworks,
@@ -145,7 +145,7 @@ const _selectAccountUuid = (
   accountUuid: string | undefined
 ): string | undefined => accountUuid
 
-const _selectBalancesByAccountIndex = createSelector(
+const _selectBalancesByAccountId = createSelector(
   [_selectAllBalances, _selectAccountUuid],
   (balances, accountUuid) => {
     if (accountUuid === undefined) return []
@@ -158,9 +158,9 @@ const _selectBalancesByAccountIndex = createSelector(
 )
 
 export const selectTokensWithBalanceForAccount = createSelector(
-  [selectIsDeveloperMode, selectAllNetworks, _selectBalancesByAccountIndex],
-  (isDeveloperMode, networks, balancesByAccountIndex) => {
-    const filteredBalancesForCurrentMode = balancesByAccountIndex.filter(
+  [selectIsDeveloperMode, selectAllNetworks, _selectBalancesByAccountId],
+  (isDeveloperMode, networks, balancesByAccountId) => {
+    const filteredBalancesForCurrentMode = balancesByAccountId.filter(
       balance => {
         const isTestnet = networks[balance.chainId]?.isTestnet
         return (
@@ -282,7 +282,7 @@ export const { setStatus, setBalances } = balanceSlice.actions
 
 export const refetchBalance = createAction(`${reducerName}/refetchBalance`)
 
-export const fetchBalanceForAccount = createAction<{ accountUuid: string }>(
+export const fetchBalanceForAccount = createAction<{ account: Account }>(
   `${reducerName}/fetchBalanceForAccount`
 )
 export const balanceReducer = balanceSlice.reducer
