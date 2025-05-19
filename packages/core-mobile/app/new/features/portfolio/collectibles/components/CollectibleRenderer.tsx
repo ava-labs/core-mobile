@@ -134,6 +134,7 @@ export const CollectibleRenderer = memo(
     }, [
       collectible?.imageData?.image,
       collectible?.imageData?.video,
+      isFocused,
       onImageError,
       onLoadEnd,
       onVideoError,
