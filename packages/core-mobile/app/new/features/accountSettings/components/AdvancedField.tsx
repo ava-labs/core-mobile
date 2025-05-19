@@ -69,6 +69,11 @@ export const AdvancedField = ({
     inputRef.current?.focus()
   }, [])
 
+  const onReset = useCallback(() => {
+    setIsEditing(false)
+    setInputValue('')
+  }, [])
+
   const isValidField = useCallback((): boolean => {
     switch (type) {
       case 'url':
@@ -117,7 +122,8 @@ export const AdvancedField = ({
         buttons: [
           {
             text: 'Dismiss',
-            style: 'default'
+            style: 'default',
+            onPress: onReset
           }
         ]
       })
@@ -132,10 +138,7 @@ export const AdvancedField = ({
           {
             text: 'Dismiss',
             style: 'default',
-            onPress: () => {
-              setIsEditing(false)
-              setInputValue('')
-            }
+            onPress: onReset
           }
         ]
       })
@@ -143,7 +146,16 @@ export const AdvancedField = ({
     }
     onUpdate(id, inputValue)
     setIsEditing(false)
-  }, [inputValue, type, title, isDeveloperMode, isValidField, onUpdate, id])
+  }, [
+    inputValue,
+    type,
+    title,
+    isDeveloperMode,
+    isValidField,
+    onUpdate,
+    id,
+    onReset
+  ])
 
   const onBlur = useCallback(() => {
     onSubmit()
