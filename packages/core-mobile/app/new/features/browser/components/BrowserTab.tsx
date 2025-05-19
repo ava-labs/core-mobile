@@ -45,6 +45,7 @@ import ErrorIcon from '../../../assets/icons/melting_face.png'
 import { useBrowserContext } from '../BrowserContext'
 import { isSuggestedSiteName } from '../utils'
 import { WebView } from './Webview'
+import { LoadingState } from 'common/components/LoadingState'
 
 export interface BrowserTabRef {
   loadUrl: (url: string) => void
@@ -293,6 +294,23 @@ export const BrowserTab = forwardRef<BrowserTabRef, { tabId: string }>(
       setError(event.nativeEvent)
     }
 
+    const renderLoading = (): JSX.Element => {
+      return (
+        <LoadingState
+          sx={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            paddingTop: insets.top,
+            paddingBottom: insets.bottom,
+            backgroundColor: theme.colors.$surfacePrimary
+          }}
+        />
+      )
+    }
+
     return (
       <View style={{ flex: 1 }}>
         {/* Main content */}
@@ -332,6 +350,7 @@ export const BrowserTab = forwardRef<BrowserTabRef, { tabId: string }>(
             style={{
               backgroundColor
             }}
+            renderLoading={renderLoading}
             containerStyle={{
               paddingTop: insets.top
             }}
