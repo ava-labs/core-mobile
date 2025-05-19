@@ -50,6 +50,11 @@ describe('applyExchangeRateToTrendingTokens', () => {
         decimals: 18,
         liquidity: 1000,
         logoURI: 'https://example.com/logo.png',
+        internalId: '0x123',
+        coingeckoId: 'test-coingecko-id',
+        platforms: {
+          'eip155:43114': '0x123'
+        },
         name: 'Test Token',
         symbol: 'TEST',
         volume24hUSD: 5000,
@@ -59,7 +64,6 @@ describe('applyExchangeRateToTrendingTokens', () => {
         rank: 1,
         price: 10,
         price24hChangePercent: -2,
-        coingecko_id: '',
         website: 'https://testtoken.com',
         twitter: '',
         discord: '',
@@ -92,23 +96,27 @@ describe('applyExchangeRateToTrendingTokens', () => {
       {
         address: '0x123',
         decimals: 18,
-        liquidity: null, // Non-numeric
+        liquidity: null,
         logoURI: 'https://example.com/logo.png',
+        internalId: '0x123',
+        coingeckoId: 'test-coingecko-id',
+        platforms: {
+          'eip155:43114': '0x123'
+        },
         name: 'Test Token',
         symbol: 'TEST',
-        volume24hUSD: null, // Non-numeric
+        volume24hUSD: null,
         marketcap: null,
         rank: 1,
         fdv: undefined,
         price: 10,
         price24hChangePercent: -2,
-        coingecko_id: '',
         website: 'https://testtoken.com',
         twitter: '',
         discord: '',
         medium: '',
         verified: null,
-        sparkline: undefined // Missing sparkline
+        sparkline: undefined
       }
     ]
 
