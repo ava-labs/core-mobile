@@ -30,7 +30,8 @@ export const CollectibleRenderer = memo(
     onLoaded,
     videoProps,
     style
-  }: CollectibleRendererProps): ReactNode => {
+  }: // eslint-disable-next-line sonarjs/cognitive-complexity
+  CollectibleRendererProps): ReactNode => {
     const {
       theme: { colors }
     } = useTheme()
