@@ -3,6 +3,11 @@ import BiometricsSDK from 'utils/BiometricsSDK'
 import { reducerName, selectWallets } from 'store/wallet/slice'
 import { StoreWalletWithPinParams, Wallet } from 'store/wallet/types'
 import { ThunkApi } from 'store/types'
+import { ImportedAccount } from 'store/account/types'
+import { WalletType } from 'services/wallet/types'
+import { setAccount, setActiveAccountId } from 'store/account'
+import { uuid } from 'utils/uuid'
+import { addWallet, setActiveWallet } from './slice'
 import { generateWalletName } from './utils'
 
 export const storeWalletWithPin = createAsyncThunk<
@@ -39,5 +44,42 @@ export const storeWalletWithPin = createAsyncThunk<
       isActive: true,
       type
     }
+  }
+)
+
+export const importPrivateKeyAccountAndCreateWallet = createAsyncThunk<
+  void,
+  { accountDetails: ImportedAccount },
+  ThunkApi
+>(
+  `${reducerName}/importPrivateKeyAccountAndCreateWallet`,
+  async ({ accountDetails }, thunkApi) => {
+    const newWalletId = uuid()
+    const state = thunkApi.getState()
+    const wallets = selectWallets(state)
+    const walletCount = Object.keys(wallets).length
+    const newWalletName = generateWalletName(
+      WalletType.PRIVATE_KEY,
+      walletCount + 1
+    )
+
+    const newWallet: Wallet = {
+      id: newWalletId,
+      name: newWalletName,
+      type: WalletType.PRIVATE_KEY,
+      isActive: true
+    }
+
+    thunkApi.dispatch(addWallet(newWallet))
+    thunkApi.dispatch(setActiveWallet(newWalletId))
+
+    const accountToImport: ImportedAccount = {
+      ...accountDetails,
+      walletId: newWalletId,
+      active: true
+    }
+
+    thunkApi.dispatch(setAccount(accountToImport))
+    thunkApi.dispatch(setActiveAccountId(accountToImport.id))
   }
 )

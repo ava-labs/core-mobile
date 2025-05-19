@@ -415,3 +415,13 @@ export class PrivateKeyWallet implements Wallet {
  * Thus, we are exporting a single instance of PrivateKeyWallet
  */
 export default new PrivateKeyWallet()
+
+export class PrivateKeyWalletFactory {
+  public static create(walletSecret: string, pubKey: Buffer): PrivateKeyWallet {
+    const newInstance = new PrivateKeyWallet()
+    newInstance.privateKey = walletSecret
+    newInstance.xpub = pubKey.toString('hex')
+    newInstance.xpubXP = pubKey.toString('hex')
+    return newInstance
+  }
+}
