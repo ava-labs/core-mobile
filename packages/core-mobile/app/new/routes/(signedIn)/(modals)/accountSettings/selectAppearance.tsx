@@ -1,5 +1,5 @@
 import { AnimatedPressable, Text, useTheme, View } from '@avalabs/k2-alpine'
-import { setThemePreference } from '@vonovak/react-native-theme-control'
+
 import { ScrollScreen } from 'common/components/ScrollScreen'
 import React, { FC } from 'react'
 import { SvgProps } from 'react-native-svg'
@@ -19,18 +19,6 @@ const SelectAppearanceScreen = (): JSX.Element => {
 
   const handleAppearancePress = (appearance: Appearance): void => {
     dispatch(setSelectedAppearance(appearance))
-
-    switch (appearance) {
-      case Appearance.System:
-        setThemePreference('system')
-        break
-      case Appearance.Dark:
-        setThemePreference('dark')
-        break
-      case Appearance.Light:
-        setThemePreference('light')
-        break
-    }
   }
 
   return (
