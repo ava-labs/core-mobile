@@ -105,7 +105,7 @@ export function DropdownMenu({
       onPressAction,
       theme.colors?.$textDanger,
       theme.colors?.$textPrimary,
-      theme?.isDark
+      theme.isDark
     ]
   )
 
