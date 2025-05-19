@@ -1,5 +1,6 @@
 import { showAlert, useTheme, View } from '@avalabs/k2-alpine'
 import { ErrorState } from 'common/components/ErrorState'
+import { LoadingState } from 'common/components/LoadingState'
 import { useDeeplink } from 'contexts/DeeplinkContext/DeeplinkContext'
 import { DeepLink, DeepLinkOrigin } from 'contexts/DeeplinkContext/types'
 import { Image } from 'expo-image'
@@ -45,7 +46,6 @@ import ErrorIcon from '../../../assets/icons/melting_face.png'
 import { useBrowserContext } from '../BrowserContext'
 import { isSuggestedSiteName } from '../utils'
 import { WebView } from './Webview'
-import { LoadingState } from 'common/components/LoadingState'
 
 export interface BrowserTabRef {
   loadUrl: (url: string) => void
