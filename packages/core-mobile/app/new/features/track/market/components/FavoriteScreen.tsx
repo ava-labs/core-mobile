@@ -20,7 +20,7 @@ const FavoriteScreen = ({
 }): JSX.Element => {
   const { favorites, prices, charts, isLoadingFavorites } = useWatchlist()
 
-  const { data, sort, view } = useTrackSortAndView(favorites, prices)
+  const { data, sort, view } = useTrackSortAndView(favorites, prices, true)
 
   const emptyComponent = useMemo(() => {
     return (

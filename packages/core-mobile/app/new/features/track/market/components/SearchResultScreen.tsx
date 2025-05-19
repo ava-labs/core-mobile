@@ -52,7 +52,8 @@ const SearchResultScreen = ({
 
   const { data, sort, view } = useTrackSortAndView(
     tokensToDisplay,
-    pricesToDisplay
+    pricesToDisplay,
+    false
   )
 
   const emptyComponent = useMemo(() => {
