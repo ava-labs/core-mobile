@@ -1,7 +1,7 @@
 import { IndexPath } from '@avalabs/k2-alpine'
 import { useMemo, useState } from 'react'
 import { defaultPrice, MarketToken, Prices } from 'store/watchlist'
-import { compareTokenPriceChangePercentage24h } from 'features/track/utils'
+import { compareTokenPriceChangePercentage24h } from 'features/track/utils/utils'
 import { DropdownSelection } from 'new/common/types'
 
 export const useTrackSortAndView = (

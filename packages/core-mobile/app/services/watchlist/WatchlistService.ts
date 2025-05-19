@@ -18,9 +18,7 @@ import Logger from 'utils/Logger'
 
 /*
  WatchlistService handles the following 3 API calls:
-  1. getTokens
-    - get token data from cache
-    - get token data from network (tokens not in cache)
+  1. getTokens: get token data from cache
   2. getPrices
     - get price data from cache
     - get price data from network (tokens not in cache)
@@ -30,10 +28,7 @@ import Logger from 'utils/Logger'
     - get price and market data from network (tokens not in cache)
 */
 class WatchlistService {
-  async getTokens(
-    currency: string,
-    cachedFavoriteTokenIds: string[]
-  ): Promise<{
+  async getTokens(currency: string): Promise<{
     tokens: Record<string, MarketToken>
     charts: Charts
   }> {
@@ -41,30 +36,17 @@ class WatchlistService {
       currency: currency.toLowerCase() as VsCurrencyType
     })
 
-    const cachedTokenIds = cachedTokens.map(token => token.id)
-    let otherTokens: CoinMarket[] = []
     const tokens: Record<string, MarketToken> = {}
     const charts: Charts = {}
 
-    // collect favorited token ids that are not in the cache
-    const tokenIdsToFetch = cachedFavoriteTokenIds.filter(
-      tk => !cachedTokenIds.includes(tk)
-    )
+    cachedTokens.forEach(token => {
+      const id = token.internalId
 
-    if (tokenIdsToFetch.length !== 0) {
-      // network contract tokens and favorite tokens
-      otherTokens = await TokenService.getMarkets({
-        currency: currency as VsCurrencyType,
-        coinIds: tokenIdsToFetch,
-        sparkline: true
-      })
-    }
-
-    // get tokens and chart from cached and fetched tokens
-    cachedTokens.concat(otherTokens).forEach(token => {
       const tokenToAdd = {
         marketType: MarketType.TOP,
-        id: token.id,
+        id,
+        coingeckoId: token.coingeckoId,
+        platforms: token.platforms,
         symbol: token.symbol,
         name: token.name,
         logoUri: token.image,
@@ -73,10 +55,10 @@ class WatchlistService {
         priceChangePercentage24h: token.price_change_percentage_24h ?? undefined
       }
 
-      tokens[token.id] = tokenToAdd
+      tokens[id] = tokenToAdd
 
       if (token.sparkline_in_7d?.price) {
-        charts[token.id] = transformSparklineData(token.sparkline_in_7d.price)
+        charts[id] = transformSparklineData(token.sparkline_in_7d.price)
       }
     })
 
@@ -149,8 +131,9 @@ class WatchlistService {
 
       marketsRaw.forEach(market => {
         tokens.push({
-          marketType: MarketType.TOP,
+          marketType: MarketType.SEARCH,
           id: market.id,
+          coingeckoId: market.id,
           symbol: market.symbol,
           name: market.name,
           logoUri: market.image,
@@ -217,50 +200,31 @@ class WatchlistService {
     coinIds: string[],
     currency: string
   ): Promise<SimplePriceResponse | undefined> {
-    const cachedPriceData = await TokenService.getPriceWithMarketDataByCoinIds(
-      coinIds
-    )
-
-    if (
-      cachedPriceData === undefined ||
-      Object.keys(cachedPriceData).length !== coinIds.length
-    ) {
-      try {
-        return TokenService.getSimplePrice({
-          coinIds,
-          currency: currency as VsCurrencyType
-        })
-      } catch (error) {
-        Logger.error('Failed to fetch price data', { error })
-        return undefined
-      }
+    try {
+      return TokenService.getSimplePrice({
+        coinIds,
+        currency: currency as VsCurrencyType
+      })
+    } catch (error) {
+      Logger.error('Failed to fetch price data', { error })
+      return undefined
     }
-    return cachedPriceData
   }
 
   private async getMarketsByCoinIds(
     coinIds: string[],
     currency: string
   ): Promise<CoinMarket[]> {
-    const cachedMarketData = await TokenService.getMarketsFromWatchlistCache({
-      currency: currency as VsCurrencyType
-    })
-    if (
-      cachedMarketData === undefined ||
-      Object.keys(cachedMarketData).length !== coinIds.length
-    ) {
-      try {
-        return TokenService.getMarkets({
-          coinIds,
-          currency: currency as VsCurrencyType,
-          sparkline: true
-        })
-      } catch (error) {
-        Logger.error('Failed to fetch market data', { error })
-        return []
-      }
+    try {
+      return TokenService.getMarkets({
+        coinIds,
+        currency: currency as VsCurrencyType,
+        sparkline: true
+      })
+    } catch (error) {
+      Logger.error('Failed to fetch market data', { error })
+      return []
     }
-    return cachedMarketData
   }
 }
 

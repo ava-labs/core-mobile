@@ -24,21 +24,40 @@ export const initialState: WatchListFavoriteState = {
 }
 
 export enum MarketType {
-  TOP = 'TOP', // these are the top tokens in the market (our backend fetches them from Coingecko)
-  TRENDING = 'TRENDING' // these are the trending avalanche tokens in the market (our backend fetches them from birdeye)
+  TOP = 'TOP', // these are the top tokens in the market + additional tokens in our database
+  TRENDING = 'TRENDING', // these are the trending avalanche tokens in the market
+  SEARCH = 'SEARCH' // these are the tokens that match the search query (fetched via Coingecko directly)
 }
 
-export type MarketToken = {
-  id: string // coingeckoId or address when coingeckoId is not available
-  marketType: MarketType
-  symbol: string
-  name: string
-  logoUri?: string
-  testID?: string
-  currentPrice?: number
-  priceChange24h?: number
-  priceChangePercentage24h?: number
-}
+type InternalId = string
+type CoingeckoId = string
+
+export type MarketToken =
+  | {
+      id: InternalId
+      coingeckoId: string | null | undefined
+      platforms: Record<string, string> | Record<string, never>
+      marketType: MarketType
+      symbol: string
+      name: string
+      logoUri?: string
+      testID?: string
+      currentPrice?: number
+      priceChange24h?: number
+      priceChangePercentage24h?: number
+    }
+  | {
+      id: CoingeckoId
+      coingeckoId: string
+      marketType: MarketType.SEARCH
+      symbol: string
+      name: string
+      logoUri?: string
+      testID?: string
+      currentPrice?: number
+      priceChange24h?: number
+      priceChangePercentage24h?: number
+    }
 
 export type PriceData = {
   priceInCurrency: number

@@ -10,7 +10,7 @@ import { selectSelectedCurrency } from 'store/settings/currency'
 import { formatCurrency } from 'utils/FormatCurrency'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
 import { PriceChangeStatus } from '@avalabs/k2-alpine'
-import { isEffectivelyZero } from 'features/track/utils'
+import { isEffectivelyZero } from 'features/track/utils/utils'
 import { MarketGridView } from './MarketGridView'
 import { MarketListView } from './MarketListView'
 

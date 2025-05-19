@@ -6,6 +6,7 @@ import { Dimensions } from 'react-native'
 import { useTokenSearch } from 'common/hooks/useTokenSearch'
 import { Image } from '@avalabs/k2-alpine'
 import { SEGMENT_CONTROL_HEIGHT } from 'features/portfolio/assets/consts'
+import { MarketType } from 'store/watchlist/types'
 import { useTrackSortAndView } from '../hooks/useTrackSortAndView'
 import MarketTokensScreen from './MarketTokensScreen'
 
@@ -18,7 +19,7 @@ const SearchResultScreen = ({
   isSearchBarFocused
 }: {
   searchText: string
-  goToMarketDetail: (tokenId: string) => void
+  goToMarketDetail: (tokenId: string, marketType: MarketType) => void
   isSearchBarFocused: boolean
 }): JSX.Element => {
   const {
