@@ -4,6 +4,7 @@
     <color name="textPrimary">#000000</color>
     <color name="neutral400">#B4B4B7</color>
     <color name="neutral50">#F8F8FB</color>
+    <color name="dialogTextColor">#FFFFFF</color>
     <color name="neutral900">#1A1A1C</color>
     <color name="neutral850">#2A2A2D</color>
     <color name="bootsplash_background">#000000</color>
