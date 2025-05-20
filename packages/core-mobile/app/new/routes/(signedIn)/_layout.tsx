@@ -144,6 +144,10 @@ export default function WalletLayout(): JSX.Element {
             name="(modals)/addEthereumChain"
             options={modalScreensOptions}
           />
+          <Stack.Screen
+            name="(modals)/selectCustomTokenNetwork"
+            options={formSheetScreensOptions}
+          />
         </Stack>
         <PolyfillCrypto />
         <LastTransactedNetworks />
