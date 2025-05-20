@@ -156,7 +156,6 @@ export const AddCustomTokenScreen = (): JSX.Element => {
   const renderNetwork = useCallback((): JSX.Element => {
     return (
       <TouchableOpacity
-        // disabled={token !== undefined}
         onPress={goToSelectNetwork}
         sx={{
           backgroundColor: colors.$surfaceSecondary,
@@ -171,7 +170,7 @@ export const AddCustomTokenScreen = (): JSX.Element => {
           Network
         </Text>
         {network ? (
-          <View sx={{ flexDirection: 'row', gap: 8 }}>
+          <View sx={{ flexDirection: 'row', gap: 8, alignItems: 'center' }}>
             <TokenLogo logoUri={network.logoUri} size={24} />
             <Text
               variant="body2"
@@ -182,13 +181,25 @@ export const AddCustomTokenScreen = (): JSX.Element => {
               }}>
               {network.chainName}
             </Text>
+            <View sx={{ marginHorizontal: 8 }}>
+              <Icons.Navigation.ChevronRightV2 />
+            </View>
           </View>
         ) : (
-          <Text
-            variant="body2"
-            sx={{ fontSize: 16, lineHeight: 22, color: colors.$textSecondary }}>
-            Select
-          </Text>
+          <View sx={{ flexDirection: 'row', gap: 8, alignItems: 'center' }}>
+            <Text
+              variant="body2"
+              sx={{
+                fontSize: 16,
+                lineHeight: 22,
+                color: colors.$textSecondary
+              }}>
+              Select
+            </Text>
+            <View sx={{ marginHorizontal: 8 }}>
+              <Icons.Navigation.ChevronRightV2 />
+            </View>
+          </View>
         )}
       </TouchableOpacity>
     )
