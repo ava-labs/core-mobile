@@ -1,0 +1,100 @@
+import { z } from 'zod'
+import { getCorrectedLimit } from 'store/rpc/handlers/avalanche_getAddressesInRange/utils'
+import WalletService from 'services/wallet/WalletService'
+import { StorageKey } from 'resources/Constants'
+import Logger from './Logger'
+import { commonStorage } from './mmkv'
+
+const CACHE_DURATION = 1000 * 60 * 10 // 10 minutes
+
+const getAddressesInRangeResultSchema = z.object({
+  external: z.array(z.string()),
+  internal: z.array(z.string())
+})
+
+const addressesInRangeCacheSchema = z.object({
+  expiresAtMs: z.number(),
+  addresses: getAddressesInRangeResultSchema
+})
+
+export type AddressesParams = {
+  externalStart: number
+  internalStart: number
+  externalLimit: number
+  internalLimit: number
+}
+
+export const getAddressesInRange = async (
+  isDeveloperMode: boolean,
+  // TODO: // we should use walletId here once we support multiple wallets
+  // walletId: string,
+  params: AddressesParams
+): Promise<{ external: string[]; internal: string[] }> => {
+  // const cacheKey = `${StorageKey.ADDRESSES_IN_RANGE}.${walletId}.${isDeveloperMode}.${JSON.stringify(
+  //   params
+  // )}`
+  const cacheKey = `${
+    StorageKey.ADDRESSES_IN_RANGE
+  }.${isDeveloperMode}.${JSON.stringify(params)}`
+  const cachedResult = commonStorage.getString(cacheKey)
+  const parsedCachedResult = addressesInRangeCacheSchema.safeParse(
+    JSON.parse(cachedResult ?? '{}')
+  )
+  if (
+    parsedCachedResult.success &&
+    new Date().getTime() < parsedCachedResult.data.expiresAtMs
+  ) {
+    return parsedCachedResult.data.addresses
+  }
+
+  const addresses: { external: string[]; internal: string[] } = {
+    external: [],
+    internal: []
+  }
+
+  const correctedExternalLimit = getCorrectedLimit(params.externalLimit)
+  const correctedInternalLimit = getCorrectedLimit(params.internalLimit)
+
+  const externalIndices = Array.from(
+    { length: correctedExternalLimit },
+    (_, i) => params.externalStart + i
+  )
+  addresses.external = (
+    await WalletService.getAddressesByIndices({
+      indices: externalIndices ?? [],
+      chainAlias: 'X',
+      isChange: false,
+      isTestnet: isDeveloperMode
+    })
+  ).map(address => address.split('-')[1] as string)
+
+  const internalIndices = Array.from(
+    { length: correctedInternalLimit },
+    (_, i) => params.internalStart + i
+  )
+
+  addresses.internal = (
+    await WalletService.getAddressesByIndices({
+      indices: internalIndices ?? [],
+      chainAlias: 'X',
+      isChange: true,
+      isTestnet: isDeveloperMode
+    })
+  ).map(address => address.split('-')[1] as string)
+
+  try {
+    commonStorage.set(
+      cacheKey,
+      JSON.stringify({
+        addresses,
+        expiresAtMs: new Date().getTime() + CACHE_DURATION
+      })
+    )
+  } catch (error) {
+    Logger.error(
+      'Failed to persist getAddressesInRange response to local storage',
+      error
+    )
+  }
+  return addresses
+}
