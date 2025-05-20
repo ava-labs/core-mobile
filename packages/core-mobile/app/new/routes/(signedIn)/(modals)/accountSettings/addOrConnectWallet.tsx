@@ -18,6 +18,7 @@ import WalletService from 'services/wallet/WalletService'
 import { addAccount } from 'store/account'
 import { WalletType } from 'services/wallet/types'
 import { selectActiveWallet } from 'store/wallet/slice'
+import { AppThunkDispatch } from 'store/types'
 
 const ITEM_HEIGHT = 70
 
@@ -28,7 +29,7 @@ const AddOrConnectWalletScreen = (): JSX.Element => {
   } = useTheme()
   const [isAddingAccount, setIsAddingAccount] = useState(false)
   const accounts = useSelector(selectAccounts)
-  const dispatch = useDispatch()
+  const dispatch = useDispatch<AppThunkDispatch>()
   const activeWallet = useSelector(selectActiveWallet)
 
   const handleCreateNewAccount = useCallback(async (): Promise<void> => {
@@ -40,7 +41,6 @@ const AddOrConnectWalletScreen = (): JSX.Element => {
       })
 
       setIsAddingAccount(true)
-      // @ts-ignore
       await dispatch(addAccount()).unwrap()
 
       AnalyticsService.capture('CreatedANewAccountSuccessfully', {
