@@ -5,7 +5,7 @@ import { StorageKey } from 'resources/Constants'
 import Logger from './Logger'
 import { commonStorage } from './mmkv'
 
-const CACHE_DURATION = 1000 * 60 * 10 // 10 minutes
+const CACHE_DURATION = 1000 * 60 * 30 // 30 minutes
 
 const getAddressesInRangeResultSchema = z.object({
   external: z.array(z.string()),
