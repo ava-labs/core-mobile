@@ -9,7 +9,6 @@ import { selectActiveAccount } from 'store/account'
 import {
   selectAllNetworks,
   selectEnabledChainIds,
-  selectEnabledNetworks,
   selectNetworks
 } from 'store/network'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
@@ -103,19 +102,19 @@ export const selectTokensWithBalanceByNetwork = (
     }
   )
 
-export const selectTokensWithZeroBalance = createSelector(
-  [selectEnabledNetworks, selectActiveAccount, _selectAllBalances],
-  (enabledNetworks, activeAccount, allBalances): LocalTokenWithBalance[] => {
-    if (!activeAccount) return []
+export const selectTokensWithZeroBalanceByNetwork = (
+  chainId?: number
+): ((state: RootState) => LocalTokenWithBalance[]) =>
+  createSelector(
+    [selectActiveAccount, _selectAllBalances],
+    (activeAccount, allBalances): LocalTokenWithBalance[] => {
+      if (!activeAccount || !chainId) return []
 
-    return enabledNetworks.reduce((acc, network) => {
-      const key = getKey(network.chainId, activeAccount.index)
+      const key = getKey(chainId, activeAccount.index)
       const tokens = allBalances[key]?.tokens ?? []
-      const zeroBalanceTokens = tokens.filter(token => token.balance === 0n)
-      return acc.concat(zeroBalanceTokens)
-    }, [] as LocalTokenWithBalance[])
-  }
-)
+      return tokens.filter(token => token.balance === 0n)
+    }
+  )
 
 export const selectAvaxPrice = (state: RootState): number => {
   const balances = Object.values(state.balance.balances)
