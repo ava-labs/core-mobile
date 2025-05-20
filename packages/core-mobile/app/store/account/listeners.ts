@@ -12,6 +12,7 @@ import AnalyticsService from 'services/analytics/AnalyticsService'
 import SeedlessService from 'seedless/services/SeedlessService'
 import { selectActiveNetwork, setActive } from 'store/network'
 import { getAccountIndex } from 'store/account/utils'
+import { selectActiveWalletId } from 'store/wallet/slice'
 import {
   selectAccounts,
   selectActiveAccount,
@@ -30,15 +31,21 @@ const initAccounts = async (
   const walletType = selectWalletType(state)
   const activeAccount = selectActiveAccount(state)
   const accounts: AccountCollection = {}
+  const activeWalletId = selectActiveWalletId(state)
+
+  if (!activeWalletId) {
+    throw new Error('Active wallet ID is not set')
+  }
+
+  const acc = await accountService.createNextAccount({
+    index: 0,
+    activeAccountIndex: activeAccount ? getAccountIndex(activeAccount) : 0,
+    walletType,
+    network: activeNetwork,
+    walletId: activeWalletId
+  })
 
   if (walletType === WalletType.SEEDLESS) {
-    const acc = await accountService.createNextAccount({
-      index: 0,
-      activeAccountIndex: activeAccount ? getAccountIndex(activeAccount) : 0,
-      walletType,
-      network: activeNetwork
-    })
-
     const title = await SeedlessService.getAccountName(0)
     const accountTitle = title ?? acc.name
     accounts[acc.id] = { ...acc, name: accountTitle }
@@ -57,14 +64,6 @@ const initAccounts = async (
     walletType === WalletType.MNEMONIC ||
     walletType === WalletType.PRIVATE_KEY
   ) {
-    // only add the first account for mnemonic wallet
-    const acc = await accountService.createNextAccount({
-      index: 0,
-      activeAccountIndex: activeAccount ? getAccountIndex(activeAccount) : 0,
-      walletType,
-      network: activeNetwork
-    })
-
     accounts[acc.id] = acc
     listenerApi.dispatch(setAccounts(accounts))
 
@@ -105,6 +104,11 @@ const fetchingRemainingAccounts = async ({
   const pubKeysStorage = new SeedlessPubKeysStorage()
   const pubKeys = await pubKeysStorage.retrieve()
   const accounts: AccountCollection = {}
+  const activeWalletId = selectActiveWalletId(state)
+
+  if (!activeWalletId) {
+    throw new Error('Active wallet ID is not set')
+  }
 
   // fetch the remaining accounts in the background
   for (let i = 1; i < pubKeys.length; i++) {
@@ -112,7 +116,8 @@ const fetchingRemainingAccounts = async ({
       index: i,
       activeAccountIndex,
       walletType,
-      network: activeNetwork
+      network: activeNetwork,
+      walletId: activeWalletId
     })
     const title = await SeedlessService.getAccountName(i)
     const accountTitle = title ?? acc.name
