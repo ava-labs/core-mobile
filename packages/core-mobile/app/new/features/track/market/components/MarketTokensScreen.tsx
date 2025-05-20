@@ -2,7 +2,7 @@ import React, { useMemo, useCallback } from 'react'
 import { StyleSheet } from 'react-native'
 import { Separator, View } from '@avalabs/k2-alpine'
 import { CollapsibleTabs } from 'common/components/CollapsibleTabs'
-import { Charts, MarketToken } from 'store/watchlist'
+import { Charts, MarketToken, MarketType } from 'store/watchlist'
 import { DropdownSelections } from 'common/components/DropdownSelections'
 import { Space } from 'common/components/Space'
 import { DropdownSelection } from 'common/types'
@@ -21,7 +21,7 @@ const MarketTokensScreen = ({
   charts: Charts
   sort: DropdownSelection
   view: DropdownSelection
-  goToMarketDetail: (tokenId: string) => void
+  goToMarketDetail: (tokenId: string, marketType: MarketType) => void
   emptyComponent: React.JSX.Element
 }): JSX.Element => {
   const isGridView = view.data[0]?.[view.selected.row] === MarketView.Grid
@@ -55,7 +55,7 @@ const MarketTokensScreen = ({
           charts={charts}
           index={index}
           isGridView={isGridView}
-          onPress={() => goToMarketDetail(item.id)}
+          onPress={() => goToMarketDetail(item.id, item.marketType)}
         />
       )
 

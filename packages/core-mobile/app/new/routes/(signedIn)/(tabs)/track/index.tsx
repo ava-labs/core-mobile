@@ -36,6 +36,7 @@ import Animated, {
   useAnimatedStyle,
   useSharedValue
 } from 'react-native-reanimated'
+import { MarketType } from 'store/watchlist/types'
 
 const SEARCH_BAR_MARGIN_TOP = Platform.OS === 'ios' ? 60 : 55
 
@@ -179,14 +180,14 @@ const TrackHomeScreen = (): JSX.Element => {
   )
 
   const handleGotoMarketDetail = useCallback(
-    (tokenId: string): void => {
+    (tokenId: string, marketType: MarketType): void => {
       navigate({
         // @ts-ignore TODO: make routes typesafe
         pathname: '/trackTokenDetail',
-        params: { tokenId, searchText }
+        params: { tokenId, marketType }
       })
     },
-    [navigate, searchText]
+    [navigate]
   )
 
   const renderEmptyTabBar = useCallback((): JSX.Element => <></>, [])

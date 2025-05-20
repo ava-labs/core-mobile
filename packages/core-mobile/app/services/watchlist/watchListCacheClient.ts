@@ -1,10 +1,10 @@
 import { Zodios } from '@zodios/core'
 import Config from 'react-native-config'
-import { array, boolean, string } from 'zod'
+import { array, string } from 'zod'
 import Logger from 'utils/Logger'
 import {
-  CoinMarketSchema,
   SimplePriceResponseSchema,
+  TopTokenSchema,
   TrendingTokenSchema
 } from '../token/types'
 
@@ -22,16 +22,13 @@ export const watchListCacheClient = new Zodios(
       alias: 'simplePrice',
       response: SimplePriceResponseSchema
     },
+    // tokens endpoint is top 250 + additional markets
     {
       method: 'get',
-      path: '/markets',
-      parameters: [
-        { name: 'currency', type: 'Query', schema: string() },
-        { name: 'topMarkets', type: 'Query', schema: boolean().optional() },
-        { name: 'timestamp', type: 'Query', schema: string().optional() }
-      ],
-      alias: 'markets',
-      response: array(CoinMarketSchema)
+      path: '/tokens',
+      parameters: [{ name: 'currency', type: 'Query', schema: string() }],
+      alias: 'tokens',
+      response: array(TopTokenSchema)
     },
     {
       method: 'get',

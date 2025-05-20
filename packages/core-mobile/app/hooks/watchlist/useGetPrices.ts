@@ -5,16 +5,19 @@ import WatchlistService from 'services/watchlist/WatchlistService'
 import { selectSelectedCurrency } from 'store/settings/currency'
 import { Prices } from 'store/watchlist'
 
-export const useGetPrices = (
-  tokenIds: string[],
+export const useGetPrices = ({
+  coingeckoIds,
+  enabled
+}: {
+  coingeckoIds: string[]
   enabled: boolean
-): UseQueryResult<Prices, Error> => {
+}): UseQueryResult<Prices, Error> => {
   const currency = useSelector(selectSelectedCurrency).toLowerCase()
 
   return useQuery({
     enabled,
-    queryKey: [ReactQueryKeys.WATCHLIST_PRICES, currency, tokenIds],
-    queryFn: () => WatchlistService.getPrices(tokenIds, currency),
+    queryKey: [ReactQueryKeys.WATCHLIST_PRICES, currency, coingeckoIds],
+    queryFn: () => WatchlistService.getPrices(coingeckoIds, currency),
     refetchInterval: 30000 // 30 seconds
   })
 }

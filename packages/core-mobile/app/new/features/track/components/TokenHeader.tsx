@@ -12,7 +12,7 @@ import { TokenLogo } from 'common/components/TokenLogo'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
 import { formatLargeCurrency } from 'utils/Utils'
-import { isEffectivelyZero } from '../utils'
+import { isEffectivelyZero } from '../utils/utils'
 import { RankView } from './RankView'
 
 export const TokenHeader = ({
