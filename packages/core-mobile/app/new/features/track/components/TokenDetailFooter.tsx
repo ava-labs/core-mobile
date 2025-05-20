@@ -1,96 +1,128 @@
 import { Button, View } from '@avalabs/k2-alpine'
-import { AVAX_COINGECKO_ID } from 'consts/coingecko'
-import { USDC_TOKEN_ID } from 'common/consts/swap'
 import { useHasEnoughAvaxToStake } from 'hooks/earn/useHasEnoughAvaxToStake'
-import React from 'react'
+import React, { useCallback, useMemo } from 'react'
 import { useSelector } from 'react-redux'
 import { selectActiveAccount } from 'store/account'
 import { selectBalanceTotalForAccount } from 'store/balance'
 import { selectTokenVisibility } from 'store/portfolio'
-import { selectIsEarnBlocked } from 'store/posthog'
+import { selectIsEarnBlocked, selectIsSwapBlocked } from 'store/posthog'
 import { MarketType } from 'store/watchlist'
+import { selectIsDeveloperMode } from 'store/settings/advanced'
+import { useIsSwappable } from 'common/hooks/useIsSwapable'
+import { USDC_TOKEN_ID } from 'common/consts/swap'
+import { getTokenActions } from '../utils/getTokenActions'
 
-// TODO: reenable buy after backend work is done
 export const TokenDetailFooter = ({
-  tokenId,
-  tokenInfo,
+  isAVAX,
+  marketType,
+  contractAddress,
+  chainId,
   onBuy,
   onStake,
   onSwap
 }: {
-  tokenId: string
-  tokenInfo?: { marketType: MarketType; contractAddress: string | undefined }
+  isAVAX: boolean
+  marketType: MarketType
+  contractAddress: string | undefined
+  chainId: number | undefined
   onBuy: () => void
   onStake: () => void
   onSwap: (initialTokenIdTo?: string) => void
 }): JSX.Element | null => {
   const activeAccount = useSelector(selectActiveAccount)
+  const isDeveloperMode = useSelector(selectIsDeveloperMode)
+  const { isSwappable } = useIsSwappable()
+  const isSwapBlocked = useSelector(selectIsSwapBlocked)
   const tokenVisibility = useSelector(selectTokenVisibility)
   const balanceTotal = useSelector(
     selectBalanceTotalForAccount(activeAccount?.index ?? 0, tokenVisibility)
   )
   const isZeroBalance = balanceTotal === 0n
   const { hasEnoughAvax } = useHasEnoughAvaxToStake()
-  const earnBlocked = useSelector(selectIsEarnBlocked)
+  const isEarnBlocked = useSelector(selectIsEarnBlocked)
 
-  const buyButton = (
-    <Button
-      key="buy"
-      type={'primary'}
-      size={'large'}
-      onPress={onBuy}
-      style={{ flex: 1 }}>
-      Buy
-    </Button>
+  const isTokenSwappable = isSwappable({
+    tokenAddress: contractAddress,
+    chainId
+  })
+
+  const buyButton = useMemo(
+    () => (
+      <Button
+        key="buy"
+        type={'primary'}
+        size={'large'}
+        onPress={onBuy}
+        style={{ flex: 1 }}>
+        Buy
+      </Button>
+    ),
+    [onBuy]
   )
 
-  const stakeButton = (
-    <Button
-      key="stake"
-      type={'primary'}
-      size={'large'}
-      onPress={onStake}
-      style={{ flex: 1 }}>
-      Stake
-    </Button>
+  const stakeButton = useMemo(
+    () => (
+      <Button
+        key="stake"
+        type={'primary'}
+        size={'large'}
+        onPress={onStake}
+        style={{ flex: 1 }}>
+        Stake
+      </Button>
+    ),
+    [onStake]
   )
 
-  const generateSwapButton = (initialTokenIdTo?: string): JSX.Element => (
-    <Button
-      key="swap"
-      type={'primary'}
-      size={'large'}
-      onPress={() => onSwap(initialTokenIdTo)}
-      style={{ flex: 1 }}>
-      Swap
-    </Button>
+  const generateSwapButton = useCallback(
+    (initialTokenIdTo?: string): JSX.Element => (
+      <Button
+        key="swap"
+        type={'primary'}
+        size={'large'}
+        onPress={() => onSwap(initialTokenIdTo)}
+        style={{ flex: 1 }}>
+        Swap
+      </Button>
+    ),
+    [onSwap]
   )
 
-  const actions = []
+  const actions = useMemo(() => {
+    const result = []
 
-  if (isZeroBalance) {
-    // only show buy button if the user has zero balance
-    // actions.push(buyButton)
-    tokenId === AVAX_COINGECKO_ID && actions.push(buyButton)
-  } else if (tokenId === AVAX_COINGECKO_ID) {
-    // for AVAX, show stake instead of buy button if user has enough AVAX
-    hasEnoughAvax
-      ? !earnBlocked && actions.push(stakeButton)
-      : actions.push(buyButton)
+    const { showBuy, showSwap, showStake } = getTokenActions({
+      isAVAX,
+      marketType,
+      isTokenSwappable,
+      isSwapBlocked: isSwapBlocked || isDeveloperMode,
+      isZeroBalance,
+      hasEnoughAvax,
+      isEarnBlocked
+    })
 
-    // always show swap button for AVAX
-    actions.push(generateSwapButton(USDC_TOKEN_ID))
-  } else {
-    // user has some balance, show both buy and swap button for all other tokens
-    //actions.push(buyButton)
+    showBuy && result.push(buyButton)
 
-    // however, only show swap button if the token is a trending one
-    // as we currently only support swapping on Avanlanche network
-    // (all trending tokens are on Avalanche network)
-    tokenInfo &&
-      tokenInfo.marketType === MarketType.TRENDING &&
-      actions.push(generateSwapButton(tokenInfo.contractAddress))
-  }
+    showStake && result.push(stakeButton)
+
+    showSwap &&
+      result.push(generateSwapButton(isAVAX ? USDC_TOKEN_ID : contractAddress))
+
+    return result
+  }, [
+    contractAddress,
+    marketType,
+    isDeveloperMode,
+    isSwapBlocked,
+    isZeroBalance,
+    hasEnoughAvax,
+    isEarnBlocked,
+    buyButton,
+    stakeButton,
+    generateSwapButton,
+    isAVAX,
+    isTokenSwappable
+  ])
 
   if (actions.length === 0) {
     return null

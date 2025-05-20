@@ -2,8 +2,7 @@ import sdk from '@avalabs/core-coingecko-sdk'
 import { watchListCacheClient } from 'services/watchlist/watchListCacheClient'
 import * as inMemoryCache from 'utils/InMemoryCache'
 import TokenService from './TokenService'
-import TOP_MARKETS from './__mocks__/topMarkets.json'
-import ADDITIONAL_MARKETS from './__mocks__/additionalMarkets.json'
+import TOP_MARKETS from './__mocks__/tokens.json'
 import { coingeckoProxyClient as proxy } from './coingeckoProxyClient'
 import WATCHLIST_PRICE from './__mocks__/watchlistPrice.json'
 import MARKET_CHART from './__mocks__/marketChart.json'
@@ -13,11 +12,11 @@ import RAW_WATCHLIST_PRICE from './__mocks__/rawWatchlistPrice.json'
 
 const MOCK_429 = { status: 429, message: 'Too many requests' }
 
-const watchlistMarketsMock = jest.spyOn(watchListCacheClient, 'markets')
+const watchlistMarketsMock = jest.spyOn(watchListCacheClient, 'tokens')
 
-watchlistMarketsMock.mockImplementation(async ({ queries: { topMarkets } }) => {
-  if (topMarkets) return TOP_MARKETS
-  return ADDITIONAL_MARKETS
+// @ts-ignore
+watchlistMarketsMock.mockImplementation(async () => {
+  return TOP_MARKETS
 })
 
 const inMemoryCacheMock = jest.spyOn(inMemoryCache, 'getCache')
@@ -27,7 +26,7 @@ describe('getMarketsFromWatchlistCache', () => {
     const result = await TokenService.getMarketsFromWatchlistCache({
       currency: sdk.VsCurrencyType.USD
     })
-    expect(result.length).toEqual(5)
+    expect(result.length).toEqual(1758)
   })
   it('should not have been called watchListCacheClient.markets', async () => {
     inMemoryCacheMock.mockImplementation(() => TOP_MARKETS)

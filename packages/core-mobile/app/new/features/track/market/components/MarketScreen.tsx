@@ -7,13 +7,14 @@ import { useWatchlist } from 'hooks/watchlist/useWatchlist'
 import React, { useMemo } from 'react'
 import { Dimensions } from 'react-native'
 import Animated from 'react-native-reanimated'
+import { MarketType } from 'store/watchlist/types'
 import { useTrackSortAndView } from '../hooks/useTrackSortAndView'
 import MarketTokensScreen from './MarketTokensScreen'
 
 const MarketScreen = ({
   goToMarketDetail
 }: {
-  goToMarketDetail: (tokenId: string) => void
+  goToMarketDetail: (tokenId: string, marketType: MarketType) => void
 }): JSX.Element => {
   const {
     topTokens,
@@ -24,7 +25,7 @@ const MarketScreen = ({
     refetchTopTokens
   } = useWatchlist()
 
-  const { data, sort, view } = useTrackSortAndView(topTokens, prices)
+  const { data, sort, view } = useTrackSortAndView(topTokens, prices, false)
 
   const emptyComponent = useMemo(() => {
     if (isRefetchingTopTokens) {

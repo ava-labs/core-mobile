@@ -7,12 +7,13 @@ import { LoadingState } from 'new/common/components/LoadingState'
 import React, { useMemo } from 'react'
 import { Dimensions } from 'react-native'
 import Animated from 'react-native-reanimated'
+import { MarketType } from 'store/watchlist/types'
 import TrendingTokensScreen from './TrendingTokensScreen'
 
 export const TrendingScreen = ({
   goToMarketDetail
 }: {
-  goToMarketDetail: (tokenId: string) => void
+  goToMarketDetail: (tokenId: string, marketType: MarketType) => void
 }): JSX.Element => {
   const {
     trendingTokens,

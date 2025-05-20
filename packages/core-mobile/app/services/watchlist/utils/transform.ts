@@ -14,7 +14,7 @@ export const transformTrendingTokens = (
   const prices: Prices = {}
 
   for (const token of trendingTokens) {
-    const id = token.address
+    const id = token.internalId
 
     if (token.sparkline) {
       charts[id] = transformMartketChartRawPrices(
@@ -30,6 +30,8 @@ export const transformTrendingTokens = (
     tokens[id] = {
       marketType: MarketType.TRENDING,
       id,
+      coingeckoId: token.coingeckoId,
+      platforms: token.platforms,
       symbol: token.symbol,
       name: token.name,
       logoUri: token.logoURI ?? undefined,

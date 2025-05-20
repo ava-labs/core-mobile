@@ -21,6 +21,7 @@ import { SystemBars } from 'react-native-edge-to-edge'
 import { KeyboardProvider } from 'react-native-keyboard-controller'
 import 'react-native-reanimated'
 import { useDispatch, useSelector } from 'react-redux'
+import { selectIsDeveloperMode } from 'store/settings/advanced'
 import {
   Appearance,
   selectSelectedAppearance,
@@ -30,7 +31,7 @@ import {
 
 export default function Root(): JSX.Element | null {
   const dispatch = useDispatch()
-
+  const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const selectedAppearance = useSelector(selectSelectedAppearance)
   const { inBackground } = useBgDetect()
   const [enabledPrivacyScreen, setEnabledPrivacyScreen] = useState(false)
@@ -41,14 +42,14 @@ export default function Root(): JSX.Element | null {
   useEffect(() => {
     const subscription = RnAppearance.addChangeListener(
       ({ colorScheme: updatedColorSchemes }) => {
-        if (selectedAppearance === Appearance.System) {
+        if (selectedAppearance === Appearance.System && !isDeveloperMode) {
           dispatch(setSelectedColorScheme(updatedColorSchemes ?? 'light'))
           SystemBars.setStyle(updatedColorSchemes === 'dark' ? 'light' : 'dark')
         }
       }
     )
     return () => subscription.remove()
-  }, [dispatch, selectedAppearance])
+  }, [dispatch, isDeveloperMode, selectedAppearance])
 
   useEffect(() => {
     SystemBars.setStyle(colorScheme === 'dark' ? 'light' : 'dark')

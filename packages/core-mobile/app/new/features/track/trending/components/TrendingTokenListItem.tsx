@@ -11,12 +11,14 @@ export const TrendingTokenListItem = ({
   token,
   index,
   onPress,
-  onBuyPress
+  onBuyPress,
+  showBuyButton
 }: {
   token: MarketToken
   index: number
   onPress: () => void
-  onBuyPress: (initialTokenIdTo?: string) => void
+  onBuyPress: () => void
+  showBuyButton: boolean
 }): React.JSX.Element => {
   const currency = useSelector(selectSelectedCurrency)
 
@@ -62,6 +64,7 @@ export const TrendingTokenListItem = ({
       formattedPrice={formattedPrice}
       isFavorite={isFavorite}
       onBuyPress={onBuyPress}
+      showBuyButton={showBuyButton}
     />
   )
 }

@@ -28,6 +28,8 @@ export const useGetTrendingTokens = <TData = TrendingToken[]>(
 }
 
 export const useGetTrendingToken = (
-  address: string
+  internalId: string | undefined
 ): UseQueryResult<TrendingToken | undefined, Error> =>
-  useGetTrendingTokens(data => data.find(token => token.address === address))
+  useGetTrendingTokens(data =>
+    internalId ? data.find(token => token.internalId === internalId) : undefined
+  )

@@ -1,0 +1,24 @@
+diff --git a/node_modules/react-native/Libraries/AppDelegate/RCTAppDelegate.mm b/node_modules/react-native/Libraries/AppDelegate/RCTAppDelegate.mm
+index 31b8889..a9a9da4 100644
+--- a/node_modules/react-native/Libraries/AppDelegate/RCTAppDelegate.mm
++++ b/node_modules/react-native/Libraries/AppDelegate/RCTAppDelegate.mm
+@@ -33,6 +33,11 @@
+ #import <ReactCommon/RCTJscInstance.h>
+ #endif
+ #import <react/nativemodule/defaults/DefaultTurboModules.h>
++#if __has_include(<RNThemeControl.h>)
++#import <RNThemeControl.h>
++#else
++#import "RNThemeControl.h"
++#endif
+ 
+ @interface RCTAppDelegate () <RCTComponentViewFactoryComponentProvider, RCTHostDelegate>
+ @end
+@@ -63,6 +68,7 @@ - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(
+   if (self.automaticallyLoadReactNativeWindow) {
+     [self loadReactNativeWindow:launchOptions];
+   }
++  [RNThemeControl recoverApplicationTheme];
+ 
+   return YES;
+ }
