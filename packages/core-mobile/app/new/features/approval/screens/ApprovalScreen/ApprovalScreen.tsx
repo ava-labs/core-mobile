@@ -1,6 +1,5 @@
 import { Separator, showAlert, Text, View } from '@avalabs/k2-alpine'
 import { RpcMethod } from '@avalabs/vm-module-types'
-import { useNativeTokenWithBalance } from 'common/hooks/send/useNativeTokenWithBalance'
 import { validateFee } from 'common/hooks/send/utils/evm/validate'
 import { SendErrorMessage } from 'common/hooks/send/utils/types'
 import { router } from 'expo-router'
@@ -23,6 +22,7 @@ import { getChainIdFromCaip2 } from 'utils/caip2ChainIds'
 import Logger from 'utils/Logger'
 import { Eip1559Fees } from 'utils/Utils'
 import { withWalletConnectCache } from 'common/components/withWalletConnectCache'
+import { useNativeTokenWithBalanceByNetwork } from 'features/send/hooks/useNativeTokenWithBalanceByNetwork'
 import { Account } from '../../components/Account'
 import BalanceChange from '../../components/BalanceChange/BalanceChange'
 import { Details } from '../../components/Details'
@@ -42,7 +42,7 @@ const ApprovalScreen = ({
   const chainId = getChainIdFromCaip2(caip2ChainId)
   const network = getNetwork(chainId)
   const [amountError, setAmountError] = useState<string | undefined>()
-  const nativeToken = useNativeTokenWithBalance()
+  const nativeToken = useNativeTokenWithBalanceByNetwork(network)
 
   const accountSelector =
     'account' in signingData
