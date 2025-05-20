@@ -18,27 +18,32 @@ import { UNKNOWN_AMOUNT } from 'consts/amount'
 import SparklineChart from 'features/track/components/SparklineChart'
 import { useGetPrices } from 'hooks/watchlist/useGetPrices'
 import { useIsFocused } from '@react-navigation/native'
-import { isEffectivelyZero } from '../utils'
+import { MarketType } from 'store/watchlist/types'
+import { isEffectivelyZero } from '../utils/utils'
 
 export const ShareChart = ({
   tokenId,
-  searchText
+  marketType
 }: {
   tokenId: string
-  searchText?: string
+  marketType: MarketType
 }): JSX.Element => {
   const { theme } = useTheme()
   const { theme: inversedTheme } = useInversedTheme({ isDark: theme.isDark })
-  const { chartData, ranges, tokenInfo } = useTokenDetails({
-    tokenId: tokenId ?? '',
-    searchText
+  const { chartData, ranges, tokenInfo, coingeckoId } = useTokenDetails({
+    tokenId: tokenId,
+    marketType
   })
   const isFocused = useIsFocused()
 
-  const { data: prices } = useGetPrices(
-    [tokenId],
-    isFocused && tokenInfo !== undefined && tokenInfo.currentPrice === undefined
-  )
+  const { data: prices } = useGetPrices({
+    coingeckoIds: [coingeckoId],
+    enabled:
+      isFocused &&
+      tokenInfo !== undefined &&
+      tokenInfo.currentPrice === undefined &&
+      coingeckoId.length > 0
+  })
 
   return (
     <View
@@ -71,7 +76,7 @@ export const ShareChart = ({
               logoUri={tokenInfo.logoUri}
               symbol={tokenInfo.symbol}
               currentPrice={
-                tokenInfo.currentPrice ?? prices?.[tokenId]?.priceInCurrency
+                tokenInfo.currentPrice ?? prices?.[coingeckoId]?.priceInCurrency
               }
               ranges={
                 ranges.minDate === 0 && ranges.maxDate === 0

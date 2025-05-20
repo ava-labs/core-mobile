@@ -6,7 +6,6 @@ import {
   getBasicCoingeckoHttp,
   simplePrice,
   SimplePriceParams,
-  simpleTokenPrice,
   VsCurrencyType
 } from '@avalabs/core-coingecko-sdk'
 import { Contract } from 'ethers'
@@ -33,7 +32,8 @@ import {
   CoinsSearchResponse,
   ContractMarketChartResponse,
   CoinsInfoResponse,
-  TrendingToken
+  TrendingToken,
+  TopToken
 } from './types'
 import {
   coingeckoRetry,
@@ -106,27 +106,18 @@ export class TokenService {
    */
   async getMarketsFromWatchlistCache({
     currency = VsCurrencyType.USD
-  }: GetMarketsParams): Promise<CoinMarket[]> {
-    let data: CoinMarket[] | undefined
+  }: GetMarketsParams): Promise<TopToken[]> {
+    let data: TopToken[] | undefined
 
     const cacheId = `getMarkets-${currency}`
 
     data = getCache(cacheId)
 
     if (data === undefined) {
-      const timestamp = new Date().toISOString()
-      const topMarketsPromise = watchListCacheClient.markets({
-        queries: { currency, topMarkets: true, timestamp }
-      })
-      const additionalMarketsPromise = watchListCacheClient.markets({
-        queries: { currency, topMarkets: false, timestamp }
+      data = await watchListCacheClient.tokens({
+        queries: { currency }
       })
 
-      const [topMarkets, additionalMarkets] = await Promise.all([
-        topMarketsPromise,
-        additionalMarketsPromise
-      ])
-      data = topMarkets.concat(additionalMarkets)
       setCache(cacheId, data)
     }
 
@@ -202,45 +193,6 @@ export class TokenService {
       }
       return acc
     }, {} as SimplePriceResponse)
-  }
-
-  /**
-   * Get token price with market data for a list of addresses
-   * @param tokenAddresses the token addresses
-   * @param assetPlatformId The platform id for all the tokens in the list
-   * @param currency the currency to be used
-   * @returns a list of token price with market data
-   */
-  async getPricesWithMarketDataByAddresses(
-    tokenAddresses: string[],
-    assetPlatformId: string,
-    currency: VsCurrencyType = VsCurrencyType.USD
-  ): Promise<SimplePriceResponse | undefined> {
-    let data: SimplePriceResponse | undefined
-
-    const key = `${arrayHash(tokenAddresses)}-${assetPlatformId}-${currency}`
-
-    const cacheId = `getPricesWithMarketDataByAddresses-${key}`
-    data = getCache(cacheId)
-
-    if (data === undefined) {
-      try {
-        data = await coingeckoRetry<SimplePriceResponse>(useCoingeckoProxy =>
-          this.fetchPricesWithMarketDataByAddresses({
-            assetPlatformId,
-            tokenAddresses,
-            currency,
-            useCoingeckoProxy
-          })
-        )
-      } catch {
-        data = undefined
-      }
-
-      setCache(cacheId, data)
-    }
-
-    return data
   }
 
   /**
@@ -580,41 +532,6 @@ export class TokenService {
     }
     return coinsSearch(coingeckoBasicClient, {
       query
-    })
-  }
-
-  private async fetchPricesWithMarketDataByAddresses({
-    assetPlatformId,
-    tokenAddresses,
-    currency = VsCurrencyType.USD,
-    useCoingeckoProxy = false
-  }: {
-    assetPlatformId: string
-    tokenAddresses: string[]
-    currency: VsCurrencyType
-    useCoingeckoProxy?: boolean
-  }): Promise<SimplePriceResponse | CoingeckoError> {
-    if (useCoingeckoProxy) {
-      return coingeckoProxyClient.simplePriceByContractAddresses(undefined, {
-        params: {
-          id: assetPlatformId
-        },
-        queries: {
-          contract_addresses: tokenAddresses,
-          vs_currencies: [currency],
-          include_market_cap: true,
-          include_24hr_vol: true,
-          include_24hr_change: true
-        }
-      })
-    }
-    return simpleTokenPrice(coingeckoBasicClient, {
-      assetPlatformId,
-      tokenAddresses,
-      currencies: [currency],
-      marketCap: true,
-      vol24: true,
-      change24: true
     })
   }
 }
