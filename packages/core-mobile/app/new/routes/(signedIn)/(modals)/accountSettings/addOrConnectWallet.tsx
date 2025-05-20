@@ -1,5 +1,5 @@
 import { useRouter } from 'expo-router'
-import React, { useCallback, useState } from 'react'
+import React, { useCallback, useState, useMemo } from 'react'
 import {
   ActivityIndicator,
   alpha,
@@ -16,26 +16,20 @@ import { selectAccounts } from 'store/account/slice'
 import { useSelector, useDispatch } from 'react-redux'
 import WalletService from 'services/wallet/WalletService'
 import { addAccount } from 'store/account'
+import { WalletType } from 'services/wallet/types'
+import { selectActiveWallet } from 'store/wallet/slice'
 
 const ITEM_HEIGHT = 70
 
 const AddOrConnectWalletScreen = (): JSX.Element => {
-  const { back: _back, navigate: _navigate } = useRouter() // Mark as unused for now
+  const { back, navigate } = useRouter()
   const {
     theme: { colors }
   } = useTheme()
   const [isAddingAccount, setIsAddingAccount] = useState(false)
   const accounts = useSelector(selectAccounts)
   const dispatch = useDispatch()
-
-  const handleTypeRecoveryPhrase = (): void => {
-    showSnackbar('TBD')
-  }
-
-  const handleImportPrivateKey = (): void => {
-    // @ts-ignore TODO: make routes typesafe
-    _navigate({ pathname: '/accountSettings/importPrivateKey' })
-  }
+  const activeWallet = useSelector(selectActiveWallet)
 
   const handleCreateNewAccount = useCallback(async (): Promise<void> => {
     if (isAddingAccount) return
@@ -57,69 +51,98 @@ const AddOrConnectWalletScreen = (): JSX.Element => {
       showSnackbar('Unable to add account')
     } finally {
       setIsAddingAccount(false)
-      _back()
+      back()
     }
-  }, [accounts, isAddingAccount, dispatch, _back])
+  }, [accounts, isAddingAccount, dispatch, back])
 
-  const data = [
-    {
-      title: (
-        <Text variant="body1" sx={{ color: colors.$textPrimary, fontSize: 16 }}>
-          Create new account
-        </Text>
-      ),
-      subtitle: (
-        <Text
-          variant="caption"
-          sx={{ color: alpha(colors.$textPrimary, 0.6), fontSize: 14 }}>
-          Add new multi-chain account
-        </Text>
-      ),
-      leftIcon: (
-        <Icons.Content.Add color={colors.$textPrimary} width={24} height={24} />
-      ),
-      accessory: (
-        <Icons.Navigation.ChevronRight color={colors.$textSecondary} />
-      ),
-      onPress: handleCreateNewAccount
-    },
-    {
-      title: (
-        <Text variant="body1" sx={{ color: colors.$textPrimary, fontSize: 16 }}>
-          Type in a recovery phrase
-        </Text>
-      ),
-      leftIcon: (
-        <Icons.Device.GPPMaybe
-          color={colors.$textPrimary}
-          width={24}
-          height={24}
-        />
-      ),
-      accessory: (
-        <Icons.Navigation.ChevronRight color={colors.$textSecondary} />
-      ),
-      onPress: handleTypeRecoveryPhrase
-    },
-    {
-      title: (
-        <Text variant="body1" sx={{ color: colors.$textPrimary, fontSize: 16 }}>
-          Import a private key
-        </Text>
-      ),
-      leftIcon: (
-        <Icons.Custom.ArrowDown
-          color={colors.$textPrimary}
-          width={24}
-          height={24}
-        />
-      ),
-      accessory: (
-        <Icons.Navigation.ChevronRight color={colors.$textSecondary} />
-      ),
-      onPress: handleImportPrivateKey
+  const data = useMemo(() => {
+    const handleTypeRecoveryPhrase = (): void => {
+      showSnackbar('TBD')
     }
-  ]
+
+    const handleImportPrivateKey = (): void => {
+      // @ts-ignore TODO: make routes typesafe
+      navigate({ pathname: '/accountSettings/importPrivateKey' })
+    }
+
+    const baseData = [
+      {
+        title: (
+          <Text
+            variant="body1"
+            sx={{ color: colors.$textPrimary, fontSize: 16 }}>
+            Type in a recovery phrase
+          </Text>
+        ),
+        leftIcon: (
+          <Icons.Device.GPPMaybe
+            color={colors.$textPrimary}
+            width={24}
+            height={24}
+          />
+        ),
+        accessory: (
+          <Icons.Navigation.ChevronRight color={colors.$textSecondary} />
+        ),
+        onPress: handleTypeRecoveryPhrase
+      },
+      {
+        title: (
+          <Text
+            variant="body1"
+            sx={{ color: colors.$textPrimary, fontSize: 16 }}>
+            Import a private key
+          </Text>
+        ),
+        leftIcon: (
+          <Icons.Custom.ArrowDown
+            color={colors.$textPrimary}
+            width={24}
+            height={24}
+          />
+        ),
+        accessory: (
+          <Icons.Navigation.ChevronRight color={colors.$textSecondary} />
+        ),
+        onPress: handleImportPrivateKey
+      }
+    ]
+
+    if (activeWallet?.type !== WalletType.PRIVATE_KEY) {
+      return [
+        {
+          title: (
+            <Text
+              variant="body1"
+              sx={{ color: colors.$textPrimary, fontSize: 16 }}>
+              Create new account
+            </Text>
+          ),
+          subtitle: (
+            <Text
+              variant="caption"
+              sx={{ color: alpha(colors.$textPrimary, 0.6), fontSize: 14 }}>
+              Add new multi-chain account
+            </Text>
+          ),
+          leftIcon: (
+            <Icons.Content.Add
+              color={colors.$textPrimary}
+              width={24}
+              height={24}
+            />
+          ),
+          accessory: (
+            <Icons.Navigation.ChevronRight color={colors.$textSecondary} />
+          ),
+          onPress: handleCreateNewAccount
+        },
+        ...baseData
+      ]
+    }
+
+    return baseData
+  }, [navigate, activeWallet?.type, colors, handleCreateNewAccount])
 
   return (
     <ScrollScreen

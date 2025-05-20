@@ -20,7 +20,7 @@ import { useRouter } from 'expo-router'
 import { useBalanceForAccount } from 'new/common/contexts/useBalanceForAccount'
 import React, { useCallback, useMemo, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { selectAccounts, setActiveAccountId, Account } from 'store/account'
+import { selectAccounts, Account, setActiveAccount } from 'store/account'
 import { selectIsPrivacyModeEnabled } from 'store/settings/securityPrivacy'
 import { selectWallets, selectActiveWalletId } from 'store/wallet/slice'
 
@@ -78,6 +78,13 @@ const ManageAccountsScreen = (): React.JSX.Element => {
     )
   }, [allAccountsArray, searchText])
 
+  const handleSetActiveAccount = useCallback(
+    (accountId: string) => {
+      dispatch(setActiveAccount(accountId))
+    },
+    [dispatch]
+  )
+
   const walletsDisplayData = useMemo(() => {
     const walletArray = Object.values(allWallets)
     return walletArray
@@ -130,7 +137,7 @@ const ManageAccountsScreen = (): React.JSX.Element => {
               isActive={account.active}
             />
           ),
-          onPress: () => dispatch(setActiveAccountId(account.id)),
+          onPress: () => handleSetActiveAccount(account.id),
           accessory: (
             <TouchableOpacity
               hitSlop={16}
@@ -153,11 +160,10 @@ const ManageAccountsScreen = (): React.JSX.Element => {
   }, [
     allWallets,
     accountSearchResults,
-    colors.$textPrimary,
-    colors.$textSecondary,
-    dispatch,
-    gotoAccountDetails,
-    searchText
+    searchText,
+    colors,
+    handleSetActiveAccount,
+    gotoAccountDetails
   ])
 
   const toggleWalletExpansion = useCallback((walletId: string) => {
