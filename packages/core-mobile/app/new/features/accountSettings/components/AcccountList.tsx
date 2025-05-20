@@ -6,7 +6,7 @@ import {
   Account,
   selectAccounts,
   selectActiveAccount,
-  setActiveAccountId
+  setActiveAccount
 } from 'store/account'
 import Animated, { LinearTransition } from 'react-native-reanimated'
 import { getItemEnteringAnimation } from 'common/utils/animations'
@@ -46,7 +46,7 @@ export const AccountList = (): React.JSX.Element => {
       AnalyticsService.capture('AccountSelectorAccountSwitched', {
         accountIndex: getAccountIndex(account)
       })
-      dispatch(setActiveAccountId(accountUuid))
+      dispatch(setActiveAccount(accountUuid))
     },
     [dispatch]
   )
