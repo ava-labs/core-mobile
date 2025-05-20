@@ -11,7 +11,6 @@ import { AddressBookState } from 'store/addressBook'
 import { uuid } from 'utils/uuid'
 import { CORE_MOBILE_WALLET_ID } from 'services/walletconnectv2/types'
 import { ChannelId } from 'services/notifications/channels'
-import { AVALANCHE_MAINNET_NETWORK } from 'services/network/consts'
 import { initialState as watchlistInitialState } from './watchlist'
 import {
   DefaultFeatureFlagConfig,
@@ -312,7 +311,7 @@ export const migrations = {
       ...state,
       network: {
         ...state.network,
-        active: AVALANCHE_MAINNET_NETWORK
+        active: ChainId.AVALANCHE_MAINNET_ID
       },
       settings: {
         ...state.settings,
