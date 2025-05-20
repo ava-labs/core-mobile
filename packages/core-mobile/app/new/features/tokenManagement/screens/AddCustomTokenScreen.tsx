@@ -1,7 +1,6 @@
 import {
   Button,
   Icons,
-  SearchBar,
   Text,
   TouchableOpacity,
   useTheme,
@@ -15,6 +14,8 @@ import { useRouter } from 'expo-router'
 import { LogoWithNetwork } from 'features/portfolio/assets/components/LogoWithNetwork'
 import { LoadingState } from 'common/components/LoadingState'
 import { ScrollScreen } from 'common/components/ScrollScreen'
+import { TokenLogo } from 'common/components/TokenLogo'
+import { TextInput } from 'react-native'
 import { useNetwork } from '../store'
 
 export const AddCustomTokenScreen = (): JSX.Element => {
@@ -82,59 +83,124 @@ export const AddCustomTokenScreen = (): JSX.Element => {
     )
   }, [token, colors.$surfacePrimary, addCustomToken, disabled, isLoading])
 
-  const renderHeader = useCallback(() => {
+  const renderTokenAddress = useCallback(() => {
     return (
-      <SearchBar
-        onTextChanged={setTokenAddress}
-        searchText={tokenAddress}
-        placeholder="Token contract address"
-        rightComponent={
-          <TouchableOpacity
-            onPress={goToScanQrCode}
-            hitSlop={16}
-            sx={{
-              marginRight: 9,
-              justifyContent: 'center',
-              alignItems: 'center'
-            }}>
+      <>
+        <View
+          sx={{
+            backgroundColor: colors.$surfaceSecondary,
+            borderRadius: 12,
+            padding: 16,
+            flexDirection: 'row',
+            justifyContent: 'space-between'
+          }}>
+          <View sx={{ width: '90%' }}>
+            <Text
+              variant="body2"
+              sx={{
+                fontSize: 11,
+                lineHeight: 14,
+                color: colors.$textSecondary
+              }}>
+              Token contract address
+            </Text>
+            <TextInput
+              onChangeText={setTokenAddress}
+              numberOfLines={2}
+              multiline
+              value={tokenAddress}
+              style={{
+                color: colors.$textPrimary,
+                fontSize: 15,
+                lineHeight: 20
+              }}
+            />
+          </View>
+          <TouchableOpacity onPress={goToScanQrCode} hitSlop={16}>
             <Icons.Custom.QRCodeScanner
-              color={colors.$textSecondary}
+              color={colors.$textPrimary}
               width={20}
               height={20}
             />
           </TouchableOpacity>
-        }
-      />
-    )
-  }, [setTokenAddress, tokenAddress, goToScanQrCode, colors.$textSecondary])
+        </View>
 
-  const renderFooter = useCallback(() => {
-    return (
-      <Button
-        type="primary"
-        size="medium"
-        disabled={token !== undefined}
-        onPress={goToSelectNetwork}>
-        {network?.chainName ?? 'Select a network'}
-      </Button>
+        <Text
+          variant="subtitle1"
+          sx={{ color: colors.$textDanger, marginTop: 8, marginLeft: 8 }}>
+          {errorMessage}
+        </Text>
+      </>
     )
-  }, [goToSelectNetwork, network?.chainName, token])
+  }, [
+    colors.$surfaceSecondary,
+    colors.$textSecondary,
+    colors.$textPrimary,
+    colors.$textDanger,
+    setTokenAddress,
+    tokenAddress,
+    goToScanQrCode,
+    errorMessage
+  ])
+
+  const renderNetwork = useCallback((): JSX.Element => {
+    return (
+      <TouchableOpacity
+        disabled={token !== undefined}
+        onPress={goToSelectNetwork}
+        sx={{
+          backgroundColor: colors.$surfaceSecondary,
+          paddingHorizontal: 16,
+          paddingVertical: 10,
+          justifyContent: 'space-between',
+          flexDirection: 'row',
+          borderRadius: 12,
+          alignItems: 'center'
+        }}>
+        <Text variant="body2" sx={{ fontSize: 16, lineHeight: 22 }}>
+          Network
+        </Text>
+        {network ? (
+          <View sx={{ flexDirection: 'row', gap: 8 }}>
+            <TokenLogo logoUri={network.logoUri} size={24} />
+            <Text
+              variant="body2"
+              sx={{
+                fontSize: 16,
+                lineHeight: 22,
+                color: colors.$textSecondary
+              }}>
+              {network.chainName}
+            </Text>
+          </View>
+        ) : (
+          <Text
+            variant="body2"
+            sx={{ fontSize: 16, lineHeight: 22, color: colors.$textSecondary }}>
+            Select
+          </Text>
+        )}
+      </TouchableOpacity>
+    )
+  }, [
+    colors.$surfaceSecondary,
+    colors.$textSecondary,
+    goToSelectNetwork,
+    network,
+    token
+  ])
 
   return (
     <ScrollScreen
-      title="Add a custom token"
-      renderHeader={renderHeader}
-      renderFooter={renderFooter}
+      title={`Add a custom\ntoken`}
       contentContainerStyle={{ padding: 16 }}
       shouldAvoidKeyboard
       isModal>
-      <Text
-        variant="subtitle1"
-        sx={{ color: colors.$textDanger, marginTop: 8, marginLeft: 8 }}>
-        {errorMessage}
-      </Text>
-
-      {renderToken()}
+      <View sx={{ gap: 10, marginTop: 24 }}>
+        {renderNetwork()}
+        {network && renderTokenAddress()}
+        {renderToken()}
+      </View>
     </ScrollScreen>
   )
 }
