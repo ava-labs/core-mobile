@@ -126,11 +126,20 @@ export const AddCustomTokenScreen = (): JSX.Element => {
           </TouchableOpacity>
         </View>
 
-        <Text
-          variant="subtitle1"
-          sx={{ color: colors.$textDanger, marginTop: 8, marginLeft: 8 }}>
-          {errorMessage}
-        </Text>
+        {errorMessage.length > 0 && (
+          <View
+            sx={{
+              flexDirection: 'row',
+              alignItems: 'center'
+            }}>
+            <Icons.Action.Info color={colors.$textDanger} />
+            <Text
+              variant="subtitle1"
+              sx={{ color: colors.$textDanger, marginLeft: 8 }}>
+              {errorMessage}
+            </Text>
+          </View>
+        )}
       </>
     )
   }, [
