@@ -33,7 +33,7 @@ import { useSelector } from 'react-redux'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import {
   LocalTokenWithBalance,
-  selectTokensWithZeroBalance
+  selectTokensWithZeroBalanceByNetwork
 } from 'store/balance'
 import { getTokenAddress } from 'swap/getSwapRate'
 import { calculateRate } from 'swap/utils'
@@ -54,7 +54,6 @@ export const SwapScreen = (): JSX.Element => {
   const { formatCurrency } = useFormatCurrency()
 
   const swapList = useSwapList()
-  const tokensWithZeroBalance = useSelector(selectTokensWithZeroBalance)
 
   const {
     swap,
@@ -77,6 +76,10 @@ export const SwapScreen = (): JSX.Element => {
   const [toTokenValue, setToTokenValue] = useState<bigint>()
   const [localError, setLocalError] = useState<string>('')
   const cChainNetwork = useCChainNetwork()
+  const tokensWithZeroBalance = useSelector(
+    selectTokensWithZeroBalanceByNetwork(cChainNetwork?.chainId)
+  )
+
   const [isInputFocused, setIsInputFocused] = useState<boolean>(false)
   const swapButtonBackgroundColor = useMemo(
     () => getButtonBackgroundColor('secondary', theme, false),
