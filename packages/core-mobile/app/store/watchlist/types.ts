@@ -37,7 +37,7 @@ export type MarketToken =
       id: InternalId
       coingeckoId: string | null | undefined
       platforms: Record<string, string> | Record<string, never>
-      marketType: MarketType
+      marketType: MarketType.TOP | MarketType.TRENDING
       symbol: string
       name: string
       logoUri?: string

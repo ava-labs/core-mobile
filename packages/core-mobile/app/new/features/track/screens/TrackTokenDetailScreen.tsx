@@ -46,6 +46,7 @@ import { useTokenDetails } from 'common/hooks/useTokenDetails'
 import { useGetPrices } from 'hooks/watchlist/useGetPrices'
 import { useIsFocused } from '@react-navigation/native'
 import { MarketType } from 'store/watchlist'
+import { AVAX_COINGECKO_ID } from 'consts/coingecko'
 
 const TrackTokenDetailScreen = (): JSX.Element => {
   const { theme } = useTheme()
@@ -313,7 +314,7 @@ const TrackTokenDetailScreen = (): JSX.Element => {
   const renderFooter = useCallback(() => {
     return (
       <TokenDetailFooter
-        coingeckoId={coingeckoId}
+        isAVAX={coingeckoId === AVAX_COINGECKO_ID}
         marketType={marketType}
         contractAddress={tokenInfo?.contractAddress}
         chainId={chainId}

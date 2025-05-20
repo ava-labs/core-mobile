@@ -1,5 +1,4 @@
 import { Button, View } from '@avalabs/k2-alpine'
-import { AVAX_COINGECKO_ID } from 'consts/coingecko'
 import { useHasEnoughAvaxToStake } from 'hooks/earn/useHasEnoughAvaxToStake'
 import React, { useCallback, useMemo } from 'react'
 import { useSelector } from 'react-redux'
@@ -14,7 +13,7 @@ import { USDC_TOKEN_ID } from 'common/consts/swap'
 import { getTokenActions } from '../utils/getTokenActions'
 
 export const TokenDetailFooter = ({
-  coingeckoId,
+  isAVAX,
   marketType,
   contractAddress,
   chainId,
@@ -22,7 +21,7 @@ export const TokenDetailFooter = ({
   onStake,
   onSwap
 }: {
-  coingeckoId: string
+  isAVAX: boolean
   marketType: MarketType
   contractAddress: string | undefined
   chainId: number | undefined
@@ -92,7 +91,6 @@ export const TokenDetailFooter = ({
   const actions = useMemo(() => {
     const result = []
 
-    const isAVAX = coingeckoId === AVAX_COINGECKO_ID
     const { showBuy, showSwap, showStake } = getTokenActions({
       isAVAX,
       marketType,
@@ -122,7 +120,7 @@ export const TokenDetailFooter = ({
     buyButton,
     stakeButton,
     generateSwapButton,
-    coingeckoId,
+    isAVAX,
     isTokenSwappable
   ])
 

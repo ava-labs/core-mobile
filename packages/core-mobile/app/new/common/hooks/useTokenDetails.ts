@@ -143,15 +143,13 @@ export const useTokenDetails = ({
       }
     }
 
-    if (coingeckoId) {
-      InteractionManager.runAfterInteractions(() => {
+    InteractionManager.runAfterInteractions(() => {
+      if (coingeckoId) {
         getChartDataFromCoingecko()
-      })
-    } else {
-      InteractionManager.runAfterInteractions(() => {
+      } else {
         extractChartData()
-      })
-    }
+      }
+    })
   }, [getWatchlistChart, token, tokenId, chartDays, coingeckoId, currency])
 
   // get market cap, volume, etc
@@ -201,13 +199,13 @@ export const useTokenDetails = ({
       })
     }
 
-    if (coingeckoId) {
-      InteractionManager.runAfterInteractions(() => {
+    InteractionManager.runAfterInteractions(() => {
+      if (coingeckoId) {
         getMarketDetailsFromCoingecko()
-      })
-    } else if (isTrendingToken(token)) {
-      extractMarketDetails()
-    }
+      } else if (isTrendingToken(token)) {
+        extractMarketDetails()
+      }
+    })
   }, [
     coingeckoId,
     currency,
