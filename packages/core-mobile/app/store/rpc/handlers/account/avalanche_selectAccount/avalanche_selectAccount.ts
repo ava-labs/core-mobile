@@ -1,10 +1,7 @@
 import { AppListenerEffectAPI } from 'store/types'
 import { rpcErrors } from '@metamask/rpc-errors'
-import {
-  selectAccounts,
-  selectActiveAccount,
-  setActiveAccountId
-} from 'store/account/slice'
+import { selectAccounts, selectActiveAccount } from 'store/account/slice'
+import { setActiveAccount } from 'store/account/thunks'
 import Logger from 'utils/Logger'
 import { RpcMethod, RpcRequest } from '../../../types'
 import { HandleResponse, RpcRequestHandler } from '../../types'
@@ -57,7 +54,7 @@ class AvalancheSelectAccountHandler
       }
     }
 
-    dispatch(setActiveAccountId(requestedAccount.id))
+    await dispatch(setActiveAccount(requestedAccount.id)).unwrap()
 
     return { success: true, value: [] }
   }

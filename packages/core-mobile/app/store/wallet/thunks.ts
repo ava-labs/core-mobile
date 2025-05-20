@@ -5,7 +5,7 @@ import { StoreWalletWithPinParams, Wallet } from 'store/wallet/types'
 import { ThunkApi } from 'store/types'
 import { ImportedAccount } from 'store/account/types'
 import { WalletType } from 'services/wallet/types'
-import { setAccount, setActiveAccountId } from 'store/account'
+import { setAccount, setActiveAccount } from 'store/account'
 import { uuid } from 'utils/uuid'
 import { addWallet, setActiveWallet } from './slice'
 import { generateWalletName } from './utils'
@@ -80,6 +80,6 @@ export const importPrivateKeyAccountAndCreateWallet = createAsyncThunk<
     }
 
     thunkApi.dispatch(setAccount(accountToImport))
-    thunkApi.dispatch(setActiveAccountId(accountToImport.id))
+    thunkApi.dispatch(setActiveAccount(accountToImport.id))
   }
 )
