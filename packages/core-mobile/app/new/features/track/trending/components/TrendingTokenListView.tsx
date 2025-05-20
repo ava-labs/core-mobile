@@ -66,7 +66,7 @@ export const TrendingTokenListView = memo(
         <View
           style={{
             paddingLeft: 16,
-            paddingRight: showBuyButton ? 16 : 0,
+            paddingRight: 16,
             paddingVertical: 12,
             flexDirection: 'row'
           }}>
@@ -136,17 +136,17 @@ export const TrendingTokenListView = memo(
               />
             </View>
           </View>
-          {showBuyButton && (
-            <View style={{ justifyContent: 'center' }}>
-              <Button
-                type="secondary"
-                size="small"
-                style={styles.buyButton}
-                onPress={() => onBuyPress()}>
-                Buy
-              </Button>
-            </View>
-          )}
+          <View style={{ justifyContent: 'center' }}>
+            <Button
+              type="secondary"
+              size="small"
+              style={styles.buyButton}
+              onPress={() => {
+                showBuyButton ? onBuyPress() : onPress()
+              }}>
+              {showBuyButton ? 'Buy' : 'View'}
+            </Button>
+          </View>
         </View>
       </TouchableOpacity>
     )
