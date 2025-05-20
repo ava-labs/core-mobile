@@ -7,9 +7,9 @@ import {
 import { RootState } from 'store/types'
 import { selectActiveAccount } from 'store/account'
 import {
-  selectActiveNetwork,
   selectAllNetworks,
   selectEnabledChainIds,
+  selectEnabledNetworks,
   selectNetworks
 } from 'store/network'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
@@ -89,15 +89,18 @@ const _selectAllBalances = (state: RootState): Balances => {
   return state.balance.balances
 }
 
-// get the list of tokens for the active network
+// get the list of tokens for the enabled networks
 // each token will have info such as: balance, price, market cap,...
 export const selectTokensWithBalance = createSelector(
-  [selectActiveNetwork, selectActiveAccount, _selectAllBalances],
-  (activeNetwork, activeAccount, allBalances): LocalTokenWithBalance[] => {
+  [selectEnabledNetworks, selectActiveAccount, _selectAllBalances],
+  (enabledNetworks, activeAccount, allBalances): LocalTokenWithBalance[] => {
     if (!activeAccount) return []
 
-    const key = getKey(activeNetwork.chainId, activeAccount.index)
-    return allBalances[key]?.tokens ?? []
+    return enabledNetworks.reduce((acc, network) => {
+      const key = getKey(network.chainId, activeAccount.index)
+      const tokens = allBalances[key]?.tokens ?? []
+      return acc.concat(tokens)
+    }, [] as LocalTokenWithBalance[])
   }
 )
 
