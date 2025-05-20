@@ -24,8 +24,9 @@ import { useRouter } from 'expo-router'
 import { useBalanceForAccount } from 'new/common/contexts/useBalanceForAccount'
 import React, { useCallback, useMemo, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { selectAccounts, setActiveAccountId } from 'store/account'
+import { selectAccounts, setActiveAccountId, Account } from 'store/account'
 import { selectIsPrivacyModeEnabled } from 'store/settings/securityPrivacy'
+import { selectWallets, selectActiveWalletId } from 'store/wallet/slice'
 
 const ITEM_HEIGHT = 50
 
@@ -37,8 +38,26 @@ const ManageAccountsScreen = (): React.JSX.Element => {
   const { navigate } = useRouter()
   const [searchText, setSearchText] = useState('')
   const accountCollection = useSelector(selectAccounts)
+  const allWallets = useSelector(selectWallets)
+  const activeWalletId = useSelector(selectActiveWalletId)
 
-  const accounts = useMemo(
+  const [expandedWallets, setExpandedWallets] = useState<
+    Record<string, boolean>
+  >({})
+
+  useMemo(() => {
+    const initialExpansionState: Record<string, boolean> = {}
+    const walletIds = Object.keys(allWallets)
+    if (walletIds.length > 0) {
+      // Expand only the active wallet by default
+      walletIds.forEach(id => {
+        initialExpansionState[id] = id === activeWalletId
+      })
+    }
+    setExpandedWallets(initialExpansionState)
+  }, [allWallets, activeWalletId])
+
+  const allAccountsArray: Account[] = useMemo(
     () => Object.values(accountCollection),
     [accountCollection]
   )
@@ -55,72 +74,104 @@ const ManageAccountsScreen = (): React.JSX.Element => {
   )
 
   const accountSearchResults = useMemo(() => {
-    return accounts.filter(account => {
-      return account.name.toLowerCase().includes(searchText.toLowerCase())
-    })
-  }, [accounts, searchText])
+    if (!searchText) {
+      return allAccountsArray
+    }
+    return allAccountsArray.filter(account =>
+      account.name.toLowerCase().includes(searchText.toLowerCase())
+    )
+  }, [allAccountsArray, searchText])
 
-  const data = useMemo(() => {
-    return accountSearchResults.map(account => ({
-      title: (
-        <Text
-          variant="body1"
+  const walletsDisplayData = useMemo(() => {
+    const walletArray = Object.values(allWallets)
+    return walletArray
+      .map(wallet => {
+        const accountsForWallet = accountSearchResults.filter(
+          account => account.walletId === wallet.id
+        )
+
+        if (accountsForWallet.length === 0 && searchText) {
+          return null
+        }
+
+        const accountDataForWallet = accountsForWallet.map(account => ({
+          title: (
+            <Text
+              variant="body1"
           numberOfLines={2}
-          sx={{
-            color: colors.$textPrimary,
-            fontSize: 14,
-            lineHeight: 16,
+              sx={{
+                color: colors.$textPrimary,
+                fontSize: 14,
+                lineHeight: 16,
             fontWeight: '500',
             width: SCREEN_WIDTH * 0.3
-          }}>
-          {account.name}
-        </Text>
-      ),
-      subtitle: (
-        <Text
-          variant="mono"
-          sx={{
-            color: alpha(colors.$textPrimary, 0.6),
-            fontSize: 13,
-            lineHeight: 16,
-            fontWeight: '500'
-          }}>
+              }}>
+              {account.name}
+            </Text>
+          ),
+          subtitle: (
+            <Text
+              variant="mono"
+              sx={{
+                color: alpha(colors.$textPrimary, 0.6),
+                fontSize: 13,
+                lineHeight: 16,
+                fontWeight: '500'
+              }}>
           {truncateAddress(account.addressC, TRUNCATE_ADDRESS_LENGTH)}
-        </Text>
-      ),
-      leftIcon: account.active ? (
-        <Icons.Custom.CheckSmall
-          color={colors.$textPrimary}
-          width={24}
-          height={24}
-        />
-      ) : (
-        <View sx={{ width: 24 }} />
-      ),
-      value: (
-        <AccountBalance accountUuid={account.id} isActive={account.active} />
-      ),
-      onPress: () => dispatch(setActiveAccountId(account.id)),
-      accessory: (
-        <TouchableOpacity
-          hitSlop={16}
-          sx={{ marginLeft: 4 }}
-          onPress={() => gotoAccountDetails(account.id)}>
-          <Icons.Alert.AlertCircle
-            color={colors.$textSecondary}
-            width={18}
-            height={18}
-          />
-        </TouchableOpacity>
-      )
-    }))
+            </Text>
+          ),
+          leftIcon: account.active ? (
+            <Icons.Custom.CheckSmall
+              color={colors.$textPrimary}
+              width={24}
+              height={24}
+            />
+          ) : (
+            <View sx={{ width: 24 }} />
+          ),
+          value: (
+            <AccountBalance
+              accountUuid={account.id}
+              isActive={account.active}
+            />
+          ),
+          onPress: () => dispatch(setActiveAccountId(account.id)),
+          accessory: (
+            <TouchableOpacity
+              hitSlop={16}
+              sx={{ marginLeft: 4 }}
+              onPress={() => gotoAccountDetails(account.id)}>
+              <Icons.Alert.AlertCircle
+                color={colors.$textSecondary}
+                width={18}
+                height={18}
+              />
+            </TouchableOpacity>
+          )
+        }))
+        return {
+          ...wallet,
+          accounts: accountDataForWallet
+        }
+      })
+      .filter(Boolean) // Remove nulls (wallets with no matching search results)
   }, [
+    allWallets,
     accountSearchResults,
     colors.$textPrimary,
     colors.$textSecondary,
     dispatch,
-    gotoAccountDetails
+    gotoAccountDetails,
+    searchText
   ])
+
+  const toggleWalletExpansion = useCallback((walletId: string) => {
+    setExpandedWallets(prev => ({
+      ...prev,
+      [walletId]: !prev[walletId]
+    }))
+  }, [])
 
   const handleAddAccount = useCallback(async (): Promise<void> => {
     navigate({
@@ -140,6 +191,28 @@ const ManageAccountsScreen = (): React.JSX.Element => {
     )
   }, [colors.$textPrimary, handleAddAccount])
 
+  const renderExpansionIcon = useCallback(
+    (isExpanded: boolean) => {
+      if (isExpanded) {
+        return (
+          <Icons.Navigation.ChevronRight
+            color={colors.$textPrimary}
+            width={24}
+            height={24}
+          />
+        )
+      }
+      return (
+        <Icons.Navigation.ExpandMore
+          color={colors.$textPrimary}
+          width={24}
+          height={24}
+        />
+      )
+    },
+    [colors.$textPrimary]
+  )
+
   const renderHeader = useCallback(() => {
     return (
       <SearchBar
@@ -156,8 +229,74 @@ const ManageAccountsScreen = (): React.JSX.Element => {
       isModal
       renderHeader={renderHeader}
       renderHeaderRight={renderHeaderRight}
-      contentContainerStyle={{ padding: 16 }}>
-      <GroupList itemHeight={ITEM_HEIGHT} data={data} />
+      contentContainerStyle={{
+        paddingHorizontal: 16,
+        paddingVertical: 16,
+        gap: 12
+      }}>
+      {walletsDisplayData.map(wallet => {
+        if (!wallet) {
+          return null
+        }
+        const isExpanded = expandedWallets[wallet.id] ?? false
+
+        if (searchText && wallet.accounts.length === 0) {
+          return null
+        }
+
+        return (
+          <View
+            key={wallet.id}
+            sx={{
+              backgroundColor: colors.$surfaceSecondary,
+              borderRadius: 12,
+              overflow: 'hidden'
+            }}>
+            <TouchableOpacity
+              onPress={() => toggleWalletExpansion(wallet.id)}
+              sx={{
+                paddingHorizontal: 16,
+                paddingVertical: 12,
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'space-between'
+              }}>
+              <View sx={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                {renderExpansionIcon(isExpanded)}
+                <Text
+                  variant="heading6"
+                  sx={{
+                    color: colors.$textPrimary
+                  }}>
+                  {wallet.name}
+                </Text>
+              </View>
+            </TouchableOpacity>
+
+            {isExpanded && (
+              <>
+                {wallet.accounts.length > 0 ? (
+                  <GroupList itemHeight={ITEM_HEIGHT} data={wallet.accounts} />
+                ) : (
+                  !searchText && (
+                    <View
+                      sx={{
+                        paddingHorizontal: 16,
+                        paddingVertical: 20,
+                        alignItems: 'center',
+                        backgroundColor: colors.$surfaceSecondary
+                      }}>
+                      <Text sx={{ color: colors.$textSecondary }}>
+                        No accounts in this wallet.
+                      </Text>
+                    </View>
+                  )
+                )}
+              </>
+            )}
+          </View>
+        )
+      })}
     </ScrollScreen>
   )
 }
