@@ -8,11 +8,17 @@ import {
   Value3D
 } from 'react-native-reanimated'
 
-export const useMotion = (): Motion | undefined => {
+export const useMotion = (isActive: boolean): Motion | undefined => {
   const [appState, setAppState] = useState(AppState.currentState)
-  const shouldAnimate = useMemo(() => appState === 'active', [appState])
-  const rotation = useAnimatedSensor(SensorType.ROTATION)
-  const accelerometer = useAnimatedSensor(SensorType.ACCELEROMETER)
+  const shouldAnimate = useMemo(
+    () => appState === 'active' && isActive && Platform.OS === 'ios',
+    [appState, isActive]
+  )
+  const rotation = useAnimatedSensor(SensorType.ROTATION, shouldAnimate)
+  const accelerometer = useAnimatedSensor(
+    SensorType.ACCELEROMETER,
+    shouldAnimate
+  )
 
   useEffect(() => {
     const subscription = AppState.addEventListener('change', nextAppState => {
@@ -25,13 +31,13 @@ export const useMotion = (): Motion | undefined => {
   }, [])
 
   useEffect(() => {
-    if (Platform.OS === 'android') {
+    if (!shouldAnimate) {
       rotation.unregister()
       accelerometer.unregister()
     }
-  }, [accelerometer, rotation])
+  }, [accelerometer, rotation, shouldAnimate, isActive])
 
-  return shouldAnimate && Platform.OS !== 'android'
+  return shouldAnimate
     ? {
         rotation: rotation.sensor,
         accelerometer: accelerometer.sensor
