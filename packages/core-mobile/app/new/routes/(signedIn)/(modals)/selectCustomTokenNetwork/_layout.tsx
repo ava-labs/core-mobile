@@ -2,7 +2,7 @@ import { Stack } from 'common/components/Stack'
 import { useModalScreenOptions } from 'common/hooks/useModalScreenOptions'
 import React from 'react'
 
-export default function SelectNetworkLayout(): JSX.Element {
+export default function SelectCustomTokenNetworkLayout(): JSX.Element {
   const { modalStackNavigatorScreenOptions, modalFirstScreenOptions } =
     useModalScreenOptions()
   return (

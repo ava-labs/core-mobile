@@ -20,7 +20,7 @@ import { useSelectedNetwork } from '../store'
 
 const TITLE = 'Networks'
 
-export const SelectNetworkScreen = (): JSX.Element => {
+export const SelectCustomTokenNetworkScreen = (): JSX.Element => {
   const { theme } = useTheme()
   const { canGoBack, back } = useRouter()
   const { networks, enabledNetworks, customNetworks } = useNetworks()

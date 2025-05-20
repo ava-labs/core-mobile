@@ -145,7 +145,7 @@ export default function WalletLayout(): JSX.Element {
             options={modalScreensOptions}
           />
           <Stack.Screen
-            name="(modals)/selectNetwork"
+            name="(modals)/selectCustomTokenNetwork"
             options={formSheetScreensOptions}
           />
         </Stack>
