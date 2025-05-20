@@ -16,7 +16,7 @@ import { ListRenderItem } from 'react-native'
 import { isPChain, isXChain, isXPChain } from 'utils/network/isAvalancheNetwork'
 import { useRouter } from 'expo-router'
 import { isBitcoinChainId } from 'utils/network/isBitcoinNetwork'
-import { useNetwork } from '../store'
+import { useSelectedNetwork } from '../store'
 
 const TITLE = 'Networks'
 
@@ -25,7 +25,7 @@ export const SelectNetworkScreen = (): JSX.Element => {
   const { canGoBack, back } = useRouter()
   const { networks, enabledNetworks, customNetworks } = useNetworks()
   const [searchText, setSearchText] = useState('')
-  const [network, setNetwork] = useNetwork()
+  const [selectedNetwork, setSelectedNetwork] = useSelectedNetwork()
 
   const filterBySearchText = useCallback(
     (n: Network) =>
@@ -61,15 +61,15 @@ export const SelectNetworkScreen = (): JSX.Element => {
 
   const handleSelectNetwork = useCallback(
     (n: Network): void => {
-      setNetwork(n)
+      setSelectedNetwork(n)
       canGoBack() && back()
     },
-    [back, canGoBack, setNetwork]
+    [back, canGoBack, setSelectedNetwork]
   )
 
   const renderNetwork: ListRenderItem<Network> = useCallback(
     ({ item, index }): JSX.Element => {
-      const isSelected = network?.chainId === item.chainId
+      const isSelected = selectedNetwork?.chainId === item.chainId
       const isLast = index === filteredNetworks.length - 1
       const isCustomNetwork = Object.values(customNetworks).some(
         n => n.chainId === item.chainId
@@ -139,7 +139,7 @@ export const SelectNetworkScreen = (): JSX.Element => {
       customNetworks,
       filteredNetworks.length,
       handleSelectNetwork,
-      network?.chainId,
+      selectedNetwork?.chainId,
       theme.colors.$borderPrimary,
       theme.colors.$surfacePrimary,
       theme.colors.$surfaceSecondary,

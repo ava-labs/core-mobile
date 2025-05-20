@@ -13,7 +13,10 @@ import {
 } from '@avalabs/vm-module-types'
 import { useNetworkContractTokens } from 'hooks/networks/useNetworkContractTokens'
 import { selectTokensWithBalanceByNetwork } from 'store/balance'
-import { useNetwork, useTokenAddress } from 'features/tokenManagement/store'
+import {
+  useSelectedNetwork,
+  useTokenAddress
+} from 'features/tokenManagement/store'
 
 enum AddressValidationStatus {
   Valid,
@@ -72,12 +75,10 @@ const useAddCustomToken = (callback: () => void): CustomToken => {
   const [token, setToken] = useState<NetworkContractToken>()
   const dispatch = useDispatch()
   const [isLoading, setIsLoading] = useState(false)
-  const [network] = useNetwork()
-  const chainId = useMemo(() => {
-    return network?.chainId
-  }, [network])
+  const [selectedNetwork] = useSelectedNetwork()
+  const chainId = selectedNetwork?.chainId
 
-  const tokens = useNetworkContractTokens(network)
+  const tokens = useNetworkContractTokens(selectedNetwork)
   const tokensWithBalance = useSelector(
     selectTokensWithBalanceByNetwork(chainId)
   )
@@ -121,7 +122,7 @@ const useAddCustomToken = (callback: () => void): CustomToken => {
   }, [tokenAddress])
 
   useEffect(() => {
-    if (network === undefined) {
+    if (selectedNetwork === undefined) {
       if (tokenAddress) {
         setErrorMessage('Please select a network.')
       }
@@ -140,7 +141,7 @@ const useAddCustomToken = (callback: () => void): CustomToken => {
         break
       case AddressValidationStatus.Valid:
         setIsLoading(true)
-        fetchTokenData(network, tokenAddress)
+        fetchTokenData(selectedNetwork, tokenAddress)
           .then(t => {
             setToken(t)
             setErrorMessage('')
@@ -160,7 +161,7 @@ const useAddCustomToken = (callback: () => void): CustomToken => {
         setErrorMessage('')
         setToken(undefined)
     }
-  }, [network, tokenAddress, tokenAddresses])
+  }, [selectedNetwork, tokenAddress, tokenAddresses])
 
   const addCustomToken = useCallback((): void => {
     if (token && chainId) {

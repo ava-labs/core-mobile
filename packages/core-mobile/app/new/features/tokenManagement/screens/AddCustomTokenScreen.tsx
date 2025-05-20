@@ -16,20 +16,20 @@ import { LoadingState } from 'common/components/LoadingState'
 import { ScrollScreen } from 'common/components/ScrollScreen'
 import { TokenLogo } from 'common/components/TokenLogo'
 import { TextInput } from 'react-native'
-import { useNetwork } from '../store'
+import { useSelectedNetwork } from '../store'
 
 export const AddCustomTokenScreen = (): JSX.Element => {
   const {
     theme: { colors }
   } = useTheme()
-  const [network, setNetwork] = useNetwork()
+  const [selectedNetwork, setSelectedNetwork] = useSelectedNetwork()
   const { canGoBack, back, navigate } = useRouter()
 
   const showSuccess = useCallback(() => {
     showSnackbar('Added!')
-    setNetwork(undefined)
+    setSelectedNetwork(undefined)
     canGoBack() && back()
-  }, [setNetwork, canGoBack, back])
+  }, [setSelectedNetwork, canGoBack, back])
 
   const {
     tokenAddress,
@@ -169,9 +169,9 @@ export const AddCustomTokenScreen = (): JSX.Element => {
         <Text variant="body2" sx={{ fontSize: 16, lineHeight: 22 }}>
           Network
         </Text>
-        {network ? (
+        {selectedNetwork ? (
           <View sx={{ flexDirection: 'row', gap: 8, alignItems: 'center' }}>
-            <TokenLogo logoUri={network.logoUri} size={24} />
+            <TokenLogo logoUri={selectedNetwork.logoUri} size={24} />
             <Text
               variant="body2"
               sx={{
@@ -179,7 +179,7 @@ export const AddCustomTokenScreen = (): JSX.Element => {
                 lineHeight: 22,
                 color: colors.$textSecondary
               }}>
-              {network.chainName}
+              {selectedNetwork.chainName}
             </Text>
             <View sx={{ marginHorizontal: 8 }}>
               <Icons.Navigation.ChevronRightV2 />
@@ -207,7 +207,7 @@ export const AddCustomTokenScreen = (): JSX.Element => {
     colors.$surfaceSecondary,
     colors.$textSecondary,
     goToSelectNetwork,
-    network
+    selectedNetwork
   ])
 
   return (
@@ -218,7 +218,7 @@ export const AddCustomTokenScreen = (): JSX.Element => {
       isModal>
       <View sx={{ gap: 10, marginTop: 24 }}>
         {renderNetwork()}
-        {network && renderTokenAddress()}
+        {selectedNetwork && renderTokenAddress()}
         {renderToken()}
       </View>
     </ScrollScreen>

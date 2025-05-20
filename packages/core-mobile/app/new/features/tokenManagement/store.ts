@@ -3,4 +3,6 @@ import { createZustandStore } from 'common/utils/createZustandStore'
 
 export const useTokenAddress = createZustandStore<string>('')
 
-export const useNetwork = createZustandStore<Network | undefined>(undefined)
+export const useSelectedNetwork = createZustandStore<Network | undefined>(
+  undefined
+)
