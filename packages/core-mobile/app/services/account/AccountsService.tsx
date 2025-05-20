@@ -5,7 +5,6 @@ import SeedlessService from 'seedless/services/SeedlessService'
 import { CoreAccountType, WalletType as CoreWalletType } from '@avalabs/types'
 import { uuid } from 'utils/uuid'
 import { WalletType } from 'services/wallet/types'
-import { CORE_MOBILE_WALLET_ID } from 'services/walletconnectv2/types'
 import { getAccountIndex } from 'store/account/utils'
 
 class AccountsService {
@@ -60,12 +59,14 @@ class AccountsService {
     index,
     activeAccountIndex,
     walletType,
-    network
+    network,
+    walletId
   }: {
     index: number
     activeAccountIndex: number
     walletType: WalletType
     network: Network
+    walletId: string
   }): Promise<Account> {
     if (walletType === WalletType.UNSET) throw new Error('invalid wallet type')
 
@@ -74,7 +75,7 @@ class AccountsService {
     return {
       index,
       id: uuid(),
-      walletId: CORE_MOBILE_WALLET_ID,
+      walletId,
       name: `Account ${index + 1}`,
       type: CoreAccountType.PRIMARY,
       active: index === activeAccountIndex,
