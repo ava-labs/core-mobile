@@ -89,21 +89,6 @@ const _selectAllBalances = (state: RootState): Balances => {
   return state.balance.balances
 }
 
-// get the list of tokens for the enabled networks
-// each token will have info such as: balance, price, market cap,...
-export const selectTokensWithBalance = createSelector(
-  [selectEnabledNetworks, selectActiveAccount, _selectAllBalances],
-  (enabledNetworks, activeAccount, allBalances): LocalTokenWithBalance[] => {
-    if (!activeAccount) return []
-
-    return enabledNetworks.reduce((acc, network) => {
-      const key = getKey(network.chainId, activeAccount.index)
-      const tokens = allBalances[key]?.tokens ?? []
-      return acc.concat(tokens)
-    }, [] as LocalTokenWithBalance[])
-  }
-)
-
 export const selectTokensWithBalanceByNetwork = (
   chainId?: number
 ): ((state: RootState) => LocalTokenWithBalance[]) =>
@@ -119,9 +104,16 @@ export const selectTokensWithBalanceByNetwork = (
   )
 
 export const selectTokensWithZeroBalance = createSelector(
-  selectTokensWithBalance,
-  (allTokens: LocalTokenWithBalance[]): LocalTokenWithBalance[] => {
-    return allTokens.filter(t => t.balance === 0n)
+  [selectEnabledNetworks, selectActiveAccount, _selectAllBalances],
+  (enabledNetworks, activeAccount, allBalances): LocalTokenWithBalance[] => {
+    if (!activeAccount) return []
+
+    return enabledNetworks.reduce((acc, network) => {
+      const key = getKey(network.chainId, activeAccount.index)
+      const tokens = allBalances[key]?.tokens ?? []
+      const zeroBalanceTokens = tokens.filter(token => token.balance === 0n)
+      return acc.concat(zeroBalanceTokens)
+    }, [] as LocalTokenWithBalance[])
   }
 )
 
