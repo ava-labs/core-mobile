@@ -22,13 +22,14 @@ export const AddCustomTokenScreen = (): JSX.Element => {
   const {
     theme: { colors }
   } = useTheme()
-  const [network] = useNetwork()
+  const [network, setNetwork] = useNetwork()
   const { canGoBack, back, navigate } = useRouter()
 
   const showSuccess = useCallback(() => {
     showSnackbar('Added!')
+    setNetwork(undefined)
     canGoBack() && back()
-  }, [canGoBack, back])
+  }, [setNetwork, canGoBack, back])
 
   const {
     tokenAddress,
@@ -146,7 +147,7 @@ export const AddCustomTokenScreen = (): JSX.Element => {
   const renderNetwork = useCallback((): JSX.Element => {
     return (
       <TouchableOpacity
-        disabled={token !== undefined}
+        // disabled={token !== undefined}
         onPress={goToSelectNetwork}
         sx={{
           backgroundColor: colors.$surfaceSecondary,
@@ -186,8 +187,7 @@ export const AddCustomTokenScreen = (): JSX.Element => {
     colors.$surfaceSecondary,
     colors.$textSecondary,
     goToSelectNetwork,
-    network,
-    token
+    network
   ])
 
   return (
