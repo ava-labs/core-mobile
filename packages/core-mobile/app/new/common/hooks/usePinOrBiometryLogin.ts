@@ -19,8 +19,10 @@ import { useDispatch, useSelector } from 'react-redux'
 import { selectActiveWalletId } from 'store/wallet/slice'
 import { WalletType } from 'services/wallet/types'
 import { storeWalletWithPin } from 'store/wallet/thunks'
+import { AppThunkDispatch } from 'store/types'
 import { useDeleteWallet } from './useDeleteWallet'
 import { useRateLimiter } from './useRateLimiter'
+
 export function usePinOrBiometryLogin({
   onStartLoading,
   onStopLoading,
@@ -41,7 +43,7 @@ export function usePinOrBiometryLogin({
 } {
   const [isBiometricAvailable, setIsBiometricAvailable] = useState(true)
   const [bioType, setBioType] = useState<BiometricType>(BiometricType.NONE)
-  const dispatch = useDispatch()
+  const dispatch = useDispatch<AppThunkDispatch>()
   const activeWalletId = useSelector(selectActiveWalletId)
   const [enteredPin, setEnteredPin] = useState('')
   const [mnemonic, setMnemonic] = useState<string | undefined>(undefined)
@@ -112,7 +114,6 @@ export function usePinOrBiometryLogin({
               type: WalletType.MNEMONIC
             })
           )
-          // @ts-ignore
           await dispatchStoreWalletWithPin.unwrap()
         }
 
