@@ -16,6 +16,7 @@ import { LoadingState } from 'common/components/LoadingState'
 import { ScrollScreen } from 'common/components/ScrollScreen'
 import { TokenLogo } from 'common/components/TokenLogo'
 import { TextInput } from 'react-native'
+import { useFocusEffect } from '@react-navigation/native'
 import { useSelectedNetwork } from '../store'
 
 export const AddCustomTokenScreen = (): JSX.Element => {
@@ -42,6 +43,20 @@ export const AddCustomTokenScreen = (): JSX.Element => {
 
   // only enable button if we have token and no error message
   const disabled = !!(errorMessage || !token || isLoading)
+
+  // reset token address and network
+  const reset = useCallback(() => {
+    setTokenAddress('')
+    setSelectedNetwork(undefined)
+  }, [setTokenAddress, setSelectedNetwork])
+
+  useFocusEffect(
+    useCallback(() => {
+      return () => {
+        reset()
+      }
+    }, [reset])
+  )
 
   const goToScanQrCode = useCallback((): void => {
     // @ts-ignore TODO: make routes typesafe
