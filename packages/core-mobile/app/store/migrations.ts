@@ -11,6 +11,10 @@ import { AddressBookState } from 'store/addressBook'
 import { uuid } from 'utils/uuid'
 import { CORE_MOBILE_WALLET_ID } from 'services/walletconnectv2/types'
 import { ChannelId } from 'services/notifications/channels'
+import {
+  AVALANCHE_MAINNET_NETWORK,
+  AVALANCHE_TESTNET_NETWORK
+} from 'services/network/consts'
 import { initialState as watchlistInitialState } from './watchlist'
 import {
   DefaultFeatureFlagConfig,
@@ -300,6 +304,21 @@ export const migrations = {
         ...state.network,
         enabledChainIds,
         disabledLastTransactedChainIds: []
+      }
+    }
+  },
+  19: (state: any) => {
+    const isDeveloperMode = state.settings.advanced.developerMode
+    // in the mobile next-gen app, we don't have the concept of active network anymore,
+    // we will default active network to avalanche c-chain until we remove active network
+    // everywhere in the app
+    return {
+      ...state,
+      network: {
+        ...state.network,
+        active: isDeveloperMode
+          ? AVALANCHE_TESTNET_NETWORK
+          : AVALANCHE_MAINNET_NETWORK
       }
     }
   }
