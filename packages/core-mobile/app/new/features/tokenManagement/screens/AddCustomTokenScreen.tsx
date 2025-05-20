@@ -7,7 +7,7 @@ import {
   View
 } from '@avalabs/k2-alpine'
 import { showSnackbar } from 'common/utils/toast'
-import React, { useCallback } from 'react'
+import React, { useCallback, useEffect } from 'react'
 import useAddCustomToken from 'common/hooks/useAddCustomToken'
 import { LocalTokenWithBalance } from 'store/balance'
 import { useRouter } from 'expo-router'
@@ -16,13 +16,14 @@ import { LoadingState } from 'common/components/LoadingState'
 import { ScrollScreen } from 'common/components/ScrollScreen'
 import { TokenLogo } from 'common/components/TokenLogo'
 import { TextInput } from 'react-native'
-import { useFocusEffect } from '@react-navigation/native'
+import { useNavigation } from '@react-navigation/native'
 import { useSelectedNetwork } from '../store'
 
 export const AddCustomTokenScreen = (): JSX.Element => {
   const {
     theme: { colors }
   } = useTheme()
+  const navigation = useNavigation()
   const [selectedNetwork, setSelectedNetwork] = useSelectedNetwork()
   const { canGoBack, back, navigate } = useRouter()
 
@@ -50,13 +51,11 @@ export const AddCustomTokenScreen = (): JSX.Element => {
     setSelectedNetwork(undefined)
   }, [setTokenAddress, setSelectedNetwork])
 
-  useFocusEffect(
-    useCallback(() => {
-      return () => {
-        reset()
-      }
-    }, [reset])
-  )
+  useEffect(() => {
+    return navigation.addListener('beforeRemove', () => {
+      reset()
+    })
+  }, [navigation, reset])
 
   const goToScanQrCode = useCallback((): void => {
     // @ts-ignore TODO: make routes typesafe
