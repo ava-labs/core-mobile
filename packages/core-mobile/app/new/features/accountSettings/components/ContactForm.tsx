@@ -7,7 +7,6 @@ import {
 } from '@avalabs/k2-alpine'
 import { NetworkVMType } from '@avalabs/vm-module-types'
 import { Space } from 'common/components/Space'
-import { useFormState } from 'common/hooks/useFormState'
 import { usePrimaryNetworks } from 'common/hooks/usePrimaryNetworks'
 import {
   dismissAlertWithTextInput,
@@ -18,6 +17,7 @@ import { loadAvatar } from 'common/utils/loadAvatar'
 import React, { useCallback, useMemo } from 'react'
 import { Contact } from 'store/addressBook'
 import { AddressType } from '../consts'
+import { constructContactByAddressType } from '../utils/constructContactByAddressType'
 import { AdvancedFieldProps } from './AdvancedField'
 import { AdvancedForm } from './AdvancedForm'
 
@@ -32,37 +32,52 @@ export const ContactForm = ({
 }): React.JSX.Element => {
   const { networks } = usePrimaryNetworks()
 
-  const { formState, handleUpdate } = useFormState<Contact>(contact)
+  const avatar = useMemo(() => {
+    return loadAvatar(contact.avatar)
+  }, [contact?.avatar])
+
+  const handleUpdateAddress = useCallback(
+    (addressType: AddressType, value?: string) => {
+      const updatedContact = constructContactByAddressType(
+        contact,
+        addressType,
+        value
+      )
+
+      onUpdate(updatedContact)
+    },
+    [contact, onUpdate]
+  )
 
   const data: AdvancedFieldProps[] = useMemo(() => {
-    // const disabled = mode === Mode.EDIT && !isCustomNetwork
-
     return networks.map(network => {
-      const value =
+      const address =
         network.vmName === NetworkVMType.AVM ||
         network.vmName === NetworkVMType.PVM
-          ? formState.addressXP?.replace(/^[XP]-/, '')
+          ? contact.addressXP?.replace(/^[XP]-/, '')
           : network.vmName === NetworkVMType.BITCOIN
-          ? formState.addressBTC
+          ? contact.addressBTC
           : network.vmName === NetworkVMType.EVM
-          ? formState.address
+          ? contact.address
           : undefined
 
       return {
-        id: network.chainId.toString(),
-        title: network.chainName as AddressType,
-        value,
+        id: network.chainName,
+        title: network.chainName,
         placeholder: `Type in or paste in ${network.chainName} address`,
         emptyText: `Add ${network.chainName} address`,
+        value: address,
         type: 'address',
-        onUpdate: handleUpdate
+        onUpdate: (id, value) => {
+          handleUpdateAddress(id as AddressType, value)
+        }
       }
     })
   }, [
-    formState.address,
-    formState.addressBTC,
-    formState.addressXP,
-    handleUpdate,
+    contact.address,
+    contact.addressBTC,
+    contact.addressXP,
+    handleUpdateAddress,
     networks
   ])
 
@@ -117,6 +132,7 @@ export const ContactForm = ({
         </View>
       )
     }
+
     return (
       <Button
         onPress={handleShowAlertWithTextInput}
@@ -127,10 +143,6 @@ export const ContactForm = ({
       </Button>
     )
   }, [contact.name, handleShowAlertWithTextInput])
-
-  const avatar = useMemo(() => {
-    return loadAvatar(contact.avatar)
-  }, [contact?.avatar])
 
   return (
     <View sx={{ alignItems: 'center' }}>

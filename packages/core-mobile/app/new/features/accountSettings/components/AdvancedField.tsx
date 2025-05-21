@@ -12,11 +12,11 @@ import { copyToClipboard } from 'common/utils/clipboard'
 import { useRouter } from 'expo-router'
 import { isValidUrl } from 'features/browser/utils'
 import React, { useCallback, useMemo, useRef, useState } from 'react'
-import { ContactAddressMenu } from './ContactAddressMenu'
 import { useSelector } from 'react-redux'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
-import { isValidAddress } from '../utils/isValidAddress'
 import { AddressType } from '../consts'
+import { isValidAddress } from '../utils/isValidAddress'
+import { ContactAddressMenu } from './ContactAddressMenu'
 
 export interface AdvancedFieldProps {
   id: string
@@ -58,7 +58,10 @@ export const AdvancedField = ({
         {
           text: 'Delete',
           style: 'destructive',
-          onPress: () => onUpdate(id, undefined)
+          onPress: () => {
+            onUpdate(id, undefined)
+            setInputValue('')
+          }
         }
       ]
     })
@@ -71,8 +74,8 @@ export const AdvancedField = ({
 
   const onReset = useCallback(() => {
     setIsEditing(false)
-    setInputValue('')
-  }, [])
+    setInputValue(value ?? '')
+  }, [value])
 
   const isValidField = useCallback((): boolean => {
     switch (type) {
@@ -189,8 +192,7 @@ export const AdvancedField = ({
           style={{
             flex: 1,
             flexDirection: 'row',
-            alignItems: 'center',
-            paddingVertical: 14
+            alignItems: 'center'
           }}>
           {disabled ? null : (
             <TouchableOpacity
@@ -208,7 +210,8 @@ export const AdvancedField = ({
             disabled={disabled}
             style={{
               flex: 1,
-              paddingLeft: disabled ? 16 : 0
+              paddingLeft: disabled ? 16 : 0,
+              paddingVertical: 14
             }}>
             <Text
               variant="buttonMedium"
@@ -231,9 +234,15 @@ export const AdvancedField = ({
           </TouchableOpacity>
 
           {type === 'address' && (
-            <Button size="small" type="secondary" onPress={handleCopy}>
-              Copy
-            </Button>
+            <View style={{ paddingRight: 14, paddingLeft: 14 }}>
+              <Button
+                size="small"
+                hitSlop={14}
+                type="secondary"
+                onPress={handleCopy}>
+                Copy
+              </Button>
+            </View>
           )}
         </View>
       )
