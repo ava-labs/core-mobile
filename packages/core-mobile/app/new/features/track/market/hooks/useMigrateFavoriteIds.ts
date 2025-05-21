@@ -41,22 +41,24 @@ export const useMigrateFavoriteIds = (): {
       return
 
     favoriteIds.forEach((favoriteId: string) => {
-      const topToken = topTokens.find(token => token.coingeckoId === favoriteId)
+      const topToken = topTokens.find(
+        token => token.coingeckoId?.toLowerCase() === favoriteId.toLowerCase()
+      )
       if (topToken) {
         // if the token is in the top tokens, we need to remove it from the favorites
         // and add it again with the new id
         dispatch(toggleWatchListFavorite(favoriteId))
-        dispatch(toggleWatchListFavorite(topToken.id))
+        dispatch(toggleWatchListFavorite(topToken.id.toLowerCase()))
         return
       }
       const trendingToken = trendingTokens.find(token =>
-        token.id.includes(favoriteId)
+        token.id.toLowerCase().includes(favoriteId.toLowerCase())
       )
       if (trendingToken) {
         // if the token is in the trending tokens, we need to remove it from the favorites
         // and add it again with the new id
         dispatch(toggleWatchListFavorite(favoriteId))
-        dispatch(toggleWatchListFavorite(trendingToken.id))
+        dispatch(toggleWatchListFavorite(trendingToken.id.toLowerCase()))
       }
     })
 
