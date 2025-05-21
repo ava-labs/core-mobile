@@ -78,7 +78,7 @@ export async function performSwap({
   let approveTxHash: string | undefined
 
   const slippagePercent = slippage / 100
-  const feePercent = PARASWAP_PARTNER_FEE_BPS / 10_000
+  const feePercent = isSwapFeesEnabled ? PARASWAP_PARTNER_FEE_BPS / 10_000 : 0
   const totalPercent = slippagePercent + feePercent
 
   const minAmount = new Big(priceRoute.destAmount)
