@@ -197,6 +197,7 @@ export const AdvancedField = ({
           {disabled ? null : (
             <TouchableOpacity
               onPress={type === 'address' ? handleDelete : onClear}
+              hitSlop={14}
               style={{
                 paddingLeft: 16,
                 paddingRight: 14
