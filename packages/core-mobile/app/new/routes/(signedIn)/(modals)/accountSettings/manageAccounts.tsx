@@ -6,6 +6,7 @@ import {
   GroupList,
   Icons,
   Pressable,
+  SCREEN_WIDTH,
   SearchBar,
   Text,
   TouchableOpacity,
@@ -74,11 +75,13 @@ const ManageAccountsScreen = (): React.JSX.Element => {
       title: (
         <Text
           variant="body1"
+          numberOfLines={2}
           sx={{
             color: colors.$textPrimary,
             fontSize: 14,
             lineHeight: 16,
-            fontWeight: '500'
+            fontWeight: '500',
+            width: SCREEN_WIDTH * 0.3
           }}>
           {account.name}
         </Text>
@@ -259,7 +262,9 @@ const AccountBalance = ({
       shouldMask={isPrivacyModeEnabled}
       balanceSx={{
         color: isActive ? colors.$textPrimary : alpha(colors.$textPrimary, 0.6),
-        lineHeight: 18
+        lineHeight: 18,
+        width: SCREEN_WIDTH * 0.3,
+        textAlign: 'right'
       }}
       renderMaskView={renderMaskView}
       shouldAnimate={false}
