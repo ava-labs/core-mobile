@@ -14,7 +14,7 @@ import {
 /**
  * @description
  * This hook is used to migrate favorite IDs from coingecko/contract address
- * to internId
+ * to internalId
  */
 export const useMigrateFavoriteIds = (): {
   hasMigratedFavoriteIds: boolean
