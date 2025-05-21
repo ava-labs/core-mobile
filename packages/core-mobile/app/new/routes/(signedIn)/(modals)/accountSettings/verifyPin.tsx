@@ -47,7 +47,11 @@ const VerifyPinScreen = (): React.JSX.Element => {
           'Failed to import mnemonic wallet after PIN verification',
           error
         )
-        showSnackbar(`Import failed: ${error.message || 'Unknown error'}`)
+        showSnackbar(
+          `Import failed: ${
+            error instanceof Error ? error.message : 'Unknown error'
+          }`
+        )
       } finally {
         setIsImporting(false)
       }

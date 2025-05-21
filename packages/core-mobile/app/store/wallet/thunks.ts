@@ -45,7 +45,6 @@ export const storeWalletWithPin = createAsyncThunk<
     return {
       id: walletId,
       name: generateWalletName(type, walletCount + 1),
-      isActive: true,
       type
     }
   }
@@ -70,8 +69,7 @@ export const importPrivateKeyAccountAndCreateWallet = createAsyncThunk<
     const newWallet: Wallet = {
       id: newWalletId,
       name: newWalletName,
-      type: WalletType.PRIVATE_KEY,
-      isActive: true
+      type: WalletType.PRIVATE_KEY
     }
 
     thunkApi.dispatch(addWallet(newWallet))
