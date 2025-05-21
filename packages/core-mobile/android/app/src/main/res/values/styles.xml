@@ -17,8 +17,8 @@
         <item name="enforceNavigationBarContrast">false</item>
 
         <!-- default tint color for dialog button text -->
-        <item name="android:colorPrimary">@color/neutral50</item>
-        <item name="colorPrimary">@color/neutral50</item>
+        <item name="android:colorPrimary">@color/dialogTextColor</item>
+        <item name="colorPrimary">@color/dialogTextColor</item>
     </style>
 
     <style name="CustomBottomNavigationStyle" parent="Widget.Material3.BottomNavigationView">
