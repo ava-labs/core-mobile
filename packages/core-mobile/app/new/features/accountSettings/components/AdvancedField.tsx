@@ -126,7 +126,7 @@ export const AdvancedField = ({
           'The address your entered is not valid for the selected chain',
         buttons: [
           {
-            text: 'Dismiss',
+            text: 'Got it',
             style: 'default',
             onPress: onReset
           }

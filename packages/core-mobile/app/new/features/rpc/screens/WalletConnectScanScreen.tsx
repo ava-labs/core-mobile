@@ -1,21 +1,31 @@
 import {
+  alpha,
   SCREEN_WIDTH,
+  ScrollView,
   Text,
   TextInput,
-  Tooltip,
+  useTheme,
   View
 } from '@avalabs/k2-alpine'
+import { LinearGradientBottomWrapper } from 'common/components/LinearGradientBottomWrapper'
 import { QrCodeScanner } from 'common/components/QrCodeScanner'
-import ScreenHeader from 'common/components/ScreenHeader'
-import { ScrollScreen } from 'common/components/ScrollScreen'
 import { useDeeplink } from 'contexts/DeeplinkContext/DeeplinkContext'
 import { DeepLinkOrigin } from 'contexts/DeeplinkContext/types'
 import { useRouter } from 'expo-router'
-import React, { useCallback, useState } from 'react'
+import React, { useCallback, useMemo, useState } from 'react'
+import {
+  KeyboardStickyView,
+  useKeyboardState
+} from 'react-native-keyboard-controller'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { LinearGradient } from 'expo-linear-gradient'
 
-const SCANNER_WIDTH = SCREEN_WIDTH - 40
+const SCANNER_WIDTH = SCREEN_WIDTH - 32
 
 export const WalletConnectScanScreen = (): React.JSX.Element => {
+  const { theme } = useTheme()
+  const keyboard = useKeyboardState()
+  const insets = useSafeAreaInsets()
   const router = useRouter()
   const { setPendingDeepLink } = useDeeplink()
   const [wcLink, setWcLink] = useState('')
@@ -34,58 +44,124 @@ export const WalletConnectScanScreen = (): React.JSX.Element => {
 
   const renderFooter = useCallback((): JSX.Element => {
     return (
-      <View>
-        <View style={{ flexDirection: 'row', marginVertical: 16 }}>
-          <Text sx={{ marginRight: 8, color: '$textPrimary' }} variant="body1">
+      <View
+        sx={{
+          backgroundColor: '$surfaceSecondary',
+          borderRadius: 12,
+          flexDirection: 'row',
+          justifyContent: 'space-between'
+        }}>
+        <View sx={{ width: '100%' }}>
+          <Text
+            variant="body2"
+            sx={{
+              paddingHorizontal: 16,
+              paddingTop: 16,
+              fontSize: 11,
+              lineHeight: 14,
+              color: '$textSecondary'
+            }}>
             Connection URI
           </Text>
-          <Tooltip
-            title="Connection URI"
-            description="Use this to manually connect"
-          />
-        </View>
-        <TextInput
-          value={wcLink}
-          onChangeText={handleOnChangeText}
-          placeholder="example: wc:07e46b69-98c4-4..."
-        />
-      </View>
-    )
-  }, [handleOnChangeText, wcLink])
-
-  const renderHeader = useCallback((): JSX.Element => {
-    return (
-      <View
-        style={{
-          gap: 16
-        }}>
-        <ScreenHeader title="Scan a QR code" />
-        <View
-          style={{
-            paddingHorizontal: 4
-          }}>
-          <QrCodeScanner
-            onSuccess={handleOnChangeText}
-            vibrate={true}
-            sx={{
-              height: SCANNER_WIDTH * 1.3,
-              width: SCANNER_WIDTH
+          <TextInput
+            onChangeText={handleOnChangeText}
+            numberOfLines={1}
+            value={wcLink}
+            placeholder="example: wc:f0b7866e57d6be052782a..."
+            textInputSx={{
+              color: '$textPrimary',
+              fontSize: 15,
+              lineHeight: 20
             }}
           />
         </View>
       </View>
     )
-  }, [handleOnChangeText])
+  }, [handleOnChangeText, wcLink])
+
+  const blackLinearGradientColors: [string, string, ...string[]] = useMemo(
+    () => [alpha(theme.colors.$black, 0), alpha(theme.colors.$black, 0.7)],
+    [theme.colors.$black]
+  )
+
+  const renderScanner = useCallback((): JSX.Element => {
+    return (
+      <View
+        style={{
+          flex: 1,
+          alignItems: 'center'
+        }}>
+        <QrCodeScanner
+          onSuccess={handleOnChangeText}
+          vibrate={true}
+          sx={{
+            flex: 1,
+            width: SCANNER_WIDTH
+          }}
+        />
+        <LinearGradient
+          pointerEvents="none"
+          colors={blackLinearGradientColors}
+          style={{
+            position: 'absolute',
+            bottom: -0.5,
+            left: 0,
+            right: 0,
+            height: 60,
+            borderBottomLeftRadius: 18,
+            borderBottomRightRadius: 18,
+            marginHorizontal: 16
+          }}
+        />
+        <Text
+          variant="subtitle1"
+          sx={{
+            position: 'absolute',
+            bottom: 0,
+            left: 0,
+            right: 0,
+            marginHorizontal: 16,
+            textAlign: 'center',
+            color: '$white',
+            fontWeight: '500',
+            marginBottom: 12
+          }}>
+          WalletConnect QR Code
+        </Text>
+      </View>
+    )
+  }, [handleOnChangeText, blackLinearGradientColors])
 
   return (
-    <ScrollScreen
-      isModal
-      shouldAvoidKeyboard
-      renderFooter={renderFooter}
-      scrollEnabled={false}
-      contentContainerStyle={{ padding: 16, flex: 1 }}
-      renderHeader={renderHeader}>
-      <View style={{ flex: 1 }} />
-    </ScrollScreen>
+    <View style={{ flex: 1 }}>
+      <ScrollView
+        scrollEnabled={false}
+        keyboardDismissMode="interactive"
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{
+          flex: 1,
+          marginTop: 30,
+          marginBottom: insets.bottom + 12
+        }}>
+        {renderScanner()}
+      </ScrollView>
+      <KeyboardStickyView
+        enabled={true}
+        offset={{
+          opened: 0,
+          closed: -insets.bottom
+        }}>
+        <LinearGradientBottomWrapper enabled={keyboard?.isVisible}>
+          <View
+            style={{
+              padding: 16,
+              paddingTop: 0
+            }}>
+            {renderFooter()}
+          </View>
+        </LinearGradientBottomWrapper>
+      </KeyboardStickyView>
+    </View>
   )
 }
