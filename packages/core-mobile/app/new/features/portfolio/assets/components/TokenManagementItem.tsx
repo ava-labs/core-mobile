@@ -5,6 +5,7 @@ import { isTokenVisible } from 'store/balance/utils'
 import { LocalTokenWithBalance } from 'store/balance'
 import { Text, Toggle, useTheme, View } from '@avalabs/k2-alpine'
 import { Space } from 'common/components/Space'
+import { TokenType } from '@avalabs/vm-module-types'
 import { LogoWithNetwork } from './LogoWithNetwork'
 
 type Props = {
@@ -73,21 +74,23 @@ const TokenManagementItem: FC<Props> = ({ token }) => {
           </View>
         </View>
       </View>
-      <View
-        sx={{
-          alignItems: 'center',
-          justifyContent: 'center',
-          marginLeft: 23,
-          paddingRight: 16
-        }}>
-        <Toggle
-          testID={
-            isToggledOn ? `${token.name}_displayed` : `${token.name}_blocked`
-          }
-          value={isToggledOn}
-          onValueChange={handleChange}
-        />
-      </View>
+      {token.type !== TokenType.NATIVE && (
+        <View
+          sx={{
+            alignItems: 'center',
+            justifyContent: 'center',
+            marginLeft: 23,
+            paddingRight: 16
+          }}>
+          <Toggle
+            testID={
+              isToggledOn ? `${token.name}_displayed` : `${token.name}_blocked`
+            }
+            value={isToggledOn}
+            onValueChange={handleChange}
+          />
+        </View>
+      )}
     </View>
   )
 }

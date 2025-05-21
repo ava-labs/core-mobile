@@ -113,7 +113,7 @@ export const BrowserTab = forwardRef<BrowserTabRef, { tabId: string }>(
 
       if (
         activeHistory?.url &&
-        activeHistoryURL?.pathname !== urlToLoadURL?.pathname
+        activeHistoryURL?.origin !== urlToLoadURL?.origin
       ) {
         setUrlToLoad(activeHistory.url)
       }

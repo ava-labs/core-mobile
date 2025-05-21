@@ -7,7 +7,7 @@ import {
   View
 } from '@avalabs/k2-alpine'
 import { showSnackbar } from 'common/utils/toast'
-import React, { useCallback } from 'react'
+import React, { useCallback, useLayoutEffect } from 'react'
 import useAddCustomToken from 'common/hooks/useAddCustomToken'
 import { LocalTokenWithBalance } from 'store/balance'
 import { useRouter } from 'expo-router'
@@ -42,6 +42,16 @@ export const AddCustomTokenScreen = (): JSX.Element => {
 
   // only enable button if we have token and no error message
   const disabled = !!(errorMessage || !token || isLoading)
+
+  // reset token address and network
+  const reset = useCallback(() => {
+    setTokenAddress('')
+    setSelectedNetwork(undefined)
+  }, [setTokenAddress, setSelectedNetwork])
+
+  useLayoutEffect(() => {
+    reset()
+  }, [reset])
 
   const goToScanQrCode = useCallback((): void => {
     // @ts-ignore TODO: make routes typesafe
@@ -182,7 +192,7 @@ export const AddCustomTokenScreen = (): JSX.Element => {
               {selectedNetwork.chainName}
             </Text>
             <View sx={{ marginHorizontal: 8 }}>
-              <Icons.Navigation.ChevronRightV2 />
+              <Icons.Navigation.ChevronRightV2 color={colors.$textSecondary} />
             </View>
           </View>
         ) : (
@@ -197,7 +207,7 @@ export const AddCustomTokenScreen = (): JSX.Element => {
               Select
             </Text>
             <View sx={{ marginHorizontal: 8 }}>
-              <Icons.Navigation.ChevronRightV2 />
+              <Icons.Navigation.ChevronRightV2 color={colors.$textSecondary} />
             </View>
           </View>
         )}

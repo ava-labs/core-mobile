@@ -8,6 +8,7 @@ import {
 } from '@avalabs/k2-alpine'
 import { ScrollScreen } from 'common/components/ScrollScreen'
 import React, { useCallback, useState } from 'react'
+import { Platform } from 'react-native'
 import { useSelector } from 'react-redux'
 import { selectSelectedAvatar } from 'store/settings/avatar'
 
@@ -52,6 +53,7 @@ export const Confirmation = ({
             backgroundColor={colors.$surfacePrimary}
             source={avatar.source}
             size="large"
+            hasBlur={Platform.OS === 'ios'}
             glowEffect={{
               imageSource: require('../../../../assets/glow.png'),
               size: 380,

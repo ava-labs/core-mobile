@@ -17,7 +17,7 @@ export default {
 export const All = (): JSX.Element => {
   const { theme } = useTheme()
 
-  const motion = useMotion()
+  const motion = useMotion(true)
 
   const completeCardBackground = theme.isDark
     ? require('../../../assets/images/complete-card-bg-dark.png')

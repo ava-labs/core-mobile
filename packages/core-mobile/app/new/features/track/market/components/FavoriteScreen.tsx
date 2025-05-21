@@ -9,6 +9,7 @@ import { Dimensions } from 'react-native'
 import Animated from 'react-native-reanimated'
 import { MarketType } from 'store/watchlist/types'
 import { useTrackSortAndView } from '../hooks/useTrackSortAndView'
+import { useMigrateFavoriteIds } from '../hooks/useMigrateFavoriteIds'
 import MarketTokensScreen from './MarketTokensScreen'
 
 const errorIcon = require('../../../../assets/icons/star_struck_emoji.png')
@@ -19,6 +20,7 @@ const FavoriteScreen = ({
   goToMarketDetail: (tokenId: string, marketType: MarketType) => void
 }): JSX.Element => {
   const { favorites, prices, charts, isLoadingFavorites } = useWatchlist()
+  const { hasMigratedFavoriteIds } = useMigrateFavoriteIds()
 
   const { data, sort, view } = useTrackSortAndView(favorites, prices, true)
 
@@ -33,7 +35,7 @@ const FavoriteScreen = ({
     )
   }, [])
 
-  if (isLoadingFavorites) {
+  if (isLoadingFavorites || !hasMigratedFavoriteIds) {
     return <LoadingState sx={{ height: portfolioTabContentHeight * 1.5 }} />
   }
 
