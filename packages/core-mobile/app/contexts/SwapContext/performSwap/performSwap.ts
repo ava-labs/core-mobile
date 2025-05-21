@@ -85,9 +85,15 @@ export async function performSwap({
     .times(1 - totalPercent)
     .toFixed(0)
 
-  const sourceAmount = priceRoute.srcAmount
+  const maxAmount = new Big(priceRoute.srcAmount)
+    .times(1 + totalPercent)
+    .toFixed(0)
 
-  const destinationAmount = minAmount
+  const sourceAmount =
+    priceRoute.side === 'SELL' ? priceRoute.srcAmount : maxAmount
+
+  const destinationAmount =
+    priceRoute.side === 'SELL' ? minAmount : priceRoute.destAmount
 
   // no need to approve native token
   if (!isSrcTokenNative) {
