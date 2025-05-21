@@ -39,7 +39,7 @@ export const ContactForm = ({
   const handleShowAlertWithTextInput = useCallback((): void => {
     showAlertWithTextInput({
       title: 'Name this contact',
-      inputs: [{ key: 'save' }],
+      inputs: [{ key: 'save', defaultValue: contact.name }],
       buttons: [
         {
           text: 'Cancel',
@@ -140,7 +140,7 @@ export const ContactForm = ({
         <View sx={{ gap: 24, alignItems: 'center' }}>
           <Text
             variant="heading2"
-            sx={{ color: '$textPrimary' }}
+            sx={{ color: '$textPrimary', lineHeight: 44 }}
             numberOfLines={4}>
             {contact.name}
           </Text>
