@@ -152,9 +152,9 @@ const PortfolioHomeScreen = (): JSX.Element => {
     navigate('/send')
   }, [navigate, setSelectedToken])
 
-  const handleConnect = useCallback((): void => {
+  const handleReceive = useCallback((): void => {
     // @ts-ignore TODO: make routes typesafe
-    navigate('/walletConnectScan')
+    navigate('/receive')
   }, [navigate])
 
   const handleBuy = useCallback((): void => {
@@ -215,9 +215,9 @@ const PortfolioHomeScreen = (): JSX.Element => {
       onPress: handleBuy
     })
     buttons.push({
-      title: ActionButtonTitle.Connect,
-      icon: 'connect',
-      onPress: handleConnect
+      title: ActionButtonTitle.Receive,
+      icon: 'receive',
+      onPress: handleReceive
     })
     buttons.push({
       title: ActionButtonTitle.Bridge,
@@ -228,7 +228,7 @@ const PortfolioHomeScreen = (): JSX.Element => {
   }, [
     handleSend,
     handleBridge,
-    handleConnect,
+    handleReceive,
     handleBuy,
     isDeveloperMode,
     navigateToSwap
