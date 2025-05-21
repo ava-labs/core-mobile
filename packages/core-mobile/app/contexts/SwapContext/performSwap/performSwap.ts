@@ -9,7 +9,11 @@ import SwapService from 'services/swap/SwapService'
 import { swapError } from 'errors/swapError'
 import { ERC20__factory } from 'contracts/openzeppelin'
 import { RequestContext } from 'store/rpc/types'
-import { EVM_NATIVE_TOKEN_ADDRESS, PARTNER_FEE_PARAMS } from '../consts'
+import {
+  EVM_NATIVE_TOKEN_ADDRESS,
+  PARASWAP_PARTNER_FEE_BPS,
+  PARTNER_FEE_PARAMS
+} from '../consts'
 
 export type PerformSwapParams = {
   srcTokenAddress: string | undefined
@@ -73,12 +77,16 @@ export async function performSwap({
 
   let approveTxHash: string | undefined
 
+  const slippagePercent = slippage / 100
+  const feePercent = PARASWAP_PARTNER_FEE_BPS / 10_000
+  const totalPercent = slippagePercent + feePercent
+
   const minAmount = new Big(priceRoute.destAmount)
-    .times(1 - slippage / 100)
+    .times(1 - totalPercent)
     .toFixed(0)
 
   const maxAmount = new Big(priceRoute.srcAmount)
-    .times(1 + slippage / 100)
+    .times(1 + totalPercent)
     .toFixed(0)
 
   const sourceAmount =
