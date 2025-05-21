@@ -90,6 +90,8 @@ const ContactDetailScreen = (): React.JSX.Element => {
     <ScrollScreen
       renderFooter={renderFooter}
       isModal
+      disableStickyFooter
+      shouldAvoidKeyboard
       contentContainerStyle={{ padding: 16 }}>
       {contact && (
         <ContactForm

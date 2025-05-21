@@ -106,8 +106,8 @@ export const SwapScreen = (): JSX.Element => {
     if (fromTokenValue && fromTokenValue === 0n) {
       setLocalError('Please enter an amount')
     } else if (
-      maxFromValue &&
-      fromTokenValue &&
+      maxFromValue !== undefined &&
+      fromTokenValue !== undefined &&
       fromTokenValue > maxFromValue
     ) {
       setLocalError('Amount exceeds available balance')

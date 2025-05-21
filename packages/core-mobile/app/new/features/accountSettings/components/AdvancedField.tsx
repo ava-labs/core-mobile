@@ -12,6 +12,10 @@ import { copyToClipboard } from 'common/utils/clipboard'
 import { useRouter } from 'expo-router'
 import { isValidUrl } from 'features/browser/utils'
 import React, { useCallback, useMemo, useRef, useState } from 'react'
+import { useSelector } from 'react-redux'
+import { selectIsDeveloperMode } from 'store/settings/advanced'
+import { AddressType } from '../consts'
+import { isValidAddress } from '../utils/isValidAddress'
 import { ContactAddressMenu } from './ContactAddressMenu'
 
 export interface AdvancedFieldProps {
@@ -54,7 +58,10 @@ export const AdvancedField = ({
         {
           text: 'Delete',
           style: 'destructive',
-          onPress: () => onUpdate(id, undefined)
+          onPress: () => {
+            onUpdate(id, undefined)
+            setInputValue('')
+          }
         }
       ]
     })
@@ -64,6 +71,11 @@ export const AdvancedField = ({
     setIsEditing(true)
     inputRef.current?.focus()
   }, [])
+
+  const onReset = useCallback(() => {
+    setIsEditing(false)
+    setInputValue(value ?? '')
+  }, [value])
 
   const isValidField = useCallback((): boolean => {
     switch (type) {
@@ -90,12 +102,37 @@ export const AdvancedField = ({
     }
   }, [value, title])
 
+  const isDeveloperMode = useSelector(selectIsDeveloperMode)
+
   const onSubmit = useCallback(() => {
     if (!inputValue?.length) {
       onUpdate(id, undefined)
       setIsEditing(false)
       return
     }
+    if (
+      type === 'address' &&
+      !isValidAddress({
+        addressType: title as AddressType,
+        address: inputValue,
+        isDeveloperMode
+      })
+    ) {
+      showAlert({
+        title: 'Invalid address',
+        description:
+          'The address your entered is not valid for the selected chain',
+        buttons: [
+          {
+            text: 'Got it',
+            style: 'default',
+            onPress: onReset
+          }
+        ]
+      })
+      return
+    }
+
     if (!isValidField()) {
       showAlert({
         title: `Invalid field`,
@@ -104,10 +141,7 @@ export const AdvancedField = ({
           {
             text: 'Dismiss',
             style: 'default',
-            onPress: () => {
-              setIsEditing(false)
-              setInputValue('')
-            }
+            onPress: onReset
           }
         ]
       })
@@ -115,7 +149,16 @@ export const AdvancedField = ({
     }
     onUpdate(id, inputValue)
     setIsEditing(false)
-  }, [inputValue, isValidField, onUpdate, id, type])
+  }, [
+    inputValue,
+    type,
+    title,
+    isDeveloperMode,
+    isValidField,
+    onUpdate,
+    id,
+    onReset
+  ])
 
   const onBlur = useCallback(() => {
     onSubmit()
@@ -149,12 +192,12 @@ export const AdvancedField = ({
           style={{
             flex: 1,
             flexDirection: 'row',
-            alignItems: 'center',
-            paddingVertical: 14
+            alignItems: 'center'
           }}>
           {disabled ? null : (
             <TouchableOpacity
               onPress={type === 'address' ? handleDelete : onClear}
+              hitSlop={14}
               style={{
                 paddingLeft: 16,
                 paddingRight: 14
@@ -168,7 +211,8 @@ export const AdvancedField = ({
             disabled={disabled}
             style={{
               flex: 1,
-              paddingLeft: disabled ? 16 : 0
+              paddingLeft: disabled ? 16 : 0,
+              paddingVertical: 14
             }}>
             <Text
               variant="buttonMedium"
@@ -191,9 +235,15 @@ export const AdvancedField = ({
           </TouchableOpacity>
 
           {type === 'address' && (
-            <Button size="small" type="secondary" onPress={handleCopy}>
-              Copy
-            </Button>
+            <View style={{ paddingRight: 14, paddingLeft: 14 }}>
+              <Button
+                size="small"
+                hitSlop={14}
+                type="secondary"
+                onPress={handleCopy}>
+                Copy
+              </Button>
+            </View>
           )}
         </View>
       )
@@ -230,10 +280,10 @@ export const AdvancedField = ({
     )
   }
 
-  if (value === undefined && type === 'address') {
+  if (inputValue === undefined && type === 'address') {
     return (
       <ContactAddressMenu
-        onTypeOrPaste={() => setIsEditing(true)}
+        onTypeOrPaste={onEdit}
         onScanQrCode={handleScanQrCode}>
         <View
           sx={{

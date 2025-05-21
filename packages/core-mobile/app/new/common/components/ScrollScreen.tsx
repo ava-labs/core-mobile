@@ -191,6 +191,7 @@ export const ScrollScreen = ({
           keyboardDismissMode="interactive"
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
+          bottomOffset={24}
           style={{
             flex: 1,
             marginBottom:

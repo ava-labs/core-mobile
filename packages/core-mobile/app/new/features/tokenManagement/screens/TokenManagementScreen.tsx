@@ -1,5 +1,4 @@
 import { Icons, SearchBar, Separator, useTheme } from '@avalabs/k2-alpine'
-import { TokenType } from '@avalabs/vm-module-types'
 import { ErrorState } from 'common/components/ErrorState'
 import { ListScreen } from 'common/components/ListScreen'
 import { LoadingState } from 'common/components/LoadingState'
@@ -25,11 +24,6 @@ export const TokenManagementScreen = (): JSX.Element => {
   } = useTheme()
   const { push } = useRouter()
 
-  // only show erc20 tokens here
-  const tokenList = filteredTokenList.filter(
-    token => token.type !== TokenType.NATIVE
-  )
-
   const renderItem = (
     item: ListRenderItemInfo<LocalTokenWithBalance>
   ): JSX.Element => {
@@ -53,7 +47,7 @@ export const TokenManagementScreen = (): JSX.Element => {
       return <LoadingState sx={{ flex: 1 }} />
     }
 
-    if (tokenList.length === 0) {
+    if (filteredTokenList.length === 0) {
       return (
         <ErrorState
           sx={{ flex: 1 }}
@@ -63,7 +57,7 @@ export const TokenManagementScreen = (): JSX.Element => {
         />
       )
     }
-  }, [isLoading, isRefetching, tokenList])
+  }, [isLoading, isRefetching, filteredTokenList])
 
   const addCustomToken = useCallback(() => {
     // @ts-ignore TODO: make routes typesafe
@@ -88,7 +82,7 @@ export const TokenManagementScreen = (): JSX.Element => {
   return (
     <ListScreen
       title="Manage list"
-      data={tokenList}
+      data={filteredTokenList}
       isModal
       renderHeaderRight={renderHeaderRight}
       ItemSeparatorComponent={renderSeparator}

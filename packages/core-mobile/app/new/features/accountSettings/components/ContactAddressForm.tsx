@@ -1,18 +1,18 @@
-import React, { useState, useCallback } from 'react'
+import { truncateAddress } from '@avalabs/core-utils-sdk'
 import {
+  Button,
+  Icons,
+  Text,
+  TextInput,
   TouchableOpacity,
   useTheme,
-  View,
-  Text,
-  Icons,
-  TextInput,
-  Button
+  View
 } from '@avalabs/k2-alpine'
-import { Keyboard, Platform } from 'react-native'
-import { truncateAddress } from '@avalabs/core-utils-sdk'
-import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router'
-import { copyToClipboard } from 'common/utils/clipboard'
 import { TRUNCATE_ADDRESS_LENGTH } from 'common/consts/text'
+import { copyToClipboard } from 'common/utils/clipboard'
+import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router'
+import React, { useCallback, useState } from 'react'
+import { Keyboard, Platform } from 'react-native'
 import { AddressType } from '../consts'
 import { ContactAddressMenu } from './ContactAddressMenu'
 
