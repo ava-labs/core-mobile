@@ -3,6 +3,7 @@ import Assert from '../helpers/assertions'
 import Action from '../helpers/actions'
 import delay from '../helpers/waits'
 import commonElsPage from './commonEls.page'
+import actions from '../helpers/actions'
 
 class OnboardingPage {
   get continueWithGoogle() {
@@ -220,6 +221,7 @@ class OnboardingPage {
 
   async enterRecoveryPhrase(recoveryPhrase: string) {
     await Action.setInputText(this.recoveryPhraseInput, recoveryPhrase, 0)
+    await actions.dismissKeyboard()
   }
 
   async tapImport() {
