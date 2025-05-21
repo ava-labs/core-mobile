@@ -48,7 +48,7 @@ index 870544e..63a55ad 100644
        const viewTag = this.getComponentViewTag();
        if (viewTag !== -1 && this._styles !== null) {
 diff --git a/node_modules/react-native-reanimated/src/hook/useAnimatedSensor.ts b/node_modules/react-native-reanimated/src/hook/useAnimatedSensor.ts
-index 88797da..710fe4c 100644
+index 88797da..0dc5885 100644
 --- a/node_modules/react-native-reanimated/src/hook/useAnimatedSensor.ts
 +++ b/node_modules/react-native-reanimated/src/hook/useAnimatedSensor.ts
 @@ -88,14 +88,17 @@ function adjustVectorToInterfaceOrientation(data: Value3D) {
@@ -103,6 +103,22 @@ index 88797da..710fe4c 100644
  
      if (id !== -1) {
        // if sensor is available
+@@ -171,7 +178,14 @@ export function useAnimatedSensor(
+     return () => {
+       ref.current.unregister();
+     };
+-  }, [sensorType, config]);
++  }, [sensorType, config, isActive]);
++
++
++  useEffect(() => {
++    if (!isActive) {
++      ref.current.unregister();
++    }
++  }, [isActive])
+ 
+   return ref.current as AnimatedSensor<ValueRotation> | AnimatedSensor<Value3D>;
+ }
 diff --git a/node_modules/react-native-reanimated/src/platform-specific/findHostInstance.ts b/node_modules/react-native-reanimated/src/platform-specific/findHostInstance.ts
 index da56c8e..5eff588 100644
 --- a/node_modules/react-native-reanimated/src/platform-specific/findHostInstance.ts

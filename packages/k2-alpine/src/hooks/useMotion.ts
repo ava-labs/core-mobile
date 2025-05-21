@@ -1,5 +1,3 @@
-import { useEffect, useMemo, useState } from 'react'
-import { AppState, Platform } from 'react-native'
 import {
   SharedValue,
   useAnimatedSensor,
@@ -8,36 +6,11 @@ import {
   Value3D
 } from 'react-native-reanimated'
 
-export const useMotion = (isActive: boolean): Motion | undefined => {
-  const [appState, setAppState] = useState(AppState.currentState)
-  const shouldAnimate = useMemo(
-    () => appState === 'active' && isActive && Platform.OS === 'ios',
-    [appState, isActive]
-  )
-  const rotation = useAnimatedSensor(SensorType.ROTATION, shouldAnimate)
-  const accelerometer = useAnimatedSensor(
-    SensorType.ACCELEROMETER,
-    shouldAnimate
-  )
+export const useMotion = (isEnabled: boolean): Motion | undefined => {
+  const rotation = useAnimatedSensor(SensorType.ROTATION, isEnabled)
+  const accelerometer = useAnimatedSensor(SensorType.ACCELEROMETER, isEnabled)
 
-  useEffect(() => {
-    const subscription = AppState.addEventListener('change', nextAppState => {
-      setAppState(nextAppState)
-    })
-
-    return () => {
-      subscription.remove()
-    }
-  }, [])
-
-  useEffect(() => {
-    if (!shouldAnimate) {
-      rotation.unregister()
-      accelerometer.unregister()
-    }
-  }, [accelerometer, rotation, shouldAnimate, isActive])
-
-  return shouldAnimate
+  return isEnabled
     ? {
         rotation: rotation.sensor,
         accelerometer: accelerometer.sensor

@@ -1,4 +1,4 @@
-import React, { useCallback, useRef, useState, useMemo } from 'react'
+import React, { useCallback, useRef, useState, useMemo, useEffect } from 'react'
 import {
   View,
   NavigationTitleHeader,
@@ -12,7 +12,8 @@ import {
   LayoutChangeEvent,
   LayoutRectangle,
   StyleSheet,
-  InteractionManager
+  InteractionManager,
+  AppState
 } from 'react-native'
 import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
 import Animated, {
@@ -34,6 +35,7 @@ import { AllStakesScreen } from 'features/stake/components/AllStakesScreen'
 import { ActiveStakesScreen } from 'features/stake/components/ActiveStakesScreen'
 import { CompletedStakesScreen } from 'features/stake/components/CompletedStakesScreen'
 import { useIsFocused } from '@react-navigation/native'
+import { Platform } from 'react-native'
 
 export const StakeHomeScreen = (): JSX.Element => {
   const { navigate } = useRouter()
@@ -45,7 +47,13 @@ export const StakeHomeScreen = (): JSX.Element => {
   >()
   const selectedSegmentIndex = useSharedValue(0)
   const isFocused = useIsFocused()
-  const motion = useMotion(isFocused)
+  const [appState, setAppState] = useState(AppState.currentState)
+  const isMotionEnabled = useMemo(
+    () => appState === 'active' && isFocused && Platform.OS === 'ios',
+    [appState, isFocused]
+  )
+
+  const motion = useMotion(isMotionEnabled)
   const isEmpty = !data || data.length === 0
   const { addStake, canAddStake } = useAddStake()
 
@@ -171,6 +179,16 @@ export const StakeHomeScreen = (): JSX.Element => {
       }
     ]
   }, [isEmpty, motion, handlePressStake, addStake, canAddStake, handleClaim])
+
+  useEffect(() => {
+    const subscription = AppState.addEventListener('change', nextAppState => {
+      setAppState(nextAppState)
+    })
+
+    return () => {
+      subscription.remove()
+    }
+  }, [])
 
   if (isLoading) {
     return <LoadingState sx={{ flex: 1 }} />
