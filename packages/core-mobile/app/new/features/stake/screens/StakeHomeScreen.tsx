@@ -48,12 +48,12 @@ export const StakeHomeScreen = (): JSX.Element => {
   const selectedSegmentIndex = useSharedValue(0)
   const isFocused = useIsFocused()
   const [appState, setAppState] = useState(AppState.currentState)
-  const isMotionEnabled = useMemo(
+  const isMotionActive = useMemo(
     () => appState === 'active' && isFocused && Platform.OS === 'ios',
     [appState, isFocused]
   )
 
-  const motion = useMotion(isMotionEnabled)
+  const motion = useMotion(isMotionActive)
   const isEmpty = !data || data.length === 0
   const { addStake, canAddStake } = useAddStake()
 

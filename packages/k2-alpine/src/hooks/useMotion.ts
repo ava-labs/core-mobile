@@ -6,11 +6,11 @@ import {
   Value3D
 } from 'react-native-reanimated'
 
-export const useMotion = (isEnabled: boolean): Motion | undefined => {
-  const rotation = useAnimatedSensor(SensorType.ROTATION, isEnabled)
-  const accelerometer = useAnimatedSensor(SensorType.ACCELEROMETER, isEnabled)
+export const useMotion = (isActive: boolean): Motion | undefined => {
+  const rotation = useAnimatedSensor(SensorType.ROTATION, isActive)
+  const accelerometer = useAnimatedSensor(SensorType.ACCELEROMETER, isActive)
 
-  return isEnabled
+  return isActive
     ? {
         rotation: rotation.sensor,
         accelerometer: accelerometer.sensor
