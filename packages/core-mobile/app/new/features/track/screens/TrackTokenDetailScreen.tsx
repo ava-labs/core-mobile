@@ -47,6 +47,7 @@ import { useGetPrices } from 'hooks/watchlist/useGetPrices'
 import { useIsFocused } from '@react-navigation/native'
 import { MarketType } from 'store/watchlist'
 import { AVAX_COINGECKO_ID } from 'consts/coingecko'
+import { useIsSwapListLoaded } from 'common/hooks/useIsSwapListLoaded'
 
 const TrackTokenDetailScreen = (): JSX.Element => {
   const { theme } = useTheme()
@@ -89,6 +90,8 @@ const TrackTokenDetailScreen = (): JSX.Element => {
       tokenInfo.currentPrice === undefined &&
       coingeckoId.length > 0
   })
+
+  const isSwapListLoaded = useIsSwapListLoaded()
 
   const selectedSegmentIndex = useSharedValue(0)
 
@@ -352,7 +355,15 @@ const TrackTokenDetailScreen = (): JSX.Element => {
     )
   }, [tokenInfo, prices, ranges, coingeckoId])
 
-  if (!tokenId || !tokenInfo) {
+  const showLoading =
+    !tokenId ||
+    !tokenInfo ||
+    // the token's swapability depends on the swap list
+    // thus, we need to wait for the swap list to load
+    // so that we can display the swap button accordingly
+    !isSwapListLoaded
+
+  if (showLoading) {
     return <LoadingState sx={styles.container} />
   }
 
