@@ -6,7 +6,6 @@ import {
   View
 } from '@avalabs/k2-alpine'
 import { NetworkVMType } from '@avalabs/vm-module-types'
-import { Space } from 'common/components/Space'
 import { usePrimaryNetworks } from 'common/hooks/usePrimaryNetworks'
 import {
   dismissAlertWithTextInput,
@@ -145,18 +144,19 @@ export const ContactForm = ({
   }, [contact.name, handleShowAlertWithTextInput])
 
   return (
-    <View sx={{ alignItems: 'center' }}>
-      <TouchableOpacity onPress={onSelectAvatar}>
-        <Avatar
-          size={150}
-          source={avatar?.source}
-          hasLoading={false}
-          showAddIcon={avatar?.source === undefined}
-        />
-      </TouchableOpacity>
-      <Space y={20} />
-      {renderName()}
-      <Space y={47} />
+    <View sx={{ gap: 40 }}>
+      <View sx={{ alignItems: 'center', gap: 24, marginTop: 16 }}>
+        <TouchableOpacity onPress={onSelectAvatar}>
+          <Avatar
+            size={150}
+            source={avatar?.source}
+            hasLoading={false}
+            showAddIcon={avatar?.source === undefined}
+          />
+        </TouchableOpacity>
+
+        {renderName()}
+      </View>
 
       <AdvancedForm data={data} />
     </View>
