@@ -15,7 +15,7 @@ import { getSocialHandle } from 'utils/getSocialHandle/getSocialHandle'
 import { Ranges } from 'services/token/types'
 import { selectSelectedCurrency } from 'store/settings/currency'
 import { useCoreBrowser } from 'new/common/hooks/useCoreBrowser'
-import { getTokenChainId } from 'features/track/utils/utils'
+import { getTokenAddress, getTokenChainId } from 'features/track/utils/utils'
 
 const isTrendingToken = (token: MarketToken | undefined): boolean =>
   token !== undefined && token.marketType === MarketType.TRENDING
@@ -191,7 +191,7 @@ export const useTokenDetails = ({
         name: data.name,
         logoUri: data.image?.large ?? undefined,
         // @ts-ignore contract_address exists in CoinsInfoResponse
-        contractAddress: data.contract_address,
+        contractAddress: getTokenAddress(token) ?? data.contract_address,
         urlHostname: data?.links?.homepage?.[0],
         has24hChartDataOnly: false,
         description: data.description?.en ?? undefined,
