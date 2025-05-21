@@ -7,7 +7,7 @@ import {
   CriticalConfig
 } from '@avalabs/core-bridge-sdk'
 import { BridgeState, initialState } from 'store/bridge/types'
-import { selectActiveNetwork } from 'store/network'
+import { selectIsDeveloperMode } from 'store/settings/advanced'
 
 export const reducerName = 'bridge'
 
@@ -55,12 +55,15 @@ export const selectBridgeCriticalConfig = (
 }
 
 export const selectBridgeTransactions = createSelector(
-  [selectActiveNetwork, selectTransactions],
-  (activeNetwork, bridgeTransactions): { [key: string]: BridgeTransaction } => {
+  [selectIsDeveloperMode, selectTransactions],
+  (
+    isDeveloperMode,
+    bridgeTransactions
+  ): { [key: string]: BridgeTransaction } => {
     return Object.values(bridgeTransactions).reduce<
       BridgeState['bridgeTransactions']
     >((txs, btx) => {
-      const isMainnet = !activeNetwork.isTestnet
+      const isMainnet = !isDeveloperMode
       // go figure
       const bridgeTx = btx as BridgeTransaction
       if (bridgeTx.environment === (isMainnet ? 'main' : 'test')) {

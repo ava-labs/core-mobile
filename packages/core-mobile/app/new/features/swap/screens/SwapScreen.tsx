@@ -17,10 +17,8 @@ import { SwapSide } from '@paraswap/sdk'
 import { useNavigation } from '@react-navigation/native'
 import { ScrollScreen } from 'common/components/ScrollScreen'
 import { TokenInputWidget } from 'common/components/TokenInputWidget'
-import { useAvalancheErc20ContractTokens } from 'common/hooks/useErc20ContractTokens'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import { usePreventScreenRemoval } from 'common/hooks/usePreventScreenRemoval'
-import { useSearchableTokenList } from 'common/hooks/useSearchableTokenList'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
 import { PARASWAP_PARTNER_FEE_BPS } from 'contexts/SwapContext/consts'
 import { useGlobalSearchParams, useRouter } from 'expo-router'
@@ -35,11 +33,12 @@ import { useSelector } from 'react-redux'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import {
   LocalTokenWithBalance,
-  selectTokensWithZeroBalance
+  selectTokensWithZeroBalanceByNetwork
 } from 'store/balance'
 import { getTokenAddress } from 'swap/getSwapRate'
 import { calculateRate } from 'swap/utils'
 import { basisPointsToPercentage } from 'utils/basisPointsToPercentage'
+import { useSwapList } from 'common/hooks/useSwapList'
 import { SlippageInput } from '../components.tsx/SlippageInput'
 import { useSwapContext } from '../contexts/SwapContext'
 
@@ -53,12 +52,8 @@ export const SwapScreen = (): JSX.Element => {
   }>()
 
   const { formatCurrency } = useFormatCurrency()
-  const avalancheErc20ContractTokens = useAvalancheErc20ContractTokens()
-  const { filteredTokenList } = useSearchableTokenList({
-    tokens: avalancheErc20ContractTokens,
-    hideZeroBalance: false
-  })
-  const tokensWithZeroBalance = useSelector(selectTokensWithZeroBalance)
+
+  const swapList = useSwapList()
 
   const {
     swap,
@@ -81,6 +76,10 @@ export const SwapScreen = (): JSX.Element => {
   const [toTokenValue, setToTokenValue] = useState<bigint>()
   const [localError, setLocalError] = useState<string>('')
   const cChainNetwork = useCChainNetwork()
+  const tokensWithZeroBalance = useSelector(
+    selectTokensWithZeroBalanceByNetwork(cChainNetwork?.chainId)
+  )
+
   const [isInputFocused, setIsInputFocused] = useState<boolean>(false)
   const swapButtonBackgroundColor = useMemo(
     () => getButtonBackgroundColor('secondary', theme, false),
@@ -179,7 +178,7 @@ export const SwapScreen = (): JSX.Element => {
 
     let initialFromToken: LocalTokenWithBalance | undefined
     if (params?.initialTokenIdFrom) {
-      initialFromToken = filteredTokenList.find(
+      initialFromToken = swapList.find(
         tk =>
           tk.localId.toLowerCase() === params.initialTokenIdFrom?.toLowerCase()
       )
@@ -188,13 +187,13 @@ export const SwapScreen = (): JSX.Element => {
 
     let initialToToken: LocalTokenWithBalance | undefined
     if (params?.initialTokenIdTo) {
-      initialToToken = filteredTokenList.find(
+      initialToToken = swapList.find(
         tk =>
           tk.localId.toLowerCase() === params.initialTokenIdTo?.toLowerCase()
       )
     }
     setToToken(initialToToken)
-  }, [params, filteredTokenList, setFromToken, setToToken])
+  }, [params, swapList, setFromToken, setToToken])
 
   const handleSwap = useCallback(() => {
     if (optimalRate) {

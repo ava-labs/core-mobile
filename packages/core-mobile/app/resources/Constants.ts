@@ -3,7 +3,8 @@ export enum StorageKey {
   POSTHOG_SUSPENDED = 'POSTHOG_SUSPENDED',
   HAS_MIGRATED_FROM_ASYNC_STORAGE = 'hasMigratedFromAsyncStorage',
   NOTIFICATIONS_OPTIMIZATION = 'NOTIFICATIONS_OPTIMIZATION',
-  LAST_TRANSACTED_ERC20_NETWORKS = 'lastTransactedErc20Networks'
+  LAST_TRANSACTED_ERC20_NETWORKS = 'lastTransactedErc20Networks',
+  ADDRESSES_IN_RANGE = 'addressesInRange'
 }
 
 export const CORE_UNIVERSAL_LINK_HOSTS = ['core.app', 'test.core.app']

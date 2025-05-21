@@ -302,5 +302,24 @@ export const migrations = {
         disabledLastTransactedChainIds: []
       }
     }
+  },
+  19: (state: any) => {
+    // in the mobile next-gen app, we don't have the concept of active network anymore,
+    // we will default active network to avalanche c-chain until we remove active network
+    // everywhere in the app
+    return {
+      ...state,
+      network: {
+        ...state.network,
+        active: ChainId.AVALANCHE_MAINNET_ID
+      },
+      settings: {
+        ...state.settings,
+        advanced: {
+          ...state.settings.advanced,
+          developerMode: false
+        }
+      }
+    }
   }
 }

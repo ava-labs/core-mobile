@@ -1,8 +1,9 @@
 import { BalanceHeader, View } from '@avalabs/k2-alpine'
 import { ScrollScreen } from 'common/components/ScrollScreen'
+import { useBalanceForAccount } from 'common/contexts/useBalanceForAccount'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
-import { useLocalSearchParams } from 'expo-router'
+import { useFocusEffect, useLocalSearchParams } from 'expo-router'
 import { AccountAddresses } from 'features/accountSettings/components/accountAddresses'
 import { AccountButtons } from 'features/accountSettings/components/AccountButtons'
 import React, { useCallback, useMemo } from 'react'
@@ -49,6 +50,14 @@ const AccountScreen = (): JSX.Element => {
           withoutCurrencySuffix: true
         })
   }, [balanceAccurate, balanceTotalInCurrency, formatCurrency])
+
+  const { fetchBalance } = useBalanceForAccount(accountIndexNumber)
+
+  useFocusEffect(
+    useCallback(() => {
+      fetchBalance()
+    }, [fetchBalance])
+  )
 
   const renderHeader = useCallback((): JSX.Element => {
     return (

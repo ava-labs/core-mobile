@@ -7,7 +7,6 @@ import {
 import { RootState } from 'store/types'
 import { selectActiveAccount } from 'store/account'
 import {
-  selectActiveNetwork,
   selectAllNetworks,
   selectEnabledChainIds,
   selectNetworks
@@ -89,18 +88,6 @@ const _selectAllBalances = (state: RootState): Balances => {
   return state.balance.balances
 }
 
-// get the list of tokens for the active network
-// each token will have info such as: balance, price, market cap,...
-export const selectTokensWithBalance = createSelector(
-  [selectActiveNetwork, selectActiveAccount, _selectAllBalances],
-  (activeNetwork, activeAccount, allBalances): LocalTokenWithBalance[] => {
-    if (!activeAccount) return []
-
-    const key = getKey(activeNetwork.chainId, activeAccount.index)
-    return allBalances[key]?.tokens ?? []
-  }
-)
-
 export const selectTokensWithBalanceByNetwork = (
   chainId?: number
 ): ((state: RootState) => LocalTokenWithBalance[]) =>
@@ -115,12 +102,19 @@ export const selectTokensWithBalanceByNetwork = (
     }
   )
 
-export const selectTokensWithZeroBalance = createSelector(
-  selectTokensWithBalance,
-  (allTokens: LocalTokenWithBalance[]): LocalTokenWithBalance[] => {
-    return allTokens.filter(t => t.balance === 0n)
-  }
-)
+export const selectTokensWithZeroBalanceByNetwork = (
+  chainId?: number
+): ((state: RootState) => LocalTokenWithBalance[]) =>
+  createSelector(
+    [selectActiveAccount, _selectAllBalances],
+    (activeAccount, allBalances): LocalTokenWithBalance[] => {
+      if (!activeAccount || !chainId) return []
+
+      const key = getKey(chainId, activeAccount.index)
+      const tokens = allBalances[key]?.tokens ?? []
+      return tokens.filter(token => token.balance === 0n)
+    }
+  )
 
 export const selectAvaxPrice = (state: RootState): number => {
   const balances = Object.values(state.balance.balances)

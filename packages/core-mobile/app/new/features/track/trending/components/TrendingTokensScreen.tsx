@@ -2,7 +2,7 @@ import React, { useCallback } from 'react'
 import { StyleSheet } from 'react-native'
 import { Separator } from '@avalabs/k2-alpine'
 import { CollapsibleTabs } from 'common/components/CollapsibleTabs'
-import { MarketToken } from 'store/watchlist'
+import { MarketToken, MarketType } from 'store/watchlist'
 import { selectTokenVisibility } from 'store/portfolio'
 import { useSelector } from 'react-redux'
 import { selectActiveAccount } from 'store/account'
@@ -10,6 +10,10 @@ import { selectBalanceTotalForAccount } from 'store/balance'
 import { useRouter } from 'expo-router'
 import { useNavigateToSwap } from 'features/swap/hooks/useNavigateToSwap'
 import { AVAX_TOKEN_ID } from 'common/consts/swap'
+import { useIsSwappable } from 'common/hooks/useIsSwapable'
+import { selectIsSwapBlocked } from 'store/posthog'
+import { getTokenAddress, getTokenChainId } from 'features/track/utils/utils'
+import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { TrendingTokenListItem } from './TrendingTokenListItem'
 
 const numColumns = 1
@@ -21,12 +25,15 @@ const TrendingTokensScreen = ({
   emptyComponent
 }: {
   data: MarketToken[]
-  goToMarketDetail: (tokenId: string) => void
+  goToMarketDetail: (tokenId: string, marketType: MarketType) => void
   emptyComponent: React.JSX.Element
 }): JSX.Element => {
+  const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const { navigate } = useRouter()
   const { navigateToSwap } = useNavigateToSwap()
   const activeAccount = useSelector(selectActiveAccount)
+  const { isSwappable } = useIsSwappable()
+  const isSwapBlocked = useSelector(selectIsSwapBlocked)
   const tokenVisibility = useSelector(selectTokenVisibility)
   const balanceTotal = useSelector(
     selectBalanceTotalForAccount(activeAccount?.index ?? 0, tokenVisibility)
@@ -43,13 +50,13 @@ const TrendingTokensScreen = ({
 
   const onBuyPress = useCallback(
     (initialTokenIdTo?: string) => {
-      if (isZeroBalance) {
+      if (isZeroBalance || isSwapBlocked) {
         openBuy()
       } else {
         navigateToSwap(AVAX_TOKEN_ID, initialTokenIdTo)
       }
     },
-    [isZeroBalance, openBuy, navigateToSwap]
+    [isZeroBalance, openBuy, navigateToSwap, isSwapBlocked]
   )
 
   const renderItem = useCallback(
@@ -60,16 +67,21 @@ const TrendingTokensScreen = ({
       item: MarketToken
       index: number
     }): React.JSX.Element => {
+      const tokenAddress = getTokenAddress(item)
+      const chainId = getTokenChainId(item)
+      const showBuyButton = isSwappable({ tokenAddress, chainId })
+
       return (
         <TrendingTokenListItem
           token={item}
           index={index}
-          onBuyPress={onBuyPress}
-          onPress={() => goToMarketDetail(item.id)}
+          showBuyButton={showBuyButton}
+          onBuyPress={() => onBuyPress(tokenAddress)}
+          onPress={() => goToMarketDetail(item.id, item.marketType)}
         />
       )
     },
-    [goToMarketDetail, onBuyPress]
+    [goToMarketDetail, onBuyPress, isSwappable]
   )
 
   const renderSeparator = useCallback((): JSX.Element => {
@@ -80,6 +92,7 @@ const TrendingTokensScreen = ({
     <CollapsibleTabs.FlashList
       contentContainerStyle={styles.container}
       data={data}
+      extraData={isDeveloperMode}
       numColumns={numColumns}
       renderItem={renderItem}
       ListEmptyComponent={emptyComponent}

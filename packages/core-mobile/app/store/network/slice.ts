@@ -3,7 +3,12 @@ import {
   ChainId as ChainsSDKChainId,
   Network
 } from '@avalabs/core-chains-sdk'
-import { createAction, createSlice, PayloadAction } from '@reduxjs/toolkit'
+import {
+  createAction,
+  createSelector,
+  createSlice,
+  PayloadAction
+} from '@reduxjs/toolkit'
 import { getNetworksFromCache } from 'hooks/networks/utils/getNetworksFromCache'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { RootState } from '../types'
@@ -169,20 +174,21 @@ export const selectNetworks = (state: RootState): Networks => {
   return { ...populatedNetworks, ...populatedCustomNetworks }
 }
 
-export const selectEnabledNetworks = (state: RootState): Network[] => {
-  const enabledChainIds = selectEnabledChainIds(state)
-  const isDeveloperMode = selectIsDeveloperMode(state)
-  const networks = getNetworksFromCache()
+export const selectEnabledNetworks = createSelector(
+  [selectEnabledChainIds, selectIsDeveloperMode],
+  (enabledChainIds, isDeveloperMode) => {
+    const networks = getNetworksFromCache()
+    if (networks === undefined) return []
 
-  if (networks === undefined) return []
-  return enabledChainIds.reduce((acc, chainId) => {
-    const network = networks[chainId]
-    if (network && network.isTestnet === isDeveloperMode) {
-      acc.push(network)
-    }
-    return acc
-  }, [] as Network[])
-}
+    return enabledChainIds.reduce((acc, chainId) => {
+      const network = networks[chainId]
+      if (network && network.isTestnet === isDeveloperMode) {
+        acc.push(network)
+      }
+      return acc
+    }, [] as Network[])
+  }
+)
 
 export const selectIsTestnet = (chainId: number) => (state: RootState) => {
   const networks = selectAllNetworks(state)

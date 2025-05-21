@@ -57,15 +57,16 @@ export const useWatchlist = (): UseWatchListReturnType => {
     [trendingTokensResponse]
   )
 
-  const tokenIds = Object.values(topTokensResponse?.tokens ?? {}).map(
-    token => token.id
-  )
+  const topTokensCoingeckoIds = Object.values(topTokensResponse?.tokens ?? {})
+    .map(token => token.coingeckoId)
+    .filter((id): id is string => typeof id === 'string')
+
   const isFocused = useIsFocused()
 
-  const { data: topTokenPrices } = useGetPrices(
-    tokenIds,
-    isFocused && tokenIds.length > 0
-  )
+  const { data: topTokenPrices } = useGetPrices({
+    coingeckoIds: topTokensCoingeckoIds,
+    enabled: isFocused && topTokensCoingeckoIds.length > 0
+  })
 
   const isLoadingFavorites = favoriteIds.length > 0 && isLoading
 
@@ -86,10 +87,25 @@ export const useWatchlist = (): UseWatchListReturnType => {
   ])
 
   const allTokens = useMemo(() => {
-    return [
-      ...Object.values(transformedTrendingTokens?.tokens ?? {}),
-      ...Object.values(topTokensResponse?.tokens ?? {})
-    ]
+    const seen = new Set<string>()
+    const tokens: MarketToken[] = []
+
+    const addUnique = (tokenList?: Record<string, MarketToken>): void => {
+      if (!tokenList) return
+
+      // deduplicate tokens with same internal id
+      for (const token of Object.values(tokenList)) {
+        if (token.id && !seen.has(token.id)) {
+          seen.add(token.id)
+          tokens.push(token)
+        }
+      }
+    }
+
+    addUnique(transformedTrendingTokens?.tokens)
+    addUnique(topTokensResponse?.tokens)
+
+    return tokens
   }, [topTokensResponse?.tokens, transformedTrendingTokens?.tokens])
 
   const topTokens = useMemo(() => {

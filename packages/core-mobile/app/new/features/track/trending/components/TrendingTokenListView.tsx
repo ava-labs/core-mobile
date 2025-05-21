@@ -23,7 +23,8 @@ export const TrendingTokenListView = memo(
     onBuyPress,
     formattedPrice,
     formattedPercentChange,
-    status
+    status,
+    showBuyButton
   }: {
     token: MarketToken
     isFavorite?: boolean
@@ -32,7 +33,8 @@ export const TrendingTokenListView = memo(
     formattedPercentChange?: string
     status: PriceChangeStatus
     onPress: () => void
-    onBuyPress: (initialTokenIdTo?: string) => void
+    onBuyPress: () => void
+    showBuyButton: boolean
   }) => {
     const renderLogo = useCallback(() => {
       if (index === 0) {
@@ -63,7 +65,8 @@ export const TrendingTokenListView = memo(
       <TouchableOpacity onPress={onPress}>
         <View
           style={{
-            paddingHorizontal: 16,
+            paddingLeft: 16,
+            paddingRight: 16,
             paddingVertical: 12,
             flexDirection: 'row'
           }}>
@@ -138,8 +141,10 @@ export const TrendingTokenListView = memo(
               type="secondary"
               size="small"
               style={styles.buyButton}
-              onPress={() => onBuyPress(token.id)}>
-              Buy
+              onPress={() => {
+                showBuyButton ? onBuyPress() : onPress()
+              }}>
+              {showBuyButton ? 'Buy' : 'View'}
             </Button>
           </View>
         </View>
@@ -149,9 +154,10 @@ export const TrendingTokenListView = memo(
   (prevProps, nextProps) => {
     return (
       prevProps.token.id === nextProps.token.id &&
-      (prevProps.formattedPrice === nextProps.formattedPrice ||
-        prevProps.formattedPercentChange === nextProps.formattedPercentChange ||
-        prevProps.isFavorite === nextProps.isFavorite)
+      prevProps.formattedPrice === nextProps.formattedPrice &&
+      prevProps.formattedPercentChange === nextProps.formattedPercentChange &&
+      prevProps.isFavorite === nextProps.isFavorite &&
+      prevProps.showBuyButton === nextProps.showBuyButton
     )
   }
 )

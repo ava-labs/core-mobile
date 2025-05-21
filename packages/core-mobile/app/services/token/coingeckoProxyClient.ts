@@ -5,8 +5,7 @@ import {
   CoinsContractInfoResponseSchema,
   CoinsSearchResponseSchema,
   ContractMarketChartResponseSchema,
-  RawSimplePriceResponseSchema,
-  SimplePriceResponseSchema
+  RawSimplePriceResponseSchema
 } from 'services/token/types'
 import { boolean, number, string } from 'zod'
 import Logger from 'utils/Logger'
@@ -88,32 +87,6 @@ export const coingeckoProxyClient = new Zodios(
       parameters: [{ name: 'query', type: 'Query', schema: string() }],
       alias: 'searchCoins',
       response: CoinsSearchResponseSchema
-    },
-    {
-      method: 'post',
-      path: '/simple/token_price/:id',
-      parameters: [
-        { name: 'id', type: 'Path', schema: string() },
-        { name: 'contract_addresses', type: 'Query', schema: string().array() },
-        { name: 'vs_currencies', type: 'Query', schema: string().array() },
-        {
-          name: 'include_market_cap',
-          type: 'Query',
-          schema: boolean().optional()
-        },
-        {
-          name: 'include_24hr_vol',
-          type: 'Query',
-          schema: boolean().optional()
-        },
-        {
-          name: 'include_24hr_change',
-          type: 'Query',
-          schema: boolean().optional()
-        }
-      ],
-      alias: 'simplePriceByContractAddresses',
-      response: SimplePriceResponseSchema
     }
   ],
   {

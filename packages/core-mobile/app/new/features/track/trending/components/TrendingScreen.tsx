@@ -7,12 +7,14 @@ import { LoadingState } from 'new/common/components/LoadingState'
 import React, { useMemo } from 'react'
 import { Dimensions } from 'react-native'
 import Animated from 'react-native-reanimated'
+import { MarketType } from 'store/watchlist/types'
+import { useIsSwapListLoaded } from 'common/hooks/useIsSwapListLoaded'
 import TrendingTokensScreen from './TrendingTokensScreen'
 
 export const TrendingScreen = ({
   goToMarketDetail
 }: {
-  goToMarketDetail: (tokenId: string) => void
+  goToMarketDetail: (tokenId: string, marketType: MarketType) => void
 }): JSX.Element => {
   const {
     trendingTokens,
@@ -20,6 +22,8 @@ export const TrendingScreen = ({
     isRefetchingTrendingTokens,
     refetchTrendingTokens
   } = useWatchlist()
+
+  const isSwapListLoaded = useIsSwapListLoaded()
 
   const emptyComponent = useMemo(() => {
     if (isRefetchingTrendingTokens) {
@@ -37,7 +41,14 @@ export const TrendingScreen = ({
     )
   }, [isRefetchingTrendingTokens, refetchTrendingTokens])
 
-  if (isLoadingTrendingTokens) {
+  const showLoading =
+    isLoadingTrendingTokens ||
+    // each token's swapability depends on the swap list
+    // thus, we need to wait for the swap list to load
+    // so that we can display the buy button accordingly
+    !isSwapListLoaded
+
+  if (showLoading) {
     return <LoadingState sx={{ height: portfolioTabContentHeight * 1.5 }} />
   }
 
