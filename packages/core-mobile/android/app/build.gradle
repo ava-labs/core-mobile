@@ -99,10 +99,9 @@ android {
         versionName rootProject.ext.appVersionName
         versionCode rootProject.ext.appBuildNumber
 
-        testBuildType System.getProperty('testBuildType', 'debug')  // To control the test apk build type
+        testBuildType System.getProperty('testBuildType', 'e2e')  // To control the test apk build type
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
         missingDimensionStrategy 'detox', 'full'
-
 
         // required for react native config to work properly across different build variants
         resValue "string", "build_config_package", "com.avaxwallet"

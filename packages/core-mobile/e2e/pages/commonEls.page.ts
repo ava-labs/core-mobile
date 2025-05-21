@@ -288,19 +288,6 @@ class CommonElsPage {
     await Actions.tapElementAtIndex(this.reloadSVG, index)
   }
 
-  //// NEW GEN ////
-
-  async exitMetro() {
-    try {
-      if (await Actions.isVisible(by.text(/.*8081.*/i), 0)) {
-        await Actions.tap(by.text(/.*8081.*/i))
-      }
-      await Actions.tap(by.id(/.*x-icon.*/i))
-    } catch (e) {
-      console.log('Metro dev menu is not found...')
-    }
-  }
-
   async tapNext() {
     await Actions.tap(this.next)
   }

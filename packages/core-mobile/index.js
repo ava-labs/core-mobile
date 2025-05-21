@@ -22,7 +22,9 @@ import { server } from './tests/msw/native/server'
 
 if (__DEV__) {
   require('./ReactotronConfig')
+
   DevDebuggingConfig.LOGBOX_DISABLED && LogBox.ignoreAllLogs(true)
+
   // eslint-disable-next-line no-console
   console.reportErrorsAsExceptions = false
 }

@@ -22,12 +22,9 @@ export const warmup = async (newInstance = false) => {
   if (newInstance) {
     initialArgs.newInstance = true
   }
-  console.log("YOU ")
+
   await device.launchApp(initialArgs)
-  console.log("are ")
-  // Metro Dev Menu Check
-  await commonElsPage.exitMetro()
-  console.log("here! ")
+
   // Jailbreak Check
   if (await Action.isVisible(CommonElsPage.jailbrokenWarning, 0)) {
     console.log('Handling Jailbroken warning...')

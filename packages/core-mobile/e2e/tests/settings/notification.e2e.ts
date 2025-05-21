@@ -20,10 +20,10 @@ describe('Settings - Notifications', () => {
     await settingsPage.verifyNotificationsScreen(notiData)
   })
 
-  // Object.entries(notiData).forEach(([title]) => {
-  //   it(`should toggle ${title} notification`, async () => {
-  //     await settingsPage.toggleAndVerify('enabled', title)
-  //     await settingsPage.toggleAndVerify('disabled', title)
-  //   })
-  // })
+  Object.entries(notiData).forEach(([title]) => {
+    it(`should toggle ${title} notification`, async () => {
+      await settingsPage.toggleAndVerify('enabled', title)
+      await settingsPage.toggleAndVerify('disabled', title)
+    })
+  })
 })
