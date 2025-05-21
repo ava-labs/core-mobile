@@ -37,7 +37,6 @@ import { useSendSelectedToken } from 'features/send/store'
 import { useAddStake } from 'features/stake/hooks/useAddStake'
 import { AVAX_TOKEN_ID } from 'common/consts/swap'
 import { useNavigateToSwap } from 'features/swap/hooks/useNavigateToSwap'
-import useCChainNetwork from 'hooks/earn/useCChainNetwork'
 import { UI, useIsUIDisabledForNetwork } from 'hooks/useIsUIDisabled'
 import React, { useCallback, useMemo, useRef, useState } from 'react'
 import {
@@ -53,6 +52,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useSelector } from 'react-redux'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import {
+  AVAX_P_ID,
   selectIsBalancesAccurateByNetwork,
   selectIsLoadingBalances
 } from 'store/balance'
@@ -61,6 +61,7 @@ import { selectSelectedCurrency } from 'store/settings/currency'
 import { selectIsPrivacyModeEnabled } from 'store/settings/securityPrivacy'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import { useNetworks } from 'hooks/networks/useNetworks'
+import { ChainId } from '@avalabs/core-chains-sdk'
 
 export const TokenDetailScreen = (): React.JSX.Element => {
   const {
@@ -131,12 +132,17 @@ export const TokenDetailScreen = (): React.JSX.Element => {
       )
   )
 
-  const cChainNetwork = useCChainNetwork()
   const isTokenStakable = useMemo(
     () =>
-      token?.networkChainId === cChainNetwork?.chainId &&
-      token?.localId === AVAX_TOKEN_ID,
-    [cChainNetwork, token]
+      (token?.networkChainId === ChainId.AVALANCHE_MAINNET_ID &&
+        token?.localId === AVAX_TOKEN_ID) ||
+      (token?.networkChainId === ChainId.AVALANCHE_TESTNET_ID &&
+        token?.localId === AVAX_TOKEN_ID) ||
+      (token?.networkChainId === ChainId.AVALANCHE_P &&
+        token?.localId === AVAX_P_ID) ||
+      (token?.networkChainId === ChainId.AVALANCHE_TEST_P &&
+        token?.localId === AVAX_P_ID),
+    [token]
   )
 
   const handleBridge = useCallback(() => {

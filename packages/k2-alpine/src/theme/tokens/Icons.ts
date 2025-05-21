@@ -80,7 +80,7 @@ import IconWalletClosed from '../../assets/icons/wallet_closed.svg'
 import IconSwapVertical from '../../assets/icons/swap_vertical.svg'
 import IconBalanceRefresh from '../../assets/icons/balance_refresh.svg'
 import IconCategory from '../../assets/icons/category.svg'
-
+import IconQRScanCustom from '../../assets/icons/qr_scan_custom.svg'
 // Transaction types
 import IconTxTypeAdd from '../../assets/icons/tx-type-add.svg'
 import IconTxTypeAdvanceTime from '../../assets/icons/advance-time.svg'
@@ -281,6 +281,7 @@ export const Icons = {
     CheckSmall: IconCheckSmall,
     ContractCall: IconTxTypeContractCall,
     Receive: IconTxTypeReceive,
+    QRScanCustom: IconQRScanCustom,
     TxTypeSend: IconTxTypeSend,
     Compare: IconCompare,
     Bridge: IconTxTypeBridge,
