@@ -9,7 +9,8 @@ export enum ViewOnceKey {
   STAKE_ONBOARDING,
   BRIDGE_ONBOARDING,
   SWAP_ONBOARDING,
-  SEND_ONBOARDING
+  SEND_ONBOARDING,
+  MIGRATE_TOKEN_FAVORITE_IDS
 }
 
 export type ViewOnceObjectType = {
