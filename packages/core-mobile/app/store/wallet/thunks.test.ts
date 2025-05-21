@@ -23,8 +23,7 @@ describe('wallet thunks', () => {
       walletId: 'test-wallet-1',
       encryptedWalletKey: 'encrypted-key',
       isResetting: false,
-      type: WalletType.MNEMONIC,
-      isActive: true
+      type: WalletType.MNEMONIC
     }
 
     it('should successfully store wallet with PIN', async () => {
@@ -53,8 +52,7 @@ describe('wallet thunks', () => {
       expect(result.payload).toEqual({
         id: mockParams.walletId,
         name: 'MNEMONIC Wallet 1',
-        type: mockParams.type,
-        isActive: mockParams.isActive
+        type: mockParams.type
       })
     })
 
