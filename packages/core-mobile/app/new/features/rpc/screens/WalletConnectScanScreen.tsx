@@ -7,24 +7,16 @@ import {
   useTheme,
   View
 } from '@avalabs/k2-alpine'
-import { Platform, View as RNView } from 'react-native'
 import { LinearGradientBottomWrapper } from 'common/components/LinearGradientBottomWrapper'
 import { QrCodeScanner } from 'common/components/QrCodeScanner'
 import { useDeeplink } from 'contexts/DeeplinkContext/DeeplinkContext'
 import { DeepLinkOrigin } from 'contexts/DeeplinkContext/types'
 import { useRouter } from 'expo-router'
-import React, {
-  useCallback,
-  useLayoutEffect,
-  useMemo,
-  useRef,
-  useState
-} from 'react'
+import React, { useCallback, useMemo, useState } from 'react'
 import {
   KeyboardStickyView,
   useKeyboardState
 } from 'react-native-keyboard-controller'
-import { useSharedValue } from 'react-native-reanimated'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { LinearGradient } from 'expo-linear-gradient'
 
@@ -37,17 +29,6 @@ export const WalletConnectScanScreen = (): React.JSX.Element => {
   const router = useRouter()
   const { setPendingDeepLink } = useDeeplink()
   const [wcLink, setWcLink] = useState('')
-  const footerRef = useRef<RNView>(null)
-  const footerHeight = useSharedValue<number>(0)
-
-  useLayoutEffect(() => {
-    if (footerRef.current) {
-      // eslint-disable-next-line max-params
-      footerRef.current.measure((x, y, width, height) => {
-        footerHeight.value = height
-      })
-    }
-  }, [footerHeight])
 
   const handleOnChangeText = useCallback(
     (value: string) => {
@@ -107,15 +88,14 @@ export const WalletConnectScanScreen = (): React.JSX.Element => {
     return (
       <View
         style={{
-          marginTop: 30,
-          marginBottom: footerHeight.value - (Platform.OS === 'ios' ? 40 : 50),
+          flex: 1,
           alignItems: 'center'
         }}>
         <QrCodeScanner
           onSuccess={handleOnChangeText}
           vibrate={true}
           sx={{
-            height: '100%',
+            flex: 1,
             width: SCANNER_WIDTH
           }}
         />
@@ -124,7 +104,7 @@ export const WalletConnectScanScreen = (): React.JSX.Element => {
           colors={blackLinearGradientColors}
           style={{
             position: 'absolute',
-            bottom: 0,
+            bottom: -0.5,
             left: 0,
             right: 0,
             height: 60,
@@ -150,7 +130,7 @@ export const WalletConnectScanScreen = (): React.JSX.Element => {
         </Text>
       </View>
     )
-  }, [handleOnChangeText, footerHeight.value, blackLinearGradientColors])
+  }, [handleOnChangeText, blackLinearGradientColors])
 
   return (
     <View style={{ flex: 1 }}>
@@ -158,7 +138,12 @@ export const WalletConnectScanScreen = (): React.JSX.Element => {
         scrollEnabled={false}
         keyboardDismissMode="interactive"
         keyboardShouldPersistTaps="handled"
-        showsVerticalScrollIndicator={false}>
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{
+          flex: 1,
+          marginTop: 30,
+          marginBottom: insets.bottom + 12
+        }}>
         {renderScanner()}
       </ScrollView>
       <KeyboardStickyView
@@ -169,9 +154,7 @@ export const WalletConnectScanScreen = (): React.JSX.Element => {
         }}>
         <LinearGradientBottomWrapper enabled={keyboard?.isVisible}>
           <View
-            ref={footerRef}
             style={{
-              backgroundColor: 'red',
               padding: 16,
               paddingTop: 0
             }}>
