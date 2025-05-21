@@ -117,7 +117,7 @@ export const ContactForm = ({
         <View sx={{ gap: 24, alignItems: 'center' }}>
           <Text
             variant="heading2"
-            sx={{ color: '$textPrimary' }}
+            sx={{ color: '$textPrimary', lineHeight: 44 }}
             numberOfLines={4}>
             {contact.name}
           </Text>

@@ -192,7 +192,7 @@ export const AddCustomTokenScreen = (): JSX.Element => {
               {selectedNetwork.chainName}
             </Text>
             <View sx={{ marginHorizontal: 8 }}>
-              <Icons.Navigation.ChevronRightV2 />
+              <Icons.Navigation.ChevronRightV2 color={colors.$textSecondary} />
             </View>
           </View>
         ) : (
@@ -207,7 +207,7 @@ export const AddCustomTokenScreen = (): JSX.Element => {
               Select
             </Text>
             <View sx={{ marginHorizontal: 8 }}>
-              <Icons.Navigation.ChevronRightV2 />
+              <Icons.Navigation.ChevronRightV2 color={colors.$textSecondary} />
             </View>
           </View>
         )}
