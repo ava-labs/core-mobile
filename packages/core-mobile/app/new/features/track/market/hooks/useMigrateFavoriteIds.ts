@@ -48,7 +48,7 @@ export const useMigrateFavoriteIds = (): {
         // if the token is in the top tokens, we need to remove it from the favorites
         // and add it again with the new id
         dispatch(toggleWatchListFavorite(favoriteId))
-        dispatch(toggleWatchListFavorite(topToken.id.toLowerCase()))
+        dispatch(toggleWatchListFavorite(topToken.id))
         return
       }
       const trendingToken = trendingTokens.find(token =>
@@ -58,7 +58,7 @@ export const useMigrateFavoriteIds = (): {
         // if the token is in the trending tokens, we need to remove it from the favorites
         // and add it again with the new id
         dispatch(toggleWatchListFavorite(favoriteId))
-        dispatch(toggleWatchListFavorite(trendingToken.id.toLowerCase()))
+        dispatch(toggleWatchListFavorite(trendingToken.id))
       }
     })
 
