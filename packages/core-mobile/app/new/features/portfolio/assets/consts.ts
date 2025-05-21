@@ -4,7 +4,7 @@ export enum ActionButtonTitle {
   Buy = 'Buy',
   Stake = 'Stake',
   Bridge = 'Bridge',
-  Connect = 'Connect',
+  Receive = 'Receive',
   Hide = 'Hide',
   Unhide = 'Unhide'
 }

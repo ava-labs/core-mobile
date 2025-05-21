@@ -1,6 +1,6 @@
 import { AccountSettingBarButton } from 'common/components/AccountSettingBarButton'
 import { StackNavigationOptions } from '@react-navigation/stack'
-import { ReceiveBarButton } from 'common/components/ReceiveBarButton'
+import { ConnectButton } from 'common/components/ConnectButton'
 import React from 'react'
 import { View } from '@avalabs/k2-alpine'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
@@ -22,7 +22,7 @@ export function useHomeScreenOptions(): StackNavigationOptions {
             height: '100%',
             alignItems: 'center'
           }}>
-          <ReceiveBarButton />
+          <ConnectButton />
           {/* <Link href="/notifications/" asChild>
               <NotificationBarButton />
             </Link> */}

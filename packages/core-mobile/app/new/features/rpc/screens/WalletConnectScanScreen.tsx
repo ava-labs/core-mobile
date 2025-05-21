@@ -1,9 +1,11 @@
 import {
   alpha,
+  Icons,
   SCREEN_WIDTH,
   ScrollView,
   Text,
   TextInput,
+  Tooltip,
   useTheme,
   View
 } from '@avalabs/k2-alpine'
@@ -19,6 +21,7 @@ import {
 } from 'react-native-keyboard-controller'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { LinearGradient } from 'expo-linear-gradient'
+import ScreenHeader from 'common/components/ScreenHeader'
 
 const SCANNER_WIDTH = SCREEN_WIDTH - 32
 
@@ -51,18 +54,29 @@ export const WalletConnectScanScreen = (): React.JSX.Element => {
           flexDirection: 'row',
           justifyContent: 'space-between'
         }}>
-        <View sx={{ width: '100%' }}>
-          <Text
-            variant="body2"
+        <View sx={{ width: '100%', paddingTop: 12 }}>
+          <View
             sx={{
-              paddingHorizontal: 16,
-              paddingTop: 16,
-              fontSize: 11,
-              lineHeight: 14,
-              color: '$textSecondary'
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'flex-start'
             }}>
-            Connection URI
-          </Text>
+            <Text
+              variant="body2"
+              sx={{
+                paddingLeft: 16,
+                paddingRight: 10,
+                fontSize: 11,
+                lineHeight: 14,
+                color: '$textSecondary'
+              }}>
+              Connection URI
+            </Text>
+            <Tooltip
+              title="Connection URI"
+              description="Use this to manually connect"
+            />
+          </View>
           <TextInput
             onChangeText={handleOnChangeText}
             numberOfLines={1}
@@ -113,24 +127,33 @@ export const WalletConnectScanScreen = (): React.JSX.Element => {
             marginHorizontal: 16
           }}
         />
-        <Text
-          variant="subtitle1"
+        <View
           sx={{
             position: 'absolute',
             bottom: 0,
             left: 0,
             right: 0,
             marginHorizontal: 16,
-            textAlign: 'center',
-            color: '$white',
-            fontWeight: '500',
-            marginBottom: 12
+            marginBottom: 12,
+            flexDirection: 'row',
+            justifyContent: 'center',
+            alignItems: 'center'
           }}>
-          WalletConnect QR Code
-        </Text>
+          <Icons.Custom.Connect color={theme.colors.$white} />
+          <Text
+            variant="subtitle1"
+            sx={{
+              textAlign: 'center',
+              color: '$white',
+              fontWeight: '500',
+              marginLeft: 8
+            }}>
+            WalletConnect QR Code
+          </Text>
+        </View>
       </View>
     )
-  }, [handleOnChangeText, blackLinearGradientColors])
+  }, [handleOnChangeText, blackLinearGradientColors, theme.colors.$white])
 
   return (
     <View style={{ flex: 1 }}>
@@ -144,6 +167,10 @@ export const WalletConnectScanScreen = (): React.JSX.Element => {
           marginTop: 30,
           marginBottom: insets.bottom + 12
         }}>
+        <ScreenHeader
+          title={'Connect'}
+          titleSx={{ marginLeft: 16, marginTop: 24 }}
+        />
         {renderScanner()}
       </ScrollView>
       <KeyboardStickyView

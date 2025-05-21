@@ -62,9 +62,9 @@ export type SquareButtonIconType =
   | 'send'
   | 'stake'
   | 'buy'
-  | 'connect'
   | 'hide'
   | 'show'
+  | 'receive'
 
 const iconComponents = {
   bridge: Icons.Custom.SwitchRight,
@@ -72,9 +72,9 @@ const iconComponents = {
   send: Icons.Custom.Send,
   stake: Icons.Custom.Psychiatry,
   buy: Icons.Content.Add,
-  connect: Icons.Custom.Connect,
   hide: Icons.Action.VisibilityOff,
-  show: Icons.Action.VisibilityOn
+  show: Icons.Action.VisibilityOn,
+  receive: Icons.Communication.QRCode2
 }
 
 const getIcon = (
