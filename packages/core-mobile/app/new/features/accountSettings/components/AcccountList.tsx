@@ -145,11 +145,10 @@ export const AccountList = (): React.JSX.Element => {
                 variant="body2"
                 sx={{
                   fontWeight: '500',
-                  paddingHorizontal: 30
+                  paddingHorizontal: 25,
+                  textAlign: 'center'
                 }}>
-                {accounts.length > 1
-                  ? `Manage all ${accounts.length} accounts`
-                  : 'Manage account'}
+                {'Manage all or add a wallet'}
               </Text>
             </AnimatedPressable>
           </Animated.View>

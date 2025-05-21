@@ -29,7 +29,7 @@ export const SlippageInput = ({
   const handlePress = useCallback(() => {
     showAlertWithTextInput({
       title: 'Custom slippage',
-      description: 'Allowed range: 0.1% - 100%',
+      description: 'Allowed range: 0.1% - 50%',
       inputs: [
         {
           key: inputKey,
