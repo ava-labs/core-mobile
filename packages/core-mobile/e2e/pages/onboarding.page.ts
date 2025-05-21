@@ -2,8 +2,8 @@ import onboardingLoc from '../locators/onboarding.loc'
 import Assert from '../helpers/assertions'
 import Action from '../helpers/actions'
 import delay from '../helpers/waits'
-import commonElsPage from './commonEls.page'
 import actions from '../helpers/actions'
+import commonElsPage from './commonEls.page'
 
 class OnboardingPage {
   get continueWithGoogle() {
