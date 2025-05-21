@@ -8,10 +8,12 @@ const start = { x: 0.5, y: 0 }
 const end = { x: 0.5, y: 0.5 }
 export const LinearGradientBottomWrapper = ({
   children,
-  shouldDelayBlurOniOS = false
+  shouldDelayBlurOniOS = false,
+  enabled = true
 }: {
   children?: React.ReactNode
   shouldDelayBlurOniOS?: boolean
+  enabled?: boolean
 }): React.JSX.Element => {
   const { theme } = useTheme()
 
@@ -25,13 +27,15 @@ export const LinearGradientBottomWrapper = ({
 
   return (
     <View style={styles.container}>
-      <LinearGradient
-        pointerEvents="none"
-        colors={colors}
-        style={styles.gradient}
-        start={start}
-        end={end}
-      />
+      {enabled && (
+        <LinearGradient
+          pointerEvents="none"
+          colors={colors}
+          style={styles.gradient}
+          start={start}
+          end={end}
+        />
+      )}
       <BlurViewWithFallback shouldDelayBlurOniOS={shouldDelayBlurOniOS}>
         {children}
       </BlurViewWithFallback>
