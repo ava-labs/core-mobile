@@ -57,7 +57,8 @@ const AddOrConnectWalletScreen = (): JSX.Element => {
 
   const data = useMemo(() => {
     const handleTypeRecoveryPhrase = (): void => {
-      showSnackbar('TBD')
+      // @ts-ignore TODO: make routes typesafe
+      navigate({ pathname: '/accountSettings/importSeedWallet' })
     }
 
     const handleImportPrivateKey = (): void => {

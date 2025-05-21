@@ -88,13 +88,18 @@ export const selectActiveAccount = (state: RootState): Account | undefined => {
   return state.account.accounts[activeAccountId]
 }
 
-//TODO: order accounts by index
 export const selectAccountsByWalletId =
   (walletId: string) =>
   (state: RootState): Account[] => {
-    return Object.values(state.account.accounts).filter(
-      account => account.walletId === walletId
-    )
+    return Object.values(state.account.accounts)
+      .filter(account => account.walletId === walletId)
+      .sort((a, b) => {
+        //sort by index if it exists
+        if ('index' in a && 'index' in b) {
+          return a.index - b.index
+        }
+        return 0
+      })
   }
 
 export const selectAccountByIndex =

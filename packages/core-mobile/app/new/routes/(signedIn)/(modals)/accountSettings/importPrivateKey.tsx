@@ -28,7 +28,6 @@ import {
 } from 'store/balance'
 import { useFormatCurrency } from 'new/common/hooks/useFormatCurrency'
 import { selectTokenVisibility } from 'store/portfolio'
-import { selectWallets } from 'store/wallet/slice'
 import { importPrivateKeyAccountAndCreateWallet } from 'store/wallet/thunks'
 
 interface DerivedAddress {
