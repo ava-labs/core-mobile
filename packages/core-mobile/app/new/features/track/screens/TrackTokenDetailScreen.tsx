@@ -45,12 +45,15 @@ import { formatLargeCurrency } from 'utils/Utils'
 import { useTokenDetails } from 'common/hooks/useTokenDetails'
 import { useGetPrices } from 'hooks/watchlist/useGetPrices'
 import { useIsFocused } from '@react-navigation/native'
+import { MarketType } from 'store/watchlist'
+import { AVAX_COINGECKO_ID } from 'consts/coingecko'
+import { useIsSwapListLoaded } from 'common/hooks/useIsSwapListLoaded'
 
 const TrackTokenDetailScreen = (): JSX.Element => {
   const { theme } = useTheme()
-  const { tokenId, searchText } = useLocalSearchParams<{
+  const { tokenId, marketType } = useLocalSearchParams<{
     tokenId: string
-    searchText: string
+    marketType: MarketType
   }>()
   const { back, navigate } = useRouter()
   const [isChartInteracting, setIsChartInteracting] = useState(false)
@@ -73,14 +76,22 @@ const TrackTokenDetailScreen = (): JSX.Element => {
     tokenInfo,
     isFavorite,
     handleFavorite,
-    openUrl
-  } = useTokenDetails({ tokenId: tokenId ?? '', searchText })
+    openUrl,
+    coingeckoId,
+    chainId
+  } = useTokenDetails({ tokenId: tokenId, marketType })
   const isFocused = useIsFocused()
 
-  const { data: prices } = useGetPrices(
-    [tokenId],
-    isFocused && tokenInfo !== undefined && tokenInfo.currentPrice === undefined
-  )
+  const { data: prices } = useGetPrices({
+    coingeckoIds: [coingeckoId],
+    enabled:
+      isFocused &&
+      tokenInfo !== undefined &&
+      tokenInfo.currentPrice === undefined &&
+      coingeckoId.length > 0
+  })
+
+  const isSwapListLoaded = useIsSwapListLoaded()
 
   const selectedSegmentIndex = useSharedValue(0)
 
@@ -184,9 +195,9 @@ const TrackTokenDetailScreen = (): JSX.Element => {
     navigate({
       // @ts-ignore TODO: make routes typesafe
       pathname: '/trackTokenDetail/share',
-      params: { tokenId, searchText }
+      params: { tokenId, marketType }
     })
-  }, [navigate, searchText, tokenId])
+  }, [navigate, marketType, tokenId])
 
   const marketData = useMemo(() => {
     const data: GroupListItem[] = []
@@ -277,6 +288,9 @@ const TrackTokenDetailScreen = (): JSX.Element => {
   }, [tokenInfo, theme, handlePressWebsite, handlePressTwitter])
 
   const renderHeaderRight = useCallback(() => {
+    // favorite feature is only available for tokens that exist in our database
+    const showFavoriteButton = marketType !== MarketType.SEARCH
+
     return (
       <View
         sx={{
@@ -286,11 +300,13 @@ const TrackTokenDetailScreen = (): JSX.Element => {
           marginRight: 18,
           alignItems: 'center'
         }}>
-        <FavoriteBarButton isFavorite={isFavorite} onPress={handleFavorite} />
+        {showFavoriteButton && (
+          <FavoriteBarButton isFavorite={isFavorite} onPress={handleFavorite} />
+        )}
         <ShareBarButton onPress={handleShare} />
       </View>
     )
-  }, [isFavorite, handleFavorite, handleShare])
+  }, [isFavorite, handleFavorite, handleShare, marketType])
 
   useEffect(() => {
     headerOpacity.value = withTiming(isChartInteracting ? 0 : 1, {
@@ -301,14 +317,24 @@ const TrackTokenDetailScreen = (): JSX.Element => {
   const renderFooter = useCallback(() => {
     return (
       <TokenDetailFooter
-        tokenId={tokenId}
-        tokenInfo={tokenInfo}
+        isAVAX={coingeckoId === AVAX_COINGECKO_ID}
+        marketType={marketType}
+        contractAddress={tokenInfo?.contractAddress}
+        chainId={chainId}
         onBuy={handleBuy}
         onStake={addStake}
         onSwap={handleSwap}
       />
     )
-  }, [tokenId, tokenInfo, handleBuy, addStake, handleSwap])
+  }, [
+    coingeckoId,
+    tokenInfo?.contractAddress,
+    chainId,
+    marketType,
+    handleBuy,
+    addStake,
+    handleSwap
+  ])
 
   const renderHeader = useCallback(() => {
     if (!tokenInfo) {
@@ -319,7 +345,7 @@ const TrackTokenDetailScreen = (): JSX.Element => {
         logoUri={tokenInfo.logoUri}
         symbol={tokenInfo.symbol ?? ''}
         currentPrice={
-          tokenInfo.currentPrice ?? prices?.[tokenId]?.priceInCurrency
+          tokenInfo.currentPrice ?? prices?.[coingeckoId]?.priceInCurrency
         }
         ranges={
           ranges.minDate === 0 && ranges.maxDate === 0 ? undefined : ranges
@@ -327,9 +353,17 @@ const TrackTokenDetailScreen = (): JSX.Element => {
         rank={tokenInfo?.marketCapRank}
       />
     )
-  }, [tokenInfo, prices, tokenId, ranges])
+  }, [tokenInfo, prices, ranges, coingeckoId])
 
-  if (!tokenId || !tokenInfo) {
+  const showLoading =
+    !tokenId ||
+    !tokenInfo ||
+    // the token's swapability depends on the swap list
+    // thus, we need to wait for the swap list to load
+    // so that we can display the swap button accordingly
+    !isSwapListLoaded
+
+  if (showLoading) {
     return <LoadingState sx={styles.container} />
   }
 

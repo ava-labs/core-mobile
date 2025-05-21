@@ -20,16 +20,20 @@ import { copyToClipboard } from 'common/utils/clipboard'
 import * as SMS from 'expo-sms'
 import { CORE_WEB_URL } from 'common/consts'
 import { ScrollScreen } from 'common/components/ScrollScreen'
+import { MarketType } from 'store/watchlist/types'
 
 const ShareMarketTokenScreen = (): JSX.Element => {
   const { theme } = useTheme()
-  const { tokenId, searchText } = useLocalSearchParams<{
+  const { tokenId, marketType } = useLocalSearchParams<{
     tokenId: string
-    searchText: string
+    marketType: MarketType
   }>()
   const [viewWidth, setViewWidth] = useState<number>()
   const viewShotRef = useRef<ViewShot>(null)
-  const { tokenInfo } = useTokenDetails({ tokenId: tokenId ?? '', searchText })
+  const { tokenInfo } = useTokenDetails({
+    tokenId: tokenId,
+    marketType
+  })
 
   const handleLayout = (event: LayoutChangeEvent): void => {
     setViewWidth(event.nativeEvent.layout.width)
@@ -148,7 +152,7 @@ const ShareMarketTokenScreen = (): JSX.Element => {
                 overflow: 'hidden'
               }}>
               <ViewShot ref={viewShotRef}>
-                <ShareChart tokenId={tokenId} searchText={searchText} />
+                <ShareChart tokenId={tokenId} marketType={marketType} />
               </ViewShot>
             </View>
           </View>

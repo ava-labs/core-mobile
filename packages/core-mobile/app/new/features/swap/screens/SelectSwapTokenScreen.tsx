@@ -49,7 +49,8 @@ export const SelectSwapTokenScreen = ({
     return filteredTokenList.filter(
       token =>
         token.name.toLowerCase().includes(searchText.toLowerCase()) ||
-        token.symbol.toLowerCase().includes(searchText.toLowerCase())
+        token.symbol.toLowerCase().includes(searchText.toLowerCase()) ||
+        token.localId.toLowerCase().includes(searchText.toLowerCase())
     )
   }, [filteredTokenList, searchText])
 

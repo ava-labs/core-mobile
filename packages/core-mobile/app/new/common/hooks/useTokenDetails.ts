@@ -15,13 +15,12 @@ import { getSocialHandle } from 'utils/getSocialHandle/getSocialHandle'
 import { Ranges } from 'services/token/types'
 import { selectSelectedCurrency } from 'store/settings/currency'
 import { useCoreBrowser } from 'new/common/hooks/useCoreBrowser'
-import { useTokenSearch } from './useTokenSearch'
+import { getTokenChainId } from 'features/track/utils/utils'
 
 const isTrendingToken = (token: MarketToken | undefined): boolean =>
   token !== undefined && token.marketType === MarketType.TRENDING
 
 type TokenInfo = {
-  marketType: MarketType
   marketTotalSupply?: number
   twitterHandle: string | undefined
   marketCirculatingSupply?: number
@@ -39,15 +38,17 @@ type TokenInfo = {
 }
 
 export const useTokenDetails = ({
-  tokenId,
-  searchText
+  marketType,
+  tokenId
 }: {
+  marketType: MarketType
   tokenId: string
-  searchText?: string
 }): {
   isFavorite: boolean
   openUrl: ({ url, title }: { url: string; title: string }) => void
   handleFavorite: () => void
+  chainId: number | undefined
+  coingeckoId: string
   tokenInfo: TokenInfo | undefined
   chartData: { date: Date; value: number }[] | undefined
   ranges: {
@@ -64,32 +65,19 @@ export const useTokenDetails = ({
   noData: boolean
   // eslint-disable-next-line sonarjs/cognitive-complexity
 } => {
-  const {
-    getWatchlistPrice,
-    getMarketTokenById,
-    getWatchlistChart,
-    isLoadingTopTokens,
-    isLoadingTrendingTokens,
-    allTokens
-  } = useWatchlist()
-  const { data: trendingTokenData } = useGetTrendingToken(tokenId)
-  const token = getMarketTokenById(tokenId)
-  const { data: searchResults } = useTokenSearch({
-    isFetchingTokens: isLoadingTopTokens || isLoadingTrendingTokens,
-    items: allTokens,
-    searchText
-  })
-  const tokenFromSearchByTokenId = searchResults?.tokens.find(
-    tk => tk.id === tokenId
+  const { getWatchlistPrice, getMarketTokenById, getWatchlistChart } =
+    useWatchlist()
+  const { data: trendingTokenData } = useGetTrendingToken(
+    marketType === MarketType.TRENDING ? tokenId : undefined
   )
-  // only top tokens have coingeckoId and it is the same as the token id
-  // trending tokens don't have them (the coingeckoId field is always empty)
+  const token = getMarketTokenById(tokenId)
+
+  // when searching, the token id is actually the coingecko id
   const coingeckoId =
-    token?.marketType === MarketType.TOP
-      ? token.id
-      : tokenFromSearchByTokenId?.marketType === MarketType.TOP
-      ? tokenFromSearchByTokenId.id
-      : ''
+    marketType === MarketType.SEARCH ? tokenId : token?.coingeckoId ?? ''
+
+  const chainId =
+    marketType === MarketType.SEARCH ? undefined : getTokenChainId(token)
 
   const dispatch = useDispatch()
   const isFavorite = useSelector(selectIsWatchlistFavorite(tokenId))
@@ -120,10 +108,10 @@ export const useTokenDetails = ({
           vol24: trendingTokenData.volume24hUSD ?? 0
         }
       )
-    } else if (coingeckoId) {
-      return getWatchlistPrice(coingeckoId)
     }
-  }, [coingeckoId, trendingTokenData, getWatchlistPrice, token])
+
+    return getWatchlistPrice(tokenId)
+  }, [trendingTokenData, getWatchlistPrice, token, tokenId])
 
   // get chart data
   useEffect(() => {
@@ -155,13 +143,13 @@ export const useTokenDetails = ({
       }
     }
 
-    if (isTrendingToken(token)) {
-      extractChartData()
-    } else if (coingeckoId) {
-      InteractionManager.runAfterInteractions(() => {
+    InteractionManager.runAfterInteractions(() => {
+      if (coingeckoId) {
         getChartDataFromCoingecko()
-      })
-    }
+      } else {
+        extractChartData()
+      }
+    })
   }, [getWatchlistChart, token, tokenId, chartDays, coingeckoId, currency])
 
   // get market cap, volume, etc
@@ -169,7 +157,6 @@ export const useTokenDetails = ({
     const extractMarketDetails = (): void => {
       trendingTokenData &&
         setTokenInfo({
-          marketType: MarketType.TRENDING,
           twitterHandle: trendingTokenData.twitter
             ? getSocialHandle(trendingTokenData.twitter)
             : undefined,
@@ -193,7 +180,6 @@ export const useTokenDetails = ({
       if (!data) return
 
       setTokenInfo({
-        marketType: MarketType.TOP,
         // @ts-ignore total_supply exists in CoinsInfoResponse
         marketTotalSupply: data.market_data.total_supply ?? 0,
         twitterHandle: data.links?.twitter_screen_name ?? undefined,
@@ -213,13 +199,13 @@ export const useTokenDetails = ({
       })
     }
 
-    if (isTrendingToken(token)) {
-      extractMarketDetails()
-    } else if (coingeckoId) {
-      InteractionManager.runAfterInteractions(() => {
+    InteractionManager.runAfterInteractions(() => {
+      if (coingeckoId) {
         getMarketDetailsFromCoingecko()
-      })
-    }
+      } else if (isTrendingToken(token)) {
+        extractMarketDetails()
+      }
+    })
   }, [
     coingeckoId,
     currency,
@@ -240,6 +226,8 @@ export const useTokenDetails = ({
 
   return {
     isFavorite,
+    coingeckoId,
+    chainId,
     openUrl,
     handleFavorite,
     tokenInfo,

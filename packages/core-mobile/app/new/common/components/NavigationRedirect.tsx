@@ -12,7 +12,6 @@ import { useRootNavigationState, useRouter, usePathname } from 'expo-router'
 import { useNavigation, useFocusEffect } from '@react-navigation/native'
 import { StackActions } from '@react-navigation/native'
 import { BackHandler } from 'react-native'
-import { showAlert } from '@avalabs/k2-alpine'
 
 export const NavigationRedirect = (): null => {
   const router = useRouter()
@@ -88,19 +87,7 @@ export const NavigationRedirect = (): null => {
     useCallback(() => {
       const onBackPress = (): boolean => {
         if (!router.canGoBack()) {
-          showAlert({
-            title: 'Are you sure?',
-            description: 'You will exit the app',
-            buttons: [
-              { text: 'Cancel' },
-              {
-                text: 'Got it',
-                onPress: () => {
-                  BackHandler.exitApp()
-                }
-              }
-            ]
-          })
+          BackHandler.exitApp()
           return true
         } else {
           return false
