@@ -177,8 +177,9 @@ export const ScrollScreen = ({
 
   const animatedContentContainerStyle = useAnimatedStyle(() => {
     return {
-      paddingBottom: insets.bottom + 32,
-      paddingTop: headerHeight
+      paddingBottom: disableStickyFooter
+        ? insets.bottom + 24
+        : footerHeight.value
     }
   })
 
@@ -200,11 +201,9 @@ export const ScrollScreen = ({
           }}
           contentContainerStyle={[
             props?.contentContainerStyle,
+            animatedContentContainerStyle,
             {
-              paddingTop: headerHeight,
-              paddingBottom: disableStickyFooter
-                ? insets.bottom + 24
-                : footerHeight.value
+              paddingTop: headerHeight
             }
           ]}
           onScroll={onScroll}>
@@ -275,7 +274,10 @@ export const ScrollScreen = ({
         {...props}
         contentContainerStyle={[
           props?.contentContainerStyle,
-          animatedContentContainerStyle
+          {
+            paddingBottom: insets.bottom + 32,
+            paddingTop: headerHeight
+          }
         ]}
         onScroll={onScroll}>
         {renderHeaderContent()}
