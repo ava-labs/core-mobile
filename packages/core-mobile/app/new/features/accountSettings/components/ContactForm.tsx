@@ -152,22 +152,15 @@ export const ContactForm = ({
   const renderField = useCallback(
     (item: AdvancedFieldProps, index: number): React.JSX.Element => {
       return (
-        <View key={item.id}>
-          <ContactFormField item={item} onUpdateAddress={handleUpdateAddress} />
-
-          {index !== data.length - 1 && (
-            <View
-              sx={{
-                height: 1,
-                backgroundColor: theme.colors.$borderPrimary,
-                marginHorizontal: 16
-              }}
-            />
-          )}
-        </View>
+        <ContactFormField
+          key={item.id}
+          item={item}
+          onUpdateAddress={handleUpdateAddress}
+          showSeparator={index !== data.length - 1}
+        />
       )
     },
-    [data.length, handleUpdateAddress, theme.colors.$borderPrimary]
+    [data.length, handleUpdateAddress]
   )
 
   return (
@@ -199,11 +192,14 @@ export const ContactForm = ({
 
 const ContactFormField = ({
   item,
+  showSeparator,
   onUpdateAddress
 }: {
   item: AdvancedFieldProps
+  showSeparator: boolean
   onUpdateAddress: (addressType: AddressType, value?: string) => void
 }): React.ReactNode => {
+  const { theme } = useTheme()
   const params = useLocalSearchParams<{
     address: string
     addressType: AddressType
@@ -228,5 +224,19 @@ const ContactFormField = ({
       setParams
     ])
   )
-  return <AdvancedField ref={ref} {...item} />
+  return (
+    <View key={item.id}>
+      <AdvancedField ref={ref} {...item} />
+
+      {showSeparator && (
+        <View
+          sx={{
+            height: 1,
+            backgroundColor: theme.colors.$borderPrimary,
+            marginHorizontal: 16
+          }}
+        />
+      )}
+    </View>
+  )
 }
