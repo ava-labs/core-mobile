@@ -71,7 +71,7 @@ export const AdvancedField = ({
     setIsEditing(true)
     setTimeout(() => {
       inputRef.current?.focus()
-    }, 0)
+    }, 100)
   }, [])
 
   const onReset = useCallback(() => {

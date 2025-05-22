@@ -12,8 +12,7 @@ import { ScrollView } from 'react-native-gesture-handler'
 import {
   KeyboardAwareScrollView,
   KeyboardAwareScrollViewProps,
-  KeyboardStickyView,
-  useKeyboardState
+  KeyboardStickyView
 } from 'react-native-keyboard-controller'
 import Animated, {
   interpolate,
@@ -72,6 +71,10 @@ interface ScrollScreenProps extends KeyboardAwareScrollViewProps {
   showNavigationHeaderTitle?: boolean
 }
 
+const KeyboardScrollView = Animated.createAnimatedComponent(
+  KeyboardAwareScrollView
+)
+
 export const ScrollScreen = ({
   title,
   titleSx,
@@ -90,13 +93,14 @@ export const ScrollScreen = ({
 }: ScrollScreenProps): JSX.Element => {
   const insets = useSafeAreaInsets()
   const headerHeight = useHeaderHeight()
-  const keyboard = useKeyboardState()
   const [headerLayout, setHeaderLayout] = useState<
     LayoutRectangle | undefined
   >()
 
   const headerRef = useRef<View>(null)
   const contentHeaderHeight = useSharedValue<number>(0)
+  const footerRef = useRef<View>(null)
+  const footerHeight = useSharedValue<number>(0)
 
   const { onScroll, scrollY, targetHiddenProgress } = useFadingHeaderNavigation(
     {
@@ -131,6 +135,14 @@ export const ScrollScreen = ({
     }
   }, [contentHeaderHeight])
 
+  useLayoutEffect(() => {
+    if (footerRef.current) {
+      footerRef.current.measure((x, y, width, height) => {
+        footerHeight.value = height
+      })
+    }
+  }, [footerHeight, renderFooter])
+
   const animatedBorderStyle = useAnimatedStyle(() => {
     const opacity = interpolate(scrollY.value, [0, headerHeight], [0, 1])
     return {
@@ -141,15 +153,11 @@ export const ScrollScreen = ({
   const renderHeaderContent = useCallback(() => {
     if (title || subtitle || renderHeader) {
       return (
-        <View
-          style={{
-            paddingBottom: 0
-          }}>
+        <View>
           <View
             ref={headerRef}
             style={{
-              gap: 8,
-              paddingTop: 0
+              gap: 8
             }}>
             {title ? (
               <Animated.View style={[animatedHeaderStyle]}>
@@ -170,57 +178,42 @@ export const ScrollScreen = ({
     }
   }, [animatedHeaderStyle, renderHeader, subtitle, title, titleSx])
 
-  const footerRef = useRef<View>(null)
-  const footerHeight = useSharedValue<number>(0)
-
-  useLayoutEffect(() => {
-    if (footerRef.current) {
-      footerRef.current.measure((x, y, width, height) => {
-        footerHeight.value = height
-      })
-    }
-  }, [footerHeight])
-
   // 90% of our screens reuse this component but only some need keyboard avoiding
   // If you have an input on the screen, you need to enable this prop
   if (shouldAvoidKeyboard) {
     return (
       <View style={{ flex: 1 }}>
-        <KeyboardAwareScrollView
-          extraKeyboardSpace={-insets.bottom + 32}
+        <KeyboardScrollView
+          extraKeyboardSpace={
+            disableStickyFooter ? -footerHeight.value - insets.bottom : 0
+          }
           keyboardDismissMode="interactive"
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
-          bottomOffset={24}
-          style={{
-            flex: 1,
-            marginBottom:
-              disableStickyFooter && keyboard?.isVisible
-                ? -footerHeight.value
-                : 0
-          }}
           {...props}
+          style={{
+            flex: 1
+          }}
           contentContainerStyle={[
             props?.contentContainerStyle,
             {
               paddingTop: headerHeight,
-              paddingBottom:
-                disableStickyFooter && keyboard?.isVisible
-                  ? 0
-                  : insets.bottom + 32
+              paddingBottom: disableStickyFooter
+                ? insets.bottom + 24
+                : footerHeight.value
             }
           ]}
           onScroll={onScroll}>
           {renderHeaderContent()}
           {children}
-        </KeyboardAwareScrollView>
+        </KeyboardScrollView>
 
         {renderFooter && renderFooter() ? (
           <KeyboardStickyView
             enabled={!disableStickyFooter}
             offset={{
-              opened: 0,
-              closed: -insets.bottom
+              closed: -insets.bottom,
+              opened: 0
             }}>
             <LinearGradientBottomWrapper>
               <View
