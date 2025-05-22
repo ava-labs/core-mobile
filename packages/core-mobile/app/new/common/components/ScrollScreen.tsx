@@ -175,6 +175,13 @@ export const ScrollScreen = ({
     }
   }, [animatedHeaderStyle, renderHeader, subtitle, title, titleSx])
 
+  const animatedContentContainerStyle = useAnimatedStyle(() => {
+    return {
+      paddingBottom: insets.bottom + 32,
+      paddingTop: headerHeight
+    }
+  })
+
   // 90% of our screens reuse this component but only some need keyboard avoiding
   // If you have an input on the screen, you need to enable this prop
   if (shouldAvoidKeyboard) {
@@ -268,10 +275,7 @@ export const ScrollScreen = ({
         {...props}
         contentContainerStyle={[
           props?.contentContainerStyle,
-          {
-            paddingBottom: insets.bottom + 32,
-            paddingTop: headerHeight
-          }
+          animatedContentContainerStyle
         ]}
         onScroll={onScroll}>
         {renderHeaderContent()}
