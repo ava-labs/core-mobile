@@ -33,7 +33,8 @@ export const SetWalletName = ({
       contentContainerStyle={{ padding: 16 }}>
       <View
         style={{
-          marginTop: 24
+          marginTop: 24,
+          marginBottom: 16
         }}>
         <SimpleTextInput autoFocus value={name} onChangeText={setName} />
       </View>

@@ -47,7 +47,13 @@ export const Confirmation = ({
     <ScrollScreen
       renderFooter={renderFooter}
       contentContainerStyle={{ padding: 16, flex: 1 }}>
-      <View sx={{ alignItems: 'center', marginTop: 100 }}>
+      <View
+        sx={{
+          alignItems: 'center',
+          flex: 1,
+          gap: 76,
+          justifyContent: 'center'
+        }}>
         {avatar?.source && (
           <Avatar
             backgroundColor={colors.$surfacePrimary}
@@ -62,25 +68,25 @@ export const Confirmation = ({
             testID="selected_avatar"
           />
         )}
-      </View>
-      <View
-        sx={{
-          paddingHorizontal: 12,
-          maxWidth: 320,
-          alignSelf: 'center'
-        }}>
-        <Text sx={{ marginTop: 96, textAlign: 'center' }} variant="heading3">
-          {`That's it!\nEnjoy your wallet`}
-        </Text>
-        <Text
-          variant="subtitle1"
+        <View
           sx={{
-            textAlign: 'center',
-            marginTop: 20
+            paddingHorizontal: 12,
+            maxWidth: 320,
+            alignSelf: 'center'
           }}>
-          You can now start buying, swapping, sending, receiving crypto and
-          collectibles
-        </Text>
+          <Text sx={{ textAlign: 'center' }} variant="heading3">
+            {`That's it!\nEnjoy your wallet`}
+          </Text>
+          <Text
+            variant="subtitle1"
+            sx={{
+              textAlign: 'center',
+              marginTop: 20
+            }}>
+            You can now start buying, swapping, sending, receiving crypto and
+            collectibles
+          </Text>
+        </View>
       </View>
     </ScrollScreen>
   )
