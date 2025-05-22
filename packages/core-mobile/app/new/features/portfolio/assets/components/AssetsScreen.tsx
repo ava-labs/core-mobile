@@ -23,6 +23,7 @@ import {
   selectIsLoadingBalances,
   selectIsRefetchingBalances
 } from 'store/balance'
+import { selectEnabledNetworks } from 'store/network'
 import errorIcon from '../../../../assets/icons/rocket.png'
 import { portfolioTabContentHeight } from '../../utils'
 import { useAssetsFilterAndSort } from '../hooks/useAssetsFilterAndSort'
@@ -42,6 +43,7 @@ const AssetsScreen: FC<Props> = ({
   const { data, filter, sort, view, refetch, isRefetching, isLoading } =
     useAssetsFilterAndSort()
   const activeAccount = useSelector(selectActiveAccount)
+  const enabledNetworks = useSelector(selectEnabledNetworks)
 
   const isAllBalancesInaccurate = useSelector(
     selectIsAllBalancesInaccurate(activeAccount?.index ?? 0)
@@ -145,7 +147,7 @@ const AssetsScreen: FC<Props> = ({
     )
   }, [filter, sort, view, handleManageList])
 
-  if (isBalanceLoading) {
+  if (isBalanceLoading || enabledNetworks.length === 0) {
     return <LoadingState sx={{ height: portfolioTabContentHeight * 2 }} />
   }
 
