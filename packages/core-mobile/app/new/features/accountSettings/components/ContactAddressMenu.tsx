@@ -1,7 +1,7 @@
 import { useTheme } from '@avalabs/k2-alpine'
 import { MenuView } from '@react-native-menu/menu'
 import React, { PropsWithChildren } from 'react'
-
+import { StyleProp, ViewStyle } from 'react-native'
 enum MenuId {
   TypeOrPaste = 'typeOrPaste',
   ScanQrCode = 'scanQrCode'
@@ -10,10 +10,12 @@ enum MenuId {
 export const ContactAddressMenu = ({
   onScanQrCode,
   onTypeOrPaste,
-  children
+  children,
+  style
 }: {
   onTypeOrPaste: () => void
   onScanQrCode: () => void
+  style?: StyleProp<ViewStyle>
 } & PropsWithChildren): React.JSX.Element => {
   const {
     theme: { colors, isDark }
@@ -45,6 +47,7 @@ export const ContactAddressMenu = ({
           }
         }
       }}
+      style={style}
       actions={menuActions}
       themeVariant={isDark ? 'dark' : 'default'}
       shouldOpenOnLongPress={false}>

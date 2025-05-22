@@ -69,7 +69,9 @@ export const AdvancedField = ({
 
   const onEdit = useCallback(() => {
     setIsEditing(true)
-    inputRef.current?.focus()
+    setTimeout(() => {
+      inputRef.current?.focus()
+    }, 100)
   }, [])
 
   const onReset = useCallback(() => {
@@ -184,6 +186,54 @@ export const AdvancedField = ({
     onEdit()
   }, [onEdit])
 
+  const renderEmpty = (): React.ReactNode => {
+    return (
+      <>
+        <Icons.Custom.AddCircle width={20} height={20} />
+        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+          <Text
+            sx={{
+              fontFamily: 'Inter-Medium'
+            }}>
+            {emptyText}
+          </Text>
+          {optional && (
+            <Text
+              variant="body1"
+              sx={{ color: '$textSecondary', fontFamily: 'Inter-Medium' }}>
+              {` - Optional`}
+            </Text>
+          )}
+        </View>
+      </>
+    )
+  }
+
+  const renderPlaceholder = (): React.ReactNode => {
+    return (
+      <>
+        <Text
+          variant="buttonMedium"
+          sx={{
+            fontFamily: 'Inter-Medium',
+            fontSize: 16,
+            color: '$textPrimary'
+          }}>
+          {title}
+        </Text>
+        <Text
+          variant="mono"
+          sx={{
+            color: '$textSecondary',
+            fontSize: 13,
+            lineHeight: 18
+          }}>
+          {inputValue}
+        </Text>
+      </>
+    )
+  }
+
   const renderContent = (): React.ReactNode => {
     if (isEditing) return null
     if (inputValue?.length)
@@ -214,37 +264,8 @@ export const AdvancedField = ({
               paddingLeft: disabled ? 16 : 0,
               paddingVertical: 14
             }}>
-            <Text
-              variant="buttonMedium"
-              sx={{
-                fontFamily: 'Inter-Medium',
-                fontSize: 16,
-                color: '$textPrimary'
-              }}>
-              {title}
-            </Text>
-            <Text
-              variant="mono"
-              sx={{
-                color: '$textSecondary',
-                fontSize: 13,
-                lineHeight: 18
-              }}>
-              {inputValue}
-            </Text>
+            {renderPlaceholder()}
           </TouchableOpacity>
-
-          {type === 'address' && (
-            <View style={{ paddingRight: 14, paddingLeft: 14 }}>
-              <Button
-                size="small"
-                hitSlop={14}
-                type="secondary"
-                onPress={handleCopy}>
-                Copy
-              </Button>
-            </View>
-          )}
         </View>
       )
 
@@ -260,42 +281,69 @@ export const AdvancedField = ({
           height: '100%',
           flex: 1
         }}>
-        <Icons.Custom.AddCircle width={20} height={20} />
-        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-          <Text
-            sx={{
-              fontFamily: 'Inter-Medium'
-            }}>
-            {emptyText}
-          </Text>
-          {optional && (
-            <Text
-              variant="body1"
-              sx={{ color: '$textSecondary', fontFamily: 'Inter-Medium' }}>
-              {` - Optional`}
-            </Text>
-          )}
-        </View>
+        {renderEmpty()}
       </TouchableOpacity>
     )
   }
 
-  if (inputValue === undefined && type === 'address') {
+  const renderAddressContent = (): React.ReactNode => {
+    if (isEditing) return null
+    if (inputValue?.length)
+      return (
+        <View
+          style={{
+            flex: 1,
+            flexDirection: 'row',
+            alignItems: 'center'
+          }}>
+          {disabled ? null : (
+            <TouchableOpacity
+              onPress={type === 'address' ? handleDelete : onClear}
+              hitSlop={14}
+              style={{
+                paddingLeft: 16,
+                paddingRight: 14
+              }}>
+              <Icons.Custom.DoNotDisturbOn width={20} height={20} />
+            </TouchableOpacity>
+          )}
+
+          <ContactAddressMenu
+            onTypeOrPaste={onEdit}
+            onScanQrCode={handleScanQrCode}
+            style={{
+              flex: 1,
+              paddingLeft: disabled ? 16 : 0,
+              paddingVertical: 14
+            }}>
+            {renderPlaceholder()}
+          </ContactAddressMenu>
+
+          <View style={{ paddingRight: 14, paddingLeft: 14 }}>
+            <Button
+              size="small"
+              hitSlop={14}
+              type="secondary"
+              onPress={handleCopy}>
+              Copy
+            </Button>
+          </View>
+        </View>
+      )
+
     return (
       <ContactAddressMenu
         onTypeOrPaste={onEdit}
-        onScanQrCode={handleScanQrCode}>
-        <View
-          sx={{
-            flexDirection: 'row',
-            alignItems: 'center',
-            gap: 14,
-            paddingHorizontal: 16,
-            paddingVertical: 14
-          }}>
-          <Icons.Custom.AddCircle width={20} height={20} />
-          <Text variant="body1">{emptyText}</Text>
-        </View>
+        onScanQrCode={handleScanQrCode}
+        style={{
+          flexDirection: 'row',
+          alignItems: 'center',
+          gap: 14,
+          paddingHorizontal: 16,
+          height: '100%',
+          flex: 1
+        }}>
+        {renderEmpty()}
       </ContactAddressMenu>
     )
   }
@@ -337,7 +385,7 @@ export const AdvancedField = ({
         />
       </View>
 
-      {renderContent()}
+      {type === 'address' ? renderAddressContent() : renderContent()}
     </View>
   )
 }

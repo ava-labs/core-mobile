@@ -15,7 +15,6 @@ import { onAppLocked, onAppUnlocked, onLogOut } from 'store/app'
 import { addCustomToken, selectAllCustomTokens } from 'store/customToken'
 import {
   addCustomNetwork,
-  onNetworksFetchedSuccess,
   selectEnabledNetworks,
   toggleEnabledChainId
 } from 'store/network/slice'
@@ -40,6 +39,8 @@ import { isPChain, isXChain } from 'utils/network/isAvalancheNetwork'
 import ActivityService from 'services/activity/ActivityService'
 import { uuid } from 'utils/uuid'
 import SentryWrapper from 'services/sentry/SentryWrapper'
+import { ReactQueryKeys } from 'consts/reactQueryKeys'
+import { queryClient } from 'contexts/ReactQueryProvider'
 import { Balances, LocalTokenWithBalance, QueryStatus } from './types'
 import {
   fetchBalanceForAccount,
@@ -181,12 +182,10 @@ const fetchBalancePeriodically = async (
   listenerApi: AppListenerEffectAPI
   // eslint-disable-next-line sonarjs/cognitive-complexity
 ): Promise<void> => {
-  onBalanceUpdate(QueryStatus.LOADING, listenerApi).catch(Logger.error)
   const { condition, getState } = listenerApi
   const state = getState()
   const isDeveloperMode = selectIsDeveloperMode(state)
   const selectedEnabledNetworks = selectEnabledNetworks(state)
-
   let enabledNetworks: Network[]
   let iteration = 1
   let nonPrimaryNetworksIteration = 0
@@ -197,9 +196,14 @@ const fetchBalancePeriodically = async (
     // when the app is first launched, there are no networks cached yet,
     // so we need to wait for the networks to be fetched
     // before we can start polling
-    await listenerApi.condition(isAnyOf(onNetworksFetchedSuccess))
+    await queryClient.prefetchQuery({
+      queryKey: [ReactQueryKeys.NETWORKS],
+      queryFn: () => NetworkService.getNetworks()
+    })
     enabledNetworks = selectEnabledNetworks(state)
   }
+
+  onBalanceUpdate(QueryStatus.LOADING, listenerApi).catch(Logger.error)
 
   const pollingConfig = getPollingConfig({ isDeveloperMode, enabledNetworks })
 
