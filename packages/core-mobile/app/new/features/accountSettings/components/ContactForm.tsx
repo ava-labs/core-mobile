@@ -35,7 +35,6 @@ export const ContactForm = ({
   onSelectAvatar: () => void
 }): React.JSX.Element => {
   const { networks } = usePrimaryNetworks()
-  const { theme } = useTheme()
 
   const avatar = useMemo(() => {
     return loadAvatar(contact.avatar)
