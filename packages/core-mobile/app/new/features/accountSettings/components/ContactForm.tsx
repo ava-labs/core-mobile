@@ -3,6 +3,7 @@ import {
   Button,
   Text,
   TouchableOpacity,
+  useTheme,
   View
 } from '@avalabs/k2-alpine'
 import { NetworkVMType } from '@avalabs/vm-module-types'
@@ -13,12 +14,12 @@ import {
 } from 'common/utils/alertWithTextInput'
 import { isValidContactName } from 'common/utils/isValidContactName'
 import { loadAvatar } from 'common/utils/loadAvatar'
+import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router'
 import React, { useCallback, useMemo } from 'react'
 import { Contact } from 'store/addressBook'
 import { AddressType } from '../consts'
 import { constructContactByAddressType } from '../utils/constructContactByAddressType'
-import { AdvancedFieldProps } from './AdvancedField'
-import { AdvancedForm } from './AdvancedForm'
+import { AdvancedField, AdvancedFieldProps } from './AdvancedField'
 
 export const ContactForm = ({
   contact,
@@ -30,6 +31,7 @@ export const ContactForm = ({
   onSelectAvatar: () => void
 }): React.JSX.Element => {
   const { networks } = usePrimaryNetworks()
+  const { theme } = useTheme()
 
   const avatar = useMemo(() => {
     return loadAvatar(contact.avatar)
@@ -143,6 +145,27 @@ export const ContactForm = ({
     )
   }, [contact.name, handleShowAlertWithTextInput])
 
+  const renderField = useCallback(
+    (item: AdvancedFieldProps, index: number): React.JSX.Element => {
+      return (
+        <View key={item.id}>
+          <ContactFormField item={item} onUpdateAddress={handleUpdateAddress} />
+
+          {index !== data.length - 1 && (
+            <View
+              sx={{
+                height: 1,
+                backgroundColor: theme.colors.$borderPrimary,
+                marginHorizontal: 16
+              }}
+            />
+          )}
+        </View>
+      )
+    },
+    [data.length, handleUpdateAddress, theme.colors.$borderPrimary]
+  )
+
   return (
     <View sx={{ gap: 40 }}>
       <View sx={{ alignItems: 'center', gap: 24, marginTop: 16 }}>
@@ -158,7 +181,45 @@ export const ContactForm = ({
         {renderName()}
       </View>
 
-      <AdvancedForm data={data} />
+      <View
+        sx={{
+          backgroundColor: '$surfaceSecondary',
+          width: '100%',
+          borderRadius: 12
+        }}>
+        {data.map(renderField)}
+      </View>
     </View>
   )
+}
+
+const ContactFormField = ({
+  item,
+  onUpdateAddress
+}: {
+  item: AdvancedFieldProps
+  onUpdateAddress: (addressType: AddressType, value?: string) => void
+}): React.ReactNode => {
+  const params = useLocalSearchParams<{
+    address: string
+    addressType: AddressType
+  }>()
+  const { setParams } = useRouter()
+
+  useFocusEffect(
+    useCallback(() => {
+      if (params.address && params.addressType === item.title) {
+        onUpdateAddress(params.addressType, params.address)
+        // @ts-ignore TODO: make route params typesafe
+        setParams({ address: undefined, addressType: undefined })
+      }
+    }, [
+      params.address,
+      params.addressType,
+      item.title,
+      onUpdateAddress,
+      setParams
+    ])
+  )
+  return <AdvancedField {...item} />
 }
