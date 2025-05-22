@@ -182,7 +182,7 @@ export const TokenDetailScreen = (): React.JSX.Element => {
     if (!isSwapDisabled) {
       const fromTokenId = token?.localId
       const toTokenId =
-        token?.localId === AVAX_TOKEN_ID ? USDC_TOKEN_ID : AVAX_TOKEN_ID
+        fromTokenId === AVAX_TOKEN_ID ? USDC_TOKEN_ID : AVAX_TOKEN_ID
 
       buttons.push({
         title: ActionButtonTitle.Swap,
