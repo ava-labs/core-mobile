@@ -28,7 +28,6 @@ import {
 } from 'store/balance'
 import { useFormatCurrency } from 'new/common/hooks/useFormatCurrency'
 import { selectTokenVisibility } from 'store/portfolio'
-import { importPrivateKeyAccountAndCreateWallet } from 'store/wallet/thunks'
 
 interface DerivedAddress {
   address: string
@@ -36,7 +35,7 @@ interface DerivedAddress {
 }
 
 const ImportPrivateKeyScreen = (): JSX.Element => {
-  const { back } = useRouter()
+  const { navigate } = useRouter()
   const {
     theme: { colors }
   } = useTheme()
@@ -201,14 +200,14 @@ const ImportPrivateKeyScreen = (): JSX.Element => {
   ])
 
   const handleImport = (): void => {
-    if (tempAccountDetails) {
-      dispatch(
-        importPrivateKeyAccountAndCreateWallet({
-          accountDetails: tempAccountDetails
-        })
-      )
-    }
-    back()
+    navigate({
+      // @ts-ignore TODO: make routes typesafe
+      pathname: '/accountSettings/verifyPinForImportPrivateKey',
+      params: {
+        privateKeyAccountString: JSON.stringify(tempAccountDetails),
+        privateKey
+      }
+    })
   }
 
   return (

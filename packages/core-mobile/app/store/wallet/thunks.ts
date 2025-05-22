@@ -16,9 +16,17 @@ import WalletInitializer from 'services/wallet/WalletInitializer'
 import { StorageKey } from 'resources/Constants'
 import Logger from 'utils/Logger'
 import { commonStorage } from 'utils/mmkv'
-import { addWallet, setActiveWallet } from './slice'
 import { generateWalletName } from './utils'
 
+/**
+ * Stores the wallet with PIN encryption, returns the wallet object. The wallet is automatically
+ * stored in the Redux store on successful completion via a listener in wallet/slice.ts.
+ *
+ * @param walletId - the ID of the wallet to store
+ * @param walletSecret - the secret of the wallet to store
+ * @param isResetting - whether the wallet is being reset
+ * @param type - the type of the wallet to store
+ */
 export const storeWalletWithPin = createAsyncThunk<
   Wallet,
   StoreWalletWithPinParams,
@@ -57,28 +65,36 @@ export const storeWalletWithPin = createAsyncThunk<
 
 export const importPrivateKeyAccountAndCreateWallet = createAsyncThunk<
   void,
-  { accountDetails: ImportedAccount },
+  { accountDetails: ImportedAccount; accountSecret: string; pin: string },
   ThunkApi
 >(
   `${reducerName}/importPrivateKeyAccountAndCreateWallet`,
-  async ({ accountDetails }, thunkApi) => {
+  async ({ accountDetails, accountSecret, pin }, thunkApi) => {
     const newWalletId = uuid()
-    const state = thunkApi.getState()
-    const wallets = selectWallets(state)
-    const walletCount = Object.keys(wallets).length
-    const newWalletName = generateWalletName(
-      WalletType.PRIVATE_KEY,
-      walletCount + 1
-    )
 
-    const newWallet: Wallet = {
-      id: newWalletId,
-      name: newWalletName,
-      type: WalletType.PRIVATE_KEY
+    // Store the private key with PIN encryption
+    const accountSecretEncrypted = await encrypt(accountSecret, pin)
+    await thunkApi
+      .dispatch(
+        storeWalletWithPin({
+          walletId: newWalletId,
+          walletSecret: accountSecretEncrypted,
+          type: WalletType.PRIVATE_KEY
+        })
+      )
+      .unwrap()
+
+    // If biometric auth is enabled, also store with biometry
+    const authType = commonStorage.getString(StorageKey.SECURE_ACCESS_SET)
+    if (authType === 'BIO') {
+      const result = await BiometricsSDK.storeWalletWithBiometry(
+        newWalletId,
+        accountSecret
+      )
+      if (!result) {
+        Logger.error('Failed to store wallet with biometry')
+      }
     }
-
-    thunkApi.dispatch(addWallet(newWallet))
-    thunkApi.dispatch(setActiveWallet(newWalletId))
 
     const accountToImport: ImportedAccount = {
       ...accountDetails,
@@ -100,22 +116,16 @@ export const importMnemonicWalletAndAccount = createAsyncThunk<
   async ({ mnemonic, pin }, thunkApi) => {
     const dispatch = thunkApi.dispatch
     const state = thunkApi.getState()
-    const wallets = selectWallets(state)
-    const walletCount = Object.keys(wallets).length
     const activeNetwork = selectActiveNetwork(state)
 
     const newWalletId = uuid()
-    const newWalletName = generateWalletName(
-      WalletType.MNEMONIC,
-      walletCount + 1
-    )
 
     const newWalletSecret = await encrypt(mnemonic, pin)
     if (!newWalletSecret) {
       throw new Error('Failed to encrypt new mnemonic with PIN')
     }
 
-    await dispatch(
+    const newWallet = await dispatch(
       storeWalletWithPin({
         walletId: newWalletId,
         walletSecret: newWalletSecret,
@@ -126,7 +136,7 @@ export const importMnemonicWalletAndAccount = createAsyncThunk<
 
     const type = commonStorage.getString(StorageKey.SECURE_ACCESS_SET)
     if (type === 'BIO') {
-      BiometricsSDK.storeWalletWithBiometry(newWalletId, mnemonic)
+      await BiometricsSDK.storeWalletWithBiometry(newWalletId, mnemonic)
     } else {
       Logger.error('Secure access type not found')
     }
@@ -154,7 +164,7 @@ export const importMnemonicWalletAndAccount = createAsyncThunk<
       addressAVM: addresses.AVM,
       addressPVM: addresses.PVM,
       addressCoreEth: addresses.CoreEth,
-      walletName: newWalletName
+      walletName: newWallet.name
     }
 
     dispatch(setAccount(newAccount))
