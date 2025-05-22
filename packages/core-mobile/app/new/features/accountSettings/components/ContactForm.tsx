@@ -15,11 +15,15 @@ import {
 import { isValidContactName } from 'common/utils/isValidContactName'
 import { loadAvatar } from 'common/utils/loadAvatar'
 import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router'
-import React, { useCallback, useMemo } from 'react'
+import React, { useCallback, useMemo, useRef } from 'react'
 import { Contact } from 'store/addressBook'
 import { AddressType } from '../consts'
 import { constructContactByAddressType } from '../utils/constructContactByAddressType'
-import { AdvancedField, AdvancedFieldProps } from './AdvancedField'
+import {
+  AdvancedField,
+  AdvancedFieldProps,
+  AdvancedFieldRef
+} from './AdvancedField'
 
 export const ContactForm = ({
   contact,
@@ -206,10 +210,13 @@ const ContactFormField = ({
   }>()
   const { setParams } = useRouter()
 
+  const ref = useRef<AdvancedFieldRef>(null)
+
   useFocusEffect(
     useCallback(() => {
       if (params.address && params.addressType === item.title) {
         onUpdateAddress(params.addressType, params.address)
+        ref.current?.setInputValue(params.address)
         // @ts-ignore TODO: make route params typesafe
         setParams({ address: undefined, addressType: undefined })
       }
@@ -221,5 +228,5 @@ const ContactFormField = ({
       setParams
     ])
   )
-  return <AdvancedField {...item} />
+  return <AdvancedField ref={ref} {...item} />
 }
