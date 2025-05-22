@@ -126,22 +126,19 @@ export const ScrollScreen = ({
   })
 
   useLayoutEffect(() => {
-    if (headerRef.current) {
-      // eslint-disable-next-line max-params
-      headerRef.current.measure((x, y, width, height) => {
-        contentHeaderHeight.value = height
-        setHeaderLayout({ x, y, width, height })
-      })
-    }
+    // eslint-disable-next-line max-params
+    headerRef?.current?.measure((x, y, width, height) => {
+      contentHeaderHeight.value = height
+      setHeaderLayout({ x, y, width, height })
+    })
   }, [contentHeaderHeight])
 
   useLayoutEffect(() => {
-    if (footerRef.current) {
-      footerRef.current.measure((x, y, width, height) => {
-        footerHeight.value = height
-      })
-    }
-  }, [footerHeight, renderFooter])
+    // eslint-disable-next-line max-params
+    footerRef?.current?.measure((x, y, width, height) => {
+      footerHeight.value = height
+    })
+  }, [footerHeight])
 
   const animatedBorderStyle = useAnimatedStyle(() => {
     const opacity = interpolate(scrollY.value, [0, headerHeight], [0, 1])
