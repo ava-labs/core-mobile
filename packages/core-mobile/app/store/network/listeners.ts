@@ -70,7 +70,7 @@ const toggleEnabledChainIdSideEffect = (
   })
 }
 
-const toggleAutoEnabledL2ChainIds = (
+const enableL2ChainIdsIfNeeded = (
   _: AnyAction,
   listenerApi: AppListenerEffectAPI
 ): void => {
@@ -96,7 +96,7 @@ export const addNetworkListeners = (
 
   startListening({
     matcher: isAnyOf(onAppUnlocked),
-    effect: toggleAutoEnabledL2ChainIds
+    effect: enableL2ChainIdsIfNeeded
   })
 
   startListening({
