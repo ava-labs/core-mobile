@@ -33,10 +33,11 @@ export const TokenActivityListItem: FC<Props> = ({ tx, onPress }) => {
   }, [tx.txType])
 
   const formattedAmountInCurrency = useMemo(() => {
-    if (!currentPrice || isNaN(Number(tx.tokens[0]?.amount))) {
+    const amount = Number(tx.tokens[0]?.amount.replaceAll(',', ''))
+    if (!currentPrice || isNaN(amount)) {
       return UNKNOWN_AMOUNT
     }
-    const amountInCurrency = Number(tx.tokens[0]?.amount) * currentPrice
+    const amountInCurrency = amount * currentPrice
 
     const formattedAmount = formatCurrency({
       amount: amountInCurrency
