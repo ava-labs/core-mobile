@@ -109,7 +109,7 @@ const LoginWithPinOrBiometry = (): JSX.Element => {
   )
   const buttonContainerStyle = useAnimatedStyle(() => {
     return {
-      paddingBottom: withTiming(
+      marginBottom: withTiming(
         isEnteringPin ? 0 : buttonContainerPaddingBottom.value,
         ANIMATED.TIMING_CONFIG
       )

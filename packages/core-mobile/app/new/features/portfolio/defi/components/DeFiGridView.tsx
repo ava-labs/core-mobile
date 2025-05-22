@@ -1,6 +1,5 @@
 import React from 'react'
 import {
-  AnimatedPressable,
   Icons,
   MaskedText,
   SPRING_LINEAR_TRANSITION,
@@ -40,7 +39,7 @@ export const DeFiGridView = ({
     <Animated.View
       entering={getListItemEnteringAnimation(index)}
       layout={SPRING_LINEAR_TRANSITION}>
-      <AnimatedPressable onPress={onPress}>
+      <TouchableOpacity onPress={onPress}>
         <View
           sx={{
             borderRadius: 18,
@@ -71,7 +70,7 @@ export const DeFiGridView = ({
             </View>
           </View>
         </View>
-      </AnimatedPressable>
+      </TouchableOpacity>
     </Animated.View>
   )
 }
