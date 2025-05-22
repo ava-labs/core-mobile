@@ -55,6 +55,7 @@ export const AdvancedField = forwardRef<AdvancedFieldRef, AdvancedFieldProps>(
       onUpdate
     }: AdvancedFieldProps,
     ref
+    // eslint-disable-next-line sonarjs/cognitive-complexity
   ): React.JSX.Element => {
     const { navigate } = useRouter()
     const [isEditing, setIsEditing] = useState(false)
