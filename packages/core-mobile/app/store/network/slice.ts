@@ -18,6 +18,15 @@ export const defaultNetwork = BITCOIN_NETWORK
 
 export const noActiveNetwork = 0
 
+export const defaultEnabledL2ChainIds = [
+  42161, // Arbitrum One
+  // 421614, // Arbitrum Sepolia
+  10, // Optimism
+  // 11155420, // Optimism Sepolia
+  8453 // Base Mainnet
+  // 84532 // Base Sepolia
+]
+
 export const alwaysEnabledChainIds = [
   ChainsSDKChainId.AVALANCHE_MAINNET_ID,
   ChainsSDKChainId.AVALANCHE_TESTNET_ID,
@@ -58,6 +67,14 @@ export const networkSlice = createSlice({
         const newEnabled = state.enabledChainIds.filter(id => id !== chainId)
         state.enabledChainIds = newEnabled
       }
+    },
+    enableL2ChainIds: state => {
+      defaultEnabledL2ChainIds.forEach(chainId => {
+        if (!state.enabledChainIds.includes(chainId)) {
+          // set enabledChainIds
+          state.enabledChainIds.push(chainId)
+        }
+      })
     },
     toggleDisabledLastTransactedChainId: (
       state,
@@ -206,7 +223,8 @@ export const {
   toggleDisabledLastTransactedChainId,
   addCustomNetwork,
   removeCustomNetwork,
-  updateCustomNetwork
+  updateCustomNetwork,
+  enableL2ChainIds
 } = networkSlice.actions
 
 export const networkReducer = networkSlice.reducer
