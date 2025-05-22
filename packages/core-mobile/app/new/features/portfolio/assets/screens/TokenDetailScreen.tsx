@@ -78,8 +78,9 @@ export const TokenDetailScreen = (): React.JSX.Element => {
   const [tokenHeaderLayout, setTokenHeaderLayout] = useState<
     LayoutRectangle | undefined
   >()
-  const { localId } = useLocalSearchParams<{
+  const { localId, chainId } = useLocalSearchParams<{
     localId: string
+    chainId: string
   }>()
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const isPrivacyModeEnabled = useSelector(selectIsPrivacyModeEnabled)
@@ -91,8 +92,10 @@ export const TokenDetailScreen = (): React.JSX.Element => {
   const { formatCurrency } = useFormatCurrency()
 
   const token = useMemo(() => {
-    return filteredTokenList.find(tk => tk.localId === localId)
-  }, [filteredTokenList, localId])
+    return filteredTokenList.find(
+      tk => tk.localId === localId && tk.networkChainId === Number(chainId)
+    )
+  }, [chainId, filteredTokenList, localId])
 
   const isXpToken =
     token && (isTokenWithBalanceAVM(token) || isTokenWithBalancePVM(token))

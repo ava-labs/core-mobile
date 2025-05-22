@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useMemo } from 'react'
 import { LayoutChangeEvent } from 'react-native'
 import { Text, View, Icons, BalanceLoader, useTheme } from '@avalabs/k2-alpine'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
@@ -8,6 +8,12 @@ import {
   isTokenWithBalancePVM
 } from '@avalabs/avalanche-module'
 import { PrivacyModeAlert } from '@avalabs/k2-alpine'
+import { TokenType } from '@avalabs/vm-module-types'
+import {
+  CHAIN_IDS_WITH_INCORRECT_SYMBOL,
+  CHAIN_IDS_WITH_INCORRECT_SYMBOL_MAPPING
+} from 'consts/chainIdsWithIncorrectSymbol'
+import { useNetworks } from 'hooks/networks/useNetworks'
 import { LocalTokenWithBalance } from '../../../store/balance/types'
 import { HiddenBalanceText } from './HiddenBalanceText'
 
@@ -28,21 +34,48 @@ export const TokenHeader = ({
   isLoading?: boolean
   isPrivacyModeEnabled?: boolean
 }): React.JSX.Element => {
+  const { allNetworks } = useNetworks()
   const {
     theme: { colors }
   } = useTheme()
 
-  const tokenName =
-    token && isTokenWithBalanceAVM(token)
-      ? 'Avalanche (X-Chain)'
-      : token && isTokenWithBalancePVM(token)
-      ? 'Avalanche (P-Chain)'
-      : token?.name
+  const tokenName = useMemo(() => {
+    if (token && isTokenWithBalanceAVM(token)) {
+      return 'Avalanche (X-Chain)'
+    }
+    if (token && isTokenWithBalancePVM(token)) {
+      return 'Avalanche (P-Chain)'
+    }
+    if (
+      token &&
+      CHAIN_IDS_WITH_INCORRECT_SYMBOL.includes(token.networkChainId) &&
+      token.type === TokenType.NATIVE
+    ) {
+      return allNetworks[token.networkChainId]?.chainName ?? token.name
+    }
+    return token?.name
+  }, [allNetworks, token])
+
+  const tokenSymbol = useMemo(() => {
+    if (
+      token &&
+      CHAIN_IDS_WITH_INCORRECT_SYMBOL.includes(token.networkChainId) &&
+      token.type === TokenType.NATIVE
+    ) {
+      return (
+        CHAIN_IDS_WITH_INCORRECT_SYMBOL_MAPPING[
+          token.networkChainId as keyof typeof CHAIN_IDS_WITH_INCORRECT_SYMBOL_MAPPING
+        ] ?? token.symbol
+      )
+    }
+    return token?.symbol
+  }, [token])
 
   const renderBalance = (): React.JSX.Element => {
     if (isLoading) {
       return <BalanceLoader />
     }
+
     return (
       <View>
         <View
@@ -64,7 +97,7 @@ export const TokenHeader = ({
 
           <Text
             sx={{ fontFamily: 'Aeonik-Medium', fontSize: 18, lineHeight: 28 }}>
-            {token?.symbol}
+            {tokenSymbol}
           </Text>
         </View>
         <View sx={{ marginTop: 5 }}>
