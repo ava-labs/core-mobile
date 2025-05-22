@@ -1,6 +1,7 @@
 import {
   Avatar,
   Button,
+  showAlert,
   Text,
   TouchableOpacity,
   useTheme,
@@ -17,8 +18,11 @@ import { loadAvatar } from 'common/utils/loadAvatar'
 import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router'
 import React, { useCallback, useMemo, useRef } from 'react'
 import { Contact } from 'store/addressBook'
+import { useSelector } from 'react-redux'
+import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { AddressType } from '../consts'
 import { constructContactByAddressType } from '../utils/constructContactByAddressType'
+import { isValidAddress } from '../utils/isValidAddress'
 import {
   AdvancedField,
   AdvancedFieldProps,
@@ -198,6 +202,7 @@ const ContactFormField = ({
   showSeparator: boolean
   onUpdateAddress: (addressType: AddressType, value?: string) => void
 }): React.ReactNode => {
+  const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const { theme } = useTheme()
   const params = useLocalSearchParams<{
     address: string
@@ -210,6 +215,31 @@ const ContactFormField = ({
   useFocusEffect(
     useCallback(() => {
       if (params.address && params.addressType === item.title) {
+        if (
+          !isValidAddress({
+            addressType: params.addressType,
+            address: params.address,
+            isDeveloperMode
+          })
+        ) {
+          showAlert({
+            title: 'Invalid address',
+            description:
+              'The address you entered is not valid for the selected chain',
+            buttons: [
+              {
+                text: 'Got it',
+                style: 'default',
+                onPress: () => {
+                  ref.current?.setInputValue('')
+                  // @ts-ignore TODO: make route params typesafe
+                  setParams({ address: undefined, addressType: undefined })
+                }
+              }
+            ]
+          })
+          return
+        }
         onUpdateAddress(params.addressType, params.address)
         ref.current?.setInputValue(params.address)
         // @ts-ignore TODO: make route params typesafe
@@ -219,6 +249,7 @@ const ContactFormField = ({
       params.address,
       params.addressType,
       item.title,
+      isDeveloperMode,
       onUpdateAddress,
       setParams
     ])

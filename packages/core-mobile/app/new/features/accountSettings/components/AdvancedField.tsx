@@ -145,7 +145,7 @@ export const AdvancedField = forwardRef<AdvancedFieldRef, AdvancedFieldProps>(
         showAlert({
           title: 'Invalid address',
           description:
-            'The address your entered is not valid for the selected chain',
+            'The address you entered is not valid for the selected chain',
           buttons: [
             {
               text: 'Got it',
