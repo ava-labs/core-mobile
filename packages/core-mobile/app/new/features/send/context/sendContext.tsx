@@ -38,6 +38,7 @@ import {
 import { AddrBookItemType, Contact } from 'store/addressBook'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { isBitcoinChainId } from 'utils/network/isBitcoinNetwork'
+import { NetworkVMType } from '@avalabs/vm-module-types'
 import { isXPChain } from '../../../../utils/network/isAvalancheNetwork'
 import { useSendSelectedToken } from '../store'
 import { getNetworks } from '../utils/getNetworks'
@@ -217,10 +218,8 @@ export const SendContextProvider = ({
     ) {
       return recipient?.addressXP ? recipient.addressXP : undefined
     }
-    if (
-      isAvalancheCChainId(selectedToken.networkChainId) ||
-      isEthereumChainId(selectedToken?.networkChainId)
-    ) {
+
+    if (network.vmName === NetworkVMType.EVM) {
       return recipient?.address ? recipient.address : undefined
     }
     return undefined
@@ -230,7 +229,8 @@ export const SendContextProvider = ({
     toAddress?.to,
     recipient?.addressBTC,
     recipient?.addressXP,
-    recipient?.address
+    recipient?.address,
+    network
   ])
 
   const state: SendContextState = {

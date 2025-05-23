@@ -1,13 +1,9 @@
 import { AddrBookItemType, Contact } from 'store/addressBook'
 import { Networks } from 'store/network'
-import { Network } from '@avalabs/core-chains-sdk'
+import { Network, NetworkVMType } from '@avalabs/core-chains-sdk'
 import { isValidAddress } from 'features/accountSettings/utils/isValidAddress'
 import { AddressType } from 'features/accountSettings/consts'
-import {
-  getAvalancheNetwork,
-  getBitcoinNetwork,
-  getEthereumNetwork
-} from 'services/network/utils/providerUtils'
+import { getBitcoinNetwork } from 'services/network/utils/providerUtils'
 import {
   NETWORK_P,
   NETWORK_P_TEST,
@@ -51,12 +47,9 @@ export const getNetworks = ({
     if (
       isValidAddress({ address, addressType: AddressType.EVM, isDeveloperMode })
     ) {
-      const networks: Network[] = []
-      const ethereumNetwork = getEthereumNetwork(allNetworks, isDeveloperMode)
-      const avalancheCChain = getAvalancheNetwork(allNetworks, isDeveloperMode)
-      ethereumNetwork && networks.push(ethereumNetwork)
-      avalancheCChain && networks.push(avalancheCChain)
-      return networks
+      return Object.values(allNetworks).filter(
+        network => network.vmName === NetworkVMType.EVM
+      )
     }
     if (
       isValidAddress({ address, addressType: AddressType.XP, isDeveloperMode })
@@ -74,10 +67,11 @@ export const getNetworks = ({
   }
   const networks: Network[] = []
   if ('address' in address) {
-    const ethereumNetwork = getEthereumNetwork(allNetworks, isDeveloperMode)
-    const avalancheCChain = getAvalancheNetwork(allNetworks, isDeveloperMode)
-    ethereumNetwork && networks.push(ethereumNetwork)
-    avalancheCChain && networks.push(avalancheCChain)
+    Object.values(allNetworks)
+      .filter(network => network.vmName === NetworkVMType.EVM)
+      .forEach(network => {
+        networks.push(network)
+      })
   }
   if ('addressXP' in address) {
     networks.push(isDeveloperMode ? NETWORK_P_TEST : NETWORK_P)
