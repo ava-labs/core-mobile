@@ -12,7 +12,6 @@ import bottomTabsPage from '../../pages/bottomTabs.page'
 describe('Onboarding Existing Wallet', () => {
   beforeAll(async () => {
     await device.launchApp()
-    await commonElsPage.exitMetro()
     await handleJailbrokenWarning()
   })
 

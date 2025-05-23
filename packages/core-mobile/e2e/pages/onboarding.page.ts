@@ -2,6 +2,7 @@ import onboardingLoc from '../locators/onboarding.loc'
 import Assert from '../helpers/assertions'
 import Action from '../helpers/actions'
 import delay from '../helpers/waits'
+import actions from '../helpers/actions'
 import commonElsPage from './commonEls.page'
 
 class OnboardingPage {
@@ -220,6 +221,7 @@ class OnboardingPage {
 
   async enterRecoveryPhrase(recoveryPhrase: string) {
     await Action.setInputText(this.recoveryPhraseInput, recoveryPhrase, 0)
+    await actions.dismissKeyboard()
   }
 
   async tapImport() {
