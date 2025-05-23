@@ -1,4 +1,5 @@
 import { TokenType } from '@avalabs/vm-module-types'
+import { isEthereumChainId } from 'services/network/utils/isEthereumNetwork'
 import { AVAX_P_ID, AVAX_X_ID, LocalTokenWithBalance } from 'store/balance'
 import { TokenSymbol } from 'store/network'
 
@@ -29,7 +30,10 @@ export const sortTokensWithPrimaryFirst = ({
   if (xChainToken) primaryTokens.push(xChainToken)
 
   const ethToken = tokens.find(
-    token => token.type === TokenType.NATIVE && token.symbol === TokenSymbol.ETH
+    token =>
+      token.type === TokenType.NATIVE &&
+      token.symbol === TokenSymbol.ETH &&
+      isEthereumChainId(token.networkChainId)
   )
   if (ethToken) primaryTokens.push(ethToken)
 
@@ -40,9 +44,13 @@ export const sortTokensWithPrimaryFirst = ({
 
   let rest = tokens.filter(
     token =>
-      (token.symbol !== TokenSymbol.AVAX && token.type !== TokenType.NATIVE) ||
-      (token.symbol !== TokenSymbol.ETH && token.type !== TokenType.NATIVE) ||
-      (token.symbol !== TokenSymbol.BTC && token.type !== TokenType.NATIVE)
+      !(token.symbol === TokenSymbol.AVAX && token.type === TokenType.NATIVE) &&
+      !(
+        token.symbol === TokenSymbol.ETH &&
+        token.type === TokenType.NATIVE &&
+        isEthereumChainId(token.networkChainId)
+      ) &&
+      !(token.symbol === TokenSymbol.BTC && token.type === TokenType.NATIVE)
   )
 
   if (sortOthersByBalance) {
