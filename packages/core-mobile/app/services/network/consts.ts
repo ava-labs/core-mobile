@@ -15,6 +15,8 @@ export enum ChainName {
   AVALANCHE_X_TESTNET = 'Avalanche X-Chain Testnet',
   AVALANCHE_P_TESTNET = 'Avalanche P-Chain Testnet',
   AVALANCHE_XP_TESTNET = 'Avalanche X/P-Chain Testnet',
+  AVALANCHE_C = 'Avalanche C-Chain',
+  AVALANCHE_C_TESTNET = 'Avalanche C-Chain Testnet',
   AVALANCHE_C_EVM = 'Avalanche C-Chain/EVM',
   AVALANCHE_C_EVM_TESTNET = 'Avalanche C-Chain/EVM Testnet',
   BITCOIN = 'Bitcoin',
@@ -23,7 +25,7 @@ export enum ChainName {
 
 export const AVALANCHE_MAINNET_NETWORK = {
   chainId: ChainId.AVALANCHE_MAINNET_ID,
-  chainName: ChainName.AVALANCHE_C_EVM,
+  chainName: ChainName.AVALANCHE_C,
   isTestnet: false,
   logoUri:
     'https://images.ctfassets.net/gcj8jwzm6086/5VHupNKwnDYJvqMENeV7iJ/3e4b8ff10b69bfa31e70080a4b142cd0/avalanche-avax-logo.svg',
@@ -38,7 +40,7 @@ export const AVALANCHE_MAINNET_NETWORK = {
 
 export const AVALANCHE_TESTNET_NETWORK = {
   chainId: ChainId.AVALANCHE_TESTNET_ID,
-  chainName: ChainName.AVALANCHE_C_EVM_TESTNET,
+  chainName: ChainName.AVALANCHE_C_TESTNET,
   isTestnet: true,
   logoUri:
     'https://images.ctfassets.net/gcj8jwzm6086/5VHupNKwnDYJvqMENeV7iJ/3e4b8ff10b69bfa31e70080a4b142cd0/avalanche-avax-logo.svg',
@@ -102,17 +104,34 @@ export const NETWORK_X_TEST = {
   explorerUrl: 'https://subnets-test.avax.network/x-chain'
 } as Network
 
+export const MAIN_MERGED_NETWORKS = [
+  { ...AVALANCHE_MAINNET_NETWORK, chainName: ChainName.AVALANCHE_C_EVM },
+  { ...AVALANCHE_XP_NETWORK, chainName: ChainName.AVALANCHE_XP },
+  { ...BITCOIN_NETWORK, chainName: ChainName.BITCOIN }
+]
+
+export const TEST_MERGED_NETWORKS = [
+  {
+    ...AVALANCHE_TESTNET_NETWORK,
+    chainName: ChainName.AVALANCHE_C_EVM_TESTNET
+  },
+  {
+    ...AVALANCHE_XP_TEST_NETWORK,
+    chainName: ChainName.AVALANCHE_XP_TESTNET
+  },
+  { ...BITCOIN_TEST_NETWORK, chainName: ChainName.BITCOIN_TESTNET }
+]
+
 export const MAIN_NETWORKS = [
   AVALANCHE_MAINNET_NETWORK,
-  { ...AVALANCHE_XP_NETWORK, chainName: ChainName.AVALANCHE_XP },
+  NETWORK_P,
+  NETWORK_X,
   { ...BITCOIN_NETWORK, chainName: ChainName.BITCOIN }
 ]
 
 export const TEST_NETWORKS = [
   AVALANCHE_TESTNET_NETWORK,
-  {
-    ...AVALANCHE_XP_TEST_NETWORK,
-    chainName: ChainName.AVALANCHE_XP_TESTNET
-  },
+  NETWORK_P_TEST,
+  NETWORK_X_TEST,
   { ...BITCOIN_TEST_NETWORK, chainName: ChainName.BITCOIN_TESTNET }
 ]

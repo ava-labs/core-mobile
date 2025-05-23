@@ -1,8 +1,7 @@
 import { NetworkVMType } from '@avalabs/core-chains-sdk'
 import { Icons, Text, TouchableOpacity, useTheme } from '@avalabs/k2-alpine'
 import { ScrollScreen } from 'common/components/ScrollScreen'
-import { TokenLogo } from 'common/components/TokenLogo'
-import { usePrimaryNetworks } from 'common/hooks/usePrimaryNetworks'
+import { useMergedNetworks } from 'common/hooks/useMergedNetworks'
 import { router } from 'expo-router'
 import React, { ReactNode, useCallback, useEffect, useMemo } from 'react'
 import { View } from 'react-native'
@@ -10,13 +9,14 @@ import { useSelector } from 'react-redux'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { selectActiveAccount } from 'store/account'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
+import { TokenLogo } from 'common/components/TokenLogo'
 import { AccountAddresses } from '../components/AccountAddresses'
 import { QRCode } from '../components/QRCode'
 import { useReceiveSelectedNetwork } from '../store'
 
 export const ReceiveScreen = (): ReactNode => {
   const { theme } = useTheme()
-  const { networks } = usePrimaryNetworks()
+  const { networks } = useMergedNetworks()
 
   const [selectedNetwork, setSelectedNetwork] = useReceiveSelectedNetwork()
 
