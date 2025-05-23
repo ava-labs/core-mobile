@@ -91,7 +91,9 @@ export const SelectSendTokenScreen = (): JSX.Element => {
     item,
     index
   }): React.JSX.Element => {
-    const isSelected = selectedToken?.localId === item.localId
+    const isSelected =
+      selectedToken?.localId === item.localId &&
+      selectedToken.networkChainId === item.networkChainId
     const isLastItem = index === searchResults.length - 1
 
     const balance =
@@ -146,7 +148,7 @@ export const SelectSendTokenScreen = (): JSX.Element => {
       searchText={searchText}
       tokens={sortedSearchResults ?? []}
       renderListItem={renderItem}
-      keyExtractor={item => item.localId}
+      keyExtractor={item => `${item.localId}-${item.networkChainId}`}
     />
   )
 }
