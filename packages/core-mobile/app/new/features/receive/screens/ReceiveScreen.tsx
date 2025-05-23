@@ -1,6 +1,7 @@
 import { NetworkVMType } from '@avalabs/core-chains-sdk'
 import { Icons, Text, TouchableOpacity, useTheme } from '@avalabs/k2-alpine'
 import { ScrollScreen } from 'common/components/ScrollScreen'
+import { TokenLogo } from 'common/components/TokenLogo'
 import { usePrimaryNetworks } from 'common/hooks/usePrimaryNetworks'
 import { router } from 'expo-router'
 import React, { ReactNode, useCallback, useEffect, useMemo } from 'react'
@@ -9,7 +10,6 @@ import { useSelector } from 'react-redux'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { selectActiveAccount } from 'store/account'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
-import { NetworkLogoWithChain } from 'common/components/NetworkLogoWithChain'
 import { AccountAddresses } from '../components/AccountAddresses'
 import { QRCode } from '../components/QRCode'
 import { useReceiveSelectedNetwork } from '../store'
@@ -109,11 +109,9 @@ export const ReceiveScreen = (): ReactNode => {
               borderRadius: 16,
               height: 31
             }}>
-            <NetworkLogoWithChain
-              network={selectedNetwork}
-              networkSize={20}
-              outerBorderColor={theme.colors.$surfaceSecondary}
-              showChainLogo={false}
+            <TokenLogo
+              symbol={selectedNetwork.networkToken?.symbol ?? 'AVAX'}
+              size={20}
             />
             <Text
               variant="buttonMedium"
