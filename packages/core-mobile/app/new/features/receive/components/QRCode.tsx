@@ -28,26 +28,22 @@ export const QRCode: FC<Props> = ({ address, token, label }: Props) => {
   const { theme } = useTheme()
 
   const qrToken = (): JSX.Element => {
-    switch (token) {
-      case TokenSymbol.BTC:
-        return (
-          <BTCSymbol
-            width={ICON_SIZE}
-            height={ICON_SIZE}
-            color={theme.colors.$surfacePrimary}
-          />
-        )
-      case TokenSymbol.AVAX:
-        return (
-          <AVAXSymbol
-            width={ICON_SIZE}
-            height={ICON_SIZE}
-            color={theme.colors.$surfacePrimary}
-          />
-        )
-      default:
-        return <AVAXSymbol width={ICON_SIZE} height={ICON_SIZE} />
+    if (token === TokenSymbol.BTC) {
+      return (
+        <BTCSymbol
+          width={ICON_SIZE}
+          height={ICON_SIZE}
+          color={theme.colors.$surfacePrimary}
+        />
+      )
     }
+    return (
+      <AVAXSymbol
+        width={ICON_SIZE}
+        height={ICON_SIZE}
+        color={theme.colors.$surfacePrimary}
+      />
+    )
   }
 
   return (
