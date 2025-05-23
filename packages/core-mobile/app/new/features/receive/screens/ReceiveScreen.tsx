@@ -1,7 +1,7 @@
 import { NetworkVMType } from '@avalabs/core-chains-sdk'
 import { Icons, Text, TouchableOpacity, useTheme } from '@avalabs/k2-alpine'
 import { ScrollScreen } from 'common/components/ScrollScreen'
-import { useMergedNetworks } from 'common/hooks/useMergedNetworks'
+import { useNetworksByAddress } from 'common/hooks/useNetworksByAddress'
 import { router } from 'expo-router'
 import React, { ReactNode, useCallback, useEffect, useMemo } from 'react'
 import { View } from 'react-native'
@@ -16,7 +16,7 @@ import { useReceiveSelectedNetwork } from '../store'
 
 export const ReceiveScreen = (): ReactNode => {
   const { theme } = useTheme()
-  const { networks } = useMergedNetworks()
+  const { networks } = useNetworksByAddress()
 
   const [selectedNetwork, setSelectedNetwork] = useReceiveSelectedNetwork()
 

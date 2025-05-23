@@ -104,13 +104,13 @@ export const NETWORK_X_TEST = {
   explorerUrl: 'https://subnets-test.avax.network/x-chain'
 } as Network
 
-export const MAIN_MERGED_NETWORKS = [
+export const MAIN_NETWORKS_BY_ADDRESS = [
   { ...AVALANCHE_MAINNET_NETWORK, chainName: ChainName.AVALANCHE_C_EVM },
   { ...AVALANCHE_XP_NETWORK, chainName: ChainName.AVALANCHE_XP },
   { ...BITCOIN_NETWORK, chainName: ChainName.BITCOIN }
 ]
 
-export const TEST_MERGED_NETWORKS = [
+export const TEST_NETWORKS_BY_ADDRESS = [
   {
     ...AVALANCHE_TESTNET_NETWORK,
     chainName: ChainName.AVALANCHE_C_EVM_TESTNET

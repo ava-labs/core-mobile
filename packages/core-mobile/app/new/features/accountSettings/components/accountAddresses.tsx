@@ -14,7 +14,7 @@ import { NetworkLogoWithChain } from 'common/components/NetworkLogoWithChain'
 import { isXPChain } from 'utils/network/isAvalancheNetwork'
 import { NetworkVMType } from '@avalabs/vm-module-types'
 import { TRUNCATE_ADDRESS_LENGTH } from 'common/consts/text'
-import { useMergedNetworks } from 'common/hooks/useMergedNetworks'
+import { useNetworksByAddress } from 'common/hooks/useNetworksByAddress'
 
 export const AccountAddresses = ({
   account
@@ -24,7 +24,7 @@ export const AccountAddresses = ({
   const {
     theme: { colors }
   } = useTheme()
-  const { networks } = useMergedNetworks()
+  const { networks } = useNetworksByAddress()
 
   const onCopyAddress = (value: string, message: string): void => {
     copyToClipboard(value, message)

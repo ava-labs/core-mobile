@@ -2,24 +2,24 @@ import { Network } from '@avalabs/core-chains-sdk'
 import { useMemo } from 'react'
 import { useSelector } from 'react-redux'
 import {
-  MAIN_MERGED_NETWORKS,
-  TEST_MERGED_NETWORKS
+  MAIN_NETWORKS_BY_ADDRESS,
+  TEST_NETWORKS_BY_ADDRESS
 } from 'services/network/consts'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 
 /**
- * Hook to get the merged networks (networks are merged together with same address)
+ * Hook to get the networks by address (networks are merged together with same address)
  * based on the developer mode.
  * @returns {Object} An object containing the networks.
  */
-export function useMergedNetworks(): {
+export function useNetworksByAddress(): {
   networks: Network[]
 } {
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
 
   const networks = useMemo(() => {
-    if (isDeveloperMode) return TEST_MERGED_NETWORKS as Network[]
-    return MAIN_MERGED_NETWORKS as Network[]
+    if (isDeveloperMode) return TEST_NETWORKS_BY_ADDRESS as Network[]
+    return MAIN_NETWORKS_BY_ADDRESS as Network[]
   }, [isDeveloperMode])
 
   return { networks }

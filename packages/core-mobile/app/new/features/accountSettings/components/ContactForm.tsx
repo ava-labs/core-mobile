@@ -8,7 +8,7 @@ import {
   View
 } from '@avalabs/k2-alpine'
 import { NetworkVMType } from '@avalabs/vm-module-types'
-import { useMergedNetworks } from 'common/hooks/useMergedNetworks'
+import { useNetworksByAddress } from 'common/hooks/useNetworksByAddress'
 import {
   dismissAlertWithTextInput,
   showAlertWithTextInput
@@ -38,7 +38,7 @@ export const ContactForm = ({
   onUpdate: (contact: Contact) => void
   onSelectAvatar: () => void
 }): React.JSX.Element => {
-  const { networks } = useMergedNetworks()
+  const { networks } = useNetworksByAddress()
 
   const avatar = useMemo(() => {
     return loadAvatar(contact.avatar)

@@ -1,10 +1,10 @@
 import React from 'react'
 import { SelectNetworkScreen } from 'common/screens/SelectNetworkScreen'
-import { useMergedNetworks } from 'common/hooks/useMergedNetworks'
+import { useNetworksByAddress } from 'common/hooks/useNetworksByAddress'
 import { useReceiveSelectedNetwork } from '../store'
 
 export const SelectReceiveNetworkScreen = (): JSX.Element => {
-  const { networks } = useMergedNetworks()
+  const { networks } = useNetworksByAddress()
   const [selectedNetwork, setSelectedNetwork] = useReceiveSelectedNetwork()
 
   return (
