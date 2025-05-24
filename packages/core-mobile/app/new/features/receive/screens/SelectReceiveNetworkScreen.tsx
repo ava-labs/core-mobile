@@ -1,10 +1,10 @@
 import React from 'react'
 import { SelectNetworkScreen } from 'common/screens/SelectNetworkScreen'
-import { usePrimaryNetworks } from 'common/hooks/usePrimaryNetworks'
+import { useNetworksByAddress } from 'common/hooks/useNetworksByAddress'
 import { useReceiveSelectedNetwork } from '../store'
 
 export const SelectReceiveNetworkScreen = (): JSX.Element => {
-  const { networks } = usePrimaryNetworks()
+  const { networks } = useNetworksByAddress()
   const [selectedNetwork, setSelectedNetwork] = useReceiveSelectedNetwork()
 
   return (

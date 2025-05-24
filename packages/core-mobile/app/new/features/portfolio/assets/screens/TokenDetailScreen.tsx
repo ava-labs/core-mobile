@@ -62,11 +62,13 @@ import { selectIsPrivacyModeEnabled } from 'store/settings/securityPrivacy'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import { useNetworks } from 'hooks/networks/useNetworks'
 import { ChainId } from '@avalabs/core-chains-sdk'
+import { usePrimaryNetworks } from 'common/hooks/usePrimaryNetworks'
 
 export const TokenDetailScreen = (): React.JSX.Element => {
   const {
     theme: { colors }
   } = useTheme()
+  const { networks } = usePrimaryNetworks()
   const { navigate, back } = useRouter()
   const { getNetwork } = useNetworks()
   const { navigateToSwap } = useNavigateToSwap()
@@ -118,6 +120,11 @@ export const TokenDetailScreen = (): React.JSX.Element => {
     () => <NavigationTitleHeader title={tokenName} />,
     [tokenName]
   )
+
+  const isSendSupported = useMemo(() => {
+    const chainIds = networks.map(network => network.chainId)
+    return token && chainIds.includes(token.networkChainId)
+  }, [networks, token])
 
   const isSwapDisabled = useIsUIDisabledForNetwork(
     UI.Swap,
@@ -178,9 +185,15 @@ export const TokenDetailScreen = (): React.JSX.Element => {
   }, [getNetwork, navigate, setSelectedToken, token])
 
   const actionButtons: ActionButton[] = useMemo(() => {
-    const buttons: ActionButton[] = [
-      { title: ActionButtonTitle.Send, icon: 'send', onPress: handleSend }
-    ]
+    const buttons: ActionButton[] = []
+
+    if (isSendSupported) {
+      buttons.push({
+        title: ActionButtonTitle.Send,
+        icon: 'send',
+        onPress: handleSend
+      })
+    }
 
     if (!isSwapDisabled) {
       const fromTokenId = token?.localId
@@ -219,14 +232,15 @@ export const TokenDetailScreen = (): React.JSX.Element => {
 
     return buttons
   }, [
-    handleSend,
+    isSendSupported,
     isSwapDisabled,
     handleBuy,
     isTokenStakable,
     isBridgeDisabled,
     isTokenBridgeable,
-    navigateToSwap,
+    handleSend,
     token?.localId,
+    navigateToSwap,
     canAddStake,
     addStake,
     handleBridge
