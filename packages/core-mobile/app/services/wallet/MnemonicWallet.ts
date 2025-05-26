@@ -238,7 +238,7 @@ export class MnemonicWallet implements Wallet {
     }
   }
 
-  private async getSigningKey({
+  public async getSigningKey({
     accountIndex,
     network,
     provider
@@ -419,3 +419,12 @@ export class MnemonicWallet implements Wallet {
  * Thus, we are exporting a single instance of MnemonicWallet
  */
 export default new MnemonicWallet()
+
+export class MnemonicWalletFactory {
+  //TODO: move to WalletFactory
+  public static create(mnemonic: string): MnemonicWallet {
+    const newInstance = new MnemonicWallet()
+    newInstance.mnemonic = mnemonic
+    return newInstance
+  }
+}

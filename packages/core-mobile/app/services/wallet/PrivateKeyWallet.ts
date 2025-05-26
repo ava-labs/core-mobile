@@ -417,6 +417,7 @@ export class PrivateKeyWallet implements Wallet {
 export default new PrivateKeyWallet()
 
 export class PrivateKeyWalletFactory {
+  //TODO: move to WalletFactory
   public static create(walletSecret: string, pubKey: Buffer): PrivateKeyWallet {
     const newInstance = new PrivateKeyWallet()
     newInstance.privateKey = walletSecret
