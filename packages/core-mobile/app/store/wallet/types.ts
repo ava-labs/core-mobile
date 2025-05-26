@@ -12,6 +12,7 @@ export interface WalletsState {
 }
 
 export interface StoreWalletWithPinParams {
+  //TODO: add pin to params
   walletId: string
   walletSecret: string
   isResetting?: boolean
