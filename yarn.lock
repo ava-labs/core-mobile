@@ -266,7 +266,7 @@ __metadata:
     "@storybook/addon-ondevice-backgrounds": 7.6.20
     "@storybook/addon-ondevice-controls": 7.6.20
     "@storybook/react-native": 7.6.20
-    "@tanstack/query-sync-storage-persister": 5.59.6
+    "@tanstack/query-sync-storage-persister": 5.77.1
     "@tanstack/react-query": 5.59.8
     "@tanstack/react-query-persist-client": 5.59.6
     "@tradle/react-native-http": 2.0.1
@@ -11926,6 +11926,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@tanstack/query-core@npm:5.77.1":
+  version: 5.77.1
+  resolution: "@tanstack/query-core@npm:5.77.1"
+  checksum: 1d48fccf085791928afc61698a4bbcdbac88a398c9a3cf3191a34acc0991fab960d4d03dd00d4fb742b34102c12a4643f7e9279ab1bbeae8494c1c08846b75e2
+  languageName: node
+  linkType: hard
+
 "@tanstack/query-persist-client-core@npm:5.59.6":
   version: 5.59.6
   resolution: "@tanstack/query-persist-client-core@npm:5.59.6"
@@ -11935,13 +11942,22 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@tanstack/query-sync-storage-persister@npm:5.59.6":
-  version: 5.59.6
-  resolution: "@tanstack/query-sync-storage-persister@npm:5.59.6"
+"@tanstack/query-persist-client-core@npm:5.77.1":
+  version: 5.77.1
+  resolution: "@tanstack/query-persist-client-core@npm:5.77.1"
   dependencies:
-    "@tanstack/query-core": 5.59.6
-    "@tanstack/query-persist-client-core": 5.59.6
-  checksum: 50915034928b7d3fa3c3193eeba71ffbd90e7ea1154415065b323b8ceabae5a4395e48e7bf3dc7f59a1aca320bfcdec4c51092c41120063b65f6da221ddb9d40
+    "@tanstack/query-core": 5.77.1
+  checksum: ad719fe5b32ebe6b53a52410ab7ebeb8eec565087cc49ac6508066ed4ed5dca2b1fc92854d7b73cdcdae894bbe337d4d2c5b9b2a94e8619273459086c1a2f38d
+  languageName: node
+  linkType: hard
+
+"@tanstack/query-sync-storage-persister@npm:5.77.1":
+  version: 5.77.1
+  resolution: "@tanstack/query-sync-storage-persister@npm:5.77.1"
+  dependencies:
+    "@tanstack/query-core": 5.77.1
+    "@tanstack/query-persist-client-core": 5.77.1
+  checksum: c999807e56a56b9b88deb8bf883988b5e86b5b05fd714900dff9fcde7e089e0f185fb99407342251645c1b4c5cd4beb72fccaa4dd1b3b937ae5f8c3223691900
   languageName: node
   linkType: hard
 
@@ -27532,7 +27548,7 @@ react-native-webview@ava-labs/react-native-webview:
   peerDependencies:
     react: "*"
     react-native: "*"
-  checksum: ae658f8c94177d1b419ffb73d26bd70474b6c688af507daaabc11451f983f77a906b2aafcdfdd09c96cab846d9722dcaf26a7c22ee7d19fb4cf70578c8812ac5
+  checksum: d3c1de4c884696b7b8fbecbfbc45ab40101bee2bba99cc18f570f1d5f635fc173e43a760957e160cb31cd56e77941f059001a1132f476f7441de6ca28e0174de
   languageName: node
   linkType: hard
 
