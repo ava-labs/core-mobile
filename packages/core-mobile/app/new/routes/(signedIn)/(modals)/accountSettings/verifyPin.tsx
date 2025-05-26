@@ -14,8 +14,8 @@ import { ActivityIndicator, View } from '@avalabs/k2-alpine'
 const VerifyPinScreen = (): React.JSX.Element => {
   const { canGoBack, back } = useRouter()
   const activeWallet = useSelector(selectActiveWallet)
-  const { mnemonicToImport } = useLocalSearchParams<{
-    mnemonicToImport: string
+  const { walletSecretToImport } = useLocalSearchParams<{
+    walletSecretToImport: string
   }>()
   const dispatch = useDispatch<AppThunkDispatch>()
   const [isImporting, setIsImporting] = useState(false)
@@ -33,7 +33,10 @@ const VerifyPinScreen = (): React.JSX.Element => {
 
       try {
         await dispatch(
-          importMnemonicWalletAndAccount({ mnemonic: mnemonicToImport, pin })
+          importMnemonicWalletAndAccount({
+            mnemonic: walletSecretToImport,
+            pin
+          })
         ).unwrap()
 
         AnalyticsService.capture('MnemonicWalletImported', {
@@ -56,7 +59,7 @@ const VerifyPinScreen = (): React.JSX.Element => {
         setIsImporting(false)
       }
     },
-    [activeWallet, canGoBack, back, dispatch, mnemonicToImport]
+    [activeWallet, canGoBack, back, dispatch, walletSecretToImport]
   )
 
   if (isImporting) {

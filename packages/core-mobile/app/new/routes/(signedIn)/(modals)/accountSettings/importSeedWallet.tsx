@@ -72,11 +72,12 @@ const ImportSeedWallet = (): React.JSX.Element => {
       return
     }
 
-    // Navigate to the PIN verification screen, passing the mnemonic
     router.navigate({
       // @ts-ignore TODO: make routes typesafe
       pathname: '/accountSettings/verifyPin',
-      params: { mnemonicToImport: trimmedMnemonic }
+      params: {
+        walletSecretToImport: mnemonic
+      }
     })
   }, [mnemonic, router])
 
