@@ -10,6 +10,11 @@ import AnalyticsService from 'services/analytics/AnalyticsService'
 import { selectActiveAccount } from 'store/account'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { NetworkLogoWithChain } from 'common/components/NetworkLogoWithChain'
+import { selectEnabledChainIds } from 'store/network'
+import {
+  AVALANCHE_MAINNET_NETWORK,
+  AVALANCHE_TESTNET_NETWORK
+} from 'services/network/consts'
 import { AccountAddresses } from '../components/AccountAddresses'
 import { QRCode } from '../components/QRCode'
 import { useReceiveSelectedNetwork } from '../store'
@@ -19,9 +24,23 @@ export const ReceiveScreen = (): ReactNode => {
   const { networks } = usePrimaryNetworks()
 
   const [selectedNetwork, setSelectedNetwork] = useReceiveSelectedNetwork()
+  const enabledChainIds = useSelector(selectEnabledChainIds)
 
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const activeAccount = useSelector(selectActiveAccount)
+
+  useEffect(() => {
+    if (!enabledChainIds.includes(selectedNetwork.chainId)) {
+      setSelectedNetwork(
+        isDeveloperMode ? AVALANCHE_TESTNET_NETWORK : AVALANCHE_MAINNET_NETWORK
+      )
+    }
+  }, [
+    enabledChainIds,
+    isDeveloperMode,
+    selectedNetwork.chainId,
+    setSelectedNetwork
+  ])
 
   const address = useMemo(() => {
     switch (selectedNetwork.vmName) {
