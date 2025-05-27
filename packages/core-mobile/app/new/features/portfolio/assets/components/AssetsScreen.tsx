@@ -30,7 +30,7 @@ import { useAssetsFilterAndSort } from '../hooks/useAssetsFilterAndSort'
 import { TokenListItem } from './TokenListItem'
 
 interface Props {
-  goToTokenDetail: (localId: string) => void
+  goToTokenDetail: (localId: string, chainId: number) => void
   goToTokenManagement: () => void
   goToBuy: () => void
 }
@@ -90,7 +90,7 @@ const AssetsScreen: FC<Props> = ({
           <TokenListItem
             token={item}
             index={index}
-            onPress={() => goToTokenDetail(item.localId)}
+            onPress={() => goToTokenDetail(item.localId, item.networkChainId)}
             isGridView={isGridView}
           />
         </View>
@@ -171,7 +171,9 @@ const AssetsScreen: FC<Props> = ({
         refreshing={isRefetching || isLoading}
         onRefresh={refetch}
         key={isGridView ? 'grid' : 'list'}
-        keyExtractor={item => item.localId}
+        keyExtractor={(item, index) =>
+          `${index}-${item.networkChainId}-${item.localId}`
+        }
       />
     </Animated.View>
   )

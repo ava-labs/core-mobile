@@ -35,7 +35,7 @@ import TransactionHistory from 'features/portfolio/assets/components/Transaction
 import { ActionButtonTitle } from 'features/portfolio/assets/consts'
 import { useSendSelectedToken } from 'features/send/store'
 import { useAddStake } from 'features/stake/hooks/useAddStake'
-import { AVAX_TOKEN_ID } from 'common/consts/swap'
+import { AVAX_TOKEN_ID, USDC_TOKEN_ID } from 'common/consts/swap'
 import { useNavigateToSwap } from 'features/swap/hooks/useNavigateToSwap'
 import { UI, useIsUIDisabledForNetwork } from 'hooks/useIsUIDisabled'
 import React, { useCallback, useMemo, useRef, useState } from 'react'
@@ -78,8 +78,9 @@ export const TokenDetailScreen = (): React.JSX.Element => {
   const [tokenHeaderLayout, setTokenHeaderLayout] = useState<
     LayoutRectangle | undefined
   >()
-  const { localId } = useLocalSearchParams<{
+  const { localId, chainId } = useLocalSearchParams<{
     localId: string
+    chainId: string
   }>()
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const isPrivacyModeEnabled = useSelector(selectIsPrivacyModeEnabled)
@@ -91,8 +92,10 @@ export const TokenDetailScreen = (): React.JSX.Element => {
   const { formatCurrency } = useFormatCurrency()
 
   const token = useMemo(() => {
-    return filteredTokenList.find(tk => tk.localId === localId)
-  }, [filteredTokenList, localId])
+    return filteredTokenList.find(
+      tk => tk.localId === localId && tk.networkChainId === Number(chainId)
+    )
+  }, [chainId, filteredTokenList, localId])
 
   const isXpToken =
     token && (isTokenWithBalanceAVM(token) || isTokenWithBalancePVM(token))
@@ -180,10 +183,14 @@ export const TokenDetailScreen = (): React.JSX.Element => {
     ]
 
     if (!isSwapDisabled) {
+      const fromTokenId = token?.localId
+      const toTokenId =
+        fromTokenId === AVAX_TOKEN_ID ? USDC_TOKEN_ID : AVAX_TOKEN_ID
+
       buttons.push({
         title: ActionButtonTitle.Swap,
         icon: 'swap',
-        onPress: () => navigateToSwap(token?.localId)
+        onPress: () => navigateToSwap(fromTokenId, toTokenId)
       })
     }
 

@@ -325,9 +325,9 @@ const PortfolioHomeScreen = (): JSX.Element => {
   )
 
   const handleGoToTokenDetail = useCallback(
-    (localId: string): void => {
+    (localId: string, chainId: number): void => {
       // @ts-ignore TODO: make routes typesafe
-      push({ pathname: '/tokenDetail', params: { localId } })
+      push({ pathname: '/tokenDetail', params: { localId, chainId } })
     },
     [push]
   )
