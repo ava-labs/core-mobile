@@ -129,12 +129,7 @@ export const ReceiveScreen = (): ReactNode => {
             />
           </TouchableOpacity>
         </View>
-        <QRCode
-          testID="receive_token_qr_code"
-          address={address}
-          token={selectedNetwork.networkToken?.symbol ?? 'AVAX'}
-          label={selectedNetwork.chainName}
-        />
+        <QRCode testID="receive_token_qr_code" address={address} />
         <View
           style={{
             flex: 0.5
