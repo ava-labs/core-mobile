@@ -9,10 +9,7 @@ import {
 } from '@avalabs/avalanche-module'
 import { PrivacyModeAlert } from '@avalabs/k2-alpine'
 import { TokenType } from '@avalabs/vm-module-types'
-import {
-  CHAIN_IDS_WITH_INCORRECT_SYMBOL,
-  CHAIN_IDS_WITH_INCORRECT_SYMBOL_MAPPING
-} from 'consts/chainIdsWithIncorrectSymbol'
+import { CHAIN_IDS_WITH_INCORRECT_SYMBOL } from 'consts/chainIdsWithIncorrectSymbol'
 import { useNetworks } from 'hooks/networks/useNetworks'
 import { LocalTokenWithBalance } from '../../../store/balance/types'
 import { HiddenBalanceText } from './HiddenBalanceText'
@@ -56,21 +53,6 @@ export const TokenHeader = ({
     return token?.name
   }, [allNetworks, token])
 
-  const tokenSymbol = useMemo(() => {
-    if (
-      token &&
-      CHAIN_IDS_WITH_INCORRECT_SYMBOL.includes(token.networkChainId) &&
-      token.type === TokenType.NATIVE
-    ) {
-      return (
-        CHAIN_IDS_WITH_INCORRECT_SYMBOL_MAPPING[
-          token.networkChainId as keyof typeof CHAIN_IDS_WITH_INCORRECT_SYMBOL_MAPPING
-        ] ?? token.symbol
-      )
-    }
-    return token?.symbol
-  }, [token])
-
   const renderBalance = (): React.JSX.Element => {
     if (isLoading) {
       return <BalanceLoader />
@@ -97,7 +79,7 @@ export const TokenHeader = ({
 
           <Text
             sx={{ fontFamily: 'Aeonik-Medium', fontSize: 18, lineHeight: 28 }}>
-            {tokenSymbol}
+            {token?.symbol}
           </Text>
         </View>
         <View sx={{ marginTop: 5 }}>
