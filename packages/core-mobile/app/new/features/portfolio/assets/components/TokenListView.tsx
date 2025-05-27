@@ -11,10 +11,7 @@ import {
 import { selectIsPrivacyModeEnabled } from 'store/settings/securityPrivacy'
 import { useSelector } from 'react-redux'
 import { HiddenBalanceText } from 'common/components/HiddenBalanceText'
-import {
-  CHAIN_IDS_WITH_INCORRECT_SYMBOL,
-  CHAIN_IDS_WITH_INCORRECT_SYMBOL_MAPPING
-} from 'consts/chainIdsWithIncorrectSymbol'
+import { CHAIN_IDS_WITH_INCORRECT_SYMBOL } from 'consts/chainIdsWithIncorrectSymbol'
 import { useNetworks } from 'hooks/networks/useNetworks'
 import { TokenType } from '@avalabs/vm-module-types'
 import { TokenListViewProps } from '../types'
@@ -43,20 +40,6 @@ export const TokenListView = ({
     }
     return token.name
   }, [allNetworks, token.name, token.networkChainId, token.type])
-
-  const tokenSymbol = useMemo(() => {
-    if (
-      CHAIN_IDS_WITH_INCORRECT_SYMBOL.includes(token.networkChainId) &&
-      token.type === TokenType.NATIVE
-    ) {
-      return (
-        CHAIN_IDS_WITH_INCORRECT_SYMBOL_MAPPING[
-          token.networkChainId as keyof typeof CHAIN_IDS_WITH_INCORRECT_SYMBOL_MAPPING
-        ] ?? token.symbol
-      )
-    }
-    return token.symbol
-  }, [token.networkChainId, token.symbol, token.type])
 
   return (
     <View>
@@ -141,7 +124,7 @@ export const TokenListView = ({
                 ellipsizeMode="tail"
                 numberOfLines={1}
                 testID={`list_token_balance__${index}`}>
-                {token.balanceDisplayValue} {tokenSymbol}
+                {token.balanceDisplayValue} {token.symbol}
               </MaskedText>
               <PriceChangeIndicator
                 formattedPrice={formattedPrice}
