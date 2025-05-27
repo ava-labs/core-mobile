@@ -24,10 +24,7 @@ import RNWebView, {
   WebViewMessageEvent,
   WebViewNavigationEvent
 } from 'react-native-webview'
-import {
-  WebViewError,
-  WebViewErrorEvent
-} from 'react-native-webview/lib/WebViewTypes'
+import { WebViewErrorEvent } from 'react-native-webview/lib/WebViewTypes'
 import { useDispatch, useSelector } from 'react-redux'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import WalletConnectService from 'services/walletconnectv2/WalletConnectService'
@@ -93,7 +90,7 @@ export const BrowserTab = forwardRef<BrowserTabRef, { tabId: string }>(
     const disabled = activeTab?.id !== tabId
 
     const [urlToLoad, setUrlToLoad] = useState(activeHistoryUrl)
-    const [error, setError] = useState<WebViewError | undefined>(undefined)
+    const [error, setError] = useState<unknown | undefined>(undefined)
 
     const [favicon, setFavicon] = useState<string | undefined>(undefined)
     const [description, setDescription] = useState('')
@@ -106,16 +103,21 @@ export const BrowserTab = forwardRef<BrowserTabRef, { tabId: string }>(
       pageStyles?.backgroundColor || theme.colors.$surfacePrimary
 
     useEffect(() => {
-      const activeHistoryURL = activeHistory?.url
-        ? new URL(activeHistory.url)
-        : undefined
-      const urlToLoadURL = urlToLoad.length > 0 ? new URL(urlToLoad) : undefined
+      try {
+        const activeHistoryURL = activeHistory?.url
+          ? new URL(activeHistory.url)
+          : undefined
+        const urlToLoadURL =
+          urlToLoad.length > 0 ? new URL(urlToLoad) : undefined
 
-      if (
-        activeHistory?.url &&
-        activeHistoryURL?.origin !== urlToLoadURL?.origin
-      ) {
-        setUrlToLoad(activeHistory.url)
+        if (
+          activeHistory?.url &&
+          activeHistoryURL?.origin !== urlToLoadURL?.origin
+        ) {
+          setUrlToLoad(activeHistory.url)
+        }
+      } catch (e) {
+        setError(e)
       }
     }, [activeHistory?.url, urlToLoad])
 
