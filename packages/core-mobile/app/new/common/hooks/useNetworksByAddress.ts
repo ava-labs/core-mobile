@@ -1,10 +1,7 @@
 import { Network } from '@avalabs/core-chains-sdk'
 import { useMemo } from 'react'
 import { useSelector } from 'react-redux'
-import {
-  MAIN_NETWORKS_BY_ADDRESS,
-  TEST_NETWORKS_BY_ADDRESS
-} from 'services/network/consts'
+import { MAIN_NETWORKS, TEST_NETWORKS } from 'services/network/consts'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 
 /**
@@ -18,8 +15,8 @@ export function useNetworksByAddress(): {
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
 
   const networks = useMemo(() => {
-    if (isDeveloperMode) return TEST_NETWORKS_BY_ADDRESS as Network[]
-    return MAIN_NETWORKS_BY_ADDRESS as Network[]
+    if (isDeveloperMode) return TEST_NETWORKS as Network[]
+    return MAIN_NETWORKS as Network[]
   }, [isDeveloperMode])
 
   return { networks }

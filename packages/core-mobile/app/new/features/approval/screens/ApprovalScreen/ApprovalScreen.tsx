@@ -23,6 +23,8 @@ import Logger from 'utils/Logger'
 import { Eip1559Fees } from 'utils/Utils'
 import { withWalletConnectCache } from 'common/components/withWalletConnectCache'
 import { useNativeTokenWithBalanceByNetwork } from 'features/send/hooks/useNativeTokenWithBalanceByNetwork'
+import { NetworkTokenSymbols } from 'common/components/TokenIcon'
+import { L2_NETWORK_SYMBOL_MAPPING } from 'consts/chainIdsWithIncorrectSymbol'
 import { Account } from '../../components/Account'
 import BalanceChange from '../../components/BalanceChange/BalanceChange'
 import { Details } from '../../components/Details'
@@ -43,6 +45,10 @@ const ApprovalScreen = ({
   const network = getNetwork(chainId)
   const [amountError, setAmountError] = useState<string | undefined>()
   const nativeToken = useNativeTokenWithBalanceByNetwork(network)
+
+  const symbol = chainId
+    ? (L2_NETWORK_SYMBOL_MAPPING[chainId] as NetworkTokenSymbols)
+    : undefined
 
   const accountSelector =
     'account' in signingData
@@ -233,7 +239,7 @@ const ApprovalScreen = ({
             alignItems: 'center',
             marginBottom: 36
           }}>
-          <TokenLogo logoUri={logoUri} size={62} />
+          <TokenLogo logoUri={logoUri} symbol={symbol} size={62} />
           <View
             style={{
               alignItems: 'center',
@@ -255,7 +261,7 @@ const ApprovalScreen = ({
         </View>
       )
     },
-    []
+    [symbol]
   )
 
   const renderDappInfoOrTitle = useCallback((): JSX.Element | null => {
@@ -278,6 +284,7 @@ const ApprovalScreen = ({
           <Separator sx={{ marginHorizontal: 16 }} />
           <Network
             logoUri={displayData.network.logoUri}
+            symbol={symbol}
             name={displayData.network.name}
           />
         </View>
@@ -288,6 +295,7 @@ const ApprovalScreen = ({
       return (
         <Network
           logoUri={displayData.network.logoUri}
+          symbol={symbol}
           name={displayData.network.name}
         />
       )
@@ -296,17 +304,17 @@ const ApprovalScreen = ({
     if (displayData.account) {
       return <Account address={displayData.account} />
     }
-  }, [displayData.account, displayData.network])
+  }, [displayData.account, displayData.network, symbol])
 
   const renderDetails = useCallback((): JSX.Element => {
     return (
       <View>
         {filteredSections.map((detailSection, index) => (
-          <Details key={index} detailSection={detailSection} />
+          <Details key={index} detailSection={detailSection} symbol={symbol} />
         ))}
       </View>
     )
-  }, [filteredSections])
+  }, [filteredSections, symbol])
 
   const renderBalanceChange = useCallback((): JSX.Element | null => {
     if (!hasBalanceChange) return null

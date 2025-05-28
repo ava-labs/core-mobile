@@ -25,7 +25,7 @@ export enum ChainName {
 
 export const AVALANCHE_MAINNET_NETWORK = {
   chainId: ChainId.AVALANCHE_MAINNET_ID,
-  chainName: ChainName.AVALANCHE_C,
+  chainName: ChainName.AVALANCHE_C_EVM,
   isTestnet: false,
   logoUri:
     'https://images.ctfassets.net/gcj8jwzm6086/5VHupNKwnDYJvqMENeV7iJ/3e4b8ff10b69bfa31e70080a4b142cd0/avalanche-avax-logo.svg',
@@ -40,7 +40,7 @@ export const AVALANCHE_MAINNET_NETWORK = {
 
 export const AVALANCHE_TESTNET_NETWORK = {
   chainId: ChainId.AVALANCHE_TESTNET_ID,
-  chainName: ChainName.AVALANCHE_C_TESTNET,
+  chainName: ChainName.AVALANCHE_C_EVM_TESTNET,
   isTestnet: true,
   logoUri:
     'https://images.ctfassets.net/gcj8jwzm6086/5VHupNKwnDYJvqMENeV7iJ/3e4b8ff10b69bfa31e70080a4b142cd0/avalanche-avax-logo.svg',
@@ -103,24 +103,6 @@ export const NETWORK_X_TEST = {
     'https://images.ctfassets.net/gcj8jwzm6086/5xiGm7IBR6G44eeVlaWrxi/1b253c4744a3ad21a278091e3119feba/xchain-square.svg',
   explorerUrl: 'https://subnets-test.avax.network/x-chain'
 } as Network
-
-export const MAIN_NETWORKS_BY_ADDRESS = [
-  { ...AVALANCHE_MAINNET_NETWORK, chainName: ChainName.AVALANCHE_C_EVM },
-  { ...AVALANCHE_XP_NETWORK, chainName: ChainName.AVALANCHE_XP },
-  { ...BITCOIN_NETWORK, chainName: ChainName.BITCOIN }
-]
-
-export const TEST_NETWORKS_BY_ADDRESS = [
-  {
-    ...AVALANCHE_TESTNET_NETWORK,
-    chainName: ChainName.AVALANCHE_C_EVM_TESTNET
-  },
-  {
-    ...AVALANCHE_XP_TEST_NETWORK,
-    chainName: ChainName.AVALANCHE_XP_TESTNET
-  },
-  { ...BITCOIN_TEST_NETWORK, chainName: ChainName.BITCOIN_TESTNET }
-]
 
 export const MAIN_NETWORKS = [
   AVALANCHE_MAINNET_NETWORK,

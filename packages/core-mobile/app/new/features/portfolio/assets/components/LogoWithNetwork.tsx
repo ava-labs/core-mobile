@@ -11,7 +11,10 @@ import {
   isTokenWithBalancePVM
 } from '@avalabs/avalanche-module'
 import { TokenLogo } from 'common/components/TokenLogo'
-import { CHAIN_IDS_WITH_INCORRECT_SYMBOL } from 'consts/chainIdsWithIncorrectSymbol'
+import {
+  CHAIN_IDS_WITH_INCORRECT_SYMBOL,
+  L2_NETWORK_SYMBOL_MAPPING
+} from 'consts/chainIdsWithIncorrectSymbol'
 
 interface Props {
   token: LocalTokenWithBalance
@@ -33,8 +36,9 @@ export const LogoWithNetwork = ({
   const tokenSymbol = useMemo(() => {
     return network &&
       CHAIN_IDS_WITH_INCORRECT_SYMBOL.includes(network.chainId) &&
-      token.type === TokenType.NATIVE
-      ? undefined
+      token.type === TokenType.NATIVE &&
+      L2_NETWORK_SYMBOL_MAPPING[network.chainId]
+      ? L2_NETWORK_SYMBOL_MAPPING[network.chainId]
       : token.symbol
   }, [network, token.symbol, token.type])
 
@@ -95,6 +99,7 @@ export const LogoWithNetwork = ({
         testID={`network_logo__${n.chainName}`}
         size={12}
         symbol={symbol}
+        chainId={n.chainId}
         logoUri={n.logoUri}
         isNetworkToken
       />
