@@ -1,4 +1,10 @@
-import { ANIMATED, Icons, useTheme, View } from '@avalabs/k2-alpine'
+import {
+  ANIMATED,
+  Icons,
+  SCREEN_HEIGHT,
+  useTheme,
+  View
+} from '@avalabs/k2-alpine'
 import { useHeaderHeight } from '@react-navigation/elements'
 import { useNavigation } from '@react-navigation/native'
 import { ErrorState } from 'common/components/ErrorState'
@@ -22,10 +28,7 @@ import Animated, {
   withSequence,
   withTiming
 } from 'react-native-reanimated'
-import {
-  useSafeAreaFrame,
-  useSafeAreaInsets
-} from 'react-native-safe-area-context'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useDispatch, useSelector } from 'react-redux'
 import { isCollectibleVisible } from 'store/nft/utils'
 import {
@@ -42,6 +45,7 @@ import {
   CollectibleFilterAndSortInitialState,
   useCollectiblesFilterAndSort
 } from '../hooks/useCollectiblesFilterAndSort'
+import { Platform } from 'react-native'
 
 type CollectibleDetailsScreenRouteParams = {
   localId?: string
@@ -59,7 +63,6 @@ export const CollectibleDetailsScreen = ({
   const navigation = useNavigation()
   const insets = useSafeAreaInsets()
   const headerHeight = useHeaderHeight()
-  const frame = useSafeAreaFrame()
 
   const { filteredAndSorted, isHiddenVisible } =
     useCollectiblesFilterAndSort(initial)
@@ -201,12 +204,7 @@ export const CollectibleDetailsScreen = ({
 
   useEffect(() => {
     navigation.setOptions({
-      headerRight,
-      headerTransparent: true,
-      headerStyle: {
-        elevation: 0,
-        shadowOpacity: 0
-      }
+      headerRight
     })
   }, [navigation, currentIndex, filteredAndSorted, headerRight])
 
@@ -217,7 +215,7 @@ export const CollectibleDetailsScreen = ({
   const renderEmpty = useMemo((): ReactNode => {
     return (
       <ErrorState
-        sx={{ height: frame.height - headerHeight, paddingTop: headerHeight }}
+        sx={{ height: SCREEN_HEIGHT - headerHeight, paddingTop: headerHeight }}
         title={`Oops\nThis collectible could not be loaded`}
         description="Please hit refresh or try again later"
         button={{
@@ -226,20 +224,20 @@ export const CollectibleDetailsScreen = ({
         }}
       />
     )
-  }, [frame.height, headerHeight, onBack])
+  }, [headerHeight, onBack])
 
   const heroStyle = useAnimatedStyle(() => {
     const translateY = interpolate(
       scrollY.value,
       [0, SNAP_DISTANCE],
-      [0, headerHeight + 70],
+      [0, headerHeight + 80],
       Extrapolation.CLAMP
     )
 
     const height = interpolate(
       scrollY.value,
       [0, SNAP_DISTANCE],
-      [frame.height, CARD_SIZE_SMALL],
+      [SCREEN_HEIGHT, CARD_SIZE_SMALL],
       Extrapolation.CLAMP
     )
 
@@ -257,15 +255,15 @@ export const CollectibleDetailsScreen = ({
     const translateY = interpolate(
       scrollY.value,
       [0, SNAP_DISTANCE],
-      [0, -frame.height + headerHeight + SNAP_DISTANCE * 2],
+      [0, -SCREEN_HEIGHT + headerHeight + SNAP_DISTANCE * 2],
       Extrapolation.CLAMP
     )
 
     return {
-      top: frame.height,
+      top: SCREEN_HEIGHT,
       left: 0,
       right: 0,
-      height: frame.height - headerHeight - SNAP_DISTANCE,
+      height: SCREEN_HEIGHT - headerHeight - SNAP_DISTANCE,
       transform: [
         {
           translateY
@@ -297,7 +295,12 @@ export const CollectibleDetailsScreen = ({
   })
 
   return (
-    <View style={{ flex: 1 }}>
+    <View
+      style={{
+        flex: 1,
+        // Android needs to have a negative margin to account for the status bar
+        marginTop: Platform.OS === 'ios' ? 0 : -insets.top
+      }}>
       {collectible ? (
         <Animated.ScrollView
           ref={scrollViewRef}
@@ -308,7 +311,7 @@ export const CollectibleDetailsScreen = ({
           }}
           contentContainerStyle={{
             paddingBottom: insets.bottom,
-            minHeight: frame.height + SNAP_DISTANCE
+            minHeight: SCREEN_HEIGHT + SNAP_DISTANCE
           }}
           nestedScrollEnabled
           bounces={false}
