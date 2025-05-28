@@ -94,6 +94,16 @@ export const CollectibleDetailsScreen = ({
     'worklet'
     scrollY.value = event.contentOffset.y
   })
+  const onScrollEndDrag = useCallback((): void => {
+    'worklet'
+    if (scrollY.value > SNAP_DISTANCE / 2) {
+      scrollViewRef.current?.scrollToEnd()
+    } else {
+      scrollViewRef.current?.scrollTo({
+        y: 0
+      })
+    }
+  }, [scrollY])
 
   const onSeeMore = (): void => {
     'worklet'
@@ -313,6 +323,7 @@ export const CollectibleDetailsScreen = ({
             paddingBottom: insets.bottom,
             minHeight: SCREEN_HEIGHT + SNAP_DISTANCE
           }}
+          onScrollEndDrag={onScrollEndDrag}
           nestedScrollEnabled
           bounces={false}
           showsVerticalScrollIndicator={false}
