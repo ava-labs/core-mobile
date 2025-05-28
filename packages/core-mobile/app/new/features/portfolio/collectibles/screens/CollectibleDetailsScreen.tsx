@@ -18,6 +18,7 @@ import React, {
   useRef,
   useState
 } from 'react'
+import { Platform } from 'react-native'
 import { Pressable } from 'react-native-gesture-handler'
 import Animated, {
   Extrapolation,
@@ -45,7 +46,6 @@ import {
   CollectibleFilterAndSortInitialState,
   useCollectiblesFilterAndSort
 } from '../hooks/useCollectiblesFilterAndSort'
-import { Platform } from 'react-native'
 
 type CollectibleDetailsScreenRouteParams = {
   localId?: string
