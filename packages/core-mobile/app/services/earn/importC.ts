@@ -10,6 +10,7 @@ import { TokenUnit } from '@avalabs/core-utils-sdk'
 import { cChainToken } from 'utils/units/knownTokens'
 import { weiToNano } from 'utils/units/converter'
 import { addBufferToCChainBaseFee } from 'services/wallet/utils'
+import { getAccountIndex } from 'store/account/utils'
 import {
   maxTransactionCreationRetries,
   maxTransactionStatusCheckRetries
@@ -44,7 +45,7 @@ export async function importC({
     cBaseFeeMultiplier
   )
   const unsignedTx = await WalletService.createImportCTx({
-    accountIndex: activeAccount.index,
+    accountIndex: getAccountIndex(activeAccount),
     baseFeeInNAvax: weiToNano(instantBaseFee.toSubUnit()),
     avaxXPNetwork,
     sourceChain: 'P',
@@ -57,7 +58,7 @@ export async function importC({
       externalIndices: [],
       internalIndices: []
     } as AvalancheTransactionRequest,
-    accountIndex: activeAccount.index,
+    accountIndex: getAccountIndex(activeAccount),
     network: avaxXPNetwork
   })
   const signedTx = UnsignedTx.fromJSON(signedTxJson).getSignedTx()

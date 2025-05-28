@@ -94,10 +94,10 @@ export function useSearchableTokenList({
       return selectTokensWithBalanceForAccountAndNetwork(
         state,
         chainId,
-        activeAccount?.index
+        activeAccount?.id
       )
     }
-    return selectTokensWithBalanceForAccount(state, activeAccount?.index)
+    return selectTokensWithBalanceForAccount(state, activeAccount?.id)
   })
 
   // 1. merge tokens with balance with the remaining

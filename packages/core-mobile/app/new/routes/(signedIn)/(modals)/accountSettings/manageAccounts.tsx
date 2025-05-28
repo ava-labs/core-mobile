@@ -27,11 +27,7 @@ import { ScrollView as RnScrollView } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import WalletService from 'services/wallet/WalletService'
-import {
-  addAccount,
-  selectAccounts,
-  setActiveAccountIndex
-} from 'store/account'
+import { addAccount, selectAccounts, setActiveAccountId } from 'store/account'
 import { selectIsPrivacyModeEnabled } from 'store/settings/securityPrivacy'
 import Logger from 'utils/Logger'
 
@@ -54,11 +50,11 @@ const ManageAccountsScreen = (): React.JSX.Element => {
   )
 
   const gotoAccountDetails = useCallback(
-    (accountIndex: number): void => {
+    (accountUuid: string): void => {
       navigate({
         // @ts-ignore TODO: make routes typesafe
         pathname: '/accountSettings/account',
-        params: { accountIndex: accountIndex.toString() }
+        params: { accountUuid }
       })
     },
     [navigate]
@@ -108,17 +104,14 @@ const ManageAccountsScreen = (): React.JSX.Element => {
         <View sx={{ width: 24 }} />
       ),
       value: (
-        <AccountBalance
-          accountIndex={account.index}
-          isActive={account.active}
-        />
+        <AccountBalance accountUuid={account.id} isActive={account.active} />
       ),
-      onPress: () => dispatch(setActiveAccountIndex(account.index)),
+      onPress: () => dispatch(setActiveAccountId(account.id)),
       accessory: (
         <TouchableOpacity
           hitSlop={16}
           sx={{ marginLeft: 4 }}
-          onPress={() => gotoAccountDetails(account.index)}>
+          onPress={() => gotoAccountDetails(account.id)}>
           <Icons.Alert.AlertCircle
             color={colors.$textSecondary}
             width={18}
@@ -206,10 +199,10 @@ export default ManageAccountsScreen
 
 const AccountBalance = ({
   isActive,
-  accountIndex
+  accountUuid
 }: {
   isActive: boolean
-  accountIndex: number
+  accountUuid: string
 }): React.JSX.Element => {
   const isPrivacyModeEnabled = useSelector(selectIsPrivacyModeEnabled)
   const {
@@ -220,7 +213,7 @@ const AccountBalance = ({
     fetchBalance,
     isFetchingBalance,
     isBalanceLoaded
-  } = useBalanceForAccount(accountIndex)
+  } = useBalanceForAccount(accountUuid)
   const { formatCurrency } = useFormatCurrency()
 
   const balance = useMemo(() => {

@@ -9,11 +9,10 @@ import { selectNetwork } from 'store/network/slice'
 import { isRpcRequest } from 'store/rpc/utils/isRpcRequest'
 import { mapToVmNetwork } from 'vmModule/utils/mapToVmNetwork'
 import { getChainIdFromCaip2 } from 'utils/caip2ChainIds'
-import { CorePrimaryAccount } from '@avalabs/types'
 import { Avalanche } from '@avalabs/core-wallets-sdk'
 import { getAddressByVM } from 'store/account/utils'
 import MnemonicWalletInstance from 'services/wallet/MnemonicWallet'
-import { selectActiveAccount } from 'store/account'
+import { Account, selectActiveAccount } from 'store/account'
 import WalletService from 'services/wallet/WalletService'
 import { WalletType } from 'services/wallet/types'
 import { AgnosticRpcProvider, Request } from '../../types'
@@ -108,7 +107,7 @@ export const handleRequestViaVMModule = async ({
 const getContext = (
   method: VmModuleRpcMethod,
   params: unknown,
-  activeAccount: CorePrimaryAccount | undefined
+  activeAccount: Account | undefined
 ): Record<string, string> | undefined => {
   if (
     method === VmModuleRpcMethod.AVALANCHE_SEND_TRANSACTION ||

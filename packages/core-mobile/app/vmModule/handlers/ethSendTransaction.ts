@@ -4,7 +4,7 @@ import WalletService from 'services/wallet/WalletService'
 import { rpcErrors } from '@metamask/rpc-errors'
 import { Account } from 'store/account/types'
 import { TransactionRequest } from 'ethers'
-
+import { getAccountIndex } from 'store/account/utils'
 export const ethSendTransaction = async ({
   transactionRequest,
   network,
@@ -40,7 +40,7 @@ export const ethSendTransaction = async ({
   try {
     const signedTx = await WalletService.sign({
       transaction,
-      accountIndex: account.index,
+      accountIndex: getAccountIndex(account),
       network
     })
 

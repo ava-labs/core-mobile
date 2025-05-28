@@ -5,7 +5,7 @@ import {
   toggleDeveloperMode
 } from 'store/settings/advanced'
 import { selectNetwork } from 'store/network'
-import { selectAccountByAddress, setActiveAccountIndex } from 'store/account'
+import { selectAccountByAddress, setActiveAccountId } from 'store/account'
 
 export const handleProcessNotificationData = async (
   listenerApi: AppListenerEffectAPI,
@@ -29,10 +29,10 @@ export const handleProcessNotificationData = async (
   if ('accountAddress' in data && typeof data.accountAddress === 'string') {
     const account = selectAccountByAddress(data.accountAddress)(state)
     if (account) {
-      dispatch(setActiveAccountIndex(account.index))
+      dispatch(setActiveAccountId(account.id))
     }
   }
-  if ('accountIndex' in data && typeof data.accountIndex === 'number') {
-    dispatch(setActiveAccountIndex(data.accountIndex))
+  if ('accountId' in data && typeof data.accountId === 'string') {
+    dispatch(setActiveAccountId(data.accountId))
   }
 }

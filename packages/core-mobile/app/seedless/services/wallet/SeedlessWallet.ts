@@ -14,7 +14,8 @@ import {
   BitcoinProvider,
   JsonRpcBatchInternal,
   createPsbt,
-  getEvmAddressFromPubKey
+  getEvmAddressFromPubKey,
+  DerivationPath
 } from '@avalabs/core-wallets-sdk'
 import { sha256 } from '@noble/hashes/sha256'
 import { EVM, utils } from '@avalabs/avalanchejs'
@@ -29,7 +30,6 @@ import {
   TypedData,
   TypedDataV1,
   MessageTypes,
-  WalletType,
   RpcMethod
 } from '@avalabs/vm-module-types'
 import { isTypedData, isTypedDataV1 } from '@avalabs/evm-module'
@@ -316,11 +316,10 @@ export default class SeedlessWallet implements Wallet {
     provXP: Avalanche.JsonRpcProvider
   }): Promise<Record<NetworkVMType, string>> {
     const addresses = await ModuleManager.getAddresses({
-      walletType: WalletType.Seedless,
+      secretId: '0',
       accountIndex: 0,
-      xpub: this.#addressPublicKey.evm,
-      xpubXP: this.#addressPublicKey.xp,
-      network: mapToVmNetwork(network)
+      network: mapToVmNetwork(network),
+      derivationPathType: DerivationPath.BIP44
     })
     const pubKeyBufferC = this.getPubKeyBufferC()
     return {

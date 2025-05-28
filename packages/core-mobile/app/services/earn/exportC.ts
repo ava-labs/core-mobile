@@ -11,6 +11,7 @@ import { FundsStuckError } from 'hooks/earn/errors'
 import { AvaxC } from 'types/AvaxC'
 import { weiToNano } from 'utils/units/converter'
 import { addBufferToCChainBaseFee } from 'services/wallet/utils'
+import { getAccountIndex } from 'store/account/utils'
 import { maxTransactionStatusCheckRetries } from './utils'
 
 export type ExportCParams = {
@@ -59,7 +60,7 @@ export async function exportC({
   const unsignedTxWithFee = await WalletService.createExportCTx({
     amountInNAvax: weiToNano(requiredAmountAvax.toSubUnit()),
     baseFeeInNAvax: weiToNano(instantBaseFeeAvax.toSubUnit()),
-    accountIndex: activeAccount.index,
+    accountIndex: getAccountIndex(activeAccount),
     avaxXPNetwork,
     destinationChain: 'P',
     destinationAddress: activeAccount.addressPVM
@@ -67,7 +68,7 @@ export async function exportC({
 
   const signedTxWithFeeJson = await WalletService.sign({
     transaction: { tx: unsignedTxWithFee } as AvalancheTransactionRequest,
-    accountIndex: activeAccount.index,
+    accountIndex: getAccountIndex(activeAccount),
     network: avaxXPNetwork
   })
   const signedTxWithFee = UnsignedTx.fromJSON(signedTxWithFeeJson).getSignedTx()

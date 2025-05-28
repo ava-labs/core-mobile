@@ -14,7 +14,21 @@ jest.mock('store/account/slice', () => {
 
 const mockDispatch = jest.fn()
 const mockListenerApi = {
-  getState: jest.fn(),
+  getState: jest.fn(() => ({
+    wallet: {
+      wallets: {
+        '0': {
+          id: '0',
+          name: 'Test Wallet',
+          type: 'mnemonic',
+          isActive: true
+        }
+      }
+    },
+    account: {
+      accounts: mockAccounts
+    }
+  })),
   dispatch: mockDispatch
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
 } as any
@@ -85,7 +99,7 @@ describe('avalanche_renameAccount handler', () => {
     })
 
     it('should return error when new account name is an empty string', async () => {
-      const testRequest = createRequest(['2', ''])
+      const testRequest = createRequest(['1', ''])
 
       const result = await handler.handle(testRequest, mockListenerApi)
 

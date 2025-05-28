@@ -3,6 +3,7 @@ import { WalletType } from 'services/wallet/types'
 export interface Wallet {
   id: string
   name: string
+  isActive: boolean
   type: WalletType
 }
 
@@ -13,7 +14,7 @@ export interface WalletsState {
 
 export interface StoreWalletWithPinParams {
   walletId: string
-  walletSecret: string
+  encryptedWalletKey: string
   isResetting?: boolean
   type: WalletType
 }
