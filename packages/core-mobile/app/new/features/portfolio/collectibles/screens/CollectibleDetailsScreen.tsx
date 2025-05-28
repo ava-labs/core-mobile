@@ -90,10 +90,11 @@ export const CollectibleDetailsScreen = ({
   const bounceValue = useSharedValue(0)
   const scrollViewRef = useRef<Animated.ScrollView>(null)
 
-  const scrollViewHandler = useAnimatedScrollHandler(event => {
+  const onScroll = useAnimatedScrollHandler(event => {
     'worklet'
     scrollY.value = event.contentOffset.y
   })
+
   const onScrollEndDrag = useCallback((): void => {
     'worklet'
     if (scrollY.value > SNAP_DISTANCE / 2) {
@@ -314,7 +315,7 @@ export const CollectibleDetailsScreen = ({
       {collectible ? (
         <Animated.ScrollView
           ref={scrollViewRef}
-          onScroll={scrollViewHandler}
+          onScroll={onScroll}
           style={{
             flex: 1,
             position: 'relative'
