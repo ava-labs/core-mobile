@@ -12,6 +12,9 @@ export const useNetworksListener = (queryClient: QueryClient): void => {
 
   // @ts-ignore
   useEffect(() => {
+    // This is used to invalidate the networks query when the developer mode is toggled or the app is unlocked.
+    // This ensures that the networks are always up to date when the user interacts with the app.
+    // we ran into issues with network RpcUrls not being updated and send flow was broken due to networks still using the unsupported RpcUrls
     return dispatch(
       addListener({
         matcher: isAnyOf(toggleDeveloperMode, onAppUnlocked),
