@@ -1,4 +1,4 @@
-import { useTheme, View } from '@avalabs/k2-alpine'
+import { alpha, useTheme, View } from '@avalabs/k2-alpine'
 import {
   NETWORK_TOKEN_SYMBOL_TO_ICON,
   NetworkTokenSymbols
@@ -35,16 +35,21 @@ export const SupportedReceiveEvmTokens = ({
         flexDirection: 'row',
         ...style
       }}>
-      {l2Tokens.map(symbol => {
+      {l2Tokens.map((symbol, index) => {
         const Icon = NETWORK_TOKEN_SYMBOL_TO_ICON[symbol as NetworkTokenSymbols]
         return (
           <View
             key={symbol}
             style={{
+              width: iconSize,
+              height: iconSize,
+              justifyContent: 'center',
+              alignItems: 'center',
+              zIndex: 1 - index,
               marginRight: -4,
-              borderRadius: 10,
+              borderRadius: 1000,
               borderWidth: 1,
-              borderColor: colors.$surfaceSecondary,
+              borderColor: alpha(colors.$textPrimary, 0.1),
               overflow: 'hidden'
             }}>
             <Icon width={iconSize} height={iconSize} />
