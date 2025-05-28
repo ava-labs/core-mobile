@@ -5,8 +5,8 @@ import {
   ApprovalParams,
   ApprovalResponse,
   RpcMethod,
-  RpcMethod,
-  RequestPublicKeyParams
+  RequestPublicKeyParams,
+  RpcRequest
 } from '@avalabs/vm-module-types'
 import { providerErrors, rpcErrors } from '@metamask/rpc-errors'
 import walletService from 'services/wallet/WalletService'

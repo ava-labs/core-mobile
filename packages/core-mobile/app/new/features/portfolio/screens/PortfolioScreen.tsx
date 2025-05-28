@@ -78,13 +78,13 @@ const PortfolioHomeScreen = (): JSX.Element => {
   const tokenVisibility = useFocusedSelector(selectTokenVisibility)
   const balanceTotalInCurrency = useFocusedSelector(
     selectBalanceTotalInCurrencyForAccount(
-      activeAccount?.index ?? 0,
+      activeAccount?.id ?? '',
       tokenVisibility
     )
   )
   const isLoading = isBalanceLoading || isRefetchingBalance
   const balanceAccurate = useFocusedSelector(
-    selectBalanceForAccountIsAccurate(activeAccount?.index ?? 0)
+    selectBalanceForAccountIsAccurate(activeAccount?.id ?? '')
   )
   const selectedCurrency = useSelector(selectSelectedCurrency)
   const { formatCurrency } = useFormatCurrency()
@@ -100,7 +100,7 @@ const PortfolioHomeScreen = (): JSX.Element => {
 
   const { getMarketTokenBySymbol } = useWatchlist()
   const tokens = useFocusedSelector((state: RootState) =>
-    selectTokensWithBalanceForAccount(state, activeAccount?.index)
+    selectTokensWithBalanceForAccount(state, activeAccount?.id ?? '')
   )
 
   const totalPriceChanged = useMemo(

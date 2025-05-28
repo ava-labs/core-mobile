@@ -48,7 +48,7 @@ const AccountScreen = (): JSX.Element => {
         })
   }, [balanceAccurate, balanceTotalInCurrency, formatCurrency])
 
-  const { fetchBalance } = useBalanceForAccount(accountIndexNumber)
+  const { fetchBalance } = useBalanceForAccount(account?.id ?? '')
 
   useFocusEffect(
     useCallback(() => {

@@ -10,7 +10,7 @@ import { WalletType } from 'services/wallet/types'
 import { SeedlessPubKeysStorage } from 'seedless/services/storage/SeedlessPubKeysStorage'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import SeedlessService from 'seedless/services/SeedlessService'
-import { selectActiveNetwork, setActive } from 'store/network'
+import { selectActiveNetwork } from 'store/network'
 import { Network } from '@avalabs/core-chains-sdk'
 import { getAccountIndex } from 'store/account/utils'
 import {

@@ -22,7 +22,6 @@ import { uuid } from 'utils/uuid'
 import { CORE_MOBILE_WALLET_ID } from 'services/walletconnectv2/types'
 import { ChannelId } from 'services/notifications/channels'
 import Keychain from 'react-native-keychain'
-import { Wallet } from 'store/wallet/types'
 import Logger from 'utils/Logger'
 import { initialState as watchlistInitialState } from './watchlist'
 import {
@@ -406,7 +405,7 @@ export const migrations = {
 
     return newState
   },
-  20: (state: any) => {
+  21: (state: any) => {
     Logger.info('state.account', state.account)
     // Check if migration is needed (presence of activeAccountIndex)
     if (state.account?.activeAccountIndex === undefined) {

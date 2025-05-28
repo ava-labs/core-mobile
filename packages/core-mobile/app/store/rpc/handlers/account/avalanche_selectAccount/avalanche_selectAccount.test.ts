@@ -2,7 +2,7 @@ import { rpcErrors } from '@metamask/rpc-errors'
 import { RpcMethod, RpcProvider, RpcRequest } from 'store/rpc/types'
 import mockSession from 'tests/fixtures/walletConnect/session.json'
 import mockAccounts from 'tests/fixtures/accounts.json'
-import { setActiveAccountIndex } from 'store/account/slice'
+import { setActiveAccountId } from 'store/account'
 import { avalancheSelectAccountHandler as handler } from './avalanche_selectAccount'
 
 jest.mock('store/account/slice', () => {

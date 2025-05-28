@@ -18,6 +18,7 @@ import {
   isTokenWithBalancePVM
 } from '@avalabs/avalanche-module'
 import { TokenVisibility } from 'store/portfolio'
+import { getAccountIndex } from 'store/account/utils'
 import {
   Balance,
   Balances,
@@ -110,7 +111,7 @@ export const selectTokensWithZeroBalanceByNetwork = (
     (activeAccount, allBalances): LocalTokenWithBalance[] => {
       if (!activeAccount || !chainId) return []
 
-      const key = getKey(chainId, activeAccount.index)
+      const key = getKey(chainId, getAccountIndex(activeAccount).toString())
       const tokens = allBalances[key]?.tokens ?? []
       return tokens.filter(token => token.balance === 0n)
     }

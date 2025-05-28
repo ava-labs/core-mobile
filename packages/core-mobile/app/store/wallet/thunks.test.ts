@@ -21,7 +21,7 @@ describe('wallet thunks', () => {
   describe('storeWalletWithPin', () => {
     const mockParams = {
       walletId: 'test-wallet-1',
-      walletSecret: 'encrypted-key',
+      encryptedWalletKey: 'encrypted-key',
       isResetting: false,
       type: WalletType.MNEMONIC,
       isActive: true
@@ -46,7 +46,7 @@ describe('wallet thunks', () => {
 
       expect(BiometricsSDK.storeWalletWithPin).toHaveBeenCalledWith(
         mockParams.walletId,
-        mockParams.walletSecret,
+        mockParams.encryptedWalletKey,
         mockParams.isResetting
       )
 
