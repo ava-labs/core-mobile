@@ -109,7 +109,7 @@ export function usePinOrBiometryLogin({
           const dispatchStoreWalletWithPin = dispatch(
             storeWalletWithPin({
               walletId: activeWalletId,
-              encryptedWalletKey: encryptedData,
+              walletSecret: encryptedData,
               isResetting: false,
               type: WalletType.MNEMONIC
             })

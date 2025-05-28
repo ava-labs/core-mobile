@@ -128,13 +128,13 @@ export function useWallet(): UseWallet {
     walletType = WalletType.MNEMONIC
   }: OnPinCreatedParams): Promise<string> {
     const walletId = uuid()
-    const encryptedWalletKey = await encrypt(mnemonic, pin)
+    const encryptedMnemonic = await encrypt(mnemonic, pin)
 
     try {
       const dispatchStoreWalletWithPin = dispatch(
         storeWalletWithPin({
           walletId,
-          encryptedWalletKey,
+          walletSecret: encryptedMnemonic,
           isResetting,
           type: walletType
         })

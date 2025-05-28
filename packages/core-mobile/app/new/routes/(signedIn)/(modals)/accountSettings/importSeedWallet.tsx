@@ -65,7 +65,7 @@ const ImportSeedWallet = (): React.JSX.Element => {
         buttons: [
           {
             text: 'Dismiss',
-            style: 'cancel'
+            style: 'destructive'
           }
         ]
       })

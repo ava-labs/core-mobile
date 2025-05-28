@@ -18,7 +18,6 @@ import NavigationBarButton from 'common/components/NavigationBarButton'
 import { ScrollScreen } from 'common/components/ScrollScreen'
 import { TRUNCATE_ADDRESS_LENGTH } from 'common/consts/text'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
-import { showSnackbar } from 'common/utils/toast'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
 import { useRouter } from 'expo-router'
 import { useBalanceForAccount } from 'new/common/contexts/useBalanceForAccount'
@@ -105,13 +104,13 @@ const ManageAccountsScreen = (): React.JSX.Element => {
           title: (
             <Text
               variant="body1"
-          numberOfLines={2}
+              numberOfLines={2}
               sx={{
                 color: colors.$textPrimary,
                 fontSize: 14,
                 lineHeight: 16,
-            fontWeight: '500',
-            width: SCREEN_WIDTH * 0.3
+                fontWeight: '500',
+                width: SCREEN_WIDTH * 0.3
               }}>
               {account.name}
             </Text>
@@ -125,7 +124,7 @@ const ManageAccountsScreen = (): React.JSX.Element => {
                 lineHeight: 16,
                 fontWeight: '500'
               }}>
-          {truncateAddress(account.addressC, TRUNCATE_ADDRESS_LENGTH)}
+              {truncateAddress(account.addressC, TRUNCATE_ADDRESS_LENGTH)}
             </Text>
           ),
           leftIcon: account.active ? (
