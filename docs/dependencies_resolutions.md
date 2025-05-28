@@ -4,7 +4,7 @@
 
 ### "ansi-styles": "3.2.1"
 
-we have to force ansi-styles to be v3 or else jest will break 
+we have to force ansi-styles to be v3 or else jest will break
 
 ```
 TypeError: Cannot convert undefined or null to object
