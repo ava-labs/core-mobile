@@ -328,7 +328,7 @@ __metadata:
     expo-linear-gradient: 14.0.2
     expo-linking: 7.0.5
     expo-local-authentication: 15.0.2
-    expo-location: 18.1.5
+    expo-location: 18.0.10
     expo-router: 4.0.18
     expo-sms: 13.0.1
     expo-video: 2.0.5
@@ -18999,12 +18999,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"expo-location@npm:18.1.5":
-  version: 18.1.5
-  resolution: "expo-location@npm:18.1.5"
+"expo-location@npm:18.0.10":
+  version: 18.0.10
+  resolution: "expo-location@npm:18.0.10"
   peerDependencies:
     expo: "*"
-  checksum: 64938bd3570d6ddf9b1cf9cc920aa4047d030a6c7347b20883675da767f07b225894116b04f767dd431c1939bec96135a9a28f931466b9dcb6ec23871006b2f4
+  checksum: 3ed296dbcd8ff4bb853254283612b40fc7189579ffa7ce41912b5ff96f1a18f5477ee493eba22a1e26b0c6d9b16da2a82fbc15937e5e0568937a2c9aa153c0e2
   languageName: node
   linkType: hard
 
