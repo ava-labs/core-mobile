@@ -6,6 +6,7 @@ import BalanceService, {
 import { AppListenerEffectAPI, AppStartListening } from 'store/types'
 import { Account } from 'store/account/types'
 import {
+  selectAccountByUuid,
   selectActiveAccount,
   setAccounts,
   setActiveAccountId
@@ -276,7 +277,7 @@ const handleFetchBalanceForAccount = async (
     queryStatus: QueryStatus.LOADING,
     listenerApi,
     networks,
-    accountToFetchFor
+    account: accountToFetchFor
   }).catch(Logger.error)
 }
 
