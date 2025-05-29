@@ -1,4 +1,4 @@
-import { Network } from '@avalabs/core-chains-sdk'
+import { ChainId, Network } from '@avalabs/core-chains-sdk'
 import {
   Icons,
   Pressable,
@@ -16,7 +16,7 @@ import { useRouter } from 'expo-router'
 import { useNetworks } from 'hooks/networks/useNetworks'
 import React, { useCallback, useMemo, useState } from 'react'
 import { ListRenderItem } from 'react-native'
-import { alwaysEnabledChainIds } from 'store/network'
+import { alwaysEnabledChainIds, defaultEnabledL2ChainIds } from 'store/network'
 import { isPChain, isXChain, isXPChain } from 'utils/network/isAvalancheNetwork'
 
 enum SectionTypeEnum {
@@ -72,14 +72,25 @@ export const ManageNetworksScreen = (): JSX.Element => {
 
   const data = useMemo(() => {
     const primaryNetworks = Object.values(networks)
-      .filter(network => alwaysEnabledChainIds.includes(network.chainId))
+      .filter(network => {
+        if (network.chainId === ChainId.AVALANCHE_MAINNET_ID) {
+          network.chainName = 'Avalanche C-Chain'
+        }
+        return (
+          alwaysEnabledChainIds.includes(network.chainId) ||
+          defaultEnabledL2ChainIds.includes(network.chainId) ||
+          isXChain(network.chainId)
+        )
+      })
       .sort(sortPrimaryNetworks)
     const custom = filterNetworks(Object.values(customNetworks))
     const layer1Networks = filterNetworks(
       Object.values(networks).filter(
         network =>
           !alwaysEnabledChainIds.includes(network.chainId) &&
-          !custom.some(item => item.chainId === network.chainId)
+          !custom.some(item => item.chainId === network.chainId) &&
+          !defaultEnabledL2ChainIds.includes(network.chainId) &&
+          !isXChain(network.chainId)
       )
     )
 
