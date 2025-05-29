@@ -42,7 +42,9 @@ const supportedTokenSymbols = [
   TokenSymbol.USDT,
   TokenSymbol.VET,
   TokenSymbol.XLM,
-  TokenSymbol.XRP
+  TokenSymbol.XRP,
+  TokenSymbol.OP,
+  TokenSymbol.BASE
 ]
 
 export const hasLocalTokenLogo = (symbol: string): boolean => {
@@ -53,7 +55,11 @@ const supportedNetworkTokenSymbols = [
   TokenSymbol.AVAX,
   TokenSymbol.BTC,
   TokenSymbol.ETH,
-  TokenSymbol.SOL
+  TokenSymbol.SOL,
+  TokenSymbol.BASE,
+  TokenSymbol.OP,
+  TokenSymbol.BNB,
+  TokenSymbol.ARB
 ]
 
 export const hasLocalNetworkTokenLogo = (symbol: string): boolean => {

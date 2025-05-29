@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react'
+import React from 'react'
 import { Icons, SxProp, useTheme, View } from '@avalabs/k2-alpine'
 import { TokenType } from '@avalabs/vm-module-types'
 import { LocalTokenWithBalance } from 'store/balance'
@@ -30,26 +30,13 @@ export const LogoWithNetwork = ({
   const network = useSelector(selectNetwork(token.networkChainId))
   const isMalicious = isTokenMalicious(token)
 
-  const tokenSymbol = useMemo(() => {
-    return network &&
-      CHAIN_IDS_WITH_INCORRECT_SYMBOL.includes(network.chainId) &&
-      token.type === TokenType.NATIVE
-      ? undefined
-      : token.symbol
-  }, [network, token.symbol, token.type])
-
-  const tokenLogoUri = useMemo(() => {
-    return network &&
-      CHAIN_IDS_WITH_INCORRECT_SYMBOL.includes(network.chainId) &&
-      token.type === TokenType.NATIVE
-      ? network.logoUri
-      : token.logoUri
-  }, [network, token.logoUri, token.type])
-
   const shouldShowNetworkLogo =
     token.type !== TokenType.NATIVE ||
     isTokenWithBalanceAVM(token) ||
-    isTokenWithBalancePVM(token)
+    isTokenWithBalancePVM(token) ||
+    (network &&
+      CHAIN_IDS_WITH_INCORRECT_SYMBOL.includes(network.chainId) &&
+      token.type === TokenType.NATIVE)
 
   const renderNetworkLogo = (
     t: LocalTokenWithBalance,
@@ -95,6 +82,7 @@ export const LogoWithNetwork = ({
         testID={`network_logo__${n.chainName}`}
         size={12}
         symbol={symbol}
+        chainId={n.chainId}
         logoUri={n.logoUri}
         isNetworkToken
       />
@@ -105,8 +93,8 @@ export const LogoWithNetwork = ({
     <View sx={{ width: 36, ...sx }}>
       <TokenLogo
         size={36}
-        symbol={tokenSymbol}
-        logoUri={tokenLogoUri}
+        symbol={token.symbol}
+        logoUri={token.logoUri}
         isMalicious={isMalicious}
       />
       {shouldShowNetworkLogo && network ? (

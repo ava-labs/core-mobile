@@ -4,8 +4,10 @@ import { ListScreen } from 'common/components/ListScreen'
 import { NetworkLogoWithChain } from 'common/components/NetworkLogoWithChain'
 import { HORIZONTAL_MARGIN } from 'common/consts'
 import { useRouter } from 'expo-router'
+import { SupportedReceiveEvmTokens } from 'features/receive/components/SupportedReceiveEvmTokens'
 import React from 'react'
 import { ListRenderItem } from 'react-native'
+import { isAvalancheCChainId } from 'services/network/utils/isAvalancheNetwork'
 import { isPChain, isXChain, isXPChain } from 'utils/network/isAvalancheNetwork'
 
 export const SelectNetworkScreen = ({
@@ -27,6 +29,8 @@ export const SelectNetworkScreen = ({
 
   const renderItem: ListRenderItem<Network> = ({ item, index }) => {
     const isLastItem = index === networks.length - 1
+
+    const isAvalancheCChain = isAvalancheCChainId(item.chainId)
 
     const showChainLogo =
       isXPChain(item.chainId) ||
@@ -66,6 +70,30 @@ export const SelectNetworkScreen = ({
               variant="buttonMedium">
               {item.chainName}
             </Text>
+            {isAvalancheCChain && (
+              <View
+                sx={{
+                  flex: 1,
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  gap: 8,
+                  marginBottom: 8
+                }}>
+                <Text
+                  variant="subtitle2"
+                  style={{
+                    color: theme.colors.$textSecondary
+                  }}>
+                  Also supporting
+                </Text>
+                <SupportedReceiveEvmTokens
+                  iconSize={18}
+                  style={{
+                    justifyContent: 'flex-start'
+                  }}
+                />
+              </View>
+            )}
           </View>
           {selected?.chainId === item.chainId && (
             <Icons.Navigation.Check color={theme.colors.$textPrimary} />
