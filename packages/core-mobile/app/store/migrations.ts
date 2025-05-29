@@ -20,7 +20,7 @@ import { initialState as browserFavoritesInitialState } from './browser/slices/f
 import { getInitialState as browserTabsGetInitialState } from './browser/slices/tabs'
 import { initialState as browserGlobalHistoryInitialState } from './browser/slices/globalHistory'
 import { ViewOnceKey } from './viewOnce'
-import { TokenVisibility } from './portfolio'
+import { CollectibleVisibility, TokenVisibility } from './portfolio'
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export const migrations = {
@@ -321,5 +321,23 @@ export const migrations = {
         }
       }
     }
+  },
+  20: (state: any) => {
+    const collectibleVisibility = Object.entries(
+      state.nft?.hiddenNfts ?? {}
+    ).reduce((acc: CollectibleVisibility, [tokenId, _]) => {
+      acc[tokenId.toLowerCase()] = false
+      return acc
+    }, {}) as CollectibleVisibility
+    const newState = {
+      ...state,
+      portfolio: {
+        ...state.portfolio,
+        collectibleVisibility,
+        collectibleUnprocessableVisibility: false
+      }
+    }
+    delete newState.nft
+    return newState
   }
 }
