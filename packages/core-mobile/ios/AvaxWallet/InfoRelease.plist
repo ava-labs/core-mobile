@@ -66,6 +66,12 @@
 	<string>To scan QR we need camera permission.</string>
 	<key>NSFaceIDUsageDescription</key>
 	<string>$(DISPLAY_NAME) requires Face ID access to allow you quick and secure access to your wallet.</string>
+  <key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+  <string>Allow $(PRODUCT_NAME) to use your location</string>
+  <key>NSLocationAlwaysUsageDescription</key>
+  <string>Allow $(PRODUCT_NAME) to use your location</string>
+  <key>NSLocationWhenInUseUsageDescription</key>
+  <string>Allow $(PRODUCT_NAME) to use your location</string>
 	<key>LSApplicationQueriesSchemes</key>
 	<array>
 		<string>twitter</string>
