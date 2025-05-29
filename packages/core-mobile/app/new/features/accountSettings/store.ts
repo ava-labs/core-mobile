@@ -1,8 +1,9 @@
 import { AvatarType } from '@avalabs/k2-alpine'
 import { createZustandStore } from 'common/utils/createZustandStore'
+import { StorageKey } from 'resources/Constants'
+import { zustandMMKVStorage } from 'utils/mmkv/storages'
 import { create } from 'zustand'
-import { persist, createJSONStorage } from 'zustand/middleware'
-import AsyncStorage from '@react-native-async-storage/async-storage'
+import { persist } from 'zustand/middleware'
 
 export const useNewContactAvatar = createZustandStore<AvatarType | undefined>(
   undefined
@@ -33,8 +34,8 @@ export const useRecentAccounts = create<RecentAccountsState>()(
         })
     }),
     {
-      name: 'recent-accounts-storage',
-      storage: createJSONStorage(() => AsyncStorage)
+      name: StorageKey.RECENT_ACCOUNTS,
+      storage: zustandMMKVStorage
     }
   )
 )
