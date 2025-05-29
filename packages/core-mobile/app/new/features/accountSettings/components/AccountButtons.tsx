@@ -64,22 +64,6 @@ export const AccountButtons = ({
         onPress={handleShowAlertWithTextInput}>
         Rename account
       </Button>
-      {/* <Button
-        style={{ borderRadius: 12 }}
-        size="large"
-        type="secondary"
-        // todo: CP-10070
-        onPress={noop}>
-        Export private key
-      </Button> */}
-      {/* TODO: waiting product decision on whether we show this  */}
-      {/* <Button
-        style={{ borderRadius: 12 }}
-        size="large"
-        type="secondary"
-        onPress={noop}>
-        Hide account
-      </Button> */}
     </View>
   )
 }

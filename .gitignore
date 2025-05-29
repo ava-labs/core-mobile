@@ -14,3 +14,4 @@ yarn-error.log
 # intelliJ
 /AvaxWallet.iml
 /.idea/
+/packages/core-mobile/boosts/

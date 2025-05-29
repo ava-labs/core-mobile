@@ -11,7 +11,7 @@ import { ScrollScreen } from './ScrollScreen'
 export const VerifyWithPinOrBiometry = ({
   onLoginSuccess
 }: {
-  onLoginSuccess: (mnemonic: string) => void
+  onLoginSuccess: (mnemonic: string) => void //TODO: rename to onVerifySuccess: (secret: string)
 }): JSX.Element => {
   const pinInputRef = useRef<PinInputActions>(null)
 

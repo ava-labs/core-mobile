@@ -1,14 +1,21 @@
 import React from 'react'
 import { useTheme, Text, GroupList, View } from '@avalabs/k2-alpine'
+import { useSelector } from 'react-redux'
+import { selectWalletById } from 'store/wallet/slice'
+import { Account } from 'store/account'
+import { CoreAccountType } from '@avalabs/types'
 
 export const WalletInfo = ({
-  showPrivateKey
+  showPrivateKey,
+  account
 }: {
   showPrivateKey: () => void
+  account: Account
 }): React.JSX.Element => {
   const {
     theme: { colors }
   } = useTheme()
+  const wallet = useSelector(selectWalletById(account?.walletId ?? ''))
 
   const data = [
     {
@@ -22,8 +29,7 @@ export const WalletInfo = ({
             lineHeight: 22,
             marginLeft: 9
           }}>
-          {/* TODO: CP-10070 */}
-          {'Imported'}
+          {account?.type === CoreAccountType.IMPORTED ? 'Imported' : 'Primary'}
         </Text>
       )
     },
@@ -38,8 +44,7 @@ export const WalletInfo = ({
             lineHeight: 22,
             marginLeft: 9
           }}>
-          {/* TODO: CP-10070 */}
-          {'Test wallet'}
+          {wallet?.name ?? 'Unknown Wallet'}
         </Text>
       )
     },
