@@ -73,9 +73,14 @@ export const ManageNetworksScreen = (): JSX.Element => {
   const data = useMemo(() => {
     const primaryNetworks = Object.values(networks)
       .filter(network => {
-        if (network.chainId === ChainId.AVALANCHE_MAINNET_ID) {
+        if (ChainId.AVALANCHE_MAINNET_ID === network.chainId) {
           network.chainName = 'Avalanche C-Chain'
         }
+
+        if (ChainId.AVALANCHE_TESTNET_ID === network.chainId) {
+          network.chainName = 'Avalanche C-Chain Testnet'
+        }
+
         return (
           alwaysEnabledChainIds.includes(network.chainId) ||
           defaultEnabledL2ChainIds.includes(network.chainId) ||
