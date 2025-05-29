@@ -15,6 +15,7 @@ import AnalyticsService from 'services/analytics/AnalyticsService'
 import { useCallback } from 'react'
 import { storeWalletWithPin } from 'store/wallet/thunks'
 import { uuid } from 'utils/uuid'
+import { AppThunkDispatch } from 'store/types'
 
 type InitWalletServiceAndUnlockProps = {
   mnemonic: string
@@ -55,7 +56,7 @@ export async function initWalletServiceAndUnlock({
  * destroyWallet - call when user ends session
  */
 export function useWallet(): UseWallet {
-  const dispatch = useDispatch()
+  const dispatch = useDispatch<AppThunkDispatch>()
   const cachedWalletType = useSelector(selectWalletType)
 
   /**
@@ -127,18 +128,17 @@ export function useWallet(): UseWallet {
     walletType = WalletType.MNEMONIC
   }: OnPinCreatedParams): Promise<string> {
     const walletId = uuid()
-    const encryptedWalletKey = await encrypt(mnemonic, pin)
+    const encryptedMnemonic = await encrypt(mnemonic, pin)
 
     try {
       const dispatchStoreWalletWithPin = dispatch(
         storeWalletWithPin({
           walletId,
-          encryptedWalletKey,
+          walletSecret: encryptedMnemonic,
           isResetting,
           type: walletType
         })
       )
-      // @ts-ignore
       await dispatchStoreWalletWithPin.unwrap()
 
       return Promise.resolve(walletId)

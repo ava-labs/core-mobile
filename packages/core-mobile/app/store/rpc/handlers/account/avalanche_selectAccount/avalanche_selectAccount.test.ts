@@ -2,9 +2,12 @@ import { rpcErrors } from '@metamask/rpc-errors'
 import { RpcMethod, RpcProvider, RpcRequest } from 'store/rpc/types'
 import mockSession from 'tests/fixtures/walletConnect/session.json'
 import mockAccounts from 'tests/fixtures/accounts.json'
-import { setActiveAccountId } from 'store/account'
+import { setActiveAccount } from 'store/account/thunks'
 import { avalancheSelectAccountHandler as handler } from './avalanche_selectAccount'
 
+jest.mock('store/account/thunks', () => ({
+  setActiveAccount: jest.fn()
+}))
 jest.mock('store/account/slice', () => {
   const actual = jest.requireActual('store/account/slice')
   return {
@@ -14,7 +17,9 @@ jest.mock('store/account/slice', () => {
   }
 })
 
-const mockDispatch = jest.fn()
+const mockDispatch = jest.fn(() => ({
+  unwrap: jest.fn(() => Promise.resolve())
+}))
 const mockListenerApi = {
   getState: jest.fn(),
   dispatch: mockDispatch
@@ -93,7 +98,7 @@ describe('avalanche_selectAccount handler', () => {
 
       const result = await handler.handle(testRequest, mockListenerApi)
 
-      expect(mockDispatch).toHaveBeenCalledWith(setActiveAccountId('1'))
+      expect(setActiveAccount).toHaveBeenCalledWith('1')
 
       expect(result).toEqual({ success: true, value: [] })
     })

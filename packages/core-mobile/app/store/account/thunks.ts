@@ -5,10 +5,12 @@ import AccountsService from 'services/account/AccountsService'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { selectWalletType } from 'store/app/slice'
 import { selectActiveNetwork } from 'store/network'
+import { selectActiveWalletId, setActiveWallet } from 'store/wallet/slice'
 import {
   reducerName,
   selectAccounts,
   selectActiveAccount,
+  selectAccountByUuid,
   setAccount,
   setActiveAccountId
 } from './slice'
@@ -28,11 +30,17 @@ export const addAccount = createAsyncThunk<void, void, ThunkApi>(
     const activeAccountIndex = activeAccount
       ? getAccountIndex(activeAccount)
       : 0
+    const activeWalletId = selectActiveWalletId(state)
+
+    if (!activeWalletId) {
+      throw new Error('Active wallet ID is not set')
+    }
     const acc = await AccountsService.createNextAccount({
       index: accIndex,
       activeAccountIndex,
       walletType,
-      network: activeNetwork
+      network: activeNetwork,
+      walletId: activeWalletId
     })
 
     thunkApi.dispatch(setAccount(acc))
@@ -51,5 +59,27 @@ export const addAccount = createAsyncThunk<void, void, ThunkApi>(
         }))
       })
     }
+  }
+)
+
+export const setActiveAccount = createAsyncThunk<void, string, ThunkApi>(
+  `${reducerName}/setActiveAccount`,
+  async (accountId, thunkApi) => {
+    const state = thunkApi.getState()
+    const account = selectAccountByUuid(accountId)(state)
+
+    if (!account) {
+      throw new Error(`Account with ID "${accountId}" not found`)
+    }
+
+    const activeWalletId = selectActiveWalletId(state)
+
+    // If account is from a different wallet, set that wallet as active first
+    if (account.walletId !== activeWalletId) {
+      thunkApi.dispatch(setActiveWallet(account.walletId))
+    }
+
+    // Then set the active account
+    thunkApi.dispatch(setActiveAccountId(accountId))
   }
 )
