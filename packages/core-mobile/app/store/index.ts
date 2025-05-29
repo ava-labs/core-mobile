@@ -18,7 +18,6 @@ import { portfolioReducer as portfolio } from './portfolio/slice'
 import { customTokenReducer as customToken } from './customToken/slice'
 import { securityReducer as security } from './security/slice'
 import { posthogReducer as posthog } from './posthog/slice'
-import { nftReducer as nft } from './nft/slice'
 import { addressBookReducer as addressBook } from './addressBook/slice'
 import { viewOnceReducer as viewOnce } from './viewOnce/slice'
 import settings from './settings'
@@ -47,7 +46,6 @@ const combinedReducer = combineReducers({
   unifiedBridge,
   customToken,
   posthog,
-  nft,
   security,
   rpc,
   viewOnce,

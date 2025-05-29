@@ -323,13 +323,12 @@ export const migrations = {
     }
   },
   20: (state: any) => {
-    const collectibleVisibility = state.nft.hiddenNfts.reduce(
-      (acc: CollectibleVisibility, tokenId: string) => {
-        acc[tokenId.toLowerCase()] = false
-        return acc
-      },
-      {}
-    ) as CollectibleVisibility
+    const collectibleVisibility = Object.entries(
+      state.nft?.hiddenNfts ?? {}
+    ).reduce((acc: CollectibleVisibility, [tokenId, _]) => {
+      acc[tokenId.toLowerCase()] = false
+      return acc
+    }, {}) as CollectibleVisibility
     const newState = {
       ...state,
       portfolio: {
@@ -338,7 +337,7 @@ export const migrations = {
         collectibleUnprocessableVisibility: false
       }
     }
-    delete newState.nft.hiddenNfts
+    delete newState.nft
     return newState
   }
 }
