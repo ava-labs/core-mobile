@@ -4,9 +4,11 @@ import { TokenLogo } from 'new/common/components/TokenLogo'
 
 export const Network = ({
   logoUri,
+  symbol,
   name
 }: {
   logoUri: string | undefined
+  symbol?: string
   name: string
 }): JSX.Element => {
   const {
@@ -39,7 +41,7 @@ export const Network = ({
           flex: 1,
           justifyContent: 'flex-end'
         }}>
-        <TokenLogo logoUri={logoUri} size={24} />
+        <TokenLogo logoUri={logoUri} symbol={symbol} size={24} />
         <Text
           variant="body1"
           numberOfLines={1}

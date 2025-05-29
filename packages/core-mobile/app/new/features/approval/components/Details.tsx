@@ -43,9 +43,11 @@ import { TokenLogo } from 'common/components/TokenLogo'
 import { FlatList } from 'react-native'
 
 export const Details = ({
-  detailSection
+  detailSection,
+  symbol
 }: {
   detailSection: DetailSection
+  symbol?: string
 }): JSX.Element => {
   const {
     theme: { colors }
@@ -224,8 +226,8 @@ export const Details = ({
   )
 
   const renderCurrencyValue = useCallback(
-    (value: bigint, decimals: number, symbol: string): JSX.Element => {
-      const marketToken = getMarketTokenBySymbol(symbol)
+    (value: bigint, decimals: number, s: string): JSX.Element => {
+      const marketToken = getMarketTokenBySymbol(s)
       return (
         <View sx={{ alignItems: 'flex-end' }}>
           <Text
@@ -237,7 +239,7 @@ export const Details = ({
               color: valueTextColor
             }}
             testID="token_amount">
-            {new TokenUnit(value, decimals, symbol).toDisplay()} {symbol}
+            {new TokenUnit(value, decimals, s).toDisplay()} {s}
           </Text>
           {marketToken?.currentPrice !== undefined && (
             <Text
@@ -278,7 +280,7 @@ export const Details = ({
             flex: 1,
             justifyContent: 'flex-end'
           }}>
-          <TokenLogo logoUri={item.value.logoUri} size={24} />
+          <TokenLogo logoUri={item.value.logoUri} symbol={symbol} size={24} />
           <Text
             variant="body1"
             numberOfLines={1}
@@ -292,7 +294,7 @@ export const Details = ({
         </View>
       )
     },
-    [colors.$textPrimary]
+    [colors.$textPrimary, symbol]
   )
 
   const renderValue = useCallback(

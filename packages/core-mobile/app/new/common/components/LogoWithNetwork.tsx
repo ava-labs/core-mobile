@@ -4,7 +4,7 @@ import { Network } from '@avalabs/core-chains-sdk'
 import { TokenLogo } from 'common/components/TokenLogo'
 
 interface Props {
-  token: { symbol: string; logoUri?: string }
+  token: { symbol: string; logoUri?: string; chainId?: number }
   network: Network
   size?: 'medium' | 'large'
   outerBorderColor: string // this color should match the background color of the parent view
@@ -23,7 +23,12 @@ export const LogoWithNetwork = ({
 
   return (
     <View sx={{ width }}>
-      <TokenLogo size={width} symbol={token.symbol} logoUri={token.logoUri} />
+      <TokenLogo
+        size={width}
+        symbol={token.symbol}
+        chainId={token.chainId}
+        logoUri={token.logoUri}
+      />
       {network ? (
         <View
           sx={{
@@ -44,6 +49,7 @@ export const LogoWithNetwork = ({
             testID={`network_logo__${network.chainName}`}
             size={networkLogoWidth}
             symbol={network.networkToken.symbol}
+            chainId={network.chainId}
             logoUri={network.logoUri}
             isNetworkToken
           />
