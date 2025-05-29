@@ -1,17 +1,18 @@
-import { AnimatedPressable, useTheme, View, Text } from '@avalabs/k2-alpine'
+import { AnimatedPressable, Text, useTheme, View } from '@avalabs/k2-alpine'
+import { getItemEnteringAnimation } from 'common/utils/animations'
 import { useRouter } from 'expo-router'
-import React, { useCallback, useMemo, useRef } from 'react'
+import React, { useCallback, useEffect, useMemo, useRef } from 'react'
+import { FlatList } from 'react-native-gesture-handler'
+import Animated, { LinearTransition } from 'react-native-reanimated'
 import { useDispatch, useSelector } from 'react-redux'
+import AnalyticsService from 'services/analytics/AnalyticsService'
 import {
   Account,
   selectAccounts,
   selectActiveAccount,
   setActiveAccountIndex
 } from 'store/account'
-import Animated, { LinearTransition } from 'react-native-reanimated'
-import { getItemEnteringAnimation } from 'common/utils/animations'
-import AnalyticsService from 'services/analytics/AnalyticsService'
-import { FlatList } from 'react-native-gesture-handler'
+import { useRecentAccounts } from '../store'
 import { AccountItem } from './AccountItem'
 
 const CARD_PADDING = 12
@@ -26,18 +27,25 @@ export const AccountList = (): React.JSX.Element => {
   } = useTheme()
   const dispatch = useDispatch()
   const { navigate } = useRouter()
+
   const activeAccount = useSelector(selectActiveAccount)
   const accountCollection = useSelector(selectAccounts)
   const flatListRef = useRef<FlatList>(null)
 
-  const accounts = useMemo(
-    () => Object.values(accountCollection),
-    [accountCollection]
-  )
+  const { recentAccountIndexes, addRecentAccount } = useRecentAccounts()
 
-  const accountsToDisplay = useMemo(() => {
-    return accounts.slice(0, 5)
-  }, [accounts])
+  const recentAccounts = useMemo(() => {
+    return recentAccountIndexes.map(index => accountCollection[index])
+  }, [accountCollection, recentAccountIndexes])
+
+  useEffect(() => {
+    if (activeAccount?.index != null) {
+      addRecentAccount(activeAccount.index)
+      flatListRef.current?.scrollToOffset({
+        offset: 0
+      })
+    }
+  }, [activeAccount?.index, addRecentAccount])
 
   const onSelectAccount = useCallback(
     (accountIndex: number): void => {
@@ -71,14 +79,14 @@ export const AccountList = (): React.JSX.Element => {
   )
 
   const contentContainerJustifyContent = useMemo(() => {
-    return accountsToDisplay.length < 2 ? 'center' : undefined
-  }, [accountsToDisplay.length])
+    return recentAccounts.length < 2 ? 'center' : undefined
+  }, [recentAccounts.length])
 
   const renderItem = useCallback(
     ({ item, index }: { item: Account; index: number }) => (
       <AccountItem
         index={index}
-        isActive={index === activeAccount?.index}
+        isActive={item?.index === activeAccount?.index}
         account={item as Account}
         onSelectAccount={onSelectAccount}
         gotoAccountDetails={gotoAccountDetails}
@@ -88,20 +96,11 @@ export const AccountList = (): React.JSX.Element => {
     [activeAccount?.index, gotoAccountDetails, onSelectAccount]
   )
 
-  const onContentSizeChange = useCallback(() => {
-    flatListRef.current?.scrollToOffset({
-      offset:
-        (ACCOUNT_CARD_SIZE + CARD_PADDING) *
-        (activeAccount?.index ?? accountsToDisplay.length)
-    })
-  }, [activeAccount?.index, accountsToDisplay.length])
-
   return (
     <View sx={{ flexDirection: 'row', height: ACCOUNT_CARD_SIZE }}>
       <AnimatedFlatList
         testID="account_list"
         removeClippedSubviews={true}
-        onContentSizeChange={onContentSizeChange}
         contentContainerStyle={{
           flexGrow: 1,
           justifyContent: contentContainerJustifyContent,
@@ -112,7 +111,7 @@ export const AccountList = (): React.JSX.Element => {
         showsHorizontalScrollIndicator={false}
         style={{ overflow: 'visible', flexGrow: 1 }}
         horizontal
-        data={accountsToDisplay}
+        data={recentAccounts}
         renderItem={item =>
           renderItem({
             item: item.item as Account,
@@ -124,10 +123,10 @@ export const AccountList = (): React.JSX.Element => {
           offset: ACCOUNT_CARD_SIZE * index,
           index
         })}
-        keyExtractor={item => (item as Account).id}
+        keyExtractor={item => (item as Account)?.index?.toString() ?? ''}
         ListFooterComponent={
           <Animated.View
-            entering={getItemEnteringAnimation(accounts.length)}
+            entering={getItemEnteringAnimation(recentAccounts.length)}
             layout={LinearTransition.springify()}>
             <AnimatedPressable
               onPress={goToManageAccounts}

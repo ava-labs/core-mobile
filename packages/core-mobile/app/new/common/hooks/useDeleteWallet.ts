@@ -1,3 +1,4 @@
+import { useRecentAccounts } from 'features/accountSettings/store'
 import { useWallet } from 'hooks/useWallet'
 import { useCallback } from 'react'
 import { useDispatch } from 'react-redux'
@@ -7,6 +8,7 @@ import { resetLoginAttempt } from 'store/security'
 export const useDeleteWallet = (): {
   deleteWallet: () => void
 } => {
+  const { deleteRecentAccounts } = useRecentAccounts()
   const { destroyWallet } = useWallet()
   const dispatch = useDispatch()
 
@@ -14,7 +16,8 @@ export const useDeleteWallet = (): {
     destroyWallet()
     dispatch(onLogOut())
     dispatch(resetLoginAttempt())
-  }, [dispatch, destroyWallet])
+    deleteRecentAccounts()
+  }, [deleteRecentAccounts, dispatch, destroyWallet])
 
   return { deleteWallet }
 }
