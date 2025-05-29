@@ -17,7 +17,7 @@ export const useNetworkContractTokens = (
   const { data } = useQuery({
     queryKey: [ReactQueryKeys.NETWORK_CONTRACT_TOKENS, network],
     queryFn: () => getNetworkContractTokens(network),
-    staleTime: Infinity,
+    staleTime: 120000, // 2 mins,
     networkMode: 'offlineFirst'
   })
 
