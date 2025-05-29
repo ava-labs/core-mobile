@@ -20,7 +20,7 @@ export const useEthereumContractTokens = (): NetworkContractToken[] => {
     enabled: ethereumNetwork !== undefined,
     queryKey: [ReactQueryKeys.NETWORK_CONTRACT_TOKENS, ethereumNetwork],
     queryFn: () => getNetworkContractTokens(ethereumNetwork),
-    staleTime: Infinity,
+    staleTime: 120000, // 2 mins,
     networkMode: 'offlineFirst'
   })
 
