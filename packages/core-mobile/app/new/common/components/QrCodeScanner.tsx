@@ -1,5 +1,13 @@
-import React, { useEffect, useState, useCallback } from 'react'
-import { Icons, SxProp, useTheme, View, Text, Button } from '@avalabs/k2-alpine'
+import React, { useEffect, useState, useCallback, useMemo } from 'react'
+import {
+  Icons,
+  SxProp,
+  useTheme,
+  View,
+  Text,
+  Button,
+  SCREEN_WIDTH
+} from '@avalabs/k2-alpine'
 import {
   BarcodeScanningResult,
   CameraView,
@@ -82,7 +90,7 @@ export const QrCodeScanner = ({
     checkAndroidPermission()
   }, [checkAndroidPermission])
 
-  const cameraPermissionNotGranted =
+  const cameraPermissionGranted =
     (permission?.granted === true && Platform.OS === 'ios') ||
     (isAndroidPermissionGranted === true && Platform.OS === 'android')
 
@@ -90,78 +98,103 @@ export const QrCodeScanner = ({
     (Platform.OS === 'ios' && permission === null) ||
     (Platform.OS === 'android' && isAndroidPermissionGranted === undefined)
 
-  const containerStyle = {
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderRadius: 18,
-    overflow: 'hidden',
-    ...sx
-  }
+  const containerStyle = useMemo(
+    () => ({
+      justifyContent: 'center',
+      alignItems: 'center',
+      borderRadius: 18,
+      overflow: 'hidden',
+      ...sx
+    }),
+    [sx]
+  )
+
+  const renderCamera = useCallback(() => {
+    return (
+      <View sx={containerStyle}>
+        <View
+          sx={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            zIndex: 10,
+            justifyContent: 'center',
+            alignItems: 'center'
+          }}>
+          <Icons.Custom.CameraFrame />
+        </View>
+        <CameraView
+          style={{
+            width: '100%',
+            height: '100%',
+            aspectRatio: 1,
+            justifyContent: 'center',
+            alignItems: 'center'
+          }}
+          ratio="1:1"
+          barcodeScannerSettings={{
+            barcodeTypes: ['qr']
+          }}
+          onBarcodeScanned={handleSuccess}
+        />
+      </View>
+    )
+  }, [containerStyle])
+
+  const renderCameraInstruction = useCallback(() => {
+    return (
+      <>
+        <View
+          sx={{
+            gap: 12,
+            marginBottom: 8,
+            marginLeft: 30,
+            justifyContent: 'flex-start',
+            width: '100%'
+          }}>
+          <View
+            sx={{
+              flexDirection: 'row',
+              gap: 10,
+              alignItems: 'center',
+              overflow: 'hidden',
+              marginTop: 16
+            }}>
+            <Icons.Alert.ErrorOutline
+              color={colors.$textDanger}
+              width={20}
+              height={20}
+            />
+            <Text
+              variant="subtitle1"
+              sx={{
+                color: '$textDanger',
+                width: SCREEN_WIDTH * 0.7
+              }}>
+              To scan QR code from Core, you first need to allow camera
+              permission in your device settings
+            </Text>
+          </View>
+          <Button
+            size="small"
+            type="secondary"
+            onPress={() => Linking.openSettings()}
+            style={{ width: 165, marginLeft: 30 }}>
+            Open device settings
+          </Button>
+        </View>
+        <Loader
+          sx={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}
+        />
+      </>
+    )
+  }, [colors.$textDanger])
 
   if (cameraPermissionPending) return <View sx={containerStyle} />
 
-  return cameraPermissionNotGranted ? (
-    <View sx={containerStyle}>
-      <View
-        sx={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          zIndex: 10,
-          justifyContent: 'center',
-          alignItems: 'center'
-        }}>
-        <Icons.Custom.CameraFrame />
-      </View>
-      <CameraView
-        style={{
-          width: '100%',
-          height: '100%',
-          aspectRatio: 1,
-          justifyContent: 'center',
-          alignItems: 'center'
-        }}
-        ratio="1:1"
-        barcodeScannerSettings={{
-          barcodeTypes: ['qr']
-        }}
-        onBarcodeScanned={handleSuccess}
-      />
-    </View>
-  ) : (
-    <>
-      <View sx={{ gap: 12, marginBottom: 8 }}>
-        <View
-          sx={{
-            flexDirection: 'row',
-            gap: 10,
-            alignItems: 'center',
-            marginRight: 64,
-            marginTop: 16
-          }}>
-          <Icons.Alert.ErrorOutline
-            color={colors.$textDanger}
-            width={20}
-            height={20}
-          />
-          <Text variant="subtitle1" sx={{ color: '$textDanger' }}>
-            To scan QR code from Core, your first need to allow camera
-            permission in your device settings
-          </Text>
-        </View>
-        <Button
-          size="small"
-          type="secondary"
-          onPress={() => Linking.openSettings()}
-          style={{ width: 165, marginLeft: 30 }}>
-          Open device settings
-        </Button>
-      </View>
-      <Loader
-        sx={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}
-      />
-    </>
-  )
+  if (!cameraPermissionGranted) return renderCameraInstruction()
+
+  return renderCamera()
 }

@@ -105,7 +105,7 @@ const NotificationPreferencesScreen = (): JSX.Element => {
               height={20}
             />
             <Text variant="subtitle1" sx={{ color: '$textDanger' }}>
-              To receive push notifications from Core, your first need to allow
+              To receive push notifications from Core, you first need to allow
               notifications in your device settings
             </Text>
           </View>
