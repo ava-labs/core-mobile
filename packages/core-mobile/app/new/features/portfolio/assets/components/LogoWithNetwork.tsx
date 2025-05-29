@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react'
+import React from 'react'
 import { Icons, SxProp, useTheme, View } from '@avalabs/k2-alpine'
 import { TokenType } from '@avalabs/vm-module-types'
 import { LocalTokenWithBalance } from 'store/balance'
@@ -11,10 +11,7 @@ import {
   isTokenWithBalancePVM
 } from '@avalabs/avalanche-module'
 import { TokenLogo } from 'common/components/TokenLogo'
-import {
-  CHAIN_IDS_WITH_INCORRECT_SYMBOL,
-  L2_NETWORK_SYMBOL_MAPPING
-} from 'consts/chainIdsWithIncorrectSymbol'
+import { CHAIN_IDS_WITH_INCORRECT_SYMBOL } from 'consts/chainIdsWithIncorrectSymbol'
 
 interface Props {
   token: LocalTokenWithBalance
@@ -33,27 +30,13 @@ export const LogoWithNetwork = ({
   const network = useSelector(selectNetwork(token.networkChainId))
   const isMalicious = isTokenMalicious(token)
 
-  const tokenSymbol = useMemo(() => {
-    return network &&
-      CHAIN_IDS_WITH_INCORRECT_SYMBOL.includes(network.chainId) &&
-      token.type === TokenType.NATIVE &&
-      L2_NETWORK_SYMBOL_MAPPING[network.chainId]
-      ? L2_NETWORK_SYMBOL_MAPPING[network.chainId]
-      : token.symbol
-  }, [network, token.symbol, token.type])
-
-  const tokenLogoUri = useMemo(() => {
-    return network &&
-      CHAIN_IDS_WITH_INCORRECT_SYMBOL.includes(network.chainId) &&
-      token.type === TokenType.NATIVE
-      ? network.logoUri
-      : token.logoUri
-  }, [network, token.logoUri, token.type])
-
   const shouldShowNetworkLogo =
     token.type !== TokenType.NATIVE ||
     isTokenWithBalanceAVM(token) ||
-    isTokenWithBalancePVM(token)
+    isTokenWithBalancePVM(token) ||
+    (network &&
+      CHAIN_IDS_WITH_INCORRECT_SYMBOL.includes(network.chainId) &&
+      token.type === TokenType.NATIVE)
 
   const renderNetworkLogo = (
     t: LocalTokenWithBalance,
@@ -110,8 +93,8 @@ export const LogoWithNetwork = ({
     <View sx={{ width: 36, ...sx }}>
       <TokenLogo
         size={36}
-        symbol={tokenSymbol}
-        logoUri={tokenLogoUri}
+        symbol={token.symbol}
+        logoUri={token.logoUri}
         isMalicious={isMalicious}
       />
       {shouldShowNetworkLogo && network ? (
