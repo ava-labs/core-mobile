@@ -1,8 +1,6 @@
 import { NetworkVMType } from '@avalabs/core-chains-sdk'
 import { Icons, Text, TouchableOpacity, useTheme } from '@avalabs/k2-alpine'
 import { ScrollScreen } from 'common/components/ScrollScreen'
-import { TokenLogo } from 'common/components/TokenLogo'
-import { usePrimaryNetworks } from 'common/hooks/usePrimaryNetworks'
 import { router } from 'expo-router'
 import React, { ReactNode, useCallback, useEffect, useMemo } from 'react'
 import { View } from 'react-native'
@@ -10,13 +8,16 @@ import { useSelector } from 'react-redux'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { selectActiveAccount } from 'store/account'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
+import { NetworkLogoWithChain } from 'common/components/NetworkLogoWithChain'
+import { useCombinedPrimaryNetworks } from 'common/hooks/useCombinedPrimaryNetworks'
 import { AccountAddresses } from '../components/AccountAddresses'
 import { QRCode } from '../components/QRCode'
 import { useReceiveSelectedNetwork } from '../store'
+import { SupportedReceiveEvmTokens } from '../components/SupportedReceiveEvmTokens'
 
 export const ReceiveScreen = (): ReactNode => {
   const { theme } = useTheme()
-  const { networks } = usePrimaryNetworks()
+  const { networks } = useCombinedPrimaryNetworks()
 
   const [selectedNetwork, setSelectedNetwork] = useReceiveSelectedNetwork()
 
@@ -82,22 +83,24 @@ export const ReceiveScreen = (): ReactNode => {
   return (
     <ScrollScreen
       title="Receive crypto"
-      subtitle="To receive funds you can choose to share your unique QR code or address below with the sender"
+      subtitle={`To receive funds you can choose to share\nyour unique QR code or address below with\nthe sender`}
       isModal
       renderFooter={renderFooter}
       contentContainerStyle={{
-        flex: 1,
-        padding: 16,
-        paddingTop: 0
+        padding: 16
       }}>
       <View
         style={{
-          justifyContent: 'flex-start',
           alignItems: 'center',
-          flex: 1
+          marginTop: 44
         }}>
         <View
-          style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+          style={{
+            flex: 1,
+            justifyContent: 'center',
+            alignItems: 'center',
+            marginBottom: 16
+          }}>
           <TouchableOpacity
             onPress={openSelectTokenScreen}
             style={{
@@ -109,9 +112,11 @@ export const ReceiveScreen = (): ReactNode => {
               borderRadius: 16,
               height: 31
             }}>
-            <TokenLogo
-              symbol={selectedNetwork.networkToken?.symbol ?? 'AVAX'}
-              size={20}
+            <NetworkLogoWithChain
+              network={selectedNetwork}
+              networkSize={20}
+              outerBorderColor={theme.colors.$surfaceSecondary}
+              showChainLogo={false}
             />
             <Text
               variant="buttonMedium"
@@ -127,17 +132,23 @@ export const ReceiveScreen = (): ReactNode => {
             />
           </TouchableOpacity>
         </View>
-        <QRCode
-          testID="receive_token_qr_code"
-          address={address}
-          token={selectedNetwork.networkToken?.symbol ?? 'AVAX'}
-          label={selectedNetwork.chainName}
-        />
-        <View
+        <View style={{ paddingVertical: 16 }}>
+          <QRCode testID="receive_token_qr_code" address={address} />
+        </View>
+        <SupportedReceiveEvmTokens style={{ marginTop: 16 }} iconSize={20} />
+        <Text
+          variant="subtitle2"
           style={{
-            flex: 0.5
-          }}
-        />
+            textAlign: 'center',
+            marginHorizontal: 40,
+            marginTop: 5,
+            fontSize: 12,
+            lineHeight: 15,
+            color: theme.colors.$textSecondary
+          }}>
+          This address supports receiving tokens and NFTs on Avalanche C-Chain,
+          Ethereum, Base, Arbitrum, Optimism and Avalanche L1s
+        </Text>
       </View>
     </ScrollScreen>
   )
