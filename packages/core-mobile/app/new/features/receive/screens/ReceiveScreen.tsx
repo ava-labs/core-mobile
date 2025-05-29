@@ -9,7 +9,7 @@ import AnalyticsService from 'services/analytics/AnalyticsService'
 import { selectActiveAccount } from 'store/account'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { NetworkLogoWithChain } from 'common/components/NetworkLogoWithChain'
-import { useNetworksByAddress } from 'common/hooks/useNetworksByAddress'
+import { useCombinedPrimaryNetworks } from 'common/hooks/useCombinedPrimaryNetworks'
 import { AccountAddresses } from '../components/AccountAddresses'
 import { QRCode } from '../components/QRCode'
 import { useReceiveSelectedNetwork } from '../store'
@@ -17,7 +17,7 @@ import { SupportedReceiveEvmTokens } from '../components/SupportedReceiveEvmToke
 
 export const ReceiveScreen = (): ReactNode => {
   const { theme } = useTheme()
-  const { networks } = useNetworksByAddress()
+  const { networks } = useCombinedPrimaryNetworks()
 
   const [selectedNetwork, setSelectedNetwork] = useReceiveSelectedNetwork()
 
