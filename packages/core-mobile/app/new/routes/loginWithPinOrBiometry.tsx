@@ -31,11 +31,11 @@ import Reanimated, {
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useSelector } from 'react-redux'
 import { Subscription } from 'rxjs'
-import { BiometricType } from 'services/deviceInfo/DeviceInfoService'
 import { selectWalletState, WalletState } from 'store/app'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { selectSelectedAvatar } from 'store/settings/avatar'
 import Logger from 'utils/Logger'
+import { BiometricType } from 'utils/BiometricsSDK'
 
 const LoginWithPinOrBiometry = (): JSX.Element => {
   const walletState = useSelector(selectWalletState)

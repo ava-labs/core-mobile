@@ -1,10 +1,10 @@
 import { initWalletServiceAndUnlock } from 'hooks/useWallet'
 import { useCallback } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { SEEDLESS_MNEMONIC_STUB } from 'seedless/consts'
 import { WalletType } from 'services/wallet/types'
 import { selectWalletState, selectWalletType, WalletState } from 'store/app'
 import Logger from 'utils/Logger'
+import { uuid } from 'utils/uuid'
 
 // This hook is used to initialize the seedless wallet and unlock it if the wallet state is inactive.
 export const useInitSeedlessWalletAndUnlock = (): {
@@ -21,7 +21,7 @@ export const useInitSeedlessWalletAndUnlock = (): {
     ) {
       initWalletServiceAndUnlock({
         dispatch,
-        mnemonic: SEEDLESS_MNEMONIC_STUB,
+        mnemonic: uuid(),
         walletType: WalletType.SEEDLESS,
         isLoggingIn: true
       }).catch(Logger.error)

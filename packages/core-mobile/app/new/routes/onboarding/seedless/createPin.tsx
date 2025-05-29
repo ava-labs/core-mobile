@@ -4,13 +4,13 @@ import { CreatePin as Component } from 'features/onboarding/components/CreatePin
 import { useWallet } from 'hooks/useWallet'
 import React, { useCallback, useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
-import { SEEDLESS_MNEMONIC_STUB } from 'seedless/consts'
+import { WalletType } from 'services/wallet/types'
 import SeedlessService from 'seedless/services/SeedlessService'
 import AnalyticsService from 'services/analytics/AnalyticsService'
-import { WalletType } from 'services/wallet/types'
 import { selectWalletType } from 'store/app'
 import BiometricsSDK from 'utils/BiometricsSDK'
 import Logger from 'utils/Logger'
+import { uuid } from 'utils/uuid'
 
 export default function CreatePin(): JSX.Element {
   const walletType = useSelector(selectWalletType)
@@ -42,11 +42,20 @@ export default function CreatePin(): JSX.Element {
        * this allows our pin/biometric logic to work normally
        */
 
-      // TODO: use a random string instead of a constant
-      onPinCreated(SEEDLESS_MNEMONIC_STUB, pin, false)
-        .then(() => {
+      const dummyMnemonic = uuid()
+
+      onPinCreated({
+        mnemonic: dummyMnemonic,
+        pin,
+        isResetting: false,
+        walletType
+      })
+        .then(walletId => {
           if (useBiometrics) {
-            BiometricsSDK.storeWalletWithBiometry(SEEDLESS_MNEMONIC_STUB)
+            BiometricsSDK.storeWalletWithBiometry(
+              walletId,
+              dummyMnemonic
+            ).catch(Logger.error)
           }
           if (hasWalletName) {
             // @ts-ignore TODO: make routes typesafe
@@ -58,7 +67,7 @@ export default function CreatePin(): JSX.Element {
         })
         .catch(Logger.error)
     },
-    [hasWalletName, navigate, onPinCreated, useBiometrics]
+    [hasWalletName, navigate, onPinCreated, useBiometrics, walletType]
   )
 
   return (

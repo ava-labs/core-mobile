@@ -6,6 +6,7 @@ import { unifiedBridgeReducer as unifiedBridge } from 'store/unifiedBridge/slice
 import { migrations } from 'store/migrations'
 import DevDebuggingConfig from 'utils/debugging/DevDebuggingConfig'
 import { EncryptThenMacTransform } from 'store/transforms/EncryptThenMacTransform'
+import { StatePersistence } from 'utils/state/StatePersistence'
 import reactotron from '../../ReactotronConfig'
 import { networkReducer as network } from './network/slice'
 import { balanceReducer as balance } from './balance/slice'
@@ -29,6 +30,7 @@ import { AppBlacklistTransform } from './transforms/AppBlacklistTransform'
 import { combinedReducer as browser } from './browser'
 import { snapshotsReducer as snapshots } from './snapshots/slice'
 import { reduxStorage } from './reduxStorage'
+import { walletsReducer as wallet } from './wallet/slice'
 
 const VERSION = 19
 
@@ -48,6 +50,7 @@ const combinedReducer = combineReducers({
   customToken,
   posthog,
   nft,
+  wallet,
   security,
   rpc,
   viewOnce,
@@ -117,10 +120,21 @@ export function configureEncryptedStore(secretKey: string, macSecret: string) {
     }
   })
 
-  const persistor = persistStore(store, null, () => {
-    // this block runs after rehydration is complete
-    store.dispatch(onRehydrationComplete())
-  })
+  const persistor = persistStore(
+    store,
+    {
+      // @ts-ignore
+      manualPersist: DevDebuggingConfig.STATE_PERSISTENCE_DEBUG
+    },
+    () => {
+      // this block runs after rehydration is complete
+      store.dispatch(onRehydrationComplete())
+    }
+  )
+  if (DevDebuggingConfig.STATE_PERSISTENCE_DEBUG) {
+    StatePersistence.setPersistor(persistor)
+    StatePersistence.setStore(store)
+  }
 
   return { store, persistor }
 }

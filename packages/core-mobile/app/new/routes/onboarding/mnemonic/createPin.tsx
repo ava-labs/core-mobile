@@ -6,6 +6,7 @@ import React, { useCallback } from 'react'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import BiometricsSDK from 'utils/BiometricsSDK'
 import Logger from 'utils/Logger'
+import { WalletType } from 'services/wallet/types'
 
 export default function CreatePin(): JSX.Element {
   const { navigate } = useRouter()
@@ -20,10 +21,17 @@ export default function CreatePin(): JSX.Element {
         return
       }
       AnalyticsService.capture('OnboardingPasswordSet')
-      onPinCreated(mnemonic, pin, false)
-        .then(() => {
+      onPinCreated({
+        mnemonic,
+        pin,
+        isResetting: false,
+        walletType: WalletType.MNEMONIC
+      })
+        .then(walletId => {
           if (useBiometrics) {
-            BiometricsSDK.storeWalletWithBiometry(mnemonic)
+            BiometricsSDK.storeWalletWithBiometry(walletId, mnemonic).catch(
+              Logger.error
+            )
           }
           navigate({
             // @ts-ignore TODO: make routes typesafe

@@ -7,20 +7,23 @@ import { StorageKey } from 'resources/Constants'
 import BiometricsSDK from 'utils/BiometricsSDK'
 import Logger from 'utils/Logger'
 import { commonStorage } from 'utils/mmkv'
+import { selectWalletType } from 'store/app'
+import { useSelector } from 'react-redux'
 
 const ChangePinScreen = (): React.JSX.Element => {
   const { canGoBack, back } = useRouter()
   const { mnemonic } = useLocalSearchParams<{ mnemonic: string }>()
+  const walletType = useSelector(selectWalletType)
   const { onPinCreated } = useWallet()
   const { isBiometricAvailable, useBiometrics, setUseBiometrics } =
     useStoredBiometrics()
 
   const handleEnteredValidPin = useCallback(
     (pin: string): void => {
-      onPinCreated(mnemonic, pin, false)
-        .then(() => {
+      onPinCreated({ mnemonic, pin, isResetting: false, walletType })
+        .then(walletId => {
           if (useBiometrics) {
-            BiometricsSDK.storeWalletWithBiometry(mnemonic)
+            BiometricsSDK.storeWalletWithBiometry(walletId, mnemonic)
               .then(() => canGoBack() && back())
               .catch(Logger.error)
           } else {
@@ -30,7 +33,7 @@ const ChangePinScreen = (): React.JSX.Element => {
         })
         .catch(Logger.error)
     },
-    [mnemonic, onPinCreated, back, canGoBack, useBiometrics]
+    [mnemonic, onPinCreated, back, canGoBack, useBiometrics, walletType]
   )
 
   return (

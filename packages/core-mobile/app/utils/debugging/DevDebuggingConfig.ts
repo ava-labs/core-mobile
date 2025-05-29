@@ -8,7 +8,8 @@ const DevDebuggingConfig = {
   LOGBOX_DISABLED: false,
   SHOW_DEMO_NFTS: false,
   API_MOCKING: false,
-  SENTRY_SPOTLIGHT: false
+  SENTRY_SPOTLIGHT: false,
+  STATE_PERSISTENCE_DEBUG: true
 }
 
 export default DevDebuggingConfig
