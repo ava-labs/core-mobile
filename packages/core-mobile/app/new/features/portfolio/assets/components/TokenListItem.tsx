@@ -22,10 +22,10 @@ export const TokenListItem = ({
 }: TokenListItemProps): React.JSX.Element => {
   const { getMarketTokenBySymbol } = useWatchlist()
   const { formatCurrency } = useFormatCurrency()
-  const { balanceDisplayValue, balanceInCurrency, symbol } = token
+  const { balanceInCurrency, symbol } = token
   const formattedBalance = balanceInCurrency
     ? formatCurrency({ amount: balanceInCurrency })
-    : `${balanceDisplayValue} ${symbol}`
+    : ''
 
   const marketToken = getMarketTokenBySymbol(symbol)
   const percentChange = marketToken?.priceChangePercentage24h ?? undefined

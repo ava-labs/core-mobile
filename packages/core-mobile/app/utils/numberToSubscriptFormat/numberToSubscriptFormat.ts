@@ -1,4 +1,5 @@
 import { UNKNOWN_AMOUNT } from 'consts/amount'
+import { normalNumberFormatter } from 'utils/formatNumber/formatNumber'
 
 const DIGIT_LIMIT = 5
 
@@ -31,6 +32,14 @@ export const numberToSubscriptFormat = (
       subText: '',
       mainTextAfter: ''
     }
+
+  if (number >= 1000) {
+    return {
+      mainTextBefore: normalNumberFormatter.format(number).toString(),
+      subText: '',
+      mainTextAfter: ''
+    }
+  }
 
   // Handle greater than 0.00001
   if (number > 0.00001) {

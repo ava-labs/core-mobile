@@ -39,7 +39,11 @@ export const SubTextNumber = ({
         {mainTextBefore}
       </Text>
       {subText && (
-        <Text style={[subTextStyle, { color: _textColor }]}>{subText}</Text>
+        <Text
+          variant={textVariant}
+          style={[subTextStyle, { color: _textColor }]}>
+          {subText}
+        </Text>
       )}
       {mainTextAfter && (
         <Text variant={textVariant} style={[{ color: _textColor }]}>
@@ -54,11 +58,11 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
     alignItems: 'center',
-    maxWidth: '70%'
+    maxWidth: '80%'
   }
 })
 
-type SubTextNumberVariant = Extract<TextVariant, 'body1'>
+type SubTextNumberVariant = Extract<TextVariant, 'body1' | 'body2' | 'heading2'>
 
 const getSubTextStyle = (textVariant: SubTextNumberVariant): TextStyle => {
   let style: TextStyle = {
@@ -66,7 +70,13 @@ const getSubTextStyle = (textVariant: SubTextNumberVariant): TextStyle => {
   }
   if (textVariant === 'body1') {
     style = { ...style, fontSize: 13, top: 4, fontWeight: '500' }
-  } // todo: add subtext styles for other variants when needed
+  }
+  if (textVariant === 'body2') {
+    style = { ...style, fontSize: 13, top: 4, fontWeight: '400' }
+  }
+  if (textVariant === 'heading2') {
+    style = { ...style, fontSize: 18, top: 10, fontWeight: '700' }
+  }
 
   return style
 }

@@ -6,7 +6,8 @@ import {
   MaskedText,
   Text,
   useTheme,
-  View
+  View,
+  alpha
 } from '@avalabs/k2-alpine'
 import { selectIsPrivacyModeEnabled } from 'store/settings/securityPrivacy'
 import { useSelector } from 'react-redux'
@@ -14,6 +15,8 @@ import { HiddenBalanceText } from 'common/components/HiddenBalanceText'
 import { CHAIN_IDS_WITH_INCORRECT_SYMBOL } from 'consts/chainIdsWithIncorrectSymbol'
 import { useNetworks } from 'hooks/networks/useNetworks'
 import { TokenType } from '@avalabs/vm-module-types'
+import { SubTextNumber } from 'common/components/SubTextNumber'
+import { UNKNOWN_AMOUNT } from 'consts/amount'
 import { TokenListViewProps } from '../types'
 import { LogoWithNetwork } from './LogoWithNetwork'
 
@@ -124,14 +127,33 @@ export const TokenListView = ({
                 ellipsizeMode="tail"
                 numberOfLines={1}
                 testID={`list_token_balance__${index}`}>
-                {token.balanceDisplayValue} {token.symbol}
+                <View sx={{ flexDirection: 'row' }}>
+                  <SubTextNumber
+                    number={Number(
+                      token.balanceDisplayValue.replaceAll(',', '')
+                    )}
+                    textVariant="body2"
+                  />
+                  <Text
+                    variant="body2"
+                    sx={{
+                      marginTop: 1,
+                      color: alpha(colors.$textPrimary, 0.6)
+                    }}>
+                    {' ' + token.symbol}
+                  </Text>
+                </View>
               </MaskedText>
-              <PriceChangeIndicator
-                formattedPrice={formattedPrice}
-                status={priceChangeStatus}
-                shouldMask={isPrivacyModeEnabled}
-                maskWidth={40}
-              />
+              {(formattedPrice !== UNKNOWN_AMOUNT ||
+                (formattedPrice === UNKNOWN_AMOUNT &&
+                  formattedBalance !== '')) && (
+                <PriceChangeIndicator
+                  formattedPrice={formattedPrice}
+                  status={priceChangeStatus}
+                  shouldMask={isPrivacyModeEnabled}
+                  maskWidth={40}
+                />
+              )}
             </View>
           </View>
           <View

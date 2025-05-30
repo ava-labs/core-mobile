@@ -13,6 +13,7 @@ import { CHAIN_IDS_WITH_INCORRECT_SYMBOL } from 'consts/chainIdsWithIncorrectSym
 import { useNetworks } from 'hooks/networks/useNetworks'
 import { LocalTokenWithBalance } from '../../../store/balance/types'
 import { HiddenBalanceText } from './HiddenBalanceText'
+import { SubTextNumber } from './SubTextNumber'
 
 export const TokenHeader = ({
   token,
@@ -73,14 +74,29 @@ export const TokenHeader = ({
               variant="heading2"
               sx={{ lineHeight: 38, flexShrink: 1 }}
               numberOfLines={1}>
-              {token?.balanceDisplayValue ?? UNKNOWN_AMOUNT}
+              {token?.balanceDisplayValue ? (
+                <View sx={{ flexDirection: 'row' }}>
+                  <SubTextNumber
+                    number={Number(
+                      token.balanceDisplayValue.replaceAll(',', '')
+                    )}
+                    textColor={colors.$textPrimary}
+                    textVariant="heading2"
+                  />
+                  <Text
+                    variant="heading2"
+                    sx={{
+                      fontFamily: 'Aeonik-Medium',
+                      color: colors.$textPrimary
+                    }}>
+                    {' ' + token.symbol}
+                  </Text>
+                </View>
+              ) : (
+                UNKNOWN_AMOUNT
+              )}
             </Text>
           )}
-
-          <Text
-            sx={{ fontFamily: 'Aeonik-Medium', fontSize: 18, lineHeight: 28 }}>
-            {token?.symbol}
-          </Text>
         </View>
         <View sx={{ marginTop: 5 }}>
           {errorMessage ? (
