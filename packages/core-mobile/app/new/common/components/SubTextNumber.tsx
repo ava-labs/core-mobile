@@ -40,7 +40,11 @@ export const SubTextNumber = ({
         {formatNumber(mainTextBefore)}
       </Text>
       {subText && (
-        <Text style={[subTextStyle, { color: _textColor }]}>{subText}</Text>
+        <Text
+          variant={textVariant}
+          style={[subTextStyle, { color: _textColor }]}>
+          {subText}
+        </Text>
       )}
       {mainTextAfter && (
         <Text variant={textVariant} style={[{ color: _textColor }]}>
@@ -69,7 +73,7 @@ const getSubTextStyle = (textVariant: SubTextNumberVariant): TextStyle => {
     style = { ...style, fontSize: 13, top: 4, fontWeight: '500' }
   }
   if (textVariant === 'heading2') {
-    style = { ...style, fontSize: 18, top: 10, fontWeight: '500' }
+    style = { ...style, fontSize: 18, top: 10, fontWeight: '700' }
   }
 
   return style
