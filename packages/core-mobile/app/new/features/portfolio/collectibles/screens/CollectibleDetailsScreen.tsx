@@ -247,6 +247,7 @@ export const CollectibleDetailsScreen = ({
       scrollY.value,
       [0, SNAP_DISTANCE],
       [
+        // Android viewport ignores the status bar, so we need to adjust it
         frame.height - (Platform.OS === 'ios' ? 0 : insets.top),
         CARD_SIZE_SMALL
       ],
@@ -264,6 +265,14 @@ export const CollectibleDetailsScreen = ({
   })
 
   const contentStyle = useAnimatedStyle(() => {
+    const height =
+      frame.height -
+      // Android viewport ignores the status bar, so we need to adjust it
+      (Platform.OS === 'ios' ? 0 : insets.top) -
+      headerHeight -
+      SNAP_DISTANCE +
+      10
+
     const translateY = interpolate(
       scrollY.value,
       [0, SNAP_DISTANCE],
@@ -275,13 +284,7 @@ export const CollectibleDetailsScreen = ({
       top: frame.height,
       left: 0,
       right: 0,
-      height:
-        frame.height -
-        // Android needs to have a negative margin to account for the status bar
-        (Platform.OS === 'ios' ? 0 : insets.top) -
-        headerHeight -
-        SNAP_DISTANCE +
-        10,
+      height,
       transform: [
         {
           translateY
@@ -312,6 +315,17 @@ export const CollectibleDetailsScreen = ({
     }
   })
 
+  const contentContainerStyle = useMemo(() => {
+    return {
+      paddingBottom: insets.bottom,
+      minHeight:
+        frame.height -
+        // Android viewport ignores the status bar, so we need to adjust it
+        (Platform.OS === 'ios' ? 0 : insets.top) +
+        SNAP_DISTANCE
+    }
+  }, [frame.height, insets.bottom, insets.top])
+
   return (
     <View
       style={{
@@ -325,14 +339,7 @@ export const CollectibleDetailsScreen = ({
             flex: 1,
             position: 'relative'
           }}
-          contentContainerStyle={{
-            paddingBottom: insets.bottom,
-            minHeight:
-              frame.height -
-              // Android needs to have a negative margin to account for the status bar
-              (Platform.OS === 'ios' ? 0 : insets.top) +
-              SNAP_DISTANCE
-          }}
+          contentContainerStyle={contentContainerStyle}
           onScrollEndDrag={onScrollEndDrag}
           nestedScrollEnabled
           bounces={false}
