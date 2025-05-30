@@ -1,4 +1,5 @@
 import { UNKNOWN_AMOUNT } from 'consts/amount'
+import { formatNumber } from 'utils/formatNumber/formatNumber'
 
 const DIGIT_LIMIT = 5
 
@@ -36,9 +37,10 @@ export const numberToSubscriptFormat = (
   if (number > 0.00001) {
     // For regular numbers, limit to 5 digits (excluding decimal) and round up
     const roundedNumber = limitAndRoundNumber(number)
+    const formattedNumber = formatNumber(roundedNumber)
 
     return {
-      mainTextBefore: roundedNumber.toString(),
+      mainTextBefore: formattedNumber.toString(),
       subText: '',
       mainTextAfter: ''
     }
