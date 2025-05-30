@@ -11,7 +11,6 @@ import { Networks, NetworkState } from 'store/network'
 import { AccountsState } from 'store/account'
 import { NotificationsState } from 'store/notifications'
 import { PosthogState } from 'store/posthog'
-import { NftState } from 'store/nft'
 import { RawRootState, RootState } from 'store/types'
 import { encryptTransform } from 'redux-persist-transform-encrypt'
 import { Network } from '@avalabs/core-chains-sdk'
@@ -158,9 +157,6 @@ const initialState = {
     isAnalyticsEnabled: true,
     userID: '845c3f7f-d81f-4501-9143-7ef9f689cbf6'
   } as PosthogState,
-  nft: {
-    hiddenNfts: {}
-  } as NftState,
   settings: {
     currency: currencyState,
     securityPrivacy: securityState,
@@ -168,6 +164,7 @@ const initialState = {
   },
   portfolio: {
     tokenVisibility: {},
-    collectibleVisibility: {}
+    collectibleVisibility: {},
+    collectibleUnprocessableVisibility: false
   } as PortfolioState
 } as RootState

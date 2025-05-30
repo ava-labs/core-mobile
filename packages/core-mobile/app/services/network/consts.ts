@@ -17,6 +17,8 @@ export enum ChainName {
   AVALANCHE_XP_TESTNET = 'Avalanche X/P-Chain Testnet',
   AVALANCHE_C_EVM = 'Avalanche C-Chain/EVM',
   AVALANCHE_C_EVM_TESTNET = 'Avalanche C-Chain/EVM Testnet',
+  AVALANCHE_C = 'Avalanche C-Chain',
+  AVALANCHE_C_TESTNET = 'Avalanche C-Chain Testnet',
   BITCOIN = 'Bitcoin',
   BITCOIN_TESTNET = 'Bitcoin Testnet'
 }
@@ -102,13 +104,14 @@ export const NETWORK_X_TEST = {
   explorerUrl: 'https://subnets-test.avax.network/x-chain'
 } as Network
 
-export const MAIN_NETWORKS = [
+// Primary networks are the ones that are always enabled in the app
+export const MAIN_PRIMARY_NETWORKS = [
   AVALANCHE_MAINNET_NETWORK,
   { ...AVALANCHE_XP_NETWORK, chainName: ChainName.AVALANCHE_XP },
   { ...BITCOIN_NETWORK, chainName: ChainName.BITCOIN }
 ]
 
-export const TEST_NETWORKS = [
+export const TEST_PRIMARY_NETWORKS = [
   AVALANCHE_TESTNET_NETWORK,
   {
     ...AVALANCHE_XP_TEST_NETWORK,

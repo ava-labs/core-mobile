@@ -10,7 +10,7 @@ import {
 import { Account } from 'store/account'
 import { copyToClipboard } from 'common/utils/clipboard'
 import { truncateAddress } from '@avalabs/core-utils-sdk'
-import { usePrimaryNetworks } from 'common/hooks/usePrimaryNetworks'
+import { useCombinedPrimaryNetworks } from 'common/hooks/useCombinedPrimaryNetworks'
 import { NetworkLogoWithChain } from 'common/components/NetworkLogoWithChain'
 import { isXPChain } from 'utils/network/isAvalancheNetwork'
 import { NetworkVMType } from '@avalabs/vm-module-types'
@@ -24,7 +24,7 @@ export const AccountAddresses = ({
   const {
     theme: { colors }
   } = useTheme()
-  const { networks } = usePrimaryNetworks()
+  const { networks } = useCombinedPrimaryNetworks()
 
   const onCopyAddress = (value: string, message: string): void => {
     copyToClipboard(value, message)
