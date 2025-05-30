@@ -32,7 +32,7 @@ export const AccountList = (): React.JSX.Element => {
   const accountCollection = useSelector(selectAccounts)
   const flatListRef = useRef<FlatList>(null)
 
-  const { recentAccountIndexes, addRecentAccount } = useRecentAccounts()
+  const { recentAccountIndexes } = useRecentAccounts()
 
   const recentAccounts = useMemo(() => {
     return recentAccountIndexes.map(index => accountCollection[index])
@@ -40,12 +40,11 @@ export const AccountList = (): React.JSX.Element => {
 
   useEffect(() => {
     if (activeAccount?.index != null) {
-      addRecentAccount(activeAccount.index)
       flatListRef.current?.scrollToOffset({
         offset: 0
       })
     }
-  }, [activeAccount?.index, addRecentAccount])
+  }, [activeAccount?.index])
 
   const onSelectAccount = useCallback(
     (accountIndex: number): void => {

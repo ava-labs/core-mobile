@@ -4,7 +4,10 @@ export enum StorageKey {
   HAS_MIGRATED_FROM_ASYNC_STORAGE = 'hasMigratedFromAsyncStorage',
   NOTIFICATIONS_OPTIMIZATION = 'NOTIFICATIONS_OPTIMIZATION',
   LAST_TRANSACTED_ERC20_NETWORKS = 'lastTransactedErc20Networks',
-  ADDRESSES_IN_RANGE = 'addressesInRange',
+  ADDRESSES_IN_RANGE = 'addressesInRange'
+}
+
+export enum ZustandStorageKeys {
   RECENT_ACCOUNTS = 'recentAccounts'
 }
 

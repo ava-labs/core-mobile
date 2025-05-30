@@ -1,6 +1,6 @@
 import { AvatarType } from '@avalabs/k2-alpine'
 import { createZustandStore } from 'common/utils/createZustandStore'
-import { StorageKey } from 'resources/Constants'
+import { ZustandStorageKeys } from 'resources/Constants'
 import { zustandMMKVStorage } from 'utils/mmkv/storages'
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
@@ -15,7 +15,8 @@ interface RecentAccountsState {
   deleteRecentAccounts: () => void
 }
 
-export const useRecentAccounts = create<RecentAccountsState>()(
+// Create a store that can be used outside of React components
+export const recentAccountsStore = create<RecentAccountsState>()(
   persist(
     set => ({
       recentAccountIndexes: [],
@@ -34,8 +35,13 @@ export const useRecentAccounts = create<RecentAccountsState>()(
         })
     }),
     {
-      name: StorageKey.RECENT_ACCOUNTS,
+      name: ZustandStorageKeys.RECENT_ACCOUNTS,
       storage: zustandMMKVStorage
     }
   )
 )
+
+// React hook that uses the store
+export const useRecentAccounts = () => {
+  return recentAccountsStore()
+}
