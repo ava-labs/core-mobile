@@ -1,4 +1,5 @@
 import {
+  alpha,
   AnimatedPressable,
   Icons,
   MaskedText,
@@ -16,6 +17,7 @@ import { Dimensions } from 'react-native'
 import Animated from 'react-native-reanimated'
 import { useSelector } from 'react-redux'
 import { selectIsPrivacyModeEnabled } from 'store/settings/securityPrivacy'
+import { SubTextNumber } from 'common/components/SubTextNumber'
 import { TokenListViewProps } from '../types'
 import { LogoWithNetwork } from './LogoWithNetwork'
 
@@ -68,7 +70,17 @@ export const TokenGridView = ({
                 numberOfLines={1}
                 ellipsizeMode="tail"
                 sx={{ lineHeight: 16 }}>
-                {token.balanceDisplayValue} {token.symbol}
+                <View sx={{ flexDirection: 'row' }}>
+                  <SubTextNumber number={Number(token.balanceDisplayValue)} />
+                  <Text
+                    variant="body2"
+                    sx={{
+                      marginTop: 1,
+                      color: alpha(colors.$textPrimary, 0.6)
+                    }}>
+                    {' ' + token.symbol}
+                  </Text>
+                </View>
               </MaskedText>
             </View>
           </View>
