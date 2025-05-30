@@ -6,7 +6,8 @@ import {
   selectCustomNetworks,
   setActive,
   selectEnabledChainIds,
-  toggleEnabledChainId
+  toggleEnabledChainId,
+  enableL2ChainIds
 } from 'store/network/slice'
 import {
   selectIsDeveloperMode,
@@ -14,6 +15,11 @@ import {
 } from 'store/settings/advanced'
 import { AnyAction, isAnyOf } from '@reduxjs/toolkit'
 import AnalyticsService from 'services/analytics/AnalyticsService'
+import {
+  selectHasBeenViewedOnce,
+  setViewOnce,
+  ViewOnceKey
+} from 'store/viewOnce'
 
 const adjustActiveNetwork = (
   _: AnyAction,
@@ -64,6 +70,22 @@ const toggleEnabledChainIdSideEffect = (
   })
 }
 
+const enableL2ChainIdsIfNeeded = (
+  _: AnyAction,
+  listenerApi: AppListenerEffectAPI
+): void => {
+  const { dispatch, getState } = listenerApi
+  const state = getState()
+  const hasToggledL2ChainIds = selectHasBeenViewedOnce(
+    ViewOnceKey.AUTO_ENABLE_L2_CHAINS
+  )(state)
+
+  if (hasToggledL2ChainIds === false) {
+    dispatch(enableL2ChainIds())
+    dispatch(setViewOnce(ViewOnceKey.AUTO_ENABLE_L2_CHAINS))
+  }
+}
+
 export const addNetworkListeners = (
   startListening: AppStartListening
 ): void => {
@@ -80,5 +102,10 @@ export const addNetworkListeners = (
   startListening({
     matcher: isAnyOf(toggleEnabledChainId),
     effect: toggleEnabledChainIdSideEffect
+  })
+
+  startListening({
+    matcher: isAnyOf(onAppUnlocked),
+    effect: enableL2ChainIdsIfNeeded
   })
 }
