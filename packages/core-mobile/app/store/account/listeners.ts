@@ -35,11 +35,12 @@ const initAccounts = async (
   const activeAccountIndex = selectActiveAccount(state)?.index ?? 0
   const accounts: AccountCollection = {}
 
-  const recentAccounts = recentAccountsStore.getState().recentAccountIndexes
+  // const activeAccount = useSelector(selectActiveAccount)
+  // const { recentAccountIndexes, addRecentAccount } = useRecentAccounts()
 
-  if (recentAccounts.length === 0) {
-    recentAccountsStore.getState().addRecentAccount(activeAccountIndex)
-  }
+  // if (recentAccountIndexes.length === 0 && activeAccount) {
+  //   addRecentAccount(activeAccount.index)
+  // }
 
   if (walletType === WalletType.SEEDLESS) {
     const acc = await accountService.createNextAccount({

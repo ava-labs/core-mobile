@@ -15,6 +15,7 @@ interface RecentAccountsState {
   deleteRecentAccounts: () => void
 }
 
+// Create a store that can be used outside of React components
 export const recentAccountsStore = create<RecentAccountsState>()(
   persist(
     set => ({
