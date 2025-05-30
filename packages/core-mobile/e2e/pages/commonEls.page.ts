@@ -325,6 +325,17 @@ class CommonElsPage {
       `Account name mismatch: ${expectedName} !== ${UIaccountName}`
     )
   }
+
+  async exitMetro() {
+    try {
+      if (await Actions.isVisible(by.text(/.*8081.*/i), 0)) {
+        await Actions.tap(by.text(/.*8081.*/i))
+      }
+      await Actions.tap(by.id(/.*x-icon.*/i))
+    } catch (e) {
+      console.log('Metro dev menu is not found...')
+    }
+  }
 }
 
 export default new CommonElsPage()

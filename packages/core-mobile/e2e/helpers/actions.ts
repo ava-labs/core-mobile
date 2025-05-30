@@ -94,7 +94,7 @@ const dismissKeyboard = async (searchBarId = 'search_bar__search') => {
     try {
       await element(by.id(searchBarId)).tapReturnKey()
     } catch (e) {
-      await element(by.label('Done')).atIndex(0).tap()
+      await element(by.label('done')).atIndex(0).tap()
     }
   } else {
     await device.pressBack()
