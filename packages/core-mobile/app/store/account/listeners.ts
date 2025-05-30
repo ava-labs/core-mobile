@@ -162,7 +162,6 @@ const handleActiveAccountIndexChange = (
   action: ReturnType<typeof setActiveAccountIndex>
 ): void => {
   recentAccountsStore.getState().addRecentAccount(action.payload)
-  recentAccountsStore.getState().addRecentAccount(action.payload)
 }
 
 export const addAccountListeners = (
