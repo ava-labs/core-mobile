@@ -58,7 +58,7 @@ const styles = StyleSheet.create({
   }
 })
 
-type SubTextNumberVariant = Extract<TextVariant, 'body1'>
+type SubTextNumberVariant = Extract<TextVariant, 'body1' | 'heading2'>
 
 const getSubTextStyle = (textVariant: SubTextNumberVariant): TextStyle => {
   let style: TextStyle = {
@@ -66,7 +66,10 @@ const getSubTextStyle = (textVariant: SubTextNumberVariant): TextStyle => {
   }
   if (textVariant === 'body1') {
     style = { ...style, fontSize: 13, top: 4, fontWeight: '500' }
-  } // todo: add subtext styles for other variants when needed
+  }
+  if (textVariant === 'heading2') {
+    style = { ...style, fontSize: 18, top: 10, fontWeight: '500' }
+  }
 
   return style
 }
