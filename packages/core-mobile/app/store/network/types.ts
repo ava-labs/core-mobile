@@ -54,5 +54,7 @@ export enum TokenSymbol {
   USDT = 'USDT',
   VET = 'VET',
   XLM = 'XLM',
-  XRP = 'XRP'
+  XRP = 'XRP',
+  OP = 'OP',
+  BASE = 'BASE'
 }

@@ -7,9 +7,11 @@ import {
   hasLocalTokenLogo
 } from 'common/utils/hasLocalTokenLogo'
 import { Logo } from 'common/components/Logo'
+import { L2_NETWORK_SYMBOL_MAPPING } from 'consts/chainIdsWithIncorrectSymbol'
 
 interface TokenAvatarProps {
   symbol?: string
+  chainId?: number
   logoUri?: string
   size?: number
   testID?: string
@@ -23,6 +25,7 @@ const BORDER_WIDTH = 1
 
 export const TokenLogo: FC<TokenAvatarProps> = ({
   symbol,
+  chainId,
   logoUri,
   size = DEFAULT_SIZE,
   isMalicious,
@@ -36,7 +39,10 @@ export const TokenLogo: FC<TokenAvatarProps> = ({
   const backgroundColor = colors.$borderPrimary
 
   const useLocalNetworkTokenLogo = Boolean(
-    symbol && isNetworkToken && hasLocalNetworkTokenLogo(symbol)
+    (symbol && isNetworkToken && hasLocalNetworkTokenLogo(symbol)) ||
+      (chainId &&
+        L2_NETWORK_SYMBOL_MAPPING[chainId] &&
+        hasLocalNetworkTokenLogo(L2_NETWORK_SYMBOL_MAPPING[chainId]))
   )
 
   const borderRadiusValue = isNft ? 12 : size
@@ -103,6 +109,7 @@ export const TokenLogo: FC<TokenAvatarProps> = ({
         <TokenIcon
           size={size}
           symbol={symbol}
+          chainId={chainId}
           isNetworkTokenSymbol={Boolean(useLocalNetworkTokenLogo)}
         />
         {androidBorderOverlay}

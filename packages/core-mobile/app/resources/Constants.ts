@@ -7,6 +7,10 @@ export enum StorageKey {
   ADDRESSES_IN_RANGE = 'addressesInRange'
 }
 
+export enum ZustandStorageKeys {
+  RECENT_ACCOUNTS = 'recentAccounts'
+}
+
 export const CORE_UNIVERSAL_LINK_HOSTS = ['core.app', 'test.core.app']
 
 export const TERMS_OF_USE_URL = 'https://core.app/terms/core'

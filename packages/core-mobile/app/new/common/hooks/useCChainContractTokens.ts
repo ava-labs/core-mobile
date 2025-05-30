@@ -16,7 +16,7 @@ export const useCChainContractTokens = (): NetworkContractToken[] => {
     enabled: cChainNetwork !== undefined,
     queryKey: [ReactQueryKeys.NETWORK_CONTRACT_TOKENS, cChainNetwork],
     queryFn: () => getNetworkContractTokens(cChainNetwork),
-    staleTime: Infinity,
+    staleTime: 120000, // 2 mins,
     networkMode: 'offlineFirst'
   })
 

@@ -175,6 +175,12 @@ export class NftProcessor {
 
       const response = await fetch(ipfsPath)
 
+      if (!response.ok) {
+        throw new Error(
+          `[NftProcessor] fetchMetadata error from ${ipfsPath} with status code ${response.status}`
+        )
+      }
+
       return await response.json()
     }
   }
