@@ -128,7 +128,11 @@ export const TokenListView = ({
                 numberOfLines={1}
                 testID={`list_token_balance__${index}`}>
                 <View sx={{ flexDirection: 'row' }}>
-                  <SubTextNumber number={Number(token.balanceDisplayValue)} />
+                  <SubTextNumber
+                    number={Number(
+                      token.balanceDisplayValue.replaceAll(',', '')
+                    )}
+                  />
                   <Text
                     variant="body2"
                     sx={{

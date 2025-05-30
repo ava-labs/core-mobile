@@ -2,6 +2,7 @@ import React, { useMemo } from 'react'
 import { View, Text, alpha, useTheme, TextVariant } from '@avalabs/k2-alpine'
 import { StyleSheet, TextStyle, ViewStyle } from 'react-native'
 import { numberToSubscriptFormat } from 'utils/numberToSubscriptFormat/numberToSubscriptFormat'
+import { formatNumber } from 'utils/formatNumber/formatNumber'
 
 export const SubTextNumber = ({
   number,
@@ -36,7 +37,7 @@ export const SubTextNumber = ({
         numberOfLines={1}
         variant={textVariant}
         style={[{ color: _textColor }]}>
-        {mainTextBefore}
+        {formatNumber(mainTextBefore)}
       </Text>
       {subText && (
         <Text style={[subTextStyle, { color: _textColor }]}>{subText}</Text>
@@ -54,7 +55,7 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
     alignItems: 'center',
-    maxWidth: '70%'
+    maxWidth: '80%'
   }
 })
 
