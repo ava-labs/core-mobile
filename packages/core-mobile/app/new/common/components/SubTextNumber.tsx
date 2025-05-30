@@ -40,7 +40,11 @@ export const SubTextNumber = ({
         {formatNumber(mainTextBefore)}
       </Text>
       {subText && (
-        <Text style={[subTextStyle, { color: _textColor }]}>{subText}</Text>
+        <Text
+          variant={textVariant}
+          style={[subTextStyle, { color: _textColor }]}>
+          {subText}
+        </Text>
       )}
       {mainTextAfter && (
         <Text variant={textVariant} style={[{ color: _textColor }]}>
