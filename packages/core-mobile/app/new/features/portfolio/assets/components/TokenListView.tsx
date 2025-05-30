@@ -139,7 +139,9 @@ export const TokenListView = ({
                   </Text>
                 </View>
               </MaskedText>
-              {formattedPrice !== UNKNOWN_AMOUNT && (
+              {(formattedPrice !== UNKNOWN_AMOUNT ||
+                (formattedPrice === UNKNOWN_AMOUNT &&
+                  formattedBalance !== '')) && (
                 <PriceChangeIndicator
                   formattedPrice={formattedPrice}
                   status={priceChangeStatus}
