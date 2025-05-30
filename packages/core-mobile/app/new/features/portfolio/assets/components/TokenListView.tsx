@@ -132,6 +132,7 @@ export const TokenListView = ({
                     number={Number(
                       token.balanceDisplayValue.replaceAll(',', '')
                     )}
+                    textVariant="body2"
                   />
                   <Text
                     variant="body2"
