@@ -6,7 +6,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router'
 import { SetWalletName as Component } from 'features/onboarding/components/SetWalletName'
 
 export default function SetWalletName(): JSX.Element {
-  const [name, setName] = useState<string>('Wallet 1')
+  const [name, setName] = useState<string>('Account 1')
   const dispatch = useDispatch()
   const { navigate } = useRouter()
   const { mnemonic } = useLocalSearchParams<{ mnemonic: string }>()

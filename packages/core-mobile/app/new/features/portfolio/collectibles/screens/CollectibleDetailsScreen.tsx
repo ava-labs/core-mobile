@@ -12,6 +12,7 @@ import React, {
   useRef,
   useState
 } from 'react'
+import { Platform } from 'react-native'
 import { Pressable } from 'react-native-gesture-handler'
 import Animated, {
   Extrapolation,
@@ -87,10 +88,21 @@ export const CollectibleDetailsScreen = ({
   const bounceValue = useSharedValue(0)
   const scrollViewRef = useRef<Animated.ScrollView>(null)
 
-  const scrollViewHandler = useAnimatedScrollHandler(event => {
+  const onScroll = useAnimatedScrollHandler(event => {
     'worklet'
     scrollY.value = event.contentOffset.y
   })
+
+  const onScrollEndDrag = useCallback((): void => {
+    'worklet'
+    if (scrollY.value > SNAP_DISTANCE / 2) {
+      scrollViewRef.current?.scrollToEnd()
+    } else {
+      scrollViewRef.current?.scrollTo({
+        y: 0
+      })
+    }
+  }, [scrollY])
 
   const onSeeMore = (): void => {
     'worklet'
@@ -201,12 +213,7 @@ export const CollectibleDetailsScreen = ({
 
   useEffect(() => {
     navigation.setOptions({
-      headerRight,
-      headerTransparent: true,
-      headerStyle: {
-        elevation: 0,
-        shadowOpacity: 0
-      }
+      headerRight
     })
   }, [navigation, currentIndex, filteredAndSorted, headerRight])
 
@@ -239,7 +246,11 @@ export const CollectibleDetailsScreen = ({
     const height = interpolate(
       scrollY.value,
       [0, SNAP_DISTANCE],
-      [frame.height, CARD_SIZE_SMALL],
+      [
+        // Android viewport ignores the status bar, so we need to adjust it
+        frame.height - (Platform.OS === 'ios' ? 0 : insets.top),
+        CARD_SIZE_SMALL
+      ],
       Extrapolation.CLAMP
     )
 
@@ -254,10 +265,18 @@ export const CollectibleDetailsScreen = ({
   })
 
   const contentStyle = useAnimatedStyle(() => {
+    const height =
+      frame.height -
+      // Android viewport ignores the status bar, so we need to adjust it
+      (Platform.OS === 'ios' ? 0 : insets.top) -
+      headerHeight -
+      SNAP_DISTANCE +
+      10
+
     const translateY = interpolate(
       scrollY.value,
       [0, SNAP_DISTANCE],
-      [0, -frame.height + headerHeight + SNAP_DISTANCE * 2],
+      [0, -frame.height + headerHeight + SNAP_DISTANCE * 2 - 10],
       Extrapolation.CLAMP
     )
 
@@ -265,7 +284,7 @@ export const CollectibleDetailsScreen = ({
       top: frame.height,
       left: 0,
       right: 0,
-      height: frame.height - headerHeight - SNAP_DISTANCE,
+      height,
       transform: [
         {
           translateY
@@ -296,20 +315,32 @@ export const CollectibleDetailsScreen = ({
     }
   })
 
+  const contentContainerStyle = useMemo(() => {
+    return {
+      paddingBottom: insets.bottom,
+      minHeight:
+        frame.height -
+        // Android viewport ignores the status bar, so we need to adjust it
+        (Platform.OS === 'ios' ? 0 : insets.top) +
+        SNAP_DISTANCE
+    }
+  }, [frame.height, insets.bottom, insets.top])
+
   return (
-    <View style={{ flex: 1 }}>
+    <View
+      style={{
+        flex: 1
+      }}>
       {collectible ? (
         <Animated.ScrollView
           ref={scrollViewRef}
-          onScroll={scrollViewHandler}
+          onScroll={onScroll}
           style={{
             flex: 1,
             position: 'relative'
           }}
-          contentContainerStyle={{
-            paddingBottom: insets.bottom,
-            minHeight: frame.height + SNAP_DISTANCE
-          }}
+          contentContainerStyle={contentContainerStyle}
+          onScrollEndDrag={onScrollEndDrag}
           nestedScrollEnabled
           bounces={false}
           showsVerticalScrollIndicator={false}
