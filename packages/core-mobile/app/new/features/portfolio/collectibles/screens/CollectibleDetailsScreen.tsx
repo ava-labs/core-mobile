@@ -246,7 +246,10 @@ export const CollectibleDetailsScreen = ({
     const height = interpolate(
       scrollY.value,
       [0, SNAP_DISTANCE],
-      [frame.height, CARD_SIZE_SMALL],
+      [
+        frame.height - (Platform.OS === 'ios' ? 0 : insets.top),
+        CARD_SIZE_SMALL
+      ],
       Extrapolation.CLAMP
     )
 
