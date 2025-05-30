@@ -24,6 +24,8 @@ export const ReceiveScreen = (): ReactNode => {
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const activeAccount = useSelector(selectActiveAccount)
 
+  const isEvm = selectedNetwork.vmName === NetworkVMType.EVM
+
   const address = useMemo(() => {
     switch (selectedNetwork.vmName) {
       case NetworkVMType.BITCOIN:
@@ -135,20 +137,27 @@ export const ReceiveScreen = (): ReactNode => {
         <View style={{ paddingVertical: 16 }}>
           <QRCode testID="receive_token_qr_code" address={address} />
         </View>
-        <SupportedReceiveEvmTokens style={{ marginTop: 16 }} iconSize={20} />
-        <Text
-          variant="subtitle2"
-          style={{
-            textAlign: 'center',
-            marginHorizontal: 40,
-            marginTop: 5,
-            fontSize: 12,
-            lineHeight: 15,
-            color: theme.colors.$textSecondary
-          }}>
-          This address supports receiving tokens and NFTs on Avalanche C-Chain,
-          Ethereum, Base, Arbitrum, Optimism and Avalanche L1s
-        </Text>
+        {isEvm && (
+          <>
+            <SupportedReceiveEvmTokens
+              style={{ marginTop: 16 }}
+              iconSize={20}
+            />
+            <Text
+              variant="subtitle2"
+              style={{
+                textAlign: 'center',
+                marginHorizontal: 40,
+                marginTop: 5,
+                fontSize: 12,
+                lineHeight: 15,
+                color: theme.colors.$textSecondary
+              }}>
+              This address supports receiving tokens and NFTs on Avalanche
+              C-Chain, Ethereum, Base, Arbitrum, Optimism and Avalanche L1s
+            </Text>
+          </>
+        )}
       </View>
     </ScrollScreen>
   )
