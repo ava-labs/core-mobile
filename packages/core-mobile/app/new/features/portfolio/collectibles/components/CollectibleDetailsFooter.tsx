@@ -35,7 +35,8 @@ export const CollectibleDetailsFooter = ({
         style={{
           gap: 10,
           padding: HORIZONTAL_MARGIN,
-          paddingBottom: insets.bottom + HORIZONTAL_MARGIN
+          paddingTop: 0,
+          paddingBottom: insets.bottom + HORIZONTAL_MARGIN / 2
         }}>
         {collectible?.networkChainId &&
         isAvalancheCChainId(collectible?.networkChainId) ? (
