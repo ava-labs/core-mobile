@@ -158,7 +158,10 @@ const reloadAccounts = async (
   listenerApi.dispatch(setAccounts(reloadedAccounts))
 }
 
-const handleActiveAccountIndexChange = (action: AnyAction): void => {
+const handleActiveAccountIndexChange = (
+  action: ReturnType<typeof setActiveAccountIndex>
+): void => {
+  recentAccountsStore.getState().addRecentAccount(action.payload)
   recentAccountsStore.getState().addRecentAccount(action.payload)
 }
 
