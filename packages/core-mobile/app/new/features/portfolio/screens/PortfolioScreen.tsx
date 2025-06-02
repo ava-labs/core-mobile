@@ -242,9 +242,7 @@ const PortfolioHomeScreen = (): JSX.Element => {
     return (
       <View
         style={{
-          backgroundColor: theme.colors.$surfacePrimary,
-          paddingHorizontal: 16,
-          paddingBottom: 16
+          backgroundColor: theme.colors.$surfacePrimary
         }}>
         <View onLayout={handleBalanceHeaderLayout}>
           <Animated.View
@@ -252,7 +250,8 @@ const PortfolioHomeScreen = (): JSX.Element => {
               {
                 paddingBottom: 16,
                 backgroundColor: theme.colors.$surfacePrimary,
-                marginTop: 16
+                marginTop: 16,
+                paddingHorizontal: 16
               },
               animatedHeaderStyle
             ]}>
@@ -281,7 +280,13 @@ const PortfolioHomeScreen = (): JSX.Element => {
             />
           </Animated.View>
         </View>
-        <ActionButtons buttons={actionButtons} />
+
+        <ActionButtons
+          buttons={actionButtons}
+          contentContainerStyle={{
+            paddingHorizontal: 16
+          }}
+        />
       </View>
     )
   }, [

@@ -1,17 +1,21 @@
-import React from 'react'
-import Animated from 'react-native-reanimated'
 import {
   SPRING_LINEAR_TRANSITION,
   SquareButton,
   SquareButtonIconType
 } from '@avalabs/k2-alpine'
 import { getItemEnteringAnimation } from 'common/utils/animations'
+import React from 'react'
+import { ViewStyle } from 'react-native'
+import Animated from 'react-native-reanimated'
+import { StyleProp } from 'react-native'
 import { ActionButtonTitle } from '../consts'
 
 export const ActionButtons = ({
-  buttons
+  buttons,
+  contentContainerStyle
 }: {
   buttons: ActionButton[]
+  contentContainerStyle?: StyleProp<ViewStyle>
 }): JSX.Element => {
   const renderActionItem = (item: ActionButton, index: number): JSX.Element => {
     return (
@@ -32,7 +36,7 @@ export const ActionButtons = ({
   return (
     <Animated.FlatList
       style={{ overflow: 'visible' }}
-      contentContainerStyle={{ gap: 10 }}
+      contentContainerStyle={[{ gap: 10 }, contentContainerStyle]}
       horizontal
       scrollEventThrottle={16}
       data={buttons}
