@@ -344,6 +344,14 @@ export const selectIsSwapFeesBlocked = (state: RootState): boolean => {
   )
 }
 
+export const selectIsMeldIntegrationBlocked = (state: RootState): boolean => {
+  const { featureFlags } = state.posthog
+  return (
+    !featureFlags[FeatureGates.MELD_INTEGRATION] ||
+    !featureFlags[FeatureGates.EVERYTHING]
+  )
+}
+
 // actions
 export const { regenerateUserId, toggleAnalytics, setFeatureFlags } =
   posthogSlice.actions
