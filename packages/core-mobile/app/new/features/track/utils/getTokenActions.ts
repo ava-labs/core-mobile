@@ -20,6 +20,7 @@ export const getTokenActions = ({
   showBuy: boolean
   showSwap: boolean
   showStake: boolean
+  // eslint-disable-next-line sonarjs/cognitive-complexity
 } => {
   // by default, hide all buttons
   let showBuy = false
@@ -33,21 +34,28 @@ export const getTokenActions = ({
 
   // handle AVAX token
   else if (isAVAX) {
-    if (!isSwapBlocked && !isZeroBalance) {
-      showSwap = true
-    }
-
-    if (hasEnoughAvax && !isEarnBlocked) {
-      showStake = true
-    } else {
+    if (isZeroBalance) {
       showBuy = true
+    } else {
+      if (hasEnoughAvax) {
+        if (!isSwapBlocked) {
+          showSwap = true
+        }
+
+        if (!isEarnBlocked) {
+          showStake = true
+        }
+      } else {
+        if (!isSwapBlocked) {
+          showSwap = true
+        }
+      }
     }
   }
 
   // handle other tokens
   else if (isTokenSwappable) {
     if (!isSwapBlocked && !isZeroBalance) {
-      showBuy = true
       showSwap = true
     } else {
       showBuy = true
