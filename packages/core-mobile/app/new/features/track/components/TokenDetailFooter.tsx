@@ -82,7 +82,7 @@ export const TokenDetailFooter = ({
         size={'large'}
         onPress={() => onSwap(initialTokenIdTo)}
         style={{ flex: 1 }}>
-        Swap
+        Buy
       </Button>
     ),
     [onSwap]

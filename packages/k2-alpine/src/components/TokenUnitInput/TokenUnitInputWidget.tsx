@@ -62,7 +62,7 @@ export const TokenUnitInputWidget = ({
 
     onChange?.(
       new TokenUnit(
-        Number(value.toDisplay()) * 10 ** token.maxDecimals,
+        Number(value.toDisplay({ asNumber: true })) * 10 ** token.maxDecimals,
         token.maxDecimals,
         token.symbol
       )

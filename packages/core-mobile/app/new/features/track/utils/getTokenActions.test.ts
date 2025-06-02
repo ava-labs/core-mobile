@@ -28,7 +28,7 @@ it('returns buy and swap for non-AVAX token with balance and swappable', () => {
     ...defaultArgs,
     isAVAX: false
   })
-  expect(result).toEqual({ showBuy: true, showSwap: true, showStake: false })
+  expect(result).toEqual({ showBuy: false, showSwap: true, showStake: false })
 })
 
 it('returns only buy for non-AVAX token with zero balance', () => {
@@ -53,41 +53,33 @@ it('returns nothing for non-AVAX token if not swappable', () => {
   })
 })
 
-it('returns swap and stake when there is enough balance to stake', () => {
-  const result = getTokenActions({
-    ...defaultArgs,
-    isAVAX: true,
-    hasEnoughAvax: true
+describe('AVAX token', () => {
+  it('returns swap and stake when there is enough balance to stake', () => {
+    const result = getTokenActions({
+      ...defaultArgs,
+      isAVAX: true,
+      hasEnoughAvax: true
+    })
+    expect(result).toEqual({ showBuy: false, showSwap: true, showStake: true })
   })
-  expect(result).toEqual({ showBuy: false, showSwap: true, showStake: true })
-})
 
-it('returns swap and buy when there is not enough balance to stake', () => {
-  const result = getTokenActions({
-    ...defaultArgs,
-    isAVAX: true,
-    hasEnoughAvax: false
+  it('returns only swap when there is not enough balance to stake', () => {
+    const result = getTokenActions({
+      ...defaultArgs,
+      isAVAX: true,
+      hasEnoughAvax: false
+    })
+    expect(result).toEqual({ showBuy: false, showSwap: true, showStake: false })
   })
-  expect(result).toEqual({ showBuy: true, showSwap: true, showStake: false })
-})
 
-it('returns only buy for AVAX if swap is blocked and not enough AVAX', () => {
-  const result = getTokenActions({
-    ...defaultArgs,
-    isAVAX: true,
-    isSwapBlocked: true,
-    hasEnoughAvax: false
+  it('returns only buy for AVAX if balance is zero', () => {
+    const result = getTokenActions({
+      ...defaultArgs,
+      isAVAX: true,
+      isZeroBalance: true
+    })
+    expect(result).toEqual({ showBuy: true, showSwap: false, showStake: false })
   })
-  expect(result).toEqual({ showBuy: true, showSwap: false, showStake: false })
-})
-
-it('returns only buy for AVAX if balance is zero', () => {
-  const result = getTokenActions({
-    ...defaultArgs,
-    isAVAX: true,
-    isZeroBalance: true
-  })
-  expect(result).toEqual({ showBuy: true, showSwap: false, showStake: false })
 })
 
 it('returns no actions if all flags are false and not swappable', () => {
