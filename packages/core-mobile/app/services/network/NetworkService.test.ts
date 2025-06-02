@@ -16,7 +16,7 @@ type TNetworks = {
   [chainId: number]: { chainName: string }
 }
 
-const mockERC20Networks = {
+const mockPrimaryNetworks = {
   1: {
     chainName: 'Ethereum'
   },
@@ -31,7 +31,7 @@ const mockDeBankNetworks = {
 }
 
 type TNetworkService = {
-  fetchERC20Networks: () => Promise<TNetworks>
+  fetchPrimaryNetworks: ({includeSolana}: {includeSolana: boolean}) => Promise<TNetworks>
   fetchDeBankNetworks: () => Promise<TNetworks>
   getAvalancheNetworkP: (isDevMode: boolean) => Network
   getAvalancheNetworkX: (isDevMode: boolean) => Network
@@ -39,13 +39,13 @@ type TNetworkService = {
 
 describe('NetworkService', () => {
   describe('getNetworks', () => {
-    it('should fetch ERC20 and DeBank networks and return combined network data', async () => {
+    it('should fetch common networks and DeBank networks and return combined network data', async () => {
       jest
         .spyOn(
           NetworkService as unknown as TNetworkService,
-          'fetchERC20Networks'
+          'fetchPrimaryNetworks'
         )
-        .mockResolvedValue(mockERC20Networks)
+        .mockResolvedValue(mockPrimaryNetworks)
       jest
         .spyOn(
           NetworkService as unknown as TNetworkService,
@@ -59,7 +59,7 @@ describe('NetworkService', () => {
         .spyOn(NetworkService, 'getAvalancheNetworkX')
         .mockReturnValue({ chainName: 'Avalanche X' } as unknown as Network)
 
-      const result = await NetworkService.getNetworks()
+      const result = await NetworkService.getNetworks({ includeSolana: false })
 
       expect(result).toEqual({
         1: { chainName: 'Ethereum' },
@@ -78,7 +78,7 @@ describe('NetworkService', () => {
       jest
         .spyOn(
           NetworkService as unknown as TNetworkService,
-          'fetchERC20Networks'
+          'fetchPrimaryNetworks'
         )
         .mockRejectedValue('ERC20 fetch error')
       jest
@@ -95,7 +95,7 @@ describe('NetworkService', () => {
         .spyOn(NetworkService, 'getAvalancheNetworkX')
         .mockReturnValue({ chainName: 'Avalanche X' } as unknown as Network)
 
-      const result = await NetworkService.getNetworks()
+      const result = await NetworkService.getNetworks({ includeSolana: false })
 
       // Verify Logger was called for both fetch errors
       expect(Logger.error).toHaveBeenCalledWith(
@@ -120,9 +120,9 @@ describe('NetworkService', () => {
       jest
         .spyOn(
           NetworkService as unknown as TNetworkService,
-          'fetchERC20Networks'
+          'fetchPrimaryNetworks'
         )
-        .mockResolvedValue(mockERC20Networks)
+        .mockResolvedValue(mockPrimaryNetworks)
       jest
         .spyOn(
           NetworkService as unknown as TNetworkService,
@@ -136,7 +136,7 @@ describe('NetworkService', () => {
         .spyOn(NetworkService, 'getAvalancheNetworkX')
         .mockReturnValue({ chainName: 'Avalanche X' } as unknown as Network)
 
-      const result = await NetworkService.getNetworks()
+      const result = await NetworkService.getNetworks({ includeSolana: false })
 
       expect(result[ChainId.AVALANCHE_LOCAL_ID]).toBeUndefined()
       expect(result[1]?.chainName).toEqual('Ethereum')

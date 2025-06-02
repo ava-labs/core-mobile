@@ -31,8 +31,8 @@ if (!Config.PROXY_URL)
   Logger.warn('PROXY_URL is missing in env file. Network service is disabled.')
 
 class NetworkService {
-  async getNetworks(): Promise<Networks> {
-    const erc20Networks = await this.fetchERC20Networks().catch(reason => {
+  async getNetworks({includeSolana }: { includeSolana: boolean }): Promise<Networks> {
+    const erc20Networks = await this.fetchPrimaryNetworks(includeSolana).catch(reason => {
       Logger.error(`[NetworkService][fetchERC20Networks]${reason}`)
       return {} as Networks
     })
@@ -132,14 +132,18 @@ class NetworkService {
     return ModuleManager.avalancheModule.getProvider(mapToVmNetwork(network))
   }
 
-  private async fetchERC20Networks(): Promise<Networks> {
-    const response = await fetch(`${Config.PROXY_URL}/networks`)
-    const networks: Network[] = await response.json()
+  private async fetchPrimaryNetworks(includeSolana: boolean = false): Promise<Networks> {
+    const url = includeSolana
+      ? `${Config.PROXY_URL}/networks?includeSolana`
+      : `${Config.PROXY_URL}/networks`
 
-    return networks.reduce((acc, network) => {
-      acc[network.chainId] = network
-      return acc
-    }, {} as Networks)
+    const response = await fetch(url)
+      const networks: Network[] = await response.json()
+
+      return networks.reduce((acc, network) => {
+        acc[network.chainId] = network
+        return acc
+      }, {} as Networks)
   }
 
   private async fetchDeBankNetworks(): Promise<Networks> {

@@ -19,6 +19,7 @@ export type ExportCParams = {
   activeAccount: Account
   isDevMode: boolean
   cBaseFeeMultiplier: number
+  includeSolana: boolean
 }
 
 export async function exportC({
@@ -26,14 +27,15 @@ export async function exportC({
   requiredAmountWei,
   activeAccount,
   isDevMode,
-  cBaseFeeMultiplier
+  cBaseFeeMultiplier,
+  includeSolana
 }: ExportCParams): Promise<void> {
   Logger.info(
     `exporting C started with base fee multiplier: ${cBaseFeeMultiplier}`
   )
 
   const avaxXPNetwork = NetworkService.getAvalancheNetworkP(isDevMode)
-  const chains = await NetworkService.getNetworks()
+  const chains = await NetworkService.getNetworks({ includeSolana })
   const cChainNetwork =
     chains[
       isDevMode ? ChainId.AVALANCHE_TESTNET_ID : ChainId.AVALANCHE_MAINNET_ID

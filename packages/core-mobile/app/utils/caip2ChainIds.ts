@@ -136,6 +136,10 @@ export const getEvmCaip2ChainId = (chainId: number): string => {
   return `${BlockchainNamespace.EIP155}:${chainId.toString()}`
 }
 
+export const getSolanaCaip2ChainId = (chainId: number): string => {
+  return `${BlockchainNamespace.SOLANA}:${chainId.toString()}`
+}
+
 export const getChainIdFromCaip2 = (
   caip2ChainId: string
 ): number | undefined => {

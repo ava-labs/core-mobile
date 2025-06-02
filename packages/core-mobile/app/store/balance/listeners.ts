@@ -50,6 +50,8 @@ import {
   setBalances,
   setStatus
 } from './slice'
+import { selectIsSolanaSupportBlocked } from 'store/posthog'
+import { useSelector } from 'react-redux'
 
 export const AVAX_X_ID = 'AVAX-X'
 export const AVAX_P_ID = 'AVAX-P'
@@ -186,6 +188,7 @@ const fetchBalancePeriodically = async (
   const state = getState()
   const isDeveloperMode = selectIsDeveloperMode(state)
   const selectedEnabledNetworks = selectEnabledNetworks(state)
+  const isSolanaSupportBlocked = useSelector(selectIsSolanaSupportBlocked)
   let enabledNetworks: Network[]
   let iteration = 1
   let nonPrimaryNetworksIteration = 0
@@ -198,7 +201,7 @@ const fetchBalancePeriodically = async (
     // before we can start polling
     await queryClient.prefetchQuery({
       queryKey: [ReactQueryKeys.NETWORKS],
-      queryFn: () => NetworkService.getNetworks()
+      queryFn: () => NetworkService.getNetworks({ includeSolana: !isSolanaSupportBlocked })
     })
     enabledNetworks = selectEnabledNetworks(state)
   }

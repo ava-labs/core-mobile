@@ -66,7 +66,8 @@ describe('earn/exportC', () => {
           requiredAmountWei: BigInt(10e18),
           isDevMode: false,
           activeAccount: {} as Account,
-          cBaseFeeMultiplier: testCBaseFeeMultiplier
+          cBaseFeeMultiplier: testCBaseFeeMultiplier,
+          includeSolana: false,
         })
       }).rejects.toThrow('Not enough balance on C chain')
     })
@@ -77,7 +78,8 @@ describe('earn/exportC', () => {
         requiredAmountWei: BigInt(1e18),
         isDevMode: false,
         activeAccount: {} as Account,
-        cBaseFeeMultiplier: testCBaseFeeMultiplier
+        cBaseFeeMultiplier: testCBaseFeeMultiplier,
+        includeSolana: false,
       })
       expect(baseFeeMockFn).toHaveBeenCalled()
     })
@@ -89,7 +91,8 @@ describe('earn/exportC', () => {
           requiredAmountWei: BigInt(1e18),
           isDevMode: false,
           activeAccount: {} as Account,
-          cBaseFeeMultiplier: testCBaseFeeMultiplier
+          cBaseFeeMultiplier: testCBaseFeeMultiplier,
+          includeSolana: false,
         })
         expect(WalletService.createExportCTx).toHaveBeenCalledWith({
           amountInNAvax: 1000000000n,
@@ -109,7 +112,8 @@ describe('earn/exportC', () => {
           requiredAmountWei: BigInt(1e18),
           isDevMode: false,
           activeAccount: {} as Account,
-          cBaseFeeMultiplier: testCBaseFeeMultiplier
+          cBaseFeeMultiplier: testCBaseFeeMultiplier,
+          includeSolana: false,
         })
         expect(WalletService.sign).toHaveBeenCalled()
       }).not.toThrow()
@@ -122,7 +126,8 @@ describe('earn/exportC', () => {
           requiredAmountWei: BigInt(1e18),
           isDevMode: false,
           activeAccount: {} as Account,
-          cBaseFeeMultiplier: testCBaseFeeMultiplier
+          cBaseFeeMultiplier: testCBaseFeeMultiplier,
+          includeSolana: false,
         })
         expect(NetworkService.sendTransaction).toHaveBeenCalled()
       }).not.toThrow()
