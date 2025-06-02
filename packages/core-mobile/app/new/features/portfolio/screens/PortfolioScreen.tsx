@@ -248,7 +248,6 @@ const PortfolioHomeScreen = (): JSX.Element => {
           <Animated.View
             style={[
               {
-                paddingBottom: 16,
                 backgroundColor: theme.colors.$surfacePrimary,
                 marginTop: 16,
                 paddingHorizontal: 16
@@ -284,7 +283,7 @@ const PortfolioHomeScreen = (): JSX.Element => {
         <ActionButtons
           buttons={actionButtons}
           contentContainerStyle={{
-            paddingHorizontal: 16
+            padding: 16
           }}
         />
       </View>
