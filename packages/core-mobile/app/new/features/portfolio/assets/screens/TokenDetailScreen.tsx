@@ -62,11 +62,13 @@ import { selectIsPrivacyModeEnabled } from 'store/settings/securityPrivacy'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import { useNetworks } from 'hooks/networks/useNetworks'
 import { ChainId } from '@avalabs/core-chains-sdk'
+import { selectIsMeldIntegrationBlocked } from 'store/posthog'
 
 export const TokenDetailScreen = (): React.JSX.Element => {
   const {
     theme: { colors }
   } = useTheme()
+  const isMeldIntegrationBlocked = useSelector(selectIsMeldIntegrationBlocked)
   const { navigate, back } = useRouter()
   const { getNetwork } = useNetworks()
   const { navigateToSwap } = useNavigateToSwap()
@@ -162,11 +164,14 @@ export const TokenDetailScreen = (): React.JSX.Element => {
   }, [navigate, token])
 
   const handleBuy = useCallback(() => {
-    navigate({
+    if (isMeldIntegrationBlocked) {
       // @ts-ignore TODO: make routes typesafe
-      pathname: '/buy'
-    })
-  }, [navigate])
+      navigate('/buy')
+      return
+    }
+    // @ts-ignore TODO: make routes typesafe
+    navigate('/buyOnramp')
+  }, [isMeldIntegrationBlocked, navigate])
 
   const handleSend = useCallback((): void => {
     setSelectedToken(token)

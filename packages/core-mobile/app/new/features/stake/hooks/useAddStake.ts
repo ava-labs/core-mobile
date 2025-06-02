@@ -4,21 +4,29 @@ import { useNavigateToSwap } from 'features/swap/hooks/useNavigateToSwap'
 import { useHasEnoughAvaxToStake } from 'hooks/earn/useHasEnoughAvaxToStake'
 import useStakingParams from 'hooks/earn/useStakingParams'
 import { useCallback, useEffect, useState } from 'react'
+import { useSelector } from 'react-redux'
+import { selectIsMeldIntegrationBlocked } from 'store/posthog'
 
 export const useAddStake = (): {
   addStake: () => void
   canAddStake: boolean
 } => {
   const { navigate } = useRouter()
+  const isMeldIntegrationBlocked = useSelector(selectIsMeldIntegrationBlocked)
   const { hasEnoughAvax } = useHasEnoughAvaxToStake()
   const [canAddStake, setCanAddStake] = useState(false)
   const { minStakeAmount } = useStakingParams()
   const { navigateToSwap } = useNavigateToSwap()
 
   const handleBuy = useCallback((): void => {
+    if (isMeldIntegrationBlocked) {
+      // @ts-ignore TODO: make routes typesafe
+      navigate('/buy')
+      return
+    }
     // @ts-ignore TODO: make routes typesafe
-    navigate({ pathname: '/buy' })
-  }, [navigate])
+    navigate('/buyOnramp')
+  }, [isMeldIntegrationBlocked, navigate])
 
   const showNotEnoughAvaxAlert = useCallback((): void => {
     showAlert({

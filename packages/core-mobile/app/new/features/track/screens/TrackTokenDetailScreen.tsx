@@ -48,6 +48,8 @@ import { useIsFocused } from '@react-navigation/native'
 import { MarketType } from 'store/watchlist'
 import { AVAX_COINGECKO_ID } from 'consts/coingecko'
 import { useIsSwapListLoaded } from 'common/hooks/useIsSwapListLoaded'
+import { selectIsMeldIntegrationBlocked } from 'store/posthog'
+import { useSelector } from 'react-redux'
 
 const TrackTokenDetailScreen = (): JSX.Element => {
   const { theme } = useTheme()
@@ -55,6 +57,7 @@ const TrackTokenDetailScreen = (): JSX.Element => {
     tokenId: string
     marketType: MarketType
   }>()
+  const isMeldIntegrationBlocked = useSelector(selectIsMeldIntegrationBlocked)
   const { back, navigate } = useRouter()
   const [isChartInteracting, setIsChartInteracting] = useState(false)
   const { navigateToSwap } = useNavigateToSwap()
@@ -177,12 +180,18 @@ const TrackTokenDetailScreen = (): JSX.Element => {
   }, [openUrl, tokenInfo?.urlHostname, back])
 
   const handleBuy = useCallback((): void => {
-    navigate({
+    if (isMeldIntegrationBlocked) {
       // @ts-ignore TODO: make routes typesafe
-      pathname: '/buy',
-      params: { showAvaxWarning: 'true' }
-    })
-  }, [navigate])
+      navigate({
+        // @ts-ignore TODO: make routes typesafe
+        pathname: '/buy',
+        params: { showAvaxWarning: 'true' }
+      })
+      return
+    }
+    // @ts-ignore TODO: make routes typesafe
+    navigate('/buyOnramp')
+  }, [isMeldIntegrationBlocked, navigate])
 
   const handleSwap = useCallback(
     (initialTokenIdTo?: string): void => {
