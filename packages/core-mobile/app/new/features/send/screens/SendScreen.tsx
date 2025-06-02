@@ -49,7 +49,7 @@ export const SendScreen = (): JSX.Element => {
         toAddress?.recipientType !== 'address' &&
         dispatch(
           addRecentContact({
-            id: Number(toAddress.to),
+            id: toAddress.to,
             type: toAddress.recipientType
           })
         )

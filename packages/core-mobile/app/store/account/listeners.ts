@@ -12,12 +12,14 @@ import AnalyticsService from 'services/analytics/AnalyticsService'
 import SeedlessService from 'seedless/services/SeedlessService'
 import { selectActiveNetwork } from 'store/network'
 import { Network } from '@avalabs/core-chains-sdk'
+import { recentAccountsStore } from 'new/features/accountSettings/store'
 import {
   selectAccounts,
   selectActiveAccount,
   selectWalletName,
   setAccounts,
-  setNonActiveAccounts
+  setNonActiveAccounts,
+  setActiveAccountIndex
 } from './slice'
 import { AccountCollection } from './types'
 
@@ -156,6 +158,12 @@ const reloadAccounts = async (
   listenerApi.dispatch(setAccounts(reloadedAccounts))
 }
 
+const handleActiveAccountIndexChange = (
+  action: ReturnType<typeof setActiveAccountIndex>
+): void => {
+  recentAccountsStore.getState().addRecentAccount(action.payload)
+}
+
 export const addAccountListeners = (
   startListening: AppStartListening
 ): void => {
@@ -167,5 +175,10 @@ export const addAccountListeners = (
   startListening({
     actionCreator: toggleDeveloperMode,
     effect: reloadAccounts
+  })
+
+  startListening({
+    actionCreator: setActiveAccountIndex,
+    effect: handleActiveAccountIndexChange
   })
 }

@@ -51,6 +51,8 @@ import { useIsSwapListLoaded } from 'common/hooks/useIsSwapListLoaded'
 import { selectIsMeldIntegrationBlocked } from 'store/posthog'
 import { useSelector } from 'react-redux'
 
+const MAX_VALUE_WIDTH = '80%'
+
 const TrackTokenDetailScreen = (): JSX.Element => {
   const { theme } = useTheme()
   const { tokenId, marketType } = useLocalSearchParams<{
@@ -453,8 +455,22 @@ const TrackTokenDetailScreen = (): JSX.Element => {
             </Card>
           </TouchableOpacity>
         )}
-        {marketData.length > 0 && <GroupList data={marketData} />}
-        {metaData.length > 0 && <GroupList data={metaData} />}
+        {marketData.length > 0 && (
+          <GroupList
+            data={marketData}
+            valueSx={{
+              maxWidth: MAX_VALUE_WIDTH
+            }}
+          />
+        )}
+        {metaData.length > 0 && (
+          <GroupList
+            data={metaData}
+            valueSx={{
+              maxWidth: MAX_VALUE_WIDTH
+            }}
+          />
+        )}
       </View>
     </ScrollScreen>
   )

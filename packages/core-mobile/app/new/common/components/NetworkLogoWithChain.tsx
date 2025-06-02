@@ -76,6 +76,7 @@ export const NetworkLogoWithChain = ({
       <TokenLogo
         size={chainLogoSize ?? 12}
         symbol={network.networkToken.symbol ?? 'AVAX'}
+        chainId={network.chainId}
         logoUri={network.logoUri}
         isNetworkToken
       />
@@ -88,7 +89,12 @@ export const NetworkLogoWithChain = ({
 
   return (
     <View>
-      <TokenLogo size={networkSize} symbol={symbol} logoUri={network.logoUri} />
+      <TokenLogo
+        size={networkSize}
+        symbol={symbol}
+        chainId={network.chainId}
+        logoUri={network.logoUri}
+      />
       {showChainLogo && (
         <View
           style={{
