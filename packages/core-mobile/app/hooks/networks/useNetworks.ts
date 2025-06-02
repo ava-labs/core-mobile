@@ -16,8 +16,8 @@ import { isAvalancheChainId } from 'services/network/utils/isAvalancheNetwork'
 import { getCaip2ChainId } from 'utils/caip2ChainIds'
 import { uniq } from 'lodash'
 import { useLastTransactedNetworks } from 'new/common/hooks/useLastTransactedNetworks'
-import { useGetNetworks } from './useGetNetworks'
 import { selectIsSolanaSupportBlocked } from 'store/posthog'
+import { useGetNetworks } from './useGetNetworks'
 
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export const useNetworks = () => {
@@ -27,7 +27,9 @@ export const useNetworks = () => {
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const activeChainId = useSelector(selectActiveChainId)
   const enabledChainIds = useSelector(selectEnabledChainIds)
-  const { data: rawNetworks } = useGetNetworks({ includeSolana: !isSolanaSupportBlocked })
+  const { data: rawNetworks } = useGetNetworks({
+    includeSolana: !isSolanaSupportBlocked
+  })
   const { data: lastTransactedChains } = useLastTransactedNetworks()
 
   // all networks, including custom networks

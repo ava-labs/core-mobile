@@ -16,7 +16,11 @@ import { AvalancheModule } from '@avalabs/avalanche-module'
 import { BlockchainId } from '@avalabs/glacier-sdk'
 import { BitcoinModule } from '@avalabs/bitcoin-module'
 import { SvmModule } from '@avalabs/svm-module'
-import { getBitcoinCaip2ChainId, getEvmCaip2ChainId, getSolanaCaip2ChainId } from 'utils/caip2ChainIds'
+import {
+  getBitcoinCaip2ChainId,
+  getEvmCaip2ChainId,
+  getSolanaCaip2ChainId
+} from 'utils/caip2ChainIds'
 import { APPLICATION_NAME, APPLICATION_VERSION } from 'utils/network/constants'
 import { ModuleErrors, VmModuleErrors } from './errors'
 import { approvalController } from './ApprovalController/ApprovalController'
@@ -59,7 +63,7 @@ class ModuleManager {
       module
         .getManifest()
         ?.network.namespaces.includes(BlockchainNamespace.SOLANA)
-    ) as SvmModule 
+    ) as SvmModule
   }
 
   constructor() {

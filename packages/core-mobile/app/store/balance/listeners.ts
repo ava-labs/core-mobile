@@ -41,6 +41,7 @@ import { uuid } from 'utils/uuid'
 import SentryWrapper from 'services/sentry/SentryWrapper'
 import { ReactQueryKeys } from 'consts/reactQueryKeys'
 import { queryClient } from 'contexts/ReactQueryProvider'
+import { selectIsSolanaSupportBlocked } from 'store/posthog'
 import { Balances, LocalTokenWithBalance, QueryStatus } from './types'
 import {
   fetchBalanceForAccount,
@@ -50,8 +51,6 @@ import {
   setBalances,
   setStatus
 } from './slice'
-import { selectIsSolanaSupportBlocked } from 'store/posthog'
-import { useSelector } from 'react-redux'
 
 export const AVAX_X_ID = 'AVAX-X'
 export const AVAX_P_ID = 'AVAX-P'
@@ -188,7 +187,7 @@ const fetchBalancePeriodically = async (
   const state = getState()
   const isDeveloperMode = selectIsDeveloperMode(state)
   const selectedEnabledNetworks = selectEnabledNetworks(state)
-  const isSolanaSupportBlocked = useSelector(selectIsSolanaSupportBlocked)
+  const isSolanaSupportBlocked = selectIsSolanaSupportBlocked(state)
   let enabledNetworks: Network[]
   let iteration = 1
   let nonPrimaryNetworksIteration = 0
@@ -200,8 +199,11 @@ const fetchBalancePeriodically = async (
     // so we need to wait for the networks to be fetched
     // before we can start polling
     await queryClient.prefetchQuery({
-      queryKey: [ReactQueryKeys.NETWORKS],
-      queryFn: () => NetworkService.getNetworks({ includeSolana: !isSolanaSupportBlocked })
+      queryKey: [ReactQueryKeys.NETWORKS, !isSolanaSupportBlocked],
+      queryFn: () =>
+        NetworkService.getNetworks({
+          includeSolana: !isSolanaSupportBlocked
+        })
     })
     enabledNetworks = selectEnabledNetworks(state)
   }

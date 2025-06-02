@@ -31,7 +31,11 @@ const mockDeBankNetworks = {
 }
 
 type TNetworkService = {
-  fetchPrimaryNetworks: ({includeSolana}: {includeSolana: boolean}) => Promise<TNetworks>
+  fetchPrimaryNetworks: ({
+    includeSolana
+  }: {
+    includeSolana: boolean
+  }) => Promise<TNetworks>
   fetchDeBankNetworks: () => Promise<TNetworks>
   getAvalancheNetworkP: (isDevMode: boolean) => Network
   getAvalancheNetworkX: (isDevMode: boolean) => Network
