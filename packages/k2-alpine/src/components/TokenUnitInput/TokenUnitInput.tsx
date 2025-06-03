@@ -184,7 +184,13 @@ export const TokenUnitInput = forwardRef<
                   minWidth: textInputMinimumLayout?.width
                 }
               ]}
-              keyboardType="numeric"
+              /**
+               * keyboardType="numeric" causes noticeable input lag on Android.
+               * Using inputMode="numeric" provides the same behavior without the performance issues.
+               * See: https://github.com/expo/expo/issues/34156
+               */
+              keyboardType={Platform.OS === 'ios' ? 'numeric' : undefined}
+              inputMode={Platform.OS === 'android' ? 'numeric' : undefined}
               placeholder={PLACEHOLDER}
               placeholderTextColor={alpha(colors.$textSecondary, 0.2)}
               value={value}
