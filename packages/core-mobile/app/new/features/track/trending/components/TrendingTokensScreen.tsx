@@ -11,7 +11,10 @@ import { useRouter } from 'expo-router'
 import { useNavigateToSwap } from 'features/swap/hooks/useNavigateToSwap'
 import { AVAX_TOKEN_ID } from 'common/consts/swap'
 import { useIsSwappable } from 'common/hooks/useIsSwapable'
-import { selectIsSwapBlocked } from 'store/posthog'
+import {
+  selectIsMeldIntegrationBlocked,
+  selectIsSwapBlocked
+} from 'store/posthog'
 import { getTokenAddress, getTokenChainId } from 'features/track/utils/utils'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { TrendingTokenListItem } from './TrendingTokenListItem'
@@ -39,14 +42,21 @@ const TrendingTokensScreen = ({
     selectBalanceTotalForAccount(activeAccount?.index ?? 0, tokenVisibility)
   )
   const isZeroBalance = balanceTotal === 0n
+  const isMeldIntegrationBlocked = useSelector(selectIsMeldIntegrationBlocked)
 
   const openBuy = useCallback(() => {
-    navigate({
+    if (isMeldIntegrationBlocked) {
       // @ts-ignore TODO: make routes typesafe
-      pathname: '/buy',
-      params: { showAvaxWarning: 'true' }
-    })
-  }, [navigate])
+      navigate({
+        // @ts-ignore TODO: make routes typesafe
+        pathname: '/buy',
+        params: { showAvaxWarning: 'true' }
+      })
+      return
+    }
+    // @ts-ignore TODO: make routes typesafe
+    navigate('/buyOnramp')
+  }, [isMeldIntegrationBlocked, navigate])
 
   const onBuyPress = useCallback(
     (initialTokenIdTo?: string) => {

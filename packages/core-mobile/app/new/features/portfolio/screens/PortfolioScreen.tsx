@@ -57,10 +57,12 @@ import { selectSelectedCurrency } from 'store/settings/currency'
 import { selectIsPrivacyModeEnabled } from 'store/settings/securityPrivacy'
 import { RootState } from 'store/types'
 import { useFocusedSelector } from 'utils/performance/useFocusedSelector'
+import { selectIsMeldIntegrationBlocked } from 'store/posthog'
 
 const SEGMENT_ITEMS = ['Assets', 'Collectibles', 'DeFi']
 
 const PortfolioHomeScreen = (): JSX.Element => {
+  const isMeldIntegrationBlocked = useSelector(selectIsMeldIntegrationBlocked)
   const isPrivacyModeEnabled = useFocusedSelector(selectIsPrivacyModeEnabled)
   const [_, setSelectedToken] = useSendSelectedToken()
   const { theme } = useTheme()
@@ -158,9 +160,14 @@ const PortfolioHomeScreen = (): JSX.Element => {
   }, [navigate])
 
   const handleBuy = useCallback((): void => {
+    if (isMeldIntegrationBlocked) {
+      // @ts-ignore TODO: make routes typesafe
+      navigate('/buy')
+      return
+    }
     // @ts-ignore TODO: make routes typesafe
-    navigate('/buy')
-  }, [navigate])
+    navigate('/buyOnramp')
+  }, [isMeldIntegrationBlocked, navigate])
 
   const header = useMemo(
     () => (
