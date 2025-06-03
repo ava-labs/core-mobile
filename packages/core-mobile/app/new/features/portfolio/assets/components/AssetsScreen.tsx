@@ -33,12 +33,14 @@ interface Props {
   goToTokenDetail: (localId: string, chainId: number) => void
   goToTokenManagement: () => void
   goToBuy: () => void
+  onReset: () => void
 }
 
 const AssetsScreen: FC<Props> = ({
   goToTokenDetail,
   goToTokenManagement,
-  goToBuy
+  goToBuy,
+  onReset
 }): JSX.Element => {
   const { data, filter, sort, view, refetch, isRefetching, isLoading } =
     useAssetsFilterAndSort()
@@ -59,9 +61,10 @@ const AssetsScreen: FC<Props> = ({
         goToTokenManagement()
         return
       }
+      onReset()
       view.onSelected(indexPath)
     },
-    [goToTokenManagement, view]
+    [goToTokenManagement, view, onReset]
   )
 
   const isGridView = view.data[0]?.[view.selected.row] === AssetManageView.Grid
@@ -146,6 +149,12 @@ const AssetsScreen: FC<Props> = ({
       </View>
     )
   }, [filter, sort, view, handleManageList])
+
+  // useEffect(() => {
+  //   if (data.length) {
+  //     onReset()
+  //   }
+  // }, [data, numColumns, onReset])
 
   if (isBalanceLoading || enabledNetworks.length === 0) {
     return <LoadingState sx={{ height: portfolioTabContentHeight * 2 }} />

@@ -1,5 +1,6 @@
 import {
   Image,
+  IndexPath,
   Separator,
   SPRING_LINEAR_TRANSITION,
   View
@@ -10,6 +11,7 @@ import { ErrorState } from 'common/components/ErrorState'
 import { LoadingState } from 'common/components/LoadingState'
 import { Placeholder } from 'common/components/Placeholder'
 import { Space } from 'common/components/Space'
+import { useCoreBrowser } from 'common/hooks/useCoreBrowser'
 import { getListItemEnteringAnimation } from 'common/utils/animations'
 import { useRouter } from 'expo-router'
 import { useExchangedAmount } from 'new/common/hooks/useExchangedAmount'
@@ -18,7 +20,6 @@ import { ListRenderItemInfo, StyleSheet } from 'react-native'
 import Animated from 'react-native-reanimated'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { DeFiSimpleProtocol } from 'services/defi/types'
-import { useCoreBrowser } from 'common/hooks/useCoreBrowser'
 import { portfolioTabContentHeight } from '../../utils'
 import { useDeFiProtocols } from '../hooks/useDeFiProtocols'
 import { DeFiViewOption } from '../types'
@@ -26,7 +27,11 @@ import { DeFiListItem } from './DeFiListItem'
 
 const placeholderIcon = require('../../../../assets/icons/bar_chart_emoji.png')
 
-export const DeFiScreen = (): JSX.Element => {
+export const DeFiScreen = ({
+  onReset
+}: {
+  onReset: () => void
+}): JSX.Element => {
   const { navigate } = useRouter()
   const { openUrl } = useCoreBrowser()
   const {
@@ -47,6 +52,7 @@ export const DeFiScreen = (): JSX.Element => {
 
   const isGridView =
     view.data[0]?.[view.selected.row] === DeFiViewOption.GridView
+  const numColumns = isGridView ? 2 : 1
 
   useEffect(() => {
     if (isSuccess) {
@@ -148,7 +154,13 @@ export const DeFiScreen = (): JSX.Element => {
       <View sx={styles.dropdownContainer}>
         <DropdownSelections
           sort={sort}
-          view={view}
+          view={{
+            ...view,
+            onSelected: (indexPath: IndexPath) => {
+              onReset()
+              view.onSelected(indexPath)
+            }
+          }}
           sx={{
             marginTop: 4,
             marginBottom: isGridView ? 16 : 8
@@ -181,7 +193,7 @@ export const DeFiScreen = (): JSX.Element => {
       <CollapsibleTabs.FlatList
         contentContainerStyle={styles.container}
         data={data}
-        numColumns={isGridView ? 2 : 1}
+        numColumns={numColumns}
         renderItem={renderItem}
         ListHeaderComponent={header}
         ListEmptyComponent={emptyComponent}

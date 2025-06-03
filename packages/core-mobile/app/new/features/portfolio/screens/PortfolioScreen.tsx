@@ -368,6 +368,10 @@ const PortfolioHomeScreen = (): JSX.Element => {
 
   const tabViewRef = useRef<CollapsibleTabsRef>(null)
 
+  const onScrollTo = useCallback((name: string, offset: number) => {
+    tabViewRef.current?.scrollTo(name, offset)
+  }, [])
+
   const tabs = useMemo(() => {
     return [
       {
@@ -377,6 +381,7 @@ const PortfolioHomeScreen = (): JSX.Element => {
             goToTokenDetail={handleGoToTokenDetail}
             goToTokenManagement={handleGoToTokenManagement}
             goToBuy={handleBuy}
+            onReset={() => onScrollTo('Assets', 0)}
           />
         )
       },
@@ -387,12 +392,13 @@ const PortfolioHomeScreen = (): JSX.Element => {
             goToCollectibleDetail={handleGoToCollectibleDetail}
             goToCollectibleManagement={handleGoToCollectibleManagement}
             goToDiscoverCollectibles={handleGoToDiscoverCollectibles}
+            onReset={() => onScrollTo('Collectibles', 0)}
           />
         )
       },
       {
         tabName: 'DeFi',
-        component: <DeFiScreen />
+        component: <DeFiScreen onReset={() => onScrollTo('DeFi', 0)} />
       }
     ]
   }, [
@@ -401,7 +407,8 @@ const PortfolioHomeScreen = (): JSX.Element => {
     handleBuy,
     handleGoToCollectibleDetail,
     handleGoToCollectibleManagement,
-    handleGoToDiscoverCollectibles
+    handleGoToDiscoverCollectibles,
+    onScrollTo
   ])
 
   return (

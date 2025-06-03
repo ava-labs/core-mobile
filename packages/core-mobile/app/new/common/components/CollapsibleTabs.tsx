@@ -1,4 +1,5 @@
 import React, { forwardRef, useMemo } from 'react'
+import { StyleSheet } from 'react-native'
 import {
   CollapsibleRef,
   OnTabChangeCallback,
@@ -7,7 +8,6 @@ import {
   useCurrentTabScrollY
 } from 'react-native-collapsible-tab-view'
 import { runOnJS, useAnimatedReaction } from 'react-native-reanimated'
-import { StyleSheet } from 'react-native'
 
 export type OnTabChange = OnTabChangeCallback<string>
 
