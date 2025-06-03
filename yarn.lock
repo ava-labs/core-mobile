@@ -235,7 +235,7 @@ __metadata:
     "@gorhom/bottom-sheet": 4.6.4
     "@hookform/resolvers": 3.9.0
     "@invertase/react-native-apple-authentication": 2.4.0
-    "@lavamoat/allow-scripts": 3.2.1
+    "@lavamoat/allow-scripts": 3.3.3
     "@lavamoat/preinstall-always-fail": 2.1.0
     "@metamask/eth-sig-util": 7.0.3
     "@metamask/rpc-errors": 6.3.0
@@ -573,7 +573,7 @@ __metadata:
     "@avalabs/core-utils-sdk": 3.1.0-alpha.48
     "@avalabs/tsconfig-mobile": "workspace:*"
     "@babel/core": 7.25.7
-    "@lavamoat/allow-scripts": 3.2.1
+    "@lavamoat/allow-scripts": 3.3.3
     "@react-native-async-storage/async-storage": 2.0.0
     "@react-native-community/datetimepicker": 8.2.0
     "@react-native-community/slider": 4.5.5
@@ -652,7 +652,7 @@ __metadata:
     "@avalabs/tsconfig-mobile": "workspace:*"
     "@babel/core": 7.25.7
     "@babel/runtime": 7.25.7
-    "@lavamoat/allow-scripts": 3.2.1
+    "@lavamoat/allow-scripts": 3.3.3
     "@react-native-async-storage/async-storage": 2.0.0
     "@react-native-community/datetimepicker": 8.2.0
     "@react-native-community/slider": 4.5.3
@@ -7027,31 +7027,30 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@lavamoat/aa@npm:^4.3.0":
-  version: 4.3.0
-  resolution: "@lavamoat/aa@npm:4.3.0"
+"@lavamoat/aa@npm:^4.3.2":
+  version: 4.3.2
+  resolution: "@lavamoat/aa@npm:4.3.2"
   dependencies:
-    resolve: 1.22.8
+    resolve: 1.22.10
   bin:
     lavamoat-ls: src/cli.js
-  checksum: 41d83b512a88db71bbb3634febd5840614f1f39fa0b614499af2d6e9963180891b0350d8c38ce8d499142c9a6663711f983a3960f232f0d20f601c2a64912c30
+  checksum: b560fbf29ca911f15790ef80f3cdb9cdd8a070d713a3ff7a6d639d048308de726c9319174e70b99d81084e865d5ef6c78234e28535d81dc1e497962b322ca40e
   languageName: node
   linkType: hard
 
-"@lavamoat/allow-scripts@npm:3.2.1":
-  version: 3.2.1
-  resolution: "@lavamoat/allow-scripts@npm:3.2.1"
+"@lavamoat/allow-scripts@npm:3.3.3":
+  version: 3.3.3
+  resolution: "@lavamoat/allow-scripts@npm:3.3.3"
   dependencies:
-    "@lavamoat/aa": ^4.3.0
+    "@lavamoat/aa": ^4.3.2
     "@npmcli/run-script": 8.1.0
     bin-links: 4.0.4
     npm-normalize-package-bin: 3.0.1
+    type-fest: 4.40.1
     yargs: 17.7.2
-  peerDependencies:
-    "@lavamoat/preinstall-always-fail": "*"
   bin:
     allow-scripts: src/cli.js
-  checksum: e3a619845cac89b0553b89ef2f4a642e5203efbb0615ba06b87b0ebd48f291cc943b372ca3115b9efec762e4afb371836300762b9851470f7b9bf578d7678bcb
+  checksum: 6964892023037060c8f55d5e7884f0e43545148a700a5fd0df9bd635bbe177ff275877e3a77839db0f57b43c8543ab8ae0ad5138f8bfec4010bb67f3297f43e7
   languageName: node
   linkType: hard
 
@@ -18227,7 +18226,7 @@ __metadata:
   resolution: "eslint-plugin-avalabs-mobile@workspace:packages/eslint-mobile"
   dependencies:
     "@avalabs/tsconfig-mobile": "workspace:*"
-    "@lavamoat/allow-scripts": 3.2.1
+    "@lavamoat/allow-scripts": 3.3.3
     "@react-native-community/eslint-config": 3.0.3
     "@tanstack/eslint-plugin-query": 5.59.7
     "@types/node": 22.7.5
@@ -21374,6 +21373,15 @@ __metadata:
   dependencies:
     hasown: ^2.0.2
   checksum: df134c168115690724b62018c37b2f5bba0d5745fa16960b329c5a00883a8bea6a5632fdb1e3efcce237c201826ba09f93197b7cd95577ea56b0df335be23633
+  languageName: node
+  linkType: hard
+
+"is-core-module@npm:^2.16.0":
+  version: 2.16.1
+  resolution: "is-core-module@npm:2.16.1"
+  dependencies:
+    hasown: ^2.0.2
+  checksum: 6ec5b3c42d9cbf1ac23f164b16b8a140c3cec338bf8f884c076ca89950c7cc04c33e78f02b8cae7ff4751f3247e3174b2330f1fe4de194c7210deb8b1ea316a7
   languageName: node
   linkType: hard
 
@@ -27621,7 +27629,7 @@ react-native-webview@ava-labs/react-native-webview:
   peerDependencies:
     react: "*"
     react-native: "*"
-  checksum: 77324747a8b5df0a5558bb99a9a0804a5575d328e84f480e462c56417af97213f38a9930e4582fb749bec374dc4d1a8910a45b006e77af9b14a8e64057b932bf
+  checksum: c0fa0c16cee5215b85ae808bc7b30af77e27d405fcc4ba1911521a9f9a86b15404ce7e4be0c92d88d2be908c487f79a7b58f014badbc1bb2feca46244afd907c
   languageName: node
   linkType: hard
 
@@ -28429,7 +28437,20 @@ react-native-webview@ava-labs/react-native-webview:
   languageName: node
   linkType: hard
 
-"resolve@npm:1.22.8, resolve@npm:^1.14.2, resolve@npm:^1.20.0, resolve@npm:^1.22.2, resolve@npm:^1.22.4, resolve@npm:^1.22.8":
+"resolve@npm:1.22.10":
+  version: 1.22.10
+  resolution: "resolve@npm:1.22.10"
+  dependencies:
+    is-core-module: ^2.16.0
+    path-parse: ^1.0.7
+    supports-preserve-symlinks-flag: ^1.0.0
+  bin:
+    resolve: bin/resolve
+  checksum: ab7a32ff4046fcd7c6fdd525b24a7527847d03c3650c733b909b01b757f92eb23510afa9cc3e9bf3f26a3e073b48c88c706dfd4c1d2fb4a16a96b73b6328ddcf
+  languageName: node
+  linkType: hard
+
+"resolve@npm:^1.14.2, resolve@npm:^1.20.0, resolve@npm:^1.22.2, resolve@npm:^1.22.4, resolve@npm:^1.22.8":
   version: 1.22.8
   resolution: "resolve@npm:1.22.8"
   dependencies:
@@ -28464,7 +28485,20 @@ react-native-webview@ava-labs/react-native-webview:
   languageName: node
   linkType: hard
 
-"resolve@patch:resolve@1.22.8#~builtin<compat/resolve>, resolve@patch:resolve@^1.14.2#~builtin<compat/resolve>, resolve@patch:resolve@^1.20.0#~builtin<compat/resolve>, resolve@patch:resolve@^1.22.2#~builtin<compat/resolve>, resolve@patch:resolve@^1.22.4#~builtin<compat/resolve>, resolve@patch:resolve@^1.22.8#~builtin<compat/resolve>":
+"resolve@patch:resolve@1.22.10#~builtin<compat/resolve>":
+  version: 1.22.10
+  resolution: "resolve@patch:resolve@npm%3A1.22.10#~builtin<compat/resolve>::version=1.22.10&hash=c3c19d"
+  dependencies:
+    is-core-module: ^2.16.0
+    path-parse: ^1.0.7
+    supports-preserve-symlinks-flag: ^1.0.0
+  bin:
+    resolve: bin/resolve
+  checksum: 8aac1e4e4628bd00bf4b94b23de137dd3fe44097a8d528fd66db74484be929936e20c696e1a3edf4488f37e14180b73df6f600992baea3e089e8674291f16c9d
+  languageName: node
+  linkType: hard
+
+"resolve@patch:resolve@^1.14.2#~builtin<compat/resolve>, resolve@patch:resolve@^1.20.0#~builtin<compat/resolve>, resolve@patch:resolve@^1.22.2#~builtin<compat/resolve>, resolve@patch:resolve@^1.22.4#~builtin<compat/resolve>, resolve@patch:resolve@^1.22.8#~builtin<compat/resolve>":
   version: 1.22.8
   resolution: "resolve@patch:resolve@npm%3A1.22.8#~builtin<compat/resolve>::version=1.22.8&hash=c3c19d"
   dependencies:
@@ -30765,6 +30799,13 @@ react-native-webview@ava-labs/react-native-webview:
   version: 4.26.1
   resolution: "type-fest@npm:4.26.1"
   checksum: 7188db3bca82afa62c69a8043fb7c5eb74e63c45e7e28efb986da1629d844286f7181bc5a8185f38989fffff0d6c96be66fd13529b01932d1b6ebe725181d31a
+  languageName: node
+  linkType: hard
+
+"type-fest@npm:4.40.1":
+  version: 4.40.1
+  resolution: "type-fest@npm:4.40.1"
+  checksum: cb0f48afdd1f718bd2d5e64f355512afd5a672d7eb39edf601d3b37f2b92fa1be0301ba845a3d9212befc6325c6f9b1b7680b2f201845061f39d2a35bb6931dc
   languageName: node
   linkType: hard
 
