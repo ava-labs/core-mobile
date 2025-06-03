@@ -16,7 +16,7 @@ type TNetworks = {
   [chainId: number]: { chainName: string }
 }
 
-const mockPrimaryNetworks = {
+const mockNetworks = {
   1: {
     chainName: 'Ethereum'
   },
@@ -46,7 +46,7 @@ describe('NetworkService', () => {
     it('should fetch common networks and DeBank networks and return combined network data', async () => {
       jest
         .spyOn(NetworkService as unknown as TNetworkService, 'fetchNetworks')
-        .mockResolvedValue(mockPrimaryNetworks)
+        .mockResolvedValue(mockNetworks)
       jest
         .spyOn(
           NetworkService as unknown as TNetworkService,
@@ -117,7 +117,7 @@ describe('NetworkService', () => {
     it('should exclude ChainId.AVALANCHE_LOCAL_ID from the final network data', async () => {
       jest
         .spyOn(NetworkService as unknown as TNetworkService, 'fetchNetworks')
-        .mockResolvedValue(mockPrimaryNetworks)
+        .mockResolvedValue(mockNetworks)
       jest
         .spyOn(
           NetworkService as unknown as TNetworkService,

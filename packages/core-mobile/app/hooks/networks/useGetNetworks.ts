@@ -12,7 +12,7 @@ export const useGetNetworks = ({
     queryKey: [ReactQueryKeys.NETWORKS, includeSolana],
     queryFn: () =>
       NetworkService.getNetworks({
-        includeSolana: !isSolanaSupportBlocked
+        includeSolana
       }),
     staleTime: 240000, // 4 mins,
     networkMode: 'always'

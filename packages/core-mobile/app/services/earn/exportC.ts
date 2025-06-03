@@ -1,5 +1,3 @@
-import { ChainId } from '@avalabs/core-chains-sdk'
-import { assertNotUndefined } from 'utils/assertions'
 import { retry } from 'utils/js/retry'
 import Logger from 'utils/Logger'
 import WalletService from 'services/wallet/WalletService'
@@ -19,7 +17,6 @@ export type ExportCParams = {
   activeAccount: Account
   isDevMode: boolean
   cBaseFeeMultiplier: number
-  includeSolana: boolean
 }
 
 export async function exportC({
@@ -27,20 +24,13 @@ export async function exportC({
   requiredAmountWei,
   activeAccount,
   isDevMode,
-  cBaseFeeMultiplier,
-  includeSolana
+  cBaseFeeMultiplier
 }: ExportCParams): Promise<void> {
   Logger.info(
     `exporting C started with base fee multiplier: ${cBaseFeeMultiplier}`
   )
 
   const avaxXPNetwork = NetworkService.getAvalancheNetworkP(isDevMode)
-  const chains = await NetworkService.getNetworks({ includeSolana })
-  const cChainNetwork =
-    chains[
-      isDevMode ? ChainId.AVALANCHE_TESTNET_ID : ChainId.AVALANCHE_MAINNET_ID
-    ]
-  assertNotUndefined(cChainNetwork)
 
   const avaxProvider = await NetworkService.getAvalancheProviderXP(isDevMode)
 
