@@ -3,7 +3,8 @@ import {
   AvalancheCaip2ChainId,
   BitcoinCaip2ChainId,
   BlockchainNamespace,
-  ChainId
+  ChainId,
+  SolanaCaip2ChainId
 } from '@avalabs/core-chains-sdk'
 
 /**
@@ -134,6 +135,17 @@ export const getBitcoinCaip2ChainIdByChainId = (
 
 export const getEvmCaip2ChainId = (chainId: number): string => {
   return `${BlockchainNamespace.EIP155}:${chainId.toString()}`
+}
+
+export const getSolanaCaip2ChainId = (chainId: number): string | undefined => {
+  if (chainId === ChainId.SOLANA_MAINNET_ID) {
+    return SolanaCaip2ChainId.MAINNET
+  } else if (chainId === ChainId.SOLANA_DEVNET_ID) {
+    return SolanaCaip2ChainId.DEVNET
+  } else if (chainId === ChainId.SOLANA_TESTNET_ID) {
+    return SolanaCaip2ChainId.TESTNET
+  }
+  return undefined
 }
 
 export const getChainIdFromCaip2 = (
