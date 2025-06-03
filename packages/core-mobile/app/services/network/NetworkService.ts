@@ -36,7 +36,7 @@ class NetworkService {
   }: {
     includeSolana: boolean
   }): Promise<Networks> {
-    const erc20Networks = await this.fetchPrimaryNetworks({
+    const erc20Networks = await this.fetchNetworks({
       includeSolana
     }).catch(reason => {
       Logger.error(`[NetworkService][fetchERC20Networks]${reason}`)
@@ -138,8 +138,8 @@ class NetworkService {
     return ModuleManager.avalancheModule.getProvider(mapToVmNetwork(network))
   }
 
-  private async fetchPrimaryNetworks({
-    includeSolana
+  private async fetchNetworks({
+    includeSolana = false
   }: {
     includeSolana: boolean
   }): Promise<Networks> {

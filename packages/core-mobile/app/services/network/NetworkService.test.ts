@@ -31,7 +31,7 @@ const mockDeBankNetworks = {
 }
 
 type TNetworkService = {
-  fetchPrimaryNetworks: ({
+  fetchNetworks: ({
     includeSolana
   }: {
     includeSolana: boolean
@@ -45,10 +45,7 @@ describe('NetworkService', () => {
   describe('getNetworks', () => {
     it('should fetch common networks and DeBank networks and return combined network data', async () => {
       jest
-        .spyOn(
-          NetworkService as unknown as TNetworkService,
-          'fetchPrimaryNetworks'
-        )
+        .spyOn(NetworkService as unknown as TNetworkService, 'fetchNetworks')
         .mockResolvedValue(mockPrimaryNetworks)
       jest
         .spyOn(
@@ -80,10 +77,7 @@ describe('NetworkService', () => {
 
     it('should handle errors in fetchERC20Networks and fetchDeBankNetworks gracefully', async () => {
       jest
-        .spyOn(
-          NetworkService as unknown as TNetworkService,
-          'fetchPrimaryNetworks'
-        )
+        .spyOn(NetworkService as unknown as TNetworkService, 'fetchNetworks')
         .mockRejectedValue('ERC20 fetch error')
       jest
         .spyOn(
@@ -122,10 +116,7 @@ describe('NetworkService', () => {
 
     it('should exclude ChainId.AVALANCHE_LOCAL_ID from the final network data', async () => {
       jest
-        .spyOn(
-          NetworkService as unknown as TNetworkService,
-          'fetchPrimaryNetworks'
-        )
+        .spyOn(NetworkService as unknown as TNetworkService, 'fetchNetworks')
         .mockResolvedValue(mockPrimaryNetworks)
       jest
         .spyOn(
