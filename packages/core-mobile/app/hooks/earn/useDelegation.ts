@@ -7,8 +7,7 @@ import { useCChainBaseFee } from 'hooks/useCChainBaseFee'
 import {
   selectPFeeAdjustmentThreshold,
   selectCrossChainFeesMultiplier,
-  selectCBaseFeeMultiplier,
-  selectIsSolanaSupportBlocked
+  selectCBaseFeeMultiplier
 } from 'store/posthog/slice'
 import { selectActiveAccount } from 'store/account/slice'
 import { computeDelegationSteps } from 'services/earn/computeDelegationSteps/computeDelegationSteps'
@@ -39,7 +38,6 @@ export const useDelegation = (): {
   const cChainBalance = useCChainBalance()
   const activeAccount = useSelector(selectActiveAccount)
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
-  const isSolanaSupportBlocked = useSelector(selectIsSolanaSupportBlocked)
   const selectedCurrency = useSelector(selectSelectedCurrency)
   const pFeeAdjustmentThreshold = useSelector(selectPFeeAdjustmentThreshold)
   const crossChainFeesMultiplier = useSelector(selectCrossChainFeesMultiplier)
@@ -161,8 +159,7 @@ export const useDelegation = (): {
               requiredAmountWei: nanoToWei(step.amount),
               activeAccount,
               isDevMode: isDeveloperMode,
-              cBaseFeeMultiplier,
-              includeSolana: !isSolanaSupportBlocked
+              cBaseFeeMultiplier
             })
             break
 
