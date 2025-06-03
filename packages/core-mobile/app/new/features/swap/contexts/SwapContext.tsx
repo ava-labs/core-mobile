@@ -11,6 +11,7 @@ import React, {
 import { JsonRpcError } from '@metamask/rpc-errors'
 import { getSwapRate, getTokenAddress } from 'swap/getSwapRate'
 import { SwapSide, OptimalRate } from '@paraswap/sdk'
+import { useDebounce } from 'use-debounce'
 import Logger from 'utils/Logger'
 import { resolve } from '@avalabs/core-utils-sdk'
 import { InteractionManager } from 'react-native'
@@ -25,7 +26,6 @@ import { getEvmCaip2ChainId } from 'utils/caip2ChainIds'
 import { audioFeedback, Audios } from 'utils/AudioFeedback'
 import { RpcMethod } from '@avalabs/vm-module-types'
 import { isUserRejectedError } from 'store/rpc/providers/walletConnect/utils'
-import { useDebounce } from 'hooks/useDebounce'
 import { humanizeParaswapRateError } from 'errors/swapError'
 import { selectIsSwapFeesBlocked } from 'store/posthog'
 import { performSwap } from 'contexts/SwapContext/performSwap/performSwap'
@@ -34,7 +34,7 @@ import useCChainNetwork from 'hooks/earn/useCChainNetwork'
 import { transactionSnackbar } from 'new/common/utils/toast'
 import { useSwapSelectedFromToken, useSwapSelectedToToken } from '../store'
 
-const DEFAULT_DEBOUNCE_MILLISECONDS = 150
+const DEFAULT_DEBOUNCE_MILLISECONDS = 300
 
 // success here just means the transaction was sent, not that it was successful/confirmed
 export type SwapStatus = 'Idle' | 'Swapping' | 'Success' | 'Fail'
@@ -91,10 +91,9 @@ export const SwapContextProvider = ({
   const [swapStatus, setSwapStatus] = useState<SwapStatus>('Idle')
   const [amount, setAmount] = useState<bigint>() //the amount that's gonna be passed to paraswap
   const [isFetchingOptimalRate, setIsFetchingOptimalRate] = useState(false)
-  const { debounced: debouncedAmount } = useDebounce(
-    amount,
-    DEFAULT_DEBOUNCE_MILLISECONDS
-  ) // debounce since fetching rates via paraswaps can take awhile
+
+  // debounce since fetching rates via paraswaps can take awhile
+  const [debouncedAmount] = useDebounce(amount, DEFAULT_DEBOUNCE_MILLISECONDS)
   const isSwapFeesBlocked = useSelector(selectIsSwapFeesBlocked)
 
   const getOptimalRateForAmount = useCallback(

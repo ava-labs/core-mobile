@@ -77,6 +77,7 @@ export function TokenAmountInput({
       ref={ref}
       keyboardType="numeric"
       onChangeText={handleChangeText}
+      numberOfLines={1}
       value={valueAsString}
       placeholderTextColor={alpha(theme.colors.$textSecondary, 0.2)}
       selectionColor={theme.colors.$textPrimary}
