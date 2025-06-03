@@ -25,7 +25,7 @@
     "@avalabs/bitcoin-module": "1.9.4",
     "@avalabs/bridge-unified": "4.0.2",
     "@avalabs/core-bridge-sdk": "3.1.0-alpha.48",
-    "@avalabs/core-chains-sdk": "3.1.0-alpha.48",
+    "@avalabs/core-chains-sdk": "3.1.0-alpha.54",
     "@avalabs/core-coingecko-sdk": "3.1.0-alpha.48",
     "@avalabs/core-gasless-sdk": "3.1.0-alpha.48",
     "@avalabs/core-utils-sdk": "3.1.0-alpha.48",
