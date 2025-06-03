@@ -36,21 +36,22 @@ class NetworkService {
   }: {
     includeSolana: boolean
   }): Promise<Networks> {
-    const erc20Networks = await this.fetchNetworks({
+    const networks = await this.fetchNetworks({
       includeSolana
     }).catch(reason => {
-      Logger.error(`[NetworkService][fetchERC20Networks]${reason}`)
+      Logger.error(`[NetworkService][fetchNetworks]${reason}`)
       return {} as Networks
     })
+
     const deBankNetworks = await this.fetchDeBankNetworks().catch(reason => {
       Logger.error(`[NetworkService][fetchDeBankNetworks]${reason}`)
       return {} as Networks
     })
 
-    delete erc20Networks[ChainId.AVALANCHE_LOCAL_ID]
+    delete networks[ChainId.AVALANCHE_LOCAL_ID]
 
     return {
-      ...erc20Networks,
+      ...networks,
       ...deBankNetworks,
       [ChainId.BITCOIN]: BITCOIN_NETWORK,
       [ChainId.BITCOIN_TESTNET]: BITCOIN_TEST_NETWORK,

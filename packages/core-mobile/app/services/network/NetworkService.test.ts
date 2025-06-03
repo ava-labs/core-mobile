@@ -75,7 +75,7 @@ describe('NetworkService', () => {
       })
     })
 
-    it('should handle errors in fetchERC20Networks and fetchDeBankNetworks gracefully', async () => {
+    it('should handle errors in fetchNetworks and fetchDeBankNetworks gracefully', async () => {
       jest
         .spyOn(NetworkService as unknown as TNetworkService, 'fetchNetworks')
         .mockRejectedValue('ERC20 fetch error')
@@ -97,7 +97,7 @@ describe('NetworkService', () => {
 
       // Verify Logger was called for both fetch errors
       expect(Logger.error).toHaveBeenCalledWith(
-        '[NetworkService][fetchERC20Networks]ERC20 fetch error'
+        '[NetworkService][fetchNetworks]ERC20 fetch error'
       )
       expect(Logger.error).toHaveBeenCalledWith(
         '[NetworkService][fetchDeBankNetworks]DeBank fetch error'
