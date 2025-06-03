@@ -29,7 +29,6 @@ import Reanimated, {
   useSharedValue,
   withTiming
 } from 'react-native-reanimated'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useSelector } from 'react-redux'
 import { Subscription } from 'rxjs'
 import { BiometricType } from 'services/deviceInfo/DeviceInfoService'
@@ -120,15 +119,13 @@ const LoginWithPinOrBiometry = (): JSX.Element => {
     }
   })
 
-  const insets = useSafeAreaInsets()
-
   const buttonContainerPaddingBottom = useSharedValue(
     configuration.buttonContainerPaddingBottom.from
   )
   const buttonContainerStyle = useAnimatedStyle(() => {
     return {
       marginBottom: withTiming(
-        isEnteringPin ? 0 : insets.bottom + buttonContainerPaddingBottom.value,
+        buttonContainerPaddingBottom.value,
         ANIMATED.TIMING_CONFIG
       )
     }
