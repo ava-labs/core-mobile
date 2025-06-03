@@ -11,7 +11,7 @@ import React, {
 import { JsonRpcError } from '@metamask/rpc-errors'
 import { getSwapRate, getTokenAddress } from 'swap/getSwapRate'
 import { SwapSide, OptimalRate } from '@paraswap/sdk'
-import { useDebounce } from 'use-debounce'
+import { useDebouncedCallback } from 'use-debounce'
 import Logger from 'utils/Logger'
 import { resolve } from '@avalabs/core-utils-sdk'
 import { InteractionManager } from 'react-native'
@@ -93,7 +93,10 @@ export const SwapContextProvider = ({
   const [isFetchingOptimalRate, setIsFetchingOptimalRate] = useState(false)
 
   // debounce since fetching rates via paraswaps can take awhile
-  const [debouncedAmount] = useDebounce(amount, DEFAULT_DEBOUNCE_MILLISECONDS)
+  const debouncedSetAmount = useDebouncedCallback(
+    setAmount,
+    DEFAULT_DEBOUNCE_MILLISECONDS
+  )
   const isSwapFeesBlocked = useSelector(selectIsSwapFeesBlocked)
 
   const getOptimalRateForAmount = useCallback(
@@ -131,9 +134,9 @@ export const SwapContextProvider = ({
   )
 
   const getOptimalRate = useCallback(() => {
-    if (activeAccount && debouncedAmount && debouncedAmount > 0n) {
+    if (activeAccount && amount && amount > 0n) {
       setIsFetchingOptimalRate(true)
-      getOptimalRateForAmount(activeAccount, debouncedAmount)
+      getOptimalRateForAmount(activeAccount, amount)
         .then(({ optimalRate: opRate }) => {
           setError('')
           setOptimalRate(opRate)
@@ -152,7 +155,7 @@ export const SwapContextProvider = ({
       setError('')
       setOptimalRate(undefined)
     }
-  }, [activeAccount, debouncedAmount, getOptimalRateForAmount])
+  }, [activeAccount, amount, getOptimalRateForAmount])
 
   useEffect(() => {
     //call getOptimalRate every time its params change to get fresh rates
@@ -270,7 +273,7 @@ export const SwapContextProvider = ({
     setDestination,
     swap: onSwap,
     swapStatus,
-    setAmount,
+    setAmount: debouncedSetAmount,
     error,
     isFetchingOptimalRate
   }
