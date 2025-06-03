@@ -185,8 +185,13 @@ class ModuleManager {
       case NetworkVMType.EVM:
       case NetworkVMType.CoreEth:
         return getEvmCaip2ChainId(network.chainId)
-      case NetworkVMType.SVM:
-        return getSolanaCaip2ChainId(network.chainId)
+      case NetworkVMType.SVM: {
+        const solanaCaip2ChainId = getSolanaCaip2ChainId(network.chainId)
+        if (!solanaCaip2ChainId) {
+          throw new Error('Unsupported Solana network')
+        }
+        return solanaCaip2ChainId
+      }
       default:
         throw new Error('Unsupported network')
     }

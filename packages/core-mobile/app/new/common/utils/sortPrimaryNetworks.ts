@@ -3,7 +3,7 @@ import { isAvalancheCChainId } from 'services/network/utils/isAvalancheNetwork'
 import { isEthereumChainId } from 'services/network/utils/isEthereumNetwork'
 import { isPChain, isXChain } from 'utils/network/isAvalancheNetwork'
 import { isBitcoinChainId } from 'utils/network/isBitcoinNetwork'
-import { isSolanaNetwork } from 'utils/network/isSolanaNetwork'
+import { isSolanaChainId } from 'utils/network/isSolanaNetwork'
 
 export function sortPrimaryNetworks(a: Network, b: Network): number {
   if (isAvalancheCChainId(a.chainId)) return -1
@@ -14,8 +14,8 @@ export function sortPrimaryNetworks(a: Network, b: Network): number {
   if (isBitcoinChainId(b.chainId)) return 1
   if (isEthereumChainId(a.chainId)) return -1
   if (isEthereumChainId(b.chainId)) return 1
-  if (isSolanaNetwork(a)) return -1
-  if (isSolanaNetwork(b)) return 1
+  if (isSolanaChainId(a.chainId)) return -1
+  if (isSolanaChainId(b.chainId)) return 1
   if (isXChain(a.chainId)) return -1
   if (isXChain(b.chainId)) return 1
   return 0
