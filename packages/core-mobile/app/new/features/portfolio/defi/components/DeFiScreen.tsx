@@ -28,9 +28,9 @@ import { DeFiListItem } from './DeFiListItem'
 const placeholderIcon = require('../../../../assets/icons/bar_chart_emoji.png')
 
 export const DeFiScreen = ({
-  onReset
+  onChangeViewType
 }: {
-  onReset: () => void
+  onChangeViewType: () => void
 }): JSX.Element => {
   const { navigate } = useRouter()
   const { openUrl } = useCoreBrowser()
@@ -157,7 +157,7 @@ export const DeFiScreen = ({
           view={{
             ...view,
             onSelected: (indexPath: IndexPath) => {
-              onReset()
+              onChangeViewType()
               view.onSelected(indexPath)
             }
           }}
@@ -168,7 +168,7 @@ export const DeFiScreen = ({
         />
       </View>
     )
-  }, [dataLength, isGridView, onReset, sort, view])
+  }, [dataLength, isGridView, onChangeViewType, sort, view])
 
   const renderSeparator = useCallback((): JSX.Element => {
     return isGridView ? <Space y={12} /> : <Separator sx={{ marginLeft: 62 }} />

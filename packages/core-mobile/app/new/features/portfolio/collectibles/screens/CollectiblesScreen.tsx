@@ -41,7 +41,7 @@ export const CollectiblesScreen = ({
   goToCollectibleDetail,
   goToCollectibleManagement,
   goToDiscoverCollectibles,
-  onReset
+  onChangeViewType
 }: {
   goToCollectibleDetail: (
     localId: string,
@@ -49,7 +49,7 @@ export const CollectiblesScreen = ({
   ) => void
   goToCollectibleManagement: () => void
   goToDiscoverCollectibles: () => void
-  onReset: () => void
+  onChangeViewType: () => void
 }): ReactNode => {
   const {
     theme: { colors }
@@ -96,10 +96,10 @@ export const CollectiblesScreen = ({
         goToCollectibleManagement()
         return
       }
-      onReset()
+      onChangeViewType()
       view.onSelected(indexPath)
     },
-    [goToCollectibleManagement, view, onReset]
+    [goToCollectibleManagement, view, onChangeViewType]
   )
 
   const renderItem: ListRenderItem<NftItem> = useCallback(
