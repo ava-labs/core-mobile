@@ -28,9 +28,9 @@ import { DeFiListItem } from './DeFiListItem'
 const placeholderIcon = require('../../../../assets/icons/bar_chart_emoji.png')
 
 export const DeFiScreen = ({
-  onChangeViewType
+  onScrollResync
 }: {
-  onChangeViewType: () => void
+  onScrollResync: () => void
 }): JSX.Element => {
   const { navigate } = useRouter()
   const { openUrl } = useCoreBrowser()
@@ -59,8 +59,9 @@ export const DeFiScreen = ({
       AnalyticsService.capture('DeFiAggregatorsCount', {
         count: data.length
       })
+      onScrollResync()
     }
-  }, [data, isSuccess])
+  }, [data, isSuccess, onScrollResync])
 
   const handlePressDeFiItem = useCallback(
     (item: DeFiSimpleProtocol): void => {
@@ -157,7 +158,7 @@ export const DeFiScreen = ({
           view={{
             ...view,
             onSelected: (indexPath: IndexPath) => {
-              onChangeViewType()
+              onScrollResync()
               view.onSelected(indexPath)
             }
           }}
@@ -168,7 +169,7 @@ export const DeFiScreen = ({
         />
       </View>
     )
-  }, [dataLength, isGridView, onChangeViewType, sort, view])
+  }, [dataLength, isGridView, onScrollResync, sort, view])
 
   const renderSeparator = useCallback((): JSX.Element => {
     return isGridView ? <Space y={12} /> : <Separator sx={{ marginLeft: 62 }} />

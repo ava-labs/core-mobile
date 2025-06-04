@@ -33,14 +33,14 @@ interface Props {
   goToTokenDetail: (localId: string, chainId: number) => void
   goToTokenManagement: () => void
   goToBuy: () => void
-  onChangeViewType: () => void
+  onScrollResync: () => void
 }
 
 const AssetsScreen: FC<Props> = ({
   goToTokenDetail,
   goToTokenManagement,
   goToBuy,
-  onChangeViewType
+  onScrollResync
 }): JSX.Element => {
   const { data, filter, sort, view, refetch, isRefetching, isLoading } =
     useAssetsFilterAndSort()
@@ -61,10 +61,10 @@ const AssetsScreen: FC<Props> = ({
         goToTokenManagement()
         return
       }
-      onChangeViewType()
+      onScrollResync()
       view.onSelected(indexPath)
     },
-    [goToTokenManagement, view, onChangeViewType]
+    [goToTokenManagement, view, onScrollResync]
   )
 
   const isGridView = view.data[0]?.[view.selected.row] === AssetManageView.Grid

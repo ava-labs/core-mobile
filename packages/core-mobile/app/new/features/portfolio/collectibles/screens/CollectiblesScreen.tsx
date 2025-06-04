@@ -41,7 +41,7 @@ export const CollectiblesScreen = ({
   goToCollectibleDetail,
   goToCollectibleManagement,
   goToDiscoverCollectibles,
-  onChangeViewType
+  onScrollResync
 }: {
   goToCollectibleDetail: (
     localId: string,
@@ -49,7 +49,7 @@ export const CollectiblesScreen = ({
   ) => void
   goToCollectibleManagement: () => void
   goToDiscoverCollectibles: () => void
-  onChangeViewType: () => void
+  onScrollResync: () => void
 }): ReactNode => {
   const {
     theme: { colors }
@@ -80,6 +80,12 @@ export const CollectiblesScreen = ({
     setIsEnabled(true)
   }, [isEnabled, setIsEnabled])
 
+  useEffect(() => {
+    if (!isLoading && isEnabled) {
+      onScrollResync()
+    }
+  }, [isEnabled, isLoading, onScrollResync])
+
   const listType = view.data[0]?.[view.selected.row] as CollectibleView
   const columns =
     listType === CollectibleView.CompactGrid
@@ -96,10 +102,10 @@ export const CollectiblesScreen = ({
         goToCollectibleManagement()
         return
       }
-      onChangeViewType()
+      onScrollResync()
       view.onSelected(indexPath)
     },
-    [goToCollectibleManagement, view, onChangeViewType]
+    [goToCollectibleManagement, view, onScrollResync]
   )
 
   const renderItem: ListRenderItem<NftItem> = useCallback(

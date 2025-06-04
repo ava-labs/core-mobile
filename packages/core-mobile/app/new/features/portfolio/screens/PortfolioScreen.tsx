@@ -387,7 +387,7 @@ const PortfolioHomeScreen = (): JSX.Element => {
             goToTokenDetail={handleGoToTokenDetail}
             goToTokenManagement={handleGoToTokenManagement}
             goToBuy={handleBuy}
-            onChangeViewType={handleScrollResync}
+            onScrollResync={handleScrollResync}
           />
         )
       },
@@ -398,13 +398,13 @@ const PortfolioHomeScreen = (): JSX.Element => {
             goToCollectibleDetail={handleGoToCollectibleDetail}
             goToCollectibleManagement={handleGoToCollectibleManagement}
             goToDiscoverCollectibles={handleGoToDiscoverCollectibles}
-            onChangeViewType={handleScrollResync}
+            onScrollResync={handleScrollResync}
           />
         )
       },
       {
         tabName: 'DeFi',
-        component: <DeFiScreen onChangeViewType={handleScrollResync} />
+        component: <DeFiScreen onScrollResync={handleScrollResync} />
       }
     ]
   }, [
