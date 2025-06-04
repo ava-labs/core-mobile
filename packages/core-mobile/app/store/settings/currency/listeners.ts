@@ -47,14 +47,13 @@ const handleSetDefaultCurrency = (
 ): void => {
   const { getState, dispatch } = listenerApi
   const state = getState()
-  const selectedCurrency = selectSelectedCurrency(state)
 
   const hasSetDefaultCurrency = selectHasBeenViewedOnce(
     ViewOnceKey.SET_DEFAULT_CURRENCY
   )(state)
 
   if (hasSetDefaultCurrency === false) {
-    setCurrency(dispatch, selectedCurrency)
+    setCurrency(_, listenerApi)
     dispatch(setViewOnce(ViewOnceKey.SET_DEFAULT_CURRENCY))
   }
 }
