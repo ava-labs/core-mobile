@@ -561,7 +561,6 @@ workflows:
         - service_account_json_key_path: $BITRISEIO_AVALABS_GOOGLE_PLAY_SERVICE_ACCOUNT_JSON_KEY_URL
   android-internal-no-deploy:
     before_run:
-    - _trigger_ios_internal_build
     - _install-and-set-env
     - _set-version
     - _build-android
