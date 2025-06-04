@@ -35,7 +35,10 @@ export const alwaysEnabledChainIds = [
   ChainsSDKChainId.BITCOIN,
   ChainsSDKChainId.BITCOIN_TESTNET,
   ChainsSDKChainId.ETHEREUM_HOMESTEAD,
-  ChainsSDKChainId.ETHEREUM_TEST_SEPOLIA
+  ChainsSDKChainId.ETHEREUM_TEST_SEPOLIA,
+  ChainsSDKChainId.SOLANA_MAINNET_ID,
+  ChainsSDKChainId.SOLANA_DEVNET_ID,
+  ChainsSDKChainId.SOLANA_TESTNET_ID
 ]
 
 export const reducerName = 'network'

@@ -1,7 +1,12 @@
 import React, { useEffect, useRef, useState } from 'react'
 import Big from 'big.js'
 import { bigintToBig, bigToBigInt } from '@avalabs/core-utils-sdk'
-import { InteractionManager, TextInput, TextInputProps } from 'react-native'
+import {
+  InteractionManager,
+  Platform,
+  TextInput,
+  TextInputProps
+} from 'react-native'
 import { alpha } from '../../utils'
 import {
   normalizeNumericTextInput,
@@ -75,8 +80,15 @@ export function TokenAmountInput({
     <TextInput
       {...props}
       ref={ref}
-      keyboardType="numeric"
+      /**
+       * keyboardType="numeric" causes noticeable input lag on Android.
+       * Using inputMode="numeric" provides the same behavior without the performance issues.
+       * See: https://github.com/expo/expo/issues/34156
+       */
+      keyboardType={Platform.OS === 'ios' ? 'numeric' : undefined}
+      inputMode={Platform.OS === 'android' ? 'numeric' : undefined}
       onChangeText={handleChangeText}
+      numberOfLines={1}
       value={valueAsString}
       placeholderTextColor={alpha(theme.colors.$textSecondary, 0.2)}
       selectionColor={theme.colors.$textPrimary}

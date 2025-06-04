@@ -1,5 +1,3 @@
-import { ChainId } from '@avalabs/core-chains-sdk'
-import { assertNotUndefined } from 'utils/assertions'
 import { retry } from 'utils/js/retry'
 import Logger from 'utils/Logger'
 import WalletService from 'services/wallet/WalletService'
@@ -33,12 +31,6 @@ export async function exportC({
   )
 
   const avaxXPNetwork = NetworkService.getAvalancheNetworkP(isDevMode)
-  const chains = await NetworkService.getNetworks()
-  const cChainNetwork =
-    chains[
-      isDevMode ? ChainId.AVALANCHE_TESTNET_ID : ChainId.AVALANCHE_MAINNET_ID
-    ]
-  assertNotUndefined(cChainNetwork)
 
   const avaxProvider = await NetworkService.getAvalancheProviderXP(isDevMode)
 

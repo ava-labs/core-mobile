@@ -35,7 +35,8 @@ export enum FeatureGates {
   ENABLE_NOTIFICATION_PROMPT = 'enable-notification-prompt',
   HALLIDAY_BRIDGE_BANNER = 'halliday-bridge-banner',
   GASLESS = 'gasless-feature',
-  SWAP_FEES = 'swap-fees'
+  SWAP_FEES = 'swap-fees',
+  SOLANA_SUPPORT = 'solana-support'
 }
 
 export enum FeatureVars {
