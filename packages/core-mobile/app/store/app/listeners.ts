@@ -32,7 +32,6 @@ import {
   setSelectedAppearance,
   setSelectedColorScheme
 } from 'store/settings/appearance'
-import { setCurrencyOnChangeLocale } from 'store/settings/currency'
 import {
   onAppLocked,
   onAppUnlocked,
@@ -89,7 +88,6 @@ const listenToAppState = async (
         Logger.info('app comes back to foreground')
         AnalyticsService.capture('ApplicationOpened')
         dispatch(onForeground())
-        dispatch(setCurrencyOnChangeLocale())
       } else if (nextAppState === 'background') {
         Logger.info('app goes to background')
         dispatch(onBackground())

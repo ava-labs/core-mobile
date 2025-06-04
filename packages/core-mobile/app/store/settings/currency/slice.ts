@@ -1,4 +1,4 @@
-import { createAction, createSlice, PayloadAction } from '@reduxjs/toolkit'
+import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { RootState } from 'store/types'
 import {
   currencies,
@@ -35,9 +35,5 @@ export const selectSelectedCurrency = (state: RootState): CurrencySymbol => {
 
 // actions
 export const { setSelectedCurrency } = currencySlice.actions
-
-export const setCurrencyOnChangeLocale = createAction(
-  `${reducerName}/setCurrencyOnChangeLocale`
-)
 
 export const currencyReducer = currencySlice.reducer
