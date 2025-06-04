@@ -168,7 +168,7 @@ export const DeFiScreen = ({
         />
       </View>
     )
-  }, [dataLength, isGridView, sort, view])
+  }, [dataLength, isGridView, onReset, sort, view])
 
   const renderSeparator = useCallback((): JSX.Element => {
     return isGridView ? <Space y={12} /> : <Separator sx={{ marginLeft: 62 }} />

@@ -82,6 +82,8 @@ const PortfolioHomeScreen = (): JSX.Element => {
       tokenVisibility
     )
   )
+
+  const tabViewRef = useRef<CollapsibleTabsRef>(null)
   const isLoading = isBalanceLoading || isRefetchingBalance
   const balanceAccurate = useFocusedSelector(
     selectBalanceForAccountIsAccurate(activeAccount?.index ?? 0)
@@ -366,10 +368,8 @@ const PortfolioHomeScreen = (): JSX.Element => {
 
   const renderEmptyTabBar = useCallback((): JSX.Element => <></>, [])
 
-  const tabViewRef = useRef<CollapsibleTabsRef>(null)
-
-  const onScrollTo = useCallback((name: string, offset: number) => {
-    tabViewRef.current?.scrollTo(name, offset)
+  const handleScrollResync = useCallback(() => {
+    tabViewRef.current?.scrollResync()
   }, [])
 
   const tabs = useMemo(() => {
@@ -381,7 +381,7 @@ const PortfolioHomeScreen = (): JSX.Element => {
             goToTokenDetail={handleGoToTokenDetail}
             goToTokenManagement={handleGoToTokenManagement}
             goToBuy={handleBuy}
-            onReset={() => onScrollTo('Assets', 0)}
+            onReset={handleScrollResync}
           />
         )
       },
@@ -392,13 +392,13 @@ const PortfolioHomeScreen = (): JSX.Element => {
             goToCollectibleDetail={handleGoToCollectibleDetail}
             goToCollectibleManagement={handleGoToCollectibleManagement}
             goToDiscoverCollectibles={handleGoToDiscoverCollectibles}
-            onReset={() => onScrollTo('Collectibles', 0)}
+            onReset={handleScrollResync}
           />
         )
       },
       {
         tabName: 'DeFi',
-        component: <DeFiScreen onReset={() => onScrollTo('DeFi', 0)} />
+        component: <DeFiScreen onReset={handleScrollResync} />
       }
     ]
   }, [
@@ -408,7 +408,7 @@ const PortfolioHomeScreen = (): JSX.Element => {
     handleGoToCollectibleDetail,
     handleGoToCollectibleManagement,
     handleGoToDiscoverCollectibles,
-    onScrollTo
+    handleScrollResync
   ])
 
   return (
