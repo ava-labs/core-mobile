@@ -8,7 +8,7 @@ import {
   useTheme,
   View
 } from '@avalabs/k2-alpine'
-import { Dimensions } from 'react-native'
+import { Dimensions, ViewStyle } from 'react-native'
 import Animated from 'react-native-reanimated'
 import { DeFiChain, DeFiSimpleProtocol } from 'services/defi/types'
 import { getListItemEnteringAnimation } from 'common/utils/animations'
@@ -23,7 +23,8 @@ export const DeFiGridView = ({
   index,
   formattedPrice,
   onPress,
-  onPressArrow
+  onPressArrow,
+  style
 }: {
   item: DeFiSimpleProtocol
   chain: DeFiChain | undefined
@@ -31,6 +32,7 @@ export const DeFiGridView = ({
   formattedPrice: string
   onPress: () => void
   onPressArrow: () => void
+  style: ViewStyle
 }): React.JSX.Element => {
   const { theme } = useTheme()
   const isPrivacyModeEnabled = useSelector(selectIsPrivacyModeEnabled)
@@ -38,7 +40,8 @@ export const DeFiGridView = ({
   return (
     <Animated.View
       entering={getListItemEnteringAnimation(index)}
-      layout={SPRING_LINEAR_TRANSITION}>
+      layout={SPRING_LINEAR_TRANSITION}
+      style={style}>
       <TouchableOpacity onPress={onPress}>
         <View
           sx={{

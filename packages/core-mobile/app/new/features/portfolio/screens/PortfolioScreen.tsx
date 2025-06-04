@@ -2,6 +2,7 @@ import {
   BalanceHeader,
   NavigationTitleHeader,
   PriceChangeStatus,
+  SCREEN_HEIGHT,
   SegmentedControl,
   useTheme,
   View
@@ -14,7 +15,9 @@ import {
 } from 'common/components/CollapsibleTabs'
 import { HiddenBalanceText } from 'common/components/HiddenBalanceText'
 import { LinearGradientBottomWrapper } from 'common/components/LinearGradientBottomWrapper'
+import { useBottomTabBarHeight } from 'common/hooks/useBottomTabBarHeight'
 import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
+import { useIsAndroidWithBottomBar } from 'common/hooks/useIsAndroidWithBottomBar'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
 import { useFocusEffect, useRouter } from 'expo-router'
 import {
@@ -23,8 +26,8 @@ import {
 } from 'features/portfolio/assets/components/ActionButtons'
 import AssetsScreen from 'features/portfolio/assets/components/AssetsScreen'
 import { ActionButtonTitle } from 'features/portfolio/assets/consts'
-import { CollectiblesScreen } from 'features/portfolio/collectibles/screens/CollectiblesScreen'
 import { CollectibleFilterAndSortInitialState } from 'features/portfolio/collectibles/hooks/useCollectiblesFilterAndSort'
+import { CollectiblesScreen } from 'features/portfolio/collectibles/screens/CollectiblesScreen'
 import { DeFiScreen } from 'features/portfolio/defi/components/DeFiScreen'
 import { useSendSelectedToken } from 'features/send/store'
 import { useNavigateToSwap } from 'features/swap/hooks/useNavigateToSwap'
@@ -35,12 +38,14 @@ import {
   InteractionManager,
   LayoutChangeEvent,
   LayoutRectangle,
+  Platform,
   StyleSheet
 } from 'react-native'
 import Animated, {
   useAnimatedStyle,
   useSharedValue
 } from 'react-native-reanimated'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useDispatch, useSelector } from 'react-redux'
 import { selectActiveAccount } from 'store/account'
 import {
@@ -285,7 +290,8 @@ const PortfolioHomeScreen = (): JSX.Element => {
         <ActionButtons
           buttons={actionButtons}
           contentContainerStyle={{
-            padding: 16
+            padding: 16,
+            paddingBottom: 10
           }}
         />
       </View>
@@ -378,6 +384,35 @@ const PortfolioHomeScreen = (): JSX.Element => {
     }, [])
   )
 
+  const insets = useSafeAreaInsets()
+  const isAndroidWithBottomBar = useIsAndroidWithBottomBar()
+  const tabBarHeight = useBottomTabBarHeight()
+
+  const tabHeight = useMemo(() => {
+    return Platform.select({
+      ios:
+        SCREEN_HEIGHT -
+        insets.top -
+        (balanceHeaderLayout?.height ?? 0) -
+        tabBarHeight -
+        11,
+      android: SCREEN_HEIGHT - insets.top + (isAndroidWithBottomBar ? -11 : 11)
+    })
+  }, [
+    balanceHeaderLayout?.height,
+    insets.top,
+    isAndroidWithBottomBar,
+    tabBarHeight
+  ])
+
+  const contentContainerStyle = useMemo(() => {
+    return {
+      paddingBottom: 16,
+      paddingTop: 10,
+      minHeight: tabHeight
+    }
+  }, [tabHeight])
+
   const tabs = useMemo(() => {
     return [
       {
@@ -388,6 +423,7 @@ const PortfolioHomeScreen = (): JSX.Element => {
             goToTokenManagement={handleGoToTokenManagement}
             goToBuy={handleBuy}
             onScrollResync={handleScrollResync}
+            containerStyle={contentContainerStyle}
           />
         )
       },
@@ -399,22 +435,29 @@ const PortfolioHomeScreen = (): JSX.Element => {
             goToCollectibleManagement={handleGoToCollectibleManagement}
             goToDiscoverCollectibles={handleGoToDiscoverCollectibles}
             onScrollResync={handleScrollResync}
+            containerStyle={contentContainerStyle}
           />
         )
       },
       {
         tabName: 'DeFi',
-        component: <DeFiScreen onScrollResync={handleScrollResync} />
+        component: (
+          <DeFiScreen
+            onScrollResync={handleScrollResync}
+            containerStyle={contentContainerStyle}
+          />
+        )
       }
     ]
   }, [
     handleGoToTokenDetail,
     handleGoToTokenManagement,
     handleBuy,
+    handleScrollResync,
+    contentContainerStyle,
     handleGoToCollectibleDetail,
     handleGoToCollectibleManagement,
-    handleGoToDiscoverCollectibles,
-    handleScrollResync
+    handleGoToDiscoverCollectibles
   ])
 
   return (

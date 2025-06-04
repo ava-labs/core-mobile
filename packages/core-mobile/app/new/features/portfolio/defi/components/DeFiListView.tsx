@@ -11,6 +11,8 @@ import { DeFiChain, DeFiSimpleProtocol } from 'services/defi/types'
 import { useSelector } from 'react-redux'
 import { selectIsPrivacyModeEnabled } from 'store/settings/securityPrivacy'
 import { LogoWithNetwork } from './LogoWithNetwork'
+import { HORIZONTAL_MARGIN } from 'common/consts'
+import { HORIZONTAL_ITEM_GAP } from 'features/portfolio/collectibles/consts'
 
 export const DeFiListView = ({
   item,
@@ -32,15 +34,25 @@ export const DeFiListView = ({
     <TouchableOpacity
       onPress={onPress}
       sx={{
-        paddingHorizontal: 16,
-        paddingVertical: 12,
+        paddingLeft: HORIZONTAL_MARGIN,
         flexDirection: 'row',
         alignItems: 'center',
-        justifyContent: 'space-between'
+        gap: HORIZONTAL_ITEM_GAP
       }}>
-      <View sx={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-        <LogoWithNetwork item={item} chain={chain} size="small" />
-        <View>
+      <LogoWithNetwork item={item} chain={chain} size="small" />
+      <View
+        sx={{
+          flex: 1,
+          height: '100%',
+          borderBottomWidth: 0.5,
+          borderColor: '$borderPrimary',
+          alignItems: 'center',
+          flexDirection: 'row',
+          gap: HORIZONTAL_ITEM_GAP,
+          paddingVertical: 12,
+          paddingRight: HORIZONTAL_MARGIN
+        }}>
+        <View style={{ flex: 1 }}>
           <Text variant="buttonMedium" numberOfLines={1}>
             {item.name}
           </Text>
@@ -56,8 +68,8 @@ export const DeFiListView = ({
             </TouchableOpacity>
           </View>
         </View>
+        <Icons.Navigation.ChevronRightV2 color={theme.colors.$textSecondary} />
       </View>
-      <Icons.Navigation.ChevronRightV2 color={theme.colors.$textSecondary} />
     </TouchableOpacity>
   )
 }

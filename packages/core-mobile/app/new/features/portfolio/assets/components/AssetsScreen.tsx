@@ -1,7 +1,6 @@
 import {
   Image,
   IndexPath,
-  SCREEN_HEIGHT,
   SPRING_LINEAR_TRANSITION,
   View
 } from '@avalabs/k2-alpine'
@@ -11,11 +10,10 @@ import { ErrorState } from 'common/components/ErrorState'
 import { LoadingState } from 'common/components/LoadingState'
 import { Space } from 'common/components/Space'
 import { getListItemEnteringAnimation } from 'common/utils/animations'
+import { portfolioTabContentHeight } from 'features/portfolio/utils'
 import React, { FC, memo, useCallback, useMemo } from 'react'
-import { Platform, StyleSheet } from 'react-native'
-import { useHeaderMeasurements } from 'react-native-collapsible-tab-view'
+import { ViewStyle } from 'react-native'
 import Animated from 'react-native-reanimated'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useSelector } from 'react-redux'
 import { selectActiveAccount } from 'store/account'
 import {
@@ -28,11 +26,11 @@ import {
 } from 'store/balance'
 import { selectEnabledNetworks } from 'store/network'
 import errorIcon from '../../../../assets/icons/rocket.png'
-import { portfolioTabContentHeight } from '../../utils'
 import { useAssetsFilterAndSort } from '../hooks/useAssetsFilterAndSort'
 import { TokenListItem } from './TokenListItem'
 
 interface Props {
+  containerStyle: ViewStyle
   goToTokenDetail: (localId: string, chainId: number) => void
   goToTokenManagement: () => void
   goToBuy: () => void
@@ -40,6 +38,7 @@ interface Props {
 }
 
 const AssetsScreen: FC<Props> = ({
+  containerStyle,
   goToTokenDetail,
   goToTokenManagement,
   goToBuy,
@@ -142,9 +141,12 @@ const AssetsScreen: FC<Props> = ({
 
   const header = useMemo(() => {
     return (
-      <View sx={styles.dropdownContainer}>
+      <View
+        style={{
+          paddingHorizontal: 16
+        }}>
         <DropdownSelections
-          sx={styles.dropdown}
+          sx={{ marginBottom: 16 }}
           filter={filter}
           sort={sort}
           view={{ ...view, onSelected: handleManageList }}
@@ -153,15 +155,18 @@ const AssetsScreen: FC<Props> = ({
     )
   }, [filter, sort, view, handleManageList])
 
-  const insets = useSafeAreaInsets()
-  const { height } = useHeaderMeasurements()
+  const keyExtractor = useCallback(
+    (item: LocalTokenWithBalance | number, index: number) => {
+      if (typeof item === 'number') return `header`
+      return `${index}-${item.networkChainId}-${item.localId}`
+    },
+    []
+  )
 
-  const contentContainerStyle = {
-    paddingBottom: 16,
-    minHeight:
-      Platform.OS === 'ios'
-        ? SCREEN_HEIGHT - insets.bottom - height
-        : SCREEN_HEIGHT - insets.bottom + 24
+  const overrideProps = {
+    contentContainerStyle: {
+      ...containerStyle
+    }
   }
 
   if (isBalanceLoading || enabledNetworks.length === 0) {
@@ -176,12 +181,12 @@ const AssetsScreen: FC<Props> = ({
         flex: 1
       }}>
       <CollapsibleTabs.FlashList
-        overrideProps={{
-          contentContainerStyle
-        }}
         data={data}
+        key={isGridView ? 'grid' : 'list'}
+        keyExtractor={keyExtractor}
+        overrideProps={overrideProps}
         numColumns={numColumns}
-        estimatedItemSize={isGridView ? 183 : 73} // these numbers are suggested by FlashList at runtime
+        estimatedItemSize={isGridView ? 183 : 73}
         renderItem={item => renderItem(item.item, item.index)}
         ListHeaderComponent={header}
         ListEmptyComponent={emptyComponent}
@@ -189,23 +194,9 @@ const AssetsScreen: FC<Props> = ({
         showsVerticalScrollIndicator={false}
         refreshing={isRefetching || isLoading}
         onRefresh={refetch}
-        key={isGridView ? 'grid' : 'list'}
-        keyExtractor={(item, index) =>
-          `${index}-${item.networkChainId}-${item.localId}`
-        }
       />
     </Animated.View>
   )
 }
-
-const styles = StyleSheet.create({
-  dropdownContainer: {
-    paddingHorizontal: 16
-  },
-  dropdown: {
-    marginTop: 4,
-    marginBottom: 16
-  }
-})
 
 export default memo(AssetsScreen)

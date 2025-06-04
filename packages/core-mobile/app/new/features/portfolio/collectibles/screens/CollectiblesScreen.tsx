@@ -2,7 +2,6 @@ import {
   AnimatedPressable,
   Icons,
   IndexPath,
-  SCREEN_HEIGHT,
   SCREEN_WIDTH,
   SPRING_LINEAR_TRANSITION,
   useTheme,
@@ -11,16 +10,14 @@ import {
 import { ListRenderItem } from '@shopify/flash-list'
 import { CollapsibleTabs } from 'common/components/CollapsibleTabs'
 import { ErrorState } from 'common/components/ErrorState'
-import { portfolioTabContentHeight } from 'features/portfolio/utils'
 import React, { ReactNode, useCallback, useEffect, useMemo } from 'react'
-import { Platform } from 'react-native'
+import { Platform, ViewStyle } from 'react-native'
 
 import { DropdownSelections } from 'common/components/DropdownSelections'
 import { LoadingState } from 'common/components/LoadingState'
 import { getListItemEnteringAnimation } from 'common/utils/animations'
-import { useHeaderMeasurements } from 'react-native-collapsible-tab-view'
+import { portfolioTabContentHeight } from 'features/portfolio/utils'
 import Animated from 'react-native-reanimated'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { NftItem } from 'services/nft/types'
 import {
   ASSET_MANAGE_VIEWS,
@@ -41,6 +38,7 @@ import {
 } from '../hooks/useCollectiblesFilterAndSort'
 
 export const CollectiblesScreen = ({
+  containerStyle,
   goToCollectibleDetail,
   goToCollectibleManagement,
   goToDiscoverCollectibles,
@@ -53,6 +51,7 @@ export const CollectiblesScreen = ({
   goToCollectibleManagement: () => void
   goToDiscoverCollectibles: () => void
   onScrollResync: () => void
+  containerStyle: ViewStyle
 }): ReactNode => {
   const {
     theme: { colors }
@@ -144,7 +143,7 @@ export const CollectiblesScreen = ({
     if (error || !isSuccess) {
       return (
         <ErrorState
-          sx={{ height: portfolioTabContentHeight - 100 }}
+          sx={{ height: portfolioTabContentHeight }}
           description="Please hit refresh or try again later"
           button={{
             title: 'Refresh',
@@ -158,7 +157,7 @@ export const CollectiblesScreen = ({
       return (
         <ErrorState
           sx={{
-            height: portfolioTabContentHeight - 100
+            height: portfolioTabContentHeight
           }}
           title="No Collectibles found"
           description="
@@ -175,7 +174,7 @@ export const CollectiblesScreen = ({
       return (
         <ErrorState
           sx={{
-            height: portfolioTabContentHeight - 100
+            height: portfolioTabContentHeight
           }}
           title="All collectibles hidden"
           description="You have hidden all your collectibles"
@@ -272,7 +271,6 @@ export const CollectiblesScreen = ({
             alignSelf: 'center',
             width: SCREEN_WIDTH - HORIZONTAL_MARGIN * 2,
             zIndex: 10,
-            marginTop: 4,
             marginBottom: CollectibleView.ListView === listType ? 8 : 10
           }
         ]}>
@@ -294,25 +292,23 @@ export const CollectiblesScreen = ({
     handleManageList
   ])
 
-  const { height } = useHeaderMeasurements()
-  const insets = useSafeAreaInsets()
-
-  // Fix for making the list scrollable if there are just a few collectibles
-  // overrideProps and contentContainerStyle need to be both used with the same stylings for item width calculations
   const contentContainerStyle = {
-    flexGrow: 1,
     paddingHorizontal:
       listType === CollectibleView.ListView
         ? 0
         : filteredAndSorted?.length
         ? HORIZONTAL_MARGIN - HORIZONTAL_ITEM_GAP / 2
-        : 0,
-    paddingBottom: HORIZONTAL_MARGIN,
-    // This is needed so that the list can scroll if there are just a few results or none
-    minHeight:
-      Platform.OS === 'ios'
-        ? SCREEN_HEIGHT - insets.bottom - height
-        : SCREEN_HEIGHT - insets.bottom + 24
+        : 0
+  }
+
+  // Fix for making the list scrollable if there are just a few collectibles
+  // overrideProps and contentContainerStyle need to be both used with the same stylings for item width calculations
+  const overrideProps = {
+    contentContainerStyle: {
+      flexGrow: 1,
+      ...contentContainerStyle,
+      ...containerStyle
+    }
   }
 
   return (
@@ -337,12 +333,7 @@ export const CollectiblesScreen = ({
         ListEmptyComponent={renderEmpty}
         ListHeaderComponent={renderHeader}
         numColumns={columns}
-        style={{
-          overflow: 'visible'
-        }}
-        overrideProps={{
-          contentContainerStyle
-        }}
+        overrideProps={overrideProps}
         onRefresh={pullToRefresh}
         refreshing={isRefreshing}
         contentContainerStyle={contentContainerStyle}
