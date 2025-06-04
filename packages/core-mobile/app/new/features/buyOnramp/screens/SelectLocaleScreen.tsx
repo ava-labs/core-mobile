@@ -22,7 +22,8 @@ export const SelectLocaleScreen = (): React.JSX.Element => {
   ])
 
   const handleOnNext = (): void => {
-    // Handle the next action, e.g., navigate to the next screen
+    // @ts-ignore TODO: make routes typesafe
+    navigate('/buyOnramp/buyToken')
   }
 
   const handleOnSelectCountry = (): void => {

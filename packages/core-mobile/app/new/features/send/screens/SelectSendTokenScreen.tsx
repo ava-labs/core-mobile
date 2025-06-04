@@ -24,7 +24,6 @@ import {
   isTokenWithBalanceAVM,
   isTokenWithBalancePVM
 } from '@avalabs/avalanche-module'
-import { sortTokensWithPrimaryFirst } from 'common/utils/sortTokensWithPrimaryFirst'
 import { getNetworks } from '../utils/getNetworks'
 
 export const SelectSendTokenScreen = (): JSX.Element => {
@@ -82,10 +81,6 @@ export const SelectSendTokenScreen = (): JSX.Element => {
         token.networkChainId.toString().includes(searchText)
     )
   }, [tokens, searchText])
-
-  const sortedSearchResults = useMemo(() => {
-    return sortTokensWithPrimaryFirst({ tokens: searchResults })
-  }, [searchResults])
 
   const renderItem: ListRenderItem<LocalTokenWithBalance> = ({
     item,
@@ -146,7 +141,7 @@ export const SelectSendTokenScreen = (): JSX.Element => {
     <SelectTokenScreen
       onSearchText={setSearchText}
       searchText={searchText}
-      tokens={sortedSearchResults ?? []}
+      tokens={searchResults ?? []}
       renderListItem={renderItem}
       keyExtractor={item => `${item.localId}-${item.networkChainId}`}
     />
