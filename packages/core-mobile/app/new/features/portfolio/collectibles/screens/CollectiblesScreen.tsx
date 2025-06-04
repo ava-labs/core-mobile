@@ -83,6 +83,7 @@ export const CollectiblesScreen = ({
   }, [isEnabled, setIsEnabled])
 
   useEffect(() => {
+    // We want the resync to happen after the list is loaded
     if (!isLoading && isEnabled) {
       onScrollResync()
     }
@@ -270,7 +271,6 @@ export const CollectiblesScreen = ({
           {
             alignSelf: 'center',
             width: SCREEN_WIDTH - HORIZONTAL_MARGIN * 2,
-            zIndex: 10,
             marginBottom: CollectibleView.ListView === listType ? 8 : 10
           }
         ]}>

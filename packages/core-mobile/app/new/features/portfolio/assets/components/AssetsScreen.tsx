@@ -155,14 +155,6 @@ const AssetsScreen: FC<Props> = ({
     )
   }, [filter, sort, view, handleManageList])
 
-  const keyExtractor = useCallback(
-    (item: LocalTokenWithBalance | number, index: number) => {
-      if (typeof item === 'number') return `header`
-      return `${index}-${item.networkChainId}-${item.localId}`
-    },
-    []
-  )
-
   const overrideProps = {
     contentContainerStyle: {
       ...containerStyle
@@ -183,7 +175,9 @@ const AssetsScreen: FC<Props> = ({
       <CollapsibleTabs.FlashList
         data={data}
         key={isGridView ? 'grid' : 'list'}
-        keyExtractor={keyExtractor}
+        keyExtractor={(item, index) =>
+          `${index}-${item.networkChainId}-${item.localId}`
+        }
         overrideProps={overrideProps}
         numColumns={numColumns}
         estimatedItemSize={isGridView ? 183 : 73}

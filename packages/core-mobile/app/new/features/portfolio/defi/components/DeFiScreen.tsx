@@ -63,6 +63,7 @@ export const DeFiScreen = ({
       AnalyticsService.capture('DeFiAggregatorsCount', {
         count: data.length
       })
+      // We want the resync to happen after the list is loaded
       onScrollResync()
     }
   }, [data, isSuccess, onScrollResync])
@@ -163,7 +164,6 @@ export const DeFiScreen = ({
       <View
         sx={{
           alignSelf: 'center',
-          zIndex: 10,
           width: SCREEN_WIDTH - HORIZONTAL_MARGIN * 2,
           marginBottom: isGridView ? 10 : 8
         }}>
