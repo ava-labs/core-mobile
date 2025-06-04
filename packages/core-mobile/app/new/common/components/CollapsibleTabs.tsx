@@ -52,8 +52,7 @@ export const CollapsibleTabsContainer = forwardRef<
         renderTabBar={renderTabBar}
         pagerProps={pagerProps}
         onTabChange={onTabChange}
-        onIndexChange={onIndexChange}
-        headerHeight={200}>
+        onIndexChange={onIndexChange}>
         {content}
       </Tabs.Container>
     )
