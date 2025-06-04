@@ -1,6 +1,7 @@
 import {
   Image,
   IndexPath,
+  SCREEN_HEIGHT,
   Separator,
   SPRING_LINEAR_TRANSITION,
   View
@@ -16,8 +17,10 @@ import { getListItemEnteringAnimation } from 'common/utils/animations'
 import { useRouter } from 'expo-router'
 import { useExchangedAmount } from 'new/common/hooks/useExchangedAmount'
 import React, { useCallback, useEffect, useMemo } from 'react'
-import { ListRenderItemInfo, StyleSheet } from 'react-native'
+import { ListRenderItemInfo, Platform, StyleSheet } from 'react-native'
+import { useHeaderMeasurements } from 'react-native-collapsible-tab-view'
 import Animated from 'react-native-reanimated'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { DeFiSimpleProtocol } from 'services/defi/types'
 import { portfolioTabContentHeight } from '../../utils'
@@ -184,6 +187,17 @@ export const DeFiScreen = ({
     }
   }, [isGridView])
 
+  const insets = useSafeAreaInsets()
+  const { height } = useHeaderMeasurements()
+
+  const contentContainerStyle = {
+    paddingBottom: 16,
+    minHeight:
+      Platform.OS === 'ios'
+        ? SCREEN_HEIGHT - insets.bottom - height
+        : SCREEN_HEIGHT - insets.bottom + 24
+  }
+
   return (
     <Animated.View
       entering={getListItemEnteringAnimation(0)}
@@ -192,7 +206,7 @@ export const DeFiScreen = ({
         flex: 1
       }}>
       <CollapsibleTabs.FlatList
-        contentContainerStyle={styles.container}
+        contentContainerStyle={contentContainerStyle}
         data={data}
         numColumns={numColumns}
         renderItem={renderItem}
@@ -211,7 +225,6 @@ export const DeFiScreen = ({
 }
 
 const styles = StyleSheet.create({
-  container: { overflow: 'visible', paddingBottom: 16 },
   dropdownContainer: {
     paddingHorizontal: 16
   }

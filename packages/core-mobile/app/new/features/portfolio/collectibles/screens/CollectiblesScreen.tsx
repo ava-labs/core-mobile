@@ -2,6 +2,7 @@ import {
   AnimatedPressable,
   Icons,
   IndexPath,
+  SCREEN_HEIGHT,
   SCREEN_WIDTH,
   SPRING_LINEAR_TRANSITION,
   useTheme,
@@ -17,7 +18,9 @@ import { Platform } from 'react-native'
 import { DropdownSelections } from 'common/components/DropdownSelections'
 import { LoadingState } from 'common/components/LoadingState'
 import { getListItemEnteringAnimation } from 'common/utils/animations'
+import { useHeaderMeasurements } from 'react-native-collapsible-tab-view'
 import Animated from 'react-native-reanimated'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { NftItem } from 'services/nft/types'
 import {
   ASSET_MANAGE_VIEWS,
@@ -291,6 +294,9 @@ export const CollectiblesScreen = ({
     handleManageList
   ])
 
+  const { height } = useHeaderMeasurements()
+  const insets = useSafeAreaInsets()
+
   // Fix for making the list scrollable if there are just a few collectibles
   // overrideProps and contentContainerStyle need to be both used with the same stylings for item width calculations
   const contentContainerStyle = {
@@ -301,7 +307,12 @@ export const CollectiblesScreen = ({
         : filteredAndSorted?.length
         ? HORIZONTAL_MARGIN - HORIZONTAL_ITEM_GAP / 2
         : 0,
-    paddingBottom: HORIZONTAL_MARGIN
+    paddingBottom: HORIZONTAL_MARGIN,
+    // This is needed so that the list can scroll if there are just a few results or none
+    minHeight:
+      Platform.OS === 'ios'
+        ? SCREEN_HEIGHT - insets.bottom - height
+        : SCREEN_HEIGHT - insets.bottom + 24
   }
 
   return (
@@ -335,7 +346,7 @@ export const CollectiblesScreen = ({
         onRefresh={pullToRefresh}
         refreshing={isRefreshing}
         contentContainerStyle={contentContainerStyle}
-        scrollEnabled={filteredAndSorted?.length > 0}
+        scrollEnabled={filteredAndSorted?.length > 0 || hasFilters}
         estimatedItemSize={220}
         removeClippedSubviews={Platform.OS === 'android'}
         showsVerticalScrollIndicator={false}

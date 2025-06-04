@@ -1,6 +1,7 @@
 import {
   Image,
   IndexPath,
+  SCREEN_HEIGHT,
   SPRING_LINEAR_TRANSITION,
   View
 } from '@avalabs/k2-alpine'
@@ -11,8 +12,10 @@ import { LoadingState } from 'common/components/LoadingState'
 import { Space } from 'common/components/Space'
 import { getListItemEnteringAnimation } from 'common/utils/animations'
 import React, { FC, memo, useCallback, useMemo } from 'react'
-import { StyleSheet } from 'react-native'
+import { Platform, StyleSheet } from 'react-native'
+import { useHeaderMeasurements } from 'react-native-collapsible-tab-view'
 import Animated from 'react-native-reanimated'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useSelector } from 'react-redux'
 import { selectActiveAccount } from 'store/account'
 import {
@@ -150,11 +153,16 @@ const AssetsScreen: FC<Props> = ({
     )
   }, [filter, sort, view, handleManageList])
 
-  // useEffect(() => {
-  //   if (data.length) {
-  //     onReset()
-  //   }
-  // }, [data, numColumns, onReset])
+  const insets = useSafeAreaInsets()
+  const { height } = useHeaderMeasurements()
+
+  const contentContainerStyle = {
+    paddingBottom: 16,
+    minHeight:
+      Platform.OS === 'ios'
+        ? SCREEN_HEIGHT - insets.bottom - height
+        : SCREEN_HEIGHT - insets.bottom + 24
+  }
 
   if (isBalanceLoading || enabledNetworks.length === 0) {
     return <LoadingState sx={{ height: portfolioTabContentHeight * 2 }} />
@@ -168,7 +176,9 @@ const AssetsScreen: FC<Props> = ({
         flex: 1
       }}>
       <CollapsibleTabs.FlashList
-        contentContainerStyle={{ paddingBottom: 16 }}
+        overrideProps={{
+          contentContainerStyle
+        }}
         data={data}
         numColumns={numColumns}
         estimatedItemSize={isGridView ? 183 : 73} // these numbers are suggested by FlashList at runtime
