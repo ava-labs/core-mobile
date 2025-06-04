@@ -10,13 +10,13 @@ import {
 import { ListRenderItem } from '@shopify/flash-list'
 import { CollapsibleTabs } from 'common/components/CollapsibleTabs'
 import { ErrorState } from 'common/components/ErrorState'
-import { portfolioTabContentHeight } from 'features/portfolio/utils'
 import React, { ReactNode, useCallback, useEffect, useMemo } from 'react'
-import { Platform } from 'react-native'
+import { Platform, ViewStyle } from 'react-native'
 
 import { DropdownSelections } from 'common/components/DropdownSelections'
 import { LoadingState } from 'common/components/LoadingState'
 import { getListItemEnteringAnimation } from 'common/utils/animations'
+import { portfolioTabContentHeight } from 'features/portfolio/utils'
 import Animated from 'react-native-reanimated'
 import { NftItem } from 'services/nft/types'
 import {
@@ -38,9 +38,11 @@ import {
 } from '../hooks/useCollectiblesFilterAndSort'
 
 export const CollectiblesScreen = ({
+  containerStyle,
   goToCollectibleDetail,
   goToCollectibleManagement,
-  goToDiscoverCollectibles
+  goToDiscoverCollectibles,
+  onScrollResync
 }: {
   goToCollectibleDetail: (
     localId: string,
@@ -48,6 +50,8 @@ export const CollectiblesScreen = ({
   ) => void
   goToCollectibleManagement: () => void
   goToDiscoverCollectibles: () => void
+  onScrollResync: () => void
+  containerStyle: ViewStyle
 }): ReactNode => {
   const {
     theme: { colors }
@@ -78,6 +82,13 @@ export const CollectiblesScreen = ({
     setIsEnabled(true)
   }, [isEnabled, setIsEnabled])
 
+  useEffect(() => {
+    // We want the resync to happen after the list is loaded
+    if (!isLoading && isEnabled) {
+      onScrollResync()
+    }
+  }, [isEnabled, isLoading, onScrollResync])
+
   const listType = view.data[0]?.[view.selected.row] as CollectibleView
   const columns =
     listType === CollectibleView.CompactGrid
@@ -94,9 +105,10 @@ export const CollectiblesScreen = ({
         goToCollectibleManagement()
         return
       }
+      onScrollResync()
       view.onSelected(indexPath)
     },
-    [goToCollectibleManagement, view]
+    [goToCollectibleManagement, view, onScrollResync]
   )
 
   const renderItem: ListRenderItem<NftItem> = useCallback(
@@ -132,7 +144,7 @@ export const CollectiblesScreen = ({
     if (error || !isSuccess) {
       return (
         <ErrorState
-          sx={{ height: portfolioTabContentHeight - 100 }}
+          sx={{ height: portfolioTabContentHeight }}
           description="Please hit refresh or try again later"
           button={{
             title: 'Refresh',
@@ -146,7 +158,7 @@ export const CollectiblesScreen = ({
       return (
         <ErrorState
           sx={{
-            height: portfolioTabContentHeight - 100
+            height: portfolioTabContentHeight
           }}
           title="No Collectibles found"
           description="
@@ -163,7 +175,7 @@ export const CollectiblesScreen = ({
       return (
         <ErrorState
           sx={{
-            height: portfolioTabContentHeight - 100
+            height: portfolioTabContentHeight
           }}
           title="All collectibles hidden"
           description="You have hidden all your collectibles"
@@ -259,8 +271,6 @@ export const CollectiblesScreen = ({
           {
             alignSelf: 'center',
             width: SCREEN_WIDTH - HORIZONTAL_MARGIN * 2,
-            zIndex: 10,
-            marginTop: 4,
             marginBottom: CollectibleView.ListView === listType ? 8 : 10
           }
         ]}>
@@ -282,17 +292,23 @@ export const CollectiblesScreen = ({
     handleManageList
   ])
 
-  // Fix for making the list scrollable if there are just a few collectibles
-  // overrideProps and contentContainerStyle need to be both used with the same stylings for item width calculations
   const contentContainerStyle = {
-    flexGrow: 1,
     paddingHorizontal:
       listType === CollectibleView.ListView
         ? 0
         : filteredAndSorted?.length
         ? HORIZONTAL_MARGIN - HORIZONTAL_ITEM_GAP / 2
-        : 0,
-    paddingBottom: HORIZONTAL_MARGIN
+        : 0
+  }
+
+  // Fix for making the list scrollable if there are just a few collectibles
+  // overrideProps and contentContainerStyle need to be both used with the same stylings for item width calculations
+  const overrideProps = {
+    contentContainerStyle: {
+      flexGrow: 1,
+      ...contentContainerStyle,
+      ...containerStyle
+    }
   }
 
   return (
@@ -317,16 +333,11 @@ export const CollectiblesScreen = ({
         ListEmptyComponent={renderEmpty}
         ListHeaderComponent={renderHeader}
         numColumns={columns}
-        style={{
-          overflow: 'visible'
-        }}
-        overrideProps={{
-          contentContainerStyle
-        }}
+        overrideProps={overrideProps}
         onRefresh={pullToRefresh}
         refreshing={isRefreshing}
         contentContainerStyle={contentContainerStyle}
-        scrollEnabled={filteredAndSorted?.length > 0}
+        scrollEnabled={filteredAndSorted?.length > 0 || hasFilters}
         estimatedItemSize={220}
         removeClippedSubviews={Platform.OS === 'android'}
         showsVerticalScrollIndicator={false}
