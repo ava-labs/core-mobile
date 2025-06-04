@@ -559,6 +559,30 @@ workflows:
         - app_path: $BITRISE_SIGNED_AAB_PATH
         - track: internal
         - service_account_json_key_path: $BITRISEIO_AVALABS_GOOGLE_PLAY_SERVICE_ACCOUNT_JSON_KEY_URL
+  android-internal-no-deploy:
+    before_run:
+    - _trigger_ios_internal_build
+    - _install-and-set-env
+    - _set-version
+    - _build-android
+    after_run:
+    - _send-notification-slack
+    envs:
+    - ENVIRONMENT: production
+      opts:
+        is_expand: false
+    - PLATFORM: Android
+      opts:
+        is_expand: false
+    - ANDROID_BUILD_VARIANT: internalRelease
+      opts:
+        is_expand: false
+    - APP_TITLE: Core Mobile Internal
+      opts:
+        is_expand: false
+    steps:
+    - deploy-to-bitrise-io@2: {}
+    - create-install-page-qr-code@1: {}
   android-internal-e2e:
     before_run:
     - _install-and-set-env
