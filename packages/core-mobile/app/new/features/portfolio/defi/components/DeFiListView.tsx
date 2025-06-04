@@ -6,13 +6,13 @@ import {
   useTheme,
   View
 } from '@avalabs/k2-alpine'
-import React from 'react'
-import { DeFiChain, DeFiSimpleProtocol } from 'services/defi/types'
-import { useSelector } from 'react-redux'
-import { selectIsPrivacyModeEnabled } from 'store/settings/securityPrivacy'
-import { LogoWithNetwork } from './LogoWithNetwork'
 import { HORIZONTAL_MARGIN } from 'common/consts'
 import { HORIZONTAL_ITEM_GAP } from 'features/portfolio/collectibles/consts'
+import React from 'react'
+import { useSelector } from 'react-redux'
+import { DeFiChain, DeFiSimpleProtocol } from 'services/defi/types'
+import { selectIsPrivacyModeEnabled } from 'store/settings/securityPrivacy'
+import { LogoWithNetwork } from './LogoWithNetwork'
 
 export const DeFiListView = ({
   item,
