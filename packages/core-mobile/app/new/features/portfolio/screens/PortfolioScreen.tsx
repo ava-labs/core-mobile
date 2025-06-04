@@ -16,7 +16,7 @@ import { HiddenBalanceText } from 'common/components/HiddenBalanceText'
 import { LinearGradientBottomWrapper } from 'common/components/LinearGradientBottomWrapper'
 import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
-import { useRouter } from 'expo-router'
+import { useFocusEffect, useRouter } from 'expo-router'
 import {
   ActionButton,
   ActionButtons
@@ -371,6 +371,12 @@ const PortfolioHomeScreen = (): JSX.Element => {
   const handleScrollResync = useCallback(() => {
     tabViewRef.current?.scrollResync()
   }, [])
+
+  useFocusEffect(
+    useCallback(() => {
+      tabViewRef.current?.scrollResync()
+    }, [])
+  )
 
   const tabs = useMemo(() => {
     return [
