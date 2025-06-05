@@ -62,10 +62,12 @@ import { selectSelectedCurrency } from 'store/settings/currency'
 import { selectIsPrivacyModeEnabled } from 'store/settings/securityPrivacy'
 import { RootState } from 'store/types'
 import { useFocusedSelector } from 'utils/performance/useFocusedSelector'
+import { useBuy } from 'features/buyOnramp/hooks/useBuy'
 
 const SEGMENT_ITEMS = ['Assets', 'Collectibles', 'DeFi']
 
 const PortfolioHomeScreen = (): JSX.Element => {
+  const { navigateToBuy } = useBuy()
   const isPrivacyModeEnabled = useFocusedSelector(selectIsPrivacyModeEnabled)
   const [_, setSelectedToken] = useSendSelectedToken()
   const { theme } = useTheme()
@@ -169,11 +171,6 @@ const PortfolioHomeScreen = (): JSX.Element => {
     navigate('/receive')
   }, [navigate])
 
-  const handleBuy = useCallback((): void => {
-    // @ts-ignore TODO: make routes typesafe
-    navigate('/buy')
-  }, [navigate])
-
   const header = useMemo(
     () => (
       <NavigationTitleHeader
@@ -224,7 +221,7 @@ const PortfolioHomeScreen = (): JSX.Element => {
     buttons.push({
       title: ActionButtonTitle.Buy,
       icon: 'buy',
-      onPress: handleBuy
+      onPress: () => navigateToBuy({})
     })
     buttons.push({
       title: ActionButtonTitle.Receive,
@@ -241,7 +238,7 @@ const PortfolioHomeScreen = (): JSX.Element => {
     handleSend,
     handleBridge,
     handleReceive,
-    handleBuy,
+    navigateToBuy,
     isDeveloperMode,
     navigateToSwap
   ])
@@ -425,7 +422,7 @@ const PortfolioHomeScreen = (): JSX.Element => {
           <AssetsScreen
             goToTokenDetail={handleGoToTokenDetail}
             goToTokenManagement={handleGoToTokenManagement}
-            goToBuy={handleBuy}
+            goToBuy={() => navigateToBuy({})}
             onScrollResync={handleScrollResync}
             containerStyle={contentContainerStyle}
           />
@@ -456,7 +453,7 @@ const PortfolioHomeScreen = (): JSX.Element => {
   }, [
     handleGoToTokenDetail,
     handleGoToTokenManagement,
-    handleBuy,
+    navigateToBuy,
     handleScrollResync,
     contentContainerStyle,
     handleGoToCollectibleDetail,
