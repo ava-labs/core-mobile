@@ -62,6 +62,11 @@ import { selectIsPrivacyModeEnabled } from 'store/settings/securityPrivacy'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import { useNetworks } from 'hooks/networks/useNetworks'
 import { ChainId } from '@avalabs/core-chains-sdk'
+import { useBuy } from 'features/buyOnramp/hooks/useBuy'
+import { getBuyableCryptoCurrency } from 'features/buyOnramp/utils'
+import { useSearchServiceProviders } from 'features/buyOnramp/hooks/useSearchServiceProviders'
+import { useSearchCryptoCurrencies } from 'features/buyOnramp/hooks/useSearchCryptoCurrencies'
+import { SearchProviderCategories } from 'services/meld/consts'
 
 export const TokenDetailScreen = (): React.JSX.Element => {
   const {
@@ -114,6 +119,17 @@ export const TokenDetailScreen = (): React.JSX.Element => {
 
   const tokenName = token?.name ?? ''
 
+  const { navigateToBuy } = useBuy()
+  const { data: serviceProviders } = useSearchServiceProviders({
+    categories: [SearchProviderCategories.CryptoOnramp]
+  })
+  const { data: cryptoCurrencies } = useSearchCryptoCurrencies({
+    categories: [SearchProviderCategories.CryptoOnramp],
+    serviceProviders: serviceProviders?.map(
+      serviceProvider => serviceProvider.serviceProvider
+    )
+  })
+
   const header = useMemo(
     () => <NavigationTitleHeader title={tokenName} />,
     [tokenName]
@@ -161,13 +177,6 @@ export const TokenDetailScreen = (): React.JSX.Element => {
     })
   }, [navigate, token])
 
-  const handleBuy = useCallback(() => {
-    navigate({
-      // @ts-ignore TODO: make routes typesafe
-      pathname: '/buy'
-    })
-  }, [navigate])
-
   const handleSend = useCallback((): void => {
     setSelectedToken(token)
     navigate({
@@ -194,11 +203,17 @@ export const TokenDetailScreen = (): React.JSX.Element => {
       })
     }
 
-    buttons.push({
-      title: ActionButtonTitle.Buy,
-      icon: 'buy',
-      onPress: handleBuy
+    const cryptoCurrency = getBuyableCryptoCurrency({
+      cryptoCurrencies,
+      tokenOrAddress: token
     })
+    if (!isXpToken && cryptoCurrency !== undefined) {
+      buttons.push({
+        title: ActionButtonTitle.Buy,
+        icon: 'buy',
+        onPress: () => navigateToBuy({ cryptoCurrency })
+      })
+    }
 
     if (isTokenStakable) {
       buttons.push({
@@ -221,12 +236,14 @@ export const TokenDetailScreen = (): React.JSX.Element => {
   }, [
     handleSend,
     isSwapDisabled,
-    handleBuy,
+    cryptoCurrencies,
+    token,
+    isXpToken,
     isTokenStakable,
     isBridgeDisabled,
     isTokenBridgeable,
     navigateToSwap,
-    token?.localId,
+    navigateToBuy,
     canAddStake,
     addStake,
     handleBridge
