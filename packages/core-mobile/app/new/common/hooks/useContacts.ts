@@ -82,7 +82,7 @@ export const useContacts = (): {
           return {
             ...value.item,
             type: value.item.type ?? value.type
-          } as Contact
+          }
         }),
     [selectedRecentContacts, accounts, contactCollection]
   )
