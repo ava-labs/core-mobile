@@ -79,7 +79,10 @@ export const useContacts = (): {
           }[]
         )
         .map(value => {
-          return value.item as Contact
+          return {
+            ...value.item,
+            type: value.item.type ?? value.type
+          } as Contact
         }),
     [selectedRecentContacts, accounts, contactCollection]
   )
