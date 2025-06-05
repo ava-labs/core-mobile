@@ -1,16 +1,53 @@
+diff --git a/node_modules/react-native-collapsible-tab-view/lib/typescript/src/types.d.ts b/node_modules/react-native-collapsible-tab-view/lib/typescript/src/types.d.ts
+index 38df065..104337b 100644
+--- a/node_modules/react-native-collapsible-tab-view/lib/typescript/src/types.d.ts
++++ b/node_modules/react-native-collapsible-tab-view/lib/typescript/src/types.d.ts
+@@ -11,6 +11,7 @@ export type RefHandler<T extends TabName = TabName> = {
+     setIndex: (index: number) => boolean;
+     getFocusedTab: () => T;
+     getCurrentIndex: () => number;
++    scrollResync: () => void;
+ };
+ export type CollapsibleRef<T extends TabName = TabName> = RefHandler<T> | undefined;
+ export type TabBarProps<T extends TabName = TabName> = {
 diff --git a/node_modules/react-native-collapsible-tab-view/src/Container.tsx b/node_modules/react-native-collapsible-tab-view/src/Container.tsx
-index bf9729a..90581f9 100644
+index bf9729a..da90fa9 100644
 --- a/node_modules/react-native-collapsible-tab-view/src/Container.tsx
 +++ b/node_modules/react-native-collapsible-tab-view/src/Container.tsx
-@@ -229,7 +229,10 @@ export const Container = React.memo(
+@@ -229,7 +229,9 @@ export const Container = React.memo(
        const toggleSyncScrollFrame = (toggle: boolean) =>
          syncScrollFrame.setActive(toggle)
        const syncScrollFrame = useFrameCallback(({ timeSinceFirstFrame }) => {
 -        syncCurrentTabScrollPosition()
-+
 +        if (timeSinceFirstFrame % 100 === 0) {
 +          syncCurrentTabScrollPosition()
 +        }
          if (timeSinceFirstFrame > 1500) {
            runOnJS(toggleSyncScrollFrame)(false)
          }
+@@ -344,9 +346,11 @@ export const Container = React.memo(
+           getCurrentIndex: () => {
+             return index.value
+           },
++          scrollResync: () => {
++            toggleSyncScrollFrame(true)
++          },
+         }),
+-        // eslint-disable-next-line react-hooks/exhaustive-deps
+-        [onTabPress]
++        [onTabPress, toggleSyncScrollFrame]
+       )
+ 
+       return (
+diff --git a/node_modules/react-native-collapsible-tab-view/src/types.ts b/node_modules/react-native-collapsible-tab-view/src/types.ts
+index 00fbafc..a56ddd3 100644
+--- a/node_modules/react-native-collapsible-tab-view/src/types.ts
++++ b/node_modules/react-native-collapsible-tab-view/src/types.ts
+@@ -30,6 +30,7 @@ export type RefHandler<T extends TabName = TabName> = {
+   setIndex: (index: number) => boolean
+   getFocusedTab: () => T
+   getCurrentIndex: () => number
++  scrollResync: () => void
+ }
+ 
+ export type CollapsibleRef<T extends TabName = TabName> =
