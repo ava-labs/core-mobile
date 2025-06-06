@@ -93,7 +93,7 @@ class WalletService {
       { name: sentrySpanName, contextName: 'svc.wallet.sign' },
       async () => {
         const provider = await NetworkService.getProviderForNetwork(network)
-        const wallet = await WalletFactory.createWallet(walletId)
+        const wallet = await WalletFactory.createWallet(walletId, accountIndex)
 
         if (isBtcTransactionRequest(transaction)) {
           if (!(provider instanceof BitcoinProvider))
@@ -151,7 +151,7 @@ class WalletService {
     accountIndex: number
     network: Network
   }): Promise<string> {
-    const wallet = await WalletFactory.createWallet(walletId)
+    const wallet = await WalletFactory.createWallet(walletId, accountIndex)
     const provider = await NetworkService.getProviderForNetwork(network)
 
     if (
@@ -187,7 +187,7 @@ class WalletService {
       // create next account only if it doesn't exist yet
       if (!pubKeys[accountIndex]) {
         // using the first account here since it always exists
-        const wallet = await WalletFactory.createWallet(walletId)
+        const wallet = await WalletFactory.createWallet(walletId, 0)
 
         if (!(wallet instanceof SeedlessWallet))
           throw new Error('Unable to add address: wrong wallet type')
@@ -757,7 +757,7 @@ class WalletService {
     accountIndex: number,
     network: Network
   ): Promise<Avalanche.StaticSigner | Avalanche.WalletVoid> {
-    const wallet = await WalletFactory.createWallet(walletId)
+    const wallet = await WalletFactory.createWallet(walletId, accountIndex)
     const provXP = await NetworkService.getAvalancheProviderXP(
       Boolean(network.isTestnet)
     )

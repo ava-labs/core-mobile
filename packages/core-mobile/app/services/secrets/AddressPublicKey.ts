@@ -1,21 +1,16 @@
 import { hex } from '@scure/base'
 import { mnemonicToSeed } from 'bip39'
-import { fromBase58, fromSeed } from 'bip32'
+import { fromSeed } from 'bip32'
 import slip10 from 'micro-key-producer/slip10.js'
 import { ethErrors } from 'eth-rpc-errors'
 import {
   AddressPublicKeyJson,
   Curve,
-  ExtendedPublicKey,
   PrimaryWalletSecrets,
   SecretsError,
   SecretType
 } from './types'
-import {
-  assertDerivationPath,
-  getExtendedPublicKeyFor,
-  getPublicKeyFor
-} from './utils'
+import { assertDerivationPath, getPublicKeyFor } from './utils'
 
 export class AddressPublicKey<HasDerivationPath extends boolean = true> {
   private readonly type = 'address-pubkey'
@@ -72,42 +67,6 @@ export class AddressPublicKey<HasDerivationPath extends boolean = true> {
         context: secrets.secretType
       }
     })
-  }
-
-  static fromExtendedPublicKeys(
-    xpubs: ExtendedPublicKey[],
-    curve: Curve,
-    derivationPath: string
-  ): AddressPublicKey<true> {
-    assertDerivationPath(derivationPath)
-
-    if (curve !== 'secp256k1') {
-      throw ethErrors.rpc.internal({
-        data: {
-          reason: SecretsError.UnsupportedCurve,
-          context: `"${curve}" is not supported with extended public keys`
-        }
-      })
-    }
-
-    const matchingXpub = getExtendedPublicKeyFor(xpubs, derivationPath, curve)
-
-    if (!matchingXpub) {
-      throw ethErrors.rpc.internal({
-        data: {
-          reason: SecretsError.MissingExtendedPublicKey,
-          context: `${derivationPath} / ${curve}`
-        }
-      })
-    }
-
-    const pathSuffix = derivationPath.slice(
-      matchingXpub.derivationPath.length + 1 // Add one to account for the trailing slash from the lookup
-    )
-    const node = fromBase58(matchingXpub.key).derivePath(pathSuffix)
-    const key = hex.encode(new Uint8Array(node.publicKey))
-
-    return new AddressPublicKey(key, curve, derivationPath)
   }
 
   static async fromSeedphrase(

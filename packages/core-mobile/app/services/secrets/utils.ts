@@ -75,51 +75,10 @@ const findPublicKey =
   (path: string, curve: Curve) => (pk: AddressPublicKeyJson) =>
     pk.derivationPath === path && pk.curve === curve
 
-const findExtendedPublicKey =
-  (path: string, curve: Curve, exact = false) =>
-  (extPk: ExtendedPublicKey) => {
-    if (exact) {
-      return extPk.derivationPath === path && extPk.curve === curve
-    }
-    return path.startsWith(`${extPk.derivationPath}/`) && extPk.curve === curve
-  }
-
-export function hasPublicKeyFor(
-  secrets: PrimaryWalletSecrets,
-  path: string,
-  curve: Curve
-): boolean {
-  return secrets.publicKeys.some(findPublicKey(path, curve))
-}
-
 export function getPublicKeyFor(
   secrets: PrimaryWalletSecrets,
   path: string,
   curve: Curve
 ): AddressPublicKeyJson | undefined {
   return secrets.publicKeys.find(findPublicKey(path, curve))
-}
-
-export function hasExtendedPublicKeyFor(
-  keys: ExtendedPublicKey[],
-  path: string,
-  curve: Curve
-): boolean {
-  return keys.some(findExtendedPublicKey(path, curve))
-}
-
-export function getExtendedPublicKeyFor(
-  keys: ExtendedPublicKey[],
-  path: string,
-  curve: Curve
-): ExtendedPublicKey | undefined {
-  return keys.find(findExtendedPublicKey(path, curve))
-}
-
-export function getExtendedPublicKey(
-  keys: ExtendedPublicKey[],
-  path: string,
-  curve: Curve
-): ExtendedPublicKey | undefined {
-  return keys.find(findExtendedPublicKey(path, curve, true))
 }
