@@ -47,6 +47,7 @@ const usePVMSend: SendAdapterPVM = ({
 
       const destinationAddress = 'P-' + stripChainAddress(addressToSend ?? '')
       return await WalletService.createSendPTx({
+        walletId: account.walletId,
         accountIndex: account.index,
         amountInNAvax,
         avaxXPNetwork: network,
@@ -55,7 +56,7 @@ const usePVMSend: SendAdapterPVM = ({
         feeState: getFeeState(price)
       })
     },
-    [addressToSend, account.index, network, fromAddress, getFeeState]
+    [addressToSend, account, network, fromAddress, getFeeState]
   )
 
   useEffect(() => {
@@ -96,6 +97,7 @@ const usePVMSend: SendAdapterPVM = ({
         request,
         network,
         fromAddress,
+        walletId: account.walletId,
         accountIndex: account.index,
         amountInNAvax: amount.toSubUnit(),
         toAddress: addressToSend,
@@ -112,7 +114,7 @@ const usePVMSend: SendAdapterPVM = ({
     request,
     network,
     fromAddress,
-    account.index,
+    account,
     getFeeState,
     gasPrice
   ])

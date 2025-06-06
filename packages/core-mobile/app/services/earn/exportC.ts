@@ -51,6 +51,7 @@ export async function exportC({
   const unsignedTxWithFee = await WalletService.createExportCTx({
     amountInNAvax: weiToNano(requiredAmountAvax.toSubUnit()),
     baseFeeInNAvax: weiToNano(instantBaseFeeAvax.toSubUnit()),
+    walletId: activeAccount.walletId,
     accountIndex: activeAccount.index,
     avaxXPNetwork,
     destinationChain: 'P',
@@ -59,6 +60,7 @@ export async function exportC({
 
   const signedTxWithFeeJson = await WalletService.sign({
     transaction: { tx: unsignedTxWithFee } as AvalancheTransactionRequest,
+    walletId: activeAccount.walletId,
     accountIndex: activeAccount.index,
     network: avaxXPNetwork
   })

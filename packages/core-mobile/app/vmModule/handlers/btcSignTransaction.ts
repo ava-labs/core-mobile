@@ -23,6 +23,7 @@ export const btcSignTransaction = async ({
 
     const signedTx = await WalletService.sign({
       transaction,
+      walletId: account.walletId,
       accountIndex: account.index,
       network
     })

@@ -2,12 +2,12 @@ import { router } from 'expo-router'
 import { Network } from '@avalabs/core-chains-sdk'
 import { CorePrimaryAccount } from '@avalabs/types'
 import {
-  Hex,
   ApprovalController as VmModuleApprovalController,
   ApprovalParams,
   ApprovalResponse,
   RpcMethod,
-  RpcRequest
+  RpcRequest,
+  RequestPublicKeyParams
 } from '@avalabs/vm-module-types'
 import { providerErrors, rpcErrors } from '@metamask/rpc-errors'
 import { btcSignTransaction } from 'vmModule/handlers/btcSignTransaction'
@@ -16,6 +16,7 @@ import { transactionSnackbar } from 'new/common/utils/toast'
 import { isInAppRequest } from 'store/rpc/utils/isInAppRequest'
 import { RequestContext } from 'store/rpc/types'
 import { NavigationPresentationMode } from 'new/common/types'
+import SecretsService from 'services/secrets/SecretsService'
 import { avalancheSignTransaction } from '../handlers/avalancheSignTransaction'
 import { ethSendTransaction } from '../handlers/ethSendTransaction'
 import { signMessage } from '../handlers/signMessage'
@@ -23,8 +24,12 @@ import { btcSendTransaction } from '../handlers/btcSendTransaction'
 import { avalancheSendTransaction } from '../handlers/avalancheSendTransaction'
 
 class ApprovalController implements VmModuleApprovalController {
-  requestPublicKey(): Promise<Hex> {
-    return Promise.reject(providerErrors.unsupportedMethod('requestPublicKey'))
+  requestPublicKey({
+    secretId,
+    curve,
+    derivationPath
+  }: RequestPublicKeyParams): Promise<string> {
+    return SecretsService.derivePublicKey(secretId, curve, derivationPath)
   }
 
   onTransactionPending({ request }: { request: RpcRequest }): void {

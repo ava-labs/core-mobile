@@ -1,30 +1,45 @@
-import { SeedlessPubKeysStorage } from 'seedless/services/storage/SeedlessPubKeysStorage'
 import Logger from 'utils/Logger'
 import { transformKeyInfosToPubKeys } from 'seedless/services/wallet/transformKeyInfosToPubkeys'
-import { Avalanche, getXpubFromMnemonic } from '@avalabs/core-wallets-sdk'
+import {
+  Avalanche,
+  DerivationPath,
+  getXpubFromMnemonic
+} from '@avalabs/core-wallets-sdk'
 import SeedlessService from 'seedless/services/SeedlessService'
+import SecretsService from 'services/secrets/SecretsService'
+import {
+  AVALANCHE_BASE_DERIVATION_PATH,
+  EVM_BASE_DERIVATION_PATH,
+  SecretType
+} from 'services/secrets/types'
+import { buildExtendedPublicKey } from 'services/secrets/utils'
+import { CORE_MOBILE_WALLET_ID } from 'services/walletconnectv2/types'
 import { WalletType } from './types'
-import MnemonicWalletInstance from './MnemonicWallet'
 
 class WalletInitializer {
   async initialize({
     mnemonic,
     walletType,
-    isLoggingIn
+    shouldUpdatePubkeys
   }: {
     mnemonic?: string
     walletType: WalletType
-    isLoggingIn: boolean
+    shouldUpdatePubkeys: boolean
   }): Promise<void> {
     switch (walletType) {
       case WalletType.SEEDLESS: {
         try {
-          if (isLoggingIn) {
+          if (shouldUpdatePubkeys) {
             const allKeys = await SeedlessService.getSessionKeysList()
-            const pubKeys = transformKeyInfosToPubKeys(allKeys)
+            const pubKeys = await transformKeyInfosToPubKeys(allKeys)
             Logger.info('saving public keys')
-            const pubKeysStorage = new SeedlessPubKeysStorage()
-            await pubKeysStorage.save(pubKeys)
+
+            await SecretsService.update({
+              id: CORE_MOBILE_WALLET_ID,
+              secretType: SecretType.Seedless,
+              publicKeys: pubKeys,
+              derivationPathSpec: DerivationPath.BIP44
+            })
           }
         } catch (error) {
           Logger.error(`Unable to save public keys`, error)
@@ -42,43 +57,34 @@ class WalletInitializer {
           resolve(Avalanche.getXpubFromMnemonic(mnemonic))
         })
         const pubKeys = await Promise.allSettled([xpubPromise, xpubXPPromise])
-        if (pubKeys[0].status === 'fulfilled') {
-          MnemonicWalletInstance.xpub = pubKeys[0].value
-        } else {
+        if (pubKeys[0].status !== 'fulfilled') {
           throw new Error(`getXpubFromMnemonic failed, ${pubKeys[0].reason}`)
         }
-        if (pubKeys[1].status === 'fulfilled') {
-          MnemonicWalletInstance.xpubXP = pubKeys[1].value
-        } else {
+        if (pubKeys[1].status !== 'fulfilled') {
           throw new Error(
             `Avalanche.getXpubFromMnemonic failed, ${pubKeys[1].reason}`
           )
         }
 
-        MnemonicWalletInstance.mnemonic = mnemonic
+        const evmXpub = pubKeys[0].value
+        const avaxXpub = pubKeys[1].value
+
+        await SecretsService.update({
+          id: CORE_MOBILE_WALLET_ID,
+          secretType: SecretType.Mnemonic,
+          mnemonic,
+          extendedPublicKeys: [
+            buildExtendedPublicKey(evmXpub, EVM_BASE_DERIVATION_PATH),
+            buildExtendedPublicKey(avaxXpub, AVALANCHE_BASE_DERIVATION_PATH)
+          ],
+          publicKeys: [],
+          derivationPathSpec: DerivationPath.BIP44
+        })
+
         break
       }
       default:
         throw new Error(`Wallet type ${walletType} not supported`)
-    }
-  }
-
-  public async terminate(walletType: WalletType): Promise<void> {
-    switch (walletType) {
-      case WalletType.SEEDLESS:
-        // no need to do anything here
-        // as all data stored in SecureStorageService
-        // is cleared on logout
-        break
-      case WalletType.MNEMONIC:
-        MnemonicWalletInstance.mnemonic = undefined
-        MnemonicWalletInstance.xpub = undefined
-        MnemonicWalletInstance.xpubXP = undefined
-        break
-      default:
-        throw new Error(
-          `Unable to terminate wallet: unsupported wallet type ${walletType}`
-        )
     }
   }
 }

@@ -14,19 +14,18 @@ const sessionKeysList = async () => [
   }
 ]
 
+const walletId = 'testWalletId'
+
 describe('SeedlessWallet', () => {
   let wallet: SeedlessWallet
   beforeEach(() => {
-    wallet = new SeedlessWallet(
-      {
-        apiClient: {
-          identityProve: jest.fn(),
-          // @ts-ignore
-          sessionKeysList
-        }
-      },
-      { evm: 'testPublicKey' }
-    )
+    wallet = new SeedlessWallet({
+      apiClient: {
+        identityProve: jest.fn(),
+        // @ts-ignore
+        sessionKeysList
+      }
+    })
   })
   it('should have returned the mnemonic id', async () => {
     // @ts-ignore
@@ -34,16 +33,13 @@ describe('SeedlessWallet', () => {
     expect(mnemonicId).toEqual('testMnemonicId')
   })
   it('should have thrown for not found mnemonic id ', async () => {
-    wallet = new SeedlessWallet(
-      {
-        apiClient: {
-          identityProve: jest.fn(),
-          // @ts-ignore
-          sessionKeysList: () => []
-        }
-      },
-      { evm: 'testPublicKey' }
-    )
+    wallet = new SeedlessWallet({
+      apiClient: {
+        identityProve: jest.fn(),
+        // @ts-ignore
+        sessionKeysList: () => []
+      }
+    })
     try {
       // @ts-ignore
       await wallet.getMnemonicId()
@@ -94,12 +90,12 @@ describe('SeedlessWallet', () => {
 
   describe('addAccount', () => {
     it('should have called CoreSeedlessAPIService addAccount', async () => {
-      await wallet.addAccount(1)
+      await wallet.addAccount(walletId, 1)
       expect(CoreSeedlessAPIService.addAccount).toHaveBeenCalled()
     })
     it('should have thrown with incorrect account index', async () => {
       try {
-        await wallet.addAccount(0)
+        await wallet.addAccount(walletId, 0)
       } catch (error) {
         expect(error).toHaveProperty(
           'message',
@@ -121,7 +117,7 @@ describe('SeedlessWallet', () => {
         evm: 'testPublicKey'
       })
       try {
-        await walletWithMockClient.addAccount(1)
+        await walletWithMockClient.addAccount(walletId, 1)
       } catch (error) {
         expect(error).toHaveProperty('message', 'Unknown identity')
       }
@@ -138,7 +134,7 @@ describe('SeedlessWallet', () => {
         evm: 'testWrongPublicKey'
       })
       try {
-        await walletWithMockClient.addAccount(1)
+        await walletWithMockClient.addAccount(walletId, 1)
       } catch (error) {
         expect(error).toHaveProperty(
           'message',

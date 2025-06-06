@@ -40,7 +40,8 @@ export const send = async ({
           network,
           fromAddress,
           sentrySpanName,
-          accountIndex: account.index
+          accountIndex: account.index,
+          walletId: account.walletId
         })
 
         const [txHash, txError] = await resolve(
@@ -74,6 +75,7 @@ export const send = async ({
 }
 
 const getTransactionRequest = ({
+  walletId,
   accountIndex,
   toAddress,
   fromAddress,
@@ -81,6 +83,7 @@ const getTransactionRequest = ({
   network,
   sentrySpanName
 }: {
+  walletId: string
   accountIndex: number
   amount: bigint
   toAddress: string
@@ -93,6 +96,7 @@ const getTransactionRequest = ({
     async () => {
       const destinationAddress = 'X-' + stripChainAddress(toAddress ?? '')
       const unsignedTx = await WalletService.createSendXTx({
+        walletId,
         accountIndex,
         amountInNAvax: amount,
         avaxXPNetwork: network,

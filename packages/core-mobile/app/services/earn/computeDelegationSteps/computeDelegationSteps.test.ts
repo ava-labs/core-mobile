@@ -30,6 +30,7 @@ describe('computeDelegationSteps', () => {
     stakeAmount: 100n,
     currency: 'AVAX',
     avaxXPNetwork: {} as Network,
+    walletId: 'test-wallet-id',
     accountIndex: 0,
     feeState: {} as pvm.FeeState,
     cAddress: 'test-c-address',

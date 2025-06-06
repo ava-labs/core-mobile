@@ -4,7 +4,6 @@ import {
   BitcoinProvider,
   DerivationPath,
   JsonRpcBatchInternal,
-  getAddressPublicKeyFromXPub,
   getWalletFromMnemonic,
   getAddressDerivationPath
 } from '@avalabs/core-wallets-sdk'
@@ -12,7 +11,6 @@ import { now } from 'moment'
 import {
   AvalancheTransactionRequest,
   BtcTransactionRequest,
-  PubKeyType,
   Wallet
 } from 'services/wallet/types'
 import { BaseWallet, TransactionRequest } from 'ethers'
@@ -23,7 +21,6 @@ import {
   SignTypedDataVersion
 } from '@metamask/eth-sig-util'
 import Logger from 'utils/Logger'
-import { assertNotUndefined } from 'utils/assertions'
 import { utils } from '@avalabs/avalanchejs'
 import { toUtf8 } from 'ethereumjs-util'
 import { getChainAliasFromNetwork } from 'services/network/utils/getChainAliasFromNetwork'
@@ -31,27 +28,16 @@ import {
   TypedDataV1,
   TypedData,
   MessageTypes,
-  WalletType,
   RpcMethod
 } from '@avalabs/vm-module-types'
 import { isTypedData } from '@avalabs/evm-module'
-import ModuleManager from 'vmModule/ModuleManager'
-import { mapToVmNetwork } from 'vmModule/utils/mapToVmNetwork'
 
 export class MnemonicWallet implements Wallet {
-  #mnemonic?: string
+  #mnemonic: string
 
-  /**
-   * Derivation path: m/44'/60'/0'
-   * @private
-   */
-  #xpub?: string
-
-  /**
-   * Derivation path: m/44'/9000'/0'
-   * @private
-   */
-  #xpubXP?: string
+  constructor(mnemonic: string) {
+    this.#mnemonic = mnemonic
+  }
 
   private async getBtcSigner(
     accountIndex: number,
@@ -59,7 +45,7 @@ export class MnemonicWallet implements Wallet {
   ): Promise<BitcoinWallet> {
     Logger.info('btcWallet', now())
     const btcWallet = await BitcoinWallet.fromMnemonic(
-      this.mnemonic,
+      this.#mnemonic,
       accountIndex,
       provider
     )
@@ -71,7 +57,7 @@ export class MnemonicWallet implements Wallet {
     const start = now()
 
     const wallet = getWalletFromMnemonic(
-      this.mnemonic,
+      this.#mnemonic,
       accountIndex,
       DerivationPath.BIP44
     )
@@ -81,19 +67,19 @@ export class MnemonicWallet implements Wallet {
     return wallet
   }
 
-  private async getAvaSigner(
+  private getAvaSigner(
     accountIndex: number,
     provider?: Avalanche.JsonRpcProvider
-  ): Promise<Avalanche.StaticSigner | Avalanche.SimpleSigner> {
+  ): Avalanche.StaticSigner | Avalanche.SimpleSigner {
     if (provider) {
       return Avalanche.StaticSigner.fromMnemonic(
-        this.mnemonic,
+        this.#mnemonic,
         getAddressDerivationPath(accountIndex, DerivationPath.BIP44, 'AVM'),
         getAddressDerivationPath(accountIndex, DerivationPath.BIP44, 'EVM'),
         provider
       )
     }
-    return new Avalanche.SimpleSigner(this.mnemonic, accountIndex)
+    return new Avalanche.SimpleSigner(this.#mnemonic, accountIndex)
   }
 
   private async getSigner({
@@ -122,37 +108,14 @@ export class MnemonicWallet implements Wallet {
             `Unable to get signer: wrong provider obtained for network ${network.vmName}`
           )
         }
-        return (await this.getAvaSigner(accountIndex)) as Avalanche.SimpleSigner
+        return this.getAvaSigner(accountIndex) as Avalanche.SimpleSigner
       default:
         throw new Error('Unable to get signer: network not supported')
     }
   }
 
   public get mnemonic(): string {
-    assertNotUndefined(this.#mnemonic, 'no mnemonic available')
     return this.#mnemonic
-  }
-
-  public set mnemonic(mnemonic: string | undefined) {
-    this.#mnemonic = mnemonic
-  }
-
-  public get xpub(): string {
-    assertNotUndefined(this.#xpub, 'no public key (xpub) available')
-    return this.#xpub
-  }
-
-  public set xpub(xpub: string | undefined) {
-    this.#xpub = xpub
-  }
-
-  public get xpubXP(): string {
-    assertNotUndefined(this.#xpubXP, 'no public key (xpubXP) available')
-    return this.#xpubXP
-  }
-
-  public set xpubXP(xpubXP: string | undefined) {
-    this.#xpubXP = xpubXP
   }
 
   /** WALLET INTERFACE IMPLEMENTATION **/
@@ -174,7 +137,11 @@ export class MnemonicWallet implements Wallet {
         const chainAlias = getChainAliasFromNetwork(network)
         if (!chainAlias) throw new Error('invalid chain alias')
 
-        return await this.signAvalancheMessage(accountIndex, data, chainAlias)
+        return await this.signAvalancheMessage({
+          accountIndex,
+          data,
+          chainAlias
+        })
       }
       case RpcMethod.ETH_SIGN:
       case RpcMethod.PERSONAL_SIGN: {
@@ -278,7 +245,11 @@ export class MnemonicWallet implements Wallet {
     network: Network
     provider: BitcoinProvider
   }): Promise<string> {
-    const signer = await this.getSigner({ accountIndex, network, provider })
+    const signer = await this.getSigner({
+      accountIndex,
+      network,
+      provider
+    })
 
     if (!(signer instanceof BitcoinWallet)) {
       throw new Error('Unable to sign btc transaction: invalid signer')
@@ -303,7 +274,11 @@ export class MnemonicWallet implements Wallet {
     network: Network
     provider: Avalanche.JsonRpcProvider
   }): Promise<string> {
-    const signer = await this.getSigner({ accountIndex, network, provider })
+    const signer = await this.getSigner({
+      accountIndex,
+      network,
+      provider
+    })
 
     if (!(signer instanceof Avalanche.SimpleSigner)) {
       throw new Error('Unable to sign avalanche transaction: invalid signer')
@@ -344,46 +319,6 @@ export class MnemonicWallet implements Wallet {
     return await signer.signTransaction(transaction)
   }
 
-  public async getPublicKey(accountIndex: number): Promise<PubKeyType> {
-    const evmPub = getAddressPublicKeyFromXPub(this.xpub, accountIndex)
-    const xpPub = Avalanche.getAddressPublicKeyFromXpub(
-      this.xpubXP,
-      accountIndex
-    )
-
-    return {
-      evm: evmPub.toString('hex'),
-      xp: xpPub.toString('hex')
-    }
-  }
-
-  public async getAddresses({
-    accountIndex,
-    provXP,
-    network
-  }: {
-    accountIndex: number
-    provXP: Avalanche.JsonRpcProvider
-    network: Network
-  }): Promise<Record<NetworkVMType, string>> {
-    const addresses = await ModuleManager.getAddresses({
-      walletType: WalletType.Mnemonic,
-      accountIndex,
-      xpub: this.xpub,
-      xpubXP: this.xpubXP,
-      network: mapToVmNetwork(network)
-    })
-
-    // C-avax... this address uses the same public key as EVM
-    const cPubKey = getAddressPublicKeyFromXPub(this.xpub, accountIndex)
-    const cAddr = provXP.getAddress(cPubKey, 'C')
-
-    return {
-      ...(addresses as Record<NetworkVMType, string>),
-      [NetworkVMType.CoreEth]: cAddr
-    }
-  }
-
   public async getReadOnlyAvaSigner({
     accountIndex,
     provXP
@@ -391,18 +326,19 @@ export class MnemonicWallet implements Wallet {
     accountIndex: number
     provXP: Avalanche.JsonRpcProvider
   }): Promise<Avalanche.StaticSigner> {
-    return (await this.getAvaSigner(
-      accountIndex,
-      provXP
-    )) as Avalanche.StaticSigner
+    return this.getAvaSigner(accountIndex, provXP) as Avalanche.StaticSigner
   }
 
-  private signAvalancheMessage = async (
-    accountIndex: number,
+  private signAvalancheMessage = async ({
+    accountIndex,
+    data,
+    chainAlias
+  }: {
+    accountIndex: number
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    data: any,
+    data: any
     chainAlias: Avalanche.ChainIDAlias
-  ): Promise<string> => {
+  }): Promise<string> => {
     const message = toUtf8(data)
     const signer = (await this.getAvaSigner(
       accountIndex
@@ -420,4 +356,4 @@ export class MnemonicWallet implements Wallet {
  * as we need the user to enter PIN to decrypt the mnemonic phrase.
  * Thus, we are exporting a single instance of MnemonicWallet
  */
-export default new MnemonicWallet()
+export default MnemonicWallet

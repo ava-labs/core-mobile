@@ -27,6 +27,7 @@ export const signMessage = async ({
     const signedMessage = await WalletService.signMessage({
       rpcMethod: method,
       data,
+      walletId: account.walletId,
       accountIndex: account.index,
       network
     })

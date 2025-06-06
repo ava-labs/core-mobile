@@ -44,6 +44,7 @@ export async function importC({
     cBaseFeeMultiplier
   )
   const unsignedTx = await WalletService.createImportCTx({
+    walletId: activeAccount.walletId,
     accountIndex: activeAccount.index,
     baseFeeInNAvax: weiToNano(instantBaseFee.toSubUnit()),
     avaxXPNetwork,
@@ -57,6 +58,7 @@ export async function importC({
       externalIndices: [],
       internalIndices: []
     } as AvalancheTransactionRequest,
+    walletId: activeAccount.walletId,
     accountIndex: activeAccount.index,
     network: avaxXPNetwork
   })

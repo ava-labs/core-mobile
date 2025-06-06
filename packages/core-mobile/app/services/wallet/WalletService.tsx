@@ -1,6 +1,7 @@
 import {
   Avalanche,
   BitcoinProvider,
+  getAddressDerivationPath,
   JsonRpcBatchInternal
 } from '@avalabs/core-wallets-sdk'
 import {
@@ -10,7 +11,6 @@ import {
   CreateImportCTxParams,
   CreateImportPTxParams,
   CreateSendPTxParams,
-  PubKeyType,
   SignTransactionRequest,
   WalletType
 } from 'services/wallet/types'
@@ -22,11 +22,11 @@ import Logger from 'utils/Logger'
 import { UnsignedTx, utils, pvm } from '@avalabs/avalanchejs'
 import { getUnixTime, secondsToMilliseconds } from 'date-fns'
 import { getMinimumStakeEndTime } from 'services/earn/utils'
-import { SeedlessPubKeysStorage } from 'seedless/services/storage/SeedlessPubKeysStorage'
 import SeedlessWallet from 'seedless/services/wallet/SeedlessWallet'
 import { PChainId } from '@avalabs/glacier-sdk'
 import {
   MessageTypes,
+  PubKeyType,
   RpcMethod,
   TypedData,
   TypedDataV1
@@ -34,10 +34,14 @@ import {
 import { UTCDate } from '@date-fns/utc'
 import { nanoToWei } from 'utils/units/converter'
 import { SpanName } from 'services/sentry/types'
+import SecretsService from 'services/secrets/SecretsService'
+import { getPublicKeyFor } from 'services/secrets/utils'
+import { assertNotUndefined } from 'utils/assertions'
+import AddressResolver from 'services/secrets/AddressResolver'
+import { EVM_BASE_DERIVATION_PATH_PREFIX } from 'services/secrets/types'
 import { isAvalancheTransactionRequest, isBtcTransactionRequest } from './utils'
 import WalletInitializer from './WalletInitializer'
 import WalletFactory from './WalletFactory'
-import MnemonicWalletInstance from './MnemonicWallet'
 import {
   getAssetId,
   TESTNET_AVAX_ASSET_ID,
@@ -66,7 +70,7 @@ class WalletService {
     await WalletInitializer.initialize({
       mnemonic,
       walletType,
-      isLoggingIn
+      shouldUpdatePubkeys: isLoggingIn
     })
 
     this.walletType = walletType
@@ -74,11 +78,13 @@ class WalletService {
 
   public async sign({
     transaction,
+    walletId,
     accountIndex,
     network,
     sentrySpanName = 'sign-transaction'
   }: {
     transaction: SignTransactionRequest
+    walletId: string
     accountIndex: number
     network: Network
     sentrySpanName?: SpanName
@@ -87,10 +93,7 @@ class WalletService {
       { name: sentrySpanName, contextName: 'svc.wallet.sign' },
       async () => {
         const provider = await NetworkService.getProviderForNetwork(network)
-        const wallet = await WalletFactory.createWallet(
-          accountIndex,
-          this.walletType
-        )
+        const wallet = await WalletFactory.createWallet(walletId)
 
         if (isBtcTransactionRequest(transaction)) {
           if (!(provider instanceof BitcoinProvider))
@@ -138,18 +141,17 @@ class WalletService {
   public async signMessage({
     rpcMethod,
     data,
+    walletId,
     accountIndex,
     network
   }: {
     rpcMethod: RpcMethod
     data: string | TypedDataV1 | TypedData<MessageTypes>
+    walletId: string
     accountIndex: number
     network: Network
   }): Promise<string> {
-    const wallet = await WalletFactory.createWallet(
-      accountIndex,
-      this.walletType
-    )
+    const wallet = await WalletFactory.createWallet(walletId)
     const provider = await NetworkService.getProviderForNetwork(network)
 
     if (
@@ -168,24 +170,24 @@ class WalletService {
   }
 
   public async destroy(): Promise<void> {
-    await WalletInitializer.terminate(this.walletType).catch(e =>
-      Logger.error('unable to destroy wallet', e)
-    )
     this.walletType = WalletType.UNSET
   }
 
   public async addAddress(
+    walletId: string,
     accountIndex: number,
-    network: Network
+    isTestnet: boolean
   ): Promise<Record<NetworkVMType, string>> {
     if (this.walletType === WalletType.SEEDLESS) {
-      const pubKeysStorage = new SeedlessPubKeysStorage()
-      const pubKeys = await pubKeysStorage.retrieve()
+      const secrets = await SecretsService.getSecretsById(walletId)
+      const pubKeys = secrets.publicKeys.filter(pubKey =>
+        pubKey.derivationPath.startsWith(EVM_BASE_DERIVATION_PATH_PREFIX)
+      )
 
       // create next account only if it doesn't exist yet
       if (!pubKeys[accountIndex]) {
         // using the first account here since it always exists
-        const wallet = await WalletFactory.createWallet(0, this.walletType)
+        const wallet = await WalletFactory.createWallet(walletId)
 
         if (!(wallet instanceof SeedlessWallet))
           throw new Error('Unable to add address: wrong wallet type')
@@ -196,37 +198,29 @@ class WalletService {
         // re-init wallet to fetch new public keys
         await WalletInitializer.initialize({
           walletType: this.walletType,
-          isLoggingIn: true
+          shouldUpdatePubkeys: true
         })
       }
     }
 
-    return this.getAddresses(accountIndex, network)
+    return this.getAddresses(walletId, accountIndex, isTestnet)
   }
 
   /**
    * Generates addresses for the given account index and testnet flag.
    */
   public async getAddresses(
+    walletId: string,
     accountIndex: number,
-    network: Network
+    isTestnet: boolean
   ): Promise<Record<NetworkVMType, string>> {
-    const wallet = await WalletFactory.createWallet(
-      accountIndex,
-      this.walletType
-    ).catch(reason => {
-      Logger.error(reason)
-      throw reason
-    })
+    const secrets = await SecretsService.getSecretsById(walletId)
 
-    const provXP = await NetworkService.getAvalancheProviderXP(
-      Boolean(network.isTestnet)
-    )
-
-    return wallet.getAddresses({
+    return AddressResolver.getAddressesForSecretId({
+      secretId: secrets.id,
+      isTestnet,
       accountIndex,
-      network,
-      provXP
+      derivationPathType: secrets.derivationPathSpec
     })
   }
 
@@ -235,20 +229,39 @@ class WalletService {
    * @param account Account to get public key of.
    */
   public async getPublicKey(account: Account): Promise<PubKeyType> {
-    const wallet = await WalletFactory.createWallet(
+    const secrets = await SecretsService.getSecretsById(account.walletId)
+
+    const derivationPathEVM = getAddressDerivationPath(
       account.index,
-      this.walletType
+      secrets.derivationPathSpec,
+      'EVM'
     )
-    return await wallet.getPublicKey(account.index)
+    const derivationPathAVM = getAddressDerivationPath(
+      account.index,
+      secrets.derivationPathSpec,
+      'AVM'
+    )
+
+    const evmPub = getPublicKeyFor(secrets, derivationPathEVM, 'secp256k1')
+    const avmPub = getPublicKeyFor(secrets, derivationPathAVM, 'secp256k1')
+
+    assertNotUndefined(evmPub, `EVM @ ${derivationPathEVM}`)
+
+    return {
+      evm: evmPub.key,
+      xp: avmPub?.key
+    }
   }
 
   // TODO: use getAddresses instead for staking notification setup logic
   public async getAddressesByIndices({
+    account,
     indices,
     chainAlias,
     isChange,
     isTestnet
   }: {
+    account: Account
     indices: number[]
     chainAlias: 'X' | 'P'
     isChange: boolean
@@ -263,16 +276,20 @@ class WalletService {
 
     if (this.walletType === WalletType.MNEMONIC) {
       const provXP = await NetworkService.getAvalancheProviderXP(isTestnet)
+      const publicKeys = await this.getPublicKey(account)
+      const xpubXP = publicKeys.xp
 
-      return indices.map(index =>
-        Avalanche.getAddressFromXpub(
-          MnemonicWalletInstance.xpubXP,
-          index,
-          provXP,
-          chainAlias,
-          isChange
-        )
-      )
+      return xpubXP
+        ? indices.map(index =>
+            Avalanche.getAddressFromXpub(
+              xpubXP,
+              index,
+              provXP,
+              chainAlias,
+              isChange
+            )
+          )
+        : []
     }
 
     throw new Error(
@@ -284,9 +301,11 @@ class WalletService {
    * Get atomic transactions that are in VM memory.
    */
   public async getAtomicUTXOs({
+    walletId,
     accountIndex,
     avaxXPNetwork
   }: {
+    walletId: string
     accountIndex: number
     avaxXPNetwork: Network
   }): Promise<{
@@ -294,6 +313,7 @@ class WalletService {
     cChainUtxo: utils.UtxoSet
   }> {
     const readOnlySigner = await this.getReadOnlyAvaSigner(
+      walletId,
       accountIndex,
       avaxXPNetwork
     )
@@ -311,13 +331,16 @@ class WalletService {
    * Get atomic UTXOs for P-Chain.
    */
   public async getPChainAtomicUTXOs({
+    walletId,
     accountIndex,
     avaxXPNetwork
   }: {
+    walletId: string
     accountIndex: number
     avaxXPNetwork: Network
   }): Promise<utils.UtxoSet> {
     const readOnlySigner = await this.getReadOnlyAvaSigner(
+      walletId,
       accountIndex,
       avaxXPNetwork
     )
@@ -329,13 +352,16 @@ class WalletService {
    * Get UTXOs on P-Chain.
    */
   public async getPChainUTXOs({
+    walletId,
     accountIndex,
     avaxXPNetwork
   }: {
+    walletId: string
     accountIndex: number
     avaxXPNetwork: Network
   }): Promise<utils.UtxoSet> {
     const readOnlySigner = await this.getReadOnlyAvaSigner(
+      walletId,
       accountIndex,
       avaxXPNetwork
     )
@@ -346,6 +372,7 @@ class WalletService {
   public async createExportCTx({
     amountInNAvax,
     baseFeeInNAvax,
+    walletId,
     accountIndex,
     avaxXPNetwork,
     destinationChain,
@@ -353,6 +380,7 @@ class WalletService {
     shouldValidateBurnedAmount = true
   }: CreateExportCTxParams): Promise<UnsignedTx> {
     const readOnlySigner = await this.getReadOnlyAvaSigner(
+      walletId,
       accountIndex,
       avaxXPNetwork
     )
@@ -378,6 +406,7 @@ class WalletService {
   }
 
   public async createImportPTx({
+    walletId,
     accountIndex,
     avaxXPNetwork,
     sourceChain,
@@ -386,6 +415,7 @@ class WalletService {
     feeState
   }: CreateImportPTxParams): Promise<UnsignedTx> {
     const readOnlySigner = await this.getReadOnlyAvaSigner(
+      walletId,
       accountIndex,
       avaxXPNetwork
     )
@@ -410,6 +440,7 @@ class WalletService {
 
   public async createExportPTx({
     amountInNAvax,
+    walletId,
     accountIndex,
     avaxXPNetwork,
     destinationChain,
@@ -418,6 +449,7 @@ class WalletService {
     feeState
   }: CreateExportPTxParams): Promise<UnsignedTx> {
     const readOnlySigner = await this.getReadOnlyAvaSigner(
+      walletId,
       accountIndex,
       avaxXPNetwork
     )
@@ -446,6 +478,7 @@ class WalletService {
    */
   public async createSendPTx({
     amountInNAvax,
+    walletId,
     accountIndex,
     avaxXPNetwork,
     destinationAddress,
@@ -456,6 +489,7 @@ class WalletService {
       throw new Error('destination address must be set')
     }
     const readOnlySigner = await this.getReadOnlyAvaSigner(
+      walletId,
       accountIndex,
       avaxXPNetwork
     )
@@ -490,6 +524,7 @@ class WalletService {
    */
   public async createSendXTx({
     amountInNAvax,
+    walletId,
     accountIndex,
     avaxXPNetwork,
     destinationAddress,
@@ -499,6 +534,7 @@ class WalletService {
       throw new Error('destination address must be set')
     }
     const readOnlySigner = await this.getReadOnlyAvaSigner(
+      walletId,
       accountIndex,
       avaxXPNetwork
     )
@@ -522,6 +558,7 @@ class WalletService {
   }
 
   public async createImportCTx({
+    walletId,
     accountIndex,
     baseFeeInNAvax,
     avaxXPNetwork,
@@ -530,6 +567,7 @@ class WalletService {
     shouldValidateBurnedAmount = true
   }: CreateImportCTxParams): Promise<UnsignedTx> {
     const readOnlySigner = await this.getReadOnlyAvaSigner(
+      walletId,
       accountIndex,
       avaxXPNetwork
     )
@@ -555,6 +593,7 @@ class WalletService {
   }
 
   public async createAddDelegatorTx({
+    walletId,
     accountIndex,
     avaxXPNetwork,
     nodeId,
@@ -598,6 +637,7 @@ class WalletService {
     }
 
     const readOnlySigner = await this.getReadOnlyAvaSigner(
+      walletId,
       accountIndex,
       avaxXPNetwork
     )
@@ -634,6 +674,7 @@ class WalletService {
 
   public async simulateImportPTx({
     utxos,
+    walletId,
     accountIndex,
     avaxXPNetwork,
     sourceChain,
@@ -641,6 +682,7 @@ class WalletService {
     feeState
   }: {
     utxos: utils.UtxoSet
+    walletId: string
     accountIndex: number
     avaxXPNetwork: Network
     sourceChain: 'C' | 'X'
@@ -649,6 +691,7 @@ class WalletService {
     feeState?: pvm.FeeState
   }): Promise<UnsignedTx> {
     const readOnlySigner = await this.getReadOnlyAvaSigner(
+      walletId,
       accountIndex,
       avaxXPNetwork
     )
@@ -664,6 +707,7 @@ class WalletService {
   public async simulateAddPermissionlessDelegatorTx({
     utxos,
     stakeAmountInNAvax,
+    walletId,
     accountIndex,
     avaxXPNetwork,
     destinationAddress,
@@ -671,6 +715,7 @@ class WalletService {
   }: {
     utxos: utils.UtxoSet
     stakeAmountInNAvax: bigint
+    walletId: string
     accountIndex: number
     avaxXPNetwork: Network
     destinationAddress: string
@@ -678,6 +723,7 @@ class WalletService {
     feeState?: pvm.FeeState
   }): Promise<UnsignedTx> {
     const readOnlySigner = await this.getReadOnlyAvaSigner(
+      walletId,
       accountIndex,
       avaxXPNetwork
     )
@@ -707,13 +753,11 @@ class WalletService {
   }
 
   private async getReadOnlyAvaSigner(
+    walletId: string,
     accountIndex: number,
     network: Network
   ): Promise<Avalanche.StaticSigner | Avalanche.WalletVoid> {
-    const wallet = await WalletFactory.createWallet(
-      accountIndex,
-      this.walletType
-    )
+    const wallet = await WalletFactory.createWallet(walletId)
     const provXP = await NetworkService.getAvalancheProviderXP(
       Boolean(network.isTestnet)
     )

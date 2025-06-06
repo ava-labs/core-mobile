@@ -39,6 +39,7 @@ export const ethSendTransaction = async ({
 
   try {
     const signedTx = await WalletService.sign({
+      walletId: account.walletId,
       transaction,
       accountIndex: account.index,
       network

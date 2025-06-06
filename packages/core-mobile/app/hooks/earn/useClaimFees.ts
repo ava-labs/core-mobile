@@ -85,6 +85,7 @@ export const useClaimFees = (): {
       )
 
       const unsignedTx = await WalletService.createImportCTx({
+        walletId: activeAccount.walletId,
         accountIndex: activeAccount.index,
         baseFeeInNAvax: weiToNano(instantBaseFee.toSubUnit()),
         avaxXPNetwork,
@@ -186,6 +187,7 @@ const getExportPFee = async ({
   try {
     unsignedTxP = await WalletService.createExportPTx({
       amountInNAvax: amountInNAvax.toSubUnit(),
+      walletId: activeAccount.walletId,
       accountIndex: activeAccount.index,
       avaxXPNetwork,
       destinationAddress: activeAccount.addressPVM,
@@ -229,6 +231,7 @@ const getExportPFee = async ({
 
     unsignedTxP = await WalletService.createExportPTx({
       amountInNAvax: amountAvailableToClaim,
+      walletId: activeAccount.walletId,
       accountIndex: activeAccount.index,
       avaxXPNetwork,
       destinationAddress: activeAccount.addressPVM,
