@@ -3,7 +3,7 @@ import { selectActiveAccount } from 'store/account'
 import walletService from 'services/wallet/WalletService'
 import { rpcErrors } from '@metamask/rpc-errors'
 import { RpcMethod, RpcRequest } from 'store/rpc/types'
-import { PubKeyType } from 'services/wallet/types'
+import { PubKeyType } from '@avalabs/vm-module-types'
 import { HandleResponse, RpcRequestHandler } from '../types'
 
 export type AvalancheGetAccountPubKeyRpcRequest =

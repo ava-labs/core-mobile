@@ -7,7 +7,7 @@ import {
   JsonRpcBatchInternal
 } from '@avalabs/core-wallets-sdk'
 import { pvm, UnsignedTx } from '@avalabs/avalanchejs'
-import { Network, NetworkVMType } from '@avalabs/core-chains-sdk'
+import { Network } from '@avalabs/core-chains-sdk'
 import {
   MessageTypes,
   RpcMethod,
@@ -31,20 +31,8 @@ export interface AvalancheTransactionRequest {
   internalIndices?: number[]
 }
 
-/**
- * Used for X and P chain transactions
- * Copied from browser extension, evm currently not used in mobile, but
- * will probably be needed for Ledger implementation
- */
-export type PubKeyType = {
-  evm: string
-  /**
-   * Public keys used for X/P chain are from a different derivation path.
-   */
-  xp?: string
-}
-
 export type AddDelegatorProps = {
+  walletId: string
   accountIndex: number
   avaxXPNetwork: Network
   // Id of the node to delegate. starts with “NodeID-”
@@ -64,6 +52,7 @@ export type AddDelegatorProps = {
 }
 
 export interface CommonAvalancheTxParamsBase {
+  walletId: string
   accountIndex: number
   avaxXPNetwork: Network
   destinationAddress: string | undefined
@@ -198,28 +187,6 @@ export interface Wallet {
     network: Network
     provider: JsonRpcBatchInternal
   }): Promise<string>
-
-  /**
-   * Retrieves the public key for a specific account.
-   * @param accountIndex - The index of the account.
-   */
-  getPublicKey(accountIndex: number): Promise<PubKeyType>
-
-  /**
-   * Retrieves addresses for a specific account on various networks.
-   * @param accountIndex - The index of the account.
-   * @param network
-   * @param provXP - The Avalanche JSON RPC provider.
-   */
-  getAddresses({
-    accountIndex,
-    provXP,
-    network
-  }: {
-    accountIndex: number
-    network: Network
-    provXP: Avalanche.JsonRpcProvider
-  }): Promise<Record<NetworkVMType, string>>
 
   /**
    * Retrieves a read-only Avalanche signer that can be used to

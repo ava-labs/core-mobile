@@ -70,7 +70,7 @@ class ModuleManager {
     this.init()
   }
 
-  private get modules(): Module[] {
+  get modules(): Module[] {
     assertNotUndefined(this.#modules, 'modules are not initialized')
     return this.#modules
   }

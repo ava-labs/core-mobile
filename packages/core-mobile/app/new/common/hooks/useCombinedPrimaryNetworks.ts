@@ -1,10 +1,7 @@
 import { Network } from '@avalabs/core-chains-sdk'
 import { useMemo } from 'react'
 import { useSelector } from 'react-redux'
-import {
-  MAIN_PRIMARY_NETWORKS,
-  TEST_PRIMARY_NETWORKS
-} from 'services/network/consts'
+import { getNetworksForAddressDerivation } from 'services/network/utils/getNetworksForAddressDerivation'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 
 /**
@@ -18,10 +15,10 @@ export function useCombinedPrimaryNetworks(): {
 } {
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
 
-  const networks = useMemo(() => {
-    if (isDeveloperMode) return TEST_PRIMARY_NETWORKS as Network[]
-    return MAIN_PRIMARY_NETWORKS as Network[]
-  }, [isDeveloperMode])
+  const networks = useMemo(
+    () => getNetworksForAddressDerivation(isDeveloperMode),
+    [isDeveloperMode]
+  )
 
   return { networks }
 }

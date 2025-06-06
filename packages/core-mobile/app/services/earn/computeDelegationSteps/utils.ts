@@ -26,6 +26,7 @@ const DUMMY_UTXO_ID = 'dummy'
 
 export const getDelegationFee = async ({
   stakeAmount,
+  walletId,
   accountIndex,
   avaxXPNetwork,
   pAddress,
@@ -34,6 +35,7 @@ export const getDelegationFee = async ({
   pFeeAdjustmentThreshold
 }: {
   stakeAmount: bigint
+  walletId: string
   accountIndex: number
   avaxXPNetwork: Network
   pAddress: string
@@ -42,6 +44,7 @@ export const getDelegationFee = async ({
   pFeeAdjustmentThreshold: number
 }): Promise<bigint> => {
   const unsignedTx = await WalletService.createAddDelegatorTx({
+    walletId,
     accountIndex,
     avaxXPNetwork,
     nodeId: 'NodeID-1',
@@ -64,6 +67,7 @@ export const getDelegationFee = async ({
 
 export const getDelegationFeePostPImport = async ({
   stakeAmount,
+  walletId,
   accountIndex,
   avaxXPNetwork,
   pAddress,
@@ -73,6 +77,7 @@ export const getDelegationFeePostPImport = async ({
   provider
 }: {
   stakeAmount: bigint
+  walletId: string
   accountIndex: number
   avaxXPNetwork: Network
   pAddress: string
@@ -84,6 +89,7 @@ export const getDelegationFeePostPImport = async ({
   const assetId = getAssetId(avaxXPNetwork)
 
   const pChainUTXOs = await WalletService.getPChainUTXOs({
+    walletId,
     accountIndex,
     avaxXPNetwork
   })
@@ -102,6 +108,7 @@ export const getDelegationFeePostPImport = async ({
 
   const unsignedTx = await WalletService.simulateAddPermissionlessDelegatorTx({
     utxos: utxoSet,
+    walletId,
     accountIndex,
     avaxXPNetwork,
     stakeAmountInNAvax: stakeAmount,
@@ -116,6 +123,7 @@ export const getDelegationFeePostPImport = async ({
 
 export const getDelegationFeePostCExportAndPImport = async ({
   stakeAmount,
+  walletId,
   accountIndex,
   avaxXPNetwork,
   pAddress,
@@ -125,6 +133,7 @@ export const getDelegationFeePostCExportAndPImport = async ({
   pFeeAdjustmentThreshold
 }: {
   stakeAmount: bigint
+  walletId: string
   accountIndex: number
   avaxXPNetwork: Network
   pAddress: string
@@ -136,6 +145,7 @@ export const getDelegationFeePostCExportAndPImport = async ({
   const assetId = getAssetId(avaxXPNetwork)
 
   const pChainUTXOs = await WalletService.getPChainUTXOs({
+    walletId,
     accountIndex,
     avaxXPNetwork
   })
@@ -161,6 +171,7 @@ export const getDelegationFeePostCExportAndPImport = async ({
 
     unsignedTx = await WalletService.simulateAddPermissionlessDelegatorTx({
       utxos: utxoSet,
+      walletId,
       accountIndex,
       avaxXPNetwork,
       stakeAmountInNAvax: stakeAmount,
@@ -204,6 +215,7 @@ export const getDelegationFeePostCExportAndPImport = async ({
 
     unsignedTx = await WalletService.simulateAddPermissionlessDelegatorTx({
       utxos: utxoSet,
+      walletId,
       accountIndex,
       avaxXPNetwork,
       stakeAmountInNAvax: stakeAmount,
@@ -218,12 +230,14 @@ export const getDelegationFeePostCExportAndPImport = async ({
 }
 
 export const getImportPFee = async ({
+  walletId,
   accountIndex,
   avaxXPNetwork,
   pAddress,
   feeState,
   provider
 }: {
+  walletId: string
   accountIndex: number
   avaxXPNetwork: Network
   pAddress: string
@@ -231,6 +245,7 @@ export const getImportPFee = async ({
   provider: Avalanche.JsonRpcProvider
 }): Promise<bigint> => {
   const unsignedTx = await WalletService.createImportPTx({
+    walletId,
     accountIndex,
     avaxXPNetwork,
     sourceChain: 'C',
@@ -245,12 +260,14 @@ export const getImportPFee = async ({
 }
 
 export const getImportPFeePostCExport = async ({
+  walletId,
   accountIndex,
   avaxXPNetwork,
   pAddress,
   feeState,
   provider
 }: {
+  walletId: string
   accountIndex: number
   avaxXPNetwork: Network
   pAddress: string
@@ -260,6 +277,7 @@ export const getImportPFeePostCExport = async ({
   const assetId = getAssetId(avaxXPNetwork)
 
   const { pChainUtxo: atomicPChainUTXOs } = await WalletService.getAtomicUTXOs({
+    walletId,
     accountIndex,
     avaxXPNetwork
   })
@@ -278,6 +296,7 @@ export const getImportPFeePostCExport = async ({
 
   const unsignedTx = await WalletService.simulateImportPTx({
     utxos: utxoSet,
+    walletId,
     accountIndex,
     avaxXPNetwork,
     sourceChain: 'C',
@@ -292,12 +311,14 @@ export const getImportPFeePostCExport = async ({
 
 export const getExportCFee = async ({
   cChainBaseFee,
+  walletId,
   accountIndex,
   avaxXPNetwork,
   pAddress,
   cBaseFeeMultiplier
 }: {
   cChainBaseFee: TokenUnit
+  walletId: string
   accountIndex: number
   avaxXPNetwork: Network
   pAddress: string
@@ -312,6 +333,7 @@ export const getExportCFee = async ({
   const unsignedTx = await WalletService.createExportCTx({
     amountInNAvax: DUMMY_AMOUNT,
     baseFeeInNAvax: weiToNano(paddedCChainBaseFee.toSubUnit()),
+    walletId,
     accountIndex: accountIndex,
     avaxXPNetwork,
     destinationChain: 'P',
@@ -326,12 +348,15 @@ export const getExportCFee = async ({
 
 export const getPChainAtomicBalance = async ({
   avaxXPNetwork,
+  walletId,
   accountIndex
 }: {
   avaxXPNetwork: Network
+  walletId: string
   accountIndex: number
 }): Promise<bigint> => {
   const atomicUTXOs = await WalletService.getAtomicUTXOs({
+    walletId,
     accountIndex,
     avaxXPNetwork
   })

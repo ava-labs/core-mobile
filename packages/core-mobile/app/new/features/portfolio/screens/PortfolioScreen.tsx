@@ -62,6 +62,7 @@ import { selectSelectedCurrency } from 'store/settings/currency'
 import { selectIsPrivacyModeEnabled } from 'store/settings/securityPrivacy'
 import { RootState } from 'store/types'
 import { useFocusedSelector } from 'utils/performance/useFocusedSelector'
+import { Loader } from 'common/components/Loader'
 
 const SEGMENT_ITEMS = ['Assets', 'Collectibles', 'DeFi']
 
@@ -460,6 +461,10 @@ const PortfolioHomeScreen = (): JSX.Element => {
     handleGoToDiscoverCollectibles
   ])
 
+  if (!activeAccount) {
+    return <Loader />
+  }
+
   return (
     <BlurredBarsContentLayout>
       <CollapsibleTabs.Container
@@ -470,7 +475,6 @@ const PortfolioHomeScreen = (): JSX.Element => {
         onScrollY={onScroll}
         tabs={tabs}
       />
-
       <LinearGradientBottomWrapper shouldDelayBlurOniOS={true}>
         <SegmentedControl
           dynamicItemWidth={false}
