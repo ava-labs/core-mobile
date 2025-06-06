@@ -26,8 +26,6 @@ export const AnimatedBalance = ({
   renderMaskView?: () => React.JSX.Element
 }): JSX.Element => {
   const renderContent = useCallback(() => {
-    if (shouldMask) return null
-
     const balanceChars = balance.toString().split('')
     const currencyChars = currency ? currency.toString().split('') : []
 
@@ -51,7 +49,7 @@ export const AnimatedBalance = ({
         ))}
       </>
     )
-  }, [balance, currency, balanceSx, currencySx, shouldMask, variant])
+  }, [balance, currency, balanceSx, currencySx, variant])
 
   if (shouldMask && renderMaskView) {
     return renderMaskView()
