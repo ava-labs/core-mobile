@@ -59,5 +59,5 @@ export const mergeAccounts = (
   return {
     ...existingAccounts,
     ...accounts
-}
+  }
 }
