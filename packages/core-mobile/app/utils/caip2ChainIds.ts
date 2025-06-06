@@ -6,7 +6,6 @@ import {
   ChainId,
   SolanaCaip2ChainId
 } from '@avalabs/core-chains-sdk'
-import { Network } from '@avalabs/core-chains-sdk'
 
 /**
  * In the process of switching to CAIP2 naming convention for blockchain ids we are temporarily modifying Posthog
@@ -138,8 +137,7 @@ export const getEvmCaip2ChainId = (chainId: number): string => {
   return `${BlockchainNamespace.EIP155}:${chainId.toString()}`
 }
 
-export const getSolanaCaip2ChainId = (chainId: number ): string => {
-
+export const getSolanaCaip2ChainId = (chainId: number): string => {
   if (chainId === ChainId.SOLANA_MAINNET_ID) {
     return SolanaCaip2ChainId.MAINNET
   } else if (chainId === ChainId.SOLANA_DEVNET_ID) {
@@ -186,17 +184,39 @@ export const getChainIdFromCaip2 = (
   }
 }
 
-// get caip2 chain id from chain id
-// '1' -> 'eip155:1'
-export const getCaip2ChainId = (chainId: number): string => {
-  const caip2ChainId =
-    getAvalancheCaip2ChainId(chainId) ||
-    getBitcoinCaip2ChainIdByChainId(chainId) ||
-    getSolanaCaip2ChainId(chainId)
+const AVALANCHE_CHAIN_IDS = [
+  ChainId.AVALANCHE_P,
+  ChainId.AVALANCHE_TEST_P,
+  ChainId.AVALANCHE_X,
+  ChainId.AVALANCHE_TEST_X
+]
 
-  if (caip2ChainId) {
-    return caip2ChainId
+const BITCOIN_CHAIN_IDS = [
+  ChainId.BITCOIN,
+  ChainId.BITCOIN_TESTNET
+]
+
+const SOLANA_CHAIN_IDS = [
+  ChainId.SOLANA_MAINNET_ID,
+  ChainId.SOLANA_DEVNET_ID,
+  ChainId.SOLANA_TESTNET_ID
+]
+
+// get caip2 chain id from chain id
+// if chain id is not found in the mapping, return eip155:chainId
+export const getCaip2ChainId = (chainId: number): string => {
+  if (AVALANCHE_CHAIN_IDS.includes(chainId)) {
+    return getAvalancheCaip2ChainId(chainId) as string
   }
 
-  return `${BlockchainNamespace.EIP155}:${chainId}`
+  if (BITCOIN_CHAIN_IDS.includes(chainId)) {
+    return getBitcoinCaip2ChainIdByChainId(chainId) as string
+  }
+
+  if (SOLANA_CHAIN_IDS.includes(chainId)) {
+    return getSolanaCaip2ChainId(chainId)
+  }
+
+  // Default to EVM for any other chain ID
+  return getEvmCaip2ChainId(chainId)
 }

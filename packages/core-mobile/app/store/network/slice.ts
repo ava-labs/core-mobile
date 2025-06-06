@@ -209,7 +209,6 @@ export const selectEnabledNetworks = createSelector(
     })
     if (networks === undefined) return []
 
-
     return enabledChainIds.reduce((acc, chainId) => {
       const network = networks[chainId]
       if (network && network.isTestnet === isDeveloperMode) {
