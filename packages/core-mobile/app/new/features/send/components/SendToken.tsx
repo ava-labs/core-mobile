@@ -25,6 +25,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { selectSelectedCurrency } from 'store/settings/currency'
 import { TRUNCATE_ADDRESS_LENGTH } from 'common/consts/text'
+import { xpAddressWithoutPrefix } from 'common/utils/xpAddressWIthoutPrefix'
 import { useSendContext } from '../context/sendContext'
 import { useSendSelectedToken } from '../store'
 
@@ -97,6 +98,20 @@ export const SendToken = ({ onSend }: { onSend: () => void }): JSX.Element => {
       selectedToken?.symbol ?? ''
     )
   }, [network.networkToken.decimals, selectedToken])
+
+  const addressToSendWithoutPrefix = useMemo(() => {
+    if (selectedToken === undefined) {
+      return undefined
+    }
+    if (
+      addressToSend &&
+      (isTokenWithBalancePVM(selectedToken) ||
+        isTokenWithBalanceAVM(selectedToken))
+    ) {
+      return xpAddressWithoutPrefix(addressToSend)
+    }
+    return addressToSend
+  }, [addressToSend, selectedToken])
 
   const canSubmit =
     !isSending &&
@@ -201,7 +216,7 @@ export const SendToken = ({ onSend }: { onSend: () => void }): JSX.Element => {
                 {recipient.name}
               </Text>
             )}
-            {addressToSend && (
+            {addressToSendWithoutPrefix && (
               <Text
                 variant="mono"
                 numberOfLines={1}
@@ -209,7 +224,10 @@ export const SendToken = ({ onSend }: { onSend: () => void }): JSX.Element => {
                   fontSize: 13,
                   color: colors.$textSecondary
                 }}>
-                {truncateAddress(addressToSend, TRUNCATE_ADDRESS_LENGTH)}
+                {truncateAddress(
+                  addressToSendWithoutPrefix,
+                  TRUNCATE_ADDRESS_LENGTH
+                )}
               </Text>
             )}
           </View>
