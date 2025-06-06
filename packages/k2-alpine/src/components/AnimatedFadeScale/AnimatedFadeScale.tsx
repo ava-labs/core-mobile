@@ -1,7 +1,6 @@
-import React, { memo, useCallback, useEffect } from 'react'
+import React, { memo, useCallback } from 'react'
 import Animated, {
-  FadeIn,
-  FadeOut,
+  useAnimatedReaction,
   useAnimatedStyle,
   useSharedValue,
   withDelay,
@@ -21,27 +20,21 @@ export const AnimateFadeScale = memo(
       scale.value = withDelay(delay, withSpring(1, ANIMATED.SPRING_CONFIG))
     }, [delay, opacity, scale])
 
-    useEffect(() => {
-      animate()
-    }, [animate])
+    useAnimatedReaction(
+      () => delay,
+      () => {
+        animate()
+      },
+      [delay]
+    )
 
     const animatedStyle = useAnimatedStyle(() => {
       return {
         opacity: opacity.value,
         transform: [{ scale: scale.value }]
       }
-    }, [])
+    }, [opacity, scale])
 
-    return (
-      <Animated.View entering={FadeIn} exiting={FadeOut}>
-        <Animated.View
-          style={[
-            animatedStyle,
-            { justifyContent: 'flex-start', alignItems: 'flex-start' }
-          ]}>
-          {children}
-        </Animated.View>
-      </Animated.View>
-    )
+    return <Animated.View style={animatedStyle}>{children}</Animated.View>
   }
 )
