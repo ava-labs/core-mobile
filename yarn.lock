@@ -337,6 +337,7 @@ __metadata:
     expo-linear-gradient: 14.0.2
     expo-linking: 7.0.5
     expo-local-authentication: 15.0.2
+    expo-localization: 16.1.5
     expo-router: 4.0.18
     expo-sms: 13.0.1
     expo-video: 2.0.5
@@ -19079,6 +19080,18 @@ __metadata:
   languageName: node
   linkType: hard
 
+"expo-localization@npm:16.1.5":
+  version: 16.1.5
+  resolution: "expo-localization@npm:16.1.5"
+  dependencies:
+    rtl-detect: ^1.0.2
+  peerDependencies:
+    expo: "*"
+    react: "*"
+  checksum: c301e594e2a93b7e7ca278bbd4856ef23b7da1b72affaa1d7a62e54de02d949bdd23a939b7113105c1fae29317d69527e74b617fd8e666143f8211d54131fe38
+  languageName: node
+  linkType: hard
+
 "expo-manifests@npm:~0.15.7":
   version: 0.15.8
   resolution: "expo-manifests@npm:0.15.8"
@@ -28669,6 +28682,13 @@ react-native-webview@ava-labs/react-native-webview:
   bin:
     rollup-plugin-visualizer: dist/bin/cli.js
   checksum: 8ef5b05c91bd74bc1bb536609dd0ef2f1995066ec623393d192d638c209620fd2318c902d185ae648873d0a2788131cbaec11595c91322f0c2661ef6a1cc7e42
+  languageName: node
+  linkType: hard
+
+"rtl-detect@npm:^1.0.2":
+  version: 1.1.2
+  resolution: "rtl-detect@npm:1.1.2"
+  checksum: 4a43a1e5df0617eb86d5485640b318787d12b86acf53d840a3b2ff701ee941e95479d4e9ae97e907569ec763d1c47218cb87639bc87bcdad60a85747e5270cf0
   languageName: node
   linkType: hard
 
