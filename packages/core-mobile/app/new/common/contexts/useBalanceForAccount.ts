@@ -37,7 +37,7 @@ export const useBalanceForAccount = (
       dispatch(fetchBalanceForAccount({ accountUuid }))
       setIsFetchingBalance(true)
     }
-  }, [dispatch, accountUuid])
+  }, [account, dispatch, accountUuid])
 
   useEffect(() => {
     if (!isBalanceLoading && isFetchingBalance) {

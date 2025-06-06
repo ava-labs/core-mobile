@@ -25,7 +25,8 @@ import React, { useCallback, useMemo, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { selectAccounts, Account, setActiveAccount } from 'store/account'
 import { selectIsPrivacyModeEnabled } from 'store/settings/securityPrivacy'
-import { selectWallets, selectActiveWalletId } from 'store/wallet/slice'
+import { selectWallets } from 'store/wallet/slice'
+import { useActiveWalletId } from 'common/hooks/useActiveWallet'
 
 const ITEM_HEIGHT = 50
 
@@ -38,7 +39,7 @@ const ManageAccountsScreen = (): React.JSX.Element => {
   const [searchText, setSearchText] = useState('')
   const accountCollection = useSelector(selectAccounts)
   const allWallets = useSelector(selectWallets)
-  const activeWalletId = useSelector(selectActiveWalletId)
+  const activeWalletId = useActiveWalletId()
 
   const [expandedWallets, setExpandedWallets] = useState<
     Record<string, boolean>

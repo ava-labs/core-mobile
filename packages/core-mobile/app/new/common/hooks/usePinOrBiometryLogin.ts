@@ -15,11 +15,11 @@ import {
 } from 'utils/EncryptionHelper'
 import Logger from 'utils/Logger'
 import { formatTimer } from 'utils/Utils'
-import { useDispatch, useSelector } from 'react-redux'
-import { selectActiveWalletId } from 'store/wallet/slice'
+import { useDispatch } from 'react-redux'
 import { WalletType } from 'services/wallet/types'
 import { storeWalletWithPin } from 'store/wallet/thunks'
 import { AppThunkDispatch } from 'store/types'
+import { useActiveWalletId } from 'common/hooks/useActiveWallet'
 import { useDeleteWallet } from './useDeleteWallet'
 import { useRateLimiter } from './useRateLimiter'
 
@@ -44,7 +44,7 @@ export function usePinOrBiometryLogin({
   const [isBiometricAvailable, setIsBiometricAvailable] = useState(true)
   const [bioType, setBioType] = useState<BiometricType>(BiometricType.NONE)
   const dispatch = useDispatch<AppThunkDispatch>()
-  const activeWalletId = useSelector(selectActiveWalletId)
+  const activeWalletId = useActiveWalletId()
   const [enteredPin, setEnteredPin] = useState('')
   const [mnemonic, setMnemonic] = useState<string | undefined>(undefined)
   const [disableKeypad, setDisableKeypad] = useState(false)
@@ -88,11 +88,6 @@ export function usePinOrBiometryLogin({
 
   const checkPinEntered = useCallback(
     async (pin: string) => {
-      if (!activeWalletId) {
-        Logger.error('No active wallet ID found')
-        return
-      }
-
       try {
         onStartLoading()
         const credentials = (await BiometricsSDK.loadWalletWithPin(
@@ -167,11 +162,6 @@ export function usePinOrBiometryLogin({
 
   const promptForWalletLoadingIfExists =
     useCallback((): Observable<WalletLoadingResults> => {
-      if (!activeWalletId) {
-        Logger.error('No active wallet ID found')
-        return of(new NothingToLoad())
-      }
-
       return timer(0, asyncScheduler).pipe(
         //timer is here to give UI opportunity to draw everything
         concatMap(() => of(BiometricsSDK.getAccessType())),

@@ -20,8 +20,8 @@ import {
 } from 'store/settings/securityPrivacy'
 import { useStoredBiometrics } from 'common/hooks/useStoredBiometrics'
 import BiometricsSDK from 'utils/BiometricsSDK'
-import { selectActiveWalletId } from 'store/wallet/slice'
 import Logger from 'utils/Logger'
+import { useActiveWalletId } from 'common/hooks/useActiveWallet'
 
 const SecurityAndPrivacyScreen = (): JSX.Element => {
   const {
@@ -31,7 +31,7 @@ const SecurityAndPrivacyScreen = (): JSX.Element => {
   const coreAnalyticsConsent = useSelector(selectCoreAnalyticsConsent)
   const { allApprovedDapps } = useConnectedDapps()
   const walletType = useSelector(selectWalletType)
-  const activeWalletId = useSelector(selectActiveWalletId)
+  const activeWalletId = useActiveWalletId()
   const {
     biometricType,
     isBiometricAvailable,
@@ -47,9 +47,7 @@ const SecurityAndPrivacyScreen = (): JSX.Element => {
         // @ts-ignore TODO: make routes typesafe
         navigate('/accountSettings/biometricVerifyPin')
       } else {
-        if (activeWalletId) {
-          BiometricsSDK.disableBiometry(activeWalletId).catch(Logger.error)
-        }
+        BiometricsSDK.disableBiometry(activeWalletId).catch(Logger.error)
       }
     },
     [activeWalletId, navigate, setUseBiometrics]
