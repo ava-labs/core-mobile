@@ -1,5 +1,5 @@
 import { AVM, EVM, PVM, VM } from '@avalabs/avalanchejs'
-import { Account, AccountCollection, PrimaryAccount } from 'store/account/types'
+import { Account, PrimaryAccount } from 'store/account/types'
 import { Network, NetworkVMType } from '@avalabs/core-chains-sdk'
 import { CoreAccountType } from '@avalabs/types'
 
@@ -56,15 +56,5 @@ export function getAddressByNetwork(
       return account.addressCoreEth
     default:
       throw new Error('unsupported network ' + network.vmName)
-  }
-}
-
-export const mergeAccounts = (
-  existingAccounts: AccountCollection,
-  accounts: AccountCollection
-): AccountCollection => {
-  return {
-    ...existingAccounts,
-    ...accounts
   }
 }
