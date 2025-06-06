@@ -2,17 +2,13 @@ import { AnimatedPressable, useTheme, View, Text } from '@avalabs/k2-alpine'
 import { useRouter } from 'expo-router'
 import React, { useCallback, useMemo, useRef } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import {
-  Account,
-  selectAccounts,
-  selectActiveAccount,
-  setActiveAccount
-} from 'store/account'
+import { Account, selectAccounts, setActiveAccount } from 'store/account'
 import Animated, { LinearTransition } from 'react-native-reanimated'
 import { getItemEnteringAnimation } from 'common/utils/animations'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { FlatList } from 'react-native-gesture-handler'
 import { getAccountIndex } from 'store/account/utils'
+import { useActiveAccount } from 'common/hooks/useActiveAccount'
 import { AccountItem } from './AccountItem'
 
 const CARD_PADDING = 12
@@ -27,7 +23,7 @@ export const AccountList = (): React.JSX.Element => {
   } = useTheme()
   const dispatch = useDispatch()
   const { navigate } = useRouter()
-  const activeAccount = useSelector(selectActiveAccount)
+  const activeAccount = useActiveAccount()
   const accountCollection = useSelector(selectAccounts)
   const flatListRef = useRef<FlatList>(null)
 

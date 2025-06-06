@@ -7,8 +7,6 @@ import {
   selectCBaseFeeMultiplier
 } from 'store/posthog/slice'
 import NetworkService from 'services/network/NetworkService'
-import { selectActiveAccount } from 'store/account/slice'
-import { Account } from 'store/account/types'
 import WalletService from 'services/wallet/WalletService'
 import Logger from 'utils/Logger'
 import { useCChainBaseFee } from 'hooks/useCChainBaseFee'
@@ -22,6 +20,7 @@ import { useAvalancheXpProvider } from 'hooks/networks/networkProviderHooks'
 import { getAssetId, addBufferToCChainBaseFee } from 'services/wallet/utils'
 import { SendErrorMessage } from 'errors/sendError'
 import { getAccountIndex } from 'store/account/utils'
+import { useActiveAccount } from 'common/hooks/useActiveAccount'
 import { usePChainBalance } from './usePChainBalance'
 import { useGetFeeState } from './useGetFeeState'
 import { extractNeededAmount } from './utils/extractNeededAmount'
@@ -42,7 +41,7 @@ export const useClaimFees = (): {
   feeCalculationError?: SendErrorMessage
 } => {
   const isDevMode = useSelector(selectIsDeveloperMode)
-  const activeAccount: Account | undefined = useSelector(selectActiveAccount)
+  const activeAccount = useActiveAccount()
   const pFeeAdjustmentThreshold = useSelector(selectPFeeAdjustmentThreshold)
   const [totalFees, setTotalFees] = useState<TokenUnit>()
   const [amountToTransfer, setAmountToTransfer] = useState<TokenUnit>()

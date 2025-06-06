@@ -7,10 +7,7 @@ export function isPrimaryAccount(account: Account): account is PrimaryAccount {
   return account.type === CoreAccountType.PRIMARY
 }
 
-export function getAccountIndex(account: Account | undefined): number {
-  if (!account) {
-    return 0
-  }
+export function getAccountIndex(account: Account): number {
   return isPrimaryAccount(account) ? account.index : 0
 }
 

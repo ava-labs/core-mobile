@@ -87,6 +87,9 @@ const AccountScreen = (): JSX.Element => {
   }, [account?.id])
 
   const handleShowPrivateKey = (): void => {
+    if (!account) {
+      return
+    }
     router.push({
       // @ts-ignore TODO: make routes typesafe
       pathname: '/accountSettings/verifyPinForPrivateKey',

@@ -35,11 +35,11 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import NetworkService from 'services/network/NetworkService'
-import { selectActiveAccount } from 'store/account'
 import { getAccountIndex } from 'store/account/utils'
 import { scheduleStakingCompleteNotifications } from 'store/notifications'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { truncateNodeId } from 'utils/Utils'
+import { useActiveAccount } from 'common/hooks/useActiveAccount'
 
 const StakeConfirmScreen = (): JSX.Element => {
   const { theme } = useTheme()
@@ -73,7 +73,7 @@ const StakeConfirmScreen = (): JSX.Element => {
     [searchedValidator, selectedValidator]
   )
 
-  const activeAccount = useSelector(selectActiveAccount)
+  const activeAccount = useActiveAccount()
 
   const validatorEndTimeUnix = useMemo(() => {
     if (validator?.endTime) {

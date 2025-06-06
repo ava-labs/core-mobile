@@ -9,7 +9,6 @@ import {
   selectCrossChainFeesMultiplier,
   selectCBaseFeeMultiplier
 } from 'store/posthog/slice'
-import { selectActiveAccount } from 'store/account/slice'
 import { computeDelegationSteps } from 'services/earn/computeDelegationSteps/computeDelegationSteps'
 import {
   Operation,
@@ -24,6 +23,7 @@ import EarnService from 'services/earn/EarnService'
 import { type Compute, type Delegate } from 'contexts/DelegationContext'
 import Logger from 'utils/Logger'
 import { getAccountIndex } from 'store/account/utils'
+import { useActiveAccount } from 'common/hooks/useActiveAccount'
 import { useAvalancheXpProvider } from '../networks/networkProviderHooks'
 import useCChainNetwork from './useCChainNetwork'
 
@@ -37,7 +37,7 @@ export const useDelegation = (): {
 } => {
   const [steps, setSteps] = useState<Step[]>(EMPTY_STEPS)
   const cChainBalance = useCChainBalance()
-  const activeAccount = useSelector(selectActiveAccount)
+  const activeAccount = useActiveAccount()
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const selectedCurrency = useSelector(selectSelectedCurrency)
   const pFeeAdjustmentThreshold = useSelector(selectPFeeAdjustmentThreshold)

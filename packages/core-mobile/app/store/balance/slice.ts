@@ -5,7 +5,7 @@ import {
   PayloadAction
 } from '@reduxjs/toolkit'
 import { RootState } from 'store/types'
-import { Account, selectActiveAccount } from 'store/account'
+import { selectActiveAccount } from 'store/account'
 import {
   selectAllNetworks,
   selectEnabledChainIds,
