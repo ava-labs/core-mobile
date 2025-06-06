@@ -10,6 +10,7 @@ import {
 import ModuleManager from 'vmModule/ModuleManager'
 import { mapToVmNetwork } from 'vmModule/utils/mapToVmNetwork'
 import { coingeckoInMemoryCache } from 'utils/coingeckoInMemoryCache'
+import { NetworkVMType } from '@avalabs/core-chains-sdk'
 
 export type BalancesForAccount = {
   accountIndex: number
@@ -31,15 +32,20 @@ export class BalanceService {
     customTokens?: NetworkContractToken[]
   }): Promise<BalancesForAccount> {
     const accountAddress = getAddressByNetwork(account, network)
-
     const module = await ModuleManager.loadModuleByNetwork(network)
+
+    const tokenTypes =
+      network.vmName === NetworkVMType.SVM
+        ? [TokenType.NATIVE, TokenType.SPL]
+        : [TokenType.NATIVE, TokenType.ERC20]
+
     const balancesResponse = await module.getBalances({
       customTokens,
       addresses: [accountAddress],
       currency,
       network: mapToVmNetwork(network),
       storage: coingeckoInMemoryCache,
-      tokenTypes: [TokenType.NATIVE, TokenType.ERC20]
+      tokenTypes
     })
 
     const balances = balancesResponse[accountAddress] ?? {}

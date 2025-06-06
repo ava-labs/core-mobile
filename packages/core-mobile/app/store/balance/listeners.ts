@@ -42,6 +42,8 @@ import SentryWrapper from 'services/sentry/SentryWrapper'
 import { ReactQueryKeys } from 'consts/reactQueryKeys'
 import { queryClient } from 'contexts/ReactQueryProvider'
 import { selectIsSolanaSupportBlocked } from 'store/posthog'
+import { TokenType } from '@avalabs/vm-module-types'
+import { isSolanaChainId } from 'utils/network/isSolanaNetwork'
 import { Balances, LocalTokenWithBalance, QueryStatus } from './types'
 import {
   fetchBalanceForAccount,
@@ -340,6 +342,20 @@ const fetchBalanceForNetworks = async (
           {
             ...token,
             localId: AVAX_X_ID,
+            isDataAccurate: true,
+            networkChainId: chainId
+          }
+        ]
+      }
+      if (isSolanaChainId(chainId)) {
+        return [
+          ...tokenBalance,
+          {
+            ...token,
+            localId:
+              token.type === TokenType.SPL
+                ? token.address
+                : `SOL_${token.symbol}`,
             isDataAccurate: true,
             networkChainId: chainId
           }

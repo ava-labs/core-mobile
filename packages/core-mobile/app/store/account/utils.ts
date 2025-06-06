@@ -45,6 +45,8 @@ export function getAddressByNetwork(
       return account.addressPVM
     case NetworkVMType.CoreEth:
       return account.addressCoreEth
+    case NetworkVMType.SVM:
+      return 'sECa46k36BxV14ErxPZYLxaQgcEHYrNW3cQ5df6MZUD' // TODO: replace with accountSVM when thats
     default:
       throw new Error('unsupported network ' + network.vmName)
   }
@@ -57,5 +59,5 @@ export const mergeAccounts = (
   return {
     ...existingAccounts,
     ...accounts
-  }
+}
 }

@@ -11,6 +11,7 @@ import {
 } from '@reduxjs/toolkit'
 import { getNetworksFromCache } from 'hooks/networks/utils/getNetworksFromCache'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
+import { selectIsSolanaSupportBlocked } from 'store/posthog'
 import { RootState } from '../types'
 import { ChainID, Networks, NetworkState } from './types'
 
@@ -150,7 +151,10 @@ export const selectActiveNetwork = (state: RootState): Network => {
 }
 
 export const selectAllNetworks = (state: RootState): Networks => {
-  const rawNetworks = getNetworksFromCache()
+  const isSolanaSupportBlocked = selectIsSolanaSupportBlocked(state)
+  const rawNetworks = getNetworksFromCache({
+    includeSolana: !isSolanaSupportBlocked
+  })
   const customNetworks = selectCustomNetworks(state)
   return { ...rawNetworks, ...customNetworks }
 }
@@ -165,7 +169,10 @@ export const selectNetwork =
 export const selectNetworks = (state: RootState): Networks => {
   const isDeveloperMode = selectIsDeveloperMode(state)
   const customNetworks = selectCustomNetworks(state)
-  const rawNetworks = getNetworksFromCache()
+  const isSolanaSupportBlocked = selectIsSolanaSupportBlocked(state)
+  const rawNetworks = getNetworksFromCache({
+    includeSolana: !isSolanaSupportBlocked
+  })
 
   const populatedNetworks = Object.keys(rawNetworks ?? {}).reduce(
     (reducedNetworks, key) => {
@@ -195,10 +202,13 @@ export const selectNetworks = (state: RootState): Networks => {
 }
 
 export const selectEnabledNetworks = createSelector(
-  [selectEnabledChainIds, selectIsDeveloperMode],
-  (enabledChainIds, isDeveloperMode) => {
-    const networks = getNetworksFromCache()
+  [selectEnabledChainIds, selectIsDeveloperMode, selectIsSolanaSupportBlocked],
+  (enabledChainIds, isDeveloperMode, isSolanaSupportBlocked) => {
+    const networks = getNetworksFromCache({
+      includeSolana: !isSolanaSupportBlocked
+    })
     if (networks === undefined) return []
+
 
     return enabledChainIds.reduce((acc, chainId) => {
       const network = networks[chainId]
