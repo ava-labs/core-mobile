@@ -8,7 +8,7 @@ import { AccountAddresses } from 'features/accountSettings/components/accountAdd
 import { AccountButtons } from 'features/accountSettings/components/AccountButtons'
 import React, { useCallback, useMemo } from 'react'
 import { useSelector } from 'react-redux'
-import { selectAccountByUuid } from 'store/account'
+import { selectAccountById } from 'store/account'
 import {
   selectBalanceForAccountIsAccurate,
   selectBalanceTotalInCurrencyForAccount,
@@ -24,19 +24,19 @@ import { getAccountIndex } from 'store/account/utils'
 
 const AccountScreen = (): JSX.Element => {
   const router = useRouter()
-  const { accountUuid } = useLocalSearchParams<{ accountUuid: string }>()
+  const { accountId } = useLocalSearchParams<{ accountId: string }>()
   const isPrivacyModeEnabled = useSelector(selectIsPrivacyModeEnabled)
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
-  const account = useSelector(selectAccountByUuid(accountUuid ?? ''))
+  const account = useSelector(selectAccountById(accountId ?? ''))
   const isBalanceLoading = useSelector(selectIsLoadingBalances)
   const isRefetchingBalance = useSelector(selectIsRefetchingBalances)
   const tokenVisibility = useSelector(selectTokenVisibility)
   const balanceTotalInCurrency = useSelector(
-    selectBalanceTotalInCurrencyForAccount(accountUuid, tokenVisibility)
+    selectBalanceTotalInCurrencyForAccount(accountId, tokenVisibility)
   )
   const isLoading = isBalanceLoading || isRefetchingBalance
   const balanceAccurate = useSelector(
-    selectBalanceForAccountIsAccurate(accountUuid)
+    selectBalanceForAccountIsAccurate(accountId)
   )
   const selectedCurrency = useSelector(selectSelectedCurrency)
   const { formatCurrency } = useFormatCurrency()
@@ -83,7 +83,7 @@ const AccountScreen = (): JSX.Element => {
   ])
 
   const renderFooter = useCallback(() => {
-    return <AccountButtons accountUuid={account?.id ?? ''} />
+    return <AccountButtons accountId={account?.id ?? ''} />
   }, [account?.id])
 
   const handleShowPrivateKey = (): void => {

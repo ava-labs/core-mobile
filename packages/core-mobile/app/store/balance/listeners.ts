@@ -6,7 +6,7 @@ import BalanceService, {
 import { AppListenerEffectAPI, AppStartListening } from 'store/types'
 import { Account } from 'store/account/types'
 import {
-  selectAccountByUuid,
+  selectAccountById,
   selectActiveAccount,
   setAccounts,
   setActiveAccountId
@@ -258,12 +258,12 @@ const fetchBalancePeriodically = async (
 
 const handleFetchBalanceForAccount = async (
   listenerApi: AppListenerEffectAPI,
-  accountUuid: string
+  accountId: string
 ): Promise<void> => {
   const state = listenerApi.getState()
   const isDeveloperMode = selectIsDeveloperMode(state)
   const enabledNetworks = selectEnabledNetworks(state)
-  const accountToFetchFor = selectAccountByUuid(accountUuid)(state)
+  const accountToFetchFor = selectAccountById(accountId)(state)
   const networks = getNetworksToFetch({
     isDeveloperMode,
     enabledNetworks,
@@ -293,17 +293,17 @@ const fetchBalanceForNetworks = async (
       const key: string = keys[i] ?? ''
       acc[key] = {
         dataAccurate: false,
-        accountUuid: undefined,
+        accountId: undefined,
         chainId: 0,
         tokens: []
       }
       return acc
     }
 
-    const { accountUuid, chainId, tokens } = result.value
+    const { accountId, chainId, tokens } = result.value
     const balances = {
       dataAccurate: true,
-      accountUuid,
+      accountId,
       chainId,
       tokens: [] as LocalTokenWithBalance[]
     }
@@ -350,7 +350,7 @@ const fetchBalanceForNetworks = async (
       ]
     }, [] as LocalTokenWithBalance[])
 
-    acc[getKey(chainId, accountUuid)] = balances
+    acc[getKey(chainId, accountId)] = balances
     return acc
   }, {})
 }
@@ -438,7 +438,7 @@ export const addBalanceListeners = (
   startListening({
     actionCreator: fetchBalanceForAccount,
     effect: async (action, listenerApi) => {
-      handleFetchBalanceForAccount(listenerApi, action.payload.accountUuid)
+      handleFetchBalanceForAccount(listenerApi, action.payload.accountId)
     }
   })
 

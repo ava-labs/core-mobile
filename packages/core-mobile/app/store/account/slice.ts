@@ -76,10 +76,10 @@ export const selectAccountByAddress =
   }
 
 //NEVEN: check if this is used anywhere
-export const selectAccountByUuid =
-  (uuid: string) =>
+export const selectAccountById =
+  (id: string) =>
   (state: RootState): Account | undefined =>
-    state.account.accounts[uuid]
+    state.account.accounts[id]
 
 export const selectActiveAccount = (state: RootState): Account | undefined => {
   const activeAccountId = state.account.activeAccountId

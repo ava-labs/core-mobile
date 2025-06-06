@@ -35,7 +35,7 @@ export const AccountItem = memo(
     isActive: boolean
     account: Account
     onSelectAccount: (account: Account) => void
-    gotoAccountDetails: (accountUuid: string) => void
+    gotoAccountDetails: (accountId: string) => void
     testID?: string
   }): React.JSX.Element => {
     const {

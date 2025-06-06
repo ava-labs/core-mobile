@@ -9,16 +9,16 @@ import { selectSelectedCurrency } from 'store/settings/currency'
 import { useFormatCurrency } from './useFormatCurrency'
 
 export const useTotalBalanceInCurrencyForAccount = (
-  accountUuid: string
+  accountId: string
 ): string => {
   const { formatCurrency } = useFormatCurrency()
   const selectedCurrency = useSelector(selectSelectedCurrency)
   const tokenVisibility = useSelector(selectTokenVisibility)
   const balanceTotalInCurrency = useSelector(
-    selectBalanceTotalInCurrencyForAccount(accountUuid, tokenVisibility)
+    selectBalanceTotalInCurrencyForAccount(accountId, tokenVisibility)
   )
   const balanceAccurate = useSelector(
-    selectBalanceForAccountIsAccurate(accountUuid)
+    selectBalanceForAccountIsAccurate(accountId)
   )
   const currencyBalance =
     !balanceAccurate || balanceTotalInCurrency === 0

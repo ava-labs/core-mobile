@@ -8,10 +8,10 @@ import {
   selectBalanceTotalInCurrencyForAccount,
   selectIsBalanceLoadedForAccount
 } from 'store/balance'
-import { selectAccountByUuid } from 'store/account'
+import { selectAccountById } from 'store/account'
 
 export const useBalanceForAccount = (
-  accountUuid: string
+  accountId: string
 ): {
   isBalanceLoaded: boolean
   fetchBalance: () => void
@@ -24,20 +24,20 @@ export const useBalanceForAccount = (
   const [isFetchingBalance, setIsFetchingBalance] = useState(false)
   const tokenVisibility = useSelector(selectTokenVisibility)
   const accountBalance = useSelector(
-    selectBalanceTotalInCurrencyForAccount(accountUuid, tokenVisibility)
+    selectBalanceTotalInCurrencyForAccount(accountId, tokenVisibility)
   )
-  const account = useSelector(selectAccountByUuid(accountUuid))
+  const account = useSelector(selectAccountById(accountId))
 
   const isBalanceLoaded = useSelector(
-    selectIsBalanceLoadedForAccount(accountUuid)
+    selectIsBalanceLoadedForAccount(accountId)
   )
 
   const fetchBalance = useCallback(() => {
     if (account) {
-      dispatch(fetchBalanceForAccount({ accountUuid }))
+      dispatch(fetchBalanceForAccount({ accountId }))
       setIsFetchingBalance(true)
     }
-  }, [account, dispatch, accountUuid])
+  }, [account, dispatch, accountId])
 
   useEffect(() => {
     if (!isBalanceLoading && isFetchingBalance) {

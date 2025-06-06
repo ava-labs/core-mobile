@@ -38,21 +38,21 @@ export const AccountList = (): React.JSX.Element => {
 
   const onSelectAccount = useCallback(
     (account: Account): void => {
-      const accountUuid = account.id
+      const accountId = account.id
       AnalyticsService.capture('AccountSelectorAccountSwitched', {
         accountIndex: getAccountIndex(account)
       })
-      dispatch(setActiveAccount(accountUuid))
+      dispatch(setActiveAccount(accountId))
     },
     [dispatch]
   )
 
   const gotoAccountDetails = useCallback(
-    (accountUuid: string): void => {
+    (accountId: string): void => {
       navigate({
         // @ts-ignore TODO: make routes typesafe
         pathname: '/accountSettings/account',
-        params: { accountUuid }
+        params: { accountId }
       })
     },
     [navigate]

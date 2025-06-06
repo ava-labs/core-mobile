@@ -10,7 +10,7 @@ import {
   reducerName,
   selectAccounts,
   selectActiveAccount,
-  selectAccountByUuid,
+  selectAccountById,
   setAccount,
   setActiveAccountId
 } from './slice'
@@ -66,7 +66,7 @@ export const setActiveAccount = createAsyncThunk<void, string, ThunkApi>(
   `${reducerName}/setActiveAccount`,
   async (accountId, thunkApi) => {
     const state = thunkApi.getState()
-    const account = selectAccountByUuid(accountId)(state)
+    const account = selectAccountById(accountId)(state)
 
     if (!account) {
       throw new Error(`Account with ID "${accountId}" not found`)

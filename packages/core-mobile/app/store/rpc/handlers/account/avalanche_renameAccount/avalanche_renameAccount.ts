@@ -1,6 +1,6 @@
 import { AppListenerEffectAPI } from 'store/types'
 import { rpcErrors } from '@metamask/rpc-errors'
-import { selectAccountByUuid, setAccountTitle } from 'store/account/slice'
+import { selectAccountById, setAccountTitle } from 'store/account/slice'
 import Logger from 'utils/Logger'
 import { selectWalletById } from 'store/wallet/slice'
 import { RpcMethod, RpcRequest } from '../../../types'
@@ -35,7 +35,7 @@ class AvalancheRenameAccountHandler
     const accountId = result.data[0]
     const title = result.data[1]
 
-    const requestedAccount = selectAccountByUuid(accountId)(getState())
+    const requestedAccount = selectAccountById(accountId)(getState())
     if (!requestedAccount) {
       return {
         success: false,

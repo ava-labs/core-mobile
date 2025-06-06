@@ -63,11 +63,11 @@ const ManageAccountsScreen = (): React.JSX.Element => {
   )
 
   const gotoAccountDetails = useCallback(
-    (accountUuid: string): void => {
+    (accountId: string): void => {
       navigate({
         // @ts-ignore TODO: make routes typesafe
         pathname: '/accountSettings/account',
-        params: { accountUuid }
+        params: { accountId }
       })
     },
     [navigate]
@@ -138,10 +138,7 @@ const ManageAccountsScreen = (): React.JSX.Element => {
             <View sx={{ width: 24 }} />
           ),
           value: (
-            <AccountBalance
-              accountUuid={account.id}
-              isActive={account.active}
-            />
+            <AccountBalance accountId={account.id} isActive={account.active} />
           ),
           onPress: () => handleSetActiveAccount(account.id),
           accessory: (
@@ -311,10 +308,10 @@ export default ManageAccountsScreen
 
 const AccountBalance = ({
   isActive,
-  accountUuid
+  accountId
 }: {
   isActive: boolean
-  accountUuid: string
+  accountId: string
 }): React.JSX.Element => {
   const isPrivacyModeEnabled = useSelector(selectIsPrivacyModeEnabled)
   const {
@@ -325,7 +322,7 @@ const AccountBalance = ({
     fetchBalance,
     isFetchingBalance,
     isBalanceLoaded
-  } = useBalanceForAccount(accountUuid)
+  } = useBalanceForAccount(accountId)
   const { formatCurrency } = useFormatCurrency()
 
   const balance = useMemo(() => {

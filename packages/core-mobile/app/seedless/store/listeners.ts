@@ -13,7 +13,7 @@ import { WalletType } from 'services/wallet/types'
 import { Action } from '@reduxjs/toolkit'
 import { AppStartListening, AppListenerEffectAPI } from 'store/types'
 import { onTokenExpired } from 'seedless/store/slice'
-import { selectAccountByUuid, setAccountTitle } from 'store/account/slice'
+import { selectAccountById, setAccountTitle } from 'store/account/slice'
 import { router } from 'expo-router'
 import { getAccountIndex } from 'store/account/utils'
 
@@ -69,7 +69,7 @@ const handleSetAccountTitle = async ({
 }): Promise<void> => {
   const { getState } = listenerApi
   if (walletType !== WalletType.SEEDLESS) return
-  const account = selectAccountByUuid(accountId)(getState())
+  const account = selectAccountById(accountId)(getState())
   if (!account) return
   SeedlessService.setAcountName(name, getAccountIndex(account))
 }

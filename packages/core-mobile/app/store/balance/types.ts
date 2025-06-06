@@ -10,7 +10,7 @@ export type LocalTokenWithBalance = TokenWithBalance & {
 
 export type Balance = {
   dataAccurate: boolean
-  accountUuid: string | undefined
+  accountId: string | undefined
   chainId: number
   tokens: LocalTokenWithBalance[]
 }

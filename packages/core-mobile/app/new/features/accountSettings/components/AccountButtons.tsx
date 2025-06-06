@@ -5,17 +5,17 @@ import {
 } from 'common/utils/alertWithTextInput'
 import React, { useCallback } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { selectAccountByUuid, setAccountTitle } from 'store/account'
+import { selectAccountById, setAccountTitle } from 'store/account'
 import { selectWalletType } from 'store/app'
 
 export const AccountButtons = ({
-  accountUuid
+  accountId
 }: {
-  accountUuid: string
+  accountId: string
 }): React.JSX.Element => {
   const dispatch = useDispatch()
   const walletType = useSelector(selectWalletType)
-  const account = useSelector(selectAccountByUuid(accountUuid))
+  const account = useSelector(selectAccountById(accountId))
 
   const handleShowAlertWithTextInput = (): void => {
     showAlertWithTextInput({

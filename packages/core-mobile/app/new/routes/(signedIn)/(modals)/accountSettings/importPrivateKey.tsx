@@ -136,7 +136,7 @@ const ImportPrivateKeyScreen = (): JSX.Element => {
         tempAccountDetails.id
       )
       setIsAwaitingOurBalance(true)
-      dispatch(fetchBalanceForAccount({ account: tempAccountDetails }))
+      dispatch(fetchBalanceForAccount({ accountId: tempAccountDetails.id })) //FIXME: tempAccountDetails not in store
     } else if (
       tempAccountDetails &&
       !isAwaitingOurBalance &&
