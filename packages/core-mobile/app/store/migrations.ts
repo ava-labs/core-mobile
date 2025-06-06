@@ -203,7 +203,7 @@ export const migrations = {
       [WalletType.UNSET]: undefined
     }
     const walletType = state.app.walletType as WalletType
-    // @ts-ignore
+    // @ts-ignore WalletType.PRIVATE_KEY is added in migration 21 so newWalletType type is any
     const newWalletType = walletTypeMapping[walletType]
 
     Object.entries(accountState.accounts).forEach(([accIndex, account]) => {
@@ -221,7 +221,7 @@ export const migrations = {
         name: oldAccount.title,
         type: CoreAccountType.PRIMARY,
         walletType: newWalletType,
-        // @ts-ignore
+        // @ts-ignore activeAccountIndex is removed from accountState
         active: accountState.activeAccountIndex === Number(accIndex),
         addressBTC: oldAccount.addressBtc,
         addressAVM: oldAccount.addressAVM,
@@ -384,7 +384,7 @@ export const migrations = {
 
       // Create a new wallet entry
       const walletName =
-        // @ts-ignore
+        // @ts-ignore walletName not part of accountState anymore
         accountState.walletName ||
         `Wallet ${Object.keys(accountState.accounts).length + 1}`
 
