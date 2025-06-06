@@ -31,20 +31,27 @@ if (!Config.PROXY_URL)
   Logger.warn('PROXY_URL is missing in env file. Network service is disabled.')
 
 class NetworkService {
-  async getNetworks(): Promise<Networks> {
-    const erc20Networks = await this.fetchERC20Networks().catch(reason => {
-      Logger.error(`[NetworkService][fetchERC20Networks]${reason}`)
+  async getNetworks({
+    includeSolana
+  }: {
+    includeSolana: boolean
+  }): Promise<Networks> {
+    const networks = await this.fetchNetworks({
+      includeSolana
+    }).catch(reason => {
+      Logger.error(`[NetworkService][fetchNetworks]${reason}`)
       return {} as Networks
     })
+
     const deBankNetworks = await this.fetchDeBankNetworks().catch(reason => {
       Logger.error(`[NetworkService][fetchDeBankNetworks]${reason}`)
       return {} as Networks
     })
 
-    delete erc20Networks[ChainId.AVALANCHE_LOCAL_ID]
+    delete networks[ChainId.AVALANCHE_LOCAL_ID]
 
     return {
-      ...erc20Networks,
+      ...networks,
       ...deBankNetworks,
       [ChainId.BITCOIN]: BITCOIN_NETWORK,
       [ChainId.BITCOIN_TESTNET]: BITCOIN_TEST_NETWORK,
@@ -132,8 +139,16 @@ class NetworkService {
     return ModuleManager.avalancheModule.getProvider(mapToVmNetwork(network))
   }
 
-  private async fetchERC20Networks(): Promise<Networks> {
-    const response = await fetch(`${Config.PROXY_URL}/networks`)
+  private async fetchNetworks({
+    includeSolana = false
+  }: {
+    includeSolana: boolean
+  }): Promise<Networks> {
+    const url = includeSolana
+      ? `${Config.PROXY_URL}/networks?includeSolana`
+      : `${Config.PROXY_URL}/networks`
+
+    const response = await fetch(url)
     const networks: Network[] = await response.json()
 
     return networks.reduce((acc, network) => {

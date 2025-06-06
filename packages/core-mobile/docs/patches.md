@@ -64,6 +64,8 @@ https://github.com/software-mansion/react-native-reanimated/pull/7158
 perf improvement
 https://github.com/PedroBern/react-native-collapsible-tab-view/pull/461
 
+exposed toggleSyncScrollFrame using scrollResync ref for manually recomputing layout 
+
 ### react-native-webview-crypto+0.0.26.patch
 
 with the latest react native, if the webview is not rendered using `display: none`, nothing will work: all the javascript injection, message relaying,...
