@@ -15,6 +15,7 @@ import { InteractionManager } from 'react-native'
 import SentryWrapper from 'services/sentry/SentryWrapper'
 import { humanizeSwapError } from 'errors/swapError'
 import { useSelector } from 'react-redux'
+import { TokenType } from '@avalabs/vm-module-types'
 import { Account, selectActiveAccount } from 'store/account'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { audioFeedback, Audios } from 'utils/AudioFeedback'
@@ -23,30 +24,16 @@ import { LocalTokenWithBalance } from 'store/balance'
 import useCChainNetwork from 'hooks/earn/useCChainNetwork'
 import { transactionSnackbar } from 'new/common/utils/toast'
 import { useSwapSelectedFromToken, useSwapSelectedToToken } from '../store'
-import { EvmSwapQuote, SwapQuote } from '../types'
+import { SwapQuote, SwapType } from '../types'
 import { useEvmSwap } from '../hooks/useEvmSwap'
+import { getTokenAddress } from '../utils/getTokenAddress'
 
 const DEFAULT_DEBOUNCE_MILLISECONDS = 300
 
 // success here just means the transaction was sent, not that it was successful/confirmed
-export type SwapStatus = 'Idle' | 'Swapping' | 'Success' | 'Fail'
+type SwapStatus = 'Idle' | 'Swapping' | 'Success' | 'Fail'
 
-export enum SwapType {
-  EVM = 'EVM',
-  SOLANA = 'SOLANA'
-}
-
-export type SwapParams = {
-  swapType: SwapType.EVM
-  srcTokenAddress: string
-  isSrcTokenNative: boolean
-  destTokenAddress: string
-  isDestTokenNative: boolean
-  quote: EvmSwapQuote
-  slippage: number
-}
-
-export interface SwapContextState {
+interface SwapContextState {
   fromToken?: LocalTokenWithBalance
   toToken?: LocalTokenWithBalance
   setFromToken: Dispatch<LocalTokenWithBalance | undefined>
@@ -55,7 +42,7 @@ export interface SwapContextState {
   setSwapType: Dispatch<SwapType | undefined>
   quote: SwapQuote | undefined
   isFetchingQuote: boolean
-  swap(params: SwapParams): void
+  swap(): void
   slippage: number
   setSlippage: Dispatch<number>
   destination: SwapSide
@@ -95,7 +82,17 @@ export const SwapContextProvider = ({
   )
 
   const getQuote = useCallback(async () => {
-    if (!activeAccount || !swapType || !amount || amount <= 0n) {
+    const isValidFromToken = fromToken && 'decimals' in fromToken
+    const isValidToToken = toToken && 'decimals' in toToken
+
+    if (
+      !activeAccount ||
+      !swapType ||
+      !amount ||
+      amount <= 0n ||
+      !isValidFromToken ||
+      !isValidToToken
+    ) {
       setError('')
       setQuote(undefined)
       return
@@ -114,8 +111,12 @@ export const SwapContextProvider = ({
           account: activeAccount,
           network: cChainNetwork,
           amount,
-          fromToken,
-          toToken,
+          fromTokenAddress: getTokenAddress(fromToken),
+          fromTokenDecimals: fromToken.decimals,
+          isFromTokenNative: fromToken.type === TokenType.NATIVE,
+          toTokenAddress: getTokenAddress(toToken),
+          toTokenDecimals: toToken.decimals,
+          isToTokenNative: toToken.type === TokenType.NATIVE,
           destination
         })
       } else {
@@ -197,78 +198,77 @@ export const SwapContextProvider = ({
     []
   )
 
-  const swap = useCallback(
-    ({
-      srcTokenAddress,
-      isSrcTokenNative,
-      destTokenAddress,
-      isDestTokenNative,
-      quote: swapQuote,
-      slippage: swapSlippage
-    }: // eslint-disable-next-line sonarjs/cognitive-complexity
-    SwapParams) => {
-      if (!activeAccount || !swapType) {
-        return
-      }
+  // eslint-disable-next-line sonarjs/cognitive-complexity
+  const swap = useCallback(() => {
+    if (!activeAccount || !fromToken || !toToken || !swapType || !quote) {
+      return
+    }
 
-      InteractionManager.runAfterInteractions(async () => {
-        let chainId: number | undefined
+    const fromTokenAddress = getTokenAddress(fromToken)
+    const isFromTokenNative = fromToken.type === TokenType.NATIVE
+    const toTokenAddress = getTokenAddress(toToken)
+    const isToTokenNative = toToken.type === TokenType.NATIVE
 
-        SentryWrapper.startSpan({ name: 'swap' }, async span => {
-          try {
-            setSwapStatus('Swapping')
+    InteractionManager.runAfterInteractions(async () => {
+      let chainId: number | undefined
 
-            let swapTxHash: string | undefined
+      SentryWrapper.startSpan({ name: 'swap' }, async span => {
+        try {
+          setSwapStatus('Swapping')
 
-            if (swapType === SwapType.EVM) {
-              if (!cChainNetwork) {
-                throw new Error('Invalid network')
-              }
+          let swapTxHash: string | undefined
 
-              chainId = cChainNetwork.chainId
-
-              swapTxHash = await evmSwap({
-                account: activeAccount,
-                network: cChainNetwork,
-                srcTokenAddress,
-                isSrcTokenNative,
-                destTokenAddress,
-                isDestTokenNative,
-                quote: swapQuote,
-                slippage: swapSlippage
-              })
+          if (swapType === SwapType.EVM) {
+            if (!cChainNetwork) {
+              throw new Error('Invalid network')
             }
 
-            if (swapTxHash && chainId) {
-              handleSwapSuccess({
-                swapTxHash: swapTxHash,
-                chainId
-              })
-            }
-          } catch (err) {
-            setSwapStatus('Fail')
-            if (!isUserRejectedError(err) && chainId && activeAccount) {
-              handleSwapError({
-                account: activeAccount,
-                chainId,
-                err
-              })
-            }
-          } finally {
-            span?.end()
+            chainId = cChainNetwork.chainId
+
+            swapTxHash = await evmSwap({
+              account: activeAccount,
+              network: cChainNetwork,
+              fromTokenAddress,
+              isFromTokenNative,
+              toTokenAddress,
+              isToTokenNative,
+              quote,
+              slippage
+            })
           }
-        })
+
+          if (swapTxHash && chainId) {
+            handleSwapSuccess({
+              swapTxHash: swapTxHash,
+              chainId
+            })
+          }
+        } catch (err) {
+          setSwapStatus('Fail')
+          if (!isUserRejectedError(err) && chainId && activeAccount) {
+            handleSwapError({
+              account: activeAccount,
+              chainId,
+              err
+            })
+          }
+        } finally {
+          span?.end()
+        }
       })
-    },
-    [
-      activeAccount,
-      swapType,
-      cChainNetwork,
-      evmSwap,
-      handleSwapError,
-      handleSwapSuccess
-    ]
-  )
+    })
+  }, [
+    activeAccount,
+    swapType,
+    quote,
+    slippage,
+    cChainNetwork,
+    evmSwap,
+    fromToken,
+    toToken,
+    handleSwapError,
+    handleSwapSuccess
+  ])
 
   const state: SwapContextState = {
     fromToken,

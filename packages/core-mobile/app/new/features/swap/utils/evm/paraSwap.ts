@@ -36,7 +36,8 @@ export type PerformSwapParams = {
 
 type SwapTxHash = string
 
-export const performSwap = async ({
+// perform a swap via paraswap
+export const paraSwap = async ({
   srcTokenAddress,
   isSrcTokenNative,
   destTokenAddress,

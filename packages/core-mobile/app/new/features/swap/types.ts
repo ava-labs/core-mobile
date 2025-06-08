@@ -1,37 +1,42 @@
 import { OptimalRate, SwapSide } from '@paraswap/sdk'
-import { LocalTokenWithBalance } from 'store/balance/types'
 import { Account } from 'store/account/types'
 import { Network } from '@avalabs/core-chains-sdk'
+import { JsonRpcBatchInternal } from '@avalabs/core-wallets-sdk'
+import type WAVAX_ABI from '../../../contracts/ABI_WAVAX.json'
+import type WETH_ABI from '../../../contracts/ABI_WETH.json'
+
+export enum SwapType {
+  EVM = 'EVM',
+  SOLANA = 'SOLANA'
+}
 
 export enum EvmSwapOperation {
   WRAP = 'WRAP',
   UNWRAP = 'UNWRAP'
 }
 
-export type EvmWrapOperation = {
+export type EvmWrapQuote = {
   operation: EvmSwapOperation.WRAP
   target: string
   amount: string
 }
 
-export type EvmUnwrapOperation = {
+export type EvmUnwrapQuote = {
   operation: EvmSwapOperation.UNWRAP
   source: string
   amount: string
 }
 
-export type EvmSwapQuote = OptimalRate | EvmWrapOperation | EvmUnwrapOperation
+export type EvmSwapQuote = OptimalRate | EvmWrapQuote | EvmUnwrapQuote
 
 // TODO: add solana swap quote
 export type SwapQuote = EvmSwapQuote
 
-export function isWrapOperation(quote: SwapQuote): quote is EvmWrapOperation {
+export function isEvmWrapQuote(quote: SwapQuote): quote is EvmWrapQuote {
   return 'operation' in quote && quote.operation === EvmSwapOperation.WRAP
 }
 
-export function isUnwrapOperation(
-  quote: SwapQuote
-): quote is EvmUnwrapOperation {
+export function isEvmUnwrapQuote(quote: SwapQuote): quote is EvmUnwrapQuote {
   return 'operation' in quote && quote.operation === EvmSwapOperation.UNWRAP
 }
 
@@ -47,8 +52,12 @@ export const isParaswapQuote = (quote: SwapQuote): quote is OptimalRate => {
 export type GetQuoteParams = {
   account: Account
   amount: bigint
-  fromToken: LocalTokenWithBalance | undefined
-  toToken: LocalTokenWithBalance | undefined
+  fromTokenAddress: string
+  fromTokenDecimals: number
+  isFromTokenNative: boolean
+  toTokenAddress: string
+  toTokenDecimals: number
+  isToTokenNative: boolean
   destination: SwapSide
   network: Network
 }
@@ -56,10 +65,18 @@ export type GetQuoteParams = {
 export type SwapParams = {
   account: Account
   network: Network
-  srcTokenAddress: string
-  isSrcTokenNative: boolean
-  destTokenAddress: string
-  isDestTokenNative: boolean
+  fromTokenAddress: string
+  isFromTokenNative: boolean
+  toTokenAddress: string
+  isToTokenNative: boolean
   quote: EvmSwapQuote
   slippage: number
+}
+
+export type WrapUnwrapTxParams = {
+  userAddress: string
+  tokenAddress: string
+  amount: string
+  provider: JsonRpcBatchInternal
+  abi: typeof WAVAX_ABI | typeof WETH_ABI
 }

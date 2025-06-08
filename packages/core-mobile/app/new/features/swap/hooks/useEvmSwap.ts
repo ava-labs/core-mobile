@@ -1,21 +1,24 @@
 import { useCallback, useRef } from 'react'
 import { useSelector } from 'react-redux'
 import { RpcMethod } from '@avalabs/vm-module-types'
+import { TransactionParams } from '@avalabs/evm-module'
 import { humanizeParaswapRateError } from 'errors/swapError'
 import { selectIsSwapFeesBlocked } from 'store/posthog'
 import { useAvalancheEvmProvider } from 'hooks/networks/networkProviderHooks'
 import { useInAppRequest } from 'hooks/useInAppRequest'
 import { getEvmCaip2ChainId } from 'utils/caip2ChainIds'
 import { getSwapRate } from '../utils/evm/getSwapRate'
-import { getTokenAddress } from '../utils/getTokenAddress'
 import {
+  EvmSwapOperation,
   GetQuoteParams,
-  isUnwrapOperation,
-  isWrapOperation,
+  isEvmWrapQuote,
+  isEvmUnwrapQuote,
   SwapParams,
   SwapQuote
 } from '../types'
-import { performSwap } from '../utils/evm/performSwap'
+import { paraSwap } from '../utils/evm/paraSwap'
+import { isWrappableToken } from '../utils/evm/isWrappableToken'
+import { manualSwap } from '../utils/evm/manualSwap'
 
 export const useEvmSwap = (): {
   getQuote: (params: GetQuoteParams) => Promise<SwapQuote | undefined>
@@ -30,17 +33,27 @@ export const useEvmSwap = (): {
     async ({
       account,
       amount,
-      fromToken,
-      toToken,
+      fromTokenAddress,
+      fromTokenDecimals,
+      isFromTokenNative,
+      toTokenAddress,
+      toTokenDecimals,
+      isToTokenNative,
       destination,
       network
     }: GetQuoteParams): Promise<SwapQuote | undefined> => {
-      // validate tokens
-      if (!fromToken || !('decimals' in fromToken)) {
-        throw new Error('Invalid from token')
-      }
-      if (!toToken || !('decimals' in toToken)) {
-        throw new Error('Invalid to token')
+      if (isFromTokenNative && isWrappableToken(toTokenAddress)) {
+        return {
+          operation: EvmSwapOperation.WRAP,
+          target: toTokenAddress,
+          amount: amount.toString()
+        }
+      } else if (isToTokenNative && isWrappableToken(fromTokenAddress)) {
+        return {
+          operation: EvmSwapOperation.UNWRAP,
+          source: fromTokenAddress,
+          amount: amount.toString()
+        }
       }
 
       // abort previous request
@@ -51,10 +64,10 @@ export const useEvmSwap = (): {
 
       try {
         const { optimalRate } = await getSwapRate({
-          fromTokenAddress: getTokenAddress(fromToken),
-          toTokenAddress: getTokenAddress(toToken),
-          fromTokenDecimals: fromToken.decimals,
-          toTokenDecimals: toToken.decimals,
+          fromTokenAddress,
+          toTokenAddress,
+          fromTokenDecimals,
+          toTokenDecimals,
           amount: amount.toString(),
           swapSide: destination,
           network,
@@ -84,10 +97,10 @@ export const useEvmSwap = (): {
     ({
       account,
       network,
-      srcTokenAddress,
-      isSrcTokenNative,
-      destTokenAddress,
-      isDestTokenNative,
+      fromTokenAddress,
+      isFromTokenNative,
+      toTokenAddress,
+      isToTokenNative,
       quote,
       slippage
     }: SwapParams) => {
@@ -95,26 +108,37 @@ export const useEvmSwap = (): {
         throw new Error('Invalid provider')
       }
 
-      if (isWrapOperation(quote) || isUnwrapOperation(quote)) {
-        throw new Error('Invalid quote')
+      const signAndSend = (
+        txParams: [TransactionParams],
+        context?: Record<string, unknown>
+      ): Promise<string> =>
+        request({
+          method: RpcMethod.ETH_SEND_TRANSACTION,
+          params: txParams,
+          chainId: getEvmCaip2ChainId(network.chainId),
+          context
+        })
+
+      if (isEvmWrapQuote(quote) || isEvmUnwrapQuote(quote)) {
+        return manualSwap({
+          userAddress: account.addressC,
+          network,
+          provider: avalancheProvider,
+          quote,
+          signAndSend
+        })
       }
 
-      return performSwap({
-        srcTokenAddress,
-        isSrcTokenNative,
-        destTokenAddress,
-        isDestTokenNative,
+      return paraSwap({
+        srcTokenAddress: fromTokenAddress,
+        isSrcTokenNative: isFromTokenNative,
+        destTokenAddress: toTokenAddress,
+        isDestTokenNative: isToTokenNative,
         priceRoute: quote,
         slippage,
         network,
         provider: avalancheProvider,
-        signAndSend: (txParams, context) =>
-          request({
-            method: RpcMethod.ETH_SEND_TRANSACTION,
-            params: txParams,
-            chainId: getEvmCaip2ChainId(network.chainId),
-            context
-          }),
+        signAndSend,
         userAddress: account.addressC,
         isSwapFeesEnabled: !isSwapFeesBlocked
       })

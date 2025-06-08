@@ -12,7 +12,7 @@ import {
   useTheme,
   View
 } from '@avalabs/k2-alpine'
-import { TokenType, TokenWithBalance } from '@avalabs/vm-module-types'
+import { TokenWithBalance } from '@avalabs/vm-module-types'
 import { SwapSide } from '@paraswap/sdk'
 import { useNavigation } from '@react-navigation/native'
 import { ScrollScreen } from 'common/components/ScrollScreen'
@@ -20,7 +20,6 @@ import { TokenInputWidget } from 'common/components/TokenInputWidget'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import { usePreventScreenRemoval } from 'common/hooks/usePreventScreenRemoval'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
-import { PARASWAP_PARTNER_FEE_BPS } from 'contexts/SwapContext/consts'
 import { useGlobalSearchParams, useRouter } from 'expo-router'
 import useCChainNetwork from 'hooks/earn/useCChainNetwork'
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
@@ -35,12 +34,18 @@ import {
   LocalTokenWithBalance,
   selectTokensWithZeroBalanceByNetwork
 } from 'store/balance'
-import { getTokenAddress } from 'swap/getSwapRate'
-import { calculateRate } from 'swap/utils'
 import { basisPointsToPercentage } from 'utils/basisPointsToPercentage'
 import { useSwapList } from 'common/hooks/useSwapList'
 import { SlippageInput } from '../components.tsx/SlippageInput'
 import { useSwapContext } from '../contexts/SwapContext'
+import { PARASWAP_PARTNER_FEE_BPS } from '../consts'
+import { calculateRate as calculateEvmRate } from '../utils/evm/calculateRate'
+import {
+  isEvmUnwrapQuote,
+  isEvmWrapQuote,
+  isParaswapQuote,
+  SwapType
+} from '../types'
 
 export const SwapScreen = (): JSX.Element => {
   const { theme } = useTheme()
@@ -62,13 +67,15 @@ export const SwapScreen = (): JSX.Element => {
     toToken,
     setToToken,
     destination,
-    optimalRate,
+    quote,
+    isFetchingQuote,
+    swapType,
+    setSwapType,
     setDestination,
     slippage,
     setSlippage,
     setAmount,
     error: swapError,
-    isFetchingOptimalRate,
     swapStatus
   } = useSwapContext()
   const [maxFromValue, setMaxFromValue] = useState<bigint | undefined>()
@@ -90,7 +97,7 @@ export const SwapScreen = (): JSX.Element => {
     [localError, swapError]
   )
   const canSwap: boolean =
-    !localError && !swapError && !!fromToken && !!toToken && !!optimalRate
+    !localError && !swapError && !!fromToken && !!toToken && !!quote
 
   const swapInProcess = swapStatus === 'Swapping'
 
@@ -102,7 +109,7 @@ export const SwapScreen = (): JSX.Element => {
     []
   )
 
-  const validateInputsFx = useCallback(() => {
+  const validateInputs = useCallback(() => {
     if (fromTokenValue && fromTokenValue === 0n) {
       setLocalError('Please enter an amount')
     } else if (
@@ -116,23 +123,26 @@ export const SwapScreen = (): JSX.Element => {
     }
   }, [fromTokenValue, maxFromValue])
 
-  const applyOptimalRateFx = useCallback(() => {
+  const applyQuote = useCallback(() => {
     if (!fromTokenValue) {
       setToTokenValue(undefined)
-    } else if (optimalRate) {
-      if (optimalRate.side === SwapSide.SELL) {
-        if (fromTokenValue !== undefined) {
-          setToTokenValue(BigInt(optimalRate.destAmount))
+      return
+    }
+
+    if (quote) {
+      if (isParaswapQuote(quote)) {
+        if (quote.side === SwapSide.SELL) {
+          setToTokenValue(BigInt(quote.destAmount))
+        } else {
+          setFromTokenValue(BigInt(quote.srcAmount))
         }
-      } else {
-        if (toTokenValue !== undefined) {
-          setFromTokenValue(BigInt(optimalRate.srcAmount))
-        }
+      } else if (isEvmWrapQuote(quote) || isEvmUnwrapQuote(quote)) {
+        setToTokenValue(BigInt(quote.amount))
       }
     }
-  }, [optimalRate, fromTokenValue, toTokenValue])
+  }, [quote, fromTokenValue])
 
-  const calculateMaxFx = useCallback(() => {
+  const calculateMax = useCallback(() => {
     if (!fromToken) return
 
     setMaxFromValue(fromToken?.balance)
@@ -196,24 +206,13 @@ export const SwapScreen = (): JSX.Element => {
   }, [params, swapList, setFromToken, setToToken])
 
   const handleSwap = useCallback(() => {
-    if (optimalRate) {
-      AnalyticsService.capture('SwapReviewOrder', {
-        destinationInputField: destination,
-        slippageTolerance: slippage
-      })
+    AnalyticsService.capture('SwapReviewOrder', {
+      destinationInputField: destination,
+      slippageTolerance: slippage
+    })
 
-      if (fromToken && toToken && optimalRate && slippage) {
-        swap({
-          srcTokenAddress: getTokenAddress(fromToken),
-          isSrcTokenNative: fromToken.type === TokenType.NATIVE,
-          destTokenAddress: getTokenAddress(toToken),
-          isDestTokenNative: toToken.type === TokenType.NATIVE,
-          priceRoute: optimalRate,
-          swapSlippage: slippage
-        })
-      }
-    }
-  }, [optimalRate, swap, fromToken, toToken, slippage, destination])
+    swap()
+  }, [swap, destination, slippage])
 
   const handleFromAmountChange = useCallback(
     (amount: bigint): void => {
@@ -343,7 +342,7 @@ export const SwapScreen = (): JSX.Element => {
           onFocus={() => setIsInputFocused(true)}
           onBlur={() => setIsInputFocused(false)}
           onSelectToken={handleSelectToToken}
-          isLoadingAmount={isFetchingOptimalRate}
+          isLoadingAmount={isFetchingQuote}
         />
       </View>
     )
@@ -354,46 +353,62 @@ export const SwapScreen = (): JSX.Element => {
     toToken,
     cChainNetwork,
     toTokenValue,
-    isFetchingOptimalRate,
+    isFetchingQuote,
     handleSelectToToken,
     swapInProcess
   ])
 
+  const rate = useMemo(() => {
+    // eslint-disable-next-line sonarjs/no-collapsible-if
+    if (quote) {
+      if (swapType === SwapType.EVM) {
+        return calculateEvmRate(quote)
+      }
+    }
+
+    return 0
+  }, [quote, swapType])
+
+  const showFeesAndSlippage = useMemo(() => {
+    return quote && isParaswapQuote(quote)
+  }, [quote])
+
   const data = useMemo(() => {
     const items: GroupListItem[] = []
 
-    const rate = optimalRate ? calculateRate(optimalRate) : 0
-
-    if (fromToken && toToken) {
+    if (fromToken && toToken && rate) {
       items.push({
         title: 'Rate',
-        value: isFetchingOptimalRate
-          ? undefined
-          : `1 ${fromToken.symbol} = ${rate?.toFixed(4)} ${toToken.symbol}`
+        value: `1 ${fromToken.symbol} = ${rate?.toFixed(4)} ${toToken.symbol}`
       })
     }
 
-    items.push({
-      title: 'Slippage tolerance',
-      accessory: (
-        <SlippageInput
-          slippage={slippage}
-          setSlippage={setSlippage}
-          disabled={swapInProcess}
-        />
-      )
-    })
+    showFeesAndSlippage &&
+      items.push({
+        title: 'Slippage tolerance',
+        accessory: (
+          <SlippageInput
+            slippage={slippage}
+            setSlippage={setSlippage}
+            disabled={swapInProcess}
+          />
+        )
+      })
 
     return items
   }, [
     toToken,
     fromToken,
-    optimalRate,
+    showFeesAndSlippage,
+    rate,
     slippage,
     setSlippage,
-    swapInProcess,
-    isFetchingOptimalRate
+    swapInProcess
   ])
+
+  useEffect(() => {
+    setSwapType(SwapType.EVM)
+  }, [setSwapType])
 
   useEffect(() => {
     if (swapStatus === 'Success') {
@@ -405,9 +420,9 @@ export const SwapScreen = (): JSX.Element => {
     }
   }, [back, canGoBack, getState, swapStatus])
 
-  useEffect(validateInputsFx, [validateInputsFx])
-  useEffect(applyOptimalRateFx, [applyOptimalRateFx])
-  useEffect(calculateMaxFx, [calculateMaxFx])
+  useEffect(validateInputs, [validateInputs])
+  useEffect(applyQuote, [applyQuote])
+  useEffect(calculateMax, [calculateMax])
 
   const initialized = useRef(false)
   useEffect(setInitialTokensFx, [setInitialTokensFx])
@@ -524,9 +539,11 @@ export const SwapScreen = (): JSX.Element => {
       )}
       <View style={{ marginTop: 24 }}>
         <GroupList data={data} separatorMarginRight={16} />
-        <Text variant="caption" sx={{ marginTop: 6, alignSelf: 'center' }}>
-          {coreFeeMessage}
-        </Text>
+        {showFeesAndSlippage && (
+          <Text variant="caption" sx={{ marginTop: 6, alignSelf: 'center' }}>
+            {coreFeeMessage}
+          </Text>
+        )}
       </View>
     </ScrollScreen>
   )
