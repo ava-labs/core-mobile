@@ -1,4 +1,4 @@
-import { BuildTxParams } from 'services/swap/SwapService'
+import { BuildTxParams } from './services/SwapService'
 
 /**
  * The address where ParaSwap will send collected partner fees.
@@ -30,3 +30,6 @@ export const PARTNER_FEE_PARAMS = {
   // TODO: upgrade prettier to latest version to fix this
   // eslint-disable-next-line prettier/prettier
 } satisfies Partial<BuildTxParams>
+
+export const WAVAX_ADDRESS = '0xb31f66aa3c1e785363f0875a1b74e27b85fd66c7'
+export const WETH_ADDRESS = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'

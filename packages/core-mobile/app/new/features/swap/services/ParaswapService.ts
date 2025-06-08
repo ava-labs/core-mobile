@@ -15,7 +15,7 @@ import {
 } from '@paraswap/sdk'
 import { ParaSwapVersion } from '@paraswap/core'
 import { SimpleFetchSDK } from '@paraswap/sdk/dist/sdk/simple'
-import { EVM_NATIVE_TOKEN_ADDRESS } from 'contexts/SwapContext/consts'
+import { EVM_NATIVE_TOKEN_ADDRESS } from '../consts'
 
 const txResponseSchema = z
   .object({
@@ -86,7 +86,7 @@ const SUPPORTED_SWAP_NETWORKS = [
   // BASE = 8453,
 ]
 
-class SwapService {
+class ParaswapService {
   private getParaSwapSDK = (chainId: number): SimpleFetchSDK => {
     return constructSimpleSDK({
       chainId,
@@ -225,4 +225,4 @@ class SwapService {
   }
 }
 
-export default new SwapService()
+export default new ParaswapService()
