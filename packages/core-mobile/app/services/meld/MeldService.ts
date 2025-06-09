@@ -5,7 +5,9 @@ import {
 } from 'features/buyOnramp/hooks/useSearchCryptoCurrencies'
 import { FiatCurrency } from 'features/buyOnramp/hooks/useSearchFiatCurrencies'
 import { ServiceProviders } from 'features/buyOnramp/hooks/useSearchServiceProviders'
+import { SearchDefaultsByCountryResponse } from 'features/buyOnramp/hooks/useSearchDefaultsByCountry'
 import Config from 'react-native-config'
+import { CurrencySymbol } from 'store/settings/currency'
 import Logger from 'utils/Logger'
 
 if (!Config.PROXY_URL)
@@ -87,6 +89,79 @@ class MeldService {
       commaSeparatedServiceProviders &&
         url.searchParams.set('serviceProviders', commaSeparatedServiceProviders)
       url.searchParams.set('accountFilter', accountFilter.toString())
+
+      const response = await fetch(url.toString(), {
+        method: 'GET'
+      })
+      return response.json()
+    } catch (error) {
+      return []
+    }
+  }
+
+  async getPurchaseLimits({
+    categories,
+    countries,
+    serviceProviders,
+    accountFilter = true,
+    fiatCurrencies = [CurrencySymbol.USD],
+    includeDetails = false,
+    cryptoCurrencyCodes
+  }: SearchCryptoCurrenciesParams & {
+    fiatCurrencies?: CurrencySymbol[]
+    includeDetails?: boolean
+    cryptoCurrencyCodes?: string[]
+  }): Promise<ServiceProviders[]> {
+    try {
+      const url = new URL(
+        baseURL + '/service-providers/limits/fiat-currency-purchases'
+      )
+      const commaSeparatedCategories = categories.join(',')
+      const commaSeparatedCountries = countries.join(',')
+      const commaSeparatedFiatCurrencies = fiatCurrencies.join(',')
+      const commaSeparatedCryptoCurrencyCodes = cryptoCurrencyCodes?.join(',')
+      const commaSeparatedServiceProviders = serviceProviders?.join(',')
+
+      url.searchParams.set('accountFilter', accountFilter.toString())
+      url.searchParams.set('includeDetails', includeDetails.toString())
+
+      url.searchParams.set('categories', commaSeparatedCategories)
+      url.searchParams.set('countries', commaSeparatedCountries)
+
+      url.searchParams.set('fiatCurrencies', commaSeparatedFiatCurrencies)
+      commaSeparatedServiceProviders &&
+        url.searchParams.set('serviceProviders', commaSeparatedServiceProviders)
+      commaSeparatedCryptoCurrencyCodes &&
+        url.searchParams.set(
+          'cryptoCurrencies',
+          commaSeparatedCryptoCurrencyCodes
+        )
+
+      const response = await fetch(url.toString(), {
+        method: 'GET'
+      })
+      return response.json()
+    } catch (error) {
+      return []
+    }
+  }
+
+  async searchDefaultsByCountry({
+    categories,
+    countries,
+    accountFilter = true
+  }: SearchCryptoCurrenciesParams): Promise<SearchDefaultsByCountryResponse[]> {
+    try {
+      const url = new URL(
+        baseURL + '/service-providers/properties/defaults/by-country'
+      )
+      const commaSeparatedCategories = categories.join(',')
+      const commaSeparatedCountries = countries.join(',')
+      url.searchParams.set('accountFilter', accountFilter.toString())
+
+      url.searchParams.set('categories', commaSeparatedCategories)
+      url.searchParams.set('countries', commaSeparatedCountries)
+
       const response = await fetch(url.toString(), {
         method: 'GET'
       })

@@ -55,6 +55,31 @@ export function formatCurrency({
   return formatted
 }
 
+export function formatIntegerCurrency({
+  amount,
+  currency
+}: Omit<FormatCurrencyProps, 'boostSmallNumberPrecision'>): string {
+  const formatter = getIntegerFormat(currency)
+  const formatted = formatter.format(amount)
+
+  // Check if the currency appears at the beginning
+  if (formatted.startsWith(currency)) {
+    // Move the currency to the end
+    return `${formatted.slice(currency.length).trim()} ${currency}`
+  }
+
+  // Check if the currency appears after a sign (e.g., "-CHF 10")
+  const signMatch = formatted.match(/^([-+])\s*([A-Z]{3})\s*(.*)/)
+  if (signMatch && signMatch[2] === currency) {
+    const sign = signMatch[1]
+    const number = signMatch[3] ?? ''
+    return `${sign}${number.trim()} ${currency}`
+  }
+
+  // Default case: return the formatted string as is
+  return formatted
+}
+
 const selectCurrencyFormat = ({
   amount,
   currency,
@@ -130,3 +155,12 @@ const commonNumberFormat = (
     minimumFractionDigits: 2
   }
 }
+
+const getIntegerFormat = memoize(
+  (currency: string) =>
+    new Intl.NumberFormat('en-US', {
+      ...commonNumberFormat(currency),
+      maximumFractionDigits: 0,
+      minimumFractionDigits: 0
+    })
+)

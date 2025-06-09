@@ -9,22 +9,28 @@ import {
   SearchProviderCategories
 } from 'services/meld/consts'
 import { TokenSymbol } from 'store/network'
-import { useOnRampToken } from '../store'
-import { useSearchCryptoCurrencies } from '../hooks/useSearchCryptoCurrencies'
+import { LoadingState } from 'common/components/LoadingState'
+import {
+  CryptoCurrency,
+  useSearchCryptoCurrencies
+} from '../hooks/useSearchCryptoCurrencies'
 import { useSearchServiceProviders } from '../hooks/useSearchServiceProviders'
+import { useBuy } from '../hooks/useBuy'
 
 export const BuyTokenScreen = (): React.JSX.Element => {
   const { navigate } = useRouter()
-  const [_, setSelectedToken] = useOnRampToken()
-  const { data: serviceProviders } = useSearchServiceProviders({
-    categories: [SearchProviderCategories.CryptoOnramp]
-  })
-  const { data: cryptoCurrencies } = useSearchCryptoCurrencies({
-    categories: [SearchProviderCategories.CryptoOnramp],
-    serviceProviders: serviceProviders?.map(
-      serviceProvider => serviceProvider.serviceProvider
-    )
-  })
+  const { navigateToBuy } = useBuy()
+  const { data: serviceProviders, isLoading: isLoadingServiceProviders } =
+    useSearchServiceProviders({
+      categories: [SearchProviderCategories.CryptoOnramp]
+    })
+  const { data: cryptoCurrencies, isLoading: isLoadingCryptoCurrencies } =
+    useSearchCryptoCurrencies({
+      categories: [SearchProviderCategories.CryptoOnramp],
+      serviceProviders: serviceProviders?.map(
+        serviceProvider => serviceProvider.serviceProvider
+      )
+    })
 
   const avax = cryptoCurrencies?.find(
     token => token.currencyCode === MELD_CURRENCY_CODES.AVAXC
@@ -33,13 +39,12 @@ export const BuyTokenScreen = (): React.JSX.Element => {
     token => token.currencyCode === MELD_CURRENCY_CODES.USDC
   )
 
-  const buyAvax = useCallback((): void => {
-    avax && setSelectedToken(avax)
-  }, [avax, setSelectedToken])
-
-  const buyUsdc = useCallback((): void => {
-    usdc && setSelectedToken(usdc)
-  }, [usdc, setSelectedToken])
+  const handleBuy = useCallback(
+    (cryptoCurrency: CryptoCurrency): void => {
+      navigateToBuy({ cryptoCurrency })
+    },
+    [navigateToBuy]
+  )
 
   const selectOtherToken = useCallback((): void => {
     // @ts-ignore TODO: make routes typesafe
@@ -47,25 +52,34 @@ export const BuyTokenScreen = (): React.JSX.Element => {
   }, [navigate])
 
   const data = useMemo(() => {
-    const _data: GroupListItem[] = [
-      {
+    const _data: GroupListItem[] = []
+    if (avax) {
+      _data.push({
         title: TokenSymbol.AVAX,
         leftIcon: <TokenLogo symbol={TokenSymbol.AVAX} />,
-        onPress: buyAvax
-      },
-      {
+        onPress: () => handleBuy(avax)
+      })
+    }
+
+    if (usdc) {
+      _data.push({
         title: TokenSymbol.USDC,
         leftIcon: <TokenLogo symbol={TokenSymbol.USDC} />,
-        onPress: buyUsdc
-      },
-      {
-        title: 'Select other token',
-        onPress: selectOtherToken
-      }
-    ]
+        onPress: () => handleBuy(usdc)
+      })
+    }
+
+    _data.push({
+      title: 'Select other token',
+      onPress: selectOtherToken
+    })
 
     return _data
-  }, [buyAvax, buyUsdc, selectOtherToken])
+  }, [avax, handleBuy, selectOtherToken, usdc])
+
+  if (isLoadingServiceProviders || isLoadingCryptoCurrencies) {
+    return <LoadingState sx={{ flex: 1 }} />
+  }
 
   return (
     <ScrollScreen

@@ -12,3 +12,7 @@ export const useOnRampCurrencyCode = createZustandStore<string | undefined>(
 export const useOnRampToken = createZustandStore<CryptoCurrency | undefined>(
   undefined
 )
+
+export const useOnRampServiceProvider = createZustandStore<string | undefined>(
+  undefined
+)
