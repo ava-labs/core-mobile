@@ -1,12 +1,16 @@
 import { useCallback } from 'react'
 import { useSelector } from 'react-redux'
 import { selectSelectedCurrency } from 'store/settings/currency'
-import { formatCurrency as _formatCurrency } from 'utils/FormatCurrency'
+import {
+  formatCurrency as _formatCurrency,
+  formatIntegerCurrency as _formatIntegerCurrency
+} from 'utils/FormatCurrency'
 import { NotationTypes } from 'consts/FormatNumberTypes'
 
 export function useFormatCurrency(): {
   formatCurrency(props: FormatCurrencyProps): string
   formatTokenInCurrency(props: FormatCurrencyProps): string
+  formatIntegerCurrency(props: FormatCurrencyProps): string
 } {
   const selectedCurrency = useSelector(selectSelectedCurrency)
 
@@ -24,6 +28,25 @@ export function useFormatCurrency(): {
         currency: selectedCurrency,
         boostSmallNumberPrecision: false,
         notation
+      })
+
+      if (withoutCurrencySuffix && formattedText.endsWith(selectedCurrency)) {
+        return formattedText.replace(selectedCurrency, '').trim()
+      }
+
+      return formattedText
+    },
+    [selectedCurrency]
+  )
+
+  /**
+   * Localized currency formatter for integer values
+   */
+  const formatIntegerCurrency = useCallback(
+    ({ amount, withoutCurrencySuffix = false }: FormatCurrencyProps) => {
+      const formattedText = _formatIntegerCurrency({
+        amount,
+        currency: selectedCurrency
       })
 
       if (withoutCurrencySuffix && formattedText.endsWith(selectedCurrency)) {
@@ -62,7 +85,8 @@ export function useFormatCurrency(): {
 
   return {
     formatCurrency,
-    formatTokenInCurrency
+    formatTokenInCurrency,
+    formatIntegerCurrency
   }
 }
 

@@ -8,6 +8,7 @@ export default function BuyOnrampLayout(): JSX.Element {
   return (
     <Stack screenOptions={modalStackNavigatorScreenOptions}>
       <Stack.Screen name="index" options={modalFirstScreenOptions} />
+      <Stack.Screen name="selectBuyAmount" />
     </Stack>
   )
 }
