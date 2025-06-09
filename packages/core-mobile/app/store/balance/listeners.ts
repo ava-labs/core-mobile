@@ -42,8 +42,6 @@ import SentryWrapper from 'services/sentry/SentryWrapper'
 import { ReactQueryKeys } from 'consts/reactQueryKeys'
 import { queryClient } from 'contexts/ReactQueryProvider'
 import { selectIsSolanaSupportBlocked } from 'store/posthog'
-import { TokenType } from '@avalabs/vm-module-types'
-import { isSolanaChainId } from 'utils/network/isSolanaNetwork'
 import { Balances, LocalTokenWithBalance, QueryStatus } from './types'
 import {
   fetchBalanceForAccount,
