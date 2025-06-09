@@ -8,6 +8,7 @@ import onboardingPage from '../../pages/onboarding.page'
 import actions from '../../helpers/actions'
 import onboardingLoc from '../../locators/onboarding.loc'
 import bottomTabsPage from '../../pages/bottomTabs.page'
+import { ENV } from '../../helpers/getEnvs'
 
 describe('Onboarding Existing Wallet', () => {
   beforeAll(async () => {
@@ -35,7 +36,7 @@ describe('Onboarding Existing Wallet', () => {
 
     // Verify `Enter your recovery phrase` page
     await onboardingPage.verifyEnterYourRecoveryPhrasePage()
-    await onboardingPage.enterRecoveryPhrase(process.env.E2E_MNEMONIC as string)
+    await onboardingPage.enterRecoveryPhrase(ENV.E2E_MNEMONIC as string)
     await onboardingPage.tapImport()
 
     // Verify Enter PIN pages

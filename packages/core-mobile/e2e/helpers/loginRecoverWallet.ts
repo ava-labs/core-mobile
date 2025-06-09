@@ -4,6 +4,7 @@ import Actions from '../helpers/actions'
 import onboardingPage from '../pages/onboarding.page'
 import onboardingLoc from '../locators/onboarding.loc'
 import bottomTabsPage from '../pages/bottomTabs.page'
+import { ENV } from './getEnvs'
 
 class LoginRecoverWallet {
   async recoverMnemonicWallet(recoveryPhrase: string) {
@@ -30,7 +31,7 @@ class LoginRecoverWallet {
     await commonElsPage.checkIfMainnet()
   }
 
-  async login(recoverPhrase: string = process.env.E2E_MNEMONIC as string) {
+  async login(recoverPhrase = ENV.E2E_MNEMONIC as string) {
     const isLoggedIn = await Actions.expectToBeVisible(onboardingPage.forgotPin)
 
     if (isLoggedIn) {

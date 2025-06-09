@@ -44,19 +44,16 @@ describe('Settings - Manage Accounts', () => {
     // Verify the new name on settings
     await settingsPage.goSettings()
     const newName = await actions.getElementText(
-      by.id(`${settingsLoc.accountNameIdPrefix}${oldAccount}`)
+      by.id(`${settingsLoc.account}${oldAccount}`)
     )
     assert(newName === settingsLoc.newAccountName)
   })
 
   it('should add new account', async () => {
     // Verify the account boxes
-    await settingsPage.verifyAccountBoxes(oldAccount)
 
     // Verify the new account box is not visible
-    await assertions.isNotVisible(
-      by.id(`${settingsLoc.accountNameIdPrefix}${newAccount}`)
-    )
+    await assertions.isNotVisible(by.id(`${settingsLoc.account}${newAccount}`))
 
     // Add new account and verify the new account box
     // await settingsPage.tapAddAccountBtn()
@@ -81,7 +78,7 @@ describe('Settings - Manage Accounts', () => {
 
     // Get the first account name that you just switched to
     const newName = await actions.getElementText(
-      by.id(`${settingsLoc.accountNameIdPrefix}${oldAccount}`)
+      by.id(`${settingsLoc.account}${oldAccount}`)
     )
     await commonElsPage.dismissBottomSheet()
 

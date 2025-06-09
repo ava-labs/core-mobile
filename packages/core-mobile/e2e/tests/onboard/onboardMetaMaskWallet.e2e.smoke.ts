@@ -2,6 +2,7 @@
 /**
  * @jest-environment ./jestCustomEnv
  */
+import { ENV } from '../../helpers/getEnvs'
 import loginRecoverWallet from '../../helpers/loginRecoverWallet'
 import { handleJailbrokenWarning } from '../../helpers/warmup'
 import commonElsPage from '../../pages/commonEls.page'
@@ -14,6 +15,6 @@ describe('Onboard MetaMask wallet', () => {
   })
 
   it('Should login with a metamask wallet', async () => {
-    await loginRecoverWallet.login(process.env.E2E_METAMASK_MNEMONIC as string)
+    await loginRecoverWallet.login(ENV.E2E_METAMASK_MNEMONIC)
   })
 })

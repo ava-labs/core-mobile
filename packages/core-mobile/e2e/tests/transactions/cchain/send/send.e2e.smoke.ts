@@ -1,9 +1,6 @@
 import { warmup } from '../../../../helpers/warmup'
 import loc from '../../../../locators/send.loc'
-// import accountManagePage from '../../../../pages/accountManage.page'
-// import activityTabPage from '../../../../pages/activityTab.page'
 import commonElsPage from '../../../../pages/commonEls.page'
-// import portfolioPage from '../../../../pages/portfolio.page'
 import sendPage from '../../../../pages/send.page'
 import settingsPage from '../../../../pages/settings.page'
 
