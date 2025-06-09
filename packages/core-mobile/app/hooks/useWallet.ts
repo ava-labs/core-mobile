@@ -15,6 +15,7 @@ import AnalyticsService from 'services/analytics/AnalyticsService'
 import { useCallback } from 'react'
 import { storeWalletWithPin } from 'store/wallet/thunks'
 import { uuid } from 'utils/uuid'
+import { WalletId } from 'store/wallet/types'
 
 type InitWalletServiceAndUnlockProps = {
   mnemonic: string
@@ -125,7 +126,7 @@ export function useWallet(): UseWallet {
     pin,
     isResetting = false,
     walletType = WalletType.MNEMONIC
-  }: OnPinCreatedParams): Promise<string> {
+  }: OnPinCreatedParams): Promise<WalletId> {
     const walletId = uuid()
     const walletSecret = await encrypt(mnemonic, pin)
 
