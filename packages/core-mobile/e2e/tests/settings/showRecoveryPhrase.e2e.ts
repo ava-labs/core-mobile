@@ -3,12 +3,12 @@
  * @jest-environment ./environment.ts
  */
 import assert from 'assert'
-import Config from 'react-native-config'
 import { warmup } from '../../helpers/warmup'
 import settingsPage from '../../pages/settings.page'
 import commonElsPage from '../../pages/commonEls.page'
 import onboardingPage from '../../pages/onboarding.page'
 import actions from '../../helpers/actions'
+import { ENV } from '../../helpers/getEnvs'
 
 describe('Setting - Show Recovery Phrase', () => {
   beforeAll(async () => {
@@ -24,7 +24,7 @@ describe('Setting - Show Recovery Phrase', () => {
     const words = await onboardingPage.getMnemonicWords()
     const joinedWords = words.join(' ')
     assert(
-      joinedWords === Config.E2E_MNEMONIC,
+      joinedWords === ENV.E2E_MNEMONIC,
       'Displayed mnemonic does not match the expected mnemonic'
     )
   })
