@@ -10,6 +10,7 @@ export const mapToVmNetwork = (network: ChainsSDKNetwork): VmModuleNetwork => ({
   logoUri: network.logoUri,
   isTestnet: network.isTestnet,
   explorerUrl: network.explorerUrl,
+  caipId: network.caip2Id,
   pricingProviders: {
     coingecko: {
       nativeTokenId: network.pricingProviders?.coingecko.nativeTokenId,
