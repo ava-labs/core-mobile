@@ -199,7 +199,7 @@ export const RecentContacts = ({
               onPress={onGoToQrCode}
               hitSlop={16}
               sx={{
-                marginRight: 9,
+                marginRight: 12,
                 justifyContent: 'center',
                 alignItems: 'center'
               }}>

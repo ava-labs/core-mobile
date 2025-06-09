@@ -15,6 +15,7 @@ import { addWatchlistListeners } from 'store/watchlist/listeners'
 import { addAppearanceListeners } from 'store/settings/appearance/listeners'
 import { addUnifiedBridgeListeners } from 'store/unifiedBridge/listeners'
 import { AppAddListener, AppStartListening } from 'store/types'
+import { addCurrencyListeners } from 'store/settings/currency/listeners'
 
 const listener = createListenerMiddleware({
   onError: (error, errorInfo) => {
@@ -52,6 +53,8 @@ addSeedlessListeners(startListening)
 addWatchlistListeners(startListening)
 
 addAppearanceListeners(startListening)
+
+addCurrencyListeners(startListening)
 
 export const addAppListener = addListener as AppAddListener
 

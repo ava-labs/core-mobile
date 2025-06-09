@@ -11,12 +11,22 @@ import {
 } from '@reduxjs/toolkit'
 import { getNetworksFromCache } from 'hooks/networks/utils/getNetworksFromCache'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
+import { selectIsSolanaSupportBlocked } from 'store/posthog'
 import { RootState } from '../types'
 import { ChainID, Networks, NetworkState } from './types'
 
 export const defaultNetwork = BITCOIN_NETWORK
 
 export const noActiveNetwork = 0
+
+export const defaultEnabledL2ChainIds = [
+  42161, // Arbitrum One
+  // 421614, // Arbitrum Sepolia
+  10, // Optimism
+  // 11155420, // Optimism Sepolia
+  8453 // Base Mainnet
+  // 84532 // Base Sepolia
+]
 
 export const alwaysEnabledChainIds = [
   ChainsSDKChainId.AVALANCHE_MAINNET_ID,
@@ -26,7 +36,10 @@ export const alwaysEnabledChainIds = [
   ChainsSDKChainId.BITCOIN,
   ChainsSDKChainId.BITCOIN_TESTNET,
   ChainsSDKChainId.ETHEREUM_HOMESTEAD,
-  ChainsSDKChainId.ETHEREUM_TEST_SEPOLIA
+  ChainsSDKChainId.ETHEREUM_TEST_SEPOLIA,
+  ChainsSDKChainId.SOLANA_MAINNET_ID,
+  ChainsSDKChainId.SOLANA_DEVNET_ID,
+  ChainsSDKChainId.SOLANA_TESTNET_ID
 ]
 
 export const reducerName = 'network'
@@ -58,6 +71,14 @@ export const networkSlice = createSlice({
         const newEnabled = state.enabledChainIds.filter(id => id !== chainId)
         state.enabledChainIds = newEnabled
       }
+    },
+    enableL2ChainIds: state => {
+      defaultEnabledL2ChainIds.forEach(chainId => {
+        if (!state.enabledChainIds.includes(chainId)) {
+          // set enabledChainIds
+          state.enabledChainIds.push(chainId)
+        }
+      })
     },
     toggleDisabledLastTransactedChainId: (
       state,
@@ -130,7 +151,10 @@ export const selectActiveNetwork = (state: RootState): Network => {
 }
 
 export const selectAllNetworks = (state: RootState): Networks => {
-  const rawNetworks = getNetworksFromCache()
+  const isSolanaSupportBlocked = selectIsSolanaSupportBlocked(state)
+  const rawNetworks = getNetworksFromCache({
+    includeSolana: !isSolanaSupportBlocked
+  })
   const customNetworks = selectCustomNetworks(state)
   return { ...rawNetworks, ...customNetworks }
 }
@@ -145,7 +169,10 @@ export const selectNetwork =
 export const selectNetworks = (state: RootState): Networks => {
   const isDeveloperMode = selectIsDeveloperMode(state)
   const customNetworks = selectCustomNetworks(state)
-  const rawNetworks = getNetworksFromCache()
+  const isSolanaSupportBlocked = selectIsSolanaSupportBlocked(state)
+  const rawNetworks = getNetworksFromCache({
+    includeSolana: !isSolanaSupportBlocked
+  })
 
   const populatedNetworks = Object.keys(rawNetworks ?? {}).reduce(
     (reducedNetworks, key) => {
@@ -175,9 +202,11 @@ export const selectNetworks = (state: RootState): Networks => {
 }
 
 export const selectEnabledNetworks = createSelector(
-  [selectEnabledChainIds, selectIsDeveloperMode],
-  (enabledChainIds, isDeveloperMode) => {
-    const networks = getNetworksFromCache()
+  [selectEnabledChainIds, selectIsDeveloperMode, selectIsSolanaSupportBlocked],
+  (enabledChainIds, isDeveloperMode, isSolanaSupportBlocked) => {
+    const networks = getNetworksFromCache({
+      includeSolana: !isSolanaSupportBlocked
+    })
     if (networks === undefined) return []
 
     return enabledChainIds.reduce((acc, chainId) => {
@@ -206,7 +235,8 @@ export const {
   toggleDisabledLastTransactedChainId,
   addCustomNetwork,
   removeCustomNetwork,
-  updateCustomNetwork
+  updateCustomNetwork,
+  enableL2ChainIds
 } = networkSlice.actions
 
 export const networkReducer = networkSlice.reducer

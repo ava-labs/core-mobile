@@ -67,13 +67,13 @@ test('formats regular number correctly', () => {
   })
 
   expect(numberToSubscriptFormat(1234.567)).toEqual({
-    mainTextBefore: '1234.6',
+    mainTextBefore: '1,234.57',
     subText: '',
     mainTextAfter: ''
   })
 
   expect(numberToSubscriptFormat(123456)).toEqual({
-    mainTextBefore: '123456', // for integers more than 5 digits, keep as is
+    mainTextBefore: '123,456.00', // for integers more than 5 digits, keep as is
     subText: '',
     mainTextAfter: ''
   })

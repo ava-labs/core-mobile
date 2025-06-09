@@ -1,4 +1,4 @@
-import { Network } from '@avalabs/core-chains-sdk'
+import { ChainId, Network } from '@avalabs/core-chains-sdk'
 import {
   Icons,
   Pressable,
@@ -16,55 +16,154 @@ import { useRouter } from 'expo-router'
 import { useNetworks } from 'hooks/networks/useNetworks'
 import React, { useCallback, useMemo, useState } from 'react'
 import { ListRenderItem } from 'react-native'
-import { alwaysEnabledChainIds } from 'store/network'
+import { alwaysEnabledChainIds, defaultEnabledL2ChainIds } from 'store/network'
 import { isPChain, isXChain, isXPChain } from 'utils/network/isAvalancheNetwork'
+
+enum SectionTypeEnum {
+  HEADER = 'header',
+  ITEM = 'item'
+}
+
+type SectionItemType = {
+  type: SectionTypeEnum
+  key: string
+  title?: string
+  data?: Network
+}
 
 export const ManageNetworksScreen = (): JSX.Element => {
   const { theme } = useTheme()
+  const { navigate } = useRouter()
   const { networks, enabledNetworks, customNetworks, toggleNetwork } =
     useNetworks()
-  const [searchText, setSearchText] = useState('')
+
   const title = 'Networks'
-  const { navigate } = useRouter()
-  const filterBySearchText = useCallback(
-    (network: Network) =>
-      network.chainName.toLowerCase().includes(searchText.toLowerCase()) ||
-      network.chainId.toString().includes(searchText),
-    [searchText]
+  const [searchText, setSearchText] = useState('')
+
+  const filterNetworks = useCallback(
+    (items: Network[]) => {
+      const enabled = items.filter(network =>
+        enabledNetworks.some(
+          enabledNetwork => enabledNetwork.chainId === network.chainId
+        )
+      )
+
+      const disabled = items.filter(
+        network =>
+          !enabledNetworks.some(
+            enabledNetwork => enabledNetwork.chainId === network.chainId
+          )
+      )
+
+      if (searchText.length) {
+        return [...enabled, ...disabled].filter(
+          network =>
+            network.chainName
+              .toLowerCase()
+              .includes(searchText.toLowerCase()) ||
+            network.chainId.toString().includes(searchText)
+        )
+      }
+
+      return [...enabled, ...disabled]
+    },
+    [enabledNetworks, searchText]
   )
 
-  const availableNetworks = useMemo(() => {
-    const enabled = Object.values(networks).filter(network =>
-      enabledNetworks.includes(network)
-    )
+  const data = useMemo(() => {
+    const primaryNetworks = Object.values(networks)
+      .filter(network => {
+        if (ChainId.AVALANCHE_MAINNET_ID === network.chainId) {
+          network.chainName = 'Avalanche C-Chain'
+        }
 
-    const custom = Object.values(customNetworks).filter(
-      network => !enabled.includes(network)
-    )
-    const disabled = Object.values(networks)
-      .filter(
-        network => !enabled.includes(network) && !custom.includes(network)
-      )
+        if (ChainId.AVALANCHE_TESTNET_ID === network.chainId) {
+          network.chainName = 'Avalanche C-Chain Testnet'
+        }
+
+        return (
+          alwaysEnabledChainIds.includes(network.chainId) ||
+          defaultEnabledL2ChainIds.includes(network.chainId) ||
+          isXChain(network.chainId)
+        )
+      })
       .sort(sortPrimaryNetworks)
+    const custom = filterNetworks(Object.values(customNetworks))
+    const layer1Networks = filterNetworks(
+      Object.values(networks).filter(
+        network =>
+          !alwaysEnabledChainIds.includes(network.chainId) &&
+          !custom.some(item => item.chainId === network.chainId) &&
+          !defaultEnabledL2ChainIds.includes(network.chainId) &&
+          !isXChain(network.chainId)
+      )
+    )
 
-    return [...enabled, ...custom, ...disabled].sort(sortPrimaryNetworks)
-  }, [customNetworks, enabledNetworks, networks])
+    const sectionedNetworks = [
+      {
+        key: 'primary-networks',
+        title: '',
+        data: filterNetworks(primaryNetworks)
+      }
+    ]
 
-  const filteredNetworks = useMemo(() => {
-    if (searchText.length) {
-      return availableNetworks.filter(filterBySearchText)
+    if (custom.length) {
+      sectionedNetworks.push({
+        key: 'custom-networks',
+        title: 'Custom networks',
+        data: custom
+      })
     }
-    return availableNetworks
-  }, [availableNetworks, filterBySearchText, searchText.length])
 
-  const renderNetwork: ListRenderItem<Network> = ({
-    item,
+    if (layer1Networks.length) {
+      sectionedNetworks.push({
+        title: 'Avalanche L1s',
+        key: 'avalanche-l1s',
+        data: filterNetworks(layer1Networks)
+      })
+    }
+
+    return sectionedNetworks.flatMap(section => [
+      { type: SectionTypeEnum.HEADER, title: section.title, key: section.key },
+      ...section.data.map(item => ({
+        type: SectionTypeEnum.ITEM,
+        data: item,
+        key: item.chainId.toString()
+      }))
+    ])
+  }, [customNetworks, filterNetworks, networks])
+
+  const renderSectionHeader = useCallback((sectionItem: SectionItemType) => {
+    if (!sectionItem.title) {
+      return <></>
+    }
+
+    return (
+      <View style={{ paddingHorizontal: 16, paddingTop: 24 }}>
+        <Text variant="heading3">{sectionItem.title}</Text>
+      </View>
+    )
+  }, [])
+
+  const renderNetwork: ListRenderItem<SectionItemType> = ({
+    item: sectionItem,
     index
   }): JSX.Element => {
+    if (sectionItem.type === SectionTypeEnum.HEADER) {
+      return renderSectionHeader(sectionItem)
+    }
+
+    const item = sectionItem.data
+    if (!item) {
+      return <></>
+    }
+
     const isEnabled = enabledNetworks.some(
       network => network.chainId === item.chainId
     )
-    const isLast = index === filteredNetworks.length - 1
+
+    const isNextSection = data[index + 1]?.type === SectionTypeEnum.HEADER
+    const isLast = isNextSection || index === data.length - 1
     const isCustomNetwork = Object.values(customNetworks).some(
       network => network.chainId === item.chainId
     )
@@ -172,10 +271,10 @@ export const ManageNetworksScreen = (): JSX.Element => {
   return (
     <ListScreen
       title={title}
-      data={filteredNetworks}
+      data={data}
       isModal
       hasParent
-      keyExtractor={item => item.chainId.toString()}
+      keyExtractor={item => item.key}
       renderItem={renderNetwork}
       renderHeaderRight={renderHeaderRight}
       renderHeader={renderHeader}

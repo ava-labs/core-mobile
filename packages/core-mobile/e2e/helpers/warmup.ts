@@ -2,7 +2,6 @@ import { device } from 'detox'
 import { DeviceLaunchAppConfig } from 'detox/detox'
 import CommonElsPage from '../pages/commonEls.page'
 import Assert from '../helpers/assertions'
-import commonElsPage from '../pages/commonEls.page'
 import Action from './actions'
 import { Platform } from './constants'
 import loginRecoverWallet from './loginRecoverWallet'
@@ -22,6 +21,7 @@ export const warmup = async (newInstance = false) => {
   if (newInstance) {
     initialArgs.newInstance = true
   }
+
   await device.launchApp(initialArgs)
 
   // Jailbreak Check
@@ -31,9 +31,6 @@ export const warmup = async (newInstance = false) => {
     await Action.waitForElementNotVisible(CommonElsPage.jailbrokenWarning)
     console.log('Jailbroken warning handled!!!')
   }
-
-  // Metro Dev Menu Check
-  await commonElsPage.exitMetro()
 
   // Login
   await loginRecoverWallet.login()

@@ -3,7 +3,8 @@ import {
   AvalancheCaip2ChainId,
   BitcoinCaip2ChainId,
   BlockchainNamespace,
-  ChainId
+  ChainId,
+  SolanaCaip2ChainId
 } from '@avalabs/core-chains-sdk'
 
 /**
@@ -136,27 +137,77 @@ export const getEvmCaip2ChainId = (chainId: number): string => {
   return `${BlockchainNamespace.EIP155}:${chainId.toString()}`
 }
 
+export const getSolanaCaip2ChainId = (chainId: number): string => {
+  if (chainId === ChainId.SOLANA_MAINNET_ID) {
+    return SolanaCaip2ChainId.MAINNET
+  } else if (chainId === ChainId.SOLANA_DEVNET_ID) {
+    return SolanaCaip2ChainId.DEVNET
+  } else if (chainId === ChainId.SOLANA_TESTNET_ID) {
+    return SolanaCaip2ChainId.TESTNET
+  }
+
+  return `${BlockchainNamespace.SOLANA}:${chainId}`
+}
+
+export const getSolanaChainId = (caip2ChainId: string): number | undefined => {
+  // First check standard formats
+  if (caip2ChainId === SolanaCaip2ChainId.MAINNET) {
+    return ChainId.SOLANA_MAINNET_ID
+  } else if (caip2ChainId === SolanaCaip2ChainId.DEVNET) {
+    return ChainId.SOLANA_DEVNET_ID
+  } else if (caip2ChainId === SolanaCaip2ChainId.TESTNET) {
+    return ChainId.SOLANA_TESTNET_ID
+  }
+
+  return undefined
+}
+
 export const getChainIdFromCaip2 = (
   caip2ChainId: string
 ): number | undefined => {
   const namespace = caip2ChainId.split(':')[0]
-  return namespace === BlockchainNamespace.AVAX
-    ? getAvalancheChainId(caip2ChainId)
-    : namespace === BlockchainNamespace.BIP122
-    ? getBitcoinChainId(caip2ChainId)
-    : Number(caip2ChainId.split(':')[1])
+  switch (namespace) {
+    case BlockchainNamespace.AVAX:
+      return getAvalancheChainId(caip2ChainId)
+    case BlockchainNamespace.BIP122:
+      return getBitcoinChainId(caip2ChainId)
+    case BlockchainNamespace.SOLANA:
+      return getSolanaChainId(caip2ChainId)
+    default:
+      return Number(caip2ChainId.split(':')[1])
+  }
 }
 
-// get caip2 chain id from chain id
-// '1' -> 'eip155:1'
-export const getCaip2ChainId = (chainId: number): string => {
-  const caip2ChainId =
-    getAvalancheCaip2ChainId(chainId) ||
-    getBitcoinCaip2ChainIdByChainId(chainId)
+const AVALANCHE_CHAIN_IDS = [
+  ChainId.AVALANCHE_P,
+  ChainId.AVALANCHE_TEST_P,
+  ChainId.AVALANCHE_X,
+  ChainId.AVALANCHE_TEST_X
+]
 
-  if (caip2ChainId) {
-    return caip2ChainId
+const BITCOIN_CHAIN_IDS = [ChainId.BITCOIN, ChainId.BITCOIN_TESTNET]
+
+const SOLANA_CHAIN_IDS = [
+  ChainId.SOLANA_MAINNET_ID,
+  ChainId.SOLANA_DEVNET_ID,
+  ChainId.SOLANA_TESTNET_ID
+]
+
+// get caip2 chain id from chain id
+// if chain id is not found in the mapping, return eip155:chainId
+export const getCaip2ChainId = (chainId: number): string => {
+  if (AVALANCHE_CHAIN_IDS.includes(chainId)) {
+    return getAvalancheCaip2ChainId(chainId) as string
   }
 
-  return `${BlockchainNamespace.EIP155}:${chainId}`
+  if (BITCOIN_CHAIN_IDS.includes(chainId)) {
+    return getBitcoinCaip2ChainIdByChainId(chainId) as string
+  }
+
+  if (SOLANA_CHAIN_IDS.includes(chainId)) {
+    return getSolanaCaip2ChainId(chainId)
+  }
+
+  // Default to EVM for any other chain ID
+  return getEvmCaip2ChainId(chainId)
 }

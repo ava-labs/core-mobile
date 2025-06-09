@@ -52,7 +52,7 @@ export const useContacts = (): {
             switch (recentContact.type) {
               case 'account': {
                 const account = accounts.find(
-                  acct => acct.id === recentContact.id
+                  acct => acct.id === recentContact.id.toString()
                 )
                 if (account) {
                   acc.push({ item: account, type: recentContact.type })
@@ -79,7 +79,10 @@ export const useContacts = (): {
           }[]
         )
         .map(value => {
-          return value.item as Contact
+          return {
+            ...value.item,
+            type: value.item.type ?? value.type
+          }
         }),
     [selectedRecentContacts, accounts, contactCollection]
   )

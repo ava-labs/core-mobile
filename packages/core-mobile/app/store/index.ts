@@ -6,7 +6,6 @@ import { unifiedBridgeReducer as unifiedBridge } from 'store/unifiedBridge/slice
 import { migrations } from 'store/migrations'
 import DevDebuggingConfig from 'utils/debugging/DevDebuggingConfig'
 import { EncryptThenMacTransform } from 'store/transforms/EncryptThenMacTransform'
-import { StatePersistence } from 'utils/state/StatePersistence'
 import reactotron from '../../ReactotronConfig'
 import { networkReducer as network } from './network/slice'
 import { balanceReducer as balance } from './balance/slice'
@@ -19,7 +18,6 @@ import { portfolioReducer as portfolio } from './portfolio/slice'
 import { customTokenReducer as customToken } from './customToken/slice'
 import { securityReducer as security } from './security/slice'
 import { posthogReducer as posthog } from './posthog/slice'
-import { nftReducer as nft } from './nft/slice'
 import { addressBookReducer as addressBook } from './addressBook/slice'
 import { viewOnceReducer as viewOnce } from './viewOnce/slice'
 import settings from './settings'
@@ -32,7 +30,7 @@ import { snapshotsReducer as snapshots } from './snapshots/slice'
 import { reduxStorage } from './reduxStorage'
 import { walletsReducer as wallet } from './wallet/slice'
 
-const VERSION = 19
+const VERSION = 20
 
 // list of reducers that don't need to be persisted
 // for nested/partial blacklist, please use transform
@@ -49,7 +47,6 @@ const combinedReducer = combineReducers({
   unifiedBridge,
   customToken,
   posthog,
-  nft,
   wallet,
   security,
   rpc,
@@ -120,21 +117,10 @@ export function configureEncryptedStore(secretKey: string, macSecret: string) {
     }
   })
 
-  const persistor = persistStore(
-    store,
-    {
-      // @ts-ignore
-      manualPersist: DevDebuggingConfig.STATE_PERSISTENCE_DEBUG
-    },
-    () => {
-      // this block runs after rehydration is complete
-      store.dispatch(onRehydrationComplete())
-    }
-  )
-  if (DevDebuggingConfig.STATE_PERSISTENCE_DEBUG) {
-    StatePersistence.setPersistor(persistor)
-    StatePersistence.setStore(store)
-  }
+  const persistor = persistStore(store, null, () => {
+    // this block runs after rehydration is complete
+    store.dispatch(onRehydrationComplete())
+  })
 
   return { store, persistor }
 }

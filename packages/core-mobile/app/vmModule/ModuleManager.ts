@@ -15,7 +15,12 @@ import { assertNotUndefined } from 'utils/assertions'
 import { AvalancheModule } from '@avalabs/avalanche-module'
 import { BlockchainId } from '@avalabs/glacier-sdk'
 import { BitcoinModule } from '@avalabs/bitcoin-module'
-import { getBitcoinCaip2ChainId, getEvmCaip2ChainId } from 'utils/caip2ChainIds'
+import { SvmModule } from '@avalabs/svm-module'
+import {
+  getBitcoinCaip2ChainId,
+  getEvmCaip2ChainId,
+  getSolanaCaip2ChainId
+} from 'utils/caip2ChainIds'
 import { APPLICATION_NAME, APPLICATION_VERSION } from 'utils/network/constants'
 import { ModuleErrors, VmModuleErrors } from './errors'
 import { approvalController } from './ApprovalController/ApprovalController'
@@ -53,6 +58,14 @@ class ModuleManager {
     ) as EvmModule
   }
 
+  get solanaModule(): SvmModule {
+    return this.#modules?.find(module =>
+      module
+        .getManifest()
+        ?.network.namespaces.includes(BlockchainNamespace.SOLANA)
+    ) as SvmModule
+  }
+
   constructor() {
     this.init()
   }
@@ -83,7 +96,8 @@ class ModuleManager {
     this.modules = [
       new EvmModule(moduleInitParams),
       new BitcoinModule(moduleInitParams),
-      new AvalancheModule(moduleInitParams)
+      new AvalancheModule(moduleInitParams),
+      new SvmModule(moduleInitParams)
     ]
   }
 
@@ -171,6 +185,8 @@ class ModuleManager {
       case NetworkVMType.EVM:
       case NetworkVMType.CoreEth:
         return getEvmCaip2ChainId(network.chainId)
+      case NetworkVMType.SVM:
+        return getSolanaCaip2ChainId(network.chainId)
       default:
         throw new Error('Unsupported network')
     }

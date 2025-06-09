@@ -3,7 +3,7 @@ const bigNumberFormatter = Intl.NumberFormat('en-us', {
   maximumFractionDigits: 2
 })
 
-const normalNumberFormatter = new Intl.NumberFormat('en-US', {
+export const normalNumberFormatter = new Intl.NumberFormat('en-US', {
   minimumFractionDigits: 2,
   maximumFractionDigits: 2
 })

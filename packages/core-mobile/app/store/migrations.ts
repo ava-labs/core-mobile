@@ -26,7 +26,7 @@ import { initialState as browserFavoritesInitialState } from './browser/slices/f
 import { getInitialState as browserTabsGetInitialState } from './browser/slices/tabs'
 import { initialState as browserGlobalHistoryInitialState } from './browser/slices/globalHistory'
 import { ViewOnceKey } from './viewOnce'
-import { TokenVisibility } from './portfolio'
+import { CollectibleVisibility, TokenVisibility } from './portfolio'
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export const migrations = {
@@ -328,7 +328,25 @@ export const migrations = {
       }
     }
   },
-  20: async (state: any) => {
+  20: (state: any) => {
+    const collectibleVisibility = Object.entries(
+      state.nft?.hiddenNfts ?? {}
+    ).reduce((acc: CollectibleVisibility, [tokenId, _]) => {
+      acc[tokenId.toLowerCase()] = false
+      return acc
+    }, {}) as CollectibleVisibility
+    const newState = {
+      ...state,
+      portfolio: {
+        ...state.portfolio,
+        collectibleVisibility,
+        collectibleUnprocessableVisibility: false
+      }
+    }
+    delete newState.nft
+    return newState
+  },
+  21: async (state: any) => {
     // Step 1: Migrate BiometricsSDK keychain service names
     const oldServiceKey = SERVICE_KEY
     const oldServiceKeyBio = SERVICE_KEY_BIO

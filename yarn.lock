@@ -153,6 +153,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@avalabs/core-chains-sdk@npm:3.1.0-alpha.54":
+  version: 3.1.0-alpha.54
+  resolution: "@avalabs/core-chains-sdk@npm:3.1.0-alpha.54"
+  dependencies:
+    "@avalabs/core-utils-sdk": 3.1.0-alpha.54
+  checksum: 2c7f8eb4d33eb5fb073139f31e7c69dc899be2ef8e1fa330be4f067f06e0813219920a1356bfdbb6320e8d86341097fab31456554ce92ceea008a174ae43e7c8
+  languageName: node
+  linkType: hard
+
 "@avalabs/core-coingecko-sdk@npm:3.1.0-alpha.48":
   version: 3.1.0-alpha.48
   resolution: "@avalabs/core-coingecko-sdk@npm:3.1.0-alpha.48"
@@ -190,7 +199,7 @@ __metadata:
     "@avalabs/bitcoin-module": 1.9.4
     "@avalabs/bridge-unified": 4.0.2
     "@avalabs/core-bridge-sdk": 3.1.0-alpha.48
-    "@avalabs/core-chains-sdk": 3.1.0-alpha.48
+    "@avalabs/core-chains-sdk": 3.1.0-alpha.54
     "@avalabs/core-coingecko-sdk": 3.1.0-alpha.48
     "@avalabs/core-gasless-sdk": 3.1.0-alpha.48
     "@avalabs/core-utils-sdk": 3.1.0-alpha.48
@@ -198,6 +207,7 @@ __metadata:
     "@avalabs/evm-module": 1.9.4
     "@avalabs/glacier-sdk": 3.1.0-alpha.51
     "@avalabs/k2-alpine": "workspace:*"
+    "@avalabs/svm-module": ^1.9.4
     "@avalabs/tsconfig-mobile": "workspace:*"
     "@avalabs/types": 3.1.0-alpha.48
     "@avalabs/vm-module-types": 1.9.4
@@ -327,6 +337,7 @@ __metadata:
     expo-linear-gradient: 14.0.2
     expo-linking: 7.0.5
     expo-local-authentication: 15.0.2
+    expo-localization: 15.0.2
     expo-router: 4.0.18
     expo-sms: 13.0.1
     expo-video: 2.0.5
@@ -430,6 +441,7 @@ __metadata:
     typechain: 8.3.2
     typescript: 5.6.3
     url: 0.11.4
+    use-debounce: 10.0.4
     viem: 2.21.21
     vm-browserify: 1.1.2
     web3: 4.16.0
@@ -451,6 +463,20 @@ __metadata:
     bn.js: ^5.2.1
     ethers: ^6.7.1
   checksum: 65976a954c21582c0b6d87c722b024889a891e09f703dd86afc7a16db2b8dc23fea4ec403f91b6b39d243d3041f64e5ed0fbfa8551b136b4a3505c4d95170ccd
+  languageName: node
+  linkType: hard
+
+"@avalabs/core-utils-sdk@npm:3.1.0-alpha.54":
+  version: 3.1.0-alpha.54
+  resolution: "@avalabs/core-utils-sdk@npm:3.1.0-alpha.54"
+  dependencies:
+    "@hpke/core": 1.2.5
+    is-ipfs: 6.0.2
+  peerDependencies:
+    big.js: ^6.2.1
+    bn.js: ^5.2.1
+    ethers: ^6.7.1
+  checksum: 3ef2828db99fc8c613a2cefee763db28327a8e7cc7e874c04f6268cb284148737a1bf4f3c6fb21e1c9a10d72d8522be392501190214862d91a80c989bbc43930
   languageName: node
   linkType: hard
 
@@ -667,6 +693,29 @@ __metadata:
     react-native-svg: 15.8.0
   languageName: unknown
   linkType: soft
+
+"@avalabs/svm-module@npm:^1.9.4":
+  version: 1.9.4
+  resolution: "@avalabs/svm-module@npm:1.9.4"
+  dependencies:
+    "@avalabs/core-chains-sdk": 3.1.0-alpha.48
+    "@avalabs/core-coingecko-sdk": 3.1.0-alpha.48
+    "@avalabs/core-utils-sdk": 3.1.0-alpha.48
+    "@avalabs/core-wallets-sdk": 3.1.0-alpha.48
+    "@avalabs/vm-module-types": 1.9.4
+    "@blockaid/client": 0.48.0
+    "@metamask/rpc-errors": 6.3.0
+    "@scure/base": 1.2.4
+    "@solana-program/system": 0.7.0
+    "@solana-program/token": 0.5.1
+    "@solana/kit": 2.1.0
+    "@solana/wallet-standard-features": 1.3.0
+    "@wallet-standard/base": 1.1.0
+    "@wallet-standard/features": 1.1.0
+    zod: 3.23.8
+  checksum: bff9ee640fd2a1aa4e1b600b35c84c413a6da9b529db5c25267bb9b18a19b73d30cd24a09c1f16e1fc1976da89f2961725b759e28ac9561fa0d1d1c5e2c3acce
+  languageName: node
+  linkType: hard
 
 "@avalabs/tsconfig-mobile@workspace:*, @avalabs/tsconfig-mobile@workspace:packages/tsconfig-mobile":
   version: 0.0.0-use.local
@@ -4100,6 +4149,21 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@blockaid/client@npm:0.48.0":
+  version: 0.48.0
+  resolution: "@blockaid/client@npm:0.48.0"
+  dependencies:
+    "@types/node": ^18.11.18
+    "@types/node-fetch": ^2.6.4
+    abort-controller: ^3.0.0
+    agentkeepalive: ^4.2.1
+    form-data-encoder: 1.7.2
+    formdata-node: ^4.3.2
+    node-fetch: ^2.6.7
+  checksum: b035f55d32ac6ea29ad249bf9221fee080500993f79e8ab1926639b54648fa53989326a9fec561fc9e5d1e3e985c9dbe2fd6679d90d8824d4cdaf2a8973f36b9
+  languageName: node
+  linkType: hard
+
 "@bottom-tabs/react-navigation@npm:0.9.0":
   version: 0.9.0
   resolution: "@bottom-tabs/react-navigation@npm:0.9.0"
@@ -5061,7 +5125,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@expo/config@npm:~10.0.10, @expo/config@npm:~10.0.11, @expo/config@npm:~10.0.5":
+"@expo/config@npm:~10.0.11, @expo/config@npm:~10.0.5":
   version: 10.0.11
   resolution: "@expo/config@npm:10.0.11"
   dependencies:
@@ -11135,6 +11199,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@solana/wallet-standard-features@npm:1.3.0":
+  version: 1.3.0
+  resolution: "@solana/wallet-standard-features@npm:1.3.0"
+  dependencies:
+    "@wallet-standard/base": ^1.1.0
+    "@wallet-standard/features": ^1.1.0
+  checksum: ee303ae145a734a0ef4592d3da4bcb888956dbb5dc69759cbec2050b3fa6ffe09ca4ae037d254ba438d687b8d7c70902037276197cfb52b7a2c3851be7d5edeb
+  languageName: node
+  linkType: hard
+
 "@spotlightjs/overlay@npm:2.6.0":
   version: 2.6.0
   resolution: "@spotlightjs/overlay@npm:2.6.0"
@@ -13168,6 +13242,22 @@ __metadata:
     expo:
       optional: true
   checksum: 63c39ffaff4188317ea572c7fb6abe4c11e66a7bcda06df33d7d8ab7372d702d7e67db5f24fa3cd5091f2fe40a2785981911c1ca5dd0a1c080ea65e78cdae029
+  languageName: node
+  linkType: hard
+
+"@wallet-standard/base@npm:1.1.0, @wallet-standard/base@npm:^1.1.0":
+  version: 1.1.0
+  resolution: "@wallet-standard/base@npm:1.1.0"
+  checksum: 4057188f615f1deeb0c8a39f04018d4575f87cb387749dab6bc2e8232a95400be51ea4235450829bb256aa21136621f47167383ef1767f0eb3109f1140c74d86
+  languageName: node
+  linkType: hard
+
+"@wallet-standard/features@npm:1.1.0, @wallet-standard/features@npm:^1.1.0":
+  version: 1.1.0
+  resolution: "@wallet-standard/features@npm:1.1.0"
+  dependencies:
+    "@wallet-standard/base": ^1.1.0
+  checksum: c0c101ee0bd4c55619e39505d15158132bbd619f4dc611880a4b0c001e96806957bed35d7a51efdff0077cf5afb01e0dc46a32b01d9d8c27f807fc2b61e92159
   languageName: node
   linkType: hard
 
@@ -18990,15 +19080,26 @@ __metadata:
   languageName: node
   linkType: hard
 
-"expo-manifests@npm:~0.15.7":
-  version: 0.15.7
-  resolution: "expo-manifests@npm:0.15.7"
+"expo-localization@npm:15.0.2":
+  version: 15.0.2
+  resolution: "expo-localization@npm:15.0.2"
   dependencies:
-    "@expo/config": ~10.0.10
+    rtl-detect: ^1.0.2
+  peerDependencies:
+    expo: "*"
+  checksum: c6d535717ee3f2b8c24efd158b6f570aa5c2059007b19402967d38673d3c807b88e3d907bfa166dbf6f0bb51beea9c72fab86d2395aaf6b3a920c0ad4fd1d849
+  languageName: node
+  linkType: hard
+
+"expo-manifests@npm:~0.15.7":
+  version: 0.15.8
+  resolution: "expo-manifests@npm:0.15.8"
+  dependencies:
+    "@expo/config": ~10.0.11
     expo-json-utils: ~0.14.0
   peerDependencies:
     expo: "*"
-  checksum: dfc40ec2249df450faac0627519d0461e7520ddec93aff26bb24ffa0ba59623016ec3fbfd44673f656af9d176fb862502c1b03efbf385664a5a4cdd6ef4cdb11
+  checksum: 608e3ca95757b6adc2374442691cb918402810c69ed9fca6acd3f64bdfbd7e6be33470e777cb4d8656c322cd2e2a1524066bf8dcf9d11c1a21e5ce11145f31f2
   languageName: node
   linkType: hard
 
@@ -28583,6 +28684,13 @@ react-native-webview@ava-labs/react-native-webview:
   languageName: node
   linkType: hard
 
+"rtl-detect@npm:^1.0.2":
+  version: 1.1.2
+  resolution: "rtl-detect@npm:1.1.2"
+  checksum: 4a43a1e5df0617eb86d5485640b318787d12b86acf53d840a3b2ff701ee941e95479d4e9ae97e907569ec763d1c47218cb87639bc87bcdad60a85747e5270cf0
+  languageName: node
+  linkType: hard
+
 "run-async@npm:^2.4.0":
   version: 2.4.1
   resolution: "run-async@npm:2.4.1"
@@ -31249,6 +31357,15 @@ react-native-webview@ava-labs/react-native-webview:
     "@types/react":
       optional: true
   checksum: 4da1c82d7a2409cee6c882748a40f4a083decf238308bf12c3d0166f0e338f8d512f37b8d11987eb5a421f14b9b5b991edf3e11ed25c3bb7a6559081f8359b44
+  languageName: node
+  linkType: hard
+
+"use-debounce@npm:10.0.4":
+  version: 10.0.4
+  resolution: "use-debounce@npm:10.0.4"
+  peerDependencies:
+    react: "*"
+  checksum: 59d7e014e9ac6ba57a5b1c411cf1c088b44987b898dd64a4dc73a02da66a5ecacbc3521e261d042e7d388445b69c820b43837a1533fe9def7f85adcaaec472d0
   languageName: node
   linkType: hard
 
