@@ -138,14 +138,19 @@ class BiometricsSDK {
 
   /**
    * Disables biometric authentication by removing biometric credentials and resetting to PIN-only access.
-   * @param walletId - unique identifier for the wallet
+   * We are removing all biometric services because of backwards compatibility with existing users.
+   * Existing users might have `${SERVICE_KEY_BIO}-${walletId}` service, while new users will have `${SERVICE_KEY_BIO}` service.
    */
-  async disableBiometry(walletId: string): Promise<void> {
+  async disableBiometry(): Promise<void> {
     try {
       // Remove biometric credentials
-      await Keychain.resetGenericPassword({
-        service: `${SERVICE_KEY_BIO}-${walletId}`
-      })
+      const services = await Keychain.getAllGenericPasswordServices()
+      const bioServices = services.filter(service =>
+        service.startsWith(SERVICE_KEY_BIO)
+      )
+      await Promise.all(
+        bioServices.map(service => Keychain.resetGenericPassword({ service }))
+      )
 
       // Reset storage to indicate PIN-only access
       commonStorage.set(StorageKey.SECURE_ACCESS_SET, 'PIN')
