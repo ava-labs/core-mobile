@@ -337,7 +337,7 @@ __metadata:
     expo-linear-gradient: 14.0.2
     expo-linking: 7.0.5
     expo-local-authentication: 15.0.2
-    expo-localization: 16.1.5
+    expo-localization: 15.0.2
     expo-router: 4.0.18
     expo-sms: 13.0.1
     expo-video: 2.0.5
@@ -19080,15 +19080,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"expo-localization@npm:16.1.5":
-  version: 16.1.5
-  resolution: "expo-localization@npm:16.1.5"
+"expo-localization@npm:15.0.2":
+  version: 15.0.2
+  resolution: "expo-localization@npm:15.0.2"
   dependencies:
     rtl-detect: ^1.0.2
   peerDependencies:
     expo: "*"
-    react: "*"
-  checksum: c301e594e2a93b7e7ca278bbd4856ef23b7da1b72affaa1d7a62e54de02d949bdd23a939b7113105c1fae29317d69527e74b617fd8e666143f8211d54131fe38
+  checksum: c6d535717ee3f2b8c24efd158b6f570aa5c2059007b19402967d38673d3c807b88e3d907bfa166dbf6f0bb51beea9c72fab86d2395aaf6b3a920c0ad4fd1d849
   languageName: node
   linkType: hard
 
@@ -27634,7 +27633,7 @@ react-native-webview@ava-labs/react-native-webview:
   peerDependencies:
     react: "*"
     react-native: "*"
-  checksum: 77324747a8b5df0a5558bb99a9a0804a5575d328e84f480e462c56417af97213f38a9930e4582fb749bec374dc4d1a8910a45b006e77af9b14a8e64057b932bf
+  checksum: ae658f8c94177d1b419ffb73d26bd70474b6c688af507daaabc11451f983f77a906b2aafcdfdd09c96cab846d9722dcaf26a7c22ee7d19fb4cf70578c8812ac5
   languageName: node
   linkType: hard
 
