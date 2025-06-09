@@ -41,5 +41,7 @@ export default {
   selectNetworkCChainEVM: 'select_network__Avalanche C-Chain/EVM',
   selectNetworkXPChain: 'select_network__Avalanche X/P-Chain',
   evmNetwork: 'Avalanche C-Chain/EVM',
-  XPNetwork: 'Avalanche X/P-Chain'
+  XPNetwork: 'Avalanche X/P-Chain',
+  transactionOnboardingNext: 'transaction_onboarding__next',
+  tokenAmountInputField: 'token_amount_input_field'
 }

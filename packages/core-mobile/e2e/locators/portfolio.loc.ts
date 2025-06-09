@@ -1,6 +1,11 @@
 export default {
   // NEW BELOW:
   testnetModeIsOn: 'Testnet mode is on',
+  sendButton: 'action_button__Send',
+  swapButton: 'action_button__Swap',
+  buyButton: 'action_button__Buy',
+  bridgeButton: 'action_button__Bridge',
+  receiveButton: 'action_button__Receive',
   // OLD BELOW:
   activityTab: 'Activity',
   addToWatchlist: 'add_svg',

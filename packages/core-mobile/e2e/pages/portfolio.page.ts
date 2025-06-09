@@ -168,6 +168,26 @@ class PortfolioPage {
     return by.text(portfolio.testnetModeIsOn)
   }
 
+  get sendButton() {
+    return by.id(portfolio.sendButton)
+  }
+
+  get swapButton() {
+    return by.id(portfolio.swapButton)
+  }
+
+  get buyButton() {
+    return by.id(portfolio.buyButton)
+  }
+
+  get bridgeButton() {
+    return by.id(portfolio.bridgeButton)
+  }
+
+  get receiveButton() {
+    return by.id(portfolio.receiveButton)
+  }
+
   async verifyPorfolioScreen() {
     await Assert.isVisible(this.viewAllBtn)
     await Assert.isVisible(this.favoritesHeader)
@@ -457,6 +477,26 @@ class PortfolioPage {
       (await Action.getElementText(by.id('list_fiat_balance__0'))) ?? ''
     console.log(`${fiatBal}`)
     assert(fiatBal.includes(currency), 'Fiat currency not found')
+  }
+
+  async tapSend() {
+    await Action.tapElementAtIndex(this.sendButton, 0)
+  }
+
+  async tapSwap() {
+    await Action.tapElementAtIndex(this.swapButton, 0)
+  }
+
+  async tapBuy() {
+    await Action.tapElementAtIndex(this.buyButton, 0)
+  }
+
+  async tapBridge() {
+    await Action.tapElementAtIndex(this.bridgeButton, 0)
+  }
+
+  async tapReceive() {
+    await Action.tapElementAtIndex(this.receiveButton, 0)
   }
 }
 

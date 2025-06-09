@@ -189,6 +189,7 @@ export const RecentContacts = ({
           gap: 16
         }}>
         <SearchBar
+          testID="search_bar__search"
           onTextChanged={setSearchText}
           searchText={searchText}
           placeholder="Type in address or search contact"

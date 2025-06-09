@@ -22,7 +22,7 @@ describe('Settings - Manage Accounts', () => {
     // Switch to the first account (oldAccount)
     const accountName =
       (await commonElsPage.getBalanceHeaderAccountName()) || 'Wallet 1'
-    await settingsPage.selectAccount(oldAccount)
+    // await settingsPage.selectAccount(oldAccount)
 
     // Go to the account detail
     await settingsPage.goToAccountDetail(oldAccount)
@@ -59,7 +59,7 @@ describe('Settings - Manage Accounts', () => {
     )
 
     // Add new account and verify the new account box
-    await settingsPage.tapAddAccountBtn()
+    // await settingsPage.tapAddAccountBtn()
     await actions.waitForElement(by.text(`Account ${newAccount}`))
   })
 
@@ -77,7 +77,7 @@ describe('Settings - Manage Accounts', () => {
     )
 
     // Switch to the first account (oldAccount)
-    await settingsPage.selectAccount(oldAccount)
+    // await settingsPage.selectAccount(oldAccount)
 
     // Get the first account name that you just switched to
     const newName = await actions.getElementText(

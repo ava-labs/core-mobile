@@ -1,4 +1,5 @@
 export default {
+  accountTwo: 'Account 2',
   addressBook: 'address_book',
   amountField: 'universal_token_selector__amount_field',
   avaxToken: 'AVAX',
@@ -10,7 +11,7 @@ export default {
   nextBtn: 'next_btn',
   sendTitle: 'Send',
   amountToSend: 'universal_token_selector__amount_field',
-  tokenDropdown: 'send_token__token_dropdown',
+  sendSelectTokenListBtn: 'send_select_token_list_btn',
   usdcToken: 'USDC',
   wethToken: 'WETH.e',
   approveBtn: 'approve_button',

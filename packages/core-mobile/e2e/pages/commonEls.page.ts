@@ -164,6 +164,22 @@ class CommonElsPage {
     return by.text(commonElsLoc.XPNetwork)
   }
 
+  get transactionOnboardingNext() {
+    return by.id(commonElsLoc.transactionOnboardingNext)
+  }
+
+  get tokenAmountInputField() {
+    return by.id(commonElsLoc.tokenAmountInputField)
+  }
+
+  async dismissTransactionOnboarding() {
+    try {
+      await Actions.tap(this.transactionOnboardingNext)
+    } catch (e) {
+      console.log('Transaction onboarding not found')
+    }
+  }
+
   async enterPin(pin = '000000') {
     await Actions.waitForElement(this.pinInputField)
     await Actions.setInputText(this.pinInputField, pin)
@@ -335,6 +351,14 @@ class CommonElsPage {
     } catch (e) {
       console.log('Metro dev menu is not found...')
     }
+  }
+
+  async verifySuccessToast() {
+    await Actions.waitForElement(by.text('Success'))
+  }
+
+  async enterAmount(amount: string) {
+    await Actions.setInputText(this.tokenAmountInputField, amount)
   }
 }
 

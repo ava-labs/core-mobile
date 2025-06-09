@@ -20,19 +20,19 @@ class BottomsTabsPage {
   }
 
   get portfolioTab() {
-    return by.text(bottomTabsLoc.portfolioTab)
+    return by.id(bottomTabsLoc.portfolioTab)
   }
 
   get trackTab() {
-    return by.text(bottomTabsLoc.trackTab)
+    return by.id(bottomTabsLoc.trackTab)
   }
 
   get stakeTab() {
-    return by.text(bottomTabsLoc.stakeTab)
+    return by.id(bottomTabsLoc.stakeTab)
   }
 
   get browserTab() {
-    return by.text(bottomTabsLoc.browserTab)
+    return by.id(bottomTabsLoc.browserTab)
   }
 
   async tapBrowserTab() {
@@ -60,7 +60,7 @@ class BottomsTabsPage {
   }
 
   async tapPortfolioTab() {
-    await Actions.tapElementAtIndex(this.portfolioTab, 1)
+    await Actions.tap(this.portfolioTab)
   }
 
   async tapStakeTab() {

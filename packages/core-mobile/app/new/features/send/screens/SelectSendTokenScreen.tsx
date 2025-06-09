@@ -121,7 +121,11 @@ export const SelectSendTokenScreen = (): JSX.Element => {
               outerBorderColor={colors.$surfaceSecondary}
             />
             <View>
-              <Text variant="buttonMedium">{item.name}</Text>
+              <Text
+                variant="buttonMedium"
+                testID={`token_selector__${item.symbol}`}>
+                {item.name}
+              </Text>
               <Text variant="subtitle2">{balance + ' ' + item.symbol}</Text>
             </View>
           </View>
