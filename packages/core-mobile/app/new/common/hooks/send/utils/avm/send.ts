@@ -1,17 +1,17 @@
 import { Network } from '@avalabs/core-chains-sdk'
-import { CorePrimaryAccount } from '@avalabs/types'
 import SentryWrapper from 'services/sentry/SentryWrapper'
 import { resolve } from '@avalabs/core-utils-sdk'
 import { Request } from 'store/rpc/utils/createInAppRequest'
 import { getAvalancheCaip2ChainId } from 'utils/caip2ChainIds'
 import { AvalancheSendTransactionParams } from '@avalabs/avalanche-module'
-import { stripChainAddress } from 'store/account/utils'
+import { getAccountIndex, stripChainAddress } from 'store/account/utils'
 import WalletService from 'services/wallet/WalletService'
 import { utils } from '@avalabs/avalanchejs'
 import { SpanName } from 'services/sentry/types'
 import { Avalanche } from '@avalabs/core-wallets-sdk'
 import { SPAN_STATUS_ERROR } from '@sentry/core'
 import { RpcMethod } from '@avalabs/vm-module-types'
+import { AvmCapableAccount } from 'common/hooks/send/utils/types'
 import { getInternalExternalAddrs } from '../getInternalExternalAddrs'
 
 export const send = async ({
@@ -24,7 +24,7 @@ export const send = async ({
 }: {
   request: Request
   fromAddress: string
-  account: CorePrimaryAccount
+  account: AvmCapableAccount
   network: Network
   toAddress: string
   amount: bigint
@@ -40,7 +40,7 @@ export const send = async ({
           network,
           fromAddress,
           sentrySpanName,
-          accountIndex: account.index
+          accountIndex: getAccountIndex(account)
         })
 
         const [txHash, txError] = await resolve(

@@ -17,8 +17,7 @@ describe('wallet slice', () => {
     id: 'test-wallet-1',
     name: 'Test Wallet 1',
     mnemonic: 'test-mnemonic',
-    type: WalletType.MNEMONIC,
-    isActive: true
+    type: WalletType.MNEMONIC
   }
 
   const mockWallet2 = {

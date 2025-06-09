@@ -8,7 +8,7 @@ import Logger from 'utils/Logger'
 import { Avalanche } from '@avalabs/core-wallets-sdk'
 import { UnsignedTx } from '@avalabs/avalanchejs'
 import WalletService from 'services/wallet/WalletService'
-import { stripChainAddress } from 'store/account/utils'
+import { getAccountIndex, stripChainAddress } from 'store/account/utils'
 import { useAvalancheXpProvider } from 'hooks/networks/networkProviderHooks'
 import { useGetFeeState } from 'hooks/earn/useGetFeeState'
 import { useSendContext } from 'new/features/send/context/sendContext'
@@ -47,7 +47,7 @@ const usePVMSend: SendAdapterPVM = ({
 
       const destinationAddress = 'P-' + stripChainAddress(addressToSend ?? '')
       return await WalletService.createSendPTx({
-        accountIndex: account.index,
+        accountIndex: getAccountIndex(account),
         amountInNAvax,
         avaxXPNetwork: network,
         destinationAddress: destinationAddress,
@@ -55,7 +55,7 @@ const usePVMSend: SendAdapterPVM = ({
         feeState: getFeeState(price)
       })
     },
-    [addressToSend, account.index, network, fromAddress, getFeeState]
+    [network, addressToSend, account, fromAddress, getFeeState]
   )
 
   useEffect(() => {
@@ -96,7 +96,7 @@ const usePVMSend: SendAdapterPVM = ({
         request,
         network,
         fromAddress,
-        accountIndex: account.index,
+        accountIndex: getAccountIndex(account),
         amountInNAvax: amount.toSubUnit(),
         toAddress: addressToSend,
         feeState: getFeeState(gasPrice)
@@ -112,7 +112,7 @@ const usePVMSend: SendAdapterPVM = ({
     request,
     network,
     fromAddress,
-    account.index,
+    account,
     getFeeState,
     gasPrice
   ])

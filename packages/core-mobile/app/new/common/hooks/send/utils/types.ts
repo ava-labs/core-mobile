@@ -6,7 +6,7 @@ import {
   TokenWithBalancePVM
 } from '@avalabs/vm-module-types'
 import { Dispatch } from 'react'
-import { PrimaryAccount } from 'store/account'
+import { Account } from 'store/account'
 
 export enum SendErrorMessage {
   AMOUNT_REQUIRED = 'Amount required',
@@ -39,12 +39,12 @@ export type AdapterOptionsBTC = {
 }
 
 export type AvmCapableAccount = EnsureDefined<
-  PrimaryAccount,
+  Account,
   'addressAVM' | 'addressCoreEth'
 >
 
 export type PvmCapableAccount = EnsureDefined<
-  PrimaryAccount,
+  Account,
   'addressPVM' | 'addressCoreEth'
 >
 

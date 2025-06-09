@@ -3,7 +3,6 @@ import { TokenWithBalanceAVM } from '@avalabs/vm-module-types'
 import { Account } from 'store/account'
 import { Network } from '@avalabs/core-chains-sdk'
 import useAVMSend from 'common/hooks/send/useAVMSend'
-import { CoreAccountType } from '@avalabs/types'
 import { useSendSelectedToken } from '../store'
 import { useSendContext } from '../context/sendContext'
 import { SendToken } from './SendToken'
@@ -24,10 +23,6 @@ export const SendAVM = ({
   const { maxFee } = useSendContext()
   const [selectedToken] = useSendSelectedToken()
   const fromAddress = account.addressAVM
-
-  if (account.type !== CoreAccountType.PRIMARY) {
-    throw new Error('Account is not a primary account')
-  }
 
   const { send } = useAVMSend({
     fromAddress,

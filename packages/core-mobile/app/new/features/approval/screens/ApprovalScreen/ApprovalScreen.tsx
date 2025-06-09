@@ -23,7 +23,6 @@ import Logger from 'utils/Logger'
 import { Eip1559Fees } from 'utils/Utils'
 import { withWalletConnectCache } from 'common/components/withWalletConnectCache'
 import { useNativeTokenWithBalanceByNetwork } from 'features/send/hooks/useNativeTokenWithBalanceByNetwork'
-import { CoreAccountType } from '@avalabs/types'
 import { Account } from '../../components/Account'
 import BalanceChange from '../../components/BalanceChange/BalanceChange'
 import { Details } from '../../components/Details'
@@ -118,10 +117,6 @@ const ApprovalScreen = ({
         setSubmitting(false)
         return
       }
-    }
-
-    if (account.type === CoreAccountType.IMPORTED) {
-      throw new Error('Imported account not supported')
     }
 
     try {

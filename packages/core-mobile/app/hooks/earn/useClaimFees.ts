@@ -12,7 +12,6 @@ import Logger from 'utils/Logger'
 import { useCChainBaseFee } from 'hooks/useCChainBaseFee'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
 import { weiToNano } from 'utils/units/converter'
-import { CorePrimaryAccount, CoreAccountType } from '@avalabs/types'
 import { Avalanche } from '@avalabs/core-wallets-sdk'
 import { Network } from '@avalabs/core-chains-sdk'
 import { pvm } from '@avalabs/avalanchejs'
@@ -21,6 +20,7 @@ import { getAssetId, addBufferToCChainBaseFee } from 'services/wallet/utils'
 import { SendErrorMessage } from 'errors/sendError'
 import { getAccountIndex } from 'store/account/utils'
 import { useActiveAccount } from 'common/hooks/useActiveAccount'
+import { PvmCapableAccount } from 'common/hooks/send/utils/types'
 import { usePChainBalance } from './usePChainBalance'
 import { useGetFeeState } from './useGetFeeState'
 import { extractNeededAmount } from './utils/extractNeededAmount'
@@ -69,7 +69,6 @@ export const useClaimFees = (): {
     pChainBalance?.data?.balancePerType.unlockedUnstaked
   ])
 
-  // eslint-disable-next-line sonarjs/cognitive-complexity
   useEffect(() => {
     const calculateFees = async (): Promise<void> => {
       if (xpProvider === undefined) return
@@ -80,9 +79,6 @@ export const useClaimFees = (): {
       if (!baseFee) throw new Error('No base fee available')
 
       if (!activeAccount) throw new Error('No active account')
-
-      if (activeAccount.type === CoreAccountType.IMPORTED)
-        throw new Error('Invalid account type')
 
       const instantBaseFee = addBufferToCChainBaseFee(
         baseFee,
@@ -170,7 +166,7 @@ const getExportPFee = async ({
   pFeeAdjustmentThreshold
 }: {
   amountInNAvax: TokenUnit
-  activeAccount: CorePrimaryAccount
+  activeAccount: PvmCapableAccount
   avaxXPNetwork: Network
   provider: Avalanche.JsonRpcProvider
   feeState?: pvm.FeeState
@@ -191,7 +187,7 @@ const getExportPFee = async ({
   try {
     unsignedTxP = await WalletService.createExportPTx({
       amountInNAvax: amountInNAvax.toSubUnit(),
-      accountIndex: activeAccount.index,
+      accountIndex: getAccountIndex(activeAccount),
       avaxXPNetwork,
       destinationAddress: activeAccount.addressPVM,
       destinationChain: 'C',
@@ -234,7 +230,7 @@ const getExportPFee = async ({
 
     unsignedTxP = await WalletService.createExportPTx({
       amountInNAvax: amountAvailableToClaim,
-      accountIndex: activeAccount.index,
+      accountIndex: getAccountIndex(activeAccount),
       avaxXPNetwork,
       destinationAddress: activeAccount.addressPVM,
       destinationChain: 'C',
