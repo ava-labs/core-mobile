@@ -7,7 +7,6 @@ import { isTokenMalicious } from 'utils/isTokenMalicious'
 import { ChainId, Network } from '@avalabs/core-chains-sdk'
 import { getLastTransactedNetworks } from 'new/common/utils/getLastTransactedNetworks'
 import { uniqBy } from 'lodash'
-import { TokenType } from '@avalabs/vm-module-types'
 import { LocalTokenWithBalance } from './types'
 
 const UPDATE_PERIOD = 15
@@ -15,12 +14,6 @@ const UPDATE_PERIOD = 15
 export function getLocalTokenId(
   token: TokenWithBalance | NetworkContractToken
 ): string {
-  if (token.type === TokenType.SPL) {
-    return `spl-${token.address}`
-  }
-  if (token.type === TokenType.NATIVE && token.symbol === 'SOL') {
-    return 'native-sol'
-  }
   return 'address' in token ? token.address : `${token.name}${token.symbol}`
 }
 

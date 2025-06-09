@@ -347,20 +347,6 @@ const fetchBalanceForNetworks = async (
           }
         ]
       }
-      if (isSolanaChainId(chainId)) {
-        return [
-          ...tokenBalance,
-          {
-            ...token,
-            localId:
-              token.type === TokenType.SPL
-                ? token.address
-                : `SOL_${token.symbol}`,
-            isDataAccurate: true,
-            networkChainId: chainId
-          }
-        ]
-      }
       return [
         ...tokenBalance,
         {

@@ -159,12 +159,6 @@ export const getSolanaChainId = (caip2ChainId: string): number | undefined => {
     return ChainId.SOLANA_TESTNET_ID
   }
 
-  // For custom formats, return mainnet ID if it's a valid Solana address format
-  const [namespace, address] = caip2ChainId.split(':')
-  if (namespace === BlockchainNamespace.SOLANA && address) {
-    return ChainId.SOLANA_MAINNET_ID
-  }
-
   return undefined
 }
 
