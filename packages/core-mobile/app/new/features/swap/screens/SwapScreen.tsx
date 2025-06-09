@@ -205,14 +205,18 @@ export const SwapScreen = (): JSX.Element => {
     setToToken(initialToToken)
   }, [params, swapList, setFromToken, setToToken])
 
+  const showFeesAndSlippage = useMemo(() => {
+    return quote && isParaswapQuote(quote)
+  }, [quote])
+
   const handleSwap = useCallback(() => {
     AnalyticsService.capture('SwapReviewOrder', {
       destinationInputField: destination,
-      slippageTolerance: slippage
+      slippageTolerance: showFeesAndSlippage ? slippage : undefined
     })
 
     swap()
-  }, [swap, destination, slippage])
+  }, [swap, destination, slippage, showFeesAndSlippage])
 
   const handleFromAmountChange = useCallback(
     (amount: bigint): void => {
@@ -368,10 +372,6 @@ export const SwapScreen = (): JSX.Element => {
 
     return 0
   }, [quote, swapType])
-
-  const showFeesAndSlippage = useMemo(() => {
-    return quote && isParaswapQuote(quote)
-  }, [quote])
 
   const data = useMemo(() => {
     const items: GroupListItem[] = []
