@@ -85,12 +85,28 @@ class BiometricsSDK {
     })
   }
 
+  async storePINWithBiometry(pin: string): Promise<boolean> {
+    await Keychain.setGenericPassword(pin, pin, {
+      ...KeystoreConfig.KEYSTORE_BIO_OPTIONS,
+      service: `${SERVICE_KEY_BIO}`
+    })
+    return true
+  }
+
+  async loadPINWithBiometry(): Promise<false | UserCredentials> {
+    return Keychain.getGenericPassword({
+      ...KeystoreConfig.KEYSTORE_BIO_OPTIONS,
+      service: `${SERVICE_KEY_BIO}`
+    })
+  }
+
   /**
    * Stores key under available biometry and prompts user for biometry to check if everything is ok.
    * Emits boolean true if everything ok, or throws Error if something went wrong.
    * @param walletId - unique identifier for the wallet
    * @param key - mnemonic to store
    */
+  /** @deprecated use storePINWithBiometry */
   async storeWalletWithBiometry(
     walletId: string,
     key: string
