@@ -1,10 +1,9 @@
-import React, { useMemo } from 'react'
 import { SxProp } from 'dripsy'
+import React, { useCallback } from 'react'
 import Animated from 'react-native-reanimated'
 import { TextVariant } from '../../theme/tokens/text'
-import { Text, View } from '../Primitives'
 import { AnimateFadeScale } from '../AnimatedFadeScale/AnimatedFadeScale'
-import { SPRING_LINEAR_TRANSITION } from '../../utils'
+import { Text, View } from '../Primitives'
 
 export const AnimatedBalance = ({
   variant = 'heading2',
@@ -25,70 +24,64 @@ export const AnimatedBalance = ({
   shouldAnimate?: boolean
   renderMaskView?: () => React.JSX.Element
 }): JSX.Element => {
-  const animatedBalance = useMemo(() => {
-    if (shouldMask) return
+  const renderContent = useCallback(() => {
+    const balanceChars = balance.toString().split('')
+    const currencyChars = currency ? currency.toString().split('') : []
 
-    return balance
-      .toString()
-      .split('')
-      .map((character, index) => {
-        return (
-          <AnimateFadeScale key={`${character}-${index}`} delay={index * 30}>
+    return (
+      <>
+        {balanceChars.map((char, index) => (
+          <AnimateFadeScale key={`balance-${index}`} delay={index * 30}>
             <Text variant={variant} sx={balanceSx}>
-              {character}
+              {char}
             </Text>
           </AnimateFadeScale>
-        )
-      })
-  }, [balance, balanceSx, shouldMask, variant])
-
-  const animatedCurrency = useMemo(() => {
-    if (currency === undefined || shouldMask) return
-    return currency
-      .toString()
-      .split('')
-      .map((character, index) => {
-        return (
+        ))}
+        {currencyChars.map((char, index) => (
           <AnimateFadeScale
-            key={`${character}-${index}`}
-            delay={(balance.length + index) * 30}>
+            key={`currency-${index}`}
+            delay={(balanceChars.length + index) * 30}>
             <Text variant={variant} sx={currencySx}>
-              {character}
+              {char}
             </Text>
           </AnimateFadeScale>
-        )
-      })
-  }, [balance.length, currency, currencySx, shouldMask, variant])
+        ))}
+      </>
+    )
+  }, [balance, currency, balanceSx, currencySx, variant])
 
   if (shouldMask && renderMaskView) {
     return renderMaskView()
   }
 
-  return shouldAnimate === false ? (
-    <View
-      testID="balance"
-      style={{
-        flexDirection: 'row',
-        alignItems: 'flex-end',
-        gap: 1
-      }}>
-      <Text variant={variant} sx={balanceSx} numberOfLines={1}>
-        {balance}
-      </Text>
-      <Text variant={variant} sx={currencySx}>
-        {currency}
-      </Text>
-    </View>
-  ) : (
+  if (shouldAnimate === false)
+    return (
+      <View
+        testID="balance"
+        style={{
+          flexDirection: 'row',
+          alignItems: 'flex-end',
+          gap: 1
+        }}>
+        <Text variant={variant} sx={balanceSx} numberOfLines={1}>
+          {balance}
+        </Text>
+        {currency && (
+          <Text variant={variant} sx={currencySx}>
+            {currency}
+          </Text>
+        )}
+      </View>
+    )
+
+  return (
     <Animated.View
       testID="animated_balance"
-      layout={SPRING_LINEAR_TRANSITION}
       style={{
         flexDirection: 'row',
         alignItems: 'flex-end'
       }}>
-      {animatedBalance}
-      {animatedCurrency}
+      {renderContent()}
     </Animated.View>
   )
 }
