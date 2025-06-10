@@ -17,14 +17,14 @@ import ParaswapService from '../../services/ParaswapService'
 
 const PARTNER = 'Avalanche'
 
-export type PerformSwapParams = {
+export type ParaSwapParams = {
   srcTokenAddress: string | undefined
   isSrcTokenNative: boolean
   destTokenAddress: string | undefined
   isDestTokenNative: boolean
   priceRoute: OptimalRate | undefined
   slippage: number
-  network: Network | undefined
+  network: Network
   provider: JsonRpcBatchInternal
   userAddress: string | undefined
   signAndSend: (
@@ -50,7 +50,7 @@ export const paraSwap = async ({
   signAndSend,
   isSwapFeesEnabled
 }: // eslint-disable-next-line sonarjs/cognitive-complexity
-PerformSwapParams): Promise<SwapTxHash> => {
+ParaSwapParams): Promise<SwapTxHash> => {
   if (!srcTokenAddress) throw swapError.missingParam('srcTokenAddress')
 
   if (!destTokenAddress) throw swapError.missingParam('destTokenAddress')
@@ -58,8 +58,6 @@ PerformSwapParams): Promise<SwapTxHash> => {
   if (!priceRoute) throw swapError.missingParam('priceRoute')
 
   if (!userAddress) throw swapError.missingParam('userAddress')
-
-  if (!network) throw swapError.missingParam('network')
 
   if (network.isTestnet) throw swapError.networkNotSupported(network.chainName)
 
