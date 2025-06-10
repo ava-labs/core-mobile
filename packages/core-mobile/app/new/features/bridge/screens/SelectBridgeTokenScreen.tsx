@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from 'react'
 import {
   Icons,
+  SCREEN_WIDTH,
   Separator,
   Text,
   TouchableOpacity,
@@ -94,7 +95,12 @@ export const SelectBridgeTokenScreen = (): JSX.Element => {
               />
             )}
             <View>
-              <Text variant="buttonMedium">{item.asset.name}</Text>
+              <Text
+                variant="buttonMedium"
+                numberOfLines={1}
+                sx={{ width: SCREEN_WIDTH * 0.65 }}>
+                {item.asset.name}
+              </Text>
               <Text variant="subtitle2">
                 {item.balance !== undefined
                   ? formatTokenAmount(

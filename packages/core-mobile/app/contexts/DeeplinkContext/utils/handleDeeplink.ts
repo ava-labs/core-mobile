@@ -8,6 +8,7 @@ import { showSnackbar } from 'new/common/utils/toast'
 import { router } from 'expo-router'
 import { History } from 'store/browser'
 import { navigateFromDeeplinkUrl } from 'utils/navigateFromDeeplink'
+import { MarketType } from 'store/watchlist'
 import { ACTIONS, DeepLink, PROTOCOLS } from '../types'
 
 export const handleDeeplink = ({
@@ -66,7 +67,9 @@ export const handleDeeplink = ({
         navigateFromDeeplinkUrl('/claimStakeReward')
       } else if (action === ACTIONS.WatchList) {
         const coingeckoId = pathname.split('/')[1]
-        navigateFromDeeplinkUrl(`/trackTokenDetail?tokenId=${coingeckoId}`)
+        navigateFromDeeplinkUrl(
+          `/trackTokenDetail?tokenId=${coingeckoId}&marketType=${MarketType.SEARCH}`
+        )
       } else {
         const path = deeplink.url.split(':/')[1]
         path && navigateFromDeeplinkUrl(path)
