@@ -13,11 +13,13 @@ import { isPChain, isXChain, isXPChain } from 'utils/network/isAvalancheNetwork'
 export const SelectNetworkScreen = ({
   networks,
   selected,
-  onSelect
+  onSelect,
+  isReceiveScreen = false
 }: {
   networks: Network[]
   selected?: Network
   onSelect: (network: Network) => void
+  isReceiveScreen?: boolean
 }): JSX.Element => {
   const { theme } = useTheme()
   const { back } = useRouter()
@@ -70,7 +72,7 @@ export const SelectNetworkScreen = ({
               variant="buttonMedium">
               {item.chainName}
             </Text>
-            {isAvalancheCChain && (
+            {isAvalancheCChain && isReceiveScreen && (
               <View
                 sx={{
                   flex: 1,
