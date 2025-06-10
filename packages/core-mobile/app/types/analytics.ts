@@ -147,7 +147,7 @@ export type AnalyticsEvents = {
   }
   SwapReviewOrder: {
     destinationInputField: string
-    slippageTolerance: number
+    slippageTolerance: number | undefined
   }
   Swap_TokenSelected: undefined
   TermsAndConditionsAccepted: undefined

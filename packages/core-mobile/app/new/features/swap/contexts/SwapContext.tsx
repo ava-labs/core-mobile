@@ -5,67 +5,51 @@ import React, {
   useCallback,
   useContext,
   useEffect,
-  useState,
-  useRef
+  useState
 } from 'react'
 import { JsonRpcError } from '@metamask/rpc-errors'
-import { getSwapRate, getTokenAddress } from 'swap/getSwapRate'
-import { SwapSide, OptimalRate } from '@paraswap/sdk'
+import { SwapSide } from '@paraswap/sdk'
 import { useDebouncedCallback } from 'use-debounce'
 import Logger from 'utils/Logger'
-import { resolve } from '@avalabs/core-utils-sdk'
 import { InteractionManager } from 'react-native'
 import SentryWrapper from 'services/sentry/SentryWrapper'
 import { humanizeSwapError } from 'errors/swapError'
-import { useAvalancheProvider } from 'hooks/networks/networkProviderHooks'
 import { useSelector } from 'react-redux'
+import { TokenType } from '@avalabs/vm-module-types'
 import { Account, selectActiveAccount } from 'store/account'
 import AnalyticsService from 'services/analytics/AnalyticsService'
-import { useInAppRequest } from 'hooks/useInAppRequest'
-import { getEvmCaip2ChainId } from 'utils/caip2ChainIds'
 import { audioFeedback, Audios } from 'utils/AudioFeedback'
-import { RpcMethod } from '@avalabs/vm-module-types'
 import { isUserRejectedError } from 'store/rpc/providers/walletConnect/utils'
-import { humanizeParaswapRateError } from 'errors/swapError'
-import { selectIsSwapFeesBlocked } from 'store/posthog'
-import { performSwap } from 'contexts/SwapContext/performSwap/performSwap'
 import { LocalTokenWithBalance } from 'store/balance'
 import useCChainNetwork from 'hooks/earn/useCChainNetwork'
 import { transactionSnackbar } from 'new/common/utils/toast'
 import { useSwapSelectedFromToken, useSwapSelectedToToken } from '../store'
+import { SwapQuote, SwapType } from '../types'
+import { useEvmSwap } from '../hooks/useEvmSwap'
+import { getTokenAddress } from '../utils/getTokenAddress'
 
 const DEFAULT_DEBOUNCE_MILLISECONDS = 300
 
 // success here just means the transaction was sent, not that it was successful/confirmed
-export type SwapStatus = 'Idle' | 'Swapping' | 'Success' | 'Fail'
+type SwapStatus = 'Idle' | 'Swapping' | 'Success' | 'Fail'
 
-export type SwapParams = {
-  srcTokenAddress: string
-  isSrcTokenNative: boolean
-  destTokenAddress: string
-  isDestTokenNative: boolean
-  priceRoute: OptimalRate
-  swapSlippage: number
-}
-
-export interface SwapContextState {
+interface SwapContextState {
   fromToken?: LocalTokenWithBalance
   toToken?: LocalTokenWithBalance
   setFromToken: Dispatch<LocalTokenWithBalance | undefined>
   setToToken: Dispatch<LocalTokenWithBalance | undefined>
-  optimalRate?: OptimalRate
-  setOptimalRate: Dispatch<OptimalRate | undefined>
-  refresh: () => void
-  swap(params: SwapParams): void
+  swapType: SwapType | undefined
+  setSwapType: Dispatch<SwapType | undefined>
+  quote: SwapQuote | undefined
+  isFetchingQuote: boolean
+  swap(): void
   slippage: number
   setSlippage: Dispatch<number>
   destination: SwapSide
   setDestination: Dispatch<SwapSide>
   swapStatus: SwapStatus
   setAmount: Dispatch<bigint | undefined>
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  error: any
-  isFetchingOptimalRate: boolean
+  error: string
 }
 
 export const SwapContext = createContext<SwapContextState>(
@@ -77,104 +61,113 @@ export const SwapContextProvider = ({
 }: {
   children: ReactNode
 }): JSX.Element => {
-  const abortControllerRef = useRef<AbortController | null>(null)
-  const { request } = useInAppRequest()
-  const cChainNetwork = useCChainNetwork()
   const activeAccount = useSelector(selectActiveAccount)
-  const avalancheProvider = useAvalancheProvider()
+  const [swapType, setSwapType] = useState<SwapType>()
   const [fromToken, setFromToken] = useSwapSelectedFromToken()
   const [toToken, setToToken] = useSwapSelectedToToken()
-  const [optimalRate, setOptimalRate] = useState<OptimalRate>()
-  const [error, setError] = useState('')
   const [slippage, setSlippage] = useState<number>(1)
   const [destination, setDestination] = useState<SwapSide>(SwapSide.SELL)
   const [swapStatus, setSwapStatus] = useState<SwapStatus>('Idle')
-  const [amount, setAmount] = useState<bigint>() //the amount that's gonna be passed to paraswap
-  const [isFetchingOptimalRate, setIsFetchingOptimalRate] = useState(false)
+  const [amount, setAmount] = useState<bigint>()
+  const [isFetchingQuote, setIsFetchingQuote] = useState(false)
+  const [quote, setQuote] = useState<SwapQuote | undefined>()
+  const [error, setError] = useState('')
+  const cChainNetwork = useCChainNetwork()
+  const { getQuote: getEvmQuote, swap: evmSwap } = useEvmSwap()
 
-  // debounce since fetching rates via paraswaps can take awhile
+  // debounce since fetching quotes can take awhile
   const debouncedSetAmount = useDebouncedCallback(
     setAmount,
     DEFAULT_DEBOUNCE_MILLISECONDS
   )
-  const isSwapFeesBlocked = useSelector(selectIsSwapFeesBlocked)
 
-  const getOptimalRateForAmount = useCallback(
-    (account: Account, amnt: bigint) => {
-      if (!cChainNetwork) {
-        return Promise.reject('Invalid from network')
-      }
-      if (!fromToken || !('decimals' in fromToken))
-        return Promise.reject('Invalid from token')
+  const getQuote = useCallback(async () => {
+    const isValidFromToken = fromToken && 'decimals' in fromToken
+    const isValidToToken = toToken && 'decimals' in toToken
 
-      if (!toToken || !('decimals' in toToken))
-        return Promise.reject('Invalid to token')
-
-      // abort previous request if it exists
-      if (abortControllerRef.current) {
-        abortControllerRef.current.abort()
-      }
-      // create new AbortController
-      const controller = new AbortController()
-      abortControllerRef.current = controller
-
-      return getSwapRate({
-        fromTokenAddress: getTokenAddress(fromToken),
-        toTokenAddress: getTokenAddress(toToken),
-        fromTokenDecimals: fromToken.decimals,
-        toTokenDecimals: toToken.decimals,
-        amount: amnt.toString(),
-        swapSide: destination,
-        network: cChainNetwork,
-        account,
-        abortSignal: controller.signal
-      })
-    },
-    [cChainNetwork, destination, fromToken, toToken]
-  )
-
-  const getOptimalRate = useCallback(() => {
-    if (activeAccount && amount && amount > 0n) {
-      setIsFetchingOptimalRate(true)
-      getOptimalRateForAmount(activeAccount, amount)
-        .then(({ optimalRate: opRate }) => {
-          setError('')
-          setOptimalRate(opRate)
-        })
-        .catch(reason => {
-          if (reason.message !== 'Aborted') {
-            setError(humanizeParaswapRateError(reason.message))
-            setOptimalRate(undefined)
-            Logger.error('failed to getSwapRate', reason)
-          }
-        })
-        .finally(() => {
-          setIsFetchingOptimalRate(false)
-        })
-    } else {
+    if (
+      !activeAccount ||
+      !swapType ||
+      !amount ||
+      amount <= 0n ||
+      !isValidFromToken ||
+      !isValidToToken
+    ) {
       setError('')
-      setOptimalRate(undefined)
+      setQuote(undefined)
+      return
     }
-  }, [activeAccount, amount, getOptimalRateForAmount])
+
+    try {
+      setIsFetchingQuote(true)
+      let tempQuote: SwapQuote | undefined
+
+      if (swapType === SwapType.EVM) {
+        if (!cChainNetwork) {
+          throw new Error('Invalid network')
+        }
+
+        tempQuote = await getEvmQuote({
+          account: activeAccount,
+          network: cChainNetwork,
+          amount,
+          fromTokenAddress: getTokenAddress(fromToken),
+          fromTokenDecimals: fromToken.decimals,
+          isFromTokenNative: fromToken.type === TokenType.NATIVE,
+          toTokenAddress: getTokenAddress(toToken),
+          toTokenDecimals: toToken.decimals,
+          isToTokenNative: toToken.type === TokenType.NATIVE,
+          destination
+        })
+      } else {
+        throw new Error(`Unsupported swap type: ${swapType}`)
+      }
+
+      if (tempQuote) {
+        setError('')
+        setQuote(tempQuote)
+      }
+    } catch (err) {
+      const errorMessage =
+        err instanceof Error ? err.message : 'Unknown error occurred'
+      setError(errorMessage)
+      Logger.error('Failed to fetch quote', err)
+    } finally {
+      setIsFetchingQuote(false)
+    }
+  }, [
+    activeAccount,
+    cChainNetwork,
+    amount,
+    destination,
+    fromToken,
+    toToken,
+    getEvmQuote,
+    swapType
+  ])
 
   useEffect(() => {
-    //call getOptimalRate every time its params change to get fresh rates
-    getOptimalRate()
-  }, [getOptimalRate])
-
-  const refresh = useCallback(() => {
-    getOptimalRate()
-  }, [getOptimalRate])
+    //call getQuote every time its params change to get fresh rates
+    getQuote()
+  }, [getQuote])
 
   const handleSwapError = useCallback(
-    (account: Account, err: unknown) => {
+    ({
+      account,
+      chainId,
+      err
+    }: {
+      account: Account
+      chainId: number
+      err: unknown
+    }) => {
       if (!cChainNetwork) {
         return
       }
 
       AnalyticsService.captureWithEncryption('SwapTransactionFailed', {
         address: account.addressC,
-        chainId: cChainNetwork.chainId
+        chainId
       })
 
       const readableErrorMessage = humanizeSwapError(err)
@@ -188,94 +181,112 @@ export const SwapContextProvider = ({
   )
 
   const handleSwapSuccess = useCallback(
-    (swapTxHash: string | undefined) => {
-      if (!cChainNetwork) {
-        return
-      }
-
+    ({
+      swapTxHash,
+      chainId
+    }: {
+      swapTxHash: string | undefined
+      chainId: number
+    }) => {
       setSwapStatus('Success')
       AnalyticsService.captureWithEncryption('SwapTransactionSucceeded', {
         txHash: swapTxHash ?? '',
-        chainId: cChainNetwork.chainId
+        chainId
       })
       audioFeedback(Audios.Send)
     },
-    [cChainNetwork]
+    []
   )
 
   // eslint-disable-next-line sonarjs/cognitive-complexity
-  function onSwap({
-    srcTokenAddress,
-    isSrcTokenNative,
-    destTokenAddress,
-    isDestTokenNative,
-    priceRoute,
-    swapSlippage
-  }: SwapParams): void {
-    setSwapStatus('Swapping')
+  const swap = useCallback(() => {
+    if (!activeAccount || !fromToken || !toToken || !swapType || !quote) {
+      return
+    }
+
+    const fromTokenAddress = getTokenAddress(fromToken)
+    const isFromTokenNative = fromToken.type === TokenType.NATIVE
+    const toTokenAddress = getTokenAddress(toToken)
+    const isToTokenNative = toToken.type === TokenType.NATIVE
 
     InteractionManager.runAfterInteractions(async () => {
-      SentryWrapper.startSpan({ name: 'swap' }, async span => {
-        if (!avalancheProvider || !activeAccount || !cChainNetwork) {
-          return
-        }
+      let chainId: number | undefined
 
-        resolve(
-          performSwap({
-            srcTokenAddress,
-            isSrcTokenNative,
-            destTokenAddress,
-            isDestTokenNative,
-            priceRoute,
-            slippage: swapSlippage,
-            activeNetwork: cChainNetwork,
-            provider: avalancheProvider,
-            signAndSend: (txParams, context) =>
-              request({
-                method: RpcMethod.ETH_SEND_TRANSACTION,
-                params: txParams,
-                chainId: getEvmCaip2ChainId(cChainNetwork.chainId),
-                context
-              }),
-            userAddress: activeAccount.addressC,
-            isSwapFeesEnabled: !isSwapFeesBlocked
-          })
-        )
-          .then(([result, err]) => {
-            if (err || (result && 'error' in result)) {
-              setSwapStatus('Fail')
-              if (!isUserRejectedError(err)) {
-                handleSwapError(activeAccount, err)
-              }
-            } else {
-              handleSwapSuccess(result?.swapTxHash)
+      SentryWrapper.startSpan({ name: 'swap' }, async span => {
+        try {
+          setSwapStatus('Swapping')
+
+          let swapTxHash: string | undefined
+
+          if (swapType === SwapType.EVM) {
+            if (!cChainNetwork) {
+              throw new Error('Invalid network')
             }
-          })
-          .catch(Logger.error)
-          .finally(() => {
-            span?.end()
-          })
+
+            chainId = cChainNetwork.chainId
+
+            swapTxHash = await evmSwap({
+              account: activeAccount,
+              network: cChainNetwork,
+              fromTokenAddress,
+              isFromTokenNative,
+              toTokenAddress,
+              isToTokenNative,
+              quote,
+              slippage
+            })
+          }
+
+          if (swapTxHash && chainId) {
+            handleSwapSuccess({
+              swapTxHash: swapTxHash,
+              chainId
+            })
+          }
+        } catch (err) {
+          setSwapStatus('Fail')
+          if (!isUserRejectedError(err) && chainId && activeAccount) {
+            handleSwapError({
+              account: activeAccount,
+              chainId,
+              err
+            })
+          }
+        } finally {
+          span?.end()
+        }
       })
     })
-  }
+  }, [
+    activeAccount,
+    swapType,
+    quote,
+    slippage,
+    cChainNetwork,
+    evmSwap,
+    fromToken,
+    toToken,
+    handleSwapError,
+    handleSwapSuccess
+  ])
 
   const state: SwapContextState = {
     fromToken,
     setFromToken,
     toToken,
     setToToken,
-    optimalRate,
-    setOptimalRate,
-    refresh,
     slippage,
     setSlippage,
     destination,
     setDestination,
-    swap: onSwap,
+    swap,
     swapStatus,
     setAmount: debouncedSetAmount,
+    swapType,
+    setSwapType,
     error,
-    isFetchingOptimalRate
+    quote,
+    isFetchingQuote
   }
 
   return <SwapContext.Provider value={state}>{children}</SwapContext.Provider>
