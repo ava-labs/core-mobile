@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from 'react'
 import {
   Icons,
+  SCREEN_WIDTH,
   Separator,
   Text,
   TouchableOpacity,
@@ -81,7 +82,12 @@ export const SelectSwapTokenScreen = ({
               outerBorderColor={colors.$surfaceSecondary}
             />
             <View>
-              <Text variant="buttonMedium">{item.name}</Text>
+              <Text
+                variant="buttonMedium"
+                numberOfLines={1}
+                sx={{ width: SCREEN_WIDTH * 0.65 }}>
+                {item.name}
+              </Text>
               <Text variant="subtitle2">
                 {item.balanceDisplayValue} {item.symbol}
               </Text>
