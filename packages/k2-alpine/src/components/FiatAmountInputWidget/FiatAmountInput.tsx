@@ -10,7 +10,6 @@ import React, {
 import { SxProp } from 'dripsy'
 import {
   InteractionManager,
-  LayoutChangeEvent,
   Platform,
   ReturnKeyTypeOptions,
   StyleSheet,
@@ -31,6 +30,7 @@ export type FiatAmountInputHandle = {
 type FiatAmountInputProps = {
   amount?: string
   currency: string
+  isAmountValid?: boolean
   formatInTokenUnit?(amount: number): string
   formatInCurrency(amount: number): string
   sx?: SxProp
@@ -47,6 +47,7 @@ export const FiatAmountInput = forwardRef<
   (
     {
       amount,
+      isAmountValid = true,
       currency,
       onChange,
       formatInCurrency,
@@ -65,10 +66,6 @@ export const FiatAmountInput = forwardRef<
     const [value, setValue] = useState(amount)
     const [maxLength, setMaxLength] = useState<number>()
     const textInputRef = useRef<TextInput>(null)
-    const [textInputMinimumLayout, setTextInputMinimumLayout] = useState<{
-      width: number
-      height: number
-    }>()
 
     const inputAmount = useMemo(() => {
       return value?.replace(/,/g, '')
@@ -131,10 +128,6 @@ export const FiatAmountInput = forwardRef<
       textInputRef.current?.focus()
     }
 
-    const handleTextInputLayout = (event: LayoutChangeEvent): void => {
-      setTextInputMinimumLayout(event.nativeEvent.layout)
-    }
-
     useImperativeHandle(ref, () => ({
       setValue: (newValue: string) => setValue(newValue),
       focus: () => textInputRef.current?.focus(),
@@ -158,7 +151,12 @@ export const FiatAmountInput = forwardRef<
         {formatInTokenUnit && (
           <Text
             variant="subtitle2"
-            sx={{ marginBottom: 8, color: alpha(colors.$textPrimary, 0.9) }}>
+            sx={{
+              marginBottom: 8,
+              color: isAmountValid
+                ? alpha(colors.$textPrimary, 0.9)
+                : colors.$textDanger
+            }}>
             {formatInTokenUnit(Number(inputAmount ?? 0))}
           </Text>
         )}
@@ -173,23 +171,14 @@ export const FiatAmountInput = forwardRef<
               <Text
                 sx={{
                   ...styles.textInput,
-                  lineHeight: 68
+                  lineHeight: 68,
+                  color: isAmountValid
+                    ? alpha(colors.$textPrimary, 0.9)
+                    : colors.$textDanger
                 }}>
                 {displayLeadingFiatCurrency}
               </Text>
             )}
-            <Text
-              onLayout={handleTextInputLayout}
-              style={[
-                styles.textInput,
-                {
-                  position: 'absolute',
-                  top: 0,
-                  opacity: 0
-                }
-              ]}>
-              {PLACEHOLDER}
-            </Text>
             <TextInput
               returnKeyType={returnKeyType}
               ref={textInputRef}
@@ -198,9 +187,10 @@ export const FiatAmountInput = forwardRef<
                 styles.textInput,
                 {
                   flexShrink: 1,
-                  color: colors.$textPrimary,
-                  textAlign: 'center',
-                  minWidth: textInputMinimumLayout?.width
+                  color: isAmountValid
+                    ? alpha(colors.$textPrimary, 0.9)
+                    : colors.$textDanger,
+                  textAlign: 'right'
                 }
               ]}
               /**
@@ -223,7 +213,10 @@ export const FiatAmountInput = forwardRef<
                   fontFamily: 'Aeonik-Medium',
                   fontSize: 24,
                   lineHeight: 24,
-                  marginBottom: 8
+                  marginBottom: 8,
+                  color: isAmountValid
+                    ? alpha(colors.$textPrimary, 0.9)
+                    : colors.$textDanger
                 }}>
                 {currency}
               </Text>
