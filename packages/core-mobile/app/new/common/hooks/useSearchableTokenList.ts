@@ -105,10 +105,11 @@ export function useSearchableTokenList({
   const mergedTokens = useMemo(() => {
     const tokensWithBalanceIDs: Record<LocalTokenId, boolean> = {}
     tokensWithBalance.forEach(token => {
-      tokensWithBalanceIDs[token.localId] = true
+      tokensWithBalanceIDs[token.localId.toLowerCase()] = true
     })
+
     const remainingNetworkTokens = allNetworkTokens.filter(
-      token => !tokensWithBalanceIDs[token.localId]
+      token => !tokensWithBalanceIDs[token.localId.toLowerCase()]
     )
     return [...tokensWithBalance, ...remainingNetworkTokens]
   }, [allNetworkTokens, tokensWithBalance])
