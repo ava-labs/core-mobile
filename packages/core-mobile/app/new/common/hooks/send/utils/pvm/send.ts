@@ -20,6 +20,7 @@ export const send = async ({
   toAddress,
   amountInNAvax,
   feeState,
+  walletId,
   accountIndex
 }: {
   request: Request
@@ -28,6 +29,7 @@ export const send = async ({
   toAddress: string
   amountInNAvax: bigint
   feeState?: pvm.FeeState
+  walletId: string
   accountIndex: number
 }): Promise<string> => {
   const sentrySpanName = 'send-token'
@@ -38,6 +40,7 @@ export const send = async ({
       try {
         const destinationAddress = 'P-' + stripChainAddress(toAddress ?? '')
         const unsignedTx = await WalletService.createSendPTx({
+          walletId,
           accountIndex: accountIndex,
           amountInNAvax,
           avaxXPNetwork: network,

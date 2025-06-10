@@ -1,37 +1,31 @@
-import { SeedlessPubKeysStorage } from 'seedless/services/storage/SeedlessPubKeysStorage'
 import SeedlessWallet from 'seedless/services/wallet/SeedlessWallet'
 import SeedlessService from 'seedless/services/SeedlessService'
-import { Wallet, WalletType } from './types'
-import MnemonicWalletInstance from './MnemonicWallet'
+import SecretsService from 'services/secrets/SecretsService'
+import {
+  EVM_BASE_DERIVATION_PATH_PREFIX,
+  SecretType
+} from 'services/secrets/types'
+import { Wallet } from './types'
+import MnemonicWallet from './MnemonicWallet'
 
 class WalletFactory {
-  async createWallet(
-    accountIndex: number,
-    walletType: WalletType
-  ): Promise<Wallet> {
-    switch (walletType) {
-      case WalletType.SEEDLESS: {
-        const pubKeysStorage = new SeedlessPubKeysStorage()
-        const pubKeys = await pubKeysStorage.retrieve()
+  async createWallet(walletId: string, accountIndex: number): Promise<Wallet> {
+    const secrets = await SecretsService.getSecretsById(walletId)
+    const publicKeys = secrets.publicKeys.filter(pubKey =>
+      pubKey.derivationPath.startsWith(EVM_BASE_DERIVATION_PATH_PREFIX)
+    )
 
-        if (pubKeys.length === 0) throw new Error('Public keys not available')
+    switch (secrets.secretType) {
+      case SecretType.Seedless: {
+        const addressPublicKey = publicKeys[accountIndex]
 
-        const addressPublicKey = pubKeys[accountIndex]
-
-        if (!addressPublicKey) {
-          throw new Error(`Public key not available for index ${accountIndex}`)
-        }
-
+        if (!addressPublicKey) throw new Error('Public keys not available')
         const client = await SeedlessService.session.getSignerClient()
 
         return new SeedlessWallet(client, addressPublicKey)
       }
-      case WalletType.MNEMONIC:
-        return MnemonicWalletInstance
-      default:
-        throw new Error(
-          `Unable to create wallet: unsupported wallet type ${walletType}`
-        )
+      case SecretType.Mnemonic:
+        return new MnemonicWallet(secrets.mnemonic)
     }
   }
 }

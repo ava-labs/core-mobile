@@ -86,6 +86,7 @@ class EarnService {
           progressEvents?.(RecoveryEvents.GetAtomicUTXOsFailIng)
         }
         return WalletService.getAtomicUTXOs({
+          walletId: activeAccount.walletId,
           accountIndex: activeAccount.index,
           avaxXPNetwork
         })
@@ -237,6 +238,7 @@ class EarnService {
 
     const signedTxJson = await WalletService.sign({
       transaction: { tx: unsignedTx } as AvalancheTransactionRequest,
+      walletId: activeAccount.walletId,
       accountIndex: activeAccount.index,
       network: avaxXPNetwork
     })
@@ -356,7 +358,11 @@ class EarnService {
       const oppositeNetworkAddresses = (
         await Promise.all(
           accountsArray.map(account =>
-            WalletService.getAddresses(account.index, network)
+            WalletService.getAddresses(
+              account.walletId,
+              account.index,
+              isDeveloperMode
+            )
           )
         )
       ).map(address => address.PVM)

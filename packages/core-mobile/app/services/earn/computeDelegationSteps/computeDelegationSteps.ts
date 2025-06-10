@@ -27,6 +27,7 @@ export const computeDelegationSteps = async ({
   stakeAmount,
   currency,
   avaxXPNetwork,
+  walletId,
   accountIndex,
   feeState,
   cAddress,
@@ -41,6 +42,7 @@ export const computeDelegationSteps = async ({
   stakeAmount: bigint
   currency: string
   avaxXPNetwork: Network
+  walletId: string
   accountIndex: number
   feeState: pvm.FeeState
   cAddress: string
@@ -68,6 +70,7 @@ export const computeDelegationSteps = async ({
 
   const pChainAtomicBalance = await getPChainAtomicBalance({
     avaxXPNetwork,
+    walletId,
     accountIndex
   })
 
@@ -83,6 +86,7 @@ export const computeDelegationSteps = async ({
         // this will throw if P-Chain balance is not enough
         const delegationFee = await getDelegationFee({
           stakeAmount,
+          walletId,
           accountIndex,
           avaxXPNetwork,
           pAddress,
@@ -109,6 +113,7 @@ export const computeDelegationSteps = async ({
           throw new Error('no P-Chain atomic balance')
 
         const importPFee = await getImportPFee({
+          walletId,
           accountIndex,
           avaxXPNetwork,
           pAddress,
@@ -119,6 +124,7 @@ export const computeDelegationSteps = async ({
         // this will throw if P-Chain balance is not enough
         const delegationFee = await getDelegationFeePostPImport({
           stakeAmount,
+          walletId,
           accountIndex,
           avaxXPNetwork,
           pAddress,
@@ -156,6 +162,7 @@ export const computeDelegationSteps = async ({
 
         const exportCFee = await getExportCFee({
           cChainBaseFee,
+          walletId,
           accountIndex,
           avaxXPNetwork,
           pAddress,
@@ -163,6 +170,7 @@ export const computeDelegationSteps = async ({
         })
 
         const importPFee = await getImportPFeePostCExport({
+          walletId,
           accountIndex,
           avaxXPNetwork,
           pAddress,
@@ -173,6 +181,7 @@ export const computeDelegationSteps = async ({
         // this will throw if P-Chain balance is not enough
         const delegationFee = await getDelegationFeePostCExportAndPImport({
           stakeAmount,
+          walletId,
           accountIndex,
           avaxXPNetwork,
           pAddress,

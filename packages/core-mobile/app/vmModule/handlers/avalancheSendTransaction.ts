@@ -54,6 +54,7 @@ export const avalancheSendTransaction = async ({
         externalIndices,
         internalIndices
       },
+      walletId: account.walletId,
       accountIndex: account.index
     })
 

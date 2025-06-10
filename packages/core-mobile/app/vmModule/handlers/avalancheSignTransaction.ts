@@ -30,6 +30,7 @@ export const avalancheSignTransaction = async ({
       transaction: {
         tx: unsignedTx
       },
+      walletId: account.walletId,
       accountIndex: account.index,
       network
     })

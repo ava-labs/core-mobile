@@ -72,6 +72,7 @@ export const useDelegation = (): {
         pAddress: activeAccount.addressPVM,
         cAddress: activeAccount.addressC,
         currency: selectedCurrency,
+        walletId: activeAccount.walletId,
         accountIndex: activeAccount.index,
         avaxXPNetwork: network,
         cChainNetwork,
