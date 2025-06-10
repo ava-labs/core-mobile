@@ -1,6 +1,7 @@
 import { isAddress } from 'ethers'
 import { Avalanche } from '@avalabs/core-wallets-sdk'
 import { isBtcAddress } from 'utils/isBtcAddress'
+import { isAddress as isSolanaAddress } from '@solana/kit'
 import { AddressType } from '../consts'
 
 export const isValidAddress = ({
@@ -18,6 +19,7 @@ export const isValidAddress = ({
     return (
       isAddress(address) ||
       isBtcAddress(address, !isDeveloperMode) ||
+      isSolanaAddress(address) ||
       (Avalanche.isBech32Address(addressWithoutPrefix, false) &&
         ((isDeveloperMode && addressWithoutPrefix.includes('fuji')) ||
           (!isDeveloperMode && addressWithoutPrefix.includes('avax'))))
@@ -39,5 +41,8 @@ export const isValidAddress = ({
     case AddressType.BTC:
     case AddressType.BTC_TESTNET:
       return isBtcAddress(address, !isDeveloperMode)
+    case AddressType.SOLANA:
+    case AddressType.SOLANA_DEVNET:
+      return isSolanaAddress(address)
   }
 }

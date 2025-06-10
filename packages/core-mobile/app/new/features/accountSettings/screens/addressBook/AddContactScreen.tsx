@@ -44,7 +44,8 @@ export const AddContactScreen = (): React.JSX.Element => {
     return (
       (contact.address === undefined &&
         contact.addressXP === undefined &&
-        contact.addressBTC === undefined) ||
+        contact.addressBTC === undefined &&
+        contact.addressSVM === undefined) ||
       contact.name.length === 0
     )
   }, [contact])

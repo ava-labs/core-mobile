@@ -212,11 +212,13 @@ export const AdvancedField = forwardRef<AdvancedFieldRef, AdvancedFieldProps>(
       return (
         <>
           <Icons.Custom.AddCircle width={20} height={20} />
-          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+          <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center' }}>
             <Text
               sx={{
                 fontFamily: 'Inter-Medium'
-              }}>
+              }}
+              numberOfLines={1}
+              ellipsizeMode="tail">
               {emptyText}
             </Text>
             {optional && (
