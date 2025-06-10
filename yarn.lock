@@ -207,7 +207,7 @@ __metadata:
     "@avalabs/evm-module": 1.9.4
     "@avalabs/glacier-sdk": 3.1.0-alpha.51
     "@avalabs/k2-alpine": "workspace:*"
-    "@avalabs/svm-module": ^1.9.4
+    "@avalabs/svm-module": 1.9.4
     "@avalabs/tsconfig-mobile": "workspace:*"
     "@avalabs/types": 3.1.0-alpha.54
     "@avalabs/vm-module-types": 1.9.4
@@ -271,7 +271,7 @@ __metadata:
     "@shopify/flash-list": 1.7.3
     "@shopify/react-native-performance": 4.1.2
     "@shopify/react-native-skia": 1.5.0
-    "@solana/kit": ^2.1.1
+    "@solana/kit": 2.1.1
     "@spotlightjs/spotlight": 2.5.0
     "@storybook/addon-ondevice-actions": 7.6.20
     "@storybook/addon-ondevice-backgrounds": 7.6.20
@@ -695,7 +695,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@avalabs/svm-module@npm:^1.9.4":
+"@avalabs/svm-module@npm:1.9.4":
   version: 1.9.4
   resolution: "@avalabs/svm-module@npm:1.9.4"
   dependencies:
@@ -11056,7 +11056,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@solana/kit@npm:^2.1.1":
+"@solana/kit@npm:2.1.1":
   version: 2.1.1
   resolution: "@solana/kit@npm:2.1.1"
   dependencies:
