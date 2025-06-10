@@ -3,7 +3,6 @@ import { usePinOrBiometryLogin } from 'common/hooks/usePinOrBiometryLogin'
 import { useFocusEffect } from 'expo-router'
 import React, { useCallback, useEffect, useRef } from 'react'
 import { InteractionManager, Keyboard, Platform } from 'react-native'
-import { Subscription } from 'rxjs'
 import Logger from 'utils/Logger'
 import { BiometricType } from 'utils/BiometricsSDK'
 import { ScrollScreen } from './ScrollScreen'
@@ -54,10 +53,12 @@ export const VerifyWithPinOrBiometry = ({
     pinInputRef.current?.blur()
   }
 
-  const handlePromptBioLogin = useCallback(() => {
-    return promptForWalletLoadingIfExists().subscribe({
-      error: err => Logger.error('failed to check biometric', err)
-    })
+  const handlePromptBioLogin = useCallback(async () => {
+    try {
+      return await promptForWalletLoadingIfExists()
+    } catch (err) {
+      Logger.error('failed to check biometric', err)
+    }
   }, [promptForWalletLoadingIfExists])
 
   useEffect(() => {
@@ -80,10 +81,9 @@ export const VerifyWithPinOrBiometry = ({
 
   useFocusEffect(
     useCallback(() => {
-      let sub: Subscription
       InteractionManager.runAfterInteractions(() => {
         if (bioType !== BiometricType.NONE) {
-          sub = handlePromptBioLogin()
+          handlePromptBioLogin()
         } else {
           focusPinInput()
         }
@@ -91,7 +91,6 @@ export const VerifyWithPinOrBiometry = ({
 
       return () => {
         blurPinInput()
-        sub?.unsubscribe()
       }
     }, [bioType, handlePromptBioLogin, focusPinInput])
   )

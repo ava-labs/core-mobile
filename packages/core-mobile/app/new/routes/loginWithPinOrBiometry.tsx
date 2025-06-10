@@ -31,7 +31,6 @@ import Reanimated, {
   withTiming
 } from 'react-native-reanimated'
 import { useSelector } from 'react-redux'
-import { Subscription } from 'rxjs'
 import { selectWalletState, WalletState } from 'store/app'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { selectSelectedAvatar } from 'store/settings/avatar'
@@ -166,9 +165,7 @@ const LoginWithPinOrBiometry = (): JSX.Element => {
   }
 
   const handlePromptBioLogin = useCallback(() => {
-    return promptForWalletLoadingIfExists().subscribe({
-      error: err => Logger.error('failed to check biometric', err)
-    })
+    promptForWalletLoadingIfExists().catch(Logger.error)
   }, [promptForWalletLoadingIfExists])
 
   const handlePressBackground = (): void => {
@@ -198,10 +195,9 @@ const LoginWithPinOrBiometry = (): JSX.Element => {
 
   useFocusEffect(
     useCallback(() => {
-      let sub: Subscription
       InteractionManager.runAfterInteractions(() => {
         if (bioType !== BiometricType.NONE) {
-          sub = handlePromptBioLogin()
+          handlePromptBioLogin()
         } else if (!isBiometricAvailable) {
           focusPinInput()
         }
@@ -209,7 +205,6 @@ const LoginWithPinOrBiometry = (): JSX.Element => {
 
       return () => {
         blurPinInput()
-        sub?.unsubscribe()
       }
     }, [bioType, isBiometricAvailable, handlePromptBioLogin, focusPinInput])
   )
