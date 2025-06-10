@@ -1,7 +1,5 @@
 import React, { memo, useCallback, useEffect } from 'react'
 import Animated, {
-  FadeIn,
-  FadeOut,
   useAnimatedStyle,
   useSharedValue,
   withDelay,
@@ -10,8 +8,13 @@ import Animated, {
 } from 'react-native-reanimated'
 import { ANIMATED } from '../../utils'
 
+interface AnimateFadeScaleProps {
+  children: React.ReactNode
+  delay?: number
+}
+
 export const AnimateFadeScale = memo(
-  ({ children, delay = 0 }: { children: JSX.Element; delay?: number }) => {
+  ({ children, delay = 0 }: AnimateFadeScaleProps) => {
     const opacity = useSharedValue(0)
     const scale = useSharedValue(0.8)
 
@@ -25,23 +28,11 @@ export const AnimateFadeScale = memo(
       animate()
     }, [animate])
 
-    const animatedStyle = useAnimatedStyle(() => {
-      return {
-        opacity: opacity.value,
-        transform: [{ scale: scale.value }]
-      }
-    }, [])
+    const animatedStyle = useAnimatedStyle(() => ({
+      opacity: opacity.value,
+      transform: [{ scale: scale.value }]
+    }))
 
-    return (
-      <Animated.View entering={FadeIn} exiting={FadeOut}>
-        <Animated.View
-          style={[
-            animatedStyle,
-            { justifyContent: 'flex-start', alignItems: 'flex-start' }
-          ]}>
-          {children}
-        </Animated.View>
-      </Animated.View>
-    )
+    return <Animated.View style={animatedStyle}>{children}</Animated.View>
   }
 )
