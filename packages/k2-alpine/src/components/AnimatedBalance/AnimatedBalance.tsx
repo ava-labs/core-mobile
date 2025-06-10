@@ -2,7 +2,6 @@ import { SxProp } from 'dripsy'
 import React, { useCallback } from 'react'
 import Animated from 'react-native-reanimated'
 import { TextVariant } from '../../theme/tokens/text'
-import { SPRING_LINEAR_TRANSITION } from '../../utils'
 import { AnimateFadeScale } from '../AnimatedFadeScale/AnimatedFadeScale'
 import { Text, View } from '../Primitives'
 
@@ -78,7 +77,6 @@ export const AnimatedBalance = ({
   return (
     <Animated.View
       testID="animated_balance"
-      layout={SPRING_LINEAR_TRANSITION}
       style={{
         flexDirection: 'row',
         alignItems: 'flex-end'
