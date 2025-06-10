@@ -138,7 +138,7 @@ class NotificationsService {
       {
         id: txHash, // use to look up if the stake notification already exists
         title: channel.title,
-        body: channel.subtitle,
+        body: channel.name,
         data: {
           url: STAKE_COMPELETE_DEEPLINK_URL,
           isDeveloperMode: isDeveloperMode.toString(),
