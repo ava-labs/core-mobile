@@ -1,17 +1,9 @@
 import { Network } from '@avalabs/core-chains-sdk'
 import { Account } from 'store/account'
-import SwapService from 'services/swap/SwapService'
 import { OptimalRate, SwapSide } from '@paraswap/sdk'
-import { TokenType, TokenWithBalance } from '@avalabs/vm-module-types'
+import ParaswapService from '../../services/ParaswapService'
 
-export const getTokenAddress = (token?: TokenWithBalance): string => {
-  if (!token) {
-    return ''
-  }
-  return token.type === TokenType.NATIVE ? token.symbol : token.address
-}
-
-export async function getSwapRate({
+export const getSwapRate = async ({
   fromTokenAddress,
   toTokenAddress,
   fromTokenDecimals,
@@ -34,7 +26,7 @@ export async function getSwapRate({
 }): Promise<{
   destAmount?: string
   optimalRate?: OptimalRate
-}> {
+}> => {
   if (!fromTokenAddress || !fromTokenDecimals) {
     throw new Error('No source token selected')
   }
@@ -47,7 +39,7 @@ export async function getSwapRate({
     throw new Error('No amount')
   }
 
-  const priceResponse = await SwapService.getSwapRate({
+  const priceResponse = await ParaswapService.getSwapRate({
     srcToken: fromTokenAddress,
     srcDecimals: fromTokenDecimals,
     destToken: toTokenAddress,

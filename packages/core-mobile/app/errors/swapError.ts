@@ -2,6 +2,7 @@ import { JsonRpcError, rpcErrors } from '@metamask/rpc-errors'
 import { parseJsonRpcError } from 'utils/getJsonRpcErrorMessage/getJsonRpcErrorMessage'
 
 enum SwapErrorCode {
+  INCORRECT_TOKEN_ADDRESS = 'INCORRECT_TOKEN_ADDRESS',
   MISSING_PARAM = 'MISSING_PARAM',
   NETWORK_NOT_SUPPORTED = 'NETWORK_NOT_SUPPORTED',
   CANNOT_BUILD_TRANSACTION = 'CANNOT_BUILD_TRANSACTION',
@@ -17,6 +18,11 @@ const isObjWithError = (error: unknown): error is ObjWithError =>
   Boolean(typeof error === 'object' && error && 'error' in error)
 
 export const swapError = {
+  incorrectTokenAddress: (tokenAddress: string) =>
+    rpcErrors.internal({
+      message: `Incorrect token address: ${tokenAddress}`,
+      data: { code: SwapErrorCode.INCORRECT_TOKEN_ADDRESS }
+    }),
   missingParam: (param: string) =>
     rpcErrors.internal({
       message: `Missing required parameter: ${param}`,
@@ -91,8 +97,22 @@ export function humanizeSwapError(err: unknown): string {
     return 'Network error, please try again later.'
   }
 
-  if (err instanceof JsonRpcError && err.data.cause instanceof JsonRpcError) {
-    return parseJsonRpcError(err.data.cause, err.message)
+  if (err instanceof JsonRpcError) {
+    if (err.data.cause instanceof JsonRpcError) {
+      return parseJsonRpcError(err.data.cause, err.message)
+    }
+    if ('message' in err) {
+      return err.message
+    }
+  }
+
+  if (
+    typeof err === 'object' &&
+    err !== null &&
+    'message' in err &&
+    typeof err.message === 'string'
+  ) {
+    return err.message
   }
 
   return errorString || 'An unknown error occurred'

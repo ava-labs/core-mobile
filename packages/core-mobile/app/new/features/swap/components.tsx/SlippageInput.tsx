@@ -4,7 +4,7 @@ import {
   showAlertWithTextInput
 } from 'common/utils/alertWithTextInput'
 import React, { useCallback } from 'react'
-import { isSlippageValid } from '../utils'
+import { isSlippageValid } from '../utils/isSlippageValid'
 
 const inputKey = 'slippage'
 
