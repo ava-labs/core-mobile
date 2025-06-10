@@ -1,7 +1,7 @@
 import { isAddress } from 'ethers'
 import { Avalanche } from '@avalabs/core-wallets-sdk'
 import { isBtcAddress } from 'utils/isBtcAddress'
-import { isSolanaAddress } from 'utils/isSolanaAddress'
+import { isAddress as isSolanaAddress } from '@solana/kit'
 import { AddressType } from '../consts'
 
 export const isValidAddress = ({
