@@ -1,5 +1,11 @@
 import { ScrollScreen } from 'common/components/ScrollScreen'
-import React, { useCallback, useMemo, useState } from 'react'
+import React, {
+  useCallback,
+  useMemo,
+  useState,
+  useEffect,
+  useLayoutEffect
+} from 'react'
 import {
   Button,
   View,
@@ -7,7 +13,8 @@ import {
   Icons,
   Pressable,
   useTheme,
-  FiatAmountInputWidget
+  FiatAmountInputWidget,
+  ActivityIndicator
 } from '@avalabs/k2-alpine'
 import { useRouter } from 'expo-router'
 import { LogoWithNetwork } from 'features/portfolio/assets/components/LogoWithNetwork'
@@ -21,10 +28,14 @@ import { useSelector } from 'react-redux'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import {
   PaymentMethods,
-  SearchProviderCategories,
-  SearchProviders
+  ServiceProviderCategories,
+  ServiceProviders
 } from 'services/meld/consts'
-import { useOnRampToken } from '../store'
+import {
+  useOnRampPaymentMethod,
+  useOnRampServiceProvider,
+  useOnRampToken
+} from '../store'
 import {
   isBtcToken,
   isSupportedErc20Token,
@@ -46,19 +57,21 @@ export const SelectBuyAmountScreen = (): React.JSX.Element => {
   const selectedCurrency = useSelector(selectSelectedCurrency)
   const { getMarketTokenBySymbol } = useWatchlist()
   const [onrampToken] = useOnRampToken()
+  const [onRampPaymentMethod, setOnRampPaymentMethod] = useOnRampPaymentMethod()
   const erc20ContractTokens = useErc20ContractTokens()
   const { filteredTokenList } = useSearchableTokenList({
     tokens: erc20ContractTokens,
     hideZeroBalance: false
   })
-  const { data: serviceProviders } = useSearchServiceProviders({
-    categories: [SearchProviderCategories.CryptoOnramp]
-  })
+  const { data: serviceProviders, isLoading: isLoadingServiceProviders } =
+    useSearchServiceProviders({
+      categories: [ServiceProviderCategories.CryptoOnramp]
+    })
+  const [onRampServiceProvider, setOnRampServiceProvider] =
+    useOnRampServiceProvider()
+
   const { data: purchaseLimits } = useGetPurchaseLimits({
-    serviceProviders: serviceProviders?.map(
-      serviceProvider => serviceProvider.serviceProvider
-    ),
-    categories: [SearchProviderCategories.CryptoOnramp],
+    categories: [ServiceProviderCategories.CryptoOnramp],
     fiatCurrencies: [selectedCurrency],
     cryptoCurrencyCodes: onrampToken?.currencyCode
       ? [onrampToken?.currencyCode]
@@ -66,15 +79,50 @@ export const SelectBuyAmountScreen = (): React.JSX.Element => {
   })
   const { countryCode } = useLocale()
 
-  const { data: defaultsByCountry } = useSearchDefaultsByCountry({
-    categories: [SearchProviderCategories.CryptoOnramp]
-  })
+  const { data: defaultsByCountry, isLoading: isLoadingDefaultsByCountry } =
+    useSearchDefaultsByCountry({
+      categories: [ServiceProviderCategories.CryptoOnramp]
+    })
 
   const defaultPaymentMethod = useMemo(() => {
-    const pm = defaultsByCountry?.find(d => d.countryCode === countryCode)
-      ?.defaultPaymentMethods[0]
-    return pm ? PaymentMethods[pm as keyof typeof PaymentMethods] : undefined
-  }, [defaultsByCountry, countryCode])
+    return defaultsByCountry?.find(d => d.countryCode === countryCode)
+      ?.defaultPaymentMethods[0] as keyof typeof PaymentMethods
+  }, [countryCode, defaultsByCountry])
+
+  const defaultServiceProvider = serviceProviders?.[0]?.serviceProvider
+
+  useLayoutEffect(() => {
+    setOnRampPaymentMethod(undefined)
+    setOnRampServiceProvider(undefined)
+  }, [setOnRampPaymentMethod, setOnRampServiceProvider])
+
+  useEffect(() => {
+    if (onRampPaymentMethod === undefined && defaultPaymentMethod) {
+      setOnRampPaymentMethod(defaultPaymentMethod)
+    }
+    if (onRampServiceProvider === undefined && defaultServiceProvider) {
+      setOnRampServiceProvider(defaultServiceProvider)
+    }
+  }, [
+    defaultPaymentMethod,
+    defaultServiceProvider,
+    onRampPaymentMethod,
+    onRampServiceProvider,
+    setOnRampPaymentMethod,
+    setOnRampServiceProvider
+  ])
+
+  const paymentMethodToDisplay = useMemo(() => {
+    return onRampPaymentMethod
+      ? PaymentMethods[onRampPaymentMethod as keyof typeof PaymentMethods]
+      : undefined
+  }, [onRampPaymentMethod])
+
+  const serviceProviderToDisplay = useMemo(() => {
+    return onRampServiceProvider
+      ? ServiceProviders[onRampServiceProvider]
+      : undefined
+  }, [onRampServiceProvider])
 
   const selectedPurchasingFiatCurrency = useMemo(() => {
     return purchaseLimits?.find(
@@ -173,6 +221,11 @@ export const SelectBuyAmountScreen = (): React.JSX.Element => {
     navigate('/selectBuyToken')
   }, [navigate])
 
+  const handleSelectPaymentMethod = useCallback((): void => {
+    // @ts-ignore TODO: make routes typesafe
+    navigate('/selectPaymentMethod')
+  }, [navigate])
+
   const onNext = useCallback((): void => {
     // @ts-ignore TODO: make routes typesafe
     navigate('/selectPaymentMethod')
@@ -194,6 +247,77 @@ export const SelectBuyAmountScreen = (): React.JSX.Element => {
       </View>
     )
   }, [onNext, isBuyAllowed])
+
+  const renderPayWith = useCallback(() => {
+    return (
+      paymentMethodToDisplay && (
+        <Pressable
+          onPress={handleSelectPaymentMethod}
+          sx={{
+            marginTop: 12,
+            flexDirection: 'row',
+            alignItems: 'center',
+            borderRadius: 12,
+            justifyContent: 'space-between',
+            padding: 17,
+            backgroundColor: colors.$surfaceSecondary
+          }}>
+          <Text
+            variant="body1"
+            sx={{
+              fontSize: 16,
+              lineHeight: 22,
+              fontWeight: 400,
+              color: colors.$textPrimary
+            }}>
+            Pay with
+          </Text>
+          <View sx={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+            {isLoadingServiceProviders || isLoadingDefaultsByCountry ? (
+              <ActivityIndicator size="small" color={colors.$textPrimary} />
+            ) : (
+              <>
+                <View>
+                  <Text
+                    variant="body2"
+                    sx={{
+                      fontSize: 16,
+                      lineHeight: 22,
+                      fontWeight: 400,
+                      textAlign: 'right'
+                    }}>
+                    {paymentMethodToDisplay}
+                  </Text>
+                  <Text
+                    variant="caption"
+                    sx={{
+                      fontSize: 11,
+                      fontWeight: 500,
+                      textAlign: 'right'
+                    }}>
+                    {serviceProviderToDisplay}
+                  </Text>
+                </View>
+                <View sx={{ marginLeft: 8 }}>
+                  <Icons.Navigation.ChevronRightV2
+                    color={colors.$textPrimary}
+                  />
+                </View>
+              </>
+            )}
+          </View>
+        </Pressable>
+      )
+    )
+  }, [
+    colors.$surfaceSecondary,
+    colors.$textPrimary,
+    handleSelectPaymentMethod,
+    isLoadingDefaultsByCountry,
+    isLoadingServiceProviders,
+    paymentMethodToDisplay,
+    serviceProviderToDisplay
+  ])
 
   return (
     <ScrollScreen
@@ -285,64 +409,7 @@ export const SelectBuyAmountScreen = (): React.JSX.Element => {
           )}
       </View>
       {/* Pay with */}
-      {defaultsByCountry &&
-        defaultsByCountry?.length > 0 &&
-        isWithinPurchaseLimit && (
-          <Pressable
-            // onPress={handleSelectPaymentMethod}
-            sx={{
-              marginTop: 12,
-              flexDirection: 'row',
-              alignItems: 'center',
-              borderRadius: 12,
-              justifyContent: 'space-between',
-              padding: 17,
-              backgroundColor: colors.$surfaceSecondary
-            }}>
-            <Text
-              variant="body1"
-              sx={{
-                fontSize: 16,
-                lineHeight: 22,
-                fontWeight: 400,
-                color: colors.$textPrimary
-              }}>
-              Pay with
-            </Text>
-            <View sx={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-              <View>
-                <Text
-                  variant="body2"
-                  sx={{
-                    fontSize: 16,
-                    lineHeight: 22,
-                    fontWeight: 400,
-                    textAlign: 'right'
-                  }}>
-                  {defaultPaymentMethod}
-                </Text>
-                {/* Todo: CP-10736 */}
-                <Text
-                  variant="caption"
-                  sx={{
-                    fontSize: 11,
-                    fontWeight: 500,
-                    textAlign: 'right'
-                  }}>
-                  {
-                    SearchProviders[
-                      serviceProviders?.[0]
-                        ?.serviceProvider as keyof typeof SearchProviders
-                    ]
-                  }
-                </Text>
-              </View>
-              <View sx={{ marginLeft: 8 }}>
-                <Icons.Navigation.ChevronRightV2 color={colors.$textPrimary} />
-              </View>
-            </View>
-          </Pressable>
-        )}
+      {renderPayWith()}
     </ScrollScreen>
   )
 }

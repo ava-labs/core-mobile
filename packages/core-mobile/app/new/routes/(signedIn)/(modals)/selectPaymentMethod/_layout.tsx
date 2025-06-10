@@ -8,6 +8,7 @@ export default function SelectPaymentMethodLayout(): JSX.Element {
   return (
     <Stack screenOptions={modalStackNavigatorScreenOptions}>
       <Stack.Screen name="index" options={modalFirstScreenOptions} />
+      <Stack.Screen name="selectServiceProvider" />
     </Stack>
   )
 }

@@ -4,11 +4,15 @@ import {
   SearchCryptoCurrenciesParams
 } from 'features/buyOnramp/hooks/useSearchCryptoCurrencies'
 import { FiatCurrency } from 'features/buyOnramp/hooks/useSearchFiatCurrencies'
-import { ServiceProviders } from 'features/buyOnramp/hooks/useSearchServiceProviders'
+import { SearchServiceProvidersResponse } from 'features/buyOnramp/hooks/useSearchServiceProviders'
 import { SearchDefaultsByCountryResponse } from 'features/buyOnramp/hooks/useSearchDefaultsByCountry'
 import Config from 'react-native-config'
 import { CurrencySymbol } from 'store/settings/currency'
 import Logger from 'utils/Logger'
+import {
+  SearchPaymentMethodsParams,
+  SearchPaymentMethodsResponse
+} from 'features/buyOnramp/hooks/useSearchPaymentMethods'
 
 if (!Config.PROXY_URL)
   Logger.warn('PROXY_URL is missing in env file. Meld service disabled.')
@@ -74,20 +78,16 @@ class MeldService {
   async searchServiceProviders({
     categories,
     countries,
-    serviceProviders,
     accountFilter = true
-  }: SearchCryptoCurrenciesParams): Promise<ServiceProviders[]> {
+  }: SearchCryptoCurrenciesParams): Promise<SearchServiceProvidersResponse[]> {
     try {
       const url = new URL(baseURL + '/service-providers')
       const commaSeparatedCategories = categories.join(',')
       const commaSeparatedCountries = countries.join(',')
-      const commaSeparatedServiceProviders = serviceProviders
-        ? serviceProviders?.join(',')
-        : undefined
+
       url.searchParams.set('categories', commaSeparatedCategories)
       url.searchParams.set('countries', commaSeparatedCountries)
-      commaSeparatedServiceProviders &&
-        url.searchParams.set('serviceProviders', commaSeparatedServiceProviders)
+
       url.searchParams.set('accountFilter', accountFilter.toString())
 
       const response = await fetch(url.toString(), {
@@ -161,6 +161,36 @@ class MeldService {
 
       url.searchParams.set('categories', commaSeparatedCategories)
       url.searchParams.set('countries', commaSeparatedCountries)
+
+      const response = await fetch(url.toString(), {
+        method: 'GET'
+      })
+      return response.json()
+    } catch (error) {
+      return []
+    }
+  }
+
+  async searchPaymentMethods({
+    serviceProviders,
+    categories,
+    countries,
+    accountFilter = true
+  }: SearchPaymentMethodsParams): Promise<SearchPaymentMethodsResponse[]> {
+    try {
+      const url = new URL(
+        baseURL + '/service-providers/properties/payment-methods'
+      )
+      const commaSeparatedCategories = categories.join(',')
+      const commaSeparatedCountries = countries.join(',')
+      const commaSeparatedServiceProviders = serviceProviders?.join(',')
+
+      url.searchParams.set('accountFilter', accountFilter.toString())
+
+      url.searchParams.set('categories', commaSeparatedCategories)
+      url.searchParams.set('countries', commaSeparatedCountries)
+      commaSeparatedServiceProviders &&
+        url.searchParams.set('serviceProviders', commaSeparatedServiceProviders)
 
       const response = await fetch(url.toString(), {
         method: 'GET'

@@ -1,12 +1,16 @@
 import { useQuery, UseQueryResult } from '@tanstack/react-query'
-import { SearchProviderCategories } from 'services/meld/consts'
+import {
+  ServiceProviderCategories,
+  ServiceProviders
+} from 'services/meld/consts'
 import MeldService from 'services/meld/MeldService'
 import { CurrencySymbol } from 'store/settings/currency'
 import { useLocale } from './useLocale'
+import { useSearchServiceProviders } from './useSearchServiceProviders'
 
 export type GetPurchaseLimitsParams = {
-  categories: SearchProviderCategories[]
-  serviceProviders?: string[]
+  categories: ServiceProviderCategories[]
+  serviceProviders?: (keyof typeof ServiceProviders)[]
   accountFilter?: boolean
   fiatCurrencies?: CurrencySymbol[]
   includeDetails?: boolean
@@ -26,7 +30,7 @@ export type GetPurchaseLimitsResponse = {
   minimumAmount: number
   maximumAmount: number
   meldDetails?: AmountDetails
-  serviceProviderDetails?: Record<string, AmountDetails>
+  serviceProviderDetails?: Record<keyof typeof ServiceProviders, AmountDetails>
 }
 
 export const useGetPurchaseLimits = ({
@@ -34,12 +38,19 @@ export const useGetPurchaseLimits = ({
   fiatCurrencies,
   includeDetails,
   cryptoCurrencyCodes
-}: GetPurchaseLimitsParams): UseQueryResult<
-  GetPurchaseLimitsResponse[],
-  Error
-> => {
+}: Omit<
+  GetPurchaseLimitsParams,
+  'serviceProviders' | 'accountFilter'
+>): UseQueryResult<GetPurchaseLimitsResponse[], Error> => {
+  const { data: serviceProvidersData } = useSearchServiceProviders({
+    categories: [ServiceProviderCategories.CryptoOnramp]
+  })
+  const serviceProviders = serviceProvidersData?.map(
+    serviceProvider => serviceProvider.serviceProvider
+  )
   const { countryCode } = useLocale()
   return useQuery({
+    enabled: !!serviceProviders,
     queryKey: [
       'meld',
       'getPurchaseLimits',
@@ -47,12 +58,14 @@ export const useGetPurchaseLimits = ({
       countryCode,
       fiatCurrencies,
       includeDetails,
-      cryptoCurrencyCodes
+      cryptoCurrencyCodes,
+      serviceProviders
     ],
     queryFn: () =>
       MeldService.getPurchaseLimits({
         categories,
         countries: [countryCode],
+        serviceProviders,
         fiatCurrencies,
         includeDetails,
         cryptoCurrencyCodes

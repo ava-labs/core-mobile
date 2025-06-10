@@ -14,7 +14,7 @@ import { useSearchableTokenList } from 'common/hooks/useSearchableTokenList'
 import { useErc20ContractTokens } from 'common/hooks/useErc20ContractTokens'
 import {
   MELD_CURRENCY_CODES,
-  SearchProviderCategories
+  ServiceProviderCategories
 } from 'services/meld/consts'
 import { CHAIN_IDS_WITH_INCORRECT_SYMBOL } from 'consts/chainIdsWithIncorrectSymbol'
 import { LogoWithNetwork } from 'features/portfolio/assets/components/LogoWithNetwork'
@@ -25,7 +25,6 @@ import {
   CryptoCurrency,
   useSearchCryptoCurrencies
 } from '../hooks/useSearchCryptoCurrencies'
-import { useSearchServiceProviders } from '../hooks/useSearchServiceProviders'
 import {
   isBtcToken,
   isSupportedErc20Token,
@@ -50,16 +49,9 @@ export const SelectBuyTokenScreen = (): React.JSX.Element => {
     tokens: erc20ContractTokens,
     hideZeroBalance: false
   })
-  const { data: serviceProviders, isLoading: isLoadingServiceProviders } =
-    useSearchServiceProviders({
-      categories: [SearchProviderCategories.CryptoOnramp]
-    })
   const { data: cryptoCurrencies, isLoading: isLoadingCryptoCurrencies } =
     useSearchCryptoCurrencies({
-      categories: [SearchProviderCategories.CryptoOnramp],
-      serviceProviders: serviceProviders?.map(
-        serviceProvider => serviceProvider.serviceProvider
-      )
+      categories: [ServiceProviderCategories.CryptoOnramp]
     })
 
   const supportedCryptoCurrencies = useMemo(() => {
@@ -187,7 +179,7 @@ export const SelectBuyTokenScreen = (): React.JSX.Element => {
     )
   }
 
-  if (isLoadingCryptoCurrencies || isLoadingServiceProviders) {
+  if (isLoadingCryptoCurrencies) {
     return <LoadingState sx={{ flex: 1 }} />
   }
 

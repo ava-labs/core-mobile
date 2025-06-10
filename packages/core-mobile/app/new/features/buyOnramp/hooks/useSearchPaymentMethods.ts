@@ -1,58 +1,61 @@
 import { useQuery, UseQueryResult } from '@tanstack/react-query'
+import MeldService from 'services/meld/MeldService'
 import {
+  PaymentMethods,
+  PaymentTypes,
   ServiceProviderCategories,
   ServiceProviders
 } from 'services/meld/consts'
-import MeldService from 'services/meld/MeldService'
 import { useLocale } from './useLocale'
 import { useSearchServiceProviders } from './useSearchServiceProviders'
 
-export type SearchCryptoCurrenciesParams = {
+export type SearchPaymentMethodsParams = {
   categories: ServiceProviderCategories[]
   countries: string[]
   serviceProviders?: (keyof typeof ServiceProviders)[]
   accountFilter?: boolean
 }
 
-export type CryptoCurrency = {
-  currencyCode: string
+export type SearchPaymentMethodsResponse = {
+  paymentMethod: keyof typeof PaymentMethods
   name: string
-  chainCode: string
-  chainName: string
-  chainId: string
-  contractAddress: string
-  symbolImageUrl: string
+  paymentType: PaymentTypes
+  logos: {
+    dark: string
+    light: string
+  }
 }
 
-export const useSearchCryptoCurrencies = ({
+export const useSearchPaymentMethods = ({
   categories,
   accountFilter = true
 }: Omit<
-  SearchCryptoCurrenciesParams,
+  SearchPaymentMethodsParams,
   'countries' | 'serviceProviders'
->): UseQueryResult<CryptoCurrency[], Error> => {
+>): UseQueryResult<SearchPaymentMethodsResponse[], Error> => {
   const { data: serviceProvidersData } = useSearchServiceProviders({
     categories: [ServiceProviderCategories.CryptoOnramp]
   })
   const serviceProviders = serviceProvidersData?.map(
     serviceProvider => serviceProvider.serviceProvider
   )
+
   const { countryCode } = useLocale()
-  return useQuery({
-    enabled: !!serviceProviders,
+
+  return useQuery<SearchPaymentMethodsResponse[]>({
     queryKey: [
       'meld',
-      'searchCryptoCurrencies',
+      'searchPaymentMethods',
       categories,
-      serviceProviders,
       countryCode,
+      serviceProviders,
       accountFilter
     ],
     queryFn: () =>
-      MeldService.searchCryptoCurrencies({
-        categories,
+      MeldService.searchPaymentMethods({
         serviceProviders,
         countries: [countryCode],
+        categories,
         accountFilter
       }),
     staleTime: 1000 * 60 * 30 // 30 minutes

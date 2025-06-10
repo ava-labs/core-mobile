@@ -1,12 +1,13 @@
 import { useQuery, UseQueryResult } from '@tanstack/react-query'
 import MeldService from 'services/meld/MeldService'
+import { PaymentMethods } from 'services/meld/consts'
 import { SearchCryptoCurrenciesParams } from './useSearchCryptoCurrencies'
 import { useLocale } from './useLocale'
 
 export type SearchDefaultsByCountryResponse = {
   countryCode: string
   defaultCurrencyCode: string
-  defaultPaymentMethods: string[]
+  defaultPaymentMethods: PaymentMethods[]
 }
 
 export const useSearchDefaultsByCountry = ({
@@ -19,7 +20,13 @@ export const useSearchDefaultsByCountry = ({
   const { countryCode } = useLocale()
 
   return useQuery<SearchDefaultsByCountryResponse[]>({
-    queryKey: ['meld', 'countries', categories, accountFilter, countryCode],
+    queryKey: [
+      'meld',
+      'searchDefaultsByCountry',
+      categories,
+      accountFilter,
+      countryCode
+    ],
     queryFn: () =>
       MeldService.searchDefaultsByCountry({
         countries: [countryCode],

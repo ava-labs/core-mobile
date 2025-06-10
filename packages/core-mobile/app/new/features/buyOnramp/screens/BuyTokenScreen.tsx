@@ -6,7 +6,7 @@ import { TokenLogo } from 'common/components/TokenLogo'
 import { Space } from 'common/components/Space'
 import {
   MELD_CURRENCY_CODES,
-  SearchProviderCategories
+  ServiceProviderCategories
 } from 'services/meld/consts'
 import { TokenSymbol } from 'store/network'
 import { LoadingState } from 'common/components/LoadingState'
@@ -14,22 +14,14 @@ import {
   CryptoCurrency,
   useSearchCryptoCurrencies
 } from '../hooks/useSearchCryptoCurrencies'
-import { useSearchServiceProviders } from '../hooks/useSearchServiceProviders'
 import { useBuy } from '../hooks/useBuy'
 
 export const BuyTokenScreen = (): React.JSX.Element => {
   const { navigate } = useRouter()
   const { navigateToBuy } = useBuy()
-  const { data: serviceProviders, isLoading: isLoadingServiceProviders } =
-    useSearchServiceProviders({
-      categories: [SearchProviderCategories.CryptoOnramp]
-    })
   const { data: cryptoCurrencies, isLoading: isLoadingCryptoCurrencies } =
     useSearchCryptoCurrencies({
-      categories: [SearchProviderCategories.CryptoOnramp],
-      serviceProviders: serviceProviders?.map(
-        serviceProvider => serviceProvider.serviceProvider
-      )
+      categories: [ServiceProviderCategories.CryptoOnramp]
     })
 
   const avax = cryptoCurrencies?.find(
@@ -77,7 +69,7 @@ export const BuyTokenScreen = (): React.JSX.Element => {
     return _data
   }, [avax, handleBuy, selectOtherToken, usdc])
 
-  if (isLoadingServiceProviders || isLoadingCryptoCurrencies) {
+  if (isLoadingCryptoCurrencies) {
     return <LoadingState sx={{ flex: 1 }} />
   }
 

@@ -1,14 +1,18 @@
 import { useQuery, UseQueryResult } from '@tanstack/react-query'
 import MeldService from 'services/meld/MeldService'
+import {
+  ServiceProviderCategories,
+  ServiceProviders
+} from 'services/meld/consts'
 import { SearchCryptoCurrenciesParams } from './useSearchCryptoCurrencies'
 import { useLocale } from './useLocale'
 
-export type ServiceProviders = {
-  serviceProvider: string
+export type SearchServiceProvidersResponse = {
+  serviceProvider: keyof typeof ServiceProviders
   name: string
   status: string
-  categories: string[]
-  categoryStatuses: Record<string, string>
+  categories: ServiceProviderCategories[]
+  categoryStatuses: Record<ServiceProviderCategories, string>
   websiteUrl: string
   customerSupportUrl: string
   logos: {
@@ -21,26 +25,23 @@ export type ServiceProviders = {
 
 export const useSearchServiceProviders = ({
   categories,
-  serviceProviders,
   accountFilter = true
 }: Omit<SearchCryptoCurrenciesParams, 'countries'>): UseQueryResult<
-  ServiceProviders[],
+  SearchServiceProvidersResponse[],
   Error
 > => {
   const { countryCode } = useLocale()
 
-  return useQuery<ServiceProviders[]>({
+  return useQuery<SearchServiceProvidersResponse[]>({
     queryKey: [
       'meld',
-      'countries',
+      'searchServiceProviders',
       categories,
       accountFilter,
-      countryCode,
-      serviceProviders
+      countryCode
     ],
     queryFn: () =>
       MeldService.searchServiceProviders({
-        serviceProviders,
         countries: [countryCode],
         categories,
         accountFilter

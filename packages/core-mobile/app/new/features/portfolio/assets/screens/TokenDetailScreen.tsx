@@ -64,9 +64,8 @@ import { useNetworks } from 'hooks/networks/useNetworks'
 import { ChainId } from '@avalabs/core-chains-sdk'
 import { useBuy } from 'features/buyOnramp/hooks/useBuy'
 import { getBuyableCryptoCurrency } from 'features/buyOnramp/utils'
-import { useSearchServiceProviders } from 'features/buyOnramp/hooks/useSearchServiceProviders'
 import { useSearchCryptoCurrencies } from 'features/buyOnramp/hooks/useSearchCryptoCurrencies'
-import { SearchProviderCategories } from 'services/meld/consts'
+import { ServiceProviderCategories } from 'services/meld/consts'
 
 export const TokenDetailScreen = (): React.JSX.Element => {
   const {
@@ -120,14 +119,8 @@ export const TokenDetailScreen = (): React.JSX.Element => {
   const tokenName = token?.name ?? ''
 
   const { navigateToBuy } = useBuy()
-  const { data: serviceProviders } = useSearchServiceProviders({
-    categories: [SearchProviderCategories.CryptoOnramp]
-  })
   const { data: cryptoCurrencies } = useSearchCryptoCurrencies({
-    categories: [SearchProviderCategories.CryptoOnramp],
-    serviceProviders: serviceProviders?.map(
-      serviceProvider => serviceProvider.serviceProvider
-    )
+    categories: [ServiceProviderCategories.CryptoOnramp]
   })
 
   const header = useMemo(
