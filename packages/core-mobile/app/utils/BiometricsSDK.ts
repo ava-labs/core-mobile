@@ -1,50 +1,58 @@
 import Keychain, {
   getSupportedBiometryType,
-  Options,
-  UserCredentials
+  Options
 } from 'react-native-keychain'
 import { StorageKey } from 'resources/Constants'
 import { Platform } from 'react-native'
 import { commonStorage } from 'utils/mmkv'
+import { decrypt, encrypt } from 'utils/EncryptionHelper'
+import Aes from 'react-native-aes-crypto'
 import Logger from './Logger'
 
-const SERVICE_KEY = 'sec-storage-service'
-const SERVICE_KEY_BIO = 'sec-storage-service-bio'
+const LEGACY_SERVICE_KEY = 'sec-storage-service'
+const LEGACY_SERVICE_KEY_BIO = 'sec-storage-service-bio'
+
+const getWalletServiceKey = (walletId: string): string =>
+  `sec-storage-service-${walletId}`
+const ENCRYPTION_KEY_SERVICE = 'encryption-key-service'
+const ENCRYPTION_KEY_SERVICE_BIO = 'encryption-key-service-bio'
 const iOS = Platform.OS === 'ios'
 
 type KeystoreConfigType = {
-  KEYSTORE_PASSCODE_OPTIONS: Options
-  KEYSTORE_BIO_OPTIONS: Options
-  KEYCHAIN_FALLBACK_OPTIONS: Options
+  ENCRYPTION_KEY_PASSCODE_OPTIONS: Options
+  ENCRYPTION_KEY_BIO_OPTIONS: Options
+  WALLET_SECRET_OPTIONS: (walletId: string) => Options
 }
 
 export const KeystoreConfig: KeystoreConfigType = {
-  KEYSTORE_PASSCODE_OPTIONS: {
-    service: SERVICE_KEY_BIO,
+  ENCRYPTION_KEY_PASSCODE_OPTIONS: {
+    service: ENCRYPTION_KEY_SERVICE,
     accessControl: iOS
       ? undefined
       : Keychain.ACCESS_CONTROL.APPLICATION_PASSWORD,
     rules: iOS ? undefined : Keychain.SECURITY_RULES.NONE
   },
-  KEYSTORE_BIO_OPTIONS: {
+  ENCRYPTION_KEY_BIO_OPTIONS: {
+    service: ENCRYPTION_KEY_SERVICE_BIO,
     accessControl: Keychain.ACCESS_CONTROL.BIOMETRY_CURRENT_SET,
     accessible: Keychain.ACCESSIBLE.WHEN_UNLOCKED_THIS_DEVICE_ONLY,
     authenticationPrompt: {
-      title: 'Store Wallet',
-      subtitle: 'Use biometric data to securely store your Avalanche Wallet',
-      cancel: 'cancel'
+      title: 'Access Wallet',
+      subtitle:
+        'Use biometric data to access securely stored wallet information',
+      cancel: 'Cancel'
     },
     authenticationType:
-      Keychain.AUTHENTICATION_TYPE.DEVICE_PASSCODE_OR_BIOMETRICS,
-    service: SERVICE_KEY
+      Keychain.AUTHENTICATION_TYPE.DEVICE_PASSCODE_OR_BIOMETRICS
   },
-  KEYCHAIN_FALLBACK_OPTIONS: {
-    accessControl: Keychain.ACCESS_CONTROL.DEVICE_PASSCODE,
-    service: SERVICE_KEY
-  }
+  WALLET_SECRET_OPTIONS: (walletId: string) => ({
+    service: getWalletServiceKey(walletId)
+  })
 }
 
 class BiometricsSDK {
+  private encryptionKeyCache: string | null = null
+
   /**
    * On some android devices loading keystore can take
    * some time on first run, so we call this function
@@ -58,76 +66,229 @@ class BiometricsSDK {
     return commonStorage.getString(StorageKey.SECURE_ACCESS_SET) ?? 'PIN'
   }
 
-  async storeWalletWithPin(
-    encryptedMnemonic: string,
-    isResetting = false
-  ): Promise<false | Keychain.Result> {
-    // if the user is not resetting the pin
-    // we mark it as using PIN type. The other two cases are:
-    // - User already option is already PIN and is simply changing it
-    // - User has BIO but is simply changing the pin. In this case
-    // to change the type back to PIN the need to toggle the switch in
-    // security & privacy
-    if (!isResetting) {
-      commonStorage.set(StorageKey.SECURE_ACCESS_SET, 'PIN')
-    }
-    return Keychain.setGenericPassword(
-      'wallet',
-      encryptedMnemonic,
-      KeystoreConfig.KEYSTORE_PASSCODE_OPTIONS
-    )
+  // In-memory cache for the encryption key
+  async generateEncryptionKey(): Promise<string> {
+    return Aes.randomKey(32)
   }
 
-  async loadWalletWithPin(): Promise<false | UserCredentials> {
-    return Keychain.getGenericPassword(KeystoreConfig.KEYSTORE_PASSCODE_OPTIONS)
+  clearEncryptionKeyCache(): void {
+    this.encryptionKeyCache = null
+  }
+
+  // Migration-specific methods
+  async loadLegacyWalletWithPin(pin: string): Promise<false | string> {
+    const credentials = await Keychain.getGenericPassword({
+      service: LEGACY_SERVICE_KEY_BIO
+    })
+    if (!credentials) return false
+    const decrypted = await decrypt(credentials.password, pin)
+    if (!decrypted) return false
+    return decrypted.data
+  }
+
+  async loadLegacyWalletWithBiometry(): Promise<false | string> {
+    const credentials = await Keychain.getGenericPassword({
+      service: LEGACY_SERVICE_KEY,
+      accessControl: Keychain.ACCESS_CONTROL.BIOMETRY_CURRENT_SET,
+      accessible: Keychain.ACCESSIBLE.WHEN_UNLOCKED_THIS_DEVICE_ONLY,
+      authenticationPrompt: {
+        title: 'Authorize access',
+        subtitle: 'Use biometric data to migrate your wallet',
+        cancel: 'Cancel'
+      },
+      authenticationType:
+        Keychain.AUTHENTICATION_TYPE.DEVICE_PASSCODE_OR_BIOMETRICS
+    })
+    if (!credentials) return false
+    return credentials.password
+  }
+
+  async clearLegacyWalletData(): Promise<void> {
+    try {
+      await Keychain.resetGenericPassword({ service: LEGACY_SERVICE_KEY })
+      await Keychain.resetGenericPassword({ service: LEGACY_SERVICE_KEY_BIO })
+    } catch (e) {
+      Logger.error(`Failed to reset legacy keychain data`, e)
+    }
+  }
+
+  // Encryption Key Management
+  async getEncryptionKeyWithPinExists(): Promise<boolean> {
+    try {
+      const credentials = await Keychain.getGenericPassword(
+        KeystoreConfig.ENCRYPTION_KEY_PASSCODE_OPTIONS
+      )
+      return credentials !== false
+    } catch (e) {
+      Logger.error('Failed to check encryption key existence', e)
+      return false
+    }
+  }
+
+  async getEncryptionKeyWithBiometryExists(): Promise<boolean> {
+    try {
+      const credentials = await Keychain.getGenericPassword(
+        KeystoreConfig.ENCRYPTION_KEY_BIO_OPTIONS
+      )
+      return credentials !== false
+    } catch (e) {
+      Logger.error('Failed to check encryption key existence', e)
+      return false
+    }
+  }
+
+  async loadEncryptionKeyWithPin(pin: string): Promise<boolean> {
+    const credentials = await Keychain.getGenericPassword(
+      KeystoreConfig.ENCRYPTION_KEY_PASSCODE_OPTIONS
+    )
+    if (!credentials) return false
+    const decrypted = await decrypt(credentials.password, pin)
+    if (!decrypted) return false
+    this.encryptionKeyCache = decrypted.data
+    return true
+  }
+
+  async loadEncryptionKeyWithBiometry(): Promise<boolean> {
+    const credentials = await Keychain.getGenericPassword(
+      KeystoreConfig.ENCRYPTION_KEY_BIO_OPTIONS
+    )
+    if (!credentials) return false
+    this.encryptionKeyCache = credentials.password
+    return true
+  }
+
+  async storeEncryptionKeyWithPin(
+    encryptionKey: string,
+    pin: string
+  ): Promise<boolean> {
+    commonStorage.set(StorageKey.SECURE_ACCESS_SET, 'PIN')
+    const encrypted = await encrypt(encryptionKey, pin)
+    await Keychain.setGenericPassword(
+      'encryptionKey',
+      encrypted,
+      KeystoreConfig.ENCRYPTION_KEY_PASSCODE_OPTIONS
+    )
+    this.encryptionKeyCache = encryptionKey
+    return true
   }
 
   /**
-   * Stores key under available biometry and prompts user for biometry to check if everything is ok.
-   * Emits boolean true if everything ok, or throws Error if something went wrong.
-   * @param key - mnemonic to store
+   * Stores the encryption key with biometry
+   * Use this if pin is not yet set, likely when migrating from legacy
+   * Use {@link enableBiometry} otherwise
+   * @param encryptionKey - The encryption key to store
+   * @returns true if the encryption key was stored successfully, false otherwise
    */
-  async storeWalletWithBiometry(key: string): Promise<boolean> {
+  async storeEncryptionKeyWithBiometry(
+    encryptionKey: string
+  ): Promise<boolean> {
     commonStorage.set(StorageKey.SECURE_ACCESS_SET, 'BIO')
-    // try to store with biometry
     try {
       await Keychain.setGenericPassword(
-        'wallet',
-        key,
-        KeystoreConfig.KEYSTORE_BIO_OPTIONS
+        'encryptionKey',
+        encryptionKey,
+        KeystoreConfig.ENCRYPTION_KEY_BIO_OPTIONS
       )
-
+      this.encryptionKeyCache = encryptionKey
       return true
     } catch (e) {
-      Logger.error('failed to store with biometry', e)
-      // case something goes wrong with biometrics, use the fallback, which defaults to device code
-      try {
-        await Keychain.setGenericPassword(
-          'wallet',
-          key,
-          KeystoreConfig.KEYCHAIN_FALLBACK_OPTIONS
-        )
-        return true
-      } catch (ex) {
-        Logger.error('failed to store with device code fallback', e)
-        return false
-      }
+      Logger.error('failed to store encryption key with biometry', e)
+      return false
     }
   }
 
-  async loadWalletKey(options: Options): Promise<false | UserCredentials> {
-    return Keychain.getGenericPassword(options)
+  /**
+   * Clears encryption_key_service and re-encrypts the encryption key with the new pin.
+   * No need to reset encryption_key_service_bio since it doesn't use pin.
+   * @param newPin - The new pin to set
+   * @throws Error if the encryption key is not found in cache.
+   */
+  async changePin(newPin: string): Promise<void> {
+    if (!this.encryptionKeyCache) {
+      throw new Error('Encryption key not found in cache. Cannot change pin.')
+    }
+    await Keychain.resetGenericPassword({
+      service: ENCRYPTION_KEY_SERVICE
+    })
+    await Keychain.resetGenericPassword({
+      service: LEGACY_SERVICE_KEY
+    })
+    await this.storeEncryptionKeyWithPin(this.encryptionKeyCache, newPin)
   }
 
-  async clearAllWalletKeys(): Promise<void> {
-    return Keychain.resetGenericPassword(
-      KeystoreConfig.KEYSTORE_PASSCODE_OPTIONS
-    )
-      .then(() =>
-        Keychain.resetGenericPassword(KeystoreConfig.KEYSTORE_BIO_OPTIONS)
+  // Wallet Secret Management
+  async storeWalletSecret(
+    walletId: string,
+    secret: string
+  ): Promise<false | Keychain.Result> {
+    if (!this.encryptionKeyCache) {
+      throw new Error(
+        'Encryption key not found in cache. Cannot store wallet secret.'
       )
-      .then(() => commonStorage.delete(StorageKey.SECURE_ACCESS_SET))
-      .catch(Logger.error)
+    }
+    const encrypted = await encrypt(secret, this.encryptionKeyCache)
+    return Keychain.setGenericPassword(
+      'walletSecret',
+      encrypted,
+      KeystoreConfig.WALLET_SECRET_OPTIONS(walletId)
+    )
+  }
+
+  async loadWalletSecret(walletId: string): Promise<false | string> {
+    if (!this.encryptionKeyCache) {
+      throw new Error(
+        'Encryption key not found in cache. Cannot load wallet secret.'
+      )
+    }
+    const credentials = await Keychain.getGenericPassword(
+      KeystoreConfig.WALLET_SECRET_OPTIONS(walletId)
+    )
+    if (!credentials) return false
+    const decrypted = await decrypt(
+      credentials.password,
+      this.encryptionKeyCache
+    )
+    return decrypted.data
+  }
+
+  async clearWalletData(walletId: string): Promise<void> {
+    try {
+      await Keychain.resetGenericPassword(
+        KeystoreConfig.WALLET_SECRET_OPTIONS(walletId)
+      )
+    } catch (e) {
+      Logger.error(
+        `Failed to reset keychain for service: ${
+          KeystoreConfig.WALLET_SECRET_OPTIONS(walletId).service
+        }`,
+        e
+      )
+    }
+    commonStorage.delete(StorageKey.SECURE_ACCESS_SET)
+  }
+
+  async clearAllData(): Promise<void> {
+    try {
+      const services = await Keychain.getAllGenericPasswordServices()
+      const walletPrefix = 'sec-storage-service-'
+      const servicesToClear = [
+        ENCRYPTION_KEY_SERVICE,
+        ENCRYPTION_KEY_SERVICE_BIO,
+        LEGACY_SERVICE_KEY,
+        LEGACY_SERVICE_KEY_BIO
+      ]
+      for (const service of services) {
+        if (
+          service.startsWith(walletPrefix) ||
+          servicesToClear.includes(service)
+        ) {
+          await Keychain.resetGenericPassword({ service })
+        }
+      }
+      commonStorage.delete(StorageKey.SECURE_ACCESS_SET)
+    } catch (e) {
+      Logger.error('Failed to clear all keychain data', e)
+    }
   }
 
   async canUseBiometry(): Promise<boolean> {
@@ -136,9 +297,51 @@ class BiometricsSDK {
     })
   }
 
-  async getBiometryType(): Promise<Keychain.BIOMETRY_TYPE | null> {
-    return getSupportedBiometryType()
+  async getBiometryType(): Promise<BiometricType> {
+    const bioType = await getSupportedBiometryType()
+    if (!bioType) return BiometricType.NONE
+    switch (bioType) {
+      case Keychain.BIOMETRY_TYPE.FINGERPRINT:
+      case Keychain.BIOMETRY_TYPE.TOUCH_ID:
+        return BiometricType.TOUCH_ID
+      case Keychain.BIOMETRY_TYPE.FACE_ID:
+      case Keychain.BIOMETRY_TYPE.FACE:
+        return BiometricType.FACE_ID
+      case Keychain.BIOMETRY_TYPE.IRIS:
+        return BiometricType.IRIS
+    }
+  }
+
+  /**
+   * Enables biometry if pin is set
+   * Use {@link storeEncryptionKeyWithBiometry} otherwise
+   * @throws Error if the encryption key is not found in cache.
+   */
+  async enableBiometry(): Promise<void> {
+    if (!this.encryptionKeyCache) {
+      throw new Error(
+        'Encryption key not found in cache. Cannot enable biometry.'
+      )
+    }
+    await this.storeEncryptionKeyWithBiometry(this.encryptionKeyCache)
+  }
+
+  async disableBiometry(): Promise<void> {
+    commonStorage.set(StorageKey.SECURE_ACCESS_SET, 'PIN')
+    await Keychain.resetGenericPassword({
+      service: ENCRYPTION_KEY_SERVICE_BIO
+    })
+    await Keychain.resetGenericPassword({
+      service: LEGACY_SERVICE_KEY_BIO
+    })
   }
 }
 
 export default new BiometricsSDK()
+
+export enum BiometricType {
+  FACE_ID = 'Face ID',
+  TOUCH_ID = 'Touch ID',
+  IRIS = 'Iris',
+  NONE = 'None'
+}
