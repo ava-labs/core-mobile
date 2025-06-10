@@ -41,7 +41,7 @@ export const SelectBuyAmountScreen = (): React.JSX.Element => {
   } = useTheme()
   const { formatIntegerCurrency, formatCurrency } = useFormatCurrency()
   const { getFromPopulatedNetwork } = useNetworks()
-  const [amount, setAmount] = useState<number>()
+  const [amount, setAmount] = useState(0)
   const { navigate } = useRouter()
   const selectedCurrency = useSelector(selectSelectedCurrency)
   const { getMarketTokenBySymbol } = useWatchlist()
@@ -76,21 +76,35 @@ export const SelectBuyAmountScreen = (): React.JSX.Element => {
     return pm ? PaymentMethods[pm as keyof typeof PaymentMethods] : undefined
   }, [defaultsByCountry, countryCode])
 
-  const isWithinPurchaseLimit = useMemo(() => {
-    const purchasingFiatCurrency = purchaseLimits?.find(
+  const selectedPurchasingFiatCurrency = useMemo(() => {
+    return purchaseLimits?.find(
       limit => limit.currencyCode === selectedCurrency
     )
+  }, [purchaseLimits, selectedCurrency])
 
-    if (!purchasingFiatCurrency) {
+  const minimumPurchaseLimit = selectedPurchasingFiatCurrency?.minimumAmount
+  const maximumPurchaseLimit = selectedPurchasingFiatCurrency?.maximumAmount
+
+  const isAboveMinimumPurchaseLimit = useMemo(() => {
+    if (!selectedPurchasingFiatCurrency) {
       // if there is no matching fiat currency found, we don't allow the user to proceed
       return false
     }
 
-    return (
-      (amount ?? 0) <= (purchasingFiatCurrency?.maximumAmount ?? 0) &&
-      (amount ?? 0) >= (purchasingFiatCurrency?.minimumAmount ?? 0)
-    )
-  }, [purchaseLimits, amount, selectedCurrency])
+    return (amount ?? 0) >= (selectedPurchasingFiatCurrency?.minimumAmount ?? 0)
+  }, [selectedPurchasingFiatCurrency, amount])
+
+  const isBelowMaximumPurchaseLimit = useMemo(() => {
+    if (!selectedPurchasingFiatCurrency) {
+      // if there is no matching fiat currency found, we don't allow the user to proceed
+      return false
+    }
+
+    return (amount ?? 0) <= (selectedPurchasingFiatCurrency?.maximumAmount ?? 0)
+  }, [selectedPurchasingFiatCurrency, amount])
+
+  const isWithinPurchaseLimit =
+    isBelowMaximumPurchaseLimit && isAboveMinimumPurchaseLimit
 
   const isBuyAllowed = useMemo(() => {
     return (amount ?? 0) > 0 && isWithinPurchaseLimit
@@ -236,6 +250,7 @@ export const SelectBuyAmountScreen = (): React.JSX.Element => {
       {/* Fiat amount input widget */}
       {token?.tokenWithBalance && tokenBalance && (
         <FiatAmountInputWidget
+          isAmountValid={isWithinPurchaseLimit}
           sx={{ marginTop: 12 }}
           currency={selectedCurrency}
           amount={amount}
@@ -247,64 +262,87 @@ export const SelectBuyAmountScreen = (): React.JSX.Element => {
           formatInTokenUnit={formatInTokenUnit}
         />
       )}
-
+      <View sx={{ alignItems: 'center', marginTop: 12 }}>
+        {isAboveMinimumPurchaseLimit === false &&
+          minimumPurchaseLimit &&
+          amount !== 0 && (
+            <Text
+              variant="caption"
+              sx={{
+                fontWeight: 500,
+                color: colors.$textDanger
+              }}>{`The minimum purchase amount is ${minimumPurchaseLimit} ${selectedCurrency}`}</Text>
+          )}
+        {isBelowMaximumPurchaseLimit === false &&
+          maximumPurchaseLimit &&
+          amount !== 0 && (
+            <Text
+              variant="caption"
+              sx={{
+                fontWeight: 500,
+                color: colors.$textDanger
+              }}>{`The maximum purchase amount is ${maximumPurchaseLimit} ${selectedCurrency}`}</Text>
+          )}
+      </View>
       {/* Pay with */}
-      {defaultsByCountry && defaultsByCountry?.length > 0 && (
-        <Pressable
-          // onPress={handleSelectPaymentMethod}
-          sx={{
-            marginTop: 12,
-            flexDirection: 'row',
-            alignItems: 'center',
-            borderRadius: 12,
-            justifyContent: 'space-between',
-            padding: 17,
-            backgroundColor: colors.$surfaceSecondary
-          }}>
-          <Text
-            variant="body1"
+      {defaultsByCountry &&
+        defaultsByCountry?.length > 0 &&
+        isWithinPurchaseLimit && (
+          <Pressable
+            // onPress={handleSelectPaymentMethod}
             sx={{
-              fontSize: 16,
-              lineHeight: 22,
-              fontWeight: 400,
-              color: colors.$textPrimary
+              marginTop: 12,
+              flexDirection: 'row',
+              alignItems: 'center',
+              borderRadius: 12,
+              justifyContent: 'space-between',
+              padding: 17,
+              backgroundColor: colors.$surfaceSecondary
             }}>
-            Pay with
-          </Text>
-          <View sx={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-            <View>
-              <Text
-                variant="body2"
-                sx={{
-                  fontSize: 16,
-                  lineHeight: 22,
-                  fontWeight: 400,
-                  textAlign: 'right'
-                }}>
-                {defaultPaymentMethod}
-              </Text>
-              {/* Todo: CP-10736 */}
-              <Text
-                variant="caption"
-                sx={{
-                  fontSize: 11,
-                  fontWeight: 500,
-                  textAlign: 'right'
-                }}>
-                {
-                  SearchProviders[
-                    serviceProviders?.[0]
-                      ?.serviceProvider as keyof typeof SearchProviders
-                  ]
-                }
-              </Text>
+            <Text
+              variant="body1"
+              sx={{
+                fontSize: 16,
+                lineHeight: 22,
+                fontWeight: 400,
+                color: colors.$textPrimary
+              }}>
+              Pay with
+            </Text>
+            <View sx={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+              <View>
+                <Text
+                  variant="body2"
+                  sx={{
+                    fontSize: 16,
+                    lineHeight: 22,
+                    fontWeight: 400,
+                    textAlign: 'right'
+                  }}>
+                  {defaultPaymentMethod}
+                </Text>
+                {/* Todo: CP-10736 */}
+                <Text
+                  variant="caption"
+                  sx={{
+                    fontSize: 11,
+                    fontWeight: 500,
+                    textAlign: 'right'
+                  }}>
+                  {
+                    SearchProviders[
+                      serviceProviders?.[0]
+                        ?.serviceProvider as keyof typeof SearchProviders
+                    ]
+                  }
+                </Text>
+              </View>
+              <View sx={{ marginLeft: 8 }}>
+                <Icons.Navigation.ChevronRightV2 color={colors.$textPrimary} />
+              </View>
             </View>
-            <View sx={{ marginLeft: 8 }}>
-              <Icons.Navigation.ChevronRightV2 color={colors.$textPrimary} />
-            </View>
-          </View>
-        </Pressable>
-      )}
+          </Pressable>
+        )}
     </ScrollScreen>
   )
 }

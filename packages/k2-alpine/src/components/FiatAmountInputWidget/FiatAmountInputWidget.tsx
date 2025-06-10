@@ -6,6 +6,7 @@ import { FiatAmountInput, FiatAmountInputHandle } from './FiatAmountInput'
 
 export const FiatAmountInputWidget = ({
   amount,
+  isAmountValid = true,
   onChange,
   formatInCurrency,
   formatIntegerCurrency,
@@ -17,6 +18,7 @@ export const FiatAmountInputWidget = ({
   autoFocus
 }: {
   currency: string
+  isAmountValid?: boolean
   formatInTokenUnit?(amount: number): string
   formatInCurrency(amount: number): string
   formatIntegerCurrency(amount: number): string
@@ -89,10 +91,11 @@ export const FiatAmountInputWidget = ({
           paddingBottom: 22
         }}>
         <FiatAmountInput
+          isAmountValid={isAmountValid}
           ref={textInputRef}
           autoFocus={autoFocus}
           currency={currency}
-          amount={amount?.toString() ?? ''}
+          amount={amount !== 0 ? amount?.toString() : ''}
           onChange={handleChange}
           formatInCurrency={formatInCurrency}
           formatInTokenUnit={formatInTokenUnit}
