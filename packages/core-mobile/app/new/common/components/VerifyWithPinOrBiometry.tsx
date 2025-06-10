@@ -4,14 +4,14 @@ import { useFocusEffect } from 'expo-router'
 import React, { useCallback, useEffect, useRef } from 'react'
 import { InteractionManager, Keyboard, Platform } from 'react-native'
 import { Subscription } from 'rxjs'
-import { BiometricType } from 'services/deviceInfo/DeviceInfoService'
 import Logger from 'utils/Logger'
+import { BiometricType } from 'utils/BiometricsSDK'
 import { ScrollScreen } from './ScrollScreen'
 
 export const VerifyWithPinOrBiometry = ({
-  onLoginSuccess
+  onVerifySuccess
 }: {
-  onLoginSuccess: (mnemonic: string) => void
+  onVerifySuccess: () => void
 }): JSX.Element => {
   const pinInputRef = useRef<PinInputActions>(null)
 
@@ -31,7 +31,7 @@ export const VerifyWithPinOrBiometry = ({
   const {
     enteredPin,
     onEnterPin,
-    mnemonic,
+    verified,
     promptForWalletLoadingIfExists,
     disableKeypad,
     timeRemaining,
@@ -97,10 +97,10 @@ export const VerifyWithPinOrBiometry = ({
   )
 
   useEffect(() => {
-    if (mnemonic) {
-      onLoginSuccess(mnemonic)
+    if (verified) {
+      onVerifySuccess()
     }
-  }, [mnemonic, onLoginSuccess])
+  }, [verified, onVerifySuccess])
 
   return (
     <ScrollScreen

@@ -13,6 +13,7 @@ import {
 } from '@avalabs/k2-alpine'
 import { LoadingState } from 'common/components/LoadingState'
 import { ScrollScreen } from 'common/components/ScrollScreen'
+import { useActiveWalletId } from 'common/hooks/useActiveWallet'
 import { usePinOrBiometryLogin } from 'common/hooks/usePinOrBiometryLogin'
 import { usePreventScreenRemoval } from 'common/hooks/usePreventScreenRemoval'
 import { useFocusEffect, useRouter } from 'expo-router'
@@ -31,10 +32,10 @@ import Reanimated, {
 } from 'react-native-reanimated'
 import { useSelector } from 'react-redux'
 import { Subscription } from 'rxjs'
-import { BiometricType } from 'services/deviceInfo/DeviceInfoService'
 import { selectWalletState, WalletState } from 'store/app'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { selectSelectedAvatar } from 'store/settings/avatar'
+import BiometricsSDK, { BiometricType } from 'utils/BiometricsSDK'
 import Logger from 'utils/Logger'
 
 const LoginWithPinOrBiometry = (): JSX.Element => {
@@ -46,6 +47,7 @@ const LoginWithPinOrBiometry = (): JSX.Element => {
   const pinInputRef = useRef<PinInputActions>(null)
   const { unlock } = useWallet()
   const router = useRouter()
+  const walletId = useActiveWalletId()
 
   const isProcessing = useSharedValue(false)
   const [hasNoRecentInput, setHasNoRecentInput] = useState(false)
@@ -68,24 +70,27 @@ const LoginWithPinOrBiometry = (): JSX.Element => {
     pinInputRef.current?.stopLoadingAnimation(onComplete)
   }
 
-  const handleLoginSuccess = useCallback(
-    (mnemonic: string) => {
-      handleStartLoading()
-      pinInputRef.current?.blur()
-      isProcessing.value = true
+  const handleLoginSuccess = useCallback(() => {
+    handleStartLoading()
+    pinInputRef.current?.blur()
+    isProcessing.value = true
 
-      // JS thread is blocked, so we need to wait for the animation to finish for updating the UI after the keyboard is closed
-      setTimeout(() => {
-        unlock({ mnemonic }).catch(Logger.error)
-      }, 0)
-    },
-    [handleStartLoading, isProcessing, unlock]
-  )
+    // JS thread is blocked, so we need to wait for the animation to finish for updating the UI after the keyboard is closed
+    setTimeout(() => {
+      BiometricsSDK.loadWalletSecret(walletId) //for now we only support one wallet, multiple wallets will be supported in the upcoming PR
+        .then(result => {
+          if (result) {
+            unlock({ mnemonic: result }).catch(Logger.error)
+          }
+        })
+        .catch(Logger.error)
+    }, 0)
+  }, [handleStartLoading, isProcessing, unlock, walletId])
 
   const {
     enteredPin,
     onEnterPin,
-    mnemonic,
+    verified,
     promptForWalletLoadingIfExists,
     disableKeypad,
     timeRemaining,
@@ -218,10 +223,10 @@ const LoginWithPinOrBiometry = (): JSX.Element => {
   }, [enteredPin, isEnteringPin])
 
   useEffect(() => {
-    if (mnemonic) {
-      handleLoginSuccess(mnemonic)
+    if (verified) {
+      handleLoginSuccess()
     }
-  }, [mnemonic, handleLoginSuccess])
+  }, [verified, handleLoginSuccess])
 
   useEffect(() => {
     const pinInputOpacityValue = isEnteringPin ? 1 : 0
