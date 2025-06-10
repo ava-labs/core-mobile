@@ -20,7 +20,9 @@ export enum ChainName {
   AVALANCHE_C = 'Avalanche C-Chain',
   AVALANCHE_C_TESTNET = 'Avalanche C-Chain Testnet',
   BITCOIN = 'Bitcoin',
-  BITCOIN_TESTNET = 'Bitcoin Testnet'
+  BITCOIN_TESTNET = 'Bitcoin Testnet',
+  SOLANA = 'Solana',
+  SOLANA_DEVNET = 'Solana Devnet'
 }
 
 export const AVALANCHE_MAINNET_NETWORK = {
@@ -102,6 +104,33 @@ export const NETWORK_X_TEST = {
   logoUri:
     'https://images.ctfassets.net/gcj8jwzm6086/5xiGm7IBR6G44eeVlaWrxi/1b253c4744a3ad21a278091e3119feba/xchain-square.svg',
   explorerUrl: 'https://subnets-test.avax.network/x-chain'
+} as Network
+
+export const NETWORK_SOLANA = {
+  chainId: ChainId.SOLANA_MAINNET_ID,
+  isTestnet: false,
+  vmName: NetworkVMType.SVM,
+  rpcUrl: 'https://api.mainnet-beta.solana.com',
+  wsUrl: 'wss://api.mainnet-beta.solana.com',
+  networkToken: {
+    name: 'Solana',
+    symbol: 'SOL',
+    description:
+      'Solana is a high-performance blockchain supporting builders around the world creating crypto apps that scale today.',
+    decimals: 9,
+    logoUri: 'https://solana.com/img/solana-logo-full.svg'
+  },
+  explorerUrl: 'https://explorer.solana.com',
+  chainName: ChainName.SOLANA,
+  logoUri: 'https://solana.com/img/solana-logo-full.svg'
+} as Network
+
+export const NETWORK_SOLANA_DEVNET = {
+  chainId: ChainId.SOLANA_DEVNET_ID,
+  isTestnet: true,
+  vmName: NetworkVMType.SVM,
+  rpcUrl: 'https://api.devnet.solana.com',
+  wsUrl: 'wss://api.devnet.solana.com'
 } as Network
 
 // Primary networks are the ones that are always enabled in the app

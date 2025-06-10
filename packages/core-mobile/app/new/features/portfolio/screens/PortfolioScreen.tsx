@@ -123,6 +123,11 @@ const PortfolioHomeScreen = (): JSX.Element => {
     [getMarketTokenBySymbol, tokens]
   )
 
+  const formattedPriceChange =
+    totalPriceChanged > 0
+      ? formatCurrency({ amount: Math.abs(totalPriceChanged) })
+      : ''
+
   const indicatorStatus =
     totalPriceChanged > 0
       ? PriceChangeStatus.Up
@@ -268,9 +273,7 @@ const PortfolioHomeScreen = (): JSX.Element => {
               priceChange={
                 totalPriceChanged > 0
                   ? {
-                      formattedPrice: `$${Math.abs(totalPriceChanged).toFixed(
-                        2
-                      )}`,
+                      formattedPrice: formattedPriceChange,
                       status: indicatorStatus,
                       formattedPercent
                     }
@@ -311,6 +314,7 @@ const PortfolioHomeScreen = (): JSX.Element => {
     isLoading,
     isPrivacyModeEnabled,
     isDeveloperMode,
+    formattedPriceChange,
     actionButtons
   ])
 
