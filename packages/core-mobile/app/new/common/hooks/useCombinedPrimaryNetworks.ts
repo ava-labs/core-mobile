@@ -4,6 +4,7 @@ import { useSelector } from 'react-redux'
 import {
   MAIN_PRIMARY_NETWORKS,
   NETWORK_SOLANA,
+  NETWORK_SOLANA_DEVNET,
   TEST_PRIMARY_NETWORKS
 } from 'services/network/consts'
 import { selectIsSolanaSupportBlocked } from 'store/posthog/slice'
@@ -26,7 +27,7 @@ export function useCombinedPrimaryNetworks(): {
     if (isDeveloperMode) {
       return isSolanaSupportBlocked
         ? (TEST_PRIMARY_NETWORKS as Network[])
-        : [...TEST_PRIMARY_NETWORKS, NETWORK_SOLANA]
+        : [...TEST_PRIMARY_NETWORKS, NETWORK_SOLANA_DEVNET]
     }
 
     // Main networks
