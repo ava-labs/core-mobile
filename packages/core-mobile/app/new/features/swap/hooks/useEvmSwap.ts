@@ -16,9 +16,10 @@ import {
   SwapParams,
   SwapQuote
 } from '../types'
-import { paraSwap } from '../utils/evm/paraSwap'
 import { isWrappableToken } from '../utils/evm/isWrappableToken'
-import { manualSwap } from '../utils/evm/manualSwap'
+import { paraSwap } from '../utils/evm/paraSwap'
+import { wrap } from '../utils/evm/wrap'
+import { unwrap } from '../utils/evm/unwrap'
 
 export const useEvmSwap = (): {
   getQuote: (params: GetQuoteParams) => Promise<SwapQuote | undefined>
@@ -119,8 +120,18 @@ export const useEvmSwap = (): {
           context
         })
 
-      if (isEvmWrapQuote(quote) || isEvmUnwrapQuote(quote)) {
-        return manualSwap({
+      if (isEvmWrapQuote(quote)) {
+        return wrap({
+          userAddress: account.addressC,
+          network,
+          provider: avalancheProvider,
+          quote,
+          signAndSend
+        })
+      }
+
+      if (isEvmUnwrapQuote(quote)) {
+        return unwrap({
           userAddress: account.addressC,
           network,
           provider: avalancheProvider,
