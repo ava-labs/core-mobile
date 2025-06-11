@@ -211,16 +211,13 @@ class BiometricsSDK {
    * @throws Error if the encryption key is not found in cache.
    */
   async changePin(newPin: string): Promise<void> {
-    if (!this.encryptionKey) {
-      throw new Error('Encryption key not found in cache. Cannot change pin.')
-    }
     await Keychain.resetGenericPassword({
       service: ENCRYPTION_KEY_SERVICE
     })
     await Keychain.resetGenericPassword({
       service: LEGACY_SERVICE_KEY
     })
-    await this.storeEncryptionKeyWithPin(this.encryptionKey, newPin)
+    await this.storeEncryptionKeyWithPin(this.getEncryptionKey(), newPin)
   }
 
   // Wallet Secret Management
@@ -228,12 +225,7 @@ class BiometricsSDK {
     walletId: string,
     secret: string
   ): Promise<false | Keychain.Result> {
-    if (!this.encryptionKey) {
-      throw new Error(
-        'Encryption key not found in cache. Cannot store wallet secret.'
-      )
-    }
-    const encrypted = await encrypt(secret, this.encryptionKey)
+    const encrypted = await encrypt(secret, this.getEncryptionKey())
     return Keychain.setGenericPassword(
       'walletSecret',
       encrypted,
@@ -241,17 +233,24 @@ class BiometricsSDK {
     )
   }
 
-  async loadWalletSecret(walletId: string): Promise<false | string> {
+  private getEncryptionKey(): string {
     if (!this.encryptionKey) {
       throw new Error(
-        'Encryption key not found in cache. Cannot load wallet secret.'
+        'Encryption key not found in cache. Cannot store wallet secret.'
       )
     }
+    return this.encryptionKey
+  }
+
+  async loadWalletSecret(walletId: string): Promise<false | string> {
     const credentials = await Keychain.getGenericPassword(
       KeystoreConfig.wallet_secret_options(walletId)
     )
     if (!credentials) return false
-    const decrypted = await decrypt(credentials.password, this.encryptionKey)
+    const decrypted = await decrypt(
+      credentials.password,
+      this.getEncryptionKey()
+    )
     return decrypted.data
   }
 
@@ -322,12 +321,7 @@ class BiometricsSDK {
    * @throws Error if the encryption key is not found in cache.
    */
   async enableBiometry(): Promise<void> {
-    if (!this.encryptionKey) {
-      throw new Error(
-        'Encryption key not found in cache. Cannot enable biometry.'
-      )
-    }
-    await this.storeEncryptionKeyWithBiometry(this.encryptionKey)
+    await this.storeEncryptionKeyWithBiometry(this.getEncryptionKey())
   }
 
   async disableBiometry(): Promise<void> {
