@@ -174,6 +174,20 @@ const fetchSeedlessAccountsIfNeeded = async (
   }
 }
 
+const migrateSolanaAddressesIfNeeded = async (
+  _action: AnyAction,
+  listenerApi: AppListenerEffectAPI
+): Promise<void> => {
+  const state = listenerApi.getState()
+
+  const accounts = selectAccounts(state)
+  const entries = Object.values(accounts)
+
+  if (entries.some(account => !account.addressSVM)) {
+    reloadAccounts(_action, listenerApi)
+  }
+}
+
 export const addAccountListeners = (
   startListening: AppStartListening
 ): void => {
@@ -195,5 +209,10 @@ export const addAccountListeners = (
   startListening({
     actionCreator: onAppUnlocked,
     effect: fetchSeedlessAccountsIfNeeded
+  })
+
+  startListening({
+    actionCreator: onAppUnlocked,
+    effect: migrateSolanaAddressesIfNeeded
   })
 }
