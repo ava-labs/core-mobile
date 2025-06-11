@@ -10,9 +10,9 @@ import { WalletType } from 'services/wallet/types'
 import { SeedlessPubKeysStorage } from 'seedless/services/storage/SeedlessPubKeysStorage'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import SeedlessService from 'seedless/services/SeedlessService'
-import { selectActiveNetwork } from 'store/network'
-import { Network } from '@avalabs/core-chains-sdk'
 import { recentAccountsStore } from 'new/features/accountSettings/store'
+import { EVM_BASE_DERIVATION_PATH_PREFIX } from 'utils/publicKeys'
+import { Secp256k1 } from '@cubist-labs/cubesigner-sdk'
 import {
   selectAccounts,
   selectActiveAccount,
@@ -29,7 +29,6 @@ const initAccounts = async (
 ): Promise<void> => {
   const state = listenerApi.getState()
   const isDeveloperMode = selectIsDeveloperMode(state)
-  const activeNetwork = selectActiveNetwork(state)
   const walletType = selectWalletType(state)
   const walletName = selectWalletName(state)
   const activeAccountIndex = selectActiveAccount(state)?.index ?? 0
@@ -40,7 +39,7 @@ const initAccounts = async (
       index: 0,
       activeAccountIndex,
       walletType,
-      network: activeNetwork
+      isTestnet: isDeveloperMode
     })
 
     const title = await SeedlessService.getAccountName(0)
@@ -50,7 +49,7 @@ const initAccounts = async (
 
     // to avoid initial account fetching taking too long,
     // we fetch the remaining accounts in the background
-    fetchingRemainingAccounts({
+    fetchRemainingAccounts({
       isDeveloperMode,
       walletType,
       activeAccountIndex,
@@ -63,7 +62,7 @@ const initAccounts = async (
       index: 0,
       activeAccountIndex,
       walletType,
-      network: activeNetwork
+      isTestnet: isDeveloperMode
     })
 
     const accountTitle =
@@ -85,7 +84,7 @@ const initAccounts = async (
   }
 }
 
-const fetchingRemainingAccounts = async ({
+const fetchRemainingAccounts = async ({
   isDeveloperMode,
   walletType,
   activeAccountIndex,
@@ -103,20 +102,22 @@ const fetchingRemainingAccounts = async ({
    * adding accounts cannot be parallelized, they need to be added one-by-one.
    * otherwise race conditions occur and addresses get mixed up.
    */
-  const state = listenerApi.getState()
-  const activeNetwork = selectActiveNetwork(state)
-  const pubKeysStorage = new SeedlessPubKeysStorage()
-  const pubKeys = await pubKeysStorage.retrieve()
+  const pubKeys = await SeedlessPubKeysStorage.retrieve()
+  const numberOfAccounts = pubKeys.filter(pubKey =>
+    pubKey.derivationPath.startsWith(EVM_BASE_DERIVATION_PATH_PREFIX)
+  ).length
+
   const accounts: AccountCollection = {}
+  const targetKeys = await SeedlessService.getSessionKeysList(Secp256k1.Ava)
   // fetch the remaining accounts in the background
-  for (let i = 1; i < pubKeys.length; i++) {
+  for (let i = 1; i < numberOfAccounts; i++) {
     const acc = await accountService.createNextAccount({
       index: i,
       activeAccountIndex,
       walletType,
-      network: activeNetwork
+      isTestnet: isDeveloperMode
     })
-    const title = await SeedlessService.getAccountName(i)
+    const title = await SeedlessService.getAccountName(i, targetKeys)
     const accountTitle = title ?? acc.name
     accounts[acc.index] = { ...acc, name: accountTitle }
   }
@@ -144,15 +145,10 @@ const reloadAccounts = async (
   const state = listenerApi.getState()
   const isDeveloperMode = selectIsDeveloperMode(state)
 
-  // all vm modules need is just the isTestnet flag
-  const network = {
-    isTestnet: isDeveloperMode
-  } as Network
-
   const accounts = selectAccounts(state)
   const reloadedAccounts = await accountService.reloadAccounts(
     accounts,
-    network as Network
+    isDeveloperMode
   )
 
   listenerApi.dispatch(setAccounts(reloadedAccounts))

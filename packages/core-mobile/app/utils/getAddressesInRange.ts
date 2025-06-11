@@ -2,6 +2,7 @@ import { z } from 'zod'
 import { getCorrectedLimit } from 'store/rpc/handlers/avalanche_getAddressesInRange/utils'
 import WalletService from 'services/wallet/WalletService'
 import { StorageKey } from 'resources/Constants'
+import { Account } from 'store/account'
 import Logger from './Logger'
 import { commonStorage } from './mmkv'
 
@@ -25,6 +26,7 @@ export type AddressesParams = {
 }
 
 export const getAddressesInRange = async (
+  account: Account,
   isDeveloperMode: boolean,
   // TODO: // we should use walletId here once we support multiple wallets
   // walletId: string,
@@ -61,6 +63,7 @@ export const getAddressesInRange = async (
   )
   addresses.external = (
     await WalletService.getAddressesByIndices({
+      accountIndex: account.index,
       indices: externalIndices ?? [],
       chainAlias: 'X',
       isChange: false,
@@ -75,6 +78,7 @@ export const getAddressesInRange = async (
 
   addresses.internal = (
     await WalletService.getAddressesByIndices({
+      accountIndex: account.index,
       indices: internalIndices ?? [],
       chainAlias: 'X',
       isChange: true,

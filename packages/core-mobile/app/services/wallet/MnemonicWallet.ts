@@ -4,7 +4,6 @@ import {
   BitcoinProvider,
   DerivationPath,
   JsonRpcBatchInternal,
-  getAddressPublicKeyFromXPub,
   getWalletFromMnemonic,
   getAddressDerivationPath
 } from '@avalabs/core-wallets-sdk'
@@ -12,7 +11,6 @@ import { now } from 'moment'
 import {
   AvalancheTransactionRequest,
   BtcTransactionRequest,
-  PubKeyType,
   Wallet
 } from 'services/wallet/types'
 import { BaseWallet, TransactionRequest } from 'ethers'
@@ -31,12 +29,14 @@ import {
   TypedDataV1,
   TypedData,
   MessageTypes,
-  WalletType,
   RpcMethod
 } from '@avalabs/vm-module-types'
 import { isTypedData } from '@avalabs/evm-module'
-import ModuleManager from 'vmModule/ModuleManager'
-import { mapToVmNetwork } from 'vmModule/utils/mapToVmNetwork'
+import { Curve } from 'utils/publicKeys'
+import slip10 from 'micro-key-producer/slip10.js'
+import { mnemonicToSeed } from 'bip39'
+import { fromSeed } from 'bip32'
+import { hex } from '@scure/base'
 
 export class MnemonicWallet implements Wallet {
   #mnemonic?: string
@@ -344,43 +344,27 @@ export class MnemonicWallet implements Wallet {
     return await signer.signTransaction(transaction)
   }
 
-  public async getPublicKey(accountIndex: number): Promise<PubKeyType> {
-    const evmPub = getAddressPublicKeyFromXPub(this.xpub, accountIndex)
-    const xpPub = Avalanche.getAddressPublicKeyFromXpub(
-      this.xpubXP,
-      accountIndex
-    )
+  public async getPublicKeyFor(
+    derivationPath: string,
+    curve: Curve
+  ): Promise<string> {
+    const seed = await mnemonicToSeed(this.mnemonic)
 
-    return {
-      evm: evmPub.toString('hex'),
-      xp: xpPub.toString('hex')
-    }
-  }
+    switch (curve) {
+      case 'secp256k1': {
+        const seedNode = fromSeed(seed)
+        return hex.encode(
+          new Uint8Array(seedNode.derivePath(derivationPath).publicKey)
+        )
+      }
 
-  public async getAddresses({
-    accountIndex,
-    provXP,
-    network
-  }: {
-    accountIndex: number
-    provXP: Avalanche.JsonRpcProvider
-    network: Network
-  }): Promise<Record<NetworkVMType, string>> {
-    const addresses = await ModuleManager.getAddresses({
-      walletType: WalletType.Mnemonic,
-      accountIndex,
-      xpub: this.xpub,
-      xpubXP: this.xpubXP,
-      network: mapToVmNetwork(network)
-    })
+      case 'ed25519': {
+        const hdKey = slip10.fromMasterSeed(new Uint8Array(seed))
+        return hex.encode(hdKey.derive(derivationPath).publicKeyRaw)
+      }
 
-    // C-avax... this address uses the same public key as EVM
-    const cPubKey = getAddressPublicKeyFromXPub(this.xpub, accountIndex)
-    const cAddr = provXP.getAddress(cPubKey, 'C')
-
-    return {
-      ...(addresses as Record<NetworkVMType, string>),
-      [NetworkVMType.CoreEth]: cAddr
+      default:
+        throw new Error('Unsupported curve: ' + curve)
     }
   }
 

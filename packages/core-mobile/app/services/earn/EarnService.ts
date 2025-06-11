@@ -36,7 +36,6 @@ import { glacierApi } from 'utils/network/glacier'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
 import { Avalanche } from '@avalabs/core-wallets-sdk'
-import { Network } from '@avalabs/core-chains-sdk'
 import { AvaxXP } from 'types/AvaxXP'
 import {
   getTransformedTransactions,
@@ -324,11 +323,11 @@ class EarnService {
 
   getTransformedStakesForAllAccounts = async ({
     accounts,
-    network,
+    isDeveloperMode,
     startTimestamp
   }: {
     accounts: AccountCollection
-    network: Network
+    isDeveloperMode: boolean
     startTimestamp?: number
   }): Promise<
     | {
@@ -340,7 +339,6 @@ class EarnService {
       }[]
     | undefined
   > => {
-    const isDeveloperMode = Boolean(network.isTestnet)
     const accountsArray = Object.values(accounts)
 
     try {
@@ -356,7 +354,10 @@ class EarnService {
       const oppositeNetworkAddresses = (
         await Promise.all(
           accountsArray.map(account =>
-            WalletService.getAddresses(account.index, network)
+            WalletService.getAddresses({
+              accountIndex: account.index,
+              isTestnet: isDeveloperMode
+            })
           )
         )
       ).map(address => address.PVM)
