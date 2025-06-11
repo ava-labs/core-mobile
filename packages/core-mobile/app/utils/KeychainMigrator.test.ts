@@ -19,34 +19,28 @@ describe('KeychainMigrator', () => {
 
   describe('getMigrationStatus', () => {
     it('should return false if fully migrated', async () => {
-      mockBiometricsSDK.getEncryptionKeyWithPinExists.mockResolvedValue(true)
+      mockBiometricsSDK.hasEncryptionKeyWithPin.mockResolvedValue(true)
       const status = await keychainMigrator.getMigrationStatus('PIN')
       expect(status).toBe(false)
     })
 
     it('should return "completePartialMigration" if bio key exists but pin key does not', async () => {
-      mockBiometricsSDK.getEncryptionKeyWithPinExists.mockResolvedValue(false)
-      mockBiometricsSDK.getEncryptionKeyWithBiometryExists.mockResolvedValue(
-        true
-      )
+      mockBiometricsSDK.hasEncryptionKeyWithPin.mockResolvedValue(false)
+      mockBiometricsSDK.hasEncryptionKeyWithBiometry.mockResolvedValue(true)
       const status = await keychainMigrator.getMigrationStatus('PIN')
       expect(status).toBe('completePartialMigration')
     })
 
     it('should return "runPinMigration" if no keys exist and access type is PIN', async () => {
-      mockBiometricsSDK.getEncryptionKeyWithPinExists.mockResolvedValue(false)
-      mockBiometricsSDK.getEncryptionKeyWithBiometryExists.mockResolvedValue(
-        false
-      )
+      mockBiometricsSDK.hasEncryptionKeyWithPin.mockResolvedValue(false)
+      mockBiometricsSDK.hasEncryptionKeyWithBiometry.mockResolvedValue(false)
       const status = await keychainMigrator.getMigrationStatus('PIN')
       expect(status).toBe('runPinMigration')
     })
 
     it('should return "runBiometricMigration" if no keys exist and access type is Biometric', async () => {
-      mockBiometricsSDK.getEncryptionKeyWithPinExists.mockResolvedValue(false)
-      mockBiometricsSDK.getEncryptionKeyWithBiometryExists.mockResolvedValue(
-        false
-      )
+      mockBiometricsSDK.hasEncryptionKeyWithPin.mockResolvedValue(false)
+      mockBiometricsSDK.hasEncryptionKeyWithBiometry.mockResolvedValue(false)
       const status = await keychainMigrator.getMigrationStatus('BIO')
       expect(status).toBe('runBiometricMigration')
     })

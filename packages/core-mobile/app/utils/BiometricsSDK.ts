@@ -120,7 +120,7 @@ class BiometricsSDK {
   }
 
   // Encryption Key Management
-  async getEncryptionKeyWithPinExists(): Promise<boolean> {
+  async hasEncryptionKeyWithPin(): Promise<boolean> {
     try {
       const credentials = await Keychain.getGenericPassword(
         KeystoreConfig.ENCRYPTION_KEY_PASSCODE_OPTIONS
@@ -132,7 +132,7 @@ class BiometricsSDK {
     }
   }
 
-  async getEncryptionKeyWithBiometryExists(): Promise<boolean> {
+  async hasEncryptionKeyWithBiometry(): Promise<boolean> {
     try {
       const credentials = await Keychain.getGenericPassword(
         KeystoreConfig.ENCRYPTION_KEY_BIO_OPTIONS
