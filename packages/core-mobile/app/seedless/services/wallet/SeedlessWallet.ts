@@ -43,11 +43,14 @@ import { SeedlessBtcSigner } from './SeedlessBtcSigner'
 
 export default class SeedlessWallet implements Wallet {
   #client: cs.CubeSignerClient
-  #publicKeys: AddressPublicKey[]
+  #addressPublicKeys: AddressPublicKey[]
 
-  constructor(client: cs.CubeSignerClient, publicKeys: AddressPublicKey[]) {
+  constructor(
+    client: cs.CubeSignerClient,
+    addressPublicKeys: AddressPublicKey[]
+  ) {
     this.#client = client
-    this.#publicKeys = publicKeys
+    this.#addressPublicKeys = addressPublicKeys
   }
 
   private async getMnemonicId(): Promise<string> {
@@ -290,7 +293,7 @@ export default class SeedlessWallet implements Wallet {
   }
 
   public async getPublicKeyFor(path: string, curve: Curve): Promise<string> {
-    const publicKey = this.#publicKeys.find(findPublicKey(path, curve))
+    const publicKey = this.#addressPublicKeys.find(findPublicKey(path, curve))
 
     if (!publicKey) {
       throw new Error(
@@ -369,7 +372,7 @@ export default class SeedlessWallet implements Wallet {
   }
 
   private getAddressPublicKey(accountIndex: number): string {
-    const publicKeys = this.#publicKeys.filter(pubKey =>
+    const publicKeys = this.#addressPublicKeys.filter(pubKey =>
       pubKey.derivationPath.startsWith(EVM_BASE_DERIVATION_PATH_PREFIX)
     )
 

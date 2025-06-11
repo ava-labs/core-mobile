@@ -30,7 +30,7 @@ export class SeedlessPubKeysStorage {
     return pubKeys
   }
 
-  static clear(): void {
+  static clearCache(): void {
     this.cache = undefined
   }
 }

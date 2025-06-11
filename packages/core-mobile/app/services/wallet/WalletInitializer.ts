@@ -46,10 +46,10 @@ class WalletInitializer {
   public async terminate(walletType: WalletType): Promise<void> {
     switch (walletType) {
       case WalletType.SEEDLESS:
-        // no need to do anything here
+        // clear only the cache of public keys
         // as all data stored in SecureStorageService
         // is cleared on logout
-        SeedlessPubKeysStorage.clear()
+        SeedlessPubKeysStorage.clearCache()
         break
       case WalletType.MNEMONIC:
         MnemonicWalletInstance.mnemonic = undefined
