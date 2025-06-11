@@ -115,7 +115,7 @@ export const TokenDetailScreen = (): React.JSX.Element => {
 
   const tokenName = token?.name ?? ''
 
-  const { navigateToBuy } = useBuy()
+  const { navigateToBuy, isBuyable } = useBuy()
 
   const header = useMemo(
     () => <NavigationTitleHeader title={tokenName} />,
@@ -190,7 +190,7 @@ export const TokenDetailScreen = (): React.JSX.Element => {
       })
     }
 
-    if (!isXpToken && token) {
+    if (token && isBuyable(token)) {
       buttons.push({
         title: ActionButtonTitle.Buy,
         icon: 'buy',
@@ -219,8 +219,8 @@ export const TokenDetailScreen = (): React.JSX.Element => {
   }, [
     handleSend,
     isSwapDisabled,
-    isXpToken,
     token,
+    isBuyable,
     isTokenStakable,
     isBridgeDisabled,
     isTokenBridgeable,

@@ -19,6 +19,7 @@ export const useBuy = (): {
   navigateToBuy: (props?: NavigateToBuyParams) => void
   navigateToBuyAvax: () => void
   navigateToBuyUsdc: () => void
+  isBuyable: (token?: LocalTokenWithBalance, address?: string) => boolean
 } => {
   const { navigate } = useRouter()
   const [_, setOnrampToken] = useOnRampToken()
@@ -27,6 +28,13 @@ export const useBuy = (): {
     categories: [ServiceProviderCategories.CRYPTO_ONRAMP]
   })
   const { getBuyableCryptoCurrency } = useGetBuyableCryptoCurrency()
+
+  const isBuyable = useCallback(
+    (token?: LocalTokenWithBalance, address?: string) => {
+      return getBuyableCryptoCurrency(token, address) !== undefined
+    },
+    [getBuyableCryptoCurrency]
+  )
 
   const avax = useMemo(
     () =>
@@ -92,6 +100,7 @@ export const useBuy = (): {
   return {
     navigateToBuy,
     navigateToBuyAvax,
-    navigateToBuyUsdc
+    navigateToBuyUsdc,
+    isBuyable
   }
 }
