@@ -77,36 +77,14 @@ export function usePinOrBiometryLogin({
       try {
         onStartLoading()
 
-        // Check if migration is needed first
-        const migrator = new KeychainMigrator(activeWalletId)
-        const migrationStatus = await migrator.getMigrationStatus('PIN')
+        const migrationSuccess = await checkMigration(pin, activeWalletId)
 
-        if (migrationStatus) {
-          Logger.info('Migration needed:', migrationStatus)
-
-          let migrationSuccess = false
-
-          switch (migrationStatus) {
-            case 'runPinMigration':
-              migrationSuccess = await migrator.runPinMigration(pin)
-              break
-            case 'completePartialMigration':
-              migrationSuccess = await migrator.completePartialMigration(pin)
-              break
-            default:
-              Logger.error('Unexpected migration status:', migrationStatus)
-              break
-          }
-
-          if (!migrationSuccess) {
-            Logger.error('Migration failed')
-            setVerified(false)
-            increaseAttempt()
-            onStopLoading(onWrongPin)
-            return
-          }
-
-          Logger.info('Migration completed successfully')
+        if (!migrationSuccess) {
+          Logger.error('Migration failed')
+          setVerified(false)
+          increaseAttempt()
+          onStopLoading(onWrongPin)
+          return
         }
 
         // Now try to load the encryption key (either new or migrated)
@@ -142,15 +120,42 @@ export function usePinOrBiometryLogin({
       }
     },
     [
-      activeWalletId,
-      alertBadData,
-      increaseAttempt,
-      resetRateLimiter,
-      onWrongPin,
       onStartLoading,
-      onStopLoading
+      activeWalletId,
+      onStopLoading,
+      increaseAttempt,
+      onWrongPin,
+      resetRateLimiter,
+      alertBadData
     ]
   )
+
+  async function checkMigration(
+    pin: string,
+    walletId: string
+  ): Promise<boolean> {
+    const migrator = new KeychainMigrator(walletId)
+    const migrationStatus = await migrator.getMigrationStatus('PIN')
+
+    let migrationSuccess = true
+    if (migrationStatus) {
+      Logger.info('Migration needed:', migrationStatus)
+
+      switch (migrationStatus) {
+        case 'runPinMigration':
+          migrationSuccess = await migrator.runPinMigration(pin)
+          break
+        case 'completePartialMigration':
+          migrationSuccess = await migrator.completePartialMigration(pin)
+          break
+        default:
+          Logger.error('Unexpected migration status:', migrationStatus)
+          break
+      }
+      Logger.info('Migration completed successfully')
+    }
+    return migrationSuccess
+  }
 
   const onEnterPin = (pin: string): void => {
     if (pin.length > 6) {
