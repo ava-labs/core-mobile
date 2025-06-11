@@ -1,4 +1,5 @@
 import { Network } from '@avalabs/core-chains-sdk'
+import { Network } from '@avalabs/core-chains-sdk'
 import * as cs from '@cubist-labs/cubesigner-sdk'
 import { Signer as CsEthersSigner } from '@cubist-labs/cubesigner-sdk-ethers-v6'
 import {

@@ -153,7 +153,7 @@ const fetchRemainingAccounts = async ({
       walletId: activeWalletId,
       name: `Account ${i + 1}`
     })
-    const title = await SeedlessService.getAccountName(i)
+    const title = await SeedlessService.getAccountName(i, targetKeys)
     const accountTitle = title ?? acc.name
     accounts[acc.id] = { ...acc, name: accountTitle }
   }

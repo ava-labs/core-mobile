@@ -7,6 +7,8 @@ import {
   RpcMethod,
   RpcRequest,
   RequestPublicKeyParams
+  RpcRequest,
+  RequestPublicKeyParams
 } from '@avalabs/vm-module-types'
 import { providerErrors, rpcErrors } from '@metamask/rpc-errors'
 import { btcSignTransaction } from 'vmModule/handlers/btcSignTransaction'
