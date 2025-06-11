@@ -49,7 +49,7 @@ class WalletInitializer {
         // clear only the cache of public keys
         // as all data stored in SecureStorageService
         // is cleared on logout
-        SeedlessPubKeysStorage.clear()
+        SeedlessPubKeysStorage.clearCache()
         break
       case WalletType.MNEMONIC:
         MnemonicWalletInstance.mnemonic = undefined
