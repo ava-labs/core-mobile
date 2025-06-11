@@ -39,7 +39,6 @@ import { nanoToWei } from 'utils/units/converter'
 import { SpanName } from 'services/sentry/types'
 import { Curve, EVM_BASE_DERIVATION_PATH_PREFIX } from 'utils/publicKeys'
 import ModuleManager from 'vmModule/ModuleManager'
-import { CORE_MOBILE_WALLET_ID } from 'services/walletconnectv2/types'
 import { isAvalancheTransactionRequest, isBtcTransactionRequest } from './utils'
 import WalletInitializer from './WalletInitializer'
 import WalletFactory from './WalletFactory'
@@ -219,7 +218,6 @@ class WalletService {
     network: Network
   }): Promise<Record<NetworkVMType, string>> {
     return ModuleManager.deriveAddresses({
-      walletId: CORE_MOBILE_WALLET_ID,
       accountIndex,
       network
     })
