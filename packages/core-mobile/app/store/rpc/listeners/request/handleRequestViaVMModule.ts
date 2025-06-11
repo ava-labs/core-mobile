@@ -129,7 +129,7 @@ const getContext = async (
     const context: Record<string, string> = { currentAddress }
 
     if (WalletService.walletType === WalletType.MNEMONIC && activeAccount) {
-      const publicKey = await WalletService.getPublicKey(activeAccount.index)
+      const publicKey = await WalletService.getPublicKey(activeAccount)
       if (publicKey.xp) {
         context.xpubXP = publicKey.xp
       }

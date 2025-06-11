@@ -9,7 +9,7 @@ import { WalletState, selectWalletState } from 'store/app'
 import { ChannelId } from 'services/notifications/channels'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { getUnixTime } from 'date-fns'
-import { selectIsDeveloperMode } from 'store/settings/advanced'
+import { selectActiveNetwork } from 'store/network'
 import { turnOnNotificationsFor } from '../slice'
 import { isStakeCompleteNotificationDisabled } from './utils'
 
@@ -78,7 +78,7 @@ const scheduleNotificationsForActiveStakes = async (
 
   setTimeout(async () => {
     const accounts = selectAccounts(state)
-    const isDeveloperMode = selectIsDeveloperMode(state)
+    const activeNetwork = selectActiveNetwork(state)
 
     Logger.info('fetching stakes for all accounts')
 
@@ -93,7 +93,7 @@ const scheduleNotificationsForActiveStakes = async (
     const transformedTransactions =
       await EarnService.getTransformedStakesForAllAccounts({
         accounts,
-        isDeveloperMode,
+        network: activeNetwork,
         startTimestamp
       })
 

@@ -21,6 +21,8 @@ import {
   getSolanaCaip2ChainId
 } from 'utils/caip2ChainIds'
 import { APPLICATION_NAME, APPLICATION_VERSION } from 'utils/network/constants'
+import { DerivationPath } from '@avalabs/core-wallets-sdk'
+import { emptyAddresses } from 'utils/publicKeys'
 import { ModuleErrors, VmModuleErrors } from './errors'
 import { approvalController } from './ApprovalController/ApprovalController'
 
@@ -98,6 +100,43 @@ class ModuleManager {
       new AvalancheModule(moduleInitParams),
       new SvmModule(moduleInitParams)
     ]
+  }
+
+  /**
+   * @param param0 walletType
+   * @param param1 accountIndex
+   * @param param2 xpub
+   * @param param3 xpubXP
+   * @param param4 isTestnet
+   * @returns EVM, AVM, PVM and Bitcoin addresses
+   */
+  deriveAddresses = async ({
+    walletId,
+    accountIndex,
+    network
+  }: {
+    walletId: string
+    accountIndex: number
+    network: Network
+  }): Promise<Record<NetworkVMType, string>> => {
+    return Promise.allSettled(
+      this.modules.map(async module =>
+        module.deriveAddress({
+          secretId: walletId,
+          accountIndex,
+          network,
+          derivationPathType: DerivationPath.BIP44
+        })
+      )
+    ).then(results => {
+      let addresses = emptyAddresses()
+      results.forEach(result => {
+        if (result.status === 'fulfilled') {
+          addresses = { ...addresses, ...result.value }
+        }
+      })
+      return addresses
+    })
   }
 
   loadModule = async (chainId: string, method?: string): Promise<Module> => {
