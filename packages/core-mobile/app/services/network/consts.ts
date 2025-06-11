@@ -127,10 +127,21 @@ export const NETWORK_SOLANA = {
 
 export const NETWORK_SOLANA_DEVNET = {
   chainId: ChainId.SOLANA_DEVNET_ID,
+  chainName: 'Solana Devnet',
   isTestnet: true,
   vmName: NetworkVMType.SVM,
   rpcUrl: 'https://api.devnet.solana.com',
-  wsUrl: 'wss://api.devnet.solana.com'
+  wsUrl: 'wss://api.devnet.solana.com',
+  networkToken: {
+    name: 'Solana',
+    symbol: 'SOL',
+    decimals: 9,
+    logoUri:
+      'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/solana/info/logo.png'
+  },
+  logoUri:
+    'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/solana/info/logo.png',
+  explorerUrl: 'https://explorer.solana.com/?cluster=devnet'
 } as Network
 
 // Primary networks are the ones that are always enabled in the app
