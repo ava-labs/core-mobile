@@ -7,6 +7,12 @@ import { useSearchableTokenList } from 'common/hooks/useSearchableTokenList'
 import { TokenUnit } from '@avalabs/core-utils-sdk/dist'
 import { useWatchlist } from 'hooks/watchlist/useWatchlist'
 import { LocalTokenWithBalance } from 'store/balance'
+import { getAddressByNetwork } from 'store/account/utils'
+import { selectActiveAccount } from 'store/account'
+import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
+import { useNavigation } from '@react-navigation/native'
+import { ACTIONS } from 'contexts/DeeplinkContext/types'
+import { SessionTypes } from 'services/meld/consts'
 import {
   PaymentMethodNames,
   ServiceProviderCategories,
@@ -23,6 +29,7 @@ import { isTokenSupportedForBuying } from '../utils'
 import { useGetPurchaseLimits } from './useGetPurchaseLimits'
 import { useLocale } from './useLocale'
 import { useSearchDefaultsByCountry } from './useSearchDefaultsByCountry'
+import { useCreateCryptoWidget } from './useCreateCryptoWidget'
 
 export const useSelectBuyAmount = (): {
   isLoadingDefaultsByCountry: boolean
@@ -39,8 +46,12 @@ export const useSelectBuyAmount = (): {
   sourceAmount: number | undefined
   minimumPurchaseLimit: number | undefined
   maximumPurchaseLimit: number | undefined
+  widgetUrl?: string
   // eslint-disable-next-line sonarjs/cognitive-complexity
 } => {
+  const account = useSelector(selectActiveAccount)
+  const { getState } = useNavigation()
+  const { formatCurrency } = useFormatCurrency()
   const [sourceAmount, setSourceAmount] = useOnRampSourceAmount()
   const selectedCurrency = useSelector(selectSelectedCurrency)
   const [onrampToken] = useOnRampToken()
@@ -62,6 +73,7 @@ export const useSelectBuyAmount = (): {
     tokens: erc20ContractTokens,
     hideZeroBalance: false
   })
+
   const { data: defaultsByCountry, isLoading: isLoadingDefaultsByCountry } =
     useSearchDefaultsByCountry({
       categories: [ServiceProviderCategories.CRYPTO_ONRAMP]
@@ -83,6 +95,29 @@ export const useSelectBuyAmount = (): {
     () => getFromPopulatedNetwork(token?.tokenWithBalance?.networkChainId),
     [getFromPopulatedNetwork, token?.tokenWithBalance?.networkChainId]
   )
+
+  const walletAddress = useMemo(() => {
+    return account && network && getAddressByNetwork(account, network)
+  }, [account, network])
+
+  const redirectUrl = useMemo(() => {
+    const state = getState()
+    const currentIndex = state?.index
+    const formattedAmount = formatCurrency({ amount: sourceAmount ?? 0 })
+    return `core://${
+      ACTIONS.BuyCompleted
+    }?amount=${formattedAmount}&dismissCount=${(currentIndex ?? 0) + 1}`
+  }, [formatCurrency, getState, sourceAmount])
+
+  const { data: onrampWidget } = useCreateCryptoWidget({
+    redirectUrl,
+    sourceAmount: sourceAmount ?? 0,
+    destinationCurrencyCode: onrampToken?.currencyCode ?? '',
+    sourceCurrencyCode: selectedCurrency,
+    sessionType: SessionTypes.BUY,
+    walletAddress,
+    serviceProvider
+  })
 
   const tokenBalance = useMemo(() => {
     if (token?.tokenWithBalance === undefined) {
@@ -200,6 +235,7 @@ export const useSelectBuyAmount = (): {
     isAboveMinimumPurchaseLimit,
     isBelowMaximumPurchaseLimit,
     isLoadingDefaultsByCountry,
-    isLoadingPurchaseLimits
+    isLoadingPurchaseLimits,
+    widgetUrl: onrampWidget?.widgetUrl
   }
 }

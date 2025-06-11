@@ -15,6 +15,7 @@ import { LogoWithNetwork } from 'features/portfolio/assets/components/LogoWithNe
 import { selectSelectedCurrency } from 'store/settings/currency'
 import { useSelector } from 'react-redux'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
+import useInAppBrowser from 'common/hooks/useInAppBrowser'
 import { useSelectBuyAmount } from '../hooks/useSelectBuyAmount'
 
 export const SelectBuyAmountScreen = (): React.JSX.Element => {
@@ -35,8 +36,10 @@ export const SelectBuyAmountScreen = (): React.JSX.Element => {
     isAboveMinimumPurchaseLimit,
     isBelowMaximumPurchaseLimit,
     isLoadingDefaultsByCountry,
-    isLoadingPurchaseLimits
+    isLoadingPurchaseLimits,
+    widgetUrl
   } = useSelectBuyAmount()
+  const { openUrl } = useInAppBrowser()
   const { formatIntegerCurrency, formatCurrency } = useFormatCurrency()
   const { navigate } = useRouter()
   const selectedCurrency = useSelector(selectSelectedCurrency)
@@ -52,9 +55,8 @@ export const SelectBuyAmountScreen = (): React.JSX.Element => {
   }, [navigate])
 
   const onNext = useCallback((): void => {
-    // @ts-ignore TODO: make routes typesafe
-    navigate('/selectPaymentMethod')
-  }, [navigate])
+    widgetUrl && openUrl(widgetUrl)
+  }, [openUrl, widgetUrl])
 
   const renderFooter = useCallback(() => {
     return (

@@ -10,6 +10,8 @@ import { useLocale } from './useLocale'
 import { useSearchServiceProviders } from './useSearchServiceProviders'
 
 export const useCreateCryptoQuote = ({
+  customerId,
+  externalCustomerId,
   walletAddress,
   sourceAmount,
   destinationCurrencyCode,
@@ -38,7 +40,9 @@ export const useCreateCryptoQuote = ({
       walletAddress,
       sourceAmount,
       destinationCurrencyCode,
-      sourceCurrencyCode
+      sourceCurrencyCode,
+      customerId,
+      externalCustomerId
     ],
     queryFn: () =>
       MeldService.createCryptoQuote({
