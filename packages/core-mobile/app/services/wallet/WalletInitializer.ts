@@ -9,17 +9,19 @@ class WalletInitializer {
   async initialize({
     mnemonic,
     walletType,
-    isLoggingIn
+    shouldRefreshPublicKeys
   }: {
     mnemonic?: string
     walletType: WalletType
-    isLoggingIn: boolean
+    shouldRefreshPublicKeys: boolean
   }): Promise<void> {
     switch (walletType) {
       case WalletType.SEEDLESS: {
         try {
-          if (isLoggingIn) {
+          const storedPubKeys = await SeedlessPubKeysStorage.retrieve()
+          if (shouldRefreshPublicKeys || storedPubKeys.length === 0) {
             const allKeys = await SeedlessService.getSessionKeysList()
+
             const pubKeys = transformKeyInfosToPubKeys(allKeys)
             Logger.info('saving public keys')
             await SeedlessPubKeysStorage.save(pubKeys)
@@ -47,7 +49,7 @@ class WalletInitializer {
         // no need to do anything here
         // as all data stored in SecureStorageService
         // is cleared on logout
-        SeedlessPubKeysStorage.clearCache()
+        SeedlessPubKeysStorage.clear()
         break
       case WalletType.MNEMONIC:
         MnemonicWalletInstance.mnemonic = undefined
