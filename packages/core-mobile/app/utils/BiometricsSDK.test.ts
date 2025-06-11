@@ -83,7 +83,7 @@ describe('BiometricsSDK', () => {
   })
 
   afterEach(() => {
-    BiometricsSDK.clearEncryptionKeyCache()
+    BiometricsSDK.clearEncryptionKey()
   })
 
   describe('Encryption Key Management', () => {
@@ -279,7 +279,7 @@ describe('BiometricsSDK', () => {
     })
 
     it('should throw error when storing secret without key in cache', async () => {
-      BiometricsSDK.clearEncryptionKeyCache() // empty cache
+      BiometricsSDK.clearEncryptionKey() // empty cache
       await expect(
         BiometricsSDK.storeWalletSecret(mockWalletId, mockSecret)
       ).rejects.toThrow(
@@ -307,7 +307,7 @@ describe('BiometricsSDK', () => {
     })
 
     it('should throw error when loading secret without key in cache', async () => {
-      BiometricsSDK.clearEncryptionKeyCache() // empty cache
+      BiometricsSDK.clearEncryptionKey() // empty cache
       await expect(
         BiometricsSDK.loadWalletSecret(mockWalletId)
       ).rejects.toThrow(
