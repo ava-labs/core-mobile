@@ -13,6 +13,8 @@ import SeedlessService from 'seedless/services/SeedlessService'
 import { recentAccountsStore } from 'new/features/accountSettings/store'
 import { EVM_BASE_DERIVATION_PATH_PREFIX } from 'utils/publicKeys'
 import { Secp256k1 } from '@cubist-labs/cubesigner-sdk'
+import { selectActiveNetwork } from 'store/network'
+import { Network } from '@avalabs/core-chains-sdk'
 import {
   selectAccounts,
   selectActiveAccount,
@@ -29,6 +31,7 @@ const initAccounts = async (
 ): Promise<void> => {
   const state = listenerApi.getState()
   const isDeveloperMode = selectIsDeveloperMode(state)
+  const activeNetwork = selectActiveNetwork(state)
   const walletType = selectWalletType(state)
   const walletName = selectWalletName(state)
   let accounts: AccountCollection = {}
@@ -38,7 +41,7 @@ const initAccounts = async (
       index: 0,
       activeAccountIndex: 0,
       walletType,
-      isTestnet: isDeveloperMode
+      network: activeNetwork
     })
 
     const title = await SeedlessService.getAccountName(0)
@@ -49,7 +52,6 @@ const initAccounts = async (
     // to avoid initial account fetching taking too long,
     // we fetch the remaining accounts in the background
     const addedAccounts = await fetchRemainingAccounts({
-      isDeveloperMode,
       walletType,
       activeAccountIndex: 0,
       startIndex: 1,
@@ -63,7 +65,7 @@ const initAccounts = async (
       index: 0,
       activeAccountIndex: 0,
       walletType,
-      isTestnet: isDeveloperMode
+      network: activeNetwork
     })
 
     const accountTitle =
@@ -87,13 +89,11 @@ const initAccounts = async (
 }
 
 const fetchRemainingAccounts = async ({
-  isDeveloperMode,
   walletType,
   activeAccountIndex,
   startIndex,
   listenerApi
 }: {
-  isDeveloperMode: boolean
   walletType: WalletType
   activeAccountIndex: number
   startIndex: number
@@ -104,6 +104,8 @@ const fetchRemainingAccounts = async ({
    * adding accounts cannot be parallelized, they need to be added one-by-one.
    * otherwise race conditions occur and addresses get mixed up.
    */
+  const state = listenerApi.getState()
+  const activeNetwork = selectActiveNetwork(state)
   const pubKeys = await SeedlessPubKeysStorage.retrieve()
   const numberOfAccounts = pubKeys.filter(pubKey =>
     pubKey.derivationPath.startsWith(EVM_BASE_DERIVATION_PATH_PREFIX)
@@ -117,7 +119,7 @@ const fetchRemainingAccounts = async ({
       index: i,
       activeAccountIndex,
       walletType,
-      isTestnet: isDeveloperMode
+      network: activeNetwork
     })
     const title = await SeedlessService.getAccountName(i, targetKeys)
     const accountTitle = title ?? acc.name
@@ -136,10 +138,15 @@ const reloadAccounts = async (
   const state = listenerApi.getState()
   const isDeveloperMode = selectIsDeveloperMode(state)
 
+  // all vm modules need is just the isTestnet flag
+  const network = {
+    isTestnet: isDeveloperMode
+  } as Network
+
   const accounts = selectAccounts(state)
   const reloadedAccounts = await accountService.reloadAccounts(
     accounts,
-    isDeveloperMode
+    network
   )
 
   listenerApi.dispatch(setAccounts(reloadedAccounts))
@@ -159,12 +166,10 @@ const fetchSeedlessAccountsIfNeeded = async (
   const walletType = selectWalletType(state)
 
   if (walletType === WalletType.SEEDLESS) {
-    const isDeveloperMode = selectIsDeveloperMode(state)
     const activeAccountIndex = selectActiveAccount(state)?.index ?? 0
     const accounts = selectAccounts(state)
 
     fetchRemainingAccounts({
-      isDeveloperMode,
       walletType,
       activeAccountIndex,
       startIndex: Object.keys(accounts).length,

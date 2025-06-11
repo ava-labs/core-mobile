@@ -1,6 +1,6 @@
 import WalletService from 'services/wallet/WalletService'
 import { Account, AccountCollection } from 'store/account'
-import { NetworkVMType } from '@avalabs/core-chains-sdk'
+import { Network, NetworkVMType } from '@avalabs/core-chains-sdk'
 import SeedlessService from 'seedless/services/SeedlessService'
 import { CoreAccountType, WalletType as CoreWalletType } from '@avalabs/types'
 import { uuid } from 'utils/uuid'
@@ -10,7 +10,7 @@ import { CORE_MOBILE_WALLET_ID } from 'services/walletconnectv2/types'
 class AccountsService {
   async reloadAccounts(
     accounts: AccountCollection,
-    isTestnet: boolean
+    network: Network
   ): Promise<AccountCollection> {
     const reloadedAccounts: AccountCollection = {}
 
@@ -18,7 +18,7 @@ class AccountsService {
       const key = parseInt(index)
       const addresses = await WalletService.getAddresses({
         accountIndex: key,
-        isTestnet
+        network
       })
       const title = await SeedlessService.getAccountName(key)
 
@@ -49,16 +49,16 @@ class AccountsService {
     index,
     activeAccountIndex,
     walletType,
-    isTestnet
+    network
   }: {
     index: number
     activeAccountIndex: number
     walletType: WalletType
-    isTestnet: boolean
+    network: Network
   }): Promise<Account> {
     if (walletType === WalletType.UNSET) throw new Error('invalid wallet type')
 
-    const addresses = await WalletService.addAddress(index, isTestnet)
+    const addresses = await WalletService.addAddress(index, network)
 
     return {
       index,

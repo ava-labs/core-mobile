@@ -19,6 +19,7 @@ import {
 import NetworkService from 'services/network/NetworkService'
 import { Network } from '@avalabs/core-chains-sdk'
 import SentryWrapper from 'services/sentry/SentryWrapper'
+import { Account } from 'store/account/types'
 import Logger from 'utils/Logger'
 import { UnsignedTx, utils, pvm } from '@avalabs/avalanchejs'
 import { getUnixTime, secondsToMilliseconds } from 'date-fns'
@@ -28,7 +29,6 @@ import SeedlessWallet from 'seedless/services/wallet/SeedlessWallet'
 import { PChainId } from '@avalabs/glacier-sdk'
 import {
   MessageTypes,
-  Module,
   NetworkVMType,
   RpcMethod,
   TypedData,
@@ -38,8 +38,6 @@ import { UTCDate } from '@date-fns/utc'
 import { nanoToWei } from 'utils/units/converter'
 import { SpanName } from 'services/sentry/types'
 import { Curve, EVM_BASE_DERIVATION_PATH_PREFIX } from 'utils/publicKeys'
-import { getNetworksForAddressDerivation } from 'services/network/utils/getNetworksForAddressDerivation'
-import { emptyAddresses } from 'utils/publicKeys'
 import ModuleManager from 'vmModule/ModuleManager'
 import { CORE_MOBILE_WALLET_ID } from 'services/walletconnectv2/types'
 import { isAvalancheTransactionRequest, isBtcTransactionRequest } from './utils'
@@ -177,7 +175,7 @@ class WalletService {
 
   public async addAddress(
     accountIndex: number,
-    isTestnet: boolean
+    network: Network
   ): Promise<Record<NetworkVMType, string>> {
     if (this.walletType === WalletType.SEEDLESS) {
       const storedPubKeys = await SeedlessPubKeysStorage.retrieve()
@@ -205,7 +203,7 @@ class WalletService {
 
     return this.getAddresses({
       accountIndex,
-      isTestnet
+      network
     })
   }
 
@@ -215,64 +213,32 @@ class WalletService {
 
   public async getAddresses({
     accountIndex,
-    isTestnet
+    network
   }: {
     accountIndex: number
-    isTestnet: boolean
+    network: Network
   }): Promise<Record<NetworkVMType, string>> {
-    const addresses = emptyAddresses()
-
-    const networks = getNetworksForAddressDerivation(isTestnet)
-    const modules = new Map<Module, Network>()
-
-    for (const network of networks) {
-      const module = await ModuleManager.loadModuleByNetwork(network)
-      if (module && !modules.has(module)) {
-        modules.set(module, network)
-      }
-    }
-
-    for (const [module, network] of modules.entries()) {
-      const moduleAddresses = await module
-        .deriveAddress({
-          accountIndex,
-          network,
-          secretId: CORE_MOBILE_WALLET_ID,
-          derivationPathType: DerivationPath.BIP44
-        })
-        .catch(error => {
-          Logger.error(
-            `Failed to derive address for account ${accountIndex} and ${network.caip2Id}`,
-            error
-          )
-
-          // We don't want to completely fail the entire method -- we return all the addresses we could.
-          // The responsibility for validating the presence of required addresses lies with the caller.
-          return {}
-        })
-
-      for (const [vmType, address] of Object.entries(moduleAddresses)) {
-        addresses[vmType as NetworkVMType] = address
-      }
-    }
-
-    return addresses
+    return ModuleManager.deriveAddresses({
+      walletId: CORE_MOBILE_WALLET_ID,
+      accountIndex,
+      network
+    })
   }
 
   /**
    * Get the public key of an account
    * @param account Account to get public key of.
    */
-  public async getPublicKey(accountIndex: number): Promise<PubKeyType> {
+  public async getPublicKey(account: Account): Promise<PubKeyType> {
     const wallet = await WalletFactory.createWallet(this.walletType)
 
     const derivationPathEVM = getAddressDerivationPath(
-      accountIndex,
+      account.index,
       DerivationPath.BIP44,
       'EVM'
     )
     const derivationPathAVM = getAddressDerivationPath(
-      accountIndex,
+      account.index,
       DerivationPath.BIP44,
       'AVM'
     )
@@ -303,13 +269,13 @@ class WalletService {
 
   // TODO: use getAddresses instead for staking notification setup logic
   public async getAddressesByIndices({
-    accountIndex,
+    account,
     indices,
     chainAlias,
     isChange,
     isTestnet
   }: {
-    accountIndex: number
+    account: Account
     indices: number[]
     chainAlias: 'X' | 'P'
     isChange: boolean
@@ -324,7 +290,7 @@ class WalletService {
 
     if (this.walletType === WalletType.MNEMONIC) {
       const provXP = await NetworkService.getAvalancheProviderXP(isTestnet)
-      const publicKeys = await this.getPublicKey(accountIndex)
+      const publicKeys = await this.getPublicKey(account)
       const xpubXP = publicKeys.xp
 
       return xpubXP

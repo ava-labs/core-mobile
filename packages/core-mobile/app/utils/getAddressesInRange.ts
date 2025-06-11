@@ -63,7 +63,7 @@ export const getAddressesInRange = async (
   )
   addresses.external = (
     await WalletService.getAddressesByIndices({
-      accountIndex: account.index,
+      account,
       indices: externalIndices ?? [],
       chainAlias: 'X',
       isChange: false,
@@ -78,7 +78,7 @@ export const getAddressesInRange = async (
 
   addresses.internal = (
     await WalletService.getAddressesByIndices({
-      accountIndex: account.index,
+      account,
       indices: internalIndices ?? [],
       chainAlias: 'X',
       isChange: true,
