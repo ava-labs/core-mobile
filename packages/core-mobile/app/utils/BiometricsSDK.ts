@@ -9,7 +9,14 @@ import { decrypt, encrypt } from 'utils/EncryptionHelper'
 import Aes from 'react-native-aes-crypto'
 import Logger from './Logger'
 
+/**
+ * @deprecated Legacy service keys used for backwards compatibility
+ */
 const LEGACY_SERVICE_KEY = 'sec-storage-service'
+
+/**
+ * @deprecated Legacy service keys used for backwards compatibility
+ */
 const LEGACY_SERVICE_KEY_BIO = 'sec-storage-service-bio'
 
 const getWalletServiceKey = (walletId: string): string =>
@@ -66,7 +73,7 @@ class BiometricsSDK {
     return commonStorage.getString(StorageKey.SECURE_ACCESS_SET) ?? 'PIN'
   }
 
-  // In-memory cache for the encryption key
+  // Generate a new encryption key
   async generateEncryptionKey(): Promise<string> {
     return Aes.randomKey(32)
   }
