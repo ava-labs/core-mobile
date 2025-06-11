@@ -6,6 +6,7 @@ import {
 import { AppListenerEffectAPI, AppStartListening } from 'store/types'
 import { AnyAction } from '@reduxjs/toolkit'
 import { onAppUnlocked, onLogIn, selectWalletType } from 'store/app/slice'
+import { onAppUnlocked, onLogIn, selectWalletType } from 'store/app/slice'
 import { WalletType } from 'services/wallet/types'
 import { SeedlessPubKeysStorage } from 'seedless/services/storage/SeedlessPubKeysStorage'
 import AnalyticsService from 'services/analytics/AnalyticsService'
@@ -38,10 +39,12 @@ const initAccounts = async (
   const walletType = selectWalletType(state)
   const walletName = selectWalletName(state)
   let accounts: AccountCollection = {}
+  let accounts: AccountCollection = {}
 
   if (walletType === WalletType.SEEDLESS) {
     const acc = await accountService.createNextAccount({
       index: 0,
+      activeAccountIndex: 0,
       activeAccountIndex: 0,
       walletType,
       isTestnet: isDeveloperMode
@@ -87,6 +90,18 @@ const initAccounts = async (
         addressPVM: acc.addressPVM ?? '',
         addressCoreEth: acc.addressCoreEth ?? '',
         addressSVM: acc.addressSVM ?? ''
+      }))
+    })
+  }
+
+  if (isDeveloperMode === false) {
+    AnalyticsService.captureWithEncryption('AccountAddressesUpdated', {
+      addresses: Object.values(accounts).map(acc => ({
+        address: acc.addressC,
+        addressBtc: acc.addressBTC,
+        addressAVM: acc.addressAVM ?? '',
+        addressPVM: acc.addressPVM ?? '',
+        addressCoreEth: acc.addressCoreEth ?? ''
       }))
     })
   }
