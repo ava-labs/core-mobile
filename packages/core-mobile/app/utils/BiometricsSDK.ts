@@ -221,16 +221,14 @@ class BiometricsSDK {
   }
 
   // Wallet Secret Management
-  async storeWalletSecret(
-    walletId: string,
-    secret: string
-  ): Promise<false | Keychain.Result> {
+  async storeWalletSecret(walletId: string, secret: string): Promise<boolean> {
     const encrypted = await encrypt(secret, this.getEncryptionKey())
-    return Keychain.setGenericPassword(
+    await Keychain.setGenericPassword(
       'walletSecret',
       encrypted,
       KeystoreConfig.wallet_secret_options(walletId)
     )
+    return true
   }
 
   private getEncryptionKey(): string {

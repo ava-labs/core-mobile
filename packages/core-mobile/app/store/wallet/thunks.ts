@@ -12,9 +12,12 @@ export const storeWallet = createAsyncThunk<
 >(
   `${reducerName}/storeWallet`,
   async ({ walletId, walletSecret, type }: StoreWalletParams, thunkApi) => {
-    const result = await BiometricsSDK.storeWalletSecret(walletId, walletSecret)
+    const success = await BiometricsSDK.storeWalletSecret(
+      walletId,
+      walletSecret
+    )
 
-    if (!result) {
+    if (!success) {
       throw new Error('Failed to store wallet in BiometricsSDK')
     }
 
