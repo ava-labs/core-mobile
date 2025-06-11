@@ -4,6 +4,7 @@ import {
   Icons,
   Separator,
   Text,
+  SCREEN_WIDTH,
   TouchableOpacity,
   useTheme,
   View
@@ -12,24 +13,14 @@ import { ListRenderItem } from '@shopify/flash-list'
 import { LocalTokenWithBalance } from 'store/balance'
 import { useSearchableTokenList } from 'common/hooks/useSearchableTokenList'
 import { useErc20ContractTokens } from 'common/hooks/useErc20ContractTokens'
-import {
-  MELD_CURRENCY_CODES,
-  SearchProviderCategories
-} from 'services/meld/consts'
 import { CHAIN_IDS_WITH_INCORRECT_SYMBOL } from 'consts/chainIdsWithIncorrectSymbol'
 import { LogoWithNetwork } from 'features/portfolio/assets/components/LogoWithNetwork'
 import { LoadingState } from 'common/components/LoadingState'
 import { useOnRampToken } from '../store'
-import {
-  CryptoCurrency,
-  useSearchCryptoCurrencies
-} from '../hooks/useSearchCryptoCurrencies'
-import { useSearchServiceProviders } from '../hooks/useSearchServiceProviders'
-import {
-  isBtcToken,
-  isSupportedErc20Token,
-  isSupportedNativeToken
-} from '../utils'
+import { useSearchCryptoCurrencies } from '../hooks/useSearchCryptoCurrencies'
+import { isBtcToken, isSupportedToken, isSupportedNativeToken } from '../utils'
+import { CryptoCurrency } from '../types'
+import { MELD_CURRENCY_CODES, ServiceProviderCategories } from '../consts'
 
 type CryptoCurrencyWithBalance = CryptoCurrency & {
   tokenWithBalance: LocalTokenWithBalance
@@ -46,16 +37,9 @@ export const SelectBuyTokenScreen = (): React.JSX.Element => {
     tokens: erc20ContractTokens,
     hideZeroBalance: false
   })
-  const { data: serviceProviders, isLoading: isLoadingServiceProviders } =
-    useSearchServiceProviders({
-      categories: [SearchProviderCategories.CryptoOnramp]
-    })
   const { data: cryptoCurrencies, isLoading: isLoadingCryptoCurrencies } =
     useSearchCryptoCurrencies({
-      categories: [SearchProviderCategories.CryptoOnramp],
-      serviceProviders: serviceProviders?.map(
-        serviceProvider => serviceProvider.serviceProvider
-      )
+      categories: [ServiceProviderCategories.CryptoOnramp]
     })
 
   const handleSelectToken = (token: CryptoCurrency): void => {
@@ -69,7 +53,7 @@ export const SelectBuyTokenScreen = (): React.JSX.Element => {
       const token = filteredTokenList.find(
         tk =>
           isSupportedNativeToken(crypto, tk) ||
-          isSupportedErc20Token(crypto, tk) ||
+          isSupportedToken(crypto, tk) ||
           isBtcToken(crypto, tk)
       )
       if (token) {
@@ -100,7 +84,7 @@ export const SelectBuyTokenScreen = (): React.JSX.Element => {
   }, [searchText, supportedCryptoCurrencies])
 
   const sortedResults = useMemo(() => {
-    const avalancheCChain = searchResults.find(
+    const avaxC = searchResults.find(
       tk => tk.currencyCode === MELD_CURRENCY_CODES.AVAXC
     )
     const usdc = searchResults.find(
@@ -121,11 +105,7 @@ export const SelectBuyTokenScreen = (): React.JSX.Element => {
       }
       return balanceInCurrencyA > balanceInCurrencyB ? -1 : 1
     })
-    return [
-      ...(avalancheCChain ? [avalancheCChain] : []),
-      ...(usdc ? [usdc] : []),
-      ...sortedOthers
-    ]
+    return [...(avaxC ? [avaxC] : []), ...(usdc ? [usdc] : []), ...sortedOthers]
   }, [searchResults])
 
   const renderItem: ListRenderItem<CryptoCurrencyWithBalance> = ({
@@ -161,7 +141,12 @@ export const SelectBuyTokenScreen = (): React.JSX.Element => {
               outerBorderColor={colors.$surfaceSecondary}
             />
             <View>
-              <Text variant="buttonMedium">{name}</Text>
+              <Text
+                variant="buttonMedium"
+                numberOfLines={1}
+                sx={{ width: SCREEN_WIDTH * 0.65 }}>
+                {name}
+              </Text>
               <Text variant="subtitle2">
                 {item.tokenWithBalance.balanceDisplayValue +
                   ' ' +
@@ -186,7 +171,7 @@ export const SelectBuyTokenScreen = (): React.JSX.Element => {
     )
   }
 
-  if (isLoadingCryptoCurrencies || isLoadingServiceProviders) {
+  if (isLoadingCryptoCurrencies) {
     return <LoadingState sx={{ flex: 1 }} />
   }
 

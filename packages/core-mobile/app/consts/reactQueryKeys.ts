@@ -24,5 +24,11 @@ export enum ReactQueryKeys {
   // seedless
   USER_MFA = 'userMfa',
 
-  SIMPLE_PRICES = 'simplePrices'
+  SIMPLE_PRICES = 'simplePrices',
+
+  // meld
+  MELD_SEARCH_CRYPTO_CURRENCIES = 'meldSearchCryptoCurrencies',
+  MELD_SEARCH_COUNTRIES = 'meldSearchCountries',
+  MELD_SEARCH_FIAT_CURRENCIES = 'meldSearchFiatCurrencies',
+  MELD_SEARCH_SERVICE_PROVIDERS = 'meldSearchServiceProviders'
 }

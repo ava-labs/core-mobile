@@ -1,45 +1,42 @@
 import { useQuery, UseQueryResult } from '@tanstack/react-query'
-import { SearchProviderCategories } from 'services/meld/consts'
-import MeldService from 'services/meld/MeldService'
+import MeldService from 'features/buyOnramp/services/MeldService'
+import { ReactQueryKeys } from 'consts/reactQueryKeys'
+import { CryptoCurrency, MeldDefaultParams } from '../types'
+import { ServiceProviderCategories } from '../consts'
 import { useLocale } from './useLocale'
+import { useSearchServiceProviders } from './useSearchServiceProviders'
 
-export type SearchCryptoCurrenciesParams = {
-  categories: SearchProviderCategories[]
-  serviceProviders?: string[]
-  countries: string[]
-  accountFilter?: boolean
-}
-
-export type CryptoCurrency = {
-  currencyCode: string
-  name: string
-  chainCode: string
-  chainName: string
-  chainId: string
-  contractAddress: string
-  symbolImageUrl: string
+export type SearchCryptoCurrenciesParams = MeldDefaultParams & {
+  cryptoCurrencies?: string[]
 }
 
 export const useSearchCryptoCurrencies = ({
   categories,
-  serviceProviders,
-  accountFilter = true
-}: Omit<SearchCryptoCurrenciesParams, 'countries'>): UseQueryResult<
-  CryptoCurrency[],
-  Error
-> => {
+  accountFilter = true,
+  cryptoCurrencies
+}: Omit<
+  SearchCryptoCurrenciesParams,
+  'countries' | 'serviceProviders'
+>): UseQueryResult<CryptoCurrency[], Error> => {
+  const { data: serviceProvidersData } = useSearchServiceProviders({
+    categories: [ServiceProviderCategories.CryptoOnramp]
+  })
+  const serviceProviders = serviceProvidersData?.map(
+    serviceProvider => serviceProvider.serviceProvider
+  )
   const { countryCode } = useLocale()
   return useQuery({
     queryKey: [
-      'meld',
-      'cryptoCurrencies',
+      ReactQueryKeys.MELD_SEARCH_CRYPTO_CURRENCIES,
       categories,
       serviceProviders,
       countryCode,
-      accountFilter
+      accountFilter,
+      cryptoCurrencies
     ],
     queryFn: () =>
       MeldService.searchCryptoCurrencies({
+        cryptoCurrencies,
         categories,
         serviceProviders,
         countries: [countryCode],

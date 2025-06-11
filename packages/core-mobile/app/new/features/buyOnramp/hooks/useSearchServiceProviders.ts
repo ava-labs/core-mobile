@@ -1,49 +1,40 @@
 import { useQuery, UseQueryResult } from '@tanstack/react-query'
-import MeldService from 'services/meld/MeldService'
-import { SearchCryptoCurrenciesParams } from './useSearchCryptoCurrencies'
+import MeldService from 'features/buyOnramp/services/MeldService'
+import { ReactQueryKeys } from 'consts/reactQueryKeys'
+import { MeldDefaultParams, ServiceProvider } from '../types'
 import { useLocale } from './useLocale'
 
-export type ServiceProviders = {
-  serviceProvider: string
-  name: string
-  status: string
-  categories: string[]
-  categoryStatuses: Record<string, string>
-  websiteUrl: string
-  customerSupportUrl: string
-  logos: {
-    dark: string
-    light: string
-    darkShort: string
-    lightShort: string
-  }
+export type SearchServiceProvidersParams = Omit<
+  MeldDefaultParams,
+  'serviceProviders'
+> & {
+  cryptoCurrencies?: string[]
 }
 
 export const useSearchServiceProviders = ({
   categories,
-  serviceProviders,
-  accountFilter = true
-}: Omit<SearchCryptoCurrenciesParams, 'countries'>): UseQueryResult<
-  ServiceProviders[],
+  accountFilter = true,
+  cryptoCurrencies
+}: Omit<SearchServiceProvidersParams, 'countries'>): UseQueryResult<
+  ServiceProvider[],
   Error
 > => {
   const { countryCode } = useLocale()
 
-  return useQuery<ServiceProviders[]>({
+  return useQuery<ServiceProvider[]>({
     queryKey: [
-      'meld',
-      'countries',
+      ReactQueryKeys.MELD_SEARCH_SERVICE_PROVIDERS,
       categories,
       accountFilter,
       countryCode,
-      serviceProviders
+      cryptoCurrencies
     ],
     queryFn: () =>
       MeldService.searchServiceProviders({
-        serviceProviders,
         countries: [countryCode],
         categories,
-        accountFilter
+        accountFilter,
+        cryptoCurrencies
       }),
     staleTime: 1000 * 60 * 30 // 30 minutes
   })

@@ -13,9 +13,6 @@ import { useIsSwappable } from 'common/hooks/useIsSwapable'
 import { selectIsSwapBlocked } from 'store/posthog'
 import { getTokenAddress, getTokenChainId } from 'features/track/utils/utils'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
-import { useSearchCryptoCurrencies } from 'features/buyOnramp/hooks/useSearchCryptoCurrencies'
-import { SearchProviderCategories } from 'services/meld/consts'
-import { useSearchServiceProviders } from 'features/buyOnramp/hooks/useSearchServiceProviders'
 import { useBuy } from 'features/buyOnramp/hooks/useBuy'
 import { TrendingTokenListItem } from './TrendingTokenListItem'
 
@@ -38,15 +35,6 @@ const TrendingTokensScreen = ({
   const isSwapBlocked = useSelector(selectIsSwapBlocked)
   const tokenVisibility = useSelector(selectTokenVisibility)
   const { navigateToBuy } = useBuy()
-  const { data: serviceProviders } = useSearchServiceProviders({
-    categories: [SearchProviderCategories.CryptoOnramp]
-  })
-  const { data: cryptoCurrencies } = useSearchCryptoCurrencies({
-    categories: [SearchProviderCategories.CryptoOnramp],
-    serviceProviders: serviceProviders?.map(
-      serviceProvider => serviceProvider.serviceProvider
-    )
-  })
 
   const balanceTotal = useSelector(
     selectBalanceTotalForAccount(activeAccount?.index ?? 0, tokenVisibility)
@@ -55,15 +43,12 @@ const TrendingTokensScreen = ({
 
   const openBuy = useCallback(
     (initialTokenIdTo?: string) => {
-      const cryptoCurrency = cryptoCurrencies?.find(
-        c => c.contractAddress === initialTokenIdTo
-      )
       navigateToBuy({
         showAvaxWarning: true,
-        cryptoCurrency
+        tokenOrAddress: initialTokenIdTo
       })
     },
-    [cryptoCurrencies, navigateToBuy]
+    [navigateToBuy]
   )
 
   const onBuyPress = useCallback(

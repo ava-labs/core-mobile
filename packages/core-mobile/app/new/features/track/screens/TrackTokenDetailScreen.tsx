@@ -49,10 +49,6 @@ import { MarketType } from 'store/watchlist'
 import { AVAX_COINGECKO_ID } from 'consts/coingecko'
 import { useIsSwapListLoaded } from 'common/hooks/useIsSwapListLoaded'
 import { useBuy } from 'features/buyOnramp/hooks/useBuy'
-import { useSearchServiceProviders } from 'features/buyOnramp/hooks/useSearchServiceProviders'
-import { useSearchCryptoCurrencies } from 'features/buyOnramp/hooks/useSearchCryptoCurrencies'
-import { SearchProviderCategories } from 'services/meld/consts'
-import { getBuyableCryptoCurrency } from 'features/buyOnramp/utils'
 
 const MAX_VALUE_WIDTH = '80%'
 
@@ -75,7 +71,6 @@ const TrackTokenDetailScreen = (): JSX.Element => {
     date: Date
   }>()
   const { formatCurrency } = useFormatCurrency()
-
   const {
     chartData,
     ranges,
@@ -89,15 +84,6 @@ const TrackTokenDetailScreen = (): JSX.Element => {
   } = useTokenDetails({ tokenId: tokenId, marketType })
   const isFocused = useIsFocused()
   const { navigateToBuy } = useBuy()
-  const { data: serviceProviders } = useSearchServiceProviders({
-    categories: [SearchProviderCategories.CryptoOnramp]
-  })
-  const { data: cryptoCurrencies } = useSearchCryptoCurrencies({
-    categories: [SearchProviderCategories.CryptoOnramp],
-    serviceProviders: serviceProviders?.map(
-      serviceProvider => serviceProvider.serviceProvider
-    )
-  })
 
   const { data: prices } = useGetPrices({
     coingeckoIds: [coingeckoId],
@@ -195,16 +181,13 @@ const TrackTokenDetailScreen = (): JSX.Element => {
 
   const handleBuy = useCallback(
     (contractAddress?: string): void => {
-      const cryptoCurrency = getBuyableCryptoCurrency({
-        cryptoCurrencies,
-        tokenOrAddress: contractAddress
-      })
+      if (contractAddress === undefined) return
       navigateToBuy({
         showAvaxWarning: true,
-        cryptoCurrency
+        tokenOrAddress: contractAddress
       })
     },
-    [cryptoCurrencies, navigateToBuy]
+    [navigateToBuy]
   )
 
   const handleSwap = useCallback(

@@ -4,42 +4,12 @@ import React, { useCallback, useMemo } from 'react'
 import { useRouter } from 'expo-router'
 import { TokenLogo } from 'common/components/TokenLogo'
 import { Space } from 'common/components/Space'
-import {
-  MELD_CURRENCY_CODES,
-  SearchProviderCategories
-} from 'services/meld/consts'
 import { TokenSymbol } from 'store/network'
-import { useOnRampToken } from '../store'
-import { useSearchCryptoCurrencies } from '../hooks/useSearchCryptoCurrencies'
-import { useSearchServiceProviders } from '../hooks/useSearchServiceProviders'
+import { useBuy } from '../hooks/useBuy'
 
 export const BuyTokenScreen = (): React.JSX.Element => {
   const { navigate } = useRouter()
-  const [_, setSelectedToken] = useOnRampToken()
-  const { data: serviceProviders } = useSearchServiceProviders({
-    categories: [SearchProviderCategories.CryptoOnramp]
-  })
-  const { data: cryptoCurrencies } = useSearchCryptoCurrencies({
-    categories: [SearchProviderCategories.CryptoOnramp],
-    serviceProviders: serviceProviders?.map(
-      serviceProvider => serviceProvider.serviceProvider
-    )
-  })
-
-  const avax = cryptoCurrencies?.find(
-    token => token.currencyCode === MELD_CURRENCY_CODES.AVAXC
-  )
-  const usdc = cryptoCurrencies?.find(
-    token => token.currencyCode === MELD_CURRENCY_CODES.USDC
-  )
-
-  const buyAvax = useCallback((): void => {
-    avax && setSelectedToken(avax)
-  }, [avax, setSelectedToken])
-
-  const buyUsdc = useCallback((): void => {
-    usdc && setSelectedToken(usdc)
-  }, [usdc, setSelectedToken])
+  const { navigateToBuyAvax, navigateToBuyUsdc } = useBuy()
 
   const selectOtherToken = useCallback((): void => {
     // @ts-ignore TODO: make routes typesafe
@@ -51,12 +21,12 @@ export const BuyTokenScreen = (): React.JSX.Element => {
       {
         title: TokenSymbol.AVAX,
         leftIcon: <TokenLogo symbol={TokenSymbol.AVAX} />,
-        onPress: buyAvax
+        onPress: navigateToBuyAvax
       },
       {
         title: TokenSymbol.USDC,
         leftIcon: <TokenLogo symbol={TokenSymbol.USDC} />,
-        onPress: buyUsdc
+        onPress: navigateToBuyUsdc
       },
       {
         title: 'Select other token',
@@ -65,7 +35,7 @@ export const BuyTokenScreen = (): React.JSX.Element => {
     ]
 
     return _data
-  }, [buyAvax, buyUsdc, selectOtherToken])
+  }, [navigateToBuyAvax, navigateToBuyUsdc, selectOtherToken])
 
   return (
     <ScrollScreen
@@ -75,7 +45,7 @@ export const BuyTokenScreen = (): React.JSX.Element => {
       <GroupList
         data={data}
         titleSx={{
-          fontFamily: 'Inter-regular',
+          fontFamily: 'Inter-Regular',
           fontSize: 16,
           lineHeight: 22,
           fontWeight: 500

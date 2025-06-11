@@ -1,4 +1,4 @@
-export enum SearchProviderCategories {
+export enum ServiceProviderCategories {
   BankLinking = 'BANK_LINKING',
   CryptoOnramp = 'CRYPTO_ONRAMP',
   CryptoOfframp = 'CRYPTO_OFFRAMP',
@@ -6,10 +6,10 @@ export enum SearchProviderCategories {
   FiatPayments = 'FIAT_PAYMENTS'
 }
 
-export enum SearchProviderStatus {
-  Live = 'LIVE',
-  RecentlyAdded = 'RECENTLY_ADDED',
-  Building = 'BUILDING'
+export enum ServiceProviderStatus {
+  LIVE = 'LIVE',
+  RECENTLY_ADDED = 'RECENTLY_ADDED',
+  BUILDING = 'BUILDING'
 }
 
 export enum MELD_CURRENCY_CODES {

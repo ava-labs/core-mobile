@@ -8,13 +8,15 @@ export const SelectTokenScreen = <T,>({
   searchText,
   onSearchText,
   renderListItem,
-  keyExtractor
+  keyExtractor,
+  renderEmpty
 }: {
   tokens: T[]
   searchText: string
   onSearchText: (value: string) => void
   renderListItem: ListRenderItem<T>
   keyExtractor?: (item: T) => string
+  renderEmpty?: () => React.ReactNode
 }): JSX.Element => {
   const renderHeader = useCallback(() => {
     return <SearchBar onTextChanged={onSearchText} searchText={searchText} />
@@ -29,6 +31,7 @@ export const SelectTokenScreen = <T,>({
       renderItem={renderListItem}
       keyExtractor={keyExtractor}
       renderHeader={renderHeader}
+      renderEmpty={renderEmpty}
     />
   )
 }

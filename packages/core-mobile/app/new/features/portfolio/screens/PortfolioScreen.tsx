@@ -221,7 +221,7 @@ const PortfolioHomeScreen = (): JSX.Element => {
     buttons.push({
       title: ActionButtonTitle.Buy,
       icon: 'buy',
-      onPress: () => navigateToBuy({})
+      onPress: navigateToBuy
     })
     buttons.push({
       title: ActionButtonTitle.Receive,
@@ -422,7 +422,7 @@ const PortfolioHomeScreen = (): JSX.Element => {
           <AssetsScreen
             goToTokenDetail={handleGoToTokenDetail}
             goToTokenManagement={handleGoToTokenManagement}
-            goToBuy={() => navigateToBuy({})}
+            goToBuy={navigateToBuy}
             onScrollResync={handleScrollResync}
             containerStyle={contentContainerStyle}
           />
