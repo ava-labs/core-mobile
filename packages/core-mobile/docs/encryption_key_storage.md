@@ -1,19 +1,6 @@
-# Key Storage Refactoring
+# New Encryption Key Storage Model
 
-## Description and scope
-
-This change introduces a significant architectural refactor to enable future multi-wallet support by overhauling how wallet secrets are stored and managed.
-
-### 1. New Redux Slice for Wallet Management
-
-- **`wallet` Slice**: A new Redux slice named `wallet` has been created (`packages/core-mobile/app/store/wallet/`). This slice is responsible for managing the metadata of one or more wallets, including their unique `id`, `name`, and `type`.
-- **State and Actions**: It includes standard Redux actions and selectors for adding, removing, renaming, and setting the active wallet.
-- **Async Thunk**: A new thunk, `storeWalletWithPin`, orchestrates the process of securely storing a wallet's secret in the Keychain and then adding the wallet's metadata to the new Redux state.
-- **Testing**: The new slice and its thunks are accompanied by a comprehensive suite of unit tests (`slice.test.ts`, `thunks.test.ts`).
-
-### 2. New Encryption Key Storage Model & `BiometricsSDK` Refactor
-
-This update introduces a more secure and flexible key management system by using a master "Encryption Key". This key is responsible for encrypting all wallet secrets (mnemonics and private keys), which provides a single point of control and allows for smoother multi-wallet operations without repeated user prompts. This change also centralizes biometrics logic within the `BiometricsSDK`.
+Introduced a more secure and flexible key management system by using a master "Encryption Key". This key is responsible for encrypting all wallet secrets (mnemonics and private keys), which provides a single point of control and allows for smoother multi-wallet operations without repeated user prompts.
 
 - **Master Encryption Key**:
 
@@ -25,10 +12,6 @@ This update introduces a more secure and flexible key management system by using
   - **PIN-based Storage**: The Encryption Key is encrypted with the user's PIN and stored in the Keychain. This is the primary, recoverable storage method.
   - **Biometric Storage**: If the user enables biometrics, the raw (unencrypted) Encryption Key is also stored in the device's secure biometric storage for quick, passwordless unlocking.
 
-- **Centralized Biometrics Logic**:
-
-  - All biometric-related logic (e.g., `getBiometryType`, `canUseBiometry`) has been consolidated within `BiometricsSDK`. Corresponding logic has been removed from `DeviceInfoService` to eliminate duplication and create a single source of truth for biometric interactions.
-
 - **Migration Paths for Existing Users**: To support the new Encryption Key model, existing users will be migrated through one of the following paths, depending on their setup:
   - **Initial Login with PIN**: For users without biometrics enabled, the first login with a PIN triggers the full migration. The app decrypts the existing mnemonic, generates a new master Encryption Key, and stores it in two places: encrypted with the PIN in the Keychain, and raw in biometric storage (if the user enables it later). The wallet secret is then re-encrypted with this new key.
   - **Initial Login with Biometrics**: For users with biometrics enabled, the first login uses biometrics to access the raw mnemonic. A new master Encryption Key is generated and stored _only_ in the secure biometric storage. The wallet's secret is re-encrypted with this key. This creates a temporary, partially migrated state.
@@ -37,9 +20,3 @@ This update introduces a more secure and flexible key management system by using
     - **Disabling Biometrics**: If the user disables biometrics within the app's settings.
     - **Importing a New Wallet**: When attempting to create or import a new wallet.
       Completing the migration ensures the master Encryption Key is also stored in its PIN-encrypted form in the Keychain.
-
-## Testing
-
-- have any wallet unlocked on previous code version
-- update to this code version
-- check if you can normally use wallet as before
