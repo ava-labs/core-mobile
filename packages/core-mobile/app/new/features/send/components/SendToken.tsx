@@ -100,10 +100,11 @@ export const SendToken = ({ onSend }: { onSend: () => void }): JSX.Element => {
   }, [network.networkToken.decimals, selectedToken])
 
   const addressToSendWithoutPrefix = useMemo(() => {
-    if (selectedToken === undefined) {
+    if (selectedToken === undefined && toAddress?.recipientType !== 'address') {
       return undefined
     }
     if (
+      selectedToken &&
       addressToSend &&
       (isTokenWithBalancePVM(selectedToken) ||
         isTokenWithBalanceAVM(selectedToken))
@@ -111,7 +112,7 @@ export const SendToken = ({ onSend }: { onSend: () => void }): JSX.Element => {
       return xpAddressWithoutPrefix(addressToSend)
     }
     return addressToSend
-  }, [addressToSend, selectedToken])
+  }, [addressToSend, selectedToken, toAddress?.recipientType])
 
   const canSubmit =
     !isSending &&
