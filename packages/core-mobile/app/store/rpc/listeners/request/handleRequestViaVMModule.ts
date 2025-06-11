@@ -12,7 +12,6 @@ import { getChainIdFromCaip2 } from 'utils/caip2ChainIds'
 import { CorePrimaryAccount } from '@avalabs/types'
 import { Avalanche } from '@avalabs/core-wallets-sdk'
 import { getAddressByVM } from 'store/account/utils'
-import MnemonicWalletInstance from 'services/wallet/MnemonicWallet'
 import { selectActiveAccount } from 'store/account'
 import WalletService from 'services/wallet/WalletService'
 import { WalletType } from 'services/wallet/types'
@@ -73,6 +72,8 @@ export const handleRequestViaVMModule = async ({
   const params = request.data.params.request.params
   const method = request.method as unknown as VmModuleRpcMethod
 
+  const context = await getContext(method, params, activeAccount)
+
   const response = await module.onRpcRequest(
     {
       requestId: String(request.data.id),
@@ -85,7 +86,7 @@ export const handleRequestViaVMModule = async ({
       },
       method,
       params,
-      context: request.context ?? getContext(method, params, activeAccount)
+      context: request.context ?? context
     },
     mapToVmNetwork(network)
   )
@@ -105,11 +106,11 @@ export const handleRequestViaVMModule = async ({
   }
 }
 
-const getContext = (
+const getContext = async (
   method: VmModuleRpcMethod,
   params: unknown,
   activeAccount: CorePrimaryAccount | undefined
-): Record<string, string> | undefined => {
+): Promise<Record<string, string> | undefined> => {
   if (
     method === VmModuleRpcMethod.AVALANCHE_SEND_TRANSACTION ||
     method === VmModuleRpcMethod.AVALANCHE_SIGN_TRANSACTION
@@ -127,8 +128,11 @@ const getContext = (
 
     const context: Record<string, string> = { currentAddress }
 
-    if (WalletService.walletType === WalletType.MNEMONIC) {
-      context.xpubXP = MnemonicWalletInstance.xpubXP
+    if (WalletService.walletType === WalletType.MNEMONIC && activeAccount) {
+      const publicKey = await WalletService.getPublicKey(activeAccount.index)
+      if (publicKey.xp) {
+        context.xpubXP = publicKey.xp
+      }
     }
 
     return context
