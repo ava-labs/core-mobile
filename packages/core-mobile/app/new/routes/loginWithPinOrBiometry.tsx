@@ -90,7 +90,7 @@ const LoginWithPinOrBiometry = (): JSX.Element => {
     enteredPin,
     onEnterPin,
     verified,
-    promptForWalletLoadingIfExists,
+    verifyBiometric,
     disableKeypad,
     timeRemaining,
     bioType,
@@ -165,8 +165,8 @@ const LoginWithPinOrBiometry = (): JSX.Element => {
   }
 
   const handlePromptBioLogin = useCallback(() => {
-    promptForWalletLoadingIfExists().catch(Logger.error)
-  }, [promptForWalletLoadingIfExists])
+    verifyBiometric().catch(Logger.error)
+  }, [verifyBiometric])
 
   const handlePressBackground = (): void => {
     if (pinInputRef.current?.isFocused()) {

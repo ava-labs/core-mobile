@@ -31,7 +31,7 @@ export const VerifyWithPinOrBiometry = ({
     enteredPin,
     onEnterPin,
     verified,
-    promptForWalletLoadingIfExists,
+    verifyBiometric,
     disableKeypad,
     timeRemaining,
     bioType
@@ -55,11 +55,11 @@ export const VerifyWithPinOrBiometry = ({
 
   const handlePromptBioLogin = useCallback(async () => {
     try {
-      return await promptForWalletLoadingIfExists()
+      return await verifyBiometric()
     } catch (err) {
       Logger.error('failed to check biometric', err)
     }
-  }, [promptForWalletLoadingIfExists])
+  }, [verifyBiometric])
 
   useEffect(() => {
     // When the hide keyboard button is pressed on Android, it doesn’t update the isEnteringPin state,

@@ -22,7 +22,7 @@ export function usePinOrBiometryLogin({
   enteredPin: string
   onEnterPin: (pinKey: string) => void
   verified: boolean
-  promptForWalletLoadingIfExists: () => Promise<WalletLoadingResults>
+  verifyBiometric: () => Promise<WalletLoadingResults>
   disableKeypad: boolean
   timeRemaining: string
   bioType: BiometricType
@@ -142,7 +142,7 @@ export function usePinOrBiometryLogin({
     }
   }
 
-  const promptForWalletLoadingIfExists =
+  const verifyBiometric =
     useCallback(async (): Promise<WalletLoadingResults> => {
       try {
         // Timer delay to give UI opportunity to draw everything
@@ -203,7 +203,7 @@ export function usePinOrBiometryLogin({
     enteredPin,
     onEnterPin,
     verified,
-    promptForWalletLoadingIfExists,
+    verifyBiometric,
     disableKeypad,
     timeRemaining,
     bioType,
