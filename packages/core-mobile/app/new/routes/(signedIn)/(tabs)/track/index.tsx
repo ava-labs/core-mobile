@@ -1,5 +1,6 @@
 import {
   NavigationTitleHeader,
+  SCREEN_HEIGHT,
   SearchBar,
   SegmentedControl,
   Text,
@@ -13,13 +14,15 @@ import {
   OnTabChange
 } from 'common/components/CollapsibleTabs'
 import { LinearGradientBottomWrapper } from 'common/components/LinearGradientBottomWrapper'
+import { useBottomTabBarHeight } from 'common/hooks/useBottomTabBarHeight'
 import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
+import { useIsAndroidWithBottomBar } from 'common/hooks/useIsAndroidWithBottomBar'
 import { useFocusEffect, useRouter } from 'expo-router'
 import FavoriteScreen from 'features/track/market/components/FavoriteScreen'
 import MarketScreen from 'features/track/market/components/MarketScreen'
 import SearchResultScreen from 'features/track/market/components/SearchResultScreen'
 import { TrendingScreen } from 'features/track/trending/components/TrendingScreen'
-import React, { useCallback, useMemo, useRef, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   InteractionManager,
   LayoutChangeEvent,
@@ -36,6 +39,7 @@ import Animated, {
   useAnimatedStyle,
   useSharedValue
 } from 'react-native-reanimated'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { MarketType } from 'store/watchlist/types'
 
 const SEARCH_BAR_MARGIN_TOP = Platform.OS === 'ios' ? 60 : 55
@@ -79,6 +83,7 @@ const TrackHomeScreen = (): JSX.Element => {
       [0, SEARCH_BAR_MARGIN_TOP],
       'clamp'
     )
+
     return {
       transform: [{ translateY }]
     }
@@ -106,19 +111,17 @@ const TrackHomeScreen = (): JSX.Element => {
   const renderHeader = useCallback((): JSX.Element => {
     return (
       <View style={{ backgroundColor: theme.colors.$surfacePrimary }}>
-        <View onLayout={handleBalanceHeaderLayout}>
-          <Animated.View
-            style={[
-              {
-                paddingHorizontal: 16,
-                marginTop: Platform.OS === 'ios' ? 24 : 8,
-                backgroundColor: theme.colors.$surfacePrimary
-              },
-              animatedHeaderStyle
-            ]}>
+        <Animated.View style={[animatedHeaderStyle]}>
+          <View
+            onLayout={handleBalanceHeaderLayout}
+            style={{
+              paddingHorizontal: 16,
+              marginTop: 16,
+              backgroundColor: theme.colors.$surfacePrimary
+            }}>
             <Text variant="heading2">Track</Text>
-          </Animated.View>
-        </View>
+          </View>
+        </Animated.View>
         <Animated.View
           style={[
             animatedSearchbarStyle,
@@ -202,6 +205,48 @@ const TrackHomeScreen = (): JSX.Element => {
     )
   }, [handleGotoMarketDetail, isSearchBarFocused, searchText])
 
+  const handleScrollResync = useCallback(() => {
+    tabViewRef.current?.scrollResync()
+  }, [])
+
+  useFocusEffect(
+    useCallback(() => {
+      handleScrollResync()
+    }, [handleScrollResync])
+  )
+
+  useEffect(() => {
+    handleScrollResync()
+  }, [showSearchResults, handleScrollResync])
+
+  const insets = useSafeAreaInsets()
+  const isAndroidWithBottomBar = useIsAndroidWithBottomBar()
+  const tabBarHeight = useBottomTabBarHeight()
+
+  const tabHeight = useMemo(() => {
+    return Platform.select({
+      ios:
+        SCREEN_HEIGHT -
+        insets.top -
+        (balanceHeaderLayout?.height ?? 0) -
+        tabBarHeight -
+        11,
+      android: SCREEN_HEIGHT - insets.top + (isAndroidWithBottomBar ? -11 : 11)
+    })
+  }, [
+    balanceHeaderLayout?.height,
+    insets.top,
+    isAndroidWithBottomBar,
+    tabBarHeight
+  ])
+
+  const contentContainerStyle = useMemo(() => {
+    return {
+      paddingBottom: 16,
+      minHeight: tabHeight
+    }
+  }, [tabHeight])
+
   const tabs = useMemo(() => {
     return [
       {
@@ -210,7 +255,10 @@ const TrackHomeScreen = (): JSX.Element => {
           showSearchResults && selectedSegmentIndex.get() === 0 ? (
             renderSearchResults()
           ) : (
-            <TrendingScreen goToMarketDetail={handleGotoMarketDetail} />
+            <TrendingScreen
+              goToMarketDetail={handleGotoMarketDetail}
+              containerStyle={contentContainerStyle}
+            />
           )
       },
       {
@@ -219,7 +267,10 @@ const TrackHomeScreen = (): JSX.Element => {
           showSearchResults && selectedSegmentIndex.get() === 1 ? (
             renderSearchResults()
           ) : (
-            <FavoriteScreen goToMarketDetail={handleGotoMarketDetail} />
+            <FavoriteScreen
+              goToMarketDetail={handleGotoMarketDetail}
+              containerStyle={contentContainerStyle}
+            />
           )
       },
       {
@@ -228,11 +279,15 @@ const TrackHomeScreen = (): JSX.Element => {
           showSearchResults && selectedSegmentIndex.get() === 2 ? (
             renderSearchResults()
           ) : (
-            <MarketScreen goToMarketDetail={handleGotoMarketDetail} />
+            <MarketScreen
+              goToMarketDetail={handleGotoMarketDetail}
+              containerStyle={contentContainerStyle}
+            />
           )
       }
     ]
   }, [
+    contentContainerStyle,
     handleGotoMarketDetail,
     renderSearchResults,
     selectedSegmentIndex,

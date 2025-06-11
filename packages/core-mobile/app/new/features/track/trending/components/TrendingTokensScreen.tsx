@@ -1,5 +1,5 @@
 import React, { useCallback } from 'react'
-import { StyleSheet } from 'react-native'
+import { StyleSheet, ViewStyle } from 'react-native'
 import { Separator } from '@avalabs/k2-alpine'
 import { CollapsibleTabs } from 'common/components/CollapsibleTabs'
 import { MarketToken, MarketType } from 'store/watchlist'
@@ -22,11 +22,13 @@ const estimatedItemSize = 120
 const TrendingTokensScreen = ({
   data,
   goToMarketDetail,
-  emptyComponent
+  emptyComponent,
+  containerStyle
 }: {
   data: MarketToken[]
   goToMarketDetail: (tokenId: string, marketType: MarketType) => void
   emptyComponent: React.JSX.Element
+  containerStyle: ViewStyle
 }): JSX.Element => {
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const { navigate } = useRouter()
@@ -88,8 +90,15 @@ const TrendingTokensScreen = ({
     return <Separator sx={{ marginLeft: 68 }} />
   }, [])
 
+  const overrideProps = {
+    contentContainerStyle: {
+      ...containerStyle
+    }
+  }
+
   return (
     <CollapsibleTabs.FlashList
+      overrideProps={overrideProps}
       contentContainerStyle={styles.container}
       data={data}
       extraData={isDeveloperMode}

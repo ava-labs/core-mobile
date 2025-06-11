@@ -5,16 +5,18 @@ import { getListItemEnteringAnimation } from 'common/utils/animations'
 import { portfolioTabContentHeight } from 'features/portfolio/utils'
 import { useWatchlist } from 'hooks/watchlist/useWatchlist'
 import React, { useMemo } from 'react'
-import { Dimensions } from 'react-native'
+import { Dimensions, ViewStyle } from 'react-native'
 import Animated from 'react-native-reanimated'
 import { MarketType } from 'store/watchlist/types'
 import { useTrackSortAndView } from '../hooks/useTrackSortAndView'
 import MarketTokensScreen from './MarketTokensScreen'
 
 const MarketScreen = ({
-  goToMarketDetail
+  goToMarketDetail,
+  containerStyle
 }: {
   goToMarketDetail: (tokenId: string, marketType: MarketType) => void
+  containerStyle: ViewStyle
 }): JSX.Element => {
   const {
     topTokens,
@@ -61,6 +63,7 @@ const MarketScreen = ({
         view={view}
         goToMarketDetail={goToMarketDetail}
         emptyComponent={emptyComponent}
+        containerStyle={containerStyle}
       />
     </Animated.View>
   )

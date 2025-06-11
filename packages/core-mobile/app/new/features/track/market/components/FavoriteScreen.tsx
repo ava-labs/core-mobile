@@ -5,7 +5,7 @@ import { getListItemEnteringAnimation } from 'common/utils/animations'
 import { portfolioTabContentHeight } from 'features/portfolio/utils'
 import { useWatchlist } from 'hooks/watchlist/useWatchlist'
 import React, { useMemo } from 'react'
-import { Dimensions } from 'react-native'
+import { Dimensions, ViewStyle } from 'react-native'
 import Animated from 'react-native-reanimated'
 import { MarketType } from 'store/watchlist/types'
 import { useTrackSortAndView } from '../hooks/useTrackSortAndView'
@@ -15,9 +15,11 @@ import MarketTokensScreen from './MarketTokensScreen'
 const errorIcon = require('../../../../assets/icons/star_struck_emoji.png')
 
 const FavoriteScreen = ({
-  goToMarketDetail
+  goToMarketDetail,
+  containerStyle
 }: {
   goToMarketDetail: (tokenId: string, marketType: MarketType) => void
+  containerStyle: ViewStyle
 }): JSX.Element => {
   const { favorites, prices, charts, isLoadingFavorites } = useWatchlist()
   const { hasMigratedFavoriteIds } = useMigrateFavoriteIds()
@@ -53,6 +55,7 @@ const FavoriteScreen = ({
         view={view}
         goToMarketDetail={goToMarketDetail}
         emptyComponent={emptyComponent}
+        containerStyle={containerStyle}
       />
     </Animated.View>
   )

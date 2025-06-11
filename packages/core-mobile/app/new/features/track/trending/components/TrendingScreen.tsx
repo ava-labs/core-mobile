@@ -5,16 +5,18 @@ import { useWatchlist } from 'hooks/watchlist/useWatchlist'
 import { ErrorState } from 'new/common/components/ErrorState'
 import { LoadingState } from 'new/common/components/LoadingState'
 import React, { useMemo } from 'react'
-import { Dimensions } from 'react-native'
+import { Dimensions, ViewStyle } from 'react-native'
 import Animated from 'react-native-reanimated'
 import { MarketType } from 'store/watchlist/types'
 import { useIsSwapListLoaded } from 'common/hooks/useIsSwapListLoaded'
 import TrendingTokensScreen from './TrendingTokensScreen'
 
 export const TrendingScreen = ({
-  goToMarketDetail
+  goToMarketDetail,
+  containerStyle
 }: {
   goToMarketDetail: (tokenId: string, marketType: MarketType) => void
+  containerStyle: ViewStyle
 }): JSX.Element => {
   const {
     trendingTokens,
@@ -63,6 +65,7 @@ export const TrendingScreen = ({
         data={trendingTokens}
         goToMarketDetail={goToMarketDetail}
         emptyComponent={emptyComponent}
+        containerStyle={containerStyle}
       />
     </Animated.View>
   )
