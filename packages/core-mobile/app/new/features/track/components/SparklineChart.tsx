@@ -25,7 +25,8 @@ const SparklineChart: FC<Props> = ({
   onGestureStart,
   onGestureEnd,
   labels,
-  overrideTheme
+  overrideTheme,
+  enablePanGesture
 }) => {
   const { theme: defaultTheme } = useTheme()
   const colorScheme = useSelector(selectSelectedColorScheme)
@@ -83,7 +84,7 @@ const SparklineChart: FC<Props> = ({
         lineThickness={lineThickness}
         points={data}
         gradientFillColors={gradientFillColors}
-        enablePanGesture={true}
+        enablePanGesture={enablePanGesture}
         SelectionDot={props => SelectionDotWithSelector(props)}
         onPointSelected={onPointSelected}
         onGestureStart={handleTouchStart}
@@ -96,7 +97,7 @@ const SparklineChart: FC<Props> = ({
 interface Props {
   style?: ViewStyle
   data: { date: Date; value: number }[]
-  labels: string[]
+  labels?: string[]
   lineThickness?: number
   negative?: boolean
   onPointSelected?: (p: GraphPoint) => void
@@ -104,6 +105,7 @@ interface Props {
   onGestureEnd?: () => void
   verticalPadding?: number
   overrideTheme?: K2AlpineTheme
+  enablePanGesture?: boolean
 }
 
 const Grid = ({
@@ -112,7 +114,7 @@ const Grid = ({
   isTouching
 }: {
   color: string
-  labels: string[]
+  labels?: string[]
   isTouching: SharedValue<boolean>
 }): JSX.Element => {
   return (
@@ -128,7 +130,7 @@ const Grid = ({
         zIndex: 1000,
         pointerEvents: 'none'
       }}>
-      {labels.map((label, index) => (
+      {(labels || new Array(4).fill('')).map((label, index) => (
         <DashedLine
           isTouching={isTouching}
           key={index}

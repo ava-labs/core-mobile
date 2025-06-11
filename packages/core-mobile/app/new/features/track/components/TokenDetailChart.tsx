@@ -84,11 +84,12 @@ export const TokenDetailChart = ({
         }}
         labels={chartLabels}
         data={chartData ?? []}
-        verticalPadding={VERTICAL_PADDING}
+        verticalPadding={VERTICAL_PADDING + 4}
         negative={negative}
         onGestureStart={handleGestureStart}
         onGestureEnd={handleGestureEnd}
         onPointSelected={onDataSelected}
+        enablePanGesture
       />
       <ChartOverlay
         chartData={chartData}
