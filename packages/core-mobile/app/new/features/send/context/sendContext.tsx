@@ -202,6 +202,19 @@ export const SendContextProvider = ({
         addressBTC: toAddress.to
       }
     }
+
+    if (
+      isValidAddress({
+        address: toAddress.to,
+        addressType: AddressType.SOLANA,
+        isDeveloperMode
+      })
+    ) {
+      return {
+        addressSVM: toAddress.to
+      }
+    }
+
     return undefined
   }, [accounts, contacts, toAddress, isDeveloperMode])
 
@@ -219,18 +232,23 @@ export const SendContextProvider = ({
       return recipient?.addressXP ? recipient.addressXP : undefined
     }
 
-    if (network.vmName === NetworkVMType.EVM) {
-      return recipient?.address ? recipient.address : undefined
+    switch (network.vmName) {
+      case NetworkVMType.EVM:
+        return recipient?.address ? recipient.address : undefined
+      case NetworkVMType.SVM:
+        return recipient?.addressSVM ? recipient.addressSVM : undefined
+      default:
+        return undefined
     }
-    return undefined
   }, [
     selectedToken,
+    network.vmName,
     toAddress?.recipientType,
     toAddress?.to,
     recipient?.addressBTC,
     recipient?.addressXP,
     recipient?.address,
-    network
+    recipient?.addressSVM
   ])
 
   const state: SendContextState = {
