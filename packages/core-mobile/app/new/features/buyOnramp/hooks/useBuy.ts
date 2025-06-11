@@ -23,7 +23,8 @@ export const useBuy = (): {
   isLoadingCryptoCurrencies: boolean
 } => {
   const { navigate } = useRouter()
-  const [_, setOnrampToken] = useOnRampToken()
+  const [_onrampToken, setOnrampToken] = useOnRampToken()
+  const [_sourceAmount, setSourceAmount] = useOnRampSourceAmount()
   const isMeldIntegrationBlocked = useSelector(selectIsMeldIntegrationBlocked)
   const { data: cryptoCurrencies, isLoading: isLoadingCryptoCurrencies } =
     useSearchCryptoCurrencies({
