@@ -17,7 +17,11 @@ export const isEffectivelyZero = (value: number): boolean => {
   return Math.abs(value) < zeroThreshold
 }
 
-export const getTokenAddress = (token: MarketToken): string | undefined => {
+export const getTokenAddress = (
+  token: MarketToken | undefined
+): string | undefined => {
+  if (!token) return undefined
+
   return 'platforms' in token
     ? token.platforms[SUPPORTED_PLATFORM_ID]
     : undefined

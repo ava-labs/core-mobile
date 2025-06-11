@@ -12,6 +12,7 @@ export const SelectReceiveNetworkScreen = (): JSX.Element => {
       networks={networks}
       selected={selectedNetwork}
       onSelect={setSelectedNetwork}
+      isReceiveScreen
     />
   )
 }

@@ -61,7 +61,7 @@ export function useBitcoinProvider(
   return bitcoinProvider
 }
 
-export function useAvalancheProvider(
+export function useAvalancheEvmProvider(
   isTestnet?: boolean
 ): JsonRpcBatchInternal | undefined {
   const { networks } = useNetworks()

@@ -21,5 +21,8 @@ export const constructContactByAddressType = (
     case AddressType.BTC:
     case AddressType.BTC_TESTNET:
       return { ...contact, addressBTC: address }
+    case AddressType.SOLANA:
+    case AddressType.SOLANA_DEVNET:
+      return { ...contact, addressSVM: address }
   }
 }
