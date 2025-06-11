@@ -4,7 +4,6 @@ import { selectIsDeveloperMode } from 'store/settings/advanced/slice'
 import AccountsService from 'services/account/AccountsService'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { selectWalletType } from 'store/app/slice'
-import { selectActiveNetwork } from 'store/network'
 import {
   reducerName,
   selectAccounts,
@@ -18,7 +17,6 @@ export const addAccount = createAsyncThunk<void, void, ThunkApi>(
   async (_, thunkApi) => {
     const state = thunkApi.getState()
     const isDeveloperMode = selectIsDeveloperMode(state)
-    const activeNetwork = selectActiveNetwork(state)
     const activeAccountIndex = selectActiveAccount(state)?.index ?? 0
     const walletType = selectWalletType(state)
 
@@ -28,7 +26,7 @@ export const addAccount = createAsyncThunk<void, void, ThunkApi>(
       index: accIndex,
       activeAccountIndex,
       walletType,
-      network: activeNetwork
+      isTestnet: isDeveloperMode
     })
 
     thunkApi.dispatch(setAccount(acc))

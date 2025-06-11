@@ -35,7 +35,6 @@ const initAccounts = async (
 ): Promise<void> => {
   const state = listenerApi.getState()
   const isDeveloperMode = selectIsDeveloperMode(state)
-  const activeNetwork = selectActiveNetwork(state)
   const walletType = selectWalletType(state)
   const walletName = selectWalletName(state)
   let accounts: AccountCollection = {}
@@ -45,7 +44,7 @@ const initAccounts = async (
       index: 0,
       activeAccountIndex: 0,
       walletType,
-      network: activeNetwork
+      isTestnet: isDeveloperMode
     })
 
     const title = await SeedlessService.getAccountName(0)
@@ -69,7 +68,7 @@ const initAccounts = async (
       index: 0,
       activeAccountIndex: 0,
       walletType,
-      network: activeNetwork
+      isTestnet: isDeveloperMode
     })
 
     const accountTitle =
@@ -115,15 +114,16 @@ const fetchRemainingAccounts = async ({
   const numberOfAccounts = pubKeys.filter(isEvmPublicKey).length
 
   const accounts: AccountCollection = {}
+  const targetKeys = await SeedlessService.getSessionKeysList(Secp256k1.Ava)
   // fetch the remaining accounts in the background
   for (let i = startIndex; i < numberOfAccounts; i++) {
     const acc = await accountService.createNextAccount({
       index: i,
       activeAccountIndex,
       walletType,
-      network: activeNetwork
+      isTestnet: isDeveloperMode
     })
-    const title = await SeedlessService.getAccountName(i)
+    const title = await SeedlessService.getAccountName(i, targetKeys)
     const accountTitle = title ?? acc.name
     accounts[acc.index] = { ...acc, name: accountTitle }
   }
@@ -139,11 +139,6 @@ const reloadAccounts = async (
 ): Promise<void> => {
   const state = listenerApi.getState()
   const isDeveloperMode = selectIsDeveloperMode(state)
-
-  // all vm modules need is just the isTestnet flag
-  const network = {
-    isTestnet: isDeveloperMode
-  } as Network
 
   const accounts = selectAccounts(state)
   const reloadedAccounts = await accountService.reloadAccounts(
