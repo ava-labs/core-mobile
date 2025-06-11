@@ -339,5 +339,37 @@ export const migrations = {
     }
     delete newState.nft
     return newState
+  },
+  21: async (state: any) => {
+    // Generate a new wallet ID
+    const walletId = uuid()
+    // Migrate stored wallet structure
+    const newState = { ...state }
+
+    // If there's an existing account state, migrate it to the new wallet structure
+    if (state.account && state.account.accounts) {
+      const accountState = newState.account as AccountsState
+      const walletType = state.app.walletType as WalletType
+
+      // Create a new wallet entry
+      const walletName =
+        // @ts-ignore walletName not part of accountState anymore
+        accountState.walletName ||
+        `Wallet ${Object.keys(accountState.accounts).length + 1}`
+
+      // Add wallet to the wallets state
+      newState.wallet = {
+        wallets: {
+          [walletId]: {
+            id: walletId,
+            name: walletName,
+            type: walletType
+          }
+        },
+        activeWalletId: walletId
+      }
+    }
+
+    return newState
   }
 }
