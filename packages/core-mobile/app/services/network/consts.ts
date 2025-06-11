@@ -107,41 +107,61 @@ export const NETWORK_X_TEST = {
 } as Network
 
 export const NETWORK_SOLANA = {
-  chainId: ChainId.SOLANA_MAINNET_ID,
+  chainId: 4503599627369476,
+  chainName: 'Solana',
+  description: '',
+  explorerUrl: 'https://solscan.io/',
   isTestnet: false,
-  vmName: NetworkVMType.SVM,
-  rpcUrl: 'https://api.mainnet-beta.solana.com',
-  wsUrl: 'wss://api.mainnet-beta.solana.com',
+  logoUri:
+    'https://images.ctfassets.net/gcj8jwzm6086/4HsK06WXdGcPFQgrtZNd9t/db15a7a0726543c9c936cfbb4f41db67/solanaLogoMark.svg',
   networkToken: {
-    name: 'Solana',
-    symbol: 'SOL',
-    description:
-      'Solana is a high-performance blockchain supporting builders around the world creating crypto apps that scale today.',
+    name: 'SOL',
     decimals: 9,
-    logoUri: 'https://solana.com/img/solana-logo-full.svg'
+    symbol: 'SOL',
+    description: '',
+    logoUri:
+      'https://images.ctfassets.net/gcj8jwzm6086/4VgCue74mbrtME1ZqEj7Y1/44192d2d71381e89ea76f30e370ccd79/solana-sol-logo.svg'
   },
-  explorerUrl: 'https://explorer.solana.com',
-  chainName: ChainName.SOLANA,
-  logoUri: 'https://solana.com/img/solana-logo-full.svg'
+  pricingProviders: {
+    coingecko: {
+      nativeTokenId: 'solana',
+      assetPlatformId: 'solana'
+    }
+  },
+  primaryColor: '#9945FF',
+  rpcUrl: '',
+  subnetExplorerUriId: 'solana-mainnet',
+  vmName: 'SVM',
+  caip2Id: 'solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp'
 } as Network
 
 export const NETWORK_SOLANA_DEVNET = {
-  chainId: ChainId.SOLANA_DEVNET_ID,
-  chainName: 'Solana Devnet',
+  chainId: 4503599627369466,
+  chainName: 'Solana (Devnet)',
+  description: '',
+  explorerUrl: 'https://solscan.io/?cluster=devnet',
   isTestnet: true,
-  vmName: NetworkVMType.SVM,
-  rpcUrl: 'https://api.devnet.solana.com',
-  wsUrl: 'wss://api.devnet.solana.com',
-  networkToken: {
-    name: 'Solana',
-    symbol: 'SOL',
-    decimals: 9,
-    logoUri:
-      'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/solana/info/logo.png'
-  },
   logoUri:
-    'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/solana/info/logo.png',
-  explorerUrl: 'https://explorer.solana.com/?cluster=devnet'
+    'https://images.ctfassets.net/gcj8jwzm6086/4HsK06WXdGcPFQgrtZNd9t/db15a7a0726543c9c936cfbb4f41db67/solanaLogoMark.svg',
+  networkToken: {
+    name: 'SOL',
+    decimals: 9,
+    symbol: 'SOL',
+    description: '',
+    logoUri:
+      'https://images.ctfassets.net/gcj8jwzm6086/4VgCue74mbrtME1ZqEj7Y1/44192d2d71381e89ea76f30e370ccd79/solana-sol-logo.svg'
+  },
+  pricingProviders: {
+    coingecko: {
+      nativeTokenId: 'solana',
+      assetPlatformId: 'solana'
+    }
+  },
+  primaryColor: '#9945FF',
+  rpcUrl: '',
+  subnetExplorerUriId: 'solana-devnet',
+  vmName: 'SVM',
+  caip2Id: 'solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1'
 } as Network
 
 // Primary networks are the ones that are always enabled in the app
