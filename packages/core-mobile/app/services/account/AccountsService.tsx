@@ -1,6 +1,6 @@
 import WalletService from 'services/wallet/WalletService'
 import { Account, AccountCollection } from 'store/account'
-import { NetworkVMType } from '@avalabs/core-chains-sdk'
+import { Network, NetworkVMType } from '@avalabs/core-chains-sdk'
 import SeedlessService from 'seedless/services/SeedlessService'
 import { CoreAccountType } from '@avalabs/types'
 import { uuid } from 'utils/uuid'

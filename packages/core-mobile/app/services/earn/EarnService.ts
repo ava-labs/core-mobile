@@ -34,6 +34,7 @@ import AnalyticsService from 'services/analytics/AnalyticsService'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
 import { Avalanche } from '@avalabs/core-wallets-sdk'
 import { AvaxXP } from 'types/AvaxXP'
+import { Network } from '@avalabs/core-chains-sdk'
 import {
   getTransformedTransactions,
   maxGetAtomicUTXOsRetries,
@@ -349,13 +350,13 @@ class EarnService {
     walletId,
     walletType,
     accounts,
-    isDeveloperMode,
+    network,
     startTimestamp
   }: {
     walletId: string
     walletType: WalletType
     accounts: AccountCollection
-    isDeveloperMode: boolean
+    network: Network
     startTimestamp?: number
   }): Promise<
     | {
@@ -367,6 +368,7 @@ class EarnService {
       }[]
     | undefined
   > => {
+    const isDeveloperMode = Boolean(network.isTestnet)
     const accountsArray = Object.values(accounts)
 
     try {

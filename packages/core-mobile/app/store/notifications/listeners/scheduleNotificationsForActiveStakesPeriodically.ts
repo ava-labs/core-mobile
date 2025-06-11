@@ -101,7 +101,7 @@ const scheduleNotificationsForActiveStakes = async (
         walletId: activeWallet.id,
         walletType: activeWallet.type,
         accounts,
-        isDeveloperMode,
+        network: activeNetwork,
         startTimestamp
       })
 
