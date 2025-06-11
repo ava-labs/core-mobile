@@ -3,6 +3,8 @@ import {
   BitcoinProvider,
   DerivationPath,
   getAddressDerivationPath,
+  DerivationPath,
+  getAddressDerivationPath,
   JsonRpcBatchInternal
 } from '@avalabs/core-wallets-sdk'
 import {
@@ -19,8 +21,8 @@ import {
 } from 'services/wallet/types'
 import NetworkService from 'services/network/NetworkService'
 import { Network } from '@avalabs/core-chains-sdk'
+import { Network } from '@avalabs/core-chains-sdk'
 import SentryWrapper from 'services/sentry/SentryWrapper'
-import { Account } from 'store/account/types'
 import Logger from 'utils/Logger'
 import { pvm, UnsignedTx, utils } from '@avalabs/avalanchejs'
 import { getUnixTime, secondsToMilliseconds } from 'date-fns'
