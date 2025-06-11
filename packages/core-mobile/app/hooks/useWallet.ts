@@ -111,7 +111,7 @@ export function useWallet(): UseWallet {
   /**
    * Creates a new wallet with the provided PIN and mnemonic.
    * Generates an encryption key, stores it with the PIN, and creates a new wallet.
-   * The wallet is stored in the secure storage and added to the Redux store.
+   * The wallet's secret is stored in the secure storage and its metadata is added to the Redux store.
    *
    * @param params - The parameters for creating the wallet
    * @param params.mnemonic - The wallet's mnemonic phrase or secret
