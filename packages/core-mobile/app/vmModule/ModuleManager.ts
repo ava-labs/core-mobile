@@ -2,7 +2,6 @@ import { EvmModule } from '@avalabs/evm-module'
 import Logger from 'utils/Logger'
 import {
   Environment,
-  GetAddressParams,
   Module,
   ConstructorParams
 } from '@avalabs/vm-module-types'
@@ -99,42 +98,6 @@ class ModuleManager {
       new AvalancheModule(moduleInitParams),
       new SvmModule(moduleInitParams)
     ]
-  }
-
-  /**
-   * @param param0 walletType
-   * @param param1 accountIndex
-   * @param param2 xpub
-   * @param param3 xpubXP
-   * @param param4 isTestnet
-   * @returns EVM, AVM, PVM and Bitcoin addresses
-   */
-  getAddresses = async ({
-    walletType,
-    accountIndex,
-    xpub,
-    xpubXP,
-    network
-  }: GetAddressParams): Promise<Record<string, string>> => {
-    return Promise.allSettled(
-      this.modules.map(async module =>
-        module.getAddress({
-          walletType,
-          accountIndex,
-          xpub,
-          xpubXP,
-          network
-        })
-      )
-    ).then(results => {
-      let addresses = {}
-      results.forEach(result => {
-        if (result.status === 'fulfilled') {
-          addresses = { ...addresses, ...result.value }
-        }
-      })
-      return addresses
-    })
   }
 
   loadModule = async (chainId: string, method?: string): Promise<Module> => {
