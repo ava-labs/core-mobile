@@ -28,7 +28,7 @@ const iOS = Platform.OS === 'ios'
 type KeystoreConfigType = {
   ENCRYPTION_KEY_PASSCODE_OPTIONS: Options
   ENCRYPTION_KEY_BIO_OPTIONS: Options
-  WALLET_SECRET_OPTIONS: (walletId: string) => Options
+  wallet_secret_options: (walletId: string) => Options
 }
 
 export const KeystoreConfig: KeystoreConfigType = {
@@ -52,7 +52,7 @@ export const KeystoreConfig: KeystoreConfigType = {
     authenticationType:
       Keychain.AUTHENTICATION_TYPE.DEVICE_PASSCODE_OR_BIOMETRICS
   },
-  WALLET_SECRET_OPTIONS: (walletId: string) => ({
+  wallet_secret_options: (walletId: string) => ({
     service: getWalletServiceKey(walletId)
   })
 }
@@ -237,7 +237,7 @@ class BiometricsSDK {
     return Keychain.setGenericPassword(
       'walletSecret',
       encrypted,
-      KeystoreConfig.WALLET_SECRET_OPTIONS(walletId)
+      KeystoreConfig.wallet_secret_options(walletId)
     )
   }
 
@@ -248,7 +248,7 @@ class BiometricsSDK {
       )
     }
     const credentials = await Keychain.getGenericPassword(
-      KeystoreConfig.WALLET_SECRET_OPTIONS(walletId)
+      KeystoreConfig.wallet_secret_options(walletId)
     )
     if (!credentials) return false
     const decrypted = await decrypt(credentials.password, this.encryptionKey)
@@ -258,12 +258,12 @@ class BiometricsSDK {
   async clearWalletData(walletId: string): Promise<void> {
     try {
       await Keychain.resetGenericPassword(
-        KeystoreConfig.WALLET_SECRET_OPTIONS(walletId)
+        KeystoreConfig.wallet_secret_options(walletId)
       )
     } catch (e) {
       Logger.error(
         `Failed to reset keychain for service: ${
-          KeystoreConfig.WALLET_SECRET_OPTIONS(walletId).service
+          KeystoreConfig.wallet_secret_options(walletId).service
         }`,
         e
       )

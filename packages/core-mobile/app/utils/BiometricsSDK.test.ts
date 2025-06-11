@@ -273,7 +273,7 @@ describe('BiometricsSDK', () => {
       expect(mockKeychain.setGenericPassword).toHaveBeenCalledWith(
         'walletSecret',
         mockEncryptedData,
-        KeystoreConfig.WALLET_SECRET_OPTIONS(mockWalletId)
+        KeystoreConfig.wallet_secret_options(mockWalletId)
       )
     })
 
@@ -296,7 +296,7 @@ describe('BiometricsSDK', () => {
       const result = await BiometricsSDK.loadWalletSecret(mockWalletId)
 
       expect(mockKeychain.getGenericPassword).toHaveBeenCalledWith(
-        KeystoreConfig.WALLET_SECRET_OPTIONS(mockWalletId)
+        KeystoreConfig.wallet_secret_options(mockWalletId)
       )
       expect(mockDecrypt).toHaveBeenCalledWith(
         mockEncryptedData,
@@ -325,7 +325,7 @@ describe('BiometricsSDK', () => {
     it('should clear wallet data', async () => {
       await BiometricsSDK.clearWalletData(mockWalletId)
       expect(mockKeychain.resetGenericPassword).toHaveBeenCalledWith(
-        KeystoreConfig.WALLET_SECRET_OPTIONS(mockWalletId)
+        KeystoreConfig.wallet_secret_options(mockWalletId)
       )
     })
 
