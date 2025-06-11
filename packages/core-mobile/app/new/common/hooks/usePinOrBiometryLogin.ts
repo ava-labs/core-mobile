@@ -77,7 +77,8 @@ export function usePinOrBiometryLogin({
       try {
         onStartLoading()
 
-        const migrationSuccess = await checkMigration(pin, activeWalletId)
+        const migrator = new KeychainMigrator(activeWalletId)
+        const migrationSuccess = await migrator.migrateIfNeeded('PIN', pin)
 
         if (!migrationSuccess) {
           Logger.error('Migration failed')
@@ -130,33 +131,6 @@ export function usePinOrBiometryLogin({
     ]
   )
 
-  async function checkMigration(
-    pin: string,
-    walletId: string
-  ): Promise<boolean> {
-    const migrator = new KeychainMigrator(walletId)
-    const migrationStatus = await migrator.getMigrationStatus('PIN')
-
-    let migrationSuccess = true
-    if (migrationStatus) {
-      Logger.info('Migration needed:', migrationStatus)
-
-      switch (migrationStatus) {
-        case 'runPinMigration':
-          migrationSuccess = await migrator.runPinMigration(pin)
-          break
-        case 'completePartialMigration':
-          migrationSuccess = await migrator.completePartialMigration(pin)
-          break
-        default:
-          Logger.error('Unexpected migration status:', migrationStatus)
-          break
-      }
-      Logger.info('Migration completed successfully')
-    }
-    return migrationSuccess
-  }
-
   const onEnterPin = (pin: string): void => {
     if (pin.length > 6) {
       return
@@ -179,19 +153,12 @@ export function usePinOrBiometryLogin({
         if (accessType === 'BIO') {
           // Check if migration is needed first
           const migrator = new KeychainMigrator(activeWalletId)
-          const migrationStatus = await migrator.getMigrationStatus('BIO')
+          const migrationSuccess = await migrator.migrateIfNeeded('BIO')
 
-          if (migrationStatus === 'runBiometricMigration') {
-            Logger.info('Biometric migration needed')
-            const migrationSuccess = await migrator.runBiometricMigration()
-
-            if (!migrationSuccess) {
-              Logger.error('Biometric migration failed')
-              setVerified(false)
-              return new NothingToLoad()
-            }
-
-            Logger.info('Biometric migration completed successfully')
+          if (!migrationSuccess) {
+            Logger.error('Biometric migration failed')
+            setVerified(false)
+            return new NothingToLoad()
           }
 
           const isSuccess = await BiometricsSDK.loadEncryptionKeyWithBiometry()
