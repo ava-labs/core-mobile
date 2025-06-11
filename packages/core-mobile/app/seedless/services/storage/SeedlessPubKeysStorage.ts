@@ -1,6 +1,6 @@
 import SecureStorageService, { KeySlot } from 'security/SecureStorageService'
-import { AddressPublicKey } from 'utils/publicKeys/types'
-import { assertNotUndefined } from 'utils/assertions'
+import Logger from 'utils/Logger'
+import { AddressPublicKey } from 'utils/publicKeys'
 
 export class SeedlessPubKeysStorage {
   private static cache: AddressPublicKey[] | undefined = undefined
@@ -12,19 +12,25 @@ export class SeedlessPubKeysStorage {
   }
 
   static async retrieve(): Promise<AddressPublicKey[]> {
-    if (this.cache) {
+    if (this.cache && this.cache.length > 0) {
       return this.cache
     }
-    const pubKeys = await SecureStorageService.load<AddressPublicKey[]>(
-      KeySlot.SeedlessPubKeys
-    )
-    assertNotUndefined(pubKeys, 'no pubkeys found')
-    this.cache = pubKeys
+
+    let pubKeys: AddressPublicKey[] = []
+    try {
+      pubKeys = await SecureStorageService.load<AddressPublicKey[]>(
+        KeySlot.SeedlessPubKeys
+      )
+
+      this.cache = pubKeys
+    } catch (error) {
+      Logger.info('Error retrieving public keys from storage:', error)
+    }
 
     return pubKeys
   }
 
-  static clearCache(): void {
+  static clear(): void {
     this.cache = undefined
   }
 }

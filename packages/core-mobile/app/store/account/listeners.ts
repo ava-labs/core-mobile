@@ -5,7 +5,7 @@ import {
 } from 'store/settings/advanced'
 import { AppListenerEffectAPI, AppStartListening } from 'store/types'
 import { AnyAction } from '@reduxjs/toolkit'
-import { onLogIn, selectWalletType } from 'store/app/slice'
+import { onAppUnlocked, onLogIn, selectWalletType } from 'store/app/slice'
 import { WalletType } from 'services/wallet/types'
 import { SeedlessPubKeysStorage } from 'seedless/services/storage/SeedlessPubKeysStorage'
 import AnalyticsService from 'services/analytics/AnalyticsService'
@@ -31,13 +31,12 @@ const initAccounts = async (
   const isDeveloperMode = selectIsDeveloperMode(state)
   const walletType = selectWalletType(state)
   const walletName = selectWalletName(state)
-  const activeAccountIndex = selectActiveAccount(state)?.index ?? 0
-  const accounts: AccountCollection = {}
+  let accounts: AccountCollection = {}
 
   if (walletType === WalletType.SEEDLESS) {
     const acc = await accountService.createNextAccount({
       index: 0,
-      activeAccountIndex,
+      activeAccountIndex: 0,
       walletType,
       isTestnet: isDeveloperMode
     })
@@ -49,18 +48,20 @@ const initAccounts = async (
 
     // to avoid initial account fetching taking too long,
     // we fetch the remaining accounts in the background
-    fetchRemainingAccounts({
+    const addedAccounts = await fetchRemainingAccounts({
       isDeveloperMode,
       walletType,
-      activeAccountIndex,
-      listenerApi,
-      initialAccounts: accounts // pass the initial account for analytic reporting purposes
+      activeAccountIndex: 0,
+      startIndex: 1,
+      listenerApi
     })
+
+    accounts = { ...accounts, ...addedAccounts }
   } else if (walletType === WalletType.MNEMONIC) {
     // only add the first account for mnemonic wallet
     const acc = await accountService.createNextAccount({
       index: 0,
-      activeAccountIndex,
+      activeAccountIndex: 0,
       walletType,
       isTestnet: isDeveloperMode
     })
@@ -70,17 +71,18 @@ const initAccounts = async (
     accounts[acc.index] = { ...acc, name: accountTitle }
 
     listenerApi.dispatch(setAccounts(accounts))
-    if (isDeveloperMode === false) {
-      AnalyticsService.captureWithEncryption('AccountAddressesUpdated', {
-        addresses: Object.values(accounts).map(account => ({
-          address: account.addressC,
-          addressBtc: account.addressBTC,
-          addressAVM: account.addressAVM ?? '',
-          addressPVM: account.addressPVM ?? '',
-          addressCoreEth: account.addressCoreEth ?? ''
-        }))
-      })
-    }
+  }
+
+  if (isDeveloperMode === false) {
+    AnalyticsService.captureWithEncryption('AccountAddressesUpdated', {
+      addresses: Object.values(accounts).map(acc => ({
+        address: acc.addressC,
+        addressBtc: acc.addressBTC,
+        addressAVM: acc.addressAVM ?? '',
+        addressPVM: acc.addressPVM ?? '',
+        addressCoreEth: acc.addressCoreEth ?? ''
+      }))
+    })
   }
 }
 
@@ -88,15 +90,15 @@ const fetchRemainingAccounts = async ({
   isDeveloperMode,
   walletType,
   activeAccountIndex,
-  listenerApi,
-  initialAccounts
+  startIndex,
+  listenerApi
 }: {
   isDeveloperMode: boolean
   walletType: WalletType
   activeAccountIndex: number
+  startIndex: number
   listenerApi: AppListenerEffectAPI
-  initialAccounts: AccountCollection
-}): Promise<void> => {
+}): Promise<AccountCollection> => {
   /**
    * note:
    * adding accounts cannot be parallelized, they need to be added one-by-one.
@@ -110,7 +112,7 @@ const fetchRemainingAccounts = async ({
   const accounts: AccountCollection = {}
   const targetKeys = await SeedlessService.getSessionKeysList(Secp256k1.Ava)
   // fetch the remaining accounts in the background
-  for (let i = 1; i < numberOfAccounts; i++) {
+  for (let i = startIndex; i < numberOfAccounts; i++) {
     const acc = await accountService.createNextAccount({
       index: i,
       activeAccountIndex,
@@ -123,18 +125,7 @@ const fetchRemainingAccounts = async ({
   }
   listenerApi.dispatch(setNonActiveAccounts(accounts))
 
-  const allAccounts = { ...initialAccounts, ...accounts }
-  if (isDeveloperMode === false) {
-    AnalyticsService.captureWithEncryption('AccountAddressesUpdated', {
-      addresses: Object.values(allAccounts).map(acc => ({
-        address: acc.addressC,
-        addressBtc: acc.addressBTC,
-        addressAVM: acc.addressAVM ?? '',
-        addressPVM: acc.addressPVM ?? '',
-        addressCoreEth: acc.addressCoreEth ?? ''
-      }))
-    })
-  }
+  return accounts
 }
 
 // reload addresses
@@ -160,6 +151,28 @@ const handleActiveAccountIndexChange = (
   recentAccountsStore.getState().addRecentAccount(action.payload)
 }
 
+const fetchSeedlessAccountsIfNeeded = async (
+  _action: AnyAction,
+  listenerApi: AppListenerEffectAPI
+): Promise<void> => {
+  const state = listenerApi.getState()
+  const walletType = selectWalletType(state)
+
+  if (walletType === WalletType.SEEDLESS) {
+    const isDeveloperMode = selectIsDeveloperMode(state)
+    const activeAccountIndex = selectActiveAccount(state)?.index ?? 0
+    const accounts = selectAccounts(state)
+
+    fetchRemainingAccounts({
+      isDeveloperMode,
+      walletType,
+      activeAccountIndex,
+      startIndex: Object.keys(accounts).length,
+      listenerApi
+    })
+  }
+}
+
 export const addAccountListeners = (
   startListening: AppStartListening
 ): void => {
@@ -176,5 +189,10 @@ export const addAccountListeners = (
   startListening({
     actionCreator: setActiveAccountIndex,
     effect: handleActiveAccountIndexChange
+  })
+
+  startListening({
+    actionCreator: onAppUnlocked,
+    effect: fetchSeedlessAccountsIfNeeded
   })
 }

@@ -73,7 +73,7 @@ class WalletService {
     await WalletInitializer.initialize({
       mnemonic,
       walletType,
-      isLoggingIn
+      shouldRefreshPublicKeys: isLoggingIn
     })
 
     this.walletType = walletType
@@ -198,7 +198,7 @@ class WalletService {
         // re-init wallet to fetch new public keys
         await WalletInitializer.initialize({
           walletType: this.walletType,
-          isLoggingIn: true
+          shouldRefreshPublicKeys: true
         })
       }
     }

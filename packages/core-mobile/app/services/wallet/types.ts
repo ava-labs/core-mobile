@@ -14,7 +14,7 @@ import {
   TypedData,
   TypedDataV1
 } from '@avalabs/vm-module-types'
-import { Curve } from 'utils/publicKeys/types'
+import { Curve } from 'utils/publicKeys'
 
 export type SignTransactionRequest =
   | TransactionRequest
