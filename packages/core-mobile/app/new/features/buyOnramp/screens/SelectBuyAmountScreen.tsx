@@ -1,11 +1,5 @@
 import { ScrollScreen } from 'common/components/ScrollScreen'
-import React, {
-  useCallback,
-  useMemo,
-  useState,
-  useEffect,
-  useLayoutEffect
-} from 'react'
+import React, { useCallback, useMemo, useEffect, useLayoutEffect } from 'react'
 import {
   Button,
   View,
@@ -34,6 +28,7 @@ import {
 import {
   useOnRampPaymentMethod,
   useOnRampServiceProvider,
+  useOnRampSourceAmount,
   useOnRampToken
 } from '../store'
 import {
@@ -42,7 +37,6 @@ import {
   isSupportedNativeToken
 } from '../utils'
 import { useGetPurchaseLimits } from '../hooks/useGetPurchaseLimits'
-import { useSearchServiceProviders } from '../hooks/useSearchServiceProviders'
 import { useSearchDefaultsByCountry } from '../hooks/useSearchDefaultsByCountry'
 import { useLocale } from '../hooks/useLocale'
 
@@ -52,7 +46,6 @@ export const SelectBuyAmountScreen = (): React.JSX.Element => {
   } = useTheme()
   const { formatIntegerCurrency, formatCurrency } = useFormatCurrency()
   const { getFromPopulatedNetwork } = useNetworks()
-  const [amount, setAmount] = useState(0)
   const { navigate } = useRouter()
   const selectedCurrency = useSelector(selectSelectedCurrency)
   const { getMarketTokenBySymbol } = useWatchlist()
@@ -63,13 +56,9 @@ export const SelectBuyAmountScreen = (): React.JSX.Element => {
     tokens: erc20ContractTokens,
     hideZeroBalance: false
   })
-  const { data: serviceProviders, isLoading: isLoadingServiceProviders } =
-    useSearchServiceProviders({
-      categories: [ServiceProviderCategories.CryptoOnramp]
-    })
   const [onRampServiceProvider, setOnRampServiceProvider] =
     useOnRampServiceProvider()
-
+  const [sourceAmount, setSourceAmount] = useOnRampSourceAmount()
   const { data: purchaseLimits } = useGetPurchaseLimits({
     categories: [ServiceProviderCategories.CryptoOnramp],
     fiatCurrencies: [selectedCurrency],
@@ -89,28 +78,17 @@ export const SelectBuyAmountScreen = (): React.JSX.Element => {
       ?.defaultPaymentMethods[0] as keyof typeof PaymentMethods
   }, [countryCode, defaultsByCountry])
 
-  const defaultServiceProvider = serviceProviders?.[0]?.serviceProvider
-
   useLayoutEffect(() => {
     setOnRampPaymentMethod(undefined)
     setOnRampServiceProvider(undefined)
-  }, [setOnRampPaymentMethod, setOnRampServiceProvider])
+    setSourceAmount(0)
+  }, [setOnRampPaymentMethod, setOnRampServiceProvider, setSourceAmount])
 
   useEffect(() => {
     if (onRampPaymentMethod === undefined && defaultPaymentMethod) {
       setOnRampPaymentMethod(defaultPaymentMethod)
     }
-    if (onRampServiceProvider === undefined && defaultServiceProvider) {
-      setOnRampServiceProvider(defaultServiceProvider)
-    }
-  }, [
-    defaultPaymentMethod,
-    defaultServiceProvider,
-    onRampPaymentMethod,
-    onRampServiceProvider,
-    setOnRampPaymentMethod,
-    setOnRampServiceProvider
-  ])
+  }, [defaultPaymentMethod, onRampPaymentMethod, setOnRampPaymentMethod])
 
   const paymentMethodToDisplay = useMemo(() => {
     return onRampPaymentMethod
@@ -139,8 +117,11 @@ export const SelectBuyAmountScreen = (): React.JSX.Element => {
       return false
     }
 
-    return (amount ?? 0) >= (selectedPurchasingFiatCurrency?.minimumAmount ?? 0)
-  }, [selectedPurchasingFiatCurrency, amount])
+    return (
+      (sourceAmount ?? 0) >=
+      (selectedPurchasingFiatCurrency?.minimumAmount ?? 0)
+    )
+  }, [selectedPurchasingFiatCurrency, sourceAmount])
 
   const isBelowMaximumPurchaseLimit = useMemo(() => {
     if (!selectedPurchasingFiatCurrency) {
@@ -148,15 +129,18 @@ export const SelectBuyAmountScreen = (): React.JSX.Element => {
       return false
     }
 
-    return (amount ?? 0) <= (selectedPurchasingFiatCurrency?.maximumAmount ?? 0)
-  }, [selectedPurchasingFiatCurrency, amount])
+    return (
+      (sourceAmount ?? 0) <=
+      (selectedPurchasingFiatCurrency?.maximumAmount ?? 0)
+    )
+  }, [selectedPurchasingFiatCurrency, sourceAmount])
 
   const isWithinPurchaseLimit =
     isBelowMaximumPurchaseLimit && isAboveMinimumPurchaseLimit
 
   const isBuyAllowed = useMemo(() => {
-    return (amount ?? 0) > 0 && isWithinPurchaseLimit
-  }, [amount, isWithinPurchaseLimit])
+    return (sourceAmount ?? 0) > 0 && isWithinPurchaseLimit
+  }, [sourceAmount, isWithinPurchaseLimit])
 
   const token = useMemo(() => {
     const t = filteredTokenList.find(
@@ -249,6 +233,10 @@ export const SelectBuyAmountScreen = (): React.JSX.Element => {
   }, [onNext, isBuyAllowed])
 
   const renderPayWith = useCallback(() => {
+    if (!sourceAmount || isWithinPurchaseLimit === false) {
+      return null
+    }
+
     return (
       paymentMethodToDisplay && (
         <Pressable
@@ -273,11 +261,11 @@ export const SelectBuyAmountScreen = (): React.JSX.Element => {
             Pay with
           </Text>
           <View sx={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-            {isLoadingServiceProviders || isLoadingDefaultsByCountry ? (
+            {isLoadingDefaultsByCountry ? (
               <ActivityIndicator size="small" color={colors.$textPrimary} />
             ) : (
               <>
-                <View>
+                <View sx={{ justifyContent: 'center' }}>
                   <Text
                     variant="body2"
                     sx={{
@@ -288,15 +276,17 @@ export const SelectBuyAmountScreen = (): React.JSX.Element => {
                     }}>
                     {paymentMethodToDisplay}
                   </Text>
-                  <Text
-                    variant="caption"
-                    sx={{
-                      fontSize: 11,
-                      fontWeight: 500,
-                      textAlign: 'right'
-                    }}>
-                    {serviceProviderToDisplay}
-                  </Text>
+                  {serviceProviderToDisplay && (
+                    <Text
+                      variant="caption"
+                      sx={{
+                        fontSize: 11,
+                        fontWeight: 500,
+                        textAlign: 'right'
+                      }}>
+                      {serviceProviderToDisplay}
+                    </Text>
+                  )}
                 </View>
                 <View sx={{ marginLeft: 8 }}>
                   <Icons.Navigation.ChevronRightV2
@@ -310,11 +300,12 @@ export const SelectBuyAmountScreen = (): React.JSX.Element => {
       )
     )
   }, [
+    sourceAmount,
     colors.$surfaceSecondary,
     colors.$textPrimary,
     handleSelectPaymentMethod,
     isLoadingDefaultsByCountry,
-    isLoadingServiceProviders,
+    isWithinPurchaseLimit,
     paymentMethodToDisplay,
     serviceProviderToDisplay
   ])
@@ -374,11 +365,12 @@ export const SelectBuyAmountScreen = (): React.JSX.Element => {
       {/* Fiat amount input widget */}
       {token?.tokenWithBalance && tokenBalance && (
         <FiatAmountInputWidget
+          autoFocus
           isAmountValid={isWithinPurchaseLimit}
           sx={{ marginTop: 12 }}
           currency={selectedCurrency}
-          amount={amount}
-          onChange={setAmount}
+          amount={sourceAmount}
+          onChange={setSourceAmount}
           formatIntegerCurrency={amt =>
             formatIntegerCurrency({ amount: amt, withoutCurrencySuffix: true })
           }
@@ -389,7 +381,7 @@ export const SelectBuyAmountScreen = (): React.JSX.Element => {
       <View sx={{ alignItems: 'center', marginTop: 12 }}>
         {isAboveMinimumPurchaseLimit === false &&
           minimumPurchaseLimit &&
-          amount !== 0 && (
+          sourceAmount !== 0 && (
             <Text
               variant="caption"
               sx={{
@@ -399,7 +391,7 @@ export const SelectBuyAmountScreen = (): React.JSX.Element => {
           )}
         {isBelowMaximumPurchaseLimit === false &&
           maximumPurchaseLimit &&
-          amount !== 0 && (
+          sourceAmount !== 0 && (
             <Text
               variant="caption"
               sx={{

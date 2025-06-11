@@ -2,7 +2,7 @@ import { useRouter } from 'expo-router'
 import { useCallback } from 'react'
 import { useSelector } from 'react-redux'
 import { selectIsMeldIntegrationBlocked } from 'store/posthog'
-import { useOnRampToken } from '../store'
+import { useOnRampSourceAmount, useOnRampToken } from '../store'
 import { CryptoCurrency } from './useSearchCryptoCurrencies'
 
 type NavigateToBuyParams = {
@@ -17,7 +17,8 @@ export const useBuy = (): {
   }: NavigateToBuyParams) => void
 } => {
   const { navigate } = useRouter()
-  const [_, setOnrampToken] = useOnRampToken()
+  const [_onrampToken, setOnrampToken] = useOnRampToken()
+  const [_sourceAmount, setSourceAmount] = useOnRampSourceAmount()
   const isMeldIntegrationBlocked = useSelector(selectIsMeldIntegrationBlocked)
 
   const navigateToBuy = useCallback(
@@ -31,6 +32,7 @@ export const useBuy = (): {
         return
       }
 
+      setSourceAmount(0)
       if (cryptoCurrency) {
         setOnrampToken(cryptoCurrency)
         // @ts-ignore TODO: make routes typesafe
@@ -41,7 +43,7 @@ export const useBuy = (): {
       // @ts-ignore TODO: make routes typesafe
       navigate('/buyOnramp')
     },
-    [isMeldIntegrationBlocked, navigate, setOnrampToken]
+    [isMeldIntegrationBlocked, navigate, setOnrampToken, setSourceAmount]
   )
 
   return {

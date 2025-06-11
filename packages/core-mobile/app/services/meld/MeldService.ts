@@ -1,4 +1,7 @@
-import { Country } from 'features/buyOnramp/hooks/useSearchCountries'
+import {
+  Country,
+  SearchCountriesParams
+} from 'features/buyOnramp/hooks/useSearchCountries'
 import {
   CryptoCurrency,
   SearchCryptoCurrenciesParams
@@ -13,6 +16,10 @@ import {
   SearchPaymentMethodsParams,
   SearchPaymentMethodsResponse
 } from 'features/buyOnramp/hooks/useSearchPaymentMethods'
+import {
+  CreateCryptoQuoteParams,
+  CreateCryptoQuoteResponse
+} from 'features/buyOnramp/hooks/useCreateCryptoQuote'
 
 if (!Config.PROXY_URL)
   Logger.warn('PROXY_URL is missing in env file. Meld service disabled.')
@@ -20,9 +27,21 @@ if (!Config.PROXY_URL)
 const baseURL = Config.PROXY_URL + '/proxy/meld'
 
 class MeldService {
-  async searchCountries(): Promise<Country[]> {
+  async searchCountries({
+    accountFilter = true,
+    categories,
+    countries
+  }: SearchCountriesParams): Promise<Country[]> {
     try {
       const url = new URL(baseURL + '/service-providers/properties/countries')
+
+      const commaSeparatedCountries = countries.join(',')
+      const commaSeparatedCategories = categories.join(',')
+
+      url.searchParams.set('accountFilter', accountFilter.toString())
+      url.searchParams.set('categories', commaSeparatedCategories)
+      url.searchParams.set('countries', commaSeparatedCountries)
+
       const response = await fetch(url, {
         method: 'GET'
       })
@@ -198,6 +217,38 @@ class MeldService {
       return response.json()
     } catch (error) {
       return []
+    }
+  }
+
+  async createCryptoQuote({
+    sourceAmount,
+    walletAddress,
+    countryCode,
+    sourceCurrencyCode,
+    destinationCurrencyCode,
+    paymentMethodType,
+    subdivision
+  }: CreateCryptoQuoteParams): Promise<CreateCryptoQuoteResponse | undefined> {
+    try {
+      const url = new URL(baseURL + '/payments/crypto/quote')
+
+      const body = {
+        countryCode,
+        sourceCurrencyCode,
+        destinationCurrencyCode,
+        paymentMethodType,
+        sourceAmount,
+        walletAddress,
+        subdivision
+      }
+
+      const response = await fetch(url.toString(), {
+        method: 'POST',
+        body: JSON.stringify(body)
+      })
+      return response.json()
+    } catch {
+      return undefined
     }
   }
 }

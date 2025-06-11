@@ -1,4 +1,4 @@
-import { GroupList, GroupListItem } from '@avalabs/k2-alpine'
+import { ActivityIndicator, GroupList, GroupListItem } from '@avalabs/k2-alpine'
 import { ScrollScreen } from 'common/components/ScrollScreen'
 import React, { useCallback, useMemo } from 'react'
 import { useRouter } from 'expo-router'
@@ -9,7 +9,6 @@ import {
   ServiceProviderCategories
 } from 'services/meld/consts'
 import { TokenSymbol } from 'store/network'
-import { LoadingState } from 'common/components/LoadingState'
 import {
   CryptoCurrency,
   useSearchCryptoCurrencies
@@ -69,15 +68,14 @@ export const BuyTokenScreen = (): React.JSX.Element => {
     return _data
   }, [avax, handleBuy, selectOtherToken, usdc])
 
-  if (isLoadingCryptoCurrencies) {
-    return <LoadingState sx={{ flex: 1 }} />
-  }
-
   return (
     <ScrollScreen
       title={`What token do\nyou want to buy?`}
       contentContainerStyle={{ padding: 16 }}>
       <Space y={16} />
+      {isLoadingCryptoCurrencies && (
+        <ActivityIndicator size="small" sx={{ marginBottom: 8 }} />
+      )}
       <GroupList
         data={data}
         titleSx={{
