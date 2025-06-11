@@ -8,7 +8,7 @@ const VerifyChangePinScreen = (): React.JSX.Element => {
   const { replace } = useRouter()
   const walletId = useActiveWalletId()
 
-  const handleLoginSuccess = async (): Promise<void> => {
+  const handleVerifySuccess = async (): Promise<void> => {
     const walletSecret = await BiometricsSDK.loadWalletSecret(walletId)
     if (!walletSecret) {
       throw new Error('Failed to load wallet secret')
@@ -20,6 +20,6 @@ const VerifyChangePinScreen = (): React.JSX.Element => {
     })
   }
 
-  return <VerifyWithPinOrBiometry onVerifySuccess={handleLoginSuccess} />
+  return <VerifyWithPinOrBiometry onVerifySuccess={handleVerifySuccess} />
 }
 export default VerifyChangePinScreen

@@ -9,7 +9,7 @@ const RecoveryPhraseVerifyPinScreen = (): JSX.Element => {
   const { replace } = useRouter()
   const walletId = useActiveWalletId()
 
-  const handleLoginSuccess = (): void => {
+  const handleVerifySuccess = (): void => {
     BiometricsSDK.loadWalletSecret(walletId)
       .then(walletSecret => {
         Logger.info('walletSecret', walletSecret)
@@ -27,7 +27,7 @@ const RecoveryPhraseVerifyPinScreen = (): JSX.Element => {
       })
   }
 
-  return <VerifyWithPinOrBiometry onVerifySuccess={handleLoginSuccess} />
+  return <VerifyWithPinOrBiometry onVerifySuccess={handleVerifySuccess} />
 }
 
 export default RecoveryPhraseVerifyPinScreen
