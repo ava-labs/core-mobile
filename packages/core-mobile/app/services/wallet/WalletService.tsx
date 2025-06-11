@@ -22,6 +22,7 @@ import NetworkService from 'services/network/NetworkService'
 import { Network } from '@avalabs/core-chains-sdk'
 import { Network } from '@avalabs/core-chains-sdk'
 import SentryWrapper from 'services/sentry/SentryWrapper'
+import { Account } from 'store/account/types'
 import Logger from 'utils/Logger'
 import { UnsignedTx, utils, pvm } from '@avalabs/avalanchejs'
 import { getUnixTime, secondsToMilliseconds } from 'date-fns'
@@ -176,7 +177,7 @@ class WalletService {
 
   public async addAddress(
     accountIndex: number,
-    isTestnet: boolean
+    network: Network
   ): Promise<Record<NetworkVMType, string>> {
     if (this.walletType === WalletType.SEEDLESS) {
       const storedPubKeys = await SeedlessPubKeysStorage.retrieve()

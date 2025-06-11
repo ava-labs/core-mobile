@@ -6,7 +6,6 @@ import {
 import { AppListenerEffectAPI, AppStartListening } from 'store/types'
 import { AnyAction } from '@reduxjs/toolkit'
 import { onAppUnlocked, onLogIn, selectWalletType } from 'store/app/slice'
-import { onAppUnlocked, onLogIn, selectWalletType } from 'store/app/slice'
 import { WalletType } from 'services/wallet/types'
 import { SeedlessPubKeysStorage } from 'seedless/services/storage/SeedlessPubKeysStorage'
 import AnalyticsService from 'services/analytics/AnalyticsService'
@@ -36,6 +35,7 @@ const initAccounts = async (
 ): Promise<void> => {
   const state = listenerApi.getState()
   const isDeveloperMode = selectIsDeveloperMode(state)
+  const activeNetwork = selectActiveNetwork(state)
   const walletType = selectWalletType(state)
   const walletName = selectWalletName(state)
   let accounts: AccountCollection = {}
@@ -47,7 +47,7 @@ const initAccounts = async (
       activeAccountIndex: 0,
       activeAccountIndex: 0,
       walletType,
-      isTestnet: isDeveloperMode
+      network: activeNetwork
     })
 
     const title = await SeedlessService.getAccountName(0)
@@ -71,7 +71,7 @@ const initAccounts = async (
       index: 0,
       activeAccountIndex: 0,
       walletType,
-      isTestnet: isDeveloperMode
+      network: activeNetwork
     })
 
     const accountTitle =
@@ -136,7 +136,7 @@ const fetchRemainingAccounts = async ({
       index: i,
       activeAccountIndex,
       walletType,
-      isTestnet: isDeveloperMode
+      network: activeNetwork
     })
     const title = await SeedlessService.getAccountName(i, targetKeys)
     const accountTitle = title ?? acc.name
@@ -154,6 +154,11 @@ const reloadAccounts = async (
 ): Promise<void> => {
   const state = listenerApi.getState()
   const isDeveloperMode = selectIsDeveloperMode(state)
+
+  // all vm modules need is just the isTestnet flag
+  const network = {
+    isTestnet: isDeveloperMode
+  } as Network
 
   const accounts = selectAccounts(state)
   const reloadedAccounts = await accountService.reloadAccounts(
