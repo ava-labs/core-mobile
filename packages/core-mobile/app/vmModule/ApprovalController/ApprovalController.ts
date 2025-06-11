@@ -30,9 +30,7 @@ class ApprovalController implements VmModuleApprovalController {
   }: RequestPublicKeyParams): Promise<string> {
     if (derivationPath === undefined) {
       return Promise.reject(
-        rpcErrors.invalidParams(
-          'accountIndex and derivationPath required to get public key'
-        )
+        rpcErrors.invalidParams('derivationPath required to get public key')
       )
     }
 
