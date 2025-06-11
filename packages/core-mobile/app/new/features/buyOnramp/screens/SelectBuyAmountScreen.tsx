@@ -23,8 +23,12 @@ import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import {
   PaymentMethods,
   ServiceProviderCategories,
-  ServiceProviders
+  ServiceProviders,
+  SessionTypes
 } from 'services/meld/consts'
+import useInAppBrowser from 'common/hooks/useInAppBrowser'
+import { selectActiveAccount } from 'store/account'
+import { getAddressByNetwork } from 'store/account/utils'
 import {
   useOnRampPaymentMethod,
   useOnRampServiceProvider,
@@ -39,11 +43,13 @@ import {
 import { useGetPurchaseLimits } from '../hooks/useGetPurchaseLimits'
 import { useSearchDefaultsByCountry } from '../hooks/useSearchDefaultsByCountry'
 import { useLocale } from '../hooks/useLocale'
+import { useCreateCryptoWidget } from '../hooks/useCreateCryptoWidget'
 
 export const SelectBuyAmountScreen = (): React.JSX.Element => {
   const {
     theme: { colors }
   } = useTheme()
+  const { openUrl } = useInAppBrowser()
   const { formatIntegerCurrency, formatCurrency } = useFormatCurrency()
   const { getFromPopulatedNetwork } = useNetworks()
   const { navigate } = useRouter()
@@ -56,6 +62,7 @@ export const SelectBuyAmountScreen = (): React.JSX.Element => {
     tokens: erc20ContractTokens,
     hideZeroBalance: false
   })
+  const account = useSelector(selectActiveAccount)
   const [onRampServiceProvider, setOnRampServiceProvider] =
     useOnRampServiceProvider()
   const [sourceAmount, setSourceAmount] = useOnRampSourceAmount()
@@ -67,6 +74,40 @@ export const SelectBuyAmountScreen = (): React.JSX.Element => {
       : undefined
   })
   const { countryCode } = useLocale()
+
+  const token = useMemo(() => {
+    const t = filteredTokenList.find(
+      tk =>
+        onrampToken &&
+        (isSupportedNativeToken(onrampToken, tk) ||
+          isSupportedErc20Token(onrampToken, tk) ||
+          isBtcToken(onrampToken, tk))
+    )
+    if (t) {
+      return {
+        ...onrampToken,
+        tokenWithBalance: t
+      }
+    }
+  }, [filteredTokenList, onrampToken])
+
+  const network = useMemo(
+    () => getFromPopulatedNetwork(token?.tokenWithBalance?.networkChainId),
+    [getFromPopulatedNetwork, token?.tokenWithBalance?.networkChainId]
+  )
+
+  const walletAddress = useMemo(() => {
+    return account && network && getAddressByNetwork(account, network)
+  }, [account, network])
+
+  const { data: onrampWidget } = useCreateCryptoWidget({
+    sourceAmount: sourceAmount ?? 0,
+    destinationCurrencyCode: onrampToken?.currencyCode ?? '',
+    sourceCurrencyCode: selectedCurrency,
+    sessionType: SessionTypes.BUY,
+    walletAddress,
+    serviceProvider: onRampServiceProvider
+  })
 
   const { data: defaultsByCountry, isLoading: isLoadingDefaultsByCountry } =
     useSearchDefaultsByCountry({
@@ -138,31 +179,6 @@ export const SelectBuyAmountScreen = (): React.JSX.Element => {
   const isWithinPurchaseLimit =
     isBelowMaximumPurchaseLimit && isAboveMinimumPurchaseLimit
 
-  const isBuyAllowed = useMemo(() => {
-    return (sourceAmount ?? 0) > 0 && isWithinPurchaseLimit
-  }, [sourceAmount, isWithinPurchaseLimit])
-
-  const token = useMemo(() => {
-    const t = filteredTokenList.find(
-      tk =>
-        onrampToken &&
-        (isSupportedNativeToken(onrampToken, tk) ||
-          isSupportedErc20Token(onrampToken, tk) ||
-          isBtcToken(onrampToken, tk))
-    )
-    if (t) {
-      return {
-        ...onrampToken,
-        tokenWithBalance: t
-      }
-    }
-  }, [filteredTokenList, onrampToken])
-
-  const network = useMemo(
-    () => getFromPopulatedNetwork(token?.tokenWithBalance?.networkChainId),
-    [getFromPopulatedNetwork, token?.tokenWithBalance?.networkChainId]
-  )
-
   const tokenBalance = useMemo(() => {
     if (token?.tokenWithBalance === undefined) {
       return undefined
@@ -211,9 +227,21 @@ export const SelectBuyAmountScreen = (): React.JSX.Element => {
   }, [navigate])
 
   const onNext = useCallback((): void => {
-    // @ts-ignore TODO: make routes typesafe
-    navigate('/selectPaymentMethod')
-  }, [navigate])
+    // navigate({
+    //   // @ts-ignore TODO: make routes typesafe
+    //   pathname: '/selectPaymentMethod',
+    //   params: { url: onrampWidget?.widgetUrl }
+    // })
+    onrampWidget?.widgetUrl && openUrl(onrampWidget.widgetUrl)
+  }, [onrampWidget?.widgetUrl, openUrl])
+
+  const isBuyAllowed = useMemo(() => {
+    return (
+      (sourceAmount ?? 0) > 0 &&
+      isWithinPurchaseLimit &&
+      onrampWidget?.widgetUrl !== undefined
+    )
+  }, [sourceAmount, isWithinPurchaseLimit, onrampWidget?.widgetUrl])
 
   const renderFooter = useCallback(() => {
     return (

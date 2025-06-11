@@ -20,6 +20,10 @@ import {
   CreateCryptoQuoteParams,
   CreateCryptoQuoteResponse
 } from 'features/buyOnramp/hooks/useCreateCryptoQuote'
+import {
+  CreateCryptoWidgetParams,
+  CreateCryptoWidgetResponse
+} from 'features/buyOnramp/hooks/useCreateCryptoWidget'
 
 if (!Config.PROXY_URL)
   Logger.warn('PROXY_URL is missing in env file. Meld service disabled.')
@@ -221,6 +225,8 @@ class MeldService {
   }
 
   async createCryptoQuote({
+    customerId,
+    externalCustomerId,
     sourceAmount,
     walletAddress,
     countryCode,
@@ -233,6 +239,8 @@ class MeldService {
       const url = new URL(baseURL + '/payments/crypto/quote')
 
       const body = {
+        customerId,
+        externalCustomerId,
         countryCode,
         sourceCurrencyCode,
         destinationCurrencyCode,
@@ -240,6 +248,52 @@ class MeldService {
         sourceAmount,
         walletAddress,
         subdivision
+      }
+
+      const response = await fetch(url.toString(), {
+        method: 'POST',
+        body: JSON.stringify(body)
+      })
+      return response.json()
+    } catch {
+      return undefined
+    }
+  }
+
+  async createCryptoWidget({
+    customerId,
+    externalCustomerId,
+    externalSessionId,
+    sessionType,
+    serviceProvider,
+    redirectUrl,
+    sourceAmount,
+    walletAddress,
+    countryCode,
+    sourceCurrencyCode,
+    destinationCurrencyCode,
+    paymentMethodType
+  }: CreateCryptoWidgetParams): Promise<
+    CreateCryptoWidgetResponse | undefined
+  > {
+    try {
+      const url = new URL(baseURL + '/crypto/session/widget')
+
+      const body = {
+        customerId,
+        externalCustomerId,
+        externalSessionId,
+        sessionType,
+        sessionData: {
+          serviceProvider,
+          redirectUrl,
+          countryCode,
+          sourceCurrencyCode,
+          destinationCurrencyCode,
+          paymentMethodType,
+          sourceAmount,
+          walletAddress
+        }
       }
 
       const response = await fetch(url.toString(), {
