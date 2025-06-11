@@ -11,7 +11,9 @@ import { now } from 'moment'
 import {
   AvalancheTransactionRequest,
   BtcTransactionRequest,
-  Wallet
+  PubKeyType,
+  Wallet,
+  SolanaTransactionRequest
 } from 'services/wallet/types'
 import { BaseWallet, TransactionRequest } from 'ethers'
 import { Network, NetworkVMType } from '@avalabs/core-chains-sdk'
@@ -37,6 +39,7 @@ import slip10 from 'micro-key-producer/slip10.js'
 import { mnemonicToSeed } from 'bip39'
 import { fromSeed } from 'bip32'
 import { hex } from '@scure/base'
+import { SolanaProvider } from '@avalabs/core-wallets-sdk'
 
 export class MnemonicWallet implements Wallet {
   #mnemonic?: string
@@ -366,6 +369,30 @@ export class MnemonicWallet implements Wallet {
       chain: chainAlias
     })
     return utils.base58check.encode(new Uint8Array(buffer))
+  }
+
+  public async signSolanaTransaction({
+    accountIndex,
+    transaction,
+    network,
+    provider
+  }: {
+    accountIndex: number
+    transaction: SolanaTransactionRequest
+    network: Network
+    provider: SolanaProvider
+  }): Promise<string> {
+    const signer = await this.getSigner({
+      accountIndex,
+      network,
+      provider
+    })
+
+    if (!(signer instanceof BaseWallet)) {
+      throw new Error('Unable to sign solana transaction: invalid signer')
+    }
+
+    return await provider.signTransaction(transaction.serializedTx, signer.privateKey)
   }
 }
 

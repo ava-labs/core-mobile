@@ -67,6 +67,9 @@ export enum RpcMethod {
   AVALANCHE_SIGN_MESSAGE = 'avalanche_signMessage',
   AVALANCHE_RENAME_ACCOUNT = 'avalanche_renameAccount',
 
+    /* Solana methods */
+    SOLANA_SIGN_AND_SEND_TRANSACTION = 'solana_signAndSendTransaction',
+
   /* custom methods that only apply to Wallet Connect*/
   WC_SESSION_REQUEST = 'wc_sessionRequest'
 }
