@@ -397,6 +397,7 @@ const TrackTokenDetailScreen = (): JSX.Element => {
         )}
       </View>
       <TokenDetailChart
+        ranges={ranges}
         chartData={chartData}
         negative={ranges.diffValue < 0}
         onDataSelected={handleDataSelected}

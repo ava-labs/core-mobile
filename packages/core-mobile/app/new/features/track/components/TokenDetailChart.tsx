@@ -15,12 +15,21 @@ import SparklineChart from './SparklineChart'
 
 export const TokenDetailChart = ({
   chartData,
+  ranges,
   negative,
   onDataSelected,
   onGestureStart,
   onGestureEnd
 }: {
   negative: boolean
+  ranges: {
+    minDate: number
+    maxDate: number
+    minPrice: number
+    maxPrice: number
+    diffValue: number
+    percentChange: number
+  }
   chartData: { date: Date; value: number }[] | undefined
   onDataSelected?: (p: GraphPoint) => void
   onGestureStart?: () => void
@@ -48,8 +57,8 @@ export const TokenDetailChart = ({
   }
 
   const chartLabels = useMemo(() => {
-    const min = Math.min(...(chartData?.map(d => d.value) ?? []))
-    const max = Math.max(...(chartData?.map(d => d.value) ?? []))
+    const min = ranges.minPrice
+    const max = ranges.maxPrice
     const range = max - min
     const point1 = max
     const point2 = min + (2 * range) / 3
@@ -64,7 +73,7 @@ export const TokenDetailChart = ({
         notation: 'engineering'
       })
     )
-  }, [chartData, selectedCurrency])
+  }, [ranges.maxPrice, ranges.minPrice, selectedCurrency])
 
   return (
     <View>
