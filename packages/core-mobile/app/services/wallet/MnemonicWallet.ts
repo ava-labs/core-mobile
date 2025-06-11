@@ -41,18 +41,6 @@ import { hex } from '@scure/base'
 export class MnemonicWallet implements Wallet {
   #mnemonic?: string
 
-  /**
-   * Derivation path: m/44'/60'/0'
-   * @private
-   */
-  #xpub?: string
-
-  /**
-   * Derivation path: m/44'/9000'/0'
-   * @private
-   */
-  #xpubXP?: string
-
   private async getBtcSigner(
     accountIndex: number,
     provider: BitcoinProvider
@@ -135,24 +123,6 @@ export class MnemonicWallet implements Wallet {
 
   public set mnemonic(mnemonic: string | undefined) {
     this.#mnemonic = mnemonic
-  }
-
-  public get xpub(): string {
-    assertNotUndefined(this.#xpub, 'no public key (xpub) available')
-    return this.#xpub
-  }
-
-  public set xpub(xpub: string | undefined) {
-    this.#xpub = xpub
-  }
-
-  public get xpubXP(): string {
-    assertNotUndefined(this.#xpubXP, 'no public key (xpubXP) available')
-    return this.#xpubXP
-  }
-
-  public set xpubXP(xpubXP: string | undefined) {
-    this.#xpubXP = xpubXP
   }
 
   /** WALLET INTERFACE IMPLEMENTATION **/
