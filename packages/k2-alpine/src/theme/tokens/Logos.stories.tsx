@@ -30,6 +30,8 @@ export const PartnerLogos = (): JSX.Element => {
       Logos.PartnerLogos.Halliday,
       Logos.PartnerLogos.Moonpay,
       Logos.PartnerLogos.Stripe,
+      Logos.PartnerLogos.Topper,
+      Logos.PartnerLogos.Unlimit,
       theme.isDark
         ? Logos.PartnerLogos.PoweredByCircleDark
         : Logos.PartnerLogos.PoweredByCircleLight,

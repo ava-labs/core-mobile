@@ -8,6 +8,8 @@ import CoinbasePay from '../../assets/logos/coinbase-pay.svg'
 import Halliday from '../../assets/logos/halliday.svg'
 import Moonpay from '../../assets/logos/moonpay.svg'
 import Stripe from '../../assets/logos/stripe.svg'
+import Topper from '../../assets/logos/topper.svg'
+import Unlimit from '../../assets/logos/unlimit.svg'
 import PoweredByCircleDark from '../../assets/logos/powered-by-circle-dark.svg'
 import PoweredByCircleLight from '../../assets/logos/powered-by-circle-light.svg'
 import PoweredByParaswapDark from '../../assets/logos/powered-by-paraswap-dark.svg'
@@ -28,6 +30,8 @@ export const Logos = {
     PoweredByCircleDark: PoweredByCircleDark,
     PoweredByCircleLight: PoweredByCircleLight,
     PoweredByParaswapDark: PoweredByParaswapDark,
-    PoweredByParaswapLight: PoweredByParaswapLight
+    PoweredByParaswapLight: PoweredByParaswapLight,
+    Topper,
+    Unlimit
   }
 }

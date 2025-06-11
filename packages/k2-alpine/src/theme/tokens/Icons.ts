@@ -81,6 +81,7 @@ import IconSwapVertical from '../../assets/icons/swap_vertical.svg'
 import IconBalanceRefresh from '../../assets/icons/balance_refresh.svg'
 import IconCategory from '../../assets/icons/category.svg'
 import IconQRScanCustom from '../../assets/icons/qr_scan_custom.svg'
+import IconPace from '../../assets/icons/pace.svg'
 // Transaction types
 import IconTxTypeAdd from '../../assets/icons/tx-type-add.svg'
 import IconTxTypeAdvanceTime from '../../assets/icons/advance-time.svg'
@@ -299,7 +300,8 @@ export const Icons = {
     WalletClosed: IconWalletClosed,
     SwapVertical: IconSwapVertical,
     BalanceRefresh: IconBalanceRefresh,
-    Category: IconCategory
+    Category: IconCategory,
+    Pace: IconPace
   },
   RecoveryMethod: {
     Passkey: IconPasskey,
