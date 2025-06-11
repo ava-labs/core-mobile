@@ -184,7 +184,7 @@ const TrackTokenDetailScreen = (): JSX.Element => {
       if (contractAddress === undefined) return
       navigateToBuy({
         showAvaxWarning: true,
-        tokenOrAddress: contractAddress
+        address: contractAddress
       })
     },
     [navigateToBuy]

@@ -11,7 +11,8 @@ import { useGetBuyableCryptoCurrency } from './useGetBuyableCryptoCurrency'
 
 type NavigateToBuyParams = {
   showAvaxWarning?: boolean
-  tokenOrAddress?: LocalTokenWithBalance | string
+  token?: LocalTokenWithBalance
+  address?: string
 }
 
 export const useBuy = (): {
@@ -23,7 +24,7 @@ export const useBuy = (): {
   const [_, setOnrampToken] = useOnRampToken()
   const isMeldIntegrationBlocked = useSelector(selectIsMeldIntegrationBlocked)
   const { data: cryptoCurrencies } = useSearchCryptoCurrencies({
-    categories: [ServiceProviderCategories.CryptoOnramp]
+    categories: [ServiceProviderCategories.CRYPTO_ONRAMP]
   })
   const { getBuyableCryptoCurrency } = useGetBuyableCryptoCurrency()
 
@@ -45,7 +46,7 @@ export const useBuy = (): {
 
   const navigateToBuy = useCallback(
     (props?: NavigateToBuyParams) => {
-      const { tokenOrAddress, showAvaxWarning } = props ?? {}
+      const { token, address, showAvaxWarning } = props ?? {}
       if (isMeldIntegrationBlocked) {
         navigate({
           // @ts-ignore TODO: make routes typesafe
@@ -55,8 +56,8 @@ export const useBuy = (): {
         return
       }
 
-      if (tokenOrAddress) {
-        const cryptoCurrency = getBuyableCryptoCurrency(tokenOrAddress)
+      if (token || address) {
+        const cryptoCurrency = getBuyableCryptoCurrency(token, address)
         setOnrampToken(cryptoCurrency)
         // @ts-ignore TODO: make routes typesafe
         navigate('/buyOnramp/selectAmount')

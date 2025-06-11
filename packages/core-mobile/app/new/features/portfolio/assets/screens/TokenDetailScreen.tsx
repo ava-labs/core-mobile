@@ -194,7 +194,7 @@ export const TokenDetailScreen = (): React.JSX.Element => {
       buttons.push({
         title: ActionButtonTitle.Buy,
         icon: 'buy',
-        onPress: () => navigateToBuy({ tokenOrAddress: token })
+        onPress: () => navigateToBuy({ token })
       })
     }
 

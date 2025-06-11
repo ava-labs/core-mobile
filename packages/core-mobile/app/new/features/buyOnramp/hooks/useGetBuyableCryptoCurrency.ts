@@ -1,37 +1,37 @@
 import { LocalTokenWithBalance } from 'store/balance'
 import { useCallback } from 'react'
 import { ServiceProviderCategories } from '../consts'
-import { isBtcToken, isSupportedToken, isSupportedNativeToken } from '../utils'
+import { isTokenSupportedForBuying } from '../utils'
 import { CryptoCurrency } from '../types'
 import { useSearchCryptoCurrencies } from './useSearchCryptoCurrencies'
 
 export const useGetBuyableCryptoCurrency = (): {
   getBuyableCryptoCurrency: (
-    tokenOrAddress: LocalTokenWithBalance | string
+    token?: LocalTokenWithBalance,
+    address?: string
   ) => CryptoCurrency | undefined
 } => {
   const { data: cryptoCurrencies } = useSearchCryptoCurrencies({
-    categories: [ServiceProviderCategories.CryptoOnramp]
+    categories: [ServiceProviderCategories.CRYPTO_ONRAMP]
   })
 
   const getBuyableCryptoCurrency = useCallback(
-    (tokenOrAddress: LocalTokenWithBalance | string) => {
-      if (!tokenOrAddress || !cryptoCurrencies) {
+    (token?: LocalTokenWithBalance, address?: string) => {
+      if ((!token && !address) || !cryptoCurrencies) {
         return undefined
       }
 
-      if (typeof tokenOrAddress === 'string') {
+      if (address) {
         return cryptoCurrencies.find(
-          crypto => crypto.contractAddress === tokenOrAddress
+          crypto => crypto.contractAddress === address
         )
       }
-      return cryptoCurrencies.find(crypto => {
-        return (
-          isSupportedNativeToken(crypto, tokenOrAddress) ||
-          isSupportedToken(crypto, tokenOrAddress) ||
-          isBtcToken(crypto, tokenOrAddress)
-        )
-      })
+
+      if (token) {
+        return cryptoCurrencies.find(crypto => {
+          return isTokenSupportedForBuying(crypto, token)
+        })
+      }
     },
     [cryptoCurrencies]
   )

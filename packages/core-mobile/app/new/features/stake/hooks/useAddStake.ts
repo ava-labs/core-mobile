@@ -1,16 +1,11 @@
 import { showAlert } from '@avalabs/k2-alpine'
 import { useRouter } from 'expo-router'
-import {
-  MELD_CURRENCY_CODES,
-  ServiceProviderCategories
-} from 'features/buyOnramp/consts'
 import { useBuy } from 'features/buyOnramp/hooks/useBuy'
-import { useSearchCryptoCurrencies } from 'features/buyOnramp/hooks/useSearchCryptoCurrencies'
+import { useIsAvaxCSupported } from 'features/buyOnramp/hooks/useIsAvaxCSupported'
 import { useNavigateToSwap } from 'features/swap/hooks/useNavigateToSwap'
 import { useHasEnoughAvaxToStake } from 'hooks/earn/useHasEnoughAvaxToStake'
 import useStakingParams from 'hooks/earn/useStakingParams'
 import { useCallback, useEffect, useState } from 'react'
-import { useMemo } from 'react'
 
 export const useAddStake = (): {
   addStake: () => void
@@ -22,21 +17,11 @@ export const useAddStake = (): {
   const { minStakeAmount } = useStakingParams()
   const { navigateToSwap } = useNavigateToSwap()
   const { navigateToBuyAvax } = useBuy()
-  const { data: cryptoCurrencies } = useSearchCryptoCurrencies({
-    categories: [ServiceProviderCategories.CryptoOnramp]
-  })
-
-  const cryptoCurrency = useMemo(
-    () =>
-      cryptoCurrencies?.find(
-        crypto => crypto.currencyCode === MELD_CURRENCY_CODES.AVAXC
-      ),
-    [cryptoCurrencies]
-  )
+  const isAvaxCSupported = useIsAvaxCSupported()
 
   const showNotEnoughAvaxAlert = useCallback((): void => {
     const buttons = []
-    if (cryptoCurrency) {
+    if (isAvaxCSupported) {
       buttons.push({
         text: 'Buy AVAX',
         onPress: navigateToBuyAvax
@@ -56,7 +41,7 @@ export const useAddStake = (): {
         'Staking your AVAX in the Avalanche Network allows you to earn up to 10% APY.',
       buttons
     })
-  }, [minStakeAmount, navigateToSwap, navigateToBuyAvax, cryptoCurrency])
+  }, [isAvaxCSupported, navigateToSwap, minStakeAmount, navigateToBuyAvax])
 
   useEffect(() => {
     setCanAddStake(hasEnoughAvax !== undefined)

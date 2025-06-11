@@ -45,7 +45,7 @@ const TrendingTokensScreen = ({
     (initialTokenIdTo?: string) => {
       navigateToBuy({
         showAvaxWarning: true,
-        tokenOrAddress: initialTokenIdTo
+        address: initialTokenIdTo
       })
     },
     [navigateToBuy]

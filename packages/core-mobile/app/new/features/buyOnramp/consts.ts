@@ -1,9 +1,9 @@
 export enum ServiceProviderCategories {
-  BankLinking = 'BANK_LINKING',
-  CryptoOnramp = 'CRYPTO_ONRAMP',
-  CryptoOfframp = 'CRYPTO_OFFRAMP',
-  CryptoTransfer = 'CRYPTO_TRANSFER',
-  FiatPayments = 'FIAT_PAYMENTS'
+  BANK_LINKING = 'BANK_LINKING',
+  CRYPTO_ONRAMP = 'CRYPTO_ONRAMP',
+  CRYPTO_OFFRAMP = 'CRYPTO_OFFRAMP',
+  CRYPTO_TRANSFER = 'CRYPTO_TRANSFER',
+  FIAT_PAYMENTS = 'FIAT_PAYMENTS'
 }
 
 export enum ServiceProviderStatus {

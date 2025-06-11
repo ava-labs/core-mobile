@@ -18,7 +18,7 @@ import { LogoWithNetwork } from 'features/portfolio/assets/components/LogoWithNe
 import { LoadingState } from 'common/components/LoadingState'
 import { useOnRampToken } from '../store'
 import { useSearchCryptoCurrencies } from '../hooks/useSearchCryptoCurrencies'
-import { isBtcToken, isSupportedToken, isSupportedNativeToken } from '../utils'
+import { isTokenSupportedForBuying } from '../utils'
 import { CryptoCurrency } from '../types'
 import { MELD_CURRENCY_CODES, ServiceProviderCategories } from '../consts'
 
@@ -39,7 +39,7 @@ export const SelectBuyTokenScreen = (): React.JSX.Element => {
   })
   const { data: cryptoCurrencies, isLoading: isLoadingCryptoCurrencies } =
     useSearchCryptoCurrencies({
-      categories: [ServiceProviderCategories.CryptoOnramp]
+      categories: [ServiceProviderCategories.CRYPTO_ONRAMP]
     })
 
   const handleSelectToken = (token: CryptoCurrency): void => {
@@ -50,11 +50,8 @@ export const SelectBuyTokenScreen = (): React.JSX.Element => {
 
   const supportedCryptoCurrencies = useMemo(() => {
     return cryptoCurrencies?.reduce((acc, crypto) => {
-      const token = filteredTokenList.find(
-        tk =>
-          isSupportedNativeToken(crypto, tk) ||
-          isSupportedToken(crypto, tk) ||
-          isBtcToken(crypto, tk)
+      const token = filteredTokenList.find(tk =>
+        isTokenSupportedForBuying(crypto, tk)
       )
       if (token) {
         acc.push({

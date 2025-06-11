@@ -19,7 +19,7 @@ export const useSearchCryptoCurrencies = ({
   'countries' | 'serviceProviders'
 >): UseQueryResult<CryptoCurrency[], Error> => {
   const { data: serviceProvidersData } = useSearchServiceProviders({
-    categories: [ServiceProviderCategories.CryptoOnramp]
+    categories: [ServiceProviderCategories.CRYPTO_ONRAMP]
   })
   const serviceProviders = serviceProvidersData?.map(
     serviceProvider => serviceProvider.serviceProvider

@@ -23,3 +23,11 @@ export const isBtcToken = (
   crypto: CryptoCurrency,
   token: LocalTokenWithBalance
 ): boolean => crypto.currencyCode === 'BTC' && token.symbol === 'BTC'
+
+export const isTokenSupportedForBuying = (
+  crypto: CryptoCurrency,
+  token: LocalTokenWithBalance
+): boolean =>
+  isSupportedNativeToken(crypto, token) ||
+  isSupportedToken(crypto, token) ||
+  isBtcToken(crypto, token)
