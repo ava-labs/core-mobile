@@ -15,6 +15,18 @@ import ModuleManager from 'vmModule/ModuleManager'
 import { mapToVmNetwork } from 'vmModule/utils/mapToVmNetwork'
 import NetworkService from '../NetworkService'
 
+export function getSVMProvider(
+  network?: Network
+): ReturnType<typeof ModuleManager.solanaModule.getProvider> {
+  if (network?.vmName !== NetworkVMType.SVM) {
+    throw new Error(
+      `Cannot get svm provider for network type: ${network?.vmName}`
+    )
+  }
+
+  return ModuleManager.solanaModule.getProvider(mapToVmNetwork(network))
+}
+
 export function getBitcoinProvider(
   isTest: boolean | undefined
 ): Promise<BitcoinProvider> {

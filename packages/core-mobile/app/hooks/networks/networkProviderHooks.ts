@@ -1,7 +1,8 @@
 import {
   Avalanche,
   BitcoinProvider,
-  JsonRpcBatchInternal
+  JsonRpcBatchInternal,
+  SolanaProvider
 } from '@avalabs/core-wallets-sdk'
 import { Network } from '@avalabs/core-chains-sdk'
 import { useEffect, useState } from 'react'
@@ -10,12 +11,22 @@ import {
   getAvalancheXpProvider,
   getBitcoinProvider,
   getEthereumProvider,
-  getEvmProvider
+  getEvmProvider,
+  getSVMProvider
 } from 'services/network/utils/providerUtils'
 import Logger from 'utils/Logger'
 import { useSelector } from 'react-redux'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { useNetworks } from './useNetworks'
+
+export function useSVMProvider(network?: Network): SolanaProvider | undefined {
+  const [svmProvider, setSVMProvider] = useState<SolanaProvider>()
+  useEffect(() => {
+    network && getSVMProvider(network).then(setSVMProvider).catch(Logger.error)
+  }, [network])
+
+  return svmProvider
+}
 
 // this will return an EVM provider (that uses the network.rpcUrl)
 export function useEVMProvider(
