@@ -1,6 +1,7 @@
 import {
   Avalanche,
   BitcoinProvider,
+  isSolanaProvider,
   JsonRpcBatchInternal
 } from '@avalabs/core-wallets-sdk'
 import {
@@ -34,7 +35,11 @@ import {
 import { UTCDate } from '@date-fns/utc'
 import { nanoToWei } from 'utils/units/converter'
 import { SpanName } from 'services/sentry/types'
-import { isAvalancheTransactionRequest, isBtcTransactionRequest } from './utils'
+import {
+  isAvalancheTransactionRequest,
+  isBtcTransactionRequest,
+  isSolanaTransactionRequest
+} from './utils'
 import WalletInitializer from './WalletInitializer'
 import WalletFactory from './WalletFactory'
 import MnemonicWalletInstance from './MnemonicWallet'
@@ -113,6 +118,20 @@ class WalletService {
             )
 
           return wallet.signAvalancheTransaction({
+            accountIndex,
+            transaction,
+            network,
+            provider
+          })
+        }
+
+        if (isSolanaTransactionRequest(transaction)) {
+          if (!isSolanaProvider(provider))
+            throw new Error(
+              'Unable to sign solana transaction: wrong provider obtained'
+            )
+
+          return wallet.signSolanaTransaction({
             accountIndex,
             transaction,
             network,

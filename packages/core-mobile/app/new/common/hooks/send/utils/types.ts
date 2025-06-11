@@ -3,7 +3,8 @@ import {
   NetworkTokenWithBalance,
   TokenWithBalanceAVM,
   TokenWithBalanceBTC,
-  TokenWithBalancePVM
+  TokenWithBalancePVM,
+  TokenWithBalanceSVM
 } from '@avalabs/vm-module-types'
 import { Dispatch } from 'react'
 import { Account } from 'store/account'
@@ -48,12 +49,18 @@ export type PvmCapableAccount = EnsureDefined<
   'addressPVM' | 'addressCoreEth'
 >
 
+export type SvmCapableAccount = EnsureDefined<Account, 'addressSVM'>
+
 export type AdapterOptionsP = {
   account: PvmCapableAccount
 }
 
 export type AdapterOptionsX = {
   account: AvmCapableAccount
+}
+
+export type AdapterOptionsSVM = {
+  account: SvmCapableAccount
 }
 
 export type SendReturnType = {
@@ -82,6 +89,8 @@ export type SendAdapterBTC = SendAdapter<AdapterOptionsBTC, TokenWithBalanceBTC>
 export type SendAdapterPVM = SendAdapter<AdapterOptionsP, TokenWithBalancePVM>
 
 export type SendAdapterAVM = SendAdapter<AdapterOptionsX, TokenWithBalanceAVM>
+
+export type SendAdapterSVM = SendAdapter<AdapterOptionsSVM, TokenWithBalanceSVM>
 
 export type SendAdapterCollectible = SendAdapter<
   AdapterOptionsEVM,

@@ -14,11 +14,13 @@ import {
   TypedData,
   TypedDataV1
 } from '@avalabs/vm-module-types'
+import { SolanaProvider } from '@avalabs/core-wallets-sdk'
 
 export type SignTransactionRequest =
   | TransactionRequest
   | BtcTransactionRequest
   | AvalancheTransactionRequest
+  | SolanaTransactionRequest
 
 export interface BtcTransactionRequest {
   inputs: BitcoinInputUTXO[]
@@ -29,6 +31,10 @@ export interface AvalancheTransactionRequest {
   tx: UnsignedTx
   externalIndices?: number[]
   internalIndices?: number[]
+}
+
+export interface SolanaTransactionRequest {
+  serializedTx: string
 }
 
 /**
@@ -47,7 +53,7 @@ export type PubKeyType = {
 export type AddDelegatorProps = {
   accountIndex: number
   avaxXPNetwork: Network
-  // Id of the node to delegate. starts with “NodeID-”
+  // Id of the node to delegate. starts with "NodeID-"
   nodeId: string
   //Amount to be delegated in nAVAX
   stakeAmountInNAvax: bigint
@@ -236,4 +242,19 @@ export interface Wallet {
     accountIndex: number
     provXP: Avalanche.JsonRpcProvider
   }): Promise<Avalanche.WalletVoid | Avalanche.StaticSigner>
+
+  /**
+   * Signs a Solana transaction using the specified account, transaction request, network, and Solana provider.
+   */
+  signSolanaTransaction({
+    accountIndex,
+    transaction,
+    network,
+    provider
+  }: {
+    accountIndex: number
+    transaction: SolanaTransactionRequest
+    network: Network
+    provider: SolanaProvider
+  }): Promise<string>
 }

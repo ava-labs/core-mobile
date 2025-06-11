@@ -16,6 +16,7 @@ import { transactionSnackbar } from 'new/common/utils/toast'
 import { isInAppRequest } from 'store/rpc/utils/isInAppRequest'
 import { RequestContext } from 'store/rpc/types'
 import { NavigationPresentationMode } from 'new/common/types'
+import { solanaSendTransaction } from 'vmModule/handlers/solanaSendTransaction'
 import { avalancheSignTransaction } from '../handlers/avalancheSignTransaction'
 import { ethSendTransaction } from '../handlers/ethSendTransaction'
 import { signMessage } from '../handlers/signMessage'
@@ -139,6 +140,16 @@ class ApprovalController implements VmModuleApprovalController {
             avalancheSignTransaction({
               unsignedTxJson: signingData.unsignedTxJson,
               ownSignatureIndices: signingData.ownSignatureIndices,
+              account,
+              network,
+              resolve
+            })
+            break
+          }
+
+          case RpcMethod.SOLANA_SIGN_AND_SEND_TRANSACTION: {
+            solanaSendTransaction({
+              transactionData: signingData.data,
               account,
               network,
               resolve
