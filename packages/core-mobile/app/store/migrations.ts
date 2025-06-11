@@ -1,4 +1,4 @@
-import { ChainId } from '@avalabs/core-chains-sdk'
+import { ChainId, Network } from '@avalabs/core-chains-sdk'
 import BiometricsSDK from 'utils/BiometricsSDK'
 import {
   Contact,
@@ -11,6 +11,8 @@ import { AddressBookState } from 'store/addressBook'
 import { uuid } from 'utils/uuid'
 import { CORE_MOBILE_WALLET_ID } from 'services/walletconnectv2/types'
 import { ChannelId } from 'services/notifications/channels'
+import WalletService from 'services/wallet/WalletService'
+import { NetworkVMType } from '@avalabs/vm-module-types'
 import { initialState as watchlistInitialState } from './watchlist'
 import {
   DefaultFeatureFlagConfig,
@@ -338,6 +340,34 @@ export const migrations = {
       }
     }
     delete newState.nft
+    return newState
+  },
+  21: async (state: any) => {
+    const newState = { ...state }
+    const accountState = newState.account as AccountsState
+    const isDeveloperMode = state.settings.advanced.developerMode
+
+    // all vm modules need is just the isTestnet flag
+    const network = {
+      isTestnet: isDeveloperMode
+    } as Network
+
+    const entries = Object.entries(accountState.accounts)
+    for (const [accIndex, account] of entries) {
+      if (!account.addressSVM) {
+        const addresses = await WalletService.getAddresses({
+          accountIndex: account.index,
+          network
+        })
+        const addressSVM = addresses[NetworkVMType.SVM]
+        accountState.accounts[Number(accIndex)] = {
+          ...account,
+          addressSVM
+        } as Account
+      }
+    }
+
+    newState.account = accountState
     return newState
   }
 }

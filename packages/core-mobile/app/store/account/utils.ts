@@ -46,7 +46,7 @@ export function getAddressByNetwork(
     case NetworkVMType.CoreEth:
       return account.addressCoreEth
     case NetworkVMType.SVM:
-      return '52C9T2T7JRojtxumYnYZhyUmrN7kqzvCLc4Ksvjk7TxD' // TODO: replace with accountSVM when thats
+      return account.addressSVM
     default:
       throw new Error('unsupported network ' + network.vmName)
   }
