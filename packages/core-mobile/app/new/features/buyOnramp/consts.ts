@@ -59,6 +59,7 @@ export enum PaymentMethods {
   SHOPEEPAY = 'ShopeePay',
   PICPAY = 'PicPay',
   PAYID = 'PayID',
+  PAYPAL = 'PayPal',
   BOOST = 'Boost',
   BANCONTACT = 'Bancontact',
   BRIVA = 'BRIVA',
@@ -115,7 +116,7 @@ export enum PaymentMethods {
 }
 
 export enum PaymentTypes {
-  Card,
+  CARD,
   BANK_TRANSFER,
   MOBILE_WALLET,
   LOCAL,
