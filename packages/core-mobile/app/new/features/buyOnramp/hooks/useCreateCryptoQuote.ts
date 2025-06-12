@@ -4,6 +4,8 @@ import { PaymentMethods, ServiceProviders } from 'services/meld/consts'
 import { useLocale } from './useLocale'
 
 export type CreateCryptoQuoteParams = {
+  customerId?: string
+  externalCustomerId?: string
   walletAddress?: string
   sourceAmount: number
   sourceCurrencyCode: string
@@ -43,6 +45,8 @@ export type CreateCryptoQuoteResponse = {
 }
 
 export const useCreateCryptoQuote = ({
+  customerId,
+  externalCustomerId,
   walletAddress,
   sourceAmount,
   destinationCurrencyCode,
@@ -62,10 +66,14 @@ export const useCreateCryptoQuote = ({
       walletAddress,
       sourceAmount,
       destinationCurrencyCode,
-      sourceCurrencyCode
+      sourceCurrencyCode,
+      customerId,
+      externalCustomerId
     ],
     queryFn: () =>
       MeldService.createCryptoQuote({
+        customerId,
+        externalCustomerId,
         walletAddress,
         sourceAmount,
         countryCode,

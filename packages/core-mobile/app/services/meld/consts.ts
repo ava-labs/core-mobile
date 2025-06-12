@@ -165,3 +165,9 @@ export enum ServiceProviders {
   YELLOWCARD = 'Yellow Card',
   YODLEE = 'Yodlee'
 }
+
+export enum SessionTypes {
+  BUY = 'BUY',
+  SELL = 'SELL',
+  TRANSFER = 'TRANSFER'
+}
