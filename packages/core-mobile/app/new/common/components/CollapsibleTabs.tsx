@@ -6,11 +6,13 @@ import {
   OnTabChangeCallback,
   TabBarProps,
   Tabs,
-  useCurrentTabScrollY
+  useCurrentTabScrollY,
+  useHeaderMeasurements
 } from 'react-native-collapsible-tab-view'
 import Animated, {
+  Extrapolation,
+  interpolate,
   runOnJS,
-  SharedValue,
   useAnimatedReaction,
   useAnimatedStyle,
   withTiming
@@ -99,18 +101,25 @@ const CollapsibleTabWrapper = ({
 
 const ContentWrapper = ({
   children,
-  bottomOffset,
   height
 }: {
   children: React.ReactNode
-  bottomOffset: SharedValue<number>
   height: number
 }): JSX.Element => {
+  const scrollY = useCurrentTabScrollY()
+  const header = useHeaderMeasurements()
+
   const animatedStyle = useAnimatedStyle(() => {
+    const translateY = interpolate(
+      scrollY.value,
+      [0, header.height],
+      [-header.height / 2, 0],
+      Extrapolation.CLAMP
+    )
     return {
       transform: [
         {
-          translateY: withTiming(-bottomOffset.value, {
+          translateY: withTiming(translateY, {
             ...ANIMATED.TIMING_CONFIG,
             duration: 250
           })

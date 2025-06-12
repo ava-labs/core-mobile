@@ -10,9 +10,9 @@ import { ErrorState } from 'common/components/ErrorState'
 import { LoadingState } from 'common/components/LoadingState'
 import { Space } from 'common/components/Space'
 import { getListItemEnteringAnimation } from 'common/utils/animations'
-import React, { FC, memo, useCallback, useMemo } from 'react'
-import { ViewStyle } from 'react-native'
-import Animated, { SharedValue } from 'react-native-reanimated'
+import React, { FC, memo, useCallback, useMemo, useState } from 'react'
+import { LayoutChangeEvent, LayoutRectangle, ViewStyle } from 'react-native'
+import Animated from 'react-native-reanimated'
 import { useSelector } from 'react-redux'
 import { selectActiveAccount } from 'store/account'
 import {
@@ -34,7 +34,6 @@ interface Props {
   goToTokenManagement: () => void
   goToBuy: () => void
   onScrollResync: () => void
-  bottomOffset: SharedValue<number>
 }
 
 const AssetsScreen: FC<Props> = ({
@@ -42,8 +41,7 @@ const AssetsScreen: FC<Props> = ({
   goToTokenDetail,
   goToTokenManagement,
   goToBuy,
-  onScrollResync,
-  bottomOffset
+  onScrollResync
 }): JSX.Element => {
   const { data, filter, sort, view, refetch, isRefetching, isLoading } =
     useAssetsFilterAndSort()
@@ -55,6 +53,8 @@ const AssetsScreen: FC<Props> = ({
   )
   const isBalanceLoading = useSelector(selectIsLoadingBalances)
   const isRefetchingBalance = useSelector(selectIsRefetchingBalances)
+
+  const [headerLayout, setHeaderLayout] = useState<LayoutRectangle | null>(null)
 
   const handleManageList = useCallback(
     (indexPath: IndexPath): void => {
@@ -141,16 +141,20 @@ const AssetsScreen: FC<Props> = ({
   const renderEmpty = useCallback(() => {
     return (
       <CollapsibleTabs.ContentWrapper
-        bottomOffset={bottomOffset}
-        height={Number(containerStyle.minHeight)}>
+        height={Number(containerStyle.minHeight) - (headerLayout?.height ?? 0)}>
         {emptyComponent}
       </CollapsibleTabs.ContentWrapper>
     )
-  }, [bottomOffset, containerStyle.minHeight, emptyComponent])
+  }, [containerStyle.minHeight, emptyComponent, headerLayout?.height])
+
+  const onHeaderLayout = useCallback((e: LayoutChangeEvent) => {
+    setHeaderLayout(e.nativeEvent.layout)
+  }, [])
 
   const header = useMemo(() => {
     return (
       <View
+        onLayout={onHeaderLayout}
         style={{
           paddingHorizontal: 16
         }}>
@@ -162,7 +166,7 @@ const AssetsScreen: FC<Props> = ({
         />
       </View>
     )
-  }, [filter, sort, view, handleManageList])
+  }, [onHeaderLayout, filter, sort, view, handleManageList])
 
   const overrideProps = {
     contentContainerStyle: {
@@ -172,9 +176,7 @@ const AssetsScreen: FC<Props> = ({
 
   if (isBalanceLoading || enabledNetworks.length === 0) {
     return (
-      <CollapsibleTabs.ContentWrapper
-        bottomOffset={bottomOffset}
-        height={Number(containerStyle.minHeight)}>
+      <CollapsibleTabs.ContentWrapper height={Number(containerStyle.minHeight)}>
         <LoadingState />
       </CollapsibleTabs.ContentWrapper>
     )

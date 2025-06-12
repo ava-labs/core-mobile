@@ -6,7 +6,6 @@ import { useTokenSearch } from 'common/hooks/useTokenSearch'
 import { useWatchlist } from 'hooks/watchlist/useWatchlist'
 import React, { useMemo } from 'react'
 import { ViewStyle } from 'react-native'
-import { SharedValue } from 'react-native-reanimated'
 import { MarketType } from 'store/watchlist/types'
 import { useTrackSortAndView } from '../hooks/useTrackSortAndView'
 import MarketTokensScreen from './MarketTokensScreen'
@@ -19,15 +18,13 @@ const SearchResultScreen = ({
   goToMarketDetail,
   isSearchBarFocused,
   containerStyle,
-  handleScrollResync,
-  bottomOffset
+  handleScrollResync
 }: {
   searchText: string
   goToMarketDetail: (tokenId: string, marketType: MarketType) => void
   isSearchBarFocused: boolean
   containerStyle: ViewStyle
   handleScrollResync: () => void
-  bottomOffset: SharedValue<number>
 }): JSX.Element => {
   const {
     prices,
@@ -67,7 +64,6 @@ const SearchResultScreen = ({
     if (isSearchingTokens || isLoadingTopTokens || isLoadingTrendingTokens) {
       return (
         <CollapsibleTabs.ContentWrapper
-          bottomOffset={bottomOffset}
           height={Number(containerStyle.minHeight)}>
           <LoadingState />
         </CollapsibleTabs.ContentWrapper>
@@ -75,9 +71,7 @@ const SearchResultScreen = ({
     }
 
     return (
-      <CollapsibleTabs.ContentWrapper
-        bottomOffset={bottomOffset}
-        height={Number(containerStyle.minHeight)}>
+      <CollapsibleTabs.ContentWrapper height={Number(containerStyle.minHeight)}>
         <ErrorState
           icon={
             <Image
@@ -98,7 +92,6 @@ const SearchResultScreen = ({
       </CollapsibleTabs.ContentWrapper>
     )
   }, [
-    bottomOffset,
     containerStyle.minHeight,
     isFocused,
     isLoadingTopTokens,

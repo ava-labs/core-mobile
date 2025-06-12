@@ -10,13 +10,24 @@ import {
 import { ListRenderItem } from '@shopify/flash-list'
 import { CollapsibleTabs } from 'common/components/CollapsibleTabs'
 import { ErrorState } from 'common/components/ErrorState'
-import React, { ReactNode, useCallback, useEffect, useMemo } from 'react'
-import { Platform, ViewStyle } from 'react-native'
+import React, {
+  ReactNode,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState
+} from 'react'
+import {
+  LayoutChangeEvent,
+  LayoutRectangle,
+  Platform,
+  ViewStyle
+} from 'react-native'
 
 import { DropdownSelections } from 'common/components/DropdownSelections'
 import { LoadingState } from 'common/components/LoadingState'
 import { getListItemEnteringAnimation } from 'common/utils/animations'
-import Animated, { SharedValue } from 'react-native-reanimated'
+import Animated from 'react-native-reanimated'
 import { NftItem } from 'services/nft/types'
 import {
   ASSET_MANAGE_VIEWS,
@@ -41,8 +52,7 @@ export const CollectiblesScreen = ({
   goToCollectibleDetail,
   goToCollectibleManagement,
   goToDiscoverCollectibles,
-  onScrollResync,
-  bottomOffset
+  onScrollResync
 }: {
   goToCollectibleDetail: (
     localId: string,
@@ -52,7 +62,6 @@ export const CollectiblesScreen = ({
   goToDiscoverCollectibles: () => void
   onScrollResync: () => void
   containerStyle: ViewStyle
-  bottomOffset: SharedValue<number>
 }): ReactNode => {
   const {
     theme: { colors }
@@ -78,6 +87,8 @@ export const CollectiblesScreen = ({
     onResetFilter,
     onShowHidden
   } = useCollectiblesFilterAndSort()
+
+  const [headerLayout, setHeaderLayout] = useState<LayoutRectangle | null>(null)
 
   useEffect(() => {
     setIsEnabled(true)
@@ -142,8 +153,9 @@ export const CollectiblesScreen = ({
     if (isLoading || !isEnabled)
       return (
         <CollapsibleTabs.ContentWrapper
-          bottomOffset={bottomOffset}
-          height={Number(containerStyle.minHeight)}>
+          height={
+            Number(containerStyle.minHeight) - (headerLayout?.height ?? 0)
+          }>
           <LoadingState />
         </CollapsibleTabs.ContentWrapper>
       )
@@ -151,7 +163,6 @@ export const CollectiblesScreen = ({
     if (error || !isSuccess) {
       return (
         <CollapsibleTabs.ContentWrapper
-          bottomOffset={bottomOffset}
           height={Number(containerStyle.minHeight)}>
           <ErrorState
             description="Please hit refresh or try again later"
@@ -167,8 +178,9 @@ export const CollectiblesScreen = ({
     if (filteredAndSorted.length === 0 && hasFilters) {
       return (
         <CollapsibleTabs.ContentWrapper
-          bottomOffset={bottomOffset}
-          height={Number(containerStyle.minHeight)}>
+          height={
+            Number(containerStyle.minHeight) - (headerLayout?.height ?? 0)
+          }>
           <ErrorState
             title="No Collectibles found"
             description="
@@ -185,8 +197,9 @@ export const CollectiblesScreen = ({
     if (filteredAndSorted.length === 0 && isEveryCollectibleHidden) {
       return (
         <CollapsibleTabs.ContentWrapper
-          bottomOffset={bottomOffset}
-          height={Number(containerStyle.minHeight)}>
+          height={
+            Number(containerStyle.minHeight) - (headerLayout?.height ?? 0)
+          }>
           <ErrorState
             title="All collectibles hidden"
             description="You have hidden all your collectibles"
@@ -262,8 +275,8 @@ export const CollectiblesScreen = ({
   }, [
     isLoading,
     isEnabled,
-    bottomOffset,
     containerStyle.minHeight,
+    headerLayout?.height,
     error,
     isSuccess,
     filteredAndSorted.length,
@@ -276,17 +289,22 @@ export const CollectiblesScreen = ({
     onShowHidden
   ])
 
+  const onHeaderLayout = useCallback((e: LayoutChangeEvent) => {
+    setHeaderLayout(e.nativeEvent.layout)
+  }, [])
+
   const renderHeader = useMemo((): JSX.Element | null => {
     if (collectibles.length === 0 && (!isEnabled || isLoading)) return null
     if (collectibles.length === 0) return null
 
     return (
       <View
+        onLayout={onHeaderLayout}
         style={[
           {
             alignSelf: 'center',
             width: SCREEN_WIDTH - HORIZONTAL_MARGIN * 2,
-            marginBottom: CollectibleView.ListView === listType ? 8 : 10
+            paddingBottom: CollectibleView.ListView === listType ? 8 : 10
           }
         ]}>
         <DropdownSelections
@@ -300,6 +318,7 @@ export const CollectiblesScreen = ({
     collectibles.length,
     isEnabled,
     isLoading,
+    onHeaderLayout,
     listType,
     filter,
     sort,
@@ -320,7 +339,7 @@ export const CollectiblesScreen = ({
   // overrideProps and contentContainerStyle need to be both used with the same stylings for item width calculations
   const overrideProps = {
     contentContainerStyle: {
-      flexGrow: 1,
+      flexGrow: Platform.OS === 'ios' ? 1 : undefined,
       ...contentContainerStyle,
       ...containerStyle
     }

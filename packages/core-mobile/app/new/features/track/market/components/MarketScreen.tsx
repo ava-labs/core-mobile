@@ -14,13 +14,11 @@ import MarketTokensScreen from './MarketTokensScreen'
 const MarketScreen = ({
   goToMarketDetail,
   containerStyle,
-  onScrollResync,
-  bottomOffset
+  onScrollResync
 }: {
   goToMarketDetail: (tokenId: string, marketType: MarketType) => void
   containerStyle: ViewStyle
   onScrollResync: () => void
-  bottomOffset: SharedValue<number>
 }): JSX.Element => {
   const {
     topTokens,
@@ -37,7 +35,6 @@ const MarketScreen = ({
     if (isRefetchingTopTokens) {
       return (
         <CollapsibleTabs.ContentWrapper
-          bottomOffset={bottomOffset}
           height={Number(containerStyle.minHeight)}>
           <LoadingState />
         </CollapsibleTabs.ContentWrapper>
@@ -45,9 +42,7 @@ const MarketScreen = ({
     }
 
     return (
-      <CollapsibleTabs.ContentWrapper
-        bottomOffset={bottomOffset}
-        height={Number(containerStyle.minHeight)}>
+      <CollapsibleTabs.ContentWrapper height={Number(containerStyle.minHeight)}>
         <ErrorState
           button={{
             title: 'Refresh',
@@ -56,18 +51,11 @@ const MarketScreen = ({
         />
       </CollapsibleTabs.ContentWrapper>
     )
-  }, [
-    bottomOffset,
-    containerStyle.minHeight,
-    isRefetchingTopTokens,
-    refetchTopTokens
-  ])
+  }, [containerStyle.minHeight, isRefetchingTopTokens, refetchTopTokens])
 
   if (isLoadingTopTokens) {
     return (
-      <CollapsibleTabs.ContentWrapper
-        bottomOffset={bottomOffset}
-        height={Number(containerStyle.minHeight)}>
+      <CollapsibleTabs.ContentWrapper height={Number(containerStyle.minHeight)}>
         <LoadingState />
       </CollapsibleTabs.ContentWrapper>
     )

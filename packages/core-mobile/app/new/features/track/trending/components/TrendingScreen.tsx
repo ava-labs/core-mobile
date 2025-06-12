@@ -7,18 +7,16 @@ import { ErrorState } from 'new/common/components/ErrorState'
 import { LoadingState } from 'new/common/components/LoadingState'
 import React, { useMemo } from 'react'
 import { ViewStyle } from 'react-native'
-import Animated, { SharedValue } from 'react-native-reanimated'
+import Animated from 'react-native-reanimated'
 import { MarketType } from 'store/watchlist/types'
 import TrendingTokensScreen from './TrendingTokensScreen'
 
 export const TrendingScreen = ({
   goToMarketDetail,
-  containerStyle,
-  bottomOffset
+  containerStyle
 }: {
   goToMarketDetail: (tokenId: string, marketType: MarketType) => void
   containerStyle: ViewStyle
-  bottomOffset: SharedValue<number>
 }): JSX.Element => {
   const {
     trendingTokens,
@@ -33,7 +31,6 @@ export const TrendingScreen = ({
     if (isRefetchingTrendingTokens) {
       return (
         <CollapsibleTabs.ContentWrapper
-          bottomOffset={bottomOffset}
           height={Number(containerStyle.minHeight)}>
           <LoadingState />
         </CollapsibleTabs.ContentWrapper>
@@ -41,9 +38,7 @@ export const TrendingScreen = ({
     }
 
     return (
-      <CollapsibleTabs.ContentWrapper
-        bottomOffset={bottomOffset}
-        height={Number(containerStyle.minHeight)}>
+      <CollapsibleTabs.ContentWrapper height={Number(containerStyle.minHeight)}>
         <ErrorState
           button={{
             title: 'Refresh',
@@ -53,7 +48,6 @@ export const TrendingScreen = ({
       </CollapsibleTabs.ContentWrapper>
     )
   }, [
-    bottomOffset,
     containerStyle.minHeight,
     isRefetchingTrendingTokens,
     refetchTrendingTokens
@@ -68,9 +62,7 @@ export const TrendingScreen = ({
 
   if (showLoading) {
     return (
-      <CollapsibleTabs.ContentWrapper
-        bottomOffset={bottomOffset}
-        height={Number(containerStyle.minHeight)}>
+      <CollapsibleTabs.ContentWrapper height={Number(containerStyle.minHeight)}>
         <LoadingState />
       </CollapsibleTabs.ContentWrapper>
     )

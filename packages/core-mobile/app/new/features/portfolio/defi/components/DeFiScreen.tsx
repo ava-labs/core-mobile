@@ -19,7 +19,7 @@ import { HORIZONTAL_ITEM_GAP } from 'features/portfolio/collectibles/consts'
 import { useExchangedAmount } from 'new/common/hooks/useExchangedAmount'
 import React, { useCallback, useEffect, useMemo } from 'react'
 import { ViewStyle } from 'react-native'
-import Animated, { SharedValue } from 'react-native-reanimated'
+import Animated from 'react-native-reanimated'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { DeFiSimpleProtocol } from 'services/defi/types'
 import { useDeFiProtocols } from '../hooks/useDeFiProtocols'
@@ -30,12 +30,10 @@ const placeholderIcon = require('../../../../assets/icons/bar_chart_emoji.png')
 
 export const DeFiScreen = ({
   containerStyle,
-  onScrollResync,
-  bottomOffset
+  onScrollResync
 }: {
   containerStyle: ViewStyle
   onScrollResync: () => void
-  bottomOffset: SharedValue<number>
 }): JSX.Element => {
   const { navigate } = useRouter()
   const { openUrl } = useCoreBrowser()
@@ -99,7 +97,6 @@ export const DeFiScreen = ({
     if (isLoading) {
       return (
         <CollapsibleTabs.ContentWrapper
-          bottomOffset={bottomOffset}
           height={Number(containerStyle.minHeight)}>
           <LoadingState />
         </CollapsibleTabs.ContentWrapper>
@@ -109,7 +106,6 @@ export const DeFiScreen = ({
     if (error || (isPaused && !isSuccess)) {
       return (
         <CollapsibleTabs.ContentWrapper
-          bottomOffset={bottomOffset}
           height={Number(containerStyle.minHeight)}>
           <ErrorState
             description="Please hit refresh or try again later"
@@ -123,9 +119,7 @@ export const DeFiScreen = ({
     }
 
     return (
-      <CollapsibleTabs.ContentWrapper
-        bottomOffset={bottomOffset}
-        height={Number(containerStyle.minHeight)}>
+      <CollapsibleTabs.ContentWrapper height={Number(containerStyle.minHeight)}>
         <Placeholder
           icon={
             <Image source={placeholderIcon} sx={{ width: 42, height: 42 }} />
@@ -144,7 +138,6 @@ export const DeFiScreen = ({
     error,
     isPaused,
     isSuccess,
-    bottomOffset,
     containerStyle.minHeight,
     handleExplore,
     refetch

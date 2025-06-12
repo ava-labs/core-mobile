@@ -208,35 +208,6 @@ const TrackHomeScreen = (): JSX.Element => {
     }
   }, [tabHeight])
 
-  const bottomOffset = useSharedValue(0)
-
-  const updateBottomOffset = useCallback(
-    (contentOffsetY: number) => {
-      'worklet'
-      if (
-        balanceHeaderLayout?.height &&
-        contentOffsetY < balanceHeaderLayout.height
-      ) {
-        bottomOffset.value =
-          balanceHeaderLayout?.height +
-          insets.bottom +
-          tabBarHeight +
-          contentOffsetY
-      } else {
-        bottomOffset.value = 0
-      }
-    },
-    [bottomOffset, balanceHeaderLayout?.height, insets.bottom, tabBarHeight]
-  )
-
-  const handleScroll = useCallback(
-    (contentOffsetY: number) => {
-      updateBottomOffset(contentOffsetY)
-      onScroll(contentOffsetY)
-    },
-    [onScroll, updateBottomOffset]
-  )
-
   const renderEmptyTabBar = useCallback((): JSX.Element => <></>, [])
 
   const renderHeader = useCallback((): JSX.Element => {
@@ -306,11 +277,9 @@ const TrackHomeScreen = (): JSX.Element => {
         goToMarketDetail={handleGotoMarketDetail}
         handleScrollResync={handleScrollResync}
         containerStyle={containerStyle}
-        bottomOffset={bottomOffset}
       />
     )
   }, [
-    bottomOffset,
     contentContainerStyle,
     handleGotoMarketDetail,
     handleScrollResync,
@@ -331,7 +300,6 @@ const TrackHomeScreen = (): JSX.Element => {
             <TrendingScreen
               goToMarketDetail={handleGotoMarketDetail}
               containerStyle={contentContainerStyle}
-              bottomOffset={bottomOffset}
             />
           )
       },
@@ -345,7 +313,6 @@ const TrackHomeScreen = (): JSX.Element => {
               goToMarketDetail={handleGotoMarketDetail}
               containerStyle={contentContainerStyle}
               onScrollResync={handleScrollResync}
-              bottomOffset={bottomOffset}
             />
           )
       },
@@ -359,13 +326,11 @@ const TrackHomeScreen = (): JSX.Element => {
               goToMarketDetail={handleGotoMarketDetail}
               containerStyle={contentContainerStyle}
               onScrollResync={handleScrollResync}
-              bottomOffset={bottomOffset}
             />
           )
       }
     ]
   }, [
-    bottomOffset,
     contentContainerStyle,
     handleGotoMarketDetail,
     handleScrollResync,
@@ -394,7 +359,7 @@ const TrackHomeScreen = (): JSX.Element => {
         renderHeader={renderHeader}
         renderTabBar={renderEmptyTabBar}
         onTabChange={handleTabChange}
-        onScrollY={handleScroll}
+        onScrollY={onScroll}
         tabs={tabs}
         minHeaderHeight={searchBarLayout?.height ?? 0}
       />

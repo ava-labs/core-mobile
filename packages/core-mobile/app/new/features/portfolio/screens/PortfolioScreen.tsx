@@ -7,6 +7,7 @@ import {
   useTheme,
   View
 } from '@avalabs/k2-alpine'
+import { useHeaderHeight } from '@react-navigation/elements'
 import BlurredBarsContentLayout from 'common/components/BlurredBarsContentLayout'
 import {
   CollapsibleTabs,
@@ -76,6 +77,9 @@ const PortfolioHomeScreen = (): JSX.Element => {
   const { navigate, push } = useRouter()
   const { navigateToSwap } = useNavigateToSwap()
   const [balanceHeaderLayout, setBalanceHeaderLayout] = useState<
+    LayoutRectangle | undefined
+  >()
+  const [segmentedControlLayout, setSegmentedControlLayout] = useState<
     LayoutRectangle | undefined
   >()
 
@@ -154,6 +158,13 @@ const PortfolioHomeScreen = (): JSX.Element => {
   const handleBalanceHeaderLayout = useCallback(
     (event: LayoutChangeEvent): void => {
       setBalanceHeaderLayout(event.nativeEvent.layout)
+    },
+    []
+  )
+
+  const handleSegmentedControlLayout = useCallback(
+    (event: LayoutChangeEvent): void => {
+      setSegmentedControlLayout(event.nativeEvent.layout)
     },
     []
   )
@@ -304,7 +315,6 @@ const PortfolioHomeScreen = (): JSX.Element => {
       </View>
     )
   }, [
-    renderMaskView,
     theme.colors.$surfacePrimary,
     handleBalanceHeaderLayout,
     animatedHeaderStyle,
@@ -312,13 +322,14 @@ const PortfolioHomeScreen = (): JSX.Element => {
     formattedBalance,
     selectedCurrency,
     totalPriceChanged,
+    formattedPriceChange,
     indicatorStatus,
     formattedPercent,
     balanceAccurate,
     isLoading,
     isPrivacyModeEnabled,
     isDeveloperMode,
-    formattedPriceChange,
+    renderMaskView,
     actionButtons
   ])
 
@@ -392,20 +403,25 @@ const PortfolioHomeScreen = (): JSX.Element => {
     }, [])
   )
 
+  const headerHeight = useHeaderHeight()
+
   const tabHeight = useMemo(() => {
+    const height =
+      SCREEN_HEIGHT -
+      insets.bottom -
+      tabBarHeight -
+      headerHeight -
+      (segmentedControlLayout?.height ?? 0)
+
     return Platform.select({
-      ios:
-        SCREEN_HEIGHT -
-        insets.top -
-        tabBarHeight -
-        (balanceHeaderLayout?.height ?? 0) -
-        11,
-      android: SCREEN_HEIGHT - insets.top + (isAndroidWithBottomBar ? -11 : 11)
+      ios: height + 11,
+      android: height + (isAndroidWithBottomBar ? 22 : 0)
     })
   }, [
-    balanceHeaderLayout?.height,
-    insets.top,
+    headerHeight,
+    insets.bottom,
     isAndroidWithBottomBar,
+    segmentedControlLayout?.height,
     tabBarHeight
   ])
 
@@ -416,32 +432,6 @@ const PortfolioHomeScreen = (): JSX.Element => {
       minHeight: tabHeight
     }
   }, [tabHeight])
-
-  const bottomOffset = useSharedValue(0)
-
-  const updateBottomOffset = useCallback(
-    (contentOffsetY: number) => {
-      'worklet'
-      if (
-        balanceHeaderLayout?.height &&
-        contentOffsetY < balanceHeaderLayout.height
-      ) {
-        bottomOffset.value =
-          balanceHeaderLayout?.height + insets.bottom + contentOffsetY
-      } else {
-        bottomOffset.value = 0
-      }
-    },
-    [bottomOffset, balanceHeaderLayout?.height, insets.bottom]
-  )
-
-  const handleScroll = useCallback(
-    (contentOffsetY: number) => {
-      updateBottomOffset(contentOffsetY)
-      onScroll(contentOffsetY)
-    },
-    [onScroll, updateBottomOffset]
-  )
 
   const tabs = useMemo(() => {
     return [
@@ -454,7 +444,6 @@ const PortfolioHomeScreen = (): JSX.Element => {
             goToBuy={handleBuy}
             onScrollResync={handleScrollResync}
             containerStyle={contentContainerStyle}
-            bottomOffset={bottomOffset}
           />
         )
       },
@@ -467,7 +456,6 @@ const PortfolioHomeScreen = (): JSX.Element => {
             goToDiscoverCollectibles={handleGoToDiscoverCollectibles}
             onScrollResync={handleScrollResync}
             containerStyle={contentContainerStyle}
-            bottomOffset={bottomOffset}
           />
         )
       },
@@ -477,7 +465,6 @@ const PortfolioHomeScreen = (): JSX.Element => {
           <DeFiScreen
             onScrollResync={handleScrollResync}
             containerStyle={contentContainerStyle}
-            bottomOffset={bottomOffset}
           />
         )
       }
@@ -488,7 +475,6 @@ const PortfolioHomeScreen = (): JSX.Element => {
     handleBuy,
     handleScrollResync,
     contentContainerStyle,
-    bottomOffset,
     handleGoToCollectibleDetail,
     handleGoToCollectibleManagement,
     handleGoToDiscoverCollectibles
@@ -501,19 +487,21 @@ const PortfolioHomeScreen = (): JSX.Element => {
         renderHeader={renderHeader}
         renderTabBar={renderEmptyTabBar}
         onTabChange={handleTabChange}
-        onScrollY={handleScroll}
+        onScrollY={onScroll}
         tabs={tabs}
       />
 
-      <LinearGradientBottomWrapper shouldDelayBlurOniOS={true}>
-        <SegmentedControl
-          dynamicItemWidth={false}
-          items={SEGMENT_ITEMS}
-          selectedSegmentIndex={selectedSegmentIndex}
-          onSelectSegment={handleSelectSegment}
-          style={styles.segmentedControl}
-        />
-      </LinearGradientBottomWrapper>
+      <View onLayout={handleSegmentedControlLayout}>
+        <LinearGradientBottomWrapper shouldDelayBlurOniOS={true}>
+          <SegmentedControl
+            dynamicItemWidth={false}
+            items={SEGMENT_ITEMS}
+            selectedSegmentIndex={selectedSegmentIndex}
+            onSelectSegment={handleSelectSegment}
+            style={styles.segmentedControl}
+          />
+        </LinearGradientBottomWrapper>
+      </View>
     </BlurredBarsContentLayout>
   )
 }
