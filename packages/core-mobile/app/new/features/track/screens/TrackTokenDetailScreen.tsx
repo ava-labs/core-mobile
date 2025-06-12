@@ -48,6 +48,7 @@ import { useIsFocused } from '@react-navigation/native'
 import { MarketType } from 'store/watchlist'
 import { AVAX_COINGECKO_ID } from 'consts/coingecko'
 import { useIsSwapListLoaded } from 'common/hooks/useIsSwapListLoaded'
+import { useBuy } from 'features/buyOnramp/hooks/useBuy'
 
 const MAX_VALUE_WIDTH = '80%'
 
@@ -70,7 +71,6 @@ const TrackTokenDetailScreen = (): JSX.Element => {
     date: Date
   }>()
   const { formatCurrency } = useFormatCurrency()
-
   const {
     chartData,
     ranges,
@@ -83,6 +83,7 @@ const TrackTokenDetailScreen = (): JSX.Element => {
     chainId
   } = useTokenDetails({ tokenId: tokenId, marketType })
   const isFocused = useIsFocused()
+  const { navigateToBuy } = useBuy()
 
   const { data: prices } = useGetPrices({
     coingeckoIds: [coingeckoId],
@@ -178,13 +179,16 @@ const TrackTokenDetailScreen = (): JSX.Element => {
     }
   }, [openUrl, tokenInfo?.urlHostname, back])
 
-  const handleBuy = useCallback((): void => {
-    navigate({
-      // @ts-ignore TODO: make routes typesafe
-      pathname: '/buy',
-      params: { showAvaxWarning: 'true' }
-    })
-  }, [navigate])
+  const handleBuy = useCallback(
+    (contractAddress?: string): void => {
+      if (contractAddress === undefined) return
+      navigateToBuy({
+        showAvaxWarning: true,
+        address: contractAddress
+      })
+    },
+    [navigateToBuy]
+  )
 
   const handleSwap = useCallback(
     (initialTokenIdTo?: string): void => {
@@ -323,7 +327,7 @@ const TrackTokenDetailScreen = (): JSX.Element => {
         marketType={marketType}
         contractAddress={tokenInfo?.contractAddress}
         chainId={chainId}
-        onBuy={handleBuy}
+        onBuy={() => handleBuy(tokenInfo?.contractAddress)}
         onStake={addStake}
         onSwap={handleSwap}
       />
