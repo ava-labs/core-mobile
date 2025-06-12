@@ -87,14 +87,14 @@ export const useBuy = (): {
     if (avax === undefined) return
     setOnrampToken(avax)
     // @ts-ignore TODO: make routes typesafe
-    navigate('/buyOnramp/selectAmount')
+    navigate('/buyOnramp/selectBuyAmount')
   }, [avax, navigate, setOnrampToken])
 
   const navigateToBuyUsdc = useCallback(() => {
     if (usdc === undefined) return
     setOnrampToken(usdc)
     // @ts-ignore TODO: make routes typesafe
-    navigate('/buyOnramp/selectAmount')
+    navigate('/buyOnramp/selectBuyAmount')
   }, [usdc, navigate, setOnrampToken])
 
   return {

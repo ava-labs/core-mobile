@@ -19,21 +19,12 @@ import { useWatchlist } from 'hooks/watchlist/useWatchlist'
 import { selectSelectedCurrency } from 'store/settings/currency'
 import { useSelector } from 'react-redux'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
-import {
-  PaymentMethods,
-  SearchProviderCategories,
-  SearchProviders
-} from 'services/meld/consts'
-import { useOnRampToken } from '../store'
-import {
-  isBtcToken,
-  isSupportedErc20Token,
-  isSupportedNativeToken
-} from '../utils'
+import { isTokenSupportedForBuying } from 'features/buyOnramp/utils'
+import { useOnRampServiceProvider, useOnRampToken } from '../store'
 import { useGetPurchaseLimits } from '../hooks/useGetPurchaseLimits'
-import { useSearchServiceProviders } from '../hooks/useSearchServiceProviders'
 import { useSearchDefaultsByCountry } from '../hooks/useSearchDefaultsByCountry'
 import { useLocale } from '../hooks/useLocale'
+import { PaymentMethods, ServiceProviderCategories } from '../consts'
 
 export const SelectBuyAmountScreen = (): React.JSX.Element => {
   const {
@@ -46,19 +37,14 @@ export const SelectBuyAmountScreen = (): React.JSX.Element => {
   const selectedCurrency = useSelector(selectSelectedCurrency)
   const { getMarketTokenBySymbol } = useWatchlist()
   const [onrampToken] = useOnRampToken()
+  const [serviceProvider] = useOnRampServiceProvider()
   const erc20ContractTokens = useErc20ContractTokens()
   const { filteredTokenList } = useSearchableTokenList({
     tokens: erc20ContractTokens,
     hideZeroBalance: false
   })
-  const { data: serviceProviders } = useSearchServiceProviders({
-    categories: [SearchProviderCategories.CryptoOnramp]
-  })
   const { data: purchaseLimits } = useGetPurchaseLimits({
-    serviceProviders: serviceProviders?.map(
-      serviceProvider => serviceProvider.serviceProvider
-    ),
-    categories: [SearchProviderCategories.CryptoOnramp],
+    categories: [ServiceProviderCategories.CRYPTO_ONRAMP],
     fiatCurrencies: [selectedCurrency],
     cryptoCurrencyCodes: onrampToken?.currencyCode
       ? [onrampToken?.currencyCode]
@@ -67,7 +53,7 @@ export const SelectBuyAmountScreen = (): React.JSX.Element => {
   const { countryCode } = useLocale()
 
   const { data: defaultsByCountry } = useSearchDefaultsByCountry({
-    categories: [SearchProviderCategories.CryptoOnramp]
+    categories: [ServiceProviderCategories.CRYPTO_ONRAMP]
   })
 
   const defaultPaymentMethod = useMemo(() => {
@@ -112,11 +98,7 @@ export const SelectBuyAmountScreen = (): React.JSX.Element => {
 
   const token = useMemo(() => {
     const t = filteredTokenList.find(
-      tk =>
-        onrampToken &&
-        (isSupportedNativeToken(onrampToken, tk) ||
-          isSupportedErc20Token(onrampToken, tk) ||
-          isBtcToken(onrampToken, tk))
+      tk => onrampToken && isTokenSupportedForBuying(onrampToken, tk)
     )
     if (t) {
       return {
@@ -321,21 +303,17 @@ export const SelectBuyAmountScreen = (): React.JSX.Element => {
                   }}>
                   {defaultPaymentMethod}
                 </Text>
-                {/* Todo: CP-10736 */}
-                <Text
-                  variant="caption"
-                  sx={{
-                    fontSize: 11,
-                    fontWeight: 500,
-                    textAlign: 'right'
-                  }}>
-                  {
-                    SearchProviders[
-                      serviceProviders?.[0]
-                        ?.serviceProvider as keyof typeof SearchProviders
-                    ]
-                  }
-                </Text>
+                {serviceProvider && (
+                  <Text
+                    variant="caption"
+                    sx={{
+                      fontSize: 11,
+                      fontWeight: 500,
+                      textAlign: 'right'
+                    }}>
+                    {serviceProvider}
+                  </Text>
+                )}
               </View>
               <View sx={{ marginLeft: 8 }}>
                 <Icons.Navigation.ChevronRightV2 color={colors.$textPrimary} />

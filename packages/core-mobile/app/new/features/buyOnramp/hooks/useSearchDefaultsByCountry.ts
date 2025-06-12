@@ -1,25 +1,29 @@
 import { useQuery, UseQueryResult } from '@tanstack/react-query'
-import MeldService from 'services/meld/MeldService'
-import { SearchCryptoCurrenciesParams } from './useSearchCryptoCurrencies'
+import { ReactQueryKeys } from 'consts/reactQueryKeys'
+import { MeldDefaultParams, SearchDefaultsByCountry } from '../types'
+import MeldService from '../services/MeldService'
 import { useLocale } from './useLocale'
 
-export type SearchDefaultsByCountryResponse = {
-  countryCode: string
-  defaultCurrencyCode: string
-  defaultPaymentMethods: string[]
+export type SearchDefaultsByCountryParams = MeldDefaultParams & {
+  cryptoCurrencies?: string[]
 }
 
 export const useSearchDefaultsByCountry = ({
   categories,
   accountFilter = true
-}: Omit<SearchCryptoCurrenciesParams, 'countries'>): UseQueryResult<
-  SearchDefaultsByCountryResponse[],
+}: Omit<SearchDefaultsByCountryParams, 'countries'>): UseQueryResult<
+  SearchDefaultsByCountry[],
   Error
 > => {
   const { countryCode } = useLocale()
 
-  return useQuery<SearchDefaultsByCountryResponse[]>({
-    queryKey: ['meld', 'countries', categories, accountFilter, countryCode],
+  return useQuery<SearchDefaultsByCountry[]>({
+    queryKey: [
+      ReactQueryKeys.MELD_SEARCH_DEFAULTS_BY_COUNTRY,
+      categories,
+      accountFilter,
+      countryCode
+    ],
     queryFn: () =>
       MeldService.searchDefaultsByCountry({
         countries: [countryCode],

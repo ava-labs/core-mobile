@@ -22,6 +22,7 @@ import { useSearchCryptoCurrencies } from '../hooks/useSearchCryptoCurrencies'
 import { isTokenSupportedForBuying } from '../utils'
 import { CryptoCurrency } from '../types'
 import { MELD_CURRENCY_CODES, ServiceProviderCategories } from '../consts'
+import { useBuy } from '../hooks/useBuy'
 
 type CryptoCurrencyWithBalance = CryptoCurrency & {
   tokenWithBalance: LocalTokenWithBalance
@@ -118,7 +119,7 @@ export const SelectBuyTokenScreen = (): React.JSX.Element => {
       <TouchableOpacity
         onPress={() => {
           canGoBack() && back()
-          navigateToBuy({ cryptoCurrency: item })
+          navigateToBuy({ token: item.tokenWithBalance })
         }}
         sx={{
           marginTop: 10,
