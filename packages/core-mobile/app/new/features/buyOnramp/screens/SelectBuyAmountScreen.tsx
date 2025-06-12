@@ -27,11 +27,19 @@ import { selectSelectedCurrency } from 'store/settings/currency'
 import { useSelector } from 'react-redux'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import { isTokenSupportedForBuying } from 'features/buyOnramp/utils'
-import { useOnRampServiceProvider, useOnRampToken } from '../store'
+import {
+  useOnRampPaymentMethod,
+  useOnRampServiceProvider,
+  useOnRampToken
+} from '../store'
 import { useGetPurchaseLimits } from '../hooks/useGetPurchaseLimits'
 import { useSearchDefaultsByCountry } from '../hooks/useSearchDefaultsByCountry'
 import { useLocale } from '../hooks/useLocale'
-import { PaymentMethods, ServiceProviderCategories } from '../consts'
+import {
+  PaymentMethods,
+  ServiceProviderCategories,
+  ServiceProviders
+} from '../consts'
 
 export const SelectBuyAmountScreen = (): React.JSX.Element => {
   const {
@@ -44,7 +52,8 @@ export const SelectBuyAmountScreen = (): React.JSX.Element => {
   const selectedCurrency = useSelector(selectSelectedCurrency)
   const { getMarketTokenBySymbol } = useWatchlist()
   const [onrampToken] = useOnRampToken()
-  const [serviceProvider] = useOnRampServiceProvider()
+  const [serviceProvider, setServiceProvider] = useOnRampServiceProvider()
+  const [paymentMethod, setPaymentMethod] = useOnRampPaymentMethod()
   const erc20ContractTokens = useErc20ContractTokens()
   const { filteredTokenList } = useSearchableTokenList({
     tokens: erc20ContractTokens,
@@ -59,49 +68,36 @@ export const SelectBuyAmountScreen = (): React.JSX.Element => {
   })
   const { countryCode } = useLocale()
 
-  const { data: defaultsByCountry } = useSearchDefaultsByCountry({
-    categories: [ServiceProviderCategories.CRYPTO_ONRAMP]
-  })
+  const { data: defaultsByCountry, isLoading: isLoadingDefaultsByCountry } =
+    useSearchDefaultsByCountry({
+      categories: [ServiceProviderCategories.CRYPTO_ONRAMP]
+    })
 
   const defaultPaymentMethod = useMemo(() => {
     return defaultsByCountry?.find(d => d.countryCode === countryCode)
       ?.defaultPaymentMethods[0] as keyof typeof PaymentMethods
   }, [countryCode, defaultsByCountry])
 
-  const defaultServiceProvider = serviceProviders?.[0]?.serviceProvider
-
   useLayoutEffect(() => {
-    setOnRampPaymentMethod(undefined)
-    setOnRampServiceProvider(undefined)
-  }, [setOnRampPaymentMethod, setOnRampServiceProvider])
+    setPaymentMethod(undefined)
+    setServiceProvider(undefined)
+  }, [setPaymentMethod, setServiceProvider])
 
   useEffect(() => {
-    if (onRampPaymentMethod === undefined && defaultPaymentMethod) {
-      setOnRampPaymentMethod(defaultPaymentMethod)
+    if (paymentMethod === undefined && defaultPaymentMethod) {
+      setPaymentMethod(defaultPaymentMethod)
     }
-    if (onRampServiceProvider === undefined && defaultServiceProvider) {
-      setOnRampServiceProvider(defaultServiceProvider)
-    }
-  }, [
-    defaultPaymentMethod,
-    defaultServiceProvider,
-    onRampPaymentMethod,
-    onRampServiceProvider,
-    setOnRampPaymentMethod,
-    setOnRampServiceProvider
-  ])
+  }, [defaultPaymentMethod, paymentMethod, setPaymentMethod])
 
   const paymentMethodToDisplay = useMemo(() => {
-    return onRampPaymentMethod
-      ? PaymentMethods[onRampPaymentMethod as keyof typeof PaymentMethods]
+    return paymentMethod
+      ? PaymentMethods[paymentMethod as keyof typeof PaymentMethods]
       : undefined
-  }, [onRampPaymentMethod])
+  }, [paymentMethod])
 
   const serviceProviderToDisplay = useMemo(() => {
-    return onRampServiceProvider
-      ? ServiceProviders[onRampServiceProvider]
-      : undefined
-  }, [onRampServiceProvider])
+    return serviceProvider ? ServiceProviders[serviceProvider] : undefined
+  }, [serviceProvider])
 
   const selectedPurchasingFiatCurrency = useMemo(() => {
     return purchaseLimits?.find(
@@ -248,7 +244,7 @@ export const SelectBuyAmountScreen = (): React.JSX.Element => {
             Pay with
           </Text>
           <View sx={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-            {isLoadingServiceProviders || isLoadingDefaultsByCountry ? (
+            {isLoadingDefaultsByCountry ? (
               <ActivityIndicator size="small" color={colors.$textPrimary} />
             ) : (
               <>
@@ -263,15 +259,17 @@ export const SelectBuyAmountScreen = (): React.JSX.Element => {
                     }}>
                     {paymentMethodToDisplay}
                   </Text>
-                  <Text
-                    variant="caption"
-                    sx={{
-                      fontSize: 11,
-                      fontWeight: 500,
-                      textAlign: 'right'
-                    }}>
-                    {serviceProviderToDisplay}
-                  </Text>
+                  {serviceProviderToDisplay && (
+                    <Text
+                      variant="caption"
+                      sx={{
+                        fontSize: 11,
+                        fontWeight: 500,
+                        textAlign: 'right'
+                      }}>
+                      {serviceProviderToDisplay}
+                    </Text>
+                  )}
                 </View>
                 <View sx={{ marginLeft: 8 }}>
                   <Icons.Navigation.ChevronRightV2
@@ -289,7 +287,6 @@ export const SelectBuyAmountScreen = (): React.JSX.Element => {
     colors.$textPrimary,
     handleSelectPaymentMethod,
     isLoadingDefaultsByCountry,
-    isLoadingServiceProviders,
     paymentMethodToDisplay,
     serviceProviderToDisplay
   ])
@@ -384,60 +381,7 @@ export const SelectBuyAmountScreen = (): React.JSX.Element => {
           )}
       </View>
       {/* Pay with */}
-      {defaultsByCountry &&
-        defaultsByCountry?.length > 0 &&
-        isWithinPurchaseLimit && (
-          <Pressable
-            // onPress={handleSelectPaymentMethod}
-            sx={{
-              marginTop: 12,
-              flexDirection: 'row',
-              alignItems: 'center',
-              borderRadius: 12,
-              justifyContent: 'space-between',
-              padding: 17,
-              backgroundColor: colors.$surfaceSecondary
-            }}>
-            <Text
-              variant="body1"
-              sx={{
-                fontSize: 16,
-                lineHeight: 22,
-                fontWeight: 400,
-                color: colors.$textPrimary
-              }}>
-              Pay with
-            </Text>
-            <View sx={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-              <View>
-                <Text
-                  variant="body2"
-                  sx={{
-                    fontSize: 16,
-                    lineHeight: 22,
-                    fontWeight: 400,
-                    textAlign: 'right'
-                  }}>
-                  {defaultPaymentMethod}
-                </Text>
-                {serviceProvider && (
-                  <Text
-                    variant="caption"
-                    sx={{
-                      fontSize: 11,
-                      fontWeight: 500,
-                      textAlign: 'right'
-                    }}>
-                    {serviceProvider}
-                  </Text>
-                )}
-              </View>
-              <View sx={{ marginLeft: 8 }}>
-                <Icons.Navigation.ChevronRightV2 color={colors.$textPrimary} />
-              </View>
-            </View>
-          </Pressable>
-        )}
+      {renderPayWith()}
     </ScrollScreen>
   )
 }

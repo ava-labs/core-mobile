@@ -12,11 +12,11 @@ import {
 } from '@avalabs/k2-alpine'
 import { useRouter } from 'expo-router'
 import { Space } from 'common/components/Space'
-import { PaymentMethods, ServiceProviderCategories } from 'services/meld/consts'
 import { LoadingState } from 'common/components/LoadingState'
 import { portfolioTabContentHeight } from 'features/portfolio/utils'
 import { useSearchPaymentMethods } from '../hooks/useSearchPaymentMethods'
 import { useOnRampPaymentMethod } from '../store'
+import { PaymentMethods, ServiceProviderCategories } from '../consts'
 
 export const SelectPaymentMethodScreen = (): React.JSX.Element => {
   const {
@@ -24,10 +24,9 @@ export const SelectPaymentMethodScreen = (): React.JSX.Element => {
   } = useTheme()
   const { navigate, back, canGoBack } = useRouter()
   const [onRampPaymentMethod, setOnRampPaymentMethod] = useOnRampPaymentMethod()
-
   const { data: paymentMethods, isLoading: isLoadingPaymentMethods } =
     useSearchPaymentMethods({
-      categories: [ServiceProviderCategories.CryptoOnramp]
+      categories: [ServiceProviderCategories.CRYPTO_ONRAMP]
     })
 
   const handleSelectServiceProvider = useCallback(() => {
@@ -103,10 +102,7 @@ export const SelectPaymentMethodScreen = (): React.JSX.Element => {
 
     return paymentMethods.map(paymentMethod => {
       return {
-        title:
-          PaymentMethods[
-            paymentMethod.paymentMethod as keyof typeof PaymentMethods
-          ],
+        title: PaymentMethods[paymentMethod.paymentMethod],
         subtitle: paymentMethod.paymentType,
         onPress: () => setOnRampPaymentMethod(paymentMethod.paymentMethod),
         accessory:
