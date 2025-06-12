@@ -15,6 +15,7 @@ import SentryWrapper from 'services/sentry/SentryWrapper'
 import { resolve } from '@avalabs/core-utils-sdk'
 import { Request } from 'store/rpc/utils/createInAppRequest'
 import { SPAN_STATUS_ERROR } from '@sentry/core'
+import { getSolanaCaip2ChainId } from 'utils/caip2ChainIds'
 
 export const send = async ({
   request,
@@ -22,14 +23,16 @@ export const send = async ({
   provider,
   token,
   toAddress,
-  amount
+  amount,
+  chainId
 }: {
   request: Request
   fromAddress: string
   provider: SolanaProvider
   token: TokenWithBalanceSVM
   toAddress: string
-  amount?: bigint
+  amount?: bigint,
+  chainId: number
 }): Promise<string> => {
   const sentrySpanName = 'send-token'
 
@@ -54,7 +57,8 @@ export const send = async ({
                 account: fromAddress,
                 serializedTx: serializeSolanaTx(compiledTx)
               }
-            ]
+            ],
+            chainId: getSolanaCaip2ChainId(chainId) 
           })
         )
 
@@ -68,7 +72,7 @@ export const send = async ({
 
         return txHash
       } catch (error) {
-        console.log(error)
+        console.error(error)
         span?.setStatus({
           code: SPAN_STATUS_ERROR,
           message: error instanceof Error ? error.message : 'unknown error'
