@@ -30,6 +30,8 @@ const useSVMSend: SendAdapterSVM = ({
       validateSupportedToken(selectedToken)
       setIsSending(true)
 
+      console.log('network', network.chainId)
+
       return await sendSVM({
         request,
         fromAddress,
