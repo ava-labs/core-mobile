@@ -22,7 +22,7 @@ import FavoriteScreen from 'features/track/market/components/FavoriteScreen'
 import MarketScreen from 'features/track/market/components/MarketScreen'
 import SearchResultScreen from 'features/track/market/components/SearchResultScreen'
 import { TrendingScreen } from 'features/track/trending/components/TrendingScreen'
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import React, { useCallback, useMemo, useRef, useState } from 'react'
 import {
   InteractionManager,
   LayoutChangeEvent,
@@ -42,25 +42,30 @@ import Animated, {
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { MarketType } from 'store/watchlist/types'
 
-const SEARCH_BAR_MARGIN_TOP = Platform.OS === 'ios' ? 60 : 55
+// const SEARCH_BAR_MARGIN_TOP = Platform.OS === 'ios' ? 60 : 55
 
 const TrackHomeScreen = (): JSX.Element => {
   const { navigate } = useRouter()
   const { theme } = useTheme()
+  const insets = useSafeAreaInsets()
+  const isAndroidWithBottomBar = useIsAndroidWithBottomBar()
+  const tabBarHeight = useBottomTabBarHeight()
   const [isSearchBarFocused, setSearchBarFocused] = useState(false)
   const [searchText, setSearchText] = useState('')
   const tabViewRef = useRef<CollapsibleTabsRef>(null)
   const [balanceHeaderLayout, setBalanceHeaderLayout] = useState<
     LayoutRectangle | undefined
   >()
-  const selectedSegmentIndex = useSharedValue(0)
 
-  const handleBalanceHeaderLayout = useCallback(
-    (event: LayoutChangeEvent): void => {
-      setBalanceHeaderLayout(event.nativeEvent.layout)
-    },
-    []
-  )
+  const [tabBarLayout, setTabBarLayout] = useState<
+    LayoutRectangle | undefined
+  >()
+
+  const [searchBarLayout, setSearchBarLayout] = useState<
+    LayoutRectangle | undefined
+  >()
+
+  const selectedSegmentIndex = useSharedValue(0)
 
   const showSearchResults = isSearchBarFocused || searchText.length > 0
 
@@ -80,7 +85,7 @@ const TrackHomeScreen = (): JSX.Element => {
     const translateY = interpolate(
       targetHiddenProgress.value,
       [0, 1],
-      [0, SEARCH_BAR_MARGIN_TOP],
+      [0, 0],
       'clamp'
     )
 
@@ -93,7 +98,7 @@ const TrackHomeScreen = (): JSX.Element => {
     const translateY = interpolate(
       targetHiddenProgress.value,
       [0, 1],
-      [0, SEARCH_BAR_MARGIN_TOP],
+      [0, 0],
       'clamp'
     )
     const opacity = interpolate(
@@ -108,57 +113,24 @@ const TrackHomeScreen = (): JSX.Element => {
     }
   })
 
-  const renderHeader = useCallback((): JSX.Element => {
-    return (
-      <View style={{ backgroundColor: theme.colors.$surfacePrimary }}>
-        <Animated.View style={[animatedHeaderStyle]}>
-          <View
-            onLayout={handleBalanceHeaderLayout}
-            style={{
-              paddingHorizontal: 16,
-              marginTop: 16,
-              backgroundColor: theme.colors.$surfacePrimary
-            }}>
-            <Text variant="heading2">Track</Text>
-          </View>
-        </Animated.View>
-        <Animated.View
-          style={[
-            animatedSearchbarStyle,
-            {
-              paddingHorizontal: 16,
-              paddingVertical: 16,
-              backgroundColor: theme.colors.$surfacePrimary
-            }
-          ]}>
-          <SearchBar
-            setSearchBarFocused={setSearchBarFocused}
-            onTextChanged={setSearchText}
-            searchText={searchText}
-            placeholder="Search"
-            useDebounce={true}
-            useCancel
-          />
-        </Animated.View>
-        <Animated.View
-          style={[
-            { height: 1, backgroundColor: theme.colors.$surfaceSecondary },
-            animatedSeparatorStyle
-          ]}
-        />
-      </View>
-    )
-  }, [
-    handleBalanceHeaderLayout,
-    animatedHeaderStyle,
-    animatedSearchbarStyle,
-    animatedSeparatorStyle,
-    setSearchBarFocused,
-    setSearchText,
-    searchText,
-    theme.colors.$surfacePrimary,
-    theme.colors.$surfaceSecondary
-  ])
+  const handleScrollResync = useCallback(() => {
+    tabViewRef.current?.scrollResync()
+  }, [])
+
+  const onSearchTextChanged = useCallback(
+    (text: string) => {
+      setSearchText(text)
+      handleScrollResync()
+    },
+    [handleScrollResync]
+  )
+
+  const handleBalanceHeaderLayout = useCallback(
+    (event: LayoutChangeEvent): void => {
+      setBalanceHeaderLayout(event.nativeEvent.layout)
+    },
+    []
+  )
 
   const handleSelectSegment = useCallback(
     (index: number): void => {
@@ -193,43 +165,29 @@ const TrackHomeScreen = (): JSX.Element => {
     [navigate]
   )
 
-  const renderEmptyTabBar = useCallback((): JSX.Element => <></>, [])
-
-  const renderSearchResults = useCallback(() => {
-    return (
-      <SearchResultScreen
-        isSearchBarFocused={isSearchBarFocused}
-        searchText={searchText}
-        goToMarketDetail={handleGotoMarketDetail}
-      />
-    )
-  }, [handleGotoMarketDetail, isSearchBarFocused, searchText])
-
-  const handleScrollResync = useCallback(() => {
-    tabViewRef.current?.scrollResync()
-  }, [])
-
   useFocusEffect(
     useCallback(() => {
       handleScrollResync()
     }, [handleScrollResync])
   )
 
-  useEffect(() => {
-    handleScrollResync()
-  }, [showSearchResults, handleScrollResync])
+  const handleSearchBarLayout = useCallback((event: LayoutChangeEvent) => {
+    setSearchBarLayout(event.nativeEvent.layout)
+  }, [])
 
-  const insets = useSafeAreaInsets()
-  const isAndroidWithBottomBar = useIsAndroidWithBottomBar()
-  const tabBarHeight = useBottomTabBarHeight()
+  const handleTabBarLayout = useCallback((event: LayoutChangeEvent) => {
+    setTabBarLayout(event.nativeEvent.layout)
+  }, [])
 
   const tabHeight = useMemo(() => {
     return Platform.select({
       ios:
         SCREEN_HEIGHT -
         insets.top -
-        (balanceHeaderLayout?.height ?? 0) -
         tabBarHeight -
+        (balanceHeaderLayout?.height ?? 0) -
+        (tabBarLayout?.height ?? 0) -
+        (searchBarLayout?.height ?? 0) -
         11,
       android: SCREEN_HEIGHT - insets.top + (isAndroidWithBottomBar ? -11 : 11)
     })
@@ -237,15 +195,130 @@ const TrackHomeScreen = (): JSX.Element => {
     balanceHeaderLayout?.height,
     insets.top,
     isAndroidWithBottomBar,
-    tabBarHeight
+    tabBarHeight,
+    tabBarLayout?.height,
+    searchBarLayout?.height
   ])
 
   const contentContainerStyle = useMemo(() => {
     return {
       paddingBottom: 16,
+      paddingTop: 10,
       minHeight: tabHeight
     }
   }, [tabHeight])
+
+  const bottomOffset = useSharedValue(0)
+
+  const updateBottomOffset = useCallback(
+    (contentOffsetY: number) => {
+      'worklet'
+      if (
+        balanceHeaderLayout?.height &&
+        contentOffsetY < balanceHeaderLayout.height
+      ) {
+        bottomOffset.value =
+          balanceHeaderLayout?.height +
+          insets.bottom +
+          tabBarHeight +
+          contentOffsetY
+      } else {
+        bottomOffset.value = 0
+      }
+    },
+    [bottomOffset, balanceHeaderLayout?.height, insets.bottom, tabBarHeight]
+  )
+
+  const handleScroll = useCallback(
+    (contentOffsetY: number) => {
+      updateBottomOffset(contentOffsetY)
+      onScroll(contentOffsetY)
+    },
+    [onScroll, updateBottomOffset]
+  )
+
+  const renderEmptyTabBar = useCallback((): JSX.Element => <></>, [])
+
+  const renderHeader = useCallback((): JSX.Element => {
+    return (
+      <View style={{ backgroundColor: theme.colors.$surfacePrimary }}>
+        <Animated.View style={[animatedHeaderStyle]}>
+          <View
+            onLayout={handleBalanceHeaderLayout}
+            style={{
+              paddingHorizontal: 16,
+              marginTop: 16,
+              backgroundColor: theme.colors.$surfacePrimary
+            }}>
+            <Text variant="heading2">Track</Text>
+          </View>
+        </Animated.View>
+        <View>
+          <Animated.View
+            onLayout={handleSearchBarLayout}
+            style={[
+              animatedSearchbarStyle,
+              {
+                paddingHorizontal: 16,
+                paddingVertical: 12,
+                backgroundColor: theme.colors.$surfacePrimary
+              }
+            ]}>
+            <SearchBar
+              setSearchBarFocused={setSearchBarFocused}
+              onTextChanged={onSearchTextChanged}
+              searchText={searchText}
+              placeholder="Search"
+              useDebounce={true}
+              useCancel
+            />
+          </Animated.View>
+          <Animated.View
+            style={[
+              { height: 1, backgroundColor: theme.colors.$surfaceSecondary },
+              animatedSeparatorStyle
+            ]}
+          />
+        </View>
+      </View>
+    )
+  }, [
+    theme.colors.$surfacePrimary,
+    theme.colors.$surfaceSecondary,
+    animatedHeaderStyle,
+    handleBalanceHeaderLayout,
+    handleSearchBarLayout,
+    animatedSearchbarStyle,
+    onSearchTextChanged,
+    searchText,
+    animatedSeparatorStyle
+  ])
+
+  const renderSearchResults = useCallback(() => {
+    const containerStyle = {
+      ...contentContainerStyle,
+      minHeight: (tabHeight ?? 0) + (tabBarLayout?.height ?? 0)
+    }
+    return (
+      <SearchResultScreen
+        isSearchBarFocused={isSearchBarFocused}
+        searchText={searchText}
+        goToMarketDetail={handleGotoMarketDetail}
+        handleScrollResync={handleScrollResync}
+        containerStyle={containerStyle}
+        bottomOffset={bottomOffset}
+      />
+    )
+  }, [
+    bottomOffset,
+    contentContainerStyle,
+    handleGotoMarketDetail,
+    handleScrollResync,
+    isSearchBarFocused,
+    searchText,
+    tabBarLayout?.height,
+    tabHeight
+  ])
 
   const tabs = useMemo(() => {
     return [
@@ -258,6 +331,7 @@ const TrackHomeScreen = (): JSX.Element => {
             <TrendingScreen
               goToMarketDetail={handleGotoMarketDetail}
               containerStyle={contentContainerStyle}
+              bottomOffset={bottomOffset}
             />
           )
       },
@@ -270,6 +344,8 @@ const TrackHomeScreen = (): JSX.Element => {
             <FavoriteScreen
               goToMarketDetail={handleGotoMarketDetail}
               containerStyle={contentContainerStyle}
+              onScrollResync={handleScrollResync}
+              bottomOffset={bottomOffset}
             />
           )
       },
@@ -282,13 +358,17 @@ const TrackHomeScreen = (): JSX.Element => {
             <MarketScreen
               goToMarketDetail={handleGotoMarketDetail}
               containerStyle={contentContainerStyle}
+              onScrollResync={handleScrollResync}
+              bottomOffset={bottomOffset}
             />
           )
       }
     ]
   }, [
+    bottomOffset,
     contentContainerStyle,
     handleGotoMarketDetail,
+    handleScrollResync,
     renderSearchResults,
     selectedSegmentIndex,
     showSearchResults
@@ -314,19 +394,22 @@ const TrackHomeScreen = (): JSX.Element => {
         renderHeader={renderHeader}
         renderTabBar={renderEmptyTabBar}
         onTabChange={handleTabChange}
-        onScrollY={onScroll}
+        onScrollY={handleScroll}
         tabs={tabs}
+        minHeaderHeight={searchBarLayout?.height ?? 0}
       />
       {!showSearchResults && (
-        <LinearGradientBottomWrapper>
-          <SegmentedControl
-            dynamicItemWidth={false}
-            items={SEGMENT_ITEMS}
-            selectedSegmentIndex={selectedSegmentIndex}
-            onSelectSegment={handleSelectSegment}
-            style={styles.segmentedControl}
-          />
-        </LinearGradientBottomWrapper>
+        <View onLayout={handleTabBarLayout}>
+          <LinearGradientBottomWrapper>
+            <SegmentedControl
+              dynamicItemWidth={false}
+              items={SEGMENT_ITEMS}
+              selectedSegmentIndex={selectedSegmentIndex}
+              onSelectSegment={handleSelectSegment}
+              style={styles.segmentedControl}
+            />
+          </LinearGradientBottomWrapper>
+        </View>
       )}
     </BlurredBarsContentLayout>
   )

@@ -16,8 +16,7 @@ import { Platform, ViewStyle } from 'react-native'
 import { DropdownSelections } from 'common/components/DropdownSelections'
 import { LoadingState } from 'common/components/LoadingState'
 import { getListItemEnteringAnimation } from 'common/utils/animations'
-import { portfolioTabContentHeight } from 'features/portfolio/utils'
-import Animated from 'react-native-reanimated'
+import Animated, { SharedValue } from 'react-native-reanimated'
 import { NftItem } from 'services/nft/types'
 import {
   ASSET_MANAGE_VIEWS,
@@ -42,7 +41,8 @@ export const CollectiblesScreen = ({
   goToCollectibleDetail,
   goToCollectibleManagement,
   goToDiscoverCollectibles,
-  onScrollResync
+  onScrollResync,
+  bottomOffset
 }: {
   goToCollectibleDetail: (
     localId: string,
@@ -52,6 +52,7 @@ export const CollectiblesScreen = ({
   goToDiscoverCollectibles: () => void
   onScrollResync: () => void
   containerStyle: ViewStyle
+  bottomOffset: SharedValue<number>
 }): ReactNode => {
   const {
     theme: { colors }
@@ -139,51 +140,62 @@ export const CollectiblesScreen = ({
 
   const renderEmpty = useMemo((): JSX.Element => {
     if (isLoading || !isEnabled)
-      return <LoadingState sx={{ height: portfolioTabContentHeight }} />
+      return (
+        <CollapsibleTabs.ContentWrapper
+          bottomOffset={bottomOffset}
+          height={Number(containerStyle.minHeight)}>
+          <LoadingState />
+        </CollapsibleTabs.ContentWrapper>
+      )
 
     if (error || !isSuccess) {
       return (
-        <ErrorState
-          sx={{ height: portfolioTabContentHeight }}
-          description="Please hit refresh or try again later"
-          button={{
-            title: 'Refresh',
-            onPress: refetch
-          }}
-        />
+        <CollapsibleTabs.ContentWrapper
+          bottomOffset={bottomOffset}
+          height={Number(containerStyle.minHeight)}>
+          <ErrorState
+            description="Please hit refresh or try again later"
+            button={{
+              title: 'Refresh',
+              onPress: refetch
+            }}
+          />
+        </CollapsibleTabs.ContentWrapper>
       )
     }
 
     if (filteredAndSorted.length === 0 && hasFilters) {
       return (
-        <ErrorState
-          sx={{
-            height: portfolioTabContentHeight
-          }}
-          title="No Collectibles found"
-          description="
+        <CollapsibleTabs.ContentWrapper
+          bottomOffset={bottomOffset}
+          height={Number(containerStyle.minHeight)}>
+          <ErrorState
+            title="No Collectibles found"
+            description="
               Try changing the filter settings or reset the filter to see all assets."
-          button={{
-            title: 'Reset filter',
-            onPress: onResetFilter
-          }}
-        />
+            button={{
+              title: 'Reset filter',
+              onPress: onResetFilter
+            }}
+          />
+        </CollapsibleTabs.ContentWrapper>
       )
     }
 
     if (filteredAndSorted.length === 0 && isEveryCollectibleHidden) {
       return (
-        <ErrorState
-          sx={{
-            height: portfolioTabContentHeight
-          }}
-          title="All collectibles hidden"
-          description="You have hidden all your collectibles"
-          button={{
-            title: 'Show hidden',
-            onPress: onShowHidden
-          }}
-        />
+        <CollapsibleTabs.ContentWrapper
+          bottomOffset={bottomOffset}
+          height={Number(containerStyle.minHeight)}>
+          <ErrorState
+            title="All collectibles hidden"
+            description="You have hidden all your collectibles"
+            button={{
+              title: 'Show hidden',
+              onPress: onShowHidden
+            }}
+          />
+        </CollapsibleTabs.ContentWrapper>
       )
     }
 
@@ -194,7 +206,8 @@ export const CollectiblesScreen = ({
           flexDirection: 'row',
           gap: HORIZONTAL_MARGIN,
           marginHorizontal: HORIZONTAL_MARGIN,
-          paddingTop: HORIZONTAL_MARGIN / 2
+          paddingTop: HORIZONTAL_MARGIN / 2,
+          minHeight: containerStyle.minHeight
         }}>
         <View
           style={{
@@ -249,6 +262,8 @@ export const CollectiblesScreen = ({
   }, [
     isLoading,
     isEnabled,
+    bottomOffset,
+    containerStyle.minHeight,
     error,
     isSuccess,
     filteredAndSorted.length,
@@ -337,7 +352,6 @@ export const CollectiblesScreen = ({
         onRefresh={pullToRefresh}
         refreshing={isRefreshing}
         contentContainerStyle={contentContainerStyle}
-        scrollEnabled={filteredAndSorted?.length > 0 || hasFilters}
         estimatedItemSize={220}
         removeClippedSubviews={Platform.OS === 'android'}
         showsVerticalScrollIndicator={false}

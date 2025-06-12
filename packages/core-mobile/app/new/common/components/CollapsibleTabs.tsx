@@ -1,3 +1,4 @@
+import { ANIMATED, View } from '@avalabs/k2-alpine'
 import React, { forwardRef, useMemo } from 'react'
 import { StyleSheet } from 'react-native'
 import {
@@ -7,7 +8,13 @@ import {
   Tabs,
   useCurrentTabScrollY
 } from 'react-native-collapsible-tab-view'
-import { runOnJS, useAnimatedReaction } from 'react-native-reanimated'
+import Animated, {
+  runOnJS,
+  SharedValue,
+  useAnimatedReaction,
+  useAnimatedStyle,
+  withTiming
+} from 'react-native-reanimated'
 
 export type OnTabChange = OnTabChangeCallback<string>
 
@@ -20,10 +27,19 @@ export const CollapsibleTabsContainer = forwardRef<
     onTabChange?: OnTabChange
     onScrollY?: (contentOffsetY: number) => void
     tabs: { tabName: string; component: JSX.Element }[]
+    minHeaderHeight?: number
   }
 >(
   (
-    { tabs, renderHeader, renderTabBar, onIndexChange, onTabChange, onScrollY },
+    {
+      tabs,
+      renderHeader,
+      renderTabBar,
+      onIndexChange,
+      onTabChange,
+      onScrollY,
+      minHeaderHeight
+    },
     ref
   ): JSX.Element => {
     const content = useMemo(() => {
@@ -52,7 +68,8 @@ export const CollapsibleTabsContainer = forwardRef<
         renderTabBar={renderTabBar}
         pagerProps={pagerProps}
         onTabChange={onTabChange}
-        onIndexChange={onIndexChange}>
+        onIndexChange={onIndexChange}
+        minHeaderHeight={minHeaderHeight}>
         {content}
       </Tabs.Container>
     )
@@ -80,8 +97,43 @@ const CollapsibleTabWrapper = ({
   return component
 }
 
+const ContentWrapper = ({
+  children,
+  bottomOffset,
+  height
+}: {
+  children: React.ReactNode
+  bottomOffset: SharedValue<number>
+  height: number
+}): JSX.Element => {
+  const animatedStyle = useAnimatedStyle(() => {
+    return {
+      transform: [
+        {
+          translateY: withTiming(-bottomOffset.value, {
+            ...ANIMATED.TIMING_CONFIG,
+            duration: 250
+          })
+        }
+      ]
+    }
+  })
+
+  return (
+    <View
+      style={{
+        height: height,
+        justifyContent: 'center',
+        alignItems: 'center'
+      }}>
+      <Animated.View style={animatedStyle}>{children}</Animated.View>
+    </View>
+  )
+}
+
 export const CollapsibleTabs = {
   Container: CollapsibleTabsContainer,
+  ContentWrapper: ContentWrapper,
   Tab: Tabs.Tab,
   FlatList: Tabs.FlatList,
   MasonryList: Tabs.MasonryFlashList,

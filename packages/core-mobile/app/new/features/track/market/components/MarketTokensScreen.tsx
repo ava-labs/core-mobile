@@ -110,9 +110,8 @@ const MarketTokensScreen = ({
 }
 
 const styles = StyleSheet.create({
-  container: { paddingBottom: 16 },
   dropdownContainer: { paddingHorizontal: 16 },
-  dropdown: { marginTop: 8, marginBottom: 12 }
+  dropdown: { marginBottom: 12 }
 })
 
 export default MarketTokensScreen

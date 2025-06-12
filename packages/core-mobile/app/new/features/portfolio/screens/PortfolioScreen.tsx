@@ -66,6 +66,9 @@ import { useFocusedSelector } from 'utils/performance/useFocusedSelector'
 const SEGMENT_ITEMS = ['Assets', 'Collectibles', 'DeFi']
 
 const PortfolioHomeScreen = (): JSX.Element => {
+  const insets = useSafeAreaInsets()
+  const isAndroidWithBottomBar = useIsAndroidWithBottomBar()
+  const tabBarHeight = useBottomTabBarHeight()
   const isPrivacyModeEnabled = useFocusedSelector(selectIsPrivacyModeEnabled)
   const [_, setSelectedToken] = useSendSelectedToken()
   const { theme } = useTheme()
@@ -75,6 +78,7 @@ const PortfolioHomeScreen = (): JSX.Element => {
   const [balanceHeaderLayout, setBalanceHeaderLayout] = useState<
     LayoutRectangle | undefined
   >()
+
   const selectedSegmentIndex = useSharedValue(0)
   const activeAccount = useFocusedSelector(selectActiveAccount)
   const isBalanceLoading = useFocusedSelector(selectIsLoadingBalances)
@@ -388,17 +392,13 @@ const PortfolioHomeScreen = (): JSX.Element => {
     }, [])
   )
 
-  const insets = useSafeAreaInsets()
-  const isAndroidWithBottomBar = useIsAndroidWithBottomBar()
-  const tabBarHeight = useBottomTabBarHeight()
-
   const tabHeight = useMemo(() => {
     return Platform.select({
       ios:
         SCREEN_HEIGHT -
         insets.top -
-        (balanceHeaderLayout?.height ?? 0) -
         tabBarHeight -
+        (balanceHeaderLayout?.height ?? 0) -
         11,
       android: SCREEN_HEIGHT - insets.top + (isAndroidWithBottomBar ? -11 : 11)
     })
@@ -417,6 +417,32 @@ const PortfolioHomeScreen = (): JSX.Element => {
     }
   }, [tabHeight])
 
+  const bottomOffset = useSharedValue(0)
+
+  const updateBottomOffset = useCallback(
+    (contentOffsetY: number) => {
+      'worklet'
+      if (
+        balanceHeaderLayout?.height &&
+        contentOffsetY < balanceHeaderLayout.height
+      ) {
+        bottomOffset.value =
+          balanceHeaderLayout?.height + insets.bottom + contentOffsetY
+      } else {
+        bottomOffset.value = 0
+      }
+    },
+    [bottomOffset, balanceHeaderLayout?.height, insets.bottom]
+  )
+
+  const handleScroll = useCallback(
+    (contentOffsetY: number) => {
+      updateBottomOffset(contentOffsetY)
+      onScroll(contentOffsetY)
+    },
+    [onScroll, updateBottomOffset]
+  )
+
   const tabs = useMemo(() => {
     return [
       {
@@ -428,6 +454,7 @@ const PortfolioHomeScreen = (): JSX.Element => {
             goToBuy={handleBuy}
             onScrollResync={handleScrollResync}
             containerStyle={contentContainerStyle}
+            bottomOffset={bottomOffset}
           />
         )
       },
@@ -440,6 +467,7 @@ const PortfolioHomeScreen = (): JSX.Element => {
             goToDiscoverCollectibles={handleGoToDiscoverCollectibles}
             onScrollResync={handleScrollResync}
             containerStyle={contentContainerStyle}
+            bottomOffset={bottomOffset}
           />
         )
       },
@@ -449,6 +477,7 @@ const PortfolioHomeScreen = (): JSX.Element => {
           <DeFiScreen
             onScrollResync={handleScrollResync}
             containerStyle={contentContainerStyle}
+            bottomOffset={bottomOffset}
           />
         )
       }
@@ -459,6 +488,7 @@ const PortfolioHomeScreen = (): JSX.Element => {
     handleBuy,
     handleScrollResync,
     contentContainerStyle,
+    bottomOffset,
     handleGoToCollectibleDetail,
     handleGoToCollectibleManagement,
     handleGoToDiscoverCollectibles
@@ -471,7 +501,7 @@ const PortfolioHomeScreen = (): JSX.Element => {
         renderHeader={renderHeader}
         renderTabBar={renderEmptyTabBar}
         onTabChange={handleTabChange}
-        onScrollY={onScroll}
+        onScrollY={handleScroll}
         tabs={tabs}
       />
 

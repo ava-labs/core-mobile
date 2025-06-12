@@ -10,10 +10,9 @@ import { ErrorState } from 'common/components/ErrorState'
 import { LoadingState } from 'common/components/LoadingState'
 import { Space } from 'common/components/Space'
 import { getListItemEnteringAnimation } from 'common/utils/animations'
-import { portfolioTabContentHeight } from 'features/portfolio/utils'
 import React, { FC, memo, useCallback, useMemo } from 'react'
 import { ViewStyle } from 'react-native'
-import Animated from 'react-native-reanimated'
+import Animated, { SharedValue } from 'react-native-reanimated'
 import { useSelector } from 'react-redux'
 import { selectActiveAccount } from 'store/account'
 import {
@@ -35,6 +34,7 @@ interface Props {
   goToTokenManagement: () => void
   goToBuy: () => void
   onScrollResync: () => void
+  bottomOffset: SharedValue<number>
 }
 
 const AssetsScreen: FC<Props> = ({
@@ -42,7 +42,8 @@ const AssetsScreen: FC<Props> = ({
   goToTokenDetail,
   goToTokenManagement,
   goToBuy,
-  onScrollResync
+  onScrollResync,
+  bottomOffset
 }): JSX.Element => {
   const { data, filter, sort, view, refetch, isRefetching, isLoading } =
     useAssetsFilterAndSort()
@@ -110,12 +111,11 @@ const AssetsScreen: FC<Props> = ({
 
   const emptyComponent = useMemo(() => {
     if (isRefetchingBalance) {
-      return <LoadingState sx={{ height: portfolioTabContentHeight }} />
+      return <LoadingState />
     }
     if (isAllBalancesInaccurate) {
       return (
         <ErrorState
-          sx={{ height: portfolioTabContentHeight }}
           description="Please hit refresh or try again later"
           button={{
             title: 'Refresh',
@@ -127,7 +127,6 @@ const AssetsScreen: FC<Props> = ({
 
     return (
       <ErrorState
-        sx={{ height: portfolioTabContentHeight }}
         icon={<Image source={errorIcon} sx={{ width: 42, height: 42 }} />}
         title="No assets yet"
         description="On-ramp using Core in two minutes"
@@ -138,6 +137,16 @@ const AssetsScreen: FC<Props> = ({
       />
     )
   }, [isRefetchingBalance, isAllBalancesInaccurate, goToBuy, refetch])
+
+  const renderEmpty = useCallback(() => {
+    return (
+      <CollapsibleTabs.ContentWrapper
+        bottomOffset={bottomOffset}
+        height={Number(containerStyle.minHeight)}>
+        {emptyComponent}
+      </CollapsibleTabs.ContentWrapper>
+    )
+  }, [bottomOffset, containerStyle.minHeight, emptyComponent])
 
   const header = useMemo(() => {
     return (
@@ -162,7 +171,13 @@ const AssetsScreen: FC<Props> = ({
   }
 
   if (isBalanceLoading || enabledNetworks.length === 0) {
-    return <LoadingState sx={{ height: portfolioTabContentHeight * 2 }} />
+    return (
+      <CollapsibleTabs.ContentWrapper
+        bottomOffset={bottomOffset}
+        height={Number(containerStyle.minHeight)}>
+        <LoadingState />
+      </CollapsibleTabs.ContentWrapper>
+    )
   }
 
   return (
@@ -183,7 +198,7 @@ const AssetsScreen: FC<Props> = ({
         estimatedItemSize={isGridView ? 183 : 73}
         renderItem={item => renderItem(item.item, item.index)}
         ListHeaderComponent={header}
-        ListEmptyComponent={emptyComponent}
+        ListEmptyComponent={renderEmpty}
         ItemSeparatorComponent={renderSeparator}
         showsVerticalScrollIndicator={false}
         refreshing={isRefetching || isLoading}

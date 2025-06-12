@@ -1,22 +1,24 @@
 import { SPRING_LINEAR_TRANSITION } from '@avalabs/k2-alpine'
+import { CollapsibleTabs } from 'common/components/CollapsibleTabs'
+import { useIsSwapListLoaded } from 'common/hooks/useIsSwapListLoaded'
 import { getListItemEnteringAnimation } from 'common/utils/animations'
-import { portfolioTabContentHeight } from 'features/portfolio/utils'
 import { useWatchlist } from 'hooks/watchlist/useWatchlist'
 import { ErrorState } from 'new/common/components/ErrorState'
 import { LoadingState } from 'new/common/components/LoadingState'
 import React, { useMemo } from 'react'
-import { Dimensions, ViewStyle } from 'react-native'
-import Animated from 'react-native-reanimated'
+import { ViewStyle } from 'react-native'
+import Animated, { SharedValue } from 'react-native-reanimated'
 import { MarketType } from 'store/watchlist/types'
-import { useIsSwapListLoaded } from 'common/hooks/useIsSwapListLoaded'
 import TrendingTokensScreen from './TrendingTokensScreen'
 
 export const TrendingScreen = ({
   goToMarketDetail,
-  containerStyle
+  containerStyle,
+  bottomOffset
 }: {
   goToMarketDetail: (tokenId: string, marketType: MarketType) => void
   containerStyle: ViewStyle
+  bottomOffset: SharedValue<number>
 }): JSX.Element => {
   const {
     trendingTokens,
@@ -29,19 +31,33 @@ export const TrendingScreen = ({
 
   const emptyComponent = useMemo(() => {
     if (isRefetchingTrendingTokens) {
-      return <LoadingState sx={{ height: portfolioTabContentHeight }} />
+      return (
+        <CollapsibleTabs.ContentWrapper
+          bottomOffset={bottomOffset}
+          height={Number(containerStyle.minHeight)}>
+          <LoadingState />
+        </CollapsibleTabs.ContentWrapper>
+      )
     }
 
     return (
-      <ErrorState
-        sx={{ height: contentHeight }}
-        button={{
-          title: 'Refresh',
-          onPress: refetchTrendingTokens
-        }}
-      />
+      <CollapsibleTabs.ContentWrapper
+        bottomOffset={bottomOffset}
+        height={Number(containerStyle.minHeight)}>
+        <ErrorState
+          button={{
+            title: 'Refresh',
+            onPress: refetchTrendingTokens
+          }}
+        />
+      </CollapsibleTabs.ContentWrapper>
     )
-  }, [isRefetchingTrendingTokens, refetchTrendingTokens])
+  }, [
+    bottomOffset,
+    containerStyle.minHeight,
+    isRefetchingTrendingTokens,
+    refetchTrendingTokens
+  ])
 
   const showLoading =
     isLoadingTrendingTokens ||
@@ -51,7 +67,13 @@ export const TrendingScreen = ({
     !isSwapListLoaded
 
   if (showLoading) {
-    return <LoadingState sx={{ height: portfolioTabContentHeight * 1.5 }} />
+    return (
+      <CollapsibleTabs.ContentWrapper
+        bottomOffset={bottomOffset}
+        height={Number(containerStyle.minHeight)}>
+        <LoadingState />
+      </CollapsibleTabs.ContentWrapper>
+    )
   }
 
   return (
@@ -70,5 +92,3 @@ export const TrendingScreen = ({
     </Animated.View>
   )
 }
-
-const contentHeight = Dimensions.get('window').height / 2
