@@ -247,7 +247,7 @@ describe('BiometricsSDK', () => {
 
     it('should throw error when changing PIN without key in cache', async () => {
       await expect(BiometricsSDK.changePin('newPin')).rejects.toThrow(
-        'Encryption key not found in cache. Cannot change pin.'
+        'Encryption key not found in cache.'
       )
     })
   })
@@ -281,9 +281,7 @@ describe('BiometricsSDK', () => {
       BiometricsSDK.clearEncryptionKey() // empty cache
       await expect(
         BiometricsSDK.storeWalletSecret(mockWalletId, mockSecret)
-      ).rejects.toThrow(
-        'Encryption key not found in cache. Cannot store wallet secret.'
-      )
+      ).rejects.toThrow('Encryption key not found in cache.')
     })
 
     it('should load wallet secret', async () => {
@@ -309,9 +307,7 @@ describe('BiometricsSDK', () => {
       BiometricsSDK.clearEncryptionKey() // empty cache
       await expect(
         BiometricsSDK.loadWalletSecret(mockWalletId)
-      ).rejects.toThrow(
-        'Encryption key not found in cache. Cannot load wallet secret.'
-      )
+      ).rejects.toThrow('Encryption key not found in cache.')
     })
 
     it('should return false if loading wallet secret fails', async () => {

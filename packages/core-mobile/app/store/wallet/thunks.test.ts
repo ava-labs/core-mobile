@@ -26,14 +26,8 @@ describe('wallet thunks', () => {
     }
 
     it('should successfully store wallet with PIN', async () => {
-      const keychainResult = {
-        service: 'test-service',
-        storage: 'keychain'
-      }
       // Mock successful storage
-      jest
-        .spyOn(BiometricsSDK, 'storeWalletSecret')
-        .mockResolvedValue(keychainResult)
+      jest.spyOn(BiometricsSDK, 'storeWalletSecret').mockResolvedValue(true)
 
       const mockGetState = jest.fn().mockReturnValue(mockState)
       const result = await storeWallet(mockParams)(

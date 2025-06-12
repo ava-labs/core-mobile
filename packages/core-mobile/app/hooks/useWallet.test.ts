@@ -57,12 +57,6 @@ jest.mock('uuid', () => ({
   v4: jest.fn()
 }))
 
-// Mock keychain result
-const keychainResult = {
-  service: 'test-service',
-  storage: 'keychain'
-}
-
 describe('useWallet', () => {
   const mockWalletId = 'test-wallet-1'
   const mockMnemonic =
@@ -80,9 +74,7 @@ describe('useWallet', () => {
 
   describe('onPinCreated', () => {
     it('should create wallet with PIN and return the walletId', async () => {
-      jest
-        .spyOn(BiometricsSDK, 'storeWalletSecret')
-        .mockResolvedValue(keychainResult)
+      jest.spyOn(BiometricsSDK, 'storeWalletSecret').mockResolvedValue(true)
       jest.spyOn(BiometricsSDK, 'canUseBiometry').mockResolvedValue(true)
 
       const { result } = renderHook(() => useWallet(), { wrapper })

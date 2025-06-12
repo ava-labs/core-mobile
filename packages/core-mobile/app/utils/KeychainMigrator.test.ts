@@ -101,7 +101,8 @@ describe('KeychainMigrator', () => {
       const result = await keychainMigrator.runPinMigration(pin)
       expect(result).toBe(false)
       expect(mockLogger.error).toHaveBeenCalledWith(
-        'Could not load legacy wallet with PIN'
+        'PIN-based keychain migration failed:',
+        new Error('Could not load legacy wallet with PIN')
       )
     })
 
@@ -143,7 +144,8 @@ describe('KeychainMigrator', () => {
       const result = await keychainMigrator.runBiometricMigration()
       expect(result).toBe(false)
       expect(mockLogger.error).toHaveBeenCalledWith(
-        'Could not load legacy wallet with biometrics.'
+        'Biometric-based keychain migration failed:',
+        new Error('Could not load legacy wallet with biometrics.')
       )
     })
 
@@ -193,7 +195,8 @@ describe('KeychainMigrator', () => {
       const result = await keychainMigrator.completePartialMigration(pin)
       expect(result).toBe(false)
       expect(mockLogger.error).toHaveBeenCalledWith(
-        'Could not load legacy wallet with PIN.'
+        'Failed to complete partial migration:',
+        new Error('Could not load legacy wallet with PIN.')
       )
     })
 

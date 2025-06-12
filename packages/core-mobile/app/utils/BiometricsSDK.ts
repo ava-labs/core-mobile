@@ -233,9 +233,7 @@ class BiometricsSDK {
 
   private getEncryptionKey(): string {
     if (!this.encryptionKey) {
-      throw new Error(
-        'Encryption key not found in cache. Cannot store wallet secret.'
-      )
+      throw new Error('Encryption key not found in cache.')
     }
     return this.encryptionKey
   }
