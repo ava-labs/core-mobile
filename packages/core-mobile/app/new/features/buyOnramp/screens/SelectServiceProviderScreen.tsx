@@ -3,12 +3,9 @@ import React, { useCallback, useMemo } from 'react'
 import { View, GroupList, useTheme, Image } from '@avalabs/k2-alpine'
 import { useRouter } from 'expo-router'
 import { Space } from 'common/components/Space'
-import {
-  ServiceProviderCategories,
-  ServiceProviders
-} from 'services/meld/consts'
 import { useSearchServiceProviders } from '../hooks/useSearchServiceProviders'
 import { useOnRampServiceProvider } from '../store'
+import { ServiceProviderCategories, ServiceProviders } from '../consts'
 
 export const SelectServiceProviderScreen = (): React.JSX.Element => {
   const {
@@ -16,7 +13,7 @@ export const SelectServiceProviderScreen = (): React.JSX.Element => {
   } = useTheme()
   const { back, canGoBack } = useRouter()
   const { data: serviceProviders } = useSearchServiceProviders({
-    categories: [ServiceProviderCategories.CryptoOnramp]
+    categories: [ServiceProviderCategories.CRYPTO_ONRAMP]
   })
   const [_, setOnRampServiceProvider] = useOnRampServiceProvider()
 
