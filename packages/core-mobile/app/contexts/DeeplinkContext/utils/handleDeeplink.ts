@@ -67,6 +67,10 @@ export const handleDeeplink = ({
       } else if (action === ACTIONS.WatchList) {
         const coingeckoId = pathname.split('/')[1]
         navigateFromDeeplinkUrl(`/trackTokenDetail?tokenId=${coingeckoId}`)
+      } else if (action === ACTIONS.BuyCompleted) {
+        // dismiss buy flow
+      } else if (action === ACTIONS.SellCompleted) {
+        // dismiss sell flow
       } else {
         const path = deeplink.url.split(':/')[1]
         path && navigateFromDeeplinkUrl(path)
