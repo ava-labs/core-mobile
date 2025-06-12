@@ -62,9 +62,13 @@ export const TrendingScreen = ({
 
   if (showLoading) {
     return (
-      <CollapsibleTabs.ContentWrapper height={Number(containerStyle.minHeight)}>
-        <LoadingState />
-      </CollapsibleTabs.ContentWrapper>
+      <LoadingState
+        sx={{
+          minHeight: containerStyle.minHeight,
+          justifyContent: 'center',
+          alignItems: 'center'
+        }}
+      />
     )
   }
 

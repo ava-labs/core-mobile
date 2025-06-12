@@ -7,6 +7,7 @@ import {
   useTheme,
   View
 } from '@avalabs/k2-alpine'
+import { useHeaderHeight } from '@react-navigation/elements'
 import BlurredBarsContentLayout from 'common/components/BlurredBarsContentLayout'
 import {
   CollapsibleTabs,
@@ -16,7 +17,6 @@ import {
 import { LinearGradientBottomWrapper } from 'common/components/LinearGradientBottomWrapper'
 import { useBottomTabBarHeight } from 'common/hooks/useBottomTabBarHeight'
 import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
-import { useIsAndroidWithBottomBar } from 'common/hooks/useIsAndroidWithBottomBar'
 import { useFocusEffect, useRouter } from 'expo-router'
 import FavoriteScreen from 'features/track/market/components/FavoriteScreen'
 import MarketScreen from 'features/track/market/components/MarketScreen'
@@ -39,7 +39,6 @@ import Animated, {
   useAnimatedStyle,
   useSharedValue
 } from 'react-native-reanimated'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { MarketType } from 'store/watchlist/types'
 
 // const SEARCH_BAR_MARGIN_TOP = Platform.OS === 'ios' ? 60 : 55
@@ -47,8 +46,6 @@ import { MarketType } from 'store/watchlist/types'
 const TrackHomeScreen = (): JSX.Element => {
   const { navigate } = useRouter()
   const { theme } = useTheme()
-  const insets = useSafeAreaInsets()
-  const isAndroidWithBottomBar = useIsAndroidWithBottomBar()
   const tabBarHeight = useBottomTabBarHeight()
   const [isSearchBarFocused, setSearchBarFocused] = useState(false)
   const [searchText, setSearchText] = useState('')
@@ -179,23 +176,27 @@ const TrackHomeScreen = (): JSX.Element => {
     setTabBarLayout(event.nativeEvent.layout)
   }, [])
 
+  const headerHeight = useHeaderHeight()
+
   const tabHeight = useMemo(() => {
     return Platform.select({
       ios:
         SCREEN_HEIGHT -
-        insets.top -
         tabBarHeight -
-        (balanceHeaderLayout?.height ?? 0) -
+        headerHeight -
         (tabBarLayout?.height ?? 0) -
+        (searchBarLayout?.height ?? 0),
+      android:
+        SCREEN_HEIGHT -
+        tabBarHeight +
+        headerHeight -
         (searchBarLayout?.height ?? 0) -
-        11,
-      android: SCREEN_HEIGHT - insets.top + (isAndroidWithBottomBar ? -11 : 11)
+        (tabBarLayout?.height ?? 0) -
+        32
     })
   }, [
-    balanceHeaderLayout?.height,
-    insets.top,
-    isAndroidWithBottomBar,
     tabBarHeight,
+    headerHeight,
     tabBarLayout?.height,
     searchBarLayout?.height
   ])

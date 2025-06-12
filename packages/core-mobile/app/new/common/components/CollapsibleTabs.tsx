@@ -1,6 +1,6 @@
 import { ANIMATED, View } from '@avalabs/k2-alpine'
 import React, { forwardRef, useMemo } from 'react'
-import { StyleSheet } from 'react-native'
+import { Platform, StyleSheet } from 'react-native'
 import {
   CollapsibleRef,
   OnTabChangeCallback,
@@ -131,7 +131,7 @@ const ContentWrapper = ({
   return (
     <View
       style={{
-        height: height,
+        height: height - (Platform.OS === 'android' ? header.height : 0) - 24,
         justifyContent: 'center',
         alignItems: 'center'
       }}>

@@ -18,7 +18,6 @@ import { HiddenBalanceText } from 'common/components/HiddenBalanceText'
 import { LinearGradientBottomWrapper } from 'common/components/LinearGradientBottomWrapper'
 import { useBottomTabBarHeight } from 'common/hooks/useBottomTabBarHeight'
 import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
-import { useIsAndroidWithBottomBar } from 'common/hooks/useIsAndroidWithBottomBar'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
 import { useFocusEffect, useRouter } from 'expo-router'
 import {
@@ -46,7 +45,6 @@ import Animated, {
   useAnimatedStyle,
   useSharedValue
 } from 'react-native-reanimated'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useDispatch, useSelector } from 'react-redux'
 import { selectActiveAccount } from 'store/account'
 import {
@@ -67,8 +65,6 @@ import { useFocusedSelector } from 'utils/performance/useFocusedSelector'
 const SEGMENT_ITEMS = ['Assets', 'Collectibles', 'DeFi']
 
 const PortfolioHomeScreen = (): JSX.Element => {
-  const insets = useSafeAreaInsets()
-  const isAndroidWithBottomBar = useIsAndroidWithBottomBar()
   const tabBarHeight = useBottomTabBarHeight()
   const isPrivacyModeEnabled = useFocusedSelector(selectIsPrivacyModeEnabled)
   const [_, setSelectedToken] = useSendSelectedToken()
@@ -406,24 +402,15 @@ const PortfolioHomeScreen = (): JSX.Element => {
   const headerHeight = useHeaderHeight()
 
   const tabHeight = useMemo(() => {
-    const height =
-      SCREEN_HEIGHT -
-      insets.bottom -
-      tabBarHeight -
-      headerHeight -
-      (segmentedControlLayout?.height ?? 0)
-
     return Platform.select({
-      ios: height + 11,
-      android: height + (isAndroidWithBottomBar ? 22 : 0)
+      ios:
+        SCREEN_HEIGHT -
+        tabBarHeight -
+        headerHeight -
+        (segmentedControlLayout?.height ?? 0),
+      android: SCREEN_HEIGHT - tabBarHeight + headerHeight - 6
     })
-  }, [
-    headerHeight,
-    insets.bottom,
-    isAndroidWithBottomBar,
-    segmentedControlLayout?.height,
-    tabBarHeight
-  ])
+  }, [headerHeight, segmentedControlLayout?.height, tabBarHeight])
 
   const contentContainerStyle = useMemo(() => {
     return {

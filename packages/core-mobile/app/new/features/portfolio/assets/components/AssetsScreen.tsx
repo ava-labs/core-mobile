@@ -176,9 +176,13 @@ const AssetsScreen: FC<Props> = ({
 
   if (isBalanceLoading || enabledNetworks.length === 0) {
     return (
-      <CollapsibleTabs.ContentWrapper height={Number(containerStyle.minHeight)}>
-        <LoadingState />
-      </CollapsibleTabs.ContentWrapper>
+      <LoadingState
+        sx={{
+          minHeight: containerStyle.minHeight,
+          justifyContent: 'center',
+          alignItems: 'center'
+        }}
+      />
     )
   }
 
