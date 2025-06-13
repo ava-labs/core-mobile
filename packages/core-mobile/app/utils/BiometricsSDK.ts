@@ -133,12 +133,8 @@ class BiometricsSDK {
   }
 
   async clearLegacyWalletData(): Promise<void> {
-    try {
-      await Keychain.resetGenericPassword({ service: LEGACY_SERVICE_KEY })
-      await Keychain.resetGenericPassword({ service: LEGACY_SERVICE_KEY_BIO })
-    } catch (e) {
-      Logger.error(`Failed to reset legacy keychain data`, e)
-    }
+    await Keychain.resetGenericPassword({ service: LEGACY_SERVICE_KEY })
+    await Keychain.resetGenericPassword({ service: LEGACY_SERVICE_KEY_BIO })
   }
 
   // Encryption Key Management
@@ -360,6 +356,28 @@ class BiometricsSDK {
     await Keychain.resetGenericPassword({
       service: LEGACY_SERVICE_KEY_BIO
     })
+  }
+
+  /**
+   * Checks if the entered PIN is correct by attempting to unlock
+   * either LEGACY_SERVICE_KEY_BIO or ENCRYPTION_KEY_SERVICE
+   * @param pin - The PIN to validate
+   * @returns true if the PIN successfully unlocks any stored data, false otherwise
+   */
+  async isPinCorrect(pin: string): Promise<boolean> {
+    try {
+      // First try to load legacy wallet data with PIN
+      const legacyResult = await this.loadLegacyWalletWithPin(pin)
+      if (legacyResult.success) {
+        return true
+      }
+
+      // If legacy fails, try to load encryption key with PIN
+      return await this.loadEncryptionKeyWithPin(pin)
+    } catch (error) {
+      Logger.error('Failed to validate PIN', error)
+      return false
+    }
   }
 }
 

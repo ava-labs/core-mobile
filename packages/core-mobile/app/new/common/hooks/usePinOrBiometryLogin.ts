@@ -5,7 +5,7 @@ import { InvalidVersionError, NoSaltError } from 'utils/EncryptionHelper'
 import Logger from 'utils/Logger'
 import { formatTimer } from 'utils/Utils'
 import { BiometricType } from 'utils/BiometricsSDK'
-import KeychainMigrator from 'utils/KeychainMigrator'
+import KeychainMigrator, { MigrationFailedError } from 'utils/KeychainMigrator'
 import { useDeleteWallet } from './useDeleteWallet'
 import { useRateLimiter } from './useRateLimiter'
 import { useActiveWalletId } from './useActiveWallet'
@@ -77,27 +77,24 @@ export function usePinOrBiometryLogin({
       try {
         onStartLoading()
 
+        const isPinCorrect = await BiometricsSDK.isPinCorrect(pin)
+        if (!isPinCorrect) {
+          throw new Error('BAD_DECRYPT')
+        }
+
+        // Migrate if needed
         const migrator = new KeychainMigrator(activeWalletId)
-        const migrationSuccess = await migrator.migrateIfNeeded('PIN', pin)
+        await migrator.migrateIfNeeded('PIN', pin)
 
-        if (!migrationSuccess) {
-          Logger.error('Migration failed')
-          setVerified(false)
-          increaseAttempt()
-          onStopLoading(onWrongPin)
-          return
-        }
-
-        // Now try to load the encryption key (either new or migrated)
+        // Load encryption key
         const isValidPin = await BiometricsSDK.loadEncryptionKeyWithPin(pin)
-        setVerified(isValidPin)
-
-        if (isValidPin) {
-          resetRateLimiter()
-        } else {
-          increaseAttempt()
+        if (!isValidPin) {
+          throw new Error('BAD_DECRYPT')
         }
 
+        // Success path
+        setVerified(true)
+        resetRateLimiter()
         onStopLoading()
       } catch (err) {
         Logger.error('Error decrypting data', err)
@@ -110,14 +107,17 @@ export function usePinOrBiometryLogin({
         if (isInvalidPin) {
           increaseAttempt()
           setVerified(false)
+          onStopLoading(onWrongPin)
         } else if (
           err instanceof NoSaltError ||
-          err instanceof InvalidVersionError
+          err instanceof InvalidVersionError ||
+          err instanceof MigrationFailedError
         ) {
           alertBadData()
+          onStopLoading()
+        } else {
+          onStopLoading()
         }
-
-        onStopLoading(isInvalidPin ? onWrongPin : undefined)
       }
     },
     [
@@ -153,13 +153,7 @@ export function usePinOrBiometryLogin({
         if (accessType === 'BIO') {
           // Check if migration is needed first
           const migrator = new KeychainMigrator(activeWalletId)
-          const migrationSuccess = await migrator.migrateIfNeeded('BIO')
-
-          if (!migrationSuccess) {
-            Logger.error('Biometric migration failed')
-            setVerified(false)
-            return new NothingToLoad()
-          }
+          await migrator.migrateIfNeeded('BIO')
 
           const isSuccess = await BiometricsSDK.loadEncryptionKeyWithBiometry()
 
@@ -178,10 +172,13 @@ export function usePinOrBiometryLogin({
         return new NothingToLoad()
       } catch (err) {
         Logger.error('Error in biometric authentication or migration', err)
+        if (err instanceof MigrationFailedError) {
+          alertBadData()
+        }
         setVerified(false)
         throw err
       }
-    }, [activeWalletId, resetRateLimiter])
+    }, [activeWalletId, alertBadData, resetRateLimiter])
 
   useEffect(() => {
     async function getBiometryType(): Promise<void> {

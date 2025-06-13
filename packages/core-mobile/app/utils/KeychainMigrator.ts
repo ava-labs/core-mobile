@@ -1,5 +1,8 @@
+import { ErrorBase } from 'errors/ErrorBase'
 import BiometricsSDK from './BiometricsSDK'
 import Logger from './Logger'
+
+export class MigrationFailedError extends ErrorBase<'MigrationFailedError'> {}
 
 class KeychainMigrator {
   private activeWalletId: string
@@ -37,9 +40,13 @@ class KeychainMigrator {
   public async migrateIfNeeded(
     accessType: 'PIN' | 'BIO',
     pin?: string
-  ): Promise<boolean> {
+  ): Promise<void> {
     const migrationStatus = await this.getMigrationStatus(accessType)
-    if (migrationStatus !== false) {
+    if (migrationStatus === false) {
+      return
+    }
+
+    try {
       Logger.info('Migration needed:', migrationStatus)
 
       if (accessType === 'PIN') {
@@ -48,121 +55,125 @@ class KeychainMigrator {
         }
         switch (migrationStatus) {
           case 'runPinMigration':
-            return await this.runPinMigration(pin)
+            await this.runPinMigration(pin)
+            break
           case 'completePartialMigration':
-            return await this.completePartialMigration(pin)
+            await this.completePartialMigration(pin)
+            break
           default:
             Logger.error('Unexpected migration status:', migrationStatus)
-            return false
+            throw new MigrationFailedError({
+              message: 'Unexpected migration status'
+            })
         }
       } else {
         if (migrationStatus === 'runBiometricMigration') {
-          return await this.runBiometricMigration()
+          await this.runBiometricMigration()
         } else {
           Logger.error('Unexpected migration status:', migrationStatus)
-          return false
+          throw new MigrationFailedError({
+            message: 'Unexpected migration status'
+          })
         }
       }
-    }
-    return true
-  }
-
-  // Path 1: User logs in with PIN
-  async runPinMigration(pin: string): Promise<boolean> {
-    try {
-      Logger.info('Starting PIN-based keychain migration.')
-
-      const mnemonicResult = await BiometricsSDK.loadLegacyWalletWithPin(pin)
-      if (!mnemonicResult.success) {
-        throw mnemonicResult.error
-      }
-      const newEncryptionKey = await BiometricsSDK.generateEncryptionKey()
-
-      // Store new encryption key for PIN and also Biometry (if applicable)
-      await BiometricsSDK.storeEncryptionKeyWithPin(newEncryptionKey, pin)
-
-      const accessType = BiometricsSDK.getAccessType()
-      if (accessType === 'BIO') {
-        await BiometricsSDK.storeEncryptionKeyWithBiometry(newEncryptionKey)
-      }
-      await BiometricsSDK.loadEncryptionKeyWithPin(pin)
-
-      // Store wallet secret with new encryption key
-      await BiometricsSDK.storeWalletSecret(
-        this.activeWalletId,
-        mnemonicResult.value
-      )
-
-      await BiometricsSDK.clearLegacyWalletData()
-      Logger.info('PIN-based keychain migration completed successfully.')
-      return true
     } catch (error) {
-      Logger.error('PIN-based keychain migration failed:', error)
-      return false
+      throw new MigrationFailedError({
+        message: `Migration failed: ${
+          error instanceof Error ? error.message : 'Unknown error'
+        }`
+      })
     }
   }
 
-  // Path 2: User logs in with Biometrics
-  async runBiometricMigration(): Promise<boolean> {
-    try {
-      Logger.info('Starting biometric-based keychain migration.')
-      const mnemonicResult = await BiometricsSDK.loadLegacyWalletWithBiometry()
-      if (!mnemonicResult.success) {
-        throw mnemonicResult.error
-      }
+  /**
+   * Runs PIN-based keychain migration.
+   * Throws an error if the migration fails.
+   * @param pin - The PIN to use for the migration
+   */
+  async runPinMigration(pin: string): Promise<void> {
+    Logger.info('Starting PIN-based keychain migration.')
 
-      const newEncryptionKey = await BiometricsSDK.generateEncryptionKey()
+    const mnemonicResult = await BiometricsSDK.loadLegacyWalletWithPin(pin)
+    if (!mnemonicResult.success) {
+      throw mnemonicResult.error
+    }
+    const newEncryptionKey = await BiometricsSDK.generateEncryptionKey()
 
-      // Store raw encryption key in biometric storage ONLY
+    // Store new encryption key for PIN and also Biometry (if applicable)
+    await BiometricsSDK.storeEncryptionKeyWithPin(newEncryptionKey, pin)
+
+    const accessType = BiometricsSDK.getAccessType()
+    if (accessType === 'BIO') {
       await BiometricsSDK.storeEncryptionKeyWithBiometry(newEncryptionKey)
-
-      // Re-encrypt mnemonic and store it
-      await BiometricsSDK.storeWalletSecret(
-        this.activeWalletId,
-        mnemonicResult.value
-      )
-
-      // DO NOT clear legacy data yet, we need it for PIN completion
-      Logger.info(
-        'Biometric-based keychain migration (partial) completed successfully.'
-      )
-      return true
-    } catch (error) {
-      Logger.error('Biometric-based keychain migration failed:', error)
-      return false
     }
+    await BiometricsSDK.loadEncryptionKeyWithPin(pin)
+
+    // Store wallet secret with new encryption key
+    await BiometricsSDK.storeWalletSecret(
+      this.activeWalletId,
+      mnemonicResult.value
+    )
+
+    await BiometricsSDK.clearLegacyWalletData()
+    Logger.info('PIN-based keychain migration completed successfully.')
   }
 
-  // Path 3: Completing a partial (biometric) migration
-  async completePartialMigration(pin: string): Promise<boolean> {
-    try {
-      Logger.info('Starting completion of partial migration.')
-      // 1. Get the mnemonic from legacy pin storage
-      const mnemonicResult = await BiometricsSDK.loadLegacyWalletWithPin(pin)
-      if (!mnemonicResult.success) {
-        throw mnemonicResult.error
-      }
-      // 2. Generate new encryption key
-      const newEncryptionKey = await BiometricsSDK.generateEncryptionKey()
-      // 3. Store new encryption key for both PIN and Biometry
-      await BiometricsSDK.storeEncryptionKeyWithPin(newEncryptionKey, pin)
-      await BiometricsSDK.storeEncryptionKeyWithBiometry(newEncryptionKey)
-
-      // 4. Store mnemonic with new encryption key
-      await BiometricsSDK.storeWalletSecret(
-        this.activeWalletId,
-        mnemonicResult.value
-      )
-
-      // 5. Now that both keys are stored, we can safely remove the legacy data
-      await BiometricsSDK.clearLegacyWalletData()
-
-      Logger.info('Partial keychain migration completed successfully.')
-      return true
-    } catch (error) {
-      Logger.error('Failed to complete partial migration:', error)
-      return false
+  /**
+   * Runs biometric-based keychain migration.
+   * Throws an error if the migration fails.
+   */
+  async runBiometricMigration(): Promise<void> {
+    Logger.info('Starting biometric-based keychain migration.')
+    const mnemonicResult = await BiometricsSDK.loadLegacyWalletWithBiometry()
+    if (!mnemonicResult.success) {
+      throw mnemonicResult.error
     }
+
+    const newEncryptionKey = await BiometricsSDK.generateEncryptionKey()
+
+    // Store raw encryption key in biometric storage ONLY
+    await BiometricsSDK.storeEncryptionKeyWithBiometry(newEncryptionKey)
+
+    // Re-encrypt mnemonic and store it
+    await BiometricsSDK.storeWalletSecret(
+      this.activeWalletId,
+      mnemonicResult.value
+    )
+
+    // DO NOT clear legacy data yet, we need it for PIN completion
+    Logger.info(
+      'Biometric-based keychain migration (partial) completed successfully.'
+    )
+  }
+
+  /**
+   * Completes a partial (biometric) migration.
+   * Throws an error if the migration fails.
+   * @param pin - The PIN to use for the migration
+   */
+  async completePartialMigration(pin: string): Promise<void> {
+    Logger.info('Starting completion of partial migration.')
+    // 1. Get the mnemonic from legacy pin storage
+    const mnemonicResult = await BiometricsSDK.loadLegacyWalletWithPin(pin)
+    if (!mnemonicResult.success) {
+      throw mnemonicResult.error
+    }
+    // 2. Generate new encryption key
+    const newEncryptionKey = await BiometricsSDK.generateEncryptionKey()
+    // 3. Store new encryption key for both PIN and Biometry
+    await BiometricsSDK.storeEncryptionKeyWithPin(newEncryptionKey, pin)
+    await BiometricsSDK.storeEncryptionKeyWithBiometry(newEncryptionKey)
+
+    // 4. Store mnemonic with new encryption key
+    await BiometricsSDK.storeWalletSecret(
+      this.activeWalletId,
+      mnemonicResult.value
+    )
+
+    // 5. Now that both keys are stored, we can safely remove the legacy data
+    await BiometricsSDK.clearLegacyWalletData()
+
+    Logger.info('Partial keychain migration completed successfully.')
   }
 }
 
