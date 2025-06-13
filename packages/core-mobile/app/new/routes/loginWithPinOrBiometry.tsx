@@ -81,13 +81,9 @@ const LoginWithPinOrBiometry = (): JSX.Element => {
         if (!result.success) {
           throw result.error
         }
-        try {
-          await unlock({ mnemonic: result.value })
-        } catch (error) {
-          Logger.error('Failed to unlock wallet:', error)
-        }
+        await unlock({ mnemonic: result.value })
       } catch (error) {
-        Logger.error('Failed to load wallet secret:', error)
+        Logger.error('Failed to login:', error)
       }
     }, 0)
   }, [handleStartLoading, isProcessing, unlock, walletId])
