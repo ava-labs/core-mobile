@@ -7,7 +7,6 @@ import { useWatchlist } from 'hooks/watchlist/useWatchlist'
 import React, { useCallback, useMemo } from 'react'
 import { ViewStyle } from 'react-native'
 import { useHeaderMeasurements } from 'react-native-collapsible-tab-view'
-import { useKeyboardState } from 'react-native-keyboard-controller'
 import Animated, { useAnimatedStyle, withTiming } from 'react-native-reanimated'
 import { MarketType } from 'store/watchlist/types'
 import { useTrackSortAndView } from '../hooks/useTrackSortAndView'
@@ -65,13 +64,11 @@ const SearchResultScreen = ({
 
   const header = useHeaderMeasurements()
 
-  const keyboard = useKeyboardState()
-
   const keyboardAvoidingStyle = useAnimatedStyle(() => {
     return {
       transform: [
         {
-          translateY: withTiming(isSearchBarFocused ? -header.height : 0, {
+          translateY: withTiming(isSearchBarFocused ? -header.height + 40 : 0, {
             ...ANIMATED.TIMING_CONFIG
           })
         }
