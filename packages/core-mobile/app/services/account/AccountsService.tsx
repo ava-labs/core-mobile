@@ -16,7 +16,10 @@ class AccountsService {
 
     for (const index of Object.keys(accounts)) {
       const key = parseInt(index)
-      const addresses = await WalletService.getAddresses(key, network)
+      const addresses = await WalletService.getAddresses({
+        accountIndex: key,
+        network
+      })
       const title = await SeedlessService.getAccountName(key)
 
       const account = accounts[key]
