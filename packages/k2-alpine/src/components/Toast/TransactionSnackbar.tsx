@@ -106,7 +106,7 @@ export const TransactionSnackbar = ({
   return (
     <TouchableWithoutFeedback
       style={[{ alignSelf: 'flex-start' }, style]}
-      testID={`transaction_snackbar__${type}`}
+      testID={testID}
       onPress={onPress}>
       <View
         style={{
