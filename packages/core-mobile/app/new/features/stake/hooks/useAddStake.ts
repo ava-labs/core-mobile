@@ -1,5 +1,7 @@
 import { showAlert } from '@avalabs/k2-alpine'
 import { useRouter } from 'expo-router'
+import { useBuy } from 'features/buyOnramp/hooks/useBuy'
+import { useIsAvaxCSupported } from 'features/buyOnramp/hooks/useIsAvaxCSupported'
 import { useNavigateToSwap } from 'features/swap/hooks/useNavigateToSwap'
 import { useHasEnoughAvaxToStake } from 'hooks/earn/useHasEnoughAvaxToStake'
 import useStakingParams from 'hooks/earn/useStakingParams'
@@ -14,32 +16,32 @@ export const useAddStake = (): {
   const [canAddStake, setCanAddStake] = useState(false)
   const { minStakeAmount } = useStakingParams()
   const { navigateToSwap } = useNavigateToSwap()
-
-  const handleBuy = useCallback((): void => {
-    // @ts-ignore TODO: make routes typesafe
-    navigate({ pathname: '/buy' })
-  }, [navigate])
+  const { navigateToBuyAvax } = useBuy()
+  const isAvaxCSupported = useIsAvaxCSupported()
 
   const showNotEnoughAvaxAlert = useCallback((): void => {
+    const buttons = []
+    if (isAvaxCSupported) {
+      buttons.push({
+        text: 'Buy AVAX',
+        onPress: navigateToBuyAvax
+      })
+    }
+    buttons.push({
+      text: 'Swap AVAX',
+      onPress: navigateToSwap
+    })
+    buttons.push({
+      text: 'Cancel'
+    })
+
     showAlert({
       title: `${minStakeAmount} available AVAX required`,
       description:
         'Staking your AVAX in the Avalanche Network allows you to earn up to 10% APY.',
-      buttons: [
-        {
-          text: 'Buy AVAX',
-          onPress: handleBuy
-        },
-        {
-          text: 'Swap AVAX',
-          onPress: navigateToSwap
-        },
-        {
-          text: 'Cancel'
-        }
-      ]
+      buttons
     })
-  }, [minStakeAmount, navigateToSwap, handleBuy])
+  }, [isAvaxCSupported, navigateToSwap, minStakeAmount, navigateToBuyAvax])
 
   useEffect(() => {
     setCanAddStake(hasEnoughAvax !== undefined)
