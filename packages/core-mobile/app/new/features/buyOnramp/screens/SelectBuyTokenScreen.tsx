@@ -74,7 +74,10 @@ export const SelectBuyTokenScreen = (): React.JSX.Element => {
         tk.name.toLowerCase().includes(searchText.toLowerCase()) ||
         tk.chainName.toLowerCase().includes(searchText.toLowerCase()) ||
         tk.contractAddress?.toLowerCase().includes(searchText.toLowerCase()) ||
-        tk.chainId?.toString().includes(searchText.toLowerCase())
+        tk.chainId?.toString().includes(searchText.toLowerCase()) ||
+        tk.tokenWithBalance.symbol
+          .toLowerCase()
+          .includes(searchText.toLowerCase())
     )
   }, [searchText, supportedCryptoCurrencies])
 
