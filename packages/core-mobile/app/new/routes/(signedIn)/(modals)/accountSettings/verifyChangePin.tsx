@@ -3,6 +3,7 @@ import { useActiveWalletId } from 'common/hooks/useActiveWallet'
 import { useRouter } from 'expo-router'
 import React from 'react'
 import BiometricsSDK from 'utils/BiometricsSDK'
+import Logger from 'utils/Logger'
 
 const VerifyChangePinScreen = (): React.JSX.Element => {
   const { replace } = useRouter()
@@ -11,7 +12,8 @@ const VerifyChangePinScreen = (): React.JSX.Element => {
   const handleVerifySuccess = async (): Promise<void> => {
     const walletSecretResult = await BiometricsSDK.loadWalletSecret(walletId)
     if (!walletSecretResult.success) {
-      throw walletSecretResult.error
+      Logger.error('Failed to load wallet secret', walletSecretResult.error)
+      return
     }
 
     replace({
