@@ -20,7 +20,7 @@ export const useBalanceForAccount = (
   const dispatch = useDispatch()
   const balanceStatus = useSelector(selectBalanceStatus)
   const isBalanceLoading = balanceStatus !== QueryStatus.IDLE
-  const [isFetchingBalance, setIsFetchingBalance] = useState(false)
+  const [isFetchingBalance, setIsFetchingBalance] = useState(true)
   const tokenVisibility = useSelector(selectTokenVisibility)
   const accountBalance = useSelector(
     selectBalanceTotalInCurrencyForAccount(accountIndex, tokenVisibility)
