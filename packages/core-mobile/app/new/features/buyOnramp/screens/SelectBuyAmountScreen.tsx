@@ -36,7 +36,7 @@ import { useGetPurchaseLimits } from '../hooks/useGetPurchaseLimits'
 import { useSearchDefaultsByCountry } from '../hooks/useSearchDefaultsByCountry'
 import { useLocale } from '../hooks/useLocale'
 import {
-  PaymentMethods,
+  PaymentMethodNames,
   ServiceProviderCategories,
   ServiceProviders
 } from '../consts'
@@ -75,7 +75,7 @@ export const SelectBuyAmountScreen = (): React.JSX.Element => {
 
   const defaultPaymentMethod = useMemo(() => {
     return defaultsByCountry?.find(d => d.countryCode === countryCode)
-      ?.defaultPaymentMethods[0] as keyof typeof PaymentMethods
+      ?.defaultPaymentMethods[0]
   }, [countryCode, defaultsByCountry])
 
   useLayoutEffect(() => {
@@ -90,9 +90,7 @@ export const SelectBuyAmountScreen = (): React.JSX.Element => {
   }, [defaultPaymentMethod, paymentMethod, setPaymentMethod])
 
   const paymentMethodToDisplay = useMemo(() => {
-    return paymentMethod
-      ? PaymentMethods[paymentMethod as keyof typeof PaymentMethods]
-      : undefined
+    return paymentMethod ? PaymentMethodNames[paymentMethod] : undefined
   }, [paymentMethod])
 
   const serviceProviderToDisplay = useMemo(() => {

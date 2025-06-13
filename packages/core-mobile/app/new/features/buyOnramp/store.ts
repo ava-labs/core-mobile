@@ -11,5 +11,5 @@ export const useOnRampServiceProvider = createZustandStore<
 >(undefined)
 
 export const useOnRampPaymentMethod = createZustandStore<
-  keyof typeof PaymentMethods | undefined
+  PaymentMethods | undefined
 >(undefined)

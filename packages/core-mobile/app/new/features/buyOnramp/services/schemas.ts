@@ -12,10 +12,6 @@ const serviceProviderKeys = Object.keys(ServiceProviders) as Array<
   keyof typeof ServiceProviders
 >
 
-const paymentMethodKeys = Object.keys(PaymentMethods) as Array<
-  keyof typeof PaymentMethods
->
-
 const paymentTypeKeys = Object.keys(PaymentTypes) as Array<
   keyof typeof PaymentTypes
 >
@@ -66,7 +62,7 @@ export const SearchServiceProviderSchema = object({
 export const SearchDefaultsByCountrySchema = object({
   countryCode: string(),
   defaultCurrencyCode: string(),
-  defaultPaymentMethods: z.enum(zodEnum(paymentMethodKeys)).array()
+  defaultPaymentMethods: z.nativeEnum(PaymentMethods).array()
 }).passthrough()
 
 const AmountDetailsSchema = object({
@@ -89,7 +85,7 @@ export const GetPurchaseLimitsSchema = object({
 }).passthrough()
 
 export const SearchPaymentMethodsSchema = object({
-  paymentMethod: z.enum(zodEnum(paymentMethodKeys)),
+  paymentMethod: z.nativeEnum(PaymentMethods),
   name: string(),
   paymentType: z.enum(zodEnum(paymentTypeKeys)),
   logos: object({
