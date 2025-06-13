@@ -20,7 +20,9 @@ export enum ChainName {
   AVALANCHE_C = 'Avalanche C-Chain',
   AVALANCHE_C_TESTNET = 'Avalanche C-Chain Testnet',
   BITCOIN = 'Bitcoin',
-  BITCOIN_TESTNET = 'Bitcoin Testnet'
+  BITCOIN_TESTNET = 'Bitcoin Testnet',
+  SOLANA = 'Solana',
+  SOLANA_DEVNET = 'Solana Devnet'
 }
 
 export const AVALANCHE_MAINNET_NETWORK = {
@@ -102,6 +104,64 @@ export const NETWORK_X_TEST = {
   logoUri:
     'https://images.ctfassets.net/gcj8jwzm6086/5xiGm7IBR6G44eeVlaWrxi/1b253c4744a3ad21a278091e3119feba/xchain-square.svg',
   explorerUrl: 'https://subnets-test.avax.network/x-chain'
+} as Network
+
+export const NETWORK_SOLANA = {
+  chainId: 4503599627369476,
+  chainName: 'Solana',
+  description: '',
+  explorerUrl: 'https://solscan.io/',
+  isTestnet: false,
+  logoUri:
+    'https://images.ctfassets.net/gcj8jwzm6086/4HsK06WXdGcPFQgrtZNd9t/db15a7a0726543c9c936cfbb4f41db67/solanaLogoMark.svg',
+  networkToken: {
+    name: 'SOL',
+    decimals: 9,
+    symbol: 'SOL',
+    description: '',
+    logoUri:
+      'https://images.ctfassets.net/gcj8jwzm6086/4VgCue74mbrtME1ZqEj7Y1/44192d2d71381e89ea76f30e370ccd79/solana-sol-logo.svg'
+  },
+  pricingProviders: {
+    coingecko: {
+      nativeTokenId: 'solana',
+      assetPlatformId: 'solana'
+    }
+  },
+  primaryColor: '#9945FF',
+  rpcUrl: '',
+  subnetExplorerUriId: 'solana-mainnet',
+  vmName: 'SVM',
+  caip2Id: 'solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp'
+} as Network
+
+export const NETWORK_SOLANA_DEVNET = {
+  chainId: 4503599627369466,
+  chainName: 'Solana (Devnet)',
+  description: '',
+  explorerUrl: 'https://solscan.io/?cluster=devnet',
+  isTestnet: true,
+  logoUri:
+    'https://images.ctfassets.net/gcj8jwzm6086/4HsK06WXdGcPFQgrtZNd9t/db15a7a0726543c9c936cfbb4f41db67/solanaLogoMark.svg',
+  networkToken: {
+    name: 'SOL',
+    decimals: 9,
+    symbol: 'SOL',
+    description: '',
+    logoUri:
+      'https://images.ctfassets.net/gcj8jwzm6086/4VgCue74mbrtME1ZqEj7Y1/44192d2d71381e89ea76f30e370ccd79/solana-sol-logo.svg'
+  },
+  pricingProviders: {
+    coingecko: {
+      nativeTokenId: 'solana',
+      assetPlatformId: 'solana'
+    }
+  },
+  primaryColor: '#9945FF',
+  rpcUrl: '',
+  subnetExplorerUriId: 'solana-devnet',
+  vmName: 'SVM',
+  caip2Id: 'solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1'
 } as Network
 
 // Primary networks are the ones that are always enabled in the app

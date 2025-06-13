@@ -5,7 +5,6 @@ import Big from 'big.js'
 import { OptimalRate, TransactionParams as Transaction } from '@paraswap/sdk'
 import { promiseResolveWithBackoff, resolve } from '@avalabs/core-utils-sdk'
 import { bigIntToHex } from '@ethereumjs/util'
-import SwapService from 'services/swap/SwapService'
 import { swapError } from 'errors/swapError'
 import { ERC20__factory } from 'contracts/openzeppelin'
 import { RequestContext } from 'store/rpc/types'
@@ -13,16 +12,19 @@ import {
   EVM_NATIVE_TOKEN_ADDRESS,
   PARASWAP_PARTNER_FEE_BPS,
   PARTNER_FEE_PARAMS
-} from '../consts'
+} from '../../consts'
+import ParaswapService from '../../services/ParaswapService'
 
-export type PerformSwapParams = {
+const PARTNER = 'Avalanche'
+
+export type ParaSwapParams = {
   srcTokenAddress: string | undefined
   isSrcTokenNative: boolean
   destTokenAddress: string | undefined
   isDestTokenNative: boolean
   priceRoute: OptimalRate | undefined
   slippage: number
-  activeNetwork: Network | undefined
+  network: Network
   provider: JsonRpcBatchInternal
   userAddress: string | undefined
   signAndSend: (
@@ -32,27 +34,23 @@ export type PerformSwapParams = {
   isSwapFeesEnabled: boolean
 }
 
-// copied from https://github.com/ava-labs/avalanche-sdks/tree/alpha-release/packages/paraswap-sdk
-// modified to use our new in app request for now
-// TODO: move this back to the sdk once everything is stable
+type SwapTxHash = string
 
-// eslint-disable-next-line sonarjs/cognitive-complexity
-export async function performSwap({
+// perform a swap via paraswap
+export const paraSwap = async ({
   srcTokenAddress,
   isSrcTokenNative,
   destTokenAddress,
   isDestTokenNative,
   priceRoute,
   slippage,
-  activeNetwork,
+  network,
   provider,
   userAddress,
   signAndSend,
   isSwapFeesEnabled
-}: PerformSwapParams): Promise<{
-  swapTxHash: string
-  approveTxHash: string | undefined
-}> {
+}: // eslint-disable-next-line sonarjs/cognitive-complexity
+ParaSwapParams): Promise<SwapTxHash> => {
   if (!srcTokenAddress) throw swapError.missingParam('srcTokenAddress')
 
   if (!destTokenAddress) throw swapError.missingParam('destTokenAddress')
@@ -61,10 +59,7 @@ export async function performSwap({
 
   if (!userAddress) throw swapError.missingParam('userAddress')
 
-  if (!activeNetwork) throw swapError.missingParam('activeNetwork')
-
-  if (activeNetwork.isTestnet)
-    throw swapError.networkNotSupported(activeNetwork.chainName)
+  if (network.isTestnet) throw swapError.networkNotSupported(network.chainName)
 
   const sourceTokenAddress = isSrcTokenNative
     ? EVM_NATIVE_TOKEN_ADDRESS
@@ -72,10 +67,6 @@ export async function performSwap({
   const destinationTokenAddress = isDestTokenNative
     ? EVM_NATIVE_TOKEN_ADDRESS
     : destTokenAddress
-
-  const partner = 'Avalanche'
-
-  let approveTxHash: string | undefined
 
   const slippagePercent = slippage / 100
   const feePercent = isSwapFeesEnabled ? PARASWAP_PARTNER_FEE_BPS / 10_000 : 0
@@ -100,7 +91,7 @@ export async function performSwap({
     let spenderAddress: string
 
     try {
-      spenderAddress = await SwapService.getParaswapSpender(activeNetwork)
+      spenderAddress = await ParaswapService.getParaswapSpender(network)
     } catch (error) {
       throw swapError.cannotFetchSpender(error)
     }
@@ -154,10 +145,6 @@ export async function performSwap({
       if (!receipt || (receipt && receipt.status !== 1)) {
         throw swapError.approvalTxFailed(new Error('Transaction Reverted'))
       }
-
-      approveTxHash = approvalTxHash
-    } else {
-      approveTxHash = undefined
     }
   }
 
@@ -175,15 +162,15 @@ export async function performSwap({
   const [txBuildData, txBuildDataError] = await resolve(
     promiseResolveWithBackoff(
       () =>
-        SwapService.buildTx({
-          network: activeNetwork,
+        ParaswapService.buildTx({
+          network,
           srcToken: sourceTokenAddress,
           destToken: destinationTokenAddress,
           srcAmount: sourceAmount,
           destAmount: destinationAmount,
           priceRoute,
           userAddress,
-          partner,
+          partner: PARTNER,
           srcDecimals: priceRoute.srcDecimals,
           destDecimals: priceRoute.destDecimals,
           ...(isSwapFeesEnabled && PARTNER_FEE_PARAMS)
@@ -217,8 +204,5 @@ export async function performSwap({
     throw swapError.swapTxFailed(swapTxError)
   }
 
-  return {
-    swapTxHash,
-    approveTxHash
-  }
+  return swapTxHash
 }

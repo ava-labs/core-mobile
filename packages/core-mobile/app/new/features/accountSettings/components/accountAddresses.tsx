@@ -15,6 +15,7 @@ import { NetworkLogoWithChain } from 'common/components/NetworkLogoWithChain'
 import { isXPChain } from 'utils/network/isAvalancheNetwork'
 import { NetworkVMType } from '@avalabs/vm-module-types'
 import { TRUNCATE_ADDRESS_LENGTH } from 'common/consts/text'
+import { getAddressByNetwork } from 'store/account/utils'
 
 export const AccountAddresses = ({
   account
@@ -32,15 +33,21 @@ export const AccountAddresses = ({
 
   const data = useMemo(() => {
     return networks.map(network => {
-      const address =
-        network.vmName === NetworkVMType.AVM ||
-        network.vmName === NetworkVMType.PVM
-          ? account.addressPVM.replace(/^[XP]-/, '')
-          : network.vmName === NetworkVMType.BITCOIN
-          ? account.addressBTC
-          : network.vmName === NetworkVMType.EVM
-          ? account.addressC
-          : undefined
+      const address = (() => {
+        switch (network.vmName) {
+          case NetworkVMType.AVM:
+          case NetworkVMType.PVM:
+            return account.addressPVM.replace(/^[XP]-/, '')
+          case NetworkVMType.BITCOIN:
+            return account.addressBTC
+          case NetworkVMType.EVM:
+            return account.addressC
+          case NetworkVMType.SVM:
+            return getAddressByNetwork(account, network) // TODO: replace with account.addressSVM when we have it
+          default:
+            return undefined
+        }
+      })()
 
       return {
         subtitle: address

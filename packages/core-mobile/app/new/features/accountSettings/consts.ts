@@ -8,5 +8,7 @@ export enum AddressType {
   XP = ChainName.AVALANCHE_XP,
   XP_TESTNET = ChainName.AVALANCHE_XP_TESTNET,
   BTC = ChainName.BITCOIN,
-  BTC_TESTNET = ChainName.BITCOIN_TESTNET
+  BTC_TESTNET = ChainName.BITCOIN_TESTNET,
+  SOLANA = ChainName.SOLANA,
+  SOLANA_DEVNET = ChainName.SOLANA_DEVNET
 }

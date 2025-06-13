@@ -14,7 +14,7 @@ import {
   selectBridgeTransactions
 } from 'store/bridge'
 import {
-  useAvalancheProvider,
+  useAvalancheEvmProvider,
   useBitcoinProvider,
   useEthereumProvider
 } from 'hooks/networks/networkProviderHooks'
@@ -60,7 +60,7 @@ function LocalBridgeProvider({
   const bridgeTransactions = useSelector(selectBridgeTransactions)
   const ethereumProvider = useEthereumProvider()
   const bitcoinProvider = useBitcoinProvider()
-  const avalancheProvider = useAvalancheProvider()
+  const avalancheProvider = useAvalancheEvmProvider()
   const { bridgeConfig: bridgeConfigSDK, setBridgeConfig } = useBridgeSDK()
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
 

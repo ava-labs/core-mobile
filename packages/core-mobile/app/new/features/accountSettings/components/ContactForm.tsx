@@ -59,15 +59,21 @@ export const ContactForm = ({
 
   const data: AdvancedFieldProps[] = useMemo(() => {
     return networks.map(network => {
-      const address =
-        network.vmName === NetworkVMType.AVM ||
-        network.vmName === NetworkVMType.PVM
-          ? contact.addressXP?.replace(/^[XP]-/, '')
-          : network.vmName === NetworkVMType.BITCOIN
-          ? contact.addressBTC
-          : network.vmName === NetworkVMType.EVM
-          ? contact.address
-          : undefined
+      const address = (() => {
+        switch (network.vmName) {
+          case NetworkVMType.AVM:
+          case NetworkVMType.PVM:
+            return contact.addressXP?.replace(/^[XP]-/, '')
+          case NetworkVMType.BITCOIN:
+            return contact.addressBTC
+          case NetworkVMType.EVM:
+            return contact.address
+          case NetworkVMType.SVM:
+            return contact.addressSVM
+          default:
+            return undefined
+        }
+      })()
 
       return {
         id: network.chainName,
@@ -85,6 +91,7 @@ export const ContactForm = ({
     contact.address,
     contact.addressBTC,
     contact.addressXP,
+    contact.addressSVM,
     handleUpdateAddress,
     networks
   ])
