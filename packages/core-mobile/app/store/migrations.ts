@@ -11,6 +11,8 @@ import { AddressBookState } from 'store/addressBook'
 import { uuid } from 'utils/uuid'
 import { CORE_MOBILE_WALLET_ID } from 'services/walletconnectv2/types'
 import { ChannelId } from 'services/notifications/channels'
+import Keychain from 'react-native-keychain'
+import Logger from 'utils/Logger'
 import { initialState as watchlistInitialState } from './watchlist'
 import {
   DefaultFeatureFlagConfig,
@@ -341,6 +343,13 @@ export const migrations = {
     return newState
   },
   21: async (state: any) => {
+    // Get all services from keychain
+    await Keychain.resetGenericPassword({ service: 'encryption-key-service' })
+    await Keychain.resetGenericPassword({
+      service: 'encryption-key-service-bio'
+    })
+    const services = await Keychain.getAllGenericPasswordServices()
+    Logger.info('services:', services)
     // Generate a new wallet ID
     const walletId = uuid()
     // Migrate stored wallet structure
@@ -348,6 +357,7 @@ export const migrations = {
 
     // If there's an existing account state, migrate it to the new wallet structure
     if (state.account && state.account.accounts) {
+      Logger.info('Migrating account state')
       const accountState = newState.account as AccountsState
       const walletType = state.app.walletType as WalletType
 
@@ -369,7 +379,7 @@ export const migrations = {
         activeWalletId: walletId
       }
     }
-
+    Logger.info('newState.wallet:', newState.wallet)
     return newState
   }
 }
