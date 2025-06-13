@@ -16,7 +16,11 @@ import { LoadingState } from 'common/components/LoadingState'
 import { portfolioTabContentHeight } from 'features/portfolio/utils'
 import { useSearchPaymentMethods } from '../hooks/useSearchPaymentMethods'
 import { useOnRampPaymentMethod } from '../store'
-import { PaymentMethods, ServiceProviderCategories } from '../consts'
+import {
+  PaymentMethodNames,
+  ServiceProviderCategories,
+  PaymentMethodTimeLimits
+} from '../consts'
 
 export const SelectPaymentMethodScreen = (): React.JSX.Element => {
   const {
@@ -102,8 +106,8 @@ export const SelectPaymentMethodScreen = (): React.JSX.Element => {
 
     return paymentMethods.map(paymentMethod => {
       return {
-        title: PaymentMethods[paymentMethod.paymentMethod],
-        subtitle: paymentMethod.paymentType,
+        title: PaymentMethodNames[paymentMethod.paymentMethod],
+        subtitle: PaymentMethodTimeLimits[paymentMethod.paymentMethod],
         onPress: () => setOnRampPaymentMethod(paymentMethod.paymentMethod),
         accessory:
           onRampPaymentMethod === paymentMethod.paymentMethod ? (
