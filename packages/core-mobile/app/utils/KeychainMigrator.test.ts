@@ -1,4 +1,7 @@
-import KeychainMigrator, { MigrationFailedError } from './KeychainMigrator'
+import KeychainMigrator, {
+  BadPinError,
+  MigrationFailedError
+} from './KeychainMigrator'
 import BiometricsSDK from './BiometricsSDK'
 import Logger from './Logger'
 
@@ -66,6 +69,7 @@ describe('KeychainMigrator', () => {
       })
       mockBiometricsSDK.generateEncryptionKey.mockResolvedValue('new-key')
       mockBiometricsSDK.getAccessType.mockReturnValue('PIN')
+      mockBiometricsSDK.isPinCorrect.mockResolvedValue(true)
 
       await keychainMigrator.migrateIfNeeded('PIN', pin)
 
@@ -104,6 +108,7 @@ describe('KeychainMigrator', () => {
         value: 'test-mnemonic'
       })
       mockBiometricsSDK.generateEncryptionKey.mockResolvedValue('new-key')
+      mockBiometricsSDK.isPinCorrect.mockResolvedValue(true)
 
       await keychainMigrator.migrateIfNeeded('PIN', pin)
 
@@ -116,12 +121,12 @@ describe('KeychainMigrator', () => {
       )
     })
 
-    it('should throw MigrationFailedError if PIN is required but not provided', async () => {
+    it('should throw BadPinError if PIN is required but not provided', async () => {
       mockBiometricsSDK.hasEncryptionKeyWithPin.mockResolvedValue(false)
       mockBiometricsSDK.hasEncryptionKeyWithBiometry.mockResolvedValue(false)
 
       await expect(keychainMigrator.migrateIfNeeded('PIN')).rejects.toThrow(
-        MigrationFailedError
+        BadPinError
       )
     })
 
@@ -145,6 +150,7 @@ describe('KeychainMigrator', () => {
         success: false,
         error: new Error('Load failed')
       })
+      mockBiometricsSDK.isPinCorrect.mockResolvedValue(true)
 
       await expect(
         keychainMigrator.migrateIfNeeded('PIN', pin)
