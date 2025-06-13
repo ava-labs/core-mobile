@@ -131,7 +131,7 @@ const ContentWrapper = ({
   return (
     <View
       style={{
-        height: height - (Platform.OS === 'android' ? header.height : 0) - 24,
+        height: height - (Platform.OS === 'android' ? header.height + 32 : 24),
         justifyContent: 'center',
         alignItems: 'center'
       }}>

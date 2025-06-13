@@ -4,7 +4,7 @@ import { ErrorState } from 'common/components/ErrorState'
 import { LoadingState } from 'common/components/LoadingState'
 import { getListItemEnteringAnimation } from 'common/utils/animations'
 import { useWatchlist } from 'hooks/watchlist/useWatchlist'
-import React, { useMemo } from 'react'
+import React, { useCallback, useMemo } from 'react'
 import { ViewStyle } from 'react-native'
 import Animated from 'react-native-reanimated'
 import { MarketType } from 'store/watchlist/types'
@@ -30,15 +30,21 @@ const FavoriteScreen = ({
 
   const emptyComponent = useMemo(() => {
     return (
+      <ErrorState
+        icon={<Image source={errorIcon} sx={{ width: 42, height: 42 }} />}
+        title="No favorite tokens"
+        description="Star any token to add it to this screen"
+      />
+    )
+  }, [])
+
+  const renderEmpty = useCallback(() => {
+    return (
       <CollapsibleTabs.ContentWrapper height={Number(containerStyle.minHeight)}>
-        <ErrorState
-          icon={<Image source={errorIcon} sx={{ width: 42, height: 42 }} />}
-          title="No favorite tokens"
-          description="Star any token to add it to this screen"
-        />
+        {emptyComponent}
       </CollapsibleTabs.ContentWrapper>
     )
-  }, [containerStyle.minHeight])
+  }, [containerStyle.minHeight, emptyComponent])
 
   if (isLoadingFavorites || !hasMigratedFavoriteIds) {
     return (
@@ -71,7 +77,7 @@ const FavoriteScreen = ({
           }
         }}
         goToMarketDetail={goToMarketDetail}
-        emptyComponent={emptyComponent}
+        renderEmpty={renderEmpty}
         containerStyle={containerStyle}
       />
     </Animated.View>

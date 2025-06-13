@@ -27,6 +27,7 @@ import {
 import { DropdownSelections } from 'common/components/DropdownSelections'
 import { LoadingState } from 'common/components/LoadingState'
 import { getListItemEnteringAnimation } from 'common/utils/animations'
+import { useHeaderMeasurements } from 'react-native-collapsible-tab-view'
 import Animated from 'react-native-reanimated'
 import { NftItem } from 'services/nft/types'
 import {
@@ -37,11 +38,7 @@ import {
 import { useCollectiblesContext } from '../CollectiblesContext'
 import { CardContainer } from '../components/CardContainer'
 import { CollectibleItem } from '../components/CollectibleItem'
-import {
-  HORIZONTAL_ITEM_GAP,
-  HORIZONTAL_MARGIN,
-  VERTICAL_ITEM_GAP
-} from '../consts'
+import { HORIZONTAL_ITEM_GAP, HORIZONTAL_MARGIN } from '../consts'
 import {
   CollectibleFilterAndSortInitialState,
   useCollectiblesFilterAndSort
@@ -149,145 +146,68 @@ export const CollectiblesScreen = ({
     Array.isArray(filter.selected) &&
     (filter.selected[0]?.row !== 0 || filter.selected[1]?.row !== 0)
 
-  const renderEmpty = useMemo((): JSX.Element => {
-    if (isLoading || !isEnabled)
-      return (
-        <CollapsibleTabs.ContentWrapper
-          height={
-            Number(containerStyle.minHeight) - (headerLayout?.height ?? 0)
-          }>
-          <LoadingState />
-        </CollapsibleTabs.ContentWrapper>
-      )
+  const emptyComponent = useMemo((): JSX.Element | undefined => {
+    if (isLoading || !isEnabled) return <LoadingState />
 
     if (error || !isSuccess) {
       return (
-        <CollapsibleTabs.ContentWrapper
-          height={Number(containerStyle.minHeight)}>
-          <ErrorState
-            description="Please hit refresh or try again later"
-            button={{
-              title: 'Refresh',
-              onPress: refetch
-            }}
-          />
-        </CollapsibleTabs.ContentWrapper>
+        <ErrorState
+          description="Please hit refresh or try again later"
+          button={{
+            title: 'Refresh',
+            onPress: refetch
+          }}
+        />
       )
     }
 
     if (filteredAndSorted.length === 0 && hasFilters) {
       return (
-        <CollapsibleTabs.ContentWrapper
-          height={
-            Number(containerStyle.minHeight) - (headerLayout?.height ?? 0)
-          }>
-          <ErrorState
-            title="No Collectibles found"
-            description="
+        <ErrorState
+          title="No Collectibles found"
+          description="
               Try changing the filter settings or reset the filter to see all assets."
-            button={{
-              title: 'Reset filter',
-              onPress: onResetFilter
-            }}
-          />
-        </CollapsibleTabs.ContentWrapper>
+          button={{
+            title: 'Reset filter',
+            onPress: onResetFilter
+          }}
+        />
       )
     }
 
     if (filteredAndSorted.length === 0 && isEveryCollectibleHidden) {
       return (
-        <CollapsibleTabs.ContentWrapper
-          height={
-            Number(containerStyle.minHeight) - (headerLayout?.height ?? 0)
-          }>
-          <ErrorState
-            title="All collectibles hidden"
-            description="You have hidden all your collectibles"
-            button={{
-              title: 'Show hidden',
-              onPress: onShowHidden
-            }}
-          />
-        </CollapsibleTabs.ContentWrapper>
+        <ErrorState
+          title="All collectibles hidden"
+          description="You have hidden all your collectibles"
+          button={{
+            title: 'Show hidden',
+            onPress: onShowHidden
+          }}
+        />
       )
     }
-
-    return (
-      <View
-        sx={{
-          flex: 1,
-          flexDirection: 'row',
-          gap: HORIZONTAL_MARGIN,
-          marginHorizontal: HORIZONTAL_MARGIN,
-          paddingTop: HORIZONTAL_MARGIN / 2,
-          minHeight: containerStyle.minHeight
-        }}>
-        <View
-          style={{
-            flex: 1,
-            gap: VERTICAL_ITEM_GAP
-          }}>
-          <AnimatedPressable
-            onPress={goToDiscoverCollectibles}
-            entering={getListItemEnteringAnimation(0)}>
-            <CardContainer
-              style={{
-                height: 220
-              }}>
-              <Icons.Content.Add
-                color={colors.$textPrimary}
-                width={40}
-                height={40}
-              />
-            </CardContainer>
-          </AnimatedPressable>
-
-          <Animated.View entering={getListItemEnteringAnimation(1)}>
-            <CardContainer
-              style={{
-                height: 180
-              }}
-            />
-          </Animated.View>
-        </View>
-        <View
-          style={{
-            flex: 1,
-            gap: VERTICAL_ITEM_GAP
-          }}>
-          <Animated.View entering={getListItemEnteringAnimation(2)}>
-            <CardContainer
-              style={{
-                height: 190
-              }}
-            />
-          </Animated.View>
-          <Animated.View entering={getListItemEnteringAnimation(3)}>
-            <CardContainer
-              style={{
-                height: 190
-              }}
-            />
-          </Animated.View>
-        </View>
-      </View>
-    )
   }, [
     isLoading,
     isEnabled,
-    containerStyle.minHeight,
-    headerLayout?.height,
     error,
     isSuccess,
     filteredAndSorted.length,
     hasFilters,
     isEveryCollectibleHidden,
-    goToDiscoverCollectibles,
-    colors.$textPrimary,
     refetch,
     onResetFilter,
     onShowHidden
   ])
+
+  const renderEmpty = useMemo(() => {
+    return (
+      <CollapsibleTabs.ContentWrapper
+        height={Number(containerStyle.minHeight) - (headerLayout?.height ?? 0)}>
+        {emptyComponent}
+      </CollapsibleTabs.ContentWrapper>
+    )
+  }, [containerStyle.minHeight, headerLayout?.height, emptyComponent])
 
   const onHeaderLayout = useCallback((e: LayoutChangeEvent) => {
     setHeaderLayout(e.nativeEvent.layout)
@@ -339,10 +259,40 @@ export const CollectiblesScreen = ({
   // overrideProps and contentContainerStyle need to be both used with the same stylings for item width calculations
   const overrideProps = {
     contentContainerStyle: {
-      flexGrow: Platform.OS === 'ios' ? 1 : undefined,
+      flexGrow: 1,
       ...contentContainerStyle,
       ...containerStyle
     }
+  }
+
+  const header = useHeaderMeasurements()
+
+  if (collectibles.length === 0 && !isLoading && isEnabled) {
+    return (
+      <View
+        sx={{
+          flexDirection: 'row',
+          gap: HORIZONTAL_MARGIN,
+          paddingHorizontal: HORIZONTAL_MARGIN,
+          paddingTop: header.height + HORIZONTAL_MARGIN / 2
+        }}>
+        <AnimatedPressable
+          onPress={goToDiscoverCollectibles}
+          entering={getListItemEnteringAnimation(0)}>
+          <CardContainer
+            style={{
+              height: 220,
+              width: (SCREEN_WIDTH - HORIZONTAL_MARGIN * 3) / 2
+            }}>
+            <Icons.Content.Add
+              color={colors.$textPrimary}
+              width={40}
+              height={40}
+            />
+          </CardContainer>
+        </AnimatedPressable>
+      </View>
+    )
   }
 
   return (

@@ -11,7 +11,13 @@ import { LoadingState } from 'common/components/LoadingState'
 import { Space } from 'common/components/Space'
 import { getListItemEnteringAnimation } from 'common/utils/animations'
 import React, { FC, memo, useCallback, useMemo, useState } from 'react'
-import { LayoutChangeEvent, LayoutRectangle, ViewStyle } from 'react-native'
+import {
+  LayoutChangeEvent,
+  LayoutRectangle,
+  Platform,
+  ViewStyle
+} from 'react-native'
+import { useHeaderMeasurements } from 'react-native-collapsible-tab-view'
 import Animated from 'react-native-reanimated'
 import { useSelector } from 'react-redux'
 import { selectActiveAccount } from 'store/account'
@@ -151,7 +157,7 @@ const AssetsScreen: FC<Props> = ({
     setHeaderLayout(e.nativeEvent.layout)
   }, [])
 
-  const header = useMemo(() => {
+  const renderHeader = useCallback(() => {
     return (
       <View
         onLayout={onHeaderLayout}
@@ -174,10 +180,13 @@ const AssetsScreen: FC<Props> = ({
     }
   }
 
+  const header = useHeaderMeasurements()
+
   if (isBalanceLoading || enabledNetworks.length === 0) {
     return (
       <LoadingState
         sx={{
+          paddingTop: Platform.OS === 'ios' ? header.height : 0,
           minHeight: containerStyle.minHeight,
           justifyContent: 'center',
           alignItems: 'center'
@@ -203,7 +212,7 @@ const AssetsScreen: FC<Props> = ({
         numColumns={numColumns}
         estimatedItemSize={isGridView ? 183 : 73}
         renderItem={item => renderItem(item.item, item.index)}
-        ListHeaderComponent={header}
+        ListHeaderComponent={renderHeader}
         ListEmptyComponent={renderEmpty}
         ItemSeparatorComponent={renderSeparator}
         showsVerticalScrollIndicator={false}

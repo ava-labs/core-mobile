@@ -17,6 +17,7 @@ import {
 import { LinearGradientBottomWrapper } from 'common/components/LinearGradientBottomWrapper'
 import { useBottomTabBarHeight } from 'common/hooks/useBottomTabBarHeight'
 import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
+import { useIsAndroidWithBottomBar } from 'common/hooks/useIsAndroidWithBottomBar'
 import { useFocusEffect, useRouter } from 'expo-router'
 import FavoriteScreen from 'features/track/market/components/FavoriteScreen'
 import MarketScreen from 'features/track/market/components/MarketScreen'
@@ -39,6 +40,7 @@ import Animated, {
   useAnimatedStyle,
   useSharedValue
 } from 'react-native-reanimated'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { MarketType } from 'store/watchlist/types'
 
 // const SEARCH_BAR_MARGIN_TOP = Platform.OS === 'ios' ? 60 : 55
@@ -177,6 +179,7 @@ const TrackHomeScreen = (): JSX.Element => {
   }, [])
 
   const headerHeight = useHeaderHeight()
+  const isAndroidWithBottomBar = useIsAndroidWithBottomBar()
 
   const tabHeight = useMemo(() => {
     return Platform.select({
@@ -188,17 +191,17 @@ const TrackHomeScreen = (): JSX.Element => {
         (searchBarLayout?.height ?? 0),
       android:
         SCREEN_HEIGHT -
-        tabBarHeight +
         headerHeight -
-        (searchBarLayout?.height ?? 0) -
-        (tabBarLayout?.height ?? 0) -
-        32
+        (searchBarLayout?.height ?? 0) +
+        (isAndroidWithBottomBar ? 0 : 20) -
+        48
     })
   }, [
     tabBarHeight,
     headerHeight,
     tabBarLayout?.height,
-    searchBarLayout?.height
+    searchBarLayout?.height,
+    isAndroidWithBottomBar
   ])
 
   const contentContainerStyle = useMemo(() => {

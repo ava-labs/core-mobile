@@ -1,11 +1,14 @@
-import { Image, IndexPath } from '@avalabs/k2-alpine'
+import { ANIMATED, Image, IndexPath } from '@avalabs/k2-alpine'
 import { CollapsibleTabs } from 'common/components/CollapsibleTabs'
 import { ErrorState } from 'common/components/ErrorState'
 import { LoadingState } from 'common/components/LoadingState'
 import { useTokenSearch } from 'common/hooks/useTokenSearch'
 import { useWatchlist } from 'hooks/watchlist/useWatchlist'
-import React, { useMemo } from 'react'
+import React, { useCallback, useMemo } from 'react'
 import { ViewStyle } from 'react-native'
+import { useHeaderMeasurements } from 'react-native-collapsible-tab-view'
+import { useKeyboardState } from 'react-native-keyboard-controller'
+import Animated, { useAnimatedStyle, withTiming } from 'react-native-reanimated'
 import { MarketType } from 'store/watchlist/types'
 import { useTrackSortAndView } from '../hooks/useTrackSortAndView'
 import MarketTokensScreen from './MarketTokensScreen'
@@ -60,44 +63,62 @@ const SearchResultScreen = ({
     false
   )
 
+  const header = useHeaderMeasurements()
+
+  const keyboard = useKeyboardState()
+
+  const keyboardAvoidingStyle = useAnimatedStyle(() => {
+    return {
+      transform: [
+        {
+          translateY: withTiming(isSearchBarFocused ? -header.height : 0, {
+            ...ANIMATED.TIMING_CONFIG
+          })
+        }
+      ]
+    }
+  })
+
   const emptyComponent = useMemo(() => {
     if (isSearchingTokens || isLoadingTopTokens || isLoadingTrendingTokens) {
-      return (
-        <CollapsibleTabs.ContentWrapper
-          height={Number(containerStyle.minHeight)}>
-          <LoadingState />
-        </CollapsibleTabs.ContentWrapper>
-      )
+      return <LoadingState />
     }
 
     return (
-      <CollapsibleTabs.ContentWrapper height={Number(containerStyle.minHeight)}>
-        <ErrorState
-          icon={
-            <Image
-              source={isFocused ? magnifyingGlassIcon : cactusIcon}
-              sx={{
-                width: 42,
-                height: 42
-              }}
-            />
-          }
-          title={
-            isFocused
-              ? 'Find tokens by name,\nsymbol or address'
-              : 'No results found'
-          }
-          description=""
-        />
-      </CollapsibleTabs.ContentWrapper>
+      <ErrorState
+        icon={
+          <Image
+            source={isFocused ? magnifyingGlassIcon : cactusIcon}
+            sx={{
+              width: 42,
+              height: 42
+            }}
+          />
+        }
+        title={
+          isFocused
+            ? 'Find tokens by name,\nsymbol or address'
+            : 'No results found'
+        }
+        description=""
+      />
     )
   }, [
-    containerStyle.minHeight,
     isFocused,
     isLoadingTopTokens,
     isLoadingTrendingTokens,
     isSearchingTokens
   ])
+
+  const renderEmpty = useCallback(() => {
+    return (
+      <CollapsibleTabs.ContentWrapper height={Number(containerStyle.minHeight)}>
+        <Animated.View style={keyboardAvoidingStyle}>
+          {emptyComponent}
+        </Animated.View>
+      </CollapsibleTabs.ContentWrapper>
+    )
+  }, [containerStyle.minHeight, emptyComponent, keyboardAvoidingStyle])
 
   return (
     <MarketTokensScreen
@@ -112,7 +133,7 @@ const SearchResultScreen = ({
         }
       }}
       goToMarketDetail={goToMarketDetail}
-      emptyComponent={emptyComponent}
+      renderEmpty={renderEmpty}
       containerStyle={containerStyle}
     />
   )

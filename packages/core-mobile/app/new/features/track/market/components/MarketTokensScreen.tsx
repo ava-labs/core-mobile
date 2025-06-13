@@ -15,7 +15,7 @@ const MarketTokensScreen = ({
   sort,
   view,
   goToMarketDetail,
-  emptyComponent,
+  renderEmpty,
   containerStyle
 }: {
   data: MarketToken[]
@@ -23,7 +23,7 @@ const MarketTokensScreen = ({
   sort: DropdownSelection
   view: DropdownSelection
   goToMarketDetail: (tokenId: string, marketType: MarketType) => void
-  emptyComponent: React.JSX.Element
+  renderEmpty: () => React.JSX.Element
   containerStyle: ViewStyle
 }): JSX.Element => {
   const isGridView = view.data[0]?.[view.selected.row] === MarketView.Grid
@@ -98,7 +98,7 @@ const MarketTokensScreen = ({
       numColumns={numColumns}
       renderItem={renderItem}
       ListHeaderComponent={dropdowns}
-      ListEmptyComponent={emptyComponent}
+      ListEmptyComponent={renderEmpty}
       ItemSeparatorComponent={renderSeparator}
       showsVerticalScrollIndicator={false}
       key={isGridView ? 'grid' : 'list'}

@@ -18,6 +18,7 @@ import { HiddenBalanceText } from 'common/components/HiddenBalanceText'
 import { LinearGradientBottomWrapper } from 'common/components/LinearGradientBottomWrapper'
 import { useBottomTabBarHeight } from 'common/hooks/useBottomTabBarHeight'
 import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
+import { useIsAndroidWithBottomBar } from 'common/hooks/useIsAndroidWithBottomBar'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
 import { useFocusEffect, useRouter } from 'expo-router'
 import {
@@ -45,6 +46,7 @@ import Animated, {
   useAnimatedStyle,
   useSharedValue
 } from 'react-native-reanimated'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useDispatch, useSelector } from 'react-redux'
 import { selectActiveAccount } from 'store/account'
 import {
@@ -401,6 +403,10 @@ const PortfolioHomeScreen = (): JSX.Element => {
 
   const headerHeight = useHeaderHeight()
 
+  const insets = useSafeAreaInsets()
+
+  const isAndroidWithBottomBar = useIsAndroidWithBottomBar()
+
   const tabHeight = useMemo(() => {
     return Platform.select({
       ios:
@@ -408,9 +414,15 @@ const PortfolioHomeScreen = (): JSX.Element => {
         tabBarHeight -
         headerHeight -
         (segmentedControlLayout?.height ?? 0),
-      android: SCREEN_HEIGHT - tabBarHeight + headerHeight - 6
+      android: SCREEN_HEIGHT - insets.top + (isAndroidWithBottomBar ? 0 : 22)
     })
-  }, [headerHeight, segmentedControlLayout?.height, tabBarHeight])
+  }, [
+    tabBarHeight,
+    headerHeight,
+    segmentedControlLayout?.height,
+    insets.top,
+    isAndroidWithBottomBar
+  ])
 
   const contentContainerStyle = useMemo(() => {
     return {

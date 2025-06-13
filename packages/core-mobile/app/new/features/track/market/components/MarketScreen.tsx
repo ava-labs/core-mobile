@@ -4,7 +4,7 @@ import { ErrorState } from 'common/components/ErrorState'
 import { LoadingState } from 'common/components/LoadingState'
 import { getListItemEnteringAnimation } from 'common/utils/animations'
 import { useWatchlist } from 'hooks/watchlist/useWatchlist'
-import React, { useMemo } from 'react'
+import React, { useCallback, useMemo } from 'react'
 import { ViewStyle } from 'react-native'
 import Animated from 'react-native-reanimated'
 import { MarketType } from 'store/watchlist/types'
@@ -33,25 +33,26 @@ const MarketScreen = ({
 
   const emptyComponent = useMemo(() => {
     if (isRefetchingTopTokens) {
-      return (
-        <CollapsibleTabs.ContentWrapper
-          height={Number(containerStyle.minHeight)}>
-          <LoadingState />
-        </CollapsibleTabs.ContentWrapper>
-      )
+      return <LoadingState />
     }
 
     return (
+      <ErrorState
+        button={{
+          title: 'Refresh',
+          onPress: refetchTopTokens
+        }}
+      />
+    )
+  }, [isRefetchingTopTokens, refetchTopTokens])
+
+  const renderEmpty = useCallback(() => {
+    return (
       <CollapsibleTabs.ContentWrapper height={Number(containerStyle.minHeight)}>
-        <ErrorState
-          button={{
-            title: 'Refresh',
-            onPress: refetchTopTokens
-          }}
-        />
+        {emptyComponent}
       </CollapsibleTabs.ContentWrapper>
     )
-  }, [containerStyle.minHeight, isRefetchingTopTokens, refetchTopTokens])
+  }, [containerStyle.minHeight, emptyComponent])
 
   if (isLoadingTopTokens) {
     return (
@@ -84,7 +85,7 @@ const MarketScreen = ({
           }
         }}
         goToMarketDetail={goToMarketDetail}
-        emptyComponent={emptyComponent}
+        renderEmpty={renderEmpty}
         containerStyle={containerStyle}
       />
     </Animated.View>
