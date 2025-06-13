@@ -72,9 +72,9 @@ class KeychainMigrator {
     try {
       Logger.info('Starting PIN-based keychain migration.')
 
-      const mnemonic = await BiometricsSDK.loadLegacyWalletWithPin(pin)
-      if (!mnemonic) {
-        throw new Error('Could not load legacy wallet with PIN')
+      const mnemonicResult = await BiometricsSDK.loadLegacyWalletWithPin(pin)
+      if (!mnemonicResult.success) {
+        throw mnemonicResult.error
       }
       const newEncryptionKey = await BiometricsSDK.generateEncryptionKey()
 
@@ -88,7 +88,10 @@ class KeychainMigrator {
       await BiometricsSDK.loadEncryptionKeyWithPin(pin)
 
       // Store wallet secret with new encryption key
-      await BiometricsSDK.storeWalletSecret(this.activeWalletId, mnemonic)
+      await BiometricsSDK.storeWalletSecret(
+        this.activeWalletId,
+        mnemonicResult.value
+      )
 
       await BiometricsSDK.clearLegacyWalletData()
       Logger.info('PIN-based keychain migration completed successfully.')
@@ -103,9 +106,9 @@ class KeychainMigrator {
   async runBiometricMigration(): Promise<boolean> {
     try {
       Logger.info('Starting biometric-based keychain migration.')
-      const mnemonic = await BiometricsSDK.loadLegacyWalletWithBiometry()
-      if (!mnemonic) {
-        throw new Error('Could not load legacy wallet with biometrics.')
+      const mnemonicResult = await BiometricsSDK.loadLegacyWalletWithBiometry()
+      if (!mnemonicResult.success) {
+        throw mnemonicResult.error
       }
 
       const newEncryptionKey = await BiometricsSDK.generateEncryptionKey()
@@ -114,7 +117,10 @@ class KeychainMigrator {
       await BiometricsSDK.storeEncryptionKeyWithBiometry(newEncryptionKey)
 
       // Re-encrypt mnemonic and store it
-      await BiometricsSDK.storeWalletSecret(this.activeWalletId, mnemonic)
+      await BiometricsSDK.storeWalletSecret(
+        this.activeWalletId,
+        mnemonicResult.value
+      )
 
       // DO NOT clear legacy data yet, we need it for PIN completion
       Logger.info(
@@ -132,9 +138,9 @@ class KeychainMigrator {
     try {
       Logger.info('Starting completion of partial migration.')
       // 1. Get the mnemonic from legacy pin storage
-      const mnemonic = await BiometricsSDK.loadLegacyWalletWithPin(pin)
-      if (!mnemonic) {
-        throw new Error('Could not load legacy wallet with PIN.')
+      const mnemonicResult = await BiometricsSDK.loadLegacyWalletWithPin(pin)
+      if (!mnemonicResult.success) {
+        throw mnemonicResult.error
       }
       // 2. Generate new encryption key
       const newEncryptionKey = await BiometricsSDK.generateEncryptionKey()
@@ -143,7 +149,10 @@ class KeychainMigrator {
       await BiometricsSDK.storeEncryptionKeyWithBiometry(newEncryptionKey)
 
       // 4. Store mnemonic with new encryption key
-      await BiometricsSDK.storeWalletSecret(this.activeWalletId, mnemonic)
+      await BiometricsSDK.storeWalletSecret(
+        this.activeWalletId,
+        mnemonicResult.value
+      )
 
       // 5. Now that both keys are stored, we can safely remove the legacy data
       await BiometricsSDK.clearLegacyWalletData()

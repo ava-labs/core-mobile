@@ -11,12 +11,12 @@ const RecoveryPhraseVerifyPinScreen = (): JSX.Element => {
 
   const handleVerifySuccess = async (): Promise<void> => {
     try {
-      const walletSecret = await BiometricsSDK.loadWalletSecret(walletId)
-      Logger.info('walletSecret', walletSecret)
-
-      if (!walletSecret) {
-        throw new Error('Failed to load wallet secret')
+      const result = await BiometricsSDK.loadWalletSecret(walletId)
+      if (!result.success) {
+        throw result.error
       }
+      const walletSecret = result.value
+      Logger.info('walletSecret', walletSecret)
 
       replace({
         // @ts-ignore TODO: make routes typesafe

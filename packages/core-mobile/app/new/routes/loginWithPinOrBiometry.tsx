@@ -78,12 +78,13 @@ const LoginWithPinOrBiometry = (): JSX.Element => {
     setTimeout(async () => {
       try {
         const result = await BiometricsSDK.loadWalletSecret(walletId) //for now we only support one wallet, multiple wallets will be supported in the upcoming PR
-        if (result) {
-          try {
-            await unlock({ mnemonic: result })
-          } catch (error) {
-            Logger.error('Failed to unlock wallet:', error)
-          }
+        if (!result.success) {
+          throw result.error
+        }
+        try {
+          await unlock({ mnemonic: result.value })
+        } catch (error) {
+          Logger.error('Failed to unlock wallet:', error)
         }
       } catch (error) {
         Logger.error('Failed to load wallet secret:', error)

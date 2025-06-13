@@ -52,7 +52,10 @@ describe('KeychainMigrator', () => {
     const newEncryptionKey = 'new-key'
 
     it('should successfully migrate with PIN', async () => {
-      mockBiometricsSDK.loadLegacyWalletWithPin.mockResolvedValue(mnemonic)
+      mockBiometricsSDK.loadLegacyWalletWithPin.mockResolvedValue({
+        success: true,
+        value: mnemonic
+      })
       mockBiometricsSDK.generateEncryptionKey.mockResolvedValue(
         newEncryptionKey
       )
@@ -82,7 +85,10 @@ describe('KeychainMigrator', () => {
     })
 
     it('should successfully migrate with PIN and store biometry key if enabled', async () => {
-      mockBiometricsSDK.loadLegacyWalletWithPin.mockResolvedValue(mnemonic)
+      mockBiometricsSDK.loadLegacyWalletWithPin.mockResolvedValue({
+        success: true,
+        value: mnemonic
+      })
       mockBiometricsSDK.generateEncryptionKey.mockResolvedValue(
         newEncryptionKey
       )
@@ -97,7 +103,10 @@ describe('KeychainMigrator', () => {
     })
 
     it('should return false if loading legacy wallet fails', async () => {
-      mockBiometricsSDK.loadLegacyWalletWithPin.mockResolvedValue(false)
+      mockBiometricsSDK.loadLegacyWalletWithPin.mockResolvedValue({
+        success: false,
+        error: new Error('Could not load legacy wallet with PIN')
+      })
       const result = await keychainMigrator.runPinMigration(pin)
       expect(result).toBe(false)
       expect(mockLogger.error).toHaveBeenCalledWith(
@@ -120,7 +129,10 @@ describe('KeychainMigrator', () => {
     const mnemonic = 'test-mnemonic'
     const newEncryptionKey = 'new-key'
     it('should successfully run partial biometric migration', async () => {
-      mockBiometricsSDK.loadLegacyWalletWithBiometry.mockResolvedValue(mnemonic)
+      mockBiometricsSDK.loadLegacyWalletWithBiometry.mockResolvedValue({
+        success: true,
+        value: mnemonic
+      })
       mockBiometricsSDK.generateEncryptionKey.mockResolvedValue(
         newEncryptionKey
       )
@@ -140,7 +152,10 @@ describe('KeychainMigrator', () => {
     })
 
     it('should return false if loading legacy wallet fails', async () => {
-      mockBiometricsSDK.loadLegacyWalletWithBiometry.mockResolvedValue(false)
+      mockBiometricsSDK.loadLegacyWalletWithBiometry.mockResolvedValue({
+        success: false,
+        error: new Error('Could not load legacy wallet with biometrics.')
+      })
       const result = await keychainMigrator.runBiometricMigration()
       expect(result).toBe(false)
       expect(mockLogger.error).toHaveBeenCalledWith(
@@ -165,7 +180,10 @@ describe('KeychainMigrator', () => {
     const newEncryptionKey = 'new-key'
 
     it('should successfully complete a partial migration', async () => {
-      mockBiometricsSDK.loadLegacyWalletWithPin.mockResolvedValue(mnemonic)
+      mockBiometricsSDK.loadLegacyWalletWithPin.mockResolvedValue({
+        success: true,
+        value: mnemonic
+      })
       mockBiometricsSDK.generateEncryptionKey.mockResolvedValue(
         newEncryptionKey
       )
@@ -191,7 +209,10 @@ describe('KeychainMigrator', () => {
     })
 
     it('should return false if loading legacy wallet fails', async () => {
-      mockBiometricsSDK.loadLegacyWalletWithPin.mockResolvedValue(false)
+      mockBiometricsSDK.loadLegacyWalletWithPin.mockResolvedValue({
+        success: false,
+        error: new Error('Could not load legacy wallet with PIN.')
+      })
       const result = await keychainMigrator.completePartialMigration(pin)
       expect(result).toBe(false)
       expect(mockLogger.error).toHaveBeenCalledWith(

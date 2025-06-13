@@ -247,7 +247,7 @@ describe('BiometricsSDK', () => {
 
     it('should throw error when changing PIN without key in cache', async () => {
       await expect(BiometricsSDK.changePin('newPin')).rejects.toThrow(
-        'Encryption key not found in cache.'
+        'Encryption key not found'
       )
     })
   })
@@ -281,7 +281,7 @@ describe('BiometricsSDK', () => {
       BiometricsSDK.clearEncryptionKey() // empty cache
       await expect(
         BiometricsSDK.storeWalletSecret(mockWalletId, mockSecret)
-      ).rejects.toThrow('Encryption key not found in cache.')
+      ).rejects.toThrow('Encryption key not found')
     })
 
     it('should load wallet secret', async () => {
@@ -300,20 +300,28 @@ describe('BiometricsSDK', () => {
         mockEncryptedData,
         mockEncryptionKey
       )
-      expect(result).toBe(mockSecret)
+      expect(result).toEqual({
+        success: true,
+        value: mockSecret
+      })
     })
 
-    it('should throw error when loading secret without key in cache', async () => {
+    it('should return error when loading secret without key in cache', async () => {
       BiometricsSDK.clearEncryptionKey() // empty cache
-      await expect(
-        BiometricsSDK.loadWalletSecret(mockWalletId)
-      ).rejects.toThrow('Encryption key not found in cache.')
+      const result = await BiometricsSDK.loadWalletSecret(mockWalletId)
+      expect(result).toEqual({
+        error: new Error('Encryption key not found'),
+        success: false
+      })
     })
 
     it('should return false if loading wallet secret fails', async () => {
       mockKeychain.getGenericPassword.mockResolvedValue(false)
       const result = await BiometricsSDK.loadWalletSecret(mockWalletId)
-      expect(result).toBe(false)
+      expect(result).toEqual({
+        error: new Error('No credentials found'),
+        success: false
+      })
     })
   })
 
@@ -447,7 +455,10 @@ describe('BiometricsSDK', () => {
         legacyEncryptedPassword,
         legacyPin
       )
-      expect(result).toBe(legacyDecryptedData)
+      expect(result).toEqual({
+        success: true,
+        value: legacyDecryptedData
+      })
     })
 
     it('should return false if legacy wallet with pin fails decryption', async () => {
@@ -457,13 +468,19 @@ describe('BiometricsSDK', () => {
       })
       mockDecrypt.mockResolvedValue(false)
       const result = await BiometricsSDK.loadLegacyWalletWithPin(legacyPin)
-      expect(result).toBe(false)
+      expect(result).toEqual({
+        error: new Error('Failed to decrypt'),
+        success: false
+      })
     })
 
     it('should return false if no credentials for legacy wallet with pin', async () => {
       mockKeychain.getGenericPassword.mockResolvedValue(false)
       const result = await BiometricsSDK.loadLegacyWalletWithPin(legacyPin)
-      expect(result).toBe(false)
+      expect(result).toEqual({
+        error: new Error('No credentials found'),
+        success: false
+      })
     })
 
     it('should load legacy wallet with biometry', async () => {
@@ -477,13 +494,19 @@ describe('BiometricsSDK', () => {
       expect(mockKeychain.getGenericPassword).toHaveBeenCalledWith(
         expect.objectContaining({ service: LEGACY_SERVICE_KEY })
       )
-      expect(result).toBe(legacyDecryptedData)
+      expect(result).toEqual({
+        success: true,
+        value: legacyDecryptedData
+      })
     })
 
     it('should return false if no credentials for legacy wallet with biometry', async () => {
       mockKeychain.getGenericPassword.mockResolvedValue(false)
       const result = await BiometricsSDK.loadLegacyWalletWithBiometry()
-      expect(result).toBe(false)
+      expect(result).toEqual({
+        error: new Error('No credentials found'),
+        success: false
+      })
     })
 
     it('should clear legacy wallet data', async () => {

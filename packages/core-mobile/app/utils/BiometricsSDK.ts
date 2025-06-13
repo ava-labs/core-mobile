@@ -7,6 +7,7 @@ import { Platform } from 'react-native'
 import { commonStorage } from 'utils/mmkv'
 import { decrypt, encrypt } from 'utils/EncryptionHelper'
 import Aes from 'react-native-aes-crypto'
+import { Result } from 'types/result'
 import Logger from './Logger'
 import { assertNotNull } from './assertions'
 
@@ -84,31 +85,51 @@ class BiometricsSDK {
   }
 
   // Migration-specific methods
-  async loadLegacyWalletWithPin(pin: string): Promise<false | string> {
-    const credentials = await Keychain.getGenericPassword({
-      service: LEGACY_SERVICE_KEY_BIO
-    })
-    if (!credentials) return false
-    const decrypted = await decrypt(credentials.password, pin)
-    if (!decrypted) return false
-    return decrypted.data
+  async loadLegacyWalletWithPin(pin: string): Promise<Result<string>> {
+    try {
+      const credentials = await Keychain.getGenericPassword({
+        service: LEGACY_SERVICE_KEY_BIO
+      })
+      if (!credentials)
+        return { success: false, error: new Error('No credentials found') }
+
+      const decrypted = await decrypt(credentials.password, pin)
+      if (!decrypted)
+        return { success: false, error: new Error('Failed to decrypt') }
+
+      return { success: true, value: decrypted.data }
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error : new Error('Unknown error')
+      }
+    }
   }
 
-  async loadLegacyWalletWithBiometry(): Promise<false | string> {
-    const credentials = await Keychain.getGenericPassword({
-      service: LEGACY_SERVICE_KEY,
-      accessControl: Keychain.ACCESS_CONTROL.BIOMETRY_CURRENT_SET,
-      accessible: Keychain.ACCESSIBLE.WHEN_UNLOCKED_THIS_DEVICE_ONLY,
-      authenticationPrompt: {
-        title: 'Authorize access',
-        subtitle: 'Use biometric data to migrate your wallet',
-        cancel: 'Cancel'
-      },
-      authenticationType:
-        Keychain.AUTHENTICATION_TYPE.DEVICE_PASSCODE_OR_BIOMETRICS
-    })
-    if (!credentials) return false
-    return credentials.password
+  async loadLegacyWalletWithBiometry(): Promise<Result<string>> {
+    try {
+      const credentials = await Keychain.getGenericPassword({
+        service: LEGACY_SERVICE_KEY,
+        accessControl: Keychain.ACCESS_CONTROL.BIOMETRY_CURRENT_SET,
+        accessible: Keychain.ACCESSIBLE.WHEN_UNLOCKED_THIS_DEVICE_ONLY,
+        authenticationPrompt: {
+          title: 'Authorize access',
+          subtitle: 'Use biometric data to migrate your wallet',
+          cancel: 'Cancel'
+        },
+        authenticationType:
+          Keychain.AUTHENTICATION_TYPE.DEVICE_PASSCODE_OR_BIOMETRICS
+      })
+      if (!credentials)
+        return { success: false, error: new Error('No credentials found') }
+
+      return { success: true, value: credentials.password }
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error : new Error('Unknown error')
+      }
+    }
   }
 
   async clearLegacyWalletData(): Promise<void> {
@@ -237,13 +258,28 @@ class BiometricsSDK {
     return this.encryptionKey
   }
 
-  async loadWalletSecret(walletId: string): Promise<false | string> {
-    const credentials = await Keychain.getGenericPassword(
-      KeystoreConfig.wallet_secret_options(walletId)
-    )
-    if (!credentials) return false
-    const decrypted = await decrypt(credentials.password, this.getEncryptionKey)
-    return decrypted.data
+  async loadWalletSecret(walletId: string): Promise<Result<string>> {
+    try {
+      const credentials = await Keychain.getGenericPassword(
+        KeystoreConfig.wallet_secret_options(walletId)
+      )
+      if (!credentials)
+        return { success: false, error: new Error('No credentials found') }
+
+      const decrypted = await decrypt(
+        credentials.password,
+        this.getEncryptionKey
+      )
+      if (!decrypted)
+        return { success: false, error: new Error('Failed to decrypt') }
+
+      return { success: true, value: decrypted.data }
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error : new Error('Unknown error')
+      }
+    }
   }
 
   async clearWalletData(walletId: string): Promise<void> {

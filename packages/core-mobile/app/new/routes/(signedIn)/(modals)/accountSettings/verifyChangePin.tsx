@@ -9,14 +9,15 @@ const VerifyChangePinScreen = (): React.JSX.Element => {
   const walletId = useActiveWalletId()
 
   const handleVerifySuccess = async (): Promise<void> => {
-    const walletSecret = await BiometricsSDK.loadWalletSecret(walletId)
-    if (!walletSecret) {
-      throw new Error('Failed to load wallet secret')
+    const walletSecretResult = await BiometricsSDK.loadWalletSecret(walletId)
+    if (!walletSecretResult.success) {
+      throw walletSecretResult.error
     }
+
     replace({
       // @ts-ignore TODO: make routes typesafe
       pathname: '/accountSettings/changePin',
-      params: { mnemonic: walletSecret }
+      params: { mnemonic: walletSecretResult.value }
     })
   }
 
