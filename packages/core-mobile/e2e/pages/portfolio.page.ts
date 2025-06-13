@@ -5,12 +5,12 @@ import portfolio from '../locators/portfolio.loc'
 import { Platform } from '../helpers/constants'
 import cm from '../locators/commonEls.loc'
 import commonElsLoc from '../locators/commonEls.loc'
+import accountManageLoc from '../locators/accountManage.loc'
 import networksManagePage from './networksManage.page'
 import ActivityTabPage from './activityTab.page'
 import collectiblesPage from './collectibles.page'
 import accountManagePage from './accountManage.page'
 import bottomTabsPage from './bottomTabs.page'
-import accountManageLoc from '../locators/accountManage.loc'
 
 const platformIndex = Action.platform() === Platform.iOS ? 1 : 0
 class PortfolioPage {

@@ -88,10 +88,6 @@ class CommonElsPage {
     return by.id(commonElsLoc.grabber)
   }
 
-  get viewDropdownBtn() {
-    return by.id(commonElsLoc.viewDropdownBtn)
-  }
-
   get cChain() {
     return by.text(commonElsLoc.cChain)
   }

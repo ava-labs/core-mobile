@@ -219,7 +219,7 @@ class OnboardingPage {
     try {
       await Action.dismissKeyboard(onboardingLoc.recoveryPhraseInput)
     } catch (e) {
-      console.warn('Keybaord is not displayed')
+      console.warn('the keyboard is not displayed')
     }
   }
 

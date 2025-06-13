@@ -20,7 +20,7 @@ export default {
   unselectedAppearance: 'unselected_appearance',
   selectCurrencyTitle: 'Select a currency',
   addAccountBtn: 'add_account_btn',
-  accountList: 'account_list',
+  accountList: 'account_carousel_list',
   accountDetailIconIdPrefix: 'account_detail_icon__account #',
   changePin: 'Change PIN',
   enterYourCurrentPinTitle: 'Enter your current PIN',

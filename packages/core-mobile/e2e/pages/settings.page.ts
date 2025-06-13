@@ -497,11 +497,23 @@ class Settings {
     await Actions.tap(by.id(`manage_accounts_list__${name}`))
   }
 
-  async switchToAccount(name = settings.account) {
+  async switchAccount(name = settings.account) {
+    // You switch account within the `manage accounts` screen
+    // settings > manage all or add a wallet > select the account
     await this.goSettings()
     await this.tapManageAccountsBtn()
     await this.selectAccount(name)
     await commonElsPage.dismissBottomSheet()
+  }
+
+  async quickSwitchAccount(name = settings.account) {
+    // You switch account on Settings view without entering the `manage accounts` screen
+    // settings > tap the account on the account carousel
+    await this.goSettings()
+    while (!(await Actions.isVisible(by.text(name), 0, 0))) {
+      await Actions.swipe(this.accountList, 'left', 'fast', 0.5)
+    }
+    await Actions.tap(by.id(`account_carousel_item__${name}`))
   }
 }
 
