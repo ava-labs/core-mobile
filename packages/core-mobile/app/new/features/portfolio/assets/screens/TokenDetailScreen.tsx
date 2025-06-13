@@ -62,6 +62,7 @@ import { selectIsPrivacyModeEnabled } from 'store/settings/securityPrivacy'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import { useNetworks } from 'hooks/networks/useNetworks'
 import { ChainId } from '@avalabs/core-chains-sdk'
+import { useBuy } from 'features/buyOnramp/hooks/useBuy'
 
 export const TokenDetailScreen = (): React.JSX.Element => {
   const {
@@ -114,6 +115,8 @@ export const TokenDetailScreen = (): React.JSX.Element => {
 
   const tokenName = token?.name ?? ''
 
+  const { navigateToBuy, isBuyable } = useBuy()
+
   const header = useMemo(
     () => <NavigationTitleHeader title={tokenName} />,
     [tokenName]
@@ -161,13 +164,6 @@ export const TokenDetailScreen = (): React.JSX.Element => {
     })
   }, [navigate, token])
 
-  const handleBuy = useCallback(() => {
-    navigate({
-      // @ts-ignore TODO: make routes typesafe
-      pathname: '/buy'
-    })
-  }, [navigate])
-
   const handleSend = useCallback((): void => {
     setSelectedToken(token)
     navigate({
@@ -194,11 +190,13 @@ export const TokenDetailScreen = (): React.JSX.Element => {
       })
     }
 
-    buttons.push({
-      title: ActionButtonTitle.Buy,
-      icon: 'buy',
-      onPress: handleBuy
-    })
+    if (token && isBuyable(token)) {
+      buttons.push({
+        title: ActionButtonTitle.Buy,
+        icon: 'buy',
+        onPress: () => navigateToBuy({ token })
+      })
+    }
 
     if (isTokenStakable) {
       buttons.push({
@@ -221,12 +219,13 @@ export const TokenDetailScreen = (): React.JSX.Element => {
   }, [
     handleSend,
     isSwapDisabled,
-    handleBuy,
+    token,
+    isBuyable,
     isTokenStakable,
     isBridgeDisabled,
     isTokenBridgeable,
     navigateToSwap,
-    token?.localId,
+    navigateToBuy,
     canAddStake,
     addStake,
     handleBridge

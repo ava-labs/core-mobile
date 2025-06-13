@@ -7,13 +7,13 @@ import { selectTokenVisibility } from 'store/portfolio'
 import { useSelector } from 'react-redux'
 import { selectActiveAccount } from 'store/account'
 import { selectBalanceTotalForAccount } from 'store/balance'
-import { useRouter } from 'expo-router'
 import { useNavigateToSwap } from 'features/swap/hooks/useNavigateToSwap'
 import { AVAX_TOKEN_ID } from 'common/consts/swap'
 import { useIsSwappable } from 'common/hooks/useIsSwapable'
 import { selectIsSwapBlocked } from 'store/posthog'
 import { getTokenAddress, getTokenChainId } from 'features/track/utils/utils'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
+import { useBuy } from 'features/buyOnramp/hooks/useBuy'
 import { TrendingTokenListItem } from './TrendingTokenListItem'
 
 const numColumns = 1
@@ -31,29 +31,32 @@ const TrendingTokensScreen = ({
   containerStyle: ViewStyle
 }): JSX.Element => {
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
-  const { navigate } = useRouter()
   const { navigateToSwap } = useNavigateToSwap()
   const activeAccount = useSelector(selectActiveAccount)
   const { isSwappable } = useIsSwappable()
   const isSwapBlocked = useSelector(selectIsSwapBlocked)
   const tokenVisibility = useSelector(selectTokenVisibility)
+  const { navigateToBuy } = useBuy()
+
   const balanceTotal = useSelector(
     selectBalanceTotalForAccount(activeAccount?.index ?? 0, tokenVisibility)
   )
   const isZeroBalance = balanceTotal === 0n
 
-  const openBuy = useCallback(() => {
-    navigate({
-      // @ts-ignore TODO: make routes typesafe
-      pathname: '/buy',
-      params: { showAvaxWarning: 'true' }
-    })
-  }, [navigate])
+  const openBuy = useCallback(
+    (initialTokenIdTo?: string) => {
+      navigateToBuy({
+        showAvaxWarning: true,
+        address: initialTokenIdTo
+      })
+    },
+    [navigateToBuy]
+  )
 
   const onBuyPress = useCallback(
     (initialTokenIdTo?: string) => {
       if (isZeroBalance || isSwapBlocked) {
-        openBuy()
+        openBuy(initialTokenIdTo)
       } else {
         navigateToSwap(AVAX_TOKEN_ID, initialTokenIdTo)
       }
