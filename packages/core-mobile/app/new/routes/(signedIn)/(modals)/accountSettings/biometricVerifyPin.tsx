@@ -7,12 +7,12 @@ import Logger from 'utils/Logger'
 const BiometricVerifyPinScreen = (): React.JSX.Element => {
   const { canGoBack, back } = useRouter()
 
-  const handleLoginSuccess = (mnemonic: string): void => {
-    BiometricsSDK.storeWalletWithBiometry(mnemonic)
+  const handleVerifySuccess = (): void => {
+    BiometricsSDK.enableBiometry()
       .then(() => canGoBack() && back())
       .catch(Logger.error)
   }
 
-  return <VerifyWithPinOrBiometry onLoginSuccess={handleLoginSuccess} />
+  return <VerifyWithPinOrBiometry onVerifySuccess={handleVerifySuccess} />
 }
 export default BiometricVerifyPinScreen

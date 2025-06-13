@@ -159,7 +159,7 @@ const clearData = async (
   dispatch(
     setSelectedColorScheme(RnAppearance.getColorScheme() as ColorSchemeName)
   )
-  await BiometricsSDK.clearAllWalletKeys().catch(e =>
+  await BiometricsSDK.clearAllData().catch(e =>
     Logger.error('failed to clear biometrics', e)
   )
   await SecureStorageService.clearAll().catch(e =>
