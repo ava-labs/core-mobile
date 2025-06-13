@@ -362,18 +362,17 @@ class BiometricsSDK {
    * Checks if the entered PIN is correct by attempting to unlock
    * either LEGACY_SERVICE_KEY_BIO or ENCRYPTION_KEY_SERVICE
    * @param pin - The PIN to validate
+   * @param isLegacy - Whether to use the legacy service key
    * @returns true if the PIN successfully unlocks any stored data, false otherwise
    */
-  async isPinCorrect(pin: string): Promise<boolean> {
+  async isPinCorrect(pin: string, isLegacy: boolean): Promise<boolean> {
     try {
-      // First try to load legacy wallet data with PIN
-      const legacyResult = await this.loadLegacyWalletWithPin(pin)
-      if (legacyResult.success) {
-        return true
+      if (isLegacy) {
+        const legacyResult = await this.loadLegacyWalletWithPin(pin)
+        return legacyResult.success
+      } else {
+        return await this.loadEncryptionKeyWithPin(pin)
       }
-
-      // If legacy fails, try to load encryption key with PIN
-      return await this.loadEncryptionKeyWithPin(pin)
     } catch (error) {
       Logger.error('Failed to validate PIN', error)
       return false

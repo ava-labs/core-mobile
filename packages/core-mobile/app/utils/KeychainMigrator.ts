@@ -1,8 +1,10 @@
 import { ErrorBase } from 'errors/ErrorBase'
 import BiometricsSDK from './BiometricsSDK'
 import Logger from './Logger'
+import { assertNotUndefined } from './assertions'
 
 export class MigrationFailedError extends ErrorBase<'MigrationFailedError'> {}
+export class BadPinError extends ErrorBase<'BadPinError'> {}
 
 class KeychainMigrator {
   private activeWalletId: string
@@ -50,9 +52,9 @@ class KeychainMigrator {
       Logger.info('Migration needed:', migrationStatus)
 
       if (accessType === 'PIN') {
-        if (!pin) {
-          throw new Error('PIN is required for PIN migration')
-        }
+        await this.throwIfBadPin(pin)
+        assertNotUndefined(pin) // throwIfBadPin already checks for undefined
+
         switch (migrationStatus) {
           case 'runPinMigration':
             await this.runPinMigration(pin)
@@ -77,10 +79,30 @@ class KeychainMigrator {
         }
       }
     } catch (error) {
+      if (
+        error instanceof BadPinError ||
+        error instanceof MigrationFailedError
+      ) {
+        throw error
+      }
       throw new MigrationFailedError({
         message: `Migration failed: ${
           error instanceof Error ? error.message : 'Unknown error'
         }`
+      })
+    }
+  }
+
+  private async throwIfBadPin(pin?: string): Promise<void> {
+    if (!pin) {
+      throw new BadPinError({
+        message: 'PIN is required for PIN migration'
+      })
+    }
+    const isPinCorrect = await BiometricsSDK.isPinCorrect(pin, true)
+    if (!isPinCorrect) {
+      throw new BadPinError({
+        message: 'Bad PIN'
       })
     }
   }

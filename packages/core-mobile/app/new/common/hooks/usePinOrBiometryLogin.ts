@@ -5,7 +5,10 @@ import { InvalidVersionError, NoSaltError } from 'utils/EncryptionHelper'
 import Logger from 'utils/Logger'
 import { formatTimer } from 'utils/Utils'
 import { BiometricType } from 'utils/BiometricsSDK'
-import KeychainMigrator, { MigrationFailedError } from 'utils/KeychainMigrator'
+import KeychainMigrator, {
+  BadPinError,
+  MigrationFailedError
+} from 'utils/KeychainMigrator'
 import { useDeleteWallet } from './useDeleteWallet'
 import { useRateLimiter } from './useRateLimiter'
 import { useActiveWalletId } from './useActiveWallet'
@@ -77,11 +80,6 @@ export function usePinOrBiometryLogin({
       try {
         onStartLoading()
 
-        const isPinCorrect = await BiometricsSDK.isPinCorrect(pin)
-        if (!isPinCorrect) {
-          throw new Error('BAD_DECRYPT')
-        }
-
         // Migrate if needed
         const migrator = new KeychainMigrator(activeWalletId)
         await migrator.migrateIfNeeded('PIN', pin)
@@ -104,7 +102,7 @@ export function usePinOrBiometryLogin({
           (err?.message?.includes('BAD_DECRYPT') || // Android
             err?.message?.includes('Decrypt failed')) // iOS
 
-        if (isInvalidPin) {
+        if (isInvalidPin || err instanceof BadPinError) {
           increaseAttempt()
           setVerified(false)
           onStopLoading(onWrongPin)
