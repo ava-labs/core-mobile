@@ -43,5 +43,5 @@ export default {
   XPNetwork: 'Avalanche X/P-Chain',
   transactionOnboardingNext: 'transaction_onboarding__next',
   tokenAmountInputField: 'token_amount_input_field',
-  transactionSuccess: 'Transaction susccessful'
+  transactionSuccess: 'Transaction successful'
 }

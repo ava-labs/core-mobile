@@ -32,7 +32,6 @@ describe('Send AVAX', () => {
   it('should verify the AVAX Received history', async () => {
     // verify the second account tx history
     await settingsPage.quickSwitchAccount(settingsLoc.account2)
-    await portfolioPage.filterNetwork()
     await portfolioPage.tapToken()
     await portfolioPage.verifyActivityItem()
     await commonElsPage.goBack()
