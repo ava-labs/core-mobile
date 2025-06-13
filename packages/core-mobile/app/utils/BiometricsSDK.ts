@@ -8,6 +8,7 @@ import { commonStorage } from 'utils/mmkv'
 import { decrypt, encrypt } from 'utils/EncryptionHelper'
 import Aes from 'react-native-aes-crypto'
 import Logger from './Logger'
+import { assertNotNull } from './assertions'
 
 /**
  * @deprecated Legacy service keys used for backwards compatibility
@@ -217,12 +218,12 @@ class BiometricsSDK {
     await Keychain.resetGenericPassword({
       service: LEGACY_SERVICE_KEY
     })
-    await this.storeEncryptionKeyWithPin(this.getEncryptionKey(), newPin)
+    await this.storeEncryptionKeyWithPin(this.getEncryptionKey, newPin)
   }
 
   // Wallet Secret Management
   async storeWalletSecret(walletId: string, secret: string): Promise<boolean> {
-    const encrypted = await encrypt(secret, this.getEncryptionKey())
+    const encrypted = await encrypt(secret, this.getEncryptionKey)
     await Keychain.setGenericPassword(
       'walletSecret',
       encrypted,
@@ -231,10 +232,8 @@ class BiometricsSDK {
     return true
   }
 
-  private getEncryptionKey(): string {
-    if (!this.encryptionKey) {
-      throw new Error('Encryption key not found in cache.')
-    }
+  private get getEncryptionKey(): string {
+    assertNotNull(this.encryptionKey, 'Encryption key not found')
     return this.encryptionKey
   }
 
@@ -243,10 +242,7 @@ class BiometricsSDK {
       KeystoreConfig.wallet_secret_options(walletId)
     )
     if (!credentials) return false
-    const decrypted = await decrypt(
-      credentials.password,
-      this.getEncryptionKey()
-    )
+    const decrypted = await decrypt(credentials.password, this.getEncryptionKey)
     return decrypted.data
   }
 
@@ -317,7 +313,7 @@ class BiometricsSDK {
    * @throws Error if the encryption key is not found in cache.
    */
   async enableBiometry(): Promise<void> {
-    await this.storeEncryptionKeyWithBiometry(this.getEncryptionKey())
+    await this.storeEncryptionKeyWithBiometry(this.getEncryptionKey)
   }
 
   async disableBiometry(): Promise<void> {
