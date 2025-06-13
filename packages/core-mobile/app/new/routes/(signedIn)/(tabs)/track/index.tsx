@@ -40,7 +40,6 @@ import Animated, {
   useAnimatedStyle,
   useSharedValue
 } from 'react-native-reanimated'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { MarketType } from 'store/watchlist/types'
 
 // const SEARCH_BAR_MARGIN_TOP = Platform.OS === 'ios' ? 60 : 55
@@ -49,6 +48,8 @@ const TrackHomeScreen = (): JSX.Element => {
   const { navigate } = useRouter()
   const { theme } = useTheme()
   const tabBarHeight = useBottomTabBarHeight()
+  const headerHeight = useHeaderHeight()
+  const isAndroidWithBottomBar = useIsAndroidWithBottomBar()
   const [isSearchBarFocused, setSearchBarFocused] = useState(false)
   const [searchText, setSearchText] = useState('')
   const tabViewRef = useRef<CollapsibleTabsRef>(null)
@@ -177,9 +178,6 @@ const TrackHomeScreen = (): JSX.Element => {
   const handleTabBarLayout = useCallback((event: LayoutChangeEvent) => {
     setTabBarLayout(event.nativeEvent.layout)
   }, [])
-
-  const headerHeight = useHeaderHeight()
-  const isAndroidWithBottomBar = useIsAndroidWithBottomBar()
 
   const tabHeight = useMemo(() => {
     return Platform.select({
