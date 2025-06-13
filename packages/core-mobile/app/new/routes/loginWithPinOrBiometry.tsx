@@ -75,14 +75,19 @@ const LoginWithPinOrBiometry = (): JSX.Element => {
     isProcessing.value = true
 
     // JS thread is blocked, so we need to wait for the animation to finish for updating the UI after the keyboard is closed
-    setTimeout(() => {
-      BiometricsSDK.loadWalletSecret(walletId) //for now we only support one wallet, multiple wallets will be supported in the upcoming PR
-        .then(result => {
-          if (result) {
-            unlock({ mnemonic: result }).catch(Logger.error)
+    setTimeout(async () => {
+      try {
+        const result = await BiometricsSDK.loadWalletSecret(walletId) //for now we only support one wallet, multiple wallets will be supported in the upcoming PR
+        if (result) {
+          try {
+            await unlock({ mnemonic: result })
+          } catch (error) {
+            Logger.error('Failed to unlock wallet:', error)
           }
-        })
-        .catch(Logger.error)
+        }
+      } catch (error) {
+        Logger.error('Failed to load wallet secret:', error)
+      }
     }, 0)
   }, [handleStartLoading, isProcessing, unlock, walletId])
 
