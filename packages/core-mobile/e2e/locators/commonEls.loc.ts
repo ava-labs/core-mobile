@@ -43,5 +43,6 @@ export default {
   evmNetwork: 'Avalanche C-Chain/EVM',
   XPNetwork: 'Avalanche X/P-Chain',
   transactionOnboardingNext: 'transaction_onboarding__next',
-  tokenAmountInputField: 'token_amount_input_field'
+  tokenAmountInputField: 'token_amount_input_field',
+  transactionSuccess: 'Transaction susccessful'
 }

@@ -158,6 +158,7 @@ export const SendToken = ({ onSend }: { onSend: () => void }): JSX.Element => {
           gap: 20
         }}>
         <Button
+          testID={canSubmit ? 'next_btn' : 'next_btn_disabled'}
           disabled={!canSubmit}
           type="primary"
           size="large"

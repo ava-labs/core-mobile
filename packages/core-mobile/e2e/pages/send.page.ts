@@ -85,6 +85,7 @@ class SendPage {
   }
 
   async tapApproveButton() {
+    await Actions.waitForElement(this.approveButton, 20000)
     await Actions.tapElementAtIndex(this.approveButton, 0)
   }
 

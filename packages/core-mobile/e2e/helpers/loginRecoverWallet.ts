@@ -19,6 +19,7 @@ class LoginRecoverWallet {
     await Actions.waitForElement(onboardingPage.enterPinSecondScreenTitle)
     await commonElsPage.enterPin()
     await onboardingPage.enterWalletName(onboardingLoc.walletName)
+    await Actions.tap(onboardingPage.nameWalletTitle)
     await commonElsPage.tapNext()
     await Actions.waitForElement(onboardingPage.selectAvatarTitle)
     await commonElsPage.tapNext()

@@ -4,11 +4,13 @@ import Action from '../helpers/actions'
 import portfolio from '../locators/portfolio.loc'
 import { Platform } from '../helpers/constants'
 import cm from '../locators/commonEls.loc'
+import commonElsLoc from '../locators/commonEls.loc'
 import networksManagePage from './networksManage.page'
 import ActivityTabPage from './activityTab.page'
 import collectiblesPage from './collectibles.page'
 import accountManagePage from './accountManage.page'
 import bottomTabsPage from './bottomTabs.page'
+import accountManageLoc from '../locators/accountManage.loc'
 
 const platformIndex = Action.platform() === Platform.iOS ? 1 : 0
 class PortfolioPage {
@@ -188,6 +190,18 @@ class PortfolioPage {
     return by.id(portfolio.receiveButton)
   }
 
+  get filter() {
+    return by.id(portfolio.filter)
+  }
+
+  get sort() {
+    return by.id(portfolio.sort)
+  }
+
+  get view() {
+    return by.id(portfolio.view)
+  }
+
   async verifyPorfolioScreen() {
     await Assert.isVisible(this.viewAllBtn)
     await Assert.isVisible(this.favoritesHeader)
@@ -339,14 +353,8 @@ class PortfolioPage {
     await Action.tap(by.id(portfolio.activeNetwork + network))
   }
 
-  async tapToken(token: string) {
-    await Action.waitForElement(this.portfolioTokenList)
-    await Action.scrollListUntil(
-      by.id(`${token}_portfolio_list_item`),
-      this.portfolioTokenList,
-      100
-    )
-    await Action.tap(by.id(`${token}_portfolio_list_item`))
+  async tapToken(token = 'Avalanche') {
+    await Action.tap(by.id(`portfolio_token_item__${token}`))
   }
 
   async verifyActiveNetwork(network: string) {
@@ -497,6 +505,19 @@ class PortfolioPage {
 
   async tapReceive() {
     await Action.tapElementAtIndex(this.receiveButton, 0)
+  }
+
+  async filterNetwork(network = commonElsLoc.cChain_2) {
+    await Action.tap(this.filter)
+    await Action.waitForElement(by.id(`dropdown_item__${network}`))
+    await Action.tap(by.id(`dropdown_item__${network}`))
+  }
+
+  async verifyActivityItem(
+    from = accountManageLoc.accountOneAddress,
+    to = accountManageLoc.accountTwoAddress
+  ) {
+    await Action.waitForElement(by.id(`tx__from_${from}_to_${to}`))
   }
 }
 

@@ -19,7 +19,6 @@ export type TransactionSnackbarType = 'pending' | 'success' | 'error'
 type TransactionSnackbarProps = {
   message?: string
   type: TransactionSnackbarType
-  testID?: string
   onPress?: () => void
   isActionable?: boolean
   style?: ViewStyle
@@ -28,7 +27,6 @@ type TransactionSnackbarProps = {
 export const TransactionSnackbar = ({
   message,
   type,
-  testID,
   onPress,
   isActionable = false,
   style
@@ -106,7 +104,6 @@ export const TransactionSnackbar = ({
   return (
     <TouchableWithoutFeedback
       style={[{ alignSelf: 'flex-start' }, style]}
-      testID={testID}
       onPress={onPress}>
       <View
         style={{

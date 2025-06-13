@@ -1,6 +1,7 @@
 export default {
   // NEW BELOW:
   account: 'testWallet1',
+  account2: 'Account 2',
   eyeIcon: 'eye_icon',
   settingsFooter: 'settings_footer',
   settingsScrollView: 'settings_scroll_view',

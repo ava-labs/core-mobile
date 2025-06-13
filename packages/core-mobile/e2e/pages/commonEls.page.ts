@@ -172,6 +172,10 @@ class CommonElsPage {
     return by.id(commonElsLoc.tokenAmountInputField)
   }
 
+  get transactionSuccess() {
+    return by.text(commonElsLoc.transactionSuccess)
+  }
+
   async dismissTransactionOnboarding() {
     try {
       await Actions.tap(this.transactionOnboardingNext)
@@ -354,7 +358,7 @@ class CommonElsPage {
   }
 
   async verifySuccessToast() {
-    await Actions.waitForElement(by.text('Success'))
+    await Actions.waitForElement(this.transactionSuccess, 30000)
   }
 
   async enterAmount(amount: string) {
