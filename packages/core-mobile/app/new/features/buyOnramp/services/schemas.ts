@@ -1,4 +1,4 @@
-import { object, record, string } from 'zod'
+import { object, record, string, number } from 'zod'
 
 export const SearchCountrySchema = object({
   countryCode: string(),
@@ -14,7 +14,7 @@ export const SearchFiatCurrencySchema = object({
 }).passthrough()
 
 export const SearchCryptoCurrencySchema = object({
-  countryCode: string().nullable().optional(),
+  currencyCode: string().nullable().optional(),
   name: string(),
   chainCode: string(),
   chainName: string(),
@@ -37,4 +37,26 @@ export const SearchServiceProviderSchema = object({
     darkShort: string(),
     lightShort: string()
   })
+}).passthrough()
+
+export const SearchDefaultsByCountrySchema = object({
+  countryCode: string(),
+  defaultCurrencyCode: string(),
+  defaultPaymentMethods: string().array()
+}).passthrough()
+
+const AmountDetailsSchema = object({
+  defaultAmount: number().optional(),
+  minimumAmount: number(),
+  maximumAmount: number()
+})
+
+export const GetPurchaseLimitsSchema = object({
+  countryCode: string().optional(),
+  chainCode: string().optional(),
+  defaultAmount: number().optional(),
+  minimumAmount: number(),
+  maximumAmount: number(),
+  meldDetails: AmountDetailsSchema.optional(),
+  serviceProviderDetails: record(string(), AmountDetailsSchema).optional()
 }).passthrough()
