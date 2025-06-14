@@ -1,11 +1,5 @@
 import { ScrollScreen } from 'common/components/ScrollScreen'
-import React, {
-  useCallback,
-  useMemo,
-  useState,
-  useEffect,
-  useLayoutEffect
-} from 'react'
+import React, { useCallback } from 'react'
 import {
   Button,
   View,
@@ -18,172 +12,33 @@ import {
 } from '@avalabs/k2-alpine'
 import { useRouter } from 'expo-router'
 import { LogoWithNetwork } from 'features/portfolio/assets/components/LogoWithNetwork'
-import { useErc20ContractTokens } from 'common/hooks/useErc20ContractTokens'
-import { useSearchableTokenList } from 'common/hooks/useSearchableTokenList'
-import { TokenUnit } from '@avalabs/core-utils-sdk'
-import { useNetworks } from 'hooks/networks/useNetworks'
-import { useWatchlist } from 'hooks/watchlist/useWatchlist'
 import { selectSelectedCurrency } from 'store/settings/currency'
 import { useSelector } from 'react-redux'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
-import { isTokenSupportedForBuying } from 'features/buyOnramp/utils'
-import {
-  useOnRampPaymentMethod,
-  useOnRampServiceProvider,
-  useOnRampToken
-} from '../store'
-import { useGetPurchaseLimits } from '../hooks/useGetPurchaseLimits'
-import { useSearchDefaultsByCountry } from '../hooks/useSearchDefaultsByCountry'
-import { useLocale } from '../hooks/useLocale'
-import {
-  PaymentMethodNames,
-  ServiceProviderCategories,
-  ServiceProviders
-} from '../consts'
+import { useSelectBuyAmount } from '../hooks/useSelectBuyAmount'
 
 export const SelectBuyAmountScreen = (): React.JSX.Element => {
   const {
     theme: { colors }
   } = useTheme()
+  const {
+    minimumPurchaseLimit,
+    maximumPurchaseLimit,
+    formatInTokenUnit,
+    amount,
+    setAmount,
+    paymentMethodToDisplay,
+    serviceProviderToDisplay,
+    isBuyAllowed,
+    token,
+    tokenBalance,
+    isAboveMinimumPurchaseLimit,
+    isBelowMaximumPurchaseLimit,
+    isLoadingDefaultsByCountry
+  } = useSelectBuyAmount()
   const { formatIntegerCurrency, formatCurrency } = useFormatCurrency()
-  const { getFromPopulatedNetwork } = useNetworks()
-  const [amount, setAmount] = useState(0)
   const { navigate } = useRouter()
   const selectedCurrency = useSelector(selectSelectedCurrency)
-  const { getMarketTokenBySymbol } = useWatchlist()
-  const [onrampToken] = useOnRampToken()
-  const [serviceProvider, setServiceProvider] = useOnRampServiceProvider()
-  const [paymentMethod, setPaymentMethod] = useOnRampPaymentMethod()
-  const erc20ContractTokens = useErc20ContractTokens()
-  const { filteredTokenList } = useSearchableTokenList({
-    tokens: erc20ContractTokens,
-    hideZeroBalance: false
-  })
-  const { data: purchaseLimits } = useGetPurchaseLimits({
-    categories: [ServiceProviderCategories.CRYPTO_ONRAMP],
-    fiatCurrencies: [selectedCurrency],
-    cryptoCurrencyCodes: onrampToken?.currencyCode
-      ? [onrampToken?.currencyCode]
-      : undefined
-  })
-  const { countryCode } = useLocale()
-
-  const { data: defaultsByCountry, isLoading: isLoadingDefaultsByCountry } =
-    useSearchDefaultsByCountry({
-      categories: [ServiceProviderCategories.CRYPTO_ONRAMP]
-    })
-
-  const defaultPaymentMethod = useMemo(() => {
-    return defaultsByCountry?.find(d => d.countryCode === countryCode)
-      ?.defaultPaymentMethods[0]
-  }, [countryCode, defaultsByCountry])
-
-  useLayoutEffect(() => {
-    setPaymentMethod(undefined)
-    setServiceProvider(undefined)
-  }, [setPaymentMethod, setServiceProvider])
-
-  useEffect(() => {
-    if (paymentMethod === undefined && defaultPaymentMethod) {
-      setPaymentMethod(defaultPaymentMethod)
-    }
-  }, [defaultPaymentMethod, paymentMethod, setPaymentMethod])
-
-  const paymentMethodToDisplay = useMemo(() => {
-    return paymentMethod ? PaymentMethodNames[paymentMethod] : undefined
-  }, [paymentMethod])
-
-  const serviceProviderToDisplay = useMemo(() => {
-    return serviceProvider ? ServiceProviders[serviceProvider] : undefined
-  }, [serviceProvider])
-
-  const selectedPurchasingFiatCurrency = useMemo(() => {
-    return purchaseLimits?.find(
-      limit => limit.currencyCode === selectedCurrency
-    )
-  }, [purchaseLimits, selectedCurrency])
-
-  const minimumPurchaseLimit = selectedPurchasingFiatCurrency?.minimumAmount
-  const maximumPurchaseLimit = selectedPurchasingFiatCurrency?.maximumAmount
-
-  const isAboveMinimumPurchaseLimit = useMemo(() => {
-    if (!selectedPurchasingFiatCurrency) {
-      // if there is no matching fiat currency found, we don't allow the user to proceed
-      return false
-    }
-
-    return (amount ?? 0) >= (selectedPurchasingFiatCurrency?.minimumAmount ?? 0)
-  }, [selectedPurchasingFiatCurrency, amount])
-
-  const isBelowMaximumPurchaseLimit = useMemo(() => {
-    if (!selectedPurchasingFiatCurrency) {
-      // if there is no matching fiat currency found, we don't allow the user to proceed
-      return false
-    }
-
-    return (amount ?? 0) <= (selectedPurchasingFiatCurrency?.maximumAmount ?? 0)
-  }, [selectedPurchasingFiatCurrency, amount])
-
-  const isWithinPurchaseLimit =
-    isBelowMaximumPurchaseLimit && isAboveMinimumPurchaseLimit
-
-  const isBuyAllowed = useMemo(() => {
-    return (amount ?? 0) > 0 && isWithinPurchaseLimit
-  }, [amount, isWithinPurchaseLimit])
-
-  const token = useMemo(() => {
-    const t = filteredTokenList.find(
-      tk => onrampToken && isTokenSupportedForBuying(onrampToken, tk)
-    )
-    if (t) {
-      return {
-        ...onrampToken,
-        tokenWithBalance: t
-      }
-    }
-  }, [filteredTokenList, onrampToken])
-
-  const network = useMemo(
-    () => getFromPopulatedNetwork(token?.tokenWithBalance?.networkChainId),
-    [getFromPopulatedNetwork, token?.tokenWithBalance?.networkChainId]
-  )
-
-  const tokenBalance = useMemo(() => {
-    if (token?.tokenWithBalance === undefined) {
-      return undefined
-    }
-
-    return new TokenUnit(
-      token?.tokenWithBalance?.balance ?? 0,
-      token?.tokenWithBalance && 'decimals' in token.tokenWithBalance
-        ? token.tokenWithBalance.decimals
-        : network?.networkToken.decimals ?? 0,
-      token?.tokenWithBalance?.symbol ?? ''
-    )
-  }, [network?.networkToken.decimals, token?.tokenWithBalance])
-
-  const formatInTokenUnit = useCallback(
-    (amt: number): string => {
-      if (token?.tokenWithBalance === undefined || amt === 0) {
-        return ''
-      }
-      const currentPrice =
-        getMarketTokenBySymbol(token.tokenWithBalance.symbol)?.currentPrice ?? 0
-      const maxDecimals =
-        token.tokenWithBalance && 'decimals' in token.tokenWithBalance
-          ? token.tokenWithBalance.decimals
-          : 0
-
-      const tokenAmount = (amt / currentPrice) * 10 ** maxDecimals
-      const tokenUnit = new TokenUnit(
-        tokenAmount,
-        maxDecimals,
-        token.tokenWithBalance.symbol
-      )
-      return tokenUnit.toDisplay() + ' ' + token.tokenWithBalance.symbol
-    },
-    [getMarketTokenBySymbol, token?.tokenWithBalance]
-  )
 
   const handleSelectToken = useCallback((): void => {
     // @ts-ignore TODO: make routes typesafe
@@ -342,9 +197,11 @@ export const SelectBuyAmountScreen = (): React.JSX.Element => {
       </Pressable>
 
       {/* Fiat amount input widget */}
-      {token?.tokenWithBalance && tokenBalance && (
+      {tokenBalance && (
         <FiatAmountInputWidget
-          isAmountValid={isWithinPurchaseLimit}
+          isAmountValid={
+            isBelowMaximumPurchaseLimit && isAboveMinimumPurchaseLimit
+          }
           sx={{ marginTop: 12 }}
           currency={selectedCurrency}
           amount={amount}
