@@ -35,12 +35,12 @@ export const SearchFiatCurrencySchema = object({
 
 export const SearchCryptoCurrencySchema = object({
   currencyCode: string().nullable().optional(),
-  name: string(),
-  chainCode: string(),
-  chainName: string(),
-  chainId: string().nullable(),
-  contractAddress: string().nullable(),
-  symbolImageUrl: string().nullable()
+  name: string().nullable().optional(),
+  chainCode: string().nullable().optional(),
+  chainName: string().nullable().optional(),
+  chainId: string().nullable().optional(),
+  contractAddress: string().nullable().optional(),
+  symbolImageUrl: string().nullable().optional()
 }).passthrough()
 
 export const SearchServiceProviderSchema = object({
