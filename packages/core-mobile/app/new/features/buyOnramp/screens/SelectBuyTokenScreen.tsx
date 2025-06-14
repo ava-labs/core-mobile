@@ -16,11 +16,13 @@ import { useErc20ContractTokens } from 'common/hooks/useErc20ContractTokens'
 import { CHAIN_IDS_WITH_INCORRECT_SYMBOL } from 'consts/chainIdsWithIncorrectSymbol'
 import { LogoWithNetwork } from 'features/portfolio/assets/components/LogoWithNetwork'
 import { LoadingState } from 'common/components/LoadingState'
+import { useRouter } from 'expo-router'
 import { useOnRampToken } from '../store'
 import { useSearchCryptoCurrencies } from '../hooks/useSearchCryptoCurrencies'
 import { isTokenSupportedForBuying } from '../utils'
 import { CryptoCurrency } from '../types'
 import { MELD_CURRENCY_CODES, ServiceProviderCategories } from '../consts'
+import { useBuy } from '../hooks/useBuy'
 
 type CryptoCurrencyWithBalance = CryptoCurrency & {
   tokenWithBalance: LocalTokenWithBalance
@@ -30,8 +32,10 @@ export const SelectBuyTokenScreen = (): React.JSX.Element => {
   const {
     theme: { colors }
   } = useTheme()
+  const { canGoBack, back } = useRouter()
+  const { navigateToBuy } = useBuy()
   const [searchText, setSearchText] = useState<string>('')
-  const [selectedToken, setSelectedToken] = useOnRampToken()
+  const [selectedToken] = useOnRampToken()
   const erc20ContractTokens = useErc20ContractTokens()
   const { filteredTokenList } = useSearchableTokenList({
     tokens: erc20ContractTokens,
@@ -41,12 +45,6 @@ export const SelectBuyTokenScreen = (): React.JSX.Element => {
     useSearchCryptoCurrencies({
       categories: [ServiceProviderCategories.CRYPTO_ONRAMP]
     })
-
-  const handleSelectToken = (token: CryptoCurrency): void => {
-    setSelectedToken(token)
-    // @ts-ignore TODO: make routes typesafe
-    // navigate('./inputAmount')
-  }
 
   const supportedCryptoCurrencies = useMemo(() => {
     return cryptoCurrencies?.reduce((acc, crypto) => {
@@ -76,7 +74,10 @@ export const SelectBuyTokenScreen = (): React.JSX.Element => {
         tk.name.toLowerCase().includes(searchText.toLowerCase()) ||
         tk.chainName.toLowerCase().includes(searchText.toLowerCase()) ||
         tk.contractAddress?.toLowerCase().includes(searchText.toLowerCase()) ||
-        tk.chainId?.toString().includes(searchText.toLowerCase())
+        tk.chainId?.toString().includes(searchText.toLowerCase()) ||
+        tk.tokenWithBalance.symbol
+          .toLowerCase()
+          .includes(searchText.toLowerCase())
     )
   }, [searchText, supportedCryptoCurrencies])
 
@@ -119,7 +120,10 @@ export const SelectBuyTokenScreen = (): React.JSX.Element => {
 
     return (
       <TouchableOpacity
-        onPress={() => handleSelectToken(item)}
+        onPress={() => {
+          canGoBack() && back()
+          navigateToBuy({ token: item.tokenWithBalance })
+        }}
         sx={{
           marginTop: 10,
           paddingLeft: 16
