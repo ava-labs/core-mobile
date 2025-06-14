@@ -1,20 +1,18 @@
 import { useCallback, useEffect, useState } from 'react'
-import BiometricsSDK, { KeystoreConfig } from 'utils/BiometricsSDK'
-import { BIOMETRY_TYPE, UserCredentials } from 'react-native-keychain'
-import { asyncScheduler, Observable, of, timer } from 'rxjs'
-import { catchError, concatMap, map } from 'rxjs/operators'
+import BiometricsSDK from 'utils/BiometricsSDK'
 import { Alert } from 'react-native'
-import {
-  decrypt,
-  encrypt,
-  InvalidVersionError,
-  NoSaltError
-} from 'utils/EncryptionHelper'
+import { InvalidVersionError, NoSaltError } from 'utils/EncryptionHelper'
 import Logger from 'utils/Logger'
 import { formatTimer } from 'utils/Utils'
-import { BiometricType } from 'services/deviceInfo/DeviceInfoService'
+import { BiometricType } from 'utils/BiometricsSDK'
+import KeychainMigrator, {
+  BadPinError,
+  MigrationFailedError
+} from 'utils/KeychainMigrator'
 import { useDeleteWallet } from './useDeleteWallet'
 import { useRateLimiter } from './useRateLimiter'
+import { useActiveWalletId } from './useActiveWallet'
+
 export function usePinOrBiometryLogin({
   onStartLoading,
   onStopLoading,
@@ -26,8 +24,8 @@ export function usePinOrBiometryLogin({
 }): {
   enteredPin: string
   onEnterPin: (pinKey: string) => void
-  mnemonic: string | undefined
-  promptForWalletLoadingIfExists: () => Observable<WalletLoadingResults>
+  verified: boolean
+  verifyBiometric: () => Promise<WalletLoadingResults>
   disableKeypad: boolean
   timeRemaining: string
   bioType: BiometricType
@@ -36,9 +34,10 @@ export function usePinOrBiometryLogin({
   const [isBiometricAvailable, setIsBiometricAvailable] = useState(true)
   const [bioType, setBioType] = useState<BiometricType>(BiometricType.NONE)
   const [enteredPin, setEnteredPin] = useState('')
-  const [mnemonic, setMnemonic] = useState<string | undefined>(undefined)
+  const [verified, setVerified] = useState(false)
   const [disableKeypad, setDisableKeypad] = useState(false)
   const { deleteWallet } = useDeleteWallet()
+  const activeWalletId = useActiveWalletId()
   const [timeRemaining, setTimeRemaining] = useState('00:00')
   const {
     increaseAttempt,
@@ -76,26 +75,24 @@ export function usePinOrBiometryLogin({
     [deleteWallet]
   )
 
-  const checkPinEntered = useCallback(
+  const checkEnteredPin = useCallback(
     async (pin: string) => {
       try {
         onStartLoading()
-        const credentials =
-          (await BiometricsSDK.loadWalletWithPin()) as UserCredentials
 
-        const { data, version } = await decrypt(credentials.password, pin)
+        // Migrate if needed
+        const migrator = new KeychainMigrator(activeWalletId)
+        await migrator.migrateIfNeeded('PIN', pin)
 
-        if (version === 1) {
-          // data was encrypted using version 1 config
-          // we need to re-encrypt it using version 2 config
-          // and store it again
-          const encryptedData = await encrypt(data, pin)
-          await BiometricsSDK.storeWalletWithPin(encryptedData, false)
+        // Load encryption key
+        const isValidPin = await BiometricsSDK.loadEncryptionKeyWithPin(pin)
+        if (!isValidPin) {
+          throw new Error('BAD_DECRYPT')
         }
 
-        setMnemonic(data)
+        // Success path
+        setVerified(true)
         resetRateLimiter()
-
         onStopLoading()
       } catch (err) {
         Logger.error('Error decrypting data', err)
@@ -105,26 +102,30 @@ export function usePinOrBiometryLogin({
           (err?.message?.includes('BAD_DECRYPT') || // Android
             err?.message?.includes('Decrypt failed')) // iOS
 
-        if (isInvalidPin) {
+        if (isInvalidPin || err instanceof BadPinError) {
           increaseAttempt()
-          setMnemonic(undefined)
+          setVerified(false)
+          onStopLoading(onWrongPin)
         } else if (
           err instanceof NoSaltError ||
-          err instanceof InvalidVersionError
+          err instanceof InvalidVersionError ||
+          err instanceof MigrationFailedError
         ) {
           alertBadData()
+          onStopLoading()
+        } else {
+          onStopLoading()
         }
-
-        onStopLoading(isInvalidPin ? onWrongPin : undefined)
       }
     },
     [
-      alertBadData,
-      increaseAttempt,
-      resetRateLimiter,
-      onWrongPin,
       onStartLoading,
-      onStopLoading
+      activeWalletId,
+      onStopLoading,
+      increaseAttempt,
+      onWrongPin,
+      resetRateLimiter,
+      alertBadData
     ]
   )
 
@@ -135,49 +136,47 @@ export function usePinOrBiometryLogin({
     setEnteredPin(pin)
 
     if (pin.length === 6) {
-      checkPinEntered(pin).catch(Logger.error)
+      checkEnteredPin(pin).catch(Logger.error)
     }
   }
 
-  const promptForWalletLoadingIfExists =
-    useCallback((): Observable<WalletLoadingResults> => {
-      return timer(0, asyncScheduler).pipe(
-        //timer is here to give UI opportunity to draw everything
-        concatMap(() => of(BiometricsSDK.getAccessType())),
-        concatMap((value: string | null) => {
-          if (value && value === 'BIO') {
-            return BiometricsSDK.loadWalletKey({
-              ...KeystoreConfig.KEYSTORE_BIO_OPTIONS,
-              authenticationPrompt: {
-                title: 'Access Wallet',
-                subtitle:
-                  'Use biometric data to access securely stored wallet information',
-                cancel: 'cancel'
-              }
-            })
-          }
-          return of(false)
-        }),
-        map((value: boolean | UserCredentials) => {
-          if (value !== false) {
-            const keyOrMnemonic = (value as UserCredentials).password
-            if (keyOrMnemonic.startsWith('PrivateKey')) {
-              resetRateLimiter()
-              return new PrivateKeyLoaded(keyOrMnemonic)
-            } else {
-              setMnemonic(keyOrMnemonic)
-              resetRateLimiter()
-              return new NothingToLoad()
-            }
+  const verifyBiometric =
+    useCallback(async (): Promise<WalletLoadingResults> => {
+      try {
+        // Timer delay to give UI opportunity to draw everything
+        await new Promise(resolve => setTimeout(resolve, 0))
+
+        const accessType = BiometricsSDK.getAccessType()
+
+        if (accessType === 'BIO') {
+          // Check if migration is needed first
+          const migrator = new KeychainMigrator(activeWalletId)
+          await migrator.migrateIfNeeded('BIO')
+
+          const isSuccess = await BiometricsSDK.loadEncryptionKeyWithBiometry()
+
+          if (isSuccess) {
+            setVerified(true)
+            resetRateLimiter()
+            return new NothingToLoad()
           } else {
+            setVerified(false)
             return new NothingToLoad()
           }
-        }),
-        catchError(err => {
-          throw err
-        })
-      )
-    }, [resetRateLimiter])
+        }
+
+        // If not BIO access type
+        setVerified(false)
+        return new NothingToLoad()
+      } catch (err) {
+        Logger.error('Error in biometric authentication or migration', err)
+        if (err instanceof MigrationFailedError) {
+          alertBadData()
+        }
+        setVerified(false)
+        throw err
+      }
+    }, [activeWalletId, alertBadData, resetRateLimiter])
 
   useEffect(() => {
     async function getBiometryType(): Promise<void> {
@@ -189,12 +188,7 @@ export function usePinOrBiometryLogin({
       }
 
       const type = await BiometricsSDK.getBiometryType()
-
-      if (type === BIOMETRY_TYPE.FACE || type === BIOMETRY_TYPE.FACE_ID) {
-        setBioType(BiometricType.FACE_ID)
-      } else if (type === BIOMETRY_TYPE.FINGERPRINT) {
-        setBioType(BiometricType.TOUCH_ID)
-      }
+      setBioType(type)
     }
 
     getBiometryType()
@@ -203,8 +197,8 @@ export function usePinOrBiometryLogin({
   return {
     enteredPin,
     onEnterPin,
-    mnemonic,
-    promptForWalletLoadingIfExists,
+    verified,
+    verifyBiometric,
     disableKeypad,
     timeRemaining,
     bioType,
@@ -214,13 +208,5 @@ export function usePinOrBiometryLogin({
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
 interface WalletLoadingResults {}
-
-class PrivateKeyLoaded implements WalletLoadingResults {
-  privateKey: string
-
-  constructor(privateKey: string) {
-    this.privateKey = privateKey
-  }
-}
 
 class NothingToLoad implements WalletLoadingResults {}
