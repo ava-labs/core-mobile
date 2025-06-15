@@ -22,11 +22,13 @@ export type ActionButtonsProps = {
     onPress: () => void
     disabled?: boolean
     isLoading?: boolean
+    testID?: string
   }
   cancel: {
     label: string
     onPress: () => void
     disabled?: boolean
+    testID?: string
   }
   alert?: Alert
 }
@@ -59,7 +61,8 @@ export const ActionButtons = ({
           size="large"
           type="primary"
           onPress={() => confirm.onPress()}
-          disabled={shouldDisableConfirm}>
+          disabled={shouldDisableConfirm}
+          testID={confirm.testID}>
           {confirm.isLoading ? <ActivityIndicator /> : confirm.label}
         </Button>
         <Button
@@ -67,7 +70,8 @@ export const ActionButtons = ({
           type="tertiary"
           style={{ marginTop: 16 }}
           onPress={() => cancel.onPress()}
-          disabled={cancel.disabled}>
+          disabled={cancel.disabled}
+          testID={cancel.testID}>
           {cancel.label}
         </Button>
       </View>

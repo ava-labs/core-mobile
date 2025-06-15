@@ -74,6 +74,7 @@ const ManageAccountsScreen = (): React.JSX.Element => {
     return accountSearchResults.map(account => ({
       title: (
         <Text
+          testID={`manage_accounts_list__${account.name}`}
           variant="body1"
           numberOfLines={2}
           sx={{

@@ -62,7 +62,11 @@ export const TransactionOnboarding = ({
             paddingVertical: 4
           }}
         />
-        <Button type="primary" size="large" onPress={handlePressNext}>
+        <Button
+          type="primary"
+          size="large"
+          onPress={handlePressNext}
+          testID="transaction_onboarding__next">
           {buttonTitle ?? "Let's go!"}
         </Button>
       </View>

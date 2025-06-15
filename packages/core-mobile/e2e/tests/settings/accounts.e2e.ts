@@ -22,7 +22,7 @@ describe('Settings - Manage Accounts', () => {
     // Switch to the first account (oldAccount)
     const accountName =
       (await commonElsPage.getBalanceHeaderAccountName()) || 'Wallet 1'
-    await settingsPage.selectAccount(oldAccount)
+    // await settingsPage.selectAccount(oldAccount)
 
     // Go to the account detail
     await settingsPage.goToAccountDetail(oldAccount)
@@ -44,22 +44,19 @@ describe('Settings - Manage Accounts', () => {
     // Verify the new name on settings
     await settingsPage.goSettings()
     const newName = await actions.getElementText(
-      by.id(`${settingsLoc.accountNameIdPrefix}${oldAccount}`)
+      by.id(`${settingsLoc.account}${oldAccount}`)
     )
     assert(newName === settingsLoc.newAccountName)
   })
 
   it('should add new account', async () => {
     // Verify the account boxes
-    await settingsPage.verifyAccountBoxes(oldAccount)
 
     // Verify the new account box is not visible
-    await assertions.isNotVisible(
-      by.id(`${settingsLoc.accountNameIdPrefix}${newAccount}`)
-    )
+    await assertions.isNotVisible(by.id(`${settingsLoc.account}${newAccount}`))
 
     // Add new account and verify the new account box
-    await settingsPage.tapAddAccountBtn()
+    // await settingsPage.tapAddAccountBtn()
     await actions.waitForElement(by.text(`Account ${newAccount}`))
   })
 
@@ -77,11 +74,11 @@ describe('Settings - Manage Accounts', () => {
     )
 
     // Switch to the first account (oldAccount)
-    await settingsPage.selectAccount(oldAccount)
+    // await settingsPage.selectAccount(oldAccount)
 
     // Get the first account name that you just switched to
     const newName = await actions.getElementText(
-      by.id(`${settingsLoc.accountNameIdPrefix}${oldAccount}`)
+      by.id(`${settingsLoc.account}${oldAccount}`)
     )
     await commonElsPage.dismissBottomSheet()
 

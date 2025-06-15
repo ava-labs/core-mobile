@@ -4,6 +4,8 @@ import Action from '../helpers/actions'
 import portfolio from '../locators/portfolio.loc'
 import { Platform } from '../helpers/constants'
 import cm from '../locators/commonEls.loc'
+import commonElsLoc from '../locators/commonEls.loc'
+import accountManageLoc from '../locators/accountManage.loc'
 import networksManagePage from './networksManage.page'
 import ActivityTabPage from './activityTab.page'
 import collectiblesPage from './collectibles.page'
@@ -168,6 +170,38 @@ class PortfolioPage {
     return by.text(portfolio.testnetModeIsOn)
   }
 
+  get sendButton() {
+    return by.id(portfolio.sendButton)
+  }
+
+  get swapButton() {
+    return by.id(portfolio.swapButton)
+  }
+
+  get buyButton() {
+    return by.id(portfolio.buyButton)
+  }
+
+  get bridgeButton() {
+    return by.id(portfolio.bridgeButton)
+  }
+
+  get receiveButton() {
+    return by.id(portfolio.receiveButton)
+  }
+
+  get filter() {
+    return by.id(portfolio.filter)
+  }
+
+  get sort() {
+    return by.id(portfolio.sort)
+  }
+
+  get view() {
+    return by.id(portfolio.view)
+  }
+
   async verifyPorfolioScreen() {
     await Assert.isVisible(this.viewAllBtn)
     await Assert.isVisible(this.favoritesHeader)
@@ -319,14 +353,8 @@ class PortfolioPage {
     await Action.tap(by.id(portfolio.activeNetwork + network))
   }
 
-  async tapToken(token: string) {
-    await Action.waitForElement(this.portfolioTokenList)
-    await Action.scrollListUntil(
-      by.id(`${token}_portfolio_list_item`),
-      this.portfolioTokenList,
-      100
-    )
-    await Action.tap(by.id(`${token}_portfolio_list_item`))
+  async tapToken(token = 'Avalanche') {
+    await Action.tap(by.id(`portfolio_token_item__${token}`))
   }
 
   async verifyActiveNetwork(network: string) {
@@ -457,6 +485,39 @@ class PortfolioPage {
       (await Action.getElementText(by.id('list_fiat_balance__0'))) ?? ''
     console.log(`${fiatBal}`)
     assert(fiatBal.includes(currency), 'Fiat currency not found')
+  }
+
+  async tapSend() {
+    await Action.tapElementAtIndex(this.sendButton, 0)
+  }
+
+  async tapSwap() {
+    await Action.tapElementAtIndex(this.swapButton, 0)
+  }
+
+  async tapBuy() {
+    await Action.tapElementAtIndex(this.buyButton, 0)
+  }
+
+  async tapBridge() {
+    await Action.tapElementAtIndex(this.bridgeButton, 0)
+  }
+
+  async tapReceive() {
+    await Action.tapElementAtIndex(this.receiveButton, 0)
+  }
+
+  async filterNetwork(network = commonElsLoc.cChain_2) {
+    await Action.tap(this.filter)
+    await Action.waitForElement(by.id(`dropdown_item__${network}`))
+    await Action.tap(by.id(`dropdown_item__${network}`))
+  }
+
+  async verifyActivityItem(
+    from = accountManageLoc.accountOneAddress,
+    to = accountManageLoc.accountTwoAddress
+  ) {
+    await Action.waitForElement(by.id(`tx__from_${from}_to_${to}`))
   }
 }
 

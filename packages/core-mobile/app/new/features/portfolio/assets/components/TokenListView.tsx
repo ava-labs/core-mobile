@@ -79,7 +79,7 @@ export const TokenListView = ({
                 variant="buttonMedium"
                 numberOfLines={1}
                 sx={{ flex: 1 }}
-                testID={`list_token_name__${index}`}>
+                testID={`portfolio_token_item__${tokenName}`}>
                 {tokenName}
               </Text>
               <View

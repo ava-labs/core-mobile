@@ -8,7 +8,7 @@ export default {
   testnetBanner: 'testnet_banner',
   notNow: 'Not Now',
   turnOnNotifications: 'Turn on Notifications',
-  searchBar: 'search_bar__search',
+  searchBar: 'search_bar',
   bitcoinSVG: 'bitcoin_svg',
   avaSVG: 'ava_logo',
   reloadSVG: 'reload_svg',
@@ -19,7 +19,6 @@ export default {
   next: 'Next',
   dismiss: 'Dismiss',
   grabber: 'grabber',
-  viewDropdownBtn: 'view_dropdown_btn',
   cChain: 'Avalanche C-Chain',
   cChain_2: 'Avalanche (C-Chain)',
   pChain: 'Avalanche P-Chain',
@@ -41,5 +40,8 @@ export default {
   selectNetworkCChainEVM: 'select_network__Avalanche C-Chain/EVM',
   selectNetworkXPChain: 'select_network__Avalanche X/P-Chain',
   evmNetwork: 'Avalanche C-Chain/EVM',
-  XPNetwork: 'Avalanche X/P-Chain'
+  XPNetwork: 'Avalanche X/P-Chain',
+  transactionOnboardingNext: 'transaction_onboarding__next',
+  tokenAmountInputField: 'token_amount_input_field',
+  transactionSuccess: 'Transaction successful'
 }

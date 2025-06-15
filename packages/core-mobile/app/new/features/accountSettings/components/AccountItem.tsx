@@ -154,7 +154,7 @@ export const AccountItem = memo(
           <View>
             <Text
               variant="heading6"
-              testID={`account_name__${testID}`}
+              testID={`account_carousel_item__${account.name}`}
               numberOfLines={2}
               sx={{ color: accountNameColor, marginBottom: 2 }}>
               {account.name}

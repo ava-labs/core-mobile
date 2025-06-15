@@ -150,7 +150,7 @@ export const SearchBar: FC<Props> = ({
           </View>
 
           <TextInput
-            testID="search_bar__search"
+            testID="search_bar"
             autoCorrect={false}
             autoComplete="off"
             autoCapitalize="none"

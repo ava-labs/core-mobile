@@ -1,5 +1,7 @@
 export default {
   // NEW BELOW:
+  account: 'testWallet1',
+  account2: 'Account 2',
   eyeIcon: 'eye_icon',
   settingsFooter: 'settings_footer',
   settingsScrollView: 'settings_scroll_view',
@@ -18,8 +20,7 @@ export default {
   unselectedAppearance: 'unselected_appearance',
   selectCurrencyTitle: 'Select a currency',
   addAccountBtn: 'add_account_btn',
-  accountList: 'account_list',
-  accountNameIdPrefix: 'account_name__account #',
+  accountList: 'account_carousel_list',
   accountDetailIconIdPrefix: 'account_detail_icon__account #',
   changePin: 'Change PIN',
   enterYourCurrentPinTitle: 'Enter your current PIN',

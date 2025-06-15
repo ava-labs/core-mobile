@@ -10,13 +10,15 @@ export const SquareButton = ({
   icon,
   onPress,
   style,
-  disabled
+  disabled,
+  testID
 }: {
   title: string
   icon: SquareButtonIconType
   onPress?: () => void
   style?: ViewStyle
   disabled?: boolean
+  testID?: string
 }): JSX.Element => {
   const { theme } = useTheme()
   const tintColor = disabled
@@ -40,6 +42,7 @@ export const SquareButton = ({
           })}
         </View>
         <Text
+          testID={testID}
           sx={{
             position: 'absolute',
             bottom: 7,

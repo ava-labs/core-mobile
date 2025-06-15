@@ -88,10 +88,6 @@ class CommonElsPage {
     return by.id(commonElsLoc.grabber)
   }
 
-  get viewDropdownBtn() {
-    return by.id(commonElsLoc.viewDropdownBtn)
-  }
-
   get cChain() {
     return by.text(commonElsLoc.cChain)
   }
@@ -162,6 +158,26 @@ class CommonElsPage {
 
   get XPNetwork() {
     return by.text(commonElsLoc.XPNetwork)
+  }
+
+  get transactionOnboardingNext() {
+    return by.id(commonElsLoc.transactionOnboardingNext)
+  }
+
+  get tokenAmountInputField() {
+    return by.id(commonElsLoc.tokenAmountInputField)
+  }
+
+  get transactionSuccess() {
+    return by.text(commonElsLoc.transactionSuccess)
+  }
+
+  async dismissTransactionOnboarding() {
+    try {
+      await Actions.tap(this.transactionOnboardingNext)
+    } catch (e) {
+      console.log('Transaction onboarding not found')
+    }
   }
 
   async enterPin(pin = '000000') {
@@ -324,6 +340,25 @@ class CommonElsPage {
       expectedName === UIaccountName,
       `Account name mismatch: ${expectedName} !== ${UIaccountName}`
     )
+  }
+
+  async exitMetro() {
+    try {
+      if (await Actions.isVisible(by.text(/.*8081.*/i), 0)) {
+        await Actions.tap(by.text(/.*8081.*/i))
+      }
+      await Actions.tap(by.id(/.*x-icon.*/i))
+    } catch (e) {
+      console.log('Metro dev menu is not found...')
+    }
+  }
+
+  async verifySuccessToast() {
+    await Actions.waitForElement(this.transactionSuccess, 30000)
+  }
+
+  async enterAmount(amount: string) {
+    await Actions.setInputText(this.tokenAmountInputField, amount)
   }
 }
 

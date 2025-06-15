@@ -56,7 +56,7 @@ export const TokenGridView = ({
           />
           <View>
             <Text
-              testID={`grid_token_name__${index}`}
+              testID={`portfolio_token_item__${token.name}`}
               variant="buttonMedium"
               numberOfLines={1}
               sx={{ lineHeight: 16 }}>

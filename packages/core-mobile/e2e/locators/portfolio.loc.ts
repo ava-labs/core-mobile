@@ -1,6 +1,14 @@
 export default {
   // NEW BELOW:
   testnetModeIsOn: 'Testnet mode is on',
+  sendButton: 'action_button__Send',
+  swapButton: 'action_button__Swap',
+  buyButton: 'action_button__Buy',
+  bridgeButton: 'action_button__Bridge',
+  receiveButton: 'action_button__Receive',
+  filter: 'filter_dropdown_btn',
+  sort: 'sort_dropdown_btn',
+  view: 'view_dropdown_btn',
   // OLD BELOW:
   activityTab: 'Activity',
   addToWatchlist: 'add_svg',
@@ -44,5 +52,6 @@ export default {
   benqi: 'BENQI',
   activeNetworkBalance: 'active_network_balance',
   tokensTabListView: 'tokens_tab_list_view',
-  portfolioTokenList: 'portfolio_token_list'
+  portfolioTokenList: 'portfolio_token_list',
+  portfolioTokenItem: 'portfolio_token_item__'
 }

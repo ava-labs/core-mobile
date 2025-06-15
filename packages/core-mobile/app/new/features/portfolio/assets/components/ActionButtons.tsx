@@ -23,6 +23,7 @@ export const ActionButtons = ({
         entering={getItemEnteringAnimation(index)}
         layout={SPRING_LINEAR_TRANSITION}>
         <SquareButton
+          testID={`action_button__${item.title}`}
           key={index}
           title={item.title}
           icon={item.icon}
