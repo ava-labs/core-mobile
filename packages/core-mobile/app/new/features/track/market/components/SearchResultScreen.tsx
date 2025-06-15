@@ -1,11 +1,13 @@
-import React, { useMemo } from 'react'
-import { LoadingState } from 'common/components/LoadingState'
+import { ANIMATED, Image, IndexPath } from '@avalabs/k2-alpine'
+import { CollapsibleTabs } from 'common/components/CollapsibleTabs'
 import { ErrorState } from 'common/components/ErrorState'
-import { useWatchlist } from 'hooks/watchlist/useWatchlist'
-import { Dimensions } from 'react-native'
+import { LoadingState } from 'common/components/LoadingState'
 import { useTokenSearch } from 'common/hooks/useTokenSearch'
-import { Image } from '@avalabs/k2-alpine'
-import { SEGMENT_CONTROL_HEIGHT } from 'features/portfolio/assets/consts'
+import { useWatchlist } from 'hooks/watchlist/useWatchlist'
+import React, { useCallback, useMemo } from 'react'
+import { ViewStyle } from 'react-native'
+import { useHeaderMeasurements } from 'react-native-collapsible-tab-view'
+import Animated, { useAnimatedStyle, withTiming } from 'react-native-reanimated'
 import { MarketType } from 'store/watchlist/types'
 import { useTrackSortAndView } from '../hooks/useTrackSortAndView'
 import MarketTokensScreen from './MarketTokensScreen'
@@ -16,11 +18,15 @@ const cactusIcon = require('../../../../assets/icons/cactus.png')
 const SearchResultScreen = ({
   searchText,
   goToMarketDetail,
-  isSearchBarFocused
+  isSearchBarFocused,
+  containerStyle,
+  handleScrollResync
 }: {
   searchText: string
   goToMarketDetail: (tokenId: string, marketType: MarketType) => void
   isSearchBarFocused: boolean
+  containerStyle: ViewStyle
+  handleScrollResync: () => void
 }): JSX.Element => {
   const {
     prices,
@@ -56,14 +62,27 @@ const SearchResultScreen = ({
     false
   )
 
+  const header = useHeaderMeasurements()
+
+  const keyboardAvoidingStyle = useAnimatedStyle(() => {
+    return {
+      transform: [
+        {
+          translateY: withTiming(isSearchBarFocused ? -header.height + 40 : 0, {
+            ...ANIMATED.TIMING_CONFIG
+          })
+        }
+      ]
+    }
+  })
+
   const emptyComponent = useMemo(() => {
     if (isSearchingTokens || isLoadingTopTokens || isLoadingTrendingTokens) {
-      return <LoadingState sx={{ height: contentHeight }} />
+      return <LoadingState />
     }
 
     return (
       <ErrorState
-        sx={{ height: contentHeight }}
         icon={
           <Image
             source={isFocused ? magnifyingGlassIcon : cactusIcon}
@@ -88,19 +107,33 @@ const SearchResultScreen = ({
     isSearchingTokens
   ])
 
+  const renderEmpty = useCallback(() => {
+    return (
+      <CollapsibleTabs.ContentWrapper height={Number(containerStyle.minHeight)}>
+        <Animated.View style={keyboardAvoidingStyle}>
+          {emptyComponent}
+        </Animated.View>
+      </CollapsibleTabs.ContentWrapper>
+    )
+  }, [containerStyle.minHeight, emptyComponent, keyboardAvoidingStyle])
+
   return (
     <MarketTokensScreen
       data={data}
       charts={chartsToDisplay}
       sort={sort}
-      view={view}
+      view={{
+        ...view,
+        onSelected: (indexPath: IndexPath) => {
+          handleScrollResync()
+          view.onSelected(indexPath)
+        }
+      }}
       goToMarketDetail={goToMarketDetail}
-      emptyComponent={emptyComponent}
+      renderEmpty={renderEmpty}
+      containerStyle={containerStyle}
     />
   )
 }
-
-const contentHeight =
-  Dimensions.get('window').height / 2 + SEGMENT_CONTROL_HEIGHT + 16
 
 export default SearchResultScreen

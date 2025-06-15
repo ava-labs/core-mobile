@@ -7,6 +7,7 @@ import {
   useTheme,
   View
 } from '@avalabs/k2-alpine'
+import { useHeaderHeight } from '@react-navigation/elements'
 import BlurredBarsContentLayout from 'common/components/BlurredBarsContentLayout'
 import {
   CollapsibleTabs,
@@ -67,6 +68,7 @@ import { useBuy } from 'features/buyOnramp/hooks/useBuy'
 const SEGMENT_ITEMS = ['Assets', 'Collectibles', 'DeFi']
 
 const PortfolioHomeScreen = (): JSX.Element => {
+  const tabBarHeight = useBottomTabBarHeight()
   const { navigateToBuy } = useBuy()
   const isPrivacyModeEnabled = useFocusedSelector(selectIsPrivacyModeEnabled)
   const [_, setSelectedToken] = useSendSelectedToken()
@@ -77,6 +79,10 @@ const PortfolioHomeScreen = (): JSX.Element => {
   const [balanceHeaderLayout, setBalanceHeaderLayout] = useState<
     LayoutRectangle | undefined
   >()
+  const [segmentedControlLayout, setSegmentedControlLayout] = useState<
+    LayoutRectangle | undefined
+  >()
+
   const selectedSegmentIndex = useSharedValue(0)
   const activeAccount = useFocusedSelector(selectActiveAccount)
   const isBalanceLoading = useFocusedSelector(selectIsLoadingBalances)
@@ -152,6 +158,13 @@ const PortfolioHomeScreen = (): JSX.Element => {
   const handleBalanceHeaderLayout = useCallback(
     (event: LayoutChangeEvent): void => {
       setBalanceHeaderLayout(event.nativeEvent.layout)
+    },
+    []
+  )
+
+  const handleSegmentedControlLayout = useCallback(
+    (event: LayoutChangeEvent): void => {
+      setSegmentedControlLayout(event.nativeEvent.layout)
     },
     []
   )
@@ -297,7 +310,6 @@ const PortfolioHomeScreen = (): JSX.Element => {
       </View>
     )
   }, [
-    renderMaskView,
     theme.colors.$surfacePrimary,
     handleBalanceHeaderLayout,
     animatedHeaderStyle,
@@ -305,13 +317,14 @@ const PortfolioHomeScreen = (): JSX.Element => {
     formattedBalance,
     selectedCurrency,
     totalPriceChanged,
+    formattedPriceChange,
     indicatorStatus,
     formattedPercent,
     balanceAccurate,
     isLoading,
     isPrivacyModeEnabled,
     isDeveloperMode,
-    formattedPriceChange,
+    renderMaskView,
     actionButtons
   ])
 
@@ -385,25 +398,27 @@ const PortfolioHomeScreen = (): JSX.Element => {
     }, [])
   )
 
+  const headerHeight = useHeaderHeight()
+
   const insets = useSafeAreaInsets()
+
   const isAndroidWithBottomBar = useIsAndroidWithBottomBar()
-  const tabBarHeight = useBottomTabBarHeight()
 
   const tabHeight = useMemo(() => {
     return Platform.select({
       ios:
         SCREEN_HEIGHT -
-        insets.top -
-        (balanceHeaderLayout?.height ?? 0) -
         tabBarHeight -
-        11,
-      android: SCREEN_HEIGHT - insets.top + (isAndroidWithBottomBar ? -11 : 11)
+        headerHeight -
+        (segmentedControlLayout?.height ?? 0),
+      android: SCREEN_HEIGHT - insets.top + (isAndroidWithBottomBar ? 0 : 22)
     })
   }, [
-    balanceHeaderLayout?.height,
+    tabBarHeight,
+    headerHeight,
+    segmentedControlLayout?.height,
     insets.top,
-    isAndroidWithBottomBar,
-    tabBarHeight
+    isAndroidWithBottomBar
   ])
 
   const contentContainerStyle = useMemo(() => {
@@ -472,15 +487,17 @@ const PortfolioHomeScreen = (): JSX.Element => {
         tabs={tabs}
       />
 
-      <LinearGradientBottomWrapper shouldDelayBlurOniOS={true}>
-        <SegmentedControl
-          dynamicItemWidth={false}
-          items={SEGMENT_ITEMS}
-          selectedSegmentIndex={selectedSegmentIndex}
-          onSelectSegment={handleSelectSegment}
-          style={styles.segmentedControl}
-        />
-      </LinearGradientBottomWrapper>
+      <View onLayout={handleSegmentedControlLayout}>
+        <LinearGradientBottomWrapper shouldDelayBlurOniOS={true}>
+          <SegmentedControl
+            dynamicItemWidth={false}
+            items={SEGMENT_ITEMS}
+            selectedSegmentIndex={selectedSegmentIndex}
+            onSelectSegment={handleSelectSegment}
+            style={styles.segmentedControl}
+          />
+        </LinearGradientBottomWrapper>
+      </View>
     </BlurredBarsContentLayout>
   )
 }

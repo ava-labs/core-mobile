@@ -1,13 +1,22 @@
+import { ANIMATED, View } from '@avalabs/k2-alpine'
 import React, { forwardRef, useMemo } from 'react'
-import { StyleSheet } from 'react-native'
+import { Platform, StyleSheet } from 'react-native'
 import {
   CollapsibleRef,
   OnTabChangeCallback,
   TabBarProps,
   Tabs,
-  useCurrentTabScrollY
+  useCurrentTabScrollY,
+  useHeaderMeasurements
 } from 'react-native-collapsible-tab-view'
-import { runOnJS, useAnimatedReaction } from 'react-native-reanimated'
+import Animated, {
+  Extrapolation,
+  interpolate,
+  runOnJS,
+  useAnimatedReaction,
+  useAnimatedStyle,
+  withTiming
+} from 'react-native-reanimated'
 
 export type OnTabChange = OnTabChangeCallback<string>
 
@@ -20,10 +29,19 @@ export const CollapsibleTabsContainer = forwardRef<
     onTabChange?: OnTabChange
     onScrollY?: (contentOffsetY: number) => void
     tabs: { tabName: string; component: JSX.Element }[]
+    minHeaderHeight?: number
   }
 >(
   (
-    { tabs, renderHeader, renderTabBar, onIndexChange, onTabChange, onScrollY },
+    {
+      tabs,
+      renderHeader,
+      renderTabBar,
+      onIndexChange,
+      onTabChange,
+      onScrollY,
+      minHeaderHeight
+    },
     ref
   ): JSX.Element => {
     const content = useMemo(() => {
@@ -52,7 +70,8 @@ export const CollapsibleTabsContainer = forwardRef<
         renderTabBar={renderTabBar}
         pagerProps={pagerProps}
         onTabChange={onTabChange}
-        onIndexChange={onIndexChange}>
+        onIndexChange={onIndexChange}
+        minHeaderHeight={minHeaderHeight}>
         {content}
       </Tabs.Container>
     )
@@ -80,8 +99,50 @@ const CollapsibleTabWrapper = ({
   return component
 }
 
+const ContentWrapper = ({
+  children,
+  height
+}: {
+  children: React.ReactNode
+  height: number
+}): JSX.Element => {
+  const scrollY = useCurrentTabScrollY()
+  const header = useHeaderMeasurements()
+
+  const animatedStyle = useAnimatedStyle(() => {
+    const translateY = interpolate(
+      scrollY.value,
+      [0, header.height],
+      [-header.height / 2, 0],
+      Extrapolation.CLAMP
+    )
+    return {
+      transform: [
+        {
+          translateY: withTiming(translateY, {
+            ...ANIMATED.TIMING_CONFIG,
+            duration: 250
+          })
+        }
+      ]
+    }
+  })
+
+  return (
+    <View
+      style={{
+        height: height - (Platform.OS === 'android' ? header.height + 32 : 24),
+        justifyContent: 'center',
+        alignItems: 'center'
+      }}>
+      <Animated.View style={animatedStyle}>{children}</Animated.View>
+    </View>
+  )
+}
+
 export const CollapsibleTabs = {
   Container: CollapsibleTabsContainer,
+  ContentWrapper: ContentWrapper,
   Tab: Tabs.Tab,
   FlatList: Tabs.FlatList,
   MasonryList: Tabs.MasonryFlashList,
