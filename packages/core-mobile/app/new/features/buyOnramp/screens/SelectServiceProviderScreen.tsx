@@ -9,7 +9,6 @@ import {
   alpha
 } from '@avalabs/k2-alpine'
 import { useRouter } from 'expo-router'
-import { useSelector } from 'react-redux'
 import { ListScreen } from 'common/components/ListScreen'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import { format } from 'date-fns'
@@ -19,16 +18,11 @@ import { useSearchableTokenList } from 'common/hooks/useSearchableTokenList'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
 import { useNetworks } from 'hooks/networks/useNetworks'
 import { LoadingState } from 'common/components/LoadingState'
-import {
-  useOnRampServiceProvider,
-  useOnRampSourceAmount,
-  useOnRampToken
-} from '../store'
-import { useCreateCryptoQuote } from '../hooks/useCreateCryptoQuote'
-import { selectSelectedCurrency } from '../../../../store/settings/currency/slice'
+import { useOnRampServiceProvider, useOnRampToken } from '../store'
 import { useSearchServiceProviders } from '../hooks/useSearchServiceProviders'
 import { ServiceProviderCategories } from '../consts'
 import { Quote } from '../types'
+import { useServiceProviders } from '../hooks/useServiceProviders'
 
 const NEW_QUOTE_TIME = 60
 const IMAGE_SIZE = 36
@@ -39,21 +33,16 @@ export const SelectServiceProviderScreen = (): React.JSX.Element => {
   } = useTheme()
   const { back, canGoBack } = useRouter()
   const { formatCurrency } = useFormatCurrency()
-  const selectedCurrency = useSelector(selectSelectedCurrency)
   const [onRampToken] = useOnRampToken()
-  const [sourceAmount] = useOnRampSourceAmount()
   const [_, setOnRampServiceProvider] = useOnRampServiceProvider()
   const [newQuoteTime, setNewQuoteTime] = useState(NEW_QUOTE_TIME)
   const {
-    data: crytoQuotes,
-    isLoading: isLoadingCryptoQuotes,
+    crytoQuotes,
+    isLoadingCryptoQuotes,
     refetch,
-    isRefetching: isRefetchingCryptoQuotes
-  } = useCreateCryptoQuote({
-    sourceAmount: sourceAmount ?? 0,
-    destinationCurrencyCode: onRampToken?.currencyCode ?? '',
-    sourceCurrencyCode: selectedCurrency
-  })
+    isRefetchingCryptoQuotes
+  } = useServiceProviders()
+
   const { data: serviceProviders } = useSearchServiceProviders({
     categories: [ServiceProviderCategories.CRYPTO_ONRAMP]
   })
@@ -101,11 +90,6 @@ export const SelectServiceProviderScreen = (): React.JSX.Element => {
   const dismiss = useCallback(() => {
     canGoBack() && back()
   }, [back, canGoBack])
-
-  const data = useMemo(() => {
-    if (crytoQuotes?.quotes === undefined) return []
-    return crytoQuotes.quotes.toSorted((a, b) => a.totalFee - b.totalFee)
-  }, [crytoQuotes])
 
   const renderHeader = useCallback(() => {
     return (
@@ -239,7 +223,7 @@ export const SelectServiceProviderScreen = (): React.JSX.Element => {
       isModal
       title="Change provider"
       renderHeader={renderHeader}
-      data={data}
+      data={crytoQuotes}
       renderItem={item => renderItem(item.item, item.index)}
       renderEmpty={renderEmpty}
     />

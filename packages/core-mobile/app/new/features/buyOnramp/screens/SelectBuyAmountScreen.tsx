@@ -75,6 +75,26 @@ export const SelectBuyAmountScreen = (): React.JSX.Element => {
     )
   }, [onNext, isBuyAllowed])
 
+  const renderServiceProvider = useCallback(() => {
+    if (isLoadingCryptoQuotes) {
+      return <ActivityIndicator size="small" color={colors.$textPrimary} />
+    }
+
+    if (serviceProviderToDisplay) {
+      return (
+        <Text
+          variant="caption"
+          sx={{
+            fontSize: 11,
+            fontWeight: 500,
+            textAlign: 'right'
+          }}>
+          {serviceProviderToDisplay}
+        </Text>
+      )
+    }
+  }, [colors.$textPrimary, isLoadingCryptoQuotes, serviceProviderToDisplay])
+
   const renderPayWith = useCallback(() => {
     if (
       !sourceAmount ||
@@ -112,7 +132,7 @@ export const SelectBuyAmountScreen = (): React.JSX.Element => {
               <ActivityIndicator size="small" color={colors.$textPrimary} />
             ) : (
               <>
-                <View sx={{ justifyContent: 'center' }}>
+                <View sx={{ justifyContent: 'center', alignItems: 'flex-end' }}>
                   <Text
                     variant="body2"
                     sx={{
@@ -123,17 +143,7 @@ export const SelectBuyAmountScreen = (): React.JSX.Element => {
                     }}>
                     {paymentMethodToDisplay}
                   </Text>
-                  {serviceProviderToDisplay && (
-                    <Text
-                      variant="caption"
-                      sx={{
-                        fontSize: 11,
-                        fontWeight: 500,
-                        textAlign: 'right'
-                      }}>
-                      {serviceProviderToDisplay}
-                    </Text>
-                  )}
+                  {renderServiceProvider()}
                 </View>
                 <View sx={{ marginLeft: 8 }}>
                   <Icons.Navigation.ChevronRightV2
@@ -155,7 +165,7 @@ export const SelectBuyAmountScreen = (): React.JSX.Element => {
     colors.$surfaceSecondary,
     colors.$textPrimary,
     isLoadingDefaultsByCountry,
-    serviceProviderToDisplay
+    renderServiceProvider
   ])
 
   return (
