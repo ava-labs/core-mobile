@@ -1,4 +1,11 @@
-import { useCallback, useEffect, useLayoutEffect, useMemo } from 'react'
+import {
+  Ref,
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef
+} from 'react'
 import { selectSelectedCurrency } from 'store/settings/currency'
 import { useSelector } from 'react-redux'
 import { useNetworks } from 'hooks/networks/useNetworks'
@@ -12,11 +19,12 @@ import { selectActiveAccount } from 'store/account'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import { useNavigation } from '@react-navigation/native'
 import { ACTIONS } from 'contexts/DeeplinkContext/types'
-import { SessionTypes } from 'services/meld/consts'
+import { FiatAmountInputHandle } from '@avalabs/k2-alpine'
 import {
   PaymentMethodNames,
   ServiceProviderCategories,
-  ServiceProviderNames
+  ServiceProviderNames,
+  SessionTypes
 } from '../consts'
 import {
   useOnRampPaymentMethod,
@@ -30,10 +38,12 @@ import { useGetPurchaseLimits } from './useGetPurchaseLimits'
 import { useLocale } from './useLocale'
 import { useSearchDefaultsByCountry } from './useSearchDefaultsByCountry'
 import { useCreateCryptoWidget } from './useCreateCryptoWidget'
+import { useServiceProviders } from './useServiceProviders'
 
 export const useSelectBuyAmount = (): {
   isLoadingDefaultsByCountry: boolean
   isLoadingPurchaseLimits: boolean
+  isLoadingCryptoQuotes: boolean
   paymentMethodToDisplay: string | undefined
   serviceProviderToDisplay: string | undefined
   token?: CryptoCurrency & { tokenWithBalance: LocalTokenWithBalance }
@@ -47,6 +57,8 @@ export const useSelectBuyAmount = (): {
   minimumPurchaseLimit: number | undefined
   maximumPurchaseLimit: number | undefined
   widgetUrl?: string
+  noAvailableServiceProvider: boolean
+  textInputRef: Ref<FiatAmountInputHandle>
   // eslint-disable-next-line sonarjs/cognitive-complexity
 } => {
   const account = useSelector(selectActiveAccount)
@@ -68,6 +80,8 @@ export const useSelectBuyAmount = (): {
   const { countryCode } = useLocale()
   const { getFromPopulatedNetwork } = useNetworks()
   const { getMarketTokenBySymbol } = useWatchlist()
+  const { crytoQuotes, isLoadingCryptoQuotes } = useServiceProviders()
+
   const erc20ContractTokens = useErc20ContractTokens()
   const { filteredTokenList } = useSearchableTokenList({
     tokens: erc20ContractTokens,
@@ -78,6 +92,7 @@ export const useSelectBuyAmount = (): {
     useSearchDefaultsByCountry({
       categories: [ServiceProviderCategories.CRYPTO_ONRAMP]
     })
+  const textInputRef = useRef<FiatAmountInputHandle>(null)
 
   const token = useMemo(() => {
     const t = filteredTokenList.find(
@@ -118,6 +133,14 @@ export const useSelectBuyAmount = (): {
     walletAddress,
     serviceProvider
   })
+
+  const noAvailableServiceProvider = useMemo(() => {
+    return (
+      sourceAmount !== 0 &&
+      serviceProvider === undefined &&
+      isLoadingCryptoQuotes === false
+    )
+  }, [isLoadingCryptoQuotes, serviceProvider, sourceAmount])
 
   const tokenBalance = useMemo(() => {
     if (token?.tokenWithBalance === undefined) {
@@ -192,8 +215,13 @@ export const useSelectBuyAmount = (): {
       if (token?.tokenWithBalance === undefined || amt === 0) {
         return ''
       }
-      const currentPrice =
-        getMarketTokenBySymbol(token.tokenWithBalance.symbol)?.currentPrice ?? 0
+      const currentPrice = getMarketTokenBySymbol(
+        token.tokenWithBalance.symbol
+      )?.currentPrice
+
+      if (currentPrice === undefined) {
+        return ''
+      }
       const maxDecimals =
         token.tokenWithBalance && 'decimals' in token.tokenWithBalance
           ? token.tokenWithBalance.decimals
@@ -213,13 +241,33 @@ export const useSelectBuyAmount = (): {
   useLayoutEffect(() => {
     setPaymentMethod(undefined)
     setServiceProvider(undefined)
-  }, [setPaymentMethod, setServiceProvider])
+    setSourceAmount(0)
+    textInputRef.current?.setValue('')
+  }, [setPaymentMethod, setServiceProvider, setSourceAmount])
+
+  useEffect(() => {
+    textInputRef.current?.setValue('')
+  }, [onrampToken])
 
   useEffect(() => {
     if (paymentMethod === undefined && defaultPaymentMethod) {
       setPaymentMethod(defaultPaymentMethod)
     }
-  }, [defaultPaymentMethod, paymentMethod, setPaymentMethod])
+    if (serviceProvider === undefined && crytoQuotes[0]?.serviceProvider) {
+      setServiceProvider(crytoQuotes[0].serviceProvider)
+    }
+
+    if (crytoQuotes.length === 0) {
+      setServiceProvider(undefined)
+    }
+  }, [
+    crytoQuotes,
+    defaultPaymentMethod,
+    paymentMethod,
+    serviceProvider,
+    setPaymentMethod,
+    setServiceProvider
+  ])
 
   return {
     minimumPurchaseLimit,
@@ -236,6 +284,9 @@ export const useSelectBuyAmount = (): {
     isBelowMaximumPurchaseLimit,
     isLoadingDefaultsByCountry,
     isLoadingPurchaseLimits,
-    widgetUrl: onrampWidget?.widgetUrl
+    widgetUrl: onrampWidget?.widgetUrl,
+    isLoadingCryptoQuotes,
+    textInputRef,
+    noAvailableServiceProvider
   }
 }

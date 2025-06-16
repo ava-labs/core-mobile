@@ -1,14 +1,14 @@
 import { useQuery, UseQueryResult } from '@tanstack/react-query'
 import MeldService from 'services/meld/MeldService'
-import { ServiceProviders, SessionTypes } from 'services/meld/consts'
+import { ServiceProviders, SessionTypes } from '../consts'
+import { CreateCryptoQuoteParams } from '../types'
 import { useLocale } from './useLocale'
-import { CreateCryptoQuoteParams } from './useCreateCryptoQuote'
 
 export type CreateCryptoWidgetParams = CreateCryptoQuoteParams & {
   externalSessionId?: string
   redirectUrl?: string
   sessionType: SessionTypes
-  serviceProvider?: keyof typeof ServiceProviders
+  serviceProvider?: ServiceProviders
 }
 
 export type CreateCryptoWidgetResponse = {
@@ -38,6 +38,7 @@ export const useCreateCryptoWidget = ({
 
   const enabled =
     walletAddress !== undefined &&
+    sourceAmount !== undefined &&
     sourceAmount > 0 &&
     sourceCurrencyCode !== '' &&
     destinationCurrencyCode !== '' &&

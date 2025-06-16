@@ -1,5 +1,5 @@
 import { ScrollScreen } from 'common/components/ScrollScreen'
-import React, { useCallback } from 'react'
+import React, { useCallback, useMemo } from 'react'
 import {
   Button,
   View,
@@ -37,7 +37,9 @@ export const SelectBuyAmountScreen = (): React.JSX.Element => {
     isBelowMaximumPurchaseLimit,
     isLoadingDefaultsByCountry,
     isLoadingPurchaseLimits,
-    widgetUrl
+    widgetUrl,
+    isLoadingCryptoQuotes,
+    noAvailableServiceProvider
   } = useSelectBuyAmount()
   const { openUrl } = useInAppBrowser()
   const { formatIntegerCurrency, formatCurrency } = useFormatCurrency()
@@ -94,6 +96,38 @@ export const SelectBuyAmountScreen = (): React.JSX.Element => {
       )
     }
   }, [colors.$textPrimary, isLoadingCryptoQuotes, serviceProviderToDisplay])
+
+  const errorMessage = useMemo(() => {
+    if (
+      isAboveMinimumPurchaseLimit === false &&
+      minimumPurchaseLimit &&
+      sourceAmount !== 0
+    ) {
+      return `The minimum purchase amount is ${minimumPurchaseLimit} ${selectedCurrency}`
+    }
+
+    if (
+      isBelowMaximumPurchaseLimit === false &&
+      maximumPurchaseLimit &&
+      sourceAmount !== 0
+    ) {
+      return `The maximum purchase amount is ${maximumPurchaseLimit} ${selectedCurrency}`
+    }
+
+    if (noAvailableServiceProvider) {
+      return 'No service provider available, please select a different token or a different amount.'
+    }
+
+    return undefined
+  }, [
+    isAboveMinimumPurchaseLimit,
+    isBelowMaximumPurchaseLimit,
+    maximumPurchaseLimit,
+    minimumPurchaseLimit,
+    noAvailableServiceProvider,
+    selectedCurrency,
+    sourceAmount
+  ])
 
   const renderPayWith = useCallback(() => {
     if (
@@ -238,28 +272,15 @@ export const SelectBuyAmountScreen = (): React.JSX.Element => {
           formatInTokenUnit={formatInTokenUnit}
         />
       )}
-      <View sx={{ alignItems: 'center', marginTop: 12 }}>
-        {isAboveMinimumPurchaseLimit === false &&
-          minimumPurchaseLimit &&
-          sourceAmount !== 0 && (
-            <Text
-              variant="caption"
-              sx={{
-                fontWeight: 500,
-                color: colors.$textDanger
-              }}>{`The minimum purchase amount is ${minimumPurchaseLimit} ${selectedCurrency}`}</Text>
-          )}
-        {isBelowMaximumPurchaseLimit === false &&
-          maximumPurchaseLimit &&
-          sourceAmount !== 0 && (
-            <Text
-              variant="caption"
-              sx={{
-                fontWeight: 500,
-                color: colors.$textDanger
-              }}>{`The maximum purchase amount is ${maximumPurchaseLimit} ${selectedCurrency}`}</Text>
-          )}
-      </View>
+      {errorMessage && (
+        <View sx={{ alignItems: 'center', marginTop: 12 }}>
+          <Text
+            variant="caption"
+            sx={{ fontWeight: 500, color: colors.$textDanger }}>
+            {errorMessage}
+          </Text>
+        </View>
+      )}
       {/* Pay with */}
       {renderPayWith()}
     </ScrollScreen>

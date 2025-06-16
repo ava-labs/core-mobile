@@ -53,6 +53,10 @@ export const SelectServiceProviderScreen = (): React.JSX.Element => {
   })
   const { getNetwork } = useNetworks()
 
+  const hasAvailableServiceProviders = useMemo(() => {
+    return crytoQuotes && crytoQuotes?.length > 0
+  }, [crytoQuotes])
+
   const token = useMemo(() => {
     return filteredTokenList.find(
       tk =>
@@ -73,7 +77,12 @@ export const SelectServiceProviderScreen = (): React.JSX.Element => {
   }, [getNetwork, token])
 
   useEffect(() => {
-    if (isLoadingCryptoQuotes || isRefetchingCryptoQuotes) return
+    if (
+      isLoadingCryptoQuotes ||
+      isRefetchingCryptoQuotes ||
+      hasAvailableServiceProviders
+    )
+      return
 
     const interval = setInterval(() => {
       setNewQuoteTime(prev => prev - 1)
@@ -85,7 +94,15 @@ export const SelectServiceProviderScreen = (): React.JSX.Element => {
     }
 
     return () => clearInterval(interval)
-  }, [isLoadingCryptoQuotes, isRefetchingCryptoQuotes, newQuoteTime, refetch])
+  }, [
+    hasAvailableServiceProviders,
+    isLoadingCryptoQuotes,
+    isRefetchingCryptoQuotes,
+    newQuoteTime,
+    refetch,
+    serviceProviders,
+    serviceProviders.length
+  ])
 
   const dismiss = useCallback(() => {
     canGoBack() && back()
@@ -98,13 +115,15 @@ export const SelectServiceProviderScreen = (): React.JSX.Element => {
           External providers are used to process fiat-to-crypto purchases. Rates
           vary between providers
         </Text>
-        <View sx={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-          <Icons.Custom.Pace color={colors.$textPrimary} />
-          <Text>New quote in {formatSeconds(newQuoteTime)}</Text>
-        </View>
+        {hasAvailableServiceProviders && (
+          <View sx={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+            <Icons.Custom.Pace color={colors.$textPrimary} />
+            <Text>New quote in {formatSeconds(newQuoteTime)}</Text>
+          </View>
+        )}
       </View>
     )
-  }, [colors.$textPrimary, newQuoteTime])
+  }, [colors.$textPrimary, hasAvailableServiceProviders, newQuoteTime])
 
   const renderItem = useCallback(
     (item: Quote, index: number) => {
@@ -212,11 +231,9 @@ export const SelectServiceProviderScreen = (): React.JSX.Element => {
     ]
   )
 
-  const renderEmpty = useCallback(() => {
-    if (isLoadingCryptoQuotes || isRefetchingCryptoQuotes) {
-      return <LoadingState sx={{ flex: 1 }} />
-    }
-  }, [isLoadingCryptoQuotes, isRefetchingCryptoQuotes])
+  if (isLoadingCryptoQuotes || isRefetchingCryptoQuotes) {
+    return <LoadingState sx={{ flex: 1 }} />
+  }
 
   return (
     <ListScreen
@@ -225,7 +242,8 @@ export const SelectServiceProviderScreen = (): React.JSX.Element => {
       renderHeader={renderHeader}
       data={crytoQuotes}
       renderItem={item => renderItem(item.item, item.index)}
-      renderEmpty={renderEmpty}
+      errorMessageTitle="No service providers available"
+      errorMessageDescription="Try a different token or amount"
     />
   )
 }

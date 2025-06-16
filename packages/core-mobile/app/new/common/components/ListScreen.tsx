@@ -80,6 +80,8 @@ interface ListScreenProps<T>
   renderHeaderRight?: () => React.ReactNode
   /** Optional function to render content when the list is empty */
   renderEmpty?: () => React.ReactNode
+  errorMessageTitle?: string
+  errorMessageDescription?: string
 }
 
 const AnimatedFlatList = Animated.createAnimatedComponent(FlatList)
@@ -95,6 +97,8 @@ export const ListScreen = <T,>({
   renderEmpty,
   renderHeader,
   renderHeaderRight,
+  errorMessageTitle,
+  errorMessageDescription,
   ...rest
 }: ListScreenProps<T>): JSX.Element => {
   const insets = useSafeAreaInsets()
@@ -242,11 +246,11 @@ export const ListScreen = <T,>({
     return (
       <ErrorState
         sx={{ flex: 1 }}
-        title="No results"
-        description="Try a different search"
+        title={errorMessageTitle ?? 'No results'}
+        description={errorMessageDescription ?? 'Try a different search'}
       />
     )
-  }, [renderEmpty])
+  }, [errorMessageDescription, errorMessageTitle, renderEmpty])
 
   const contentContainerStyle = useMemo(() => {
     let paddingBottom = hasTabBar ? 16 : insets.bottom + 16
