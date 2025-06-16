@@ -8,4 +8,5 @@ export interface TokenListViewProps {
   onPress: () => void
   formattedPrice: string
   priceChangeStatus: PriceChangeStatus
+  testID?: string
 }

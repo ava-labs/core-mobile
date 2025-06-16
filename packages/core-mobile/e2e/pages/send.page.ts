@@ -1,12 +1,11 @@
 import Actions from '../helpers/actions'
-import AccountManagePage from '../pages/accountManage.page'
-import BottomTabsPage from '../pages/bottomTabs.page'
-import PlusMenuPage from '../pages/plusMenu.page'
 import popUpModalPage from '../pages/popUpModal.page'
 import Send from '../locators/send.loc'
-import delay from '../helpers/waits'
 import assertions from '../helpers/assertions'
+import sendLoc from '../locators/send.loc'
 import commonElsPage from './commonEls.page'
+import selectTokenPage from './selectToken.page'
+import portfolioPage from './portfolio.page'
 
 class SendPage {
   get addressBook() {
@@ -17,8 +16,8 @@ class SendPage {
     return by.id(Send.amountToSend)
   }
 
-  get tokenDropdown() {
-    return by.id(Send.tokenDropdown)
+  get sendSelectTokenListBtn() {
+    return by.id(Send.sendSelectTokenListBtn)
   }
 
   get amountField() {
@@ -49,10 +48,6 @@ class SendPage {
     return by.id(Send.addressField)
   }
 
-  get searchBarOnSelectToken() {
-    return by.id(Send.searchBarOnSelectToken)
-  }
-
   get selectTokenTitle() {
     return by.text(Send.selectTokenTitle)
   }
@@ -81,19 +76,16 @@ class SendPage {
     await Actions.waitForElementNoSync(this.nextButton, 8000)
   }
 
-  async tapMyAccounts() {
-    await Actions.tap(this.myAccounts)
-  }
-
   async tapSendField() {
     await Actions.tap(this.amountToSendInput)
   }
 
-  async tapTokenDropdown() {
-    await Actions.tap(this.tokenDropdown)
+  async getSelectTokenList() {
+    await Actions.tap(this.sendSelectTokenListBtn)
   }
 
   async tapApproveButton() {
+    await Actions.waitForElement(this.approveButton, 20000)
     await Actions.tapElementAtIndex(this.approveButton, 0)
   }
 
@@ -105,19 +97,25 @@ class SendPage {
     await Actions.setInputText(this.addressField, address, 0)
   }
 
-  async selectToken(tokenName: string) {
-    await Actions.waitForElement(this.searchBarOnSelectToken)
-    await Actions.setInputText(this.searchBarOnSelectToken, tokenName)
-    await delay(1000)
-    await Actions.tapElementAtIndex(by.id(`token_selector__${tokenName}`), 0)
-  }
-
   async tapMax() {
     await Actions.tap(this.max)
   }
 
   async enterAmount(amount: string) {
     await Actions.setInputText(this.amountToSendInput, amount, 0)
+  }
+
+  async send(token: string, amount: string, account = sendLoc.accountTwo) {
+    await portfolioPage.tapSend()
+    await commonElsPage.dismissTransactionOnboarding()
+    await commonElsPage.typeSearchBar(account)
+    await Actions.tapElementAtIndex(by.text(account), 1)
+    await this.getSelectTokenList()
+    await selectTokenPage.selectToken(token)
+    await commonElsPage.enterAmount(amount)
+    await this.waitForNextBtnEnabled()
+    await this.tapNextButton()
+    await this.tapApproveButton()
   }
 
   // eslint-disable-next-line max-params
@@ -127,14 +125,10 @@ class SendPage {
     isCChain = true,
     isPXChain = false
   ) {
-    await Actions.waitForElement(BottomTabsPage.plusIcon)
-    await BottomTabsPage.tapPlusIcon()
-    await PlusMenuPage.tapSendButton()
-    await this.tapAddressBook()
-    await this.tapMyAccounts()
-    await AccountManagePage.tapSecondAccountMenu()
-    await this.tapTokenDropdown()
-    await this.selectToken(token)
+    await portfolioPage.tapSend()
+    await commonElsPage.dismissTransactionOnboarding()
+    await commonElsPage.typeSearchBar(sendLoc.accountTwo)
+    await Actions.tapElementAtIndex(by.text(sendLoc.accountTwo), 1)
     try {
       await Actions.waitForElement(by.text(`Balance 0 ${token}`))
       await commonElsPage.goBack()
@@ -165,7 +159,6 @@ class SendPage {
     await Actions.waitForElement(this.sendTitle)
     await assertions.isVisible(this.sendTo)
     await assertions.isVisible(this.amountToSendInput)
-    await assertions.isVisible(this.tokenDropdown)
   }
 }
 

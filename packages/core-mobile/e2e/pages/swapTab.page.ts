@@ -6,7 +6,6 @@ import swapTab from '../locators/swapTab.loc'
 import bottomTabsPage from './bottomTabs.page'
 import plusMenuPage from './plusMenu.page'
 import popUpModalPage from './popUpModal.page'
-import sendPage from './send.page'
 
 const platformIndex = Actions.platform() === Platform.Android ? 1 : 0
 
@@ -135,11 +134,9 @@ class SwapTabPage {
 
     // Select From Token
     await this.tapFromTokenSelector()
-    await sendPage.selectToken(from)
 
     // Select To Token
     await this.tapToTokenSelector()
-    await sendPage.selectToken(to)
 
     // Enter input
     await this.inputTokenAmount(amount)

@@ -202,6 +202,7 @@ export const TokenInputWidget = ({
                     sx={{ alignItems: 'flex-end' }}
                     pointerEvents={token === undefined ? 'none' : 'auto'}>
                     <TokenAmountInput
+                      testID="token_amount_input_field"
                       autoFocus={autoFocus}
                       editable={editable}
                       denomination={token?.decimals ?? 0}
