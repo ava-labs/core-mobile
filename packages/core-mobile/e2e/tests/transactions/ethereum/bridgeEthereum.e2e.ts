@@ -25,7 +25,6 @@ describe('Bridge Ethereum', () => {
     await portfolioPage.tapNetworksDropdownETH()
     await bridgeTabPage.goToBridge()
     await bridgeTabPage.tapSelectToken()
-    await sendPage.selectToken('ETH')
     await sendPage.tapMax()
     await bridgeTabPage.tapBridgeBtn()
     await popUpModalPage.verifyFeeIsLegit(false, false, 0.02)

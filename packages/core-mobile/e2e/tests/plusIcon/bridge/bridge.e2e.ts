@@ -3,7 +3,6 @@ import actions from '../../../helpers/actions'
 import bridgeTabPage from '../../../pages/bridgeTab.page'
 import portfolioLoc from '../../../locators/portfolio.loc'
 import commonElsPage from '../../../pages/commonEls.page'
-import sendPage from '../../../pages/send.page'
 import bridgeTabLoc from '../../../locators/bridgeTab.loc'
 import { cleanup } from '../../../helpers/cleanup'
 
@@ -32,7 +31,7 @@ describe('Bridge Screen', () => {
     await commonElsPage.goBack()
   })
 
-  networks.forEach(({ network, token }) => {
+  networks.forEach(({ network }) => {
     it(`should change networks via dropdown and bridge toggle button for ${network}`, async () => {
       await bridgeTabPage.goToBridge()
 
@@ -42,7 +41,6 @@ describe('Bridge Screen', () => {
 
       // Add token before toggling
       await bridgeTabPage.tapSelectToken()
-      await sendPage.selectToken(token)
       await bridgeTabPage.verifyNetworks(network, bridgeTabLoc.avalancheNetwork)
 
       // Toggle > verify `from` and `to` networks updated

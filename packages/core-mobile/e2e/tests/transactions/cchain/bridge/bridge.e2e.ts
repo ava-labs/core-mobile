@@ -18,12 +18,11 @@ describe('Bridge C-Chain', () => {
     { network: portfolioLoc.btcNetwork, token: 'BTC.b' }
   ]
 
-  networks.forEach(({ network, token }) => {
+  networks.forEach(({ network }) => {
     it(`should verify Bridge Flow from Avalanche to ${network}`, async () => {
       // Avalanche > Select token with Max amount
       await bridgeTabPage.goToBridge()
       await bridgeTabPage.tapSelectToken()
-      await sendPage.selectToken(token)
       await sendPage.tapMax()
 
       // Verify approve modal with legit fee > Reject
