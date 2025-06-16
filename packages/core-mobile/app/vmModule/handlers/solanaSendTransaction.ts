@@ -2,8 +2,7 @@ import { Network } from '@avalabs/core-chains-sdk'
 import { ApprovalResponse } from '@avalabs/vm-module-types'
 import { Account } from 'store/account/types'
 import { rpcErrors } from '@metamask/rpc-errors'
-import { getSVMProvider } from 'services/network/utils/providerUtils'
-import { compileSolanaTx, serializeSolanaTx } from '@avalabs/core-wallets-sdk'
+import walletService from 'services/wallet/WalletService'
 
 export const solanaSendTransaction = async ({
   transactionData,
@@ -11,38 +10,30 @@ export const solanaSendTransaction = async ({
   account,
   resolve
 }: {
-  transactionData: {
-    params: {
-      request: {
-        params: [{
-          account: string
-          serializedTx: string
-        }]
-      }
-    }
-  }
+  transactionData: string
   network: Network
   account: Account
   resolve: (value: ApprovalResponse) => void
 }): Promise<void> => {
-  console.log('transactionData', transactionData)
   try {
-    const provider = await getSVMProvider(network)
-    const tx = compileSolanaTx(transactionData)
-    const base64Tx = serializeSolanaTx(tx)
-    const pendingTx = await provider.sendTransaction(base64Tx, {
-      skipPreflight: false
+    // Sign the transaction - following core-mobile pattern
+    const signedTx = await walletService.sign({
+      transaction: {
+        serializedTx: transactionData
+      },
+      accountIndex: account.index,
+      network
     })
 
-    const signature = await pendingTx
-
+    // Return the signed transaction data (not the hash)
+    // The ApprovalController/VM module will handle broadcasting
     resolve({
-      signedData: signature.toString()
+      signedData: signedTx
     })
   } catch (error) {
     resolve({
       error: rpcErrors.internal({
-        message: 'Failed to send solana transaction',
+        message: 'Failed to sign solana transaction',
         data: { cause: error }
       })
     })

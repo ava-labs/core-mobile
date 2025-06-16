@@ -13,6 +13,7 @@ import {
 import { Networks } from 'store/network/types'
 import ModuleManager from 'vmModule/ModuleManager'
 import { mapToVmNetwork } from 'vmModule/utils/mapToVmNetwork'
+import { networkIDs } from '@avalabs/avalanchejs'
 import NetworkService from '../NetworkService'
 
 export function getSVMProvider(
@@ -71,6 +72,15 @@ export function getAvalancheNetwork(
   return isTest
     ? networks[ChainId.AVALANCHE_TESTNET_ID]
     : networks[ChainId.AVALANCHE_MAINNET_ID]
+}
+
+export function getSolanaNetwork(
+  networks: Networks,
+  isTest: boolean | undefined
+): Network | undefined {
+  return isTest
+    ? networks[ChainId.SOLANA_DEVNET_ID]
+    : networks[ChainId.SOLANA_MAINNET_ID]
 }
 
 export function getBitcoinNetwork(isTest: boolean | undefined): Network {

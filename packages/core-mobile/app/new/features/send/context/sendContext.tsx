@@ -33,12 +33,14 @@ import { isEthereumChainId } from 'services/network/utils/isEthereumNetwork'
 import {
   getAvalancheNetwork,
   getBitcoinNetwork,
-  getEthereumNetwork
+  getEthereumNetwork,
+  getSolanaNetwork
 } from 'services/network/utils/providerUtils'
 import { AddrBookItemType, Contact } from 'store/addressBook'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { isBitcoinChainId } from 'utils/network/isBitcoinNetwork'
 import { NetworkVMType } from '@avalabs/vm-module-types'
+import { isSolanaChainId } from 'utils/network/isSolanaNetwork'
 import { isXPChain } from '../../../../utils/network/isAvalancheNetwork'
 import { useSendSelectedToken } from '../store'
 import { getNetworks } from '../utils/getNetworks'
@@ -108,6 +110,8 @@ export const SendContextProvider = ({
     })
     const ethereumNetwork = getEthereumNetwork(allNetworks, isDeveloperMode)
     const avalancheCChain = getAvalancheNetwork(allNetworks, isDeveloperMode)
+    const solanaNetwork = getSolanaNetwork(allNetworks, isDeveloperMode)
+
     if (
       networks.find(n => n.chainId && isAvalancheCChainId(n.chainId)) &&
       avalancheCChain
@@ -126,6 +130,11 @@ export const SendContextProvider = ({
     if (networks.find(n => n.chainId && isBitcoinChainId(n.chainId))) {
       return getBitcoinNetwork(isDeveloperMode)
     }
+
+    if (networks.find(n => n.chainId && isSolanaChainId(n.chainId))) {
+      return solanaNetwork
+    }
+
     return isDeveloperMode
       ? AVALANCHE_TESTNET_NETWORK
       : AVALANCHE_MAINNET_NETWORK
