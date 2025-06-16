@@ -10,7 +10,7 @@ export default {
   enterWalletBtn: 'btnPrimary',
   alreadyHaveAWalletBtn: 'Already Have a Wallet?',
   recoveryPhrase: 'Recovery Phrase',
-  searchBar: 'search_bar__search',
+  searchBar: 'search_bar',
   topTrendingTokenName: 'trending_token_name__1',
   topTrendingTokenSymbol: 'trending_token_symbol__1',
   topTrendingTokenValue: 'trending_token_value__1',
