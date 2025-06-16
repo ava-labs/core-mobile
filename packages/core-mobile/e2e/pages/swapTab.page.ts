@@ -135,11 +135,9 @@ class SwapTabPage {
 
     // Select From Token
     await this.tapFromTokenSelector()
-    await sendPage.selectToken(from)
 
     // Select To Token
     await this.tapToTokenSelector()
-    await sendPage.selectToken(to)
 
     // Enter input
     await this.inputTokenAmount(amount)
