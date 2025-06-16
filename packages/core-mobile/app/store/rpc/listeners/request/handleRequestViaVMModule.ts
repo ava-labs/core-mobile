@@ -1,6 +1,7 @@
 import { rpcErrors } from '@metamask/rpc-errors'
 import {
   Module,
+  RpcMethod,
   RpcMethod as VmModuleRpcMethod
 } from '@avalabs/vm-module-types'
 import { AppListenerEffectAPI } from 'store/types'
@@ -11,10 +12,11 @@ import { mapToVmNetwork } from 'vmModule/utils/mapToVmNetwork'
 import { getChainIdFromCaip2 } from 'utils/caip2ChainIds'
 import { Avalanche } from '@avalabs/core-wallets-sdk'
 import { getAddressByVM } from 'store/account/utils'
-import MnemonicWalletInstance from 'services/wallet/MnemonicWallet'
+import { MnemonicWallet } from 'services/wallet/MnemonicWallet'
 import { Account, selectActiveAccount } from 'store/account'
-import WalletService from 'services/wallet/WalletService'
-import { WalletType } from 'services/wallet/types'
+import { Wallet, WalletType } from 'services/wallet/types'
+import { selectActiveWallet } from 'store/wallet/slice'
+import WalletFactory from 'services/wallet/WalletFactory'
 import { AgnosticRpcProvider, Request } from '../../types'
 
 export const handleRequestViaVMModule = async ({
@@ -68,7 +70,23 @@ export const handleRequestViaVMModule = async ({
 
   const { getState } = listenerApi
   const activeAccount = selectActiveAccount(getState())
+  const activeWallet = selectActiveWallet(getState())
 
+  if (!activeWallet || !activeAccount) {
+    Logger.error('Active wallet or account not found')
+    rpcProvider.onError({
+      request,
+      error: rpcErrors.resourceNotFound('Active wallet or account not found'),
+      listenerApi
+    })
+    return
+  }
+
+  const wallet = await WalletFactory.createWallet({
+    walletId: activeWallet.id,
+    walletType: activeWallet.type,
+    accountIndex: activeAccount.index
+  })
   const params = request.data.params.request.params
   const method = request.method as unknown as VmModuleRpcMethod
 
@@ -84,7 +102,15 @@ export const handleRequestViaVMModule = async ({
       },
       method,
       params,
-      context: request.context ?? getContext(method, params, activeAccount)
+      context:
+        request.context ??
+        getContext({
+          method: method,
+          params: params,
+          activeAccount: activeAccount,
+          wallet,
+          walletType: activeWallet?.type
+        })
     },
     mapToVmNetwork(network)
   )
@@ -104,11 +130,19 @@ export const handleRequestViaVMModule = async ({
   }
 }
 
-const getContext = (
-  method: VmModuleRpcMethod,
-  params: unknown,
+const getContext = ({
+  method,
+  params,
+  activeAccount,
+  wallet,
+  walletType
+}: {
+  method: RpcMethod
+  params: unknown
   activeAccount: Account | undefined
-): Record<string, string> | undefined => {
+  wallet: Wallet | undefined
+  walletType: WalletType
+}): Record<string, string> | undefined => {
   if (
     method === VmModuleRpcMethod.AVALANCHE_SEND_TRANSACTION ||
     method === VmModuleRpcMethod.AVALANCHE_SIGN_TRANSACTION
@@ -126,8 +160,8 @@ const getContext = (
 
     const context: Record<string, string> = { currentAddress }
 
-    if (WalletService.walletType === WalletType.MNEMONIC) {
-      context.xpubXP = MnemonicWalletInstance.xpubXP
+    if (walletType === WalletType.MNEMONIC) {
+      context.xpubXP = (wallet as MnemonicWallet).xpubXP
     }
 
     return context

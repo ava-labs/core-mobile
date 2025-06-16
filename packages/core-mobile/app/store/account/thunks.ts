@@ -9,12 +9,10 @@ import { selectActiveWalletId, setActiveWallet } from 'store/wallet/slice'
 import {
   reducerName,
   selectAccounts,
-  selectActiveAccount,
   selectAccountById,
   setAccount,
   setActiveAccountId
 } from './slice'
-import { getAccountIndex } from './utils'
 
 export const addAccount = createAsyncThunk<void, void, ThunkApi>(
   `${reducerName}/addAccount`,
@@ -22,19 +20,21 @@ export const addAccount = createAsyncThunk<void, void, ThunkApi>(
     const state = thunkApi.getState()
     const isDeveloperMode = selectIsDeveloperMode(state)
     const activeNetwork = selectActiveNetwork(state)
-    const activeAccount = selectActiveAccount(state)
     const walletType = selectWalletType(state)
 
     const accounts = selectAccounts(state)
     const accIndex = Object.keys(accounts).length
-    const activeAccountIndex = activeAccount
-      ? getAccountIndex(activeAccount)
-      : 0
+    const activeWalletId = selectActiveWalletId(state)
+
+    if (!activeWalletId) {
+      throw new Error('Active wallet ID is not set')
+    }
+
     const acc = await AccountsService.createNextAccount({
       index: accIndex,
-      activeAccountIndex,
       walletType,
-      network: activeNetwork
+      network: activeNetwork,
+      walletId: activeWalletId
     })
 
     thunkApi.dispatch(setAccount(acc))

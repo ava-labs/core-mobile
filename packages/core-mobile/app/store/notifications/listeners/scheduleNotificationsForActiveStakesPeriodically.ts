@@ -10,6 +10,7 @@ import { ChannelId } from 'services/notifications/channels'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { selectActiveNetwork } from 'store/network'
 import { getUnixTime } from 'date-fns'
+import { selectActiveWallet } from 'store/wallet/slice'
 import { turnOnNotificationsFor } from '../slice'
 import { isStakeCompleteNotificationDisabled } from './utils'
 
@@ -57,6 +58,7 @@ const scheduleNotificationsForActiveStakes = async (
   listenerApi: AppListenerEffectAPI
 ): Promise<void> => {
   const state = listenerApi.getState()
+  const activeWallet = selectActiveWallet(state)
   const isEarnBlocked = selectIsEarnBlocked(state)
 
   if (isEarnBlocked) {
@@ -79,6 +81,10 @@ const scheduleNotificationsForActiveStakes = async (
   setTimeout(async () => {
     const accounts = selectAccounts(state)
     const activeNetwork = selectActiveNetwork(state)
+    if (!activeWallet) {
+      Logger.error('Active wallet not found')
+      return
+    }
 
     Logger.info('fetching stakes for all accounts')
 
@@ -92,6 +98,8 @@ const scheduleNotificationsForActiveStakes = async (
 
     const transformedTransactions =
       await EarnService.getTransformedStakesForAllAccounts({
+        walletId: activeWallet.id,
+        walletType: activeWallet.type,
         accounts,
         network: activeNetwork,
         startTimestamp

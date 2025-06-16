@@ -15,6 +15,7 @@ import { Network } from '@avalabs/core-chains-sdk'
 import { getAccountIndex } from 'store/account/utils'
 import { recentAccountsStore } from 'new/features/accountSettings/store'
 import { selectActiveWalletId } from 'store/wallet/slice'
+import { selectActiveWallet, selectActiveWalletId } from 'store/wallet/slice'
 import {
   selectAccounts,
   selectActiveAccount,
@@ -146,6 +147,15 @@ const reloadAccounts = async (
 ): Promise<void> => {
   const state = listenerApi.getState()
   const isDeveloperMode = selectIsDeveloperMode(state)
+  const activeWalletId = selectActiveWalletId(state)
+  const activeWallet = selectActiveWallet(state)
+
+  if (!activeWalletId) {
+    throw new Error('Active wallet ID is not set')
+  }
+  if (!activeWallet) {
+    throw new Error('Active wallet is not set')
+  }
 
   // all vm modules need is just the isTestnet flag
   const network = {
@@ -153,10 +163,12 @@ const reloadAccounts = async (
   } as Network
 
   const accounts = selectAccounts(state)
-  const reloadedAccounts = await accountService.reloadAccounts(
-    accounts,
-    network as Network
-  )
+  const reloadedAccounts = await accountService.reloadAccounts({
+    accounts: accounts,
+    network: network as Network,
+    walletId: activeWalletId,
+    walletType: activeWallet.type
+  })
 
   listenerApi.dispatch(setAccounts(reloadedAccounts))
 }

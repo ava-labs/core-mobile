@@ -3,14 +3,18 @@ import { ApprovalResponse, BitcoingSignTxData } from '@avalabs/vm-module-types'
 import WalletService from 'services/wallet/WalletService'
 import { rpcErrors } from '@metamask/rpc-errors'
 import { Account } from 'store/account/types'
-import { BtcTransactionRequest } from 'services/wallet/types'
+import { BtcTransactionRequest, WalletType } from 'services/wallet/types'
 
 export const btcSignTransaction = async ({
+  walletId,
+  walletType,
   transactionData,
   network,
   account,
   resolve
 }: {
+  walletId: string
+  walletType: WalletType
   transactionData: BitcoingSignTxData
   network: Network
   account: Account
@@ -22,6 +26,8 @@ export const btcSignTransaction = async ({
     const transaction: BtcTransactionRequest = { inputs, outputs }
 
     const signedTx = await WalletService.sign({
+      walletId,
+      walletType,
       transaction,
       accountIndex: account.index,
       network
