@@ -8,7 +8,7 @@ import { showSnackbar } from 'new/common/utils/toast'
 import { router } from 'expo-router'
 import { History } from 'store/browser'
 import { navigateFromDeeplinkUrl } from 'utils/navigateFromDeeplink'
-import { MarketType } from 'store/watchlist'
+import { dismissMeldStack } from 'features/buyOnramp/utils'
 import { ACTIONS, DeepLink, PROTOCOLS } from '../types'
 
 export const handleDeeplink = ({
@@ -54,7 +54,7 @@ export const handleDeeplink = ({
       break
     }
     case PROTOCOLS.CORE: {
-      const { host: action, pathname } = url
+      const { host: action, pathname, searchParams } = url
       if (action === ACTIONS.WC) {
         startWalletConnectSession({ url, dispatch, deeplink })
       } else if (action === ACTIONS.Portfolio) {
@@ -69,9 +69,15 @@ export const handleDeeplink = ({
         const coingeckoId = pathname.split('/')[1]
         navigateFromDeeplinkUrl(`/trackTokenDetail?tokenId=${coingeckoId}`)
       } else if (action === ACTIONS.BuyCompleted) {
-        // dismiss buy flow
+        const amount = searchParams.get('amount') ?? ''
+        dismissMeldStack(router, `${amount} successfully bought`, searchParams)
       } else if (action === ACTIONS.WithdrawCompleted) {
-        // dismiss sell flow
+        const amount = searchParams.get('amount') ?? ''
+        dismissMeldStack(
+          router,
+          `${amount} successfully withdrawn`,
+          searchParams
+        )
       } else {
         const path = deeplink.url.split(':/')[1]
         path && navigateFromDeeplinkUrl(path)
