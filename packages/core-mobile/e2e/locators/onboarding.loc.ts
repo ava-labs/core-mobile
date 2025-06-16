@@ -32,16 +32,14 @@ export default {
   signInWithRecoveryPhrase: 'Sign in with Recovery Phrase',
   forgotPin: 'Forgot PIN?',
   manuallyCreateNewWalletBtn: 'manually_create_new_wallet_button',
-  enterYourRecoveryPhraseTitle: 'Enter your recovery phrase',
+  enterYourRecoveryPhraseTitle: 'Enter your\nrecovery phrase',
   enterYourRecoveryPhraseDescription:
     'This phrase should contain 12, 18, or 24 words. Use a space between each word.',
   import: `Import`,
   nameWalletInput: 'text_input',
-  nameWalletTitle: 'How would you like to name your wallet?',
-  nameWalletContent:
-    'Add a display name for your wallet. You can change it at any time in the app’s settings',
+  nameWalletTitle: 'Add a name for your wallet',
   letsgo: 'lets_go_btn',
-  confirmationTitle: 'That’s it!\n Enjoy your wallet',
+  confirmationTitle: `That's it!\nEnjoy your wallet`,
   confirmationDescription:
     'You can now start buying, swapping, sending, receiving crypto and collectibles',
   newRecoveryPhraseTitle: "Here is your wallet's recovery phrase",
@@ -52,6 +50,5 @@ export default {
   securityWarningContent:
     'For your security, you should not screenshot your recovery phrase. It is best to write it down and store it in a secure location.',
   verifyYourRecoveryPhraseTitle: 'Verify your recovery phrase',
-  verifyYourRecoveryPhraseDescription:
-    'Select the words below to verify your recover phrase'
+  verifyYourRecoveryPhraseDescription: `Select the words below to verify your\nrecover phrase`
 }

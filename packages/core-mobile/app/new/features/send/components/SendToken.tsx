@@ -159,6 +159,7 @@ export const SendToken = ({ onSend }: { onSend: () => void }): JSX.Element => {
           gap: 20
         }}>
         <Button
+          testID={canSubmit ? 'next_btn' : 'next_btn_disabled'}
           disabled={!canSubmit}
           type="primary"
           size="large"
@@ -255,6 +256,7 @@ export const SendToken = ({ onSend }: { onSend: () => void }): JSX.Element => {
           backgroundColor: colors.$surfaceSecondary
         }}>
         <Text
+          testID="send_select_token_list_btn"
           variant="body1"
           sx={{ fontSize: 16, lineHeight: 22, color: colors.$textPrimary }}>
           Token

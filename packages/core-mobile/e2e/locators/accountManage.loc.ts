@@ -1,5 +1,7 @@
 export default {
   account: 'testWallet1',
+  accountOneAddress: '0x1eaecc18b1ce33a2dffa01bc3a5e421344999027',
+  accountTwoAddress: '0xf65536cdcbc74960b6a835e5902eb362c458f490',
   editedAccount: 'AvaxWallet',
   addAccountButton: 'Add Account',
   addEditAccounts: 'Add/Edit Accounts',
