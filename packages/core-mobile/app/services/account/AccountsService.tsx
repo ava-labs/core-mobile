@@ -2,40 +2,69 @@ import WalletService from 'services/wallet/WalletService'
 import { Account, AccountCollection } from 'store/account'
 import { Network, NetworkVMType } from '@avalabs/core-chains-sdk'
 import SeedlessService from 'seedless/services/SeedlessService'
-import { CoreAccountType, WalletType as CoreWalletType } from '@avalabs/types'
+import { CoreAccountType } from '@avalabs/types'
 import { uuid } from 'utils/uuid'
 import { WalletType } from 'services/wallet/types'
-import { CORE_MOBILE_WALLET_ID } from 'services/walletconnectv2/types'
 
 class AccountsService {
-  async reloadAccounts(
-    accounts: AccountCollection,
+  /**
+   * Reloads the accounts for the given network.
+   * @param accounts The accounts to reload.
+   * @param network The network to reload the accounts for.
+   * @param walletId The wallet ID to reload the accounts for.
+   * @param walletType The wallet type to reload the accounts for.
+   * @returns The reloaded accounts.
+   */
+  async reloadAccounts({
+    accounts,
+    network,
+    walletId,
+    walletType
+  }: {
+    accounts: AccountCollection
     network: Network
-  ): Promise<AccountCollection> {
+    walletId: string
+    walletType: WalletType
+  }): Promise<AccountCollection> {
     const reloadedAccounts: AccountCollection = {}
 
-    for (const index of Object.keys(accounts)) {
-      const key = parseInt(index)
-      const addresses = await WalletService.getAddresses(key, network)
-      const title = await SeedlessService.getAccountName(key)
+    for (const id of Object.keys(accounts)) {
+      const account = accounts[id]
+      if (!account || account.walletId !== walletId) continue
 
-      const account = accounts[key]
-      if (account) {
-        reloadedAccounts[key] = {
-          id: account.id,
-          name: title ?? account.name,
-          type: account.type,
-          active: account.active,
-          walletId: account.walletId,
-          index: account.index,
-          walletType: account.walletType,
-          addressBTC: addresses[NetworkVMType.BITCOIN],
-          addressC: addresses[NetworkVMType.EVM],
-          addressAVM: addresses[NetworkVMType.AVM],
-          addressPVM: addresses[NetworkVMType.PVM],
-          addressCoreEth: addresses[NetworkVMType.CoreEth],
-          walletName: account.walletName
+      let addresses
+      let title = account.name
+
+      if (account.type === CoreAccountType.PRIMARY) {
+        addresses = await WalletService.getAddresses({
+          walletId,
+          walletType,
+          accountIndex: account.index,
+          network
+        })
+        if (walletType === WalletType.SEEDLESS) {
+          //FIXME: is seedless primary?
+          title =
+            (await SeedlessService.getAccountName(account.index)) ??
+            account.name
         }
+      } else {
+        addresses = await WalletService.getAddresses({
+          walletId,
+          walletType,
+          accountIndex: account.index,
+          network
+        })
+      }
+
+      reloadedAccounts[id] = {
+        ...account,
+        name: title ?? account.name,
+        addressBTC: addresses[NetworkVMType.BITCOIN],
+        addressC: addresses[NetworkVMType.EVM],
+        addressAVM: addresses[NetworkVMType.AVM],
+        addressPVM: addresses[NetworkVMType.PVM],
+        addressCoreEth: addresses[NetworkVMType.CoreEth]
       }
     }
 
@@ -44,36 +73,35 @@ class AccountsService {
 
   async createNextAccount({
     index,
-    activeAccountIndex,
     walletType,
-    network
+    network,
+    walletId
   }: {
     index: number
-    activeAccountIndex: number
     walletType: WalletType
     network: Network
+    walletId: string
   }): Promise<Account> {
     if (walletType === WalletType.UNSET) throw new Error('invalid wallet type')
 
-    const addresses = await WalletService.addAddress(index, network)
+    const addresses = await WalletService.addAddress({
+      walletId,
+      walletType,
+      accountIndex: index,
+      network
+    })
 
     return {
       index,
       id: uuid(),
-      walletId: CORE_MOBILE_WALLET_ID,
+      walletId,
       name: `Account ${index + 1}`,
       type: CoreAccountType.PRIMARY,
-      active: index === activeAccountIndex,
-      walletType:
-        walletType === WalletType.MNEMONIC
-          ? CoreWalletType.Mnemonic
-          : CoreWalletType.Seedless,
       addressBTC: addresses[NetworkVMType.BITCOIN],
       addressC: addresses[NetworkVMType.EVM],
       addressAVM: addresses[NetworkVMType.AVM],
       addressPVM: addresses[NetworkVMType.PVM],
-      addressCoreEth: addresses[NetworkVMType.CoreEth],
-      walletName: ''
+      addressCoreEth: addresses[NetworkVMType.CoreEth]
     }
   }
 }

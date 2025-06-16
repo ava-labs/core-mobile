@@ -11,6 +11,7 @@ import { AvalancheUpdateContactRequest } from 'store/rpc/handlers/contact/avalan
 import { Contact } from 'store/addressBook/types'
 import { WalletAddEthereumChainRpcRequest } from 'store/rpc/handlers/chain/wallet_addEthereumChain/wallet_addEthereumChain'
 import { Account } from 'store/account'
+import { WalletType } from 'services/wallet/types'
 
 export type SessionProposalParams = {
   request: WCSessionProposal
@@ -23,12 +24,16 @@ export type ApprovalParams = {
   displayData: DisplayData
   signingData: SigningData
   onApprove: ({
+    walletId,
+    walletType,
     network,
     account,
     maxFeePerGas,
     maxPriorityFeePerGas,
     overrideData
   }: {
+    walletId: string
+    walletType: WalletType
     network: Network
     account: Account
     maxFeePerGas?: bigint

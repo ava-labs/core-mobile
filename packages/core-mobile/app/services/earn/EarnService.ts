@@ -5,10 +5,7 @@ import { FujiParams, MainnetParams } from 'utils/NetworkParams'
 import { importC } from 'services/earn/importC'
 import { exportP } from 'services/earn/exportP'
 import WalletService from 'services/wallet/WalletService'
-import {
-  AddDelegatorProps,
-  AvalancheTransactionRequest
-} from 'services/wallet/types'
+import { AvalancheTransactionRequest, WalletType } from 'services/wallet/types'
 import NetworkService from 'services/network/NetworkService'
 import { pvm, UnsignedTx } from '@avalabs/avalanchejs'
 import Logger from 'utils/Logger'
@@ -63,6 +60,8 @@ class EarnService {
    * for additional explanation.
    */
   async importAnyStuckFunds({
+    walletId,
+    walletType,
     activeAccount,
     isDevMode,
     selectedCurrency,
@@ -70,6 +69,8 @@ class EarnService {
     feeState,
     cBaseFeeMultiplier
   }: {
+    walletId: string
+    walletType: WalletType
     activeAccount: Account
     isDevMode: boolean
     selectedCurrency: string
@@ -86,6 +87,8 @@ class EarnService {
           progressEvents?.(RecoveryEvents.GetAtomicUTXOsFailIng)
         }
         return WalletService.getAtomicUTXOs({
+          walletId,
+          walletType,
           accountIndex: activeAccount.index,
           avaxXPNetwork
         })
@@ -98,6 +101,8 @@ class EarnService {
     if (pChainUtxo.getUTXOs().length !== 0) {
       progressEvents?.(RecoveryEvents.ImportPStart)
       await importPWithBalanceCheck({
+        walletId,
+        walletType,
         activeAccount,
         isDevMode,
         selectedCurrency,
@@ -109,6 +114,8 @@ class EarnService {
     if (cChainUtxo.getUTXOs().length !== 0) {
       progressEvents?.(RecoveryEvents.ImportCStart)
       await importC({
+        walletId,
+        walletType,
         activeAccount,
         isDevMode,
         cBaseFeeMultiplier
@@ -127,6 +134,8 @@ class EarnService {
    * @param isDevMode
    */
   async claimRewards({
+    walletId,
+    walletType,
     pChainBalance,
     requiredAmount,
     activeAccount,
@@ -134,6 +143,8 @@ class EarnService {
     feeState,
     cBaseFeeMultiplier
   }: {
+    walletId: string
+    walletType: WalletType
     pChainBalance: TokenUnit
     requiredAmount: TokenUnit
     activeAccount: Account
@@ -142,6 +153,8 @@ class EarnService {
     cBaseFeeMultiplier: number
   }): Promise<void> {
     await exportP({
+      walletId,
+      walletType,
       pChainBalance,
       requiredAmount,
       activeAccount,
@@ -149,6 +162,8 @@ class EarnService {
       feeState
     })
     await importC({
+      walletId,
+      walletType,
       activeAccount,
       isDevMode,
       cBaseFeeMultiplier
@@ -208,6 +223,8 @@ class EarnService {
   }
 
   async issueAddDelegatorTransaction({
+    walletId,
+    walletType,
     activeAccount,
     nodeId,
     stakeAmountNanoAvax,
@@ -216,13 +233,18 @@ class EarnService {
     isDevMode,
     feeState,
     pFeeAdjustmentThreshold
-  }: AddDelegatorTransactionProps): Promise<string> {
+  }: AddDelegatorTransactionProps & {
+    walletId: string
+    walletType: WalletType
+  }): Promise<string> {
     const startDateUnix = getUnixTime(startDate)
     const endDateUnix = getUnixTime(endDate)
     const avaxXPNetwork = NetworkService.getAvalancheNetworkP(isDevMode)
     const rewardAddress = activeAccount.addressPVM
 
     const unsignedTx = await WalletService.createAddDelegatorTx({
+      walletId,
+      walletType,
       accountIndex: activeAccount.index,
       avaxXPNetwork,
       rewardAddress,
@@ -233,9 +255,11 @@ class EarnService {
       isDevMode,
       feeState,
       pFeeAdjustmentThreshold
-    } as AddDelegatorProps)
+    })
 
     const signedTxJson = await WalletService.sign({
+      walletId,
+      walletType,
       transaction: { tx: unsignedTx } as AvalancheTransactionRequest,
       accountIndex: activeAccount.index,
       network: avaxXPNetwork
@@ -323,10 +347,14 @@ class EarnService {
   }
 
   getTransformedStakesForAllAccounts = async ({
+    walletId,
+    walletType,
     accounts,
     network,
     startTimestamp
   }: {
+    walletId: string
+    walletType: WalletType
     accounts: AccountCollection
     network: Network
     startTimestamp?: number
@@ -356,7 +384,12 @@ class EarnService {
       const oppositeNetworkAddresses = (
         await Promise.all(
           accountsArray.map(account =>
-            WalletService.getAddresses(account.index, network)
+            WalletService.getAddresses({
+              walletId,
+              walletType,
+              accountIndex: account.index,
+              network
+            })
           )
         )
       ).map(address => address.PVM)

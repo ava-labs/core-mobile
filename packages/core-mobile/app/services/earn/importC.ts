@@ -3,7 +3,7 @@ import Logger from 'utils/Logger'
 import WalletService from 'services/wallet/WalletService'
 import NetworkService from 'services/network/NetworkService'
 import { Account } from 'store/account'
-import { AvalancheTransactionRequest } from 'services/wallet/types'
+import { AvalancheTransactionRequest, WalletType } from 'services/wallet/types'
 import { UnsignedTx } from '@avalabs/avalanchejs'
 import { FundsStuckError } from 'hooks/earn/errors'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
@@ -16,12 +16,16 @@ import {
 } from './utils'
 
 export type ImportCParams = {
+  walletId: string
+  walletType: WalletType
   activeAccount: Account
   isDevMode: boolean
   cBaseFeeMultiplier: number
 }
 
 export async function importC({
+  walletId,
+  walletType,
   activeAccount,
   isDevMode,
   cBaseFeeMultiplier
@@ -44,6 +48,8 @@ export async function importC({
     cBaseFeeMultiplier
   )
   const unsignedTx = await WalletService.createImportCTx({
+    walletId,
+    walletType,
     accountIndex: activeAccount.index,
     baseFeeInNAvax: weiToNano(instantBaseFee.toSubUnit()),
     avaxXPNetwork,
@@ -52,6 +58,8 @@ export async function importC({
   })
 
   const signedTxJson = await WalletService.sign({
+    walletId,
+    walletType,
     transaction: {
       tx: unsignedTx,
       externalIndices: [],

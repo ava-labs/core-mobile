@@ -235,9 +235,16 @@ class WalletService {
    * @param accountIndex - Account index to get public key of.
    */
   public async getPublicKey(
-    wallet: Wallet,
+    walletId: string,
+    walletType: WalletType,
     accountIndex: number
   ): Promise<PubKeyType> {
+    const wallet = await WalletFactory.createWallet({
+      walletId,
+      walletType,
+      accountIndex
+    })
+
     return await wallet.getPublicKey(accountIndex)
   }
 
