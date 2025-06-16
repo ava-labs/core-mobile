@@ -186,28 +186,28 @@ export const SelectBuyAmountScreen = (): React.JSX.Element => {
           sx={{ fontSize: 16, lineHeight: 22, color: colors.$textPrimary }}>
           Token
         </Text>
-        <View sx={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-          {token?.tokenWithBalance && (
-            <>
-              <LogoWithNetwork
-                token={token.tokenWithBalance}
-                outerBorderColor={colors.$surfaceSecondary}
-              />
-              <Text
-                variant="body1"
-                sx={{
-                  fontSize: 16,
-                  lineHeight: 22,
-                  color: colors.$textSecondary
-                }}>
-                {token?.tokenWithBalance?.symbol}
-              </Text>
-            </>
-          )}
-          <View sx={{ marginLeft: 8 }}>
-            <Icons.Navigation.ChevronRightV2 color={colors.$textPrimary} />
+        {token?.tokenWithBalance ? (
+          <View sx={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+            <LogoWithNetwork
+              token={token.tokenWithBalance}
+              outerBorderColor={colors.$surfaceSecondary}
+            />
+            <Text
+              variant="body1"
+              sx={{
+                fontSize: 16,
+                lineHeight: 22,
+                color: colors.$textSecondary
+              }}>
+              {token?.tokenWithBalance?.symbol}
+            </Text>
+            <View sx={{ marginLeft: 8 }}>
+              <Icons.Navigation.ChevronRightV2 color={colors.$textPrimary} />
+            </View>
           </View>
-        </View>
+        ) : (
+          <ActivityIndicator size="small" color={colors.$textPrimary} />
+        )}
       </Pressable>
 
       {/* Fiat amount input widget */}
