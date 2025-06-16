@@ -12,16 +12,17 @@ import AnalyticsService from 'services/analytics/AnalyticsService'
 import SeedlessService from 'seedless/services/SeedlessService'
 import { selectActiveNetwork } from 'store/network'
 import { Network } from '@avalabs/core-chains-sdk'
+import { getAccountIndex } from 'store/account/utils'
 import { recentAccountsStore } from 'new/features/accountSettings/store'
+import { selectActiveWalletId } from 'store/wallet/slice'
 import {
   selectAccounts,
   selectActiveAccount,
-  selectWalletName,
   setAccounts,
   setNonActiveAccounts,
-  setActiveAccountIndex
+  setActiveAccountId
 } from './slice'
-import { AccountCollection } from './types'
+import { Account, AccountCollection } from './types'
 
 const initAccounts = async (
   _action: AnyAction,
@@ -31,21 +32,26 @@ const initAccounts = async (
   const isDeveloperMode = selectIsDeveloperMode(state)
   const activeNetwork = selectActiveNetwork(state)
   const walletType = selectWalletType(state)
-  const walletName = selectWalletName(state)
-  const activeAccountIndex = selectActiveAccount(state)?.index ?? 0
+  const activeAccount = selectActiveAccount(state)
   const accounts: AccountCollection = {}
+  const activeWalletId = selectActiveWalletId(state)
+
+  if (!activeWalletId) {
+    throw new Error('Active wallet ID is not set')
+  }
+
+  const acc = await accountService.createNextAccount({
+    index: 0,
+    activeAccountIndex: activeAccount ? getAccountIndex(activeAccount) : 0,
+    walletType,
+    network: activeNetwork,
+    walletId: activeWalletId
+  })
 
   if (walletType === WalletType.SEEDLESS) {
-    const acc = await accountService.createNextAccount({
-      index: 0,
-      activeAccountIndex,
-      walletType,
-      network: activeNetwork
-    })
-
     const title = await SeedlessService.getAccountName(0)
     const accountTitle = title ?? acc.name
-    accounts[acc.index] = { ...acc, name: accountTitle }
+    accounts[acc.id] = { ...acc, name: accountTitle }
     listenerApi.dispatch(setAccounts(accounts))
 
     // to avoid initial account fetching taking too long,
@@ -53,27 +59,17 @@ const initAccounts = async (
     fetchingRemainingAccounts({
       isDeveloperMode,
       walletType,
-      activeAccountIndex,
+      activeAccountIndex: activeAccount ? getAccountIndex(activeAccount) : 0,
       listenerApi,
       initialAccounts: accounts // pass the initial account for analytic reporting purposes
     })
   } else if (walletType === WalletType.MNEMONIC) {
-    // only add the first account for mnemonic wallet
-    const acc = await accountService.createNextAccount({
-      index: 0,
-      activeAccountIndex,
-      walletType,
-      network: activeNetwork
-    })
-
-    const accountTitle =
-      walletName && walletName.length > 0 ? walletName : acc.name
-    accounts[acc.index] = { ...acc, name: accountTitle }
-
+    accounts[acc.id] = acc
     listenerApi.dispatch(setAccounts(accounts))
+
     if (isDeveloperMode === false) {
       AnalyticsService.captureWithEncryption('AccountAddressesUpdated', {
-        addresses: Object.values(accounts).map(account => ({
+        addresses: Object.values(accounts).map((account: Account) => ({
           address: account.addressC,
           addressBtc: account.addressBTC,
           addressAVM: account.addressAVM ?? '',
@@ -108,17 +104,24 @@ const fetchingRemainingAccounts = async ({
   const pubKeysStorage = new SeedlessPubKeysStorage()
   const pubKeys = await pubKeysStorage.retrieve()
   const accounts: AccountCollection = {}
+  const activeWalletId = selectActiveWalletId(state)
+
+  if (!activeWalletId) {
+    throw new Error('Active wallet ID is not set')
+  }
+
   // fetch the remaining accounts in the background
   for (let i = 1; i < pubKeys.length; i++) {
     const acc = await accountService.createNextAccount({
       index: i,
       activeAccountIndex,
       walletType,
-      network: activeNetwork
+      network: activeNetwork,
+      walletId: activeWalletId
     })
     const title = await SeedlessService.getAccountName(i)
     const accountTitle = title ?? acc.name
-    accounts[acc.index] = { ...acc, name: accountTitle }
+    accounts[acc.id] = { ...acc, name: accountTitle }
   }
   listenerApi.dispatch(setNonActiveAccounts(accounts))
 
@@ -159,7 +162,7 @@ const reloadAccounts = async (
 }
 
 const handleActiveAccountIndexChange = (
-  action: ReturnType<typeof setActiveAccountIndex>
+  action: ReturnType<typeof setActiveAccountId>
 ): void => {
   recentAccountsStore.getState().addRecentAccount(action.payload)
 }
@@ -178,7 +181,7 @@ export const addAccountListeners = (
   })
 
   startListening({
-    actionCreator: setActiveAccountIndex,
+    actionCreator: setActiveAccountId,
     effect: handleActiveAccountIndexChange
   })
 }
