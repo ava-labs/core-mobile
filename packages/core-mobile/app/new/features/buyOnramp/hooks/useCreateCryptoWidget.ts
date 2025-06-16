@@ -75,6 +75,6 @@ export const useCreateCryptoWidget = ({
         sessionType,
         serviceProvider
       }),
-    staleTime: 1000 * 60 * 30 // 30 minutes
+    staleTime: 0 // widget url is only valid for one time use, we should always fetch a new one
   })
 }
