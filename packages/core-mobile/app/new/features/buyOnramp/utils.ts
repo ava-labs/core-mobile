@@ -64,15 +64,15 @@ export const dismissMeldStack = (
 ): void => {
   const dismissCount = searchParams.get('dismissCount') ?? ''
   closeInAppBrowser()
-  transactionSnackbar.success({
-    message
-  })
   // the number of dismisses is the number of meld screens to dismiss
   // there is currently at most 2 meld screens
   // the first dismiss is the selectBuyAmountScreen
   // the second dismiss is the selectBuyTokenScreen (only if user launched buy from token detail)
   Array.from({ length: Number(dismissCount) }).forEach(() => {
     router.canGoBack() && router.back()
+  })
+  transactionSnackbar.success({
+    message
   })
   confetti.restart()
 }
