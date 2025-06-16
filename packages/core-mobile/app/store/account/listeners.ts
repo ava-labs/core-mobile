@@ -12,10 +12,9 @@ import AnalyticsService from 'services/analytics/AnalyticsService'
 import SeedlessService from 'seedless/services/SeedlessService'
 import { selectActiveNetwork } from 'store/network'
 import { Network } from '@avalabs/core-chains-sdk'
-import { getAccountIndex } from 'store/account/utils'
 import { recentAccountsStore } from 'new/features/accountSettings/store'
-import { selectActiveWalletId } from 'store/wallet/slice'
 import { selectActiveWallet, selectActiveWalletId } from 'store/wallet/slice'
+import BiometricsSDK from 'utils/BiometricsSDK'
 import {
   selectAccounts,
   selectActiveAccount,
@@ -36,14 +35,25 @@ const initAccounts = async (
   const activeAccount = selectActiveAccount(state)
   const accounts: AccountCollection = {}
   const activeWalletId = selectActiveWalletId(state)
+  const activeWallet = selectActiveWallet(state)
 
   if (!activeWalletId) {
     throw new Error('Active wallet ID is not set')
   }
+  if (!activeAccount) {
+    throw new Error('Active account is not set')
+  }
+  if (!activeWallet) {
+    throw new Error('Active wallet is not set')
+  }
+
+  const walletSecret = await BiometricsSDK.loadWalletSecret(activeWalletId)
+  if (!walletSecret.success) {
+    throw new Error('Failed to load wallet secret')
+  }
 
   const acc = await accountService.createNextAccount({
-    index: 0,
-    activeAccountIndex: activeAccount ? getAccountIndex(activeAccount) : 0,
+    index: activeAccount.index,
     walletType,
     network: activeNetwork,
     walletId: activeWalletId
@@ -60,7 +70,6 @@ const initAccounts = async (
     fetchingRemainingAccounts({
       isDeveloperMode,
       walletType,
-      activeAccountIndex: activeAccount ? getAccountIndex(activeAccount) : 0,
       listenerApi,
       initialAccounts: accounts // pass the initial account for analytic reporting purposes
     })
@@ -85,13 +94,11 @@ const initAccounts = async (
 const fetchingRemainingAccounts = async ({
   isDeveloperMode,
   walletType,
-  activeAccountIndex,
   listenerApi,
   initialAccounts
 }: {
   isDeveloperMode: boolean
   walletType: WalletType
-  activeAccountIndex: number
   listenerApi: AppListenerEffectAPI
   initialAccounts: AccountCollection
 }): Promise<void> => {
@@ -110,12 +117,10 @@ const fetchingRemainingAccounts = async ({
   if (!activeWalletId) {
     throw new Error('Active wallet ID is not set')
   }
-
   // fetch the remaining accounts in the background
   for (let i = 1; i < pubKeys.length; i++) {
     const acc = await accountService.createNextAccount({
       index: i,
-      activeAccountIndex,
       walletType,
       network: activeNetwork,
       walletId: activeWalletId
