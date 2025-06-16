@@ -1,4 +1,3 @@
-import { CorePrimaryAccount } from '@avalabs/types'
 import { RpcRequest, DisplayData, SigningData } from '@avalabs/vm-module-types'
 import { ProposalTypes } from '@walletconnect/types'
 import { SiteScanResponse } from 'services/blockaid/types'
@@ -11,6 +10,7 @@ import { AvalancheRemoveContactRequest } from 'store/rpc/handlers/contact/avalan
 import { AvalancheUpdateContactRequest } from 'store/rpc/handlers/contact/avalanche_updateContact/avalanche_updateContact'
 import { Contact } from 'store/addressBook/types'
 import { WalletAddEthereumChainRpcRequest } from 'store/rpc/handlers/chain/wallet_addEthereumChain/wallet_addEthereumChain'
+import { Account } from 'store/account'
 
 export type SessionProposalParams = {
   request: WCSessionProposal
@@ -30,7 +30,7 @@ export type ApprovalParams = {
     overrideData
   }: {
     network: Network
-    account: CorePrimaryAccount
+    account: Account
     maxFeePerGas?: bigint
     maxPriorityFeePerGas?: bigint
     overrideData?: string

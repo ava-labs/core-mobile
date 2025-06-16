@@ -12,15 +12,14 @@ import {
   useTheme,
   View
 } from '@avalabs/k2-alpine'
-import { CorePrimaryAccount } from '@avalabs/types'
-import { AccountCollection } from 'store/account/types'
+import type { Account, AccountCollection } from 'store/account/types'
 import { useFormatCurrency } from 'new/common/hooks/useFormatCurrency'
 import { useBalanceForAccount } from 'new/common/contexts/useBalanceForAccount'
 import { TRUNCATE_ADDRESS_LENGTH } from 'common/consts/text'
 
 type Props = {
-  onSelect: (account: CorePrimaryAccount) => void
-  selectedAccounts: CorePrimaryAccount[]
+  onSelect: (account: Account) => void
+  selectedAccounts: Account[]
   accounts: AccountCollection
 }
 
@@ -108,8 +107,8 @@ const Account = ({
   lastItem,
   isSelected
 }: {
-  account: CorePrimaryAccount
-  onSelect: (account: CorePrimaryAccount) => void
+  account: Account
+  onSelect: (account: Account) => void
   lastItem: boolean
   isSelected: boolean
 }): JSX.Element => {
