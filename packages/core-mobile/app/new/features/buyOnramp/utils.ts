@@ -66,6 +66,7 @@ export const dismissMeldStack = (
   closeInAppBrowser()
   // the number of dismisses is the number of meld screens to dismiss
   // there is currently at most 2 meld screens
+  // TODO: when we start implementing native buy/sell, we can simply call dismissAll() and back()
   // the first dismiss is the selectBuyAmountScreen
   // the second dismiss is the selectBuyTokenScreen (only if user launched buy from token detail)
   Array.from({ length: Number(dismissCount) }).forEach(() => {
