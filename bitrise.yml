@@ -531,7 +531,6 @@ workflows:
         is_expand: false
   android-internal:
     before_run:
-    - _trigger_ios_internal_build
     - _install-and-set-env
     - _set-version
     - _build-android
