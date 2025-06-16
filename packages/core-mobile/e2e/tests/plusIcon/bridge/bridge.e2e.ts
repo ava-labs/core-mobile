@@ -3,7 +3,6 @@ import actions from '../../../helpers/actions'
 import bridgeTabPage from '../../../pages/bridgeTab.page'
 import portfolioLoc from '../../../locators/portfolio.loc'
 import commonElsPage from '../../../pages/commonEls.page'
-import sendPage from '../../../pages/send.page'
 import bridgeTabLoc from '../../../locators/bridgeTab.loc'
 import { cleanup } from '../../../helpers/cleanup'
 

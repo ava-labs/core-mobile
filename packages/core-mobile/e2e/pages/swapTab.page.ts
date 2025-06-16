@@ -6,7 +6,6 @@ import swapTab from '../locators/swapTab.loc'
 import bottomTabsPage from './bottomTabs.page'
 import plusMenuPage from './plusMenu.page'
 import popUpModalPage from './popUpModal.page'
-import sendPage from './send.page'
 
 const platformIndex = Actions.platform() === Platform.Android ? 1 : 0
 
