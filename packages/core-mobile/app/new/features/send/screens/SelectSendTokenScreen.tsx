@@ -124,7 +124,7 @@ export const SelectSendTokenScreen = (): JSX.Element => {
             <View>
               <Text
                 variant="buttonMedium"
-                testID={`token_selector__${item.symbol}`}>
+                testID={`token_selector__${item.symbol}`}
                 numberOfLines={1}
                 sx={{ width: SCREEN_WIDTH * 0.65 }}>
                 {item.name}

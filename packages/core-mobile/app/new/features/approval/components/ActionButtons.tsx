@@ -62,7 +62,9 @@ export const ActionButtons = ({
           type="primary"
           onPress={() => confirm.onPress()}
           disabled={shouldDisableConfirm}
-          testID={confirm.testID}>
+          testID={
+            shouldDisableConfirm ? 'approve_button_disabled' : 'approve_button'
+          }>
           {confirm.isLoading ? <ActivityIndicator /> : confirm.label}
         </Button>
         <Button
@@ -71,7 +73,7 @@ export const ActionButtons = ({
           style={{ marginTop: 16 }}
           onPress={() => cancel.onPress()}
           disabled={cancel.disabled}
-          testID={cancel.testID}>
+          testID="reject_button">
           {cancel.label}
         </Button>
       </View>

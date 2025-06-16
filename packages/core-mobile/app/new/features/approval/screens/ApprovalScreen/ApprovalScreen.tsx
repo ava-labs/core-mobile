@@ -390,14 +390,12 @@ const ApprovalScreen = ({
         label: 'Approve',
         onPress: handleApprove,
         disabled: approveDisabled,
-        isLoading: submitting,
-        testID: approveDisabled ? 'approve_button_disabled' : 'approve_button'
+        isLoading: submitting
       }}
       cancel={{
         label: 'Reject',
         onPress: rejectAndClose,
-        disabled: submitting,
-        testID: 'reject_button'
+        disabled: submitting
       }}>
       {renderDappInfoOrTitle()}
       {renderGaslessAlert()}
