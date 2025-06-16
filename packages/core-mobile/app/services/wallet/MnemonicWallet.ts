@@ -6,7 +6,8 @@ import {
   JsonRpcBatchInternal,
   getAddressPublicKeyFromXPub,
   getWalletFromMnemonic,
-  getAddressDerivationPath
+  getAddressDerivationPath,
+  getXpubFromMnemonic
 } from '@avalabs/core-wallets-sdk'
 import { now } from 'moment'
 import {
@@ -38,6 +39,22 @@ import { isTypedData } from '@avalabs/evm-module'
 import ModuleManager from 'vmModule/ModuleManager'
 import { mapToVmNetwork } from 'vmModule/utils/mapToVmNetwork'
 
+/**
+ * Type guard to assert that a wallet is a MnemonicWallet instance
+ */
+export function assertMnemonicWallet(
+  wallet: unknown
+): asserts wallet is MnemonicWallet {
+  if (
+    !wallet ||
+    typeof wallet !== 'object' ||
+    !('type' in wallet) ||
+    wallet.type !== WalletType.Mnemonic
+  ) {
+    throw new Error('Expected MnemonicWallet instance')
+  }
+}
+
 export class MnemonicWallet implements Wallet {
   #mnemonic?: string
 
@@ -52,6 +69,35 @@ export class MnemonicWallet implements Wallet {
    * @private
    */
   #xpubXP?: string
+
+  /**
+   * Initialize wallet with mnemonic
+   */
+  public async initialize(mnemonic: string): Promise<void> {
+    this.#mnemonic = mnemonic
+
+    // Generate xpub keys
+    const xpubPromise = getXpubFromMnemonic(mnemonic)
+    const xpubXPPromise = new Promise<string>(resolve => {
+      resolve(Avalanche.getXpubFromMnemonic(mnemonic))
+    })
+
+    const pubKeys = await Promise.allSettled([xpubPromise, xpubXPPromise])
+
+    if (pubKeys[0].status === 'fulfilled') {
+      this.#xpub = pubKeys[0].value
+    } else {
+      throw new Error(`getXpubFromMnemonic failed, ${pubKeys[0].reason}`)
+    }
+
+    if (pubKeys[1].status === 'fulfilled') {
+      this.#xpubXP = pubKeys[1].value
+    } else {
+      throw new Error(
+        `Avalanche.getXpubFromMnemonic failed, ${pubKeys[1].reason}`
+      )
+    }
+  }
 
   private async getBtcSigner(
     accountIndex: number,
@@ -414,10 +460,3 @@ export class MnemonicWallet implements Wallet {
     return utils.base58check.encode(new Uint8Array(buffer))
   }
 }
-
-/**
- * Unlike SeedlessWallet, MnemonicWallet cannot be created on demand
- * as we need the user to enter PIN to decrypt the mnemonic phrase.
- * Thus, we are exporting a single instance of MnemonicWallet
- */
-export default new MnemonicWallet()

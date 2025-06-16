@@ -39,6 +39,22 @@ import { mapToVmNetwork } from 'vmModule/utils/mapToVmNetwork'
 import CoreSeedlessAPIService from '../CoreSeedlessAPIService'
 import { SeedlessBtcSigner } from './SeedlessBtcSigner'
 
+/**
+ * Type guard to assert that a wallet is a SeedlessWallet instance
+ */
+export function assertSeedlessWallet(
+  wallet: unknown
+): asserts wallet is SeedlessWallet {
+  if (
+    !wallet ||
+    typeof wallet !== 'object' ||
+    !('type' in wallet) ||
+    wallet.type !== WalletType.Seedless
+  ) {
+    throw new Error('Expected SeedlessWallet instance')
+  }
+}
+
 export default class SeedlessWallet implements Wallet {
   #client: cs.CubeSignerClient
   #addressPublicKey: PubKeyType
