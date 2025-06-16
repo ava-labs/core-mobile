@@ -6,12 +6,8 @@ import { FlatList } from 'react-native-gesture-handler'
 import Animated, { LinearTransition } from 'react-native-reanimated'
 import { useDispatch, useSelector } from 'react-redux'
 import AnalyticsService from 'services/analytics/AnalyticsService'
-import {
-  Account,
-  selectAccounts,
-  selectActiveAccount,
-  setActiveAccountIndex
-} from 'store/account'
+import { Account, selectAccounts, setActiveAccount } from 'store/account'
+import { useActiveAccount } from 'common/hooks/useActiveAccount'
 import { useRecentAccounts } from '../store'
 import { AccountItem } from './AccountItem'
 
@@ -27,22 +23,21 @@ export const AccountList = (): React.JSX.Element => {
   } = useTheme()
   const dispatch = useDispatch()
   const { navigate } = useRouter()
-
-  const activeAccount = useSelector(selectActiveAccount)
+  const activeAccount = useActiveAccount()
   const accountCollection = useSelector(selectAccounts)
   const flatListRef = useRef<FlatList>(null)
 
-  const { recentAccountIndexes, addRecentAccount } = useRecentAccounts()
+  const { recentAccountIds, addRecentAccount } = useRecentAccounts()
 
   useEffect(() => {
-    if (recentAccountIndexes.length === 0 && activeAccount) {
-      addRecentAccount(activeAccount.index)
+    if (recentAccountIds.length === 0 && activeAccount) {
+      addRecentAccount(activeAccount.index.toString())
     }
-  }, [activeAccount, addRecentAccount, recentAccountIndexes])
+  }, [activeAccount, addRecentAccount, recentAccountIds])
 
   const recentAccounts = useMemo(() => {
-    return recentAccountIndexes.map(index => accountCollection[index])
-  }, [accountCollection, recentAccountIndexes])
+    return recentAccountIds.map(id => accountCollection[id])
+  }, [accountCollection, recentAccountIds])
 
   useEffect(() => {
     if (activeAccount?.index != null) {
@@ -53,21 +48,21 @@ export const AccountList = (): React.JSX.Element => {
   }, [activeAccount?.index])
 
   const onSelectAccount = useCallback(
-    (accountIndex: number): void => {
+    (account: Account): void => {
       AnalyticsService.capture('AccountSelectorAccountSwitched', {
-        accountIndex
+        accountIndex: account.index
       })
-      dispatch(setActiveAccountIndex(accountIndex))
+      dispatch(setActiveAccount(account.id))
     },
     [dispatch]
   )
 
   const gotoAccountDetails = useCallback(
-    (accountIndex: number): void => {
+    (accountId: string): void => {
       navigate({
         // @ts-ignore TODO: make routes typesafe
         pathname: '/accountSettings/account',
-        params: { accountIndex: accountIndex.toString() }
+        params: { accountId }
       })
     },
     [navigate]

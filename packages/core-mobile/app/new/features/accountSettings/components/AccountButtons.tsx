@@ -5,17 +5,17 @@ import {
 } from 'common/utils/alertWithTextInput'
 import React, { useCallback } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { selectAccountByIndex, setAccountTitle } from 'store/account'
+import { selectAccountById, setAccountTitle } from 'store/account'
 import { selectWalletType } from 'store/app'
 
 export const AccountButtons = ({
-  accountIndex
+  accountId
 }: {
-  accountIndex: number
+  accountId: string
 }): React.JSX.Element => {
   const dispatch = useDispatch()
   const walletType = useSelector(selectWalletType)
-  const account = useSelector(selectAccountByIndex(accountIndex))
+  const account = useSelector(selectAccountById(accountId))
 
   const handleShowAlertWithTextInput = (): void => {
     showAlertWithTextInput({
@@ -41,17 +41,18 @@ export const AccountButtons = ({
     (values: Record<string, string>): void => {
       if (values.accountName && values.accountName.length > 0) {
         dismissAlertWithTextInput()
-        values.accountName !== account?.name &&
+        if (account && values.accountName !== account.name) {
           dispatch(
             setAccountTitle({
-              accountIndex,
+              accountId: account.id,
               title: values.accountName,
               walletType
             })
           )
+        }
       }
     },
-    [account?.name, accountIndex, dispatch, walletType]
+    [account, dispatch, walletType]
   )
 
   return (
@@ -63,22 +64,6 @@ export const AccountButtons = ({
         onPress={handleShowAlertWithTextInput}>
         Rename account
       </Button>
-      {/* <Button
-        style={{ borderRadius: 12 }}
-        size="large"
-        type="secondary"
-        // todo: CP-10070
-        onPress={noop}>
-        Export private key
-      </Button> */}
-      {/* TODO: waiting product decision on whether we show this  */}
-      {/* <Button
-        style={{ borderRadius: 12 }}
-        size="large"
-        type="secondary"
-        onPress={noop}>
-        Hide account
-      </Button> */}
     </View>
   )
 }
