@@ -31,7 +31,7 @@
     "@avalabs/tsconfig-mobile": "workspace:*",
     "@babel/core": "7.25.7",
     "@babel/runtime": "7.25.7",
-    "@lavamoat/allow-scripts": "3.2.1",
+    "@lavamoat/allow-scripts": "3.3.3",
     "@react-native/babel-preset": "0.76.9",
     "@react-native/metro-config": "0.76.9",
     "@rushstack/eslint-patch": "1.10.4",
