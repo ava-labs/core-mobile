@@ -2,12 +2,16 @@ import {
   Country,
   CryptoCurrency,
   FiatCurrency,
+  GetPurchaseLimits,
   MeldDefaultParams,
+  SearchDefaultsByCountry,
   ServiceProvider
 } from '../types'
 import { SearchServiceProvidersParams } from '../hooks/useSearchServiceProviders'
 import { SearchFiatCurrenciesParams } from '../hooks/useSearchFiatCurrencies'
 import { SearchCryptoCurrenciesParams } from '../hooks/useSearchCryptoCurrencies'
+import { SearchDefaultsByCountryParams } from '../hooks/useSearchDefaultsByCountry'
+import { GetPurchaseLimitsParams } from '../hooks/useGetPurchaseLimits'
 import { meldApiClient } from './apiClient'
 
 class MeldService {
@@ -79,6 +83,40 @@ class MeldService {
     return meldApiClient.getServiceProviders({
       queries
     })
+  }
+
+  async searchDefaultsByCountry({
+    categories,
+    countries,
+    accountFilter = true
+  }: SearchDefaultsByCountryParams): Promise<SearchDefaultsByCountry[]> {
+    const queries = {
+      categories: categories.join(','),
+      accountFilter,
+      countries: countries.join(',')
+    }
+    return meldApiClient.getDefaultsByCountry({ queries })
+  }
+
+  async getPurchaseLimits({
+    categories,
+    countries,
+    accountFilter = true,
+    serviceProviders,
+    fiatCurrencies,
+    cryptoCurrencyCodes,
+    includeDetails = false
+  }: GetPurchaseLimitsParams): Promise<GetPurchaseLimits[]> {
+    const queries = {
+      categories: categories.join(','),
+      accountFilter,
+      countries: countries.join(','),
+      serviceProviders: serviceProviders?.join(','),
+      fiatCurrencies: fiatCurrencies?.join(','),
+      cryptoCurrencies: cryptoCurrencyCodes?.join(','),
+      includeDetails
+    }
+    return meldApiClient.getPurchaseLimits({ queries })
   }
 }
 

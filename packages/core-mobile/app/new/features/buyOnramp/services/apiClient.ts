@@ -3,8 +3,10 @@ import Config from 'react-native-config'
 import { z } from 'zod'
 import Logger from 'utils/Logger'
 import {
+  GetPurchaseLimitsSchema,
   SearchCountrySchema,
   SearchCryptoCurrencySchema,
+  SearchDefaultsByCountrySchema,
   SearchFiatCurrencySchema,
   SearchServiceProviderSchema
 } from './schemas'
@@ -106,6 +108,51 @@ export const meldApiClient = new Zodios(
       ],
       alias: 'getServiceProviders',
       response: z.array(SearchServiceProviderSchema)
+    },
+    {
+      method: 'get',
+      path: '/service-providers/properties/defaults/by-country',
+      parameters: [
+        { name: 'categories', type: 'Query', schema: z.string().optional() },
+        {
+          name: 'accountFilter',
+          type: 'Query',
+          schema: z.boolean().optional()
+        },
+        { name: 'countries', type: 'Query', schema: z.string().optional() }
+      ],
+      alias: 'getDefaultsByCountry',
+      response: z.array(SearchDefaultsByCountrySchema)
+    },
+    {
+      method: 'get',
+      path: '/service-providers/limits/fiat-currency-purchases',
+      parameters: [
+        {
+          name: 'serviceProviders',
+          type: 'Query',
+          schema: z.string().optional()
+        },
+        { name: 'categories', type: 'Query', schema: z.string().optional() },
+        {
+          name: 'accountFilter',
+          type: 'Query',
+          schema: z.boolean().optional()
+        },
+        { name: 'countries', type: 'Query', schema: z.string().optional() },
+        {
+          name: 'fiatCurrencies',
+          type: 'Query',
+          schema: z.string().optional()
+        },
+        {
+          name: 'cryptoCurrencyCodes',
+          type: 'Query',
+          schema: z.string().optional()
+        }
+      ],
+      alias: 'getPurchaseLimits',
+      response: z.array(GetPurchaseLimitsSchema)
     }
   ],
   {

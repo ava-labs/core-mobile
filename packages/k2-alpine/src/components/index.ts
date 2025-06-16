@@ -53,3 +53,6 @@ export * from './PriceChangeIndicator/types'
 
 export * from './AnimatedBalance/AnimatedBalance'
 export * from './MaskedText/MaskedText'
+
+export * from './FiatAmountInputWidget/FiatAmountInputWidget'
+export * from './FiatAmountInputWidget/FiatAmountInput'
