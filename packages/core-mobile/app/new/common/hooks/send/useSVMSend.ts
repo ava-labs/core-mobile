@@ -1,25 +1,63 @@
 import { useInAppRequest } from 'hooks/useInAppRequest'
 import { useSendContext } from 'features/send/context/sendContext'
-import { useCallback } from 'react'
+import { useCallback, useEffect } from 'react'
 import { assertNotUndefined } from 'utils/assertions'
 import { useSendSelectedToken } from 'features/send/store'
 import { useSVMProvider } from 'hooks/networks/networkProviderHooks'
-import { SendAdapterSVM } from './utils/types'
+import { SendAdapterSVM, SendErrorMessage } from './utils/types'
 import { validateSupportedToken } from './utils/svm/validate'
 import { send as sendSVM } from './utils/svm/send'
 
-const useSVMSend: SendAdapterSVM = ({
-  fromAddress,
-  network,
-  maxFee,
-  nativeToken
-}) => {
+const useSVMSend: SendAdapterSVM = ({ fromAddress, network, account }) => {
   const { request } = useInAppRequest()
 
-  const { setIsSending, addressToSend, amount } = useSendContext()
+  const { setError, setIsSending, addressToSend, amount, canValidate } =
+    useSendContext()
 
   const [selectedToken] = useSendSelectedToken()
   const provider = useSVMProvider(network)
+
+  const handleError = useCallback(
+    (err: unknown) => {
+      if (err instanceof Error) {
+        setError(err.message)
+      } else {
+        setError(SendErrorMessage.UNKNOWN_ERROR)
+      }
+    },
+    [setError]
+  )
+
+  const validate = useCallback(async () => {
+    try {
+      assertNotUndefined(selectedToken)
+      validateSupportedToken(selectedToken)
+      assertNotUndefined(addressToSend)
+      assertNotUndefined(provider)
+      assertNotUndefined(network)
+
+      // Basic validation for SVM transactions
+      if (!amount || amount.toSubUnit() <= 0n) {
+        throw new Error(SendErrorMessage.AMOUNT_REQUIRED)
+      }
+
+      if (!addressToSend) {
+        throw new Error(SendErrorMessage.ADDRESS_REQUIRED)
+      }
+
+      setError(undefined)
+    } catch (err) {
+      handleError(err)
+    }
+  }, [
+    selectedToken,
+    addressToSend,
+    provider,
+    network,
+    amount,
+    setError,
+    handleError
+  ])
 
   const send = useCallback(async () => {
     try {
@@ -30,8 +68,6 @@ const useSVMSend: SendAdapterSVM = ({
       validateSupportedToken(selectedToken)
       setIsSending(true)
 
-      console.log('network', network.chainId)
-
       return await sendSVM({
         request,
         fromAddress,
@@ -39,8 +75,12 @@ const useSVMSend: SendAdapterSVM = ({
         token: selectedToken,
         toAddress: addressToSend,
         amount: amount?.toSubUnit(),
-        chainId: network.chainId
+        chainId: network.chainId,
+        account
       })
+    } catch (error) {
+      handleError(error)
+      throw error
     } finally {
       setIsSending(false)
     }
@@ -48,12 +88,20 @@ const useSVMSend: SendAdapterSVM = ({
     selectedToken,
     addressToSend,
     provider,
+    fromAddress,
     network,
     setIsSending,
     request,
-    fromAddress,
-    amount
+    amount,
+    handleError,
+    account
   ])
+
+  useEffect(() => {
+    if (canValidate) {
+      validate()
+    }
+  }, [validate, canValidate])
 
   return {
     maxAmount: undefined,

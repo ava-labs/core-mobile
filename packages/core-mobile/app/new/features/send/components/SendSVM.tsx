@@ -22,10 +22,9 @@ export const SendSVM = ({
 }): JSX.Element => {
   const { maxFee } = useSendContext()
   const [selectedToken] = useSendSelectedToken()
-  const fromAddress = '52C9T2T7JRojtxumYnYZhyUmrN7kqzvCLc4Ksvjk7TxD'
 
   const { send } = useSVMSend({
-    fromAddress,
+    fromAddress: account.addressSVM,
     network,
     maxFee,
     nativeToken,
@@ -39,7 +38,6 @@ export const SendSVM = ({
 
     try {
       const txHash = await send()
-
       onSuccess(txHash)
     } catch (error) {
       onFailure(error)

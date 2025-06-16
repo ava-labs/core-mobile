@@ -58,6 +58,7 @@ const ApprovalScreen = ({
       : selectActiveAccount
 
   const account = useSelector(accountSelector)
+
   const [submitting, setSubmitting] = useState(false)
   const [maxFeePerGas, setMaxFeePerGas] = useState<bigint | undefined>()
   const [maxPriorityFeePerGas, setMaxPriorityFeePerGas] = useState<
