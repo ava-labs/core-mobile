@@ -120,7 +120,7 @@ const Account = ({
     isBalanceLoaded,
     isFetchingBalance,
     fetchBalance
-  } = useBalanceForAccount(account.index)
+  } = useBalanceForAccount(account.id)
   const { formatCurrency } = useFormatCurrency()
 
   const renderBalance = useCallback(() => {
