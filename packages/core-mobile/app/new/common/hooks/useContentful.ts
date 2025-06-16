@@ -18,7 +18,7 @@ export type ParsedGraphQLResponse<T> = {
 export function getContentfulGraphQL(
   query: string,
   operationName: string,
-  variables: Record<string, any>
+  variables: Record<string, unknown>
 ): Request {
   try {
     return new Request(PROXY_ENDPOINT, {
