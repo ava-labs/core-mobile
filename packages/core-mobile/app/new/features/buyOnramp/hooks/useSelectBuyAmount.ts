@@ -16,7 +16,7 @@ import { LocalTokenWithBalance } from 'store/balance'
 import {
   PaymentMethodNames,
   ServiceProviderCategories,
-  ServiceProviders
+  ServiceProviderNames
 } from '../consts'
 import {
   useOnRampPaymentMethod,
@@ -32,7 +32,7 @@ import { useSearchDefaultsByCountry } from './useSearchDefaultsByCountry'
 export const useSelectBuyAmount = (): {
   isLoadingDefaultsByCountry: boolean
   paymentMethodToDisplay: string | undefined
-  serviceProviderToDisplay: ServiceProviders | undefined
+  serviceProviderToDisplay: ServiceProviderNames | undefined
   token?: CryptoCurrency & { tokenWithBalance: LocalTokenWithBalance }
   tokenBalance: TokenUnit | undefined
   isAboveMinimumPurchaseLimit: boolean
@@ -111,7 +111,7 @@ export const useSelectBuyAmount = (): {
   }, [paymentMethod])
 
   const serviceProviderToDisplay = useMemo(() => {
-    return serviceProvider ? ServiceProviders[serviceProvider] : undefined
+    return serviceProvider ? ServiceProviderNames[serviceProvider] : undefined
   }, [serviceProvider])
 
   const selectedPurchasingFiatCurrency = useMemo(() => {

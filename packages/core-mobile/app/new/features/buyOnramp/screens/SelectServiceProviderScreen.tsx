@@ -1,16 +1,14 @@
 import { ScrollScreen } from 'common/components/ScrollScreen'
 import React, { useCallback, useMemo } from 'react'
-import { View, GroupList, useTheme, Image } from '@avalabs/k2-alpine'
+import { View, GroupList } from '@avalabs/k2-alpine'
 import { useRouter } from 'expo-router'
 import { Space } from 'common/components/Space'
 import { useSearchServiceProviders } from '../hooks/useSearchServiceProviders'
 import { useOnRampServiceProvider } from '../store'
-import { ServiceProviderCategories, ServiceProviders } from '../consts'
+import { ServiceProviderCategories, ServiceProviderNames } from '../consts'
+import { ServiceProviderIcon } from '../components/ServiceProviderIcon'
 
 export const SelectServiceProviderScreen = (): React.JSX.Element => {
-  const {
-    theme: { isDark }
-  } = useTheme()
   const { back, canGoBack } = useRouter()
   const { data: serviceProviders } = useSearchServiceProviders({
     categories: [ServiceProviderCategories.CRYPTO_ONRAMP]
@@ -26,7 +24,7 @@ export const SelectServiceProviderScreen = (): React.JSX.Element => {
 
     return serviceProviders.map(serviceProvider => {
       return {
-        title: ServiceProviders[serviceProvider.serviceProvider],
+        title: ServiceProviderNames[serviceProvider.serviceProvider],
         onPress: () => {
           setOnRampServiceProvider(serviceProvider.serviceProvider)
           dismiss()
@@ -38,20 +36,14 @@ export const SelectServiceProviderScreen = (): React.JSX.Element => {
               borderRadius: 100,
               overflow: 'hidden'
             }}>
-            <Image
-              accessibilityRole="image"
-              sx={{ width: 27, height: 27 }}
-              source={{
-                uri: isDark
-                  ? serviceProvider.logos.dark
-                  : serviceProvider.logos.light
-              }}
+            <ServiceProviderIcon
+              serviceProvider={serviceProvider.serviceProvider}
             />
           </View>
         )
       }
     })
-  }, [dismiss, isDark, serviceProviders, setOnRampServiceProvider])
+  }, [dismiss, serviceProviders, setOnRampServiceProvider])
 
   return (
     <ScrollScreen

@@ -8,10 +8,6 @@ import {
 
 const zodEnum = <T extends string>(arr: T[]): [T, ...T[]] => arr as [T, ...T[]]
 
-const serviceProviderKeys = Object.keys(ServiceProviders) as Array<
-  keyof typeof ServiceProviders
->
-
 const paymentTypeKeys = Object.keys(PaymentTypes) as Array<
   keyof typeof PaymentTypes
 >
@@ -44,7 +40,7 @@ export const SearchCryptoCurrencySchema = object({
 }).passthrough()
 
 export const SearchServiceProviderSchema = object({
-  serviceProvider: z.enum(zodEnum(serviceProviderKeys)),
+  serviceProvider: z.nativeEnum(ServiceProviders),
   name: string(),
   status: string(),
   categories: z.enum(zodEnum(categoryKeys)).array(),
@@ -79,7 +75,7 @@ export const GetPurchaseLimitsSchema = object({
   maximumAmount: number(),
   meldDetails: AmountDetailsSchema.optional(),
   serviceProviderDetails: record(
-    z.enum(zodEnum(serviceProviderKeys)),
+    z.nativeEnum(ServiceProviders),
     AmountDetailsSchema
   ).optional()
 }).passthrough()
