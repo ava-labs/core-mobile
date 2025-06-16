@@ -10,8 +10,8 @@ export const useNewContactAvatar = createZustandStore<AvatarType | undefined>(
 )
 
 interface RecentAccountsState {
-  recentAccountIndexes: number[]
-  addRecentAccount: (accountIndex: number) => void
+  recentAccountIds: string[]
+  addRecentAccount: (accountId: string) => void
   deleteRecentAccounts: () => void
 }
 
@@ -19,19 +19,17 @@ interface RecentAccountsState {
 export const recentAccountsStore = create<RecentAccountsState>()(
   persist(
     set => ({
-      recentAccountIndexes: [],
-      addRecentAccount: (accountIndex: number) =>
+      recentAccountIds: [],
+      addRecentAccount: (accountId: string) =>
         set(state => ({
-          recentAccountIndexes: [
-            accountIndex,
-            ...state.recentAccountIndexes.filter(
-              index => index !== accountIndex
-            )
+          recentAccountIds: [
+            accountId,
+            ...state.recentAccountIds.filter(id => id !== accountId)
           ].slice(0, 5)
         })),
       deleteRecentAccounts: () =>
         set({
-          recentAccountIndexes: []
+          recentAccountIds: []
         })
     }),
     {

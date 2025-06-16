@@ -162,7 +162,7 @@ const Account = ({
   return (
     <>
       <View
-        key={account.index.toString()}
+        key={account.id}
         style={{
           flexDirection: 'row',
           alignItems: 'center',

@@ -10,10 +10,9 @@ import {
 import { AnyAction } from '@reduxjs/toolkit'
 import { WalletConnectCallbacks } from 'services/walletconnectv2/types'
 import { selectActiveNetwork, setActive } from 'store/network'
-import { selectActiveAccount, setActiveAccountIndex } from 'store/account'
+import { Account, selectActiveAccount, setActiveAccountId } from 'store/account'
 import { UPDATE_SESSION_DELAY } from 'consts/walletConnect'
 import { onRequest } from 'store/rpc/slice'
-import { CorePrimaryAccount } from '@avalabs/types'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { isCoreDomain } from 'store/rpc/handlers/wc_sessionRequest/utils'
 import { showSnackbar, transactionSnackbar } from 'new/common/utils/toast'
@@ -90,7 +89,7 @@ export const updateSessions = async ({
   account
 }: {
   chainId: number
-  account?: CorePrimaryAccount
+  account?: Account
 }): Promise<void> => {
   try {
     if (!account) return
@@ -154,7 +153,7 @@ export const handleNetworkChange = async (
 }
 
 export const handleAccountChange = async (
-  _: ReturnType<typeof setActiveAccountIndex>,
+  _: ReturnType<typeof setActiveAccountId>,
   listenerApi: AppListenerEffectAPI
 ): Promise<void> => {
   const state = listenerApi.getState()

@@ -5,7 +5,7 @@ import {
   toggleDeveloperMode
 } from 'store/settings/advanced'
 import { selectNetwork } from 'store/network'
-import { selectAccountByAddress, setActiveAccountIndex } from 'store/account'
+import { selectAccountByAddress, setActiveAccount } from 'store/account'
 
 export const handleProcessNotificationData = async (
   listenerApi: AppListenerEffectAPI,
@@ -13,6 +13,7 @@ export const handleProcessNotificationData = async (
 ): Promise<void> => {
   const state = listenerApi.getState()
   const dispatch = listenerApi.dispatch
+
   const isDeveloperMode = selectIsDeveloperMode(state)
 
   //maybe toggle testnet mode
@@ -29,10 +30,10 @@ export const handleProcessNotificationData = async (
   if ('accountAddress' in data && typeof data.accountAddress === 'string') {
     const account = selectAccountByAddress(data.accountAddress)(state)
     if (account) {
-      dispatch(setActiveAccountIndex(account.index))
+      await dispatch(setActiveAccount(account.id)).unwrap()
     }
   }
-  if ('accountIndex' in data && typeof data.accountIndex === 'number') {
-    dispatch(setActiveAccountIndex(data.accountIndex))
+  if ('accountId' in data && typeof data.accountId === 'string') {
+    await dispatch(setActiveAccount(data.accountId)).unwrap()
   }
 }
