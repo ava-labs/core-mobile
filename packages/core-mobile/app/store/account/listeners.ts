@@ -81,7 +81,8 @@ const initAccounts = async (
         addressBtc: acc.addressBTC,
         addressAVM: acc.addressAVM ?? '',
         addressPVM: acc.addressPVM ?? '',
-        addressCoreEth: acc.addressCoreEth ?? ''
+        addressCoreEth: acc.addressCoreEth ?? '',
+        addressSVM: acc.addressSVM ?? ''
       }))
     })
   }
