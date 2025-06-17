@@ -1,4 +1,5 @@
 import * as cs from '@cubist-labs/cubesigner-sdk'
+import { Curve } from 'utils/publicKeys'
 import CoreSeedlessAPIService from '../CoreSeedlessAPIService'
 import SeedlessWallet from './SeedlessWallet'
 
@@ -27,7 +28,7 @@ describe('SeedlessWallet', () => {
       },
       [
         {
-          curve: 'secp256k1',
+          curve: Curve.Secp256k1,
           derivationPath: "m/44'/60'/0'/0/0",
           key: 'testPublicKey'
         }
@@ -50,7 +51,7 @@ describe('SeedlessWallet', () => {
       },
       [
         {
-          curve: 'secp256k1',
+          curve: Curve.Secp256k1,
           derivationPath: "m/44'/60'/0'/0/0",
           key: 'testPublicKey'
         }
@@ -131,7 +132,7 @@ describe('SeedlessWallet', () => {
       // @ts-ignore
       const walletWithMockClient = new SeedlessWallet(client, [
         {
-          curve: 'secp256k1',
+          curve: Curve.Secp256k1,
           derivationPath: "m/44'/60'/0'/0/0",
           key: 'testPublicKey'
         }
@@ -152,7 +153,7 @@ describe('SeedlessWallet', () => {
       // @ts-ignore
       const walletWithMockClient = new SeedlessWallet(client, [
         {
-          curve: 'secp256k1',
+          curve: Curve.Secp256k1,
           derivationPath: "m/44'/60'/0'/0/0",
           key: 'testWrongPublicKey'
         }

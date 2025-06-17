@@ -14,7 +14,10 @@ export const findPublicKey =
   (path: string, curve: Curve) => (pk: AddressPublicKey) =>
     pk.derivationPath === path && pk.curve === curve
 
-export type Curve = 'secp256k1' | 'ed25519'
+export enum Curve {
+  Secp256k1 = 'secp256k1',
+  Ed25519 = 'ed25519'
+}
 export const EVM_BASE_DERIVATION_PATH_PREFIX = "m/44'/60'/"
 
 export type AddressPublicKey = {
@@ -28,3 +31,6 @@ export type SeedlessPublicKeys = {
 }
 
 export type PickKeys<T, K extends (keyof T)[]> = Omit<T, K[number]>
+
+export const isEvmPublicKey = (publicKey: AddressPublicKey): boolean =>
+  publicKey.derivationPath.startsWith(EVM_BASE_DERIVATION_PATH_PREFIX)

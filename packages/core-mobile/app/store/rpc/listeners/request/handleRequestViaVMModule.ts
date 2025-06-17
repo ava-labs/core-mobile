@@ -72,7 +72,8 @@ export const handleRequestViaVMModule = async ({
   const params = request.data.params.request.params
   const method = request.method as unknown as VmModuleRpcMethod
 
-  const context = await getContext(method, params, activeAccount)
+  const context =
+    request.context ?? (await getContext(method, params, activeAccount))
 
   const response = await module.onRpcRequest(
     {
@@ -86,7 +87,7 @@ export const handleRequestViaVMModule = async ({
       },
       method,
       params,
-      context: request.context ?? context
+      context
     },
     mapToVmNetwork(network)
   )

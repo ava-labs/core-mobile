@@ -7,7 +7,7 @@ import { deserializeJson } from 'utils/serialization/deserialize'
 
 export enum KeySlot {
   SignerSessionData = 'SignerSessionData',
-  SeedlessPubKeys = 'SeedlessPubKeysNew',
+  SeedlessPubKeys = 'SeedlessPubKeysV2',
   OidcProvider = 'OidcProvider',
   OidcUserId = 'OidcUserId'
 }

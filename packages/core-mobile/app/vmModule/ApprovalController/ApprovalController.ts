@@ -17,6 +17,7 @@ import { isInAppRequest } from 'store/rpc/utils/isInAppRequest'
 import { RequestContext } from 'store/rpc/types'
 import { NavigationPresentationMode } from 'new/common/types'
 import WalletService from 'services/wallet/WalletService'
+import { Curve } from 'utils/publicKeys'
 import { avalancheSignTransaction } from '../handlers/avalancheSignTransaction'
 import { ethSendTransaction } from '../handlers/ethSendTransaction'
 import { signMessage } from '../handlers/signMessage'
@@ -30,11 +31,11 @@ class ApprovalController implements VmModuleApprovalController {
   }: RequestPublicKeyParams): Promise<string> {
     if (derivationPath === undefined) {
       return Promise.reject(
-        rpcErrors.invalidParams('derivationPath required to get public key')
+        rpcErrors.invalidParams('derivationPath is required to get public key')
       )
     }
 
-    return WalletService.getPublicKeyFor(derivationPath, curve)
+    return WalletService.getPublicKeyFor(derivationPath, curve as Curve)
   }
 
   onTransactionPending({ request }: { request: RpcRequest }): void {

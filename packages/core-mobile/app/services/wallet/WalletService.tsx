@@ -37,7 +37,7 @@ import {
 import { UTCDate } from '@date-fns/utc'
 import { nanoToWei } from 'utils/units/converter'
 import { SpanName } from 'services/sentry/types'
-import { Curve, EVM_BASE_DERIVATION_PATH_PREFIX } from 'utils/publicKeys'
+import { Curve, isEvmPublicKey } from 'utils/publicKeys'
 import ModuleManager from 'vmModule/ModuleManager'
 import { isAvalancheTransactionRequest, isBtcTransactionRequest } from './utils'
 import WalletInitializer from './WalletInitializer'
@@ -178,9 +178,7 @@ class WalletService {
   ): Promise<Record<NetworkVMType, string>> {
     if (this.walletType === WalletType.SEEDLESS) {
       const storedPubKeys = await SeedlessPubKeysStorage.retrieve()
-      const pubKeys = storedPubKeys.filter(pubKey =>
-        pubKey.derivationPath.startsWith(EVM_BASE_DERIVATION_PATH_PREFIX)
-      )
+      const pubKeys = storedPubKeys.filter(isEvmPublicKey)
 
       // create next account only if it doesn't exist yet
       if (!pubKeys[accountIndex]) {
@@ -243,11 +241,11 @@ class WalletService {
 
     const evmPublicKey = await wallet.getPublicKeyFor(
       derivationPathEVM,
-      'secp256k1'
+      Curve.Secp256k1
     )
     const xpPublicKey = await wallet.getPublicKeyFor(
       derivationPathAVM,
-      'secp256k1'
+      Curve.Secp256k1
     )
 
     return {

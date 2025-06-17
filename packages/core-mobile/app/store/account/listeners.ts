@@ -11,7 +11,7 @@ import { SeedlessPubKeysStorage } from 'seedless/services/storage/SeedlessPubKey
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import SeedlessService from 'seedless/services/SeedlessService'
 import { recentAccountsStore } from 'new/features/accountSettings/store'
-import { EVM_BASE_DERIVATION_PATH_PREFIX } from 'utils/publicKeys'
+import { isEvmPublicKey } from 'utils/publicKeys'
 import { Secp256k1 } from '@cubist-labs/cubesigner-sdk'
 import { selectActiveNetwork } from 'store/network'
 import { Network } from '@avalabs/core-chains-sdk'
@@ -107,9 +107,7 @@ const fetchRemainingAccounts = async ({
   const state = listenerApi.getState()
   const activeNetwork = selectActiveNetwork(state)
   const pubKeys = await SeedlessPubKeysStorage.retrieve()
-  const numberOfAccounts = pubKeys.filter(pubKey =>
-    pubKey.derivationPath.startsWith(EVM_BASE_DERIVATION_PATH_PREFIX)
-  ).length
+  const numberOfAccounts = pubKeys.filter(isEvmPublicKey).length
 
   const accounts: AccountCollection = {}
   const targetKeys = await SeedlessService.getSessionKeysList(Secp256k1.Ava)

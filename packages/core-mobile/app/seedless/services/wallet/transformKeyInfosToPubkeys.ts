@@ -1,19 +1,21 @@
 import * as cs from '@cubist-labs/cubesigner-sdk'
 import { strip0x } from '@avalabs/core-utils-sdk'
-import { AddressPublicKey } from 'utils/publicKeys'
+import { AddressPublicKey, Curve } from 'utils/publicKeys'
 
 export const transformKeyInfosToPubKeys = (
   keyInfos: cs.KeyInfo[]
   // eslint-disable-next-line sonarjs/cognitive-complexity
 ): AddressPublicKey[] => {
-  const requiredKeyTypes: cs.KeyTypeApi[] = [cs.Secp256k1.Evm, cs.Secp256k1.Ava]
-  const optionalKeyTypes: cs.KeyTypeApi[] = [cs.Ed25519.Solana]
-  const allowedKeyTypes = [...requiredKeyTypes, ...optionalKeyTypes]
+  const keyTypes: cs.KeyTypeApi[] = [
+    cs.Secp256k1.Evm,
+    cs.Secp256k1.Ava,
+    cs.Ed25519.Solana
+  ]
   const keys = keyInfos
     ?.filter(
       k =>
         k.enabled &&
-        allowedKeyTypes.includes(k.key_type) &&
+        keyTypes.includes(k.key_type) &&
         k.derivation_info?.derivation_path
     )
     .reduce((acc, key) => {
@@ -52,7 +54,7 @@ export const transformKeyInfosToPubKeys = (
 
   // We only look for key sets that contain all of the required key types.
   const validKeySets = allDerivedKeySets.filter(keySet => {
-    return keySet.every(key => requiredKeyTypes.every(type => key[type]))
+    return keySet.every(key => keyTypes.every(type => key[type]))
   })
 
   if (!validKeySets[0]) {
@@ -77,12 +79,12 @@ export const transformKeyInfosToPubKeys = (
 
     pubkeys.push(
       {
-        curve: 'secp256k1',
+        curve: Curve.Secp256k1,
         derivationPath: key[cs.Secp256k1.Evm].derivation_info.derivation_path,
         key: strip0x(key[cs.Secp256k1.Evm].public_key)
       },
       {
-        curve: 'secp256k1',
+        curve: Curve.Secp256k1,
         derivationPath: key[cs.Secp256k1.Ava].derivation_info.derivation_path,
         key: strip0x(key[cs.Secp256k1.Ava].public_key)
       }
@@ -90,7 +92,7 @@ export const transformKeyInfosToPubKeys = (
 
     if (key[cs.Ed25519.Solana]?.derivation_info?.derivation_path) {
       pubkeys.push({
-        curve: 'ed25519',
+        curve: Curve.Ed25519,
         derivationPath: key[cs.Ed25519.Solana].derivation_info.derivation_path,
         key: strip0x(key[cs.Ed25519.Solana].public_key)
       })

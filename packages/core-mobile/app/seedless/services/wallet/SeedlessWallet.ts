@@ -32,11 +32,7 @@ import {
 } from '@avalabs/vm-module-types'
 import { isTypedData, isTypedDataV1 } from '@avalabs/evm-module'
 import { stripChainAddress } from 'store/account/utils'
-import {
-  AddressPublicKey,
-  Curve,
-  EVM_BASE_DERIVATION_PATH_PREFIX
-} from 'utils/publicKeys'
+import { AddressPublicKey, Curve, isEvmPublicKey } from 'utils/publicKeys'
 import { findPublicKey } from 'utils/publicKeys'
 import CoreSeedlessAPIService from '../CoreSeedlessAPIService'
 import { SeedlessBtcSigner } from './SeedlessBtcSigner'
@@ -372,9 +368,7 @@ export default class SeedlessWallet implements Wallet {
   }
 
   private getAddressPublicKey(accountIndex: number): string {
-    const publicKeys = this.#addressPublicKeys.filter(pubKey =>
-      pubKey.derivationPath.startsWith(EVM_BASE_DERIVATION_PATH_PREFIX)
-    )
+    const publicKeys = this.#addressPublicKeys.filter(isEvmPublicKey)
 
     if (
       accountIndex < 0 ||

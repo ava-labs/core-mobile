@@ -104,12 +104,9 @@ class ModuleManager {
   }
 
   /**
-   * @param param0 walletType
-   * @param param1 accountIndex
-   * @param param2 xpub
-   * @param param3 xpubXP
-   * @param param4 isTestnet
-   * @returns EVM, AVM, PVM and Bitcoin addresses
+   * @param param0 accountIndex
+   * @param param1 network
+   * @returns EVM, AVM, PVM, SVM and Bitcoin addresses
    */
   deriveAddresses = async ({
     accountIndex,
