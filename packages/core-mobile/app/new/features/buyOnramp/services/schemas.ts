@@ -91,28 +91,6 @@ export const CreateCryptoQuoteBodySchema = object({
   subdivision: string().optional()
 }).passthrough()
 
-export type Quote = {
-  transactionType: string
-  sourceAmount: number
-  sourceAmountWithoutFees: number
-  fiatAmountWithoutFees: number
-  destinationAmountWithoutFees?: number
-  sourceCurrencyCode: string
-  countryCode: string
-  totalFee: number
-  networkFee: number
-  transactionFee: number
-  destinationAmount: number
-  destinationCurrencyCode: string
-  exchangeRate: number
-  paymentMethodType: PaymentMethods
-  serviceProvider: ServiceProviders
-  customerScore: number
-  institutionName?: string
-  lowKyc: boolean
-  partnerFee: number
-}
-
 export const QuoteSchema = object({
   transactionType: string(),
   sourceAmount: number(),

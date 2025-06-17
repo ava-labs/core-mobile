@@ -1,7 +1,10 @@
 import { useQuery, UseQueryResult } from '@tanstack/react-query'
 import { ReactQueryKeys } from 'consts/reactQueryKeys'
 import MeldService from '../services/MeldService'
-import { CreateCryptoQuote, CreateCryptoQuoteParams } from '../types'
+import {
+  CreateCryptoQuote,
+  CreateCryptoQuoteWithoutCountryCodeParams
+} from '../types'
 import { ServiceProviderCategories } from '../consts'
 import { useLocale } from './useLocale'
 import { useSearchServiceProviders } from './useSearchServiceProviders'
@@ -11,7 +14,7 @@ export const useCreateCryptoQuote = ({
   sourceAmount,
   destinationCurrencyCode,
   sourceCurrencyCode
-}: CreateCryptoQuoteParams): UseQueryResult<
+}: CreateCryptoQuoteWithoutCountryCodeParams): UseQueryResult<
   CreateCryptoQuote | undefined,
   Error
 > => {
