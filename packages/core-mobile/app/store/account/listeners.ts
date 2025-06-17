@@ -39,12 +39,10 @@ const initAccounts = async (
   const walletType = selectWalletType(state)
   const walletName = selectWalletName(state)
   let accounts: AccountCollection = {}
-  let accounts: AccountCollection = {}
 
   if (walletType === WalletType.SEEDLESS) {
     const acc = await accountService.createNextAccount({
       index: 0,
-      activeAccountIndex: 0,
       activeAccountIndex: 0,
       walletType,
       network: activeNetwork
@@ -129,7 +127,6 @@ const fetchRemainingAccounts = async ({
   const numberOfAccounts = pubKeys.filter(isEvmPublicKey).length
 
   const accounts: AccountCollection = {}
-  const targetKeys = await SeedlessService.getSessionKeysList(Secp256k1.Ava)
   // fetch the remaining accounts in the background
   for (let i = startIndex; i < numberOfAccounts; i++) {
     const acc = await accountService.createNextAccount({
@@ -138,7 +135,7 @@ const fetchRemainingAccounts = async ({
       walletType,
       network: activeNetwork
     })
-    const title = await SeedlessService.getAccountName(i, targetKeys)
+    const title = await SeedlessService.getAccountName(i)
     const accountTitle = title ?? acc.name
     accounts[acc.index] = { ...acc, name: accountTitle }
   }
