@@ -1,4 +1,20 @@
-import { object, record, string, number } from 'zod'
+import { object, record, string, number, z } from 'zod'
+import {
+  PaymentMethods,
+  PaymentTypes,
+  ServiceProviderCategories,
+  ServiceProviders
+} from '../consts'
+
+const zodEnum = <T extends string>(arr: T[]): [T, ...T[]] => arr as [T, ...T[]]
+
+const paymentTypeKeys = Object.keys(PaymentTypes) as Array<
+  keyof typeof PaymentTypes
+>
+
+const categoryKeys = Object.keys(ServiceProviderCategories) as Array<
+  keyof typeof ServiceProviderCategories
+>
 
 export const SearchCountrySchema = object({
   countryCode: string(),
@@ -15,20 +31,20 @@ export const SearchFiatCurrencySchema = object({
 
 export const SearchCryptoCurrencySchema = object({
   currencyCode: string().nullable().optional(),
-  name: string(),
-  chainCode: string(),
-  chainName: string(),
-  chainId: string().nullable(),
-  contractAddress: string().nullable(),
-  symbolImageUrl: string().nullable()
+  name: string().nullable().optional(),
+  chainCode: string().nullable().optional(),
+  chainName: string().nullable().optional(),
+  chainId: string().nullable().optional(),
+  contractAddress: string().nullable().optional(),
+  symbolImageUrl: string().nullable().optional()
 }).passthrough()
 
 export const SearchServiceProviderSchema = object({
-  serviceProvider: string(),
+  serviceProvider: z.nativeEnum(ServiceProviders),
   name: string(),
   status: string(),
-  categories: string().array(),
-  categoryStatuses: record(string(), string()),
+  categories: z.enum(zodEnum(categoryKeys)).array(),
+  categoryStatuses: record(z.enum(zodEnum(categoryKeys)), string()),
   websiteUrl: string().nullable(),
   customerSupportUrl: string().nullable(),
   logos: object({
@@ -42,7 +58,7 @@ export const SearchServiceProviderSchema = object({
 export const SearchDefaultsByCountrySchema = object({
   countryCode: string(),
   defaultCurrencyCode: string(),
-  defaultPaymentMethods: string().array()
+  defaultPaymentMethods: z.nativeEnum(PaymentMethods).array()
 }).passthrough()
 
 const AmountDetailsSchema = object({
@@ -58,5 +74,18 @@ export const GetPurchaseLimitsSchema = object({
   minimumAmount: number(),
   maximumAmount: number(),
   meldDetails: AmountDetailsSchema.optional(),
-  serviceProviderDetails: record(string(), AmountDetailsSchema).optional()
+  serviceProviderDetails: record(
+    z.nativeEnum(ServiceProviders),
+    AmountDetailsSchema
+  ).optional()
+}).passthrough()
+
+export const SearchPaymentMethodsSchema = object({
+  paymentMethod: z.nativeEnum(PaymentMethods),
+  name: string(),
+  paymentType: z.enum(zodEnum(paymentTypeKeys)),
+  logos: object({
+    dark: string(),
+    light: string()
+  })
 }).passthrough()

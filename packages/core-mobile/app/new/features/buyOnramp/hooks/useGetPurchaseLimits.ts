@@ -30,6 +30,7 @@ export const useGetPurchaseLimits = ({
   )
   const { countryCode } = useLocale()
   return useQuery({
+    enabled: !!serviceProviders,
     queryKey: [
       ReactQueryKeys.MELD_GET_PURCHASE_LIMITS,
       categories,
