@@ -9,15 +9,16 @@ import { ServiceProviderCategories, ServiceProviderNames } from '../consts'
 import { ServiceProviderIcon } from '../components/ServiceProviderIcon'
 
 export const SelectServiceProviderScreen = (): React.JSX.Element => {
-  const { back, canGoBack } = useRouter()
+  const { back, canGoBack, dismissAll } = useRouter()
   const { data: serviceProviders } = useSearchServiceProviders({
     categories: [ServiceProviderCategories.CRYPTO_ONRAMP]
   })
   const [_, setOnRampServiceProvider] = useOnRampServiceProvider()
 
   const dismiss = useCallback(() => {
-    canGoBack() && back()
-  }, [back, canGoBack])
+    dismissAll() // dismiss to top of the selectPaymentMethod stack
+    canGoBack() && back() // dismiss initial selectPaymentMethod screen
+  }, [back, canGoBack, dismissAll])
 
   const data = useMemo(() => {
     if (!serviceProviders) return []

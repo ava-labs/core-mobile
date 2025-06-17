@@ -31,6 +31,7 @@ import { useSearchDefaultsByCountry } from './useSearchDefaultsByCountry'
 
 export const useSelectBuyAmount = (): {
   isLoadingDefaultsByCountry: boolean
+  isLoadingPurchaseLimits: boolean
   paymentMethodToDisplay: string | undefined
   serviceProviderToDisplay: string | undefined
   token?: CryptoCurrency & { tokenWithBalance: LocalTokenWithBalance }
@@ -50,13 +51,14 @@ export const useSelectBuyAmount = (): {
   const [onrampToken] = useOnRampToken()
   const [serviceProvider, setServiceProvider] = useOnRampServiceProvider()
   const [paymentMethod, setPaymentMethod] = useOnRampPaymentMethod()
-  const { data: purchaseLimits } = useGetPurchaseLimits({
-    categories: [ServiceProviderCategories.CRYPTO_ONRAMP],
-    fiatCurrencies: [selectedCurrency],
-    cryptoCurrencyCodes: onrampToken?.currencyCode
-      ? [onrampToken?.currencyCode]
-      : undefined
-  })
+  const { data: purchaseLimits, isLoading: isLoadingPurchaseLimits } =
+    useGetPurchaseLimits({
+      categories: [ServiceProviderCategories.CRYPTO_ONRAMP],
+      fiatCurrencies: [selectedCurrency],
+      cryptoCurrencyCodes: onrampToken?.currencyCode
+        ? [onrampToken?.currencyCode]
+        : undefined
+    })
   const { countryCode } = useLocale()
   const { getFromPopulatedNetwork } = useNetworks()
   const { getMarketTokenBySymbol } = useWatchlist()
@@ -196,6 +198,7 @@ export const useSelectBuyAmount = (): {
     tokenBalance,
     isAboveMinimumPurchaseLimit,
     isBelowMaximumPurchaseLimit,
-    isLoadingDefaultsByCountry
+    isLoadingDefaultsByCountry,
+    isLoadingPurchaseLimits
   }
 }

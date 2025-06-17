@@ -34,7 +34,8 @@ export const SelectBuyAmountScreen = (): React.JSX.Element => {
     tokenBalance,
     isAboveMinimumPurchaseLimit,
     isBelowMaximumPurchaseLimit,
-    isLoadingDefaultsByCountry
+    isLoadingDefaultsByCountry,
+    isLoadingPurchaseLimits
   } = useSelectBuyAmount()
   const { formatIntegerCurrency, formatCurrency } = useFormatCurrency()
   const { navigate } = useRouter()
@@ -202,6 +203,7 @@ export const SelectBuyAmountScreen = (): React.JSX.Element => {
           isAmountValid={
             isBelowMaximumPurchaseLimit && isAboveMinimumPurchaseLimit
           }
+          disabled={isLoadingPurchaseLimits}
           sx={{ marginTop: 12 }}
           currency={selectedCurrency}
           amount={amount}
