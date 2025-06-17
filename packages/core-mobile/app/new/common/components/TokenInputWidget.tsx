@@ -1,4 +1,6 @@
-import React, { useCallback, useEffect, useState } from 'react'
+import { formatTokenAmount } from '@avalabs/core-bridge-sdk'
+import { Network } from '@avalabs/core-chains-sdk'
+import { bigintToBig } from '@avalabs/core-utils-sdk'
 import {
   ActivityIndicator,
   Button,
@@ -7,13 +9,16 @@ import {
   Text,
   TokenAmount,
   TokenAmountInput,
+  TokenAmountInputRef,
   TouchableOpacity,
   useTheme,
   View
 } from '@avalabs/k2-alpine'
-import { Network } from '@avalabs/core-chains-sdk'
-import { formatTokenAmount } from '@avalabs/core-bridge-sdk'
-import { bigintToBig } from '@avalabs/core-utils-sdk'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
+import {
+  NativeSyntheticEvent,
+  TextInputSelectionChangeEventData
+} from 'react-native'
 import Animated, {
   Easing,
   FadeIn,
@@ -68,6 +73,43 @@ export const TokenInputWidget = ({
   const [percentageButtons, setPercentageButtons] = useState<
     PercentageButton[]
   >([])
+  const [selection, setSelection] = useState<
+    | {
+        start: number
+        end: number
+      }
+    | undefined
+  >(undefined)
+
+  const inputRef = useRef<TokenAmountInputRef>(null)
+
+  const onSelectionChange = (
+    e: NativeSyntheticEvent<TextInputSelectionChangeEventData>
+  ): void => {
+    setSelection({
+      start: e.nativeEvent.selection.start,
+      end: e.nativeEvent.selection.end
+    })
+  }
+
+  const updateCursorPosition = useCallback(() => {
+    const decimalIndex = inputRef.current?.valueAsString.indexOf('.')
+    if (decimalIndex !== undefined) {
+      setTimeout(() => {
+        setSelection({ start: 0, end: 0 })
+
+        setTimeout(() => {
+          setSelection({
+            start: decimalIndex,
+            end: decimalIndex
+          })
+          setTimeout(() => {
+            setSelection(undefined)
+          }, 50)
+        }, 50)
+      }, 0)
+    }
+  }, [])
 
   const handlePressPercentageButton = (
     button: PercentageButton,
@@ -86,6 +128,8 @@ export const TokenInputWidget = ({
         i === index ? { ...b, isSelected: true } : { ...b, isSelected: false }
       )
     )
+
+    updateCursorPosition()
   }
 
   const handleAmountChange = useCallback(
@@ -202,10 +246,12 @@ export const TokenInputWidget = ({
                     sx={{ alignItems: 'flex-end' }}
                     pointerEvents={token === undefined ? 'none' : 'auto'}>
                     <TokenAmountInput
+                      ref={inputRef}
                       testID="token_amount_input_field"
                       autoFocus={autoFocus}
                       editable={editable}
                       denomination={token?.decimals ?? 0}
+                      selection={selection}
                       style={{
                         fontFamily: 'Aeonik-Medium',
                         fontSize: 42,
@@ -217,6 +263,7 @@ export const TokenInputWidget = ({
                             ? colors.$textPrimary
                             : colors.$textSecondary)
                       }}
+                      onSelectionChange={onSelectionChange}
                       value={amount}
                       onChange={handleAmountChange}
                       onFocus={handleFocus}
