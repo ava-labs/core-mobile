@@ -105,8 +105,8 @@ export const TokenInputWidget = ({
           })
           setTimeout(() => {
             setSelection(undefined)
-          }, 50)
-        }, 50)
+          }, 150)
+        }, 150)
       }, 0)
     }
   }, [])
