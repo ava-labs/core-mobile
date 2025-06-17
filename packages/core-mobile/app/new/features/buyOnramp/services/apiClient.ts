@@ -3,6 +3,8 @@ import Config from 'react-native-config'
 import { z } from 'zod'
 import Logger from 'utils/Logger'
 import {
+  CreateCryptoQuoteBodySchema,
+  CreateCryptoQuoteSchema,
   GetPurchaseLimitsSchema,
   SearchCountrySchema,
   SearchCryptoCurrencySchema,
@@ -184,6 +186,19 @@ export const meldApiClient = new Zodios(
       ],
       alias: 'getPaymentMethods',
       response: z.array(SearchPaymentMethodsSchema)
+    },
+    {
+      method: 'post',
+      path: '/payments/crypto/quote',
+      parameters: [
+        {
+          name: 'body',
+          type: 'Body',
+          schema: CreateCryptoQuoteBodySchema
+        }
+      ],
+      alias: 'createCryptoQuotes',
+      response: CreateCryptoQuoteSchema
     }
   ],
   {

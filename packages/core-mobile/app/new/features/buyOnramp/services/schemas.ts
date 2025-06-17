@@ -1,4 +1,4 @@
-import { object, record, string, number, z } from 'zod'
+import { object, record, string, number, z, boolean } from 'zod'
 import {
   PaymentMethods,
   PaymentTypes,
@@ -79,3 +79,65 @@ export const SearchPaymentMethodsSchema = object({
     light: string()
   })
 }).passthrough()
+
+export const CreateCryptoQuoteBodySchema = object({
+  serviceProviders: z.nativeEnum(ServiceProviders).array().optional(),
+  walletAddress: string().optional(),
+  sourceAmount: number().optional(),
+  sourceCurrencyCode: string(),
+  destinationCurrencyCode: string(),
+  countryCode: string(),
+  paymentMethodType: z.nativeEnum(PaymentMethods).optional(),
+  subdivision: string().optional()
+}).passthrough()
+
+export type Quote = {
+  transactionType: string
+  sourceAmount: number
+  sourceAmountWithoutFees: number
+  fiatAmountWithoutFees: number
+  destinationAmountWithoutFees?: number
+  sourceCurrencyCode: string
+  countryCode: string
+  totalFee: number
+  networkFee: number
+  transactionFee: number
+  destinationAmount: number
+  destinationCurrencyCode: string
+  exchangeRate: number
+  paymentMethodType: PaymentMethods
+  serviceProvider: ServiceProviders
+  customerScore: number
+  institutionName?: string
+  lowKyc: boolean
+  partnerFee: number
+}
+
+export const QuoteSchema = object({
+  transactionType: string(),
+  sourceAmount: number(),
+  sourceAmountWithoutFees: number(),
+  fiatAmountWithoutFees: number(),
+  destinationAmountWithoutFees: number().optional().nullable(),
+  sourceCurrencyCode: string(),
+  countryCode: string(),
+  totalFee: number(),
+  networkFee: number(),
+  transactionFee: number(),
+  destinationAmount: number(),
+  destinationCurrencyCode: string(),
+  exchangeRate: number(),
+  paymentMethodType: z.nativeEnum(PaymentMethods),
+  serviceProvider: z.nativeEnum(ServiceProviders),
+  customerScore: number(),
+  institutionName: string().optional().nullable(),
+  lowKyc: boolean(),
+  partnerFee: number()
+})
+
+export const CreateCryptoQuoteSchema = object({
+  quotes: z.array(QuoteSchema),
+  message: string().optional().nullable(),
+  error: string().optional().nullable(),
+  timestamp: string().optional().nullable()
+})

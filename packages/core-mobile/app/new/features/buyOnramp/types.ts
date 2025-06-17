@@ -6,7 +6,9 @@ import {
   SearchServiceProviderSchema,
   SearchDefaultsByCountrySchema,
   GetPurchaseLimitsSchema,
-  SearchPaymentMethodsSchema
+  SearchPaymentMethodsSchema,
+  CreateCryptoQuoteSchema,
+  CreateCryptoQuoteBodySchema
 } from './services/schemas'
 import { ServiceProviderCategories } from './consts'
 
@@ -19,6 +21,11 @@ export type SearchDefaultsByCountry = z.infer<
 >
 export type GetPurchaseLimits = z.infer<typeof GetPurchaseLimitsSchema>
 export type SearchPaymentMethods = z.infer<typeof SearchPaymentMethodsSchema>
+export type CreateCryptoQuote = z.infer<typeof CreateCryptoQuoteSchema>
+
+export type CreateCryptoQuoteParams = z.infer<
+  typeof CreateCryptoQuoteBodySchema
+>
 
 export type MeldDefaultParams = {
   categories: ServiceProviderCategories[]

@@ -24,10 +24,11 @@ import {
   useOnRampSourceAmount,
   useOnRampToken
 } from '../store'
-import { Quote, useCreateCryptoQuote } from '../hooks/useCreateCryptoQuote'
+import { useCreateCryptoQuote } from '../hooks/useCreateCryptoQuote'
 import { selectSelectedCurrency } from '../../../../store/settings/currency/slice'
 import { useSearchServiceProviders } from '../hooks/useSearchServiceProviders'
 import { ServiceProviderCategories } from '../consts'
+import { Quote } from '../services/schemas'
 
 const NEW_QUOTE_TIME = 60
 const IMAGE_SIZE = 36
