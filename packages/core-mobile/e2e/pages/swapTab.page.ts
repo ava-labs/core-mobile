@@ -62,6 +62,10 @@ class SwapTabPage {
     return by.id(swapTab.selectTokenTitle)
   }
 
+  get errorMsg() {
+    return by.id(swapTab.errorMsg)
+  }
+
   async tapAvaxToken() {
     return Actions.tapElementAtIndex(this.avaxToken, 0)
   }
@@ -114,6 +118,21 @@ class SwapTabPage {
     return (parseFloat(amount) * 10).toFixed(10).replace(/\.?0+$/, '')
   }
 
+  async enterAmountAndAdjust(amount: string) {
+    await commonElsPage.enterAmount(amount)
+    let tryCount = 5
+    let newAmount = amount
+
+    while ((await Actions.isVisible(this.errorMsg, 0, 2000)) || tryCount) {
+      newAmount = await this.adjustAmount(newAmount)
+      await commonElsPage.enterAmount(newAmount)
+      tryCount--
+      if (await Actions.isVisible(commonElsPage.nextButton, 0, 1000)) {
+        break
+      }
+    }
+  }
+
   async swap(from: string, to: string, amount = '0.000001') {
     // Go to swap form
     await portfolioPage.tapSwap()
@@ -132,7 +151,7 @@ class SwapTabPage {
     }
 
     // Enter input
-    await commonElsPage.enterAmount(amount)
+    await this.enterAmountAndAdjust(amount)
     await commonElsPage.tapNextButton()
 
     // If `from` is not AVAX, we need to approve the spend limit

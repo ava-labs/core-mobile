@@ -13,5 +13,6 @@ export default {
   rejectBtn: 'reject_button',
   tokenSpendApproval: 'Do you approve this spend limit?',
   swapTitle: 'Swap',
-  selectTokenTitle: 'select_token_title'
+  selectTokenTitle: 'select_token_title',
+  errorMsg: 'error_msg'
 }

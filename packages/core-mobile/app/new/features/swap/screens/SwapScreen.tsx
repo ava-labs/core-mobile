@@ -528,6 +528,7 @@ export const SwapScreen = (): JSX.Element => {
       {errorMessage && (
         <Animated.View entering={FadeIn} exiting={FadeOut}>
           <Text
+            testID="error_msg"
             variant="caption"
             sx={{
               color: '$textDanger',
