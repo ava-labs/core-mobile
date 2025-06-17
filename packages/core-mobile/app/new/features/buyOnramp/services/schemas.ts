@@ -122,7 +122,7 @@ export const QuoteSchema = object({
   sourceCurrencyCode: string(),
   countryCode: string(),
   totalFee: number(),
-  networkFee: number(),
+  networkFee: number().nullable().optional(),
   transactionFee: number(),
   destinationAmount: number(),
   destinationCurrencyCode: string(),
