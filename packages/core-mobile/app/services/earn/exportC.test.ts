@@ -6,6 +6,7 @@ import { Avalanche } from '@avalabs/core-wallets-sdk'
 import { avaxSerial, EVM, UnsignedTx, utils } from '@avalabs/avalanchejs'
 import mockNetworks from 'tests/fixtures/networks.json'
 import { Network } from '@avalabs/core-chains-sdk'
+import { WalletType } from 'services/wallet/types'
 
 const testCBaseFeeMultiplier = 1
 
@@ -62,6 +63,8 @@ describe('earn/exportC', () => {
     it('should fail if cChainBalance is less than required amount', async () => {
       await expect(async () => {
         await exportC({
+          walletId: 'wallet-1',
+          walletType: WalletType.MNEMONIC,
           cChainBalanceWei: BigInt(1e18),
           requiredAmountWei: BigInt(10e18),
           isDevMode: false,
@@ -73,6 +76,8 @@ describe('earn/exportC', () => {
 
     it('should call avaxProvider.getApiC().getBaseFee()', async () => {
       await exportC({
+        walletId: 'wallet-1',
+        walletType: WalletType.MNEMONIC,
         cChainBalanceWei: BigInt(10e18),
         requiredAmountWei: BigInt(1e18),
         isDevMode: false,
@@ -85,6 +90,8 @@ describe('earn/exportC', () => {
     it('should call walletService.createExportCTx', async () => {
       expect(async () => {
         await exportC({
+          walletId: 'wallet-1',
+          walletType: WalletType.MNEMONIC,
           cChainBalanceWei: BigInt(10e18),
           requiredAmountWei: BigInt(1e18),
           isDevMode: false,
@@ -97,7 +104,9 @@ describe('earn/exportC', () => {
           accountIndex: undefined,
           avaxXPNetwork: NetworkService.getAvalancheNetworkP(false),
           destinationChain: 'P',
-          destinationAddress: undefined
+          destinationAddress: undefined,
+          walletId: 'wallet-1',
+          walletType: 'MNEMONIC'
         })
       }).not.toThrow()
     })
@@ -105,6 +114,8 @@ describe('earn/exportC', () => {
     it('should call walletService.signAvaxTx', async () => {
       expect(async () => {
         await exportC({
+          walletId: 'wallet-1',
+          walletType: WalletType.MNEMONIC,
           cChainBalanceWei: BigInt(10e18),
           requiredAmountWei: BigInt(1e18),
           isDevMode: false,
@@ -118,6 +129,8 @@ describe('earn/exportC', () => {
     it('should call networkService.sendTransaction', async () => {
       expect(async () => {
         await exportC({
+          walletId: 'wallet-1',
+          walletType: WalletType.MNEMONIC,
           cChainBalanceWei: BigInt(10e18),
           requiredAmountWei: BigInt(1e18),
           isDevMode: false,

@@ -5,6 +5,7 @@ import { Avalanche } from '@avalabs/core-wallets-sdk'
 import { avaxSerial, EVM, UnsignedTx, utils } from '@avalabs/avalanchejs'
 import { importP } from 'services/earn/importP'
 import { VsCurrencyType } from '@avalabs/core-coingecko-sdk'
+import { WalletType } from 'services/wallet/types'
 
 describe('earn/importP', () => {
   describe('importP', () => {
@@ -51,6 +52,8 @@ describe('earn/importP', () => {
 
     it('should call walletService.createImportPTx', async () => {
       await importP({
+        walletId: 'test-wallet-id',
+        walletType: WalletType.MNEMONIC,
         activeAccount: {} as Account,
         isDevMode: false,
         selectedCurrency: VsCurrencyType.USD
@@ -60,6 +63,8 @@ describe('earn/importP', () => {
 
     it('should call walletService.signAvaxTx', async () => {
       await importP({
+        walletId: 'test-wallet-id',
+        walletType: WalletType.MNEMONIC,
         activeAccount: {} as Account,
         isDevMode: false,
         selectedCurrency: VsCurrencyType.USD
@@ -69,6 +74,8 @@ describe('earn/importP', () => {
 
     it('should call networkService.sendTransaction', async () => {
       await importP({
+        walletId: 'test-wallet-id',
+        walletType: WalletType.MNEMONIC,
         activeAccount: {} as Account,
         isDevMode: false,
         selectedCurrency: VsCurrencyType.USD

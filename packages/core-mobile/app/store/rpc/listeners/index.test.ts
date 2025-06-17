@@ -12,7 +12,10 @@ import { selectIsDeveloperMode } from 'store/settings/advanced/slice'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import ModuleManager from 'vmModule/ModuleManager'
 import mockAccounts from 'tests/fixtures/accounts.json'
+import mockWallets from 'tests/fixtures/wallets.json'
 import { transactionSnackbar } from 'new/common/utils/toast'
+import BiometricsSDK from 'utils/BiometricsSDK'
+import { MnemonicWallet } from 'services/wallet/MnemonicWallet'
 import {
   rpcReducer,
   reducerName,
@@ -36,6 +39,24 @@ jest.mock('store/account/slice', () => {
     selectActiveAccount: () => mockActiveAccount
   }
 })
+const mockActiveWallet = mockWallets['wallet-1']
+jest.mock('store/wallet/slice', () => {
+  const actual = jest.requireActual('store/wallet/slice')
+  return {
+    ...actual,
+    selectActiveWallet: () => mockActiveWallet
+  }
+})
+jest
+  .spyOn(BiometricsSDK, 'loadWalletSecret')
+  .mockResolvedValue({ success: true, value: 'superSecret' })
+
+jest
+  .spyOn(MnemonicWallet.prototype, 'initialize')
+  .mockImplementation(function (this: MnemonicWallet) {
+    this.xpub = 'mock-xpub'
+    return Promise.resolve()
+  })
 
 const mockOnRpcRequest = jest.fn()
 

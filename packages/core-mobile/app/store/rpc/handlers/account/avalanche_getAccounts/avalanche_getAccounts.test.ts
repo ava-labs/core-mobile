@@ -8,7 +8,7 @@ jest.mock('store/account/slice', () => {
   return {
     ...actual,
     selectAccounts: () => mockAccounts,
-    selectActiveAccount: () => mockAccounts[0]
+    selectActiveAccount: () => mockAccounts['0']
   }
 })
 
@@ -61,7 +61,7 @@ describe('avalanche_getAccounts handler', () => {
             addressCoreEth: 'C-fuji1y76a8lk4ym3af4u45f7fghuqc6ftfh7l4jsrgz',
             active: true,
             type: 'primary',
-            walletId: '',
+            walletId: 'wallet-1',
             walletType: 'mnemonic'
           },
           {
@@ -75,7 +75,7 @@ describe('avalanche_getAccounts handler', () => {
             addressCoreEth: '',
             active: false,
             type: 'primary',
-            walletId: '',
+            walletId: 'wallet-1',
             walletType: 'mnemonic'
           }
         ]

@@ -1,6 +1,6 @@
 import { AppListenerEffectAPI } from 'store/types'
 import { rpcErrors } from '@metamask/rpc-errors'
-import { selectAccounts, selectActiveAccount } from 'store/account/slice'
+import { selectAccountById, selectActiveAccount } from 'store/account/slice'
 import { setActiveAccount } from 'store/account/thunks'
 import Logger from 'utils/Logger'
 import { RpcMethod, RpcRequest } from '../../../types'
@@ -35,7 +35,6 @@ class AvalancheSelectAccountHandler
     const accountId = result.data[0]
 
     const activeAccount = selectActiveAccount(getState())
-    const accounts = selectAccounts(getState())
 
     const accountAlreadyActive = activeAccount && activeAccount.id === accountId
 
@@ -43,9 +42,7 @@ class AvalancheSelectAccountHandler
       return { success: true, value: null }
     }
 
-    const requestedAccount = Object.values(accounts).find(
-      account => account.id === accountId
-    )
+    const requestedAccount = selectAccountById(accountId)(getState())
 
     if (requestedAccount === undefined) {
       return {

@@ -7,7 +7,8 @@ import {
 import { BaseWallet } from 'ethers'
 import { RpcMethod } from 'store/rpc/types'
 import * as ethSignUtil from '@metamask/eth-sig-util'
-import MnemonicWallet from './MnemonicWallet'
+import mockMnemonic from 'tests/fixtures/mockMnemonic.json'
+import { MnemonicWallet } from './MnemonicWallet'
 
 const TYPED_DATA = {
   types: {
@@ -60,8 +61,7 @@ const TYPED_DATA = {
   }
 }
 
-const MOCK_MENMONIC =
-  'seed horn heart blood noble total foster paddle welcome mother hospital tilt orphan someone defy blossom mercy execute visit journey layer north horn dinner'
+const MOCK_MENMONIC = mockMnemonic.value
 const MOCK_XPUB = 'MOCK_XPUB'
 const MOCK_XPUBXP = 'MOCK_XPUBXP'
 const MOCK_CONTEXT = {
@@ -82,9 +82,6 @@ const MOCK_CONTEXT = {
   addSubnetDelegatorFee: BigInt(1)
 }
 
-jest.spyOn(MnemonicWallet, 'getAvaSigner')
-jest.spyOn(MnemonicWallet, 'getEvmSigner')
-jest.spyOn(MnemonicWallet, 'getBtcSigner')
 jest.mock('@metamask/eth-sig-util', () => ({
   ...jest.requireActual('@metamask/eth-sig-util'),
   personalSign: jest.fn(),
@@ -100,114 +97,53 @@ jest
   })
 
 describe('MnemonicWallet', () => {
-  beforeEach(() => {
+  let mnemonicWallet: MnemonicWallet
+
+  beforeEach(async () => {
     jest.clearAllMocks()
-    MnemonicWallet.mnemonic = MOCK_MENMONIC
+    mnemonicWallet = new MnemonicWallet()
+    await mnemonicWallet.initialize(MOCK_MENMONIC)
   })
 
   describe('getSigner', () => {
     it('should have returned error invalid mnemonic phrase.', async () => {
-      MnemonicWallet.mnemonic = 'MOCK_MENMONIC'
+      const invalidWallet = new MnemonicWallet()
       try {
-        await MnemonicWallet.getBtcSigner(0, {})
+        await invalidWallet.initialize('MOCK_MENMONIC')
       } catch (e) {
-        expect((e as Error).message).toBe('Invalid mnemonic phrase.')
+        expect((e as Error).message).toContain('Invalid mnemonic phrase.')
       }
     })
 
-    it('should have returned bitcoin wallet', async () => {
-      const wallet = await MnemonicWallet.getBtcSigner(0, {})
-      expect(wallet).toBeInstanceOf(BitcoinWallet)
-    })
-
-    it('should have returned base wallet', () => {
-      const wallet = MnemonicWallet.getEvmSigner(0, {})
-      expect(wallet).toBeInstanceOf(BaseWallet)
-    })
-    it('should have returned Avalanche.StaticSigner', async () => {
-      const wallet = await MnemonicWallet.getAvaSigner(0, {})
-      expect(wallet).toBeInstanceOf(Avalanche.StaticSigner)
-    })
-    it('should have returned Avalanche.SimpleSigner', async () => {
-      const wallet = await MnemonicWallet.getAvaSigner(0)
-      expect(wallet).toBeInstanceOf(Avalanche.SimpleSigner)
-    })
-    it('should have called getEvmSigner for EVM network', async () => {
-      await MnemonicWallet.getSigner({
+    it('should sign BTC transaction successfully', async () => {
+      const result = await mnemonicWallet.signBtcTransaction({
         accountIndex: 0,
-        network: { vmName: 'EVM' },
-        provider: {}
-      })
-      // @ts-ignore
-      expect(MnemonicWallet.getEvmSigner).toHaveBeenCalled()
-    })
-    it('should have called getBtcSigner for BTC network', async () => {
-      await MnemonicWallet.getSigner({
-        accountIndex: 0,
+        transaction: { inputs: [], outputs: [] },
         network: { vmName: 'BITCOIN' },
         provider: new BitcoinProvider()
       })
-      expect(MnemonicWallet.getBtcSigner).toHaveBeenCalled()
+      expect(typeof result).toBe('string')
     })
-    it('should have thrown error with incorrect provider for BTC network ', async () => {
-      try {
-        await MnemonicWallet.getSigner({
-          accountIndex: 0,
-          network: { vmName: 'BITCOIN' },
-          provider: {}
-        })
-      } catch (e) {
-        expect((e as Error).message).toBe(
-          'Unable to get signer: wrong provider obtained for BTC network'
-        )
-      }
-    })
-    it('should have called getAvaSigner for AVM network', async () => {
-      await MnemonicWallet.getSigner({
+
+    it('should sign EVM transaction successfully', async () => {
+      const result = await mnemonicWallet.signEvmTransaction({
         accountIndex: 0,
-        network: { vmName: 'AVM' },
-        provider: new Avalanche.JsonRpcProvider('url', MOCK_CONTEXT)
+        transaction: {},
+        network: { vmName: 'EVM' },
+        provider: {}
       })
-      expect(MnemonicWallet.getAvaSigner).toHaveBeenCalled()
+      expect(typeof result).toBe('string')
     })
-    it('should have thrown error with incorrect provider for AVM network', async () => {
-      try {
-        await MnemonicWallet.getSigner({
-          accountIndex: 0,
-          network: { vmName: 'AVM' },
-          provider: {}
-        })
-      } catch (e) {
-        expect((e as Error).message).toBe(
-          'Unable to get signer: wrong provider obtained for network AVM'
-        )
-      }
-    })
-    it('should have thrown error with incorrect provider for PVM network', async () => {
-      try {
-        await MnemonicWallet.getSigner({
-          accountIndex: 0,
-          network: { vmName: 'PVM' },
-          provider: {}
-        })
-      } catch (e) {
-        expect((e as Error).message).toBe(
-          'Unable to get signer: wrong provider obtained for network PVM'
-        )
-      }
-    })
-    it('should have thrown error with unsupported network', async () => {
-      try {
-        await MnemonicWallet.getSigner({
-          accountIndex: 0,
-          network: { vmName: 'UNSUPPORTED' },
-          provider: {}
-        })
-      } catch (e) {
-        expect((e as Error).message).toBe(
-          'Unable to get signer: network not supported'
-        )
-      }
+
+    it('should get addresses successfully', async () => {
+      const addresses = await mnemonicWallet.getAddresses({
+        accountIndex: 0,
+        provXP: new Avalanche.JsonRpcProvider('url', MOCK_CONTEXT),
+        network: { vmName: 'AVM' }
+      })
+      expect(addresses).toHaveProperty('EVM')
+      expect(addresses).toHaveProperty('AVM')
+      expect(addresses).toHaveProperty('PVM')
     })
   })
 
@@ -219,7 +155,7 @@ describe('MnemonicWallet', () => {
       data?: unknown
       rpcMethod?: RpcMethod
     }) => {
-      return MnemonicWallet.signMessage({
+      return mnemonicWallet.signMessage({
         rpcMethod,
         data,
         accountIndex: 0,
@@ -312,7 +248,7 @@ describe('MnemonicWallet', () => {
         return 'signedTx'
       })
     it('should have returned signed tx with avalanche signer', async () => {
-      const signedTx = await MnemonicWallet.signAvalancheTransaction({
+      const signedTx = await mnemonicWallet.signAvalancheTransaction({
         accountIndex: 0,
         transaction: {},
         network: { vmName: 'AVM' },
@@ -321,7 +257,7 @@ describe('MnemonicWallet', () => {
       expect(signedTx).toBe('{"signedTx":"signedTx"}')
     })
     it('should have returned signed tx with btc signer', async () => {
-      const signedTx = await MnemonicWallet.signBtcTransaction({
+      const signedTx = await mnemonicWallet.signBtcTransaction({
         accountIndex: 0,
         transaction: {},
         network: { vmName: 'BITCOIN' },
@@ -330,7 +266,7 @@ describe('MnemonicWallet', () => {
       expect(signedTx).toBe('signedTx')
     })
     it('should have returned signed tx with evm signer', async () => {
-      const signedTx = await MnemonicWallet.signEvmTransaction({
+      const signedTx = await mnemonicWallet.signEvmTransaction({
         accountIndex: 0,
         transaction: {},
         network: { vmName: 'EVM' },
@@ -342,13 +278,12 @@ describe('MnemonicWallet', () => {
 
   describe('mnemonic', () => {
     it('should have returned mnemonic', () => {
-      MnemonicWallet.mnemonic = MOCK_MENMONIC
-      expect(MnemonicWallet.mnemonic).toBe(MOCK_MENMONIC)
+      expect(mnemonicWallet.mnemonic).toBe(MOCK_MENMONIC)
     })
     it('should have returned error no mnemonic available', () => {
-      MnemonicWallet.mnemonic = undefined
+      mnemonicWallet.mnemonic = undefined
       try {
-        MnemonicWallet.mnemonic
+        mnemonicWallet.mnemonic
       } catch (e) {
         expect((e as Error).message).toBe('no mnemonic available')
       }
@@ -356,13 +291,13 @@ describe('MnemonicWallet', () => {
   })
   describe('xpub', () => {
     it('should have returned xpub', () => {
-      MnemonicWallet.xpub = MOCK_XPUB
-      expect(MnemonicWallet.xpub).toBe(MOCK_XPUB)
+      mnemonicWallet.xpub = MOCK_XPUB
+      expect(mnemonicWallet.xpub).toBe(MOCK_XPUB)
     })
     it('should have returned error no public key (xpub) available', () => {
-      MnemonicWallet.xpub = undefined
+      mnemonicWallet.xpub = undefined
       try {
-        MnemonicWallet.xpub
+        mnemonicWallet.xpub
       } catch (e) {
         expect((e as Error).message).toBe('no public key (xpub) available')
       }
@@ -370,13 +305,13 @@ describe('MnemonicWallet', () => {
   })
   describe('xpubXP', () => {
     it('should have returned xpubXP', () => {
-      MnemonicWallet.xpubXP = MOCK_XPUBXP
-      expect(MnemonicWallet.xpubXP).toBe(MOCK_XPUBXP)
+      mnemonicWallet.xpubXP = MOCK_XPUBXP
+      expect(mnemonicWallet.xpubXP).toBe(MOCK_XPUBXP)
     })
     it('should have returned error no public key (xpubXP) available', () => {
-      MnemonicWallet.xpubXP = undefined
+      mnemonicWallet.xpubXP = undefined
       try {
-        MnemonicWallet.xpubXP
+        mnemonicWallet.xpubXP
       } catch (e) {
         expect((e as Error).message).toBe('no public key (xpubXP) available')
       }

@@ -3,6 +3,7 @@ import mockSession from 'tests/fixtures/walletConnect/session.json'
 import { rpcErrors } from '@metamask/rpc-errors'
 import WalletService from 'services/wallet/WalletService'
 import mockNetworks from 'tests/fixtures/networks.json'
+import mockWallets from 'tests/fixtures/wallets.json'
 import { avalancheGetAddressesInRangeHandler } from './avalanche_getAddressesInRange'
 import { AvalancheGetAddressesInRangeRpcRequest } from './types'
 
@@ -19,6 +20,15 @@ jest.mock('store/settings/advanced/slice', () => {
   return {
     ...actual,
     selectIsDeveloperMode: () => true
+  }
+})
+
+const mockActiveWallet = mockWallets['wallet-1']
+jest.mock('store/wallet/slice', () => {
+  const actual = jest.requireActual('store/wallet/slice')
+  return {
+    ...actual,
+    selectActiveWallet: () => mockActiveWallet
   }
 })
 
