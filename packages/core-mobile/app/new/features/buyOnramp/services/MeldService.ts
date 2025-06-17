@@ -1,5 +1,7 @@
 import {
   Country,
+  CreateCryptoQuote,
+  CreateCryptoQuoteParams,
   CryptoCurrency,
   FiatCurrency,
   GetPurchaseLimits,
@@ -138,6 +140,29 @@ class MeldService {
       cryptoCurrencies: cryptoCurrencyCodes?.join(',')
     }
     return meldApiClient.getPaymentMethods({ queries })
+  }
+
+  async createCryptoQuote({
+    serviceProviders,
+    sourceAmount,
+    walletAddress,
+    countryCode,
+    sourceCurrencyCode,
+    destinationCurrencyCode,
+    paymentMethodType,
+    subdivision
+  }: CreateCryptoQuoteParams): Promise<CreateCryptoQuote | undefined> {
+    const body = {
+      serviceProviders,
+      countryCode,
+      sourceCurrencyCode,
+      destinationCurrencyCode,
+      sourceAmount,
+      walletAddress,
+      subdivision,
+      paymentMethodType
+    }
+    return meldApiClient.createCryptoQuotes(body)
   }
 }
 
