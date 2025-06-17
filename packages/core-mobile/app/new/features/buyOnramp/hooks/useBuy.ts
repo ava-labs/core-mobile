@@ -20,11 +20,12 @@ export const useBuy = (): {
   navigateToBuyAvax: () => void
   navigateToBuyUsdc: () => void
   isBuyable: (token?: LocalTokenWithBalance, address?: string) => boolean
+  isLoading: boolean
 } => {
   const { navigate } = useRouter()
   const [_, setOnrampToken] = useOnRampToken()
   const isMeldIntegrationBlocked = useSelector(selectIsMeldIntegrationBlocked)
-  const { data: cryptoCurrencies } = useSearchCryptoCurrencies({
+  const { data: cryptoCurrencies, isLoading } = useSearchCryptoCurrencies({
     categories: [ServiceProviderCategories.CRYPTO_ONRAMP]
   })
   const { getBuyableCryptoCurrency } = useGetBuyableCryptoCurrency()
@@ -101,6 +102,7 @@ export const useBuy = (): {
     navigateToBuy,
     navigateToBuyAvax,
     navigateToBuyUsdc,
-    isBuyable
+    isBuyable,
+    isLoading
   }
 }

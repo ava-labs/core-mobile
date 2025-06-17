@@ -69,6 +69,8 @@ interface ScrollScreenProps extends KeyboardAwareScrollViewProps {
   bottomOffset?: number
   /** Whether this screen should show navigation title when scroll. Default is true. */
   showNavigationHeaderTitle?: boolean
+  /** Callback when header layout is measured */
+  onHeaderLayout?: (height: number) => void
 }
 
 const KeyboardScrollView = Animated.createAnimatedComponent(
@@ -89,6 +91,7 @@ export const ScrollScreen = ({
   renderHeader,
   renderFooter,
   renderHeaderRight,
+  onHeaderLayout,
   ...props
 }: ScrollScreenProps): JSX.Element => {
   const insets = useSafeAreaInsets()
@@ -130,8 +133,9 @@ export const ScrollScreen = ({
     headerRef?.current?.measure((x, y, width, height) => {
       contentHeaderHeight.value = height
       setHeaderLayout({ x, y, width, height })
+      onHeaderLayout?.(height)
     })
-  }, [contentHeaderHeight])
+  }, [contentHeaderHeight, onHeaderLayout])
 
   useLayoutEffect(() => {
     // eslint-disable-next-line max-params
