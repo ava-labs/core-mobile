@@ -91,18 +91,6 @@ const initAccounts = async (
       }))
     })
   }
-
-  if (isDeveloperMode === false) {
-    AnalyticsService.captureWithEncryption('AccountAddressesUpdated', {
-      addresses: Object.values(accounts).map(acc => ({
-        address: acc.addressC,
-        addressBtc: acc.addressBTC,
-        addressAVM: acc.addressAVM ?? '',
-        addressPVM: acc.addressPVM ?? '',
-        addressCoreEth: acc.addressCoreEth ?? ''
-      }))
-    })
-  }
 }
 
 const fetchRemainingAccounts = async ({
