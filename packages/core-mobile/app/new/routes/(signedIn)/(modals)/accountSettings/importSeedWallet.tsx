@@ -10,6 +10,9 @@ import {
 } from '@avalabs/core-wallets-sdk'
 import { truncateAddress } from '@avalabs/core-utils-sdk'
 import { useRouter } from 'expo-router'
+import { useImportMnemonic } from 'new/common/hooks/useImportMnemonic'
+import { useActiveWallet } from 'common/hooks/useActiveWallet'
+import KeychainMigrator from 'utils/KeychainMigrator'
 
 const MINIMUM_MNEMONIC_WORDS = 12
 
@@ -27,6 +30,9 @@ const ImportSeedWallet = (): React.JSX.Element => {
   const [derivedAddresses, setDerivedAddresses] = useState<
     DerivedAddressItem[]
   >([])
+  const { isImporting, importWallet } = useImportMnemonic()
+  const [isCheckingMigration, setIsCheckingMigration] = useState(false)
+  const activeWallet = useActiveWallet()
 
   useEffect(() => {
     const trimmedMnemonic = mnemonic.toLowerCase().trim()
@@ -53,7 +59,7 @@ const ImportSeedWallet = (): React.JSX.Element => {
     }
   }, [mnemonic])
 
-  const handleImport = useCallback(() => {
+  const handleImport = useCallback(async () => {
     const trimmedMnemonic = mnemonic.toLowerCase().trim()
     const isValid = bip39.validateMnemonic(trimmedMnemonic)
 
@@ -72,16 +78,31 @@ const ImportSeedWallet = (): React.JSX.Element => {
       return
     }
 
-    router.navigate({
-      // @ts-ignore TODO: make routes typesafe
-      pathname: '/accountSettings/verifyPin',
-      params: {
-        walletSecretToImport: mnemonic
-      }
-    })
-  }, [mnemonic, router])
+    setIsCheckingMigration(true)
+    const migrator = new KeychainMigrator(activeWallet.id)
+    const migrationNeeded = await migrator.getMigrationStatus('PIN')
+    setIsCheckingMigration(false)
+
+    if (migrationNeeded) {
+      router.navigate({
+        // @ts-ignore TODO: make routes typesafe
+        pathname: '/accountSettings/verifyPin',
+        params: {
+          walletSecretToImport: mnemonic
+        }
+      })
+    } else {
+      await importWallet(mnemonic)
+    }
+  }, [mnemonic, router, importWallet, activeWallet.id])
 
   const renderFooter = useCallback(() => {
+    const disabled =
+      !mnemonic ||
+      mnemonic.trim().split(/\s+/).length < MINIMUM_MNEMONIC_WORDS ||
+      isImporting ||
+      isCheckingMigration
+
     return (
       <View
         sx={{
@@ -91,15 +112,12 @@ const ImportSeedWallet = (): React.JSX.Element => {
           size="large"
           type="primary"
           onPress={handleImport}
-          disabled={
-            !mnemonic ||
-            mnemonic.trim().split(/\s+/).length < MINIMUM_MNEMONIC_WORDS
-          }>
+          disabled={disabled}>
           Import
         </Button>
       </View>
     )
-  }, [handleImport, mnemonic])
+  }, [handleImport, mnemonic, isImporting, isCheckingMigration])
 
   return (
     <ScrollScreen

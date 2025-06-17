@@ -28,6 +28,9 @@ import {
 } from 'store/balance'
 import { useFormatCurrency } from 'new/common/hooks/useFormatCurrency'
 import { selectTokenVisibility } from 'store/portfolio'
+import { useImportPrivateKey } from 'new/common/hooks/useImportPrivateKey'
+import KeychainMigrator from 'utils/KeychainMigrator'
+import { useActiveWallet } from 'common/hooks/useActiveWallet'
 
 interface DerivedAddress {
   address: string
@@ -48,12 +51,14 @@ const ImportPrivateKeyScreen = (): JSX.Element => {
     null
   )
   const [isAwaitingOurBalance, setIsAwaitingOurBalance] = useState(false)
+  const [isCheckingMigration, setIsCheckingMigration] = useState(false)
 
   const activeNetwork = useSelector(selectActiveNetwork)
   const dispatch = useDispatch()
   const globalBalanceQueryStatus = useSelector(selectBalanceStatus)
   const tokenVisibility = useSelector(selectTokenVisibility)
   const { formatCurrency } = useFormatCurrency()
+  const activeWallet = useActiveWallet()
 
   const accountIdForBalance = tempAccountDetails ? tempAccountDetails.id : ''
   const currentTempAccountBalance = useSelector(
@@ -62,6 +67,8 @@ const ImportPrivateKeyScreen = (): JSX.Element => {
   const isOurBalanceDataLoadedInStore = useSelector(
     selectIsBalanceLoadedForAccount(accountIdForBalance)
   )
+
+  const { isImporting, importWallet } = useImportPrivateKey()
 
   const deriveAddresses = useCallback(async (): Promise<void> => {
     setDerivedAddresses([])
@@ -198,16 +205,27 @@ const ImportPrivateKeyScreen = (): JSX.Element => {
     formatCurrency
   ])
 
-  const handleImport = (): void => {
-    navigate({
-      // @ts-ignore TODO: make routes typesafe
-      pathname: '/accountSettings/verifyPinForImportPrivateKey',
-      params: {
-        privateKeyAccountString: JSON.stringify(tempAccountDetails),
-        privateKey
-      }
-    })
-  }
+  const handleImport = useCallback(async (): Promise<void> => {
+    if (!tempAccountDetails) return
+
+    setIsCheckingMigration(true)
+    const migrator = new KeychainMigrator(activeWallet.id)
+    const migrationNeeded = await migrator.getMigrationStatus('PIN')
+    setIsCheckingMigration(false)
+
+    if (migrationNeeded) {
+      navigate({
+        // @ts-ignore TODO: make routes typesafe
+        pathname: '/accountSettings/verifyPinForImportPrivateKey',
+        params: {
+          privateKeyAccountString: JSON.stringify(tempAccountDetails),
+          privateKey
+        }
+      })
+    } else {
+      await importWallet(tempAccountDetails, privateKey)
+    }
+  }, [navigate, tempAccountDetails, privateKey, importWallet, activeWallet.id])
 
   return (
     <ScrollScreen
@@ -299,7 +317,12 @@ const ImportPrivateKeyScreen = (): JSX.Element => {
           type="primary"
           size="large"
           onPress={handleImport}
-          disabled={privateKey.trim() === '' || isAwaitingOurBalance}>
+          disabled={
+            privateKey.trim() === '' ||
+            isAwaitingOurBalance ||
+            isCheckingMigration ||
+            isImporting
+          }>
           Import
         </Button>
       </View>

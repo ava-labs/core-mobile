@@ -1,20 +1,13 @@
-import React, { useCallback, useState } from 'react'
-import { useLocalSearchParams, useRouter } from 'expo-router'
+import React, { useCallback } from 'react'
+import { useLocalSearchParams } from 'expo-router'
 import { ActivityIndicator, View } from '@avalabs/k2-alpine'
-import { WalletType } from 'services/wallet/types'
-import { useDispatch } from 'react-redux'
-import { AppThunkDispatch } from 'store/types'
-import { importPrivateKeyAccountAndCreateWallet } from 'store/wallet/thunks'
-import { showSnackbar } from 'common/utils/toast'
-import Logger from 'utils/Logger'
 import { VerifyPin } from 'common/components/VerifyPin'
 import { ImportedAccount } from 'store/account/types'
-import AnalyticsService from 'services/analytics/AnalyticsService'
 import { useActiveWallet } from 'common/hooks/useActiveWallet'
 import KeychainMigrator from 'utils/KeychainMigrator'
+import { useImportPrivateKey } from 'new/common/hooks/useImportPrivateKey'
 
 const VerifyPinForImportPrivateKeyScreen = (): JSX.Element => {
-  const { canGoBack, back } = useRouter()
   const activeWallet = useActiveWallet()
   const { privateKeyAccountString, privateKey } = useLocalSearchParams<{
     privateKeyAccountString: string //typeof ImportedAccount
@@ -25,45 +18,18 @@ const VerifyPinForImportPrivateKeyScreen = (): JSX.Element => {
     ? JSON.parse(privateKeyAccountString)
     : null
 
-  const dispatch = useDispatch<AppThunkDispatch>()
-  const [isImporting, setIsImporting] = useState(false)
+  const { isImporting, importWallet } = useImportPrivateKey()
 
   const handlePinVerified = useCallback(
     async (pin: string): Promise<void> => {
       const migrator = new KeychainMigrator(activeWallet.id)
       await migrator.migrateIfNeeded('PIN', pin)
 
-      setIsImporting(true)
-
-      try {
-        await dispatch(
-          importPrivateKeyAccountAndCreateWallet({
-            accountDetails: privateKeyAccount as ImportedAccount,
-            accountSecret: privateKey
-          })
-        ).unwrap()
-
-        AnalyticsService.capture('PrivateKeyWalletImported', {
-          walletType: WalletType.PRIVATE_KEY
-        })
-        showSnackbar('Wallet imported successfully!')
-
-        if (canGoBack()) back()
-      } catch (error) {
-        Logger.error(
-          'Failed to import mnemonic wallet after PIN verification',
-          error
-        )
-        showSnackbar(
-          `Import failed: ${
-            error instanceof Error ? error.message : 'Unknown error'
-          }`
-        )
-      } finally {
-        setIsImporting(false)
+      if (privateKeyAccount && privateKey) {
+        await importWallet(privateKeyAccount, privateKey)
       }
     },
-    [activeWallet, canGoBack, back, dispatch, privateKeyAccount, privateKey]
+    [activeWallet.id, importWallet, privateKeyAccount, privateKey]
   )
 
   if (isImporting) {
