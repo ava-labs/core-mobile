@@ -32,7 +32,7 @@ import { useSearchDefaultsByCountry } from './useSearchDefaultsByCountry'
 export const useSelectBuyAmount = (): {
   isLoadingDefaultsByCountry: boolean
   paymentMethodToDisplay: string | undefined
-  serviceProviderToDisplay: ServiceProviderNames | undefined
+  serviceProviderToDisplay: string | undefined
   token?: CryptoCurrency & { tokenWithBalance: LocalTokenWithBalance }
   tokenBalance: TokenUnit | undefined
   isAboveMinimumPurchaseLimit: boolean
