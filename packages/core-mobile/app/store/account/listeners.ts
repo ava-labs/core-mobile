@@ -12,7 +12,6 @@ import AnalyticsService from 'services/analytics/AnalyticsService'
 import SeedlessService from 'seedless/services/SeedlessService'
 import { recentAccountsStore } from 'new/features/accountSettings/store'
 import { isEvmPublicKey } from 'utils/publicKeys'
-import { Secp256k1 } from '@cubist-labs/cubesigner-sdk'
 import { selectActiveNetwork } from 'store/network'
 import { Network } from '@avalabs/core-chains-sdk'
 import {
@@ -110,7 +109,6 @@ const fetchRemainingAccounts = async ({
   const numberOfAccounts = pubKeys.filter(isEvmPublicKey).length
 
   const accounts: AccountCollection = {}
-  const targetKeys = await SeedlessService.getSessionKeysList(Secp256k1.Ava)
   // fetch the remaining accounts in the background
   for (let i = startIndex; i < numberOfAccounts; i++) {
     const acc = await accountService.createNextAccount({
@@ -119,7 +117,7 @@ const fetchRemainingAccounts = async ({
       walletType,
       network: activeNetwork
     })
-    const title = await SeedlessService.getAccountName(i, targetKeys)
+    const title = await SeedlessService.getAccountName(i)
     const accountTitle = title ?? acc.name
     accounts[acc.index] = { ...acc, name: accountTitle }
   }

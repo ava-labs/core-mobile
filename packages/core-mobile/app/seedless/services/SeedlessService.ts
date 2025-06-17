@@ -9,6 +9,8 @@ import SeedlessSession from './SeedlessSession'
  * https://github.com/cubist-labs/CubeSigner-TypeScript-SDK
  */
 class SeedlessService {
+  private cache: KeyInfo[] | undefined = undefined
+
   // According to Cubist, CubeSigner creates a temporary session with the scopes manage:mfa:vote:fido and manage:mfa:vote:totp,
   // enabling users to approve or deny login attempts using MFA. Therefore, specifying only sign:* allows users
   // to proceed with signing up or signing in through MFA verification.
@@ -30,8 +32,15 @@ class SeedlessService {
    * Returns the list of keys that this session has access to.
    */
   async getSessionKeysList(type?: KeyType): Promise<KeyInfo[]> {
-    const signerSession = await this.session.getSignerClient()
-    const keysList = await signerSession.apiClient.sessionKeysList()
+    let keysList: KeyInfo[] = []
+    if (this.cache && this.cache.length > 0) {
+      keysList = this.cache
+    } else {
+      const signerSession = await this.session.getSignerClient()
+      keysList = await signerSession.apiClient.sessionKeysList()
+      this.cache = keysList
+    }
+
     return type !== undefined
       ? keysList.filter(k => k.key_type === type)
       : keysList
@@ -50,14 +59,10 @@ class SeedlessService {
    * @param accountIndex - The account index to get the account name for
    * @returns The acount name of the key
    */
-  async getAccountName(
-    accountIndex = 0,
-    keys: KeyInfo[] = []
-  ): Promise<string | undefined> {
+  async getAccountName(accountIndex = 0): Promise<string | undefined> {
     try {
-      const targetKeys =
-        keys.length > 0 ? keys : await this.getSessionKeysList(Secp256k1.Ava)
-      const metadata = this.getKeyInfo(targetKeys, accountIndex)?.metadata
+      const keys = await this.getSessionKeysList(Secp256k1.Ava)
+      const metadata = this.getKeyInfo(keys, accountIndex)?.metadata
       return this.getAccountNameInMetadata(metadata)
     } catch (error) {
       Logger.warn('Failed to get name for the account index', error)
@@ -69,7 +74,7 @@ class SeedlessService {
    * @param name - The name to set for the key.
    * @param accountIndex - The account index to set the name for
    */
-  async setAcountName(name: string, accountIndex: number): Promise<void> {
+  async setAccountName(name: string, accountIndex: number): Promise<void> {
     try {
       const keys = await this.getSessionKeysList(Secp256k1.Ava)
       const keyInfo = this.getKeyInfo(keys, accountIndex)
@@ -112,6 +117,10 @@ class SeedlessService {
       return metadata.account_name
     }
     return undefined
+  }
+
+  invalidateSessionKeysCache(): void {
+    this.cache = undefined
   }
 }
 

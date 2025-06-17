@@ -79,12 +79,12 @@ export const transformKeyInfosToPubKeys = (
 
     pubkeys.push(
       {
-        curve: Curve.Secp256k1,
+        curve: Curve.SECP256K1,
         derivationPath: key[cs.Secp256k1.Evm].derivation_info.derivation_path,
         key: strip0x(key[cs.Secp256k1.Evm].public_key)
       },
       {
-        curve: Curve.Secp256k1,
+        curve: Curve.SECP256K1,
         derivationPath: key[cs.Secp256k1.Ava].derivation_info.derivation_path,
         key: strip0x(key[cs.Secp256k1.Ava].public_key)
       }
@@ -92,7 +92,7 @@ export const transformKeyInfosToPubKeys = (
 
     if (key[cs.Ed25519.Solana]?.derivation_info?.derivation_path) {
       pubkeys.push({
-        curve: Curve.Ed25519,
+        curve: Curve.ED25519,
         derivationPath: key[cs.Ed25519.Solana].derivation_info.derivation_path,
         key: strip0x(key[cs.Ed25519.Solana].public_key)
       })

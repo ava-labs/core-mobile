@@ -35,6 +35,7 @@ import { stripChainAddress } from 'store/account/utils'
 import { AddressPublicKey, Curve, isEvmPublicKey } from 'utils/publicKeys'
 import { findPublicKey } from 'utils/publicKeys'
 import CoreSeedlessAPIService from '../CoreSeedlessAPIService'
+import SeedlessService from '../SeedlessService'
 import { SeedlessBtcSigner } from './SeedlessBtcSigner'
 
 export default class SeedlessWallet implements Wallet {
@@ -140,6 +141,8 @@ export default class SeedlessWallet implements Wallet {
       identityProof,
       mnemonicId
     })
+
+    SeedlessService.invalidateSessionKeysCache()
   }
 
   /** WALLET INTERFACE IMPLEMENTATION **/

@@ -135,13 +135,13 @@ describe('SeedlessService', () => {
 
   describe('setAcountName', () => {
     it('should have set account name correctly', async () => {
-      await SeedlessService.setAcountName('test', 0)
+      await SeedlessService.setAccountName('test', 0)
       expect(mockSetMetadataProperty).toHaveBeenCalledWith(ACCOUNT_NAME, 'test')
     })
     it('should have thrown if key type SecpAvaAddr does not exist', async () => {
       mockSessionKeysList.mockRejectedValueOnce(new Error('rejected'))
       try {
-        await SeedlessService.setAcountName('test', 0)
+        await SeedlessService.setAccountName('test', 0)
       } catch (error) {
         expect((error as Error).message).toBe(
           `Failed to set metadata, ${error}`
@@ -150,7 +150,7 @@ describe('SeedlessService', () => {
     })
     it('should have thrown if key info does not exist in account index', async () => {
       try {
-        await SeedlessService.setAcountName('test', 100)
+        await SeedlessService.setAccountName('test', 100)
       } catch (error) {
         expect((error as Error).message).toBe(
           `Failed to set metadata, ${error}`

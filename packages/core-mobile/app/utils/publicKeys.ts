@@ -15,8 +15,8 @@ export const findPublicKey =
     pk.derivationPath === path && pk.curve === curve
 
 export enum Curve {
-  Secp256k1 = 'secp256k1',
-  Ed25519 = 'ed25519'
+  SECP256K1 = 'secp256k1',
+  ED25519 = 'ed25519'
 }
 export const EVM_BASE_DERIVATION_PATH_PREFIX = "m/44'/60'/"
 

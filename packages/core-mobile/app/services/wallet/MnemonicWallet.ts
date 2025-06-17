@@ -321,14 +321,14 @@ export class MnemonicWallet implements Wallet {
     const seed = await mnemonicToSeed(this.mnemonic)
 
     switch (curve) {
-      case Curve.Secp256k1: {
+      case Curve.SECP256K1: {
         const seedNode = fromSeed(seed)
         return hex.encode(
           new Uint8Array(seedNode.derivePath(derivationPath).publicKey)
         )
       }
 
-      case Curve.Ed25519: {
+      case Curve.ED25519: {
         const hdKey = slip10.fromMasterSeed(new Uint8Array(seed))
         return hex.encode(hdKey.derive(derivationPath).publicKeyRaw)
       }

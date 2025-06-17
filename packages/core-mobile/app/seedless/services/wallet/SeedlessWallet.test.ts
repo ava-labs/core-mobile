@@ -28,7 +28,7 @@ describe('SeedlessWallet', () => {
       },
       [
         {
-          curve: Curve.Secp256k1,
+          curve: Curve.SECP256K1,
           derivationPath: "m/44'/60'/0'/0/0",
           key: 'testPublicKey'
         }
@@ -51,7 +51,7 @@ describe('SeedlessWallet', () => {
       },
       [
         {
-          curve: Curve.Secp256k1,
+          curve: Curve.SECP256K1,
           derivationPath: "m/44'/60'/0'/0/0",
           key: 'testPublicKey'
         }
@@ -132,7 +132,7 @@ describe('SeedlessWallet', () => {
       // @ts-ignore
       const walletWithMockClient = new SeedlessWallet(client, [
         {
-          curve: Curve.Secp256k1,
+          curve: Curve.SECP256K1,
           derivationPath: "m/44'/60'/0'/0/0",
           key: 'testPublicKey'
         }
@@ -153,7 +153,7 @@ describe('SeedlessWallet', () => {
       // @ts-ignore
       const walletWithMockClient = new SeedlessWallet(client, [
         {
-          curve: Curve.Secp256k1,
+          curve: Curve.SECP256K1,
           derivationPath: "m/44'/60'/0'/0/0",
           key: 'testWrongPublicKey'
         }

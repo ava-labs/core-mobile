@@ -241,11 +241,11 @@ class WalletService {
 
     const evmPublicKey = await wallet.getPublicKeyFor(
       derivationPathEVM,
-      Curve.Secp256k1
+      Curve.SECP256K1
     )
     const xpPublicKey = await wallet.getPublicKeyFor(
       derivationPathAVM,
-      Curve.Secp256k1
+      Curve.SECP256K1
     )
 
     return {
