@@ -8,7 +8,6 @@ import {
 } from '@avalabs/core-wallets-sdk'
 import { pvm, UnsignedTx } from '@avalabs/avalanchejs'
 import { Network } from '@avalabs/core-chains-sdk'
-import { Network } from '@avalabs/core-chains-sdk'
 import {
   MessageTypes,
   RpcMethod,
