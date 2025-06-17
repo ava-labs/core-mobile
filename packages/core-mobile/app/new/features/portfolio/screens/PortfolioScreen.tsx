@@ -2,7 +2,6 @@ import {
   BalanceHeader,
   NavigationTitleHeader,
   PriceChangeStatus,
-  SCREEN_HEIGHT,
   SegmentedControl,
   useTheme,
   View
@@ -21,6 +20,7 @@ import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigatio
 import { useIsAndroidWithBottomBar } from 'common/hooks/useIsAndroidWithBottomBar'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
 import { useFocusEffect, useRouter } from 'expo-router'
+import { useBuy } from 'features/buyOnramp/hooks/useBuy'
 import {
   ActionButton,
   ActionButtons
@@ -46,7 +46,10 @@ import Animated, {
   useAnimatedStyle,
   useSharedValue
 } from 'react-native-reanimated'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import {
+  useSafeAreaFrame,
+  useSafeAreaInsets
+} from 'react-native-safe-area-context'
 import { useDispatch, useSelector } from 'react-redux'
 import { selectActiveAccount } from 'store/account'
 import {
@@ -63,7 +66,6 @@ import { selectSelectedCurrency } from 'store/settings/currency'
 import { selectIsPrivacyModeEnabled } from 'store/settings/securityPrivacy'
 import { RootState } from 'store/types'
 import { useFocusedSelector } from 'utils/performance/useFocusedSelector'
-import { useBuy } from 'features/buyOnramp/hooks/useBuy'
 
 const SEGMENT_ITEMS = ['Assets', 'Collectibles', 'DeFi']
 
@@ -399,25 +401,29 @@ const PortfolioHomeScreen = (): JSX.Element => {
   )
 
   const headerHeight = useHeaderHeight()
-
   const insets = useSafeAreaInsets()
-
   const isAndroidWithBottomBar = useIsAndroidWithBottomBar()
+  const frame = useSafeAreaFrame()
 
   const tabHeight = useMemo(() => {
     return Platform.select({
       ios:
-        SCREEN_HEIGHT -
+        frame.height -
         tabBarHeight -
         headerHeight -
         (segmentedControlLayout?.height ?? 0),
-      android: SCREEN_HEIGHT - insets.top + (isAndroidWithBottomBar ? 0 : 22)
+      android:
+        frame.height -
+        headerHeight +
+        insets.bottom +
+        (isAndroidWithBottomBar ? 0 : 48)
     })
   }, [
+    frame.height,
     tabBarHeight,
     headerHeight,
     segmentedControlLayout?.height,
-    insets.top,
+    insets.bottom,
     isAndroidWithBottomBar
   ])
 

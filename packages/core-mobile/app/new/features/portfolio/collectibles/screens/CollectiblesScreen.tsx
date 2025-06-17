@@ -223,11 +223,13 @@ export const CollectiblesScreen = ({
         style={[
           {
             alignSelf: 'center',
-            width: SCREEN_WIDTH - HORIZONTAL_MARGIN * 2,
-            paddingBottom: CollectibleView.ListView === listType ? 8 : 10
+            width: SCREEN_WIDTH - HORIZONTAL_MARGIN * 2
           }
         ]}>
         <DropdownSelections
+          sx={{
+            paddingBottom: CollectibleView.ListView === listType ? 8 : 16
+          }}
           filter={filter}
           sort={sort}
           view={{ ...view, onSelected: handleManageList }}

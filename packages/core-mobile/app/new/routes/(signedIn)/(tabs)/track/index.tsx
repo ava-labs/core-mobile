@@ -1,6 +1,5 @@
 import {
   NavigationTitleHeader,
-  SCREEN_HEIGHT,
   SearchBar,
   SegmentedControl,
   Text,
@@ -17,7 +16,6 @@ import {
 import { LinearGradientBottomWrapper } from 'common/components/LinearGradientBottomWrapper'
 import { useBottomTabBarHeight } from 'common/hooks/useBottomTabBarHeight'
 import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
-import { useIsAndroidWithBottomBar } from 'common/hooks/useIsAndroidWithBottomBar'
 import { useFocusEffect, useRouter } from 'expo-router'
 import FavoriteScreen from 'features/track/market/components/FavoriteScreen'
 import MarketScreen from 'features/track/market/components/MarketScreen'
@@ -40,6 +38,10 @@ import Animated, {
   useAnimatedStyle,
   useSharedValue
 } from 'react-native-reanimated'
+import {
+  useSafeAreaFrame,
+  useSafeAreaInsets
+} from 'react-native-safe-area-context'
 import { MarketType } from 'store/watchlist/types'
 
 // const SEARCH_BAR_MARGIN_TOP = Platform.OS === 'ios' ? 60 : 55
@@ -49,7 +51,6 @@ const TrackHomeScreen = (): JSX.Element => {
   const { theme } = useTheme()
   const tabBarHeight = useBottomTabBarHeight()
   const headerHeight = useHeaderHeight()
-  const isAndroidWithBottomBar = useIsAndroidWithBottomBar()
   const [isSearchBarFocused, setSearchBarFocused] = useState(false)
   const [searchText, setSearchText] = useState('')
   const tabViewRef = useRef<CollapsibleTabsRef>(null)
@@ -179,27 +180,30 @@ const TrackHomeScreen = (): JSX.Element => {
     setTabBarLayout(event.nativeEvent.layout)
   }, [])
 
+  const insets = useSafeAreaInsets()
+  const frame = useSafeAreaFrame()
+
   const tabHeight = useMemo(() => {
     return Platform.select({
       ios:
-        SCREEN_HEIGHT -
+        frame.height -
         tabBarHeight -
         headerHeight -
         (tabBarLayout?.height ?? 0) -
         (searchBarLayout?.height ?? 0),
       android:
-        SCREEN_HEIGHT -
+        frame.height -
         headerHeight -
-        (searchBarLayout?.height ?? 0) +
-        (isAndroidWithBottomBar ? 0 : 20) -
-        48
+        insets.bottom -
+        (searchBarLayout?.height ?? 0)
     })
   }, [
+    frame.height,
     tabBarHeight,
     headerHeight,
     tabBarLayout?.height,
     searchBarLayout?.height,
-    isAndroidWithBottomBar
+    insets.bottom
   ])
 
   const contentContainerStyle = useMemo(() => {
