@@ -2,7 +2,6 @@ import { EvmModule } from '@avalabs/evm-module'
 import Logger from 'utils/Logger'
 import {
   Environment,
-  GetAddressParams,
   Module,
   ConstructorParams
 } from '@avalabs/vm-module-types'
@@ -22,6 +21,9 @@ import {
   getSolanaCaip2ChainId
 } from 'utils/caip2ChainIds'
 import { APPLICATION_NAME, APPLICATION_VERSION } from 'utils/network/constants'
+import { DerivationPath } from '@avalabs/core-wallets-sdk'
+import { emptyAddresses } from 'utils/publicKeys'
+import { CORE_MOBILE_WALLET_ID } from 'services/walletconnectv2/types'
 import { ModuleErrors, VmModuleErrors } from './errors'
 import { approvalController } from './ApprovalController/ApprovalController'
 
@@ -102,32 +104,28 @@ class ModuleManager {
   }
 
   /**
-   * @param param0 walletType
-   * @param param1 accountIndex
-   * @param param2 xpub
-   * @param param3 xpubXP
-   * @param param4 isTestnet
-   * @returns EVM, AVM, PVM and Bitcoin addresses
+   * @param param0 accountIndex
+   * @param param1 network
+   * @returns EVM, AVM, PVM, SVM and Bitcoin addresses
    */
-  getAddresses = async ({
-    walletType,
+  deriveAddresses = async ({
     accountIndex,
-    xpub,
-    xpubXP,
     network
-  }: GetAddressParams): Promise<Record<string, string>> => {
+  }: {
+    accountIndex: number
+    network: Network
+  }): Promise<Record<NetworkVMType, string>> => {
     return Promise.allSettled(
       this.modules.map(async module =>
-        module.getAddress({
-          walletType,
+        module.deriveAddress({
+          secretId: CORE_MOBILE_WALLET_ID,
           accountIndex,
-          xpub,
-          xpubXP,
-          network
+          network,
+          derivationPathType: DerivationPath.BIP44
         })
       )
     ).then(results => {
-      let addresses = {}
+      let addresses = emptyAddresses()
       results.forEach(result => {
         if (result.status === 'fulfilled') {
           addresses = { ...addresses, ...result.value }
