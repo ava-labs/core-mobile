@@ -71,6 +71,7 @@ class BiometricsSDK {
     await Keychain.getAllGenericPasswordServices()
   }
 
+  //FIXME: before last change this returned null as a sign that user made login, also important for migration #9
   getAccessType(): string {
     return commonStorage.getString(StorageKey.SECURE_ACCESS_SET) ?? 'PIN'
   }
