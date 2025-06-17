@@ -72,6 +72,8 @@ export type AnalyticsEvents = {
   'LoginWithMnemonic:WalletNameSet': undefined
   ManageNetworksClicked: undefined
   ManageTokensAddCustomToken: { status: string; address: string }
+  MnemonicWalletImported: { walletType: string }
+  PrivateKeyWalletImported: { walletType: string }
   MoonpayBuyClicked: undefined
   NetworkDetailsClicked: { chainId: number }
   NetworkEnabled: { networkChainId: string; isCustom: boolean }
