@@ -199,6 +199,7 @@ export const migrations = {
       [WalletType.UNSET]: undefined
     }
     const walletType = state.app.walletType as WalletType
+    // @ts-ignore WalletType.PRIVATE_KEY is added in migration 21, so the newWalletType type is any
     const newWalletType = walletTypeMapping[walletType]
 
     Object.entries(accountState.accounts).forEach(([accIndex, account]) => {

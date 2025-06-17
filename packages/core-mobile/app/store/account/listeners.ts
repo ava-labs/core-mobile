@@ -73,7 +73,10 @@ const initAccounts = async (
       listenerApi,
       initialAccounts: accounts // pass the initial account for analytic reporting purposes
     })
-  } else if (walletType === WalletType.MNEMONIC) {
+  } else if (
+    walletType === WalletType.MNEMONIC ||
+    walletType === WalletType.PRIVATE_KEY
+  ) {
     accounts[acc.id] = acc
     listenerApi.dispatch(setAccounts(accounts))
 

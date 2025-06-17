@@ -2,6 +2,7 @@ import { SeedlessPubKeysStorage } from 'seedless/services/storage/SeedlessPubKey
 import SeedlessWallet from 'seedless/services/wallet/SeedlessWallet'
 import SeedlessService from 'seedless/services/SeedlessService'
 import BiometricsSDK from 'utils/BiometricsSDK'
+import { PrivateKeyWallet } from 'services/wallet/PrivateKeyWallet'
 import { Wallet, WalletType } from './types'
 import { MnemonicWallet } from './MnemonicWallet'
 
@@ -44,6 +45,13 @@ class WalletFactory {
         const mnemonicWallet = new MnemonicWallet()
         await mnemonicWallet.initialize(walletSecret.value)
         return mnemonicWallet
+      }
+      case WalletType.PRIVATE_KEY: {
+        const walletSecret = await BiometricsSDK.loadWalletSecret(walletId)
+        if (!walletSecret.success) {
+          throw new Error('Failed to load wallet secret')
+        }
+        return new PrivateKeyWallet(walletSecret.value)
       }
       default:
         throw new Error(
