@@ -1,4 +1,4 @@
-import { ChainId, Network } from '@avalabs/core-chains-sdk'
+import { ChainId } from '@avalabs/core-chains-sdk'
 import BiometricsSDK from 'utils/BiometricsSDK'
 import {
   Contact,

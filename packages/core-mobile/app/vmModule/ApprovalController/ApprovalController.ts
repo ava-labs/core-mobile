@@ -7,8 +7,6 @@ import {
   RpcMethod,
   RpcRequest,
   RequestPublicKeyParams
-  RpcRequest,
-  RequestPublicKeyParams
 } from '@avalabs/vm-module-types'
 import { providerErrors, rpcErrors } from '@metamask/rpc-errors'
 import { btcSignTransaction } from 'vmModule/handlers/btcSignTransaction'
@@ -17,7 +15,6 @@ import { transactionSnackbar } from 'new/common/utils/toast'
 import { isInAppRequest } from 'store/rpc/utils/isInAppRequest'
 import { RequestContext } from 'store/rpc/types'
 import { NavigationPresentationMode } from 'new/common/types'
-import WalletService from 'services/wallet/WalletService'
 import { solanaSendTransaction } from 'vmModule/handlers/solanaSendTransaction'
 import { Account } from 'store/account'
 import { WalletType } from 'services/wallet/types'
