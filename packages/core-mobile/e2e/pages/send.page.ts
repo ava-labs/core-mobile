@@ -6,6 +6,7 @@ import sendLoc from '../locators/send.loc'
 import commonElsPage from './commonEls.page'
 import selectTokenPage from './selectToken.page'
 import portfolioPage from './portfolio.page'
+import collectiblesPage from './collectibles.page'
 
 class SendPage {
   get addressBook() {
@@ -69,6 +70,7 @@ class SendPage {
   }
 
   async tapNextButton() {
+    await Actions.waitForElementNoSync(this.nextButton, 8000)
     await Actions.tapElementAtIndex(this.nextButton, 0)
   }
 
@@ -113,9 +115,18 @@ class SendPage {
     await this.getSelectTokenList()
     await selectTokenPage.selectToken(token)
     await commonElsPage.enterAmount(amount)
-    await this.waitForNextBtnEnabled()
-    await this.tapNextButton()
-    await this.tapApproveButton()
+    await commonElsPage.tapNextButton()
+    await commonElsPage.tapApproveButton()
+  }
+
+  async sendNFT(nftName = 'BUNNY', account = sendLoc.accountTwo) {
+    await collectiblesPage.tapNFT(nftName)
+    await collectiblesPage.swipeUpForDetails()
+    await portfolioPage.tapSend()
+    await commonElsPage.dismissTransactionOnboarding()
+    await commonElsPage.typeSearchBar(account)
+    await Actions.tapElementAtIndex(by.text(account), 1)
+    await commonElsPage.tapApproveButton()
   }
 
   // eslint-disable-next-line max-params

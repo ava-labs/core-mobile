@@ -458,6 +458,7 @@ export const SwapScreen = (): JSX.Element => {
   const renderFooter = useCallback(() => {
     return (
       <Button
+        testID={!canSwap || swapInProcess ? 'next_btn_disabled' : 'next_btn'}
         type="primary"
         size="large"
         onPress={handleSwap}

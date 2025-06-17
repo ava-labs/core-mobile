@@ -11,8 +11,7 @@ export default {
   linkSvg: 'link_svg',
   approveBtn: 'approve_button',
   rejectBtn: 'reject_button',
-  tokenSpendApproval: 'Token Spend Approval',
+  tokenSpendApproval: 'Do you approve this spend limit?',
   swapTitle: 'Swap',
-  fromTokenSelector: 'from_token_selector',
-  toTokenSelector: 'to_token_selector'
+  selectTokenTitle: 'select_token_title'
 }

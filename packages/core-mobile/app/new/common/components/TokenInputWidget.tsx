@@ -176,6 +176,7 @@ export const TokenInputWidget = ({
                     {token && <Text variant="subtitle2">{title}</Text>}
                     <View sx={{ flexDirection: 'row', alignItems: 'center' }}>
                       <Text
+                        testID="select_token_title"
                         variant="heading6"
                         sx={{
                           marginTop: 0

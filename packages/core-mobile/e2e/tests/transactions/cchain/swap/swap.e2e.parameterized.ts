@@ -2,7 +2,7 @@ import actions from '../../../../helpers/actions'
 import { SwapTokens } from '../../../../helpers/tokens'
 import { warmup } from '../../../../helpers/warmup'
 import swapTabLoc from '../../../../locators/swapTab.loc'
-import SendPage from '../../../../pages/send.page'
+import commonElsPage from '../../../../pages/commonEls.page'
 import SwapTabPage from '../../../../pages/swapTab.page'
 
 describe('Swap AVAX to Parameterized Tokens', () => {
@@ -17,7 +17,7 @@ describe('Swap AVAX to Parameterized Tokens', () => {
     .forEach(({ symbol }) => {
       test(`should swap AVAX to ${symbol}`, async () => {
         await SwapTabPage.swap(swapTabLoc.avaxSymbol, symbol)
-        await SendPage.verifySuccessToast()
+        await commonElsPage.verifySuccessToast()
         console.log(`${symbol}: Swap Transaction Successful`)
       })
     }, 120000)
@@ -28,7 +28,7 @@ describe('Swap AVAX to Parameterized Tokens', () => {
     .forEach(({ symbol }) => {
       test(`should swap ${symbol} to AVAX`, async () => {
         await SwapTabPage.swap(symbol, swapTabLoc.avaxSymbol)
-        await SendPage.verifySuccessToast()
+        await commonElsPage.verifySuccessToast()
         console.log(`${symbol}: Swap Transaction Successful`)
       })
     }, 120000)
@@ -43,7 +43,7 @@ describe('Swap AVAX to Parameterized Tokens', () => {
     const secondToken = secondHalf[index] || { symbol: 'AVAX' }
     test(`should swap ${firstToken.symbol} to ${secondToken.symbol}`, async () => {
       await SwapTabPage.swap(firstToken.symbol, secondToken.symbol)
-      await SendPage.verifySuccessToast()
+      await commonElsPage.verifySuccessToast()
       console.log(`${firstToken.symbol}: Swap Transaction Successful`)
     })
   }, 120000)
