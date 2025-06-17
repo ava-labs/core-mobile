@@ -230,6 +230,7 @@ export const SendContextProvider = ({
     return undefined
   }, [accounts, contacts, toAddress, isDeveloperMode])
 
+  // eslint-disable-next-line sonarjs/cognitive-complexity
   const addressToSend = useMemo(() => {
     if (selectedToken === undefined) {
       return toAddress?.recipientType === 'address' ? toAddress.to : undefined
@@ -244,6 +245,10 @@ export const SendContextProvider = ({
       return recipient?.addressXP ? recipient.addressXP : undefined
     }
 
+    if (isSolanaChainId(selectedToken?.networkChainId)) {
+      return recipient?.addressSVM ? recipient.addressSVM : undefined
+    }
+
     switch (network.vmName) {
       case NetworkVMType.EVM:
         return recipient?.address ? recipient.address : undefined
@@ -254,7 +259,7 @@ export const SendContextProvider = ({
     }
   }, [
     selectedToken,
-    network.vmName,
+    network,
     toAddress?.recipientType,
     toAddress?.to,
     recipient?.addressBTC,
