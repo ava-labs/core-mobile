@@ -51,7 +51,6 @@ export const send = async ({
           provider
         })
 
-
         const compiledTx = compileSolanaTx(tx)
         const [txHash, txError] = await resolve(
           request({
