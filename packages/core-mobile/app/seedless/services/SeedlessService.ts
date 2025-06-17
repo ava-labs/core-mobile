@@ -9,7 +9,7 @@ import SeedlessSession from './SeedlessSession'
  * https://github.com/cubist-labs/CubeSigner-TypeScript-SDK
  */
 class SeedlessService {
-  private cache: KeyInfo[] | undefined = undefined
+  private sessionKeysListCache: KeyInfo[] | undefined = undefined
 
   // According to Cubist, CubeSigner creates a temporary session with the scopes manage:mfa:vote:fido and manage:mfa:vote:totp,
   // enabling users to approve or deny login attempts using MFA. Therefore, specifying only sign:* allows users
@@ -33,12 +33,12 @@ class SeedlessService {
    */
   async getSessionKeysList(type?: KeyType): Promise<KeyInfo[]> {
     let keysList: KeyInfo[] = []
-    if (this.cache && this.cache.length > 0) {
-      keysList = this.cache
+    if (this.sessionKeysListCache && this.sessionKeysListCache.length > 0) {
+      keysList = this.sessionKeysListCache
     } else {
       const signerSession = await this.session.getSignerClient()
       keysList = await signerSession.apiClient.sessionKeysList()
-      this.cache = keysList
+      this.sessionKeysListCache = keysList
     }
 
     return type !== undefined
@@ -120,7 +120,7 @@ class SeedlessService {
   }
 
   invalidateSessionKeysCache(): void {
-    this.cache = undefined
+    this.sessionKeysListCache = undefined
   }
 }
 
