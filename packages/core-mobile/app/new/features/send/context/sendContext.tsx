@@ -77,6 +77,8 @@ interface SendContextState {
   network: Network
   addressToSend?: string
   resetAmount: () => void
+  minAmount: TokenUnit | undefined
+  setMinAmount: Dispatch<TokenUnit>
 }
 
 export const SendContext = createContext<SendContextState>(
@@ -91,6 +93,7 @@ export const SendContextProvider = ({
   const { allNetworks, getFromPopulatedNetwork } = useNetworks()
   const { accounts, contacts } = useContacts()
   const [maxAmount, setMaxAmount] = useState<TokenUnit>()
+  const [minAmount, setMinAmount] = useState<TokenUnit>()
   const [amount, setAmount] = useState<TokenUnit>()
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const [toAddress, setToAddress] = useState<ToAddress>()
@@ -278,6 +281,8 @@ export const SendContextProvider = ({
     network,
     isValid: error === undefined,
     resetAmount,
+    minAmount,
+    setMinAmount,
     addressToSend
   }
   return <SendContext.Provider value={state}>{children}</SendContext.Provider>
