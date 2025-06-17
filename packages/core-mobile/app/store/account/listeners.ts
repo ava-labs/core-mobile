@@ -14,7 +14,11 @@ import { recentAccountsStore } from 'new/features/accountSettings/store'
 import { isEvmPublicKey } from 'utils/publicKeys'
 import { selectActiveNetwork } from 'store/network'
 import { Network } from '@avalabs/core-chains-sdk'
-import { selectIsSolanaSupportBlocked } from 'store/posthog'
+import {
+  selectHasBeenViewedOnce,
+  setViewOnce,
+  ViewOnceKey
+} from 'store/viewOnce'
 import {
   selectAccounts,
   selectActiveAccount,
@@ -180,18 +184,20 @@ const migrateSolanaAddressesIfNeeded = async (
   _action: AnyAction,
   listenerApi: AppListenerEffectAPI
 ): Promise<void> => {
-  const state = listenerApi.getState()
-  const isSolanaSupportBlocked = selectIsSolanaSupportBlocked(state)
+  const { dispatch, getState } = listenerApi
+  const state = getState()
+  const hasSolanaAddressesMigrated = selectHasBeenViewedOnce(
+    ViewOnceKey.MIGRATE_SOLANA_ADDRESSES
+  )(state)
 
-  if (isSolanaSupportBlocked) {
-    return
-  }
-
-  const accounts = selectAccounts(state)
-  const entries = Object.values(accounts)
-
-  if (entries.some(account => !account.addressSVM)) {
-    reloadAccounts(_action, listenerApi)
+  if (!hasSolanaAddressesMigrated) {
+    const accounts = selectAccounts(state)
+    const entries = Object.values(accounts)
+    if (entries.some(account => !account.addressSVM)) {
+      // reload only when there are accounts without Solana addresses
+      reloadAccounts(_action, listenerApi)
+    }
+    dispatch(setViewOnce(ViewOnceKey.MIGRATE_SOLANA_ADDRESSES))
   }
 }
 
