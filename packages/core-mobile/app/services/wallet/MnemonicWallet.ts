@@ -432,7 +432,6 @@ export class MnemonicWallet implements Wallet {
     network: Network
     provider: SolanaProvider
   }): Promise<string> {
-    
     try {
       const signer = this.getSolanaSigner(accountIndex)
       return await signer.signTx(transaction.serializedTx, provider)

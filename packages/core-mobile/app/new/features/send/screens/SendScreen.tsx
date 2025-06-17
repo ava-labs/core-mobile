@@ -85,7 +85,6 @@ export const SendScreen = (): JSX.Element => {
 
   const handleFailure = useCallback(
     (error: unknown): void => {
-      console.log('error', error)
       if (error instanceof Error && !isUserRejectedError(error)) {
         transactionSnackbar.error({ error: getJsonRpcErrorMessage(error) })
         network &&

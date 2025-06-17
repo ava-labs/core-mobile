@@ -13,7 +13,6 @@ import {
 import { Networks } from 'store/network/types'
 import ModuleManager from 'vmModule/ModuleManager'
 import { mapToVmNetwork } from 'vmModule/utils/mapToVmNetwork'
-import { networkIDs } from '@avalabs/avalanchejs'
 import NetworkService from '../NetworkService'
 
 export function getSVMProvider(

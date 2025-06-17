@@ -456,7 +456,6 @@ export default class SeedlessWallet implements Wallet {
   public async signSolanaTransaction({
     accountIndex,
     transaction,
-    network,
     provider
   }: {
     accountIndex: number
@@ -484,7 +483,7 @@ export default class SeedlessWallet implements Wallet {
       const address = solanaKey.material_id
 
       // Check if signature is required
-      if (!this.#requiresSolanaSignature(address, signatures)) {
+      if (!this.requiresSolanaSignature(address, signatures)) {
         return transaction.serializedTx
       }
 
@@ -507,12 +506,15 @@ export default class SeedlessWallet implements Wallet {
           [address]: signature
         }
       })
-    } catch (error) {
-      throw new Error(`Failed to sign Solana transaction: ${error.message}`)
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        throw new Error(`Failed to sign Solana transaction: ${error.message}`)
+      }
+      throw new Error('Failed to sign Solana transaction: Unknown error')
     }
   }
 
-  #requiresSolanaSignature(
+  private requiresSolanaSignature(
     address: string,
     signatures: Record<string, Uint8Array | null>
   ): boolean {
