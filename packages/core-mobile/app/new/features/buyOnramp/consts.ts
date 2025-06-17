@@ -316,12 +316,12 @@ export const PaymentMethodTimeLimits = {
 }
 
 export enum PaymentTypes {
-  CARD,
-  BANK_TRANSFER,
-  MOBILE_WALLET,
-  LOCAL,
-  EXCHANGE,
-  CASH
+  CARD = 'CARD',
+  BANK_TRANSFER = 'BANK_TRANSFER',
+  MOBILE_WALLET = 'MOBILE_WALLET',
+  LOCAL = 'LOCAL',
+  EXCHANGE = 'EXCHANGE',
+  CASH = 'CASH'
 }
 
 export enum ServiceProviders {

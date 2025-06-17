@@ -12,7 +12,7 @@ import { useSearchServiceProviders } from './useSearchServiceProviders'
 export type SearchPaymentMethodsParams = {
   categories: ServiceProviderCategories[]
   countries: string[]
-  serviceProviders?: (keyof typeof ServiceProviders)[]
+  serviceProviders?: ServiceProviders[]
   accountFilter?: boolean
   fiatCurrencies?: string[]
   cryptoCurrencyCodes?: string[]
