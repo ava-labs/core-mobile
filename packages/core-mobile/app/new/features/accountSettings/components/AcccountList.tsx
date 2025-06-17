@@ -36,7 +36,9 @@ export const AccountList = (): React.JSX.Element => {
   }, [activeAccount, addRecentAccount, recentAccountIds])
 
   const recentAccounts = useMemo(() => {
-    return recentAccountIds.map(id => accountCollection[id])
+    return recentAccountIds
+      .map(id => accountCollection[id])
+      .filter((account): account is Account => account !== undefined)
   }, [accountCollection, recentAccountIds])
 
   useEffect(() => {
@@ -86,14 +88,14 @@ export const AccountList = (): React.JSX.Element => {
     ({ item, index }: { item: Account; index: number }) => (
       <AccountItem
         index={index}
-        isActive={item?.index === activeAccount?.index}
+        isActive={item.id === activeAccount?.id}
         account={item as Account}
         onSelectAccount={onSelectAccount}
         gotoAccountDetails={gotoAccountDetails}
         testID={`account #${index + 1}`}
       />
     ),
-    [activeAccount?.index, gotoAccountDetails, onSelectAccount]
+    [activeAccount?.id, gotoAccountDetails, onSelectAccount]
   )
 
   return (

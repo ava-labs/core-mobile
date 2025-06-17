@@ -34,7 +34,17 @@ export const recentAccountsStore = create<RecentAccountsState>()(
     }),
     {
       name: ZustandStorageKeys.RECENT_ACCOUNTS,
-      storage: zustandMMKVStorage
+      storage: zustandMMKVStorage,
+      migrate: (persistedState: any) => {
+        // Check if this is legacy data with recentAccountIndexes
+        if (persistedState && 'recentAccountIndexes' in persistedState) {
+          // For now, we'll clear the old data since we can't easily convert indexes to IDs
+          // without access to the account store here
+          delete persistedState.recentAccountIndexes
+        }
+        return persistedState
+      },
+      version: 1
     }
   )
 )
