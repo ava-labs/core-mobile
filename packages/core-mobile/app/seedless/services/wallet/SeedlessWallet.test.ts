@@ -1,4 +1,5 @@
 import * as cs from '@cubist-labs/cubesigner-sdk'
+import { Curve } from 'utils/publicKeys'
 import CoreSeedlessAPIService from '../CoreSeedlessAPIService'
 import SeedlessWallet from './SeedlessWallet'
 
@@ -25,7 +26,13 @@ describe('SeedlessWallet', () => {
           sessionKeysList
         }
       },
-      { evm: 'testPublicKey' }
+      [
+        {
+          curve: Curve.SECP256K1,
+          derivationPath: "m/44'/60'/0'/0/0",
+          key: 'testPublicKey'
+        }
+      ]
     )
   })
   it('should have returned the mnemonic id', async () => {
@@ -42,7 +49,13 @@ describe('SeedlessWallet', () => {
           sessionKeysList: () => []
         }
       },
-      { evm: 'testPublicKey' }
+      [
+        {
+          curve: Curve.SECP256K1,
+          derivationPath: "m/44'/60'/0'/0/0",
+          key: 'testPublicKey'
+        }
+      ]
     )
     try {
       // @ts-ignore
@@ -117,9 +130,13 @@ describe('SeedlessWallet', () => {
         }
       }
       // @ts-ignore
-      const walletWithMockClient = new SeedlessWallet(client, {
-        evm: 'testPublicKey'
-      })
+      const walletWithMockClient = new SeedlessWallet(client, [
+        {
+          curve: Curve.SECP256K1,
+          derivationPath: "m/44'/60'/0'/0/0",
+          key: 'testPublicKey'
+        }
+      ])
       try {
         await walletWithMockClient.addAccount(1)
       } catch (error) {
@@ -134,9 +151,13 @@ describe('SeedlessWallet', () => {
         }
       }
       // @ts-ignore
-      const walletWithMockClient = new SeedlessWallet(client, {
-        evm: 'testWrongPublicKey'
-      })
+      const walletWithMockClient = new SeedlessWallet(client, [
+        {
+          curve: Curve.SECP256K1,
+          derivationPath: "m/44'/60'/0'/0/0",
+          key: 'testWrongPublicKey'
+        }
+      ])
       try {
         await walletWithMockClient.addAccount(1)
       } catch (error) {

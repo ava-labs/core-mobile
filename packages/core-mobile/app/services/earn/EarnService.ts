@@ -356,7 +356,10 @@ class EarnService {
       const oppositeNetworkAddresses = (
         await Promise.all(
           accountsArray.map(account =>
-            WalletService.getAddresses(account.index, network)
+            WalletService.getAddresses({
+              accountIndex: account.index,
+              network
+            })
           )
         )
       ).map(address => address.PVM)
