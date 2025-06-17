@@ -3,7 +3,7 @@ import { useCallback } from 'react'
 import { useSelector } from 'react-redux'
 import { selectIsMeldIntegrationBlocked } from 'store/posthog'
 import { useMemo } from 'react'
-import { useOnRampToken } from '../store'
+import { useOnRampSourceAmount, useOnRampToken } from '../store'
 import { MELD_CURRENCY_CODES, ServiceProviderCategories } from '../consts'
 import { LocalTokenWithBalance } from '../../../../store/balance/types'
 import { useSearchCryptoCurrencies } from './useSearchCryptoCurrencies'
@@ -67,6 +67,7 @@ export const useBuy = (): {
         return
       }
 
+      setSourceAmount(0)
       if (token || address) {
         const cryptoCurrency = getBuyableCryptoCurrency(token, address)
         setOnrampToken(cryptoCurrency)
@@ -82,7 +83,8 @@ export const useBuy = (): {
       getBuyableCryptoCurrency,
       isMeldIntegrationBlocked,
       navigate,
-      setOnrampToken
+      setOnrampToken,
+      setSourceAmount
     ]
   )
 

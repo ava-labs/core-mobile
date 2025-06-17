@@ -1,6 +1,6 @@
 import { useQuery, UseQueryResult } from '@tanstack/react-query'
-import MeldService from 'services/meld/MeldService'
-import { PaymentMethods, ServiceProviders } from 'services/meld/consts'
+import { PaymentMethods, ServiceProviders } from '../consts'
+import MeldService from '../services/MeldService'
 import { useLocale } from './useLocale'
 
 export type CreateCryptoQuoteParams = {
@@ -9,7 +9,7 @@ export type CreateCryptoQuoteParams = {
   sourceCurrencyCode: string
   destinationCurrencyCode: string
   countryCode: string
-  paymentMethodType?: keyof typeof PaymentMethods
+  paymentMethodType?: PaymentMethods
   subdivision?: string
 }
 
@@ -27,8 +27,8 @@ export type Quote = {
   destinationAmount: number
   destinationCurrencyCode: string
   exchangeRate: number
-  paymentMethodType: keyof typeof PaymentMethods
-  serviceProvider: keyof typeof ServiceProviders
+  paymentMethodType: PaymentMethods
+  serviceProvider: ServiceProviders
   customerScore: number
   institutionName?: string
   lowKyc: boolean

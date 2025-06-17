@@ -6,16 +6,6 @@ import {
   ServiceProviders
 } from '../consts'
 
-const zodEnum = <T extends string>(arr: T[]): [T, ...T[]] => arr as [T, ...T[]]
-
-const paymentTypeKeys = Object.keys(PaymentTypes) as Array<
-  keyof typeof PaymentTypes
->
-
-const categoryKeys = Object.keys(ServiceProviderCategories) as Array<
-  keyof typeof ServiceProviderCategories
->
-
 export const SearchCountrySchema = object({
   countryCode: string(),
   name: string(),
@@ -43,8 +33,8 @@ export const SearchServiceProviderSchema = object({
   serviceProvider: z.nativeEnum(ServiceProviders),
   name: string(),
   status: string(),
-  categories: z.enum(zodEnum(categoryKeys)).array(),
-  categoryStatuses: record(z.enum(zodEnum(categoryKeys)), string()),
+  categories: z.nativeEnum(ServiceProviderCategories).array(),
+  categoryStatuses: record(z.nativeEnum(ServiceProviderCategories), string()),
   websiteUrl: string().nullable(),
   customerSupportUrl: string().nullable(),
   logos: object({
@@ -83,7 +73,7 @@ export const GetPurchaseLimitsSchema = object({
 export const SearchPaymentMethodsSchema = object({
   paymentMethod: z.nativeEnum(PaymentMethods),
   name: string(),
-  paymentType: z.enum(zodEnum(paymentTypeKeys)),
+  paymentType: z.nativeEnum(PaymentTypes),
   logos: object({
     dark: string(),
     light: string()
