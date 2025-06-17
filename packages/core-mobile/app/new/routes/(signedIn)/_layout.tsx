@@ -148,6 +148,18 @@ export default function WalletLayout(): JSX.Element {
             name="(modals)/selectCustomTokenNetwork"
             options={formSheetScreensOptions}
           />
+          <Stack.Screen
+            name="(modals)/buyOnramp"
+            options={modalScreensOptions}
+          />
+          <Stack.Screen
+            name="(modals)/selectBuyToken"
+            options={formSheetScreensOptions}
+          />
+          <Stack.Screen
+            name="(modals)/selectPaymentMethod"
+            options={formSheetScreensOptions}
+          />
         </Stack>
         <PolyfillCrypto />
         <LastTransactedNetworks />

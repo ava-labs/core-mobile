@@ -224,6 +224,8 @@ __metadata:
     "@bottom-tabs/react-navigation": 0.9.0
     "@coinbase/cbpay-js": 2.2.1
     "@config-plugins/detox": 9.0.0
+    "@contentful/rich-text-react-renderer": 16.0.2
+    "@contentful/rich-text-types": 17.0.1
     "@cubist-labs/cubesigner-sdk": 0.4.117-0
     "@cubist-labs/cubesigner-sdk-ethers-v6": 0.4.117-0
     "@datadog/mobile-react-native": 2.6.4
@@ -280,6 +282,7 @@ __metadata:
     "@tanstack/query-sync-storage-persister": 5.59.6
     "@tanstack/react-query": 5.59.8
     "@tanstack/react-query-persist-client": 5.59.6
+    "@testing-library/react-hooks": 8.0.1
     "@tradle/react-native-http": 2.0.1
     "@typechain/ethers-v6": 0.5.1
     "@types/big.js": 6.2.2
@@ -4213,6 +4216,27 @@ __metadata:
   peerDependencies:
     expo: ^52
   checksum: b4a07a0ee0ef8937a3c8e77aa8d5c257cad74704c0f2633c871a303153987ee84475782860edb26a3233943c560337ffd61af99024e73cbe4c958c290db114e1
+  languageName: node
+  linkType: hard
+
+"@contentful/rich-text-react-renderer@npm:16.0.2":
+  version: 16.0.2
+  resolution: "@contentful/rich-text-react-renderer@npm:16.0.2"
+  dependencies:
+    "@contentful/rich-text-types": ^17.0.1
+  peerDependencies:
+    react: ^16.8.6 || ^17.0.0 || ^18.0.0 || ^19.0.0
+    react-dom: ^16.8.6 || ^17.0.0 || ^18.0.0 || ^19.0.0
+  checksum: 34e36b363763389eea9c43cade7dd122d099069596344c97e3ef564661b33124a7724c78da5340b8b3de3397b9904299e71e6caf16acd4e6cda50ae8df207b4e
+  languageName: node
+  linkType: hard
+
+"@contentful/rich-text-types@npm:17.0.1, @contentful/rich-text-types@npm:^17.0.1":
+  version: 17.0.1
+  resolution: "@contentful/rich-text-types@npm:17.0.1"
+  dependencies:
+    is-plain-obj: ^3.0.0
+  checksum: 7c9828c8f0f6199bc8cf63edb7a5c38d5807e6a22e2b41fdb649dced88b12af2311322f739095d2786ba745dba8485254b0b7d4e8ceb70e5679a2f28b407f503
   languageName: node
   linkType: hard
 
@@ -12572,6 +12596,28 @@ __metadata:
   peerDependencies:
     react: ^18 || ^19
   checksum: 584fa340f197d3afd8dc9639ab5fa0238eea41050b2ddd642f3be94d5c8a16cb7773da3fc6e90b3c1b473c9170fb4eedd83460270ce014a004cf97df3ab36f15
+  languageName: node
+  linkType: hard
+
+"@testing-library/react-hooks@npm:8.0.1":
+  version: 8.0.1
+  resolution: "@testing-library/react-hooks@npm:8.0.1"
+  dependencies:
+    "@babel/runtime": ^7.12.5
+    react-error-boundary: ^3.1.0
+  peerDependencies:
+    "@types/react": ^16.9.0 || ^17.0.0
+    react: ^16.9.0 || ^17.0.0
+    react-dom: ^16.9.0 || ^17.0.0
+    react-test-renderer: ^16.9.0 || ^17.0.0
+  peerDependenciesMeta:
+    "@types/react":
+      optional: true
+    react-dom:
+      optional: true
+    react-test-renderer:
+      optional: true
+  checksum: 7fe44352e920deb5cb1876f80d64e48615232072c9d5382f1e0284b3aab46bb1c659a040b774c45cdf084a5257b8fe463f7e08695ad8480d8a15635d4d3d1f6d
   languageName: node
   linkType: hard
 
@@ -22152,6 +22198,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"is-plain-obj@npm:^3.0.0":
+  version: 3.0.0
+  resolution: "is-plain-obj@npm:3.0.0"
+  checksum: a6ebdf8e12ab73f33530641972a72a4b8aed6df04f762070d823808303e4f76d87d5ea5bd76f96a7bbe83d93f04ac7764429c29413bd9049853a69cb630fb21c
+  languageName: node
+  linkType: hard
+
 "is-plain-object@npm:5.0.0":
   version: 5.0.0
   resolution: "is-plain-object@npm:5.0.0"
@@ -27297,6 +27350,17 @@ __metadata:
     react: ^0.14.8 || ^15.0.1 || ^16.0.0 || ^17.0.1 || ^18.0.0
     react-dom: ^0.14.8 || ^15.0.1 || ^16.0.0 || ^17.0.1 || ^18.0.0
   checksum: c3907cc4c1d3e9ecc8ca7727058ebcba6ec89848d9e07bfd2c77ee8f28f1ad99bf55e38359dec8a1125de83d41ac09a2874f53c41415edc86ffa9840fa1b7856
+  languageName: node
+  linkType: hard
+
+"react-error-boundary@npm:^3.1.0":
+  version: 3.1.4
+  resolution: "react-error-boundary@npm:3.1.4"
+  dependencies:
+    "@babel/runtime": ^7.12.5
+  peerDependencies:
+    react: ">=16.13.1"
+  checksum: f36270a5d775a25c8920f854c0d91649ceea417b15b5bc51e270a959b0476647bb79abb4da3be7dd9a4597b029214e8fe43ea914a7f16fa7543c91f784977f1b
   languageName: node
   linkType: hard
 

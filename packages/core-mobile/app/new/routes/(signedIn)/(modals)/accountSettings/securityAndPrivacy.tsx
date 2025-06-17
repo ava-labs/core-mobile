@@ -7,24 +7,20 @@ import {
 } from '@avalabs/k2-alpine'
 import { ScrollScreen } from 'common/components/ScrollScreen'
 import { Space } from 'common/components/Space'
-import { useFocusEffect, useRouter } from 'expo-router'
+import { useRouter } from 'expo-router'
 import { useConnectedDapps } from 'features/accountSettings/hooks/useConnectedDapps'
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import React, { useCallback, useMemo } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { StorageKey } from 'resources/Constants'
 import AnalyticsService from 'services/analytics/AnalyticsService'
-import DeviceInfoService, {
-  BiometricType
-} from 'services/deviceInfo/DeviceInfoService'
 import { WalletType } from 'services/wallet/types'
 import { selectWalletType } from 'store/app'
 import {
   selectCoreAnalyticsConsent,
   setCoreAnalytics
 } from 'store/settings/securityPrivacy'
+import { useStoredBiometrics } from 'common/hooks/useStoredBiometrics'
 import BiometricsSDK from 'utils/BiometricsSDK'
 import Logger from 'utils/Logger'
-import { commonStorage } from 'utils/mmkv'
 
 const SecurityAndPrivacyScreen = (): JSX.Element => {
   const {
@@ -34,43 +30,25 @@ const SecurityAndPrivacyScreen = (): JSX.Element => {
   const coreAnalyticsConsent = useSelector(selectCoreAnalyticsConsent)
   const { allApprovedDapps } = useConnectedDapps()
   const walletType = useSelector(selectWalletType)
-  const [biometricType, setBiometricType] = useState<BiometricType>(
-    BiometricType.NONE
-  )
+  const {
+    biometricType,
+    isBiometricAvailable,
+    useBiometrics,
+    setUseBiometrics
+  } = useStoredBiometrics()
   const { navigate } = useRouter()
-
-  const [isBiometricSwitchEnabled, setIsBiometricSwitchEnabled] =
-    useState(false)
-  const [isBiometricAvailable, setIsBiometricAvailable] = useState(false)
-
-  useFocusEffect(
-    useCallback(() => {
-      BiometricsSDK.canUseBiometry()
-        .then((biometricAvailable: boolean) => {
-          setIsBiometricAvailable(biometricAvailable)
-        })
-        .catch(Logger.error)
-
-      const type = commonStorage.getString(StorageKey.SECURE_ACCESS_SET)
-      if (type) {
-        setIsBiometricSwitchEnabled(type === 'BIO')
-      } else {
-        Logger.error('Secure access type not found')
-      }
-    }, [])
-  )
 
   const handleSwitchBiometric = useCallback(
     (value: boolean): void => {
-      setIsBiometricSwitchEnabled(value)
+      setUseBiometrics(value)
       if (value) {
         // @ts-ignore TODO: make routes typesafe
         navigate('/accountSettings/biometricVerifyPin')
       } else {
-        commonStorage.set(StorageKey.SECURE_ACCESS_SET, 'PIN')
+        BiometricsSDK.disableBiometry().catch(Logger.error)
       }
     },
-    [navigate]
+    [navigate, setUseBiometrics]
   )
 
   const connectedSitesData = useMemo(() => {
@@ -101,10 +79,7 @@ const SecurityAndPrivacyScreen = (): JSX.Element => {
       data.push({
         title: `Use ${biometricType}`,
         value: (
-          <Toggle
-            onValueChange={handleSwitchBiometric}
-            value={isBiometricSwitchEnabled}
-          />
+          <Toggle onValueChange={handleSwitchBiometric} value={useBiometrics} />
         )
       })
     }
@@ -113,7 +88,7 @@ const SecurityAndPrivacyScreen = (): JSX.Element => {
     biometricType,
     handleSwitchBiometric,
     isBiometricAvailable,
-    isBiometricSwitchEnabled,
+    useBiometrics,
     navigate
   ])
 
@@ -173,14 +148,6 @@ const SecurityAndPrivacyScreen = (): JSX.Element => {
       }
     ]
   }, [coreAnalyticsConsent, handleToggleCoreAnalyticsConsent])
-
-  useEffect(() => {
-    const getBiometryType = async (): Promise<void> => {
-      const type = await DeviceInfoService.getBiometricType()
-      setBiometricType(type)
-    }
-    getBiometryType()
-  }, [])
 
   return (
     <ScrollScreen

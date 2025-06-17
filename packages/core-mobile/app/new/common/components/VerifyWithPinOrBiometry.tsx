@@ -3,15 +3,14 @@ import { usePinOrBiometryLogin } from 'common/hooks/usePinOrBiometryLogin'
 import { useFocusEffect } from 'expo-router'
 import React, { useCallback, useEffect, useRef } from 'react'
 import { InteractionManager, Keyboard, Platform } from 'react-native'
-import { Subscription } from 'rxjs'
-import { BiometricType } from 'services/deviceInfo/DeviceInfoService'
 import Logger from 'utils/Logger'
+import { BiometricType } from 'utils/BiometricsSDK'
 import { ScrollScreen } from './ScrollScreen'
 
 export const VerifyWithPinOrBiometry = ({
-  onLoginSuccess
+  onVerifySuccess
 }: {
-  onLoginSuccess: (mnemonic: string) => void
+  onVerifySuccess: () => void
 }): JSX.Element => {
   const pinInputRef = useRef<PinInputActions>(null)
 
@@ -31,8 +30,8 @@ export const VerifyWithPinOrBiometry = ({
   const {
     enteredPin,
     onEnterPin,
-    mnemonic,
-    promptForWalletLoadingIfExists,
+    verified,
+    verifyBiometric,
     disableKeypad,
     timeRemaining,
     bioType
@@ -54,11 +53,13 @@ export const VerifyWithPinOrBiometry = ({
     pinInputRef.current?.blur()
   }
 
-  const handlePromptBioLogin = useCallback(() => {
-    return promptForWalletLoadingIfExists().subscribe({
-      error: err => Logger.error('failed to check biometric', err)
-    })
-  }, [promptForWalletLoadingIfExists])
+  const handlePromptBioLogin = useCallback(async () => {
+    try {
+      return await verifyBiometric()
+    } catch (err) {
+      Logger.error('failed to check biometric', err)
+    }
+  }, [verifyBiometric])
 
   useEffect(() => {
     // When the hide keyboard button is pressed on Android, it doesn’t update the isEnteringPin state,
@@ -80,10 +81,9 @@ export const VerifyWithPinOrBiometry = ({
 
   useFocusEffect(
     useCallback(() => {
-      let sub: Subscription
       InteractionManager.runAfterInteractions(() => {
         if (bioType !== BiometricType.NONE) {
-          sub = handlePromptBioLogin()
+          handlePromptBioLogin()
         } else {
           focusPinInput()
         }
@@ -91,16 +91,15 @@ export const VerifyWithPinOrBiometry = ({
 
       return () => {
         blurPinInput()
-        sub?.unsubscribe()
       }
     }, [bioType, handlePromptBioLogin, focusPinInput])
   )
 
   useEffect(() => {
-    if (mnemonic) {
-      onLoginSuccess(mnemonic)
+    if (verified) {
+      onVerifySuccess()
     }
-  }, [mnemonic, onLoginSuccess])
+  }, [verified, onVerifySuccess])
 
   return (
     <ScrollScreen

@@ -2,7 +2,6 @@ import onboardingLoc from '../locators/onboarding.loc'
 import Assert from '../helpers/assertions'
 import Action from '../helpers/actions'
 import delay from '../helpers/waits'
-import actions from '../helpers/actions'
 import commonElsPage from './commonEls.page'
 
 class OnboardingPage {
@@ -118,10 +117,6 @@ class OnboardingPage {
     return by.text(onboardingLoc.nameWalletTitle)
   }
 
-  get nameWalletContent() {
-    return by.text(onboardingLoc.nameWalletContent)
-  }
-
   get letsgo() {
     return by.id(onboardingLoc.letsgo)
   }
@@ -221,7 +216,11 @@ class OnboardingPage {
 
   async enterRecoveryPhrase(recoveryPhrase: string) {
     await Action.setInputText(this.recoveryPhraseInput, recoveryPhrase, 0)
-    await actions.dismissKeyboard()
+    try {
+      await Action.dismissKeyboard(onboardingLoc.recoveryPhraseInput)
+    } catch (e) {
+      console.warn('the keyboard is not displayed')
+    }
   }
 
   async tapImport() {
@@ -246,7 +245,6 @@ class OnboardingPage {
 
   async verifyNameYourWalletPage() {
     await Action.waitForElement(this.nameWalletTitle)
-    await Assert.isVisible(this.nameWalletContent)
     await Assert.isVisible(this.nameWalletInput)
     await Assert.isVisible(commonElsPage.next)
   }

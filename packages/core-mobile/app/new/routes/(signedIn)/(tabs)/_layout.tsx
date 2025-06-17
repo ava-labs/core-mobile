@@ -50,6 +50,7 @@ export default function TabLayout(): JSX.Element {
       <BottomTabs.Screen
         name="portfolio"
         options={{
+          tabBarButtonTestID: 'portfolio_tab',
           title: 'Portfolio',
           tabBarIcon: () => portfolioIcon
         }}
@@ -57,6 +58,7 @@ export default function TabLayout(): JSX.Element {
       <BottomTabs.Screen
         name="track"
         options={{
+          tabBarButtonTestID: 'track_tab',
           title: 'Track',
           tabBarIcon: () => trackIcon
         }}
@@ -64,6 +66,7 @@ export default function TabLayout(): JSX.Element {
       <BottomTabs.Screen
         name="stake"
         options={{
+          tabBarButtonTestID: 'stake_tab',
           title: 'Stake',
           tabBarIcon: () => stakeIcon
         }}
@@ -71,6 +74,7 @@ export default function TabLayout(): JSX.Element {
       <BottomTabs.Screen
         name="browser"
         options={{
+          tabBarButtonTestID: 'browser_tab',
           title: 'Browser',
           tabBarIcon: () => browserIcon
         }}

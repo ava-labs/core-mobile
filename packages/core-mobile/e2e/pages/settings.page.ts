@@ -386,66 +386,17 @@ class Settings {
     await Actions.tap(by.id(`currency__${curr}`))
   }
 
-  async tapAddAccountBtn() {
+  async tapManageAccountsBtn() {
     while (!(await Actions.isVisible(this.manageAccountsBtn, 0, 0))) {
       await Actions.swipe(this.accountList, 'left', 'fast', 0.5)
     }
     await Actions.tap(this.manageAccountsBtn)
+  }
+
+  async addAccount(accountNum = 2) {
     await Actions.waitForElement(this.addAccountBtn)
-    await Actions.tap(this.addAccountBtn)
-  }
-
-  async selectAccount(targetAccount: number) {
-    // get the active account
-    const accountName = await commonElsPage.getBalanceHeaderAccountName()
-    const accountNum = parseInt(accountName?.slice(-1) || 'Wallet 1')
-
-    // make direction to scroll to the left or right
-    await this.goSettings()
-    const direction = targetAccount > accountNum ? 'left' : 'right'
-
-    // scroll till the target account is visible
-    while (
-      !(await Actions.isVisible(
-        by.id(`${settings.accountNameIdPrefix}${targetAccount}`),
-        0,
-        0
-      ))
-    ) {
-      await Actions.swipe(this.accountList, direction, 'fast', 0.5)
-    }
-
-    // tap the target account
-    await Actions.tap(by.id(`${settings.accountNameIdPrefix}${targetAccount}`))
-  }
-
-  async verifyAccountBoxes(boxes = 0) {
-    let index = 1
-
-    while (index <= boxes) {
-      console.log(`Testing account #${index}`)
-
-      // verify the account box is visible
-      if (
-        await Actions.isVisible(
-          by.id(`${settings.accountNameIdPrefix}${index}`),
-          0,
-          0
-        )
-      ) {
-        index++
-        continue
-      }
-
-      // Verify the account box is NOT visible when you hit the end of the list
-      if (await Actions.isVisible(this.addAccountBtn, 0, 0)) {
-        throw new Error(
-          `Reached end of list, but ${settings.accountNameIdPrefix}${index} not found`
-        )
-      }
-
-      // Scroll to the next box
-      await Actions.swipe(this.accountList, 'left', 'slow', 0.5)
+    while (!(await Actions.isVisible(by.text(`Account ${accountNum}`), 0, 0))) {
+      await Actions.tap(this.addAccountBtn)
     }
   }
 
@@ -532,6 +483,39 @@ class Settings {
   async setNewAccountName(newAccountName: string) {
     await commonElsPage.typeSearchBar(newAccountName, commonElsPage.dialogInput)
     await commonElsPage.tapSave()
+  }
+
+  async createNthAccount(account = 2, activeAccount = settings.account) {
+    await this.goSettings()
+    await this.tapManageAccountsBtn()
+    await this.addAccount(account)
+    await this.selectAccount(activeAccount)
+    await commonElsPage.dismissBottomSheet()
+  }
+
+  async selectAccount(name: string) {
+    await Actions.tap(by.id(`manage_accounts_list__${name}`))
+  }
+
+  async switchAccount(name = settings.account) {
+    // You switch account within the `manage accounts` screen
+    // settings > manage all or add a wallet > select the account
+    await this.goSettings()
+    await this.tapManageAccountsBtn()
+    await this.selectAccount(name)
+    await commonElsPage.dismissBottomSheet()
+  }
+
+  async quickSwitchAccount(name = settings.account) {
+    // You switch account on Settings view without entering the `manage accounts` screen
+    // settings > tap the account on the account carousel
+    await this.goSettings()
+    const ele = by.id(`account_carousel_item__${name}`)
+    while (!(await Actions.isVisible(ele, 0, 0))) {
+      await Actions.swipe(this.accountList, 'left', 'fast', 0.5)
+    }
+    await Actions.tap(ele)
+    await commonElsPage.dismissBottomSheet()
   }
 }
 
