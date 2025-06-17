@@ -210,6 +210,7 @@ export const migrations = {
         )
       }
 
+      // @ts-ignore
       accountState.accounts[Number(accIndex)] = {
         index: Number(accIndex),
         id: uuid(),
@@ -423,6 +424,7 @@ export const migrations = {
           addressAVM: oldAccount.addressAVM,
           addressPVM: oldAccount.addressPVM,
           addressCoreEth: oldAccount.addressCoreEth,
+          addressSVM: oldAccount.addressSVM,
           // Add new/changed properties
           id: uuid(),
           walletId: activeWalletId,

@@ -1,12 +1,12 @@
 import { router } from 'expo-router'
 import { Network } from '@avalabs/core-chains-sdk'
 import {
-  Hex,
   ApprovalController as VmModuleApprovalController,
   ApprovalParams,
   ApprovalResponse,
   RpcMethod,
-  RpcRequest
+  RpcRequest,
+  RequestPublicKeyParams
 } from '@avalabs/vm-module-types'
 import { providerErrors, rpcErrors } from '@metamask/rpc-errors'
 import { btcSignTransaction } from 'vmModule/handlers/btcSignTransaction'
@@ -17,6 +17,8 @@ import { RequestContext } from 'store/rpc/types'
 import { NavigationPresentationMode } from 'new/common/types'
 import { Account } from 'store/account'
 import { WalletType } from 'services/wallet/types'
+import WalletService from 'services/wallet/WalletService'
+import { Curve } from 'utils/publicKeys'
 import { avalancheSignTransaction } from '../handlers/avalancheSignTransaction'
 import { ethSendTransaction } from '../handlers/ethSendTransaction'
 import { signMessage } from '../handlers/signMessage'
@@ -24,8 +26,24 @@ import { btcSendTransaction } from '../handlers/btcSendTransaction'
 import { avalancheSendTransaction } from '../handlers/avalancheSendTransaction'
 
 class ApprovalController implements VmModuleApprovalController {
-  requestPublicKey(): Promise<Hex> {
-    return Promise.reject(providerErrors.unsupportedMethod('requestPublicKey'))
+  async requestPublicKey({
+    secretId,
+    derivationPath,
+    curve
+  }: RequestPublicKeyParams): Promise<string> {
+    if (derivationPath === undefined) {
+      return Promise.reject(
+        rpcErrors.invalidParams('derivationPath is required to get public key')
+      )
+    }
+    const { walletId, walletType } = JSON.parse(secretId)
+
+    return WalletService.getPublicKeyFor({
+      walletId,
+      walletType: walletType,
+      derivationPath,
+      curve: curve as Curve
+    })
   }
 
   onTransactionPending({ request }: { request: RpcRequest }): void {

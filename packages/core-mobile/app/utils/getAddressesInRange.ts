@@ -3,6 +3,7 @@ import { getCorrectedLimit } from 'store/rpc/handlers/avalanche_getAddressesInRa
 import WalletService from 'services/wallet/WalletService'
 import { StorageKey } from 'resources/Constants'
 import { WalletType } from 'services/wallet/types'
+import { Account } from 'store/account'
 import Logger from './Logger'
 import { commonStorage } from './mmkv'
 
@@ -27,11 +28,13 @@ export type AddressesParams = {
 
 export const getAddressesInRange = async ({
   isDeveloperMode,
+  account,
   walletId,
   walletType,
   params
 }: {
   isDeveloperMode: boolean
+  account: Account
   walletId: string
   walletType: WalletType
   params: AddressesParams
@@ -71,6 +74,7 @@ export const getAddressesInRange = async ({
     await WalletService.getAddressesByIndices({
       walletId,
       walletType,
+      account,
       indices: externalIndices ?? [],
       chainAlias: 'X',
       isChange: false,
@@ -87,6 +91,7 @@ export const getAddressesInRange = async ({
     await WalletService.getAddressesByIndices({
       walletId,
       walletType,
+      account,
       indices: internalIndices ?? [],
       chainAlias: 'X',
       isChange: true,

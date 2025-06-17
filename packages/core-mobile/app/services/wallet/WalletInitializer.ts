@@ -2,37 +2,39 @@ import { SeedlessPubKeysStorage } from 'seedless/services/storage/SeedlessPubKey
 import Logger from 'utils/Logger'
 import { transformKeyInfosToPubKeys } from 'seedless/services/wallet/transformKeyInfosToPubkeys'
 import SeedlessService from 'seedless/services/SeedlessService'
-import { Wallet, WalletType } from './types'
+import { WalletType } from './types'
 
 class WalletInitializer {
   async initialize({
     walletType,
-    isLoggingIn
+    shouldRefreshPublicKeys
   }: {
-    walletSecret?: string
     walletType: WalletType
-    isLoggingIn: boolean
-  }): Promise<Wallet> {
+    shouldRefreshPublicKeys: boolean
+  }): Promise<void> {
     if (walletType === WalletType.SEEDLESS) {
       try {
-        if (isLoggingIn) {
+        const storedPubKeys = await SeedlessPubKeysStorage.retrieve()
+        if (shouldRefreshPublicKeys || storedPubKeys.length === 0) {
           const allKeys = await SeedlessService.getSessionKeysList()
+
           const pubKeys = transformKeyInfosToPubKeys(allKeys)
           Logger.info('saving public keys')
-          const pubKeysStorage = new SeedlessPubKeysStorage()
-          await pubKeysStorage.save(pubKeys)
+          await SeedlessPubKeysStorage.save(pubKeys)
         }
       } catch (error) {
         Logger.error(`Unable to save public keys`, error)
         throw new Error(`Unable to save public keys`)
       }
-      // For SEEDLESS wallets, we return a placeholder or throw an error
-      // since this initializer doesn't create the actual wallet instance
-      throw new Error(
-        'Seedless wallet initialization requires additional parameters'
-      )
-    } else {
-      throw new Error(`Wallet type ${walletType} not supported`)
+    }
+  }
+
+  public async terminate(walletType: WalletType): Promise<void> {
+    if (walletType === WalletType.SEEDLESS) {
+      // clear only the cache of public keys
+      // as all data stored in SecureStorageService
+      // is cleared on logout
+      SeedlessPubKeysStorage.clearCache()
     }
   }
 }

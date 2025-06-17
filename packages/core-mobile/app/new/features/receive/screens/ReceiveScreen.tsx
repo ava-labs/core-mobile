@@ -9,7 +9,6 @@ import AnalyticsService from 'services/analytics/AnalyticsService'
 import { selectActiveAccount } from 'store/account'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { NetworkLogoWithChain } from 'common/components/NetworkLogoWithChain'
-import { getAddressByNetwork } from 'store/account/utils'
 import { useCombinedPrimaryNetworks } from 'common/hooks/useCombinedPrimaryNetworks'
 import { AccountAddresses } from '../components/AccountAddresses'
 import { QRCode } from '../components/QRCode'
@@ -36,9 +35,7 @@ export const ReceiveScreen = (): ReactNode => {
       case NetworkVMType.PVM:
         return activeAccount?.addressPVM.split('-')[1] ?? ''
       case NetworkVMType.SVM:
-        return activeAccount
-          ? getAddressByNetwork(activeAccount, selectedNetwork) // TODO: replace with account.addressSVM when we have it
-          : ''
+        return activeAccount?.addressSVM ?? ''
       case NetworkVMType.EVM:
       default:
         return activeAccount?.addressC ?? ''

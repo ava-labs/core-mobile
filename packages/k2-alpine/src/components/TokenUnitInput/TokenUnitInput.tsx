@@ -172,6 +172,7 @@ export const TokenUnitInput = forwardRef<
               {PLACEHOLDER}
             </Text>
             <TextInput
+              testID="token_amount_input_field"
               returnKeyType={returnKeyType}
               ref={textInputRef}
               editable={editable}

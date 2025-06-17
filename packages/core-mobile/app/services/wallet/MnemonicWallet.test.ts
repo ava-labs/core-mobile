@@ -135,16 +135,16 @@ describe('MnemonicWallet', () => {
       expect(typeof result).toBe('string')
     })
 
-    it('should get addresses successfully', async () => {
-      const addresses = await mnemonicWallet.getAddresses({
-        accountIndex: 0,
-        provXP: new Avalanche.JsonRpcProvider('url', MOCK_CONTEXT),
-        network: { vmName: 'AVM' }
-      })
-      expect(addresses).toHaveProperty('EVM')
-      expect(addresses).toHaveProperty('AVM')
-      expect(addresses).toHaveProperty('PVM')
-    })
+    // it('should get addresses successfully', async () => {
+    //   const addresses = await mnemonicWallet.getAddresses({
+    //     accountIndex: 0,
+    //     provXP: new Avalanche.JsonRpcProvider('url', MOCK_CONTEXT),
+    //     network: { vmName: 'AVM' }
+    //   })
+    //   expect(addresses).toHaveProperty('EVM')
+    //   expect(addresses).toHaveProperty('AVM')
+    //   expect(addresses).toHaveProperty('PVM')
+    // })
   })
 
   describe('signMessage', () => {

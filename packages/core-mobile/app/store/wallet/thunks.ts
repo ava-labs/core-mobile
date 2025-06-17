@@ -133,6 +133,7 @@ export const importMnemonicWalletAndAccount = createAsyncThunk<
       addressBTC: addresses.BITCOIN,
       addressAVM: addresses.AVM,
       addressPVM: addresses.PVM,
+      addressSVM: addresses.SVM,
       addressCoreEth: addresses.CoreEth
     }
 

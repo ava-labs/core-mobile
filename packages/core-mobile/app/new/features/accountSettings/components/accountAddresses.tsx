@@ -15,7 +15,6 @@ import { NetworkLogoWithChain } from 'common/components/NetworkLogoWithChain'
 import { isXPChain } from 'utils/network/isAvalancheNetwork'
 import { NetworkVMType } from '@avalabs/vm-module-types'
 import { TRUNCATE_ADDRESS_LENGTH } from 'common/consts/text'
-import { getAddressByNetwork } from 'store/account/utils'
 
 export const AccountAddresses = ({
   account
@@ -43,7 +42,7 @@ export const AccountAddresses = ({
           case NetworkVMType.EVM:
             return account.addressC
           case NetworkVMType.SVM:
-            return getAddressByNetwork(account, network) // TODO: replace with account.addressSVM when we have it
+            return account.addressSVM
           default:
             return undefined
         }
@@ -76,6 +75,7 @@ export const AccountAddresses = ({
     account.addressBTC,
     account.addressC,
     account.addressPVM,
+    account.addressSVM,
     colors.$surfaceSecondary,
     networks
   ])

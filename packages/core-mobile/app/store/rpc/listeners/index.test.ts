@@ -54,7 +54,6 @@ jest
 jest
   .spyOn(MnemonicWallet.prototype, 'initialize')
   .mockImplementation(function (this: MnemonicWallet) {
-    this.xpub = 'mock-xpub'
     return Promise.resolve()
   })
 

@@ -9,6 +9,8 @@ import SeedlessSession from './SeedlessSession'
  * https://github.com/cubist-labs/CubeSigner-TypeScript-SDK
  */
 class SeedlessService {
+  private sessionKeysListCache: KeyInfo[] | undefined = undefined
+
   // According to Cubist, CubeSigner creates a temporary session with the scopes manage:mfa:vote:fido and manage:mfa:vote:totp,
   // enabling users to approve or deny login attempts using MFA. Therefore, specifying only sign:* allows users
   // to proceed with signing up or signing in through MFA verification.
@@ -30,8 +32,15 @@ class SeedlessService {
    * Returns the list of keys that this session has access to.
    */
   async getSessionKeysList(type?: KeyType): Promise<KeyInfo[]> {
-    const signerSession = await this.session.getSignerClient()
-    const keysList = await signerSession.apiClient.sessionKeysList()
+    let keysList: KeyInfo[] = []
+    if (this.sessionKeysListCache && this.sessionKeysListCache.length > 0) {
+      keysList = this.sessionKeysListCache
+    } else {
+      const signerSession = await this.session.getSignerClient()
+      keysList = await signerSession.apiClient.sessionKeysList()
+      this.sessionKeysListCache = keysList
+    }
+
     return type !== undefined
       ? keysList.filter(k => k.key_type === type)
       : keysList
@@ -65,7 +74,7 @@ class SeedlessService {
    * @param name - The name to set for the key.
    * @param accountIndex - The account index to set the name for
    */
-  async setAcountName(name: string, accountIndex: number): Promise<void> {
+  async setAccountName(name: string, accountIndex: number): Promise<void> {
     try {
       const keys = await this.getSessionKeysList(Secp256k1.Ava)
       const keyInfo = this.getKeyInfo(keys, accountIndex)
@@ -108,6 +117,10 @@ class SeedlessService {
       return metadata.account_name
     }
     return undefined
+  }
+
+  invalidateSessionKeysCache(): void {
+    this.sessionKeysListCache = undefined
   }
 }
 

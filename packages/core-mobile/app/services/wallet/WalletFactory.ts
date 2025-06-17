@@ -1,41 +1,28 @@
-import { SeedlessPubKeysStorage } from 'seedless/services/storage/SeedlessPubKeysStorage'
 import SeedlessWallet from 'seedless/services/wallet/SeedlessWallet'
 import SeedlessService from 'seedless/services/SeedlessService'
 import BiometricsSDK from 'utils/BiometricsSDK'
 import { PrivateKeyWallet } from 'services/wallet/PrivateKeyWallet'
+import { SeedlessPubKeysStorage } from 'seedless/services/storage/SeedlessPubKeysStorage'
 import { Wallet, WalletType } from './types'
 import { MnemonicWallet } from './MnemonicWallet'
 
 class WalletFactory {
   async createWallet({
     walletId,
-    walletType,
-    accountIndex
+    walletType
   }: {
     walletId: string
     walletType: WalletType
-    accountIndex?: number
   }): Promise<Wallet> {
     switch (walletType) {
       case WalletType.SEEDLESS: {
-        const pubKeysStorage = new SeedlessPubKeysStorage()
-        const pubKeys = await pubKeysStorage.retrieve()
+        const pubKeys = await SeedlessPubKeysStorage.retrieve()
 
         if (pubKeys.length === 0) throw new Error('Public keys not available')
 
-        if (!accountIndex) {
-          throw new Error('Account index is required')
-        }
-
-        const addressPublicKey = pubKeys[accountIndex]
-
-        if (!addressPublicKey) {
-          throw new Error(`Public key not available for index ${accountIndex}`)
-        }
-
         const client = await SeedlessService.session.getSignerClient()
 
-        return new SeedlessWallet(client, addressPublicKey)
+        return new SeedlessWallet(client, pubKeys)
       }
       case WalletType.MNEMONIC: {
         const walletSecret = await BiometricsSDK.loadWalletSecret(walletId)

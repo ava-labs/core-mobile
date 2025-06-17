@@ -122,6 +122,7 @@ const initialState = {
         addressAVM: 'X-avax17y8xf7ddfjwv0qg4zvuew0kucmylr749n83n0h',
         addressBTC: 'bc1qctnzrtj8k6f362x34t3n09tk0er0eu4c2e56aq',
         addressCoreEth: 'C-avax1ctnzrtj8k6f362x34t3n09tk0er0eu4cfp8cqs',
+        addressSVM: '52C9T2T7JRojtxumYnYZhyUmrN7kqzvCLc4Ksvjk7TxD',
         index: 0,
         name: 'Account 1',
         active: true,

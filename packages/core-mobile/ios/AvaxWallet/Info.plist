@@ -79,6 +79,7 @@
 	<key>LSApplicationQueriesSchemes</key>
 	<array>
 		<string>twitter</string>
+		<string>mailto</string>
 	</array>
 	<key>UIBackgroundModes</key>
 	<array>

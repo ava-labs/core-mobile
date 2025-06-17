@@ -33,7 +33,7 @@ class AvalancheGetAccountPubKeyHandler
     const publicKey = await walletService.getPublicKey(
       activeWalletId,
       activeWallet.type,
-      activeAccount.index
+      activeAccount
     )
 
     return { success: true, value: publicKey }

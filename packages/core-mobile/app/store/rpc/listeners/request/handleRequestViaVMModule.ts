@@ -1,7 +1,6 @@
 import { rpcErrors } from '@metamask/rpc-errors'
 import {
   Module,
-  RpcMethod,
   RpcMethod as VmModuleRpcMethod
 } from '@avalabs/vm-module-types'
 import { AppListenerEffectAPI } from 'store/types'
@@ -12,11 +11,10 @@ import { mapToVmNetwork } from 'vmModule/utils/mapToVmNetwork'
 import { getChainIdFromCaip2 } from 'utils/caip2ChainIds'
 import { Avalanche } from '@avalabs/core-wallets-sdk'
 import { getAddressByVM } from 'store/account/utils'
-import { MnemonicWallet } from 'services/wallet/MnemonicWallet'
 import { Account, selectActiveAccount } from 'store/account'
-import { Wallet, WalletType } from 'services/wallet/types'
 import { selectActiveWallet } from 'store/wallet/slice'
-import WalletFactory from 'services/wallet/WalletFactory'
+import WalletService from 'services/wallet/WalletService'
+import { WalletType } from 'services/wallet/types'
 import { AgnosticRpcProvider, Request } from '../../types'
 
 export const handleRequestViaVMModule = async ({
@@ -82,11 +80,6 @@ export const handleRequestViaVMModule = async ({
     return
   }
 
-  const wallet = await WalletFactory.createWallet({
-    walletId: activeWallet.id,
-    walletType: activeWallet.type,
-    accountIndex: activeAccount.index
-  })
   const params = request.data.params.request.params
   const method = request.method as unknown as VmModuleRpcMethod
 
@@ -104,13 +97,13 @@ export const handleRequestViaVMModule = async ({
       params,
       context:
         request.context ??
-        getContext({
-          method: method,
-          params: params,
-          activeAccount: activeAccount,
-          wallet,
-          walletType: activeWallet?.type
-        })
+        (await getContext({
+          method,
+          params,
+          activeAccount,
+          walletId: activeWallet.id,
+          walletType: activeWallet.type
+        }))
     },
     mapToVmNetwork(network)
   )
@@ -130,19 +123,19 @@ export const handleRequestViaVMModule = async ({
   }
 }
 
-const getContext = ({
+const getContext = async ({
   method,
   params,
   activeAccount,
-  wallet,
+  walletId,
   walletType
 }: {
-  method: RpcMethod
+  method: VmModuleRpcMethod
   params: unknown
   activeAccount: Account | undefined
-  wallet: Wallet | undefined
+  walletId: string
   walletType: WalletType
-}): Record<string, string> | undefined => {
+}): Promise<Record<string, string> | undefined> => {
   if (
     method === VmModuleRpcMethod.AVALANCHE_SEND_TRANSACTION ||
     method === VmModuleRpcMethod.AVALANCHE_SIGN_TRANSACTION
@@ -160,8 +153,15 @@ const getContext = ({
 
     const context: Record<string, string> = { currentAddress }
 
-    if (walletType === WalletType.MNEMONIC) {
-      context.xpubXP = (wallet as MnemonicWallet).xpubXP
+    if (walletType === WalletType.MNEMONIC && activeAccount) {
+      const publicKey = await WalletService.getPublicKey(
+        walletId,
+        walletType,
+        activeAccount
+      )
+      if (publicKey.xp) {
+        context.xpubXP = publicKey.xp
+      }
     }
 
     return context

@@ -2,10 +2,10 @@ import { useQuery, UseQueryResult } from '@tanstack/react-query'
 import { ReactQueryKeys } from 'consts/reactQueryKeys'
 import Logger from 'utils/Logger'
 import {
-  getContentfulGraphQL,
   GraphQLResponse,
-  ParsedGraphQLResponse
-} from './useContentful'
+  ParsedGraphQLResponse,
+  getContentfulGraphQL
+} from 'common/hooks/useContentful'
 
 const LIMIT = 40
 

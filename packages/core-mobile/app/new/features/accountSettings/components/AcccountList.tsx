@@ -92,7 +92,6 @@ export const AccountList = (): React.JSX.Element => {
         account={item as Account}
         onSelectAccount={onSelectAccount}
         gotoAccountDetails={gotoAccountDetails}
-        testID={`account #${index + 1}`}
       />
     ),
     [activeAccount?.id, gotoAccountDetails, onSelectAccount]
@@ -101,7 +100,7 @@ export const AccountList = (): React.JSX.Element => {
   return (
     <View sx={{ flexDirection: 'row', height: ACCOUNT_CARD_SIZE }}>
       <AnimatedFlatList
-        testID="account_list"
+        testID="account_carousel_list"
         removeClippedSubviews={true}
         contentContainerStyle={{
           flexGrow: 1,

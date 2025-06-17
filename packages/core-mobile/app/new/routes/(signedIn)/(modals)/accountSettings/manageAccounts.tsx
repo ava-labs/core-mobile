@@ -105,6 +105,7 @@ const ManageAccountsScreen = (): React.JSX.Element => {
         const accountDataForWallet = accountsForWallet.map(account => ({
           title: (
             <Text
+              testID={`manage_accounts_list__${account.name}`}
               variant="body1"
               numberOfLines={2}
               sx={{

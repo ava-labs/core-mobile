@@ -12,6 +12,7 @@ import onboardingPage from '../../pages/onboarding.page'
 describe('Onboard New Wallet', () => {
   beforeAll(async () => {
     await device.launchApp()
+    await commonElsPage.exitMetro()
     await handleJailbrokenWarning()
   })
 

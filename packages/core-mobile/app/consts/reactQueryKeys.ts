@@ -32,5 +32,8 @@ export enum ReactQueryKeys {
   MELD_SEARCH_FIAT_CURRENCIES = 'meldSearchFiatCurrencies',
   MELD_SEARCH_SERVICE_PROVIDERS = 'meldSearchServiceProviders',
   MELD_GET_PURCHASE_LIMITS = 'meldGetPurchaseLimits',
-  MELD_SEARCH_DEFAULTS_BY_COUNTRY = 'meldSearchDefaultsByCountry'
+  MELD_SEARCH_DEFAULTS_BY_COUNTRY = 'meldSearchDefaultsByCountry',
+  MELD_SEARCH_PAYMENT_METHODS = 'meldSearchPaymentMethods',
+
+  TERMS_OF_USE = 'termsOfUse'
 }

@@ -5,16 +5,22 @@ import {
 } from 'store/settings/advanced'
 import { AppListenerEffectAPI, AppStartListening } from 'store/types'
 import { AnyAction } from '@reduxjs/toolkit'
-import { onLogIn, selectWalletType } from 'store/app/slice'
+import { onAppUnlocked, onLogIn, selectWalletType } from 'store/app/slice'
 import { WalletType } from 'services/wallet/types'
 import { SeedlessPubKeysStorage } from 'seedless/services/storage/SeedlessPubKeysStorage'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import SeedlessService from 'seedless/services/SeedlessService'
+import { isEvmPublicKey } from 'utils/publicKeys'
 import { selectActiveNetwork } from 'store/network'
 import { Network } from '@avalabs/core-chains-sdk'
 import { recentAccountsStore } from 'new/features/accountSettings/store'
 import { selectActiveWallet, selectActiveWalletId } from 'store/wallet/slice'
 import BiometricsSDK from 'utils/BiometricsSDK'
+import {
+  selectHasBeenViewedOnce,
+  setViewOnce,
+  ViewOnceKey
+} from 'store/viewOnce'
 import {
   selectAccounts,
   selectActiveAccount,
@@ -22,7 +28,7 @@ import {
   setNonActiveAccounts,
   setActiveAccountId
 } from './slice'
-import { Account, AccountCollection } from './types'
+import { AccountCollection } from './types'
 
 const initAccounts = async (
   _action: AnyAction,
@@ -33,9 +39,9 @@ const initAccounts = async (
   const activeNetwork = selectActiveNetwork(state)
   const walletType = selectWalletType(state)
   const activeAccount = selectActiveAccount(state)
-  const accounts: AccountCollection = {}
   const activeWalletId = selectActiveWalletId(state)
   const activeWallet = selectActiveWallet(state)
+  let accounts: AccountCollection = {}
 
   if (!activeWalletId) {
     throw new Error('Active wallet ID is not set')
@@ -67,44 +73,44 @@ const initAccounts = async (
 
     // to avoid initial account fetching taking too long,
     // we fetch the remaining accounts in the background
-    fetchingRemainingAccounts({
-      isDeveloperMode,
+    const addedAccounts = await fetchRemainingAccounts({
       walletType,
-      listenerApi,
-      initialAccounts: accounts // pass the initial account for analytic reporting purposes
+      startIndex: 1,
+      listenerApi
     })
+
+    accounts = { ...accounts, ...addedAccounts }
   } else if (
     walletType === WalletType.MNEMONIC ||
     walletType === WalletType.PRIVATE_KEY
   ) {
     accounts[acc.id] = acc
     listenerApi.dispatch(setAccounts(accounts))
+  }
 
-    if (isDeveloperMode === false) {
-      AnalyticsService.captureWithEncryption('AccountAddressesUpdated', {
-        addresses: Object.values(accounts).map((account: Account) => ({
-          address: account.addressC,
-          addressBtc: account.addressBTC,
-          addressAVM: account.addressAVM ?? '',
-          addressPVM: account.addressPVM ?? '',
-          addressCoreEth: account.addressCoreEth ?? ''
-        }))
-      })
-    }
+  if (isDeveloperMode === false) {
+    AnalyticsService.captureWithEncryption('AccountAddressesUpdated', {
+      addresses: Object.values(accounts).map(account => ({
+        address: account.addressC,
+        addressBtc: account.addressBTC,
+        addressAVM: account.addressAVM ?? '',
+        addressPVM: account.addressPVM ?? '',
+        addressCoreEth: account.addressCoreEth ?? '',
+        addressSVM: acc.addressSVM ?? ''
+      }))
+    })
   }
 }
 
-const fetchingRemainingAccounts = async ({
-  isDeveloperMode,
+const fetchRemainingAccounts = async ({
   walletType,
   listenerApi,
-  initialAccounts
+  startIndex
 }: {
-  isDeveloperMode: boolean
   walletType: WalletType
   listenerApi: AppListenerEffectAPI
-  initialAccounts: AccountCollection
-}): Promise<void> => {
+  startIndex: number
+}): Promise<AccountCollection> => {
   /**
    * note:
    * adding accounts cannot be parallelized, they need to be added one-by-one.
@@ -112,8 +118,9 @@ const fetchingRemainingAccounts = async ({
    */
   const state = listenerApi.getState()
   const activeNetwork = selectActiveNetwork(state)
-  const pubKeysStorage = new SeedlessPubKeysStorage()
-  const pubKeys = await pubKeysStorage.retrieve()
+  const pubKeys = await SeedlessPubKeysStorage.retrieve()
+  const numberOfAccounts = pubKeys.filter(isEvmPublicKey).length
+
   const accounts: AccountCollection = {}
   const activeWalletId = selectActiveWalletId(state)
 
@@ -121,7 +128,7 @@ const fetchingRemainingAccounts = async ({
     throw new Error('Active wallet ID is not set')
   }
   // fetch the remaining accounts in the background
-  for (let i = 1; i < pubKeys.length; i++) {
+  for (let i = startIndex; i < numberOfAccounts; i++) {
     const acc = await accountService.createNextAccount({
       index: i,
       walletType,
@@ -134,18 +141,7 @@ const fetchingRemainingAccounts = async ({
   }
   listenerApi.dispatch(setNonActiveAccounts(accounts))
 
-  const allAccounts = { ...initialAccounts, ...accounts }
-  if (isDeveloperMode === false) {
-    AnalyticsService.captureWithEncryption('AccountAddressesUpdated', {
-      addresses: Object.values(allAccounts).map(acc => ({
-        address: acc.addressC,
-        addressBtc: acc.addressBTC,
-        addressAVM: acc.addressAVM ?? '',
-        addressPVM: acc.addressPVM ?? '',
-        addressCoreEth: acc.addressCoreEth ?? ''
-      }))
-    })
-  }
+  return accounts
 }
 
 // reload addresses
@@ -187,6 +183,45 @@ const handleActiveAccountIndexChange = (
   recentAccountsStore.getState().addRecentAccount(action.payload)
 }
 
+const fetchSeedlessAccountsIfNeeded = async (
+  _action: AnyAction,
+  listenerApi: AppListenerEffectAPI
+): Promise<void> => {
+  const state = listenerApi.getState()
+  const walletType = selectWalletType(state)
+
+  if (walletType === WalletType.SEEDLESS) {
+    const accounts = selectAccounts(state)
+
+    fetchRemainingAccounts({
+      walletType,
+      listenerApi,
+      startIndex: Object.keys(accounts).length
+    })
+  }
+}
+
+const migrateSolanaAddressesIfNeeded = async (
+  _action: AnyAction,
+  listenerApi: AppListenerEffectAPI
+): Promise<void> => {
+  const { dispatch, getState } = listenerApi
+  const state = getState()
+  const hasSolanaAddressesMigrated = selectHasBeenViewedOnce(
+    ViewOnceKey.MIGRATE_SOLANA_ADDRESSES
+  )(state)
+
+  if (!hasSolanaAddressesMigrated) {
+    const accounts = selectAccounts(state)
+    const entries = Object.values(accounts)
+    if (entries.some(account => !account.addressSVM)) {
+      // reload only when there are accounts without Solana addresses
+      reloadAccounts(_action, listenerApi)
+    }
+    dispatch(setViewOnce(ViewOnceKey.MIGRATE_SOLANA_ADDRESSES))
+  }
+}
+
 export const addAccountListeners = (
   startListening: AppStartListening
 ): void => {
@@ -203,5 +238,15 @@ export const addAccountListeners = (
   startListening({
     actionCreator: setActiveAccountId,
     effect: handleActiveAccountIndexChange
+  })
+
+  startListening({
+    actionCreator: onAppUnlocked,
+    effect: fetchSeedlessAccountsIfNeeded
+  })
+
+  startListening({
+    actionCreator: onAppUnlocked,
+    effect: migrateSolanaAddressesIfNeeded
   })
 }

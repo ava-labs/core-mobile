@@ -4,6 +4,7 @@ import { rpcErrors } from '@metamask/rpc-errors'
 import WalletService from 'services/wallet/WalletService'
 import mockNetworks from 'tests/fixtures/networks.json'
 import mockWallets from 'tests/fixtures/wallets.json'
+import mockAccounts from 'tests/fixtures/accounts.json'
 import { avalancheGetAddressesInRangeHandler } from './avalanche_getAddressesInRange'
 import { AvalancheGetAddressesInRangeRpcRequest } from './types'
 
@@ -29,6 +30,15 @@ jest.mock('store/wallet/slice', () => {
   return {
     ...actual,
     selectActiveWallet: () => mockActiveWallet
+  }
+})
+
+jest.mock('store/account/slice', () => {
+  const actual = jest.requireActual('store/account/slice')
+  return {
+    ...actual,
+    selectAccounts: () => mockAccounts,
+    selectActiveAccount: () => mockAccounts[0]
   }
 })
 

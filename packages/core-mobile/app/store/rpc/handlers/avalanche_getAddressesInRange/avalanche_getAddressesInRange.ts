@@ -5,6 +5,7 @@ import { selectIsDeveloperMode } from 'store/settings/advanced'
 import Logger from 'utils/Logger'
 import { getAddressesInRange } from 'utils/getAddressesInRange'
 import { selectActiveWallet } from 'store/wallet/slice'
+import { selectActiveAccount } from 'store/account'
 import { HandleResponse, RpcRequestHandler } from '../types'
 import { parseRequestParams } from './utils'
 import { RequestParams, AvalancheGetAddressesInRangeRpcRequest } from './types'
@@ -22,6 +23,16 @@ class AvalancheGetAddressesInRangeHandler
     const state = getState()
     const activeWallet = selectActiveWallet(state)
     const isDeveloperMode = selectIsDeveloperMode(state)
+    const activeAccount = selectActiveAccount(state)
+    if (!activeAccount) {
+      Logger.error(
+        'avalanche_getAddressesInRange: No active account found in state'
+      )
+      return {
+        success: false,
+        error: rpcErrors.internal('No active account found')
+      }
+    }
     const result = parseRequestParams(request.data.params.request.params)
     if (!result.success) {
       Logger.error('Invalid param', result.error)
@@ -48,6 +59,7 @@ class AvalancheGetAddressesInRangeHandler
         isDeveloperMode: isDeveloperMode,
         walletId: activeWallet.id,
         walletType: activeWallet.type,
+        account: activeAccount,
         params: {
           externalStart,
           internalStart,

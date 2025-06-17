@@ -178,6 +178,7 @@ const AssetsScreen: FC<Props> = ({
         keyExtractor={(item, index) =>
           `${index}-${item.networkChainId}-${item.localId}`
         }
+        testID="portfolio_token_list"
         overrideProps={overrideProps}
         numColumns={numColumns}
         estimatedItemSize={isGridView ? 183 : 73}

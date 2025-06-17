@@ -29,12 +29,10 @@ import {
   TypedDataV1,
   TypedData,
   MessageTypes,
-  RpcMethod,
-  WalletType
+  RpcMethod
 } from '@avalabs/vm-module-types'
 import { isTypedData } from '@avalabs/evm-module'
-import ModuleManager from 'vmModule/ModuleManager'
-import { mapToVmNetwork } from 'vmModule/utils/mapToVmNetwork'
+import { Curve } from 'utils/publicKeys'
 
 export class PrivateKeyWallet implements Wallet {
   #privateKey?: string
@@ -131,6 +129,12 @@ export class PrivateKeyWallet implements Wallet {
     }
   }
 
+  public getPublicKeyFor(_path: string, _curve: Curve): Promise<string> {
+    const pubKey = getPublicKeyFromPrivateKey(
+      Buffer.from(this.privateKey, 'hex')
+    )
+    return Promise.resolve(pubKey.toString('hex'))
+  }
   public get privateKey(): string {
     assertNotUndefined(this.#privateKey, 'no private key available')
     return this.#privateKey
@@ -353,33 +357,6 @@ export class PrivateKeyWallet implements Wallet {
     return {
       evm: evmPub.toString('hex'),
       xp: xpPub.toString('hex')
-    }
-  }
-
-  public async getAddresses({
-    accountIndex,
-    provXP,
-    network
-  }: {
-    accountIndex: number
-    provXP: Avalanche.JsonRpcProvider
-    network: Network
-  }): Promise<Record<NetworkVMType, string>> {
-    const addresses = await ModuleManager.getAddresses({
-      walletType: WalletType.Mnemonic, //FIXME: this is refactored in JJ's PR
-      accountIndex,
-      xpub: this.xpub,
-      xpubXP: this.xpubXP,
-      network: mapToVmNetwork(network)
-    })
-
-    // C-avax... this address uses the same public key as EVM
-    const cPubKey = getAddressPublicKeyFromXPub(this.xpub, accountIndex)
-    const cAddr = provXP.getAddress(cPubKey, 'C')
-
-    return {
-      ...(addresses as Record<NetworkVMType, string>),
-      [NetworkVMType.CoreEth]: cAddr
     }
   }
 

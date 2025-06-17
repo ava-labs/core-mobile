@@ -204,6 +204,7 @@ export type AnalyticsEvents = {
       addressAVM: string
       addressPVM: string
       addressCoreEth: string
+      addressSVM: string
     }[]
   }
   SendTransactionSucceeded: { txHash: string; chainId: number }

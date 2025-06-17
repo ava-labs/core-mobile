@@ -28,46 +28,30 @@ class AccountsService {
   }): Promise<AccountCollection> {
     const reloadedAccounts: AccountCollection = {}
 
-    for (const id of Object.keys(accounts)) {
-      const account = accounts[id]
-      if (!account || account.walletId !== walletId) continue
+    for (const [key, account] of Object.entries(accounts)) {
+      const addresses = await WalletService.getAddresses({
+        walletId,
+        walletType,
+        accountIndex: account.index,
+        network
+      })
 
-      let addresses
-      let title = account.name
+      const title = await SeedlessService.getAccountName(account.index)
 
-      if (account.type === CoreAccountType.PRIMARY) {
-        addresses = await WalletService.getAddresses({
-          walletId,
-          walletType,
-          accountIndex: account.index,
-          network
-        })
-        if (walletType === WalletType.SEEDLESS) {
-          //FIXME: is seedless primary?
-          title =
-            (await SeedlessService.getAccountName(account.index)) ??
-            account.name
-        }
-      } else {
-        addresses = await WalletService.getAddresses({
-          walletId,
-          walletType,
-          accountIndex: account.index,
-          network
-        })
-      }
-
-      reloadedAccounts[id] = {
-        ...account,
+      reloadedAccounts[key] = {
+        id: account.id,
         name: title ?? account.name,
+        type: account.type,
+        walletId: account.walletId,
+        index: account.index,
         addressBTC: addresses[NetworkVMType.BITCOIN],
         addressC: addresses[NetworkVMType.EVM],
         addressAVM: addresses[NetworkVMType.AVM],
         addressPVM: addresses[NetworkVMType.PVM],
-        addressCoreEth: addresses[NetworkVMType.CoreEth]
-      }
+        addressCoreEth: addresses[NetworkVMType.CoreEth],
+        addressSVM: addresses[NetworkVMType.SVM]
+      } as Account
     }
-
     return reloadedAccounts
   }
 
@@ -101,7 +85,8 @@ class AccountsService {
       addressC: addresses[NetworkVMType.EVM],
       addressAVM: addresses[NetworkVMType.AVM],
       addressPVM: addresses[NetworkVMType.PVM],
-      addressCoreEth: addresses[NetworkVMType.CoreEth]
+      addressCoreEth: addresses[NetworkVMType.CoreEth],
+      addressSVM: addresses[NetworkVMType.SVM]
     }
   }
 }
