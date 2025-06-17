@@ -14,6 +14,7 @@ import { recentAccountsStore } from 'new/features/accountSettings/store'
 import { isEvmPublicKey } from 'utils/publicKeys'
 import { selectActiveNetwork } from 'store/network'
 import { Network } from '@avalabs/core-chains-sdk'
+import { selectIsSolanaSupportBlocked } from 'store/posthog'
 import {
   selectAccounts,
   selectActiveAccount,
@@ -180,6 +181,11 @@ const migrateSolanaAddressesIfNeeded = async (
   listenerApi: AppListenerEffectAPI
 ): Promise<void> => {
   const state = listenerApi.getState()
+  const isSolanaSupportBlocked = selectIsSolanaSupportBlocked(state)
+
+  if (isSolanaSupportBlocked) {
+    return
+  }
 
   const accounts = selectAccounts(state)
   const entries = Object.values(accounts)
