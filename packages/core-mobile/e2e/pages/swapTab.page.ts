@@ -6,6 +6,7 @@ import swapTab from '../locators/swapTab.loc'
 import commonElsPage from './commonEls.page'
 import portfolioPage from './portfolio.page'
 import selectTokenPage from './selectToken.page'
+import watchlistPage from './watchlist.page'
 
 const platformIndex = Actions.platform() === Platform.Android ? 1 : 0
 
@@ -123,14 +124,26 @@ class SwapTabPage {
     let tryCount = 5
     let newAmount = amount
 
-    while ((await Actions.isVisible(this.errorMsg, 0, 2000)) || tryCount) {
+    while (await Actions.isVisible(this.errorMsg, 0, 2000)) {
       newAmount = await this.adjustAmount(newAmount)
       await commonElsPage.enterAmount(newAmount)
       tryCount--
-      if (await Actions.isVisible(commonElsPage.nextButton, 0, 1000)) {
+      if (
+        (await Actions.isVisible(commonElsPage.nextButton, 0, 1000)) ||
+        tryCount === 0
+      ) {
         break
       }
     }
+  }
+
+  async swapOnTrack(index = 0, amount = '0.000001') {
+    await watchlistPage.tapTrackBuyBtn(index)
+    await commonElsPage.dismissTransactionOnboarding()
+    await this.enterAmountAndAdjust(amount)
+    await commonElsPage.tapNextButton()
+    await commonElsPage.tapApproveButton()
+    await commonElsPage.verifySuccessToast()
   }
 
   async swap(from: string, to: string, amount = '0.000001') {
