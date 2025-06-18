@@ -79,6 +79,14 @@ export const SelectBuyAmountScreen = (): React.JSX.Element => {
   }, [onNext, isBuyAllowed])
 
   const renderServiceProvider = useCallback(() => {
+    if (
+      !sourceAmount ||
+      isAboveMinimumPurchaseLimit === false ||
+      isBelowMaximumPurchaseLimit === false
+    ) {
+      return
+    }
+
     if (isLoadingCryptoQuotes) {
       return <ActivityIndicator size="small" color={colors.$textPrimary} />
     }
@@ -96,7 +104,14 @@ export const SelectBuyAmountScreen = (): React.JSX.Element => {
         </Text>
       )
     }
-  }, [colors.$textPrimary, isLoadingCryptoQuotes, serviceProviderToDisplay])
+  }, [
+    colors.$textPrimary,
+    isAboveMinimumPurchaseLimit,
+    isBelowMaximumPurchaseLimit,
+    isLoadingCryptoQuotes,
+    serviceProviderToDisplay,
+    sourceAmount
+  ])
 
   const errorMessage = useMemo(() => {
     if (
@@ -131,14 +146,6 @@ export const SelectBuyAmountScreen = (): React.JSX.Element => {
   ])
 
   const renderPayWith = useCallback(() => {
-    if (
-      !sourceAmount ||
-      isAboveMinimumPurchaseLimit === false ||
-      isBelowMaximumPurchaseLimit === false
-    ) {
-      return null
-    }
-
     return (
       paymentMethodToDisplay && (
         <Pressable
@@ -192,9 +199,6 @@ export const SelectBuyAmountScreen = (): React.JSX.Element => {
       )
     )
   }, [
-    sourceAmount,
-    isAboveMinimumPurchaseLimit,
-    isBelowMaximumPurchaseLimit,
     paymentMethodToDisplay,
     handleSelectPaymentMethod,
     colors.$surfaceSecondary,
@@ -275,7 +279,16 @@ export const SelectBuyAmountScreen = (): React.JSX.Element => {
         />
       )}
       {errorMessage && (
-        <View sx={{ alignItems: 'center', marginTop: 12 }}>
+        <View
+          sx={{
+            alignItems: 'center',
+            marginTop: 12,
+            marginHorizontal: 16,
+            flexDirection: 'row',
+            justifyContent: 'center',
+            gap: 8
+          }}>
+          <Icons.Alert.AlertCircle color={colors.$textDanger} />
           <Text
             variant="caption"
             sx={{ fontWeight: 500, color: colors.$textDanger }}>

@@ -1,22 +1,18 @@
 import { useQuery, UseQueryResult } from '@tanstack/react-query'
 import { ReactQueryKeys } from 'consts/reactQueryKeys'
 import MeldService from '../services/MeldService'
-import {
-  CreateCryptoQuote,
-  CreateCryptoQuoteWithoutCountryCodeParams
-} from '../types'
+import { CreateCryptoQuote, CreateCryptoQuoteParams } from '../types'
 import { ServiceProviderCategories } from '../consts'
-import { useLocale } from './useLocale'
 import { useSearchServiceProviders } from './useSearchServiceProviders'
 
 export const useCreateCryptoQuote = ({
-  customerId,
-  externalCustomerId,
+  countryCode,
+  enabled,
   walletAddress,
   sourceAmount,
   destinationCurrencyCode,
   sourceCurrencyCode
-}: CreateCryptoQuoteWithoutCountryCodeParams): UseQueryResult<
+}: CreateCryptoQuoteParams & { enabled: boolean }): UseQueryResult<
   CreateCryptoQuote | undefined,
   Error
 > => {
@@ -26,13 +22,9 @@ export const useCreateCryptoQuote = ({
   const serviceProviders = serviceProvidersData?.map(
     serviceProvider => serviceProvider.serviceProvider
   )
-  const { countryCode } = useLocale()
 
   return useQuery<CreateCryptoQuote | undefined>({
-    enabled:
-      sourceAmount !== undefined &&
-      sourceAmount > 0 &&
-      destinationCurrencyCode !== '',
+    enabled,
     queryKey: [
       ReactQueryKeys.MELD_CREATE_CRYPTO_QUOTE,
       serviceProviders,
@@ -40,9 +32,7 @@ export const useCreateCryptoQuote = ({
       walletAddress,
       sourceAmount,
       destinationCurrencyCode,
-      sourceCurrencyCode,
-      customerId,
-      externalCustomerId
+      sourceCurrencyCode
     ],
     queryFn: () =>
       MeldService.createCryptoQuote({
@@ -52,6 +42,7 @@ export const useCreateCryptoQuote = ({
         countryCode,
         destinationCurrencyCode,
         sourceCurrencyCode
-      })
+      }),
+    staleTime: 1000 * 60 * 1 // 1 minute
   })
 }

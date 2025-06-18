@@ -3,7 +3,8 @@ import {
   PaymentMethods,
   PaymentTypes,
   ServiceProviderCategories,
-  ServiceProviders
+  ServiceProviders,
+  SessionTypes
 } from '../consts'
 
 export const SearchCountrySchema = object({
@@ -118,4 +119,28 @@ export const CreateCryptoQuoteSchema = object({
   message: string().optional().nullable(),
   error: string().optional().nullable(),
   timestamp: string().optional().nullable()
+})
+
+export const SessionDataSchema = object({
+  serviceProvider: z.nativeEnum(ServiceProviders).optional().nullable(),
+  redirectUrl: string().optional().nullable(),
+  countryCode: string().optional().nullable(),
+  sourceCurrencyCode: string().optional().nullable(),
+  destinationCurrencyCode: string().optional().nullable(),
+  paymentMethodType: z.nativeEnum(PaymentMethods).optional().nullable(),
+  sourceAmount: number().optional().nullable(),
+  walletAddress: string().optional().nullable()
+})
+
+export const CreateSessionWidgetBodySchema = object({
+  sessionType: z.nativeEnum(SessionTypes),
+  sessionData: SessionDataSchema
+})
+
+export const CreateSessionWidgetSchema = object({
+  id: string(),
+  externalSessionId: string().optional().nullable(),
+  externalCustomerId: string().optional().nullable(),
+  customerId: string().optional().nullable(),
+  widgetUrl: string().optional().nullable()
 })

@@ -9,7 +9,9 @@ import {
   SearchPaymentMethodsSchema,
   CreateCryptoQuoteSchema,
   CreateCryptoQuoteBodySchema,
-  QuoteSchema
+  QuoteSchema,
+  CreateSessionWidgetBodySchema,
+  CreateSessionWidgetSchema
 } from './services/schemas'
 import { ServiceProviderCategories } from './consts'
 
@@ -29,14 +31,11 @@ export type CreateCryptoQuoteParams = z.infer<
   typeof CreateCryptoQuoteBodySchema
 >
 
-const CreateCryptoQuoteWithoutCountryCodeSchema =
-  CreateCryptoQuoteBodySchema.omit({
-    countryCode: true
-  })
-
-export type CreateCryptoQuoteWithoutCountryCodeParams = z.infer<
-  typeof CreateCryptoQuoteWithoutCountryCodeSchema
+export type CreateSessionWidgetParams = z.infer<
+  typeof CreateSessionWidgetBodySchema
 >
+
+export type CreateSessionWidget = z.infer<typeof CreateSessionWidgetSchema>
 
 export type MeldDefaultParams = {
   categories: ServiceProviderCategories[]

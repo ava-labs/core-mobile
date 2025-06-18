@@ -5,8 +5,11 @@ import { useMemo } from 'react'
 import { useOnRampSourceAmount, useOnRampToken } from '../store'
 import { CreateCryptoQuote, Quote } from '../types'
 import { useCreateCryptoQuote } from './useCreateCryptoQuote'
+import { useLocale } from './useLocale'
 
-export const useServiceProviders = (): {
+export const useServiceProviders = (
+  shouldCreateCryptoQuote = true
+): {
   crytoQuotes: Quote[]
   isLoadingCryptoQuotes: boolean
   refetch: (
@@ -17,6 +20,7 @@ export const useServiceProviders = (): {
   const [onRampToken] = useOnRampToken()
   const selectedCurrency = useSelector(selectSelectedCurrency)
   const [sourceAmount] = useOnRampSourceAmount()
+  const { countryCode } = useLocale()
 
   const {
     data,
@@ -24,9 +28,18 @@ export const useServiceProviders = (): {
     refetch,
     isRefetching: isRefetchingCryptoQuotes
   } = useCreateCryptoQuote({
+    enabled:
+      countryCode !== undefined &&
+      selectedCurrency !== undefined &&
+      shouldCreateCryptoQuote &&
+      sourceAmount !== undefined &&
+      sourceAmount !== 0 &&
+      onRampToken?.currencyCode !== '' &&
+      onRampToken?.currencyCode !== undefined,
     sourceAmount: sourceAmount ?? 0,
     destinationCurrencyCode: onRampToken?.currencyCode ?? '',
-    sourceCurrencyCode: selectedCurrency
+    sourceCurrencyCode: selectedCurrency,
+    countryCode
   })
 
   const crytoQuotes = useMemo(() => {

@@ -5,7 +5,6 @@ import {
   Text,
   Icons,
   Pressable,
-  Image,
   alpha
 } from '@avalabs/k2-alpine'
 import { useRouter } from 'expo-router'
@@ -18,20 +17,22 @@ import { useSearchableTokenList } from 'common/hooks/useSearchableTokenList'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
 import { useNetworks } from 'hooks/networks/useNetworks'
 import { LoadingState } from 'common/components/LoadingState'
+import { ErrorState } from 'common/components/ErrorState'
 import { useOnRampServiceProvider, useOnRampToken } from '../store'
 import { useSearchServiceProviders } from '../hooks/useSearchServiceProviders'
 import { ServiceProviderCategories } from '../consts'
 import { Quote } from '../types'
 import { useServiceProviders } from '../hooks/useServiceProviders'
+import { ServiceProviderIcon } from '../components/ServiceProviderIcon'
 
 const NEW_QUOTE_TIME = 60
 const IMAGE_SIZE = 36
 
 export const SelectServiceProviderScreen = (): React.JSX.Element => {
   const {
-    theme: { colors, isDark }
+    theme: { colors }
   } = useTheme()
-  const { back, canGoBack } = useRouter()
+  const { back, canGoBack, dismissAll } = useRouter()
   const { formatCurrency } = useFormatCurrency()
   const [onRampToken] = useOnRampToken()
   const [_, setOnRampServiceProvider] = useOnRampServiceProvider()
@@ -46,6 +47,7 @@ export const SelectServiceProviderScreen = (): React.JSX.Element => {
   const { data: serviceProviders } = useSearchServiceProviders({
     categories: [ServiceProviderCategories.CRYPTO_ONRAMP]
   })
+
   const erc20ContractTokens = useErc20ContractTokens()
   const { filteredTokenList } = useSearchableTokenList({
     tokens: erc20ContractTokens,
@@ -80,7 +82,7 @@ export const SelectServiceProviderScreen = (): React.JSX.Element => {
     if (
       isLoadingCryptoQuotes ||
       isRefetchingCryptoQuotes ||
-      hasAvailableServiceProviders
+      hasAvailableServiceProviders === false
     )
       return
 
@@ -101,12 +103,13 @@ export const SelectServiceProviderScreen = (): React.JSX.Element => {
     newQuoteTime,
     refetch,
     serviceProviders,
-    serviceProviders.length
+    serviceProviders?.length
   ])
 
   const dismiss = useCallback(() => {
-    canGoBack() && back()
-  }, [back, canGoBack])
+    dismissAll() // dismiss to the top of selectPaymentMethod stack
+    canGoBack() && back() // dismiss the first screen of the selectPaymentMethod stack
+  }, [back, canGoBack, dismissAll])
 
   const renderHeader = useCallback(() => {
     return (
@@ -167,17 +170,12 @@ export const SelectServiceProviderScreen = (): React.JSX.Element => {
                 borderRadius: IMAGE_SIZE / 2,
                 borderColor: alpha(colors.$textPrimary, 0.1)
               }}>
-              <Image
-                source={{
-                  uri: isDark
-                    ? serviceProvider?.logos.darkShort
-                    : serviceProvider?.logos.lightShort
-                }}
-                style={{
-                  width: IMAGE_SIZE,
-                  height: IMAGE_SIZE
-                }}
-              />
+              {serviceProvider?.serviceProvider && (
+                <ServiceProviderIcon
+                  serviceProvider={serviceProvider.serviceProvider}
+                  size={IMAGE_SIZE}
+                />
+              )}
             </View>
             <View>
               <Text
@@ -223,7 +221,6 @@ export const SelectServiceProviderScreen = (): React.JSX.Element => {
       colors.$textSuccess,
       dismiss,
       formatCurrency,
-      isDark,
       network?.networkToken.decimals,
       serviceProviders,
       setOnRampServiceProvider,
@@ -231,9 +228,18 @@ export const SelectServiceProviderScreen = (): React.JSX.Element => {
     ]
   )
 
-  if (isLoadingCryptoQuotes || isRefetchingCryptoQuotes) {
-    return <LoadingState sx={{ flex: 1 }} />
-  }
+  const renderEmpty = useCallback(() => {
+    if (isLoadingCryptoQuotes || isRefetchingCryptoQuotes) {
+      return <LoadingState sx={{ flex: 1 }} />
+    }
+    return (
+      <ErrorState
+        sx={{ flex: 1 }}
+        title="No service providers available"
+        description="Try a different token or amount"
+      />
+    )
+  }, [isLoadingCryptoQuotes, isRefetchingCryptoQuotes])
 
   return (
     <ListScreen
@@ -242,8 +248,7 @@ export const SelectServiceProviderScreen = (): React.JSX.Element => {
       renderHeader={renderHeader}
       data={crytoQuotes}
       renderItem={item => renderItem(item.item, item.index)}
-      errorMessageTitle="No service providers available"
-      errorMessageDescription="Try a different token or amount"
+      renderEmpty={renderEmpty}
     />
   )
 }

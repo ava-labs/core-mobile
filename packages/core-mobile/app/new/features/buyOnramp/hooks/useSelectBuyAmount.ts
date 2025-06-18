@@ -20,6 +20,7 @@ import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import { useNavigation } from '@react-navigation/native'
 import { ACTIONS } from 'contexts/DeeplinkContext/types'
 import { FiatAmountInputHandle } from '@avalabs/k2-alpine'
+import { useDebouncedCallback } from 'use-debounce'
 import {
   PaymentMethodNames,
   ServiceProviderCategories,
@@ -37,8 +38,10 @@ import { isTokenSupportedForBuying } from '../utils'
 import { useGetPurchaseLimits } from './useGetPurchaseLimits'
 import { useLocale } from './useLocale'
 import { useSearchDefaultsByCountry } from './useSearchDefaultsByCountry'
-import { useCreateCryptoWidget } from './useCreateCryptoWidget'
+import { useCreateSessionWidget } from './useCreateSessionWidget'
 import { useServiceProviders } from './useServiceProviders'
+
+const DEFAULT_DEBOUNCE_MILLISECONDS = 300
 
 export const useSelectBuyAmount = (): {
   isLoadingDefaultsByCountry: boolean
@@ -80,7 +83,51 @@ export const useSelectBuyAmount = (): {
   const { countryCode } = useLocale()
   const { getFromPopulatedNetwork } = useNetworks()
   const { getMarketTokenBySymbol } = useWatchlist()
-  const { crytoQuotes, isLoadingCryptoQuotes } = useServiceProviders()
+
+  // debounce since fetching quotes can take awhile
+  const debouncedSetAmount = useDebouncedCallback(
+    setSourceAmount,
+    DEFAULT_DEBOUNCE_MILLISECONDS
+  )
+
+  const selectedPurchasingFiatCurrency = useMemo(() => {
+    return purchaseLimits?.find(
+      limit => limit.currencyCode === selectedCurrency
+    )
+  }, [purchaseLimits, selectedCurrency])
+
+  const minimumPurchaseLimit = selectedPurchasingFiatCurrency?.minimumAmount
+  const maximumPurchaseLimit = selectedPurchasingFiatCurrency?.maximumAmount
+
+  const isAboveMinimumPurchaseLimit = useMemo(() => {
+    if (!selectedPurchasingFiatCurrency) {
+      // if there is no matching fiat currency found, we don't allow the user to proceed
+      return false
+    }
+
+    return (
+      (sourceAmount ?? 0) >=
+      (selectedPurchasingFiatCurrency?.minimumAmount ?? 0)
+    )
+  }, [selectedPurchasingFiatCurrency, sourceAmount])
+
+  const isBelowMaximumPurchaseLimit = useMemo(() => {
+    if (!selectedPurchasingFiatCurrency) {
+      // if there is no matching fiat currency found, we don't allow the user to proceed
+      return false
+    }
+
+    return (
+      (sourceAmount ?? 0) <=
+      (selectedPurchasingFiatCurrency?.maximumAmount ?? 0)
+    )
+  }, [selectedPurchasingFiatCurrency, sourceAmount])
+
+  const { crytoQuotes, isLoadingCryptoQuotes } = useServiceProviders(
+    isLoadingPurchaseLimits === false &&
+      isBelowMaximumPurchaseLimit &&
+      isAboveMinimumPurchaseLimit
+  )
 
   const erc20ContractTokens = useErc20ContractTokens()
   const { filteredTokenList } = useSearchableTokenList({
@@ -124,14 +171,16 @@ export const useSelectBuyAmount = (): {
     }?amount=${formattedAmount}&dismissCount=${(currentIndex ?? 0) + 1}`
   }, [formatCurrency, getState, sourceAmount])
 
-  const { data: onrampWidget } = useCreateCryptoWidget({
-    redirectUrl,
-    sourceAmount: sourceAmount ?? 0,
-    destinationCurrencyCode: onrampToken?.currencyCode ?? '',
-    sourceCurrencyCode: selectedCurrency,
+  const { data: onrampWidget } = useCreateSessionWidget({
     sessionType: SessionTypes.BUY,
-    walletAddress,
-    serviceProvider
+    sessionData: {
+      redirectUrl,
+      sourceAmount: sourceAmount ?? 0,
+      destinationCurrencyCode: onrampToken?.currencyCode ?? '',
+      sourceCurrencyCode: selectedCurrency,
+      walletAddress,
+      serviceProvider
+    }
   })
 
   const noAvailableServiceProvider = useMemo(() => {
@@ -141,6 +190,22 @@ export const useSelectBuyAmount = (): {
       isLoadingCryptoQuotes === false
     )
   }, [isLoadingCryptoQuotes, serviceProvider, sourceAmount])
+
+  const isBuyAllowed = useMemo(() => {
+    return (
+      (sourceAmount ?? 0) > 0 &&
+      isBelowMaximumPurchaseLimit &&
+      isAboveMinimumPurchaseLimit &&
+      isLoadingCryptoQuotes === false &&
+      noAvailableServiceProvider === false
+    )
+  }, [
+    sourceAmount,
+    isBelowMaximumPurchaseLimit,
+    isAboveMinimumPurchaseLimit,
+    isLoadingCryptoQuotes,
+    noAvailableServiceProvider
+  ])
 
   const tokenBalance = useMemo(() => {
     if (token?.tokenWithBalance === undefined) {
@@ -168,47 +233,6 @@ export const useSelectBuyAmount = (): {
   const serviceProviderToDisplay = useMemo(() => {
     return serviceProvider ? ServiceProviderNames[serviceProvider] : undefined
   }, [serviceProvider])
-
-  const selectedPurchasingFiatCurrency = useMemo(() => {
-    return purchaseLimits?.find(
-      limit => limit.currencyCode === selectedCurrency
-    )
-  }, [purchaseLimits, selectedCurrency])
-
-  const minimumPurchaseLimit = selectedPurchasingFiatCurrency?.minimumAmount
-  const maximumPurchaseLimit = selectedPurchasingFiatCurrency?.maximumAmount
-
-  const isAboveMinimumPurchaseLimit = useMemo(() => {
-    if (!selectedPurchasingFiatCurrency) {
-      // if there is no matching fiat currency found, we don't allow the user to proceed
-      return false
-    }
-
-    return (
-      (sourceAmount ?? 0) >=
-      (selectedPurchasingFiatCurrency?.minimumAmount ?? 0)
-    )
-  }, [selectedPurchasingFiatCurrency, sourceAmount])
-
-  const isBelowMaximumPurchaseLimit = useMemo(() => {
-    if (!selectedPurchasingFiatCurrency) {
-      // if there is no matching fiat currency found, we don't allow the user to proceed
-      return false
-    }
-
-    return (
-      (sourceAmount ?? 0) <=
-      (selectedPurchasingFiatCurrency?.maximumAmount ?? 0)
-    )
-  }, [selectedPurchasingFiatCurrency, sourceAmount])
-
-  const isBuyAllowed = useMemo(() => {
-    return (
-      (sourceAmount ?? 0) > 0 &&
-      isBelowMaximumPurchaseLimit &&
-      isAboveMinimumPurchaseLimit
-    )
-  }, [sourceAmount, isBelowMaximumPurchaseLimit, isAboveMinimumPurchaseLimit])
 
   const formatInTokenUnit = useCallback(
     (amt: number): string => {
@@ -274,7 +298,7 @@ export const useSelectBuyAmount = (): {
     maximumPurchaseLimit,
     formatInTokenUnit,
     sourceAmount,
-    setSourceAmount,
+    setSourceAmount: debouncedSetAmount,
     paymentMethodToDisplay,
     serviceProviderToDisplay,
     isBuyAllowed,
@@ -284,7 +308,7 @@ export const useSelectBuyAmount = (): {
     isBelowMaximumPurchaseLimit,
     isLoadingDefaultsByCountry,
     isLoadingPurchaseLimits,
-    widgetUrl: onrampWidget?.widgetUrl,
+    widgetUrl: onrampWidget?.widgetUrl ?? undefined,
     isLoadingCryptoQuotes,
     textInputRef,
     noAvailableServiceProvider
