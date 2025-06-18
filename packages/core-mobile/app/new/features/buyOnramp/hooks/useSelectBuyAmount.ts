@@ -25,7 +25,7 @@ import {
   useOnRampSourceAmount,
   useOnRampToken
 } from '../store'
-import { CryptoCurrency } from '../types'
+import { CreateCryptoQuoteErrorCode, CryptoCurrency } from '../types'
 import { isTokenSupportedForBuying } from '../utils'
 import { useGetPurchaseLimits } from './useGetPurchaseLimits'
 import { useLocale } from './useLocale'
@@ -49,10 +49,8 @@ export const useSelectBuyAmount = (): {
   formatInTokenUnit: (amt: number) => string
   setSourceAmount: (amt: number) => void
   sourceAmount: number | undefined
-  minimumPurchaseLimit: number | undefined
-  maximumPurchaseLimit: number | undefined
   widgetUrl?: string
-  noAvailableServiceProvider: boolean
+  errorMessage?: string
   // eslint-disable-next-line sonarjs/cognitive-complexity
 } => {
   const account = useSelector(selectActiveAccount)
@@ -114,11 +112,12 @@ export const useSelectBuyAmount = (): {
     )
   }, [selectedPurchasingFiatCurrency, sourceAmount])
 
-  const { crytoQuotes, isLoadingCryptoQuotes } = useServiceProviders(
-    isLoadingPurchaseLimits === false &&
-      isBelowMaximumPurchaseLimit &&
-      isAboveMinimumPurchaseLimit
-  )
+  const { crytoQuotes, isLoadingCryptoQuotes, cryptoQuotesError } =
+    useServiceProviders(
+      isLoadingPurchaseLimits === false &&
+        isBelowMaximumPurchaseLimit &&
+        isAboveMinimumPurchaseLimit
+    )
 
   const erc20ContractTokens = useErc20ContractTokens()
   const { filteredTokenList } = useSearchableTokenList({
@@ -173,28 +172,20 @@ export const useSelectBuyAmount = (): {
     }
   })
 
-  const noAvailableServiceProvider = useMemo(() => {
-    return (
-      sourceAmount !== 0 &&
-      serviceProvider === undefined &&
-      isLoadingCryptoQuotes === false
-    )
-  }, [isLoadingCryptoQuotes, serviceProvider, sourceAmount])
-
   const isBuyAllowed = useMemo(() => {
     return (
       (sourceAmount ?? 0) > 0 &&
       isBelowMaximumPurchaseLimit &&
       isAboveMinimumPurchaseLimit &&
       isLoadingCryptoQuotes === false &&
-      noAvailableServiceProvider === false
+      cryptoQuotesError === undefined
     )
   }, [
     sourceAmount,
     isBelowMaximumPurchaseLimit,
     isAboveMinimumPurchaseLimit,
     isLoadingCryptoQuotes,
-    noAvailableServiceProvider
+    cryptoQuotesError
   ])
 
   const tokenBalance = useMemo(() => {
@@ -278,9 +269,48 @@ export const useSelectBuyAmount = (): {
     setServiceProvider
   ])
 
-  return {
+  const errorMessage = useMemo(() => {
+    if (
+      isAboveMinimumPurchaseLimit === false &&
+      minimumPurchaseLimit &&
+      sourceAmount !== 0
+    ) {
+      return `The minimum purchase amount is ${minimumPurchaseLimit} ${selectedCurrency}`
+    }
+
+    if (
+      isBelowMaximumPurchaseLimit === false &&
+      maximumPurchaseLimit &&
+      sourceAmount !== 0
+    ) {
+      return `The maximum purchase amount is ${maximumPurchaseLimit} ${selectedCurrency}`
+    }
+
+    if (
+      (cryptoQuotesError?.statusCode === CreateCryptoQuoteErrorCode.NOT_FOUND &&
+        cryptoQuotesError.message.toLowerCase().includes('not found')) ||
+      (cryptoQuotesError?.statusCode ===
+        CreateCryptoQuoteErrorCode.INCOMPATIBLE_REQUEST &&
+        cryptoQuotesError.message
+          .toLowerCase()
+          .includes('does not match service providers'))
+    ) {
+      return `${token?.tokenWithBalance.name} cannot be purchased at the moment, please try again later.`
+    }
+
+    return undefined
+  }, [
+    isAboveMinimumPurchaseLimit,
     minimumPurchaseLimit,
+    sourceAmount,
+    isBelowMaximumPurchaseLimit,
     maximumPurchaseLimit,
+    cryptoQuotesError,
+    selectedCurrency,
+    token?.tokenWithBalance.name
+  ])
+
+  return {
     formatInTokenUnit,
     sourceAmount,
     setSourceAmount: debouncedSetAmount,
@@ -295,6 +325,6 @@ export const useSelectBuyAmount = (): {
     isLoadingPurchaseLimits,
     widgetUrl: onrampWidget?.widgetUrl ?? undefined,
     isLoadingCryptoQuotes,
-    noAvailableServiceProvider
+    errorMessage
   }
 }

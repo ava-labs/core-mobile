@@ -1,5 +1,5 @@
 import { ScrollScreen } from 'common/components/ScrollScreen'
-import React, { useCallback, useMemo } from 'react'
+import React, { useCallback } from 'react'
 import {
   Button,
   View,
@@ -23,8 +23,6 @@ export const SelectBuyAmountScreen = (): React.JSX.Element => {
     theme: { colors }
   } = useTheme()
   const {
-    minimumPurchaseLimit,
-    maximumPurchaseLimit,
     formatInTokenUnit,
     sourceAmount,
     setSourceAmount,
@@ -39,7 +37,7 @@ export const SelectBuyAmountScreen = (): React.JSX.Element => {
     isLoadingPurchaseLimits,
     widgetUrl,
     isLoadingCryptoQuotes,
-    noAvailableServiceProvider
+    errorMessage
   } = useSelectBuyAmount()
   const { openUrl } = useInAppBrowser()
   const { formatIntegerCurrency, formatCurrency } = useFormatCurrency()
@@ -71,7 +69,7 @@ export const SelectBuyAmountScreen = (): React.JSX.Element => {
           type="primary"
           size="large"
           onPress={onNext}>
-          Next
+          Buy
         </Button>
       </View>
     )
@@ -109,38 +107,6 @@ export const SelectBuyAmountScreen = (): React.JSX.Element => {
     isBelowMaximumPurchaseLimit,
     isLoadingCryptoQuotes,
     serviceProviderToDisplay,
-    sourceAmount
-  ])
-
-  const errorMessage = useMemo(() => {
-    if (
-      isAboveMinimumPurchaseLimit === false &&
-      minimumPurchaseLimit &&
-      sourceAmount !== 0
-    ) {
-      return `The minimum purchase amount is ${minimumPurchaseLimit} ${selectedCurrency}`
-    }
-
-    if (
-      isBelowMaximumPurchaseLimit === false &&
-      maximumPurchaseLimit &&
-      sourceAmount !== 0
-    ) {
-      return `The maximum purchase amount is ${maximumPurchaseLimit} ${selectedCurrency}`
-    }
-
-    if (noAvailableServiceProvider) {
-      return 'No service provider available, please select a different token or a different amount.'
-    }
-
-    return undefined
-  }, [
-    isAboveMinimumPurchaseLimit,
-    isBelowMaximumPurchaseLimit,
-    maximumPurchaseLimit,
-    minimumPurchaseLimit,
-    noAvailableServiceProvider,
-    selectedCurrency,
     sourceAmount
   ])
 

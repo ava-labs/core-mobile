@@ -13,7 +13,7 @@ import {
   CreateSessionWidgetBodySchema,
   CreateSessionWidgetSchema
 } from './services/schemas'
-import { ServiceProviderCategories } from './consts'
+import { ServiceProviderCategories, ServiceProviders } from './consts'
 
 export type Country = z.infer<typeof SearchCountrySchema>
 export type FiatCurrency = z.infer<typeof SearchFiatCurrencySchema>
@@ -42,4 +42,24 @@ export type MeldDefaultParams = {
   serviceProviders?: string[]
   countries: string[]
   accountFilter?: boolean
+}
+
+export type CreateCryptoQuoteNotFoundError = {
+  status: CreateCryptoQuoteErrorCode
+  message: string
+}
+
+export type CreateCryptoQuoteError = {
+  code: CreateCryptoQuoteErrorCode
+  message: string
+  serviceProviderDetails?: {
+    serviceProvider: ServiceProviders
+  }
+  timestamp?: string
+  requestId?: string
+}
+
+export enum CreateCryptoQuoteErrorCode {
+  NOT_FOUND = 404,
+  INCOMPATIBLE_REQUEST = 'INCOMPATIBLE_REQUEST'
 }
