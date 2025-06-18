@@ -9,12 +9,11 @@ import {
   Text,
   TokenAmount,
   TokenAmountInput,
-  TokenAmountInputRef,
   TouchableOpacity,
   useTheme,
   View
 } from '@avalabs/k2-alpine'
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import Animated, {
   Easing,
   FadeIn,
@@ -69,8 +68,6 @@ export const TokenInputWidget = ({
   const [percentageButtons, setPercentageButtons] = useState<
     PercentageButton[]
   >([])
-
-  const inputRef = useRef<TokenAmountInputRef>(null)
 
   const handlePressPercentageButton = (
     button: PercentageButton,
