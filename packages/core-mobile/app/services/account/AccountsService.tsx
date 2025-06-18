@@ -37,6 +37,7 @@ class AccountsService {
           addressAVM: addresses[NetworkVMType.AVM],
           addressPVM: addresses[NetworkVMType.PVM],
           addressCoreEth: addresses[NetworkVMType.CoreEth],
+          addressSVM: addresses[NetworkVMType.SVM],
           walletName: account.walletName
         }
       }
@@ -76,6 +77,7 @@ class AccountsService {
       addressAVM: addresses[NetworkVMType.AVM],
       addressPVM: addresses[NetworkVMType.PVM],
       addressCoreEth: addresses[NetworkVMType.CoreEth],
+      addressSVM: addresses[NetworkVMType.SVM],
       walletName: ''
     }
   }

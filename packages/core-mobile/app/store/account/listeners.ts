@@ -15,6 +15,11 @@ import { isEvmPublicKey } from 'utils/publicKeys'
 import { selectActiveNetwork } from 'store/network'
 import { Network } from '@avalabs/core-chains-sdk'
 import {
+  selectHasBeenViewedOnce,
+  setViewOnce,
+  ViewOnceKey
+} from 'store/viewOnce'
+import {
   selectAccounts,
   selectActiveAccount,
   selectWalletName,
@@ -81,7 +86,8 @@ const initAccounts = async (
         addressBtc: acc.addressBTC,
         addressAVM: acc.addressAVM ?? '',
         addressPVM: acc.addressPVM ?? '',
-        addressCoreEth: acc.addressCoreEth ?? ''
+        addressCoreEth: acc.addressCoreEth ?? '',
+        addressSVM: acc.addressSVM ?? ''
       }))
     })
   }
@@ -174,6 +180,27 @@ const fetchSeedlessAccountsIfNeeded = async (
   }
 }
 
+const migrateSolanaAddressesIfNeeded = async (
+  _action: AnyAction,
+  listenerApi: AppListenerEffectAPI
+): Promise<void> => {
+  const { dispatch, getState } = listenerApi
+  const state = getState()
+  const hasSolanaAddressesMigrated = selectHasBeenViewedOnce(
+    ViewOnceKey.MIGRATE_SOLANA_ADDRESSES
+  )(state)
+
+  if (!hasSolanaAddressesMigrated) {
+    const accounts = selectAccounts(state)
+    const entries = Object.values(accounts)
+    if (entries.some(account => !account.addressSVM)) {
+      // reload only when there are accounts without Solana addresses
+      reloadAccounts(_action, listenerApi)
+    }
+    dispatch(setViewOnce(ViewOnceKey.MIGRATE_SOLANA_ADDRESSES))
+  }
+}
+
 export const addAccountListeners = (
   startListening: AppStartListening
 ): void => {
@@ -195,5 +222,10 @@ export const addAccountListeners = (
   startListening({
     actionCreator: onAppUnlocked,
     effect: fetchSeedlessAccountsIfNeeded
+  })
+
+  startListening({
+    actionCreator: onAppUnlocked,
+    effect: migrateSolanaAddressesIfNeeded
   })
 }
