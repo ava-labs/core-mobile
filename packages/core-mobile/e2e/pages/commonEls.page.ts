@@ -140,6 +140,14 @@ class CommonElsPage {
     return by.text(commonEls.copy)
   }
 
+  get nextButton() {
+    return by.id(commonEls.nextBtn)
+  }
+
+  get approveButton() {
+    return by.id(commonEls.approveBtn)
+  }
+
   get selectNetworkBitcoin() {
     return by.id(commonElsLoc.selectNetworkBitcoin)
   }
@@ -354,11 +362,24 @@ class CommonElsPage {
   }
 
   async verifySuccessToast() {
-    await Actions.waitForElement(this.transactionSuccess, 30000)
+    await device.disableSynchronization()
+    await Actions.waitForElementNoSync(this.transactionSuccess, 30000)
+    await device.enableSynchronization()
   }
 
-  async enterAmount(amount: string) {
-    await Actions.setInputText(this.tokenAmountInputField, amount)
+  async enterAmount(amount: string, index = 0) {
+    await delay(500)
+    await Actions.setInputText(this.tokenAmountInputField, amount, index)
+  }
+
+  async tapNextButton() {
+    await Actions.waitForElementNoSync(this.nextButton, 8000)
+    await Actions.tapElementAtIndex(this.nextButton, 0)
+  }
+
+  async tapApproveButton() {
+    await Actions.waitForElement(this.approveButton, 20000)
+    await Actions.tapElementAtIndex(this.approveButton, 0)
   }
 }
 

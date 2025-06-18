@@ -33,9 +33,9 @@ describe('Watchlist trending tab', () => {
 
   it('should verify top trending token navigations', async () => {
     await watchlist.topTrendingTokenOnWatchlist()
-    const topToken = await watchlist.getTopToken()
-    const symbol = topToken[1] as string
-    await watchlist.topTrendingTokenBuyFlow(symbol)
+    // const topToken = await watchlist.getTopToken()
+    // const symbol = topToken[1] as string
+    await watchlist.topTrendingTokenBuyFlow()
     await watchlist.topTrendingTokenDetailBuyFlow()
     await watchlist.topTrendingTokenDetailSwapFlow()
     await commonElsPage.goBack()
