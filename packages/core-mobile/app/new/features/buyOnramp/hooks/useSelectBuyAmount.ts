@@ -298,6 +298,10 @@ export const useSelectBuyAmount = (): {
       return `${token?.tokenWithBalance.name} cannot be purchased at the moment, please try again later.`
     }
 
+    if (cryptoQuotesError?.message) {
+      return cryptoQuotesError.message
+    }
+
     return undefined
   }, [
     isAboveMinimumPurchaseLimit,
