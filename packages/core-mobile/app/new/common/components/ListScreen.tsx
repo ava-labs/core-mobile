@@ -242,8 +242,8 @@ export const ListScreen = <T,>({
     return (
       <ErrorState
         sx={{ flex: 1 }}
-        title={'No results'}
-        description={'Try a different search'}
+        title="No results"
+        description="Try a different search"
       />
     )
   }, [renderEmpty])
