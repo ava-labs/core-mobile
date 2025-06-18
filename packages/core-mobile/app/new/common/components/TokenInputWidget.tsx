@@ -1,6 +1,6 @@
 import { formatTokenAmount } from '@avalabs/core-bridge-sdk'
 import { Network } from '@avalabs/core-chains-sdk'
-import { bigintToBig } from '@avalabs/core-utils-sdk'
+import { bigintToBig, TokenUnit } from '@avalabs/core-utils-sdk'
 import {
   ActivityIndicator,
   Button,
@@ -14,11 +14,7 @@ import {
   useTheme,
   View
 } from '@avalabs/k2-alpine'
-import React, { useCallback, useEffect, useRef, useState } from 'react'
-import {
-  NativeSyntheticEvent,
-  TextInputSelectionChangeEventData
-} from 'react-native'
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import Animated, {
   Easing,
   FadeIn,
@@ -73,44 +69,8 @@ export const TokenInputWidget = ({
   const [percentageButtons, setPercentageButtons] = useState<
     PercentageButton[]
   >([])
-  const [selection, setSelection] = useState<
-    | {
-        start: number
-        end: number
-      }
-    | undefined
-  >(undefined)
 
   const inputRef = useRef<TokenAmountInputRef>(null)
-
-  const onSelectionChange = (
-    e: NativeSyntheticEvent<TextInputSelectionChangeEventData>
-  ): void => {
-    setSelection({
-      start: e.nativeEvent.selection.start,
-      end: e.nativeEvent.selection.end
-    })
-  }
-
-  const updateCursorPosition = useCallback(
-    (value: bigint) => {
-      const valueBig = bigintToBig(value, token?.decimals ?? 0)
-      const decimalIndex = valueBig.toString().indexOf('.')
-
-      if (decimalIndex === undefined || decimalIndex === -1) return
-
-      requestAnimationFrame(() => {
-        setSelection({ start: 0, end: 0 })
-        setTimeout(() => {
-          setSelection({
-            start: decimalIndex,
-            end: decimalIndex
-          })
-        }, 100)
-      })
-    },
-    [token?.decimals]
-  )
 
   const handlePressPercentageButton = (
     button: PercentageButton,
@@ -122,6 +82,7 @@ export const TokenInputWidget = ({
     } else {
       value = BigInt(Math.floor(Number(balance ?? 0n) * button.percent))
     }
+
     onAmountChange?.(value)
 
     setPercentageButtons(prevButtons =>
@@ -129,8 +90,6 @@ export const TokenInputWidget = ({
         i === index ? { ...b, isSelected: true } : { ...b, isSelected: false }
       )
     )
-
-    updateCursorPosition(value)
   }
 
   const handleAmountChange = useCallback(
@@ -181,6 +140,35 @@ export const TokenInputWidget = ({
       }
     ])
   }, [maximum])
+
+  const inputValue = useMemo(() => {
+    const selectedButton = percentageButtons.find(b => b.isSelected)
+    let value: bigint
+
+    if (selectedButton) {
+      // If maximum is selected, use the maximum value
+      if (selectedButton.value) {
+        value = selectedButton.value
+      } else {
+        // If a percentage is selected, use the percentage of the balance
+        value = BigInt(
+          Math.floor(Number(balance ?? 0n) * selectedButton.percent)
+        )
+      }
+
+      // Convert the value to a TokenUnit and return the display value
+      const unit = new TokenUnit(
+        value,
+        token?.decimals ?? 0,
+        token?.symbol ?? ''
+      )
+      const display = unit.toDisplay()
+      const decimals = token?.decimals ?? 0
+      return BigInt(Number(display) * 10 ** decimals)
+    }
+
+    return amount
+  }, [amount, balance, percentageButtons, token?.decimals, token?.symbol])
 
   return (
     <View sx={sx}>
@@ -244,7 +232,10 @@ export const TokenInputWidget = ({
                   sx={{ flex: 1 }}
                   onPress={token === undefined ? onSelectToken : undefined}>
                   <View
-                    sx={{ alignItems: 'flex-end' }}
+                    sx={{
+                      alignItems: 'flex-end',
+                      flex: 1
+                    }}
                     pointerEvents={token === undefined ? 'none' : 'auto'}>
                     <TokenAmountInput
                       ref={inputRef}
@@ -252,11 +243,11 @@ export const TokenInputWidget = ({
                       autoFocus={autoFocus}
                       editable={editable}
                       denomination={token?.decimals ?? 0}
-                      selection={selection}
                       style={{
                         fontFamily: 'Aeonik-Medium',
                         fontSize: 42,
                         minWidth: 100,
+                        width: '100%',
                         textAlign: 'right',
                         color:
                           inputTextColor ??
@@ -264,8 +255,7 @@ export const TokenInputWidget = ({
                             ? colors.$textPrimary
                             : colors.$textSecondary)
                       }}
-                      onSelectionChange={onSelectionChange}
-                      value={amount}
+                      value={inputValue}
                       onChange={handleAmountChange}
                       onFocus={handleFocus}
                       onBlur={handleBlur}
