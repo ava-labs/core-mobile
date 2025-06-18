@@ -39,8 +39,7 @@ export const SelectBuyAmountScreen = (): React.JSX.Element => {
     isLoadingPurchaseLimits,
     widgetUrl,
     isLoadingCryptoQuotes,
-    noAvailableServiceProvider,
-    textInputRef
+    noAvailableServiceProvider
   } = useSelectBuyAmount()
   const { openUrl } = useInAppBrowser()
   const { formatIntegerCurrency, formatCurrency } = useFormatCurrency()
@@ -262,7 +261,6 @@ export const SelectBuyAmountScreen = (): React.JSX.Element => {
       {/* Fiat amount input widget */}
       {tokenBalance && (
         <FiatAmountInputWidget
-          ref={textInputRef}
           isAmountValid={
             isBelowMaximumPurchaseLimit && isAboveMinimumPurchaseLimit
           }

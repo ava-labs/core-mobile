@@ -108,9 +108,9 @@ export const QuoteSchema = object({
   exchangeRate: number(),
   paymentMethodType: z.nativeEnum(PaymentMethods),
   serviceProvider: z.nativeEnum(ServiceProviders),
-  customerScore: number(),
+  customerScore: number().optional().nullable(),
   institutionName: string().optional().nullable(),
-  lowKyc: boolean(),
+  lowKyc: boolean().optional().nullable(),
   partnerFee: number()
 })
 

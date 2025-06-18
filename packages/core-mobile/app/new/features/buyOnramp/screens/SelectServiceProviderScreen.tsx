@@ -12,7 +12,6 @@ import { ListScreen } from 'common/components/ListScreen'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import { format } from 'date-fns'
 import { useErc20ContractTokens } from 'common/hooks/useErc20ContractTokens'
-import { TokenType } from '@avalabs/vm-module-types'
 import { useSearchableTokenList } from 'common/hooks/useSearchableTokenList'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
 import { useNetworks } from 'hooks/networks/useNetworks'
@@ -24,6 +23,7 @@ import { ServiceProviderCategories } from '../consts'
 import { Quote } from '../types'
 import { useServiceProviders } from '../hooks/useServiceProviders'
 import { ServiceProviderIcon } from '../components/ServiceProviderIcon'
+import { isTokenSupportedForBuying } from '../utils'
 
 const NEW_QUOTE_TIME = 60
 const IMAGE_SIZE = 36
@@ -61,14 +61,9 @@ export const SelectServiceProviderScreen = (): React.JSX.Element => {
 
   const token = useMemo(() => {
     return filteredTokenList.find(
-      tk =>
-        (tk.networkChainId.toString() === onRampToken?.chainId &&
-          tk.type === TokenType.NATIVE) ||
-        ('chainId' in tk &&
-          tk.chainId?.toString() === onRampToken?.chainId &&
-          tk.address === onRampToken?.contractAddress)
+      tk => onRampToken && isTokenSupportedForBuying(onRampToken, tk)
     )
-  }, [filteredTokenList, onRampToken?.chainId, onRampToken?.contractAddress])
+  }, [filteredTokenList, onRampToken])
 
   const network = useMemo(() => {
     return token?.networkChainId

@@ -1,11 +1,4 @@
-import {
-  Ref,
-  useCallback,
-  useEffect,
-  useLayoutEffect,
-  useMemo,
-  useRef
-} from 'react'
+import { useCallback, useEffect, useLayoutEffect, useMemo } from 'react'
 import { selectSelectedCurrency } from 'store/settings/currency'
 import { useSelector } from 'react-redux'
 import { useNetworks } from 'hooks/networks/useNetworks'
@@ -19,7 +12,6 @@ import { selectActiveAccount } from 'store/account'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import { useNavigation } from '@react-navigation/native'
 import { ACTIONS } from 'contexts/DeeplinkContext/types'
-import { FiatAmountInputHandle } from '@avalabs/k2-alpine'
 import { useDebouncedCallback } from 'use-debounce'
 import {
   PaymentMethodNames,
@@ -61,7 +53,6 @@ export const useSelectBuyAmount = (): {
   maximumPurchaseLimit: number | undefined
   widgetUrl?: string
   noAvailableServiceProvider: boolean
-  textInputRef: Ref<FiatAmountInputHandle>
   // eslint-disable-next-line sonarjs/cognitive-complexity
 } => {
   const account = useSelector(selectActiveAccount)
@@ -139,7 +130,6 @@ export const useSelectBuyAmount = (): {
     useSearchDefaultsByCountry({
       categories: [ServiceProviderCategories.CRYPTO_ONRAMP]
     })
-  const textInputRef = useRef<FiatAmountInputHandle>(null)
 
   const token = useMemo(() => {
     const t = filteredTokenList.find(
@@ -266,12 +256,7 @@ export const useSelectBuyAmount = (): {
     setPaymentMethod(undefined)
     setServiceProvider(undefined)
     setSourceAmount(0)
-    textInputRef.current?.setValue('')
   }, [setPaymentMethod, setServiceProvider, setSourceAmount])
-
-  useEffect(() => {
-    textInputRef.current?.setValue('')
-  }, [onrampToken])
 
   useEffect(() => {
     if (paymentMethod === undefined && defaultPaymentMethod) {
@@ -310,7 +295,6 @@ export const useSelectBuyAmount = (): {
     isLoadingPurchaseLimits,
     widgetUrl: onrampWidget?.widgetUrl ?? undefined,
     isLoadingCryptoQuotes,
-    textInputRef,
     noAvailableServiceProvider
   }
 }
