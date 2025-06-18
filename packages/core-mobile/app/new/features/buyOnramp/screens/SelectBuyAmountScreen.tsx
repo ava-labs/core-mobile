@@ -25,8 +25,8 @@ export const SelectBuyAmountScreen = (): React.JSX.Element => {
     minimumPurchaseLimit,
     maximumPurchaseLimit,
     formatInTokenUnit,
-    amount,
-    setAmount,
+    sourceAmount,
+    setSourceAmount,
     paymentMethodToDisplay,
     serviceProviderToDisplay,
     isBuyAllowed,
@@ -74,6 +74,14 @@ export const SelectBuyAmountScreen = (): React.JSX.Element => {
   }, [onNext, isBuyAllowed])
 
   const renderPayWith = useCallback(() => {
+    if (
+      !sourceAmount ||
+      isAboveMinimumPurchaseLimit === false ||
+      isBelowMaximumPurchaseLimit === false
+    ) {
+      return null
+    }
+
     return (
       paymentMethodToDisplay && (
         <Pressable
@@ -102,7 +110,7 @@ export const SelectBuyAmountScreen = (): React.JSX.Element => {
               <ActivityIndicator size="small" color={colors.$textPrimary} />
             ) : (
               <>
-                <View>
+                <View sx={{ justifyContent: 'center' }}>
                   <Text
                     variant="body2"
                     sx={{
@@ -137,11 +145,14 @@ export const SelectBuyAmountScreen = (): React.JSX.Element => {
       )
     )
   }, [
+    sourceAmount,
+    isAboveMinimumPurchaseLimit,
+    isBelowMaximumPurchaseLimit,
+    paymentMethodToDisplay,
+    handleSelectPaymentMethod,
     colors.$surfaceSecondary,
     colors.$textPrimary,
-    handleSelectPaymentMethod,
     isLoadingDefaultsByCountry,
-    paymentMethodToDisplay,
     serviceProviderToDisplay
   ])
 
@@ -206,8 +217,8 @@ export const SelectBuyAmountScreen = (): React.JSX.Element => {
           disabled={isLoadingPurchaseLimits}
           sx={{ marginTop: 12 }}
           currency={selectedCurrency}
-          amount={amount}
-          onChange={setAmount}
+          amount={sourceAmount}
+          onChange={setSourceAmount}
           formatIntegerCurrency={amt =>
             formatIntegerCurrency({ amount: amt, withoutCurrencySuffix: true })
           }
@@ -218,7 +229,7 @@ export const SelectBuyAmountScreen = (): React.JSX.Element => {
       <View sx={{ alignItems: 'center', marginTop: 12 }}>
         {isAboveMinimumPurchaseLimit === false &&
           minimumPurchaseLimit &&
-          amount !== 0 && (
+          sourceAmount !== 0 && (
             <Text
               variant="caption"
               sx={{
@@ -228,7 +239,7 @@ export const SelectBuyAmountScreen = (): React.JSX.Element => {
           )}
         {isBelowMaximumPurchaseLimit === false &&
           maximumPurchaseLimit &&
-          amount !== 0 && (
+          sourceAmount !== 0 && (
             <Text
               variant="caption"
               sx={{

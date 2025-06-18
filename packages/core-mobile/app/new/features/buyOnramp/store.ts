@@ -7,9 +7,13 @@ export const useOnRampToken = createZustandStore<CryptoCurrency | undefined>(
 )
 
 export const useOnRampServiceProvider = createZustandStore<
-  keyof typeof ServiceProviders | undefined
+  ServiceProviders | undefined
 >(undefined)
 
 export const useOnRampPaymentMethod = createZustandStore<
   PaymentMethods | undefined
 >(undefined)
+
+export const useOnRampSourceAmount = createZustandStore<number | undefined>(
+  undefined
+)
