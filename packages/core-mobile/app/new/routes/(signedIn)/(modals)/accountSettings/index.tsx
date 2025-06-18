@@ -85,11 +85,13 @@ const AccountSettingsScreen = (): JSX.Element => {
   }, [navigate])
 
   const onTestnetChange = (value: boolean): void => {
+    showSnackbar('Testnet mode is now ' + (value ? 'on' : 'off'))
+
     AnalyticsService.capture(
       value ? 'DeveloperModeEnabled' : 'DeveloperModeDisabled'
     )
+
     dispatch(toggleDeveloperMode())
-    showSnackbar('Testnet mode is now ' + (value ? 'on' : 'off'))
   }
 
   const handlePressAboutItem = useCallback(
