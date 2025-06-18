@@ -23,8 +23,8 @@ export const ServiceProviderIcon = ({
           borderColor: colors.$borderPrimary,
           borderWidth: 1,
           borderRadius: 100,
-          width: DEFAULT_SIZE,
-          height: DEFAULT_SIZE,
+          width: size,
+          height: size,
           justifyContent: 'center',
           alignItems: 'center',
           backgroundColor: colors.$surfaceSecondary
