@@ -365,7 +365,7 @@ class CommonElsPage {
     await device.disableSynchronization()
     await Actions.waitForElementNoSync(this.transactionSuccess, 30000)
     await device.enableSynchronization()
-  } 
+  }
 
   async enterAmount(amount: string, index = 0) {
     await delay(500)
