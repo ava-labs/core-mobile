@@ -1,10 +1,10 @@
 import { LocalTokenWithBalance } from 'store/balance'
 import { TokenType } from '@avalabs/vm-module-types'
-import { CryptoCurrency } from './types'
-import { NATIVE_ERC20_TOKEN_CONTRACT_ADDRESS } from './consts'
 import { closeInAppBrowser } from 'utils/openInAppBrowser'
 import { transactionSnackbar } from 'common/utils/toast'
 import { Router } from 'expo-router'
+import { NATIVE_ERC20_TOKEN_CONTRACT_ADDRESS } from './consts'
+import { CryptoCurrency } from './types'
 
 export const isSupportedNativeToken = (
   crypto: CryptoCurrency,
