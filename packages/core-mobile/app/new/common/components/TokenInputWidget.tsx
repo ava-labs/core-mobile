@@ -92,36 +92,37 @@ export const TokenInputWidget = ({
     })
   }
 
-  const updateCursorPosition = useCallback(() => {
-    const decimalIndex = inputRef.current?.valueAsString.indexOf('.')
-    if (decimalIndex !== undefined) {
-      setTimeout(() => {
-        setSelection({ start: 0, end: 0 })
+  const updateCursorPosition = useCallback(
+    (value: bigint) => {
+      const valueBig = bigintToBig(value, token?.decimals ?? 0)
+      const decimalIndex = valueBig.toString().indexOf('.')
 
+      if (decimalIndex === undefined || decimalIndex === -1) return
+
+      requestAnimationFrame(() => {
+        setSelection({ start: 0, end: 0 })
         setTimeout(() => {
           setSelection({
             start: decimalIndex,
             end: decimalIndex
           })
-          setTimeout(() => {
-            setSelection(undefined)
-          }, 150)
-        }, 150)
-      }, 0)
-    }
-  }, [])
+        }, 100)
+      })
+    },
+    [token?.decimals]
+  )
 
   const handlePressPercentageButton = (
     button: PercentageButton,
     index: number
   ): void => {
+    let value: bigint
     if (button.value !== undefined) {
-      onAmountChange?.(button.value)
+      value = button.value
     } else {
-      const value = Number(balance ?? 0n) * button.percent
-
-      onAmountChange?.(button.value ?? BigInt(Math.floor(value)))
+      value = BigInt(Math.floor(Number(balance ?? 0n) * button.percent))
     }
+    onAmountChange?.(value)
 
     setPercentageButtons(prevButtons =>
       prevButtons.map((b, i) =>
@@ -129,7 +130,7 @@ export const TokenInputWidget = ({
       )
     )
 
-    updateCursorPosition()
+    updateCursorPosition(value)
   }
 
   const handleAmountChange = useCallback(
