@@ -209,7 +209,7 @@ __metadata:
     "@avalabs/k2-alpine": "workspace:*"
     "@avalabs/svm-module": 1.9.4
     "@avalabs/tsconfig-mobile": "workspace:*"
-    "@avalabs/types": 3.1.0-alpha.54
+    "@avalabs/types": 3.1.0-alpha.56
     "@avalabs/vm-module-types": 1.9.4
     "@babel/core": 7.25.7
     "@babel/plugin-proposal-nullish-coalescing-operator": 7.18.6
@@ -734,10 +734,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@avalabs/types@npm:3.1.0-alpha.54":
-  version: 3.1.0-alpha.54
-  resolution: "@avalabs/types@npm:3.1.0-alpha.54"
-  checksum: 4d73515edf928fd8b98e62328ae32c7d0fa9f4f0c6b80eb5b86631e9db255bb91b0863d22e9f10e4d1469753d5f179cfd52a2442a12d6da4c0e7b45da904a54d
+"@avalabs/types@npm:3.1.0-alpha.56":
+  version: 3.1.0-alpha.56
+  resolution: "@avalabs/types@npm:3.1.0-alpha.56"
+  checksum: ff52641ad5d15776f94e861ac0b05013555bc0980fa0cdbeafe2f764067be8c0891da99909dcfc914b2c789ed75b72de1dbf8716944e97687cbac7cbdb374edc
   languageName: node
   linkType: hard
 
@@ -28230,7 +28230,7 @@ react-native-webview@ava-labs/react-native-webview:
   peerDependencies:
     react: "*"
     react-native: "*"
-  checksum: f7ac158dbe58d410185c45bcdd1ae1bbdab3d3548940e2e1e1ef792a33996713d40bb4ee7c7420f078f013954c78d43b11eb5884ab0d786da781936be78a41cd
+  checksum: ae658f8c94177d1b419ffb73d26bd70474b6c688af507daaabc11451f983f77a906b2aafcdfdd09c96cab846d9722dcaf26a7c22ee7d19fb4cf70578c8812ac5
   languageName: node
   linkType: hard
 

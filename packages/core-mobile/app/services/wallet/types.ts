@@ -7,13 +7,14 @@ import {
   JsonRpcBatchInternal
 } from '@avalabs/core-wallets-sdk'
 import { pvm, UnsignedTx } from '@avalabs/avalanchejs'
-import { Network, NetworkVMType } from '@avalabs/core-chains-sdk'
+import { Network } from '@avalabs/core-chains-sdk'
 import {
   MessageTypes,
   RpcMethod,
   TypedData,
   TypedDataV1
 } from '@avalabs/vm-module-types'
+import { Curve } from 'utils/publicKeys'
 
 export type SignTransactionRequest =
   | TransactionRequest
@@ -203,23 +204,7 @@ export interface Wallet {
    * Retrieves the public key for a specific account.
    * @param accountIndex - The index of the account.
    */
-  getPublicKey(accountIndex: number): Promise<PubKeyType>
-
-  /**
-   * Retrieves addresses for a specific account on various networks.
-   * @param accountIndex - The index of the account.
-   * @param network
-   * @param provXP - The Avalanche JSON RPC provider.
-   */
-  getAddresses({
-    accountIndex,
-    provXP,
-    network
-  }: {
-    accountIndex: number
-    network: Network
-    provXP: Avalanche.JsonRpcProvider
-  }): Promise<Record<NetworkVMType, string>>
+  getPublicKeyFor(path: string, curve: Curve): Promise<string>
 
   /**
    * Retrieves a read-only Avalanche signer that can be used to

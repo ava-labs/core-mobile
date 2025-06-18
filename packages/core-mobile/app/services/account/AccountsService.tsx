@@ -16,7 +16,10 @@ class AccountsService {
 
     for (const index of Object.keys(accounts)) {
       const key = parseInt(index)
-      const addresses = await WalletService.getAddresses(key, network)
+      const addresses = await WalletService.getAddresses({
+        accountIndex: key,
+        network
+      })
       const title = await SeedlessService.getAccountName(key)
 
       const account = accounts[key]
@@ -34,6 +37,7 @@ class AccountsService {
           addressAVM: addresses[NetworkVMType.AVM],
           addressPVM: addresses[NetworkVMType.PVM],
           addressCoreEth: addresses[NetworkVMType.CoreEth],
+          addressSVM: addresses[NetworkVMType.SVM],
           walletName: account.walletName
         }
       }
@@ -73,6 +77,7 @@ class AccountsService {
       addressAVM: addresses[NetworkVMType.AVM],
       addressPVM: addresses[NetworkVMType.PVM],
       addressCoreEth: addresses[NetworkVMType.CoreEth],
+      addressSVM: addresses[NetworkVMType.SVM],
       walletName: ''
     }
   }
