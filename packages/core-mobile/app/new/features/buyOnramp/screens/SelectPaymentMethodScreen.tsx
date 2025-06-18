@@ -7,8 +7,7 @@ import {
   useTheme,
   Icons,
   Button,
-  Pressable,
-  Image
+  Pressable
 } from '@avalabs/k2-alpine'
 import { useRouter } from 'expo-router'
 import { Space } from 'common/components/Space'
@@ -21,10 +20,11 @@ import {
   ServiceProviderCategories,
   PaymentMethodTimeLimits
 } from '../consts'
+import { PaymentMethodIcon } from '../components/PaymentMethodIcon'
 
 export const SelectPaymentMethodScreen = (): React.JSX.Element => {
   const {
-    theme: { colors, isDark }
+    theme: { colors }
   } = useTheme()
   const { navigate, back, canGoBack } = useRouter()
   const [onRampPaymentMethod, setOnRampPaymentMethod] = useOnRampPaymentMethod()
@@ -115,28 +115,11 @@ export const SelectPaymentMethodScreen = (): React.JSX.Element => {
           ) : (
             <></>
           ),
-        leftIcon: (
-          <View
-            style={{
-              borderRadius: 100,
-              overflow: 'hidden'
-            }}>
-            <Image
-              accessibilityRole="image"
-              sx={{ width: 27, height: 27 }}
-              source={{
-                uri: isDark
-                  ? paymentMethod.logos.dark
-                  : paymentMethod.logos.light
-              }}
-            />
-          </View>
-        )
+        leftIcon: <PaymentMethodIcon paymentMethod={paymentMethod} />
       }
     })
   }, [
     colors.$textPrimary,
-    isDark,
     onRampPaymentMethod,
     paymentMethods,
     setOnRampPaymentMethod

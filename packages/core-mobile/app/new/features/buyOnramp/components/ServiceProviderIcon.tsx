@@ -29,12 +29,7 @@ export const ServiceProviderIcon = ({
           alignItems: 'center',
           backgroundColor: colors.$surfaceSecondary
         }}>
-        <Icon
-          testID={`icon__${serviceProvider}`}
-          width={size}
-          height={size}
-          color={'green'}
-        />
+        <Icon testID={`icon__${serviceProvider}`} width={size} height={size} />
       </View>
     )
   )
