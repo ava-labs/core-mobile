@@ -15,5 +15,7 @@ export default {
   topTrendingTokenSymbol: 'trending_token_symbol__1',
   topTrendingTokenValue: 'trending_token_value__1',
   topTrendingTokenBuyBtn: 'trending_token_value__1_buy_btn',
-  topTrendingTokenLogo: 'trending_token_logo__1'
+  topTrendingTokenLogo: 'trending_token_logo__1',
+  trackBuyBtn: 'track_buy_btn',
+  trackViewBtn: 'track_view_btn'
 }
