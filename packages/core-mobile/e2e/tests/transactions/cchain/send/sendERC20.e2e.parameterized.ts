@@ -1,13 +1,14 @@
 import actions from '../../../../helpers/actions'
 import { Tokens } from '../../../../helpers/tokens'
 import { warmup } from '../../../../helpers/warmup'
-import accountManagePage from '../../../../pages/accountManage.page'
+import settingsPage from '../../../../pages/settings.page'
 import sendPage from '../../../../pages/send.page'
+import commonElsPage from '../../../../pages/commonEls.page'
 
 describe('Send ERC20', () => {
   beforeAll(async () => {
     await warmup()
-    await accountManagePage.createSecondAccount()
+    await settingsPage.createNthAccount()
   })
 
   beforeEach(async () => {
@@ -17,9 +18,8 @@ describe('Send ERC20', () => {
 
   Tokens.forEach(({ symbol, amount }) => {
     test(`should send ${symbol}`, async () => {
-      await sendPage.sendTokenTo2ndAccount(symbol, amount)
-      await actions.waitForElementNotVisible(sendPage.sendTitle)
-      await sendPage.verifySuccessToast()
+      await sendPage.send(symbol, amount)
+      await commonElsPage.verifySuccessToast()
       console.log(`${symbol}: Transaction Successful`)
     })
   })

@@ -138,6 +138,7 @@ export const TrendingTokenListView = memo(
           </View>
           <View style={{ justifyContent: 'center' }}>
             <Button
+              testID={showBuyButton ? 'track_buy_btn' : 'track_view_btn'}
               type="secondary"
               size="small"
               style={styles.buyButton}
