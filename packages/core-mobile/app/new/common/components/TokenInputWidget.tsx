@@ -1,4 +1,6 @@
-import React, { useCallback, useEffect, useState } from 'react'
+import { formatTokenAmount } from '@avalabs/core-bridge-sdk'
+import { Network } from '@avalabs/core-chains-sdk'
+import { bigintToBig, TokenUnit } from '@avalabs/core-utils-sdk'
 import {
   ActivityIndicator,
   Button,
@@ -11,9 +13,7 @@ import {
   useTheme,
   View
 } from '@avalabs/k2-alpine'
-import { Network } from '@avalabs/core-chains-sdk'
-import { formatTokenAmount } from '@avalabs/core-bridge-sdk'
-import { bigintToBig } from '@avalabs/core-utils-sdk'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import Animated, {
   Easing,
   FadeIn,
@@ -73,13 +73,14 @@ export const TokenInputWidget = ({
     button: PercentageButton,
     index: number
   ): void => {
+    let value: bigint
     if (button.value !== undefined) {
-      onAmountChange?.(button.value)
+      value = button.value
     } else {
-      const value = Number(balance ?? 0n) * button.percent
-
-      onAmountChange?.(button.value ?? BigInt(Math.floor(value)))
+      value = BigInt(Math.floor(Number(balance ?? 0n) * button.percent))
     }
+
+    onAmountChange?.(value)
 
     setPercentageButtons(prevButtons =>
       prevButtons.map((b, i) =>
@@ -136,6 +137,35 @@ export const TokenInputWidget = ({
       }
     ])
   }, [maximum])
+
+  const inputValue = useMemo(() => {
+    const selectedButton = percentageButtons.find(b => b.isSelected)
+    let value: bigint
+
+    if (selectedButton) {
+      // If maximum is selected, use the maximum value
+      if (selectedButton.value) {
+        value = selectedButton.value
+      } else {
+        // If a percentage is selected, use the percentage of the balance
+        value = BigInt(
+          Math.floor(Number(balance ?? 0n) * selectedButton.percent)
+        )
+      }
+
+      // Convert the value to a TokenUnit and return the display value
+      const unit = new TokenUnit(
+        value,
+        token?.decimals ?? 0,
+        token?.symbol ?? ''
+      )
+      const display = unit.toDisplay()
+      const decimals = token?.decimals ?? 0
+      return BigInt(Number(display) * 10 ** decimals)
+    }
+
+    return amount
+  }, [amount, balance, percentageButtons, token?.decimals, token?.symbol])
 
   return (
     <View sx={sx}>
@@ -200,7 +230,10 @@ export const TokenInputWidget = ({
                   sx={{ flex: 1 }}
                   onPress={token === undefined ? onSelectToken : undefined}>
                   <View
-                    sx={{ alignItems: 'flex-end' }}
+                    sx={{
+                      alignItems: 'flex-end',
+                      flex: 1
+                    }}
                     pointerEvents={token === undefined ? 'none' : 'auto'}>
                     <TokenAmountInput
                       testID="token_amount_input_field"
@@ -211,6 +244,7 @@ export const TokenInputWidget = ({
                         fontFamily: 'Aeonik-Medium',
                         fontSize: 42,
                         minWidth: 100,
+                        width: '100%',
                         textAlign: 'right',
                         color:
                           inputTextColor ??
@@ -218,7 +252,7 @@ export const TokenInputWidget = ({
                             ? colors.$textPrimary
                             : colors.$textSecondary)
                       }}
-                      value={amount}
+                      value={inputValue}
                       onChange={handleAmountChange}
                       onFocus={handleFocus}
                       onBlur={handleBlur}
