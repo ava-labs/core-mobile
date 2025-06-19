@@ -140,32 +140,17 @@ export const TokenInputWidget = ({
 
   const inputValue = useMemo(() => {
     const selectedButton = percentageButtons.find(b => b.isSelected)
-    let value: bigint
 
-    if (selectedButton) {
-      // If maximum is selected, use the maximum value
-      if (selectedButton.value) {
-        value = selectedButton.value
-      } else {
-        // If a percentage is selected, use the percentage of the balance
-        value = BigInt(
-          Math.floor(Number(balance ?? 0n) * selectedButton.percent)
-        )
-      }
+    if (selectedButton && token?.decimals && amount) {
+      const unit = new TokenUnit(amount, token?.decimals, token?.symbol)
+      const display = unit.toDisplay({ asNumber: true })
+      const multiplier = 10 ** token.decimals
 
-      // Convert the value to a TokenUnit and return the display value
-      const unit = new TokenUnit(
-        value,
-        token?.decimals ?? 0,
-        token?.symbol ?? ''
-      )
-      const display = unit.toDisplay()
-      const decimals = token?.decimals ?? 0
-      return BigInt(Number(display) * 10 ** decimals)
+      return BigInt(Math.round(display * multiplier))
     }
 
     return amount
-  }, [amount, balance, percentageButtons, token?.decimals, token?.symbol])
+  }, [amount, percentageButtons, token?.decimals, token?.symbol])
 
   return (
     <View sx={sx}>
@@ -206,6 +191,7 @@ export const TokenInputWidget = ({
                     {token && <Text variant="subtitle2">{title}</Text>}
                     <View sx={{ flexDirection: 'row', alignItems: 'center' }}>
                       <Text
+                        testID="select_token_title"
                         variant="heading6"
                         sx={{
                           marginTop: 0
