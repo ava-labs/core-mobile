@@ -3,9 +3,10 @@ import Assert from '../helpers/assertions'
 import { Platform } from '../helpers/constants'
 import delay from '../helpers/waits'
 import swapTab from '../locators/swapTab.loc'
-import bottomTabsPage from './bottomTabs.page'
-import plusMenuPage from './plusMenu.page'
-import popUpModalPage from './popUpModal.page'
+import commonElsPage from './commonEls.page'
+import portfolioPage from './portfolio.page'
+import selectTokenPage from './selectToken.page'
+import watchlistPage from './watchlist.page'
 
 const platformIndex = Actions.platform() === Platform.Android ? 1 : 0
 
@@ -58,12 +59,12 @@ class SwapTabPage {
     return by.text(swapTab.swapTitle)
   }
 
-  get fromTokenSelector() {
-    return by.id(swapTab.fromTokenSelector)
+  get selectTokenTitle() {
+    return by.id(swapTab.selectTokenTitle)
   }
 
-  get toTokenSelector() {
-    return by.id(swapTab.toTokenSelector)
+  get errorMsg() {
+    return by.id(swapTab.errorMsg)
   }
 
   async tapAvaxToken() {
@@ -73,12 +74,9 @@ class SwapTabPage {
   async tapUsdcToken() {
     return Actions.tapElementAtIndex(this.usdcToken, 0)
   }
-  async tapFromTokenSelector() {
-    await Actions.tapElementAtIndex(this.fromTokenSelector, 0)
-  }
 
-  async tapToTokenSelector() {
-    await Actions.tapElementAtIndex(this.toTokenSelector, 0)
+  async tapSelectToken(index = 0) {
+    await Actions.tapElementAtIndex(this.selectTokenTitle, index)
   }
 
   async tapReviewOrderButton(index = 0) {
@@ -87,12 +85,6 @@ class SwapTabPage {
       await Actions.tapElementAtIndex(this.reviewOrderBtn, index)
       await delay(3000)
     }
-  }
-
-  async tapApproveButton() {
-    await Actions.waitForElement(this.approveBtn, 10000)
-    delay(2000)
-    await Actions.tapElementAtIndex(this.approveBtn, 0)
   }
 
   async tapRejectButton() {
@@ -127,45 +119,65 @@ class SwapTabPage {
     return (parseFloat(amount) * 10).toFixed(10).replace(/\.?0+$/, '')
   }
 
-  async swap(from: string, to: string, amount = '0.000001') {
-    // Go to swap form
-    await bottomTabsPage.tapPlusIcon()
-    await plusMenuPage.tapSwapButton()
-
-    // Select From Token
-    await this.tapFromTokenSelector()
-
-    // Select To Token
-    await this.tapToTokenSelector()
-
-    // Enter input
-    await this.inputTokenAmount(amount)
+  async enterAmountAndAdjust(amount: string) {
+    await commonElsPage.enterAmount(amount)
+    let tryCount = 5
     let newAmount = amount
 
-    // Update input if error message is displayed
-    while (
-      (await Actions.isVisible(by.id('error_msg'), 0, 500)) ||
-      (await Actions.hasText(this.amountField, ''))
-    ) {
+    while (await Actions.isVisible(this.errorMsg, 0, 2000)) {
       newAmount = await this.adjustAmount(newAmount)
-      console.log(newAmount)
-      await this.inputTokenAmount(newAmount)
-      if (await Actions.isVisible(this.reviewOrderBtn, 0, 1000)) {
+      await commonElsPage.enterAmount(newAmount)
+      tryCount--
+      if (
+        (await Actions.isVisible(commonElsPage.nextButton, 0, 1000)) ||
+        tryCount === 0
+      ) {
         break
       }
     }
-    // Tap Review Order
-    await this.tapReviewOrderButton()
+  }
 
-    // Approve token spend approval
-    await Actions.waitForElement(popUpModalPage.popUpModalScrollView, 30000)
-    if (await Actions.isVisible(this.tokenSpendApproval, 0)) {
-      await popUpModalPage.verifyFeeIsLegit(true, false, 0.2)
-      await this.tapApproveButton()
+  async swapOnTrack(index = 0, amount = '0.000001') {
+    await watchlistPage.tapTrackBuyBtn(index)
+    await commonElsPage.dismissTransactionOnboarding()
+    await this.enterAmountAndAdjust(amount)
+    await commonElsPage.tapNextButton()
+    await commonElsPage.tapApproveButton()
+    await commonElsPage.verifySuccessToast()
+  }
+
+  async swap(from: string, to: string, amount = '0.000001') {
+    // Go to swap form
+    await portfolioPage.tapSwap()
+    await commonElsPage.dismissTransactionOnboarding()
+
+    // Select From Token
+    if (from !== 'AVAX') {
+      await this.tapSelectToken()
+      await selectTokenPage.selectToken(from)
     }
-    // Verify fee and approve
-    await popUpModalPage.verifyFeeIsLegit(true, false, 0.2)
-    await this.tapApproveButton()
+
+    // Select To Token
+    if (to !== 'USDC') {
+      await this.tapSelectToken(1)
+      await selectTokenPage.selectToken(to)
+    }
+
+    // Enter input
+    await this.enterAmountAndAdjust(amount)
+    await commonElsPage.tapNextButton()
+
+    // If `from` is not AVAX, we need to approve the spend limit
+    if (from !== 'AVAX') {
+      try {
+        await Actions.waitForElement(this.tokenSpendApproval, 10000)
+        await commonElsPage.tapApproveButton()
+        await commonElsPage.verifySuccessToast()
+      } catch (e) {
+        console.log('Spend limit approval is not needed')
+      }
+    }
+    await commonElsPage.tapApproveButton()
   }
 
   async verifySwapScreen() {

@@ -509,8 +509,12 @@ class PortfolioPage {
 
   async filterNetwork(network = commonElsLoc.cChain_2) {
     await Action.tap(this.filter)
-    await Action.waitForElement(by.id(`dropdown_item__${network}`))
-    await Action.tap(by.id(`dropdown_item__${network}`))
+    await this.selectDropdownItem(network)
+  }
+
+  async selectDropdownItem(item: string) {
+    await Action.waitForElement(by.id(`dropdown_item__${item}`))
+    await Action.tap(by.id(`dropdown_item__${item}`))
   }
 
   async verifyActivityItem(
@@ -518,6 +522,11 @@ class PortfolioPage {
     to = accountManageLoc.accountTwoAddress
   ) {
     await Action.waitForElement(by.id(`tx__from_${from}_to_${to}`))
+  }
+
+  async selectView(viewType = 'List view') {
+    await Action.tap(this.view)
+    await this.selectDropdownItem(viewType)
   }
 }
 
