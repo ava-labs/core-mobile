@@ -1,25 +1,25 @@
-import React, { useEffect, useRef, useState } from 'react'
-import Big from 'big.js'
 import { bigintToBig, bigToBigInt } from '@avalabs/core-utils-sdk'
+import Big from 'big.js'
+import React, { useEffect, useRef, useState } from 'react'
 import {
   InteractionManager,
   Platform,
   TextInput,
   TextInputProps
 } from 'react-native'
+import { useTheme } from '../../hooks'
 import { alpha } from '../../utils'
 import {
   normalizeNumericTextInput,
   splitIntegerAndFraction
 } from '../../utils/tokenUnitInput'
-import { useTheme } from '../../hooks'
 
 /**
  * TokenAmountInput takes user's input via InputText component and calls "onChange" callback with { value: bigint; valueString: string } object.
  * If there's no input, callback value is set to { value: new BigInt(0), valueString: '0' }.
  * Because of that, if "value" passed to TokenAmountInput is zero it is sanitized to "undefined" so that user can delete all zeroes from input.
  */
-export function TokenAmountInput({
+export const TokenAmountInput = ({
   value,
   denomination,
   onChange,
@@ -27,11 +27,11 @@ export function TokenAmountInput({
   hideErrorMessage,
   autoFocus,
   ...props
-}: TokenAmountInputProps): JSX.Element {
+}: TokenAmountInputProps): JSX.Element => {
   const { theme } = useTheme()
   const [valueAsString, setValueAsString] = useState('')
   const valueBig = value ? bigintToBig(value, denomination) : undefined
-  const ref = useRef<TextInput>(null)
+  const inputRef = useRef<TextInput>(null)
 
   useEffect(() => {
     // When deleting zeros after decimal, all zeros delete without this check.
@@ -71,7 +71,7 @@ export function TokenAmountInput({
   useEffect(() => {
     if (autoFocus) {
       InteractionManager.runAfterInteractions(() => {
-        ref.current?.focus()
+        inputRef.current?.focus()
       })
     }
   }, [autoFocus])
@@ -79,7 +79,7 @@ export function TokenAmountInput({
   return (
     <TextInput
       {...props}
-      ref={ref}
+      ref={inputRef}
       /**
        * keyboardType="numeric" causes noticeable input lag on Android.
        * Using inputMode="numeric" provides the same behavior without the performance issues.
