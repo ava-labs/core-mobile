@@ -1,7 +1,6 @@
 import { SeedlessPubKeysStorage } from 'seedless/services/storage/SeedlessPubKeysStorage'
 import Logger from 'utils/Logger'
 import SeedlessService from 'seedless/services/SeedlessService'
-import { transformKeyInfosToPubKeys } from 'seedless/services/wallet/transformKeyInfosToPubkeys'
 import { WalletType } from './types'
 import MnemonicWalletInstance from './MnemonicWallet'
 
@@ -20,11 +19,7 @@ class WalletInitializer {
         try {
           const storedPubKeys = await SeedlessPubKeysStorage.retrieve()
           if (shouldRefreshPublicKeys || storedPubKeys.length === 0) {
-            const allKeys = await SeedlessService.getSessionKeysList()
-
-            const pubKeys = transformKeyInfosToPubKeys(allKeys)
-            Logger.info('saving public keys')
-            await SeedlessPubKeysStorage.save(pubKeys)
+            await SeedlessService.refreshSessionKeys()
           }
         } catch (error) {
           Logger.error(`Unable to save public keys`, error)

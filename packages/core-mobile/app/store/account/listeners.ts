@@ -14,11 +14,9 @@ import { recentAccountsStore } from 'new/features/accountSettings/store'
 import { isEvmPublicKey } from 'utils/publicKeys'
 import { selectActiveNetwork } from 'store/network'
 import { Network } from '@avalabs/core-chains-sdk'
-import {
-  selectHasBeenViewedOnce,
-  setViewOnce,
-  ViewOnceKey
-} from 'store/viewOnce'
+import WalletFactory from 'services/wallet/WalletFactory'
+import SeedlessWallet from 'seedless/services/wallet/SeedlessWallet'
+import { transactionSnackbar } from 'common/utils/toast'
 import {
   selectAccounts,
   selectActiveAccount,
@@ -63,6 +61,13 @@ const initAccounts = async (
     })
 
     accounts = { ...accounts, ...addedAccounts }
+
+    const entries = Object.values(accounts)
+    if (entries.some(account => !account.addressSVM)) {
+      await refreshSeedlessSessionKeys()
+      // reload only when there are accounts without Solana addresses
+      reloadAccounts(_action, listenerApi)
+    }
   } else if (walletType === WalletType.MNEMONIC) {
     // only add the first account for mnemonic wallet
     const acc = await accountService.createNextAccount({
@@ -184,20 +189,31 @@ const migrateSolanaAddressesIfNeeded = async (
   _action: AnyAction,
   listenerApi: AppListenerEffectAPI
 ): Promise<void> => {
-  const { dispatch, getState } = listenerApi
+  const { getState } = listenerApi
   const state = getState()
-  const hasSolanaAddressesMigrated = selectHasBeenViewedOnce(
-    ViewOnceKey.MIGRATE_SOLANA_ADDRESSES
-  )(state)
-
-  if (!hasSolanaAddressesMigrated) {
-    const accounts = selectAccounts(state)
-    const entries = Object.values(accounts)
-    if (entries.some(account => !account.addressSVM)) {
-      // reload only when there are accounts without Solana addresses
-      reloadAccounts(_action, listenerApi)
+  const accounts = selectAccounts(state)
+  const entries = Object.values(accounts)
+  if (entries.some(account => !account.addressSVM)) {
+    const walletType = selectWalletType(state)
+    if (walletType === WalletType.SEEDLESS) {
+      await refreshSeedlessSessionKeys()
     }
-    dispatch(setViewOnce(ViewOnceKey.MIGRATE_SOLANA_ADDRESSES))
+    // reload only when there are accounts without Solana addresses
+    reloadAccounts(_action, listenerApi)
+  }
+}
+
+const refreshSeedlessSessionKeys = async (): Promise<void> => {
+  transactionSnackbar.pending({ message: 'Updating accounts...' })
+
+  const wallet = await WalletFactory.createWallet(WalletType.SEEDLESS)
+  if (wallet instanceof SeedlessWallet) {
+    // prompt Core Seedless API to derive missing keys
+    await wallet.deriveMissingKeys()
+
+    await SeedlessService.refreshSessionKeys()
+
+    transactionSnackbar.success({ message: 'Accounts updated' })
   }
 }
 
