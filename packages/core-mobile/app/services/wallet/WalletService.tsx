@@ -113,7 +113,7 @@ class WalletService {
               'Unable to sign solana transaction: wrong provider obtained'
             )
 
-          return wallet.signSolanaTransaction({
+          return wallet.signSvmTransaction({
             accountIndex,
             transaction,
             network,
