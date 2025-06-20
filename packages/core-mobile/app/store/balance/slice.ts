@@ -259,7 +259,8 @@ export const selectTokensWithBalanceForAccountAndNetwork = createSelector(
 
 // use in k2-alpine
 export const selectIsAllBalancesInaccurate =
-  (accountId: string) => (state: RootState) => {
+  (accountId: string | undefined) => (state: RootState) => {
+    if (!accountId) return false
     const tokens = selectTokensWithBalanceForAccount(state, accountId)
     return (
       tokens.length === 0 &&

@@ -6,8 +6,12 @@ import { FlatList } from 'react-native-gesture-handler'
 import Animated, { LinearTransition } from 'react-native-reanimated'
 import { useDispatch, useSelector } from 'react-redux'
 import AnalyticsService from 'services/analytics/AnalyticsService'
-import { Account, selectAccounts, setActiveAccount } from 'store/account'
-import { useActiveAccount } from 'common/hooks/useActiveAccount'
+import {
+  Account,
+  selectAccounts,
+  selectActiveAccount,
+  setActiveAccount
+} from 'store/account'
 import { useRecentAccounts } from '../store'
 import { AccountItem } from './AccountItem'
 
@@ -23,7 +27,7 @@ export const AccountList = (): React.JSX.Element => {
   } = useTheme()
   const dispatch = useDispatch()
   const { navigate } = useRouter()
-  const activeAccount = useActiveAccount()
+  const activeAccount = useSelector(selectActiveAccount)
   const accountCollection = useSelector(selectAccounts)
   const flatListRef = useRef<FlatList>(null)
 

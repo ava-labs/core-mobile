@@ -24,7 +24,7 @@ import {
   selectIsRefetchingBalances
 } from 'store/balance'
 import { selectEnabledNetworks } from 'store/network'
-import { useActiveAccount } from 'common/hooks/useActiveAccount'
+import { selectActiveAccount } from 'store/account'
 import errorIcon from '../../../../assets/icons/rocket.png'
 import { useAssetsFilterAndSort } from '../hooks/useAssetsFilterAndSort'
 import { TokenListItem } from './TokenListItem'
@@ -46,11 +46,11 @@ const AssetsScreen: FC<Props> = ({
 }): JSX.Element => {
   const { data, filter, sort, view, refetch, isRefetching, isLoading } =
     useAssetsFilterAndSort()
-  const activeAccount = useActiveAccount()
+  const activeAccount = useSelector(selectActiveAccount)
   const enabledNetworks = useSelector(selectEnabledNetworks)
 
   const isAllBalancesInaccurate = useSelector(
-    selectIsAllBalancesInaccurate(activeAccount.id)
+    selectIsAllBalancesInaccurate(activeAccount?.id)
   )
   const isBalanceLoading = useSelector(selectIsLoadingBalances)
   const isRefetchingBalance = useSelector(selectIsRefetchingBalances)
