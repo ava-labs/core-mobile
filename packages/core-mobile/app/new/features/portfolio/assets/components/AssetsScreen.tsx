@@ -46,7 +46,7 @@ const AssetsScreen: FC<Props> = ({
 }): JSX.Element => {
   const { data, filter, sort, view, refetch, isRefetching, isLoading } =
     useAssetsFilterAndSort()
-  const activeAccount = useSelector(selectActiveAccount)
+  const activeAccount = useSelector(selectActiveAccount) //TODO: should use useActiveAccount but crashes if deleting wallet or just onboarding, race condition
   const enabledNetworks = useSelector(selectEnabledNetworks)
 
   const isAllBalancesInaccurate = useSelector(
