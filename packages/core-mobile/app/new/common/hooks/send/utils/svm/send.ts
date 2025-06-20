@@ -1,22 +1,16 @@
 import {
   compileSolanaTx,
   serializeSolanaTx,
-  SolanaProvider,
-  transferSol,
-  transferToken
+  SolanaProvider
 } from '@avalabs/core-wallets-sdk'
-import {
-  RpcMethod,
-  TokenType,
-  TokenWithBalanceSPL,
-  TokenWithBalanceSVM
-} from '@avalabs/vm-module-types'
+import { RpcMethod, TokenWithBalanceSVM } from '@avalabs/vm-module-types'
 import SentryWrapper from 'services/sentry/SentryWrapper'
 import { resolve } from '@avalabs/core-utils-sdk'
 import { Request } from 'store/rpc/utils/createInAppRequest'
 import { SPAN_STATUS_ERROR } from '@sentry/core'
 import { getSolanaCaip2ChainId } from 'utils/caip2ChainIds'
 import { Account } from 'store/account'
+import { buildSolanaTransaction } from './buildSolanaTransaction'
 
 export const send = async ({
   request,
@@ -43,7 +37,7 @@ export const send = async ({
     { name: sentrySpanName, contextName: 'svc.send.send' },
     async span => {
       try {
-        const tx = await buildTx({
+        const tx = await buildSolanaTransaction({
           fromAddress,
           toAddress,
           amount,
@@ -58,7 +52,10 @@ export const send = async ({
             params: [
               {
                 account: account.addressSVM,
-                serializedTx: serializeSolanaTx(compiledTx)
+                serializedTx: serializeSolanaTx(compiledTx),
+                sendOptions: {
+                  preflightCommitment: 'confirmed'
+                }
               }
             ],
             chainId: getSolanaCaip2ChainId(chainId)
@@ -85,38 +82,4 @@ export const send = async ({
       }
     }
   )
-}
-
-const buildTx = async ({
-  fromAddress,
-  toAddress,
-  amount,
-  token,
-  provider
-}: {
-  fromAddress: string
-  toAddress: string
-  amount?: bigint
-  token: TokenWithBalanceSVM | TokenWithBalanceSPL
-  provider: SolanaProvider
-}): Promise<any> => {
-  if (amount !== undefined) {
-    if (token.type === TokenType.NATIVE) {
-      return transferSol({
-        from: fromAddress,
-        to: toAddress,
-        amount: amount,
-        provider
-      })
-    }
-
-    return transferToken({
-      from: fromAddress,
-      to: toAddress,
-      mint: token.address,
-      amount: amount,
-      decimals: token.decimals,
-      provider
-    })
-  }
 }

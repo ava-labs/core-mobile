@@ -435,11 +435,7 @@ export default class SeedlessWallet implements Wallet {
   }
 
   private getSolanaPublicKey(accountIndex: number): string {
-    const publicKeys = this.#addressPublicKeys.filter(
-      pubKey =>
-        pubKey.curve === 'ed25519' &&
-        pubKey.derivationPath.startsWith("m/44'/501'/")
-    )
+    const publicKeys = this.#addressPublicKeys.filter(isSvmPublicKey)
 
     if (
       accountIndex < 0 ||
@@ -452,7 +448,7 @@ export default class SeedlessWallet implements Wallet {
     return publicKeys[accountIndex].key
   }
 
-  public async signSolanaTransaction({
+  public async signSvmTransaction({
     accountIndex,
     transaction,
     provider

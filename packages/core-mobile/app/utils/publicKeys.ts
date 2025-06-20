@@ -19,6 +19,7 @@ export enum Curve {
   ED25519 = 'ed25519' // for SVM and HVM
 }
 export const EVM_BASE_DERIVATION_PATH_PREFIX = "m/44'/60'/"
+export const SVM_BASE_DERIVATION_PATH_PREFIX = "m/44'/501'/"
 
 export type AddressPublicKey = {
   curve: Curve
@@ -32,3 +33,7 @@ export type SeedlessPublicKeys = {
 
 export const isEvmPublicKey = (publicKey: AddressPublicKey): boolean =>
   publicKey.derivationPath.startsWith(EVM_BASE_DERIVATION_PATH_PREFIX)
+
+export const isSvmPublicKey = (publicKey: AddressPublicKey): boolean =>
+  publicKey.curve === Curve.ED25519 &&
+  publicKey.derivationPath.startsWith(SVM_BASE_DERIVATION_PATH_PREFIX)

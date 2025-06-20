@@ -36,7 +36,7 @@ import {
 import { isTypedData } from '@avalabs/evm-module'
 import { Curve } from 'utils/publicKeys'
 import slip10 from 'micro-key-producer/slip10.js'
-import { mnemonicToSeed, mnemonicToSeedSync } from 'bip39'
+import { mnemonicToSeed } from 'bip39'
 import { fromSeed } from 'bip32'
 import { hex } from '@scure/base'
 import { SolanaProvider } from '@avalabs/core-wallets-sdk'
@@ -93,16 +93,19 @@ export class MnemonicWallet implements Wallet {
     return wallet
   }
 
-  private getSolanaSigner(accountIndex: number): SolanaSigner {
+  private getSvmSigner(accountIndex: number): SolanaSigner {
     const start = now()
     Logger.info('🔍 getSolanaSigner called', { accountIndex })
 
     try {
-      const seed = mnemonicToSeedSync(this.mnemonic)
-      const node = slip10.fromMasterSeed(Uint8Array.from(seed))
-      const pkey = node.derive(`m/44'/501'/${accountIndex}'/0'`)
+      const pkey = ModuleManager.solanaModule.buildDerivationPath({
+        accountIndex,
+        derivationPathType: DerivationPath.BIP44
+      })
+      const privateKey = pkey[NetworkVMType.SVM]
+      if (!privateKey) throw new Error('Failed to derive Solana private key')
       Logger.info('solanaWallet fromMnemonic', now() - start)
-      return new SolanaSigner(Buffer.from(pkey.privateKey))
+      return new SolanaSigner(Buffer.from(privateKey))
     } catch (error) {
       Logger.error('🔍 Error in getSolanaSigner:', error)
       throw error
@@ -154,7 +157,7 @@ export class MnemonicWallet implements Wallet {
         }
         return (await this.getAvaSigner(accountIndex)) as Avalanche.SimpleSigner
       case NetworkVMType.SVM:
-        return this.getSolanaSigner(accountIndex)
+        return this.getSvmSigner(accountIndex)
       default:
         throw new Error('Unable to get signer: network not supported')
     }
@@ -421,7 +424,7 @@ export class MnemonicWallet implements Wallet {
     return utils.base58check.encode(new Uint8Array(buffer))
   }
 
-  public async signSolanaTransaction({
+  public async signSvmTransaction({
     accountIndex,
     transaction,
     network: _network,
@@ -433,7 +436,7 @@ export class MnemonicWallet implements Wallet {
     provider: SolanaProvider
   }): Promise<string> {
     try {
-      const signer = this.getSolanaSigner(accountIndex)
+      const signer = this.getSvmSigner(accountIndex)
       return await signer.signTx(transaction.serializedTx, provider)
     } catch (error) {
       Logger.error('🔍 Error in signSolanaTransaction:', error)

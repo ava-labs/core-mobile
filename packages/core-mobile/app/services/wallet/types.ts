@@ -240,7 +240,7 @@ export interface Wallet {
   /**
    * Signs a Solana transaction using the specified account, transaction request, network, and Solana provider.
    */
-  signSolanaTransaction({
+  signSvmTransaction({
     accountIndex,
     transaction,
     network,
