@@ -1,13 +1,6 @@
 import { useRouter } from 'expo-router'
 import React, { useCallback, useState, useMemo } from 'react'
-import {
-  ActivityIndicator,
-  alpha,
-  GroupList,
-  Icons,
-  Text,
-  useTheme
-} from '@avalabs/k2-alpine'
+import { alpha, GroupList, Icons, Text, useTheme } from '@avalabs/k2-alpine'
 import { ScrollScreen } from 'common/components/ScrollScreen'
 import { showSnackbar } from 'new/common/utils/toast'
 import Logger from 'utils/Logger'
@@ -18,6 +11,7 @@ import { addAccount } from 'store/account'
 import { WalletType } from 'services/wallet/types'
 import { AppThunkDispatch } from 'store/types'
 import { useActiveWallet } from 'common/hooks/useActiveWallet'
+import { LoadingState } from 'common/components/LoadingState'
 
 const ITEM_HEIGHT = 70
 
@@ -150,7 +144,7 @@ const AddOrConnectWalletScreen = (): JSX.Element => {
       isModal
       contentContainerStyle={{ padding: 16, flex: 1 }}>
       <GroupList itemHeight={ITEM_HEIGHT} data={data} />
-      <ActivityIndicator animating={isAddingAccount} sx={{ marginTop: 16 }} />
+      {isAddingAccount && <LoadingState sx={{ marginTop: 16 }} />}
     </ScrollScreen>
   )
 }
