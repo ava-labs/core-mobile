@@ -291,11 +291,25 @@ class NotificationsService {
   getInitialNotification = async (
     callback: HandleNotificationCallback
   ): Promise<void> => {
-    return messaging()
-      .getInitialNotification()
-      .then(notification => {
-        callback(notification?.data)
-      })
+    // Check for FCM notifications first
+    const fcmNotification = await messaging().getInitialNotification()
+    if (fcmNotification?.data) {
+      callback(fcmNotification.data)
+      return
+    }
+
+    // Check for Notifee notifications that might have been tapped to launch the app
+    try {
+      const initialNotification = await notifee.getInitialNotification()
+      if (initialNotification?.notification?.data) {
+        callback(initialNotification.notification.data)
+        return
+      }
+    } catch (error) {
+      Logger.error(
+        `[NotificationsService.ts][getInitialNotification] Error getting Notifee initial notification: ${error}`
+      )
+    }
   }
 
   cancelAllNotifications = async (): Promise<void> => {
