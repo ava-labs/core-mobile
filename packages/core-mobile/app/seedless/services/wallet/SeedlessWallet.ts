@@ -142,7 +142,19 @@ export default class SeedlessWallet implements Wallet {
       mnemonicId
     })
 
-    SeedlessService.invalidateSessionKeysCache()
+    await SeedlessService.refreshSessionKeys()
+  }
+
+  public async deriveMissingKeys(): Promise<void> {
+    const identityProof = await this.#client.apiClient.identityProve()
+    const mnemonicId = await this.getMnemonicId()
+
+    await CoreSeedlessAPIService.deriveMissingKeys({
+      identityProof,
+      mnemonicId
+    })
+
+    await SeedlessService.refreshSessionKeys()
   }
 
   /** WALLET INTERFACE IMPLEMENTATION **/

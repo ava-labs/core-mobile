@@ -1,9 +1,28 @@
 import * as cs from '@cubist-labs/cubesigner-sdk'
 import { Curve } from 'utils/publicKeys'
 import CoreSeedlessAPIService from '../CoreSeedlessAPIService'
+import SeedlessService from '../SeedlessService'
+import { SeedlessPubKeysStorage } from '../storage/SeedlessPubKeysStorage'
 import SeedlessWallet from './SeedlessWallet'
 
 jest.spyOn(CoreSeedlessAPIService, 'addAccount').mockResolvedValue()
+
+const mockSessionKeysList = jest.fn()
+jest
+  .spyOn(SeedlessService.session, 'getSignerClient')
+  // @ts-expect-error
+  .mockImplementation(() => {
+    return {
+      apiClient: {
+        sessionKeysList: mockSessionKeysList.mockReturnValue([])
+      }
+    }
+  })
+
+jest.mock('../transformKeyInfosToPubkeys', () => ({
+  transformKeyInfosToPubKeys: jest.fn()
+}))
+jest.spyOn(SeedlessPubKeysStorage, 'save').mockResolvedValue()
 
 const sessionKeysList = async () => [
   {
