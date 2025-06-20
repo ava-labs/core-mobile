@@ -8,7 +8,6 @@ import { uuid } from 'utils/uuid'
 import { storeWallet } from 'store/wallet/thunks'
 import { AppThunkDispatch } from 'store/types'
 import BiometricsSDK from 'utils/BiometricsSDK'
-import { addAccount } from 'store/account'
 
 interface OnPinCreatedParams {
   mnemonic: string
@@ -90,8 +89,6 @@ export function useWallet(): UseWallet {
         })
       )
       await dispatchStoreWallet.unwrap()
-      const dispatchAddAccount = dispatch(addAccount())
-      await dispatchAddAccount.unwrap()
 
       return Promise.resolve(walletId)
     } catch (error) {
