@@ -1,7 +1,6 @@
 import { useDispatch } from 'react-redux'
 import { onAppUnlocked, onLogIn, setWalletType } from 'store/app'
 import { WalletType } from 'services/wallet/types'
-import { Dispatch } from '@reduxjs/toolkit'
 import Logger from 'utils/Logger'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { useCallback } from 'react'
@@ -9,10 +8,6 @@ import { uuid } from 'utils/uuid'
 import { storeWallet } from 'store/wallet/thunks'
 import { AppThunkDispatch } from 'store/types'
 import BiometricsSDK from 'utils/BiometricsSDK'
-
-type InitWalletServiceAndUnlockProps = {
-  dispatch: Dispatch
-}
 
 interface OnPinCreatedParams {
   mnemonic: string
@@ -22,14 +17,8 @@ interface OnPinCreatedParams {
 
 export interface UseWallet {
   onPinCreated: (params: OnPinCreatedParams) => Promise<string>
-  unlock: ({ mnemonic }: { mnemonic: string }) => Promise<void>
+  unlock: () => Promise<void>
   login: (walletType: WalletType) => Promise<void>
-}
-
-export async function initWalletServiceAndUnlock({
-  dispatch
-}: InitWalletServiceAndUnlockProps): Promise<void> {
-  dispatch(onAppUnlocked())
 }
 
 /**
@@ -43,8 +32,7 @@ export function useWallet(): UseWallet {
   const dispatch = useDispatch<AppThunkDispatch>()
 
   /**
-   * Initializes wallet with the specified mnemonic and wallet type
-   * and navigates to the unlocked wallet screen
+   * Navigates to the unlocked wallet screen
    */
   const unlock = useCallback(async (): Promise<void> => {
     dispatch(onAppUnlocked())
@@ -54,10 +42,7 @@ export function useWallet(): UseWallet {
     async (walletType: WalletType): Promise<void> => {
       try {
         dispatch(setWalletType(walletType))
-        await initWalletServiceAndUnlock({
-          dispatch
-        })
-
+        await unlock()
         dispatch(onLogIn())
 
         AnalyticsService.capture('OnboardingSubmitSucceeded', {
@@ -71,7 +56,7 @@ export function useWallet(): UseWallet {
         })
       }
     },
-    [dispatch]
+    [dispatch, unlock]
   )
 
   /**
