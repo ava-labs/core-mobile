@@ -51,7 +51,7 @@ class AvalancheSelectAccountHandler
       }
     }
 
-    await dispatch(setActiveAccount(requestedAccount.id)).unwrap()
+    dispatch(setActiveAccount(requestedAccount.id))
 
     return { success: true, value: [] }
   }
