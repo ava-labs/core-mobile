@@ -1,231 +1,37 @@
-import { useRouter } from 'expo-router'
-import React, { useState, useEffect, useCallback } from 'react'
+import React, { useState } from 'react'
 import { ScrollScreen } from 'common/components/ScrollScreen'
 import { View, Text, useTheme, ActivityIndicator } from '@avalabs/k2-alpine'
 import { SimpleTextInput } from 'new/common/components/SimpleTextInput'
 import { Button } from '@avalabs/k2-alpine'
-import {
-  getBtcAddressFromPubKey,
-  getEvmAddressFromPubKey,
-  getPublicKeyFromPrivateKey
-} from '@avalabs/core-wallets-sdk'
-import { useDispatch, useSelector } from 'react-redux'
+import { useSelector } from 'react-redux'
 import { selectActiveNetwork } from 'store/network'
-import Logger from 'utils/Logger'
-import { strip0x, truncateAddress } from '@avalabs/core-utils-sdk'
-import { networks } from 'bitcoinjs-lib'
+import { truncateAddress } from '@avalabs/core-utils-sdk'
 import { TokenLogo } from 'common/components/TokenLogo'
-import { CoreAccountType } from '@avalabs/types'
-import { uuid } from 'utils/uuid'
-import { ImportedAccount } from 'store/account/types'
-import { CORE_MOBILE_WALLET_ID } from 'services/walletconnectv2/types'
-import {
-  fetchBalanceForAccount,
-  selectBalanceStatus,
-  selectBalanceTotalInCurrencyForAccount,
-  QueryStatus,
-  selectIsBalanceLoadedForAccount
-} from 'store/balance'
-import { useFormatCurrency } from 'new/common/hooks/useFormatCurrency'
-import { selectTokenVisibility } from 'store/portfolio'
 import { useImportPrivateKey } from 'new/common/hooks/useImportPrivateKey'
-import KeychainMigrator from 'utils/KeychainMigrator'
-import { useActiveWallet } from 'common/hooks/useActiveWallet'
-
-interface DerivedAddress {
-  address: string
-  icon?: React.ReactNode
-}
+import { useDeriveAddresses } from 'new/common/hooks/useDeriveAddresses'
+import { usePrivateKeyBalance } from 'common/hooks/usePrivateKeyBalance'
+import { usePrivateKeyImportHandler } from 'new/common/hooks/usePrivateKeyImportHandler'
 
 const ImportPrivateKeyScreen = (): JSX.Element => {
-  const { navigate } = useRouter()
   const {
     theme: { colors }
   } = useTheme()
   const [privateKey, setPrivateKey] = useState('')
-  const [showDerivedInfo, setShowDerivedInfo] = useState(false)
-  const [derivedAddresses, setDerivedAddresses] = useState<DerivedAddress[]>([])
-  const [tempAccountDetails, setTempAccountDetails] =
-    useState<ImportedAccount | null>(null)
-  const [totalBalanceDisplay, setTotalBalanceDisplay] = useState<string | null>(
-    null
-  )
-  const [isAwaitingOurBalance, setIsAwaitingOurBalance] = useState(false)
-  const [isCheckingMigration, setIsCheckingMigration] = useState(false)
 
   const activeNetwork = useSelector(selectActiveNetwork)
-  const dispatch = useDispatch()
-  const globalBalanceQueryStatus = useSelector(selectBalanceStatus)
-  const tokenVisibility = useSelector(selectTokenVisibility)
-  const { formatCurrency } = useFormatCurrency()
-  const activeWallet = useActiveWallet()
+  const { isImporting } = useImportPrivateKey()
 
-  const accountIdForBalance = tempAccountDetails ? tempAccountDetails.id : ''
-  const currentTempAccountBalance = useSelector(
-    selectBalanceTotalInCurrencyForAccount(accountIdForBalance, tokenVisibility)
-  )
-  const isOurBalanceDataLoadedInStore = useSelector(
-    selectIsBalanceLoadedForAccount(accountIdForBalance)
-  )
+  const { derivedAddresses, tempAccountDetails, showDerivedInfo } =
+    useDeriveAddresses(privateKey, activeNetwork)
 
-  const { isImporting, importWallet } = useImportPrivateKey()
+  const { totalBalanceDisplay, isAwaitingOurBalance } =
+    usePrivateKeyBalance(tempAccountDetails)
 
-  const deriveAddresses = useCallback(async (): Promise<void> => {
-    setDerivedAddresses([])
-    setTempAccountDetails(null)
-    setIsAwaitingOurBalance(false)
-
-    try {
-      const strippedPk = strip0x(privateKey)
-
-      if (strippedPk.length === 64) {
-        const publicKey = getPublicKeyFromPrivateKey(strippedPk)
-
-        const addressC = getEvmAddressFromPubKey(publicKey)
-        const addressBTC = getBtcAddressFromPubKey(
-          publicKey,
-          activeNetwork.isTestnet ? networks.testnet : networks.bitcoin
-        )
-
-        const newTempAccountData = {
-          id: uuid(),
-          index: 0,
-          name: 'Imported Key',
-          type: CoreAccountType.IMPORTED,
-          walletId: CORE_MOBILE_WALLET_ID,
-          addressC,
-          addressBTC,
-          addressAVM: '',
-          addressPVM: '',
-          addressCoreEth: addressC
-        } as ImportedAccount
-        setTempAccountDetails(newTempAccountData)
-
-        setDerivedAddresses([
-          {
-            address: addressC,
-            icon: <TokenLogo symbol="AVAX" />
-          },
-          {
-            address: addressBTC,
-            icon: <TokenLogo symbol="BTC" />
-          }
-        ])
-      }
-    } catch (error) {
-      Logger.info('error deriving addresses:', error)
-      setDerivedAddresses([])
-      setTempAccountDetails(null)
-    }
-  }, [activeNetwork.isTestnet, privateKey])
-
-  useEffect(() => {
-    if (privateKey.trim() !== '') {
-      deriveAddresses()
-      setShowDerivedInfo(true)
-    } else {
-      setShowDerivedInfo(false)
-      setDerivedAddresses([])
-      setTempAccountDetails(null)
-    }
-  }, [privateKey, deriveAddresses])
-
-  useEffect(() => {
-    if (
-      tempAccountDetails &&
-      !isAwaitingOurBalance &&
-      globalBalanceQueryStatus === QueryStatus.IDLE &&
-      totalBalanceDisplay === null
-    ) {
-      Logger.info(
-        'Dispatching fetchBalanceForAccount for temp account:',
-        tempAccountDetails.id
-      )
-      setIsAwaitingOurBalance(true)
-      dispatch(fetchBalanceForAccount({ accountId: tempAccountDetails.id }))
-    } else if (
-      tempAccountDetails &&
-      !isAwaitingOurBalance &&
-      globalBalanceQueryStatus !== QueryStatus.IDLE
-    ) {
-      Logger.info(
-        'Global balance fetching busy, deferring fetch for temp account.'
-      )
-    }
-  }, [
+  // Extract import handler logic
+  const { handleImport, isCheckingMigration } = usePrivateKeyImportHandler(
     tempAccountDetails,
-    dispatch,
-    isAwaitingOurBalance,
-    globalBalanceQueryStatus,
-    totalBalanceDisplay
-  ])
-
-  useEffect(() => {
-    if (
-      isAwaitingOurBalance &&
-      (isOurBalanceDataLoadedInStore ||
-        globalBalanceQueryStatus === QueryStatus.IDLE)
-    ) {
-      setIsAwaitingOurBalance(false)
-      if (isOurBalanceDataLoadedInStore) {
-        Logger.info('Balance data for our temp account ID confirmed in store.')
-      } else {
-        Logger.info(
-          'Global balance query idle, fetch for temp account assumed complete/included.'
-        )
-      }
-    }
-  }, [
-    isAwaitingOurBalance,
-    isOurBalanceDataLoadedInStore,
-    globalBalanceQueryStatus
-  ])
-
-  useEffect(() => {
-    if (!tempAccountDetails) {
-      setTotalBalanceDisplay(null)
-      return
-    }
-    if (isAwaitingOurBalance && !isOurBalanceDataLoadedInStore) {
-      setTotalBalanceDisplay('(Fetching...)')
-    } else if (isOurBalanceDataLoadedInStore) {
-      setTotalBalanceDisplay(
-        formatCurrency({ amount: currentTempAccountBalance })
-      )
-    } else if (!isAwaitingOurBalance && !isOurBalanceDataLoadedInStore) {
-      setTotalBalanceDisplay('(No balance data)')
-    } else {
-      setTotalBalanceDisplay(null)
-    }
-  }, [
-    tempAccountDetails,
-    currentTempAccountBalance,
-    isAwaitingOurBalance,
-    isOurBalanceDataLoadedInStore,
-    formatCurrency
-  ])
-
-  const handleImport = useCallback(async (): Promise<void> => {
-    if (!tempAccountDetails) return
-
-    setIsCheckingMigration(true)
-    const migrator = new KeychainMigrator(activeWallet.id)
-    const migrationNeeded = await migrator.getMigrationStatus('PIN')
-    setIsCheckingMigration(false)
-
-    if (migrationNeeded) {
-      navigate({
-        // @ts-ignore TODO: make routes typesafe
-        pathname: '/accountSettings/verifyPinForImportPrivateKey',
-        params: {
-          privateKeyAccountString: JSON.stringify(tempAccountDetails),
-          privateKey
-        }
-      })
-    } else {
-      await importWallet(tempAccountDetails, privateKey)
-    }
-  }, [navigate, tempAccountDetails, privateKey, importWallet, activeWallet.id])
+    privateKey
+  )
 
   return (
     <ScrollScreen
@@ -259,7 +65,7 @@ const ImportPrivateKeyScreen = (): JSX.Element => {
                         alignItems: 'center',
                         gap: 8
                       }}>
-                      {item.icon}
+                      <TokenLogo symbol={item.symbol} />
                       <Text sx={{ color: colors.$textPrimary, fontSize: 16 }}>
                         {truncateAddress(item.address, 8)}
                       </Text>
@@ -295,7 +101,7 @@ const ImportPrivateKeyScreen = (): JSX.Element => {
                     }}>
                     Total balance
                   </Text>
-                  {isAwaitingOurBalance && !isOurBalanceDataLoadedInStore ? (
+                  {isAwaitingOurBalance ? (
                     <ActivityIndicator size="small" />
                   ) : (
                     <Text
