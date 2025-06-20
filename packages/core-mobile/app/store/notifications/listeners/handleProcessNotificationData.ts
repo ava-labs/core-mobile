@@ -30,10 +30,9 @@ export const handleProcessNotificationData = async (
   if ('accountAddress' in data && typeof data.accountAddress === 'string') {
     const account = selectAccountByAddress(data.accountAddress)(state)
     if (account) {
-      await dispatch(setActiveAccount(account.id)).unwrap()
+      dispatch(setActiveAccount(account.id))
     }
-  }
-  if ('accountId' in data && typeof data.accountId === 'string') {
-    await dispatch(setActiveAccount(data.accountId)).unwrap()
+  } else if ('accountId' in data && typeof data.accountId === 'string') {
+    dispatch(setActiveAccount(data.accountId))
   }
 }
