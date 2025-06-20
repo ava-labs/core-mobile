@@ -42,9 +42,6 @@ const initAccounts = async (
   const activeWallet = selectActiveWallet(state)
   let accounts: AccountCollection = {}
 
-  if (!activeAccount) {
-    throw new Error('Active account is not set')
-  }
   if (!activeWallet) {
     throw new Error('Active wallet is not set')
   }
@@ -55,7 +52,7 @@ const initAccounts = async (
   }
 
   const acc = await accountService.createNextAccount({
-    index: activeAccount.index,
+    index: activeAccount?.index ?? 0,
     walletType,
     network: activeNetwork,
     walletId: activeWallet.id
@@ -66,6 +63,11 @@ const initAccounts = async (
     const accountTitle = title ?? acc.name
     accounts[acc.id] = { ...acc, name: accountTitle }
     listenerApi.dispatch(setAccounts(accounts))
+    const firstAccountId = Object.keys(accounts)[0]
+    if (!firstAccountId) {
+      throw new Error('No accounts created')
+    }
+    listenerApi.dispatch(setActiveAccountId(firstAccountId))
 
     // to avoid initial account fetching taking too long,
     // we fetch the remaining accounts in the background
@@ -82,6 +84,11 @@ const initAccounts = async (
   ) {
     accounts[acc.id] = acc
     listenerApi.dispatch(setAccounts(accounts))
+    const firstAccountId = Object.keys(accounts)[0]
+    if (!firstAccountId) {
+      throw new Error('No accounts created')
+    }
+    listenerApi.dispatch(setActiveAccountId(firstAccountId))
   }
 
   if (isDeveloperMode === false) {
