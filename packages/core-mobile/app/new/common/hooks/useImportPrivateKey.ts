@@ -2,7 +2,7 @@ import { useCallback, useState } from 'react'
 import { useDispatch } from 'react-redux'
 import { useRouter } from 'expo-router'
 import { AppThunkDispatch } from 'store/types'
-import { importPrivateKeyAccountAndCreateWallet } from 'store/wallet/thunks'
+import { importPrivateKeyWalletAndAccount } from 'store/wallet/thunks'
 import { ImportedAccount } from 'store/account/types'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { WalletType } from 'services/wallet/types'
@@ -30,7 +30,7 @@ export const useImportPrivateKey = (): {
       setIsImporting(true)
       try {
         await dispatch(
-          importPrivateKeyAccountAndCreateWallet({
+          importPrivateKeyWalletAndAccount({
             accountDetails,
             accountSecret
           })

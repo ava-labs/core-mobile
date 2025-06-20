@@ -39,7 +39,7 @@ export const getAddressesInRange = async ({
   walletType: WalletType
   params: AddressesParams
 }): Promise<{ external: string[]; internal: string[] }> => {
-  //FIXME: this should be uncommented but migration is needed. Also, currently cache is never cleared which imposes a problem of storage bloating.
+  //TODO: this should be uncommented but migration is needed. Also, currently cache is never cleared which imposes a problem of storage bloating.
 
   // const cacheKey = `${StorageKey.ADDRESSES_IN_RANGE}.${walletId}.${isDeveloperMode}.${JSON.stringify(
   //   params

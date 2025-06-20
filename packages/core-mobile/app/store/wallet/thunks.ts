@@ -49,12 +49,12 @@ export const storeWallet = createAsyncThunk<
   }
 )
 
-export const importPrivateKeyAccountAndCreateWallet = createAsyncThunk<
+export const importPrivateKeyWalletAndAccount = createAsyncThunk<
   void,
   { accountDetails: ImportedAccount; accountSecret: string },
   ThunkApi
 >(
-  `${reducerName}/importPrivateKeyAccountAndCreateWallet`,
+  `${reducerName}/importPrivateKeyWalletAndAccount`,
   async ({ accountDetails, accountSecret }, thunkApi) => {
     const dispatch = thunkApi.dispatch
     const newWalletId = uuid()

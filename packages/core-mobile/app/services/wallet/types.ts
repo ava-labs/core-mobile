@@ -110,7 +110,7 @@ export type CreateSendPTxParams = CommonAvalancheTxParamsBase & {
   feeState?: pvm.FeeState
 }
 
-//FIXME: delete this enum
+//TODO: delete this enum
 export enum WalletType {
   UNSET = 'UNSET',
   SEEDLESS = 'SEEDLESS',
