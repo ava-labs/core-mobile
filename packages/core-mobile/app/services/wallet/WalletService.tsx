@@ -60,12 +60,17 @@ const EVM_FEE_TOLERANCE = 50
 class WalletService {
   #walletType: WalletType = WalletType.UNSET
 
-  public async init({ mnemonic, walletType }: InitProps): Promise<void> {
+  public async init({
+    mnemonic,
+    isLoggingIn,
+    walletType
+  }: InitProps): Promise<void> {
     Logger.info(`initializing wallet with type ${walletType}`)
 
     await WalletInitializer.initialize({
       mnemonic,
-      walletType
+      walletType,
+      shouldRefreshPublicKeys: isLoggingIn
     })
 
     this.walletType = walletType
@@ -187,7 +192,8 @@ class WalletService {
 
         // re-init wallet to fetch new public keys
         await WalletInitializer.initialize({
-          walletType: this.walletType
+          walletType: this.walletType,
+          shouldRefreshPublicKeys: true
         })
       }
     }

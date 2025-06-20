@@ -7,15 +7,20 @@ import MnemonicWalletInstance from './MnemonicWallet'
 class WalletInitializer {
   async initialize({
     mnemonic,
-    walletType
+    walletType,
+    shouldRefreshPublicKeys
   }: {
     mnemonic?: string
     walletType: WalletType
+    shouldRefreshPublicKeys: boolean
   }): Promise<void> {
     switch (walletType) {
       case WalletType.SEEDLESS: {
         try {
-          await SeedlessService.refreshSessionKeys()
+          const storedPubKeys = await SeedlessPubKeysStorage.retrieve()
+          if (shouldRefreshPublicKeys || storedPubKeys.length === 0) {
+            await SeedlessService.refreshSessionKeys()
+          }
         } catch (error) {
           Logger.error(`Unable to save public keys`, error)
           throw new Error(`Unable to save public keys`)
