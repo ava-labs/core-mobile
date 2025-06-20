@@ -37,13 +37,20 @@ export const usePrivateKeyBalance = (
     if (
       !tempAccountDetails ||
       isAwaitingOurBalance ||
-      totalBalanceDisplay !== null
+      isOurBalanceDataLoadedInStore
     ) {
       return
     }
     setIsAwaitingOurBalance(true)
     dispatch(fetchBalanceForAccount({ accountId: tempAccountDetails.id }))
-  }, [tempAccountDetails, dispatch, isAwaitingOurBalance, totalBalanceDisplay])
+  }, [
+    tempAccountDetails,
+    dispatch,
+    isAwaitingOurBalance,
+    totalBalanceDisplay,
+    isOurBalanceDataLoadedInStore,
+    currentTempAccountBalance
+  ])
 
   // Effect to handle balance fetch completion
   useEffect(() => {
@@ -84,6 +91,22 @@ export const usePrivateKeyBalance = (
       setTotalBalanceDisplay(null)
     }
   }, [tempAccountDetails])
+
+  useEffect(() => {
+    if (isAwaitingOurBalance) {
+      const timeout = setTimeout(() => {
+        setIsAwaitingOurBalance(false)
+      }, 10000) // 10 second timeout
+
+      // Clear timeout if balance loads
+      if (isOurBalanceDataLoadedInStore) {
+        clearTimeout(timeout)
+        setIsAwaitingOurBalance(false)
+      }
+
+      return () => clearTimeout(timeout)
+    }
+  }, [isAwaitingOurBalance, isOurBalanceDataLoadedInStore])
 
   return {
     totalBalanceDisplay,
