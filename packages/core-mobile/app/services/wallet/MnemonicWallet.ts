@@ -230,7 +230,7 @@ export class MnemonicWallet implements Wallet {
     }
   }
 
-  private async getSigningKey({
+  public async getSigningKey({
     accountIndex,
     network,
     provider
