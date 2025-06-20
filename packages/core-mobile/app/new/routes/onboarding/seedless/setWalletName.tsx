@@ -1,17 +1,17 @@
 import React, { useState } from 'react'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { useDispatch } from 'react-redux'
-import { selectActiveAccount, setAccountTitle } from 'store/account'
+import { setAccountTitle } from 'store/account'
 import { WalletType } from 'services/wallet/types'
 import { useRouter } from 'expo-router'
 import { SetWalletName as Component } from 'features/onboarding/components/SetWalletName'
-import { useSelector } from 'react-redux'
+import { useActiveAccount } from 'common/hooks/useActiveAccount'
 
 export default function SetWalletName(): JSX.Element {
   const [name, setName] = useState<string>('Wallet 1')
   const dispatch = useDispatch()
   const { navigate } = useRouter()
-  const activeAccount = useSelector(selectActiveAccount)
+  const activeAccount = useActiveAccount()
 
   const handleNext = (): void => {
     AnalyticsService.capture('Onboard:WalletNameSet')
@@ -19,7 +19,7 @@ export default function SetWalletName(): JSX.Element {
       setAccountTitle({
         title: name,
         walletType: WalletType.SEEDLESS,
-        accountId: activeAccount?.id ?? ''
+        accountId: activeAccount.id
       })
     )
 
