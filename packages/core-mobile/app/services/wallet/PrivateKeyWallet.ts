@@ -3,14 +3,12 @@ import {
   BitcoinWallet,
   BitcoinProvider,
   JsonRpcBatchInternal,
-  getAddressPublicKeyFromXPub,
   getPublicKeyFromPrivateKey
 } from '@avalabs/core-wallets-sdk'
 import { now } from 'moment'
 import {
   AvalancheTransactionRequest,
   BtcTransactionRequest,
-  PubKeyType,
   Wallet
 } from 'services/wallet/types'
 import { BaseWallet, TransactionRequest, Wallet as EthersWallet } from 'ethers'
@@ -37,23 +35,8 @@ import { Curve } from 'utils/publicKeys'
 export class PrivateKeyWallet implements Wallet {
   #privateKey?: string
 
-  /**
-   * Derivation path: m/44'/60'/0'
-   * @private
-   */
-  #xpub?: string
-
-  /**
-   * Derivation path: m/44'/9000'/0'
-   * @private
-   */
-  #xpubXP?: string
-
   constructor(privateKey: string) {
     this.#privateKey = privateKey
-    const pubKey = getPublicKeyFromPrivateKey(Buffer.from(privateKey, 'hex'))
-    this.#xpub = pubKey.toString('hex')
-    this.#xpubXP = pubKey.toString('hex')
   }
 
   private async getBtcSigner(
@@ -138,24 +121,6 @@ export class PrivateKeyWallet implements Wallet {
   public get privateKey(): string {
     assertNotUndefined(this.#privateKey, 'no private key available')
     return this.#privateKey
-  }
-
-  public get xpub(): string {
-    assertNotUndefined(this.#xpub, 'no public key (xpub) available')
-    return this.#xpub
-  }
-
-  public set xpub(xpub: string | undefined) {
-    this.#xpub = xpub
-  }
-
-  public get xpubXP(): string {
-    assertNotUndefined(this.#xpubXP, 'no public key (xpubXP) available')
-    return this.#xpubXP
-  }
-
-  public set xpubXP(xpubXP: string | undefined) {
-    this.#xpubXP = xpubXP
   }
 
   /** WALLET INTERFACE IMPLEMENTATION **/
@@ -345,19 +310,6 @@ export class PrivateKeyWallet implements Wallet {
     }
 
     return await signer.signTransaction(transaction)
-  }
-
-  public async getPublicKey(accountIndex: number): Promise<PubKeyType> {
-    const evmPub = getAddressPublicKeyFromXPub(this.xpub, accountIndex)
-    const xpPub = Avalanche.getAddressPublicKeyFromXpub(
-      this.xpubXP,
-      accountIndex
-    )
-
-    return {
-      evm: evmPub.toString('hex'),
-      xp: xpPub.toString('hex')
-    }
   }
 
   public async getReadOnlyAvaSigner({
