@@ -39,13 +39,9 @@ const initAccounts = async (
   const activeNetwork = selectActiveNetwork(state)
   const walletType = selectWalletType(state)
   const activeAccount = selectActiveAccount(state)
-  const activeWalletId = selectActiveWalletId(state)
   const activeWallet = selectActiveWallet(state)
   let accounts: AccountCollection = {}
 
-  if (!activeWalletId) {
-    throw new Error('Active wallet ID is not set')
-  }
   if (!activeAccount) {
     throw new Error('Active account is not set')
   }
@@ -53,7 +49,7 @@ const initAccounts = async (
     throw new Error('Active wallet is not set')
   }
 
-  const walletSecret = await BiometricsSDK.loadWalletSecret(activeWalletId)
+  const walletSecret = await BiometricsSDK.loadWalletSecret(activeWallet.id)
   if (!walletSecret.success) {
     throw new Error('Failed to load wallet secret')
   }
@@ -62,7 +58,7 @@ const initAccounts = async (
     index: activeAccount.index,
     walletType,
     network: activeNetwork,
-    walletId: activeWalletId
+    walletId: activeWallet.id
   })
 
   if (walletType === WalletType.SEEDLESS) {
