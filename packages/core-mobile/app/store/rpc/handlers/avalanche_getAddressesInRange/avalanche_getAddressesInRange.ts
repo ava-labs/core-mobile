@@ -4,6 +4,7 @@ import { RpcMethod } from 'store/rpc/types'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import Logger from 'utils/Logger'
 import { getAddressesInRange } from 'utils/getAddressesInRange'
+import { selectActiveAccount } from 'store/account'
 import { HandleResponse, RpcRequestHandler } from '../types'
 import { parseRequestParams } from './utils'
 import { RequestParams, AvalancheGetAddressesInRangeRpcRequest } from './types'
@@ -20,6 +21,16 @@ class AvalancheGetAddressesInRangeHandler
     const { getState } = listenerApi
     const state = getState()
     const isDeveloperMode = selectIsDeveloperMode(state)
+    const activeAccount = selectActiveAccount(state)
+    if (!activeAccount) {
+      Logger.error(
+        'avalanche_getAddressesInRange: No active account found in state'
+      )
+      return {
+        success: false,
+        error: rpcErrors.internal('No active account found')
+      }
+    }
     const result = parseRequestParams(request.data.params.request.params)
     if (!result.success) {
       Logger.error('Invalid param', result.error)
@@ -35,12 +46,16 @@ class AvalancheGetAddressesInRangeHandler
       result.data as RequestParams
 
     try {
-      const addresses = await getAddressesInRange(isDeveloperMode, {
-        externalStart,
-        internalStart,
-        externalLimit,
-        internalLimit
-      })
+      const addresses = await getAddressesInRange(
+        activeAccount,
+        isDeveloperMode,
+        {
+          externalStart,
+          internalStart,
+          externalLimit,
+          internalLimit
+        }
+      )
       return { success: true, value: addresses }
     } catch (e) {
       return {

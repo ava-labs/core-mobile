@@ -65,7 +65,7 @@ const handleSetAccountTitle = async ({
   walletType?: WalletType
 }): Promise<void> => {
   if (walletType !== WalletType.SEEDLESS) return
-  SeedlessService.setAcountName(name, accountIndex)
+  SeedlessService.setAccountName(name, accountIndex)
 }
 
 const signOutSocial = async (_: Action): Promise<void> => {

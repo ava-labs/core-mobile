@@ -3,11 +3,14 @@ import Config from 'react-native-config'
 import { z } from 'zod'
 import Logger from 'utils/Logger'
 import {
+  CreateCryptoQuoteBodySchema,
+  CreateCryptoQuoteSchema,
   GetPurchaseLimitsSchema,
   SearchCountrySchema,
   SearchCryptoCurrencySchema,
   SearchDefaultsByCountrySchema,
   SearchFiatCurrencySchema,
+  SearchPaymentMethodsSchema,
   SearchServiceProviderSchema
 } from './schemas'
 
@@ -146,13 +149,56 @@ export const meldApiClient = new Zodios(
           schema: z.string().optional()
         },
         {
-          name: 'cryptoCurrencyCodes',
+          name: 'cryptoCurrencies',
           type: 'Query',
           schema: z.string().optional()
         }
       ],
       alias: 'getPurchaseLimits',
       response: z.array(GetPurchaseLimitsSchema)
+    },
+    {
+      method: 'get',
+      path: '/service-providers/properties/payment-methods',
+      parameters: [
+        {
+          name: 'serviceProviders',
+          type: 'Query',
+          schema: z.string().optional()
+        },
+        { name: 'categories', type: 'Query', schema: z.string().optional() },
+        {
+          name: 'accountFilter',
+          type: 'Query',
+          schema: z.boolean().optional()
+        },
+        { name: 'countries', type: 'Query', schema: z.string().optional() },
+        {
+          name: 'fiatCurrencies',
+          type: 'Query',
+          schema: z.string().optional()
+        },
+        {
+          name: 'cryptoCurrencies',
+          type: 'Query',
+          schema: z.string().optional()
+        }
+      ],
+      alias: 'getPaymentMethods',
+      response: z.array(SearchPaymentMethodsSchema)
+    },
+    {
+      method: 'post',
+      path: '/payments/crypto/quote',
+      parameters: [
+        {
+          name: 'body',
+          type: 'Body',
+          schema: CreateCryptoQuoteBodySchema
+        }
+      ],
+      alias: 'createCryptoQuotes',
+      response: CreateCryptoQuoteSchema
     }
   ],
   {

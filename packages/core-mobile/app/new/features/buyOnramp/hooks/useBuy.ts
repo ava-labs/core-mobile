@@ -3,7 +3,7 @@ import { useCallback } from 'react'
 import { useSelector } from 'react-redux'
 import { selectIsMeldIntegrationBlocked } from 'store/posthog'
 import { useMemo } from 'react'
-import { useOnRampToken } from '../store'
+import { useOnRampSourceAmount, useOnRampToken } from '../store'
 import { MELD_CURRENCY_CODES, ServiceProviderCategories } from '../consts'
 import { LocalTokenWithBalance } from '../../../../store/balance/types'
 import { useSearchCryptoCurrencies } from './useSearchCryptoCurrencies'
@@ -20,13 +20,16 @@ export const useBuy = (): {
   navigateToBuyAvax: () => void
   navigateToBuyUsdc: () => void
   isBuyable: (token?: LocalTokenWithBalance, address?: string) => boolean
+  isLoadingCryptoCurrencies: boolean
 } => {
   const { navigate } = useRouter()
-  const [_, setOnrampToken] = useOnRampToken()
+  const [_onrampToken, setOnrampToken] = useOnRampToken()
+  const [_sourceAmount, setSourceAmount] = useOnRampSourceAmount()
   const isMeldIntegrationBlocked = useSelector(selectIsMeldIntegrationBlocked)
-  const { data: cryptoCurrencies } = useSearchCryptoCurrencies({
-    categories: [ServiceProviderCategories.CRYPTO_ONRAMP]
-  })
+  const { data: cryptoCurrencies, isLoading: isLoadingCryptoCurrencies } =
+    useSearchCryptoCurrencies({
+      categories: [ServiceProviderCategories.CRYPTO_ONRAMP]
+    })
   const { getBuyableCryptoCurrency } = useGetBuyableCryptoCurrency()
 
   const isBuyable = useCallback(
@@ -64,6 +67,7 @@ export const useBuy = (): {
         return
       }
 
+      setSourceAmount(0)
       if (token || address) {
         const cryptoCurrency = getBuyableCryptoCurrency(token, address)
         setOnrampToken(cryptoCurrency)
@@ -79,7 +83,8 @@ export const useBuy = (): {
       getBuyableCryptoCurrency,
       isMeldIntegrationBlocked,
       navigate,
-      setOnrampToken
+      setOnrampToken,
+      setSourceAmount
     ]
   )
 
@@ -101,6 +106,7 @@ export const useBuy = (): {
     navigateToBuy,
     navigateToBuyAvax,
     navigateToBuyUsdc,
-    isBuyable
+    isBuyable,
+    isLoadingCryptoCurrencies
   }
 }

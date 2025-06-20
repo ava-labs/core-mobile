@@ -142,7 +142,10 @@ export const CollectibleListItem = memo(
               style={{
                 flex: 1
               }}>
-              <Text variant="buttonMedium" numberOfLines={1}>
+              <Text
+                testID={`collectible_name__${collectibleName}`}
+                variant="buttonMedium"
+                numberOfLines={1}>
                 {collectibleName}
               </Text>
               <Text

@@ -1,10 +1,13 @@
 import {
   Country,
+  CreateCryptoQuote,
+  CreateCryptoQuoteParams,
   CryptoCurrency,
   FiatCurrency,
   GetPurchaseLimits,
   MeldDefaultParams,
   SearchDefaultsByCountry,
+  SearchPaymentMethods,
   ServiceProvider
 } from '../types'
 import { SearchServiceProvidersParams } from '../hooks/useSearchServiceProviders'
@@ -12,6 +15,7 @@ import { SearchFiatCurrenciesParams } from '../hooks/useSearchFiatCurrencies'
 import { SearchCryptoCurrenciesParams } from '../hooks/useSearchCryptoCurrencies'
 import { SearchDefaultsByCountryParams } from '../hooks/useSearchDefaultsByCountry'
 import { GetPurchaseLimitsParams } from '../hooks/useGetPurchaseLimits'
+import { SearchPaymentMethodsParams } from '../hooks/useSearchPaymentMethods'
 import { meldApiClient } from './apiClient'
 
 class MeldService {
@@ -117,6 +121,48 @@ class MeldService {
       includeDetails
     }
     return meldApiClient.getPurchaseLimits({ queries })
+  }
+
+  async searchPaymentMethods({
+    categories,
+    countries,
+    accountFilter = true,
+    serviceProviders,
+    fiatCurrencies,
+    cryptoCurrencyCodes
+  }: SearchPaymentMethodsParams): Promise<SearchPaymentMethods[]> {
+    const queries = {
+      categories: categories.join(','),
+      accountFilter,
+      countries: countries.join(','),
+      serviceProviders: serviceProviders?.join(','),
+      fiatCurrencies: fiatCurrencies?.join(','),
+      cryptoCurrencies: cryptoCurrencyCodes?.join(',')
+    }
+    return meldApiClient.getPaymentMethods({ queries })
+  }
+
+  async createCryptoQuote({
+    serviceProviders,
+    sourceAmount,
+    walletAddress,
+    countryCode,
+    sourceCurrencyCode,
+    destinationCurrencyCode,
+    paymentMethodType,
+    subdivision
+  }: CreateCryptoQuoteParams): Promise<CreateCryptoQuote | undefined> {
+    const body = {
+      serviceProviders,
+      countryCode,
+      sourceCurrencyCode,
+      destinationCurrencyCode,
+      sourceAmount,
+      walletAddress,
+      subdivision,
+      paymentMethodType
+    }
+    return meldApiClient.createCryptoQuotes(body)
   }
 }
 

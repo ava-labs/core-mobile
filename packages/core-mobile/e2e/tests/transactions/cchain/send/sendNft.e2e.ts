@@ -1,40 +1,26 @@
-import AccountManagePage from '../../../../pages/accountManage.page'
-import PortfolioPage from '../../../../pages/portfolio.page'
-import CollectiblesPage from '../../../../pages/collectibles.page'
 import { warmup } from '../../../../helpers/warmup'
-import activityTabPage from '../../../../pages/activityTab.page'
-import { cleanup } from '../../../../helpers/cleanup'
 import sendPage from '../../../../pages/send.page'
+import settingsPage from '../../../../pages/settings.page'
+import portfolioPage from '../../../../pages/portfolio.page'
+import commonElsLoc from '../../../../locators/commonEls.loc'
+import commonElsPage from '../../../../pages/commonEls.page'
 
 describe('Send NFT', () => {
   beforeAll(async () => {
     await warmup()
-    await AccountManagePage.createSecondAccount()
+    await settingsPage.createNthAccount()
   })
 
-  afterAll(async () => {
-    await cleanup()
+  it('should send NFT on C-Chain', async () => {
+    await portfolioPage.tapCollectiblesTab()
+    await portfolioPage.filterNetwork(commonElsLoc.cChain)
+    await portfolioPage.selectView()
+    await sendPage.sendNFT()
+    await commonElsPage.verifySuccessToast()
   })
 
-  it('should send Avalanche NFT', async () => {
-    await PortfolioPage.tapCollectiblesTab()
-    await CollectiblesPage.tapListSvg()
-    await CollectiblesPage.scrollToNFT()
-    await CollectiblesPage.tapNFT()
-    await CollectiblesPage.verifyNftDetailsItems()
-    await CollectiblesPage.sendNft('first')
-    await sendPage.verifySuccessToast()
-  }, 200000)
-
-  it('should verify NFT transaction on activity tab', async () => {
-    // sender activity tab:
-    await PortfolioPage.tapAssetsTab()
-    await PortfolioPage.goToActivityTab()
-    await activityTabPage.verifyExistingRow('Send NFT')
-    // receiver activity tab:
-    await AccountManagePage.switchToReceivedAccount('first')
-    await activityTabPage.refreshActivityPage()
-    const row = await activityTabPage.getLatestActivityRow()
-    await activityTabPage.verifyActivityRow(row, 'Receive NFT')
+  it('should verify the NFT Sent history', async () => {
+    // currently not supported
+    // TODO: add verification after all transactions history is supported
   })
 })
