@@ -2,14 +2,11 @@ import { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import {
   fetchBalanceForAccount,
-  selectBalanceStatus,
   selectBalanceTotalInCurrencyForAccount,
-  QueryStatus,
   selectIsBalanceLoadedForAccount
 } from 'store/balance'
 import { selectTokenVisibility } from 'store/portfolio'
 import { ImportedAccount } from 'store/account/types'
-import Logger from 'utils/Logger'
 import { useFormatCurrency } from './useFormatCurrency'
 
 export const usePrivateKeyBalance = (
@@ -17,6 +14,7 @@ export const usePrivateKeyBalance = (
 ): {
   totalBalanceDisplay: string | null
   isAwaitingOurBalance: boolean
+  // eslint-disable-next-line sonarjs/cognitive-complexity
 } => {
   const [totalBalanceDisplay, setTotalBalanceDisplay] = useState<string | null>(
     null
@@ -24,7 +22,6 @@ export const usePrivateKeyBalance = (
   const [isAwaitingOurBalance, setIsAwaitingOurBalance] = useState(false)
 
   const dispatch = useDispatch()
-  const globalBalanceQueryStatus = useSelector(selectBalanceStatus)
   const tokenVisibility = useSelector(selectTokenVisibility)
   const { formatCurrency } = useFormatCurrency()
 
@@ -37,53 +34,23 @@ export const usePrivateKeyBalance = (
   )
 
   useEffect(() => {
-    if (!tempAccountDetails || isAwaitingOurBalance) {
+    if (
+      !tempAccountDetails ||
+      isAwaitingOurBalance ||
+      totalBalanceDisplay !== null
+    ) {
       return
     }
-    if (
-      globalBalanceQueryStatus === QueryStatus.IDLE &&
-      totalBalanceDisplay === null
-    ) {
-      Logger.info(
-        'Dispatching fetchBalanceForAccount for temp account:',
-        tempAccountDetails.id
-      )
-      setIsAwaitingOurBalance(true)
-      dispatch(fetchBalanceForAccount({ accountId: tempAccountDetails.id }))
-    } else if (globalBalanceQueryStatus !== QueryStatus.IDLE) {
-      Logger.info(
-        'Global balance fetching busy, deferring fetch for PK account.'
-      )
-    }
-  }, [
-    tempAccountDetails,
-    dispatch,
-    isAwaitingOurBalance,
-    globalBalanceQueryStatus,
-    totalBalanceDisplay
-  ])
+    setIsAwaitingOurBalance(true)
+    dispatch(fetchBalanceForAccount({ accountId: tempAccountDetails.id }))
+  }, [tempAccountDetails, dispatch, isAwaitingOurBalance, totalBalanceDisplay])
 
   // Effect to handle balance fetch completion
   useEffect(() => {
-    if (
-      isAwaitingOurBalance &&
-      (isOurBalanceDataLoadedInStore ||
-        globalBalanceQueryStatus === QueryStatus.IDLE)
-    ) {
+    if (isAwaitingOurBalance && isOurBalanceDataLoadedInStore) {
       setIsAwaitingOurBalance(false)
-      if (isOurBalanceDataLoadedInStore) {
-        Logger.info('Balance data for our temp account ID confirmed in store.')
-      } else {
-        Logger.info(
-          'Global balance query idle, fetch for temp account assumed complete/included.'
-        )
-      }
     }
-  }, [
-    isAwaitingOurBalance,
-    isOurBalanceDataLoadedInStore,
-    globalBalanceQueryStatus
-  ])
+  }, [isAwaitingOurBalance, isOurBalanceDataLoadedInStore])
 
   // Effect to update balance display
   useEffect(() => {
