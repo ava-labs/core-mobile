@@ -1,6 +1,7 @@
 import {
   Avalanche,
   BitcoinProvider,
+  isSolanaProvider,
   DerivationPath,
   getAddressDerivationPath,
   JsonRpcBatchInternal
@@ -39,7 +40,11 @@ import { nanoToWei } from 'utils/units/converter'
 import { SpanName } from 'services/sentry/types'
 import { Curve, isEvmPublicKey } from 'utils/publicKeys'
 import ModuleManager from 'vmModule/ModuleManager'
-import { isAvalancheTransactionRequest, isBtcTransactionRequest } from './utils'
+import {
+  isAvalancheTransactionRequest,
+  isBtcTransactionRequest,
+  isSolanaTransactionRequest
+} from './utils'
 import WalletInitializer from './WalletInitializer'
 import WalletFactory from './WalletFactory'
 import {
@@ -114,6 +119,20 @@ class WalletService {
             )
 
           return wallet.signAvalancheTransaction({
+            accountIndex,
+            transaction,
+            network,
+            provider
+          })
+        }
+
+        if (isSolanaTransactionRequest(transaction)) {
+          if (!isSolanaProvider(provider))
+            throw new Error(
+              'Unable to sign solana transaction: wrong provider obtained'
+            )
+
+          return wallet.signSvmTransaction({
             accountIndex,
             transaction,
             network,
