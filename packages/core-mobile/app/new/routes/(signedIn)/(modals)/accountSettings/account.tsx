@@ -20,6 +20,8 @@ import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { selectSelectedCurrency } from 'store/settings/currency'
 import { selectIsPrivacyModeEnabled } from 'store/settings/securityPrivacy'
 import { WalletInfo } from 'features/accountSettings/components/WalletInfo'
+import { selectWalletById } from 'store/wallet/slice'
+import { WalletType } from 'services/wallet/types'
 
 const AccountScreen = (): JSX.Element => {
   const router = useRouter()
@@ -27,6 +29,7 @@ const AccountScreen = (): JSX.Element => {
   const isPrivacyModeEnabled = useSelector(selectIsPrivacyModeEnabled)
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const account = useSelector(selectAccountById(accountId ?? ''))
+  const wallet = useSelector(selectWalletById(account?.walletId ?? ''))
   const isBalanceLoading = useSelector(selectIsLoadingBalances)
   const isRefetchingBalance = useSelector(selectIsRefetchingBalances)
   const tokenVisibility = useSelector(selectTokenVisibility)
@@ -82,8 +85,13 @@ const AccountScreen = (): JSX.Element => {
   ])
 
   const renderFooter = useCallback(() => {
-    return <AccountButtons accountId={account?.id ?? ''} />
-  }, [account?.id])
+    return (
+      <AccountButtons
+        accountId={account?.id ?? ''}
+        walletType={wallet?.type ?? WalletType.UNSET}
+      />
+    )
+  }, [account?.id, wallet?.type])
 
   const handleShowPrivateKey = (): void => {
     if (!account) {
