@@ -56,7 +56,7 @@ const AmountDetailsSchema = object({
   defaultAmount: number().optional(),
   minimumAmount: number(),
   maximumAmount: number()
-})
+}).passthrough()
 
 export const GetPurchaseLimitsSchema = object({
   countryCode: string().optional(),
@@ -90,7 +90,7 @@ export const CreateCryptoQuoteBodySchema = object({
   countryCode: string(),
   paymentMethodType: z.nativeEnum(PaymentMethods).optional(),
   subdivision: string().optional()
-}).passthrough()
+})
 
 export const QuoteSchema = object({
   transactionType: string(),
@@ -111,15 +111,15 @@ export const QuoteSchema = object({
   customerScore: number().optional().nullable(),
   institutionName: string().optional().nullable(),
   lowKyc: boolean().optional().nullable(),
-  partnerFee: number()
-})
+  partnerFee: number().optional().nullable()
+}).passthrough()
 
 export const CreateCryptoQuoteSchema = object({
   quotes: z.array(QuoteSchema),
   message: string().optional().nullable(),
   error: string().optional().nullable(),
   timestamp: string().optional().nullable()
-})
+}).passthrough()
 
 export const SessionDataSchema = object({
   serviceProvider: z.nativeEnum(ServiceProviders).optional().nullable(),
@@ -130,7 +130,7 @@ export const SessionDataSchema = object({
   paymentMethodType: z.nativeEnum(PaymentMethods).optional().nullable(),
   sourceAmount: number().optional().nullable(),
   walletAddress: string().optional().nullable()
-})
+}).passthrough()
 
 export const CreateSessionWidgetBodySchema = object({
   sessionType: z.nativeEnum(SessionTypes),
@@ -143,4 +143,4 @@ export const CreateSessionWidgetSchema = object({
   externalCustomerId: string().optional().nullable(),
   customerId: string().optional().nullable(),
   widgetUrl: string().optional().nullable()
-})
+}).passthrough()
