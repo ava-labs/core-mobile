@@ -19,9 +19,11 @@ import { ScrollScreen } from 'common/components/ScrollScreen'
 import { TokenInputWidget } from 'common/components/TokenInputWidget'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import { usePreventScreenRemoval } from 'common/hooks/usePreventScreenRemoval'
+import { useSwapList } from 'common/hooks/useSwapList'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
 import { useGlobalSearchParams, useRouter } from 'expo-router'
 import useCChainNetwork from 'hooks/earn/useCChainNetwork'
+import { useWatchlist } from 'hooks/watchlist/useWatchlist'
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import Animated, {
   FadeIn,
@@ -35,17 +37,17 @@ import {
   selectTokensWithZeroBalanceByNetwork
 } from 'store/balance'
 import { basisPointsToPercentage } from 'utils/basisPointsToPercentage'
-import { useSwapList } from 'common/hooks/useSwapList'
 import { SlippageInput } from '../components.tsx/SlippageInput'
-import { useSwapContext } from '../contexts/SwapContext'
 import { PARASWAP_PARTNER_FEE_BPS } from '../consts'
-import { calculateRate as calculateEvmRate } from '../utils/evm/calculateRate'
+import { useSwapContext } from '../contexts/SwapContext'
 import {
   isEvmUnwrapQuote,
   isEvmWrapQuote,
   isParaswapQuote,
   SwapType
 } from '../types'
+import { calculateRate as calculateEvmRate } from '../utils/evm/calculateRate'
+import { getTokenInternalId } from '../utils/getTokenInternalId'
 
 export const SwapScreen = (): JSX.Element => {
   const { theme } = useTheme()
@@ -57,6 +59,7 @@ export const SwapScreen = (): JSX.Element => {
   }>()
 
   const { formatCurrency } = useFormatCurrency()
+  const { getMarketTokenById } = useWatchlist()
 
   const swapList = useSwapList()
 
@@ -108,6 +111,26 @@ export const SwapScreen = (): JSX.Element => {
       )} Core fee`,
     []
   )
+
+  const updateMissingTokenPrice = useCallback(
+    async (token: LocalTokenWithBalance | undefined) => {
+      if (!token) return
+      if (token && Number(token?.priceInCurrency) !== 0) return
+
+      const internalId = await getTokenInternalId(token)
+      const marketToken = getMarketTokenById(internalId ?? '')
+
+      setToToken({
+        ...token,
+        priceInCurrency: Number(marketToken?.currentPrice) ?? 0
+      } as LocalTokenWithBalance)
+    },
+    [getMarketTokenById, setToToken]
+  )
+
+  useEffect(() => {
+    updateMissingTokenPrice(toToken)
+  }, [toToken, updateMissingTokenPrice])
 
   const validateInputs = useCallback(() => {
     if (fromTokenValue && fromTokenValue === 0n) {
@@ -202,8 +225,15 @@ export const SwapScreen = (): JSX.Element => {
           tk.localId.toLowerCase() === params.initialTokenIdTo?.toLowerCase()
       )
     }
+
     setToToken(initialToToken)
-  }, [params, swapList, setFromToken, setToToken])
+  }, [
+    params.initialTokenIdFrom,
+    params.initialTokenIdTo,
+    setFromToken,
+    setToToken,
+    swapList
+  ])
 
   const showFeesAndSlippage = useMemo(() => {
     return quote && isParaswapQuote(quote)
