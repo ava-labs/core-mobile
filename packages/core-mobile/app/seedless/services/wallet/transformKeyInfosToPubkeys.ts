@@ -6,16 +6,14 @@ export const transformKeyInfosToPubKeys = (
   keyInfos: cs.KeyInfo[]
   // eslint-disable-next-line sonarjs/cognitive-complexity
 ): AddressPublicKey[] => {
-  const keyTypes: cs.KeyTypeApi[] = [
-    cs.Secp256k1.Evm,
-    cs.Secp256k1.Ava,
-    cs.Ed25519.Solana
-  ]
+  const requiredKeyTypes: cs.KeyTypeApi[] = [cs.Secp256k1.Evm, cs.Secp256k1.Ava]
+  const optionalKeyTypes: cs.KeyTypeApi[] = [cs.Ed25519.Solana]
+  const allowedKeyTypes = [...requiredKeyTypes, ...optionalKeyTypes]
   const keys = keyInfos
     ?.filter(
       k =>
         k.enabled &&
-        keyTypes.includes(k.key_type) &&
+        allowedKeyTypes.includes(k.key_type) &&
         k.derivation_info?.derivation_path
     )
     .reduce((acc, key) => {
@@ -54,7 +52,7 @@ export const transformKeyInfosToPubKeys = (
 
   // We only look for key sets that contain all of the required key types.
   const validKeySets = allDerivedKeySets.filter(keySet => {
-    return keySet.every(key => keyTypes.every(type => key[type]))
+    return keySet.every(key => requiredKeyTypes.every(type => key[type]))
   })
 
   if (!validKeySets[0]) {

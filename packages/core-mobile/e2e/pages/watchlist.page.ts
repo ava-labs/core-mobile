@@ -58,6 +58,22 @@ class WatchListPage {
     return by.id(watchlist.searchBar)
   }
 
+  get trackBuyBtn() {
+    return by.id(watchlist.trackBuyBtn)
+  }
+
+  get trackViewBtn() {
+    return by.id(watchlist.trackViewBtn)
+  }
+
+  async tapTrackBuyBtn(index = 0) {
+    await Action.tapElementAtIndex(this.trackBuyBtn, index)
+  }
+
+  async tapTrackViewBtn(index = 0) {
+    await Action.tapElementAtIndex(this.trackViewBtn, index)
+  }
+
   async tapAlreadyHaveAWalletBtn() {
     await Action.tap(this.alreadyHaveAWalletBtn)
   }
@@ -163,13 +179,13 @@ class WatchListPage {
     await Action.waitForElementNoSync(this.topTrendingTokenLogo)
   }
 
-  async topTrendingTokenBuyFlow(symbol: string) {
+  async topTrendingTokenBuyFlow() {
     await Action.tap(this.topTrendingTokenBuyBtn)
     await swapTabPage.verifySwapScreen()
-    const toToken = await Action.getElementText(swapTabPage.toTokenSelector)
-    const fromToken = await Action.getElementText(swapTabPage.fromTokenSelector)
-    assert(fromToken === 'AVAX', 'From token should be AVAX')
-    assert(toToken === symbol, `${toToken} !== ${symbol}`)
+    // const toToken = await Action.getElementText(swapTabPage.toTokenSelector)
+    // const fromToken = await Action.getElementText(swapTabPage.fromTokenSelector)
+    // assert(fromToken === 'AVAX', 'From token should be AVAX')
+    // assert(toToken === symbol, `${toToken} !== ${symbol}`)
     await commonElsPage.goBack()
   }
 

@@ -1,10 +1,4 @@
-import {
-  useCallback,
-  useEffect,
-  useLayoutEffect,
-  useMemo,
-  useState
-} from 'react'
+import { useCallback, useEffect, useLayoutEffect, useMemo } from 'react'
 import { selectSelectedCurrency } from 'store/settings/currency'
 import { useSelector } from 'react-redux'
 import { useNetworks } from 'hooks/networks/useNetworks'
@@ -21,6 +15,7 @@ import {
 import {
   useOnRampPaymentMethod,
   useOnRampServiceProvider,
+  useOnRampSourceAmount,
   useOnRampToken
 } from '../store'
 import { CryptoCurrency } from '../types'
@@ -40,13 +35,13 @@ export const useSelectBuyAmount = (): {
   isBelowMaximumPurchaseLimit: boolean
   isBuyAllowed: boolean
   formatInTokenUnit: (amt: number) => string
-  setAmount: (amt: number) => void
-  amount: number | undefined
+  setSourceAmount: (amt: number) => void
+  sourceAmount: number | undefined
   minimumPurchaseLimit: number | undefined
   maximumPurchaseLimit: number | undefined
   // eslint-disable-next-line sonarjs/cognitive-complexity
 } => {
-  const [amount, setAmount] = useState<number>(0)
+  const [sourceAmount, setSourceAmount] = useOnRampSourceAmount()
   const selectedCurrency = useSelector(selectSelectedCurrency)
   const [onrampToken] = useOnRampToken()
   const [serviceProvider, setServiceProvider] = useOnRampServiceProvider()
@@ -131,8 +126,11 @@ export const useSelectBuyAmount = (): {
       return false
     }
 
-    return (amount ?? 0) >= (selectedPurchasingFiatCurrency?.minimumAmount ?? 0)
-  }, [selectedPurchasingFiatCurrency, amount])
+    return (
+      (sourceAmount ?? 0) >=
+      (selectedPurchasingFiatCurrency?.minimumAmount ?? 0)
+    )
+  }, [selectedPurchasingFiatCurrency, sourceAmount])
 
   const isBelowMaximumPurchaseLimit = useMemo(() => {
     if (!selectedPurchasingFiatCurrency) {
@@ -140,16 +138,19 @@ export const useSelectBuyAmount = (): {
       return false
     }
 
-    return (amount ?? 0) <= (selectedPurchasingFiatCurrency?.maximumAmount ?? 0)
-  }, [selectedPurchasingFiatCurrency, amount])
+    return (
+      (sourceAmount ?? 0) <=
+      (selectedPurchasingFiatCurrency?.maximumAmount ?? 0)
+    )
+  }, [selectedPurchasingFiatCurrency, sourceAmount])
 
   const isBuyAllowed = useMemo(() => {
     return (
-      (amount ?? 0) > 0 &&
+      (sourceAmount ?? 0) > 0 &&
       isBelowMaximumPurchaseLimit &&
       isAboveMinimumPurchaseLimit
     )
-  }, [amount, isBelowMaximumPurchaseLimit, isAboveMinimumPurchaseLimit])
+  }, [sourceAmount, isBelowMaximumPurchaseLimit, isAboveMinimumPurchaseLimit])
 
   const formatInTokenUnit = useCallback(
     (amt: number): string => {
@@ -189,8 +190,8 @@ export const useSelectBuyAmount = (): {
     minimumPurchaseLimit,
     maximumPurchaseLimit,
     formatInTokenUnit,
-    amount,
-    setAmount,
+    sourceAmount,
+    setSourceAmount,
     paymentMethodToDisplay,
     serviceProviderToDisplay,
     isBuyAllowed,

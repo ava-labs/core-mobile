@@ -401,6 +401,7 @@ export const CollectibleDetailsScreen = ({
                     opacity: 0.3
                   }}>
                   <Icons.Custom.ArrowDownHandleBar
+                    testID="collectibles_handler"
                     color={colors.$textSecondary}
                     width={40}
                   />
