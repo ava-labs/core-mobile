@@ -4,6 +4,7 @@ import { RpcMethod } from 'store/rpc/types'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import Logger from 'utils/Logger'
 import { getAddressesInRange } from 'utils/getAddressesInRange'
+import { selectActiveWallet } from 'store/wallet/slice'
 import { selectActiveAccount } from 'store/account'
 import { HandleResponse, RpcRequestHandler } from '../types'
 import { parseRequestParams } from './utils'
@@ -20,6 +21,7 @@ class AvalancheGetAddressesInRangeHandler
   ): HandleResponse => {
     const { getState } = listenerApi
     const state = getState()
+    const activeWallet = selectActiveWallet(state)
     const isDeveloperMode = selectIsDeveloperMode(state)
     const activeAccount = selectActiveAccount(state)
     if (!activeAccount) {
@@ -42,20 +44,29 @@ class AvalancheGetAddressesInRangeHandler
       }
     }
 
+    if (!activeWallet) {
+      return {
+        success: false,
+        error: rpcErrors.internal('No active wallet')
+      }
+    }
+
     const [externalStart, internalStart, externalLimit, internalLimit] =
       result.data as RequestParams
 
     try {
-      const addresses = await getAddressesInRange(
-        activeAccount,
-        isDeveloperMode,
-        {
+      const addresses = await getAddressesInRange({
+        isDeveloperMode: isDeveloperMode,
+        walletId: activeWallet.id,
+        walletType: activeWallet.type,
+        account: activeAccount,
+        params: {
           externalStart,
           internalStart,
           externalLimit,
           internalLimit
         }
-      )
+      })
       return { success: true, value: addresses }
     } catch (e) {
       return {

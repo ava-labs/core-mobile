@@ -29,6 +29,7 @@ import {
   TypedDataV1,
   TypedData,
   MessageTypes,
+  WalletType,
   RpcMethod
 } from '@avalabs/vm-module-types'
 import { isTypedData } from '@avalabs/evm-module'
@@ -38,8 +39,28 @@ import { mnemonicToSeed } from 'bip39'
 import { fromSeed } from 'bip32'
 import { hex } from '@scure/base'
 
+/**
+ * Type guard to assert that a wallet is a MnemonicWallet instance
+ */
+export function assertMnemonicWallet(
+  wallet: unknown
+): asserts wallet is MnemonicWallet {
+  if (
+    !wallet ||
+    typeof wallet !== 'object' ||
+    !('type' in wallet) ||
+    wallet.type !== WalletType.Mnemonic
+  ) {
+    throw new Error('Expected MnemonicWallet instance')
+  }
+}
+
 export class MnemonicWallet implements Wallet {
   #mnemonic?: string
+
+  constructor(mnemonic: string) {
+    this.#mnemonic = mnemonic
+  }
 
   private async getBtcSigner(
     accountIndex: number,
@@ -368,10 +389,3 @@ export class MnemonicWallet implements Wallet {
     return utils.base58check.encode(new Uint8Array(buffer))
   }
 }
-
-/**
- * Unlike SeedlessWallet, MnemonicWallet cannot be created on demand
- * as we need the user to enter PIN to decrypt the mnemonic phrase.
- * Thus, we are exporting a single instance of MnemonicWallet
- */
-export default new MnemonicWallet()

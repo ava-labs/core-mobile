@@ -25,6 +25,7 @@ import { withWalletConnectCache } from 'common/components/withWalletConnectCache
 import { useNativeTokenWithBalanceByNetwork } from 'features/send/hooks/useNativeTokenWithBalanceByNetwork'
 import { NetworkTokenSymbols } from 'common/components/TokenIcon'
 import { L2_NETWORK_SYMBOL_MAPPING } from 'consts/chainIdsWithIncorrectSymbol'
+import { useActiveWallet } from 'common/hooks/useActiveWallet'
 import { Account } from '../../components/Account'
 import BalanceChange from '../../components/BalanceChange/BalanceChange'
 import { Details } from '../../components/Details'
@@ -45,6 +46,7 @@ const ApprovalScreen = ({
   const network = getNetwork(chainId)
   const [amountError, setAmountError] = useState<string | undefined>()
   const nativeToken = useNativeTokenWithBalanceByNetwork(network)
+  const activeWallet = useActiveWallet()
 
   const symbol = chainId
     ? (L2_NETWORK_SYMBOL_MAPPING[chainId] as NetworkTokenSymbols)
@@ -54,7 +56,7 @@ const ApprovalScreen = ({
     'account' in signingData
       ? selectAccountByAddress(signingData.account)
       : 'accountIndex' in signingData && signingData.accountIndex
-      ? selectAccountByIndex(signingData.accountIndex)
+      ? selectAccountByIndex(activeWallet.id, signingData.accountIndex)
       : selectActiveAccount
 
   const account = useSelector(accountSelector)
@@ -127,6 +129,8 @@ const ApprovalScreen = ({
 
     try {
       await onApprove({
+        walletId: activeWallet.id,
+        walletType: activeWallet.type,
         network,
         account,
         maxFeePerGas,
@@ -140,15 +144,17 @@ const ApprovalScreen = ({
       setSubmitting(false)
     }
   }, [
-    account,
     approveDisabled,
+    shouldShowGaslessSwitch,
     gaslessEnabled,
     handleGaslessTx,
+    account,
+    onApprove,
+    activeWallet.id,
+    activeWallet.type,
+    network,
     maxFeePerGas,
     maxPriorityFeePerGas,
-    network,
-    onApprove,
-    shouldShowGaslessSwitch,
     hashedCustomSpend
   ])
 

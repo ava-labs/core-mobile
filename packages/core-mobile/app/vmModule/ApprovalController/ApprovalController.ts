@@ -1,6 +1,5 @@
 import { router } from 'expo-router'
 import { Network } from '@avalabs/core-chains-sdk'
-import { CorePrimaryAccount } from '@avalabs/types'
 import {
   ApprovalController as VmModuleApprovalController,
   ApprovalParams,
@@ -16,6 +15,8 @@ import { transactionSnackbar } from 'new/common/utils/toast'
 import { isInAppRequest } from 'store/rpc/utils/isInAppRequest'
 import { RequestContext } from 'store/rpc/types'
 import { NavigationPresentationMode } from 'new/common/types'
+import { Account } from 'store/account'
+import { WalletType } from 'services/wallet/types'
 import WalletService from 'services/wallet/WalletService'
 import { Curve } from 'utils/publicKeys'
 import { avalancheSignTransaction } from '../handlers/avalancheSignTransaction'
@@ -25,7 +26,8 @@ import { btcSendTransaction } from '../handlers/btcSendTransaction'
 import { avalancheSendTransaction } from '../handlers/avalancheSendTransaction'
 
 class ApprovalController implements VmModuleApprovalController {
-  requestPublicKey({
+  async requestPublicKey({
+    secretId,
     derivationPath,
     curve
   }: RequestPublicKeyParams): Promise<string> {
@@ -34,8 +36,14 @@ class ApprovalController implements VmModuleApprovalController {
         rpcErrors.invalidParams('derivationPath is required to get public key')
       )
     }
+    const { walletId, walletType } = JSON.parse(secretId)
 
-    return WalletService.getPublicKeyFor(derivationPath, curve as Curve)
+    return WalletService.getPublicKeyFor({
+      walletId,
+      walletType: walletType,
+      derivationPath,
+      curve: curve as Curve
+    })
   }
 
   onTransactionPending({ request }: { request: RpcRequest }): void {
@@ -72,14 +80,18 @@ class ApprovalController implements VmModuleApprovalController {
   }: ApprovalParams): Promise<ApprovalResponse> {
     return new Promise<ApprovalResponse>(resolve => {
       const onApprove = async ({
+        walletId,
+        walletType,
         network,
         account,
         maxFeePerGas,
         maxPriorityFeePerGas,
         overrideData
       }: {
+        walletId: string
+        walletType: WalletType
         network: Network
-        account: CorePrimaryAccount
+        account: Account
         maxFeePerGas?: bigint
         maxPriorityFeePerGas?: bigint
         overrideData?: string
@@ -87,6 +99,8 @@ class ApprovalController implements VmModuleApprovalController {
         switch (signingData.type) {
           case RpcMethod.BITCOIN_SEND_TRANSACTION: {
             btcSendTransaction({
+              walletId,
+              walletType,
               transactionData: signingData.data,
               finalFeeRate: Number(maxFeePerGas || 0),
               account,
@@ -98,6 +112,8 @@ class ApprovalController implements VmModuleApprovalController {
           }
           case RpcMethod.BITCOIN_SIGN_TRANSACTION: {
             btcSignTransaction({
+              walletId,
+              walletType,
               transactionData: signingData.data,
               account,
               network,
@@ -108,6 +124,8 @@ class ApprovalController implements VmModuleApprovalController {
           }
           case RpcMethod.ETH_SEND_TRANSACTION: {
             ethSendTransaction({
+              walletId,
+              walletType,
               transactionRequest: signingData.data,
               network,
               account,
@@ -126,6 +144,8 @@ class ApprovalController implements VmModuleApprovalController {
           case RpcMethod.SIGN_TYPED_DATA_V4:
           case RpcMethod.AVALANCHE_SIGN_MESSAGE: {
             signMessage({
+              walletId,
+              walletType,
               method: signingData.type,
               data: signingData.data,
               account,
@@ -136,6 +156,8 @@ class ApprovalController implements VmModuleApprovalController {
           }
           case RpcMethod.AVALANCHE_SEND_TRANSACTION: {
             avalancheSendTransaction({
+              walletId,
+              walletType,
               unsignedTxJson: signingData.unsignedTxJson,
               vm: signingData.vm,
               externalIndices: signingData.externalIndices ?? [],
@@ -148,6 +170,8 @@ class ApprovalController implements VmModuleApprovalController {
           }
           case RpcMethod.AVALANCHE_SIGN_TRANSACTION: {
             avalancheSignTransaction({
+              walletId,
+              walletType,
               unsignedTxJson: signingData.unsignedTxJson,
               ownSignatureIndices: signingData.ownSignatureIndices,
               account,

@@ -2,7 +2,6 @@ import { Button, View } from '@avalabs/k2-alpine'
 import { useHasEnoughAvaxToStake } from 'hooks/earn/useHasEnoughAvaxToStake'
 import React, { useCallback, useMemo } from 'react'
 import { useSelector } from 'react-redux'
-import { selectActiveAccount } from 'store/account'
 import { selectBalanceTotalForAccount } from 'store/balance'
 import { selectTokenVisibility } from 'store/portfolio'
 import { selectIsEarnBlocked, selectIsSwapBlocked } from 'store/posthog'
@@ -10,6 +9,7 @@ import { MarketType } from 'store/watchlist'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { useIsSwappable } from 'common/hooks/useIsSwapable'
 import { USDC_TOKEN_ID } from 'common/consts/swap'
+import { useActiveAccount } from 'common/hooks/useActiveAccount'
 import { getTokenActions } from '../utils/getTokenActions'
 
 export const TokenDetailFooter = ({
@@ -29,13 +29,13 @@ export const TokenDetailFooter = ({
   onStake: () => void
   onSwap: (initialTokenIdTo?: string) => void
 }): JSX.Element | null => {
-  const activeAccount = useSelector(selectActiveAccount)
+  const activeAccount = useActiveAccount()
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const { isSwappable } = useIsSwappable()
   const isSwapBlocked = useSelector(selectIsSwapBlocked)
   const tokenVisibility = useSelector(selectTokenVisibility)
   const balanceTotal = useSelector(
-    selectBalanceTotalForAccount(activeAccount?.index ?? 0, tokenVisibility)
+    selectBalanceTotalForAccount(activeAccount.id, tokenVisibility)
   )
   const isZeroBalance = balanceTotal === 0n
   const { hasEnoughAvax } = useHasEnoughAvaxToStake()

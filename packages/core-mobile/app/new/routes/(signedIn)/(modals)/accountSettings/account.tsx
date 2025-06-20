@@ -3,12 +3,12 @@ import { ScrollScreen } from 'common/components/ScrollScreen'
 import { useBalanceForAccount } from 'common/contexts/useBalanceForAccount'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
-import { useFocusEffect, useLocalSearchParams } from 'expo-router'
+import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router'
 import { AccountAddresses } from 'features/accountSettings/components/accountAddresses'
 import { AccountButtons } from 'features/accountSettings/components/AccountButtons'
 import React, { useCallback, useMemo } from 'react'
 import { useSelector } from 'react-redux'
-import { selectAccountByIndex } from 'store/account'
+import { selectAccountById } from 'store/account'
 import {
   selectBalanceForAccountIsAccurate,
   selectBalanceTotalInCurrencyForAccount,
@@ -19,25 +19,23 @@ import { selectTokenVisibility } from 'store/portfolio'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { selectSelectedCurrency } from 'store/settings/currency'
 import { selectIsPrivacyModeEnabled } from 'store/settings/securityPrivacy'
+import { WalletInfo } from 'features/accountSettings/components/WalletInfo'
 
 const AccountScreen = (): JSX.Element => {
-  const { accountIndex } = useLocalSearchParams<{ accountIndex: string }>()
+  const router = useRouter()
+  const { accountId } = useLocalSearchParams<{ accountId: string }>()
   const isPrivacyModeEnabled = useSelector(selectIsPrivacyModeEnabled)
-
-  const accountIndexNumber = isNaN(Number(accountIndex))
-    ? 0
-    : Number(accountIndex)
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
-  const account = useSelector(selectAccountByIndex(accountIndexNumber))
+  const account = useSelector(selectAccountById(accountId ?? ''))
   const isBalanceLoading = useSelector(selectIsLoadingBalances)
   const isRefetchingBalance = useSelector(selectIsRefetchingBalances)
   const tokenVisibility = useSelector(selectTokenVisibility)
   const balanceTotalInCurrency = useSelector(
-    selectBalanceTotalInCurrencyForAccount(account?.index ?? 0, tokenVisibility)
+    selectBalanceTotalInCurrencyForAccount(accountId, tokenVisibility)
   )
   const isLoading = isBalanceLoading || isRefetchingBalance
   const balanceAccurate = useSelector(
-    selectBalanceForAccountIsAccurate(account?.index ?? 0)
+    selectBalanceForAccountIsAccurate(accountId)
   )
   const selectedCurrency = useSelector(selectSelectedCurrency)
   const { formatCurrency } = useFormatCurrency()
@@ -51,7 +49,7 @@ const AccountScreen = (): JSX.Element => {
         })
   }, [balanceAccurate, balanceTotalInCurrency, formatCurrency])
 
-  const { fetchBalance } = useBalanceForAccount(accountIndexNumber)
+  const { fetchBalance } = useBalanceForAccount(account?.id ?? '')
 
   useFocusEffect(
     useCallback(() => {
@@ -84,8 +82,21 @@ const AccountScreen = (): JSX.Element => {
   ])
 
   const renderFooter = useCallback(() => {
-    return <AccountButtons accountIndex={account?.index ?? 0} />
-  }, [account?.index])
+    return <AccountButtons accountId={account?.id ?? ''} />
+  }, [account?.id])
+
+  const handleShowPrivateKey = (): void => {
+    if (!account) {
+      return
+    }
+    router.push({
+      // @ts-ignore TODO: make routes typesafe
+      pathname: '/accountSettings/verifyPinForPrivateKey',
+      params: {
+        accountIndex: account.index.toString()
+      }
+    })
+  }
 
   if (account === undefined) {
     return <></>
@@ -98,9 +109,9 @@ const AccountScreen = (): JSX.Element => {
       isModal
       navigationTitle={account?.name ?? ''}
       contentContainerStyle={{ padding: 16 }}>
-      <View sx={{ gap: 12, marginTop: 24 }}>
+      <View sx={{ gap: 16, marginTop: 24 }}>
         <AccountAddresses account={account} />
-        {/* <WalletInfo showPrivateKey={handleShowPrivateKey} /> */}
+        <WalletInfo showPrivateKey={handleShowPrivateKey} account={account} />
       </View>
     </ScrollScreen>
   )

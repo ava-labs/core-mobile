@@ -7,19 +7,21 @@ import {
   selectCBaseFeeMultiplier
 } from 'store/posthog/slice'
 import NetworkService from 'services/network/NetworkService'
-import { selectActiveAccount } from 'store/account/slice'
 import WalletService from 'services/wallet/WalletService'
 import Logger from 'utils/Logger'
 import { useCChainBaseFee } from 'hooks/useCChainBaseFee'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
 import { weiToNano } from 'utils/units/converter'
-import { CorePrimaryAccount } from '@avalabs/types'
 import { Avalanche } from '@avalabs/core-wallets-sdk'
 import { Network } from '@avalabs/core-chains-sdk'
 import { pvm } from '@avalabs/avalanchejs'
 import { useAvalancheXpProvider } from 'hooks/networks/networkProviderHooks'
 import { getAssetId, addBufferToCChainBaseFee } from 'services/wallet/utils'
 import { SendErrorMessage } from 'errors/sendError'
+import { useActiveAccount } from 'common/hooks/useActiveAccount'
+import { PvmCapableAccount } from 'common/hooks/send/utils/types'
+import { useActiveWallet } from 'common/hooks/useActiveWallet'
+import { WalletType } from 'services/wallet/types'
 import { usePChainBalance } from './usePChainBalance'
 import { useGetFeeState } from './useGetFeeState'
 import { extractNeededAmount } from './utils/extractNeededAmount'
@@ -40,7 +42,8 @@ export const useClaimFees = (): {
   feeCalculationError?: SendErrorMessage
 } => {
   const isDevMode = useSelector(selectIsDeveloperMode)
-  const activeAccount = useSelector(selectActiveAccount)
+  const activeWallet = useActiveWallet()
+  const activeAccount = useActiveAccount()
   const pFeeAdjustmentThreshold = useSelector(selectPFeeAdjustmentThreshold)
   const [totalFees, setTotalFees] = useState<TokenUnit>()
   const [amountToTransfer, setAmountToTransfer] = useState<TokenUnit>()
@@ -85,6 +88,8 @@ export const useClaimFees = (): {
       )
 
       const unsignedTx = await WalletService.createImportCTx({
+        walletId: activeWallet.id,
+        walletType: activeWallet.type,
         accountIndex: activeAccount.index,
         baseFeeInNAvax: weiToNano(instantBaseFee.toSubUnit()),
         avaxXPNetwork,
@@ -99,6 +104,8 @@ export const useClaimFees = (): {
 
       const { txFee: exportPFee, txAmount: exportPAmount } =
         await getExportPFee({
+          walletId: activeWallet.id,
+          walletType: activeWallet.type,
           amountInNAvax: totalClaimable,
           activeAccount,
           avaxXPNetwork,
@@ -145,7 +152,8 @@ export const useClaimFees = (): {
     xpProvider,
     feeState,
     pFeeAdjustmentThreshold,
-    cBaseFeeMultiplier
+    cBaseFeeMultiplier,
+    activeWallet
   ])
 
   return {
@@ -157,6 +165,8 @@ export const useClaimFees = (): {
 }
 
 const getExportPFee = async ({
+  walletId,
+  walletType,
   amountInNAvax,
   activeAccount,
   avaxXPNetwork,
@@ -164,8 +174,10 @@ const getExportPFee = async ({
   feeState,
   pFeeAdjustmentThreshold
 }: {
+  walletId: string
+  walletType: WalletType
   amountInNAvax: TokenUnit
-  activeAccount: CorePrimaryAccount
+  activeAccount: PvmCapableAccount
   avaxXPNetwork: Network
   provider: Avalanche.JsonRpcProvider
   feeState?: pvm.FeeState
@@ -185,6 +197,8 @@ const getExportPFee = async ({
 
   try {
     unsignedTxP = await WalletService.createExportPTx({
+      walletId,
+      walletType,
       amountInNAvax: amountInNAvax.toSubUnit(),
       accountIndex: activeAccount.index,
       avaxXPNetwork,
@@ -228,6 +242,8 @@ const getExportPFee = async ({
     }
 
     unsignedTxP = await WalletService.createExportPTx({
+      walletId,
+      walletType,
       amountInNAvax: amountAvailableToClaim,
       accountIndex: activeAccount.index,
       avaxXPNetwork,

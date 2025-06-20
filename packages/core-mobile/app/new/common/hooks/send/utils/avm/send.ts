@@ -1,5 +1,4 @@
 import { Network } from '@avalabs/core-chains-sdk'
-import { CorePrimaryAccount } from '@avalabs/types'
 import SentryWrapper from 'services/sentry/SentryWrapper'
 import { resolve } from '@avalabs/core-utils-sdk'
 import { Request } from 'store/rpc/utils/createInAppRequest'
@@ -12,9 +11,13 @@ import { SpanName } from 'services/sentry/types'
 import { Avalanche } from '@avalabs/core-wallets-sdk'
 import { SPAN_STATUS_ERROR } from '@sentry/core'
 import { RpcMethod } from '@avalabs/vm-module-types'
+import { AvmCapableAccount } from 'common/hooks/send/utils/types'
+import { WalletType } from 'services/wallet/types'
 import { getInternalExternalAddrs } from '../getInternalExternalAddrs'
 
 export const send = async ({
+  walletId,
+  walletType,
   request,
   fromAddress,
   account,
@@ -22,9 +25,11 @@ export const send = async ({
   toAddress,
   amount
 }: {
+  walletId: string
+  walletType: WalletType
   request: Request
   fromAddress: string
-  account: CorePrimaryAccount
+  account: AvmCapableAccount
   network: Network
   toAddress: string
   amount: bigint
@@ -35,6 +40,8 @@ export const send = async ({
     async span => {
       try {
         const txRequest = await getTransactionRequest({
+          walletId,
+          walletType,
           toAddress,
           amount,
           network,
@@ -74,6 +81,8 @@ export const send = async ({
 }
 
 const getTransactionRequest = ({
+  walletId,
+  walletType,
   accountIndex,
   toAddress,
   fromAddress,
@@ -81,6 +90,8 @@ const getTransactionRequest = ({
   network,
   sentrySpanName
 }: {
+  walletId: string
+  walletType: WalletType
   accountIndex: number
   amount: bigint
   toAddress: string
@@ -93,6 +104,8 @@ const getTransactionRequest = ({
     async () => {
       const destinationAddress = 'X-' + stripChainAddress(toAddress ?? '')
       const unsignedTx = await WalletService.createSendXTx({
+        walletId,
+        walletType,
         accountIndex,
         amountInNAvax: amount,
         avaxXPNetwork: network,
