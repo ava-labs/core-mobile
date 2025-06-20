@@ -106,6 +106,10 @@ class CollectiblesPage {
     return by.text(Collectibles.manageNft)
   }
 
+  get handler() {
+    return by.id(Collectibles.handler)
+  }
+
   async tapSaveButton() {
     await Action.tapElementAtIndex(this.saveBtn, 0)
   }
@@ -160,11 +164,9 @@ class CollectiblesPage {
     )
   }
 
-  async tapNFT(nftName = 'TULIP') {
-    await Action.tapElementAtIndex(
-      this.nftItem.withDescendant(by.text(nftName)),
-      0
-    )
+  async tapNFT(nftName = 'BUNNY') {
+    await Action.waitForElement(by.id(`collectible_name__${nftName}`))
+    await Action.tap(by.id(`collectible_name__${nftName}`))
   }
 
   async tapMyAccounts() {
@@ -211,6 +213,10 @@ class CollectiblesPage {
 
   async tapManageNft() {
     await Action.tapElementAtIndex(this.manageNft, 0)
+  }
+
+  async swipeUpForDetails() {
+    await Action.drag(this.handler, 'up', 0.5)
   }
 }
 

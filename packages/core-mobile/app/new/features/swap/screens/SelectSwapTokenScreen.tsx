@@ -83,6 +83,7 @@ export const SelectSwapTokenScreen = ({
             />
             <View>
               <Text
+                testID={`token_selector__${item.symbol}`}
                 variant="buttonMedium"
                 numberOfLines={1}
                 sx={{ width: SCREEN_WIDTH * 0.65 }}>

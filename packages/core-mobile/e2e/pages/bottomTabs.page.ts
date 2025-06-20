@@ -63,6 +63,10 @@ class BottomsTabsPage {
     await Actions.tap(this.portfolioTab)
   }
 
+  async tapTrackTab() {
+    await Actions.tapElementAtIndex(this.trackTab, 0)
+  }
+
   async tapStakeTab() {
     await Actions.tapElementAtIndex(this.stakeTab, 0)
   }

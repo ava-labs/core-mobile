@@ -4,10 +4,10 @@
  */
 import actions from '../../../../helpers/actions'
 import loginRecoverWallet from '../../../../helpers/loginRecoverWallet'
+import commonElsPage from '../../../../pages/commonEls.page'
 import connectToSitePage from '../../../../pages/connectToSite.page'
 import plusMenuPage from '../../../../pages/plusMenu.page'
 import popup from '../../../../pages/popUpModal.page'
-import swapTabPage from '../../../../pages/swapTab.page'
 
 describe('Swap Dapps', () => {
   beforeAll(async () => {
@@ -21,7 +21,7 @@ describe('Swap Dapps', () => {
   it(`should swap via ${process.env.DAPP_NAME} dapps`, async () => {
     await actions.waitForElement(popup.popUpModalScrollView, 30000)
     await popup.verifyFeeIsLegit(true, false, 0.2)
-    await swapTabPage.tapApproveButton()
+    await commonElsPage.tapApproveButton()
     await actions.waitForElement(popup.successfulToastMsg, 120000)
   })
 })
