@@ -25,7 +25,7 @@ export default function AccountSettingsLayout(): JSX.Element {
       <Stack.Screen name="biometricVerifyPin" />
       <Stack.Screen name="selectAvatar" />
       <Stack.Screen name="notificationPreferences" />
-      <Stack.Screen name="addOrConnectWallet" />
+      <Stack.Screen name="importWallet" />
       <Stack.Screen name="importPrivateKey" />
       <Stack.Screen name="importSeedWallet" />
       <Stack.Screen name="verifyPin" />

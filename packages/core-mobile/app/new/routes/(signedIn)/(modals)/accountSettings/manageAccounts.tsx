@@ -185,7 +185,7 @@ const ManageAccountsScreen = (): React.JSX.Element => {
   const handleAddAccount = useCallback(async (): Promise<void> => {
     navigate({
       // @ts-ignore TODO: make routes typesafe
-      pathname: '/accountSettings/addOrConnectWallet'
+      pathname: '/accountSettings/importWallet'
     })
   }, [navigate])
 

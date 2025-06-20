@@ -15,7 +15,7 @@ import { LoadingState } from 'common/components/LoadingState'
 
 const ITEM_HEIGHT = 70
 
-const AddOrConnectWalletScreen = (): JSX.Element => {
+const ImportWalletScreen = (): JSX.Element => {
   const { back, navigate } = useRouter()
   const {
     theme: { colors }
@@ -149,4 +149,4 @@ const AddOrConnectWalletScreen = (): JSX.Element => {
   )
 }
 
-export default AddOrConnectWalletScreen
+export default ImportWalletScreen
