@@ -81,8 +81,8 @@ export const useServiceProviders = (
   }, [error])
 
   const crytoQuotes = useMemo(() => {
-    if (data?.quotes === undefined) return []
-    return data.quotes.toSorted((a, b) => a.totalFee - b.totalFee)
+    if (data?.quotes === undefined || data.quotes === null) return []
+    return data.quotes.toSorted((a, b) => (a.totalFee ?? 0) - (b.totalFee ?? 0))
   }, [data])
 
   return {

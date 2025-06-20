@@ -207,7 +207,7 @@ export const useSelectBuyAmount = (): {
 
   const defaultPaymentMethod = useMemo(() => {
     return defaultsByCountry?.find(d => d.countryCode === countryCode)
-      ?.defaultPaymentMethods[0]
+      ?.defaultPaymentMethods?.[0]
   }, [countryCode, defaultsByCountry])
 
   const paymentMethodToDisplay = useMemo(() => {

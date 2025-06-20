@@ -106,9 +106,14 @@ export const SelectPaymentMethodScreen = (): React.JSX.Element => {
 
     return paymentMethods.map(paymentMethod => {
       return {
-        title: PaymentMethodNames[paymentMethod.paymentMethod],
-        subtitle: PaymentMethodTimeLimits[paymentMethod.paymentMethod],
-        onPress: () => setOnRampPaymentMethod(paymentMethod.paymentMethod),
+        title: paymentMethod.paymentMethod
+          ? PaymentMethodNames[paymentMethod.paymentMethod]
+          : '',
+        subtitle: paymentMethod.paymentMethod
+          ? PaymentMethodTimeLimits[paymentMethod.paymentMethod]
+          : '',
+        onPress: () =>
+          setOnRampPaymentMethod(paymentMethod.paymentMethod ?? undefined),
         accessory:
           onRampPaymentMethod === paymentMethod.paymentMethod ? (
             <Icons.Custom.CheckSmall color={colors.$textPrimary} />

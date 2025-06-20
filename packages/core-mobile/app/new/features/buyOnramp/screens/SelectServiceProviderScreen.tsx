@@ -129,7 +129,8 @@ export const SelectServiceProviderScreen = (): React.JSX.Element => {
         sp => sp.serviceProvider === item.serviceProvider
       )
       const tokenAmount =
-        item.destinationAmount - item.totalFee / item.exchangeRate
+        item.destinationAmount ??
+        0 - (item.totalFee ?? 0) / (item.exchangeRate ?? 0)
       const tokenUnitToDisplay =
         network?.networkToken.decimals && token?.symbol
           ? new TokenUnit(
@@ -204,7 +205,7 @@ export const SelectServiceProviderScreen = (): React.JSX.Element => {
             <Text
               variant="subtitle2"
               sx={{ textAlign: 'right', fontWeight: 500, fontSize: 12 }}>
-              ~{formatCurrency({ amount: item.fiatAmountWithoutFees })}
+              ~{formatCurrency({ amount: item.fiatAmountWithoutFees ?? 0 })}
             </Text>
           </View>
         </Pressable>

@@ -16,7 +16,9 @@ export const PaymentMethodIcon = ({
   const {
     theme: { colors, isDark }
   } = useTheme()
-  const Icon = PAYMENT_METHOD_TO_ICON[paymentMethod.paymentMethod]
+  const Icon = paymentMethod.paymentMethod
+    ? PAYMENT_METHOD_TO_ICON[paymentMethod.paymentMethod]
+    : undefined
   return Icon ? (
     <View
       sx={{
@@ -37,7 +39,9 @@ export const PaymentMethodIcon = ({
       accessibilityRole="image"
       sx={{ width: size, height: size }}
       source={{
-        uri: isDark ? paymentMethod.logos.dark : paymentMethod.logos.light
+        uri: isDark
+          ? paymentMethod?.logos?.dark ?? ''
+          : paymentMethod?.logos?.light ?? ''
       }}
     />
   )
