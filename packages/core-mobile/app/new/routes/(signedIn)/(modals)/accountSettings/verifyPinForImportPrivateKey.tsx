@@ -1,11 +1,12 @@
 import React, { useCallback } from 'react'
 import { useLocalSearchParams } from 'expo-router'
-import { ActivityIndicator, View } from '@avalabs/k2-alpine'
+import { View } from '@avalabs/k2-alpine'
 import { VerifyPin } from 'common/components/VerifyPin'
 import { ImportedAccount } from 'store/account/types'
 import { useActiveWallet } from 'common/hooks/useActiveWallet'
 import KeychainMigrator from 'utils/KeychainMigrator'
 import { useImportPrivateKey } from 'new/common/hooks/useImportPrivateKey'
+import { LoadingState } from 'common/components/LoadingState'
 
 const VerifyPinForImportPrivateKeyScreen = (): JSX.Element => {
   const activeWallet = useActiveWallet()
@@ -35,7 +36,7 @@ const VerifyPinForImportPrivateKeyScreen = (): JSX.Element => {
   if (isImporting) {
     return (
       <View sx={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-        <ActivityIndicator size="large" />
+        <LoadingState />
       </View>
     )
   }
