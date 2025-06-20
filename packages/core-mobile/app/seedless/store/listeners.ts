@@ -20,6 +20,7 @@ import {
 } from 'store/wallet/slice'
 import WalletFactory from 'services/wallet/WalletFactory'
 import SeedlessWallet from 'seedless/services/wallet/SeedlessWallet'
+import { SeedlessPubKeysStorage } from 'seedless/services/storage/SeedlessPubKeysStorage'
 
 const refreshSeedlessToken = async (
   _: Action,
@@ -57,6 +58,10 @@ const initSeedless = async (
   SeedlessService.init({
     onSessionExpired: () => dispatch(onTokenExpired)
   })
+}
+
+const terminateSeedless = async (): Promise<void> => {
+  SeedlessPubKeysStorage.clearCache()
 }
 
 const handleTokenExpired = async (): Promise<void> => {
@@ -139,6 +144,10 @@ export const addSeedlessListeners = (
   startListening({
     actionCreator: onLogOut,
     effect: signOutSocial
+  })
+  startListening({
+    actionCreator: onLogOut,
+    effect: terminateSeedless
   })
 
   startListening({
