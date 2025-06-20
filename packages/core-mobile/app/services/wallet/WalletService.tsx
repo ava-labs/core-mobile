@@ -40,7 +40,6 @@ import { SpanName } from 'services/sentry/types'
 import SeedlessWallet from 'seedless/services/wallet/SeedlessWallet'
 import { Curve, isEvmPublicKey } from 'utils/publicKeys'
 import ModuleManager from 'vmModule/ModuleManager'
-import WalletInitializer from './WalletInitializer'
 import {
   getAssetId,
   isAvalancheTransactionRequest,
@@ -200,11 +199,7 @@ class WalletService {
         // prompt Core Seedless API to derive new keys
         await wallet.addAccount(accountIndex)
 
-        // re-init wallet to fetch new public keys
-        await WalletInitializer.initialize({
-          walletType: WalletType.SEEDLESS,
-          shouldRefreshPublicKeys: true
-        })
+        await wallet.initialize({ shouldRefreshPublicKeys: true })
       }
     }
 
