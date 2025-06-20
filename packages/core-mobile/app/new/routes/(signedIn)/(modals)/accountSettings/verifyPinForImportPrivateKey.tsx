@@ -22,12 +22,12 @@ const VerifyPinForImportPrivateKeyScreen = (): JSX.Element => {
 
   const handlePinVerified = useCallback(
     async (pin: string): Promise<void> => {
+      if (!privateKeyAccount || !privateKey) return
+
       const migrator = new KeychainMigrator(activeWallet.id)
       await migrator.migrateIfNeeded('PIN', pin)
 
-      if (privateKeyAccount && privateKey) {
-        await importWallet(privateKeyAccount, privateKey)
-      }
+      await importWallet(privateKeyAccount, privateKey)
     },
     [activeWallet.id, importWallet, privateKeyAccount, privateKey]
   )

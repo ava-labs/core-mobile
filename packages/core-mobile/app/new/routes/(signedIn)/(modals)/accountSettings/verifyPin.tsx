@@ -15,12 +15,12 @@ const VerifyPinScreen = (): React.JSX.Element => {
 
   const handlePinVerified = useCallback(
     async (pin: string): Promise<void> => {
+      if (!walletSecretToImport) return
+
       const migrator = new KeychainMigrator(activeWallet.id)
       await migrator.migrateIfNeeded('PIN', pin)
 
-      if (walletSecretToImport) {
-        await importWallet(walletSecretToImport)
-      }
+      await importWallet(walletSecretToImport)
     },
     [activeWallet.id, walletSecretToImport, importWallet]
   )
