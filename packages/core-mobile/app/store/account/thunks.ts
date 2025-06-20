@@ -4,8 +4,11 @@ import { selectIsDeveloperMode } from 'store/settings/advanced/slice'
 import AccountsService from 'services/account/AccountsService'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { selectActiveNetwork } from 'store/network'
-import { selectActiveWalletId, setActiveWallet } from 'store/wallet/slice'
-import { WalletType } from 'services/wallet/types'
+import {
+  selectActiveWalletId,
+  selectWalletById,
+  setActiveWallet
+} from 'store/wallet/slice'
 import {
   reducerName,
   selectAccountById,
@@ -14,9 +17,9 @@ import {
   selectAccountsByWalletId
 } from './slice'
 
-export const addAccount = createAsyncThunk<void, WalletType, ThunkApi>(
+export const addAccount = createAsyncThunk<void, void, ThunkApi>(
   `${reducerName}/addAccount`,
-  async (walletType: WalletType, thunkApi) => {
+  async (_, thunkApi) => {
     const state = thunkApi.getState()
     const isDeveloperMode = selectIsDeveloperMode(state)
     const activeNetwork = selectActiveNetwork(state)
@@ -24,12 +27,16 @@ export const addAccount = createAsyncThunk<void, WalletType, ThunkApi>(
     if (!activeWalletId) {
       throw new Error('Active wallet ID is not set')
     }
+    const wallet = selectWalletById(activeWalletId)(state)
+    if (!wallet) {
+      throw new Error('Wallet not found')
+    }
     const accounts = selectAccountsByWalletId(activeWalletId)(state)
     const accIndex = Object.keys(accounts).length
 
     const acc = await AccountsService.createNextAccount({
       index: accIndex,
-      walletType,
+      walletType: wallet.type,
       network: activeNetwork,
       walletId: activeWalletId
     })

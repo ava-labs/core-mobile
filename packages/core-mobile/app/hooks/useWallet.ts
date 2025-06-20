@@ -90,7 +90,7 @@ export function useWallet(): UseWallet {
         })
       )
       await dispatchStoreWallet.unwrap()
-      const dispatchAddAccount = dispatch(addAccount(walletType))
+      const dispatchAddAccount = dispatch(addAccount())
       await dispatchAddAccount.unwrap()
 
       return Promise.resolve(walletId)

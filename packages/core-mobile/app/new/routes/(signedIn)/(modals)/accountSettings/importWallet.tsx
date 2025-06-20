@@ -34,7 +34,7 @@ const ImportWalletScreen = (): JSX.Element => {
       })
 
       setIsAddingAccount(true)
-      await dispatch(addAccount(activeWallet.type)).unwrap()
+      await dispatch(addAccount()).unwrap()
 
       AnalyticsService.capture('CreatedANewAccountSuccessfully', {
         walletType: activeWallet.type
