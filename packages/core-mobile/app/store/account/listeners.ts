@@ -33,6 +33,7 @@ import { AccountCollection } from './types'
 const initAccounts = async (
   _action: AnyAction,
   listenerApi: AppListenerEffectAPI
+  // eslint-disable-next-line sonarjs/cognitive-complexity
 ): Promise<void> => {
   const state = listenerApi.getState()
   const isDeveloperMode = selectIsDeveloperMode(state)
