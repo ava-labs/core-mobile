@@ -15,7 +15,6 @@ import mockAccounts from 'tests/fixtures/accounts.json'
 import mockWallets from 'tests/fixtures/wallets.json'
 import { transactionSnackbar } from 'new/common/utils/toast'
 import BiometricsSDK from 'utils/BiometricsSDK'
-import { MnemonicWallet } from 'services/wallet/MnemonicWallet'
 import {
   rpcReducer,
   reducerName,
@@ -50,12 +49,6 @@ jest.mock('store/wallet/slice', () => {
 jest
   .spyOn(BiometricsSDK, 'loadWalletSecret')
   .mockResolvedValue({ success: true, value: 'superSecret' })
-
-jest
-  .spyOn(MnemonicWallet.prototype, 'initialize')
-  .mockImplementation(function (this: MnemonicWallet) {
-    return Promise.resolve()
-  })
 
 const mockOnRpcRequest = jest.fn()
 

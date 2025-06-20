@@ -101,20 +101,10 @@ describe('MnemonicWallet', () => {
 
   beforeEach(async () => {
     jest.clearAllMocks()
-    mnemonicWallet = new MnemonicWallet()
-    await mnemonicWallet.initialize(MOCK_MENMONIC)
+    mnemonicWallet = new MnemonicWallet(MOCK_MENMONIC)
   })
 
   describe('getSigner', () => {
-    it('should have returned error invalid mnemonic phrase.', async () => {
-      const invalidWallet = new MnemonicWallet()
-      try {
-        await invalidWallet.initialize('MOCK_MENMONIC')
-      } catch (e) {
-        expect((e as Error).message).toContain('Invalid mnemonic phrase.')
-      }
-    })
-
     it('should sign BTC transaction successfully', async () => {
       const result = await mnemonicWallet.signBtcTransaction({
         accountIndex: 0,

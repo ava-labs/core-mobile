@@ -29,9 +29,7 @@ class WalletFactory {
         if (!walletSecret.success) {
           throw new Error('Failed to load wallet secret')
         }
-        const mnemonicWallet = new MnemonicWallet()
-        await mnemonicWallet.initialize(walletSecret.value)
-        return mnemonicWallet
+        return new MnemonicWallet(walletSecret.value)
       }
       case WalletType.PRIVATE_KEY: {
         const walletSecret = await BiometricsSDK.loadWalletSecret(walletId)

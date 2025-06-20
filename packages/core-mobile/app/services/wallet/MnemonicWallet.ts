@@ -58,12 +58,8 @@ export function assertMnemonicWallet(
 export class MnemonicWallet implements Wallet {
   #mnemonic?: string
 
-  /**
-   * Initialize wallet with mnemonic
-   */
-  public async initialize(mnemonic: string): Promise<void> {
+  constructor(mnemonic: string) {
     this.#mnemonic = mnemonic
-    //FIXME: move this to constructor
   }
 
   private async getBtcSigner(
