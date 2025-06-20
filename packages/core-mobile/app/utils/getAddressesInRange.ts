@@ -2,6 +2,7 @@ import { z } from 'zod'
 import { getCorrectedLimit } from 'store/rpc/handlers/avalanche_getAddressesInRange/utils'
 import WalletService from 'services/wallet/WalletService'
 import { StorageKey } from 'resources/Constants'
+import { WalletType } from 'services/wallet/types'
 import { Account } from 'store/account'
 import Logger from './Logger'
 import { commonStorage } from './mmkv'
@@ -25,13 +26,21 @@ export type AddressesParams = {
   internalLimit: number
 }
 
-export const getAddressesInRange = async (
-  account: Account,
-  isDeveloperMode: boolean,
-  // TODO: // we should use walletId here once we support multiple wallets
-  // walletId: string,
+export const getAddressesInRange = async ({
+  isDeveloperMode,
+  account,
+  walletId,
+  walletType,
+  params
+}: {
+  isDeveloperMode: boolean
+  account: Account
+  walletId: string
+  walletType: WalletType
   params: AddressesParams
-): Promise<{ external: string[]; internal: string[] }> => {
+}): Promise<{ external: string[]; internal: string[] }> => {
+  //TODO: this should be uncommented but migration is needed. Also, currently cache is never cleared which imposes a problem of storage bloating.
+
   // const cacheKey = `${StorageKey.ADDRESSES_IN_RANGE}.${walletId}.${isDeveloperMode}.${JSON.stringify(
   //   params
   // )}`
@@ -63,6 +72,8 @@ export const getAddressesInRange = async (
   )
   addresses.external = (
     await WalletService.getAddressesByIndices({
+      walletId,
+      walletType,
       account,
       indices: externalIndices ?? [],
       chainAlias: 'X',
@@ -78,6 +89,8 @@ export const getAddressesInRange = async (
 
   addresses.internal = (
     await WalletService.getAddressesByIndices({
+      walletId,
+      walletType,
       account,
       indices: internalIndices ?? [],
       chainAlias: 'X',

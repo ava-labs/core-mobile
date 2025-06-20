@@ -9,9 +9,10 @@ import KeychainMigrator, {
   BadPinError,
   MigrationFailedError
 } from 'utils/KeychainMigrator'
+import { useSelector } from 'react-redux'
+import { selectActiveWalletId } from 'store/wallet/slice'
 import { useDeleteWallet } from './useDeleteWallet'
 import { useRateLimiter } from './useRateLimiter'
-import { useActiveWalletId } from './useActiveWallet'
 
 export function usePinOrBiometryLogin({
   onStartLoading,
@@ -37,7 +38,7 @@ export function usePinOrBiometryLogin({
   const [verified, setVerified] = useState(false)
   const [disableKeypad, setDisableKeypad] = useState(false)
   const { deleteWallet } = useDeleteWallet()
-  const activeWalletId = useActiveWalletId()
+  const activeWalletId = useSelector(selectActiveWalletId)
   const [timeRemaining, setTimeRemaining] = useState('00:00')
   const {
     increaseAttempt,
@@ -81,6 +82,9 @@ export function usePinOrBiometryLogin({
         onStartLoading()
 
         // Migrate if needed
+        if (!activeWalletId) {
+          throw new Error('Active wallet ID is not set')
+        }
         const migrator = new KeychainMigrator(activeWalletId)
         await migrator.migrateIfNeeded('PIN', pin)
 
@@ -143,6 +147,9 @@ export function usePinOrBiometryLogin({
   const verifyBiometric =
     useCallback(async (): Promise<WalletLoadingResults> => {
       try {
+        if (!activeWalletId) {
+          throw new Error('Active wallet ID is not set')
+        }
         // Timer delay to give UI opportunity to draw everything
         await new Promise(resolve => setTimeout(resolve, 0))
 

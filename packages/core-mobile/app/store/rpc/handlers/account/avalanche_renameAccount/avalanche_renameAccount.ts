@@ -1,9 +1,8 @@
 import { AppListenerEffectAPI } from 'store/types'
 import { rpcErrors } from '@metamask/rpc-errors'
-import { selectAccounts, setAccountTitle } from 'store/account/slice'
+import { selectAccountById, setAccountTitle } from 'store/account/slice'
 import Logger from 'utils/Logger'
-import { WalletType as AvalabsWalletType } from '@avalabs/types'
-import { WalletType } from 'services/wallet/types'
+import { selectWalletById } from 'store/wallet/slice'
 import { RpcMethod, RpcRequest } from '../../../types'
 import { HandleResponse, RpcRequestHandler } from '../../types'
 import { parseRequestParams } from './utils'
@@ -36,10 +35,13 @@ class AvalancheRenameAccountHandler
     const accountId = result.data[0]
     const title = result.data[1]
 
-    const accounts = selectAccounts(getState())
-    const requestedAccount = Object.values(accounts).find(
-      account => account.id === accountId
-    )
+    const requestedAccount = selectAccountById(accountId)(getState())
+    if (!requestedAccount) {
+      return {
+        success: false,
+        error: rpcErrors.resourceNotFound('Requested account does not exist')
+      }
+    }
 
     if (title.trim().length === 0) {
       return {
@@ -48,33 +50,20 @@ class AvalancheRenameAccountHandler
       }
     }
 
-    if (requestedAccount === undefined) {
+    const wallet = selectWalletById(requestedAccount.walletId)(getState())
+    if (!wallet) {
       return {
         success: false,
-        error: rpcErrors.resourceNotFound('Requested account does not exist')
-      }
-    }
-
-    let walletType: WalletType
-    if (requestedAccount.walletType === AvalabsWalletType.Mnemonic) {
-      walletType = WalletType.MNEMONIC
-    } else if (requestedAccount.walletType === AvalabsWalletType.Seedless) {
-      walletType = WalletType.SEEDLESS
-    } else {
-      return {
-        success: false,
-        error: rpcErrors.internal(
-          'Wallet type not supported: ' + requestedAccount.walletType
-        )
+        error: rpcErrors.resourceNotFound('Requested wallet does not exist')
       }
     }
 
     try {
       dispatch(
         setAccountTitle({
-          accountIndex: requestedAccount.index,
+          accountId: requestedAccount.id,
           title,
-          walletType
+          walletType: wallet.type
         })
       )
     } catch (error) {

@@ -110,10 +110,12 @@ export type CreateSendPTxParams = CommonAvalancheTxParamsBase & {
   feeState?: pvm.FeeState
 }
 
+//TODO: delete this enum
 export enum WalletType {
   UNSET = 'UNSET',
   SEEDLESS = 'SEEDLESS',
-  MNEMONIC = 'MNEMONIC'
+  MNEMONIC = 'MNEMONIC',
+  PRIVATE_KEY = 'PRIVATE_KEY'
 }
 
 /**
@@ -202,7 +204,8 @@ export interface Wallet {
 
   /**
    * Retrieves the public key for a specific account.
-   * @param accountIndex - The index of the account.
+   * @param path - The path of the account.
+   * @param curve - The curve of the account.
    */
   getPublicKeyFor(path: string, curve: Curve): Promise<string>
 

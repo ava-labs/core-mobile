@@ -10,10 +10,12 @@ import { WalletType } from 'services/wallet/types'
 import { SeedlessPubKeysStorage } from 'seedless/services/storage/SeedlessPubKeysStorage'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import SeedlessService from 'seedless/services/SeedlessService'
-import { recentAccountsStore } from 'new/features/accountSettings/store'
 import { isEvmPublicKey } from 'utils/publicKeys'
 import { selectActiveNetwork } from 'store/network'
 import { Network } from '@avalabs/core-chains-sdk'
+import { recentAccountsStore } from 'new/features/accountSettings/store'
+import { selectActiveWallet, selectActiveWalletId } from 'store/wallet/slice'
+import BiometricsSDK from 'utils/BiometricsSDK'
 import {
   selectHasBeenViewedOnce,
   setViewOnce,
@@ -21,72 +23,81 @@ import {
 } from 'store/viewOnce'
 import {
   selectAccounts,
-  selectActiveAccount,
-  selectWalletName,
   setAccounts,
   setNonActiveAccounts,
-  setActiveAccountIndex
+  setActiveAccountId
 } from './slice'
 import { AccountCollection } from './types'
 
 const initAccounts = async (
   _action: AnyAction,
   listenerApi: AppListenerEffectAPI
+  // eslint-disable-next-line sonarjs/cognitive-complexity
 ): Promise<void> => {
   const state = listenerApi.getState()
   const isDeveloperMode = selectIsDeveloperMode(state)
   const activeNetwork = selectActiveNetwork(state)
   const walletType = selectWalletType(state)
-  const walletName = selectWalletName(state)
+  const activeWallet = selectActiveWallet(state)
   let accounts: AccountCollection = {}
 
-  if (walletType === WalletType.SEEDLESS) {
-    const acc = await accountService.createNextAccount({
-      index: 0,
-      activeAccountIndex: 0,
-      walletType,
-      network: activeNetwork
-    })
+  if (!activeWallet) {
+    throw new Error('Active wallet is not set')
+  }
 
+  const walletSecret = await BiometricsSDK.loadWalletSecret(activeWallet.id)
+  if (!walletSecret.success) {
+    throw new Error('Failed to load wallet secret')
+  }
+
+  const acc = await accountService.createNextAccount({
+    index: 0,
+    walletType,
+    network: activeNetwork,
+    walletId: activeWallet.id
+  })
+
+  if (walletType === WalletType.SEEDLESS) {
     const title = await SeedlessService.getAccountName(0)
     const accountTitle = title ?? acc.name
-    accounts[acc.index] = { ...acc, name: accountTitle }
+    accounts[acc.id] = { ...acc, name: accountTitle }
     listenerApi.dispatch(setAccounts(accounts))
+    const firstAccountId = Object.keys(accounts)[0]
+    if (!firstAccountId) {
+      throw new Error('No accounts created')
+    }
+    listenerApi.dispatch(setActiveAccountId(firstAccountId))
 
     // to avoid initial account fetching taking too long,
     // we fetch the remaining accounts in the background
     const addedAccounts = await fetchRemainingAccounts({
       walletType,
-      activeAccountIndex: 0,
       startIndex: 1,
       listenerApi
     })
 
     accounts = { ...accounts, ...addedAccounts }
-  } else if (walletType === WalletType.MNEMONIC) {
-    // only add the first account for mnemonic wallet
-    const acc = await accountService.createNextAccount({
-      index: 0,
-      activeAccountIndex: 0,
-      walletType,
-      network: activeNetwork
-    })
-
-    const accountTitle =
-      walletName && walletName.length > 0 ? walletName : acc.name
-    accounts[acc.index] = { ...acc, name: accountTitle }
-
+  } else if (
+    walletType === WalletType.MNEMONIC ||
+    walletType === WalletType.PRIVATE_KEY
+  ) {
+    accounts[acc.id] = acc
     listenerApi.dispatch(setAccounts(accounts))
+    const firstAccountId = Object.keys(accounts)[0]
+    if (!firstAccountId) {
+      throw new Error('No accounts created')
+    }
+    listenerApi.dispatch(setActiveAccountId(firstAccountId))
   }
 
   if (isDeveloperMode === false) {
     AnalyticsService.captureWithEncryption('AccountAddressesUpdated', {
-      addresses: Object.values(accounts).map(acc => ({
-        address: acc.addressC,
-        addressBtc: acc.addressBTC,
-        addressAVM: acc.addressAVM ?? '',
-        addressPVM: acc.addressPVM ?? '',
-        addressCoreEth: acc.addressCoreEth ?? '',
+      addresses: Object.values(accounts).map(account => ({
+        address: account.addressC,
+        addressBtc: account.addressBTC,
+        addressAVM: account.addressAVM ?? '',
+        addressPVM: account.addressPVM ?? '',
+        addressCoreEth: account.addressCoreEth ?? '',
         addressSVM: acc.addressSVM ?? ''
       }))
     })
@@ -95,14 +106,12 @@ const initAccounts = async (
 
 const fetchRemainingAccounts = async ({
   walletType,
-  activeAccountIndex,
-  startIndex,
-  listenerApi
+  listenerApi,
+  startIndex
 }: {
   walletType: WalletType
-  activeAccountIndex: number
-  startIndex: number
   listenerApi: AppListenerEffectAPI
+  startIndex: number
 }): Promise<AccountCollection> => {
   /**
    * note:
@@ -115,17 +124,22 @@ const fetchRemainingAccounts = async ({
   const numberOfAccounts = pubKeys.filter(isEvmPublicKey).length
 
   const accounts: AccountCollection = {}
+  const activeWalletId = selectActiveWalletId(state)
+
+  if (!activeWalletId) {
+    throw new Error('Active wallet ID is not set')
+  }
   // fetch the remaining accounts in the background
   for (let i = startIndex; i < numberOfAccounts; i++) {
     const acc = await accountService.createNextAccount({
       index: i,
-      activeAccountIndex,
       walletType,
-      network: activeNetwork
+      network: activeNetwork,
+      walletId: activeWalletId
     })
     const title = await SeedlessService.getAccountName(i)
     const accountTitle = title ?? acc.name
-    accounts[acc.index] = { ...acc, name: accountTitle }
+    accounts[acc.id] = { ...acc, name: accountTitle }
   }
   listenerApi.dispatch(setNonActiveAccounts(accounts))
 
@@ -139,6 +153,11 @@ const reloadAccounts = async (
 ): Promise<void> => {
   const state = listenerApi.getState()
   const isDeveloperMode = selectIsDeveloperMode(state)
+  const activeWallet = selectActiveWallet(state)
+
+  if (!activeWallet) {
+    throw new Error('Active wallet is not set')
+  }
 
   // all vm modules need is just the isTestnet flag
   const network = {
@@ -146,16 +165,18 @@ const reloadAccounts = async (
   } as Network
 
   const accounts = selectAccounts(state)
-  const reloadedAccounts = await accountService.reloadAccounts(
-    accounts,
-    network
-  )
+  const reloadedAccounts = await accountService.reloadAccounts({
+    accounts: accounts,
+    network: network as Network,
+    walletId: activeWallet.id,
+    walletType: activeWallet.type
+  })
 
   listenerApi.dispatch(setAccounts(reloadedAccounts))
 }
 
 const handleActiveAccountIndexChange = (
-  action: ReturnType<typeof setActiveAccountIndex>
+  action: ReturnType<typeof setActiveAccountId>
 ): void => {
   recentAccountsStore.getState().addRecentAccount(action.payload)
 }
@@ -168,14 +189,12 @@ const fetchSeedlessAccountsIfNeeded = async (
   const walletType = selectWalletType(state)
 
   if (walletType === WalletType.SEEDLESS) {
-    const activeAccountIndex = selectActiveAccount(state)?.index ?? 0
     const accounts = selectAccounts(state)
 
     fetchRemainingAccounts({
       walletType,
-      activeAccountIndex,
-      startIndex: Object.keys(accounts).length,
-      listenerApi
+      listenerApi,
+      startIndex: Object.keys(accounts).length
     })
   }
 }
@@ -215,7 +234,7 @@ export const addAccountListeners = (
   })
 
   startListening({
-    actionCreator: setActiveAccountIndex,
+    actionCreator: setActiveAccountId,
     effect: handleActiveAccountIndexChange
   })
 
