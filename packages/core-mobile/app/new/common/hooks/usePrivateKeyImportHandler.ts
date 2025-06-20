@@ -1,9 +1,9 @@
 import { useCallback, useState } from 'react'
 import { useRouter } from 'expo-router'
 import { ImportedAccount } from 'store/account/types'
-import { useImportPrivateKey } from './useImportPrivateKey'
 import KeychainMigrator from 'utils/KeychainMigrator'
 import { useActiveWallet } from 'common/hooks/useActiveWallet'
+import { useImportPrivateKey } from './useImportPrivateKey'
 
 export const usePrivateKeyImportHandler = (
   tempAccountDetails: ImportedAccount | null,
@@ -43,4 +43,4 @@ export const usePrivateKeyImportHandler = (
     handleImport,
     isCheckingMigration
   }
-} 
+}
