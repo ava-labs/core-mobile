@@ -84,6 +84,35 @@ class CoreSeedlessAPIService implements CoreSeedlessApiInterface {
       throw new Error('Adding new account failed')
     }
   }
+
+  async deriveMissingKeys({
+    identityProof,
+    mnemonicId
+  }: {
+    identityProof: IdentityProof
+    mnemonicId: string
+  }): Promise<void> {
+    const response = await fetch(
+      Config.SEEDLESS_URL + '/v1/deriveMissingKeys',
+      {
+        method: 'POST',
+        headers: {
+          Authorization: this.seedlessApiKey,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          identityProof,
+          mnemonicId
+        })
+      }
+    )
+
+    if (!response.ok) {
+      Logger.error('Deriving missing keys failed')
+      Logger.info(`${response.status}`, await response.json())
+      throw new Error('Deriving missing keys failed')
+    }
+  }
 }
 
 export default Config.SEEDLESS_API_KEY
