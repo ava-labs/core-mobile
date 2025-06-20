@@ -147,12 +147,8 @@ const reloadAccounts = async (
 ): Promise<void> => {
   const state = listenerApi.getState()
   const isDeveloperMode = selectIsDeveloperMode(state)
-  const activeWalletId = selectActiveWalletId(state)
   const activeWallet = selectActiveWallet(state)
 
-  if (!activeWalletId) {
-    throw new Error('Active wallet ID is not set')
-  }
   if (!activeWallet) {
     throw new Error('Active wallet is not set')
   }
@@ -166,7 +162,7 @@ const reloadAccounts = async (
   const reloadedAccounts = await accountService.reloadAccounts({
     accounts: accounts,
     network: network as Network,
-    walletId: activeWalletId,
+    walletId: activeWallet.id,
     walletType: activeWallet.type
   })
 
