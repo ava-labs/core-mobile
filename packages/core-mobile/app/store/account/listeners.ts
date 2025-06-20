@@ -23,7 +23,6 @@ import {
 } from 'store/viewOnce'
 import {
   selectAccounts,
-  selectActiveAccount,
   setAccounts,
   setNonActiveAccounts,
   setActiveAccountId
@@ -39,7 +38,6 @@ const initAccounts = async (
   const isDeveloperMode = selectIsDeveloperMode(state)
   const activeNetwork = selectActiveNetwork(state)
   const walletType = selectWalletType(state)
-  const activeAccount = selectActiveAccount(state)
   const activeWallet = selectActiveWallet(state)
   let accounts: AccountCollection = {}
 
@@ -53,7 +51,7 @@ const initAccounts = async (
   }
 
   const acc = await accountService.createNextAccount({
-    index: activeAccount?.index ?? 0,
+    index: 0,
     walletType,
     network: activeNetwork,
     walletId: activeWallet.id
