@@ -223,7 +223,7 @@ export const DeFiScreen = ({
       }}>
       <CollapsibleTabs.FlashList
         data={data}
-        key={isGridView ? 'grid' : 'list'}
+        extraData={{ isGridView }}
         keyExtractor={item => item.id}
         overrideProps={overrideProps}
         contentContainerStyle={contentContainerStyle}

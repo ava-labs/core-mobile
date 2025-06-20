@@ -204,11 +204,11 @@ const AssetsScreen: FC<Props> = ({
       }}>
       <CollapsibleTabs.FlashList
         data={data}
-        key={isGridView ? 'grid' : 'list'}
         keyExtractor={(item, index) =>
           `${index}-${item.networkChainId}-${item.localId}`
         }
         testID="portfolio_token_list"
+        extraData={{ isGridView }}
         overrideProps={overrideProps}
         numColumns={numColumns}
         estimatedItemSize={isGridView ? 183 : 73}

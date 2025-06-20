@@ -415,6 +415,7 @@ const PortfolioHomeScreen = (): JSX.Element => {
       android:
         frame.height -
         headerHeight +
+        (totalPriceChanged > 0 ? 16 : 0) +
         insets.bottom +
         (isAndroidWithBottomBar ? 0 : 48)
     })
@@ -423,6 +424,7 @@ const PortfolioHomeScreen = (): JSX.Element => {
     tabBarHeight,
     headerHeight,
     segmentedControlLayout?.height,
+    totalPriceChanged,
     insets.bottom,
     isAndroidWithBottomBar
   ])

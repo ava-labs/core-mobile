@@ -101,7 +101,7 @@ const MarketTokensScreen = ({
       ListEmptyComponent={renderEmpty}
       ItemSeparatorComponent={renderSeparator}
       showsVerticalScrollIndicator={false}
-      key={isGridView ? 'grid' : 'list'}
+      extraData={{ isGridView }}
       keyExtractor={item => item.id}
       removeClippedSubviews={true}
       estimatedItemSize={isGridView ? 200 : 120}
