@@ -48,6 +48,7 @@ import {
   TESTNET_AVAX_ASSET_ID
 } from './utils'
 import WalletFactory from './WalletFactory'
+import { MnemonicWallet } from './MnemonicWallet'
 
 // Tolerate 50% buffer for burn amount for EVM transactions
 const EVM_FEE_TOLERANCE = 50
@@ -877,6 +878,24 @@ class WalletService {
       utxoSet: utxos,
       feeState
     })
+  }
+
+  public async getPrivateKeyFromMnemonic(
+    mnemonic: string,
+    network: Network,
+    accountIndex: number
+  ): Promise<string> {
+    const wallet: MnemonicWallet = new MnemonicWallet(mnemonic)
+    const provider = await NetworkService.getProviderForNetwork(network)
+    if (!(provider instanceof JsonRpcBatchInternal)) {
+      throw new Error('Unable to get signing key: wrong provider obtained')
+    }
+    const buffer = await wallet.getSigningKey({
+      accountIndex,
+      network,
+      provider
+    })
+    return '0x' + buffer.toString('hex')
   }
 
   private async getReadOnlyAvaSigner(

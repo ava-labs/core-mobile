@@ -2,13 +2,11 @@ import React from 'react'
 import { VerifyWithPinOrBiometry } from 'common/components/VerifyWithPinOrBiometry'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { useSelector } from 'react-redux'
-import { MnemonicWallet } from 'services/wallet/MnemonicWallet'
 import { selectActiveNetwork } from 'store/network'
-import NetworkService from 'services/network/NetworkService'
-import { JsonRpcBatchInternal } from '@avalabs/core-wallets-sdk'
 import Logger from 'utils/Logger'
 import BiometricsSDK from 'utils/BiometricsSDK'
 import { useActiveWallet } from 'common/hooks/useActiveWallet'
+import WalletService from 'services/wallet/WalletService'
 
 const VerifyPinForPrivateKeyScreen = (): JSX.Element => {
   const { replace } = useRouter()
@@ -19,17 +17,11 @@ const VerifyPinForPrivateKeyScreen = (): JSX.Element => {
   const getPrivateKeyFromMnemonic = async (
     mnemonic: string
   ): Promise<string> => {
-    const wallet: MnemonicWallet = new MnemonicWallet(mnemonic)
-    const provider = await NetworkService.getProviderForNetwork(activeNetwork)
-    if (!(provider instanceof JsonRpcBatchInternal)) {
-      throw new Error('Unable to get signing key: wrong provider obtained')
-    }
-    const buffer = await wallet.getSigningKey({
-      accountIndex: parseInt(accountIndex),
-      network: activeNetwork,
-      provider
-    })
-    return '0x' + buffer.toString('hex')
+    return WalletService.getPrivateKeyFromMnemonic(
+      mnemonic,
+      activeNetwork,
+      parseInt(accountIndex)
+    )
   }
 
   const handleLoginSuccess = async (): Promise<void> => {
