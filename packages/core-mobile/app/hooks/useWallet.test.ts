@@ -116,7 +116,7 @@ describe('useWallet', () => {
       const { result } = renderHook(() => useWallet(), { wrapper })
 
       await act(async () => {
-        await result.current.unlock({ mnemonic: mockMnemonic })
+        await result.current.unlock()
       })
     })
   })

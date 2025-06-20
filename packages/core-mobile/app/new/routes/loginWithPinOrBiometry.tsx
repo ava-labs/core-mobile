@@ -81,7 +81,7 @@ const LoginWithPinOrBiometry = (): JSX.Element => {
         if (!result.success) {
           throw result.error
         }
-        await unlock({ mnemonic: result.value })
+        await unlock()
       } catch (error) {
         Logger.error('Failed to login:', error)
       }
