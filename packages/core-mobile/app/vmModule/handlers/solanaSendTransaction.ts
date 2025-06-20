@@ -15,6 +15,8 @@ export const solanaSendTransaction = async ({
   account: Account
   resolve: (value: ApprovalResponse) => void
 }): Promise<void> => {
+  console.log('solanaSendTransaction', transactionData)
+
   try {
     // Sign the transaction - following core-mobile pattern
     const signedTx = await walletService.sign({

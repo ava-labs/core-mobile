@@ -37,7 +37,12 @@ import {
 } from '@avalabs/vm-module-types'
 import { isTypedData, isTypedDataV1 } from '@avalabs/evm-module'
 import { stripChainAddress } from 'store/account/utils'
-import { AddressPublicKey, Curve, isEvmPublicKey } from 'utils/publicKeys'
+import {
+  AddressPublicKey,
+  Curve,
+  isEvmPublicKey,
+  isSvmPublicKey
+} from 'utils/publicKeys'
 import { findPublicKey } from 'utils/publicKeys'
 import { base64 } from '@scure/base'
 import { hex } from '@scure/base'
@@ -392,11 +397,7 @@ export default class SeedlessWallet implements Wallet {
   }
 
   private getSolanaPublicKey(accountIndex: number): string {
-    const publicKeys = this.#addressPublicKeys.filter(
-      pubKey =>
-        pubKey.curve === 'ed25519' &&
-        pubKey.derivationPath.startsWith("m/44'/501'/")
-    )
+    const publicKeys = this.#addressPublicKeys.filter(isSvmPublicKey)
 
     if (
       accountIndex < 0 ||
@@ -409,7 +410,7 @@ export default class SeedlessWallet implements Wallet {
     return publicKeys[accountIndex].key
   }
 
-  public async signSolanaTransaction({
+  public async signSvmTransaction({
     accountIndex,
     transaction,
     provider
