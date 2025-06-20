@@ -5,11 +5,13 @@ import { setAccountTitle } from 'store/account'
 import { WalletType } from 'services/wallet/types'
 import { useRouter } from 'expo-router'
 import { SetWalletName as Component } from 'features/onboarding/components/SetWalletName'
+import { useActiveAccount } from 'common/hooks/useActiveAccount'
 
 export default function SetWalletName(): JSX.Element {
-  const [name, setName] = useState<string>('Account 1')
+  const [name, setName] = useState<string>('Wallet 1')
   const dispatch = useDispatch()
   const { navigate } = useRouter()
+  const activeAccount = useActiveAccount()
 
   const handleNext = (): void => {
     AnalyticsService.capture('Onboard:WalletNameSet')
@@ -17,7 +19,7 @@ export default function SetWalletName(): JSX.Element {
       setAccountTitle({
         title: name,
         walletType: WalletType.SEEDLESS,
-        accountIndex: 0
+        accountId: activeAccount.id
       })
     )
 

@@ -142,7 +142,7 @@ export const BridgeScreen = (): JSX.Element => {
     selectAvailableNativeTokenBalanceForNetworkAndAccount(
       state,
       sourceNetwork?.chainId,
-      activeAccount?.index
+      activeAccount?.id
     )
   )
 

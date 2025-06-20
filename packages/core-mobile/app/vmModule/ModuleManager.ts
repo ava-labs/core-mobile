@@ -23,7 +23,7 @@ import {
 import { APPLICATION_NAME, APPLICATION_VERSION } from 'utils/network/constants'
 import { DerivationPath } from '@avalabs/core-wallets-sdk'
 import { emptyAddresses } from 'utils/publicKeys'
-import { CORE_MOBILE_WALLET_ID } from 'services/walletconnectv2/types'
+import { WalletType } from 'services/wallet/types'
 import { ModuleErrors, VmModuleErrors } from './errors'
 import { approvalController } from './ApprovalController/ApprovalController'
 
@@ -109,16 +109,20 @@ class ModuleManager {
    * @returns EVM, AVM, PVM, SVM and Bitcoin addresses
    */
   deriveAddresses = async ({
+    walletId,
+    walletType,
     accountIndex,
     network
   }: {
+    walletId: string
+    walletType: WalletType
     accountIndex: number
     network: Network
   }): Promise<Record<NetworkVMType, string>> => {
     return Promise.allSettled(
       this.modules.map(async module =>
         module.deriveAddress({
-          secretId: CORE_MOBILE_WALLET_ID,
+          secretId: JSON.stringify({ walletId, walletType }),
           accountIndex,
           network,
           derivationPathType: DerivationPath.BIP44

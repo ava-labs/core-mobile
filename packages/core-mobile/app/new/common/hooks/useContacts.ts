@@ -23,7 +23,7 @@ export const useContacts = (): {
       Object.values(accountCollection).map(
         account =>
           ({
-            id: account.index.toString(),
+            id: account.id,
             name: account.name,
             address: account.addressC,
             addressBTC: account.addressBTC,

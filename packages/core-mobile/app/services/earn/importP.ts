@@ -3,7 +3,7 @@ import Logger from 'utils/Logger'
 import WalletService from 'services/wallet/WalletService'
 import NetworkService from 'services/network/NetworkService'
 import { Account } from 'store/account'
-import { AvalancheTransactionRequest } from 'services/wallet/types'
+import { AvalancheTransactionRequest, WalletType } from 'services/wallet/types'
 import { pvm, UnsignedTx } from '@avalabs/avalanchejs'
 import { FundsStuckError } from 'hooks/earn/errors'
 import { assertNotUndefined } from 'utils/assertions'
@@ -16,6 +16,8 @@ import {
 } from './utils'
 
 export type ImportPParams = {
+  walletId: string
+  walletType: WalletType
   activeAccount: Account
   isDevMode: boolean
   selectedCurrency: string
@@ -23,6 +25,8 @@ export type ImportPParams = {
 }
 
 export async function importP({
+  walletId,
+  walletType,
   activeAccount,
   isDevMode,
   feeState
@@ -31,6 +35,8 @@ export async function importP({
 
   const avaxPNetwork = NetworkService.getAvalancheNetworkP(isDevMode)
   const unsignedTx = await WalletService.createImportPTx({
+    walletId,
+    walletType,
     accountIndex: activeAccount.index,
     avaxXPNetwork: avaxPNetwork,
     sourceChain: 'C',
@@ -39,6 +45,8 @@ export async function importP({
   })
 
   const signedTxJson = await WalletService.sign({
+    walletId,
+    walletType,
     transaction: { tx: unsignedTx } as AvalancheTransactionRequest,
     accountIndex: activeAccount.index,
     network: avaxPNetwork
@@ -111,6 +119,8 @@ const getUnlockedUnstakedAmount = async ({
  * Makes import P with check if P chain balance changed thus ensuring imported balance is immediately available.
  */
 export async function importPWithBalanceCheck({
+  walletId,
+  walletType,
   activeAccount,
   isDevMode,
   selectedCurrency,
@@ -130,6 +140,8 @@ export async function importPWithBalanceCheck({
   Logger.trace('balanceBeforeImport', unlockedUnstakedBeforeImport)
 
   await importP({
+    walletId,
+    walletType,
     activeAccount,
     isDevMode,
     selectedCurrency,

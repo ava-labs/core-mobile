@@ -32,8 +32,7 @@ export default function CreatePin(): JSX.Element {
           }
           navigate({
             // @ts-ignore TODO: make routes typesafe
-            pathname: '/onboarding/mnemonic/setWalletName',
-            params: { mnemonic }
+            pathname: '/onboarding/mnemonic/setWalletName'
           })
         })
         .catch(Logger.error)

@@ -2,7 +2,7 @@ import { retry } from 'utils/js/retry'
 import Logger from 'utils/Logger'
 import WalletService from 'services/wallet/WalletService'
 import { Account } from 'store/account/types'
-import { AvalancheTransactionRequest } from 'services/wallet/types'
+import { AvalancheTransactionRequest, WalletType } from 'services/wallet/types'
 import { UnsignedTx } from '@avalabs/avalanchejs'
 import NetworkService from 'services/network/NetworkService'
 import { FundsStuckError } from 'hooks/earn/errors'
@@ -12,6 +12,8 @@ import { addBufferToCChainBaseFee } from 'services/wallet/utils'
 import { maxTransactionStatusCheckRetries } from './utils'
 
 export type ExportCParams = {
+  walletId: string
+  walletType: WalletType
   cChainBalanceWei: bigint
   requiredAmountWei: bigint // this amount should already include the fee to export
   activeAccount: Account
@@ -20,6 +22,8 @@ export type ExportCParams = {
 }
 
 export async function exportC({
+  walletId,
+  walletType,
   cChainBalanceWei,
   requiredAmountWei,
   activeAccount,
@@ -49,6 +53,8 @@ export async function exportC({
   }
 
   const unsignedTxWithFee = await WalletService.createExportCTx({
+    walletId,
+    walletType,
     amountInNAvax: weiToNano(requiredAmountAvax.toSubUnit()),
     baseFeeInNAvax: weiToNano(instantBaseFeeAvax.toSubUnit()),
     accountIndex: activeAccount.index,
@@ -58,6 +64,8 @@ export async function exportC({
   })
 
   const signedTxWithFeeJson = await WalletService.sign({
+    walletId,
+    walletType,
     transaction: { tx: unsignedTxWithFee } as AvalancheTransactionRequest,
     accountIndex: activeAccount.index,
     network: avaxXPNetwork

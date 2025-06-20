@@ -7,6 +7,7 @@ import { RecoveryEvents } from 'services/earn/types'
 import { selectCBaseFeeMultiplier } from 'store/posthog/slice'
 import { assertNotUndefined } from 'utils/assertions'
 import { selectSelectedCurrency } from 'store/settings/currency'
+import { useActiveWallet } from 'common/hooks/useActiveWallet'
 import { useGetFeeState } from './useGetFeeState'
 
 const REFETCH_INTERVAL = 3 * 60 * 1000 // 3 minutes
@@ -19,6 +20,7 @@ export const useImportAnyStuckFunds = (
   enabled: boolean,
   handleRecoveryEvent: (events: RecoveryEvents) => void
 ) => {
+  const activeWallet = useActiveWallet()
   const activeAccount = useSelector(selectActiveAccount)
   const isDevMode = useSelector(selectIsDeveloperMode)
   const selectedCurrency = useSelector(selectSelectedCurrency)
@@ -40,6 +42,8 @@ export const useImportAnyStuckFunds = (
     queryFn: async () => {
       assertNotUndefined(activeAccount)
       await EarnService.importAnyStuckFunds({
+        walletId: activeWallet.id,
+        walletType: activeWallet.type,
         activeAccount,
         isDevMode,
         selectedCurrency,

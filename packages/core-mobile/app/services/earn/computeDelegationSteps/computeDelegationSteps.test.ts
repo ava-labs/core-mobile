@@ -4,6 +4,7 @@ import { Avalanche } from '@avalabs/core-wallets-sdk'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
 import { getPChainBalance } from 'services/balance/getPChainBalance'
 import { getCChainBalance } from 'services/balance/getCChainBalance'
+import { WalletType } from 'services/wallet/types'
 import * as utils from './utils'
 import { computeDelegationSteps } from './computeDelegationSteps'
 
@@ -26,6 +27,8 @@ describe('computeDelegationSteps', () => {
   })
 
   const defaultParams = {
+    walletId: 'test-wallet-id',
+    walletType: WalletType.MNEMONIC,
     pAddress: 'test-p-address',
     stakeAmount: 100n,
     currency: 'AVAX',

@@ -9,7 +9,6 @@ import {
   selectCrossChainFeesMultiplier,
   selectCBaseFeeMultiplier
 } from 'store/posthog/slice'
-import { selectActiveAccount } from 'store/account/slice'
 import { computeDelegationSteps } from 'services/earn/computeDelegationSteps/computeDelegationSteps'
 import {
   Operation,
@@ -23,6 +22,8 @@ import { importP } from 'services/earn/importP'
 import EarnService from 'services/earn/EarnService'
 import { type Compute, type Delegate } from 'contexts/DelegationContext'
 import Logger from 'utils/Logger'
+import { useActiveAccount } from 'common/hooks/useActiveAccount'
+import { useActiveWallet } from 'common/hooks/useActiveWallet'
 import { useAvalancheXpProvider } from '../networks/networkProviderHooks'
 import useCChainNetwork from './useCChainNetwork'
 
@@ -36,7 +37,8 @@ export const useDelegation = (): {
 } => {
   const [steps, setSteps] = useState<Step[]>(EMPTY_STEPS)
   const cChainBalance = useCChainBalance()
-  const activeAccount = useSelector(selectActiveAccount)
+  const activeWallet = useActiveWallet()
+  const activeAccount = useActiveAccount()
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const selectedCurrency = useSelector(selectSelectedCurrency)
   const pFeeAdjustmentThreshold = useSelector(selectPFeeAdjustmentThreshold)
@@ -69,6 +71,8 @@ export const useDelegation = (): {
       const network = NetworkService.getAvalancheNetworkP(isDeveloperMode)
 
       const result = await computeDelegationSteps({
+        walletId: activeWallet.id,
+        walletType: activeWallet.type,
         pAddress: activeAccount.addressPVM,
         cAddress: activeAccount.addressC,
         currency: selectedCurrency,
@@ -88,6 +92,7 @@ export const useDelegation = (): {
       return result
     },
     [
+      activeWallet,
       cChainNetwork,
       activeAccount,
       cChainBaseFee.data,
@@ -127,6 +132,8 @@ export const useDelegation = (): {
             )
 
             txHash = await EarnService.issueAddDelegatorTransaction({
+              walletId: activeWallet.id,
+              walletType: activeWallet.type,
               activeAccount,
               endDate,
               isDevMode: isDeveloperMode,
@@ -142,6 +149,8 @@ export const useDelegation = (): {
             Logger.info(`importing P-Chain with estimated fee ${step.fee}`)
 
             await importP({
+              walletId: activeWallet.id,
+              walletType: activeWallet.type,
               activeAccount,
               selectedCurrency,
               isDevMode: isDeveloperMode,
@@ -155,6 +164,8 @@ export const useDelegation = (): {
             )
 
             await exportC({
+              walletId: activeWallet.id,
+              walletType: activeWallet.type,
               cChainBalanceWei: cChainBalance.data?.balance || 0n,
               requiredAmountWei: nanoToWei(step.amount),
               activeAccount,
@@ -176,6 +187,7 @@ export const useDelegation = (): {
       return txHash
     },
     [
+      activeWallet,
       activeAccount,
       cChainBalance.data?.balance,
       defaultFeeState,
