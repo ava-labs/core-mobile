@@ -32,6 +32,19 @@ export const useServiceProviders = (
   const [sourceAmount] = useOnRampSourceAmount()
   const { countryCode } = useLocale()
 
+  const hasValidCountry = countryCode !== undefined
+  const hasSelectedCurrency = selectedCurrency !== undefined
+  const hasSourceAmount = sourceAmount !== undefined && sourceAmount !== 0
+  const hasDestinationCurrencyCode =
+    onRampToken?.currencyCode !== '' && onRampToken?.currencyCode !== undefined
+
+  const shouldEnableCreateCryptoQuote =
+    shouldCreateCryptoQuote &&
+    hasValidCountry &&
+    hasSelectedCurrency &&
+    hasSourceAmount &&
+    hasDestinationCurrencyCode
+
   const {
     data,
     isLoading: isLoadingCryptoQuotes,
@@ -39,14 +52,7 @@ export const useServiceProviders = (
     isRefetching: isRefetchingCryptoQuotes,
     error
   } = useCreateCryptoQuote({
-    enabled:
-      countryCode !== undefined &&
-      selectedCurrency !== undefined &&
-      shouldCreateCryptoQuote &&
-      sourceAmount !== undefined &&
-      sourceAmount !== 0 &&
-      onRampToken?.currencyCode !== '' &&
-      onRampToken?.currencyCode !== undefined,
+    enabled: shouldEnableCreateCryptoQuote,
     sourceAmount: sourceAmount ?? 0,
     destinationCurrencyCode: onRampToken?.currencyCode ?? '',
     sourceCurrencyCode: selectedCurrency,

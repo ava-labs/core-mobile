@@ -2,7 +2,8 @@ import { LocalTokenWithBalance } from 'store/balance'
 import { TokenType } from '@avalabs/vm-module-types'
 import { closeInAppBrowser } from 'utils/openInAppBrowser'
 import { transactionSnackbar } from 'common/utils/toast'
-import { Router } from 'expo-router'
+import { router } from 'expo-router'
+import { ACTIONS } from '../../../contexts/DeeplinkContext/types'
 import { NATIVE_ERC20_TOKEN_CONTRACT_ADDRESS } from './consts'
 import { CryptoCurrency } from './types'
 
@@ -58,11 +59,14 @@ export const getBuyableCryptoCurrency = ({
 }
 
 export const dismissMeldStack = (
-  router: Router,
-  message: string,
+  action: typeof ACTIONS.OnrampCompleted | typeof ACTIONS.OfframpCompleted,
   searchParams: URLSearchParams
 ): void => {
+  const amount = searchParams.get('amount') ?? ''
   const dismissCount = searchParams.get('dismissCount') ?? ''
+  const message = `${amount} successfully ${
+    action === ACTIONS.OnrampCompleted ? 'bought' : 'withdrawn'
+  }`
   closeInAppBrowser()
   // the number of dismisses is the number of meld screens to dismiss
   // there is currently at most 2 meld screens

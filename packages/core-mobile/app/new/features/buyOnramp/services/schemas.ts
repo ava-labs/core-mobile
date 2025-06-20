@@ -3,9 +3,9 @@ import {
   PaymentMethods,
   PaymentTypes,
   ServiceProviderCategories,
-  ServiceProviders,
-  SessionTypes
+  ServiceProviders
 } from '../consts'
+import { SessionTypes } from '../types'
 
 export const SearchCountrySchema = object({
   countryCode: string(),

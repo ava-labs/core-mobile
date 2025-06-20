@@ -63,3 +63,9 @@ export enum CreateCryptoQuoteErrorCode {
   NOT_FOUND = 404,
   INCOMPATIBLE_REQUEST = 'INCOMPATIBLE_REQUEST'
 }
+
+export enum SessionTypes {
+  BUY = 'BUY',
+  SELL = 'SELL',
+  TRANSFER = 'TRANSFER'
+}

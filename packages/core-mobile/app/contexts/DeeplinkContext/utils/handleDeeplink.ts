@@ -9,6 +9,7 @@ import { router } from 'expo-router'
 import { History } from 'store/browser'
 import { navigateFromDeeplinkUrl } from 'utils/navigateFromDeeplink'
 import { dismissMeldStack } from 'features/buyOnramp/utils'
+import { MarketType } from 'store/watchlist'
 import { ACTIONS, DeepLink, PROTOCOLS } from '../types'
 
 export const handleDeeplink = ({
@@ -67,17 +68,14 @@ export const handleDeeplink = ({
         navigateFromDeeplinkUrl('/claimStakeReward')
       } else if (action === ACTIONS.WatchList) {
         const coingeckoId = pathname.split('/')[1]
-        navigateFromDeeplinkUrl(`/trackTokenDetail?tokenId=${coingeckoId}`)
-      } else if (action === ACTIONS.BuyCompleted) {
-        const amount = searchParams.get('amount') ?? ''
-        dismissMeldStack(router, `${amount} successfully bought`, searchParams)
-      } else if (action === ACTIONS.WithdrawCompleted) {
-        const amount = searchParams.get('amount') ?? ''
-        dismissMeldStack(
-          router,
-          `${amount} successfully withdrawn`,
-          searchParams
+        navigateFromDeeplinkUrl(
+          `/trackTokenDetail?tokenId=${coingeckoId}&marketType=${MarketType.SEARCH}`
         )
+      } else if (
+        action === ACTIONS.OnrampCompleted ||
+        action === ACTIONS.OfframpCompleted
+      ) {
+        dismissMeldStack(action, searchParams)
       } else {
         const path = deeplink.url.split(':/')[1]
         path && navigateFromDeeplinkUrl(path)

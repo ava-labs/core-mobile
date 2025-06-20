@@ -93,6 +93,7 @@ const PAYMENT_METHOD_TO_ICON: Record<
   [PaymentMethods.PH_CASH]: Icons.Custom.Cash,
   [PaymentMethods.PY_CASH]: Icons.Custom.Cash,
 
+  // if there is no custom logo for the payment method, show the default logo provided by Meld
   [PaymentMethods.SPEI]: undefined,
   [PaymentMethods.PAYMAYA]: undefined,
   [PaymentMethods.GCASH]: undefined,

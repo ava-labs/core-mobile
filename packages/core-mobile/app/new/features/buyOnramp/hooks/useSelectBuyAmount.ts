@@ -16,8 +16,7 @@ import { useDebouncedCallback } from 'use-debounce'
 import {
   PaymentMethodNames,
   ServiceProviderCategories,
-  ServiceProviderNames,
-  SessionTypes
+  ServiceProviderNames
 } from '../consts'
 import {
   useOnRampPaymentMethod,
@@ -25,7 +24,11 @@ import {
   useOnRampSourceAmount,
   useOnRampToken
 } from '../store'
-import { CreateCryptoQuoteErrorCode, CryptoCurrency } from '../types'
+import {
+  CreateCryptoQuoteErrorCode,
+  CryptoCurrency,
+  SessionTypes
+} from '../types'
 import { isTokenSupportedForBuying } from '../utils'
 import { useGetPurchaseLimits } from './useGetPurchaseLimits'
 import { useLocale } from './useLocale'
@@ -156,7 +159,7 @@ export const useSelectBuyAmount = (): {
     const currentIndex = state?.index
     const formattedAmount = formatCurrency({ amount: sourceAmount ?? 0 })
     return `core://${
-      ACTIONS.BuyCompleted
+      ACTIONS.OnrampCompleted
     }?amount=${formattedAmount}&dismissCount=${(currentIndex ?? 0) + 1}`
   }, [formatCurrency, getState, sourceAmount])
 

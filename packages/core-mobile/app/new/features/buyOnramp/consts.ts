@@ -409,9 +409,3 @@ export const ServiceProviderNames: Record<ServiceProviders, string> = {
   [ServiceProviders.YELLOWCARD]: 'Yellow Card',
   [ServiceProviders.YODLEE]: 'Yodlee'
 }
-
-export enum SessionTypes {
-  BUY = 'BUY',
-  SELL = 'SELL',
-  TRANSFER = 'TRANSFER'
-}
