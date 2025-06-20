@@ -210,7 +210,6 @@ const TrackHomeScreen = (): JSX.Element => {
     return {
       paddingBottom: 16,
       paddingTop: 10,
-      backgroundColor: 'red',
       minHeight: tabHeight
     }
   }, [tabHeight])
