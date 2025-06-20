@@ -2,8 +2,7 @@ import {
   onAppLocked,
   onAppUnlocked,
   onLogOut,
-  onRehydrationComplete,
-  selectWalletType
+  onRehydrationComplete
 } from 'store/app'
 import Logger from 'utils/Logger'
 import SeedlessService from 'seedless/services/SeedlessService'
@@ -14,7 +13,13 @@ import { AppStartListening, AppListenerEffectAPI } from 'store/types'
 import { onTokenExpired } from 'seedless/store/slice'
 import { selectAccountById, setAccountTitle } from 'store/account/slice'
 import { router } from 'expo-router'
-import { selectActiveWallet } from 'store/wallet/slice'
+import {
+  selectActiveWallet,
+  selectWalletById,
+  setActiveWallet
+} from 'store/wallet/slice'
+import WalletFactory from 'services/wallet/WalletFactory'
+import SeedlessWallet from 'seedless/services/wallet/SeedlessWallet'
 
 const refreshSeedlessToken = async (
   _: Action,
@@ -44,10 +49,10 @@ const initSeedless = async (
   listenerApi: AppListenerEffectAPI
 ): Promise<void> => {
   const { dispatch, getState } = listenerApi
+  const activeWallet = selectActiveWallet(getState())
+  const walletType = activeWallet?.type
 
-  const walletType = selectWalletType(getState())
-
-  if (walletType === WalletType.MNEMONIC) return
+  if (walletType !== WalletType.SEEDLESS) return
 
   SeedlessService.init({
     onSessionExpired: () => dispatch(onTokenExpired)
@@ -74,11 +79,42 @@ const handleSetAccountTitle = async ({
   if (walletType !== WalletType.SEEDLESS) return
   const account = selectAccountById(accountId)(getState())
   if (!account) return
-  SeedlessService.setAccountName(name, account.index)
+  await SeedlessService.setAccountName(name, account.index)
 }
 
 const signOutSocial = async (_: Action): Promise<void> => {
   await GoogleSigninService.signOut()
+}
+
+const handleActiveWalletChange = async (
+  action: ReturnType<typeof setActiveWallet>,
+  listenerApi: AppListenerEffectAPI
+): Promise<void> => {
+  const { getState } = listenerApi
+  const state = getState()
+  const activeWalletId = action.payload
+  const activeWallet = selectWalletById(activeWalletId)(state)
+
+  if (!activeWallet || activeWallet.type !== WalletType.SEEDLESS) {
+    Logger.trace('No Seedless wallet to initialize')
+    return
+  }
+
+  try {
+    Logger.trace('Initializing Seedless wallet after setActiveWallet')
+
+    const wallet = await WalletFactory.createWallet({
+      walletId: activeWallet.id,
+      walletType: WalletType.SEEDLESS
+    })
+
+    if (wallet instanceof SeedlessWallet) {
+      await wallet.initialize({ shouldRefreshPublicKeys: true })
+      Logger.trace('Seedless wallet initialized successfully')
+    }
+  } catch (error) {
+    Logger.error('Failed to initialize Seedless wallet', error)
+  }
 }
 
 export const addSeedlessListeners = (
@@ -108,12 +144,17 @@ export const addSeedlessListeners = (
   startListening({
     actionCreator: setAccountTitle,
     effect: async (action, listenerApi) => {
-      handleSetAccountTitle({
+      await handleSetAccountTitle({
         accountId: action.payload.accountId,
         name: action.payload.title,
         walletType: action.payload.walletType,
         listenerApi
       })
     }
+  })
+
+  startListening({
+    actionCreator: setActiveWallet,
+    effect: handleActiveWalletChange
   })
 }

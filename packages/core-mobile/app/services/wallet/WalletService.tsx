@@ -53,12 +53,6 @@ import WalletFactory from './WalletFactory'
 const EVM_FEE_TOLERANCE = 50
 
 class WalletService {
-  //FIXME: call this somewhere for seedless
-  // await WalletInitializer.initialize({
-  //    walletType,
-  //    shouldRefreshPublicKeys: isLoggingIn
-  //  })
-
   public async sign({
     walletId,
     walletType,
