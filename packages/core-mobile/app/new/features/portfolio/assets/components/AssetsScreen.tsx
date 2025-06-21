@@ -10,9 +10,14 @@ import { ErrorState } from 'common/components/ErrorState'
 import { LoadingState } from 'common/components/LoadingState'
 import { Space } from 'common/components/Space'
 import { getListItemEnteringAnimation } from 'common/utils/animations'
-import { portfolioTabContentHeight } from 'features/portfolio/utils'
-import React, { FC, memo, useCallback, useMemo } from 'react'
-import { ViewStyle } from 'react-native'
+import React, { FC, memo, useCallback, useMemo, useState } from 'react'
+import {
+  LayoutChangeEvent,
+  LayoutRectangle,
+  Platform,
+  ViewStyle
+} from 'react-native'
+import { useHeaderMeasurements } from 'react-native-collapsible-tab-view'
 import Animated from 'react-native-reanimated'
 import { useSelector } from 'react-redux'
 import {
@@ -54,6 +59,8 @@ const AssetsScreen: FC<Props> = ({
   )
   const isBalanceLoading = useSelector(selectIsLoadingBalances)
   const isRefetchingBalance = useSelector(selectIsRefetchingBalances)
+
+  const [headerLayout, setHeaderLayout] = useState<LayoutRectangle | null>(null)
 
   const handleManageList = useCallback(
     (indexPath: IndexPath): void => {
@@ -110,12 +117,11 @@ const AssetsScreen: FC<Props> = ({
 
   const emptyComponent = useMemo(() => {
     if (isRefetchingBalance) {
-      return <LoadingState sx={{ height: portfolioTabContentHeight }} />
+      return <LoadingState />
     }
     if (isAllBalancesInaccurate) {
       return (
         <ErrorState
-          sx={{ height: portfolioTabContentHeight }}
           description="Please hit refresh or try again later"
           button={{
             title: 'Refresh',
@@ -127,7 +133,6 @@ const AssetsScreen: FC<Props> = ({
 
     return (
       <ErrorState
-        sx={{ height: portfolioTabContentHeight }}
         icon={<Image source={errorIcon} sx={{ width: 42, height: 42 }} />}
         title="No assets yet"
         description="On-ramp using Core in two minutes"
@@ -139,9 +144,23 @@ const AssetsScreen: FC<Props> = ({
     )
   }, [isRefetchingBalance, isAllBalancesInaccurate, goToBuy, refetch])
 
-  const header = useMemo(() => {
+  const renderEmpty = useCallback(() => {
+    return (
+      <CollapsibleTabs.ContentWrapper
+        height={Number(containerStyle.minHeight) - (headerLayout?.height ?? 0)}>
+        {emptyComponent}
+      </CollapsibleTabs.ContentWrapper>
+    )
+  }, [containerStyle.minHeight, emptyComponent, headerLayout?.height])
+
+  const onHeaderLayout = useCallback((e: LayoutChangeEvent) => {
+    setHeaderLayout(e.nativeEvent.layout)
+  }, [])
+
+  const renderHeader = useCallback(() => {
     return (
       <View
+        onLayout={onHeaderLayout}
         style={{
           paddingHorizontal: 16
         }}>
@@ -153,7 +172,7 @@ const AssetsScreen: FC<Props> = ({
         />
       </View>
     )
-  }, [filter, sort, view, handleManageList])
+  }, [onHeaderLayout, filter, sort, view, handleManageList])
 
   const overrideProps = {
     contentContainerStyle: {
@@ -161,8 +180,19 @@ const AssetsScreen: FC<Props> = ({
     }
   }
 
+  const header = useHeaderMeasurements()
+
   if (isBalanceLoading || enabledNetworks.length === 0) {
-    return <LoadingState sx={{ height: portfolioTabContentHeight * 2 }} />
+    return (
+      <LoadingState
+        sx={{
+          paddingTop: Platform.OS === 'ios' ? header.height : 0,
+          minHeight: containerStyle.minHeight,
+          justifyContent: 'center',
+          alignItems: 'center'
+        }}
+      />
+    )
   }
 
   return (
@@ -174,17 +204,17 @@ const AssetsScreen: FC<Props> = ({
       }}>
       <CollapsibleTabs.FlashList
         data={data}
-        key={isGridView ? 'grid' : 'list'}
         keyExtractor={(item, index) =>
           `${index}-${item.networkChainId}-${item.localId}`
         }
         testID="portfolio_token_list"
+        extraData={{ isGridView }}
         overrideProps={overrideProps}
         numColumns={numColumns}
         estimatedItemSize={isGridView ? 183 : 73}
         renderItem={item => renderItem(item.item, item.index)}
-        ListHeaderComponent={header}
-        ListEmptyComponent={emptyComponent}
+        ListHeaderComponent={renderHeader}
+        ListEmptyComponent={renderEmpty}
         ItemSeparatorComponent={renderSeparator}
         showsVerticalScrollIndicator={false}
         refreshing={isRefetching || isLoading}

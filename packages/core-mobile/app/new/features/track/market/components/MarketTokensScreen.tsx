@@ -1,5 +1,5 @@
 import React, { useMemo, useCallback } from 'react'
-import { StyleSheet } from 'react-native'
+import { StyleSheet, ViewStyle } from 'react-native'
 import { Separator, View } from '@avalabs/k2-alpine'
 import { CollapsibleTabs } from 'common/components/CollapsibleTabs'
 import { Charts, MarketToken, MarketType } from 'store/watchlist'
@@ -15,14 +15,16 @@ const MarketTokensScreen = ({
   sort,
   view,
   goToMarketDetail,
-  emptyComponent
+  renderEmpty,
+  containerStyle
 }: {
   data: MarketToken[]
   charts: Charts
   sort: DropdownSelection
   view: DropdownSelection
   goToMarketDetail: (tokenId: string, marketType: MarketType) => void
-  emptyComponent: React.JSX.Element
+  renderEmpty: () => React.JSX.Element
+  containerStyle: ViewStyle
 }): JSX.Element => {
   const isGridView = view.data[0]?.[view.selected.row] === MarketView.Grid
   const numColumns = isGridView ? 2 : 1
@@ -83,17 +85,23 @@ const MarketTokensScreen = ({
     return isGridView ? <Space y={12} /> : <Separator sx={{ marginLeft: 68 }} />
   }, [isGridView])
 
+  const overrideProps = {
+    contentContainerStyle: {
+      ...containerStyle
+    }
+  }
+
   return (
     <CollapsibleTabs.FlashList
-      contentContainerStyle={styles.container}
+      overrideProps={overrideProps}
       data={data}
       numColumns={numColumns}
       renderItem={renderItem}
       ListHeaderComponent={dropdowns}
-      ListEmptyComponent={emptyComponent}
+      ListEmptyComponent={renderEmpty}
       ItemSeparatorComponent={renderSeparator}
       showsVerticalScrollIndicator={false}
-      key={isGridView ? 'grid' : 'list'}
+      extraData={{ isGridView }}
       keyExtractor={item => item.id}
       removeClippedSubviews={true}
       estimatedItemSize={isGridView ? 200 : 120}
@@ -102,9 +110,8 @@ const MarketTokensScreen = ({
 }
 
 const styles = StyleSheet.create({
-  container: { paddingBottom: 16 },
   dropdownContainer: { paddingHorizontal: 16 },
-  dropdown: { marginTop: 8, marginBottom: 12 }
+  dropdown: { marginBottom: 12 }
 })
 
 export default MarketTokensScreen

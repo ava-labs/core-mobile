@@ -16,7 +16,6 @@ import { useCoreBrowser } from 'common/hooks/useCoreBrowser'
 import { getListItemEnteringAnimation } from 'common/utils/animations'
 import { useRouter } from 'expo-router'
 import { HORIZONTAL_ITEM_GAP } from 'features/portfolio/collectibles/consts'
-import { portfolioTabContentHeight } from 'features/portfolio/utils'
 import { useExchangedAmount } from 'new/common/hooks/useExchangedAmount'
 import React, { useCallback, useEffect, useMemo } from 'react'
 import { ViewStyle } from 'react-native'
@@ -96,35 +95,53 @@ export const DeFiScreen = ({
 
   const emptyComponent = useMemo(() => {
     if (isLoading) {
-      return <LoadingState sx={{ height: portfolioTabContentHeight }} />
+      return (
+        <CollapsibleTabs.ContentWrapper
+          height={Number(containerStyle.minHeight)}>
+          <LoadingState />
+        </CollapsibleTabs.ContentWrapper>
+      )
     }
 
     if (error || (isPaused && !isSuccess)) {
       return (
-        <ErrorState
-          sx={{ height: portfolioTabContentHeight }}
-          description="Please hit refresh or try again later"
-          button={{
-            title: 'Refresh',
-            onPress: refetch
-          }}
-        />
+        <CollapsibleTabs.ContentWrapper
+          height={Number(containerStyle.minHeight)}>
+          <ErrorState
+            description="Please hit refresh or try again later"
+            button={{
+              title: 'Refresh',
+              onPress: refetch
+            }}
+          />
+        </CollapsibleTabs.ContentWrapper>
       )
     }
 
     return (
-      <Placeholder
-        icon={<Image source={placeholderIcon} sx={{ width: 42, height: 42 }} />}
-        title="No positions yet"
-        description="Discover a wide variety of apps, blockchains, wallets and explorers, built on the Avalanche ecosystem"
-        button={{
-          title: 'Explore DeFi',
-          onPress: handleExplore
-        }}
-        sx={{ height: portfolioTabContentHeight }}
-      />
+      <CollapsibleTabs.ContentWrapper height={Number(containerStyle.minHeight)}>
+        <Placeholder
+          icon={
+            <Image source={placeholderIcon} sx={{ width: 42, height: 42 }} />
+          }
+          title="No positions yet"
+          description="Discover a wide variety of apps, blockchains, wallets and explorers, built on the Avalanche ecosystem"
+          button={{
+            title: 'Explore DeFi',
+            onPress: handleExplore
+          }}
+        />
+      </CollapsibleTabs.ContentWrapper>
     )
-  }, [isLoading, error, refetch, handleExplore, isPaused, isSuccess])
+  }, [
+    isLoading,
+    error,
+    isPaused,
+    isSuccess,
+    containerStyle.minHeight,
+    handleExplore,
+    refetch
+  ])
 
   const renderItem: ListRenderItem<DeFiSimpleProtocol> = useCallback(
     ({ item, index }): JSX.Element => {
@@ -155,10 +172,8 @@ export const DeFiScreen = ({
     ]
   )
 
-  const dataLength = data.length
-
   const header = useMemo(() => {
-    if (dataLength === 0) return
+    if (data.length === 0) return
 
     return (
       <View
@@ -179,7 +194,7 @@ export const DeFiScreen = ({
         />
       </View>
     )
-  }, [dataLength, isGridView, onScrollResync, sort, view])
+  }, [data.length, isGridView, onScrollResync, sort, view])
 
   const contentContainerStyle = {
     paddingHorizontal: !isGridView
@@ -208,7 +223,7 @@ export const DeFiScreen = ({
       }}>
       <CollapsibleTabs.FlashList
         data={data}
-        key={isGridView ? 'grid' : 'list'}
+        extraData={{ isGridView }}
         keyExtractor={item => item.id}
         overrideProps={overrideProps}
         contentContainerStyle={contentContainerStyle}
