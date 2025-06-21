@@ -1,8 +1,22 @@
-import React, { useCallback, useRef, useState } from 'react'
+import React, { useEffect, useCallback, useRef, useState } from 'react'
 import { SxProp } from 'dripsy'
 import { View } from '../Primitives'
 import { Button } from '../Button/Button'
 import { FiatAmountInput, FiatAmountInputHandle } from './FiatAmountInput'
+
+interface FiatAmountInputWidgetProps {
+  currency: string
+  isAmountValid?: boolean
+  formatInTokenUnit?(amount: number): string
+  formatInCurrency(amount: number): string
+  formatIntegerCurrency(amount: number): string
+  amount?: number
+  onChange?(amount: number): void
+  accessory?: JSX.Element
+  sx?: SxProp
+  disabled?: boolean
+  autoFocus?: boolean
+}
 
 export const FiatAmountInputWidget = ({
   amount,
@@ -16,19 +30,7 @@ export const FiatAmountInputWidget = ({
   sx,
   disabled,
   autoFocus
-}: {
-  currency: string
-  isAmountValid?: boolean
-  formatInTokenUnit?(amount: number): string
-  formatInCurrency(amount: number): string
-  formatIntegerCurrency(amount: number): string
-  amount?: number
-  onChange?(amount: number): void
-  accessory?: JSX.Element
-  sx?: SxProp
-  disabled?: boolean
-  autoFocus?: boolean
-}): JSX.Element => {
+}: FiatAmountInputWidgetProps): JSX.Element => {
   const [predefinedAmountButtons, setPredefinedAmountButtons] = useState<
     { text: string; predefinedAmount: number; isSelected: boolean }[]
   >([
@@ -78,6 +80,18 @@ export const FiatAmountInputWidget = ({
     },
     [onChange]
   )
+
+  useEffect(() => {
+    if (amount === undefined || amount === 0) {
+      textInputRef.current?.setValue('')
+      setPredefinedAmountButtons(prevButtons =>
+        prevButtons.map(b => ({
+          ...b,
+          isSelected: false
+        }))
+      )
+    }
+  }, [amount, textInputRef])
 
   return (
     <View sx={sx}>

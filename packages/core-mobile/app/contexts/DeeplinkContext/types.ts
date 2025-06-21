@@ -32,7 +32,9 @@ export const ACTIONS = {
   WC: 'wc',
   StakeComplete: StakeActions.StakeComplete,
   Portfolio: 'portfolio',
-  WatchList: 'watchlist'
+  WatchList: 'watchlist',
+  OnrampCompleted: 'onrampCompleted',
+  OfframpCompleted: 'offrampCompleted'
 }
 
 export type NotificationData = { [p: string]: string | number | object }

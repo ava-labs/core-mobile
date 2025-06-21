@@ -163,7 +163,7 @@ export const FiatAmountInput = forwardRef<
           <View
             sx={{
               flexDirection: 'row',
-              alignItems: 'flex-end',
+              alignItems: 'center',
               gap: 5
             }}>
             {displayLeadingFiatCurrency && (
