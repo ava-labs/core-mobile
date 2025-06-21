@@ -3,29 +3,20 @@ import { ScrollScreen } from 'common/components/ScrollScreen'
 import SlideToConfirm from 'common/components/SlideToConfirm'
 import { useRouter } from 'expo-router'
 import React, { useCallback } from 'react'
-import { useSelector } from 'react-redux'
-import { WalletType } from 'services/wallet/types'
 import { useDeleteWallet } from 'new/common/hooks/useDeleteWallet'
-import { selectWalletType } from 'store/app'
 
 const ForgotPin = (): JSX.Element => {
   const router = useRouter()
   const { theme } = useTheme()
   const { deleteWallet } = useDeleteWallet()
-  const walletType = useSelector(selectWalletType)
 
   const handleCancel = useCallback(() => {
     router.back()
   }, [router])
 
   const handleConfirm = useCallback(() => {
-    if (
-      walletType === WalletType.MNEMONIC ||
-      walletType === WalletType.SEEDLESS
-    ) {
-      deleteWallet()
-    }
-  }, [deleteWallet, walletType])
+    deleteWallet()
+  }, [deleteWallet])
 
   const renderFooter = useCallback(() => {
     return (

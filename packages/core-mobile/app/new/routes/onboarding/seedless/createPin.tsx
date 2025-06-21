@@ -3,17 +3,14 @@ import { useRouter } from 'expo-router'
 import { CreatePin as Component } from 'features/onboarding/components/CreatePin'
 import { useWallet } from 'hooks/useWallet'
 import React, { useCallback, useEffect, useState } from 'react'
-import { useSelector } from 'react-redux'
 import { WalletType } from 'services/wallet/types'
 import SeedlessService from 'seedless/services/SeedlessService'
 import AnalyticsService from 'services/analytics/AnalyticsService'
-import { selectWalletType } from 'store/app'
 import BiometricsSDK from 'utils/BiometricsSDK'
 import Logger from 'utils/Logger'
 import { uuid } from 'utils/uuid'
 
 export default function CreatePin(): JSX.Element {
-  const walletType = useSelector(selectWalletType)
   const { navigate } = useRouter()
   const { onPinCreated } = useWallet()
   const [hasWalletName, setHasWalletName] = useState(false)
@@ -22,15 +19,11 @@ export default function CreatePin(): JSX.Element {
 
   useEffect(() => {
     const checkHasWalletName = async (): Promise<void> => {
-      if (walletType === WalletType.SEEDLESS) {
-        const walletName = await SeedlessService.getAccountName()
-        setHasWalletName(walletName !== undefined ? true : false)
-      } else {
-        setHasWalletName(false)
-      }
+      const walletName = await SeedlessService.getAccountName()
+      setHasWalletName(walletName !== undefined)
     }
     checkHasWalletName().catch(Logger.error)
-  }, [walletType])
+  }, [])
 
   const handleEnteredValidPin = useCallback(
     (pin: string) => {
@@ -44,7 +37,7 @@ export default function CreatePin(): JSX.Element {
       onPinCreated({
         mnemonic: uuid(),
         pin,
-        walletType
+        walletType: WalletType.SEEDLESS
       })
         .then(() => {
           if (useBiometrics) {
@@ -60,7 +53,7 @@ export default function CreatePin(): JSX.Element {
         })
         .catch(Logger.error)
     },
-    [hasWalletName, navigate, onPinCreated, useBiometrics, walletType]
+    [hasWalletName, navigate, onPinCreated, useBiometrics]
   )
 
   return (

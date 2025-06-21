@@ -20,6 +20,7 @@ import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { selectSelectedCurrency } from 'store/settings/currency'
 import { selectIsPrivacyModeEnabled } from 'store/settings/securityPrivacy'
 import { WalletInfo } from 'features/accountSettings/components/WalletInfo'
+import { selectWalletById } from 'store/wallet/slice'
 
 const AccountScreen = (): JSX.Element => {
   const router = useRouter()
@@ -27,6 +28,7 @@ const AccountScreen = (): JSX.Element => {
   const isPrivacyModeEnabled = useSelector(selectIsPrivacyModeEnabled)
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const account = useSelector(selectAccountById(accountId ?? ''))
+  const wallet = useSelector(selectWalletById(account?.walletId ?? ''))
   const isBalanceLoading = useSelector(selectIsLoadingBalances)
   const isRefetchingBalance = useSelector(selectIsRefetchingBalances)
   const tokenVisibility = useSelector(selectTokenVisibility)
@@ -57,34 +59,6 @@ const AccountScreen = (): JSX.Element => {
     }, [fetchBalance])
   )
 
-  const renderHeader = useCallback((): JSX.Element => {
-    return (
-      <BalanceHeader
-        accountName={account?.name ?? ''}
-        formattedBalance={formattedBalance}
-        currency={selectedCurrency}
-        errorMessage={
-          balanceAccurate ? undefined : 'Unable to load all balances'
-        }
-        isLoading={isLoading}
-        isPrivacyModeEnabled={isPrivacyModeEnabled}
-        isDeveloperModeEnabled={isDeveloperMode}
-      />
-    )
-  }, [
-    account?.name,
-    formattedBalance,
-    selectedCurrency,
-    balanceAccurate,
-    isLoading,
-    isPrivacyModeEnabled,
-    isDeveloperMode
-  ])
-
-  const renderFooter = useCallback(() => {
-    return <AccountButtons accountId={account?.id ?? ''} />
-  }, [account?.id])
-
   const handleShowPrivateKey = (): void => {
     if (!account) {
       return
@@ -98,8 +72,28 @@ const AccountScreen = (): JSX.Element => {
     })
   }
 
-  if (account === undefined) {
+  if (account === undefined || wallet === undefined) {
     return <></>
+  }
+
+  const renderHeader = (): JSX.Element => {
+    return (
+      <BalanceHeader
+        accountName={account.name}
+        formattedBalance={formattedBalance}
+        currency={selectedCurrency}
+        errorMessage={
+          balanceAccurate ? undefined : 'Unable to load all balances'
+        }
+        isLoading={isLoading}
+        isPrivacyModeEnabled={isPrivacyModeEnabled}
+        isDeveloperModeEnabled={isDeveloperMode}
+      />
+    )
+  }
+
+  const renderFooter = (): JSX.Element => {
+    return <AccountButtons accountId={account.id} walletType={wallet.type} />
   }
 
   return (

@@ -5,7 +5,7 @@ import {
 } from 'store/settings/advanced'
 import { AppListenerEffectAPI, AppStartListening } from 'store/types'
 import { AnyAction } from '@reduxjs/toolkit'
-import { onAppUnlocked, onLogIn, selectWalletType } from 'store/app/slice'
+import { onAppUnlocked, onLogIn } from 'store/app/slice'
 import { WalletType } from 'services/wallet/types'
 import { SeedlessPubKeysStorage } from 'seedless/services/storage/SeedlessPubKeysStorage'
 import AnalyticsService from 'services/analytics/AnalyticsService'
@@ -37,7 +37,6 @@ const initAccounts = async (
   const state = listenerApi.getState()
   const isDeveloperMode = selectIsDeveloperMode(state)
   const activeNetwork = selectActiveNetwork(state)
-  const walletType = selectWalletType(state)
   const activeWallet = selectActiveWallet(state)
   let accounts: AccountCollection = {}
 
@@ -52,12 +51,12 @@ const initAccounts = async (
 
   const acc = await accountService.createNextAccount({
     index: 0,
-    walletType,
+    walletType: activeWallet.type,
     network: activeNetwork,
     walletId: activeWallet.id
   })
 
-  if (walletType === WalletType.SEEDLESS) {
+  if (activeWallet.type === WalletType.SEEDLESS) {
     const title = await SeedlessService.getAccountName(0)
     const accountTitle = title ?? acc.name
     accounts[acc.id] = { ...acc, name: accountTitle }
@@ -71,15 +70,15 @@ const initAccounts = async (
     // to avoid initial account fetching taking too long,
     // we fetch the remaining accounts in the background
     const addedAccounts = await fetchRemainingAccounts({
-      walletType,
+      walletType: activeWallet.type,
       startIndex: 1,
       listenerApi
     })
 
     accounts = { ...accounts, ...addedAccounts }
   } else if (
-    walletType === WalletType.MNEMONIC ||
-    walletType === WalletType.PRIVATE_KEY
+    activeWallet.type === WalletType.MNEMONIC ||
+    activeWallet.type === WalletType.PRIVATE_KEY
   ) {
     accounts[acc.id] = acc
     listenerApi.dispatch(setAccounts(accounts))
@@ -186,13 +185,16 @@ const fetchSeedlessAccountsIfNeeded = async (
   listenerApi: AppListenerEffectAPI
 ): Promise<void> => {
   const state = listenerApi.getState()
-  const walletType = selectWalletType(state)
+  const activeWallet = selectActiveWallet(state)
+  if (!activeWallet) {
+    throw new Error('Active wallet is not set')
+  }
 
-  if (walletType === WalletType.SEEDLESS) {
+  if (activeWallet.type === WalletType.SEEDLESS) {
     const accounts = selectAccounts(state)
 
     fetchRemainingAccounts({
-      walletType,
+      walletType: activeWallet.type,
       listenerApi,
       startIndex: Object.keys(accounts).length
     })
