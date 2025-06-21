@@ -1,6 +1,6 @@
-import React from 'react'
 import { SelectSwapTokenScreen } from 'features/swap/screens/SelectSwapTokenScreen'
 import { useSwapSelectedToToken } from 'features/swap/store'
+import React from 'react'
 
 const SelectSwapToTokenScreen = (): JSX.Element => {
   const [selectedToToken, setSelectedToToken] = useSwapSelectedToToken()
