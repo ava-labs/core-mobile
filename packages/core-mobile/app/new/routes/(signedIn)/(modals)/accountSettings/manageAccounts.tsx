@@ -68,7 +68,7 @@ const ManageAccountsScreen = (): React.JSX.Element => {
       navigate({
         // @ts-ignore TODO: make routes typesafe
         pathname: '/accountSettings/account',
-        params: { accountId: accountId }
+        params: { accountId }
       })
     },
     [navigate]

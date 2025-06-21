@@ -6,21 +6,25 @@ import {
 import React, { useCallback } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { selectAccountById, setAccountTitle } from 'store/account'
-import { selectWalletType } from 'store/app'
+import { WalletType } from 'services/wallet/types'
 
 export const AccountButtons = ({
-  accountId
+  accountId,
+  walletType
 }: {
   accountId: string
+  walletType: WalletType
 }): React.JSX.Element => {
   const dispatch = useDispatch()
-  const walletType = useSelector(selectWalletType)
   const account = useSelector(selectAccountById(accountId))
 
   const handleShowAlertWithTextInput = (): void => {
     showAlertWithTextInput({
       title: 'Rename account',
-      inputs: [{ key: 'accountName', defaultValue: account?.name }],
+      inputs: [
+        { key: 'accountName', defaultValue: account?.name },
+        { key: 'walletType', defaultValue: walletType }
+      ],
       buttons: [
         {
           text: 'Cancel',
