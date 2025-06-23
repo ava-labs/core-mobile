@@ -8,7 +8,8 @@ import {
   Pressable,
   useTheme,
   FiatAmountInputWidget,
-  ActivityIndicator
+  ActivityIndicator,
+  showAlert
 } from '@avalabs/k2-alpine'
 import { useRouter } from 'expo-router'
 import { LogoWithNetwork } from 'features/portfolio/assets/components/LogoWithNetwork'
@@ -31,14 +32,14 @@ export const SelectBuyAmountScreen = (): React.JSX.Element => {
     isBuyAllowed,
     token,
     tokenBalance,
-    isAboveMinimumPurchaseLimit,
-    isBelowMaximumPurchaseLimit,
+    hasValidSourceAmount,
     isLoadingDefaultsByCountry,
     isLoadingPurchaseLimits,
     widgetUrl,
     isLoadingCryptoQuotes,
     errorMessage
   } = useSelectBuyAmount()
+
   const { openUrl } = useInAppBrowser()
   const { formatIntegerCurrency, formatCurrency } = useFormatCurrency()
   const { navigate } = useRouter()
@@ -50,9 +51,21 @@ export const SelectBuyAmountScreen = (): React.JSX.Element => {
   }, [navigate])
 
   const handleSelectPaymentMethod = useCallback((): void => {
+    if (sourceAmount === undefined || sourceAmount === 0) {
+      showAlert({
+        title: 'Please enter an amount',
+        buttons: [
+          {
+            text: 'OK'
+          }
+        ]
+      })
+      return
+    }
+
     // @ts-ignore TODO: make routes typesafe
     navigate('/selectPaymentMethod')
-  }, [navigate])
+  }, [navigate, sourceAmount])
 
   const onNext = useCallback((): void => {
     widgetUrl && openUrl(widgetUrl)
@@ -76,11 +89,7 @@ export const SelectBuyAmountScreen = (): React.JSX.Element => {
   }, [onNext, isBuyAllowed])
 
   const renderServiceProvider = useCallback(() => {
-    if (
-      !sourceAmount ||
-      isAboveMinimumPurchaseLimit === false ||
-      isBelowMaximumPurchaseLimit === false
-    ) {
+    if (!hasValidSourceAmount) {
       return
     }
 
@@ -103,11 +112,9 @@ export const SelectBuyAmountScreen = (): React.JSX.Element => {
     }
   }, [
     colors.$textPrimary,
-    isAboveMinimumPurchaseLimit,
-    isBelowMaximumPurchaseLimit,
+    hasValidSourceAmount,
     isLoadingCryptoQuotes,
-    serviceProviderToDisplay,
-    sourceAmount
+    serviceProviderToDisplay
   ])
 
   const renderPayWith = useCallback(() => {
@@ -227,9 +234,7 @@ export const SelectBuyAmountScreen = (): React.JSX.Element => {
       {/* Fiat amount input widget */}
       {tokenBalance && (
         <FiatAmountInputWidget
-          isAmountValid={
-            isBelowMaximumPurchaseLimit && isAboveMinimumPurchaseLimit
-          }
+          isAmountValid={hasValidSourceAmount}
           disabled={isLoadingPurchaseLimits}
           sx={{ marginTop: 12 }}
           currency={selectedCurrency}

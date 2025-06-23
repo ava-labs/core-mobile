@@ -2,7 +2,7 @@ import { useSelector } from 'react-redux'
 import { selectSelectedCurrency } from 'store/settings/currency'
 import { QueryObserverResult, RefetchOptions } from '@tanstack/react-query'
 import { useMemo } from 'react'
-import { useOnRampSourceAmount, useOnRampToken } from '../store'
+import { useOnRampToken } from '../store'
 import {
   CreateCryptoQuote,
   CreateCryptoQuoteError,
@@ -13,9 +13,7 @@ import {
 import { useCreateCryptoQuote } from './useCreateCryptoQuote'
 import { useLocale } from './useLocale'
 
-export const useServiceProviders = (
-  shouldCreateCryptoQuote = true
-): {
+export const useServiceProviders = (): {
   crytoQuotes: Quote[]
   isLoadingCryptoQuotes: boolean
   cryptoQuotesError?: {
@@ -29,21 +27,7 @@ export const useServiceProviders = (
 } => {
   const [onRampToken] = useOnRampToken()
   const selectedCurrency = useSelector(selectSelectedCurrency)
-  const [sourceAmount] = useOnRampSourceAmount()
   const { countryCode } = useLocale()
-
-  const hasValidCountry = countryCode !== undefined
-  const hasSelectedCurrency = selectedCurrency !== undefined
-  const hasSourceAmount = sourceAmount !== undefined && sourceAmount !== 0
-  const hasDestinationCurrencyCode =
-    onRampToken?.currencyCode !== '' && onRampToken?.currencyCode !== undefined
-
-  const shouldEnableCreateCryptoQuote =
-    shouldCreateCryptoQuote &&
-    hasValidCountry &&
-    hasSelectedCurrency &&
-    hasSourceAmount &&
-    hasDestinationCurrencyCode
 
   const {
     data,
@@ -52,8 +36,6 @@ export const useServiceProviders = (
     isRefetching: isRefetchingCryptoQuotes,
     error
   } = useCreateCryptoQuote({
-    enabled: shouldEnableCreateCryptoQuote,
-    sourceAmount: sourceAmount ?? 0,
     destinationCurrencyCode: onRampToken?.currencyCode ?? '',
     sourceCurrencyCode: selectedCurrency,
     countryCode
