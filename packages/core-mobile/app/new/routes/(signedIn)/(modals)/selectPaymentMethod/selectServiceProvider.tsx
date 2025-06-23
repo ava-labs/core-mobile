@@ -1,1 +1,1 @@
-export { SelectServiceProviderScreen as default } from 'features/buyOnramp/screens/SelectServiceProviderScreen'
+export { SelectServiceProviderScreen as default } from 'features/meldOnramp/screens/SelectServiceProviderScreen'

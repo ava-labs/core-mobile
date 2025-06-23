@@ -1,6 +1,6 @@
 import { useQuery, UseQueryResult } from '@tanstack/react-query'
 import { ReactQueryKeys } from 'consts/reactQueryKeys'
-import MeldService from 'features/buyOnramp/services/MeldService'
+import MeldService from 'features/meldOnramp/services/MeldService'
 import { Country, MeldDefaultParams } from '../types'
 import { useLocale } from './useLocale'
 import { useSearchServiceProviders } from './useSearchServiceProviders'

@@ -70,12 +70,12 @@ export const useBuy = (): {
         const cryptoCurrency = getBuyableCryptoCurrency(token, address)
         setOnrampToken(cryptoCurrency)
         // @ts-ignore TODO: make routes typesafe
-        navigate('/buyOnramp/selectBuyAmount')
+        navigate('/meldOnramp/selectBuyAmount')
         return
       }
       setOnrampToken(undefined)
       // @ts-ignore TODO: make routes typesafe
-      navigate('/buyOnramp')
+      navigate('/meldOnramp')
     },
     [
       getBuyableCryptoCurrency,
@@ -90,15 +90,15 @@ export const useBuy = (): {
     setOnrampToken(avax)
 
     // @ts-ignore TODO: make routes typesafe
-    navigate('/buyOnramp/selectBuyAmount')
+    navigate('/meldOnramp/selectBuyAmount')
   }, [avax, navigate, setOnrampToken])
 
   const navigateToBuyUsdc = useCallback(() => {
     if (usdc === undefined) return
     setOnrampToken(usdc)
     // @ts-ignore TODO: make routes typesafe
-    navigate('/buyOnramp/selectBuyAmount')
-  }, [usdc, setOnrampToken, navigate])
+    navigate('/meldOnramp/selectBuyAmount')
+  }, [usdc, navigate, setOnrampToken])
 
   return {
     navigateToBuy,
