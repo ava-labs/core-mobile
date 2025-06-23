@@ -34,10 +34,10 @@ export const useBalanceForAccount = (
 
   const fetchBalance = useCallback(() => {
     if (account) {
-      dispatch(fetchBalanceForAccount({ accountId }))
+      dispatch(fetchBalanceForAccount({ account }))
       setIsFetchingBalance(true)
     }
-  }, [account, dispatch, accountId])
+  }, [account, dispatch])
 
   useEffect(() => {
     if (!isBalanceLoading && isFetchingBalance) {
