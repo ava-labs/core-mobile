@@ -2,6 +2,8 @@ import {
   Country,
   CreateCryptoQuote,
   CreateCryptoQuoteParams,
+  CreateSessionWidget,
+  CreateSessionWidgetParams,
   CryptoCurrency,
   FiatCurrency,
   GetPurchaseLimits,
@@ -163,6 +165,35 @@ class MeldService {
       paymentMethodType
     }
     return meldApiClient.createCryptoQuotes(body)
+  }
+
+  async createSessionWidget({
+    sessionType,
+    sessionData: {
+      serviceProvider,
+      redirectUrl,
+      sourceAmount,
+      walletAddress,
+      countryCode,
+      sourceCurrencyCode,
+      destinationCurrencyCode,
+      paymentMethodType
+    }
+  }: CreateSessionWidgetParams): Promise<CreateSessionWidget | undefined> {
+    const body = {
+      sessionType,
+      sessionData: {
+        serviceProvider,
+        redirectUrl,
+        countryCode,
+        sourceCurrencyCode,
+        destinationCurrencyCode,
+        paymentMethodType,
+        sourceAmount,
+        walletAddress
+      }
+    }
+    return meldApiClient.createSessionWidget(body)
   }
 }
 
