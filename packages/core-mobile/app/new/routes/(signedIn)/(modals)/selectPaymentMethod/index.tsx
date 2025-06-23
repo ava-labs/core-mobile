@@ -1,1 +1,1 @@
-export { SelectPaymentMethodScreen as default } from 'features/buyOnramp/screens/SelectPaymentMethodScreen'
+export { SelectPaymentMethodScreen as default } from 'features/meldOnramp/screens/SelectPaymentMethodScreen'

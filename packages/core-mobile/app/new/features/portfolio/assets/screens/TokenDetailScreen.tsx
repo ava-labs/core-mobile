@@ -62,7 +62,7 @@ import { selectIsPrivacyModeEnabled } from 'store/settings/securityPrivacy'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import { useNetworks } from 'hooks/networks/useNetworks'
 import { ChainId } from '@avalabs/core-chains-sdk'
-import { useBuy } from 'features/buyOnramp/hooks/useBuy'
+import { useBuy } from 'features/meldOnramp/hooks/useBuy'
 
 export const TokenDetailScreen = (): React.JSX.Element => {
   const {
