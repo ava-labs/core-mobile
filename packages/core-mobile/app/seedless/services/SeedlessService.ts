@@ -30,6 +30,16 @@ class SeedlessService {
     this.session.setOnSessionExpired(onSessionExpired)
   }
 
+  async refreshPublicKeys(): Promise<void> {
+    this.invalidateSessionKeysCache()
+
+    const allKeys = await this.getSessionKeysList()
+
+    const pubKeys = transformKeyInfosToPubKeys(allKeys)
+    Logger.info('saving public keys')
+    await SeedlessPubKeysStorage.save(pubKeys)
+  }
+
   /**
    * Returns the list of keys that this session has access to.
    */
@@ -123,16 +133,6 @@ class SeedlessService {
 
   private invalidateSessionKeysCache(): void {
     this.sessionKeysListCache = undefined
-  }
-
-  async refreshPublicKeys(): Promise<void> {
-    this.invalidateSessionKeysCache()
-
-    const allKeys = await this.getSessionKeysList()
-
-    const pubKeys = transformKeyInfosToPubKeys(allKeys)
-    Logger.info('saving public keys')
-    await SeedlessPubKeysStorage.save(pubKeys)
   }
 }
 
