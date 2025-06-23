@@ -142,7 +142,7 @@ export default class SeedlessWallet implements Wallet {
       mnemonicId
     })
 
-    await SeedlessService.refreshSessionKeys()
+    await SeedlessService.refreshPublicKeys()
   }
 
   public async deriveMissingKeys(): Promise<void> {
@@ -154,7 +154,7 @@ export default class SeedlessWallet implements Wallet {
       mnemonicId
     })
 
-    await SeedlessService.refreshSessionKeys()
+    await SeedlessService.refreshPublicKeys()
   }
 
   /** WALLET INTERFACE IMPLEMENTATION **/
