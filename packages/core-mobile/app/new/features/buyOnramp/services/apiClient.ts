@@ -5,6 +5,8 @@ import Logger from 'utils/Logger'
 import {
   CreateCryptoQuoteBodySchema,
   CreateCryptoQuoteSchema,
+  CreateSessionWidgetBodySchema,
+  CreateSessionWidgetSchema,
   GetPurchaseLimitsSchema,
   SearchCountrySchema,
   SearchCryptoCurrencySchema,
@@ -199,6 +201,19 @@ export const meldApiClient = new Zodios(
       ],
       alias: 'createCryptoQuotes',
       response: CreateCryptoQuoteSchema
+    },
+    {
+      method: 'post',
+      path: '/crypto/session/widget',
+      parameters: [
+        {
+          name: 'body',
+          type: 'Body',
+          schema: CreateSessionWidgetBodySchema
+        }
+      ],
+      alias: 'createSessionWidget',
+      response: CreateSessionWidgetSchema
     }
   ],
   {

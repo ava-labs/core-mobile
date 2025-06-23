@@ -8,13 +8,15 @@ import {
   Pressable,
   useTheme,
   FiatAmountInputWidget,
-  ActivityIndicator
+  ActivityIndicator,
+  showAlert
 } from '@avalabs/k2-alpine'
 import { useRouter } from 'expo-router'
 import { LogoWithNetwork } from 'features/portfolio/assets/components/LogoWithNetwork'
 import { selectSelectedCurrency } from 'store/settings/currency'
 import { useSelector } from 'react-redux'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
+import useInAppBrowser from 'common/hooks/useInAppBrowser'
 import { useSelectBuyAmount } from '../hooks/useSelectBuyAmount'
 
 export const SelectBuyAmountScreen = (): React.JSX.Element => {
@@ -22,8 +24,6 @@ export const SelectBuyAmountScreen = (): React.JSX.Element => {
     theme: { colors }
   } = useTheme()
   const {
-    minimumPurchaseLimit,
-    maximumPurchaseLimit,
     formatInTokenUnit,
     sourceAmount,
     setSourceAmount,
@@ -32,11 +32,15 @@ export const SelectBuyAmountScreen = (): React.JSX.Element => {
     isBuyAllowed,
     token,
     tokenBalance,
-    isAboveMinimumPurchaseLimit,
-    isBelowMaximumPurchaseLimit,
+    hasValidSourceAmount,
     isLoadingDefaultsByCountry,
-    isLoadingPurchaseLimits
+    isLoadingPurchaseLimits,
+    createSessionWidget,
+    isLoadingCryptoQuotes,
+    errorMessage
   } = useSelectBuyAmount()
+
+  const { openUrl } = useInAppBrowser()
   const { formatIntegerCurrency, formatCurrency } = useFormatCurrency()
   const { navigate } = useRouter()
   const selectedCurrency = useSelector(selectSelectedCurrency)
@@ -47,14 +51,26 @@ export const SelectBuyAmountScreen = (): React.JSX.Element => {
   }, [navigate])
 
   const handleSelectPaymentMethod = useCallback((): void => {
-    // @ts-ignore TODO: make routes typesafe
-    navigate('/selectPaymentMethod')
-  }, [navigate])
+    if (sourceAmount === undefined || sourceAmount === 0) {
+      showAlert({
+        title: 'Please enter an amount',
+        buttons: [
+          {
+            text: 'OK'
+          }
+        ]
+      })
+      return
+    }
 
-  const onNext = useCallback((): void => {
     // @ts-ignore TODO: make routes typesafe
     navigate('/selectPaymentMethod')
-  }, [navigate])
+  }, [navigate, sourceAmount])
+
+  const onNext = useCallback(async (): Promise<void> => {
+    const sessionWidget = await createSessionWidget()
+    sessionWidget?.widgetUrl && openUrl(sessionWidget.widgetUrl)
+  }, [createSessionWidget, openUrl])
 
   const renderFooter = useCallback(() => {
     return (
@@ -67,21 +83,42 @@ export const SelectBuyAmountScreen = (): React.JSX.Element => {
           type="primary"
           size="large"
           onPress={onNext}>
-          Next
+          Buy
         </Button>
       </View>
     )
   }, [onNext, isBuyAllowed])
 
-  const renderPayWith = useCallback(() => {
-    if (
-      !sourceAmount ||
-      isAboveMinimumPurchaseLimit === false ||
-      isBelowMaximumPurchaseLimit === false
-    ) {
-      return null
+  const renderServiceProvider = useCallback(() => {
+    if (!hasValidSourceAmount) {
+      return
     }
 
+    if (isLoadingCryptoQuotes) {
+      return <ActivityIndicator size="small" color={colors.$textPrimary} />
+    }
+
+    if (serviceProviderToDisplay) {
+      return (
+        <Text
+          variant="caption"
+          sx={{
+            fontSize: 11,
+            fontWeight: 500,
+            textAlign: 'right'
+          }}>
+          {serviceProviderToDisplay}
+        </Text>
+      )
+    }
+  }, [
+    colors.$textPrimary,
+    hasValidSourceAmount,
+    isLoadingCryptoQuotes,
+    serviceProviderToDisplay
+  ])
+
+  const renderPayWith = useCallback(() => {
     return (
       paymentMethodToDisplay && (
         <Pressable
@@ -110,7 +147,7 @@ export const SelectBuyAmountScreen = (): React.JSX.Element => {
               <ActivityIndicator size="small" color={colors.$textPrimary} />
             ) : (
               <>
-                <View sx={{ justifyContent: 'center' }}>
+                <View sx={{ justifyContent: 'center', alignItems: 'flex-end' }}>
                   <Text
                     variant="body2"
                     sx={{
@@ -121,17 +158,7 @@ export const SelectBuyAmountScreen = (): React.JSX.Element => {
                     }}>
                     {paymentMethodToDisplay}
                   </Text>
-                  {serviceProviderToDisplay && (
-                    <Text
-                      variant="caption"
-                      sx={{
-                        fontSize: 11,
-                        fontWeight: 500,
-                        textAlign: 'right'
-                      }}>
-                      {serviceProviderToDisplay}
-                    </Text>
-                  )}
+                  {renderServiceProvider()}
                 </View>
                 <View sx={{ marginLeft: 8 }}>
                   <Icons.Navigation.ChevronRightV2
@@ -145,15 +172,12 @@ export const SelectBuyAmountScreen = (): React.JSX.Element => {
       )
     )
   }, [
-    sourceAmount,
-    isAboveMinimumPurchaseLimit,
-    isBelowMaximumPurchaseLimit,
     paymentMethodToDisplay,
     handleSelectPaymentMethod,
     colors.$surfaceSecondary,
     colors.$textPrimary,
     isLoadingDefaultsByCountry,
-    serviceProviderToDisplay
+    renderServiceProvider
   ])
 
   return (
@@ -184,36 +208,34 @@ export const SelectBuyAmountScreen = (): React.JSX.Element => {
           sx={{ fontSize: 16, lineHeight: 22, color: colors.$textPrimary }}>
           Token
         </Text>
-        <View sx={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-          {token?.tokenWithBalance && (
-            <>
-              <LogoWithNetwork
-                token={token.tokenWithBalance}
-                outerBorderColor={colors.$surfaceSecondary}
-              />
-              <Text
-                variant="body1"
-                sx={{
-                  fontSize: 16,
-                  lineHeight: 22,
-                  color: colors.$textSecondary
-                }}>
-                {token?.tokenWithBalance?.symbol}
-              </Text>
-            </>
-          )}
-          <View sx={{ marginLeft: 8 }}>
-            <Icons.Navigation.ChevronRightV2 color={colors.$textPrimary} />
+        {token?.tokenWithBalance ? (
+          <View sx={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+            <LogoWithNetwork
+              token={token.tokenWithBalance}
+              outerBorderColor={colors.$surfaceSecondary}
+            />
+            <Text
+              variant="body1"
+              sx={{
+                fontSize: 16,
+                lineHeight: 22,
+                color: colors.$textSecondary
+              }}>
+              {token?.tokenWithBalance?.symbol}
+            </Text>
+            <View sx={{ marginLeft: 8 }}>
+              <Icons.Navigation.ChevronRightV2 color={colors.$textPrimary} />
+            </View>
           </View>
-        </View>
+        ) : (
+          <ActivityIndicator size="small" color={colors.$textPrimary} />
+        )}
       </Pressable>
 
       {/* Fiat amount input widget */}
       {tokenBalance && (
         <FiatAmountInputWidget
-          isAmountValid={
-            isBelowMaximumPurchaseLimit && isAboveMinimumPurchaseLimit
-          }
+          isAmountValid={hasValidSourceAmount}
           disabled={isLoadingPurchaseLimits}
           sx={{ marginTop: 12 }}
           currency={selectedCurrency}
@@ -226,28 +248,24 @@ export const SelectBuyAmountScreen = (): React.JSX.Element => {
           formatInTokenUnit={formatInTokenUnit}
         />
       )}
-      <View sx={{ alignItems: 'center', marginTop: 12 }}>
-        {isAboveMinimumPurchaseLimit === false &&
-          minimumPurchaseLimit &&
-          sourceAmount !== 0 && (
-            <Text
-              variant="caption"
-              sx={{
-                fontWeight: 500,
-                color: colors.$textDanger
-              }}>{`The minimum purchase amount is ${minimumPurchaseLimit} ${selectedCurrency}`}</Text>
-          )}
-        {isBelowMaximumPurchaseLimit === false &&
-          maximumPurchaseLimit &&
-          sourceAmount !== 0 && (
-            <Text
-              variant="caption"
-              sx={{
-                fontWeight: 500,
-                color: colors.$textDanger
-              }}>{`The maximum purchase amount is ${maximumPurchaseLimit} ${selectedCurrency}`}</Text>
-          )}
-      </View>
+      {errorMessage && (
+        <View
+          sx={{
+            alignItems: 'center',
+            marginTop: 12,
+            marginHorizontal: 16,
+            flexDirection: 'row',
+            justifyContent: 'center',
+            gap: 8
+          }}>
+          <Icons.Alert.AlertCircle color={colors.$textDanger} />
+          <Text
+            variant="caption"
+            sx={{ fontWeight: 500, color: colors.$textDanger }}>
+            {errorMessage}
+          </Text>
+        </View>
+      )}
       {/* Pay with */}
       {renderPayWith()}
     </ScrollScreen>

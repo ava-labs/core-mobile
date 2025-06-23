@@ -20,6 +20,10 @@ export const openInAppBrowser = async (
   }
 }
 
+export const closeInAppBrowser = async (): Promise<void> => {
+  InAppBrowser.close()
+}
+
 function failSafe(url: string): void {
   Linking.openURL(url).catch(Logger.error)
 }
