@@ -7,6 +7,7 @@ import { Provider } from 'react-redux'
 import { configureStore } from '@reduxjs/toolkit'
 import { appReducer, WalletState } from 'store/app'
 import { walletsReducer } from 'store/wallet/slice'
+import mockMnemonic from 'tests/fixtures/mockMnemonic.json'
 
 // Mock encryption dependencies
 jest.mock('react-native-aes-crypto', () => ({
@@ -19,16 +20,31 @@ jest.mock('react-native-argon2', () => ({
   default: jest.fn().mockResolvedValue({ rawHash: 'mock-raw-hash' })
 }))
 
-jest.mock('services/wallet/WalletService', () => ({
-  __esModule: true,
-  default: {
-    init: jest.fn()
-  }
-}))
-
 jest.mock('utils/uuid', () => ({
   uuid: jest.fn()
 }))
+
+// Add this mock at the top with the other mocks
+jest.mock('store/settings/advanced/slice', () => ({
+  selectIsDeveloperMode: jest.fn().mockReturnValue(false)
+}))
+
+jest.mock('store/network', () => ({
+  selectActiveNetwork: jest.fn().mockReturnValue({
+    chainId: 43114, // Avalanche mainnet
+    chainName: 'Avalanche'
+    // add other network properties as needed
+  })
+}))
+
+jest.mock('store/account/slice', () => ({
+  ...jest.requireActual('store/account/slice'),
+  selectAccountsByWalletId: jest.fn().mockReturnValue(() => ({}))
+}))
+
+jest
+  .spyOn(BiometricsSDK, 'loadWalletSecret')
+  .mockResolvedValue({ success: true, value: mockMnemonic.value })
 
 const createTestStore = () => {
   return configureStore({
