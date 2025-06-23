@@ -35,7 +35,6 @@ export enum ReactQueryKeys {
   MELD_SEARCH_DEFAULTS_BY_COUNTRY = 'meldSearchDefaultsByCountry',
   MELD_SEARCH_PAYMENT_METHODS = 'meldSearchPaymentMethods',
   MELD_CREATE_CRYPTO_QUOTE = 'meldCreateCryptoQuote',
-  MELD_CREATE_SESSION_WIDGET = 'meldCreateSessionWidget',
 
   TERMS_OF_USE = 'termsOfUse'
 }

@@ -35,7 +35,7 @@ export const SelectBuyAmountScreen = (): React.JSX.Element => {
     hasValidSourceAmount,
     isLoadingDefaultsByCountry,
     isLoadingPurchaseLimits,
-    widgetUrl,
+    createSessionWidget,
     isLoadingCryptoQuotes,
     errorMessage
   } = useSelectBuyAmount()
@@ -67,9 +67,10 @@ export const SelectBuyAmountScreen = (): React.JSX.Element => {
     navigate('/selectPaymentMethod')
   }, [navigate, sourceAmount])
 
-  const onNext = useCallback((): void => {
-    widgetUrl && openUrl(widgetUrl)
-  }, [openUrl, widgetUrl])
+  const onNext = useCallback(async (): Promise<void> => {
+    const sessionWidget = await createSessionWidget()
+    sessionWidget?.widgetUrl && openUrl(sessionWidget.widgetUrl)
+  }, [createSessionWidget, openUrl])
 
   const renderFooter = useCallback(() => {
     return (

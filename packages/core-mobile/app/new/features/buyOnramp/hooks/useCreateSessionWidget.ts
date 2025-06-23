@@ -1,5 +1,4 @@
-import { useQuery, UseQueryResult } from '@tanstack/react-query'
-import { ReactQueryKeys } from 'consts/reactQueryKeys'
+import { useCallback } from 'react'
 import { CreateSessionWidget, CreateSessionWidgetParams } from '../types'
 import MeldService from '../services/MeldService'
 import { useOnRampPaymentMethod } from '../store'
@@ -16,58 +15,59 @@ export const useCreateSessionWidget = ({
     redirectUrl,
     serviceProvider
   }
-}: CreateSessionWidgetParams): UseQueryResult<
-  CreateSessionWidget | undefined,
-  Error
-> => {
+}: CreateSessionWidgetParams): {
+  createSessionWidget: () => Promise<CreateSessionWidget | undefined>
+} => {
   const { countryCode } = useLocale()
   const [onRampPaymentMethod] = useOnRampPaymentMethod()
   const { hasValidSourceAmount } = useSourceAmount()
 
-  return useQuery<CreateSessionWidget | undefined>({
-    queryKey: [
-      ReactQueryKeys.MELD_CREATE_SESSION_WIDGET,
-      countryCode,
-      walletAddress,
-      sourceAmount,
-      destinationCurrencyCode,
-      sourceCurrencyCode,
-      redirectUrl,
+  const hasWalletAddress = walletAddress !== undefined
+  const hasSourceCurrencyCode = sourceCurrencyCode !== ''
+  const hasDestinationCurrencyCode = destinationCurrencyCode !== ''
+  const hasSessionType = sessionType !== undefined
+  const hasServiceProvider = serviceProvider !== undefined
+
+  const shouldCreateSessionWidget =
+    hasValidSourceAmount &&
+    hasWalletAddress &&
+    hasSourceCurrencyCode &&
+    hasDestinationCurrencyCode &&
+    hasSessionType &&
+    hasServiceProvider
+
+  const createSessionWidget = useCallback(async () => {
+    if (shouldCreateSessionWidget === false) {
+      return undefined
+    }
+
+    return MeldService.createSessionWidget({
       sessionType,
-      serviceProvider,
-      hasValidSourceAmount,
-      onRampPaymentMethod
-    ],
-    queryFn: () => {
-      const hasWalletAddress = walletAddress !== undefined
-      const hasSourceCurrencyCode = sourceCurrencyCode !== ''
-      const hasDestinationCurrencyCode = destinationCurrencyCode !== ''
-      const hasSessionType = sessionType !== undefined
-      const hasServiceProvider = serviceProvider !== undefined
-
-      const shouldCreateSessionWidget =
-        hasWalletAddress &&
-        hasSourceCurrencyCode &&
-        hasDestinationCurrencyCode &&
-        hasSessionType &&
-        hasServiceProvider
-
-      if (shouldCreateSessionWidget) {
-        return MeldService.createSessionWidget({
-          sessionType,
-          sessionData: {
-            walletAddress,
-            sourceAmount,
-            countryCode,
-            destinationCurrencyCode,
-            sourceCurrencyCode,
-            redirectUrl,
-            serviceProvider,
-            paymentMethodType: onRampPaymentMethod
-          }
-        })
+      sessionData: {
+        walletAddress,
+        sourceAmount,
+        countryCode,
+        destinationCurrencyCode,
+        sourceCurrencyCode,
+        redirectUrl,
+        serviceProvider,
+        paymentMethodType: onRampPaymentMethod
       }
-    },
-    staleTime: 0 // widget url is only valid for one time use, we should always fetch a new one
-  })
+    })
+  }, [
+    countryCode,
+    destinationCurrencyCode,
+    onRampPaymentMethod,
+    redirectUrl,
+    serviceProvider,
+    sessionType,
+    shouldCreateSessionWidget,
+    sourceAmount,
+    sourceCurrencyCode,
+    walletAddress
+  ])
+
+  return {
+    createSessionWidget
+  }
 }

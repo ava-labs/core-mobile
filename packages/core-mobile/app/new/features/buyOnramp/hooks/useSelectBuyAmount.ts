@@ -25,6 +25,7 @@ import {
 } from '../store'
 import {
   CreateCryptoQuoteErrorCode,
+  CreateSessionWidget,
   CryptoCurrency,
   SessionTypes
 } from '../types'
@@ -50,7 +51,7 @@ export const useSelectBuyAmount = (): {
   formatInTokenUnit: (amt: number) => string
   setSourceAmount: (amt: number) => void
   sourceAmount: number | undefined
-  widgetUrl?: string
+  createSessionWidget: () => Promise<CreateSessionWidget | undefined>
   errorMessage?: string
 } => {
   const account = useSelector(selectActiveAccount)
@@ -124,7 +125,7 @@ export const useSelectBuyAmount = (): {
     }?amount=${formattedAmount}&dismissCount=${(currentIndex ?? 0) + 1}`
   }, [formatCurrency, getState, sourceAmount])
 
-  const { data: onrampWidget } = useCreateSessionWidget({
+  const { createSessionWidget } = useCreateSessionWidget({
     sessionType: SessionTypes.BUY,
     sessionData: {
       redirectUrl,
@@ -282,7 +283,7 @@ export const useSelectBuyAmount = (): {
     hasValidSourceAmount,
     isLoadingDefaultsByCountry,
     isLoadingPurchaseLimits,
-    widgetUrl: onrampWidget?.widgetUrl ?? undefined,
+    createSessionWidget,
     isLoadingCryptoQuotes,
     errorMessage
   }
