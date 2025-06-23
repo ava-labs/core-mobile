@@ -34,6 +34,16 @@ export const isValidAddressByVmName = ({
     })
   }
 
+  if (vmName === NetworkVMType.SVM) {
+    return isValidAddress({
+      addressType: isDeveloperMode
+        ? AddressType.SOLANA_DEVNET
+        : AddressType.SOLANA,
+      address,
+      isDeveloperMode
+    })
+  }
+
   return (
     vmName === NetworkVMType.BITCOIN &&
     isValidAddress({
