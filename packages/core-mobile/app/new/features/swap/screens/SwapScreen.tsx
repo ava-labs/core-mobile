@@ -113,7 +113,7 @@ export const SwapScreen = (): JSX.Element => {
 
   const updateMissingTokenPrice = useCallback(
     async (token: LocalTokenWithBalance | undefined) => {
-      if (!token || token?.priceInCurrency !== 0) return
+      if (token?.priceInCurrency !== 0) return
 
       const marketToken = getMarketTokenById(token.internalId ?? '')
 
@@ -121,7 +121,7 @@ export const SwapScreen = (): JSX.Element => {
         setToToken({
           ...token,
           priceInCurrency: marketToken?.currentPrice
-        } as LocalTokenWithBalance)
+        })
       }
     },
     [getMarketTokenById, setToToken]
