@@ -82,6 +82,16 @@ import IconBalanceRefresh from '../../assets/icons/balance_refresh.svg'
 import IconCategory from '../../assets/icons/category.svg'
 import IconQRScanCustom from '../../assets/icons/qr_scan_custom.svg'
 import IconPace from '../../assets/icons/pace.svg'
+import IconApplePay from '../../assets/icons/apple_pay.svg'
+import IconGooglePay from '../../assets/icons/google_pay.svg'
+import IconPayPal from '../../assets/icons/paypal.svg'
+import IconCoinbase from '../../assets/icons/coinbase.svg'
+import IconBinance from '../../assets/icons/binance.svg'
+import IconRevolut from '../../assets/icons/revolut.svg'
+import IconCreditCard from '../../assets/icons/credit_card.svg'
+import IconBankTransfer from '../../assets/icons/bank_transfer.svg'
+import IconCash from '../../assets/icons/cash.svg'
+
 // Transaction types
 import IconTxTypeAdd from '../../assets/icons/tx-type-add.svg'
 import IconTxTypeAdvanceTime from '../../assets/icons/advance-time.svg'
@@ -301,7 +311,16 @@ export const Icons = {
     SwapVertical: IconSwapVertical,
     BalanceRefresh: IconBalanceRefresh,
     Category: IconCategory,
-    Pace: IconPace
+    Pace: IconPace,
+    ApplePay: IconApplePay,
+    GooglePay: IconGooglePay,
+    PayPal: IconPayPal,
+    Coinbase: IconCoinbase,
+    Binance: IconBinance,
+    Revolut: IconRevolut,
+    CreditCard: IconCreditCard,
+    BankTransfer: IconBankTransfer,
+    Cash: IconCash
   },
   RecoveryMethod: {
     Passkey: IconPasskey,

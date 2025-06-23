@@ -104,6 +104,7 @@ export function useSearchableTokenList({
   // zero balance tokens from avalanche and ethereum networks
   const mergedTokens = useMemo(() => {
     const tokensWithBalanceIDs: Record<LocalTokenId, boolean> = {}
+
     tokensWithBalance.forEach(token => {
       tokensWithBalanceIDs[token.localId.toLowerCase()] = true
     })
