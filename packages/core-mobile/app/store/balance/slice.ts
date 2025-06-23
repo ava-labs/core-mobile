@@ -5,7 +5,7 @@ import {
   PayloadAction
 } from '@reduxjs/toolkit'
 import { RootState } from 'store/types'
-import { selectActiveAccount } from 'store/account'
+import { Account, selectActiveAccount } from 'store/account'
 import {
   selectAllNetworks,
   selectEnabledChainIds,
@@ -287,7 +287,7 @@ export const { setStatus, setBalances } = balanceSlice.actions
 
 export const refetchBalance = createAction(`${reducerName}/refetchBalance`)
 
-export const fetchBalanceForAccount = createAction<{ accountId: string }>(
+export const fetchBalanceForAccount = createAction<{ account: Account }>(
   `${reducerName}/fetchBalanceForAccount`
 )
 export const balanceReducer = balanceSlice.reducer

@@ -6,7 +6,6 @@ import BalanceService, {
 import { AppListenerEffectAPI, AppStartListening } from 'store/types'
 import { Account } from 'store/account/types'
 import {
-  selectAccountById,
   selectActiveAccount,
   setAccounts,
   setActiveAccountId
@@ -263,12 +262,12 @@ const fetchBalancePeriodically = async (
 
 const handleFetchBalanceForAccount = async (
   listenerApi: AppListenerEffectAPI,
-  accountId: string
+  account: Account
 ): Promise<void> => {
   const state = listenerApi.getState()
   const isDeveloperMode = selectIsDeveloperMode(state)
   const enabledNetworks = selectEnabledNetworks(state)
-  const accountToFetchFor = selectAccountById(accountId)(state)
+  const accountToFetchFor = account
   const networks = getNetworksToFetch({
     isDeveloperMode,
     enabledNetworks,
@@ -442,9 +441,8 @@ export const addBalanceListeners = (
 
   startListening({
     actionCreator: fetchBalanceForAccount,
-    effect: async (action, listenerApi) => {
-      handleFetchBalanceForAccount(listenerApi, action.payload.accountId)
-    }
+    effect: async (action, listenerApi) =>
+      handleFetchBalanceForAccount(listenerApi, action.payload.account)
   })
 
   startListening({

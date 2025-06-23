@@ -18,8 +18,6 @@ import {
   selectWalletById,
   setActiveWallet
 } from 'store/wallet/slice'
-import WalletFactory from 'services/wallet/WalletFactory'
-import SeedlessWallet from 'seedless/services/wallet/SeedlessWallet'
 import { SeedlessPubKeysStorage } from 'seedless/services/storage/SeedlessPubKeysStorage'
 
 const refreshSeedlessToken = async (
@@ -107,16 +105,8 @@ const handleActiveWalletChange = async (
 
   try {
     Logger.trace('Initializing Seedless wallet after setActiveWallet')
-
-    const wallet = await WalletFactory.createWallet({
-      walletId: activeWallet.id,
-      walletType: WalletType.SEEDLESS
-    })
-
-    if (wallet instanceof SeedlessWallet) {
-      await wallet.initialize({ shouldRefreshPublicKeys: true })
-      Logger.trace('Seedless wallet initialized successfully')
-    }
+    await SeedlessService.refreshPublicKeys()
+    Logger.trace('Seedless wallet initialized successfully')
   } catch (error) {
     Logger.error('Failed to initialize Seedless wallet', error)
   }
