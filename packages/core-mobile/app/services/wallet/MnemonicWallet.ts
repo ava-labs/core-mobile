@@ -36,7 +36,7 @@ import {
 import { isTypedData } from '@avalabs/evm-module'
 import { Curve } from 'utils/publicKeys'
 import slip10 from 'micro-key-producer/slip10.js'
-import { mnemonicToSeed } from 'bip39'
+import { mnemonicToSeed, mnemonicToSeedSync } from 'bip39'
 import { fromSeed } from 'bip32'
 import { hex } from '@scure/base'
 import { SolanaProvider } from '@avalabs/core-wallets-sdk'
@@ -98,14 +98,19 @@ export class MnemonicWallet implements Wallet {
     Logger.info('🔍 getSolanaSigner called', { accountIndex })
 
     try {
-      const pkey = ModuleManager.solanaModule.buildDerivationPath({
-        accountIndex,
-        derivationPathType: DerivationPath.BIP44
-      })
-      const privateKey = pkey[NetworkVMType.SVM]
-      if (!privateKey) throw new Error('Failed to derive Solana private key')
+      const seed = mnemonicToSeedSync(this.mnemonic)
+      const node = slip10.fromMasterSeed(Uint8Array.from(seed))
+      const derivationPathResult =
+        ModuleManager.solanaModule.buildDerivationPath({
+          accountIndex,
+          derivationPathType: DerivationPath.BIP44
+        })
+
+      const path = derivationPathResult[NetworkVMType.SVM]
+      if (!path) throw new Error('Failed to get Solana derivation path')
+      const pkey = node.derive(path)
       Logger.info('solanaWallet fromMnemonic', now() - start)
-      return new SolanaSigner(Buffer.from(privateKey))
+      return new SolanaSigner(Buffer.from(pkey.privateKey))
     } catch (error) {
       Logger.error('🔍 Error in getSolanaSigner:', error)
       throw error
