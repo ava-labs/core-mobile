@@ -4,7 +4,7 @@ export type LocalTokenId = string
 
 export type LocalTokenWithBalance = TokenWithBalance & {
   localId: string
-  internalId: string
+  internalId?: string
   isDataAccurate: boolean
   networkChainId: number
 }
