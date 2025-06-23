@@ -47,7 +47,7 @@ class ApprovalController implements VmModuleApprovalController {
   }
 
   onTransactionPending({ request }: { request: RpcRequest }): void {
-    transactionSnackbar.pending(request.requestId)
+    transactionSnackbar.pending({ toastId: request.requestId })
   }
 
   onTransactionConfirmed({
