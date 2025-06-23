@@ -52,10 +52,7 @@ export const send = async ({
             params: [
               {
                 account: account.addressSVM,
-                serializedTx: serializeSolanaTx(compiledTx),
-                sendOptions: {
-                  preflightCommitment: 'confirmed'
-                }
+                serializedTx: serializeSolanaTx(compiledTx)
               }
             ],
             chainId: getSolanaCaip2ChainId(chainId)
