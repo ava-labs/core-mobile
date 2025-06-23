@@ -5,8 +5,11 @@ import networkService from 'services/network/NetworkService'
 import { ApprovalResponse, Hex } from '@avalabs/vm-module-types'
 import { EVM, EVMUnsignedTx, UnsignedTx } from '@avalabs/avalanchejs'
 import { Avalanche } from '@avalabs/core-wallets-sdk'
+import { WalletType } from 'services/wallet/types'
 
 export const avalancheSendTransaction = async ({
+  walletId,
+  walletType,
   unsignedTxJson,
   vm,
   externalIndices,
@@ -15,6 +18,8 @@ export const avalancheSendTransaction = async ({
   isTestnet,
   resolve
 }: {
+  walletId: string
+  walletType: WalletType
   unsignedTxJson: string
   vm: 'EVM' | 'AVM' | 'PVM'
   externalIndices: number[]
@@ -44,6 +49,8 @@ export const avalancheSendTransaction = async ({
     }
 
     const signedTransactionJson = await walletService.sign({
+      walletId,
+      walletType,
       // Must tell it is avalanche network
       // in the sign function of wallets, network is only used to get the provider
       // so we can pass p network to get the provider, no matter what the network is

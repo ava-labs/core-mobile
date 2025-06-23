@@ -13,7 +13,6 @@ import {
 } from '@avalabs/k2-alpine'
 import { LoadingState } from 'common/components/LoadingState'
 import { ScrollScreen } from 'common/components/ScrollScreen'
-import { useActiveWalletId } from 'common/hooks/useActiveWallet'
 import { usePinOrBiometryLogin } from 'common/hooks/usePinOrBiometryLogin'
 import { usePreventScreenRemoval } from 'common/hooks/usePreventScreenRemoval'
 import { useFocusEffect, useRouter } from 'expo-router'
@@ -34,6 +33,7 @@ import { useSelector } from 'react-redux'
 import { selectWalletState, WalletState } from 'store/app'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { selectSelectedAvatar } from 'store/settings/avatar'
+import { selectActiveWalletId } from 'store/wallet/slice'
 import BiometricsSDK, { BiometricType } from 'utils/BiometricsSDK'
 import Logger from 'utils/Logger'
 
@@ -46,7 +46,7 @@ const LoginWithPinOrBiometry = (): JSX.Element => {
   const pinInputRef = useRef<PinInputActions>(null)
   const { unlock } = useWallet()
   const router = useRouter()
-  const walletId = useActiveWalletId()
+  const walletId = useSelector(selectActiveWalletId)
 
   const isProcessing = useSharedValue(false)
   const [hasNoRecentInput, setHasNoRecentInput] = useState(false)
@@ -77,11 +77,14 @@ const LoginWithPinOrBiometry = (): JSX.Element => {
     // JS thread is blocked, so we need to wait for the animation to finish for updating the UI after the keyboard is closed
     setTimeout(async () => {
       try {
+        if (!walletId) {
+          throw new Error('Wallet ID is not set')
+        }
         const result = await BiometricsSDK.loadWalletSecret(walletId) //for now we only support one wallet, multiple wallets will be supported in the upcoming PR
         if (!result.success) {
           throw result.error
         }
-        await unlock({ mnemonic: result.value })
+        await unlock()
       } catch (error) {
         Logger.error('Failed to login:', error)
       }

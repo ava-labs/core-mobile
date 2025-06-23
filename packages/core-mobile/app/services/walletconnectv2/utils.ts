@@ -1,6 +1,6 @@
 import { BlockchainNamespace } from '@avalabs/core-chains-sdk'
 import { isXChainId, isPChainId } from 'utils/caip2ChainIds'
-import { CorePrimaryAccount } from '@avalabs/types'
+import { Account } from 'store/account'
 
 // generate full address with caip2 chain ID based on the blockchain namespace
 // an example result 'eip155:1:0x241b0073b66bfc19FCB54308861f604F5Eb8f51b'
@@ -9,7 +9,7 @@ export const getAddressWithCaip2ChainId = ({
   blockchainNamespace,
   caip2ChainId
 }: {
-  account: CorePrimaryAccount
+  account: Account
   blockchainNamespace: string
   caip2ChainId: string
 }): string | undefined => {

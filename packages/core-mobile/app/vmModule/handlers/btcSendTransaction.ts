@@ -6,7 +6,7 @@ import {
 import WalletService from 'services/wallet/WalletService'
 import { rpcErrors } from '@metamask/rpc-errors'
 import { Account } from 'store/account/types'
-import { BtcTransactionRequest } from 'services/wallet/types'
+import { BtcTransactionRequest, WalletType } from 'services/wallet/types'
 import { BitcoinInputUTXO, createTransferTx } from '@avalabs/core-wallets-sdk'
 import ModuleManager from 'vmModule/ModuleManager'
 import { mapToVmNetwork } from 'vmModule/utils/mapToVmNetwork'
@@ -16,12 +16,16 @@ export const btcSendTransaction = async ({
   network,
   account,
   finalFeeRate,
+  walletId,
+  walletType,
   resolve
 }: {
   transactionData: BitcoinExecuteTxData
   network: Network
   account: Account
   finalFeeRate: number
+  walletId: string
+  walletType: WalletType
   resolve: (value: ApprovalResponse) => void
 }): Promise<void> => {
   const { to, amount, balance, feeRate, inputs, outputs } = transactionData
@@ -51,6 +55,8 @@ export const btcSendTransaction = async ({
     }
 
     const signedTx = await WalletService.sign({
+      walletId,
+      walletType,
       transaction,
       accountIndex: account.index,
       network

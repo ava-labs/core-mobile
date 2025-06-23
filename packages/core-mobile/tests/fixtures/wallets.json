@@ -1,0 +1,27 @@
+{
+    "wallet-1": {
+      "id": "wallet-1",
+      "name": "Main Wallet",
+      "type": "MNEMONIC"
+    },
+    "wallet-2": {
+      "id": "wallet-2", 
+      "name": "Hardware Wallet",
+      "type": "SEEDLESS"
+    },
+    "wallet-3": {
+      "id": "wallet-3",
+      "name": "Test Wallet",
+      "type": "MNEMONIC"
+    },
+    "wallet-4": {
+      "id": "wallet-4",
+      "name": "Demo Wallet",
+      "type": "SEEDLESS"
+    },
+    "wallet-5": {
+      "id": "wallet-5",
+      "name": "Development Wallet",
+      "type": "MNEMONIC"
+    }
+  }

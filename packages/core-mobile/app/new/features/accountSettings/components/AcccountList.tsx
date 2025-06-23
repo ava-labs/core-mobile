@@ -10,7 +10,7 @@ import {
   Account,
   selectAccounts,
   selectActiveAccount,
-  setActiveAccountIndex
+  setActiveAccount
 } from 'store/account'
 import { useRecentAccounts } from '../store'
 import { AccountItem } from './AccountItem'
@@ -27,22 +27,23 @@ export const AccountList = (): React.JSX.Element => {
   } = useTheme()
   const dispatch = useDispatch()
   const { navigate } = useRouter()
-
-  const activeAccount = useSelector(selectActiveAccount)
+  const activeAccount = useSelector(selectActiveAccount) //TODO: should use useActiveAccount but crashes if deleting wallet, race condition
   const accountCollection = useSelector(selectAccounts)
   const flatListRef = useRef<FlatList>(null)
 
-  const { recentAccountIndexes, addRecentAccount } = useRecentAccounts()
+  const { recentAccountIds, addRecentAccount } = useRecentAccounts()
 
   useEffect(() => {
-    if (recentAccountIndexes.length === 0 && activeAccount) {
-      addRecentAccount(activeAccount.index)
+    if (recentAccountIds.length === 0 && activeAccount) {
+      addRecentAccount(activeAccount.index.toString())
     }
-  }, [activeAccount, addRecentAccount, recentAccountIndexes])
+  }, [activeAccount, addRecentAccount, recentAccountIds])
 
   const recentAccounts = useMemo(() => {
-    return recentAccountIndexes.map(index => accountCollection[index])
-  }, [accountCollection, recentAccountIndexes])
+    return recentAccountIds
+      .map(id => accountCollection[id])
+      .filter((account): account is Account => account !== undefined)
+  }, [accountCollection, recentAccountIds])
 
   useEffect(() => {
     if (activeAccount?.index != null) {
@@ -53,21 +54,21 @@ export const AccountList = (): React.JSX.Element => {
   }, [activeAccount?.index])
 
   const onSelectAccount = useCallback(
-    (accountIndex: number): void => {
+    (account: Account): void => {
       AnalyticsService.capture('AccountSelectorAccountSwitched', {
-        accountIndex
+        accountIndex: account.index
       })
-      dispatch(setActiveAccountIndex(accountIndex))
+      dispatch(setActiveAccount(account.id))
     },
     [dispatch]
   )
 
   const gotoAccountDetails = useCallback(
-    (accountIndex: number): void => {
+    (accountId: string): void => {
       navigate({
         // @ts-ignore TODO: make routes typesafe
         pathname: '/accountSettings/account',
-        params: { accountIndex: accountIndex.toString() }
+        params: { accountId }
       })
     },
     [navigate]
@@ -91,13 +92,13 @@ export const AccountList = (): React.JSX.Element => {
     ({ item, index }: { item: Account; index: number }) => (
       <AccountItem
         index={index}
-        isActive={item?.index === activeAccount?.index}
+        isActive={item.id === activeAccount?.id}
         account={item as Account}
         onSelectAccount={onSelectAccount}
         gotoAccountDetails={gotoAccountDetails}
       />
     ),
-    [activeAccount?.index, gotoAccountDetails, onSelectAccount]
+    [activeAccount?.id, gotoAccountDetails, onSelectAccount]
   )
 
   return (

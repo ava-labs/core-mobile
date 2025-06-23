@@ -13,7 +13,7 @@ import { coingeckoInMemoryCache } from 'utils/coingeckoInMemoryCache'
 import { NetworkVMType } from '@avalabs/core-chains-sdk'
 
 export type BalancesForAccount = {
-  accountIndex: number
+  accountId: string
   chainId: number
   accountAddress: string
   tokens: (TokenWithBalance | Error)[]
@@ -51,7 +51,7 @@ export class BalanceService {
     const balances = balancesResponse[accountAddress] ?? {}
     if ('error' in balances) {
       return {
-        accountIndex: account.index,
+        accountId: account.id,
         chainId: network.chainId,
         tokens: [],
         accountAddress
@@ -59,7 +59,7 @@ export class BalanceService {
     }
 
     return {
-      accountIndex: account.index,
+      accountId: account.id,
       chainId: network.chainId,
       tokens: Object.values(balances),
       accountAddress

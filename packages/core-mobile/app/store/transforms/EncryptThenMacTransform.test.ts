@@ -14,8 +14,9 @@ import { PosthogState } from 'store/posthog'
 import { RawRootState, RootState } from 'store/types'
 import { encryptTransform } from 'redux-persist-transform-encrypt'
 import { Network } from '@avalabs/core-chains-sdk'
-import { CoreAccountType, WalletType } from '@avalabs/types'
+import { CoreAccountType } from '@avalabs/types'
 import { PortfolioState } from 'store/portfolio'
+import { WalletType } from 'services/wallet/types'
 
 const secretKey =
   '037f948ec4fc19c751a8508744626399768efc81d07e2b9dd5ad298196328efa'
@@ -127,12 +128,12 @@ const initialState = {
         active: true,
         type: CoreAccountType.PRIMARY,
         walletId: 'walletId0',
-        walletType: WalletType.Mnemonic,
+        walletType: WalletType.MNEMONIC,
         id: 'id0',
         walletName: 'Wallet 1'
       }
     },
-    activeAccountIndex: 0
+    activeAccountId: '0'
   } as AccountsState,
   notifications: {
     notificationSubscriptions: {}

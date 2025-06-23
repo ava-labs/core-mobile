@@ -4,11 +4,14 @@ import WalletService from 'services/wallet/WalletService'
 import { rpcErrors } from '@metamask/rpc-errors'
 import { Account } from 'store/account/types'
 import { TransactionRequest } from 'ethers'
+import { WalletType } from 'services/wallet/types'
 
 export const ethSendTransaction = async ({
   transactionRequest,
   network,
   account,
+  walletId,
+  walletType,
   maxFeePerGas,
   maxPriorityFeePerGas,
   overrideData,
@@ -17,6 +20,8 @@ export const ethSendTransaction = async ({
   transactionRequest: TransactionRequest
   network: Network
   account: Account
+  walletId: string
+  walletType: WalletType
   maxFeePerGas: bigint | undefined
   maxPriorityFeePerGas: bigint | undefined
   overrideData: string | undefined
@@ -39,6 +44,8 @@ export const ethSendTransaction = async ({
 
   try {
     const signedTx = await WalletService.sign({
+      walletId,
+      walletType,
       transaction,
       accountIndex: account.index,
       network
