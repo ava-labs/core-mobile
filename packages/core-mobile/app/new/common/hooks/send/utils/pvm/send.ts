@@ -11,9 +11,12 @@ import { SpanName } from 'services/sentry/types'
 import { Avalanche } from '@avalabs/core-wallets-sdk'
 import { SPAN_STATUS_ERROR } from '@sentry/core'
 import { RpcMethod } from '@avalabs/vm-module-types'
+import { WalletType } from 'services/wallet/types'
 import { getInternalExternalAddrs } from '../getInternalExternalAddrs'
 
 export const send = async ({
+  walletId,
+  walletType,
   request,
   network,
   fromAddress,
@@ -22,6 +25,8 @@ export const send = async ({
   feeState,
   accountIndex
 }: {
+  walletId: string
+  walletType: WalletType
   request: Request
   network: Network
   fromAddress: string
@@ -38,6 +43,8 @@ export const send = async ({
       try {
         const destinationAddress = 'P-' + stripChainAddress(toAddress ?? '')
         const unsignedTx = await WalletService.createSendPTx({
+          walletId,
+          walletType,
           accountIndex: accountIndex,
           amountInNAvax,
           avaxXPNetwork: network,

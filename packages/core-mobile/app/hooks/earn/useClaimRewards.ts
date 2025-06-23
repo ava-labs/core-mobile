@@ -14,6 +14,7 @@ import Logger from 'utils/Logger'
 import { FundsStuckError } from 'hooks/earn/errors'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
 import { SendErrorMessage } from 'errors/sendError'
+import { useActiveWallet } from 'common/hooks/useActiveWallet'
 import { useClaimFees } from './useClaimFees'
 import { useGetFeeState } from './useGetFeeState'
 
@@ -39,6 +40,8 @@ export const useClaimRewards = (
   const selectedCurrency = useSelector(selectSelectedCurrency)
   const { defaultFeeState } = useGetFeeState()
   const cBaseFeeMultiplier = useSelector(selectCBaseFeeMultiplier)
+  const activeWallet = useActiveWallet()
+
   const {
     totalFees,
     pClaimableBalance,
@@ -66,6 +69,8 @@ export const useClaimRewards = (
       Logger.info(`transfering ${amountToTransfer.toDisplay()} from P to C`)
 
       return EarnService.claimRewards({
+        walletId: activeWallet.id,
+        walletType: activeWallet.type,
         pChainBalance: pClaimableBalance,
         requiredAmount: amountToTransfer,
         activeAccount,

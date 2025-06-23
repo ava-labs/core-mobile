@@ -34,8 +34,8 @@ export const AccountItem = memo(
     index: number
     isActive: boolean
     account: Account
-    onSelectAccount: (accountIndex: number) => void
-    gotoAccountDetails: (accountIndex: number) => void
+    onSelectAccount: (account: Account) => void
+    gotoAccountDetails: (accountId: string) => void
     testID?: string
   }): React.JSX.Element => {
     const {
@@ -43,7 +43,7 @@ export const AccountItem = memo(
       fetchBalance,
       isFetchingBalance,
       isBalanceLoaded
-    } = useBalanceForAccount(account.index)
+    } = useBalanceForAccount(account.id)
     const isPrivacyModeEnabled = useSelector(selectIsPrivacyModeEnabled)
     const {
       theme: { colors, isDark }
@@ -142,7 +142,7 @@ export const AccountItem = memo(
         entering={getItemEnteringAnimation(index)}
         layout={LinearTransition.springify()}>
         <AnimatedPressable
-          onPress={() => onSelectAccount(account.index)}
+          onPress={() => onSelectAccount(account)}
           style={{
             backgroundColor: containerBackgroundColor,
             width: ACCOUNT_CARD_SIZE,
@@ -169,7 +169,7 @@ export const AccountItem = memo(
             </Text>
             <View onTouchStart={e => e.stopPropagation()}>
               <TouchableOpacity
-                onPress={() => gotoAccountDetails(account.index)}
+                onPress={() => gotoAccountDetails(account.id)}
                 hitSlop={16}>
                 <Icons.Alert.AlertCircle
                   color={iconColor}

@@ -10,8 +10,8 @@ export const useNewContactAvatar = createZustandStore<AvatarType | undefined>(
 )
 
 interface RecentAccountsState {
-  recentAccountIndexes: number[]
-  addRecentAccount: (accountIndex: number) => void
+  recentAccountIds: string[]
+  addRecentAccount: (accountId: string) => void
   deleteRecentAccounts: () => void
 }
 
@@ -19,24 +19,32 @@ interface RecentAccountsState {
 export const recentAccountsStore = create<RecentAccountsState>()(
   persist(
     set => ({
-      recentAccountIndexes: [],
-      addRecentAccount: (accountIndex: number) =>
+      recentAccountIds: [],
+      addRecentAccount: (accountId: string) =>
         set(state => ({
-          recentAccountIndexes: [
-            accountIndex,
-            ...state.recentAccountIndexes.filter(
-              index => index !== accountIndex
-            )
+          recentAccountIds: [
+            accountId,
+            ...state.recentAccountIds.filter(id => id !== accountId)
           ].slice(0, 5)
         })),
       deleteRecentAccounts: () =>
         set({
-          recentAccountIndexes: []
+          recentAccountIds: []
         })
     }),
     {
       name: ZustandStorageKeys.RECENT_ACCOUNTS,
-      storage: zustandMMKVStorage
+      storage: zustandMMKVStorage,
+      migrate: (persistedState: any) => {
+        // Check if this is legacy data with recentAccountIndexes
+        if (persistedState && 'recentAccountIndexes' in persistedState) {
+          // For now, we'll clear the old data since we can't easily convert indexes to IDs
+          // without access to the account store here
+          delete persistedState.recentAccountIndexes
+        }
+        return persistedState
+      },
+      version: 1
     }
   )
 )

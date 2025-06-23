@@ -6,10 +6,10 @@ import { useLocalSearchParams, useRouter } from 'expo-router'
 import { dismissTotpStack } from 'features/accountSettings/utils/dismissTotpStack'
 import { useNavigation } from '@react-navigation/native'
 import SeedlessService from 'seedless/services/SeedlessService'
-import { useInitSeedlessWalletAndUnlock } from 'common/hooks/useInitSeedlessWalletAndUnlock'
+import { useWallet } from 'hooks/useWallet'
 
 const VerifyTotpCodeScreen = (): React.JSX.Element => {
-  const { initSeedlessWalletAndUnlock } = useInitSeedlessWalletAndUnlock()
+  const { unlock } = useWallet()
   const { oidcToken, mfaId } = useLocalSearchParams<{
     oidcToken: string
     mfaId: string
@@ -18,10 +18,10 @@ const VerifyTotpCodeScreen = (): React.JSX.Element => {
   const { getState } = useNavigation()
 
   const handleVerifySuccess = useCallback(async (): Promise<void> => {
-    await initSeedlessWalletAndUnlock()
+    await unlock()
     dismissTotpStack(router, getState()) // dismiss the mfa screens
     router.canGoBack() && router.back() // dismiss the token expired screen
-  }, [getState, initSeedlessWalletAndUnlock, router])
+  }, [getState, unlock, router])
 
   const handleVerifyCode = useCallback(
     async (code: string): Promise<Result<undefined, TotpErrors>> => {

@@ -2,6 +2,7 @@ import { rpcErrors } from '@metamask/rpc-errors'
 import { RpcMethod, RpcProvider, RpcRequest } from 'store/rpc/types'
 import mockSession from 'tests/fixtures/walletConnect/session.json'
 import mockAccounts from 'tests/fixtures/accounts.json'
+import mockWallets from 'tests/fixtures/wallets.json'
 import { avalancheRenameAccountHandler as handler } from './avalanche_renameAccount'
 
 jest.mock('store/account/slice', () => {
@@ -14,7 +15,15 @@ jest.mock('store/account/slice', () => {
 
 const mockDispatch = jest.fn()
 const mockListenerApi = {
-  getState: jest.fn(),
+  getState: jest.fn(() => ({
+    wallet: {
+      wallets: mockWallets,
+      activeWalletId: 'wallet-1'
+    },
+    account: {
+      accounts: mockAccounts
+    }
+  })),
   dispatch: mockDispatch
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
 } as any
@@ -85,7 +94,7 @@ describe('avalanche_renameAccount handler', () => {
     })
 
     it('should return error when new account name is an empty string', async () => {
-      const testRequest = createRequest(['2', ''])
+      const testRequest = createRequest(['1', ''])
 
       const result = await handler.handle(testRequest, mockListenerApi)
 

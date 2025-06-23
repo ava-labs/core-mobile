@@ -2,21 +2,36 @@ import { rpcErrors } from '@metamask/rpc-errors'
 import { RpcMethod, RpcProvider, RpcRequest } from 'store/rpc/types'
 import mockSession from 'tests/fixtures/walletConnect/session.json'
 import mockAccounts from 'tests/fixtures/accounts.json'
-import { setActiveAccountIndex } from 'store/account/slice'
+import mockWallets from 'tests/fixtures/wallets.json'
+import { setActiveAccount } from 'store/account/thunks'
 import { avalancheSelectAccountHandler as handler } from './avalanche_selectAccount'
+
+jest.mock('store/account/thunks', () => ({
+  setActiveAccount: jest.fn()
+}))
 
 jest.mock('store/account/slice', () => {
   const actual = jest.requireActual('store/account/slice')
   return {
     ...actual,
     selectAccounts: () => mockAccounts,
-    selectActiveAccount: () => mockAccounts[0]
+    selectActiveAccount: () => mockAccounts['0']
   }
 })
 
-const mockDispatch = jest.fn()
+const mockDispatch = jest.fn(() => ({
+  unwrap: jest.fn(() => Promise.resolve())
+}))
 const mockListenerApi = {
-  getState: jest.fn(),
+  getState: jest.fn(() => ({
+    wallet: {
+      wallets: mockWallets,
+      activeWalletId: 'wallet-1'
+    },
+    account: {
+      accounts: mockAccounts
+    }
+  })),
   dispatch: mockDispatch
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
 } as any
@@ -93,7 +108,7 @@ describe('avalanche_selectAccount handler', () => {
 
       const result = await handler.handle(testRequest, mockListenerApi)
 
-      expect(mockDispatch).toHaveBeenCalledWith(setActiveAccountIndex(1))
+      expect(setActiveAccount).toHaveBeenCalledWith('1')
 
       expect(result).toEqual({ success: true, value: [] })
     })

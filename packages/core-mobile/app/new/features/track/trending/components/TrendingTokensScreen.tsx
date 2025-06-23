@@ -5,7 +5,6 @@ import { CollapsibleTabs } from 'common/components/CollapsibleTabs'
 import { MarketToken, MarketType } from 'store/watchlist'
 import { selectTokenVisibility } from 'store/portfolio'
 import { useSelector } from 'react-redux'
-import { selectActiveAccount } from 'store/account'
 import { selectBalanceTotalForAccount } from 'store/balance'
 import { useNavigateToSwap } from 'features/swap/hooks/useNavigateToSwap'
 import { AVAX_TOKEN_ID } from 'common/consts/swap'
@@ -14,6 +13,7 @@ import { selectIsSwapBlocked } from 'store/posthog'
 import { getTokenAddress, getTokenChainId } from 'features/track/utils/utils'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { useBuy } from 'features/buyOnramp/hooks/useBuy'
+import { useActiveAccount } from 'common/hooks/useActiveAccount'
 import { TrendingTokenListItem } from './TrendingTokenListItem'
 
 const numColumns = 1
@@ -30,14 +30,14 @@ const TrendingTokensScreen = ({
 }): JSX.Element => {
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const { navigateToSwap } = useNavigateToSwap()
-  const activeAccount = useSelector(selectActiveAccount)
+  const activeAccount = useActiveAccount()
   const { isSwappable } = useIsSwappable()
   const isSwapBlocked = useSelector(selectIsSwapBlocked)
   const tokenVisibility = useSelector(selectTokenVisibility)
   const { navigateToBuy } = useBuy()
 
   const balanceTotal = useSelector(
-    selectBalanceTotalForAccount(activeAccount?.index ?? 0, tokenVisibility)
+    selectBalanceTotalForAccount(activeAccount.id, tokenVisibility)
   )
   const isZeroBalance = balanceTotal === 0n
 

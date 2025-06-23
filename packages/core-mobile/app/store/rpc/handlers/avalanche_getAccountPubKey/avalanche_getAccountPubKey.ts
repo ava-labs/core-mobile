@@ -4,6 +4,7 @@ import walletService from 'services/wallet/WalletService'
 import { rpcErrors } from '@metamask/rpc-errors'
 import { RpcMethod, RpcRequest } from 'store/rpc/types'
 import { PubKeyType } from 'services/wallet/types'
+import { selectActiveWallet, selectActiveWalletId } from 'store/wallet/slice'
 import { HandleResponse, RpcRequestHandler } from '../types'
 
 export type AvalancheGetAccountPubKeyRpcRequest =
@@ -15,18 +16,25 @@ class AvalancheGetAccountPubKeyHandler
   methods = [RpcMethod.AVALANCHE_GET_ACCOUNT_PUB_KEY]
 
   handle = async (
-    request: AvalancheGetAccountPubKeyRpcRequest,
+    _request: AvalancheGetAccountPubKeyRpcRequest,
     listenerApi: AppListenerEffectAPI
   ): HandleResponse<PubKeyType> => {
     const activeAccount = selectActiveAccount(listenerApi.getState())
-    if (!activeAccount) {
+    const activeWalletId = selectActiveWalletId(listenerApi.getState())
+    const activeWallet = selectActiveWallet(listenerApi.getState())
+
+    if (!activeAccount || !activeWalletId || !activeWallet) {
       return {
         success: false,
         error: rpcErrors.resourceNotFound('Active account does not exist')
       }
     }
 
-    const publicKey = await walletService.getPublicKey(activeAccount)
+    const publicKey = await walletService.getPublicKey(
+      activeWalletId,
+      activeWallet.type,
+      activeAccount
+    )
 
     return { success: true, value: publicKey }
   }

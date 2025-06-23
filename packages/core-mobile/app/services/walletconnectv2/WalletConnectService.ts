@@ -14,8 +14,8 @@ import { assertNotUndefined } from 'utils/assertions'
 import Logger from 'utils/Logger'
 import promiseWithTimeout from 'utils/js/promiseWithTimeout'
 import { WalletConnectServiceNoop } from 'services/walletconnectv2/WalletConnectServiceNoop'
-import { CorePrimaryAccount } from '@avalabs/types'
 import { getCaip2ChainId } from 'utils/caip2ChainIds'
+import { Account } from 'store/account'
 import {
   CLIENT_METADATA,
   WalletConnectCallbacks,
@@ -203,7 +203,7 @@ class WalletConnectService implements WalletConnectServiceInterface {
   }: {
     session: SessionTypes.Struct
     chainId: number
-    account: CorePrimaryAccount
+    account: Account
   }): Promise<void> => {
     const topic = session.topic
     const caip2ChainId = getCaip2ChainId(chainId)
@@ -292,7 +292,7 @@ class WalletConnectService implements WalletConnectServiceInterface {
   }: {
     session: SessionTypes.Struct
     chainId: number
-    account: CorePrimaryAccount
+    account: Account
   }): Promise<void> => {
     // if dapp is not online, updateSession will be stuck for a long time
     // we are using promiseWithTimeout here to exit early when that happens
@@ -312,7 +312,7 @@ class WalletConnectService implements WalletConnectServiceInterface {
     account
   }: {
     chainId: number
-    account: CorePrimaryAccount
+    account: Account
   }): Promise<void> => {
     const promises: Promise<void>[] = []
 
@@ -334,7 +334,7 @@ class WalletConnectService implements WalletConnectServiceInterface {
     isTestnet = false
   }: {
     session: SessionTypes.Struct
-    account: CorePrimaryAccount
+    account: Account
     isTestnet?: boolean
   }): Promise<void> => {
     const topic = session.topic
@@ -402,7 +402,7 @@ class WalletConnectService implements WalletConnectServiceInterface {
     caip2ChainIds,
     blockchainNamespace
   }: {
-    account: CorePrimaryAccount
+    account: Account
     namespace: SessionTypes.Namespace
     caip2ChainIds: string[]
     blockchainNamespace: BlockchainNamespace
@@ -428,7 +428,7 @@ class WalletConnectService implements WalletConnectServiceInterface {
     isTestnet
   }: {
     session: SessionTypes.Struct
-    account: CorePrimaryAccount
+    account: Account
     isTestnet?: boolean
   }): Promise<void> => {
     // if dapp is not online, updateSession will be stuck for a long time
