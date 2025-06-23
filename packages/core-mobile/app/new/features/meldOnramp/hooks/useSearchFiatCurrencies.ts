@@ -1,5 +1,5 @@
 import { useQuery, UseQueryResult } from '@tanstack/react-query'
-import MeldService from 'features/buyOnramp/services/MeldService'
+import MeldService from 'features/meldOnramp/services/MeldService'
 import { ReactQueryKeys } from 'consts/reactQueryKeys'
 import { FiatCurrency, MeldDefaultParams } from '../types'
 import { useSearchServiceProviders } from './useSearchServiceProviders'
