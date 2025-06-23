@@ -47,7 +47,6 @@ import {
   SwapType
 } from '../types'
 import { calculateRate as calculateEvmRate } from '../utils/evm/calculateRate'
-import { getTokenInternalId } from '../utils/getTokenInternalId'
 
 export const SwapScreen = (): JSX.Element => {
   const { theme } = useTheme()
@@ -114,16 +113,16 @@ export const SwapScreen = (): JSX.Element => {
 
   const updateMissingTokenPrice = useCallback(
     async (token: LocalTokenWithBalance | undefined) => {
-      if (!token) return
-      if (token && Number(token?.priceInCurrency) !== 0) return
+      if (!token || token?.priceInCurrency !== 0) return
 
-      const internalId = await getTokenInternalId(token)
-      const marketToken = getMarketTokenById(internalId ?? '')
+      const marketToken = getMarketTokenById(token.internalId ?? '')
 
-      setToToken({
-        ...token,
-        priceInCurrency: Number(marketToken?.currentPrice) ?? 0
-      } as LocalTokenWithBalance)
+      if (marketToken?.currentPrice) {
+        setToToken({
+          ...token,
+          priceInCurrency: marketToken?.currentPrice
+        } as LocalTokenWithBalance)
+      }
     },
     [getMarketTokenById, setToToken]
   )
@@ -281,7 +280,7 @@ export const SwapScreen = (): JSX.Element => {
       token: TokenWithBalance | undefined,
       value: bigint | undefined
     ): string => {
-      if (token?.priceInCurrency === undefined || !('decimals' in token)) {
+      if (!token?.priceInCurrency || !('decimals' in token)) {
         return UNKNOWN_AMOUNT
       }
 

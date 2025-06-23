@@ -104,14 +104,25 @@ export function useSearchableTokenList({
   // zero balance tokens from avalanche and ethereum networks
   const mergedTokens = useMemo(() => {
     const tokensWithBalanceIDs: Record<LocalTokenId, boolean> = {}
-    tokensWithBalance.forEach(token => {
+
+    const tokensWithBalanceAndInternalId = tokensWithBalance.map(token => {
       tokensWithBalanceIDs[token.localId.toLowerCase()] = true
+      const foundNetwork = allNetworkTokens.find(
+        t => t.localId.toLowerCase() === token.localId.toLowerCase()
+      )
+      if (foundNetwork) {
+        return {
+          ...token,
+          internalId: foundNetwork.internalId
+        }
+      }
+      return token
     })
 
     const remainingNetworkTokens = allNetworkTokens.filter(
       token => !tokensWithBalanceIDs[token.localId.toLowerCase()]
     )
-    return [...tokensWithBalance, ...remainingNetworkTokens]
+    return [...tokensWithBalanceAndInternalId, ...remainingNetworkTokens]
   }, [allNetworkTokens, tokensWithBalance])
 
   // 2. filter tokens by balance, blacklist and search text
