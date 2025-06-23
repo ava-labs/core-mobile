@@ -97,7 +97,7 @@ export const useBuy = (): {
 
     setOnrampToken(avax)
     // @ts-ignore TODO: make routes typesafe
-    navigate('/meld/onramp/selectBuyAmount')
+    navigate('/meld/Onramp/selectBuyAmount')
   }, [avax, handleBuy, isMeldOnrampBlocked, navigate, setOnrampToken])
 
   const navigateToBuyUsdc = useCallback(() => {
