@@ -4,13 +4,14 @@ export type LocalTokenId = string
 
 export type LocalTokenWithBalance = TokenWithBalance & {
   localId: string
+  internalId?: string
   isDataAccurate: boolean
   networkChainId: number
 }
 
 export type Balance = {
   dataAccurate: boolean
-  accountIndex: number
+  accountId: string | undefined
   chainId: number
   tokens: LocalTokenWithBalance[]
 }

@@ -13,7 +13,6 @@ import React, { useCallback, useMemo } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { WalletType } from 'services/wallet/types'
-import { selectWalletType } from 'store/app'
 import {
   selectCoreAnalyticsConsent,
   setCoreAnalytics
@@ -21,6 +20,7 @@ import {
 import { useStoredBiometrics } from 'common/hooks/useStoredBiometrics'
 import BiometricsSDK from 'utils/BiometricsSDK'
 import Logger from 'utils/Logger'
+import { useActiveWallet } from 'common/hooks/useActiveWallet'
 
 const SecurityAndPrivacyScreen = (): JSX.Element => {
   const {
@@ -29,7 +29,7 @@ const SecurityAndPrivacyScreen = (): JSX.Element => {
   const dispatch = useDispatch()
   const coreAnalyticsConsent = useSelector(selectCoreAnalyticsConsent)
   const { allApprovedDapps } = useConnectedDapps()
-  const walletType = useSelector(selectWalletType)
+  const wallet = useActiveWallet()
   const {
     biometricType,
     isBiometricAvailable,
@@ -97,7 +97,7 @@ const SecurityAndPrivacyScreen = (): JSX.Element => {
       {
         title: 'Show recovery phrase',
         onPress: () => {
-          if (walletType === WalletType.SEEDLESS) {
+          if (wallet.type === WalletType.SEEDLESS) {
             // @ts-ignore TODO: make routes typesafe
             navigate('/accountSettings/seedlessExportPhrase')
             return
@@ -108,7 +108,7 @@ const SecurityAndPrivacyScreen = (): JSX.Element => {
       }
     ]
 
-    if (walletType === WalletType.SEEDLESS) {
+    if (wallet.type === WalletType.SEEDLESS) {
       data.push({
         title: 'Recovery methods',
         onPress: () => {
@@ -118,7 +118,7 @@ const SecurityAndPrivacyScreen = (): JSX.Element => {
       })
     }
     return data
-  }, [navigate, walletType])
+  }, [navigate, wallet.type])
 
   const handleToggleCoreAnalyticsConsent = useCallback(
     (value: boolean): void => {

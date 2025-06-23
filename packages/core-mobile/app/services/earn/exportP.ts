@@ -2,7 +2,7 @@ import { retry } from 'utils/js/retry'
 import Logger from 'utils/Logger'
 import WalletService from 'services/wallet/WalletService'
 import { Account } from 'store/account'
-import { AvalancheTransactionRequest } from 'services/wallet/types'
+import { AvalancheTransactionRequest, WalletType } from 'services/wallet/types'
 import { pvm, UnsignedTx } from '@avalabs/avalanchejs'
 import NetworkService from 'services/network/NetworkService'
 import { FundsStuckError } from 'hooks/earn/errors'
@@ -10,6 +10,8 @@ import { TokenUnit } from '@avalabs/core-utils-sdk'
 import { maxTransactionStatusCheckRetries } from './utils'
 
 export type ExportPParams = {
+  walletId: string
+  walletType: WalletType
   pChainBalance: TokenUnit
   requiredAmount: TokenUnit
   activeAccount: Account
@@ -18,6 +20,8 @@ export type ExportPParams = {
 }
 
 export async function exportP({
+  walletId,
+  walletType,
   pChainBalance,
   requiredAmount,
   activeAccount,
@@ -32,6 +36,8 @@ export async function exportP({
   const avaxXPNetwork = NetworkService.getAvalancheNetworkP(isDevMode)
 
   const unsignedTx = await WalletService.createExportPTx({
+    walletId,
+    walletType,
     amountInNAvax: requiredAmount.toSubUnit(),
     accountIndex: activeAccount.index,
     avaxXPNetwork,
@@ -41,6 +47,8 @@ export async function exportP({
   })
 
   const signedTxJson = await WalletService.sign({
+    walletId,
+    walletType,
     transaction: { tx: unsignedTx } as AvalancheTransactionRequest,
     accountIndex: activeAccount.index,
     network: avaxXPNetwork

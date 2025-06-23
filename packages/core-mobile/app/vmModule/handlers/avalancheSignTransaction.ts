@@ -6,18 +6,23 @@ import { avaxSerial, Credential, UnsignedTx, utils } from '@avalabs/avalanchejs'
 import { Avalanche } from '@avalabs/core-wallets-sdk'
 import Logger from 'utils/Logger'
 import { Network } from '@avalabs/core-chains-sdk'
+import { WalletType } from 'services/wallet/types'
 
 export const avalancheSignTransaction = async ({
   unsignedTxJson,
   account,
   ownSignatureIndices,
   network,
+  walletId,
+  walletType,
   resolve
 }: {
   unsignedTxJson: string
   network: Network
   account: Account
   ownSignatureIndices: [number, number][]
+  walletId: string
+  walletType: WalletType
   resolve: (value: ApprovalResponse) => void
 }): Promise<void> => {
   if (!account) {
@@ -27,6 +32,8 @@ export const avalancheSignTransaction = async ({
   try {
     const unsignedTx = UnsignedTx.fromJSON(unsignedTxJson)
     const signedTransactionJson = await WalletService.sign({
+      walletId,
+      walletType,
       transaction: {
         tx: unsignedTx
       },

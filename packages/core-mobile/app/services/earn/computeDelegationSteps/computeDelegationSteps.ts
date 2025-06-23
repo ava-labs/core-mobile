@@ -6,6 +6,7 @@ import { getPChainBalance } from 'services/balance/getPChainBalance'
 import { weiToNano } from 'utils/units/converter'
 import Logger from 'utils/Logger'
 import { getCChainBalance } from 'services/balance/getCChainBalance'
+import { WalletType } from 'services/wallet/types'
 import { Step, Operation, Case } from './types'
 import {
   getPChainAtomicBalance,
@@ -23,6 +24,8 @@ const INSUFFICIENT_BALANCE_ERROR = new Error(
 )
 
 export const computeDelegationSteps = async ({
+  walletId,
+  walletType,
   pAddress,
   stakeAmount,
   currency,
@@ -37,6 +40,8 @@ export const computeDelegationSteps = async ({
   cBaseFeeMultiplier,
   crossChainFeesMultiplier
 }: {
+  walletId: string
+  walletType: WalletType
   pAddress: string
   stakeAmount: bigint
   currency: string
@@ -67,6 +72,8 @@ export const computeDelegationSteps = async ({
   }
 
   const pChainAtomicBalance = await getPChainAtomicBalance({
+    walletId,
+    walletType,
     avaxXPNetwork,
     accountIndex
   })
@@ -82,6 +89,8 @@ export const computeDelegationSteps = async ({
 
         // this will throw if P-Chain balance is not enough
         const delegationFee = await getDelegationFee({
+          walletId,
+          walletType,
           stakeAmount,
           accountIndex,
           avaxXPNetwork,
@@ -109,6 +118,8 @@ export const computeDelegationSteps = async ({
           throw new Error('no P-Chain atomic balance')
 
         const importPFee = await getImportPFee({
+          walletId,
+          walletType,
           accountIndex,
           avaxXPNetwork,
           pAddress,
@@ -118,6 +129,8 @@ export const computeDelegationSteps = async ({
 
         // this will throw if P-Chain balance is not enough
         const delegationFee = await getDelegationFeePostPImport({
+          walletId,
+          walletType,
           stakeAmount,
           accountIndex,
           avaxXPNetwork,
@@ -155,6 +168,8 @@ export const computeDelegationSteps = async ({
         if (cChainBaseFee === undefined) throw new Error('no C-Chain base fee')
 
         const exportCFee = await getExportCFee({
+          walletId,
+          walletType,
           cChainBaseFee,
           accountIndex,
           avaxXPNetwork,
@@ -163,6 +178,8 @@ export const computeDelegationSteps = async ({
         })
 
         const importPFee = await getImportPFeePostCExport({
+          walletId,
+          walletType,
           accountIndex,
           avaxXPNetwork,
           pAddress,
@@ -172,6 +189,8 @@ export const computeDelegationSteps = async ({
 
         // this will throw if P-Chain balance is not enough
         const delegationFee = await getDelegationFeePostCExportAndPImport({
+          walletId,
+          walletType,
           stakeAmount,
           accountIndex,
           avaxXPNetwork,

@@ -17,23 +17,16 @@ import { HiddenBalanceText } from 'common/components/HiddenBalanceText'
 import NavigationBarButton from 'common/components/NavigationBarButton'
 import { ScrollScreen } from 'common/components/ScrollScreen'
 import { TRUNCATE_ADDRESS_LENGTH } from 'common/consts/text'
+import { useActiveAccount } from 'common/hooks/useActiveAccount'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
-import { showSnackbar } from 'common/utils/toast'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
 import { useRouter } from 'expo-router'
 import { useBalanceForAccount } from 'new/common/contexts/useBalanceForAccount'
-import React, { useCallback, useMemo, useRef, useState } from 'react'
-import { ScrollView as RnScrollView } from 'react-native'
+import React, { useCallback, useMemo, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import AnalyticsService from 'services/analytics/AnalyticsService'
-import WalletService from 'services/wallet/WalletService'
-import {
-  addAccount,
-  selectAccounts,
-  setActiveAccountIndex
-} from 'store/account'
+import { selectAccounts, Account, setActiveAccount } from 'store/account'
 import { selectIsPrivacyModeEnabled } from 'store/settings/securityPrivacy'
-import Logger from 'utils/Logger'
+import { selectWallets, selectActiveWalletId } from 'store/wallet/slice'
 
 const ITEM_HEIGHT = 50
 
@@ -44,125 +37,157 @@ const ManageAccountsScreen = (): React.JSX.Element => {
   const dispatch = useDispatch()
   const { navigate } = useRouter()
   const [searchText, setSearchText] = useState('')
-  const [isAddingAccount, setIsAddingAccount] = useState(false)
   const accountCollection = useSelector(selectAccounts)
-  const scrollViewRef = useRef<RnScrollView>(null)
+  const allWallets = useSelector(selectWallets)
+  const activeWalletId = useSelector(selectActiveWalletId)
+  const activeAccount = useActiveAccount()
 
-  const accounts = useMemo(
+  const [expandedWallets, setExpandedWallets] = useState<
+    Record<string, boolean>
+  >({})
+
+  useMemo(() => {
+    const initialExpansionState: Record<string, boolean> = {}
+    const walletIds = Object.keys(allWallets)
+    if (walletIds.length > 0) {
+      // Expand only the active wallet by default
+      walletIds.forEach(id => {
+        initialExpansionState[id] = id === activeWalletId
+      })
+    }
+    setExpandedWallets(initialExpansionState)
+  }, [allWallets, activeWalletId])
+
+  const allAccountsArray: Account[] = useMemo(
     () => Object.values(accountCollection),
     [accountCollection]
   )
 
   const gotoAccountDetails = useCallback(
-    (accountIndex: number): void => {
+    (accountId: string): void => {
       navigate({
         // @ts-ignore TODO: make routes typesafe
         pathname: '/accountSettings/account',
-        params: { accountIndex: accountIndex.toString() }
+        params: { accountId }
       })
     },
     [navigate]
   )
 
   const accountSearchResults = useMemo(() => {
-    return accounts.filter(account => {
-      return account.name.toLowerCase().includes(searchText.toLowerCase())
-    })
-  }, [accounts, searchText])
+    if (!searchText) {
+      return allAccountsArray
+    }
+    return allAccountsArray.filter(account =>
+      account.name.toLowerCase().includes(searchText.toLowerCase())
+    )
+  }, [allAccountsArray, searchText])
 
-  const data = useMemo(() => {
-    return accountSearchResults.map(account => ({
-      title: (
-        <Text
-          testID={`manage_accounts_list__${account.name}`}
-          variant="body1"
-          numberOfLines={2}
-          sx={{
-            color: colors.$textPrimary,
-            fontSize: 14,
-            lineHeight: 16,
-            fontWeight: '500',
-            width: SCREEN_WIDTH * 0.3
-          }}>
-          {account.name}
-        </Text>
-      ),
-      subtitle: (
-        <Text
-          variant="mono"
-          sx={{
-            color: alpha(colors.$textPrimary, 0.6),
-            fontSize: 13,
-            lineHeight: 16,
-            fontWeight: '500'
-          }}>
-          {truncateAddress(account.addressC, TRUNCATE_ADDRESS_LENGTH)}
-        </Text>
-      ),
-      leftIcon: account.active ? (
-        <Icons.Custom.CheckSmall
-          color={colors.$textPrimary}
-          width={24}
-          height={24}
-        />
-      ) : (
-        <View sx={{ width: 24 }} />
-      ),
-      value: (
-        <AccountBalance
-          accountIndex={account.index}
-          isActive={account.active}
-        />
-      ),
-      onPress: () => dispatch(setActiveAccountIndex(account.index)),
-      accessory: (
-        <TouchableOpacity
-          hitSlop={16}
-          sx={{ marginLeft: 4 }}
-          onPress={() => gotoAccountDetails(account.index)}>
-          <Icons.Alert.AlertCircle
-            color={colors.$textSecondary}
-            width={18}
-            height={18}
-          />
-        </TouchableOpacity>
-      )
-    }))
+  const handleSetActiveAccount = useCallback(
+    (accountId: string) => {
+      dispatch(setActiveAccount(accountId))
+    },
+    [dispatch]
+  )
+
+  const walletsDisplayData = useMemo(() => {
+    const walletArray = Object.values(allWallets)
+    return walletArray
+      .map(wallet => {
+        const accountsForWallet = accountSearchResults.filter(
+          account => account.walletId === wallet.id
+        )
+
+        if (accountsForWallet.length === 0 && searchText) {
+          return null
+        }
+
+        const accountDataForWallet = accountsForWallet.map(account => ({
+          title: (
+            <Text
+              testID={`manage_accounts_list__${account.name}`}
+              variant="body1"
+              numberOfLines={2}
+              sx={{
+                color: colors.$textPrimary,
+                fontSize: 14,
+                lineHeight: 16,
+                fontWeight: '500',
+                width: SCREEN_WIDTH * 0.3
+              }}>
+              {account.name}
+            </Text>
+          ),
+          subtitle: (
+            <Text
+              variant="mono"
+              sx={{
+                color: alpha(colors.$textPrimary, 0.6),
+                fontSize: 13,
+                lineHeight: 16,
+                fontWeight: '500'
+              }}>
+              {truncateAddress(account.addressC, TRUNCATE_ADDRESS_LENGTH)}
+            </Text>
+          ),
+          leftIcon:
+            account.id === activeAccount.id ? (
+              <Icons.Custom.CheckSmall
+                color={colors.$textPrimary}
+                width={24}
+                height={24}
+              />
+            ) : (
+              <View sx={{ width: 24 }} />
+            ),
+          value: (
+            <AccountBalance
+              accountId={account.id}
+              isActive={account.id === activeAccount.id}
+            />
+          ),
+          onPress: () => handleSetActiveAccount(account.id),
+          accessory: (
+            <TouchableOpacity
+              hitSlop={16}
+              sx={{ marginLeft: 4 }}
+              onPress={() => gotoAccountDetails(account.id)}>
+              <Icons.Alert.AlertCircle
+                color={colors.$textSecondary}
+                width={18}
+                height={18}
+              />
+            </TouchableOpacity>
+          )
+        }))
+        return {
+          ...wallet,
+          accounts: accountDataForWallet
+        }
+      })
+      .filter(Boolean) // Remove nulls (wallets with no matching search results)
   }, [
+    allWallets,
     accountSearchResults,
-    colors.$textPrimary,
-    colors.$textSecondary,
-    dispatch,
+    searchText,
+    colors,
+    handleSetActiveAccount,
     gotoAccountDetails
   ])
 
+  const toggleWalletExpansion = useCallback((walletId: string) => {
+    setExpandedWallets(prev => ({
+      ...prev,
+      [walletId]: !prev[walletId]
+    }))
+  }, [])
+
   const handleAddAccount = useCallback(async (): Promise<void> => {
-    if (isAddingAccount) return
-
-    try {
-      AnalyticsService.capture('AccountSelectorAddAccount', {
-        accountNumber: Object.keys(accounts).length + 1
-      })
-
-      setIsAddingAccount(true)
-      // @ts-expect-error
-      // dispatch here is not typed correctly
-      await dispatch(addAccount()).unwrap()
-
-      AnalyticsService.capture('CreatedANewAccountSuccessfully', {
-        walletType: WalletService.walletType
-      })
-    } catch (error) {
-      Logger.error('Unable to add account', error)
-      showSnackbar('Unable to add account')
-    } finally {
-      setIsAddingAccount(false)
-      scrollViewRef.current?.scrollTo({
-        y: data.length * ITEM_HEIGHT,
-        animated: true
-      })
-    }
-  }, [accounts, data.length, dispatch, isAddingAccount])
+    navigate({
+      // @ts-ignore TODO: make routes typesafe
+      pathname: '/accountSettings/importWallet'
+    })
+  }, [navigate])
 
   const renderHeaderRight = useCallback(() => {
     return (
@@ -174,6 +199,28 @@ const ManageAccountsScreen = (): React.JSX.Element => {
       </NavigationBarButton>
     )
   }, [colors.$textPrimary, handleAddAccount])
+
+  const renderExpansionIcon = useCallback(
+    (isExpanded: boolean) => {
+      if (isExpanded) {
+        return (
+          <Icons.Navigation.ChevronRight
+            color={colors.$textPrimary}
+            width={24}
+            height={24}
+          />
+        )
+      }
+      return (
+        <Icons.Navigation.ExpandMore
+          color={colors.$textPrimary}
+          width={24}
+          height={24}
+        />
+      )
+    },
+    [colors.$textPrimary]
+  )
 
   const renderHeader = useCallback(() => {
     return (
@@ -191,14 +238,74 @@ const ManageAccountsScreen = (): React.JSX.Element => {
       isModal
       renderHeader={renderHeader}
       renderHeaderRight={renderHeaderRight}
-      contentContainerStyle={{ padding: 16 }}>
-      <View
-        style={{
-          marginTop: 16
-        }}>
-        <GroupList itemHeight={ITEM_HEIGHT} data={data} />
-        <ActivityIndicator animating={isAddingAccount} sx={{ marginTop: 16 }} />
-      </View>
+      contentContainerStyle={{
+        paddingHorizontal: 16,
+        paddingVertical: 16,
+        gap: 12
+      }}>
+      {walletsDisplayData.map(wallet => {
+        if (!wallet) {
+          return null
+        }
+        const isExpanded = expandedWallets[wallet.id] ?? false
+
+        if (searchText && wallet.accounts.length === 0) {
+          return null
+        }
+
+        return (
+          <View
+            key={wallet.id}
+            sx={{
+              backgroundColor: colors.$surfaceSecondary,
+              borderRadius: 12,
+              overflow: 'hidden'
+            }}>
+            <TouchableOpacity
+              onPress={() => toggleWalletExpansion(wallet.id)}
+              sx={{
+                paddingHorizontal: 16,
+                paddingVertical: 12,
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'space-between'
+              }}>
+              <View sx={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                {renderExpansionIcon(isExpanded)}
+                <Text
+                  variant="heading6"
+                  sx={{
+                    color: colors.$textPrimary
+                  }}>
+                  {wallet.name}
+                </Text>
+              </View>
+            </TouchableOpacity>
+
+            {isExpanded && (
+              <>
+                {wallet.accounts.length > 0 ? (
+                  <GroupList itemHeight={ITEM_HEIGHT} data={wallet.accounts} />
+                ) : (
+                  !searchText && (
+                    <View
+                      sx={{
+                        paddingHorizontal: 16,
+                        paddingVertical: 20,
+                        alignItems: 'center',
+                        backgroundColor: colors.$surfaceSecondary
+                      }}>
+                      <Text sx={{ color: colors.$textSecondary }}>
+                        No accounts in this wallet.
+                      </Text>
+                    </View>
+                  )
+                )}
+              </>
+            )}
+          </View>
+        )
+      })}
     </ScrollScreen>
   )
 }
@@ -207,10 +314,10 @@ export default ManageAccountsScreen
 
 const AccountBalance = ({
   isActive,
-  accountIndex
+  accountId
 }: {
   isActive: boolean
-  accountIndex: number
+  accountId: string
 }): React.JSX.Element => {
   const isPrivacyModeEnabled = useSelector(selectIsPrivacyModeEnabled)
   const {
@@ -221,7 +328,7 @@ const AccountBalance = ({
     fetchBalance,
     isFetchingBalance,
     isBalanceLoaded
-  } = useBalanceForAccount(accountIndex)
+  } = useBalanceForAccount(accountId)
   const { formatCurrency } = useFormatCurrency()
 
   const balance = useMemo(() => {

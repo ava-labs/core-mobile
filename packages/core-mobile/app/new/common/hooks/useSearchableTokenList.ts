@@ -94,16 +94,17 @@ export function useSearchableTokenList({
       return selectTokensWithBalanceForAccountAndNetwork(
         state,
         chainId,
-        activeAccount?.index
+        activeAccount?.id
       )
     }
-    return selectTokensWithBalanceForAccount(state, activeAccount?.index)
+    return selectTokensWithBalanceForAccount(state, activeAccount?.id)
   })
 
   // 1. merge tokens with balance with the remaining
   // zero balance tokens from avalanche and ethereum networks
   const mergedTokens = useMemo(() => {
     const tokensWithBalanceIDs: Record<LocalTokenId, boolean> = {}
+
     tokensWithBalance.forEach(token => {
       tokensWithBalanceIDs[token.localId.toLowerCase()] = true
     })

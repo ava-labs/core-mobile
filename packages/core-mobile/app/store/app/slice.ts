@@ -47,9 +47,6 @@ export const selectAppState = (state: RootState): AppStateStatus =>
 export const selectWalletState = (state: RootState): WalletState =>
   state.app.walletState
 
-export const selectWalletType = (state: RootState): WalletType =>
-  state.app.walletType
-
 // actions
 // when app rehydration is complete
 export const onRehydrationComplete = createAction(

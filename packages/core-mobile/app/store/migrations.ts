@@ -3,9 +3,15 @@ import BiometricsSDK from 'utils/BiometricsSDK'
 import {
   Contact,
   CoreAccountType,
-  WalletType as CoreWalletType
+  WalletType as CoreWalletType,
+  CorePrimaryAccount
 } from '@avalabs/types'
-import { Account, AccountsState } from 'store/account'
+import {
+  Account,
+  AccountsState,
+  AccountCollection,
+  PrimaryAccount
+} from 'store/account'
 import { WalletType } from 'services/wallet/types'
 import { AddressBookState } from 'store/addressBook'
 import { uuid } from 'utils/uuid'
@@ -193,6 +199,7 @@ export const migrations = {
       [WalletType.UNSET]: undefined
     }
     const walletType = state.app.walletType as WalletType
+    // @ts-ignore WalletType.PRIVATE_KEY is added in migration 21, so the newWalletType type is any
     const newWalletType = walletTypeMapping[walletType]
 
     Object.entries(accountState.accounts).forEach(([accIndex, account]) => {
@@ -203,6 +210,7 @@ export const migrations = {
         )
       }
 
+      // @ts-ignore
       accountState.accounts[Number(accIndex)] = {
         index: Number(accIndex),
         id: uuid(),
@@ -210,6 +218,7 @@ export const migrations = {
         name: oldAccount.title,
         type: CoreAccountType.PRIMARY,
         walletType: newWalletType,
+        // @ts-ignore activeAccountIndex is removed from accountState
         active: accountState.activeAccountIndex === Number(accIndex),
         addressBTC: oldAccount.addressBtc,
         addressAVM: oldAccount.addressAVM,
@@ -364,6 +373,7 @@ export const migrations = {
       // Create a new wallet entry
       const walletName =
         // @ts-ignore walletName not part of accountState anymore
+        // @ts-ignore
         accountState.walletName ||
         `Wallet ${Object.keys(accountState.accounts).length + 1}`
 
@@ -381,5 +391,64 @@ export const migrations = {
     }
     Logger.info('newState.wallet:', newState.wallet)
     return newState
+  },
+  22: (state: any) => {
+    Logger.info('state.account', state.account)
+    // Check if migration is needed (presence of activeAccountIndex)
+    if (state.account?.activeAccountIndex === undefined) {
+      return state // Already migrated or new state
+    }
+
+    const oldAccountsState = state.account
+    const activeWalletId = state.wallet?.activeWalletId
+
+    if (!activeWalletId) {
+      // this is fresh install, no need to migrate
+      return state
+    }
+    const newAccountsCollection: AccountCollection = {}
+    let newActiveAccountId: string | null = null
+
+    Object.entries(oldAccountsState.accounts).forEach(
+      ([accIndex, oldAccountData]) => {
+        const oldAccount = oldAccountData as CorePrimaryAccount // Old state only had CorePrimaryAccount
+        const index = Number(accIndex)
+
+        // Create the new account structure (PrimaryAccount)
+        const newAccount: PrimaryAccount = {
+          // Keep essential properties from CorePrimaryAccount
+          name: oldAccount.name,
+          type: CoreAccountType.PRIMARY,
+          addressBTC: oldAccount.addressBTC,
+          addressC: oldAccount.addressC,
+          addressAVM: oldAccount.addressAVM,
+          addressPVM: oldAccount.addressPVM,
+          addressCoreEth: oldAccount.addressCoreEth,
+          addressSVM: oldAccount.addressSVM,
+          // Add new/changed properties
+          id: uuid(),
+          walletId: activeWalletId,
+          index: index
+        }
+
+        newAccountsCollection[newAccount.id] = newAccount
+
+        // Check if this account was the active one
+        if (oldAccount.active) {
+          newActiveAccountId = newAccount.id
+        }
+      }
+    )
+
+    const newAccountsState: AccountsState = {
+      accounts: newAccountsCollection,
+      activeAccountId: newActiveAccountId
+    }
+
+    Logger.info('newAccountsState', newAccountsState)
+    return {
+      ...state,
+      account: newAccountsState
+    }
   }
 }

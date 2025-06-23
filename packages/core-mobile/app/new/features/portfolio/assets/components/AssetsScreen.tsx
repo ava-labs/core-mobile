@@ -15,7 +15,6 @@ import React, { FC, memo, useCallback, useMemo } from 'react'
 import { ViewStyle } from 'react-native'
 import Animated from 'react-native-reanimated'
 import { useSelector } from 'react-redux'
-import { selectActiveAccount } from 'store/account'
 import {
   ASSET_MANAGE_VIEWS,
   AssetManageView,
@@ -25,6 +24,7 @@ import {
   selectIsRefetchingBalances
 } from 'store/balance'
 import { selectEnabledNetworks } from 'store/network'
+import { selectActiveAccount } from 'store/account'
 import errorIcon from '../../../../assets/icons/rocket.png'
 import { useAssetsFilterAndSort } from '../hooks/useAssetsFilterAndSort'
 import { TokenListItem } from './TokenListItem'
@@ -46,11 +46,11 @@ const AssetsScreen: FC<Props> = ({
 }): JSX.Element => {
   const { data, filter, sort, view, refetch, isRefetching, isLoading } =
     useAssetsFilterAndSort()
-  const activeAccount = useSelector(selectActiveAccount)
+  const activeAccount = useSelector(selectActiveAccount) //TODO: should use useActiveAccount but crashes if deleting wallet or just onboarding, race condition
   const enabledNetworks = useSelector(selectEnabledNetworks)
 
   const isAllBalancesInaccurate = useSelector(
-    selectIsAllBalancesInaccurate(activeAccount?.index ?? 0)
+    selectIsAllBalancesInaccurate(activeAccount?.id)
   )
   const isBalanceLoading = useSelector(selectIsLoadingBalances)
   const isRefetchingBalance = useSelector(selectIsRefetchingBalances)

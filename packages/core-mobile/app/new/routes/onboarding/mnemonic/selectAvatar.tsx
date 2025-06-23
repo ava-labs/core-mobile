@@ -1,6 +1,6 @@
 import { SelectAvatar as Component } from 'common/components/SelectAvatar'
 import { useAvatar } from 'common/hooks/useAvatar'
-import { useLocalSearchParams, useRouter } from 'expo-router'
+import { useRouter } from 'expo-router'
 import { useRandomAvatar } from 'features/onboarding/hooks/useRandomAvatar'
 import { useRandomizedAvatars } from 'features/onboarding/hooks/useRandomizedAvatars'
 import React, { useState } from 'react'
@@ -14,10 +14,6 @@ export default function SelectAvatar(): JSX.Element {
 
   const [selectedAvatar, setSelectedAvatar] = useState(randomAvatar)
 
-  const { mnemonic } = useLocalSearchParams<{
-    mnemonic: string
-  }>()
-
   const onSubmit = (): void => {
     if (selectedAvatar) {
       saveLocalAvatar(selectedAvatar.id)
@@ -26,7 +22,7 @@ export default function SelectAvatar(): JSX.Element {
     navigate({
       // @ts-ignore TODO: make routes typesafe
       pathname: '/onboarding/mnemonic/confirmation',
-      params: { mnemonic, selectedAvatarId: selectedAvatar?.id }
+      params: { selectedAvatarId: selectedAvatar?.id }
     })
   }
 

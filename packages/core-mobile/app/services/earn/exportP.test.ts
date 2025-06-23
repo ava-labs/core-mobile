@@ -7,6 +7,7 @@ import mockNetworks from 'tests/fixtures/networks.json'
 import { Network } from '@avalabs/core-chains-sdk'
 import { exportP } from 'services/earn/exportP'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
+import { WalletType } from 'services/wallet/types'
 
 describe('earn/exportP', () => {
   describe('exportP', () => {
@@ -59,6 +60,8 @@ describe('earn/exportP', () => {
     it('should fail if pChainBalance is less than required amount', async () => {
       await expect(async () => {
         await exportP({
+          walletId: 'wallet-1',
+          walletType: WalletType.MNEMONIC,
           pChainBalance: new TokenUnit(12 * 10 ** 9, 9, 'AVAX'),
           requiredAmount: new TokenUnit(13 * 10 ** 9, 9, 'AVAX'),
           isDevMode: false,
@@ -70,6 +73,8 @@ describe('earn/exportP', () => {
     it('should call walletService.createExportPTx', async () => {
       expect(async () => {
         await exportP({
+          walletId: 'wallet-1',
+          walletType: WalletType.MNEMONIC,
           pChainBalance: new TokenUnit(12 * 10 ** 9, 9, 'AVAX'),
           requiredAmount: new TokenUnit(10 * 10 ** 9, 9, 'AVAX'),
           isDevMode: false,
@@ -80,7 +85,10 @@ describe('earn/exportP', () => {
           accountIndex: undefined,
           avaxXPNetwork: NetworkService.getAvalancheNetworkP(false),
           destinationChain: 'C',
-          destinationAddress: undefined
+          destinationAddress: undefined,
+          feeState: undefined,
+          walletId: 'wallet-1',
+          walletType: 'MNEMONIC'
         })
       }).not.toThrow()
     })
@@ -88,6 +96,8 @@ describe('earn/exportP', () => {
     it('should call walletService.signAvaxTx', async () => {
       expect(async () => {
         await exportP({
+          walletId: 'wallet-1',
+          walletType: WalletType.MNEMONIC,
           pChainBalance: new TokenUnit(12 * 10 ** 9, 9, 'AVAX'),
           requiredAmount: new TokenUnit(10 * 10 ** 9, 9, 'AVAX'),
           isDevMode: false,
@@ -100,6 +110,8 @@ describe('earn/exportP', () => {
     it('should call networkService.sendTransaction', async () => {
       expect(async () => {
         await exportP({
+          walletId: 'wallet-1',
+          walletType: WalletType.MNEMONIC,
           pChainBalance: new TokenUnit(12 * 10 ** 9, 9, 'AVAX'),
           requiredAmount: new TokenUnit(10 * 10 ** 9, 9, 'AVAX'),
           isDevMode: false,
