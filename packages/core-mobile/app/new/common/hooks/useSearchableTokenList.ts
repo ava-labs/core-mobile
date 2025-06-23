@@ -105,24 +105,14 @@ export function useSearchableTokenList({
   const mergedTokens = useMemo(() => {
     const tokensWithBalanceIDs: Record<LocalTokenId, boolean> = {}
 
-    const tokensWithBalanceAndInternalId = tokensWithBalance.map(token => {
+    tokensWithBalance.forEach(token => {
       tokensWithBalanceIDs[token.localId.toLowerCase()] = true
-      const foundNetwork = allNetworkTokens.find(
-        t => t.localId.toLowerCase() === token.localId.toLowerCase()
-      )
-      if (foundNetwork) {
-        return {
-          ...token,
-          internalId: foundNetwork.internalId
-        }
-      }
-      return token
     })
 
     const remainingNetworkTokens = allNetworkTokens.filter(
       token => !tokensWithBalanceIDs[token.localId.toLowerCase()]
     )
-    return [...tokensWithBalanceAndInternalId, ...remainingNetworkTokens]
+    return [...tokensWithBalance, ...remainingNetworkTokens]
   }, [allNetworkTokens, tokensWithBalance])
 
   // 2. filter tokens by balance, blacklist and search text
