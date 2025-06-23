@@ -41,7 +41,7 @@ const ViewPrivateKeyScreen = (): JSX.Element => {
             alignItems: 'center',
             padding: 3,
             borderRadius: 2,
-            gap: 12
+            gap: 8
           }}>
           <Icons.Alert.ErrorOutline
             color={colors.$textDanger}
