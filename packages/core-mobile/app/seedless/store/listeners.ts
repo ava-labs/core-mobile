@@ -105,7 +105,10 @@ const handleActiveWalletChange = async (
 
   try {
     Logger.trace('Initializing Seedless wallet after setActiveWallet')
-    await SeedlessService.refreshPublicKeys()
+    const storedPubKeys = await SeedlessPubKeysStorage.retrieve()
+    if (storedPubKeys.length === 0) {
+      await SeedlessService.refreshPublicKeys()
+    }
     Logger.trace('Seedless wallet initialized successfully')
   } catch (error) {
     Logger.error('Failed to initialize Seedless wallet', error)

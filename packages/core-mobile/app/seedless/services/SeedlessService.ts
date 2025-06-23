@@ -3,8 +3,8 @@ import Logger from 'utils/Logger'
 import { ACCOUNT_NAME } from '../consts'
 import { SeedlessSessionManager } from './storage/SeedlessSessionManager'
 import SeedlessSession from './SeedlessSession'
+import { transformKeyInfosToPubKeys } from './transformKeyInfosToPubkeys'
 import { SeedlessPubKeysStorage } from './storage/SeedlessPubKeysStorage'
-import { transformKeyInfosToPubKeys } from './wallet/transformKeyInfosToPubkeys'
 
 /**
  * Service for cubesigner-sdk
@@ -31,25 +31,19 @@ class SeedlessService {
   }
 
   async refreshPublicKeys(): Promise<void> {
-    try {
-      const storedPubKeys = await SeedlessPubKeysStorage.retrieve()
-      if (storedPubKeys.length === 0) {
-        const allKeys = await this.getSessionKeysList()
+    this.invalidateSessionKeysCache()
 
-        const pubKeys = transformKeyInfosToPubKeys(allKeys)
-        Logger.info('saving public keys')
-        await SeedlessPubKeysStorage.save(pubKeys)
-      }
-    } catch (error) {
-      Logger.error(`Unable to save public keys`, error)
-      throw new Error(`Unable to save public keys`)
-    }
+    const allKeys = await this.getSessionKeysList()
+
+    const pubKeys = transformKeyInfosToPubKeys(allKeys)
+    Logger.info('saving public keys')
+    await SeedlessPubKeysStorage.save(pubKeys)
   }
 
   /**
    * Returns the list of keys that this session has access to.
    */
-  async getSessionKeysList(type?: KeyType): Promise<KeyInfo[]> {
+  private async getSessionKeysList(type?: KeyType): Promise<KeyInfo[]> {
     let keysList: KeyInfo[] = []
     if (this.sessionKeysListCache && this.sessionKeysListCache.length > 0) {
       keysList = this.sessionKeysListCache
@@ -137,7 +131,7 @@ class SeedlessService {
     return undefined
   }
 
-  invalidateSessionKeysCache(): void {
+  private invalidateSessionKeysCache(): void {
     this.sessionKeysListCache = undefined
   }
 }

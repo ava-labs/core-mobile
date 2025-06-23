@@ -267,21 +267,20 @@ const handleFetchBalanceForAccount = async (
   const state = listenerApi.getState()
   const isDeveloperMode = selectIsDeveloperMode(state)
   const enabledNetworks = selectEnabledNetworks(state)
-  const accountToFetchFor = account
   const networks = getNetworksToFetch({
     isDeveloperMode,
     enabledNetworks,
     iteration: 0,
     nonPrimaryNetworksIteration: 0,
     pullPrimaryNetworks: true,
-    address: accountToFetchFor?.addressC ?? ''
+    address: account.addressC ?? ''
   })
 
   onBalanceUpdateCore({
     queryStatus: QueryStatus.LOADING,
     listenerApi,
     networks,
-    account: accountToFetchFor
+    account
   }).catch(Logger.error)
 }
 
