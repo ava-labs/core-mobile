@@ -2,7 +2,12 @@ import { useQuery, UseQueryResult } from '@tanstack/react-query'
 import { ReactQueryKeys } from 'consts/reactQueryKeys'
 import { selectSelectedCurrency } from 'store/settings/currency'
 import { useSelector } from 'react-redux'
-import { ServiceProviderCategories, ServiceProviders } from '../consts'
+import { isAndroid, isIOS } from 'utils/Utils'
+import {
+  PaymentMethods,
+  ServiceProviderCategories,
+  ServiceProviders
+} from '../consts'
 import MeldService from '../services/MeldService'
 import { SearchPaymentMethods } from '../types'
 import { useOnRampToken } from '../store'
@@ -58,6 +63,13 @@ export const useSearchPaymentMethods = ({
         categories,
         accountFilter
       }),
+    select: data => {
+      return data.filter(
+        pm =>
+          (isAndroid && pm.paymentMethod !== PaymentMethods.APPLE_PAY) ||
+          (isIOS && pm.paymentMethod !== PaymentMethods.GOOGLE_PAY)
+      )
+    },
     staleTime: 1000 * 60 * 30 // 30 minutes
   })
 }
