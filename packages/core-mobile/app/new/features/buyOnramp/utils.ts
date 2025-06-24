@@ -77,7 +77,8 @@ export const dismissMeldStack = (
     pathname: '/transactionSuccessful',
     params: {
       title: 'Transaction submitted',
-      description: 'Please wait while we process your transaction',
+      description:
+        'Please wait while we process your transaction. You can dismiss this page at any time.',
       buttonText: 'Done'
     }
   })
