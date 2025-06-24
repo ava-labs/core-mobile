@@ -50,7 +50,7 @@ export const useBuy = (): {
   const usdc = useMemo(
     () =>
       cryptoCurrencies?.find(
-        token => token.currencyCode === MELD_CURRENCY_CODES.USDC
+        token => token.currencyCode === MELD_CURRENCY_CODES.USDC_AVAXC
       ),
     [cryptoCurrencies]
   )
@@ -91,16 +91,19 @@ export const useBuy = (): {
   const navigateToBuyAvax = useCallback(() => {
     if (avax === undefined) return
     setOnrampToken(avax)
+    setSourceAmount(0)
+
     // @ts-ignore TODO: make routes typesafe
     navigate('/buyOnramp/selectBuyAmount')
-  }, [avax, navigate, setOnrampToken])
+  }, [avax, navigate, setOnrampToken, setSourceAmount])
 
   const navigateToBuyUsdc = useCallback(() => {
     if (usdc === undefined) return
     setOnrampToken(usdc)
+    setSourceAmount(0)
     // @ts-ignore TODO: make routes typesafe
     navigate('/buyOnramp/selectBuyAmount')
-  }, [usdc, navigate, setOnrampToken])
+  }, [usdc, setOnrampToken, setSourceAmount, navigate])
 
   return {
     navigateToBuy,
