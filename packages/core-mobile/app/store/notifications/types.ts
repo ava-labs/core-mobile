@@ -9,6 +9,6 @@ export type StakeCompleteNotification = Pick<
   PChainTransaction,
   'endTimestamp' | 'txHash'
 > & {
-  accountIndex?: number
+  accountId?: string
   isDeveloperMode?: boolean
 }
