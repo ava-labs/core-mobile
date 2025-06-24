@@ -1,12 +1,11 @@
 import { formatTokenAmount } from '@avalabs/core-bridge-sdk'
 import { Network } from '@avalabs/core-chains-sdk'
-import { bigintToBig, bigToBigInt, TokenUnit } from '@avalabs/core-utils-sdk'
+import { bigintToBig, TokenUnit } from '@avalabs/core-utils-sdk'
 import {
   ActivityIndicator,
   alpha,
   Button,
   Icons,
-  normalizeNumericTextInput,
   SxProp,
   Text,
   TokenAmount,
@@ -16,6 +15,7 @@ import {
   View
 } from '@avalabs/k2-alpine'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import { Platform } from 'react-native'
 import Animated, {
   Easing,
   FadeIn,
@@ -23,8 +23,6 @@ import Animated, {
   LinearTransition
 } from 'react-native-reanimated'
 import { LogoWithNetwork } from './LogoWithNetwork'
-import Big from 'big.js'
-import { Platform } from 'react-native'
 
 export const TokenInputWidget = ({
   title,
@@ -64,6 +62,7 @@ export const TokenInputWidget = ({
   inputTextColor?: string
   isLoadingAmount?: boolean
   autoFocus?: boolean
+  // eslint-disable-next-line sonarjs/cognitive-complexity
 }): JSX.Element => {
   const {
     theme: { colors }
