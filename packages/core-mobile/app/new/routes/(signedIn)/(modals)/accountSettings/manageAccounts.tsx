@@ -18,7 +18,6 @@ import { HiddenBalanceText } from 'common/components/HiddenBalanceText'
 import NavigationBarButton from 'common/components/NavigationBarButton'
 import { ScrollScreen } from 'common/components/ScrollScreen'
 import { TRUNCATE_ADDRESS_LENGTH } from 'common/consts/text'
-import { useActiveAccount } from 'common/hooks/useActiveAccount'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
 import { useRouter } from 'expo-router'
@@ -26,6 +25,7 @@ import { useBalanceForAccount } from 'new/common/contexts/useBalanceForAccount'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { Account, selectAccounts, setActiveAccount } from 'store/account'
+import { selectActiveAccount } from 'store/account'
 import { selectIsPrivacyModeEnabled } from 'store/settings/securityPrivacy'
 import { selectActiveWalletId, selectWallets } from 'store/wallet/slice'
 
@@ -41,7 +41,7 @@ const ManageAccountsScreen = (): React.JSX.Element => {
   const accountCollection = useSelector(selectAccounts)
   const allWallets = useSelector(selectWallets)
   const activeWalletId = useSelector(selectActiveWalletId)
-  const activeAccount = useActiveAccount()
+  const activeAccount = useSelector(selectActiveAccount)
 
   const [expandedWallets, setExpandedWallets] = useState<
     Record<string, boolean>
@@ -147,7 +147,7 @@ const ManageAccountsScreen = (): React.JSX.Element => {
             </Text>
           ),
           leftIcon:
-            account.id === activeAccount.id ? (
+            account.id === activeAccount?.id ? (
               <Icons.Custom.CheckSmall
                 color={colors.$textPrimary}
                 width={24}
@@ -159,7 +159,7 @@ const ManageAccountsScreen = (): React.JSX.Element => {
           value: (
             <AccountBalance
               accountId={account.id}
-              isActive={account.id === activeAccount.id}
+              isActive={account.id === activeAccount?.id}
             />
           ),
           onPress: () => handleSetActiveAccount(account.id),
@@ -188,7 +188,7 @@ const ManageAccountsScreen = (): React.JSX.Element => {
     searchText,
     colors.$textPrimary,
     colors.$textSecondary,
-    activeAccount.id,
+    activeAccount?.id,
     handleSetActiveAccount,
     gotoAccountDetails
   ])
