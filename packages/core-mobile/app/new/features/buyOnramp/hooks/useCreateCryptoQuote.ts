@@ -29,7 +29,19 @@ export const useCreateCryptoQuote = ({
   )
   const { hasValidSourceAmount, sourceAmount } = useSourceAmount()
 
+  const hasValidCountry = countryCode !== undefined
+  const hasSelectedCurrency = selectedCurrency !== undefined
+  const hasDestinationCurrencyCode =
+    onRampToken?.currencyCode !== '' && onRampToken?.currencyCode !== undefined
+
+  const enabled =
+    hasValidCountry &&
+    hasSelectedCurrency &&
+    hasValidSourceAmount &&
+    hasDestinationCurrencyCode
+
   return useQuery<CreateCryptoQuote | undefined>({
+    enabled,
     queryKey: [
       ReactQueryKeys.MELD_CREATE_CRYPTO_QUOTE,
       serviceProviders,
@@ -44,28 +56,15 @@ export const useCreateCryptoQuote = ({
       onRampPaymentMethod
     ],
     queryFn: () => {
-      const hasValidCountry = countryCode !== undefined
-      const hasSelectedCurrency = selectedCurrency !== undefined
-      const hasDestinationCurrencyCode =
-        onRampToken?.currencyCode !== '' &&
-        onRampToken?.currencyCode !== undefined
-
-      if (
-        hasValidCountry &&
-        hasSelectedCurrency &&
-        hasValidSourceAmount &&
-        hasDestinationCurrencyCode
-      ) {
-        return MeldService.createCryptoQuote({
-          serviceProviders,
-          walletAddress,
-          sourceAmount,
-          countryCode,
-          destinationCurrencyCode,
-          sourceCurrencyCode,
-          paymentMethodType: onRampPaymentMethod
-        })
-      }
+      return MeldService.createCryptoQuote({
+        serviceProviders,
+        walletAddress,
+        sourceAmount,
+        countryCode,
+        destinationCurrencyCode,
+        sourceCurrencyCode,
+        paymentMethodType: onRampPaymentMethod
+      })
     },
     staleTime: 1000 * 60 * 1 // 1 minute
   })
