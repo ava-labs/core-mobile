@@ -362,7 +362,7 @@ class EarnService {
     | {
         txHash: string
         endTimestamp: number | undefined
-        accountIndex: number
+        accountId: string
         isDeveloperMode: boolean
         isOnGoing: boolean
       }[]
@@ -402,11 +402,19 @@ class EarnService {
       const now = new Date()
       return currentNetworkTransactions
         .concat(oppositeNetworkTransactions)
-        .map(transaction => {
+        .flatMap(transaction => {
+          // find account that matches the transaction's index
+          const account = accountsArray.find(
+            acc => acc.index === transaction.index
+          )
+
+          // flat map will remove this
+          if (!account) return []
+
           return {
             txHash: transaction.txHash,
             endTimestamp: transaction.endTimestamp,
-            accountIndex: Number(transaction.index),
+            accountId: account.id,
             isDeveloperMode: transaction.isDeveloperMode,
             isOnGoing: isOnGoing(transaction, now)
           }
