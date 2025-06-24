@@ -19,6 +19,7 @@ import BiometricsSDK from 'utils/BiometricsSDK'
 import WalletFactory from 'services/wallet/WalletFactory'
 import SeedlessWallet from 'seedless/services/wallet/SeedlessWallet'
 import { transactionSnackbar } from 'common/utils/toast'
+import Logger from 'utils/Logger'
 import {
   selectAccounts,
   setAccounts,
@@ -45,6 +46,17 @@ const initAccounts = async (
   const walletSecret = await BiometricsSDK.loadWalletSecret(activeWallet.id)
   if (!walletSecret.success) {
     throw new Error('Failed to load wallet secret')
+  }
+
+  if (activeWallet.type === WalletType.SEEDLESS) {
+    try {
+      await SeedlessService.refreshPublicKeys()
+    } catch (error) {
+      Logger.error(
+        'Failed to fetch and save public keys for Seedless wallet',
+        error
+      )
+    }
   }
 
   const acc = await accountService.createNextAccount({
