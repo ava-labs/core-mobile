@@ -24,6 +24,7 @@ import Animated, {
 } from 'react-native-reanimated'
 import { LogoWithNetwork } from './LogoWithNetwork'
 import Big from 'big.js'
+import { Platform } from 'react-native'
 
 export const TokenInputWidget = ({
   title,
@@ -158,6 +159,9 @@ export const TokenInputWidget = ({
   const nonEditableInputValue = useMemo(() => {
     if (token?.decimals && amount) {
       const unit = new TokenUnit(amount, token?.decimals, token?.symbol)
+      if (unit.lt(1)) {
+        return unit.toDisplay()
+      }
       return unit.toDisplay({ asNumber: true })
     }
 
@@ -178,7 +182,7 @@ export const TokenInputWidget = ({
           sx={{
             flexDirection: 'row',
             alignItems: 'center',
-            gap: 12
+            gap: 24
           }}>
           <View sx={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
             {token && network && (
@@ -193,7 +197,7 @@ export const TokenInputWidget = ({
                 sx={{
                   flexDirection: 'row',
                   alignItems: 'center',
-                  gap: 20,
+                  gap: 10,
                   justifyContent: 'space-between'
                 }}>
                 <TouchableOpacity
@@ -202,12 +206,7 @@ export const TokenInputWidget = ({
                   <View sx={{ gap: 1 }}>
                     {token && <Text variant="subtitle2">{title}</Text>}
                     <View sx={{ flexDirection: 'row', alignItems: 'center' }}>
-                      <Text
-                        testID="select_token_title"
-                        variant="heading6"
-                        sx={{
-                          marginTop: 0
-                        }}>
+                      <Text testID="select_token_title" variant="heading6">
                         {token
                           ? token.symbol
                           : isTokenSelectable
@@ -229,8 +228,7 @@ export const TokenInputWidget = ({
                   <View
                     sx={{
                       alignItems: 'flex-end',
-                      flex: 1,
-                      height: 42
+                      flex: 1
                     }}
                     pointerEvents={token === undefined ? 'none' : 'auto'}>
                     {editable ? (
@@ -245,6 +243,7 @@ export const TokenInputWidget = ({
                           minWidth: 100,
                           width: '100%',
                           textAlign: 'right',
+                          marginRight: Platform.OS === 'android' ? -4 : 0,
                           color:
                             inputTextColor ??
                             (editable
@@ -258,26 +257,32 @@ export const TokenInputWidget = ({
                         placeholder="0.00"
                       />
                     ) : (
-                      <Text
-                        adjustsFontSizeToFit
-                        numberOfLines={1}
+                      <View
                         style={{
-                          fontFamily: 'Aeonik-Medium',
-                          fontSize: 42,
-                          lineHeight: 42,
-                          minWidth: 100,
+                          height: 50,
                           width: '100%',
-                          textAlign: 'right',
-
-                          color: !inputValue
-                            ? alpha(colors.$textSecondary, 0.2)
-                            : inputTextColor ??
-                              (editable
-                                ? colors.$textPrimary
-                                : colors.$textSecondary)
+                          justifyContent: 'flex-end'
                         }}>
-                        {nonEditableInputValue}
-                      </Text>
+                        <Text
+                          adjustsFontSizeToFit
+                          numberOfLines={1}
+                          style={{
+                            fontFamily: 'Aeonik-Medium',
+                            fontSize: 42,
+                            lineHeight: 42,
+                            minHeight: 42,
+                            width: '100%',
+                            textAlign: 'right',
+                            color: !inputValue
+                              ? alpha(colors.$textSecondary, 0.2)
+                              : inputTextColor ??
+                                (editable
+                                  ? colors.$textPrimary
+                                  : colors.$textSecondary)
+                          }}>
+                          {nonEditableInputValue}
+                        </Text>
+                      </View>
                     )}
                   </View>
                 </TouchableOpacity>
@@ -286,9 +291,9 @@ export const TokenInputWidget = ({
                 sx={{
                   flexDirection: 'row',
                   alignItems: 'center',
-                  gap: 20,
+                  gap: 24,
                   justifyContent: 'space-between',
-                  marginTop: -4
+                  marginTop: Platform.OS === 'android' && editable ? -14 : -4
                 }}>
                 <View>
                   {token &&
