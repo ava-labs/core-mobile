@@ -1,21 +1,23 @@
-import React, { useState } from 'react'
-import { ScrollScreen } from 'common/components/ScrollScreen'
-import { View, Text, useTheme, ActivityIndicator } from '@avalabs/k2-alpine'
-import { SimpleTextInput } from 'new/common/components/SimpleTextInput'
-import { Button } from '@avalabs/k2-alpine'
-import { useSelector } from 'react-redux'
 import { truncateAddress } from '@avalabs/core-utils-sdk'
+import {
+  ActivityIndicator,
+  Button,
+  GroupList,
+  Text,
+  View
+} from '@avalabs/k2-alpine'
+import { ScrollScreen } from 'common/components/ScrollScreen'
 import { TokenLogo } from 'common/components/TokenLogo'
-import { useImportPrivateKey } from 'new/common/hooks/useImportPrivateKey'
-import { useDeriveAddresses } from 'new/common/hooks/useDeriveAddresses'
 import { usePrivateKeyBalance } from 'common/hooks/usePrivateKeyBalance'
+import { SimpleTextInput } from 'new/common/components/SimpleTextInput'
+import { useDeriveAddresses } from 'new/common/hooks/useDeriveAddresses'
+import { useImportPrivateKey } from 'new/common/hooks/useImportPrivateKey'
 import { usePrivateKeyImportHandler } from 'new/common/hooks/usePrivateKeyImportHandler'
+import React, { useCallback, useState } from 'react'
+import { useSelector } from 'react-redux'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 
 const ImportPrivateKeyScreen = (): JSX.Element => {
-  const {
-    theme: { colors }
-  } = useTheme()
   const [privateKey, setPrivateKey] = useState('')
 
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
@@ -33,104 +35,81 @@ const ImportPrivateKeyScreen = (): JSX.Element => {
     privateKey
   )
 
+  const renderFooter = useCallback(() => {
+    return (
+      <Button
+        type="primary"
+        size="large"
+        onPress={handleImport}
+        disabled={
+          privateKey.trim() === '' ||
+          isAwaitingOurBalance ||
+          isCheckingMigration ||
+          isImporting
+        }>
+        Import
+      </Button>
+    )
+  }, [
+    handleImport,
+    isAwaitingOurBalance,
+    isCheckingMigration,
+    isImporting,
+    privateKey
+  ])
+
   return (
     <ScrollScreen
       title="Import private key"
       isModal
+      shouldAvoidKeyboard
+      renderFooter={renderFooter}
       contentContainerStyle={{ padding: 16, flex: 1 }}>
-      <View sx={{ flex: 1, justifyContent: 'space-between' }}>
-        <View sx={{ gap: 24 }}>
-          <SimpleTextInput
-            value={privateKey}
-            onChangeText={setPrivateKey}
-            placeholder="Enter private key"
-            autoFocus
-            secureTextEntry={true}
-          />
+      <View sx={{ gap: 12, paddingTop: 24 }}>
+        <SimpleTextInput
+          value={privateKey}
+          onChangeText={setPrivateKey}
+          placeholder="Enter private key"
+          autoFocus
+          secureTextEntry={true}
+        />
 
-          {showDerivedInfo && (
-            <View sx={{ gap: 16 }}>
-              <View
-                sx={{
-                  backgroundColor: colors.$surfaceSecondary,
-                  borderRadius: 12,
-                  padding: 16,
-                  gap: 12
-                }}>
-                {derivedAddresses.map((item, index) => (
-                  <React.Fragment key={item.address}>
-                    <View
-                      sx={{
-                        flexDirection: 'row',
-                        alignItems: 'center',
-                        gap: 8
-                      }}>
-                      <TokenLogo symbol={item.symbol} />
-                      <Text sx={{ color: colors.$textPrimary, fontSize: 16 }}>
-                        {truncateAddress(item.address, 8)}
-                      </Text>
-                    </View>
-                    {index < derivedAddresses.length - 1 && (
-                      <View
-                        sx={{
-                          height: 1,
-                          backgroundColor: colors.$borderPrimary,
-                          marginVertical: 4
-                        }}
-                      />
-                    )}
-                  </React.Fragment>
-                ))}
-              </View>
-
-              {totalBalanceDisplay && (
-                <View
-                  sx={{
-                    backgroundColor: colors.$surfaceSecondary,
-                    borderRadius: 12,
-                    padding: 16,
-                    flexDirection: 'row',
-                    justifyContent: 'space-between',
-                    alignItems: 'center'
-                  }}>
+        {showDerivedInfo && (
+          <View sx={{ gap: 12 }}>
+            <GroupList
+              data={derivedAddresses.map(item => ({
+                title: (
                   <Text
-                    sx={{
-                      color: colors.$textPrimary,
-                      fontSize: 16,
-                      fontWeight: 'bold'
+                    variant="mono"
+                    style={{
+                      fontSize: 15
                     }}>
-                    Total balance
+                    {truncateAddress(item.address, 16)}
                   </Text>
-                  {isAwaitingOurBalance ? (
+                ),
+                leftIcon: <TokenLogo symbol={item.symbol} size={24} />
+              }))}
+            />
+
+            <GroupList
+              data={[
+                {
+                  title: 'Total balance',
+                  value: isAwaitingOurBalance ? (
                     <ActivityIndicator size="small" />
                   ) : (
                     <Text
-                      sx={{
-                        color: colors.$textPrimary,
-                        fontSize: 16,
-                        fontWeight: 'bold'
+                      style={{
+                        fontSize: 16
                       }}>
                       {totalBalanceDisplay}
                     </Text>
-                  )}
-                </View>
-              )}
-            </View>
-          )}
-        </View>
-
-        <Button
-          type="primary"
-          size="large"
-          onPress={handleImport}
-          disabled={
-            privateKey.trim() === '' ||
-            isAwaitingOurBalance ||
-            isCheckingMigration ||
-            isImporting
-          }>
-          Import
-        </Button>
+                  )
+                }
+              ]}
+            />
+          </View>
+        )}
       </View>
     </ScrollScreen>
   )
