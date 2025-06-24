@@ -1,9 +1,9 @@
 import { createAsyncThunk } from '@reduxjs/toolkit'
-import { ThunkApi } from 'store/types'
-import { selectIsDeveloperMode } from 'store/settings/advanced/slice'
 import AccountsService from 'services/account/AccountsService'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { selectActiveNetwork } from 'store/network'
+import { selectIsDeveloperMode } from 'store/settings/advanced/slice'
+import { ThunkApi } from 'store/types'
 import {
   selectActiveWalletId,
   selectWalletById,
@@ -12,6 +12,8 @@ import {
 import {
   reducerName,
   selectAccountById,
+  selectAccounts,
+  selectAccountsByWalletId,
   setAccount,
   setActiveAccountId,
   selectAccountsByWalletId,
@@ -26,6 +28,8 @@ export const addAccount = createAsyncThunk<void, void, ThunkApi>(
     const isDeveloperMode = selectIsDeveloperMode(state)
     const activeNetwork = selectActiveNetwork(state)
     const activeWalletId = selectActiveWalletId(state)
+    const allAccounts = selectAccounts(state)
+
     if (!activeWalletId) {
       throw new Error('Active wallet ID is not set')
     }
@@ -33,11 +37,12 @@ export const addAccount = createAsyncThunk<void, void, ThunkApi>(
     if (!wallet) {
       throw new Error('Wallet not found')
     }
-    const accounts = selectAccountsByWalletId(activeWalletId)(state)
-    const accIndex = Object.keys(accounts).length
+
+    const allAccountsCount = Object.keys(allAccounts).length
+    const accountsByWalletId = selectAccountsByWalletId(activeWalletId)(state)
 
     const acc = await AccountsService.createNextAccount({
-      index: accIndex,
+      index: allAccountsCount,
       walletType: wallet.type,
       network: activeNetwork,
       walletId: activeWalletId
@@ -47,10 +52,10 @@ export const addAccount = createAsyncThunk<void, void, ThunkApi>(
     thunkApi.dispatch(setActiveAccountId(acc.id))
 
     if (isDeveloperMode === false) {
-      const allAccounts = [...Object.values(accounts), acc]
+      const allAccountsByWalletId = [...Object.values(accountsByWalletId), acc]
 
       AnalyticsService.captureWithEncryption('AccountAddressesUpdated', {
-        addresses: allAccounts.map(account => ({
+        addresses: allAccountsByWalletId.map(account => ({
           address: account.addressC,
           addressBtc: account.addressBTC,
           addressAVM: account.addressAVM ?? '',
