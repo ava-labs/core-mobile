@@ -34,9 +34,6 @@ import { isTypedData, isTypedDataV1 } from '@avalabs/evm-module'
 import { stripChainAddress } from 'store/account/utils'
 import { AddressPublicKey, Curve, isEvmPublicKey } from 'utils/publicKeys'
 import { findPublicKey } from 'utils/publicKeys'
-import { SeedlessPubKeysStorage } from 'seedless/services/storage/SeedlessPubKeysStorage'
-import { transformKeyInfosToPubKeys } from 'seedless/services/wallet/transformKeyInfosToPubkeys'
-import Logger from 'utils/Logger'
 import CoreSeedlessAPIService from '../CoreSeedlessAPIService'
 import SeedlessService from '../SeedlessService'
 import { SeedlessBtcSigner } from './SeedlessBtcSigner'
@@ -51,26 +48,6 @@ export default class SeedlessWallet implements Wallet {
   ) {
     this.#client = client
     this.#addressPublicKeys = addressPublicKeys
-  }
-
-  async initialize({
-    shouldRefreshPublicKeys
-  }: {
-    shouldRefreshPublicKeys: boolean
-  }): Promise<void> {
-    try {
-      const storedPubKeys = await SeedlessPubKeysStorage.retrieve()
-      if (shouldRefreshPublicKeys || storedPubKeys.length === 0) {
-        const allKeys = await SeedlessService.getSessionKeysList()
-
-        const pubKeys = transformKeyInfosToPubKeys(allKeys)
-        Logger.info('saving public keys')
-        await SeedlessPubKeysStorage.save(pubKeys)
-      }
-    } catch (error) {
-      Logger.error(`Unable to save public keys`, error)
-      throw new Error(`Unable to save public keys`)
-    }
   }
 
   private async getMnemonicId(): Promise<string> {
@@ -165,7 +142,19 @@ export default class SeedlessWallet implements Wallet {
       mnemonicId
     })
 
-    SeedlessService.invalidateSessionKeysCache()
+    await SeedlessService.refreshPublicKeys()
+  }
+
+  public async deriveMissingKeys(): Promise<void> {
+    const identityProof = await this.#client.apiClient.identityProve()
+    const mnemonicId = await this.getMnemonicId()
+
+    await CoreSeedlessAPIService.deriveMissingKeys({
+      identityProof,
+      mnemonicId
+    })
+
+    await SeedlessService.refreshPublicKeys()
   }
 
   /** WALLET INTERFACE IMPLEMENTATION **/
