@@ -29,16 +29,12 @@ export const useCreateCryptoQuote = ({
   )
   const { hasValidSourceAmount, sourceAmount } = useSourceAmount()
 
-  const hasValidCountry = countryCode !== undefined
-  const hasSelectedCurrency = selectedCurrency !== undefined
   const hasDestinationCurrencyCode =
-    onRampToken?.currencyCode !== '' && onRampToken?.currencyCode !== undefined
+    onRampToken?.currencyCode !== '' &&
+    onRampToken?.currencyCode !== undefined &&
+    onRampToken?.currencyCode !== null
 
-  const enabled =
-    hasValidCountry &&
-    hasSelectedCurrency &&
-    hasValidSourceAmount &&
-    hasDestinationCurrencyCode
+  const enabled = hasValidSourceAmount && hasDestinationCurrencyCode
 
   return useQuery<CreateCryptoQuote | undefined>({
     enabled,

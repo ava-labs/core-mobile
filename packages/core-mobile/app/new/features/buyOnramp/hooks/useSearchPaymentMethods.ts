@@ -25,19 +25,22 @@ export type SearchPaymentMethodsParams = {
 
 export const useSearchPaymentMethods = ({
   categories,
-  accountFilter = true
-}: Omit<
-  SearchPaymentMethodsParams,
-  'countries' | 'serviceProviders'
->): UseQueryResult<SearchPaymentMethods[], Error> => {
+  accountFilter = true,
+  serviceProviders: selectedServiceProviders
+}: Omit<SearchPaymentMethodsParams, 'countries'>): UseQueryResult<
+  SearchPaymentMethods[],
+  Error
+> => {
   const [onrampToken] = useOnRampToken()
   const selectedCurrency = useSelector(selectSelectedCurrency)
   const { data: serviceProvidersData } = useSearchServiceProviders({
     categories: [ServiceProviderCategories.CRYPTO_ONRAMP]
   })
-  const serviceProviders = serviceProvidersData?.map(
+  const _serviceProviders = serviceProvidersData?.map(
     serviceProvider => serviceProvider.serviceProvider
   )
+
+  const serviceProviders = selectedServiceProviders ?? _serviceProviders
 
   const { countryCode } = useLocale()
   const cryptoCurrencyCode = onrampToken?.currencyCode

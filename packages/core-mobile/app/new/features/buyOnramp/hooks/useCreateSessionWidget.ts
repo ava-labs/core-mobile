@@ -22,18 +22,23 @@ export const useCreateSessionWidget = ({
   const [onRampPaymentMethod] = useOnRampPaymentMethod()
   const { hasValidSourceAmount } = useSourceAmount()
 
-  const hasWalletAddress = walletAddress !== undefined
-  const hasSourceCurrencyCode = sourceCurrencyCode !== ''
-  const hasDestinationCurrencyCode = destinationCurrencyCode !== ''
-  const hasSessionType = sessionType !== undefined
-  const hasServiceProvider = serviceProvider !== undefined
+  const hasWalletAddress = walletAddress !== undefined && walletAddress !== null
+  const hasSourceCurrencyCode =
+    sourceCurrencyCode !== '' &&
+    sourceCurrencyCode !== undefined &&
+    sourceCurrencyCode !== null
+  const hasDestinationCurrencyCode =
+    destinationCurrencyCode !== '' &&
+    destinationCurrencyCode !== undefined &&
+    destinationCurrencyCode !== null
+  const hasServiceProvider =
+    serviceProvider !== undefined && serviceProvider !== null
 
   const shouldCreateSessionWidget =
     hasValidSourceAmount &&
     hasWalletAddress &&
     hasSourceCurrencyCode &&
     hasDestinationCurrencyCode &&
-    hasSessionType &&
     hasServiceProvider
 
   const createSessionWidget = useCallback(async () => {
