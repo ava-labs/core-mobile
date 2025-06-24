@@ -111,13 +111,13 @@ class NotificationsService {
     txHash,
     timestamp: unixTimestamp,
     channelId,
-    accountIndex,
+    accountId,
     isDeveloperMode = false
   }: {
     txHash: string
     timestamp: number // unix timestamp in milliseconds
     channelId: ChannelId
-    accountIndex?: number
+    accountId: string
     isDeveloperMode?: boolean
   }): Promise<void> => {
     const timestamp = fromUnixTime(unixTimestamp).getTime()
@@ -142,7 +142,7 @@ class NotificationsService {
         data: {
           url: STAKE_COMPELETE_DEEPLINK_URL,
           isDeveloperMode: isDeveloperMode.toString(),
-          accountIndex: accountIndex ?? 0
+          accountId: accountId
         },
         ios: {
           badgeCount: 1
@@ -186,7 +186,7 @@ class NotificationsService {
             )
             await this.scheduleNotification({
               txHash: data.txHash,
-              accountIndex: data.accountIndex,
+              accountId: data.accountId ?? '',
               timestamp: data.endTimestamp,
               channelId: ChannelId.STAKING_COMPLETE,
               isDeveloperMode: data.isDeveloperMode
