@@ -5,7 +5,7 @@ import { useSelector } from 'react-redux'
 import MeldService from '../services/MeldService'
 import { CreateCryptoQuote, CreateCryptoQuoteParams } from '../types'
 import { ServiceProviderCategories } from '../consts'
-import { useOnRampPaymentMethod, useOnRampToken } from '../store'
+import { useOnRampPaymentMethod } from '../store'
 import { useSearchServiceProviders } from './useSearchServiceProviders'
 import { useSourceAmount } from './useSourceAmount'
 
@@ -19,7 +19,6 @@ export const useCreateCryptoQuote = ({
   Error
 > => {
   const selectedCurrency = useSelector(selectSelectedCurrency)
-  const [onRampToken] = useOnRampToken()
   const [onRampPaymentMethod] = useOnRampPaymentMethod()
   const { data: serviceProvidersData } = useSearchServiceProviders({
     categories: [ServiceProviderCategories.CRYPTO_ONRAMP]
@@ -29,10 +28,7 @@ export const useCreateCryptoQuote = ({
   )
   const { hasValidSourceAmount, sourceAmount } = useSourceAmount()
 
-  const hasDestinationCurrencyCode =
-    onRampToken?.currencyCode !== '' &&
-    onRampToken?.currencyCode !== undefined &&
-    onRampToken?.currencyCode !== null
+  const hasDestinationCurrencyCode = destinationCurrencyCode !== ''
 
   const enabled = hasValidSourceAmount && hasDestinationCurrencyCode
 
@@ -47,7 +43,6 @@ export const useCreateCryptoQuote = ({
       destinationCurrencyCode,
       sourceCurrencyCode,
       selectedCurrency,
-      onRampToken?.currencyCode,
       hasValidSourceAmount,
       onRampPaymentMethod
     ],
