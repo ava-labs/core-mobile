@@ -16,7 +16,6 @@ import {
 import { ErrorState } from 'common/components/ErrorState'
 import { HiddenBalanceText } from 'common/components/HiddenBalanceText'
 import NavigationBarButton from 'common/components/NavigationBarButton'
-import { Placeholder } from 'common/components/Placeholder'
 import { ScrollScreen } from 'common/components/ScrollScreen'
 import { TRUNCATE_ADDRESS_LENGTH } from 'common/consts/text'
 import { useActiveAccount } from 'common/hooks/useActiveAccount'
@@ -26,9 +25,9 @@ import { useRouter } from 'expo-router'
 import { useBalanceForAccount } from 'new/common/contexts/useBalanceForAccount'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { selectAccounts, Account, setActiveAccount } from 'store/account'
+import { Account, selectAccounts, setActiveAccount } from 'store/account'
 import { selectIsPrivacyModeEnabled } from 'store/settings/securityPrivacy'
-import { selectWallets, selectActiveWalletId } from 'store/wallet/slice'
+import { selectActiveWalletId, selectWallets } from 'store/wallet/slice'
 
 const ITEM_HEIGHT = 50
 
