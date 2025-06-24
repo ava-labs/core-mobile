@@ -100,8 +100,8 @@ export const Navigation = (): JSX.Element =>
       'https://www.figma.com/file/hDSl4OUgXorDAtqPZtCUhB/K2-Foundation?type=design&node-id=378-5642&mode=design&t=HOIixbVhKpxGrRwG-4'
   })
 
-export const Custom = (): JSX.Element => {
-  return Template({
+export const Custom = (): JSX.Element =>
+  Template({
     icons: [
       Icons.Custom.ArrowDown,
       Icons.Custom.BackArrowCustom,
@@ -143,14 +143,21 @@ export const Custom = (): JSX.Element => {
       Icons.Custom.Unknown,
       Icons.Custom.Unwrap,
       Icons.Custom.AddCircle,
-      Icons.Custom.DoNotDisturbOn
+      Icons.Custom.DoNotDisturbOn,
+      Icons.Custom.Shield
     ],
     itemPadding: 16,
     numColumns: 2,
     resourceURL:
       'https://www.figma.com/file/hDSl4OUgXorDAtqPZtCUhB/K2-Foundation?type=design&node-id=378-5642&mode=design&t=HOIixbVhKpxGrRwG-4'
   })
-}
+
+export const File = (): JSX.Element =>
+  Template({
+    icons: [Icons.File.Download],
+    resourceURL:
+      'https://www.figma.com/design/hDSl4OUgXorDAtqPZtCUhB/K2-Foundation?node-id=376-23667&t=qM1otSwKcHtbI8Mp-0'
+  })
 
 export const RecoveryMethods = (): JSX.Element =>
   Template({
