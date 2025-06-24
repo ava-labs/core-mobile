@@ -1,20 +1,21 @@
 import { createAsyncThunk } from '@reduxjs/toolkit'
-import { ThunkApi } from 'store/types'
-import { selectIsDeveloperMode } from 'store/settings/advanced/slice'
 import AccountsService from 'services/account/AccountsService'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { selectActiveNetwork } from 'store/network'
+import { selectIsDeveloperMode } from 'store/settings/advanced/slice'
+import { ThunkApi } from 'store/types'
 import {
   selectActiveWalletId,
   selectWalletById,
+  selectWallets,
   setActiveWallet
 } from 'store/wallet/slice'
 import {
   reducerName,
   selectAccountById,
+  selectAccountsByWalletId,
   setAccount,
-  setActiveAccountId,
-  selectAccountsByWalletId
+  setActiveAccountId
 } from './slice'
 
 export const addAccount = createAsyncThunk<void, void, ThunkApi>(
@@ -24,6 +25,7 @@ export const addAccount = createAsyncThunk<void, void, ThunkApi>(
     const isDeveloperMode = selectIsDeveloperMode(state)
     const activeNetwork = selectActiveNetwork(state)
     const activeWalletId = selectActiveWalletId(state)
+
     if (!activeWalletId) {
       throw new Error('Active wallet ID is not set')
     }
@@ -31,11 +33,17 @@ export const addAccount = createAsyncThunk<void, void, ThunkApi>(
     if (!wallet) {
       throw new Error('Wallet not found')
     }
+
+    const wallets = selectWallets(state)
+    const allAccountsCount = Object.values(wallets).reduce((acc, item) => {
+      const accounts = selectAccountsByWalletId(item.id)(state)
+      return acc + accounts.length
+    }, 0)
+
     const accounts = selectAccountsByWalletId(activeWalletId)(state)
-    const accIndex = Object.keys(accounts).length
 
     const acc = await AccountsService.createNextAccount({
-      index: accIndex,
+      index: allAccountsCount,
       walletType: wallet.type,
       network: activeNetwork,
       walletId: activeWalletId

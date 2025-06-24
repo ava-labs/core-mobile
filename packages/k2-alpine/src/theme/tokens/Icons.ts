@@ -91,6 +91,7 @@ import IconRevolut from '../../assets/icons/revolut.svg'
 import IconCreditCard from '../../assets/icons/credit_card.svg'
 import IconBankTransfer from '../../assets/icons/bank_transfer.svg'
 import IconCash from '../../assets/icons/cash.svg'
+import IconEncrypted from '../../assets/icons/encrypted.svg'
 
 // Transaction types
 import IconTxTypeAdd from '../../assets/icons/tx-type-add.svg'
@@ -106,6 +107,7 @@ import IconTxTypeSubnet from '../../assets/icons/transaction-subnet.svg'
 import IconTxTypeUnwrap from '../../assets/icons/unwrap.svg'
 import IconTxTypeUnknown from '../../assets/icons/unknown.svg'
 import IconPsychiatry from '../../assets/icons/psychiatry.svg'
+import IconDownload from '../../assets/icons/download.svg'
 
 // token logos
 import AAVE from '../../assets/tokenLogos/AAVE.svg'
@@ -223,6 +225,7 @@ export const Icons = {
     AlertCircle: IconAlertCircle
   },
   Device: {
+    Encrypted: IconEncrypted,
     GPPMaybe: IconGPPMaybe
   },
   Navigation: {
@@ -320,7 +323,8 @@ export const Icons = {
     Revolut: IconRevolut,
     CreditCard: IconCreditCard,
     BankTransfer: IconBankTransfer,
-    Cash: IconCash
+    Cash: IconCash,
+    Download: IconDownload
   },
   RecoveryMethod: {
     Passkey: IconPasskey,

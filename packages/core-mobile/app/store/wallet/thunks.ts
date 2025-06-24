@@ -5,6 +5,7 @@ import { WalletType } from 'services/wallet/types'
 import {
   Account,
   ImportedAccount,
+  selectAccountsByWalletId,
   setAccount,
   setActiveAccount
 } from 'store/account'
@@ -97,11 +98,16 @@ export const importMnemonicWalletAndAccount = createAsyncThunk<
 
     thunkApi.dispatch(setActiveWallet(newWalletId))
 
-    const accountIndex = 0
+    const wallets = selectWallets(state)
+    const allAccountsCount = Object.values(wallets).reduce((acc, item) => {
+      const accounts = selectAccountsByWalletId(item.id)(state)
+      return acc + accounts.length
+    }, 0)
+
     const addresses = await WalletService.getAddresses({
       walletId: newWalletId,
       walletType: WalletType.MNEMONIC,
-      accountIndex,
+      accountIndex: 0,
       network: activeNetwork
     })
 
@@ -109,9 +115,9 @@ export const importMnemonicWalletAndAccount = createAsyncThunk<
     const newAccount: Account = {
       id: newAccountId,
       walletId: newWalletId,
-      name: `Account ${accountIndex + 1}`,
+      name: `Account ${allAccountsCount + 1}`,
       type: CoreAccountType.PRIMARY,
-      index: accountIndex,
+      index: allAccountsCount,
       addressC: addresses.EVM,
       addressBTC: addresses.BITCOIN,
       addressAVM: addresses.AVM,

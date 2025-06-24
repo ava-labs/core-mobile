@@ -1,17 +1,17 @@
-import { useRouter } from 'expo-router'
-import React, { useCallback, useState, useMemo } from 'react'
-import { alpha, GroupList, Icons, Text, useTheme } from '@avalabs/k2-alpine'
-import { ScrollScreen } from 'common/components/ScrollScreen'
-import { showSnackbar } from 'new/common/utils/toast'
-import Logger from 'utils/Logger'
-import AnalyticsService from 'services/analytics/AnalyticsService'
-import { selectAccounts } from 'store/account/slice'
-import { useSelector, useDispatch } from 'react-redux'
-import { addAccount } from 'store/account'
-import { WalletType } from 'services/wallet/types'
-import { AppThunkDispatch } from 'store/types'
-import { useActiveWallet } from 'common/hooks/useActiveWallet'
+import { GroupList, Icons, Text, useTheme, View } from '@avalabs/k2-alpine'
 import { LoadingState } from 'common/components/LoadingState'
+import { ScrollScreen } from 'common/components/ScrollScreen'
+import { useActiveWallet } from 'common/hooks/useActiveWallet'
+import { useRouter } from 'expo-router'
+import { showSnackbar } from 'new/common/utils/toast'
+import React, { useCallback, useMemo, useState } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
+import AnalyticsService from 'services/analytics/AnalyticsService'
+import { WalletType } from 'services/wallet/types'
+import { addAccount } from 'store/account'
+import { selectAccounts } from 'store/account/slice'
+import { AppThunkDispatch } from 'store/types'
+import Logger from 'utils/Logger'
 
 const ITEM_HEIGHT = 70
 
@@ -61,15 +61,14 @@ const ImportWalletScreen = (): JSX.Element => {
 
     const baseData = [
       {
-        title: (
-          <Text
-            variant="body1"
-            sx={{ color: colors.$textPrimary, fontSize: 16 }}>
-            Type in a recovery phrase
+        title: 'Type in a recovery phrase',
+        subtitle: (
+          <Text variant="caption" sx={{ fontSize: 12, paddingTop: 4 }}>
+            Access with your recovery phrase
           </Text>
         ),
         leftIcon: (
-          <Icons.Device.GPPMaybe
+          <Icons.Device.Encrypted
             color={colors.$textPrimary}
             width={24}
             height={24}
@@ -81,15 +80,14 @@ const ImportWalletScreen = (): JSX.Element => {
         onPress: handleTypeRecoveryPhrase
       },
       {
-        title: (
-          <Text
-            variant="body1"
-            sx={{ color: colors.$textPrimary, fontSize: 16 }}>
-            Import a private key
+        title: 'Import a private key',
+        subtitle: (
+          <Text variant="caption" sx={{ fontSize: 12, paddingTop: 4 }}>
+            Access with an existing private key
           </Text>
         ),
         leftIcon: (
-          <Icons.Custom.ArrowDown
+          <Icons.Custom.Download
             color={colors.$textPrimary}
             width={24}
             height={24}
@@ -105,17 +103,9 @@ const ImportWalletScreen = (): JSX.Element => {
     if (activeWallet?.type !== WalletType.PRIVATE_KEY) {
       return [
         {
-          title: (
-            <Text
-              variant="body1"
-              sx={{ color: colors.$textPrimary, fontSize: 16 }}>
-              Create new account
-            </Text>
-          ),
+          title: 'Create new account',
           subtitle: (
-            <Text
-              variant="caption"
-              sx={{ color: alpha(colors.$textPrimary, 0.6), fontSize: 14 }}>
+            <Text variant="caption" sx={{ fontSize: 12, paddingTop: 4 }}>
               Add new multi-chain account
             </Text>
           ),
@@ -143,8 +133,13 @@ const ImportWalletScreen = (): JSX.Element => {
       title={`Add or connect\na wallet`}
       isModal
       contentContainerStyle={{ padding: 16, flex: 1 }}>
-      <GroupList itemHeight={ITEM_HEIGHT} data={data} />
-      {isAddingAccount && <LoadingState sx={{ marginTop: 16 }} />}
+      <View
+        style={{
+          marginTop: 24
+        }}>
+        <GroupList itemHeight={ITEM_HEIGHT} data={data} />
+        {isAddingAccount && <LoadingState sx={{ marginTop: 16 }} />}
+      </View>
     </ScrollScreen>
   )
 }

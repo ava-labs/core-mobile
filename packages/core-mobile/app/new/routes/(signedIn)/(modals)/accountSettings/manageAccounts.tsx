@@ -78,9 +78,9 @@ const ManageAccountsScreen = (): React.JSX.Element => {
     if (!searchText) {
       return allAccountsArray
     }
-    return allAccountsArray.filter(account =>
-      account.name.toLowerCase().includes(searchText.toLowerCase())
-    )
+    return allAccountsArray.filter(account => {
+      return account.name.toLowerCase().includes(searchText.toLowerCase())
+    })
   }, [allAccountsArray, searchText])
 
   const handleSetActiveAccount = useCallback(
@@ -102,36 +102,48 @@ const ManageAccountsScreen = (): React.JSX.Element => {
           return null
         }
 
-        const accountDataForWallet = accountsForWallet.map(account => ({
-          title: (
-            <Text
-              testID={`manage_accounts_list__${account.name}`}
-              variant="body1"
-              numberOfLines={2}
-              sx={{
-                color: colors.$textPrimary,
-                fontSize: 14,
-                lineHeight: 16,
-                fontWeight: '500',
-                width: SCREEN_WIDTH * 0.3
-              }}>
-              {account.name}
-            </Text>
-          ),
-          subtitle: (
-            <Text
-              variant="mono"
-              sx={{
-                color: alpha(colors.$textPrimary, 0.6),
-                fontSize: 13,
-                lineHeight: 16,
-                fontWeight: '500'
-              }}>
-              {truncateAddress(account.addressC, TRUNCATE_ADDRESS_LENGTH)}
-            </Text>
-          ),
-          leftIcon:
-            account.id === activeAccount.id ? (
+        const accountDataForWallet = accountsForWallet.map((account, index) => {
+          const isActive = account.id === activeAccount.id
+
+          const nextAccount = accountsForWallet[index + 1]
+          const hideSeparator = isActive || nextAccount?.id === activeAccount.id
+
+          return {
+            hideSeparator,
+            containerSx: {
+              backgroundColor: isActive
+                ? alpha(colors.$textPrimary, 0.1)
+                : 'transparent',
+              borderRadius: 8
+            },
+            title: (
+              <Text
+                testID={`manage_accounts_list__${account.name}`}
+                variant="body1"
+                numberOfLines={2}
+                sx={{
+                  color: colors.$textPrimary,
+                  fontSize: 14,
+                  lineHeight: 16,
+                  fontWeight: '500',
+                  width: SCREEN_WIDTH * 0.3
+                }}>
+                {account.name}
+              </Text>
+            ),
+            subtitle: (
+              <Text
+                variant="mono"
+                sx={{
+                  color: alpha(colors.$textPrimary, 0.6),
+                  fontSize: 13,
+                  lineHeight: 16,
+                  fontWeight: '500'
+                }}>
+                {truncateAddress(account.addressC, TRUNCATE_ADDRESS_LENGTH)}
+              </Text>
+            ),
+            leftIcon: isActive ? (
               <Icons.Custom.CheckSmall
                 color={colors.$textPrimary}
                 width={24}
@@ -140,26 +152,24 @@ const ManageAccountsScreen = (): React.JSX.Element => {
             ) : (
               <View sx={{ width: 24 }} />
             ),
-          value: (
-            <AccountBalance
-              accountId={account.id}
-              isActive={account.id === activeAccount.id}
-            />
-          ),
-          onPress: () => handleSetActiveAccount(account.id),
-          accessory: (
-            <TouchableOpacity
-              hitSlop={16}
-              sx={{ marginLeft: 4 }}
-              onPress={() => gotoAccountDetails(account.id)}>
-              <Icons.Alert.AlertCircle
-                color={colors.$textSecondary}
-                width={18}
-                height={18}
-              />
-            </TouchableOpacity>
-          )
-        }))
+            value: (
+              <AccountBalance accountId={account.id} isActive={isActive} />
+            ),
+            onPress: () => handleSetActiveAccount(account.id),
+            accessory: (
+              <TouchableOpacity
+                hitSlop={16}
+                sx={{ marginLeft: 4 }}
+                onPress={() => gotoAccountDetails(account.id)}>
+                <Icons.Alert.AlertCircle
+                  color={colors.$textSecondary}
+                  width={18}
+                  height={18}
+                />
+              </TouchableOpacity>
+            )
+          }
+        })
         return {
           ...wallet,
           accounts: accountDataForWallet
@@ -204,20 +214,12 @@ const ManageAccountsScreen = (): React.JSX.Element => {
 
   const renderExpansionIcon = useCallback(
     (isExpanded: boolean) => {
-      if (isExpanded) {
-        return (
-          <Icons.Navigation.ChevronRight
-            color={colors.$textPrimary}
-            width={24}
-            height={24}
-          />
-        )
-      }
       return (
-        <Icons.Navigation.ExpandMore
+        <Icons.Navigation.ChevronRight
           color={colors.$textPrimary}
-          width={24}
-          height={24}
+          width={20}
+          height={20}
+          transform={[{ rotate: isExpanded ? '-90deg' : '90deg' }]}
         />
       )
     },
@@ -245,7 +247,7 @@ const ManageAccountsScreen = (): React.JSX.Element => {
         paddingVertical: 16,
         gap: 12
       }}>
-      {walletsDisplayData.map(wallet => {
+      {walletsDisplayData.map((wallet, index) => {
         if (!wallet) {
           return null
         }
@@ -266,33 +268,40 @@ const ManageAccountsScreen = (): React.JSX.Element => {
             <TouchableOpacity
               onPress={() => toggleWalletExpansion(wallet.id)}
               sx={{
-                paddingHorizontal: 16,
+                paddingHorizontal: 8,
                 paddingVertical: 12,
                 flexDirection: 'row',
                 alignItems: 'center',
                 justifyContent: 'space-between'
               }}>
               <View sx={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                {renderExpansionIcon(isExpanded)}
+                <View
+                  sx={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                  {renderExpansionIcon(isExpanded)}
+                  <Icons.Custom.Wallet
+                    color={colors.$textPrimary}
+                    width={24}
+                    height={24}
+                  />
+                </View>
                 <Text
-                  variant="heading6"
-                  sx={{
-                    color: colors.$textPrimary
+                  variant="buttonSmall"
+                  style={{
+                    fontSize: 14
                   }}>
-                  {wallet.name}
+                  {`Wallet ${index + 1}`}
                 </Text>
               </View>
             </TouchableOpacity>
 
             {isExpanded && (
-              <>
+              <View sx={{ padding: 8, paddingTop: 0 }}>
                 {wallet.accounts.length > 0 ? (
                   <GroupList itemHeight={ITEM_HEIGHT} data={wallet.accounts} />
                 ) : (
                   !searchText && (
                     <View
                       sx={{
-                        paddingHorizontal: 16,
                         paddingVertical: 20,
                         alignItems: 'center',
                         backgroundColor: colors.$surfaceSecondary
@@ -303,7 +312,7 @@ const ManageAccountsScreen = (): React.JSX.Element => {
                     </View>
                   )
                 )}
-              </>
+              </View>
             )}
           </View>
         )

@@ -35,7 +35,7 @@ export const AccountList = (): React.JSX.Element => {
 
   useEffect(() => {
     if (recentAccountIds.length === 0 && activeAccount) {
-      addRecentAccount(activeAccount.index.toString())
+      addRecentAccount(activeAccount.id.toString())
     }
   }, [activeAccount, addRecentAccount, recentAccountIds])
 
@@ -128,7 +128,7 @@ export const AccountList = (): React.JSX.Element => {
           offset: ACCOUNT_CARD_SIZE * index,
           index
         })}
-        keyExtractor={item => (item as Account)?.index?.toString() ?? ''}
+        keyExtractor={item => (item as Account)?.id?.toString() ?? ''}
         ListFooterComponent={
           <Animated.View
             entering={getItemEnteringAnimation(recentAccounts.length)}
