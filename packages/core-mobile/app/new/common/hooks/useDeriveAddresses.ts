@@ -83,7 +83,7 @@ export const useDeriveAddresses = (
       setDerivedAddresses([])
       setTempAccountDetails(null)
     }
-  }, [isTestnet, privateKey])
+  }, [isTestnet, privateKey, accounts])
 
   useEffect(() => {
     if (privateKey.trim() !== '') {

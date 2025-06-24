@@ -2,10 +2,11 @@ import { CoreAccountType } from '@avalabs/types'
 import { createAsyncThunk } from '@reduxjs/toolkit'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { WalletType } from 'services/wallet/types'
+import WalletService from 'services/wallet/WalletService'
 import {
   Account,
   ImportedAccount,
-  selectAccountsByWalletId,
+  selectAccounts,
   setAccount,
   setActiveAccount
 } from 'store/account'
@@ -15,7 +16,6 @@ import { reducerName, selectWallets, setActiveWallet } from 'store/wallet/slice'
 import { StoreWalletParams, Wallet } from 'store/wallet/types'
 import BiometricsSDK from 'utils/BiometricsSDK'
 import { uuid } from 'utils/uuid'
-import WalletService from 'services/wallet/WalletService'
 import { generateWalletName } from './utils'
 
 export const storeWallet = createAsyncThunk<
@@ -98,11 +98,8 @@ export const importMnemonicWalletAndAccount = createAsyncThunk<
 
     thunkApi.dispatch(setActiveWallet(newWalletId))
 
-    const wallets = selectWallets(state)
-    const allAccountsCount = Object.values(wallets).reduce((acc, item) => {
-      const accounts = selectAccountsByWalletId(item.id)(state)
-      return acc + accounts.length
-    }, 0)
+    const allAccounts = selectAccounts(state)
+    const allAccountsCount = Object.keys(allAccounts).length
 
     const addresses = await WalletService.getAddresses({
       walletId: newWalletId,
