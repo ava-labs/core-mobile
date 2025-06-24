@@ -1,4 +1,4 @@
-import { Button, useTheme, View } from '@avalabs/k2-alpine'
+import { Button, Text, useTheme, View } from '@avalabs/k2-alpine'
 import {
   dismissAlertWithTextInput,
   showAlertWithTextInput
@@ -129,6 +129,11 @@ export const AccountButtons = ({
           onPress={handleRemoveAccount}>
           Remove account
         </Button>
+      )}
+      {shouldShowRemoveButton && !isRemoveEnabled && (
+        <Text variant="caption" sx={{ color: theme.colors.$textSecondary }}>
+          Only the most recently added account may be removed
+        </Text>
       )}
     </View>
   )
