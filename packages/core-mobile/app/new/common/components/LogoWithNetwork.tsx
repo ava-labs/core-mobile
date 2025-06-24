@@ -6,7 +6,7 @@ import { TokenLogo } from 'common/components/TokenLogo'
 interface Props {
   token: { symbol: string; logoUri?: string; chainId?: number }
   network: Network
-  size?: 'medium' | 'large'
+  size?: 'small' | 'medium' | 'large'
   outerBorderColor: string // this color should match the background color of the parent view
 }
 
@@ -16,10 +16,10 @@ export const LogoWithNetwork = ({
   size = 'large',
   outerBorderColor
 }: Props): React.JSX.Element => {
-  const width = size === 'medium' ? 36 : 42
-  const networkLogoWidth = size === 'medium' ? 12 : 16
+  const width = size === 'small' ? 32 : size === 'medium' ? 36 : 42
+  const networkLogoWidth = size === 'small' ? 10 : size === 'medium' ? 12 : 16
   const borderWidth = 2
-  const offset = size === 'medium' ? -4 : -6
+  const offset = size === 'small' ? -2 : size === 'medium' ? -4 : -6
 
   return (
     <View sx={{ width }}>

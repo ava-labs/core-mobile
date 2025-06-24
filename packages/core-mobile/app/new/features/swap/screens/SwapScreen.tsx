@@ -372,8 +372,6 @@ export const SwapScreen = (): JSX.Element => {
           network={cChainNetwork}
           formatInCurrency={amount => formatInCurrency(toToken, amount)}
           onAmountChange={handleToAmountChange}
-          onFocus={() => setIsInputFocused(true)}
-          onBlur={() => setIsInputFocused(false)}
           onSelectToken={handleSelectToToken}
           isLoadingAmount={isFetchingQuote}
         />

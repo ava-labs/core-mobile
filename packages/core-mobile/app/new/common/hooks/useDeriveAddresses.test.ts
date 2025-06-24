@@ -2,7 +2,23 @@ import { renderHook, act } from '@testing-library/react-hooks'
 import { networks } from 'bitcoinjs-lib'
 import { CoreAccountType } from '@avalabs/types'
 import { CORE_MOBILE_WALLET_ID } from 'services/walletconnectv2/types'
+import { useSelector } from 'react-redux'
+
+// Import mock accounts from fixture
+import mockAccountsData from '../../../../tests/fixtures/accounts.json'
+
 import { useDeriveAddresses } from './useDeriveAddresses'
+
+// Mock react-redux useSelector
+jest.mock('react-redux', () => ({
+  ...jest.requireActual('react-redux'),
+  useSelector: jest.fn()
+}))
+
+// Mock store/account to prevent dependency chain issues
+jest.mock('store/account', () => ({
+  selectAccounts: jest.fn()
+}))
 
 // Mock the core-wallets-sdk functions
 jest.mock('@avalabs/core-wallets-sdk', () => ({
@@ -39,6 +55,24 @@ describe('useDeriveAddresses', () => {
   beforeEach(() => {
     jest.clearAllMocks()
 
+    // Get the mocked selectAccounts function
+    const { selectAccounts } = require('store/account')
+
+    // Mock selectAccounts to return our fixture accounts
+    selectAccounts.mockReturnValue(mockAccountsData)
+
+    // Setup useSelector mock to work with selectors
+    ;(
+      useSelector as jest.MockedFunction<typeof useSelector>
+    ).mockImplementation(selector => {
+      // If the selector is selectAccounts, return the mock accounts directly
+      if (selector === selectAccounts) {
+        return mockAccountsData
+      }
+      // For any other selector, call it with a mock state
+      return selector({ account: { accounts: mockAccountsData } })
+    })
+
     // Setup default mocks
     const {
       getBtcAddressFromPubKey,
@@ -54,6 +88,32 @@ describe('useDeriveAddresses', () => {
     getEvmAddressFromPubKey.mockReturnValue(mockEvmAddress)
     getBtcAddressFromPubKey.mockReturnValue(mockBtcAddress)
     uuid.mockReturnValue(mockUuid)
+  })
+
+  afterEach(() => {
+    ;(useSelector as jest.MockedFunction<typeof useSelector>).mockClear()
+    jest.restoreAllMocks()
+  })
+
+  describe('Redux mocking', () => {
+    it('should properly mock useSelector and return accounts', async () => {
+      const { result } = renderHook(() =>
+        useDeriveAddresses(validPrivateKey, false)
+      )
+
+      // Wait for the async deriveAddresses to complete
+      await act(async () => {
+        await new Promise(resolve => setTimeout(resolve, 0))
+      })
+
+      // Verify that useSelector was called and returned the expected data
+      expect(useSelector).toHaveBeenCalled()
+
+      // The hook should have access to the mocked accounts
+      // We can verify this by checking if the temp account name is correct
+      // With 2 existing accounts, the new account should be "Account 3"
+      expect(result.current.tempAccountDetails?.name).toBe('Account 3')
+    })
   })
 
   describe('with valid private key', () => {
@@ -89,7 +149,7 @@ describe('useDeriveAddresses', () => {
       expect(result.current.tempAccountDetails).toEqual({
         id: mockUuid,
         index: 0,
-        name: 'Imported Key',
+        name: 'Account 3',
         type: CoreAccountType.IMPORTED,
         walletId: CORE_MOBILE_WALLET_ID,
         addressC: mockEvmAddress,
@@ -375,7 +435,7 @@ describe('useDeriveAddresses', () => {
       expect(tempAccount).toMatchObject({
         id: expect.any(String),
         index: 0,
-        name: 'Imported Key',
+        name: 'Account 3',
         type: CoreAccountType.IMPORTED,
         walletId: CORE_MOBILE_WALLET_ID,
         addressC: expect.any(String),
