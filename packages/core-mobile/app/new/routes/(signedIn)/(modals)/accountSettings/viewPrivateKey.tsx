@@ -40,9 +40,10 @@ const ViewPrivateKeyScreen = (): JSX.Element => {
             flexDirection: 'row',
             alignItems: 'center',
             padding: 3,
-            borderRadius: 2
+            borderRadius: 2,
+            gap: 8
           }}>
-          <Icons.Alert.AlertCircle
+          <Icons.Alert.ErrorOutline
             color={colors.$textDanger}
             width={24}
             height={24}
