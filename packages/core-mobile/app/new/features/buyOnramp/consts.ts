@@ -15,7 +15,8 @@ export enum ServiceProviderStatus {
 export enum MELD_CURRENCY_CODES {
   BTC = 'BTC',
   USDC = 'USDC',
-  AVAXC = 'AVAXC'
+  AVAXC = 'AVAXC',
+  USDC_AVAXC = 'USDC_AVAXC'
 }
 
 export const NATIVE_ERC20_TOKEN_CONTRACT_ADDRESS =
