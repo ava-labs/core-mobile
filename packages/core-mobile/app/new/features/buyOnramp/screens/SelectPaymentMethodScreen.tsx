@@ -14,7 +14,7 @@ import { Space } from 'common/components/Space'
 import { LoadingState } from 'common/components/LoadingState'
 import { portfolioTabContentHeight } from 'features/portfolio/utils'
 import { useSearchPaymentMethods } from '../hooks/useSearchPaymentMethods'
-import { useOnRampPaymentMethod } from '../store'
+import { useOnRampPaymentMethod, useOnRampServiceProvider } from '../store'
 import {
   PaymentMethodNames,
   ServiceProviderCategories,
@@ -27,10 +27,14 @@ export const SelectPaymentMethodScreen = (): React.JSX.Element => {
     theme: { colors }
   } = useTheme()
   const { navigate, back, canGoBack } = useRouter()
+  const [onrampServiceProvider] = useOnRampServiceProvider()
   const [onRampPaymentMethod, setOnRampPaymentMethod] = useOnRampPaymentMethod()
   const { data: paymentMethods, isLoading: isLoadingPaymentMethods } =
     useSearchPaymentMethods({
-      categories: [ServiceProviderCategories.CRYPTO_ONRAMP]
+      categories: [ServiceProviderCategories.CRYPTO_ONRAMP],
+      serviceProviders: onrampServiceProvider
+        ? [onrampServiceProvider]
+        : undefined
     })
 
   const handleSelectServiceProvider = useCallback(() => {

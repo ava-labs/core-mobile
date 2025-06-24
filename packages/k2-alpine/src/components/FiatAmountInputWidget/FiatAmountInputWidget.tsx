@@ -109,7 +109,7 @@ export const FiatAmountInputWidget = ({
           ref={textInputRef}
           autoFocus={autoFocus}
           currency={currency}
-          amount={amount !== 0 ? amount?.toString() : ''}
+          amount={amount && amount !== 0 ? amount?.toString() : ''}
           onChange={handleChange}
           formatInCurrency={formatInCurrency}
           formatInTokenUnit={formatInTokenUnit}
