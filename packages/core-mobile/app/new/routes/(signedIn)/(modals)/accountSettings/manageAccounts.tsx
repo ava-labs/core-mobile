@@ -243,6 +243,16 @@ const ManageAccountsScreen = (): React.JSX.Element => {
     [colors.$textPrimary]
   )
 
+  const renderWalletIcon = useCallback(
+    (isExpanded: boolean) => {
+      if (isExpanded) {
+        return <Icons.Custom.Wallet color={colors.$textPrimary} />
+      }
+      return <Icons.Custom.WalletClosed color={colors.$textPrimary} />
+    },
+    [colors.$textPrimary]
+  )
+
   const renderHeader = useCallback(() => {
     return (
       <SearchBar
@@ -312,11 +322,7 @@ const ManageAccountsScreen = (): React.JSX.Element => {
                   <View
                     sx={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
                     {renderExpansionIcon(isExpanded)}
-                    <Icons.Custom.Wallet
-                      color={colors.$textPrimary}
-                      width={24}
-                      height={24}
-                    />
+                    {renderWalletIcon(isExpanded)}
                   </View>
                   <Text
                     variant="buttonSmall"
