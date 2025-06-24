@@ -362,7 +362,7 @@ class EarnService {
     | {
         txHash: string
         endTimestamp: number | undefined
-        accountId: string | undefined
+        accountId: string
         isDeveloperMode: boolean
         isOnGoing: boolean
       }[]
@@ -408,10 +408,14 @@ class EarnService {
             acc => acc.index === transaction.index
           )
 
+          if (!account) {
+            throw new Error('Account not found')
+          }
+
           return {
             txHash: transaction.txHash,
             endTimestamp: transaction.endTimestamp,
-            accountId: account?.id,
+            accountId: account.id,
             isDeveloperMode: transaction.isDeveloperMode,
             isOnGoing: isOnGoing(transaction, now)
           }
