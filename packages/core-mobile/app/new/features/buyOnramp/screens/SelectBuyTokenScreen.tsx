@@ -86,13 +86,13 @@ export const SelectBuyTokenScreen = (): React.JSX.Element => {
       tk => tk.currencyCode === MELD_CURRENCY_CODES.AVAXC
     )
     const usdc = searchResults.find(
-      tk => tk.currencyCode === MELD_CURRENCY_CODES.USDC
+      tk => tk.currencyCode === MELD_CURRENCY_CODES.USDC_AVAXC
     )
 
     const others = searchResults.filter(
       token =>
         token.currencyCode !== MELD_CURRENCY_CODES.AVAXC &&
-        token.currencyCode !== MELD_CURRENCY_CODES.USDC
+        token.currencyCode !== MELD_CURRENCY_CODES.USDC_AVAXC
     )
 
     const sortedOthers = others.toSorted((a, b) => {
