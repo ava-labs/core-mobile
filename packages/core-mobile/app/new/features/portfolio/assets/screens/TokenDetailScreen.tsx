@@ -35,7 +35,7 @@ import TransactionHistory from 'features/portfolio/assets/components/Transaction
 import { ActionButtonTitle } from 'features/portfolio/assets/consts'
 import { useSendSelectedToken } from 'features/send/store'
 import { useAddStake } from 'features/stake/hooks/useAddStake'
-import { AVAX_TOKEN_ID, USDC_AVAX_TOKEN_ID } from 'common/consts/swap'
+import { AVAX_TOKEN_ID, USDC_AVALANCHE_C_TOKEN_ID } from 'common/consts/swap'
 import { useNavigateToSwap } from 'features/swap/hooks/useNavigateToSwap'
 import { UI, useIsUIDisabledForNetwork } from 'hooks/useIsUIDisabled'
 import React, { useCallback, useMemo, useRef, useState } from 'react'
@@ -181,7 +181,9 @@ export const TokenDetailScreen = (): React.JSX.Element => {
     if (!isSwapDisabled) {
       const fromTokenId = token?.localId
       const toTokenId =
-        fromTokenId === AVAX_TOKEN_ID ? USDC_AVAX_TOKEN_ID : AVAX_TOKEN_ID
+        fromTokenId === AVAX_TOKEN_ID
+          ? USDC_AVALANCHE_C_TOKEN_ID
+          : AVAX_TOKEN_ID
 
       buttons.push({
         title: ActionButtonTitle.Swap,

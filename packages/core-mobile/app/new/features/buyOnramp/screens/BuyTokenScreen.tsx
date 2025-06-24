@@ -10,7 +10,7 @@ import { LogoWithNetwork } from 'common/components/LogoWithNetwork'
 import useCChainNetwork from 'hooks/earn/useCChainNetwork'
 import { useAvalancheErc20ContractTokens } from 'common/hooks/useErc20ContractTokens'
 import { useSearchableTokenList } from 'common/hooks/useSearchableTokenList'
-import { USDC_AVAX_TOKEN_ID } from 'common/consts/swap'
+import { USDC_AVALANCHE_C_TOKEN_ID } from 'common/consts/swap'
 import { isAvalancheChainId } from 'services/network/utils/isAvalancheNetwork'
 import { useBuy } from '../hooks/useBuy'
 
@@ -33,7 +33,7 @@ export const BuyTokenScreen = (): React.JSX.Element => {
       'chainId' in token &&
       token.chainId &&
       isAvalancheChainId(token.chainId) &&
-      token.address.toLowerCase() === USDC_AVAX_TOKEN_ID.toLowerCase()
+      token.address.toLowerCase() === USDC_AVALANCHE_C_TOKEN_ID.toLowerCase()
   )
 
   const selectOtherToken = useCallback((): void => {

@@ -8,7 +8,7 @@ import { selectIsEarnBlocked, selectIsSwapBlocked } from 'store/posthog'
 import { MarketType } from 'store/watchlist'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { useIsSwappable } from 'common/hooks/useIsSwapable'
-import { USDC_AVAX_TOKEN_ID } from 'common/consts/swap'
+import { USDC_AVALANCHE_C_TOKEN_ID } from 'common/consts/swap'
 import { useActiveAccount } from 'common/hooks/useActiveAccount'
 import { getTokenActions } from '../utils/getTokenActions'
 
@@ -107,7 +107,7 @@ export const TokenDetailFooter = ({
 
     showSwap &&
       result.push(
-        generateSwapButton(isAVAX ? USDC_AVAX_TOKEN_ID : contractAddress)
+        generateSwapButton(isAVAX ? USDC_AVALANCHE_C_TOKEN_ID : contractAddress)
       )
 
     return result
