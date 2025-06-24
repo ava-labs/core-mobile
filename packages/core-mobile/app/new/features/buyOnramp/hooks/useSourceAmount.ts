@@ -40,28 +40,22 @@ export const useSourceAmount = (): {
     selectedPurchasingFiatCurrency?.maximumAmount ?? undefined
 
   const isAboveMinimumPurchaseLimit = useMemo(() => {
-    if (!selectedPurchasingFiatCurrency) {
+    if (minimumPurchaseLimit === undefined) {
       // if there is no matching fiat currency found, we don't allow the user to proceed
       return false
     }
 
-    return (
-      (sourceAmount ?? 0) >=
-      (selectedPurchasingFiatCurrency?.minimumAmount ?? 0)
-    )
-  }, [selectedPurchasingFiatCurrency, sourceAmount])
+    return (sourceAmount ?? 0) >= (minimumPurchaseLimit ?? 0)
+  }, [minimumPurchaseLimit, sourceAmount])
 
   const isBelowMaximumPurchaseLimit = useMemo(() => {
-    if (!selectedPurchasingFiatCurrency) {
+    if (!maximumPurchaseLimit) {
       // if there is no matching fiat currency found, we don't allow the user to proceed
       return false
     }
 
-    return (
-      (sourceAmount ?? 0) <=
-      (selectedPurchasingFiatCurrency?.maximumAmount ?? 0)
-    )
-  }, [selectedPurchasingFiatCurrency, sourceAmount])
+    return (sourceAmount ?? 0) <= (maximumPurchaseLimit ?? 0)
+  }, [maximumPurchaseLimit, sourceAmount])
 
   const hasValidSourceAmount = useMemo(() => {
     return (
