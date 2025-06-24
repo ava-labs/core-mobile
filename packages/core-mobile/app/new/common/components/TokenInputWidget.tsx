@@ -1,11 +1,12 @@
 import { formatTokenAmount } from '@avalabs/core-bridge-sdk'
 import { Network } from '@avalabs/core-chains-sdk'
-import { bigintToBig, TokenUnit } from '@avalabs/core-utils-sdk'
+import { bigintToBig, bigToBigInt, TokenUnit } from '@avalabs/core-utils-sdk'
 import {
   ActivityIndicator,
   alpha,
   Button,
   Icons,
+  normalizeNumericTextInput,
   SxProp,
   Text,
   TokenAmount,
@@ -22,6 +23,7 @@ import Animated, {
   LinearTransition
 } from 'react-native-reanimated'
 import { LogoWithNetwork } from './LogoWithNetwork'
+import Big from 'big.js'
 
 export const TokenInputWidget = ({
   title,
@@ -153,6 +155,15 @@ export const TokenInputWidget = ({
     return amount
   }, [amount, percentageButtons, token?.decimals, token?.symbol])
 
+  const nonEditableInputValue = useMemo(() => {
+    if (token?.decimals && amount) {
+      const unit = new TokenUnit(amount, token?.decimals, token?.symbol)
+      return unit.toDisplay({ asNumber: true })
+    }
+
+    return '0.00'
+  }, [amount, token?.decimals, token?.symbol])
+
   return (
     <View sx={sx}>
       <Animated.View
@@ -218,7 +229,8 @@ export const TokenInputWidget = ({
                   <View
                     sx={{
                       alignItems: 'flex-end',
-                      flex: 1
+                      flex: 1,
+                      height: 42
                     }}
                     pointerEvents={token === undefined ? 'none' : 'auto'}>
                     {editable ? (
@@ -264,7 +276,7 @@ export const TokenInputWidget = ({
                                 ? colors.$textPrimary
                                 : colors.$textSecondary)
                         }}>
-                        {inputValue?.toString() ?? '0.00'}
+                        {nonEditableInputValue}
                       </Text>
                     )}
                   </View>

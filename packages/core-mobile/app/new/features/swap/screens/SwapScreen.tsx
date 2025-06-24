@@ -284,7 +284,6 @@ export const SwapScreen = (): JSX.Element => {
         return UNKNOWN_AMOUNT
       }
 
-      console.warn('formatInCurrency', token.priceInCurrency, value)
       return formatCurrency({
         amount: new TokenUnit(value ?? 0n, token.decimals, token.symbol)
           .mul(token.priceInCurrency)
