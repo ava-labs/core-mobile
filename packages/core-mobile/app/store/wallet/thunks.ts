@@ -39,7 +39,7 @@ export const storeWallet = createAsyncThunk<
 
     return {
       id: walletId,
-      name: generateWalletName(type, walletCount + 1),
+      name: generateWalletName(walletCount + 1),
       type
     }
   }
