@@ -89,7 +89,7 @@ describe('useDeriveAddresses', () => {
       expect(result.current.tempAccountDetails).toEqual({
         id: mockUuid,
         index: 0,
-        name: 'Imported Key',
+        name: 'Account 1',
         type: CoreAccountType.IMPORTED,
         walletId: CORE_MOBILE_WALLET_ID,
         addressC: mockEvmAddress,
@@ -375,7 +375,7 @@ describe('useDeriveAddresses', () => {
       expect(tempAccount).toMatchObject({
         id: expect.any(String),
         index: 0,
-        name: 'Imported Key',
+        name: 'Account 1',
         type: CoreAccountType.IMPORTED,
         walletId: CORE_MOBILE_WALLET_ID,
         addressC: expect.any(String),
