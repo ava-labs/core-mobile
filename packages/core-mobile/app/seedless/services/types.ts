@@ -15,4 +15,12 @@ export interface CoreSeedlessApiInterface {
     identityProof: IdentityProof
     mnemonicId: string
   }): Promise<void>
+
+  deriveMissingKeys({
+    identityProof,
+    mnemonicId
+  }: {
+    identityProof: IdentityProof
+    mnemonicId: string
+  }): Promise<void>
 }

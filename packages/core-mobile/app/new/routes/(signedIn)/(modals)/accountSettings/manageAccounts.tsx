@@ -170,7 +170,9 @@ const ManageAccountsScreen = (): React.JSX.Element => {
     allWallets,
     accountSearchResults,
     searchText,
-    colors,
+    colors.$textPrimary,
+    colors.$textSecondary,
+    activeAccount.id,
     handleSetActiveAccount,
     gotoAccountDetails
   ])

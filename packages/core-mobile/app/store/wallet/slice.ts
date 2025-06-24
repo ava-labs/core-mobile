@@ -28,8 +28,7 @@ const walletsSlice = createSlice({
       }
     },
     setActiveWallet: (state, action: PayloadAction<string>) => {
-      const newActiveId = action.payload
-      state.activeWalletId = newActiveId
+      state.activeWalletId = action.payload
     },
     removeWallet: (state, action: PayloadAction<string>) => {
       const walletId = action.payload
@@ -56,7 +55,6 @@ const walletsSlice = createSlice({
     builder.addCase(storeWallet.fulfilled, (state, action) => {
       const wallet = action.payload
       state.wallets[wallet.id] = wallet
-      state.activeWalletId = wallet.id
     })
   }
 })
