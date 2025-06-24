@@ -125,12 +125,14 @@ export const GroupList = ({
   return (
     <Animated.View
       layout={LinearTransition.easing(Easing.inOut(Easing.ease))}
-      style={{
-        width: '100%',
-        borderRadius: 12,
-        overflow: 'hidden',
-        backgroundColor: theme.colors.$surfaceSecondary
-      }}>
+      style={[
+        {
+          width: '100%',
+          borderRadius: 12,
+          overflow: 'hidden',
+          backgroundColor: theme.colors.$surfaceSecondary
+        }
+      ]}>
       {data.map((item, index) => {
         const {
           leftIcon,
@@ -140,11 +142,13 @@ export const GroupList = ({
           value,
           accordion,
           onPress,
-          onLongPress
+          onLongPress,
+          containerSx,
+          hideSeparator
         } = item
 
         return (
-          <View key={index}>
+          <View key={index} sx={containerSx}>
             <TouchableOpacity
               onPress={() => handlePress(item, index)}
               disabled={!onPress && !accordion}
@@ -221,6 +225,7 @@ export const GroupList = ({
             {index < data.length - 1 && (
               <Separator
                 sx={{
+                  opacity: hideSeparator ? 0 : 1,
                   marginLeft: textMarginLeft,
                   marginRight: separatorMarginRight
                 }}
@@ -248,6 +253,8 @@ export type GroupListItem = {
   bottomAccessory?: JSX.Element
   accordion?: JSX.Element
   expanded?: boolean
+  containerSx?: SxProp
+  hideSeparator?: boolean
 }
 
 const AnimatedChevron = ({ expanded }: { expanded: boolean }): JSX.Element => {
