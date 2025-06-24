@@ -214,12 +214,12 @@ export const transactionSnackbar = {
   /*
    * Displays a pending snackbar with a short duration.
    */
-  pending: (toastId?: string) =>
+  pending: ({ toastId, message }: { toastId?: string; message?: string }) =>
     showToast(
       {
         toastId,
         toastType: ToastType.TRANSACTION_SNACKBAR,
-        content: { type: 'pending' }
+        content: { type: 'pending', message }
       },
       {
         duration: DURATION_INDEFINITE

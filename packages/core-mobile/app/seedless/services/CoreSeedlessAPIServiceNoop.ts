@@ -9,4 +9,8 @@ export class CoreSeedlessAPIServiceNoop implements CoreSeedlessApiInterface {
   async addAccount(): Promise<void> {
     //noop
   }
+
+  async deriveMissingKeys(): Promise<void> {
+    //noop
+  }
 }

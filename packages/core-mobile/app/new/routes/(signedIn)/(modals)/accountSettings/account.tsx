@@ -21,6 +21,8 @@ import { selectSelectedCurrency } from 'store/settings/currency'
 import { selectIsPrivacyModeEnabled } from 'store/settings/securityPrivacy'
 import { WalletInfo } from 'features/accountSettings/components/WalletInfo'
 import { selectWalletById } from 'store/wallet/slice'
+import { CoreAccountType } from '@avalabs/types'
+import { WalletType } from 'services/wallet/types'
 
 const AccountScreen = (): JSX.Element => {
   const router = useRouter()
@@ -52,6 +54,14 @@ const AccountScreen = (): JSX.Element => {
   }, [balanceAccurate, balanceTotalInCurrency, formatCurrency])
 
   const { fetchBalance } = useBalanceForAccount(account?.id ?? '')
+
+  const isPrivateKeyAvailable = useMemo(
+    () =>
+      account?.type === CoreAccountType.IMPORTED ||
+      (account?.type === CoreAccountType.PRIMARY &&
+        wallet?.type === WalletType.MNEMONIC),
+    [account?.type, wallet?.type]
+  )
 
   useFocusEffect(
     useCallback(() => {
@@ -105,7 +115,13 @@ const AccountScreen = (): JSX.Element => {
       contentContainerStyle={{ padding: 16 }}>
       <View sx={{ gap: 16, marginTop: 24 }}>
         <AccountAddresses account={account} />
-        <WalletInfo showPrivateKey={handleShowPrivateKey} account={account} />
+        <WalletInfo
+          onShowPrivateKey={
+            isPrivateKeyAvailable ? handleShowPrivateKey : undefined
+          }
+          account={account}
+          wallet={wallet}
+        />
       </View>
     </ScrollScreen>
   )

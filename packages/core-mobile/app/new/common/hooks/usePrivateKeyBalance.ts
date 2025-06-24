@@ -42,7 +42,7 @@ export const usePrivateKeyBalance = (
       return
     }
     setIsAwaitingOurBalance(true)
-    dispatch(fetchBalanceForAccount({ accountId: tempAccountDetails.id }))
+    dispatch(fetchBalanceForAccount({ account: tempAccountDetails }))
   }, [
     tempAccountDetails,
     dispatch,

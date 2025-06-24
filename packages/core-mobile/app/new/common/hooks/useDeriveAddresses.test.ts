@@ -1,6 +1,5 @@
 import { renderHook, act } from '@testing-library/react-hooks'
 import { networks } from 'bitcoinjs-lib'
-import { Network } from '@avalabs/core-chains-sdk'
 import { CoreAccountType } from '@avalabs/types'
 import { CORE_MOBILE_WALLET_ID } from 'services/walletconnectv2/types'
 import { useDeriveAddresses } from './useDeriveAddresses'
@@ -37,27 +36,6 @@ describe('useDeriveAddresses', () => {
   const invalidPrivateKey = 'invalid-key'
   const emptyPrivateKey = ''
 
-  // Mock network objects
-  const mockMainnetNetwork: Network = {
-    isTestnet: false,
-    chainName: 'Avalanche',
-    chainId: 43114,
-    rpcUrl: 'https://api.avax.network/ext/bc/C/rpc',
-    explorerUrl: 'https://snowtrace.io',
-    primaryColor: '#E84142',
-    logoUri: 'https://cryptologos.cc/logos/avalanche-avax-logo.png'
-  } as Network
-
-  const mockTestnetNetwork: Network = {
-    isTestnet: true,
-    chainName: 'Avalanche Fuji',
-    chainId: 43113,
-    rpcUrl: 'https://api.avax-test.network/ext/bc/C/rpc',
-    explorerUrl: 'https://testnet.snowtrace.io',
-    primaryColor: '#E84142',
-    logoUri: 'https://cryptologos.cc/logos/avalanche-avax-logo.png'
-  } as Network
-
   beforeEach(() => {
     jest.clearAllMocks()
 
@@ -81,7 +59,7 @@ describe('useDeriveAddresses', () => {
   describe('with valid private key', () => {
     it('should derive addresses successfully for mainnet', async () => {
       const { result } = renderHook(() =>
-        useDeriveAddresses(validPrivateKey, mockMainnetNetwork)
+        useDeriveAddresses(validPrivateKey, false)
       )
 
       // Wait for the async deriveAddresses to complete
@@ -126,7 +104,7 @@ describe('useDeriveAddresses', () => {
 
     it('should derive addresses successfully for testnet', async () => {
       const { result } = renderHook(() =>
-        useDeriveAddresses(validPrivateKey, mockTestnetNetwork)
+        useDeriveAddresses(validPrivateKey, true)
       )
 
       await act(async () => {
@@ -153,7 +131,7 @@ describe('useDeriveAddresses', () => {
       const { strip0x } = require('@avalabs/core-utils-sdk')
 
       const { result } = renderHook(() =>
-        useDeriveAddresses(privateKeyWithPrefix, mockMainnetNetwork)
+        useDeriveAddresses(privateKeyWithPrefix, false)
       )
 
       await act(async () => {
@@ -171,7 +149,7 @@ describe('useDeriveAddresses', () => {
       const shortPrivateKey = 'abc123'
 
       const { result } = renderHook(() =>
-        useDeriveAddresses(shortPrivateKey, mockMainnetNetwork)
+        useDeriveAddresses(shortPrivateKey, false)
       )
 
       await act(async () => {
@@ -195,7 +173,7 @@ describe('useDeriveAddresses', () => {
       })
 
       const { result } = renderHook(() =>
-        useDeriveAddresses(invalidPrivateKey, mockMainnetNetwork)
+        useDeriveAddresses(invalidPrivateKey, false)
       )
 
       await act(async () => {
@@ -215,7 +193,7 @@ describe('useDeriveAddresses', () => {
   describe('with empty private key', () => {
     it('should not show derived info and reset state', () => {
       const { result } = renderHook(() =>
-        useDeriveAddresses(emptyPrivateKey, mockMainnetNetwork)
+        useDeriveAddresses(emptyPrivateKey, false)
       )
 
       // These are synchronous updates, no need to wait
@@ -233,7 +211,7 @@ describe('useDeriveAddresses', () => {
       const whitespacePrivateKey = '   '
 
       const { result } = renderHook(() =>
-        useDeriveAddresses(whitespacePrivateKey, mockMainnetNetwork)
+        useDeriveAddresses(whitespacePrivateKey, false)
       )
 
       expect(result.current.derivedAddresses).toEqual([])
@@ -245,11 +223,12 @@ describe('useDeriveAddresses', () => {
   describe('state updates on prop changes', () => {
     it('should update when private key changes', async () => {
       const { result, rerender } = renderHook(
-        ({ privateKey, network }) => useDeriveAddresses(privateKey, network),
+        ({ privateKey, isTestnet }) =>
+          useDeriveAddresses(privateKey, isTestnet),
         {
           initialProps: {
             privateKey: emptyPrivateKey,
-            network: mockMainnetNetwork
+            isTestnet: false
           }
         }
       )
@@ -261,7 +240,7 @@ describe('useDeriveAddresses', () => {
       act(() => {
         rerender({
           privateKey: validPrivateKey,
-          network: mockMainnetNetwork
+          isTestnet: false
         })
       })
 
@@ -276,7 +255,7 @@ describe('useDeriveAddresses', () => {
       act(() => {
         rerender({
           privateKey: emptyPrivateKey,
-          network: mockMainnetNetwork
+          isTestnet: false
         })
       })
 
@@ -287,11 +266,12 @@ describe('useDeriveAddresses', () => {
 
     it('should update when network changes', async () => {
       const { rerender } = renderHook(
-        ({ privateKey, network }) => useDeriveAddresses(privateKey, network),
+        ({ privateKey, isTestnet }) =>
+          useDeriveAddresses(privateKey, isTestnet),
         {
           initialProps: {
             privateKey: validPrivateKey,
-            network: mockMainnetNetwork
+            isTestnet: false
           }
         }
       )
@@ -315,7 +295,7 @@ describe('useDeriveAddresses', () => {
       act(() => {
         rerender({
           privateKey: validPrivateKey,
-          network: mockTestnetNetwork
+          isTestnet: true
         })
       })
 
@@ -338,7 +318,7 @@ describe('useDeriveAddresses', () => {
       strip0x.mockReturnValue(exactly64CharKey)
 
       const { result } = renderHook(() =>
-        useDeriveAddresses(exactly64CharKey, mockMainnetNetwork)
+        useDeriveAddresses(exactly64CharKey, false)
       )
 
       await act(async () => {
@@ -354,9 +334,7 @@ describe('useDeriveAddresses', () => {
       const { strip0x } = require('@avalabs/core-utils-sdk')
       strip0x.mockReturnValue(shortKey)
 
-      const { result } = renderHook(() =>
-        useDeriveAddresses(shortKey, mockMainnetNetwork)
-      )
+      const { result } = renderHook(() => useDeriveAddresses(shortKey, false))
 
       await act(async () => {
         await new Promise(resolve => setTimeout(resolve, 0))
@@ -371,9 +349,7 @@ describe('useDeriveAddresses', () => {
       const { strip0x } = require('@avalabs/core-utils-sdk')
       strip0x.mockReturnValue(longKey)
 
-      const { result } = renderHook(() =>
-        useDeriveAddresses(longKey, mockMainnetNetwork)
-      )
+      const { result } = renderHook(() => useDeriveAddresses(longKey, false))
 
       await act(async () => {
         await new Promise(resolve => setTimeout(resolve, 0))
@@ -387,7 +363,7 @@ describe('useDeriveAddresses', () => {
   describe('temp account details structure', () => {
     it('should create correct temp account structure', async () => {
       const { result } = renderHook(() =>
-        useDeriveAddresses(validPrivateKey, mockMainnetNetwork)
+        useDeriveAddresses(validPrivateKey, false)
       )
 
       await act(async () => {
