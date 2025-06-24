@@ -177,13 +177,14 @@ class WalletService {
     accountIndex: number
     network: Network
   }): Promise<Record<NetworkVMType, string>> {
-    const wallet = await WalletFactory.createWallet({
-      walletId,
-      walletType
-    })
     if (walletType === WalletType.SEEDLESS) {
       const storedPubKeys = await SeedlessPubKeysStorage.retrieve()
       const pubKeys = storedPubKeys.filter(isEvmPublicKey)
+
+      const wallet = await WalletFactory.createWallet({
+        walletId,
+        walletType
+      })
 
       // create next account only if it doesn't exist yet
       if (!pubKeys[accountIndex]) {
@@ -193,8 +194,6 @@ class WalletService {
 
         // prompt Core Seedless API to derive new keys
         await wallet.addAccount(accountIndex)
-
-        await wallet.initialize({ shouldRefreshPublicKeys: true })
       }
     }
 

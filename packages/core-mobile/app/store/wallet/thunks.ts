@@ -10,12 +10,7 @@ import {
 } from 'store/account'
 import { selectActiveNetwork } from 'store/network'
 import { ThunkApi } from 'store/types'
-import {
-  addWallet,
-  reducerName,
-  selectWallets,
-  setActiveWallet
-} from 'store/wallet/slice'
+import { reducerName, selectWallets, setActiveWallet } from 'store/wallet/slice'
 import { StoreWalletParams, Wallet } from 'store/wallet/types'
 import BiometricsSDK from 'utils/BiometricsSDK'
 import { uuid } from 'utils/uuid'
@@ -58,19 +53,6 @@ export const importPrivateKeyWalletAndAccount = createAsyncThunk<
   async ({ accountDetails, accountSecret }, thunkApi) => {
     const dispatch = thunkApi.dispatch
     const newWalletId = uuid()
-    const state = thunkApi.getState()
-    const wallets = selectWallets(state)
-    const walletCount = Object.keys(wallets).length
-    const newWalletName = generateWalletName(
-      WalletType.PRIVATE_KEY,
-      walletCount + 1
-    )
-
-    const newWallet: Wallet = {
-      id: newWalletId,
-      name: newWalletName,
-      type: WalletType.PRIVATE_KEY
-    }
 
     await dispatch(
       storeWallet({
@@ -80,7 +62,6 @@ export const importPrivateKeyWalletAndAccount = createAsyncThunk<
       })
     ).unwrap()
 
-    thunkApi.dispatch(addWallet(newWallet))
     thunkApi.dispatch(setActiveWallet(newWalletId))
 
     const accountToImport: ImportedAccount = {
@@ -113,6 +94,8 @@ export const importMnemonicWalletAndAccount = createAsyncThunk<
         type: WalletType.MNEMONIC
       })
     ).unwrap()
+
+    thunkApi.dispatch(setActiveWallet(newWalletId))
 
     const accountIndex = 0
     const addresses = await WalletService.getAddresses({
