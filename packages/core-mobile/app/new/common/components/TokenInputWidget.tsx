@@ -3,6 +3,7 @@ import { Network } from '@avalabs/core-chains-sdk'
 import { bigintToBig, TokenUnit } from '@avalabs/core-utils-sdk'
 import {
   ActivityIndicator,
+  alpha,
   Button,
   Icons,
   SxProp,
@@ -220,29 +221,52 @@ export const TokenInputWidget = ({
                       flex: 1
                     }}
                     pointerEvents={token === undefined ? 'none' : 'auto'}>
-                    <TokenAmountInput
-                      testID="token_amount_input_field"
-                      autoFocus={autoFocus}
-                      editable={editable}
-                      denomination={token?.decimals ?? 0}
-                      style={{
-                        fontFamily: 'Aeonik-Medium',
-                        fontSize: 42,
-                        minWidth: 100,
-                        width: '100%',
-                        textAlign: 'right',
-                        color:
-                          inputTextColor ??
-                          (editable
-                            ? colors.$textPrimary
-                            : colors.$textSecondary)
-                      }}
-                      value={inputValue}
-                      onChange={handleAmountChange}
-                      onFocus={handleFocus}
-                      onBlur={handleBlur}
-                      placeholder="0.00"
-                    />
+                    {editable ? (
+                      <TokenAmountInput
+                        testID="token_amount_input_field"
+                        autoFocus={autoFocus}
+                        editable={editable}
+                        denomination={token?.decimals ?? 0}
+                        style={{
+                          fontFamily: 'Aeonik-Medium',
+                          fontSize: 42,
+                          minWidth: 100,
+                          width: '100%',
+                          textAlign: 'right',
+                          color:
+                            inputTextColor ??
+                            (editable
+                              ? colors.$textPrimary
+                              : colors.$textSecondary)
+                        }}
+                        value={inputValue}
+                        onChange={handleAmountChange}
+                        onFocus={handleFocus}
+                        onBlur={handleBlur}
+                        placeholder="0.00"
+                      />
+                    ) : (
+                      <Text
+                        adjustsFontSizeToFit
+                        numberOfLines={1}
+                        style={{
+                          fontFamily: 'Aeonik-Medium',
+                          fontSize: 42,
+                          lineHeight: 42,
+                          minWidth: 100,
+                          width: '100%',
+                          textAlign: 'right',
+
+                          color: !inputValue
+                            ? alpha(colors.$textSecondary, 0.2)
+                            : inputTextColor ??
+                              (editable
+                                ? colors.$textPrimary
+                                : colors.$textSecondary)
+                        }}>
+                        {inputValue?.toString() ?? '0.00'}
+                      </Text>
+                    )}
                   </View>
                 </TouchableOpacity>
               </View>

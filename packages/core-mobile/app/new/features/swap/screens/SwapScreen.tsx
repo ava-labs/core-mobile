@@ -284,6 +284,7 @@ export const SwapScreen = (): JSX.Element => {
         return UNKNOWN_AMOUNT
       }
 
+      console.warn('formatInCurrency', token.priceInCurrency, value)
       return formatCurrency({
         amount: new TokenUnit(value ?? 0n, token.decimals, token.symbol)
           .mul(token.priceInCurrency)
@@ -372,8 +373,6 @@ export const SwapScreen = (): JSX.Element => {
           network={cChainNetwork}
           formatInCurrency={amount => formatInCurrency(toToken, amount)}
           onAmountChange={handleToAmountChange}
-          onFocus={() => setIsInputFocused(true)}
-          onBlur={() => setIsInputFocused(false)}
           onSelectToken={handleSelectToToken}
           isLoadingAmount={isFetchingQuote}
         />
