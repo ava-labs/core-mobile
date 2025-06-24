@@ -160,6 +160,10 @@ export default function WalletLayout(): JSX.Element {
             name="(modals)/selectPaymentMethod"
             options={formSheetScreensOptions}
           />
+          <Stack.Screen
+            name="(modals)/transactionSuccessful"
+            options={modalScreensOptions}
+          />
         </Stack>
         <PolyfillCrypto />
         <LastTransactedNetworks />
