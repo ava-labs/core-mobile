@@ -43,7 +43,7 @@ export const Alert = (): JSX.Element => {
 
 export const Device = (): JSX.Element =>
   Template({
-    icons: [Icons.Device.GPPMaybe],
+    icons: [Icons.Device.GPPMaybe, Icons.Device.Encrypted],
     resourceURL:
       'https://www.figma.com/design/hDSl4OUgXorDAtqPZtCUhB/K2-Foundation?node-id=376-17725&t=aSE6qCYReaOZSaNQ-0'
   })
@@ -100,8 +100,8 @@ export const Navigation = (): JSX.Element =>
       'https://www.figma.com/file/hDSl4OUgXorDAtqPZtCUhB/K2-Foundation?type=design&node-id=378-5642&mode=design&t=HOIixbVhKpxGrRwG-4'
   })
 
-export const Custom = (): JSX.Element => {
-  return Template({
+export const Custom = (): JSX.Element =>
+  Template({
     icons: [
       Icons.Custom.ArrowDown,
       Icons.Custom.BackArrowCustom,
@@ -150,7 +150,13 @@ export const Custom = (): JSX.Element => {
     resourceURL:
       'https://www.figma.com/file/hDSl4OUgXorDAtqPZtCUhB/K2-Foundation?type=design&node-id=378-5642&mode=design&t=HOIixbVhKpxGrRwG-4'
   })
-}
+
+export const File = (): JSX.Element =>
+  Template({
+    icons: [Icons.File.Download],
+    resourceURL:
+      'https://www.figma.com/design/hDSl4OUgXorDAtqPZtCUhB/K2-Foundation?node-id=376-23667&t=qM1otSwKcHtbI8Mp-0'
+  })
 
 export const RecoveryMethods = (): JSX.Element =>
   Template({
