@@ -43,7 +43,7 @@ describe('wallet thunks', () => {
 
       expect(result.payload).toEqual({
         id: mockParams.walletId,
-        name: 'Mnemonic Wallet 1',
+        name: 'Wallet 1',
         type: mockParams.type
       })
     })

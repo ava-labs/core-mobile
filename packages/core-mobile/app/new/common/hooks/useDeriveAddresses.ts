@@ -11,6 +11,8 @@ import { uuid } from 'utils/uuid'
 import { ImportedAccount } from 'store/account/types'
 import { CORE_MOBILE_WALLET_ID } from 'services/walletconnectv2/types'
 import Logger from 'utils/Logger'
+import { useSelector } from 'react-redux'
+import { selectAccounts } from 'store/account'
 
 export interface DerivedAddress {
   address: string
@@ -30,6 +32,8 @@ export const useDeriveAddresses = (
     useState<ImportedAccount | null>(null)
   const [showDerivedInfo, setShowDerivedInfo] = useState(false)
 
+  const accounts = useSelector(selectAccounts)
+
   const deriveAddresses = useCallback(async (): Promise<void> => {
     setDerivedAddresses([])
     setTempAccountDetails(null)
@@ -48,10 +52,12 @@ export const useDeriveAddresses = (
         isTestnet ? networks.testnet : networks.bitcoin
       )
 
+      const accountsCount = Object.keys(accounts).length + 1
+
       const newTempAccountData = {
         id: uuid(),
         index: 0,
-        name: 'Imported Key',
+        name: `Account ${accountsCount}`,
         type: CoreAccountType.IMPORTED,
         walletId: CORE_MOBILE_WALLET_ID,
         addressC,
@@ -77,7 +83,7 @@ export const useDeriveAddresses = (
       setDerivedAddresses([])
       setTempAccountDetails(null)
     }
-  }, [isTestnet, privateKey])
+  }, [isTestnet, privateKey, accounts])
 
   useEffect(() => {
     if (privateKey.trim() !== '') {
