@@ -7,7 +7,8 @@ describe('scheduleNotification', () => {
     const mockNotification = {
       txHash: 'testNodeId',
       timestamp: 123456789,
-      channelId: ChannelId.STAKING_COMPLETE
+      channelId: ChannelId.STAKING_COMPLETE,
+      accountId: '3824cbfb-6016-4731-a1dd-8e3a2b202d6f'
     }
     await NotificationsService.scheduleNotification(mockNotification)
     expect(notifee.createTriggerNotification).toHaveBeenCalled()
@@ -16,7 +17,8 @@ describe('scheduleNotification', () => {
     const mockNotification = {
       txHash: 'testNodeId',
       timestamp: 123456789,
-      channelId: 'testChannelId' as ChannelId
+      channelId: 'testChannelId' as ChannelId,
+      accountId: '3824cbfb-6016-4731-a1dd-8e3a2b202d6f'
     }
     await NotificationsService.scheduleNotification(mockNotification)
     expect(notifee.createTriggerNotification).not.toHaveBeenCalled()

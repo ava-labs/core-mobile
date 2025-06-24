@@ -26,13 +26,16 @@ export const handleProcessNotificationData = async (
     }
   }
 
-  //maybe set account
-  if ('accountAddress' in data && typeof data.accountAddress === 'string') {
+  // prioritize new approach of using accountId over accountAddress
+  if ('accountId' in data && typeof data.accountId === 'string') {
+    dispatch(setActiveAccount(data.accountId))
+  } else if (
+    'accountAddress' in data &&
+    typeof data.accountAddress === 'string'
+  ) {
     const account = selectAccountByAddress(data.accountAddress)(state)
     if (account) {
       dispatch(setActiveAccount(account.id))
     }
-  } else if ('accountId' in data && typeof data.accountId === 'string') {
-    dispatch(setActiveAccount(data.accountId))
   }
 }
