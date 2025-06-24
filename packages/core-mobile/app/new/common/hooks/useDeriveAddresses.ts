@@ -11,7 +11,6 @@ import { uuid } from 'utils/uuid'
 import { ImportedAccount } from 'store/account/types'
 import { CORE_MOBILE_WALLET_ID } from 'services/walletconnectv2/types'
 import Logger from 'utils/Logger'
-import { Network } from '@avalabs/core-chains-sdk'
 
 export interface DerivedAddress {
   address: string
@@ -20,7 +19,7 @@ export interface DerivedAddress {
 
 export const useDeriveAddresses = (
   privateKey: string,
-  activeNetwork: Network
+  isTestnet: boolean
 ): {
   derivedAddresses: DerivedAddress[]
   tempAccountDetails: ImportedAccount | null
@@ -46,7 +45,7 @@ export const useDeriveAddresses = (
       const addressC = getEvmAddressFromPubKey(publicKey)
       const addressBTC = getBtcAddressFromPubKey(
         publicKey,
-        activeNetwork.isTestnet ? networks.testnet : networks.bitcoin
+        isTestnet ? networks.testnet : networks.bitcoin
       )
 
       const newTempAccountData = {
@@ -78,7 +77,7 @@ export const useDeriveAddresses = (
       setDerivedAddresses([])
       setTempAccountDetails(null)
     }
-  }, [activeNetwork.isTestnet, privateKey])
+  }, [isTestnet, privateKey])
 
   useEffect(() => {
     if (privateKey.trim() !== '') {

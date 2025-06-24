@@ -4,13 +4,13 @@ import { View, Text, useTheme, ActivityIndicator } from '@avalabs/k2-alpine'
 import { SimpleTextInput } from 'new/common/components/SimpleTextInput'
 import { Button } from '@avalabs/k2-alpine'
 import { useSelector } from 'react-redux'
-import { selectActiveNetwork } from 'store/network'
 import { truncateAddress } from '@avalabs/core-utils-sdk'
 import { TokenLogo } from 'common/components/TokenLogo'
 import { useImportPrivateKey } from 'new/common/hooks/useImportPrivateKey'
 import { useDeriveAddresses } from 'new/common/hooks/useDeriveAddresses'
 import { usePrivateKeyBalance } from 'common/hooks/usePrivateKeyBalance'
 import { usePrivateKeyImportHandler } from 'new/common/hooks/usePrivateKeyImportHandler'
+import { selectIsDeveloperMode } from 'store/settings/advanced'
 
 const ImportPrivateKeyScreen = (): JSX.Element => {
   const {
@@ -18,11 +18,11 @@ const ImportPrivateKeyScreen = (): JSX.Element => {
   } = useTheme()
   const [privateKey, setPrivateKey] = useState('')
 
-  const activeNetwork = useSelector(selectActiveNetwork)
+  const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const { isImporting } = useImportPrivateKey()
 
   const { derivedAddresses, tempAccountDetails, showDerivedInfo } =
-    useDeriveAddresses(privateKey, activeNetwork)
+    useDeriveAddresses(privateKey, isDeveloperMode)
 
   const { totalBalanceDisplay, isAwaitingOurBalance } =
     usePrivateKeyBalance(tempAccountDetails)
