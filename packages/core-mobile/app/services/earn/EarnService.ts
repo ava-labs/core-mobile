@@ -402,15 +402,14 @@ class EarnService {
       const now = new Date()
       return currentNetworkTransactions
         .concat(oppositeNetworkTransactions)
-        .map(transaction => {
+        .flatMap(transaction => {
           // find account that matches the transaction's index
           const account = accountsArray.find(
             acc => acc.index === transaction.index
           )
 
-          if (!account) {
-            throw new Error('Account not found')
-          }
+          // flat map will remove this
+          if (!account) return []
 
           return {
             txHash: transaction.txHash,
