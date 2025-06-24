@@ -52,7 +52,9 @@ export const transformKeyInfosToPubKeys = (
 
   // We only look for key sets that contain all of the required key types.
   const validKeySets = allDerivedKeySets.filter(keySet => {
-    return keySet.every(key => requiredKeyTypes.every(type => key[type]))
+    return keySet
+      .filter(key => Boolean(key))
+      .every(key => requiredKeyTypes.every(type => key[type]))
   })
 
   if (!validKeySets[0]) {
