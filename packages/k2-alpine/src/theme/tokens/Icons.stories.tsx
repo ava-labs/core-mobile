@@ -43,7 +43,7 @@ export const Alert = (): JSX.Element => {
 
 export const Device = (): JSX.Element =>
   Template({
-    icons: [Icons.Device.GPPMaybe],
+    icons: [Icons.Device.GPPMaybe, Icons.Device.Encrypted],
     resourceURL:
       'https://www.figma.com/design/hDSl4OUgXorDAtqPZtCUhB/K2-Foundation?node-id=376-17725&t=aSE6qCYReaOZSaNQ-0'
   })
@@ -143,8 +143,7 @@ export const Custom = (): JSX.Element =>
       Icons.Custom.Unknown,
       Icons.Custom.Unwrap,
       Icons.Custom.AddCircle,
-      Icons.Custom.DoNotDisturbOn,
-      Icons.Custom.Shield
+      Icons.Custom.DoNotDisturbOn
     ],
     itemPadding: 16,
     numColumns: 2,

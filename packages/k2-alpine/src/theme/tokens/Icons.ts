@@ -92,7 +92,7 @@ import IconCreditCard from '../../assets/icons/credit_card.svg'
 import IconBankTransfer from '../../assets/icons/bank_transfer.svg'
 import IconCash from '../../assets/icons/cash.svg'
 import IconDownload from '../../assets/icons/download.svg'
-import IconEncrypted from '../../assets/icons/encrypted.svg'
+import IconEncrypted from '../../assets/icons/shield.svg'
 
 // Transaction types
 import IconTxTypeAdd from '../../assets/icons/tx-type-add.svg'
