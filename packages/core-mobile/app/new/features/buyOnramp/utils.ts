@@ -1,7 +1,6 @@
 import { LocalTokenWithBalance } from 'store/balance'
 import { TokenType } from '@avalabs/vm-module-types'
 import { closeInAppBrowser } from 'utils/openInAppBrowser'
-import { transactionSnackbar } from 'common/utils/toast'
 import { router } from 'expo-router'
 import { ACTIONS } from '../../../contexts/DeeplinkContext/types'
 import { NATIVE_ERC20_TOKEN_CONTRACT_ADDRESS } from './consts'
@@ -21,7 +20,7 @@ export const isSupportedToken = (
 ): boolean =>
   'chainId' in token &&
   token.chainId?.toString() === crypto.chainId &&
-  crypto.contractAddress === token.address
+  crypto.contractAddress?.toLowerCase() === token.address.toLowerCase()
 
 export const isBtcToken = (
   crypto: CryptoCurrency,
@@ -49,7 +48,8 @@ export const getBuyableCryptoCurrency = ({
 
   if (typeof tokenOrAddress === 'string') {
     return cryptoCurrencies.find(
-      crypto => crypto.contractAddress === tokenOrAddress
+      crypto =>
+        crypto.contractAddress?.toLowerCase() === tokenOrAddress.toLowerCase()
     )
   }
 
@@ -59,14 +59,10 @@ export const getBuyableCryptoCurrency = ({
 }
 
 export const dismissMeldStack = (
-  action: typeof ACTIONS.OnrampCompleted | typeof ACTIONS.OfframpCompleted,
+  _: typeof ACTIONS.OnrampCompleted | typeof ACTIONS.OfframpCompleted,
   searchParams: URLSearchParams
 ): void => {
-  const amount = searchParams.get('amount') ?? ''
   const dismissCount = searchParams.get('dismissCount') ?? ''
-  const message = `${amount} successfully ${
-    action === ACTIONS.OnrampCompleted ? 'bought' : 'withdrawn'
-  }`
   closeInAppBrowser()
   // the number of dismisses is the number of meld screens to dismiss
   // there is currently at most 2 meld screens
@@ -76,8 +72,13 @@ export const dismissMeldStack = (
   Array.from({ length: Number(dismissCount) }).forEach(() => {
     router.canGoBack() && router.back()
   })
-  transactionSnackbar.success({
-    message
+  router.navigate({
+    // @ts-ignore TODO: make routes typesafe
+    pathname: '/transactionSuccessful',
+    params: {
+      title: 'Transaction is in progress',
+      description: 'Please wait while we process your transaction',
+      buttonText: 'Done'
+    }
   })
-  confetti.restart()
 }

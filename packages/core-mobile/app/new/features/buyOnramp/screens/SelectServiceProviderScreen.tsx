@@ -19,7 +19,7 @@ import { LoadingState } from 'common/components/LoadingState'
 import { ErrorState } from 'common/components/ErrorState'
 import { useOnRampServiceProvider, useOnRampToken } from '../store'
 import { useSearchServiceProviders } from '../hooks/useSearchServiceProviders'
-import { ServiceProviderCategories } from '../consts'
+import { ServiceProviderCategories, ServiceProviderNames } from '../consts'
 import { Quote } from '../types'
 import { useServiceProviders } from '../hooks/useServiceProviders'
 import { ServiceProviderIcon } from '../components/ServiceProviderIcon'
@@ -128,6 +128,7 @@ export const SelectServiceProviderScreen = (): React.JSX.Element => {
       const serviceProvider = serviceProviders?.find(
         sp => sp.serviceProvider === item.serviceProvider
       )
+
       const tokenAmount =
         item.destinationAmount ??
         0 - (item.totalFee ?? 0) / (item.exchangeRate ?? 0)
@@ -158,44 +159,44 @@ export const SelectServiceProviderScreen = (): React.JSX.Element => {
             backgroundColor: colors.$surfaceSecondary,
             justifyContent: 'space-between'
           }}>
-          <View sx={{ gap: 12, flexDirection: 'row', alignItems: 'center' }}>
-            <View
-              style={{
-                overflow: 'hidden',
-                backgroundColor: alpha(colors.$textPrimary, 0.1),
-                borderRadius: IMAGE_SIZE / 2,
-                borderColor: alpha(colors.$textPrimary, 0.1)
-              }}>
-              {serviceProvider?.serviceProvider && (
+          {serviceProvider?.serviceProvider && (
+            <View sx={{ gap: 12, flexDirection: 'row', alignItems: 'center' }}>
+              <View
+                style={{
+                  overflow: 'hidden',
+                  backgroundColor: alpha(colors.$textPrimary, 0.1),
+                  borderRadius: IMAGE_SIZE / 2,
+                  borderColor: alpha(colors.$textPrimary, 0.1)
+                }}>
                 <ServiceProviderIcon
                   serviceProvider={serviceProvider.serviceProvider}
                   size={IMAGE_SIZE}
                 />
-              )}
-            </View>
-            <View>
-              <Text
-                variant="body1"
-                sx={{
-                  lineHeight: 16,
-                  fontWeight: 600,
-                  color: colors.$textPrimary
-                }}>
-                {serviceProvider?.serviceProvider}
-              </Text>
-              {index === 0 && (
+              </View>
+              <View>
                 <Text
-                  variant="body2"
+                  variant="body1"
                   sx={{
-                    color: colors.$textSuccess,
-                    fontWeight: 400,
-                    lineHeight: 16
+                    lineHeight: 16,
+                    fontWeight: 600,
+                    color: colors.$textPrimary
                   }}>
-                  Lowest price
+                  {ServiceProviderNames[serviceProvider.serviceProvider]}
                 </Text>
-              )}
+                {index === 0 && (
+                  <Text
+                    variant="body2"
+                    sx={{
+                      color: colors.$textSuccess,
+                      fontWeight: 400,
+                      lineHeight: 16
+                    }}>
+                    Lowest price
+                  </Text>
+                )}
+              </View>
             </View>
-          </View>
+          )}
           <View>
             <Text
               variant="body2"
