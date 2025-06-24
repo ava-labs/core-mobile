@@ -40,8 +40,6 @@ export const AccountButtons = ({
     return account.index === highestIndexInWallet
   }, [account, siblingAccounts])
 
-  const shouldShowRemoveButton = account?.index !== 0
-
   const handleShowAlertWithTextInput = (): void => {
     showAlertWithTextInput({
       title: 'Rename account',
@@ -117,20 +115,18 @@ export const AccountButtons = ({
         onPress={handleShowAlertWithTextInput}>
         Rename account
       </Button>
-      {shouldShowRemoveButton && (
-        <Button
-          style={{ borderRadius: 12 }}
-          size="large"
-          textStyle={{
-            color: theme.colors.$textDanger
-          }}
-          type="secondary"
-          disabled={!isRemoveEnabled}
-          onPress={handleRemoveAccount}>
-          Remove account
-        </Button>
-      )}
-      {shouldShowRemoveButton && !isRemoveEnabled && (
+      <Button
+        style={{ borderRadius: 12 }}
+        size="large"
+        textStyle={{
+          color: theme.colors.$textDanger
+        }}
+        type="secondary"
+        disabled={!isRemoveEnabled}
+        onPress={handleRemoveAccount}>
+        Remove account
+      </Button>
+      {!isRemoveEnabled && (
         <Text variant="caption" sx={{ color: theme.colors.$textSecondary }}>
           Only the most recently added account may be removed
         </Text>
