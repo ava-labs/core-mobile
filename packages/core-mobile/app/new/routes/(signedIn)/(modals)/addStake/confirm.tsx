@@ -235,14 +235,14 @@ const StakeConfirmScreen = (): JSX.Element => {
           {
             txHash,
             endTimestamp: getUnixTime(validatedStakingEndTime),
-            accountIndex: activeAccount?.index,
+            accountId: activeAccount?.id,
             isDeveloperMode
           }
         ])
       )
     },
     [
-      activeAccount?.index,
+      activeAccount?.id,
       dispatch,
       isDeveloperMode,
       validatedStakingEndTime,
