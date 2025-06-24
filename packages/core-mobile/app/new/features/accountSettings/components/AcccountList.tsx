@@ -46,12 +46,12 @@ export const AccountList = (): React.JSX.Element => {
   }, [accountCollection, recentAccountIds])
 
   useEffect(() => {
-    if (activeAccount?.index != null) {
+    if (activeAccount?.id != null) {
       flatListRef.current?.scrollToOffset({
         offset: 0
       })
     }
-  }, [activeAccount?.index])
+  }, [activeAccount?.id])
 
   const onSelectAccount = useCallback(
     (account: Account): void => {
