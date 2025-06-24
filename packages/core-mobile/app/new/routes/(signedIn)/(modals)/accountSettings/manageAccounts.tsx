@@ -79,8 +79,15 @@ const ManageAccountsScreen = (): React.JSX.Element => {
     if (!searchText) {
       return allAccountsArray
     }
-    return allAccountsArray.filter(
-      account =>
+    return allAccountsArray.filter(account => {
+      const wallet = allWallets[account.walletId]
+      if (!wallet) {
+        return false
+      }
+      const walletName = wallet.name.toLowerCase()
+
+      return (
+        walletName.includes(searchText.toLowerCase()) ||
         account.name.toLowerCase().includes(searchText.toLowerCase()) ||
         account.addressC.toLowerCase().includes(searchText.toLowerCase()) ||
         account.addressBTC.toLowerCase().includes(searchText.toLowerCase()) ||
@@ -88,8 +95,9 @@ const ManageAccountsScreen = (): React.JSX.Element => {
         account.addressPVM.toLowerCase().includes(searchText.toLowerCase()) ||
         account.addressSVM.toLowerCase().includes(searchText.toLowerCase()) ||
         account.addressCoreEth.toLowerCase().includes(searchText.toLowerCase())
-    )
-  }, [allAccountsArray, searchText])
+      )
+    })
+  }, [allAccountsArray, allWallets, searchText])
 
   const handleSetActiveAccount = useCallback(
     (accountId: string) => {
