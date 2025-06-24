@@ -12,6 +12,7 @@ import { selectActiveAccount } from 'store/account'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import { useNavigation } from '@react-navigation/native'
 import { ACTIONS } from 'contexts/DeeplinkContext/types'
+import { useDebouncedCallback } from 'use-debounce'
 import {
   PaymentMethodNames,
   ServiceProviderCategories,
@@ -35,6 +36,8 @@ import { useCreateSessionWidget } from './useCreateSessionWidget'
 import { useServiceProviders } from './useServiceProviders'
 import { useSourceAmount } from './useSourceAmount'
 
+const DEFAULT_DEBOUNCE_MILLISECONDS = 300
+
 export const useSelectBuyAmount = (): {
   isLoadingDefaultsByCountry: boolean
   isLoadingPurchaseLimits: boolean
@@ -46,7 +49,7 @@ export const useSelectBuyAmount = (): {
   hasValidSourceAmount: boolean
   isBuyAllowed: boolean
   formatInTokenUnit: (amt: number) => string
-  setSourceAmount: (amt?: number) => void
+  setSourceAmount: (amt: number) => void
   sourceAmount: number | undefined
   createSessionWidget: () => Promise<CreateSessionWidget | undefined>
   errorMessage?: string
@@ -71,6 +74,12 @@ export const useSelectBuyAmount = (): {
   const { countryCode } = useLocale()
   const { getFromPopulatedNetwork } = useNetworks()
   const { getMarketTokenBySymbol } = useWatchlist()
+
+  // debounce since fetching quotes can take awhile
+  const debouncedSetAmount = useDebouncedCallback(
+    setSourceAmount,
+    DEFAULT_DEBOUNCE_MILLISECONDS
+  )
 
   const { crytoQuotes, isLoadingCryptoQuotes, cryptoQuotesError } =
     useServiceProviders()
@@ -194,7 +203,8 @@ export const useSelectBuyAmount = (): {
   useLayoutEffect(() => {
     setPaymentMethod(undefined)
     setServiceProvider(undefined)
-  }, [setPaymentMethod, setServiceProvider])
+    setSourceAmount(0)
+  }, [setPaymentMethod, setServiceProvider, setSourceAmount])
 
   useEffect(() => {
     if (paymentMethod === undefined && defaultPaymentMethod) {
@@ -264,7 +274,7 @@ export const useSelectBuyAmount = (): {
   return {
     formatInTokenUnit,
     sourceAmount,
-    setSourceAmount,
+    setSourceAmount: debouncedSetAmount,
     paymentMethodToDisplay,
     serviceProviderToDisplay,
     isBuyAllowed,

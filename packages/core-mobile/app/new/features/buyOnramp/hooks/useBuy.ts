@@ -67,7 +67,7 @@ export const useBuy = (): {
         return
       }
 
-      setSourceAmount(undefined)
+      setSourceAmount(0)
       if (token || address) {
         const cryptoCurrency = getBuyableCryptoCurrency(token, address)
         setOnrampToken(cryptoCurrency)
@@ -91,7 +91,7 @@ export const useBuy = (): {
   const navigateToBuyAvax = useCallback(() => {
     if (avax === undefined) return
     setOnrampToken(avax)
-    setSourceAmount(undefined)
+    setSourceAmount(0)
 
     // @ts-ignore TODO: make routes typesafe
     navigate('/buyOnramp/selectBuyAmount')
@@ -100,7 +100,7 @@ export const useBuy = (): {
   const navigateToBuyUsdc = useCallback(() => {
     if (usdc === undefined) return
     setOnrampToken(usdc)
-    setSourceAmount(undefined)
+    setSourceAmount(0)
     // @ts-ignore TODO: make routes typesafe
     navigate('/buyOnramp/selectBuyAmount')
   }, [usdc, setOnrampToken, setSourceAmount, navigate])
