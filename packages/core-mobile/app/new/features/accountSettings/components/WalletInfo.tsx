@@ -27,35 +27,12 @@ export const WalletInfo = ({
     const results: GroupListItem[] = [
       {
         title: 'Type',
-        value: (
-          <Text
-            variant="body2"
-            sx={{
-              color: colors.$textSecondary,
-              fontSize: 16,
-              lineHeight: 22,
-              marginLeft: 9
-            }}>
-            {account?.type === CoreAccountType.IMPORTED
-              ? 'Imported'
-              : 'Primary'}
-          </Text>
-        )
+        value:
+          account?.type === CoreAccountType.IMPORTED ? 'Imported' : 'Primary'
       },
       {
         title: 'Wallet',
-        value: (
-          <Text
-            variant="body2"
-            sx={{
-              color: colors.$textSecondary,
-              fontSize: 16,
-              lineHeight: 22,
-              marginLeft: 9
-            }}>
-            {wallet?.name ?? 'Unknown Wallet'}
-          </Text>
-        )
+        value: wallet?.name ?? 'Unknown Wallet'
       }
     ]
 
@@ -67,19 +44,11 @@ export const WalletInfo = ({
     }
 
     return results
-  }, [account?.type, wallet?.name, onShowPrivateKey, colors.$textSecondary])
+  }, [account?.type, wallet?.name, onShowPrivateKey])
 
   return (
     <View sx={{ gap: 4 }}>
-      <GroupList
-        data={data}
-        titleSx={{
-          fontSize: 16,
-          lineHeight: 22,
-          fontFamily: 'Inter-Regular'
-        }}
-        valueSx={{ fontSize: 16, lineHeight: 22 }}
-      />
+      <GroupList data={data} valueSx={{ fontSize: 16, lineHeight: 22 }} />
       {onShowPrivateKey !== undefined && (
         <Text variant="caption" sx={{ color: colors.$textSecondary }}>
           Your account’s private key is a fixed password for accessing the
