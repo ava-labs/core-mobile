@@ -16,7 +16,6 @@ import {
   selectAccountsByWalletId,
   setAccount,
   setActiveAccountId,
-  selectAccountsByWalletId,
   removeAccount,
   selectActiveAccount
 } from './slice'
