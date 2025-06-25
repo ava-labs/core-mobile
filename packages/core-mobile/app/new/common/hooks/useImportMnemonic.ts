@@ -15,10 +15,10 @@ export const useImportMnemonic = (): {
   importWallet: (mnemonic: string) => Promise<void>
 } => {
   const dispatch = useDispatch<AppThunkDispatch>()
-  const { canGoBack, back } = useRouter()
+  const { canGoBack } = useRouter()
   const [isImporting, setIsImporting] = useState(false)
   const navigation = useNavigation()
-  
+
   const importWallet = useCallback(
     async (mnemonic: string) => {
       if (!mnemonic) {
@@ -41,7 +41,7 @@ export const useImportMnemonic = (): {
 
         if (canGoBack()) {
           navigation.dispatch(StackActions.popTo('manageAccounts'))
-        } 
+        }
       } catch (error) {
         Logger.error('Failed to import mnemonic wallet', error)
         showSnackbar(
@@ -53,7 +53,7 @@ export const useImportMnemonic = (): {
         setIsImporting(false)
       }
     },
-    [dispatch, canGoBack, back]
+    [dispatch, canGoBack, navigation]
   )
 
   return { isImporting, importWallet }
