@@ -78,12 +78,10 @@ export const useDeriveAddresses = (
           symbol: 'BTC'
         }
       ])
-      setShowDerivedInfo(true)
     } catch (error) {
       Logger.info('error deriving addresses:', error)
       setDerivedAddresses([])
       setTempAccountDetails(null)
-      setShowDerivedInfo(false)
     }
   }, [isTestnet, privateKey, accounts])
 
@@ -91,11 +89,14 @@ export const useDeriveAddresses = (
     if (privateKey.trim() !== '') {
       deriveAddresses()
     } else {
-      setShowDerivedInfo(false)
       setDerivedAddresses([])
       setTempAccountDetails(null)
     }
   }, [privateKey, deriveAddresses])
+
+  useEffect(() => {
+    setShowDerivedInfo(derivedAddresses.length > 0)
+  }, [derivedAddresses])
 
   return {
     derivedAddresses,

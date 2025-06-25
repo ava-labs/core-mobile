@@ -1,7 +1,7 @@
 import { Button, showAlert, View, Text, useTheme } from '@avalabs/k2-alpine'
 import * as bip39 from 'bip39'
 import { ScrollScreen } from 'common/components/ScrollScreen'
-import React, { useCallback, useState, useEffect } from 'react'
+import React, { useCallback, useState, useEffect, useMemo } from 'react'
 import RecoveryPhraseInput from 'new/features/onboarding/components/RecoveryPhraseInput'
 import Logger from 'utils/Logger'
 import {
@@ -13,8 +13,8 @@ import { useRouter } from 'expo-router'
 import { useImportMnemonic } from 'new/common/hooks/useImportMnemonic'
 import { useActiveWallet } from 'common/hooks/useActiveWallet'
 import KeychainMigrator from 'utils/KeychainMigrator'
-
-const MINIMUM_MNEMONIC_WORDS = 12
+import { MINIMUM_MNEMONIC_WORDS } from 'common/consts'
+import { useCheckIfAccountExists } from 'features/onboarding/hooks/useIsExistingAccount'
 
 interface DerivedAddressItem {
   address: string
@@ -30,9 +30,16 @@ const ImportSeedWallet = (): React.JSX.Element => {
   const [derivedAddresses, setDerivedAddresses] = useState<
     DerivedAddressItem[]
   >([])
+  const [isKnownPhrase, setIsKnownPhrase] = useState(false)
   const { isImporting, importWallet } = useImportMnemonic()
   const [isCheckingMigration, setIsCheckingMigration] = useState(false)
   const activeWallet = useActiveWallet()
+  const checkIfAccountExists = useCheckIfAccountExists()
+  const errorMessage = useMemo(() => {
+    return isKnownPhrase
+      ? 'This recovery phrase appears to have already been imported.'
+      : undefined
+  }, [isKnownPhrase])
 
   useEffect(() => {
     const trimmedMnemonic = mnemonic.toLowerCase().trim()
@@ -49,15 +56,26 @@ const ImportSeedWallet = (): React.JSX.Element => {
           )
           newAddresses.push({ address: wallet.address })
         }
+
+        const isMnemonicKnown = checkIfAccountExists(newAddresses[0]?.address)
+
+        if (isMnemonicKnown) {
+          setIsKnownPhrase(true)
+          return
+        }
+
+        setIsKnownPhrase(false)
         setDerivedAddresses(newAddresses)
       } catch (error) {
         Logger.error('Error deriving addresses:', error)
+        setIsKnownPhrase(false)
         setDerivedAddresses([])
       }
     } else {
+      setIsKnownPhrase(false)
       setDerivedAddresses([])
     }
-  }, [mnemonic])
+  }, [mnemonic, checkIfAccountExists])
 
   const handleImport = useCallback(async () => {
     const trimmedMnemonic = mnemonic.toLowerCase().trim()
@@ -88,11 +106,11 @@ const ImportSeedWallet = (): React.JSX.Element => {
         // @ts-ignore TODO: make routes typesafe
         pathname: '/accountSettings/verifyPin',
         params: {
-          walletSecretToImport: mnemonic
+          walletSecretToImport: trimmedMnemonic
         }
       })
     } else {
-      await importWallet(mnemonic)
+      await importWallet(trimmedMnemonic)
     }
   }, [mnemonic, router, importWallet, activeWallet.id])
 
@@ -101,7 +119,8 @@ const ImportSeedWallet = (): React.JSX.Element => {
       !mnemonic ||
       mnemonic.trim().split(/\s+/).length < MINIMUM_MNEMONIC_WORDS ||
       isImporting ||
-      isCheckingMigration
+      isCheckingMigration ||
+      isKnownPhrase
 
     return (
       <View
@@ -117,7 +136,7 @@ const ImportSeedWallet = (): React.JSX.Element => {
         </Button>
       </View>
     )
-  }, [handleImport, mnemonic, isImporting, isCheckingMigration])
+  }, [handleImport, mnemonic, isImporting, isCheckingMigration, isKnownPhrase])
 
   return (
     <ScrollScreen
@@ -132,6 +151,13 @@ const ImportSeedWallet = (): React.JSX.Element => {
           paddingTop: 16
         }}>
         <RecoveryPhraseInput onChangeText={setMnemonic} />
+        {errorMessage ? (
+          <View sx={{ alignItems: 'center' }}>
+            <Text variant="caption" sx={{ color: '$textDanger' }}>
+              {errorMessage}
+            </Text>
+          </View>
+        ) : undefined}
       </View>
       {derivedAddresses.length > 0 && (
         <View sx={{ marginTop: 24, marginBottom: 16 }}>

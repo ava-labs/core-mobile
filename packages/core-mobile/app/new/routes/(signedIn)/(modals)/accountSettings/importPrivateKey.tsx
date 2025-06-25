@@ -3,12 +3,14 @@ import {
   ActivityIndicator,
   Button,
   GroupList,
+  showAlert,
   Text,
   View
 } from '@avalabs/k2-alpine'
 import { ScrollScreen } from 'common/components/ScrollScreen'
 import { TokenLogo } from 'common/components/TokenLogo'
 import { usePrivateKeyBalance } from 'common/hooks/usePrivateKeyBalance'
+import { useCheckIfAccountExists } from 'features/onboarding/hooks/useIsExistingAccount'
 import { SimpleTextInput } from 'new/common/components/SimpleTextInput'
 import { useDeriveAddresses } from 'new/common/hooks/useDeriveAddresses'
 import { usePrivateKeyImportHandler } from 'new/common/hooks/usePrivateKeyImportHandler'
@@ -31,12 +33,35 @@ const ImportPrivateKeyScreen = (): JSX.Element => {
   const { handleImport, isImporting, isCheckingMigration } =
     usePrivateKeyImportHandler(tempAccountDetails, privateKey)
 
+  const checkIfAccountExists = useCheckIfAccountExists()
+
+  const handleImportPrivateKey = useCallback(() => {
+    if (checkIfAccountExists(tempAccountDetails?.addressC)) {
+      showAlert({
+        title: 'Import Duplicate Account?',
+        description:
+          'This account has already been imported, do you want to continue?',
+        buttons: [
+          {
+            text: 'Import',
+            onPress: handleImport
+          },
+          {
+            text: 'Cancel'
+          }
+        ]
+      })
+    } else {
+      handleImport()
+    }
+  }, [handleImport, checkIfAccountExists, tempAccountDetails])
+
   const renderFooter = useCallback(() => {
     return (
       <Button
         type="primary"
         size="large"
-        onPress={handleImport}
+        onPress={handleImportPrivateKey}
         disabled={
           privateKey.trim() === '' ||
           isAwaitingOurBalance ||
@@ -48,7 +73,7 @@ const ImportPrivateKeyScreen = (): JSX.Element => {
       </Button>
     )
   }, [
-    handleImport,
+    handleImportPrivateKey,
     isAwaitingOurBalance,
     isCheckingMigration,
     isImporting,
