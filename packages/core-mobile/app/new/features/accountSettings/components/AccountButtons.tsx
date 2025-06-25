@@ -1,11 +1,17 @@
-import { Button, View } from '@avalabs/k2-alpine'
+import { Button, Text, useTheme, View } from '@avalabs/k2-alpine'
 import {
   dismissAlertWithTextInput,
   showAlertWithTextInput
 } from 'common/utils/alertWithTextInput'
-import React, { useCallback } from 'react'
+import React, { useCallback, useMemo } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { selectAccountById, setAccountTitle } from 'store/account'
+import { useRouter } from 'expo-router'
+import {
+  removeAccountWithActiveCheck,
+  selectAccountById,
+  selectAccountsByWalletId,
+  setAccountTitle
+} from 'store/account'
 import { WalletType } from 'services/wallet/types'
 
 export const AccountButtons = ({
@@ -16,7 +22,23 @@ export const AccountButtons = ({
   walletType: WalletType
 }): React.JSX.Element => {
   const dispatch = useDispatch()
+  const router = useRouter()
+  const { theme } = useTheme()
   const account = useSelector(selectAccountById(accountId))
+  const siblingAccounts = useSelector(
+    selectAccountsByWalletId(account?.walletId ?? '')
+  )
+
+  const isRemoveEnabled = useMemo(() => {
+    if (!account) return false
+
+    if (siblingAccounts.length <= 1) return false
+
+    const highestIndexInWallet = Math.max(
+      ...siblingAccounts.map(acc => acc.index)
+    )
+    return account.index === highestIndexInWallet
+  }, [account, siblingAccounts])
 
   const handleShowAlertWithTextInput = (): void => {
     showAlertWithTextInput({
@@ -40,6 +62,31 @@ export const AccountButtons = ({
       ]
     })
   }
+
+  const handleRemoveAccount = useCallback((): void => {
+    if (!account) return
+
+    showAlertWithTextInput({
+      title: 'Remove account',
+      description: `Are you sure you want to remove "${account.name}"?`,
+      inputs: [],
+      buttons: [
+        {
+          text: 'Cancel',
+          onPress: dismissAlertWithTextInput
+        },
+        {
+          text: 'Remove',
+          style: 'destructive',
+          onPress: () => {
+            dismissAlertWithTextInput()
+            dispatch(removeAccountWithActiveCheck(account.id))
+            router.back()
+          }
+        }
+      ]
+    })
+  }, [account, dispatch, router])
 
   const handleSaveAccountName = useCallback(
     (values: Record<string, string>): void => {
@@ -68,6 +115,22 @@ export const AccountButtons = ({
         onPress={handleShowAlertWithTextInput}>
         Rename account
       </Button>
+      <Button
+        style={{ borderRadius: 12 }}
+        size="large"
+        textStyle={{
+          color: theme.colors.$textDanger
+        }}
+        type="secondary"
+        disabled={!isRemoveEnabled}
+        onPress={handleRemoveAccount}>
+        Remove account
+      </Button>
+      {!isRemoveEnabled && (
+        <Text variant="caption" sx={{ color: theme.colors.$textSecondary }}>
+          Only the most recently added account may be removed
+        </Text>
+      )}
     </View>
   )
 }

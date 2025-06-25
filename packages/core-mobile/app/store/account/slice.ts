@@ -47,6 +47,10 @@ const accountsSlice = createSlice({
     },
     setNonActiveAccounts: (state, action: PayloadAction<AccountCollection>) => {
       state.accounts = { ...state.accounts, ...action.payload }
+    },
+    removeAccount: (state, action: PayloadAction<string>) => {
+      const accountId = action.payload
+      delete state.accounts[accountId]
     }
   }
 })
@@ -72,7 +76,6 @@ export const selectAccountByAddress =
     })
   }
 
-//NEVEN: check if this is used anywhere
 export const selectAccountById =
   (id: string) =>
   (state: RootState): Account | undefined =>
@@ -112,7 +115,8 @@ export const {
   setActiveAccountId,
   setAccount,
   setAccounts,
-  setNonActiveAccounts
+  setNonActiveAccounts,
+  removeAccount
 } = accountsSlice.actions
 
 export const accountsReducer = accountsSlice.reducer
