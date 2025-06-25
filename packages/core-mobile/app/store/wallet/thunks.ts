@@ -114,7 +114,7 @@ export const importMnemonicWalletAndAccount = createAsyncThunk<
       walletId: newWalletId,
       name: `Account ${allAccountsCount + 1}`,
       type: CoreAccountType.PRIMARY,
-      index: allAccountsCount,
+      index: 0,
       addressC: addresses.EVM,
       addressBTC: addresses.BITCOIN,
       addressAVM: addresses.AVM,

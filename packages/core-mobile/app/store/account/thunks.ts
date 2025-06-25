@@ -41,7 +41,8 @@ export const addAccount = createAsyncThunk<void, void, ThunkApi>(
     const accountsByWalletId = selectAccountsByWalletId(activeWalletId)(state)
 
     const acc = await AccountsService.createNextAccount({
-      index: allAccountsCount,
+      name: `Account ${allAccountsCount + 1}`,
+      index: Object.keys(accountsByWalletId).length,
       walletType: wallet.type,
       network: activeNetwork,
       walletId: activeWalletId

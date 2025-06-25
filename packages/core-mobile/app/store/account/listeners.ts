@@ -63,7 +63,8 @@ const initAccounts = async (
     index: 0,
     walletType: activeWallet.type,
     network: activeNetwork,
-    walletId: activeWallet.id
+    walletId: activeWallet.id,
+    name: `Account 1`
   })
 
   if (activeWallet.type === WalletType.SEEDLESS) {
@@ -152,7 +153,8 @@ const fetchRemainingAccounts = async ({
       index: i,
       walletType,
       network: activeNetwork,
-      walletId: activeWalletId
+      walletId: activeWalletId,
+      name: `Account ${i + 1}`
     })
     const title = await SeedlessService.getAccountName(i)
     const accountTitle = title ?? acc.name
