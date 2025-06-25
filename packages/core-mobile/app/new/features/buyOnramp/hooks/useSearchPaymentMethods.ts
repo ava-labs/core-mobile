@@ -67,11 +67,11 @@ export const useSearchPaymentMethods = ({
         accountFilter
       }),
     select: data => {
-      return data.filter(
-        pm =>
-          (isAndroid && pm.paymentMethod !== PaymentMethods.APPLE_PAY) ||
-          (isIOS && pm.paymentMethod !== PaymentMethods.GOOGLE_PAY)
-      )
+      return data.filter(pm => {
+        if (isAndroid) return pm.paymentMethod !== PaymentMethods.APPLE_PAY
+        if (isIOS) return pm.paymentMethod !== PaymentMethods.GOOGLE_PAY
+        return true
+      })
     },
     staleTime: 1000 * 60 * 30 // 30 minutes
   })
