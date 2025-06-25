@@ -2,13 +2,13 @@ import { CorePrimaryAccount, CoreImportedAccount } from '@avalabs/types'
 
 export type PrimaryAccount = Omit<
   CorePrimaryAccount,
-  'walletType' | 'walletName'
+  'active' | 'walletType' | 'walletName'
 > & {
   walletId: string
   index: number
 }
 
-export type ImportedAccount = CoreImportedAccount & {
+export type ImportedAccount = Omit<CoreImportedAccount, 'active'> & {
   walletId: string
   index: 0
 }
