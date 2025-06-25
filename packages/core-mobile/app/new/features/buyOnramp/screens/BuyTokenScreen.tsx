@@ -58,7 +58,7 @@ export const BuyTokenScreen = (): React.JSX.Element => {
             size="small"
             token={usdcAvalancheToken}
             network={cChainNetwork}
-            outerBorderColor={colors.$surfacePrimary}
+            outerBorderColor={colors.$surfaceSecondary}
           />
         ),
         onPress: navigateToBuyUsdc
@@ -72,7 +72,7 @@ export const BuyTokenScreen = (): React.JSX.Element => {
     return _data
   }, [
     cChainNetwork,
-    colors.$surfacePrimary,
+    colors.$surfaceSecondary,
     navigateToBuyAvax,
     navigateToBuyUsdc,
     selectOtherToken,

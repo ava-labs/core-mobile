@@ -34,11 +34,11 @@ export const useSearchDefaultsByCountry = ({
       }),
     select: data => {
       return data.reduce((acc, curr) => {
-        const paymentMethods = curr.defaultPaymentMethods?.filter(
-          pm =>
-            (isAndroid && pm !== PaymentMethods.APPLE_PAY) ||
-            (isIOS && pm !== PaymentMethods.GOOGLE_PAY)
-        )
+        const paymentMethods = (curr.defaultPaymentMethods ?? []).filter(pm => {
+          if (isAndroid) return pm !== PaymentMethods.APPLE_PAY
+          if (isIOS) return pm !== PaymentMethods.GOOGLE_PAY
+          return true
+        })
         return [...acc, { ...curr, defaultPaymentMethods: paymentMethods }]
       }, [] as SearchDefaultsByCountry[])
     },
