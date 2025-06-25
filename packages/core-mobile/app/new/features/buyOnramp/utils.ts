@@ -76,8 +76,9 @@ export const dismissMeldStack = (
     // @ts-ignore TODO: make routes typesafe
     pathname: '/transactionSuccessful',
     params: {
-      title: 'Transaction is in progress',
-      description: 'Please wait while we process your transaction',
+      title: 'Transaction submitted',
+      description:
+        'Please wait while we process your transaction. You can dismiss this screen at any time.',
       buttonText: 'Done'
     }
   })

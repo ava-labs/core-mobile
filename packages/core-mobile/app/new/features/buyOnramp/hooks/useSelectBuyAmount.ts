@@ -129,7 +129,7 @@ export const useSelectBuyAmount = (): {
     sessionType: SessionTypes.BUY,
     sessionData: {
       redirectUrl,
-      sourceAmount: sourceAmount ?? 0,
+      sourceAmount,
       destinationCurrencyCode: onrampToken?.currencyCode ?? '',
       sourceCurrencyCode: selectedCurrency,
       walletAddress,

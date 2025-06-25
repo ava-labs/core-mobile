@@ -235,7 +235,7 @@ export const SelectBuyAmountScreen = (): React.JSX.Element => {
       {/* Fiat amount input widget */}
       {tokenBalance && (
         <FiatAmountInputWidget
-          isAmountValid={hasValidSourceAmount}
+          isAmountValid={errorMessage === undefined}
           disabled={isLoadingPurchaseLimits}
           sx={{ marginTop: 12 }}
           currency={selectedCurrency}

@@ -8,6 +8,8 @@ import AnalyticsService from 'services/analytics/AnalyticsService'
 import { WalletType } from 'services/wallet/types'
 import { showSnackbar } from 'new/common/utils/toast'
 import Logger from 'utils/Logger'
+import { StackActions } from '@react-navigation/native'
+import { useNavigation } from '@react-navigation/native'
 
 export const useImportPrivateKey = (): {
   isImporting: boolean
@@ -17,8 +19,9 @@ export const useImportPrivateKey = (): {
   ) => Promise<void>
 } => {
   const dispatch = useDispatch<AppThunkDispatch>()
-  const { canGoBack, back } = useRouter()
+  const { canGoBack } = useRouter()
   const [isImporting, setIsImporting] = useState(false)
+  const navigation = useNavigation()
 
   const importWallet = useCallback(
     async (accountDetails: ImportedAccount, accountSecret: string) => {
@@ -41,7 +44,10 @@ export const useImportPrivateKey = (): {
         })
         showSnackbar('Wallet imported successfully!')
 
-        if (canGoBack()) back()
+        if (canGoBack()) {
+          // clear the stack back to the manage accounts screen
+          navigation.dispatch(StackActions.popTo('manageAccounts'))
+        }
       } catch (error) {
         Logger.error('Failed to import private key wallet', error)
         showSnackbar(
@@ -53,7 +59,7 @@ export const useImportPrivateKey = (): {
         setIsImporting(false)
       }
     },
-    [dispatch, canGoBack, back]
+    [dispatch, canGoBack, navigation]
   )
 
   return { isImporting, importWallet }

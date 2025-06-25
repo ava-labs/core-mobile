@@ -3,7 +3,7 @@ import { useCallback } from 'react'
 import { useSelector } from 'react-redux'
 import { selectIsMeldIntegrationBlocked } from 'store/posthog'
 import { useMemo } from 'react'
-import { useOnRampSourceAmount, useOnRampToken } from '../store'
+import { useOnRampToken } from '../store'
 import { MELD_CURRENCY_CODES, ServiceProviderCategories } from '../consts'
 import { LocalTokenWithBalance } from '../../../../store/balance/types'
 import { useSearchCryptoCurrencies } from './useSearchCryptoCurrencies'
@@ -24,7 +24,6 @@ export const useBuy = (): {
 } => {
   const { navigate } = useRouter()
   const [_onrampToken, setOnrampToken] = useOnRampToken()
-  const [_sourceAmount, setSourceAmount] = useOnRampSourceAmount()
   const isMeldIntegrationBlocked = useSelector(selectIsMeldIntegrationBlocked)
   const { data: cryptoCurrencies, isLoading: isLoadingCryptoCurrencies } =
     useSearchCryptoCurrencies({
@@ -67,7 +66,6 @@ export const useBuy = (): {
         return
       }
 
-      setSourceAmount(0)
       if (token || address) {
         const cryptoCurrency = getBuyableCryptoCurrency(token, address)
         setOnrampToken(cryptoCurrency)
@@ -83,27 +81,24 @@ export const useBuy = (): {
       getBuyableCryptoCurrency,
       isMeldIntegrationBlocked,
       navigate,
-      setOnrampToken,
-      setSourceAmount
+      setOnrampToken
     ]
   )
 
   const navigateToBuyAvax = useCallback(() => {
     if (avax === undefined) return
     setOnrampToken(avax)
-    setSourceAmount(0)
 
     // @ts-ignore TODO: make routes typesafe
     navigate('/buyOnramp/selectBuyAmount')
-  }, [avax, navigate, setOnrampToken, setSourceAmount])
+  }, [avax, navigate, setOnrampToken])
 
   const navigateToBuyUsdc = useCallback(() => {
     if (usdc === undefined) return
     setOnrampToken(usdc)
-    setSourceAmount(0)
     // @ts-ignore TODO: make routes typesafe
     navigate('/buyOnramp/selectBuyAmount')
-  }, [usdc, setOnrampToken, setSourceAmount, navigate])
+  }, [usdc, setOnrampToken, navigate])
 
   return {
     navigateToBuy,

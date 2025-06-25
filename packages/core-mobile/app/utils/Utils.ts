@@ -1,6 +1,7 @@
 import Big from 'big.js'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
 import DeviceInfo from 'react-native-device-info'
+import { Platform } from 'react-native'
 import { formatNumber } from './formatNumber/formatNumber'
 
 export const truncateNodeId = (nodeId: string, size = 6): string => {
@@ -135,3 +136,6 @@ export async function findAsyncSequential<T>(
 export const isDebugOrInternalBuild = (): boolean => {
   return __DEV__ || DeviceInfo.getBundleId().includes('.internal')
 }
+
+export const isIOS = Platform.OS === 'ios'
+export const isAndroid = Platform.OS === 'android'
