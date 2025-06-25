@@ -59,12 +59,14 @@ class AccountsService {
     index,
     walletType,
     network,
-    walletId
+    walletId,
+    name
   }: {
     index: number
     walletType: WalletType
     network: Network
     walletId: string
+    name: string
   }): Promise<Account> {
     if (walletType === WalletType.UNSET) throw new Error('invalid wallet type')
 
@@ -79,7 +81,7 @@ class AccountsService {
       index,
       id: uuid(),
       walletId,
-      name: `Account ${index + 1}`,
+      name,
       type: CoreAccountType.PRIMARY,
       addressBTC: addresses[NetworkVMType.BITCOIN],
       addressC: addresses[NetworkVMType.EVM],
