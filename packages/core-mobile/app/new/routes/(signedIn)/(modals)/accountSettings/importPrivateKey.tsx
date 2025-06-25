@@ -41,7 +41,8 @@ const ImportPrivateKeyScreen = (): JSX.Element => {
           privateKey.trim() === '' ||
           isAwaitingOurBalance ||
           isCheckingMigration ||
-          isImporting
+          isImporting ||
+          !showDerivedInfo
         }>
         {isImporting ? <ActivityIndicator size="small" /> : 'Import'}
       </Button>
@@ -51,7 +52,8 @@ const ImportPrivateKeyScreen = (): JSX.Element => {
     isAwaitingOurBalance,
     isCheckingMigration,
     isImporting,
-    privateKey
+    privateKey,
+    showDerivedInfo
   ])
 
   return (
