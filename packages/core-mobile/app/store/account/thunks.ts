@@ -15,7 +15,9 @@ import {
   selectAccounts,
   selectAccountsByWalletId,
   setAccount,
-  setActiveAccountId
+  setActiveAccountId,
+  removeAccount,
+  selectActiveAccount
 } from './slice'
 
 export const addAccount = createAsyncThunk<void, void, ThunkApi>(
@@ -63,6 +65,48 @@ export const addAccount = createAsyncThunk<void, void, ThunkApi>(
         }))
       })
     }
+  }
+)
+
+export const removeAccountWithActiveCheck = createAsyncThunk<
+  void,
+  string,
+  ThunkApi
+>(
+  `${reducerName}/removeAccountWithActiveCheck`,
+  async (accountId, thunkApi) => {
+    const state = thunkApi.getState()
+    const accountToRemove = selectAccountById(accountId)(state)
+    const activeAccount = selectActiveAccount(state)
+
+    if (!accountToRemove) {
+      throw new Error(`Account with ID "${accountId}" not found`)
+    }
+
+    const accountsInWallet = selectAccountsByWalletId(accountToRemove.walletId)(
+      state
+    )
+
+    // Validate removal eligibility
+    const isLastAccount =
+      accountToRemove.index ===
+      Math.max(...accountsInWallet.map(acc => acc.index))
+    if (!isLastAccount || accountsInWallet.length <= 1) {
+      throw new Error(
+        'Account cannot be removed: not the last account or only account in wallet'
+      )
+    }
+
+    // If removing the active account, set the previous account as active
+    if (activeAccount?.id === accountId) {
+      const previousAccount = accountsInWallet[accountsInWallet.length - 2] // Second to last
+      if (previousAccount) {
+        thunkApi.dispatch(setActiveAccountId(previousAccount.id))
+      }
+    }
+
+    // Remove the account
+    thunkApi.dispatch(removeAccount(accountId))
   }
 )
 
