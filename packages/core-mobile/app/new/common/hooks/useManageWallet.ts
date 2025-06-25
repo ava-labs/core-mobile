@@ -9,7 +9,13 @@ import { selectWallets, setWalletName } from 'store/wallet/slice'
 import { WalletId } from 'store/wallet/types'
 import { showAlert } from '@avalabs/k2-alpine'
 import { removeWallet } from 'store/wallet/thunks'
+import { addAccount } from 'store/account'
+import { selectAccounts } from 'store/account/slice'
 import { AppThunkDispatch } from 'store/types'
+import { WalletType } from 'services/wallet/types'
+import AnalyticsService from 'services/analytics/AnalyticsService'
+import Logger from 'utils/Logger'
+import { showSnackbar } from 'new/common/utils/toast'
 
 export const useManageWallet = (): {
   dropdownItems: DropdownItem[]
@@ -23,8 +29,10 @@ export const useManageWallet = (): {
   const [activeDropdownWalletId, setActiveDropdownWalletId] = useState<
     string | null
   >(null)
+  const [isAddingAccount, setIsAddingAccount] = useState(false)
   const dispatch = useDispatch<AppThunkDispatch>()
   const wallets = useSelector(selectWallets)
+  const accounts = useSelector(selectAccounts)
 
   const handleRenameWallet = useCallback(
     (walletId: WalletId, walletName: string): void => {
@@ -93,8 +101,41 @@ export const useManageWallet = (): {
     [dispatch, wallets]
   )
 
+  const handleAddAccount = useCallback(
+    async (walletId: WalletId): Promise<void> => {
+      if (isAddingAccount) return
+
+      const wallet = wallets[walletId]
+      if (!wallet) {
+        Logger.error('Wallet not found for adding account')
+        return
+      }
+
+      try {
+        AnalyticsService.capture('AccountSelectorAddAccount', {
+          accountNumber: Object.keys(accounts).length + 1
+        })
+
+        setIsAddingAccount(true)
+        await dispatch(addAccount(walletId)).unwrap()
+
+        AnalyticsService.capture('CreatedANewAccountSuccessfully', {
+          walletType: wallet.type
+        })
+
+        showSnackbar('Account added successfully')
+      } catch (error) {
+        Logger.error('Unable to add account', error)
+        showSnackbar('Unable to add account')
+      } finally {
+        setIsAddingAccount(false)
+      }
+    },
+    [isAddingAccount, accounts, dispatch, wallets]
+  )
+
   const dropdownItems = useMemo((): DropdownItem[] => {
-    return [
+    const baseItems = [
       {
         id: 'rename',
         title: 'Rename'
@@ -105,7 +146,20 @@ export const useManageWallet = (): {
         destructive: true
       }
     ]
-  }, [])
+
+    // Only show add account option for mnemonic wallets
+    if (activeDropdownWalletId) {
+      const wallet = wallets[activeDropdownWalletId]
+      if (wallet?.type === WalletType.MNEMONIC) {
+        baseItems.push({
+          id: 'add_account',
+          title: 'Add account to this wallet'
+        })
+      }
+    }
+
+    return baseItems
+  }, [activeDropdownWalletId, wallets])
 
   const handleWalletMenuAction = useCallback(
     (action: string, walletId: string, currentName: string) => {
@@ -118,9 +172,12 @@ export const useManageWallet = (): {
         case 'remove':
           handleRemoveWallet(walletId)
           break
+        case 'add_account':
+          handleAddAccount(walletId)
+          break
       }
     },
-    [handleRenameWallet, handleRemoveWallet]
+    [handleRenameWallet, handleRemoveWallet, handleAddAccount]
   )
 
   const handleDropdownSelect = useCallback(
