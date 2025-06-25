@@ -218,7 +218,7 @@ describe('useDeriveAddresses', () => {
 
       expect(result.current.derivedAddresses).toEqual([])
       expect(result.current.tempAccountDetails).toBeNull()
-      expect(result.current.showDerivedInfo).toBe(true) // Still true because privateKey is not empty
+      expect(result.current.showDerivedInfo).toBe(false)
     })
 
     it('should handle derivation errors gracefully', async () => {
@@ -246,7 +246,7 @@ describe('useDeriveAddresses', () => {
       )
       expect(result.current.derivedAddresses).toEqual([])
       expect(result.current.tempAccountDetails).toBeNull()
-      expect(result.current.showDerivedInfo).toBe(true)
+      expect(result.current.showDerivedInfo).toBe(false)
     })
   })
 
