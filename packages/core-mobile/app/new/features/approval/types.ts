@@ -1,7 +1,7 @@
 export enum FeePreset {
-  SLOW = 'Slow',
   NORMAL = 'Normal',
   FAST = 'Fast',
+  INSTANT = 'Instant',
   CUSTOM = 'Custom'
 }
 
