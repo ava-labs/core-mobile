@@ -11,7 +11,6 @@ import { TokenLogo } from 'common/components/TokenLogo'
 import { usePrivateKeyBalance } from 'common/hooks/usePrivateKeyBalance'
 import { SimpleTextInput } from 'new/common/components/SimpleTextInput'
 import { useDeriveAddresses } from 'new/common/hooks/useDeriveAddresses'
-import { useImportPrivateKey } from 'new/common/hooks/useImportPrivateKey'
 import { usePrivateKeyImportHandler } from 'new/common/hooks/usePrivateKeyImportHandler'
 import React, { useCallback, useState } from 'react'
 import { useSelector } from 'react-redux'
@@ -21,7 +20,6 @@ const ImportPrivateKeyScreen = (): JSX.Element => {
   const [privateKey, setPrivateKey] = useState('')
 
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
-  const { isImporting } = useImportPrivateKey()
 
   const { derivedAddresses, tempAccountDetails, showDerivedInfo } =
     useDeriveAddresses(privateKey, isDeveloperMode)
@@ -30,10 +28,8 @@ const ImportPrivateKeyScreen = (): JSX.Element => {
     usePrivateKeyBalance(tempAccountDetails)
 
   // Extract import handler logic
-  const { handleImport, isCheckingMigration } = usePrivateKeyImportHandler(
-    tempAccountDetails,
-    privateKey
-  )
+  const { handleImport, isImporting, isCheckingMigration } =
+    usePrivateKeyImportHandler(tempAccountDetails, privateKey)
 
   const renderFooter = useCallback(() => {
     return (
@@ -45,9 +41,10 @@ const ImportPrivateKeyScreen = (): JSX.Element => {
           privateKey.trim() === '' ||
           isAwaitingOurBalance ||
           isCheckingMigration ||
-          isImporting
+          isImporting ||
+          !showDerivedInfo
         }>
-        Import
+        {isImporting ? <ActivityIndicator size="small" /> : 'Import'}
       </Button>
     )
   }, [
@@ -55,7 +52,8 @@ const ImportPrivateKeyScreen = (): JSX.Element => {
     isAwaitingOurBalance,
     isCheckingMigration,
     isImporting,
-    privateKey
+    privateKey,
+    showDerivedInfo
   ])
 
   return (
