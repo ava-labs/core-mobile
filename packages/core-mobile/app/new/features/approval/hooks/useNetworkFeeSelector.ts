@@ -78,7 +78,7 @@ export const useNetworkFeeSelector = ({
     ? isAvalancheCChainId(network.chainId)
     : false
 
-  const initialPreset = isAvalancheCChain ? FeePreset.FAST : FeePreset.SLOW
+  const initialPreset = isAvalancheCChain ? FeePreset.INSTANT : FeePreset.NORMAL
   const [selectedPreset, setSelectedPreset] = useState(initialPreset)
   const [calculatedFees, setCalculatedFees] = useState<GasAndFees>()
 
@@ -99,9 +99,9 @@ export const useNetworkFeeSelector = ({
   const getFeesForPreset = useCallback(
     (fee: NetworkFees, preset: FeePreset): GasAndFees | undefined => {
       const key =
-        preset === FeePreset.SLOW
+        preset === FeePreset.NORMAL
           ? 'low'
-          : preset === FeePreset.NORMAL
+          : preset === FeePreset.FAST
           ? 'medium'
           : 'high'
 
@@ -135,7 +135,7 @@ export const useNetworkFeeSelector = ({
 
       const normalFees = getFeesForPreset(
         networkFee,
-        isAvalancheCChain ? FeePreset.FAST : FeePreset.NORMAL
+        isAvalancheCChain ? FeePreset.INSTANT : FeePreset.FAST
       )
       normalFees && setCustomFees(normalFees)
     }
@@ -160,9 +160,9 @@ export const useNetworkFeeSelector = ({
         if (!networkFee) return
 
         const feeRateMap = {
-          [FeePreset.SLOW]: networkFee.low,
-          [FeePreset.NORMAL]: networkFee.medium,
-          [FeePreset.FAST]: networkFee.high
+          [FeePreset.NORMAL]: networkFee.low,
+          [FeePreset.FAST]: networkFee.medium,
+          [FeePreset.INSTANT]: networkFee.high
         }
 
         const presetFeeRate = feeRateMap[preset]
