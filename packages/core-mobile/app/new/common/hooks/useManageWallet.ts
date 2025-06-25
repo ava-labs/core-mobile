@@ -7,6 +7,8 @@ import { useCallback, useMemo, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { selectWallets, setWalletName } from 'store/wallet/slice'
 import { WalletId } from 'store/wallet/types'
+import { showAlert } from '@avalabs/k2-alpine'
+import { removeWallet } from 'store/wallet/thunks'
 import { AppThunkDispatch } from 'store/types'
 
 export const useManageWallet = (): {
@@ -53,6 +55,44 @@ export const useManageWallet = (): {
     [dispatch]
   )
 
+  const handleRemoveWallet = useCallback(
+    (walletId: WalletId): void => {
+      const walletCount = Object.keys(wallets).length
+
+      if (walletCount <= 1) {
+        showAlert({
+          title: 'Cannot remove wallet',
+          description:
+            'You must have at least one wallet. This is your only wallet.',
+          buttons: [
+            {
+              text: 'OK'
+            }
+          ]
+        })
+        return
+      }
+
+      showAlert({
+        title: 'Remove wallet',
+        description: 'Are you sure you want to remove this wallet?',
+        buttons: [
+          {
+            text: 'Cancel'
+          },
+          {
+            text: 'Remove',
+            style: 'destructive',
+            onPress: () => {
+              dispatch(removeWallet(walletId))
+            }
+          }
+        ]
+      })
+    },
+    [dispatch, wallets]
+  )
+
   const dropdownItems = useMemo((): DropdownItem[] => {
     return [
       {
@@ -75,9 +115,12 @@ export const useManageWallet = (): {
         case 'rename':
           handleRenameWallet(walletId, currentName)
           break
+        case 'remove':
+          handleRemoveWallet(walletId)
+          break
       }
     },
-    [handleRenameWallet]
+    [handleRenameWallet, handleRemoveWallet]
   )
 
   const handleDropdownSelect = useCallback(
