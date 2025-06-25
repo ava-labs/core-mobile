@@ -91,6 +91,9 @@ import IconRevolut from '../../assets/icons/revolut.svg'
 import IconCreditCard from '../../assets/icons/credit_card.svg'
 import IconBankTransfer from '../../assets/icons/bank_transfer.svg'
 import IconCash from '../../assets/icons/cash.svg'
+import IconMobileMoney from '../../assets/icons/mobile_money.svg'
+import IconShopeePay from '../../assets/icons/shopee_pay.svg'
+import IconAch from '../../assets/icons/ach.svg'
 import IconDownload from '../../assets/icons/download.svg'
 import IconEncrypted from '../../assets/icons/shield.svg'
 
@@ -324,6 +327,9 @@ export const Icons = {
     CreditCard: IconCreditCard,
     BankTransfer: IconBankTransfer,
     Cash: IconCash,
+    MobileMoney: IconMobileMoney,
+    ShopeePay: IconShopeePay,
+    Ach: IconAch,
     Download: IconDownload
   },
   RecoveryMethod: {
