@@ -3,28 +3,32 @@ import { ApprovalResponse } from '@avalabs/vm-module-types'
 import { Account } from 'store/account/types'
 import { rpcErrors } from '@metamask/rpc-errors'
 import walletService from 'services/wallet/WalletService'
+import { WalletType } from 'services/wallet/types'
 
 export const solanaSendTransaction = async ({
   transactionData,
   network,
   account,
+  walletId,
+  walletType,
   resolve
 }: {
   transactionData: string
   network: Network
   account: Account
+  walletId: string
+  walletType: WalletType
   resolve: (value: ApprovalResponse) => void
 }): Promise<void> => {
-  console.log('solanaSendTransaction', transactionData)
-
   try {
-    // Sign the transaction - following core-mobile pattern
     const signedTx = await walletService.sign({
       transaction: {
         serializedTx: transactionData
       },
       accountIndex: account.index,
-      network
+      network,
+      walletId,
+      walletType
     })
 
     // Return the signed transaction data (not the hash)
