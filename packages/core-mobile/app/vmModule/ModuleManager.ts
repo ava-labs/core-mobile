@@ -116,7 +116,7 @@ class ModuleManager {
   }: {
     walletId: string
     walletType: WalletType
-    accountIndex: number
+    accountIndex?: number
     network: Network
   }): Promise<Record<NetworkVMType, string>> => {
     return Promise.allSettled(
