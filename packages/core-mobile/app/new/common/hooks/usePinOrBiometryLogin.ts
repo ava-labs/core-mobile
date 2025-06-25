@@ -151,7 +151,7 @@ export function usePinOrBiometryLogin({
           throw new Error('Active wallet ID is not set')
         }
         // Timer delay to give UI opportunity to draw everything
-        await new Promise(resolve => setTimeout(resolve, 0))
+        // await new Promise(resolve => setTimeout(resolve, 0))
 
         const accessType = BiometricsSDK.getAccessType()
 
