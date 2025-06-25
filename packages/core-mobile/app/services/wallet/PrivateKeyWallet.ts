@@ -326,7 +326,7 @@ export class PrivateKeyWallet implements Wallet {
   }
 
   public matchesPrivateKey(privateKey: string): boolean {
-    return this.privateKey === privateKey
+    return this.privateKey.toLowerCase() === privateKey.toLowerCase()
   }
 
   private signAvalancheMessage = async (

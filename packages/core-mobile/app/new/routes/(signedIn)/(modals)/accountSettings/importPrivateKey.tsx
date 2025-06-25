@@ -90,7 +90,7 @@ const ImportPrivateKeyScreen = (): JSX.Element => {
 
   useEffect(() => {
     if (derivedAddresses.length > 0) {
-      checkIfPrivateKeyWalletExists(privateKey)
+      checkIfPrivateKeyWalletExists(privateKey.trim())
         .then(exists => {
           if (exists) {
             setErrorMessage(
