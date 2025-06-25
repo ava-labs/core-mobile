@@ -3,7 +3,6 @@ import {
   ActivityIndicator,
   alpha,
   AnimatedBalance,
-  GroupList,
   Icons,
   Pressable,
   SCREEN_WIDTH,
@@ -17,8 +16,10 @@ import { ErrorState } from 'common/components/ErrorState'
 import { HiddenBalanceText } from 'common/components/HiddenBalanceText'
 import NavigationBarButton from 'common/components/NavigationBarButton'
 import { ScrollScreen } from 'common/components/ScrollScreen'
+import WalletCard from 'common/components/WalletCard'
 import { TRUNCATE_ADDRESS_LENGTH } from 'common/consts/text'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
+import { WalletDisplayData } from 'common/types'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
 import { useRouter } from 'expo-router'
 import { useBalanceForAccount } from 'new/common/contexts/useBalanceForAccount'
@@ -28,8 +29,6 @@ import { Account, selectAccounts, setActiveAccount } from 'store/account'
 import { selectActiveAccount } from 'store/account'
 import { selectIsPrivacyModeEnabled } from 'store/settings/securityPrivacy'
 import { selectActiveWalletId, selectWallets } from 'store/wallet/slice'
-
-const ITEM_HEIGHT = 50
 
 const ManageAccountsScreen = (): React.JSX.Element => {
   const {
@@ -106,7 +105,7 @@ const ManageAccountsScreen = (): React.JSX.Element => {
     [dispatch]
   )
 
-  const walletsDisplayData = useMemo(() => {
+  const walletsDisplayData: (WalletDisplayData | null)[] = useMemo(() => {
     const walletArray = Object.values(allWallets)
     return walletArray
       .map(wallet => {
@@ -229,30 +228,6 @@ const ManageAccountsScreen = (): React.JSX.Element => {
     )
   }, [colors.$textPrimary, handleAddAccount])
 
-  const renderExpansionIcon = useCallback(
-    (isExpanded: boolean) => {
-      return (
-        <Icons.Navigation.ChevronRight
-          color={colors.$textPrimary}
-          width={20}
-          height={20}
-          transform={[{ rotate: isExpanded ? '-90deg' : '90deg' }]}
-        />
-      )
-    },
-    [colors.$textPrimary]
-  )
-
-  const renderWalletIcon = useCallback(
-    (isExpanded: boolean) => {
-      if (isExpanded) {
-        return <Icons.Custom.Wallet color={colors.$textPrimary} />
-      }
-      return <Icons.Custom.WalletClosed color={colors.$textPrimary} />
-    },
-    [colors.$textPrimary]
-  )
-
   const renderHeader = useCallback(() => {
     return (
       <SearchBar
@@ -301,63 +276,13 @@ const ManageAccountsScreen = (): React.JSX.Element => {
           }
 
           return (
-            <View
+            <WalletCard
               key={wallet.id}
-              sx={{
-                backgroundColor: colors.$surfaceSecondary,
-                borderRadius: 12,
-                overflow: 'hidden'
-              }}>
-              <TouchableOpacity
-                onPress={() => toggleWalletExpansion(wallet.id)}
-                sx={{
-                  paddingHorizontal: 8,
-                  paddingVertical: 12,
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  justifyContent: 'space-between'
-                }}>
-                <View
-                  sx={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                  <View
-                    sx={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-                    {renderExpansionIcon(isExpanded)}
-                    {renderWalletIcon(isExpanded)}
-                  </View>
-                  <Text
-                    variant="buttonSmall"
-                    style={{
-                      fontSize: 14
-                    }}>
-                    {wallet.name}
-                  </Text>
-                </View>
-              </TouchableOpacity>
-
-              {isExpanded && (
-                <View sx={{ padding: 8, paddingTop: 0 }}>
-                  {wallet.accounts.length > 0 ? (
-                    <GroupList
-                      itemHeight={ITEM_HEIGHT}
-                      data={wallet.accounts}
-                    />
-                  ) : (
-                    !searchText && (
-                      <View
-                        sx={{
-                          paddingVertical: 20,
-                          alignItems: 'center',
-                          backgroundColor: colors.$surfaceSecondary
-                        }}>
-                        <Text sx={{ color: colors.$textSecondary }}>
-                          No accounts in this wallet.
-                        </Text>
-                      </View>
-                    )
-                  )}
-                </View>
-              )}
-            </View>
+              wallet={wallet}
+              isExpanded={isExpanded}
+              searchText={searchText}
+              onToggleExpansion={() => toggleWalletExpansion(wallet.id)}
+            />
           )
         })
       ) : (
