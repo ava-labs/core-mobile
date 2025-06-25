@@ -14,14 +14,15 @@ import { useCheckIfAccountExists } from 'common/hooks/useCheckIfAccountExists'
 import { SimpleTextInput } from 'new/common/components/SimpleTextInput'
 import { useDeriveAddresses } from 'new/common/hooks/useDeriveAddresses'
 import { usePrivateKeyImportHandler } from 'new/common/hooks/usePrivateKeyImportHandler'
-import React, { useCallback, useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { useCheckIfPrivateKeyWalletExists } from 'common/hooks/useCheckIfPrivateKeyWalletExists'
 import Logger from 'utils/Logger'
 
 const ImportPrivateKeyScreen = (): JSX.Element => {
-  const [privateKey, setPrivateKey] = useState('')
+  const [privateKeyText, setPrivateKeyText] = useState('')
+  const privateKey = useMemo(() => privateKeyText.trim(), [privateKeyText])
   const [errorMessage, setErrorMessage] = useState<string>()
 
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
@@ -62,7 +63,7 @@ const ImportPrivateKeyScreen = (): JSX.Element => {
 
   const renderFooter = useCallback(() => {
     const disabled =
-      privateKey.trim() === '' ||
+      privateKey === '' ||
       isAwaitingOurBalance ||
       isCheckingMigration ||
       isImporting ||
@@ -90,7 +91,7 @@ const ImportPrivateKeyScreen = (): JSX.Element => {
 
   useEffect(() => {
     if (derivedAddresses.length > 0) {
-      checkIfPrivateKeyWalletExists(privateKey.trim())
+      checkIfPrivateKeyWalletExists(privateKey)
         .then(exists => {
           if (exists) {
             setErrorMessage(
@@ -115,8 +116,8 @@ const ImportPrivateKeyScreen = (): JSX.Element => {
       contentContainerStyle={{ padding: 16, flex: 1 }}>
       <View sx={{ gap: 12, paddingTop: 24 }}>
         <SimpleTextInput
-          value={privateKey}
-          onChangeText={setPrivateKey}
+          value={privateKeyText}
+          onChangeText={setPrivateKeyText}
           placeholder="Enter private key"
           autoFocus
           secureTextEntry={true}

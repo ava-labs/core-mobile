@@ -86,7 +86,7 @@ export const useDeriveAddresses = (
   }, [isTestnet, privateKey, accounts])
 
   useEffect(() => {
-    if (privateKey.trim() !== '') {
+    if (privateKey !== '') {
       deriveAddresses()
     } else {
       setDerivedAddresses([])
