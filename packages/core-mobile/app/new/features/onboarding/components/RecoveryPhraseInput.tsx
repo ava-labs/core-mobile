@@ -93,7 +93,6 @@ export default function RecoveryPhraseInput({
 
   const handleChangeText = (text: string): void => {
     setEnteredText(text)
-    onChangeText(text)
 
     updateCurrentWord(text, selection.start)
   }
@@ -113,6 +112,10 @@ export default function RecoveryPhraseInput({
       textInputRef.current?.focus()
     })
   }, [textInputRef])
+
+  useEffect(() => {
+    onChangeText(enteredText)
+  }, [enteredText, onChangeText])
 
   const decoratedText = useMemo(() => {
     const textArray = enteredText.split(/\s+/)
