@@ -449,9 +449,3 @@ export class MnemonicWallet implements Wallet {
     }
   }
 }
-
-/**
- * Unlike SeedlessWallet, MnemonicWallet can be created from the mnemonic phrase.
- * Thus, we are exporting a single instance of MnemonicWallet
- */
-export default new MnemonicWallet()

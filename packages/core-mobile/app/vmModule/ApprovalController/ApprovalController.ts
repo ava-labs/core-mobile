@@ -178,8 +178,9 @@ class ApprovalController implements VmModuleApprovalController {
           }
 
           case RpcMethod.SOLANA_SIGN_AND_SEND_TRANSACTION: {
-            console.log('requestApproval', signingData)
             solanaSendTransaction({
+              walletId,
+              walletType,
               transactionData: signingData.data,
               account,
               network,
