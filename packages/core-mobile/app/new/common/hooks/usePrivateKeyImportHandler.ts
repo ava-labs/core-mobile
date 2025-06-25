@@ -9,13 +9,14 @@ export const usePrivateKeyImportHandler = (
   tempAccountDetails: ImportedAccount | null,
   privateKey: string
 ): {
+  isImporting: boolean
   handleImport: () => Promise<void>
   isCheckingMigration: boolean
 } => {
   const [isCheckingMigration, setIsCheckingMigration] = useState(false)
   const { navigate } = useRouter()
   const activeWallet = useActiveWallet()
-  const { importWallet } = useImportPrivateKey()
+  const { importWallet, isImporting } = useImportPrivateKey()
 
   const handleImport = useCallback(async (): Promise<void> => {
     if (!tempAccountDetails) return
@@ -41,6 +42,7 @@ export const usePrivateKeyImportHandler = (
 
   return {
     handleImport,
+    isImporting,
     isCheckingMigration
   }
 }
