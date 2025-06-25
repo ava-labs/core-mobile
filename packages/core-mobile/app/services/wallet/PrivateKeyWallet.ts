@@ -325,6 +325,10 @@ export class PrivateKeyWallet implements Wallet {
     )) as Avalanche.StaticSigner
   }
 
+  public matchesPrivateKey(privateKey: string): boolean {
+    return this.privateKey.toLowerCase() === privateKey.toLowerCase()
+  }
+
   private signAvalancheMessage = async (
     accountIndex: number,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
