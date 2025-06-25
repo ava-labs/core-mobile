@@ -10,16 +10,19 @@ import {
 import { ScrollScreen } from 'common/components/ScrollScreen'
 import { TokenLogo } from 'common/components/TokenLogo'
 import { usePrivateKeyBalance } from 'common/hooks/usePrivateKeyBalance'
-import { useCheckIfAccountExists } from 'features/onboarding/hooks/useIsExistingAccount'
+import { useCheckIfAccountExists } from 'common/hooks/useCheckIfAccountExists'
 import { SimpleTextInput } from 'new/common/components/SimpleTextInput'
 import { useDeriveAddresses } from 'new/common/hooks/useDeriveAddresses'
 import { usePrivateKeyImportHandler } from 'new/common/hooks/usePrivateKeyImportHandler'
-import React, { useCallback, useState } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
+import { useCheckIfPrivateKeyWalletExists } from 'common/hooks/useCheckIfPrivateKeyWalletExists'
+import Logger from 'utils/Logger'
 
 const ImportPrivateKeyScreen = (): JSX.Element => {
   const [privateKey, setPrivateKey] = useState('')
+  const [errorMessage, setErrorMessage] = useState<string>()
 
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
 
@@ -34,6 +37,7 @@ const ImportPrivateKeyScreen = (): JSX.Element => {
     usePrivateKeyImportHandler(tempAccountDetails, privateKey)
 
   const checkIfAccountExists = useCheckIfAccountExists()
+  const checkIfPrivateKeyWalletExists = useCheckIfPrivateKeyWalletExists()
 
   const handleImportPrivateKey = useCallback(() => {
     if (checkIfAccountExists(tempAccountDetails?.addressC)) {
@@ -57,18 +61,20 @@ const ImportPrivateKeyScreen = (): JSX.Element => {
   }, [handleImport, checkIfAccountExists, tempAccountDetails])
 
   const renderFooter = useCallback(() => {
+    const disabled =
+      privateKey.trim() === '' ||
+      isAwaitingOurBalance ||
+      isCheckingMigration ||
+      isImporting ||
+      !showDerivedInfo ||
+      errorMessage !== undefined
+
     return (
       <Button
         type="primary"
         size="large"
         onPress={handleImportPrivateKey}
-        disabled={
-          privateKey.trim() === '' ||
-          isAwaitingOurBalance ||
-          isCheckingMigration ||
-          isImporting ||
-          !showDerivedInfo
-        }>
+        disabled={disabled}>
         {isImporting ? <ActivityIndicator size="small" /> : 'Import'}
       </Button>
     )
@@ -78,8 +84,27 @@ const ImportPrivateKeyScreen = (): JSX.Element => {
     isCheckingMigration,
     isImporting,
     privateKey,
-    showDerivedInfo
+    showDerivedInfo,
+    errorMessage
   ])
+
+  useEffect(() => {
+    if (derivedAddresses.length > 0) {
+      checkIfPrivateKeyWalletExists(privateKey)
+        .then(exists => {
+          if (exists) {
+            setErrorMessage(
+              'This private key appears to have already been imported.'
+            )
+          }
+        })
+        .catch(Logger.error)
+    }
+  }, [derivedAddresses, privateKey, checkIfPrivateKeyWalletExists])
+
+  useEffect(() => {
+    setErrorMessage(undefined)
+  }, [privateKey])
 
   return (
     <ScrollScreen
@@ -96,6 +121,13 @@ const ImportPrivateKeyScreen = (): JSX.Element => {
           autoFocus
           secureTextEntry={true}
         />
+        {errorMessage ? (
+          <View sx={{ alignItems: 'center' }}>
+            <Text variant="caption" sx={{ color: '$textDanger' }}>
+              {errorMessage}
+            </Text>
+          </View>
+        ) : undefined}
 
         {showDerivedInfo && (
           <View sx={{ gap: 12 }}>

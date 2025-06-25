@@ -14,7 +14,7 @@ import { useImportMnemonic } from 'new/common/hooks/useImportMnemonic'
 import { useActiveWallet } from 'common/hooks/useActiveWallet'
 import KeychainMigrator from 'utils/KeychainMigrator'
 import { MINIMUM_MNEMONIC_WORDS } from 'common/consts'
-import { useCheckIfAccountExists } from 'features/onboarding/hooks/useIsExistingAccount'
+import { useCheckIfAccountExists } from 'common/hooks/useCheckIfAccountExists'
 
 interface DerivedAddressItem {
   address: string
