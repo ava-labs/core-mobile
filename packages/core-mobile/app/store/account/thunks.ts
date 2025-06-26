@@ -19,31 +19,27 @@ import {
   selectActiveAccount
 } from './slice'
 
-export const addAccount = createAsyncThunk<void, void, ThunkApi>(
+export const addAccount = createAsyncThunk<void, string, ThunkApi>(
   `${reducerName}/addAccount`,
-  async (_, thunkApi) => {
+  async (walletId, thunkApi) => {
     const state = thunkApi.getState()
     const isDeveloperMode = selectIsDeveloperMode(state)
-    const activeWalletId = selectActiveWalletId(state)
     const allAccounts = selectAccounts(state)
 
-    if (!activeWalletId) {
-      throw new Error('Active wallet ID is not set')
-    }
-    const wallet = selectWalletById(activeWalletId)(state)
+    const wallet = selectWalletById(walletId)(state)
     if (!wallet) {
       throw new Error('Wallet not found')
     }
 
     const allAccountsCount = Object.keys(allAccounts).length
-    const accountsByWalletId = selectAccountsByWalletId(activeWalletId)(state)
+    const accountsByWalletId = selectAccountsByWalletId(walletId)(state)
 
     const acc = await AccountsService.createNextAccount({
       name: `Account ${allAccountsCount + 1}`,
       index: Object.keys(accountsByWalletId).length,
       walletType: wallet.type,
       isTestnet: isDeveloperMode,
-      walletId: activeWalletId
+      walletId: walletId
     })
 
     thunkApi.dispatch(setAccount(acc))
