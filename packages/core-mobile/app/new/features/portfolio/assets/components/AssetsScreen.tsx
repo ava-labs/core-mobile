@@ -15,7 +15,6 @@ import React, { FC, memo, useCallback, useMemo } from 'react'
 import { ViewStyle } from 'react-native'
 import Animated from 'react-native-reanimated'
 import { useSelector } from 'react-redux'
-import { selectActiveAccount } from 'store/account'
 import {
   ASSET_MANAGE_VIEWS,
   AssetManageView,
@@ -25,13 +24,15 @@ import {
   selectIsRefetchingBalances
 } from 'store/balance'
 import { selectEnabledNetworks } from 'store/network'
+import { selectActiveAccount } from 'store/account'
+import AnalyticsService from 'services/analytics/AnalyticsService'
 import errorIcon from '../../../../assets/icons/rocket.png'
 import { useAssetsFilterAndSort } from '../hooks/useAssetsFilterAndSort'
 import { TokenListItem } from './TokenListItem'
 
 interface Props {
   containerStyle: ViewStyle
-  goToTokenDetail: (localId: string, chainId: number) => void
+  goToTokenDetail: (token: LocalTokenWithBalance) => void
   goToTokenManagement: () => void
   goToBuy: () => void
   onScrollResync: () => void
@@ -60,6 +61,7 @@ const AssetsScreen: FC<Props> = ({
       const manageList =
         ASSET_MANAGE_VIEWS?.[indexPath.section]?.[indexPath.row]
       if (manageList === AssetManageView.ManageList) {
+        AnalyticsService.capture('PortfolioManageTokenListClicked')
         goToTokenManagement()
         return
       }
@@ -95,7 +97,7 @@ const AssetsScreen: FC<Props> = ({
           <TokenListItem
             token={item}
             index={index}
-            onPress={() => goToTokenDetail(item.localId, item.networkChainId)}
+            onPress={() => goToTokenDetail(item)}
             isGridView={isGridView}
           />
         </View>

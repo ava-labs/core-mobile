@@ -47,8 +47,11 @@ import Animated, {
 } from 'react-native-reanimated'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useDispatch, useSelector } from 'react-redux'
+import AnalyticsService from 'services/analytics/AnalyticsService'
+import { AnalyticsEventName } from 'services/analytics/types'
 import { selectActiveAccount } from 'store/account'
 import {
+  LocalTokenWithBalance,
   selectBalanceForAccountIsAccurate,
   selectBalanceTotalInCurrencyForAccount,
   selectIsLoadingBalances,
@@ -64,6 +67,12 @@ import { RootState } from 'store/types'
 import { useFocusedSelector } from 'utils/performance/useFocusedSelector'
 
 const SEGMENT_ITEMS = ['Assets', 'Collectibles', 'DeFi']
+
+const SEGMENT_EVENT_MAP: Record<number, AnalyticsEventName> = {
+  0: 'PortfolioAssetsClicked',
+  1: 'PortfolioCollectiblesClicked',
+  2: 'PortfolioDeFiClicked'
+}
 
 const PortfolioHomeScreen = (): JSX.Element => {
   const isPrivacyModeEnabled = useFocusedSelector(selectIsPrivacyModeEnabled)
@@ -320,6 +329,12 @@ const PortfolioHomeScreen = (): JSX.Element => {
 
   const handleSelectSegment = useCallback(
     (index: number): void => {
+      const eventName = SEGMENT_EVENT_MAP[index]
+
+      if (eventName) {
+        AnalyticsService.capture(eventName)
+      }
+
       selectedSegmentIndex.value = index
 
       InteractionManager.runAfterInteractions(() => {
@@ -341,9 +356,18 @@ const PortfolioHomeScreen = (): JSX.Element => {
   )
 
   const handleGoToTokenDetail = useCallback(
-    (localId: string, chainId: number): void => {
-      // @ts-ignore TODO: make routes typesafe
-      push({ pathname: '/tokenDetail', params: { localId, chainId } })
+    (token: LocalTokenWithBalance): void => {
+      const { name, symbol, localId, networkChainId } = token
+      AnalyticsService.capture('PortfolioTokenSelected', {
+        name,
+        symbol,
+        chainId: networkChainId
+      })
+      push({
+        // @ts-ignore TODO: make routes typesafe
+        pathname: '/tokenDetail',
+        params: { localId, chainId: networkChainId }
+      })
     },
     [push]
   )
@@ -491,11 +515,5 @@ const PortfolioHomeScreen = (): JSX.Element => {
 const styles = StyleSheet.create({
   segmentedControl: { marginHorizontal: 16, marginBottom: 16 }
 })
-
-export enum PortfolioHomeScreenTab {
-  Assets = 0,
-  Collectibles = 1,
-  DeFi = 2
-}
 
 export default PortfolioHomeScreen

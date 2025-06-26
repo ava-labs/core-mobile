@@ -4,8 +4,7 @@ export type AnalyticsEvents = {
   AccountSelectorAddAccount: { accountNumber: number }
   AccountSelectorBtcAddressCopied: undefined
   AccountSelectorEthAddressCopied: undefined
-  ActivityCardDetailShown: undefined
-  ActivityCardLinkClicked: undefined
+  ExplorerLinkClicked: undefined
   AddContactClicked: undefined
   AddContactFailed: undefined
   AddContactSucceeded: undefined
@@ -45,8 +44,6 @@ export type AnalyticsEvents = {
   ChangePasswordFailed: undefined
   HallidayBuyClicked: undefined
   CoinbasePayBuyClicked: undefined
-  CollectibleItemClicked: { chainId: string }
-  CollectibleSendClicked: { chainId: string }
   ConnectedSitesClicked: undefined
   ConnectedSiteRemoved: {
     walletConnectVersion: string
@@ -91,13 +88,11 @@ export type AnalyticsEvents = {
   OnboardingPasswordSet: undefined
   OnboardingSubmitSucceeded: { walletType: string }
   OnboardingSubmitFailed: { walletType: string }
-  PortfolioActivityClicked: undefined
+  PortfolioManageTokenListClicked: undefined
   PortfolioAssetsClicked: undefined
   PortfolioCollectiblesClicked: undefined
   PortfolioDeFiClicked: undefined
-  PortfolioPrimaryNetworkClicked: { chainId: number }
-  PortfolioSecondaryNetworkClicked: { chainId: number }
-  PortfolioTokenSelected: { selectedToken: string }
+  PortfolioTokenSelected: { name: string; symbol: string; chainId: number }
   PrivacyPolicyClicked: undefined
   ReceivePageVisited: undefined
   RecoveryPhraseClicked: undefined
@@ -152,11 +147,6 @@ export type AnalyticsEvents = {
   Swap_TokenSelected: undefined
   TermsAndConditionsAccepted: undefined
   TermsOfUseClicked: undefined
-  TokenListTokenSelected: { selectedToken: string }
-  TokenReceiveClicked: { chainId: number }
-  TokenSendClicked: { chainId: number }
-  TokenSwapClicked: { chainId: number }
-  TokenBridgeClicked: { chainId: number }
   TotpValidationFailed: { error: string }
   TotpValidationSuccess: undefined
   WalletConnectSessionApprovedV2: {
