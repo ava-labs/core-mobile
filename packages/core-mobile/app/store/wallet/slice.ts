@@ -24,7 +24,7 @@ const walletsSlice = createSlice({
     ) => {
       const { walletId, name } = action.payload
       if (state.wallets[walletId]) {
-        state.wallets[walletId].name = name
+        state.wallets[walletId].name = name.trim()
       }
     },
     setActiveWallet: (state, action: PayloadAction<string>) => {

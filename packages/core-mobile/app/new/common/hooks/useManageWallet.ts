@@ -53,7 +53,7 @@ export const useManageWallet = (): {
           {
             text: 'Save',
             shouldDisable: (values: Record<string, string>) => {
-              return values.newName?.length === 0
+              return values.newName?.trim().length === 0
             },
             onPress: handleSaveWalletName
           }
