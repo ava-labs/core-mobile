@@ -3,7 +3,9 @@ import Assert from '../helpers/assertions'
 import networksManage from '../locators/networksManage.loc'
 import { Platform } from '../helpers/constants'
 import portfolioLoc from '../locators/portfolio.loc'
+import commonElsLoc from '../locators/commonEls.loc'
 import PortfolioPage from './portfolio.page'
+import commonElsPage from './commonEls.page'
 
 const platformIndex = Action.platform() === Platform.iOS ? 1 : 0
 
@@ -112,10 +114,6 @@ class NetworksPage {
     return by.id(networksManage.networkName)
   }
 
-  get searchBar() {
-    return by.id(networksManage.searchBar)
-  }
-
   get networkNotAvailableToast() {
     return by.id(networksManage.networkNotAvailableToast)
   }
@@ -146,7 +144,7 @@ class NetworksPage {
 
   async tapStarSvgByNetwork(network: string, isKeyboardUp = true) {
     if (isKeyboardUp && Action.platform() === 'ios') {
-      await Action.dismissKeyboard(networksManage.searchBar)
+      await Action.dismissKeyboard(commonElsLoc.searchBar)
     }
     await Action.waitForElement(by.id(`star_svg__${network}`))
     await Action.tap(by.id(`star_svg__${network}`))
@@ -268,7 +266,7 @@ class NetworksPage {
   }
 
   async searchNetworks(network: string) {
-    await Action.setInputText(this.searchBar, network, 0)
+    await Action.setInputText(commonElsPage.searchBar, network, 0)
   }
 
   async swipeUp(text: Detox.NativeMatcher = this.chainIdText) {

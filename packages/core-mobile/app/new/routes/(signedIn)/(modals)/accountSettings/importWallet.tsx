@@ -105,7 +105,10 @@ const ImportWalletScreen = (): JSX.Element => {
         {
           title: 'Create new account',
           subtitle: (
-            <Text variant="caption" sx={{ fontSize: 12, paddingTop: 4 }}>
+            <Text
+              testID="create_new_account_btn"
+              variant="caption"
+              sx={{ fontSize: 12, paddingTop: 4 }}>
               Add new multi-chain account
             </Text>
           ),

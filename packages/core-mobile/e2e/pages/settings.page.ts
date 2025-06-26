@@ -2,6 +2,7 @@ import assert from 'assert'
 import Actions from '../helpers/actions'
 import assertions from '../helpers/assertions'
 import settings from '../locators/settings.loc'
+import commonElsLoc from '../locators/commonEls.loc'
 import commonElsPage from './commonEls.page'
 import portfolioPage from './portfolio.page'
 
@@ -66,6 +67,10 @@ class Settings {
     return by.text(settings.currency)
   }
 
+  get networks() {
+    return by.text(settings.networks)
+  }
+
   get securityAndPrivacy() {
     return by.text(settings.securityAndPrivacy)
   }
@@ -120,6 +125,10 @@ class Settings {
 
   get addAccountBtn() {
     return by.id(settings.addAccountBtn)
+  }
+
+  get createNewAccountBtn() {
+    return by.id(settings.createNewAccountBtn)
   }
 
   get accountList() {
@@ -254,8 +263,13 @@ class Settings {
     await this.scrollToSettingsFooter()
     await Actions.tapElementAtIndex(this.notificationsPreferences, 0)
   }
+
   async tapCurrencyRow() {
     await Actions.tapElementAtIndex(this.currency, 0)
+  }
+
+  async tapNetworksRow() {
+    await Actions.tapElementAtIndex(this.networks, 0)
   }
 
   async scrollToSettingsFooter() {
@@ -387,16 +401,27 @@ class Settings {
   }
 
   async tapManageAccountsBtn() {
+    await Actions.waitForElement(this.settingsScrollView, 10000)
     while (!(await Actions.isVisible(this.manageAccountsBtn, 0, 0))) {
       await Actions.swipe(this.accountList, 'left', 'fast', 0.5)
+      await Actions.waitForElement(this.manageAccountsBtn, 1000)
     }
     await Actions.tap(this.manageAccountsBtn)
   }
 
   async addAccount(accountNum = 2) {
     await Actions.waitForElement(this.addAccountBtn)
-    while (!(await Actions.isVisible(by.text(`Account ${accountNum}`), 0, 0))) {
+    while (
+      !(await Actions.isVisible(
+        by.id(`manage_accounts_list__Account ${accountNum}`),
+        0,
+        5000
+      ))
+    ) {
+      console.log(`manage_accounts_list__Account ${accountNum}`)
       await Actions.tap(this.addAccountBtn)
+      await Actions.waitForElement(this.createNewAccountBtn)
+      await Actions.tap(this.createNewAccountBtn)
     }
   }
 
@@ -515,6 +540,18 @@ class Settings {
       await Actions.swipe(this.accountList, 'left', 'fast', 0.5)
     }
     await Actions.tap(ele)
+    await commonElsPage.dismissBottomSheet()
+  }
+
+  async enableNetwork(network = commonElsLoc.xChain) {
+    await this.goSettings()
+    await this.tapNetworksRow()
+    await Actions.setInputText(commonElsPage.searchBar, network)
+    try {
+      await Actions.longPress(by.id(`network_toggle_disabled__${network}`))
+    } catch (e) {
+      console.log(`Already enabled ${network}`)
+    }
     await commonElsPage.dismissBottomSheet()
   }
 }

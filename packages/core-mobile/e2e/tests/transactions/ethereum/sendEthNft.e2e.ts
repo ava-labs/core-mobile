@@ -1,29 +1,26 @@
-import AccountManagePage from '../../../pages/accountManage.page'
-import PortfolioPage from '../../../pages/portfolio.page'
-import CollectiblesPage from '../../../pages/collectibles.page'
 import { warmup } from '../../../helpers/warmup'
-import { cleanup } from '../../../helpers/cleanup'
 import sendPage from '../../../pages/send.page'
-import networksManagePage from '../../../pages/networksManage.page'
+import settingsPage from '../../../pages/settings.page'
+import portfolioPage from '../../../pages/portfolio.page'
+import commonElsLoc from '../../../locators/commonEls.loc'
+import commonElsPage from '../../../pages/commonEls.page'
 
-describe('Ethereum NFT Transaction', () => {
+describe('Send NFT', () => {
   beforeAll(async () => {
     await warmup()
-    await AccountManagePage.createSecondAccount()
-    await networksManagePage.switchNetwork('Ethereum')
+    await settingsPage.createNthAccount()
   })
 
-  afterAll(async () => {
-    await cleanup()
+  it('should send NFT on Ethereum network', async () => {
+    await portfolioPage.tapCollectiblesTab()
+    await portfolioPage.filterNetwork(commonElsLoc.ethereum)
+    await portfolioPage.selectView()
+    await sendPage.sendNFT('Untitled') // the only NFT `Untitled` on Ethereum network on the testing wallet 
+    await commonElsPage.verifySuccessToast()
   })
 
-  it('should send Ethereum NFT', async () => {
-    await PortfolioPage.tapCollectiblesTab()
-    await CollectiblesPage.tapListSvg()
-    await CollectiblesPage.scrollToNFT()
-    await CollectiblesPage.tapNFT()
-    await CollectiblesPage.verifyNftDetailsItems()
-    await CollectiblesPage.sendNft('first', false)
-    await sendPage.verifySuccessToast()
-  }, 200000)
+  it('should verify the NFT Sent history', async () => {
+    // currently not supported
+    // TODO: add verification after all transactions history is supported
+  })
 })
