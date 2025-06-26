@@ -7,36 +7,35 @@ export const getAddressDerivationPath = ({
   derivationPathType = 'bip44'
 }: {
   accountIndex: number
-  vmType: NetworkVMType
+  vmType: Exclude<NetworkVMType, NetworkVMType.PVM | NetworkVMType.HVM>
   derivationPathType?: DerivationPathType
 }): string => {
   let derivationPath: string | undefined
   switch (vmType) {
     case NetworkVMType.AVM:
-    case NetworkVMType.PVM:
+    case NetworkVMType.CoreEth:
       derivationPath = ModuleManager.avalancheModule.buildDerivationPath({
         accountIndex,
         derivationPathType
-      })[NetworkVMType.AVM]
+      })[vmType]
       break
-    case NetworkVMType.CoreEth:
     case NetworkVMType.EVM:
       derivationPath = ModuleManager.evmModule.buildDerivationPath({
         accountIndex,
         derivationPathType
-      })[NetworkVMType.EVM]
+      })[vmType]
       break
     case NetworkVMType.BITCOIN:
       derivationPath = ModuleManager.bitcoinModule.buildDerivationPath({
         accountIndex,
         derivationPathType
-      })[NetworkVMType.BITCOIN]
+      })[vmType]
       break
     case NetworkVMType.SVM:
       derivationPath = ModuleManager.solanaModule.buildDerivationPath({
         accountIndex,
         derivationPathType
-      })[NetworkVMType.SVM]
+      })[vmType]
       break
   }
 
