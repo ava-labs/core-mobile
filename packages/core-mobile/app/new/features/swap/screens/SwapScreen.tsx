@@ -21,6 +21,7 @@ import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import { usePreventScreenRemoval } from 'common/hooks/usePreventScreenRemoval'
 import { useSwapList } from 'common/hooks/useSwapList'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
+import { ParaswapError, ParaswapErrorCode } from 'errors/swapError'
 import { useGlobalSearchParams, useRouter } from 'expo-router'
 import useCChainNetwork from 'hooks/earn/useCChainNetwork'
 import { useWatchlist } from 'hooks/watchlist/useWatchlist'
@@ -47,7 +48,6 @@ import {
   SwapType
 } from '../types'
 import { calculateRate as calculateEvmRate } from '../utils/evm/calculateRate'
-import { ParaswapError, ParaswapErrorCode } from 'errors/swapError'
 
 export const SwapScreen = (): JSX.Element => {
   const { theme } = useTheme()
