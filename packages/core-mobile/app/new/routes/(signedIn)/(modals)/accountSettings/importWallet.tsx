@@ -34,7 +34,7 @@ const ImportWalletScreen = (): JSX.Element => {
       })
 
       setIsAddingAccount(true)
-      await dispatch(addAccount()).unwrap()
+      await dispatch(addAccount(activeWallet.id)).unwrap()
 
       AnalyticsService.capture('CreatedANewAccountSuccessfully', {
         walletType: activeWallet.type
@@ -46,7 +46,14 @@ const ImportWalletScreen = (): JSX.Element => {
       setIsAddingAccount(false)
       back()
     }
-  }, [isAddingAccount, accounts, dispatch, activeWallet.type, back])
+  }, [
+    isAddingAccount,
+    accounts,
+    dispatch,
+    activeWallet.id,
+    activeWallet.type,
+    back
+  ])
 
   const data = useMemo(() => {
     const handleTypeRecoveryPhrase = (): void => {

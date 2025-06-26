@@ -4,8 +4,9 @@ import {
   addWallet,
   setWalletName,
   setActiveWallet,
-  removeWallet
+  _removeWallet
 } from './slice'
+import { storeWallet } from './thunks'
 
 describe('wallet slice', () => {
   const initialState = {
@@ -16,14 +17,12 @@ describe('wallet slice', () => {
   const mockWallet = {
     id: 'test-wallet-1',
     name: 'Test Wallet 1',
-    mnemonic: 'test-mnemonic',
     type: WalletType.MNEMONIC
   }
 
   const mockWallet2 = {
     id: 'test-wallet-2',
     name: 'Test Wallet 2',
-    mnemonic: 'test-mnemonic-2',
     type: WalletType.MNEMONIC
   }
 
@@ -64,7 +63,7 @@ describe('wallet slice', () => {
     expect(actual.activeWalletId).toBe(mockWallet.id)
   })
 
-  it('should handle removeWallet', () => {
+  it('should handle _removeWallet when multiple wallets exist', () => {
     const state = {
       ...initialState,
       wallets: {
@@ -73,9 +72,11 @@ describe('wallet slice', () => {
       },
       activeWalletId: mockWallet.id
     }
-    const actual = walletsReducer(state, removeWallet(mockWallet.id))
+    const actual = walletsReducer(state, _removeWallet(mockWallet.id))
     expect(actual.wallets[mockWallet.id]).toBeUndefined()
-    expect(actual.activeWalletId).toBe(mockWallet2.id)
+    expect(actual.wallets[mockWallet2.id]).toEqual(mockWallet2)
+    // _removeWallet doesn't change activeWalletId - that's handled by the thunk
+    expect(actual.activeWalletId).toBe(mockWallet.id)
   })
 
   it('should not remove the last wallet', () => {
@@ -84,7 +85,25 @@ describe('wallet slice', () => {
       wallets: { [mockWallet.id]: mockWallet },
       activeWalletId: mockWallet.id
     }
-    const actual = walletsReducer(state, removeWallet(mockWallet.id))
+    const actual = walletsReducer(state, _removeWallet(mockWallet.id))
     expect(actual).toEqual(state)
+  })
+
+  describe('storeWallet thunk', () => {
+    it('should handle storeWallet.fulfilled', () => {
+      const walletToStore = {
+        id: 'new-wallet-id',
+        name: 'New Wallet',
+        type: WalletType.PRIVATE_KEY
+      }
+
+      const action = {
+        type: storeWallet.fulfilled.type,
+        payload: walletToStore
+      }
+
+      const actual = walletsReducer(initialState, action)
+      expect(actual.wallets[walletToStore.id]).toEqual(walletToStore)
+    })
   })
 })
