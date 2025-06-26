@@ -37,7 +37,7 @@ import { TokenListItem } from './TokenListItem'
 
 interface Props {
   containerStyle: ViewStyle
-  goToTokenDetail: (localId: string, chainId: number) => void
+  goToTokenDetail: (token: LocalTokenWithBalance) => void
   goToTokenManagement: () => void
   goToBuy: () => void
   onScrollResync: () => void
@@ -104,7 +104,7 @@ const AssetsScreen: FC<Props> = ({
           <TokenListItem
             token={item}
             index={index}
-            onPress={() => goToTokenDetail(item.localId, item.networkChainId)}
+            onPress={() => goToTokenDetail(item)}
             isGridView={isGridView}
           />
         </View>

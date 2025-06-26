@@ -55,6 +55,7 @@ import AnalyticsService from 'services/analytics/AnalyticsService'
 import { AnalyticsEventName } from 'services/analytics/types'
 import { selectActiveAccount } from 'store/account'
 import {
+  LocalTokenWithBalance,
   selectBalanceForAccountIsAccurate,
   selectBalanceTotalInCurrencyForAccount,
   selectIsLoadingBalances,
@@ -367,13 +368,18 @@ const PortfolioHomeScreen = (): JSX.Element => {
   )
 
   const handleGoToTokenDetail = useCallback(
-    (localId: string, chainId: number): void => {
+    (token: LocalTokenWithBalance): void => {
+      const { name, symbol, localId, networkChainId } = token
       AnalyticsService.capture('PortfolioTokenSelected', {
-        selectedToken: localId,
-        chainId: chainId
+        name,
+        symbol,
+        chainId: networkChainId
       })
-      // @ts-ignore TODO: make routes typesafe
-      push({ pathname: '/tokenDetail', params: { localId, chainId } })
+      push({
+        // @ts-ignore TODO: make routes typesafe
+        pathname: '/tokenDetail',
+        params: { localId, chainId: networkChainId }
+      })
     },
     [push]
   )
