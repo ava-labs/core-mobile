@@ -1,8 +1,6 @@
 import {
   Avalanche,
   BitcoinProvider,
-  DerivationPath,
-  getAddressDerivationPath,
   JsonRpcBatchInternal
 } from '@avalabs/core-wallets-sdk'
 import {
@@ -40,6 +38,7 @@ import { SpanName } from 'services/sentry/types'
 import SeedlessWallet from 'seedless/services/wallet/SeedlessWallet'
 import { Curve, isEvmPublicKey } from 'utils/publicKeys'
 import ModuleManager from 'vmModule/ModuleManager'
+import { getAddressDerivationPath } from 'utils/getAddressDerivationPath'
 import {
   getAssetId,
   isAvalancheTransactionRequest,
@@ -247,16 +246,14 @@ class WalletService {
       walletType
     })
 
-    const derivationPathEVM = getAddressDerivationPath(
-      account.index,
-      DerivationPath.BIP44,
-      'EVM'
-    )
-    const derivationPathAVM = getAddressDerivationPath(
-      account.index,
-      DerivationPath.BIP44,
-      'AVM'
-    )
+    const derivationPathEVM = getAddressDerivationPath({
+      accountIndex: account.index,
+      vmType: NetworkVMType.EVM
+    })
+    const derivationPathAVM = getAddressDerivationPath({
+      accountIndex: account.index,
+      vmType: NetworkVMType.AVM
+    })
 
     const evmPublicKey = await wallet.getPublicKeyFor({
       derivationPath: derivationPathEVM,

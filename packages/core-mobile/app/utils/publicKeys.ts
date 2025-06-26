@@ -30,7 +30,5 @@ export type SeedlessPublicKeys = {
   publicKeys: AddressPublicKey[]
 }
 
-export type PickKeys<T, K extends (keyof T)[]> = Omit<T, K[number]>
-
 export const isEvmPublicKey = (publicKey: AddressPublicKey): boolean =>
   publicKey.derivationPath.startsWith(EVM_BASE_DERIVATION_PATH_PREFIX)
