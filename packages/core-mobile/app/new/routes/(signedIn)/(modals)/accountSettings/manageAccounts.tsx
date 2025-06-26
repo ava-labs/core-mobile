@@ -89,12 +89,12 @@ const ManageAccountsScreen = (): React.JSX.Element => {
       return (
         walletName.includes(searchText.toLowerCase()) ||
         account.name.toLowerCase().includes(searchText.toLowerCase()) ||
-        account.addressC.toLowerCase().includes(searchText.toLowerCase()) ||
-        account.addressBTC.toLowerCase().includes(searchText.toLowerCase()) ||
-        account.addressAVM.toLowerCase().includes(searchText.toLowerCase()) ||
-        account.addressPVM.toLowerCase().includes(searchText.toLowerCase()) ||
-        account.addressSVM.toLowerCase().includes(searchText.toLowerCase()) ||
-        account.addressCoreEth.toLowerCase().includes(searchText.toLowerCase())
+        account.addressC?.toLowerCase().includes(searchText.toLowerCase()) ||
+        account.addressBTC?.toLowerCase().includes(searchText.toLowerCase()) ||
+        account.addressAVM?.toLowerCase().includes(searchText.toLowerCase()) ||
+        account.addressPVM?.toLowerCase().includes(searchText.toLowerCase()) ||
+        account.addressSVM?.toLowerCase().includes(searchText.toLowerCase()) ||
+        account.addressCoreEth?.toLowerCase().includes(searchText.toLowerCase())
       )
     })
   }, [allAccountsArray, allWallets, searchText])

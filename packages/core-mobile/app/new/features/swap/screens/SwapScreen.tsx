@@ -47,6 +47,7 @@ import {
   SwapType
 } from '../types'
 import { calculateRate as calculateEvmRate } from '../utils/evm/calculateRate'
+import { ParaswapError, ParaswapErrorCode } from 'errors/swapError'
 
 export const SwapScreen = (): JSX.Element => {
   const { theme } = useTheme()
@@ -235,8 +236,8 @@ export const SwapScreen = (): JSX.Element => {
   ])
 
   const showFeesAndSlippage = useMemo(() => {
-    return (quote && isParaswapQuote(quote)) || errorMessage.length
-  }, [errorMessage, quote])
+    return quote && isParaswapQuote(quote)
+  }, [quote])
 
   const handleSwap = useCallback(() => {
     AnalyticsService.capture('SwapReviewOrder', {
@@ -410,7 +411,12 @@ export const SwapScreen = (): JSX.Element => {
       })
     }
 
-    if (showFeesAndSlippage) {
+    if (
+      showFeesAndSlippage ||
+      // display slippage field if slippage tolerance is exceeded
+      errorMessage ===
+        ParaswapError[ParaswapErrorCode.ESTIMATED_LOSS_GREATER_THAN_MAX_IMPACT]
+    ) {
       items.push({
         title: 'Slippage tolerance',
         accessory: (
@@ -428,6 +434,7 @@ export const SwapScreen = (): JSX.Element => {
     fromToken,
     toToken,
     rate,
+    errorMessage,
     showFeesAndSlippage,
     slippage,
     setSlippage,

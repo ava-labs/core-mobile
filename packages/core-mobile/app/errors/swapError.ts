@@ -12,6 +12,18 @@ enum SwapErrorCode {
   SWAP_TX_FAILED = 'SWAP_TX_FAILED'
 }
 
+export enum ParaswapErrorCode {
+  ESTIMATED_LOSS_GREATER_THAN_MAX_IMPACT = 'ESTIMATED_LOSS_GREATER_THAN_MAX_IMPACT',
+  INTERNAL_ERROR_WHILE_COMPUTING_PRICE = 'Internal Error while computing the price'
+}
+
+export const ParaswapError = {
+  [ParaswapErrorCode.ESTIMATED_LOSS_GREATER_THAN_MAX_IMPACT]:
+    'Slippage tolerance exceeded, increase the slippage and try again.',
+  [ParaswapErrorCode.INTERNAL_ERROR_WHILE_COMPUTING_PRICE]:
+    'An error occurred while computing the price'
+}
+
 type ObjWithError = { error: string }
 
 const isObjWithError = (error: unknown): error is ObjWithError =>
@@ -64,10 +76,14 @@ export const swapError = {
 
 export const humanizeParaswapRateError = (errorMsg: string): string => {
   switch (errorMsg) {
-    case 'ESTIMATED_LOSS_GREATER_THAN_MAX_IMPACT':
-      return 'Slippage tolerance exceeded, increase the slippage and try again.'
-    case 'Internal Error while computing the price':
-      return 'An error occurred while computing the price'
+    case ParaswapErrorCode.ESTIMATED_LOSS_GREATER_THAN_MAX_IMPACT:
+      return ParaswapError[
+        ParaswapErrorCode.ESTIMATED_LOSS_GREATER_THAN_MAX_IMPACT
+      ]
+    case ParaswapErrorCode.INTERNAL_ERROR_WHILE_COMPUTING_PRICE:
+      return ParaswapError[
+        ParaswapErrorCode.INTERNAL_ERROR_WHILE_COMPUTING_PRICE
+      ]
     default:
       return errorMsg
   }
