@@ -24,13 +24,13 @@ const walletsSlice = createSlice({
     ) => {
       const { walletId, name } = action.payload
       if (state.wallets[walletId]) {
-        state.wallets[walletId].name = name
+        state.wallets[walletId].name = name.trim()
       }
     },
     setActiveWallet: (state, action: PayloadAction<string>) => {
       state.activeWalletId = action.payload
     },
-    removeWallet: (state, action: PayloadAction<string>) => {
+    _removeWallet: (state, action: PayloadAction<string>) => {
       const walletId = action.payload
       const walletIds = Object.keys(state.wallets)
 
@@ -40,15 +40,6 @@ const walletsSlice = createSlice({
       }
 
       delete state.wallets[walletId]
-
-      // If we removed the active wallet, set the next one as active
-      if (state.activeWalletId === walletId) {
-        const currentIndex = walletIds.indexOf(walletId)
-        const nextWalletId = walletIds[currentIndex + 1] || walletIds[0]
-        if (nextWalletId && state.wallets[nextWalletId]) {
-          state.activeWalletId = nextWalletId
-        }
-      }
     }
   },
   extraReducers: builder => {
@@ -77,7 +68,7 @@ export const selectWalletById =
     state.wallet.wallets[walletId]
 
 // actions
-export const { addWallet, setWalletName, setActiveWallet, removeWallet } =
+export const { addWallet, setWalletName, setActiveWallet, _removeWallet } =
   walletsSlice.actions
 
 export const walletsReducer = walletsSlice.reducer

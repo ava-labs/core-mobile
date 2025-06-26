@@ -252,6 +252,23 @@ class BiometricsSDK {
     return true
   }
 
+  async removeWalletSecret(walletId: string): Promise<boolean> {
+    try {
+      await Keychain.resetGenericPassword(
+        KeystoreConfig.wallet_secret_options(walletId)
+      )
+      return true
+    } catch (e) {
+      Logger.error(
+        `Failed to remove wallet secret for service: ${
+          KeystoreConfig.wallet_secret_options(walletId).service
+        }`,
+        e
+      )
+      return false
+    }
+  }
+
   private get getEncryptionKey(): string {
     assertNotNull(this.encryptionKey, 'Encryption key not found')
     return this.encryptionKey
