@@ -3,7 +3,8 @@ import {
   NetworkTokenWithBalance,
   TokenWithBalanceAVM,
   TokenWithBalanceBTC,
-  TokenWithBalancePVM
+  TokenWithBalancePVM,
+  TokenWithBalanceSVM
 } from '@avalabs/vm-module-types'
 import { Dispatch } from 'react'
 import { Account } from 'store/account'
@@ -20,7 +21,8 @@ export enum SendErrorMessage {
   UNSUPPORTED_TOKEN = 'Unsupported token',
   INVALID_GAS_LIMIT = 'Unable to send token - invalid gas limit',
   UNKNOWN_ERROR = 'Unknown error',
-  EXCESSIVE_NETWORK_FEE = 'Selected fee is too high'
+  EXCESSIVE_NETWORK_FEE = 'Selected fee is too high',
+  AMOUNT_TO_LOW = 'Amount to send is too low'
 }
 
 type CommonAdapterOptions<Token> = {
@@ -48,12 +50,18 @@ export type PvmCapableAccount = EnsureDefined<
   'addressPVM' | 'addressCoreEth'
 >
 
+export type SvmCapableAccount = EnsureDefined<Account, 'addressSVM'>
+
 export type AdapterOptionsP = {
   account: PvmCapableAccount
 }
 
 export type AdapterOptionsX = {
   account: AvmCapableAccount
+}
+
+export type AdapterOptionsSVM = {
+  account: SvmCapableAccount
 }
 
 export type SendReturnType = {
@@ -82,6 +90,8 @@ export type SendAdapterBTC = SendAdapter<AdapterOptionsBTC, TokenWithBalanceBTC>
 export type SendAdapterPVM = SendAdapter<AdapterOptionsP, TokenWithBalancePVM>
 
 export type SendAdapterAVM = SendAdapter<AdapterOptionsX, TokenWithBalanceAVM>
+
+export type SendAdapterSVM = SendAdapter<AdapterOptionsSVM, TokenWithBalanceSVM>
 
 export type SendAdapterCollectible = SendAdapter<
   AdapterOptionsEVM,

@@ -10,5 +10,6 @@ export enum SendErrorMessage {
   UNSUPPORTED_TOKEN = 'Unsupported token',
   INVALID_GAS_LIMIT = 'Unable to send token - invalid gas limit',
   UNKNOWN_ERROR = 'Unknown error',
-  EXCESSIVE_NETWORK_FEE = 'Selected fee is too high'
+  EXCESSIVE_NETWORK_FEE = 'Selected fee is too high',
+  AMOUNT_TOO_LOW = 'Amount is too low'
 }

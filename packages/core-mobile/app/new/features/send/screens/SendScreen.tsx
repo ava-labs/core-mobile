@@ -13,7 +13,8 @@ import {
   NetworkVMType,
   TokenWithBalanceAVM,
   TokenWithBalanceBTC,
-  TokenWithBalancePVM
+  TokenWithBalancePVM,
+  TokenWithBalanceSVM
 } from '@avalabs/vm-module-types'
 import { ErrorState } from 'common/components/ErrorState'
 import { useNavigation } from '@react-navigation/native'
@@ -25,6 +26,7 @@ import { SendBTC } from '../components/SendBTC'
 import { SendEVM } from '../components/SendEVM'
 import { useNativeTokenWithBalanceByNetwork } from '../hooks/useNativeTokenWithBalanceByNetwork'
 import { useSendSelectedToken } from '../store'
+import { SendSVM } from '../components/SendSVM'
 
 export const SendScreen = (): JSX.Element => {
   const { canGoBack, back } = useRouter()
@@ -105,39 +107,68 @@ export const SendScreen = (): JSX.Element => {
     )
   }
 
-  return network?.vmName === NetworkVMType.EVM ? (
-    <SendEVM
-      onSuccess={handleSuccess}
-      onFailure={handleFailure}
-      nativeToken={nativeToken as NetworkTokenWithBalance}
-      account={activeAccount}
-      network={network}
-    />
-  ) : network?.vmName === NetworkVMType.PVM ? (
-    <SendPVM
-      onSuccess={handleSuccess}
-      onFailure={handleFailure}
-      nativeToken={nativeToken as TokenWithBalancePVM}
-      account={activeAccount}
-      network={network}
-    />
-  ) : network?.vmName === NetworkVMType.AVM ? (
-    <SendAVM
-      onSuccess={handleSuccess}
-      onFailure={handleFailure}
-      nativeToken={nativeToken as TokenWithBalanceAVM}
-      account={activeAccount}
-      network={network}
-    />
-  ) : network?.vmName === NetworkVMType.BITCOIN ? (
-    <SendBTC
-      onSuccess={handleSuccess}
-      onFailure={handleFailure}
-      nativeToken={nativeToken as TokenWithBalanceBTC}
-      account={activeAccount}
-      network={network}
-    />
-  ) : (
-    <ErrorState title="Unable to send" description="network not supported" />
-  )
+  switch (network?.vmName) {
+    case NetworkVMType.EVM:
+      return (
+        <SendEVM
+          onSuccess={handleSuccess}
+          onFailure={handleFailure}
+          nativeToken={nativeToken as NetworkTokenWithBalance}
+          account={activeAccount}
+          network={network}
+        />
+      )
+
+    case NetworkVMType.PVM:
+      return (
+        <SendPVM
+          onSuccess={handleSuccess}
+          onFailure={handleFailure}
+          nativeToken={nativeToken as TokenWithBalancePVM}
+          account={activeAccount}
+          network={network}
+        />
+      )
+
+    case NetworkVMType.AVM:
+      return (
+        <SendAVM
+          onSuccess={handleSuccess}
+          onFailure={handleFailure}
+          nativeToken={nativeToken as TokenWithBalanceAVM}
+          account={activeAccount}
+          network={network}
+        />
+      )
+
+    case NetworkVMType.BITCOIN:
+      return (
+        <SendBTC
+          onSuccess={handleSuccess}
+          onFailure={handleFailure}
+          nativeToken={nativeToken as TokenWithBalanceBTC}
+          account={activeAccount}
+          network={network}
+        />
+      )
+
+    case NetworkVMType.SVM:
+      return (
+        <SendSVM
+          onSuccess={handleSuccess}
+          onFailure={handleFailure}
+          nativeToken={nativeToken as TokenWithBalanceSVM}
+          account={activeAccount}
+          network={network}
+        />
+      )
+
+    default:
+      return (
+        <ErrorState
+          title="Unable to send"
+          description="network not supported"
+        />
+      )
+  }
 }

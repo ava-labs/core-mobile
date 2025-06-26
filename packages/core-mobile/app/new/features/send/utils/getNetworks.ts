@@ -7,6 +7,8 @@ import { getBitcoinNetwork } from 'services/network/utils/providerUtils'
 import {
   NETWORK_P,
   NETWORK_P_TEST,
+  NETWORK_SOLANA,
+  NETWORK_SOLANA_DEVNET,
   NETWORK_X,
   NETWORK_X_TEST
 } from 'services/network/consts'
@@ -63,6 +65,17 @@ export const getNetworks = ({
     ) {
       return [getBitcoinNetwork(isDeveloperMode)]
     }
+
+    if (
+      isValidAddress({
+        address,
+        addressType: AddressType.SOLANA,
+        isDeveloperMode
+      })
+    ) {
+      return isDeveloperMode ? [NETWORK_SOLANA_DEVNET] : [NETWORK_SOLANA]
+    }
+
     return []
   }
   const networks: Network[] = []
@@ -73,12 +86,18 @@ export const getNetworks = ({
         networks.push(network)
       })
   }
+
   if ('addressXP' in address) {
     networks.push(isDeveloperMode ? NETWORK_P_TEST : NETWORK_P)
     networks.push(isDeveloperMode ? NETWORK_X_TEST : NETWORK_X)
   }
+
   if ('addressBTC' in address) {
     networks.push(getBitcoinNetwork(isDeveloperMode))
+  }
+
+  if ('addressSVM' in address) {
+    networks.push(isDeveloperMode ? NETWORK_SOLANA_DEVNET : NETWORK_SOLANA)
   }
   return networks
 }

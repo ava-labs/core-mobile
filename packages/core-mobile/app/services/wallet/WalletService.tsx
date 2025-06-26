@@ -1,6 +1,7 @@
 import {
   Avalanche,
   BitcoinProvider,
+  isSolanaProvider,
   DerivationPath,
   getAddressDerivationPath,
   JsonRpcBatchInternal
@@ -99,6 +100,20 @@ class WalletService {
             )
 
           return wallet.signAvalancheTransaction({
+            accountIndex,
+            transaction,
+            network,
+            provider
+          })
+        }
+
+        if (isSolanaTransactionRequest(transaction)) {
+          if (!isSolanaProvider(provider))
+            throw new Error(
+              'Unable to sign solana transaction: wrong provider obtained'
+            )
+
+          return wallet.signSvmTransaction({
             accountIndex,
             transaction,
             network,
