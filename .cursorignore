@@ -1,0 +1,19 @@
+# Add directories or file patterns to ignore during indexing (e.g. foo/ or *.csv)
+
+.cursorignore
+.gitignore
+.vscode
+.env
+.env.local
+.env.development
+.env.production
+.env.test
+.env.test.local
+.env.production.local
+.env.development.local
+packages/core-mobile/boosts/*
+packages/core-mobile/e2e/*
+packages/core-mobile/android/*
+packages/core-mobile/ios/*
+packages/core-mobile/patches/*
+packages/core-mobile/tests/*
