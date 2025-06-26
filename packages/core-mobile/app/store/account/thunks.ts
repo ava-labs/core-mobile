@@ -1,7 +1,6 @@
 import { createAsyncThunk } from '@reduxjs/toolkit'
 import AccountsService from 'services/account/AccountsService'
 import AnalyticsService from 'services/analytics/AnalyticsService'
-import { selectActiveNetwork } from 'store/network'
 import { selectIsDeveloperMode } from 'store/settings/advanced/slice'
 import { ThunkApi } from 'store/types'
 import {
@@ -25,7 +24,6 @@ export const addAccount = createAsyncThunk<void, string, ThunkApi>(
   async (walletId, thunkApi) => {
     const state = thunkApi.getState()
     const isDeveloperMode = selectIsDeveloperMode(state)
-    const activeNetwork = selectActiveNetwork(state)
     const allAccounts = selectAccounts(state)
 
     const wallet = selectWalletById(walletId)(state)
@@ -40,7 +38,7 @@ export const addAccount = createAsyncThunk<void, string, ThunkApi>(
       name: `Account ${allAccountsCount + 1}`,
       index: Object.keys(accountsByWalletId).length,
       walletType: wallet.type,
-      network: activeNetwork,
+      isTestnet: isDeveloperMode,
       walletId: walletId
     })
 

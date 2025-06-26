@@ -1,6 +1,6 @@
 import WalletService from 'services/wallet/WalletService'
 import { Account, AccountCollection } from 'store/account'
-import { Network, NetworkVMType } from '@avalabs/core-chains-sdk'
+import { NetworkVMType } from '@avalabs/core-chains-sdk'
 import SeedlessService from 'seedless/services/SeedlessService'
 import { CoreAccountType } from '@avalabs/types'
 import { uuid } from 'utils/uuid'
@@ -17,12 +17,12 @@ class AccountsService {
    */
   async reloadAccounts({
     accounts,
-    network,
+    isTestnet,
     walletId,
     walletType
   }: {
     accounts: AccountCollection
-    network: Network
+    isTestnet: boolean
     walletId: string
     walletType: WalletType
   }): Promise<AccountCollection> {
@@ -33,7 +33,7 @@ class AccountsService {
         walletId,
         walletType,
         accountIndex: account.index,
-        network
+        isTestnet
       })
 
       const title = await SeedlessService.getAccountName(account.index)
@@ -58,13 +58,13 @@ class AccountsService {
   async createNextAccount({
     index,
     walletType,
-    network,
+    isTestnet,
     walletId,
     name
   }: {
     index: number
     walletType: WalletType
-    network: Network
+    isTestnet: boolean
     walletId: string
     name: string
   }): Promise<Account> {
@@ -74,7 +74,7 @@ class AccountsService {
       walletId,
       walletType,
       accountIndex: index,
-      network
+      isTestnet
     })
 
     return {
