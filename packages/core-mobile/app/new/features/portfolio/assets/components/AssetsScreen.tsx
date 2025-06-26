@@ -30,6 +30,7 @@ import {
 } from 'store/balance'
 import { selectEnabledNetworks } from 'store/network'
 import { selectActiveAccount } from 'store/account'
+import AnalyticsService from 'services/analytics/AnalyticsService'
 import errorIcon from '../../../../assets/icons/rocket.png'
 import { useAssetsFilterAndSort } from '../hooks/useAssetsFilterAndSort'
 import { TokenListItem } from './TokenListItem'
@@ -67,6 +68,7 @@ const AssetsScreen: FC<Props> = ({
       const manageList =
         ASSET_MANAGE_VIEWS?.[indexPath.section]?.[indexPath.row]
       if (manageList === AssetManageView.ManageList) {
+        AnalyticsService.capture('PortfolioManageTokenListClicked')
         goToTokenManagement()
         return
       }
