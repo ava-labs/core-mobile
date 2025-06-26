@@ -10,7 +10,7 @@ import { ChannelId } from 'services/notifications/channels'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { getUnixTime } from 'date-fns'
 import { selectActiveWallet } from 'store/wallet/slice'
-import { selectActiveNetwork } from 'store/network'
+import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { turnOnNotificationsFor } from '../slice'
 import { isStakeCompleteNotificationDisabled } from './utils'
 
@@ -80,7 +80,7 @@ const scheduleNotificationsForActiveStakes = async (
 
   setTimeout(async () => {
     const accounts = selectAccounts(state)
-    const activeNetwork = selectActiveNetwork(state)
+    const isDeveloperMode = selectIsDeveloperMode(state)
     if (!activeWallet) {
       Logger.error('Active wallet not found')
       return
@@ -101,7 +101,7 @@ const scheduleNotificationsForActiveStakes = async (
         walletId: activeWallet.id,
         walletType: activeWallet.type,
         accounts,
-        network: activeNetwork,
+        isTestnet: isDeveloperMode,
         startTimestamp
       })
 
