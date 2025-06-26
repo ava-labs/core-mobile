@@ -37,7 +37,7 @@ import slip10 from 'micro-key-producer/slip10.js'
 import { mnemonicToSeed } from 'bip39'
 import { fromSeed } from 'bip32'
 import { hex } from '@scure/base'
-import { getAddressDerivationPath } from 'utils/getAddressDerivationPath'
+import { getAddressDerivationPath } from './utils'
 
 /**
  * Type guard to assert that a wallet is a MnemonicWallet instance

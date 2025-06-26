@@ -38,8 +38,8 @@ import { SpanName } from 'services/sentry/types'
 import SeedlessWallet from 'seedless/services/wallet/SeedlessWallet'
 import { Curve, isEvmPublicKey } from 'utils/publicKeys'
 import ModuleManager from 'vmModule/ModuleManager'
-import { getAddressDerivationPath } from 'utils/getAddressDerivationPath'
 import {
+  getAddressDerivationPath,
   getAssetId,
   isAvalancheTransactionRequest,
   isBtcTransactionRequest,
