@@ -254,7 +254,7 @@ export const TokenDetailScreen = (): React.JSX.Element => {
 
   const handleExplorerLink = useCallback(
     (explorerLink: string): void => {
-      AnalyticsService.capture('ActivityCardLinkClicked')
+      AnalyticsService.capture('ExplorerLinkClicked')
       back()
       openUrl({ url: explorerLink, title: '' })
     },
