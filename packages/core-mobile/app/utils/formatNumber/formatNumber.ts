@@ -1,4 +1,5 @@
 const bigNumberFormatter = Intl.NumberFormat('en-us', {
+  // Compact won't work  without polyfills, so use formatLargeCurrency instead
   notation: 'compact',
   maximumFractionDigits: 2
 })
