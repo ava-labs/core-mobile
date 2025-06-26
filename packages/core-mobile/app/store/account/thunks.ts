@@ -9,7 +9,6 @@ import {
   setActiveWallet
 } from 'store/wallet/slice'
 import { WalletType } from 'services/wallet/types'
-import { SeedlessPubKeysStorage } from 'seedless/services/storage/SeedlessPubKeysStorage'
 import {
   reducerName,
   selectAccountById,
@@ -76,6 +75,11 @@ export const removeAccountWithActiveCheck = createAsyncThunk<
     const activeAccount = selectActiveAccount(state)
     const wallet = selectWalletById(accountToRemove?.walletId ?? '')(state)
 
+    // fail safe, UI should prevent this from happening
+    if (wallet?.type === WalletType.SEEDLESS) {
+      throw new Error('Seedless wallets do not support account removal')
+    }
+
     if (!accountToRemove) {
       throw new Error(`Account with ID "${accountId}" not found`)
     }
@@ -100,12 +104,6 @@ export const removeAccountWithActiveCheck = createAsyncThunk<
       if (previousAccount) {
         thunkApi.dispatch(setActiveAccountId(previousAccount.id))
       }
-    }
-
-    if (wallet?.type === WalletType.SEEDLESS) {
-      await SeedlessPubKeysStorage.removePublicKeysByIndex(
-        accountToRemove.index
-      )
     }
 
     // Remove the account
