@@ -11,59 +11,65 @@ import { useRouter } from 'expo-router'
 import { ListScreen } from 'common/components/ListScreen'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import { format } from 'date-fns'
+import { useErc20ContractTokens } from 'common/hooks/useErc20ContractTokens'
+import { useSearchableTokenList } from 'common/hooks/useSearchableTokenList'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
 import { useNetworks } from 'hooks/networks/useNetworks'
 import { LoadingState } from 'common/components/LoadingState'
 import { ErrorState } from 'common/components/ErrorState'
-import { useMeldServiceProvider } from '../store'
-import { useSearchServiceProviders } from '../hooks/useSearchServiceProviders'
-import { ServiceProviderCategories, ServiceProviderNames } from '../consts'
-import { Quote } from '../types'
-import { useServiceProviders } from '../hooks/useServiceProviders'
-import { useMeldTokenWithBalance } from '../hooks/useMeldTokenWithBalance'
-import { ServiceProviderIcon } from './ServiceProviderIcon'
+import { useOnrampServiceProvider, useOnrampToken } from '../store'
+import { useSearchServiceProviders } from '../../hooks/useSearchServiceProviders'
+import { ServiceProviderCategories } from '../../consts'
+import { Quote } from '../../types'
+import { useServiceProviders } from '../../hooks/useServiceProviders'
+import { ServiceProviderIcon } from '../../components/ServiceProviderIcon'
+import { isTokenTradable } from '../../utils'
 
 const NEW_QUOTE_TIME = 60
 const IMAGE_SIZE = 36
 
-export const SelectServiceProvider = ({
-  category,
-  description
-}: {
-  category: ServiceProviderCategories
-  description: string
-}): React.JSX.Element => {
+export const SelectServiceProviderScreen = (): React.JSX.Element => {
   const {
     theme: { colors }
   } = useTheme()
   const { back, canGoBack, dismissAll } = useRouter()
   const { formatCurrency } = useFormatCurrency()
-  const [_, setMeldServiceProvider] = useMeldServiceProvider()
+  const [onRampToken] = useOnrampToken()
+  const [_, setOnRampServiceProvider] = useOnrampServiceProvider()
   const [newQuoteTime, setNewQuoteTime] = useState(NEW_QUOTE_TIME)
   const {
     crytoQuotes,
     isLoadingCryptoQuotes,
     refetch,
     isRefetchingCryptoQuotes
-  } = useServiceProviders({ category })
+  } = useServiceProviders()
 
   const { data: serviceProviders } = useSearchServiceProviders({
-    categories: [category]
+    categories: [ServiceProviderCategories.CRYPTO_ONRAMP]
   })
 
+  const erc20ContractTokens = useErc20ContractTokens()
+  const { filteredTokenList } = useSearchableTokenList({
+    tokens: erc20ContractTokens,
+    hideZeroBalance: false
+  })
   const { getNetwork } = useNetworks()
 
   const hasAvailableServiceProviders = useMemo(() => {
     return crytoQuotes && crytoQuotes?.length > 0
   }, [crytoQuotes])
 
-  const token = useMeldTokenWithBalance({ category })
+  const token = useMemo(() => {
+    return filteredTokenList.find(
+      tk => onRampToken && isTokenTradable(onRampToken, tk)
+    )
+  }, [filteredTokenList, onRampToken])
 
   const network = useMemo(() => {
     return token?.networkChainId
-      ? getNetwork(token.tokenWithBalance.networkChainId)
-      : token && 'chainId' in token.tokenWithBalance
-      ? getNetwork(token.tokenWithBalance.chainId)
+      ? getNetwork(token.networkChainId)
+      : token && 'chainId' in token
+      ? getNetwork(token.chainId)
       : undefined
   }, [getNetwork, token])
 
@@ -103,7 +109,10 @@ export const SelectServiceProvider = ({
   const renderHeader = useCallback(() => {
     return (
       <View sx={{ gap: 32 }}>
-        <Text>{description}</Text>
+        <Text>
+          External providers are used to process fiat-to-crypto purchases. Rates
+          vary between providers
+        </Text>
         {hasAvailableServiceProviders && (
           <View sx={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
             <Icons.Custom.Pace color={colors.$textPrimary} />
@@ -112,41 +121,30 @@ export const SelectServiceProvider = ({
         )}
       </View>
     )
-  }, [
-    colors.$textPrimary,
-    description,
-    hasAvailableServiceProviders,
-    newQuoteTime
-  ])
+  }, [colors.$textPrimary, hasAvailableServiceProviders, newQuoteTime])
 
   const renderItem = useCallback(
     (item: Quote, index: number) => {
       const serviceProvider = serviceProviders?.find(
         sp => sp.serviceProvider === item.serviceProvider
       )
-      const amount =
-        category === ServiceProviderCategories.CRYPTO_ONRAMP
-          ? item.destinationAmount ?? 0
-          : item.sourceAmount ?? 0
+
       const tokenAmount =
-        amount - (item.totalFee ?? 0) / (item.exchangeRate ?? 0)
-      const tokenAmountFixed = Math.trunc(tokenAmount * 1_000_000) / 1_000_000 // truncate to 6 decimal places
-
+        item.destinationAmount ??
+        0 - (item.totalFee ?? 0) / (item.exchangeRate ?? 0)
       const tokenUnitToDisplay =
-        network?.networkToken.decimals && token?.tokenWithBalance.symbol
+        network?.networkToken.decimals && token?.symbol
           ? new TokenUnit(
-              tokenAmountFixed * 10 ** network.networkToken.decimals,
+              tokenAmount * 10 ** network.networkToken.decimals,
               network.networkToken.decimals,
-              token.tokenWithBalance.symbol
-            ).toDisplay({ asNumber: true })
-          : tokenAmountFixed
-
-      const fiatAmount = tokenUnitToDisplay * (item.exchangeRate ?? 0)
+              token.symbol
+            ).toDisplay()
+          : tokenAmount
 
       return (
         <Pressable
           onPress={() => {
-            setMeldServiceProvider(serviceProvider?.serviceProvider)
+            setOnRampServiceProvider(serviceProvider?.serviceProvider)
             dismiss()
           }}
           sx={{
@@ -185,18 +183,17 @@ export const SelectServiceProvider = ({
                   }}>
                   {ServiceProviderNames[serviceProvider.serviceProvider]}
                 </Text>
-                {index === 0 &&
-                  category === ServiceProviderCategories.CRYPTO_ONRAMP && (
-                    <Text
-                      variant="body2"
-                      sx={{
-                        color: colors.$textSuccess,
-                        fontWeight: 400,
-                        lineHeight: 16
-                      }}>
-                      Lowest price
-                    </Text>
-                  )}
+                {index === 0 && (
+                  <Text
+                    variant="body2"
+                    sx={{
+                      color: colors.$textSuccess,
+                      fontWeight: 400,
+                      lineHeight: 16
+                    }}>
+                    Lowest price
+                  </Text>
+                )}
               </View>
             </View>
           )}
@@ -204,19 +201,18 @@ export const SelectServiceProvider = ({
             <Text
               variant="body2"
               sx={{ textAlign: 'right', fontWeight: 400, lineHeight: 16 }}>
-              {tokenUnitToDisplay} {token?.tokenWithBalance.symbol}
+              {tokenUnitToDisplay} {token?.symbol}
             </Text>
             <Text
               variant="subtitle2"
               sx={{ textAlign: 'right', fontWeight: 500, fontSize: 12 }}>
-              ~{formatCurrency({ amount: fiatAmount })}
+              ~{formatCurrency({ amount: item.fiatAmountWithoutFees ?? 0 })}
             </Text>
           </View>
         </Pressable>
       )
     },
     [
-      category,
       colors.$surfaceSecondary,
       colors.$textPrimary,
       colors.$textSuccess,
@@ -224,8 +220,8 @@ export const SelectServiceProvider = ({
       formatCurrency,
       network?.networkToken.decimals,
       serviceProviders,
-      setMeldServiceProvider,
-      token?.tokenWithBalance.symbol
+      setOnRampServiceProvider,
+      token?.symbol
     ]
   )
 
