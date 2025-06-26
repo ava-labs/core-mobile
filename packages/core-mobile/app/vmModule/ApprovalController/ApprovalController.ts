@@ -31,11 +31,6 @@ class ApprovalController implements VmModuleApprovalController {
     derivationPath,
     curve
   }: RequestPublicKeyParams): Promise<string> {
-    if (derivationPath === undefined) {
-      return Promise.reject(
-        rpcErrors.invalidParams('derivationPath is required to get public key')
-      )
-    }
     const { walletId, walletType } = JSON.parse(secretId)
 
     return WalletService.getPublicKeyFor({

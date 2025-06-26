@@ -170,12 +170,12 @@ class WalletService {
     walletId,
     walletType,
     accountIndex,
-    network
+    isTestnet
   }: {
     walletId: string
     walletType: WalletType
     accountIndex: number
-    network: Network
+    isTestnet: boolean
   }): Promise<Record<NetworkVMType, string>> {
     if (walletType === WalletType.SEEDLESS) {
       const storedPubKeys = await SeedlessPubKeysStorage.retrieve()
@@ -201,7 +201,7 @@ class WalletService {
       walletId,
       walletType,
       accountIndex,
-      network
+      isTestnet
     })
   }
 
@@ -213,13 +213,18 @@ class WalletService {
     walletId,
     walletType,
     accountIndex,
-    network
+    isTestnet
   }: {
     walletId: string
     walletType: WalletType
-    accountIndex: number
-    network: Network
+    accountIndex?: number
+    isTestnet: boolean
   }): Promise<Record<NetworkVMType, string>> {
+    // all vm modules need is just the isTestnet flag
+    const network = {
+      isTestnet
+    } as Network
+
     return ModuleManager.deriveAddresses({
       walletId,
       walletType,
@@ -253,14 +258,15 @@ class WalletService {
       'AVM'
     )
 
-    const evmPublicKey = await wallet.getPublicKeyFor(
-      derivationPathEVM,
-      Curve.SECP256K1
-    )
-    const xpPublicKey = await wallet.getPublicKeyFor(
-      derivationPathAVM,
-      Curve.SECP256K1
-    )
+    const evmPublicKey = await wallet.getPublicKeyFor({
+      derivationPath: derivationPathEVM,
+      curve: Curve.SECP256K1
+    })
+
+    const xpPublicKey = await wallet.getPublicKeyFor({
+      derivationPath: derivationPathAVM,
+      curve: Curve.SECP256K1
+    })
 
     return {
       evm: evmPublicKey,
@@ -276,7 +282,7 @@ class WalletService {
   }: {
     walletId: string
     walletType: WalletType
-    derivationPath: string
+    derivationPath?: string
     curve: Curve
   }): Promise<string> {
     const wallet = await WalletFactory.createWallet({
@@ -284,7 +290,7 @@ class WalletService {
       walletType
     })
 
-    return await wallet.getPublicKeyFor(derivationPath, curve)
+    return await wallet.getPublicKeyFor({ derivationPath, curve })
   }
 
   // TODO: use getAddresses instead for staking notification setup logic

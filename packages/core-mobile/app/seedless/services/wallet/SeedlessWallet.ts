@@ -303,12 +303,26 @@ export default class SeedlessWallet implements Wallet {
     return signer.signTransaction(transaction)
   }
 
-  public async getPublicKeyFor(path: string, curve: Curve): Promise<string> {
-    const publicKey = this.#addressPublicKeys.find(findPublicKey(path, curve))
+  public async getPublicKeyFor({
+    derivationPath,
+    curve
+  }: {
+    derivationPath?: string
+    curve: Curve
+  }): Promise<string> {
+    if (derivationPath === undefined) {
+      throw new Error(
+        'derivationPath is required to get public key for SeedlessWallet'
+      )
+    }
+
+    const publicKey = this.#addressPublicKeys.find(
+      findPublicKey(derivationPath, curve)
+    )
 
     if (!publicKey) {
       throw new Error(
-        `Public key not found for path: ${path} and curve: ${curve}`
+        `Public key not found for path: ${derivationPath} and curve: ${curve}`
       )
     }
 

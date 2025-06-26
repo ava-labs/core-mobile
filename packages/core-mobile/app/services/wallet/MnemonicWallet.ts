@@ -335,10 +335,19 @@ export class MnemonicWallet implements Wallet {
     return await signer.signTransaction(transaction)
   }
 
-  public async getPublicKeyFor(
-    derivationPath: string,
+  public async getPublicKeyFor({
+    derivationPath,
+    curve
+  }: {
+    derivationPath?: string
     curve: Curve
-  ): Promise<string> {
+  }): Promise<string> {
+    if (derivationPath === undefined) {
+      throw new Error(
+        'derivationPath is required to get public key for MnemonicWallet'
+      )
+    }
+
     const seed = await mnemonicToSeed(this.mnemonic)
 
     switch (curve) {
