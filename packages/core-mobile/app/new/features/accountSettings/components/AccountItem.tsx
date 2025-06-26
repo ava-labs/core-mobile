@@ -1,25 +1,26 @@
-import React, { memo, useMemo, useCallback } from 'react'
-import { Account } from 'store/account'
+import { truncateAddress } from '@avalabs/core-utils-sdk'
 import {
-  View,
-  Text,
-  Icons,
-  TouchableOpacity,
-  AnimatedPressable,
-  useTheme,
+  ActivityIndicator,
   alpha,
   AnimatedBalance,
-  ActivityIndicator,
-  Pressable
+  AnimatedPressable,
+  Icons,
+  Pressable,
+  Text,
+  TouchableOpacity,
+  useTheme,
+  View
 } from '@avalabs/k2-alpine'
-import { useSelector } from 'react-redux'
-import { getItemEnteringAnimation } from 'common/utils/animations'
-import Animated, { LinearTransition } from 'react-native-reanimated'
-import { truncateAddress } from '@avalabs/core-utils-sdk'
-import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
-import { selectIsPrivacyModeEnabled } from 'store/settings/securityPrivacy'
-import { useBalanceForAccount } from 'new/common/contexts/useBalanceForAccount'
 import { HiddenBalanceText } from 'common/components/HiddenBalanceText'
+import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
+import { getItemEnteringAnimation } from 'common/utils/animations'
+import { useBalanceForAccount } from 'new/common/contexts/useBalanceForAccount'
+import React, { memo, useCallback, useMemo } from 'react'
+import Animated, { LinearTransition } from 'react-native-reanimated'
+import { useSelector } from 'react-redux'
+import { Account } from 'store/account'
+import { selectIsPrivacyModeEnabled } from 'store/settings/securityPrivacy'
+import { formatLargeCurrency } from 'utils/Utils'
 import { ACCOUNT_CARD_SIZE } from './AcccountList'
 
 export const AccountItem = memo(
@@ -48,14 +49,16 @@ export const AccountItem = memo(
     const {
       theme: { colors, isDark }
     } = useTheme()
-    const { formatCurrency } = useFormatCurrency()
+    const { formatTokenInCurrency } = useFormatCurrency()
 
     const balance = useMemo(() => {
       // CP-10570: Balances should never show $0.00
       return accountBalance === 0
         ? ''
-        : formatCurrency({ amount: accountBalance })
-    }, [accountBalance, formatCurrency])
+        : `${formatLargeCurrency(
+            formatTokenInCurrency({ amount: accountBalance })
+          )}`
+    }, [accountBalance, formatTokenInCurrency])
 
     const containerBackgroundColor = isActive
       ? colors.$textPrimary
