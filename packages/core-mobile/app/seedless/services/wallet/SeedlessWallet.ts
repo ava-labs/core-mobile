@@ -413,7 +413,7 @@ export default class SeedlessWallet implements Wallet {
 
   private async getAddressPublicKey(
     accountIndex: number,
-    vmType: NetworkVMType
+    vmType: Exclude<NetworkVMType, NetworkVMType.PVM | NetworkVMType.HVM>
   ): Promise<string> {
     const derivationPath = getAddressDerivationPath({
       accountIndex,
