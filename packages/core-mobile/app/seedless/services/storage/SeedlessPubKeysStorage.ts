@@ -30,6 +30,23 @@ export class SeedlessPubKeysStorage {
     return pubKeys
   }
 
+  static async removePublicKeysByIndex(accountIndex: number): Promise<void> {
+    const pubKeys = await this.retrieve()
+
+    // Filter out all public keys for this account index across all paths
+    const filteredKeys = pubKeys.filter(key => {
+      // Parse the derivation path to get the account index
+      const pathParts = key.derivationPath.split('/')
+      const lastPart = pathParts[pathParts.length - 1]
+      if (!lastPart) return true // Keep keys with invalid paths
+      const lastIndex = parseInt(lastPart, 10)
+      return lastIndex !== accountIndex
+    })
+
+    // Save the updated list
+    await this.save(filteredKeys)
+  }
+
   static clearCache(): void {
     this.cache = undefined
   }
