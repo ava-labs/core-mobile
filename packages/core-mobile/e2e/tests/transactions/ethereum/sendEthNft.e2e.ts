@@ -15,7 +15,7 @@ describe('Send NFT', () => {
     await portfolioPage.tapCollectiblesTab()
     await portfolioPage.filterNetwork(commonElsLoc.ethereum)
     await portfolioPage.selectView()
-    await sendPage.sendNFT('Untitled') // the only NFT `Untitled` on Ethereum network on the testing wallet 
+    await sendPage.sendNFT('Untitled') // the only NFT `Untitled` on Ethereum network on the testing wallet
     await commonElsPage.verifySuccessToast()
   })
 
