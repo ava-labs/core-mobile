@@ -13,35 +13,34 @@ import { useRouter } from 'expo-router'
 import { Space } from 'common/components/Space'
 import { LoadingState } from 'common/components/LoadingState'
 import { portfolioTabContentHeight } from 'features/portfolio/utils'
-import { useSearchPaymentMethods } from '../hooks/useSearchPaymentMethods'
-import { useMeldPaymentMethod, useMeldServiceProvider } from '../store'
+import { useSearchPaymentMethods } from '../../hooks/useSearchPaymentMethods'
+import { useOnrampPaymentMethod, useOnrampServiceProvider } from '../store'
 import {
   PaymentMethodNames,
   ServiceProviderCategories,
   PaymentMethodTimeLimits
-} from '../consts'
-import { PaymentMethodIcon } from './PaymentMethodIcon'
+} from '../../consts'
+import { PaymentMethodIcon } from '../../components/PaymentMethodIcon'
 
-export const SelectPaymentMethod = ({
-  category,
-  title,
-  onSelectServiceProvider
-}: {
-  category: ServiceProviderCategories
-  title: string
-  onSelectServiceProvider: () => void
-}): React.JSX.Element => {
+export const SelectPaymentMethodScreen = (): React.JSX.Element => {
   const {
     theme: { colors }
   } = useTheme()
-  const { back, canGoBack } = useRouter()
-  const [meldPaymentMethod, setMeldPaymentMethod] = useMeldPaymentMethod()
-  const [meldServiceProvider] = useMeldServiceProvider()
+  const { navigate, back, canGoBack } = useRouter()
+  const [onRampPaymentMethod, setOnRampPaymentMethod] = useOnrampPaymentMethod()
+  const [onrampServiceProvider] = useOnrampServiceProvider()
   const { data: paymentMethods, isLoading: isLoadingPaymentMethods } =
     useSearchPaymentMethods({
-      categories: [category],
-      serviceProviders: meldServiceProvider ? [meldServiceProvider] : undefined
+      categories: [ServiceProviderCategories.CRYPTO_ONRAMP],
+      serviceProviders: onrampServiceProvider
+        ? [onrampServiceProvider]
+        : undefined
     })
+
+  const handleSelectServiceProvider = useCallback(() => {
+    // @ts-ignore TODO: make routes typesafe
+    navigate('/selectPaymentMethod/selectServiceProvider')
+  }, [navigate])
 
   const dismissPaymentMethod = useCallback(() => {
     canGoBack() && back()
@@ -51,7 +50,7 @@ export const SelectPaymentMethod = ({
     return (
       <View>
         <Pressable
-          onPress={onSelectServiceProvider}
+          onPress={handleSelectServiceProvider}
           sx={{
             marginTop: 12,
             flexDirection: 'row',
@@ -75,29 +74,26 @@ export const SelectPaymentMethod = ({
             <Icons.Navigation.ChevronRightV2 color={colors.$textPrimary} />
           </View>
         </Pressable>
-        {category === ServiceProviderCategories.CRYPTO_ONRAMP && (
-          <View
-            sx={{
-              flexDirection: 'row',
-              alignItems: 'center',
-              gap: 8,
-              marginTop: 39,
-              marginRight: 32
-            }}>
-            <Icons.Action.Info color={colors.$textPrimary} />
-            <Text variant="body1" sx={{ color: colors.$textPrimary }}>
-              When using Apple Pay or Google Pay, payments made with credit
-              cards are more likely to succeed
-            </Text>
-          </View>
-        )}
+        <View
+          sx={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            gap: 8,
+            marginTop: 39,
+            marginRight: 32
+          }}>
+          <Icons.Action.Info color={colors.$textPrimary} />
+          <Text variant="body1" sx={{ color: colors.$textPrimary }}>
+            When using Apple Pay or Google Pay, payments made with credit cards
+            are more likely to succeed
+          </Text>
+        </View>
       </View>
     )
   }, [
-    category,
     colors.$surfaceSecondary,
     colors.$textPrimary,
-    onSelectServiceProvider
+    handleSelectServiceProvider
   ])
 
   const renderFooter = useCallback(() => {
@@ -121,10 +117,9 @@ export const SelectPaymentMethod = ({
           ? PaymentMethodTimeLimits[paymentMethod.paymentMethod]
           : '',
         onPress: () =>
-          paymentMethod.paymentMethod &&
-          setMeldPaymentMethod(paymentMethod.paymentMethod),
+          setOnRampPaymentMethod(paymentMethod.paymentMethod ?? undefined),
         accessory:
-          meldPaymentMethod === paymentMethod.paymentMethod ? (
+          onRampPaymentMethod === paymentMethod.paymentMethod ? (
             <Icons.Custom.CheckSmall color={colors.$textPrimary} />
           ) : (
             <></>
@@ -134,15 +129,15 @@ export const SelectPaymentMethod = ({
     })
   }, [
     colors.$textPrimary,
-    meldPaymentMethod,
+    onRampPaymentMethod,
     paymentMethods,
-    setMeldPaymentMethod
+    setOnRampPaymentMethod
   ])
 
   return (
     <ScrollScreen
       isModal
-      title={title}
+      title="Pay with"
       renderHeader={renderHeader}
       renderFooter={renderFooter}
       contentContainerStyle={{

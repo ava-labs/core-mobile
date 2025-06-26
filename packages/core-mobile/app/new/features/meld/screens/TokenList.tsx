@@ -16,23 +16,20 @@ import { useErc20ContractTokens } from 'common/hooks/useErc20ContractTokens'
 import { CHAIN_IDS_WITH_INCORRECT_SYMBOL } from 'consts/chainIdsWithIncorrectSymbol'
 import { LogoWithNetwork } from 'features/portfolio/assets/components/LogoWithNetwork'
 import { LoadingState } from 'common/components/LoadingState'
-import { SubTextNumber } from 'common/components/SubTextNumber'
 import { CryptoCurrency } from '../types'
 import { isTokenTradable } from '../utils'
-import { MELD_CURRENCY_CODES, ServiceProviderCategories } from '../consts'
+import { MELD_CURRENCY_CODES } from '../consts'
 
 type CryptoCurrencyWithBalance = CryptoCurrency & {
   tokenWithBalance: LocalTokenWithBalance
 }
 
 export const TokenList = ({
-  category,
   onPress,
   selectedToken,
   cryptoCurrencies,
   isLoadingCryptoCurrencies
 }: {
-  category: ServiceProviderCategories
   onPress: (token: CryptoCurrencyWithBalance) => void
   selectedToken?: CryptoCurrency
   cryptoCurrencies?: CryptoCurrency[]
@@ -45,7 +42,7 @@ export const TokenList = ({
   const erc20ContractTokens = useErc20ContractTokens()
   const { filteredTokenList } = useSearchableTokenList({
     tokens: erc20ContractTokens,
-    hideZeroBalance: category !== ServiceProviderCategories.CRYPTO_ONRAMP
+    hideZeroBalance: false
   })
 
   const supportedCryptoCurrencies = useMemo(() => {
@@ -145,20 +142,11 @@ export const TokenList = ({
                 sx={{ width: SCREEN_WIDTH * 0.65 }}>
                 {name}
               </Text>
-              <View sx={{ flexDirection: 'row' }}>
-                <SubTextNumber
-                  number={Number(item.tokenWithBalance.balanceDisplayValue)}
-                  textColor={colors.$textPrimary}
-                  textVariant="subtitle2"
-                />
-                <Text
-                  variant="subtitle2"
-                  sx={{
-                    color: colors.$textPrimary
-                  }}>
-                  {' ' + item.tokenWithBalance.symbol}
-                </Text>
-              </View>
+              <Text variant="subtitle2">
+                {item.tokenWithBalance.balanceDisplayValue +
+                  ' ' +
+                  item.tokenWithBalance.symbol}
+              </Text>
             </View>
           </View>
           {isSelected && (

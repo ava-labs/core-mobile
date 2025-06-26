@@ -11,52 +11,44 @@ import {
   ActivityIndicator,
   showAlert
 } from '@avalabs/k2-alpine'
+import { useRouter } from 'expo-router'
 import { LogoWithNetwork } from 'features/portfolio/assets/components/LogoWithNetwork'
 import { selectSelectedCurrency } from 'store/settings/currency'
 import { useSelector } from 'react-redux'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import useInAppBrowser from 'common/hooks/useInAppBrowser'
-import { SubTextNumber } from 'common/components/SubTextNumber'
-import { useSelectAmount } from '../hooks/useSelectAmount'
-import { ServiceProviderCategories } from '../consts'
+import { useSelectBuyAmount } from '../../hooks/useSelectBuyAmount'
 
-interface SelectAmountProps {
-  title: string
-  navigationTitle: string
-  category: ServiceProviderCategories
-  onSelectToken: () => void
-  onSelectPaymentMethod: () => void
-}
-
-export const SelectAmount = ({
-  title,
-  navigationTitle,
-  category,
-  onSelectToken,
-  onSelectPaymentMethod
-}: SelectAmountProps): React.JSX.Element => {
+export const SelectBuyAmountScreen = (): React.JSX.Element => {
   const {
     theme: { colors }
   } = useTheme()
   const {
-    formatInSubTextNumber,
+    formatInTokenUnit,
     sourceAmount,
     setSourceAmount,
     paymentMethodToDisplay,
     serviceProviderToDisplay,
-    isEnabled,
+    isBuyAllowed,
     token,
     tokenBalance,
     hasValidSourceAmount,
     isLoadingDefaultsByCountry,
-    isLoadingTradeLimits,
+    isLoadingPurchaseLimits,
     createSessionWidget,
     isLoadingCryptoQuotes,
     errorMessage
-  } = useSelectAmount({ category })
+  } = useSelectBuyAmount()
+
   const { openUrl } = useInAppBrowser()
   const { formatIntegerCurrency, formatCurrency } = useFormatCurrency()
+  const { navigate } = useRouter()
   const selectedCurrency = useSelector(selectSelectedCurrency)
+
+  const handleSelectToken = useCallback((): void => {
+    // @ts-ignore TODO: make routes typesafe
+    navigate('/selectBuyToken')
+  }, [navigate])
 
   const handleSelectPaymentMethod = useCallback((): void => {
     if (sourceAmount === undefined || sourceAmount === 0) {
@@ -70,8 +62,10 @@ export const SelectAmount = ({
       })
       return
     }
-    onSelectPaymentMethod()
-  }, [onSelectPaymentMethod, sourceAmount])
+
+    // @ts-ignore TODO: make routes typesafe
+    navigate('/selectPaymentMethod')
+  }, [navigate, sourceAmount])
 
   const onNext = useCallback(async (): Promise<void> => {
     const sessionWidget = await createSessionWidget()
@@ -85,17 +79,15 @@ export const SelectAmount = ({
           gap: 20
         }}>
         <Button
-          disabled={!isEnabled}
+          disabled={!isBuyAllowed}
           type="primary"
           size="large"
           onPress={onNext}>
-          {category === ServiceProviderCategories.CRYPTO_ONRAMP
-            ? 'Buy'
-            : 'Withdraw'}
+          Buy
         </Button>
       </View>
     )
-  }, [isEnabled, onNext, category])
+  }, [onNext, isBuyAllowed])
 
   const renderServiceProvider = useCallback(() => {
     if (!hasValidSourceAmount) {
@@ -126,102 +118,36 @@ export const SelectAmount = ({
     serviceProviderToDisplay
   ])
 
-  const renderCaption = useCallback(() => {
-    if (errorMessage) {
-      return (
-        <View
-          sx={{
-            alignItems: 'center',
-            marginTop: 12,
-            marginHorizontal: 16,
-            flexDirection: 'row',
-            justifyContent: 'center',
-            gap: 8
-          }}>
-          <Icons.Alert.AlertCircle color={colors.$textDanger} />
-          <Text
-            variant="caption"
-            sx={{ fontWeight: 500, color: colors.$textDanger }}>
-            {errorMessage}
-          </Text>
-        </View>
-      )
-    }
-
-    if (tokenBalance && token?.tokenWithBalance.symbol) {
-      return (
-        <View
-          sx={{
-            alignItems: 'center',
-            marginTop: 12,
-            marginHorizontal: 16,
-            flexDirection: 'row',
-            justifyContent: 'center'
-          }}>
-          <Text
-            variant="caption"
-            sx={{
-              fontWeight: 500,
-              color: colors.$textPrimary
-            }}>
-            {'Balance: '}
-          </Text>
-          <SubTextNumber
-            number={Number(tokenBalance.toDisplay({ asNumber: true }))}
-            textColor={colors.$textPrimary}
-            textVariant="caption"
-          />
-          <Text
-            variant="caption"
-            sx={{
-              fontWeight: 500,
-              color: colors.$textPrimary
-            }}>
-            {' ' + token.tokenWithBalance.symbol}
-          </Text>
-        </View>
-      )
-    }
-  }, [
-    colors.$textDanger,
-    colors.$textPrimary,
-    errorMessage,
-    token?.tokenWithBalance.symbol,
-    tokenBalance
-  ])
-
   const renderPayWith = useCallback(() => {
     return (
-      <Pressable
-        onPress={handleSelectPaymentMethod}
-        sx={{
-          marginTop: 12,
-          flexDirection: 'row',
-          alignItems: 'center',
-          borderRadius: 12,
-          justifyContent: 'space-between',
-          padding: 17,
-          backgroundColor: colors.$surfaceSecondary
-        }}>
-        <Text
-          variant="body1"
+      paymentMethodToDisplay && (
+        <Pressable
+          onPress={handleSelectPaymentMethod}
           sx={{
-            fontSize: 16,
-            lineHeight: 22,
-            fontWeight: 400,
-            color: colors.$textPrimary
+            marginTop: 12,
+            flexDirection: 'row',
+            alignItems: 'center',
+            borderRadius: 12,
+            justifyContent: 'space-between',
+            padding: 17,
+            backgroundColor: colors.$surfaceSecondary
           }}>
-          {category === ServiceProviderCategories.CRYPTO_ONRAMP
-            ? 'Pay with'
-            : 'Withdraw to'}
-        </Text>
-        <View sx={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-          {isLoadingDefaultsByCountry ? (
-            <ActivityIndicator size="small" color={colors.$textPrimary} />
-          ) : (
-            <>
-              <View sx={{ justifyContent: 'center', alignItems: 'flex-end' }}>
-                {paymentMethodToDisplay && (
+          <Text
+            variant="body1"
+            sx={{
+              fontSize: 16,
+              lineHeight: 22,
+              fontWeight: 400,
+              color: colors.$textPrimary
+            }}>
+            Pay with
+          </Text>
+          <View sx={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+            {isLoadingDefaultsByCountry ? (
+              <ActivityIndicator size="small" color={colors.$textPrimary} />
+            ) : (
+              <>
+                <View sx={{ justifyContent: 'center', alignItems: 'flex-end' }}>
                   <Text
                     variant="body2"
                     sx={{
@@ -232,23 +158,24 @@ export const SelectAmount = ({
                     }}>
                     {paymentMethodToDisplay}
                   </Text>
-                )}
-                {renderServiceProvider()}
-              </View>
-              <View sx={{ marginLeft: 8 }}>
-                <Icons.Navigation.ChevronRightV2 color={colors.$textPrimary} />
-              </View>
-            </>
-          )}
-        </View>
-      </Pressable>
+                  {renderServiceProvider()}
+                </View>
+                <View sx={{ marginLeft: 8 }}>
+                  <Icons.Navigation.ChevronRightV2
+                    color={colors.$textPrimary}
+                  />
+                </View>
+              </>
+            )}
+          </View>
+        </Pressable>
+      )
     )
   }, [
     paymentMethodToDisplay,
     handleSelectPaymentMethod,
     colors.$surfaceSecondary,
     colors.$textPrimary,
-    category,
     isLoadingDefaultsByCountry,
     renderServiceProvider
   ])
@@ -257,8 +184,8 @@ export const SelectAmount = ({
     <ScrollScreen
       bottomOffset={150}
       isModal
-      title={title}
-      navigationTitle={navigationTitle}
+      title={`${'How much do\nyou like to buy?'}`}
+      navigationTitle="Enter buy amount"
       renderFooter={renderFooter}
       shouldAvoidKeyboard
       contentContainerStyle={{
@@ -266,7 +193,7 @@ export const SelectAmount = ({
       }}>
       {/* Select Token */}
       <Pressable
-        onPress={onSelectToken}
+        onPress={handleSelectToken}
         sx={{
           marginTop: 12,
           flexDirection: 'row',
@@ -309,7 +236,7 @@ export const SelectAmount = ({
       {tokenBalance && (
         <FiatAmountInputWidget
           isAmountValid={errorMessage === undefined}
-          disabled={isLoadingTradeLimits}
+          disabled={isLoadingPurchaseLimits}
           sx={{ marginTop: 12 }}
           currency={selectedCurrency}
           amount={sourceAmount}
@@ -318,12 +245,28 @@ export const SelectAmount = ({
             formatIntegerCurrency({ amount: amt, withoutCurrencySuffix: true })
           }
           formatInCurrency={amt => formatCurrency({ amount: amt })}
-          formatInSubTextNumber={formatInSubTextNumber}
+          formatInTokenUnit={formatInTokenUnit}
         />
       )}
-      {/* token balance or error message */}
-      {renderCaption()}
-      {/* Pay with / Withdraw to */}
+      {errorMessage && (
+        <View
+          sx={{
+            alignItems: 'center',
+            marginTop: 12,
+            marginHorizontal: 16,
+            flexDirection: 'row',
+            justifyContent: 'center',
+            gap: 8
+          }}>
+          <Icons.Alert.AlertCircle color={colors.$textDanger} />
+          <Text
+            variant="caption"
+            sx={{ fontWeight: 500, color: colors.$textDanger }}>
+            {errorMessage}
+          </Text>
+        </View>
+      )}
+      {/* Pay with */}
       {renderPayWith()}
     </ScrollScreen>
   )

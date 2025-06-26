@@ -1,1 +1,1 @@
-export { BuyTokenScreen as default } from 'features/meldOnramp/screens/BuyTokenScreen'
+export { SelectTokenScreen as default } from 'features/meld/meldOnramp/screens/SelectTokenScreen'
