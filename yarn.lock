@@ -234,6 +234,9 @@ __metadata:
     "@dlenroc/testrail": 1.9.1
     "@ethereumjs/common": 4.4.0
     "@ethereumjs/tx": 5.4.0
+    "@formatjs/intl-locale": 4.2.11
+    "@formatjs/intl-numberformat": 8.15.4
+    "@formatjs/intl-pluralrules": 5.4.4
     "@gorhom/bottom-sheet": 4.6.4
     "@hookform/resolvers": 3.9.0
     "@invertase/react-native-apple-authentication": 2.4.0
@@ -6209,6 +6212,91 @@ __metadata:
   version: 0.2.1
   resolution: "@floating-ui/utils@npm:0.2.1"
   checksum: 9ed4380653c7c217cd6f66ae51f20fdce433730dbc77f95b5abfb5a808f5fdb029c6ae249b4e0490a816f2453aa6e586d9a873cd157fdba4690f65628efc6e06
+  languageName: node
+  linkType: hard
+
+"@formatjs/ecma402-abstract@npm:2.3.4":
+  version: 2.3.4
+  resolution: "@formatjs/ecma402-abstract@npm:2.3.4"
+  dependencies:
+    "@formatjs/fast-memoize": 2.2.7
+    "@formatjs/intl-localematcher": 0.6.1
+    decimal.js: ^10.4.3
+    tslib: ^2.8.0
+  checksum: ee41278ab4d587e0c9e82d8ed9d46440297a547fac10eb4bee922c65c99a1cf00db154da02d7c80682bb010222e6fbe5a1cad72d64a94052544e76c9119a7513
+  languageName: node
+  linkType: hard
+
+"@formatjs/fast-memoize@npm:2.2.7":
+  version: 2.2.7
+  resolution: "@formatjs/fast-memoize@npm:2.2.7"
+  dependencies:
+    tslib: ^2.8.0
+  checksum: e7e6efc677d63a13d99a854305db471b69f64cbfebdcb6dbe507dab9aa7eaae482ca5de86f343c856ca0a2c8f251672bd1f37c572ce14af602c0287378097d43
+  languageName: node
+  linkType: hard
+
+"@formatjs/intl-enumerator@npm:1.8.10":
+  version: 1.8.10
+  resolution: "@formatjs/intl-enumerator@npm:1.8.10"
+  dependencies:
+    "@formatjs/ecma402-abstract": 2.3.4
+    tslib: ^2.8.0
+  checksum: f3d0251247ba028904e19d0c35036ac36bce919216f323e225b50794629ccf959f5185577ffd483c1269e1a00dad807117f962fc169726f1501949d9d0c2eb09
+  languageName: node
+  linkType: hard
+
+"@formatjs/intl-getcanonicallocales@npm:2.5.5":
+  version: 2.5.5
+  resolution: "@formatjs/intl-getcanonicallocales@npm:2.5.5"
+  dependencies:
+    tslib: ^2.8.0
+  checksum: de2d948507b24452182e5ea249682050641d3607961bb6032b7ed1b6b03c3f7685ee76183831e8c2ce6229d4a2841e0145e4f9d037dd1bb592c3f11555b60886
+  languageName: node
+  linkType: hard
+
+"@formatjs/intl-locale@npm:4.2.11":
+  version: 4.2.11
+  resolution: "@formatjs/intl-locale@npm:4.2.11"
+  dependencies:
+    "@formatjs/ecma402-abstract": 2.3.4
+    "@formatjs/intl-enumerator": 1.8.10
+    "@formatjs/intl-getcanonicallocales": 2.5.5
+    tslib: ^2.8.0
+  checksum: 0877103042e894a73c90e08d9e66256d11752c13228b9009b61676f7a5a0fab9a7f6321dbae4534e9a7cb7ef92454588df869e467153bc7ba004506f8c7cfda2
+  languageName: node
+  linkType: hard
+
+"@formatjs/intl-localematcher@npm:0.6.1":
+  version: 0.6.1
+  resolution: "@formatjs/intl-localematcher@npm:0.6.1"
+  dependencies:
+    tslib: ^2.8.0
+  checksum: 1c7e67f079f18bfd25f42d7f32bcb829d79708dba58408807e2b81ce16da812f48d958e0ad51af37faa8080042bc927dcf5b2cef63954316882d4cc007f53077
+  languageName: node
+  linkType: hard
+
+"@formatjs/intl-numberformat@npm:8.15.4":
+  version: 8.15.4
+  resolution: "@formatjs/intl-numberformat@npm:8.15.4"
+  dependencies:
+    "@formatjs/ecma402-abstract": 2.3.4
+    "@formatjs/intl-localematcher": 0.6.1
+    decimal.js: ^10.4.3
+    tslib: ^2.8.0
+  checksum: 7a8834d96b9c87398420b561c63ddc40cc6f401cc192bb7f8db8953f981c28239370834a7bc2ce6c31dec2175532cd6754e1f9dfaaa0a1b5c3b5fa2b3e7431cf
+  languageName: node
+  linkType: hard
+
+"@formatjs/intl-pluralrules@npm:5.4.4":
+  version: 5.4.4
+  resolution: "@formatjs/intl-pluralrules@npm:5.4.4"
+  dependencies:
+    "@formatjs/ecma402-abstract": 2.3.4
+    "@formatjs/intl-localematcher": 0.6.1
+    decimal.js: ^10.4.3
+    tslib: ^2.8.0
+  checksum: a61bdd6a84ecb76a2d1c2e2b6bd3726de7d38f831189b53fc736aee7d12d127c17b635d51e56ed51c170609a96e0cb0d7f5c0aa622fcfbc462a105374c96a646
   languageName: node
   linkType: hard
 
@@ -17559,6 +17647,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"decimal.js@npm:^10.4.3":
+  version: 10.5.0
+  resolution: "decimal.js@npm:10.5.0"
+  checksum: 91c6b53b5dd2f39a05535349ced6840f591d1f914e3c025c6dcec6ffada6e3cfc8dc3f560d304b716be9a9aece3567a7f80f6aff8f38d11ab6f78541c3a91a01
+  languageName: node
+  linkType: hard
+
 "decode-uri-component@npm:^0.2.2":
   version: 0.2.2
   resolution: "decode-uri-component@npm:0.2.2"
@@ -28230,7 +28325,7 @@ react-native-webview@ava-labs/react-native-webview:
   peerDependencies:
     react: "*"
     react-native: "*"
-  checksum: ae658f8c94177d1b419ffb73d26bd70474b6c688af507daaabc11451f983f77a906b2aafcdfdd09c96cab846d9722dcaf26a7c22ee7d19fb4cf70578c8812ac5
+  checksum: f7ac158dbe58d410185c45bcdd1ae1bbdab3d3548940e2e1e1ef792a33996713d40bb4ee7c7420f078f013954c78d43b11eb5884ab0d786da781936be78a41cd
   languageName: node
   linkType: hard
 
@@ -31313,7 +31408,7 @@ react-native-webview@ava-labs/react-native-webview:
   languageName: node
   linkType: hard
 
-"tslib@npm:2.8.1":
+"tslib@npm:2.8.1, tslib@npm:^2.8.0":
   version: 2.8.1
   resolution: "tslib@npm:2.8.1"
   checksum: e4aba30e632b8c8902b47587fd13345e2827fa639e7c3121074d5ee0880723282411a8838f830b55100cbe4517672f84a2472667d355b81e8af165a55dc6203a
