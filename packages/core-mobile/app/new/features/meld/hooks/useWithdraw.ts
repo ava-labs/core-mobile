@@ -23,7 +23,7 @@ export const useWithdraw = (): {
 } => {
   const { navigate } = useRouter()
   const [_meldToken, setMeldToken] = useMeldToken()
-  const isMeldIntegrationBlocked = useSelector(selectIsMeldOfframpBlocked)
+  const isMeldOfframpBlocked = useSelector(selectIsMeldOfframpBlocked)
   const { data: cryptoCurrencies, isLoading: isLoadingCryptoCurrencies } =
     useSearchCryptoCurrencies({
       categories: [ServiceProviderCategories.CRYPTO_OFFRAMP]
@@ -58,7 +58,7 @@ export const useWithdraw = (): {
   const navigateToWithdraw = useCallback(
     (props?: NavigateToWithdrawParams) => {
       const { token, address } = props ?? {}
-      if (isMeldIntegrationBlocked) {
+      if (isMeldOfframpBlocked) {
         return
       }
 
@@ -73,27 +73,22 @@ export const useWithdraw = (): {
       // @ts-ignore TODO: make routes typesafe
       navigate('/meld/offramp')
     },
-    [
-      getTradableCryptoCurrency,
-      isMeldIntegrationBlocked,
-      navigate,
-      setMeldToken
-    ]
+    [getTradableCryptoCurrency, isMeldOfframpBlocked, navigate, setMeldToken]
   )
 
   const navigateToWithdrawAvax = useCallback(() => {
-    if (avax === undefined) return
+    if (avax === undefined || isMeldOfframpBlocked) return
     setMeldToken(avax)
     // @ts-ignore TODO: make routes typesafe
     navigate('/meld/offramp/selectWithdrawAmount')
-  }, [avax, navigate, setMeldToken])
+  }, [avax, isMeldOfframpBlocked, navigate, setMeldToken])
 
   const navigateToWithdrawUsdc = useCallback(() => {
-    if (usdc === undefined) return
+    if (usdc === undefined || isMeldOfframpBlocked) return
     setMeldToken(usdc)
     // @ts-ignore TODO: make routes typesafe
     navigate('/meld/offramp/selectWithdrawAmount')
-  }, [usdc, navigate, setMeldToken])
+  }, [usdc, isMeldOfframpBlocked, navigate, setMeldToken])
 
   return {
     navigateToWithdraw,
