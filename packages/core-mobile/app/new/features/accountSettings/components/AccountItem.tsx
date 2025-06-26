@@ -54,7 +54,7 @@ export const AccountItem = memo(
       // CP-10570: Balances should never show $0.00
       return accountBalance === 0
         ? ''
-        : formatCurrency({ amount: accountBalance })
+        : formatCurrency({ amount: accountBalance, notation: 'compact' })
     }, [accountBalance, formatCurrency])
 
     const containerBackgroundColor = isActive
