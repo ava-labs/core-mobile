@@ -11,6 +11,9 @@ export const securityPrivacySlice = createSlice({
     setCoreAnalytics: (state, action: PayloadAction<boolean | undefined>) => {
       state.coreAnalytics = action.payload
     },
+    setLockWalletWithPIN: (state, action: PayloadAction<boolean>) => {
+      state.lockWalletWithPIN = action.payload
+    },
     /**
      * Set Terms of use and Privacy policy consent
      */
@@ -28,6 +31,11 @@ export const selectCoreAnalyticsConsent = (
   state: RootState
 ): boolean | undefined => state.settings.securityPrivacy.coreAnalytics
 
+// selectors
+export const selectLockWalletWithPIN = (
+  state: RootState
+): boolean | undefined => state.settings.securityPrivacy.coreAnalytics
+
 /**
  * Select Terms of use and Privacy policy consent
  * @param state
@@ -39,7 +47,11 @@ export const selectIsPrivacyModeEnabled = (state: RootState): boolean =>
   state.settings.securityPrivacy.privacyModeEnabled
 
 // actions
-export const { setCoreAnalytics, setTouAndPpConsent, togglePrivacyMode } =
-  securityPrivacySlice.actions
+export const {
+  setCoreAnalytics,
+  setTouAndPpConsent,
+  togglePrivacyMode,
+  setLockWalletWithPIN
+} = securityPrivacySlice.actions
 
 export const securityPrivacyReducer = securityPrivacySlice.reducer

@@ -15,7 +15,9 @@ import AnalyticsService from 'services/analytics/AnalyticsService'
 import { WalletType } from 'services/wallet/types'
 import {
   selectCoreAnalyticsConsent,
-  setCoreAnalytics
+  selectLockWalletWithPIN,
+  setCoreAnalytics,
+  setLockWalletWithPIN
 } from 'store/settings/securityPrivacy'
 import { useStoredBiometrics } from 'common/hooks/useStoredBiometrics'
 import BiometricsSDK from 'utils/BiometricsSDK'
@@ -28,6 +30,7 @@ const SecurityAndPrivacyScreen = (): JSX.Element => {
   } = useTheme()
   const dispatch = useDispatch()
   const coreAnalyticsConsent = useSelector(selectCoreAnalyticsConsent)
+  const lockWalletWithPIN = useSelector(selectLockWalletWithPIN)
   const { allApprovedDapps } = useConnectedDapps()
   const wallet = useActiveWallet()
   const {
@@ -149,6 +152,30 @@ const SecurityAndPrivacyScreen = (): JSX.Element => {
     ]
   }, [coreAnalyticsConsent, handleToggleCoreAnalyticsConsent])
 
+  const handleToggleLockWalletWithPIN = useCallback(
+    (value: boolean): void => {
+      dispatch(setLockWalletWithPIN(value))
+    },
+    [dispatch]
+  )
+
+  const lockWalletWithPINData = useMemo(() => {
+    return [
+      {
+        title: 'Lock wallet with PIN',
+        value: (
+          <Toggle
+            onValueChange={() =>
+              handleToggleLockWalletWithPIN(!lockWalletWithPIN)
+            }
+            testID={lockWalletWithPIN ? 'pin_enabled' : 'pin_disabled'}
+            value={lockWalletWithPIN}
+          />
+        )
+      }
+    ]
+  }, [lockWalletWithPIN, handleToggleLockWalletWithPIN])
+
   return (
     <ScrollScreen
       title={`Security\n& privacy`}
@@ -166,6 +193,16 @@ const SecurityAndPrivacyScreen = (): JSX.Element => {
         valueSx={{ fontSize: 16, lineHeight: 22 }}
       />
       <Space y={24} />
+      <GroupList
+        data={lockWalletWithPINData}
+        titleSx={{
+          fontSize: 16,
+          lineHeight: 22,
+          fontFamily: 'Inter-Regular'
+        }}
+        separatorMarginRight={16}
+      />
+      <Space y={12} />
       <GroupList
         data={pinAndBiometricData}
         titleSx={{
