@@ -12,7 +12,7 @@ import { useIsSwappable } from 'common/hooks/useIsSwapable'
 import { selectIsSwapBlocked } from 'store/posthog'
 import { getTokenAddress, getTokenChainId } from 'features/track/utils/utils'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
-import { useBuy } from 'features/meldOnramp/hooks/useBuy'
+import { useBuy } from 'features/meld/hooks/useBuy'
 import { useActiveAccount } from 'common/hooks/useActiveAccount'
 import { TrendingTokenListItem } from './TrendingTokenListItem'
 

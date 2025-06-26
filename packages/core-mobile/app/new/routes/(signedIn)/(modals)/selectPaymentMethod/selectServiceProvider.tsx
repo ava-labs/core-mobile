@@ -1,1 +1,1 @@
-export { SelectServiceProviderScreen as default } from 'features/meldOnramp/screens/SelectServiceProviderScreen'
+export { SelectServiceProviderScreen as default } from 'features/meld/meldOnramp/screens/SelectServiceProviderScreen'
