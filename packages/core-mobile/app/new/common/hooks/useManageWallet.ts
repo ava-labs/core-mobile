@@ -147,10 +147,13 @@ export const useManageWallet = (): {
       }
     ]
 
-    // Only show add account option for mnemonic wallets
+    // Only show add account option for mnemonic and seedless wallets
     if (activeDropdownWalletId) {
       const wallet = wallets[activeDropdownWalletId]
-      if (wallet?.type === WalletType.MNEMONIC) {
+      if (
+        wallet?.type &&
+        [WalletType.MNEMONIC, WalletType.SEEDLESS].includes(wallet?.type)
+      ) {
         baseItems.push({
           id: 'add_account',
           title: 'Add account to this wallet'
