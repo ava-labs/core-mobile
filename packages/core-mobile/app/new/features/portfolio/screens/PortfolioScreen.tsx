@@ -68,7 +68,7 @@ import { selectSelectedCurrency } from 'store/settings/currency'
 import { selectIsPrivacyModeEnabled } from 'store/settings/securityPrivacy'
 import { RootState } from 'store/types'
 import { useFocusedSelector } from 'utils/performance/useFocusedSelector'
-import { useBuy } from 'features/meldOnramp/hooks/useBuy'
+import { useBuy } from 'features/meld/hooks/useBuy'
 
 const SEGMENT_ITEMS = ['Assets', 'Collectibles', 'DeFi']
 

@@ -1,0 +1,110 @@
+import { useRouter } from 'expo-router'
+import { useCallback } from 'react'
+import { useSelector } from 'react-redux'
+import { selectIsMeldIntegrationBlocked } from 'store/posthog'
+import { useMemo } from 'react'
+import { useOnrampToken } from '../meldOnramp/store'
+import { MELD_CURRENCY_CODES, ServiceProviderCategories } from '../consts'
+import { LocalTokenWithBalance } from '../../../../store/balance/types'
+import { useSearchCryptoCurrencies } from './useSearchCryptoCurrencies'
+import { useGetTradableCryptoCurrency } from './useGetTradableCryptoCurrency'
+
+type NavigateToBuyParams = {
+  showAvaxWarning?: boolean
+  token?: LocalTokenWithBalance
+  address?: string
+}
+
+export const useBuy = (): {
+  navigateToBuy: (props?: NavigateToBuyParams) => void
+  navigateToBuyAvax: () => void
+  navigateToBuyUsdc: () => void
+  isBuyable: (token?: LocalTokenWithBalance, address?: string) => boolean
+  isLoadingCryptoCurrencies: boolean
+} => {
+  const { navigate } = useRouter()
+  const [_onrampToken, setOnrampToken] = useOnrampToken()
+  const isMeldIntegrationBlocked = useSelector(selectIsMeldIntegrationBlocked)
+  const { data: cryptoCurrencies, isLoading: isLoadingCryptoCurrencies } =
+    useSearchCryptoCurrencies({
+      categories: [ServiceProviderCategories.CRYPTO_ONRAMP]
+    })
+  const { getTradableCryptoCurrency } = useGetTradableCryptoCurrency()
+
+  const isBuyable = useCallback(
+    (token?: LocalTokenWithBalance, address?: string) => {
+      return getTradableCryptoCurrency(token, address) !== undefined
+    },
+    [getTradableCryptoCurrency]
+  )
+
+  const avax = useMemo(
+    () =>
+      cryptoCurrencies?.find(
+        token => token.currencyCode === MELD_CURRENCY_CODES.AVAXC
+      ),
+    [cryptoCurrencies]
+  )
+
+  const usdc = useMemo(
+    () =>
+      cryptoCurrencies?.find(
+        token => token.currencyCode === MELD_CURRENCY_CODES.USDC_AVAXC
+      ),
+    [cryptoCurrencies]
+  )
+
+  const navigateToBuy = useCallback(
+    (props?: NavigateToBuyParams) => {
+      const { token, address, showAvaxWarning } = props ?? {}
+      if (isMeldIntegrationBlocked) {
+        navigate({
+          // @ts-ignore TODO: make routes typesafe
+          pathname: '/buy',
+          params: { showAvaxWarning: showAvaxWarning?.toString() }
+        })
+        return
+      }
+
+      if (token || address) {
+        const cryptoCurrency = getTradableCryptoCurrency(token, address)
+        setOnrampToken(cryptoCurrency)
+        // @ts-ignore TODO: make routes typesafe
+        navigate('/meldOnramp/selectBuyAmount')
+        return
+      }
+      setOnrampToken(undefined)
+      // @ts-ignore TODO: make routes typesafe
+      navigate('/meldOnramp')
+    },
+    [
+      getTradableCryptoCurrency,
+      isMeldIntegrationBlocked,
+      navigate,
+      setOnrampToken
+    ]
+  )
+
+  const navigateToBuyAvax = useCallback(() => {
+    if (avax === undefined) return
+    setOnrampToken(avax)
+
+    // @ts-ignore TODO: make routes typesafe
+    navigate('/meldOnramp/selectBuyAmount')
+  }, [avax, navigate, setOnrampToken])
+
+  const navigateToBuyUsdc = useCallback(() => {
+    if (usdc === undefined) return
+    setOnrampToken(usdc)
+    // @ts-ignore TODO: make routes typesafe
+    navigate('/meldOnramp/selectBuyAmount')
+  }, [usdc, navigate, setOnrampToken])
+
+  return {
+    navigateToBuy,
+    navigateToBuyAvax,
+    navigateToBuyUsdc,
+    isBuyable,
+    isLoadingCryptoCurrencies
+  }
+}
