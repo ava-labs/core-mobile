@@ -30,7 +30,10 @@ import {
   RpcMethod
 } from '@avalabs/vm-module-types'
 import { isTypedData } from '@avalabs/evm-module'
+import { strip0x } from '@avalabs/core-utils-sdk/dist'
 import { Curve } from 'utils/publicKeys'
+import { ed25519 } from '@noble/curves/ed25519'
+import { hex } from '@scure/base'
 
 export class PrivateKeyWallet implements Wallet {
   #privateKey?: string
@@ -112,11 +115,26 @@ export class PrivateKeyWallet implements Wallet {
     }
   }
 
-  public getPublicKeyFor(_path: string, _curve: Curve): Promise<string> {
-    const pubKey = getPublicKeyFromPrivateKey(
-      Buffer.from(this.privateKey, 'hex')
-    )
-    return Promise.resolve(pubKey.toString('hex'))
+  public getPublicKeyFor({ curve }: { curve: Curve }): Promise<string> {
+    const strippedPk = strip0x(this.privateKey)
+    let key: string
+
+    switch (curve) {
+      case Curve.SECP256K1: {
+        key = hex.encode(new Uint8Array(getPublicKeyFromPrivateKey(strippedPk)))
+        break
+      }
+
+      case Curve.ED25519: {
+        key = hex.encode(ed25519.getPublicKey(strippedPk))
+        break
+      }
+
+      default:
+        throw new Error('Unsupported curve: ' + curve)
+    }
+
+    return Promise.resolve(key)
   }
   public get privateKey(): string {
     assertNotUndefined(this.#privateKey, 'no private key available')
@@ -323,6 +341,10 @@ export class PrivateKeyWallet implements Wallet {
       accountIndex,
       provXP
     )) as Avalanche.StaticSigner
+  }
+
+  public matchesPrivateKey(privateKey: string): boolean {
+    return this.privateKey.toLowerCase() === privateKey.toLowerCase()
   }
 
   private signAvalancheMessage = async (

@@ -11,8 +11,6 @@ import { SeedlessPubKeysStorage } from 'seedless/services/storage/SeedlessPubKey
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import SeedlessService from 'seedless/services/SeedlessService'
 import { isEvmPublicKey } from 'utils/publicKeys'
-import { selectActiveNetwork } from 'store/network'
-import { Network } from '@avalabs/core-chains-sdk'
 import { recentAccountsStore } from 'new/features/accountSettings/store'
 import { selectActiveWallet, selectActiveWalletId } from 'store/wallet/slice'
 import BiometricsSDK from 'utils/BiometricsSDK'
@@ -35,7 +33,6 @@ const initAccounts = async (
 ): Promise<void> => {
   const state = listenerApi.getState()
   const isDeveloperMode = selectIsDeveloperMode(state)
-  const activeNetwork = selectActiveNetwork(state)
   const activeWallet = selectActiveWallet(state)
   let accounts: AccountCollection = {}
 
@@ -62,7 +59,7 @@ const initAccounts = async (
   const acc = await accountService.createNextAccount({
     index: 0,
     walletType: activeWallet.type,
-    network: activeNetwork,
+    isTestnet: isDeveloperMode,
     walletId: activeWallet.id,
     name: `Account 1`
   })
@@ -137,7 +134,7 @@ const fetchRemainingAccounts = async ({
    * otherwise race conditions occur and addresses get mixed up.
    */
   const state = listenerApi.getState()
-  const activeNetwork = selectActiveNetwork(state)
+  const isDeveloperMode = selectIsDeveloperMode(state)
   const pubKeys = await SeedlessPubKeysStorage.retrieve()
   const numberOfAccounts = pubKeys.filter(isEvmPublicKey).length
 
@@ -152,7 +149,7 @@ const fetchRemainingAccounts = async ({
     const acc = await accountService.createNextAccount({
       index: i,
       walletType,
-      network: activeNetwork,
+      isTestnet: isDeveloperMode,
       walletId: activeWalletId,
       name: `Account ${i + 1}`
     })
@@ -178,15 +175,10 @@ const reloadAccounts = async (
     throw new Error('Active wallet is not set')
   }
 
-  // all vm modules need is just the isTestnet flag
-  const network = {
-    isTestnet: isDeveloperMode
-  } as Network
-
   const accounts = selectAccounts(state)
   const reloadedAccounts = await accountService.reloadAccounts({
     accounts: accounts,
-    network: network as Network,
+    isTestnet: isDeveloperMode,
     walletId: activeWallet.id,
     walletType: activeWallet.type
   })
