@@ -235,17 +235,17 @@ export const SwapScreen = (): JSX.Element => {
   ])
 
   const showFeesAndSlippage = useMemo(() => {
-    return quote && isParaswapQuote(quote)
-  }, [quote])
+    return (quote && isParaswapQuote(quote)) || errorMessage.length
+  }, [errorMessage, quote])
 
   const handleSwap = useCallback(() => {
     AnalyticsService.capture('SwapReviewOrder', {
       destinationInputField: destination,
-      slippageTolerance: showFeesAndSlippage ? slippage : undefined
+      slippageTolerance: slippage
     })
 
     swap()
-  }, [swap, destination, slippage, showFeesAndSlippage])
+  }, [swap, destination, slippage])
 
   const handleFromAmountChange = useCallback(
     (amount: bigint): void => {
@@ -410,7 +410,7 @@ export const SwapScreen = (): JSX.Element => {
       })
     }
 
-    showFeesAndSlippage &&
+    if (showFeesAndSlippage) {
       items.push({
         title: 'Slippage tolerance',
         accessory: (
@@ -421,13 +421,14 @@ export const SwapScreen = (): JSX.Element => {
           />
         )
       })
+    }
 
     return items
   }, [
-    toToken,
     fromToken,
-    showFeesAndSlippage,
+    toToken,
     rate,
+    showFeesAndSlippage,
     slippage,
     setSlippage,
     swapInProcess
