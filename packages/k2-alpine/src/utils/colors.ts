@@ -30,10 +30,6 @@ export function getButtonBackgroundColor(
   type: ButtonType,
   theme: K2AlpineTheme
 ): string | undefined {
-  if (type === 'tertiary') {
-    return 'transparent'
-  }
-
   switch (type) {
     case 'primary':
       return theme.isDark
@@ -43,6 +39,8 @@ export function getButtonBackgroundColor(
       return theme.isDark
         ? alpha('#ffffff', 0.1)
         : alpha(colors.$neutral850, 0.1)
+    case 'tertiary':
+      return 'transparent'
   }
 }
 
@@ -50,16 +48,14 @@ export const getButtonTintColor = (
   type: ButtonType,
   theme: K2AlpineTheme
 ): string | undefined => {
-  if (type === 'tertiary') {
-    return theme.colors.$textPrimary
-  }
-
   switch (type) {
     case 'primary':
       return theme.isDark
         ? lightModeColors.$textPrimary
         : darkModeColors.$textPrimary
     case 'secondary':
+      return theme.colors.$textPrimary
+    case 'tertiary':
       return theme.colors.$textPrimary
   }
 }
