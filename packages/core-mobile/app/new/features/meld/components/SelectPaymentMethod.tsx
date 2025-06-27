@@ -13,34 +13,35 @@ import { useRouter } from 'expo-router'
 import { Space } from 'common/components/Space'
 import { LoadingState } from 'common/components/LoadingState'
 import { portfolioTabContentHeight } from 'features/portfolio/utils'
-import { useSearchPaymentMethods } from '../../hooks/useSearchPaymentMethods'
-import { useOnrampPaymentMethod, useOnrampServiceProvider } from '../store'
+import { useSearchPaymentMethods } from '../hooks/useSearchPaymentMethods'
+import { useMeldPaymentMethod, useMeldServiceProvider } from '../store'
 import {
   PaymentMethodNames,
   ServiceProviderCategories,
   PaymentMethodTimeLimits
-} from '../../consts'
-import { PaymentMethodIcon } from '../../components/PaymentMethodIcon'
+} from '../consts'
+import { PaymentMethodIcon } from './PaymentMethodIcon'
 
-export const SelectPaymentMethodScreen = (): React.JSX.Element => {
+export const SelectPaymentMethod = ({
+  category,
+  title,
+  onSelectServiceProvider
+}: {
+  category: ServiceProviderCategories
+  title: string
+  onSelectServiceProvider: () => void
+}): React.JSX.Element => {
   const {
     theme: { colors }
   } = useTheme()
-  const { navigate, back, canGoBack } = useRouter()
-  const [onRampPaymentMethod, setOnRampPaymentMethod] = useOnrampPaymentMethod()
-  const [onrampServiceProvider] = useOnrampServiceProvider()
+  const { back, canGoBack } = useRouter()
+  const [meldPaymentMethod, setMeldPaymentMethod] = useMeldPaymentMethod()
+  const [meldServiceProvider] = useMeldServiceProvider()
   const { data: paymentMethods, isLoading: isLoadingPaymentMethods } =
     useSearchPaymentMethods({
-      categories: [ServiceProviderCategories.CRYPTO_ONRAMP],
-      serviceProviders: onrampServiceProvider
-        ? [onrampServiceProvider]
-        : undefined
+      categories: [category],
+      serviceProviders: meldServiceProvider ? [meldServiceProvider] : undefined
     })
-
-  const handleSelectServiceProvider = useCallback(() => {
-    // @ts-ignore TODO: make routes typesafe
-    navigate('/selectPaymentMethod/selectServiceProvider')
-  }, [navigate])
 
   const dismissPaymentMethod = useCallback(() => {
     canGoBack() && back()
@@ -50,7 +51,7 @@ export const SelectPaymentMethodScreen = (): React.JSX.Element => {
     return (
       <View>
         <Pressable
-          onPress={handleSelectServiceProvider}
+          onPress={onSelectServiceProvider}
           sx={{
             marginTop: 12,
             flexDirection: 'row',
@@ -90,11 +91,7 @@ export const SelectPaymentMethodScreen = (): React.JSX.Element => {
         </View>
       </View>
     )
-  }, [
-    colors.$surfaceSecondary,
-    colors.$textPrimary,
-    handleSelectServiceProvider
-  ])
+  }, [colors.$surfaceSecondary, colors.$textPrimary, onSelectServiceProvider])
 
   const renderFooter = useCallback(() => {
     // TODO: go to webview screen or go to amount screen
@@ -117,9 +114,9 @@ export const SelectPaymentMethodScreen = (): React.JSX.Element => {
           ? PaymentMethodTimeLimits[paymentMethod.paymentMethod]
           : '',
         onPress: () =>
-          setOnRampPaymentMethod(paymentMethod.paymentMethod ?? undefined),
+          setMeldPaymentMethod(paymentMethod.paymentMethod ?? undefined),
         accessory:
-          onRampPaymentMethod === paymentMethod.paymentMethod ? (
+          meldPaymentMethod === paymentMethod.paymentMethod ? (
             <Icons.Custom.CheckSmall color={colors.$textPrimary} />
           ) : (
             <></>
@@ -129,15 +126,15 @@ export const SelectPaymentMethodScreen = (): React.JSX.Element => {
     })
   }, [
     colors.$textPrimary,
-    onRampPaymentMethod,
+    meldPaymentMethod,
     paymentMethods,
-    setOnRampPaymentMethod
+    setMeldPaymentMethod
   ])
 
   return (
     <ScrollScreen
       isModal
-      title="Pay with"
+      title={title}
       renderHeader={renderHeader}
       renderFooter={renderFooter}
       contentContainerStyle={{

@@ -1,6 +1,6 @@
 import React, { useCallback } from 'react'
 import { useRouter } from 'expo-router'
-import { SelectToken } from 'features/meld/screens/SelectToken'
+import { SelectToken } from 'features/meld/components/SelectToken'
 import { useWithdraw } from 'features/meld/hooks/useWithdraw'
 
 export const SelectTokenScreen = (): React.JSX.Element => {

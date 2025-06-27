@@ -63,13 +63,13 @@ export const SearchDefaultsByCountrySchema = object({
 }).passthrough()
 
 const AmountDetailsSchema = object({
-  defaultAmount: number().optional(),
-  minimumAmount: number().optional(),
-  maximumAmount: number().optional()
+  defaultAmount: number().optional().nullable(),
+  minimumAmount: number().optional().nullable(),
+  maximumAmount: number().optional().nullable()
 }).passthrough()
 
-export const GetPurchaseLimitsSchema = object({
-  countryCode: string().optional().nullable(),
+export const GetTradeLimitsSchema = object({
+  currencyCode: string().optional().nullable(),
   chainCode: string().optional().nullable(),
   defaultAmount: number().optional().nullable(),
   minimumAmount: number().optional().nullable(),

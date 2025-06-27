@@ -3,13 +3,14 @@ import { ReactQueryKeys } from 'consts/reactQueryKeys'
 import { isAndroid, isIOS } from 'utils/Utils'
 import { MeldDefaultParams, SearchDefaultsByCountry } from '../types'
 import MeldService from '../services/MeldService'
-import { PaymentMethods } from '../consts'
+import { PaymentMethods, ServiceProviderCategories } from '../consts'
 import { useLocale } from './useLocale'
 
 export type SearchDefaultsByCountryParams = MeldDefaultParams & {
   cryptoCurrencies?: string[]
 }
 
+// This hook is only used for crypto onramp
 export const useSearchDefaultsByCountry = ({
   categories,
   accountFilter = true
@@ -20,6 +21,7 @@ export const useSearchDefaultsByCountry = ({
   const { countryCode } = useLocale()
 
   return useQuery<SearchDefaultsByCountry[]>({
+    enabled: categories.includes(ServiceProviderCategories.CRYPTO_ONRAMP),
     queryKey: [
       ReactQueryKeys.MELD_SEARCH_DEFAULTS_BY_COUNTRY,
       categories,

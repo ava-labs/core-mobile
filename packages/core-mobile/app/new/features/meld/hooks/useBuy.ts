@@ -3,7 +3,7 @@ import { useCallback } from 'react'
 import { useSelector } from 'react-redux'
 import { selectIsMeldOnrampBlocked } from 'store/posthog'
 import { useMemo } from 'react'
-import { useOnrampToken } from '../meldOnramp/store'
+import { useMeldToken } from '../store'
 import { MELD_CURRENCY_CODES, ServiceProviderCategories } from '../consts'
 import { LocalTokenWithBalance } from '../../../../store/balance/types'
 import { useSearchCryptoCurrencies } from './useSearchCryptoCurrencies'
@@ -23,13 +23,15 @@ export const useBuy = (): {
   isLoadingCryptoCurrencies: boolean
 } => {
   const { navigate } = useRouter()
-  const [_onrampToken, setOnrampToken] = useOnrampToken()
+  const [_onrampToken, setOnrampToken] = useMeldToken()
   const isMeldOnrampBlocked = useSelector(selectIsMeldOnrampBlocked)
   const { data: cryptoCurrencies, isLoading: isLoadingCryptoCurrencies } =
     useSearchCryptoCurrencies({
       categories: [ServiceProviderCategories.CRYPTO_ONRAMP]
     })
-  const { getTradableCryptoCurrency } = useGetTradableCryptoCurrency()
+  const { getTradableCryptoCurrency } = useGetTradableCryptoCurrency({
+    category: ServiceProviderCategories.CRYPTO_ONRAMP
+  })
 
   const isBuyable = useCallback(
     (token?: LocalTokenWithBalance, address?: string) => {

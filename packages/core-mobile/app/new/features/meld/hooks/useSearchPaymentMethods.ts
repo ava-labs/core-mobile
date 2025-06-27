@@ -10,7 +10,7 @@ import {
 } from '../consts'
 import MeldService from '../services/MeldService'
 import { SearchPaymentMethods } from '../types'
-import { useOnrampToken } from '../meldOnramp/store'
+import { useMeldToken } from '../store'
 import { useLocale } from './useLocale'
 import { useSearchServiceProviders } from './useSearchServiceProviders'
 
@@ -31,10 +31,10 @@ export const useSearchPaymentMethods = ({
   SearchPaymentMethods[],
   Error
 > => {
-  const [onrampToken] = useOnrampToken()
+  const [meldToken] = useMeldToken()
   const selectedCurrency = useSelector(selectSelectedCurrency)
   const { data: serviceProvidersData } = useSearchServiceProviders({
-    categories: [ServiceProviderCategories.CRYPTO_ONRAMP]
+    categories
   })
   const _serviceProviders = serviceProvidersData?.map(
     serviceProvider => serviceProvider.serviceProvider
@@ -43,7 +43,7 @@ export const useSearchPaymentMethods = ({
   const serviceProviders = selectedServiceProviders ?? _serviceProviders
 
   const { countryCode } = useLocale()
-  const cryptoCurrencyCode = onrampToken?.currencyCode
+  const cryptoCurrencyCode = meldToken?.currencyCode
 
   return useQuery<SearchPaymentMethods[]>({
     queryKey: [

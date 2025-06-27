@@ -7,7 +7,7 @@ import {
   CreateCryptoQuoteSchema,
   CreateSessionWidgetBodySchema,
   CreateSessionWidgetSchema,
-  GetPurchaseLimitsSchema,
+  GetTradeLimitsSchema,
   SearchCountrySchema,
   SearchCryptoCurrencySchema,
   SearchDefaultsByCountrySchema,
@@ -157,7 +157,37 @@ export const meldApiClient = new Zodios(
         }
       ],
       alias: 'getPurchaseLimits',
-      response: z.array(GetPurchaseLimitsSchema)
+      response: z.array(GetTradeLimitsSchema)
+    },
+    {
+      method: 'get',
+      path: '/service-providers/limits/crypto-currency-sells',
+      parameters: [
+        {
+          name: 'serviceProviders',
+          type: 'Query',
+          schema: z.string().optional()
+        },
+        { name: 'categories', type: 'Query', schema: z.string().optional() },
+        {
+          name: 'accountFilter',
+          type: 'Query',
+          schema: z.boolean().optional()
+        },
+        { name: 'countries', type: 'Query', schema: z.string().optional() },
+        {
+          name: 'fiatCurrencies',
+          type: 'Query',
+          schema: z.string().optional()
+        },
+        {
+          name: 'cryptoCurrencies',
+          type: 'Query',
+          schema: z.string().optional()
+        }
+      ],
+      alias: 'getSellLimits',
+      response: z.array(GetTradeLimitsSchema)
     },
     {
       method: 'get',

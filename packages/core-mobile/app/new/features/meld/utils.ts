@@ -12,7 +12,8 @@ export const isSupportedNativeToken = (
 ): boolean =>
   token.networkChainId.toString() === crypto.chainId &&
   token.type === TokenType.NATIVE &&
-  crypto.contractAddress === NATIVE_ERC20_TOKEN_CONTRACT_ADDRESS
+  crypto.contractAddress?.toLocaleLowerCase() ===
+    NATIVE_ERC20_TOKEN_CONTRACT_ADDRESS.toLowerCase()
 
 export const isSupportedToken = (
   crypto: CryptoCurrency,
@@ -34,29 +35,6 @@ export const isTokenTradable = (
   isSupportedNativeToken(crypto, token) ||
   isSupportedToken(crypto, token) ||
   isBtcToken(crypto, token)
-
-export const getBuyableCryptoCurrency = ({
-  cryptoCurrencies,
-  tokenOrAddress
-}: {
-  cryptoCurrencies?: CryptoCurrency[]
-  tokenOrAddress?: LocalTokenWithBalance | string
-}): CryptoCurrency | undefined => {
-  if (!tokenOrAddress || !cryptoCurrencies) {
-    return undefined
-  }
-
-  if (typeof tokenOrAddress === 'string') {
-    return cryptoCurrencies.find(
-      crypto =>
-        crypto.contractAddress?.toLowerCase() === tokenOrAddress.toLowerCase()
-    )
-  }
-
-  return cryptoCurrencies.find(crypto =>
-    isTokenTradable(crypto, tokenOrAddress)
-  )
-}
 
 export const dismissMeldStack = (
   _: typeof ACTIONS.OnrampCompleted | typeof ACTIONS.OfframpCompleted,
