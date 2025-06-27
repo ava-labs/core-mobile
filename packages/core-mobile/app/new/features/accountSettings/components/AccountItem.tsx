@@ -49,16 +49,19 @@ export const AccountItem = memo(
     const {
       theme: { colors, isDark }
     } = useTheme()
-    const { formatTokenInCurrency } = useFormatCurrency()
+    const { formatCurrency } = useFormatCurrency()
 
     const balance = useMemo(() => {
       // CP-10570: Balances should never show $0.00
       return accountBalance === 0
         ? ''
         : `${formatLargeCurrency(
-            formatTokenInCurrency({ amount: accountBalance })
+            formatCurrency({
+              amount: accountBalance,
+              notation: accountBalance < 100000 ? undefined : 'compact'
+            })
           )}`
-    }, [accountBalance, formatTokenInCurrency])
+    }, [accountBalance, formatCurrency])
 
     const containerBackgroundColor = isActive
       ? colors.$textPrimary
@@ -126,7 +129,6 @@ export const AccountItem = memo(
           shouldMask={isPrivacyModeEnabled}
           renderMaskView={renderMaskView}
           balanceSx={{ color: alpha(accountNameColor, 0.6), lineHeight: 18 }}
-          shouldAnimate={false}
         />
       )
     }, [

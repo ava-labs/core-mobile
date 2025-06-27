@@ -86,7 +86,6 @@ const selectCurrencyFormat = ({
   boostSmallNumberPrecision,
   notation
 }: FormatCurrencyProps): Intl.NumberFormat => {
-  // Compact won't work without polyfills, so use formatLargeCurrency instead
   if (notation === 'compact') {
     return getCompactFormat(currency)
   }
