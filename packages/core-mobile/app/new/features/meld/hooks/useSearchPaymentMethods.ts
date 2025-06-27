@@ -12,7 +12,6 @@ import MeldService from '../services/MeldService'
 import { SearchPaymentMethods } from '../types'
 import { useMeldToken } from '../store'
 import { useLocale } from './useLocale'
-import { useSearchServiceProviders } from './useSearchServiceProviders'
 
 export type SearchPaymentMethodsParams = {
   categories: ServiceProviderCategories[]
@@ -26,26 +25,19 @@ export type SearchPaymentMethodsParams = {
 export const useSearchPaymentMethods = ({
   categories,
   accountFilter = true,
-  serviceProviders: selectedServiceProviders
+  serviceProviders
 }: Omit<SearchPaymentMethodsParams, 'countries'>): UseQueryResult<
   SearchPaymentMethods[],
   Error
 > => {
   const [meldToken] = useMeldToken()
   const selectedCurrency = useSelector(selectSelectedCurrency)
-  const { data: serviceProvidersData } = useSearchServiceProviders({
-    categories
-  })
-  const _serviceProviders = serviceProvidersData?.map(
-    serviceProvider => serviceProvider.serviceProvider
-  )
-
-  const serviceProviders = selectedServiceProviders ?? _serviceProviders
 
   const { countryCode } = useLocale()
   const cryptoCurrencyCode = meldToken?.currencyCode
 
   return useQuery<SearchPaymentMethods[]>({
+    enabled: serviceProviders !== undefined,
     queryKey: [
       ReactQueryKeys.MELD_SEARCH_PAYMENT_METHODS,
       categories,

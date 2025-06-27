@@ -121,7 +121,8 @@ export const SelectPaymentMethod = ({
           ? PaymentMethodTimeLimits[paymentMethod.paymentMethod]
           : '',
         onPress: () =>
-          setMeldPaymentMethod(paymentMethod.paymentMethod ?? undefined),
+          paymentMethod.paymentMethod &&
+          setMeldPaymentMethod(paymentMethod.paymentMethod),
         accessory:
           meldPaymentMethod === paymentMethod.paymentMethod ? (
             <Icons.Custom.CheckSmall color={colors.$textPrimary} />
