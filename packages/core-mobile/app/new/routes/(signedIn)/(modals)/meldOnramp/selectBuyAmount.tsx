@@ -1,1 +1,1 @@
-export { SelectBuyAmountScreen as default } from 'features/meld/meldOnramp/screens/SelectBuyAmountScreen'
+export { SelectBuyAmountScreen as default } from 'features/meld/onramp/screens/SelectBuyAmountScreen'
