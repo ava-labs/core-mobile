@@ -28,55 +28,30 @@ export function overlayColor(colorA: string, colorB: string): string {
 
 export function getButtonBackgroundColor(
   type: ButtonType,
-  theme: K2AlpineTheme,
-  disabled: boolean | undefined
+  theme: K2AlpineTheme
 ): string | undefined {
-  let color = theme.isDark
-    ? lightModeColors.$surfacePrimary
-    : darkModeColors.$surfacePrimary
-  let invertedColor = theme.isDark
-    ? darkModeColors.$surfacePrimary
-    : lightModeColors.$surfacePrimary
-
   if (type === 'tertiary') {
     return 'transparent'
   }
 
   switch (type) {
-    case 'primary': {
-      if (disabled) {
-        return overlayColor(alpha(color, 0.3), invertedColor)
-      }
-      return color
-    }
-    case 'secondary': {
-      color = theme.isDark
+    case 'primary':
+      return theme.isDark
+        ? lightModeColors.$surfacePrimary
+        : darkModeColors.$surfacePrimary
+    case 'secondary':
+      return theme.isDark
         ? alpha('#ffffff', 0.1)
         : alpha(colors.$neutral850, 0.1)
-      invertedColor = theme.isDark
-        ? alpha(colors.$neutral850, 0.1)
-        : alpha('#ffffff', 0.1)
-      if (disabled) {
-        return overlayColor(alpha(color, 0.3), invertedColor)
-      }
-      return color
-    }
   }
 }
 
 export const getButtonTintColor = (
   type: ButtonType,
-  theme: K2AlpineTheme,
-  disabled: boolean | undefined
+  theme: K2AlpineTheme
 ): string | undefined => {
   if (type === 'tertiary') {
-    return alpha(theme.colors.$textPrimary, disabled ? 0.4 : 1)
-  }
-
-  if (disabled) {
-    return theme.isDark
-      ? lightModeColors.$textPrimary
-      : darkModeColors.$textPrimary
+    return theme.colors.$textPrimary
   }
 
   switch (type) {

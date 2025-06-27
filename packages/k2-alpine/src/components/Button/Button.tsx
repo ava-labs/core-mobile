@@ -67,13 +67,13 @@ export const Button = forwardRef<RNView, ButtonProps & PropsWithChildren>(
     )
 
     const tintColor = useMemo(
-      () => getButtonTintColor(type, resultTheme, disabled),
-      [disabled, type, resultTheme]
+      () => getButtonTintColor(type, resultTheme),
+      [type, resultTheme]
     )
 
     const backgroundColor = useMemo(
-      () => getButtonBackgroundColor(type, resultTheme, disabled),
-      [type, resultTheme, disabled]
+      () => getButtonBackgroundColor(type, resultTheme),
+      [type, resultTheme]
     )
 
     const iconWidth = { large: 20, medium: 16, small: 16 }[size]
