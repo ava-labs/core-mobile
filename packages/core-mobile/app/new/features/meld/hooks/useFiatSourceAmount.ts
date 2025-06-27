@@ -7,8 +7,6 @@ import { useMeldFiatAmount } from '../store'
 import { useGetTradeLimits } from './useGetTradeLimits'
 import { useMeldTokenWithBalance } from './useMeldTokenWithBalance'
 
-const DEFAULT_WITHDRAWAL_AMOUNT = 10
-
 export const useFiatSourceAmount = ({
   category
 }: {
@@ -62,7 +60,7 @@ export const useFiatSourceAmount = ({
     }
     return selectedTradeLimitCurrency?.minimumAmount && currentTokenPrice
       ? selectedTradeLimitCurrency.minimumAmount * currentTokenPrice
-      : DEFAULT_WITHDRAWAL_AMOUNT
+      : undefined
   }, [category, selectedTradeLimitCurrency, currentTokenPrice])
 
   const maximumLimit = useMemo(() => {
@@ -72,21 +70,21 @@ export const useFiatSourceAmount = ({
     return selectedTradeLimitCurrency?.maximumAmount && currentTokenPrice
       ? selectedTradeLimitCurrency.maximumAmount * currentTokenPrice
       : undefined
-  }, [category, selectedTradeLimitCurrency, currentTokenPrice])
+  }, [category, selectedTradeLimitCurrency?.maximumAmount, currentTokenPrice])
 
   const isAboveMinimumLimit = useMemo(() => {
     if (minimumLimit === undefined) {
-      // if there is no matching fiat currency found, we don't allow the user to proceed
-      return false
+      // if there is no minimum limit, we allow the user to proceed
+      return true
     }
 
     return (sourceAmount ?? 0) >= (minimumLimit ?? 0)
   }, [minimumLimit, sourceAmount])
 
   const isBelowMaximumLimit = useMemo(() => {
-    if (!maximumLimit) {
-      // if there is no matching fiat currency found, we don't allow the user to proceed
-      return false
+    if (maximumLimit === undefined) {
+      // if there is no maximum limit, we allow the user to proceed
+      return true
     }
 
     return (sourceAmount ?? 0) <= (maximumLimit ?? 0)

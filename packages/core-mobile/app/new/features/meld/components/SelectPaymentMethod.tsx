@@ -75,23 +75,30 @@ export const SelectPaymentMethod = ({
             <Icons.Navigation.ChevronRightV2 color={colors.$textPrimary} />
           </View>
         </Pressable>
-        <View
-          sx={{
-            flexDirection: 'row',
-            alignItems: 'center',
-            gap: 8,
-            marginTop: 39,
-            marginRight: 32
-          }}>
-          <Icons.Action.Info color={colors.$textPrimary} />
-          <Text variant="body1" sx={{ color: colors.$textPrimary }}>
-            When using Apple Pay or Google Pay, payments made with credit cards
-            are more likely to succeed
-          </Text>
-        </View>
+        {category === ServiceProviderCategories.CRYPTO_ONRAMP && (
+          <View
+            sx={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: 8,
+              marginTop: 39,
+              marginRight: 32
+            }}>
+            <Icons.Action.Info color={colors.$textPrimary} />
+            <Text variant="body1" sx={{ color: colors.$textPrimary }}>
+              When using Apple Pay or Google Pay, payments made with credit
+              cards are more likely to succeed
+            </Text>
+          </View>
+        )}
       </View>
     )
-  }, [colors.$surfaceSecondary, colors.$textPrimary, onSelectServiceProvider])
+  }, [
+    category,
+    colors.$surfaceSecondary,
+    colors.$textPrimary,
+    onSelectServiceProvider
+  ])
 
   const renderFooter = useCallback(() => {
     // TODO: go to webview screen or go to amount screen

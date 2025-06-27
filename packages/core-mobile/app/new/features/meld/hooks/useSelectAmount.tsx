@@ -53,6 +53,7 @@ export const useSelectAmount = ({
   sourceAmount: number | undefined
   createSessionWidget: () => Promise<CreateSessionWidget | undefined>
   errorMessage?: string
+  // eslint-disable-next-line sonarjs/cognitive-complexity
 } => {
   const {
     theme: { colors }
@@ -107,9 +108,11 @@ export const useSelectAmount = ({
     const currentIndex = state?.index
     const formattedAmount = formatCurrency({ amount: sourceAmount ?? 0 })
     return `core://${
-      ACTIONS.OnrampCompleted
+      category === ServiceProviderCategories.CRYPTO_ONRAMP
+        ? ACTIONS.OnrampCompleted
+        : ACTIONS.OfframpCompleted
     }?amount=${formattedAmount}&dismissCount=${(currentIndex ?? 0) + 1}`
-  }, [formatCurrency, getState, sourceAmount])
+  }, [formatCurrency, getState, sourceAmount, category])
 
   const destinationCurrencyCode = useMemo(() => {
     return category === ServiceProviderCategories.CRYPTO_ONRAMP
@@ -125,7 +128,10 @@ export const useSelectAmount = ({
 
   const { createSessionWidget } = useCreateSessionWidget({
     category,
-    sessionType: SessionTypes.BUY,
+    sessionType:
+      category === ServiceProviderCategories.CRYPTO_ONRAMP
+        ? SessionTypes.BUY
+        : SessionTypes.SELL,
     sessionData: {
       redirectUrl,
       sourceAmount,
@@ -140,9 +146,17 @@ export const useSelectAmount = ({
     return (
       hasValidSourceAmount &&
       isLoadingCryptoQuotes === false &&
-      cryptoQuotesError === undefined
+      cryptoQuotesError === undefined &&
+      serviceProvider !== undefined &&
+      paymentMethod !== undefined
     )
-  }, [hasValidSourceAmount, isLoadingCryptoQuotes, cryptoQuotesError])
+  }, [
+    hasValidSourceAmount,
+    isLoadingCryptoQuotes,
+    cryptoQuotesError,
+    serviceProvider,
+    paymentMethod
+  ])
 
   const tokenBalance = useMemo(() => {
     if (token?.tokenWithBalance === undefined) {
@@ -219,7 +233,6 @@ export const useSelectAmount = ({
     [getMarketTokenBySymbol, token?.tokenWithBalance]
   )
 
-  // eslint-disable-next-line sonarjs/cognitive-complexity
   const errorMessage = useMemo(() => {
     if (
       category === ServiceProviderCategories.CRYPTO_OFFRAMP &&
