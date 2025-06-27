@@ -212,11 +212,14 @@ describe('BiometricsSDK', () => {
     })
 
     it('should check if encryption key with biometry exists', async () => {
-      mockKeychain.getGenericPassword.mockResolvedValue(mockKeychainResult)
+      const ENCRYPTION_KEY_SERVICE_BIO = 'encryption-key-service-bio'
+      mockKeychain.getAllGenericPasswordServices.mockResolvedValue([
+        ENCRYPTION_KEY_SERVICE_BIO
+      ])
       const result = await BiometricsSDK.hasEncryptionKeyWithBiometry()
       expect(result).toBe(true)
 
-      mockKeychain.getGenericPassword.mockResolvedValue(false)
+      mockKeychain.getAllGenericPasswordServices.mockResolvedValue([])
       const secondResult = await BiometricsSDK.hasEncryptionKeyWithBiometry()
       expect(secondResult).toBe(false)
     })
