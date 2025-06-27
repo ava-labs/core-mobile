@@ -1,1 +1,1 @@
-export { OfframpTokenListScreen as default } from 'features/meld/meldOfframp/screens/OfframpTokenListScreen'
+export { OfframpTokenListScreen as default } from 'features/meld/offramp/screens/OfframpTokenListScreen'

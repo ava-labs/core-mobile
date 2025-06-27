@@ -11,65 +11,57 @@ import { useRouter } from 'expo-router'
 import { ListScreen } from 'common/components/ListScreen'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import { format } from 'date-fns'
-import { useErc20ContractTokens } from 'common/hooks/useErc20ContractTokens'
-import { useSearchableTokenList } from 'common/hooks/useSearchableTokenList'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
 import { useNetworks } from 'hooks/networks/useNetworks'
 import { LoadingState } from 'common/components/LoadingState'
 import { ErrorState } from 'common/components/ErrorState'
-import { useOnrampServiceProvider, useOnrampToken } from '../store'
-import { useSearchServiceProviders } from '../../hooks/useSearchServiceProviders'
-import { ServiceProviderCategories } from '../../consts'
-import { Quote } from '../../types'
-import { useServiceProviders } from '../../hooks/useServiceProviders'
-import { ServiceProviderIcon } from '../../components/ServiceProviderIcon'
-import { isTokenTradable } from '../../utils'
+import { useMeldServiceProvider } from '../store'
+import { useSearchServiceProviders } from '../hooks/useSearchServiceProviders'
+import { ServiceProviderCategories, ServiceProviderNames } from '../consts'
+import { Quote } from '../types'
+import { useServiceProviders } from '../hooks/useServiceProviders'
+import { useMeldTokenWithBalance } from '../hooks/useMeldTokenWithBalance'
+import { ServiceProviderIcon } from './ServiceProviderIcon'
 
 const NEW_QUOTE_TIME = 60
 const IMAGE_SIZE = 36
 
-export const SelectServiceProviderScreen = (): React.JSX.Element => {
+export const SelectServiceProvider = ({
+  category
+}: {
+  category: ServiceProviderCategories
+}): React.JSX.Element => {
   const {
     theme: { colors }
   } = useTheme()
   const { back, canGoBack, dismissAll } = useRouter()
   const { formatCurrency } = useFormatCurrency()
-  const [onRampToken] = useOnrampToken()
-  const [_, setOnRampServiceProvider] = useOnrampServiceProvider()
+  const [_, setMeldServiceProvider] = useMeldServiceProvider()
   const [newQuoteTime, setNewQuoteTime] = useState(NEW_QUOTE_TIME)
   const {
     crytoQuotes,
     isLoadingCryptoQuotes,
     refetch,
     isRefetchingCryptoQuotes
-  } = useServiceProviders()
+  } = useServiceProviders({ category })
 
   const { data: serviceProviders } = useSearchServiceProviders({
-    categories: [ServiceProviderCategories.CRYPTO_ONRAMP]
+    categories: [category]
   })
 
-  const erc20ContractTokens = useErc20ContractTokens()
-  const { filteredTokenList } = useSearchableTokenList({
-    tokens: erc20ContractTokens,
-    hideZeroBalance: false
-  })
   const { getNetwork } = useNetworks()
 
   const hasAvailableServiceProviders = useMemo(() => {
     return crytoQuotes && crytoQuotes?.length > 0
   }, [crytoQuotes])
 
-  const token = useMemo(() => {
-    return filteredTokenList.find(
-      tk => onRampToken && isTokenTradable(onRampToken, tk)
-    )
-  }, [filteredTokenList, onRampToken])
+  const token = useMeldTokenWithBalance({ category })
 
   const network = useMemo(() => {
     return token?.networkChainId
-      ? getNetwork(token.networkChainId)
-      : token && 'chainId' in token
-      ? getNetwork(token.chainId)
+      ? getNetwork(token.tokenWithBalance.networkChainId)
+      : token && 'chainId' in token.tokenWithBalance
+      ? getNetwork(token.tokenWithBalance.chainId)
       : undefined
   }, [getNetwork, token])
 
@@ -133,18 +125,18 @@ export const SelectServiceProviderScreen = (): React.JSX.Element => {
         item.destinationAmount ??
         0 - (item.totalFee ?? 0) / (item.exchangeRate ?? 0)
       const tokenUnitToDisplay =
-        network?.networkToken.decimals && token?.symbol
+        network?.networkToken.decimals && token?.tokenWithBalance.symbol
           ? new TokenUnit(
               tokenAmount * 10 ** network.networkToken.decimals,
               network.networkToken.decimals,
-              token.symbol
+              token.tokenWithBalance.symbol
             ).toDisplay()
           : tokenAmount
 
       return (
         <Pressable
           onPress={() => {
-            setOnRampServiceProvider(serviceProvider?.serviceProvider)
+            setMeldServiceProvider(serviceProvider?.serviceProvider)
             dismiss()
           }}
           sx={{
@@ -201,7 +193,7 @@ export const SelectServiceProviderScreen = (): React.JSX.Element => {
             <Text
               variant="body2"
               sx={{ textAlign: 'right', fontWeight: 400, lineHeight: 16 }}>
-              {tokenUnitToDisplay} {token?.symbol}
+              {tokenUnitToDisplay} {token?.tokenWithBalance.symbol}
             </Text>
             <Text
               variant="subtitle2"
@@ -220,8 +212,8 @@ export const SelectServiceProviderScreen = (): React.JSX.Element => {
       formatCurrency,
       network?.networkToken.decimals,
       serviceProviders,
-      setOnRampServiceProvider,
-      token?.symbol
+      setMeldServiceProvider,
+      token?.tokenWithBalance.symbol
     ]
   )
 

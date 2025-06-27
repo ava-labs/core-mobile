@@ -5,14 +5,18 @@ import { isTokenTradable } from '../utils'
 import { CryptoCurrency } from '../types'
 import { useSearchCryptoCurrencies } from './useSearchCryptoCurrencies'
 
-export const useGetTradableCryptoCurrency = (): {
+export const useGetTradableCryptoCurrency = ({
+  category
+}: {
+  category: ServiceProviderCategories
+}): {
   getTradableCryptoCurrency: (
     token?: LocalTokenWithBalance,
     address?: string
   ) => CryptoCurrency | undefined
 } => {
   const { data: cryptoCurrencies } = useSearchCryptoCurrencies({
-    categories: [ServiceProviderCategories.CRYPTO_ONRAMP]
+    categories: [category]
   })
 
   const getTradableCryptoCurrency = useCallback(
@@ -23,7 +27,8 @@ export const useGetTradableCryptoCurrency = (): {
 
       if (address) {
         return cryptoCurrencies.find(
-          crypto => crypto.contractAddress === address
+          crypto =>
+            crypto.contractAddress?.toLowerCase() === address.toLowerCase()
         )
       }
 

@@ -11,44 +11,52 @@ import {
   ActivityIndicator,
   showAlert
 } from '@avalabs/k2-alpine'
-import { useRouter } from 'expo-router'
 import { LogoWithNetwork } from 'features/portfolio/assets/components/LogoWithNetwork'
 import { selectSelectedCurrency } from 'store/settings/currency'
 import { useSelector } from 'react-redux'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import useInAppBrowser from 'common/hooks/useInAppBrowser'
-import { useSelectBuyAmount } from '../../hooks/useSelectBuyAmount'
+import { SubTextNumber } from 'common/components/SubTextNumber'
+import { useSelectAmount } from '../hooks/useSelectAmount'
+import { ServiceProviderCategories } from '../consts'
 
-export const SelectBuyAmountScreen = (): React.JSX.Element => {
+interface SelectAmountProps {
+  title: string
+  navigationTitle: string
+  category: ServiceProviderCategories
+  onSelectToken: () => void
+  onSelectPaymentMethod: () => void
+}
+
+export const SelectAmount = ({
+  title,
+  navigationTitle,
+  category,
+  onSelectToken,
+  onSelectPaymentMethod
+}: SelectAmountProps): React.JSX.Element => {
   const {
     theme: { colors }
   } = useTheme()
   const {
-    formatInTokenUnit,
+    formatInSubTextNumber,
     sourceAmount,
     setSourceAmount,
     paymentMethodToDisplay,
     serviceProviderToDisplay,
-    isBuyAllowed,
+    isEnabled,
     token,
     tokenBalance,
     hasValidSourceAmount,
     isLoadingDefaultsByCountry,
-    isLoadingPurchaseLimits,
+    isLoadingTradeLimits,
     createSessionWidget,
     isLoadingCryptoQuotes,
     errorMessage
-  } = useSelectBuyAmount()
-
+  } = useSelectAmount({ category })
   const { openUrl } = useInAppBrowser()
   const { formatIntegerCurrency, formatCurrency } = useFormatCurrency()
-  const { navigate } = useRouter()
   const selectedCurrency = useSelector(selectSelectedCurrency)
-
-  const handleSelectToken = useCallback((): void => {
-    // @ts-ignore TODO: make routes typesafe
-    navigate('/selectBuyToken')
-  }, [navigate])
 
   const handleSelectPaymentMethod = useCallback((): void => {
     if (sourceAmount === undefined || sourceAmount === 0) {
@@ -62,10 +70,8 @@ export const SelectBuyAmountScreen = (): React.JSX.Element => {
       })
       return
     }
-
-    // @ts-ignore TODO: make routes typesafe
-    navigate('/selectPaymentMethod')
-  }, [navigate, sourceAmount])
+    onSelectPaymentMethod()
+  }, [onSelectPaymentMethod, sourceAmount])
 
   const onNext = useCallback(async (): Promise<void> => {
     const sessionWidget = await createSessionWidget()
@@ -79,15 +85,17 @@ export const SelectBuyAmountScreen = (): React.JSX.Element => {
           gap: 20
         }}>
         <Button
-          disabled={!isBuyAllowed}
+          disabled={!isEnabled}
           type="primary"
           size="large"
           onPress={onNext}>
-          Buy
+          {category === ServiceProviderCategories.CRYPTO_ONRAMP
+            ? 'Buy'
+            : 'Withdraw'}
         </Button>
       </View>
     )
-  }, [onNext, isBuyAllowed])
+  }, [isEnabled, onNext, category])
 
   const renderServiceProvider = useCallback(() => {
     if (!hasValidSourceAmount) {
@@ -118,6 +126,68 @@ export const SelectBuyAmountScreen = (): React.JSX.Element => {
     serviceProviderToDisplay
   ])
 
+  const renderCaption = useCallback(() => {
+    if (errorMessage) {
+      return (
+        <View
+          sx={{
+            alignItems: 'center',
+            marginTop: 12,
+            marginHorizontal: 16,
+            flexDirection: 'row',
+            justifyContent: 'center',
+            gap: 8
+          }}>
+          <Icons.Alert.AlertCircle color={colors.$textDanger} />
+          <Text
+            variant="caption"
+            sx={{ fontWeight: 500, color: colors.$textDanger }}>
+            {errorMessage}
+          </Text>
+        </View>
+      )
+    }
+
+    if (tokenBalance && token?.tokenWithBalance.symbol) {
+      return (
+        <View
+          sx={{
+            alignItems: 'center',
+            marginTop: 12,
+            marginHorizontal: 16,
+            flexDirection: 'row',
+            justifyContent: 'center'
+          }}>
+          <Text
+            variant="caption"
+            sx={{
+              color: colors.$textPrimary
+            }}>
+            {'Balance: '}
+          </Text>
+          <SubTextNumber
+            number={Number(tokenBalance.toDisplay({ asNumber: true }))}
+            textColor={colors.$textPrimary}
+            textVariant="caption"
+          />
+          <Text
+            variant="caption"
+            sx={{
+              color: colors.$textPrimary
+            }}>
+            {' ' + token.tokenWithBalance.symbol}
+          </Text>
+        </View>
+      )
+    }
+  }, [
+    colors.$textDanger,
+    colors.$textPrimary,
+    errorMessage,
+    token?.tokenWithBalance.symbol,
+    tokenBalance
+  ])
+
   const renderPayWith = useCallback(() => {
     return (
       paymentMethodToDisplay && (
@@ -140,7 +210,9 @@ export const SelectBuyAmountScreen = (): React.JSX.Element => {
               fontWeight: 400,
               color: colors.$textPrimary
             }}>
-            Pay with
+            {category === ServiceProviderCategories.CRYPTO_ONRAMP
+              ? 'Pay with'
+              : 'Withdraw to'}
           </Text>
           <View sx={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
             {isLoadingDefaultsByCountry ? (
@@ -176,6 +248,7 @@ export const SelectBuyAmountScreen = (): React.JSX.Element => {
     handleSelectPaymentMethod,
     colors.$surfaceSecondary,
     colors.$textPrimary,
+    category,
     isLoadingDefaultsByCountry,
     renderServiceProvider
   ])
@@ -184,8 +257,8 @@ export const SelectBuyAmountScreen = (): React.JSX.Element => {
     <ScrollScreen
       bottomOffset={150}
       isModal
-      title={`${'How much do\nyou like to buy?'}`}
-      navigationTitle="Enter buy amount"
+      title={title}
+      navigationTitle={navigationTitle}
       renderFooter={renderFooter}
       shouldAvoidKeyboard
       contentContainerStyle={{
@@ -193,7 +266,7 @@ export const SelectBuyAmountScreen = (): React.JSX.Element => {
       }}>
       {/* Select Token */}
       <Pressable
-        onPress={handleSelectToken}
+        onPress={onSelectToken}
         sx={{
           marginTop: 12,
           flexDirection: 'row',
@@ -236,7 +309,7 @@ export const SelectBuyAmountScreen = (): React.JSX.Element => {
       {tokenBalance && (
         <FiatAmountInputWidget
           isAmountValid={errorMessage === undefined}
-          disabled={isLoadingPurchaseLimits}
+          disabled={isLoadingTradeLimits}
           sx={{ marginTop: 12 }}
           currency={selectedCurrency}
           amount={sourceAmount}
@@ -245,28 +318,12 @@ export const SelectBuyAmountScreen = (): React.JSX.Element => {
             formatIntegerCurrency({ amount: amt, withoutCurrencySuffix: true })
           }
           formatInCurrency={amt => formatCurrency({ amount: amt })}
-          formatInTokenUnit={formatInTokenUnit}
+          formatInSubTextNumber={formatInSubTextNumber}
         />
       )}
-      {errorMessage && (
-        <View
-          sx={{
-            alignItems: 'center',
-            marginTop: 12,
-            marginHorizontal: 16,
-            flexDirection: 'row',
-            justifyContent: 'center',
-            gap: 8
-          }}>
-          <Icons.Alert.AlertCircle color={colors.$textDanger} />
-          <Text
-            variant="caption"
-            sx={{ fontWeight: 500, color: colors.$textDanger }}>
-            {errorMessage}
-          </Text>
-        </View>
-      )}
-      {/* Pay with */}
+      {/* token balance or error message */}
+      {renderCaption()}
+      {/* Pay with / Withdraw to */}
       {renderPayWith()}
     </ScrollScreen>
   )

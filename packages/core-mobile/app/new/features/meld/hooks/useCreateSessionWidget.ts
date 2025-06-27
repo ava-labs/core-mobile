@@ -1,11 +1,13 @@
 import { useCallback } from 'react'
 import { CreateSessionWidget, CreateSessionWidgetParams } from '../types'
 import MeldService from '../services/MeldService'
-import { useOnrampPaymentMethod } from '../meldOnramp/store'
+import { useMeldPaymentMethod } from '../store'
+import { ServiceProviderCategories } from '../consts'
 import { useLocale } from './useLocale'
-import { useSourceAmount } from './useSourceAmount'
+import { useFiatSourceAmount } from './useFiatSourceAmount'
 
 export const useCreateSessionWidget = ({
+  category,
   sessionType,
   sessionData: {
     walletAddress,
@@ -15,12 +17,14 @@ export const useCreateSessionWidget = ({
     redirectUrl,
     serviceProvider
   }
-}: CreateSessionWidgetParams): {
+}: CreateSessionWidgetParams & {
+  category: ServiceProviderCategories
+}): {
   createSessionWidget: () => Promise<CreateSessionWidget | undefined>
 } => {
   const { countryCode } = useLocale()
-  const [onRampPaymentMethod] = useOnrampPaymentMethod()
-  const { hasValidSourceAmount } = useSourceAmount()
+  const [meldPaymentMethod] = useMeldPaymentMethod()
+  const { hasValidSourceAmount } = useFiatSourceAmount({ category })
 
   const hasWalletAddress = walletAddress !== undefined && walletAddress !== null
   const hasSourceCurrencyCode =
@@ -56,13 +60,13 @@ export const useCreateSessionWidget = ({
         sourceCurrencyCode,
         redirectUrl,
         serviceProvider,
-        paymentMethodType: onRampPaymentMethod
+        paymentMethodType: meldPaymentMethod
       }
     })
   }, [
     countryCode,
     destinationCurrencyCode,
-    onRampPaymentMethod,
+    meldPaymentMethod,
     redirectUrl,
     serviceProvider,
     sessionType,

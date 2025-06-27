@@ -5,13 +5,13 @@ import {
   SearchCryptoCurrencySchema,
   SearchServiceProviderSchema,
   SearchDefaultsByCountrySchema,
-  GetPurchaseLimitsSchema,
   SearchPaymentMethodsSchema,
   CreateCryptoQuoteSchema,
   CreateCryptoQuoteBodySchema,
   QuoteSchema,
   CreateSessionWidgetBodySchema,
-  CreateSessionWidgetSchema
+  CreateSessionWidgetSchema,
+  GetTradeLimitsSchema
 } from './services/schemas'
 import { ServiceProviderCategories, ServiceProviders } from './consts'
 
@@ -22,7 +22,7 @@ export type ServiceProvider = z.infer<typeof SearchServiceProviderSchema>
 export type SearchDefaultsByCountry = z.infer<
   typeof SearchDefaultsByCountrySchema
 >
-export type GetPurchaseLimits = z.infer<typeof GetPurchaseLimitsSchema>
+export type GetTradeLimits = z.infer<typeof GetTradeLimitsSchema>
 export type SearchPaymentMethods = z.infer<typeof SearchPaymentMethodsSchema>
 export type CreateCryptoQuote = z.infer<typeof CreateCryptoQuoteSchema>
 export type Quote = z.infer<typeof QuoteSchema>

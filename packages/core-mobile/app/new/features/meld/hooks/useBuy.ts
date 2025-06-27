@@ -3,7 +3,7 @@ import { useCallback } from 'react'
 import { useSelector } from 'react-redux'
 import { selectIsMeldIntegrationBlocked } from 'store/posthog'
 import { useMemo } from 'react'
-import { useOnrampToken } from '../meldOnramp/store'
+import { useMeldToken } from '../store'
 import { MELD_CURRENCY_CODES, ServiceProviderCategories } from '../consts'
 import { LocalTokenWithBalance } from '../../../../store/balance/types'
 import { useSearchCryptoCurrencies } from './useSearchCryptoCurrencies'
@@ -23,13 +23,15 @@ export const useBuy = (): {
   isLoadingCryptoCurrencies: boolean
 } => {
   const { navigate } = useRouter()
-  const [_onrampToken, setOnrampToken] = useOnrampToken()
+  const [_meldToken, setMeldToken] = useMeldToken()
   const isMeldIntegrationBlocked = useSelector(selectIsMeldIntegrationBlocked)
   const { data: cryptoCurrencies, isLoading: isLoadingCryptoCurrencies } =
     useSearchCryptoCurrencies({
       categories: [ServiceProviderCategories.CRYPTO_ONRAMP]
     })
-  const { getTradableCryptoCurrency } = useGetTradableCryptoCurrency()
+  const { getTradableCryptoCurrency } = useGetTradableCryptoCurrency({
+    category: ServiceProviderCategories.CRYPTO_ONRAMP
+  })
 
   const isBuyable = useCallback(
     (token?: LocalTokenWithBalance, address?: string) => {
@@ -68,12 +70,12 @@ export const useBuy = (): {
 
       if (token || address) {
         const cryptoCurrency = getTradableCryptoCurrency(token, address)
-        setOnrampToken(cryptoCurrency)
+        setMeldToken(cryptoCurrency)
         // @ts-ignore TODO: make routes typesafe
         navigate('/meldOnramp/selectBuyAmount')
         return
       }
-      setOnrampToken(undefined)
+      setMeldToken(undefined)
       // @ts-ignore TODO: make routes typesafe
       navigate('/meldOnramp')
     },
@@ -81,24 +83,24 @@ export const useBuy = (): {
       getTradableCryptoCurrency,
       isMeldIntegrationBlocked,
       navigate,
-      setOnrampToken
+      setMeldToken
     ]
   )
 
   const navigateToBuyAvax = useCallback(() => {
     if (avax === undefined) return
-    setOnrampToken(avax)
+    setMeldToken(avax)
 
     // @ts-ignore TODO: make routes typesafe
     navigate('/meldOnramp/selectBuyAmount')
-  }, [avax, navigate, setOnrampToken])
+  }, [avax, navigate, setMeldToken])
 
   const navigateToBuyUsdc = useCallback(() => {
     if (usdc === undefined) return
-    setOnrampToken(usdc)
+    setMeldToken(usdc)
     // @ts-ignore TODO: make routes typesafe
     navigate('/meldOnramp/selectBuyAmount')
-  }, [usdc, navigate, setOnrampToken])
+  }, [usdc, navigate, setMeldToken])
 
   return {
     navigateToBuy,
