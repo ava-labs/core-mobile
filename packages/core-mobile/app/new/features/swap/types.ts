@@ -27,10 +27,36 @@ export type EvmUnwrapQuote = {
   amount: string
 }
 
-export type EvmSwapQuote = OptimalRate | EvmWrapQuote | EvmUnwrapQuote
+export type MarkrQuote = {
+  uuid: string;
+  aggregator?: {
+    id: string;
+    name: string;
+  };
+  tokenIn?: string;
+  tokenInDecimals?: number;
+  amountIn?: string;
+  tokenOut?: string;
+  tokenOutDecimals?: number;
+  amountOut?: string;
+  done?: boolean;
+}
+
+export type MarkrTransaction = {
+  to: string;
+  value: string;
+  data: string;
+}
+
+export type EvmSwapQuote = OptimalRate | EvmWrapQuote | EvmUnwrapQuote | MarkrQuote
 
 // TODO: add solana swap quote
 export type SwapQuote = EvmSwapQuote
+
+export type SwapQuoteUpdate = {
+  allQuotes: MarkrQuote[]
+  bestQuote: MarkrQuote
+}
 
 export function isEvmWrapQuote(quote: SwapQuote): quote is EvmWrapQuote {
   return 'operation' in quote && quote.operation === EvmSwapOperation.WRAP
@@ -49,6 +75,17 @@ export const isParaswapQuote = (quote: SwapQuote): quote is OptimalRate => {
   )
 }
 
+export const isMarkrQuote = (quote: SwapQuote): quote is MarkrQuote => {
+  return (
+    'uuid' in quote &&
+    'aggregator' in quote &&
+    'amountIn' in quote &&
+    'tokenIn' in quote &&
+    'amountOut' in quote &&
+    'tokenOut' in quote
+  )
+}
+
 export type GetQuoteParams = {
   account: Account
   amount: bigint
@@ -60,6 +97,8 @@ export type GetQuoteParams = {
   isToTokenNative: boolean
   destination: SwapSide
   network: Network
+  slippage: number
+  onUpdate?: (update: SwapQuoteUpdate) => void
 }
 
 export type SwapParams = {
