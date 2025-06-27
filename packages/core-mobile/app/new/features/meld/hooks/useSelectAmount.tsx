@@ -279,7 +279,7 @@ export const useSelectAmount = ({
     isBelowMaximumLimit,
     maximumLimit,
     cryptoQuotesError?.statusCode,
-    cryptoQuotesError.message,
+    cryptoQuotesError?.message,
     token?.tokenWithBalance.symbol,
     token?.tokenWithBalance.name,
     formatCurrency,
