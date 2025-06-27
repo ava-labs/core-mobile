@@ -1,7 +1,5 @@
 import { useQuery, UseQueryResult } from '@tanstack/react-query'
 import { ReactQueryKeys } from 'consts/reactQueryKeys'
-import { selectSelectedCurrency } from 'store/settings/currency'
-import { useSelector } from 'react-redux'
 import MeldService from '../services/MeldService'
 import { CreateCryptoQuote, CreateCryptoQuoteParams } from '../types'
 import { ServiceProviderCategories } from '../consts'
@@ -18,7 +16,6 @@ export const useCreateCryptoQuote = ({
 }: CreateCryptoQuoteParams & {
   category: ServiceProviderCategories
 }): UseQueryResult<CreateCryptoQuote | undefined, Error> => {
-  const selectedCurrency = useSelector(selectSelectedCurrency)
   const [meldPaymentMethod] = useMeldPaymentMethod()
   const { data: serviceProvidersData } = useSearchServiceProviders({
     categories: [category]
@@ -31,8 +28,10 @@ export const useCreateCryptoQuote = ({
   })
 
   const hasDestinationCurrencyCode = destinationCurrencyCode !== ''
+  const hasSourceCurrencyCode = sourceCurrencyCode !== ''
 
-  const enabled = hasValidSourceAmount && hasDestinationCurrencyCode
+  const enabled =
+    hasValidSourceAmount && hasDestinationCurrencyCode && hasSourceCurrencyCode
 
   return useQuery<CreateCryptoQuote | undefined>({
     enabled,
@@ -44,7 +43,6 @@ export const useCreateCryptoQuote = ({
       sourceAmount,
       destinationCurrencyCode,
       sourceCurrencyCode,
-      selectedCurrency,
       hasValidSourceAmount,
       meldPaymentMethod
     ],

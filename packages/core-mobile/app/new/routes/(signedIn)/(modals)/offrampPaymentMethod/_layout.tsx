@@ -2,13 +2,13 @@ import { Stack } from 'common/components/Stack'
 import { useModalScreenOptions } from 'common/hooks/useModalScreenOptions'
 import React from 'react'
 
-export default function SelectPaymentMethodLayout(): JSX.Element {
+export default function OfframpPaymentMethodLayout(): JSX.Element {
   const { modalStackNavigatorScreenOptions, modalFirstScreenOptions } =
     useModalScreenOptions()
   return (
     <Stack screenOptions={modalStackNavigatorScreenOptions}>
       <Stack.Screen name="index" options={modalFirstScreenOptions} />
-      <Stack.Screen name="selectServiceProvider" />
+      <Stack.Screen name="offrampServiceProvider" />
     </Stack>
   )
 }

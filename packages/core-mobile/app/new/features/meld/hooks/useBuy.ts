@@ -72,12 +72,12 @@ export const useBuy = (): {
         const cryptoCurrency = getTradableCryptoCurrency(token, address)
         setMeldToken(cryptoCurrency)
         // @ts-ignore TODO: make routes typesafe
-        navigate('/meldOnramp/selectBuyAmount')
+        navigate('/meld/onramp/selectBuyAmount')
         return
       }
       setMeldToken(undefined)
       // @ts-ignore TODO: make routes typesafe
-      navigate('/meldOnramp')
+      navigate('/meld/onramp')
     },
     [
       getTradableCryptoCurrency,
@@ -92,14 +92,14 @@ export const useBuy = (): {
     setMeldToken(avax)
 
     // @ts-ignore TODO: make routes typesafe
-    navigate('/meldOnramp/selectBuyAmount')
+    navigate('/meld/onramp/selectBuyAmount')
   }, [avax, navigate, setMeldToken])
 
   const navigateToBuyUsdc = useCallback(() => {
     if (usdc === undefined) return
     setMeldToken(usdc)
     // @ts-ignore TODO: make routes typesafe
-    navigate('/meldOnramp/selectBuyAmount')
+    navigate('/meld/onramp/selectBuyAmount')
   }, [usdc, navigate, setMeldToken])
 
   return {

@@ -13,7 +13,7 @@ export const SelectWithdrawAmountScreen = (): React.JSX.Element => {
 
   const handleSelectPaymentMethod = useCallback((): void => {
     // @ts-ignore TODO: make routes typesafe
-    navigate('/selectPaymentMethod')
+    navigate('/offrampPaymentMethod')
   }, [navigate])
 
   return (

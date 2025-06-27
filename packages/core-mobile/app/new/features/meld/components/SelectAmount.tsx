@@ -161,6 +161,7 @@ export const SelectAmount = ({
           <Text
             variant="caption"
             sx={{
+              fontWeight: 500,
               color: colors.$textPrimary
             }}>
             {'Balance: '}
@@ -173,6 +174,7 @@ export const SelectAmount = ({
           <Text
             variant="caption"
             sx={{
+              fontWeight: 500,
               color: colors.$textPrimary
             }}>
             {' ' + token.tokenWithBalance.symbol}
@@ -190,36 +192,36 @@ export const SelectAmount = ({
 
   const renderPayWith = useCallback(() => {
     return (
-      paymentMethodToDisplay && (
-        <Pressable
-          onPress={handleSelectPaymentMethod}
+      <Pressable
+        onPress={handleSelectPaymentMethod}
+        sx={{
+          marginTop: 12,
+          flexDirection: 'row',
+          alignItems: 'center',
+          borderRadius: 12,
+          justifyContent: 'space-between',
+          padding: 17,
+          backgroundColor: colors.$surfaceSecondary
+        }}>
+        <Text
+          variant="body1"
           sx={{
-            marginTop: 12,
-            flexDirection: 'row',
-            alignItems: 'center',
-            borderRadius: 12,
-            justifyContent: 'space-between',
-            padding: 17,
-            backgroundColor: colors.$surfaceSecondary
+            fontSize: 16,
+            lineHeight: 22,
+            fontWeight: 400,
+            color: colors.$textPrimary
           }}>
-          <Text
-            variant="body1"
-            sx={{
-              fontSize: 16,
-              lineHeight: 22,
-              fontWeight: 400,
-              color: colors.$textPrimary
-            }}>
-            {category === ServiceProviderCategories.CRYPTO_ONRAMP
-              ? 'Pay with'
-              : 'Withdraw to'}
-          </Text>
-          <View sx={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-            {isLoadingDefaultsByCountry ? (
-              <ActivityIndicator size="small" color={colors.$textPrimary} />
-            ) : (
-              <>
-                <View sx={{ justifyContent: 'center', alignItems: 'flex-end' }}>
+          {category === ServiceProviderCategories.CRYPTO_ONRAMP
+            ? 'Pay with'
+            : 'Withdraw to'}
+        </Text>
+        <View sx={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+          {isLoadingDefaultsByCountry ? (
+            <ActivityIndicator size="small" color={colors.$textPrimary} />
+          ) : (
+            <>
+              <View sx={{ justifyContent: 'center', alignItems: 'flex-end' }}>
+                {paymentMethodToDisplay && (
                   <Text
                     variant="body2"
                     sx={{
@@ -230,18 +232,16 @@ export const SelectAmount = ({
                     }}>
                     {paymentMethodToDisplay}
                   </Text>
-                  {renderServiceProvider()}
-                </View>
-                <View sx={{ marginLeft: 8 }}>
-                  <Icons.Navigation.ChevronRightV2
-                    color={colors.$textPrimary}
-                  />
-                </View>
-              </>
-            )}
-          </View>
-        </Pressable>
-      )
+                )}
+                {renderServiceProvider()}
+              </View>
+              <View sx={{ marginLeft: 8 }}>
+                <Icons.Navigation.ChevronRightV2 color={colors.$textPrimary} />
+              </View>
+            </>
+          )}
+        </View>
+      </Pressable>
     )
   }, [
     paymentMethodToDisplay,
