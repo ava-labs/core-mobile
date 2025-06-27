@@ -38,6 +38,7 @@ export const AccountItem = memo(
     onSelectAccount: (account: Account) => void
     gotoAccountDetails: (accountId: string) => void
     testID?: string
+    // eslint-disable-next-line sonarjs/cognitive-complexity
   }): React.JSX.Element => {
     const {
       balance: accountBalance,
