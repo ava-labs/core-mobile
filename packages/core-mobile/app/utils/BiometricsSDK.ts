@@ -155,10 +155,8 @@ class BiometricsSDK {
 
   async hasEncryptionKeyWithBiometry(): Promise<boolean> {
     try {
-      const credentials = await Keychain.getGenericPassword(
-        KeystoreConfig.ENCRYPTION_KEY_BIO_OPTIONS
-      )
-      return credentials !== false
+      const services = await Keychain.getAllGenericPasswordServices()
+      return services.includes(ENCRYPTION_KEY_SERVICE_BIO)
     } catch (e) {
       Logger.error('Failed to check encryption key existence', e)
       return false
@@ -250,6 +248,23 @@ class BiometricsSDK {
       KeystoreConfig.wallet_secret_options(walletId)
     )
     return true
+  }
+
+  async removeWalletSecret(walletId: string): Promise<boolean> {
+    try {
+      await Keychain.resetGenericPassword(
+        KeystoreConfig.wallet_secret_options(walletId)
+      )
+      return true
+    } catch (e) {
+      Logger.error(
+        `Failed to remove wallet secret for service: ${
+          KeystoreConfig.wallet_secret_options(walletId).service
+        }`,
+        e
+      )
+      return false
+    }
   }
 
   private get getEncryptionKey(): string {

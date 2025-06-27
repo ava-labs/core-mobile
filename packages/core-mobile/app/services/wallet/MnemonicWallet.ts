@@ -4,8 +4,7 @@ import {
   BitcoinProvider,
   DerivationPath,
   JsonRpcBatchInternal,
-  getWalletFromMnemonic,
-  getAddressDerivationPath
+  getWalletFromMnemonic
 } from '@avalabs/core-wallets-sdk'
 import { now } from 'moment'
 import {
@@ -38,6 +37,7 @@ import slip10 from 'micro-key-producer/slip10.js'
 import { mnemonicToSeed } from 'bip39'
 import { fromSeed } from 'bip32'
 import { hex } from '@scure/base'
+import { getAddressDerivationPath } from './utils'
 
 /**
  * Type guard to assert that a wallet is a MnemonicWallet instance
@@ -97,8 +97,8 @@ export class MnemonicWallet implements Wallet {
     if (provider) {
       return Avalanche.StaticSigner.fromMnemonic(
         this.mnemonic,
-        getAddressDerivationPath(accountIndex, DerivationPath.BIP44, 'AVM'),
-        getAddressDerivationPath(accountIndex, DerivationPath.BIP44, 'EVM'),
+        getAddressDerivationPath({ accountIndex, vmType: NetworkVMType.AVM }),
+        getAddressDerivationPath({ accountIndex, vmType: NetworkVMType.EVM }),
         provider
       )
     }
@@ -335,10 +335,19 @@ export class MnemonicWallet implements Wallet {
     return await signer.signTransaction(transaction)
   }
 
-  public async getPublicKeyFor(
-    derivationPath: string,
+  public async getPublicKeyFor({
+    derivationPath,
+    curve
+  }: {
+    derivationPath?: string
     curve: Curve
-  ): Promise<string> {
+  }): Promise<string> {
+    if (derivationPath === undefined) {
+      throw new Error(
+        'derivationPath is required to get public key for MnemonicWallet'
+      )
+    }
+
     const seed = await mnemonicToSeed(this.mnemonic)
 
     switch (curve) {

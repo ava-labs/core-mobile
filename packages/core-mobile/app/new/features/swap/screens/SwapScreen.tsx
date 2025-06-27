@@ -21,6 +21,7 @@ import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import { usePreventScreenRemoval } from 'common/hooks/usePreventScreenRemoval'
 import { useSwapList } from 'common/hooks/useSwapList'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
+import { ParaswapError, ParaswapErrorCode } from 'errors/swapError'
 import { useGlobalSearchParams, useRouter } from 'expo-router'
 import useCChainNetwork from 'hooks/earn/useCChainNetwork'
 import { useWatchlist } from 'hooks/watchlist/useWatchlist'
@@ -91,7 +92,7 @@ export const SwapScreen = (): JSX.Element => {
 
   const [isInputFocused, setIsInputFocused] = useState<boolean>(false)
   const swapButtonBackgroundColor = useMemo(
-    () => getButtonBackgroundColor('secondary', theme, false),
+    () => getButtonBackgroundColor('secondary', theme),
     [theme]
   )
   const errorMessage = useMemo(
@@ -241,11 +242,11 @@ export const SwapScreen = (): JSX.Element => {
   const handleSwap = useCallback(() => {
     AnalyticsService.capture('SwapReviewOrder', {
       destinationInputField: destination,
-      slippageTolerance: showFeesAndSlippage ? slippage : undefined
+      slippageTolerance: slippage
     })
 
     swap()
-  }, [swap, destination, slippage, showFeesAndSlippage])
+  }, [swap, destination, slippage])
 
   const handleFromAmountChange = useCallback(
     (amount: bigint): void => {
@@ -410,7 +411,12 @@ export const SwapScreen = (): JSX.Element => {
       })
     }
 
-    showFeesAndSlippage &&
+    if (
+      showFeesAndSlippage ||
+      // display slippage field if slippage tolerance is exceeded
+      errorMessage ===
+        ParaswapError[ParaswapErrorCode.ESTIMATED_LOSS_GREATER_THAN_MAX_IMPACT]
+    ) {
       items.push({
         title: 'Slippage tolerance',
         accessory: (
@@ -421,13 +427,15 @@ export const SwapScreen = (): JSX.Element => {
           />
         )
       })
+    }
 
     return items
   }, [
-    toToken,
     fromToken,
-    showFeesAndSlippage,
+    toToken,
     rate,
+    errorMessage,
+    showFeesAndSlippage,
     slippage,
     setSlippage,
     swapInProcess

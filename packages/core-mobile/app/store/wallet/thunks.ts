@@ -10,13 +10,19 @@ import {
   setAccount,
   setActiveAccount
 } from 'store/account'
-import { selectActiveNetwork } from 'store/network'
 import { ThunkApi } from 'store/types'
 import { reducerName, selectWallets, setActiveWallet } from 'store/wallet/slice'
 import { StoreWalletParams, Wallet } from 'store/wallet/types'
 import BiometricsSDK from 'utils/BiometricsSDK'
 import { uuid } from 'utils/uuid'
+import { selectIsDeveloperMode } from 'store/settings/advanced'
+import {
+  removeAccount,
+  selectAccountsByWalletId,
+  setActiveAccountId
+} from 'store/account/slice'
 import { generateWalletName } from './utils'
+import { _removeWallet, selectActiveWalletId } from './slice'
 
 export const storeWallet = createAsyncThunk<
   Wallet,
@@ -53,6 +59,9 @@ export const importPrivateKeyWalletAndAccount = createAsyncThunk<
   `${reducerName}/importPrivateKeyWalletAndAccount`,
   async ({ accountDetails, accountSecret }, thunkApi) => {
     const dispatch = thunkApi.dispatch
+    const state = thunkApi.getState()
+    const isDeveloperMode = selectIsDeveloperMode(state)
+
     const newWalletId = uuid()
 
     await dispatch(
@@ -65,9 +74,21 @@ export const importPrivateKeyWalletAndAccount = createAsyncThunk<
 
     thunkApi.dispatch(setActiveWallet(newWalletId))
 
+    const addresses = await WalletService.getAddresses({
+      walletId: newWalletId,
+      walletType: WalletType.PRIVATE_KEY,
+      isTestnet: isDeveloperMode
+    })
+
     const accountToImport: ImportedAccount = {
       ...accountDetails,
-      walletId: newWalletId
+      walletId: newWalletId,
+      addressC: addresses.EVM,
+      addressBTC: addresses.BITCOIN,
+      addressAVM: addresses.AVM,
+      addressPVM: addresses.PVM,
+      addressSVM: addresses.SVM,
+      addressCoreEth: addresses.CoreEth
     }
 
     thunkApi.dispatch(setAccount(accountToImport))
@@ -84,7 +105,7 @@ export const importMnemonicWalletAndAccount = createAsyncThunk<
   async ({ mnemonic }, thunkApi) => {
     const dispatch = thunkApi.dispatch
     const state = thunkApi.getState()
-    const activeNetwork = selectActiveNetwork(state)
+    const isDeveloperMode = selectIsDeveloperMode(state)
 
     const newWalletId = uuid()
 
@@ -105,7 +126,7 @@ export const importMnemonicWalletAndAccount = createAsyncThunk<
       walletId: newWalletId,
       walletType: WalletType.MNEMONIC,
       accountIndex: 0,
-      network: activeNetwork
+      isTestnet: isDeveloperMode
     })
 
     const newAccountId = uuid()
@@ -129,5 +150,45 @@ export const importMnemonicWalletAndAccount = createAsyncThunk<
     AnalyticsService.capture('MnemonicWalletImported', {
       walletType: WalletType.MNEMONIC
     })
+  }
+)
+
+export const removeWallet = createAsyncThunk<void, string, ThunkApi>(
+  'wallet/removeWallet',
+  async (walletId, thunkApi) => {
+    const stateBefore = thunkApi.getState()
+    const activeWalletIdBefore = selectActiveWalletId(stateBefore)
+    if (!activeWalletIdBefore) {
+      throw new Error('No active wallet found')
+    }
+    const activeWalletsIndexBefore = Object.keys(
+      selectWallets(stateBefore)
+    ).indexOf(activeWalletIdBefore)
+
+    const accountsToRemove = selectAccountsByWalletId(walletId)(stateBefore)
+    accountsToRemove.forEach(account => {
+      thunkApi.dispatch(removeAccount(account.id))
+    })
+    thunkApi.dispatch(_removeWallet(walletId))
+    await BiometricsSDK.removeWalletSecret(walletId)
+
+    // If we removed the active wallet, set the first account of the new active wallet as active
+    if (activeWalletIdBefore === walletId) {
+      const stateAfter = thunkApi.getState()
+      const newActiveWalletsIndex = Math.max(activeWalletsIndexBefore - 1, 0)
+      const newActiveWalletId = Object.keys(selectWallets(stateAfter))[
+        newActiveWalletsIndex
+      ]
+      if (!newActiveWalletId) {
+        throw new Error('No active wallet found')
+      }
+      thunkApi.dispatch(setActiveWallet(newActiveWalletId))
+
+      const accountsForWallet =
+        selectAccountsByWalletId(newActiveWalletId)(stateAfter)
+      if (accountsForWallet.length > 0 && accountsForWallet[0]) {
+        thunkApi.dispatch(setActiveAccountId(accountsForWallet[0].id))
+      }
+    }
   }
 )

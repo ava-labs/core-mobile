@@ -115,17 +115,19 @@ export const AccountButtons = ({
         onPress={handleShowAlertWithTextInput}>
         Rename account
       </Button>
-      <Button
-        style={{ borderRadius: 12 }}
-        size="large"
-        textStyle={{
-          color: theme.colors.$textDanger
-        }}
-        type="secondary"
-        disabled={!isRemoveEnabled}
-        onPress={handleRemoveAccount}>
-        Remove account
-      </Button>
+      {walletType !== WalletType.SEEDLESS && (
+        <Button
+          style={{ borderRadius: 12 }}
+          size="large"
+          textStyle={{
+            color: theme.colors.$textDanger
+          }}
+          type="secondary"
+          disabled={!isRemoveEnabled}
+          onPress={handleRemoveAccount}>
+          Remove account
+        </Button>
+      )}
       {!isRemoveEnabled && (
         <Text variant="caption" sx={{ color: theme.colors.$textSecondary }}>
           Only the most recently added account may be removed

@@ -207,7 +207,13 @@ export interface Wallet {
    * @param path - The path of the account.
    * @param curve - The curve of the account.
    */
-  getPublicKeyFor(path: string, curve: Curve): Promise<string>
+  getPublicKeyFor({
+    derivationPath,
+    curve
+  }: {
+    derivationPath?: string
+    curve: Curve
+  }): Promise<string>
 
   /**
    * Retrieves a read-only Avalanche signer that can be used to

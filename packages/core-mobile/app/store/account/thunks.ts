@@ -1,7 +1,6 @@
 import { createAsyncThunk } from '@reduxjs/toolkit'
 import AccountsService from 'services/account/AccountsService'
 import AnalyticsService from 'services/analytics/AnalyticsService'
-import { selectActiveNetwork } from 'store/network'
 import { selectIsDeveloperMode } from 'store/settings/advanced/slice'
 import { ThunkApi } from 'store/types'
 import {
@@ -9,6 +8,7 @@ import {
   selectWalletById,
   setActiveWallet
 } from 'store/wallet/slice'
+import { WalletType } from 'services/wallet/types'
 import {
   reducerName,
   selectAccountById,
@@ -20,32 +20,27 @@ import {
   selectActiveAccount
 } from './slice'
 
-export const addAccount = createAsyncThunk<void, void, ThunkApi>(
+export const addAccount = createAsyncThunk<void, string, ThunkApi>(
   `${reducerName}/addAccount`,
-  async (_, thunkApi) => {
+  async (walletId, thunkApi) => {
     const state = thunkApi.getState()
     const isDeveloperMode = selectIsDeveloperMode(state)
-    const activeNetwork = selectActiveNetwork(state)
-    const activeWalletId = selectActiveWalletId(state)
     const allAccounts = selectAccounts(state)
 
-    if (!activeWalletId) {
-      throw new Error('Active wallet ID is not set')
-    }
-    const wallet = selectWalletById(activeWalletId)(state)
+    const wallet = selectWalletById(walletId)(state)
     if (!wallet) {
       throw new Error('Wallet not found')
     }
 
     const allAccountsCount = Object.keys(allAccounts).length
-    const accountsByWalletId = selectAccountsByWalletId(activeWalletId)(state)
+    const accountsByWalletId = selectAccountsByWalletId(walletId)(state)
 
     const acc = await AccountsService.createNextAccount({
       name: `Account ${allAccountsCount + 1}`,
       index: Object.keys(accountsByWalletId).length,
       walletType: wallet.type,
-      network: activeNetwork,
-      walletId: activeWalletId
+      isTestnet: isDeveloperMode,
+      walletId: walletId
     })
 
     thunkApi.dispatch(setAccount(acc))
@@ -78,6 +73,12 @@ export const removeAccountWithActiveCheck = createAsyncThunk<
     const state = thunkApi.getState()
     const accountToRemove = selectAccountById(accountId)(state)
     const activeAccount = selectActiveAccount(state)
+    const wallet = selectWalletById(accountToRemove?.walletId ?? '')(state)
+
+    // fail safe, UI should prevent this from happening
+    if (wallet?.type === WalletType.SEEDLESS) {
+      throw new Error('Seedless wallets do not support account removal')
+    }
 
     if (!accountToRemove) {
       throw new Error(`Account with ID "${accountId}" not found`)

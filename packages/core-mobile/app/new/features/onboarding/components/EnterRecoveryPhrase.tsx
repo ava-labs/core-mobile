@@ -4,6 +4,7 @@ import { ScrollScreen } from 'common/components/ScrollScreen'
 import React, { useCallback, useState } from 'react'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import WalletSDK from 'utils/WalletSDK'
+import { MINIMUM_MNEMONIC_WORDS } from 'common/consts'
 import RecoveryPhraseInput from './RecoveryPhraseInput'
 
 export const EnterRecoveryPhrase = ({
@@ -85,5 +86,3 @@ export const EnterRecoveryPhrase = ({
     </ScrollScreen>
   )
 }
-
-const MINIMUM_MNEMONIC_WORDS = 12

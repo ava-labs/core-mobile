@@ -3,8 +3,6 @@ import {
   NetworkWithCaip2ChainId,
   Networks,
   selectCustomNetworks as customNetworksSelector,
-  defaultNetwork,
-  selectActiveChainId,
   selectEnabledChainIds,
   toggleDisabledLastTransactedChainId,
   toggleEnabledChainId
@@ -25,7 +23,6 @@ export const useNetworks = () => {
   const isSolanaSupportBlocked = useSelector(selectIsSolanaSupportBlocked)
   const _customNetworks = useSelector(customNetworksSelector)
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
-  const activeChainId = useSelector(selectActiveChainId)
   const enabledChainIds = useSelector(selectEnabledChainIds)
   const { data: rawNetworks } = useGetNetworks({
     includeSolana: !isSolanaSupportBlocked
@@ -83,12 +80,6 @@ export const useNetworks = () => {
       customNetworkChainIds.includes(n.chainId)
     )
   }, [networks, _customNetworks])
-
-  const activeNetwork = useMemo(() => {
-    if (networks === undefined) return defaultNetwork
-    const network = networks[activeChainId]
-    return network === undefined ? defaultNetwork : network
-  }, [networks, activeChainId])
 
   const enabledNetworks = useMemo(() => {
     if (networks === undefined) return []
@@ -183,7 +174,6 @@ export const useNetworks = () => {
     allNetworks,
     customNetworks,
     networks,
-    activeNetwork,
     enabledNetworks,
     getIsTestnet,
     getIsCustomNetwork,
