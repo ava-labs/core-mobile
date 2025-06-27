@@ -63,48 +63,64 @@ const WalletCard = ({
         <TouchableOpacity
           onPress={onToggleExpansion}
           sx={{
-            paddingHorizontal: 8,
-            paddingVertical: 12,
             flexDirection: 'row',
             alignItems: 'center',
             justifyContent: 'space-between'
           }}>
-          <View sx={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+          <View
+            sx={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: 8,
+              flex: 1,
+              paddingHorizontal: 10
+            }}>
             <View sx={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
               {renderExpansionIcon()}
               {renderWalletIcon()}
             </View>
             <Text
               variant="buttonSmall"
+              numberOfLines={1}
               style={{
-                fontSize: 14
+                fontSize: 14,
+                flex: 1
               }}>
               {wallet.name}
             </Text>
-            <DropdownMenu
-              groups={[
-                {
-                  key: 'wallet-actions',
-                  items: dropdownItems
-                }
-              ]}
-              onPressAction={(event: { nativeEvent: { event: string } }) =>
-                handleDropdownSelect(
-                  event.nativeEvent.event,
-                  wallet.id,
-                  wallet.name
-                )
-              }
-              style={{ marginLeft: 8 }}>
-              <TouchableOpacity hitSlop={8} onPress={handleMorePress}>
-                <Icons.Navigation.MoreHoriz
-                  color={colors.$textSecondary}
-                  width={20}
-                  height={20}
-                />
-              </TouchableOpacity>
-            </DropdownMenu>
           </View>
+
+          <DropdownMenu
+            groups={[
+              {
+                key: 'wallet-actions',
+                items: dropdownItems
+              }
+            ]}
+            onPressAction={(event: { nativeEvent: { event: string } }) =>
+              handleDropdownSelect(
+                event.nativeEvent.event,
+                wallet.id,
+                wallet.name
+              )
+            }>
+            <TouchableOpacity
+              hitSlop={8}
+              style={{
+                minHeight: 48,
+                paddingRight: 24,
+                paddingLeft: 12,
+                justifyContent: 'center',
+                alignItems: 'center'
+              }}
+              onPress={handleMorePress}>
+              <Icons.Navigation.MoreHoriz
+                color={colors.$textSecondary}
+                width={20}
+                height={20}
+              />
+            </TouchableOpacity>
+          </DropdownMenu>
         </TouchableOpacity>
 
         {isExpanded && (
