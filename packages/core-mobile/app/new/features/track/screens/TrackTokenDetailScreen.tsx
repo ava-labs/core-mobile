@@ -48,7 +48,7 @@ import { useIsFocused } from '@react-navigation/native'
 import { MarketType } from 'store/watchlist'
 import { AVAX_COINGECKO_ID } from 'consts/coingecko'
 import { useIsSwapListLoaded } from 'common/hooks/useIsSwapListLoaded'
-import { useBuy } from 'features/buyOnramp/hooks/useBuy'
+import { useBuy } from 'features/meld/hooks/useBuy'
 
 const MAX_VALUE_WIDTH = '80%'
 
