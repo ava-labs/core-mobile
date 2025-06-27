@@ -5,14 +5,15 @@ import { useSelector } from 'react-redux'
 import { selectActiveNetwork } from 'store/network'
 import Logger from 'utils/Logger'
 import BiometricsSDK from 'utils/BiometricsSDK'
-import { useActiveWallet } from 'common/hooks/useActiveWallet'
 import WalletService from 'services/wallet/WalletService'
 
 const VerifyPinForPrivateKeyScreen = (): JSX.Element => {
   const { replace } = useRouter()
-  const { accountIndex } = useLocalSearchParams<{ accountIndex: string }>()
+  const { walletId, accountIndex } = useLocalSearchParams<{
+    walletId: string
+    accountIndex: string
+  }>()
   const activeNetwork = useSelector(selectActiveNetwork)
-  const activeWallet = useActiveWallet()
 
   const getPrivateKeyFromMnemonic = async (
     mnemonic: string
@@ -25,9 +26,7 @@ const VerifyPinForPrivateKeyScreen = (): JSX.Element => {
   }
 
   const handleLoginSuccess = async (): Promise<void> => {
-    const walletSecretResult = await BiometricsSDK.loadWalletSecret(
-      activeWallet.id
-    )
+    const walletSecretResult = await BiometricsSDK.loadWalletSecret(walletId)
     if (!walletSecretResult.success) {
       Logger.error('Failed to load wallet secret', walletSecretResult.error)
       return
