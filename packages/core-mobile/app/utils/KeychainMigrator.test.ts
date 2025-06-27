@@ -24,7 +24,7 @@ describe('KeychainMigrator', () => {
     it('should return false if fully migrated', async () => {
       mockBiometricsSDK.hasEncryptionKeyWithPin.mockResolvedValue(true)
       const status = await keychainMigrator.getMigrationStatus('PIN')
-      expect(status).toBe(false)
+      expect(status).toBe('noMigrationNeeded')
     })
 
     it('should return "completePartialMigration" if bio key exists but pin key does not', async () => {
@@ -269,7 +269,7 @@ describe('KeychainMigrator', () => {
     })
 
     it('should throw error if loading legacy wallet fails', async () => {
-      const error = new Error('Could not load legacy wallet with biometrics.')
+      const error = new Error('Invalid biometric data. Please try again.')
       mockBiometricsSDK.loadLegacyWalletWithBiometry.mockResolvedValue({
         success: false,
         error
