@@ -77,6 +77,7 @@ const AccountScreen = (): JSX.Element => {
       // @ts-ignore TODO: make routes typesafe
       pathname: '/accountSettings/verifyPinForPrivateKey',
       params: {
+        walletId: account.walletId,
         accountIndex: account.index.toString()
       }
     })
