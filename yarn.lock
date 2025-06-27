@@ -234,9 +234,9 @@ __metadata:
     "@dlenroc/testrail": 1.9.1
     "@ethereumjs/common": 4.4.0
     "@ethereumjs/tx": 5.4.0
-    "@formatjs/intl-locale": ^4.2.11
-    "@formatjs/intl-numberformat": ^8.15.4
-    "@formatjs/intl-pluralrules": ^5.4.4
+    "@formatjs/intl-locale": 4.2.11
+    "@formatjs/intl-numberformat": 8.15.4
+    "@formatjs/intl-pluralrules": 5.4.4
     "@gorhom/bottom-sheet": 4.6.4
     "@hookform/resolvers": 3.9.0
     "@invertase/react-native-apple-authentication": 2.4.0
@@ -6255,7 +6255,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@formatjs/intl-locale@npm:^4.2.11":
+"@formatjs/intl-locale@npm:4.2.11":
   version: 4.2.11
   resolution: "@formatjs/intl-locale@npm:4.2.11"
   dependencies:
@@ -6276,7 +6276,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@formatjs/intl-numberformat@npm:^8.15.4":
+"@formatjs/intl-numberformat@npm:8.15.4":
   version: 8.15.4
   resolution: "@formatjs/intl-numberformat@npm:8.15.4"
   dependencies:
@@ -6288,7 +6288,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@formatjs/intl-pluralrules@npm:^5.4.4":
+"@formatjs/intl-pluralrules@npm:5.4.4":
   version: 5.4.4
   resolution: "@formatjs/intl-pluralrules@npm:5.4.4"
   dependencies:
