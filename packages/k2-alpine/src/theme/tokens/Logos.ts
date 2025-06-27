@@ -40,6 +40,12 @@ import Transfi from '../../assets/logos/provider-transfi.svg'
 import Unlimit from '../../assets/logos/provider-unlimit.svg'
 import YellowCard from '../../assets/logos/provider-yellowcard.svg'
 
+// price provider logos
+import Velora from '../../assets/logos/provider-velora.svg'
+import Odos from '../../assets/logos/provider-odos.svg'
+import Kyber from '../../assets/logos/provider-kyber.svg'
+import Yak from '../../assets/logos/provider-yak.svg'
+
 export const Logos = {
   AppIcons: {
     Core: LogoCore,
@@ -82,6 +88,10 @@ export const Logos = {
     Transak: Transak,
     Transfi: Transfi,
     Unlimit: Unlimit,
-    YellowCard: YellowCard
+    YellowCard: YellowCard,
+    Velora: Velora,
+    Odos: Odos,
+    Kyber: Kyber,
+    Yak: Yak
   }
 }

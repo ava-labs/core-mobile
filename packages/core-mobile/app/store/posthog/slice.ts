@@ -360,6 +360,14 @@ export const selectIsMeldIntegrationBlocked = (state: RootState): boolean => {
   )
 }
 
+export const selectIsSwapUseMarkrBlocked = (state: RootState): boolean => {
+  const { featureFlags } = state.posthog
+  return (
+    !featureFlags[FeatureGates.SWAP_USE_MARKR] ||
+    !featureFlags[FeatureGates.EVERYTHING]
+  )
+}
+
 // actions
 export const { regenerateUserId, toggleAnalytics, setFeatureFlags } =
   posthogSlice.actions
