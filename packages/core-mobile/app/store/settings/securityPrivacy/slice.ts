@@ -32,9 +32,8 @@ export const selectCoreAnalyticsConsent = (
 ): boolean | undefined => state.settings.securityPrivacy.coreAnalytics
 
 // selectors
-export const selectLockWalletWithPIN = (
-  state: RootState
-): boolean | undefined => state.settings.securityPrivacy.coreAnalytics
+export const selectLockWalletWithPIN = (state: RootState): boolean =>
+  state.settings.securityPrivacy.lockWalletWithPIN
 
 /**
  * Select Terms of use and Privacy policy consent
