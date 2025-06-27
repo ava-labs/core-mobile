@@ -1,6 +1,7 @@
 import {
   GroupList,
   GroupListItem,
+  showAlert,
   Text,
   Toggle,
   useTheme
@@ -154,7 +155,26 @@ const SecurityAndPrivacyScreen = (): JSX.Element => {
 
   const handleToggleLockWalletWithPIN = useCallback(
     (value: boolean): void => {
-      dispatch(setLockWalletWithPIN(value))
+      if (!value) {
+        showAlert({
+          title: 'Do you really want to disable the PIN code?',
+          description:
+            'I understand that removing the need of a PIN code to unlock my wallet will lorem ipsum lorem ipsum dolor sit amet.',
+          buttons: [
+            {
+              text: 'Cancel'
+            },
+            {
+              text: 'Disable',
+              onPress: () => {
+                dispatch(setLockWalletWithPIN(value))
+              }
+            }
+          ]
+        })
+      } else {
+        dispatch(setLockWalletWithPIN(value))
+      }
     },
     [dispatch]
   )
@@ -162,7 +182,7 @@ const SecurityAndPrivacyScreen = (): JSX.Element => {
   const lockWalletWithPINData = useMemo(() => {
     return [
       {
-        title: 'Lock wallet with PIN',
+        title: 'Lock wallet with a PIN',
         value: (
           <Toggle
             onValueChange={() =>
