@@ -1,3 +1,4 @@
+import AsyncStorage from '@react-native-async-storage/async-storage'
 import { Action, isAnyOf } from '@reduxjs/toolkit'
 import { differenceInSeconds } from 'date-fns'
 import {
@@ -6,7 +7,11 @@ import {
   Platform,
   Appearance as RnAppearance
 } from 'react-native'
-import { AppListenerEffectAPI, AppStartListening } from 'store/types'
+import BootSplash from 'react-native-bootsplash'
+import DeviceInfo from 'react-native-device-info'
+import SecureStorageService from 'security/SecureStorageService'
+import AnalyticsService from 'services/analytics/AnalyticsService'
+import { WalletType } from 'services/wallet/types'
 import {
   onRehydrationComplete,
   selectWalletState,
@@ -16,22 +21,18 @@ import {
   setWalletState,
   WalletState
 } from 'store/app'
-import BiometricsSDK from 'utils/BiometricsSDK'
-import Logger from 'utils/Logger'
-import DeviceInfo from 'react-native-device-info'
-import { WalletType } from 'services/wallet/types'
-import SecureStorageService from 'security/SecureStorageService'
-import AnalyticsService from 'services/analytics/AnalyticsService'
-import { commonStorage } from 'utils/mmkv'
 import { reduxStorage } from 'store/reduxStorage'
-import AsyncStorage from '@react-native-async-storage/async-storage'
-import BootSplash from 'react-native-bootsplash'
 import {
   Appearance,
   ColorSchemeName,
   setSelectedAppearance,
   setSelectedColorScheme
 } from 'store/settings/appearance'
+import { selectLockWalletWithPIN } from 'store/settings/securityPrivacy'
+import { AppListenerEffectAPI, AppStartListening } from 'store/types'
+import BiometricsSDK from 'utils/BiometricsSDK'
+import Logger from 'utils/Logger'
+import { commonStorage } from 'utils/mmkv'
 import {
   onAppLocked,
   onAppUnlocked,
@@ -109,11 +110,11 @@ const lockApp = async (
   const { dispatch, condition } = listenerApi
   const state = listenerApi.getState()
   const walletState = selectWalletState(state)
-
+  const lockWalletWithPIN = selectLockWalletWithPIN(state)
   const isLocked = selectIsLocked(state)
 
-  if (isLocked) {
-    // bail out if already locked
+  if (isLocked || !lockWalletWithPIN) {
+    // bail out if already locked or if lock wallet with PIN is disabled
     return
   }
 
