@@ -155,7 +155,7 @@ const SecurityAndPrivacyScreen = (): JSX.Element => {
 
   const handleToggleLockWalletWithPIN = useCallback(
     (value: boolean): void => {
-      if (!value) {
+      if (value === false) {
         showAlert({
           title: 'Do you really want to disable the PIN code?',
           description:
