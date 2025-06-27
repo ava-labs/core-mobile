@@ -222,7 +222,7 @@ export const PaymentMethodNames = {
   [PaymentMethods.PA_CASH]: 'Local Cash Vouchers',
   [PaymentMethods.PH_CASH]: 'Local Cash Vouchers',
   [PaymentMethods.PY_CASH]: 'Local Cash Vouchers',
-  [PaymentMethods.PAYOUT_TO_CARD]: 'Payout to Card'
+  [PaymentMethods.PAYOUT_TO_CARD]: 'Payout via Debit Card'
 }
 
 export const PaymentMethodTimeLimits = {
