@@ -31,31 +31,36 @@ export function getButtonBackgroundColor(
   theme: K2AlpineTheme,
   disabled: boolean | undefined
 ): string | undefined {
+  let color = theme.isDark
+    ? lightModeColors.$surfacePrimary
+    : darkModeColors.$surfacePrimary
+  let invertedColor = theme.isDark
+    ? darkModeColors.$surfacePrimary
+    : lightModeColors.$surfacePrimary
+
   if (type === 'tertiary') {
     return 'transparent'
   }
 
-  if (disabled) {
-    return theme.isDark
-      ? overlayColor(
-          alpha(lightModeColors.$surfacePrimary, 0.3),
-          darkModeColors.$surfacePrimary
-        )
-      : overlayColor(
-          alpha(darkModeColors.$surfacePrimary, 0.3),
-          lightModeColors.$surfacePrimary
-        )
-  }
-
   switch (type) {
-    case 'primary':
-      return theme.isDark
-        ? lightModeColors.$surfacePrimary
-        : darkModeColors.$surfacePrimary
-    case 'secondary':
-      return theme.isDark
+    case 'primary': {
+      if (disabled) {
+        return overlayColor(alpha(color, 0.3), invertedColor)
+      }
+      return color
+    }
+    case 'secondary': {
+      color = theme.isDark
         ? alpha('#ffffff', 0.1)
         : alpha(colors.$neutral850, 0.1)
+      invertedColor = theme.isDark
+        ? alpha(colors.$neutral850, 0.1)
+        : alpha('#ffffff', 0.1)
+      if (disabled) {
+        return overlayColor(alpha(color, 0.3), invertedColor)
+      }
+      return color
+    }
   }
 }
 

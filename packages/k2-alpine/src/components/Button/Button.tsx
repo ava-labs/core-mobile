@@ -94,7 +94,8 @@ export const Button = forwardRef<RNView, ButtonProps & PropsWithChildren>(
             borderRadius: 1000,
             overflow: 'hidden',
             alignItems: 'center',
-            backgroundColor
+            backgroundColor,
+            opacity: disabled ? 0.4 : 1
           },
           style
         ]}
