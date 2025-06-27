@@ -149,5 +149,7 @@ const PAYMENT_METHOD_TO_ICON: Record<
   [PaymentMethods.INTERAC]: undefined,
   [PaymentMethods.ZALOPAY]: undefined,
   [PaymentMethods.PROMPTPAY]: undefined,
-  [PaymentMethods.BLIK]: undefined
+  [PaymentMethods.BLIK]: undefined,
+
+  [PaymentMethods.PAYOUT_TO_CARD]: undefined
 }
