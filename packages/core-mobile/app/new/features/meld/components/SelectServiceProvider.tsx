@@ -27,9 +27,11 @@ const NEW_QUOTE_TIME = 60
 const IMAGE_SIZE = 36
 
 export const SelectServiceProvider = ({
-  category
+  category,
+  description
 }: {
   category: ServiceProviderCategories
+  description: string
 }): React.JSX.Element => {
   const {
     theme: { colors }
@@ -101,10 +103,7 @@ export const SelectServiceProvider = ({
   const renderHeader = useCallback(() => {
     return (
       <View sx={{ gap: 32 }}>
-        <Text>
-          External providers are used to process fiat-to-crypto purchases. Rates
-          vary between providers
-        </Text>
+        <Text>{description}</Text>
         {hasAvailableServiceProviders && (
           <View sx={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
             <Icons.Custom.Pace color={colors.$textPrimary} />
@@ -113,7 +112,12 @@ export const SelectServiceProvider = ({
         )}
       </View>
     )
-  }, [colors.$textPrimary, hasAvailableServiceProviders, newQuoteTime])
+  }, [
+    colors.$textPrimary,
+    description,
+    hasAvailableServiceProviders,
+    newQuoteTime
+  ])
 
   const renderItem = useCallback(
     (item: Quote, index: number) => {

@@ -66,12 +66,12 @@ export const useWithdraw = (): {
         const cryptoCurrency = getTradableCryptoCurrency(token, address)
         setMeldToken(cryptoCurrency)
         // @ts-ignore TODO: make routes typesafe
-        navigate('/meldOfframp/selectWithdrawAmount')
+        navigate('/meld/offramp/selectWithdrawAmount')
         return
       }
       setMeldToken(undefined)
       // @ts-ignore TODO: make routes typesafe
-      navigate('/meldOfframp')
+      navigate('/meld/offramp')
     },
     [
       getTradableCryptoCurrency,
@@ -85,14 +85,14 @@ export const useWithdraw = (): {
     if (avax === undefined) return
     setMeldToken(avax)
     // @ts-ignore TODO: make routes typesafe
-    navigate('/meldOfframp/selectWithdrawAmount')
+    navigate('/meld/offramp/selectWithdrawAmount')
   }, [avax, navigate, setMeldToken])
 
   const navigateToWithdrawUsdc = useCallback(() => {
     if (usdc === undefined) return
     setMeldToken(usdc)
     // @ts-ignore TODO: make routes typesafe
-    navigate('/meldOfframp/selectWithdrawAmount')
+    navigate('/meld/offramp/selectWithdrawAmount')
   }, [usdc, navigate, setMeldToken])
 
   return {

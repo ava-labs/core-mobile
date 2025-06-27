@@ -77,12 +77,12 @@ export const useBuy = (): {
         const cryptoCurrency = getTradableCryptoCurrency(token, address)
         setOnrampToken(cryptoCurrency)
         // @ts-ignore TODO: make routes typesafe
-        navigate('/meldOnramp/selectBuyAmount')
+        navigate('/meld/onramp/selectBuyAmount')
         return
       }
       setOnrampToken(undefined)
       // @ts-ignore TODO: make routes typesafe
-      navigate('/meldOnramp')
+      navigate('/meld/onramp')
     },
     [getTradableCryptoCurrency, isMeldOnrampBlocked, navigate, setOnrampToken]
   )

@@ -35,7 +35,7 @@ export const SubTextNumber = ({
       <Text
         numberOfLines={1}
         variant={textVariant}
-        style={[{ color: _textColor }]}>
+        style={[{ color: _textColor, fontWeight: subTextStyle.fontWeight }]}>
         {mainTextBefore}
       </Text>
       {subText && (
@@ -46,7 +46,9 @@ export const SubTextNumber = ({
         </Text>
       )}
       {mainTextAfter && (
-        <Text variant={textVariant} style={[{ color: _textColor }]}>
+        <Text
+          variant={textVariant}
+          style={[{ color: _textColor, fontWeight: subTextStyle.fontWeight }]}>
           {mainTextAfter}
         </Text>
       )}
