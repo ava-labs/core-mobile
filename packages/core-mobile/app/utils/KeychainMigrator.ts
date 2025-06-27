@@ -25,6 +25,7 @@ class KeychainMigrator {
     // Check for legacy wallet data with both PIN and biometrics
     const newPinKeyExists = await BiometricsSDK.hasEncryptionKeyWithPin()
     const newBioKeyExists = await BiometricsSDK.hasEncryptionKeyWithBiometry()
+
     //fully migrated
     if (newPinKeyExists) {
       return false
