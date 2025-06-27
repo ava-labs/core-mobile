@@ -68,6 +68,7 @@ export type SquareButtonIconType =
   | 'hide'
   | 'show'
   | 'receive'
+  | 'withdraw'
 
 const iconComponents = {
   bridge: Icons.Custom.SwitchRight,

@@ -1,1 +1,1 @@
-export { SelectTokenScreen as default } from 'features/meld/meldOfframp/screens/SelectTokenScreen'
+export { SelectTokenScreen as default } from 'features/meld/offramp/screens/SelectTokenScreen'
