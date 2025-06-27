@@ -159,7 +159,7 @@ const SecurityAndPrivacyScreen = (): JSX.Element => {
         showAlert({
           title: 'Do you really want to disable the PIN code?',
           description:
-            'I understand that removing the need of a PIN code to unlock my wallet will lorem ipsum lorem ipsum dolor sit amet.',
+            'This will remove the PIN requirement when leaving the app and keeping it open in the background.\n\nHowever, pin will be required if the app is closed completely',
           buttons: [
             {
               text: 'Cancel'
