@@ -1,54 +1,68 @@
 import { useQuery, UseQueryResult } from '@tanstack/react-query'
 import { CurrencySymbol } from 'store/settings/currency'
 import { ReactQueryKeys } from 'consts/reactQueryKeys'
-import { ServiceProviderCategories } from '../consts'
-import { GetPurchaseLimits, MeldDefaultParams } from '../types'
+import { GetTradeLimits, MeldDefaultParams } from '../types'
 import MeldService from '../services/MeldService'
+import { ServiceProviderCategories } from '../consts'
 import { useLocale } from './useLocale'
 import { useSearchServiceProviders } from './useSearchServiceProviders'
 
-export type GetPurchaseLimitsParams = MeldDefaultParams & {
+export type GetTradeLimitsParams = MeldDefaultParams & {
   fiatCurrencies?: CurrencySymbol[]
   includeDetails?: boolean
   cryptoCurrencyCodes?: string[]
 }
 
-export const useGetPurchaseLimits = ({
-  categories,
+export const useGetTradeLimits = ({
+  category,
   fiatCurrencies,
   includeDetails,
   cryptoCurrencyCodes
 }: Omit<
-  GetPurchaseLimitsParams,
-  'serviceProviders' | 'countries'
->): UseQueryResult<GetPurchaseLimits[], Error> => {
+  GetTradeLimitsParams,
+  'categories' | 'serviceProviders' | 'countries'
+> & {
+  category: ServiceProviderCategories
+}): UseQueryResult<GetTradeLimits[], Error> => {
   const { data: serviceProvidersData } = useSearchServiceProviders({
-    categories: [ServiceProviderCategories.CRYPTO_ONRAMP]
+    categories: [category]
   })
   const serviceProviders = serviceProvidersData?.map(
     serviceProvider => serviceProvider.serviceProvider
   )
+
+  const meldQueryKey =
+    category === ServiceProviderCategories.CRYPTO_ONRAMP
+      ? ReactQueryKeys.MELD_GET_PURCHASE_LIMITS
+      : ReactQueryKeys.MELD_GET_SELL_LIMITS
+
   const { countryCode } = useLocale()
   return useQuery({
     enabled: !!serviceProviders,
     queryKey: [
-      ReactQueryKeys.MELD_GET_PURCHASE_LIMITS,
-      categories,
+      meldQueryKey,
+      category,
       countryCode,
       fiatCurrencies,
       includeDetails,
       cryptoCurrencyCodes,
       serviceProviders
     ],
-    queryFn: () =>
-      MeldService.getPurchaseLimits({
+    queryFn: () => {
+      const params = {
         serviceProviders,
-        categories,
+        categories: [category],
         countries: [countryCode],
         fiatCurrencies,
         includeDetails,
         cryptoCurrencyCodes
-      }),
+      }
+      if (category === ServiceProviderCategories.CRYPTO_ONRAMP) {
+        return MeldService.getPurchaseLimits(params)
+      } else {
+        return MeldService.getSellLimits(params)
+      }
+    },
     staleTime: 1000 * 60 * 30 // 30 minutes
   })
 }

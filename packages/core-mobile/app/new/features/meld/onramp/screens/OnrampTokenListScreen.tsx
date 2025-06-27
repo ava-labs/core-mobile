@@ -1,7 +1,7 @@
 import React from 'react'
 import { useRouter } from 'expo-router'
-import { TokenList } from 'features/meld/screens/TokenList'
-import { useOnrampToken } from '../store'
+import { TokenList } from 'features/meld/components/TokenList'
+import { useMeldToken } from 'features/meld/store'
 import { useSearchCryptoCurrencies } from '../../hooks/useSearchCryptoCurrencies'
 import { ServiceProviderCategories } from '../../consts'
 import { useBuy } from '../../hooks/useBuy'
@@ -9,7 +9,7 @@ import { useBuy } from '../../hooks/useBuy'
 export const OnrampTokenListScreen = (): React.JSX.Element => {
   const { canGoBack, back } = useRouter()
   const { navigateToBuy } = useBuy()
-  const [selectedToken] = useOnrampToken()
+  const [selectedToken] = useMeldToken()
 
   const { data: cryptoCurrencies, isLoading: isLoadingCryptoCurrencies } =
     useSearchCryptoCurrencies({
@@ -18,6 +18,7 @@ export const OnrampTokenListScreen = (): React.JSX.Element => {
 
   return (
     <TokenList
+      category={ServiceProviderCategories.CRYPTO_ONRAMP}
       onPress={token => {
         canGoBack() && back()
         navigateToBuy({ token: token.tokenWithBalance })

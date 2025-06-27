@@ -1,9 +1,9 @@
-import { useCallback, useEffect, useLayoutEffect, useMemo } from 'react'
+import React, { useCallback, useEffect, useLayoutEffect, useMemo } from 'react'
+import { View, Text, useTheme, alpha } from '@avalabs/k2-alpine'
+import { SubTextNumber } from 'common/components/SubTextNumber'
 import { selectSelectedCurrency } from 'store/settings/currency'
 import { useSelector } from 'react-redux'
 import { useNetworks } from 'hooks/networks/useNetworks'
-import { useErc20ContractTokens } from 'common/hooks/useErc20ContractTokens'
-import { useSearchableTokenList } from 'common/hooks/useSearchableTokenList'
 import { TokenUnit } from '@avalabs/core-utils-sdk/dist'
 import { useWatchlist } from 'hooks/watchlist/useWatchlist'
 import { LocalTokenWithBalance } from 'store/balance'
@@ -18,59 +18,61 @@ import {
   ServiceProviderCategories,
   ServiceProviderNames
 } from '../consts'
-import {
-  useOnrampPaymentMethod,
-  useOnrampServiceProvider,
-  useOnrampToken
-} from '../meldOnramp/store'
+import { useMeldPaymentMethod, useMeldServiceProvider } from '../store'
 import {
   CreateCryptoQuoteErrorCode,
   CreateSessionWidget,
   CryptoCurrency,
   SessionTypes
 } from '../types'
-import { isTokenTradable } from '../utils'
 import { useLocale } from './useLocale'
 import { useSearchDefaultsByCountry } from './useSearchDefaultsByCountry'
 import { useCreateSessionWidget } from './useCreateSessionWidget'
 import { useServiceProviders } from './useServiceProviders'
-import { useSourceAmount } from './useSourceAmount'
+import { useFiatSourceAmount } from './useFiatSourceAmount'
+import { useMeldTokenWithBalance } from './useMeldTokenWithBalance'
 
 const DEFAULT_DEBOUNCE_MILLISECONDS = 300
 
-export const useSelectBuyAmount = (): {
+export const useSelectAmount = ({
+  category
+}: {
+  category: ServiceProviderCategories
+}): {
   isLoadingDefaultsByCountry: boolean
-  isLoadingPurchaseLimits: boolean
+  isLoadingTradeLimits: boolean
   isLoadingCryptoQuotes: boolean
   paymentMethodToDisplay: string | undefined
   serviceProviderToDisplay: string | undefined
   token?: CryptoCurrency & { tokenWithBalance: LocalTokenWithBalance }
   tokenBalance: TokenUnit | undefined
   hasValidSourceAmount: boolean
-  isBuyAllowed: boolean
-  formatInTokenUnit: (amt: number) => string
+  isEnabled: boolean
+  formatInSubTextNumber: (amt: number) => JSX.Element
   setSourceAmount: (amt: number) => void
   sourceAmount: number | undefined
   createSessionWidget: () => Promise<CreateSessionWidget | undefined>
   errorMessage?: string
 } => {
+  const {
+    theme: { colors }
+  } = useTheme()
   const account = useSelector(selectActiveAccount)
   const { getState } = useNavigation()
   const { formatCurrency } = useFormatCurrency()
   const selectedCurrency = useSelector(selectSelectedCurrency)
-  const [onrampToken] = useOnrampToken()
-  const [serviceProvider, setServiceProvider] = useOnrampServiceProvider()
-  const [paymentMethod, setPaymentMethod] = useOnrampPaymentMethod()
+  const [serviceProvider, setServiceProvider] = useMeldServiceProvider()
+  const [paymentMethod, setPaymentMethod] = useMeldPaymentMethod()
   const {
     sourceAmount,
     setSourceAmount,
-    isAboveMinimumPurchaseLimit,
-    isBelowMaximumPurchaseLimit,
+    isAboveMinimumLimit,
+    isBelowMaximumLimit,
     hasValidSourceAmount,
-    minimumPurchaseLimit,
-    maximumPurchaseLimit,
-    isLoadingPurchaseLimits
-  } = useSourceAmount()
+    minimumLimit,
+    maximumLimit,
+    isLoadingTradeLimits
+  } = useFiatSourceAmount({ category })
   const { countryCode } = useLocale()
   const { getFromPopulatedNetwork } = useNetworks()
   const { getMarketTokenBySymbol } = useWatchlist()
@@ -82,30 +84,14 @@ export const useSelectBuyAmount = (): {
   )
 
   const { crytoQuotes, isLoadingCryptoQuotes, cryptoQuotesError } =
-    useServiceProviders()
-
-  const erc20ContractTokens = useErc20ContractTokens()
-  const { filteredTokenList } = useSearchableTokenList({
-    tokens: erc20ContractTokens,
-    hideZeroBalance: false
-  })
+    useServiceProviders({ category })
 
   const { data: defaultsByCountry, isLoading: isLoadingDefaultsByCountry } =
     useSearchDefaultsByCountry({
-      categories: [ServiceProviderCategories.CRYPTO_ONRAMP]
+      categories: [category]
     })
 
-  const token = useMemo(() => {
-    const t = filteredTokenList.find(
-      tk => onrampToken && isTokenTradable(onrampToken, tk)
-    )
-    if (t) {
-      return {
-        ...onrampToken,
-        tokenWithBalance: t
-      }
-    }
-  }, [filteredTokenList, onrampToken])
+  const token = useMeldTokenWithBalance({ category })
 
   const network = useMemo(
     () => getFromPopulatedNetwork(token?.tokenWithBalance?.networkChainId),
@@ -125,19 +111,32 @@ export const useSelectBuyAmount = (): {
     }?amount=${formattedAmount}&dismissCount=${(currentIndex ?? 0) + 1}`
   }, [formatCurrency, getState, sourceAmount])
 
+  const destinationCurrencyCode = useMemo(() => {
+    return category === ServiceProviderCategories.CRYPTO_ONRAMP
+      ? token?.currencyCode ?? ''
+      : selectedCurrency
+  }, [category, token?.currencyCode, selectedCurrency])
+
+  const sourceCurrencyCode = useMemo(() => {
+    return category === ServiceProviderCategories.CRYPTO_ONRAMP
+      ? selectedCurrency
+      : token?.currencyCode ?? ''
+  }, [category, token?.currencyCode, selectedCurrency])
+
   const { createSessionWidget } = useCreateSessionWidget({
+    category,
     sessionType: SessionTypes.BUY,
     sessionData: {
       redirectUrl,
       sourceAmount,
-      destinationCurrencyCode: onrampToken?.currencyCode ?? '',
-      sourceCurrencyCode: selectedCurrency,
+      destinationCurrencyCode,
+      sourceCurrencyCode,
       walletAddress,
       serviceProvider
     }
   })
 
-  const isBuyAllowed = useMemo(() => {
+  const isEnabled = useMemo(() => {
     return (
       hasValidSourceAmount &&
       isLoadingCryptoQuotes === false &&
@@ -172,34 +171,6 @@ export const useSelectBuyAmount = (): {
     return serviceProvider ? ServiceProviderNames[serviceProvider] : undefined
   }, [serviceProvider])
 
-  const formatInTokenUnit = useCallback(
-    (amt: number): string => {
-      if (token?.tokenWithBalance === undefined || amt === 0) {
-        return ''
-      }
-      const currentPrice = getMarketTokenBySymbol(
-        token.tokenWithBalance.symbol
-      )?.currentPrice
-
-      if (currentPrice === undefined) {
-        return ''
-      }
-      const maxDecimals =
-        token.tokenWithBalance && 'decimals' in token.tokenWithBalance
-          ? token.tokenWithBalance.decimals
-          : 0
-
-      const tokenAmount = (amt / currentPrice) * 10 ** maxDecimals
-      const tokenUnit = new TokenUnit(
-        tokenAmount,
-        maxDecimals,
-        token.tokenWithBalance.symbol
-      )
-      return tokenUnit.toDisplay() + ' ' + token.tokenWithBalance.symbol
-    },
-    [getMarketTokenBySymbol, token?.tokenWithBalance]
-  )
-
   useLayoutEffect(() => {
     setPaymentMethod(undefined)
     setServiceProvider(undefined)
@@ -226,21 +197,55 @@ export const useSelectBuyAmount = (): {
     setServiceProvider
   ])
 
+  const getSourceAmountInTokenUnit = useCallback(
+    (amt: number): TokenUnit => {
+      const currentPrice = token?.tokenWithBalance.symbol
+        ? getMarketTokenBySymbol(token.tokenWithBalance.symbol)?.currentPrice ??
+          0
+        : 0
+
+      const maxDecimals =
+        token?.tokenWithBalance && 'decimals' in token.tokenWithBalance
+          ? token.tokenWithBalance.decimals
+          : 0
+
+      const tokenAmount = (amt / currentPrice) * 10 ** maxDecimals
+      return new TokenUnit(
+        tokenAmount,
+        maxDecimals,
+        token?.tokenWithBalance.symbol ?? ''
+      )
+    },
+    [getMarketTokenBySymbol, token?.tokenWithBalance]
+  )
+
+  // eslint-disable-next-line sonarjs/cognitive-complexity
   const errorMessage = useMemo(() => {
     if (
-      isAboveMinimumPurchaseLimit === false &&
-      minimumPurchaseLimit &&
-      sourceAmount !== 0
+      category === ServiceProviderCategories.CRYPTO_OFFRAMP &&
+      tokenBalance &&
+      sourceAmount &&
+      getSourceAmountInTokenUnit(sourceAmount).gt(tokenBalance)
     ) {
-      return `The minimum purchase amount is ${minimumPurchaseLimit} ${selectedCurrency}`
+      return `You don't have enough ${token?.tokenWithBalance.symbol} to withdraw`
     }
 
-    if (
-      isBelowMaximumPurchaseLimit === false &&
-      maximumPurchaseLimit &&
-      sourceAmount !== 0
-    ) {
-      return `The maximum purchase amount is ${maximumPurchaseLimit} ${selectedCurrency}`
+    if (isAboveMinimumLimit === false && minimumLimit && sourceAmount !== 0) {
+      const formattedMinimumLimit = formatCurrency({
+        amount: minimumLimit
+      })
+      return category === ServiceProviderCategories.CRYPTO_ONRAMP
+        ? `The minimum purchase amount is ${formattedMinimumLimit} ${selectedCurrency}`
+        : `The minimum withdrawal token amount is ${formattedMinimumLimit} ${selectedCurrency}`
+    }
+
+    if (isBelowMaximumLimit === false && maximumLimit && sourceAmount !== 0) {
+      const formattedMaximumLimit = formatCurrency({
+        amount: maximumLimit
+      })
+      return category === ServiceProviderCategories.CRYPTO_ONRAMP
+        ? `The maximum purchase amount is ${formattedMaximumLimit} ${selectedCurrency}`
+        : `The maximum withdrawal token amount is ${formattedMaximumLimit} ${selectedCurrency}`
     }
 
     if (
@@ -252,7 +257,11 @@ export const useSelectBuyAmount = (): {
           .toLowerCase()
           .includes('does not match service providers'))
     ) {
-      return `${token?.tokenWithBalance.name} cannot be purchased at the moment, please try again later.`
+      return `${token?.tokenWithBalance.name} cannot be ${
+        category === ServiceProviderCategories.CRYPTO_ONRAMP
+          ? 'purchased'
+          : 'withdrawn'
+      } at the moment, please try again later.`
     }
 
     if (cryptoQuotesError?.message) {
@@ -261,28 +270,74 @@ export const useSelectBuyAmount = (): {
 
     return undefined
   }, [
-    isAboveMinimumPurchaseLimit,
-    minimumPurchaseLimit,
+    category,
+    tokenBalance,
     sourceAmount,
-    isBelowMaximumPurchaseLimit,
-    maximumPurchaseLimit,
-    cryptoQuotesError,
-    selectedCurrency,
-    token?.tokenWithBalance.name
+    getSourceAmountInTokenUnit,
+    isAboveMinimumLimit,
+    minimumLimit,
+    isBelowMaximumLimit,
+    maximumLimit,
+    cryptoQuotesError?.statusCode,
+    cryptoQuotesError.message,
+    token?.tokenWithBalance.symbol,
+    token?.tokenWithBalance.name,
+    formatCurrency,
+    selectedCurrency
   ])
 
+  const formatInSubTextNumber = useCallback(
+    (amt: number): JSX.Element => {
+      const sourceAmountInTokenUnit = getSourceAmountInTokenUnit(amt)
+      return (
+        <View
+          sx={{
+            flexDirection: 'row',
+            justifyContent: 'center',
+            marginBottom: 8,
+            color:
+              errorMessage === undefined
+                ? alpha(colors.$textPrimary, 0.9)
+                : colors.$textDanger
+          }}>
+          <SubTextNumber
+            number={Number(
+              sourceAmountInTokenUnit.toDisplay({ asNumber: true })
+            )}
+            textColor={colors.$textPrimary}
+            textVariant="subtitle2"
+          />
+          <Text
+            variant="subtitle2"
+            sx={{
+              color: colors.$textPrimary
+            }}>
+            {' ' + token?.tokenWithBalance.symbol}
+          </Text>
+        </View>
+      )
+    },
+    [
+      getSourceAmountInTokenUnit,
+      errorMessage,
+      colors.$textPrimary,
+      colors.$textDanger,
+      token?.tokenWithBalance.symbol
+    ]
+  )
+
   return {
-    formatInTokenUnit,
+    formatInSubTextNumber,
     sourceAmount,
     setSourceAmount: debouncedSetAmount,
     paymentMethodToDisplay,
     serviceProviderToDisplay,
-    isBuyAllowed,
+    isEnabled,
     token,
     tokenBalance,
     hasValidSourceAmount,
     isLoadingDefaultsByCountry,
-    isLoadingPurchaseLimits,
+    isLoadingTradeLimits,
     createSessionWidget,
     isLoadingCryptoQuotes,
     errorMessage

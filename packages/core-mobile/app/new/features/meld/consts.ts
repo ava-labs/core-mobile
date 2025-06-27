@@ -23,14 +23,12 @@ export const NATIVE_ERC20_TOKEN_CONTRACT_ADDRESS =
   '0x0000000000000000000000000000000000000000'
 
 export enum PaymentMethods {
+  // Buy
   CREDIT_DEBIT_CARD = 'CREDIT_DEBIT_CARD',
   APPLE_PAY = 'APPLE_PAY',
   GOOGLE_PAY = 'GOOGLE_PAY',
-  SEPA = 'SEPA',
   PIX = 'PIX',
   BINANCE_CASH_BALANCE = 'BINANCE_CASH_BALANCE',
-  COINBASE_CASH_BALANCE = 'COINBASE_CASH_BALANCE',
-  ACH = 'ACH',
   KHIPU = 'KHIPU',
   PSE = 'PSE',
   REVOLUT_PAY = 'REVOLUT_PAY',
@@ -117,7 +115,15 @@ export enum PaymentMethods {
   NI_CASH = 'NI_CASH',
   PA_CASH = 'PA_CASH',
   PH_CASH = 'PH_CASH',
-  PY_CASH = 'PY_CASH'
+  PY_CASH = 'PY_CASH',
+
+  // Withdraw
+  PAYOUT_TO_CARD = 'PAYOUT_TO_CARD',
+
+  // Buy and Withdraw
+  SEPA = 'SEPA',
+  COINBASE_CASH_BALANCE = 'COINBASE_CASH_BALANCE',
+  ACH = 'ACH'
 }
 
 export const PaymentMethodNames = {
@@ -215,7 +221,8 @@ export const PaymentMethodNames = {
   [PaymentMethods.NI_CASH]: 'Local Cash Vouchers',
   [PaymentMethods.PA_CASH]: 'Local Cash Vouchers',
   [PaymentMethods.PH_CASH]: 'Local Cash Vouchers',
-  [PaymentMethods.PY_CASH]: 'Local Cash Vouchers'
+  [PaymentMethods.PY_CASH]: 'Local Cash Vouchers',
+  [PaymentMethods.PAYOUT_TO_CARD]: 'Payout to Card'
 }
 
 export const PaymentMethodTimeLimits = {
@@ -313,7 +320,9 @@ export const PaymentMethodTimeLimits = {
   [PaymentMethods.TOUCH_N_GO]: 'Instant',
   [PaymentMethods.QRPH]: 'Instant',
   [PaymentMethods.TH_BANK_TRANSFER]: 'Under 10 minutes',
-  [PaymentMethods.IN_BANK_TRANSFER]: 'Under 10 minutes'
+  [PaymentMethods.IN_BANK_TRANSFER]: 'Under 10 minutes',
+
+  [PaymentMethods.PAYOUT_TO_CARD]: '3-5 days'
 }
 
 export enum PaymentTypes {

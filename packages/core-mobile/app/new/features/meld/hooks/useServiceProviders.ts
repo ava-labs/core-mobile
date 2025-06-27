@@ -2,7 +2,7 @@ import { useSelector } from 'react-redux'
 import { selectSelectedCurrency } from 'store/settings/currency'
 import { QueryObserverResult, RefetchOptions } from '@tanstack/react-query'
 import { useMemo } from 'react'
-import { useOnrampToken } from '../meldOnramp/store'
+import { useMeldToken } from '../store'
 import {
   CreateCryptoQuote,
   CreateCryptoQuoteError,
@@ -10,10 +10,15 @@ import {
   CreateCryptoQuoteNotFoundError,
   Quote
 } from '../types'
+import { ServiceProviderCategories } from '../consts'
 import { useCreateCryptoQuote } from './useCreateCryptoQuote'
 import { useLocale } from './useLocale'
 
-export const useServiceProviders = (): {
+export const useServiceProviders = ({
+  category
+}: {
+  category: ServiceProviderCategories
+}): {
   crytoQuotes: Quote[]
   isLoadingCryptoQuotes: boolean
   cryptoQuotesError?: {
@@ -25,9 +30,21 @@ export const useServiceProviders = (): {
   ) => Promise<QueryObserverResult<CreateCryptoQuote | undefined, Error>>
   isRefetchingCryptoQuotes: boolean
 } => {
-  const [onRampToken] = useOnrampToken()
+  const [meldToken] = useMeldToken()
   const selectedCurrency = useSelector(selectSelectedCurrency)
   const { countryCode } = useLocale()
+
+  const destinationCurrencyCode = useMemo(() => {
+    return category === ServiceProviderCategories.CRYPTO_ONRAMP
+      ? meldToken?.currencyCode ?? ''
+      : selectedCurrency
+  }, [category, meldToken?.currencyCode, selectedCurrency])
+
+  const sourceCurrencyCode = useMemo(() => {
+    return category === ServiceProviderCategories.CRYPTO_ONRAMP
+      ? selectedCurrency
+      : meldToken?.currencyCode ?? ''
+  }, [category, meldToken?.currencyCode, selectedCurrency])
 
   const {
     data,
@@ -36,8 +53,9 @@ export const useServiceProviders = (): {
     isRefetching: isRefetchingCryptoQuotes,
     error
   } = useCreateCryptoQuote({
-    destinationCurrencyCode: onRampToken?.currencyCode ?? '',
-    sourceCurrencyCode: selectedCurrency,
+    category,
+    destinationCurrencyCode,
+    sourceCurrencyCode,
     countryCode
   })
 

@@ -2,7 +2,6 @@ import { useQuery, UseQueryResult } from '@tanstack/react-query'
 import MeldService from 'features/meld/services/MeldService'
 import { ReactQueryKeys } from 'consts/reactQueryKeys'
 import { CryptoCurrency, MeldDefaultParams } from '../types'
-import { ServiceProviderCategories } from '../consts'
 import { useLocale } from './useLocale'
 import { useSearchServiceProviders } from './useSearchServiceProviders'
 
@@ -19,7 +18,7 @@ export const useSearchCryptoCurrencies = ({
   'countries' | 'serviceProviders'
 >): UseQueryResult<CryptoCurrency[], Error> => {
   const { data: serviceProvidersData } = useSearchServiceProviders({
-    categories: [ServiceProviderCategories.CRYPTO_ONRAMP]
+    categories
   })
   const serviceProviders = serviceProvidersData?.map(
     serviceProvider => serviceProvider.serviceProvider

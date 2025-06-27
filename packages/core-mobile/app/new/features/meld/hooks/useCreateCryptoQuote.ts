@@ -5,28 +5,30 @@ import { useSelector } from 'react-redux'
 import MeldService from '../services/MeldService'
 import { CreateCryptoQuote, CreateCryptoQuoteParams } from '../types'
 import { ServiceProviderCategories } from '../consts'
-import { useOnrampPaymentMethod } from '../meldOnramp/store'
+import { useMeldPaymentMethod } from '../store'
 import { useSearchServiceProviders } from './useSearchServiceProviders'
-import { useSourceAmount } from './useSourceAmount'
+import { useFiatSourceAmount } from './useFiatSourceAmount'
 
 export const useCreateCryptoQuote = ({
+  category,
   countryCode,
   walletAddress,
   destinationCurrencyCode,
   sourceCurrencyCode
-}: CreateCryptoQuoteParams): UseQueryResult<
-  CreateCryptoQuote | undefined,
-  Error
-> => {
+}: CreateCryptoQuoteParams & {
+  category: ServiceProviderCategories
+}): UseQueryResult<CreateCryptoQuote | undefined, Error> => {
   const selectedCurrency = useSelector(selectSelectedCurrency)
-  const [onRampPaymentMethod] = useOnrampPaymentMethod()
+  const [meldPaymentMethod] = useMeldPaymentMethod()
   const { data: serviceProvidersData } = useSearchServiceProviders({
-    categories: [ServiceProviderCategories.CRYPTO_ONRAMP]
+    categories: [category]
   })
   const serviceProviders = serviceProvidersData?.map(
     serviceProvider => serviceProvider.serviceProvider
   )
-  const { hasValidSourceAmount, sourceAmount } = useSourceAmount()
+  const { hasValidSourceAmount, sourceAmount } = useFiatSourceAmount({
+    category
+  })
 
   const hasDestinationCurrencyCode = destinationCurrencyCode !== ''
 
@@ -44,7 +46,7 @@ export const useCreateCryptoQuote = ({
       sourceCurrencyCode,
       selectedCurrency,
       hasValidSourceAmount,
-      onRampPaymentMethod
+      meldPaymentMethod
     ],
     queryFn: () => {
       return MeldService.createCryptoQuote({
@@ -54,7 +56,7 @@ export const useCreateCryptoQuote = ({
         countryCode,
         destinationCurrencyCode,
         sourceCurrencyCode,
-        paymentMethodType: onRampPaymentMethod
+        paymentMethodType: meldPaymentMethod
       })
     },
     staleTime: 1000 * 60 * 1 // 1 minute

@@ -69,6 +69,7 @@ import { selectIsPrivacyModeEnabled } from 'store/settings/securityPrivacy'
 import { RootState } from 'store/types'
 import { useFocusedSelector } from 'utils/performance/useFocusedSelector'
 import { useBuy } from 'features/meld/hooks/useBuy'
+import { useWithdraw } from 'features/meld/hooks/useWithdraw'
 
 const SEGMENT_ITEMS = ['Assets', 'Collectibles', 'DeFi']
 
@@ -81,6 +82,7 @@ const SEGMENT_EVENT_MAP: Record<number, AnalyticsEventName> = {
 const PortfolioHomeScreen = (): JSX.Element => {
   const tabBarHeight = useBottomTabBarHeight()
   const { navigateToBuy } = useBuy()
+  const { navigateToWithdraw } = useWithdraw()
   const isPrivacyModeEnabled = useFocusedSelector(selectIsPrivacyModeEnabled)
   const [_, setSelectedToken] = useSendSelectedToken()
   const { theme } = useTheme()
@@ -248,6 +250,11 @@ const PortfolioHomeScreen = (): JSX.Element => {
       onPress: navigateToBuy
     })
     buttons.push({
+      title: 'Sell',
+      icon: 'buy',
+      onPress: navigateToWithdraw
+    })
+    buttons.push({
       title: ActionButtonTitle.Receive,
       icon: 'receive',
       onPress: handleReceive
@@ -260,10 +267,11 @@ const PortfolioHomeScreen = (): JSX.Element => {
     return buttons
   }, [
     handleSend,
-    handleBridge,
-    handleReceive,
-    navigateToBuy,
     isDeveloperMode,
+    navigateToBuy,
+    navigateToWithdraw,
+    handleReceive,
+    handleBridge,
     navigateToSwap
   ])
 
