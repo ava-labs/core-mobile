@@ -15,6 +15,7 @@ import { LoadingState } from 'common/components/LoadingState'
 import { ScrollScreen } from 'common/components/ScrollScreen'
 import { usePinOrBiometryLogin } from 'common/hooks/usePinOrBiometryLogin'
 import { usePreventScreenRemoval } from 'common/hooks/usePreventScreenRemoval'
+import { useStoredBiometrics } from 'common/hooks/useStoredBiometrics'
 import { useFocusEffect, useRouter } from 'expo-router'
 import { useWallet } from 'hooks/useWallet'
 import React, { useCallback, useEffect, useRef, useState } from 'react'
@@ -105,6 +106,8 @@ const LoginWithPinOrBiometry = (): JSX.Element => {
     onStartLoading: handleStartLoading,
     onStopLoading: handleStopLoading
   })
+
+  const { useBiometrics } = useStoredBiometrics()
 
   const [isEnteringPin, setIsEnteringPin] = useState(false)
 
@@ -203,7 +206,7 @@ const LoginWithPinOrBiometry = (): JSX.Element => {
       InteractionManager.runAfterInteractions(() => {
         if (bioType !== BiometricType.NONE) {
           handlePromptBioLogin()
-        } else if (!isBiometricAvailable) {
+        } else if (!isBiometricAvailable || !useBiometrics) {
           focusPinInput()
         }
       })
@@ -211,7 +214,13 @@ const LoginWithPinOrBiometry = (): JSX.Element => {
       return () => {
         blurPinInput()
       }
-    }, [bioType, isBiometricAvailable, handlePromptBioLogin, focusPinInput])
+    }, [
+      bioType,
+      isBiometricAvailable,
+      useBiometrics,
+      handlePromptBioLogin,
+      focusPinInput
+    ])
   )
 
   useEffect(() => {
