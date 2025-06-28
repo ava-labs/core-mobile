@@ -30,7 +30,6 @@ export default {
   networkRpcUrl: 'networkRpcUrl',
   networksTab: 'Networks',
   saveButton: 'save_btn',
-  searchBar: 'network_manager__search_input',
   starSvg: 'star_svg',
   networkNotAvailableToast: 'network_not_available_toast',
   bitcoin: 'Bitcoin',

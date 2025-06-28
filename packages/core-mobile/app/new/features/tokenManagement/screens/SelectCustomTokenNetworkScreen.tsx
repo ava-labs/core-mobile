@@ -149,13 +149,7 @@ export const SelectCustomTokenNetworkScreen = (): JSX.Element => {
   )
 
   const renderHeader = useCallback(() => {
-    return (
-      <SearchBar
-        onTextChanged={setSearchText}
-        searchText={searchText}
-        testID="network_manager__search_input"
-      />
-    )
+    return <SearchBar onTextChanged={setSearchText} searchText={searchText} />
   }, [setSearchText, searchText])
 
   return (

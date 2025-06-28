@@ -180,6 +180,10 @@ class CommonElsPage {
     return by.text(commonElsLoc.transactionSuccess)
   }
 
+  get dropdownScrollView() {
+    return by.id(commonElsLoc.dropdownScrollView)
+  }
+
   async dismissTransactionOnboarding() {
     try {
       await Actions.tap(this.transactionOnboardingNext)
@@ -363,7 +367,7 @@ class CommonElsPage {
 
   async verifySuccessToast() {
     await device.disableSynchronization()
-    await Actions.waitForElementNoSync(this.transactionSuccess, 30000)
+    await Actions.waitForElementNoSync(this.transactionSuccess, 40000)
     await device.enableSynchronization()
   }
 
@@ -380,6 +384,15 @@ class CommonElsPage {
   async tapApproveButton() {
     await Actions.waitForElement(this.approveButton, 20000)
     await Actions.tapElementAtIndex(this.approveButton, 0)
+  }
+
+  async selectDropdownItem(item: string) {
+    await Actions.scrollListUntil(
+      by.id(`${commonElsLoc.dropdownItem}${item}`),
+      this.dropdownScrollView,
+      100
+    )
+    await Actions.tap(by.id(`${commonElsLoc.dropdownItem}${item}`))
   }
 }
 

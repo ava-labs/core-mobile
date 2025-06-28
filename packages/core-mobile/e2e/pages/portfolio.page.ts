@@ -11,6 +11,7 @@ import ActivityTabPage from './activityTab.page'
 import collectiblesPage from './collectibles.page'
 import accountManagePage from './accountManage.page'
 import bottomTabsPage from './bottomTabs.page'
+import commonElsPage from './commonEls.page'
 
 const platformIndex = Action.platform() === Platform.iOS ? 1 : 0
 class PortfolioPage {
@@ -354,7 +355,7 @@ class PortfolioPage {
   }
 
   async tapToken(token = 'Avalanche') {
-    await Action.tap(by.id(`portfolio_token_item__${token}`))
+    await Action.waitAndTap(by.id(`${portfolio.portfolioTokenItem}${token}`))
   }
 
   async verifyActiveNetwork(network: string) {
@@ -509,12 +510,7 @@ class PortfolioPage {
 
   async filterNetwork(network = commonElsLoc.cChain_2) {
     await Action.tap(this.filter)
-    await this.selectDropdownItem(network)
-  }
-
-  async selectDropdownItem(item: string) {
-    await Action.waitForElement(by.id(`dropdown_item__${item}`))
-    await Action.tap(by.id(`dropdown_item__${item}`))
+    await commonElsPage.selectDropdownItem(network)
   }
 
   async verifyActivityItem(
@@ -526,7 +522,7 @@ class PortfolioPage {
 
   async selectView(viewType = 'List view') {
     await Action.tap(this.view)
-    await this.selectDropdownItem(viewType)
+    await commonElsPage.selectDropdownItem(viewType)
   }
 }
 

@@ -223,6 +223,11 @@ export const ManageNetworksScreen = (): JSX.Element => {
           <Text style={{ flex: 1 }}>{item.chainName}</Text>
           {!alwaysEnabledChainIds.includes(item.chainId) && (
             <Toggle
+              testID={
+                isEnabled
+                  ? `network_toggle_enabled__${item.chainName}`
+                  : `network_toggle_disabled__${item.chainName}`
+              }
               value={isEnabled}
               onValueChange={() => toggleNetwork(item.chainId)}
             />
@@ -251,13 +256,7 @@ export const ManageNetworksScreen = (): JSX.Element => {
   )
 
   const renderHeader = useCallback(() => {
-    return (
-      <SearchBar
-        onTextChanged={setSearchText}
-        searchText={searchText}
-        testID="network_manager__search_input"
-      />
-    )
+    return <SearchBar onTextChanged={setSearchText} searchText={searchText} />
   }, [setSearchText, searchText])
 
   const renderHeaderRight = useCallback(() => {
