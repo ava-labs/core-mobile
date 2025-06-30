@@ -124,18 +124,24 @@ export const SelectServiceProvider = ({
       const serviceProvider = serviceProviders?.find(
         sp => sp.serviceProvider === item.serviceProvider
       )
-
+      const amount =
+        category === ServiceProviderCategories.CRYPTO_ONRAMP
+          ? item.destinationAmount ?? 0
+          : item.sourceAmount ?? 0
       const tokenAmount =
-        item.destinationAmount ??
-        0 - (item.totalFee ?? 0) / (item.exchangeRate ?? 0)
+        amount - (item.totalFee ?? 0) / (item.exchangeRate ?? 0)
+      const tokenAmountFixed = Math.trunc(tokenAmount * 1_000_000) / 1_000_000 // truncate to 6 decimal places
+
       const tokenUnitToDisplay =
         network?.networkToken.decimals && token?.tokenWithBalance.symbol
           ? new TokenUnit(
-              tokenAmount * 10 ** network.networkToken.decimals,
+              tokenAmountFixed * 10 ** network.networkToken.decimals,
               network.networkToken.decimals,
               token.tokenWithBalance.symbol
-            ).toDisplay()
-          : tokenAmount
+            ).toDisplay({ asNumber: true })
+          : tokenAmountFixed
+
+      const fiatAmount = tokenUnitToDisplay * (item.exchangeRate ?? 0)
 
       return (
         <Pressable
@@ -202,13 +208,14 @@ export const SelectServiceProvider = ({
             <Text
               variant="subtitle2"
               sx={{ textAlign: 'right', fontWeight: 500, fontSize: 12 }}>
-              ~{formatCurrency({ amount: item.fiatAmountWithoutFees ?? 0 })}
+              ~{formatCurrency({ amount: fiatAmount })}
             </Text>
           </View>
         </Pressable>
       )
     },
     [
+      category,
       colors.$surfaceSecondary,
       colors.$textPrimary,
       colors.$textSuccess,
