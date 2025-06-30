@@ -38,7 +38,7 @@ import {
 } from '@avalabs/vm-module-types'
 import { isTypedData, isTypedDataV1 } from '@avalabs/evm-module'
 import { stripChainAddress } from 'store/account/utils'
-import { AddressPublicKey, Curve, isSvmPublicKey } from 'utils/publicKeys'
+import { AddressPublicKey, Curve } from 'utils/publicKeys'
 import { findPublicKey } from 'utils/publicKeys'
 import { base64 } from '@scure/base'
 import { hex } from '@scure/base'
@@ -434,20 +434,6 @@ export default class SeedlessWallet implements Wallet {
     })
   }
 
-  private getSolanaPublicKey(accountIndex: number): string {
-    const publicKeys = this.#addressPublicKeys.filter(isSvmPublicKey)
-
-    if (
-      accountIndex < 0 ||
-      accountIndex >= publicKeys.length ||
-      !publicKeys[accountIndex]
-    ) {
-      throw new Error('Invalid account index or Solana key not found')
-    }
-
-    return publicKeys[accountIndex].key
-  }
-
   public async signSvmTransaction({
     accountIndex,
     transaction,
@@ -460,7 +446,10 @@ export default class SeedlessWallet implements Wallet {
   }): Promise<string> {
     try {
       // Get the Solana-specific public key (Ed25519)
-      const solanaPublicKey = this.getSolanaPublicKey(accountIndex)
+      const solanaPublicKey = await this.getAddressPublicKey(
+        accountIndex,
+        NetworkVMType.SVM
+      )
 
       // Get the signing key
       const solanaKey = await this.getSigningKeyByTypeAndKey(

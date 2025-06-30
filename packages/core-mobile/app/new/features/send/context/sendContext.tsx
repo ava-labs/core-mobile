@@ -78,7 +78,7 @@ interface SendContextState {
   addressToSend?: string
   resetAmount: () => void
   minAmount: TokenUnit | undefined
-  setMinAmount: Dispatch<TokenUnit>
+  setMinAmount: Dispatch<TokenUnit | undefined>
 }
 
 export const SendContext = createContext<SendContextState>(

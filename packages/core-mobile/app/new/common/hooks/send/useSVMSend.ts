@@ -106,6 +106,8 @@ const useSVMSend: SendAdapterSVM = ({
           token: nativeToken,
           setMinAmount
         })
+      } else {
+        setMinAmount(undefined)
       }
 
       setError(undefined)

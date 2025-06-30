@@ -33,7 +33,3 @@ export type SeedlessPublicKeys = {
 
 export const isEvmPublicKey = (publicKey: AddressPublicKey): boolean =>
   publicKey.derivationPath.startsWith(EVM_BASE_DERIVATION_PATH_PREFIX)
-
-export const isSvmPublicKey = (publicKey: AddressPublicKey): boolean =>
-  publicKey.curve === Curve.ED25519 &&
-  publicKey.derivationPath.startsWith(SVM_BASE_DERIVATION_PATH_PREFIX)

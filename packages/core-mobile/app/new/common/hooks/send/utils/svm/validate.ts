@@ -1,14 +1,13 @@
 import {
   TokenWithBalance,
   TokenWithBalanceSPL,
-  TokenWithBalanceSVM,
-  TokenType
+  TokenWithBalanceSVM
 } from '@avalabs/vm-module-types'
 import { SendErrorMessage } from 'errors/sendError'
 import { TokenUnit } from '@avalabs/core-utils-sdk/dist'
 import { isAddress } from '@solana/kit'
 import { SolanaProvider } from '@avalabs/core-wallets-sdk'
-import { getAccountOccupiedSpace } from '../getAccountOccupiedSpace'
+import { getAccountOccupiedSpace } from './getAccountOccupiedSpace'
 import { isSupportedSVMToken } from './typeguard'
 import { getRentExemptMinimum } from './getRentExemptMinimum'
 
@@ -59,7 +58,7 @@ export const validateDestinationAccountRentExempt = async ({
   amount?: TokenUnit
   provider: SolanaProvider
   token: TokenWithBalanceSVM | TokenWithBalanceSPL
-  setMinAmount: (amount: TokenUnit) => void
+  setMinAmount: (amount: TokenUnit | undefined) => void
 }): Promise<void> => {
   const amountBigInt = amount?.toSubUnit() ?? 0n
 
@@ -68,33 +67,29 @@ export const validateDestinationAccountRentExempt = async ({
     throw new Error(SendErrorMessage.INVALID_ADDRESS)
   }
 
-  if (token.type === TokenType.NATIVE) {
-    // For native SOL transfers, check recipient account's rent-exempt requirement
-    const spaceOccupied = await getAccountOccupiedSpace(addressToSend, provider)
-    const rentExemptMinimum = await getRentExemptMinimum(
-      spaceOccupied,
-      provider
+  // For native SOL transfers, check recipient account's rent-exempt requirement
+  const spaceOccupied = await getAccountOccupiedSpace(addressToSend, provider)
+  const rentExemptMinimum = await getRentExemptMinimum(spaceOccupied, provider)
+
+  // If account doesn't exist, ensure first transfer covers rent-exempt minimum
+  if (spaceOccupied === 0n) {
+    const minAmount = new TokenUnit(
+      rentExemptMinimum,
+      token.decimals,
+      token.symbol
     )
-
-    // If account doesn't exist, ensure first transfer covers rent-exempt minimum
-    if (spaceOccupied === 0n) {
-      const minAmount = new TokenUnit(
-        rentExemptMinimum,
-        token.decimals,
-        token.symbol
-      )
-      setMinAmount(minAmount)
-
-      if (amountBigInt < rentExemptMinimum) {
-        throw new Error(SendErrorMessage.INSUFFICIENT_BALANCE)
-      }
-    }
+    setMinAmount(minAmount)
 
     if (amountBigInt < rentExemptMinimum) {
-      throw new Error(SendErrorMessage.AMOUNT_TOO_LOW)
+      throw new Error(SendErrorMessage.INSUFFICIENT_BALANCE)
+    } else {
+      setMinAmount(undefined)
     }
   } else {
-    // look into associated token account
-    // For SPL tokens, check if recipient has an associated token account
+    setMinAmount(undefined)
+  }
+
+  if (amountBigInt < rentExemptMinimum) {
+    throw new Error(SendErrorMessage.AMOUNT_TOO_LOW)
   }
 }

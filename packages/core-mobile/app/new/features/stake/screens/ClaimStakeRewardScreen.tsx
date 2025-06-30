@@ -12,7 +12,7 @@ import {
   View
 } from '@avalabs/k2-alpine'
 import { ScrollScreen } from 'common/components/ScrollScreen'
-import { SendErrorMessage } from 'common/hooks/send/utils/types'
+import { SendErrorMessage } from 'errors/sendError'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import { usePreventScreenRemoval } from 'common/hooks/usePreventScreenRemoval'
 import { transactionSnackbar } from 'common/utils/toast'
