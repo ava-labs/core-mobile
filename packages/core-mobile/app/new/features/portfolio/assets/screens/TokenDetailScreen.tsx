@@ -226,7 +226,7 @@ export const TokenDetailScreen = (): React.JSX.Element => {
       buttons.push({
         title: ActionButtonTitle.Withdraw,
         icon: 'buy',
-        onPress: navigateToWithdraw
+        onPress: () => navigateToWithdraw({ token })
       })
     }
 
