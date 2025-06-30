@@ -185,17 +185,18 @@ export const SelectServiceProvider = ({
                   }}>
                   {ServiceProviderNames[serviceProvider.serviceProvider]}
                 </Text>
-                {index === 0 && (
-                  <Text
-                    variant="body2"
-                    sx={{
-                      color: colors.$textSuccess,
-                      fontWeight: 400,
-                      lineHeight: 16
-                    }}>
-                    Lowest price
-                  </Text>
-                )}
+                {index === 0 &&
+                  category === ServiceProviderCategories.CRYPTO_ONRAMP && (
+                    <Text
+                      variant="body2"
+                      sx={{
+                        color: colors.$textSuccess,
+                        fontWeight: 400,
+                        lineHeight: 16
+                      }}>
+                      Lowest price
+                    </Text>
+                  )}
               </View>
             </View>
           )}
