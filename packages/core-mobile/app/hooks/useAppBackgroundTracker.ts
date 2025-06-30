@@ -87,7 +87,7 @@ async function isForegroundAndLoggedIn(
   return (
     appState.current.match(/background/) &&
     nextAppState === 'active' &&
-    (await BiometricsSDK.getAccessType())
+    BiometricsSDK.getAccessType()
   )
 }
 

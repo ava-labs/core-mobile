@@ -121,7 +121,7 @@ export const migrations = {
   9: async (state: any) => {
     // for people upgrading from < 9, if they have set biometrics or pin,
     // it means they have created a mnemonic wallet
-    const isLoggedIn = await BiometricsSDK.getAccessType()
+    const isLoggedIn = BiometricsSDK.getAccessType()
 
     return {
       ...state,
