@@ -159,7 +159,7 @@ const SecurityAndPrivacyScreen = (): JSX.Element => {
         showAlert({
           title: 'Do you really want to disable the PIN code?',
           description:
-            'This will remove the PIN requirement when leaving the app and keeping it open in the background.\n\nHowever, pin will be required if the app is closed completely',
+            'This will remove the PIN requirement when leaving the app and keeping it open in the background.\n\nHowever, PIN will be required if the app is closed completely',
           buttons: [
             {
               text: 'Cancel'

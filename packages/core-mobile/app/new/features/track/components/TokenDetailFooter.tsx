@@ -1,15 +1,16 @@
 import { Button, View } from '@avalabs/k2-alpine'
+import { USDC_AVALANCHE_C_TOKEN_ID } from 'common/consts/swap'
+import { useActiveAccount } from 'common/hooks/useActiveAccount'
+import { useIsSwappable } from 'common/hooks/useIsSwapable'
+import { useIsSwapListLoaded } from 'common/hooks/useIsSwapListLoaded'
 import { useHasEnoughAvaxToStake } from 'hooks/earn/useHasEnoughAvaxToStake'
 import React, { useCallback, useMemo } from 'react'
 import { useSelector } from 'react-redux'
 import { selectBalanceTotalForAccount } from 'store/balance'
 import { selectTokenVisibility } from 'store/portfolio'
 import { selectIsEarnBlocked, selectIsSwapBlocked } from 'store/posthog'
-import { MarketType } from 'store/watchlist'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
-import { useIsSwappable } from 'common/hooks/useIsSwapable'
-import { USDC_AVALANCHE_C_TOKEN_ID } from 'common/consts/swap'
-import { useActiveAccount } from 'common/hooks/useActiveAccount'
+import { MarketType } from 'store/watchlist'
 import { getTokenActions } from '../utils/getTokenActions'
 
 export const TokenDetailFooter = ({
@@ -40,6 +41,8 @@ export const TokenDetailFooter = ({
   const isZeroBalance = balanceTotal === 0n
   const { hasEnoughAvax } = useHasEnoughAvaxToStake()
   const isEarnBlocked = useSelector(selectIsEarnBlocked)
+
+  const isSwapListLoaded = useIsSwapListLoaded()
 
   const isTokenSwappable = isSwappable({
     tokenAddress: contractAddress,
@@ -105,29 +108,34 @@ export const TokenDetailFooter = ({
 
     showStake && result.push(stakeButton)
 
-    showSwap &&
+    // the token's swapability depends on the swap list
+    // thus, we need to wait for the swap list to load
+    // so that we can display the swap button accordingly
+    if (showSwap && isSwapListLoaded) {
       result.push(
         generateSwapButton(isAVAX ? USDC_AVALANCHE_C_TOKEN_ID : contractAddress)
       )
+    }
 
     return result
   }, [
-    contractAddress,
+    isAVAX,
     marketType,
-    isDeveloperMode,
+    isTokenSwappable,
     isSwapBlocked,
+    isDeveloperMode,
     isZeroBalance,
     hasEnoughAvax,
     isEarnBlocked,
     buyButton,
     stakeButton,
+    isSwapListLoaded,
     generateSwapButton,
-    isAVAX,
-    isTokenSwappable
+    contractAddress
   ])
 
   if (actions.length === 0) {
-    return null
+    return <></>
   }
 
   return (

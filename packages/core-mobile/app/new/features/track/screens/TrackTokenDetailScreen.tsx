@@ -19,19 +19,24 @@ import { useLocalSearchParams, useRouter } from 'expo-router'
  * TODO: Adjust import back to expo-router once the bug is resolved.
  */
 import { truncateAddress } from '@avalabs/core-utils-sdk'
+import { useIsFocused } from '@react-navigation/native'
 import { FavoriteBarButton } from 'common/components/FavoriteBarButton'
 import { ScrollScreen } from 'common/components/ScrollScreen'
 import { ShareBarButton } from 'common/components/ShareBarButton'
-import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
-import { copyToClipboard } from 'common/utils/clipboard'
-import { format } from 'date-fns'
-import { useAddStake } from 'features/stake/hooks/useAddStake'
 import { AVAX_TOKEN_ID } from 'common/consts/swap'
+import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
+import { useTokenDetails } from 'common/hooks/useTokenDetails'
+import { copyToClipboard } from 'common/utils/clipboard'
+import { AVAX_COINGECKO_ID } from 'consts/coingecko'
+import { format } from 'date-fns'
+import { useBuy } from 'features/buyOnramp/hooks/useBuy'
+import { useAddStake } from 'features/stake/hooks/useAddStake'
 import { useNavigateToSwap } from 'features/swap/hooks/useNavigateToSwap'
 import { SelectedChartDataIndicator } from 'features/track/components/SelectedChartDataIndicator'
 import { TokenDetailChart } from 'features/track/components/TokenDetailChart'
 import { TokenDetailFooter } from 'features/track/components/TokenDetailFooter'
 import { TokenHeader } from 'features/track/components/TokenHeader'
+import { useGetPrices } from 'hooks/watchlist/useGetPrices'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { StyleSheet } from 'react-native'
 import Animated, {
@@ -39,25 +44,20 @@ import Animated, {
   useSharedValue,
   withTiming
 } from 'react-native-reanimated'
+import { MarketToken, MarketType } from 'store/watchlist'
 import { getDomainFromUrl } from 'utils/getDomainFromUrl/getDomainFromUrl'
 import { isPositiveNumber } from 'utils/isPositiveNumber/isPositiveNumber'
 import { formatLargeCurrency } from 'utils/Utils'
-import { useTokenDetails } from 'common/hooks/useTokenDetails'
-import { useGetPrices } from 'hooks/watchlist/useGetPrices'
-import { useIsFocused } from '@react-navigation/native'
-import { MarketType } from 'store/watchlist'
-import { AVAX_COINGECKO_ID } from 'consts/coingecko'
-import { useIsSwapListLoaded } from 'common/hooks/useIsSwapListLoaded'
-import { useBuy } from 'features/buyOnramp/hooks/useBuy'
 
 const MAX_VALUE_WIDTH = '80%'
 
 const TrackTokenDetailScreen = (): JSX.Element => {
   const { theme } = useTheme()
-  const { tokenId, marketType } = useLocalSearchParams<{
-    tokenId: string
-    marketType: MarketType
+  const params = useLocalSearchParams<{
+    token: string
   }>()
+
+  const token = JSON.parse(params.token) as MarketToken
   const { back, navigate } = useRouter()
   const [isChartInteracting, setIsChartInteracting] = useState(false)
   const { navigateToSwap } = useNavigateToSwap()
@@ -81,7 +81,7 @@ const TrackTokenDetailScreen = (): JSX.Element => {
     openUrl,
     coingeckoId,
     chainId
-  } = useTokenDetails({ tokenId: tokenId, marketType })
+  } = useTokenDetails({ tokenId: token.id, marketType: token.marketType })
   const isFocused = useIsFocused()
   const { navigateToBuy } = useBuy()
 
@@ -93,8 +93,6 @@ const TrackTokenDetailScreen = (): JSX.Element => {
       tokenInfo.currentPrice === undefined &&
       coingeckoId.length > 0
   })
-
-  const isSwapListLoaded = useIsSwapListLoaded()
 
   const selectedSegmentIndex = useSharedValue(0)
 
@@ -201,9 +199,11 @@ const TrackTokenDetailScreen = (): JSX.Element => {
     navigate({
       // @ts-ignore TODO: make routes typesafe
       pathname: '/trackTokenDetail/share',
-      params: { tokenId, marketType }
+      params: {
+        token: JSON.stringify(token)
+      }
     })
-  }, [navigate, marketType, tokenId])
+  }, [navigate, token])
 
   const marketData = useMemo(() => {
     const data: GroupListItem[] = []
@@ -295,24 +295,32 @@ const TrackTokenDetailScreen = (): JSX.Element => {
 
   const renderHeaderRight = useCallback(() => {
     // favorite feature is only available for tokens that exist in our database
-    const showFavoriteButton = marketType !== MarketType.SEARCH
+    const showFavoriteButton = token.marketType !== MarketType.SEARCH
 
     return (
       <View
         sx={{
-          flexDirection: 'row',
-          gap: 16,
-          marginTop: 14,
-          marginRight: 18,
-          alignItems: 'center'
+          flexDirection: 'row'
         }}>
         {showFavoriteButton && (
-          <FavoriteBarButton isFavorite={isFavorite} onPress={handleFavorite} />
+          <FavoriteBarButton
+            isFavorite={isFavorite}
+            onPress={handleFavorite}
+            isModal
+            style={{ paddingRight: 12 }}
+          />
         )}
-        <ShareBarButton onPress={handleShare} />
+        <ShareBarButton
+          onPress={handleShare}
+          isModal
+          style={{
+            paddingRight: 30,
+            paddingLeft: 12
+          }}
+        />
       </View>
     )
-  }, [isFavorite, handleFavorite, handleShare, marketType])
+  }, [isFavorite, handleFavorite, handleShare, token.marketType])
 
   useEffect(() => {
     headerOpacity.value = withTiming(isChartInteracting ? 0 : 1, {
@@ -324,7 +332,7 @@ const TrackTokenDetailScreen = (): JSX.Element => {
     return (
       <TokenDetailFooter
         isAVAX={coingeckoId === AVAX_COINGECKO_ID}
-        marketType={marketType}
+        marketType={token.marketType}
         contractAddress={tokenInfo?.contractAddress}
         chainId={chainId}
         onBuy={() => handleBuy(tokenInfo?.contractAddress)}
@@ -334,55 +342,32 @@ const TrackTokenDetailScreen = (): JSX.Element => {
     )
   }, [
     coingeckoId,
+    token.marketType,
     tokenInfo?.contractAddress,
     chainId,
-    marketType,
-    handleBuy,
     addStake,
-    handleSwap
+    handleSwap,
+    handleBuy
   ])
 
   const renderHeader = useCallback(() => {
-    if (!tokenInfo) {
-      return <></>
-    }
     return (
-      <TokenHeader
-        logoUri={tokenInfo.logoUri}
-        symbol={tokenInfo.symbol ?? ''}
-        currentPrice={
-          tokenInfo.currentPrice ?? prices?.[coingeckoId]?.priceInCurrency
-        }
-        ranges={
-          ranges.minDate === 0 && ranges.maxDate === 0 ? undefined : ranges
-        }
-        rank={tokenInfo?.marketCapRank}
-      />
-    )
-  }, [tokenInfo, prices, ranges, coingeckoId])
-
-  const showLoading =
-    !tokenId ||
-    !tokenInfo ||
-    // the token's swapability depends on the swap list
-    // thus, we need to wait for the swap list to load
-    // so that we can display the swap button accordingly
-    !isSwapListLoaded
-
-  if (showLoading) {
-    return <LoadingState sx={styles.container} />
-  }
-
-  return (
-    <ScrollScreen
-      renderFooter={renderFooter}
-      navigationTitle={tokenInfo?.symbol.toUpperCase() ?? ''}
-      isModal
-      renderHeaderRight={renderHeaderRight}>
-      <View style={styles.chartContainer}>
+      <View sx={{ paddingHorizontal: 16 }}>
         <Animated.View style={{ opacity: headerOpacity }}>
-          {renderHeader()}
+          <TokenHeader
+            logoUri={token.logoUri}
+            symbol={token.symbol ?? ''}
+            currentPrice={
+              token.currentPrice ?? prices?.[coingeckoId]?.priceInCurrency
+            }
+            ranges={{
+              diffValue: token.priceChange24h ?? 0,
+              percentChange: token.priceChangePercentage24h ?? 0
+            }}
+            rank={tokenInfo?.marketCapRank}
+          />
         </Animated.View>
+
         {isChartInteracting && (
           <Animated.View
             style={[
@@ -400,6 +385,34 @@ const TrackTokenDetailScreen = (): JSX.Element => {
           </Animated.View>
         )}
       </View>
+    )
+  }, [
+    headerOpacity,
+    token.logoUri,
+    token.symbol,
+    token.currentPrice,
+    token.priceChange24h,
+    token.priceChangePercentage24h,
+    prices,
+    coingeckoId,
+    tokenInfo?.marketCapRank,
+    isChartInteracting,
+    selectedDataIndicatorOpacity,
+    selectedData,
+    chartData
+  ])
+
+  if (!token.id) {
+    return <LoadingState sx={styles.container} />
+  }
+
+  return (
+    <ScrollScreen
+      renderFooter={renderFooter}
+      navigationTitle={tokenInfo?.symbol.toUpperCase() ?? ''}
+      isModal
+      renderHeader={renderHeader}
+      renderHeaderRight={renderHeaderRight}>
       <TokenDetailChart
         ranges={ranges}
         chartData={chartData}
@@ -487,8 +500,6 @@ const styles = StyleSheet.create({
   aboutContainer: { paddingHorizontal: 16, marginTop: 25, gap: 20 },
   aboutCard: { alignItems: undefined, gap: 3 },
   segmentedControl: { marginHorizontal: 16 },
-  scrollviewContent: { paddingBottom: 60 },
-  chartContainer: { paddingHorizontal: 16, paddingBottom: 4 },
   lastUpdatedContainer: { paddingTop: 40, marginTop: 8 }
 })
 

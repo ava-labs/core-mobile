@@ -9,40 +9,31 @@ import {
   useTheme,
   View
 } from '@avalabs/k2-alpine'
-import React, { useMemo } from 'react'
-import { useTokenDetails } from 'common/hooks/useTokenDetails'
-import { formatLargeCurrency } from 'utils/Utils'
-import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
+import { useIsFocused } from '@react-navigation/native'
 import { TokenLogo } from 'common/components/TokenLogo'
+import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
+import { useTokenDetails } from 'common/hooks/useTokenDetails'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
 import SparklineChart from 'features/track/components/SparklineChart'
 import { useGetPrices } from 'hooks/watchlist/useGetPrices'
-import { useIsFocused } from '@react-navigation/native'
-import { MarketType } from 'store/watchlist/types'
+import React, { useMemo } from 'react'
+import { MarketToken } from 'store/watchlist'
+import { formatLargeCurrency } from 'utils/Utils'
 import { isEffectivelyZero } from '../utils/utils'
 
-export const ShareChart = ({
-  tokenId,
-  marketType
-}: {
-  tokenId: string
-  marketType: MarketType
-}): JSX.Element => {
+export const ShareChart = ({ token }: { token: MarketToken }): JSX.Element => {
   const { theme } = useTheme()
   const { theme: inversedTheme } = useInversedTheme({ isDark: theme.isDark })
-  const { chartData, ranges, tokenInfo, coingeckoId } = useTokenDetails({
-    tokenId: tokenId,
-    marketType
+  const { chartData, ranges, coingeckoId } = useTokenDetails({
+    tokenId: token.id,
+    marketType: token.marketType
   })
   const isFocused = useIsFocused()
 
   const { data: prices } = useGetPrices({
     coingeckoIds: [coingeckoId],
     enabled:
-      isFocused &&
-      tokenInfo !== undefined &&
-      tokenInfo.currentPrice === undefined &&
-      coingeckoId.length > 0
+      isFocused && token?.currentPrice === undefined && coingeckoId.length > 0
   })
 
   return (
@@ -51,55 +42,55 @@ export const ShareChart = ({
         width: CHART_IMAGE_SIZE,
         height: CHART_IMAGE_SIZE
       }}>
-      {!tokenInfo || (chartData ?? []).length === 0 ? (
+      <View
+        sx={{
+          backgroundColor: inversedTheme.colors.$surfacePrimary,
+          height: '100%'
+        }}>
         <View
           sx={{
-            backgroundColor: theme.colors.$surfaceSecondary,
-            height: '100%',
-            justifyContent: 'center'
+            paddingTop: 36,
+            paddingHorizontal: 40,
+            paddingBottom: 4
           }}>
-          <ActivityIndicator size={'large'} />
-        </View>
-      ) : (
-        <View
-          sx={{
-            backgroundColor: inversedTheme.colors.$surfacePrimary,
-            height: '100%'
-          }}>
-          <View
-            sx={{
-              paddingTop: 36,
-              paddingHorizontal: 40,
-              paddingBottom: 4
-            }}>
-            <TokenHeader
-              logoUri={tokenInfo.logoUri}
-              symbol={tokenInfo.symbol}
-              currentPrice={
-                tokenInfo.currentPrice ?? prices?.[coingeckoId]?.priceInCurrency
-              }
-              ranges={
-                ranges.minDate === 0 && ranges.maxDate === 0
-                  ? undefined
-                  : ranges
-              }
-            />
-          </View>
-          <SparklineChart
-            style={{
-              position: 'absolute',
-              bottom: 0,
-              left: 0,
-              right: 0,
-              height: CHART_HEIGHT + VERTICAL_PADDING * 2
+          <TokenHeader
+            logoUri={token?.logoUri}
+            symbol={token?.symbol ?? ''}
+            currentPrice={
+              token?.currentPrice ?? prices?.[coingeckoId]?.priceInCurrency
+            }
+            ranges={{
+              diffValue: token?.priceChange24h ?? 0,
+              percentChange: token?.priceChangePercentage24h ?? 0
             }}
-            data={chartData ?? []}
-            verticalPadding={VERTICAL_PADDING}
-            negative={ranges.diffValue < 0}
-            overrideTheme={inversedTheme}
           />
         </View>
-      )}
+        <View
+          sx={{ flex: 1, position: 'absolute', bottom: 0, left: 0, right: 0 }}>
+          {(chartData ?? []).length === 0 ? (
+            <View
+              sx={{
+                height: CHART_HEIGHT + VERTICAL_PADDING * 2,
+                justifyContent: 'center'
+              }}>
+              <ActivityIndicator
+                size={'large'}
+                color={theme.colors.$surfacePrimary}
+              />
+            </View>
+          ) : (
+            <SparklineChart
+              style={{
+                height: CHART_HEIGHT + VERTICAL_PADDING * 2
+              }}
+              data={chartData ?? []}
+              verticalPadding={VERTICAL_PADDING}
+              negative={ranges.diffValue < 0}
+              overrideTheme={inversedTheme}
+            />
+          )}
+        </View>
+      </View>
     </View>
   )
 }

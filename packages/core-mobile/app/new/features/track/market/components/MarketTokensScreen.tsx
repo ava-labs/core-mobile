@@ -1,11 +1,11 @@
-import React, { useMemo, useCallback } from 'react'
-import { StyleSheet, ViewStyle } from 'react-native'
 import { Separator, View } from '@avalabs/k2-alpine'
 import { CollapsibleTabs } from 'common/components/CollapsibleTabs'
-import { Charts, MarketToken, MarketType } from 'store/watchlist'
 import { DropdownSelections } from 'common/components/DropdownSelections'
 import { Space } from 'common/components/Space'
 import { DropdownSelection } from 'common/types'
+import React, { useCallback, useMemo } from 'react'
+import { StyleSheet, ViewStyle } from 'react-native'
+import { Charts, MarketToken } from 'store/watchlist'
 import { MarketView } from '../hooks/useTrackSortAndView'
 import { MarketListItem } from './MarketListItem'
 
@@ -22,7 +22,7 @@ const MarketTokensScreen = ({
   charts: Charts
   sort: DropdownSelection
   view: DropdownSelection
-  goToMarketDetail: (tokenId: string, marketType: MarketType) => void
+  goToMarketDetail: (token: MarketToken) => void
   renderEmpty: () => React.JSX.Element
   containerStyle: ViewStyle
 }): JSX.Element => {
@@ -57,7 +57,7 @@ const MarketTokensScreen = ({
           charts={charts}
           index={index}
           isGridView={isGridView}
-          onPress={() => goToMarketDetail(item.id, item.marketType)}
+          onPress={() => goToMarketDetail(item)}
         />
       )
 
@@ -103,7 +103,6 @@ const MarketTokensScreen = ({
       showsVerticalScrollIndicator={false}
       extraData={{ isGridView }}
       keyExtractor={item => item.id}
-      removeClippedSubviews={true}
       estimatedItemSize={isGridView ? 200 : 120}
     />
   )
