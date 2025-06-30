@@ -33,12 +33,14 @@ import { isEthereumChainId } from 'services/network/utils/isEthereumNetwork'
 import {
   getAvalancheNetwork,
   getBitcoinNetwork,
-  getEthereumNetwork
+  getEthereumNetwork,
+  getSolanaNetwork
 } from 'services/network/utils/providerUtils'
 import { AddrBookItemType, Contact } from 'store/addressBook'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { isBitcoinChainId } from 'utils/network/isBitcoinNetwork'
 import { NetworkVMType } from '@avalabs/vm-module-types'
+import { isSolanaChainId } from 'utils/network/isSolanaNetwork'
 import { isXPChain } from '../../../../utils/network/isAvalancheNetwork'
 import { useSendSelectedToken } from '../store'
 import { getNetworks } from '../utils/getNetworks'
@@ -75,6 +77,8 @@ interface SendContextState {
   network: Network
   addressToSend?: string
   resetAmount: () => void
+  minAmount: TokenUnit | undefined
+  setMinAmount: Dispatch<TokenUnit | undefined>
 }
 
 export const SendContext = createContext<SendContextState>(
@@ -89,6 +93,7 @@ export const SendContextProvider = ({
   const { allNetworks, getFromPopulatedNetwork } = useNetworks()
   const { accounts, contacts } = useContacts()
   const [maxAmount, setMaxAmount] = useState<TokenUnit>()
+  const [minAmount, setMinAmount] = useState<TokenUnit>()
   const [amount, setAmount] = useState<TokenUnit>()
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const [toAddress, setToAddress] = useState<ToAddress>()
@@ -108,6 +113,8 @@ export const SendContextProvider = ({
     })
     const ethereumNetwork = getEthereumNetwork(allNetworks, isDeveloperMode)
     const avalancheCChain = getAvalancheNetwork(allNetworks, isDeveloperMode)
+    const solanaNetwork = getSolanaNetwork(allNetworks, isDeveloperMode)
+
     if (
       networks.find(n => n.chainId && isAvalancheCChainId(n.chainId)) &&
       avalancheCChain
@@ -126,6 +133,11 @@ export const SendContextProvider = ({
     if (networks.find(n => n.chainId && isBitcoinChainId(n.chainId))) {
       return getBitcoinNetwork(isDeveloperMode)
     }
+
+    if (networks.find(n => n.chainId && isSolanaChainId(n.chainId))) {
+      return solanaNetwork
+    }
+
     return isDeveloperMode
       ? AVALANCHE_TESTNET_NETWORK
       : AVALANCHE_MAINNET_NETWORK
@@ -202,9 +214,23 @@ export const SendContextProvider = ({
         addressBTC: toAddress.to
       }
     }
+
+    if (
+      isValidAddress({
+        address: toAddress.to,
+        addressType: AddressType.SOLANA,
+        isDeveloperMode
+      })
+    ) {
+      return {
+        addressSVM: toAddress.to
+      }
+    }
+
     return undefined
   }, [accounts, contacts, toAddress, isDeveloperMode])
 
+  // eslint-disable-next-line sonarjs/cognitive-complexity
   const addressToSend = useMemo(() => {
     if (selectedToken === undefined) {
       return toAddress?.recipientType === 'address' ? toAddress.to : undefined
@@ -219,18 +245,27 @@ export const SendContextProvider = ({
       return recipient?.addressXP ? recipient.addressXP : undefined
     }
 
-    if (network.vmName === NetworkVMType.EVM) {
-      return recipient?.address ? recipient.address : undefined
+    if (isSolanaChainId(selectedToken?.networkChainId)) {
+      return recipient?.addressSVM ? recipient.addressSVM : undefined
     }
-    return undefined
+
+    switch (network.vmName) {
+      case NetworkVMType.EVM:
+        return recipient?.address ? recipient.address : undefined
+      case NetworkVMType.SVM:
+        return recipient?.addressSVM ? recipient.addressSVM : undefined
+      default:
+        return undefined
+    }
   }, [
     selectedToken,
+    network,
     toAddress?.recipientType,
     toAddress?.to,
     recipient?.addressBTC,
     recipient?.addressXP,
     recipient?.address,
-    network
+    recipient?.addressSVM
   ])
 
   const state: SendContextState = {
@@ -251,6 +286,8 @@ export const SendContextProvider = ({
     network,
     isValid: error === undefined,
     resetAmount,
+    minAmount,
+    setMinAmount,
     addressToSend
   }
   return <SendContext.Provider value={state}>{children}</SendContext.Provider>
