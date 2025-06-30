@@ -2,8 +2,6 @@ import {
   Avalanche,
   BitcoinProvider,
   isSolanaProvider,
-  DerivationPath,
-  getAddressDerivationPath,
   JsonRpcBatchInternal
 } from '@avalabs/core-wallets-sdk'
 import {
@@ -46,6 +44,7 @@ import {
   getAssetId,
   isAvalancheTransactionRequest,
   isBtcTransactionRequest,
+  isSolanaTransactionRequest,
   MAINNET_AVAX_ASSET_ID,
   TESTNET_AVAX_ASSET_ID
 } from './utils'

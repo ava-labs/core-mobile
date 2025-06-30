@@ -41,6 +41,7 @@ import { fromSeed } from 'bip32'
 import { hex } from '@scure/base'
 import { SolanaProvider } from '@avalabs/core-wallets-sdk'
 import { getAddressDerivationPath } from './utils'
+import ModuleManager from 'vmModule/ModuleManager'
 
 /**
  * Type guard to assert that a wallet is a MnemonicWallet instance
