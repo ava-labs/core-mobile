@@ -43,7 +43,7 @@ export const useManageWallet = (): {
       }
 
       showAlertWithTextInput({
-        title: 'Rename account',
+        title: 'Rename wallet',
         inputs: [{ key: 'newName', defaultValue: walletName }],
         buttons: [
           {
