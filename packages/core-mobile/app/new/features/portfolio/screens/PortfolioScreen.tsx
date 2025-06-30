@@ -250,11 +250,6 @@ const PortfolioHomeScreen = (): JSX.Element => {
       onPress: navigateToBuy
     })
     buttons.push({
-      title: 'Sell',
-      icon: 'buy',
-      onPress: navigateToWithdraw
-    })
-    buttons.push({
       title: ActionButtonTitle.Receive,
       icon: 'receive',
       onPress: handleReceive
@@ -263,6 +258,11 @@ const PortfolioHomeScreen = (): JSX.Element => {
       title: ActionButtonTitle.Bridge,
       icon: 'bridge',
       onPress: handleBridge
+    })
+    buttons.push({
+      title: ActionButtonTitle.Withdraw,
+      icon: 'buy',
+      onPress: navigateToWithdraw
     })
     return buttons
   }, [
