@@ -1,0 +1,1 @@
+export const SOLANA_FIXED_BASE_FEE = 5000n

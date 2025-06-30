@@ -3,12 +3,15 @@ import {
   BitcoinWallet,
   BitcoinProvider,
   JsonRpcBatchInternal,
-  getPublicKeyFromPrivateKey
+  getPublicKeyFromPrivateKey,
+  SolanaSigner,
+  SolanaProvider
 } from '@avalabs/core-wallets-sdk'
 import { now } from 'moment'
 import {
   AvalancheTransactionRequest,
   BtcTransactionRequest,
+  SolanaTransactionRequest,
   Wallet
 } from 'services/wallet/types'
 import { BaseWallet, TransactionRequest, Wallet as EthersWallet } from 'ethers'
@@ -78,6 +81,10 @@ export class PrivateKeyWallet implements Wallet {
     return new Avalanche.SimpleSigner(this.privateKey, accountIndex)
   }
 
+  private async getSvmSigner(): Promise<SolanaSigner> {
+    return new SolanaSigner(Buffer.from(this.privateKey, 'hex'))
+  }
+
   private async getSigner({
     accountIndex,
     network,
@@ -86,7 +93,9 @@ export class PrivateKeyWallet implements Wallet {
     accountIndex: number
     network: Network
     provider: JsonRpcBatchInternal | BitcoinProvider | Avalanche.JsonRpcProvider
-  }): Promise<BitcoinWallet | BaseWallet | Avalanche.SimpleSigner> {
+  }): Promise<
+    BitcoinWallet | BaseWallet | Avalanche.SimpleSigner | SolanaSigner
+  > {
     switch (network.vmName) {
       case NetworkVMType.EVM:
         if (!(provider instanceof JsonRpcBatchInternal)) {
@@ -110,6 +119,8 @@ export class PrivateKeyWallet implements Wallet {
           )
         }
         return (await this.getAvaSigner(accountIndex)) as Avalanche.SimpleSigner
+      case NetworkVMType.SVM:
+        return this.getSvmSigner()
       default:
         throw new Error('Unable to get signer: network not supported')
     }
@@ -328,6 +339,20 @@ export class PrivateKeyWallet implements Wallet {
     }
 
     return await signer.signTransaction(transaction)
+  }
+
+  public async signSvmTransaction({
+    transaction,
+    network: _network,
+    provider
+  }: {
+    accountIndex: number
+    transaction: SolanaTransactionRequest
+    network: Network
+    provider: SolanaProvider
+  }): Promise<string> {
+    const signer = await this.getSvmSigner()
+    return signer.signTx(transaction.serializedTx, provider)
   }
 
   public async getReadOnlyAvaSigner({
