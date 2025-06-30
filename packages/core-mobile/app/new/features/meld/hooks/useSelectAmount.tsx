@@ -171,9 +171,17 @@ export const useSelectAmount = ({
   }, [network?.networkToken.decimals, token?.tokenWithBalance])
 
   const defaultPaymentMethod = useMemo(() => {
-    return defaultsByCountry?.find(d => d.countryCode === countryCode)
-      ?.defaultPaymentMethods?.[0]
-  }, [countryCode, defaultsByCountry])
+    if (category === ServiceProviderCategories.CRYPTO_ONRAMP) {
+      return defaultsByCountry?.find(d => d.countryCode === countryCode)
+        ?.defaultPaymentMethods?.[0]
+    }
+
+    if (category === ServiceProviderCategories.CRYPTO_OFFRAMP) {
+      return crytoQuotes[0]?.paymentMethodType
+    }
+
+    return undefined
+  }, [category, countryCode, crytoQuotes, defaultsByCountry])
 
   const paymentMethodToDisplay = useMemo(() => {
     return paymentMethod ? PaymentMethodNames[paymentMethod] : undefined
