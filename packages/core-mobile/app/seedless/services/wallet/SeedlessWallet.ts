@@ -4,6 +4,7 @@ import { Signer as CsEthersSigner } from '@cubist-labs/cubesigner-sdk-ethers-v6'
 import {
   AvalancheTransactionRequest,
   BtcTransactionRequest,
+  SolanaTransactionRequest,
   Wallet
 } from 'services/wallet/types'
 import { strip0x } from '@avalabs/core-utils-sdk'
@@ -12,8 +13,12 @@ import {
   Avalanche,
   BitcoinProvider,
   JsonRpcBatchInternal,
+  SolanaProvider,
   createPsbt,
-  getEvmAddressFromPubKey
+  getEvmAddressFromPubKey,
+  compileSolanaTx,
+  serializeSolanaTx,
+  deserializeTransactionMessage
 } from '@avalabs/core-wallets-sdk'
 import { sha256 } from '@noble/hashes/sha256'
 import { EVM, utils } from '@avalabs/avalanchejs'
@@ -35,6 +40,8 @@ import { isTypedData, isTypedDataV1 } from '@avalabs/evm-module'
 import { stripChainAddress } from 'store/account/utils'
 import { AddressPublicKey, Curve } from 'utils/publicKeys'
 import { findPublicKey } from 'utils/publicKeys'
+import { base64 } from '@scure/base'
+import { hex } from '@scure/base'
 import { getAddressDerivationPath } from 'services/wallet/utils'
 import CoreSeedlessAPIService from '../CoreSeedlessAPIService'
 import SeedlessService from '../SeedlessService'
@@ -88,7 +95,7 @@ export default class SeedlessWallet implements Wallet {
   }
 
   private async getSigningKeyByTypeAndKey(
-    type: cs.Secp256k1,
+    type: cs.Secp256k1 | cs.Ed25519,
     lookupPublicKey?: string
   ): Promise<cs.KeyInfo> {
     if (!lookupPublicKey) {
@@ -425,5 +432,81 @@ export default class SeedlessWallet implements Wallet {
       derivationPath,
       curve
     })
+  }
+
+  public async signSvmTransaction({
+    accountIndex,
+    transaction,
+    provider
+  }: {
+    accountIndex: number
+    transaction: SolanaTransactionRequest
+    network: Network
+    provider: SolanaProvider
+  }): Promise<string> {
+    try {
+      // Get the Solana-specific public key (Ed25519)
+      const solanaPublicKey = await this.getAddressPublicKey(
+        accountIndex,
+        NetworkVMType.SVM
+      )
+
+      // Get the signing key
+      const solanaKey = await this.getSigningKeyByTypeAndKey(
+        cs.Ed25519.Solana,
+        solanaPublicKey
+      )
+
+      // Copy the exact extension implementation
+      const txMessage = await deserializeTransactionMessage(
+        transaction.serializedTx,
+        provider
+      )
+      const { signatures, messageBytes } = compileSolanaTx(txMessage)
+
+      const address = solanaKey.material_id
+
+      // Check if signature is required
+      if (!this.requiresSolanaSignature(address, signatures)) {
+        return transaction.serializedTx
+      }
+
+      // Sign using CubeSigner
+      const response = await this.#client.apiClient.signSolana(
+        solanaKey.material_id,
+        {
+          message_base64: base64.encode(Uint8Array.from(messageBytes))
+        }
+      )
+
+      const { signature: signatureHex } = response.data()
+      const signature = hex.decode(strip0x(signatureHex))
+
+      // Reconstruct the full signed transaction
+      return serializeSolanaTx({
+        messageBytes,
+        signatures: {
+          ...signatures,
+          [address]: signature
+        }
+      })
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        throw new Error(`Failed to sign Solana transaction: ${error.message}`)
+      }
+      throw new Error('Failed to sign Solana transaction: Unknown error')
+    }
+  }
+
+  private requiresSolanaSignature(
+    address: string,
+    signatures: Record<string, Uint8Array | null>
+  ): boolean {
+    if (address in signatures) {
+      // If our signature is required, check if it's already been added.
+      return !signatures[address]
+    }
+
+    return false
   }
 }
