@@ -216,7 +216,6 @@ const LoginWithPinOrBiometry = (): JSX.Element => {
         blurPinInput()
       }
     }, [
-      bioType,
       isBiometricAvailable,
       useBiometrics,
       handlePromptBioLogin,
