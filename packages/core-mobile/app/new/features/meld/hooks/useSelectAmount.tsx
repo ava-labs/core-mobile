@@ -106,13 +106,12 @@ export const useSelectAmount = ({
   const redirectUrl = useMemo(() => {
     const state = getState()
     const currentIndex = state?.index
-    const formattedAmount = formatCurrency({ amount: sourceAmount ?? 0 })
     return `core://${
       category === ServiceProviderCategories.CRYPTO_ONRAMP
         ? ACTIONS.OnrampCompleted
         : ACTIONS.OfframpCompleted
-    }?amount=${formattedAmount}&dismissCount=${(currentIndex ?? 0) + 1}`
-  }, [formatCurrency, getState, sourceAmount, category])
+    }?dismissCount=${(currentIndex ?? 0) + 1}`
+  }, [getState, category])
 
   const destinationCurrencyCode = useMemo(() => {
     return category === ServiceProviderCategories.CRYPTO_ONRAMP
@@ -134,7 +133,6 @@ export const useSelectAmount = ({
         : SessionTypes.SELL,
     sessionData: {
       redirectUrl,
-      sourceAmount,
       destinationCurrencyCode,
       sourceCurrencyCode,
       walletAddress,

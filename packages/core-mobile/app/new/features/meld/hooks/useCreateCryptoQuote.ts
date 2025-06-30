@@ -1,5 +1,6 @@
 import { useQuery, UseQueryResult } from '@tanstack/react-query'
 import { ReactQueryKeys } from 'consts/reactQueryKeys'
+import { useMemo } from 'react'
 import MeldService from '../services/MeldService'
 import { CreateCryptoQuote, CreateCryptoQuoteParams } from '../types'
 import { ServiceProviderCategories } from '../consts'
@@ -23,15 +24,26 @@ export const useCreateCryptoQuote = ({
   const serviceProviders = serviceProvidersData?.map(
     serviceProvider => serviceProvider.serviceProvider
   )
-  const { hasValidSourceAmount, sourceAmount } = useFiatSourceAmount({
+  const {
+    hasValidSourceAmount,
+    sourceAmount: fiatSourceAmount,
+    cryptoSourceAmount
+  } = useFiatSourceAmount({
     category
   })
 
+  const sourceAmount = useMemo(() => {
+    return category === ServiceProviderCategories.CRYPTO_ONRAMP
+      ? fiatSourceAmount ?? undefined
+      : cryptoSourceAmount ?? undefined
+  }, [category, cryptoSourceAmount, fiatSourceAmount])
+
   const hasDestinationCurrencyCode = destinationCurrencyCode !== ''
   const hasSourceCurrencyCode = sourceCurrencyCode !== ''
+  const isSourceAmountValid = hasValidSourceAmount && sourceAmount !== undefined
 
   const enabled =
-    hasValidSourceAmount && hasDestinationCurrencyCode && hasSourceCurrencyCode
+    isSourceAmountValid && hasDestinationCurrencyCode && hasSourceCurrencyCode
 
   return useQuery<CreateCryptoQuote | undefined>({
     enabled,
