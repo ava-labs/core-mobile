@@ -156,13 +156,12 @@ export function usePinOrBiometryLogin({
         const accessType = BiometricsSDK.getAccessType()
 
         if (accessType === 'BIO') {
-          // Check if migration is needed first
-          const migrator = new KeychainMigrator(activeWalletId)
-          await migrator.migrateIfNeeded('BIO')
-
           const isSuccess = await BiometricsSDK.loadEncryptionKeyWithBiometry()
 
           if (isSuccess) {
+            // Check if migration is needed first
+            const migrator = new KeychainMigrator(activeWalletId)
+            await migrator.migrateIfNeeded('BIO')
             setVerified(true)
             resetRateLimiter()
             return new NothingToLoad()
