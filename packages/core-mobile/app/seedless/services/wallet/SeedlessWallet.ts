@@ -38,7 +38,7 @@ import {
 } from '@avalabs/vm-module-types'
 import { isTypedData, isTypedDataV1 } from '@avalabs/evm-module'
 import { stripChainAddress } from 'store/account/utils'
-import { AddressPublicKey, Curve } from 'utils/publicKeys'
+import { AddressPublicKey, Curve, isSvmPublicKey } from 'utils/publicKeys'
 import { findPublicKey } from 'utils/publicKeys'
 import { base64 } from '@scure/base'
 import { hex } from '@scure/base'

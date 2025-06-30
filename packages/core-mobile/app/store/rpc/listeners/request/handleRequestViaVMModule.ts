@@ -83,7 +83,6 @@ export const handleRequestViaVMModule = async ({
   const params = request.data.params.request.params
   const method = request.method as unknown as VmModuleRpcMethod
 
-
   const response = await module.onRpcRequest(
     {
       requestId: String(request.data.id),
