@@ -6,7 +6,7 @@ import {
 import { useCallback, useMemo, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { selectWallets, setWalletName } from 'store/wallet/slice'
-import { WalletId } from 'store/wallet/types'
+import { Wallet, WalletId } from 'store/wallet/types'
 import { showAlert } from '@avalabs/k2-alpine'
 import { removeWallet } from 'store/wallet/thunks'
 import { addAccount } from 'store/account'
@@ -134,26 +134,49 @@ export const useManageWallet = (): {
     [isAddingAccount, accounts, dispatch, wallets]
   )
 
+  const canRemoveWallet = useCallback(
+    (wallet: Wallet): boolean => {
+      // 1. Seedless wallets cannot be removed
+      if (wallet.type === WalletType.SEEDLESS) return false
+
+      // 2. Mnemonic wallets can be removed if there are multiple mnemonic or seedless wallets
+      const walletCount = Object.values(wallets).filter(
+        w => w.type === WalletType.MNEMONIC || w.type === WalletType.SEEDLESS
+      ).length
+
+      const isLastRemovableMnemonic =
+        walletCount === 1 && wallets[wallet.id]?.type === WalletType.MNEMONIC
+
+      return !isLastRemovableMnemonic
+    },
+    [wallets]
+  )
+
   const dropdownItems = useMemo((): DropdownItem[] => {
-    const baseItems = [
+    const baseItems: DropdownItem[] = [
       {
         id: 'rename',
         title: 'Rename'
-      },
-      {
-        id: 'remove',
-        title: 'Remove wallet',
-        destructive: true
       }
     ]
 
     // Only show add account option for mnemonic and seedless wallets
     if (activeDropdownWalletId) {
       const wallet = wallets[activeDropdownWalletId]
-      if (
-        wallet?.type &&
-        [WalletType.MNEMONIC, WalletType.SEEDLESS].includes(wallet?.type)
-      ) {
+      if (!wallet) {
+        Logger.error('Wallet not found for dropdown items')
+        return baseItems
+      }
+
+      if (canRemoveWallet(wallet)) {
+        baseItems.push({
+          id: 'remove',
+          title: 'Remove wallet',
+          destructive: true
+        })
+      }
+
+      if ([WalletType.MNEMONIC, WalletType.SEEDLESS].includes(wallet.type)) {
         baseItems.push({
           id: 'add_account',
           title: 'Add account to this wallet'
@@ -162,7 +185,7 @@ export const useManageWallet = (): {
     }
 
     return baseItems
-  }, [activeDropdownWalletId, wallets])
+  }, [activeDropdownWalletId, wallets, canRemoveWallet])
 
   const handleWalletMenuAction = useCallback(
     (action: string, walletId: string, currentName: string) => {
