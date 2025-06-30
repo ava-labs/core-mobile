@@ -48,6 +48,7 @@ const LoginWithPinOrBiometry = (): JSX.Element => {
   const { unlock } = useWallet()
   const router = useRouter()
   const walletId = useSelector(selectActiveWalletId)
+  const [isHandledBioPrompt, setIsHandledBioPrompt] = useState(false)
 
   const isProcessing = useSharedValue(false)
   const [hasNoRecentInput, setHasNoRecentInput] = useState(false)
@@ -205,7 +206,8 @@ const LoginWithPinOrBiometry = (): JSX.Element => {
     useCallback(() => {
       InteractionManager.runAfterInteractions(() => {
         const accessType = BiometricsSDK.getAccessType()
-        if (accessType === 'BIO') {
+        if (accessType === 'BIO' && !isHandledBioPrompt) {
+          setIsHandledBioPrompt(true)
           handlePromptBioLogin()
         } else if (!isBiometricAvailable || !useBiometrics) {
           focusPinInput()
@@ -216,6 +218,7 @@ const LoginWithPinOrBiometry = (): JSX.Element => {
         blurPinInput()
       }
     }, [
+      isHandledBioPrompt,
       isBiometricAvailable,
       useBiometrics,
       handlePromptBioLogin,
