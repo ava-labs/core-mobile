@@ -1,4 +1,4 @@
-import { useCallback } from 'react'
+import { useCallback, useMemo } from 'react'
 import { CreateSessionWidget, CreateSessionWidgetParams } from '../types'
 import MeldService from '../services/MeldService'
 import { useMeldPaymentMethod } from '../store'
@@ -11,7 +11,6 @@ export const useCreateSessionWidget = ({
   sessionType,
   sessionData: {
     walletAddress,
-    sourceAmount,
     destinationCurrencyCode,
     sourceCurrencyCode,
     redirectUrl,
@@ -24,7 +23,17 @@ export const useCreateSessionWidget = ({
 } => {
   const { countryCode } = useLocale()
   const [meldPaymentMethod] = useMeldPaymentMethod()
-  const { hasValidSourceAmount } = useFiatSourceAmount({ category })
+  const {
+    hasValidSourceAmount,
+    sourceAmount: fiatSourceAmount,
+    cryptoSourceAmount
+  } = useFiatSourceAmount({ category })
+
+  const sourceAmount = useMemo(() => {
+    return category === ServiceProviderCategories.CRYPTO_ONRAMP
+      ? fiatSourceAmount ?? undefined
+      : cryptoSourceAmount ?? undefined
+  }, [category, cryptoSourceAmount, fiatSourceAmount])
 
   const hasWalletAddress = walletAddress !== undefined && walletAddress !== null
   const hasSourceCurrencyCode =
@@ -37,9 +46,10 @@ export const useCreateSessionWidget = ({
     destinationCurrencyCode !== null
   const hasServiceProvider =
     serviceProvider !== undefined && serviceProvider !== null
+  const isSourceAmountValid = hasValidSourceAmount && sourceAmount !== undefined
 
   const shouldCreateSessionWidget =
-    hasValidSourceAmount &&
+    isSourceAmountValid &&
     hasWalletAddress &&
     hasSourceCurrencyCode &&
     hasDestinationCurrencyCode &&

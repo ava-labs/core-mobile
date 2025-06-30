@@ -13,6 +13,7 @@ export const useFiatSourceAmount = ({
   category: ServiceProviderCategories
 }): {
   sourceAmount: number | undefined
+  cryptoSourceAmount: number | undefined
   setSourceAmount: (amount: number) => void
   isAboveMinimumLimit: boolean
   isBelowMaximumLimit: boolean
@@ -99,7 +100,19 @@ export const useFiatSourceAmount = ({
     )
   }, [sourceAmount, isAboveMinimumLimit, isBelowMaximumLimit])
 
+  const cryptoSourceAmount = useMemo(() => {
+    if (
+      category === ServiceProviderCategories.CRYPTO_ONRAMP ||
+      sourceAmount === undefined ||
+      currentTokenPrice === undefined
+    ) {
+      return undefined
+    }
+    return sourceAmount / currentTokenPrice
+  }, [category, sourceAmount, currentTokenPrice])
+
   return {
+    cryptoSourceAmount,
     sourceAmount,
     setSourceAmount,
     hasValidSourceAmount,
