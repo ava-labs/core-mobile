@@ -63,6 +63,7 @@ import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import { useNetworks } from 'hooks/networks/useNetworks'
 import { ChainId } from '@avalabs/core-chains-sdk'
 import { useBuy } from 'features/meld/hooks/useBuy'
+import { useWithdraw } from 'features/meld/hooks/useWithdraw'
 
 export const TokenDetailScreen = (): React.JSX.Element => {
   const {
@@ -116,6 +117,7 @@ export const TokenDetailScreen = (): React.JSX.Element => {
   const tokenName = token?.name ?? ''
 
   const { navigateToBuy, isBuyable } = useBuy()
+  const { navigateToWithdraw, isWithdrawable } = useWithdraw()
 
   const header = useMemo(
     () => <NavigationTitleHeader title={tokenName} />,
@@ -217,6 +219,14 @@ export const TokenDetailScreen = (): React.JSX.Element => {
       })
     }
 
+    if (token && isWithdrawable(token)) {
+      buttons.push({
+        title: ActionButtonTitle.Withdraw,
+        icon: 'buy',
+        onPress: navigateToWithdraw
+      })
+    }
+
     return buttons
   }, [
     handleSend,
@@ -226,11 +236,13 @@ export const TokenDetailScreen = (): React.JSX.Element => {
     isTokenStakable,
     isBridgeDisabled,
     isTokenBridgeable,
+    isWithdrawable,
     navigateToSwap,
     navigateToBuy,
     canAddStake,
     addStake,
-    handleBridge
+    handleBridge,
+    navigateToWithdraw
   ])
 
   const { onScroll, targetHiddenProgress } = useFadingHeaderNavigation({
