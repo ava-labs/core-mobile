@@ -46,6 +46,7 @@ export function usePinOrBiometryLogin({
     reset: resetRateLimiter,
     remainingSeconds
   } = useRateLimiter()
+  const [isVerifyingBiometric, setIsVerifyingBiometric] = useState(false)
 
   // get formatted time based on time ticker and rest interval
   useEffect(() => {
@@ -146,6 +147,16 @@ export function usePinOrBiometryLogin({
 
   const verifyBiometric =
     useCallback(async (): Promise<WalletLoadingResults> => {
+      // Guard against multiple concurrent calls
+      if (isVerifyingBiometric) {
+        Logger.trace(
+          'verifyBiometric already in progress, skipping duplicate call'
+        )
+        return new NothingToLoad()
+      }
+
+      setIsVerifyingBiometric(true)
+
       try {
         if (!activeWalletId) {
           throw new Error('Active wallet ID is not set')
@@ -196,8 +207,10 @@ export function usePinOrBiometryLogin({
         }
         setVerified(false)
         throw err
+      } finally {
+        setIsVerifyingBiometric(false)
       }
-    }, [activeWalletId, alertBadData, resetRateLimiter])
+    }, [activeWalletId, alertBadData, resetRateLimiter, isVerifyingBiometric])
 
   useEffect(() => {
     async function getBiometryType(): Promise<void> {
