@@ -23,8 +23,10 @@ class LoginRecoverWallet {
     await commonElsPage.tapNext()
     await Actions.waitForElement(onboardingPage.selectAvatarTitle)
     await commonElsPage.tapNext()
+    await device.disableSynchronization()
     await onboardingPage.tapLetsGo()
     await bottomTabsPage.verifyBottomTabs()
+    await device.enableSynchronization()
   }
 
   async enterPin() {

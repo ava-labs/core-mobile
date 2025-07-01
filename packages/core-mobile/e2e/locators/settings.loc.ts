@@ -1,6 +1,6 @@
 export default {
   // NEW BELOW:
-  account: 'testWallet1',
+  account: 'Account 1',
   account2: 'Account 2',
   eyeIcon: 'eye_icon',
   settingsFooter: 'settings_footer',
@@ -12,6 +12,7 @@ export default {
   securityAndPrivacy: 'Security & privacy',
   securityAndPrivacyTitle: 'Security\n& privacy',
   appearance: 'Theme',
+  networks: 'Networks',
   appearanceTitle: 'Customize the\napp theme',
   system: 'System',
   light: 'Light',
@@ -20,6 +21,7 @@ export default {
   unselectedAppearance: 'unselected_appearance',
   selectCurrencyTitle: 'Select a currency',
   addAccountBtn: 'add_account_btn',
+  createNewAccountBtn: 'create_new_account_btn',
   accountList: 'account_carousel_list',
   accountDetailIconIdPrefix: 'account_detail_icon__account #',
   changePin: 'Change PIN',
