@@ -82,6 +82,7 @@ const TrackTokenDetailScreen = (): JSX.Element => {
     coingeckoId,
     chainId
   } = useTokenDetails({ tokenId: token.id, marketType: token.marketType })
+
   const isFocused = useIsFocused()
   const { navigateToBuy } = useBuy()
 
@@ -358,11 +359,17 @@ const TrackTokenDetailScreen = (): JSX.Element => {
             logoUri={token.logoUri}
             symbol={token.symbol ?? ''}
             currentPrice={
-              token.currentPrice ?? prices?.[coingeckoId]?.priceInCurrency
+              tokenInfo?.currentPrice ??
+              prices?.[coingeckoId]?.priceInCurrency ??
+              token.currentPrice
             }
             ranges={{
-              diffValue: token.priceChange24h ?? 0,
-              percentChange: token.priceChangePercentage24h ?? 0
+              diffValue: ranges.diffValue
+                ? ranges.diffValue
+                : token.priceChange24h ?? 0,
+              percentChange: ranges.percentChange
+                ? ranges.percentChange
+                : token.priceChangePercentage24h ?? 0
             }}
             rank={tokenInfo?.marketCapRank}
           />
@@ -393,9 +400,12 @@ const TrackTokenDetailScreen = (): JSX.Element => {
     token.currentPrice,
     token.priceChange24h,
     token.priceChangePercentage24h,
+    tokenInfo?.currentPrice,
+    tokenInfo?.marketCapRank,
     prices,
     coingeckoId,
-    tokenInfo?.marketCapRank,
+    ranges.diffValue,
+    ranges.percentChange,
     isChartInteracting,
     selectedDataIndicatorOpacity,
     selectedData,
