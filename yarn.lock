@@ -207,10 +207,10 @@ __metadata:
     "@avalabs/evm-module": 1.9.4
     "@avalabs/glacier-sdk": 3.1.0-alpha.51
     "@avalabs/k2-alpine": "workspace:*"
-    "@avalabs/svm-module": 1.9.4
+    "@avalabs/svm-module": 1.9.5
     "@avalabs/tsconfig-mobile": "workspace:*"
     "@avalabs/types": 3.1.0-alpha.56
-    "@avalabs/vm-module-types": 1.9.4
+    "@avalabs/vm-module-types": 1.9.5
     "@babel/core": 7.25.7
     "@babel/plugin-proposal-nullish-coalescing-operator": 7.18.6
     "@babel/plugin-syntax-object-rest-spread": 7.8.3
@@ -701,15 +701,15 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@avalabs/svm-module@npm:1.9.4":
-  version: 1.9.4
-  resolution: "@avalabs/svm-module@npm:1.9.4"
+"@avalabs/svm-module@npm:1.9.5":
+  version: 1.9.5
+  resolution: "@avalabs/svm-module@npm:1.9.5"
   dependencies:
     "@avalabs/core-chains-sdk": 3.1.0-alpha.48
     "@avalabs/core-coingecko-sdk": 3.1.0-alpha.48
     "@avalabs/core-utils-sdk": 3.1.0-alpha.48
     "@avalabs/core-wallets-sdk": 3.1.0-alpha.48
-    "@avalabs/vm-module-types": 1.9.4
+    "@avalabs/vm-module-types": 1.9.5
     "@blockaid/client": 0.48.0
     "@metamask/rpc-errors": 6.3.0
     "@scure/base": 1.2.4
@@ -720,7 +720,7 @@ __metadata:
     "@wallet-standard/base": 1.1.0
     "@wallet-standard/features": 1.1.0
     zod: 3.23.8
-  checksum: bff9ee640fd2a1aa4e1b600b35c84c413a6da9b529db5c25267bb9b18a19b73d30cd24a09c1f16e1fc1976da89f2961725b759e28ac9561fa0d1d1c5e2c3acce
+  checksum: d7861f3dc3893c83eab8c374e1150791f8de35d510d0e67419eb1741a5e910391413feac5d01549ceaa777b4bfae07524ced4a4d86db48c14f64baab35efcbd2
   languageName: node
   linkType: hard
 
@@ -757,6 +757,22 @@ __metadata:
   peerDependencies:
     ethers: 6.13.5
   checksum: e6036d879ff07f8c1828e22554f34cf82772208e7d5881c3b4b86f961ac7a4a64a45b2290920403917775fa94eb3821e0c8ce00f9f18981146bae92e396c4622
+  languageName: node
+  linkType: hard
+
+"@avalabs/vm-module-types@npm:1.9.5":
+  version: 1.9.5
+  resolution: "@avalabs/vm-module-types@npm:1.9.5"
+  dependencies:
+    "@avalabs/core-wallets-sdk": 3.1.0-alpha.48
+    "@avalabs/glacier-sdk": 3.1.0-alpha.51
+    "@metamask/rpc-errors": 6.3.0
+    bitcoinjs-lib: 5.2.0
+    hypersdk-client: 0.4.16
+    zod: 3.23.8
+  peerDependencies:
+    ethers: 6.13.5
+  checksum: 41f2fbea8375070153db1f996538238a23dc910f817d456e4b5f97b2965a9c56add0ee5dcbb1b205f8078475e7f7a717ab349f035f9dea7c3cffa6a28c68ddcb
   languageName: node
   linkType: hard
 
@@ -27800,7 +27816,7 @@ react-native-webview@ava-labs/react-native-webview:
   peerDependencies:
     react: "*"
     react-native: "*"
-  checksum: f7ac158dbe58d410185c45bcdd1ae1bbdab3d3548940e2e1e1ef792a33996713d40bb4ee7c7420f078f013954c78d43b11eb5884ab0d786da781936be78a41cd
+  checksum: 1aa0b34afe09465996e73a92ea287d57280dfdafeb843d963045bd203cbff56e2b71196983d2731725cc17e8032b059bf0c44c18a3e86d001013609d3c458572
   languageName: node
   linkType: hard
 
