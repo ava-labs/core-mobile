@@ -1,6 +1,7 @@
 import {
   Avalanche,
   BitcoinProvider,
+  isSolanaProvider,
   JsonRpcBatchInternal
 } from '@avalabs/core-wallets-sdk'
 import {
@@ -43,6 +44,7 @@ import {
   getAssetId,
   isAvalancheTransactionRequest,
   isBtcTransactionRequest,
+  isSolanaTransactionRequest,
   MAINNET_AVAX_ASSET_ID,
   TESTNET_AVAX_ASSET_ID
 } from './utils'
@@ -98,6 +100,20 @@ class WalletService {
             )
 
           return wallet.signAvalancheTransaction({
+            accountIndex,
+            transaction,
+            network,
+            provider
+          })
+        }
+
+        if (isSolanaTransactionRequest(transaction)) {
+          if (!isSolanaProvider(provider))
+            throw new Error(
+              'Unable to sign solana transaction: wrong provider obtained'
+            )
+
+          return wallet.signSvmTransaction({
             accountIndex,
             transaction,
             network,

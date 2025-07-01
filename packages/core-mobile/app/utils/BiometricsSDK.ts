@@ -155,10 +155,8 @@ class BiometricsSDK {
 
   async hasEncryptionKeyWithBiometry(): Promise<boolean> {
     try {
-      const credentials = await Keychain.getGenericPassword(
-        KeystoreConfig.ENCRYPTION_KEY_BIO_OPTIONS
-      )
-      return credentials !== false
+      const services = await Keychain.getAllGenericPasswordServices()
+      return services.includes(ENCRYPTION_KEY_SERVICE_BIO)
     } catch (e) {
       Logger.error('Failed to check encryption key existence', e)
       return false
