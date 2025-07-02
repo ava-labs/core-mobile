@@ -214,28 +214,6 @@ describe('BiometricsSDK', () => {
       expect(result).toBe(false)
     })
 
-    it('should check if encryption key with PIN exists', async () => {
-      mockKeychain.getGenericPassword.mockResolvedValue(mockKeychainResult)
-      const result = await BiometricsSDK.hasEncryptionKeyWithPin()
-      expect(result).toBe(true)
-
-      mockKeychain.getGenericPassword.mockResolvedValue(false)
-      const secondResult = await BiometricsSDK.hasEncryptionKeyWithPin()
-      expect(secondResult).toBe(false)
-    })
-
-    it('should check if encryption key with biometry exists', async () => {
-      mockKeychain.getAllGenericPasswordServices.mockResolvedValue([
-        ENCRYPTION_KEY_SERVICE_BIO
-      ])
-      const result = await BiometricsSDK.hasEncryptionKeyWithBiometry()
-      expect(result).toBe(true)
-
-      mockKeychain.getAllGenericPasswordServices.mockResolvedValue([])
-      const secondResult = await BiometricsSDK.hasEncryptionKeyWithBiometry()
-      expect(secondResult).toBe(false)
-    })
-
     it('should change PIN', async () => {
       const newPin = '654321'
       mockEncrypt.mockResolvedValue('new-encrypted-data')
@@ -349,6 +327,8 @@ describe('BiometricsSDK', () => {
     })
 
     it('should clear all relevant data', async () => {
+      const LEGACY_SERVICE_KEY_BIO = 'sec-storage-service-bio'
+      const LEGACY_SERVICE_KEY = 'sec-storage-service'
       const mockServices = [
         `sec-storage-service-${mockWalletId}`,
         'sec-storage-service-wallet2',
@@ -361,7 +341,7 @@ describe('BiometricsSDK', () => {
       await BiometricsSDK.clearAllData()
 
       expect(mockKeychain.getAllGenericPasswordServices).toHaveBeenCalled()
-      expect(mockKeychain.resetGenericPassword).toHaveBeenCalledTimes(4)
+      expect(mockKeychain.resetGenericPassword).toHaveBeenCalledTimes(6)
       expect(mockKeychain.resetGenericPassword).toHaveBeenCalledWith({
         service: `sec-storage-service-${mockWalletId}`
       })
@@ -373,6 +353,12 @@ describe('BiometricsSDK', () => {
       })
       expect(mockKeychain.resetGenericPassword).toHaveBeenCalledWith({
         service: ENCRYPTION_KEY_SERVICE_BIO
+      })
+      expect(mockKeychain.resetGenericPassword).toHaveBeenCalledWith({
+        service: LEGACY_SERVICE_KEY
+      })
+      expect(mockKeychain.resetGenericPassword).toHaveBeenCalledWith({
+        service: LEGACY_SERVICE_KEY_BIO
       })
       expect(mockKeychain.resetGenericPassword).not.toHaveBeenCalledWith({
         service: 'some-other-service'
