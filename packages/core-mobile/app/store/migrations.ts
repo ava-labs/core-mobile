@@ -360,10 +360,6 @@ export const migrations = {
     await Keychain.resetGenericPassword({
       service: ENCRYPTION_KEY_SERVICE_BIO
     })
-    const services = await Keychain.getAllGenericPasswordServices({
-      skipUIAuth: true
-    })
-    Logger.info('services:', services)
     // Generate a new wallet ID
     const walletId = uuid()
     // Migrate stored wallet structure

@@ -2,7 +2,8 @@ import Keychain, {
   getSupportedBiometryType,
   SetOptions,
   GetOptions,
-  BaseOptions
+  BaseOptions,
+  hasGenericPassword
 } from 'react-native-keychain'
 import { StorageKey } from 'resources/Constants'
 import { Platform } from 'react-native'
@@ -69,7 +70,7 @@ class BiometricsSDK {
    * early and mask it with splash for smoother UX
    */
   async warmup(): Promise<void> {
-    await Keychain.getAllGenericPasswordServices({ skipUIAuth: true })
+    await Keychain.getAllGenericPasswordServices()
   }
 
   //FIXME: changed in
@@ -141,8 +142,7 @@ class BiometricsSDK {
   // Encryption Key Management
   async hasEncryptionKeyWithPin(): Promise<boolean> {
     try {
-      const credentials = await Keychain.getGenericPassword(passcodeGetOptions)
-      return credentials !== false
+      return await hasGenericPassword(passcodeGetOptions)
     } catch (e) {
       Logger.error('Failed to check encryption key existence', e)
       return false
@@ -151,10 +151,7 @@ class BiometricsSDK {
 
   async hasEncryptionKeyWithBiometry(): Promise<boolean> {
     try {
-      const services = await Keychain.getAllGenericPasswordServices({
-        skipUIAuth: true
-      })
-      return services.includes(ENCRYPTION_KEY_SERVICE_BIO)
+      return await hasGenericPassword(bioGetOptions)
     } catch (e) {
       Logger.error('Failed to check encryption key existence', e)
       return false
@@ -304,21 +301,22 @@ class BiometricsSDK {
 
   async clearAllData(): Promise<void> {
     try {
-      const services = await Keychain.getAllGenericPasswordServices({
-        skipUIAuth: true
-      })
-      const walletPrefix = 'sec-storage-service-'
       const servicesToClear = [
         ENCRYPTION_KEY_SERVICE,
         ENCRYPTION_KEY_SERVICE_BIO,
         LEGACY_SERVICE_KEY,
         LEGACY_SERVICE_KEY_BIO
       ]
+      for (const service of servicesToClear) {
+        await Keychain.resetGenericPassword({ service })
+      }
+
+      const services = await Keychain.getAllGenericPasswordServices({
+        skipUIAuth: true
+      })
+      const walletPrefix = 'sec-storage-service-'
       for (const service of services) {
-        if (
-          service.startsWith(walletPrefix) ||
-          servicesToClear.includes(service)
-        ) {
+        if (service.startsWith(walletPrefix)) {
           await Keychain.resetGenericPassword({ service })
         }
       }
