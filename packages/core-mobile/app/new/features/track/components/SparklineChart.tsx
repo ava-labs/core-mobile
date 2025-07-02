@@ -1,4 +1,11 @@
-import { alpha, ANIMATED, Text, useTheme, View } from '@avalabs/k2-alpine'
+import {
+  alpha,
+  ANIMATED,
+  SPRING_LINEAR_TRANSITION,
+  Text,
+  useTheme,
+  View
+} from '@avalabs/k2-alpine'
 import { K2AlpineTheme } from '@avalabs/k2-alpine/src/theme/theme'
 import { HORIZONTAL_MARGIN } from 'common/consts'
 import React, { FC, useCallback } from 'react'
@@ -8,7 +15,8 @@ import Animated, {
   SharedValue,
   useAnimatedStyle,
   useSharedValue,
-  withTiming
+  withTiming,
+  FadeIn
 } from 'react-native-reanimated'
 import Svg, { Line } from 'react-native-svg'
 import { useSelector } from 'react-redux'
@@ -76,21 +84,27 @@ const SparklineChart: FC<Props> = ({
         color={theme.colors.$borderPrimary}
         isLoading={data.length === 0}
       />
-      <LineGraph
-        style={{ width: '100%', height: '100%' }}
-        verticalPadding={verticalPadding}
-        testID="line_graph"
-        animated={true}
-        color={color}
-        lineThickness={lineThickness}
-        points={data}
-        gradientFillColors={gradientFillColors}
-        enablePanGesture={enablePanGesture}
-        SelectionDot={props => SelectionDotWithSelector(props)}
-        onPointSelected={onPointSelected}
-        onGestureStart={handleTouchStart}
-        onGestureEnd={handleTouchEnd}
-      />
+      {data?.length ? (
+        <Animated.View
+          entering={FadeIn.delay(400).duration(1000)}
+          layout={SPRING_LINEAR_TRANSITION}>
+          <LineGraph
+            style={{ width: '100%', height: '100%' }}
+            verticalPadding={verticalPadding}
+            testID="line_graph"
+            animated={true}
+            color={color}
+            lineThickness={lineThickness}
+            points={data}
+            gradientFillColors={gradientFillColors}
+            enablePanGesture={enablePanGesture}
+            SelectionDot={props => SelectionDotWithSelector(props)}
+            onPointSelected={onPointSelected}
+            onGestureStart={handleTouchStart}
+            onGestureEnd={handleTouchEnd}
+          />
+        </Animated.View>
+      ) : null}
     </View>
   )
 }

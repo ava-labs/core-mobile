@@ -38,6 +38,25 @@ export const ShareChart = ({ token }: { token: MarketToken }): JSX.Element => {
       coingeckoId.length > 0
   })
 
+  const currentPrice = useMemo(() => {
+    return (
+      tokenInfo?.currentPrice ??
+      prices?.[coingeckoId]?.priceInCurrency ??
+      token.currentPrice
+    )
+  }, [tokenInfo?.currentPrice, prices, coingeckoId, token.currentPrice])
+
+  const range = useMemo(() => {
+    return {
+      diffValue: ranges.diffValue
+        ? ranges.diffValue
+        : token.priceChange24h ?? 0,
+      percentChange: ranges.percentChange
+        ? ranges.percentChange
+        : token.priceChangePercentage24h ?? 0
+    }
+  }, [ranges, token.priceChange24h, token.priceChangePercentage24h])
+
   return (
     <View
       sx={{
@@ -58,19 +77,8 @@ export const ShareChart = ({ token }: { token: MarketToken }): JSX.Element => {
           <TokenHeader
             logoUri={token.logoUri}
             symbol={token.symbol ?? ''}
-            currentPrice={
-              tokenInfo?.currentPrice ??
-              prices?.[coingeckoId]?.priceInCurrency ??
-              token.currentPrice
-            }
-            ranges={{
-              diffValue: ranges.diffValue
-                ? ranges.diffValue
-                : token.priceChange24h ?? 0,
-              percentChange: ranges.percentChange
-                ? ranges.percentChange
-                : token.priceChangePercentage24h ?? 0
-            }}
+            currentPrice={currentPrice}
+            ranges={range}
           />
         </View>
         <View

@@ -5,6 +5,7 @@ import {
   Icons,
   SegmentedControl,
   showAlert,
+  SPRING_LINEAR_TRANSITION,
   Text,
   TouchableOpacity,
   useTheme,
@@ -42,7 +43,8 @@ import { StyleSheet } from 'react-native'
 import Animated, {
   useDerivedValue,
   useSharedValue,
-  withTiming
+  withTiming,
+  FadeIn
 } from 'react-native-reanimated'
 import { MarketToken, MarketType } from 'store/watchlist'
 import { getDomainFromUrl } from 'utils/getDomainFromUrl/getDomainFromUrl'
@@ -50,6 +52,7 @@ import { isPositiveNumber } from 'utils/isPositiveNumber/isPositiveNumber'
 import { formatLargeCurrency } from 'utils/Utils'
 
 const MAX_VALUE_WIDTH = '80%'
+const DELAY = 200
 
 const TrackTokenDetailScreen = (): JSX.Element => {
   const { theme } = useTheme()
@@ -331,15 +334,19 @@ const TrackTokenDetailScreen = (): JSX.Element => {
 
   const renderFooter = useCallback(() => {
     return (
-      <TokenDetailFooter
-        isAVAX={coingeckoId === AVAX_COINGECKO_ID}
-        marketType={token.marketType}
-        contractAddress={tokenInfo?.contractAddress}
-        chainId={chainId}
-        onBuy={() => handleBuy(tokenInfo?.contractAddress)}
-        onStake={addStake}
-        onSwap={handleSwap}
-      />
+      <Animated.View
+        entering={FadeIn.delay(DELAY * 2)}
+        layout={SPRING_LINEAR_TRANSITION}>
+        <TokenDetailFooter
+          isAVAX={coingeckoId === AVAX_COINGECKO_ID}
+          marketType={token.marketType}
+          contractAddress={tokenInfo?.contractAddress}
+          chainId={chainId}
+          onBuy={() => handleBuy(tokenInfo?.contractAddress)}
+          onStake={addStake}
+          onSwap={handleSwap}
+        />
+      </Animated.View>
     )
   }, [
     coingeckoId,
@@ -351,6 +358,25 @@ const TrackTokenDetailScreen = (): JSX.Element => {
     handleBuy
   ])
 
+  const currentPrice = useMemo(() => {
+    return (
+      tokenInfo?.currentPrice ??
+      prices?.[coingeckoId]?.priceInCurrency ??
+      token.currentPrice
+    )
+  }, [tokenInfo?.currentPrice, prices, coingeckoId, token.currentPrice])
+
+  const range = useMemo(() => {
+    return {
+      diffValue: ranges.diffValue
+        ? ranges.diffValue
+        : token.priceChange24h ?? 0,
+      percentChange: ranges.percentChange
+        ? ranges.percentChange
+        : token.priceChangePercentage24h ?? 0
+    }
+  }, [ranges, token.priceChange24h, token.priceChangePercentage24h])
+
   const renderHeader = useCallback(() => {
     return (
       <View sx={{ paddingHorizontal: 16 }}>
@@ -358,19 +384,8 @@ const TrackTokenDetailScreen = (): JSX.Element => {
           <TokenHeader
             logoUri={token.logoUri}
             symbol={token.symbol ?? ''}
-            currentPrice={
-              tokenInfo?.currentPrice ??
-              prices?.[coingeckoId]?.priceInCurrency ??
-              token.currentPrice
-            }
-            ranges={{
-              diffValue: ranges.diffValue
-                ? ranges.diffValue
-                : token.priceChange24h ?? 0,
-              percentChange: ranges.percentChange
-                ? ranges.percentChange
-                : token.priceChangePercentage24h ?? 0
-            }}
+            currentPrice={currentPrice}
+            ranges={range}
             rank={tokenInfo?.marketCapRank}
           />
         </Animated.View>
@@ -397,15 +412,9 @@ const TrackTokenDetailScreen = (): JSX.Element => {
     headerOpacity,
     token.logoUri,
     token.symbol,
-    token.currentPrice,
-    token.priceChange24h,
-    token.priceChangePercentage24h,
-    tokenInfo?.currentPrice,
+    currentPrice,
+    range,
     tokenInfo?.marketCapRank,
-    prices,
-    coingeckoId,
-    ranges.diffValue,
-    ranges.percentChange,
     isChartInteracting,
     selectedDataIndicatorOpacity,
     selectedData,
@@ -431,64 +440,87 @@ const TrackTokenDetailScreen = (): JSX.Element => {
         onGestureStart={handleChartGestureStart}
         onGestureEnd={handleChartGestureEnd}
       />
+
       <View sx={styles.lastUpdatedContainer}>
         {lastUpdatedDate && (
           <Animated.View
+            entering={FadeIn.delay(DELAY * 4)}
+            layout={SPRING_LINEAR_TRANSITION}
             style={{
               alignSelf: 'center',
-              position: 'absolute',
-              opacity: headerOpacity
+              position: 'absolute'
             }}>
-            <Text
-              variant="caption"
-              sx={{
-                color: '$textSecondary'
+            <Animated.View
+              style={{
+                opacity: headerOpacity
               }}>
-              Last updated:{' '}
-              {format(lastUpdatedDate, 'E, MMM dd, yyyy, h:mm aa')}
-            </Text>
+              <Text
+                variant="caption"
+                sx={{
+                  color: '$textSecondary'
+                }}>
+                Last updated:{' '}
+                {format(lastUpdatedDate, 'E, MMM dd, yyyy, h:mm aa')}
+              </Text>
+            </Animated.View>
           </Animated.View>
         )}
       </View>
       {tokenInfo?.has24hChartDataOnly === false && (
-        <SegmentedControl
-          type="thin"
-          dynamicItemWidth={false}
-          items={SEGMENT_ITEMS}
-          style={styles.segmentedControl}
-          selectedSegmentIndex={selectedSegmentIndex}
-          onSelectSegment={handleSelectSegment}
-        />
+        <Animated.View
+          entering={FadeIn.delay(DELAY * 5)}
+          layout={SPRING_LINEAR_TRANSITION}>
+          <SegmentedControl
+            type="thin"
+            dynamicItemWidth={false}
+            items={SEGMENT_ITEMS}
+            style={styles.segmentedControl}
+            selectedSegmentIndex={selectedSegmentIndex}
+            onSelectSegment={handleSelectSegment}
+          />
+        </Animated.View>
       )}
       <View sx={styles.aboutContainer}>
         {tokenInfo?.description && (
-          <TouchableOpacity onPress={handlePressAbout}>
-            <Card sx={styles.aboutCard}>
-              <Text variant="heading4">About</Text>
-              <Text
-                variant="subtitle2"
-                sx={{ color: '$textSecondary' }}
-                numberOfLines={6}>
-                {tokenInfo?.description}
-              </Text>
-            </Card>
-          </TouchableOpacity>
+          <Animated.View
+            entering={FadeIn.delay(DELAY * 6)}
+            layout={SPRING_LINEAR_TRANSITION}>
+            <TouchableOpacity onPress={handlePressAbout}>
+              <Card sx={styles.aboutCard}>
+                <Text variant="heading4">About</Text>
+                <Text
+                  variant="subtitle2"
+                  sx={{ color: '$textSecondary' }}
+                  numberOfLines={6}>
+                  {tokenInfo?.description}
+                </Text>
+              </Card>
+            </TouchableOpacity>
+          </Animated.View>
         )}
         {marketData.length > 0 && (
-          <GroupList
-            data={marketData}
-            valueSx={{
-              maxWidth: MAX_VALUE_WIDTH
-            }}
-          />
+          <Animated.View
+            entering={FadeIn.delay(DELAY * 7)}
+            layout={SPRING_LINEAR_TRANSITION}>
+            <GroupList
+              data={marketData}
+              valueSx={{
+                maxWidth: MAX_VALUE_WIDTH
+              }}
+            />
+          </Animated.View>
         )}
         {metaData.length > 0 && (
-          <GroupList
-            data={metaData}
-            valueSx={{
-              maxWidth: MAX_VALUE_WIDTH
-            }}
-          />
+          <Animated.View
+            entering={FadeIn.delay(DELAY * 8)}
+            layout={SPRING_LINEAR_TRANSITION}>
+            <GroupList
+              data={metaData}
+              valueSx={{
+                maxWidth: MAX_VALUE_WIDTH
+              }}
+            />
+          </Animated.View>
         )}
       </View>
     </ScrollScreen>
