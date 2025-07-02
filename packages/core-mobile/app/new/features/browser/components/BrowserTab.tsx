@@ -39,8 +39,9 @@ import {
   updateActiveHistoryForTab
 } from 'store/browser/slices/tabs'
 import Logger from 'utils/Logger'
+import { SharedValue } from 'react-native-reanimated'
+import { WebViewProgressEvent } from 'react-native-webview/lib/WebViewTypes'
 import ErrorIcon from '../../../assets/icons/melting_face.png'
-import { useBrowserContext } from '../BrowserContext'
 import { isSuggestedSiteName } from '../utils'
 import { WebView } from './Webview'
 
@@ -55,14 +56,21 @@ export interface BrowserTabRef {
   }
 }
 
-export const BrowserTab = forwardRef<BrowserTabRef, { tabId: string }>(
+export const BrowserTab = forwardRef<
+  BrowserTabRef,
+  {
+    tabId: string
+    setUrlEntry?: (url: string) => void
+    onProgress: (event: WebViewProgressEvent) => void
+    progress: SharedValue<number>
+  }
+>(
   // eslint-disable-next-line sonarjs/cognitive-complexity
-  ({ tabId }, ref): JSX.Element => {
+  ({ tabId, setUrlEntry, onProgress, progress }, ref): JSX.Element => {
     const dispatch = useDispatch()
     const { theme } = useTheme()
     const insets = useSafeAreaInsets()
 
-    const { onProgress, progress, setUrlEntry } = useBrowserContext()
     const { setPendingDeepLink } = useDeeplink()
     const clipboard = useClipboardWatcher()
     const {
@@ -288,7 +296,7 @@ export const BrowserTab = forwardRef<BrowserTabRef, { tabId: string }>(
           }
         : { title: event.nativeEvent.title, url: event.nativeEvent.url }
       dispatch(addHistoryForActiveTab(history))
-      setUrlEntry(event.nativeEvent.url)
+      setUrlEntry?.(event.nativeEvent.url)
     }
 
     const onError = (event: WebViewErrorEvent): void => {
