@@ -390,7 +390,7 @@ describe('BiometricsSDK', () => {
       expect(BiometricsSDK.getAccessType()).toBe('PIN')
 
       mockCommonStorage.getString.mockReturnValue(undefined)
-      expect(BiometricsSDK.getAccessType()).toBe('PIN') // default
+      expect(BiometricsSDK.getAccessType()).toBe(undefined)
     })
 
     it('should check if biometry can be used', async () => {
