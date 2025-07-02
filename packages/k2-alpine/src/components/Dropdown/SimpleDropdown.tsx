@@ -138,6 +138,7 @@ export const SimpleDropdown = <T extends { toString(): string }>({
         backgroundStyle={{ backgroundColor: 'transparent' }}>
         <DropdownBackground>
           <ScrollView
+            testID={`dropdown_scroll_view`}
             scrollEnabled={scrollContentMaxHeight !== undefined}
             showsVerticalScrollIndicator={false}
             sx={{

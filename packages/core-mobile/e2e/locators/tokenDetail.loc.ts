@@ -24,5 +24,6 @@ export default {
   lineGraph: 'line_graph',
   footerBuyBtn: 'token_detail_footer_buy_btn',
   footerSwapBtn: 'token_detail_footer_swap_btn',
-  footerStakeBtn: 'token_detail_footer_stake_btn'
+  footerStakeBtn: 'token_detail_footer_stake_btn',
+  tokenBreakdown: 'Token breakdown'
 }

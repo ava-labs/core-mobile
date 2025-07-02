@@ -24,7 +24,7 @@ describe('KeychainMigrator', () => {
     it('should return false if fully migrated', async () => {
       mockBiometricsSDK.hasEncryptionKeyWithPin.mockResolvedValue(true)
       const status = await keychainMigrator.getMigrationStatus('PIN')
-      expect(status).toBe(false)
+      expect(status).toBe('noMigrationNeeded')
     })
 
     it('should return "completePartialMigration" if bio key exists but pin key does not', async () => {
@@ -130,17 +130,14 @@ describe('KeychainMigrator', () => {
       )
     })
 
-    it('should throw MigrationFailedError on unexpected migration status for biometric', async () => {
+    it('should do no migration if already migrated bio', async () => {
       mockBiometricsSDK.hasEncryptionKeyWithPin.mockResolvedValue(false)
       mockBiometricsSDK.hasEncryptionKeyWithBiometry.mockResolvedValue(true)
 
-      await expect(keychainMigrator.migrateIfNeeded('BIO')).rejects.toThrow(
-        MigrationFailedError
-      )
-      expect(mockLogger.error).toHaveBeenCalledWith(
-        'Unexpected migration status:',
-        'completePartialMigration'
-      )
+      expect(await keychainMigrator.migrateIfNeeded('BIO')).toStrictEqual({
+        success: true,
+        value: 'noMigrationNeeded'
+      })
     })
 
     it('should throw MigrationFailedError when underlying migration fails', async () => {

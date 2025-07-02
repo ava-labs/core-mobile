@@ -7,7 +7,8 @@ import ModuleManager from 'vmModule/ModuleManager'
 import {
   AvalancheTransactionRequest,
   BtcTransactionRequest,
-  SignTransactionRequest
+  SignTransactionRequest,
+  SolanaTransactionRequest
 } from './types'
 
 export const MAINNET_AVAX_ASSET_ID = Avalanche.MainnetContext.avaxAssetID
@@ -25,6 +26,12 @@ export const isAvalancheTransactionRequest = (
   request: SignTransactionRequest
 ): request is AvalancheTransactionRequest => {
   return 'tx' in request
+}
+
+export const isSolanaTransactionRequest = (
+  request: SignTransactionRequest
+): request is SolanaTransactionRequest => {
+  return 'serializedTx' in request
 }
 
 export const getAssetId = (avaxXPNetwork: Network): string => {

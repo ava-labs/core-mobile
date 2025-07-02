@@ -43,10 +43,7 @@ export const AccountButtons = ({
   const handleShowAlertWithTextInput = (): void => {
     showAlertWithTextInput({
       title: 'Rename account',
-      inputs: [
-        { key: 'accountName', defaultValue: account?.name },
-        { key: 'walletType', defaultValue: walletType }
-      ],
+      inputs: [{ key: 'accountName', defaultValue: account?.name }],
       buttons: [
         {
           text: 'Cancel',

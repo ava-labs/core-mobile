@@ -1,45 +1,22 @@
-import { cleanup } from '../../../helpers/cleanup'
 import { warmup } from '../../../helpers/warmup'
 import sendLoc from '../../../locators/send.loc'
-import accountManagePage from '../../../pages/accountManage.page'
-import bottomTabsPage from '../../../pages/bottomTabs.page'
-import advancedPage from '../../../pages/burgerMenu/advanced.page'
-import networksManagePage from '../../../pages/networksManage.page'
-import portfolioPage from '../../../pages/portfolio.page'
+import commonElsPage from '../../../pages/commonEls.page'
 import sendPage from '../../../pages/send.page'
+import settingsPage from '../../../pages/settings.page'
 
-describe('Ethereum Transaction', () => {
+describe('Send on Ethereum network', () => {
   beforeAll(async () => {
     await warmup()
-    await accountManagePage.createSecondAccount()
+    await settingsPage.createNthAccount()
   })
 
-  afterAll(async () => {
-    await cleanup()
+  it('Should send Eth on Ethereum network', async () => {
+    await sendPage.send(sendLoc.ethToken, sendLoc.sendingAmount)
+    await commonElsPage.verifySuccessToast()
   })
 
-  it('Should send Eth on MainNet', async () => {
-    await bottomTabsPage.tapPortfolioTab()
-    await portfolioPage.tapNetworksDropdown()
-    await portfolioPage.tapNetworksDropdownETH()
-    await sendPage.sendTokenTo2ndAccount(
-      sendLoc.ethToken,
-      sendLoc.sendingAmount,
-      false
-    )
-    await sendPage.verifySuccessToast()
+  it('Should send ERC20 on Ethereum network', async () => {
+    await sendPage.send(sendLoc.wethToken, sendLoc.sendingAmount)
+    await commonElsPage.verifySuccessToast()
   })
-
-  it('Should send Sepolia Eth on TestNet', async () => {
-    await bottomTabsPage.tapPortfolioTab()
-    await advancedPage.switchToTestnet()
-    await networksManagePage.switchToEthereumSepoliaNetwork()
-    await portfolioPage.verifyActiveNetwork('Ethereum Sepolia')
-    await sendPage.sendTokenTo2ndAccount(
-      sendLoc.ethToken,
-      sendLoc.sendingAmount,
-      false
-    )
-    await sendPage.verifySuccessToast()
-  }, 120000)
 })
