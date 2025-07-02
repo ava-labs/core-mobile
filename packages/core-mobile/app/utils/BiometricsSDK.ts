@@ -69,7 +69,7 @@ class BiometricsSDK {
    * early and mask it with splash for smoother UX
    */
   async warmup(): Promise<void> {
-    await Keychain.getAllGenericPasswordServices()
+    await Keychain.getAllGenericPasswordServices({ skipUIAuth: true })
   }
 
   //FIXME: changed in
@@ -151,7 +151,9 @@ class BiometricsSDK {
 
   async hasEncryptionKeyWithBiometry(): Promise<boolean> {
     try {
-      const services = await Keychain.getAllGenericPasswordServices()
+      const services = await Keychain.getAllGenericPasswordServices({
+        skipUIAuth: true
+      })
       return services.includes(ENCRYPTION_KEY_SERVICE_BIO)
     } catch (e) {
       Logger.error('Failed to check encryption key existence', e)

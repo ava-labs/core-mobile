@@ -357,7 +357,9 @@ export const migrations = {
     await Keychain.resetGenericPassword({
       service: 'encryption-key-service-bio'
     })
-    const services = await Keychain.getAllGenericPasswordServices()
+    const services = await Keychain.getAllGenericPasswordServices({
+      skipUIAuth: true
+    })
     Logger.info('services:', services)
     // Generate a new wallet ID
     const walletId = uuid()
