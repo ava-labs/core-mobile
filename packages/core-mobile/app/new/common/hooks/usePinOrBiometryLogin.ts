@@ -7,7 +7,8 @@ import { formatTimer } from 'utils/Utils'
 import { BiometricType } from 'utils/BiometricsSDK'
 import KeychainMigrator, {
   BadPinError,
-  MigrationFailedError
+  MigrationFailedError,
+  MigrationStatus
 } from 'utils/KeychainMigrator'
 import { useSelector } from 'react-redux'
 import { selectActiveWalletId } from 'store/wallet/slice'
@@ -156,6 +157,27 @@ export function usePinOrBiometryLogin({
         const accessType = BiometricsSDK.getAccessType()
 
         if (accessType === 'BIO') {
+          // Check if migration is needed first
+          const migrator = new KeychainMigrator(activeWalletId)
+          const result = await migrator.migrateIfNeeded('BIO')
+          if (
+            result.success &&
+            result.value === MigrationStatus.RunBiometricMigration
+          ) {
+            //already prompted user for bio, assume verified
+            setVerified(true)
+            resetRateLimiter()
+            return new NothingToLoad()
+          }
+          if (
+            result.success &&
+            result.value !== MigrationStatus.NoMigrationNeeded
+          ) {
+            throw new Error(
+              'Invalid state: migration status is not RunBiometricMigration'
+            )
+          }
+          //already migrated
           const isSuccess = await BiometricsSDK.loadEncryptionKeyWithBiometry()
 
           if (isSuccess) {
@@ -163,18 +185,6 @@ export function usePinOrBiometryLogin({
             resetRateLimiter()
             return new NothingToLoad()
           } else {
-            // Check if migration is needed first
-            const migrator = new KeychainMigrator(activeWalletId)
-            await migrator.migrateIfNeeded('BIO')
-
-            const isSuccessAfterMigration =
-              await BiometricsSDK.loadEncryptionKeyWithBiometry()
-            if (isSuccessAfterMigration) {
-              setVerified(true)
-              resetRateLimiter()
-              return new NothingToLoad()
-            }
-
             setVerified(false)
             return new NothingToLoad()
           }

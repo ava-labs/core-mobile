@@ -12,7 +12,7 @@ import { truncateAddress } from '@avalabs/core-utils-sdk'
 import { useRouter } from 'expo-router'
 import { useImportMnemonic } from 'new/common/hooks/useImportMnemonic'
 import { useActiveWallet } from 'common/hooks/useActiveWallet'
-import KeychainMigrator from 'utils/KeychainMigrator'
+import KeychainMigrator, { MigrationStatus } from 'utils/KeychainMigrator'
 import { MINIMUM_MNEMONIC_WORDS } from 'common/consts'
 import { useCheckIfAccountExists } from 'common/hooks/useCheckIfAccountExists'
 
@@ -93,10 +93,10 @@ const ImportSeedWallet = (): React.JSX.Element => {
 
     setIsCheckingMigration(true)
     const migrator = new KeychainMigrator(activeWallet.id)
-    const migrationNeeded = await migrator.getMigrationStatus('PIN')
+    const migrationStatus = await migrator.getMigrationStatus('PIN')
     setIsCheckingMigration(false)
 
-    if (migrationNeeded) {
+    if (migrationStatus !== MigrationStatus.NoMigrationNeeded) {
       router.navigate({
         // @ts-ignore TODO: make routes typesafe
         pathname: '/accountSettings/verifyPin',
