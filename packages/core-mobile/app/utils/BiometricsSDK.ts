@@ -1,6 +1,8 @@
 import Keychain, {
   getSupportedBiometryType,
-  Options
+  SetOptions,
+  GetOptions,
+  BaseOptions
 } from 'react-native-keychain'
 import { StorageKey } from 'resources/Constants'
 import { Platform } from 'react-native'
@@ -27,37 +29,36 @@ const ENCRYPTION_KEY_SERVICE = 'encryption-key-service'
 const ENCRYPTION_KEY_SERVICE_BIO = 'encryption-key-service-bio'
 const iOS = Platform.OS === 'ios'
 
-type KeystoreConfigType = {
-  ENCRYPTION_KEY_PASSCODE_OPTIONS: Options
-  ENCRYPTION_KEY_BIO_OPTIONS: Options
-  wallet_secret_options: (walletId: string) => Options
+const COMMON_BIO_PROMPT = {
+  title: 'Access Wallet',
+  subtitle: 'Use biometric data to access securely stored wallet information',
+  cancel: 'Cancel'
 }
 
-export const KeystoreConfig: KeystoreConfigType = {
-  ENCRYPTION_KEY_PASSCODE_OPTIONS: {
-    service: ENCRYPTION_KEY_SERVICE,
-    accessControl: iOS
-      ? undefined
-      : Keychain.ACCESS_CONTROL.APPLICATION_PASSWORD,
-    rules: iOS ? undefined : Keychain.SECURITY_RULES.NONE
-  },
-  ENCRYPTION_KEY_BIO_OPTIONS: {
-    service: ENCRYPTION_KEY_SERVICE_BIO,
-    accessControl: Keychain.ACCESS_CONTROL.BIOMETRY_CURRENT_SET,
-    accessible: Keychain.ACCESSIBLE.WHEN_UNLOCKED_THIS_DEVICE_ONLY,
-    authenticationPrompt: {
-      title: 'Access Wallet',
-      subtitle:
-        'Use biometric data to access securely stored wallet information',
-      cancel: 'Cancel'
-    },
-    authenticationType:
-      Keychain.AUTHENTICATION_TYPE.DEVICE_PASSCODE_OR_BIOMETRICS
-  },
-  wallet_secret_options: (walletId: string) => ({
-    service: getWalletServiceKey(walletId)
-  })
+const passcodeGetOptions: GetOptions = {
+  service: ENCRYPTION_KEY_SERVICE,
+  accessControl: iOS ? undefined : Keychain.ACCESS_CONTROL.APPLICATION_PASSWORD
 }
+
+const passcodeSetOptions: SetOptions = {
+  ...passcodeGetOptions,
+  securityLevel: iOS ? undefined : Keychain.SECURITY_LEVEL.ANY
+}
+
+const bioGetOptions: GetOptions = {
+  service: ENCRYPTION_KEY_SERVICE_BIO,
+  accessControl: Keychain.ACCESS_CONTROL.BIOMETRY_CURRENT_SET,
+  authenticationPrompt: COMMON_BIO_PROMPT
+}
+
+const bioSetOptions: SetOptions = {
+  ...bioGetOptions,
+  accessible: Keychain.ACCESSIBLE.WHEN_UNLOCKED_THIS_DEVICE_ONLY
+}
+
+const walletSecretOptions = (walletId: string): BaseOptions => ({
+  service: getWalletServiceKey(walletId)
+})
 
 class BiometricsSDK {
   private encryptionKey: string | null = null
@@ -114,14 +115,11 @@ class BiometricsSDK {
       const credentials = await Keychain.getGenericPassword({
         service: LEGACY_SERVICE_KEY,
         accessControl: Keychain.ACCESS_CONTROL.BIOMETRY_CURRENT_SET,
-        accessible: Keychain.ACCESSIBLE.WHEN_UNLOCKED_THIS_DEVICE_ONLY,
         authenticationPrompt: {
           title: 'Authorize access',
           subtitle: 'Use biometric data to migrate your wallet',
           cancel: 'Cancel'
-        },
-        authenticationType:
-          Keychain.AUTHENTICATION_TYPE.DEVICE_PASSCODE_OR_BIOMETRICS
+        }
       })
       if (!credentials)
         return { success: false, error: new Error('No credentials found') }
@@ -143,9 +141,7 @@ class BiometricsSDK {
   // Encryption Key Management
   async hasEncryptionKeyWithPin(): Promise<boolean> {
     try {
-      const credentials = await Keychain.getGenericPassword(
-        KeystoreConfig.ENCRYPTION_KEY_PASSCODE_OPTIONS
-      )
+      const credentials = await Keychain.getGenericPassword(passcodeGetOptions)
       return credentials !== false
     } catch (e) {
       Logger.error('Failed to check encryption key existence', e)
@@ -164,9 +160,7 @@ class BiometricsSDK {
   }
 
   async loadEncryptionKeyWithPin(pin: string): Promise<boolean> {
-    const credentials = await Keychain.getGenericPassword(
-      KeystoreConfig.ENCRYPTION_KEY_PASSCODE_OPTIONS
-    )
+    const credentials = await Keychain.getGenericPassword(passcodeGetOptions)
     if (!credentials) return false
     const decrypted = await decrypt(credentials.password, pin)
     if (!decrypted) return false
@@ -175,9 +169,7 @@ class BiometricsSDK {
   }
 
   async loadEncryptionKeyWithBiometry(): Promise<boolean> {
-    const credentials = await Keychain.getGenericPassword(
-      KeystoreConfig.ENCRYPTION_KEY_BIO_OPTIONS
-    )
+    const credentials = await Keychain.getGenericPassword(bioGetOptions)
     if (!credentials) return false
     this.encryptionKey = credentials.password
     return true
@@ -192,7 +184,7 @@ class BiometricsSDK {
     await Keychain.setGenericPassword(
       'encryptionKey',
       encrypted,
-      KeystoreConfig.ENCRYPTION_KEY_PASSCODE_OPTIONS
+      passcodeSetOptions
     )
     this.encryptionKey = encryptionKey
     return true
@@ -213,7 +205,7 @@ class BiometricsSDK {
       await Keychain.setGenericPassword(
         'encryptionKey',
         encryptionKey,
-        KeystoreConfig.ENCRYPTION_KEY_BIO_OPTIONS
+        bioSetOptions
       )
       this.encryptionKey = encryptionKey
       return true
@@ -245,21 +237,19 @@ class BiometricsSDK {
     await Keychain.setGenericPassword(
       'walletSecret',
       encrypted,
-      KeystoreConfig.wallet_secret_options(walletId)
+      walletSecretOptions(walletId)
     )
     return true
   }
 
   async removeWalletSecret(walletId: string): Promise<boolean> {
     try {
-      await Keychain.resetGenericPassword(
-        KeystoreConfig.wallet_secret_options(walletId)
-      )
+      await Keychain.resetGenericPassword(walletSecretOptions(walletId))
       return true
     } catch (e) {
       Logger.error(
         `Failed to remove wallet secret for service: ${
-          KeystoreConfig.wallet_secret_options(walletId).service
+          walletSecretOptions(walletId).service
         }`,
         e
       )
@@ -275,7 +265,7 @@ class BiometricsSDK {
   async loadWalletSecret(walletId: string): Promise<Result<string>> {
     try {
       const credentials = await Keychain.getGenericPassword(
-        KeystoreConfig.wallet_secret_options(walletId)
+        walletSecretOptions(walletId)
       )
       if (!credentials)
         return { success: false, error: new Error('No credentials found') }
@@ -298,13 +288,11 @@ class BiometricsSDK {
 
   async clearWalletData(walletId: string): Promise<void> {
     try {
-      await Keychain.resetGenericPassword(
-        KeystoreConfig.wallet_secret_options(walletId)
-      )
+      await Keychain.resetGenericPassword(walletSecretOptions(walletId))
     } catch (e) {
       Logger.error(
         `Failed to reset keychain for service: ${
-          KeystoreConfig.wallet_secret_options(walletId).service
+          walletSecretOptions(walletId).service
         }`,
         e
       )
@@ -314,7 +302,9 @@ class BiometricsSDK {
 
   async clearAllData(): Promise<void> {
     try {
-      const services = await Keychain.getAllGenericPasswordServices()
+      const services = await Keychain.getAllGenericPasswordServices({
+        skipUIAuth: true
+      })
       const walletPrefix = 'sec-storage-service-'
       const servicesToClear = [
         ENCRYPTION_KEY_SERVICE,
@@ -354,6 +344,8 @@ class BiometricsSDK {
         return BiometricType.FACE_ID
       case Keychain.BIOMETRY_TYPE.IRIS:
         return BiometricType.IRIS
+      case Keychain.BIOMETRY_TYPE.OPTIC_ID:
+        throw new Error('BiometricType.OPTIC_ID is not supported')
     }
   }
 
