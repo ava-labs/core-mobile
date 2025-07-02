@@ -1,5 +1,6 @@
 import { ErrorBase } from 'errors/ErrorBase'
 import { Result } from 'types/result'
+import { SecureAccessSet } from 'resources/Constants'
 import BiometricsSDK from './BiometricsSDK'
 import Logger from './Logger'
 import { assertNotUndefined } from './assertions'
@@ -35,6 +36,11 @@ class KeychainMigrator {
       return MigrationStatus.NoMigrationNeeded
     }
 
+    //new bio exists, but accessType is bio so no need to migrate
+    if (newBioKeyExists && accessType === 'BIO') {
+      return MigrationStatus.NoMigrationNeeded
+    }
+
     // no pin key, but bio key exists
     if (newBioKeyExists) {
       return MigrationStatus.CompletePartialMigration
@@ -52,7 +58,7 @@ class KeychainMigrator {
   ): Promise<Result<MigrationStatus>> {
     const migrationStatus = await this.getMigrationStatus(accessType)
     if (migrationStatus === MigrationStatus.NoMigrationNeeded) {
-      return { success: false, error: new Error('No migration needed') }
+      return { success: true, value: migrationStatus }
     }
 
     try {
