@@ -2,6 +2,8 @@ import BiometricsSDK, {
   bioGetOptions,
   BiometricType,
   bioSetOptions,
+  ENCRYPTION_KEY_SERVICE,
+  ENCRYPTION_KEY_SERVICE_BIO,
   passcodeGetOptions,
   passcodeSetOptions,
   walletSecretOptions
@@ -223,7 +225,6 @@ describe('BiometricsSDK', () => {
     })
 
     it('should check if encryption key with biometry exists', async () => {
-      const ENCRYPTION_KEY_SERVICE_BIO = 'encryption-key-service-bio'
       mockKeychain.getAllGenericPasswordServices.mockResolvedValue([
         ENCRYPTION_KEY_SERVICE_BIO
       ])
@@ -348,8 +349,6 @@ describe('BiometricsSDK', () => {
     })
 
     it('should clear all relevant data', async () => {
-      const ENCRYPTION_KEY_SERVICE = 'encryption-key-service'
-      const ENCRYPTION_KEY_SERVICE_BIO = 'encryption-key-service-bio'
       const mockServices = [
         `sec-storage-service-${mockWalletId}`,
         'sec-storage-service-wallet2',

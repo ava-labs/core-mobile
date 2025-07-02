@@ -25,8 +25,8 @@ const LEGACY_SERVICE_KEY_BIO = 'sec-storage-service-bio'
 
 const getWalletServiceKey = (walletId: string): string =>
   `sec-storage-service-${walletId}`
-const ENCRYPTION_KEY_SERVICE = 'encryption-key-service'
-const ENCRYPTION_KEY_SERVICE_BIO = 'encryption-key-service-bio'
+export const ENCRYPTION_KEY_SERVICE = 'encryption-key-service'
+export const ENCRYPTION_KEY_SERVICE_BIO = 'encryption-key-service-bio'
 const iOS = Platform.OS === 'ios'
 
 const COMMON_BIO_PROMPT = {
