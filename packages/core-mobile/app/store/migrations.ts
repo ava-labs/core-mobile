@@ -451,5 +451,18 @@ export const migrations = {
       ...state,
       account: newAccountsState
     }
+  },
+  23: (state: any) => {
+    // Ensure lockWalletWithPIN exists in securityPrivacy settings
+    return {
+      ...state,
+      settings: {
+        ...state.settings,
+        securityPrivacy: {
+          ...state.settings.securityPrivacy,
+          lockWalletWithPIN: true
+        }
+      }
+    }
   }
 }
