@@ -261,7 +261,7 @@ const PortfolioHomeScreen = (): JSX.Element => {
     })
     buttons.push({
       title: ActionButtonTitle.Withdraw,
-      icon: 'withdraw',
+      icon: 'buy',
       onPress: navigateToWithdraw
     })
     return buttons

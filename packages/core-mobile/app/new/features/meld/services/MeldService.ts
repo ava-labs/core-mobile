@@ -193,7 +193,6 @@ class MeldService {
     sessionData: {
       serviceProvider,
       redirectUrl,
-      redirectFlow,
       sourceAmount,
       walletAddress,
       countryCode,
@@ -207,7 +206,6 @@ class MeldService {
       sessionData: {
         serviceProvider,
         redirectUrl,
-        redirectFlow,
         countryCode,
         sourceCurrencyCode,
         destinationCurrencyCode,
