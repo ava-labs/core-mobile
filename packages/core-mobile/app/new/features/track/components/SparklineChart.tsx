@@ -74,6 +74,7 @@ const SparklineChart: FC<Props> = ({
         isTouching={isTouching}
         labels={labels}
         color={theme.colors.$borderPrimary}
+        isLoading={data.length === 0}
       />
       <LineGraph
         style={{ width: '100%', height: '100%' }}
@@ -111,25 +112,36 @@ interface Props {
 const Grid = ({
   color,
   labels,
-  isTouching
+  isTouching,
+  isLoading
 }: {
   color: string
   labels?: string[]
   isTouching: SharedValue<boolean>
+  isLoading: boolean
 }): JSX.Element => {
+  const animatedStyle = useAnimatedStyle(() => {
+    return {
+      opacity: withTiming(isLoading ? 0.2 : 1, ANIMATED.TIMING_CONFIG)
+    }
+  })
+
   return (
-    <View
-      sx={{
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        justifyContent: 'center',
-        gap: 44,
-        zIndex: 1000,
-        pointerEvents: 'none'
-      }}>
+    <Animated.View
+      style={[
+        animatedStyle,
+        {
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          justifyContent: 'center',
+          gap: 44,
+          zIndex: 1000,
+          pointerEvents: 'none'
+        }
+      ]}>
       {(labels || new Array(4).fill('')).map((label, index) => (
         <DashedLine
           isTouching={isTouching}
@@ -138,7 +150,7 @@ const Grid = ({
           color={color}
         />
       ))}
-    </View>
+    </Animated.View>
   )
 }
 

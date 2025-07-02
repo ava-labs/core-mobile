@@ -24,7 +24,7 @@ import { isEffectivelyZero } from '../utils/utils'
 export const ShareChart = ({ token }: { token: MarketToken }): JSX.Element => {
   const { theme } = useTheme()
   const { theme: inversedTheme } = useInversedTheme({ isDark: theme.isDark })
-  const { chartData, ranges, coingeckoId } = useTokenDetails({
+  const { chartData, ranges, coingeckoId, tokenInfo } = useTokenDetails({
     tokenId: token.id,
     marketType: token.marketType
   })
@@ -33,7 +33,9 @@ export const ShareChart = ({ token }: { token: MarketToken }): JSX.Element => {
   const { data: prices } = useGetPrices({
     coingeckoIds: [coingeckoId],
     enabled:
-      isFocused && token?.currentPrice === undefined && coingeckoId.length > 0
+      isFocused &&
+      tokenInfo?.currentPrice === undefined &&
+      coingeckoId.length > 0
   })
 
   return (
@@ -54,14 +56,20 @@ export const ShareChart = ({ token }: { token: MarketToken }): JSX.Element => {
             paddingBottom: 4
           }}>
           <TokenHeader
-            logoUri={token?.logoUri}
-            symbol={token?.symbol ?? ''}
+            logoUri={token.logoUri}
+            symbol={token.symbol ?? ''}
             currentPrice={
-              token?.currentPrice ?? prices?.[coingeckoId]?.priceInCurrency
+              tokenInfo?.currentPrice ??
+              prices?.[coingeckoId]?.priceInCurrency ??
+              token.currentPrice
             }
             ranges={{
-              diffValue: token?.priceChange24h ?? 0,
-              percentChange: token?.priceChangePercentage24h ?? 0
+              diffValue: ranges.diffValue
+                ? ranges.diffValue
+                : token.priceChange24h ?? 0,
+              percentChange: ranges.percentChange
+                ? ranges.percentChange
+                : token.priceChangePercentage24h ?? 0
             }}
           />
         </View>
@@ -87,6 +95,7 @@ export const ShareChart = ({ token }: { token: MarketToken }): JSX.Element => {
               verticalPadding={VERTICAL_PADDING}
               negative={ranges.diffValue < 0}
               overrideTheme={inversedTheme}
+              lineThickness={4}
             />
           )}
         </View>
