@@ -7,7 +7,7 @@ import { FiatAmountInput, FiatAmountInputHandle } from './FiatAmountInput'
 interface FiatAmountInputWidgetProps {
   currency: string
   isAmountValid?: boolean
-  formatInTokenUnit?(amount: number): string
+  formatInSubTextNumber?(amount: number): JSX.Element
   formatInCurrency(amount: number): string
   formatIntegerCurrency(amount: number): string
   amount?: number
@@ -24,7 +24,7 @@ export const FiatAmountInputWidget = ({
   onChange,
   formatInCurrency,
   formatIntegerCurrency,
-  formatInTokenUnit,
+  formatInSubTextNumber,
   currency,
   accessory,
   sx,
@@ -112,7 +112,7 @@ export const FiatAmountInputWidget = ({
           amount={amount && amount !== 0 ? amount?.toString() : ''}
           onChange={handleChange}
           formatInCurrency={formatInCurrency}
-          formatInTokenUnit={formatInTokenUnit}
+          formatInSubTextNumber={formatInSubTextNumber}
         />
         <View sx={{ flexDirection: 'row', gap: 7, marginTop: 25 }}>
           {predefinedAmountButtons.map((button, index) => (

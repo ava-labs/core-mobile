@@ -31,7 +31,7 @@ type FiatAmountInputProps = {
   amount?: string
   currency: string
   isAmountValid?: boolean
-  formatInTokenUnit?(amount: number): string
+  formatInSubTextNumber?(amount: number): JSX.Element
   formatInCurrency(amount: number): string
   sx?: SxProp
   editable?: boolean
@@ -51,7 +51,7 @@ export const FiatAmountInput = forwardRef<
       currency,
       onChange,
       formatInCurrency,
-      formatInTokenUnit,
+      formatInSubTextNumber,
       sx,
       editable,
       returnKeyType = 'done',
@@ -147,18 +147,7 @@ export const FiatAmountInput = forwardRef<
           alignItems: 'center',
           ...sx
         }}>
-        {formatInTokenUnit && (
-          <Text
-            variant="subtitle2"
-            sx={{
-              marginBottom: 8,
-              color: isAmountValid
-                ? alpha(colors.$textPrimary, 0.9)
-                : colors.$textDanger
-            }}>
-            {formatInTokenUnit(Number(inputAmount ?? 0))}
-          </Text>
-        )}
+        {formatInSubTextNumber?.(Number(inputAmount ?? 0))}
         <TouchableWithoutFeedback onPress={handlePress}>
           <View
             sx={{

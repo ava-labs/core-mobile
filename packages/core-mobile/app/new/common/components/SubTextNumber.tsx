@@ -35,7 +35,7 @@ export const SubTextNumber = ({
       <Text
         numberOfLines={1}
         variant={textVariant}
-        style={[{ color: _textColor }]}>
+        style={[{ color: _textColor, fontWeight: subTextStyle.fontWeight }]}>
         {mainTextBefore}
       </Text>
       {subText && (
@@ -46,7 +46,9 @@ export const SubTextNumber = ({
         </Text>
       )}
       {mainTextAfter && (
-        <Text variant={textVariant} style={[{ color: _textColor }]}>
+        <Text
+          variant={textVariant}
+          style={[{ color: _textColor, fontWeight: subTextStyle.fontWeight }]}>
           {mainTextAfter}
         </Text>
       )}
@@ -62,11 +64,20 @@ const styles = StyleSheet.create({
   }
 })
 
-type SubTextNumberVariant = Extract<TextVariant, 'body1' | 'body2' | 'heading2'>
+type SubTextNumberVariant = Extract<
+  TextVariant,
+  'body1' | 'body2' | 'heading2' | 'caption' | 'subtitle2'
+>
 
 const getSubTextStyle = (textVariant: SubTextNumberVariant): TextStyle => {
   let style: TextStyle = {
     position: 'relative'
+  }
+  if (textVariant === 'subtitle2') {
+    style = { ...style, fontSize: 11, top: 4, fontWeight: '500' }
+  }
+  if (textVariant === 'caption') {
+    style = { ...style, fontSize: 9, top: 4, fontWeight: '500' }
   }
   if (textVariant === 'body1') {
     style = { ...style, fontSize: 13, top: 4, fontWeight: '500' }
