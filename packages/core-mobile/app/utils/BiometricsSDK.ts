@@ -35,28 +35,28 @@ const COMMON_BIO_PROMPT = {
   cancel: 'Cancel'
 }
 
-const passcodeGetOptions: GetOptions = {
+export const passcodeGetOptions: GetOptions = {
   service: ENCRYPTION_KEY_SERVICE,
   accessControl: iOS ? undefined : Keychain.ACCESS_CONTROL.APPLICATION_PASSWORD
 }
 
-const passcodeSetOptions: SetOptions = {
+export const passcodeSetOptions: SetOptions = {
   ...passcodeGetOptions,
   securityLevel: iOS ? undefined : Keychain.SECURITY_LEVEL.ANY
 }
 
-const bioGetOptions: GetOptions = {
+export const bioGetOptions: GetOptions = {
   service: ENCRYPTION_KEY_SERVICE_BIO,
   accessControl: Keychain.ACCESS_CONTROL.BIOMETRY_CURRENT_SET,
   authenticationPrompt: COMMON_BIO_PROMPT
 }
 
-const bioSetOptions: SetOptions = {
+export const bioSetOptions: SetOptions = {
   ...bioGetOptions,
   accessible: Keychain.ACCESSIBLE.WHEN_UNLOCKED_THIS_DEVICE_ONLY
 }
 
-const walletSecretOptions = (walletId: string): BaseOptions => ({
+export const walletSecretOptions = (walletId: string): BaseOptions => ({
   service: getWalletServiceKey(walletId)
 })
 
