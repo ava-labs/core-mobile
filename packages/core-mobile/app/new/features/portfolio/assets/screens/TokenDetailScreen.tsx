@@ -225,7 +225,7 @@ export const TokenDetailScreen = (): React.JSX.Element => {
     if (token && isWithdrawable(token)) {
       buttons.push({
         title: ActionButtonTitle.Withdraw,
-        icon: 'buy',
+        icon: 'withdraw',
         onPress: () => navigateToWithdraw({ token })
       })
     }

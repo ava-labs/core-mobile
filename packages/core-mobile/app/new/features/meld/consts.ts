@@ -419,3 +419,5 @@ export const ServiceProviderNames: Record<ServiceProviders, string> = {
   [ServiceProviders.YELLOWCARD]: 'Yellow Card',
   [ServiceProviders.YODLEE]: 'Yodlee'
 }
+
+export const AWAITING_PAYMENT_FROM_USER = 'AWAITING_PAYMENT_FROM_USER'

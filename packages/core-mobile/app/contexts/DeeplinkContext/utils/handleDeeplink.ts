@@ -10,6 +10,8 @@ import { History } from 'store/browser'
 import { navigateFromDeeplinkUrl } from 'utils/navigateFromDeeplink'
 import { dismissMeldStack } from 'features/meld/utils'
 import { MarketType } from 'store/watchlist'
+import { AWAITING_PAYMENT_FROM_USER } from 'features/meld/consts'
+import { offrampSend } from 'store/meld/slice'
 import { ACTIONS, DeepLink, PROTOCOLS } from '../types'
 
 export const handleDeeplink = ({
@@ -72,9 +74,11 @@ export const handleDeeplink = ({
           `/trackTokenDetail?tokenId=${coingeckoId}&marketType=${MarketType.SEARCH}`
         )
       } else if (
-        action === ACTIONS.OnrampCompleted ||
-        action === ACTIONS.OfframpCompleted
+        action === ACTIONS.OfframpCompleted &&
+        searchParams.get('status') === AWAITING_PAYMENT_FROM_USER
       ) {
+        dispatch(offrampSend({ searchParams }))
+      } else if (action === ACTIONS.OnrampCompleted) {
         dismissMeldStack(action, searchParams)
       } else {
         const path = deeplink.url.split(':/')[1]
