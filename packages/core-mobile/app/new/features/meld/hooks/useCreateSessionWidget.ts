@@ -13,7 +13,6 @@ export const useCreateSessionWidget = ({
     walletAddress,
     destinationCurrencyCode,
     sourceCurrencyCode,
-    redirectFlow,
     redirectUrl,
     serviceProvider
   }
@@ -69,7 +68,6 @@ export const useCreateSessionWidget = ({
         countryCode,
         destinationCurrencyCode,
         sourceCurrencyCode,
-        redirectFlow,
         redirectUrl,
         serviceProvider,
         paymentMethodType: meldPaymentMethod
@@ -79,7 +77,6 @@ export const useCreateSessionWidget = ({
     countryCode,
     destinationCurrencyCode,
     meldPaymentMethod,
-    redirectFlow,
     redirectUrl,
     serviceProvider,
     sessionType,

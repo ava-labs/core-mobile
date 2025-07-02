@@ -12,8 +12,7 @@ export const send = async ({
   toAddress,
   amount,
   feeRate,
-  isMainnet,
-  context
+  isMainnet
 }: {
   request: Request
   fromAddress: string
@@ -21,7 +20,6 @@ export const send = async ({
   amount: bigint
   feeRate: bigint
   isMainnet: boolean
-  context?: Record<string, unknown>
 }): Promise<string> => {
   return SentryWrapper.startSpan(
     { name: 'send-token', contextName: 'svc.send.send' },
@@ -38,8 +36,7 @@ export const send = async ({
           request({
             method: RpcMethod.BITCOIN_SEND_TRANSACTION,
             params,
-            chainId: getBitcoinCaip2ChainId(isMainnet),
-            context
+            chainId: getBitcoinCaip2ChainId(isMainnet)
           })
         )
 
