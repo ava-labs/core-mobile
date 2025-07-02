@@ -5,6 +5,7 @@ import { assertNotUndefined } from './assertions'
 
 export class MigrationFailedError extends ErrorBase<'MigrationFailedError'> {}
 export class BadPinError extends ErrorBase<'BadPinError'> {}
+export class BiometricAuthError extends ErrorBase<'BiometricAuthError'> {}
 
 class KeychainMigrator {
   private activeWalletId: string
@@ -81,7 +82,8 @@ class KeychainMigrator {
     } catch (error) {
       if (
         error instanceof BadPinError ||
-        error instanceof MigrationFailedError
+        error instanceof MigrationFailedError ||
+        error instanceof BiometricAuthError
       ) {
         throw error
       }
@@ -148,7 +150,9 @@ class KeychainMigrator {
     Logger.info('Starting biometric-based keychain migration.')
     const mnemonicResult = await BiometricsSDK.loadLegacyWalletWithBiometry()
     if (!mnemonicResult.success) {
-      throw mnemonicResult.error
+      throw new BiometricAuthError({
+        message: mnemonicResult.error.message
+      })
     }
 
     const newEncryptionKey = await BiometricsSDK.generateEncryptionKey()
