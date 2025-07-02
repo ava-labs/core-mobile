@@ -204,7 +204,8 @@ const LoginWithPinOrBiometry = (): JSX.Element => {
   useFocusEffect(
     useCallback(() => {
       InteractionManager.runAfterInteractions(() => {
-        if (bioType !== BiometricType.NONE) {
+        const accessType = BiometricsSDK.getAccessType()
+        if (accessType === 'BIO') {
           handlePromptBioLogin()
         } else if (!isBiometricAvailable || !useBiometrics) {
           focusPinInput()
@@ -215,7 +216,6 @@ const LoginWithPinOrBiometry = (): JSX.Element => {
         blurPinInput()
       }
     }, [
-      bioType,
       isBiometricAvailable,
       useBiometrics,
       handlePromptBioLogin,

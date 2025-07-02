@@ -4,7 +4,7 @@ import { useFocusEffect } from 'expo-router'
 import React, { useCallback, useEffect, useRef } from 'react'
 import { InteractionManager, Keyboard, Platform } from 'react-native'
 import Logger from 'utils/Logger'
-import { BiometricType } from 'utils/BiometricsSDK'
+import BiometricsSDK from 'utils/BiometricsSDK'
 import { ScrollScreen } from './ScrollScreen'
 
 export const VerifyWithPinOrBiometry = ({
@@ -33,8 +33,7 @@ export const VerifyWithPinOrBiometry = ({
     verified,
     verifyBiometric,
     disableKeypad,
-    timeRemaining,
-    bioType
+    timeRemaining
   } = usePinOrBiometryLogin({
     onWrongPin: handleWrongPin,
     onStartLoading: handleStartLoading,
@@ -82,8 +81,9 @@ export const VerifyWithPinOrBiometry = ({
   useFocusEffect(
     useCallback(() => {
       InteractionManager.runAfterInteractions(() => {
-        if (bioType !== BiometricType.NONE) {
-          handlePromptBioLogin()
+        const accessType = BiometricsSDK.getAccessType()
+        if (accessType === 'BIO') {
+          handlePromptBioLogin().catch(Logger.error)
         } else {
           focusPinInput()
         }
@@ -92,7 +92,7 @@ export const VerifyWithPinOrBiometry = ({
       return () => {
         blurPinInput()
       }
-    }, [bioType, handlePromptBioLogin, focusPinInput])
+    }, [handlePromptBioLogin, focusPinInput])
   )
 
   useEffect(() => {
