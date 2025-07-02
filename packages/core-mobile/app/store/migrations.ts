@@ -1,5 +1,8 @@
 import { ChainId } from '@avalabs/core-chains-sdk'
-import BiometricsSDK from 'utils/BiometricsSDK'
+import BiometricsSDK, {
+  ENCRYPTION_KEY_SERVICE,
+  ENCRYPTION_KEY_SERVICE_BIO
+} from 'utils/BiometricsSDK'
 import {
   Contact,
   CoreAccountType,
@@ -353,12 +356,10 @@ export const migrations = {
   },
   21: async (state: any) => {
     // Get all services from keychain
-    await Keychain.resetGenericPassword({ service: 'encryption-key-service' })
+    await Keychain.resetGenericPassword({ service: ENCRYPTION_KEY_SERVICE })
     await Keychain.resetGenericPassword({
-      service: 'encryption-key-service-bio'
+      service: ENCRYPTION_KEY_SERVICE_BIO
     })
-    const services = await Keychain.getAllGenericPasswordServices()
-    Logger.info('services:', services)
     // Generate a new wallet ID
     const walletId = uuid()
     // Migrate stored wallet structure
