@@ -1,7 +1,7 @@
 import { useRouter } from 'expo-router'
 import { useCallback } from 'react'
 import { useSelector } from 'react-redux'
-import { selectIsMeldIntegrationBlocked } from 'store/posthog'
+import { selectIsMeldOnrampBlocked } from 'store/posthog'
 import { useMemo } from 'react'
 import { useOnRampToken } from '../store'
 import { MELD_CURRENCY_CODES, ServiceProviderCategories } from '../consts'
@@ -24,7 +24,7 @@ export const useBuy = (): {
 } => {
   const { navigate } = useRouter()
   const [_onrampToken, setOnrampToken] = useOnRampToken()
-  const isMeldIntegrationBlocked = useSelector(selectIsMeldIntegrationBlocked)
+  const isMeldOnrampBlocked = useSelector(selectIsMeldOnrampBlocked)
   const { data: cryptoCurrencies, isLoading: isLoadingCryptoCurrencies } =
     useSearchCryptoCurrencies({
       categories: [ServiceProviderCategories.CRYPTO_ONRAMP]
@@ -57,7 +57,7 @@ export const useBuy = (): {
   const navigateToBuy = useCallback(
     (props?: NavigateToBuyParams) => {
       const { token, address, showAvaxWarning } = props ?? {}
-      if (isMeldIntegrationBlocked) {
+      if (isMeldOnrampBlocked) {
         navigate({
           // @ts-ignore TODO: make routes typesafe
           pathname: '/buy',
@@ -77,12 +77,7 @@ export const useBuy = (): {
       // @ts-ignore TODO: make routes typesafe
       navigate('/buyOnramp')
     },
-    [
-      getBuyableCryptoCurrency,
-      isMeldIntegrationBlocked,
-      navigate,
-      setOnrampToken
-    ]
+    [getBuyableCryptoCurrency, isMeldOnrampBlocked, navigate, setOnrampToken]
   )
 
   const navigateToBuyAvax = useCallback(() => {
