@@ -15,8 +15,8 @@ import { LogoWithNetwork } from 'features/portfolio/assets/components/LogoWithNe
 import { selectSelectedCurrency } from 'store/settings/currency'
 import { useSelector } from 'react-redux'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
-import useInAppBrowser from 'common/hooks/useInAppBrowser'
 import { SubTextNumber } from 'common/components/SubTextNumber'
+import { useCoreBrowser } from 'common/hooks/useCoreBrowser'
 import { useSelectAmount } from '../hooks/useSelectAmount'
 import { ServiceProviderCategories } from '../consts'
 
@@ -54,7 +54,7 @@ export const SelectAmount = ({
     isLoadingCryptoQuotes,
     errorMessage
   } = useSelectAmount({ category })
-  const { openUrl } = useInAppBrowser()
+  const { openUrlInSimpleBrowser } = useCoreBrowser()
   const { formatIntegerCurrency, formatCurrency } = useFormatCurrency()
   const selectedCurrency = useSelector(selectSelectedCurrency)
 
@@ -75,8 +75,15 @@ export const SelectAmount = ({
 
   const onNext = useCallback(async (): Promise<void> => {
     const sessionWidget = await createSessionWidget()
-    sessionWidget?.widgetUrl && openUrl(sessionWidget.widgetUrl)
-  }, [createSessionWidget, openUrl])
+    sessionWidget?.widgetUrl &&
+      openUrlInSimpleBrowser({
+        url: sessionWidget.widgetUrl,
+        title:
+          category === ServiceProviderCategories.CRYPTO_ONRAMP
+            ? 'Buy'
+            : 'Withdraw'
+      })
+  }, [category, createSessionWidget, openUrlInSimpleBrowser])
 
   const renderFooter = useCallback(() => {
     return (
