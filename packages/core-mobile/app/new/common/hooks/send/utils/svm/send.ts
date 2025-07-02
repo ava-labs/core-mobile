@@ -20,8 +20,7 @@ export const send = async ({
   toAddress,
   amount,
   chainId,
-  account,
-  context
+  account
 }: {
   request: Request
   fromAddress: string
@@ -31,7 +30,6 @@ export const send = async ({
   amount?: bigint
   chainId: number
   account: Account
-  context?: Record<string, unknown>
 }): Promise<string> => {
   const sentrySpanName = 'send-token'
 
@@ -57,8 +55,7 @@ export const send = async ({
                 serializedTx: serializeSolanaTx(compiledTx)
               }
             ],
-            chainId: getSolanaCaip2ChainId(chainId),
-            context
+            chainId: getSolanaCaip2ChainId(chainId)
           })
         )
 

@@ -65,7 +65,6 @@ const PAYMENT_METHOD_TO_ICON: Record<
   [PaymentMethods.SAME_DAY_ACH]: Icons.Custom.Ach,
   [PaymentMethods.SHOPEEPAY]: Icons.Custom.ShopeePay,
   [PaymentMethods.SWIFT]: Icons.Custom.BankTransfer,
-  [PaymentMethods.PAYOUT_TO_CARD]: Icons.Custom.Cash,
 
   [PaymentMethods.BR_BANK_TRANSFER]: Icons.Custom.BankTransfer,
   [PaymentMethods.UAE_BANK_TRANSFER]: Icons.Custom.BankTransfer,
@@ -150,5 +149,7 @@ const PAYMENT_METHOD_TO_ICON: Record<
   [PaymentMethods.INTERAC]: undefined,
   [PaymentMethods.ZALOPAY]: undefined,
   [PaymentMethods.PROMPTPAY]: undefined,
-  [PaymentMethods.BLIK]: undefined
+  [PaymentMethods.BLIK]: undefined,
+
+  [PaymentMethods.PAYOUT_TO_CARD]: undefined
 }
