@@ -54,6 +54,11 @@ export const useBuy = (): {
     [cryptoCurrencies]
   )
 
+  const handleBuy = useCallback((): void => {
+    // @ts-ignore TODO: make routes typesafe
+    navigate({ pathname: '/buy' })
+  }, [navigate])
+
   const navigateToBuy = useCallback(
     (props?: NavigateToBuyParams) => {
       const { token, address, showAvaxWarning } = props ?? {}
@@ -81,19 +86,29 @@ export const useBuy = (): {
   )
 
   const navigateToBuyAvax = useCallback(() => {
-    if (avax === undefined) return
-    setOnrampToken(avax)
+    if (isMeldOnrampBlocked) {
+      handleBuy()
+      return
+    }
 
+    if (avax === undefined) return
+
+    setOnrampToken(avax)
     // @ts-ignore TODO: make routes typesafe
     navigate('/buyOnramp/selectBuyAmount')
-  }, [avax, navigate, setOnrampToken])
+  }, [avax, navigate, setOnrampToken, handleBuy, isMeldOnrampBlocked])
 
   const navigateToBuyUsdc = useCallback(() => {
+    if (isMeldOnrampBlocked) {
+      handleBuy()
+      return
+    }
+
     if (usdc === undefined) return
     setOnrampToken(usdc)
     // @ts-ignore TODO: make routes typesafe
     navigate('/buyOnramp/selectBuyAmount')
-  }, [usdc, setOnrampToken, navigate])
+  }, [usdc, setOnrampToken, navigate, handleBuy, isMeldOnrampBlocked])
 
   return {
     navigateToBuy,
