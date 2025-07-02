@@ -73,11 +73,8 @@ class BiometricsSDK {
     await Keychain.getAllGenericPasswordServices()
   }
 
-  //FIXME: changed in
-  // https://github.com/ava-labs/core-mobile/commit/1644856c46b4567a5e6ece947ce69b81c09a4da0.
-  // This should return null as a sign that user never made login. This is also important for migration #9 (in migrations.ts)
-  getAccessType(): string {
-    return commonStorage.getString(StorageKey.SECURE_ACCESS_SET) ?? 'PIN'
+  getAccessType(): string | undefined {
+    return commonStorage.getString(StorageKey.SECURE_ACCESS_SET)
   }
 
   // Generate a new encryption key
