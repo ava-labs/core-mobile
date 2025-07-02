@@ -169,7 +169,10 @@ export function usePinOrBiometryLogin({
             resetRateLimiter()
             return new NothingToLoad()
           }
-          if (result.success) {
+          if (
+            result.success &&
+            result.value !== MigrationStatus.NoMigrationNeeded
+          ) {
             throw new Error(
               'Invalid state: migration status is not RunBiometricMigration'
             )
