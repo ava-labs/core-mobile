@@ -13,7 +13,7 @@ import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { MarketType } from 'store/watchlist'
 import { getTokenActions } from '../utils/getTokenActions'
 
-export function useTrendingTokenActions({
+export function useTrackTokenActions({
   isAVAX,
   marketType,
   contractAddress,

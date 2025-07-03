@@ -36,7 +36,6 @@ import { useNavigateToSwap } from 'features/swap/hooks/useNavigateToSwap'
 import { SelectedChartDataIndicator } from 'features/track/components/SelectedChartDataIndicator'
 import { TokenDetailChart } from 'features/track/components/TokenDetailChart'
 import { TokenHeader } from 'features/track/components/TokenHeader'
-import { useTrendingTokenActions } from 'features/track/hooks/useTrendingTokenActions'
 import { useGetPrices } from 'hooks/watchlist/useGetPrices'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { StyleSheet } from 'react-native'
@@ -50,6 +49,7 @@ import { MarketToken, MarketType } from 'store/watchlist'
 import { getDomainFromUrl } from 'utils/getDomainFromUrl/getDomainFromUrl'
 import { isPositiveNumber } from 'utils/isPositiveNumber/isPositiveNumber'
 import { formatLargeCurrency } from 'utils/Utils'
+import { useTrackTokenActions } from '../hooks/useTrackTokenActions'
 
 const MAX_VALUE_WIDTH = '80%'
 const DELAY = 200
@@ -120,7 +120,7 @@ const TrackTokenDetailScreen = (): JSX.Element => {
     [navigateToSwap]
   )
 
-  const { actions } = useTrendingTokenActions({
+  const { actions } = useTrackTokenActions({
     isAVAX: coingeckoId === AVAX_COINGECKO_ID,
     marketType: token.marketType,
     contractAddress: tokenInfo?.contractAddress,
