@@ -106,7 +106,7 @@ describe('useWallet', () => {
 
       expect(BiometricsSDK.storeWalletSecret).toHaveBeenCalledWith(
         mockWalletId,
-        mockMnemonic
+        mnemonic
       )
       expect(response).toBe(mockWalletId)
     })
