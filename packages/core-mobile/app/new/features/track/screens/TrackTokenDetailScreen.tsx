@@ -35,16 +35,16 @@ import { useAddStake } from 'features/stake/hooks/useAddStake'
 import { useNavigateToSwap } from 'features/swap/hooks/useNavigateToSwap'
 import { SelectedChartDataIndicator } from 'features/track/components/SelectedChartDataIndicator'
 import { TokenDetailChart } from 'features/track/components/TokenDetailChart'
-import { TokenDetailFooter } from 'features/track/components/TokenDetailFooter'
 import { TokenHeader } from 'features/track/components/TokenHeader'
+import { useTrendingTokenActions } from 'features/track/hooks/useTrendingTokenActions'
 import { useGetPrices } from 'hooks/watchlist/useGetPrices'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { StyleSheet } from 'react-native'
 import Animated, {
+  FadeIn,
   useDerivedValue,
   useSharedValue,
-  withTiming,
-  FadeIn
+  withTiming
 } from 'react-native-reanimated'
 import { MarketToken, MarketType } from 'store/watchlist'
 import { getDomainFromUrl } from 'utils/getDomainFromUrl/getDomainFromUrl'
@@ -101,6 +101,34 @@ const TrackTokenDetailScreen = (): JSX.Element => {
   const selectedSegmentIndex = useSharedValue(0)
 
   const lastUpdatedDate = chartData?.[chartData.length - 1]?.date
+
+  const handleBuy = useCallback(
+    (contractAddress?: string): void => {
+      if (contractAddress === undefined) return
+      navigateToBuy({
+        showAvaxWarning: true,
+        address: contractAddress
+      })
+    },
+    [navigateToBuy]
+  )
+
+  const handleSwap = useCallback(
+    (initialTokenIdTo?: string): void => {
+      navigateToSwap(AVAX_TOKEN_ID, initialTokenIdTo)
+    },
+    [navigateToSwap]
+  )
+
+  const { actions } = useTrendingTokenActions({
+    isAVAX: coingeckoId === AVAX_COINGECKO_ID,
+    marketType: token.marketType,
+    contractAddress: tokenInfo?.contractAddress,
+    chainId,
+    onBuy: () => handleBuy(tokenInfo?.contractAddress),
+    onStake: addStake,
+    onSwap: handleSwap
+  })
 
   const formatMarketNumbers = useCallback(
     (value: number) => {
@@ -180,24 +208,6 @@ const TrackTokenDetailScreen = (): JSX.Element => {
       })
     }
   }, [openUrl, tokenInfo?.urlHostname, back])
-
-  const handleBuy = useCallback(
-    (contractAddress?: string): void => {
-      if (contractAddress === undefined) return
-      navigateToBuy({
-        showAvaxWarning: true,
-        address: contractAddress
-      })
-    },
-    [navigateToBuy]
-  )
-
-  const handleSwap = useCallback(
-    (initialTokenIdTo?: string): void => {
-      navigateToSwap(AVAX_TOKEN_ID, initialTokenIdTo)
-    },
-    [navigateToSwap]
-  )
 
   const handleShare = useCallback(() => {
     navigate({
@@ -333,30 +343,22 @@ const TrackTokenDetailScreen = (): JSX.Element => {
   }, [isChartInteracting, headerOpacity])
 
   const renderFooter = useCallback(() => {
+    if (actions.length === 0) {
+      return null
+    }
+
     return (
       <Animated.View
-        entering={FadeIn.delay(DELAY)}
-        layout={SPRING_LINEAR_TRANSITION}>
-        <TokenDetailFooter
-          isAVAX={coingeckoId === AVAX_COINGECKO_ID}
-          marketType={token.marketType}
-          contractAddress={tokenInfo?.contractAddress}
-          chainId={chainId}
-          onBuy={() => handleBuy(tokenInfo?.contractAddress)}
-          onStake={addStake}
-          onSwap={handleSwap}
-        />
+        entering={FadeIn.delay(200)}
+        layout={SPRING_LINEAR_TRANSITION}
+        style={{
+          flexDirection: 'row',
+          gap: 12
+        }}>
+        {actions}
       </Animated.View>
     )
-  }, [
-    coingeckoId,
-    token.marketType,
-    tokenInfo?.contractAddress,
-    chainId,
-    addStake,
-    handleSwap,
-    handleBuy
-  ])
+  }, [actions])
 
   const currentPrice = useMemo(() => {
     return (
