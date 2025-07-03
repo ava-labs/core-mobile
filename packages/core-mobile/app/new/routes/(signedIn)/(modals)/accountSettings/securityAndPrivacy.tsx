@@ -55,6 +55,32 @@ const SecurityAndPrivacyScreen = (): JSX.Element => {
     [navigate, setUseBiometrics]
   )
 
+  const handleToggleLockWalletWithPIN = useCallback(
+    (value: boolean): void => {
+      if (value === false) {
+        showAlert({
+          title: 'Do you really want to disable the PIN code?',
+          description:
+            'This will remove the PIN requirement when leaving the app and keeping it open in the background.\n\nHowever, pin will be required if the app is closed completely',
+          buttons: [
+            {
+              text: 'Cancel'
+            },
+            {
+              text: 'Disable',
+              onPress: () => {
+                dispatch(setLockWalletWithPIN(value))
+              }
+            }
+          ]
+        })
+      } else {
+        dispatch(setLockWalletWithPIN(value))
+      }
+    },
+    [dispatch]
+  )
+
   const connectedSitesData = useMemo(() => {
     return [
       {
@@ -70,6 +96,18 @@ const SecurityAndPrivacyScreen = (): JSX.Element => {
 
   const pinAndBiometricData = useMemo(() => {
     const data: GroupListItem[] = [
+      {
+        title: 'Require PIN code immediately',
+        value: (
+          <Toggle
+            onValueChange={() =>
+              handleToggleLockWalletWithPIN(!lockWalletWithPIN)
+            }
+            testID={lockWalletWithPIN ? 'pin_enabled' : 'pin_disabled'}
+            value={lockWalletWithPIN}
+          />
+        )
+      },
       {
         title: 'Change PIN',
         onPress: () => {
@@ -89,11 +127,13 @@ const SecurityAndPrivacyScreen = (): JSX.Element => {
     }
     return data
   }, [
+    lockWalletWithPIN,
+    isBiometricAvailable,
+    handleToggleLockWalletWithPIN,
+    navigate,
     biometricType,
     handleSwitchBiometric,
-    isBiometricAvailable,
-    useBiometrics,
-    navigate
+    useBiometrics
   ])
 
   const recoveryData = useMemo(() => {
@@ -153,49 +193,6 @@ const SecurityAndPrivacyScreen = (): JSX.Element => {
     ]
   }, [coreAnalyticsConsent, handleToggleCoreAnalyticsConsent])
 
-  const handleToggleLockWalletWithPIN = useCallback(
-    (value: boolean): void => {
-      if (value === false) {
-        showAlert({
-          title: 'Do you really want to disable the PIN code?',
-          description:
-            'This will remove the PIN requirement when leaving the app and keeping it open in the background.\n\nHowever, pin will be required if the app is closed completely',
-          buttons: [
-            {
-              text: 'Cancel'
-            },
-            {
-              text: 'Disable',
-              onPress: () => {
-                dispatch(setLockWalletWithPIN(value))
-              }
-            }
-          ]
-        })
-      } else {
-        dispatch(setLockWalletWithPIN(value))
-      }
-    },
-    [dispatch]
-  )
-
-  const lockWalletWithPINData = useMemo(() => {
-    return [
-      {
-        title: 'Lock wallet with a PIN',
-        value: (
-          <Toggle
-            onValueChange={() =>
-              handleToggleLockWalletWithPIN(!lockWalletWithPIN)
-            }
-            testID={lockWalletWithPIN ? 'pin_enabled' : 'pin_disabled'}
-            value={lockWalletWithPIN}
-          />
-        )
-      }
-    ]
-  }, [lockWalletWithPIN, handleToggleLockWalletWithPIN])
-
   return (
     <ScrollScreen
       title={`Security\n& privacy`}
@@ -213,16 +210,7 @@ const SecurityAndPrivacyScreen = (): JSX.Element => {
         valueSx={{ fontSize: 16, lineHeight: 22 }}
       />
       <Space y={24} />
-      <GroupList
-        data={lockWalletWithPINData}
-        titleSx={{
-          fontSize: 16,
-          lineHeight: 22,
-          fontFamily: 'Inter-Regular'
-        }}
-        separatorMarginRight={16}
-      />
-      <Space y={12} />
+
       <GroupList
         data={pinAndBiometricData}
         titleSx={{

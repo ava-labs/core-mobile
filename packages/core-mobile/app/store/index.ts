@@ -30,7 +30,7 @@ import { snapshotsReducer as snapshots } from './snapshots/slice'
 import { reduxStorage } from './reduxStorage'
 import { walletsReducer as wallet } from './wallet/slice'
 
-const VERSION = 22
+const VERSION = 23
 
 // list of reducers that don't need to be persisted
 // for nested/partial blacklist, please use transform
