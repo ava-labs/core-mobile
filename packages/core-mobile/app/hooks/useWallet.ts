@@ -4,13 +4,13 @@ import { WalletType } from 'services/wallet/types'
 import Logger from 'utils/Logger'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { useCallback } from 'react'
-import { uuid } from 'utils/uuid'
 import { storeWallet } from 'store/wallet/thunks'
 import { AppThunkDispatch } from 'store/types'
 import BiometricsSDK from 'utils/BiometricsSDK'
 import { setActiveWallet } from 'store/wallet/slice'
 
 interface OnPinCreatedParams {
+  walletId: string
   mnemonic: string
   pin: string
   walletType?: WalletType
@@ -73,13 +73,13 @@ export function useWallet(): UseWallet {
    * @throws Error if generating encryption key, storing it with PIN, or storing the wallet fails
    */
   async function onPinCreated({
+    walletId,
     mnemonic,
     pin,
     walletType = WalletType.MNEMONIC
   }: OnPinCreatedParams): Promise<string> {
     const encryptionKey = await BiometricsSDK.generateEncryptionKey()
     await BiometricsSDK.storeEncryptionKeyWithPin(encryptionKey, pin)
-    const walletId = uuid()
 
     try {
       const dispatchStoreWallet = dispatch(
