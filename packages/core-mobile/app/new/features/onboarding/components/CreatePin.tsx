@@ -1,4 +1,4 @@
-import React, { useCallback, useRef } from 'react'
+import React, { useCallback, useEffect, useRef } from 'react'
 import { useFocusEffect } from 'expo-router'
 import {
   GroupList,
@@ -61,11 +61,11 @@ export const CreatePin = ({
     }, [resetPin])
   )
 
-  useFocusEffect(
-    useCallback(() => {
-      validPin && onEnteredValidPin(validPin)
-    }, [onEnteredValidPin, validPin])
-  )
+  useEffect(() => {
+    if (validPin) {
+      onEnteredValidPin(validPin)
+    }
+  }, [validPin, onEnteredValidPin])
 
   const renderBiometricToggle = useCallback((): React.JSX.Element => {
     return (
