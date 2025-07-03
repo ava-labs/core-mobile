@@ -27,7 +27,7 @@ const WalletCard = ({
   const {
     theme: { colors }
   } = useTheme()
-  const { dropdownItems, handleDropdownSelect } = useManageWallet(wallet.id)
+  const { getDropdownItems, handleDropdownSelect } = useManageWallet()
 
   const renderExpansionIcon = useCallback(() => {
     return (
@@ -89,7 +89,7 @@ const WalletCard = ({
             groups={[
               {
                 key: 'wallet-actions',
-                items: dropdownItems
+                items: getDropdownItems(wallet.id)
               }
             ]}
             onPressAction={(event: { nativeEvent: { event: string } }) =>

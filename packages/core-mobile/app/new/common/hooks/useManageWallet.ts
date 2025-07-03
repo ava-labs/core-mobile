@@ -3,7 +3,7 @@ import {
   dismissAlertWithTextInput,
   showAlertWithTextInput
 } from 'common/utils/alertWithTextInput'
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { selectWallets, setWalletName } from 'store/wallet/slice'
 import { Wallet, WalletId } from 'store/wallet/types'
@@ -17,10 +17,8 @@ import AnalyticsService from 'services/analytics/AnalyticsService'
 import Logger from 'utils/Logger'
 import { showSnackbar } from 'new/common/utils/toast'
 
-export const useManageWallet = (
-  walletId?: string
-): {
-  dropdownItems: DropdownItem[]
+export const useManageWallet = (): {
+  getDropdownItems: (walletId: string) => DropdownItem[]
   handleDropdownSelect: (
     action: string,
     walletId: string,
@@ -33,10 +31,10 @@ export const useManageWallet = (
   const accounts = useSelector(selectAccounts)
 
   const handleRenameWallet = useCallback(
-    (_walletId: WalletId, walletName: string): void => {
+    (walletId: WalletId, walletName: string): void => {
       const handleSaveWalletName = (values: Record<string, string>): void => {
         if (values.newName) {
-          dispatch(setWalletName({ walletId: _walletId, name: values.newName }))
+          dispatch(setWalletName({ walletId: walletId, name: values.newName }))
         }
       }
 
@@ -62,7 +60,7 @@ export const useManageWallet = (
   )
 
   const handleRemoveWallet = useCallback(
-    (_walletId: WalletId): void => {
+    (walletId: WalletId): void => {
       const walletCount = Object.keys(wallets).length
 
       if (walletCount <= 1) {
@@ -90,7 +88,7 @@ export const useManageWallet = (
             text: 'Remove',
             style: 'destructive',
             onPress: () => {
-              dispatch(removeWallet(_walletId))
+              dispatch(removeWallet(walletId))
             }
           }
         ]
@@ -100,10 +98,10 @@ export const useManageWallet = (
   )
 
   const handleAddAccount = useCallback(
-    async (_walletId: WalletId): Promise<void> => {
+    async (walletId: WalletId): Promise<void> => {
       if (isAddingAccount) return
 
-      const wallet = wallets[_walletId]
+      const wallet = wallets[walletId]
       if (!wallet) {
         Logger.error('Wallet not found for adding account')
         return
@@ -115,7 +113,7 @@ export const useManageWallet = (
         })
 
         setIsAddingAccount(true)
-        await dispatch(addAccount(_walletId)).unwrap()
+        await dispatch(addAccount(walletId)).unwrap()
 
         AnalyticsService.capture('CreatedANewAccountSuccessfully', {
           walletType: wallet.type
@@ -150,52 +148,55 @@ export const useManageWallet = (
     [wallets]
   )
 
-  const dropdownItems = useMemo((): DropdownItem[] => {
-    const baseItems: DropdownItem[] = [
-      {
-        id: 'rename',
-        title: 'Rename'
-      }
-    ]
+  const getDropdownItems = useCallback(
+    (walletId: string): DropdownItem[] => {
+      const baseItems: DropdownItem[] = [
+        {
+          id: 'rename',
+          title: 'Rename'
+        }
+      ]
 
-    // Only show add account option for mnemonic and seedless wallets
-    if (walletId) {
-      const wallet = wallets[walletId]
-      if (!wallet) {
-        Logger.error('Wallet not found for dropdown items')
-        return baseItems
+      // Only show add account option for mnemonic and seedless wallets
+      if (walletId) {
+        const wallet = wallets[walletId]
+        if (!wallet) {
+          Logger.error('Wallet not found for dropdown items')
+          return baseItems
+        }
+
+        if (canRemoveWallet(wallet)) {
+          baseItems.push({
+            id: 'remove',
+            title: 'Remove wallet',
+            destructive: true
+          })
+        }
+
+        if ([WalletType.MNEMONIC, WalletType.SEEDLESS].includes(wallet.type)) {
+          baseItems.push({
+            id: 'add_account',
+            title: 'Add account to this wallet'
+          })
+        }
       }
 
-      if (canRemoveWallet(wallet)) {
-        baseItems.push({
-          id: 'remove',
-          title: 'Remove wallet',
-          destructive: true
-        })
-      }
-
-      if ([WalletType.MNEMONIC, WalletType.SEEDLESS].includes(wallet.type)) {
-        baseItems.push({
-          id: 'add_account',
-          title: 'Add account to this wallet'
-        })
-      }
-    }
-
-    return baseItems
-  }, [walletId, wallets, canRemoveWallet])
+      return baseItems
+    },
+    [wallets, canRemoveWallet]
+  )
 
   const handleWalletMenuAction = useCallback(
-    (action: string, _walletId: string, currentName: string) => {
+    (action: string, walletId: string, currentName: string) => {
       switch (action) {
         case 'rename':
-          handleRenameWallet(_walletId, currentName)
+          handleRenameWallet(walletId, currentName)
           break
         case 'remove':
-          handleRemoveWallet(_walletId)
+          handleRemoveWallet(walletId)
           break
         case 'add_account':
-          handleAddAccount(_walletId)
+          handleAddAccount(walletId)
           break
       }
     },
@@ -203,14 +204,14 @@ export const useManageWallet = (
   )
 
   const handleDropdownSelect = useCallback(
-    (action: string, _walletId: string, currentName: string) => {
-      handleWalletMenuAction(action, _walletId, currentName)
+    (action: string, walletId: string, currentName: string) => {
+      handleWalletMenuAction(action, walletId, currentName)
     },
     [handleWalletMenuAction]
   )
 
   return {
-    dropdownItems,
+    getDropdownItems,
     handleDropdownSelect
   }
 }
