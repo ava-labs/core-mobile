@@ -33,6 +33,7 @@ import { WalletType } from 'services/wallet/types'
 import { CoreAccountType } from '@avalabs/types'
 
 const VIRTUAL_WALLET_ID = 'private-key-accounts'
+const VIRTUAL_WALLET_NAME = 'Imported'
 
 const ManageAccountsScreen = (): React.JSX.Element => {
   const {
@@ -92,8 +93,16 @@ const ManageAccountsScreen = (): React.JSX.Element => {
       }
       const walletName = wallet.name.toLowerCase()
 
+      const isPrivateKeyAccount = wallet.type === WalletType.PRIVATE_KEY
+      const virtualWalletMatches =
+        isPrivateKeyAccount &&
+        VIRTUAL_WALLET_NAME.toLowerCase().includes(searchText.toLowerCase())
+      const walletNameMatches =
+        !isPrivateKeyAccount && walletName.includes(searchText.toLowerCase())
+
       return (
-        walletName.includes(searchText.toLowerCase()) ||
+        virtualWalletMatches ||
+        walletNameMatches ||
         account.name.toLowerCase().includes(searchText.toLowerCase()) ||
         account.addressC?.toLowerCase().includes(searchText.toLowerCase()) ||
         account.addressBTC?.toLowerCase().includes(searchText.toLowerCase()) ||
@@ -300,7 +309,7 @@ const ManageAccountsScreen = (): React.JSX.Element => {
     // Create virtual wallet for private key accounts
     return {
       id: VIRTUAL_WALLET_ID, // Virtual ID
-      name: 'Imported',
+      name: VIRTUAL_WALLET_NAME,
       type: WalletType.PRIVATE_KEY,
       accounts: privateKeyAccountData
     }
@@ -346,13 +355,7 @@ const ManageAccountsScreen = (): React.JSX.Element => {
   }, [colors.$textPrimary, handleAddAccount])
 
   const renderHeader = useCallback(() => {
-    return (
-      <SearchBar
-        onTextChanged={setSearchText}
-        searchText={searchText}
-        useDebounce={true}
-      />
-    )
+    return <SearchBar onTextChanged={setSearchText} searchText={searchText} />
   }, [searchText])
 
   useEffect(() => {
