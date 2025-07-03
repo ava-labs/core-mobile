@@ -39,7 +39,8 @@ export const DefaultFeatureFlagConfig = {
   [FeatureGates.HALLIDAY_BRIDGE_BANNER]: true,
   [FeatureGates.GASLESS]: true,
   [FeatureGates.SWAP_FEES]: true,
-  [FeatureGates.MELD_INTEGRATION]: true
+  [FeatureGates.MELD_ONRAMP]: true,
+  [FeatureGates.MELD_OFFRAMP]: true
 }
 
 export const initialState = {
