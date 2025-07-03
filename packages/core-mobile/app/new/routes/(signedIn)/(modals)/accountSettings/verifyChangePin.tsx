@@ -15,12 +15,8 @@ const VerifyChangePinScreen = (): React.JSX.Element => {
       Logger.error('Failed to load wallet secret', walletSecretResult.error)
       return
     }
-
-    replace({
-      // @ts-ignore TODO: make routes typesafe
-      pathname: '/accountSettings/changePin',
-      params: { mnemonic: walletSecretResult.value }
-    })
+    // @ts-ignore TODO: make routes typesafe
+    replace('/accountSettings/changePin')
   }
 
   return <VerifyWithPinOrBiometry onVerifySuccess={handleVerifySuccess} />
