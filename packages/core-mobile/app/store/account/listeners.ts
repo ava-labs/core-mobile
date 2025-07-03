@@ -239,12 +239,18 @@ const deriveMissingSeedlessSessionKeys = async (
     walletType: WalletType.SEEDLESS
   })
   if (wallet instanceof SeedlessWallet) {
-    transactionSnackbar.pending({ message: 'Updating accounts...' })
+    try {
+      transactionSnackbar.pending({ message: 'Updating accounts...' })
 
-    // prompt Core Seedless API to derive missing keys
-    await wallet.deriveMissingKeys()
+      // prompt Core Seedless API to derive missing keys
+      await wallet.deriveMissingKeys()
 
-    transactionSnackbar.success({ message: 'Accounts updated' })
+      transactionSnackbar.success({ message: 'Accounts updated' })
+    } catch (error) {
+      transactionSnackbar.error({
+        error: 'Failed to update accounts'
+      })
+    }
   }
 }
 
