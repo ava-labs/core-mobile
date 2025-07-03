@@ -352,10 +352,18 @@ export const selectIsSolanaSupportBlocked = (state: RootState): boolean => {
   )
 }
 
-export const selectIsMeldIntegrationBlocked = (state: RootState): boolean => {
+export const selectIsMeldOnrampBlocked = (state: RootState): boolean => {
   const { featureFlags } = state.posthog
   return (
-    !featureFlags[FeatureGates.MELD_INTEGRATION] ||
+    !featureFlags[FeatureGates.MELD_ONRAMP] ||
+    !featureFlags[FeatureGates.EVERYTHING]
+  )
+}
+
+export const selectIsMeldOfframpBlocked = (state: RootState): boolean => {
+  const { featureFlags } = state.posthog
+  return (
+    !featureFlags[FeatureGates.MELD_OFFRAMP] ||
     !featureFlags[FeatureGates.EVERYTHING]
   )
 }
