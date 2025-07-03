@@ -89,15 +89,11 @@ const WalletCard = ({
             groups={[
               {
                 key: 'wallet-actions',
-                items: getDropdownItems(wallet.id)
+                items: getDropdownItems(wallet)
               }
             ]}
             onPressAction={(event: { nativeEvent: { event: string } }) =>
-              handleDropdownSelect(
-                event.nativeEvent.event,
-                wallet.id,
-                wallet.name
-              )
+              handleDropdownSelect(event.nativeEvent.event, wallet)
             }>
             <TouchableOpacity
               hitSlop={8}
