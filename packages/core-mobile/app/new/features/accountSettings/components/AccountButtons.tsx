@@ -25,8 +25,8 @@ export const AccountButtons = ({
   const router = useRouter()
   const { theme } = useTheme()
   const account = useSelector(selectAccountById(accountId))
-  const siblingAccounts = useSelector(
-    selectAccountsByWalletId(account?.walletId ?? '')
+  const siblingAccounts = useSelector((state: RootState) =>
+    selectAccountsByWalletId(state, account?.walletId ?? '')
   )
 
   const isRemoveEnabled = useMemo(() => {

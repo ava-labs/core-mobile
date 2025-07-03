@@ -33,7 +33,7 @@ export const addAccount = createAsyncThunk<void, string, ThunkApi>(
     }
 
     const allAccountsCount = Object.keys(allAccounts).length
-    const accountsByWalletId = selectAccountsByWalletId(walletId)(state)
+    const accountsByWalletId = selectAccountsByWalletId(state, walletId)
 
     const acc = await AccountsService.createNextAccount({
       name: `Account ${allAccountsCount + 1}`,
@@ -84,8 +84,9 @@ export const removeAccountWithActiveCheck = createAsyncThunk<
       throw new Error(`Account with ID "${accountId}" not found`)
     }
 
-    const accountsInWallet = selectAccountsByWalletId(accountToRemove.walletId)(
-      state
+    const accountsInWallet = selectAccountsByWalletId(
+      state,
+      accountToRemove.walletId
     )
 
     // Validate removal eligibility
