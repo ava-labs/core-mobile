@@ -9,6 +9,7 @@ import {
   setActiveWallet
 } from 'store/wallet/slice'
 import { WalletType } from 'services/wallet/types'
+import { removeWallet } from 'store/wallet/thunks'
 import {
   reducerName,
   selectAccountById,
@@ -89,7 +90,26 @@ export const removeAccountWithActiveCheck = createAsyncThunk<
       accountToRemove.walletId
     )
 
-    // Validate removal eligibility
+    if (wallet?.type === WalletType.PRIVATE_KEY) {
+      // For private key wallets, remove the wallet along with the account
+      // First, handle active account switching if needed
+      if (activeAccount?.id === accountId) {
+        // Find another account from a different wallet to set as active
+        const allAccounts = selectAccounts(state)
+        const otherAccount = Object.values(allAccounts).find(
+          acc => acc.walletId !== accountToRemove.walletId
+        )
+
+        if (otherAccount) {
+          thunkApi.dispatch(setActiveAccountId(otherAccount.id))
+        }
+      }
+
+      // Remove the entire wallet (this will also remove the account)
+      thunkApi.dispatch(removeWallet(accountToRemove.walletId))
+      return
+    }
+
     const isLastAccount =
       accountToRemove.index ===
       Math.max(...accountsInWallet.map(acc => acc.index))
