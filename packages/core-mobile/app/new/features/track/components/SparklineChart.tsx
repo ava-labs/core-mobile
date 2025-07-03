@@ -86,7 +86,7 @@ const SparklineChart: FC<Props> = ({
       />
       {data?.length ? (
         <Animated.View
-          entering={FadeIn.delay(400).duration(1000)}
+          entering={FadeIn.delay(100).duration(600)}
           layout={SPRING_LINEAR_TRANSITION}>
           <LineGraph
             style={{ width: '100%', height: '100%' }}

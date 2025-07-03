@@ -335,7 +335,7 @@ const TrackTokenDetailScreen = (): JSX.Element => {
   const renderFooter = useCallback(() => {
     return (
       <Animated.View
-        entering={FadeIn.delay(DELAY * 2)}
+        entering={FadeIn.delay(DELAY)}
         layout={SPRING_LINEAR_TRANSITION}>
         <TokenDetailFooter
           isAVAX={coingeckoId === AVAX_COINGECKO_ID}
@@ -382,6 +382,7 @@ const TrackTokenDetailScreen = (): JSX.Element => {
       <View sx={{ paddingHorizontal: 16 }}>
         <Animated.View style={{ opacity: headerOpacity }}>
           <TokenHeader
+            name={token.name}
             logoUri={token.logoUri}
             symbol={token.symbol ?? ''}
             currentPrice={currentPrice}
@@ -410,6 +411,7 @@ const TrackTokenDetailScreen = (): JSX.Element => {
     )
   }, [
     headerOpacity,
+    token.name,
     token.logoUri,
     token.symbol,
     currentPrice,
@@ -441,10 +443,10 @@ const TrackTokenDetailScreen = (): JSX.Element => {
         onGestureEnd={handleChartGestureEnd}
       />
 
-      <View sx={styles.lastUpdatedContainer}>
-        {lastUpdatedDate && (
+      {lastUpdatedDate && (
+        <View sx={styles.lastUpdatedContainer}>
           <Animated.View
-            entering={FadeIn.delay(DELAY * 4)}
+            entering={FadeIn.delay(DELAY * 3)}
             layout={SPRING_LINEAR_TRANSITION}
             style={{
               alignSelf: 'center',
@@ -464,11 +466,11 @@ const TrackTokenDetailScreen = (): JSX.Element => {
               </Text>
             </Animated.View>
           </Animated.View>
-        )}
-      </View>
+        </View>
+      )}
       {tokenInfo?.has24hChartDataOnly === false && (
         <Animated.View
-          entering={FadeIn.delay(DELAY * 5)}
+          entering={FadeIn.delay(DELAY * 3)}
           layout={SPRING_LINEAR_TRANSITION}>
           <SegmentedControl
             type="thin"
@@ -483,7 +485,7 @@ const TrackTokenDetailScreen = (): JSX.Element => {
       <View sx={styles.aboutContainer}>
         {tokenInfo?.description && (
           <Animated.View
-            entering={FadeIn.delay(DELAY * 6)}
+            entering={FadeIn.delay(DELAY * 4)}
             layout={SPRING_LINEAR_TRANSITION}>
             <TouchableOpacity onPress={handlePressAbout}>
               <Card sx={styles.aboutCard}>
@@ -500,7 +502,7 @@ const TrackTokenDetailScreen = (): JSX.Element => {
         )}
         {marketData.length > 0 && (
           <Animated.View
-            entering={FadeIn.delay(DELAY * 7)}
+            entering={FadeIn.delay(DELAY * 5)}
             layout={SPRING_LINEAR_TRANSITION}>
             <GroupList
               data={marketData}
@@ -512,7 +514,7 @@ const TrackTokenDetailScreen = (): JSX.Element => {
         )}
         {metaData.length > 0 && (
           <Animated.View
-            entering={FadeIn.delay(DELAY * 8)}
+            entering={FadeIn.delay(DELAY * 6)}
             layout={SPRING_LINEAR_TRANSITION}>
             <GroupList
               data={metaData}
