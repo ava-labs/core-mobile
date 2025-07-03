@@ -9,11 +9,18 @@ import BiometricsSDK from 'utils/BiometricsSDK'
 import Logger from 'utils/Logger'
 
 export default function CreatePin(): JSX.Element {
-  const { navigate } = useRouter()
+  const { navigate, back } = useRouter()
   const { mnemonic } = useLocalSearchParams<{ mnemonic: string }>()
   const { onPinCreated } = useWallet()
   const { isBiometricAvailable, useBiometrics, setUseBiometrics } =
     useStoredBiometrics()
+
+  const navigateToSetWalletName = useCallback(() => {
+    navigate({
+      // @ts-ignore TODO: make routes typesafe
+      pathname: '/onboarding/mnemonic/setWalletName'
+    })
+  }, [navigate])
 
   const handleEnteredValidPin = useCallback(
     (pin: string): void => {
@@ -28,16 +35,22 @@ export default function CreatePin(): JSX.Element {
       })
         .then(() => {
           if (useBiometrics) {
-            BiometricsSDK.enableBiometry().catch(Logger.error)
+            BiometricsSDK.enableBiometry()
+              .then(enabled => {
+                if (enabled) {
+                  navigateToSetWalletName()
+                } else {
+                  back()
+                }
+              })
+              .catch(Logger.error)
+          } else {
+            navigateToSetWalletName()
           }
-          navigate({
-            // @ts-ignore TODO: make routes typesafe
-            pathname: '/onboarding/mnemonic/setWalletName'
-          })
         })
         .catch(Logger.error)
     },
-    [mnemonic, navigate, onPinCreated, useBiometrics]
+    [mnemonic, onPinCreated, useBiometrics, navigateToSetWalletName, back]
   )
 
   return (
