@@ -7,7 +7,6 @@ import { selectIsSwapFeesBlocked, selectIsSwapUseMarkrBlocked } from 'store/post
 import { useAvalancheEvmProvider } from 'hooks/networks/networkProviderHooks'
 import { useInAppRequest } from 'hooks/useInAppRequest'
 import { getEvmCaip2ChainId } from 'utils/caip2ChainIds'
-import { getSwapRate } from '../utils/evm/getSwapRate'
 import {
   EvmSwapOperation,
   GetQuoteParams,
@@ -15,15 +14,13 @@ import {
   isEvmUnwrapQuote,
   SwapParams,
   SwapQuote,
-  isParaswapQuote
+  SwapProvider
 } from '../types'
 import { isWrappableToken } from '../utils/evm/isWrappableToken'
-import { paraSwap } from '../utils/evm/paraSwap'
 import { wrap } from '../utils/evm/wrap'
 import { unwrap } from '../utils/evm/unwrap'
-import { OptimalRate } from '@paraswap/sdk'
-import { MARKR_EVM_NATIVE_TOKEN_ADDRESS } from '../consts'
-import { markrSwap } from '../utils/evm/markrSwap'
+import { ParaswapProvider } from '../providers/ParaswapProvider'
+import { MarkrProvider } from '../providers/MarkrProvider'
 
 export const useEvmSwap = (): {
   getQuote: (params: GetQuoteParams) => Promise<SwapQuote | undefined>
@@ -34,6 +31,9 @@ export const useEvmSwap = (): {
   const { request } = useInAppRequest()
   const isSwapFeesBlocked = useSelector(selectIsSwapFeesBlocked)
   const isSwapUseMarkrBlocked = useSelector(selectIsSwapUseMarkrBlocked)
+
+  const getSwapProvider = (isSwapUseMarkrBlocked: boolean): SwapProvider =>
+    isSwapUseMarkrBlocked ? ParaswapProvider : MarkrProvider
 
   const getQuote = useCallback(
     async ({
@@ -64,10 +64,6 @@ export const useEvmSwap = (): {
         }
       }
 
-      if (!isSwapUseMarkrBlocked && onUpdate === undefined) {
-        throw new Error('onUpdate is required when swap use markr is enabled')
-      }
-
       // abort previous request
       abortControllerRef.current?.abort()
       // create new AbortController
@@ -75,21 +71,22 @@ export const useEvmSwap = (): {
       abortControllerRef.current = controller
 
       try {
-        const { optimalRate, bestRate } = await getSwapRate({
-          fromTokenAddress: isSwapUseMarkrBlocked ? fromTokenAddress : isFromTokenNative ? MARKR_EVM_NATIVE_TOKEN_ADDRESS : fromTokenAddress,
-          toTokenAddress: isSwapUseMarkrBlocked ? toTokenAddress : isToTokenNative ? MARKR_EVM_NATIVE_TOKEN_ADDRESS : toTokenAddress,
+        const provider = getSwapProvider(isSwapUseMarkrBlocked);
+        const quote = await provider.getQuote({
+          isFromTokenNative,
+          fromTokenAddress: fromTokenAddress,
+          isToTokenNative,
+          toTokenAddress: toTokenAddress,
           fromTokenDecimals,
           toTokenDecimals,
-          amount: amount.toString(),
-          swapSide: destination,
+          amount: amount,
+          destination: destination,
           network,
           account,
-          abortSignal: controller.signal,
-          isSwapUseMarkrBlocked,
           slippage,
           onUpdate
-        })
-        return optimalRate || bestRate
+        }, controller.signal)
+        return quote
       } catch (error) {
         if (error instanceof Error) {
           if (error.message === 'Aborted') {
@@ -154,31 +151,19 @@ export const useEvmSwap = (): {
         })
       }
 
-      if (isParaswapQuote(quote)) {
-        return paraSwap({
-          srcTokenAddress: fromTokenAddress,
-          isSrcTokenNative: isFromTokenNative,
-          destTokenAddress: toTokenAddress,
-          isDestTokenNative: isToTokenNative,
-          priceRoute: quote as OptimalRate,
-          slippage,
-          network,
-          provider: avalancheProvider,
-          signAndSend,
-          userAddress: account.addressC,
-          isSwapFeesEnabled: !isSwapFeesBlocked
-        })
-      }
-
-      return markrSwap({
-        srcTokenAddress: isFromTokenNative ? MARKR_EVM_NATIVE_TOKEN_ADDRESS : fromTokenAddress,
-        destTokenAddress: isToTokenNative ? MARKR_EVM_NATIVE_TOKEN_ADDRESS : toTokenAddress,
+      const provider = getSwapProvider(isSwapUseMarkrBlocked);
+      return provider.swap({
+        srcTokenAddress: fromTokenAddress,
+        isSrcTokenNative: isFromTokenNative,
+        destTokenAddress: toTokenAddress,
+        isDestTokenNative: isToTokenNative,
         quote,
         slippage,
         network,
         provider: avalancheProvider,
+        signAndSend,
         userAddress: account.addressC,
-        signAndSend
+        isSwapFeesEnabled: !isSwapFeesBlocked
       })
     },
     [avalancheProvider, isSwapFeesBlocked, request]

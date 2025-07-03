@@ -9,7 +9,8 @@ enum SwapErrorCode {
   CANNOT_FETCH_ALLOWANCE = 'CANNOT_FETCH_ALLOWANCE',
   CANNOT_FETCH_SPENDER = 'CANNOT_FETCH_SPENDER',
   APPROVAL_TX_FAILED = 'APPROVAL_TX_FAILED',
-  SWAP_TX_FAILED = 'SWAP_TX_FAILED'
+  SWAP_TX_FAILED = 'SWAP_TX_FAILED',
+  WRONG_QUOTE_PROVIDER = 'WRONG_QUOTE_PROVIDER'
 }
 
 export enum ParaswapErrorCode {
@@ -44,6 +45,11 @@ export const swapError = {
     rpcErrors.internal({
       message: `Network not supported: ${network}`,
       data: { code: SwapErrorCode.NETWORK_NOT_SUPPORTED }
+    }),
+  wrongQuoteProvider: (quoteProvider: string) =>
+    rpcErrors.internal({
+      message: `Wrong quote provider. Quote provider should be: ${quoteProvider}`,
+      data: { code: SwapErrorCode.WRONG_QUOTE_PROVIDER }
     }),
   cannotBuildTx: (error: unknown) =>
     rpcErrors.internal({
