@@ -234,13 +234,13 @@ const migrateSolanaAddressesIfNeeded = async (
 const deriveMissingSeedlessSessionKeys = async (
   walletId: string
 ): Promise<void> => {
-  transactionSnackbar.pending({ message: 'Updating accounts...' })
-
   const wallet = await WalletFactory.createWallet({
     walletId,
     walletType: WalletType.SEEDLESS
   })
   if (wallet instanceof SeedlessWallet) {
+    transactionSnackbar.pending({ message: 'Updating accounts...' })
+
     // prompt Core Seedless API to derive missing keys
     await wallet.deriveMissingKeys()
 
