@@ -127,7 +127,8 @@ export const AccountButtons = ({
       )}
       {!isRemoveEnabled && (
         <Text variant="caption" sx={{ color: theme.colors.$textSecondary }}>
-          Only the most recently added account may be removed
+          Only the most recently added private key or seed phrase accounts may
+          be removed
         </Text>
       )}
     </View>
