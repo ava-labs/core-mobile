@@ -74,7 +74,7 @@ jest.mock('uuid', () => ({
 
 describe('useWallet', () => {
   const mockWalletId = 'test-wallet-1'
-  const mockMnemonic =
+  const mnemonic =
     'clown below snake memory pet neither jungle sunny crisp cram nominee insane thing tiger adult upset juice debate gym govern rent goddess dentist civil'
   const mockPin = '1234'
   const store = createTestStore()
@@ -97,7 +97,8 @@ describe('useWallet', () => {
       let response
       await act(async () => {
         response = await result.current.onPinCreated({
-          mnemonic: mockMnemonic,
+          walletId: mockWalletId,
+          mnemonic,
           pin: mockPin,
           walletType: WalletType.MNEMONIC
         })
@@ -118,7 +119,8 @@ describe('useWallet', () => {
       await act(async () => {
         await expect(
           result.current.onPinCreated({
-            mnemonic: mockMnemonic,
+            walletId: mockWalletId,
+            mnemonic,
             pin: mockPin,
             walletType: WalletType.MNEMONIC
           })
