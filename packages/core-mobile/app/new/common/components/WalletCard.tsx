@@ -27,12 +27,7 @@ const WalletCard = ({
   const {
     theme: { colors }
   } = useTheme()
-  const { dropdownItems, handleDropdownSelect, setActiveDropdownWalletId } =
-    useManageWallet()
-
-  const handleMorePress = useCallback(() => {
-    setActiveDropdownWalletId(wallet.id)
-  }, [setActiveDropdownWalletId, wallet.id])
+  const { dropdownItems, handleDropdownSelect } = useManageWallet(wallet.id)
 
   const renderExpansionIcon = useCallback(() => {
     return (
@@ -112,8 +107,7 @@ const WalletCard = ({
                 paddingLeft: 12,
                 justifyContent: 'center',
                 alignItems: 'center'
-              }}
-              onPress={handleMorePress}>
+              }}>
               <Icons.Navigation.MoreHoriz
                 color={colors.$textSecondary}
                 width={20}

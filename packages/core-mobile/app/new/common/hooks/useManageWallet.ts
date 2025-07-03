@@ -17,28 +17,26 @@ import AnalyticsService from 'services/analytics/AnalyticsService'
 import Logger from 'utils/Logger'
 import { showSnackbar } from 'new/common/utils/toast'
 
-export const useManageWallet = (): {
+export const useManageWallet = (
+  walletId?: string
+): {
   dropdownItems: DropdownItem[]
   handleDropdownSelect: (
     action: string,
     walletId: string,
     currentName: string
   ) => void
-  setActiveDropdownWalletId: (id: string | null) => void
 } => {
-  const [activeDropdownWalletId, setActiveDropdownWalletId] = useState<
-    string | null
-  >(null)
   const [isAddingAccount, setIsAddingAccount] = useState(false)
   const dispatch = useDispatch<AppThunkDispatch>()
   const wallets = useSelector(selectWallets)
   const accounts = useSelector(selectAccounts)
 
   const handleRenameWallet = useCallback(
-    (walletId: WalletId, walletName: string): void => {
+    (_walletId: WalletId, walletName: string): void => {
       const handleSaveWalletName = (values: Record<string, string>): void => {
         if (values.newName) {
-          dispatch(setWalletName({ walletId: walletId, name: values.newName }))
+          dispatch(setWalletName({ walletId: _walletId, name: values.newName }))
         }
       }
 
@@ -64,7 +62,7 @@ export const useManageWallet = (): {
   )
 
   const handleRemoveWallet = useCallback(
-    (walletId: WalletId): void => {
+    (_walletId: WalletId): void => {
       const walletCount = Object.keys(wallets).length
 
       if (walletCount <= 1) {
@@ -92,7 +90,7 @@ export const useManageWallet = (): {
             text: 'Remove',
             style: 'destructive',
             onPress: () => {
-              dispatch(removeWallet(walletId))
+              dispatch(removeWallet(_walletId))
             }
           }
         ]
@@ -102,10 +100,10 @@ export const useManageWallet = (): {
   )
 
   const handleAddAccount = useCallback(
-    async (walletId: WalletId): Promise<void> => {
+    async (_walletId: WalletId): Promise<void> => {
       if (isAddingAccount) return
 
-      const wallet = wallets[walletId]
+      const wallet = wallets[_walletId]
       if (!wallet) {
         Logger.error('Wallet not found for adding account')
         return
@@ -117,7 +115,7 @@ export const useManageWallet = (): {
         })
 
         setIsAddingAccount(true)
-        await dispatch(addAccount(walletId)).unwrap()
+        await dispatch(addAccount(_walletId)).unwrap()
 
         AnalyticsService.capture('CreatedANewAccountSuccessfully', {
           walletType: wallet.type
@@ -161,8 +159,8 @@ export const useManageWallet = (): {
     ]
 
     // Only show add account option for mnemonic and seedless wallets
-    if (activeDropdownWalletId) {
-      const wallet = wallets[activeDropdownWalletId]
+    if (walletId) {
+      const wallet = wallets[walletId]
       if (!wallet) {
         Logger.error('Wallet not found for dropdown items')
         return baseItems
@@ -185,21 +183,19 @@ export const useManageWallet = (): {
     }
 
     return baseItems
-  }, [activeDropdownWalletId, wallets, canRemoveWallet])
+  }, [walletId, wallets, canRemoveWallet])
 
   const handleWalletMenuAction = useCallback(
-    (action: string, walletId: string, currentName: string) => {
-      setActiveDropdownWalletId(null)
-
+    (action: string, _walletId: string, currentName: string) => {
       switch (action) {
         case 'rename':
-          handleRenameWallet(walletId, currentName)
+          handleRenameWallet(_walletId, currentName)
           break
         case 'remove':
-          handleRemoveWallet(walletId)
+          handleRemoveWallet(_walletId)
           break
         case 'add_account':
-          handleAddAccount(walletId)
+          handleAddAccount(_walletId)
           break
       }
     },
@@ -207,17 +203,14 @@ export const useManageWallet = (): {
   )
 
   const handleDropdownSelect = useCallback(
-    (action: string, walletId: string, currentName: string) => {
-      if (activeDropdownWalletId) {
-        handleWalletMenuAction(action, walletId, currentName)
-      }
+    (action: string, _walletId: string, currentName: string) => {
+      handleWalletMenuAction(action, _walletId, currentName)
     },
-    [activeDropdownWalletId, handleWalletMenuAction]
+    [handleWalletMenuAction]
   )
 
   return {
     dropdownItems,
-    handleDropdownSelect,
-    setActiveDropdownWalletId
+    handleDropdownSelect
   }
 }

@@ -210,11 +210,9 @@ const ManageAccountsScreen = (): React.JSX.Element => {
     }))
   }, [])
 
-  const handleAddAccount = useCallback(async (): Promise<void> => {
-    navigate({
-      // @ts-ignore TODO: make routes typesafe
-      pathname: '/accountSettings/importWallet'
-    })
+  const handleAddAccount = useCallback((): void => {
+    // @ts-ignore TODO: make routes typesafe
+    navigate('/accountSettings/importWallet')
   }, [navigate])
 
   const renderHeaderRight = useCallback(() => {
