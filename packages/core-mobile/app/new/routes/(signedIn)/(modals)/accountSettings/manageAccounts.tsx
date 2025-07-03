@@ -29,6 +29,10 @@ import { Account, selectAccounts, setActiveAccount } from 'store/account'
 import { selectActiveAccount } from 'store/account'
 import { selectIsPrivacyModeEnabled } from 'store/settings/securityPrivacy'
 import { selectActiveWalletId, selectWallets } from 'store/wallet/slice'
+import { WalletType } from 'services/wallet/types'
+import { CoreAccountType } from '@avalabs/types'
+
+const VIRTUAL_WALLET_ID = 'private-key-accounts'
 
 const ManageAccountsScreen = (): React.JSX.Element => {
   const {
@@ -48,15 +52,18 @@ const ManageAccountsScreen = (): React.JSX.Element => {
 
   useMemo(() => {
     const initialExpansionState: Record<string, boolean> = {}
-    const walletIds = Object.keys(allWallets)
+    const walletIds = [...Object.keys(allWallets), VIRTUAL_WALLET_ID]
     if (walletIds.length > 0) {
       // Expand only the active wallet by default
       walletIds.forEach(id => {
-        initialExpansionState[id] = id === activeWalletId
+        initialExpansionState[id] =
+          id === activeWalletId ||
+          (id === VIRTUAL_WALLET_ID &&
+            activeAccount?.type === CoreAccountType.IMPORTED)
       })
     }
     setExpandedWallets(initialExpansionState)
-  }, [allWallets, activeWalletId])
+  }, [allWallets, activeWalletId, activeAccount?.type])
 
   const allAccountsArray: Account[] = useMemo(
     () => Object.values(accountCollection),
@@ -105,103 +112,213 @@ const ManageAccountsScreen = (): React.JSX.Element => {
     [dispatch]
   )
 
-  const walletsDisplayData: (WalletDisplayData | null)[] = useMemo(() => {
-    const walletArray = Object.values(allWallets)
-    return walletArray
-      .map(wallet => {
-        const accountsForWallet = accountSearchResults.filter(
-          account => account.walletId === wallet.id
-        )
+  const privateKeyWallets = useMemo(() => {
+    return Object.values(allWallets).filter(
+      wallet => wallet.type === WalletType.PRIVATE_KEY
+    )
+  }, [allWallets])
 
-        if (accountsForWallet.length === 0 && searchText) {
-          return null
-        }
+  const otherWallets = useMemo(() => {
+    return Object.values(allWallets).filter(
+      wallet => wallet.type !== WalletType.PRIVATE_KEY
+    )
+  }, [allWallets])
 
-        const accountDataForWallet = accountsForWallet.map((account, index) => {
-          const isActive = account.id === activeAccount?.id
+  const otherWalletsDisplayData = useMemo(() => {
+    return otherWallets.map(wallet => {
+      const accountsForWallet = accountSearchResults.filter(
+        account => account.walletId === wallet.id
+      )
 
-          const nextAccount = accountsForWallet[index + 1]
-          const hideSeparator =
-            isActive || nextAccount?.id === activeAccount?.id
+      if (accountsForWallet.length === 0) {
+        return null
+      }
 
-          return {
-            hideSeparator,
-            containerSx: {
-              backgroundColor: isActive
-                ? alpha(colors.$textPrimary, 0.1)
-                : 'transparent',
-              borderRadius: 8
-            },
-            title: (
-              <Text
-                testID={`manage_accounts_list__${account.name}`}
-                variant="body1"
-                numberOfLines={2}
-                sx={{
-                  color: colors.$textPrimary,
-                  fontSize: 14,
-                  lineHeight: 16,
-                  fontWeight: '500',
-                  width: SCREEN_WIDTH * 0.3
-                }}>
-                {account.name}
-              </Text>
-            ),
-            subtitle: (
-              <Text
-                variant="mono"
-                sx={{
-                  color: alpha(colors.$textPrimary, 0.6),
-                  fontSize: 13,
-                  lineHeight: 16,
-                  fontWeight: '500'
-                }}>
-                {truncateAddress(account.addressC, TRUNCATE_ADDRESS_LENGTH)}
-              </Text>
-            ),
-            leftIcon: isActive ? (
-              <Icons.Custom.CheckSmall
-                color={colors.$textPrimary}
-                width={24}
-                height={24}
-              />
-            ) : (
-              <View sx={{ width: 24 }} />
-            ),
-            value: (
-              <AccountBalance accountId={account.id} isActive={isActive} />
-            ),
-            onPress: () => handleSetActiveAccount(account.id),
-            accessory: (
-              <TouchableOpacity
-                hitSlop={16}
-                sx={{ marginLeft: 4 }}
-                onPress={() => gotoAccountDetails(account.id)}>
-                <Icons.Alert.AlertCircle
-                  color={colors.$textSecondary}
-                  width={18}
-                  height={18}
-                />
-              </TouchableOpacity>
-            )
-          }
-        })
+      const accountDataForWallet = accountsForWallet.map((account, index) => {
+        const isActive = account.id === activeAccount?.id
+        const nextAccount = accountsForWallet[index + 1]
+        const hideSeparator = isActive || nextAccount?.id === activeAccount?.id
+
         return {
-          ...wallet,
-          accounts: accountDataForWallet
+          hideSeparator,
+          containerSx: {
+            backgroundColor: isActive
+              ? alpha(colors.$textPrimary, 0.1)
+              : 'transparent',
+            borderRadius: 8
+          },
+          title: (
+            <Text
+              testID={`manage_accounts_list__${account.name}`}
+              variant="body1"
+              numberOfLines={2}
+              sx={{
+                color: colors.$textPrimary,
+                fontSize: 14,
+                lineHeight: 16,
+                fontWeight: '500',
+                width: SCREEN_WIDTH * 0.3
+              }}>
+              {account.name}
+            </Text>
+          ),
+          subtitle: (
+            <Text
+              variant="mono"
+              sx={{
+                color: alpha(colors.$textPrimary, 0.6),
+                fontSize: 13,
+                lineHeight: 16,
+                fontWeight: '500'
+              }}>
+              {truncateAddress(account.addressC, TRUNCATE_ADDRESS_LENGTH)}
+            </Text>
+          ),
+          leftIcon: isActive ? (
+            <Icons.Custom.CheckSmall
+              color={colors.$textPrimary}
+              width={24}
+              height={24}
+            />
+          ) : (
+            <View sx={{ width: 24 }} />
+          ),
+          value: <AccountBalance accountId={account.id} isActive={isActive} />,
+          onPress: () => handleSetActiveAccount(account.id),
+          accessory: (
+            <TouchableOpacity
+              hitSlop={16}
+              sx={{ marginLeft: 4 }}
+              onPress={() => gotoAccountDetails(account.id)}>
+              <Icons.Alert.AlertCircle
+                color={colors.$textSecondary}
+                width={18}
+                height={18}
+              />
+            </TouchableOpacity>
+          )
         }
       })
-      .filter(Boolean) // Remove nulls (wallets with no matching search results)
+
+      return {
+        ...wallet,
+        accounts: accountDataForWallet
+      }
+    })
   }, [
-    allWallets,
+    otherWallets,
     accountSearchResults,
-    searchText,
+    activeAccount?.id,
     colors.$textPrimary,
     colors.$textSecondary,
-    activeAccount?.id,
     handleSetActiveAccount,
     gotoAccountDetails
   ])
+
+  const privateKeyWalletsDisplayData = useMemo(() => {
+    // Get all accounts from private key wallets
+    const allPrivateKeyAccounts = privateKeyWallets.flatMap(wallet => {
+      return accountSearchResults.filter(
+        account => account.walletId === wallet.id
+      )
+    })
+
+    if (allPrivateKeyAccounts.length === 0) {
+      return null
+    }
+
+    // Create virtual "Private Key Accounts" wallet if there are any private key wallets
+    // Only add the virtual wallet if there are matching accounts (respects search)
+    const privateKeyAccountData = allPrivateKeyAccounts.map(
+      (account, index) => {
+        const isActive = account.id === activeAccount?.id
+        const nextAccount = allPrivateKeyAccounts[index + 1]
+        const hideSeparator = isActive || nextAccount?.id === activeAccount?.id
+
+        return {
+          hideSeparator,
+          containerSx: {
+            backgroundColor: isActive
+              ? alpha(colors.$textPrimary, 0.1)
+              : 'transparent',
+            borderRadius: 8
+          },
+          title: (
+            <Text
+              testID={`manage_accounts_list__${account.name}`}
+              variant="body1"
+              numberOfLines={2}
+              sx={{
+                color: colors.$textPrimary,
+                fontSize: 14,
+                lineHeight: 16,
+                fontWeight: '500',
+                width: SCREEN_WIDTH * 0.3
+              }}>
+              {account.name}
+            </Text>
+          ),
+          subtitle: (
+            <Text
+              variant="mono"
+              sx={{
+                color: alpha(colors.$textPrimary, 0.6),
+                fontSize: 13,
+                lineHeight: 16,
+                fontWeight: '500'
+              }}>
+              {truncateAddress(account.addressC, TRUNCATE_ADDRESS_LENGTH)}
+            </Text>
+          ),
+          leftIcon: isActive ? (
+            <Icons.Custom.CheckSmall
+              color={colors.$textPrimary}
+              width={24}
+              height={24}
+            />
+          ) : (
+            <View sx={{ width: 24 }} />
+          ),
+          value: <AccountBalance accountId={account.id} isActive={isActive} />,
+          onPress: () => handleSetActiveAccount(account.id),
+          accessory: (
+            <TouchableOpacity
+              hitSlop={16}
+              sx={{ marginLeft: 4 }}
+              onPress={() => gotoAccountDetails(account.id)}>
+              <Icons.Alert.AlertCircle
+                color={colors.$textSecondary}
+                width={18}
+                height={18}
+              />
+            </TouchableOpacity>
+          )
+        }
+      }
+    )
+
+    // Create virtual wallet for private key accounts
+    return {
+      id: VIRTUAL_WALLET_ID, // Virtual ID
+      name: 'Imported',
+      type: WalletType.PRIVATE_KEY,
+      accounts: privateKeyAccountData
+    }
+  }, [
+    privateKeyWallets,
+    accountSearchResults,
+    activeAccount?.id,
+    colors.$textPrimary,
+    colors.$textSecondary,
+    handleSetActiveAccount,
+    gotoAccountDetails
+  ])
+
+  const walletsDisplayData: (WalletDisplayData | null)[] = useMemo(() => {
+    return [...otherWalletsDisplayData, privateKeyWalletsDisplayData].filter(
+      Boolean
+    ) as WalletDisplayData[]
+  }, [otherWalletsDisplayData, privateKeyWalletsDisplayData])
 
   const toggleWalletExpansion = useCallback((walletId: string) => {
     setExpandedWallets(prev => ({
@@ -282,6 +399,7 @@ const ManageAccountsScreen = (): React.JSX.Element => {
               isExpanded={isExpanded}
               searchText={searchText}
               onToggleExpansion={() => toggleWalletExpansion(wallet.id)}
+              showMoreButton={wallet.id !== VIRTUAL_WALLET_ID}
             />
           )
         })
