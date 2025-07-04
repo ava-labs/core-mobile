@@ -1,5 +1,3 @@
-import React, { useMemo } from 'react'
-import { LayoutChangeEvent } from 'react-native'
 import {
   PriceChange,
   PriceChangeIndicator,
@@ -7,15 +5,18 @@ import {
   Text,
   View
 } from '@avalabs/k2-alpine'
-import Animated, { FadeIn } from 'react-native-reanimated'
 import { TokenLogo } from 'common/components/TokenLogo'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
+import React, { useMemo } from 'react'
+import { LayoutChangeEvent } from 'react-native'
+import Animated, { FadeIn } from 'react-native-reanimated'
 import { formatLargeCurrency } from 'utils/Utils'
 import { isEffectivelyZero } from '../utils/utils'
 import { RankView } from './RankView'
 
 export const TokenHeader = ({
+  name,
   currentPrice,
   logoUri,
   symbol,
@@ -23,6 +24,7 @@ export const TokenHeader = ({
   rank,
   onLayout
 }: {
+  name: string
   logoUri?: string
   currentPrice?: number
   ranges?: {
@@ -63,48 +65,68 @@ export const TokenHeader = ({
   return (
     <View onLayout={onLayout}>
       <TokenLogo symbol={symbol} logoUri={logoUri} size={42} />
-      <View
-        sx={{
-          marginTop: 15,
-          flexDirection: 'row',
-          alignItems: 'center',
-          justifyContent: 'space-between'
-        }}>
-        <View>
+
+      <View style={{ marginTop: 15, marginBottom: 5 }}>
+        {name.toLowerCase() !== symbol.toLowerCase() ? (
           <Text
             variant="heading2"
             sx={{ color: '$textSecondary', lineHeight: 38 }}
             numberOfLines={1}>
-            {symbol.toUpperCase()}
+            {name}
           </Text>
-          <View
-            style={{
-              flexDirection: 'column'
-            }}>
-            <View style={{ flexDirection: 'row', alignItems: 'flex-end' }}>
-              <Text variant="heading2">
-                {currentPrice !== undefined
-                  ? formatTokenInCurrency({ amount: currentPrice })
-                  : UNKNOWN_AMOUNT}
-              </Text>
+        ) : null}
+        <View
+          sx={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'space-between'
+          }}>
+          <View>
+            <Text
+              variant="heading2"
+              numberOfLines={1}
+              sx={{
+                color:
+                  name.toLowerCase() === symbol.toLowerCase()
+                    ? '$textSecondary'
+                    : '$textPrimary',
+                lineHeight: 38
+              }}>
+              {symbol.toUpperCase()}
+            </Text>
+
+            <View
+              style={{
+                flexDirection: 'column'
+              }}>
+              <View style={{ flexDirection: 'row', alignItems: 'flex-end' }}>
+                <Text
+                  variant="heading2"
+                  sx={{
+                    lineHeight: 38
+                  }}>
+                  {currentPrice !== undefined
+                    ? formatTokenInCurrency({ amount: currentPrice })
+                    : UNKNOWN_AMOUNT}
+                </Text>
+              </View>
             </View>
           </View>
+          {rank !== undefined && rank > 0 && rank < 100 && (
+            <Animated.View entering={FadeIn}>
+              <RankView rank={rank} sx={{ marginRight: 10 }} />
+            </Animated.View>
+          )}
         </View>
-        {rank !== undefined && rank > 0 && rank < 100 && (
-          <Animated.View entering={FadeIn}>
-            <RankView rank={rank} sx={{ marginRight: 10 }} />
-          </Animated.View>
-        )}
       </View>
-      <View sx={{ opacity: priceChange ? 1 : 0, marginTop: 5 }}>
-        <PriceChangeIndicator
-          formattedPrice={priceChange?.formattedPrice}
-          status={priceChange?.status ?? PriceChangeStatus.Neutral}
-          formattedPercent={priceChange?.formattedPercent}
-          textVariant="buttonMedium"
-          animated={true}
-        />
-      </View>
+
+      <PriceChangeIndicator
+        formattedPrice={priceChange?.formattedPrice}
+        status={priceChange?.status ?? PriceChangeStatus.Neutral}
+        formattedPercent={priceChange?.formattedPercent}
+        textVariant="buttonMedium"
+        animated={true}
+      />
     </View>
   )
 }

@@ -97,7 +97,7 @@ const SecurityAndPrivacyScreen = (): JSX.Element => {
   const pinAndBiometricData = useMemo(() => {
     const data: GroupListItem[] = [
       {
-        title: 'Require PIN code immediately',
+        title: 'Require PIN immediately',
         value: (
           <Toggle
             onValueChange={() =>
