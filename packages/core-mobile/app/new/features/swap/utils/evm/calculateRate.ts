@@ -1,10 +1,10 @@
 import { OptimalRate } from '@paraswap/sdk'
+import { MarkrQuote } from 'features/swap/services/MarkrService'
 import {
   EvmSwapQuote,
   isEvmUnwrapQuote,
   isEvmWrapQuote,
   isParaswapQuote,
-  MarkrQuote
 } from 'features/swap/types'
 
 const getParaswapRate = (quote: OptimalRate): number => {
