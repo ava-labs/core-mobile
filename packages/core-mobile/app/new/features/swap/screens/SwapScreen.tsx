@@ -92,7 +92,7 @@ export const SwapScreen = (): JSX.Element => {
   )
   const [isInputFocused, setIsInputFocused] = useState<boolean>(false)
   const swapButtonBackgroundColor = useMemo(
-    () => getButtonBackgroundColor('secondary', theme, false),
+    () => getButtonBackgroundColor('secondary', theme),
     [theme]
   )
   const errorMessage = useMemo(

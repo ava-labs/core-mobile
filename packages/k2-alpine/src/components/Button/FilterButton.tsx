@@ -17,7 +17,7 @@ export const FilterButton = ({
   onPress?: () => void
 }): JSX.Element => {
   const { theme } = useTheme()
-  const tintColor = getButtonTintColor('secondary', theme, disabled)
+  const tintColor = getButtonTintColor('secondary', theme)
 
   return (
     <Button
@@ -25,6 +25,7 @@ export const FilterButton = ({
       size="small"
       type="secondary"
       onPress={onPress}
+      disabled={disabled}
       rightIcon={
         <Icons.Custom.ArrowDown style={{ marginLeft: 5 }} color={tintColor} />
       }>

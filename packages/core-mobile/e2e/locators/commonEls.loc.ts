@@ -45,5 +45,7 @@ export default {
   tokenAmountInputField: 'token_amount_input_field',
   transactionSuccess: 'Transaction successful',
   nextBtn: 'next_btn',
-  approveBtn: 'approve_button'
+  approveBtn: 'approve_button',
+  dropdownScrollView: 'dropdown_scroll_view',
+  dropdownItem: 'dropdown_item__'
 }

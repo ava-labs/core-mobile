@@ -43,10 +43,7 @@ export const AccountButtons = ({
   const handleShowAlertWithTextInput = (): void => {
     showAlertWithTextInput({
       title: 'Rename account',
-      inputs: [
-        { key: 'accountName', defaultValue: account?.name },
-        { key: 'walletType', defaultValue: walletType }
-      ],
+      inputs: [{ key: 'accountName', defaultValue: account?.name }],
       buttons: [
         {
           text: 'Cancel',
@@ -130,7 +127,7 @@ export const AccountButtons = ({
       )}
       {!isRemoveEnabled && (
         <Text variant="caption" sx={{ color: theme.colors.$textSecondary }}>
-          Only the most recently added account may be removed
+          Only the most recently added seed phrase accounts may be removed
         </Text>
       )}
     </View>

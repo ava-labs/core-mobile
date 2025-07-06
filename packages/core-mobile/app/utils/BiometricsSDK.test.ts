@@ -1,6 +1,12 @@
 import BiometricsSDK, {
+  bioGetOptions,
   BiometricType,
-  KeystoreConfig
+  bioSetOptions,
+  ENCRYPTION_KEY_SERVICE,
+  ENCRYPTION_KEY_SERVICE_BIO,
+  passcodeGetOptions,
+  passcodeSetOptions,
+  walletSecretOptions
 } from 'utils/BiometricsSDK'
 import Keychain, { BIOMETRY_TYPE } from 'react-native-keychain'
 import { commonStorage } from 'utils/mmkv'
@@ -65,6 +71,13 @@ const mockEncrypt = encrypt as jest.Mock
 const mockDecrypt = decrypt as jest.Mock
 const mockLogger = Logger as jest.Mocked<typeof Logger>
 
+enum STORAGE_TYPE {
+  AES_CBC = 'KeystoreAESCBC',
+  AES_GCM_NO_AUTH = 'KeystoreAESGCM_NoAuth',
+  AES_GCM = 'KeystoreAESGCM',
+  RSA = 'KeystoreRSAECB'
+}
+
 describe('BiometricsSDK', () => {
   const mockPin = '123456'
   const mockEncryptionKey = 'mock-encryption-key'
@@ -75,7 +88,7 @@ describe('BiometricsSDK', () => {
     service: 'some-service',
     username: 'encryptionKey',
     password: mockEncryptedData,
-    storage: 'keychain'
+    storage: STORAGE_TYPE.AES_GCM
   }
 
   beforeEach(() => {
@@ -108,7 +121,7 @@ describe('BiometricsSDK', () => {
       expect(mockKeychain.setGenericPassword).toHaveBeenCalledWith(
         'encryptionKey',
         mockEncryptedData,
-        KeystoreConfig.ENCRYPTION_KEY_PASSCODE_OPTIONS
+        passcodeSetOptions
       )
       expect(result).toBe(true)
     })
@@ -127,7 +140,7 @@ describe('BiometricsSDK', () => {
       expect(mockKeychain.setGenericPassword).toHaveBeenCalledWith(
         'encryptionKey',
         mockEncryptionKey,
-        KeystoreConfig.ENCRYPTION_KEY_BIO_OPTIONS
+        bioSetOptions
       )
       expect(result).toBe(true)
     })
@@ -157,7 +170,7 @@ describe('BiometricsSDK', () => {
       const result = await BiometricsSDK.loadEncryptionKeyWithPin(mockPin)
 
       expect(mockKeychain.getGenericPassword).toHaveBeenCalledWith(
-        KeystoreConfig.ENCRYPTION_KEY_PASSCODE_OPTIONS
+        passcodeGetOptions
       )
       expect(mockDecrypt).toHaveBeenCalledWith(mockEncryptedData, mockPin)
       expect(result).toBe(true)
@@ -190,7 +203,7 @@ describe('BiometricsSDK', () => {
       const result = await BiometricsSDK.loadEncryptionKeyWithBiometry()
 
       expect(mockKeychain.getGenericPassword).toHaveBeenCalledWith(
-        KeystoreConfig.ENCRYPTION_KEY_BIO_OPTIONS
+        bioGetOptions
       )
       expect(result).toBe(true)
     })
@@ -199,26 +212,6 @@ describe('BiometricsSDK', () => {
       mockKeychain.getGenericPassword.mockResolvedValue(false)
       const result = await BiometricsSDK.loadEncryptionKeyWithBiometry()
       expect(result).toBe(false)
-    })
-
-    it('should check if encryption key with PIN exists', async () => {
-      mockKeychain.getGenericPassword.mockResolvedValue(mockKeychainResult)
-      const result = await BiometricsSDK.hasEncryptionKeyWithPin()
-      expect(result).toBe(true)
-
-      mockKeychain.getGenericPassword.mockResolvedValue(false)
-      const secondResult = await BiometricsSDK.hasEncryptionKeyWithPin()
-      expect(secondResult).toBe(false)
-    })
-
-    it('should check if encryption key with biometry exists', async () => {
-      mockKeychain.getGenericPassword.mockResolvedValue(mockKeychainResult)
-      const result = await BiometricsSDK.hasEncryptionKeyWithBiometry()
-      expect(result).toBe(true)
-
-      mockKeychain.getGenericPassword.mockResolvedValue(false)
-      const secondResult = await BiometricsSDK.hasEncryptionKeyWithBiometry()
-      expect(secondResult).toBe(false)
     })
 
     it('should change PIN', async () => {
@@ -231,7 +224,7 @@ describe('BiometricsSDK', () => {
       await BiometricsSDK.changePin(newPin)
 
       expect(mockKeychain.resetGenericPassword).toHaveBeenCalledWith({
-        service: KeystoreConfig.ENCRYPTION_KEY_PASSCODE_OPTIONS.service
+        service: passcodeGetOptions.service
       })
       // Legacy service is also called
       expect(mockKeychain.resetGenericPassword).toHaveBeenCalledWith({
@@ -241,7 +234,7 @@ describe('BiometricsSDK', () => {
       expect(mockKeychain.setGenericPassword).toHaveBeenCalledWith(
         'encryptionKey',
         'new-encrypted-data',
-        KeystoreConfig.ENCRYPTION_KEY_PASSCODE_OPTIONS
+        passcodeSetOptions
       )
     })
 
@@ -273,7 +266,7 @@ describe('BiometricsSDK', () => {
       expect(mockKeychain.setGenericPassword).toHaveBeenCalledWith(
         'walletSecret',
         mockEncryptedData,
-        KeystoreConfig.wallet_secret_options(mockWalletId)
+        walletSecretOptions(mockWalletId)
       )
     })
 
@@ -294,7 +287,7 @@ describe('BiometricsSDK', () => {
       const result = await BiometricsSDK.loadWalletSecret(mockWalletId)
 
       expect(mockKeychain.getGenericPassword).toHaveBeenCalledWith(
-        KeystoreConfig.wallet_secret_options(mockWalletId)
+        walletSecretOptions(mockWalletId)
       )
       expect(mockDecrypt).toHaveBeenCalledWith(
         mockEncryptedData,
@@ -329,13 +322,13 @@ describe('BiometricsSDK', () => {
     it('should clear wallet data', async () => {
       await BiometricsSDK.clearWalletData(mockWalletId)
       expect(mockKeychain.resetGenericPassword).toHaveBeenCalledWith(
-        KeystoreConfig.wallet_secret_options(mockWalletId)
+        walletSecretOptions(mockWalletId)
       )
     })
 
     it('should clear all relevant data', async () => {
-      const ENCRYPTION_KEY_SERVICE = 'encryption-key-service'
-      const ENCRYPTION_KEY_SERVICE_BIO = 'encryption-key-service-bio'
+      const LEGACY_SERVICE_KEY_BIO = 'sec-storage-service-bio'
+      const LEGACY_SERVICE_KEY = 'sec-storage-service'
       const mockServices = [
         `sec-storage-service-${mockWalletId}`,
         'sec-storage-service-wallet2',
@@ -348,7 +341,7 @@ describe('BiometricsSDK', () => {
       await BiometricsSDK.clearAllData()
 
       expect(mockKeychain.getAllGenericPasswordServices).toHaveBeenCalled()
-      expect(mockKeychain.resetGenericPassword).toHaveBeenCalledTimes(4)
+      expect(mockKeychain.resetGenericPassword).toHaveBeenCalledTimes(6)
       expect(mockKeychain.resetGenericPassword).toHaveBeenCalledWith({
         service: `sec-storage-service-${mockWalletId}`
       })
@@ -360,6 +353,12 @@ describe('BiometricsSDK', () => {
       })
       expect(mockKeychain.resetGenericPassword).toHaveBeenCalledWith({
         service: ENCRYPTION_KEY_SERVICE_BIO
+      })
+      expect(mockKeychain.resetGenericPassword).toHaveBeenCalledWith({
+        service: LEGACY_SERVICE_KEY
+      })
+      expect(mockKeychain.resetGenericPassword).toHaveBeenCalledWith({
+        service: LEGACY_SERVICE_KEY_BIO
       })
       expect(mockKeychain.resetGenericPassword).not.toHaveBeenCalledWith({
         service: 'some-other-service'
@@ -373,7 +372,7 @@ describe('BiometricsSDK', () => {
       await BiometricsSDK.disableBiometry()
 
       expect(mockKeychain.resetGenericPassword).toHaveBeenCalledWith({
-        service: KeystoreConfig.ENCRYPTION_KEY_BIO_OPTIONS.service
+        service: bioGetOptions.service
       })
       expect(mockCommonStorage.set).toHaveBeenCalledWith(
         StorageKey.SECURE_ACCESS_SET,
@@ -391,7 +390,7 @@ describe('BiometricsSDK', () => {
       expect(BiometricsSDK.getAccessType()).toBe('PIN')
 
       mockCommonStorage.getString.mockReturnValue(undefined)
-      expect(BiometricsSDK.getAccessType()).toBe('PIN') // default
+      expect(BiometricsSDK.getAccessType()).toBe(undefined)
     })
 
     it('should check if biometry can be used', async () => {
