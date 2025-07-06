@@ -3,12 +3,13 @@ import {
     MARKR_EVM_NATIVE_TOKEN_ADDRESS,
     MARKR_EVM_PARTNER_ID
 } from "../consts"
-import MarkrService from "../services/MarkrService"
+import MarkrService, { MarkrQuote } from "../services/MarkrService"
 import {
-    EvmSwapQuote,
     GetQuoteParams,
     isMarkrQuote,
     MarkrTransaction,
+    NormalizedSwapQuote,
+    NormalizedSwapQuoteResult,
     PerformSwapParams,
     SwapProvider
 } from "../types"
@@ -19,7 +20,26 @@ import { ERC20__factory } from "contracts/openzeppelin"
 import Big from "big.js"
 import { RequestContext } from "store/rpc/types"
 
+const getNormalizedQuoteResult = (rates: MarkrQuote[]): NormalizedSwapQuoteResult => {
+    const quotes: NormalizedSwapQuote[] = [];
+    for (const rate of rates) {
+        quotes.push({
+            quote: rate,
+            metadata: {
+                amountOut: rate.amountOut
+            }
+        });
+    }
+
+    return {
+        provider: "markr",
+        quotes: quotes,
+        selected: quotes[0]!
+    }
+}
+
 export const MarkrProvider: SwapProvider = {
+    name: "markr",
 
     async getQuote({
         isFromTokenNative,
@@ -33,7 +53,7 @@ export const MarkrProvider: SwapProvider = {
         account,
         slippage,
         onUpdate,
-    }: GetQuoteParams, abortSignal: AbortSignal): Promise<EvmSwapQuote> {
+    }: GetQuoteParams, abortSignal?: AbortSignal): Promise<NormalizedSwapQuoteResult> {
         if (!fromTokenAddress || !fromTokenDecimals) {
             throw new Error('No source token selected')
         }
@@ -46,11 +66,22 @@ export const MarkrProvider: SwapProvider = {
             throw new Error('No amount')
         }
 
+        if (!abortSignal) {
+            throw new Error('abortSignal is required when swap provider is enabled')
+        }
+
         if (!onUpdate) {
             throw new Error('onUpdate is required when swap use markr is enabled')
         }
 
-        const response = await MarkrService.getSwapRateStream({
+        const onUpdateOverridden = (rates: MarkrQuote[] | undefined) => {
+            if (!rates) {
+                return
+            }
+            onUpdate(getNormalizedQuoteResult(rates));
+        }
+
+        const rates = await MarkrService.getSwapRateStream({
             fromTokenAddress: isFromTokenNative ? MARKR_EVM_NATIVE_TOKEN_ADDRESS : fromTokenAddress,
             toTokenAddress: isToTokenNative ? MARKR_EVM_NATIVE_TOKEN_ADDRESS : toTokenAddress,
             fromTokenDecimals,
@@ -59,15 +90,15 @@ export const MarkrProvider: SwapProvider = {
             network,
             account,
             slippage,
-            onUpdate,
+            onUpdate: onUpdateOverridden,
             abortSignal
         })
 
-        if ('done' in response) {
+        if (!rates || rates.length === 0) {
             throw new Error('No rate found')
         }
 
-        return response
+        return getNormalizedQuoteResult(rates);
     },
 
     async swap({

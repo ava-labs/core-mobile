@@ -18,7 +18,8 @@ import { calculateRate as calculateEvmRate } from '../utils/evm/calculateRate'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import { SvgProps } from 'react-native-svg'
-import { MarkrQuote } from '../types'
+import { NormalizedSwapQuote, NormalizedSwapQuoteResult } from '../types'
+import { MarkrQuote } from '../services/MarkrService'
 
 // Provider logo mapping
 const PRICE_PROVIDER_ICONS: Record<
@@ -39,17 +40,17 @@ const getPriceProviderIcon = (id: string) => {
 export const SwapPricingDetailsScreen = ({
   fromToken,
   toToken,
-  selectedRate,
-  setSelectedRate,
-  bestRate,
-  allRates
+  quotes,
+  setQuotes,
+  manuallySelected,
+  setManuallySelected
 }: {
   fromToken: LocalTokenWithBalance | undefined
   toToken: LocalTokenWithBalance | undefined
-  selectedRate: MarkrQuote | undefined
-  setSelectedRate: (rate: MarkrQuote) => void
-  bestRate: MarkrQuote | undefined
-  allRates: MarkrQuote[] | undefined
+  quotes: NormalizedSwapQuoteResult | undefined
+  setQuotes: (quotes: NormalizedSwapQuoteResult) => void
+  manuallySelected: boolean
+  setManuallySelected: (manuallySelected: boolean) => void
 }): JSX.Element => {
   const {
     theme: { colors }
@@ -77,15 +78,15 @@ export const SwapPricingDetailsScreen = ({
 
   const renderItem = useCallback(
     (item: any, index: number): React.JSX.Element => {
-      if (allRates === undefined || selectedRate === undefined) {
+      if (!quotes || !quotes.selected) {
         return <></>
       }
 
-      const { id, name } = item.aggregator;
-      const isLastItem = index === allRates.length - 1
-      const isSelected = id === selectedRate.aggregator?.id || (!selectedRate && id === "auto")
+      const { id, name } = item.quote.aggregator;
+      const isLastItem = index === quotes.quotes.length - 1
+      const isSelected = (!manuallySelected && index === 0) || (manuallySelected && quotes.selected === item)
 
-      const usdEquivalent = id === 'auto' ? 0 : formatInCurrency(toToken, item.amountOut)
+      const usdEquivalent = id === 'auto' ? 0 : formatInCurrency(toToken, item.metadata.amountOut)
       
       // Get the logo for this provider dynamically
       const Icon = getPriceProviderIcon(id)
@@ -95,7 +96,8 @@ export const SwapPricingDetailsScreen = ({
           key={id}
           sx={{ marginTop: 12 }}
           onPress={() => {
-            setSelectedRate(item)
+            setManuallySelected(true)
+            setQuotes({ ...quotes, selected: item })
           }}>
           <View
             sx={{
@@ -165,39 +167,38 @@ export const SwapPricingDetailsScreen = ({
         </TouchableOpacity>
       )
     },
-    [allRates?.length, selectedRate?.aggregator, colors, setSelectedRate]
+    [quotes, fromToken, toToken, colors]
   )
 
   const data = useMemo(() => {
     const items: GroupListItem[] = []
 
-    const activeRate = selectedRate || bestRate;
-
-    if (activeRate === undefined || allRates === undefined || toToken === undefined || fromToken === undefined) {
+    if (!fromToken || !toToken || !quotes || quotes.quotes.length === 0 || !quotes.quotes[0] || !quotes.selected) {
       return items
     }
 
-    const rate = calculateEvmRate(activeRate); 
+    const quote = quotes.selected.quote
+    const rate = calculateEvmRate(quote)
     items.push({
       title: 'Rate',
       value: `1 ${fromToken.symbol} = ${rate?.toFixed(4)} ${toToken.symbol}`
     })
 
+    const bestRate = quotes.quotes[0]
+    const selectedRate = quotes.selected
     items.push({
       title: 'Provider',
-      value: selectedRate?.aggregator!.id === 'auto' ? `Auto • ${bestRate?.aggregator!.name}` : `${selectedRate?.aggregator!.name}`,
-      accordion: bestRate ? (
-        <FlatList
-          data={bestRate ? [{ ...bestRate, aggregator: { id: 'auto', name: 'Auto' } }, ...allRates] : allRates}
-          keyExtractor={(item): string => (item as any).aggregator.id}
+      value:  !manuallySelected ? `Auto • ${(selectedRate.quote as MarkrQuote).aggregator.name}` : `${(selectedRate.quote as MarkrQuote).aggregator.name}`, 
+      accordion: <FlatList
+          data={[{ ...bestRate, quote: { ...bestRate.quote, aggregator: { id: 'auto', name: 'Auto' } } }, ...quotes.quotes]}
+          keyExtractor={(item): string => ((item as NormalizedSwapQuote).quote as MarkrQuote).aggregator.id}
           renderItem={item => renderItem(item.item, item.index)}
           scrollEnabled={false}
         />
-      ) : undefined
     })
 
     return items
-  }, [allRates, selectedRate, renderItem, bestRate])
+  }, [quotes, renderItem])
 
   return (
     <ScrollScreen

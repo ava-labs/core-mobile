@@ -5,6 +5,7 @@ import { JsonRpcBatchInternal } from '@avalabs/core-wallets-sdk'
 import type WAVAX_ABI from '../../../contracts/ABI_WAVAX.json'
 import type WETH_ABI from '../../../contracts/ABI_WETH.json'
 import { TransactionParams } from '@avalabs/evm-module'
+import { MarkrQuote } from './services/MarkrService'
 
 export enum SwapType {
   EVM = 'EVM',
@@ -28,21 +29,6 @@ export type EvmUnwrapQuote = {
   amount: string
 }
 
-export type MarkrQuote = {
-  uuid: string;
-  aggregator?: {
-    id: string;
-    name: string;
-  };
-  tokenIn?: string;
-  tokenInDecimals?: number;
-  amountIn?: string;
-  tokenOut?: string;
-  tokenOutDecimals?: number;
-  amountOut?: string;
-  done?: boolean;
-}
-
 export type MarkrTransaction = {
   to: string;
   value: string;
@@ -51,13 +37,19 @@ export type MarkrTransaction = {
 
 export type EvmSwapQuote = OptimalRate | EvmWrapQuote | EvmUnwrapQuote | MarkrQuote
 
+export type NormalizedSwapQuote = {
+  quote: EvmSwapQuote
+  metadata: Record<string, unknown>
+}
+
+export type NormalizedSwapQuoteResult = {
+  provider: string
+  quotes: NormalizedSwapQuote[]
+  selected: NormalizedSwapQuote
+}
+
 // TODO: add solana swap quote
 export type SwapQuote = EvmSwapQuote
-
-export type SwapQuoteUpdate = {
-  allQuotes: MarkrQuote[]
-  bestQuote: MarkrQuote
-}
 
 export function isEvmWrapQuote(quote: SwapQuote): quote is EvmWrapQuote {
   return 'operation' in quote && quote.operation === EvmSwapOperation.WRAP
@@ -99,7 +91,7 @@ export type GetQuoteParams = {
   destination: SwapSide
   network: Network
   slippage: number
-  onUpdate?: (update: SwapQuoteUpdate) => void
+  onUpdate?: (update: NormalizedSwapQuoteResult) => void
 }
 
 export type SwapParams = {
@@ -109,6 +101,7 @@ export type SwapParams = {
   isFromTokenNative: boolean
   toTokenAddress: string
   isToTokenNative: boolean
+  swapProvider: string
   quote: EvmSwapQuote
   slippage: number
 }
@@ -127,7 +120,7 @@ export type PerformSwapParams = {
   isSrcTokenNative?: boolean
   destTokenAddress: string | undefined
   isDestTokenNative?: boolean
-  quote: MarkrQuote | OptimalRate | undefined
+  quote: MarkrQuote | OptimalRate | EvmWrapQuote | EvmUnwrapQuote | undefined
   slippage: number
   network: Network
   provider: JsonRpcBatchInternal
@@ -140,6 +133,7 @@ export type PerformSwapParams = {
 }
 
 export interface SwapProvider {
-  getQuote: (params: GetQuoteParams, abortSignal: AbortSignal) => Promise<EvmSwapQuote | undefined>
+  name: string
+  getQuote: (params: GetQuoteParams, abortSignal?: AbortSignal) => Promise<NormalizedSwapQuoteResult | undefined>
   swap: (params: PerformSwapParams) => Promise<string>
 }

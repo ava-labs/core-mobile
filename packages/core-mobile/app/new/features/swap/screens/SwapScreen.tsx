@@ -49,7 +49,6 @@ import {
   SwapType
 } from '../types'
 import { calculateRate as calculateEvmRate } from '../utils/evm/calculateRate'
-import { selectIsSwapUseMarkrBlocked } from 'store/posthog'
 
 export const SwapScreen = (): JSX.Element => {
   const { theme } = useTheme()
@@ -72,9 +71,7 @@ export const SwapScreen = (): JSX.Element => {
     toToken,
     setToToken,
     destination,
-    quote,
-    selectedQuote,
-    bestQuote,
+    quotes,
     isFetchingQuote,
     swapType,
     setSwapType,
@@ -93,8 +90,6 @@ export const SwapScreen = (): JSX.Element => {
   const tokensWithZeroBalance = useSelector(
     selectTokensWithZeroBalanceByNetwork(cChainNetwork?.chainId)
   )
-  const isSwapUseMarkrBlocked = useSelector(selectIsSwapUseMarkrBlocked)
-
   const [isInputFocused, setIsInputFocused] = useState<boolean>(false)
   const swapButtonBackgroundColor = useMemo(
     () => getButtonBackgroundColor('secondary', theme, false),
@@ -105,7 +100,7 @@ export const SwapScreen = (): JSX.Element => {
     [localError, swapError]
   )
   const canSwap: boolean =
-    !localError && !swapError && !!fromToken && !!toToken && (isSwapUseMarkrBlocked ? !!quote : (!!selectedQuote || !!bestQuote))
+    !localError && !swapError && !!fromToken && !!toToken && !!quotes
 
   const swapInProcess = swapStatus === 'Swapping'
 
@@ -157,21 +152,28 @@ export const SwapScreen = (): JSX.Element => {
       return
     }
 
-    const quoteToUse = quote || selectedQuote;
-    if (quoteToUse) {
-      if (isParaswapQuote(quoteToUse)) {
-        if (quoteToUse.side === SwapSide.SELL) {
-          setToTokenValue(BigInt(quoteToUse.destAmount))
+    if (!quotes || !quotes.selected) {
+      return
+    }
+
+    const selectedQuote = quotes.selected;
+    const quote = selectedQuote.quote;
+    const destAmount = selectedQuote.metadata.amountOut as string;
+    const swapProvider = quotes.provider;
+    if (quote) {
+      if (isParaswapQuote(quote) && swapProvider === 'paraswap') {
+        if (quote.side === SwapSide.SELL) {
+          setToTokenValue(BigInt(destAmount))
         } else {
-          setFromTokenValue(BigInt(quoteToUse.srcAmount))
+          setFromTokenValue(BigInt(quote.srcAmount)) // todo: add srcAmount to the metadata
         }
-      } else if (isEvmWrapQuote(quoteToUse) || isEvmUnwrapQuote(quoteToUse)) {
-        setToTokenValue(BigInt(quoteToUse.amount))
-      } else if (isMarkrQuote(quoteToUse)) {
-        setToTokenValue(BigInt(quoteToUse.amountOut!))
+      } else if (isMarkrQuote(quote) && swapProvider === 'markr') {
+        setToTokenValue(BigInt(destAmount))
+      } else if (isEvmWrapQuote(quote) || isEvmUnwrapQuote(quote)) {
+        setToTokenValue(BigInt(destAmount))
       }
     }
-  }, [quote, selectedQuote, fromTokenValue])
+  }, [quotes, fromTokenValue])
 
   const calculateMax = useCallback(() => {
     if (!fromToken) return
@@ -244,8 +246,8 @@ export const SwapScreen = (): JSX.Element => {
   ])
 
   const showFeesAndSlippage = useMemo(() => {
-    return (quote && isParaswapQuote(quote)) || (selectedQuote && isMarkrQuote(selectedQuote))
-  }, [quote, selectedQuote])
+    return (quotes && ["markr", "paraswap"].includes(quotes.provider))
+  }, [quotes])
 
   const handleSwap = useCallback(() => {
     AnalyticsService.capture('SwapReviewOrder', {
@@ -405,20 +407,24 @@ export const SwapScreen = (): JSX.Element => {
 
   const rate = useMemo(() => {
     // eslint-disable-next-line sonarjs/no-collapsible-if
-    const quoteToUse = quote || selectedQuote;
+    const quoteToUse = quotes?.selected;
     if (quoteToUse) {
       if (swapType === SwapType.EVM) {
-        return calculateEvmRate(quoteToUse)
+        return calculateEvmRate(quoteToUse.quote)
       }
     }
 
     return 0
-  }, [quote, selectedQuote, swapType])
+  }, [quotes, swapType])
 
   const data = useMemo(() => {
     const items: GroupListItem[] = []
 
-    const haveMultipleQuotes = !isSwapUseMarkrBlocked && bestQuote !== undefined;
+    if (!quotes || quotes.quotes.length === 0) {
+      return items
+    }
+
+    const haveMultipleQuotes = quotes.quotes.length > 1;
     if (fromToken && toToken && rate) {
       if (haveMultipleQuotes) {
       items.push({
@@ -457,6 +463,7 @@ export const SwapScreen = (): JSX.Element => {
     fromToken,
     toToken,
     rate,
+    quotes,
     errorMessage,
     showFeesAndSlippage,
     slippage,

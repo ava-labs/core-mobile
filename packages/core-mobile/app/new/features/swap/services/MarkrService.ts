@@ -1,5 +1,5 @@
 import { Network } from "@avalabs/core-chains-sdk";
-import { MarkrQuote, MarkrTransaction, SwapQuoteUpdate } from "../types";
+import { MarkrTransaction } from "../types";
 import { fetch as expoFetch } from 'expo/fetch';
 import { MARKR_EVM_PARTNER_ID } from "../consts";
 import { Account } from "store/account";
@@ -30,6 +30,21 @@ import { z } from "zod";
  * so we will be able to use it directly in the future.
  */
 
+export type MarkrQuote = {
+    uuid: string;
+    aggregator: {
+      id: string;
+      name: string;
+    };
+    tokenIn: string;
+    tokenInDecimals: number;
+    amountIn: string;
+    tokenOut: string;
+    tokenOutDecimals: number;
+    amountOut: string;
+    done?: boolean;
+  }
+
 const ORCHESTRATOR_URL = 'https://orchestrator.markr.io';
 const DATA_PREFIX = 'data:';
 const NEWLINE = '\n';
@@ -49,8 +64,17 @@ const isBetterQuote = (current: MarkrQuote, best: MarkrQuote | null): boolean =>
     return BigInt(current.amountOut) > BigInt(best.amountOut ?? '0') || !!current.done;
 };
 
+// Helper function to sort quotes by amountOut in descending order
+const sortQuotesByAmountOut = (quotes: MarkrQuote[]): MarkrQuote[] => {
+    return [...quotes].sort((a, b) => {
+        const amountA = BigInt(a.amountOut || '0');
+        const amountB = BigInt(b.amountOut || '0');
+        return amountB > amountA ? 1 : amountB < amountA ? -1 : 0;
+    });
+};
+
 const processEvent = (eventBuffer: string, best: MarkrQuote | null, allQuotes: MarkrQuote[],
-    onUpdate: (update: SwapQuoteUpdate) => void): { best: MarkrQuote | null; allQuotes: MarkrQuote[] } => {
+    onUpdate: (update: MarkrQuote[]) => void): { best: MarkrQuote | null; allQuotes: MarkrQuote[] } => {
     if (!eventBuffer.startsWith(DATA_PREFIX)) return { best, allQuotes };
 
     const data = parseReceivedData(eventBuffer);
@@ -60,11 +84,11 @@ const processEvent = (eventBuffer: string, best: MarkrQuote | null, allQuotes: M
     const newAllQuotes = [...allQuotes, data];
 
     if (isBetterQuote(data, best)) {
-        onUpdate({ allQuotes: newAllQuotes, bestQuote: data });
+        onUpdate(sortQuotesByAmountOut(newAllQuotes));
         return { best: data, allQuotes: newAllQuotes };
     } else {
         // Still update with all quotes even if it's not the best
-        onUpdate({ allQuotes: newAllQuotes, bestQuote: best! });
+        onUpdate(sortQuotesByAmountOut(newAllQuotes));
         return { best, allQuotes: newAllQuotes };
     }
 };
@@ -74,7 +98,7 @@ const processStreamChunk = (
     eventBuffer: string,
     best: MarkrQuote | null,
     allQuotes: MarkrQuote[],
-    onUpdate: (update: SwapQuoteUpdate) => void
+    onUpdate: (update: MarkrQuote[]) => void
 ): { newBuffer: string; newEvent: string; newBest: MarkrQuote | null; newAllQuotes: MarkrQuote[] } => {
     const nl = buffer.indexOf(NEWLINE);
     if (nl === -1) return { newBuffer: buffer, newEvent: eventBuffer, newBest: best, newAllQuotes: allQuotes };
@@ -99,7 +123,7 @@ interface GetSwapRateStreamParams {
     network: Network,
     account: Account,
     slippage: number,
-    onUpdate: (update: SwapQuoteUpdate) => void,
+    onUpdate: (update: MarkrQuote[]) => void,
     abortSignal: AbortSignal
 }
 
@@ -159,7 +183,7 @@ class MarkrService {
         slippage,
         onUpdate,
         abortSignal
-    }: GetSwapRateStreamParams) {
+    }: GetSwapRateStreamParams): Promise<MarkrQuote[] | undefined> {
         try {
             const response = await expoFetch(`${ORCHESTRATOR_URL}/quote`, {
                 method: 'POST',
@@ -205,7 +229,7 @@ class MarkrService {
                 }
             }
 
-            return best ?? { done: true };
+            return sortQuotesByAmountOut(allQuotes) ?? undefined;
         } catch (error) {
             if (error instanceof Error && error.message.includes('FetchRequestCanceledException')) {
                 throw new Error('Aborted');

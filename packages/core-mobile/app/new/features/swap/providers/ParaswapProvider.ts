@@ -1,8 +1,9 @@
 import { TransactionParams } from '@avalabs/evm-module'
 import { 
-  EvmSwapQuote, 
   GetQuoteParams, 
   isParaswapQuote, 
+  NormalizedSwapQuote, 
+  NormalizedSwapQuoteResult, 
   PerformSwapParams, 
   SwapProvider 
 } from "../types"
@@ -26,6 +27,7 @@ import { RequestContext } from 'store/rpc/types'
 const PARTNER = 'Avalanche'
 
 export const ParaswapProvider: SwapProvider = {
+  name: "paraswap",
 
   async getQuote({
     fromTokenAddress,
@@ -36,7 +38,7 @@ export const ParaswapProvider: SwapProvider = {
     destination,
     network,
     account,
-  }: GetQuoteParams, abortSignal: AbortSignal): Promise<EvmSwapQuote> {
+  }: GetQuoteParams, abortSignal?: AbortSignal): Promise<NormalizedSwapQuoteResult> {
     if (!fromTokenAddress || !fromTokenDecimals) {
       throw new Error('No source token selected')
     }
@@ -49,7 +51,11 @@ export const ParaswapProvider: SwapProvider = {
       throw new Error('No amount')
     }
 
-    return await ParaswapService.getSwapRate({
+    if (!abortSignal) {
+        throw new Error('abortSignal is required when swap provider is enabled')
+    }
+
+    const rate = await ParaswapService.getSwapRate({
       srcToken: fromTokenAddress,
       srcDecimals: fromTokenDecimals,
       destToken: toTokenAddress,
@@ -60,6 +66,19 @@ export const ParaswapProvider: SwapProvider = {
       account: account,
       abortSignal
     })
+
+    const quote: NormalizedSwapQuote = {
+      quote: rate,
+      metadata: {
+        amountOut: rate.destAmount
+      }
+    }
+
+    return {
+      provider: this.name,
+      quotes: [quote],
+      selected: quote
+    }
   },
 
   async swap({

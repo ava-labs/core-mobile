@@ -20,13 +20,13 @@ import { Account, selectActiveAccount } from 'store/account'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { audioFeedback, Audios } from 'utils/AudioFeedback'
 import { isUserRejectedError } from 'store/rpc/providers/walletConnect/utils'
-import { isParaswapQuote, SwapQuote, SwapQuoteUpdate, SwapType } from '../types'
+import { NormalizedSwapQuoteResult, SwapType } from '../types'
 import { useEvmSwap } from '../hooks/useEvmSwap'
 import { getTokenAddress } from '../utils/getTokenAddress'
 import { LocalTokenWithBalance } from 'store/balance'
 import useCChainNetwork from 'hooks/earn/useCChainNetwork'
 import { transactionSnackbar } from 'new/common/utils/toast'
-import { useAllRates, useBestRate, useSelectedSwapRate, useSwapSelectedFromToken, useSwapSelectedToToken } from '../store'
+import { useManuallySelected, useQuotes, useSwapSelectedFromToken, useSwapSelectedToToken } from '../store'
 
 const DEFAULT_DEBOUNCE_MILLISECONDS = 300
 
@@ -40,10 +40,7 @@ interface SwapContextState {
   setToToken: Dispatch<LocalTokenWithBalance | undefined>
   swapType: SwapType | undefined
   setSwapType: Dispatch<SwapType | undefined>
-  quote: SwapQuote | undefined // legacy
-  selectedQuote: SwapQuote | undefined
-  bestQuote: SwapQuote | undefined
-  allQuotes: SwapQuote[] | undefined
+  quotes: NormalizedSwapQuoteResult | undefined
   isFetchingQuote: boolean
   swap(): void
   slippage: number
@@ -73,10 +70,8 @@ export const SwapContextProvider = ({
   const [swapStatus, setSwapStatus] = useState<SwapStatus>('Idle')
   const [amount, setAmount] = useState<bigint>()
   const [isFetchingQuote, setIsFetchingQuote] = useState(false)
-  const [quote, setQuote] = useState<SwapQuote | undefined>() // legacy
-  const [selectedQuote, setSelectedQuote] = useSelectedSwapRate()
-  const [bestQuote, setBestQuote] = useBestRate()
-  const [allQuotes, setAllQuotes] = useAllRates()
+  const [quotes, setQuotes] = useQuotes()
+  const [, setManuallySelected] = useManuallySelected()
   const [error, setError] = useState('')
   const cChainNetwork = useCChainNetwork()
   const { getQuote: getEvmQuote, swap: evmSwap } = useEvmSwap()
@@ -100,16 +95,13 @@ export const SwapContextProvider = ({
       !isValidToToken
     ) {
       setError('')
-      setQuote(undefined)
-      setSelectedQuote(undefined)
-      setBestQuote(undefined)
-      setAllQuotes(undefined)
+      setQuotes(undefined)
       return
     }
 
     try {
       setIsFetchingQuote(true)
-      let tempQuote: SwapQuote | undefined
+      let tempQuote: NormalizedSwapQuoteResult | undefined
 
       if (swapType === SwapType.EVM) {
         if (!cChainNetwork) {
@@ -128,10 +120,9 @@ export const SwapContextProvider = ({
           isToTokenNative: toToken.type === TokenType.NATIVE,
           destination,
           slippage,
-          onUpdate: (update: SwapQuoteUpdate) => {
-            setAllQuotes(update.allQuotes)
-            setBestQuote(update.bestQuote)
-            setSelectedQuote({ ...update.bestQuote, aggregator: { id: 'auto', name: 'Auto' } })
+          onUpdate: (update: NormalizedSwapQuoteResult) => {
+            setManuallySelected(false)
+            setQuotes(update)
           }
         })
       } else {
@@ -140,9 +131,8 @@ export const SwapContextProvider = ({
 
       if (tempQuote) {
         setError('')
-        if (isParaswapQuote(tempQuote)) {
-          setQuote(tempQuote)
-        }
+        setManuallySelected(false)
+        setQuotes(tempQuote)
       }
     } catch (err) {
       const errorMessage =
@@ -218,11 +208,17 @@ export const SwapContextProvider = ({
 
   // eslint-disable-next-line sonarjs/cognitive-complexity
   const swap = useCallback(() => {
-    if (!activeAccount || !fromToken || !toToken || !swapType || (!quote && !selectedQuote)) {
+    if (!activeAccount || !fromToken || !toToken || !swapType || !quotes) {
       return
     }
 
-    const quoteToUse = quote || selectedQuote
+    const quoteToUse = quotes.selected
+    if (!quoteToUse) {
+      return
+    }
+
+    const quote = quoteToUse.quote
+    const swapProvider = quotes.provider
     const fromTokenAddress = getTokenAddress(fromToken)
     const isFromTokenNative = fromToken.type === TokenType.NATIVE
     const toTokenAddress = getTokenAddress(toToken)
@@ -251,7 +247,8 @@ export const SwapContextProvider = ({
               isFromTokenNative,
               toTokenAddress,
               isToTokenNative,
-              quote: quoteToUse!,
+              swapProvider,
+              quote,
               slippage
             })
           }
@@ -279,8 +276,7 @@ export const SwapContextProvider = ({
   }, [
     activeAccount,
     swapType,
-    quote,
-    selectedQuote,
+    quotes,
     slippage,
     cChainNetwork,
     evmSwap,
@@ -305,10 +301,7 @@ export const SwapContextProvider = ({
     swapType,
     setSwapType,
     error,
-    quote,
-    selectedQuote,
-    bestQuote,
-    allQuotes,
+    quotes,
     isFetchingQuote
   }
 
