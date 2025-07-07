@@ -17,12 +17,14 @@ const WalletCard = ({
   wallet,
   isExpanded,
   searchText,
-  onToggleExpansion
+  onToggleExpansion,
+  showMoreButton = true
 }: {
   wallet: WalletDisplayData
   isExpanded: boolean
   searchText: string
   onToggleExpansion: () => void
+  showMoreButton?: boolean
 }): React.JSX.Element => {
   const {
     theme: { colors }
@@ -60,7 +62,8 @@ const WalletCard = ({
           sx={{
             flexDirection: 'row',
             alignItems: 'center',
-            justifyContent: 'space-between'
+            justifyContent: 'space-between',
+            minHeight: 48
           }}>
           <View
             sx={{
@@ -85,32 +88,34 @@ const WalletCard = ({
             </Text>
           </View>
 
-          <DropdownMenu
-            groups={[
-              {
-                key: 'wallet-actions',
-                items: getDropdownItems(wallet)
-              }
-            ]}
-            onPressAction={(event: { nativeEvent: { event: string } }) =>
-              handleDropdownSelect(event.nativeEvent.event, wallet)
-            }>
-            <TouchableOpacity
-              hitSlop={8}
-              style={{
-                minHeight: 48,
-                paddingRight: 24,
-                paddingLeft: 12,
-                justifyContent: 'center',
-                alignItems: 'center'
-              }}>
-              <Icons.Navigation.MoreHoriz
-                color={colors.$textSecondary}
-                width={20}
-                height={20}
-              />
-            </TouchableOpacity>
-          </DropdownMenu>
+          {showMoreButton && (
+            <DropdownMenu
+              groups={[
+                {
+                  key: 'wallet-actions',
+                  items: getDropdownItems(wallet)
+                }
+              ]}
+              onPressAction={(event: { nativeEvent: { event: string } }) =>
+                handleDropdownSelect(event.nativeEvent.event, wallet)
+              }>
+              <TouchableOpacity
+                hitSlop={8}
+                style={{
+                  minHeight: 48,
+                  paddingRight: 24,
+                  paddingLeft: 12,
+                  justifyContent: 'center',
+                  alignItems: 'center'
+                }}>
+                <Icons.Navigation.MoreHoriz
+                  color={colors.$textSecondary}
+                  width={20}
+                  height={20}
+                />
+              </TouchableOpacity>
+            </DropdownMenu>
+          )}
         </TouchableOpacity>
 
         {isExpanded && (

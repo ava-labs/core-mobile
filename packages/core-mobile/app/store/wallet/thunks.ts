@@ -165,7 +165,7 @@ export const removeWallet = createAsyncThunk<void, string, ThunkApi>(
       selectWallets(stateBefore)
     ).indexOf(activeWalletIdBefore)
 
-    const accountsToRemove = selectAccountsByWalletId(walletId)(stateBefore)
+    const accountsToRemove = selectAccountsByWalletId(stateBefore, walletId)
     accountsToRemove.forEach(account => {
       thunkApi.dispatch(removeAccount(account.id))
     })
@@ -184,8 +184,10 @@ export const removeWallet = createAsyncThunk<void, string, ThunkApi>(
       }
       thunkApi.dispatch(setActiveWallet(newActiveWalletId))
 
-      const accountsForWallet =
-        selectAccountsByWalletId(newActiveWalletId)(stateAfter)
+      const accountsForWallet = selectAccountsByWalletId(
+        stateAfter,
+        newActiveWalletId
+      )
       if (accountsForWallet.length > 0 && accountsForWallet[0]) {
         thunkApi.dispatch(setActiveAccountId(accountsForWallet[0].id))
       }
