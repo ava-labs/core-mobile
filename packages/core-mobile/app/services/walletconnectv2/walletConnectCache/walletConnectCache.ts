@@ -3,7 +3,9 @@ import {
   SetDeveloperModeParams,
   SessionProposalParams,
   EditContactParams,
-  AddEthereumChainParams
+  AddEthereumChainParams,
+  KeystoneSignerParams,
+  KeystoneTroubleshootingParams
 } from './types'
 
 // a simple in-memory cache (no reactivity or persistence support)
@@ -15,7 +17,11 @@ export const walletConnectCache = {
     createCache<SetDeveloperModeParams>('set developer mode'),
   editContactParams: createCache<EditContactParams>('edit contact'),
   addEthereumChainParams:
-    createCache<AddEthereumChainParams>('add ethereum chain')
+    createCache<AddEthereumChainParams>('add ethereum chain'),
+  keystoneSignerParams: createCache<KeystoneSignerParams>('keystone signer'),
+  keystoneTroubleshootingParams: createCache<KeystoneTroubleshootingParams>(
+    'keystone troubleshooting'
+  )
 }
 
 function createCache<T>(key: string): {

@@ -68,6 +68,7 @@ export const NavigationRedirect = (): null => {
       } else if (
         pathName === '/onboarding/mnemonic/confirmation' ||
         pathName === '/onboarding/seedless/confirmation' ||
+        pathName === '/onboarding/keystone/confirmation' ||
         (pathName === '/loginWithPinOrBiometry' && !isSignedIn)
       ) {
         // must call dismissAll() here

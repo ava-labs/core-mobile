@@ -12,6 +12,7 @@ import { Contact } from 'store/addressBook/types'
 import { WalletAddEthereumChainRpcRequest } from 'store/rpc/handlers/chain/wallet_addEthereumChain/wallet_addEthereumChain'
 import { Account } from 'store/account'
 import { WalletType } from 'services/wallet/types'
+import { UR } from '@ngraveio/bc-ur'
 
 export type SessionProposalParams = {
   request: WCSessionProposal
@@ -41,6 +42,18 @@ export type ApprovalParams = {
     overrideData?: string
   }) => Promise<void>
   onReject: (message?: string) => void
+}
+
+export type KeystoneSignerParams = {
+  request: UR
+  responseURTypes: string[]
+  onApprove: (cbor: Buffer) => Promise<void>
+  onReject: (message?: string) => void
+}
+
+export type KeystoneTroubleshootingParams = {
+  errorCode: number
+  retry: () => void
 }
 
 export type SetDeveloperModeParams = {

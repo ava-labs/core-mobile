@@ -20,6 +20,7 @@ import WalletFactory from 'services/wallet/WalletFactory'
 import SeedlessWallet from 'seedless/services/wallet/SeedlessWallet'
 import { transactionSnackbar } from 'common/utils/toast'
 import Logger from 'utils/Logger'
+import KeystoneService from 'hardware/services/KeystoneService'
 import {
   selectAccounts,
   setAccounts,
@@ -54,6 +55,17 @@ const initAccounts = async (
     } catch (error) {
       Logger.error(
         'Failed to fetch and save public keys for Seedless wallet',
+        error
+      )
+    }
+  }
+
+  if (activeWallet.type === WalletType.KEYSTONE) {
+    try {
+      await KeystoneService.refreshPublicKeys()
+    } catch (error) {
+      Logger.error(
+        'Failed to fetch and save public keys for Keystone wallet',
         error
       )
     }
@@ -95,7 +107,8 @@ const initAccounts = async (
     }
   } else if (
     activeWallet.type === WalletType.MNEMONIC ||
-    activeWallet.type === WalletType.PRIVATE_KEY
+    activeWallet.type === WalletType.PRIVATE_KEY ||
+    activeWallet.type === WalletType.KEYSTONE
   ) {
     accounts[acc.id] = acc
 

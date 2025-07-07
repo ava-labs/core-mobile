@@ -43,6 +43,14 @@ export default function WalletLayout(): JSX.Element {
               return modalScreensOptions
             }}
           />
+          <Stack.Screen
+            name="(modals)/keystoneSigner"
+            options={modalScreensOptions}
+          />
+          <Stack.Screen
+            name="(modals)/keystoneTroubleshooting"
+            options={modalScreensOptions}
+          />
           <Stack.Screen name="(modals)/receive" options={modalScreensOptions} />
           <Stack.Screen
             name="(modals)/notifications"
