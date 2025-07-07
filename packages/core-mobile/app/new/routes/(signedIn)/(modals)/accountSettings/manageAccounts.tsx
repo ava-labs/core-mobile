@@ -32,8 +32,8 @@ import { selectActiveWalletId, selectWallets } from 'store/wallet/slice'
 import { WalletType } from 'services/wallet/types'
 import { CoreAccountType } from '@avalabs/types'
 
-const VIRTUAL_WALLET_ID = 'private-key-accounts'
-const VIRTUAL_WALLET_NAME = 'Imported'
+const IMPORTED_ACCOUNTS_VIRTUAL_WALLET_ID = 'imported-accounts-wallet-id'
+const IMPORTED_ACCOUNTS_VIRTUAL_WALLET_NAME = 'Imported'
 
 const ManageAccountsScreen = (): React.JSX.Element => {
   const {
@@ -53,13 +53,16 @@ const ManageAccountsScreen = (): React.JSX.Element => {
 
   useMemo(() => {
     const initialExpansionState: Record<string, boolean> = {}
-    const walletIds = [...Object.keys(allWallets), VIRTUAL_WALLET_ID]
+    const walletIds = [
+      ...Object.keys(allWallets),
+      IMPORTED_ACCOUNTS_VIRTUAL_WALLET_ID
+    ]
     if (walletIds.length > 0) {
       // Expand only the active wallet by default
       walletIds.forEach(id => {
         initialExpansionState[id] =
           id === activeWalletId ||
-          (id === VIRTUAL_WALLET_ID &&
+          (id === IMPORTED_ACCOUNTS_VIRTUAL_WALLET_ID &&
             activeAccount?.type === CoreAccountType.IMPORTED)
       })
     }
@@ -96,7 +99,9 @@ const ManageAccountsScreen = (): React.JSX.Element => {
       const isPrivateKeyAccount = wallet.type === WalletType.PRIVATE_KEY
       const virtualWalletMatches =
         isPrivateKeyAccount &&
-        VIRTUAL_WALLET_NAME.toLowerCase().includes(searchText.toLowerCase())
+        IMPORTED_ACCOUNTS_VIRTUAL_WALLET_NAME.toLowerCase().includes(
+          searchText.toLowerCase()
+        )
       const walletNameMatches =
         !isPrivateKeyAccount && walletName.includes(searchText.toLowerCase())
 
@@ -308,8 +313,8 @@ const ManageAccountsScreen = (): React.JSX.Element => {
 
     // Create virtual wallet for private key accounts
     return {
-      id: VIRTUAL_WALLET_ID, // Virtual ID
-      name: VIRTUAL_WALLET_NAME,
+      id: IMPORTED_ACCOUNTS_VIRTUAL_WALLET_ID, // Virtual ID
+      name: IMPORTED_ACCOUNTS_VIRTUAL_WALLET_NAME,
       type: WalletType.PRIVATE_KEY,
       accounts: privateKeyAccountData
     }
@@ -402,7 +407,7 @@ const ManageAccountsScreen = (): React.JSX.Element => {
               isExpanded={isExpanded}
               searchText={searchText}
               onToggleExpansion={() => toggleWalletExpansion(wallet.id)}
-              showMoreButton={wallet.id !== VIRTUAL_WALLET_ID}
+              showMoreButton={wallet.id !== IMPORTED_ACCOUNTS_VIRTUAL_WALLET_ID}
             />
           )
         })
