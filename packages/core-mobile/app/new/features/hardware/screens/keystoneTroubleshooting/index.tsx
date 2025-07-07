@@ -5,9 +5,10 @@ import { walletConnectCache } from 'services/walletconnectv2/walletConnectCache/
 import { router, useNavigation, Link } from 'expo-router'
 import { ScrollScreen } from 'common/components/ScrollScreen'
 import { BackHandler } from 'react-native'
-import { View, Text, SCREEN_WIDTH, Button } from '@avalabs/k2-alpine'
+import { View, Text, SCREEN_WIDTH, Button, useTheme } from '@avalabs/k2-alpine'
 import { Space } from 'common/components/Space'
-import QRCode from 'assets/icons/qrcode.svg'
+import QRCodeLight from 'assets/icons/qrcode_light.svg'
+import QRCodeDark from 'assets/icons/qrcode_dark.svg'
 
 export const showKeystoneTroubleshooting = (
   params: KeystoneTroubleshootingParams
@@ -25,6 +26,7 @@ const KeystoneTroubleshootingScreen = ({
 }: {
   params: KeystoneTroubleshootingParams
 }): JSX.Element => {
+  const { theme } = useTheme()
   const navigation = useNavigation()
   const { retry } = params
 
@@ -86,7 +88,7 @@ const KeystoneTroubleshootingScreen = ({
           </Text>
         </View>
         <Space y={40} />
-        <QRCode />
+        {theme.isDark ? <QRCodeDark /> : <QRCodeLight />}
         <Space y={40} />
         <Button
           style={{
