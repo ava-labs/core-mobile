@@ -5,7 +5,7 @@ import {
 } from '@walletconnect/types'
 import { PeerMeta } from 'store/rpc/types'
 import { RpcError } from '@avalabs/vm-module-types'
-import { CorePrimaryAccount } from '@avalabs/types'
+import { CorePrimaryAccount } from 'store/account/types'
 import DeviceInfoService from 'services/deviceInfo/DeviceInfoService'
 
 export const CORE_MOBILE_WALLET_ID = 'c3de833a-9cb0-4274-bb52-86e402ecfcd3'
@@ -58,7 +58,7 @@ export interface WalletConnectServiceInterface {
   approveRequest(
     topic: string,
     requestId: number,
-    result: unknown
+    result: unknown,
   ): Promise<void>
 
   rejectRequest(

@@ -74,6 +74,14 @@ export const isBtcChainId = (caip2ChainId: string): boolean => {
   )
 }
 
+export const isSvmChainId = (caip2ChainId: string): boolean => {
+  return (
+    caip2ChainId === SolanaCaip2ChainId.MAINNET ||
+    caip2ChainId === SolanaCaip2ChainId.DEVNET ||
+    caip2ChainId === 'solana:4sGjMW1sUnHzSxGspuhpqLDx6wiyjNtZ'
+  )
+}
+
 export const getAvalancheCaip2ChainId = (
   chainId: number
 ): string | undefined => {
@@ -157,6 +165,10 @@ export const getSolanaChainId = (caip2ChainId: string): number | undefined => {
     return ChainId.SOLANA_DEVNET_ID
   } else if (caip2ChainId === SolanaCaip2ChainId.TESTNET) {
     return ChainId.SOLANA_TESTNET_ID
+  }
+
+  if (caip2ChainId === 'solana:4sGjMW1sUnHzSxGspuhpqLDx6wiyjNtZ') {
+    return ChainId.SOLANA_MAINNET_ID
   }
 
   return undefined

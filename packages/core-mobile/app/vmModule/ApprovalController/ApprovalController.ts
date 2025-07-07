@@ -20,6 +20,8 @@ import { Account } from 'store/account'
 import { WalletType } from 'services/wallet/types'
 import WalletService from 'services/wallet/WalletService'
 import { Curve } from 'utils/publicKeys'
+import { solanaSignMessage } from 'vmModule/handlers/solanaSignMessage'
+import { solanaSignTransaction } from 'vmModule/handlers/solanaSignTransaction'
 import { avalancheSignTransaction } from '../handlers/avalancheSignTransaction'
 import { ethSendTransaction } from '../handlers/ethSendTransaction'
 import { signMessage } from '../handlers/signMessage'
@@ -182,6 +184,34 @@ class ApprovalController implements VmModuleApprovalController {
               walletId,
               walletType,
               transactionData: signingData.data,
+              account,
+              network,
+              resolve
+            })
+            break
+          }
+          case RpcMethod.SOLANA_SIGN_MESSAGE: {
+            solanaSignMessage({
+              walletId,
+              walletType,
+              message: {
+                pubkey: signingData.account,
+                message: signingData.data
+              },
+              account,
+              network,
+              resolve
+            })
+            break
+          }
+          case RpcMethod.SOLANA_SIGN_TRANSACTION: {
+            solanaSignTransaction({
+              walletId,
+              walletType,
+              transactionData: {
+                account: account.addressSVM,
+                message: signingData.data
+              },
               account,
               network,
               resolve

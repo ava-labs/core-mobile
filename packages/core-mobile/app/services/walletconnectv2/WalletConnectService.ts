@@ -16,6 +16,7 @@ import promiseWithTimeout from 'utils/js/promiseWithTimeout'
 import { WalletConnectServiceNoop } from 'services/walletconnectv2/WalletConnectServiceNoop'
 import { getCaip2ChainId } from 'utils/caip2ChainIds'
 import { Account } from 'store/account'
+import bs58 from 'bs58'
 import {
   CLIENT_METADATA,
   WalletConnectCallbacks,
@@ -73,8 +74,70 @@ class WalletConnectService implements WalletConnectServiceInterface {
 
     this.client.on('session_request', requestEvent => {
       const requestSession = this.getSession(requestEvent.topic)
-      requestSession &&
+
+      console.log(requestEvent, 'HIT REQUEST EVENT')
+      if (requestSession) {
+        // Transform Solana method parameters from object to array format
+        if (requestEvent.params.request.method === 'solana_signMessage') {
+          const params = requestEvent.params.request.params
+          if (
+            params &&
+            typeof params === 'object' &&
+            'message' in params &&
+            'pubkey' in params
+          ) {
+            // Transform from {pubkey, message} to [{account, serializedMessage}] format with base64 encoding
+            requestEvent.params.request.params = [
+              {
+                account: params.pubkey,
+                serializedMessage: Buffer.from(
+                  bs58.decode(params.message)
+                ).toString('base64')
+              }
+            ]
+          }
+        }
+
+        // Add transformation for solana_signTransaction
+        if (requestEvent.params.request.method === 'solana_signTransaction') {
+          const params = requestEvent.params.request.params
+
+          if (
+            params &&
+            typeof params === 'object' &&
+            !Array.isArray(params) &&
+            'transaction' in params
+          ) {
+            let solanaAccount: string | undefined
+
+            // First try to get from params.pubkey (Jupiter format)
+            if ('pubkey' in params && params.pubkey) {
+              solanaAccount = params.pubkey
+            } else {
+              // Fall back to session extraction (Orca format)
+              const solanaNamespace = requestSession.namespaces?.solana
+              if (solanaNamespace && solanaNamespace.accounts.length > 0) {
+                const accountParts = solanaNamespace.accounts[0]?.split(':')
+                solanaAccount = accountParts?.[2]
+              }
+            }
+
+            if (!solanaAccount) {
+              throw new Error('No Solana account found in params or session')
+            }
+
+            // Transform to the format expected by SVM module
+            requestEvent.params.request.params = [
+              {
+                account: solanaAccount,
+                serializedTx: params.transaction
+              }
+            ]
+          }
+        }
+
         callbacks.onSessionRequest(requestEvent, requestSession.peer.metadata)
+      }
     })
 
     this.client.on('session_delete', requestEvent => {
@@ -148,7 +211,6 @@ class WalletConnectService implements WalletConnectServiceInterface {
     result: unknown
   ): Promise<void> => {
     const response = { id: requestId, result, jsonrpc: '2.0' }
-
     await this.client.respondSessionRequest({ topic, response })
   }
 
@@ -205,14 +267,20 @@ class WalletConnectService implements WalletConnectServiceInterface {
     chainId: number
     account: Account
   }): Promise<void> => {
-    const topic = session.topic
     const caip2ChainId = getCaip2ChainId(chainId)
+    const blockchainNamespace = caip2ChainId.split(
+      ':'
+    )[0] as BlockchainNamespace
 
-    const blockchainNamespace = caip2ChainId.split(':')[0]
-
-    if (!blockchainNamespace) {
-      throw new Error('invalid chain data')
+    // Early exit if the session does not support this namespace (e.g. Solana-only dApp and we are on EVM network)
+    if (!session.namespaces[blockchainNamespace]) {
+      Logger.info(
+        `Skipping WC session update for namespace '${blockchainNamespace}' – not present in session.`
+      )
+      return
     }
+
+    const topic = session.topic
 
     const addressWithCaip2ChainId = getAddressWithCaip2ChainId({
       account,
@@ -259,7 +327,10 @@ class WalletConnectService implements WalletConnectServiceInterface {
 
     // emitting events
     // but only for evm chains since neither wagmi/universal provider can handle non-evm chain events
-    if (blockchainNamespace !== BlockchainNamespace.EIP155) {
+    if (
+      blockchainNamespace !== BlockchainNamespace.EIP155 &&
+      blockchainNamespace !== BlockchainNamespace.SOLANA
+    ) {
       Logger.info(
         'skipping emitting wallet connect events since it is for a non-evm chain'
       )
