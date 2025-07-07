@@ -132,14 +132,14 @@ const ManageAccountsScreen = (): React.JSX.Element => {
     )
   }, [allWallets])
 
-  const otherWallets = useMemo(() => {
+  const primaryWallets = useMemo(() => {
     return Object.values(allWallets).filter(
       wallet => wallet.type !== WalletType.PRIVATE_KEY
     )
   }, [allWallets])
 
-  const otherWalletsDisplayData = useMemo(() => {
-    return otherWallets.map(wallet => {
+  const primaryWalletsDisplayData = useMemo(() => {
+    return primaryWallets.map(wallet => {
       const accountsForWallet = accountSearchResults.filter(
         account => account.walletId === wallet.id
       )
@@ -220,7 +220,7 @@ const ManageAccountsScreen = (): React.JSX.Element => {
       }
     })
   }, [
-    otherWallets,
+    primaryWallets,
     accountSearchResults,
     activeAccount?.id,
     colors.$textPrimary,
@@ -329,10 +329,10 @@ const ManageAccountsScreen = (): React.JSX.Element => {
   ])
 
   const walletsDisplayData: (WalletDisplayData | null)[] = useMemo(() => {
-    return [...otherWalletsDisplayData, importedWalletsDisplayData].filter(
+    return [...primaryWalletsDisplayData, importedWalletsDisplayData].filter(
       Boolean
     ) as WalletDisplayData[]
-  }, [otherWalletsDisplayData, importedWalletsDisplayData])
+  }, [primaryWalletsDisplayData, importedWalletsDisplayData])
 
   const toggleWalletExpansion = useCallback((walletId: string) => {
     setExpandedWallets(prev => ({
