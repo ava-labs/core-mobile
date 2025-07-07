@@ -43,7 +43,8 @@ const supportedMethods = [
   RpcMethod.PERSONAL_SIGN,
   RpcMethod.ETH_SIGN,
   RpcMethod.WALLET_ADD_ETHEREUM_CHAIN,
-  RpcMethod.WALLET_GET_ETHEREUM_CHAIN
+  RpcMethod.WALLET_GET_ETHEREUM_CHAIN,
+  RpcMethod.WALLET_SWITCH_ETHEREUM_CHAIN
 ]
 
 class WCSessionRequestHandler implements RpcRequestHandler<WCSessionProposal> {
@@ -300,19 +301,6 @@ class WCSessionRequestHandler implements RpcRequestHandler<WCSessionProposal> {
             : namespaceToApprove.methods
 
         const events = this.getApprovedEvents(requiredNamespaces, namespace)
-
-        if (namespace === BlockchainNamespace.EIP155) {
-          // Validate that all required methods are included
-          const requiredMethods = requiredNamespaces[namespace]?.methods || []
-          const missingMethods = requiredMethods.filter(
-            method => !methods.includes(method)
-          )
-
-          if (missingMethods.length > 0) {
-            // Add missing methods to prevent namespace conformity error
-            methods.push(...missingMethods)
-          }
-        }
 
         namespaces[namespace] = {
           chains: namespaceToApprove.chains,
