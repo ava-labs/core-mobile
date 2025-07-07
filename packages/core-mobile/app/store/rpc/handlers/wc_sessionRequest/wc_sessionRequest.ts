@@ -43,7 +43,8 @@ const supportedMethods = [
   RpcMethod.PERSONAL_SIGN,
   RpcMethod.ETH_SIGN,
   RpcMethod.WALLET_ADD_ETHEREUM_CHAIN,
-  RpcMethod.WALLET_GET_ETHEREUM_CHAIN
+  RpcMethod.WALLET_GET_ETHEREUM_CHAIN,
+  RpcMethod.WALLET_SWITCH_ETHEREUM_CHAIN
 ]
 
 class WCSessionRequestHandler implements RpcRequestHandler<WCSessionProposal> {
