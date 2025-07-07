@@ -14,6 +14,7 @@ export type Balance = {
   accountId: string | undefined
   chainId: number
   tokens: LocalTokenWithBalance[]
+  error: Error | null
 }
 
 export type Balances = { [chainId_address: string]: Balance }
