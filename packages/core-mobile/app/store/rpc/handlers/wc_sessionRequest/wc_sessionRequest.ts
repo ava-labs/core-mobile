@@ -14,6 +14,7 @@ import { getChainIdFromCaip2 } from 'utils/caip2ChainIds'
 import mergeWith from 'lodash/mergeWith'
 import isArray from 'lodash/isArray'
 import union from 'lodash/union'
+
 import { RpcMethod, CORE_EVM_METHODS } from '../../types'
 import {
   RpcRequestHandler,
@@ -44,7 +45,10 @@ const supportedMethods = [
   RpcMethod.ETH_SIGN,
   RpcMethod.WALLET_ADD_ETHEREUM_CHAIN,
   RpcMethod.WALLET_GET_ETHEREUM_CHAIN,
-  RpcMethod.WALLET_SWITCH_ETHEREUM_CHAIN
+  RpcMethod.WALLET_SWITCH_ETHEREUM_CHAIN,
+  RpcMethod.SOLANA_SIGN_MESSAGE,
+  RpcMethod.SOLANA_SIGN_TRANSACTION,
+  RpcMethod.SOLANA_SIGN_ALL_TRANSACTIONS
 ]
 
 class WCSessionRequestHandler implements RpcRequestHandler<WCSessionProposal> {
@@ -98,6 +102,8 @@ class WCSessionRequestHandler implements RpcRequestHandler<WCSessionProposal> {
     const state = listenerApi.getState()
     const activeNetwork = selectActiveNetwork(state)
     const supportedNetworks = selectAllNetworks(state)
+
+    // Original EVM chain handling...
     const chainIdsToApprove = caip2ChainIdsToApprove.map(getChainIdFromCaip2)
 
     if (chainIdsToApprove.includes(activeNetwork.chainId)) {
@@ -108,6 +114,7 @@ class WCSessionRequestHandler implements RpcRequestHandler<WCSessionProposal> {
     const enabledNetworksChainIds = selectEnabledNetworks(state).map(
       network => network.chainId
     )
+
     const supportedChainIds = [
       ...enabledNetworksChainIds,
       ...Object.values(supportedNetworks)
@@ -238,6 +245,7 @@ class WCSessionRequestHandler implements RpcRequestHandler<WCSessionProposal> {
       const chainsToApprove = Object.values(namespaces).flatMap(
         namespace => namespace.chains ?? []
       )
+
       if (chainsToApprove.length === 0) {
         throw new Error('Networks not specified')
       }

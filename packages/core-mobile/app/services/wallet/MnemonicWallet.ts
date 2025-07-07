@@ -5,7 +5,8 @@ import {
   DerivationPath,
   JsonRpcBatchInternal,
   getWalletFromMnemonic,
-  SolanaSigner
+  SolanaSigner,
+  SolanaProvider
 } from '@avalabs/core-wallets-sdk'
 import { now } from 'moment'
 import {
@@ -39,7 +40,6 @@ import slip10 from 'micro-key-producer/slip10.js'
 import { mnemonicToSeed, mnemonicToSeedSync } from 'bip39'
 import { fromSeed } from 'bip32'
 import { hex } from '@scure/base'
-import { SolanaProvider } from '@avalabs/core-wallets-sdk'
 import ModuleManager from 'vmModule/ModuleManager'
 import { getAddressDerivationPath } from './utils'
 
@@ -179,6 +179,7 @@ export class MnemonicWallet implements Wallet {
   }
 
   /** WALLET INTERFACE IMPLEMENTATION **/
+  // eslint-disable-next-line sonarjs/cognitive-complexity
   public async signMessage({
     rpcMethod,
     data,
@@ -187,12 +188,20 @@ export class MnemonicWallet implements Wallet {
     provider
   }: {
     rpcMethod: RpcMethod
-    data: string | TypedDataV1 | TypedData<MessageTypes>
+    data: string | Uint8Array | TypedDataV1 | TypedData<MessageTypes>
     accountIndex: number
     network: Network
-    provider: JsonRpcBatchInternal
+    provider: JsonRpcBatchInternal | Avalanche.JsonRpcProvider | SolanaProvider
   }): Promise<string> {
     switch (rpcMethod) {
+      case RpcMethod.SOLANA_SIGN_MESSAGE: {
+        if (typeof data !== 'string') {
+          throw new Error('data must be string')
+        }
+
+        const signer = this.getSvmSigner(accountIndex)
+        return await signer.signMessage(data)
+      }
       case RpcMethod.AVALANCHE_SIGN_MESSAGE: {
         const chainAlias = getChainAliasFromNetwork(network)
         if (!chainAlias) throw new Error('invalid chain alias')
@@ -202,6 +211,9 @@ export class MnemonicWallet implements Wallet {
       case RpcMethod.ETH_SIGN:
       case RpcMethod.PERSONAL_SIGN: {
         if (typeof data !== 'string') throw new Error('data must be string')
+        if (!(provider instanceof JsonRpcBatchInternal)) {
+          throw new Error('EVM signing requires JsonRpcBatchInternal provider')
+        }
 
         const key = await this.getSigningKey({
           accountIndex,
@@ -213,6 +225,9 @@ export class MnemonicWallet implements Wallet {
       case RpcMethod.SIGN_TYPED_DATA:
       case RpcMethod.SIGN_TYPED_DATA_V1: {
         if (typeof data === 'string') throw new Error('data cannot be string')
+        if (!(provider instanceof JsonRpcBatchInternal)) {
+          throw new Error('EVM signing requires JsonRpcBatchInternal provider')
+        }
 
         // instances were observed where method was eth_signTypedData or eth_signTypedData_v1,
         // however, payload was V4
@@ -225,12 +240,15 @@ export class MnemonicWallet implements Wallet {
         })
         return signTypedData({
           privateKey: key,
-          data,
+          data: data as TypedDataV1 | TypedData<MessageTypes>,
           version: isV4 ? SignTypedDataVersion.V4 : SignTypedDataVersion.V1
         })
       }
       case RpcMethod.SIGN_TYPED_DATA_V3: {
         if (!isTypedData(data)) throw new Error('invalid typed data')
+        if (!(provider instanceof JsonRpcBatchInternal)) {
+          throw new Error('EVM signing requires JsonRpcBatchInternal provider')
+        }
 
         const key = await this.getSigningKey({
           accountIndex,
@@ -239,12 +257,15 @@ export class MnemonicWallet implements Wallet {
         })
         return signTypedData({
           privateKey: key,
-          data,
+          data: data as TypedData<MessageTypes>,
           version: SignTypedDataVersion.V3
         })
       }
       case RpcMethod.SIGN_TYPED_DATA_V4: {
         if (!isTypedData(data)) throw new Error('invalid typed data')
+        if (!(provider instanceof JsonRpcBatchInternal)) {
+          throw new Error('EVM signing requires JsonRpcBatchInternal provider')
+        }
 
         const key = await this.getSigningKey({
           accountIndex,
@@ -253,7 +274,7 @@ export class MnemonicWallet implements Wallet {
         })
         return signTypedData({
           privateKey: key,
-          data,
+          data: data as TypedData<MessageTypes>,
           version: SignTypedDataVersion.V4
         })
       }
@@ -269,8 +290,14 @@ export class MnemonicWallet implements Wallet {
   }: {
     accountIndex: number
     network: Network
-    provider: JsonRpcBatchInternal
+    provider: JsonRpcBatchInternal | Avalanche.JsonRpcProvider | SolanaProvider
   }): Promise<Buffer> {
+    if (!(provider instanceof JsonRpcBatchInternal)) {
+      throw new Error(
+        'Unable to sign message: EVM signing requires JsonRpcBatchInternal provider'
+      )
+    }
+
     const signer = await this.getSigner({
       accountIndex,
       network,

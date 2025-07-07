@@ -161,7 +161,7 @@ export class PrivateKeyWallet implements Wallet {
     provider
   }: {
     rpcMethod: RpcMethod
-    data: string | TypedDataV1 | TypedData<MessageTypes>
+    data: string | Uint8Array | TypedDataV1 | TypedData<MessageTypes>
     accountIndex: number
     network: Network
     provider: JsonRpcBatchInternal
@@ -199,7 +199,7 @@ export class PrivateKeyWallet implements Wallet {
         })
         return signTypedData({
           privateKey: key,
-          data,
+          data: data as TypedDataV1 | TypedData<MessageTypes>,
           version: isV4 ? SignTypedDataVersion.V4 : SignTypedDataVersion.V1
         })
       }
@@ -213,7 +213,7 @@ export class PrivateKeyWallet implements Wallet {
         })
         return signTypedData({
           privateKey: key,
-          data,
+          data: data as TypedData<MessageTypes>,
           version: SignTypedDataVersion.V3
         })
       }
@@ -227,7 +227,7 @@ export class PrivateKeyWallet implements Wallet {
         })
         return signTypedData({
           privateKey: key,
-          data,
+          data: data as TypedData<MessageTypes>,
           version: SignTypedDataVersion.V4
         })
       }

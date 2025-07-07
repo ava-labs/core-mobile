@@ -147,7 +147,7 @@ class WalletService {
     walletId: string
     walletType: WalletType
     rpcMethod: RpcMethod
-    data: string | TypedDataV1 | TypedData<MessageTypes>
+    data: string | Uint8Array | TypedDataV1 | TypedData<MessageTypes>
     accountIndex: number
     network: Network
   }): Promise<string> {
@@ -155,7 +155,8 @@ class WalletService {
 
     if (
       !(provider instanceof JsonRpcBatchInternal) &&
-      !(provider instanceof Avalanche.JsonRpcProvider)
+      !(provider instanceof Avalanche.JsonRpcProvider) &&
+      !isSolanaProvider(provider)
     )
       throw new Error('Unable to sign message: wrong provider obtained')
 

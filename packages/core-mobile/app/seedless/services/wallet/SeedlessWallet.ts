@@ -178,7 +178,7 @@ export default class SeedlessWallet implements Wallet {
     provider
   }: {
     rpcMethod: RpcMethod
-    data: string | TypedDataV1 | TypedData<MessageTypes>
+    data: string | Uint8Array | TypedDataV1 | TypedData<MessageTypes>
     accountIndex: number
     network: Network
     provider: JsonRpcBatchInternal | Avalanche.JsonRpcProvider
@@ -210,18 +210,20 @@ export default class SeedlessWallet implements Wallet {
         return this.signEip191(addressEVM, data)
       case RpcMethod.SIGN_TYPED_DATA:
       case RpcMethod.SIGN_TYPED_DATA_V1:
-        if (!isTypedDataV1(data)) throw new Error('Invalid typed data v1')
+        if (!isTypedDataV1(data as TypedDataV1))
+          throw new Error('Invalid typed data v1')
 
-        return this.signBlob(addressEVM, typedSignatureHash(data))
+        return this.signBlob(addressEVM, typedSignatureHash(data as TypedDataV1))
       case RpcMethod.SIGN_TYPED_DATA_V3:
       case RpcMethod.SIGN_TYPED_DATA_V4: {
-        if (!isTypedData(data)) throw new Error('Invalid typed data')
+        if (!isTypedData(data as TypedData<MessageTypes>))
+          throw new Error('Invalid typed data')
 
         // Not using cs.ethers.Signer.signTypedData due to the strict type verification in Ethers
         // dApps in many cases have requests with extra unused types. In these cases ethers throws an error, rightfully.
         // However since MM supports these malformed messages, we have to as well. Otherwise Core would look broken.
         const hash = TypedDataUtils.eip712Hash(
-          data,
+          data as TypedData<MessageTypes>,
           rpcMethod === RpcMethod.SIGN_TYPED_DATA_V3
             ? SignTypedDataVersion.V3
             : SignTypedDataVersion.V4

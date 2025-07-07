@@ -11,6 +11,7 @@ import AnalyticsService from 'services/analytics/AnalyticsService'
 import { getChainIdFromCaip2 } from 'utils/caip2ChainIds'
 import { getJsonRpcErrorMessage } from 'utils/getJsonRpcErrorMessage/getJsonRpcErrorMessage'
 import { transactionSnackbar } from 'new/common/utils/toast'
+import bs58 from 'bs58'
 import { AgnosticRpcProvider, RpcMethod, RpcProvider } from '../../types'
 import { isSessionProposal, isUserRejectedError } from './utils'
 
@@ -130,8 +131,30 @@ class WalletConnectProvider implements AgnosticRpcProvider {
       const topic = request.data.topic
       const requestId = request.data.id
 
+      let transformedResult = result
+
+      if (request.method === RpcMethod.SOLANA_SIGN_MESSAGE) {
+        // VM module returns base58 signature string, WalletConnect expects {signature: string}
+        transformedResult = { signature: result as string }
+      } else if (request.method === RpcMethod.SOLANA_SIGN_TRANSACTION) {
+        // VM module returns base64 signed transaction string
+        // Extract signature and return {signature: base58}
+        try {
+          const signedTxBuffer = Buffer.from(result as string, 'base64')
+          const signature = signedTxBuffer.slice(1, 65) // Skip signature count byte
+          const signatureBase58 = bs58.encode(new Uint8Array(signature))
+          transformedResult = { signature: signatureBase58 }
+        } catch (error) {
+          transformedResult = result
+        }
+      }
+
       try {
-        await WalletConnectService.approveRequest(topic, requestId, result)
+        await WalletConnectService.approveRequest(
+          topic,
+          requestId,
+          transformedResult
+        )
       } catch (e) {
         Logger.error('Unable to approve request', e)
 
