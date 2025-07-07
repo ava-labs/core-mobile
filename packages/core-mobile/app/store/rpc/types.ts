@@ -48,6 +48,7 @@ export enum RpcMethod {
   ETH_SIGN = 'eth_sign',
   WALLET_ADD_ETHEREUM_CHAIN = 'wallet_addEthereumChain',
   WALLET_GET_ETHEREUM_CHAIN = 'wallet_getEthereumChain',
+  WALLET_SWITCH_ETHEREUM_CHAIN = 'wallet_switchEthereumChain',
 
   /* custom methods that are proprietary to Core */
   AVALANCHE_CREATE_CONTACT = 'avalanche_createContact',

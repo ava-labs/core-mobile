@@ -170,6 +170,7 @@ const onBalanceUpdateCore = async ({
         })
       }
       const networkBalances = await fetchBalanceForNetworks(networkPromises)
+
       dispatch(setBalances(networkBalances))
       dispatch(setStatus(QueryStatus.IDLE))
       span?.end()
@@ -298,17 +299,19 @@ const fetchBalanceForNetworks = async (
         dataAccurate: false,
         accountId: undefined,
         chainId: 0,
-        tokens: []
+        tokens: [],
+        error: result.reason
       }
       return acc
     }
 
-    const { accountId, chainId, tokens } = result.value
+    const { accountId, chainId, tokens, error } = result.value
     const balances = {
       dataAccurate: true,
       accountId,
       chainId,
-      tokens: [] as LocalTokenWithBalance[]
+      tokens: [] as LocalTokenWithBalance[],
+      error
     }
 
     balances.tokens = tokens.reduce((tokenBalance, token) => {
@@ -317,7 +320,8 @@ const fetchBalanceForNetworks = async (
         return {
           ...tokenBalance,
           isDataAccurate: false,
-          networkChainId: chainId
+          networkChainId: chainId,
+          error: token.error
         }
       }
       if (isPChain(chainId)) {
@@ -327,7 +331,8 @@ const fetchBalanceForNetworks = async (
             ...token,
             localId: AVAX_P_ID,
             isDataAccurate: true,
-            networkChainId: chainId
+            networkChainId: chainId,
+            error: null
           }
         ]
       }
@@ -338,7 +343,8 @@ const fetchBalanceForNetworks = async (
             ...token,
             localId: AVAX_X_ID,
             isDataAccurate: true,
-            networkChainId: chainId
+            networkChainId: chainId,
+            error: null
           }
         ]
       }
@@ -348,7 +354,8 @@ const fetchBalanceForNetworks = async (
           ...token,
           localId: getLocalTokenId(token),
           isDataAccurate: true,
-          networkChainId: chainId
+          networkChainId: chainId,
+          error: null
         }
       ]
     }, [] as LocalTokenWithBalance[])
