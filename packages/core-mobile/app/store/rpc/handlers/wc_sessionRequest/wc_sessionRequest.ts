@@ -11,6 +11,7 @@ import {
 } from 'store/network/slice'
 import { selectIsBlockaidDappScanBlocked } from 'store/posthog/slice'
 import { getChainIdFromCaip2 } from 'utils/caip2ChainIds'
+import Logger from 'utils/Logger'
 import mergeWith from 'lodash/mergeWith'
 import isArray from 'lodash/isArray'
 import union from 'lodash/union'
@@ -49,15 +50,35 @@ const supportedMethods = [
 class WCSessionRequestHandler implements RpcRequestHandler<WCSessionProposal> {
   methods = [RpcMethod.WC_SESSION_REQUEST]
 
-  private getApprovedEvmMethods = (dappUrl: string): RpcMethod[] => {
+  private getApprovedEvmMethods = (dappUrl: string): string[] => {
     const isCoreApp = isCoreDomain(dappUrl)
 
     // approve all methods that we support here to allow dApps
     // that use Wagmi to be able to send/access more rpc methods
     // by default, Wagmi only requests eth_sendTransaction and personal_sign
-    return isCoreApp
+    const baseMethods = isCoreApp
       ? [...supportedMethods, ...CORE_EVM_METHODS]
       : supportedMethods
+
+    // Ensure we include all standard EVM methods that might be requested
+    const allSupportedMethods = [
+      ...baseMethods,
+      // Add any additional methods that might be commonly requested
+      'eth_getBalance',
+      'eth_getCode',
+      'eth_getTransactionCount',
+      'eth_getTransactionReceipt',
+      'eth_call',
+      'eth_estimateGas',
+      'eth_gasPrice',
+      'eth_blockNumber',
+      'eth_getBlockByNumber',
+      'eth_getBlockByHash',
+      'eth_getLogs'
+    ]
+
+    // Remove duplicates while preserving order
+    return [...new Set(allSupportedMethods)]
   }
 
   private getApprovedEvents = (
@@ -300,6 +321,24 @@ class WCSessionRequestHandler implements RpcRequestHandler<WCSessionProposal> {
             : namespaceToApprove.methods
 
         const events = this.getApprovedEvents(requiredNamespaces, namespace)
+
+        if (namespace === BlockchainNamespace.EIP155) {
+          // Validate that all required methods are included
+          const requiredMethods = requiredNamespaces[namespace]?.methods || []
+          const missingMethods = requiredMethods.filter(
+            method => !methods.includes(method)
+          )
+
+          if (missingMethods.length > 0) {
+            Logger.warn(
+              'Missing required methods in approved namespace:',
+              missingMethods
+            )
+            // Add missing methods to prevent namespace conformity error
+            methods.push(...missingMethods)
+            Logger.info('Updated approved methods:', methods)
+          }
+        }
 
         namespaces[namespace] = {
           chains: namespaceToApprove.chains,
