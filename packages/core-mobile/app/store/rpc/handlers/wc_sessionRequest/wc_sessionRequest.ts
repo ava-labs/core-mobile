@@ -310,13 +310,8 @@ class WCSessionRequestHandler implements RpcRequestHandler<WCSessionProposal> {
           )
 
           if (missingMethods.length > 0) {
-            Logger.warn(
-              'Missing required methods in approved namespace:',
-              missingMethods
-            )
             // Add missing methods to prevent namespace conformity error
             methods.push(...missingMethods)
-            Logger.info('Updated approved methods:', methods)
           }
         }
 
