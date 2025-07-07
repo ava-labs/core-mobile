@@ -126,7 +126,7 @@ const ManageAccountsScreen = (): React.JSX.Element => {
     [dispatch]
   )
 
-  const privateKeyWallets = useMemo(() => {
+  const importedWallets = useMemo(() => {
     return Object.values(allWallets).filter(
       wallet => wallet.type === WalletType.PRIVATE_KEY
     )
@@ -229,9 +229,9 @@ const ManageAccountsScreen = (): React.JSX.Element => {
     gotoAccountDetails
   ])
 
-  const privateKeyWalletsDisplayData = useMemo(() => {
+  const importedWalletsDisplayData = useMemo(() => {
     // Get all accounts from private key wallets
-    const allPrivateKeyAccounts = privateKeyWallets.flatMap(wallet => {
+    const allPrivateKeyAccounts = importedWallets.flatMap(wallet => {
       return accountSearchResults.filter(
         account => account.walletId === wallet.id
       )
@@ -241,7 +241,7 @@ const ManageAccountsScreen = (): React.JSX.Element => {
       return null
     }
 
-    // Create virtual "Private Key Accounts" wallet if there are any private key wallets
+    // Create virtual "Private Key Accounts" wallet if there are any imported wallets
     // Only add the virtual wallet if there are matching accounts (respects search)
     const privateKeyAccountData = allPrivateKeyAccounts.map(
       (account, index) => {
@@ -319,7 +319,7 @@ const ManageAccountsScreen = (): React.JSX.Element => {
       accounts: privateKeyAccountData
     }
   }, [
-    privateKeyWallets,
+    importedWallets,
     accountSearchResults,
     activeAccount?.id,
     colors.$textPrimary,
@@ -329,10 +329,10 @@ const ManageAccountsScreen = (): React.JSX.Element => {
   ])
 
   const walletsDisplayData: (WalletDisplayData | null)[] = useMemo(() => {
-    return [...otherWalletsDisplayData, privateKeyWalletsDisplayData].filter(
+    return [...otherWalletsDisplayData, importedWalletsDisplayData].filter(
       Boolean
     ) as WalletDisplayData[]
-  }, [otherWalletsDisplayData, privateKeyWalletsDisplayData])
+  }, [otherWalletsDisplayData, importedWalletsDisplayData])
 
   const toggleWalletExpansion = useCallback((walletId: string) => {
     setExpandedWallets(prev => ({
