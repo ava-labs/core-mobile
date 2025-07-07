@@ -50,35 +50,15 @@ const supportedMethods = [
 class WCSessionRequestHandler implements RpcRequestHandler<WCSessionProposal> {
   methods = [RpcMethod.WC_SESSION_REQUEST]
 
-  private getApprovedEvmMethods = (dappUrl: string): string[] => {
+  private getApprovedEvmMethods = (dappUrl: string): RpcMethod[] => {
     const isCoreApp = isCoreDomain(dappUrl)
 
     // approve all methods that we support here to allow dApps
     // that use Wagmi to be able to send/access more rpc methods
     // by default, Wagmi only requests eth_sendTransaction and personal_sign
-    const baseMethods = isCoreApp
+    return isCoreApp
       ? [...supportedMethods, ...CORE_EVM_METHODS]
       : supportedMethods
-
-    // Ensure we include all standard EVM methods that might be requested
-    const allSupportedMethods = [
-      ...baseMethods,
-      // Add any additional methods that might be commonly requested
-      'eth_getBalance',
-      'eth_getCode',
-      'eth_getTransactionCount',
-      'eth_getTransactionReceipt',
-      'eth_call',
-      'eth_estimateGas',
-      'eth_gasPrice',
-      'eth_blockNumber',
-      'eth_getBlockByNumber',
-      'eth_getBlockByHash',
-      'eth_getLogs'
-    ]
-
-    // Remove duplicates while preserving order
-    return [...new Set(allSupportedMethods)]
   }
 
   private getApprovedEvents = (
