@@ -9,6 +9,7 @@ import {
   setActiveWallet
 } from 'store/wallet/slice'
 import { WalletType } from 'services/wallet/types'
+import { removeWallet } from 'store/wallet/thunks'
 import {
   reducerName,
   selectAccountById,
@@ -33,7 +34,7 @@ export const addAccount = createAsyncThunk<void, string, ThunkApi>(
     }
 
     const allAccountsCount = Object.keys(allAccounts).length
-    const accountsByWalletId = selectAccountsByWalletId(walletId)(state)
+    const accountsByWalletId = selectAccountsByWalletId(state, walletId)
 
     const acc = await AccountsService.createNextAccount({
       name: `Account ${allAccountsCount + 1}`,
@@ -84,11 +85,31 @@ export const removeAccountWithActiveCheck = createAsyncThunk<
       throw new Error(`Account with ID "${accountId}" not found`)
     }
 
-    const accountsInWallet = selectAccountsByWalletId(accountToRemove.walletId)(
-      state
+    const accountsInWallet = selectAccountsByWalletId(
+      state,
+      accountToRemove.walletId
     )
 
-    // Validate removal eligibility
+    if (wallet?.type === WalletType.PRIVATE_KEY) {
+      // For private key wallets, remove the wallet along with the account
+      // First, handle active account switching if needed
+      if (activeAccount?.id === accountId) {
+        // Find another account from a different wallet to set as active
+        const allAccounts = selectAccounts(state)
+        const otherAccount = Object.values(allAccounts).find(
+          acc => acc.walletId !== accountToRemove.walletId
+        )
+
+        if (otherAccount) {
+          thunkApi.dispatch(setActiveAccountId(otherAccount.id))
+        }
+      }
+
+      // Remove the entire wallet (this will also remove the account)
+      thunkApi.dispatch(removeWallet(accountToRemove.walletId))
+      return
+    }
+
     const isLastAccount =
       accountToRemove.index ===
       Math.max(...accountsInWallet.map(acc => acc.index))
