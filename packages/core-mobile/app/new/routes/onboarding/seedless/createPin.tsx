@@ -9,13 +9,26 @@ import AnalyticsService from 'services/analytics/AnalyticsService'
 import BiometricsSDK from 'utils/BiometricsSDK'
 import Logger from 'utils/Logger'
 import { uuid } from 'utils/uuid'
+import { useSelector } from 'react-redux'
+import { selectActiveWalletId } from 'store/wallet/slice'
 
 export default function CreatePin(): JSX.Element {
-  const { navigate } = useRouter()
+  const { navigate, back } = useRouter()
   const { onPinCreated } = useWallet()
   const [hasWalletName, setHasWalletName] = useState(false)
   const { isBiometricAvailable, useBiometrics, setUseBiometrics } =
     useStoredBiometrics()
+  const activeWalletId = useSelector(selectActiveWalletId)
+
+  const navigateToNextStep = useCallback(() => {
+    if (hasWalletName) {
+      // @ts-ignore TODO: make routes typesafe
+      navigate('/onboarding/seedless/selectAvatar')
+    } else {
+      // @ts-ignore TODO: make routes typesafe
+      navigate('/onboarding/seedless/setWalletName')
+    }
+  }, [navigate, hasWalletName])
 
   useEffect(() => {
     const checkHasWalletName = async (): Promise<void> => {
@@ -35,25 +48,29 @@ export default function CreatePin(): JSX.Element {
        * this allows our pin/biometric logic to work normally
        */
       onPinCreated({
+        walletId: activeWalletId ?? uuid(),
         mnemonic: uuid(),
         pin,
         walletType: WalletType.SEEDLESS
       })
         .then(() => {
           if (useBiometrics) {
-            BiometricsSDK.enableBiometry().catch(Logger.error)
-          }
-          if (hasWalletName) {
-            // @ts-ignore TODO: make routes typesafe
-            navigate('/onboarding/seedless/selectAvatar')
+            BiometricsSDK.enableBiometry()
+              .then(enabled => {
+                if (enabled) {
+                  navigateToNextStep()
+                } else {
+                  back()
+                }
+              })
+              .catch(Logger.error)
           } else {
-            // @ts-ignore TODO: make routes typesafe
-            navigate('/onboarding/seedless/setWalletName')
+            navigateToNextStep()
           }
         })
         .catch(Logger.error)
     },
-    [hasWalletName, navigate, onPinCreated, useBiometrics]
+    [onPinCreated, useBiometrics, navigateToNextStep, back, activeWalletId]
   )
 
   return (

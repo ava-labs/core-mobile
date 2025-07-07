@@ -29,12 +29,7 @@ const WalletCard = ({
   const {
     theme: { colors }
   } = useTheme()
-  const { dropdownItems, handleDropdownSelect, setActiveDropdownWalletId } =
-    useManageWallet()
-
-  const handleMorePress = useCallback(() => {
-    setActiveDropdownWalletId(wallet.id)
-  }, [setActiveDropdownWalletId, wallet.id])
+  const { getDropdownItems, handleDropdownSelect } = useManageWallet()
 
   const renderExpansionIcon = useCallback(() => {
     return (
@@ -98,15 +93,11 @@ const WalletCard = ({
               groups={[
                 {
                   key: 'wallet-actions',
-                  items: dropdownItems
+                  items: getDropdownItems(wallet)
                 }
               ]}
               onPressAction={(event: { nativeEvent: { event: string } }) =>
-                handleDropdownSelect(
-                  event.nativeEvent.event,
-                  wallet.id,
-                  wallet.name
-                )
+                handleDropdownSelect(event.nativeEvent.event, wallet)
               }>
               <TouchableOpacity
                 hitSlop={8}
@@ -116,8 +107,7 @@ const WalletCard = ({
                   paddingLeft: 12,
                   justifyContent: 'center',
                   alignItems: 'center'
-                }}
-                onPress={handleMorePress}>
+                }}>
                 <Icons.Navigation.MoreHoriz
                   color={colors.$textSecondary}
                   width={20}
