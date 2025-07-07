@@ -7,6 +7,7 @@ import {
   Logos,
   PinInput,
   PinInputActions,
+  showAlert,
   Text,
   useTheme,
   View
@@ -18,6 +19,7 @@ import { usePreventScreenRemoval } from 'common/hooks/usePreventScreenRemoval'
 import { useStoredBiometrics } from 'common/hooks/useStoredBiometrics'
 import { useFocusEffect, useRouter } from 'expo-router'
 import { useWallet } from 'hooks/useWallet'
+import * as LocalAuth from 'expo-local-authentication'
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import {
   InteractionManager,
@@ -172,9 +174,26 @@ const LoginWithPinOrBiometry = (): JSX.Element => {
     }
   }
 
-  const handlePromptBioLogin = useCallback(() => {
-    verifyBiometric().catch(Logger.error)
-  }, [verifyBiometric])
+  const handlePromptBioLogin = useCallback(async () => {
+    verifyBiometric().catch(err => {
+      if (bioType !== BiometricType.NONE) {
+        LocalAuth.isEnrolledAsync()
+          .then(isEnrolled => {
+            if (!isEnrolled) {
+              showAlert({
+                title: `Enable ${bioType} for Core`,
+                description: `${bioType} is currently disabled for Core. To use ${bioType} to log in, open the iOS Settings app and enable ${bioType} for Core.`,
+                buttons: [{ text: 'OK' }]
+              })
+            }
+            Logger.error(err)
+          })
+          .catch(Logger.error)
+      } else {
+        Logger.error(err)
+      }
+    })
+  }, [verifyBiometric, bioType])
 
   const handlePressBackground = (): void => {
     if (pinInputRef.current?.isFocused()) {
@@ -204,11 +223,14 @@ const LoginWithPinOrBiometry = (): JSX.Element => {
   useFocusEffect(
     useCallback(() => {
       InteractionManager.runAfterInteractions(() => {
+        if (!isBiometricAvailable || !useBiometrics) {
+          focusPinInput()
+          return
+        }
+
         const accessType = BiometricsSDK.getAccessType()
         if (accessType === 'BIO') {
           handlePromptBioLogin()
-        } else if (!isBiometricAvailable || !useBiometrics) {
-          focusPinInput()
         }
       })
 
