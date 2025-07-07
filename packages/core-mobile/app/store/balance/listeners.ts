@@ -311,7 +311,7 @@ const fetchBalanceForNetworks = async (
       accountId,
       chainId,
       tokens: [] as LocalTokenWithBalance[],
-      error: error as unknown
+      error
     }
 
     balances.tokens = tokens.reduce((tokenBalance, token) => {
@@ -321,7 +321,7 @@ const fetchBalanceForNetworks = async (
           ...tokenBalance,
           isDataAccurate: false,
           networkChainId: chainId,
-          error: new Error(token.error)
+          error: token.error
         }
       }
       if (isPChain(chainId)) {
