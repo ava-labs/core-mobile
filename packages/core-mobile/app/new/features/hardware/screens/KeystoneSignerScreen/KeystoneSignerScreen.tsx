@@ -161,13 +161,7 @@ const QRRenderer: FC<{
           borderRadius: 7,
           marginVertical: 36
         }}>
-        <QRCode
-          value={data}
-          ecl={'H'}
-          size={qrCodeSize}
-          color={theme.colors.$textPrimary}
-          backgroundColor={theme.colors.$surfacePrimary}
-        />
+        <QRCode value={data} ecl={'H'} size={qrCodeSize} />
       </View>
       <Text variant="body1">
         Click on the 'Get Signature' button after signing the transaction with
