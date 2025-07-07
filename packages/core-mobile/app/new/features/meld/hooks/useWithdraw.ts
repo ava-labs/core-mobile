@@ -1,7 +1,7 @@
 import { useRouter } from 'expo-router'
 import { useCallback } from 'react'
 import { useSelector } from 'react-redux'
-import { selectIsMeldIntegrationBlocked } from 'store/posthog'
+import { selectIsMeldOfframpBlocked } from 'store/posthog'
 import { useMemo } from 'react'
 import { MELD_CURRENCY_CODES, ServiceProviderCategories } from '../consts'
 import { LocalTokenWithBalance } from '../../../../store/balance/types'
@@ -23,7 +23,7 @@ export const useWithdraw = (): {
 } => {
   const { navigate } = useRouter()
   const [_meldToken, setMeldToken] = useMeldToken()
-  const isMeldIntegrationBlocked = useSelector(selectIsMeldIntegrationBlocked)
+  const isMeldIntegrationBlocked = useSelector(selectIsMeldOfframpBlocked)
   const { data: cryptoCurrencies, isLoading: isLoadingCryptoCurrencies } =
     useSearchCryptoCurrencies({
       categories: [ServiceProviderCategories.CRYPTO_OFFRAMP]
