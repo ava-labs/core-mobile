@@ -3,8 +3,10 @@ import { useRouter } from 'expo-router'
 import { CreatePin as Component } from 'features/onboarding/components/CreatePin'
 import { useWallet } from 'hooks/useWallet'
 import React, { useCallback } from 'react'
+import { useSelector } from 'react-redux'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { WalletType } from 'services/wallet/types'
+import { selectActiveWalletId } from 'store/wallet/slice'
 import BiometricsSDK from 'utils/BiometricsSDK'
 import Logger from 'utils/Logger'
 import { uuid } from 'utils/uuid'
@@ -14,11 +16,13 @@ export default function CreatePin(): JSX.Element {
   const { onPinCreated } = useWallet()
   const { isBiometricAvailable, useBiometrics, setUseBiometrics } =
     useStoredBiometrics()
+  const activeWalletId = useSelector(selectActiveWalletId)
 
   const handleEnteredValidPin = useCallback(
     (pin: string): void => {
       AnalyticsService.capture('OnboardingPasswordSet')
       onPinCreated({
+        walletId: activeWalletId ?? uuid(),
         mnemonic: uuid(),
         pin,
         walletType: WalletType.KEYSTONE
