@@ -45,10 +45,12 @@ import { useGetAllTransactions } from 'store/transaction/hooks/useGetAllTransact
 const errorIcon = require('../../../assets/icons/unamused_emoji.png')
 
 export const ActivityScreen = ({
+  searchText,
   containerStyle,
   handleExplorerLink,
   handlePendingBridge
 }: {
+  searchText: string
   handleExplorerLink: (explorerLink: string) => void
   handlePendingBridge: (transaction: BridgeTransaction | BridgeTransfer) => void
   containerStyle: ViewStyle
@@ -147,8 +149,26 @@ export const ActivityScreen = ({
   )
 
   const combinedData = useMemo(() => {
-    return [...filteredPendingBridgeTxs, ...data]
-  }, [data, filteredPendingBridgeTxs])
+    return [
+      ...filteredPendingBridgeTxs.filter(tx => {
+        return (
+          tx.sourceTxHash.toLowerCase().includes(searchText.toLowerCase()) ||
+          tx.targetTxHash?.toLowerCase().includes(searchText.toLowerCase())
+        )
+      }),
+      ...data.filter(tx => {
+        return (
+          tx.tokens[0]?.symbol
+            .toLowerCase()
+            .includes(searchText.toLowerCase()) ||
+          tx.tokens[0]?.name.toLowerCase().includes(searchText.toLowerCase()) ||
+          tx.hash.toLowerCase().includes(searchText.toLowerCase()) ||
+          tx.to.toLowerCase().includes(searchText.toLowerCase()) ||
+          tx.from.toLowerCase().includes(searchText.toLowerCase())
+        )
+      })
+    ]
+  }, [data, filteredPendingBridgeTxs, searchText])
 
   const dropdowns = useMemo(() => {
     return (

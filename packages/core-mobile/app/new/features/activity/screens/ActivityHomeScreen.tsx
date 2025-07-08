@@ -227,7 +227,6 @@ const ActivityHomeScreen = (): JSX.Element => {
               searchText={searchText}
               placeholder="Search"
               useDebounce={true}
-              useCancel
             />
           </Animated.View>
           <Animated.View
@@ -257,6 +256,7 @@ const ActivityHomeScreen = (): JSX.Element => {
         tabName: ActivityTab.Activity,
         component: (
           <ActivityScreen
+            searchText={searchText}
             handleExplorerLink={handleExplorerLink}
             handlePendingBridge={handlePendingBridge}
             containerStyle={contentContainerStyle}
@@ -264,7 +264,12 @@ const ActivityHomeScreen = (): JSX.Element => {
         )
       }
     ]
-  }, [contentContainerStyle, handleExplorerLink, handlePendingBridge])
+  }, [
+    contentContainerStyle,
+    handleExplorerLink,
+    handlePendingBridge,
+    searchText
+  ])
 
   useFocusEffect(() => {
     if (!KeyboardController.isVisible()) {
