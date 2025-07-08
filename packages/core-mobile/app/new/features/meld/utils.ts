@@ -42,6 +42,7 @@ export const dismissMeldStack = (
 ): void => {
   const dismissCount = searchParams.get('dismissCount') ?? ''
   closeInAppBrowser()
+
   // the number of dismisses is the number of meld screens to dismiss
   // there is currently at most 2 meld screens
   // TODO: when we start implementing native buy/sell, we can simply call dismissAll() and back()
