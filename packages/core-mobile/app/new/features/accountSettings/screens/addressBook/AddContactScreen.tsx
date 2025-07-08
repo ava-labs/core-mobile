@@ -92,7 +92,7 @@ export const AddContactScreen = (): React.JSX.Element => {
       renderFooter={renderFooter}
       shouldAvoidKeyboard
       disableStickyFooter
-      contentContainerStyle={{ 
+      contentContainerStyle={{
         padding: 16,
         paddingBottom: 64
       }}>
