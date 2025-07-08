@@ -88,6 +88,10 @@ export default function WalletLayout(): JSX.Element {
             options={stackModalScreensOptions}
           />
           <Stack.Screen
+            name="(modals)/activityDetail"
+            options={stackModalScreensOptions}
+          />
+          <Stack.Screen
             name="(modals)/defiDetail"
             options={stackModalScreensOptions}
           />
