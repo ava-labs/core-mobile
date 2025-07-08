@@ -16,7 +16,9 @@ import {
 import { HiddenBalanceText } from 'common/components/HiddenBalanceText'
 import { LinearGradientBottomWrapper } from 'common/components/LinearGradientBottomWrapper'
 import { useBottomTabBarHeight } from 'common/hooks/useBottomTabBarHeight'
+import { useErc20ContractTokens } from 'common/hooks/useErc20ContractTokens'
 import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
+import { useSearchableTokenList } from 'common/hooks/useSearchableTokenList'
 import { useIsAndroidWithBottomBar } from 'common/hooks/useIsAndroidWithBottomBar'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
 import { useFocusEffect, useRouter } from 'expo-router'
@@ -93,7 +95,10 @@ const PortfolioHomeScreen = (): JSX.Element => {
   const [segmentedControlLayout, setSegmentedControlLayout] = useState<
     LayoutRectangle | undefined
   >()
-
+  const erc20ContractTokens = useErc20ContractTokens()
+  const { filteredTokenList } = useSearchableTokenList({
+    tokens: erc20ContractTokens
+  })
   const selectedSegmentIndex = useSharedValue(0)
   const activeAccount = useFocusedSelector(selectActiveAccount)
   const isBalanceLoading = useFocusedSelector(selectIsLoadingBalances)
@@ -311,13 +316,15 @@ const PortfolioHomeScreen = (): JSX.Element => {
           </Animated.View>
         </View>
 
-        <ActionButtons
-          buttons={actionButtons}
-          contentContainerStyle={{
-            padding: 16,
-            paddingBottom: 10
-          }}
-        />
+        {filteredTokenList.length > 0 && (
+          <ActionButtons
+            buttons={actionButtons}
+            contentContainerStyle={{
+              padding: 16,
+              paddingBottom: 10
+            }}
+          />
+        )}
       </View>
     )
   }, [
@@ -336,6 +343,7 @@ const PortfolioHomeScreen = (): JSX.Element => {
     isPrivacyModeEnabled,
     isDeveloperMode,
     renderMaskView,
+    filteredTokenList.length,
     actionButtons
   ])
 
