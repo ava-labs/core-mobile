@@ -1,10 +1,6 @@
-import {
-  isTokenWithBalanceAVM,
-  isTokenWithBalancePVM
-} from '@avalabs/avalanche-module'
 import { BridgeTransfer } from '@avalabs/bridge-unified'
 import { BridgeTransaction } from '@avalabs/core-bridge-sdk'
-import { Network } from '@avalabs/core-chains-sdk'
+import { ChainId, Network } from '@avalabs/core-chains-sdk'
 import {
   Chip,
   Image,
@@ -85,14 +81,23 @@ export const ActivityScreen = ({
 
   const token = useMemo(() => {
     return filteredTokenList.find(
-      tk => Number(tk.localId) === Number(networkOption?.chainId)
+      tk => Number(tk.localId) === Number(network?.chainId)
+      // TODO: Fix this, is localId the same as chainId?
+      // Number(tk.localId) === Number(networkOption?.chainId)
     )
-  }, [filteredTokenList, networkOption?.chainId])
+  }, [filteredTokenList, network?.chainId])
 
   const networkDropdown = useMemo(() => {
     return {
       title: 'Network',
-      data: [networkFilters.map(f => f.filterName)],
+      data: [
+        networkFilters.map(f => {
+          if (f.chainId === ChainId.AVALANCHE_MAINNET_ID) {
+            return 'Avalanche C-Chain'
+          }
+          return f.filterName
+        })
+      ],
       selected: selectedNetwork,
       onSelected: setSelectedNetwork,
       scrollContentMaxHeight: 250
@@ -270,13 +275,12 @@ export const ActivityScreen = ({
           />
         )
       } else {
-        const isXpTx =
-          isXpTransaction(item.txType) &&
-          token &&
-          (isTokenWithBalanceAVM(token) || isTokenWithBalancePVM(token))
+        const isXpTx = isXpTransaction(item.txType)
+        // TODO: After fixing the token issue, we can remove this
+        // token &&
+        // (isTokenWithBalanceAVM(token) || isTokenWithBalancePVM(token))
 
         const props = {
-          // TODO: Fix this, why does this need to be item.item?
           tx: item,
           index,
           onPress: () => handleExplorerLink(item.explorerLink)
@@ -288,7 +292,7 @@ export const ActivityScreen = ({
         return <TokenActivityListItem {...props} key={item.hash} />
       }
     },
-    [handleExplorerLink, handlePendingBridge, token]
+    [handleExplorerLink, handlePendingBridge]
   )
 
   const renderSeparator = useCallback((): JSX.Element => {
