@@ -13,6 +13,7 @@ import SeedlessService from 'seedless/services/SeedlessService'
 import { isEvmPublicKey } from 'utils/publicKeys'
 import { recentAccountsStore } from 'new/features/accountSettings/store'
 import { selectActiveWallet, selectActiveWalletId } from 'store/wallet/slice'
+import { selectIsSolanaSupportBlocked } from 'store/posthog'
 import BiometricsSDK from 'utils/BiometricsSDK'
 import WalletFactory from 'services/wallet/WalletFactory'
 import SeedlessWallet from 'seedless/services/wallet/SeedlessWallet'
@@ -33,6 +34,7 @@ const initAccounts = async (
 ): Promise<void> => {
   const state = listenerApi.getState()
   const isDeveloperMode = selectIsDeveloperMode(state)
+  const isSolanaSupportBlocked = selectIsSolanaSupportBlocked(state)
   const activeWallet = selectActiveWallet(state)
   let accounts: AccountCollection = {}
 
@@ -86,7 +88,11 @@ const initAccounts = async (
     accounts = { ...accounts, ...addedAccounts }
 
     const entries = Object.values(accounts)
-    if (entries.some(account => !account.addressSVM)) {
+    // Only derive missing Solana keys if Solana support is enabled
+    if (
+      !isSolanaSupportBlocked &&
+      entries.some(account => !account.addressSVM)
+    ) {
       await deriveMissingSeedlessSessionKeys(activeWallet.id)
       // reload only when there are accounts without Solana addresses
       reloadAccounts(_action, listenerApi)
@@ -219,9 +225,11 @@ const migrateSolanaAddressesIfNeeded = async (
 ): Promise<void> => {
   const { getState } = listenerApi
   const state = getState()
+  const isSolanaSupportBlocked = selectIsSolanaSupportBlocked(state)
   const accounts = selectAccounts(state)
   const entries = Object.values(accounts)
-  if (entries.some(account => !account.addressSVM)) {
+  // Only migrate Solana addresses if Solana support is enabled
+  if (!isSolanaSupportBlocked && entries.some(account => !account.addressSVM)) {
     const activeWallet = selectActiveWallet(state)
     if (activeWallet?.type === WalletType.SEEDLESS) {
       await deriveMissingSeedlessSessionKeys(activeWallet.id)
