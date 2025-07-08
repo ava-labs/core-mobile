@@ -384,7 +384,6 @@ __metadata:
     react-native-big-list: 1.6.1
     react-native-bootsplash: 6.1.4
     react-native-bottom-tabs: 0.9.0
-    react-native-camera: 4.2.1
     react-native-chart-kit: 6.12.0
     react-native-circular-progress: 1.4.0
     react-native-collapsible: 1.6.2
@@ -413,7 +412,6 @@ __metadata:
     react-native-popable: 0.4.3
     react-native-popover-view: 6.1.0
     react-native-progress: 5.0.1
-    react-native-qrcode-scanner: 1.5.5
     react-native-qrcode-svg: 6.3.2
     react-native-quick-base64: 2.1.2
     react-native-quick-crypto: 0.7.11
@@ -9707,17 +9705,6 @@ __metadata:
   peerDependencies:
     react-native: ^0.0.0-0 || >=0.65 <1.0
   checksum: 7007a411f13988594a3f9b5ebb29f1554ab65ff2bd90814fa8b125fa68b69c431bdfcd38769ae2dcb6505aec2bad9296f0a0fa1ac8f123007eda49c826f2d138
-  languageName: node
-  linkType: hard
-
-"@react-native-async-storage/async-storage@npm:^1.13.4":
-  version: 1.24.0
-  resolution: "@react-native-async-storage/async-storage@npm:1.24.0"
-  dependencies:
-    merge-options: ^3.0.4
-  peerDependencies:
-    react-native: ^0.0.0-0 || >=0.60 <1.0
-  checksum: 7e56a2e97f48332f57c56ebf473b763c7ca2b1ef82f4b5f8e1c73350231ec91b8eafc4e4d1f972c4c1005da0d304816fa725dc6f07a8a7543e90f8bd16c22ab4
   languageName: node
   linkType: hard
 
@@ -26885,7 +26872,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"prop-types@npm:*, prop-types@npm:15.8.1, prop-types@npm:^15.5.10, prop-types@npm:^15.6.2, prop-types@npm:^15.7.2, prop-types@npm:^15.8.0, prop-types@npm:^15.8.1":
+"prop-types@npm:*, prop-types@npm:15.8.1, prop-types@npm:^15.5.10, prop-types@npm:^15.7.2, prop-types@npm:^15.8.0, prop-types@npm:^15.8.1":
   version: 15.8.1
   resolution: "prop-types@npm:15.8.1"
   dependencies:
@@ -27469,15 +27456,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-native-camera@npm:4.2.1":
-  version: 4.2.1
-  resolution: "react-native-camera@npm:4.2.1"
-  dependencies:
-    prop-types: ^15.6.2
-  checksum: 0e84ce657774694d1cc49395c43a8f2caabc03df36aa77aacfb5c797ad8cfe0368f4807deccc54e82ff2b193e8c2d1ce7ad504eedf7a9fc4719b38e39958a804
-  languageName: node
-  linkType: hard
-
 "react-native-chart-kit@npm:6.12.0":
   version: 6.12.0
   resolution: "react-native-chart-kit@npm:6.12.0"
@@ -27886,16 +27864,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-native-permissions@npm:^2.0.2":
-  version: 2.2.2
-  resolution: "react-native-permissions@npm:2.2.2"
-  peerDependencies:
-    react: ">=16.8.6"
-    react-native: ">=0.60.0"
-  checksum: cfc2b9d9c1e70a965faea108f546b34909cff36bc453e854ea6f129d3fa41c67d0db2fedd13d6041417276f9fd30c03b1aa44e0e20ffb883be3135a28fc94993
-  languageName: node
-  linkType: hard
-
 "react-native-popable@npm:0.4.3":
   version: 0.4.3
   resolution: "react-native-popable@npm:0.4.3"
@@ -27924,19 +27892,6 @@ __metadata:
   peerDependencies:
     react-native-svg: "*"
   checksum: fc9b68f1ca381b011859f8900c89595d62461cfa5b4faf65527639e8d8247d494cc75d5eb86e6dd393bca8dec18996b451775670d7ef2ae70247fa4079c9a8cf
-  languageName: node
-  linkType: hard
-
-"react-native-qrcode-scanner@npm:1.5.5":
-  version: 1.5.5
-  resolution: "react-native-qrcode-scanner@npm:1.5.5"
-  dependencies:
-    "@react-native-async-storage/async-storage": ^1.13.4
-    prop-types: ^15.5.10
-    react-native-permissions: ^2.0.2
-  peerDependencies:
-    react-native-camera: ">=1.0.2"
-  checksum: 135a46a3ecc424b7b3be2f0637baba0e108fda10435299a15bad44dedff100fddaae8e31ddaf7dbd86296cc363e20195e7268bf58d8d7604e6de3243311cf8c3
   languageName: node
   linkType: hard
 
