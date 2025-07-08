@@ -78,6 +78,10 @@ export default class KeystoneWallet implements Wallet {
     return this.#mfp
   }
 
+  public async signSvmTransaction(): Promise<string> {
+    throw new Error('signSvmTransaction not implemented')
+  }
+
   public async signMessage({
     rpcMethod
   }: {
@@ -364,12 +368,24 @@ export default class KeystoneWallet implements Wallet {
     return Number(accountIndex)
   }
 
-  public async getPublicKeyFor(path: string, curve: Curve): Promise<string> {
-    const publicKey = this.getPublicKey(path).toString('hex')
+  public async getPublicKeyFor({
+    derivationPath,
+    curve
+  }: {
+    derivationPath?: string
+    curve: Curve
+  }): Promise<string> {
+    if (curve === Curve.ED25519) {
+      throw new Error(`ED25519 not supported for path: ${derivationPath}`)
+    }
+    if (!derivationPath) {
+      throw new Error(`Path is required for curve: ${curve}`)
+    }
+    const publicKey = this.getPublicKey(derivationPath).toString('hex')
 
     if (!publicKey) {
       throw new Error(
-        `Public key not found for path: ${path} and curve: ${curve}`
+        `Public key not found for path: ${derivationPath} and curve: ${curve}`
       )
     }
 

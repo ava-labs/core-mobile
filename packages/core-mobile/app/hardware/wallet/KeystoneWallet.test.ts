@@ -34,17 +34,17 @@ describe('KeystoneWallet', () => {
   })
 
   it('should have returned the correct public key', async () => {
-    const evmPublicKey = await wallet.getPublicKeyFor(
-      `m/44'/60'/0'/0/1`,
-      Curve.SECP256K1
-    )
+    const evmPublicKey = await wallet.getPublicKeyFor({
+      derivationPath: `m/44'/60'/0'/0/1`,
+      curve: Curve.SECP256K1
+    })
     expect(evmPublicKey).toEqual(
       '0341f20093c553b2aa95dd57449532b85480de93a9aaa225a391dcfe8679e33f50'
     )
-    const xpPublicKey = await wallet.getPublicKeyFor(
-      `m/44'/9000'/0'/0/1`,
-      Curve.SECP256K1
-    )
+    const xpPublicKey = await wallet.getPublicKeyFor({
+      derivationPath: `m/44'/9000'/0'/0/1`,
+      curve: Curve.SECP256K1
+    })
     expect(xpPublicKey).toEqual(
       '034814b89f62338b37881a71ffe40cdd29752241560b861a7086ac711fa7a8fe79'
     )

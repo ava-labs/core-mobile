@@ -33,13 +33,6 @@ export const KeystoneQrScanner: (props: Props) => JSX.Element = ({
     if (onError) {
       onError()
     }
-    // if (onError) {
-    //   onError()
-    //   // setProgress(0)
-    //   setShowTroubleshooting(false)
-    // } else {
-    //   setShowTroubleshooting(true)
-    // }
   }, [onError])
 
   const showErrorSheet = useCallback(() => {
