@@ -1,1 +1,1 @@
-export { default } from 'features/hardware/screens/KeystoneSignerScreen/KeystoneSignerScreen'
+export { default } from 'features/hardware/screens/KeystoneSignerScreen'

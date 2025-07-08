@@ -42,34 +42,15 @@ import { rlp } from 'ethereumjs-util'
 import { KeystoneDataStorageType } from 'hardware/storage/KeystoneDataStorage'
 import { Network } from '@avalabs/core-chains-sdk'
 import { Psbt } from 'bitcoinjs-lib'
-import { requestKeystoneSigner } from 'features/hardware/screens/KeystoneSignerScreen/KeystoneSignerScreen'
 import { v4 } from 'uuid'
 import { TransactionRequest } from 'ethers'
 import { URType } from '@keystonehq/animated-qr'
 import { BigIntLike, BytesLike, AddressLike } from '@ethereumjs/util'
 import { convertTxData, makeBigIntLike } from './utils'
+import { signer } from './keystoneSigner'
 
 export const EVM_DERIVATION_PATH = `m/44'/60'/0'`
 export const AVAX_DERIVATION_PATH = `m/44'/9000'/0'`
-
-const signer = async (
-  request: UR,
-  responseURTypes: string[],
-  handleResult: (cbor: Buffer) => Promise<string>
-): Promise<string> => {
-  return new Promise<string>((resolve, reject) => {
-    requestKeystoneSigner({
-      request,
-      responseURTypes,
-      onReject: (message?: string) => {
-        reject(message ?? 'User rejected')
-      },
-      onApprove: (cbor: Buffer) => {
-        return handleResult(cbor).then(resolve).catch(reject)
-      }
-    })
-  })
-}
 
 export default class KeystoneWallet implements Wallet {
   #mfp: string

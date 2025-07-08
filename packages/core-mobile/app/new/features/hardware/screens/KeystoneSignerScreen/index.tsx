@@ -2,8 +2,7 @@ import { Button, Text, useTheme, View } from '@avalabs/k2-alpine'
 import React, { FC, useCallback, useEffect, useState } from 'react'
 import { withWalletConnectCache } from 'common/components/withWalletConnectCache'
 import { KeystoneSignerParams } from 'services/walletconnectv2/walletConnectCache/types'
-import { walletConnectCache } from 'services/walletconnectv2/walletConnectCache/walletConnectCache'
-import { router, useNavigation } from 'expo-router'
+import { useNavigation } from 'expo-router'
 import { ScrollScreen } from 'common/components/ScrollScreen'
 import { UREncoder } from '@ngraveio/bc-ur'
 import { Space } from 'common/components/Space'
@@ -12,15 +11,6 @@ import { Dimensions, BackHandler } from 'react-native'
 import { KeystoneQrScanner } from 'common/components/KeystoneQrScanner'
 import KeystoneLogoLight from 'assets/icons/keystone_logo_light.svg'
 import KeystoneLogoDark from 'assets/icons/keystone_logo_dark.svg'
-
-export const requestKeystoneSigner = (params: KeystoneSignerParams): void => {
-  walletConnectCache.keystoneSignerParams.set(params)
-
-  router.navigate({
-    // @ts-ignore
-    pathname: '/keystoneSigner'
-  })
-}
 
 enum KeystoneSignerStep {
   QR,

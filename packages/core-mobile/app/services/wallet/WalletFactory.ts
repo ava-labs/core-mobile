@@ -36,6 +36,10 @@ class WalletFactory {
       case WalletType.KEYSTONE: {
         const keystoneData = await KeystoneDataStorage.retrieve()
 
+        if (!keystoneData) {
+          throw new Error('Keystone data not available')
+        }
+
         return new KeystoneWallet(keystoneData)
       }
       case WalletType.PRIVATE_KEY: {

@@ -2,7 +2,7 @@ import React, { useState, useCallback, useEffect } from 'react'
 import { UR, URDecoder } from '@ngraveio/bc-ur'
 import * as Progress from 'react-native-progress'
 import { View, Text, SCREEN_WIDTH, useTheme } from '@avalabs/k2-alpine'
-import { showKeystoneTroubleshooting } from 'features/hardware/screens/keystoneTroubleshooting'
+import { showKeystoneTroubleshooting } from 'features/hardware/utils'
 import { QrCodeScanner } from './QrCodeScanner'
 import { Space } from './Space'
 
