@@ -20,7 +20,8 @@ export const transactionApi = createApi({
           const data = await ActivityService.getActivities({
             network,
             account,
-            nextPageToken
+            nextPageToken,
+            pageSize: 100
           })
 
           return { data }

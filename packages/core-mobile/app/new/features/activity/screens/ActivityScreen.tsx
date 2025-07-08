@@ -236,6 +236,15 @@ export const ActivityScreen = ({
       )
     }
 
+    if (searchText.length > 0) {
+      return (
+        <CollapsibleTabs.ContentWrapper
+          height={Number(containerStyle.minHeight)}>
+          <ErrorState title="No results found" description="" />
+        </CollapsibleTabs.ContentWrapper>
+      )
+    }
+
     if (isError) {
       return (
         <CollapsibleTabs.ContentWrapper
