@@ -1,47 +1,61 @@
 import React from 'react'
 import { VerifyWithPinOrBiometry } from 'common/components/VerifyWithPinOrBiometry'
 import { useLocalSearchParams, useRouter } from 'expo-router'
-import { useSelector } from 'react-redux'
-import { selectActiveNetwork } from 'store/network'
 import Logger from 'utils/Logger'
 import BiometricsSDK from 'utils/BiometricsSDK'
-import { useActiveWallet } from 'common/hooks/useActiveWallet'
 import WalletService from 'services/wallet/WalletService'
+import useCChainNetwork from 'hooks/earn/useCChainNetwork'
+import { Network } from '@avalabs/core-chains-sdk'
+import { useSelector } from 'react-redux'
+import { selectWalletById } from 'store/wallet/slice'
+import { WalletType } from 'services/wallet/types'
 
 const VerifyPinForPrivateKeyScreen = (): JSX.Element => {
   const { replace } = useRouter()
-  const { accountIndex } = useLocalSearchParams<{ accountIndex: string }>()
-  const activeNetwork = useSelector(selectActiveNetwork)
-  const activeWallet = useActiveWallet()
+  const { walletId, accountIndex } = useLocalSearchParams<{
+    walletId: string
+    accountIndex: string
+  }>()
+  const cChainNetwork = useCChainNetwork()
+  const wallet = useSelector(selectWalletById(walletId))
 
   const getPrivateKeyFromMnemonic = async (
-    mnemonic: string
+    mnemonic: string,
+    network: Network
   ): Promise<string> => {
     return WalletService.getPrivateKeyFromMnemonic(
       mnemonic,
-      activeNetwork,
+      network,
       parseInt(accountIndex)
     )
   }
 
   const handleLoginSuccess = async (): Promise<void> => {
-    const walletSecretResult = await BiometricsSDK.loadWalletSecret(
-      activeWallet.id
-    )
+    if (!wallet) {
+      Logger.error('Wallet not found for ID:', walletId)
+      return
+    }
+
+    const walletSecretResult = await BiometricsSDK.loadWalletSecret(wallet.id)
     if (!walletSecretResult.success) {
       Logger.error('Failed to load wallet secret', walletSecretResult.error)
       return
     }
     const walletSecret = walletSecretResult.value
     Logger.info('walletSecret', walletSecret)
-    if (walletSecret.startsWith('0x')) {
+    if (wallet.type === WalletType.PRIVATE_KEY) {
       replace({
         // @ts-ignore TODO: make routes typesafe
         pathname: '/accountSettings/viewPrivateKey',
         params: { privateKey: walletSecret }
       })
-    } else {
-      getPrivateKeyFromMnemonic(walletSecret)
+    } else if (wallet.type === WalletType.MNEMONIC) {
+      if (!cChainNetwork) {
+        Logger.error('CChain network is not available')
+        return
+      }
+      // Todo: support private key for x/p network later
+      getPrivateKeyFromMnemonic(walletSecret, cChainNetwork)
         .then(privateKey => {
           replace({
             // @ts-ignore TODO: make routes typesafe

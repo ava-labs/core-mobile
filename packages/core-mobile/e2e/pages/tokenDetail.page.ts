@@ -115,6 +115,10 @@ class TokenDetailsPage {
     return by.id(tokenDetail.footerStakeBtn)
   }
 
+  get tokenBreakdown() {
+    return by.text(tokenDetail.tokenBreakdown)
+  }
+
   async verifyTokenDetailScreen() {
     await Assert.isVisible(this.totalSupply)
     await Assert.isVisible(this.rank)
@@ -323,6 +327,10 @@ class TokenDetailsPage {
   async holdAndDragSparklineChart(direction: Detox.Direction = 'right') {
     await delay(2000)
     await element(this.lineGraph).swipe(direction, 'slow', 0.75, 0.2)
+  }
+
+  async verifyPXChainTokenDetail() {
+    await Action.waitForElement(this.tokenBreakdown)
   }
 }
 

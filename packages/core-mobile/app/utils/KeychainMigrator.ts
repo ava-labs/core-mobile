@@ -1,10 +1,19 @@
 import { ErrorBase } from 'errors/ErrorBase'
+import { Result } from 'types/result'
 import BiometricsSDK from './BiometricsSDK'
 import Logger from './Logger'
 import { assertNotUndefined } from './assertions'
 
 export class MigrationFailedError extends ErrorBase<'MigrationFailedError'> {}
 export class BadPinError extends ErrorBase<'BadPinError'> {}
+export class BiometricAuthError extends ErrorBase<'BiometricAuthError'> {}
+
+export enum MigrationStatus {
+  RunPinMigration = 'runPinMigration',
+  RunBiometricMigration = 'runBiometricMigration',
+  CompletePartialMigration = 'completePartialMigration',
+  NoMigrationNeeded = 'noMigrationNeeded'
+}
 
 class KeychainMigrator {
   private activeWalletId: string
@@ -16,36 +25,38 @@ class KeychainMigrator {
 
   public async getMigrationStatus(
     accessType: 'PIN' | 'BIO'
-  ): Promise<
-    | 'runPinMigration'
-    | 'runBiometricMigration'
-    | 'completePartialMigration'
-    | false
-  > {
+  ): Promise<MigrationStatus> {
     // Check for legacy wallet data with both PIN and biometrics
     const newPinKeyExists = await BiometricsSDK.hasEncryptionKeyWithPin()
-    const newBioKeyExists = await BiometricsSDK.hasEncryptionKeyWithBiometry()
     //fully migrated
     if (newPinKeyExists) {
-      return false
+      return MigrationStatus.NoMigrationNeeded
+    }
+
+    const newBioKeyExists = await BiometricsSDK.hasEncryptionKeyWithBiometry()
+    //new bio exists, but accessType is bio so no need to migrate
+    if (newBioKeyExists && accessType === 'BIO') {
+      return MigrationStatus.NoMigrationNeeded
     }
 
     // no pin key, but bio key exists
     if (newBioKeyExists) {
-      return 'completePartialMigration'
+      return MigrationStatus.CompletePartialMigration
     }
 
     //no keys exist
-    return accessType === 'PIN' ? 'runPinMigration' : 'runBiometricMigration'
+    return accessType === 'PIN'
+      ? MigrationStatus.RunPinMigration
+      : MigrationStatus.RunBiometricMigration
   }
 
   public async migrateIfNeeded(
     accessType: 'PIN' | 'BIO',
     pin?: string
-  ): Promise<void> {
+  ): Promise<Result<MigrationStatus>> {
     const migrationStatus = await this.getMigrationStatus(accessType)
-    if (migrationStatus === false) {
-      return
+    if (migrationStatus === MigrationStatus.NoMigrationNeeded) {
+      return { success: true, value: migrationStatus }
     }
 
     try {
@@ -78,10 +89,12 @@ class KeychainMigrator {
           })
         }
       }
+      return { success: true, value: migrationStatus }
     } catch (error) {
       if (
         error instanceof BadPinError ||
-        error instanceof MigrationFailedError
+        error instanceof MigrationFailedError ||
+        error instanceof BiometricAuthError
       ) {
         throw error
       }
@@ -148,7 +161,9 @@ class KeychainMigrator {
     Logger.info('Starting biometric-based keychain migration.')
     const mnemonicResult = await BiometricsSDK.loadLegacyWalletWithBiometry()
     if (!mnemonicResult.success) {
-      throw mnemonicResult.error
+      throw new BiometricAuthError({
+        message: mnemonicResult.error.message
+      })
     }
 
     const newEncryptionKey = await BiometricsSDK.generateEncryptionKey()

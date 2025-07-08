@@ -82,7 +82,7 @@ class SendPage {
     await Actions.tap(this.amountToSendInput)
   }
 
-  async getSelectTokenList() {
+  async goToSelectTokenList() {
     await Actions.tap(this.sendSelectTokenListBtn)
   }
 
@@ -107,13 +107,19 @@ class SendPage {
     await Actions.setInputText(this.amountToSendInput, amount, 0)
   }
 
-  async send(token: string, amount: string, account = sendLoc.accountTwo) {
+  async send(
+    token: string | undefined,
+    amount: string,
+    account = sendLoc.accountTwo
+  ) {
     await portfolioPage.tapSend()
     await commonElsPage.dismissTransactionOnboarding()
     await commonElsPage.typeSearchBar(account)
     await Actions.tapElementAtIndex(by.text(account), 1)
-    await this.getSelectTokenList()
-    await selectTokenPage.selectToken(token)
+    if (token) {
+      await this.goToSelectTokenList()
+      await selectTokenPage.selectToken(token)
+    }
     await commonElsPage.enterAmount(amount)
     await commonElsPage.tapNextButton()
     await commonElsPage.tapApproveButton()

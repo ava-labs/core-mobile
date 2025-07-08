@@ -12,9 +12,9 @@ import { truncateAddress } from '@avalabs/core-utils-sdk'
 import { useRouter } from 'expo-router'
 import { useImportMnemonic } from 'new/common/hooks/useImportMnemonic'
 import { useActiveWallet } from 'common/hooks/useActiveWallet'
-import KeychainMigrator from 'utils/KeychainMigrator'
-
-const MINIMUM_MNEMONIC_WORDS = 12
+import KeychainMigrator, { MigrationStatus } from 'utils/KeychainMigrator'
+import { MINIMUM_MNEMONIC_WORDS } from 'common/consts'
+import { useCheckIfAccountExists } from 'common/hooks/useCheckIfAccountExists'
 
 interface DerivedAddressItem {
   address: string
@@ -33,6 +33,8 @@ const ImportSeedWallet = (): React.JSX.Element => {
   const { isImporting, importWallet } = useImportMnemonic()
   const [isCheckingMigration, setIsCheckingMigration] = useState(false)
   const activeWallet = useActiveWallet()
+  const checkIfAccountExists = useCheckIfAccountExists()
+  const [errorMessage, setErrorMessage] = useState<string>()
 
   useEffect(() => {
     const trimmedMnemonic = mnemonic.toLowerCase().trim()
@@ -49,15 +51,26 @@ const ImportSeedWallet = (): React.JSX.Element => {
           )
           newAddresses.push({ address: wallet.address })
         }
+
+        if (checkIfAccountExists(newAddresses[0]?.address)) {
+          setErrorMessage(
+            'This recovery phrase appears to have already been imported.'
+          )
+          return
+        }
+
+        setErrorMessage(undefined)
         setDerivedAddresses(newAddresses)
       } catch (error) {
         Logger.error('Error deriving addresses:', error)
+        setErrorMessage(undefined)
         setDerivedAddresses([])
       }
     } else {
+      setErrorMessage(undefined)
       setDerivedAddresses([])
     }
-  }, [mnemonic])
+  }, [mnemonic, checkIfAccountExists])
 
   const handleImport = useCallback(async () => {
     const trimmedMnemonic = mnemonic.toLowerCase().trim()
@@ -80,19 +93,19 @@ const ImportSeedWallet = (): React.JSX.Element => {
 
     setIsCheckingMigration(true)
     const migrator = new KeychainMigrator(activeWallet.id)
-    const migrationNeeded = await migrator.getMigrationStatus('PIN')
+    const migrationStatus = await migrator.getMigrationStatus('PIN')
     setIsCheckingMigration(false)
 
-    if (migrationNeeded) {
+    if (migrationStatus !== MigrationStatus.NoMigrationNeeded) {
       router.navigate({
         // @ts-ignore TODO: make routes typesafe
         pathname: '/accountSettings/verifyPin',
         params: {
-          walletSecretToImport: mnemonic
+          walletSecretToImport: trimmedMnemonic
         }
       })
     } else {
-      await importWallet(mnemonic)
+      await importWallet(trimmedMnemonic)
     }
   }, [mnemonic, router, importWallet, activeWallet.id])
 
@@ -101,7 +114,8 @@ const ImportSeedWallet = (): React.JSX.Element => {
       !mnemonic ||
       mnemonic.trim().split(/\s+/).length < MINIMUM_MNEMONIC_WORDS ||
       isImporting ||
-      isCheckingMigration
+      isCheckingMigration ||
+      errorMessage !== undefined
 
     return (
       <View
@@ -117,7 +131,7 @@ const ImportSeedWallet = (): React.JSX.Element => {
         </Button>
       </View>
     )
-  }, [handleImport, mnemonic, isImporting, isCheckingMigration])
+  }, [handleImport, mnemonic, isImporting, isCheckingMigration, errorMessage])
 
   return (
     <ScrollScreen
@@ -132,6 +146,13 @@ const ImportSeedWallet = (): React.JSX.Element => {
           paddingTop: 16
         }}>
         <RecoveryPhraseInput onChangeText={setMnemonic} />
+        {errorMessage ? (
+          <View sx={{ alignItems: 'center', marginTop: 8 }}>
+            <Text variant="caption" sx={{ color: '$textDanger' }}>
+              {errorMessage}
+            </Text>
+          </View>
+        ) : undefined}
       </View>
       {derivedAddresses.length > 0 && (
         <View sx={{ marginTop: 24, marginBottom: 16 }}>

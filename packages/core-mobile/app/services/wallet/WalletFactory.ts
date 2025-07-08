@@ -18,7 +18,14 @@ class WalletFactory {
   }): Promise<Wallet> {
     switch (walletType) {
       case WalletType.SEEDLESS: {
-        const pubKeys = await SeedlessPubKeysStorage.retrieve()
+        let pubKeys = await SeedlessPubKeysStorage.retrieve()
+
+        if (pubKeys.length === 0) {
+          // If no public keys are available, refresh them
+          // This can happen if the app was updated from a version that stored with a different key
+          await SeedlessService.refreshPublicKeys()
+          pubKeys = await SeedlessPubKeysStorage.retrieve()
+        }
 
         if (pubKeys.length === 0) throw new Error('Public keys not available')
 

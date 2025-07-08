@@ -5,13 +5,14 @@ import {
   DerivationPath,
   JsonRpcBatchInternal,
   getWalletFromMnemonic,
-  getAddressDerivationPath
+  SolanaSigner
 } from '@avalabs/core-wallets-sdk'
 import { now } from 'moment'
 import {
   AvalancheTransactionRequest,
   BtcTransactionRequest,
-  Wallet
+  Wallet,
+  SolanaTransactionRequest
 } from 'services/wallet/types'
 import { BaseWallet, TransactionRequest } from 'ethers'
 import { Network, NetworkVMType } from '@avalabs/core-chains-sdk'
@@ -35,9 +36,12 @@ import {
 import { isTypedData } from '@avalabs/evm-module'
 import { Curve } from 'utils/publicKeys'
 import slip10 from 'micro-key-producer/slip10.js'
-import { mnemonicToSeed } from 'bip39'
+import { mnemonicToSeed, mnemonicToSeedSync } from 'bip39'
 import { fromSeed } from 'bip32'
 import { hex } from '@scure/base'
+import { SolanaProvider } from '@avalabs/core-wallets-sdk'
+import ModuleManager from 'vmModule/ModuleManager'
+import { getAddressDerivationPath } from './utils'
 
 /**
  * Type guard to assert that a wallet is a MnemonicWallet instance
@@ -90,6 +94,30 @@ export class MnemonicWallet implements Wallet {
     return wallet
   }
 
+  private getSvmSigner(accountIndex: number): SolanaSigner {
+    const start = now()
+    Logger.info('🔍 getSolanaSigner called', { accountIndex })
+
+    try {
+      const seed = mnemonicToSeedSync(this.mnemonic)
+      const node = slip10.fromMasterSeed(Uint8Array.from(seed))
+      const derivationPathResult =
+        ModuleManager.solanaModule.buildDerivationPath({
+          accountIndex,
+          derivationPathType: DerivationPath.BIP44
+        })
+
+      const path = derivationPathResult[NetworkVMType.SVM]
+      if (!path) throw new Error('Failed to get Solana derivation path')
+      const pkey = node.derive(path)
+      Logger.info('solanaWallet fromMnemonic', now() - start)
+      return new SolanaSigner(Buffer.from(pkey.privateKey))
+    } catch (error) {
+      Logger.error('🔍 Error in getSolanaSigner:', error)
+      throw error
+    }
+  }
+
   private async getAvaSigner(
     accountIndex: number,
     provider?: Avalanche.JsonRpcProvider
@@ -97,8 +125,8 @@ export class MnemonicWallet implements Wallet {
     if (provider) {
       return Avalanche.StaticSigner.fromMnemonic(
         this.mnemonic,
-        getAddressDerivationPath(accountIndex, DerivationPath.BIP44, 'AVM'),
-        getAddressDerivationPath(accountIndex, DerivationPath.BIP44, 'EVM'),
+        getAddressDerivationPath({ accountIndex, vmType: NetworkVMType.AVM }),
+        getAddressDerivationPath({ accountIndex, vmType: NetworkVMType.EVM }),
         provider
       )
     }
@@ -113,7 +141,9 @@ export class MnemonicWallet implements Wallet {
     accountIndex: number
     network: Network
     provider: JsonRpcBatchInternal | BitcoinProvider | Avalanche.JsonRpcProvider
-  }): Promise<BitcoinWallet | BaseWallet | Avalanche.SimpleSigner> {
+  }): Promise<
+    BitcoinWallet | BaseWallet | Avalanche.SimpleSigner | SolanaSigner
+  > {
     switch (network.vmName) {
       case NetworkVMType.EVM:
         return this.getEvmSigner(accountIndex)
@@ -132,6 +162,8 @@ export class MnemonicWallet implements Wallet {
           )
         }
         return (await this.getAvaSigner(accountIndex)) as Avalanche.SimpleSigner
+      case NetworkVMType.SVM:
+        return this.getSvmSigner(accountIndex)
       default:
         throw new Error('Unable to get signer: network not supported')
     }
@@ -335,10 +367,19 @@ export class MnemonicWallet implements Wallet {
     return await signer.signTransaction(transaction)
   }
 
-  public async getPublicKeyFor(
-    derivationPath: string,
+  public async getPublicKeyFor({
+    derivationPath,
+    curve
+  }: {
+    derivationPath?: string
     curve: Curve
-  ): Promise<string> {
+  }): Promise<string> {
+    if (derivationPath === undefined) {
+      throw new Error(
+        'derivationPath is required to get public key for MnemonicWallet'
+      )
+    }
+
     const seed = await mnemonicToSeed(this.mnemonic)
 
     switch (curve) {
@@ -387,5 +428,25 @@ export class MnemonicWallet implements Wallet {
       chain: chainAlias
     })
     return utils.base58check.encode(new Uint8Array(buffer))
+  }
+
+  public async signSvmTransaction({
+    accountIndex,
+    transaction,
+    network: _network,
+    provider
+  }: {
+    accountIndex: number
+    transaction: SolanaTransactionRequest
+    network: Network
+    provider: SolanaProvider
+  }): Promise<string> {
+    try {
+      const signer = this.getSvmSigner(accountIndex)
+      return await signer.signTx(transaction.serializedTx, provider)
+    } catch (error) {
+      Logger.error('🔍 Error in signSolanaTransaction:', error)
+      throw error
+    }
   }
 }

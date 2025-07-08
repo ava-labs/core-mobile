@@ -2,10 +2,13 @@ import { Avalanche } from '@avalabs/core-wallets-sdk'
 import { Network } from '@avalabs/core-chains-sdk'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
 import { cChainToken } from 'utils/units/knownTokens'
+import { DerivationPathType, NetworkVMType } from '@avalabs/vm-module-types'
+import ModuleManager from 'vmModule/ModuleManager'
 import {
   AvalancheTransactionRequest,
   BtcTransactionRequest,
-  SignTransactionRequest
+  SignTransactionRequest,
+  SolanaTransactionRequest
 } from './types'
 
 export const MAINNET_AVAX_ASSET_ID = Avalanche.MainnetContext.avaxAssetID
@@ -23,6 +26,12 @@ export const isAvalancheTransactionRequest = (
   request: SignTransactionRequest
 ): request is AvalancheTransactionRequest => {
   return 'tx' in request
+}
+
+export const isSolanaTransactionRequest = (
+  request: SignTransactionRequest
+): request is SolanaTransactionRequest => {
+  return 'serializedTx' in request
 }
 
 export const getAssetId = (avaxXPNetwork: Network): string => {
@@ -48,4 +57,49 @@ export const addBufferToCChainBaseFee = (
   return adjustedBaseFee.toSubUnit() >= minAvax.toSubUnit()
     ? adjustedBaseFee
     : minAvax
+}
+
+export const getAddressDerivationPath = ({
+  accountIndex,
+  vmType,
+  derivationPathType = 'bip44'
+}: {
+  accountIndex: number
+  vmType: Exclude<NetworkVMType, NetworkVMType.PVM | NetworkVMType.HVM>
+  derivationPathType?: DerivationPathType
+}): string => {
+  let derivationPath: string | undefined
+  switch (vmType) {
+    case NetworkVMType.AVM:
+    case NetworkVMType.CoreEth:
+      derivationPath = ModuleManager.avalancheModule.buildDerivationPath({
+        accountIndex,
+        derivationPathType
+      })[vmType]
+      break
+    case NetworkVMType.EVM:
+      derivationPath = ModuleManager.evmModule.buildDerivationPath({
+        accountIndex,
+        derivationPathType
+      })[vmType]
+      break
+    case NetworkVMType.BITCOIN:
+      derivationPath = ModuleManager.bitcoinModule.buildDerivationPath({
+        accountIndex,
+        derivationPathType
+      })[vmType]
+      break
+    case NetworkVMType.SVM:
+      derivationPath = ModuleManager.solanaModule.buildDerivationPath({
+        accountIndex,
+        derivationPathType
+      })[vmType]
+      break
+  }
+
+  if (!derivationPath) {
+    throw new Error(`Unsupported VM type: ${vmType}`)
+  }
+
+  return derivationPath
 }

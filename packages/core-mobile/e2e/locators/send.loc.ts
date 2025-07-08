@@ -8,7 +8,7 @@ export default {
   ethToken: 'ETH',
   wrappedEthToken: 'WETH',
   btcToken: 'BTC',
-  sendingAmount: '0.0001',
+  sendingAmount: '0.00001',
   myAccounts: 'My Accounts',
   nextBtn: 'next_btn',
   sendTitle: 'Send',

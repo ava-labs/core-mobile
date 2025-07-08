@@ -4,6 +4,7 @@ import { Signer as CsEthersSigner } from '@cubist-labs/cubesigner-sdk-ethers-v6'
 import {
   AvalancheTransactionRequest,
   BtcTransactionRequest,
+  SolanaTransactionRequest,
   Wallet
 } from 'services/wallet/types'
 import { strip0x } from '@avalabs/core-utils-sdk'
@@ -12,8 +13,12 @@ import {
   Avalanche,
   BitcoinProvider,
   JsonRpcBatchInternal,
+  SolanaProvider,
   createPsbt,
-  getEvmAddressFromPubKey
+  getEvmAddressFromPubKey,
+  compileSolanaTx,
+  serializeSolanaTx,
+  deserializeTransactionMessage
 } from '@avalabs/core-wallets-sdk'
 import { sha256 } from '@noble/hashes/sha256'
 import { EVM, utils } from '@avalabs/avalanchejs'
@@ -28,12 +33,16 @@ import {
   TypedData,
   TypedDataV1,
   MessageTypes,
-  RpcMethod
+  RpcMethod,
+  NetworkVMType
 } from '@avalabs/vm-module-types'
 import { isTypedData, isTypedDataV1 } from '@avalabs/evm-module'
 import { stripChainAddress } from 'store/account/utils'
-import { AddressPublicKey, Curve, isEvmPublicKey } from 'utils/publicKeys'
+import { AddressPublicKey, Curve } from 'utils/publicKeys'
 import { findPublicKey } from 'utils/publicKeys'
+import { base64 } from '@scure/base'
+import { hex } from '@scure/base'
+import { getAddressDerivationPath } from 'services/wallet/utils'
 import CoreSeedlessAPIService from '../CoreSeedlessAPIService'
 import SeedlessService from '../SeedlessService'
 import { SeedlessBtcSigner } from './SeedlessBtcSigner'
@@ -53,7 +62,10 @@ export default class SeedlessWallet implements Wallet {
   private async getMnemonicId(): Promise<string> {
     const keys = await this.#client.apiClient.sessionKeysList()
     // using the first account here since it always exists
-    const addressPublicKey = this.getAddressPublicKey(0)
+    const addressPublicKey = await this.getAddressPublicKey(
+      0,
+      NetworkVMType.EVM
+    )
 
     const activeAccountKey = keys.find(
       key => strip0x(key.public_key) === addressPublicKey
@@ -83,7 +95,7 @@ export default class SeedlessWallet implements Wallet {
   }
 
   private async getSigningKeyByTypeAndKey(
-    type: cs.Secp256k1,
+    type: cs.Secp256k1 | cs.Ed25519,
     lookupPublicKey?: string
   ): Promise<cs.KeyInfo> {
     if (!lookupPublicKey) {
@@ -233,7 +245,10 @@ export default class SeedlessWallet implements Wallet {
   }): Promise<string> {
     const btcNetwork = provider.getNetwork()
     const psbt = createPsbt(transaction.inputs, transaction.outputs, btcNetwork)
-    const addressPublicKey = this.getAddressPublicKey(accountIndex)
+    const addressPublicKey = await this.getAddressPublicKey(
+      accountIndex,
+      NetworkVMType.BITCOIN
+    )
 
     // Sign the inputs
     await Promise.all(
@@ -270,12 +285,18 @@ export default class SeedlessWallet implements Wallet {
     accountIndex: number
     transaction: AvalancheTransactionRequest
   }): Promise<string> {
-    const addressPublicKey = this.getAddressPublicKey(accountIndex)
     const isEvmTx = transaction.tx.getVM() === EVM
 
-    const key = isEvmTx
-      ? await this.getSigningKeyByTypeAndKey(cs.Secp256k1.Evm, addressPublicKey)
-      : await this.getSigningKeyByTypeAndKey(cs.Secp256k1.Ava, addressPublicKey)
+    const vmType = isEvmTx ? NetworkVMType.EVM : NetworkVMType.AVM
+    const addressPublicKey = await this.getAddressPublicKey(
+      accountIndex,
+      vmType
+    )
+
+    const key = await this.getSigningKeyByTypeAndKey(
+      isEvmTx ? cs.Secp256k1.Evm : cs.Secp256k1.Ava,
+      addressPublicKey
+    )
 
     const response = await this.#client.apiClient.signBlob(key.key_id, {
       message_base64: Buffer.from(sha256(transaction.tx.toBytes())).toString(
@@ -303,12 +324,26 @@ export default class SeedlessWallet implements Wallet {
     return signer.signTransaction(transaction)
   }
 
-  public async getPublicKeyFor(path: string, curve: Curve): Promise<string> {
-    const publicKey = this.#addressPublicKeys.find(findPublicKey(path, curve))
+  public async getPublicKeyFor({
+    derivationPath,
+    curve
+  }: {
+    derivationPath?: string
+    curve: Curve
+  }): Promise<string> {
+    if (derivationPath === undefined) {
+      throw new Error(
+        'derivationPath is required to get public key for SeedlessWallet'
+      )
+    }
+
+    const publicKey = this.#addressPublicKeys.find(
+      findPublicKey(derivationPath, curve)
+    )
 
     if (!publicKey) {
       throw new Error(
-        `Public key not found for path: ${path} and curve: ${curve}`
+        `Public key not found for path: ${derivationPath} and curve: ${curve}`
       )
     }
 
@@ -322,22 +357,17 @@ export default class SeedlessWallet implements Wallet {
     accountIndex: number
     provXP: Avalanche.JsonRpcProvider
   }): Promise<Avalanche.WalletVoid> {
-    const addressPublicKey = this.getAddressPublicKey(accountIndex)
-    const pubKeyEvm = await this.getSigningKeyByTypeAndKey(
-      cs.Secp256k1.Evm,
-      addressPublicKey
+    const addressPublicKeyEVM = await this.getAddressPublicKey(
+      accountIndex,
+      NetworkVMType.EVM
     )
-    const pubKeyXP = await this.getSigningKeyByTypeAndKey(
-      cs.Secp256k1.Ava,
-      addressPublicKey
+    const addressPublicKeyAVM = await this.getAddressPublicKey(
+      accountIndex,
+      NetworkVMType.AVM
     )
 
-    if (!pubKeyEvm || !pubKeyXP) {
-      throw new Error('No public keys found for wallet')
-    }
-
-    const pubKeyBufferC = Buffer.from(pubKeyEvm.public_key, 'hex')
-    const pubKeyBufferXP = Buffer.from(pubKeyXP.public_key, 'hex')
+    const pubKeyBufferC = Buffer.from(addressPublicKeyEVM, 'hex')
+    const pubKeyBufferXP = Buffer.from(addressPublicKeyAVM, 'hex')
 
     return Avalanche.WalletVoid.fromPublicKey(
       pubKeyBufferXP,
@@ -355,7 +385,10 @@ export default class SeedlessWallet implements Wallet {
     message: string
     provider: Avalanche.JsonRpcProvider
   }): Promise<string> => {
-    const addressPublicKey = this.getAddressPublicKey(accountIndex)
+    const addressPublicKey = await this.getAddressPublicKey(
+      accountIndex,
+      NetworkVMType.AVM
+    )
     const addressAVM = provider
       .getAddress(Buffer.from(addressPublicKey, 'hex'), 'X')
       .slice(2) //
@@ -373,7 +406,10 @@ export default class SeedlessWallet implements Wallet {
   }
 
   private async getEvmAddress(accountIndex: number): Promise<string> {
-    const addressPublicKey = this.getAddressPublicKey(accountIndex)
+    const addressPublicKey = await this.getAddressPublicKey(
+      accountIndex,
+      NetworkVMType.EVM
+    )
 
     // need to use lowercase address due to a bug in the cubist sdk
     // TODO remove toLowerCase when the bug is fixed
@@ -382,17 +418,95 @@ export default class SeedlessWallet implements Wallet {
     ).toLowerCase()
   }
 
-  private getAddressPublicKey(accountIndex: number): string {
-    const publicKeys = this.#addressPublicKeys.filter(isEvmPublicKey)
+  private async getAddressPublicKey(
+    accountIndex: number,
+    vmType: Exclude<NetworkVMType, NetworkVMType.PVM | NetworkVMType.HVM>
+  ): Promise<string> {
+    const derivationPath = getAddressDerivationPath({
+      accountIndex,
+      vmType
+    })
+    const curve = vmType === NetworkVMType.SVM ? Curve.ED25519 : Curve.SECP256K1
 
-    if (
-      accountIndex < 0 ||
-      accountIndex >= publicKeys.length ||
-      !publicKeys[accountIndex]
-    ) {
-      throw new Error('Invalid account index')
+    return await this.getPublicKeyFor({
+      derivationPath,
+      curve
+    })
+  }
+
+  public async signSvmTransaction({
+    accountIndex,
+    transaction,
+    provider
+  }: {
+    accountIndex: number
+    transaction: SolanaTransactionRequest
+    network: Network
+    provider: SolanaProvider
+  }): Promise<string> {
+    try {
+      // Get the Solana-specific public key (Ed25519)
+      const solanaPublicKey = await this.getAddressPublicKey(
+        accountIndex,
+        NetworkVMType.SVM
+      )
+
+      // Get the signing key
+      const solanaKey = await this.getSigningKeyByTypeAndKey(
+        cs.Ed25519.Solana,
+        solanaPublicKey
+      )
+
+      // Copy the exact extension implementation
+      const txMessage = await deserializeTransactionMessage(
+        transaction.serializedTx,
+        provider
+      )
+      const { signatures, messageBytes } = compileSolanaTx(txMessage)
+
+      const address = solanaKey.material_id
+
+      // Check if signature is required
+      if (!this.requiresSolanaSignature(address, signatures)) {
+        return transaction.serializedTx
+      }
+
+      // Sign using CubeSigner
+      const response = await this.#client.apiClient.signSolana(
+        solanaKey.material_id,
+        {
+          message_base64: base64.encode(Uint8Array.from(messageBytes))
+        }
+      )
+
+      const { signature: signatureHex } = response.data()
+      const signature = hex.decode(strip0x(signatureHex))
+
+      // Reconstruct the full signed transaction
+      return serializeSolanaTx({
+        messageBytes,
+        signatures: {
+          ...signatures,
+          [address]: signature
+        }
+      })
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        throw new Error(`Failed to sign Solana transaction: ${error.message}`)
+      }
+      throw new Error('Failed to sign Solana transaction: Unknown error')
+    }
+  }
+
+  private requiresSolanaSignature(
+    address: string,
+    signatures: Record<string, Uint8Array | null>
+  ): boolean {
+    if (address in signatures) {
+      // If our signature is required, check if it's already been added.
+      return !signatures[address]
     }
 
-    return publicKeys[accountIndex].key
+    return false
   }
 }

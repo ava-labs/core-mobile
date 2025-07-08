@@ -208,9 +208,10 @@ export const selectBalanceForAccountIsAccurate =
   (accountId: string) => (state: RootState) => {
     const tokens = selectTokensWithBalanceForAccount(state, accountId)
     if (tokens.length === 0) return false
-    return !Object.values(state.balance.balances).some(
-      balance => !balance.dataAccurate
-    )
+
+    return !Object.values(state.balance.balances)
+      .filter(balance => balance.accountId === accountId)
+      .some(balance => !balance.dataAccurate)
   }
 
 const _selectBalanceKeyForNetworkAndAccount = (
@@ -269,6 +270,10 @@ export const selectIsAllBalancesInaccurate =
       )
     )
   }
+
+export const selectIsAllBalancesError = (state: RootState): boolean => {
+  return Object.values(state.balance.balances).every(balance => balance.error)
+}
 
 export const selectIsBalancesAccurateByNetwork =
   (chainId?: number) =>

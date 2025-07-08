@@ -33,7 +33,6 @@ import { glacierApi } from 'utils/network/glacier'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
 import { Avalanche } from '@avalabs/core-wallets-sdk'
-import { Network } from '@avalabs/core-chains-sdk'
 import { AvaxXP } from 'types/AvaxXP'
 import {
   getTransformedTransactions,
@@ -350,13 +349,13 @@ class EarnService {
     walletId,
     walletType,
     accounts,
-    network,
+    isTestnet,
     startTimestamp
   }: {
     walletId: string
     walletType: WalletType
     accounts: AccountCollection
-    network: Network
+    isTestnet: boolean
     startTimestamp?: number
   }): Promise<
     | {
@@ -368,7 +367,6 @@ class EarnService {
       }[]
     | undefined
   > => {
-    const isDeveloperMode = Boolean(network.isTestnet)
     const accountsArray = Object.values(accounts)
 
     try {
@@ -377,7 +375,7 @@ class EarnService {
         .filter((address): address is string => address !== undefined)
       const currentNetworkTransactions = await getTransformedTransactions(
         currentNetworkAddresses,
-        isDeveloperMode,
+        isTestnet,
         startTimestamp
       )
 
@@ -388,14 +386,14 @@ class EarnService {
               walletId,
               walletType,
               accountIndex: account.index,
-              network
+              isTestnet
             })
           )
         )
       ).map(address => address.PVM)
       const oppositeNetworkTransactions = await getTransformedTransactions(
         oppositeNetworkAddresses,
-        !isDeveloperMode,
+        !isTestnet,
         startTimestamp
       )
 

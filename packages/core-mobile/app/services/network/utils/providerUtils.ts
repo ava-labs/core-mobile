@@ -14,6 +14,19 @@ import { Networks } from 'store/network/types'
 import ModuleManager from 'vmModule/ModuleManager'
 import { mapToVmNetwork } from 'vmModule/utils/mapToVmNetwork'
 import NetworkService from '../NetworkService'
+import { NETWORK_SOLANA, NETWORK_SOLANA_DEVNET } from '../consts'
+
+export function getSVMProvider(
+  network?: Network
+): ReturnType<typeof ModuleManager.solanaModule.getProvider> {
+  if (network?.vmName !== NetworkVMType.SVM) {
+    throw new Error(
+      `Cannot get svm provider for network type: ${network?.vmName}`
+    )
+  }
+
+  return ModuleManager.solanaModule.getProvider(mapToVmNetwork(network))
+}
 
 export function getBitcoinProvider(
   isTest: boolean | undefined
@@ -59,6 +72,13 @@ export function getAvalancheNetwork(
   return isTest
     ? networks[ChainId.AVALANCHE_TESTNET_ID]
     : networks[ChainId.AVALANCHE_MAINNET_ID]
+}
+
+export function getSolanaNetwork(
+  networks: Networks,
+  isTest: boolean | undefined
+): Network {
+  return isTest ? NETWORK_SOLANA_DEVNET : NETWORK_SOLANA
 }
 
 export function getBitcoinNetwork(isTest: boolean | undefined): Network {

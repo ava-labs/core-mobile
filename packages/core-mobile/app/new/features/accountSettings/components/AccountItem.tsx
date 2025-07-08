@@ -1,25 +1,25 @@
-import React, { memo, useMemo, useCallback } from 'react'
-import { Account } from 'store/account'
+import { truncateAddress } from '@avalabs/core-utils-sdk'
 import {
-  View,
-  Text,
-  Icons,
-  TouchableOpacity,
-  AnimatedPressable,
-  useTheme,
+  ActivityIndicator,
   alpha,
   AnimatedBalance,
-  ActivityIndicator,
-  Pressable
+  AnimatedPressable,
+  Icons,
+  Pressable,
+  Text,
+  TouchableOpacity,
+  useTheme,
+  View
 } from '@avalabs/k2-alpine'
-import { useSelector } from 'react-redux'
-import { getItemEnteringAnimation } from 'common/utils/animations'
-import Animated, { LinearTransition } from 'react-native-reanimated'
-import { truncateAddress } from '@avalabs/core-utils-sdk'
-import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
-import { selectIsPrivacyModeEnabled } from 'store/settings/securityPrivacy'
-import { useBalanceForAccount } from 'new/common/contexts/useBalanceForAccount'
 import { HiddenBalanceText } from 'common/components/HiddenBalanceText'
+import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
+import { getItemEnteringAnimation } from 'common/utils/animations'
+import { useBalanceForAccount } from 'new/common/contexts/useBalanceForAccount'
+import React, { memo, useCallback, useMemo } from 'react'
+import Animated, { LinearTransition } from 'react-native-reanimated'
+import { useSelector } from 'react-redux'
+import { Account } from 'store/account'
+import { selectIsPrivacyModeEnabled } from 'store/settings/securityPrivacy'
 import { ACCOUNT_CARD_SIZE } from './AcccountList'
 
 export const AccountItem = memo(
@@ -37,6 +37,7 @@ export const AccountItem = memo(
     onSelectAccount: (account: Account) => void
     gotoAccountDetails: (accountId: string) => void
     testID?: string
+    // eslint-disable-next-line sonarjs/cognitive-complexity
   }): React.JSX.Element => {
     const {
       balance: accountBalance,
@@ -54,7 +55,10 @@ export const AccountItem = memo(
       // CP-10570: Balances should never show $0.00
       return accountBalance === 0
         ? ''
-        : formatCurrency({ amount: accountBalance })
+        : `${formatCurrency({
+            amount: accountBalance,
+            notation: accountBalance < 100000 ? undefined : 'compact'
+          })}`
     }, [accountBalance, formatCurrency])
 
     const containerBackgroundColor = isActive
@@ -123,7 +127,6 @@ export const AccountItem = memo(
           shouldMask={isPrivacyModeEnabled}
           renderMaskView={renderMaskView}
           balanceSx={{ color: alpha(accountNameColor, 0.6), lineHeight: 18 }}
-          shouldAnimate={false}
         />
       )
     }, [

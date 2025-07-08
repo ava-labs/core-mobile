@@ -48,6 +48,7 @@ export enum RpcMethod {
   ETH_SIGN = 'eth_sign',
   WALLET_ADD_ETHEREUM_CHAIN = 'wallet_addEthereumChain',
   WALLET_GET_ETHEREUM_CHAIN = 'wallet_getEthereumChain',
+  WALLET_SWITCH_ETHEREUM_CHAIN = 'wallet_switchEthereumChain',
 
   /* custom methods that are proprietary to Core */
   AVALANCHE_CREATE_CONTACT = 'avalanche_createContact',
@@ -66,6 +67,9 @@ export enum RpcMethod {
   BITCOIN_SIGN_TRANSACTION = 'bitcoin_signTransaction',
   AVALANCHE_SIGN_MESSAGE = 'avalanche_signMessage',
   AVALANCHE_RENAME_ACCOUNT = 'avalanche_renameAccount',
+
+  /* Solana methods */
+  SOLANA_SIGN_AND_SEND_TRANSACTION = 'solana_signAndSendTransaction',
 
   /* custom methods that only apply to Wallet Connect*/
   WC_SESSION_REQUEST = 'wc_sessionRequest'

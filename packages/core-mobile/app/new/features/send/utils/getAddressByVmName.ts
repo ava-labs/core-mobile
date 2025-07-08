@@ -30,6 +30,17 @@ export const getAddressByVmName = ({
   }
 
   if (
+    contact.addressSVM &&
+    isValidAddressByVmName({
+      vmName,
+      address: contact.addressSVM,
+      isDeveloperMode
+    })
+  ) {
+    return contact.addressSVM
+  }
+
+  if (
     contact.addressXP &&
     isValidAddressByVmName({
       vmName,

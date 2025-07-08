@@ -86,15 +86,17 @@ export const useDeriveAddresses = (
   }, [isTestnet, privateKey, accounts])
 
   useEffect(() => {
-    if (privateKey.trim() !== '') {
+    if (privateKey !== '') {
       deriveAddresses()
-      setShowDerivedInfo(true)
     } else {
-      setShowDerivedInfo(false)
       setDerivedAddresses([])
       setTempAccountDetails(null)
     }
   }, [privateKey, deriveAddresses])
+
+  useEffect(() => {
+    setShowDerivedInfo(derivedAddresses.length > 0)
+  }, [derivedAddresses])
 
   return {
     derivedAddresses,

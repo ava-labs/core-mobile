@@ -37,7 +37,8 @@ export enum FeatureGates {
   GASLESS = 'gasless-feature',
   SWAP_FEES = 'swap-fees',
   SOLANA_SUPPORT = 'solana-support',
-  MELD_INTEGRATION = 'meld-integration'
+  MELD_ONRAMP = 'meld-onramp',
+  MELD_OFFRAMP = 'meld-offramp'
 }
 
 export enum FeatureVars {

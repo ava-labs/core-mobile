@@ -20,23 +20,25 @@ import {
 import { useHeaderMeasurements } from 'react-native-collapsible-tab-view'
 import Animated from 'react-native-reanimated'
 import { useSelector } from 'react-redux'
+import AnalyticsService from 'services/analytics/AnalyticsService'
+import { selectActiveAccount } from 'store/account'
 import {
   ASSET_MANAGE_VIEWS,
   AssetManageView,
   LocalTokenWithBalance,
+  selectIsAllBalancesError,
   selectIsAllBalancesInaccurate,
   selectIsLoadingBalances,
   selectIsRefetchingBalances
 } from 'store/balance'
 import { selectEnabledNetworks } from 'store/network'
-import { selectActiveAccount } from 'store/account'
 import errorIcon from '../../../../assets/icons/rocket.png'
 import { useAssetsFilterAndSort } from '../hooks/useAssetsFilterAndSort'
 import { TokenListItem } from './TokenListItem'
 
 interface Props {
   containerStyle: ViewStyle
-  goToTokenDetail: (localId: string, chainId: number) => void
+  goToTokenDetail: (token: LocalTokenWithBalance) => void
   goToTokenManagement: () => void
   goToBuy: () => void
   onScrollResync: () => void
@@ -51,12 +53,14 @@ const AssetsScreen: FC<Props> = ({
 }): JSX.Element => {
   const { data, filter, sort, view, refetch, isRefetching, isLoading } =
     useAssetsFilterAndSort()
+
   const activeAccount = useSelector(selectActiveAccount) //TODO: should use useActiveAccount but crashes if deleting wallet or just onboarding, race condition
   const enabledNetworks = useSelector(selectEnabledNetworks)
 
   const isAllBalancesInaccurate = useSelector(
     selectIsAllBalancesInaccurate(activeAccount?.id)
   )
+  const isAllBalancesError = useSelector(selectIsAllBalancesError)
   const isBalanceLoading = useSelector(selectIsLoadingBalances)
   const isRefetchingBalance = useSelector(selectIsRefetchingBalances)
 
@@ -67,6 +71,7 @@ const AssetsScreen: FC<Props> = ({
       const manageList =
         ASSET_MANAGE_VIEWS?.[indexPath.section]?.[indexPath.row]
       if (manageList === AssetManageView.ManageList) {
+        AnalyticsService.capture('PortfolioManageTokenListClicked')
         goToTokenManagement()
         return
       }
@@ -102,7 +107,7 @@ const AssetsScreen: FC<Props> = ({
           <TokenListItem
             token={item}
             index={index}
-            onPress={() => goToTokenDetail(item.localId, item.networkChainId)}
+            onPress={() => goToTokenDetail(item)}
             isGridView={isGridView}
           />
         </View>
@@ -116,6 +121,18 @@ const AssetsScreen: FC<Props> = ({
   }, [isGridView])
 
   const emptyComponent = useMemo(() => {
+    if (isAllBalancesError) {
+      return (
+        <ErrorState
+          description="Please hit refresh or try again later"
+          button={{
+            title: 'Refresh',
+            onPress: refetch
+          }}
+        />
+      )
+    }
+
     if (isRefetchingBalance) {
       return <LoadingState />
     }
@@ -142,7 +159,13 @@ const AssetsScreen: FC<Props> = ({
         }}
       />
     )
-  }, [isRefetchingBalance, isAllBalancesInaccurate, goToBuy, refetch])
+  }, [
+    isAllBalancesError,
+    isRefetchingBalance,
+    isAllBalancesInaccurate,
+    goToBuy,
+    refetch
+  ])
 
   const renderEmpty = useCallback(() => {
     return (

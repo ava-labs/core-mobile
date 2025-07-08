@@ -1,4 +1,4 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit'
+import { createSlice, PayloadAction, createSelector } from '@reduxjs/toolkit'
 import { RootState } from 'store/types'
 import { WalletType } from 'services/wallet/types'
 import {
@@ -47,6 +47,10 @@ const accountsSlice = createSlice({
     },
     setNonActiveAccounts: (state, action: PayloadAction<AccountCollection>) => {
       state.accounts = { ...state.accounts, ...action.payload }
+    },
+    removeAccount: (state, action: PayloadAction<string>) => {
+      const accountId = action.payload
+      delete state.accounts[accountId]
     }
   }
 })
@@ -72,7 +76,6 @@ export const selectAccountByAddress =
     })
   }
 
-//NEVEN: check if this is used anywhere
 export const selectAccountById =
   (id: string) =>
   (state: RootState): Account | undefined =>
@@ -85,13 +88,14 @@ export const selectActiveAccount = (state: RootState): Account | undefined => {
   return state.account.accounts[activeAccountId]
 }
 
-export const selectAccountsByWalletId =
-  (walletId: string) =>
-  (state: RootState): Account[] => {
-    return Object.values(state.account.accounts)
+export const selectAccountsByWalletId = createSelector(
+  [selectAccounts, (_: RootState, walletId: string) => walletId],
+  (accounts, walletId) => {
+    return Object.values(accounts)
       .filter(account => account.walletId === walletId)
       .sort((a, b) => a.index - b.index)
   }
+)
 
 export const selectAccountByIndex =
   (walletId: string, index: number) =>
@@ -112,7 +116,8 @@ export const {
   setActiveAccountId,
   setAccount,
   setAccounts,
-  setNonActiveAccounts
+  setNonActiveAccounts,
+  removeAccount
 } = accountsSlice.actions
 
 export const accountsReducer = accountsSlice.reducer

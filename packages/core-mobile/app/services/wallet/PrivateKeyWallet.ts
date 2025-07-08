@@ -3,12 +3,15 @@ import {
   BitcoinWallet,
   BitcoinProvider,
   JsonRpcBatchInternal,
-  getPublicKeyFromPrivateKey
+  getPublicKeyFromPrivateKey,
+  SolanaSigner,
+  SolanaProvider
 } from '@avalabs/core-wallets-sdk'
 import { now } from 'moment'
 import {
   AvalancheTransactionRequest,
   BtcTransactionRequest,
+  SolanaTransactionRequest,
   Wallet
 } from 'services/wallet/types'
 import { BaseWallet, TransactionRequest, Wallet as EthersWallet } from 'ethers'
@@ -30,7 +33,10 @@ import {
   RpcMethod
 } from '@avalabs/vm-module-types'
 import { isTypedData } from '@avalabs/evm-module'
+import { strip0x } from '@avalabs/core-utils-sdk/dist'
 import { Curve } from 'utils/publicKeys'
+import { ed25519 } from '@noble/curves/ed25519'
+import { hex } from '@scure/base'
 
 export class PrivateKeyWallet implements Wallet {
   #privateKey?: string
@@ -75,6 +81,10 @@ export class PrivateKeyWallet implements Wallet {
     return new Avalanche.SimpleSigner(this.privateKey, accountIndex)
   }
 
+  private async getSvmSigner(): Promise<SolanaSigner> {
+    return new SolanaSigner(Buffer.from(this.privateKey, 'hex'))
+  }
+
   private async getSigner({
     accountIndex,
     network,
@@ -83,7 +93,9 @@ export class PrivateKeyWallet implements Wallet {
     accountIndex: number
     network: Network
     provider: JsonRpcBatchInternal | BitcoinProvider | Avalanche.JsonRpcProvider
-  }): Promise<BitcoinWallet | BaseWallet | Avalanche.SimpleSigner> {
+  }): Promise<
+    BitcoinWallet | BaseWallet | Avalanche.SimpleSigner | SolanaSigner
+  > {
     switch (network.vmName) {
       case NetworkVMType.EVM:
         if (!(provider instanceof JsonRpcBatchInternal)) {
@@ -107,16 +119,33 @@ export class PrivateKeyWallet implements Wallet {
           )
         }
         return (await this.getAvaSigner(accountIndex)) as Avalanche.SimpleSigner
+      case NetworkVMType.SVM:
+        return this.getSvmSigner()
       default:
         throw new Error('Unable to get signer: network not supported')
     }
   }
 
-  public getPublicKeyFor(_path: string, _curve: Curve): Promise<string> {
-    const pubKey = getPublicKeyFromPrivateKey(
-      Buffer.from(this.privateKey, 'hex')
-    )
-    return Promise.resolve(pubKey.toString('hex'))
+  public getPublicKeyFor({ curve }: { curve: Curve }): Promise<string> {
+    const strippedPk = strip0x(this.privateKey)
+    let key: string
+
+    switch (curve) {
+      case Curve.SECP256K1: {
+        key = hex.encode(new Uint8Array(getPublicKeyFromPrivateKey(strippedPk)))
+        break
+      }
+
+      case Curve.ED25519: {
+        key = hex.encode(ed25519.getPublicKey(strippedPk))
+        break
+      }
+
+      default:
+        throw new Error('Unsupported curve: ' + curve)
+    }
+
+    return Promise.resolve(key)
   }
   public get privateKey(): string {
     assertNotUndefined(this.#privateKey, 'no private key available')
@@ -312,6 +341,20 @@ export class PrivateKeyWallet implements Wallet {
     return await signer.signTransaction(transaction)
   }
 
+  public async signSvmTransaction({
+    transaction,
+    network: _network,
+    provider
+  }: {
+    accountIndex: number
+    transaction: SolanaTransactionRequest
+    network: Network
+    provider: SolanaProvider
+  }): Promise<string> {
+    const signer = await this.getSvmSigner()
+    return signer.signTx(transaction.serializedTx, provider)
+  }
+
   public async getReadOnlyAvaSigner({
     accountIndex,
     provXP
@@ -323,6 +366,10 @@ export class PrivateKeyWallet implements Wallet {
       accountIndex,
       provXP
     )) as Avalanche.StaticSigner
+  }
+
+  public matchesPrivateKey(privateKey: string): boolean {
+    return this.privateKey.toLowerCase() === privateKey.toLowerCase()
   }
 
   private signAvalancheMessage = async (
