@@ -20,7 +20,7 @@ const AccessWalletScreen = (): JSX.Element => {
   const handleEnterKeystone = (): void => {
     navigate({
       // @ts-ignore TODO: make routes typesafe
-      pathname: '/onboarding/keystone/'
+      pathname: '/onboarding/keystone/termsAndConditions/'
     })
   }
 
