@@ -19,6 +19,7 @@ import useInAppBrowser from 'common/hooks/useInAppBrowser'
 import { SubTextNumber } from 'common/components/SubTextNumber'
 import { useSelectAmount } from '../hooks/useSelectAmount'
 import { ServiceProviderCategories } from '../consts'
+import { useOfframpSessionId } from '../store'
 
 interface SelectAmountProps {
   title: string
@@ -55,6 +56,7 @@ export const SelectAmount = ({
     errorMessage
   } = useSelectAmount({ category })
   const { openUrl } = useInAppBrowser()
+  const { setSessionId } = useOfframpSessionId()
   const { formatIntegerCurrency, formatCurrency } = useFormatCurrency()
   const selectedCurrency = useSelector(selectSelectedCurrency)
 
@@ -74,9 +76,18 @@ export const SelectAmount = ({
   }, [onSelectPaymentMethod, sourceAmount])
 
   const onNext = useCallback(async (): Promise<void> => {
+    setSessionId(undefined)
     const sessionWidget = await createSessionWidget()
+    if (
+      category === ServiceProviderCategories.CRYPTO_OFFRAMP &&
+      sessionWidget?.id
+    ) {
+      // store the session id in the store for the offramp flow
+      // this is used to fetch the transaction details from the service provider immediately
+      setSessionId(sessionWidget.id)
+    }
     sessionWidget?.widgetUrl && openUrl(sessionWidget.widgetUrl)
-  }, [createSessionWidget, openUrl])
+  }, [category, createSessionWidget, openUrl, setSessionId])
 
   const renderFooter = useCallback(() => {
     return (

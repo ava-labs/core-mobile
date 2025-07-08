@@ -40,8 +40,8 @@ export const dismissMeldStack = (
   _: typeof ACTIONS.OnrampCompleted | typeof ACTIONS.OfframpCompleted,
   searchParams: URLSearchParams
 ): void => {
-  const dismissCount = searchParams.get('dismissCount') ?? ''
   closeInAppBrowser()
+  const dismissCount = searchParams.get('dismissCount') ?? ''
 
   // the number of dismisses is the number of meld screens to dismiss
   // there is currently at most 2 meld screens

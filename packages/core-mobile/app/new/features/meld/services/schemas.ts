@@ -149,10 +149,105 @@ export const CreateSessionWidgetBodySchema = object({
   sessionData: SessionDataSchema
 })
 
+export const StatusHistorySchema = object({
+  status: string().optional().nullable(),
+  message: string().optional().nullable(),
+  createdAt: string().optional().nullable(),
+  partnerEventId: string().optional().nullable(),
+  emailSentToUser: boolean().optional().nullable()
+}).passthrough()
+
 export const CreateSessionWidgetSchema = object({
   id: string().optional().nullable(),
   externalSessionId: string().optional().nullable(),
   externalCustomerId: string().optional().nullable(),
   customerId: string().optional().nullable(),
   widgetUrl: string().optional().nullable()
+}).passthrough()
+
+export const CustomerSchema = object({
+  id: string().optional().nullable(),
+  accountId: string().optional().nullable()
+}).passthrough()
+
+export const CryptoDetailsSchema = object({
+  sourceWalletAddress: string().optional().nullable(),
+  destinationWalletAddress: string().optional().nullable(),
+  sessionWalletAddress: string().optional().nullable(),
+  networkFee: number().optional().nullable(),
+  transactionFee: number().optional().nullable(),
+  partnerFee: number().optional().nullable(),
+  totalFee: number().optional().nullable(),
+  networkFeeInUsd: number().optional().nullable(),
+  transactionFeeInUsd: number().optional().nullable(),
+  partnerFeeInUsd: number().optional().nullable(),
+  totalFeeInUsd: number().optional().nullable(),
+  blockchainTransactionId: string().optional().nullable(),
+  institution: string().optional().nullable(),
+  chainId: string().optional().nullable()
+}).passthrough()
+
+export const MeldTransactionSchema = object({
+  transaction: object({
+    id: string().optional().nullable(),
+    transactionType: string().optional().nullable(),
+    status: string().optional().nullable(),
+    sourceAmount: number().optional().nullable(),
+    sourceCurrencyCode: string().optional().nullable(),
+    destinationAmount: number().optional().nullable(),
+    destinationCurrencyCode: string().optional().nullable(),
+    paymentMethodType: string().optional().nullable(),
+    serviceProvider: string().optional().nullable(),
+    serviceProviderDetails: object({
+      details: object({
+        _id: string().optional().nullable(),
+        status: string().optional().nullable(),
+        userId: string().optional().nullable(),
+        dispute: boolean().optional().nullable(),
+        network: string().optional().nullable(),
+        quoteId: string().optional().nullable(),
+        createdAt: string().optional().nullable(),
+        ipAddress: string().optional().nullable(),
+        stateCode: string().optional().nullable(),
+        updatedAt: string().optional().nullable(),
+        amountPaid: number().optional().nullable(),
+        capturedAt: string().optional().nullable(),
+        exchangeId: string().optional().nullable(),
+        fiatAmount: number().optional().nullable(),
+        firstOrder: boolean().optional().nullable(),
+        walletLink: string().optional().nullable(),
+        completedAt: string().optional().nullable(),
+        countryCode: string().optional().nullable(),
+        isBuyOrSell: string().optional().nullable(),
+        userKycType: string().optional().nullable(),
+        cryptoAmount: number().optional().nullable(),
+        fiatCurrency: string().optional().nullable(),
+        paymentTnxId: string().optional().nullable(),
+        autoExpiresAt: string().optional().nullable(),
+        partnerApiKey: string().optional().nullable(),
+        referenceCode: number().optional().nullable(),
+        walletAddress: string().optional().nullable(),
+        appVersionName: string().optional().nullable(),
+        cryptoCurrency: string().optional().nullable(),
+        totalFeeInFiat: number().optional().nullable(),
+        cardPaymentData: string().optional().nullable(),
+        conversionPrice: number().optional().nullable(),
+        fiatAmountInUsd: number().optional().nullable(),
+        partnerFeeInUsd: number().optional().nullable(),
+        paymentMarkedAt: string().optional().nullable(),
+        paymentOptionId: string().optional().nullable(),
+        paymentdateTime: string().optional().nullable(),
+        statusHistories: z.array(StatusHistorySchema).optional().nullable(),
+        totalfeeDecimal: number().optional().nullable(),
+        transactionHash: string().optional().nullable(),
+        transactionLink: string().optional().nullable(),
+        fromWalletAddress: string().optional().nullable(),
+        liquidityProvider: string().optional().nullable(),
+        partnerFeeDecimal: number().optional().nullable(),
+        paymentProcessing: boolean().optional().nullable()
+      }).passthrough(),
+      type: string().optional().nullable()
+    }).passthrough(),
+    cryptoDetails: CryptoDetailsSchema.optional().nullable()
+  }).passthrough()
 }).passthrough()

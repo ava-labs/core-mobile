@@ -11,7 +11,8 @@ import {
   QuoteSchema,
   CreateSessionWidgetBodySchema,
   CreateSessionWidgetSchema,
-  GetTradeLimitsSchema
+  GetTradeLimitsSchema,
+  MeldTransactionSchema
 } from './services/schemas'
 import { ServiceProviderCategories, ServiceProviders } from './consts'
 
@@ -36,6 +37,8 @@ export type CreateSessionWidgetParams = z.infer<
 >
 
 export type CreateSessionWidget = z.infer<typeof CreateSessionWidgetSchema>
+
+export type MeldTransaction = z.infer<typeof MeldTransactionSchema>
 
 export type MeldDefaultParams = {
   categories: ServiceProviderCategories[]

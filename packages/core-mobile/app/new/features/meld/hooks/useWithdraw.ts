@@ -50,7 +50,7 @@ export const useWithdraw = (): {
   const usdc = useMemo(
     () =>
       cryptoCurrencies?.find(
-        token => token.currencyCode === MELD_CURRENCY_CODES.USDC
+        token => token.currencyCode === MELD_CURRENCY_CODES.USDC_AVAXC
       ),
     [cryptoCurrencies]
   )

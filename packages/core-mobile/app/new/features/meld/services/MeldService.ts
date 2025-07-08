@@ -8,6 +8,7 @@ import {
   FiatCurrency,
   GetTradeLimits,
   MeldDefaultParams,
+  MeldTransaction,
   SearchDefaultsByCountry,
   SearchPaymentMethods,
   ServiceProvider
@@ -215,6 +216,21 @@ class MeldService {
       }
     }
     return meldApiClient.createSessionWidget(body)
+  }
+
+  // Fetch transaction by session id
+  // - sessionId is created in the createSessionWidget function, and the transaction has not been created yet
+  // - user has to completed the kyc or signed into the service provider platform
+  // - Meld has webhook setup to get the transaction details from the service provider
+  // - this endpoint is used to ask Meld to fetch the transaction details from the service provider immediately
+  async fetchTrasactionBySessionId({
+    sessionId
+  }: {
+    sessionId: string
+  }): Promise<MeldTransaction | undefined> {
+    return await meldApiClient.fetchTransactionBySessionId({
+      params: { id: sessionId }
+    })
   }
 }
 
