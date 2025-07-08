@@ -12,10 +12,11 @@ import {
   useTheme,
   View
 } from '@avalabs/k2-alpine'
+import { CoreAccountType } from '@avalabs/types'
 import { ErrorState } from 'common/components/ErrorState'
 import { HiddenBalanceText } from 'common/components/HiddenBalanceText'
+import { ListScreen } from 'common/components/ListScreen'
 import NavigationBarButton from 'common/components/NavigationBarButton'
-import { ScrollScreen } from 'common/components/ScrollScreen'
 import WalletCard from 'common/components/WalletCard'
 import { TRUNCATE_ADDRESS_LENGTH } from 'common/consts/text'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
@@ -25,12 +26,15 @@ import { useRouter } from 'expo-router'
 import { useBalanceForAccount } from 'new/common/contexts/useBalanceForAccount'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { Account, selectAccounts, setActiveAccount } from 'store/account'
-import { selectActiveAccount } from 'store/account'
+import { WalletType } from 'services/wallet/types'
+import {
+  Account,
+  selectAccounts,
+  selectActiveAccount,
+  setActiveAccount
+} from 'store/account'
 import { selectIsPrivacyModeEnabled } from 'store/settings/securityPrivacy'
 import { selectActiveWalletId, selectWallets } from 'store/wallet/slice'
-import { WalletType } from 'services/wallet/types'
-import { CoreAccountType } from '@avalabs/types'
 
 const IMPORTED_ACCOUNTS_VIRTUAL_WALLET_ID = 'imported-accounts-wallet-id'
 const IMPORTED_ACCOUNTS_VIRTUAL_WALLET_NAME = 'Imported'
@@ -329,9 +333,7 @@ const ManageAccountsScreen = (): React.JSX.Element => {
   ])
 
   const walletsDisplayData: (WalletDisplayData | null)[] = useMemo(() => {
-    return [...primaryWalletsDisplayData, importedWalletsDisplayData].filter(
-      Boolean
-    ) as WalletDisplayData[]
+    return [...primaryWalletsDisplayData, importedWalletsDisplayData]
   }, [primaryWalletsDisplayData, importedWalletsDisplayData])
 
   const toggleWalletExpansion = useCallback((walletId: string) => {
@@ -374,49 +376,55 @@ const ManageAccountsScreen = (): React.JSX.Element => {
     }
   }, [searchText])
 
+  const renderItem = useCallback(
+    ({ item }: { item: WalletDisplayData }) => {
+      if (!item) {
+        return null
+      }
+      const isExpanded = expandedWallets[item.id] ?? false
+
+      if (searchText && item.accounts.length === 0) {
+        return null
+      }
+
+      return (
+        <WalletCard
+          wallet={item}
+          isExpanded={isExpanded}
+          searchText={searchText}
+          onToggleExpansion={() => toggleWalletExpansion(item.id)}
+          showMoreButton={item.id !== IMPORTED_ACCOUNTS_VIRTUAL_WALLET_ID}
+          style={{
+            marginHorizontal: 16,
+            marginTop: 12
+          }}
+        />
+      )
+    },
+    [expandedWallets, searchText, toggleWalletExpansion]
+  )
+
+  const renderEmpty = useCallback(() => {
+    return (
+      <ErrorState
+        sx={{ flex: 1 }}
+        title="No accounts found"
+        description="Try a different search term"
+      />
+    )
+  }, [])
+
   return (
-    <ScrollScreen
+    <ListScreen
       title="Manage accounts"
       isModal
-      shouldAvoidKeyboard
       renderHeader={renderHeader}
       renderHeaderRight={renderHeaderRight}
-      contentContainerStyle={{
-        paddingHorizontal: 16,
-        paddingVertical: 16,
-        gap: 12,
-        flex: walletsDisplayData.length ? undefined : 1
-      }}>
-      {walletsDisplayData.length ? (
-        walletsDisplayData.map(wallet => {
-          if (!wallet) {
-            return null
-          }
-          const isExpanded = expandedWallets[wallet.id] ?? false
-
-          if (searchText && wallet.accounts.length === 0) {
-            return null
-          }
-
-          return (
-            <WalletCard
-              key={wallet.id}
-              wallet={wallet}
-              isExpanded={isExpanded}
-              searchText={searchText}
-              onToggleExpansion={() => toggleWalletExpansion(wallet.id)}
-              showMoreButton={wallet.id !== IMPORTED_ACCOUNTS_VIRTUAL_WALLET_ID}
-            />
-          )
-        })
-      ) : (
-        <ErrorState
-          sx={{ flex: 1 }}
-          title="No accounts found"
-          description="Try a different search term"
-        />
-      )}
-    </ScrollScreen>
+      renderEmpty={renderEmpty}
+      data={walletsDisplayData.filter(Boolean) as WalletDisplayData[]}
+      keyExtractor={item => item.id}
+      renderItem={renderItem}
+    />
   )
 }
 
