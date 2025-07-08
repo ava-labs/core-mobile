@@ -22,6 +22,7 @@ import Animated, {
   FadeOut,
   LinearTransition
 } from 'react-native-reanimated'
+import { roundToUnitOrSignificantDigit } from 'common/utils/roundToUnitOrSignificantDigit'
 import { LogoWithNetwork } from './LogoWithNetwork'
 
 export const TokenInputWidget = ({
@@ -83,6 +84,8 @@ export const TokenInputWidget = ({
       value = BigInt(Math.floor(Number(balance ?? 0n) * button.percent))
     }
 
+    value = roundToUnitOrSignificantDigit(value, 14)
+
     onAmountChange?.(value)
 
     setPercentageButtons(prevButtons =>
@@ -140,20 +143,6 @@ export const TokenInputWidget = ({
       }
     ])
   }, [maximum])
-
-  const inputValue = useMemo(() => {
-    const selectedButton = percentageButtons.find(b => b.isSelected)
-
-    if (selectedButton && token?.decimals && amount) {
-      const unit = new TokenUnit(amount, token?.decimals, token?.symbol)
-      const display = unit.toDisplay({ asNumber: true })
-      const multiplier = 10 ** token.decimals
-
-      return BigInt(Math.round(display * multiplier))
-    }
-
-    return amount
-  }, [amount, percentageButtons, token?.decimals, token?.symbol])
 
   const nonEditableInputValue = useMemo(() => {
     if (token?.decimals && amount) {
@@ -249,7 +238,7 @@ export const TokenInputWidget = ({
                               ? colors.$textPrimary
                               : colors.$textSecondary)
                         }}
-                        value={inputValue}
+                        value={amount}
                         onChange={handleAmountChange}
                         onFocus={handleFocus}
                         onBlur={handleBlur}
@@ -272,7 +261,7 @@ export const TokenInputWidget = ({
                             minHeight: 42,
                             width: '100%',
                             textAlign: 'right',
-                            color: !inputValue
+                            color: !amount
                               ? alpha(colors.$textSecondary, 0.2)
                               : inputTextColor ??
                                 (editable
