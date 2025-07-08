@@ -7,8 +7,9 @@ import {
   View
 } from '@avalabs/k2-alpine'
 import { useManageWallet } from 'common/hooks/useManageWallet'
-import React, { useCallback } from 'react'
 import { WalletDisplayData } from 'common/types'
+import React, { useCallback } from 'react'
+import { StyleProp, ViewStyle } from 'react-native'
 import { DropdownMenu } from './DropdownMenu'
 
 const ITEM_HEIGHT = 50
@@ -18,13 +19,15 @@ const WalletCard = ({
   isExpanded,
   searchText,
   onToggleExpansion,
-  showMoreButton = true
+  showMoreButton = true,
+  style
 }: {
   wallet: WalletDisplayData
   isExpanded: boolean
   searchText: string
   onToggleExpansion: () => void
   showMoreButton?: boolean
+  style?: StyleProp<ViewStyle>
 }): React.JSX.Element => {
   const {
     theme: { colors }
@@ -50,96 +53,97 @@ const WalletCard = ({
   }, [colors.$textPrimary, isExpanded])
 
   return (
-    <>
-      <View
-        sx={{
+    <View
+      style={[
+        {
           backgroundColor: colors.$surfaceSecondary,
           borderRadius: 12,
           overflow: 'hidden'
+        },
+        style
+      ]}>
+      <TouchableOpacity
+        onPress={onToggleExpansion}
+        sx={{
+          flexDirection: 'row',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          minHeight: 48
         }}>
-        <TouchableOpacity
-          onPress={onToggleExpansion}
+        <View
           sx={{
             flexDirection: 'row',
             alignItems: 'center',
-            justifyContent: 'space-between',
-            minHeight: 48
+            gap: 8,
+            flex: 1,
+            paddingHorizontal: 10
           }}>
-          <View
-            sx={{
-              flexDirection: 'row',
-              alignItems: 'center',
-              gap: 8,
-              flex: 1,
-              paddingHorizontal: 10
+          <View sx={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+            {renderExpansionIcon()}
+            {renderWalletIcon()}
+          </View>
+          <Text
+            variant="buttonSmall"
+            numberOfLines={1}
+            style={{
+              fontSize: 14,
+              flex: 1
             }}>
-            <View sx={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-              {renderExpansionIcon()}
-              {renderWalletIcon()}
-            </View>
-            <Text
-              variant="buttonSmall"
-              numberOfLines={1}
+            {wallet.name}
+          </Text>
+        </View>
+
+        {showMoreButton && (
+          <DropdownMenu
+            groups={[
+              {
+                key: 'wallet-actions',
+                items: getDropdownItems(wallet)
+              }
+            ]}
+            onPressAction={(event: { nativeEvent: { event: string } }) =>
+              handleDropdownSelect(event.nativeEvent.event, wallet)
+            }>
+            <TouchableOpacity
+              hitSlop={8}
               style={{
-                fontSize: 14,
-                flex: 1
+                minHeight: 48,
+                paddingRight: 24,
+                paddingLeft: 12,
+                justifyContent: 'center',
+                alignItems: 'center'
               }}>
-              {wallet.name}
-            </Text>
-          </View>
-
-          {showMoreButton && (
-            <DropdownMenu
-              groups={[
-                {
-                  key: 'wallet-actions',
-                  items: getDropdownItems(wallet)
-                }
-              ]}
-              onPressAction={(event: { nativeEvent: { event: string } }) =>
-                handleDropdownSelect(event.nativeEvent.event, wallet)
-              }>
-              <TouchableOpacity
-                hitSlop={8}
-                style={{
-                  minHeight: 48,
-                  paddingRight: 24,
-                  paddingLeft: 12,
-                  justifyContent: 'center',
-                  alignItems: 'center'
-                }}>
-                <Icons.Navigation.MoreHoriz
-                  color={colors.$textSecondary}
-                  width={20}
-                  height={20}
-                />
-              </TouchableOpacity>
-            </DropdownMenu>
-          )}
-        </TouchableOpacity>
-
-        {isExpanded && (
-          <View sx={{ padding: 8, paddingTop: 0 }}>
-            {wallet.accounts.length > 0 ? (
-              <GroupList itemHeight={ITEM_HEIGHT} data={wallet.accounts} />
-            ) : (
-              !searchText && (
-                <View
-                  sx={{
-                    paddingVertical: 20,
-                    alignItems: 'center',
-                    backgroundColor: colors.$surfaceSecondary
-                  }}>
-                  <Text sx={{ color: colors.$textSecondary }}>
-                    No accounts in this wallet.
-                  </Text>
-                </View>
-              )
-            )}
-          </View>
+              <Icons.Navigation.MoreHoriz
+                color={colors.$textSecondary}
+                width={20}
+                height={20}
+              />
+            </TouchableOpacity>
+          </DropdownMenu>
         )}
-      </View>
-    </>
+      </TouchableOpacity>
+
+      {isExpanded && (
+        <View sx={{ padding: 8, paddingTop: 0 }}>
+          {wallet.accounts.length > 0 ? (
+            <GroupList itemHeight={ITEM_HEIGHT} data={wallet.accounts} />
+          ) : (
+            !searchText && (
+              <View
+                sx={{
+                  paddingVertical: 20,
+                  alignItems: 'center',
+                  backgroundColor: colors.$surfaceSecondary
+                }}>
+                <Text sx={{ color: colors.$textSecondary }}>
+                  No accounts in this wallet.
+                </Text>
+              </View>
+            )
+          )}
+        </View>
+      )}
+    </View>
   )
 }
 
