@@ -1,5 +1,5 @@
 import { ScrollScreen } from 'common/components/ScrollScreen'
-import React, { useCallback } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import {
   Button,
   View,
@@ -9,7 +9,8 @@ import {
   useTheme,
   FiatAmountInputWidget,
   ActivityIndicator,
-  showAlert
+  showAlert,
+  useInversedTheme
 } from '@avalabs/k2-alpine'
 import { LogoWithNetwork } from 'features/portfolio/assets/components/LogoWithNetwork'
 import { selectSelectedCurrency } from 'store/settings/currency'
@@ -20,6 +21,7 @@ import { SubTextNumber } from 'common/components/SubTextNumber'
 import { useSelectAmount } from '../hooks/useSelectAmount'
 import { ServiceProviderCategories } from '../consts'
 import { useOfframpSessionId } from '../store'
+import { getErrorMessage } from '../utils'
 
 interface SelectAmountProps {
   title: string
@@ -37,8 +39,10 @@ export const SelectAmount = ({
   onSelectPaymentMethod
 }: SelectAmountProps): React.JSX.Element => {
   const {
-    theme: { colors }
+    theme: { colors, isDark }
   } = useTheme()
+  const { theme: inversedTheme } = useInversedTheme({ isDark })
+
   const {
     formatInSubTextNumber,
     sourceAmount,
@@ -56,9 +60,17 @@ export const SelectAmount = ({
     errorMessage
   } = useSelectAmount({ category })
   const { openUrl } = useInAppBrowser()
+  const [createSessionWidgetErrorMessage, setCreateSessionWidgetErrorMessage] =
+    useState<string | undefined>()
+  const [isLoadingCreateSessionWidget, setIsLoadingCreateSessionWidget] =
+    useState(false)
   const { setSessionId } = useOfframpSessionId()
   const { formatIntegerCurrency, formatCurrency } = useFormatCurrency()
   const selectedCurrency = useSelector(selectSelectedCurrency)
+
+  useEffect(() => {
+    setCreateSessionWidgetErrorMessage(undefined)
+  }, [sourceAmount])
 
   const handleSelectPaymentMethod = useCallback((): void => {
     if (sourceAmount === undefined || sourceAmount === 0) {
@@ -77,16 +89,25 @@ export const SelectAmount = ({
 
   const onNext = useCallback(async (): Promise<void> => {
     setSessionId(undefined)
-    const sessionWidget = await createSessionWidget()
-    if (
-      category === ServiceProviderCategories.CRYPTO_OFFRAMP &&
-      sessionWidget?.id
-    ) {
-      // store the session id in the store for the offramp flow
-      // this is used to fetch the transaction details from the service provider immediately
-      setSessionId(sessionWidget.id)
+    setIsLoadingCreateSessionWidget(true)
+    try {
+      const sessionWidget = await createSessionWidget()
+
+      if (
+        category === ServiceProviderCategories.CRYPTO_OFFRAMP &&
+        sessionWidget?.id
+      ) {
+        // store the session id in the store for the offramp flow
+        // this is used to fetch the transaction details from the service provider immediately
+        setSessionId(sessionWidget.id)
+      }
+      sessionWidget?.widgetUrl && openUrl(sessionWidget.widgetUrl)
+    } catch (error) {
+      const err = getErrorMessage(error as Error)
+      setCreateSessionWidgetErrorMessage(err?.message)
+    } finally {
+      setIsLoadingCreateSessionWidget(false)
     }
-    sessionWidget?.widgetUrl && openUrl(sessionWidget.widgetUrl)
   }, [category, createSessionWidget, openUrl, setSessionId])
 
   const renderFooter = useCallback(() => {
@@ -100,13 +121,26 @@ export const SelectAmount = ({
           type="primary"
           size="large"
           onPress={onNext}>
-          {category === ServiceProviderCategories.CRYPTO_ONRAMP
-            ? 'Buy'
-            : 'Withdraw'}
+          {isLoadingCreateSessionWidget ? (
+            <ActivityIndicator
+              size="small"
+              color={inversedTheme.colors.$textPrimary}
+            />
+          ) : category === ServiceProviderCategories.CRYPTO_ONRAMP ? (
+            'Buy'
+          ) : (
+            'Withdraw'
+          )}
         </Button>
       </View>
     )
-  }, [isEnabled, onNext, category])
+  }, [
+    isEnabled,
+    onNext,
+    isLoadingCreateSessionWidget,
+    inversedTheme.colors.$textPrimary,
+    category
+  ])
 
   const renderServiceProvider = useCallback(() => {
     if (!hasValidSourceAmount) {
@@ -138,7 +172,7 @@ export const SelectAmount = ({
   ])
 
   const renderCaption = useCallback(() => {
-    if (errorMessage) {
+    if (errorMessage || createSessionWidgetErrorMessage) {
       return (
         <View
           sx={{
@@ -153,7 +187,7 @@ export const SelectAmount = ({
           <Text
             variant="caption"
             sx={{ fontWeight: 500, color: colors.$textDanger }}>
-            {errorMessage}
+            {errorMessage || createSessionWidgetErrorMessage}
           </Text>
         </View>
       )
@@ -197,6 +231,7 @@ export const SelectAmount = ({
     colors.$textDanger,
     colors.$textPrimary,
     errorMessage,
+    createSessionWidgetErrorMessage,
     token?.tokenWithBalance.symbol,
     tokenBalance
   ])

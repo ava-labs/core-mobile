@@ -72,3 +72,8 @@ export enum SessionTypes {
   SELL = 'SELL',
   TRANSFER = 'TRANSFER'
 }
+
+export type CryptoQuotesError = {
+  statusCode: CreateCryptoQuoteErrorCode
+  message: string
+}

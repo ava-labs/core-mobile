@@ -4,7 +4,12 @@ import { closeInAppBrowser } from 'utils/openInAppBrowser'
 import { router } from 'expo-router'
 import { ACTIONS } from '../../../contexts/DeeplinkContext/types'
 import { NATIVE_ERC20_TOKEN_CONTRACT_ADDRESS } from './consts'
-import { CryptoCurrency } from './types'
+import {
+  CreateCryptoQuoteNotFoundError,
+  CreateCryptoQuoteError,
+  CryptoCurrency,
+  CryptoQuotesError
+} from './types'
 
 export const isSupportedNativeToken = (
   crypto: CryptoCurrency,
@@ -61,4 +66,27 @@ export const dismissMeldStack = (
       buttonText: 'Done'
     }
   })
+}
+
+export const getErrorMessage = (
+  error?: Error
+): CryptoQuotesError | undefined => {
+  if (error && 'response' in error) {
+    const response = error.response as {
+      data?: CreateCryptoQuoteError | CreateCryptoQuoteNotFoundError
+    }
+    if (response.data && 'status' in response.data) {
+      return {
+        statusCode: response.data.status,
+        message: response.data.message
+      }
+    }
+    if (response.data && 'code' in response.data) {
+      return {
+        statusCode: response.data.code,
+        message: response.data.message
+      }
+    }
+  }
+  return undefined
 }
