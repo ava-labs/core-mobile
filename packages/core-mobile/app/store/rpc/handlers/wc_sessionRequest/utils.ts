@@ -108,7 +108,7 @@ export const getAddressForChainId = (
     : isBtcChainId(caip2ChainId)
     ? account.addressBTC
     : isSvmChainId(caip2ChainId)
-    ? account.addressSVM
+    ? account.addressSVM ?? account.addressC
     : account.addressC
 }
 
@@ -118,7 +118,7 @@ const coreAccountAddresses = z.object({
   addressAVM: z.string(),
   addressPVM: z.string(),
   addressCoreEth: z.string(),
-  addressSVM: z.string()
+  addressSVM: z.string().optional()
 })
 
 const namespaceToApproveSchema = z.object({

@@ -35,7 +35,7 @@ import {
 } from './utils'
 import { COMMON_EVENTS, NON_EVM_OPTIONAL_NAMESPACES } from './namespaces'
 
-const supportedMethods = [
+const supportedEvmMethods = [
   RpcMethod.ETH_SEND_TRANSACTION,
   RpcMethod.SIGN_TYPED_DATA_V3,
   RpcMethod.SIGN_TYPED_DATA_V4,
@@ -45,10 +45,7 @@ const supportedMethods = [
   RpcMethod.ETH_SIGN,
   RpcMethod.WALLET_ADD_ETHEREUM_CHAIN,
   RpcMethod.WALLET_GET_ETHEREUM_CHAIN,
-  RpcMethod.WALLET_SWITCH_ETHEREUM_CHAIN,
-  RpcMethod.SOLANA_SIGN_MESSAGE,
-  RpcMethod.SOLANA_SIGN_TRANSACTION,
-  RpcMethod.SOLANA_SIGN_ALL_TRANSACTIONS
+  RpcMethod.WALLET_SWITCH_ETHEREUM_CHAIN
 ]
 
 class WCSessionRequestHandler implements RpcRequestHandler<WCSessionProposal> {
@@ -61,8 +58,8 @@ class WCSessionRequestHandler implements RpcRequestHandler<WCSessionProposal> {
     // that use Wagmi to be able to send/access more rpc methods
     // by default, Wagmi only requests eth_sendTransaction and personal_sign
     return isCoreApp
-      ? [...supportedMethods, ...CORE_EVM_METHODS]
-      : supportedMethods
+      ? [...supportedEvmMethods, ...CORE_EVM_METHODS]
+      : supportedEvmMethods
   }
 
   private getApprovedEvents = (
@@ -303,6 +300,7 @@ class WCSessionRequestHandler implements RpcRequestHandler<WCSessionProposal> {
           namespaceToApprove
         )
 
+        // Use the namespace's own methods instead of mixing them
         const methods =
           namespace === BlockchainNamespace.EIP155
             ? this.getApprovedEvmMethods(dappUrl)

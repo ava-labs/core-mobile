@@ -72,7 +72,6 @@ export enum RpcMethod {
   SOLANA_SIGN_AND_SEND_TRANSACTION = 'solana_signAndSendTransaction',
   SOLANA_SIGN_TRANSACTION = 'solana_signTransaction',
   SOLANA_SIGN_MESSAGE = 'solana_signMessage',
-  SOLANA_SIGN_ALL_TRANSACTIONS = 'solana_signAllTransactions',
 
   /* custom methods that only apply to Wallet Connect*/
   WC_SESSION_REQUEST = 'wc_sessionRequest'
@@ -105,9 +104,8 @@ export const CORE_BTC_METHODS = [
 
 export const CORE_SOLANA_METHODS = [
   RpcMethod.SOLANA_SIGN_MESSAGE,
-  RpcMethod.SOLANA_SIGN_AND_SEND_TRANSACTION,
   RpcMethod.SOLANA_SIGN_TRANSACTION,
-  RpcMethod.SOLANA_SIGN_ALL_TRANSACTIONS
+  RpcMethod.SOLANA_SIGN_AND_SEND_TRANSACTION
 ]
 
 export type ConfirmationReceiptStatus = 'Reverted' | 'Success' | 'Pending'
