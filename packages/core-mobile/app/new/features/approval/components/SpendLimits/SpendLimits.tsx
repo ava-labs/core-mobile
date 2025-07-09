@@ -127,7 +127,6 @@ export const SpendLimits = ({
       <View
         sx={{
           backgroundColor: '$surfaceSecondary',
-          marginBottom: 12,
           paddingHorizontal: 16,
           paddingBottom: 17,
           paddingTop: 25,

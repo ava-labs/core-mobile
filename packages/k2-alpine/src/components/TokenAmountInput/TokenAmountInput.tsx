@@ -76,6 +76,12 @@ export const TokenAmountInput = ({
     }
   }, [autoFocus])
 
+  useEffect(() => {
+    if (inputRef.current) {
+      inputRef.current?.setNativeProps({ text: valueAsString })
+    }
+  }, [valueAsString])
+
   return (
     <TextInput
       {...props}
@@ -89,7 +95,6 @@ export const TokenAmountInput = ({
       inputMode={Platform.OS === 'android' ? 'numeric' : undefined}
       onChangeText={handleChangeText}
       numberOfLines={1}
-      value={valueAsString}
       placeholderTextColor={alpha(theme.colors.$textSecondary, 0.2)}
       selectionColor={theme.colors.$textPrimary}
       style={[{ color: theme.colors.$textPrimary }, props.style]}
