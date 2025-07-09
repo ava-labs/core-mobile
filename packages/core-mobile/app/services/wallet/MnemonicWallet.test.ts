@@ -8,6 +8,7 @@ import { BaseWallet } from 'ethers'
 import { RpcMethod } from 'store/rpc/types'
 import * as ethSignUtil from '@metamask/eth-sig-util'
 import mockMnemonic from 'tests/fixtures/mockMnemonic.json'
+import { JsonRpcBatchInternal } from '@avalabs/core-wallets-sdk'
 import { MnemonicWallet } from './MnemonicWallet'
 
 const TYPED_DATA = {
@@ -82,11 +83,37 @@ const MOCK_CONTEXT = {
   addSubnetDelegatorFee: BigInt(1)
 }
 
+// Update mock constants with proper base64 encoding
+const MOCK_SOLANA_MESSAGE = Buffer.from('Hello Solana').toString('base64') // Base64 encode the message
+
+// Mock the Solana provider with required methods
+class MockSolanaProvider {
+  getAddress() {
+    return 'solana123'
+  }
+  // Add other required methods if needed
+}
+
 jest.mock('@metamask/eth-sig-util', () => ({
   ...jest.requireActual('@metamask/eth-sig-util'),
   personalSign: jest.fn(),
   signTypedData: jest.fn()
 }))
+
+jest.mock('@avalabs/core-wallets-sdk', () => ({
+  ...jest.requireActual('@avalabs/core-wallets-sdk'),
+  JsonRpcBatchInternal: jest.fn().mockImplementation(() => ({})),
+  SolanaSigner: jest.fn().mockImplementation(() => ({
+    signTx: jest.fn().mockResolvedValue('mockedSignedTx'),
+    signMessage: jest.fn().mockResolvedValue('mockedSignedMessage')
+  }))
+}))
+
+class MockJsonRpcBatchInternal {}
+Object.setPrototypeOf(
+  MockJsonRpcBatchInternal.prototype,
+  JsonRpcBatchInternal.prototype
+)
 
 jest
   .spyOn(Avalanche.AbstractProvider.prototype, 'getInfo')
@@ -138,6 +165,8 @@ describe('MnemonicWallet', () => {
   })
 
   describe('signMessage', () => {
+    const mockProvider = new MockJsonRpcBatchInternal()
+
     const signMessage = async ({
       data = undefined,
       rpcMethod = RpcMethod.ETH_SIGN
@@ -150,7 +179,7 @@ describe('MnemonicWallet', () => {
         data,
         accountIndex: 0,
         network: { vmName: 'EVM' },
-        provider: {}
+        provider: mockProvider // Use mocked provider
       })
     }
     it('should have returned error data must be string', async () => {
@@ -207,6 +236,43 @@ describe('MnemonicWallet', () => {
       } catch (e) {
         expect((e as Error).message).toBe('unknown method')
       }
+    })
+  })
+
+  describe('Solana Operations', () => {
+    const mockSolanaProvider = new MockSolanaProvider()
+
+    it('should sign Solana message', async () => {
+      const result = await mnemonicWallet.signMessage({
+        rpcMethod: RpcMethod.SOLANA_SIGN_MESSAGE,
+        data: MOCK_SOLANA_MESSAGE,
+        accountIndex: 0,
+        network: { vmName: 'SVM' },
+        provider: mockSolanaProvider
+      })
+      expect(typeof result).toBe('string')
+    })
+
+    it('should sign Solana transaction', async () => {
+      const result = await mnemonicWallet.signSvmTransaction({
+        accountIndex: 0,
+        transaction: { serializedTx: 'anyTransaction' }, // The actual value doesn't matter now
+        network: { vmName: 'SVM' },
+        provider: mockSolanaProvider
+      })
+      expect(result).toBe('mockedSignedTx')
+    })
+
+    it('should handle invalid Solana message format', async () => {
+      await expect(
+        mnemonicWallet.signMessage({
+          rpcMethod: RpcMethod.SOLANA_SIGN_MESSAGE,
+          data: { invalid: 'format' }, // This will trigger the type check
+          accountIndex: 0,
+          network: { vmName: 'SVM' },
+          provider: mockSolanaProvider
+        })
+      ).rejects.toThrow('data must be string')
     })
   })
 

@@ -188,7 +188,7 @@ export class MnemonicWallet implements Wallet {
     provider
   }: {
     rpcMethod: RpcMethod
-    data: string | Uint8Array | TypedDataV1 | TypedData<MessageTypes>
+    data: string | TypedDataV1 | TypedData<MessageTypes>
     accountIndex: number
     network: Network
     provider: JsonRpcBatchInternal | Avalanche.JsonRpcProvider | SolanaProvider

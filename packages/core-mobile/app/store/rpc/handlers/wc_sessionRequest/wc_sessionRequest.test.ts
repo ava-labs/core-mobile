@@ -5,6 +5,7 @@ import { ProposalTypes } from '@walletconnect/types'
 import { WCSessionProposal } from 'store/walletConnectV2/types'
 import { selectIsBlockaidDappScanBlocked } from 'store/posthog/slice'
 import { AvalancheCaip2ChainId } from '@avalabs/core-chains-sdk'
+import { SolanaCaip2ChainId } from '@avalabs/core-chains-sdk'
 import * as utils from './utils'
 import { wcSessionRequestHandler as handler } from './wc_sessionRequest'
 
@@ -115,6 +116,21 @@ const testNonEVMNamespacesToApprove = {
     methods: [
       RpcMethod.BITCOIN_SEND_TRANSACTION,
       RpcMethod.BITCOIN_SIGN_TRANSACTION
+    ],
+    events: [
+      'chainChanged',
+      'accountsChanged',
+      'message',
+      'disconnect',
+      'connect'
+    ]
+  },
+  solana: {
+    chains: [SolanaCaip2ChainId.MAINNET, SolanaCaip2ChainId.DEVNET],
+    methods: [
+      RpcMethod.SOLANA_SIGN_MESSAGE,
+      RpcMethod.SOLANA_SIGN_AND_SEND_TRANSACTION,
+      RpcMethod.SOLANA_SIGN_TRANSACTION
     ],
     events: [
       'chainChanged',
@@ -360,14 +376,16 @@ describe('session_request handler', () => {
           addressBTC: 'btcAddress1',
           addressAVM: 'avmAddress1',
           addressPVM: 'pvmAddress1',
-          addressCoreEth: 'coreEthAddress1'
+          addressCoreEth: 'coreEthAddress1',
+          addressSVM: 'solanaAddress1'
         },
         {
           addressC: '0xC7E5ffBd7843EdB88cCB2ebaECAa07EC55c65318',
           addressBTC: 'btcAddress2',
           addressAVM: 'avmAddress2',
           addressPVM: 'pvmAddress2',
-          addressCoreEth: 'coreEthAddress2'
+          addressCoreEth: 'coreEthAddress2',
+          addressSVM: 'solanaAddress2'
         }
       ]
 
@@ -422,14 +440,16 @@ describe('session_request handler', () => {
           addressBTC: 'btcAddress1',
           addressAVM: 'avmAddress1',
           addressPVM: 'pvmAddress1',
-          addressCoreEth: 'coreEthAddress1'
+          addressCoreEth: 'coreEthAddress1',
+          addressSVM: 'solanaAddress1'
         },
         {
           addressC: '0xC7E5ffBd7843EdB88cCB2ebaECAa07EC55c65318',
           addressBTC: 'btcAddress2',
           addressAVM: 'avmAddress2',
           addressPVM: 'pvmAddress2',
-          addressCoreEth: 'coreEthAddress2'
+          addressCoreEth: 'coreEthAddress2',
+          addressSVM: 'solanaAddress2'
         }
       ]
 
@@ -538,6 +558,42 @@ describe('session_request handler', () => {
             'connect'
           ],
           methods: ['bitcoin_sendTransaction', 'bitcoin_signTransaction']
+        },
+        solana: {
+          accounts: [
+            'solana:8aDU0Kqh-5d23op-B-r-4YbQFRbsgF9a:solanaAddress1',
+            'solana:8aDU0Kqh-5d23op-B-r-4YbQFRbsgF9a:solanaAddress2',
+            'solana:YRLfeDBJpfEqUWe2FYR1OpXsnDDZeKWd:solanaAddress1',
+            'solana:YRLfeDBJpfEqUWe2FYR1OpXsnDDZeKWd:solanaAddress2',
+            'solana:Rr9hnPVPxuUvrdCul-vjEsU1zmqKqRDo:solanaAddress1',
+            'solana:Rr9hnPVPxuUvrdCul-vjEsU1zmqKqRDo:solanaAddress2',
+            'solana:Sj7NVE3jXTbJvwFAiu7OEUo_8g8ctXMG:solanaAddress1',
+            'solana:Sj7NVE3jXTbJvwFAiu7OEUo_8g8ctXMG:solanaAddress2',
+            'solana:imji8papUf2EhV3le337w1vgFauqkJg-:solanaAddress1',
+            'solana:imji8papUf2EhV3le337w1vgFauqkJg-:solanaAddress2',
+            'solana:8AJTpRj3SAqv1e80Mtl9em08LhvKEbkl:solanaAddress1',
+            'solana:8AJTpRj3SAqv1e80Mtl9em08LhvKEbkl:solanaAddress2'
+          ],
+          chains: [
+            'solana:8aDU0Kqh-5d23op-B-r-4YbQFRbsgF9a',
+            'solana:YRLfeDBJpfEqUWe2FYR1OpXsnDDZeKWd',
+            'solana:Rr9hnPVPxuUvrdCul-vjEsU1zmqKqRDo',
+            'solana:Sj7NVE3jXTbJvwFAiu7OEUo_8g8ctXMG',
+            'solana:imji8papUf2EhV3le337w1vgFauqkJg-',
+            'solana:8AJTpRj3SAqv1e80Mtl9em08LhvKEbkl'
+          ],
+          events: [
+            'chainChanged',
+            'accountsChanged',
+            'message',
+            'disconnect',
+            'connect'
+          ],
+          methods: [
+            'solana_signMessage',
+            'solana_signTransaction',
+            'solana_signAllTransactions'
+          ]
         }
       }
 
