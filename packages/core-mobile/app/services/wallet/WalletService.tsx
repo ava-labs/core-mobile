@@ -324,7 +324,6 @@ class WalletService {
     isChange: boolean
     isTestnet: boolean
   }): Promise<string[]> {
-    // core web handles the logic to get the addresses by the account index
     if (
       walletType === WalletType.SEEDLESS ||
       (isChange && chainAlias !== 'X')
@@ -332,7 +331,7 @@ class WalletService {
       return []
     }
 
-    // We only return the current address for private key wallets
+    // We only return the current address for private key account
     if (walletType === WalletType.PRIVATE_KEY) {
       return [account.addressAVM]
     }
