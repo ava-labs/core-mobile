@@ -208,7 +208,12 @@ export const SelectServiceProvider = ({
             </Text>
             <Text
               variant="subtitle2"
-              sx={{ textAlign: 'right', fontWeight: 500, fontSize: 12 }}>
+              sx={{
+                textAlign: 'right',
+                fontWeight: 500,
+                fontSize: 12,
+                color: colors.$textSecondary
+              }}>
               ~{formatCurrency({ amount: fiatAmount })}
             </Text>
           </View>
@@ -219,6 +224,7 @@ export const SelectServiceProvider = ({
       category,
       colors.$surfaceSecondary,
       colors.$textPrimary,
+      colors.$textSecondary,
       colors.$textSuccess,
       dismiss,
       formatCurrency,
