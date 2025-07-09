@@ -12,7 +12,11 @@ import AnalyticsService from 'services/analytics/AnalyticsService'
 import SeedlessService from 'seedless/services/SeedlessService'
 import { isEvmPublicKey } from 'utils/publicKeys'
 import { recentAccountsStore } from 'new/features/accountSettings/store'
-import { selectActiveWallet, selectActiveWalletId } from 'store/wallet/slice'
+import {
+  selectActiveWallet,
+  selectActiveWalletId,
+  selectWallets
+} from 'store/wallet/slice'
 import { selectIsSolanaSupportBlocked } from 'store/posthog'
 import BiometricsSDK from 'utils/BiometricsSDK'
 import WalletFactory from 'services/wallet/WalletFactory'
@@ -23,7 +27,8 @@ import {
   selectAccounts,
   setAccounts,
   setNonActiveAccounts,
-  setActiveAccountId
+  setActiveAccountId,
+  selectAccountsByWalletId
 } from './slice'
 import { AccountCollection } from './types'
 
@@ -181,15 +186,25 @@ const reloadAccounts = async (
     throw new Error('Active wallet is not set')
   }
 
-  const accounts = selectAccounts(state)
-  const reloadedAccounts = await accountService.reloadAccounts({
-    accounts: accounts,
-    isTestnet: isDeveloperMode,
-    walletId: activeWallet.id,
-    walletType: activeWallet.type
-  })
+  const wallets = selectWallets(state)
+  for (const walletId of Object.keys(wallets)) {
+    const wallet = wallets[walletId]
+    if (!wallet) continue
+    const accounts = selectAccountsByWalletId(state, wallet.id)
+    //convert accounts to AccountCollection
+    const accountsCollection: AccountCollection = {}
+    for (const account of accounts) {
+      accountsCollection[account.id] = account
+    }
 
-  listenerApi.dispatch(setAccounts(reloadedAccounts))
+    const reloadedAccounts = await accountService.reloadAccounts({
+      accounts: accountsCollection,
+      isTestnet: isDeveloperMode,
+      walletId: wallet.id,
+      walletType: wallet.type
+    })
+    listenerApi.dispatch(setAccounts(reloadedAccounts))
+  }
 }
 
 const handleActiveAccountIndexChange = (
