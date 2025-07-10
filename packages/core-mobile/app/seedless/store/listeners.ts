@@ -13,15 +13,15 @@ import { AppStartListening, AppListenerEffectAPI } from 'store/types'
 import { onTokenExpired } from 'seedless/store/slice'
 import { selectAccountById, setAccountTitle } from 'store/account/slice'
 import { router } from 'expo-router'
-import { selectActiveWallet } from 'store/wallet/slice'
+import { selectSeedlessWallet } from 'store/wallet/slice'
 import { SeedlessPubKeysStorage } from 'seedless/services/storage/SeedlessPubKeysStorage'
 
 const refreshSeedlessToken = async (
   _: Action,
   listenerApi: AppListenerEffectAPI
 ): Promise<void> => {
-  const activeWallet = selectActiveWallet(listenerApi.getState())
-  if (activeWallet?.type !== WalletType.SEEDLESS) {
+  const seedlessWallet = selectSeedlessWallet(listenerApi.getState())
+  if (!seedlessWallet) {
     return
   }
 
@@ -44,10 +44,8 @@ const initSeedless = async (
   listenerApi: AppListenerEffectAPI
 ): Promise<void> => {
   const { dispatch, getState } = listenerApi
-  const activeWallet = selectActiveWallet(getState())
-  const walletType = activeWallet?.type
-
-  if (walletType !== WalletType.SEEDLESS) return
+  const seedlessWallet = selectSeedlessWallet(getState())
+  if (!seedlessWallet) return
 
   SeedlessService.init({
     onSessionExpired: () => dispatch(onTokenExpired)

@@ -15,6 +15,7 @@ import { recentAccountsStore } from 'new/features/accountSettings/store'
 import {
   selectActiveWallet,
   selectActiveWalletId,
+  selectSeedlessWallet,
   selectWallets
 } from 'store/wallet/slice'
 import { selectIsSolanaSupportBlocked } from 'store/posthog'
@@ -180,16 +181,8 @@ const reloadAccounts = async (
 ): Promise<void> => {
   const state = listenerApi.getState()
   const isDeveloperMode = selectIsDeveloperMode(state)
-  const activeWallet = selectActiveWallet(state)
-
-  if (!activeWallet) {
-    throw new Error('Active wallet is not set')
-  }
-
   const wallets = selectWallets(state)
-  for (const walletId of Object.keys(wallets)) {
-    const wallet = wallets[walletId]
-    if (!wallet) continue
+  for (const wallet of Object.values(wallets)) {
     const accounts = selectAccountsByWalletId(state, wallet.id)
     //convert accounts to AccountCollection
     const accountsCollection: AccountCollection = {}
@@ -218,20 +211,18 @@ const fetchSeedlessAccountsIfNeeded = async (
   listenerApi: AppListenerEffectAPI
 ): Promise<void> => {
   const state = listenerApi.getState()
-  const activeWallet = selectActiveWallet(state)
-  if (!activeWallet) {
-    throw new Error('Active wallet is not set')
+  const seedlessWallet = selectSeedlessWallet(state)
+  if (!seedlessWallet) {
+    throw new Error('Seedless wallet not found')
   }
 
-  if (activeWallet.type === WalletType.SEEDLESS) {
-    const accounts = selectAccounts(state)
+  const accounts = selectAccountsByWalletId(state, seedlessWallet.id)
 
-    fetchRemainingAccounts({
-      walletType: activeWallet.type,
-      listenerApi,
-      startIndex: Object.keys(accounts).length
-    })
-  }
+  fetchRemainingAccounts({
+    walletType: seedlessWallet.type,
+    listenerApi,
+    startIndex: Object.keys(accounts).length
+  })
 }
 
 const migrateSolanaAddressesIfNeeded = async (
@@ -245,9 +236,9 @@ const migrateSolanaAddressesIfNeeded = async (
   const entries = Object.values(accounts)
   // Only migrate Solana addresses if Solana support is enabled
   if (!isSolanaSupportBlocked && entries.some(account => !account.addressSVM)) {
-    const activeWallet = selectActiveWallet(state)
-    if (activeWallet?.type === WalletType.SEEDLESS) {
-      await deriveMissingSeedlessSessionKeys(activeWallet.id)
+    const seedlessWallet = selectSeedlessWallet(state)
+    if (seedlessWallet) {
+      await deriveMissingSeedlessSessionKeys(seedlessWallet.id)
     }
     // reload only when there are accounts without Solana addresses
     reloadAccounts(_action, listenerApi)
