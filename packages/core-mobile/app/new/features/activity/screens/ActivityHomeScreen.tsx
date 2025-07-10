@@ -40,7 +40,7 @@ import { selectIsDeveloperMode } from 'store/settings/advanced/slice'
 import { ActivityScreen } from './ActivityScreen'
 
 const ActivityHomeScreen = (): JSX.Element => {
-  const { navigate, back } = useRouter()
+  const { navigate } = useRouter()
   const { theme } = useTheme()
   const tabBarHeight = useBottomTabBarHeight()
   const headerHeight = useHeaderHeight()
@@ -149,10 +149,9 @@ const ActivityHomeScreen = (): JSX.Element => {
   const handleExplorerLink = useCallback(
     (explorerLink: string): void => {
       AnalyticsService.capture('ExplorerLinkClicked')
-      back()
       openUrl(explorerLink)
     },
-    [back, openUrl]
+    [openUrl]
   )
 
   useFocusEffect(

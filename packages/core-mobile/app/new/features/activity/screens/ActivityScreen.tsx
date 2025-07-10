@@ -159,7 +159,8 @@ export const ActivityScreen = ({
 
   const renderEmpty = useCallback(() => {
     return (
-      <CollapsibleTabs.ContentWrapper height={Number(containerStyle.minHeight)}>
+      <CollapsibleTabs.ContentWrapper
+        height={Number(containerStyle.minHeight + 24)}>
         <Animated.View style={keyboardAvoidingStyle}>
           {emptyComponent}
         </Animated.View>
