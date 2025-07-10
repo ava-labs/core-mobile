@@ -1,6 +1,7 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { RootState } from 'store/types'
 import { Wallet, WalletsState } from 'store/wallet/types'
+import { WalletType } from 'services/wallet/types'
 import { storeWallet } from './thunks'
 
 export const reducerName = 'wallet'
@@ -61,6 +62,11 @@ export const selectActiveWallet = (state: RootState): Wallet | undefined =>
   state.wallet.activeWalletId
     ? state.wallet.wallets[state.wallet.activeWalletId]
     : undefined
+
+export const selectSeedlessWallet = (state: RootState): Wallet | undefined =>
+  Object.values(state.wallet.wallets).find(
+    wallet => wallet.type === WalletType.SEEDLESS
+  )
 
 export const selectWalletById =
   (walletId: string) =>
