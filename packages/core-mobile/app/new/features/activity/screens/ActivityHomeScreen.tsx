@@ -41,7 +41,7 @@ import { ActivityScreen } from './ActivityScreen'
 
 const ActivityHomeScreen = (): JSX.Element => {
   const { navigate, back } = useRouter()
-  const { openUrl } = useCoreBrowser()
+  const { openUrlInSimpleBrowser } = useCoreBrowser()
   const { theme } = useTheme()
   const tabBarHeight = useBottomTabBarHeight()
   const headerHeight = useHeaderHeight()
@@ -148,9 +148,9 @@ const ActivityHomeScreen = (): JSX.Element => {
     (explorerLink: string): void => {
       AnalyticsService.capture('ExplorerLinkClicked')
       back()
-      openUrl({ url: explorerLink, title: '' })
+      openUrlInSimpleBrowser({ url: explorerLink, title: '' })
     },
-    [openUrl, back]
+    [openUrlInSimpleBrowser, back]
   )
 
   useFocusEffect(

@@ -5,6 +5,7 @@ import React from 'react'
 
 export default function ActivityLayout(): JSX.Element {
   const homeScreenOptions = useHomeScreenOptions()
+
   return (
     <Stack screenOptions={stackNavigatorScreenOptions}>
       <Stack.Screen name="index" options={homeScreenOptions} />

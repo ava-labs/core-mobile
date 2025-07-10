@@ -1,7 +1,10 @@
 import { IndexPath } from '@avalabs/k2-alpine'
 import { useCallback, useMemo, useState } from 'react'
 import { Transaction } from 'store/transaction'
-import { TransactionType } from '@avalabs/vm-module-types'
+import {
+  PChainTransactionType,
+  TransactionType
+} from '@avalabs/vm-module-types'
 import { sortUndefined } from 'common/utils/sortUndefined'
 
 export type Selection = {
@@ -12,9 +15,11 @@ export type Selection = {
 }
 
 export const useTokenDetailFilterAndSort = ({
-  transactions
+  transactions,
+  filters
 }: {
   transactions: Transaction[]
+  filters?: TokenDetailFilters
 }): {
   data: Transaction[]
   filter: Selection
@@ -31,10 +36,11 @@ export const useTokenDetailFilterAndSort = ({
 
   const filterOption = useMemo(() => {
     return (
-      TOKEN_DETAIL_FILTERS?.[selectedFilter.section]?.[selectedFilter.row] ??
-      TokenDetailFilter.All
+      (filters ?? TOKEN_DETAIL_FILTERS)?.[selectedFilter.section]?.[
+        selectedFilter.row
+      ] ?? TokenDetailFilter.All
     )
-  }, [selectedFilter])
+  }, [filters, selectedFilter.row, selectedFilter.section])
 
   const sortOption = useMemo(() => {
     return (
@@ -49,6 +55,10 @@ export const useTokenDetailFilterAndSort = ({
     }
     return transactions.filter(tx => {
       switch (filterOption) {
+        case TokenDetailFilter.Stake:
+          return (
+            tx.txType === PChainTransactionType.ADD_PERMISSIONLESS_DELEGATOR_TX
+          )
         case TokenDetailFilter.Received:
           return tx.isIncoming && tx.txType !== TransactionType.BRIDGE
         case TokenDetailFilter.Sent:
@@ -84,7 +94,7 @@ export const useTokenDetailFilterAndSort = ({
   return {
     filter: {
       title: 'Filter',
-      data: TOKEN_DETAIL_FILTERS,
+      data: filters ?? TOKEN_DETAIL_FILTERS,
       selected: selectedFilter,
       onSelected: setSelectedFilter
     },
@@ -104,7 +114,8 @@ export enum TokenDetailFilter {
   Sent = 'Sent',
   Received = 'Received',
   Bridge = 'Bridge',
-  Swap = 'Swap'
+  Swap = 'Swap',
+  Stake = 'Stake'
 }
 
 export enum TokenDetailSort {
@@ -112,10 +123,10 @@ export enum TokenDetailSort {
   OldToNew = 'Oldest to newest'
 }
 
-type TokenDetailFilters = TokenDetailFilter[][]
+export type TokenDetailFilters = TokenDetailFilter[][]
 type TokenDetailSorts = TokenDetailSort[][]
 
-const TOKEN_DETAIL_FILTERS: TokenDetailFilters = [
+export const TOKEN_DETAIL_FILTERS: TokenDetailFilters = [
   [
     TokenDetailFilter.All,
     TokenDetailFilter.Sent,

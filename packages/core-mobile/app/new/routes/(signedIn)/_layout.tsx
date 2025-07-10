@@ -53,6 +53,10 @@ export default function WalletLayout(): JSX.Element {
             options={modalScreensOptions}
           />
           <Stack.Screen
+            name="(modals)/browserScreen"
+            options={modalScreensOptions}
+          />
+          <Stack.Screen
             name="(modals)/authorizeDapp"
             options={modalScreensOptions}
           />
