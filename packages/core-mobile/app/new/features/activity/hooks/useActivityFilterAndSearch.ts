@@ -21,6 +21,11 @@ import { useGetAllTransactions } from 'store/transaction/hooks/useGetAllTransact
 import { isPChain } from 'utils/network/isAvalancheNetwork'
 import { useActivity } from '../store'
 
+type ActivityNetworkFilter = {
+  filterName: string
+  chainId: number
+}
+
 export const useActivityFilterAndSearch = ({
   searchText
 }: {
@@ -31,14 +36,8 @@ export const useActivityFilterAndSearch = ({
   filter: Selection
   network: Network
   token: LocalTokenWithBalance
-  networkOption?: {
-    filterName: string
-    chainId: number
-  }
-  networkFilters: {
-    filterName: string
-    chainId: number
-  }[]
+  networkOption?: ActivityNetworkFilter
+  networkFilters: ActivityNetworkFilter[]
   networkDropdown: Selection & {
     scrollContentMaxHeight: number
   }
@@ -56,7 +55,7 @@ export const useActivityFilterAndSearch = ({
 
   const { selectedNetwork, setSelectedNetwork } = useActivity()
 
-  const networkFilters = useMemo(() => {
+  const networkFilters: ActivityNetworkFilter[] = useMemo(() => {
     return enabledNetworks.map(network => ({
       filterName: isAvalancheNetwork(network)
         ? `Avalanche C-Chain ${
@@ -67,7 +66,7 @@ export const useActivityFilterAndSearch = ({
     }))
   }, [enabledNetworks])
 
-  const networkOption = useMemo(() => {
+  const networkOption: ActivityNetworkFilter | undefined = useMemo(() => {
     return [networkFilters]?.[selectedNetwork.section]?.[selectedNetwork.row]
   }, [networkFilters, selectedNetwork.row, selectedNetwork.section])
 
@@ -81,7 +80,9 @@ export const useActivityFilterAndSearch = ({
     )
   }, [filteredTokenList, network?.chainId])
 
-  const networkDropdown = useMemo(() => {
+  const networkDropdown: Selection & {
+    scrollContentMaxHeight: number
+  } = useMemo(() => {
     return {
       title: 'Network',
       data: [networkFilters.map(f => f.filterName)],
@@ -127,7 +128,7 @@ export const useActivityFilterAndSearch = ({
   }, [allTransactions.transactions, token?.symbol, isPendingBridge])
 
   const filters: TokenDetailFilters | undefined = useMemo(() => {
-    if (isPChain(network?.chainId ?? 0)) {
+    if (network?.chainId && isPChain(network.chainId)) {
       const newFilters = [
         ...(TOKEN_DETAIL_FILTERS[0] ?? []),
         TokenDetailFilter.Stake
@@ -157,8 +158,8 @@ export const useActivityFilterAndSearch = ({
 
   const combinedData = useMemo(() => {
     const filteredPendingBridgeTxs = pendingBridgeTxs
+      .toSorted((a, b) => b.sourceStartedAt - a.sourceStartedAt)
       .filter(tx => getBridgeAssetSymbol(tx) === token?.symbol)
-      .sort((a, b) => b.sourceStartedAt - a.sourceStartedAt)
 
     if (searchText.length) {
       return [

@@ -58,10 +58,8 @@ const ActivityHomeScreen = (): JSX.Element => {
 
   const selectedSegmentIndex = useSharedValue(0)
 
-  const header = useMemo(() => <NavigationTitleHeader title={'Activity'} />, [])
-
   const { onScroll, targetHiddenProgress } = useFadingHeaderNavigation({
-    header: header,
+    header: <NavigationTitleHeader title={'Activity'} />,
     targetLayout: balanceHeaderLayout,
     hasSeparator: false
   })

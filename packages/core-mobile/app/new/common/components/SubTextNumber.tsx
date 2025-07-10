@@ -78,7 +78,10 @@ const getSubTextStyle = (textVariant: SubTextNumberVariant): TextStyle => {
     style = { ...style, fontSize: 13, top: 4, fontWeight: '400' }
   }
   if (textVariant === 'heading2') {
-    style = { ...style, fontSize: 18, top: 10, fontWeight: '700' }
+    style = { ...style, fontSize: 18, top: 8, fontWeight: '700' }
+  }
+  if (textVariant === 'buttonMedium') {
+    style = { ...style, fontSize: 15, top: 6, fontWeight: '600' }
   }
 
   return style
