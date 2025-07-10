@@ -5,7 +5,6 @@ import { ProposalTypes } from '@walletconnect/types'
 import { WCSessionProposal } from 'store/walletConnectV2/types'
 import { selectIsBlockaidDappScanBlocked } from 'store/posthog/slice'
 import { AvalancheCaip2ChainId } from '@avalabs/core-chains-sdk'
-import { SolanaCaip2ChainId } from '@avalabs/core-chains-sdk'
 import * as utils from './utils'
 import { wcSessionRequestHandler as handler } from './wc_sessionRequest'
 
@@ -127,8 +126,8 @@ const testNonEVMNamespacesToApprove = {
   },
   solana: {
     chains: [
-      'solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp',  // mainnet
-      'solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1'   // devnet
+      'solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp',
+      'solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1'
     ],
     methods: [
       RpcMethod.SOLANA_SIGN_MESSAGE,
