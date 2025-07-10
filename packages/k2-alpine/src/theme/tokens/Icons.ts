@@ -96,8 +96,6 @@ import IconShopeePay from '../../assets/icons/shopee_pay.svg'
 import IconAch from '../../assets/icons/ach.svg'
 import IconDownload from '../../assets/icons/download.svg'
 import IconEncrypted from '../../assets/icons/shield.svg'
-import IconAvaxLightGradient from '../../assets/icons/avax_light_gradient.svg'
-import IconAvaxDarkGradient from '../../assets/icons/avax_dark_gradient.svg'
 
 // Transaction types
 import IconTxTypeAdd from '../../assets/icons/tx-type-add.svg'
@@ -332,9 +330,7 @@ export const Icons = {
     MobileMoney: IconMobileMoney,
     ShopeePay: IconShopeePay,
     Ach: IconAch,
-    Download: IconDownload,
-    AvaxLightGradient: IconAvaxLightGradient,
-    AvaxDarkGradient: IconAvaxDarkGradient
+    Download: IconDownload
   },
   RecoveryMethod: {
     Passkey: IconPasskey,

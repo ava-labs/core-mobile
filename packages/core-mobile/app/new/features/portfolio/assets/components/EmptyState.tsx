@@ -10,9 +10,9 @@ import {
 import { useRouter } from 'expo-router'
 import { Space } from 'common/components/Space'
 import { StyleSheet } from 'react-native'
-import { isSmallScreen } from 'utils/isSmallScreen'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { isAndroid } from 'utils/Utils'
+import { AvaxLogoGradientSvg } from './AvaxLogoGradientSvg'
 
 const WIDTH = SCREEN_WIDTH - 32
 
@@ -70,11 +70,7 @@ export const EmptyState = ({
           top: -100,
           left: -50
         }}>
-        {isDark ? (
-          <Icons.Custom.AvaxDarkGradient opacity={isSmallScreen ? 0.2 : 1} />
-        ) : (
-          <Icons.Custom.AvaxLightGradient opacity={isSmallScreen ? 0.2 : 1} />
-        )}
+        <AvaxLogoGradientSvg isDark={isDark} />
       </View>
 
       <View
