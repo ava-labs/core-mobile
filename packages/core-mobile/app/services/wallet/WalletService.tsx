@@ -147,7 +147,7 @@ class WalletService {
     walletId: string
     walletType: WalletType
     rpcMethod: RpcMethod
-    data: string | Uint8Array | TypedDataV1 | TypedData<MessageTypes>
+    data: string | TypedDataV1 | TypedData<MessageTypes>
     accountIndex: number
     network: Network
   }): Promise<string> {
