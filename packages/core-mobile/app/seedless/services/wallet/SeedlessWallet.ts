@@ -170,6 +170,7 @@ export default class SeedlessWallet implements Wallet {
   }
 
   /** WALLET INTERFACE IMPLEMENTATION **/
+  // eslint-disable-next-line sonarjs/cognitive-complexity
   public async signMessage({
     rpcMethod,
     data,
@@ -186,6 +187,11 @@ export default class SeedlessWallet implements Wallet {
     const addressEVM = await this.getEvmAddress(accountIndex)
 
     switch (rpcMethod) {
+      case RpcMethod.SOLANA_SIGN_MESSAGE: {
+        if (typeof data !== 'string') throw new Error('Data must be string')
+
+        return this.signSolanaMessage(data, accountIndex)
+      }
       case RpcMethod.AVALANCHE_SIGN_MESSAGE: {
         if (typeof data !== 'string') throw new Error('Data must be string')
 
@@ -508,5 +514,22 @@ export default class SeedlessWallet implements Wallet {
     }
 
     return false
+  }
+
+  private async signSolanaMessage(
+    _data: string,
+    _accountIndex: number
+  ): Promise<string> {
+    /**
+     * FIXME: Pulled over from XT's SeedlessWallet implementation
+     * I have a PoC that seems to be working, but obtained signatures are not verified
+     * properly by the dApps. I think it's because the dApps provide a UTF-8 message,
+     * but for it to be accepted by Solana Ledger app, we need to serialize it,
+     * add a message header etc., and I think Ledger then signs the whole thing, which
+     * makes it impossible to verify the signature with the original message.
+     */
+    throw new Error(
+      'Signing off-chain messages is only supported with seedphrase wallets at the moment'
+    )
   }
 }
