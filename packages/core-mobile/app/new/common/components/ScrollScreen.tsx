@@ -312,7 +312,7 @@ export const ScrollScreen = ({
         </Animated.View>
       </View>
 
-      {renderFooter ? (
+      {renderFooter && renderFooter() ? (
         <LinearGradientBottomWrapper>
           <View
             style={{

@@ -20,7 +20,7 @@ import { getTokenAddress, getTokenChainId } from 'features/track/utils/utils'
 const isTrendingToken = (token: MarketToken | undefined): boolean =>
   token !== undefined && token.marketType === MarketType.TRENDING
 
-type TokenInfo = {
+export type TokenInfo = {
   marketTotalSupply?: number
   twitterHandle: string | undefined
   marketCirculatingSupply?: number

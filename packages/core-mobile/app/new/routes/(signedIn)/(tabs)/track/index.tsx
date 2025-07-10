@@ -42,7 +42,7 @@ import {
   useSafeAreaFrame,
   useSafeAreaInsets
 } from 'react-native-safe-area-context'
-import { MarketType } from 'store/watchlist/types'
+import { MarketToken } from 'store/watchlist/types'
 
 // const SEARCH_BAR_MARGIN_TOP = Platform.OS === 'ios' ? 60 : 55
 
@@ -156,11 +156,11 @@ const TrackHomeScreen = (): JSX.Element => {
   )
 
   const handleGotoMarketDetail = useCallback(
-    (tokenId: string, marketType: MarketType): void => {
+    (token: MarketToken): void => {
       navigate({
         // @ts-ignore TODO: make routes typesafe
         pathname: '/trackTokenDetail',
-        params: { tokenId, marketType }
+        params: { token: JSON.stringify(token) }
       })
     },
     [navigate]

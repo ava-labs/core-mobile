@@ -1,4 +1,11 @@
-import { alpha, ANIMATED, Text, useTheme, View } from '@avalabs/k2-alpine'
+import {
+  alpha,
+  ANIMATED,
+  SPRING_LINEAR_TRANSITION,
+  Text,
+  useTheme,
+  View
+} from '@avalabs/k2-alpine'
 import { K2AlpineTheme } from '@avalabs/k2-alpine/src/theme/theme'
 import { HORIZONTAL_MARGIN } from 'common/consts'
 import React, { FC, useCallback } from 'react'
@@ -8,7 +15,8 @@ import Animated, {
   SharedValue,
   useAnimatedStyle,
   useSharedValue,
-  withTiming
+  withTiming,
+  FadeIn
 } from 'react-native-reanimated'
 import Svg, { Line } from 'react-native-svg'
 import { useSelector } from 'react-redux'
@@ -74,22 +82,29 @@ const SparklineChart: FC<Props> = ({
         isTouching={isTouching}
         labels={labels}
         color={theme.colors.$borderPrimary}
+        isLoading={data.length === 0}
       />
-      <LineGraph
-        style={{ width: '100%', height: '100%' }}
-        verticalPadding={verticalPadding}
-        testID="line_graph"
-        animated={true}
-        color={color}
-        lineThickness={lineThickness}
-        points={data}
-        gradientFillColors={gradientFillColors}
-        enablePanGesture={enablePanGesture}
-        SelectionDot={props => SelectionDotWithSelector(props)}
-        onPointSelected={onPointSelected}
-        onGestureStart={handleTouchStart}
-        onGestureEnd={handleTouchEnd}
-      />
+      {data?.length ? (
+        <Animated.View
+          entering={FadeIn.delay(100).duration(600)}
+          layout={SPRING_LINEAR_TRANSITION}>
+          <LineGraph
+            style={{ width: '100%', height: '100%' }}
+            verticalPadding={verticalPadding}
+            testID="line_graph"
+            animated={true}
+            color={color}
+            lineThickness={lineThickness}
+            points={data}
+            gradientFillColors={gradientFillColors}
+            enablePanGesture={enablePanGesture}
+            SelectionDot={props => SelectionDotWithSelector(props)}
+            onPointSelected={onPointSelected}
+            onGestureStart={handleTouchStart}
+            onGestureEnd={handleTouchEnd}
+          />
+        </Animated.View>
+      ) : null}
     </View>
   )
 }
@@ -111,25 +126,36 @@ interface Props {
 const Grid = ({
   color,
   labels,
-  isTouching
+  isTouching,
+  isLoading
 }: {
   color: string
   labels?: string[]
   isTouching: SharedValue<boolean>
+  isLoading: boolean
 }): JSX.Element => {
+  const animatedStyle = useAnimatedStyle(() => {
+    return {
+      opacity: withTiming(isLoading ? 0.2 : 1, ANIMATED.TIMING_CONFIG)
+    }
+  })
+
   return (
-    <View
-      sx={{
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        justifyContent: 'center',
-        gap: 44,
-        zIndex: 1000,
-        pointerEvents: 'none'
-      }}>
+    <Animated.View
+      style={[
+        animatedStyle,
+        {
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          justifyContent: 'center',
+          gap: 44,
+          zIndex: 1000,
+          pointerEvents: 'none'
+        }
+      ]}>
       {(labels || new Array(4).fill('')).map((label, index) => (
         <DashedLine
           isTouching={isTouching}
@@ -138,7 +164,7 @@ const Grid = ({
           color={color}
         />
       ))}
-    </View>
+    </Animated.View>
   )
 }
 
