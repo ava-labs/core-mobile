@@ -27,7 +27,7 @@ import {
 } from 'store/browser'
 
 const Browser = (): React.ReactNode => {
-  const { browserRefs, setUrlEntry, onProgress, progress } = useBrowserContext()
+  const { browserRefs } = useBrowserContext()
   const dispatch = useDispatch()
   const router = useRouter()
   const { deeplinkUrl } = useGlobalSearchParams<{ deeplinkUrl: string }>()
@@ -74,17 +74,11 @@ const Browser = (): React.ReactNode => {
             pointerEvents: tab.id === activeTab?.id ? 'auto' : 'none',
             opacity: tab.id === activeTab?.id ? 1 : 0
           }}>
-          <BrowserTab
-            ref={browserRefs.current[tab.id]}
-            tabId={tab.id}
-            setUrlEntry={setUrlEntry}
-            onProgress={onProgress}
-            progress={progress}
-          />
+          <BrowserTab ref={browserRefs.current[tab.id]} tabId={tab.id} />
         </View>
       )
     })
-  }, [activeTab?.id, browserRefs, onProgress, progress, setUrlEntry, tabs])
+  }, [activeTab?.id, browserRefs, tabs])
 
   const discoverStyle = useAnimatedStyle(() => {
     return {
