@@ -126,11 +126,14 @@ const testNonEVMNamespacesToApprove = {
     ]
   },
   solana: {
-    chains: [SolanaCaip2ChainId.MAINNET, SolanaCaip2ChainId.DEVNET],
+    chains: [
+      'solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp',  // mainnet
+      'solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1'   // devnet
+    ],
     methods: [
       RpcMethod.SOLANA_SIGN_MESSAGE,
-      RpcMethod.SOLANA_SIGN_AND_SEND_TRANSACTION,
-      RpcMethod.SOLANA_SIGN_TRANSACTION
+      RpcMethod.SOLANA_SIGN_TRANSACTION,
+      RpcMethod.SOLANA_SIGN_AND_SEND_TRANSACTION
     ],
     events: [
       'chainChanged',
@@ -561,26 +564,14 @@ describe('session_request handler', () => {
         },
         solana: {
           accounts: [
-            'solana:8aDU0Kqh-5d23op-B-r-4YbQFRbsgF9a:solanaAddress1',
-            'solana:8aDU0Kqh-5d23op-B-r-4YbQFRbsgF9a:solanaAddress2',
-            'solana:YRLfeDBJpfEqUWe2FYR1OpXsnDDZeKWd:solanaAddress1',
-            'solana:YRLfeDBJpfEqUWe2FYR1OpXsnDDZeKWd:solanaAddress2',
-            'solana:Rr9hnPVPxuUvrdCul-vjEsU1zmqKqRDo:solanaAddress1',
-            'solana:Rr9hnPVPxuUvrdCul-vjEsU1zmqKqRDo:solanaAddress2',
-            'solana:Sj7NVE3jXTbJvwFAiu7OEUo_8g8ctXMG:solanaAddress1',
-            'solana:Sj7NVE3jXTbJvwFAiu7OEUo_8g8ctXMG:solanaAddress2',
-            'solana:imji8papUf2EhV3le337w1vgFauqkJg-:solanaAddress1',
-            'solana:imji8papUf2EhV3le337w1vgFauqkJg-:solanaAddress2',
-            'solana:8AJTpRj3SAqv1e80Mtl9em08LhvKEbkl:solanaAddress1',
-            'solana:8AJTpRj3SAqv1e80Mtl9em08LhvKEbkl:solanaAddress2'
+            'solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp:solanaAddress1',
+            'solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp:solanaAddress2',
+            'solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1:solanaAddress1',
+            'solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1:solanaAddress2'
           ],
           chains: [
-            'solana:8aDU0Kqh-5d23op-B-r-4YbQFRbsgF9a',
-            'solana:YRLfeDBJpfEqUWe2FYR1OpXsnDDZeKWd',
-            'solana:Rr9hnPVPxuUvrdCul-vjEsU1zmqKqRDo',
-            'solana:Sj7NVE3jXTbJvwFAiu7OEUo_8g8ctXMG',
-            'solana:imji8papUf2EhV3le337w1vgFauqkJg-',
-            'solana:8AJTpRj3SAqv1e80Mtl9em08LhvKEbkl'
+            'solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp',
+            'solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1'
           ],
           events: [
             'chainChanged',
@@ -592,7 +583,7 @@ describe('session_request handler', () => {
           methods: [
             'solana_signMessage',
             'solana_signTransaction',
-            'solana_signAllTransactions'
+            'solana_signAndSendTransaction'
           ]
         }
       }
