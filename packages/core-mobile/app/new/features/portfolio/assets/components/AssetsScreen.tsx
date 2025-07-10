@@ -1,16 +1,11 @@
-import {
-  Image,
-  IndexPath,
-  SPRING_LINEAR_TRANSITION,
-  View
-} from '@avalabs/k2-alpine'
+import { IndexPath, SPRING_LINEAR_TRANSITION, View } from '@avalabs/k2-alpine'
 import { CollapsibleTabs } from 'common/components/CollapsibleTabs'
 import { DropdownSelections } from 'common/components/DropdownSelections'
 import { ErrorState } from 'common/components/ErrorState'
 import { LoadingState } from 'common/components/LoadingState'
 import { Space } from 'common/components/Space'
 import { getListItemEnteringAnimation } from 'common/utils/animations'
-import React, { FC, memo, useCallback, useMemo, useState } from 'react'
+import React, { FC, memo, useCallback, useState } from 'react'
 import {
   LayoutChangeEvent,
   LayoutRectangle,
@@ -32,9 +27,9 @@ import {
   selectIsRefetchingBalances
 } from 'store/balance'
 import { selectEnabledNetworks } from 'store/network'
-import errorIcon from '../../../../assets/icons/rocket.png'
 import { useAssetsFilterAndSort } from '../hooks/useAssetsFilterAndSort'
 import { TokenListItem } from './TokenListItem'
+import { EmptyState } from './EmptyState'
 
 interface Props {
   containerStyle: ViewStyle
@@ -51,8 +46,17 @@ const AssetsScreen: FC<Props> = ({
   goToBuy,
   onScrollResync
 }): JSX.Element => {
-  const { data, filter, sort, view, refetch, isRefetching, isLoading } =
-    useAssetsFilterAndSort()
+  const {
+    onResetFilter,
+    tokenList,
+    data,
+    filter,
+    sort,
+    view,
+    refetch,
+    isRefetching,
+    isLoading
+  } = useAssetsFilterAndSort()
 
   const activeAccount = useSelector(selectActiveAccount) //TODO: should use useActiveAccount but crashes if deleting wallet or just onboarding, race condition
   const enabledNetworks = useSelector(selectEnabledNetworks)
@@ -120,7 +124,7 @@ const AssetsScreen: FC<Props> = ({
     return <Space y={isGridView ? 12 : 10} />
   }, [isGridView])
 
-  const emptyComponent = useMemo(() => {
+  const renderEmptyComponent = useCallback(() => {
     if (isAllBalancesError) {
       return (
         <ErrorState
@@ -136,6 +140,7 @@ const AssetsScreen: FC<Props> = ({
     if (isRefetchingBalance) {
       return <LoadingState />
     }
+
     if (isAllBalancesInaccurate) {
       return (
         <ErrorState
@@ -148,14 +153,17 @@ const AssetsScreen: FC<Props> = ({
       )
     }
 
+    if (tokenList.length === 0) {
+      return <EmptyState goToBuy={goToBuy} />
+    }
+
     return (
       <ErrorState
-        icon={<Image source={errorIcon} sx={{ width: 42, height: 42 }} />}
-        title="No assets yet"
-        description="On-ramp using Core in two minutes"
+        title="No assets found"
+        description="Try changing the filter settings or reset the filter to see all assets."
         button={{
-          title: 'Let’s go!',
-          onPress: goToBuy
+          title: 'Reset filter',
+          onPress: onResetFilter
         }}
       />
     )
@@ -163,24 +171,31 @@ const AssetsScreen: FC<Props> = ({
     isAllBalancesError,
     isRefetchingBalance,
     isAllBalancesInaccurate,
-    goToBuy,
-    refetch
+    tokenList.length,
+    onResetFilter,
+    refetch,
+    goToBuy
   ])
 
   const renderEmpty = useCallback(() => {
+    const height =
+      Number(containerStyle.minHeight) - (headerLayout?.height ?? 0)
     return (
-      <CollapsibleTabs.ContentWrapper
-        height={Number(containerStyle.minHeight) - (headerLayout?.height ?? 0)}>
-        {emptyComponent}
+      <CollapsibleTabs.ContentWrapper height={height}>
+        {renderEmptyComponent()}
       </CollapsibleTabs.ContentWrapper>
     )
-  }, [containerStyle.minHeight, emptyComponent, headerLayout?.height])
+  }, [containerStyle.minHeight, renderEmptyComponent, headerLayout?.height])
 
   const onHeaderLayout = useCallback((e: LayoutChangeEvent) => {
     setHeaderLayout(e.nativeEvent.layout)
   }, [])
 
   const renderHeader = useCallback(() => {
+    if (tokenList.length === 0) {
+      return
+    }
+
     return (
       <View
         onLayout={onHeaderLayout}
@@ -195,7 +210,7 @@ const AssetsScreen: FC<Props> = ({
         />
       </View>
     )
-  }, [onHeaderLayout, filter, sort, view, handleManageList])
+  }, [tokenList.length, onHeaderLayout, filter, sort, view, handleManageList])
 
   const overrideProps = {
     contentContainerStyle: {
