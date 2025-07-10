@@ -1,24 +1,26 @@
-import React, { useRef, useState, useEffect } from 'react'
+import React, { useState, useEffect } from 'react'
 import Animated, {
+  useAnimatedReaction,
   useAnimatedStyle,
   useSharedValue,
-  withRepeat
+  withRepeat,
+  Easing
 } from 'react-native-reanimated'
 import Svg, { Defs, LinearGradient, Stop, Path } from 'react-native-svg'
-import { withTiming } from 'react-native-reanimated'
-import { Easing, Animated as RNAnimated } from 'react-native'
+import { withTiming, runOnJS } from 'react-native-reanimated'
 import { isScreenLargerThan6_2Inches } from 'features/portfolio/utils'
 
 const AnimatedView = Animated.View
+const DURATION = 4000
 
 export const AvaxLogoGradientSvg = ({
   isDark
 }: {
   isDark: boolean
 }): React.JSX.Element => {
-  const rotateValue = useRef(new RNAnimated.Value(0)).current
   const [gradientTransform, setGradientTransform] = useState('rotate(0)')
   const opacity = useSharedValue(1)
+  const rotateValue = useSharedValue(0)
 
   const width = isScreenLargerThan6_2Inches ? 360 : 319
   const height = isScreenLargerThan6_2Inches ? 381 : 281
@@ -29,29 +31,32 @@ export const AvaxLogoGradientSvg = ({
     : 'url(#paint0_linear_10493_40496)'
 
   useEffect(() => {
-    const animation = RNAnimated.loop(
-      RNAnimated.timing(rotateValue, {
-        toValue: 360,
-        duration: 4000,
-        easing: Easing.linear,
-        useNativeDriver: false // must be false, because we are animating a non-native property
-      })
+    rotateValue.value = withRepeat(
+      withTiming(360, {
+        duration: DURATION,
+        easing: Easing.linear
+      }),
+      -1,
+      false
     )
-    animation.start()
-
-    // Listen to animation updates and update the gradientTransform string
-    const id = rotateValue.addListener(({ value }) => {
-      setGradientTransform(`rotate(${value})`)
-    })
-
-    return () => {
-      animation.stop()
-      rotateValue.removeListener(id)
-    }
   }, [rotateValue])
 
+  useAnimatedReaction(
+    () => rotateValue.value,
+    (value, prev) => {
+      if (value !== prev) {
+        runOnJS(setGradientTransform)(`rotate(${value})`)
+      }
+    },
+    [setGradientTransform]
+  )
+
   useEffect(() => {
-    opacity.value = withRepeat(withTiming(0.7, { duration: 4000 }), -1, true)
+    opacity.value = withRepeat(
+      withTiming(0.7, { duration: DURATION, easing: Easing.linear }),
+      -1,
+      true
+    )
   }, [opacity])
 
   const animatedStyle = useAnimatedStyle(() => ({
