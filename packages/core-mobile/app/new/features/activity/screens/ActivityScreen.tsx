@@ -24,7 +24,7 @@ import { XpActivityListItem } from 'features/portfolio/assets/components/XpActiv
 import { ErrorState } from 'new/common/components/ErrorState'
 import { LoadingState } from 'new/common/components/LoadingState'
 import React, { useCallback, useMemo } from 'react'
-import { ViewStyle } from 'react-native'
+import { Platform, ViewStyle } from 'react-native'
 import Animated, { useAnimatedStyle, withTiming } from 'react-native-reanimated'
 import { useHeaderMeasurements } from 'react-native-collapsible-tab-view'
 import { Transaction } from 'store/transaction'
@@ -66,9 +66,14 @@ export const ActivityScreen = ({
     return {
       transform: [
         {
-          translateY: withTiming(isSearchBarFocused ? -header.height : 0, {
-            ...ANIMATED.TIMING_CONFIG
-          })
+          translateY: withTiming(
+            isSearchBarFocused
+              ? -header.height + (Platform.OS === 'ios' ? 40 : 32)
+              : 0,
+            {
+              ...ANIMATED.TIMING_CONFIG
+            }
+          )
         }
       ]
     }
@@ -160,7 +165,9 @@ export const ActivityScreen = ({
   const renderEmpty = useCallback(() => {
     return (
       <CollapsibleTabs.ContentWrapper
-        height={Number(containerStyle.minHeight + 24)}>
+        height={
+          Number(containerStyle.minHeight) - (Platform.OS === 'ios' ? 50 : 32)
+        }>
         <Animated.View style={keyboardAvoidingStyle}>
           {emptyComponent}
         </Animated.View>

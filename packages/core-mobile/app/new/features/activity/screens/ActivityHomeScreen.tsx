@@ -178,7 +178,8 @@ const ActivityHomeScreen = (): JSX.Element => {
         frame.height -
         headerHeight -
         insets.bottom -
-        (searchBarLayout?.height ?? 0)
+        (searchBarLayout?.height ?? 0) +
+        56
     })
   }, [
     frame.height,
