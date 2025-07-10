@@ -19,7 +19,7 @@ export const TokenActivityListItemTitle = ({
   } = useTheme()
   const { sourceBlockchain, targetBlockchain } = useBlockchainNames(tx)
   const isPrivacyModeEnabled = useSelector(selectIsPrivacyModeEnabled)
-  const textVariant = 'body1'
+  const textVariant = 'buttonMedium'
 
   const renderAmount = useCallback(
     (amount?: string): ReactNode => {
@@ -33,6 +33,7 @@ export const TokenActivityListItemTitle = ({
           <SubTextNumber
             key={`amt-${amount}`}
             number={num}
+            textVariant={textVariant}
             textColor={colors.$textPrimary}
           />
         )

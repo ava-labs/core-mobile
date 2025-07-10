@@ -17,15 +17,34 @@ interface Props {
   filter?: DropdownSelection & { selected: IndexPath | IndexPath[] }
   sort?: DropdownSelection
   view?: DropdownSelection
+  network?: DropdownSelection
   sx?: SxProp
 }
 
 export const DropdownSelections = ({
   filter,
   sort,
+  network,
   view,
   sx
 }: Props): React.JSX.Element => {
+  const networkDropdown = useMemo(() => {
+    if (!network) return
+
+    return (
+      <SimpleDropdown
+        from={
+          <Chip size="large" hitSlop={8} testID="network_dropdown_btn">
+            {network.title}
+          </Chip>
+        }
+        sections={network.data}
+        selectedRows={[network.selected]}
+        onSelectRow={network.onSelected}
+      />
+    )
+  }, [network])
+
   const viewDropdown = useMemo(() => {
     if (!view) return
 
@@ -73,6 +92,7 @@ export const DropdownSelections = ({
         )}
       </View>
       {viewDropdown}
+      {networkDropdown}
     </View>
   )
 }
