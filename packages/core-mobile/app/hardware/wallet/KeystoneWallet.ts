@@ -43,9 +43,11 @@ import { KeystoneDataStorageType } from 'hardware/storage/KeystoneDataStorage'
 import { Network } from '@avalabs/core-chains-sdk'
 import { Psbt } from 'bitcoinjs-lib'
 import { v4 } from 'uuid'
-import { TransactionRequest } from 'ethers'
+import { hexlify, Signature, TransactionRequest } from 'ethers'
 import { URType } from '@keystonehq/animated-qr'
-import { BigIntLike, BytesLike, AddressLike } from '@ethereumjs/util'
+import { BytesLike, AddressLike } from '@ethereumjs/util'
+import { BN } from 'bn.js'
+import { isTypedData } from '@avalabs/evm-module'
 import { convertTxData, makeBigIntLike } from './utils'
 import { signer } from './keystoneSigner'
 
@@ -82,8 +84,22 @@ export default class KeystoneWallet implements Wallet {
     throw new Error('signSvmTransaction not implemented')
   }
 
+  private async deriveEthSignature(cbor: Buffer): Promise<{
+    r: string
+    s: string
+    v: number
+  }> {
+    const signature: any = ETHSignature.fromCBOR(cbor).getSignature()
+    const r = hexlify(new Uint8Array(signature.slice(0, 32)))
+    const s = hexlify(new Uint8Array(signature.slice(32, 64)))
+    const v = new BN(signature.slice(64)).toNumber()
+    return { r, s, v }
+  }
+
   public async signMessage({
-    rpcMethod
+    rpcMethod,
+    data,
+    accountIndex
   }: {
     rpcMethod: RpcMethod
     data: string | TypedDataV1 | TypedData<MessageTypes>
@@ -99,8 +115,25 @@ export default class KeystoneWallet implements Wallet {
       }
       case RpcMethod.ETH_SIGN:
       case RpcMethod.PERSONAL_SIGN: {
-        throw new Error(
-          '[KeystoneWallet-signMessage] ETH_SIGN/PERSONAL_SIGN not implemented.'
+        if (typeof data !== 'string')
+          throw new Error(`Invalid message type ${typeof data}`)
+
+        const ur = EthSignRequest.constructETHRequest(
+          Buffer.from(data.replace('0x', ''), 'hex'),
+          DataType.personalMessage,
+          `M/44'/60'/0'/0/${accountIndex}`,
+          this.mfp,
+          crypto.randomUUID()
+        ).toUR()
+
+        return await signer(
+          ur,
+          [URType.ETH_SIGNATURE, URType.EVM_SIGNATURE],
+          async cbor => {
+            const sig = await this.deriveEthSignature(cbor)
+
+            return Signature.from(sig).serialized
+          }
         )
       }
       case RpcMethod.SIGN_TYPED_DATA:
@@ -109,14 +142,26 @@ export default class KeystoneWallet implements Wallet {
           '[KeystoneWallet-signMessage] SIGN_TYPED_DATA/SIGN_TYPED_DATA_V1 not implemented.'
         )
       }
-      case RpcMethod.SIGN_TYPED_DATA_V3: {
-        throw new Error(
-          '[KeystoneWallet-signMessage] SIGN_TYPED_DATA_V3 not implemented.'
-        )
-      }
+      case RpcMethod.SIGN_TYPED_DATA_V3:
       case RpcMethod.SIGN_TYPED_DATA_V4: {
-        throw new Error(
-          '[KeystoneWallet-signMessage] SIGN_TYPED_DATA_V4 not implemented.'
+        if (!isTypedData(data)) throw new Error('Invalid typed data')
+
+        const ur = EthSignRequest.constructETHRequest(
+          Buffer.from(JSON.stringify(data), 'utf-8'),
+          DataType.typedData,
+          `M/44'/60'/0'/0/${accountIndex}`,
+          this.mfp,
+          crypto.randomUUID()
+        ).toUR()
+
+        return await signer(
+          ur,
+          [URType.ETH_SIGNATURE, URType.EVM_SIGNATURE],
+          async cbor => {
+            const sig = await this.deriveEthSignature(cbor)
+
+            return Signature.from(sig).serialized
+          }
         )
       }
       default:
@@ -222,13 +267,20 @@ export default class KeystoneWallet implements Wallet {
 
   private async getTxFromTransactionRequest(
     txRequest: TransactionRequest,
-    signature?: { r: BigIntLike; s: BigIntLike; v: BigIntLike }
+    signature?: { r: string; s: string; v: number }
   ): Promise<LegacyTransaction | FeeMarketEIP1559Transaction> {
+    const _signature = signature
+      ? {
+          r: makeBigIntLike(signature.r),
+          s: makeBigIntLike(signature.s),
+          v: makeBigIntLike(signature.v)
+        }
+      : {}
     return typeof txRequest.gasPrice !== 'undefined'
       ? LegacyTransaction.fromTxData(
           {
             ...convertTxData(txRequest),
-            ...signature
+            ..._signature
           },
           {
             common: Common.custom({
@@ -237,7 +289,7 @@ export default class KeystoneWallet implements Wallet {
           }
         )
       : FeeMarketEIP1559Transaction.fromTxData(
-          { ...this.txRequestToFeeMarketTxData(txRequest), ...signature },
+          { ...this.txRequestToFeeMarketTxData(txRequest), ..._signature },
           {
             common: Common.custom(
               { chainId: Number(txRequest.chainId) },
@@ -302,21 +354,12 @@ export default class KeystoneWallet implements Wallet {
       ur,
       [URType.ETH_SIGNATURE, URType.EVM_SIGNATURE],
       async cbor => {
-        const signature: any = ETHSignature.fromCBOR(cbor).getSignature()
+        const sig = await this.deriveEthSignature(cbor)
 
-        const r = makeBigIntLike(
-          Buffer.from(signature.slice(0, 32)).toString('hex')
-        )!
-        const s = makeBigIntLike(
-          Buffer.from(signature.slice(32, 64)).toString('hex')
-        )!
-        const v = signature.slice(64)
-
-        const signedTx = await this.getTxFromTransactionRequest(transaction, {
-          r,
-          s,
-          v
-        })
+        const signedTx = await this.getTxFromTransactionRequest(
+          transaction,
+          sig
+        )
 
         return '0x' + Buffer.from(signedTx.serialize()).toString('hex')
       }
