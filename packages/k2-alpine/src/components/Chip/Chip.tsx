@@ -6,11 +6,11 @@ import {
   TouchableOpacity,
   ViewStyle
 } from 'react-native'
-import { Text } from '../Primitives'
 import { useTheme } from '../../hooks'
+import { colors } from '../../theme/tokens/colors'
 import { Icons } from '../../theme/tokens/Icons'
 import { alpha } from '../../utils'
-import { colors } from '../../theme/tokens/colors'
+import { Text } from '../Primitives'
 
 type ChipSize = 'small' | 'large'
 type ChipVariant = 'light' | 'dark'
@@ -24,6 +24,7 @@ interface ChipProps {
   variant?: ChipVariant
   rightIcon?: ChipIconType | JSX.Element
   hitSlop?: number | Insets
+  renderLeft?: () => JSX.Element
 }
 
 export const Chip = forwardRef<
@@ -31,7 +32,16 @@ export const Chip = forwardRef<
   ChipProps & PropsWithChildren
 >(
   (
-    { size, variant = 'light', rightIcon, style, children, testID, ...rest },
+    {
+      size,
+      variant = 'light',
+      rightIcon,
+      style,
+      children,
+      testID,
+      renderLeft,
+      ...rest
+    },
     ref
   ) => {
     const { theme } = useTheme()
@@ -68,6 +78,7 @@ export const Chip = forwardRef<
           style
         ]}
         {...rest}>
+        {renderLeft && renderLeft()}
         <Text
           numberOfLines={1}
           variant={'buttonSmall'}

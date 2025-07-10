@@ -1,5 +1,5 @@
+import { Text, TextVariant, View, alpha, useTheme } from '@avalabs/k2-alpine'
 import React, { useMemo } from 'react'
-import { View, Text, alpha, useTheme, TextVariant } from '@avalabs/k2-alpine'
 import { StyleSheet, TextStyle, ViewStyle } from 'react-native'
 import { numberToSubscriptFormat } from 'utils/numberToSubscriptFormat/numberToSubscriptFormat'
 
@@ -62,7 +62,10 @@ const styles = StyleSheet.create({
   }
 })
 
-type SubTextNumberVariant = Extract<TextVariant, 'body1' | 'body2' | 'heading2'>
+type SubTextNumberVariant = Extract<
+  TextVariant,
+  'body1' | 'body2' | 'heading2' | 'buttonMedium'
+>
 
 const getSubTextStyle = (textVariant: SubTextNumberVariant): TextStyle => {
   let style: TextStyle = {
@@ -75,7 +78,10 @@ const getSubTextStyle = (textVariant: SubTextNumberVariant): TextStyle => {
     style = { ...style, fontSize: 13, top: 4, fontWeight: '400' }
   }
   if (textVariant === 'heading2') {
-    style = { ...style, fontSize: 18, top: 10, fontWeight: '700' }
+    style = { ...style, fontSize: 18, top: 8, fontWeight: '700' }
+  }
+  if (textVariant === 'buttonMedium') {
+    style = { ...style, fontSize: 15, top: 6, fontWeight: '600' }
   }
 
   return style

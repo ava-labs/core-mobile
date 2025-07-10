@@ -160,8 +160,7 @@ export const SearchBar: FC<Props> = ({
               height: HEIGHT,
               color: colors.$textPrimary,
               paddingLeft: 36,
-              paddingVertical: 0,
-              marginRight: 36
+              paddingVertical: 0
             }}
             placeholder={placeholder}
             placeholderTextColor={colors.$textSecondary}
