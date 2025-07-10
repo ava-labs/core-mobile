@@ -61,6 +61,7 @@ export const EmptyState = ({
         borderRadius: 12,
         flex: 1,
         marginTop: 64,
+        marginBottom: 64 + (isAndroid ? insets.bottom + 80 : 0),
         backgroundColor: '$surfaceSecondary'
       }}>
       <View
@@ -78,18 +79,18 @@ export const EmptyState = ({
           zIndex: 100,
           justifyContent: 'flex-end',
           flex: 1,
-          marginBottom: 64 + (isAndroid ? insets.bottom + 80 : 0)
+          marginBottom: 16
         }}>
         <Text
           variant="heading3"
-          sx={{ color: '$textPrimary', marginHorizontal: 16 }}>
+          sx={{ color: '$textPrimary', marginLeft: 16, marginRight: 32 }}>
           Get started by adding crypto to your wallet
         </Text>
         <Space y={16} />
         <GroupList
           data={groupListData}
           titleSx={{ fontFamily: 'Inter-regular', fontSize: 15 }}
-          subtitleSx={{ marginRight: 16 }}
+          subtitleSx={{ marginRight: 16, fontFamily: 'Inter-regular' }}
           textContainerSx={{
             paddingVertical: 4
           }}

@@ -7,6 +7,7 @@ import Animated, {
 import Svg, { Defs, LinearGradient, Stop, Path } from 'react-native-svg'
 import { withTiming } from 'react-native-reanimated'
 import { Easing, Animated as RNAnimated } from 'react-native'
+import { isScreenLargerThan6_2Inches } from 'features/portfolio/utils'
 
 const AnimatedView = Animated.View
 
@@ -19,6 +20,8 @@ export const AvaxLogoGradientSvg = ({
   const [gradientTransform, setGradientTransform] = useState('rotate(0)')
   const opacity = useSharedValue(1)
 
+  const width = isScreenLargerThan6_2Inches ? 360 : 319
+  const height = isScreenLargerThan6_2Inches ? 381 : 281
   const gradientColor1 = isDark ? '#78787C' : '#EBEBEC'
   const gradientColor2 = isDark ? '#47474C' : '#B8B8BA'
   const fill = isDark
@@ -29,7 +32,7 @@ export const AvaxLogoGradientSvg = ({
     const animation = RNAnimated.loop(
       RNAnimated.timing(rotateValue, {
         toValue: 360,
-        duration: 3000,
+        duration: 4000,
         easing: Easing.linear,
         useNativeDriver: false // must be false, because we are animating a non-native property
       })
@@ -48,7 +51,7 @@ export const AvaxLogoGradientSvg = ({
   }, [rotateValue])
 
   useEffect(() => {
-    opacity.value = withRepeat(withTiming(0.7, { duration: 3000 }), -1, true)
+    opacity.value = withRepeat(withTiming(0.7, { duration: 4000 }), -1, true)
   }, [opacity])
 
   const animatedStyle = useAnimatedStyle(() => ({
@@ -56,8 +59,8 @@ export const AvaxLogoGradientSvg = ({
   }))
 
   return (
-    <AnimatedView style={[{ width: 319, height: 281 }, animatedStyle]}>
-      <Svg width={319} height={281} viewBox="0 0 319 281" fill="none">
+    <AnimatedView style={[{ width, height }, animatedStyle]}>
+      <Svg width="100%" height="100%" viewBox="0 0 319 281" fill="none">
         <Defs>
           <LinearGradient
             id={fill}

@@ -516,6 +516,31 @@ const PortfolioHomeScreen = (): JSX.Element => {
     handleGoToDiscoverCollectibles
   ])
 
+  const renderSegmentedControl = useCallback((): JSX.Element => {
+    if (filteredTokenList.length === 0) {
+      return (
+        <SegmentedControl
+          dynamicItemWidth={false}
+          items={SEGMENT_ITEMS}
+          selectedSegmentIndex={selectedSegmentIndex}
+          onSelectSegment={handleSelectSegment}
+          style={styles.segmentedControl}
+        />
+      )
+    }
+    return (
+      <LinearGradientBottomWrapper shouldDelayBlurOniOS={true}>
+        <SegmentedControl
+          dynamicItemWidth={false}
+          items={SEGMENT_ITEMS}
+          selectedSegmentIndex={selectedSegmentIndex}
+          onSelectSegment={handleSelectSegment}
+          style={styles.segmentedControl}
+        />
+      </LinearGradientBottomWrapper>
+    )
+  }, [filteredTokenList.length, handleSelectSegment, selectedSegmentIndex])
+
   return (
     <BlurredBarsContentLayout>
       <CollapsibleTabs.Container
@@ -528,15 +553,7 @@ const PortfolioHomeScreen = (): JSX.Element => {
       />
 
       <View onLayout={handleSegmentedControlLayout}>
-        <LinearGradientBottomWrapper shouldDelayBlurOniOS={true}>
-          <SegmentedControl
-            dynamicItemWidth={false}
-            items={SEGMENT_ITEMS}
-            selectedSegmentIndex={selectedSegmentIndex}
-            onSelectSegment={handleSelectSegment}
-            style={styles.segmentedControl}
-          />
-        </LinearGradientBottomWrapper>
+        {renderSegmentedControl()}
       </View>
     </BlurredBarsContentLayout>
   )
