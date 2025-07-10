@@ -8,6 +8,15 @@ import {
 } from '@avalabs/core-chains-sdk'
 
 /**
+ * Legacy Solana chain ID format used by some WalletConnect dApps. While the standard
+ * mainnet chain ID is 'solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp', some dApps still use
+ * this older format. We need to support both to maintain compatibility with all dApps.
+ * This is separate from actual Solana program IDs (smart contracts) - it's just a
+ * different format for identifying the Solana mainnet chain.
+ */
+export const SOLANA_LEGACY_CHAIN_ID = 'solana:4sGjMW1sUnHzSxGspuhpqLDx6wiyjNtZ'
+
+/**
  * In the process of switching to CAIP2 naming convention for blockchain ids we are temporarily modifying Posthog
  * events to send chain ids with new naming convention.
  * Eventually we will use CAIP2 through whole app so this conversion will not be needed anymore.
@@ -78,7 +87,7 @@ export const isSvmChainId = (caip2ChainId: string): boolean => {
   return (
     caip2ChainId === SolanaCaip2ChainId.MAINNET ||
     caip2ChainId === SolanaCaip2ChainId.DEVNET ||
-    caip2ChainId === 'solana:4sGjMW1sUnHzSxGspuhpqLDx6wiyjNtZ'
+    caip2ChainId === SOLANA_LEGACY_CHAIN_ID
   )
 }
 
@@ -167,7 +176,7 @@ export const getSolanaChainId = (caip2ChainId: string): number | undefined => {
     return ChainId.SOLANA_TESTNET_ID
   }
 
-  if (caip2ChainId === 'solana:4sGjMW1sUnHzSxGspuhpqLDx6wiyjNtZ') {
+  if (caip2ChainId === SOLANA_LEGACY_CHAIN_ID) {
     return ChainId.SOLANA_MAINNET_ID
   }
 
