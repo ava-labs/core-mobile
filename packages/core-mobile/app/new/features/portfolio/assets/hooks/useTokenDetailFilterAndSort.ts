@@ -24,6 +24,7 @@ export const useTokenDetailFilterAndSort = ({
   data: Transaction[]
   filter: Selection
   sort: Selection
+  resetFilter: () => void
 } => {
   const [selectedFilter, setSelectedFilter] = useState<IndexPath>({
     section: 0,
@@ -33,6 +34,10 @@ export const useTokenDetailFilterAndSort = ({
     section: 0,
     row: 0
   })
+
+  const resetFilter = useCallback(() => {
+    setSelectedFilter({ section: 0, row: 0 })
+  }, [])
 
   const filterOption = useMemo(() => {
     return (
@@ -104,7 +109,8 @@ export const useTokenDetailFilterAndSort = ({
       selected: selectedSort,
       onSelected: setSelectedSort
     },
-    data: filteredAndSorted
+    data: filteredAndSorted,
+    resetFilter
   }
 }
 

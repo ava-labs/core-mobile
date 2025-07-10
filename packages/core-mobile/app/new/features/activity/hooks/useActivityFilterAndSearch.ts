@@ -13,7 +13,7 @@ import {
   useTokenDetailFilterAndSort
 } from 'features/portfolio/assets/hooks/useTokenDetailFilterAndSort'
 import { useNetworks } from 'hooks/networks/useNetworks'
-import { useCallback, useMemo } from 'react'
+import { useCallback, useEffect, useMemo } from 'react'
 import { isAvalancheNetwork } from 'services/network/utils/isAvalancheNetwork'
 import { LocalTokenWithBalance } from 'store/balance'
 import { Transaction } from 'store/transaction'
@@ -137,38 +137,51 @@ export const useActivityFilterAndSearch = ({
     return undefined
   }, [network?.chainId])
 
-  const { data, filter, sort } = useTokenDetailFilterAndSort({
+  const { data, filter, sort, resetFilter } = useTokenDetailFilterAndSort({
     transactions: transactionsBySymbol,
     filters
   })
 
+  useEffect(() => {
+    // In case the user is searching and the filter is not the default one, reset the filter
+    if (searchText.length > 0 && filter.title !== TokenDetailFilter.All) {
+      resetFilter()
+    }
+  }, [
+    filter.selected.row,
+    filter.selected.section,
+    filter.title,
+    resetFilter,
+    searchText.length
+  ])
+
   const combinedData = useMemo(() => {
     const filteredPendingBridgeTxs = pendingBridgeTxs
       .filter(tx => getBridgeAssetSymbol(tx) === token?.symbol)
-      .sort(
-        (a, b) => b.sourceStartedAt - a.sourceStartedAt // descending
-      )
-      .filter(tx => {
-        return (
-          tx.sourceTxHash.toLowerCase().includes(searchText.toLowerCase()) ||
-          tx.targetTxHash?.toLowerCase().includes(searchText.toLowerCase())
-        )
-      })
+      .sort((a, b) => b.sourceStartedAt - a.sourceStartedAt)
 
-    const filteredTransactions = data.filter(tx => {
-      return (
-        tx.tokens.some(t =>
-          [t.symbol, t.name, t.amount.toString()].some(field =>
-            field.toLowerCase().includes(searchText.toLowerCase())
+    if (searchText.length) {
+      return [
+        ...filteredPendingBridgeTxs.filter(tx => {
+          return (
+            tx.sourceTxHash.toLowerCase().includes(searchText.toLowerCase()) ||
+            tx.targetTxHash?.toLowerCase().includes(searchText.toLowerCase())
           )
-        ) ||
-        tx.hash.toLowerCase().includes(searchText.toLowerCase()) ||
-        tx.to.toLowerCase().includes(searchText.toLowerCase()) ||
-        tx.from.toLowerCase().includes(searchText.toLowerCase())
-      )
-    })
+        }),
+        ...data.filter(tx => {
+          tx.tokens.some(t =>
+            [t.symbol, t.name, t.amount.toString()].some(field =>
+              field.toLowerCase().includes(searchText.toLowerCase())
+            )
+          ) ||
+            tx.hash.toLowerCase().includes(searchText.toLowerCase()) ||
+            tx.to.toLowerCase().includes(searchText.toLowerCase()) ||
+            tx.from.toLowerCase().includes(searchText.toLowerCase())
+        })
+      ]
+    }
 
-    return [...filteredPendingBridgeTxs, ...filteredTransactions]
+    return [...filteredPendingBridgeTxs, ...data]
   }, [data, pendingBridgeTxs, searchText, token?.symbol])
 
   return {
