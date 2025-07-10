@@ -163,22 +163,22 @@ export const useActivityFilterAndSearch = ({
 
     if (searchText.length) {
       return [
-        ...filteredPendingBridgeTxs.filter(tx => {
-          return (
+        ...filteredPendingBridgeTxs.filter(
+          tx =>
             tx.sourceTxHash.toLowerCase().includes(searchText.toLowerCase()) ||
             tx.targetTxHash?.toLowerCase().includes(searchText.toLowerCase())
-          )
-        }),
-        ...data.filter(tx => {
-          tx.tokens.some(t =>
-            [t.symbol, t.name, t.amount.toString()].some(field =>
-              field.toLowerCase().includes(searchText.toLowerCase())
-            )
-          ) ||
+        ),
+        ...data.filter(
+          tx =>
+            tx.tokens.some(t =>
+              [t.symbol, t.name, t.amount.toString()].some(field =>
+                field.toLowerCase().includes(searchText.toLowerCase())
+              )
+            ) ||
             tx.hash.toLowerCase().includes(searchText.toLowerCase()) ||
             tx.to.toLowerCase().includes(searchText.toLowerCase()) ||
             tx.from.toLowerCase().includes(searchText.toLowerCase())
-        })
+        )
       ]
     }
 
