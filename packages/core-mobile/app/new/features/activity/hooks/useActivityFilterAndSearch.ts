@@ -170,14 +170,16 @@ export const useActivityFilterAndSearch = ({
           )
         }),
         ...data.filter(tx => {
-          tx.tokens.some(t =>
-            [t.symbol, t.name, t.amount.toString()].some(field =>
-              field.toLowerCase().includes(searchText.toLowerCase())
-            )
-          ) ||
+          return (
+            tx.tokens.some(t =>
+              [t.symbol, t.name, t.amount.toString()].some(field =>
+                field.toLowerCase().includes(searchText.toLowerCase())
+              )
+            ) ||
             tx.hash.toLowerCase().includes(searchText.toLowerCase()) ||
             tx.to.toLowerCase().includes(searchText.toLowerCase()) ||
             tx.from.toLowerCase().includes(searchText.toLowerCase())
+          )
         })
       ]
     }
