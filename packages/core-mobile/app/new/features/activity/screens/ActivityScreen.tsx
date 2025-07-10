@@ -2,6 +2,7 @@ import { BridgeTransfer } from '@avalabs/bridge-unified'
 import { BridgeTransaction } from '@avalabs/core-bridge-sdk'
 import { Network } from '@avalabs/core-chains-sdk'
 import {
+  ANIMATED,
   Chip,
   Image,
   Separator,
@@ -24,24 +25,29 @@ import { ErrorState } from 'new/common/components/ErrorState'
 import { LoadingState } from 'new/common/components/LoadingState'
 import React, { useCallback, useMemo } from 'react'
 import { ViewStyle } from 'react-native'
-import Animated from 'react-native-reanimated'
+import Animated, { useAnimatedStyle, withTiming } from 'react-native-reanimated'
+import { useHeaderMeasurements } from 'react-native-collapsible-tab-view'
 import { Transaction } from 'store/transaction'
 import { useActivityFilterAndSearch } from '../hooks/useActivityFilterAndSearch'
 
 const errorIcon = require('../../../assets/icons/unamused_emoji.png')
 
 export const ActivityScreen = ({
+  isSearchBarFocused,
   searchText,
   containerStyle,
   handleExplorerLink,
   handlePendingBridge
 }: {
+  isSearchBarFocused: boolean
   searchText: string
   handleExplorerLink: (explorerLink: string) => void
   handlePendingBridge: (transaction: BridgeTransaction | BridgeTransfer) => void
   containerStyle: ViewStyle
 }): JSX.Element => {
   const { theme } = useTheme()
+  const header = useHeaderMeasurements()
+
   const {
     data,
     filter,
@@ -56,39 +62,17 @@ export const ActivityScreen = ({
     selectedNetwork
   } = useActivityFilterAndSearch({ searchText })
 
-  const renderItem: ListRenderItem<
-    Transaction | BridgeTransaction | BridgeTransfer
-  > = useCallback(
-    ({ item, index }) => {
-      if (isPendingBridgeTransaction(item)) {
-        return (
-          <PendingBridgeTransactionItem
-            key={item.sourceTxHash}
-            item={item}
-            index={index}
-            onPress={() => handlePendingBridge(item)}
-          />
-        )
-      } else {
-        const isXpTx = isXpTransaction(item.txType)
-        // TODO: After fixing the token issue, we can remove this
-        // token &&
-        // (isTokenWithBalanceAVM(token) || isTokenWithBalancePVM(token))
-
-        const props = {
-          tx: item,
-          index,
-          onPress: () => handleExplorerLink(item.explorerLink)
+  const keyboardAvoidingStyle = useAnimatedStyle(() => {
+    return {
+      transform: [
+        {
+          translateY: withTiming(isSearchBarFocused ? -header.height : 0, {
+            ...ANIMATED.TIMING_CONFIG
+          })
         }
-
-        if (isXpTx) {
-          return <XpActivityListItem {...props} key={item.hash} />
-        }
-        return <TokenActivityListItem {...props} key={item.hash} />
-      }
-    },
-    [handleExplorerLink, handlePendingBridge]
-  )
+      ]
+    }
+  })
 
   const dropdowns = useMemo(() => {
     return (
@@ -146,54 +130,73 @@ export const ActivityScreen = ({
 
   const emptyComponent = useMemo(() => {
     if (isRefreshing || isLoading) {
-      return (
-        <CollapsibleTabs.ContentWrapper
-          height={Number(containerStyle.minHeight)}>
-          <LoadingState />
-        </CollapsibleTabs.ContentWrapper>
-      )
+      return <LoadingState />
     }
 
     if (searchText.length > 0) {
-      return (
-        <CollapsibleTabs.ContentWrapper
-          height={Number(containerStyle.minHeight)}>
-          <ErrorState title="No results found" description="" />
-        </CollapsibleTabs.ContentWrapper>
-      )
+      return <ErrorState title="No results found" description="" />
     }
 
     if (isError) {
       return (
-        <CollapsibleTabs.ContentWrapper
-          height={Number(containerStyle.minHeight)}>
-          <ErrorState
-            button={{
-              title: 'Refresh',
-              onPress: refresh
-            }}
-          />
-        </CollapsibleTabs.ContentWrapper>
+        <ErrorState
+          button={{
+            title: 'Refresh',
+            onPress: refresh
+          }}
+        />
       )
     }
 
     return (
+      <ErrorState
+        icon={<Image source={errorIcon} sx={{ width: 42, height: 42 }} />}
+        title="No recent transactions"
+        description="Interact with this token onchain and see your activity here"
+      />
+    )
+  }, [isError, isLoading, isRefreshing, refresh, searchText.length])
+
+  const renderEmpty = useCallback(() => {
+    return (
       <CollapsibleTabs.ContentWrapper height={Number(containerStyle.minHeight)}>
-        <ErrorState
-          icon={<Image source={errorIcon} sx={{ width: 42, height: 42 }} />}
-          title="No recent transactions"
-          description="Interact with this token onchain and see your activity here"
-        />
+        <Animated.View style={keyboardAvoidingStyle}>
+          {emptyComponent}
+        </Animated.View>
       </CollapsibleTabs.ContentWrapper>
     )
-  }, [
-    containerStyle.minHeight,
-    isError,
-    isLoading,
-    isRefreshing,
-    refresh,
-    searchText.length
-  ])
+  }, [containerStyle.minHeight, emptyComponent, keyboardAvoidingStyle])
+
+  const renderItem: ListRenderItem<
+    Transaction | BridgeTransaction | BridgeTransfer
+  > = useCallback(
+    ({ item, index }) => {
+      if (isPendingBridgeTransaction(item)) {
+        return (
+          <PendingBridgeTransactionItem
+            key={item.sourceTxHash}
+            item={item}
+            index={index}
+            onPress={() => handlePendingBridge(item)}
+          />
+        )
+      } else {
+        const isXpTx = isXpTransaction(item.txType)
+
+        const props = {
+          tx: item,
+          index,
+          onPress: () => handleExplorerLink(item.explorerLink)
+        }
+
+        if (isXpTx) {
+          return <XpActivityListItem {...props} key={item.hash} />
+        }
+        return <TokenActivityListItem {...props} key={item.hash} />
+      }
+    },
+    [handleExplorerLink, handlePendingBridge]
+  )
 
   const renderSeparator = useCallback((): JSX.Element => {
     return <Separator sx={{ marginLeft: 68 }} />
@@ -228,7 +231,7 @@ export const ActivityScreen = ({
         data={data}
         renderItem={renderItem}
         ListHeaderComponent={dropdowns}
-        ListEmptyComponent={emptyComponent}
+        ListEmptyComponent={renderEmpty}
         ItemSeparatorComponent={renderSeparator}
         showsVerticalScrollIndicator={false}
         keyExtractor={keyExtractor}

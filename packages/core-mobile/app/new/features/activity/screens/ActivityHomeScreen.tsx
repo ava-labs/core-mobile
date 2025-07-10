@@ -15,8 +15,8 @@ import {
   OnTabChange
 } from 'common/components/CollapsibleTabs'
 import { useBottomTabBarHeight } from 'common/hooks/useBottomTabBarHeight'
-import { useCoreBrowser } from 'common/hooks/useCoreBrowser'
 import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
+import useInAppBrowser from 'common/hooks/useInAppBrowser'
 import { getSourceChainId } from 'common/utils/bridgeUtils'
 import { useFocusEffect, useRouter } from 'expo-router'
 import React, { useCallback, useMemo, useRef, useState } from 'react'
@@ -41,12 +41,12 @@ import { ActivityScreen } from './ActivityScreen'
 
 const ActivityHomeScreen = (): JSX.Element => {
   const { navigate, back } = useRouter()
-  const { openUrlInSimpleBrowser } = useCoreBrowser()
   const { theme } = useTheme()
   const tabBarHeight = useBottomTabBarHeight()
   const headerHeight = useHeaderHeight()
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const [searchText, setSearchText] = useState('')
+  const [isSearchBarFocused, setSearchBarFocused] = useState(false)
   const tabViewRef = useRef<CollapsibleTabsRef>(null)
   const [balanceHeaderLayout, setBalanceHeaderLayout] = useState<
     LayoutRectangle | undefined
@@ -144,13 +144,15 @@ const ActivityHomeScreen = (): JSX.Element => {
     [navigate, isDeveloperMode]
   )
 
+  const { openUrl } = useInAppBrowser()
+
   const handleExplorerLink = useCallback(
     (explorerLink: string): void => {
       AnalyticsService.capture('ExplorerLinkClicked')
       back()
-      openUrlInSimpleBrowser({ url: explorerLink, title: '' })
+      openUrl(explorerLink)
     },
-    [openUrlInSimpleBrowser, back]
+    [back, openUrl]
   )
 
   useFocusEffect(
@@ -223,6 +225,7 @@ const ActivityHomeScreen = (): JSX.Element => {
               }
             ]}>
             <SearchBar
+              setSearchBarFocused={setSearchBarFocused}
               onTextChanged={onSearchTextChanged}
               searchText={searchText}
               placeholder="Search"
@@ -256,6 +259,7 @@ const ActivityHomeScreen = (): JSX.Element => {
         tabName: ActivityTab.Activity,
         component: (
           <ActivityScreen
+            isSearchBarFocused={isSearchBarFocused}
             searchText={searchText}
             handleExplorerLink={handleExplorerLink}
             handlePendingBridge={handlePendingBridge}
@@ -268,7 +272,8 @@ const ActivityHomeScreen = (): JSX.Element => {
     contentContainerStyle,
     handleExplorerLink,
     handlePendingBridge,
-    searchText
+    searchText,
+    isSearchBarFocused
   ])
 
   useFocusEffect(() => {

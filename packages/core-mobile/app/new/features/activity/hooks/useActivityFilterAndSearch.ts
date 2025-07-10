@@ -78,8 +78,6 @@ export const useActivityFilterAndSearch = ({
   const token = useMemo(() => {
     return filteredTokenList.find(
       tk => Number(tk.localId) === Number(network?.chainId)
-      // TODO: Fix this, is localId the same as chainId?
-      // Number(tk.localId) === Number(networkOption?.chainId)
     )
   }, [filteredTokenList, network?.chainId])
 
@@ -159,17 +157,11 @@ export const useActivityFilterAndSearch = ({
 
     const filteredTransactions = data.filter(tx => {
       return (
-        tx.tokens
-          .map(t => t.symbol)
-          .some(s => s.toLowerCase().includes(searchText.toLowerCase())) ||
-        tx.tokens
-          .map(t => t.name)
-          .some(n => n.toLowerCase().includes(searchText.toLowerCase())) ||
-        tx.tokens
-          .map(t => t.amount)
-          .some(a =>
-            a.toString().toLowerCase().includes(searchText.toLowerCase())
-          ) ||
+        tx.tokens.some(t =>
+          [t.symbol, t.name, t.amount.toString()].some(field =>
+            field.toLowerCase().includes(searchText.toLowerCase())
+          )
+        ) ||
         tx.hash.toLowerCase().includes(searchText.toLowerCase()) ||
         tx.to.toLowerCase().includes(searchText.toLowerCase()) ||
         tx.from.toLowerCase().includes(searchText.toLowerCase())

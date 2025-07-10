@@ -99,6 +99,7 @@ export const XpActivityListItem: FC<Props> = ({ tx, onPress }) => {
       icon={transactionTypeIcon}
       onPress={onPress}
       status={PriceChangeStatus.Neutral}
+      timestamp={tx.timestamp}
     />
   )
 }
