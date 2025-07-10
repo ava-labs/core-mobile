@@ -17,7 +17,7 @@ import { useCallback, useEffect, useMemo } from 'react'
 import { isAvalancheNetwork } from 'services/network/utils/isAvalancheNetwork'
 import { LocalTokenWithBalance } from 'store/balance'
 import { Transaction } from 'store/transaction'
-import { useGetAllTransactions } from 'store/transaction/hooks/useGetAllTransactions'
+import { useGetRecentTransactions } from 'store/transaction/hooks/useGetRecentTransactions'
 import { isPChain } from 'utils/network/isAvalancheNetwork'
 import { useActivity } from '../store'
 
@@ -93,12 +93,12 @@ export const useActivityFilterAndSearch = ({
   }, [networkFilters, selectedNetwork, setSelectedNetwork])
 
   const {
-    data: allTransactions,
+    transactions: allTransactions,
     refresh,
     isLoading,
     isRefreshing,
     isError
-  } = useGetAllTransactions(network)
+  } = useGetRecentTransactions(network)
 
   const pendingBridgeTxs = usePendingBridgeTransactions(network?.chainId)
   const isPendingBridge = useCallback(
@@ -117,7 +117,7 @@ export const useActivityFilterAndSearch = ({
   )
 
   const transactionsBySymbol = useMemo(() => {
-    return allTransactions.transactions
+    return allTransactions
       .filter(tx => {
         return (
           !token?.symbol ||
@@ -125,7 +125,7 @@ export const useActivityFilterAndSearch = ({
         )
       })
       .filter(tx => !isPendingBridge(tx))
-  }, [allTransactions.transactions, token?.symbol, isPendingBridge])
+  }, [allTransactions, token?.symbol, isPendingBridge])
 
   const filters: TokenDetailFilters | undefined = useMemo(() => {
     if (network?.chainId && isPChain(network.chainId)) {
@@ -170,14 +170,16 @@ export const useActivityFilterAndSearch = ({
           )
         }),
         ...data.filter(tx => {
-          tx.tokens.some(t =>
-            [t.symbol, t.name, t.amount.toString()].some(field =>
-              field.toLowerCase().includes(searchText.toLowerCase())
-            )
-          ) ||
+          return (
+            tx.tokens.some(t =>
+              [t.symbol, t.name, t.amount.toString()].some(field =>
+                field.toLowerCase().includes(searchText.toLowerCase())
+              )
+            ) ||
             tx.hash.toLowerCase().includes(searchText.toLowerCase()) ||
             tx.to.toLowerCase().includes(searchText.toLowerCase()) ||
             tx.from.toLowerCase().includes(searchText.toLowerCase())
+          )
         })
       ]
     }
