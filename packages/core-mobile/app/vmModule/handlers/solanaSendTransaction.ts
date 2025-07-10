@@ -23,6 +23,7 @@ export const solanaSendTransaction = async ({
   try {
     const signedTx = await walletService.sign({
       transaction: {
+        account: account.addressSVM,
         serializedTx: transactionData
       },
       accountIndex: account.index,
