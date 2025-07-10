@@ -4,6 +4,7 @@ import {
 } from '@avalabs/avalanche-module'
 import { BridgeTransfer } from '@avalabs/bridge-unified'
 import { BridgeTransaction } from '@avalabs/core-bridge-sdk'
+import { ChainId } from '@avalabs/core-chains-sdk'
 import {
   NavigationTitleHeader,
   SegmentedControl,
@@ -18,14 +19,17 @@ import {
 } from 'common/components/CollapsibleTabs'
 import { LinearGradientBottomWrapper } from 'common/components/LinearGradientBottomWrapper'
 import { TokenHeader } from 'common/components/TokenHeader'
-import { useCoreBrowser } from 'common/hooks/useCoreBrowser'
+import { AVAX_TOKEN_ID, USDC_AVALANCHE_C_TOKEN_ID } from 'common/consts/swap'
 import { useErc20ContractTokens } from 'common/hooks/useErc20ContractTokens'
 import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
+import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
+import useInAppBrowser from 'common/hooks/useInAppBrowser'
 import { useSearchableTokenList } from 'common/hooks/useSearchableTokenList'
+import { getSourceChainId } from 'common/utils/bridgeUtils'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { useAssetBalances } from 'features/bridge/hooks/useAssetBalances'
-import { getSourceChainId } from 'common/utils/bridgeUtils'
+import { useBuy } from 'features/buyOnramp/hooks/useBuy'
 import {
   ActionButton,
   ActionButtons
@@ -35,8 +39,8 @@ import TransactionHistory from 'features/portfolio/assets/components/Transaction
 import { ActionButtonTitle } from 'features/portfolio/assets/consts'
 import { useSendSelectedToken } from 'features/send/store'
 import { useAddStake } from 'features/stake/hooks/useAddStake'
-import { AVAX_TOKEN_ID, USDC_AVALANCHE_C_TOKEN_ID } from 'common/consts/swap'
 import { useNavigateToSwap } from 'features/swap/hooks/useNavigateToSwap'
+import { useNetworks } from 'hooks/networks/useNetworks'
 import { UI, useIsUIDisabledForNetwork } from 'hooks/useIsUIDisabled'
 import React, { useCallback, useMemo, useRef, useState } from 'react'
 import {
@@ -59,22 +63,17 @@ import {
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { selectSelectedCurrency } from 'store/settings/currency'
 import { selectIsPrivacyModeEnabled } from 'store/settings/securityPrivacy'
-import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
-import { useNetworks } from 'hooks/networks/useNetworks'
-import { ChainId } from '@avalabs/core-chains-sdk'
-import { useBuy } from 'features/buyOnramp/hooks/useBuy'
 
 export const TokenDetailScreen = (): React.JSX.Element => {
   const {
     theme: { colors }
   } = useTheme()
-  const { navigate, back } = useRouter()
+  const { navigate } = useRouter()
   const { getNetwork } = useNetworks()
   const { navigateToSwap } = useNavigateToSwap()
   const { addStake, canAddStake } = useAddStake()
   const botomInset = useSafeAreaInsets().bottom
   const tabViewRef = useRef<CollapsibleTabsRef>(null)
-  const { openUrl } = useCoreBrowser()
   const [_, setSelectedToken] = useSendSelectedToken()
   const [tokenHeaderLayout, setTokenHeaderLayout] = useState<
     LayoutRectangle | undefined
@@ -252,13 +251,14 @@ export const TokenDetailScreen = (): React.JSX.Element => {
     })
   }, [token?.balanceInCurrency, formatCurrency])
 
+  const { openUrl } = useInAppBrowser()
+
   const handleExplorerLink = useCallback(
     (explorerLink: string): void => {
       AnalyticsService.capture('ExplorerLinkClicked')
-      back()
-      openUrl({ url: explorerLink, title: '' })
+      openUrl(explorerLink)
     },
-    [openUrl, back]
+    [openUrl]
   )
 
   const handlePendingBridge = useCallback(
