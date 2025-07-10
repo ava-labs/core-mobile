@@ -229,7 +229,6 @@ const ActivityHomeScreen = (): JSX.Element => {
               onTextChanged={onSearchTextChanged}
               searchText={searchText}
               placeholder="Search"
-              useDebounce={true}
             />
           </Animated.View>
           <Animated.View
