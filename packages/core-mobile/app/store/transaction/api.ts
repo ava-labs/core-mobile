@@ -1,7 +1,7 @@
 import { createApi, fakeBaseQuery } from '@reduxjs/toolkit/query/react'
 import ActivityService from 'services/activity/ActivityService'
-import Logger from 'utils/Logger'
 import { ActivityResponse } from 'services/activity/types'
+import Logger from 'utils/Logger'
 import {
   GetRecentTransactionsArgs,
   GetTransactionsArgs,
@@ -17,13 +17,14 @@ export const transactionApi = createApi({
         if (!account || !network) return { error: 'unable to get transactions' }
 
         try {
-          const transactions = await ActivityService.getActivities({
+          const data = await ActivityService.getActivities({
             network,
             account,
-            nextPageToken
+            nextPageToken,
+            pageSize: 100
           })
 
-          return { data: transactions }
+          return { data }
         } catch (err) {
           Logger.error(
             `failed to get transactions for chain ${network.chainId}`,

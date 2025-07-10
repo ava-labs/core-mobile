@@ -4,11 +4,12 @@ import { isAnyOf } from '@reduxjs/toolkit'
 import { useCallback, useState } from 'react'
 import { InteractionManager } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
+import { ActivityResponse } from 'services/activity/types'
 import { selectActiveAccount } from 'store/account/slice'
 import { selectIsLocked } from 'store/app/slice'
 import { popBridgeTransaction } from 'store/bridge/slice'
 import { addAppListener } from 'store/middleware/listener'
-import { useGetRecentsTransactionsQuery } from '../api'
+import { useGetTransactionsQuery } from '../api'
 import { Transaction } from '../types'
 
 const REFETCH_EVENTS = isAnyOf(popBridgeTransaction)
@@ -31,10 +32,10 @@ const emptyArr: Transaction[] = []
  *  - refetch transactions whenever the app is switched from another screen to portfolio screen
  *    except from react-native-tab-view screens
  */
-export const useGetRecentTransactions = (
+export const useGetAllTransactions = (
   network?: Network
 ): {
-  transactions: Transaction[]
+  data: ActivityResponse
   isLoading: boolean
   isRefreshing: boolean
   isError: boolean
@@ -49,7 +50,7 @@ export const useGetRecentTransactions = (
     isFetching,
     refetch,
     isError
-  } = useGetRecentsTransactionsQuery(
+  } = useGetTransactionsQuery(
     {
       network,
       account
@@ -98,7 +99,7 @@ export const useGetRecentTransactions = (
   const isLoading = isFetching && !data
 
   return {
-    transactions: data ?? emptyArr,
+    data: data ?? { transactions: emptyArr },
     isLoading,
     isRefreshing,
     isError,
