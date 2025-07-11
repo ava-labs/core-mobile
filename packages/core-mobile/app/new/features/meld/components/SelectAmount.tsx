@@ -68,6 +68,7 @@ export const SelectAmount = ({
   const { setSessionId } = useOfframpSessionId()
   const { formatIntegerCurrency, formatCurrency } = useFormatCurrency()
   const selectedCurrency = useSelector(selectSelectedCurrency)
+  const { openUrl } = useInAppBrowser()
 
   useEffect(() => {
     setCreateSessionWidgetErrorMessage(undefined)
