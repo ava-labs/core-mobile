@@ -16,7 +16,7 @@ export const useAddStake = (): {
   const [canAddStake, setCanAddStake] = useState(false)
   const { minStakeAmount } = useStakingParams()
   const { navigateToSwap } = useNavigateToSwap()
-  const { navigateToBuyAvax } = useBuy()
+  const { navigateToBuyAmountWithAvax } = useBuy()
   const isAvaxCSupported = useIsAvaxCSupported()
 
   const showNotEnoughAvaxAlert = useCallback((): void => {
@@ -24,7 +24,7 @@ export const useAddStake = (): {
     if (isAvaxCSupported) {
       buttons.push({
         text: 'Buy AVAX',
-        onPress: navigateToBuyAvax
+        onPress: navigateToBuyAmountWithAvax
       })
     }
     buttons.push({
@@ -41,7 +41,12 @@ export const useAddStake = (): {
         'Staking your AVAX in the Avalanche Network allows you to earn up to 10% APY.',
       buttons
     })
-  }, [isAvaxCSupported, navigateToSwap, minStakeAmount, navigateToBuyAvax])
+  }, [
+    isAvaxCSupported,
+    navigateToSwap,
+    minStakeAmount,
+    navigateToBuyAmountWithAvax
+  ])
 
   useEffect(() => {
     setCanAddStake(hasEnoughAvax !== undefined)
