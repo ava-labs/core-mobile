@@ -44,10 +44,6 @@ class BridgePage {
     return by.id(bridgeTab.toNetwork)
   }
 
-  get fromNetwork() {
-    return by.text(bridgeTab.fromNetwork)
-  }
-
   get hollidayBannerTitle() {
     return by.text(bridgeTab.hollidayBannerTitle)
   }
@@ -77,7 +73,7 @@ class BridgePage {
   }
 
   async tapFromNetwork() {
-    await Actions.tap(this.fromNetwork)
+    await Actions.tap(this.fromText)
   }
 
   async tapSelectToken() {
@@ -86,7 +82,7 @@ class BridgePage {
   }
 
   async verifyFromNetwork(network: string) {
-    await Assert.hasText(this.fromNetwork, network, 0)
+    await Assert.hasText(this.fromText, network, 0)
   }
 
   async verifyNetworks(from: string, to: string) {
