@@ -27,6 +27,9 @@ import {
 } from 'features/meld/store'
 import { TokenType } from '@avalabs/vm-module-types'
 import { closeInAppBrowser } from 'utils/openInAppBrowser'
+import { retry } from 'utils/js/retry'
+import { showAlert } from '@avalabs/k2-alpine'
+import { MeldTransaction } from 'features/meld/types'
 import { offrampSend } from './slice'
 
 const handleOfframpSend = async (
@@ -46,10 +49,35 @@ const handleOfframpSend = async (
     return
   }
 
-  // fetch transaction by session id
-  const response = await MeldService.fetchTrasactionBySessionId({
-    sessionId
-  })
+  let response: MeldTransaction | undefined
+  // fetch transaction by session id with max 2 retries
+  try {
+    response = await retry({
+      operation: () => {
+        return MeldService.fetchTrasactionBySessionId({
+          sessionId
+        })
+      },
+      isSuccess: result => result?.transaction !== undefined,
+      maxRetries: 2
+    })
+  } catch (error) {
+    Logger.error('failed to fetch transaction by session id', { error })
+    closeInAppBrowser()
+    showAlert({
+      title: 'Unable to complete the offramp transaction',
+      description:
+        'Please cancel the order in the offramp widget and try again.',
+      buttons: [
+        {
+          text: 'Got it',
+          style: 'default'
+        }
+      ]
+    })
+    setAnimating(false)
+    return
+  }
 
   const chainId = response?.transaction?.cryptoDetails?.chainId ?? undefined
   const destinationWalletAddress =
