@@ -133,6 +133,10 @@ export const useSelectAmount = ({
         : SessionTypes.SELL,
     sessionData: {
       redirectUrl,
+      redirectFlow:
+        category === ServiceProviderCategories.CRYPTO_OFFRAMP
+          ? true
+          : undefined,
       destinationCurrencyCode,
       sourceCurrencyCode,
       walletAddress,

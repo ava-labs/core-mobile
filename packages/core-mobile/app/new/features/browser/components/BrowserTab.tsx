@@ -42,7 +42,6 @@ import Logger from 'utils/Logger'
 import ErrorIcon from '../../../assets/icons/melting_face.png'
 import { useBrowserContext } from '../BrowserContext'
 import { isSuggestedSiteName } from '../utils'
-import { useBrowserContext } from '../BrowserContext'
 import { WebView } from './Webview'
 
 export interface BrowserTabRef {

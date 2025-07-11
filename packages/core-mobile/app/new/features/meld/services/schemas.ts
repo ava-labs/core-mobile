@@ -136,6 +136,7 @@ export const CreateCryptoQuoteSchema = object({
 export const SessionDataSchema = object({
   serviceProvider: z.nativeEnum(ServiceProviders).optional().nullable(),
   redirectUrl: string().optional().nullable(),
+  redirectFlow: boolean().optional().nullable(),
   countryCode: string().optional().nullable(),
   sourceCurrencyCode: string().optional().nullable(),
   destinationCurrencyCode: string().optional().nullable(),

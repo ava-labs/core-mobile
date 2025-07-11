@@ -26,7 +26,6 @@ import {
   offrampSessionIdStore
 } from 'features/meld/store'
 import { TokenType } from '@avalabs/vm-module-types'
-import { closeInAppBrowser } from 'utils/openInAppBrowser'
 import { offrampSend } from './slice'
 
 const handleOfframpSend = async (
@@ -99,7 +98,6 @@ const handleOfframpSend = async (
 
   try {
     setAnimating(true)
-    closeInAppBrowser()
     switch (network.vmName) {
       case NetworkVMType.EVM: {
         txHash = await sendEVM({

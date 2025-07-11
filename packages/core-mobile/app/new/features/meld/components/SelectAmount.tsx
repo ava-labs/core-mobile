@@ -18,6 +18,7 @@ import { useSelector } from 'react-redux'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import useInAppBrowser from 'common/hooks/useInAppBrowser'
 import { SubTextNumber } from 'common/components/SubTextNumber'
+import { LoadingState } from 'common/components/LoadingState'
 import { useSelectAmount } from '../hooks/useSelectAmount'
 import { ServiceProviderCategories } from '../consts'
 import { useOfframpActivityIndicator, useOfframpSessionId } from '../store'
@@ -68,7 +69,6 @@ export const SelectAmount = ({
   const { setSessionId } = useOfframpSessionId()
   const { formatIntegerCurrency, formatCurrency } = useFormatCurrency()
   const selectedCurrency = useSelector(selectSelectedCurrency)
-  const { openUrl } = useInAppBrowser()
 
   useEffect(() => {
     setCreateSessionWidgetErrorMessage(undefined)
