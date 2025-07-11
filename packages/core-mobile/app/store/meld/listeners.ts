@@ -65,9 +65,8 @@ const handleOfframpSend = async (
     Logger.error('failed to fetch transaction by session id', { error })
     closeInAppBrowser()
     showAlert({
-      title: 'Unable to complete the offramp transaction',
-      description:
-        'Please cancel the order in the offramp widget and try again.',
+      title: 'Unable to retrieve your off-ramp transaction',
+      description: 'Please try again later.',
       buttons: [
         {
           text: 'Got it',
