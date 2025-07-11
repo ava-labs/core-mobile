@@ -1,10 +1,14 @@
 import { LocalTokenWithBalance } from 'store/balance'
 import { TokenType } from '@avalabs/vm-module-types'
-import { closeInAppBrowser } from 'utils/openInAppBrowser'
 import { router } from 'expo-router'
 import { ACTIONS } from '../../../contexts/DeeplinkContext/types'
 import { NATIVE_ERC20_TOKEN_CONTRACT_ADDRESS } from './consts'
-import { CryptoCurrency } from './types'
+import {
+  CreateCryptoQuoteNotFoundError,
+  CreateCryptoQuoteError,
+  CryptoCurrency,
+  CryptoQuotesError
+} from './types'
 
 export const isSupportedNativeToken = (
   crypto: CryptoCurrency,
@@ -41,7 +45,7 @@ export const dismissMeldStack = (
   searchParams: URLSearchParams
 ): void => {
   const dismissCount = searchParams.get('dismissCount') ?? ''
-  closeInAppBrowser()
+
   // the number of dismisses is the number of meld screens to dismiss
   // there is currently at most 2 meld screens
   // TODO: when we start implementing native buy/sell, we can simply call dismissAll() and back()
@@ -60,4 +64,27 @@ export const dismissMeldStack = (
       buttonText: 'Done'
     }
   })
+}
+
+export const getErrorMessage = (
+  error?: Error | null
+): CryptoQuotesError | undefined => {
+  if (error && 'response' in error) {
+    const response = error.response as {
+      data?: CreateCryptoQuoteError | CreateCryptoQuoteNotFoundError
+    }
+    if (response.data && 'status' in response.data) {
+      return {
+        statusCode: response.data.status,
+        message: response.data.message
+      }
+    }
+    if (response.data && 'code' in response.data) {
+      return {
+        statusCode: response.data.code,
+        message: response.data.message
+      }
+    }
+  }
+  return undefined
 }
