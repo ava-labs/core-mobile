@@ -18,7 +18,6 @@ import { useSelector } from 'react-redux'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import useInAppBrowser from 'common/hooks/useInAppBrowser'
 import { SubTextNumber } from 'common/components/SubTextNumber'
-import { LoadingState } from 'common/components/LoadingState'
 import { useSelectAmount } from '../hooks/useSelectAmount'
 import { ServiceProviderCategories } from '../consts'
 import { useOfframpActivityIndicator, useOfframpSessionId } from '../store'
@@ -123,7 +122,7 @@ export const SelectAmount = ({
           type="primary"
           size="large"
           onPress={onNext}>
-          {isLoadingCreateSessionWidget ? (
+          {isLoadingCreateSessionWidget || animating ? (
             <ActivityIndicator
               size="small"
               color={inversedTheme.colors.$textPrimary}
@@ -141,7 +140,8 @@ export const SelectAmount = ({
     onNext,
     isLoadingCreateSessionWidget,
     inversedTheme.colors.$textPrimary,
-    category
+    category,
+    animating
   ])
 
   const renderServiceProvider = useCallback(() => {
@@ -379,7 +379,7 @@ export const SelectAmount = ({
         {renderPayWith()}
       </ScrollScreen>
       {animating && (
-        <LoadingState
+        <View
           sx={{
             position: 'absolute',
             top: 0,
