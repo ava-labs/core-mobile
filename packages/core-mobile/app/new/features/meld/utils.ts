@@ -1,6 +1,5 @@
 import { LocalTokenWithBalance } from 'store/balance'
 import { TokenType } from '@avalabs/vm-module-types'
-import { closeInAppBrowser } from 'utils/openInAppBrowser'
 import { router } from 'expo-router'
 import { ACTIONS } from '../../../contexts/DeeplinkContext/types'
 import { NATIVE_ERC20_TOKEN_CONTRACT_ADDRESS } from './consts'
@@ -45,7 +44,6 @@ export const dismissMeldStack = (
   _: typeof ACTIONS.OnrampCompleted | typeof ACTIONS.OfframpCompleted,
   searchParams: URLSearchParams
 ): void => {
-  closeInAppBrowser()
   const dismissCount = searchParams.get('dismissCount') ?? ''
 
   // the number of dismisses is the number of meld screens to dismiss
