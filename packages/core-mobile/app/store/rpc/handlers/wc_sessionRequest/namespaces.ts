@@ -8,7 +8,7 @@ import { ProposalTypes } from '@walletconnect/types'
 import {
   CORE_AVAX_METHODS,
   CORE_BTC_METHODS,
-  CORE_SOLANA_METHODS
+  SOLANA_METHODS
 } from 'store/rpc/types'
 
 export const COMMON_EVENTS = [
@@ -39,7 +39,7 @@ export const NON_EVM_OPTIONAL_NAMESPACES: ProposalTypes.OptionalNamespaces = {
   },
   [BlockchainNamespace.SOLANA]: {
     chains: [SolanaCaip2ChainId.MAINNET, SolanaCaip2ChainId.DEVNET],
-    methods: CORE_SOLANA_METHODS,
+    methods: SOLANA_METHODS,
     events: COMMON_EVENTS
   }
 }

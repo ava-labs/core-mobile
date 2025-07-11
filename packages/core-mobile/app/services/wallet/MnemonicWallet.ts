@@ -190,7 +190,7 @@ export class MnemonicWallet implements Wallet {
     data: string | TypedDataV1 | TypedData<MessageTypes>
     accountIndex: number
     network: Network
-    provider: JsonRpcBatchInternal | Avalanche.JsonRpcProvider | SolanaProvider
+    provider: JsonRpcBatchInternal | Avalanche.JsonRpcProvider
   }): Promise<string> {
     switch (rpcMethod) {
       case RpcMethod.SOLANA_SIGN_MESSAGE:
@@ -231,7 +231,7 @@ export class MnemonicWallet implements Wallet {
   }: {
     accountIndex: number
     network: Network
-    provider: JsonRpcBatchInternal | Avalanche.JsonRpcProvider | SolanaProvider
+    provider: JsonRpcBatchInternal | Avalanche.JsonRpcProvider
   }): Promise<Buffer> {
     if (!(provider instanceof JsonRpcBatchInternal)) {
       throw new Error(

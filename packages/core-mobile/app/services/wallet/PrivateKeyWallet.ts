@@ -154,7 +154,6 @@ export class PrivateKeyWallet implements Wallet {
   }
 
   /** WALLET INTERFACE IMPLEMENTATION **/
-  // eslint-disable-next-line sonarjs/cognitive-complexity
   public async signMessage({
     rpcMethod,
     data,
@@ -166,7 +165,7 @@ export class PrivateKeyWallet implements Wallet {
     data: string | TypedDataV1 | TypedData<MessageTypes>
     accountIndex: number
     network: Network
-    provider: JsonRpcBatchInternal | Avalanche.JsonRpcProvider | SolanaProvider
+    provider: JsonRpcBatchInternal | Avalanche.JsonRpcProvider
   }): Promise<string> {
     switch (rpcMethod) {
       case RpcMethod.SOLANA_SIGN_MESSAGE: {
@@ -180,79 +179,22 @@ export class PrivateKeyWallet implements Wallet {
         return await this.signAvalancheMessage(accountIndex, data, chainAlias)
       }
       case RpcMethod.ETH_SIGN:
-      case RpcMethod.PERSONAL_SIGN: {
-        if (typeof data !== 'string') throw new Error('data must be string')
-
-        if (!(provider instanceof JsonRpcBatchInternal)) {
-          throw new Error('EVM signing requires JsonRpcBatchInternal provider')
-        }
-
-        const key = await this.getSigningKey({
-          accountIndex,
-          network,
-          provider
-        })
-        return personalSign({ privateKey: key, data })
-      }
+      case RpcMethod.PERSONAL_SIGN:
       case RpcMethod.SIGN_TYPED_DATA:
-      case RpcMethod.SIGN_TYPED_DATA_V1: {
-        if (typeof data === 'string') throw new Error('data cannot be string')
-
+      case RpcMethod.SIGN_TYPED_DATA_V1:
+      case RpcMethod.SIGN_TYPED_DATA_V3:
+      case RpcMethod.SIGN_TYPED_DATA_V4:
         if (!(provider instanceof JsonRpcBatchInternal)) {
           throw new Error('EVM signing requires JsonRpcBatchInternal provider')
         }
-
-        // instances were observed where method was eth_signTypedData or eth_signTypedData_v1,
-        // however, payload was V4
-        const isV4 = isTypedData(data)
-
-        const key = await this.getSigningKey({
+        return this.signEvmMessage(
+          data,
           accountIndex,
           network,
-          provider
-        })
-        return signTypedData({
-          privateKey: key,
-          data,
-          version: isV4 ? SignTypedDataVersion.V4 : SignTypedDataVersion.V1
-        })
-      }
-      case RpcMethod.SIGN_TYPED_DATA_V3: {
-        if (!isTypedData(data)) throw new Error('invalid typed data')
+          provider,
+          rpcMethod
+        )
 
-        if (!(provider instanceof JsonRpcBatchInternal)) {
-          throw new Error('EVM signing requires JsonRpcBatchInternal provider')
-        }
-
-        const key = await this.getSigningKey({
-          accountIndex,
-          network,
-          provider
-        })
-        return signTypedData({
-          privateKey: key,
-          data,
-          version: SignTypedDataVersion.V3
-        })
-      }
-      case RpcMethod.SIGN_TYPED_DATA_V4: {
-        if (!isTypedData(data)) throw new Error('invalid typed data')
-
-        if (!(provider instanceof JsonRpcBatchInternal)) {
-          throw new Error('EVM signing requires JsonRpcBatchInternal provider')
-        }
-
-        const key = await this.getSigningKey({
-          accountIndex,
-          network,
-          provider
-        })
-        return signTypedData({
-          privateKey: key,
-          data,
-          version: SignTypedDataVersion.V4
-        })
-      }
       default:
         throw new Error('unknown method')
     }
@@ -392,6 +334,77 @@ export class PrivateKeyWallet implements Wallet {
 
   public matchesPrivateKey(privateKey: string): boolean {
     return this.privateKey.toLowerCase() === privateKey.toLowerCase()
+  }
+
+  private async signEvmMessage(
+    data: string | TypedDataV1 | TypedData<MessageTypes>,
+    accountIndex: number,
+    network: Network,
+    provider: JsonRpcBatchInternal,
+    rpcMethod: RpcMethod
+  ): Promise<string> {
+    switch (rpcMethod) {
+      case RpcMethod.ETH_SIGN:
+      case RpcMethod.PERSONAL_SIGN: {
+        if (typeof data !== 'string') throw new Error('data must be string')
+
+        const key = await this.getSigningKey({
+          accountIndex,
+          network,
+          provider
+        })
+        return personalSign({ privateKey: key, data })
+      }
+      case RpcMethod.SIGN_TYPED_DATA:
+      case RpcMethod.SIGN_TYPED_DATA_V1: {
+        if (typeof data === 'string') throw new Error('data cannot be string')
+
+        // instances were observed where method was eth_signTypedData or eth_signTypedData_v1,
+        // however, payload was V4
+        const isV4 = isTypedData(data)
+
+        const key = await this.getSigningKey({
+          accountIndex,
+          network,
+          provider
+        })
+        return signTypedData({
+          privateKey: key,
+          data,
+          version: isV4 ? SignTypedDataVersion.V4 : SignTypedDataVersion.V1
+        })
+      }
+      case RpcMethod.SIGN_TYPED_DATA_V3: {
+        if (!isTypedData(data)) throw new Error('invalid typed data')
+
+        const key = await this.getSigningKey({
+          accountIndex,
+          network,
+          provider
+        })
+        return signTypedData({
+          privateKey: key,
+          data,
+          version: SignTypedDataVersion.V3
+        })
+      }
+      case RpcMethod.SIGN_TYPED_DATA_V4: {
+        if (!isTypedData(data)) throw new Error('invalid typed data')
+
+        const key = await this.getSigningKey({
+          accountIndex,
+          network,
+          provider
+        })
+        return signTypedData({
+          privateKey: key,
+          data,
+          version: SignTypedDataVersion.V4
+        })
+      }
+      default:
+        throw new Error('Unknown EVM message type method')
+    }
   }
 
   private signAvalancheMessage = async (
