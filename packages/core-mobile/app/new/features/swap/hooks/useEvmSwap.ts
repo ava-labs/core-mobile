@@ -3,58 +3,68 @@ import { useSelector } from 'react-redux'
 import { RpcMethod } from '@avalabs/vm-module-types'
 import { TransactionParams } from '@avalabs/evm-module'
 import { humanizeParaswapRateError } from 'errors/swapError'
-import { selectIsSwapFeesBlocked } from 'store/posthog'
+import {
+  selectIsSwapFeesBlocked,
+  selectIsSwapUseMarkrBlocked
+} from 'store/posthog'
 import { useAvalancheEvmProvider } from 'hooks/networks/networkProviderHooks'
 import { useInAppRequest } from 'hooks/useInAppRequest'
 import { getEvmCaip2ChainId } from 'utils/caip2ChainIds'
-import { getSwapRate } from '../utils/evm/getSwapRate'
 import {
-  EvmSwapOperation,
   GetQuoteParams,
-  isEvmWrapQuote,
-  isEvmUnwrapQuote,
   SwapParams,
-  SwapQuote
+  SwapProvider,
+  NormalizedSwapQuoteResult,
+  SwapProviders
 } from '../types'
 import { isWrappableToken } from '../utils/evm/isWrappableToken'
-import { paraSwap } from '../utils/evm/paraSwap'
-import { wrap } from '../utils/evm/wrap'
-import { unwrap } from '../utils/evm/unwrap'
+import { ParaswapProvider } from '../providers/ParaswapProvider'
+import { MarkrProvider } from '../providers/MarkrProvider'
+import { WNativeProvider } from '../providers/WNativeProvider'
 
 export const useEvmSwap = (): {
-  getQuote: (params: GetQuoteParams) => Promise<SwapQuote | undefined>
+  getQuote: (
+    params: GetQuoteParams
+  ) => Promise<NormalizedSwapQuoteResult | undefined>
   swap: (params: SwapParams) => Promise<string>
 } => {
   const abortControllerRef = useRef<AbortController | null>(null)
   const avalancheProvider = useAvalancheEvmProvider()
   const { request } = useInAppRequest()
   const isSwapFeesBlocked = useSelector(selectIsSwapFeesBlocked)
+  const isSwapUseMarkrBlocked = useSelector(selectIsSwapUseMarkrBlocked)
+
+  const getSwapProvider = (isMarkrBlocked: boolean): SwapProvider =>
+    isMarkrBlocked ? ParaswapProvider : MarkrProvider
+
+  const getSwapProviderByName = (name: SwapProviders): SwapProvider => {
+    switch (name) {
+      case SwapProviders.PARASWAP:
+        return ParaswapProvider
+      case SwapProviders.MARKR:
+        return MarkrProvider
+      case SwapProviders.WNATIVE:
+        return WNativeProvider
+      default:
+        throw new Error(`Unsupported swap provider: ${name}`)
+    }
+  }
 
   const getQuote = useCallback(
-    async ({
-      account,
-      amount,
-      fromTokenAddress,
-      fromTokenDecimals,
-      isFromTokenNative,
-      toTokenAddress,
-      toTokenDecimals,
-      isToTokenNative,
-      destination,
-      network
-    }: GetQuoteParams): Promise<SwapQuote | undefined> => {
-      if (isFromTokenNative && isWrappableToken(toTokenAddress)) {
-        return {
-          operation: EvmSwapOperation.WRAP,
-          target: toTokenAddress,
-          amount: amount.toString()
-        }
-      } else if (isToTokenNative && isWrappableToken(fromTokenAddress)) {
-        return {
-          operation: EvmSwapOperation.UNWRAP,
-          source: fromTokenAddress,
-          amount: amount.toString()
-        }
+    async (
+      params: GetQuoteParams
+    ): Promise<NormalizedSwapQuoteResult | undefined> => {
+      const {
+        isFromTokenNative,
+        fromTokenAddress,
+        isToTokenNative,
+        toTokenAddress
+      } = params
+      if (
+        (isFromTokenNative && isWrappableToken(toTokenAddress)) ||
+        (isToTokenNative && isWrappableToken(fromTokenAddress))
+      ) {
+        return WNativeProvider.getQuote(params)
       }
 
       // abort previous request
@@ -64,21 +74,11 @@ export const useEvmSwap = (): {
       abortControllerRef.current = controller
 
       try {
-        const { optimalRate } = await getSwapRate({
-          fromTokenAddress,
-          toTokenAddress,
-          fromTokenDecimals,
-          toTokenDecimals,
-          amount: amount.toString(),
-          swapSide: destination,
-          network,
-          account,
-          abortSignal: controller.signal
-        })
-        return optimalRate
+        const provider = getSwapProvider(isSwapUseMarkrBlocked)
+        return await provider.getQuote(params, controller.signal)
       } catch (error) {
         if (error instanceof Error) {
-          if (error.message === 'Aborted') {
+          if (error.message.toLowerCase() === 'aborted') {
             return undefined
           }
 
@@ -91,7 +91,7 @@ export const useEvmSwap = (): {
         }
       }
     },
-    []
+    [isSwapUseMarkrBlocked]
   )
 
   const swap = useCallback(
@@ -102,6 +102,7 @@ export const useEvmSwap = (): {
       isFromTokenNative,
       toTokenAddress,
       isToTokenNative,
+      swapProvider,
       quote,
       slippage
     }: SwapParams) => {
@@ -120,32 +121,15 @@ export const useEvmSwap = (): {
           context
         })
 
-      if (isEvmWrapQuote(quote)) {
-        return wrap({
-          userAddress: account.addressC,
-          network,
-          provider: avalancheProvider,
-          quote,
-          signAndSend
-        })
-      }
-
-      if (isEvmUnwrapQuote(quote)) {
-        return unwrap({
-          userAddress: account.addressC,
-          network,
-          provider: avalancheProvider,
-          quote,
-          signAndSend
-        })
-      }
-
-      return paraSwap({
+      const provider = getSwapProviderByName(swapProvider)
+      // getting the swap provider by name because there is chance that
+      // the markr can be blocked after the quote is fetched
+      return provider.swap({
         srcTokenAddress: fromTokenAddress,
         isSrcTokenNative: isFromTokenNative,
         destTokenAddress: toTokenAddress,
         isDestTokenNative: isToTokenNative,
-        priceRoute: quote,
+        quote,
         slippage,
         network,
         provider: avalancheProvider,

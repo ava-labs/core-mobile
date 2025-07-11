@@ -21,6 +21,18 @@ export const EVM_NATIVE_TOKEN_ADDRESS =
   '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee'
 
 /**
+ * The address Markr uses for EVM native tokens.
+ */
+export const MARKR_EVM_NATIVE_TOKEN_ADDRESS =
+  '0x0000000000000000000000000000000000000000'
+
+/**
+ * The partner ID Markr uses for EVM swaps.
+ */
+export const MARKR_EVM_PARTNER_ID =
+  '0x1c8f2aada1d99f5ac6e1011ce002fc53a6e36ab104e30f11a13053734edec239'
+
+/**
  * The necessary parameters for Core to gather fees from the swap.
  */
 export const PARTNER_FEE_PARAMS = {
