@@ -35,7 +35,7 @@ export default {
   bridgeToggleBtn: 'bridge_toggle_btn',
   selectedToken: 'selected_token',
   toNetwork: 'to_blockchain',
-  fromNetwork: 'from_blockchain',
+  fromNetwork: 'From',
   error: 'bridge_error',
   hollidayBannerWebView: 'halliday-bridge-webview',
   hollidayBannerTitle: 'Bridge using Halliday',
