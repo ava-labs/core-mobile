@@ -83,6 +83,7 @@ const WalletCard = ({
             {renderWalletIcon()}
           </View>
           <Text
+            testID={`manage_accounts_wallet_name__${wallet.name}`}
             variant="buttonSmall"
             numberOfLines={1}
             style={{
