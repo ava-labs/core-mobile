@@ -13,6 +13,7 @@ import {
   setAccountTitle
 } from 'store/account'
 import { WalletType } from 'services/wallet/types'
+import { RootState } from 'store/types'
 
 export const AccountButtons = ({
   accountId,
@@ -25,20 +26,27 @@ export const AccountButtons = ({
   const router = useRouter()
   const { theme } = useTheme()
   const account = useSelector(selectAccountById(accountId))
-  const siblingAccounts = useSelector(
-    selectAccountsByWalletId(account?.walletId ?? '')
+  const siblingAccounts = useSelector((state: RootState) =>
+    selectAccountsByWalletId(state, account?.walletId ?? '')
   )
 
   const isRemoveEnabled = useMemo(() => {
     if (!account) return false
 
+    // For PRIVATE_KEY wallets, always allow removal
+    if (walletType === WalletType.PRIVATE_KEY) {
+      return true
+    }
+
+    // For SEEDLESS and MNEMONIC wallets, only allow removal if there are multiple accounts
+    // and this is the highest index account
     if (siblingAccounts.length <= 1) return false
 
     const highestIndexInWallet = Math.max(
       ...siblingAccounts.map(acc => acc.index)
     )
     return account.index === highestIndexInWallet
-  }, [account, siblingAccounts])
+  }, [account, siblingAccounts, walletType])
 
   const handleShowAlertWithTextInput = (): void => {
     showAlertWithTextInput({

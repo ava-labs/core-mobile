@@ -8,7 +8,7 @@ import { showSnackbar } from 'new/common/utils/toast'
 import { router } from 'expo-router'
 import { History } from 'store/browser'
 import { navigateFromDeeplinkUrl } from 'utils/navigateFromDeeplink'
-import { dismissMeldStack } from 'features/buyOnramp/utils'
+import { dismissMeldStack } from 'features/meld/utils'
 import { MarketType } from 'store/watchlist'
 import { ACTIONS, DeepLink, PROTOCOLS } from '../types'
 

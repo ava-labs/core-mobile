@@ -9,6 +9,7 @@ const portfolioIcon = require('../../../assets/icons/tabs/layers.png')
 const trackIcon = require('../../../assets/icons/tabs/search-custom.png')
 const stakeIcon = require('../../../assets/icons/tabs/psychiatry.png')
 const browserIcon = require('../../../assets/icons/tabs/compass.png')
+const activityIcon = require('../../../assets/icons/tabs/activity.png')
 
 const tabLabelStyle = {
   fontSize: 10,
@@ -53,6 +54,14 @@ export default function TabLayout(): JSX.Element {
           tabBarButtonTestID: 'portfolio_tab',
           title: 'Portfolio',
           tabBarIcon: () => portfolioIcon
+        }}
+      />
+      <BottomTabs.Screen
+        name="activity"
+        options={{
+          tabBarButtonTestID: 'activity_tab',
+          title: 'Activity',
+          tabBarIcon: () => activityIcon
         }}
       />
       <BottomTabs.Screen

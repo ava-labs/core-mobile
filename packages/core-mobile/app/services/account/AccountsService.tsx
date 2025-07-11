@@ -36,7 +36,10 @@ class AccountsService {
         isTestnet
       })
 
-      const title = await SeedlessService.getAccountName(account.index)
+      const title =
+        walletType === WalletType.SEEDLESS
+          ? await SeedlessService.getAccountName(account.index)
+          : account.name
 
       reloadedAccounts[key] = {
         id: account.id,

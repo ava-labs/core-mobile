@@ -15,6 +15,8 @@ import { useSelector } from 'react-redux'
 import { selectEnabledNetworks } from 'store/network'
 
 export const useAssetsFilterAndSort = (): {
+  onResetFilter: () => void
+  tokenList: LocalTokenWithBalance[]
   data: LocalTokenWithBalance[]
   filter: DropdownSelection
   sort: DropdownSelection
@@ -137,8 +139,14 @@ export const useAssetsFilterAndSort = (): {
     [selectedView, setSelectedView]
   )
 
+  const onResetFilter = useCallback((): void => {
+    setSelectedFilter({ section: 0, row: 0 })
+  }, [])
+
   return useMemo(
     () => ({
+      onResetFilter,
+      tokenList: filteredTokenList,
       filter,
       sort,
       view,
@@ -147,6 +155,16 @@ export const useAssetsFilterAndSort = (): {
       isRefetching,
       isLoading
     }),
-    [filter, sort, view, filteredAndSorted, refetch, isRefetching, isLoading]
+    [
+      onResetFilter,
+      filteredTokenList,
+      filter,
+      sort,
+      view,
+      filteredAndSorted,
+      refetch,
+      isRefetching,
+      isLoading
+    ]
   )
 }

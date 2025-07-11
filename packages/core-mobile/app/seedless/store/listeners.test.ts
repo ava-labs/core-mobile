@@ -24,6 +24,7 @@ jest.mock('store/app', () => {
 jest.mock('store/wallet/slice', () => ({
   selectActiveWallet: jest.fn(),
   selectWalletById: jest.fn(),
+  selectSeedlessWallet: jest.fn(),
   setActiveWallet: { type: 'wallet/setActiveWallet' }
 }))
 
@@ -92,9 +93,9 @@ describe('seedless - listeners', () => {
     )
   })
 
-  it('should call refresh token when active wallet is seedless', async () => {
-    const { selectActiveWallet } = require('store/wallet/slice')
-    selectActiveWallet.mockReturnValue({
+  it('should call refresh token when logged in with seedless wallet', async () => {
+    const { selectSeedlessWallet } = require('store/wallet/slice')
+    selectSeedlessWallet.mockReturnValue({
       id: 'test-wallet',
       type: WalletType.SEEDLESS,
       name: 'Test Seedless Wallet'
@@ -104,29 +105,17 @@ describe('seedless - listeners', () => {
     expect(SeedlessService.session.refreshToken).toHaveBeenCalled()
   })
 
-  it('should not call refresh token when active wallet is not seedless', async () => {
-    const { selectActiveWallet } = require('store/wallet/slice')
-    selectActiveWallet.mockReturnValue({
-      id: 'test-wallet',
-      type: WalletType.MNEMONIC,
-      name: 'Test Mnemonic Wallet'
-    })
-
-    store.dispatch(onAppUnlocked())
-    expect(SeedlessService.session.refreshToken).not.toHaveBeenCalled()
-  })
-
-  it('should not call refresh token when no active wallet exists', async () => {
-    const { selectActiveWallet } = require('store/wallet/slice')
-    selectActiveWallet.mockReturnValue(undefined)
+  it('should not call refresh token when seedless wallet was not found', async () => {
+    const { selectSeedlessWallet } = require('store/wallet/slice')
+    selectSeedlessWallet.mockReturnValue(undefined)
 
     store.dispatch(onAppUnlocked())
     expect(SeedlessService.session.refreshToken).not.toHaveBeenCalled()
   })
 
   it('should init SeedlessService on onRehydrationComplete action', async () => {
-    const { selectActiveWallet } = require('store/wallet/slice')
-    selectActiveWallet.mockReturnValue({
+    const { selectSeedlessWallet } = require('store/wallet/slice')
+    selectSeedlessWallet.mockReturnValue({
       id: 'test-seedless-wallet',
       type: WalletType.SEEDLESS,
       name: 'Test Seedless Wallet'
@@ -139,13 +128,9 @@ describe('seedless - listeners', () => {
     })
   })
 
-  it('should not init SeedlessService on onRehydrationComplete action when wallet is mnemonic', async () => {
-    const { selectActiveWallet } = require('store/wallet/slice')
-    selectActiveWallet.mockReturnValue({
-      id: 'test-mnemonic-wallet',
-      type: WalletType.MNEMONIC,
-      name: 'Test Mnemonic Wallet'
-    })
+  it('should not init SeedlessService on onRehydrationComplete action when seedless wallet was not found', async () => {
+    const { selectSeedlessWallet } = require('store/wallet/slice')
+    selectSeedlessWallet.mockReturnValue(undefined)
 
     store.dispatch(onRehydrationComplete())
 
