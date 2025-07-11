@@ -38,3 +38,18 @@ export const useOfframpSessionId = (): {
 } => {
   return offrampSessionIdStore()
 }
+
+export const offrampActivityIndicatorStore = create<{
+  animating: boolean
+  setAnimating: (animating: boolean) => void
+}>(set => ({
+  animating: false,
+  setAnimating: (animating: boolean) => set({ animating })
+}))
+
+export const useOfframpActivityIndicator = (): {
+  animating: boolean
+  setAnimating: (animating: boolean) => void
+} => {
+  return offrampActivityIndicatorStore()
+}

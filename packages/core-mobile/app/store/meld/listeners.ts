@@ -21,8 +21,12 @@ import { dismissMeldStack } from 'features/meld/utils'
 import { ACTIONS } from 'contexts/DeeplinkContext/types'
 import { RequestContext } from 'store/rpc'
 import MeldService from 'features/meld/services/MeldService'
-import { offrampSessionIdStore } from 'features/meld/store'
+import {
+  offrampActivityIndicatorStore,
+  offrampSessionIdStore
+} from 'features/meld/store'
 import { TokenType } from '@avalabs/vm-module-types'
+import { closeInAppBrowser } from 'utils/openInAppBrowser'
 import { offrampSend } from './slice'
 
 const handleOfframpSend = async (
@@ -35,6 +39,7 @@ const handleOfframpSend = async (
   const isDeveloperMode = selectIsDeveloperMode(state)
   const activeAccount = selectActiveAccount(state)
   const sessionId = offrampSessionIdStore.getState().sessionId
+  const { setAnimating } = offrampActivityIndicatorStore.getState()
 
   if (sessionId === undefined) {
     Logger.error('sessionId is undefined')
@@ -92,56 +97,64 @@ const handleOfframpSend = async (
 
   let txHash: string | undefined
 
-  switch (network.vmName) {
-    case NetworkVMType.EVM: {
-      txHash = await sendEVM({
-        request,
-        fromAddress: activeAccount.addressC,
-        chainId: Number(chainId),
-        provider: provider as JsonRpcBatchInternal,
-        token: token as NetworkTokenWithBalance,
-        toAddress: destinationWalletAddress,
-        amount: amountTokenUnit.toSubUnit(),
-        context: {
-          [RequestContext.CONFETTI_DISABLED]: true
-        }
-      })
-      break
+  try {
+    setAnimating(true)
+    closeInAppBrowser()
+    switch (network.vmName) {
+      case NetworkVMType.EVM: {
+        txHash = await sendEVM({
+          request,
+          fromAddress: activeAccount.addressC,
+          chainId: Number(chainId),
+          provider: provider as JsonRpcBatchInternal,
+          token: token as NetworkTokenWithBalance,
+          toAddress: destinationWalletAddress,
+          amount: amountTokenUnit.toSubUnit(),
+          context: {
+            [RequestContext.CONFETTI_DISABLED]: true
+          }
+        })
+        break
+      }
+      case NetworkVMType.SVM: {
+        txHash = await sendSVM({
+          request,
+          fromAddress: activeAccount.addressSVM,
+          chainId: Number(chainId),
+          provider: provider as SolanaProvider,
+          token: token as TokenWithBalanceSVM,
+          toAddress: destinationWalletAddress,
+          amount: amountTokenUnit.toSubUnit(),
+          account: activeAccount,
+          context: {
+            [RequestContext.CONFETTI_DISABLED]: true
+          }
+        })
+        break
+      }
+      case NetworkVMType.BITCOIN: {
+        const networkFee = await NetworkFeeService.getNetworkFee(network)
+        txHash = await sendBTC({
+          request,
+          fromAddress: activeAccount.addressBTC,
+          toAddress: destinationWalletAddress,
+          amount: amountTokenUnit.toSubUnit(),
+          feeRate: networkFee?.low.maxFeePerGas,
+          isMainnet: !isDeveloperMode,
+          context: {
+            [RequestContext.CONFETTI_DISABLED]: true
+          }
+        })
+        break
+      }
     }
-    case NetworkVMType.SVM: {
-      txHash = await sendSVM({
-        request,
-        fromAddress: activeAccount.addressSVM,
-        chainId: Number(chainId),
-        provider: provider as SolanaProvider,
-        token: token as TokenWithBalanceSVM,
-        toAddress: destinationWalletAddress,
-        amount: amountTokenUnit.toSubUnit(),
-        account: activeAccount,
-        context: {
-          [RequestContext.CONFETTI_DISABLED]: true
-        }
-      })
-      break
+    if (txHash) {
+      dismissMeldStack(ACTIONS.OfframpCompleted, searchParams)
     }
-    case NetworkVMType.BITCOIN: {
-      const networkFee = await NetworkFeeService.getNetworkFee(network)
-      txHash = await sendBTC({
-        request,
-        fromAddress: activeAccount.addressBTC,
-        toAddress: destinationWalletAddress,
-        amount: amountTokenUnit.toSubUnit(),
-        feeRate: networkFee?.low.maxFeePerGas,
-        isMainnet: !isDeveloperMode,
-        context: {
-          [RequestContext.CONFETTI_DISABLED]: true
-        }
-      })
-      break
-    }
-  }
-  if (txHash) {
-    dismissMeldStack(ACTIONS.OfframpCompleted, searchParams)
+  } catch (error) {
+    Logger.error('error completing offramp transaction', { error })
+  } finally {
+    setAnimating(false)
   }
 }
 

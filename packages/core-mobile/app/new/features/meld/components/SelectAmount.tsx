@@ -20,7 +20,7 @@ import useInAppBrowser from 'common/hooks/useInAppBrowser'
 import { SubTextNumber } from 'common/components/SubTextNumber'
 import { useSelectAmount } from '../hooks/useSelectAmount'
 import { ServiceProviderCategories } from '../consts'
-import { useOfframpSessionId } from '../store'
+import { useOfframpActivityIndicator, useOfframpSessionId } from '../store'
 import { getErrorMessage } from '../utils'
 
 interface SelectAmountProps {
@@ -42,6 +42,7 @@ export const SelectAmount = ({
     theme: { colors, isDark }
   } = useTheme()
   const { theme: inversedTheme } = useInversedTheme({ isDark })
+  const { animating } = useOfframpActivityIndicator()
 
   const {
     formatInSubTextNumber,
@@ -67,6 +68,7 @@ export const SelectAmount = ({
   const { setSessionId } = useOfframpSessionId()
   const { formatIntegerCurrency, formatCurrency } = useFormatCurrency()
   const selectedCurrency = useSelector(selectSelectedCurrency)
+  const { openUrl } = useInAppBrowser()
 
   useEffect(() => {
     setCreateSessionWidgetErrorMessage(undefined)
@@ -300,77 +302,94 @@ export const SelectAmount = ({
   ])
 
   return (
-    <ScrollScreen
-      bottomOffset={150}
-      isModal
-      title={title}
-      navigationTitle={navigationTitle}
-      renderFooter={renderFooter}
-      shouldAvoidKeyboard
-      contentContainerStyle={{
-        padding: 16
-      }}>
-      {/* Select Token */}
-      <Pressable
-        onPress={onSelectToken}
-        sx={{
-          marginTop: 12,
-          flexDirection: 'row',
-          alignItems: 'center',
-          borderRadius: 12,
-          justifyContent: 'space-between',
-          padding: 17,
-          backgroundColor: colors.$surfaceSecondary
+    <>
+      <ScrollScreen
+        bottomOffset={150}
+        isModal
+        title={title}
+        navigationTitle={navigationTitle}
+        renderFooter={renderFooter}
+        shouldAvoidKeyboard
+        contentContainerStyle={{
+          padding: 16
         }}>
-        <Text
-          variant="body1"
-          sx={{ fontSize: 16, lineHeight: 22, color: colors.$textPrimary }}>
-          Token
-        </Text>
-        {token?.tokenWithBalance ? (
-          <View sx={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-            <LogoWithNetwork
-              token={token.tokenWithBalance}
-              outerBorderColor={colors.$surfaceSecondary}
-            />
-            <Text
-              variant="body1"
-              sx={{
-                fontSize: 16,
-                lineHeight: 22,
-                color: colors.$textSecondary
-              }}>
-              {token?.tokenWithBalance?.symbol}
-            </Text>
-            <View sx={{ marginLeft: 8 }}>
-              <Icons.Navigation.ChevronRightV2 color={colors.$textPrimary} />
+        {/* Select Token */}
+        <Pressable
+          onPress={onSelectToken}
+          sx={{
+            marginTop: 12,
+            flexDirection: 'row',
+            alignItems: 'center',
+            borderRadius: 12,
+            justifyContent: 'space-between',
+            padding: 17,
+            backgroundColor: colors.$surfaceSecondary
+          }}>
+          <Text
+            variant="body1"
+            sx={{ fontSize: 16, lineHeight: 22, color: colors.$textPrimary }}>
+            Token
+          </Text>
+          {token?.tokenWithBalance ? (
+            <View sx={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+              <LogoWithNetwork
+                token={token.tokenWithBalance}
+                outerBorderColor={colors.$surfaceSecondary}
+              />
+              <Text
+                variant="body1"
+                sx={{
+                  fontSize: 16,
+                  lineHeight: 22,
+                  color: colors.$textSecondary
+                }}>
+                {token?.tokenWithBalance?.symbol}
+              </Text>
+              <View sx={{ marginLeft: 8 }}>
+                <Icons.Navigation.ChevronRightV2 color={colors.$textPrimary} />
+              </View>
             </View>
-          </View>
-        ) : (
-          <ActivityIndicator size="small" color={colors.$textPrimary} />
-        )}
-      </Pressable>
+          ) : (
+            <ActivityIndicator size="small" color={colors.$textPrimary} />
+          )}
+        </Pressable>
 
-      {/* Fiat amount input widget */}
-      {tokenBalance && (
-        <FiatAmountInputWidget
-          isAmountValid={errorMessage === undefined}
-          disabled={isLoadingTradeLimits}
-          sx={{ marginTop: 12 }}
-          currency={selectedCurrency}
-          amount={sourceAmount}
-          onChange={setSourceAmount}
-          formatIntegerCurrency={amt =>
-            formatIntegerCurrency({ amount: amt, withoutCurrencySuffix: true })
-          }
-          formatInCurrency={amt => formatCurrency({ amount: amt })}
-          formatInSubTextNumber={formatInSubTextNumber}
+        {/* Fiat amount input widget */}
+        {tokenBalance && (
+          <FiatAmountInputWidget
+            isAmountValid={errorMessage === undefined}
+            disabled={isLoadingTradeLimits}
+            sx={{ marginTop: 12 }}
+            currency={selectedCurrency}
+            amount={sourceAmount}
+            onChange={setSourceAmount}
+            formatIntegerCurrency={amt =>
+              formatIntegerCurrency({
+                amount: amt,
+                withoutCurrencySuffix: true
+              })
+            }
+            formatInCurrency={amt => formatCurrency({ amount: amt })}
+            formatInSubTextNumber={formatInSubTextNumber}
+          />
+        )}
+        {/* token balance or error message */}
+        {renderCaption()}
+        {/* Pay with / Withdraw to */}
+        {renderPayWith()}
+      </ScrollScreen>
+      {animating && (
+        <LoadingState
+          sx={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(40, 40, 46, 0.5)'
+          }}
         />
       )}
-      {/* token balance or error message */}
-      {renderCaption()}
-      {/* Pay with / Withdraw to */}
-      {renderPayWith()}
-    </ScrollScreen>
+    </>
   )
 }
