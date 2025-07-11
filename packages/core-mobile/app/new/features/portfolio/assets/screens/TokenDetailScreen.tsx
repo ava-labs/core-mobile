@@ -4,7 +4,6 @@ import {
 } from '@avalabs/avalanche-module'
 import { BridgeTransfer } from '@avalabs/bridge-unified'
 import { BridgeTransaction } from '@avalabs/core-bridge-sdk'
-import { ChainId } from '@avalabs/core-chains-sdk'
 import {
   NavigationTitleHeader,
   SegmentedControl,
@@ -22,14 +21,12 @@ import { TokenHeader } from 'common/components/TokenHeader'
 import { AVAX_TOKEN_ID, USDC_AVALANCHE_C_TOKEN_ID } from 'common/consts/swap'
 import { useErc20ContractTokens } from 'common/hooks/useErc20ContractTokens'
 import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
-import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import useInAppBrowser from 'common/hooks/useInAppBrowser'
 import { useSearchableTokenList } from 'common/hooks/useSearchableTokenList'
 import { getSourceChainId } from 'common/utils/bridgeUtils'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { useAssetBalances } from 'features/bridge/hooks/useAssetBalances'
-import { useBuy } from 'features/buyOnramp/hooks/useBuy'
 import {
   ActionButton,
   ActionButtons
@@ -40,7 +37,6 @@ import { ActionButtonTitle } from 'features/portfolio/assets/consts'
 import { useSendSelectedToken } from 'features/send/store'
 import { useAddStake } from 'features/stake/hooks/useAddStake'
 import { useNavigateToSwap } from 'features/swap/hooks/useNavigateToSwap'
-import { useNetworks } from 'hooks/networks/useNetworks'
 import { UI, useIsUIDisabledForNetwork } from 'hooks/useIsUIDisabled'
 import React, { useCallback, useMemo, useRef, useState } from 'react'
 import {
