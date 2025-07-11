@@ -66,7 +66,8 @@ const handleOfframpSend = async (
     closeInAppBrowser()
     showAlert({
       title: 'Unable to retrieve your off-ramp transaction',
-      description: 'Please try again later.',
+      description:
+        'We had trouble retrieving your off-ramp transaction. This might be a connection issue — please try again. If the problem persists, some providers may require you to cancel the existing transaction before starting a new one.',
       buttons: [
         {
           text: 'Got it',
