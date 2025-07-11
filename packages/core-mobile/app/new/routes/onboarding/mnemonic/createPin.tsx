@@ -3,17 +3,28 @@ import { useLocalSearchParams, useRouter } from 'expo-router'
 import { CreatePin as Component } from 'features/onboarding/components/CreatePin'
 import { useWallet } from 'hooks/useWallet'
 import React, { useCallback } from 'react'
+import { useSelector } from 'react-redux'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { WalletType } from 'services/wallet/types'
+import { selectActiveWalletId } from 'store/wallet/slice'
 import BiometricsSDK from 'utils/BiometricsSDK'
 import Logger from 'utils/Logger'
+import { uuid } from 'utils/uuid'
 
 export default function CreatePin(): JSX.Element {
-  const { navigate } = useRouter()
+  const { navigate, back } = useRouter()
   const { mnemonic } = useLocalSearchParams<{ mnemonic: string }>()
   const { onPinCreated } = useWallet()
   const { isBiometricAvailable, useBiometrics, setUseBiometrics } =
     useStoredBiometrics()
+  const activeWalletId = useSelector(selectActiveWalletId)
+
+  const navigateToSetWalletName = useCallback(() => {
+    navigate({
+      // @ts-ignore TODO: make routes typesafe
+      pathname: '/onboarding/mnemonic/setWalletName'
+    })
+  }, [navigate])
 
   const handleEnteredValidPin = useCallback(
     (pin: string): void => {
@@ -22,22 +33,36 @@ export default function CreatePin(): JSX.Element {
       }
       AnalyticsService.capture('OnboardingPasswordSet')
       onPinCreated({
+        walletId: activeWalletId ?? uuid(),
         mnemonic,
         pin,
         walletType: WalletType.MNEMONIC
       })
         .then(() => {
           if (useBiometrics) {
-            BiometricsSDK.enableBiometry().catch(Logger.error)
+            BiometricsSDK.enableBiometry()
+              .then(enabled => {
+                if (enabled) {
+                  navigateToSetWalletName()
+                } else {
+                  back()
+                }
+              })
+              .catch(Logger.error)
+          } else {
+            navigateToSetWalletName()
           }
-          navigate({
-            // @ts-ignore TODO: make routes typesafe
-            pathname: '/onboarding/mnemonic/setWalletName'
-          })
         })
         .catch(Logger.error)
     },
-    [mnemonic, navigate, onPinCreated, useBiometrics]
+    [
+      mnemonic,
+      onPinCreated,
+      useBiometrics,
+      navigateToSetWalletName,
+      back,
+      activeWalletId
+    ]
   )
 
   return (

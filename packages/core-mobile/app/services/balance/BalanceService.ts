@@ -17,6 +17,7 @@ export type BalancesForAccount = {
   chainId: number
   accountAddress: string
   tokens: (TokenWithBalance | Error)[]
+  error: Error | null
 }
 
 export class BalanceService {
@@ -54,7 +55,8 @@ export class BalanceService {
         accountId: account.id,
         chainId: network.chainId,
         tokens: [],
-        accountAddress
+        accountAddress,
+        error: balances.error as Error
       }
     }
 
@@ -62,7 +64,8 @@ export class BalanceService {
       accountId: account.id,
       chainId: network.chainId,
       tokens: Object.values(balances),
-      accountAddress
+      accountAddress,
+      error: null
     }
   }
 }

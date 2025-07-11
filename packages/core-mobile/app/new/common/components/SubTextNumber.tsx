@@ -1,5 +1,5 @@
+import { Text, TextVariant, View, alpha, useTheme } from '@avalabs/k2-alpine'
 import React, { useMemo } from 'react'
-import { View, Text, alpha, useTheme, TextVariant } from '@avalabs/k2-alpine'
 import { StyleSheet, TextStyle, ViewStyle } from 'react-native'
 import { numberToSubscriptFormat } from 'utils/numberToSubscriptFormat/numberToSubscriptFormat'
 
@@ -35,7 +35,7 @@ export const SubTextNumber = ({
       <Text
         numberOfLines={1}
         variant={textVariant}
-        style={[{ color: _textColor }]}>
+        style={[{ color: _textColor, fontWeight: subTextStyle.fontWeight }]}>
         {mainTextBefore}
       </Text>
       {subText && (
@@ -46,7 +46,9 @@ export const SubTextNumber = ({
         </Text>
       )}
       {mainTextAfter && (
-        <Text variant={textVariant} style={[{ color: _textColor }]}>
+        <Text
+          variant={textVariant}
+          style={[{ color: _textColor, fontWeight: subTextStyle.fontWeight }]}>
           {mainTextAfter}
         </Text>
       )}
@@ -62,11 +64,20 @@ const styles = StyleSheet.create({
   }
 })
 
-type SubTextNumberVariant = Extract<TextVariant, 'body1' | 'body2' | 'heading2'>
+type SubTextNumberVariant = Extract<
+  TextVariant,
+  'body1' | 'body2' | 'heading2' | 'caption' | 'subtitle2' | 'buttonMedium'
+>
 
 const getSubTextStyle = (textVariant: SubTextNumberVariant): TextStyle => {
   let style: TextStyle = {
     position: 'relative'
+  }
+  if (textVariant === 'subtitle2') {
+    style = { ...style, fontSize: 11, top: 4, fontWeight: '500' }
+  }
+  if (textVariant === 'caption') {
+    style = { ...style, fontSize: 9, top: 4, fontWeight: '500' }
   }
   if (textVariant === 'body1') {
     style = { ...style, fontSize: 13, top: 4, fontWeight: '500' }
@@ -75,7 +86,10 @@ const getSubTextStyle = (textVariant: SubTextNumberVariant): TextStyle => {
     style = { ...style, fontSize: 13, top: 4, fontWeight: '400' }
   }
   if (textVariant === 'heading2') {
-    style = { ...style, fontSize: 18, top: 10, fontWeight: '700' }
+    style = { ...style, fontSize: 18, top: 8, fontWeight: '700' }
+  }
+  if (textVariant === 'buttonMedium') {
+    style = { ...style, fontSize: 15, top: 6, fontWeight: '600' }
   }
 
   return style

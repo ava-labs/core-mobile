@@ -17,6 +17,7 @@ type Props = {
   accessoryType?: 'outbound' | 'chevron'
   onPress?: () => void
   subtitleType: 'amountInCurrency' | 'amountInToken' | 'text'
+  timestamp?: number
 }
 
 const ActivityListItem: FC<Props> = ({
@@ -26,7 +27,8 @@ const ActivityListItem: FC<Props> = ({
   onPress,
   accessoryType = 'outbound',
   status = PriceChangeStatus.Neutral,
-  subtitleType
+  subtitleType,
+  timestamp
 }) => {
   const {
     theme: { colors }
@@ -39,6 +41,26 @@ const ActivityListItem: FC<Props> = ({
       ? colors.$textDanger
       : colors.$textSecondary
 
+  const formatDate = (date: Date): string => {
+    const now = new Date()
+    const historyDate = new Date(date)
+    const diffTime = Math.abs(now.getTime() - historyDate.getTime())
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+
+    return diffDays === 0
+      ? 'Today'
+      : diffDays === 1
+      ? 'Yesterday'
+      : diffDays < 7
+      ? 'Last week'
+      : diffDays < 30
+      ? 'Last month'
+      : historyDate.toLocaleDateString('en-US', {
+          month: 'short',
+          day: 'numeric'
+        })
+  }
+
   return (
     <TouchableOpacity onPress={onPress} testID="activityListItem">
       <View
@@ -47,8 +69,8 @@ const ActivityListItem: FC<Props> = ({
           alignItems: 'center',
           gap: 11,
           paddingHorizontal: 16,
-          paddingTop: 14,
-          paddingBottom: 9
+          paddingTop: 12,
+          paddingBottom: 12
         }}>
         {icon}
         <View
@@ -66,8 +88,11 @@ const ActivityListItem: FC<Props> = ({
               gap: 3
             }}>
             <Text
-              variant="body1"
-              sx={{ color: '$textPrimary', lineHeight: 15 }}
+              variant="buttonMedium"
+              sx={{
+                color: '$textPrimary',
+                lineHeight: 15
+              }}
               numberOfLines={1}
               ellipsizeMode="tail">
               {title}
@@ -76,8 +101,7 @@ const ActivityListItem: FC<Props> = ({
               <Text
                 variant="body2"
                 sx={{
-                  color: textColor,
-                  lineHeight: 16
+                  color: textColor
                 }}
                 numberOfLines={1}
                 ellipsizeMode="tail">
@@ -95,6 +119,11 @@ const ActivityListItem: FC<Props> = ({
               </BalanceText>
             )}
           </View>
+          {timestamp && (
+            <Text variant="body2" sx={{ color: colors.$textSecondary }}>
+              {formatDate(new Date(timestamp))}
+            </Text>
+          )}
           {accessoryType === 'outbound' && (
             <Icons.Custom.Outbound color={colors.$textPrimary} />
           )}

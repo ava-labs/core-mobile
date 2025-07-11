@@ -1,4 +1,7 @@
+import { NetworkContractToken, TokenType } from '@avalabs/vm-module-types'
 import { useMemo, useState } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
+import { selectActiveAccount } from 'store/account'
 import {
   refetchBalance,
   selectIsLoadingBalances,
@@ -7,13 +10,10 @@ import {
   selectTokensWithBalanceForAccountAndNetwork
 } from 'store/balance/slice'
 import { LocalTokenId, LocalTokenWithBalance } from 'store/balance/types'
-import { useDispatch, useSelector } from 'react-redux'
-import { selectTokenVisibility, TokenVisibility } from 'store/portfolio'
 import { getLocalTokenId, isTokenVisible } from 'store/balance/utils'
-import { NetworkContractToken, TokenType } from '@avalabs/vm-module-types'
-import { selectActiveAccount } from 'store/account'
-import { RootState } from 'store/types'
 import { selectEnabledChainIds } from 'store/network'
+import { selectTokenVisibility, TokenVisibility } from 'store/portfolio'
+import { RootState } from 'store/types'
 
 const isGreaterThanZero = (token: LocalTokenWithBalance): boolean =>
   token.balance > 0n

@@ -39,10 +39,10 @@ export const TokenHeader = ({
 
   const tokenName = useMemo(() => {
     if (token && isTokenWithBalanceAVM(token)) {
-      return 'Avalanche (X-Chain)'
+      return 'Avalanche X-Chain'
     }
     if (token && isTokenWithBalancePVM(token)) {
-      return 'Avalanche (P-Chain)'
+      return 'Avalanche P-Chain'
     }
     if (
       token &&

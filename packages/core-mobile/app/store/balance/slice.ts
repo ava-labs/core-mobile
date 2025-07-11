@@ -271,6 +271,10 @@ export const selectIsAllBalancesInaccurate =
     )
   }
 
+export const selectIsAllBalancesError = (state: RootState): boolean => {
+  return Object.values(state.balance.balances).every(balance => balance.error)
+}
+
 export const selectIsBalancesAccurateByNetwork =
   (chainId?: number) =>
   (state: RootState): boolean => {

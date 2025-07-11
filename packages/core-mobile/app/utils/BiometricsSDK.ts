@@ -62,7 +62,7 @@ export const walletSecretOptions = (walletId: string): BaseOptions => ({
 })
 
 class BiometricsSDK {
-  private encryptionKey: string | null = null
+  #encryptionKey: string | null = null
 
   /**
    * On some android devices loading keystore can take
@@ -83,7 +83,7 @@ class BiometricsSDK {
   }
 
   clearEncryptionKey(): void {
-    this.encryptionKey = null
+    this.#encryptionKey = null
   }
 
   // Migration-specific methods
@@ -160,14 +160,14 @@ class BiometricsSDK {
     if (!credentials) return false
     const decrypted = await decrypt(credentials.password, pin)
     if (!decrypted) return false
-    this.encryptionKey = decrypted.data
+    this.#encryptionKey = decrypted.data
     return true
   }
 
   async loadEncryptionKeyWithBiometry(): Promise<boolean> {
     const credentials = await Keychain.getGenericPassword(bioGetOptions)
     if (!credentials) return false
-    this.encryptionKey = credentials.password
+    this.#encryptionKey = credentials.password
     return true
   }
 
@@ -182,7 +182,7 @@ class BiometricsSDK {
       encrypted,
       passcodeSetOptions
     )
-    this.encryptionKey = encryptionKey
+    this.#encryptionKey = encryptionKey
     return true
   }
 
@@ -203,7 +203,7 @@ class BiometricsSDK {
         encryptionKey,
         bioSetOptions
       )
-      this.encryptionKey = encryptionKey
+      this.#encryptionKey = encryptionKey
       return true
     } catch (e) {
       Logger.error('failed to store encryption key with biometry', e)
@@ -224,12 +224,12 @@ class BiometricsSDK {
     await Keychain.resetGenericPassword({
       service: LEGACY_SERVICE_KEY
     })
-    await this.storeEncryptionKeyWithPin(this.getEncryptionKey, newPin)
+    await this.storeEncryptionKeyWithPin(this.encryptionKey, newPin)
   }
 
   // Wallet Secret Management
   async storeWalletSecret(walletId: string, secret: string): Promise<boolean> {
-    const encrypted = await encrypt(secret, this.getEncryptionKey)
+    const encrypted = await encrypt(secret, this.encryptionKey)
     await Keychain.setGenericPassword(
       'walletSecret',
       encrypted,
@@ -253,9 +253,9 @@ class BiometricsSDK {
     }
   }
 
-  private get getEncryptionKey(): string {
-    assertNotNull(this.encryptionKey, 'Encryption key not found')
-    return this.encryptionKey
+  private get encryptionKey(): string {
+    assertNotNull(this.#encryptionKey, 'Encryption key not found')
+    return this.#encryptionKey
   }
 
   async loadWalletSecret(walletId: string): Promise<Result<string>> {
@@ -266,10 +266,7 @@ class BiometricsSDK {
       if (!credentials)
         return { success: false, error: new Error('No credentials found') }
 
-      const decrypted = await decrypt(
-        credentials.password,
-        this.getEncryptionKey
-      )
+      const decrypted = await decrypt(credentials.password, this.encryptionKey)
       if (!decrypted)
         return { success: false, error: new Error('Failed to decrypt') }
 
@@ -351,8 +348,8 @@ class BiometricsSDK {
    * Use {@link storeEncryptionKeyWithBiometry} otherwise
    * @throws Error if the encryption key is not found in cache.
    */
-  async enableBiometry(): Promise<void> {
-    await this.storeEncryptionKeyWithBiometry(this.getEncryptionKey)
+  async enableBiometry(): Promise<boolean> {
+    return await this.storeEncryptionKeyWithBiometry(this.encryptionKey)
   }
 
   async disableBiometry(): Promise<void> {
