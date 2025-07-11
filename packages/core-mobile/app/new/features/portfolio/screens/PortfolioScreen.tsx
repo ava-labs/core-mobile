@@ -72,6 +72,7 @@ import { RootState } from 'store/types'
 import { useFocusedSelector } from 'utils/performance/useFocusedSelector'
 import { useBuy } from 'features/meld/hooks/useBuy'
 import { useWithdraw } from 'features/meld/hooks/useWithdraw'
+import { selectIsMeldOfframpBlocked } from 'store/posthog'
 
 const SEGMENT_ITEMS = ['Assets', 'Collectibles', 'DeFi']
 
@@ -82,6 +83,7 @@ const SEGMENT_EVENT_MAP: Record<number, AnalyticsEventName> = {
 }
 
 const PortfolioHomeScreen = (): JSX.Element => {
+  const isMeldOfframpBlocked = useSelector(selectIsMeldOfframpBlocked)
   const tabBarHeight = useBottomTabBarHeight()
   const { navigateToBuy } = useBuy()
   const { navigateToWithdraw } = useWithdraw()
@@ -264,11 +266,13 @@ const PortfolioHomeScreen = (): JSX.Element => {
       icon: 'bridge',
       onPress: handleBridge
     })
-    buttons.push({
-      title: ActionButtonTitle.Withdraw,
-      icon: 'withdraw',
-      onPress: navigateToWithdraw
-    })
+    if (!isMeldOfframpBlocked) {
+      buttons.push({
+        title: ActionButtonTitle.Withdraw,
+        icon: 'withdraw',
+        onPress: navigateToWithdraw
+      })
+    }
     return buttons
   }, [
     handleSend,
@@ -277,7 +281,8 @@ const PortfolioHomeScreen = (): JSX.Element => {
     navigateToWithdraw,
     handleReceive,
     handleBridge,
-    navigateToSwap
+    navigateToSwap,
+    isMeldOfframpBlocked
   ])
 
   const renderMaskView = useCallback((): JSX.Element => {

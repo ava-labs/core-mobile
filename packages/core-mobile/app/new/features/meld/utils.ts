@@ -69,7 +69,7 @@ export const dismissMeldStack = (
 }
 
 export const getErrorMessage = (
-  error?: Error
+  error?: Error | null
 ): CryptoQuotesError | undefined => {
   if (error && 'response' in error) {
     const response = error.response as {

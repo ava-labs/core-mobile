@@ -23,7 +23,7 @@ export const useFiatSourceAmount = ({
   hasValidSourceAmount: boolean
   // eslint-disable-next-line sonarjs/cognitive-complexity
 } => {
-  const { getMarketTokenById } = useWatchlist()
+  const { getMarketTokenBySymbol } = useWatchlist()
   const [sourceAmount, setSourceAmount] = useMeldFiatAmount()
   const selectedCurrency = useSelector(selectSelectedCurrency)
   const token = useMeldTokenWithBalance({ category })
@@ -38,11 +38,11 @@ export const useFiatSourceAmount = ({
 
   const currentTokenPrice = useMemo(
     () =>
-      token?.tokenWithBalance.internalId
-        ? getMarketTokenById(token.tokenWithBalance.internalId)?.currentPrice ??
+      token?.tokenWithBalance.symbol
+        ? getMarketTokenBySymbol(token.tokenWithBalance.symbol)?.currentPrice ??
           undefined
         : undefined,
-    [getMarketTokenById, token?.tokenWithBalance.internalId]
+    [getMarketTokenBySymbol, token?.tokenWithBalance.symbol]
   )
 
   const currencyCode = useMemo(() => {
