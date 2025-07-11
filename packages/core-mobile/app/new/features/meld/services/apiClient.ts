@@ -8,6 +8,7 @@ import {
   CreateSessionWidgetBodySchema,
   CreateSessionWidgetSchema,
   GetTradeLimitsSchema,
+  MeldTransactionSchema,
   SearchCountrySchema,
   SearchCryptoCurrencySchema,
   SearchDefaultsByCountrySchema,
@@ -244,6 +245,20 @@ export const meldApiClient = new Zodios(
       ],
       alias: 'createSessionWidget',
       response: CreateSessionWidgetSchema
+    },
+    {
+      method: 'get',
+      path: '/payments/transactions/sessions/:id',
+      parameters: [
+        {
+          name: 'id',
+          type: 'Path',
+          description: 'Session ID',
+          schema: z.string()
+        }
+      ],
+      alias: 'fetchTransactionBySessionId',
+      response: MeldTransactionSchema
     }
   ],
   {

@@ -10,7 +10,7 @@ export const SelectTokenScreen = (): React.JSX.Element => {
 
   const selectOtherToken = useCallback((): void => {
     // @ts-ignore TODO: make routes typesafe
-    navigate('/onrampTokenList')
+    navigate('/meldOnrampTokenList')
   }, [navigate])
 
   return (

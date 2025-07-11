@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import Animated, {
   useAnimatedReaction,
   useAnimatedStyle,
@@ -9,14 +9,17 @@ import Animated, {
 import Svg, { Defs, LinearGradient, Stop, Path } from 'react-native-svg'
 import { withTiming, runOnJS } from 'react-native-reanimated'
 import { isScreenLargerThan6_2Inches } from 'features/portfolio/utils'
+import { View } from '@avalabs/k2-alpine'
 
 const AnimatedView = Animated.View
 const DURATION = 4000
 
 export const AvaxLogoGradientSvg = ({
-  isDark
+  isDark,
+  shouldAnimate = false
 }: {
   isDark: boolean
+  shouldAnimate?: boolean
 }): React.JSX.Element => {
   const [gradientTransform, setGradientTransform] = useState('rotate(0)')
   const opacity = useSharedValue(1)
@@ -63,8 +66,8 @@ export const AvaxLogoGradientSvg = ({
     opacity: opacity.value
   }))
 
-  return (
-    <AnimatedView style={[{ width, height }, animatedStyle]}>
+  const renderSvg = useCallback(() => {
+    return (
       <Svg width="100%" height="100%" viewBox="0 0 319 281" fill="none">
         <Defs>
           <LinearGradient
@@ -84,6 +87,14 @@ export const AvaxLogoGradientSvg = ({
           fill={`url(#${fill})`}
         />
       </Svg>
+    )
+  }, [fill, gradientColor1, gradientColor2, gradientTransform])
+
+  return shouldAnimate ? (
+    <AnimatedView style={[{ width, height }, animatedStyle]}>
+      {renderSvg()}
     </AnimatedView>
+  ) : (
+    <View style={[{ width, height }]}>{renderSvg()}</View>
   )
 }

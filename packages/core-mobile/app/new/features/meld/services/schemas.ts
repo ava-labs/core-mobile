@@ -136,6 +136,7 @@ export const CreateCryptoQuoteSchema = object({
 export const SessionDataSchema = object({
   serviceProvider: z.nativeEnum(ServiceProviders).optional().nullable(),
   redirectUrl: string().optional().nullable(),
+  redirectFlow: boolean().optional().nullable(),
   countryCode: string().optional().nullable(),
   sourceCurrencyCode: string().optional().nullable(),
   destinationCurrencyCode: string().optional().nullable(),
@@ -149,10 +150,60 @@ export const CreateSessionWidgetBodySchema = object({
   sessionData: SessionDataSchema
 })
 
+export const StatusHistorySchema = object({
+  status: string().optional().nullable(),
+  message: string().optional().nullable(),
+  createdAt: string().optional().nullable(),
+  partnerEventId: string().optional().nullable(),
+  emailSentToUser: boolean().optional().nullable()
+}).passthrough()
+
 export const CreateSessionWidgetSchema = object({
   id: string().optional().nullable(),
   externalSessionId: string().optional().nullable(),
   externalCustomerId: string().optional().nullable(),
   customerId: string().optional().nullable(),
   widgetUrl: string().optional().nullable()
+}).passthrough()
+
+export const CustomerSchema = object({
+  id: string().optional().nullable(),
+  accountId: string().optional().nullable()
+}).passthrough()
+
+export const CryptoDetailsSchema = object({
+  sourceWalletAddress: string().optional().nullable(),
+  destinationWalletAddress: string().optional().nullable(),
+  networkFee: number().optional().nullable(),
+  transactionFee: number().optional().nullable(),
+  partnerFee: number().optional().nullable(),
+  totalFee: number().optional().nullable(),
+  networkFeeInUsd: number().optional().nullable(),
+  transactionFeeInUsd: number().optional().nullable(),
+  partnerFeeInUsd: number().optional().nullable(),
+  totalFeeInUsd: number().optional().nullable(),
+  blockchainTransactionId: string().optional().nullable(),
+  chainId: string().optional().nullable()
+}).passthrough()
+
+export const MeldTransactionSchema = object({
+  transaction: object({
+    id: string().optional().nullable(),
+    transactionType: string().optional().nullable(),
+    sourceAmount: number().optional().nullable(),
+    sourceCurrencyCode: string().optional().nullable(),
+    destinationAmount: number().optional().nullable(),
+    destinationCurrencyCode: string().optional().nullable(),
+    serviceProviderDetails: object({
+      details: object({
+        status: string().optional().nullable(),
+        fiatAmount: number().optional().nullable(),
+        countryCode: string().optional().nullable(),
+        cryptoAmount: number().optional().nullable(),
+        cryptoCurrency: string().optional().nullable()
+      }).passthrough(),
+      type: string().optional().nullable()
+    }).passthrough(),
+    cryptoDetails: CryptoDetailsSchema.optional().nullable()
+  }).passthrough()
 }).passthrough()
