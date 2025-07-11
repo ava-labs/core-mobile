@@ -113,6 +113,7 @@ export const SwapContextProvider = ({
           throw new Error('Invalid network')
         }
 
+        setQuotes(undefined)
         tempQuote = await getEvmQuote({
           account: activeAccount,
           network: cChainNetwork,

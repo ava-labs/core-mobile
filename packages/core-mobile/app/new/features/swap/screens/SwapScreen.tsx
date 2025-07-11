@@ -170,12 +170,8 @@ export const SwapScreen = (): JSX.Element => {
   }, [fromTokenValue, maxFromValue])
 
   const applyQuote = useCallback(() => {
-    if (!fromTokenValue) {
+    if (!fromTokenValue || !selectedQuote) {
       setToTokenValue(undefined)
-      return
-    }
-
-    if (!selectedQuote) {
       return
     }
 
