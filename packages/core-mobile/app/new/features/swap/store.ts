@@ -14,6 +14,4 @@ export const useQuotes = createZustandStore<
   NormalizedSwapQuoteResult | undefined
 >(undefined)
 
-export const useManuallySelected = createZustandStore<
-  boolean
->(false)
+export const useManuallySelected = createZustandStore<boolean>(false)

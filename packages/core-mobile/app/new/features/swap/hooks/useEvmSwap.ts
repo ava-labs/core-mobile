@@ -3,7 +3,10 @@ import { useSelector } from 'react-redux'
 import { RpcMethod } from '@avalabs/vm-module-types'
 import { TransactionParams } from '@avalabs/evm-module'
 import { humanizeParaswapRateError } from 'errors/swapError'
-import { selectIsSwapFeesBlocked, selectIsSwapUseMarkrBlocked } from 'store/posthog'
+import {
+  selectIsSwapFeesBlocked,
+  selectIsSwapUseMarkrBlocked
+} from 'store/posthog'
 import { useAvalancheEvmProvider } from 'hooks/networks/networkProviderHooks'
 import { useInAppRequest } from 'hooks/useInAppRequest'
 import { getEvmCaip2ChainId } from 'utils/caip2ChainIds'
@@ -11,7 +14,8 @@ import {
   GetQuoteParams,
   SwapParams,
   SwapProvider,
-  NormalizedSwapQuoteResult
+  NormalizedSwapQuoteResult,
+  SwapProviders
 } from '../types'
 import { isWrappableToken } from '../utils/evm/isWrappableToken'
 import { ParaswapProvider } from '../providers/ParaswapProvider'
@@ -19,7 +23,9 @@ import { MarkrProvider } from '../providers/MarkrProvider'
 import { WNativeProvider } from '../providers/WNativeProvider'
 
 export const useEvmSwap = (): {
-  getQuote: (params: GetQuoteParams) => Promise<NormalizedSwapQuoteResult | undefined>
+  getQuote: (
+    params: GetQuoteParams
+  ) => Promise<NormalizedSwapQuoteResult | undefined>
   swap: (params: SwapParams) => Promise<string>
 } => {
   const abortControllerRef = useRef<AbortController | null>(null)
@@ -28,16 +34,16 @@ export const useEvmSwap = (): {
   const isSwapFeesBlocked = useSelector(selectIsSwapFeesBlocked)
   const isSwapUseMarkrBlocked = useSelector(selectIsSwapUseMarkrBlocked)
 
-  const getSwapProvider = (isSwapUseMarkrBlocked: boolean): SwapProvider =>
-    isSwapUseMarkrBlocked ? ParaswapProvider : MarkrProvider
+  const getSwapProvider = (isMarkrBlocked: boolean): SwapProvider =>
+    isMarkrBlocked ? ParaswapProvider : MarkrProvider
 
-  const getSwapProviderByName = (name: string): SwapProvider => {
+  const getSwapProviderByName = (name: SwapProviders): SwapProvider => {
     switch (name) {
-      case 'paraswap':
+      case SwapProviders.PARASWAP:
         return ParaswapProvider
-      case 'markr':
+      case SwapProviders.MARKR:
         return MarkrProvider
-      case 'wnative':
+      case SwapProviders.WNATIVE:
         return WNativeProvider
       default:
         throw new Error(`Unsupported swap provider: ${name}`)
@@ -45,13 +51,20 @@ export const useEvmSwap = (): {
   }
 
   const getQuote = useCallback(
-    async (params: GetQuoteParams): Promise<NormalizedSwapQuoteResult | undefined> => {
-      const { isFromTokenNative, fromTokenAddress, isToTokenNative, toTokenAddress } = params;
+    async (
+      params: GetQuoteParams
+    ): Promise<NormalizedSwapQuoteResult | undefined> => {
+      const {
+        isFromTokenNative,
+        fromTokenAddress,
+        isToTokenNative,
+        toTokenAddress
+      } = params
       if (
         (isFromTokenNative && isWrappableToken(toTokenAddress)) ||
         (isToTokenNative && isWrappableToken(fromTokenAddress))
       ) {
-        return WNativeProvider.getQuote(params);
+        return WNativeProvider.getQuote(params)
       }
 
       // abort previous request
@@ -61,12 +74,11 @@ export const useEvmSwap = (): {
       abortControllerRef.current = controller
 
       try {
-        const provider = getSwapProvider(isSwapUseMarkrBlocked);
-        const quote = await provider.getQuote(params, controller.signal)
-        return quote
+        const provider = getSwapProvider(isSwapUseMarkrBlocked)
+        return await provider.getQuote(params, controller.signal)
       } catch (error) {
         if (error instanceof Error) {
-          if (error.message === 'Aborted') {
+          if (error.message.toLowerCase() === 'aborted') {
             return undefined
           }
 
@@ -79,7 +91,7 @@ export const useEvmSwap = (): {
         }
       }
     },
-    []
+    [isSwapUseMarkrBlocked]
   )
 
   const swap = useCallback(
@@ -109,8 +121,8 @@ export const useEvmSwap = (): {
           context
         })
 
-      const provider = getSwapProviderByName(swapProvider);
-      // getting the swap provider by name because there is chance that 
+      const provider = getSwapProviderByName(swapProvider)
+      // getting the swap provider by name because there is chance that
       // the markr can be blocked after the quote is fetched
       return provider.swap({
         srcTokenAddress: fromTokenAddress,

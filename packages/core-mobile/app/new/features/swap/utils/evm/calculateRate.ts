@@ -4,7 +4,7 @@ import {
   EvmSwapQuote,
   isEvmUnwrapQuote,
   isEvmWrapQuote,
-  isParaswapQuote,
+  isParaswapQuote
 } from 'features/swap/types'
 
 const getParaswapRate = (quote: OptimalRate): number => {
@@ -28,7 +28,6 @@ const getMarkrRate = (quote: MarkrQuote): number => {
 
   return destAmountNumber / sourceAmountNumber
 }
-
 
 export const calculateRate = (quote: EvmSwapQuote): number => {
   // wrap/unwrap always has 1:1 rate

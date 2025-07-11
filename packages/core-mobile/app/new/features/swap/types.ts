@@ -2,9 +2,9 @@ import { OptimalRate, SwapSide } from '@paraswap/sdk'
 import { Account } from 'store/account/types'
 import { Network } from '@avalabs/core-chains-sdk'
 import { JsonRpcBatchInternal } from '@avalabs/core-wallets-sdk'
+import { TransactionParams } from '@avalabs/evm-module'
 import type WAVAX_ABI from '../../../contracts/ABI_WAVAX.json'
 import type WETH_ABI from '../../../contracts/ABI_WETH.json'
-import { TransactionParams } from '@avalabs/evm-module'
 import { MarkrQuote } from './services/MarkrService'
 
 export enum SwapType {
@@ -30,12 +30,16 @@ export type EvmUnwrapQuote = {
 }
 
 export type MarkrTransaction = {
-  to: string;
-  value: string;
-  data: string;
+  to: string
+  value: string
+  data: string
 }
 
-export type EvmSwapQuote = OptimalRate | EvmWrapQuote | EvmUnwrapQuote | MarkrQuote
+export type EvmSwapQuote =
+  | OptimalRate
+  | EvmWrapQuote
+  | EvmUnwrapQuote
+  | MarkrQuote
 
 export type NormalizedSwapQuote = {
   quote: EvmSwapQuote
@@ -43,7 +47,7 @@ export type NormalizedSwapQuote = {
 }
 
 export type NormalizedSwapQuoteResult = {
-  provider: string
+  provider: SwapProviders
   quotes: NormalizedSwapQuote[]
   selected: NormalizedSwapQuote
 }
@@ -101,7 +105,7 @@ export type SwapParams = {
   isFromTokenNative: boolean
   toTokenAddress: string
   isToTokenNative: boolean
-  swapProvider: string
+  swapProvider: SwapProviders
   quote: EvmSwapQuote
   slippage: number
 }
@@ -114,26 +118,34 @@ export type WrapUnwrapTxParams = {
   abi: typeof WAVAX_ABI | typeof WETH_ABI
 }
 
-
 export type PerformSwapParams = {
   srcTokenAddress: string | undefined
   isSrcTokenNative?: boolean
   destTokenAddress: string | undefined
   isDestTokenNative?: boolean
-  quote: MarkrQuote | OptimalRate | EvmWrapQuote | EvmUnwrapQuote | undefined
+  quote: EvmSwapQuote | undefined
   slippage: number
   network: Network
   provider: JsonRpcBatchInternal
   userAddress: string | undefined
   signAndSend: (
-      txParams: [TransactionParams],
-      context?: Record<string, unknown>
+    txParams: [TransactionParams],
+    context?: Record<string, unknown>
   ) => Promise<string>
   isSwapFeesEnabled?: boolean
 }
 
+export enum SwapProviders {
+  MARKR = 'markr',
+  PARASWAP = 'paraswap',
+  WNATIVE = 'wnative'
+}
+
 export interface SwapProvider {
   name: string
-  getQuote: (params: GetQuoteParams, abortSignal?: AbortSignal) => Promise<NormalizedSwapQuoteResult | undefined>
+  getQuote: (
+    params: GetQuoteParams,
+    abortSignal?: AbortSignal
+  ) => Promise<NormalizedSwapQuoteResult | undefined>
   swap: (params: PerformSwapParams) => Promise<string>
 }

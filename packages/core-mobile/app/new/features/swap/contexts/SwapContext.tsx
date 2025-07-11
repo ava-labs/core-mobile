@@ -20,13 +20,18 @@ import { Account, selectActiveAccount } from 'store/account'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { audioFeedback, Audios } from 'utils/AudioFeedback'
 import { isUserRejectedError } from 'store/rpc/providers/walletConnect/utils'
-import { NormalizedSwapQuoteResult, SwapType } from '../types'
-import { useEvmSwap } from '../hooks/useEvmSwap'
-import { getTokenAddress } from '../utils/getTokenAddress'
 import { LocalTokenWithBalance } from 'store/balance'
 import useCChainNetwork from 'hooks/earn/useCChainNetwork'
 import { transactionSnackbar } from 'new/common/utils/toast'
-import { useManuallySelected, useQuotes, useSwapSelectedFromToken, useSwapSelectedToToken } from '../store'
+import { NormalizedSwapQuoteResult, SwapType } from '../types'
+import { useEvmSwap } from '../hooks/useEvmSwap'
+import { getTokenAddress } from '../utils/getTokenAddress'
+import {
+  useManuallySelected,
+  useQuotes,
+  useSwapSelectedFromToken,
+  useSwapSelectedToToken
+} from '../store'
 
 const DEFAULT_DEBOUNCE_MILLISECONDS = 300
 
@@ -151,7 +156,9 @@ export const SwapContextProvider = ({
     toToken,
     getEvmQuote,
     swapType,
-    slippage
+    slippage,
+    setManuallySelected,
+    setQuotes
   ])
 
   useEffect(() => {

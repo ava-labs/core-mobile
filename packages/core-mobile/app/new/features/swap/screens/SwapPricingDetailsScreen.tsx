@@ -14,26 +14,27 @@ import {
 import { ScrollScreen } from 'common/components/ScrollScreen'
 import { FlatList } from 'react-native-gesture-handler'
 import { LocalTokenWithBalance } from 'store/balance/types'
-import { calculateRate as calculateEvmRate } from '../utils/evm/calculateRate'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import { SvgProps } from 'react-native-svg'
-import { NormalizedSwapQuote, NormalizedSwapQuoteResult } from '../types'
+import { calculateRate as calculateEvmRate } from '../utils/evm/calculateRate'
+import {
+  isMarkrQuote,
+  NormalizedSwapQuote,
+  NormalizedSwapQuoteResult
+} from '../types'
 import { MarkrQuote } from '../services/MarkrService'
 
 // Provider logo mapping
-const PRICE_PROVIDER_ICONS: Record<
-  string,
-  React.FC<SvgProps> | undefined
-> = {
-  'velora': Logos.PartnerLogos.Velora,
-  'odos': Logos.PartnerLogos.Odos,
-  'kyber': Logos.PartnerLogos.Kyber,
-  'yak': Logos.PartnerLogos.Yak
+const PRICE_PROVIDER_ICONS: Record<string, React.FC<SvgProps> | undefined> = {
+  velora: Logos.PartnerLogos.Velora,
+  odos: Logos.PartnerLogos.Odos,
+  kyber: Logos.PartnerLogos.Kyber,
+  yak: Logos.PartnerLogos.Yak
 }
 
 // Function to get provider logo with fallback
-const getPriceProviderIcon = (id: string) => {
+const getPriceProviderIcon = (id: string): React.FC<SvgProps> | null => {
   return PRICE_PROVIDER_ICONS[id] || null
 }
 
@@ -77,20 +78,31 @@ export const SwapPricingDetailsScreen = ({
   )
 
   const renderItem = useCallback(
-    (item: any, index: number): React.JSX.Element => {
+    (item: NormalizedSwapQuote, index: number): React.JSX.Element => {
       if (!quotes || !quotes.selected) {
         return <></>
       }
 
-      const { id, name } = item.quote.aggregator;
-      const isLastItem = index === quotes.quotes.length - 1
-      const isSelected = (!manuallySelected && index === 0) || (manuallySelected && quotes.selected === item)
+      if (!isMarkrQuote(item.quote)) {
+        return <></>
+      }
 
-      const usdEquivalent = id === 'auto' ? 0 : formatInCurrency(toToken, item.metadata.amountOut)
-      
+      const quote = item.quote as MarkrQuote
+
+      const { id, name } = quote.aggregator
+      const isLastItem = index === quotes.quotes.length - 1
+      const isSelected =
+        (!manuallySelected && index === 0) ||
+        (manuallySelected && quotes.selected === item)
+
+      const usdEquivalent =
+        id === 'auto'
+          ? 0
+          : formatInCurrency(toToken, BigInt(item.metadata.amountOut as string))
+
       // Get the logo for this provider dynamically
       const Icon = getPriceProviderIcon(id)
-      
+
       return (
         <TouchableOpacity
           key={id}
@@ -117,7 +129,7 @@ export const SwapPricingDetailsScreen = ({
                 justifyContent: 'center',
                 alignItems: 'center'
               }}>
-              { id === 'auto' ? (
+              {id === 'auto' ? (
                 <Icons.Custom.SwapProviderAuto />
               ) : Icon ? (
                 <Icon testID={`icon__${id}`} width={36} height={36} />
@@ -167,13 +179,28 @@ export const SwapPricingDetailsScreen = ({
         </TouchableOpacity>
       )
     },
-    [quotes, fromToken, toToken, colors]
+    [
+      quotes,
+      toToken,
+      formatInCurrency,
+      colors,
+      manuallySelected,
+      setManuallySelected,
+      setQuotes
+    ]
   )
 
   const data = useMemo(() => {
     const items: GroupListItem[] = []
 
-    if (!fromToken || !toToken || !quotes || quotes.quotes.length === 0 || !quotes.quotes[0] || !quotes.selected) {
+    if (
+      !fromToken ||
+      !toToken ||
+      !quotes ||
+      quotes.quotes.length === 0 ||
+      !quotes.quotes[0] ||
+      !quotes.selected
+    ) {
       return items
     }
 
@@ -188,17 +215,32 @@ export const SwapPricingDetailsScreen = ({
     const selectedRate = quotes.selected
     items.push({
       title: 'Provider',
-      value:  !manuallySelected ? `Auto • ${(selectedRate.quote as MarkrQuote).aggregator.name}` : `${(selectedRate.quote as MarkrQuote).aggregator.name}`, 
-      accordion: <FlatList
-          data={[{ ...bestRate, quote: { ...bestRate.quote, aggregator: { id: 'auto', name: 'Auto' } } }, ...quotes.quotes]}
-          keyExtractor={(item): string => ((item as NormalizedSwapQuote).quote as MarkrQuote).aggregator.id}
+      value: !manuallySelected
+        ? `Auto • ${(selectedRate.quote as MarkrQuote).aggregator.name}`
+        : `${(selectedRate.quote as MarkrQuote).aggregator.name}`,
+      accordion: (
+        <FlatList
+          data={[
+            {
+              ...bestRate,
+              quote: {
+                ...bestRate.quote,
+                aggregator: { id: 'auto', name: 'Auto' }
+              }
+            },
+            ...quotes.quotes
+          ]}
+          keyExtractor={(item): string =>
+            ((item as NormalizedSwapQuote).quote as MarkrQuote).aggregator.id
+          }
           renderItem={item => renderItem(item.item, item.index)}
           scrollEnabled={false}
         />
+      )
     })
 
     return items
-  }, [quotes, renderItem])
+  }, [quotes, fromToken, toToken, manuallySelected, renderItem])
 
   return (
     <ScrollScreen
@@ -206,7 +248,6 @@ export const SwapPricingDetailsScreen = ({
       navigationTitle="Pricing details"
       isModal
       contentContainerStyle={{ padding: 16 }}>
-
       <GroupList data={data} separatorMarginRight={16} />
     </ScrollScreen>
   )

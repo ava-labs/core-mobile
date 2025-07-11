@@ -46,6 +46,7 @@ import {
   isEvmWrapQuote,
   isMarkrQuote,
   isParaswapQuote,
+  SwapProviders,
   SwapType
 } from '../types'
 import { calculateRate as calculateEvmRate } from '../utils/evm/calculateRate'
@@ -99,8 +100,30 @@ export const SwapScreen = (): JSX.Element => {
     () => localError || swapError,
     [localError, swapError]
   )
+
+  const selectedQuote = useMemo(() => {
+    if (!quotes || !quotes.selected) {
+      return undefined
+    }
+
+    return quotes.selected
+  }, [quotes])
+
+  const selectedProvider = useMemo(() => {
+    if (!quotes) {
+      return undefined
+    }
+
+    return quotes.provider
+  }, [quotes])
+
   const canSwap: boolean =
-    !localError && !swapError && !!fromToken && !!toToken && !!quotes
+    !localError &&
+    !swapError &&
+    !!fromToken &&
+    !!toToken &&
+    !!selectedQuote &&
+    !!selectedProvider
 
   const swapInProcess = swapStatus === 'Swapping'
 
@@ -152,28 +175,32 @@ export const SwapScreen = (): JSX.Element => {
       return
     }
 
-    if (!quotes || !quotes.selected) {
+    if (!selectedQuote) {
       return
     }
 
-    const selectedQuote = quotes.selected;
-    const quote = selectedQuote.quote;
-    const destAmount = selectedQuote.metadata.amountOut as string;
-    const swapProvider = quotes.provider;
+    const quote = selectedQuote.quote
+    const destAmount = selectedQuote.metadata.amountOut as string
     if (quote) {
-      if (isParaswapQuote(quote) && swapProvider === 'paraswap') {
+      if (
+        isParaswapQuote(quote) &&
+        selectedProvider === SwapProviders.PARASWAP
+      ) {
         if (quote.side === SwapSide.SELL) {
           setToTokenValue(BigInt(destAmount))
         } else {
           setFromTokenValue(BigInt(quote.srcAmount)) // todo: add srcAmount to the metadata
         }
-      } else if (isMarkrQuote(quote) && swapProvider === 'markr') {
+      } else if (
+        isMarkrQuote(quote) &&
+        selectedProvider === SwapProviders.MARKR
+      ) {
         setToTokenValue(BigInt(destAmount))
       } else if (isEvmWrapQuote(quote) || isEvmUnwrapQuote(quote)) {
         setToTokenValue(BigInt(destAmount))
       }
     }
-  }, [quotes, fromTokenValue])
+  }, [selectedQuote, selectedProvider, fromTokenValue])
 
   const calculateMax = useCallback(() => {
     if (!fromToken) return
@@ -246,7 +273,10 @@ export const SwapScreen = (): JSX.Element => {
   ])
 
   const showFeesAndSlippage = useMemo(() => {
-    return (quotes && ["markr", "paraswap"].includes(quotes.provider))
+    return (
+      quotes &&
+      [SwapProviders.MARKR, SwapProviders.PARASWAP].includes(quotes.provider)
+    )
   }, [quotes])
 
   const handleSwap = useCallback(() => {
@@ -406,12 +436,9 @@ export const SwapScreen = (): JSX.Element => {
   ])
 
   const rate = useMemo(() => {
-    // eslint-disable-next-line sonarjs/no-collapsible-if
-    const quoteToUse = quotes?.selected;
-    if (quoteToUse) {
-      if (swapType === SwapType.EVM) {
-        return calculateEvmRate(quoteToUse.quote)
-      }
+    const quoteToUse = quotes?.selected
+    if (quoteToUse && swapType === SwapType.EVM) {
+      return calculateEvmRate(quoteToUse.quote)
     }
 
     return 0
@@ -424,12 +451,14 @@ export const SwapScreen = (): JSX.Element => {
       return items
     }
 
-    const haveMultipleQuotes = quotes.quotes.length > 1;
+    const haveMultipleQuotes = quotes.quotes.length > 1
     if (fromToken && toToken && rate) {
       if (haveMultipleQuotes) {
-      items.push({
+        items.push({
           title: 'Pricing',
-          value: `1 ${fromToken.symbol} = ${rate?.toFixed(4)} ${toToken.symbol}`,
+          value: `1 ${fromToken.symbol} = ${rate?.toFixed(4)} ${
+            toToken.symbol
+          }`,
           onPress: handleSelectPricingDetails
         })
       } else {
@@ -468,7 +497,8 @@ export const SwapScreen = (): JSX.Element => {
     showFeesAndSlippage,
     slippage,
     setSlippage,
-    swapInProcess
+    swapInProcess,
+    handleSelectPricingDetails
   ])
 
   useEffect(() => {
