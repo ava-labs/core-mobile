@@ -33,7 +33,7 @@ class MeldService {
         serviceProviders: serviceProviders?.join(','),
         categories: categories.join(','),
         accountFilter,
-        countries: countries.join(',')
+        countries: countries?.join(',')
       }
     })
   }
@@ -50,7 +50,7 @@ class MeldService {
         serviceProviders: serviceProviders?.join(','),
         categories: categories.join(','),
         accountFilter,
-        countries: countries.join(','),
+        countries: countries?.join(','),
         fiatCurrencies: fiatCurrencies?.join(',')
       }
     })
@@ -67,7 +67,7 @@ class MeldService {
       serviceProviders: serviceProviders?.join(','),
       categories: categories.join(','),
       accountFilter,
-      countries: countries.join(','),
+      countries: countries?.join(','),
       cryptoCurrencies: cryptoCurrencies?.join(',')
     }
     return meldApiClient.getCryptoCurrencies({
@@ -84,7 +84,7 @@ class MeldService {
     const queries = {
       categories: categories.join(','),
       accountFilter,
-      countries: countries.join(','),
+      countries: countries?.join(','),
       cryptoCurrencies: cryptoCurrencies?.join(',')
     }
     return meldApiClient.getServiceProviders({
@@ -100,7 +100,7 @@ class MeldService {
     const queries = {
       categories: categories.join(','),
       accountFilter,
-      countries: countries.join(',')
+      countries: countries?.join(',')
     }
     return meldApiClient.getDefaultsByCountry({ queries })
   }
@@ -117,7 +117,7 @@ class MeldService {
     const queries = {
       categories: categories.join(','),
       accountFilter,
-      countries: countries.join(','),
+      countries: countries?.join(','),
       serviceProviders: serviceProviders?.join(','),
       fiatCurrencies: fiatCurrencies?.join(','),
       cryptoCurrencies: cryptoCurrencyCodes?.join(','),
@@ -138,7 +138,7 @@ class MeldService {
     const queries = {
       categories: categories.join(','),
       accountFilter,
-      countries: countries.join(','),
+      countries: countries?.join(','),
       serviceProviders: serviceProviders?.join(','),
       fiatCurrencies: fiatCurrencies?.join(','),
       cryptoCurrencies: cryptoCurrencyCodes?.join(','),
@@ -158,7 +158,7 @@ class MeldService {
     const queries = {
       categories: categories.join(','),
       accountFilter,
-      countries: countries.join(','),
+      countries: countries?.join(','),
       serviceProviders: serviceProviders?.join(','),
       fiatCurrencies: fiatCurrencies?.join(','),
       cryptoCurrencies: cryptoCurrencyCodes?.join(',')

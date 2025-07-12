@@ -3,21 +3,20 @@ import MeldService from 'features/meld/services/MeldService'
 import { ReactQueryKeys } from 'consts/reactQueryKeys'
 import { FiatCurrency, MeldDefaultParams } from '../types'
 import { useSearchServiceProviders } from './useSearchServiceProviders'
-import { useLocale } from './useLocale'
 
 export type SearchFiatCurrenciesParams = MeldDefaultParams & {
   fiatCurrencies?: string[]
 }
 
 export const useSearchFiatCurrencies = ({
+  countries,
   accountFilter,
   categories,
   fiatCurrencies
-}: Omit<
-  SearchFiatCurrenciesParams,
-  'countries' | 'serviceProviders'
->): UseQueryResult<FiatCurrency[], Error> => {
-  const { countryCode } = useLocale()
+}: Omit<SearchFiatCurrenciesParams, 'serviceProviders'>): UseQueryResult<
+  FiatCurrency[],
+  Error
+> => {
   const { data: serviceProvidersData } = useSearchServiceProviders({
     categories
   })
@@ -30,7 +29,7 @@ export const useSearchFiatCurrencies = ({
       accountFilter,
       serviceProviders,
       fiatCurrencies,
-      countryCode,
+      countries,
       categories
     ],
     queryFn: () =>
@@ -39,7 +38,7 @@ export const useSearchFiatCurrencies = ({
         accountFilter,
         serviceProviders,
         fiatCurrencies,
-        countries: [countryCode]
+        countries
       }),
     staleTime: 1000 * 60 * 30 // 30 minutes
   })

@@ -5,8 +5,11 @@ import { useBuy } from '../../hooks/useBuy'
 
 export const SelectTokenScreen = (): React.JSX.Element => {
   const { navigate } = useRouter()
-  const { navigateToBuyAvax, navigateToBuyUsdc, isLoadingCryptoCurrencies } =
-    useBuy()
+  const {
+    navigateToBuyAmountWithAvax,
+    navigateToBuyAmountWithUsdc,
+    isLoadingCryptoCurrencies
+  } = useBuy()
 
   const selectOtherToken = useCallback((): void => {
     // @ts-ignore TODO: make routes typesafe
@@ -18,8 +21,8 @@ export const SelectTokenScreen = (): React.JSX.Element => {
       title={`What token do\nyou want to buy?`}
       isLoadingCryptoCurrencies={isLoadingCryptoCurrencies}
       onSelectOtherToken={selectOtherToken}
-      onSelectAvax={navigateToBuyAvax}
-      onSelectUsdc={navigateToBuyUsdc}
+      onSelectAvax={navigateToBuyAmountWithAvax}
+      onSelectUsdc={navigateToBuyAmountWithUsdc}
     />
   )
 }

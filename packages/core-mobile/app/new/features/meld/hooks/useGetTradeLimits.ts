@@ -4,7 +4,7 @@ import { ReactQueryKeys } from 'consts/reactQueryKeys'
 import { GetTradeLimits, MeldDefaultParams } from '../types'
 import MeldService from '../services/MeldService'
 import { ServiceProviderCategories } from '../consts'
-import { useLocale } from './useLocale'
+import { useMeldCountryCode } from '../store'
 import { useSearchServiceProviders } from './useSearchServiceProviders'
 
 export type GetTradeLimitsParams = MeldDefaultParams & {
@@ -36,7 +36,8 @@ export const useGetTradeLimits = ({
       ? ReactQueryKeys.MELD_GET_PURCHASE_LIMITS
       : ReactQueryKeys.MELD_GET_SELL_LIMITS
 
-  const { countryCode } = useLocale()
+  const [countryCode] = useMeldCountryCode()
+
   return useQuery({
     enabled: !!serviceProviders,
     queryKey: [
@@ -52,7 +53,7 @@ export const useGetTradeLimits = ({
       const params = {
         serviceProviders,
         categories: [category],
-        countries: [countryCode],
+        countries: countryCode ? [countryCode] : undefined,
         fiatCurrencies,
         includeDetails,
         cryptoCurrencyCodes

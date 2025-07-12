@@ -8,7 +8,7 @@ import { useBuy } from '../../hooks/useBuy'
 
 export const OnrampTokenListScreen = (): React.JSX.Element => {
   const { canGoBack, back } = useRouter()
-  const { navigateToBuy } = useBuy()
+  const { navigateToBuyAmountWithToken } = useBuy()
   const [selectedToken] = useMeldToken()
 
   const { data: cryptoCurrencies, isLoading: isLoadingCryptoCurrencies } =
@@ -21,7 +21,7 @@ export const OnrampTokenListScreen = (): React.JSX.Element => {
       category={ServiceProviderCategories.CRYPTO_ONRAMP}
       onPress={token => {
         canGoBack() && back()
-        navigateToBuy({ token: token.tokenWithBalance })
+        navigateToBuyAmountWithToken(token)
       }}
       selectedToken={selectedToken}
       cryptoCurrencies={cryptoCurrencies}

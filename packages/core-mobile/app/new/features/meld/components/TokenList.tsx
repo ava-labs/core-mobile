@@ -10,20 +10,15 @@ import {
   View
 } from '@avalabs/k2-alpine'
 import { ListRenderItem } from '@shopify/flash-list'
-import { LocalTokenWithBalance } from 'store/balance'
 import { useSearchableTokenList } from 'common/hooks/useSearchableTokenList'
 import { useErc20ContractTokens } from 'common/hooks/useErc20ContractTokens'
 import { CHAIN_IDS_WITH_INCORRECT_SYMBOL } from 'consts/chainIdsWithIncorrectSymbol'
 import { LogoWithNetwork } from 'features/portfolio/assets/components/LogoWithNetwork'
 import { LoadingState } from 'common/components/LoadingState'
 import { SubTextNumber } from 'common/components/SubTextNumber'
-import { CryptoCurrency } from '../types'
+import { CryptoCurrency, CryptoCurrencyWithBalance } from '../types'
 import { isTokenTradable } from '../utils'
 import { MELD_CURRENCY_CODES, ServiceProviderCategories } from '../consts'
-
-type CryptoCurrencyWithBalance = CryptoCurrency & {
-  tokenWithBalance: LocalTokenWithBalance
-}
 
 export const TokenList = ({
   category,

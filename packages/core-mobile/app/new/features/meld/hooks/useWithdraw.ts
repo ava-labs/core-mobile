@@ -6,6 +6,7 @@ import { useMemo } from 'react'
 import { MELD_CURRENCY_CODES, ServiceProviderCategories } from '../consts'
 import { LocalTokenWithBalance } from '../../../../store/balance/types'
 import { useMeldToken } from '../store'
+import { CryptoCurrencyWithBalance } from '../types'
 import { useSearchCryptoCurrencies } from './useSearchCryptoCurrencies'
 import { useGetTradableCryptoCurrency } from './useGetTradableCryptoCurrency'
 
@@ -16,8 +17,9 @@ type NavigateToWithdrawParams = {
 
 export const useWithdraw = (): {
   navigateToWithdraw: (props?: NavigateToWithdrawParams) => void
-  navigateToWithdrawAvax: () => void
-  navigateToWithdrawUsdc: () => void
+  navigateToWithdrawAmountWithToken: (token: CryptoCurrencyWithBalance) => void
+  navigateToWithdrawAmountWithAvax: () => void
+  navigateToWithdrawAmountWithUsdc: () => void
   isWithdrawable: (token?: LocalTokenWithBalance, address?: string) => boolean
   isLoadingCryptoCurrencies: boolean
 } => {
@@ -65,25 +67,33 @@ export const useWithdraw = (): {
       if (token || address) {
         const cryptoCurrency = getTradableCryptoCurrency(token, address)
         setOfframpToken(cryptoCurrency)
-        // @ts-ignore TODO: make routes typesafe
-        navigate('/meld/offramp/selectWithdrawAmount')
-        return
+      } else {
+        setOfframpToken(undefined)
       }
-      setOfframpToken(undefined)
       // @ts-ignore TODO: make routes typesafe
       navigate('/meld/offramp')
     },
     [getTradableCryptoCurrency, isMeldOfframpBlocked, navigate, setOfframpToken]
   )
 
-  const navigateToWithdrawAvax = useCallback(() => {
+  const navigateToWithdrawAmountWithToken = useCallback(
+    (token: CryptoCurrencyWithBalance) => {
+      if (isMeldOfframpBlocked) return
+      setOfframpToken(token)
+      // @ts-ignore TODO: make routes typesafe
+      navigate('/meld/offramp/selectWithdrawAmount')
+    },
+    [isMeldOfframpBlocked, navigate, setOfframpToken]
+  )
+
+  const navigateToWithdrawAmountWithAvax = useCallback(() => {
     if (avax === undefined || isMeldOfframpBlocked) return
     setOfframpToken(avax)
     // @ts-ignore TODO: make routes typesafe
     navigate('/meld/offramp/selectWithdrawAmount')
   }, [avax, isMeldOfframpBlocked, navigate, setOfframpToken])
 
-  const navigateToWithdrawUsdc = useCallback(() => {
+  const navigateToWithdrawAmountWithUsdc = useCallback(() => {
     if (usdc === undefined || isMeldOfframpBlocked) return
     setOfframpToken(usdc)
     // @ts-ignore TODO: make routes typesafe
@@ -92,8 +102,9 @@ export const useWithdraw = (): {
 
   return {
     navigateToWithdraw,
-    navigateToWithdrawAvax,
-    navigateToWithdrawUsdc,
+    navigateToWithdrawAmountWithToken,
+    navigateToWithdrawAmountWithAvax,
+    navigateToWithdrawAmountWithUsdc,
     isWithdrawable,
     isLoadingCryptoCurrencies
   }

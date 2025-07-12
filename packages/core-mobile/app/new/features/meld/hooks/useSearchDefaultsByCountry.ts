@@ -4,7 +4,7 @@ import { isAndroid, isIOS } from 'utils/Utils'
 import { MeldDefaultParams, SearchDefaultsByCountry } from '../types'
 import MeldService from '../services/MeldService'
 import { PaymentMethods, ServiceProviderCategories } from '../consts'
-import { useLocale } from './useLocale'
+import { useMeldCountryCode } from '../store'
 
 export type SearchDefaultsByCountryParams = MeldDefaultParams & {
   cryptoCurrencies?: string[]
@@ -18,7 +18,7 @@ export const useSearchDefaultsByCountry = ({
   SearchDefaultsByCountry[],
   Error
 > => {
-  const { countryCode } = useLocale()
+  const [countryCode] = useMeldCountryCode()
 
   return useQuery<SearchDefaultsByCountry[]>({
     enabled: categories.includes(ServiceProviderCategories.CRYPTO_ONRAMP),
@@ -30,7 +30,7 @@ export const useSearchDefaultsByCountry = ({
     ],
     queryFn: () =>
       MeldService.searchDefaultsByCountry({
-        countries: [countryCode],
+        countries: countryCode ? [countryCode] : undefined,
         categories,
         accountFilter
       }),
