@@ -8,7 +8,7 @@ import sendPage from './send.page'
 import commonElsPage from './commonEls.page'
 //import receivePage from './receive.page'
 import swapTabPage from './swapTab.page'
-import bridgeTabPage from './bridgeTab.page'
+import bridgeTabPage from './bridge.page'
 
 class TokenDetailsPage {
   get totalSupply() {

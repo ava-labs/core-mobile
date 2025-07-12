@@ -63,6 +63,7 @@ export const AccountAddresses = ({
         ),
         value: (
           <CopyButton
+            testID={`copy_btn__${network.chainName}`}
             onPress={() =>
               address &&
               onCopyAddress(address, `${network.chainName} address copied`)

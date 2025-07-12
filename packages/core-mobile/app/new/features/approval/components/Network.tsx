@@ -43,6 +43,7 @@ export const Network = ({
         }}>
         <TokenLogo logoUri={logoUri} symbol={symbol} size={24} />
         <Text
+          testID={`network__${name}`}
           variant="body1"
           numberOfLines={1}
           sx={{

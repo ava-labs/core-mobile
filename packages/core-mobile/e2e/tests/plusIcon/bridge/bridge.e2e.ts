@@ -1,6 +1,6 @@
 import { warmup } from '../../../helpers/warmup'
 import actions from '../../../helpers/actions'
-import bridgeTabPage from '../../../pages/bridgeTab.page'
+import bridgeTabPage from '../../../pages/bridge.page'
 import portfolioLoc from '../../../locators/portfolio.loc'
 import commonElsPage from '../../../pages/commonEls.page'
 import bridgeTabLoc from '../../../locators/bridgeTab.loc'

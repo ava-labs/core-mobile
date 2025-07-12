@@ -109,9 +109,15 @@ const waitForElement = async (
   await waitFor(element(item).atIndex(index)).toBeVisible().withTimeout(timeout)
 }
 
-const expectToBeVisible = async (item: Detox.NativeMatcher, index = 0) => {
+const expectToBeVisible = async (
+  item: Detox.NativeMatcher,
+  index = 0,
+  timeout = 2000
+) => {
   try {
-    await waitFor(element(item).atIndex(index)).toBeVisible().withTimeout(1000)
+    await waitFor(element(item).atIndex(index))
+      .toBeVisible()
+      .withTimeout(timeout)
     return true
   } catch (e) {
     console.log('Element is not visible ' + e)

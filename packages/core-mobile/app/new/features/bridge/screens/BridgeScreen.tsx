@@ -681,6 +681,7 @@ export const BridgeScreen = (): JSX.Element => {
           gap: 16
         }}>
         <Button
+          testID={isPending ? 'pending_btn' : 'next_btn'}
           type="primary"
           size="large"
           onPress={handleTransfer}

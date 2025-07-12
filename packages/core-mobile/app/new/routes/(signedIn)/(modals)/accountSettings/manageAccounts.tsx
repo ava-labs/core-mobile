@@ -209,6 +209,7 @@ const ManageAccountsScreen = (): React.JSX.Element => {
               sx={{ marginLeft: 4 }}
               onPress={() => gotoAccountDetails(account.id)}>
               <Icons.Alert.AlertCircle
+                testID={`account_detail_icon__${wallet.name}_${account.name}`}
                 color={colors.$textSecondary}
                 width={18}
                 height={18}
@@ -352,7 +353,7 @@ const ManageAccountsScreen = (): React.JSX.Element => {
     return (
       <NavigationBarButton
         isModal
-        testID="add_account_btn"
+        testID="add_wallet_btn"
         onPress={handleAddAccount}>
         <Icons.Content.Add color={colors.$textPrimary} />
       </NavigationBarButton>

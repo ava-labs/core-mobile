@@ -1,3 +1,4 @@
+import assert from 'assert'
 import { warmup } from '../../helpers/warmup'
 import settingsPage from '../../pages/settings.page'
 
@@ -7,14 +8,12 @@ describe('Settings - Testnet', () => {
   })
 
   it('Should enable testnet', async () => {
-    await settingsPage.goSettings()
     await settingsPage.switchToTestnet()
-    await settingsPage.verifyTestnetMode()
+    assert(await settingsPage.verifyTestnetMode())
   })
 
   it('Should enable mainnet', async () => {
-    await settingsPage.goSettings()
     await settingsPage.switchToMainnet()
-    await settingsPage.verifyMainnetMode()
+    assert(await settingsPage.verifyMainnetMode())
   })
 })

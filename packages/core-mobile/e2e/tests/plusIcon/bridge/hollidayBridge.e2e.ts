@@ -1,5 +1,5 @@
 import { warmup } from '../../../helpers/warmup'
-import bridgeTabPage from '../../../pages/bridgeTab.page'
+import bridgeTabPage from '../../../pages/bridge.page'
 import Wbs, { setWebViewId } from '../../../helpers/web'
 import browserPage from '../../../pages/browser.page'
 import connectToSitePage from '../../../pages/connectToSite.page'
