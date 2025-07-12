@@ -18,14 +18,17 @@ import {
   ServiceProviderCategories,
   ServiceProviderNames
 } from '../consts'
-import { useMeldPaymentMethod, useMeldServiceProvider } from '../store'
+import {
+  useMeldCountryCode,
+  useMeldPaymentMethod,
+  useMeldServiceProvider
+} from '../store'
 import {
   CreateCryptoQuoteErrorCode,
   CreateSessionWidget,
   CryptoCurrency,
   SessionTypes
 } from '../types'
-import { useLocale } from './useLocale'
 import { useSearchDefaultsByCountry } from './useSearchDefaultsByCountry'
 import { useCreateSessionWidget } from './useCreateSessionWidget'
 import { useServiceProviders } from './useServiceProviders'
@@ -74,7 +77,8 @@ export const useSelectAmount = ({
     maximumLimit,
     isLoadingTradeLimits
   } = useFiatSourceAmount({ category })
-  const { countryCode } = useLocale()
+  const [countryCode] = useMeldCountryCode()
+
   const { getFromPopulatedNetwork } = useNetworks()
   const { getMarketTokenBySymbol } = useWatchlist()
 

@@ -158,7 +158,7 @@ class MeldService {
     const queries = {
       categories: categories.join(','),
       accountFilter,
-      countries: countries.join(','),
+      countries: countries?.join(','),
       serviceProviders: serviceProviders?.join(','),
       fiatCurrencies: fiatCurrencies?.join(','),
       cryptoCurrencies: cryptoCurrencyCodes?.join(',')

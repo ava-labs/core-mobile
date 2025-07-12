@@ -104,7 +104,7 @@ export const CreateCryptoQuoteBodySchema = object({
   sourceAmount: number().optional(),
   sourceCurrencyCode: string(),
   destinationCurrencyCode: string(),
-  countryCode: string(),
+  countryCode: string().optional().nullable(),
   paymentMethodType: z.nativeEnum(PaymentMethods).optional(),
   subdivision: string().optional()
 })

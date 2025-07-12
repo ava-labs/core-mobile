@@ -1,9 +1,8 @@
 import { useCallback, useMemo } from 'react'
 import { CreateSessionWidget, CreateSessionWidgetParams } from '../types'
 import MeldService from '../services/MeldService'
-import { useMeldPaymentMethod } from '../store'
+import { useMeldCountryCode, useMeldPaymentMethod } from '../store'
 import { ServiceProviderCategories } from '../consts'
-import { useLocale } from './useLocale'
 import { useFiatSourceAmount } from './useFiatSourceAmount'
 
 export const useCreateSessionWidget = ({
@@ -22,7 +21,7 @@ export const useCreateSessionWidget = ({
 }): {
   createSessionWidget: () => Promise<CreateSessionWidget | undefined>
 } => {
-  const { countryCode } = useLocale()
+  const [countryCode] = useMeldCountryCode()
   const [meldPaymentMethod] = useMeldPaymentMethod()
   const {
     hasValidSourceAmount,
