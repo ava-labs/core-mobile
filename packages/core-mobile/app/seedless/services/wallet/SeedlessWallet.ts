@@ -183,9 +183,11 @@ export default class SeedlessWallet implements Wallet {
     network: Network
     provider: JsonRpcBatchInternal | Avalanche.JsonRpcProvider
   }): Promise<string> {
-    const addressEVM = await this.getEvmAddress(accountIndex)
-
     switch (rpcMethod) {
+      case RpcMethod.SOLANA_SIGN_MESSAGE: {
+        if (typeof data !== 'string') throw new Error('Data must be string')
+        return this.signSolanaMessage(data, accountIndex)
+      }
       case RpcMethod.AVALANCHE_SIGN_MESSAGE: {
         if (typeof data !== 'string') throw new Error('Data must be string')
 
@@ -204,30 +206,11 @@ export default class SeedlessWallet implements Wallet {
       }
       case RpcMethod.ETH_SIGN:
       case RpcMethod.PERSONAL_SIGN:
-        if (typeof data !== 'string')
-          throw new Error(`Invalid message type ${typeof data}`)
-
-        return this.signEip191(addressEVM, data)
       case RpcMethod.SIGN_TYPED_DATA:
       case RpcMethod.SIGN_TYPED_DATA_V1:
-        if (!isTypedDataV1(data)) throw new Error('Invalid typed data v1')
-
-        return this.signBlob(addressEVM, typedSignatureHash(data))
       case RpcMethod.SIGN_TYPED_DATA_V3:
-      case RpcMethod.SIGN_TYPED_DATA_V4: {
-        if (!isTypedData(data)) throw new Error('Invalid typed data')
-
-        // Not using cs.ethers.Signer.signTypedData due to the strict type verification in Ethers
-        // dApps in many cases have requests with extra unused types. In these cases ethers throws an error, rightfully.
-        // However since MM supports these malformed messages, we have to as well. Otherwise Core would look broken.
-        const hash = TypedDataUtils.eip712Hash(
-          data,
-          rpcMethod === RpcMethod.SIGN_TYPED_DATA_V3
-            ? SignTypedDataVersion.V3
-            : SignTypedDataVersion.V4
-        ).toString('hex')
-        return this.signBlob(addressEVM, `0x${hash}`)
-      }
+      case RpcMethod.SIGN_TYPED_DATA_V4:
+        return this.signEvmMessage(data, accountIndex, rpcMethod)
 
       default:
         throw new Error('Unknown message type method')
@@ -508,5 +491,62 @@ export default class SeedlessWallet implements Wallet {
     }
 
     return false
+  }
+
+  private async signEvmMessage(
+    data: string | TypedDataV1 | TypedData<MessageTypes>,
+    accountIndex: number,
+    rpcMethod: RpcMethod
+  ): Promise<string> {
+    const addressEVM = await this.getEvmAddress(accountIndex)
+
+    switch (rpcMethod) {
+      case RpcMethod.ETH_SIGN:
+      case RpcMethod.PERSONAL_SIGN:
+        if (typeof data !== 'string')
+          throw new Error(`Invalid message type ${typeof data}`)
+        return this.signEip191(addressEVM, data)
+
+      case RpcMethod.SIGN_TYPED_DATA:
+      case RpcMethod.SIGN_TYPED_DATA_V1:
+        if (!isTypedDataV1(data)) throw new Error('Invalid typed data v1')
+        return this.signBlob(addressEVM, typedSignatureHash(data))
+
+      case RpcMethod.SIGN_TYPED_DATA_V3:
+      case RpcMethod.SIGN_TYPED_DATA_V4: {
+        if (!isTypedData(data)) throw new Error('Invalid typed data')
+
+        // Not using cs.ethers.Signer.signTypedData due to the strict type verification in Ethers
+        // dApps in many cases have requests with extra unused types. In these cases ethers throws an error, rightfully.
+        // However since MM supports these malformed messages, we have to as well. Otherwise Core would look broken.
+        const hash = TypedDataUtils.eip712Hash(
+          data,
+          rpcMethod === RpcMethod.SIGN_TYPED_DATA_V3
+            ? SignTypedDataVersion.V3
+            : SignTypedDataVersion.V4
+        ).toString('hex')
+        return this.signBlob(addressEVM, `0x${hash}`)
+      }
+
+      default:
+        throw new Error('Unknown EVM message type method')
+    }
+  }
+
+  private async signSolanaMessage(
+    _data: string,
+    _accountIndex: number
+  ): Promise<string> {
+    /**
+     * FIXME: Pulled over from XT's SeedlessWallet implementation
+     * I have a PoC that seems to be working, but obtained signatures are not verified
+     * properly by the dApps. I think it's because the dApps provide a UTF-8 message,
+     * but for it to be accepted by Solana Ledger app, we need to serialize it,
+     * add a message header etc., and I think Ledger then signs the whole thing, which
+     * makes it impossible to verify the signature with the original message.
+     */
+    throw new Error(
+      'Signing off-chain messages is only supported with seedphrase wallets at the moment'
+    )
   }
 }

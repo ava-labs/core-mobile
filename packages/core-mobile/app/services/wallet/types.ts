@@ -35,6 +35,7 @@ export interface AvalancheTransactionRequest {
 }
 
 export interface SolanaTransactionRequest {
+  account: string
   serializedTx: string
 }
 
@@ -148,7 +149,7 @@ export interface Wallet {
     data: string | TypedDataV1 | TypedData<MessageTypes>
     accountIndex: number
     network: Network
-    provider: JsonRpcBatchInternal | Avalanche.JsonRpcProvider
+    provider: JsonRpcBatchInternal | Avalanche.JsonRpcProvider | SolanaProvider
   }): Promise<string>
 
   /**

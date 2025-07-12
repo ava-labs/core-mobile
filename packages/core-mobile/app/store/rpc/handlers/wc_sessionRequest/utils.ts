@@ -16,7 +16,8 @@ import {
   isXChainId,
   isCChainId,
   isPChainId,
-  isBtcChainId
+  isBtcChainId,
+  isSvmChainId
 } from 'utils/caip2ChainIds'
 import { router } from 'expo-router'
 import { walletConnectCache } from 'services/walletconnectv2/walletConnectCache/walletConnectCache'
@@ -89,7 +90,8 @@ export const isNetworkSupported = (
     isXChainId(caip2ChainId) ||
     isPChainId(caip2ChainId) ||
     isCChainId(caip2ChainId) ||
-    isBtcChainId(caip2ChainId)
+    isBtcChainId(caip2ChainId) ||
+    isSvmChainId(caip2ChainId)
   )
 }
 
@@ -105,6 +107,8 @@ export const getAddressForChainId = (
     ? account.addressPVM
     : isBtcChainId(caip2ChainId)
     ? account.addressBTC
+    : isSvmChainId(caip2ChainId)
+    ? account.addressSVM
     : account.addressC
 }
 
@@ -113,7 +117,8 @@ const coreAccountAddresses = z.object({
   addressBTC: z.string(),
   addressAVM: z.string(),
   addressPVM: z.string(),
-  addressCoreEth: z.string()
+  addressCoreEth: z.string(),
+  addressSVM: z.string()
 })
 
 const namespaceToApproveSchema = z.object({
