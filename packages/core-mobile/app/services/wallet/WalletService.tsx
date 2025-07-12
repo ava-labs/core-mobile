@@ -331,6 +331,11 @@ class WalletService {
       return []
     }
 
+    // We only return the current address for private key account
+    if (walletType === WalletType.PRIVATE_KEY) {
+      return [account.addressAVM]
+    }
+
     if (walletType === WalletType.MNEMONIC) {
       const provXP = await NetworkService.getAvalancheProviderXP(isTestnet)
       const publicKeys = await this.getPublicKey(walletId, walletType, account)
