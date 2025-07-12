@@ -48,7 +48,7 @@ export const useSelectAmount = ({
   tokenBalance: TokenUnit | undefined
   hasValidSourceAmount: boolean
   isEnabled: boolean
-  formatInSubTextNumber: (amt: number) => JSX.Element
+  formatInSubTextNumber: (amt: number | undefined | null) => JSX.Element
   setSourceAmount: (amt: number) => void
   sourceAmount: number | undefined
   createSessionWidget: () => Promise<CreateSessionWidget | undefined>
@@ -222,7 +222,7 @@ export const useSelectAmount = ({
   ])
 
   const getSourceAmountInTokenUnit = useCallback(
-    (amt: number): TokenUnit => {
+    (amt: number | undefined | null): TokenUnit => {
       const currentPrice = token?.tokenWithBalance.symbol
         ? getMarketTokenBySymbol(token.tokenWithBalance.symbol)?.currentPrice ??
           0
@@ -233,7 +233,11 @@ export const useSelectAmount = ({
           ? token.tokenWithBalance.decimals
           : 0
 
-      const tokenAmount = (amt / currentPrice) * 10 ** maxDecimals
+      const tokenAmount =
+        amt !== null && amt !== undefined
+          ? 0
+          : (amt / currentPrice) * 10 ** maxDecimals
+
       return new TokenUnit(
         tokenAmount,
         maxDecimals,
@@ -310,7 +314,7 @@ export const useSelectAmount = ({
   ])
 
   const formatInSubTextNumber = useCallback(
-    (amt: number): JSX.Element => {
+    (amt: number | undefined | null): JSX.Element => {
       const sourceAmountInTokenUnit = getSourceAmountInTokenUnit(amt)
       return (
         <View

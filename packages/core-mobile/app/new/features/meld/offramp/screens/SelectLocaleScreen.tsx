@@ -1,4 +1,4 @@
-import React, { useLayoutEffect, useMemo } from 'react'
+import React, { useLayoutEffect } from 'react'
 import { useRouter } from 'expo-router'
 import { useMeldCountryCode, useMeldToken } from 'features/meld/store'
 import { useLocale } from 'features/meld/hooks/useLocale'
@@ -7,7 +7,7 @@ import { useSearchCountries } from 'features/meld/hooks/useSearchCountries'
 import { useSearchFiatCurrencies } from 'features/meld/hooks/useSearchFiatCurrencies'
 import { ServiceProviderCategories } from 'features/meld/consts'
 import { useDispatch } from 'react-redux'
-import { currencies } from 'store/settings/currency'
+import { setSelectedCurrency } from 'store/settings/currency'
 
 export const SelectLocaleScreen = (): React.JSX.Element => {
   const { navigate } = useRouter()
@@ -15,33 +15,22 @@ export const SelectLocaleScreen = (): React.JSX.Element => {
   const { currencyCode, countryCode } = useLocale()
   const [selectedCountryCode, setSelectedCountryCode] = useMeldCountryCode()
   const dispatch = useDispatch()
-  const { data: countries } = useSearchCountries({
-    categories: [ServiceProviderCategories.CRYPTO_OFFRAMP]
-  })
+  const { data: countries, isLoading: isLoadingCountries } = useSearchCountries(
+    {
+      categories: [ServiceProviderCategories.CRYPTO_OFFRAMP]
+    }
+  )
   const { data: meldCurrencies, isLoading: isLoadingCurrencies } =
     useSearchFiatCurrencies({
       categories: [ServiceProviderCategories.CRYPTO_OFFRAMP]
     })
-
-  const supportedCurrencyCodes = currencies.map(currency =>
-    currency.symbol.toUpperCase()
-  )
-
-  const supportedCurrencies = useMemo(() => {
-    return (
-      meldCurrencies?.filter(
-        currency =>
-          currency.currencyCode &&
-          supportedCurrencyCodes.includes(currency.currencyCode)
-      ) ?? []
-    )
-  }, [meldCurrencies, supportedCurrencyCodes])
 
   useLayoutEffect(() => {
     setSelectedCountryCode(countryCode)
   }, [countryCode, currencyCode, dispatch, setSelectedCountryCode])
 
   const handleOnNext = (): void => {
+    dispatch(setSelectedCurrency(currencyCode))
     if (meldToken) {
       // @ts-ignore TODO: make routes typesafe
       navigate('/meld/offramp/selectWithdrawAmount')
@@ -61,13 +50,20 @@ export const SelectLocaleScreen = (): React.JSX.Element => {
     navigate('/meldOfframpCurrency')
   }
 
+  const selectedCountry = countries?.find(
+    c => c.countryCode === (selectedCountryCode ?? countryCode)
+  )
+
+  const selectedCurrency = meldCurrencies?.find(
+    c => c.currencyCode === currencyCode
+  )
+
   return (
     <SelectLocale
-      countries={countries ?? []}
-      currencies={supportedCurrencies}
-      isLoadingCurrencies={isLoadingCurrencies}
-      selectedCountryCode={selectedCountryCode}
-      currencyCode={currencyCode?.toUpperCase()}
+      isLoadingCountry={isLoadingCountries}
+      isLoadingCurrency={isLoadingCurrencies}
+      selectedCountry={selectedCountry}
+      selectedCurrency={selectedCurrency}
       onNext={handleOnNext}
       onSelectCountry={handleOnSelectCountry}
       onSelectCurrency={handleOnSelectCurrency}

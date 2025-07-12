@@ -10,24 +10,21 @@ import { ScrollScreen } from 'common/components/ScrollScreen'
 import { Space } from 'common/components/Space'
 import React, { useCallback, useMemo } from 'react'
 import { LoadingState } from 'common/components/LoadingState'
-import { FiatCurrency } from '../types'
-import { Country } from '../types'
+import { FiatCurrency, Country } from '../types'
 
 export const SelectLocale = ({
-  countries,
-  currencies,
-  isLoadingCurrencies,
-  selectedCountryCode,
-  currencyCode,
+  isLoadingCountry,
+  isLoadingCurrency,
+  selectedCountry,
+  selectedCurrency,
   onNext,
   onSelectCountry,
   onSelectCurrency
 }: {
-  countries: Country[]
-  currencies: FiatCurrency[]
-  isLoadingCurrencies: boolean
-  selectedCountryCode?: string
-  currencyCode?: string
+  isLoadingCountry: boolean
+  isLoadingCurrency: boolean
+  selectedCountry?: Country
+  selectedCurrency?: FiatCurrency
   onNext: () => void
   onSelectCountry: () => void
   onSelectCurrency: () => void
@@ -35,7 +32,6 @@ export const SelectLocale = ({
   const {
     theme: { colors }
   } = useTheme()
-  const country = countries?.find(c => c.countryCode === selectedCountryCode)
 
   const renderFooter = (): React.JSX.Element => {
     return (
@@ -45,18 +41,33 @@ export const SelectLocale = ({
     )
   }
 
-  const renderCurrencyValue = useCallback((): React.JSX.Element => {
-    if (isLoadingCurrencies) {
+  const renderCountryValue = useCallback((): React.JSX.Element => {
+    if (isLoadingCountry) {
       return <LoadingState />
     }
 
-    const currency = currencies?.find(
-      curr => curr.currencyCode === currencyCode
+    return (
+      <Text
+        variant="body2"
+        sx={{
+          color: colors.$textSecondary,
+          fontSize: 16,
+          lineHeight: 22,
+          marginLeft: 9
+        }}>
+        {selectedCountry?.name}
+      </Text>
     )
+  }, [colors.$textSecondary, selectedCountry, isLoadingCountry])
+
+  const renderCurrencyValue = useCallback((): React.JSX.Element => {
+    if (isLoadingCurrency) {
+      return <LoadingState />
+    }
 
     return (
       <View sx={{ flexDirection: 'row', alignItems: 'center' }}>
-        {currencyCode && (
+        {selectedCurrency && (
           <View
             sx={{
               width: 21,
@@ -64,9 +75,9 @@ export const SelectLocale = ({
               borderRadius: 21,
               overflow: 'hidden'
             }}>
-            {currency?.symbolImageUrl && (
+            {selectedCurrency?.symbolImageUrl && (
               <Image
-                source={{ uri: currency.symbolImageUrl }}
+                source={{ uri: selectedCurrency.symbolImageUrl }}
                 sx={{ width: 21, height: 21 }}
               />
             )}
@@ -81,29 +92,18 @@ export const SelectLocale = ({
             lineHeight: 22,
             marginLeft: 9
           }}>
-          {currencyCode?.toUpperCase()}
+          {selectedCurrency?.currencyCode?.toUpperCase()}
         </Text>
       </View>
     )
-  }, [colors.$textSecondary, currencies, currencyCode, isLoadingCurrencies])
+  }, [colors.$textSecondary, selectedCurrency, isLoadingCurrency])
 
   const groupListData = useMemo(() => {
     return [
       {
         title: 'Country',
         onPress: onSelectCountry,
-        value: (
-          <Text
-            variant="body2"
-            sx={{
-              color: colors.$textSecondary,
-              fontSize: 16,
-              lineHeight: 22,
-              marginLeft: 9
-            }}>
-            {country?.name}
-          </Text>
-        )
+        value: renderCountryValue()
       },
       {
         title: 'Currency',
@@ -112,11 +112,10 @@ export const SelectLocale = ({
       }
     ]
   }, [
-    colors.$textSecondary,
-    country?.name,
     onSelectCountry,
     onSelectCurrency,
-    renderCurrencyValue
+    renderCurrencyValue,
+    renderCountryValue
   ])
 
   return (

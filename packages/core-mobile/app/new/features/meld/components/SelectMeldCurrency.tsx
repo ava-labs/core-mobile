@@ -3,6 +3,7 @@ import React, { useMemo } from 'react'
 import { LoadingState } from 'common/components/LoadingState'
 import { ErrorState } from 'common/components/ErrorState'
 import {
+  currencies,
   CurrencySymbol,
   selectSelectedCurrency,
   setSelectedCurrency
@@ -18,19 +19,33 @@ export const SelectMeldCurrency = ({
 }): React.JSX.Element => {
   const dispatch = useDispatch()
   const selectedCurrency = useSelector(selectSelectedCurrency)
-  const { data: currencies, isLoading } = useSearchFiatCurrencies({
+  const { data: meldCurrencies, isLoading } = useSearchFiatCurrencies({
     categories: [category]
   })
 
+  const supportedCurrencyCodes = currencies.map(currency =>
+    currency.symbol.toUpperCase()
+  )
+
+  const supportedCurrencies = useMemo(() => {
+    return (
+      meldCurrencies?.filter(
+        currency =>
+          currency.currencyCode &&
+          supportedCurrencyCodes.includes(currency.currencyCode)
+      ) ?? []
+    )
+  }, [meldCurrencies, supportedCurrencyCodes])
+
   const sortedCurrencies = useMemo(() => {
-    if (currencies === undefined) {
+    if (supportedCurrencies === undefined) {
       return []
     }
-    const usCurrency = currencies.filter(
+    const usCurrency = supportedCurrencies.filter(
       currency => currency.currencyCode === CurrencySymbol.USD
     )
 
-    const otherCurrencies = currencies.filter(
+    const otherCurrencies = supportedCurrencies.filter(
       currency => currency.currencyCode !== CurrencySymbol.USD
     )
 
@@ -38,7 +53,7 @@ export const SelectMeldCurrency = ({
       return a.name?.localeCompare(b.name ?? '') ?? 0
     })
     return [...usCurrency, ...sortedOtherCurrencies]
-  }, [currencies])
+  }, [supportedCurrencies])
 
   const transformedCurrencies = useMemo(() => {
     return sortedCurrencies.map(curr => {
