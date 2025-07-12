@@ -238,7 +238,7 @@ export const useSelectAmount = ({
           : 0
 
       const tokenAmount =
-        amt !== null && amt !== undefined
+        amt !== null || amt !== undefined
           ? 0
           : (amt / currentPrice) * 10 ** maxDecimals
 
