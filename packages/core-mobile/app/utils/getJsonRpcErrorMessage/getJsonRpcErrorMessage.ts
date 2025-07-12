@@ -19,6 +19,57 @@ export const getJsonRpcErrorMessage = (error: unknown): string => {
   return 'Unexpected error'
 }
 
+function getSolanaErrorMessage(errorMessage: string): string | null {
+  if (errorMessage.includes('-32002')) {
+    if (errorMessage.includes('Blockhash not found')) {
+      return 'Transaction failed: The network is experiencing high load. Please try again.'
+    }
+    return 'Transaction failed: Please verify your transaction details and try again.'
+  }
+
+  if (errorMessage.includes('-32003')) {
+    return 'Transaction failed: Invalid signature. Please check your account has sufficient permissions.'
+  }
+
+  if (errorMessage.includes('-32004')) {
+    return 'Transaction failed: Network timeout. Please try again.'
+  }
+
+  if (errorMessage.includes('-32005')) {
+    return 'Transaction failed: Network is temporarily experiencing delays. Please try again in a moment.'
+  }
+
+  if (errorMessage.includes('-32007') || errorMessage.includes('-32009')) {
+    return 'Transaction failed: Network synchronization issue. Please try again.'
+  }
+
+  if (errorMessage.includes('-32010')) {
+    return 'Transaction failed: Invalid transaction data. Please check your transaction details.'
+  }
+
+  if (errorMessage.includes('-32013')) {
+    return 'Transaction failed: Invalid signature format.'
+  }
+
+  if (errorMessage.includes('-32014')) {
+    return 'Transaction failed: Network is processing your request. Please try again in a moment.'
+  }
+
+  if (errorMessage.includes('-32015')) {
+    return 'Transaction failed: Unsupported transaction version. Please update your wallet.'
+  }
+
+  if (errorMessage.includes('-32016')) {
+    return 'Transaction failed: Please try again in a moment.'
+  }
+
+  if (errorMessage.includes('-32602')) {
+    return 'Transaction failed: Invalid parameters. Please check your transaction details.'
+  }
+
+  return null
+}
+
 /**
  * Handles JSON-RPC error cases and returns a user-friendly error message.
  * @param error - The error object to process.
@@ -34,6 +85,13 @@ export const parseJsonRpcError = (
 
   // Handle detailed error message based on cause
   if (cause?.error?.message) {
+    // Try to get Solana specific error message
+    const solanaError = getSolanaErrorMessage(cause.error.message)
+    if (solanaError) {
+      return solanaError
+    }
+
+    // Handle existing cases for other chains
     if (cause.error.message.startsWith('transaction underpriced')) {
       return "Transaction failed. The gas price or max priority fee is too low compared to the network's current minimum requirement. Please increase the gas and try again."
     } else if (cause.error.message === 'already known') {
