@@ -1,6 +1,10 @@
 import { getAddressByNetwork } from 'store/account/utils'
 import ModuleManager from 'vmModule/ModuleManager'
 import { mapToVmNetwork } from 'vmModule/utils/mapToVmNetwork'
+import { NetworkVMType } from '@avalabs/core-chains-sdk'
+import Config from 'react-native-config'
+import { Network } from '@avalabs/core-chains-sdk'
+import Logger from 'utils/Logger'
 import { ActivityResponse, GetActivitiesForAccountParams } from './types'
 import { convertTransaction } from './utils/convertTransaction'
 
@@ -13,9 +17,14 @@ export class ActivityService {
     pageSize = 30
   }: GetActivitiesForAccountParams): Promise<ActivityResponse> {
     const address = getAddressByNetwork(account, network)
-    const module = await ModuleManager.loadModuleByNetwork(network)
+
+    // Populate network with tokens for SVM networks if needed
+    const networkWithTokens = await this.enrichNetworkWithTokens(network)
+
+    const module = await ModuleManager.loadModuleByNetwork(networkWithTokens)
+
     const rawTxHistory = await module.getTransactionHistory({
-      network: mapToVmNetwork(network),
+      network: mapToVmNetwork(networkWithTokens),
       address,
       nextPageToken,
       offset: pageSize
@@ -29,6 +38,35 @@ export class ActivityService {
       transactions,
       nextPageToken: rawTxHistory.nextPageToken
     }
+  }
+
+  private async enrichNetworkWithTokens(network: Network): Promise<Network> {
+    // Only enrich SVM networks that don't already have tokens
+    if (
+      network.vmName !== NetworkVMType.SVM ||
+      (network.tokens && network.tokens.length > 0)
+    ) {
+      return network
+    }
+
+    try {
+      const tokenListResponse = await fetch(
+        `${Config.PROXY_URL}/tokenlist?includeSolana`
+      )
+      const tokenData = await tokenListResponse.json()
+      const networkData = tokenData[network.chainId]
+
+      if (networkData?.tokens) {
+        return {
+          ...network,
+          tokens: networkData.tokens
+        }
+      }
+    } catch (error) {
+      Logger.error('Failed to fetch SPL token metadata', error)
+    }
+
+    return network
   }
 }
 

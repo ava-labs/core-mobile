@@ -1,5 +1,8 @@
 import { Network as ChainsSDKNetwork } from '@avalabs/core-chains-sdk'
-import { Network as VmModuleNetwork } from '@avalabs/vm-module-types'
+import {
+  NetworkContractToken,
+  Network as VmModuleNetwork
+} from '@avalabs/vm-module-types'
 
 export const mapToVmNetwork = (network: ChainsSDKNetwork): VmModuleNetwork => ({
   chainId: network.chainId,
@@ -17,5 +20,6 @@ export const mapToVmNetwork = (network: ChainsSDKNetwork): VmModuleNetwork => ({
       assetPlatformId: network.pricingProviders?.coingecko.assetPlatformId
     }
   },
-  vmName: network.vmName
+  vmName: network.vmName,
+  tokens: network?.tokens as NetworkContractToken[] // Needed to display SPL tokens
 })
