@@ -40,6 +40,13 @@ export class ActivityService {
     }
   }
 
+  /**
+   * Enriches SVM networks with SPL token metadata for proper transaction history display.
+   *
+   * Unlike EVM networks which include token metadata in the main /networks endpoint,
+   * Solana networks return empty tokens arrays and require fetching from /tokenlist?includeSolana.
+   * This ensures SPL tokens show proper symbols (e.g., "ORCA") instead of "Unknown" in activity.
+   */
   private async enrichNetworkWithTokens(network: Network): Promise<Network> {
     // Only enrich SVM networks that don't already have tokens
     if (
