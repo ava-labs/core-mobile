@@ -6,6 +6,7 @@ import { useMemo } from 'react'
 import { MELD_CURRENCY_CODES, ServiceProviderCategories } from '../consts'
 import { LocalTokenWithBalance } from '../../../../store/balance/types'
 import { useMeldToken } from '../store'
+import { CryptoCurrencyWithBalance } from '../types'
 import { useSearchCryptoCurrencies } from './useSearchCryptoCurrencies'
 import { useGetTradableCryptoCurrency } from './useGetTradableCryptoCurrency'
 
@@ -16,14 +17,15 @@ type NavigateToWithdrawParams = {
 
 export const useWithdraw = (): {
   navigateToWithdraw: (props?: NavigateToWithdrawParams) => void
-  navigateToWithdrawAvax: () => void
-  navigateToWithdrawUsdc: () => void
+  navigateToWithdrawAmountWithToken: (token: CryptoCurrencyWithBalance) => void
+  navigateToWithdrawAmountWithAvax: () => void
+  navigateToWithdrawAmountWithUsdc: () => void
   isWithdrawable: (token?: LocalTokenWithBalance, address?: string) => boolean
   isLoadingCryptoCurrencies: boolean
 } => {
   const { navigate } = useRouter()
-  const [_meldToken, setMeldToken] = useMeldToken()
-  const isMeldIntegrationBlocked = useSelector(selectIsMeldOfframpBlocked)
+  const [_, setOfframpToken] = useMeldToken()
+  const isMeldOfframpBlocked = useSelector(selectIsMeldOfframpBlocked)
   const { data: cryptoCurrencies, isLoading: isLoadingCryptoCurrencies } =
     useSearchCryptoCurrencies({
       categories: [ServiceProviderCategories.CRYPTO_OFFRAMP]
@@ -50,7 +52,7 @@ export const useWithdraw = (): {
   const usdc = useMemo(
     () =>
       cryptoCurrencies?.find(
-        token => token.currencyCode === MELD_CURRENCY_CODES.USDC
+        token => token.currencyCode === MELD_CURRENCY_CODES.USDC_AVAXC
       ),
     [cryptoCurrencies]
   )
@@ -58,47 +60,51 @@ export const useWithdraw = (): {
   const navigateToWithdraw = useCallback(
     (props?: NavigateToWithdrawParams) => {
       const { token, address } = props ?? {}
-      if (isMeldIntegrationBlocked) {
+      if (isMeldOfframpBlocked) {
         return
       }
 
       if (token || address) {
         const cryptoCurrency = getTradableCryptoCurrency(token, address)
-        setMeldToken(cryptoCurrency)
-        // @ts-ignore TODO: make routes typesafe
-        navigate('/meld/offramp/selectWithdrawAmount')
-        return
+        setOfframpToken(cryptoCurrency)
+      } else {
+        setOfframpToken(undefined)
       }
-      setMeldToken(undefined)
       // @ts-ignore TODO: make routes typesafe
       navigate('/meld/offramp')
     },
-    [
-      getTradableCryptoCurrency,
-      isMeldIntegrationBlocked,
-      navigate,
-      setMeldToken
-    ]
+    [getTradableCryptoCurrency, isMeldOfframpBlocked, navigate, setOfframpToken]
   )
 
-  const navigateToWithdrawAvax = useCallback(() => {
-    if (avax === undefined) return
-    setMeldToken(avax)
-    // @ts-ignore TODO: make routes typesafe
-    navigate('/meld/offramp/selectWithdrawAmount')
-  }, [avax, navigate, setMeldToken])
+  const navigateToWithdrawAmountWithToken = useCallback(
+    (token: CryptoCurrencyWithBalance) => {
+      if (isMeldOfframpBlocked) return
+      setOfframpToken(token)
+      // @ts-ignore TODO: make routes typesafe
+      navigate('/meld/offramp/selectWithdrawAmount')
+    },
+    [isMeldOfframpBlocked, navigate, setOfframpToken]
+  )
 
-  const navigateToWithdrawUsdc = useCallback(() => {
-    if (usdc === undefined) return
-    setMeldToken(usdc)
+  const navigateToWithdrawAmountWithAvax = useCallback(() => {
+    if (avax === undefined || isMeldOfframpBlocked) return
+    setOfframpToken(avax)
     // @ts-ignore TODO: make routes typesafe
     navigate('/meld/offramp/selectWithdrawAmount')
-  }, [usdc, navigate, setMeldToken])
+  }, [avax, isMeldOfframpBlocked, navigate, setOfframpToken])
+
+  const navigateToWithdrawAmountWithUsdc = useCallback(() => {
+    if (usdc === undefined || isMeldOfframpBlocked) return
+    setOfframpToken(usdc)
+    // @ts-ignore TODO: make routes typesafe
+    navigate('/meld/offramp/selectWithdrawAmount')
+  }, [usdc, isMeldOfframpBlocked, navigate, setOfframpToken])
 
   return {
     navigateToWithdraw,
-    navigateToWithdrawAvax,
-    navigateToWithdrawUsdc,
+    navigateToWithdrawAmountWithToken,
+    navigateToWithdrawAmountWithAvax,
+    navigateToWithdrawAmountWithUsdc,
     isWithdrawable,
     isLoadingCryptoCurrencies
   }

@@ -8,6 +8,7 @@ import {
   FiatCurrency,
   GetTradeLimits,
   MeldDefaultParams,
+  MeldTransaction,
   SearchDefaultsByCountry,
   SearchPaymentMethods,
   ServiceProvider
@@ -32,7 +33,7 @@ class MeldService {
         serviceProviders: serviceProviders?.join(','),
         categories: categories.join(','),
         accountFilter,
-        countries: countries.join(',')
+        countries: countries?.join(',')
       }
     })
   }
@@ -49,7 +50,7 @@ class MeldService {
         serviceProviders: serviceProviders?.join(','),
         categories: categories.join(','),
         accountFilter,
-        countries: countries.join(','),
+        countries: countries?.join(','),
         fiatCurrencies: fiatCurrencies?.join(',')
       }
     })
@@ -66,7 +67,7 @@ class MeldService {
       serviceProviders: serviceProviders?.join(','),
       categories: categories.join(','),
       accountFilter,
-      countries: countries.join(','),
+      countries: countries?.join(','),
       cryptoCurrencies: cryptoCurrencies?.join(',')
     }
     return meldApiClient.getCryptoCurrencies({
@@ -83,7 +84,7 @@ class MeldService {
     const queries = {
       categories: categories.join(','),
       accountFilter,
-      countries: countries.join(','),
+      countries: countries?.join(','),
       cryptoCurrencies: cryptoCurrencies?.join(',')
     }
     return meldApiClient.getServiceProviders({
@@ -99,7 +100,7 @@ class MeldService {
     const queries = {
       categories: categories.join(','),
       accountFilter,
-      countries: countries.join(',')
+      countries: countries?.join(',')
     }
     return meldApiClient.getDefaultsByCountry({ queries })
   }
@@ -116,7 +117,7 @@ class MeldService {
     const queries = {
       categories: categories.join(','),
       accountFilter,
-      countries: countries.join(','),
+      countries: countries?.join(','),
       serviceProviders: serviceProviders?.join(','),
       fiatCurrencies: fiatCurrencies?.join(','),
       cryptoCurrencies: cryptoCurrencyCodes?.join(','),
@@ -137,7 +138,7 @@ class MeldService {
     const queries = {
       categories: categories.join(','),
       accountFilter,
-      countries: countries.join(','),
+      countries: countries?.join(','),
       serviceProviders: serviceProviders?.join(','),
       fiatCurrencies: fiatCurrencies?.join(','),
       cryptoCurrencies: cryptoCurrencyCodes?.join(','),
@@ -157,7 +158,7 @@ class MeldService {
     const queries = {
       categories: categories.join(','),
       accountFilter,
-      countries: countries.join(','),
+      countries: countries?.join(','),
       serviceProviders: serviceProviders?.join(','),
       fiatCurrencies: fiatCurrencies?.join(','),
       cryptoCurrencies: cryptoCurrencyCodes?.join(',')
@@ -193,6 +194,7 @@ class MeldService {
     sessionData: {
       serviceProvider,
       redirectUrl,
+      redirectFlow,
       sourceAmount,
       walletAddress,
       countryCode,
@@ -206,6 +208,7 @@ class MeldService {
       sessionData: {
         serviceProvider,
         redirectUrl,
+        redirectFlow,
         countryCode,
         sourceCurrencyCode,
         destinationCurrencyCode,
@@ -215,6 +218,21 @@ class MeldService {
       }
     }
     return meldApiClient.createSessionWidget(body)
+  }
+
+  // Fetch transaction by session id
+  // - sessionId is created in the createSessionWidget function, and the transaction has not been created yet
+  // - user has to completed the kyc or signed into the service provider platform
+  // - Meld has webhook setup to get the transaction details from the service provider
+  // - this endpoint is used to ask Meld to fetch the transaction details from the service provider immediately
+  async fetchTrasactionBySessionId({
+    sessionId
+  }: {
+    sessionId: string
+  }): Promise<MeldTransaction | undefined> {
+    return await meldApiClient.fetchTransactionBySessionId({
+      params: { id: sessionId }
+    })
   }
 }
 

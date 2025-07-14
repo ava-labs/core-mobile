@@ -6,6 +6,7 @@ import { useMemo } from 'react'
 import { useMeldToken } from '../store'
 import { MELD_CURRENCY_CODES, ServiceProviderCategories } from '../consts'
 import { LocalTokenWithBalance } from '../../../../store/balance/types'
+import { CryptoCurrencyWithBalance } from '../types'
 import { useSearchCryptoCurrencies } from './useSearchCryptoCurrencies'
 import { useGetTradableCryptoCurrency } from './useGetTradableCryptoCurrency'
 
@@ -17,8 +18,9 @@ type NavigateToBuyParams = {
 
 export const useBuy = (): {
   navigateToBuy: (props?: NavigateToBuyParams) => void
-  navigateToBuyAvax: () => void
-  navigateToBuyUsdc: () => void
+  navigateToBuyAmountWithToken: (token: CryptoCurrencyWithBalance) => void
+  navigateToBuyAmountWithAvax: () => void
+  navigateToBuyAmountWithUsdc: () => void
   isBuyable: (token?: LocalTokenWithBalance, address?: string) => boolean
   isLoadingCryptoCurrencies: boolean
 } => {
@@ -76,18 +78,30 @@ export const useBuy = (): {
       if (token || address) {
         const cryptoCurrency = getTradableCryptoCurrency(token, address)
         setOnrampToken(cryptoCurrency)
-        // @ts-ignore TODO: make routes typesafe
-        navigate('/meld/onramp/selectBuyAmount')
-        return
+      } else {
+        setOnrampToken(undefined)
       }
-      setOnrampToken(undefined)
       // @ts-ignore TODO: make routes typesafe
       navigate('/meld/onramp')
     },
     [getTradableCryptoCurrency, isMeldOnrampBlocked, navigate, setOnrampToken]
   )
 
-  const navigateToBuyAvax = useCallback(() => {
+  const navigateToBuyAmountWithToken = useCallback(
+    (token: CryptoCurrencyWithBalance) => {
+      if (isMeldOnrampBlocked) {
+        handleBuy()
+        return
+      }
+
+      setOnrampToken(token)
+      // @ts-ignore TODO: make routes typesafe
+      navigate('/meld/onramp/selectBuyAmount')
+    },
+    [handleBuy, isMeldOnrampBlocked, navigate, setOnrampToken]
+  )
+
+  const navigateToBuyAmountWithAvax = useCallback(() => {
     if (isMeldOnrampBlocked) {
       handleBuy()
       return
@@ -97,10 +111,10 @@ export const useBuy = (): {
 
     setOnrampToken(avax)
     // @ts-ignore TODO: make routes typesafe
-    navigate('/meldOnramp/selectBuyAmount')
+    navigate('/meld/onramp/selectBuyAmount')
   }, [avax, handleBuy, isMeldOnrampBlocked, navigate, setOnrampToken])
 
-  const navigateToBuyUsdc = useCallback(() => {
+  const navigateToBuyAmountWithUsdc = useCallback(() => {
     if (isMeldOnrampBlocked) {
       handleBuy()
       return
@@ -109,13 +123,14 @@ export const useBuy = (): {
     if (usdc === undefined) return
     setOnrampToken(usdc)
     // @ts-ignore TODO: make routes typesafe
-    navigate('/meldOnramp/selectBuyAmount')
+    navigate('/meld/onramp/selectBuyAmount')
   }, [isMeldOnrampBlocked, usdc, setOnrampToken, navigate, handleBuy])
 
   return {
     navigateToBuy,
-    navigateToBuyAvax,
-    navigateToBuyUsdc,
+    navigateToBuyAmountWithToken,
+    navigateToBuyAmountWithAvax,
+    navigateToBuyAmountWithUsdc,
     isBuyable,
     isLoadingCryptoCurrencies
   }

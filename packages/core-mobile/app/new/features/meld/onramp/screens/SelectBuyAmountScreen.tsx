@@ -8,17 +8,17 @@ export const SelectBuyAmountScreen = (): React.JSX.Element => {
 
   const handleSelectToken = useCallback((): void => {
     // @ts-ignore TODO: make routes typesafe
-    navigate('/onrampTokenList')
+    navigate('/meldOnrampTokenList')
   }, [navigate])
 
   const handleSelectPaymentMethod = useCallback((): void => {
     // @ts-ignore TODO: make routes typesafe
-    navigate('/onrampPaymentMethod')
+    navigate('/meldOnrampPaymentMethod')
   }, [navigate])
 
   return (
     <SelectAmount
-      title={`How much do you want\nto buy?`}
+      title={`How much do you want to buy?`}
       navigationTitle={`Enter buy amount`}
       category={ServiceProviderCategories.CRYPTO_ONRAMP}
       onSelectToken={handleSelectToken}

@@ -6,14 +6,14 @@ import { useWithdraw } from 'features/meld/hooks/useWithdraw'
 export const SelectTokenScreen = (): React.JSX.Element => {
   const { navigate } = useRouter()
   const {
-    navigateToWithdrawAvax,
-    navigateToWithdrawUsdc,
+    navigateToWithdrawAmountWithAvax,
+    navigateToWithdrawAmountWithUsdc,
     isLoadingCryptoCurrencies
   } = useWithdraw()
 
   const selectOtherToken = useCallback((): void => {
     // @ts-ignore TODO: make routes typesafe
-    navigate('/offrampTokenList')
+    navigate('/meldOfframpTokenList')
   }, [navigate])
 
   return (
@@ -21,8 +21,8 @@ export const SelectTokenScreen = (): React.JSX.Element => {
       title={`What token do\nyou want to withdraw?`}
       isLoadingCryptoCurrencies={isLoadingCryptoCurrencies}
       onSelectOtherToken={selectOtherToken}
-      onSelectAvax={navigateToWithdrawAvax}
-      onSelectUsdc={navigateToWithdrawUsdc}
+      onSelectAvax={navigateToWithdrawAmountWithAvax}
+      onSelectUsdc={navigateToWithdrawAmountWithUsdc}
     />
   )
 }

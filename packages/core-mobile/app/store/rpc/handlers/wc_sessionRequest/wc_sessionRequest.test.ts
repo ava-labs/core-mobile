@@ -123,6 +123,24 @@ const testNonEVMNamespacesToApprove = {
       'disconnect',
       'connect'
     ]
+  },
+  solana: {
+    chains: [
+      'solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp',
+      'solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1'
+    ],
+    methods: [
+      RpcMethod.SOLANA_SIGN_MESSAGE,
+      RpcMethod.SOLANA_SIGN_TRANSACTION,
+      RpcMethod.SOLANA_SIGN_AND_SEND_TRANSACTION
+    ],
+    events: [
+      'chainChanged',
+      'accountsChanged',
+      'message',
+      'disconnect',
+      'connect'
+    ]
   }
 }
 
@@ -360,14 +378,16 @@ describe('session_request handler', () => {
           addressBTC: 'btcAddress1',
           addressAVM: 'avmAddress1',
           addressPVM: 'pvmAddress1',
-          addressCoreEth: 'coreEthAddress1'
+          addressCoreEth: 'coreEthAddress1',
+          addressSVM: 'solanaAddress1'
         },
         {
           addressC: '0xC7E5ffBd7843EdB88cCB2ebaECAa07EC55c65318',
           addressBTC: 'btcAddress2',
           addressAVM: 'avmAddress2',
           addressPVM: 'pvmAddress2',
-          addressCoreEth: 'coreEthAddress2'
+          addressCoreEth: 'coreEthAddress2',
+          addressSVM: 'solanaAddress2'
         }
       ]
 
@@ -422,14 +442,16 @@ describe('session_request handler', () => {
           addressBTC: 'btcAddress1',
           addressAVM: 'avmAddress1',
           addressPVM: 'pvmAddress1',
-          addressCoreEth: 'coreEthAddress1'
+          addressCoreEth: 'coreEthAddress1',
+          addressSVM: 'solanaAddress1'
         },
         {
           addressC: '0xC7E5ffBd7843EdB88cCB2ebaECAa07EC55c65318',
           addressBTC: 'btcAddress2',
           addressAVM: 'avmAddress2',
           addressPVM: 'pvmAddress2',
-          addressCoreEth: 'coreEthAddress2'
+          addressCoreEth: 'coreEthAddress2',
+          addressSVM: 'solanaAddress2'
         }
       ]
 
@@ -538,6 +560,30 @@ describe('session_request handler', () => {
             'connect'
           ],
           methods: ['bitcoin_sendTransaction', 'bitcoin_signTransaction']
+        },
+        solana: {
+          accounts: [
+            'solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp:solanaAddress1',
+            'solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp:solanaAddress2',
+            'solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1:solanaAddress1',
+            'solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1:solanaAddress2'
+          ],
+          chains: [
+            'solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp',
+            'solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1'
+          ],
+          events: [
+            'chainChanged',
+            'accountsChanged',
+            'message',
+            'disconnect',
+            'connect'
+          ],
+          methods: [
+            'solana_signMessage',
+            'solana_signTransaction',
+            'solana_signAndSendTransaction'
+          ]
         }
       }
 
