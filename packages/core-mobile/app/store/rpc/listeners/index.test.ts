@@ -1,5 +1,6 @@
 import { configureStore, createListenerMiddleware } from '@reduxjs/toolkit'
-import { Module, Network, NetworkVMType } from '@avalabs/vm-module-types'
+import { Module } from '@avalabs/vm-module-types'
+import { Network } from '@avalabs/core-chains-sdk'
 import { noop } from 'lodash'
 import WalletConnectService from 'services/walletconnectv2/WalletConnectService'
 import { AppStartListening } from 'store/types'
@@ -15,6 +16,7 @@ import mockAccounts from 'tests/fixtures/accounts.json'
 import mockWallets from 'tests/fixtures/wallets.json'
 import { transactionSnackbar } from 'new/common/utils/toast'
 import BiometricsSDK from 'utils/BiometricsSDK'
+import { mapToVmNetwork } from 'vmModule/utils/mapToVmNetwork'
 import {
   rpcReducer,
   reducerName,
@@ -547,23 +549,8 @@ describe('rpc - listeners', () => {
 
           await jest.runOnlyPendingTimersAsync()
 
-          const network: Network = {
-            chainId: 43114,
-            chainName: mockNetworks[43114].chainName,
-            isTestnet: mockNetworks[43114].isTestnet,
-            rpcUrl: mockNetworks[43114].rpcUrl,
-            logoUri: mockNetworks[43114].logoUri,
-            explorerUrl: mockNetworks[43114].explorerUrl,
-            utilityAddresses: mockNetworks[43114].utilityAddresses,
-            networkToken: mockNetworks[43114].networkToken,
-            vmName: NetworkVMType.EVM,
-            pricingProviders: {
-              coingecko: {
-                assetPlatformId: 'avalanche',
-                nativeTokenId: 'avalanche-2'
-              }
-            }
-          }
+          const network = mockNetworks[43114] as Network
+          const transformedNetwork = mapToVmNetwork(network)
 
           const request = {
             requestId: String(testRequest.data.id),
@@ -579,7 +566,10 @@ describe('rpc - listeners', () => {
             context: undefined
           }
 
-          expect(mockOnRpcRequest).toHaveBeenCalledWith(request, network)
+          expect(mockOnRpcRequest).toHaveBeenCalledWith(
+            request,
+            transformedNetwork
+          )
 
           expect(transactionSnackbar.error).toHaveBeenCalledWith({
             error: 'Invalid params'
