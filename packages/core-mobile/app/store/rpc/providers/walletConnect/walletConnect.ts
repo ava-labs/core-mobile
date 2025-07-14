@@ -11,8 +11,10 @@ import AnalyticsService from 'services/analytics/AnalyticsService'
 import { getChainIdFromCaip2 } from 'utils/caip2ChainIds'
 import { getJsonRpcErrorMessage } from 'utils/getJsonRpcErrorMessage/getJsonRpcErrorMessage'
 import { transactionSnackbar } from 'new/common/utils/toast'
+import bs58 from 'bs58'
 import { AgnosticRpcProvider, RpcMethod, RpcProvider } from '../../types'
 import { isSessionProposal, isUserRejectedError } from './utils'
+import { transformSolanaParams } from './solanaRequestUtils'
 
 const chainAgnosticMethods = [
   RpcMethod.AVALANCHE_CREATE_CONTACT,
@@ -130,8 +132,28 @@ class WalletConnectProvider implements AgnosticRpcProvider {
       const topic = request.data.topic
       const requestId = request.data.id
 
+      let transformedResult = result
+
+      // Move Solana result transformation here
+      if (request.method === RpcMethod.SOLANA_SIGN_MESSAGE) {
+        transformedResult = { signature: result as string }
+      } else if (request.method === RpcMethod.SOLANA_SIGN_TRANSACTION) {
+        try {
+          const signedTxBuffer = Buffer.from(result as string, 'base64')
+          const signature = signedTxBuffer.slice(1, 65)
+          const signatureBase58 = bs58.encode(new Uint8Array(signature))
+          transformedResult = { signature: signatureBase58 }
+        } catch (error) {
+          transformedResult = result
+        }
+      }
+
       try {
-        await WalletConnectService.approveRequest(topic, requestId, result)
+        await WalletConnectService.approveRequest(
+          topic,
+          requestId,
+          transformedResult
+        )
       } catch (e) {
         Logger.error('Unable to approve request', e)
 
@@ -148,6 +170,19 @@ class WalletConnectProvider implements AgnosticRpcProvider {
     listenerApi
   ): void => {
     if (isSessionProposal(request)) return
+
+    if (request.method.includes('solana_')) {
+      /**
+       * Solana dApps use different parameter formats than our internal VM module:
+       * 1. Different dApps (Jupiter, Orca) structure their parameters differently
+       * 2. Encoding differences: dApps use base58, our VM uses base64
+       * 3. Parameter shape: dApps use {pubkey, message} format, VM expects [{account, serializedMessage}]
+       */
+      const session = WalletConnectService.getSession(request.data.topic)
+      if (session) {
+        transformSolanaParams(request.data, session)
+      }
+    }
 
     if (chainAgnosticMethods.includes(request.method as RpcMethod)) return
 
