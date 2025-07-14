@@ -5,26 +5,32 @@ import { rpcErrors } from '@metamask/rpc-errors'
 import walletService from 'services/wallet/WalletService'
 import { WalletType } from 'services/wallet/types'
 
-export const solanaSendTransaction = async ({
-  transactionData,
-  network,
-  account,
+// Payload accepted from ApprovalController
+type SolanaTransactionPayload = {
+  account: string
+  message: string
+}
+
+export const solanaSignTransaction = async ({
   walletId,
   walletType,
+  transactionData,
+  account,
+  network,
   resolve
 }: {
-  transactionData: string
-  network: Network
-  account: Account
   walletId: string
   walletType: WalletType
+  transactionData: SolanaTransactionPayload
+  account: Account
+  network: Network
   resolve: (value: ApprovalResponse) => void
 }): Promise<void> => {
   try {
     const signedTx = await walletService.sign({
       transaction: {
-        account: account.addressSVM,
-        serializedTx: transactionData
+        account: transactionData.account,
+        serializedTx: transactionData.message
       },
       accountIndex: account.index,
       network,
@@ -32,15 +38,14 @@ export const solanaSendTransaction = async ({
       walletType
     })
 
-    // Return the signed transaction data (not the hash)
-    // The ApprovalController/VM module will handle broadcasting
+    // Return the signed transaction
     resolve({
       signedData: signedTx
     })
   } catch (error) {
     resolve({
       error: rpcErrors.internal({
-        message: 'Failed to sign solana transaction',
+        message: 'Failed to sign Solana transaction',
         data: { cause: error }
       })
     })
