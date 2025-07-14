@@ -326,14 +326,10 @@ class WalletService {
   }): Promise<string[]> {
     if (
       walletType === WalletType.SEEDLESS ||
+      walletType === WalletType.PRIVATE_KEY ||
       (isChange && chainAlias !== 'X')
     ) {
       return []
-    }
-
-    // We only return the current address for private key account
-    if (walletType === WalletType.PRIVATE_KEY) {
-      return [account.addressAVM]
     }
 
     if (walletType === WalletType.MNEMONIC) {
