@@ -11,11 +11,13 @@ import { useAvalancheEvmProvider } from 'hooks/networks/networkProviderHooks'
 import { useInAppRequest } from 'hooks/useInAppRequest'
 import { getEvmCaip2ChainId } from 'utils/caip2ChainIds'
 import {
-  GetQuoteParams,
-  SwapParams,
   SwapProvider,
   NormalizedSwapQuoteResult,
-  SwapProviders
+  SwapProviders,
+  SwapParams,
+  GetEvmQuoteParams,
+  EvmSwapQuote,
+  PerformSwapEvmParams
 } from '../types'
 import { isWrappableToken } from '../utils/evm/isWrappableToken'
 import { ParaswapProvider } from '../providers/ParaswapProvider'
@@ -24,9 +26,9 @@ import { WNativeProvider } from '../providers/WNativeProvider'
 
 export const useEvmSwap = (): {
   getQuote: (
-    params: GetQuoteParams
+    params: GetEvmQuoteParams
   ) => Promise<NormalizedSwapQuoteResult | undefined>
-  swap: (params: SwapParams) => Promise<string>
+  swap: (params: SwapParams<EvmSwapQuote>) => Promise<string>
 } => {
   const abortControllerRef = useRef<AbortController | null>(null)
   const avalancheProvider = useAvalancheEvmProvider()
@@ -34,10 +36,14 @@ export const useEvmSwap = (): {
   const isSwapFeesBlocked = useSelector(selectIsSwapFeesBlocked)
   const isSwapUseMarkrBlocked = useSelector(selectIsSwapUseMarkrBlocked)
 
-  const getSwapProvider = (isMarkrBlocked: boolean): SwapProvider =>
+  const getSwapProvider = (
+    isMarkrBlocked: boolean
+  ): SwapProvider<GetEvmQuoteParams, PerformSwapEvmParams> =>
     isMarkrBlocked ? ParaswapProvider : MarkrProvider
 
-  const getSwapProviderByName = (name: SwapProviders): SwapProvider => {
+  const getSwapProviderByName = (
+    name: SwapProviders
+  ): SwapProvider<GetEvmQuoteParams, PerformSwapEvmParams> => {
     switch (name) {
       case SwapProviders.PARASWAP:
         return ParaswapProvider
@@ -52,7 +58,7 @@ export const useEvmSwap = (): {
 
   const getQuote = useCallback(
     async (
-      params: GetQuoteParams
+      params: GetEvmQuoteParams
     ): Promise<NormalizedSwapQuoteResult | undefined> => {
       const {
         isFromTokenNative,
@@ -105,7 +111,7 @@ export const useEvmSwap = (): {
       swapProvider,
       quote,
       slippage
-    }: SwapParams) => {
+    }: SwapParams<EvmSwapQuote>) => {
       if (!avalancheProvider) {
         throw new Error('Invalid provider')
       }
