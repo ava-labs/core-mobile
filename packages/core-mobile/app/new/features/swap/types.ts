@@ -4,11 +4,7 @@ import { Network } from '@avalabs/core-chains-sdk'
 import { JsonRpcBatchInternal } from '@avalabs/core-wallets-sdk'
 import type WAVAX_ABI from '../../../contracts/ABI_WAVAX.json'
 import type WETH_ABI from '../../../contracts/ABI_WETH.json'
-
-export enum SwapType {
-  EVM = 'EVM',
-  SOLANA = 'SOLANA'
-}
+import { JupiterQuote } from './utils/svm/schemas'
 
 export enum EvmSwapOperation {
   WRAP = 'WRAP',
@@ -29,8 +25,7 @@ export type EvmUnwrapQuote = {
 
 export type EvmSwapQuote = OptimalRate | EvmWrapQuote | EvmUnwrapQuote
 
-// TODO: add solana swap quote
-export type SwapQuote = EvmSwapQuote
+export type SwapQuote = EvmSwapQuote | JupiterQuote
 
 export function isEvmWrapQuote(quote: SwapQuote): quote is EvmWrapQuote {
   return 'operation' in quote && quote.operation === EvmSwapOperation.WRAP
@@ -49,27 +44,47 @@ export const isParaswapQuote = (quote: SwapQuote): quote is OptimalRate => {
   )
 }
 
-export type GetQuoteParams = {
-  account: Account
+export const isEvmSwapQuote = (quote: SwapQuote): quote is EvmSwapQuote => {
+  return (
+    isParaswapQuote(quote) || isEvmWrapQuote(quote) || isEvmUnwrapQuote(quote)
+  )
+}
+
+export const isJupiterQuote = (quote: SwapQuote): quote is JupiterQuote => {
+  return 'inputMint' in quote
+}
+
+export type GetQuoteBaseParams = {
   amount: bigint
   fromTokenAddress: string
   fromTokenDecimals: number
-  isFromTokenNative: boolean
   toTokenAddress: string
   toTokenDecimals: number
-  isToTokenNative: boolean
   destination: SwapSide
   network: Network
 }
 
-export type SwapParams = {
+export type GetEvmQuoteParams = GetQuoteBaseParams & {
+  address: string
+  isFromTokenNative: boolean
+  isToTokenNative: boolean
+}
+
+export type GetSolanaQuoteParams = GetQuoteBaseParams & {
+  fromTokenBalance?: bigint
+  slippage: number
+}
+
+export type GetQuoteParams = GetEvmQuoteParams | GetSolanaQuoteParams
+
+export type SwapParams<T extends SwapQuote> = {
   account: Account
   network: Network
   fromTokenAddress: string
   isFromTokenNative: boolean
   toTokenAddress: string
   isToTokenNative: boolean
-  quote: EvmSwapQuote
+  quote: T
   slippage: number
 }
 

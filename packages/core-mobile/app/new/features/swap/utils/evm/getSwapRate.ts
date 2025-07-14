@@ -1,5 +1,4 @@
 import { Network } from '@avalabs/core-chains-sdk'
-import { Account } from 'store/account'
 import { OptimalRate, SwapSide } from '@paraswap/sdk'
 import ParaswapService from '../../services/ParaswapService'
 
@@ -10,7 +9,7 @@ export const getSwapRate = async ({
   toTokenDecimals,
   amount,
   swapSide,
-  account,
+  address,
   network,
   abortSignal
 }: {
@@ -18,9 +17,9 @@ export const getSwapRate = async ({
   toTokenAddress?: string
   fromTokenDecimals?: number
   toTokenDecimals?: number
-  amount: string
+  amount: bigint
   swapSide: SwapSide
-  account: Account
+  address: string
   network: Network
   abortSignal?: AbortSignal
 }): Promise<{
@@ -44,10 +43,10 @@ export const getSwapRate = async ({
     srcDecimals: fromTokenDecimals,
     destToken: toTokenAddress,
     destDecimals: toTokenDecimals,
-    srcAmount: amount,
+    srcAmount: amount.toString(),
     swapSide: swapSide,
     network: network,
-    account: account,
+    address,
     abortSignal
   })
 

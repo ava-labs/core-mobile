@@ -10,11 +10,12 @@ import { getEvmCaip2ChainId } from 'utils/caip2ChainIds'
 import { getSwapRate } from '../utils/evm/getSwapRate'
 import {
   EvmSwapOperation,
-  GetQuoteParams,
   isEvmWrapQuote,
   isEvmUnwrapQuote,
   SwapParams,
-  SwapQuote
+  SwapQuote,
+  GetEvmQuoteParams,
+  EvmSwapQuote
 } from '../types'
 import { isWrappableToken } from '../utils/evm/isWrappableToken'
 import { paraSwap } from '../utils/evm/paraSwap'
@@ -22,8 +23,8 @@ import { wrap } from '../utils/evm/wrap'
 import { unwrap } from '../utils/evm/unwrap'
 
 export const useEvmSwap = (): {
-  getQuote: (params: GetQuoteParams) => Promise<SwapQuote | undefined>
-  swap: (params: SwapParams) => Promise<string>
+  getQuote: (params: GetEvmQuoteParams) => Promise<SwapQuote | undefined>
+  swap: (params: SwapParams<EvmSwapQuote>) => Promise<string>
 } => {
   const abortControllerRef = useRef<AbortController | null>(null)
   const avalancheProvider = useAvalancheEvmProvider()
@@ -32,7 +33,7 @@ export const useEvmSwap = (): {
 
   const getQuote = useCallback(
     async ({
-      account,
+      address,
       amount,
       fromTokenAddress,
       fromTokenDecimals,
@@ -42,7 +43,7 @@ export const useEvmSwap = (): {
       isToTokenNative,
       destination,
       network
-    }: GetQuoteParams): Promise<SwapQuote | undefined> => {
+    }: GetEvmQuoteParams): Promise<SwapQuote | undefined> => {
       if (isFromTokenNative && isWrappableToken(toTokenAddress)) {
         return {
           operation: EvmSwapOperation.WRAP,
@@ -69,10 +70,10 @@ export const useEvmSwap = (): {
           toTokenAddress,
           fromTokenDecimals,
           toTokenDecimals,
-          amount: amount.toString(),
+          amount,
           swapSide: destination,
           network,
-          account,
+          address,
           abortSignal: controller.signal
         })
         return optimalRate
@@ -104,7 +105,7 @@ export const useEvmSwap = (): {
       isToTokenNative,
       quote,
       slippage
-    }: SwapParams) => {
+    }: SwapParams<EvmSwapQuote>) => {
       if (!avalancheProvider) {
         throw new Error('Invalid provider')
       }

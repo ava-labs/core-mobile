@@ -19,7 +19,6 @@ import { ScrollScreen } from 'common/components/ScrollScreen'
 import { TokenInputWidget } from 'common/components/TokenInputWidget'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import { usePreventScreenRemoval } from 'common/hooks/usePreventScreenRemoval'
-import { useSwapList } from 'common/hooks/useSwapList'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
 import { ParaswapError, ParaswapErrorCode } from 'errors/swapError'
 import { useGlobalSearchParams, useRouter } from 'expo-router'
@@ -35,19 +34,29 @@ import { useSelector } from 'react-redux'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import {
   LocalTokenWithBalance,
-  selectTokensWithZeroBalanceByNetwork
+  selectTokensWithZeroBalanceByNetworks
 } from 'store/balance'
 import { basisPointsToPercentage } from 'utils/basisPointsToPercentage'
+import { useSwapList } from 'common/hooks/useSwapList'
+import useSolanaNetwork from 'hooks/earn/useSolanaNetwork'
+import { useNetworks } from 'hooks/networks/useNetworks'
+import {
+  AVAX_TOKEN_ID,
+  SOLANA_TOKEN_LOCAL_ID,
+  USDC_AVALANCHE_C_TOKEN_ID,
+  USDC_SOLANA_TOKEN_ID
+} from 'common/consts/swap'
 import { SlippageInput } from '../components.tsx/SlippageInput'
 import { PARASWAP_PARTNER_FEE_BPS } from '../consts'
 import { useSwapContext } from '../contexts/SwapContext'
 import {
   isEvmUnwrapQuote,
   isEvmWrapQuote,
-  isParaswapQuote,
-  SwapType
+  isJupiterQuote,
+  isParaswapQuote
 } from '../types'
 import { calculateRate as calculateEvmRate } from '../utils/evm/calculateRate'
+import { calculateRate as calculateSvmRate } from '../utils/svm/calculateRate'
 
 export const SwapScreen = (): JSX.Element => {
   const { theme } = useTheme()
@@ -72,8 +81,6 @@ export const SwapScreen = (): JSX.Element => {
     destination,
     quote,
     isFetchingQuote,
-    swapType,
-    setSwapType,
     setDestination,
     slippage,
     setSlippage,
@@ -86,9 +93,15 @@ export const SwapScreen = (): JSX.Element => {
   const [toTokenValue, setToTokenValue] = useState<bigint>()
   const [localError, setLocalError] = useState<string>('')
   const cChainNetwork = useCChainNetwork()
+  const solanaNetwork = useSolanaNetwork()
   const tokensWithZeroBalance = useSelector(
-    selectTokensWithZeroBalanceByNetwork(cChainNetwork?.chainId)
+    selectTokensWithZeroBalanceByNetworks(
+      [cChainNetwork, solanaNetwork]
+        .map(network => network?.chainId)
+        .filter(chainId => chainId !== undefined) as number[]
+    )
   )
+  const { getNetwork } = useNetworks()
 
   const [isInputFocused, setIsInputFocused] = useState<boolean>(false)
   const swapButtonBackgroundColor = useMemo(
@@ -161,6 +174,8 @@ export const SwapScreen = (): JSX.Element => {
         }
       } else if (isEvmWrapQuote(quote) || isEvmUnwrapQuote(quote)) {
         setToTokenValue(BigInt(quote.amount))
+      } else if (isJupiterQuote(quote)) {
+        setToTokenValue(BigInt(quote.outAmount))
       }
     }
   }, [quote, fromTokenValue])
@@ -236,7 +251,7 @@ export const SwapScreen = (): JSX.Element => {
   ])
 
   const showFeesAndSlippage = useMemo(() => {
-    return quote && isParaswapQuote(quote)
+    return quote && (isParaswapQuote(quote) || isJupiterQuote(quote))
   }, [quote])
 
   const handleSwap = useCallback(() => {
@@ -272,9 +287,12 @@ export const SwapScreen = (): JSX.Element => {
   }, [navigate])
 
   const handleSelectToToken = useCallback((): void => {
-    // @ts-ignore TODO: make routes typesafe
-    navigate({ pathname: '/selectSwapToToken' })
-  }, [navigate])
+    navigate({
+      // @ts-ignore TODO: make routes typesafe
+      pathname: '/selectSwapToToken',
+      params: { networkChainId: fromToken?.networkChainId }
+    })
+  }, [navigate, fromToken])
 
   const formatInCurrency = useCallback(
     (
@@ -321,7 +339,7 @@ export const SwapScreen = (): JSX.Element => {
                 }
               : undefined
           }
-          network={cChainNetwork}
+          network={getNetwork(fromToken?.networkChainId)}
           formatInCurrency={amount => formatInCurrency(fromToken, amount)}
           onAmountChange={handleFromAmountChange}
           onFocus={() => setIsInputFocused(true)}
@@ -337,7 +355,7 @@ export const SwapScreen = (): JSX.Element => {
     formatInCurrency,
     handleFromAmountChange,
     handleSelectFromToken,
-    cChainNetwork,
+    getNetwork,
     fromToken,
     localError,
     fromTokenValue,
@@ -370,7 +388,7 @@ export const SwapScreen = (): JSX.Element => {
                 }
               : undefined
           }
-          network={cChainNetwork}
+          network={getNetwork(toToken?.networkChainId)}
           formatInCurrency={amount => formatInCurrency(toToken, amount)}
           onAmountChange={handleToAmountChange}
           onSelectToken={handleSelectToToken}
@@ -383,7 +401,7 @@ export const SwapScreen = (): JSX.Element => {
     formatInCurrency,
     handleToAmountChange,
     toToken,
-    cChainNetwork,
+    getNetwork,
     toTokenValue,
     isFetchingQuote,
     handleSelectToToken,
@@ -391,15 +409,24 @@ export const SwapScreen = (): JSX.Element => {
   ])
 
   const rate = useMemo(() => {
-    // eslint-disable-next-line sonarjs/no-collapsible-if
     if (quote) {
-      if (swapType === SwapType.EVM) {
+      if (
+        isEvmWrapQuote(quote) ||
+        isEvmUnwrapQuote(quote) ||
+        isParaswapQuote(quote)
+      ) {
         return calculateEvmRate(quote)
+      } else if (isJupiterQuote(quote) && fromToken && toToken) {
+        return calculateSvmRate({
+          quote,
+          fromToken,
+          toToken
+        })
       }
     }
 
     return 0
-  }, [quote, swapType])
+  }, [quote, toToken, fromToken])
 
   const data = useMemo(() => {
     const items: GroupListItem[] = []
@@ -440,10 +467,6 @@ export const SwapScreen = (): JSX.Element => {
     setSlippage,
     swapInProcess
   ])
-
-  useEffect(() => {
-    setSwapType(SwapType.EVM)
-  }, [setSwapType])
 
   useEffect(() => {
     if (swapStatus === 'Success') {
@@ -502,6 +525,30 @@ export const SwapScreen = (): JSX.Element => {
       </Button>
     )
   }, [canSwap, handleSwap, swapInProcess])
+
+  useEffect(() => {
+    if (fromToken?.networkChainId !== toToken?.networkChainId) {
+      if (fromToken?.networkChainId === cChainNetwork?.chainId) {
+        const targetTokenId =
+          fromToken?.localId === AVAX_TOKEN_ID
+            ? USDC_AVALANCHE_C_TOKEN_ID
+            : AVAX_TOKEN_ID
+        const defaultToToken = swapList.find(
+          tk => tk.localId.toLowerCase() === targetTokenId.toLowerCase()
+        )
+        setToToken(defaultToToken)
+      } else if (fromToken?.networkChainId === solanaNetwork?.chainId) {
+        const targetTokenId =
+          fromToken?.localId === SOLANA_TOKEN_LOCAL_ID
+            ? USDC_SOLANA_TOKEN_ID
+            : SOLANA_TOKEN_LOCAL_ID
+        const defaultToToken = swapList.find(
+          tk => tk.localId.toLowerCase() === targetTokenId.toLowerCase()
+        )
+        setToToken(defaultToToken)
+      }
+    }
+  }, [fromToken, toToken, cChainNetwork, solanaNetwork, setToToken, swapList])
 
   return (
     <ScrollScreen

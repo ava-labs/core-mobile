@@ -23,10 +23,12 @@ import { isUserRejectedError } from 'store/rpc/providers/walletConnect/utils'
 import { LocalTokenWithBalance } from 'store/balance'
 import useCChainNetwork from 'hooks/earn/useCChainNetwork'
 import { transactionSnackbar } from 'new/common/utils/toast'
+import useSolanaNetwork from 'hooks/earn/useSolanaNetwork'
 import { useSwapSelectedFromToken, useSwapSelectedToToken } from '../store'
-import { SwapQuote, SwapType } from '../types'
+import { isEvmSwapQuote, isJupiterQuote, SwapQuote } from '../types'
 import { useEvmSwap } from '../hooks/useEvmSwap'
 import { getTokenAddress } from '../utils/getTokenAddress'
+import { useSolanaSwap } from '../hooks/useSolanaSwap'
 
 const DEFAULT_DEBOUNCE_MILLISECONDS = 300
 
@@ -38,8 +40,6 @@ interface SwapContextState {
   toToken?: LocalTokenWithBalance
   setFromToken: Dispatch<LocalTokenWithBalance | undefined>
   setToToken: Dispatch<LocalTokenWithBalance | undefined>
-  swapType: SwapType | undefined
-  setSwapType: Dispatch<SwapType | undefined>
   quote: SwapQuote | undefined
   isFetchingQuote: boolean
   swap(): void
@@ -62,7 +62,6 @@ export const SwapContextProvider = ({
   children: ReactNode
 }): JSX.Element => {
   const activeAccount = useSelector(selectActiveAccount)
-  const [swapType, setSwapType] = useState<SwapType>()
   const [fromToken, setFromToken] = useSwapSelectedFromToken()
   const [toToken, setToToken] = useSwapSelectedToToken()
   const [slippage, setSlippage] = useState<number>(1)
@@ -74,6 +73,8 @@ export const SwapContextProvider = ({
   const [error, setError] = useState('')
   const cChainNetwork = useCChainNetwork()
   const { getQuote: getEvmQuote, swap: evmSwap } = useEvmSwap()
+  const solanaNetwork = useSolanaNetwork()
+  const { getQuote: getSvmQuote, swap: svmSwap } = useSolanaSwap()
 
   // debounce since fetching quotes can take awhile
   const debouncedSetAmount = useDebouncedCallback(
@@ -86,12 +87,14 @@ export const SwapContextProvider = ({
     const isValidToToken = toToken && 'decimals' in toToken
 
     if (
+      !cChainNetwork ||
+      !solanaNetwork ||
       !activeAccount ||
-      !swapType ||
       !amount ||
       amount <= 0n ||
       !isValidFromToken ||
-      !isValidToToken
+      !isValidToToken ||
+      fromToken.networkChainId !== toToken.networkChainId
     ) {
       setError('')
       setQuote(undefined)
@@ -102,13 +105,9 @@ export const SwapContextProvider = ({
       setIsFetchingQuote(true)
       let tempQuote: SwapQuote | undefined
 
-      if (swapType === SwapType.EVM) {
-        if (!cChainNetwork) {
-          throw new Error('Invalid network')
-        }
-
+      if (fromToken.networkChainId === cChainNetwork.chainId) {
         tempQuote = await getEvmQuote({
-          account: activeAccount,
+          address: activeAccount.addressC,
           network: cChainNetwork,
           amount,
           fromTokenAddress: getTokenAddress(fromToken),
@@ -119,8 +118,18 @@ export const SwapContextProvider = ({
           isToTokenNative: toToken.type === TokenType.NATIVE,
           destination
         })
-      } else {
-        throw new Error(`Unsupported swap type: ${swapType}`)
+      } else if (fromToken.networkChainId === solanaNetwork.chainId) {
+        tempQuote = await getSvmQuote({
+          amount,
+          fromTokenAddress: getTokenAddress(fromToken),
+          fromTokenDecimals: fromToken.decimals,
+          fromTokenBalance: fromToken.balance,
+          toTokenAddress: getTokenAddress(toToken),
+          toTokenDecimals: toToken.decimals,
+          destination,
+          network: solanaNetwork,
+          slippage
+        })
       }
 
       if (tempQuote) {
@@ -143,7 +152,9 @@ export const SwapContextProvider = ({
     fromToken,
     toToken,
     getEvmQuote,
-    swapType
+    getSvmQuote,
+    slippage,
+    solanaNetwork
   ])
 
   useEffect(() => {
@@ -200,7 +211,7 @@ export const SwapContextProvider = ({
 
   // eslint-disable-next-line sonarjs/cognitive-complexity
   const swap = useCallback(() => {
-    if (!activeAccount || !fromToken || !toToken || !swapType || !quote) {
+    if (!activeAccount || !fromToken || !toToken || !quote) {
       return
     }
 
@@ -218,7 +229,7 @@ export const SwapContextProvider = ({
 
           let swapTxHash: string | undefined
 
-          if (swapType === SwapType.EVM) {
+          if (isEvmSwapQuote(quote)) {
             if (!cChainNetwork) {
               throw new Error('Invalid network')
             }
@@ -232,6 +243,27 @@ export const SwapContextProvider = ({
               isFromTokenNative,
               toTokenAddress,
               isToTokenNative,
+              quote,
+              slippage
+            })
+          } else if (isJupiterQuote(quote)) {
+            if (!solanaNetwork) {
+              throw new Error('Invalid network')
+            }
+
+            chainId = solanaNetwork.chainId
+
+            swapTxHash = await svmSwap({
+              account: activeAccount,
+              network: solanaNetwork,
+              isFromTokenNative,
+              fromTokenAddress,
+              // fromTokenDecimals: fromToken.decimals,
+              // fromTokenBalance: fromToken.balance,
+              isToTokenNative,
+              toTokenAddress,
+              // toTokenDecimals: toToken.decimals,
+              // destination,
               quote,
               slippage
             })
@@ -259,11 +291,12 @@ export const SwapContextProvider = ({
     })
   }, [
     activeAccount,
-    swapType,
     quote,
     slippage,
     cChainNetwork,
+    solanaNetwork,
     evmSwap,
+    svmSwap,
     fromToken,
     toToken,
     handleSwapError,
@@ -282,8 +315,6 @@ export const SwapContextProvider = ({
     swap,
     swapStatus,
     setAmount: debouncedSetAmount,
-    swapType,
-    setSwapType,
     error,
     quote,
     isFetchingQuote

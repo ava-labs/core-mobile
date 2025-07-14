@@ -101,17 +101,24 @@ export const selectTokensWithBalanceByNetwork = (
     }
   )
 
-export const selectTokensWithZeroBalanceByNetwork = (
-  chainId?: number
+export const selectTokensWithZeroBalanceByNetworks = (
+  chainIds: number[]
 ): ((state: RootState) => LocalTokenWithBalance[]) =>
   createSelector(
     [selectActiveAccount, _selectAllBalances],
     (activeAccount, allBalances): LocalTokenWithBalance[] => {
-      if (!activeAccount || !chainId) return []
+      if (!activeAccount || chainIds.length === 0) return []
 
-      const key = getKey(chainId, activeAccount.id)
-      const tokens = allBalances[key]?.tokens ?? []
-      return tokens.filter(token => token.balance === 0n)
+      const tokensWithZeroBalance: LocalTokenWithBalance[] = []
+      for (const chainId of chainIds) {
+        const key = getKey(chainId, activeAccount.id)
+        const tokens = allBalances[key]?.tokens ?? []
+        tokensWithZeroBalance.push(
+          ...tokens.filter(token => token.balance === 0n)
+        )
+      }
+
+      return tokensWithZeroBalance
     }
   )
 

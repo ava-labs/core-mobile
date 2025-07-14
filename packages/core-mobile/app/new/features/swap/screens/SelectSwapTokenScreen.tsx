@@ -13,31 +13,35 @@ import { LocalTokenWithBalance } from 'store/balance'
 import { LogoWithNetwork } from 'features/portfolio/assets/components/LogoWithNetwork'
 import { useRouter } from 'expo-router'
 import { SelectTokenScreen } from 'common/screens/SelectTokenScreen'
-import { useSearchableTokenList } from 'common/hooks/useSearchableTokenList'
-import { useAvalancheErc20ContractTokens } from 'common/hooks/useErc20ContractTokens'
 import useCChainNetwork from 'hooks/earn/useCChainNetwork'
+import useSolanaNetwork from 'hooks/earn/useSolanaNetwork'
+import { useSelector } from 'react-redux'
+import { selectIsSolanaSwapBlocked } from 'store/posthog'
 
 export const SelectSwapTokenScreen = ({
+  tokens,
   selectedToken,
   setSelectedToken,
-  hideZeroBalance
+  networkChainId
 }: {
+  tokens: LocalTokenWithBalance[]
   selectedToken: LocalTokenWithBalance | undefined
   setSelectedToken: (token: LocalTokenWithBalance) => void
-  hideZeroBalance?: boolean
+  networkChainId?: number
 }): JSX.Element => {
   const {
     theme: { colors }
   } = useTheme()
   const { back, canGoBack } = useRouter()
   const [searchText, setSearchText] = useState<string>('')
-  const avalancheErc20ContractTokens = useAvalancheErc20ContractTokens()
   const cChainNetwork = useCChainNetwork()
-  const { filteredTokenList } = useSearchableTokenList({
-    tokens: avalancheErc20ContractTokens,
-    chainId: cChainNetwork?.chainId,
-    hideZeroBalance
-  })
+  const solanaNetwork = useSolanaNetwork()
+  const isSolanaSwapBlocked = useSelector(selectIsSolanaSwapBlocked)
+  const networkFilters = useMemo(() => {
+    if (isSolanaSwapBlocked) return undefined
+    return [cChainNetwork, solanaNetwork].filter(network => !!network)
+  }, [isSolanaSwapBlocked, cChainNetwork, solanaNetwork])
+
   const handleSelectToken = (token: LocalTokenWithBalance): void => {
     setSelectedToken(token)
     canGoBack() && back()
@@ -45,15 +49,19 @@ export const SelectSwapTokenScreen = ({
 
   const searchResults = useMemo(() => {
     if (searchText.length === 0) {
-      return filteredTokenList
+      return tokens
     }
-    return filteredTokenList.filter(
+    return tokens.filter(
       token =>
         token.name.toLowerCase().includes(searchText.toLowerCase()) ||
         token.symbol.toLowerCase().includes(searchText.toLowerCase()) ||
         token.localId.toLowerCase().includes(searchText.toLowerCase())
     )
-  }, [filteredTokenList, searchText])
+  }, [tokens, searchText])
+
+  const keyExtractor = (item: LocalTokenWithBalance): string => {
+    return [item.networkChainId, item.localId].join('-')
+  }
 
   const renderItem: ListRenderItem<LocalTokenWithBalance> = ({
     item,
@@ -117,7 +125,9 @@ export const SelectSwapTokenScreen = ({
       searchText={searchText}
       tokens={searchResults}
       renderListItem={renderItem}
-      keyExtractor={item => item.localId}
+      keyExtractor={keyExtractor}
+      networks={networkFilters}
+      networkChainId={networkChainId}
     />
   )
 }

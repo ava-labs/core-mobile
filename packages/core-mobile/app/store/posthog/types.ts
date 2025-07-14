@@ -40,7 +40,10 @@ export const DefaultFeatureFlagConfig = {
   [FeatureGates.GASLESS]: true,
   [FeatureGates.SWAP_FEES]: true,
   [FeatureGates.MELD_ONRAMP]: true,
-  [FeatureGates.MELD_OFFRAMP]: true
+  [FeatureGates.MELD_OFFRAMP]: true,
+  [FeatureGates.SOLANA_SUPPORT]: true,
+  [FeatureGates.SWAP_SOLANA]: true,
+  [FeatureGates.SWAP_FEES_JUPITER]: true
 }
 
 export const initialState = {
