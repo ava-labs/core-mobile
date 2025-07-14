@@ -95,9 +95,7 @@ const ActivityListItem: FC<Props> = ({
               sx={{
                 color: '$textPrimary',
                 lineHeight: 15
-              }}
-              numberOfLines={1}
-              ellipsizeMode="tail">
+              }}>
               {title}
             </Text>
             {subtitleType === 'text' ? (
