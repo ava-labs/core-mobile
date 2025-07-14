@@ -1,10 +1,11 @@
 import { getAddressByNetwork } from 'store/account/utils'
 import ModuleManager from 'vmModule/ModuleManager'
 import { mapToVmNetwork } from 'vmModule/utils/mapToVmNetwork'
-import { NetworkVMType } from '@avalabs/core-chains-sdk'
+import { NetworkContractToken, NetworkVMType } from '@avalabs/core-chains-sdk'
 import Config from 'react-native-config'
 import { Network } from '@avalabs/core-chains-sdk'
 import Logger from 'utils/Logger'
+import { queryClient } from 'contexts/ReactQueryProvider'
 import { ActivityResponse, GetActivitiesForAccountParams } from './types'
 import { convertTransaction } from './utils/convertTransaction'
 
@@ -56,6 +57,19 @@ export class ActivityService {
       return network
     }
 
+    // Try to get cached data first
+    const queryKey = ['tokenList', 'solana', network.chainId]
+    const cachedData =
+      queryClient.getQueryData<NetworkContractToken[]>(queryKey)
+
+    if (cachedData) {
+      return {
+        ...network,
+        tokens: cachedData
+      }
+    }
+
+    // If no cached data, fetch and cache
     try {
       const tokenListResponse = await fetch(
         `${Config.PROXY_URL}/tokenlist?includeSolana`
@@ -64,6 +78,9 @@ export class ActivityService {
       const networkData = tokenData[network.chainId]
 
       if (networkData?.tokens) {
+        // Cache the response
+        queryClient.setQueryData(queryKey, networkData.tokens)
+
         return {
           ...network,
           tokens: networkData.tokens
