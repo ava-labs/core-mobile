@@ -48,7 +48,7 @@ const ActivityListItem: FC<Props> = ({
     const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24))
 
     return diffDays === 0
-      ? `Today, ${historyDate.toLocaleTimeString('en-US', {
+      ? `${historyDate.toLocaleTimeString('en-US', {
           hour: '2-digit',
           minute: '2-digit'
         })}`
