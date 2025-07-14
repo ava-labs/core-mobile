@@ -16,7 +16,6 @@ import { selectEnabledNetworks } from 'store/network'
 
 export const useAssetsFilterAndSort = (): {
   onResetFilter: () => void
-  tokenList: LocalTokenWithBalance[]
   data: LocalTokenWithBalance[]
   filter: DropdownSelection
   sort: DropdownSelection
@@ -146,7 +145,6 @@ export const useAssetsFilterAndSort = (): {
   return useMemo(
     () => ({
       onResetFilter,
-      tokenList: filteredTokenList,
       filter,
       sort,
       view,
@@ -157,7 +155,6 @@ export const useAssetsFilterAndSort = (): {
     }),
     [
       onResetFilter,
-      filteredTokenList,
       filter,
       sort,
       view,
