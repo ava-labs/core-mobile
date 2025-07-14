@@ -189,7 +189,10 @@ const TransactionHistory: FC<Props> = ({
   return (
     <Animated.View
       entering={getListItemEnteringAnimation(0)}
-      layout={SPRING_LINEAR_TRANSITION}>
+      layout={SPRING_LINEAR_TRANSITION}
+      style={{
+        flex: 1
+      }}>
       <CollapsibleTabs.FlatList
         contentContainerStyle={{ overflow: 'visible', paddingBottom: 16 }}
         data={combinedData}
@@ -199,6 +202,8 @@ const TransactionHistory: FC<Props> = ({
         ItemSeparatorComponent={renderSeparator}
         showsVerticalScrollIndicator={false}
         keyExtractor={keyExtractor}
+        refreshing={isRefreshing}
+        onRefresh={refresh}
       />
     </Animated.View>
   )
