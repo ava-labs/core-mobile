@@ -326,6 +326,7 @@ class WalletService {
   }): Promise<string[]> {
     if (
       walletType === WalletType.SEEDLESS ||
+      walletType === WalletType.PRIVATE_KEY ||
       (isChange && chainAlias !== 'X')
     ) {
       return []
