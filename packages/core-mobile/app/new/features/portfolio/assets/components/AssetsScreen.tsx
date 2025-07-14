@@ -21,12 +21,16 @@ import {
   ASSET_MANAGE_VIEWS,
   AssetManageView,
   LocalTokenWithBalance,
+  selectBalanceTotalInCurrencyForAccount,
   selectIsAllBalancesError,
   selectIsAllBalancesInaccurate,
+  selectIsPollingBalances,
   selectIsLoadingBalances,
-  selectIsRefetchingBalances
+  selectIsRefetchingBalances,
+  selectIsBalanceLoadedForAccount
 } from 'store/balance'
 import { selectEnabledNetworks } from 'store/network'
+import { selectTokenVisibility } from 'store/portfolio'
 import { useAssetsFilterAndSort } from '../hooks/useAssetsFilterAndSort'
 import { TokenListItem } from './TokenListItem'
 import { EmptyState } from './EmptyState'
@@ -48,7 +52,6 @@ const AssetsScreen: FC<Props> = ({
 }): JSX.Element => {
   const {
     onResetFilter,
-    tokenList,
     data,
     filter,
     sort,
@@ -64,10 +67,20 @@ const AssetsScreen: FC<Props> = ({
   const isAllBalancesInaccurate = useSelector(
     selectIsAllBalancesInaccurate(activeAccount?.id)
   )
+  const isBalanceLoaded = useSelector(
+    selectIsBalanceLoadedForAccount(activeAccount?.id ?? '')
+  )
   const isAllBalancesError = useSelector(selectIsAllBalancesError)
   const isBalanceLoading = useSelector(selectIsLoadingBalances)
+  const isBalancePolling = useSelector(selectIsPollingBalances)
   const isRefetchingBalance = useSelector(selectIsRefetchingBalances)
-
+  const tokenVisibility = useSelector(selectTokenVisibility)
+  const balanceTotalInCurrency = useSelector(
+    selectBalanceTotalInCurrencyForAccount(
+      activeAccount?.id ?? '',
+      tokenVisibility
+    )
+  )
   const [headerLayout, setHeaderLayout] = useState<LayoutRectangle | null>(null)
 
   const handleManageList = useCallback(
@@ -85,8 +98,15 @@ const AssetsScreen: FC<Props> = ({
     [goToTokenManagement, view, onScrollResync]
   )
 
+  const isLoadingBalance = isRefetchingBalance || isBalanceLoading
   const isGridView = view.data[0]?.[view.selected.row] === AssetManageView.Grid
   const numColumns = isGridView ? 2 : 1
+
+  const hasNoAssets =
+    isBalanceLoaded &&
+    balanceTotalInCurrency === 0 &&
+    !isLoadingBalance &&
+    !isBalancePolling
 
   const renderItem = useCallback(
     (item: LocalTokenWithBalance, index: number): JSX.Element => {
@@ -125,23 +145,11 @@ const AssetsScreen: FC<Props> = ({
   }, [isGridView])
 
   const renderEmptyComponent = useCallback(() => {
-    if (isAllBalancesError) {
-      return (
-        <ErrorState
-          description="Please hit refresh or try again later"
-          button={{
-            title: 'Refresh',
-            onPress: refetch
-          }}
-        />
-      )
-    }
-
-    if (isRefetchingBalance) {
+    if (isLoadingBalance || !isBalanceLoaded) {
       return <LoadingState />
     }
 
-    if (isAllBalancesInaccurate) {
+    if (isBalanceLoaded && (isAllBalancesError || isAllBalancesInaccurate)) {
       return (
         <ErrorState
           description="Please hit refresh or try again later"
@@ -153,28 +161,38 @@ const AssetsScreen: FC<Props> = ({
       )
     }
 
-    if (tokenList.length === 0) {
+    if (hasNoAssets) {
       return <EmptyState goToBuy={goToBuy} />
     }
 
-    return (
-      <ErrorState
-        title="No assets found"
-        description="Try changing the filter settings or reset the filter to see all assets."
-        button={{
-          title: 'Reset filter',
-          onPress: onResetFilter
-        }}
-      />
-    )
+    // if the filter is the default filter, this error state does not apply
+    if (
+      filter.selected.section === 0 &&
+      filter.selected.row === 0 &&
+      isBalanceLoaded
+    ) {
+      return (
+        <ErrorState
+          title="No assets found"
+          description="Try changing the filter settings or reset the filter to see all assets."
+          button={{
+            title: 'Reset filter',
+            onPress: onResetFilter
+          }}
+        />
+      )
+    }
   }, [
+    isLoadingBalance,
+    isBalanceLoaded,
     isAllBalancesError,
-    isRefetchingBalance,
     isAllBalancesInaccurate,
-    tokenList.length,
-    onResetFilter,
+    hasNoAssets,
+    filter.selected.section,
+    filter.selected.row,
     refetch,
-    goToBuy
+    goToBuy,
+    onResetFilter
   ])
 
   const renderEmpty = useCallback(() => {
@@ -192,7 +210,7 @@ const AssetsScreen: FC<Props> = ({
   }, [])
 
   const renderHeader = useCallback(() => {
-    if (tokenList.length === 0) {
+    if (hasNoAssets || isLoadingBalance) {
       return
     }
 
@@ -210,7 +228,15 @@ const AssetsScreen: FC<Props> = ({
         />
       </View>
     )
-  }, [tokenList.length, onHeaderLayout, filter, sort, view, handleManageList])
+  }, [
+    hasNoAssets,
+    isLoadingBalance,
+    onHeaderLayout,
+    filter,
+    sort,
+    view,
+    handleManageList
+  ])
 
   const overrideProps = {
     contentContainerStyle: {
