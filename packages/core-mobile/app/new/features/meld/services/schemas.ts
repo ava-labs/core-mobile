@@ -7,15 +7,20 @@ import {
 } from '../consts'
 import { SessionTypes } from '../types'
 
+export const RegionSchema = z.object({
+  regionCode: string().optional().nullable(),
+  name: string().optional().nullable()
+})
+
 export const SearchCountrySchema = object({
   countryCode: string().optional().nullable(),
   name: string().optional().nullable(),
   flagImageUrl: string().optional().nullable(),
-  regions: string().array().optional().nullable()
+  regions: RegionSchema.array().optional().nullable()
 }).passthrough()
 
 export const SearchFiatCurrencySchema = object({
-  countryCode: string().optional().nullable(),
+  currencyCode: string().optional().nullable(),
   name: string().optional().nullable(),
   symbolImageUrl: string().optional().nullable()
 }).passthrough()
@@ -99,7 +104,7 @@ export const CreateCryptoQuoteBodySchema = object({
   sourceAmount: number().optional(),
   sourceCurrencyCode: string(),
   destinationCurrencyCode: string(),
-  countryCode: string(),
+  countryCode: string().optional().nullable(),
   paymentMethodType: z.nativeEnum(PaymentMethods).optional(),
   subdivision: string().optional()
 })
@@ -135,8 +140,8 @@ export const CreateCryptoQuoteSchema = object({
 
 export const SessionDataSchema = object({
   serviceProvider: z.nativeEnum(ServiceProviders).optional().nullable(),
-  redirectUrl: string().optional().nullable(),
   redirectFlow: boolean().optional().nullable(),
+  redirectUrl: string().optional().nullable(),
   countryCode: string().optional().nullable(),
   sourceCurrencyCode: string().optional().nullable(),
   destinationCurrencyCode: string().optional().nullable(),

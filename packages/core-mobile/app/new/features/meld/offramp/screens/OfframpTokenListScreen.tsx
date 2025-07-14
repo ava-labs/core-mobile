@@ -8,7 +8,7 @@ import { ServiceProviderCategories } from '../../consts'
 
 export const OfframpTokenListScreen = (): React.JSX.Element => {
   const { canGoBack, back } = useRouter()
-  const { navigateToWithdraw } = useWithdraw()
+  const { navigateToWithdrawAmountWithToken } = useWithdraw()
   const [selectedToken] = useMeldToken()
 
   const { data: cryptoCurrencies, isLoading: isLoadingCryptoCurrencies } =
@@ -21,7 +21,7 @@ export const OfframpTokenListScreen = (): React.JSX.Element => {
       category={ServiceProviderCategories.CRYPTO_OFFRAMP}
       onPress={token => {
         canGoBack() && back()
-        navigateToWithdraw({ token: token.tokenWithBalance })
+        navigateToWithdrawAmountWithToken(token)
       }}
       selectedToken={selectedToken}
       cryptoCurrencies={cryptoCurrencies}

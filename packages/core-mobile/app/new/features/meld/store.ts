@@ -4,6 +4,10 @@ import { create } from 'zustand'
 import { CryptoCurrency } from './types'
 import { PaymentMethods, ServiceProviders } from './consts'
 
+export const useMeldCountryCode = createZustandStore<string | undefined>(
+  undefined
+)
+
 export const useMeldToken = createZustandStore<CryptoCurrency | undefined>(
   undefined
 )
