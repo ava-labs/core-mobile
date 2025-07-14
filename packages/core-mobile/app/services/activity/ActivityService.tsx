@@ -1,11 +1,10 @@
 import { getAddressByNetwork } from 'store/account/utils'
 import ModuleManager from 'vmModule/ModuleManager'
 import { mapToVmNetwork } from 'vmModule/utils/mapToVmNetwork'
-import { NetworkContractToken, NetworkVMType } from '@avalabs/core-chains-sdk'
-import Config from 'react-native-config'
+import { NetworkVMType } from '@avalabs/core-chains-sdk'
 import { Network } from '@avalabs/core-chains-sdk'
 import Logger from 'utils/Logger'
-import { queryClient } from 'contexts/ReactQueryProvider'
+import { getCachedTokenList } from 'hooks/networks/useTokenList'
 import { ActivityResponse, GetActivitiesForAccountParams } from './types'
 import { convertTransaction } from './utils/convertTransaction'
 
@@ -57,40 +56,18 @@ export class ActivityService {
       return network
     }
 
-    // Try to get cached data first
-    const queryKey = ['tokenList', 'solana', network.chainId]
-    const cachedData =
-      queryClient.getQueryData<NetworkContractToken[]>(queryKey)
+    try {
+      const tokens = await getCachedTokenList()
+      const networkTokens = tokens[network.chainId]?.tokens ?? []
 
-    if (cachedData) {
       return {
         ...network,
-        tokens: cachedData
-      }
-    }
-
-    // If no cached data, fetch and cache
-    try {
-      const tokenListResponse = await fetch(
-        `${Config.PROXY_URL}/tokenlist?includeSolana`
-      )
-      const tokenData = await tokenListResponse.json()
-      const networkData = tokenData[network.chainId]
-
-      if (networkData?.tokens) {
-        // Cache the response
-        queryClient.setQueryData(queryKey, networkData.tokens)
-
-        return {
-          ...network,
-          tokens: networkData.tokens
-        }
+        tokens: networkTokens
       }
     } catch (error) {
       Logger.error('Failed to fetch SPL token metadata', error)
+      return network
     }
-
-    return network
   }
 }
 
