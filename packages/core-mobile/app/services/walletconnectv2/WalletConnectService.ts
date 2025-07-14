@@ -26,7 +26,6 @@ import {
   updateAccountListInNamespace,
   updateChainListInNamespace
 } from './utils'
-import { transformSolanaParams } from './solanaRequestUtils'
 
 const UPDATE_SESSION_TIMEOUT = 15000
 
@@ -75,15 +74,6 @@ class WalletConnectService implements WalletConnectServiceInterface {
     this.client.on('session_request', requestEvent => {
       const requestSession = this.getSession(requestEvent.topic)
       if (requestSession) {
-        /**
-         * Solana dApps use different parameter formats than our internal
-         * VM module so we need to transform them, @see solanaRequestUtils.ts
-         * for more details
-         */
-        if (requestEvent.params.request.method.includes('solana_')) {
-          transformSolanaParams(requestEvent, requestSession)
-        }
-
         callbacks.onSessionRequest(requestEvent, requestSession.peer.metadata)
       }
     })

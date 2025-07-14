@@ -1,9 +1,10 @@
 import bs58 from 'bs58'
-import { SessionTypes, SignClientTypes } from '@walletconnect/types'
+import { SessionTypes } from '@walletconnect/types'
+import { RpcMethod } from '@avalabs/vm-module-types'
 
 export const transformSolanaMessageParams = (
   params: unknown
-): unknown[] | undefined => {
+): { account: string; serializedMessage: string }[] | undefined => {
   if (
     params &&
     typeof params === 'object' &&
@@ -50,7 +51,7 @@ export const getSolanaAccountFromParams = (
 export const transformSolanaTransactionParams = (
   params: unknown,
   requestSession: SessionTypes.Struct
-): unknown[] | undefined => {
+): { account: string; serializedTx: string }[] | undefined => {
   if (
     params &&
     typeof params === 'object' &&
@@ -71,10 +72,10 @@ export const transformSolanaTransactionParams = (
 }
 
 export const transformSolanaParams = (
-  requestEvent: SignClientTypes.EventArguments['session_request'],
-  requestSession: SessionTypes.Struct
+  request: { params: { request: { method: string; params: any } } },
+  session: SessionTypes.Struct
 ): void => {
-  const { method, params } = requestEvent.params.request
+  const { method, params } = request.params.request
 
   // Solana dApps use different parameter formats than our internal VM module:
   // 1. Different dApps (Jupiter, Orca) structure their parameters differently
@@ -83,28 +84,28 @@ export const transformSolanaParams = (
 
   switch (method) {
     // Handle Solana message signing
-    case 'solana_signMessage': {
+    case RpcMethod.SOLANA_SIGN_MESSAGE: {
       // Transform from dApp format: { pubkey: string, message: base58 }
       // to VM format: [{ account: string, serializedMessage: base64 }]
       const transformedParams = transformSolanaMessageParams(params)
       if (transformedParams) {
-        requestEvent.params.request.params = transformedParams
+        request.params.request.params = transformedParams
       }
       break
     }
 
     // Handle Solana transaction signing
-    case 'solana_signTransaction': {
+    case RpcMethod.SOLANA_SIGN_TRANSACTION: {
       // Transform from various dApp formats:
       // Jupiter: { pubkey: string, transaction: string }
       // Orca: { transaction: string } (account from session)
       // to VM format: [{ account: string, serializedTx: string }]
       const transformedParams = transformSolanaTransactionParams(
         params,
-        requestSession
+        session
       )
       if (transformedParams) {
-        requestEvent.params.request.params = transformedParams
+        request.params.request.params = transformedParams
       }
       break
     }
