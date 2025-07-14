@@ -149,6 +149,10 @@ const AssetsScreen: FC<Props> = ({
       return <LoadingState />
     }
 
+    if (hasNoAssets) {
+      return <EmptyState goToBuy={goToBuy} />
+    }
+
     if (isBalanceLoaded && (isAllBalancesError || isAllBalancesInaccurate)) {
       return (
         <ErrorState
@@ -159,10 +163,6 @@ const AssetsScreen: FC<Props> = ({
           }}
         />
       )
-    }
-
-    if (hasNoAssets) {
-      return <EmptyState goToBuy={goToBuy} />
     }
 
     // if the filter is the default filter, this error state does not apply
