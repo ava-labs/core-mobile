@@ -8,7 +8,8 @@ export enum StorageKey {
 }
 
 export enum ZustandStorageKeys {
-  RECENT_ACCOUNTS = 'recentAccounts'
+  RECENT_ACCOUNTS = 'recentAccounts',
+  ACTIVITY = 'activity'
 }
 
 export const CORE_UNIVERSAL_LINK_HOSTS = ['core.app', 'test.core.app']

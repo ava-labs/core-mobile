@@ -12,7 +12,12 @@ import AnalyticsService from 'services/analytics/AnalyticsService'
 import SeedlessService from 'seedless/services/SeedlessService'
 import { isEvmPublicKey } from 'utils/publicKeys'
 import { recentAccountsStore } from 'new/features/accountSettings/store'
-import { selectActiveWallet, selectActiveWalletId } from 'store/wallet/slice'
+import {
+  selectActiveWallet,
+  selectActiveWalletId,
+  selectSeedlessWallet,
+  selectWallets
+} from 'store/wallet/slice'
 import { selectIsSolanaSupportBlocked } from 'store/posthog'
 import BiometricsSDK from 'utils/BiometricsSDK'
 import WalletFactory from 'services/wallet/WalletFactory'
@@ -24,7 +29,8 @@ import {
   selectAccounts,
   setAccounts,
   setNonActiveAccounts,
-  setActiveAccountId
+  setActiveAccountId,
+  selectAccountsByWalletId
 } from './slice'
 import { AccountCollection } from './types'
 
@@ -188,21 +194,23 @@ const reloadAccounts = async (
 ): Promise<void> => {
   const state = listenerApi.getState()
   const isDeveloperMode = selectIsDeveloperMode(state)
-  const activeWallet = selectActiveWallet(state)
+  const wallets = selectWallets(state)
+  for (const wallet of Object.values(wallets)) {
+    const accounts = selectAccountsByWalletId(state, wallet.id)
+    //convert accounts to AccountCollection
+    const accountsCollection: AccountCollection = {}
+    for (const account of accounts) {
+      accountsCollection[account.id] = account
+    }
 
-  if (!activeWallet) {
-    throw new Error('Active wallet is not set')
+    const reloadedAccounts = await accountService.reloadAccounts({
+      accounts: accountsCollection,
+      isTestnet: isDeveloperMode,
+      walletId: wallet.id,
+      walletType: wallet.type
+    })
+    listenerApi.dispatch(setAccounts(reloadedAccounts))
   }
-
-  const accounts = selectAccounts(state)
-  const reloadedAccounts = await accountService.reloadAccounts({
-    accounts: accounts,
-    isTestnet: isDeveloperMode,
-    walletId: activeWallet.id,
-    walletType: activeWallet.type
-  })
-
-  listenerApi.dispatch(setAccounts(reloadedAccounts))
 }
 
 const handleActiveAccountIndexChange = (
@@ -216,20 +224,18 @@ const fetchSeedlessAccountsIfNeeded = async (
   listenerApi: AppListenerEffectAPI
 ): Promise<void> => {
   const state = listenerApi.getState()
-  const activeWallet = selectActiveWallet(state)
-  if (!activeWallet) {
-    throw new Error('Active wallet is not set')
+  const seedlessWallet = selectSeedlessWallet(state)
+  if (!seedlessWallet) {
+    throw new Error('Seedless wallet not found')
   }
 
-  if (activeWallet.type === WalletType.SEEDLESS) {
-    const accounts = selectAccounts(state)
+  const accounts = selectAccountsByWalletId(state, seedlessWallet.id)
 
-    fetchRemainingAccounts({
-      walletType: activeWallet.type,
-      listenerApi,
-      startIndex: Object.keys(accounts).length
-    })
-  }
+  fetchRemainingAccounts({
+    walletType: seedlessWallet.type,
+    listenerApi,
+    startIndex: Object.keys(accounts).length
+  })
 }
 
 const migrateSolanaAddressesIfNeeded = async (
@@ -243,9 +249,9 @@ const migrateSolanaAddressesIfNeeded = async (
   const entries = Object.values(accounts)
   // Only migrate Solana addresses if Solana support is enabled
   if (!isSolanaSupportBlocked && entries.some(account => !account.addressSVM)) {
-    const activeWallet = selectActiveWallet(state)
-    if (activeWallet?.type === WalletType.SEEDLESS) {
-      await deriveMissingSeedlessSessionKeys(activeWallet.id)
+    const seedlessWallet = selectSeedlessWallet(state)
+    if (seedlessWallet) {
+      await deriveMissingSeedlessSessionKeys(seedlessWallet.id)
     }
     // reload only when there are accounts without Solana addresses
     reloadAccounts(_action, listenerApi)

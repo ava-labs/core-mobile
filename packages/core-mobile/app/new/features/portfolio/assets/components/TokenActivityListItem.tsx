@@ -56,6 +56,7 @@ export const TokenActivityListItem: FC<Props> = ({ tx, onPress }) => {
       title={<TokenActivityListItemTitle tx={tx} />}
       subtitle={formattedAmountInCurrency}
       subtitleType="amountInCurrency"
+      timestamp={tx.timestamp}
       icon={
         <View
           sx={{

@@ -24,7 +24,13 @@ import { StyleSheet } from 'react-native'
 import Animated from 'react-native-reanimated'
 import { LocalTokenWithBalance } from 'store/balance'
 import { Transaction, useGetRecentTransactions } from 'store/transaction'
-import { useTokenDetailFilterAndSort } from '../hooks/useTokenDetailFilterAndSort'
+import { isPChain } from 'utils/network/isAvalancheNetwork'
+import {
+  TOKEN_DETAIL_FILTERS,
+  TokenDetailFilter,
+  TokenDetailFilters,
+  useTokenDetailFilterAndSort
+} from '../hooks/useTokenDetailFilterAndSort'
 import { PendingBridgeTransactionItem } from './PendingBridgeTransactionItem'
 import { TokenActivityListItem } from './TokenActivityListItem'
 import { XpActivityListItem } from './XpActivityListItem'
@@ -77,8 +83,20 @@ const TransactionHistory: FC<Props> = ({
       .filter(tx => !isPendingBridge(tx))
   }, [token, transactions, isPendingBridge])
 
+  const filters: TokenDetailFilters | undefined = useMemo(() => {
+    if (isPChain(token?.networkChainId ?? 0)) {
+      const newFilters = [
+        ...(TOKEN_DETAIL_FILTERS[0] ?? []),
+        TokenDetailFilter.Stake
+      ]
+      return [newFilters]
+    }
+    return undefined
+  }, [token?.networkChainId])
+
   const { data, filter, sort } = useTokenDetailFilterAndSort({
-    transactions: transactionsBySymbol
+    transactions: transactionsBySymbol,
+    filters
   })
 
   const filteredPendingBridgeTxs = useMemo(

@@ -21,6 +21,10 @@ export type GetRecentTransactionsArgs = {
   account: Account | undefined
 }
 
+export type GetAllTransactionsArgs = {
+  account: Account | undefined
+}
+
 export type Transaction = Omit<InternalTransaction, 'txType'> & {
   txType: ActivityTransactionType
   bridgeAnalysis?: AnalyzeTxResult

@@ -16,11 +16,12 @@ import {
 import { HiddenBalanceText } from 'common/components/HiddenBalanceText'
 import { LinearGradientBottomWrapper } from 'common/components/LinearGradientBottomWrapper'
 import { useBottomTabBarHeight } from 'common/hooks/useBottomTabBarHeight'
+import { useErc20ContractTokens } from 'common/hooks/useErc20ContractTokens'
 import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
+import { useSearchableTokenList } from 'common/hooks/useSearchableTokenList'
 import { useIsAndroidWithBottomBar } from 'common/hooks/useIsAndroidWithBottomBar'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
 import { useFocusEffect, useRouter } from 'expo-router'
-import { useBuy } from 'features/buyOnramp/hooks/useBuy'
 import {
   ActionButton,
   ActionButtons
@@ -69,6 +70,9 @@ import { selectSelectedCurrency } from 'store/settings/currency'
 import { selectIsPrivacyModeEnabled } from 'store/settings/securityPrivacy'
 import { RootState } from 'store/types'
 import { useFocusedSelector } from 'utils/performance/useFocusedSelector'
+import { useBuy } from 'features/meld/hooks/useBuy'
+import { useWithdraw } from 'features/meld/hooks/useWithdraw'
+import { selectIsMeldOfframpBlocked } from 'store/posthog'
 
 const SEGMENT_ITEMS = ['Assets', 'Collectibles', 'DeFi']
 
@@ -79,8 +83,10 @@ const SEGMENT_EVENT_MAP: Record<number, AnalyticsEventName> = {
 }
 
 const PortfolioHomeScreen = (): JSX.Element => {
+  const isMeldOfframpBlocked = useSelector(selectIsMeldOfframpBlocked)
   const tabBarHeight = useBottomTabBarHeight()
   const { navigateToBuy } = useBuy()
+  const { navigateToWithdraw } = useWithdraw()
   const isPrivacyModeEnabled = useFocusedSelector(selectIsPrivacyModeEnabled)
   const [_, setSelectedToken] = useSendSelectedToken()
   const { theme } = useTheme()
@@ -93,7 +99,10 @@ const PortfolioHomeScreen = (): JSX.Element => {
   const [segmentedControlLayout, setSegmentedControlLayout] = useState<
     LayoutRectangle | undefined
   >()
-
+  const erc20ContractTokens = useErc20ContractTokens()
+  const { filteredTokenList } = useSearchableTokenList({
+    tokens: erc20ContractTokens
+  })
   const selectedSegmentIndex = useSharedValue(0)
   const activeAccount = useFocusedSelector(selectActiveAccount)
   const isBalanceLoading = useFocusedSelector(selectIsLoadingBalances)
@@ -257,14 +266,23 @@ const PortfolioHomeScreen = (): JSX.Element => {
       icon: 'bridge',
       onPress: handleBridge
     })
+    if (!isMeldOfframpBlocked) {
+      buttons.push({
+        title: ActionButtonTitle.Withdraw,
+        icon: 'withdraw',
+        onPress: navigateToWithdraw
+      })
+    }
     return buttons
   }, [
     handleSend,
-    handleBridge,
-    handleReceive,
-    navigateToBuy,
     isDeveloperMode,
-    navigateToSwap
+    navigateToBuy,
+    navigateToWithdraw,
+    handleReceive,
+    handleBridge,
+    navigateToSwap,
+    isMeldOfframpBlocked
   ])
 
   const renderMaskView = useCallback((): JSX.Element => {
@@ -311,13 +329,15 @@ const PortfolioHomeScreen = (): JSX.Element => {
           </Animated.View>
         </View>
 
-        <ActionButtons
-          buttons={actionButtons}
-          contentContainerStyle={{
-            padding: 16,
-            paddingBottom: 10
-          }}
-        />
+        {filteredTokenList.length > 0 && (
+          <ActionButtons
+            buttons={actionButtons}
+            contentContainerStyle={{
+              padding: 16,
+              paddingBottom: 10
+            }}
+          />
+        )}
       </View>
     )
   }, [
@@ -336,6 +356,7 @@ const PortfolioHomeScreen = (): JSX.Element => {
     isPrivacyModeEnabled,
     isDeveloperMode,
     renderMaskView,
+    filteredTokenList.length,
     actionButtons
   ])
 
@@ -508,6 +529,31 @@ const PortfolioHomeScreen = (): JSX.Element => {
     handleGoToDiscoverCollectibles
   ])
 
+  const renderSegmentedControl = useCallback((): JSX.Element => {
+    if (filteredTokenList.length === 0) {
+      return (
+        <SegmentedControl
+          dynamicItemWidth={false}
+          items={SEGMENT_ITEMS}
+          selectedSegmentIndex={selectedSegmentIndex}
+          onSelectSegment={handleSelectSegment}
+          style={styles.segmentedControl}
+        />
+      )
+    }
+    return (
+      <LinearGradientBottomWrapper shouldDelayBlurOniOS={true}>
+        <SegmentedControl
+          dynamicItemWidth={false}
+          items={SEGMENT_ITEMS}
+          selectedSegmentIndex={selectedSegmentIndex}
+          onSelectSegment={handleSelectSegment}
+          style={styles.segmentedControl}
+        />
+      </LinearGradientBottomWrapper>
+    )
+  }, [filteredTokenList.length, handleSelectSegment, selectedSegmentIndex])
+
   return (
     <BlurredBarsContentLayout>
       <CollapsibleTabs.Container
@@ -520,15 +566,7 @@ const PortfolioHomeScreen = (): JSX.Element => {
       />
 
       <View onLayout={handleSegmentedControlLayout}>
-        <LinearGradientBottomWrapper shouldDelayBlurOniOS={true}>
-          <SegmentedControl
-            dynamicItemWidth={false}
-            items={SEGMENT_ITEMS}
-            selectedSegmentIndex={selectedSegmentIndex}
-            onSelectSegment={handleSelectSegment}
-            style={styles.segmentedControl}
-          />
-        </LinearGradientBottomWrapper>
+        {renderSegmentedControl()}
       </View>
     </BlurredBarsContentLayout>
   )

@@ -1,12 +1,13 @@
-import { useDispatch, useSelector } from 'react-redux'
-import { useState, useCallback } from 'react'
-import { selectActiveAccount } from 'store/account/slice'
-import { isAnyOf } from '@reduxjs/toolkit'
-import { addAppListener } from 'store/middleware/listener'
-import { useFocusEffect } from '@react-navigation/native'
-import { popBridgeTransaction } from 'store/bridge/slice'
-import { selectIsLocked } from 'store/app/slice'
 import { Network } from '@avalabs/core-chains-sdk'
+import { useFocusEffect } from '@react-navigation/native'
+import { isAnyOf } from '@reduxjs/toolkit'
+import { useCallback, useState } from 'react'
+import { InteractionManager } from 'react-native'
+import { useDispatch, useSelector } from 'react-redux'
+import { selectActiveAccount } from 'store/account/slice'
+import { selectIsLocked } from 'store/app/slice'
+import { popBridgeTransaction } from 'store/bridge/slice'
+import { addAppListener } from 'store/middleware/listener'
 import { useGetRecentsTransactionsQuery } from '../api'
 import { Transaction } from '../types'
 
@@ -68,7 +69,9 @@ export const useGetRecentTransactions = (
         addAppListener({
           matcher: REFETCH_EVENTS,
           effect: () => {
-            refetch()
+            InteractionManager.runAfterInteractions(() => {
+              refetch()
+            })
           }
         })
       )
@@ -77,7 +80,9 @@ export const useGetRecentTransactions = (
 
   useFocusEffect(
     useCallback(() => {
-      refetch()
+      InteractionManager.runAfterInteractions(() => {
+        refetch()
+      })
     }, [refetch])
   )
 
