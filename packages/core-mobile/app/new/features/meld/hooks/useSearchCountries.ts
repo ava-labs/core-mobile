@@ -2,14 +2,13 @@ import { useQuery, UseQueryResult } from '@tanstack/react-query'
 import { ReactQueryKeys } from 'consts/reactQueryKeys'
 import MeldService from 'features/meld/services/MeldService'
 import { Country, MeldDefaultParams } from '../types'
-import { useLocale } from './useLocale'
 import { useSearchServiceProviders } from './useSearchServiceProviders'
 
 export const useSearchCountries = ({
+  countries,
   categories,
   accountFilter = true
-}: Omit<MeldDefaultParams, 'countries'>): UseQueryResult<Country[], Error> => {
-  const { countryCode } = useLocale()
+}: MeldDefaultParams): UseQueryResult<Country[], Error> => {
   const { data: serviceProvidersData } = useSearchServiceProviders({
     categories
   })
@@ -21,14 +20,14 @@ export const useSearchCountries = ({
     queryKey: [
       ReactQueryKeys.MELD_SEARCH_COUNTRIES,
       serviceProviders,
-      countryCode,
+      countries,
       categories,
       accountFilter
     ],
     queryFn: () =>
       MeldService.searchCountries({
         serviceProviders,
-        countries: [countryCode],
+        countries,
         categories,
         accountFilter
       }),

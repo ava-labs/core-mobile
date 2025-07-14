@@ -173,6 +173,22 @@ export default function WalletLayout(): JSX.Element {
             options={formSheetScreensOptions}
           />
           <Stack.Screen
+            name="(modals)/meldOnrampCountry"
+            options={formSheetScreensOptions}
+          />
+          <Stack.Screen
+            name="(modals)/meldOnrampCurrency"
+            options={formSheetScreensOptions}
+          />
+          <Stack.Screen
+            name="(modals)/meldOfframpCountry"
+            options={formSheetScreensOptions}
+          />
+          <Stack.Screen
+            name="(modals)/meldOfframpCurrency"
+            options={formSheetScreensOptions}
+          />
+          <Stack.Screen
             name="(modals)/transactionSuccessful"
             options={modalScreensOptions}
           />

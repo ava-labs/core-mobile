@@ -6,8 +6,8 @@ import { useWithdraw } from 'features/meld/hooks/useWithdraw'
 export const SelectTokenScreen = (): React.JSX.Element => {
   const { navigate } = useRouter()
   const {
-    navigateToWithdrawAvax,
-    navigateToWithdrawUsdc,
+    navigateToWithdrawAmountWithAvax,
+    navigateToWithdrawAmountWithUsdc,
     isLoadingCryptoCurrencies
   } = useWithdraw()
 
@@ -21,8 +21,8 @@ export const SelectTokenScreen = (): React.JSX.Element => {
       title={`What token do\nyou want to withdraw?`}
       isLoadingCryptoCurrencies={isLoadingCryptoCurrencies}
       onSelectOtherToken={selectOtherToken}
-      onSelectAvax={navigateToWithdrawAvax}
-      onSelectUsdc={navigateToWithdrawUsdc}
+      onSelectAvax={navigateToWithdrawAmountWithAvax}
+      onSelectUsdc={navigateToWithdrawAmountWithUsdc}
     />
   )
 }
