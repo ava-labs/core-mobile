@@ -2,7 +2,7 @@ import { useQuery, UseQueryResult } from '@tanstack/react-query'
 import MeldService from 'features/meld/services/MeldService'
 import { ReactQueryKeys } from 'consts/reactQueryKeys'
 import { CryptoCurrency, MeldDefaultParams } from '../types'
-import { useLocale } from './useLocale'
+import { useMeldCountryCode } from '../store'
 import { useSearchServiceProviders } from './useSearchServiceProviders'
 
 export type SearchCryptoCurrenciesParams = MeldDefaultParams & {
@@ -23,7 +23,8 @@ export const useSearchCryptoCurrencies = ({
   const serviceProviders = serviceProvidersData?.map(
     serviceProvider => serviceProvider.serviceProvider
   )
-  const { countryCode } = useLocale()
+  const [countryCode] = useMeldCountryCode()
+
   return useQuery({
     enabled: !!serviceProviders,
     queryKey: [
@@ -39,7 +40,7 @@ export const useSearchCryptoCurrencies = ({
         cryptoCurrencies,
         categories,
         serviceProviders,
-        countries: [countryCode],
+        countries: countryCode ? [countryCode] : undefined,
         accountFilter
       }),
     staleTime: 1000 * 60 * 30 // 30 minutes
