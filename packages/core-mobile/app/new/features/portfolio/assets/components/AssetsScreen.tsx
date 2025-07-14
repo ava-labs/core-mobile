@@ -210,7 +210,7 @@ const AssetsScreen: FC<Props> = ({
   }, [])
 
   const renderHeader = useCallback(() => {
-    if (hasNoAssets) {
+    if (hasNoAssets || isLoadingBalance) {
       return
     }
 
@@ -228,7 +228,15 @@ const AssetsScreen: FC<Props> = ({
         />
       </View>
     )
-  }, [hasNoAssets, onHeaderLayout, filter, sort, view, handleManageList])
+  }, [
+    hasNoAssets,
+    isLoadingBalance,
+    onHeaderLayout,
+    filter,
+    sort,
+    view,
+    handleManageList
+  ])
 
   const overrideProps = {
     contentContainerStyle: {
