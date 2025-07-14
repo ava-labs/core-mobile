@@ -67,7 +67,10 @@ export const useActivityFilterAndSearch = ({
   }, [enabledNetworks])
 
   const networkOption: ActivityNetworkFilter | undefined = useMemo(() => {
-    return [networkFilters]?.[selectedNetwork.section]?.[selectedNetwork.row]
+    return (
+      [networkFilters]?.[selectedNetwork.section]?.[selectedNetwork.row] ||
+      networkFilters[0]
+    )
   }, [networkFilters, selectedNetwork.row, selectedNetwork.section])
 
   const network = useMemo(() => {
