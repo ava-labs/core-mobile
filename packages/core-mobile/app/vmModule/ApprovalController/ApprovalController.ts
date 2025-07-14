@@ -44,6 +44,15 @@ class ApprovalController implements VmModuleApprovalController {
 
   onTransactionPending({ request }: { request: RpcRequest }): void {
     transactionSnackbar.pending({ toastId: request.requestId })
+
+    const confettiDisabled = request.context?.[RequestContext.CONFETTI_DISABLED]
+
+    // only show confetti for in-app requests
+    if (isInAppRequest(request) && !confettiDisabled) {
+      setTimeout(() => {
+        confetti.restart()
+      }, 100)
+    }
   }
 
   onTransactionConfirmed({
@@ -54,15 +63,6 @@ class ApprovalController implements VmModuleApprovalController {
     request: RpcRequest
   }): void {
     transactionSnackbar.success({ explorerLink, toastId: request.requestId })
-
-    const confettiDisabled = request.context?.[RequestContext.CONFETTI_DISABLED]
-
-    // only show confetti for in-app requests
-    if (isInAppRequest(request) && !confettiDisabled) {
-      setTimeout(() => {
-        confetti.restart()
-      }, 100)
-    }
   }
 
   onTransactionReverted(): void {
