@@ -4,7 +4,6 @@ import {
 } from '@avalabs/avalanche-module'
 import { BridgeTransfer } from '@avalabs/bridge-unified'
 import { BridgeTransaction } from '@avalabs/core-bridge-sdk'
-import { ChainId } from '@avalabs/core-chains-sdk'
 import {
   NavigationTitleHeader,
   SegmentedControl,
@@ -22,14 +21,12 @@ import { TokenHeader } from 'common/components/TokenHeader'
 import { AVAX_TOKEN_ID, USDC_AVALANCHE_C_TOKEN_ID } from 'common/consts/swap'
 import { useErc20ContractTokens } from 'common/hooks/useErc20ContractTokens'
 import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
-import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import useInAppBrowser from 'common/hooks/useInAppBrowser'
 import { useSearchableTokenList } from 'common/hooks/useSearchableTokenList'
 import { getSourceChainId } from 'common/utils/bridgeUtils'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { useAssetBalances } from 'features/bridge/hooks/useAssetBalances'
-import { useBuy } from 'features/buyOnramp/hooks/useBuy'
 import {
   ActionButton,
   ActionButtons
@@ -40,7 +37,6 @@ import { ActionButtonTitle } from 'features/portfolio/assets/consts'
 import { useSendSelectedToken } from 'features/send/store'
 import { useAddStake } from 'features/stake/hooks/useAddStake'
 import { useNavigateToSwap } from 'features/swap/hooks/useNavigateToSwap'
-import { useNetworks } from 'hooks/networks/useNetworks'
 import { UI, useIsUIDisabledForNetwork } from 'hooks/useIsUIDisabled'
 import React, { useCallback, useMemo, useRef, useState } from 'react'
 import {
@@ -63,6 +59,12 @@ import {
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { selectSelectedCurrency } from 'store/settings/currency'
 import { selectIsPrivacyModeEnabled } from 'store/settings/securityPrivacy'
+import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
+import { useNetworks } from 'hooks/networks/useNetworks'
+import { ChainId } from '@avalabs/core-chains-sdk'
+import { useBuy } from 'features/meld/hooks/useBuy'
+import { useWithdraw } from 'features/meld/hooks/useWithdraw'
+import { selectIsMeldOfframpBlocked } from 'store/posthog'
 
 export const TokenDetailScreen = (): React.JSX.Element => {
   const {
@@ -78,6 +80,7 @@ export const TokenDetailScreen = (): React.JSX.Element => {
   const [tokenHeaderLayout, setTokenHeaderLayout] = useState<
     LayoutRectangle | undefined
   >()
+  const isMeldOfframpBlocked = useSelector(selectIsMeldOfframpBlocked)
   const { localId, chainId } = useLocalSearchParams<{
     localId: string
     chainId: string
@@ -115,6 +118,7 @@ export const TokenDetailScreen = (): React.JSX.Element => {
   const tokenName = token?.name ?? ''
 
   const { navigateToBuy, isBuyable } = useBuy()
+  const { navigateToWithdraw, isWithdrawable } = useWithdraw()
 
   const header = useMemo(
     () => <NavigationTitleHeader title={tokenName} />,
@@ -216,20 +220,31 @@ export const TokenDetailScreen = (): React.JSX.Element => {
       })
     }
 
+    if (token && isWithdrawable(token) && !isMeldOfframpBlocked) {
+      buttons.push({
+        title: ActionButtonTitle.Withdraw,
+        icon: 'withdraw',
+        onPress: () => navigateToWithdraw({ token })
+      })
+    }
+
     return buttons
   }, [
     handleSend,
+    isMeldOfframpBlocked,
     isSwapDisabled,
     token,
     isBuyable,
     isTokenStakable,
     isBridgeDisabled,
     isTokenBridgeable,
+    isWithdrawable,
     navigateToSwap,
     navigateToBuy,
     canAddStake,
     addStake,
-    handleBridge
+    handleBridge,
+    navigateToWithdraw
   ])
 
   const { onScroll, targetHiddenProgress } = useFadingHeaderNavigation({
