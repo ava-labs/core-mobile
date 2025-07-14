@@ -45,7 +45,7 @@ import Animated, {
   useSharedValue,
   withTiming
 } from 'react-native-reanimated'
-import { MarketToken, MarketType } from 'store/watchlist'
+import { MarketType } from 'store/watchlist'
 import { getDomainFromUrl } from 'utils/getDomainFromUrl/getDomainFromUrl'
 import { isPositiveNumber } from 'utils/isPositiveNumber/isPositiveNumber'
 import { formatLargeCurrency } from 'utils/Utils'
@@ -56,11 +56,12 @@ const DELAY = 200
 
 const TrackTokenDetailScreen = (): JSX.Element => {
   const { theme } = useTheme()
-  const params = useLocalSearchParams<{
-    token: string
+
+  const { tokenId, marketType } = useLocalSearchParams<{
+    tokenId: string
+    marketType: MarketType
   }>()
 
-  const token = JSON.parse(params.token) as MarketToken
   const { back, navigate } = useRouter()
   const [isChartInteracting, setIsChartInteracting] = useState(false)
   const { navigateToSwap } = useNavigateToSwap()
@@ -83,8 +84,9 @@ const TrackTokenDetailScreen = (): JSX.Element => {
     handleFavorite,
     openUrl,
     coingeckoId,
-    chainId
-  } = useTokenDetails({ tokenId: token.id, marketType: token.marketType })
+    chainId,
+    token
+  } = useTokenDetails({ tokenId, marketType })
 
   const isFocused = useIsFocused()
   const { navigateToBuy } = useBuy()
@@ -122,7 +124,7 @@ const TrackTokenDetailScreen = (): JSX.Element => {
 
   const { actions } = useTrackTokenActions({
     isAVAX: coingeckoId === AVAX_COINGECKO_ID,
-    marketType: token.marketType,
+    marketType,
     contractAddress: tokenInfo?.contractAddress,
     chainId,
     onBuy: () => handleBuy(tokenInfo?.contractAddress),
@@ -214,10 +216,11 @@ const TrackTokenDetailScreen = (): JSX.Element => {
       // @ts-ignore TODO: make routes typesafe
       pathname: '/trackTokenDetail/share',
       params: {
-        token: JSON.stringify(token)
+        tokenId,
+        marketType
       }
     })
-  }, [navigate, token])
+  }, [navigate, tokenId, marketType])
 
   const marketData = useMemo(() => {
     const data: GroupListItem[] = []
@@ -309,7 +312,7 @@ const TrackTokenDetailScreen = (): JSX.Element => {
 
   const renderHeaderRight = useCallback(() => {
     // favorite feature is only available for tokens that exist in our database
-    const showFavoriteButton = token.marketType !== MarketType.SEARCH
+    const showFavoriteButton = marketType !== MarketType.SEARCH
 
     return (
       <View
@@ -334,7 +337,7 @@ const TrackTokenDetailScreen = (): JSX.Element => {
         />
       </View>
     )
-  }, [isFavorite, handleFavorite, handleShare, token.marketType])
+  }, [isFavorite, handleFavorite, handleShare, marketType])
 
   useEffect(() => {
     headerOpacity.value = withTiming(isChartInteracting ? 0 : 1, {
@@ -364,29 +367,34 @@ const TrackTokenDetailScreen = (): JSX.Element => {
     return (
       tokenInfo?.currentPrice ??
       prices?.[coingeckoId]?.priceInCurrency ??
-      token.currentPrice
+      token?.currentPrice
     )
-  }, [tokenInfo?.currentPrice, prices, coingeckoId, token.currentPrice])
+  }, [tokenInfo?.currentPrice, prices, coingeckoId, token?.currentPrice])
 
   const range = useMemo(() => {
     return {
       diffValue: ranges.diffValue
         ? ranges.diffValue
-        : token.priceChange24h ?? 0,
+        : token?.priceChange24h ?? 0,
       percentChange: ranges.percentChange
         ? ranges.percentChange
-        : token.priceChangePercentage24h ?? 0
+        : token?.priceChangePercentage24h ?? 0
     }
-  }, [ranges, token.priceChange24h, token.priceChangePercentage24h])
+  }, [
+    ranges.diffValue,
+    ranges.percentChange,
+    token?.priceChange24h,
+    token?.priceChangePercentage24h
+  ])
 
   const renderHeader = useCallback(() => {
     return (
       <View sx={{ paddingHorizontal: 16 }}>
         <Animated.View style={{ opacity: headerOpacity }}>
           <TokenHeader
-            name={token.name}
-            logoUri={token.logoUri}
-            symbol={token.symbol ?? ''}
+            name={token?.name ?? ''}
+            logoUri={token?.logoUri ?? undefined}
+            symbol={token?.symbol ?? ''}
             currentPrice={currentPrice}
             ranges={range}
             rank={tokenInfo?.marketCapRank}
@@ -413,9 +421,9 @@ const TrackTokenDetailScreen = (): JSX.Element => {
     )
   }, [
     headerOpacity,
-    token.name,
-    token.logoUri,
-    token.symbol,
+    token?.name,
+    token?.logoUri,
+    token?.symbol,
     currentPrice,
     range,
     tokenInfo?.marketCapRank,
@@ -425,7 +433,7 @@ const TrackTokenDetailScreen = (): JSX.Element => {
     chartData
   ])
 
-  if (!token.id) {
+  if (!tokenId) {
     return <LoadingState sx={styles.container} />
   }
 

@@ -8,7 +8,7 @@ import React, { useCallback, useMemo } from 'react'
 import { ViewStyle } from 'react-native'
 import { useHeaderMeasurements } from 'react-native-collapsible-tab-view'
 import Animated, { useAnimatedStyle, withTiming } from 'react-native-reanimated'
-import { MarketToken } from 'store/watchlist/types'
+import { MarketType } from 'store/watchlist/types'
 import { useTrackSortAndView } from '../hooks/useTrackSortAndView'
 import MarketTokensScreen from './MarketTokensScreen'
 
@@ -23,7 +23,7 @@ const SearchResultScreen = ({
   handleScrollResync
 }: {
   searchText: string
-  goToMarketDetail: (token: MarketToken) => void
+  goToMarketDetail: (tokenId: string, marketType: MarketType) => void
   isSearchBarFocused: boolean
   containerStyle: ViewStyle
   handleScrollResync: () => void

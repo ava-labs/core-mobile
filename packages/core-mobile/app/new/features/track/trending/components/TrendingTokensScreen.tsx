@@ -13,7 +13,7 @@ import { selectBalanceTotalForAccount } from 'store/balance'
 import { selectTokenVisibility } from 'store/portfolio'
 import { selectIsSwapBlocked } from 'store/posthog'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
-import { MarketToken } from 'store/watchlist'
+import { MarketToken, MarketType } from 'store/watchlist'
 import { TrendingTokenListItem } from './TrendingTokenListItem'
 
 const numColumns = 1
@@ -26,7 +26,7 @@ const TrendingTokensScreen = ({
   containerStyle
 }: {
   data: MarketToken[]
-  goToMarketDetail: (token: MarketToken) => void
+  goToMarketDetail: (tokenId: string, marketType: MarketType) => void
   emptyComponent: React.JSX.Element
   containerStyle: ViewStyle
 }): JSX.Element => {
@@ -83,7 +83,7 @@ const TrendingTokensScreen = ({
           showBuyButton={showBuyButton}
           onBuyPress={() => onBuyPress(tokenAddress)}
           onPress={() => {
-            goToMarketDetail(item)
+            goToMarketDetail(item.id, item.marketType)
           }}
         />
       )

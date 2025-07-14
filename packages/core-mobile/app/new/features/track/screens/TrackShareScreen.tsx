@@ -2,6 +2,7 @@ import { SCREEN_WIDTH, Text, useTheme, View } from '@avalabs/k2-alpine'
 import { LoadingState } from 'common/components/LoadingState'
 import { ScrollScreen } from 'common/components/ScrollScreen'
 import { CORE_WEB_URL } from 'common/consts'
+import { useTokenDetails } from 'common/hooks/useTokenDetails'
 import { copyToClipboard } from 'common/utils/clipboard'
 import * as FileSystem from 'expo-file-system'
 import { useLocalSearchParams } from 'expo-router'
@@ -18,16 +19,17 @@ import React, { useCallback, useRef } from 'react'
 import { PixelRatio, Platform } from 'react-native'
 import Share from 'react-native-share'
 import ViewShot, { captureRef } from 'react-native-view-shot'
-import { MarketToken } from 'store/watchlist/types'
+import { MarketType } from 'store/watchlist/types'
 import Logger from 'utils/Logger'
 
 const ShareMarketTokenScreen = (): JSX.Element => {
   const { theme } = useTheme()
-  const params = useLocalSearchParams<{
-    token: string
+  const { tokenId, marketType } = useLocalSearchParams<{
+    tokenId: string
+    marketType: MarketType
   }>()
 
-  const token = JSON.parse(params.token) as MarketToken
+  const { tokenInfo } = useTokenDetails({ tokenId, marketType })
 
   const viewShotRef = useRef<ViewShot>(null)
 
@@ -38,7 +40,7 @@ const ShareMarketTokenScreen = (): JSX.Element => {
     : 0
 
   const urlToShare = CORE_WEB_URL
-  const message = `Don't miss out on ${token?.name} price changes. Download Core from the App Store or Google Play store to receive alerts on ${token?.name} and other popular tokens. ${urlToShare}`
+  const message = `Don't miss out on ${tokenInfo?.name} price changes. Download Core from the App Store or Google Play store to receive alerts on ${tokenInfo?.name} and other popular tokens. ${urlToShare}`
 
   const captureImage = async (): Promise<string> => {
     const imageSize = CHART_IMAGE_SIZE / PixelRatio.get()
@@ -101,10 +103,10 @@ const ShareMarketTokenScreen = (): JSX.Element => {
       attachments: {
         uri: fileUri,
         mimeType: 'image/png',
-        filename: `${token?.name ?? 'token'}.png`
+        filename: `${tokenInfo?.name ?? 'token'}.png`
       }
     })
-  }, [message, token?.name])
+  }, [message, tokenInfo?.name])
 
   const renderFooter = useCallback(
     () => (
@@ -119,7 +121,7 @@ const ShareMarketTokenScreen = (): JSX.Element => {
     [urlToShare, handleSendMessage, handleMore, handleCopyLink, handleShare]
   )
 
-  if (!token.id) {
+  if (!tokenId) {
     return <LoadingState sx={{ flex: 1 }} />
   }
 
@@ -142,7 +144,7 @@ const ShareMarketTokenScreen = (): JSX.Element => {
                 overflow: 'hidden'
               }}>
               <ViewShot ref={viewShotRef}>
-                <ShareChart token={token} />
+                <ShareChart tokenId={tokenId} marketType={marketType} />
               </ViewShot>
             </View>
           </View>

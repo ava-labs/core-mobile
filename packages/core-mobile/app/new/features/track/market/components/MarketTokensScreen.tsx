@@ -5,7 +5,7 @@ import { Space } from 'common/components/Space'
 import { DropdownSelection } from 'common/types'
 import React, { useCallback, useMemo } from 'react'
 import { StyleSheet, ViewStyle } from 'react-native'
-import { Charts, MarketToken } from 'store/watchlist'
+import { Charts, MarketToken, MarketType } from 'store/watchlist'
 import { MarketView } from '../hooks/useTrackSortAndView'
 import { MarketListItem } from './MarketListItem'
 
@@ -22,7 +22,7 @@ const MarketTokensScreen = ({
   charts: Charts
   sort: DropdownSelection
   view: DropdownSelection
-  goToMarketDetail: (token: MarketToken) => void
+  goToMarketDetail: (tokenId: string, marketType: MarketType) => void
   renderEmpty: () => React.JSX.Element
   containerStyle: ViewStyle
 }): JSX.Element => {
@@ -57,7 +57,7 @@ const MarketTokensScreen = ({
           charts={charts}
           index={index}
           isGridView={isGridView}
-          onPress={() => goToMarketDetail(item)}
+          onPress={() => goToMarketDetail(item.id, item.marketType)}
         />
       )
 

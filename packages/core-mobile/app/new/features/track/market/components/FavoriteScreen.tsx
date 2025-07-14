@@ -7,7 +7,7 @@ import { useWatchlist } from 'hooks/watchlist/useWatchlist'
 import React, { useCallback, useMemo } from 'react'
 import { ViewStyle } from 'react-native'
 import Animated from 'react-native-reanimated'
-import { MarketToken } from 'store/watchlist'
+import { MarketType } from 'store/watchlist'
 import { useMigrateFavoriteIds } from '../hooks/useMigrateFavoriteIds'
 import { useTrackSortAndView } from '../hooks/useTrackSortAndView'
 import MarketTokensScreen from './MarketTokensScreen'
@@ -19,7 +19,7 @@ const FavoriteScreen = ({
   containerStyle,
   onScrollResync
 }: {
-  goToMarketDetail: (token: MarketToken) => void
+  goToMarketDetail: (tokenId: string, marketType: MarketType) => void
   containerStyle: ViewStyle
   onScrollResync: () => void
 }): JSX.Element => {

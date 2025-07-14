@@ -17,16 +17,22 @@ import { UNKNOWN_AMOUNT } from 'consts/amount'
 import SparklineChart from 'features/track/components/SparklineChart'
 import { useGetPrices } from 'hooks/watchlist/useGetPrices'
 import React, { useMemo } from 'react'
-import { MarketToken } from 'store/watchlist'
+import { MarketType } from 'store/watchlist'
 import { formatLargeCurrency } from 'utils/Utils'
 import { isEffectivelyZero } from '../utils/utils'
 
-export const ShareChart = ({ token }: { token: MarketToken }): JSX.Element => {
+export const ShareChart = ({
+  tokenId,
+  marketType
+}: {
+  tokenId: string
+  marketType: MarketType
+}): JSX.Element => {
   const { theme } = useTheme()
   const { theme: inversedTheme } = useInversedTheme({ isDark: theme.isDark })
-  const { chartData, ranges, coingeckoId, tokenInfo } = useTokenDetails({
-    tokenId: token.id,
-    marketType: token.marketType
+  const { chartData, ranges, coingeckoId, tokenInfo, token } = useTokenDetails({
+    tokenId,
+    marketType
   })
   const isFocused = useIsFocused()
 
@@ -42,20 +48,21 @@ export const ShareChart = ({ token }: { token: MarketToken }): JSX.Element => {
     return (
       tokenInfo?.currentPrice ??
       prices?.[coingeckoId]?.priceInCurrency ??
-      token.currentPrice
+      token?.currentPrice
     )
-  }, [tokenInfo?.currentPrice, prices, coingeckoId, token.currentPrice])
+  }, [tokenInfo?.currentPrice, prices, coingeckoId, token?.currentPrice])
 
   const range = useMemo(() => {
     return {
-      diffValue: ranges.diffValue
-        ? ranges.diffValue
-        : token.priceChange24h ?? 0,
-      percentChange: ranges.percentChange
-        ? ranges.percentChange
-        : token.priceChangePercentage24h ?? 0
+      diffValue: ranges.diffValue ?? token?.priceChange24h,
+      percentChange: ranges.percentChange ?? token?.priceChangePercentage24h
     }
-  }, [ranges, token.priceChange24h, token.priceChangePercentage24h])
+  }, [
+    ranges.diffValue,
+    ranges.percentChange,
+    token?.priceChange24h,
+    token?.priceChangePercentage24h
+  ])
 
   return (
     <View
@@ -75,8 +82,8 @@ export const ShareChart = ({ token }: { token: MarketToken }): JSX.Element => {
             paddingBottom: 4
           }}>
           <TokenHeader
-            logoUri={token.logoUri}
-            symbol={token.symbol ?? ''}
+            logoUri={token?.logoUri ?? undefined}
+            symbol={token?.symbol ?? ''}
             currentPrice={currentPrice}
             ranges={range}
           />
@@ -151,7 +158,7 @@ const TokenHeader = ({
           : ranges.diffValue === 0
           ? PriceChangeStatus.Neutral
           : PriceChangeStatus.Up,
-      formattedPercent: `${ranges.percentChange.toFixed(2).replace('-', '')}%`
+      formattedPercent: `${ranges.percentChange?.toFixed(2).replace('-', '')}%`
     }
   }, [ranges, formatTokenInCurrency])
 
