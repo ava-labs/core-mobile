@@ -21,7 +21,7 @@ export const BalanceHeader = ({
   isDeveloperModeEnabled = false,
   renderMaskView
 }: {
-  accountName: string
+  accountName?: string
   formattedBalance: string
   currency: string
   errorMessage?: string
@@ -124,13 +124,15 @@ export const BalanceHeader = ({
 
   return (
     <View onLayout={onLayout}>
-      <Text
-        testID="balance_header_account_name"
-        variant="heading2"
-        sx={{ color: '$textSecondary', lineHeight: 38 }}
-        numberOfLines={1}>
-        {accountName}
-      </Text>
+      {accountName && (
+        <Text
+          testID="balance_header_account_name"
+          variant="heading2"
+          sx={{ color: '$textSecondary', lineHeight: 38 }}
+          numberOfLines={1}>
+          {accountName}
+        </Text>
+      )}
       {renderBalance()}
     </View>
   )
