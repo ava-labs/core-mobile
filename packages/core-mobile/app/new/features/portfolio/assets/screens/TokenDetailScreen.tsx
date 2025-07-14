@@ -64,6 +64,7 @@ import { useNetworks } from 'hooks/networks/useNetworks'
 import { ChainId } from '@avalabs/core-chains-sdk'
 import { useBuy } from 'features/meld/hooks/useBuy'
 import { useWithdraw } from 'features/meld/hooks/useWithdraw'
+import { selectIsMeldOfframpBlocked } from 'store/posthog'
 
 export const TokenDetailScreen = (): React.JSX.Element => {
   const {
@@ -79,6 +80,7 @@ export const TokenDetailScreen = (): React.JSX.Element => {
   const [tokenHeaderLayout, setTokenHeaderLayout] = useState<
     LayoutRectangle | undefined
   >()
+  const isMeldOfframpBlocked = useSelector(selectIsMeldOfframpBlocked)
   const { localId, chainId } = useLocalSearchParams<{
     localId: string
     chainId: string
@@ -218,10 +220,10 @@ export const TokenDetailScreen = (): React.JSX.Element => {
       })
     }
 
-    if (token && isWithdrawable(token)) {
+    if (token && isWithdrawable(token) && !isMeldOfframpBlocked) {
       buttons.push({
         title: ActionButtonTitle.Withdraw,
-        icon: 'buy',
+        icon: 'withdraw',
         onPress: () => navigateToWithdraw({ token })
       })
     }
@@ -229,6 +231,7 @@ export const TokenDetailScreen = (): React.JSX.Element => {
     return buttons
   }, [
     handleSend,
+    isMeldOfframpBlocked,
     isSwapDisabled,
     token,
     isBuyable,

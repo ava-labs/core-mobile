@@ -10,12 +10,11 @@ import {
 } from '../consts'
 import MeldService from '../services/MeldService'
 import { SearchPaymentMethods } from '../types'
-import { useMeldToken } from '../store'
-import { useLocale } from './useLocale'
+import { useMeldCountryCode, useMeldToken } from '../store'
 
 export type SearchPaymentMethodsParams = {
   categories: ServiceProviderCategories[]
-  countries: string[]
+  countries?: string[]
   serviceProviders?: ServiceProviders[]
   accountFilter?: boolean
   fiatCurrencies?: string[]
@@ -33,7 +32,7 @@ export const useSearchPaymentMethods = ({
   const [meldToken] = useMeldToken()
   const selectedCurrency = useSelector(selectSelectedCurrency)
 
-  const { countryCode } = useLocale()
+  const [countryCode] = useMeldCountryCode()
   const cryptoCurrencyCode = meldToken?.currencyCode
 
   return useQuery<SearchPaymentMethods[]>({
@@ -54,7 +53,7 @@ export const useSearchPaymentMethods = ({
           ? [cryptoCurrencyCode]
           : undefined,
         serviceProviders,
-        countries: [countryCode],
+        countries: countryCode ? [countryCode] : undefined,
         categories,
         accountFilter
       }),

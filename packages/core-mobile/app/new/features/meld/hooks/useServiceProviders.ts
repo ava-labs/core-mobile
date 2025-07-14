@@ -2,17 +2,11 @@ import { useSelector } from 'react-redux'
 import { selectSelectedCurrency } from 'store/settings/currency'
 import { QueryObserverResult, RefetchOptions } from '@tanstack/react-query'
 import { useMemo } from 'react'
-import { useMeldToken } from '../store'
-import {
-  CreateCryptoQuote,
-  CreateCryptoQuoteError,
-  CreateCryptoQuoteErrorCode,
-  CreateCryptoQuoteNotFoundError,
-  Quote
-} from '../types'
+import { useMeldCountryCode, useMeldToken } from '../store'
+import { CreateCryptoQuote, CryptoQuotesError, Quote } from '../types'
 import { ServiceProviderCategories } from '../consts'
+import { getErrorMessage } from '../utils'
 import { useCreateCryptoQuote } from './useCreateCryptoQuote'
-import { useLocale } from './useLocale'
 
 export const useServiceProviders = ({
   category
@@ -21,10 +15,7 @@ export const useServiceProviders = ({
 }): {
   crytoQuotes: Quote[]
   isLoadingCryptoQuotes: boolean
-  cryptoQuotesError?: {
-    statusCode: CreateCryptoQuoteErrorCode
-    message: string
-  }
+  cryptoQuotesError?: CryptoQuotesError
   refetch: (
     options?: RefetchOptions
   ) => Promise<QueryObserverResult<CreateCryptoQuote | undefined, Error>>
@@ -32,7 +23,7 @@ export const useServiceProviders = ({
 } => {
   const [meldToken] = useMeldToken()
   const selectedCurrency = useSelector(selectSelectedCurrency)
-  const { countryCode } = useLocale()
+  const [countryCode] = useMeldCountryCode()
 
   const destinationCurrencyCode = useMemo(() => {
     return category === ServiceProviderCategories.CRYPTO_ONRAMP
@@ -60,24 +51,7 @@ export const useServiceProviders = ({
   })
 
   const cryptoQuotesError = useMemo(() => {
-    if (error && 'response' in error) {
-      const response = error.response as {
-        data?: CreateCryptoQuoteError | CreateCryptoQuoteNotFoundError
-      }
-      if (response.data && 'status' in response.data) {
-        return {
-          statusCode: response.data.status,
-          message: response.data.message
-        }
-      }
-      if (response.data && 'code' in response.data) {
-        return {
-          statusCode: response.data.code,
-          message: response.data.message
-        }
-      }
-    }
-    return undefined
+    return getErrorMessage(error)
   }, [error])
 
   const crytoQuotes = useMemo(() => {

@@ -1,5 +1,5 @@
 import { ScrollScreen } from 'common/components/ScrollScreen'
-import React, { useCallback } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import {
   Button,
   View,
@@ -9,7 +9,8 @@ import {
   useTheme,
   FiatAmountInputWidget,
   ActivityIndicator,
-  showAlert
+  showAlert,
+  useInversedTheme
 } from '@avalabs/k2-alpine'
 import { LogoWithNetwork } from 'features/portfolio/assets/components/LogoWithNetwork'
 import { selectSelectedCurrency } from 'store/settings/currency'
@@ -19,6 +20,8 @@ import useInAppBrowser from 'common/hooks/useInAppBrowser'
 import { SubTextNumber } from 'common/components/SubTextNumber'
 import { useSelectAmount } from '../hooks/useSelectAmount'
 import { ServiceProviderCategories } from '../consts'
+import { useOfframpActivityIndicator, useOfframpSessionId } from '../store'
+import { getErrorMessage } from '../utils'
 
 interface SelectAmountProps {
   title: string
@@ -36,8 +39,11 @@ export const SelectAmount = ({
   onSelectPaymentMethod
 }: SelectAmountProps): React.JSX.Element => {
   const {
-    theme: { colors }
+    theme: { colors, isDark }
   } = useTheme()
+  const { theme: inversedTheme } = useInversedTheme({ isDark })
+  const { animating } = useOfframpActivityIndicator()
+
   const {
     formatInSubTextNumber,
     sourceAmount,
@@ -55,8 +61,17 @@ export const SelectAmount = ({
     errorMessage
   } = useSelectAmount({ category })
   const { openUrl } = useInAppBrowser()
+  const [createSessionWidgetErrorMessage, setCreateSessionWidgetErrorMessage] =
+    useState<string | undefined>()
+  const [isLoadingCreateSessionWidget, setIsLoadingCreateSessionWidget] =
+    useState(false)
+  const { setSessionId } = useOfframpSessionId()
   const { formatIntegerCurrency, formatCurrency } = useFormatCurrency()
   const selectedCurrency = useSelector(selectSelectedCurrency)
+
+  useEffect(() => {
+    setCreateSessionWidgetErrorMessage(undefined)
+  }, [sourceAmount])
 
   const handleSelectPaymentMethod = useCallback((): void => {
     if (sourceAmount === undefined || sourceAmount === 0) {
@@ -74,9 +89,27 @@ export const SelectAmount = ({
   }, [onSelectPaymentMethod, sourceAmount])
 
   const onNext = useCallback(async (): Promise<void> => {
-    const sessionWidget = await createSessionWidget()
-    sessionWidget?.widgetUrl && openUrl(sessionWidget.widgetUrl)
-  }, [createSessionWidget, openUrl])
+    setSessionId(undefined)
+    setIsLoadingCreateSessionWidget(true)
+    try {
+      const sessionWidget = await createSessionWidget()
+
+      if (
+        category === ServiceProviderCategories.CRYPTO_OFFRAMP &&
+        sessionWidget?.id
+      ) {
+        // store the session id in the store for the offramp flow
+        // this is used to fetch the transaction details from the service provider immediately
+        setSessionId(sessionWidget.id)
+      }
+      sessionWidget?.widgetUrl && openUrl(sessionWidget.widgetUrl)
+    } catch (error) {
+      const err = getErrorMessage(error as Error)
+      setCreateSessionWidgetErrorMessage(err?.message)
+    } finally {
+      setIsLoadingCreateSessionWidget(false)
+    }
+  }, [category, createSessionWidget, openUrl, setSessionId])
 
   const renderFooter = useCallback(() => {
     return (
@@ -89,13 +122,27 @@ export const SelectAmount = ({
           type="primary"
           size="large"
           onPress={onNext}>
-          {category === ServiceProviderCategories.CRYPTO_ONRAMP
-            ? 'Buy'
-            : 'Withdraw'}
+          {isLoadingCreateSessionWidget || animating ? (
+            <ActivityIndicator
+              size="small"
+              color={inversedTheme.colors.$textPrimary}
+            />
+          ) : category === ServiceProviderCategories.CRYPTO_ONRAMP ? (
+            'Buy'
+          ) : (
+            'Withdraw'
+          )}
         </Button>
       </View>
     )
-  }, [isEnabled, onNext, category])
+  }, [
+    isEnabled,
+    onNext,
+    isLoadingCreateSessionWidget,
+    inversedTheme.colors.$textPrimary,
+    category,
+    animating
+  ])
 
   const renderServiceProvider = useCallback(() => {
     if (!hasValidSourceAmount) {
@@ -127,7 +174,7 @@ export const SelectAmount = ({
   ])
 
   const renderCaption = useCallback(() => {
-    if (errorMessage) {
+    if (errorMessage || createSessionWidgetErrorMessage) {
       return (
         <View
           sx={{
@@ -142,7 +189,7 @@ export const SelectAmount = ({
           <Text
             variant="caption"
             sx={{ fontWeight: 500, color: colors.$textDanger }}>
-            {errorMessage}
+            {errorMessage || createSessionWidgetErrorMessage}
           </Text>
         </View>
       )
@@ -186,6 +233,7 @@ export const SelectAmount = ({
     colors.$textDanger,
     colors.$textPrimary,
     errorMessage,
+    createSessionWidgetErrorMessage,
     token?.tokenWithBalance.symbol,
     tokenBalance
   ])
@@ -254,77 +302,94 @@ export const SelectAmount = ({
   ])
 
   return (
-    <ScrollScreen
-      bottomOffset={150}
-      isModal
-      title={title}
-      navigationTitle={navigationTitle}
-      renderFooter={renderFooter}
-      shouldAvoidKeyboard
-      contentContainerStyle={{
-        padding: 16
-      }}>
-      {/* Select Token */}
-      <Pressable
-        onPress={onSelectToken}
-        sx={{
-          marginTop: 12,
-          flexDirection: 'row',
-          alignItems: 'center',
-          borderRadius: 12,
-          justifyContent: 'space-between',
-          padding: 17,
-          backgroundColor: colors.$surfaceSecondary
+    <>
+      <ScrollScreen
+        bottomOffset={150}
+        isModal
+        title={title}
+        navigationTitle={navigationTitle}
+        renderFooter={renderFooter}
+        shouldAvoidKeyboard
+        contentContainerStyle={{
+          padding: 16
         }}>
-        <Text
-          variant="body1"
-          sx={{ fontSize: 16, lineHeight: 22, color: colors.$textPrimary }}>
-          Token
-        </Text>
-        {token?.tokenWithBalance ? (
-          <View sx={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-            <LogoWithNetwork
-              token={token.tokenWithBalance}
-              outerBorderColor={colors.$surfaceSecondary}
-            />
-            <Text
-              variant="body1"
-              sx={{
-                fontSize: 16,
-                lineHeight: 22,
-                color: colors.$textSecondary
-              }}>
-              {token?.tokenWithBalance?.symbol}
-            </Text>
-            <View sx={{ marginLeft: 8 }}>
-              <Icons.Navigation.ChevronRightV2 color={colors.$textPrimary} />
+        {/* Select Token */}
+        <Pressable
+          onPress={onSelectToken}
+          sx={{
+            marginTop: 12,
+            flexDirection: 'row',
+            alignItems: 'center',
+            borderRadius: 12,
+            justifyContent: 'space-between',
+            padding: 17,
+            backgroundColor: colors.$surfaceSecondary
+          }}>
+          <Text
+            variant="body1"
+            sx={{ fontSize: 16, lineHeight: 22, color: colors.$textPrimary }}>
+            Token
+          </Text>
+          {token?.tokenWithBalance ? (
+            <View sx={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+              <LogoWithNetwork
+                token={token.tokenWithBalance}
+                outerBorderColor={colors.$surfaceSecondary}
+              />
+              <Text
+                variant="body1"
+                sx={{
+                  fontSize: 16,
+                  lineHeight: 22,
+                  color: colors.$textSecondary
+                }}>
+                {token?.tokenWithBalance?.symbol}
+              </Text>
+              <View sx={{ marginLeft: 8 }}>
+                <Icons.Navigation.ChevronRightV2 color={colors.$textPrimary} />
+              </View>
             </View>
-          </View>
-        ) : (
-          <ActivityIndicator size="small" color={colors.$textPrimary} />
-        )}
-      </Pressable>
+          ) : (
+            <ActivityIndicator size="small" color={colors.$textPrimary} />
+          )}
+        </Pressable>
 
-      {/* Fiat amount input widget */}
-      {tokenBalance && (
-        <FiatAmountInputWidget
-          isAmountValid={errorMessage === undefined}
-          disabled={isLoadingTradeLimits}
-          sx={{ marginTop: 12 }}
-          currency={selectedCurrency}
-          amount={sourceAmount}
-          onChange={setSourceAmount}
-          formatIntegerCurrency={amt =>
-            formatIntegerCurrency({ amount: amt, withoutCurrencySuffix: true })
-          }
-          formatInCurrency={amt => formatCurrency({ amount: amt })}
-          formatInSubTextNumber={formatInSubTextNumber}
+        {/* Fiat amount input widget */}
+        {tokenBalance && (
+          <FiatAmountInputWidget
+            isAmountValid={errorMessage === undefined}
+            disabled={isLoadingTradeLimits}
+            sx={{ marginTop: 12 }}
+            currency={selectedCurrency}
+            amount={sourceAmount}
+            onChange={setSourceAmount}
+            formatIntegerCurrency={amt =>
+              formatIntegerCurrency({
+                amount: amt,
+                withoutCurrencySuffix: true
+              })
+            }
+            formatInCurrency={amt => formatCurrency({ amount: amt })}
+            formatInSubTextNumber={formatInSubTextNumber}
+          />
+        )}
+        {/* token balance or error message */}
+        {renderCaption()}
+        {/* Pay with / Withdraw to */}
+        {renderPayWith()}
+      </ScrollScreen>
+      {animating && (
+        <View
+          sx={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(40, 40, 46, 0.5)'
+          }}
         />
       )}
-      {/* token balance or error message */}
-      {renderCaption()}
-      {/* Pay with / Withdraw to */}
-      {renderPayWith()}
-    </ScrollScreen>
+    </>
   )
 }

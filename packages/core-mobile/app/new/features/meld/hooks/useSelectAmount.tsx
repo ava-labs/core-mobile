@@ -18,14 +18,17 @@ import {
   ServiceProviderCategories,
   ServiceProviderNames
 } from '../consts'
-import { useMeldPaymentMethod, useMeldServiceProvider } from '../store'
+import {
+  useMeldCountryCode,
+  useMeldPaymentMethod,
+  useMeldServiceProvider
+} from '../store'
 import {
   CreateCryptoQuoteErrorCode,
   CreateSessionWidget,
   CryptoCurrency,
   SessionTypes
 } from '../types'
-import { useLocale } from './useLocale'
 import { useSearchDefaultsByCountry } from './useSearchDefaultsByCountry'
 import { useCreateSessionWidget } from './useCreateSessionWidget'
 import { useServiceProviders } from './useServiceProviders'
@@ -48,7 +51,7 @@ export const useSelectAmount = ({
   tokenBalance: TokenUnit | undefined
   hasValidSourceAmount: boolean
   isEnabled: boolean
-  formatInSubTextNumber: (amt: number) => JSX.Element
+  formatInSubTextNumber: (amt: number | undefined | null) => JSX.Element
   setSourceAmount: (amt: number) => void
   sourceAmount: number | undefined
   createSessionWidget: () => Promise<CreateSessionWidget | undefined>
@@ -74,7 +77,8 @@ export const useSelectAmount = ({
     maximumLimit,
     isLoadingTradeLimits
   } = useFiatSourceAmount({ category })
-  const { countryCode } = useLocale()
+  const [countryCode] = useMeldCountryCode()
+
   const { getFromPopulatedNetwork } = useNetworks()
   const { getMarketTokenBySymbol } = useWatchlist()
 
@@ -133,6 +137,10 @@ export const useSelectAmount = ({
         : SessionTypes.SELL,
     sessionData: {
       redirectUrl,
+      redirectFlow:
+        category === ServiceProviderCategories.CRYPTO_OFFRAMP
+          ? true
+          : undefined,
       destinationCurrencyCode,
       sourceCurrencyCode,
       walletAddress,
@@ -218,7 +226,7 @@ export const useSelectAmount = ({
   ])
 
   const getSourceAmountInTokenUnit = useCallback(
-    (amt: number): TokenUnit => {
+    (amt: number | undefined | null): TokenUnit => {
       const currentPrice = token?.tokenWithBalance.symbol
         ? getMarketTokenBySymbol(token.tokenWithBalance.symbol)?.currentPrice ??
           0
@@ -229,7 +237,11 @@ export const useSelectAmount = ({
           ? token.tokenWithBalance.decimals
           : 0
 
-      const tokenAmount = (amt / currentPrice) * 10 ** maxDecimals
+      const tokenAmount =
+        amt !== null || amt !== undefined
+          ? 0
+          : (amt / currentPrice) * 10 ** maxDecimals
+
       return new TokenUnit(
         tokenAmount,
         maxDecimals,
@@ -306,7 +318,7 @@ export const useSelectAmount = ({
   ])
 
   const formatInSubTextNumber = useCallback(
-    (amt: number): JSX.Element => {
+    (amt: number | undefined | null): JSX.Element => {
       const sourceAmountInTokenUnit = getSourceAmountInTokenUnit(amt)
       return (
         <View

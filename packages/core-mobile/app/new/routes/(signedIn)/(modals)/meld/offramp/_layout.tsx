@@ -8,6 +8,7 @@ export default function MeldOfframpLayout(): JSX.Element {
   return (
     <Stack screenOptions={modalStackNavigatorScreenOptions}>
       <Stack.Screen name="index" options={modalFirstScreenOptions} />
+      <Stack.Screen name="selectToken" />
       <Stack.Screen name="selectWithdrawAmount" />
     </Stack>
   )

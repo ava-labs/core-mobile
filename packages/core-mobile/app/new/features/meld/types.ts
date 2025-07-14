@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { LocalTokenWithBalance } from 'store/balance'
 import {
   SearchCountrySchema,
   SearchFiatCurrencySchema,
@@ -11,10 +12,13 @@ import {
   QuoteSchema,
   CreateSessionWidgetBodySchema,
   CreateSessionWidgetSchema,
-  GetTradeLimitsSchema
+  GetTradeLimitsSchema,
+  MeldTransactionSchema,
+  RegionSchema
 } from './services/schemas'
 import { ServiceProviderCategories, ServiceProviders } from './consts'
 
+export type Region = z.infer<typeof RegionSchema>
 export type Country = z.infer<typeof SearchCountrySchema>
 export type FiatCurrency = z.infer<typeof SearchFiatCurrencySchema>
 export type CryptoCurrency = z.infer<typeof SearchCryptoCurrencySchema>
@@ -37,10 +41,12 @@ export type CreateSessionWidgetParams = z.infer<
 
 export type CreateSessionWidget = z.infer<typeof CreateSessionWidgetSchema>
 
+export type MeldTransaction = z.infer<typeof MeldTransactionSchema>
+
 export type MeldDefaultParams = {
   categories: ServiceProviderCategories[]
   serviceProviders?: string[]
-  countries: string[]
+  countries?: string[]
   accountFilter?: boolean
 }
 
@@ -68,4 +74,13 @@ export enum SessionTypes {
   BUY = 'BUY',
   SELL = 'SELL',
   TRANSFER = 'TRANSFER'
+}
+
+export type CryptoQuotesError = {
+  statusCode: CreateCryptoQuoteErrorCode
+  message: string
+}
+
+export type CryptoCurrencyWithBalance = CryptoCurrency & {
+  tokenWithBalance: LocalTokenWithBalance
 }
