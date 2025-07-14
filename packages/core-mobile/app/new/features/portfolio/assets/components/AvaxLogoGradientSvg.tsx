@@ -77,7 +77,7 @@ export const AvaxLogoGradientSvg = ({
             x2="159.504"
             y2="280.391"
             gradientUnits="userSpaceOnUse"
-            gradientTransform={gradientTransform}>
+            gradientTransform={shouldAnimate ? gradientTransform : undefined}>
             <Stop offset="0" stopColor={gradientColor1} />
             <Stop offset="1" stopColor={gradientColor2} />
           </LinearGradient>
@@ -88,7 +88,7 @@ export const AvaxLogoGradientSvg = ({
         />
       </Svg>
     )
-  }, [fill, gradientColor1, gradientColor2, gradientTransform])
+  }, [fill, gradientColor1, gradientColor2, gradientTransform, shouldAnimate])
 
   return shouldAnimate ? (
     <AnimatedView style={[{ width, height }, animatedStyle]}>

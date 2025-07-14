@@ -59,6 +59,7 @@ import {
   LocalTokenWithBalance,
   selectBalanceForAccountIsAccurate,
   selectBalanceTotalInCurrencyForAccount,
+  selectIsBalanceLoadedForAccount,
   selectIsLoadingBalances,
   selectIsRefetchingBalances,
   selectTokensWithBalanceForAccount
@@ -117,7 +118,10 @@ const PortfolioHomeScreen = (): JSX.Element => {
   )
 
   const tabViewRef = useRef<CollapsibleTabsRef>(null)
-  const isLoading = isBalanceLoading || isRefetchingBalance
+  const isBalanceLoaded = useFocusedSelector(
+    selectIsBalanceLoadedForAccount(activeAccount?.id ?? '')
+  )
+  const isLoading = isBalanceLoading || isRefetchingBalance || !isBalanceLoaded
   const balanceAccurate = useFocusedSelector(
     selectBalanceForAccountIsAccurate(activeAccount?.id ?? '')
   )
@@ -306,7 +310,7 @@ const PortfolioHomeScreen = (): JSX.Element => {
               animatedHeaderStyle
             ]}>
             <BalanceHeader
-              accountName={activeAccount?.name ?? ''}
+              accountName={activeAccount?.name}
               formattedBalance={formattedBalance}
               currency={selectedCurrency}
               priceChange={

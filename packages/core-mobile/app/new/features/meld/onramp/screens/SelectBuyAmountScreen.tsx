@@ -18,7 +18,7 @@ export const SelectBuyAmountScreen = (): React.JSX.Element => {
 
   return (
     <SelectAmount
-      title={`How much do you want\nto buy?`}
+      title={`How much do you want to buy?`}
       navigationTitle={`Enter buy amount`}
       category={ServiceProviderCategories.CRYPTO_ONRAMP}
       onSelectToken={handleSelectToken}
