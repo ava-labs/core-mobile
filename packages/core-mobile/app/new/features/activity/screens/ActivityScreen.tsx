@@ -1,3 +1,7 @@
+import {
+  isTokenWithBalanceAVM,
+  isTokenWithBalancePVM
+} from '@avalabs/avalanche-module'
 import { BridgeTransfer } from '@avalabs/bridge-unified'
 import { BridgeTransaction } from '@avalabs/core-bridge-sdk'
 import { Network } from '@avalabs/core-chains-sdk'
@@ -25,8 +29,8 @@ import { ErrorState } from 'new/common/components/ErrorState'
 import { LoadingState } from 'new/common/components/LoadingState'
 import React, { useCallback, useMemo } from 'react'
 import { Platform, ViewStyle } from 'react-native'
-import Animated, { useAnimatedStyle, withTiming } from 'react-native-reanimated'
 import { useHeaderMeasurements } from 'react-native-collapsible-tab-view'
+import Animated, { useAnimatedStyle, withTiming } from 'react-native-reanimated'
 import { Transaction } from 'store/transaction'
 import { useActivityFilterAndSearch } from '../hooks/useActivityFilterAndSearch'
 
@@ -59,7 +63,8 @@ export const ActivityScreen = ({
     network,
     networkOption,
     networkDropdown,
-    selectedNetwork
+    selectedNetwork,
+    token
   } = useActivityFilterAndSearch({ searchText })
 
   const keyboardAvoidingStyle = useAnimatedStyle(() => {
@@ -189,7 +194,10 @@ export const ActivityScreen = ({
           />
         )
       } else {
-        const isXpTx = isXpTransaction(item.txType)
+        const isXpTx =
+          isXpTransaction(item.txType) &&
+          token &&
+          (isTokenWithBalanceAVM(token) || isTokenWithBalancePVM(token))
 
         const props = {
           tx: item,
@@ -203,7 +211,7 @@ export const ActivityScreen = ({
         return <TokenActivityListItem {...props} key={item.hash} />
       }
     },
-    [handleExplorerLink, handlePendingBridge]
+    [handleExplorerLink, handlePendingBridge, token]
   )
 
   const renderSeparator = useCallback((): JSX.Element => {

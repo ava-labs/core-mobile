@@ -1,6 +1,6 @@
 import { ChainId, Network } from '@avalabs/core-chains-sdk'
 import { IndexPath } from '@avalabs/k2-alpine'
-import { TransactionType } from '@avalabs/vm-module-types'
+import { TokenWithBalance, TransactionType } from '@avalabs/vm-module-types'
 import { getBridgeAssetSymbol } from 'common/utils/bridgeUtils'
 import usePendingBridgeTransactions from 'features/bridge/hooks/usePendingBridgeTransactions'
 import {
@@ -15,7 +15,9 @@ import { useCallback, useEffect, useMemo } from 'react'
 import { isAvalancheNetwork } from 'services/network/utils/isAvalancheNetwork'
 import { Transaction } from 'store/transaction'
 import { useGetRecentTransactions } from 'store/transaction/hooks/useGetRecentTransactions'
-import { isPChain } from 'utils/network/isAvalancheNetwork'
+import { isPChain, isXChain, isXPChain } from 'utils/network/isAvalancheNetwork'
+import { useErc20ContractTokens } from 'common/hooks/useErc20ContractTokens'
+import { useSearchableTokenList } from 'common/hooks/useSearchableTokenList'
 import { useActivity } from '../store'
 
 type ActivityNetworkFilter = {
@@ -42,9 +44,15 @@ export const useActivityFilterAndSearch = ({
   isRefreshing: boolean
   isError: boolean
   refresh: () => void
+  token: TokenWithBalance | undefined
 } => {
   const { enabledNetworks, getNetwork } = useNetworks()
   const { selectedNetwork, setSelectedNetwork } = useActivity()
+
+  const erc20ContractTokens = useErc20ContractTokens()
+  const { filteredTokenList } = useSearchableTokenList({
+    tokens: erc20ContractTokens
+  })
 
   const networkFilters: ActivityNetworkFilter[] = useMemo(() => {
     return enabledNetworks.map(network => ({
@@ -67,6 +75,18 @@ export const useActivityFilterAndSearch = ({
   const network = useMemo(() => {
     return getNetwork(networkOption?.chainId)
   }, [getNetwork, networkOption?.chainId])
+
+  const token = useMemo(() => {
+    return filteredTokenList.find(tk => {
+      if (
+        isPChain(network?.chainId as ChainId) ||
+        isXChain(network?.chainId as ChainId)
+      ) {
+        return Number(tk.networkChainId) === Number(network?.chainId)
+      }
+      return Number(tk.localId) === Number(network?.chainId)
+    })
+  }, [filteredTokenList, network?.chainId])
 
   const networkDropdown: Selection & {
     scrollContentMaxHeight: number
@@ -100,16 +120,13 @@ export const useActivityFilterAndSearch = ({
   )
 
   const transactionsBySymbol = useMemo(() => {
-    return transactions
-      .filter(tx => {
-        return (
-          !network?.networkToken.symbol ||
-          (tx.tokens[0]?.symbol &&
-            network?.networkToken.symbol === tx.tokens[0].symbol)
-        )
-      })
-      .filter(tx => !isPendingBridge(tx))
-  }, [transactions, isPendingBridge, network?.networkToken.symbol])
+    return (
+      transactions
+        // Remove transaction with empty token array
+        .filter(tx => tx.tokens.length)
+        .filter(tx => !isPendingBridge(tx))
+    )
+  }, [transactions, isPendingBridge])
 
   const filters: TokenDetailFilters | undefined = useMemo(() => {
     if (network?.chainId && isPChain(network.chainId)) {
@@ -173,6 +190,7 @@ export const useActivityFilterAndSearch = ({
 
   return {
     data: combinedData as Transaction[],
+    token,
     sort,
     filter,
     isLoading,

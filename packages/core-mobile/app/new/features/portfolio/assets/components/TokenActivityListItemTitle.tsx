@@ -8,6 +8,8 @@ import { useSelector } from 'react-redux'
 import { selectIsPrivacyModeEnabled } from 'store/settings/securityPrivacy'
 import { HiddenBalanceText } from 'common/components/HiddenBalanceText'
 import { TokenActivityTransaction } from './TokenActivityListItem'
+import { useNetworks } from 'hooks/networks/useNetworks'
+import { getNetworks } from 'features/send/utils/getNetworks'
 
 export const TokenActivityListItemTitle = ({
   tx
@@ -20,6 +22,7 @@ export const TokenActivityListItemTitle = ({
   const { sourceBlockchain, targetBlockchain } = useBlockchainNames(tx)
   const isPrivacyModeEnabled = useSelector(selectIsPrivacyModeEnabled)
   const textVariant = 'buttonMedium'
+  const { getNetwork } = useNetworks()
 
   const renderAmount = useCallback(
     (amount?: string): ReactNode => {
@@ -47,7 +50,12 @@ export const TokenActivityListItemTitle = ({
   const nodes = useMemo<ReactNode[]>(() => {
     const a1 = tx.tokens[0]?.amount
     const s1 = tx.tokens[0]?.symbol ?? UNKNOWN_AMOUNT
-    const s2 = tx.tokens[1]?.symbol
+    let s2 = tx.tokens[1]?.symbol
+
+    if (!s2) {
+      const foundNetwork = getNetwork(Number(tx.chainId))
+      s2 = foundNetwork?.networkToken.symbol ?? UNKNOWN_AMOUNT
+    }
 
     switch (tx.txType) {
       case TransactionType.BRIDGE:
@@ -57,14 +65,9 @@ export const TokenActivityListItemTitle = ({
           targetBlockchain ?? 'Unknown'
         ]
 
-      case TransactionType.SWAP:
-        return [
-          renderAmount(a1),
-          ' ',
-          s1,
-          ' swapped for ',
-          s2 ?? UNKNOWN_AMOUNT
-        ]
+      case TransactionType.SWAP: {
+        return [renderAmount(a1), ' ', s1, ' swapped for ', s2]
+      }
 
       case TransactionType.SEND:
         return [renderAmount(a1), ' ', s1, ' sent']
@@ -78,19 +81,22 @@ export const TokenActivityListItemTitle = ({
       default:
         if (tx.isContractCall) {
           if (tx.tokens.length > 1) {
-            return [
-              renderAmount(a1),
-              ' ',
-              s1,
-              ' swapped for ',
-              s2 ?? UNKNOWN_AMOUNT
-            ]
+            return [renderAmount(a1), ' ', s1, ' swapped for ', s2]
           }
           return ['Contract Call']
         }
         return ['Unknown']
     }
-  }, [tx, sourceBlockchain, targetBlockchain, renderAmount])
+  }, [
+    tx.tokens,
+    tx.txType,
+    tx.isContractCall,
+    tx.chainId,
+    sourceBlockchain,
+    targetBlockchain,
+    renderAmount,
+    getNetwork
+  ])
 
   return (
     <View
