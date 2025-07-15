@@ -26,6 +26,9 @@ import { commonStorage } from 'utils/mmkv'
 import { reduxStorage } from 'store/reduxStorage'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import BootSplash from 'react-native-bootsplash'
+import PerformanceService, {
+  PerformanceMilestone
+} from 'services/performance/PerformanceService'
 import {
   Appearance,
   ColorSchemeName,
@@ -146,6 +149,7 @@ const setStateToUnlocked = async (
   const dispatch = listenerApi.dispatch
   dispatch(setIsLocked(false))
   dispatch(setWalletState(WalletState.ACTIVE))
+  PerformanceService.recordMilestone(PerformanceMilestone.UNLOCK_COMPLETED)
 }
 
 const clearData = async (
@@ -203,6 +207,9 @@ export const addAppListeners = (startListening: AppStartListening): void => {
     actionCreator: setIsReady,
     effect: () => {
       BootSplash.hide()
+      PerformanceService.recordMilestone(
+        PerformanceMilestone.SPLASH_SCREEN_HIDDEN
+      )
     }
   })
 }

@@ -17,6 +17,9 @@ import { usePinOrBiometryLogin } from 'common/hooks/usePinOrBiometryLogin'
 import { usePreventScreenRemoval } from 'common/hooks/usePreventScreenRemoval'
 import { useFocusEffect, useRouter } from 'expo-router'
 import { useWallet } from 'hooks/useWallet'
+import PerformanceService, {
+  PerformanceMilestone
+} from 'services/performance/PerformanceService'
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import {
   InteractionManager,
@@ -70,6 +73,7 @@ const LoginWithPinOrBiometry = (): JSX.Element => {
 
   const handleLoginSuccess = useCallback(
     (mnemonic: string) => {
+      PerformanceService.recordMilestone(PerformanceMilestone.UNLOCK_STARTED)
       handleStartLoading()
       pinInputRef.current?.blur()
       isProcessing.value = true

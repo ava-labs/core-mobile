@@ -11,7 +11,10 @@ import { LoadingState } from 'common/components/LoadingState'
 import { Space } from 'common/components/Space'
 import { getListItemEnteringAnimation } from 'common/utils/animations'
 import { portfolioTabContentHeight } from 'features/portfolio/utils'
-import React, { FC, memo, useCallback, useMemo } from 'react'
+import PerformanceService, {
+  PerformanceMilestone
+} from 'services/performance/PerformanceService'
+import React, { FC, memo, useCallback, useEffect, useMemo } from 'react'
 import { ViewStyle } from 'react-native'
 import Animated from 'react-native-reanimated'
 import { useSelector } from 'react-redux'
@@ -54,6 +57,23 @@ const AssetsScreen: FC<Props> = ({
   )
   const isBalanceLoading = useSelector(selectIsLoadingBalances)
   const isRefetchingBalance = useSelector(selectIsRefetchingBalances)
+
+  // Track when portfolio assets are loaded
+  useEffect(() => {
+    // Record portfolio loading started when component mounts (first time accessing portfolio)
+    PerformanceService.recordMilestone(
+      PerformanceMilestone.PORTFOLIO_LOADING_STARTED
+    )
+  }, [])
+
+  useEffect(() => {
+    // Record portfolio assets loaded when loading is complete and we have data
+    if (!isBalanceLoading && !isLoading && data.length > 0) {
+      PerformanceService.recordMilestone(
+        PerformanceMilestone.PORTFOLIO_ASSETS_LOADED
+      )
+    }
+  }, [isBalanceLoading, isLoading, data.length])
 
   const handleManageList = useCallback(
     (indexPath: IndexPath): void => {
