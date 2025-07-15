@@ -12,7 +12,7 @@ export const BalanceLoader = (): React.JSX.Element => {
   return (
     <ContentLoader
       speed={1}
-      width={'100%'}
+      width={390}
       height={61.5}
       viewBox="0 0 400 61.5"
       backgroundColor={backgroundColor}
