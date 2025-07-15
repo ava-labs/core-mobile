@@ -17,11 +17,7 @@
     "storybook-generate": "sb-rn-get-stories --v6-store",
     "storybook-watch": "sb-rn-watcher",
     "gen:contracts": "typechain --target=ethers-v6 --out-dir app/contracts/openzeppelin ./node_modules/@openzeppelin/contracts/build/contracts/ERC20.json ./node_modules/@openzeppelin/contracts/build/contracts/ERC721.json ./node_modules/@openzeppelin/contracts/build/contracts/ERC1155.json",
-    "gen:glacierApi": "npx openapi-zod-client 'https://glacier-api-dev.avax.network/api-json' -o './app/utils/network/glacierApi.client.ts'",
-    "build:prod-ios": "./scripts/production-build.sh ios-simulator",
-    "build:prod-android": "./scripts/production-build.sh android",
-    "build:eas-preview": "./scripts/production-build.sh eas-preview",
-    "perf:test": "echo 'Production performance testing ready! Check console for PerformanceMetrics logs.'"
+    "gen:glacierApi": "npx openapi-zod-client 'https://glacier-api-dev.avax.network/api-json' -o './app/utils/network/glacierApi.client.ts'"
   },
   "dependencies": {
     "@avalabs/avalanche-module": "1.9.5",
