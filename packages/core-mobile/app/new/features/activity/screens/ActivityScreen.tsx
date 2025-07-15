@@ -208,7 +208,7 @@ export const ActivityScreen = ({
           return <XpActivityListItem {...props} />
         }
 
-        return <TokenActivityListItem {...props} showTokenLogo />
+        return <TokenActivityListItem {...props} />
       }
     },
     [handleExplorerLink, handlePendingBridge, token]
