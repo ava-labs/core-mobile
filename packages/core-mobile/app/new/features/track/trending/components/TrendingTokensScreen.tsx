@@ -1,19 +1,19 @@
-import React, { useCallback } from 'react'
-import { StyleSheet, ViewStyle } from 'react-native'
 import { Separator } from '@avalabs/k2-alpine'
 import { CollapsibleTabs } from 'common/components/CollapsibleTabs'
-import { MarketToken, MarketType } from 'store/watchlist'
-import { selectTokenVisibility } from 'store/portfolio'
+import { AVAX_TOKEN_ID } from 'common/consts/swap'
+import { useActiveAccount } from 'common/hooks/useActiveAccount'
+import { useIsSwappable } from 'common/hooks/useIsSwapable'
+import { useBuy } from 'features/meld/hooks/useBuy'
+import { useNavigateToSwap } from 'features/swap/hooks/useNavigateToSwap'
+import { getTokenAddress, getTokenChainId } from 'features/track/utils/utils'
+import React, { useCallback } from 'react'
+import { StyleSheet, ViewStyle } from 'react-native'
 import { useSelector } from 'react-redux'
 import { selectBalanceTotalForAccount } from 'store/balance'
-import { useNavigateToSwap } from 'features/swap/hooks/useNavigateToSwap'
-import { AVAX_TOKEN_ID } from 'common/consts/swap'
-import { useIsSwappable } from 'common/hooks/useIsSwapable'
+import { selectTokenVisibility } from 'store/portfolio'
 import { selectIsSwapBlocked } from 'store/posthog'
-import { getTokenAddress, getTokenChainId } from 'features/track/utils/utils'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
-import { useBuy } from 'features/meld/hooks/useBuy'
-import { useActiveAccount } from 'common/hooks/useActiveAccount'
+import { MarketToken, MarketType } from 'store/watchlist'
 import { TrendingTokenListItem } from './TrendingTokenListItem'
 
 const numColumns = 1
@@ -82,7 +82,9 @@ const TrendingTokensScreen = ({
           index={index}
           showBuyButton={showBuyButton}
           onBuyPress={() => onBuyPress(tokenAddress)}
-          onPress={() => goToMarketDetail(item.id, item.marketType)}
+          onPress={() => {
+            goToMarketDetail(item.id, item.marketType)
+          }}
         />
       )
     },
@@ -112,7 +114,6 @@ const TrendingTokensScreen = ({
       showsVerticalScrollIndicator={false}
       key={'list'}
       keyExtractor={item => item.id}
-      removeClippedSubviews={true}
       estimatedItemSize={estimatedItemSize}
     />
   )

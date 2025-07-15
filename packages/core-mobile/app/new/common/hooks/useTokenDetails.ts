@@ -12,7 +12,7 @@ import TokenService from 'services/token/TokenService'
 import { useWatchlist } from 'hooks/watchlist/useWatchlist'
 import { useGetTrendingToken } from 'hooks/watchlist/useGetTrendingTokens'
 import { getSocialHandle } from 'utils/getSocialHandle/getSocialHandle'
-import { Ranges } from 'services/token/types'
+import { Ranges, TrendingToken } from 'services/token/types'
 import { selectSelectedCurrency } from 'store/settings/currency'
 import { useCoreBrowser } from 'new/common/hooks/useCoreBrowser'
 import { getTokenAddress, getTokenChainId } from 'features/track/utils/utils'
@@ -20,7 +20,7 @@ import { getTokenAddress, getTokenChainId } from 'features/track/utils/utils'
 const isTrendingToken = (token: MarketToken | undefined): boolean =>
   token !== undefined && token.marketType === MarketType.TRENDING
 
-type TokenInfo = {
+export type TokenInfo = {
   marketTotalSupply?: number
   twitterHandle: string | undefined
   marketCirculatingSupply?: number
@@ -63,6 +63,8 @@ export const useTokenDetails = ({
   changeChartDays: (days: number) => void
   priceInCurrency: number | undefined
   noData: boolean
+  trendingTokenData?: TrendingToken
+  token: MarketToken | undefined
   // eslint-disable-next-line sonarjs/cognitive-complexity
 } => {
   const { getWatchlistPrice, getMarketTokenById, getWatchlistChart } =
@@ -236,6 +238,7 @@ export const useTokenDetails = ({
     chartDays,
     changeChartDays,
     priceInCurrency: price?.priceInCurrency,
+    token,
     noData: chartData?.length === 0 && !tokenInfo
   }
 }

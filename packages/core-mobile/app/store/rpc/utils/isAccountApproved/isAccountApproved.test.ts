@@ -33,7 +33,8 @@ describe('isAccountApproved', () => {
       addressBTC: 'btcAddress1',
       addressAVM: 'avmAddress1',
       addressPVM: 'pvmAddress1',
-      addressCoreEth: 'coreEthAddress1'
+      addressCoreEth: 'coreEthAddress1',
+      addressSVM: 'svmAddress1'
     }
     const result = isAccountApproved(account, 'eip155:43114', namespaces)
 
@@ -72,7 +73,8 @@ describe('isAccountApproved', () => {
       addressBTC: 'btcAddress1',
       addressAVM: 'avmAddress1',
       addressPVM: 'pvmAddress1',
-      addressCoreEth: 'coreEthAddress1'
+      addressCoreEth: 'coreEthAddress1',
+      addressSVM: 'svmAddress1'
     }
     const result = isAccountApproved(account, 'eip155:43114', namespaces)
 
