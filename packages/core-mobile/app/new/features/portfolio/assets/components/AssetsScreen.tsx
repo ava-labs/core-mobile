@@ -5,7 +5,7 @@ import { ErrorState } from 'common/components/ErrorState'
 import { LoadingState } from 'common/components/LoadingState'
 import { Space } from 'common/components/Space'
 import { getListItemEnteringAnimation } from 'common/utils/animations'
-import React, { FC, memo, useCallback, useState } from 'react'
+import React, { FC, memo, useCallback, useEffect, useState } from 'react'
 import {
   LayoutChangeEvent,
   LayoutRectangle,
@@ -29,6 +29,9 @@ import {
   selectIsRefetchingBalances,
   selectIsBalanceLoadedForAccount
 } from 'store/balance'
+import PerformanceService, {
+  PerformanceMilestone
+} from 'services/performance/PerformanceService'
 import { selectEnabledNetworks } from 'store/network'
 import { selectTokenVisibility } from 'store/portfolio'
 import { useAssetsFilterAndSort } from '../hooks/useAssetsFilterAndSort'
@@ -107,6 +110,15 @@ const AssetsScreen: FC<Props> = ({
     balanceTotalInCurrency === 0 &&
     !isLoadingBalance &&
     !isBalancePolling
+
+  // Track when portfolio assets have finished loading
+  useEffect(() => {
+    if (!hasNoAssets) {
+      PerformanceService.recordMilestone(
+        PerformanceMilestone.PORTFOLIO_ASSETS_LOADED
+      )
+    }
+  }, [isBalanceLoaded, isLoadingBalance, isBalancePolling, hasNoAssets])
 
   const renderItem = useCallback(
     (item: LocalTokenWithBalance, index: number): JSX.Element => {

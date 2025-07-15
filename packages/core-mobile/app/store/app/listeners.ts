@@ -11,6 +11,9 @@ import BootSplash from 'react-native-bootsplash'
 import DeviceInfo from 'react-native-device-info'
 import SecureStorageService from 'security/SecureStorageService'
 import AnalyticsService from 'services/analytics/AnalyticsService'
+import PerformanceService, {
+  PerformanceMilestone
+} from 'services/performance/PerformanceService'
 import { WalletType } from 'services/wallet/types'
 import {
   onRehydrationComplete,
@@ -147,6 +150,7 @@ const setStateToUnlocked = async (
   const dispatch = listenerApi.dispatch
   dispatch(setIsLocked(false))
   dispatch(setWalletState(WalletState.ACTIVE))
+  PerformanceService.recordMilestone(PerformanceMilestone.UNLOCK_COMPLETED)
 }
 
 const clearData = async (
@@ -204,6 +208,9 @@ export const addAppListeners = (startListening: AppStartListening): void => {
     actionCreator: setIsReady,
     effect: () => {
       BootSplash.hide()
+      PerformanceService.recordMilestone(
+        PerformanceMilestone.SPLASH_SCREEN_HIDDEN
+      )
     }
   })
 }
