@@ -1,15 +1,14 @@
-import React, { ReactNode, useCallback, useMemo } from 'react'
+import { Text, useTheme, View } from '@avalabs/k2-alpine'
 import { TransactionType } from '@avalabs/vm-module-types'
-import { useTheme, View, Text } from '@avalabs/k2-alpine'
-import { UNKNOWN_AMOUNT } from 'consts/amount'
-import { useBlockchainNames } from 'common/utils/useBlockchainNames'
+import { HiddenBalanceText } from 'common/components/HiddenBalanceText'
 import { SubTextNumber } from 'common/components/SubTextNumber'
+import { useBlockchainNames } from 'common/utils/useBlockchainNames'
+import { UNKNOWN_AMOUNT } from 'consts/amount'
+import { useNetworks } from 'hooks/networks/useNetworks'
+import React, { ReactNode, useCallback, useMemo } from 'react'
 import { useSelector } from 'react-redux'
 import { selectIsPrivacyModeEnabled } from 'store/settings/securityPrivacy'
-import { HiddenBalanceText } from 'common/components/HiddenBalanceText'
 import { TokenActivityTransaction } from './TokenActivityListItem'
-import { useNetworks } from 'hooks/networks/useNetworks'
-import { getNetworks } from 'features/send/utils/getNetworks'
 
 export const TokenActivityListItemTitle = ({
   tx

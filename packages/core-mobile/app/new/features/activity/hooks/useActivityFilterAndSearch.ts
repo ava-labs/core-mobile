@@ -1,6 +1,8 @@
 import { ChainId, Network } from '@avalabs/core-chains-sdk'
 import { IndexPath } from '@avalabs/k2-alpine'
 import { TokenWithBalance, TransactionType } from '@avalabs/vm-module-types'
+import { useErc20ContractTokens } from 'common/hooks/useErc20ContractTokens'
+import { useSearchableTokenList } from 'common/hooks/useSearchableTokenList'
 import { getBridgeAssetSymbol } from 'common/utils/bridgeUtils'
 import usePendingBridgeTransactions from 'features/bridge/hooks/usePendingBridgeTransactions'
 import {
@@ -15,9 +17,7 @@ import { useCallback, useEffect, useMemo } from 'react'
 import { isAvalancheNetwork } from 'services/network/utils/isAvalancheNetwork'
 import { Transaction } from 'store/transaction'
 import { useGetRecentTransactions } from 'store/transaction/hooks/useGetRecentTransactions'
-import { isPChain, isXChain, isXPChain } from 'utils/network/isAvalancheNetwork'
-import { useErc20ContractTokens } from 'common/hooks/useErc20ContractTokens'
-import { useSearchableTokenList } from 'common/hooks/useSearchableTokenList'
+import { isPChain, isXChain } from 'utils/network/isAvalancheNetwork'
 import { useActivity } from '../store'
 
 type ActivityNetworkFilter = {
