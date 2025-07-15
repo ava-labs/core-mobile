@@ -149,7 +149,6 @@ const TransactionHistory: FC<Props> = ({
       if (isPendingBridgeTransaction(item)) {
         return (
           <PendingBridgeTransactionItem
-            key={item.sourceTxHash}
             item={item}
             index={index}
             onPress={() => handlePendingBridge(item)}
@@ -168,9 +167,9 @@ const TransactionHistory: FC<Props> = ({
         }
 
         if (isXpTx) {
-          return <XpActivityListItem {...props} key={item.hash} />
+          return <XpActivityListItem {...props} />
         }
-        return <TokenActivityListItem {...props} key={item.hash} />
+        return <TokenActivityListItem {...props} />
       }
     },
     [handleExplorerLink, token, handlePendingBridge]

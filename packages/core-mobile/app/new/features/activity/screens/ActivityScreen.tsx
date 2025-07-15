@@ -187,7 +187,6 @@ export const ActivityScreen = ({
       if (isPendingBridgeTransaction(item)) {
         return (
           <PendingBridgeTransactionItem
-            key={item.sourceTxHash}
             item={item}
             index={index}
             onPress={() => handlePendingBridge(item)}
@@ -206,9 +205,10 @@ export const ActivityScreen = ({
         }
 
         if (isXpTx) {
-          return <XpActivityListItem {...props} key={item.hash} />
+          return <XpActivityListItem {...props} />
         }
-        return <TokenActivityListItem {...props} key={item.hash} />
+
+        return <TokenActivityListItem {...props} showTokenLogo />
       }
     },
     [handleExplorerLink, handlePendingBridge, token]

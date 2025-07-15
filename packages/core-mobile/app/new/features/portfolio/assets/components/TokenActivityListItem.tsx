@@ -1,20 +1,23 @@
-import React, { FC, useMemo } from 'react'
-import { ActivityTransactionType } from 'store/transaction'
-import { TransactionType, Transaction } from '@avalabs/vm-module-types'
-import { useTheme, View, PriceChangeStatus } from '@avalabs/k2-alpine'
+import { PriceChangeStatus } from '@avalabs/k2-alpine'
+import { Transaction, TransactionType } from '@avalabs/vm-module-types'
+import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
 import { useWatchlist } from 'hooks/watchlist/useWatchlist'
-import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
+import React, { FC, useMemo } from 'react'
+import { ActivityTransactionType } from 'store/transaction'
 import ActivityListItem from './ActivityListItem'
-import { TransactionTypeIcon } from './TransactionTypeIcon'
 import { TokenActivityListItemTitle } from './TokenActivityListItemTitle'
+import { TransactionIconWithTokenLogo } from './TransactionIconWithTokenLogo'
 
-export const TokenActivityListItem: FC<Props> = ({ tx, onPress }) => {
-  const {
-    theme: { colors }
-  } = useTheme()
+export const TokenActivityListItem: FC<Props> = ({
+  tx,
+  showTokenLogo,
+  onPress
+}) => {
   const { formatCurrency } = useFormatCurrency()
   const { getMarketTokenBySymbol } = useWatchlist()
+
+  const token = getMarketTokenBySymbol(tx.tokens[0]?.symbol ?? '')
 
   const currentPrice = tx.tokens[0]?.symbol
     ? getMarketTokenBySymbol(tx.tokens[0].symbol)?.currentPrice
@@ -58,30 +61,17 @@ export const TokenActivityListItem: FC<Props> = ({ tx, onPress }) => {
       subtitleType="amountInCurrency"
       timestamp={tx.timestamp}
       icon={
-        <View
-          sx={{
-            width: ICON_SIZE,
-            height: ICON_SIZE,
-            borderRadius: ICON_SIZE,
-            justifyContent: 'center',
-            alignItems: 'center',
-            overflow: 'hidden',
-            backgroundColor: colors.$borderPrimary,
-            borderColor: colors.$borderPrimary
-          }}>
-          <TransactionTypeIcon
-            txType={tx.txType}
-            isContractCall={tx.isContractCall}
-          />
-        </View>
+        <TransactionIconWithTokenLogo
+          tx={tx}
+          token={token}
+          showTokenLogo={showTokenLogo}
+        />
       }
       onPress={onPress}
       status={status}
     />
   )
 }
-
-const ICON_SIZE = 36
 
 export type TokenActivityTransaction = Omit<Transaction, 'txType'> & {
   txType: ActivityTransactionType
@@ -90,5 +80,6 @@ export type TokenActivityTransaction = Omit<Transaction, 'txType'> & {
 type Props = {
   tx: TokenActivityTransaction
   index: number
+  showTokenLogo?: boolean
   onPress?: () => void
 }
