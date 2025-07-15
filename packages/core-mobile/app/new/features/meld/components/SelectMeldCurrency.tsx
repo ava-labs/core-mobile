@@ -9,6 +9,7 @@ import {
   setSelectedCurrency
 } from 'store/settings/currency'
 import { useDispatch, useSelector } from 'react-redux'
+import { CurrencyIcon } from 'common/components/CurrencyIcon'
 import { useSearchFiatCurrencies } from '../hooks/useSearchFiatCurrencies'
 import { ServiceProviderCategories } from '../consts'
 
@@ -57,10 +58,15 @@ export const SelectMeldCurrency = ({
 
   const transformedCurrencies = useMemo(() => {
     return sortedCurrencies.map(curr => {
+      const logoUrl = (
+        <CurrencyIcon
+          symbol={(curr.currencyCode?.toUpperCase() ?? '') as CurrencySymbol}
+        />
+      )
       return {
         name: curr.name ?? '',
         symbol: curr.currencyCode?.toUpperCase() ?? '',
-        logoUrl: curr.symbolImageUrl
+        logoUrl
       }
     })
   }, [sortedCurrencies])

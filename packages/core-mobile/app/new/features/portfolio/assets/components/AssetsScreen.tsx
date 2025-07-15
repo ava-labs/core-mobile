@@ -145,7 +145,7 @@ const AssetsScreen: FC<Props> = ({
   }, [isGridView])
 
   const renderEmptyComponent = useCallback(() => {
-    if (isLoadingBalance || !isBalanceLoaded) {
+    if (isLoadingBalance || !isBalanceLoaded || isBalancePolling) {
       return <LoadingState />
     }
 
@@ -161,15 +161,19 @@ const AssetsScreen: FC<Props> = ({
       )
     }
 
-    if (hasNoAssets) {
+    if (
+      filter.selected.section === 0 &&
+      filter.selected.row === 0 &&
+      hasNoAssets
+    ) {
       return <EmptyState goToBuy={goToBuy} />
     }
 
     // if the filter is the default filter, this error state does not apply
     if (
-      filter.selected.section === 0 &&
-      filter.selected.row === 0 &&
-      isBalanceLoaded
+      filter.selected.section !== 0 &&
+      filter.selected.row !== 0 &&
+      hasNoAssets
     ) {
       return (
         <ErrorState
@@ -190,6 +194,7 @@ const AssetsScreen: FC<Props> = ({
     hasNoAssets,
     filter.selected.section,
     filter.selected.row,
+    isBalancePolling,
     refetch,
     goToBuy,
     onResetFilter
