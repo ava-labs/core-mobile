@@ -64,16 +64,13 @@ export const FiatAmountInputWidget = ({
 
       onChange?.(predefinedAmount)
 
-      enableAmountSelection &&
-        setPredefinedAmountButtons(prevButtons =>
-          prevButtons.map((b, i) =>
-            i === index
-              ? { ...b, isSelected: true }
-              : { ...b, isSelected: false }
-          )
+      setPredefinedAmountButtons(prevButtons =>
+        prevButtons.map((b, i) =>
+          i === index ? { ...b, isSelected: true } : { ...b, isSelected: false }
         )
+      )
     },
-    [enableAmountSelection, onChange]
+    [onChange]
   )
 
   const handleChange = useCallback(
