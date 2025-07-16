@@ -1,15 +1,10 @@
-import {
-  Button,
-  GroupList,
-  Image,
-  Text,
-  useTheme,
-  View
-} from '@avalabs/k2-alpine'
+import { Button, GroupList, Text, useTheme, View } from '@avalabs/k2-alpine'
 import { ScrollScreen } from 'common/components/ScrollScreen'
 import { Space } from 'common/components/Space'
 import React, { useCallback, useMemo } from 'react'
 import { LoadingState } from 'common/components/LoadingState'
+import { CurrencyIcon } from 'common/components/CurrencyIcon'
+import { CurrencySymbol } from 'store/settings/currency'
 import { FiatCurrency, Country } from '../types'
 
 export const SelectLocale = ({
@@ -35,7 +30,13 @@ export const SelectLocale = ({
 
   const renderFooter = (): React.JSX.Element => {
     return (
-      <Button type="primary" size="large" onPress={onNext}>
+      <Button
+        type="primary"
+        size="large"
+        onPress={onNext}
+        disabled={
+          selectedCountry === undefined || selectedCurrency === undefined
+        }>
         Next
       </Button>
     )
@@ -75,10 +76,11 @@ export const SelectLocale = ({
               borderRadius: 21,
               overflow: 'hidden'
             }}>
-            {selectedCurrency?.symbolImageUrl && (
-              <Image
-                source={{ uri: selectedCurrency.symbolImageUrl }}
-                sx={{ width: 21, height: 21 }}
+            {selectedCurrency.symbolImageUrl && (
+              <CurrencyIcon
+                symbol={
+                  selectedCurrency.symbolImageUrl.toUpperCase() as CurrencySymbol
+                }
               />
             )}
           </View>

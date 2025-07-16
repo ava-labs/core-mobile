@@ -1,4 +1,4 @@
-import React, { useLayoutEffect } from 'react'
+import React, { useLayoutEffect, useMemo } from 'react'
 import { useRouter } from 'expo-router'
 import { useMeldCountryCode, useMeldToken } from 'features/meld/store'
 import { useLocale } from 'features/meld/hooks/useLocale'
@@ -6,15 +6,12 @@ import { SelectLocale } from 'features/meld/components/SelectLocale'
 import { useSearchCountries } from 'features/meld/hooks/useSearchCountries'
 import { useSearchFiatCurrencies } from 'features/meld/hooks/useSearchFiatCurrencies'
 import { ServiceProviderCategories } from 'features/meld/consts'
-import { useDispatch } from 'react-redux'
-import { setSelectedCurrency } from 'store/settings/currency'
 
 export const SelectLocaleScreen = (): React.JSX.Element => {
   const { navigate } = useRouter()
   const [meldToken] = useMeldToken()
   const { currencyCode, countryCode } = useLocale()
   const [selectedCountryCode, setSelectedCountryCode] = useMeldCountryCode()
-  const dispatch = useDispatch()
   const { data: countries, isLoading: isLoadingCountries } = useSearchCountries(
     {
       categories: [ServiceProviderCategories.CRYPTO_ONRAMP]
@@ -26,11 +23,10 @@ export const SelectLocaleScreen = (): React.JSX.Element => {
     })
 
   useLayoutEffect(() => {
-    setSelectedCountryCode(countryCode)
-  }, [countryCode, currencyCode, dispatch, setSelectedCountryCode])
+    selectedCountryCode === undefined && setSelectedCountryCode(countryCode)
+  }, [selectedCountryCode, countryCode, setSelectedCountryCode])
 
   const handleOnNext = (): void => {
-    dispatch(setSelectedCurrency(currencyCode))
     if (meldToken) {
       // @ts-ignore TODO: make routes typesafe
       navigate('/meld/onramp/selectBuyAmount')
@@ -50,13 +46,13 @@ export const SelectLocaleScreen = (): React.JSX.Element => {
     navigate('/meldOnrampCurrency')
   }
 
-  const selectedCountry = countries?.find(
-    c => c.countryCode === (selectedCountryCode ?? countryCode)
-  )
+  const selectedCountry = useMemo(() => {
+    return countries?.find(c => c.countryCode === selectedCountryCode)
+  }, [countries, selectedCountryCode])
 
-  const selectedCurrency = meldCurrencies?.find(
-    c => c.currencyCode === currencyCode
-  )
+  const selectedCurrency = useMemo(() => {
+    return meldCurrencies?.find(c => c.currencyCode === currencyCode)
+  }, [meldCurrencies, currencyCode])
 
   return (
     <SelectLocale
