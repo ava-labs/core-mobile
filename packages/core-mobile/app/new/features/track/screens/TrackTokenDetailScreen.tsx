@@ -5,6 +5,7 @@ import {
   Icons,
   SegmentedControl,
   showAlert,
+  SPRING_LINEAR_TRANSITION,
   Text,
   TouchableOpacity,
   useTheme,
@@ -19,45 +20,48 @@ import { useLocalSearchParams, useRouter } from 'expo-router'
  * TODO: Adjust import back to expo-router once the bug is resolved.
  */
 import { truncateAddress } from '@avalabs/core-utils-sdk'
+import { useIsFocused } from '@react-navigation/native'
 import { FavoriteBarButton } from 'common/components/FavoriteBarButton'
 import { ScrollScreen } from 'common/components/ScrollScreen'
 import { ShareBarButton } from 'common/components/ShareBarButton'
-import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
-import { copyToClipboard } from 'common/utils/clipboard'
-import { format } from 'date-fns'
-import { useAddStake } from 'features/stake/hooks/useAddStake'
 import { AVAX_TOKEN_ID } from 'common/consts/swap'
+import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
+import { useTokenDetails } from 'common/hooks/useTokenDetails'
+import { copyToClipboard } from 'common/utils/clipboard'
+import { AVAX_COINGECKO_ID } from 'consts/coingecko'
+import { format } from 'date-fns'
+import { useBuy } from 'features/meld/hooks/useBuy'
+import { useAddStake } from 'features/stake/hooks/useAddStake'
 import { useNavigateToSwap } from 'features/swap/hooks/useNavigateToSwap'
 import { SelectedChartDataIndicator } from 'features/track/components/SelectedChartDataIndicator'
 import { TokenDetailChart } from 'features/track/components/TokenDetailChart'
-import { TokenDetailFooter } from 'features/track/components/TokenDetailFooter'
 import { TokenHeader } from 'features/track/components/TokenHeader'
+import { useGetPrices } from 'hooks/watchlist/useGetPrices'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { StyleSheet } from 'react-native'
 import Animated, {
+  FadeIn,
   useDerivedValue,
   useSharedValue,
   withTiming
 } from 'react-native-reanimated'
+import { MarketType } from 'store/watchlist'
 import { getDomainFromUrl } from 'utils/getDomainFromUrl/getDomainFromUrl'
 import { isPositiveNumber } from 'utils/isPositiveNumber/isPositiveNumber'
 import { formatLargeCurrency } from 'utils/Utils'
-import { useTokenDetails } from 'common/hooks/useTokenDetails'
-import { useGetPrices } from 'hooks/watchlist/useGetPrices'
-import { useIsFocused } from '@react-navigation/native'
-import { MarketType } from 'store/watchlist'
-import { AVAX_COINGECKO_ID } from 'consts/coingecko'
-import { useIsSwapListLoaded } from 'common/hooks/useIsSwapListLoaded'
-import { useBuy } from 'features/meld/hooks/useBuy'
+import { useTrackTokenActions } from '../hooks/useTrackTokenActions'
 
 const MAX_VALUE_WIDTH = '80%'
+const DELAY = 200
 
 const TrackTokenDetailScreen = (): JSX.Element => {
   const { theme } = useTheme()
+
   const { tokenId, marketType } = useLocalSearchParams<{
     tokenId: string
     marketType: MarketType
   }>()
+
   const { back, navigate } = useRouter()
   const [isChartInteracting, setIsChartInteracting] = useState(false)
   const { navigateToSwap } = useNavigateToSwap()
@@ -80,8 +84,10 @@ const TrackTokenDetailScreen = (): JSX.Element => {
     handleFavorite,
     openUrl,
     coingeckoId,
-    chainId
-  } = useTokenDetails({ tokenId: tokenId, marketType })
+    chainId,
+    token
+  } = useTokenDetails({ tokenId, marketType })
+
   const isFocused = useIsFocused()
   const { navigateToBuy } = useBuy()
 
@@ -94,11 +100,37 @@ const TrackTokenDetailScreen = (): JSX.Element => {
       coingeckoId.length > 0
   })
 
-  const isSwapListLoaded = useIsSwapListLoaded()
-
   const selectedSegmentIndex = useSharedValue(0)
 
   const lastUpdatedDate = chartData?.[chartData.length - 1]?.date
+
+  const handleBuy = useCallback(
+    (contractAddress?: string): void => {
+      if (contractAddress === undefined) return
+      navigateToBuy({
+        showAvaxWarning: true,
+        address: contractAddress
+      })
+    },
+    [navigateToBuy]
+  )
+
+  const handleSwap = useCallback(
+    (initialTokenIdTo?: string): void => {
+      navigateToSwap(AVAX_TOKEN_ID, initialTokenIdTo)
+    },
+    [navigateToSwap]
+  )
+
+  const { actions } = useTrackTokenActions({
+    isAVAX: coingeckoId === AVAX_COINGECKO_ID,
+    marketType,
+    contractAddress: tokenInfo?.contractAddress,
+    chainId,
+    onBuy: () => handleBuy(tokenInfo?.contractAddress),
+    onStake: addStake,
+    onSwap: handleSwap
+  })
 
   const formatMarketNumbers = useCallback(
     (value: number) => {
@@ -179,31 +211,16 @@ const TrackTokenDetailScreen = (): JSX.Element => {
     }
   }, [openUrl, tokenInfo?.urlHostname, back])
 
-  const handleBuy = useCallback(
-    (contractAddress?: string): void => {
-      if (contractAddress === undefined) return
-      navigateToBuy({
-        showAvaxWarning: true,
-        address: contractAddress
-      })
-    },
-    [navigateToBuy]
-  )
-
-  const handleSwap = useCallback(
-    (initialTokenIdTo?: string): void => {
-      navigateToSwap(AVAX_TOKEN_ID, initialTokenIdTo)
-    },
-    [navigateToSwap]
-  )
-
   const handleShare = useCallback(() => {
     navigate({
       // @ts-ignore TODO: make routes typesafe
       pathname: '/trackTokenDetail/share',
-      params: { tokenId, marketType }
+      params: {
+        tokenId,
+        marketType
+      }
     })
-  }, [navigate, marketType, tokenId])
+  }, [navigate, tokenId, marketType])
 
   const marketData = useMemo(() => {
     const data: GroupListItem[] = []
@@ -300,16 +317,24 @@ const TrackTokenDetailScreen = (): JSX.Element => {
     return (
       <View
         sx={{
-          flexDirection: 'row',
-          gap: 16,
-          marginTop: 14,
-          marginRight: 18,
-          alignItems: 'center'
+          flexDirection: 'row'
         }}>
         {showFavoriteButton && (
-          <FavoriteBarButton isFavorite={isFavorite} onPress={handleFavorite} />
+          <FavoriteBarButton
+            isFavorite={isFavorite}
+            onPress={handleFavorite}
+            isModal
+            style={{ paddingRight: 12 }}
+          />
         )}
-        <ShareBarButton onPress={handleShare} />
+        <ShareBarButton
+          onPress={handleShare}
+          isModal
+          style={{
+            paddingRight: 30,
+            paddingLeft: 12
+          }}
+        />
       </View>
     )
   }, [isFavorite, handleFavorite, handleShare, marketType])
@@ -321,68 +346,61 @@ const TrackTokenDetailScreen = (): JSX.Element => {
   }, [isChartInteracting, headerOpacity])
 
   const renderFooter = useCallback(() => {
+    if (actions.length === 0) {
+      return null
+    }
+
     return (
-      <TokenDetailFooter
-        isAVAX={coingeckoId === AVAX_COINGECKO_ID}
-        marketType={marketType}
-        contractAddress={tokenInfo?.contractAddress}
-        chainId={chainId}
-        onBuy={() => handleBuy(tokenInfo?.contractAddress)}
-        onStake={addStake}
-        onSwap={handleSwap}
-      />
+      <Animated.View
+        entering={FadeIn.delay(200)}
+        layout={SPRING_LINEAR_TRANSITION}
+        style={{
+          flexDirection: 'row',
+          gap: 12
+        }}>
+        {actions}
+      </Animated.View>
     )
+  }, [actions])
+
+  const currentPrice = useMemo(() => {
+    return (
+      tokenInfo?.currentPrice ??
+      prices?.[coingeckoId]?.priceInCurrency ??
+      token?.currentPrice
+    )
+  }, [tokenInfo?.currentPrice, prices, coingeckoId, token?.currentPrice])
+
+  const range = useMemo(() => {
+    return {
+      diffValue: ranges.diffValue
+        ? ranges.diffValue
+        : token?.priceChange24h ?? 0,
+      percentChange: ranges.percentChange
+        ? ranges.percentChange
+        : token?.priceChangePercentage24h ?? 0
+    }
   }, [
-    coingeckoId,
-    tokenInfo?.contractAddress,
-    chainId,
-    marketType,
-    handleBuy,
-    addStake,
-    handleSwap
+    ranges.diffValue,
+    ranges.percentChange,
+    token?.priceChange24h,
+    token?.priceChangePercentage24h
   ])
 
   const renderHeader = useCallback(() => {
-    if (!tokenInfo) {
-      return <></>
-    }
     return (
-      <TokenHeader
-        logoUri={tokenInfo.logoUri}
-        symbol={tokenInfo.symbol ?? ''}
-        currentPrice={
-          tokenInfo.currentPrice ?? prices?.[coingeckoId]?.priceInCurrency
-        }
-        ranges={
-          ranges.minDate === 0 && ranges.maxDate === 0 ? undefined : ranges
-        }
-        rank={tokenInfo?.marketCapRank}
-      />
-    )
-  }, [tokenInfo, prices, ranges, coingeckoId])
-
-  const showLoading =
-    !tokenId ||
-    !tokenInfo ||
-    // the token's swapability depends on the swap list
-    // thus, we need to wait for the swap list to load
-    // so that we can display the swap button accordingly
-    !isSwapListLoaded
-
-  if (showLoading) {
-    return <LoadingState sx={styles.container} />
-  }
-
-  return (
-    <ScrollScreen
-      renderFooter={renderFooter}
-      navigationTitle={tokenInfo?.symbol.toUpperCase() ?? ''}
-      isModal
-      renderHeaderRight={renderHeaderRight}>
-      <View style={styles.chartContainer}>
+      <View sx={{ paddingHorizontal: 16 }}>
         <Animated.View style={{ opacity: headerOpacity }}>
-          {renderHeader()}
+          <TokenHeader
+            name={token?.name ?? ''}
+            logoUri={token?.logoUri ?? undefined}
+            symbol={token?.symbol ?? ''}
+            currentPrice={currentPrice}
+            ranges={range}
+            rank={tokenInfo?.marketCapRank}
+          />
         </Animated.View>
+
         {isChartInteracting && (
           <Animated.View
             style={[
@@ -400,6 +418,32 @@ const TrackTokenDetailScreen = (): JSX.Element => {
           </Animated.View>
         )}
       </View>
+    )
+  }, [
+    headerOpacity,
+    token?.name,
+    token?.logoUri,
+    token?.symbol,
+    currentPrice,
+    range,
+    tokenInfo?.marketCapRank,
+    isChartInteracting,
+    selectedDataIndicatorOpacity,
+    selectedData,
+    chartData
+  ])
+
+  if (!tokenId) {
+    return <LoadingState sx={styles.container} />
+  }
+
+  return (
+    <ScrollScreen
+      renderFooter={renderFooter}
+      navigationTitle={tokenInfo?.symbol.toUpperCase() ?? ''}
+      isModal
+      renderHeader={renderHeader}
+      renderHeaderRight={renderHeaderRight}>
       <TokenDetailChart
         ranges={ranges}
         chartData={chartData}
@@ -408,64 +452,87 @@ const TrackTokenDetailScreen = (): JSX.Element => {
         onGestureStart={handleChartGestureStart}
         onGestureEnd={handleChartGestureEnd}
       />
-      <View sx={styles.lastUpdatedContainer}>
-        {lastUpdatedDate && (
+
+      {lastUpdatedDate && (
+        <View sx={styles.lastUpdatedContainer}>
           <Animated.View
+            entering={FadeIn.delay(DELAY * 3)}
+            layout={SPRING_LINEAR_TRANSITION}
             style={{
               alignSelf: 'center',
-              position: 'absolute',
-              opacity: headerOpacity
+              position: 'absolute'
             }}>
-            <Text
-              variant="caption"
-              sx={{
-                color: '$textSecondary'
+            <Animated.View
+              style={{
+                opacity: headerOpacity
               }}>
-              Last updated:{' '}
-              {format(lastUpdatedDate, 'E, MMM dd, yyyy, h:mm aa')}
-            </Text>
+              <Text
+                variant="caption"
+                sx={{
+                  color: '$textSecondary'
+                }}>
+                Last updated:{' '}
+                {format(lastUpdatedDate, 'E, MMM dd, yyyy, h:mm aa')}
+              </Text>
+            </Animated.View>
           </Animated.View>
-        )}
-      </View>
+        </View>
+      )}
       {tokenInfo?.has24hChartDataOnly === false && (
-        <SegmentedControl
-          type="thin"
-          dynamicItemWidth={false}
-          items={SEGMENT_ITEMS}
-          style={styles.segmentedControl}
-          selectedSegmentIndex={selectedSegmentIndex}
-          onSelectSegment={handleSelectSegment}
-        />
+        <Animated.View
+          entering={FadeIn.delay(DELAY * 3)}
+          layout={SPRING_LINEAR_TRANSITION}>
+          <SegmentedControl
+            type="thin"
+            dynamicItemWidth={false}
+            items={SEGMENT_ITEMS}
+            style={styles.segmentedControl}
+            selectedSegmentIndex={selectedSegmentIndex}
+            onSelectSegment={handleSelectSegment}
+          />
+        </Animated.View>
       )}
       <View sx={styles.aboutContainer}>
         {tokenInfo?.description && (
-          <TouchableOpacity onPress={handlePressAbout}>
-            <Card sx={styles.aboutCard}>
-              <Text variant="heading4">About</Text>
-              <Text
-                variant="subtitle2"
-                sx={{ color: '$textSecondary' }}
-                numberOfLines={6}>
-                {tokenInfo?.description}
-              </Text>
-            </Card>
-          </TouchableOpacity>
+          <Animated.View
+            entering={FadeIn.delay(DELAY * 4)}
+            layout={SPRING_LINEAR_TRANSITION}>
+            <TouchableOpacity onPress={handlePressAbout}>
+              <Card sx={styles.aboutCard}>
+                <Text variant="heading4">About</Text>
+                <Text
+                  variant="subtitle2"
+                  sx={{ color: '$textSecondary' }}
+                  numberOfLines={6}>
+                  {tokenInfo?.description}
+                </Text>
+              </Card>
+            </TouchableOpacity>
+          </Animated.View>
         )}
         {marketData.length > 0 && (
-          <GroupList
-            data={marketData}
-            valueSx={{
-              maxWidth: MAX_VALUE_WIDTH
-            }}
-          />
+          <Animated.View
+            entering={FadeIn.delay(DELAY * 5)}
+            layout={SPRING_LINEAR_TRANSITION}>
+            <GroupList
+              data={marketData}
+              valueSx={{
+                maxWidth: MAX_VALUE_WIDTH
+              }}
+            />
+          </Animated.View>
         )}
         {metaData.length > 0 && (
-          <GroupList
-            data={metaData}
-            valueSx={{
-              maxWidth: MAX_VALUE_WIDTH
-            }}
-          />
+          <Animated.View
+            entering={FadeIn.delay(DELAY * 6)}
+            layout={SPRING_LINEAR_TRANSITION}>
+            <GroupList
+              data={metaData}
+              valueSx={{
+                maxWidth: MAX_VALUE_WIDTH
+              }}
+            />
+          </Animated.View>
         )}
       </View>
     </ScrollScreen>
@@ -487,8 +554,6 @@ const styles = StyleSheet.create({
   aboutContainer: { paddingHorizontal: 16, marginTop: 25, gap: 20 },
   aboutCard: { alignItems: undefined, gap: 3 },
   segmentedControl: { marginHorizontal: 16 },
-  scrollviewContent: { paddingBottom: 60 },
-  chartContainer: { paddingHorizontal: 16, paddingBottom: 4 },
   lastUpdatedContainer: { paddingTop: 40, marginTop: 8 }
 })
 

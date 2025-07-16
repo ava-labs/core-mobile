@@ -28,8 +28,7 @@ export const AccountItem = memo(
     isActive,
     account,
     onSelectAccount,
-    gotoAccountDetails,
-    testID
+    gotoAccountDetails
   }: {
     index: number
     isActive: boolean
@@ -176,7 +175,7 @@ export const AccountItem = memo(
                 hitSlop={16}>
                 <Icons.Alert.AlertCircle
                   color={iconColor}
-                  testID={`account_detail_icon__${testID}`}
+                  testID={`account_detail_icon__${account.name}`}
                 />
               </TouchableOpacity>
             </View>

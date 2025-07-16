@@ -238,9 +238,9 @@ export const useSelectAmount = ({
           : 0
 
       const tokenAmount =
-        amt !== null || amt !== undefined
-          ? 0
-          : (amt / currentPrice) * 10 ** maxDecimals
+        amt !== null && amt !== undefined && currentPrice !== 0
+          ? (amt / currentPrice) * 10 ** maxDecimals
+          : 0
 
       return new TokenUnit(
         tokenAmount,
