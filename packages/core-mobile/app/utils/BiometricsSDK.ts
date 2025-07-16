@@ -1,5 +1,4 @@
 import Keychain, {
-  getSupportedBiometryType,
   SetOptions,
   GetOptions,
   BaseOptions,
@@ -11,6 +10,12 @@ import { commonStorage } from 'utils/mmkv'
 import { decrypt, encrypt } from 'utils/EncryptionHelper'
 import Aes from 'react-native-aes-crypto'
 import { Result } from 'types/result'
+import {
+  AuthenticationType,
+  hasHardwareAsync,
+  isEnrolledAsync,
+  supportedAuthenticationTypesAsync
+} from 'expo-local-authentication'
 import Logger from './Logger'
 import { assertNotNull } from './assertions'
 
@@ -320,27 +325,36 @@ class BiometricsSDK {
     }
   }
 
-  async canUseBiometry(): Promise<boolean> {
-    return getSupportedBiometryType().then(value => {
-      return value !== null
-    })
+  async getSupportedAuthenticationTypes(): Promise<AuthenticationType[]> {
+    return supportedAuthenticationTypesAsync()
   }
 
-  async getBiometryType(): Promise<BiometricType> {
-    const bioType = await getSupportedBiometryType()
-    if (!bioType) return BiometricType.NONE
-    switch (bioType) {
-      case Keychain.BIOMETRY_TYPE.FINGERPRINT:
-      case Keychain.BIOMETRY_TYPE.TOUCH_ID:
-        return BiometricType.TOUCH_ID
-      case Keychain.BIOMETRY_TYPE.FACE_ID:
-      case Keychain.BIOMETRY_TYPE.FACE:
-        return BiometricType.FACE_ID
-      case Keychain.BIOMETRY_TYPE.IRIS:
-        return BiometricType.IRIS
-      case Keychain.BIOMETRY_TYPE.OPTIC_ID:
-        throw new Error('BiometricType.OPTIC_ID is not supported')
+  async canUseBiometry(): Promise<boolean> {
+    const supportedAuthenticationTypes =
+      await this.getSupportedAuthenticationTypes()
+    const hasBiometricHardware = await hasHardwareAsync()
+    const isEnrolled = await isEnrolledAsync()
+    return (
+      supportedAuthenticationTypes.length > 0 &&
+      hasBiometricHardware &&
+      isEnrolled
+    )
+  }
+
+  async getAuthenticationTypes(): Promise<AuthenticationType[]> {
+    const authTypes = await this.getSupportedAuthenticationTypes()
+
+    const isEnrolled = await isEnrolledAsync()
+    if (isEnrolled === false) return []
+
+    // if device has enrolled biometrics, but no supported authentication types returned,
+    // we can assume it's facial recognition
+    // this is a workaround for app-accessible APIs do not distinguish
+    // between biometric modalities (fingerprint, face) on android
+    if (authTypes.length === 0 && Platform.OS === 'android') {
+      return [AuthenticationType.FACIAL_RECOGNITION]
     }
+    return authTypes
   }
 
   /**
@@ -385,10 +399,3 @@ class BiometricsSDK {
 }
 
 export default new BiometricsSDK()
-
-export enum BiometricType {
-  FACE_ID = 'Face ID',
-  TOUCH_ID = 'Touch ID',
-  IRIS = 'Iris',
-  NONE = 'None'
-}

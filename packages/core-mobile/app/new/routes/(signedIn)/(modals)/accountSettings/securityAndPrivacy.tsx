@@ -24,6 +24,7 @@ import { useStoredBiometrics } from 'common/hooks/useStoredBiometrics'
 import BiometricsSDK from 'utils/BiometricsSDK'
 import Logger from 'utils/Logger'
 import { useActiveWallet } from 'common/hooks/useActiveWallet'
+import { AuthenticationType } from 'expo-local-authentication'
 
 const SecurityAndPrivacyScreen = (): JSX.Element => {
   const {
@@ -35,7 +36,7 @@ const SecurityAndPrivacyScreen = (): JSX.Element => {
   const { allApprovedDapps } = useConnectedDapps()
   const wallet = useActiveWallet()
   const {
-    biometricType,
+    biometricTypes,
     isBiometricAvailable,
     useBiometrics,
     setUseBiometrics
@@ -94,6 +95,13 @@ const SecurityAndPrivacyScreen = (): JSX.Element => {
     ]
   }, [allApprovedDapps.length, navigate])
 
+  const biometricTitle =
+    biometricTypes.length > 1
+      ? 'Biometrics'
+      : biometricTypes[0] === AuthenticationType.FACIAL_RECOGNITION
+      ? 'Face ID'
+      : 'Touch ID'
+
   const pinAndBiometricData = useMemo(() => {
     const data: GroupListItem[] = [
       {
@@ -119,7 +127,7 @@ const SecurityAndPrivacyScreen = (): JSX.Element => {
 
     if (isBiometricAvailable) {
       data.push({
-        title: `Use ${biometricType}`,
+        title: `Use ${biometricTitle}`,
         value: (
           <Toggle onValueChange={handleSwitchBiometric} value={useBiometrics} />
         )
@@ -131,7 +139,7 @@ const SecurityAndPrivacyScreen = (): JSX.Element => {
     isBiometricAvailable,
     handleToggleLockWalletWithPIN,
     navigate,
-    biometricType,
+    biometricTitle,
     handleSwitchBiometric,
     useBiometrics
   ])

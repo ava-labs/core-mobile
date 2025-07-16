@@ -12,6 +12,7 @@ import { ScrollScreen } from 'common/components/ScrollScreen'
 import { useCreatePin } from 'features/onboarding/hooks/useCreatePin'
 import { InteractionManager } from 'react-native'
 import { useStoredBiometrics } from 'common/hooks/useStoredBiometrics'
+import { AuthenticationType } from 'expo-local-authentication'
 
 export const CreatePin = ({
   useBiometrics,
@@ -33,7 +34,7 @@ export const CreatePin = ({
   isModal?: boolean
 }): React.JSX.Element => {
   const ref = useRef<PinInputActions>(null)
-  const { biometricType } = useStoredBiometrics()
+  const { biometricTypes } = useStoredBiometrics()
   const {
     onEnterChosenPin,
     onEnterConfirmedPin,
@@ -67,12 +68,19 @@ export const CreatePin = ({
     }
   }, [validPin, onEnteredValidPin])
 
+  const biometricTitle =
+    biometricTypes.length > 1
+      ? 'Biometrics'
+      : biometricTypes[0] === AuthenticationType.FACIAL_RECOGNITION
+      ? 'Face ID'
+      : 'Touch ID'
+
   const renderBiometricToggle = useCallback((): React.JSX.Element => {
     return (
       <GroupList
         data={[
           {
-            title: `Unlock with ${biometricType}`,
+            title: `Unlock with ${biometricTitle}`,
             accessory: (
               <Toggle
                 onValueChange={setUseBiometrics}
@@ -88,7 +96,7 @@ export const CreatePin = ({
         ]}
       />
     )
-  }, [useBiometrics, setUseBiometrics, biometricType])
+  }, [useBiometrics, setUseBiometrics, biometricTitle])
 
   return (
     <ScrollScreen
