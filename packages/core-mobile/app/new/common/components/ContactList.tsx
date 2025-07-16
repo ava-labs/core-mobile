@@ -107,6 +107,7 @@ export const ContactList = ({
                   </Text>
                   {address && (
                     <Text
+                      testID="contact_preview_address"
                       variant="body2"
                       sx={{
                         lineHeight: 16,

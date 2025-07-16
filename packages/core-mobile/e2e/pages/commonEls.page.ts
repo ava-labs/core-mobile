@@ -100,12 +100,24 @@ class CommonElsPage {
     return by.text(commonElsLoc.xChain)
   }
 
+  get xpChain() {
+    return by.text(commonElsLoc.xpChain)
+  }
+
   get ethereum() {
     return by.text(commonElsLoc.ethereum)
   }
 
+  get evm() {
+    return by.text(commonElsLoc.evm)
+  }
+
   get bitcoin() {
     return by.text(commonElsLoc.bitcoin)
+  }
+
+  get solana() {
+    return by.text(commonElsLoc.solana)
   }
 
   get bitcoinNetwork() {
@@ -148,6 +160,14 @@ class CommonElsPage {
     return by.id(commonEls.approveBtn)
   }
 
+  get rejectButton() {
+    return by.id(commonEls.rejectBtn)
+  }
+
+  get insufficientBalance() {
+    return by.text(commonElsLoc.insufficientBalance)
+  }
+
   get selectNetworkBitcoin() {
     return by.id(commonElsLoc.selectNetworkBitcoin)
   }
@@ -182,6 +202,26 @@ class CommonElsPage {
 
   get dropdownScrollView() {
     return by.id(commonElsLoc.dropdownScrollView)
+  }
+
+  get settingsBtn() {
+    return by.id(commonElsLoc.settingsBtn)
+  }
+
+  get delete() {
+    return by.text(commonElsLoc.delete)
+  }
+
+  get cancel() {
+    return by.text(commonElsLoc.cancel)
+  }
+
+  get approvePopupTitle() {
+    return by.text(commonElsLoc.approvePopupTitle)
+  }
+
+  get approvePopupSpendTitle() {
+    return by.text(commonElsLoc.approvePopupSpendTitle)
   }
 
   async dismissTransactionOnboarding() {
@@ -321,6 +361,7 @@ class CommonElsPage {
   }
 
   async dismissBottomSheet() {
+    await Actions.waitForElement(this.grabber, 5000)
     await Actions.drag(this.grabber, 'down', 0.5)
   }
 
@@ -342,8 +383,9 @@ class CommonElsPage {
     await Actions.tap(this.copyPhrase)
   }
 
-  async tapSave() {
-    await Actions.tap(this.save)
+  async tapSave(index = 0) {
+    await Actions.waitForElement(this.save, 10000)
+    await Actions.tapElementAtIndex(this.save, index)
   }
 
   async verifyAccountName(expectedName: string, index = 0) {
@@ -393,6 +435,23 @@ class CommonElsPage {
       100
     )
     await Actions.tap(by.id(`${commonElsLoc.dropdownItem}${item}`))
+  }
+
+  async goSettings() {
+    await Actions.tap(this.settingsBtn)
+  }
+
+  async tapDelete(index = 0) {
+    await Actions.waitForElement(this.delete, 10000, index)
+    await Actions.tapElementAtIndex(this.delete, index)
+  }
+
+  async tapCancel() {
+    await Actions.tap(this.cancel)
+  }
+
+  async tapRejectButton() {
+    await Actions.tap(this.rejectButton)
   }
 }
 
