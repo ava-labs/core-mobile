@@ -371,6 +371,9 @@ export const SelectAmount = ({
             }
             formatInCurrency={amt => formatCurrency({ amount: amt })}
             formatInSubTextNumber={formatInSubTextNumber}
+            enableAmountSelection={
+              category === ServiceProviderCategories.CRYPTO_ONRAMP
+            }
           />
         )}
         {/* token balance or error message */}

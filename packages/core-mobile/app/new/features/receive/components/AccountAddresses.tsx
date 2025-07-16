@@ -37,6 +37,7 @@ export const AccountAddresses = memo(
             <Button
               type="secondary"
               size="medium"
+              testID={`copy_btn__${selectedNetwork.chainName}`}
               onPress={() =>
                 onCopyAddress(
                   address,
