@@ -113,12 +113,20 @@ const AssetsScreen: FC<Props> = ({
 
   // Track when portfolio assets have finished loading
   useEffect(() => {
-    if (!hasNoAssets) {
+    if (!isBalanceLoading && !isLoading && data.length > 0) {
       PerformanceService.recordMilestone(
         PerformanceMilestone.PORTFOLIO_ASSETS_LOADED
       )
     }
-  }, [isBalanceLoaded, isLoadingBalance, isBalancePolling, hasNoAssets])
+  }, [
+    isBalanceLoaded,
+    isLoadingBalance,
+    isBalancePolling,
+    hasNoAssets,
+    isBalanceLoading,
+    isLoading,
+    data.length
+  ])
 
   const renderItem = useCallback(
     (item: LocalTokenWithBalance, index: number): JSX.Element => {

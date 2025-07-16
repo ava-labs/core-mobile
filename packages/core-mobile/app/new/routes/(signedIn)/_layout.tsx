@@ -5,10 +5,7 @@ import { useModalScreenOptions } from 'common/hooks/useModalScreenOptions'
 import { BridgeProvider } from 'features/bridge/contexts/BridgeContext'
 import { CollectiblesProvider } from 'features/portfolio/collectibles/CollectiblesContext'
 import { NavigationPresentationMode } from 'new/common/types'
-import React, { useEffect } from 'react'
-import PerformanceService, {
-  PerformanceMilestone
-} from 'services/performance/PerformanceService'
+import React from 'react'
 
 const PolyfillCrypto = React.lazy(() => import('react-native-webview-crypto'))
 
@@ -22,12 +19,6 @@ export default function WalletLayout(): JSX.Element {
     formSheetScreensOptions,
     stackModalScreensOptions
   } = useModalScreenOptions()
-
-  useEffect(() => {
-    PerformanceService.recordMilestone(
-      PerformanceMilestone.PORTFOLIO_LOADING_STARTED
-    )
-  }, [])
 
   return (
     <BridgeProvider>
