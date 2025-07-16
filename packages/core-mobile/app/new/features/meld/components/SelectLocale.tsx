@@ -76,10 +76,11 @@ export const SelectLocale = ({
               borderRadius: 21,
               overflow: 'hidden'
             }}>
-            {selectedCurrency.symbolImageUrl && (
+            {selectedCurrency.currencyCode && (
               <CurrencyIcon
+                size={21}
                 symbol={
-                  selectedCurrency.symbolImageUrl.toUpperCase() as CurrencySymbol
+                  selectedCurrency.currencyCode.toUpperCase() as CurrencySymbol
                 }
               />
             )}
