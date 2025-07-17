@@ -149,9 +149,7 @@ class ActivityTabPage {
 
   async exitTransactionDetailWebBrowser(transactionType: string) {
     if (device.getPlatform() === 'android') {
-      await device.disableSynchronization()
       await device.pressBack()
-      await device.enableSynchronization()
       await Assert.isVisible(AccountManagePage.accountsDropdown)
       await Assert.isVisible(by.text(transactionType))
     } else {

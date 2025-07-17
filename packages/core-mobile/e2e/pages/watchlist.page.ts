@@ -111,10 +111,7 @@ class WatchListPage {
   }
 
   async tapWatchListToken(tokenSymbol: string, index = 0) {
-    await Action.waitForElementNoSync(
-      by.id(`watchlist_item__${tokenSymbol}`),
-      5000
-    )
+    await Action.waitForElement(by.id(`watchlist_item__${tokenSymbol}`), 5000)
     await Action.tapElementAtIndex(
       by.id(`watchlist_item__${tokenSymbol}`),
       index
@@ -128,7 +125,7 @@ class WatchListPage {
 
   async verifyFavorites(tokens: string[]) {
     for (const token of tokens) {
-      await Action.waitForElementNoSync(
+      await Action.waitForElement(
         by.id(`watchlist_item__${token.toLowerCase()}`),
         10000
       )
@@ -139,7 +136,7 @@ class WatchListPage {
     let i = 1
     while (i < 21) {
       try {
-        await Action.waitForElementNoSync(by.id(`trending_token_name__${i}`))
+        await Action.waitForElement(by.id(`trending_token_name__${i}`))
       } catch (e) {
         await Action.swipeUp(
           by.id(`trending_token_name__${i - 1}`),
@@ -173,10 +170,10 @@ class WatchListPage {
   }
 
   async topTrendingTokenOnWatchlist() {
-    await Action.waitForElementNoSync(this.topTrendingTokenName, 20000)
-    await Action.waitForElementNoSync(this.topTrendingTokenValue)
-    await Action.waitForElementNoSync(this.topTrendingTokenBuyBtn)
-    await Action.waitForElementNoSync(this.topTrendingTokenLogo)
+    await Action.waitForElement(this.topTrendingTokenName, 20000)
+    await Action.waitForElement(this.topTrendingTokenValue)
+    await Action.waitForElement(this.topTrendingTokenBuyBtn)
+    await Action.waitForElement(this.topTrendingTokenLogo)
   }
 
   async topTrendingTokenBuyFlow() {
@@ -190,16 +187,16 @@ class WatchListPage {
   }
 
   async topTrendingTokenDetailBuyFlow() {
-    await Action.waitForElementNoSync(this.topTrendingTokenName, 20000)
+    await Action.waitForElement(this.topTrendingTokenName, 20000)
     await Action.tap(this.topTrendingTokenName)
-    await Action.waitForElementNoSync(tokenDetailPage.footerBuyBtn, 20000)
+    await Action.waitForElement(tokenDetailPage.footerBuyBtn, 20000)
     await Action.tap(tokenDetailPage.footerBuyBtn)
     await buyPage.verifyBuyPage(true)
     await commonElsPage.goBack()
   }
 
   async topTrendingTokenDetailSwapFlow() {
-    await Action.waitForElementNoSync(tokenDetailPage.footerSwapBtn, 20000)
+    await Action.waitForElement(tokenDetailPage.footerSwapBtn, 20000)
     await Action.tap(tokenDetailPage.footerSwapBtn)
     await swapTabPage.verifySwapScreen()
     await commonElsPage.goBack()
@@ -255,13 +252,13 @@ class WatchListPage {
   async reorderToken(token: string) {
     const direction: Detox.Direction[] = ['up', 'down']
     const random = Action.shuffleArray(direction)[0]
-    await Action.waitForElementNoSync(by.id(`drag_handle_svg__${token}`))
+    await Action.waitForElement(by.id(`drag_handle_svg__${token}`))
     await Action.drag(by.id(`drag_handle_svg__${token}`), random)
     await delay(1000)
   }
 
   async verifyWatchlistDropdownItems(option: string) {
-    await Action.waitForElementNoSync(by.id(`checked__${option}`))
+    await Action.waitForElement(by.id(`checked__${option}`))
     await Assert.isVisible(by.id('dropdown_item__Market Cap'))
     await Assert.isVisible(by.id('dropdown_item__Price'))
     await Assert.isVisible(by.id('dropdown_item__Volume'))
@@ -323,7 +320,7 @@ class WatchListPage {
 
   async selectSortOption(option: string) {
     const platformIndex = Action.platform() === 'ios' ? 1 : 0
-    await Action.waitForElementNoSync(by.id(`dropdown_item__${option}`))
+    await Action.waitForElement(by.id(`dropdown_item__${option}`))
     await Action.tapElementAtIndex(
       by.id(`dropdown_item__${option}`),
       platformIndex

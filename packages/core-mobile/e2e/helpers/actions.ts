@@ -3,7 +3,6 @@
 
 import assert from 'assert'
 import { element, waitFor } from 'detox'
-import { Page } from '@playwright/test'
 import { Platform } from './constants'
 import Constants from './constants'
 import delay from './waits'
@@ -16,11 +15,11 @@ const balanceToNumber = async (balance: Detox.NativeMatcher, index = 0) => {
 }
 
 const tap = async (item: Detox.NativeMatcher) => {
+  await waitForElement(item)
   await element(item).tap()
 }
 
-const waitAndTap = async (item: Detox.NativeMatcher, timeout = 5000) => {
-  await waitForElementNoSync(item, timeout)
+const waitAndTap = async (item: Detox.NativeMatcher) => {
   await delay(500)
   await tap(item)
 }
@@ -30,6 +29,7 @@ const tapAtXAndY = async (
   xOffset = 0,
   yOffset = 0
 ) => {
+  await waitForElement(item)
   await element(item).tap({ x: xOffset, y: yOffset })
 }
 
@@ -38,34 +38,17 @@ const multiTap = async (
   count: number,
   index: number
 ) => {
+  await waitForElement(item, 3000, index)
   await element(item).atIndex(index).multiTap(count)
 }
 
 const tapElementAtIndex = async (item: Detox.NativeMatcher, num: number) => {
+  await waitForElement(item)
   await element(item).atIndex(num).tap()
 }
 
-// tapElementAtIndexNoSync function can be used to handle idle timeout error for Android devices, should be used only if Idle timeout error presents
-const tapElementAtIndexNoSync = async (
-  item: Detox.NativeMatcher,
-  num: number
-) => {
-  if (platform() === Platform.Android) {
-    try {
-      await element(item).atIndex(num).tap()
-    } catch (error: any) {
-      if (error.message === Constants.idleTimeoutError) {
-        console.error(Constants.animatedConsoleError)
-      } else {
-        throw error
-      }
-    }
-  } else {
-    await element(item).atIndex(num).tap()
-  }
-}
-
 const longPress = async (item: Detox.NativeMatcher, duration = 100) => {
+  await waitForElement(item)
   await element(item).longPress(duration)
 }
 
@@ -83,8 +66,10 @@ const setInputText = async (
   index?: number
 ) => {
   if (index === undefined) {
+    await waitForElement(item)
     await element(item).replaceText(value)
   } else {
+    await waitForElement(item, 3000, index)
     await element(item).atIndex(index).replaceText(value)
   }
 }
@@ -101,39 +86,24 @@ const dismissKeyboard = async (searchBarId = 'search_bar') => {
   }
 }
 
+// sunsetting this method because it's not working for the reuse state
+// const waitForElement = async (
+//   item: Detox.NativeMatcher,
+//   timeout = 5000,
+//   index = 0
+// ) => {
+//   await waitFor(element(item).atIndex(index)).toBeVisible().withTimeout(timeout)
+// }
+
 const waitForElement = async (
   item: Detox.NativeMatcher,
   timeout = 5000,
   index = 0
 ) => {
-  await waitFor(element(item).atIndex(index)).toBeVisible().withTimeout(timeout)
-}
-
-const expectToBeVisible = async (
-  item: Detox.NativeMatcher,
-  index = 0,
-  timeout = 2000
-) => {
-  try {
-    await waitFor(element(item).atIndex(index))
-      .toBeVisible()
-      .withTimeout(timeout)
-    return true
-  } catch (e) {
-    console.log('Element is not visible ' + e)
-    return false
-  }
-}
-
-// waitForElementNoSync can be used to handle idle timeout error for Android AND to handle device.disableSynchronization()
-const waitForElementNoSync = async (
-  item: Detox.NativeMatcher,
-  timeout = 2000,
-  index = 0
-) => {
   const startTime = Date.now()
   const endTime = startTime + timeout
   while (Date.now() < endTime) {
+    await new Promise(resolve => setTimeout(resolve, 500))
     try {
       await waitFor(element(item).atIndex(index))
         .toBeVisible()
@@ -151,29 +121,20 @@ const waitForElementNoSync = async (
   throw new Error('Element not visible within timeout')
 }
 
-const getRandomEle = (items: any[]): any => {
-  return items[Math.floor(Math.random() * items.length)]
-}
-
-const getRandomIndex = (itemsLength: number): number => {
-  return Math.floor(Math.random() * itemsLength)
-}
-
-const getElementTextNoSync = async (
+const waitForElementNotVisible = async (
   item: Detox.NativeMatcher,
-  timeout = 2000,
+  timeout = 3000,
   index = 0
 ) => {
   const startTime = Date.now()
   const endTime = startTime + timeout
   while (Date.now() < endTime) {
+    await new Promise(resolve => setTimeout(resolve, 200))
     try {
-      await waitFor(element(item)).toBeVisible().withTimeout(timeout)
-      const eleAttr = await element(item).getAttributes()
-      console.log('elements attributes: ', eleAttr)
-      if (!('elements' in eleAttr)) {
-        return eleAttr.text
-      } else if (eleAttr.elements[index]) return eleAttr.elements[index].text
+      await waitFor(element(item).atIndex(index))
+        .not.toBeVisible()
+        .withTimeout(timeout)
+      return
     } catch (error: any) {
       if (error.message === Constants.idleTimeoutError) {
         console.error(Constants.animatedConsoleError)
@@ -182,18 +143,16 @@ const getElementTextNoSync = async (
       }
     }
   }
-  console.error('Error: Element not visible within timeout')
-  throw new Error('Element not visible within timeout')
+  console.error('Error: Element visible within timeout')
+  throw new Error('Element visible within timeout')
 }
 
-const waitForElementNotVisible = async (
-  item: Detox.NativeMatcher,
-  timeout = 20000,
-  index = 0
-) => {
-  await waitFor(element(item).atIndex(index))
-    .not.toBeVisible()
-    .withTimeout(timeout)
+const getRandomEle = (items: any[]): any => {
+  return items[Math.floor(Math.random() * items.length)]
+}
+
+const getRandomIndex = (itemsLength: number): number => {
+  return Math.floor(Math.random() * itemsLength)
 }
 
 const getAttributes = async (item: any, index = 0) => {
@@ -211,14 +170,26 @@ const getElementsTextByTestId = async (testID: string): Promise<string[]> => {
   return output
 }
 
-const getElementText = async (ele: Detox.NativeMatcher, index = 0) => {
-  try {
-    const eleAttr = await element(ele).getAttributes()
-    if (!('elements' in eleAttr)) {
-      return eleAttr.text
-    } else if (eleAttr.elements[index]) return eleAttr.elements[index].text
-  } catch (e) {
-    console.error('Failed to get element text:', e)
+const getElementText = async (
+  item: Detox.NativeMatcher,
+  timeout = 2000,
+  index = 0
+) => {
+  const startTime = Date.now()
+  const endTime = startTime + timeout
+  while (Date.now() < endTime) {
+    try {
+      await waitFor(element(item)).toBeVisible().withTimeout(timeout)
+      const eleAttr = await element(item).getAttributes()
+      console.log('elements attributes: ', eleAttr)
+      if (!('elements' in eleAttr)) {
+        return eleAttr.text
+      } else if (eleAttr.elements[index]) return eleAttr.elements[index].text
+    } catch (error: any) {
+      if (error.message === Constants.idleTimeoutError) {
+        console.error(Constants.animatedConsoleError)
+      }
+    }
   }
   return ''
 }
@@ -238,44 +209,18 @@ const getElementsByTestId = async (testID: string) => {
   return elements
 }
 
-// Not working for some reason, need to fix
-const getAndroidAttributesArray = async (
-  locator: Detox.NativeMatcher,
-  loopCount: number
-) => {
-  const attsArray = []
-  for (let i = 0; i < loopCount; i++) {
-    const el = element(locator).atIndex(i)
-    const atts = await el.getAttributes()
-    attsArray.push(atts)
-  }
-  console.log(JSON.stringify(attsArray))
-  return attsArray
-}
-
 const isVisible = async (
   item: Detox.NativeMatcher,
-  index: number,
+  index = 0,
   timeout = 2000
-): Promise<boolean> => {
-  return await waitFor(element(item).atIndex(index))
-    .toBeVisible()
-    .withTimeout(timeout)
-    .then(() => true)
-    .catch(() => false)
-}
-
-const hasText = async (
-  item: Detox.NativeMatcher,
-  text: string,
-  index = 1,
-  timeout = 2000
-): Promise<boolean> => {
-  return await waitFor(element(item).atIndex(index))
-    .toHaveText(text)
-    .withTimeout(timeout)
-    .then(() => true)
-    .catch(() => false)
+) => {
+  try {
+    await waitForElement(item, timeout, index)
+    return true
+  } catch (e) {
+    console.log('Element is not visible ' + e)
+    return false
+  }
 }
 
 const swipeUp = async (
@@ -320,10 +265,6 @@ const swipeLeft = async (
     .swipe('left', speed, normalizedOffset)
 }
 
-const openPage = async (page: Page, url: string) => {
-  await page.goto(url)
-}
-
 const platform = () => {
   return device.getPlatform()
 }
@@ -356,6 +297,7 @@ const scrollListUntil = async (
   scrollPixel: number,
   direction: Detox.Direction = 'down'
 ) => {
+  await waitForElement(scrollList)
   await waitFor(element(scrollToItem))
     .toBeVisible()
     .whileElement(scrollList)
@@ -400,6 +342,7 @@ const drag = async (
   percentage = 0.2,
   index = 0
 ) => {
+  await waitForElement(item, 3000, index)
   await element(item).atIndex(index).longPress()
   await element(item).atIndex(index).swipe(direction, 'fast', percentage)
 }
@@ -450,11 +393,9 @@ export default {
   multiTap,
   longPress,
   waitForElement,
-  waitForElementNoSync,
   waitForElementNotVisible,
   waitForCondition,
   tapElementAtIndex,
-  tapElementAtIndexNoSync,
   getAttributes,
   swipeUp,
   swipeDown,
@@ -462,26 +403,21 @@ export default {
   swipe,
   setColumnToValue,
   setInputText,
-  getAndroidAttributesArray,
-  openPage,
   platform,
   isVisible,
   getCurrentDateTime,
   writeQrCodeToFile,
-  expectToBeVisible,
   scrollListUntil,
   getElementsByTestId,
   getElementsTextByTestId,
   dismissKeyboard,
   getElementText,
   clearTextInput,
-  getElementTextNoSync,
   drag,
   dragTo,
   shuffleArray,
   scrollToBottom,
   scrollToTop,
-  hasText,
   getAmount,
   getRandomEle,
   getRandomIndex,

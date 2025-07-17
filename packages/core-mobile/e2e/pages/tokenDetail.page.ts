@@ -206,8 +206,8 @@ class TokenDetailsPage {
   async dismissHoldAndDrag() {
     await delay(2000)
     try {
-      await Action.waitForElementNoSync(this.holdAndDrag)
-      await Action.waitForElementNoSync(this.holdAndDragContent)
+      await Action.waitForElement(this.holdAndDrag)
+      await Action.waitForElement(this.holdAndDragContent)
       await Action.tap(this.gotItBtn)
     } catch (e) {
       console.log('No hold and drag modal found')
@@ -220,18 +220,18 @@ class TokenDetailsPage {
     expectedPrice: number | undefined
   ) {
     // test Symbol
-    await Action.waitForElementNoSync(by.text(symbol), 20000)
+    await Action.waitForElement(by.text(symbol), 20000)
 
     // test name
     try {
       const titledName = name.replace(/^\w/, char => char.toUpperCase())
-      await Action.waitForElementNoSync(by.text(titledName))
+      await Action.waitForElement(by.text(titledName))
     } catch (e) {
-      await Action.waitForElementNoSync(by.text(name))
+      await Action.waitForElement(by.text(name))
     }
 
     // testprice
-    const displayedPrice = await Action.getElementTextNoSync(this.price)
+    const displayedPrice = await Action.getElementText(this.price)
     if (expectedPrice && displayedPrice) {
       const isValid = await this.isPriceValid(expectedPrice, displayedPrice)
       assert(

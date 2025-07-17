@@ -8,7 +8,6 @@ import { ENV } from './getEnvs'
 
 class LoginRecoverWallet {
   async recoverMnemonicWallet(recoveryPhrase: string) {
-    await device.enableSynchronization()
     await onboardingPage.tapAccessExistingWallet()
     await onboardingPage.tapTypeInRecoveryPhase()
     await onboardingPage.tapAgreeAndContinue()
@@ -24,10 +23,8 @@ class LoginRecoverWallet {
     await commonElsPage.tapNext()
     await Actions.waitForElement(onboardingPage.selectAvatarTitle)
     await commonElsPage.tapNext()
-    await device.disableSynchronization()
     await onboardingPage.tapLetsGo()
     await bottomTabsPage.verifyBottomTabs()
-    await device.enableSynchronization()
   }
 
   async enterPin() {
@@ -36,14 +33,12 @@ class LoginRecoverWallet {
   }
 
   async logged() {
-    const loggedin = await Actions.expectToBeVisible(onboardingPage.forgotPin)
+    const loggedin = await Actions.isVisible(onboardingPage.forgotPin)
     try {
       if (loggedin) {
         await commonElsPage.enterPin()
       }
-      await device.disableSynchronization()
       await bottomTabsPage.verifyBottomTabs()
-      await device.enableSynchronization()
       return true
     } catch (e) {
       console.log('Pin is not required...')
@@ -52,6 +47,7 @@ class LoginRecoverWallet {
   }
 
   async login(recoverPhrase = ENV.E2E_MNEMONIC as string) {
+    await device.disableSynchronization()
     const isLoggedIn = await this.logged()
     if (!isLoggedIn) {
       await this.recoverMnemonicWallet(recoverPhrase)
