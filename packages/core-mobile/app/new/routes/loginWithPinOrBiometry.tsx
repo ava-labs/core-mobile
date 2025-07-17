@@ -73,7 +73,9 @@ const LoginWithPinOrBiometry = (): JSX.Element => {
 
   const handleLoginSuccess = useCallback(
     (mnemonic: string) => {
+      // Record the start of unlock process
       PerformanceService.recordMilestone(PerformanceMilestone.UNLOCK_STARTED)
+
       handleStartLoading()
       pinInputRef.current?.blur()
       isProcessing.value = true

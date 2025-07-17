@@ -23,12 +23,6 @@ export default function WalletLayout(): JSX.Element {
     stackModalScreensOptions
   } = useModalScreenOptions()
 
-  useEffect(() => {
-    PerformanceService.recordMilestone(
-      PerformanceMilestone.PORTFOLIO_LOADING_STARTED
-    )
-  }, [])
-
   return (
     <BridgeProvider>
       <CollectiblesProvider>

@@ -1,4 +1,9 @@
 import Logger from 'utils/Logger'
+
+import { logger } from 'react-native-logs'
+
+const NativeLogger = logger.createLogger()
+
 // import AnalyticsService from 'services/analytics/AnalyticsService'
 
 export enum PerformanceMilestone {
@@ -11,14 +16,14 @@ export enum PerformanceMilestone {
 }
 
 export interface PerformanceMetrics {
-  appStart: {
-    splashHidden: number
-    unlockCompleted: number
-    portfolioLoaded: number
+  splashHidden: number
+  unlocking: {
+    completed: number
+    duration: number
   }
-  unlock: {
-    unlockDuration: number
-    portfolioLoadingDuration: number
+  portfolio: {
+    completed: number
+    loadingDuration: number
   }
 }
 
@@ -32,7 +37,7 @@ class PerformanceService {
   init(): void {
     this.sessionStartTime = Date.now()
     this.recordMilestone(PerformanceMilestone.APP_START)
-    Logger.info('PerformanceService initialized')
+    Logger.trace('PerformanceService initialized')
   }
 
   /**
@@ -42,7 +47,7 @@ class PerformanceService {
   recordMilestone(milestone: PerformanceMilestone): void {
     // Check if this milestone has already been recorded
     if (this.timingData.has(milestone)) {
-      Logger.info(
+      Logger.trace(
         `Performance milestone ${milestone} already recorded, skipping duplicate`
       )
       return
@@ -51,7 +56,7 @@ class PerformanceService {
     const timestamp = Date.now()
     this.timingData.set(milestone, timestamp)
 
-    Logger.info(
+    Logger.trace(
       `Performance milestone recorded: ${milestone} at ${new Date(
         timestamp
       ).getTime()}`
@@ -129,7 +134,7 @@ class PerformanceService {
 
     if (duration !== null) {
       const durationSeconds = (duration / 1000).toFixed(3)
-      Logger.info(`🔓 Unlock Duration: ${durationSeconds}s`)
+      Logger.trace(`🔓 Unlock Duration: ${durationSeconds}s`)
     }
   }
 
@@ -144,7 +149,7 @@ class PerformanceService {
 
     if (duration !== null) {
       const durationSeconds = (duration / 1000).toFixed(3)
-      Logger.info(`📊 Portfolio Loading Duration: ${durationSeconds}s`)
+      Logger.trace(`📊 Portfolio Loading Duration: ${durationSeconds}s`)
     }
   }
 
@@ -165,6 +170,18 @@ class PerformanceService {
 
     if (metrics) {
       Logger.info('📈 Complete Performance Metrics:', metrics)
+
+      // Send performance metrics using react-native-logs
+      NativeLogger.warn(
+        `App Performance Metrics:
+        
+        Splash Hidden (isReady): ${metrics.splashHidden}s,
+        Unlocking (duration): ${metrics.unlocking.duration}s,
+
+        Unlocking (completed): ${metrics.unlocking.completed}s,
+        Portfolio Loading (duration): ${metrics.portfolio.loadingDuration}s,
+        Portfolio Loading (completed): ${metrics.portfolio.completed}s`
+      )
     }
   }
 
@@ -200,14 +217,14 @@ class PerformanceService {
       ) || 0
 
     return {
-      appStart: {
-        splashHidden: (splashHidden - appStart) / 1000,
-        unlockCompleted: (unlockCompleted - appStart) / 1000,
-        portfolioLoaded: (portfolioLoaded - appStart) / 1000
+      splashHidden: (splashHidden - appStart) / 1000,
+      unlocking: {
+        completed: (unlockCompleted - appStart) / 1000,
+        duration: unlockDuration / 1000
       },
-      unlock: {
-        unlockDuration: unlockDuration / 1000,
-        portfolioLoadingDuration: portfolioLoadingDuration / 1000
+      portfolio: {
+        completed: (portfolioLoaded - appStart) / 1000,
+        loadingDuration: portfolioLoadingDuration / 1000
       }
     }
   }

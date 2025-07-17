@@ -58,16 +58,8 @@ const AssetsScreen: FC<Props> = ({
   const isBalanceLoading = useSelector(selectIsLoadingBalances)
   const isRefetchingBalance = useSelector(selectIsRefetchingBalances)
 
-  // Track when portfolio assets are loaded
+  // Track when portfolio assets have finished loading
   useEffect(() => {
-    // Record portfolio loading started when component mounts (first time accessing portfolio)
-    PerformanceService.recordMilestone(
-      PerformanceMilestone.PORTFOLIO_LOADING_STARTED
-    )
-  }, [])
-
-  useEffect(() => {
-    // Record portfolio assets loaded when loading is complete and we have data
     if (!isBalanceLoading && !isLoading && data.length > 0) {
       PerformanceService.recordMilestone(
         PerformanceMilestone.PORTFOLIO_ASSETS_LOADED
