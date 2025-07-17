@@ -12,6 +12,8 @@ import type { Action } from 'redux'
 import { ChannelId, NewsChannelId } from 'services/notifications/channels'
 import { handleProcessNotificationData } from 'store/notifications/listeners/handleProcessNotificationData'
 import { promptEnableNotifications } from 'store/notifications'
+import { toggleWatchListFavorite } from 'store/watchlist'
+import { setTokenSubscriptionsForFavorites } from 'store/notifications/listeners/setTokenSubscriptionsForFavorites'
 import {
   onFcmTokenChange,
   processNotificationData,
@@ -188,6 +190,11 @@ export const addNotificationsListeners = (
           `[notifications/listeners/listeners.ts][handleProcessNotificationData]${reason}`
         )
       })
+  })
+
+  startListening({
+    actionCreator: toggleWatchListFavorite,
+    effect: setTokenSubscriptionsForFavorites
   })
 }
 

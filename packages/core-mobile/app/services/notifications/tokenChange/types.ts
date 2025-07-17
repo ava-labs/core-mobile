@@ -6,7 +6,3 @@ export interface TokenSubscriptionPayload {
   tokens: TokenSubscriptionItem[]
   deviceArn: string
 }
-
-export interface ITokenChangeNotificationService {
-  setTokenSubscriptions(payload: TokenSubscriptionPayload): Promise<void>
-}
