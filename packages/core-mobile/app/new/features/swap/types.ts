@@ -2,8 +2,10 @@ import { OptimalRate, SwapSide } from '@paraswap/sdk'
 import { Account } from 'store/account/types'
 import { Network } from '@avalabs/core-chains-sdk'
 import { JsonRpcBatchInternal } from '@avalabs/core-wallets-sdk'
+import { TransactionParams } from '@avalabs/evm-module'
 import type WAVAX_ABI from '../../../contracts/ABI_WAVAX.json'
 import type WETH_ABI from '../../../contracts/ABI_WETH.json'
+import { MarkrQuote } from './services/MarkrService'
 
 export enum SwapType {
   EVM = 'EVM',
@@ -27,7 +29,28 @@ export type EvmUnwrapQuote = {
   amount: string
 }
 
-export type EvmSwapQuote = OptimalRate | EvmWrapQuote | EvmUnwrapQuote
+export type MarkrTransaction = {
+  to: string
+  value: string
+  data: string
+}
+
+export type EvmSwapQuote =
+  | OptimalRate
+  | EvmWrapQuote
+  | EvmUnwrapQuote
+  | MarkrQuote
+
+export type NormalizedSwapQuote = {
+  quote: EvmSwapQuote
+  metadata: Record<string, unknown>
+}
+
+export type NormalizedSwapQuoteResult = {
+  provider: SwapProviders
+  quotes: NormalizedSwapQuote[]
+  selected: NormalizedSwapQuote
+}
 
 // TODO: add solana swap quote
 export type SwapQuote = EvmSwapQuote
@@ -49,6 +72,17 @@ export const isParaswapQuote = (quote: SwapQuote): quote is OptimalRate => {
   )
 }
 
+export const isMarkrQuote = (quote: SwapQuote): quote is MarkrQuote => {
+  return (
+    'uuid' in quote &&
+    'aggregator' in quote &&
+    'amountIn' in quote &&
+    'tokenIn' in quote &&
+    'amountOut' in quote &&
+    'tokenOut' in quote
+  )
+}
+
 export type GetQuoteParams = {
   account: Account
   amount: bigint
@@ -60,6 +94,8 @@ export type GetQuoteParams = {
   isToTokenNative: boolean
   destination: SwapSide
   network: Network
+  slippage: number
+  onUpdate?: (update: NormalizedSwapQuoteResult) => void
 }
 
 export type SwapParams = {
@@ -69,6 +105,7 @@ export type SwapParams = {
   isFromTokenNative: boolean
   toTokenAddress: string
   isToTokenNative: boolean
+  swapProvider: SwapProviders
   quote: EvmSwapQuote
   slippage: number
 }
@@ -79,4 +116,36 @@ export type WrapUnwrapTxParams = {
   amount: string
   provider: JsonRpcBatchInternal
   abi: typeof WAVAX_ABI | typeof WETH_ABI
+}
+
+export type PerformSwapParams = {
+  srcTokenAddress: string | undefined
+  isSrcTokenNative?: boolean
+  destTokenAddress: string | undefined
+  isDestTokenNative?: boolean
+  quote: EvmSwapQuote | undefined
+  slippage: number
+  network: Network
+  provider: JsonRpcBatchInternal
+  userAddress: string | undefined
+  signAndSend: (
+    txParams: [TransactionParams],
+    context?: Record<string, unknown>
+  ) => Promise<string>
+  isSwapFeesEnabled?: boolean
+}
+
+export enum SwapProviders {
+  MARKR = 'markr',
+  PARASWAP = 'paraswap',
+  WNATIVE = 'wnative'
+}
+
+export interface SwapProvider {
+  name: string
+  getQuote: (
+    params: GetQuoteParams,
+    abortSignal?: AbortSignal
+  ) => Promise<NormalizedSwapQuoteResult | undefined>
+  swap: (params: PerformSwapParams) => Promise<string>
 }

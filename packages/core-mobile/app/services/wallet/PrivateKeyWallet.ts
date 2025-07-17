@@ -33,7 +33,7 @@ import {
   RpcMethod
 } from '@avalabs/vm-module-types'
 import { isTypedData } from '@avalabs/evm-module'
-import { strip0x } from '@avalabs/core-utils-sdk/dist'
+import { strip0x } from '@avalabs/core-utils-sdk'
 import { Curve } from 'utils/publicKeys'
 import { ed25519 } from '@noble/curves/ed25519'
 import { hex } from '@scure/base'
@@ -82,7 +82,8 @@ export class PrivateKeyWallet implements Wallet {
   }
 
   private async getSvmSigner(): Promise<SolanaSigner> {
-    return new SolanaSigner(Buffer.from(this.privateKey, 'hex'))
+    const strippedPk = strip0x(this.privateKey)
+    return new SolanaSigner(Buffer.from(strippedPk, 'hex'))
   }
 
   private async getSigner({
@@ -167,6 +168,10 @@ export class PrivateKeyWallet implements Wallet {
     provider: JsonRpcBatchInternal
   }): Promise<string> {
     switch (rpcMethod) {
+      case RpcMethod.SOLANA_SIGN_MESSAGE: {
+        if (typeof data !== 'string') throw new Error('data must be string')
+        return this.signSolanaMessage(data, accountIndex)
+      }
       case RpcMethod.AVALANCHE_SIGN_MESSAGE: {
         const chainAlias = getChainAliasFromNetwork(network)
         if (!chainAlias) throw new Error('invalid chain alias')
@@ -174,63 +179,18 @@ export class PrivateKeyWallet implements Wallet {
         return await this.signAvalancheMessage(accountIndex, data, chainAlias)
       }
       case RpcMethod.ETH_SIGN:
-      case RpcMethod.PERSONAL_SIGN: {
-        if (typeof data !== 'string') throw new Error('data must be string')
-
-        const key = await this.getSigningKey({
-          accountIndex,
-          network,
-          provider
-        })
-        return personalSign({ privateKey: key, data })
-      }
+      case RpcMethod.PERSONAL_SIGN:
       case RpcMethod.SIGN_TYPED_DATA:
-      case RpcMethod.SIGN_TYPED_DATA_V1: {
-        if (typeof data === 'string') throw new Error('data cannot be string')
-
-        // instances were observed where method was eth_signTypedData or eth_signTypedData_v1,
-        // however, payload was V4
-        const isV4 = isTypedData(data)
-
-        const key = await this.getSigningKey({
+      case RpcMethod.SIGN_TYPED_DATA_V1:
+      case RpcMethod.SIGN_TYPED_DATA_V3:
+      case RpcMethod.SIGN_TYPED_DATA_V4:
+        return this.signEvmMessage({
+          data,
           accountIndex,
           network,
-          provider
+          provider,
+          rpcMethod
         })
-        return signTypedData({
-          privateKey: key,
-          data,
-          version: isV4 ? SignTypedDataVersion.V4 : SignTypedDataVersion.V1
-        })
-      }
-      case RpcMethod.SIGN_TYPED_DATA_V3: {
-        if (!isTypedData(data)) throw new Error('invalid typed data')
-
-        const key = await this.getSigningKey({
-          accountIndex,
-          network,
-          provider
-        })
-        return signTypedData({
-          privateKey: key,
-          data,
-          version: SignTypedDataVersion.V3
-        })
-      }
-      case RpcMethod.SIGN_TYPED_DATA_V4: {
-        if (!isTypedData(data)) throw new Error('invalid typed data')
-
-        const key = await this.getSigningKey({
-          accountIndex,
-          network,
-          provider
-        })
-        return signTypedData({
-          privateKey: key,
-          data,
-          version: SignTypedDataVersion.V4
-        })
-      }
       default:
         throw new Error('unknown method')
     }
@@ -372,6 +332,83 @@ export class PrivateKeyWallet implements Wallet {
     return this.privateKey.toLowerCase() === privateKey.toLowerCase()
   }
 
+  private async signEvmMessage({
+    data,
+    accountIndex,
+    network,
+    provider,
+    rpcMethod
+  }: {
+    data: string | TypedDataV1 | TypedData<MessageTypes>
+    accountIndex: number
+    network: Network
+    provider: JsonRpcBatchInternal
+    rpcMethod: RpcMethod
+  }): Promise<string> {
+    switch (rpcMethod) {
+      case RpcMethod.ETH_SIGN:
+      case RpcMethod.PERSONAL_SIGN: {
+        if (typeof data !== 'string') throw new Error('data must be string')
+
+        const key = await this.getSigningKey({
+          accountIndex,
+          network,
+          provider
+        })
+        return personalSign({ privateKey: key, data })
+      }
+      case RpcMethod.SIGN_TYPED_DATA:
+      case RpcMethod.SIGN_TYPED_DATA_V1: {
+        if (typeof data === 'string') throw new Error('data cannot be string')
+
+        // instances were observed where method was eth_signTypedData or eth_signTypedData_v1,
+        // however, payload was V4
+        const isV4 = isTypedData(data)
+
+        const key = await this.getSigningKey({
+          accountIndex,
+          network,
+          provider
+        })
+        return signTypedData({
+          privateKey: key,
+          data,
+          version: isV4 ? SignTypedDataVersion.V4 : SignTypedDataVersion.V1
+        })
+      }
+      case RpcMethod.SIGN_TYPED_DATA_V3: {
+        if (!isTypedData(data)) throw new Error('invalid typed data')
+
+        const key = await this.getSigningKey({
+          accountIndex,
+          network,
+          provider
+        })
+        return signTypedData({
+          privateKey: key,
+          data,
+          version: SignTypedDataVersion.V3
+        })
+      }
+      case RpcMethod.SIGN_TYPED_DATA_V4: {
+        if (!isTypedData(data)) throw new Error('invalid typed data')
+
+        const key = await this.getSigningKey({
+          accountIndex,
+          network,
+          provider
+        })
+        return signTypedData({
+          privateKey: key,
+          data,
+          version: SignTypedDataVersion.V4
+        })
+      }
+      default:
+        throw new Error('Unknown EVM message type method')
+    }
+  }
+
   private signAvalancheMessage = async (
     accountIndex: number,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -387,5 +424,14 @@ export class PrivateKeyWallet implements Wallet {
       chain: chainAlias
     })
     return utils.base58check.encode(new Uint8Array(buffer))
+  }
+
+  private async signSolanaMessage(
+    data: string,
+    _accountIndex: number
+  ): Promise<string> {
+    if (typeof data !== 'string') throw new Error('data must be string')
+    const signer = await this.getSvmSigner()
+    return await signer.signMessage(data)
   }
 }

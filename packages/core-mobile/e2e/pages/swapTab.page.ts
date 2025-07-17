@@ -59,8 +59,12 @@ class SwapTabPage {
     return by.text(swapTab.swapTitle)
   }
 
+  get selectTokenTitleId() {
+    return by.id(swapTab.selectTokenTitleId)
+  }
+
   get selectTokenTitle() {
-    return by.id(swapTab.selectTokenTitle)
+    return by.text(swapTab.selectTokenTitle)
   }
 
   get errorMsg() {

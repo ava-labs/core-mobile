@@ -3,6 +3,7 @@ import Actions from '../helpers/actions'
 import assertions from '../helpers/assertions'
 import settings from '../locators/settings.loc'
 import commonElsLoc from '../locators/commonEls.loc'
+import delay from '../helpers/waits'
 import commonElsPage from './commonEls.page'
 import portfolioPage from './portfolio.page'
 
@@ -59,8 +60,8 @@ class Settings {
     return by.text(settings.advanced)
   }
 
-  get addressBook() {
-    return by.text(settings.addressBook)
+  get contacts() {
+    return by.text(settings.contacts)
   }
 
   get currency() {
@@ -123,8 +124,8 @@ class Settings {
     return by.text(settings.selectCurrencyTitle)
   }
 
-  get addAccountBtn() {
-    return by.id(settings.addAccountBtn)
+  get addWalletBtn() {
+    return by.id(settings.addWalletBtn)
   }
 
   get createNewAccountBtn() {
@@ -203,46 +204,6 @@ class Settings {
     return by.id(settings.testnetAvatar)
   }
 
-  get cChainAddressCopyBtn() {
-    return by.id(settings.cChainAddressCopyBtn)
-  }
-
-  get pChainAddressCopyBtn() {
-    return by.id(settings.pChainAddressCopyBtn)
-  }
-
-  get xChainAddressCopyBtn() {
-    return by.id(settings.xChainAddressCopyBtn)
-  }
-
-  get ethAddressCopyBtn() {
-    return by.id(settings.ethAddressCopyBtn)
-  }
-
-  get btcAddressCopyBtn() {
-    return by.id(settings.btcAddressCopyBtn)
-  }
-
-  get cChainAddressCopyToast() {
-    return by.text(settings.cChainAddressCopyToast)
-  }
-
-  get pChainAddressCopyToast() {
-    return by.text(settings.pChainAddressCopyToast)
-  }
-
-  get xChainAddressCopyToast() {
-    return by.text(settings.xChainAddressCopyToast)
-  }
-
-  get ethAddressCopyToast() {
-    return by.text(settings.ethAddressCopyToast)
-  }
-
-  get btcAddressCopyToast() {
-    return by.text(settings.btcAddressCopyToast)
-  }
-
   get renameAccount() {
     return by.text(settings.renameAccount)
   }
@@ -251,12 +212,40 @@ class Settings {
     return by.id(settings.manageAccountsBtn)
   }
 
+  get emptyContacts() {
+    return by.text(settings.emptyContacts)
+  }
+
+  get emptyContactsText() {
+    return by.text(settings.emptyContactsText)
+  }
+
+  get addAddressButton() {
+    return by.text(settings.addAddressButton)
+  }
+
+  get nameContactBtn() {
+    return by.id(settings.nameContactBtn)
+  }
+
+  get typeInOrPasteAddress() {
+    return by.text(settings.typeInOrPasteAddress)
+  }
+
+  get contactAddressInput() {
+    return by.id(settings.contactAddressInput)
+  }
+
+  get contactPreviewAddress() {
+    return by.id(settings.contactPreviewAddress)
+  }
+
   async tapAdvanced() {
     await Actions.tapElementAtIndex(this.advanced, 0)
   }
 
-  async tapAddressBook() {
-    await Actions.tapElementAtIndex(this.addressBook, 0)
+  async tapContacts() {
+    await Actions.tapElementAtIndex(this.contacts, 0)
   }
 
   async tapNotifications() {
@@ -381,11 +370,27 @@ class Settings {
   }
 
   async switchToTestnet() {
-    await Actions.longPress(this.testnetSwitchOff)
+    try {
+      await assertions.isNotVisible(portfolioPage.testnetModeIsOn)
+      await this.goSettings()
+      await Actions.longPress(this.testnetSwitchOff)
+      return true
+    } catch (e) {
+      console.log('You are on testnet')
+      return false
+    }
   }
 
   async switchToMainnet() {
-    await Actions.longPress(this.testnetSwitchOn)
+    try {
+      await assertions.isVisible(portfolioPage.testnetModeIsOn)
+      await this.goSettings()
+      await Actions.longPress(this.testnetSwitchOn)
+      return true
+    } catch (e) {
+      console.log('You are on mainnet')
+      return false
+    }
   }
 
   async verifyCurrencyScreen(curr = 'USD') {
@@ -393,6 +398,18 @@ class Settings {
     await assertions.isVisible(commonElsPage.searchBar)
     await assertions.isVisible(by.id(`selected_currency__${curr}`))
     await assertions.isVisible(by.text(curr))
+  }
+
+  async verifyAccountCarouselItem(accountName: string) {
+    await Actions.waitForElement(
+      by.id(`${settings.accountCarouselItemIdPrefix}${accountName}`)
+    )
+  }
+
+  async switchAccountByCarousel(accountName: string) {
+    await Actions.tap(
+      by.id(`${settings.accountCarouselItemIdPrefix}${accountName}`)
+    )
   }
 
   async selectCurrency(curr: string) {
@@ -409,8 +426,11 @@ class Settings {
     await Actions.tap(this.manageAccountsBtn)
   }
 
+  async tapAddWalletBtn() {
+    await Actions.tap(this.addWalletBtn)
+  }
+
   async addAccount(accountNum = 2) {
-    await Actions.waitForElement(this.addAccountBtn)
     while (
       !(await Actions.isVisible(
         by.id(`manage_accounts_list__Account ${accountNum}`),
@@ -418,8 +438,7 @@ class Settings {
         5000
       ))
     ) {
-      console.log(`manage_accounts_list__Account ${accountNum}`)
-      await Actions.tap(this.addAccountBtn)
+      await this.tapAddWalletBtn()
       await Actions.waitForElement(this.createNewAccountBtn)
       await Actions.tap(this.createNewAccountBtn)
     }
@@ -469,36 +488,44 @@ class Settings {
     await assertions.isNotVisible(portfolioPage.testnetModeIsOn)
   }
 
-  async goToAccountDetail(accountNum: number) {
-    await Actions.tap(
-      by.id(`${settings.accountDetailIconIdPrefix}${accountNum}`)
+  async goToAccountDetail(
+    accountName: string,
+    walletName: string | undefined = undefined
+  ) {
+    const targetId = walletName
+      ? `${settings.accountDetailIconIdPrefix}${walletName}_${accountName}`
+      : `${settings.accountDetailIconIdPrefix}${accountName}`
+
+    await Actions.tap(by.id(targetId))
+  }
+
+  async verifyMangeAccountsScreen(walletName: string, accountName: string) {
+    await Actions.waitForElement(by.id(`manage_accounts_list__${accountName}`))
+    await Actions.waitForElement(
+      by.id(`manage_accounts_wallet_name__${walletName}`)
     )
   }
 
   async verifyAccountDetail(portfolioAccountName: string) {
+    // Copy address verification
+    await this.verifyAddressCopied(commonElsLoc.evm)
+    await this.verifyAddressCopied(commonElsLoc.xpChain)
+    await this.verifyAddressCopied(commonElsLoc.solana)
+    await this.verifyAddressCopied(commonElsLoc.bitcoin)
+
     // Account name verification
-    await Actions.waitForElement(commonElsPage.cChain)
+    await Actions.waitForElement(commonElsPage.evm)
     await commonElsPage.verifyAccountName(portfolioAccountName, 1)
 
     // Wallet address section verification
-    await assertions.isVisible(commonElsPage.pChain)
-    await assertions.isVisible(commonElsPage.xChain)
-    await assertions.isVisible(commonElsPage.ethereum)
+    await assertions.isVisible(commonElsPage.xpChain)
     await assertions.isVisible(commonElsPage.bitcoin)
+    await assertions.isVisible(commonElsPage.solana)
+  }
 
-    // Copy address verification
-    await Actions.tap(this.cChainAddressCopyBtn)
-    await assertions.isVisible(this.cChainAddressCopyToast)
-    await Actions.tap(this.pChainAddressCopyBtn)
-    await assertions.isVisible(this.pChainAddressCopyToast)
-    await Actions.tap(this.xChainAddressCopyBtn)
-    await assertions.isVisible(this.xChainAddressCopyToast)
-    await Actions.tap(this.ethAddressCopyBtn)
-    await assertions.isVisible(this.ethAddressCopyToast)
-    await Actions.tap(this.btcAddressCopyBtn)
-    await assertions.isVisible(this.btcAddressCopyToast)
-
-    // Wallet info verification is NOT done yet and let's revisit it once it's done
+  async verifyAddressCopied(network: string) {
+    await Actions.tap(by.id(commonElsLoc.copyBtn + network))
+    await assertions.isVisible(by.text(network + settings.addressCopied))
   }
 
   async tapRenameAccount() {
@@ -508,6 +535,7 @@ class Settings {
   async setNewAccountName(newAccountName: string) {
     await commonElsPage.typeSearchBar(newAccountName, commonElsPage.dialogInput)
     await commonElsPage.tapSave()
+    await delay(500)
   }
 
   async createNthAccount(account = 2, activeAccount = settings.account) {
@@ -523,11 +551,8 @@ class Settings {
   }
 
   async switchAccount(name = settings.account) {
-    // You switch account within the `manage accounts` screen
-    // settings > manage all or add a wallet > select the account
     await this.goSettings()
-    await this.tapManageAccountsBtn()
-    await this.selectAccount(name)
+    await this.switchAccountByCarousel(name)
     await commonElsPage.dismissBottomSheet()
   }
 
@@ -553,6 +578,78 @@ class Settings {
       console.log(`Already enabled ${network}`)
     }
     await commonElsPage.dismissBottomSheet()
+  }
+
+  async verifyEmptyContactsScreen() {
+    await Actions.waitForElement(this.emptyContacts)
+    await assertions.isVisible(this.emptyContactsText)
+    await assertions.isVisible(this.addAddressButton)
+  }
+
+  async tapAddAddressButton() {
+    await Actions.tapElementAtIndex(this.addAddressButton, 0)
+  }
+
+  async addContactName(name: string) {
+    await Actions.tapElementAtIndex(this.nameContactBtn, 0)
+    await commonElsPage.typeSearchBar(name, commonElsPage.dialogInput)
+    await delay(5000)
+    await commonElsPage.tapSave()
+  }
+
+  async addContactAddress(
+    networkAndAddress: Record<string, string>, // {evm: '0x6d...', solana: '1234'}
+    contactName: string
+  ) {
+    // add contact name
+    await this.addContactName(contactName)
+
+    // add contact addresses
+    for (const [network, address] of Object.entries(networkAndAddress)) {
+      await this.setAddress(network, address)
+    }
+
+    // save contact
+    await commonElsPage.tapSave()
+  }
+
+  async setAddress(network: string, address: string) {
+    await Actions.tap(by.text(`Add ${network} address`))
+    await Actions.tap(this.typeInOrPasteAddress)
+    await Actions.setInputText(by.id(`contact_input__${network}`), address)
+    await Actions.dismissKeyboard(`contact_input__${network}`)
+  }
+
+  async editContactAddress(
+    networkAndAddress: Record<string, string>,
+    contactName: string | undefined = undefined
+  ) {
+    // add contact name
+    if (contactName) {
+      await this.addContactName(contactName)
+    }
+
+    // add contact addresses
+    for (const [network, address] of Object.entries(networkAndAddress)) {
+      await Actions.tap(by.id(`contact_delete_btn__${network}`))
+      await commonElsPage.tapDelete()
+      await Actions.waitForElement(by.text(`Add ${network} address`))
+      await this.setAddress(network, address)
+    }
+
+    // exit the edit contact form
+    await commonElsPage.goBack()
+  }
+
+  async verifyContact(address: string, contactName: string) {
+    const previewAddress = address.slice(0, 5)
+    await Actions.waitForElement(by.text(contactName))
+    await assertions.isVisible(by.text(contactName))
+    await assertions.hasPartialText(this.contactPreviewAddress, previewAddress)
+  }
+
+  async tapContactByName(contactName: string) {
+    await Actions.tapElementAtIndex(by.text(contactName), 0)
   }
 }
 

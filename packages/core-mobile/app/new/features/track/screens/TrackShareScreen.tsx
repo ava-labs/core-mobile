@@ -1,26 +1,26 @@
-import { Text, useTheme, View } from '@avalabs/k2-alpine'
+import { SCREEN_WIDTH, Text, useTheme, View } from '@avalabs/k2-alpine'
 import { LoadingState } from 'common/components/LoadingState'
+import { ScrollScreen } from 'common/components/ScrollScreen'
+import { CORE_WEB_URL } from 'common/consts'
+import { useTokenDetails } from 'common/hooks/useTokenDetails'
+import { copyToClipboard } from 'common/utils/clipboard'
+import * as FileSystem from 'expo-file-system'
 import { useLocalSearchParams } from 'expo-router'
-import React, { useCallback, useRef, useState } from 'react'
-import { LayoutChangeEvent, PixelRatio, Platform } from 'react-native'
+import * as SMS from 'expo-sms'
 import {
-  ShareChart,
-  CHART_IMAGE_SIZE
+  CHART_IMAGE_SIZE,
+  ShareChart
 } from 'features/track/components/ShareChart'
 import {
   AvailableSocial,
   ShareFooter
 } from 'features/track/components/ShareFooter'
-import ViewShot, { captureRef } from 'react-native-view-shot'
-import { useTokenDetails } from 'common/hooks/useTokenDetails'
+import React, { useCallback, useRef } from 'react'
+import { PixelRatio, Platform } from 'react-native'
 import Share from 'react-native-share'
-import * as FileSystem from 'expo-file-system'
-import Logger from 'utils/Logger'
-import { copyToClipboard } from 'common/utils/clipboard'
-import * as SMS from 'expo-sms'
-import { CORE_WEB_URL } from 'common/consts'
-import { ScrollScreen } from 'common/components/ScrollScreen'
+import ViewShot, { captureRef } from 'react-native-view-shot'
 import { MarketType } from 'store/watchlist/types'
+import Logger from 'utils/Logger'
 
 const ShareMarketTokenScreen = (): JSX.Element => {
   const { theme } = useTheme()
@@ -28,18 +28,12 @@ const ShareMarketTokenScreen = (): JSX.Element => {
     tokenId: string
     marketType: MarketType
   }>()
-  const [viewWidth, setViewWidth] = useState<number>()
+
+  const { tokenInfo } = useTokenDetails({ tokenId, marketType })
+
   const viewShotRef = useRef<ViewShot>(null)
-  const { tokenInfo } = useTokenDetails({
-    tokenId: tokenId,
-    marketType
-  })
 
-  const handleLayout = (event: LayoutChangeEvent): void => {
-    setViewWidth(event.nativeEvent.layout.width)
-  }
-
-  const actualViewWidth = viewWidth ? viewWidth - 60 : undefined
+  const actualViewWidth = SCREEN_WIDTH - 60
   const scale = actualViewWidth ? actualViewWidth / CHART_IMAGE_SIZE : 1
   const cancellingVerticalMargin = actualViewWidth
     ? (CHART_IMAGE_SIZE - actualViewWidth) / 2
@@ -112,7 +106,7 @@ const ShareMarketTokenScreen = (): JSX.Element => {
         filename: `${tokenInfo?.name ?? 'token'}.png`
       }
     })
-  }, [message, tokenInfo])
+  }, [message, tokenInfo?.name])
 
   const renderFooter = useCallback(
     () => (
@@ -127,27 +121,25 @@ const ShareMarketTokenScreen = (): JSX.Element => {
     [urlToShare, handleSendMessage, handleMore, handleCopyLink, handleShare]
   )
 
-  if (!tokenId || !tokenInfo) {
+  if (!tokenId) {
     return <LoadingState sx={{ flex: 1 }} />
   }
 
   return (
-    <ScrollScreen
-      onLayout={handleLayout}
-      contentContainerStyle={{ paddingBottom: 60 }}
-      renderFooter={renderFooter}>
+    <ScrollScreen renderFooter={renderFooter}>
       {actualViewWidth !== undefined && (
         <>
           <View
             sx={{
               transform: [{ scale: scale }],
               alignItems: 'center',
-              marginTop: -cancellingVerticalMargin
+              marginTop: -cancellingVerticalMargin + 34
             }}>
             <View
               sx={{
                 borderRadius: 18 / scale,
                 borderWidth: 1,
+                backgroundColor: theme.colors.$surfacePrimary,
                 borderColor: theme.colors.$borderPrimary,
                 overflow: 'hidden'
               }}>
@@ -161,7 +153,7 @@ const ShareMarketTokenScreen = (): JSX.Element => {
               marginTop: -cancellingVerticalMargin + 26,
               marginHorizontal: 33
             }}>
-            <Text variant="body1" sx={{ color: '$textSecondary' }}>
+            <Text variant="subtitle1" sx={{ color: '$textSecondary' }}>
               {message}
             </Text>
           </View>

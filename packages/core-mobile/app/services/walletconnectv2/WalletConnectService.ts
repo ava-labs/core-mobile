@@ -73,8 +73,9 @@ class WalletConnectService implements WalletConnectServiceInterface {
 
     this.client.on('session_request', requestEvent => {
       const requestSession = this.getSession(requestEvent.topic)
-      requestSession &&
+      if (requestSession) {
         callbacks.onSessionRequest(requestEvent, requestSession.peer.metadata)
+      }
     })
 
     this.client.on('session_delete', requestEvent => {
@@ -148,7 +149,6 @@ class WalletConnectService implements WalletConnectServiceInterface {
     result: unknown
   ): Promise<void> => {
     const response = { id: requestId, result, jsonrpc: '2.0' }
-
     await this.client.respondSessionRequest({ topic, response })
   }
 
@@ -205,14 +205,20 @@ class WalletConnectService implements WalletConnectServiceInterface {
     chainId: number
     account: Account
   }): Promise<void> => {
-    const topic = session.topic
     const caip2ChainId = getCaip2ChainId(chainId)
+    const blockchainNamespace = caip2ChainId.split(
+      ':'
+    )[0] as BlockchainNamespace
 
-    const blockchainNamespace = caip2ChainId.split(':')[0]
-
-    if (!blockchainNamespace) {
-      throw new Error('invalid chain data')
+    // Early exit if the session does not support this namespace (e.g. Solana-only dApp and we are on EVM network)
+    if (!session.namespaces[blockchainNamespace]) {
+      Logger.info(
+        `Skipping WC session update for namespace '${blockchainNamespace}' – not present in session.`
+      )
+      return
     }
+
+    const topic = session.topic
 
     const addressWithCaip2ChainId = getAddressWithCaip2ChainId({
       account,
@@ -259,9 +265,12 @@ class WalletConnectService implements WalletConnectServiceInterface {
 
     // emitting events
     // but only for evm chains since neither wagmi/universal provider can handle non-evm chain events
-    if (blockchainNamespace !== BlockchainNamespace.EIP155) {
+    if (
+      blockchainNamespace !== BlockchainNamespace.EIP155 &&
+      blockchainNamespace !== BlockchainNamespace.SOLANA
+    ) {
       Logger.info(
-        'skipping emitting wallet connect events since it is for a non-evm chain'
+        'skipping emitting wallet connect events since it is for a non-EVM and non-Solana chain'
       )
       return
     }

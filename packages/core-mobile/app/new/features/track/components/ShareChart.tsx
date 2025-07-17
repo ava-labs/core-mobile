@@ -9,16 +9,16 @@ import {
   useTheme,
   View
 } from '@avalabs/k2-alpine'
-import React, { useMemo } from 'react'
-import { useTokenDetails } from 'common/hooks/useTokenDetails'
-import { formatLargeCurrency } from 'utils/Utils'
-import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
+import { useIsFocused } from '@react-navigation/native'
 import { TokenLogo } from 'common/components/TokenLogo'
+import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
+import { useTokenDetails } from 'common/hooks/useTokenDetails'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
 import SparklineChart from 'features/track/components/SparklineChart'
 import { useGetPrices } from 'hooks/watchlist/useGetPrices'
-import { useIsFocused } from '@react-navigation/native'
-import { MarketType } from 'store/watchlist/types'
+import React, { useMemo } from 'react'
+import { MarketType } from 'store/watchlist'
+import { formatLargeCurrency } from 'utils/Utils'
 import { isEffectivelyZero } from '../utils/utils'
 
 export const ShareChart = ({
@@ -30,8 +30,8 @@ export const ShareChart = ({
 }): JSX.Element => {
   const { theme } = useTheme()
   const { theme: inversedTheme } = useInversedTheme({ isDark: theme.isDark })
-  const { chartData, ranges, tokenInfo, coingeckoId } = useTokenDetails({
-    tokenId: tokenId,
+  const { chartData, ranges, coingeckoId, tokenInfo, token } = useTokenDetails({
+    tokenId,
     marketType
   })
   const isFocused = useIsFocused()
@@ -40,10 +40,29 @@ export const ShareChart = ({
     coingeckoIds: [coingeckoId],
     enabled:
       isFocused &&
-      tokenInfo !== undefined &&
-      tokenInfo.currentPrice === undefined &&
+      tokenInfo?.currentPrice === undefined &&
       coingeckoId.length > 0
   })
+
+  const currentPrice = useMemo(() => {
+    return (
+      tokenInfo?.currentPrice ??
+      prices?.[coingeckoId]?.priceInCurrency ??
+      token?.currentPrice
+    )
+  }, [tokenInfo?.currentPrice, prices, coingeckoId, token?.currentPrice])
+
+  const range = useMemo(() => {
+    return {
+      diffValue: ranges.diffValue ?? token?.priceChange24h,
+      percentChange: ranges.percentChange ?? token?.priceChangePercentage24h
+    }
+  }, [
+    ranges.diffValue,
+    ranges.percentChange,
+    token?.priceChange24h,
+    token?.priceChangePercentage24h
+  ])
 
   return (
     <View
@@ -51,55 +70,51 @@ export const ShareChart = ({
         width: CHART_IMAGE_SIZE,
         height: CHART_IMAGE_SIZE
       }}>
-      {!tokenInfo || (chartData ?? []).length === 0 ? (
+      <View
+        sx={{
+          backgroundColor: inversedTheme.colors.$surfacePrimary,
+          height: '100%'
+        }}>
         <View
           sx={{
-            backgroundColor: theme.colors.$surfaceSecondary,
-            height: '100%',
-            justifyContent: 'center'
+            paddingTop: 36,
+            paddingHorizontal: 40,
+            paddingBottom: 4
           }}>
-          <ActivityIndicator size={'large'} />
-        </View>
-      ) : (
-        <View
-          sx={{
-            backgroundColor: inversedTheme.colors.$surfacePrimary,
-            height: '100%'
-          }}>
-          <View
-            sx={{
-              paddingTop: 36,
-              paddingHorizontal: 40,
-              paddingBottom: 4
-            }}>
-            <TokenHeader
-              logoUri={tokenInfo.logoUri}
-              symbol={tokenInfo.symbol}
-              currentPrice={
-                tokenInfo.currentPrice ?? prices?.[coingeckoId]?.priceInCurrency
-              }
-              ranges={
-                ranges.minDate === 0 && ranges.maxDate === 0
-                  ? undefined
-                  : ranges
-              }
-            />
-          </View>
-          <SparklineChart
-            style={{
-              position: 'absolute',
-              bottom: 0,
-              left: 0,
-              right: 0,
-              height: CHART_HEIGHT + VERTICAL_PADDING * 2
-            }}
-            data={chartData ?? []}
-            verticalPadding={VERTICAL_PADDING}
-            negative={ranges.diffValue < 0}
-            overrideTheme={inversedTheme}
+          <TokenHeader
+            logoUri={token?.logoUri ?? undefined}
+            symbol={token?.symbol ?? ''}
+            currentPrice={currentPrice}
+            ranges={range}
           />
         </View>
-      )}
+        <View
+          sx={{ flex: 1, position: 'absolute', bottom: 0, left: 0, right: 0 }}>
+          {(chartData ?? []).length === 0 ? (
+            <View
+              sx={{
+                height: CHART_HEIGHT + VERTICAL_PADDING * 2,
+                justifyContent: 'center'
+              }}>
+              <ActivityIndicator
+                size={'large'}
+                color={theme.colors.$surfacePrimary}
+              />
+            </View>
+          ) : (
+            <SparklineChart
+              style={{
+                height: CHART_HEIGHT + VERTICAL_PADDING * 2
+              }}
+              data={chartData ?? []}
+              verticalPadding={VERTICAL_PADDING}
+              negative={ranges.diffValue < 0}
+              overrideTheme={inversedTheme}
+              lineThickness={4}
+            />
+          )}
+        </View>
+      </View>
     </View>
   )
 }
@@ -143,7 +158,7 @@ const TokenHeader = ({
           : ranges.diffValue === 0
           ? PriceChangeStatus.Neutral
           : PriceChangeStatus.Up,
-      formattedPercent: `${ranges.percentChange.toFixed(2).replace('-', '')}%`
+      formattedPercent: `${ranges.percentChange?.toFixed(2).replace('-', '')}%`
     }
   }, [ranges, formatTokenInCurrency])
 

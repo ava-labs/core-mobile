@@ -1,5 +1,5 @@
 import { createZustandStore } from 'common/utils/createZustandStore'
-import { TokenUnit } from '@avalabs/core-utils-sdk/dist'
+import { TokenUnit } from '@avalabs/core-utils-sdk'
 import { create } from 'zustand'
 import { CryptoCurrency } from './types'
 import { PaymentMethods, ServiceProviders } from './consts'
