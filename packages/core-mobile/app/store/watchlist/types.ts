@@ -30,7 +30,7 @@ export enum MarketType {
 }
 
 type InternalId = string
-type CoingeckoId = string
+export type CoingeckoId = string
 
 export type MarketToken =
   | {
@@ -74,8 +74,6 @@ export type TokensAndCharts = {
   tokens: Record<string, MarketToken>
   charts: Charts
 }
-
-export type CoingeckoId = string
 
 export type WatchListFavoriteState = {
   favorites: CoingeckoId[]

@@ -1,7 +1,10 @@
-import { CoingeckoId } from 'store/watchlist'
+export interface TokenSubscriptionItem {
+  internalId: string // EIP-155 format: eip155:43114-0x<contract_address>
+}
 
 export interface TokenSubscriptionPayload {
-  tokenIds: CoingeckoId[] // List of token addresses to subscribe to
+  tokens: TokenSubscriptionItem[]
+  deviceArn: string
 }
 
 export interface ITokenChangeNotificationService {

@@ -36,7 +36,8 @@ export const NewsDataSchema = object({
   event: nativeEnum(NewsEvents),
   title: string(),
   body: string(),
-  url: string()
+  url: string(),
+  urlV2: string().optional() // New field for notifications with internalId
 })
 
 export const NotificationPayloadSchema = object({
