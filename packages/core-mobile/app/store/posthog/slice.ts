@@ -346,6 +346,7 @@ export const selectIsSwapFeesBlocked = (state: RootState): boolean => {
 
 export const selectIsSolanaSupportBlocked = (state: RootState): boolean => {
   const { featureFlags } = state.posthog
+  return true
   return (
     !featureFlags[FeatureGates.SOLANA_SUPPORT] ||
     !featureFlags[FeatureGates.EVERYTHING]
