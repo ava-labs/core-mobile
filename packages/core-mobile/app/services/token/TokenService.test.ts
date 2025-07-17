@@ -1,4 +1,4 @@
-import sdk from '@avalabs/core-coingecko-sdk'
+import * as sdk from '@avalabs/core-coingecko-sdk'
 import { watchListCacheClient } from 'services/watchlist/watchListCacheClient'
 import * as inMemoryCache from 'utils/InMemoryCache'
 import TokenService from './TokenService'
@@ -9,6 +9,15 @@ import MARKET_CHART from './__mocks__/marketChart.json'
 import COIN_INFO from './__mocks__/coinInfo.json'
 import MARKET_DATA from './__mocks__/marketData.json'
 import RAW_WATCHLIST_PRICE from './__mocks__/rawWatchlistPrice.json'
+
+jest.mock('@avalabs/core-coingecko-sdk', () => ({
+  ...jest.requireActual('@avalabs/core-coingecko-sdk'),
+  coinsSearch: jest.fn(),
+  simplePrice: jest.fn(),
+  coinsMarketChart: jest.fn(),
+  coinsInfo: jest.fn(),
+  coinsMarket: jest.fn()
+}))
 
 const MOCK_429 = { status: 429, message: 'Too many requests' }
 
@@ -39,10 +48,10 @@ describe('getMarketsFromWatchlistCache', () => {
 
 describe('getTokenSearch', () => {
   const proxySearchCoinsMock = jest.spyOn(proxy, 'searchCoins')
-  const sdkSearchCoinsMock = jest.spyOn(sdk, 'coinsSearch')
+  const { coinsSearch } = require('@avalabs/core-coingecko-sdk')
 
   it('should return data from sdk', async () => {
-    sdkSearchCoinsMock.mockImplementationOnce(async () => {
+    coinsSearch.mockImplementationOnce(async () => {
       return {
         coins: [
           {
@@ -56,11 +65,11 @@ describe('getTokenSearch', () => {
     })
     const result = await TokenService.getTokenSearch('test')
     expect(result).not.toBeUndefined()
-    expect(sdkSearchCoinsMock).toHaveBeenCalled()
+    expect(coinsSearch).toHaveBeenCalled()
     expect(result?.length).toEqual(1)
   })
   it('should return data from proxy', async () => {
-    sdkSearchCoinsMock.mockRejectedValueOnce(async () => MOCK_429)
+    coinsSearch.mockRejectedValueOnce(async () => MOCK_429)
     proxySearchCoinsMock.mockImplementationOnce(async () => {
       return {
         coins: [
@@ -81,21 +90,21 @@ describe('getTokenSearch', () => {
 
 describe('getSimplePrice', () => {
   const proxyMock = jest.spyOn(proxy, 'simplePrice')
-  const sdkMock = jest.spyOn(sdk, 'simplePrice')
+  const { simplePrice } = require('@avalabs/core-coingecko-sdk')
 
   it('should return simple price data from sdk', async () => {
     inMemoryCacheMock.mockImplementation(() => undefined)
-    sdkMock.mockImplementationOnce(async () => WATCHLIST_PRICE)
+    simplePrice.mockImplementationOnce(async () => WATCHLIST_PRICE)
     const result = await TokenService.getSimplePrice({
       coinIds: ['test'],
       currency: sdk.VsCurrencyType.USD
     })
-    expect(sdkMock).toHaveBeenCalledTimes(1)
+    expect(simplePrice).toHaveBeenCalledTimes(1)
     expect(result?.test?.usd?.price).toEqual(1)
   })
   it('should return simple price data from proxy', async () => {
     inMemoryCacheMock.mockImplementation(() => undefined)
-    sdkMock.mockRejectedValueOnce(async () => MOCK_429)
+    simplePrice.mockRejectedValueOnce(async () => MOCK_429)
     proxyMock.mockImplementationOnce(async () => RAW_WATCHLIST_PRICE)
     const result = await TokenService.getSimplePrice({
       coinIds: ['test'],
@@ -110,7 +119,7 @@ describe('getSimplePrice', () => {
       coinIds: ['test'],
       currency: sdk.VsCurrencyType.USD
     })
-    expect(sdkMock).not.toHaveBeenCalled()
+    expect(simplePrice).not.toHaveBeenCalled()
     expect(proxyMock).not.toHaveBeenCalled()
     expect(result?.test?.usd?.price).toEqual(1)
   })
@@ -177,20 +186,20 @@ describe('getPriceWithMarketDataByCoinIds', () => {
 
 describe('getChartDataForCoinId', () => {
   const proxyMock = jest.spyOn(proxy, 'marketChartByCoinId')
-  const sdkMock = jest.spyOn(sdk, 'coinsMarketChart')
+  const { coinsMarketChart } = require('@avalabs/core-coingecko-sdk')
 
   it('should return data from sdk', async () => {
     inMemoryCacheMock.mockImplementation(() => undefined)
-    sdkMock.mockImplementationOnce(async () => MARKET_CHART as never)
+    coinsMarketChart.mockImplementationOnce(async () => MARKET_CHART as never)
     const result = await TokenService.getChartDataForCoinId({
       coingeckoId: 'test'
     })
-    expect(sdkMock).toHaveBeenCalled()
+    expect(coinsMarketChart).toHaveBeenCalled()
     expect(result).not.toBeUndefined()
   })
   it('should return data from proxy', async () => {
     inMemoryCacheMock.mockImplementation(() => undefined)
-    sdkMock.mockRejectedValueOnce(async () => MOCK_429)
+    coinsMarketChart.mockRejectedValueOnce(async () => MOCK_429)
     proxyMock.mockImplementationOnce(async () => MARKET_CHART as never)
     const result = await TokenService.getChartDataForCoinId({
       coingeckoId: 'test'
@@ -202,20 +211,20 @@ describe('getChartDataForCoinId', () => {
 
 describe('getCoinInfo', () => {
   const proxyMock = jest.spyOn(proxy, 'marketDataByCoinId')
-  const sdkMock = jest.spyOn(sdk, 'coinsInfo')
+  const { coinsInfo } = require('@avalabs/core-coingecko-sdk')
 
   it('should return coin info from sdk', async () => {
     inMemoryCacheMock.mockImplementation(() => undefined)
-    sdkMock.mockImplementationOnce(async () => COIN_INFO as never)
+    coinsInfo.mockImplementationOnce(async () => COIN_INFO as never)
     const result = await TokenService.getCoinInfo({
       coingeckoId: 'test'
     })
-    expect(sdkMock).toHaveBeenCalledTimes(1)
+    expect(coinsInfo).toHaveBeenCalledTimes(1)
     expect(result?.id).toEqual('test')
   })
   it('should return coin info from proxy', async () => {
     inMemoryCacheMock.mockImplementation(() => undefined)
-    sdkMock.mockRejectedValueOnce(async () => MOCK_429)
+    coinsInfo.mockRejectedValueOnce(async () => MOCK_429)
     proxyMock.mockImplementationOnce(async () => COIN_INFO as never)
     const result = await TokenService.getCoinInfo({
       coingeckoId: 'test'
@@ -228,18 +237,18 @@ describe('getCoinInfo', () => {
     const result = await TokenService.getCoinInfo({
       coingeckoId: 'test'
     })
-    expect(sdkMock).not.toHaveBeenCalled()
+    expect(coinsInfo).not.toHaveBeenCalled()
     expect(proxyMock).not.toHaveBeenCalled()
     expect(result?.id).toEqual('test')
   })
   it('should return fetched coin info with fresh param', async () => {
     inMemoryCacheMock.mockImplementation(() => COIN_INFO)
-    sdkMock.mockImplementationOnce(async () => COIN_INFO as never)
+    coinsInfo.mockImplementationOnce(async () => COIN_INFO as never)
     const result = await TokenService.getCoinInfo({
       coingeckoId: 'test',
       fresh: true
     })
-    expect(sdkMock).toHaveBeenCalledTimes(1)
+    expect(coinsInfo).toHaveBeenCalledTimes(1)
     expect(proxyMock).not.toHaveBeenCalled()
     expect(result?.id).toEqual('test')
   })
@@ -247,18 +256,18 @@ describe('getCoinInfo', () => {
 
 describe('getMarkets', () => {
   const proxyMock = jest.spyOn(proxy, 'coinsMarket')
-  const sdkMock = jest.spyOn(sdk, 'coinsMarket')
+  const { coinsMarket } = require('@avalabs/core-coingecko-sdk')
 
   it('should return coins market data from sdk', async () => {
     inMemoryCacheMock.mockImplementation(() => undefined)
-    sdkMock.mockImplementation(async () => MARKET_DATA as never)
+    coinsMarket.mockImplementation(async () => MARKET_DATA as never)
     const result = await TokenService.getMarkets({})
-    expect(sdkMock).toHaveBeenCalledTimes(1)
+    expect(coinsMarket).toHaveBeenCalledTimes(1)
     expect(result?.[0]?.id).toEqual('test')
   })
   it('should return coins market data from proxy', async () => {
     inMemoryCacheMock.mockImplementation(() => undefined)
-    sdkMock.mockRejectedValue(async () => MOCK_429)
+    coinsMarket.mockRejectedValue(async () => MOCK_429)
     proxyMock.mockImplementation(async () => MARKET_DATA as never)
     const result = await TokenService.getMarkets({})
     expect(proxyMock).toHaveBeenCalledTimes(1)
@@ -267,7 +276,7 @@ describe('getMarkets', () => {
   it('should return coins market data from cache', async () => {
     inMemoryCacheMock.mockImplementation(() => MARKET_DATA as never)
     const result = await TokenService.getMarkets({})
-    expect(sdkMock).not.toHaveBeenCalled()
+    expect(coinsMarket).not.toHaveBeenCalled()
     expect(proxyMock).not.toHaveBeenCalled()
     expect(result?.[0]?.id).toEqual('test')
   })

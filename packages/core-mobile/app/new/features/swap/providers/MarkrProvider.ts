@@ -1,5 +1,5 @@
 import { swapError } from 'errors/swapError'
-import { resolve } from '@avalabs/core-utils-sdk/dist'
+import { resolve } from '@avalabs/core-utils-sdk'
 import { TransactionParams } from '@avalabs/evm-module'
 import { bigIntToHex } from '@ethereumjs/util'
 import Big from 'big.js'
