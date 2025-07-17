@@ -1,4 +1,4 @@
-import sdk from '@avalabs/core-coingecko-sdk'
+import * as sdk from '@avalabs/core-coingecko-sdk'
 import { watchListCacheClient } from 'services/watchlist/watchListCacheClient'
 import * as inMemoryCache from 'utils/InMemoryCache'
 import TokenService from './TokenService'
