@@ -18,7 +18,7 @@
     "postinstall": "node_modules/.bin/patch-package"
   },
   "dependencies": {
-    "@avalabs/core-utils-sdk": "3.1.0-alpha.48",
+    "@avalabs/core-utils-sdk": "3.1.0-alpha.58",
     "@shopify/react-native-skia": "1.5.0",
     "big.js": "6.2.2",
     "bn.js": "5.2.1",
@@ -47,7 +47,7 @@
     "react-native-svg": "15.8.0"
   },
   "peerDependencies": {
-    "@avalabs/core-utils-sdk": "3.1.0-alpha.48",
+    "@avalabs/core-utils-sdk": "3.1.0-alpha.58",
     "@react-native-masked-view/masked-view": "0.3.0",
     "@shopify/react-native-skia": "1.5.0",
     "expo-blur": "14.0.3",

@@ -1,4 +1,4 @@
-import { resolve } from '@avalabs/core-utils-sdk/dist'
+import { resolve } from '@avalabs/core-utils-sdk'
 import { JsonRpcBatchInternal } from '@avalabs/core-wallets-sdk'
 import { ERC20__factory } from 'contracts/openzeppelin'
 import { swapError } from 'errors/swapError'
