@@ -132,6 +132,7 @@ export const Details = ({
           copyToClipboard(address, 'Address copied')
         }}>
         <Text
+          testID={`address__${address}`}
           variant="mono"
           numberOfLines={1}
           style={{
@@ -282,6 +283,7 @@ export const Details = ({
           }}>
           <TokenLogo logoUri={item.value.logoUri} symbol={symbol} size={24} />
           <Text
+            testID={`network__${item.value.name}`}
             variant="body1"
             numberOfLines={1}
             sx={{

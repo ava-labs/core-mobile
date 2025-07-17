@@ -4,7 +4,7 @@ import { SubTextNumber } from 'common/components/SubTextNumber'
 import { selectSelectedCurrency } from 'store/settings/currency'
 import { useSelector } from 'react-redux'
 import { useNetworks } from 'hooks/networks/useNetworks'
-import { TokenUnit } from '@avalabs/core-utils-sdk/dist'
+import { TokenUnit } from '@avalabs/core-utils-sdk'
 import { useWatchlist } from 'hooks/watchlist/useWatchlist'
 import { LocalTokenWithBalance } from 'store/balance'
 import { getAddressByNetwork } from 'store/account/utils'
@@ -238,7 +238,7 @@ export const useSelectAmount = ({
           : 0
 
       const tokenAmount =
-        amt !== null && amt !== undefined
+        amt !== null && amt !== undefined && currentPrice !== 0
           ? (amt / currentPrice) * 10 ** maxDecimals
           : 0
 
