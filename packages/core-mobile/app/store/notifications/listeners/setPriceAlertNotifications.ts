@@ -7,10 +7,10 @@ import { registerDeviceToNotificationSender } from 'services/notifications/regis
 import NotificationsService from 'services/notifications/NotificationsService'
 import { selectNotificationSubscription } from 'store/notifications'
 import { ChannelId } from 'services/notifications/channels'
-import { unsubscribeForTokenChange } from 'services/notifications/tokenChange/unsubscribeForTokenChange'
-import { setTokenChangeSubscriptions } from 'services/notifications/tokenChange/setTokenChangeSubscriptions'
+import { unsubscribeForPriceAlert } from 'services/notifications/priceAlert/unsubscribeForPriceAlert'
+import { setPriceAlertSubscriptions } from 'services/notifications/priceAlert/setPriceAlertSubscriptions'
 
-export const setTokenSubscriptionsForFavorites = async (
+export const setPriceAlertNotifications = async (
   _: AnyAction,
   listenerApi: AppListenerEffectAPI
 ): Promise<void> => {
@@ -39,7 +39,7 @@ export const setTokenSubscriptionsForFavorites = async (
     const blockedNotifications =
       await NotificationsService.getBlockedNotifications()
     if (blockedNotifications.has(ChannelId.PRICE_ALERTS)) {
-      await unsubscribeForTokenChange()
+      await unsubscribeForPriceAlert()
       return
     }
 
@@ -49,7 +49,7 @@ export const setTokenSubscriptionsForFavorites = async (
 
     // Only call the API if we have tokens to subscribe to
     if (tokens.length > 0) {
-      await setTokenChangeSubscriptions({
+      await setPriceAlertSubscriptions({
         tokens,
         deviceArn
       })

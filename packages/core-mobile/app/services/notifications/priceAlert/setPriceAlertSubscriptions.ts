@@ -1,13 +1,13 @@
-import { TokenSubscriptionPayload } from 'services/notifications/tokenChange/types'
+import { TokenSubscriptionPayload } from 'services/notifications/priceAlert/types'
 import Logger from 'utils/Logger'
 import fetchWithAppCheck from 'utils/httpClient'
 import Config from 'react-native-config'
 
-export async function setTokenChangeSubscriptions(
+export async function setPriceAlertSubscriptions(
   payload: TokenSubscriptionPayload
 ): Promise<void> {
   Logger.info(
-    '[TokenChangeNotificationService] Setting token subscriptions:',
+    '[setPriceAlertSubscriptions] Setting token subscriptions:',
     payload.tokens.map(t => t.internalId)
   )
 
@@ -21,7 +21,7 @@ export async function setTokenChangeSubscriptions(
     if (response.ok) {
       const result = await response.json()
       Logger.info(
-        '[TokenChangeNotificationService] Successfully subscribed to token price alerts:',
+        '[setPriceAlertSubscriptions] Successfully subscribed to token price alerts:',
         result
       )
     } else {
@@ -29,7 +29,7 @@ export async function setTokenChangeSubscriptions(
     }
   } catch (error) {
     Logger.error(
-      `[TokenChangeNotificationService] Failed to set token subscriptions:`,
+      `[setPriceAlertSubscriptions] Failed to set token subscriptions:`,
       error
     )
   }

@@ -13,8 +13,8 @@ import { ChannelId, NewsChannelId } from 'services/notifications/channels'
 import { handleProcessNotificationData } from 'store/notifications/listeners/handleProcessNotificationData'
 import { promptEnableNotifications } from 'store/notifications'
 import { toggleWatchListFavorite } from 'store/watchlist'
-import { setTokenSubscriptionsForFavorites } from 'store/notifications/listeners/setTokenSubscriptionsForFavorites'
-import { unsubscribeForTokenChange } from 'services/notifications/tokenChange/unsubscribeForTokenChange'
+import { setPriceAlertNotifications } from 'store/notifications/listeners/setPriceAlertNotifications'
+import { unsubscribeForPriceAlert } from 'services/notifications/priceAlert/unsubscribeForPriceAlert'
 import {
   onFcmTokenChange,
   processNotificationData,
@@ -195,14 +195,14 @@ export const addNotificationsListeners = (
 
   startListening({
     actionCreator: toggleWatchListFavorite,
-    effect: setTokenSubscriptionsForFavorites
+    effect: setPriceAlertNotifications
   })
 
   startListening({
     matcher: isAnyOf(onNotificationsTurnedOffForNews),
     effect: async () => {
-      await unsubscribeForTokenChange().catch(reason => {
-        Logger.error(`[listeners.ts][unsubscribeAllNotifications]${reason}`)
+      await unsubscribeForPriceAlert().catch(reason => {
+        Logger.error(`[listeners.ts][unsubscribeForPriceAlert]${reason}`)
       })
     }
   })

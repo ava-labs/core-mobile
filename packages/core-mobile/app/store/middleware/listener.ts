@@ -12,7 +12,6 @@ import Logger from 'utils/Logger'
 import { addNotificationsListeners } from 'store/notifications/listeners/listeners'
 import { addSeedlessListeners } from 'seedless/store/listeners'
 import { addWatchlistListeners } from 'store/watchlist/listeners'
-import { addNotificationsTokenChangeListeners } from 'services/notifications/tokenChange/store/listeners'
 import { addAppearanceListeners } from 'store/settings/appearance/listeners'
 import { addUnifiedBridgeListeners } from 'store/unifiedBridge/listeners'
 import { AppAddListener, AppStartListening } from 'store/types'
@@ -59,8 +58,6 @@ addAppearanceListeners(startListening)
 addCurrencyListeners(startListening)
 
 addMeldListeners(startListening)
-
-addNotificationsTokenChangeListeners(startListening)
 
 export const addAppListener = addListener as AppAddListener
 
