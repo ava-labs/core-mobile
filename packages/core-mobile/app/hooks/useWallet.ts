@@ -8,6 +8,9 @@ import { storeWallet } from 'store/wallet/thunks'
 import { AppThunkDispatch } from 'store/types'
 import BiometricsSDK from 'utils/BiometricsSDK'
 import { setActiveWallet } from 'store/wallet/slice'
+import PerformanceService, {
+  PerformanceMilestone
+} from 'services/performance/PerformanceService'
 
 interface OnPinCreatedParams {
   walletId: string
@@ -36,6 +39,7 @@ export function useWallet(): UseWallet {
    * Navigates to the unlocked wallet screen
    */
   const unlock = useCallback(async (): Promise<void> => {
+    PerformanceService.recordMilestone(PerformanceMilestone.UNLOCK_STARTED)
     dispatch(onAppUnlocked())
   }, [dispatch])
 

@@ -151,6 +151,9 @@ const setStateToUnlocked = async (
   dispatch(setIsLocked(false))
   dispatch(setWalletState(WalletState.ACTIVE))
   PerformanceService.recordMilestone(PerformanceMilestone.UNLOCK_COMPLETED)
+  PerformanceService.recordMilestone(
+    PerformanceMilestone.PORTFOLIO_LOADING_STARTED
+  )
 }
 
 const clearData = async (

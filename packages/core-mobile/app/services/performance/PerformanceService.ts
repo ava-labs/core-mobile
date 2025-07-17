@@ -17,10 +17,8 @@ export enum PerformanceMilestone {
 
 export interface PerformanceMetrics {
   splashHidden: number
-  unlocking: {
-    completed: number
-    duration: number
-  }
+  unlocking: number
+  session: number
   portfolio: {
     completed: number
     loadingDuration: number
@@ -175,12 +173,15 @@ class PerformanceService {
       NativeLogger.warn(
         `App Performance Metrics:
         
-        Splash Hidden (isReady): ${metrics.splashHidden}s,
-        Unlocking (duration): ${metrics.unlocking.duration}s,
-
-        Unlocking (completed): ${metrics.unlocking.completed}s,
-        Portfolio Loading (duration): ${metrics.portfolio.loadingDuration}s,
-        Portfolio Loading (completed): ${metrics.portfolio.completed}s`
+        App Start [------- ${metrics.splashHidden}s -------] {user input pin/biometrics} [------- ??? -------] Unlocking [-------- ${metrics.unlocking}s -------] Loading [------- ${metrics.portfolio.loadingDuration}s --------] Completed in ${metrics.portfolio.completed}s
+        App Start (isReady): ${metrics.splashHidden}s,
+        Unlocking (unlocking) ${metrics.unlocking}s,
+        Loading (loading): ${metrics.portfolio.loadingDuration}s,
+        Completed (unlocking + loading): ${metrics.portfolio.completed}s
+        Session (isReady + unlocking + loading): ${metrics.session}s
+        
+        notes: "???" we don't record the time it takes the user to input his pin/biometrics after App Start
+        `
       )
     }
   }
@@ -216,16 +217,20 @@ class PerformanceService {
         PerformanceMilestone.PORTFOLIO_ASSETS_LOADED
       ) || 0
 
+    const portfolioCompleted =
+      this.getDurationBetweenMilestones(
+        PerformanceMilestone.UNLOCK_STARTED,
+        PerformanceMilestone.PORTFOLIO_ASSETS_LOADED
+      ) || 0
+
     return {
       splashHidden: (splashHidden - appStart) / 1000,
-      unlocking: {
-        completed: (unlockCompleted - appStart) / 1000,
-        duration: unlockDuration / 1000
-      },
+      unlocking: unlockDuration / 1000,
       portfolio: {
-        completed: (portfolioLoaded - appStart) / 1000,
+        completed: portfolioCompleted / 1000,
         loadingDuration: portfolioLoadingDuration / 1000
-      }
+      },
+      session: this.getSessionDuration() / 1000
     }
   }
 
