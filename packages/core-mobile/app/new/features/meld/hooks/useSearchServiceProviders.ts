@@ -2,7 +2,6 @@ import { useQuery, UseQueryResult } from '@tanstack/react-query'
 import MeldService from 'features/meld/services/MeldService'
 import { ReactQueryKeys } from 'consts/reactQueryKeys'
 import { MeldDefaultParams, ServiceProvider } from '../types'
-import { useMeldCountryCode } from '../store'
 
 export type SearchServiceProvidersParams = Omit<
   MeldDefaultParams,
@@ -19,19 +18,15 @@ export const useSearchServiceProviders = ({
   ServiceProvider[],
   Error
 > => {
-  const [countryCode] = useMeldCountryCode()
-
   return useQuery<ServiceProvider[]>({
     queryKey: [
       ReactQueryKeys.MELD_SEARCH_SERVICE_PROVIDERS,
       categories,
       accountFilter,
-      countryCode,
       cryptoCurrencies
     ],
     queryFn: () =>
       MeldService.searchServiceProviders({
-        countries: countryCode ? [countryCode] : undefined,
         categories,
         accountFilter,
         cryptoCurrencies
