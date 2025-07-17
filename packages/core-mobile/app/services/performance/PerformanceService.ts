@@ -1,4 +1,9 @@
 import Logger from 'utils/Logger'
+
+import { logger } from 'react-native-logs'
+
+const NativeLogger = logger.createLogger()
+
 // import AnalyticsService from 'services/analytics/AnalyticsService'
 
 export enum PerformanceMilestone {
@@ -165,6 +170,18 @@ class PerformanceService {
 
     if (metrics) {
       Logger.info('📈 Complete Performance Metrics:', metrics)
+
+      // Send performance metrics using react-native-logs
+      NativeLogger.warn(
+        `App Performance Metrics:
+        
+        Splash Hidden (isReady): ${metrics.splashHidden}s,
+        Unlocking (duration): ${metrics.unlocking.duration}s,
+
+        Unlocking (completed): ${metrics.unlocking.completed}s,
+        Portfolio Loading (duration): ${metrics.portfolio.loadingDuration}s,
+        Portfolio Loading (completed): ${metrics.portfolio.completed}s`
+      )
     }
   }
 
@@ -199,7 +216,7 @@ class PerformanceService {
         PerformanceMilestone.PORTFOLIO_ASSETS_LOADED
       ) || 0
 
-    const result = {
+    return {
       splashHidden: (splashHidden - appStart) / 1000,
       unlocking: {
         completed: (unlockCompleted - appStart) / 1000,
@@ -210,10 +227,6 @@ class PerformanceService {
         loadingDuration: portfolioLoadingDuration / 1000
       }
     }
-
-    Logger.trace(JSON.stringify(result, null, 2))
-
-    return result
   }
 
   /**
