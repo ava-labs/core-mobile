@@ -15,6 +15,7 @@ import Logger from 'utils/Logger'
 import LocalAuthentication, {
   AuthenticationType
 } from 'expo-local-authentication'
+import { Platform } from 'react-native'
 
 // Mock dependencies
 jest.mock('react-native-keychain', () => ({
@@ -406,45 +407,49 @@ describe('BiometricsSDK', () => {
       mockLocalAuthentication.supportedAuthenticationTypesAsync.mockResolvedValue(
         [AuthenticationType.FACIAL_RECOGNITION]
       )
-      const result = await BiometricsSDK.getAuthenticationType()
+      const result = await BiometricsSDK.getAuthenticationTypes()
       expect(result).toBeDefined()
 
       mockLocalAuthentication.supportedAuthenticationTypesAsync.mockResolvedValue(
         []
       )
-      const secondResult = await BiometricsSDK.getAuthenticationType()
-      expect(secondResult).toBeUndefined()
+      const secondResult = await BiometricsSDK.getAuthenticationTypes()
+      expect(secondResult).toStrictEqual([])
     })
 
     it('should get biometry type', async () => {
       mockLocalAuthentication.supportedAuthenticationTypesAsync.mockResolvedValue(
         [AuthenticationType.FACIAL_RECOGNITION]
       )
-      expect(await BiometricsSDK.getAuthenticationType()).toBe(
+      expect(await BiometricsSDK.getAuthenticationTypes()).toStrictEqual([
         AuthenticationType.FACIAL_RECOGNITION
-      )
+      ])
 
       mockLocalAuthentication.supportedAuthenticationTypesAsync.mockResolvedValue(
         [AuthenticationType.FINGERPRINT]
       )
-      expect(await BiometricsSDK.getAuthenticationType()).toBe(
+      expect(await BiometricsSDK.getAuthenticationTypes()).toStrictEqual([
         AuthenticationType.FINGERPRINT
-      )
+      ])
 
       mockLocalAuthentication.supportedAuthenticationTypesAsync.mockResolvedValue(
         [AuthenticationType.IRIS]
       )
-      expect(await BiometricsSDK.getAuthenticationType()).toBe(
+      expect(await BiometricsSDK.getAuthenticationTypes()).toStrictEqual([
         AuthenticationType.IRIS
-      )
+      ])
 
       mockLocalAuthentication.supportedAuthenticationTypesAsync.mockResolvedValue(
         []
       )
+      Platform.OS = 'android'
       mockLocalAuthentication.isEnrolledAsync.mockResolvedValue(true)
-      expect(await BiometricsSDK.getAuthenticationType()).toBe(
+      expect(await BiometricsSDK.getAuthenticationTypes()).toStrictEqual([
         AuthenticationType.FACIAL_RECOGNITION
-      )
+      ])
+      Platform.OS = 'ios'
+      mockLocalAuthentication.isEnrolledAsync.mockResolvedValue(true)
+      expect(await BiometricsSDK.getAuthenticationTypes()).toStrictEqual([])
     })
 
     it('should warmup', async () => {
