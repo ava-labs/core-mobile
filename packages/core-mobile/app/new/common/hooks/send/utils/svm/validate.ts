@@ -4,7 +4,7 @@ import {
   TokenWithBalanceSVM
 } from '@avalabs/vm-module-types'
 import { SendErrorMessage } from 'errors/sendError'
-import { TokenUnit } from '@avalabs/core-utils-sdk/dist'
+import { TokenUnit } from '@avalabs/core-utils-sdk'
 import { isAddress } from '@solana/kit'
 import { SolanaProvider } from '@avalabs/core-wallets-sdk'
 import { getAccountOccupiedSpace } from './getAccountOccupiedSpace'

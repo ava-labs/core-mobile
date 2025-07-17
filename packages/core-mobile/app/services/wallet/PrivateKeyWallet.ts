@@ -33,7 +33,7 @@ import {
   RpcMethod
 } from '@avalabs/vm-module-types'
 import { isTypedData } from '@avalabs/evm-module'
-import { strip0x } from '@avalabs/core-utils-sdk/dist'
+import { strip0x } from '@avalabs/core-utils-sdk'
 import { Curve } from 'utils/publicKeys'
 import { ed25519 } from '@noble/curves/ed25519'
 import { hex } from '@scure/base'
@@ -184,13 +184,13 @@ export class PrivateKeyWallet implements Wallet {
       case RpcMethod.SIGN_TYPED_DATA_V1:
       case RpcMethod.SIGN_TYPED_DATA_V3:
       case RpcMethod.SIGN_TYPED_DATA_V4:
-        return this.signEvmMessage(
+        return this.signEvmMessage({
           data,
           accountIndex,
           network,
           provider,
           rpcMethod
-        )
+        })
       default:
         throw new Error('unknown method')
     }
@@ -332,13 +332,19 @@ export class PrivateKeyWallet implements Wallet {
     return this.privateKey.toLowerCase() === privateKey.toLowerCase()
   }
 
-  private async signEvmMessage(
-    data: string | TypedDataV1 | TypedData<MessageTypes>,
-    accountIndex: number,
-    network: Network,
-    provider: JsonRpcBatchInternal,
+  private async signEvmMessage({
+    data,
+    accountIndex,
+    network,
+    provider,
+    rpcMethod
+  }: {
+    data: string | TypedDataV1 | TypedData<MessageTypes>
+    accountIndex: number
+    network: Network
+    provider: JsonRpcBatchInternal
     rpcMethod: RpcMethod
-  ): Promise<string> {
+  }): Promise<string> {
     switch (rpcMethod) {
       case RpcMethod.ETH_SIGN:
       case RpcMethod.PERSONAL_SIGN: {
