@@ -165,6 +165,7 @@
     "react-native-keychain": "8.1.1",
     "react-native-level-fs": "3.0.1",
     "react-native-localize": "3.2.1",
+    "react-native-logs": "5.3.0",
     "react-native-mmkv": "3.2.0",
     "react-native-modal-datetime-picker": "18.0.0",
     "react-native-os": "1.2.6",

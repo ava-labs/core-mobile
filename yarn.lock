@@ -392,6 +392,7 @@ __metadata:
     react-native-keychain: 8.1.1
     react-native-level-fs: 3.0.1
     react-native-localize: 3.2.1
+    react-native-logs: ^5.3.0
     react-native-mmkv: 3.2.0
     react-native-modal-datetime-picker: 18.0.0
     react-native-os: 1.2.6
@@ -27755,6 +27756,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"react-native-logs@npm:^5.3.0":
+  version: 5.3.0
+  resolution: "react-native-logs@npm:5.3.0"
+  checksum: b7fa58007e737fe337fbd664529054cfe71a1fa8f2f4cf50621ffca0f50b44f70dcb7d37f3222093c7b36a287a79b00f1b84d243fb15dc67650c72b6c514343a
+  languageName: node
+  linkType: hard
+
 "react-native-mmkv@npm:2.12.2":
   version: 2.12.2
   resolution: "react-native-mmkv@npm:2.12.2"
@@ -28166,7 +28174,7 @@ react-native-webview@ava-labs/react-native-webview:
   peerDependencies:
     react: "*"
     react-native: "*"
-  checksum: fbcda52ac0143fda4495c44c2867c73574d064934c835e38c1ca9c37bf0d5d2943990409ffc2fa6ca26f0311b01a2423b902b37a1ef2af514a9eece92fbc7f97
+  checksum: 3ac7888efe4c6a197532e10ecfc04c2cbac31885ad40d1143d0df8dc33381eb6dca76e6f8f71748ae165633d2cee45c4c1155d81dcdc49351df9217569953cfb
   languageName: node
   linkType: hard
 

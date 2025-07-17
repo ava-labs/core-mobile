@@ -1,6 +1,10 @@
 import { encrypt } from 'utils/EncryptionHelper'
 import BiometricsSDK from 'utils/BiometricsSDK'
 import walletService from 'services/wallet/WalletService'
+import AnalyticsService from 'services/analytics/AnalyticsService'
+import PerformanceService, {
+  PerformanceMilestone
+} from 'services/performance/PerformanceService'
 import { useDispatch, useSelector } from 'react-redux'
 import {
   onAppUnlocked,
@@ -12,7 +16,6 @@ import { WalletType } from 'services/wallet/types'
 import WalletService from 'services/wallet/WalletService'
 import { Dispatch } from '@reduxjs/toolkit'
 import Logger from 'utils/Logger'
-import AnalyticsService from 'services/analytics/AnalyticsService'
 import { useCallback } from 'react'
 
 type InitWalletServiceAndUnlockProps = {
@@ -60,6 +63,8 @@ export function useWallet(): UseWallet {
    */
   const unlock = useCallback(
     async ({ mnemonic }: { mnemonic: string }): Promise<void> => {
+      // Record the start of unlock process
+      PerformanceService.recordMilestone(PerformanceMilestone.UNLOCK_STARTED)
       await initWalletServiceAndUnlock({
         dispatch,
         mnemonic,

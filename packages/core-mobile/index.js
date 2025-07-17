@@ -14,6 +14,7 @@ import Bootsplash from 'react-native-bootsplash'
 import Logger, { LogLevel } from 'utils/Logger'
 import DevDebuggingConfig from 'utils/debugging/DevDebuggingConfig'
 import SentryService from 'services/sentry/SentryService'
+import PerformanceService from 'services/performance/PerformanceService'
 import NewApp from 'new/ContextApp'
 import { hideMenu } from 'expo-dev-client'
 import { expo } from './app.json'
@@ -29,6 +30,7 @@ if (__DEV__) {
 }
 
 SentryService.init()
+PerformanceService.init()
 
 Platform.OS === 'android' &&
   UIManager.setLayoutAnimationEnabledExperimental &&
