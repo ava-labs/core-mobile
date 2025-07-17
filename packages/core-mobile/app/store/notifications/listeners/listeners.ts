@@ -14,6 +14,7 @@ import { handleProcessNotificationData } from 'store/notifications/listeners/han
 import { promptEnableNotifications } from 'store/notifications'
 import { toggleWatchListFavorite } from 'store/watchlist'
 import { setTokenSubscriptionsForFavorites } from 'store/notifications/listeners/setTokenSubscriptionsForFavorites'
+import { unsubscribeForTokenChange } from 'services/notifications/tokenChange/unsubscribeForTokenChange'
 import {
   onFcmTokenChange,
   processNotificationData,
@@ -195,6 +196,15 @@ export const addNotificationsListeners = (
   startListening({
     actionCreator: toggleWatchListFavorite,
     effect: setTokenSubscriptionsForFavorites
+  })
+
+  startListening({
+    matcher: isAnyOf(onNotificationsTurnedOffForNews),
+    effect: async () => {
+      await unsubscribeForTokenChange().catch(reason => {
+        Logger.error(`[listeners.ts][unsubscribeAllNotifications]${reason}`)
+      })
+    }
   })
 }
 

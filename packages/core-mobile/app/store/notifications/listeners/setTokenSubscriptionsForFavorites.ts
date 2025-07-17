@@ -39,9 +39,7 @@ export const setTokenSubscriptionsForFavorites = async (
     const blockedNotifications =
       await NotificationsService.getBlockedNotifications()
     if (blockedNotifications.has(ChannelId.PRICE_ALERTS)) {
-      await unsubscribeForTokenChange({
-        deviceArn
-      })
+      await unsubscribeForTokenChange()
       return
     }
 

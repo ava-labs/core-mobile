@@ -4,6 +4,7 @@ import { unSubscribeForBalanceChange } from 'services/notifications/balanceChang
 import { unSubscribeForNews } from 'services/notifications/news/unsubscribeForNews'
 import messaging from '@react-native-firebase/messaging'
 import Logger from 'utils/Logger'
+import { unsubscribeForTokenChange } from 'services/notifications/tokenChange/unsubscribeForTokenChange'
 
 export async function unsubscribeAllNotifications(): Promise<void> {
   const fcmToken = await FCMService.getFCMToken()
@@ -13,7 +14,8 @@ export async function unsubscribeAllNotifications(): Promise<void> {
     unSubscribeForNews({
       deviceArn,
       channelIds: []
-    })
+    }),
+    unsubscribeForTokenChange()
   ]).catch(error => {
     //as fallback invalidate token so user doesn't get notifications
     messaging().deleteToken()
