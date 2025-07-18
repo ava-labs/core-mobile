@@ -58,7 +58,10 @@ export const HistoryList = (
     const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24))
 
     return diffDays === 0
-      ? 'Today'
+      ? `${historyDate.toLocaleTimeString('en-US', {
+          hour: '2-digit',
+          minute: '2-digit'
+        })}`
       : diffDays === 1
       ? 'Yesterday'
       : diffDays < 7
@@ -67,7 +70,10 @@ export const HistoryList = (
       ? 'Last month'
       : historyDate.toLocaleDateString('en-US', {
           month: 'short',
-          day: 'numeric'
+          day: 'numeric',
+          ...(historyDate.getFullYear() !== now.getFullYear() && {
+            year: 'numeric'
+          })
         })
   }
 

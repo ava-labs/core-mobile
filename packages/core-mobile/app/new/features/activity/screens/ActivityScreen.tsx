@@ -1,3 +1,7 @@
+import {
+  isTokenWithBalanceAVM,
+  isTokenWithBalancePVM
+} from '@avalabs/avalanche-module'
 import { BridgeTransfer } from '@avalabs/bridge-unified'
 import { BridgeTransaction } from '@avalabs/core-bridge-sdk'
 import { Network } from '@avalabs/core-chains-sdk'
@@ -25,8 +29,8 @@ import { ErrorState } from 'new/common/components/ErrorState'
 import { LoadingState } from 'new/common/components/LoadingState'
 import React, { useCallback, useMemo } from 'react'
 import { Platform, ViewStyle } from 'react-native'
-import Animated, { useAnimatedStyle, withTiming } from 'react-native-reanimated'
 import { useHeaderMeasurements } from 'react-native-collapsible-tab-view'
+import Animated, { useAnimatedStyle, withTiming } from 'react-native-reanimated'
 import { Transaction } from 'store/transaction'
 import { useActivityFilterAndSearch } from '../hooks/useActivityFilterAndSearch'
 
@@ -59,7 +63,8 @@ export const ActivityScreen = ({
     network,
     networkOption,
     networkDropdown,
-    selectedNetwork
+    selectedNetwork,
+    xpToken
   } = useActivityFilterAndSearch({ searchText })
 
   const keyboardAvoidingStyle = useAnimatedStyle(() => {
@@ -182,14 +187,16 @@ export const ActivityScreen = ({
       if (isPendingBridgeTransaction(item)) {
         return (
           <PendingBridgeTransactionItem
-            key={item.sourceTxHash}
             item={item}
             index={index}
             onPress={() => handlePendingBridge(item)}
           />
         )
       } else {
-        const isXpTx = isXpTransaction(item.txType)
+        const isXpTx =
+          isXpTransaction(item.txType) &&
+          xpToken &&
+          (isTokenWithBalanceAVM(xpToken) || isTokenWithBalancePVM(xpToken))
 
         const props = {
           tx: item,
@@ -198,12 +205,13 @@ export const ActivityScreen = ({
         }
 
         if (isXpTx) {
-          return <XpActivityListItem {...props} key={item.hash} />
+          return <XpActivityListItem {...props} />
         }
-        return <TokenActivityListItem {...props} key={item.hash} />
+
+        return <TokenActivityListItem {...props} />
       }
     },
-    [handleExplorerLink, handlePendingBridge]
+    [handleExplorerLink, handlePendingBridge, xpToken]
   )
 
   const renderSeparator = useCallback((): JSX.Element => {
