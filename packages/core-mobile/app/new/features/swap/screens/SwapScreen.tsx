@@ -38,17 +38,11 @@ import {
   selectTokensWithZeroBalanceByNetwork
 } from 'store/balance'
 import { basisPointsToPercentage } from 'utils/basisPointsToPercentage'
+import Big from 'big.js'
 import { SlippageInput } from '../components.tsx/SlippageInput'
 import { PARASWAP_PARTNER_FEE_BPS } from '../consts'
 import { useSwapContext } from '../contexts/SwapContext'
-import {
-  isEvmUnwrapQuote,
-  isEvmWrapQuote,
-  isMarkrQuote,
-  isParaswapQuote,
-  SwapProviders,
-  SwapType
-} from '../types'
+import { isParaswapQuote, SwapProviders, SwapType } from '../types'
 import { calculateRate as calculateEvmRate } from '../utils/evm/calculateRate'
 
 export const SwapScreen = (): JSX.Element => {
@@ -169,34 +163,46 @@ export const SwapScreen = (): JSX.Element => {
     }
   }, [fromTokenValue, maxFromValue])
 
+  const applyFeeDeduction = useCallback(
+    (amount: string, direction: SwapSide): bigint => {
+      const slippagePercent = slippage / 100
+      const feePercent = PARASWAP_PARTNER_FEE_BPS / 10_000
+      const totalPercent = slippagePercent + feePercent
+
+      if (direction === SwapSide.SELL) {
+        const minAmountOut = new Big(amount).times(1 - totalPercent).toFixed(0)
+        return BigInt(minAmountOut)
+      } else {
+        const maxAmountIn = new Big(amount).times(1 + totalPercent).toFixed(0)
+        return BigInt(maxAmountIn)
+      }
+    },
+    [slippage]
+  )
+
   const applyQuote = useCallback(() => {
-    if (!fromTokenValue || !selectedQuote) {
+    if (
+      !fromTokenValue ||
+      !selectedQuote ||
+      selectedQuote?.quote === undefined
+    ) {
       setToTokenValue(undefined)
       return
     }
-
     const quote = selectedQuote.quote
-    const destAmount = selectedQuote.metadata.amountOut as string
-    if (quote) {
-      if (
-        isParaswapQuote(quote) &&
-        selectedProvider === SwapProviders.PARASWAP
-      ) {
-        if (quote.side === SwapSide.SELL) {
-          setToTokenValue(BigInt(destAmount))
-        } else {
-          setFromTokenValue(BigInt(quote.srcAmount)) // todo: add srcAmount to the metadata
-        }
-      } else if (
-        isMarkrQuote(quote) &&
-        selectedProvider === SwapProviders.MARKR
-      ) {
-        setToTokenValue(BigInt(destAmount))
-      } else if (isEvmWrapQuote(quote) || isEvmUnwrapQuote(quote)) {
-        setToTokenValue(BigInt(destAmount))
-      }
+    const amountIn = selectedQuote.metadata.amountIn
+    const amountOut = selectedQuote.metadata.amountOut
+    if (
+      selectedProvider === SwapProviders.PARASWAP &&
+      isParaswapQuote(quote) &&
+      quote.side === SwapSide.BUY &&
+      amountIn
+    ) {
+      setFromTokenValue(applyFeeDeduction(amountIn, SwapSide.BUY))
+    } else if (amountOut) {
+      setToTokenValue(applyFeeDeduction(amountOut, SwapSide.SELL))
     }
-  }, [selectedQuote, selectedProvider, fromTokenValue])
+  }, [selectedQuote, selectedProvider, fromTokenValue, applyFeeDeduction])
 
   const calculateMax = useCallback(() => {
     if (!fromToken) return

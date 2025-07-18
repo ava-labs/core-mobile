@@ -43,7 +43,10 @@ export type EvmSwapQuote =
 
 export type NormalizedSwapQuote = {
   quote: EvmSwapQuote
-  metadata: Record<string, unknown>
+  metadata: {
+    amountIn?: string
+    amountOut?: string
+  } & Record<string, unknown>
 }
 
 export type NormalizedSwapQuoteResult = {

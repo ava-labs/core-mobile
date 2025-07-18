@@ -30,7 +30,12 @@ export const MARKR_EVM_NATIVE_TOKEN_ADDRESS =
  * The partner ID Markr uses for EVM swaps.
  */
 export const MARKR_EVM_PARTNER_ID =
-  '0x1c8f2aada1d99f5ac6e1011ce002fc53a6e36ab104e30f11a13053734edec239'
+  '0x655812b0b38b7733f8b36ec2bf870fd23be54cde979bcb722861de8ab6861fc4'
+
+/**
+ * The interval in milliseconds at which to refresh quotes.
+ */
+export const SWAP_REFRESH_INTERVAL = 30000
 
 /**
  * The necessary parameters for Core to gather fees from the swap.

@@ -32,6 +32,7 @@ import {
   useSwapSelectedFromToken,
   useSwapSelectedToToken
 } from '../store'
+import { SWAP_REFRESH_INTERVAL } from '../consts'
 
 const DEFAULT_DEBOUNCE_MILLISECONDS = 300
 
@@ -165,6 +166,15 @@ export const SwapContextProvider = ({
   useEffect(() => {
     //call getQuote every time its params change to get fresh rates
     getQuote()
+
+    // Auto-refresh quotes every 30 seconds
+    const intervalId = setInterval(() => {
+      getQuote()
+    }, SWAP_REFRESH_INTERVAL)
+
+    return () => {
+      clearInterval(intervalId)
+    }
   }, [getQuote])
 
   const handleSwapError = useCallback(
