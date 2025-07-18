@@ -78,13 +78,11 @@ export const useActivityFilterAndSearch = ({
 
   const token = useMemo(() => {
     return filteredTokenList.find(tk => {
-      if (
-        isPChain(network?.chainId as ChainId) ||
-        isXChain(network?.chainId as ChainId)
-      ) {
-        return Number(tk.networkChainId) === Number(network?.chainId)
-      }
-      return Number(tk.localId) === Number(network?.chainId)
+      return (
+        (isPChain(network?.chainId as ChainId) ||
+          isXChain(network?.chainId as ChainId)) &&
+        Number(tk.networkChainId) === Number(network?.chainId)
+      )
     })
   }, [filteredTokenList, network?.chainId])
 

@@ -60,7 +60,10 @@ const ActivityListItem: FC<Props> = ({
       ? 'Last month'
       : historyDate.toLocaleDateString('en-US', {
           month: 'short',
-          day: 'numeric'
+          day: 'numeric',
+          ...(historyDate.getFullYear() !== now.getFullYear() && {
+            year: 'numeric'
+          })
         })
   }
 
