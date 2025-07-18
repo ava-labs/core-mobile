@@ -33,6 +33,7 @@ import {
   useSwapSelectedFromToken,
   useSwapSelectedToToken
 } from '../store'
+import { SWAP_REFRESH_INTERVAL } from '../consts'
 import { isEvmSwapQuote, isSvmSwapQuote } from '../types'
 import { useSolanaSwap } from '../hooks/useSolanaSwap'
 
@@ -177,6 +178,15 @@ export const SwapContextProvider = ({
   useEffect(() => {
     //call getQuote every time its params change to get fresh rates
     getQuote()
+
+    // Auto-refresh quotes every 30 seconds
+    const intervalId = setInterval(() => {
+      getQuote()
+    }, SWAP_REFRESH_INTERVAL)
+
+    return () => {
+      clearInterval(intervalId)
+    }
   }, [getQuote])
 
   const handleSwapError = useCallback(

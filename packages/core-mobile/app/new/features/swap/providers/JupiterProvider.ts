@@ -51,7 +51,10 @@ export const JupiterProvider: SwapProvider<
 
     const normalizedQuote = {
       quote,
-      metadata: {}
+      metadata: {
+        amountIn: quote.inAmount,
+        amountOut: quote.outAmount
+      }
     }
     return {
       provider: SwapProviders.JUPITER,
