@@ -392,7 +392,7 @@ __metadata:
     react-native-keychain: 8.1.1
     react-native-level-fs: 3.0.1
     react-native-localize: 3.2.1
-    react-native-logs: ^5.3.0
+    react-native-logs: 5.3.0
     react-native-mmkv: 3.2.0
     react-native-modal-datetime-picker: 18.0.0
     react-native-os: 1.2.6
@@ -27756,7 +27756,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-native-logs@npm:^5.3.0":
+"react-native-logs@npm:5.3.0":
   version: 5.3.0
   resolution: "react-native-logs@npm:5.3.0"
   checksum: b7fa58007e737fe337fbd664529054cfe71a1fa8f2f4cf50621ffca0f50b44f70dcb7d37f3222093c7b36a287a79b00f1b84d243fb15dc67650c72b6c514343a
