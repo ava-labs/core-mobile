@@ -331,7 +331,7 @@ __metadata:
     expo-constants: ~17.1.7
     expo-dev-client: ~5.2.4
     expo-haptics: ~14.1.4
-    expo-image: ~2.3.2
+    expo-image: 2.0.3
     expo-linear-gradient: ~14.1.5
     expo-linking: ~7.1.7
     expo-local-authentication: ~16.0.5
@@ -18965,6 +18965,21 @@ __metadata:
   peerDependencies:
     expo: "*"
   checksum: 432c27b13df6f332a33df51564a978a57d734d13a49d4b6fc8975e24d110ca82f9764ec1f27dbe8e679a09478b70e3f8c98192c4199ab07dddcc9e69318eb87e
+  languageName: node
+  linkType: hard
+
+"expo-image@npm:2.0.3":
+  version: 2.0.3
+  resolution: "expo-image@npm:2.0.3"
+  peerDependencies:
+    expo: "*"
+    react: "*"
+    react-native: "*"
+    react-native-web: "*"
+  peerDependenciesMeta:
+    react-native-web:
+      optional: true
+  checksum: 5be69b91c179b76c881532afcd3278ea15f933fac25b382da7e689d1d523ab71fc573ebc22513dbd65ce86426dc25e73a0eb7cc367f6b78a2ad55e8846d09631
   languageName: node
   linkType: hard
 
