@@ -6,8 +6,7 @@ import { ScrollScreen } from 'common/components/ScrollScreen'
 import { BackHandler } from 'react-native'
 import { View, Text, SCREEN_WIDTH, Button, useTheme } from '@avalabs/k2-alpine'
 import { Space } from 'common/components/Space'
-import QRCodeLight from 'assets/icons/qrcode_light.svg'
-import QRCodeDark from 'assets/icons/qrcode_dark.svg'
+import { Steps } from 'features/onboarding/components/KeystoneTroubleshooting'
 
 const KeystoneTroubleshootingScreen = ({
   params
@@ -70,13 +69,23 @@ const KeystoneTroubleshootingScreen = ({
             gap: 16
           }}>
           <Text variant="heading4">Invalid QR Code</Text>
-          <Text variant="body1">
+          <Text
+            variant="body1"
+            sx={{
+              marginBottom: 40
+            }}>
             Please ensure you have selected a valid QR code from your Keystone
             device.
           </Text>
+          <Steps
+            steps={[
+              'Tap the scan icon at the bottom right of Keystone.',
+              'Scan the QR code on the Core Wallet.',
+              'Confirm the transaction details and swipe to Confirm.',
+              'Use camera to scan the QR code displayed on Keystone.'
+            ]}
+          />
         </View>
-        <Space y={40} />
-        {theme.isDark ? <QRCodeDark /> : <QRCodeLight />}
         <Space y={40} />
         <Button
           style={{
@@ -88,7 +97,7 @@ const KeystoneTroubleshootingScreen = ({
           Try Again
         </Button>
         <Link
-          href="https://keyst.one"
+          href="https://guide.keyst.one/docs/core-mobile"
           style={{
             marginTop: 16,
             paddingVertical: 15
