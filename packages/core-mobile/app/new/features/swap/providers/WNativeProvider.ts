@@ -1,12 +1,12 @@
 import { swapError } from 'errors/swapError'
 import {
   EvmSwapOperation,
-  GetQuoteParams,
+  GetEvmQuoteParams,
   isEvmUnwrapQuote,
   isEvmWrapQuote,
   NormalizedSwapQuote,
   NormalizedSwapQuoteResult,
-  PerformSwapParams,
+  PerformSwapEvmParams,
   SwapProvider,
   SwapProviders
 } from '../types'
@@ -46,7 +46,10 @@ const getUnwrapOperation = (
   }
 }
 
-export const WNativeProvider: SwapProvider = {
+export const WNativeProvider: SwapProvider<
+  GetEvmQuoteParams,
+  PerformSwapEvmParams
+> = {
   name: SwapProviders.WNATIVE,
 
   async getQuote({
@@ -54,7 +57,7 @@ export const WNativeProvider: SwapProvider = {
     fromTokenAddress,
     toTokenAddress,
     amount
-  }: GetQuoteParams): Promise<NormalizedSwapQuoteResult> {
+  }: GetEvmQuoteParams): Promise<NormalizedSwapQuoteResult> {
     let quote: NormalizedSwapQuote
     if (isFromTokenNative && isWrappableToken(toTokenAddress)) {
       quote = getWrapOperation(toTokenAddress, amount)
@@ -75,7 +78,7 @@ export const WNativeProvider: SwapProvider = {
     provider,
     userAddress,
     signAndSend
-  }: PerformSwapParams) {
+  }: PerformSwapEvmParams) {
     if (!quote) throw swapError.missingParam('quote')
 
     if (!userAddress) throw swapError.missingParam('userAddress')

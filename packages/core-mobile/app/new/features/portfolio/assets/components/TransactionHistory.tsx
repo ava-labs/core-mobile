@@ -149,7 +149,6 @@ const TransactionHistory: FC<Props> = ({
       if (isPendingBridgeTransaction(item)) {
         return (
           <PendingBridgeTransactionItem
-            key={item.sourceTxHash}
             item={item}
             index={index}
             onPress={() => handlePendingBridge(item)}
@@ -168,9 +167,9 @@ const TransactionHistory: FC<Props> = ({
         }
 
         if (isXpTx) {
-          return <XpActivityListItem {...props} key={item.hash} />
+          return <XpActivityListItem {...props} />
         }
-        return <TokenActivityListItem {...props} key={item.hash} />
+        return <TokenActivityListItem {...props} />
       }
     },
     [handleExplorerLink, token, handlePendingBridge]
@@ -189,7 +188,10 @@ const TransactionHistory: FC<Props> = ({
   return (
     <Animated.View
       entering={getListItemEnteringAnimation(0)}
-      layout={SPRING_LINEAR_TRANSITION}>
+      layout={SPRING_LINEAR_TRANSITION}
+      style={{
+        flex: 1
+      }}>
       <CollapsibleTabs.FlatList
         contentContainerStyle={{ overflow: 'visible', paddingBottom: 16 }}
         data={combinedData}
@@ -199,6 +201,8 @@ const TransactionHistory: FC<Props> = ({
         ItemSeparatorComponent={renderSeparator}
         showsVerticalScrollIndicator={false}
         keyExtractor={keyExtractor}
+        refreshing={isRefreshing}
+        onRefresh={refresh}
       />
     </Animated.View>
   )

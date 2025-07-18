@@ -1,15 +1,19 @@
-import { SearchBar } from '@avalabs/k2-alpine'
+import { Network } from '@avalabs/core-chains-sdk'
+import { Button, SearchBar, View } from '@avalabs/k2-alpine'
 import { ListRenderItem } from '@shopify/flash-list'
 import { ListScreen } from 'common/components/ListScreen'
-import React, { useCallback } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import { FlatList } from 'react-native'
 
-export const SelectTokenScreen = <T,>({
+export const SelectTokenScreen = <T extends object>({
   tokens,
   searchText,
   onSearchText,
   renderListItem,
   keyExtractor,
-  renderEmpty
+  renderEmpty,
+  networks = [],
+  networkChainId
 }: {
   tokens: T[]
   searchText: string
@@ -17,15 +21,78 @@ export const SelectTokenScreen = <T,>({
   renderListItem: ListRenderItem<T>
   keyExtractor?: (item: T) => string
   renderEmpty?: () => React.ReactNode
+  networks?: Network[]
+  networkChainId?: number
 }): JSX.Element => {
+  const [selectedNetworkFilter, setSelectedNetworkFilter] =
+    useState<NetworkFilter>(ALL_NETWORKS)
+  const filteredTokens = useMemo(
+    () =>
+      tokens.filter(token => {
+        if (selectedNetworkFilter === ALL_NETWORKS) {
+          return true
+        } else if (
+          'networkChainId' in token &&
+          typeof selectedNetworkFilter !== 'string'
+        ) {
+          return token.networkChainId === selectedNetworkFilter.chainId
+        }
+      }),
+    [tokens, selectedNetworkFilter]
+  )
+
+  const renderNetwork = useCallback(
+    ({ item }: { item: NetworkFilter }) => {
+      return (
+        <Button
+          size="small"
+          type={item === selectedNetworkFilter ? 'primary' : 'secondary'}
+          hitSlop={8}
+          onPress={() => setSelectedNetworkFilter(item)}>
+          {typeof item === 'string' ? item : item.chainName}
+        </Button>
+      )
+    },
+    [selectedNetworkFilter]
+  )
+
+  const renderNetworkSelector = useCallback(() => {
+    if (networks.length === 0) {
+      return
+    }
+
+    return (
+      <FlatList
+        contentContainerStyle={{ gap: 8 }}
+        horizontal
+        data={[ALL_NETWORKS, ...networks]}
+        renderItem={renderNetwork}
+      />
+    )
+  }, [networks, renderNetwork])
+
   const renderHeader = useCallback(() => {
-    return <SearchBar onTextChanged={onSearchText} searchText={searchText} />
-  }, [onSearchText, searchText])
+    return (
+      <View sx={{ gap: 12 }}>
+        <SearchBar onTextChanged={onSearchText} searchText={searchText} />
+        {renderNetworkSelector()}
+      </View>
+    )
+  }, [onSearchText, searchText, renderNetworkSelector])
+
+  useEffect(() => {
+    if (networkChainId) {
+      const network = networks.find(n => n.chainId === networkChainId)
+      if (network) {
+        setSelectedNetworkFilter(network)
+      }
+    }
+  }, [networkChainId, networks])
 
   return (
     <ListScreen
       title="Select a token"
-      data={tokens}
+      data={filteredTokens}
       isModal
       // @ts-ignore TODO: ListScreen improvement
       renderItem={renderListItem}
@@ -35,3 +102,6 @@ export const SelectTokenScreen = <T,>({
     />
   )
 }
+
+const ALL_NETWORKS = 'All networks'
+type NetworkFilter = Network | string

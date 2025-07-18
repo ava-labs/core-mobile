@@ -11,11 +11,11 @@ import {
 } from '../consts'
 import ParaswapService from '../services/ParaswapService'
 import {
-  GetQuoteParams,
+  GetEvmQuoteParams,
   isParaswapQuote,
   NormalizedSwapQuote,
   NormalizedSwapQuoteResult,
-  PerformSwapParams,
+  PerformSwapEvmParams,
   SwapProvider,
   SwapProviders
 } from '../types'
@@ -23,7 +23,7 @@ import { ensureAllowance } from '../utils/evm/ensureAllowance'
 
 const PARTNER = 'Avalanche'
 
-const validateSwapParams = (params: PerformSwapParams): void => {
+const validateSwapParams = (params: PerformSwapEvmParams): void => {
   const { srcTokenAddress, destTokenAddress, quote, userAddress, network } =
     params
 
@@ -64,7 +64,7 @@ const calculateSwapAmounts = (
 }
 
 const handleTokenApproval = async (
-  params: PerformSwapParams,
+  params: PerformSwapEvmParams,
   sourceAmount: string
 ): Promise<void> => {
   const {
@@ -123,7 +123,7 @@ const checkForErrorsInResult = (result: Transaction | Error): boolean => {
 }
 
 const buildSwapTransaction = async (
-  params: PerformSwapParams,
+  params: PerformSwapEvmParams,
   sourceAmount: string,
   destinationAmount: string
 ): Promise<TransactionParams> => {
@@ -193,7 +193,7 @@ const buildSwapTransaction = async (
 }
 
 const executeSwapTransaction = async (
-  params: PerformSwapParams,
+  params: PerformSwapEvmParams,
   tx: TransactionParams
 ): Promise<string> => {
   const { userAddress, signAndSend } = params
@@ -214,7 +214,10 @@ const executeSwapTransaction = async (
   return swapTxHash
 }
 
-export const ParaswapProvider: SwapProvider = {
+export const ParaswapProvider: SwapProvider<
+  GetEvmQuoteParams,
+  PerformSwapEvmParams
+> = {
   name: 'paraswap',
 
   async getQuote(
@@ -226,8 +229,8 @@ export const ParaswapProvider: SwapProvider = {
       amount,
       destination,
       network,
-      account
-    }: GetQuoteParams,
+      address
+    }: GetEvmQuoteParams,
     abortSignal?: AbortSignal
   ): Promise<NormalizedSwapQuoteResult> {
     if (!fromTokenAddress || !fromTokenDecimals) {
@@ -254,7 +257,7 @@ export const ParaswapProvider: SwapProvider = {
       srcAmount: amount.toString(),
       swapSide: destination,
       network: network,
-      account: account,
+      address,
       abortSignal
     })
 
@@ -273,7 +276,7 @@ export const ParaswapProvider: SwapProvider = {
     }
   },
 
-  async swap(params: PerformSwapParams) {
+  async swap(params: PerformSwapEvmParams) {
     validateSwapParams(params)
 
     const { quote, slippage, isSwapFeesEnabled } = params
