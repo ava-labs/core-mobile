@@ -69,10 +69,17 @@ export const handleDeeplink = ({
         deeplink.callback?.()
         navigateFromDeeplinkUrl('/claimStakeReward')
       } else if (action === ACTIONS.WatchList) {
-        const coingeckoId = pathname.split('/')[1]
-        navigateFromDeeplinkUrl(
-          `/trackTokenDetail?tokenId=${coingeckoId}&marketType=${MarketType.SEARCH}`
-        )
+        const tokenId = pathname.split('/')[1]
+        if (tokenId) {
+          // Detect if this is an internalId (EIP-155 format) or coingeckoId
+          const isInternalId = tokenId.startsWith('eip155:')
+          const marketType = isInternalId
+            ? MarketType.TRENDING
+            : MarketType.SEARCH
+          navigateFromDeeplinkUrl(
+            `/trackTokenDetail?tokenId=${tokenId}&marketType=${marketType}`
+          )
+        }
       } else if (action === ACTIONS.OfframpCompleted) {
         dispatch(offrampSend({ searchParams }))
       } else if (action === ACTIONS.OnrampCompleted) {

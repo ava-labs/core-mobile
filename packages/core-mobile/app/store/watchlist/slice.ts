@@ -5,7 +5,7 @@ import {
   BITCOIN_COINGECKO_ID,
   ETHEREUM_COINGECKO_ID
 } from 'consts/coingecko'
-import { initialState } from './types'
+import { CoingeckoId, initialState } from './types'
 
 const DEFAULT_WATCHLIST_FAVORITES = [
   ETHEREUM_COINGECKO_ID,
@@ -48,7 +48,7 @@ export const selectIsWatchlistFavorite =
   (coingeckoId: string) => (state: RootState) =>
     state.watchlist.favorites.includes(coingeckoId)
 
-export const selectWatchlistFavoriteIds = (state: RootState): string[] => {
+export const selectWatchlistFavoriteIds = (state: RootState): CoingeckoId[] => {
   return state.watchlist.favorites
 }
 
