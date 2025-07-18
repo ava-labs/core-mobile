@@ -32,6 +32,9 @@ import Reanimated, {
 import { useSelector } from 'react-redux'
 import { Subscription } from 'rxjs'
 import { BiometricType } from 'services/deviceInfo/DeviceInfoService'
+import PerformanceService, {
+  PerformanceMilestone
+} from 'services/performance/PerformanceService'
 import { selectWalletState, WalletState } from 'store/app'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { selectSelectedAvatar } from 'store/settings/avatar'
@@ -70,6 +73,8 @@ const LoginWithPinOrBiometry = (): JSX.Element => {
 
   const handleLoginSuccess = useCallback(
     (mnemonic: string) => {
+      // Record the start of unlock process
+      PerformanceService.recordMilestone(PerformanceMilestone.UNLOCK_STARTED)
       handleStartLoading()
       pinInputRef.current?.blur()
       isProcessing.value = true
