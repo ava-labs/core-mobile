@@ -11,6 +11,7 @@ import { decrypt, encrypt } from 'utils/EncryptionHelper'
 import Aes from 'react-native-aes-crypto'
 import { Result } from 'types/result'
 import {
+  authenticateAsync,
   AuthenticationType,
   hasHardwareAsync,
   isEnrolledAsync,
@@ -171,6 +172,14 @@ class BiometricsSDK {
   }
 
   async loadEncryptionKeyWithBiometry(): Promise<boolean> {
+    const result = await authenticateAsync({
+      promptMessage: 'Authenticate  wallet',
+      fallbackLabel: 'Use passcode',
+      cancelLabel: 'Cancel',
+      requireConfirmation: true
+    })
+    if (!result.success) return false
+
     const credentials = await Keychain.getGenericPassword(bioGetOptions)
     if (!credentials) return false
     this.#encryptionKey = credentials.password
