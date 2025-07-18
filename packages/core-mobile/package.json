@@ -122,7 +122,7 @@
     "expo-dev-client": "5.2.4",
     "expo-haptics": "14.1.4",
     "expo-image": "2.0.3",
-    "expo-linear-gradient": "14.1.5",
+    "expo-linear-gradient": "^14.1.5",
     "expo-linking": "7.1.7",
     "expo-local-authentication": "16.0.5",
     "expo-localization": "16.1.6",
