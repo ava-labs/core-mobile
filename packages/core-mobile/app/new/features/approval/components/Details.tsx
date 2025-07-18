@@ -299,6 +299,71 @@ export const Details = ({
     [colors.$textPrimary, symbol]
   )
 
+  const renderAddressList = useCallback(
+    (addresses: string[]): JSX.Element => (
+      <View sx={{ alignItems: 'flex-start' }}>
+        {addresses.map((address, index) => (
+          <Pressable
+            key={index}
+            onPress={() => {
+              copyToClipboard(address, 'Address copied')
+            }}>
+            <Text
+              variant="mono"
+              numberOfLines={1}
+              style={{
+                fontSize: 15,
+                lineHeight: 22,
+                color: valueTextColor,
+                marginBottom: index < addresses.length - 1 ? 4 : 0
+              }}>
+              {truncateAddress(address, 8)}
+            </Text>
+          </Pressable>
+        ))}
+      </View>
+    ),
+    [valueTextColor]
+  )
+
+  const renderAddressListItem = useCallback(
+    (item: AddressListItem, key: React.Key): JSX.Element => (
+      <View
+        style={{
+          flexDirection: 'row',
+          justifyContent: 'space-between',
+          alignItems: 'flex-start',
+          gap: 12
+        }}
+        key={key}>
+        <View
+          style={{
+            alignSelf: 'flex-start'
+          }}>
+          <Text
+            variant="body1"
+            ellipsizeMode="middle"
+            numberOfLines={1}
+            sx={{
+              fontSize: 16,
+              lineHeight: 22,
+              color: '$textPrimary'
+            }}>
+            {toSentenceCase(item.label)}
+          </Text>
+        </View>
+        <View
+          style={{
+            flex: 1,
+            alignItems: 'flex-end'
+          }}>
+          {renderAddressList(item.value)}
+        </View>
+      </View>
+    ),
+    [renderAddressList]
+  )
+
   const renderValue = useCallback(
     (
       item:
@@ -390,6 +455,8 @@ export const Details = ({
         content = renderLinkItem(item, index)
       } else if (item.type === DetailItemType.FUNDS_RECIPIENT) {
         content = renderFundReceipientItem(item, index)
+      } else if (item.type === DetailItemType.ADDRESS_LIST) {
+        content = renderAddressListItem(item, index)
       } else {
         content = (
           <View
@@ -439,7 +506,8 @@ export const Details = ({
       renderTextItem,
       renderLinkItem,
       renderValue,
-      renderFundReceipientItem
+      renderFundReceipientItem,
+      renderAddressListItem
     ]
   )
 
