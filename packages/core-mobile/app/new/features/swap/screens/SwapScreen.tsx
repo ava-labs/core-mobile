@@ -55,12 +55,7 @@ import { usePrevious } from 'common/hooks/usePrevious'
 import { SlippageInput } from '../components.tsx/SlippageInput'
 import { JUPITER_PARTNER_FEE_BPS, PARASWAP_PARTNER_FEE_BPS } from '../consts'
 import { useSwapContext } from '../contexts/SwapContext'
-import { calculateRate as calculateEvmRate } from '../utils/evm/calculateRate'
-import {
-  isJupiterQuote,
-  isParaswapQuote,
-  SwapProviders
-} from '../types'
+import { isJupiterQuote, isParaswapQuote, SwapProviders } from '../types'
 import { useSwapRate } from '../hooks/useSwapRate'
 
 export const SwapScreen = (): JSX.Element => {
