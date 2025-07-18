@@ -28,6 +28,7 @@ export const useContacts = (): {
             address: account.addressC,
             addressBTC: account.addressBTC,
             addressXP: account.addressPVM.replace(/^[PX]-/, ''),
+            addressSVM: account.addressSVM,
             avatar: avatar,
             type: 'account'
           } as Contact)
