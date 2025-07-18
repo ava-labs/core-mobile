@@ -39,7 +39,6 @@ export function useWallet(): UseWallet {
    * Navigates to the unlocked wallet screen
    */
   const unlock = useCallback(async (): Promise<void> => {
-    PerformanceService.recordMilestone(PerformanceMilestone.UNLOCK_STARTED)
     dispatch(onAppUnlocked())
   }, [dispatch])
 
