@@ -50,6 +50,7 @@ import {
   selectIsSwapFeesBlocked,
   selectIsSwapFeesJupiterBlocked
 } from 'store/posthog'
+import { usePrevious } from 'common/hooks/usePrevious'
 import { SlippageInput } from '../components.tsx/SlippageInput'
 import { JUPITER_PARTNER_FEE_BPS, PARASWAP_PARTNER_FEE_BPS } from '../consts'
 import { useSwapContext } from '../contexts/SwapContext'
@@ -589,29 +590,50 @@ export const SwapScreen = (): JSX.Element => {
     )
   }, [canSwap, handleSwap, swapInProcess])
 
+  const prevFromToken = usePrevious(fromToken)
+  const prevToToken = usePrevious(toToken)
   useEffect(() => {
-    if (fromToken?.networkChainId !== toToken?.networkChainId) {
-      if (fromToken?.networkChainId === cChainNetwork?.chainId) {
-        const targetTokenId =
-          fromToken?.localId === AVAX_TOKEN_ID
-            ? USDC_AVALANCHE_C_TOKEN_ID
-            : AVAX_TOKEN_ID
-        const defaultToToken = swapList.find(
-          tk => tk.localId.toLowerCase() === targetTokenId.toLowerCase()
-        )
-        setToToken(defaultToToken)
-      } else if (fromToken?.networkChainId === solanaNetwork?.chainId) {
-        const targetTokenId =
-          fromToken?.localId === SOLANA_TOKEN_LOCAL_ID
-            ? USDC_SOLANA_TOKEN_ID
-            : SOLANA_TOKEN_LOCAL_ID
-        const defaultToToken = swapList.find(
-          tk => tk.localId.toLowerCase() === targetTokenId.toLowerCase()
-        )
-        setToToken(defaultToToken)
-      }
+    // if both tokens are on the same chain, do nothing
+    if (fromToken?.networkChainId === toToken?.networkChainId) return
+
+    const prevFrom = prevFromToken
+    const prevTo = prevToToken
+
+    // determine which token actually changed
+    const isFromChanged =
+      prevFrom?.localId !== fromToken?.localId && !!fromToken
+    const isToChanged =
+      !isFromChanged && prevTo?.localId !== toToken?.localId && !!toToken
+    if (!isFromChanged && !isToChanged) return
+
+    // pick the token that changed and compute the default counterpart
+    const changedToken = isFromChanged ? fromToken : toToken
+    const isAvaxChain = changedToken?.networkChainId === cChainNetwork?.chainId
+    const [baseId, pairId] = isAvaxChain
+      ? [AVAX_TOKEN_ID, USDC_AVALANCHE_C_TOKEN_ID]
+      : [SOLANA_TOKEN_LOCAL_ID, USDC_SOLANA_TOKEN_ID]
+    const targetLocalId = changedToken?.localId === baseId ? pairId : baseId
+    const defaultToken = swapList.find(
+      tk => tk.localId.toLowerCase() === targetLocalId.toLowerCase()
+    )
+
+    // update the opposite token
+    if (isFromChanged) {
+      setToToken(defaultToken)
+    } else {
+      setFromToken(defaultToken)
     }
-  }, [fromToken, toToken, cChainNetwork, solanaNetwork, setToToken, swapList])
+  }, [
+    fromToken,
+    toToken,
+    prevFromToken,
+    prevToToken,
+    cChainNetwork?.chainId,
+    solanaNetwork?.chainId,
+    swapList,
+    setFromToken,
+    setToToken
+  ])
 
   return (
     <ScrollScreen
