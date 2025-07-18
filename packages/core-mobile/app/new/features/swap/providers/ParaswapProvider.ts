@@ -264,6 +264,7 @@ export const ParaswapProvider: SwapProvider<
     const quote: NormalizedSwapQuote = {
       quote: rate,
       metadata: {
+        amountIn: rate.srcAmount,
         amountOut: rate.destAmount
       }
     }

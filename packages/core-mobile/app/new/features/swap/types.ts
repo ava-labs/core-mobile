@@ -41,7 +41,10 @@ export type SvmSwapQuote = JupiterQuote
 
 export type NormalizedSwapQuote = {
   quote: SwapQuote
-  metadata: Record<string, unknown>
+  metadata: {
+    amountIn?: string
+    amountOut?: string
+  } & Record<string, unknown>
 }
 
 export type NormalizedSwapQuoteResult = {
