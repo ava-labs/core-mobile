@@ -44,7 +44,7 @@ export const useActivityFilterAndSearch = ({
   isRefreshing: boolean
   isError: boolean
   refresh: () => void
-  token: TokenWithBalance | undefined
+  xpToken: TokenWithBalance | undefined
 } => {
   const { enabledNetworks, getNetwork } = useNetworks()
   const { selectedNetwork, setSelectedNetwork } = useActivity()
@@ -76,7 +76,7 @@ export const useActivityFilterAndSearch = ({
     return getNetwork(networkOption?.chainId)
   }, [getNetwork, networkOption?.chainId])
 
-  const token = useMemo(() => {
+  const xpToken = useMemo(() => {
     return filteredTokenList.find(tk => {
       return (
         (isPChain(network?.chainId as ChainId) ||
@@ -188,7 +188,7 @@ export const useActivityFilterAndSearch = ({
 
   return {
     data: combinedData as Transaction[],
-    token,
+    xpToken,
     sort,
     filter,
     isLoading,

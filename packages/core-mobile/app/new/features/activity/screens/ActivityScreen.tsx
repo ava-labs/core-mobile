@@ -64,7 +64,7 @@ export const ActivityScreen = ({
     networkOption,
     networkDropdown,
     selectedNetwork,
-    token
+    xpToken
   } = useActivityFilterAndSearch({ searchText })
 
   const keyboardAvoidingStyle = useAnimatedStyle(() => {
@@ -195,8 +195,8 @@ export const ActivityScreen = ({
       } else {
         const isXpTx =
           isXpTransaction(item.txType) &&
-          token &&
-          (isTokenWithBalanceAVM(token) || isTokenWithBalancePVM(token))
+          xpToken &&
+          (isTokenWithBalanceAVM(xpToken) || isTokenWithBalancePVM(xpToken))
 
         const props = {
           tx: item,
@@ -211,7 +211,7 @@ export const ActivityScreen = ({
         return <TokenActivityListItem {...props} />
       }
     },
-    [handleExplorerLink, handlePendingBridge, token]
+    [handleExplorerLink, handlePendingBridge, xpToken]
   )
 
   const renderSeparator = useCallback((): JSX.Element => {
