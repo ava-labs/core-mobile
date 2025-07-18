@@ -36,7 +36,7 @@
     "@avalabs/svm-module": "1.9.7",
     "@avalabs/types": "3.1.0-alpha.58",
     "@avalabs/vm-module-types": "1.9.7",
-    "@blockaid/client": "0.27.4",
+    "@blockaid/client": "0.58.0",
     "@bottom-tabs/react-navigation": "0.9.0",
     "@coinbase/cbpay-js": "2.2.1",
     "@config-plugins/detox": "9.0.0",
