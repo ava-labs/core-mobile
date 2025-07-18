@@ -400,42 +400,42 @@ PODS:
     - ExpoModulesCore
   - fast_float (6.1.4)
   - FBLazyVector (0.79.5)
-  - Firebase/AppCheck (11.5.0):
+  - Firebase/AppCheck (11.15.0):
     - Firebase/CoreOnly
-    - FirebaseAppCheck (~> 11.5.0)
-  - Firebase/CoreOnly (11.5.0):
-    - FirebaseCore (= 11.5.0)
-  - Firebase/Messaging (11.5.0):
+    - FirebaseAppCheck (~> 11.15.0)
+  - Firebase/CoreOnly (11.15.0):
+    - FirebaseCore (~> 11.15.0)
+  - Firebase/Messaging (11.15.0):
     - Firebase/CoreOnly
-    - FirebaseMessaging (~> 11.5.0)
-  - FirebaseAppCheck (11.5.0):
+    - FirebaseMessaging (~> 11.15.0)
+  - FirebaseAppCheck (11.15.0):
     - AppCheckCore (~> 11.0)
     - FirebaseAppCheckInterop (~> 11.0)
-    - FirebaseCore (= 11.5)
-    - GoogleUtilities/Environment (~> 8.0)
-    - GoogleUtilities/UserDefaults (~> 8.0)
+    - FirebaseCore (~> 11.15.0)
+    - GoogleUtilities/Environment (~> 8.1)
+    - GoogleUtilities/UserDefaults (~> 8.1)
   - FirebaseAppCheckInterop (11.15.0)
-  - FirebaseCore (11.5.0):
-    - FirebaseCoreInternal (= 11.5)
-    - GoogleUtilities/Environment (~> 8.0)
-    - GoogleUtilities/Logger (~> 8.0)
-  - FirebaseCoreExtension (11.5.0):
-    - FirebaseCore (= 11.5)
-  - FirebaseCoreInternal (11.5.0):
-    - "GoogleUtilities/NSData+zlib (~> 8.0)"
-  - FirebaseInstallations (11.5.0):
-    - FirebaseCore (= 11.5)
-    - GoogleUtilities/Environment (~> 8.0)
-    - GoogleUtilities/UserDefaults (~> 8.0)
+  - FirebaseCore (11.15.0):
+    - FirebaseCoreInternal (~> 11.15.0)
+    - GoogleUtilities/Environment (~> 8.1)
+    - GoogleUtilities/Logger (~> 8.1)
+  - FirebaseCoreExtension (11.15.0):
+    - FirebaseCore (~> 11.15.0)
+  - FirebaseCoreInternal (11.15.0):
+    - "GoogleUtilities/NSData+zlib (~> 8.1)"
+  - FirebaseInstallations (11.15.0):
+    - FirebaseCore (~> 11.15.0)
+    - GoogleUtilities/Environment (~> 8.1)
+    - GoogleUtilities/UserDefaults (~> 8.1)
     - PromisesObjC (~> 2.4)
-  - FirebaseMessaging (11.5.0):
-    - FirebaseCore (= 11.5)
+  - FirebaseMessaging (11.15.0):
+    - FirebaseCore (~> 11.15.0)
     - FirebaseInstallations (~> 11.0)
     - GoogleDataTransport (~> 10.0)
-    - GoogleUtilities/AppDelegateSwizzler (~> 8.0)
-    - GoogleUtilities/Environment (~> 8.0)
-    - GoogleUtilities/Reachability (~> 8.0)
-    - GoogleUtilities/UserDefaults (~> 8.0)
+    - GoogleUtilities/AppDelegateSwizzler (~> 8.1)
+    - GoogleUtilities/Environment (~> 8.1)
+    - GoogleUtilities/Reachability (~> 8.1)
+    - GoogleUtilities/UserDefaults (~> 8.1)
     - nanopb (~> 3.30910.0)
   - fmt (11.0.2)
   - glog (0.3.5)
@@ -2831,15 +2831,15 @@ PODS:
     - React-Core
   - RNDominantColor (1.7.2):
     - React
-  - RNFBApp (21.6.2):
-    - Firebase/CoreOnly (= 11.5.0)
+  - RNFBApp (22.4.0):
+    - Firebase/CoreOnly (= 11.15.0)
     - React-Core
-  - RNFBAppCheck (21.6.2):
-    - Firebase/AppCheck (= 11.5.0)
+  - RNFBAppCheck (22.4.0):
+    - Firebase/AppCheck (= 11.15.0)
     - React-Core
     - RNFBApp
-  - RNFBMessaging (21.6.2):
-    - Firebase/Messaging (= 11.5.0)
+  - RNFBMessaging (22.4.0):
+    - Firebase/Messaging (= 11.15.0)
     - FirebaseCoreExtension
     - React-Core
     - RNFBApp
@@ -3854,14 +3854,14 @@ SPEC CHECKSUMS:
   EXUpdatesInterface: 64f35449b8ef89ce08cdd8952a4d119b5de6821d
   fast_float: 06eeec4fe712a76acc9376682e4808b05ce978b6
   FBLazyVector: d2a9cd223302b6c9aa4aa34c1a775e9db609eb52
-  Firebase: 7a56fe4f56b5ab81b86a6822f5b8f909ae6fc7e2
-  FirebaseAppCheck: 1c4adb8028cc5ec6a8d3d10f18b60293cddc45a4
+  Firebase: d99ac19b909cd2c548339c2241ecd0d1599ab02e
+  FirebaseAppCheck: 4574d7180be2a8b514f588099fc5262f032a92c7
   FirebaseAppCheckInterop: 06fe5a3799278ae4667e6c432edd86b1030fa3df
-  FirebaseCore: 93abc05437f8064cd2bc0a53b768fb0bc5a1d006
-  FirebaseCoreExtension: ddb2eb987f736b714d30f6386795b52c4670439e
-  FirebaseCoreInternal: f47dd28ae7782e6a4738aad3106071a8fe0af604
-  FirebaseInstallations: d8063d302a426d114ac531cd82b1e335a0565745
-  FirebaseMessaging: 9f4e42053241bd45ce8565c881bfdd9c1df2f7da
+  FirebaseCore: efb3893e5b94f32b86e331e3bd6dadf18b66568e
+  FirebaseCoreExtension: edbd30474b5ccf04e5f001470bdf6ea616af2435
+  FirebaseCoreInternal: 9afa45b1159304c963da48addb78275ef701c6b4
+  FirebaseInstallations: 317270fec08a5d418fdbc8429282238cab3ac843
+  FirebaseMessaging: 3b26e2cee503815e01c3701236b020aa9b576f09
   fmt: a40bb5bd0294ea969aaaba240a927bd33d878cdd
   glog: 5683914934d5b6e4240e497e0f4a3b42d1854183
   GoogleDataTransport: aae35b7ea0c09004c3797d53c8c41f66f219d6a7
@@ -3975,9 +3975,9 @@ SPEC CHECKSUMS:
   RNDateTimePicker: 792e57dd210f8af940812636708d43777f1f922b
   RNDeviceInfo: 55264dd7cc939dad6e9c231a7621311f5277f1dc
   RNDominantColor: 7c17c31201566a592ba4b2fbe2bb7e00df468753
-  RNFBApp: 5c187f161ac2b1c258c9c099d56bf5cfdb1f0bcb
-  RNFBAppCheck: 94c8ce0a972880b3dd1563a01e0ba3245126a9a9
-  RNFBMessaging: cb53c6f68f35949983ecb768589bb1c4771bea04
+  RNFBApp: d15dab17b5639fb7f95712d07c204912a534b8c6
+  RNFBAppCheck: 6141154680a4ba8b75369d9347b16ae2c98bbbe7
+  RNFBMessaging: d01e0013a9dc69e2deb747b991818f7d6dd296ca
   RNFlashList: 30b68f572400383347ce7df3777985af0d089624
   RNFS: 4ac0f0ea233904cb798630b3c077808c06931688
   RNGestureHandler: ccf4105b125002bd88e39d2a1f2b7e6001bcdf34

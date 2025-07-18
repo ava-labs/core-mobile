@@ -14,6 +14,7 @@
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
 		501C50832C35C63800DAFF77 /* core_send.wav in Resources */ = {isa = PBXBuildFile; fileRef = 501C50822C35C63800DAFF77 /* core_send.wav */; };
 		5084807F2C3C3E78008762B2 /* core_send.wav in Resources */ = {isa = PBXBuildFile; fileRef = 501C50822C35C63800DAFF77 /* core_send.wav */; };
+		6DC689B3DFE7645C426C6530 /* ExpoModulesProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = C385131F0D882D69AF68FB4E /* ExpoModulesProvider.swift */; };
 		815E55482C94A396000F8E0F /* NotificationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 815E55472C94A396000F8E0F /* NotificationService.swift */; };
 		815E55532C989231000F8E0F /* NotificationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 815E55472C94A396000F8E0F /* NotificationService.swift */; };
 		81ACC3932BD1B2860089FEBA /* BootSplash.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81ACC3922BD1B2860089FEBA /* BootSplash.storyboard */; };
@@ -35,18 +36,15 @@
 		8E8003662CAAF3F100FFC562 /* Inter-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 8E8003572CAAF3D800FFC562 /* Inter-Regular.ttf */; };
 		8E8003672CAAF3F100FFC562 /* Inter-SemiBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 8E8003562CAAF3D800FFC562 /* Inter-SemiBold.ttf */; };
 		8E858A5E28AFD47300236EF2 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
-		8EA3A01028EF825900F753C2 /* AppDelegate.mm in Sources */ = {isa = PBXBuildFile; fileRef = 8EA3A00D28EF825900F753C2 /* AppDelegate.mm */; };
-		8EA3A01328EF82E100F753C2 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 8EA3A01128EF82E100F753C2 /* main.m */; };
-		8EA4B4D028EF9B4D00A06DBA /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 8EA3A01128EF82E100F753C2 /* main.m */; };
-		8EA4B4D128EF9B8300A06DBA /* AppDelegate.mm in Sources */ = {isa = PBXBuildFile; fileRef = 8EA3A00D28EF825900F753C2 /* AppDelegate.mm */; };
 		8EACAADB2BD84A3300A987BA /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 8EACAADA2BD84A3300A987BA /* PrivacyInfo.xcprivacy */; };
 		8EACAADC2BD84A3300A987BA /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 8EACAADA2BD84A3300A987BA /* PrivacyInfo.xcprivacy */; };
+		8EAD100128EF825900F753C2 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8EAD100028EF825900F753C2 /* AppDelegate.swift */; };
+		8EAD100228EF825900F753C3 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8EAD100028EF825900F753C2 /* AppDelegate.swift */; };
 		8EE9988B28B537A40088DE7C /* InfoRelease.plist in Resources */ = {isa = PBXBuildFile; fileRef = 8EE9988A28B537A40088DE7C /* InfoRelease.plist */; };
 		8EE9988C28B537A40088DE7C /* InfoRelease.plist in Resources */ = {isa = PBXBuildFile; fileRef = 8EE9988A28B537A40088DE7C /* InfoRelease.plist */; };
-		A96E77CAD2ABB49A6ACACD2C /* ExpoModulesProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 762C9EF0EF8C043AB7880CD7 /* ExpoModulesProvider.swift */; };
 		C1CB5585DDACDF13F7B4A355 /* libPods-common-AvaxWallet.a in Frameworks */ = {isa = PBXBuildFile; fileRef = F87DA3BE900242BC83741257 /* libPods-common-AvaxWallet.a */; };
 		C2DC8A2807C36DFE0BFF0520 /* libPods-common-AvaxWalletInternal.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 304A7488E6D0B71E73FAD24A /* libPods-common-AvaxWalletInternal.a */; };
-		C7062D69B313585A64C52506 /* ExpoModulesProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 743FA70F1387A05E00866EBF /* ExpoModulesProvider.swift */; };
+		EBCE9AA355D2FB1249031A7D /* ExpoModulesProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E1F55F4650F709AF7520682 /* ExpoModulesProvider.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -137,8 +135,7 @@
 		501C50822C35C63800DAFF77 /* core_send.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = core_send.wav; sourceTree = "<group>"; };
 		659278F1AA86EBEA21508CE5 /* Pods-common-AvaxWallet.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-common-AvaxWallet.release.xcconfig"; path = "Target Support Files/Pods-common-AvaxWallet/Pods-common-AvaxWallet.release.xcconfig"; sourceTree = "<group>"; };
 		697B58F8BD672087EA40A6C2 /* Pods-common-AvaxWallet.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-common-AvaxWallet.debug.xcconfig"; path = "Target Support Files/Pods-common-AvaxWallet/Pods-common-AvaxWallet.debug.xcconfig"; sourceTree = "<group>"; };
-		743FA70F1387A05E00866EBF /* ExpoModulesProvider.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ExpoModulesProvider.swift; path = "Pods/Target Support Files/Pods-common-AvaxWalletInternal/ExpoModulesProvider.swift"; sourceTree = "<group>"; };
-		762C9EF0EF8C043AB7880CD7 /* ExpoModulesProvider.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ExpoModulesProvider.swift; path = "Pods/Target Support Files/Pods-common-AvaxWallet/ExpoModulesProvider.swift"; sourceTree = "<group>"; };
+		6E1F55F4650F709AF7520682 /* ExpoModulesProvider.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ExpoModulesProvider.swift; path = "Pods/Target Support Files/Pods-common-AvaxWallet/ExpoModulesProvider.swift"; sourceTree = "<group>"; };
 		815E550F2C92071A000F8E0F /* NotificationServiceExtensionInternal.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = NotificationServiceExtensionInternal.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		815E55132C92071A000F8E0F /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		815E551B2C9209AF000F8E0F /* NotificationServiceExtensionInternal.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = NotificationServiceExtensionInternal.entitlements; sourceTree = "<group>"; };
@@ -156,12 +153,11 @@
 		8E8003592CAAF3D800FFC562 /* DejaVuSansMono.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = DejaVuSansMono.ttf; path = ../app/assets/fonts/DejaVuSansMono.ttf; sourceTree = "<group>"; };
 		8E83528A28F09E0900880FD3 /* OpenSSL.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = OpenSSL.xcframework; path = "Pods/OpenSSL-Universal/Frameworks/OpenSSL.xcframework"; sourceTree = "<group>"; };
 		8E858A6628AFD47300236EF2 /* AvaxWalletInternal.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AvaxWalletInternal.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		8EA3A00D28EF825900F753C2 /* AppDelegate.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = AppDelegate.mm; sourceTree = "<group>"; };
-		8EA3A00E28EF825900F753C2 /* AppDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
-		8EA3A01128EF82E100F753C2 /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		8EACAADA2BD84A3300A987BA /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		8EAD100028EF825900F753C2 /* AppDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		8EE9988A28B537A40088DE7C /* InfoRelease.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = InfoRelease.plist; path = AvaxWallet/InfoRelease.plist; sourceTree = "<group>"; };
 		97AB271C8FD637330C22C88B /* Pods-common-AvaxWalletInternal.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-common-AvaxWalletInternal.debug.xcconfig"; path = "Target Support Files/Pods-common-AvaxWalletInternal/Pods-common-AvaxWalletInternal.debug.xcconfig"; sourceTree = "<group>"; };
+		C385131F0D882D69AF68FB4E /* ExpoModulesProvider.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ExpoModulesProvider.swift; path = "Pods/Target Support Files/Pods-common-AvaxWalletInternal/ExpoModulesProvider.swift"; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
 		F87DA3BE900242BC83741257 /* libPods-common-AvaxWallet.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-common-AvaxWallet.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -243,9 +239,7 @@
 				8EE9988A28B537A40088DE7C /* InfoRelease.plist */,
 				81ACC3922BD1B2860089FEBA /* BootSplash.storyboard */,
 				0BA5138A27D234C200A25188 /* AvaxWallet-Bridging-Header.h */,
-				8EA3A00E28EF825900F753C2 /* AppDelegate.h */,
-				8EA3A01128EF82E100F753C2 /* main.m */,
-				8EA3A00D28EF825900F753C2 /* AppDelegate.mm */,
+				8EAD100028EF825900F753C2 /* AppDelegate.swift */,
 				8EACAADA2BD84A3300A987BA /* PrivacyInfo.xcprivacy */,
 			);
 			name = AvaxWallet;
@@ -262,11 +256,19 @@
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
+		5D1463F5FD3295E5531CEBCA /* AvaxWalletInternal */ = {
+			isa = PBXGroup;
+			children = (
+				C385131F0D882D69AF68FB4E /* ExpoModulesProvider.swift */,
+			);
+			name = AvaxWalletInternal;
+			sourceTree = "<group>";
+		};
 		6493DFA96F0295D04CEC5E67 /* ExpoModulesProviders */ = {
 			isa = PBXGroup;
 			children = (
-				ECCB1DEF911D4FA6ABECADCA /* AvaxWallet */,
-				C404B8FC20C759E8C006A159 /* AvaxWalletInternal */,
+				BB64DA3C3AC1D8B08E23A749 /* AvaxWallet */,
+				5D1463F5FD3295E5531CEBCA /* AvaxWalletInternal */,
 			);
 			name = ExpoModulesProviders;
 			sourceTree = "<group>";
@@ -330,12 +332,12 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
-		C404B8FC20C759E8C006A159 /* AvaxWalletInternal */ = {
+		BB64DA3C3AC1D8B08E23A749 /* AvaxWallet */ = {
 			isa = PBXGroup;
 			children = (
-				743FA70F1387A05E00866EBF /* ExpoModulesProvider.swift */,
+				6E1F55F4650F709AF7520682 /* ExpoModulesProvider.swift */,
 			);
-			name = AvaxWalletInternal;
+			name = AvaxWallet;
 			sourceTree = "<group>";
 		};
 		D43AD4CD4B1C41E484E6B9ED /* Resources */ = {
@@ -350,14 +352,6 @@
 				8E8003562CAAF3D800FFC562 /* Inter-SemiBold.ttf */,
 			);
 			name = Resources;
-			sourceTree = "<group>";
-		};
-		ECCB1DEF911D4FA6ABECADCA /* AvaxWallet */ = {
-			isa = PBXGroup;
-			children = (
-				762C9EF0EF8C043AB7880CD7 /* ExpoModulesProvider.swift */,
-			);
-			name = AvaxWallet;
 			sourceTree = "<group>";
 		};
 		F8B72680A82297B40C47D111 /* Pods */ = {
@@ -859,9 +853,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				8EA4B4D128EF9B8300A06DBA /* AppDelegate.mm in Sources */,
-				8EA4B4D028EF9B4D00A06DBA /* main.m in Sources */,
-				A96E77CAD2ABB49A6ACACD2C /* ExpoModulesProvider.swift in Sources */,
+				8EAD100228EF825900F753C3 /* AppDelegate.swift in Sources */,
+				EBCE9AA355D2FB1249031A7D /* ExpoModulesProvider.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -885,9 +878,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				8EA3A01328EF82E100F753C2 /* main.m in Sources */,
-				8EA3A01028EF825900F753C2 /* AppDelegate.mm in Sources */,
-				C7062D69B313585A64C52506 /* ExpoModulesProvider.swift in Sources */,
+				8EAD100128EF825900F753C2 /* AppDelegate.swift in Sources */,
+				6DC689B3DFE7645C426C6530 /* ExpoModulesProvider.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
