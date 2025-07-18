@@ -1,6 +1,5 @@
 import { z } from 'zod'
 import { ChainId, Network } from '@avalabs/core-chains-sdk'
-import { Account } from 'store/account'
 import SentryWrapper from 'services/sentry/SentryWrapper'
 import {
   constructFetchFetcher,
@@ -61,7 +60,7 @@ interface SwapRate {
   srcAmount: string
   swapSide: SwapSide
   network: Network
-  account: Account
+  address: string
   abortSignal?: AbortSignal
 }
 
@@ -103,7 +102,7 @@ class ParaswapService {
     srcAmount,
     swapSide,
     network,
-    account,
+    address,
     abortSignal
   }: SwapRate): Promise<OptimalRate> {
     return SentryWrapper.startSpan(
@@ -120,7 +119,7 @@ class ParaswapService {
           throw new Error(`${network.chainName} is not supported by Paraswap`)
         }
 
-        if (!account) {
+        if (!address) {
           throw new Error('Account address missing')
         }
 
@@ -132,7 +131,7 @@ class ParaswapService {
             srcToken: isFromTokenNative ? EVM_NATIVE_TOKEN_ADDRESS : srcToken,
             destToken: isDestTokenNative ? EVM_NATIVE_TOKEN_ADDRESS : destToken,
             amount: srcAmount,
-            userAddress: account.addressC,
+            userAddress: address,
             side: swapSide,
             srcDecimals,
             destDecimals

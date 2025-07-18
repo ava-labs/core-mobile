@@ -210,4 +210,7 @@ export type AnalyticsEvents = {
   //Gasless
   GaslessFundSuccessful: { fundTxHash: string }
   GaslessFundFailed: undefined
+
+  //SOLANA
+  SolanaSwapFeeAccountNotInitialized: { mint: string }
 }

@@ -39,7 +39,10 @@ export enum FeatureGates {
   SOLANA_SUPPORT = 'solana-support',
   MELD_ONRAMP = 'meld-onramp',
   MELD_OFFRAMP = 'meld-offramp',
-  SWAP_USE_MARKR = 'swap-use-markr'
+  SWAP_USE_MARKR = 'swap-use-markr',
+  MELD_INTEGRATION = 'meld-integration',
+  SWAP_FEES_JUPITER = 'swap-fees-jupiter',
+  SWAP_SOLANA = 'swap-solana'
 }
 
 export enum FeatureVars {
