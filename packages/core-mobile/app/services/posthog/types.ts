@@ -39,6 +39,7 @@ export enum FeatureGates {
   SOLANA_SUPPORT = 'solana-support',
   MELD_ONRAMP = 'meld-onramp',
   MELD_OFFRAMP = 'meld-offramp',
+  SWAP_USE_MARKR = 'swap-use-markr',
   KEYSTONE = 'keystone'
 }
 

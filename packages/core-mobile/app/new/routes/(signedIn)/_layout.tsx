@@ -78,6 +78,10 @@ export default function WalletLayout(): JSX.Element {
             name="(modals)/selectSwapToToken"
             options={formSheetScreensOptions}
           />
+          <Stack.Screen
+            name="(modals)/swapPricingDetails"
+            options={formSheetScreensOptions}
+          />
           <Stack.Screen name="(modals)/buy" options={modalScreensOptions} />
           <Stack.Screen
             name="(modals)/selectSendToken"
@@ -178,6 +182,22 @@ export default function WalletLayout(): JSX.Element {
           />
           <Stack.Screen
             name="(modals)/meldOfframpPaymentMethod"
+            options={formSheetScreensOptions}
+          />
+          <Stack.Screen
+            name="(modals)/meldOnrampCountry"
+            options={formSheetScreensOptions}
+          />
+          <Stack.Screen
+            name="(modals)/meldOnrampCurrency"
+            options={formSheetScreensOptions}
+          />
+          <Stack.Screen
+            name="(modals)/meldOfframpCountry"
+            options={formSheetScreensOptions}
+          />
+          <Stack.Screen
+            name="(modals)/meldOfframpCurrency"
             options={formSheetScreensOptions}
           />
           <Stack.Screen

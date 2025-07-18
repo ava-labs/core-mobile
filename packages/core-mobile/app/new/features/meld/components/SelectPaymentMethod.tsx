@@ -1,5 +1,5 @@
 import { ScrollScreen } from 'common/components/ScrollScreen'
-import React, { useCallback, useMemo } from 'react'
+import React, { useCallback, useMemo, useState } from 'react'
 import {
   View,
   Text,
@@ -14,12 +14,13 @@ import { Space } from 'common/components/Space'
 import { LoadingState } from 'common/components/LoadingState'
 import { portfolioTabContentHeight } from 'features/portfolio/utils'
 import { useSearchPaymentMethods } from '../hooks/useSearchPaymentMethods'
-import { useMeldPaymentMethod, useMeldServiceProvider } from '../store'
 import {
   PaymentMethodNames,
   ServiceProviderCategories,
-  PaymentMethodTimeLimits
+  PaymentMethodTimeLimits,
+  PaymentMethods
 } from '../consts'
+import { useMeldPaymentMethod, useMeldServiceProvider } from '../store'
 import { PaymentMethodIcon } from './PaymentMethodIcon'
 
 export const SelectPaymentMethod = ({
@@ -35,8 +36,12 @@ export const SelectPaymentMethod = ({
     theme: { colors }
   } = useTheme()
   const { back, canGoBack } = useRouter()
-  const [meldPaymentMethod, setMeldPaymentMethod] = useMeldPaymentMethod()
+  const [meldPaymentMethod] = useMeldPaymentMethod()
   const [meldServiceProvider] = useMeldServiceProvider()
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<
+    PaymentMethods | undefined
+  >(meldPaymentMethod)
+  const [_, setMeldPaymentMethod] = useMeldPaymentMethod()
   const { data: paymentMethods, isLoading: isLoadingPaymentMethods } =
     useSearchPaymentMethods({
       categories: [category],
@@ -44,8 +49,9 @@ export const SelectPaymentMethod = ({
     })
 
   const dismissPaymentMethod = useCallback(() => {
+    setMeldPaymentMethod(selectedPaymentMethod)
     canGoBack() && back()
-  }, [back, canGoBack])
+  }, [back, canGoBack, selectedPaymentMethod, setMeldPaymentMethod])
 
   const renderHeader = useCallback(() => {
     return (
@@ -122,9 +128,9 @@ export const SelectPaymentMethod = ({
           : '',
         onPress: () =>
           paymentMethod.paymentMethod &&
-          setMeldPaymentMethod(paymentMethod.paymentMethod),
+          setSelectedPaymentMethod(paymentMethod.paymentMethod),
         accessory:
-          meldPaymentMethod === paymentMethod.paymentMethod ? (
+          selectedPaymentMethod === paymentMethod.paymentMethod ? (
             <Icons.Custom.CheckSmall color={colors.$textPrimary} />
           ) : (
             <></>
@@ -132,12 +138,7 @@ export const SelectPaymentMethod = ({
         leftIcon: <PaymentMethodIcon paymentMethod={paymentMethod} />
       }
     })
-  }, [
-    colors.$textPrimary,
-    meldPaymentMethod,
-    paymentMethods,
-    setMeldPaymentMethod
-  ])
+  }, [paymentMethods, selectedPaymentMethod, colors.$textPrimary])
 
   return (
     <ScrollScreen

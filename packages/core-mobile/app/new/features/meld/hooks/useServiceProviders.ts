@@ -2,12 +2,11 @@ import { useSelector } from 'react-redux'
 import { selectSelectedCurrency } from 'store/settings/currency'
 import { QueryObserverResult, RefetchOptions } from '@tanstack/react-query'
 import { useMemo } from 'react'
-import { useMeldToken } from '../store'
+import { useMeldCountryCode, useMeldToken } from '../store'
 import { CreateCryptoQuote, CryptoQuotesError, Quote } from '../types'
 import { ServiceProviderCategories } from '../consts'
 import { getErrorMessage } from '../utils'
 import { useCreateCryptoQuote } from './useCreateCryptoQuote'
-import { useLocale } from './useLocale'
 
 export const useServiceProviders = ({
   category
@@ -24,7 +23,7 @@ export const useServiceProviders = ({
 } => {
   const [meldToken] = useMeldToken()
   const selectedCurrency = useSelector(selectSelectedCurrency)
-  const { countryCode } = useLocale()
+  const [countryCode] = useMeldCountryCode()
 
   const destinationCurrencyCode = useMemo(() => {
     return category === ServiceProviderCategories.CRYPTO_ONRAMP

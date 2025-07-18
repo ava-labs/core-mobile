@@ -14,6 +14,7 @@ import { getChainIdFromCaip2 } from 'utils/caip2ChainIds'
 import mergeWith from 'lodash/mergeWith'
 import isArray from 'lodash/isArray'
 import union from 'lodash/union'
+
 import { RpcMethod, CORE_EVM_METHODS } from '../../types'
 import {
   RpcRequestHandler,
@@ -34,7 +35,7 @@ import {
 } from './utils'
 import { COMMON_EVENTS, NON_EVM_OPTIONAL_NAMESPACES } from './namespaces'
 
-const supportedMethods = [
+const supportedEvmMethods = [
   RpcMethod.ETH_SEND_TRANSACTION,
   RpcMethod.SIGN_TYPED_DATA_V3,
   RpcMethod.SIGN_TYPED_DATA_V4,
@@ -57,8 +58,8 @@ class WCSessionRequestHandler implements RpcRequestHandler<WCSessionProposal> {
     // that use Wagmi to be able to send/access more rpc methods
     // by default, Wagmi only requests eth_sendTransaction and personal_sign
     return isCoreApp
-      ? [...supportedMethods, ...CORE_EVM_METHODS]
-      : supportedMethods
+      ? [...supportedEvmMethods, ...CORE_EVM_METHODS]
+      : supportedEvmMethods
   }
 
   private getApprovedEvents = (
@@ -98,6 +99,8 @@ class WCSessionRequestHandler implements RpcRequestHandler<WCSessionProposal> {
     const state = listenerApi.getState()
     const activeNetwork = selectActiveNetwork(state)
     const supportedNetworks = selectAllNetworks(state)
+
+    // Original EVM chain handling...
     const chainIdsToApprove = caip2ChainIdsToApprove.map(getChainIdFromCaip2)
 
     if (chainIdsToApprove.includes(activeNetwork.chainId)) {
@@ -108,6 +111,7 @@ class WCSessionRequestHandler implements RpcRequestHandler<WCSessionProposal> {
     const enabledNetworksChainIds = selectEnabledNetworks(state).map(
       network => network.chainId
     )
+
     const supportedChainIds = [
       ...enabledNetworksChainIds,
       ...Object.values(supportedNetworks)
@@ -238,6 +242,7 @@ class WCSessionRequestHandler implements RpcRequestHandler<WCSessionProposal> {
       const chainsToApprove = Object.values(namespaces).flatMap(
         namespace => namespace.chains ?? []
       )
+
       if (chainsToApprove.length === 0) {
         throw new Error('Networks not specified')
       }
@@ -295,6 +300,7 @@ class WCSessionRequestHandler implements RpcRequestHandler<WCSessionProposal> {
           namespaceToApprove
         )
 
+        // Use the namespace's own methods instead of mixing them
         const methods =
           namespace === BlockchainNamespace.EIP155
             ? this.getApprovedEvmMethods(dappUrl)

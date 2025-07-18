@@ -16,6 +16,7 @@ interface FiatAmountInputWidgetProps {
   sx?: SxProp
   disabled?: boolean
   autoFocus?: boolean
+  enableAmountSelection?: boolean
 }
 
 export const FiatAmountInputWidget = ({
@@ -29,69 +30,76 @@ export const FiatAmountInputWidget = ({
   accessory,
   sx,
   disabled,
-  autoFocus
+  autoFocus,
+  enableAmountSelection
 }: FiatAmountInputWidgetProps): JSX.Element => {
   const [predefinedAmountButtons, setPredefinedAmountButtons] = useState<
     { text: string; predefinedAmount: number; isSelected: boolean }[]
-  >([
-    {
-      text: formatIntegerCurrency(100),
-      predefinedAmount: 100,
-      isSelected: false
-    },
-    {
-      text: formatIntegerCurrency(200),
-      predefinedAmount: 200,
-      isSelected: false
-    },
-    {
-      text: formatIntegerCurrency(500),
-      predefinedAmount: 500,
-      isSelected: false
-    }
-  ])
+  >(
+    enableAmountSelection
+      ? [
+          {
+            text: formatIntegerCurrency(100),
+            predefinedAmount: 100,
+            isSelected: false
+          },
+          {
+            text: formatIntegerCurrency(200),
+            predefinedAmount: 200,
+            isSelected: false
+          },
+          {
+            text: formatIntegerCurrency(500),
+            predefinedAmount: 500,
+            isSelected: false
+          }
+        ]
+      : []
+  )
   const textInputRef = useRef<FiatAmountInputHandle>(null)
 
-  const handlePressPredefinedAmountButton = (
-    predefinedAmount: number,
-    index: number
-  ): void => {
-    textInputRef.current?.setValue(predefinedAmount.toString())
+  const handlePressPredefinedAmountButton = useCallback(
+    (predefinedAmount: number, index: number): void => {
+      textInputRef.current?.setValue(predefinedAmount.toString())
 
-    onChange?.(predefinedAmount)
+      onChange?.(predefinedAmount)
 
-    setPredefinedAmountButtons(prevButtons =>
-      prevButtons.map((b, i) =>
-        i === index ? { ...b, isSelected: true } : { ...b, isSelected: false }
+      setPredefinedAmountButtons(prevButtons =>
+        prevButtons.map((b, i) =>
+          i === index ? { ...b, isSelected: true } : { ...b, isSelected: false }
+        )
       )
-    )
-  }
+    },
+    [onChange]
+  )
 
   const handleChange = useCallback(
     (value: string): void => {
-      setPredefinedAmountButtons(prevButtons =>
-        prevButtons.map(b => ({
-          ...b,
-          isSelected: Number(value) === b.predefinedAmount
-        }))
-      )
+      enableAmountSelection &&
+        setPredefinedAmountButtons(prevButtons =>
+          prevButtons.map(b => ({
+            ...b,
+            isSelected: Number(value) === b.predefinedAmount
+          }))
+        )
 
       onChange?.(Number(value))
     },
-    [onChange]
+    [enableAmountSelection, onChange]
   )
 
   useEffect(() => {
     if (amount === undefined || amount === 0) {
       textInputRef.current?.setValue('')
-      setPredefinedAmountButtons(prevButtons =>
-        prevButtons.map(b => ({
-          ...b,
-          isSelected: false
-        }))
-      )
+      enableAmountSelection &&
+        setPredefinedAmountButtons(prevButtons =>
+          prevButtons.map(b => ({
+            ...b,
+            isSelected: false
+          }))
+        )
     }
-  }, [amount, textInputRef])
+  }, [amount, enableAmountSelection, textInputRef])
 
   return (
     <View sx={sx}>
@@ -114,26 +122,28 @@ export const FiatAmountInputWidget = ({
           formatInCurrency={formatInCurrency}
           formatInSubTextNumber={formatInSubTextNumber}
         />
-        <View sx={{ flexDirection: 'row', gap: 7, marginTop: 25 }}>
-          {predefinedAmountButtons.map((button, index) => (
-            <Button
-              key={index}
-              size="small"
-              type={button.isSelected ? 'primary' : 'secondary'}
-              style={{
-                minWidth: 72
-              }}
-              disabled={disabled}
-              onPress={() => {
-                handlePressPredefinedAmountButton(
-                  button.predefinedAmount,
-                  index
-                )
-              }}>
-              {button.text}
-            </Button>
-          ))}
-        </View>
+        {enableAmountSelection && (
+          <View sx={{ flexDirection: 'row', gap: 7, marginTop: 25 }}>
+            {predefinedAmountButtons.map((button, index) => (
+              <Button
+                key={index}
+                size="small"
+                type={button.isSelected ? 'primary' : 'secondary'}
+                style={{
+                  minWidth: 72
+                }}
+                disabled={disabled}
+                onPress={() => {
+                  handlePressPredefinedAmountButton(
+                    button.predefinedAmount,
+                    index
+                  )
+                }}>
+                {button.text}
+              </Button>
+            ))}
+          </View>
+        )}
         {accessory !== undefined && (
           <View
             sx={{

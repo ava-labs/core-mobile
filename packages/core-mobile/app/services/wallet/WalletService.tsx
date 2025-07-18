@@ -155,7 +155,8 @@ class WalletService {
 
     if (
       !(provider instanceof JsonRpcBatchInternal) &&
-      !(provider instanceof Avalanche.JsonRpcProvider)
+      !(provider instanceof Avalanche.JsonRpcProvider) &&
+      !isSolanaProvider(provider)
     )
       throw new Error('Unable to sign message: wrong provider obtained')
 
@@ -326,6 +327,7 @@ class WalletService {
   }): Promise<string[]> {
     if (
       walletType === WalletType.SEEDLESS ||
+      walletType === WalletType.PRIVATE_KEY ||
       (isChange && chainAlias !== 'X')
     ) {
       return []

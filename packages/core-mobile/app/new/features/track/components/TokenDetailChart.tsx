@@ -76,11 +76,14 @@ export const TokenDetailChart = ({
   }, [ranges.maxPrice, ranges.minPrice, selectedCurrency])
 
   return (
-    <View>
+    <View
+      style={{
+        height: CHART_HEIGHT + VERTICAL_PADDING * 2
+      }}>
       <SparklineChart
         style={{
           width: '100%',
-          height: CHART_HEIGHT + VERTICAL_PADDING * 2
+          height: '100%'
         }}
         labels={chartLabels}
         data={chartData ?? []}

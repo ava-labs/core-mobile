@@ -77,6 +77,9 @@ export const selectIsBalanceLoadedForAccount =
     return !!foundBalance
   }
 
+export const selectIsPollingBalances = (state: RootState): boolean =>
+  state.balance.status === QueryStatus.POLLING
+
 export const selectIsLoadingBalances = (state: RootState): boolean =>
   state.balance.status === QueryStatus.LOADING
 
@@ -261,7 +264,7 @@ export const selectTokensWithBalanceForAccountAndNetwork = createSelector(
 // use in k2-alpine
 export const selectIsAllBalancesInaccurate =
   (accountId: string | undefined) => (state: RootState) => {
-    if (!accountId) return false
+    if (!accountId) return
     const tokens = selectTokensWithBalanceForAccount(state, accountId)
     return (
       tokens.length === 0 &&
@@ -271,7 +274,10 @@ export const selectIsAllBalancesInaccurate =
     )
   }
 
-export const selectIsAllBalancesError = (state: RootState): boolean => {
+export const selectIsAllBalancesError = (
+  state: RootState
+): boolean | undefined => {
+  if (Object.values(state.balance.balances).length === 0) return
   return Object.values(state.balance.balances).every(balance => balance.error)
 }
 

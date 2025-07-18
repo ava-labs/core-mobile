@@ -322,6 +322,7 @@ export const AdvancedField = forwardRef<AdvancedFieldRef, AdvancedFieldProps>(
             }}>
             {disabled ? null : (
               <TouchableOpacity
+                testID={`contact_delete_btn__${title}`}
                 onPress={type === 'address' ? handleDelete : onClear}
                 hitSlop={14}
                 style={{
@@ -398,6 +399,7 @@ export const AdvancedField = forwardRef<AdvancedFieldRef, AdvancedFieldProps>(
             value={inputValue}
             keyboardType={keyboardType}
             onChangeText={setInputValue}
+            testID={`contact_input__${title}`}
             placeholder={placeholder}
             textInputSx={{ height: undefined }}
             containerSx={{
