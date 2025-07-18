@@ -59,6 +59,11 @@ class PerformanceService {
         timestamp
       ).getTime()}`
     )
+    NativeLogger.warn(
+      `Performance milestone recorded: ${milestone} at ${new Date(
+        timestamp
+      ).getTime()}`
+    )
 
     // Calculate and log relevant durations when certain milestones are reached
     this.calculateAndLogDurations(milestone)
@@ -173,14 +178,11 @@ class PerformanceService {
       NativeLogger.warn(
         `App Performance Metrics:
         
-        App Start [------- ${metrics.splashHidden}s -------] {user input pin/biometrics} [------- ??? -------] Unlocking [-------- ${metrics.unlocking}s -------] Loading [------- ${metrics.portfolio.loadingDuration}s --------] Completed in ${metrics.portfolio.completed}s
         App Start (isReady): ${metrics.splashHidden}s,
         Unlocking (unlocking) ${metrics.unlocking}s,
         Loading (loading): ${metrics.portfolio.loadingDuration}s,
         Completed (unlocking + loading): ${metrics.portfolio.completed}s
         Session (isReady + unlocking + loading): ${metrics.session}s
-        
-        notes: "???" we don't record the time it takes the user to input his pin/biometrics after App Start
         `
       )
     }
