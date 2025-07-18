@@ -11,6 +11,8 @@ import { Dimensions, BackHandler } from 'react-native'
 import { KeystoneQrScanner } from 'common/components/KeystoneQrScanner'
 import KeystoneLogoLight from 'assets/icons/keystone_logo_light.svg'
 import KeystoneLogoDark from 'assets/icons/keystone_logo_dark.svg'
+import { useSelector } from 'react-redux'
+import { selectIsKeystoneBlocked } from 'store/posthog'
 
 enum KeystoneSignerStep {
   QR,
@@ -26,6 +28,7 @@ const KeystoneSignerScreen = ({
   const { request, responseURTypes, onApprove, onReject } = params
   const [currentStep, setCurrentStep] = useState(KeystoneSignerStep.QR)
   const [signningUr, setSigningUr] = useState<string>('(null)')
+  const isKeystoneBlocked = useSelector(selectIsKeystoneBlocked)
 
   useEffect(() => {
     const urEncoder = new UREncoder(request, 150)
@@ -44,6 +47,12 @@ const KeystoneSignerScreen = ({
     },
     [navigation, onReject]
   )
+
+  useEffect(() => {
+    if (isKeystoneBlocked) {
+      rejectAndClose()
+    }
+  }, [isKeystoneBlocked, rejectAndClose])
 
   useEffect(() => {
     const onBackPress = (): boolean => {
