@@ -1,14 +1,9 @@
 import { swapError } from 'errors/swapError'
 import NetworkService from 'services/network/NetworkService'
-import { isSolanaProvider, SolanaProvider } from '@avalabs/core-wallets-sdk'
+import { isSolanaProvider } from '@avalabs/core-wallets-sdk'
 import AnalyticsService from 'services/analytics/AnalyticsService'
-import { resolve, wait } from '@avalabs/core-utils-sdk'
-import { fetchAndVerify } from 'utils/fetchAndVerify'
-import Logger from 'utils/Logger'
-import { signature, TransactionError } from '@solana/kit'
+import { resolve } from '@avalabs/core-utils-sdk'
 import { getJupiterFeeAccount } from '../utils/svm/getJupiterFeeAccount'
-import { JUPITER_TX_SCHEMA } from '../utils/svm/schemas'
-import { getSwapRate } from '../utils/svm/getSwapRate'
 import {
   GetSvmQuoteParams,
   SwapProvider,
@@ -16,7 +11,8 @@ import {
   NormalizedSwapQuoteResult,
   PerformSwapSvmParams
 } from '../types'
-import { getJupiterUrl } from '../utils/svm/getJupiterUrl'
+import { jupiterApi } from '../utils/svm/jupiterApi.client'
+import JupiterService from '../services/JupiterService'
 
 export const JupiterProvider: SwapProvider<
   GetSvmQuoteParams,
@@ -39,7 +35,7 @@ export const JupiterProvider: SwapProvider<
     }: GetSvmQuoteParams,
     abortSignal?: AbortSignal
   ): Promise<NormalizedSwapQuoteResult> {
-    const { quote } = await getSwapRate({
+    const { quote } = await JupiterService.getSwapRate({
       fromTokenAddress,
       fromTokenDecimals,
       fromTokenBalance,
@@ -65,8 +61,6 @@ export const JupiterProvider: SwapProvider<
   },
 
   async swap(params: PerformSwapSvmParams): Promise<string> {
-    // validateSwapParams(params)
-
     const {
       userAddress,
       quote,
@@ -77,7 +71,6 @@ export const JupiterProvider: SwapProvider<
       network,
       signAndSend
     } = params
-
     if (!userAddress) throw swapError.missingParam('userAddress')
 
     if (!quote) throw swapError.missingParam('quote')
@@ -87,11 +80,6 @@ export const JupiterProvider: SwapProvider<
     if (!destTokenAddress) throw swapError.missingParam('destTokenAddress')
 
     if (!slippage) throw swapError.missingParam('slippage')
-
-    // const isSelling = quote.swapMode === 'ExactIn'
-
-    // const srcAmount = isSelling ? quote.outAmount : quote.inAmount
-    // const destAmount = isSelling ? quote.inAmount : quote.outAmount
 
     const provider = await NetworkService.getProviderForNetwork(network)
 
@@ -111,24 +99,12 @@ export const JupiterProvider: SwapProvider<
     })
 
     const [txResponse, buildTxError] = await resolve(
-      fetchAndVerify(
-        [
-          getJupiterUrl('swap'),
-          {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-              quoteResponse: quote,
-              userPublicKey: userAddress,
-              dynamicComputeUnitLimit: true, // Gives us a higher chance of the transaction landing
-              feeAccount
-            })
-          }
-        ],
-        JUPITER_TX_SCHEMA
-      )
+      jupiterApi.swap({
+        quoteResponse: quote,
+        userPublicKey: userAddress,
+        dynamicComputeUnitLimit: true, // Gives us a higher chance of the transaction landing
+        feeAccount
+      })
     )
 
     if (!txResponse || buildTxError) {
@@ -149,68 +125,10 @@ export const JupiterProvider: SwapProvider<
       ])
     )
 
-    // if (isUserRejectionError(approvalTxError)) {
-    //   throw approvalTxError
-    // } else
     if (approvalTxError || !approvalTxHash) {
       throw swapError.approvalTxFailed(approvalTxError)
     }
 
-    waitForTransaction(provider, approvalTxHash)
-      .then(({ error }) => {
-        if (error) {
-          Logger.error(error.toString())
-        }
-
-        // onTransactionReceipt({
-        //   isSuccessful: success,
-        //   pendingToastId,
-        //   userAddress: userPublicKey,
-        //   txHash: txHash,
-        //   chainId: network.chainId,
-        //   srcToken,
-        //   destToken,
-        //   srcAmount,
-        //   destAmount,
-        //   srcDecimals,
-        //   destDecimals
-        // })
-      })
-      .catch(Logger.error)
-
     return approvalTxHash
-  }
-}
-
-const waitForTransaction = async (
-  provider: SolanaProvider,
-  txHash: string
-): Promise<{
-  success: boolean
-  error: TransactionError | null
-}> => {
-  const tx = await provider
-    .getTransaction(signature(txHash), {
-      encoding: 'jsonParsed',
-      commitment: 'confirmed', // TODO: should we use 'finalized' here for max. certainty?
-      maxSupportedTransactionVersion: 0
-    })
-    .send()
-
-  if (!tx) {
-    await wait(500)
-    return waitForTransaction(provider, txHash)
-  }
-
-  if (tx.meta?.err) {
-    return {
-      success: false,
-      error: tx.meta.err
-    }
-  }
-
-  return {
-    success: true,
-    error: null
   }
 }
