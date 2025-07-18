@@ -18,6 +18,7 @@ import {
 } from 'expo-local-authentication'
 import Logger from './Logger'
 import { assertNotNull } from './assertions'
+import { hasSecureFaceUnlock } from './hasSecureFaceUnlock'
 
 /**
  * @deprecated Legacy service keys used for backwards compatibility
@@ -343,18 +344,31 @@ class BiometricsSDK {
 
   async getAuthenticationTypes(): Promise<AuthenticationType[]> {
     const authTypes = await this.getSupportedAuthenticationTypes()
-
     const isEnrolled = await isEnrolledAsync()
+
     if (isEnrolled === false) return []
 
     // if device has enrolled biometrics, but no supported authentication types returned,
     // we can assume it's facial recognition
     // this is a workaround for app-accessible APIs do not distinguish
     // between biometric modalities (fingerprint, face) on android
-    if (authTypes.length === 0 && Platform.OS === 'android') {
+    const isSecureFaceUnlock = await hasSecureFaceUnlock()
+    if (authTypes.length === 0 && isSecureFaceUnlock) {
       return [AuthenticationType.FACIAL_RECOGNITION]
     }
-    return authTypes
+
+    // remove face recognition if device does not have secure face unlock
+    let strongAuthTypes = authTypes
+    if (
+      isSecureFaceUnlock === false &&
+      authTypes.includes(AuthenticationType.FACIAL_RECOGNITION)
+    ) {
+      strongAuthTypes = authTypes.filter(
+        type => type !== AuthenticationType.FACIAL_RECOGNITION
+      )
+    }
+
+    return strongAuthTypes
   }
 
   /**
