@@ -39,7 +39,7 @@ import {
 } from '@ethereumjs/tx'
 import { UR } from '@ngraveio/bc-ur'
 import { rlp } from 'ethereumjs-util'
-import { KeystoneDataStorageType } from 'hardware/storage/KeystoneDataStorage'
+import { KeystoneDataStorageType } from 'features/keystone/storage/KeystoneDataStorage'
 import { Network } from '@avalabs/core-chains-sdk'
 import { Psbt } from 'bitcoinjs-lib'
 import { v4 } from 'uuid'
@@ -48,7 +48,7 @@ import { URType } from '@keystonehq/animated-qr'
 import { BytesLike, AddressLike } from '@ethereumjs/util'
 import { BN } from 'bn.js'
 import { isTypedData } from '@avalabs/evm-module'
-import { convertTxData, makeBigIntLike } from './utils'
+import { convertTxData, makeBigIntLike } from 'services/wallet/utils'
 import { signer } from './keystoneSigner'
 
 export const EVM_DERIVATION_PATH = `m/44'/60'/0'`
@@ -121,7 +121,7 @@ export default class KeystoneWallet implements Wallet {
         const ur = EthSignRequest.constructETHRequest(
           Buffer.from(data.replace('0x', ''), 'hex'),
           DataType.personalMessage,
-          `M/44'/60'/0'/0/${accountIndex}`,
+          `${EVM_DERIVATION_PATH}/0/${accountIndex}`,
           this.mfp,
           crypto.randomUUID()
         ).toUR()
@@ -149,7 +149,7 @@ export default class KeystoneWallet implements Wallet {
         const ur = EthSignRequest.constructETHRequest(
           Buffer.from(JSON.stringify(data), 'utf-8'),
           DataType.typedData,
-          `M/44'/60'/0'/0/${accountIndex}`,
+          `${EVM_DERIVATION_PATH}/0/${accountIndex}`,
           this.mfp,
           crypto.randomUUID()
         ).toUR()
@@ -326,7 +326,7 @@ export default class KeystoneWallet implements Wallet {
     // The keyPath below will depend on how the user onboards and should come from WalletService probably,
     // based on activeAccount.index, or fetched based on the address passed in params.from.
     // This here is BIP44 for the first account (index 0). 2nd account should be M/44'/60'/0'/0/1, etc..
-    const keyPath = `M/44'/60'/0'/0/${activeAccountIndex}`
+    const keyPath = `${EVM_DERIVATION_PATH}/0/${activeAccountIndex}`
     const ethSignRequest = EthSignRequest.constructETHRequest(
       Buffer.from(message as any),
       dataType,

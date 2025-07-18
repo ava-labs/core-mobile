@@ -67,12 +67,9 @@ const initAccounts = async (
 
   if (activeWallet.type === WalletType.KEYSTONE) {
     try {
-      await KeystoneService.refreshPublicKeys()
+      await KeystoneService.save()
     } catch (error) {
-      Logger.error(
-        'Failed to fetch and save public keys for Keystone wallet',
-        error
-      )
+      Logger.error('Failed to save public keys for Keystone wallet', error)
     }
   }
 

@@ -1,4 +1,4 @@
-import { KeystoneDataStorageType } from 'hardware/storage/KeystoneDataStorage'
+import { KeystoneDataStorageType } from 'features/keystone/storage/KeystoneDataStorage'
 import { Curve } from 'utils/publicKeys'
 import { BitcoinProvider } from '@avalabs/core-wallets-sdk'
 import KeystoneWallet from './KeystoneWallet'
@@ -11,7 +11,7 @@ const MockedKeystoneData: KeystoneDataStorageType = {
 }
 
 jest.mock('./keystoneSigner.ts', () => ({
-  signer: jest.fn(async () => '0xmockedsignature')
+  signer: jest.fn().mockImplementation(async () => '0xmockedsignature')
 }))
 
 describe('KeystoneWallet', () => {

@@ -1,5 +1,5 @@
 import { UR } from '@ngraveio/bc-ur'
-import { requestKeystoneSigner } from 'features/hardware/utils'
+import { requestKeystoneSigner } from 'features/keystone/utils'
 
 export const signer = async (
   request: UR,
@@ -7,9 +7,6 @@ export const signer = async (
   handleResult: (cbor: Buffer) => Promise<string>
 ): Promise<string> => {
   return new Promise<string>((resolve, reject) => {
-    if (process.env.JEST_WORKER_ID !== undefined) {
-      return resolve('0xmockedsignature')
-    }
     requestKeystoneSigner({
       request,
       responseURTypes,

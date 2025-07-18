@@ -1,1 +1,1 @@
-export { default } from 'features/hardware/screens/keystoneTroubleshooting'
+export { default } from 'features/keystone/screens/keystoneTroubleshooting'
