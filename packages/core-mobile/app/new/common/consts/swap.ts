@@ -2,3 +2,6 @@ export const AVAX_TOKEN_ID = 'AvalancheAVAX'
 export const USDC_AVALANCHE_C_TOKEN_ID =
   '0xB97EF9Ef8734C71904D8002F8b6Bc66Dd9c48a6E'
 export const SUPPORTED_PLATFORM_ID = 'eip155:43114'
+export const SOLANA_TOKEN_LOCAL_ID = 'SOLSOL'
+export const USDC_SOLANA_TOKEN_ID =
+  'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v'
