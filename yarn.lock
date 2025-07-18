@@ -331,8 +331,8 @@ __metadata:
     expo-constants: 17.1.7
     expo-dev-client: 5.2.4
     expo-haptics: 14.1.4
-    expo-image: 2.0.3
-    expo-linear-gradient: ^14.1.5
+    expo-image: 2.0.6
+    expo-linear-gradient: 14.1.5
     expo-linking: 7.1.7
     expo-local-authentication: 16.0.5
     expo-localization: 16.1.6
@@ -18799,9 +18799,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"expo-image@npm:2.0.3":
-  version: 2.0.3
-  resolution: "expo-image@npm:2.0.3"
+"expo-image@npm:2.0.6":
+  version: 2.0.6
+  resolution: "expo-image@npm:2.0.6"
   peerDependencies:
     expo: "*"
     react: "*"
@@ -18810,7 +18810,7 @@ __metadata:
   peerDependenciesMeta:
     react-native-web:
       optional: true
-  checksum: 5be69b91c179b76c881532afcd3278ea15f933fac25b382da7e689d1d523ab71fc573ebc22513dbd65ce86426dc25e73a0eb7cc367f6b78a2ad55e8846d09631
+  checksum: 41cea0f06575f7d5befde93c52e0009ca6c118eb58dabfc32218dafa82aeaf0bcddb07a51aa567138a466fd08ce4c7d61531d57a616dac9964de9dd230e6311b
   languageName: node
   linkType: hard
 
@@ -18846,7 +18846,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"expo-linear-gradient@npm:14.1.5, expo-linear-gradient@npm:^14.1.5":
+"expo-linear-gradient@npm:14.1.5":
   version: 14.1.5
   resolution: "expo-linear-gradient@npm:14.1.5"
   peerDependencies:
