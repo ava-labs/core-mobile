@@ -20,6 +20,7 @@ import { useTheme } from '../../hooks'
 import { Text, View } from '../Primitives'
 import { alpha } from '../../utils'
 import { normalizeValue } from '../../utils/tokenUnitInput'
+import { normalizeNumericTextInput } from '../../utils/tokenUnitInput'
 
 export type FiatAmountInputHandle = {
   setValue: (value: string) => void
@@ -92,7 +93,12 @@ export const FiatAmountInput = forwardRef<
           onChange?.('')
           return
         }
-        const changedValue = rawValue.startsWith('.') ? '0.' : rawValue
+
+        // Normalize the input to handle locale-specific decimal separators
+        const normalizedInput = normalizeNumericTextInput(rawValue)
+        const changedValue = normalizedInput.startsWith('.')
+          ? '0.'
+          : normalizedInput
 
         /**
          * Split the input and make sure the right side never exceeds
@@ -104,7 +110,7 @@ export const FiatAmountInput = forwardRef<
         // does not exceed the allowed maximum number of decimal digits.
         const isInputValid =
           frontValue !== undefined &&
-          !isNaN(Number(changedValue.replaceAll(',', ''))) &&
+          !isNaN(Number(changedValue)) &&
           (!endValue || endValue.length <= 5)
 
         if (isInputValid) {
