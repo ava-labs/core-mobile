@@ -69,7 +69,7 @@ PODS:
   - EXJSONUtils (0.15.0)
   - EXManifests (0.16.6):
     - ExpoModulesCore
-  - Expo (53.0.19):
+  - Expo (53.0.20):
     - DoubleConversion
     - ExpoModulesCore
     - glog
@@ -339,7 +339,7 @@ PODS:
     - ExpoModulesCore
   - ExpoBlur (14.1.5):
     - ExpoModulesCore
-  - ExpoCamera (16.1.10):
+  - ExpoCamera (16.1.11):
     - ExpoModulesCore
     - ZXingObjC/OneD
     - ZXingObjC/PDF417
@@ -349,9 +349,9 @@ PODS:
     - ExpoModulesCore
   - ExpoHaptics (14.1.4):
     - ExpoModulesCore
-  - ExpoHead (5.1.3):
+  - ExpoHead (5.1.4):
     - ExpoModulesCore
-  - ExpoImage (2.0.6):
+  - ExpoImage (2.0.3):
     - ExpoModulesCore
     - libavif/libdav1d
     - SDWebImage (~> 5.19.1)
@@ -367,7 +367,7 @@ PODS:
     - ExpoModulesCore
   - ExpoLocalization (16.1.6):
     - ExpoModulesCore
-  - ExpoModulesCore (2.4.2):
+  - ExpoModulesCore (2.5.0):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -1862,7 +1862,7 @@ PODS:
     - ReactCommon/turbomodule/core
   - react-native-aes (3.1.0):
     - React-Core
-  - react-native-bottom-tabs (0.9.0):
+  - react-native-bottom-tabs (0.9.2):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -3829,7 +3829,7 @@ SPEC CHECKSUMS:
   EXConstants: 9d62a46a36eae6d28cb978efcbc68aef354d1704
   EXJSONUtils: 1d3e4590438c3ee593684186007028a14b3686cd
   EXManifests: f4cc4a62ee4f1c8a9cf2bb79d325eac6cb9f5684
-  Expo: 6e2b482fa24909b52b80ba00271e6d7742c1ef9f
+  Expo: 666a397fcb608d72b019e16ba139b74e93e0b7d7
   expo-dev-client: f1b99dfea0c9174d2e4ec96c2c5461587dda1e86
   expo-dev-launcher: 27e8eba58d52b2f471b0c4001b0535a1c0b5610d
   expo-dev-menu: 2868212810f6651bc5c30e72c636ef64de31ec6b
@@ -3837,18 +3837,18 @@ SPEC CHECKSUMS:
   ExpoAdapterGoogleSignIn: da10ae7e7c1d73a10c2facebcdfe5ebea8e073ce
   ExpoAsset: 7bdbbacf4e6752ae6e3cf70555cee076f6229e6e
   ExpoBlur: 846780b2c90f59e964b9a50385d4deb67174ebfb
-  ExpoCamera: 0bf2f7b19a15815c009ee86d8ac1acc840ac2b3c
+  ExpoCamera: fc1ab0e1c665b543a307c577df107e37cc2edc8e
   ExpoFileSystem: 9681caebda23fa1b38a12a9c68b2bade7072ce20
   ExpoFont: 091a47eeaa1b30b0b760aa1d0a2e7814e8bf6fe6
   ExpoHaptics: 68c215e070f660e0a29c45dcda4f60eeff08aefb
-  ExpoHead: 9929511f8f28f2b41294c39fa66760ac74742078
-  ExpoImage: 36f2f4a3a530c1d1a2d349a1f0a0b400b0e1af47
+  ExpoHead: 7c1893efc8dc79570bdcbdadce175723f4c037ec
+  ExpoImage: 9cdae70d80c8a59cbfb51a475fc820172fa71666
   ExpoKeepAwake: e8dedc115d9f6f24b153ccd2d1d8efcdfd68a527
   ExpoLinearGradient: ce334cff9859da4635c1d8eff6e291b11b04ccbb
   ExpoLinking: 343a89ea864a851831fd4495e8aea01cf0f6a36f
   ExpoLocalAuthentication: 78f74d187ee51126e1a789d73fee32d6d7e60f1f
   ExpoLocalization: 677e45c2536bf918119962f78d7ffeeea317e07d
-  ExpoModulesCore: 33476f0f608d791bbaf263af22a00d3b8877f6bc
+  ExpoModulesCore: 16f74d8df26d7e4b6bf7eb3d0effaf0f15df7b80
   ExpoSMS: de195632beeb7ef00556750da10da667596d8967
   ExpoVideo: 84edf8e48b71317fb1d7f17c3d49a310476dc0f4
   EXUpdatesInterface: 64f35449b8ef89ce08cdd8952a4d119b5de6821d
@@ -3913,7 +3913,7 @@ SPEC CHECKSUMS:
   React-Mapbuffer: 5b4959cbd91e7e8fae42ab0f4b7c25b86fd139a1
   React-microtasksnativemodule: 1695ab137281dd03de967b7bbeb4e392601f6432
   react-native-aes: 8e4348c6e75fcb32f5a960e987df877e1062714e
-  react-native-bottom-tabs: 23e8e78f9cf7dcfaa8e6e4433cea37eede06e1af
+  react-native-bottom-tabs: a0a7be74c187704ae03a8a4243bfe9ab40f0e773
   react-native-compat: 8fd509839fcf4e5646b4ff2281912d95bbd66334
   react-native-config: 8f7283449bbb048902f4e764affbbf24504454af
   react-native-get-random-values: 21325b2244dfa6b58878f51f9aa42821e7ba3d06

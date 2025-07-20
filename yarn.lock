@@ -254,11 +254,11 @@ __metadata:
     "@react-native-menu/menu": 1.2.3
     "@react-native/babel-preset": 0.76.9
     "@react-native/metro-config": 0.76.9
-    "@react-navigation/bottom-tabs": 7.2.0
-    "@react-navigation/drawer": 7.1.1
+    "@react-navigation/bottom-tabs": ^7.3.10
+    "@react-navigation/drawer": ^7.3.9
     "@react-navigation/elements": 2.2.6
-    "@react-navigation/native": 7.1.14
-    "@react-navigation/native-stack": 7.2.0
+    "@react-navigation/native": ^7.1.6
+    "@react-navigation/native-stack": ^7.3.10
     "@react-navigation/stack": 7.1.2
     "@reduxjs/toolkit": 1.8.1
     "@reown/walletkit": 1.0.0
@@ -323,20 +323,20 @@ __metadata:
     ethereumjs-util: 7.1.5
     ethers: 6.8.1
     events: 3.3.0
-    expo: 53.0.19
+    expo: 53.0.20
     expo-application: 6.1.5
     expo-blur: 14.1.5
     expo-build-properties: 0.14.8
-    expo-camera: 16.1.10
+    expo-camera: 16.1.11
     expo-constants: 17.1.7
     expo-dev-client: 5.2.4
     expo-haptics: 14.1.4
-    expo-image: 2.0.6
+    expo-image: 2.0.3
     expo-linear-gradient: 14.1.5
     expo-linking: 7.1.7
     expo-local-authentication: 16.0.5
     expo-localization: 16.1.6
-    expo-router: 5.1.3
+    expo-router: 5.1.4
     expo-sms: 13.1.4
     expo-video: 2.2.2
     https-browserify: 1.0.0
@@ -371,7 +371,7 @@ __metadata:
     react-native-argon2: 2.0.1
     react-native-big-list: 1.6.1
     react-native-bootsplash: 6.3.7
-    react-native-bottom-tabs: 0.9.0
+    react-native-bottom-tabs: 0.9.2
     react-native-chart-kit: 6.12.0
     react-native-circular-progress: 1.4.0
     react-native-collapsible: 1.6.2
@@ -9861,22 +9861,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@react-navigation/bottom-tabs@npm:7.2.0":
-  version: 7.2.0
-  resolution: "@react-navigation/bottom-tabs@npm:7.2.0"
-  dependencies:
-    "@react-navigation/elements": ^2.2.5
-    color: ^4.2.3
-  peerDependencies:
-    "@react-navigation/native": ^7.0.14
-    react: ">= 18.2.0"
-    react-native: "*"
-    react-native-safe-area-context: ">= 4.0.0"
-    react-native-screens: ">= 4.0.0"
-  checksum: 30e091ab71398ac4733440641ae490a109e1eb2d3b6e6abe95908795609b007d29bb2368bbc8453338a048e8b7649f5ae07212d5cf9b97be9096e781cf44a954
-  languageName: node
-  linkType: hard
-
 "@react-navigation/bottom-tabs@npm:^7.3.10":
   version: 7.4.2
   resolution: "@react-navigation/bottom-tabs@npm:7.4.2"
@@ -9910,23 +9894,23 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@react-navigation/drawer@npm:7.1.1":
-  version: 7.1.1
-  resolution: "@react-navigation/drawer@npm:7.1.1"
+"@react-navigation/drawer@npm:^7.3.9":
+  version: 7.5.3
+  resolution: "@react-navigation/drawer@npm:7.5.3"
   dependencies:
-    "@react-navigation/elements": ^2.2.5
+    "@react-navigation/elements": ^2.5.2
     color: ^4.2.3
-    react-native-drawer-layout: ^4.1.1
-    use-latest-callback: ^0.2.1
+    react-native-drawer-layout: ^4.1.12
+    use-latest-callback: ^0.2.4
   peerDependencies:
-    "@react-navigation/native": ^7.0.14
+    "@react-navigation/native": ^7.1.14
     react: ">= 18.2.0"
     react-native: "*"
     react-native-gesture-handler: ">= 2.0.0"
     react-native-reanimated: ">= 2.0.0"
     react-native-safe-area-context: ">= 4.0.0"
     react-native-screens: ">= 4.0.0"
-  checksum: d849fa23ec346597534ce7f03dac91bdaa89560b229759ce6363a3afaf80a40486acba05fe701eeb06a6a77e35b43788fe8b129c3e91e0a03f8cf4ed6dc31dd7
+  checksum: 78e5655d9ff9df2e2d826c8ef883535991b2d1b1db06f265639e2975f361f2c21eb5af2be14650a3c460b4d5be26ce3fa32802ffbefea0ee2ada7a79a783d354
   languageName: node
   linkType: hard
 
@@ -9948,7 +9932,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@react-navigation/elements@npm:^2.2.5, @react-navigation/elements@npm:^2.5.2":
+"@react-navigation/elements@npm:^2.5.2":
   version: 2.5.2
   resolution: "@react-navigation/elements@npm:2.5.2"
   dependencies:
@@ -9968,22 +9952,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@react-navigation/native-stack@npm:7.2.0":
-  version: 7.2.0
-  resolution: "@react-navigation/native-stack@npm:7.2.0"
-  dependencies:
-    "@react-navigation/elements": ^2.2.5
-    warn-once: ^0.1.1
-  peerDependencies:
-    "@react-navigation/native": ^7.0.14
-    react: ">= 18.2.0"
-    react-native: "*"
-    react-native-safe-area-context: ">= 4.0.0"
-    react-native-screens: ">= 4.0.0"
-  checksum: c8202080416307cf7e2502e82e92f3dc09a17b96051f26d1e103fa222ff12729d1dd049c6f747e45cf03698ff019ab27d70f48e2e505606e4be5ade692e1b9a9
-  languageName: node
-  linkType: hard
-
 "@react-navigation/native-stack@npm:^7.3.10":
   version: 7.3.21
   resolution: "@react-navigation/native-stack@npm:7.3.21"
@@ -10000,7 +9968,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@react-navigation/native@npm:7.1.14, @react-navigation/native@npm:^7.1.6":
+"@react-navigation/native@npm:^7.1.6":
   version: 7.1.14
   resolution: "@react-navigation/native@npm:7.1.14"
   dependencies:
@@ -18689,9 +18657,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"expo-camera@npm:16.1.10":
-  version: 16.1.10
-  resolution: "expo-camera@npm:16.1.10"
+"expo-camera@npm:16.1.11":
+  version: 16.1.11
+  resolution: "expo-camera@npm:16.1.11"
   dependencies:
     invariant: ^2.2.4
   peerDependencies:
@@ -18702,7 +18670,7 @@ __metadata:
   peerDependenciesMeta:
     react-native-web:
       optional: true
-  checksum: 8654df7e9e5c5e4da45d958c69fb79959ed819cb8e714f67474271c36de7c8d425ea633dfcbb1e6f6d5b12277796848d660b8815a06c3b55d73f9bc9b13175a5
+  checksum: 8e2bd082686bb8d24b88992247963e57a41814773264c94b1c9400a45c0cd16bd13a3037f474313e44ee7c6159d801aba48b23dea5061593e73d3a666949fd0f
   languageName: node
   linkType: hard
 
@@ -18799,9 +18767,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"expo-image@npm:2.0.6":
-  version: 2.0.6
-  resolution: "expo-image@npm:2.0.6"
+"expo-image@npm:2.0.3":
+  version: 2.0.3
+  resolution: "expo-image@npm:2.0.3"
   peerDependencies:
     expo: "*"
     react: "*"
@@ -18810,7 +18778,7 @@ __metadata:
   peerDependenciesMeta:
     react-native-web:
       optional: true
-  checksum: 41cea0f06575f7d5befde93c52e0009ca6c118eb58dabfc32218dafa82aeaf0bcddb07a51aa567138a466fd08ce4c7d61531d57a616dac9964de9dd230e6311b
+  checksum: 5be69b91c179b76c881532afcd3278ea15f933fac25b382da7e689d1d523ab71fc573ebc22513dbd65ce86426dc25e73a0eb7cc367f6b78a2ad55e8846d09631
   languageName: node
   linkType: hard
 
@@ -18931,9 +18899,18 @@ __metadata:
   languageName: node
   linkType: hard
 
-"expo-router@npm:5.1.3":
-  version: 5.1.3
-  resolution: "expo-router@npm:5.1.3"
+"expo-modules-core@npm:2.5.0":
+  version: 2.5.0
+  resolution: "expo-modules-core@npm:2.5.0"
+  dependencies:
+    invariant: ^2.2.4
+  checksum: 7a405f20f0bc056c7409be6d00bf9ad5203cb461301b1ecf0a03380138965ea4fa8e1e2456035a2ea3cb6adb44eac3b40cb2e3a5328a4b91054911982029ad15
+  languageName: node
+  linkType: hard
+
+"expo-router@npm:5.1.4":
+  version: 5.1.4
+  resolution: "expo-router@npm:5.1.4"
   dependencies:
     "@expo/metro-runtime": 5.0.4
     "@expo/server": ^0.6.3
@@ -18964,7 +18941,7 @@ __metadata:
       optional: true
     react-native-reanimated:
       optional: true
-  checksum: dd205aa0b61511aba7aa3f2e829e09330af2b62359736101f68160d5a24b2da4090fa7867e3af78f9798e6d3033c34e3a5cce5b7af6d2ea000e1d2355cc6882c
+  checksum: a0e63a242520ef9984240c5bdd007e71925410fcfcc0c23948426409746566a7734c474d638245a25005a86db8ef2c15f30014a702441f0ab02c71baeccf8a2e
   languageName: node
   linkType: hard
 
@@ -19047,6 +19024,48 @@ __metadata:
     expo-modules-autolinking: bin/autolinking
     fingerprint: bin/fingerprint
   checksum: 40281e12e9e8d65c33cc0f4ec8313508ea47fce145ee26d6b670f33d301eb55169a246b714688d3fad7f89abf24d7bc25ae59aba47c77ca8d98aa0776498af98
+  languageName: node
+  linkType: hard
+
+"expo@npm:53.0.20":
+  version: 53.0.20
+  resolution: "expo@npm:53.0.20"
+  dependencies:
+    "@babel/runtime": ^7.20.0
+    "@expo/cli": 0.24.20
+    "@expo/config": ~11.0.13
+    "@expo/config-plugins": ~10.1.2
+    "@expo/fingerprint": 0.13.4
+    "@expo/metro-config": 0.20.17
+    "@expo/vector-icons": ^14.0.0
+    babel-preset-expo: ~13.2.3
+    expo-asset: ~11.1.7
+    expo-constants: ~17.1.7
+    expo-file-system: ~18.1.11
+    expo-font: ~13.3.2
+    expo-keep-awake: ~14.1.4
+    expo-modules-autolinking: 2.1.14
+    expo-modules-core: 2.5.0
+    react-native-edge-to-edge: 1.6.0
+    whatwg-url-without-unicode: 8.0.0-3
+  peerDependencies:
+    "@expo/dom-webview": "*"
+    "@expo/metro-runtime": "*"
+    react: "*"
+    react-native: "*"
+    react-native-webview: "*"
+  peerDependenciesMeta:
+    "@expo/dom-webview":
+      optional: true
+    "@expo/metro-runtime":
+      optional: true
+    react-native-webview:
+      optional: true
+  bin:
+    expo: bin/cli
+    expo-modules-autolinking: bin/autolinking
+    fingerprint: bin/fingerprint
+  checksum: 54f70106122aeab1e067e0dc2957fb845884861e303d02f20f496a5c4010d946f070b4a1b9ac9045ecd448006f426351dd564185603e366c1d0d258b3eb348fe
   languageName: node
   linkType: hard
 
@@ -26822,9 +26841,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-native-bottom-tabs@npm:0.9.0":
-  version: 0.9.0
-  resolution: "react-native-bottom-tabs@npm:0.9.0"
+"react-native-bottom-tabs@npm:0.9.2":
+  version: 0.9.2
+  resolution: "react-native-bottom-tabs@npm:0.9.2"
   dependencies:
     react-freeze: ^1.0.0
     sf-symbols-typescript: ^2.0.0
@@ -26832,7 +26851,7 @@ __metadata:
   peerDependencies:
     react: "*"
     react-native: "*"
-  checksum: 5c11da8d62b9377d0fa8b128721f53c8896a3e8eccfc970827b60cde9533ab73dd8cdb872b8ebe0d6d003bc5ba1b6ffae916026096f4540a4124024fda9a0c8a
+  checksum: e20433301dd04eb6ead537bdb8836c3740beb8347db5b6ac79503a1908f2d40e24fe2d9dd546dfdce26f965bbec8e36342939c5bd4b7cfd3d15eee9f0b6f0d77
   languageName: node
   linkType: hard
 
@@ -26922,7 +26941,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-native-drawer-layout@npm:^4.1.1":
+"react-native-drawer-layout@npm:^4.1.12":
   version: 4.1.12
   resolution: "react-native-drawer-layout@npm:4.1.12"
   dependencies:
