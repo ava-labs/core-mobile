@@ -35,9 +35,8 @@ export const NavigationRedirect = (): null => {
   useEffect(() => {
     if (!isNavigationReady) return
 
-    // Add a small delay to ensure Root Layout component is fully mounted
-    // This prevents "Attempted to navigate before mounting" error
-    const navigationTimeout = setTimeout(() => {
+    // Defer navigation to ensure Root Layout Stack is mounted
+    const timeoutId = setTimeout(() => {
       if (walletState === WalletState.NONEXISTENT) {
         if (router.canGoBack()) {
           router.dismissAll()
@@ -48,9 +47,9 @@ export const NavigationRedirect = (): null => {
         // @ts-ignore TODO: make routes typesafe
         router.replace('/loginWithPinOrBiometry')
       }
-    }, 100)
+    }, 0)
 
-    return () => clearTimeout(navigationTimeout)
+    return () => clearTimeout(timeoutId)
   }, [walletState, router, isNavigationReady])
 
   // TODO: refactor this effect so that we don't depend on navigation state
@@ -66,8 +65,8 @@ export const NavigationRedirect = (): null => {
      * - otherwise, return the user to their previous/last screen if the app was locked due to inactivity.
      */
     if (walletState === WalletState.ACTIVE) {
-      // Add a small delay to ensure Root Layout component is fully mounted
-      const navigationTimeout = setTimeout(() => {
+      // Defer navigation to ensure Root Layout Stack is mounted
+      const timeoutId = setTimeout(() => {
         // when the login modal is the last route and on top of the (signedIn) stack
         // it means the app just resumed from inactivity
         const isReturningFromInactivity =
@@ -90,9 +89,9 @@ export const NavigationRedirect = (): null => {
           // @ts-ignore TODO: make routes typesafe
           router.replace('/portfolio')
         }
-      }, 100)
+      }, 0)
 
-      return () => clearTimeout(navigationTimeout)
+      return () => clearTimeout(timeoutId)
     }
   }, [walletState, router, isSignedIn, pathName, isNavigationReady])
 
