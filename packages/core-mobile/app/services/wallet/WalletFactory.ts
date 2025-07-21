@@ -4,7 +4,7 @@ import BiometricsSDK from 'utils/BiometricsSDK'
 import { PrivateKeyWallet } from 'services/wallet/PrivateKeyWallet'
 import { SeedlessPubKeysStorage } from 'seedless/services/storage/SeedlessPubKeysStorage'
 import { KeystoneDataStorage } from 'features/keystone/storage/KeystoneDataStorage'
-import KeystoneWallet from 'hardware/wallet/KeystoneWallet'
+import KeystoneWallet from './KeystoneWallet'
 import { Wallet, WalletType } from './types'
 import { MnemonicWallet } from './MnemonicWallet'
 
