@@ -391,7 +391,7 @@ __metadata:
     react-native-keychain: 10.0.0
     react-native-level-fs: 3.0.1
     react-native-localize: 3.2.1
-    react-native-mmkv: 3.2.0
+    react-native-mmkv: 3.3.0
     react-native-modal-datetime-picker: 18.0.0
     react-native-os: 1.2.6
     react-native-pager-view: 6.7.1
@@ -27229,13 +27229,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-native-mmkv@npm:3.2.0":
-  version: 3.2.0
-  resolution: "react-native-mmkv@npm:3.2.0"
+"react-native-mmkv@npm:3.3.0":
+  version: 3.3.0
+  resolution: "react-native-mmkv@npm:3.3.0"
   peerDependencies:
     react: "*"
     react-native: "*"
-  checksum: 766944a7cbf265e27b57576e51bff8604cd8f58c88eaec78bd93d4ce10ff9127d5f75f4c3bb03d6c7ce5dafa07c65e233d5363c0504db802cc88eaf1ccbffaa1
+  checksum: 2544e4a2d37429a17fba14bc12140b45d8da3e2b4a3d4cf884c355cca8d57dd425fd45160c5552e4b725978b037f3dfadd408db05735bb21341eea92e0c2a869
   languageName: node
   linkType: hard
 
@@ -31154,9 +31154,9 @@ __metadata:
   linkType: hard
 
 "undici@npm:^6.18.2 || ^7.0.0":
-  version: 7.5.0
-  resolution: "undici@npm:7.5.0"
-  checksum: 796498f9d134a14a513282915109ebcb96605069e8a2b0d58271fe05cb42a5cf76f5dfa416c21e0ebfaf9df57a17a09d5a778906e7e25581df66b28f97437158
+  version: 7.12.0
+  resolution: "undici@npm:7.12.0"
+  checksum: dec61384d1d2c610f381debfe6b61bb4720720f36b8a5669ffd216d4e956fa283cb1fd9717ea44bc16b9e8a576ed237a67c40f00b0eba9df46cad01c5945abd8
   languageName: node
   linkType: hard
 
