@@ -4,7 +4,7 @@ export const useTimeElapsed = (enabled: boolean, targetTime: number) => {
   const [targetTimeReached, setTargetTimeReached] = useState(false)
 
   useEffect(() => {
-    let id: NodeJS.Timeout | undefined
+    let id: ReturnType<typeof setTimeout> | undefined
 
     if (enabled) {
       id = setTimeout(() => {

@@ -8,7 +8,7 @@ import BackBarButton from 'common/components/BackBarButton'
 import React from 'react'
 import { Platform } from 'react-native'
 import BlurredBackgroundView from 'common/components/BlurredBackgroundView'
-import { TransitionSpec } from '@react-navigation/stack/lib/typescript/commonjs/src/types'
+import { TransitionSpec } from '@react-navigation/stack/lib/typescript/src/types'
 
 export const MODAL_TOP_MARGIN = 28
 export const MODAL_BORDER_RADIUS = 40
@@ -49,10 +49,13 @@ export function forNoAnimation(): StackCardInterpolatedStyle {
   return {}
 }
 
-export const androidModalTransitionSpec = {
+export const androidModalTransitionSpec: {
+  open: TransitionSpec
+  close: TransitionSpec
+} = {
   open: TransitionSpecs.BottomSheetSlideInSpec,
   close: {
     animation: 'timing',
     config: { duration: 0 }
-  } as TransitionSpec
+  }
 }

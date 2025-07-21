@@ -14,7 +14,7 @@ export default function promiseWithTimeout<T>(
   promise: Promise<T>,
   ms: number
 ): Promise<T> {
-  let timer: NodeJS.Timeout | undefined
+  let timer: ReturnType<typeof setTimeout> | undefined
   return Promise.race([
     promise,
     new Promise<T>(

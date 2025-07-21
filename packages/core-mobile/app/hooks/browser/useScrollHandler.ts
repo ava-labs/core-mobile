@@ -19,7 +19,7 @@ export default function useScrollHandler(): {
   const onScrollHandler = useMemo(() => {
     let lastY = 0
     let lastCall = 0
-    let timeout: NodeJS.Timeout | undefined
+    let timeout: ReturnType<typeof setTimeout> | undefined
     return (event: WebViewScrollEvent) => {
       const now = Date.now()
       if (now - lastCall >= THROTTLE) {

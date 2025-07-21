@@ -30,12 +30,16 @@ export const BlurViewWithFallback = ({
   )
 
   useEffect(() => {
-    let timer: NodeJS.Timeout
+    let timer: ReturnType<typeof setTimeout> | undefined
 
     if (shouldDelayBlurOniOS && Platform.OS === 'ios') {
       timer = setTimeout(() => setReady(true), 500)
     }
-    return () => timer && clearTimeout(timer)
+    return () => {
+      if (timer) {
+        clearTimeout(timer)
+      }
+    }
   }, [shouldDelayBlurOniOS])
 
   const { theme } = useTheme()
