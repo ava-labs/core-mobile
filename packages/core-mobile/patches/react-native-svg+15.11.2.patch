@@ -1,9 +1,9 @@
 diff --git a/node_modules/react-native-svg/apple/Elements/RNSVGSvgView.mm b/node_modules/react-native-svg/apple/Elements/RNSVGSvgView.mm
-index f5da0cf..b66de56 100644
+index a00e143..19213c7 100644
 --- a/node_modules/react-native-svg/apple/Elements/RNSVGSvgView.mm
 +++ b/node_modules/react-native-svg/apple/Elements/RNSVGSvgView.mm
-@@ -319,7 +319,11 @@ - (void)drawRect:(CGRect)rect
-   _boundingBox = rect;
+@@ -328,7 +328,11 @@ - (void)drawRect:(CGRect)rect
+ #endif
    CGContextRef context = UIGraphicsGetCurrentContext();
  
 -  [self drawToContext:context withRect:[self bounds]];

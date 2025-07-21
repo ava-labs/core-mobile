@@ -2,20 +2,22 @@ import { useCallback, useEffect } from 'react'
 import 'react-native-reanimated'
 import { selectWalletState, WalletState } from 'store/app'
 import { useSelector } from 'react-redux'
-import { useRootNavigationState, useRouter, usePathname } from 'expo-router'
+import {
+  useRootNavigationState,
+  useRouter,
+  usePathname,
+  useFocusEffect
+} from 'expo-router'
 /**
  * Temporarily import "useNavigation" from @react-navigation/native.
  * This is a workaround due to a render bug in the expo-router version.
  * See: https://github.com/expo/expo/issues/35383
  * TODO: Adjust import back to expo-router once the bug is resolved.
  */
-import { useNavigation, useFocusEffect } from '@react-navigation/native'
-import { StackActions } from '@react-navigation/native'
 import { BackHandler } from 'react-native'
 
 export const NavigationRedirect = (): null => {
   const router = useRouter()
-  const navigation = useNavigation()
   const pathName = usePathname()
   const walletState = useSelector(selectWalletState)
   const navigationState = useRootNavigationState()
@@ -33,17 +35,23 @@ export const NavigationRedirect = (): null => {
   useEffect(() => {
     if (!isNavigationReady) return
 
-    if (walletState === WalletState.NONEXISTENT) {
-      if (router.canGoBack()) {
-        navigation.dispatch(StackActions.popToTop())
+    // Add a small delay to ensure Root Layout component is fully mounted
+    // This prevents "Attempted to navigate before mounting" error
+    const navigationTimeout = setTimeout(() => {
+      if (walletState === WalletState.NONEXISTENT) {
+        if (router.canGoBack()) {
+          router.dismissAll()
+        }
+        // @ts-ignore TODO: make routes typesafe
+        router.replace('/signup')
+      } else if (walletState === WalletState.INACTIVE) {
+        // @ts-ignore TODO: make routes typesafe
+        router.replace('/loginWithPinOrBiometry')
       }
-      // @ts-ignore TODO: make routes typesafe
-      router.replace('/signup')
-    } else if (walletState === WalletState.INACTIVE) {
-      // @ts-ignore TODO: make routes typesafe
-      router.navigate('/loginWithPinOrBiometry')
-    }
-  }, [walletState, router, navigation, isNavigationReady])
+    }, 100)
+
+    return () => clearTimeout(navigationTimeout)
+  }, [walletState, router, isNavigationReady])
 
   // TODO: refactor this effect so that we don't depend on navigation state
   useEffect(() => {
@@ -58,28 +66,33 @@ export const NavigationRedirect = (): null => {
      * - otherwise, return the user to their previous/last screen if the app was locked due to inactivity.
      */
     if (walletState === WalletState.ACTIVE) {
-      // when the login modal is the last route and on top of the (signedIn) stack
-      // it means the app just resumed from inactivity
-      const isReturningFromInactivity =
-        isSignedIn && pathName === '/loginWithPinOrBiometry'
+      // Add a small delay to ensure Root Layout component is fully mounted
+      const navigationTimeout = setTimeout(() => {
+        // when the login modal is the last route and on top of the (signedIn) stack
+        // it means the app just resumed from inactivity
+        const isReturningFromInactivity =
+          isSignedIn && pathName === '/loginWithPinOrBiometry'
 
-      if (isReturningFromInactivity) {
-        router.canGoBack() && router.back()
-      } else if (
-        pathName === '/onboarding/mnemonic/confirmation' ||
-        pathName === '/onboarding/seedless/confirmation' ||
-        (pathName === '/loginWithPinOrBiometry' && !isSignedIn)
-      ) {
-        // must call dismissAll() here
-        // otherwise, pressing the back button will either take users:
-        // - to a blank screen (if they are already logged in)
-        // - back to the onboarding flow (when they just completed onboarding)
-        while (router.canGoBack()) {
-          router.dismissAll()
+        if (isReturningFromInactivity) {
+          router.canGoBack() && router.back()
+        } else if (
+          pathName === '/onboarding/mnemonic/confirmation' ||
+          pathName === '/onboarding/seedless/confirmation' ||
+          (pathName === '/loginWithPinOrBiometry' && !isSignedIn)
+        ) {
+          // must call dismissAll() here
+          // otherwise, pressing the back button will either take users:
+          // - to a blank screen (if they are already logged in)
+          // - back to the onboarding flow (when they just completed onboarding)
+          while (router.canGoBack()) {
+            router.dismissAll()
+          }
+          // @ts-ignore TODO: make routes typesafe
+          router.replace('/portfolio')
         }
-        // @ts-ignore TODO: make routes typesafe
-        router.replace('/portfolio')
-      }
+      }, 100)
+
+      return () => clearTimeout(navigationTimeout)
     }
   }, [walletState, router, isSignedIn, pathName, isNavigationReady])
 
@@ -93,10 +106,12 @@ export const NavigationRedirect = (): null => {
           return false
         }
       }
-      BackHandler.addEventListener('hardwareBackPress', onBackPress)
+      const subscription = BackHandler.addEventListener(
+        'hardwareBackPress',
+        onBackPress
+      )
 
-      return () =>
-        BackHandler.removeEventListener('hardwareBackPress', onBackPress)
+      return () => subscription.remove()
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
   )

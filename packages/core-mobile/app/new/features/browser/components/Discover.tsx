@@ -24,14 +24,14 @@ export const Discover = (): JSX.Element => {
       nestedScrollEnabled
       stickyHeaderIndices={[0]}
       contentContainerStyle={{
-        paddingTop: 48
+        paddingTop: insets.top + 76
       }}>
       <Animated.View
         pointerEvents="none"
         style={[
           {
             position: 'absolute',
-            top: -26,
+            top: 0,
             left: 0,
             right: 0,
             zIndex: 1
@@ -39,7 +39,7 @@ export const Discover = (): JSX.Element => {
         ]}>
         <LinearGradient
           style={{
-            height: insets.top + 26
+            height: insets.top + 60
           }}
           colors={[
             theme.colors.$surfacePrimary,

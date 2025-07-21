@@ -45,7 +45,7 @@ HMRClient.js: adjust stringify logic of object to make logs in Terminal more rea
 
 for some reason, metro can only consume esm folder so we had to adjust the package.json to only expose esm folder
 
-### react-native-svg+15.8.0.patch
+### react-native-svg+15.11.2.patch
 
 to prevent a crash on iOS when react-native-svg is unable to render certain svgs
 
@@ -54,10 +54,9 @@ to prevent a crash on iOS when react-native-svg is unable to render certain svgs
 logger in wallet connect is hard coded to trace. this patch adjusts it to "error" level for local development and "silent" level for production
 https://github.com/WalletConnect/walletconnect-utils/issues/171
 
-### react-native-reanimated+3.17.1.patch
+### react-native-reanimated+3.17.4.patch
 
-invalid call of hasAnimatedRef method will cause a crash. it is fixed but not released yet.
-https://github.com/software-mansion/react-native-reanimated/pull/7158
+add isActive parameter to useAnimatedSensor for unregistering event
 
 ### react-native-collapsible-tab-view+8.0.0.patch
 
@@ -71,10 +70,6 @@ exposed toggleSyncScrollFrame using scrollResync ref for manually recomputing la
 with the latest react native, if the webview is not rendered using `display: none`, nothing will work: all the javascript injection, message relaying,...
 
 to fix it, we patched the lib so that the webview is still rendered but won't be visible.
-
-### @datadog+mobile-react-native+2.6.4.patch
-
-we can't build Android with this version of datadog. they have fixed this in 2.6.5 but haven't released yet.
 
 ### @react-navigation+stack+7.1.2.patch
 
