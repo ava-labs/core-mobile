@@ -2306,7 +2306,7 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
-  - react-native-theme-control (6.1.0):
+  - react-native-theme-control (7.0.2):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -3931,7 +3931,7 @@ SPEC CHECKSUMS:
   react-native-safe-area-context: 00d03dc688ba86664be66f9e3f203fc7d747d899
   react-native-skia: d4b71ff628f69fd8e1b2d0dbd436d6ab6ee8d669
   react-native-slider: c4c1a975352113af59b59dc783abc111618ec37a
-  react-native-theme-control: 6d261b09aefe0bb46a092e35303864f71093c597
+  react-native-theme-control: ad1dbaa6ac374bccf0100024269cadd44c73aa33
   react-native-view-shot: 41c5c50c809f1fd61f91c99400b2222c9b80d13f
   react-native-webview: cde150463e7caa49b316b0ed1871e7ef8193bef4
   React-NativeModulesApple: 3ecc647742d33ad617bd2805902e3f91f2b3008f
