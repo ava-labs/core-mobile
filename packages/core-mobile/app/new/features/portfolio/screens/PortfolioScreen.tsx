@@ -173,7 +173,7 @@ const PortfolioHomeScreen = (): JSX.Element => {
 
   const formattedPercent = useMemo(
     () =>
-      isNaN(totalPriceChangedInPercent) || totalPriceChangedInPercent === 0
+      !isFinite(totalPriceChangedInPercent) || totalPriceChangedInPercent === 0
         ? undefined
         : totalPriceChangedInPercent.toFixed(2) + '%',
     [totalPriceChangedInPercent]
