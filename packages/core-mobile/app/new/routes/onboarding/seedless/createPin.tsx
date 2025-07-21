@@ -2,9 +2,8 @@ import { useStoredBiometrics } from 'common/hooks/useStoredBiometrics'
 import { useRouter } from 'expo-router'
 import { CreatePin as Component } from 'features/onboarding/components/CreatePin'
 import { useWallet } from 'hooks/useWallet'
-import React, { useCallback, useEffect, useState } from 'react'
+import React, { useCallback } from 'react'
 import { WalletType } from 'services/wallet/types'
-import SeedlessService from 'seedless/services/SeedlessService'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import BiometricsSDK from 'utils/BiometricsSDK'
 import Logger from 'utils/Logger'
@@ -15,28 +14,14 @@ import { selectActiveWalletId } from 'store/wallet/slice'
 export default function CreatePin(): JSX.Element {
   const { navigate, back } = useRouter()
   const { onPinCreated } = useWallet()
-  const [hasWalletName, setHasWalletName] = useState(false)
   const { isBiometricAvailable, useBiometrics, setUseBiometrics } =
     useStoredBiometrics()
   const activeWalletId = useSelector(selectActiveWalletId)
 
   const navigateToNextStep = useCallback(() => {
-    if (hasWalletName) {
-      // @ts-ignore TODO: make routes typesafe
-      navigate('/onboarding/seedless/selectAvatar')
-    } else {
-      // @ts-ignore TODO: make routes typesafe
-      navigate('/onboarding/seedless/setWalletName')
-    }
-  }, [navigate, hasWalletName])
-
-  useEffect(() => {
-    const checkHasWalletName = async (): Promise<void> => {
-      const walletName = await SeedlessService.getAccountName()
-      setHasWalletName(walletName !== undefined)
-    }
-    checkHasWalletName().catch(Logger.error)
-  }, [])
+    // @ts-ignore TODO: make routes typesafe
+    navigate('/onboarding/seedless/setWalletName')
+  }, [navigate])
 
   const handleEnteredValidPin = useCallback(
     (pin: string) => {

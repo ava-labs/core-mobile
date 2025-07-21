@@ -16,7 +16,8 @@ import {
   selectActiveWallet,
   selectActiveWalletId,
   selectSeedlessWallet,
-  selectWallets
+  selectWallets,
+  setWalletName
 } from 'store/wallet/slice'
 import { selectIsSolanaSupportBlocked } from 'store/posthog'
 import BiometricsSDK from 'utils/BiometricsSDK'
@@ -25,6 +26,7 @@ import SeedlessWallet from 'seedless/services/wallet/SeedlessWallet'
 import { transactionSnackbar } from 'common/utils/toast'
 import Logger from 'utils/Logger'
 import KeystoneService from 'hardware/services/KeystoneService'
+import { pendingSeedlessWalletNameStore } from 'features/onboarding/store'
 import {
   selectAccounts,
   setAccounts,
@@ -33,7 +35,6 @@ import {
   selectAccountsByWalletId
 } from './slice'
 import { AccountCollection } from './types'
-
 const initAccounts = async (
   _action: AnyAction,
   listenerApi: AppListenerEffectAPI
@@ -82,6 +83,24 @@ const initAccounts = async (
   })
 
   if (activeWallet.type === WalletType.SEEDLESS) {
+    // setting wallet name
+    const { pendingSeedlessWalletName } =
+      pendingSeedlessWalletNameStore.getState()
+
+    if (pendingSeedlessWalletName) {
+      AnalyticsService.capture('Onboard:WalletNameSet')
+      listenerApi.dispatch(
+        setWalletName({
+          walletId: activeWallet.id,
+          name: pendingSeedlessWalletName
+        })
+      )
+      pendingSeedlessWalletNameStore.setState({
+        pendingSeedlessWalletName: undefined
+      })
+    }
+
+    // retrieving firstaccount name from cubist
     const title = await SeedlessService.getAccountName(0)
     const accountTitle = title ?? acc.name
     accounts[acc.id] = { ...acc, name: accountTitle }
