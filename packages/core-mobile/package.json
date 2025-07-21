@@ -315,6 +315,7 @@
       "web3>web3-core>web3-core-requestmanager>web3-providers-ws>websocket>es5-ext": false,
       "web3>web3-shh": false,
       "@react-native-firebase/app>firebase>@firebase/firestore>@grpc/proto-loader>protobufjs": false,
+      "@react-native-firebase/app>firebase>@firebase/util": false,
       "hypersdk-client>@metamask/sdk>eciesjs>secp256k1": false,
       "web3>web3-core>web3-core-requestmanager>web3-providers-ws>websocket>bufferutil": false,
       "ethereumjs-util>ethereum-cryptography>keccak": false,
