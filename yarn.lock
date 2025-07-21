@@ -254,12 +254,12 @@ __metadata:
     "@react-native-menu/menu": 1.2.3
     "@react-native/babel-preset": 0.76.9
     "@react-native/metro-config": 0.76.9
-    "@react-navigation/bottom-tabs": 7.3.10
-    "@react-navigation/drawer": 7.3.9
+    "@react-navigation/bottom-tabs": 7.4.2
+    "@react-navigation/drawer": 7.5.3
     "@react-navigation/elements": 2.2.6
-    "@react-navigation/native": 7.1.6
-    "@react-navigation/native-stack": 7.3.10
-    "@react-navigation/stack": 7.1.2
+    "@react-navigation/native": 7.1.14
+    "@react-navigation/native-stack": 7.3.21
+    "@react-navigation/stack": 7.4.2
     "@reduxjs/toolkit": 1.8.1
     "@reown/walletkit": 1.0.0
     "@rushstack/eslint-patch": 1.10.4
@@ -288,7 +288,7 @@ __metadata:
     "@types/lodash.isempty": 4.4.9
     "@types/lodash.isstring": 4.0.9
     "@types/numeral": 2.0.5
-    "@types/react": 19.0.10
+    "@types/react": ~19.0.10
     "@types/react-dom": 18.3.1
     "@types/react-test-renderer": 18.3.0
     "@types/semver": 7.5.4
@@ -583,7 +583,7 @@ __metadata:
     expo-blur: 14.1.5
     expo-constants: 17.1.7
     expo-font: 13.3.2
-    expo-image: 2.3.2
+    expo-image: 2.0.3
     expo-linear-gradient: 14.1.5
     expo-splash-screen: 0.30.10
     expo-video: 2.2.2
@@ -614,7 +614,7 @@ __metadata:
     "@react-native-masked-view/masked-view": 0.3.2
     "@shopify/react-native-skia": v2.0.0-next.4
     expo-blur: 14.1.5
-    expo-image: 2.3.2
+    expo-image: 2.0.3
     expo-linear-gradient: 14.1.5
     react: 19.0.0
     react-native: 0.79.5
@@ -9878,23 +9878,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@react-navigation/bottom-tabs@npm:7.3.10":
-  version: 7.3.10
-  resolution: "@react-navigation/bottom-tabs@npm:7.3.10"
-  dependencies:
-    "@react-navigation/elements": ^2.3.8
-    color: ^4.2.3
-  peerDependencies:
-    "@react-navigation/native": ^7.1.6
-    react: ">= 18.2.0"
-    react-native: "*"
-    react-native-safe-area-context: ">= 4.0.0"
-    react-native-screens: ">= 4.0.0"
-  checksum: d61ad5e5a018a6aefc72ce88b24bca1e1822e5061509dfc89faa9f28cf9ff4637f10379feb8cbc77caefac9c281f8be5089632d83a6c3dcc843bf9298a47531f
-  languageName: node
-  linkType: hard
-
-"@react-navigation/bottom-tabs@npm:^7.3.10":
+"@react-navigation/bottom-tabs@npm:7.4.2, @react-navigation/bottom-tabs@npm:^7.3.10":
   version: 7.4.2
   resolution: "@react-navigation/bottom-tabs@npm:7.4.2"
   dependencies:
@@ -9910,7 +9894,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@react-navigation/core@npm:^7.12.1, @react-navigation/core@npm:^7.8.5":
+"@react-navigation/core@npm:^7.12.1":
   version: 7.12.1
   resolution: "@react-navigation/core@npm:7.12.1"
   dependencies:
@@ -9927,27 +9911,27 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@react-navigation/drawer@npm:7.3.9":
-  version: 7.3.9
-  resolution: "@react-navigation/drawer@npm:7.3.9"
+"@react-navigation/drawer@npm:7.5.3":
+  version: 7.5.3
+  resolution: "@react-navigation/drawer@npm:7.5.3"
   dependencies:
-    "@react-navigation/elements": ^2.3.8
+    "@react-navigation/elements": ^2.5.2
     color: ^4.2.3
-    react-native-drawer-layout: ^4.1.6
-    use-latest-callback: ^0.2.1
+    react-native-drawer-layout: ^4.1.12
+    use-latest-callback: ^0.2.4
   peerDependencies:
-    "@react-navigation/native": ^7.1.6
+    "@react-navigation/native": ^7.1.14
     react: ">= 18.2.0"
     react-native: "*"
     react-native-gesture-handler: ">= 2.0.0"
     react-native-reanimated: ">= 2.0.0"
     react-native-safe-area-context: ">= 4.0.0"
     react-native-screens: ">= 4.0.0"
-  checksum: 8d24bf6fef94fae7268cb13a6bacd26bbdc65cf2e4693c241c8cd7190a3d117dd807a85792ef56f9649bfc80bb88c01a7e7a419c41761dc9a523a3f9c72ca7e4
+  checksum: 78e5655d9ff9df2e2d826c8ef883535991b2d1b1db06f265639e2975f361f2c21eb5af2be14650a3c460b4d5be26ce3fa32802ffbefea0ee2ada7a79a783d354
   languageName: node
   linkType: hard
 
-"@react-navigation/elements@npm:2.2.6, @react-navigation/elements@npm:^2.2.6":
+"@react-navigation/elements@npm:2.2.6":
   version: 2.2.6
   resolution: "@react-navigation/elements@npm:2.2.6"
   dependencies:
@@ -9965,7 +9949,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@react-navigation/elements@npm:^2.3.8, @react-navigation/elements@npm:^2.5.2":
+"@react-navigation/elements@npm:^2.5.2":
   version: 2.5.2
   resolution: "@react-navigation/elements@npm:2.5.2"
   dependencies:
@@ -9985,23 +9969,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@react-navigation/native-stack@npm:7.3.10":
-  version: 7.3.10
-  resolution: "@react-navigation/native-stack@npm:7.3.10"
-  dependencies:
-    "@react-navigation/elements": ^2.3.8
-    warn-once: ^0.1.1
-  peerDependencies:
-    "@react-navigation/native": ^7.1.6
-    react: ">= 18.2.0"
-    react-native: "*"
-    react-native-safe-area-context: ">= 4.0.0"
-    react-native-screens: ">= 4.0.0"
-  checksum: e64f235005164ba2bf20f023edbe7a1f0e6a0c9ede7efdd084e49bec4f5b2ff445892b6bd3b3bb4ee5588d751ac956427bf75a2e5d399159b0a7e8163c91ef2b
-  languageName: node
-  linkType: hard
-
-"@react-navigation/native-stack@npm:^7.3.10":
+"@react-navigation/native-stack@npm:7.3.21, @react-navigation/native-stack@npm:^7.3.10":
   version: 7.3.21
   resolution: "@react-navigation/native-stack@npm:7.3.21"
   dependencies:
@@ -10017,23 +9985,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@react-navigation/native@npm:7.1.6":
-  version: 7.1.6
-  resolution: "@react-navigation/native@npm:7.1.6"
-  dependencies:
-    "@react-navigation/core": ^7.8.5
-    escape-string-regexp: ^4.0.0
-    fast-deep-equal: ^3.1.3
-    nanoid: 3.3.8
-    use-latest-callback: ^0.2.1
-  peerDependencies:
-    react: ">= 18.2.0"
-    react-native: "*"
-  checksum: 12619814a52a9b9095af771caca3855835648e6807130641162fe1399d16cc8356c362d73b5a48ebdfa74278715e5313f284b6ac8e523e2cfc3f62722710dc0e
-  languageName: node
-  linkType: hard
-
-"@react-navigation/native@npm:^7.1.6":
+"@react-navigation/native@npm:7.1.14, @react-navigation/native@npm:^7.1.6":
   version: 7.1.14
   resolution: "@react-navigation/native@npm:7.1.14"
   dependencies:
@@ -10058,20 +10010,20 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@react-navigation/stack@npm:7.1.2":
-  version: 7.1.2
-  resolution: "@react-navigation/stack@npm:7.1.2"
+"@react-navigation/stack@npm:7.4.2":
+  version: 7.4.2
+  resolution: "@react-navigation/stack@npm:7.4.2"
   dependencies:
-    "@react-navigation/elements": ^2.2.6
+    "@react-navigation/elements": ^2.5.2
     color: ^4.2.3
   peerDependencies:
-    "@react-navigation/native": ^7.0.15
+    "@react-navigation/native": ^7.1.14
     react: ">= 18.2.0"
     react-native: "*"
     react-native-gesture-handler: ">= 2.0.0"
     react-native-safe-area-context: ">= 4.0.0"
     react-native-screens: ">= 4.0.0"
-  checksum: 8ee3e52c22b393a162815df623ba4ea0b50d0ceac2f121473df472c843834ef5699eff851d44140c9fcdbab79525f33b4eaa5137c4cc38d2d5bdff4802706162
+  checksum: 6ea12652a0837cce8fbd20129d977e621e12fed950116af6027575360f96289faf07625cdb12104cbd46267cdaf11c674846d72969ed9c88a3293066b8a74d14
   languageName: node
   linkType: hard
 
@@ -18861,21 +18813,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"expo-image@npm:2.3.2":
-  version: 2.3.2
-  resolution: "expo-image@npm:2.3.2"
-  peerDependencies:
-    expo: "*"
-    react: "*"
-    react-native: "*"
-    react-native-web: "*"
-  peerDependenciesMeta:
-    react-native-web:
-      optional: true
-  checksum: 0830764df3ef5dcdb05442baf6c5d9bdba159f3dd6edf61935d697a7e9aaff76f602a1f3449e667e7ad67de4a9d6a08cd7c0149ab9981c29f50cfc2ad84a9123
-  languageName: node
-  linkType: hard
-
 "expo-json-utils@npm:~0.15.0":
   version: 0.15.0
   resolution: "expo-json-utils@npm:0.15.0"
@@ -24669,15 +24606,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"nanoid@npm:3.3.8":
-  version: 3.3.8
-  resolution: "nanoid@npm:3.3.8"
-  bin:
-    nanoid: bin/nanoid.cjs
-  checksum: dfe0adbc0c77e9655b550c333075f51bb28cfc7568afbf3237249904f9c86c9aaaed1f113f0fddddba75673ee31c758c30c43d4414f014a52a7a626efc5958c9
-  languageName: node
-  linkType: hard
-
 "nanoid@npm:^3.3.1":
   version: 3.3.6
   resolution: "nanoid@npm:3.3.6"
@@ -27090,7 +27018,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-native-drawer-layout@npm:^4.1.6":
+"react-native-drawer-layout@npm:^4.1.12":
   version: 4.1.12
   resolution: "react-native-drawer-layout@npm:4.1.12"
   dependencies:
