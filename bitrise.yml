@@ -239,7 +239,7 @@ workflows:
   _build-ios:
     steps:
     # Temporarily disable cache for fresh hermes-engine installation
-    # - restore-cocoapods-cache@1: {}
+    - restore-cocoapods-cache@1: {}
     - script@1:
         title: Clean Pods and Copy Gemfile
         inputs:
@@ -250,10 +250,6 @@ workflows:
             # make pipelines' return status equal the last command to exit with a non-zero status, or zero if all commands exit successfully
             set -o pipefail
             
-            # Clean any existing pods to ensure fresh installation
-            rm -rf ios/Pods
-            rm -rf ios/Podfile.lock
-
             # we need to do this to make sure the cocoapods install step consider our Gemfile
             cp Gemfile ios
             cp Gemfile.lock ios
@@ -274,8 +270,7 @@ workflows:
         - automatic_code_signing: api-key
   _build-ios-simulator:
     steps:
-    # Temporarily disable cache for fresh hermes-engine installation
-    # - restore-cocoapods-cache@1: {}
+    - restore-cocoapods-cache@1: {}
     - script@1:
         title: Clean Pods and Copy Gemfile
         inputs:
@@ -286,10 +281,6 @@ workflows:
             # make pipelines' return status equal the last command to exit with a non-zero status, or zero if all commands exit successfully
             set -o pipefail
             
-            # Clean any existing pods to ensure fresh installation
-            rm -rf ios/Pods
-            rm -rf ios/Podfile.lock
-            
             # we need to do this to make sure the cocoapods install step consider our Gemfile
             cp Gemfile ios
             cp Gemfile.lock ios
@@ -297,7 +288,6 @@ workflows:
         inputs:
         - verbose: "true"
         - source_root_path: $BITRISE_SOURCE_DIR/ios
-        - repo_update: "true"
     - save-cocoapods-cache@1: {}
     - xcode-build-for-simulator@0:
         inputs:
