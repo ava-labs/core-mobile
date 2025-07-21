@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { useRouter } from 'expo-router'
 import { SetWalletName as Component } from 'features/onboarding/components/SetWalletName'
 import { usePendingSeedlessWalletName } from 'features/onboarding/store'
+import { useDebouncedCallback } from 'use-debounce'
 
 export default function SetWalletName(): JSX.Element {
   const [name, setName] = useState<string>('Wallet 1')
@@ -17,5 +18,9 @@ export default function SetWalletName(): JSX.Element {
     navigate('/onboarding/seedless/selectAvatar')
   }
 
-  return <Component name={name} setName={setName} onNext={handleNext} />
+  const debouncedHandleNext = useDebouncedCallback(handleNext, 1000)
+
+  return (
+    <Component name={name} setName={setName} onNext={debouncedHandleNext} />
+  )
 }
