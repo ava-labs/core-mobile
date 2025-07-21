@@ -238,9 +238,10 @@ workflows:
         - pipeline_intermediate_files: "$BITRISE_DEPLOY_DIR/app-external-e2e-bitrise-signed.apk:BITRISE_APK_PATH\n$BITRISE_DEPLOY_DIR/app-external-e2e-androidTest-bitrise-signed.apk:BITRISE_TEST_APK_PATH\t"
   _build-ios:
     steps:
+    # Temporarily disable cache for fresh hermes-engine installation
     # - restore-cocoapods-cache@1: {}
     - script@1:
-        title: Copy Gemfile to iOS folder
+        title: Clean Pods and Copy Gemfile
         inputs:
         - content: |-
             #!/usr/bin/env bash
@@ -248,6 +249,10 @@ workflows:
             set -e
             # make pipelines' return status equal the last command to exit with a non-zero status, or zero if all commands exit successfully
             set -o pipefail
+            
+            # Clean any existing pods to ensure fresh installation
+            rm -rf ios/Pods
+            rm -rf ios/Podfile.lock
 
             # we need to do this to make sure the cocoapods install step consider our Gemfile
             cp Gemfile ios
@@ -256,6 +261,7 @@ workflows:
         inputs:
         - verbose: "true"
         - source_root_path: $BITRISE_SOURCE_DIR/ios
+        - repo_update: "true"
     - save-cocoapods-cache@1: {}
     - xcode-archive@4:
         inputs:
@@ -268,9 +274,10 @@ workflows:
         - automatic_code_signing: api-key
   _build-ios-simulator:
     steps:
+    # Temporarily disable cache for fresh hermes-engine installation
     # - restore-cocoapods-cache@1: {}
     - script@1:
-        title: Copy Gemfile to iOS folder
+        title: Clean Pods and Copy Gemfile
         inputs:
         - content: |-
             #!/usr/bin/env bash
@@ -278,6 +285,11 @@ workflows:
             set -e
             # make pipelines' return status equal the last command to exit with a non-zero status, or zero if all commands exit successfully
             set -o pipefail
+            
+            # Clean any existing pods to ensure fresh installation
+            rm -rf ios/Pods
+            rm -rf ios/Podfile.lock
+            
             # we need to do this to make sure the cocoapods install step consider our Gemfile
             cp Gemfile ios
             cp Gemfile.lock ios
@@ -285,6 +297,7 @@ workflows:
         inputs:
         - verbose: "true"
         - source_root_path: $BITRISE_SOURCE_DIR/ios
+        - repo_update: "true"
     - save-cocoapods-cache@1: {}
     - xcode-build-for-simulator@0:
         inputs:
