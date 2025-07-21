@@ -5,6 +5,7 @@ import { useRouter } from 'expo-router'
 import { SetWalletName as Component } from 'features/onboarding/components/SetWalletName'
 import { setWalletName } from 'store/wallet/slice'
 import { useActiveWallet } from 'common/hooks/useActiveWallet'
+import { useDebouncedCallback } from 'use-debounce'
 
 export default function SetWalletName(): JSX.Element {
   const [name, setName] = useState<string>('Wallet 1')
@@ -21,5 +22,9 @@ export default function SetWalletName(): JSX.Element {
     })
   }
 
-  return <Component name={name} setName={setName} onNext={handleNext} />
+  const debouncedHandleNext = useDebouncedCallback(handleNext, 1000)
+
+  return (
+    <Component name={name} setName={setName} onNext={debouncedHandleNext} />
+  )
 }
