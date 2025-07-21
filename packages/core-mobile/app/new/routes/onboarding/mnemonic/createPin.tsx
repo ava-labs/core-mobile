@@ -12,7 +12,7 @@ import Logger from 'utils/Logger'
 import { uuid } from 'utils/uuid'
 
 export default function CreatePin(): JSX.Element {
-  const { navigate, back } = useRouter()
+  const { navigate } = useRouter()
   const { mnemonic } = useLocalSearchParams<{ mnemonic: string }>()
   const { onPinCreated } = useWallet()
   const { isBiometricAvailable, useBiometrics, setUseBiometrics } =
@@ -45,10 +45,17 @@ export default function CreatePin(): JSX.Element {
                 if (enabled) {
                   navigateToSetWalletName()
                 } else {
-                  back()
+                  // If biometrics fails to enable, disable it and continue with PIN only
+                  setUseBiometrics(false)
+                  navigateToSetWalletName()
                 }
               })
-              .catch(Logger.error)
+              .catch(error => {
+                Logger.error(error)
+                // On error, disable biometrics and continue with PIN only
+                setUseBiometrics(false)
+                navigateToSetWalletName()
+              })
           } else {
             navigateToSetWalletName()
           }
@@ -59,8 +66,8 @@ export default function CreatePin(): JSX.Element {
       mnemonic,
       onPinCreated,
       useBiometrics,
+      setUseBiometrics,
       navigateToSetWalletName,
-      back,
       activeWalletId
     ]
   )
