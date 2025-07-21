@@ -12,7 +12,7 @@ import { useSelector } from 'react-redux'
 import { selectActiveWalletId } from 'store/wallet/slice'
 
 export default function CreatePin(): JSX.Element {
-  const { navigate, back } = useRouter()
+  const { navigate } = useRouter()
   const { onPinCreated } = useWallet()
   const { isBiometricAvailable, useBiometrics, setUseBiometrics } =
     useStoredBiometrics()
@@ -45,17 +45,30 @@ export default function CreatePin(): JSX.Element {
                 if (enabled) {
                   navigateToNextStep()
                 } else {
-                  back()
+                  // If biometrics fails to enable, disable it and continue with PIN only
+                  setUseBiometrics(false)
+                  navigateToNextStep()
                 }
               })
-              .catch(Logger.error)
+              .catch(error => {
+                Logger.error(error)
+                // On error, disable biometrics and continue with PIN only
+                setUseBiometrics(false)
+                navigateToNextStep()
+              })
           } else {
             navigateToNextStep()
           }
         })
         .catch(Logger.error)
     },
-    [onPinCreated, useBiometrics, navigateToNextStep, back, activeWalletId]
+    [
+      onPinCreated,
+      useBiometrics,
+      setUseBiometrics,
+      navigateToNextStep,
+      activeWalletId
+    ]
   )
 
   return (
