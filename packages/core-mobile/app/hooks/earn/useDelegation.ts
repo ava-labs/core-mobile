@@ -22,8 +22,8 @@ import { importP } from 'services/earn/importP'
 import EarnService from 'services/earn/EarnService'
 import { type Compute, type Delegate } from 'contexts/DelegationContext'
 import Logger from 'utils/Logger'
-import { useActiveAccount } from 'common/hooks/useActiveAccount'
 import { useActiveWallet } from 'common/hooks/useActiveWallet'
+import { selectActiveAccount } from 'store/account'
 import { useAvalancheXpProvider } from '../networks/networkProviderHooks'
 import useCChainNetwork from './useCChainNetwork'
 
@@ -38,7 +38,7 @@ export const useDelegation = (): {
   const [steps, setSteps] = useState<Step[]>(EMPTY_STEPS)
   const cChainBalance = useCChainBalance()
   const activeWallet = useActiveWallet()
-  const activeAccount = useActiveAccount()
+  const activeAccount = useSelector(selectActiveAccount)
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const selectedCurrency = useSelector(selectSelectedCurrency)
   const pFeeAdjustmentThreshold = useSelector(selectPFeeAdjustmentThreshold)

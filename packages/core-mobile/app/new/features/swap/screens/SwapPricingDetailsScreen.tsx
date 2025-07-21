@@ -17,13 +17,14 @@ import { LocalTokenWithBalance } from 'store/balance/types'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import { SvgProps } from 'react-native-svg'
-import { calculateRate as calculateEvmRate } from '../utils/evm/calculateRate'
 import {
+  isJupiterQuote,
   isMarkrQuote,
   NormalizedSwapQuote,
   NormalizedSwapQuoteResult
 } from '../types'
 import { MarkrQuote } from '../services/MarkrService'
+import { useSwapRate } from '../hooks/useSwapRate'
 
 // Provider logo mapping
 const PRICE_PROVIDER_ICONS: Record<string, React.FC<SvgProps> | undefined> = {
@@ -190,6 +191,12 @@ export const SwapPricingDetailsScreen = ({
     ]
   )
 
+  const rate = useSwapRate({
+    quote: quotes?.selected?.quote,
+    fromToken,
+    toToken
+  })
+
   const data = useMemo(() => {
     const items: GroupListItem[] = []
 
@@ -204,8 +211,6 @@ export const SwapPricingDetailsScreen = ({
       return items
     }
 
-    const quote = quotes.selected.quote
-    const rate = calculateEvmRate(quote)
     items.push({
       title: 'Rate',
       value: `1 ${fromToken.symbol} = ${rate?.toFixed(4)} ${toToken.symbol}`
@@ -213,34 +218,42 @@ export const SwapPricingDetailsScreen = ({
 
     const bestRate = quotes.quotes[0]
     const selectedRate = quotes.selected
-    items.push({
-      title: 'Provider',
-      value: !manuallySelected
-        ? `Auto • ${(selectedRate.quote as MarkrQuote).aggregator.name}`
-        : `${(selectedRate.quote as MarkrQuote).aggregator.name}`,
-      accordion: (
-        <FlatList
-          data={[
-            {
-              ...bestRate,
-              quote: {
-                ...bestRate.quote,
-                aggregator: { id: 'auto', name: 'Auto' }
-              }
-            },
-            ...quotes.quotes
-          ]}
-          keyExtractor={(item): string =>
-            ((item as NormalizedSwapQuote).quote as MarkrQuote).aggregator.id
-          }
-          renderItem={item => renderItem(item.item, item.index)}
-          scrollEnabled={false}
-        />
-      )
-    })
+
+    if (isMarkrQuote(selectedRate.quote)) {
+      items.push({
+        title: 'Provider',
+        value: !manuallySelected
+          ? `Auto • ${selectedRate.quote.aggregator.name}`
+          : `${selectedRate.quote.aggregator.name}`,
+        accordion: (
+          <FlatList
+            data={[
+              {
+                ...bestRate,
+                quote: {
+                  ...bestRate.quote,
+                  aggregator: { id: 'auto', name: 'Auto' }
+                }
+              },
+              ...quotes.quotes
+            ]}
+            keyExtractor={(item): string =>
+              ((item as NormalizedSwapQuote).quote as MarkrQuote).aggregator.id
+            }
+            renderItem={item => renderItem(item.item, item.index)}
+            scrollEnabled={false}
+          />
+        )
+      })
+    } else if (isJupiterQuote(selectedRate.quote)) {
+      items.push({
+        title: 'Provider',
+        value: `Jupiter`
+      })
+    }
 
     return items
-  }, [quotes, fromToken, toToken, manuallySelected, renderItem])
+  }, [quotes, fromToken, toToken, manuallySelected, renderItem, rate])
 
   return (
     <ScrollScreen

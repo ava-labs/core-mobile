@@ -1,6 +1,5 @@
 import { Network } from '@avalabs/core-chains-sdk'
 import { fetch as expoFetch } from 'expo/fetch'
-import { Account } from 'store/account'
 import { Zodios } from '@zodios/core'
 import { z } from 'zod'
 import { MARKR_EVM_PARTNER_ID } from '../consts'
@@ -169,7 +168,7 @@ interface GetSwapRateStreamParams {
   toTokenDecimals: number
   amount: string
   network: Network
-  account: Account
+  address: string
   slippage: number
   onUpdate: (update: MarkrQuote[]) => void
   abortSignal: AbortSignal
@@ -226,7 +225,7 @@ class MarkrService {
     toTokenDecimals,
     amount,
     network,
-    account,
+    address,
     slippage,
     onUpdate,
     abortSignal
@@ -238,7 +237,7 @@ class MarkrService {
         body: JSON.stringify({
           appId: MARKR_EVM_PARTNER_ID,
           chainId: network.chainId,
-          from: account.addressC,
+          from: address,
           tokenIn: fromTokenAddress,
           tokenInDecimals: fromTokenDecimals,
           tokenOut: toTokenAddress,

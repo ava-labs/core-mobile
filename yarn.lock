@@ -266,6 +266,7 @@ __metadata:
     "@sentry/react-native": 6.14.0
     "@shopify/flash-list": 1.7.6
     "@shopify/react-native-performance": 4.1.2
+    "@solana-program/token": 0.5.1
     "@shopify/react-native-skia": v2.0.0-next.4
     "@solana/kit": 2.1.0
     "@spotlightjs/spotlight": 2.5.0
@@ -27659,6 +27660,7 @@ __metadata:
   peerDependencies:
     react: "*"
     react-native: "*"
+  checksum: 77324747a8b5df0a5558bb99a9a0804a5575d328e84f480e462c56417af97213f38a9930e4582fb749bec374dc4d1a8910a45b006e77af9b14a8e64057b932bf
   checksum: 7f3bce1b37d6be9b2f07f0f7481181d5344f9e58022645b0d20dc58cd66056bb6efecacb231963959db6283cc66d977593db62a403c7c151f83568f83041c2eb
   languageName: node
   linkType: hard
