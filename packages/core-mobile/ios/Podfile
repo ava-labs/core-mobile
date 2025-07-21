@@ -1,7 +1,7 @@
 require File.join(File.dirname(`node --print "require.resolve('expo/package.json')"`), "scripts/autolinking")
 
-# to prevent error "Unable to find a specification for `React-hermes` depended upon by `RNSentry`"
-ENV['USE_HERMES'] = '0'
+# Hermes configuration - keeping enabled for better performance
+# ENV['USE_HERMES'] = '0'
 
 # Resolve react_native_pods.rb with node to allow for hoisting
 def node_require(script)
