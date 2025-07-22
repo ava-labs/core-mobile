@@ -34,13 +34,13 @@ const BalanceChangeComponent = ({
     )
 
   const filteredOuts = isSwapLikeTransaction
-    ? balanceChange.outs // Show all tokens for swaps
+    ? balanceChange.outs
     : hasSplTokens
     ? balanceChange.outs.filter(tokenDiff => 'type' in tokenDiff.token)
     : balanceChange.outs
 
   const filteredIns = isSwapLikeTransaction
-    ? balanceChange.ins // Show all tokens for swaps
+    ? balanceChange.ins
     : hasSplTokens
     ? balanceChange.ins.filter(tokenDiff => 'type' in tokenDiff.token)
     : balanceChange.ins
