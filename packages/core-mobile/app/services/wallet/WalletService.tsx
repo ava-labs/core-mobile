@@ -39,6 +39,8 @@ import { SpanName } from 'services/sentry/types'
 import SeedlessWallet from 'seedless/services/wallet/SeedlessWallet'
 import { Curve, isEvmPublicKey } from 'utils/publicKeys'
 import ModuleManager from 'vmModule/ModuleManager'
+import { mnemonicToSeed } from 'bip39'
+import { fromSeed } from 'bip32'
 import {
   getAddressDerivationPath,
   getAssetId,
@@ -335,8 +337,25 @@ class WalletService {
 
     if (walletType === WalletType.MNEMONIC) {
       const provXP = await NetworkService.getAvalancheProviderXP(isTestnet)
-      const publicKeys = await this.getPublicKey(walletId, walletType, account)
-      const xpubXP = publicKeys.xp
+      const wallet = (await WalletFactory.createWallet({
+        walletId,
+        walletType
+      })) as MnemonicWallet
+
+      // Generate xpub from mnemonic using bip32/bip39
+      const seed = await mnemonicToSeed(wallet.mnemonic)
+      const seedNode = fromSeed(seed)
+      const derivationPath = getAddressDerivationPath({
+        accountIndex: account.index,
+        vmType: NetworkVMType.AVM
+      })
+      const xpubXP = seedNode.derivePath(derivationPath).toBase58()
+
+      console.log('🔍 Using proper xpub:', {
+        xpub: xpubXP.substring(0, 20) + '...',
+        xpubLength: xpubXP.length,
+        isXpub: xpubXP.startsWith('xpub') || xpubXP.startsWith('tpub')
+      })
 
       return xpubXP
         ? indices.map(index =>
