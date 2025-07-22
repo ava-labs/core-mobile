@@ -47,7 +47,7 @@ export const ActivityList = ({
         return (
           <PendingBridgeTransactionItem
             item={item.transaction}
-            index={index}
+            showSeparator={index !== data.length - 1}
             onPress={() => handlePendingBridge(item.transaction)}
           />
         )
