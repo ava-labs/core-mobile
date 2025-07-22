@@ -85,7 +85,7 @@ export const TokenActivityListItemTitle = ({
       default: {
         if (tx.isContractCall) {
           if (tx.tokens.length === 1) {
-            return [renderAmount(a1), ' ', s1]
+            return [renderAmount(a1), ' ', s1, ' swapped']
           }
           if (tx.tokens.length === 2) {
             return [
