@@ -1,6 +1,6 @@
 import { Separator, View } from '@avalabs/k2-alpine'
 import React from 'react'
-import { BalanceChange, TokenDiff, TokenType } from '@avalabs/vm-module-types'
+import { BalanceChange, TokenType } from '@avalabs/vm-module-types'
 import { TokenDiffGroup } from './TokenDiffGroup'
 
 const BalanceChangeComponent = ({
@@ -33,41 +33,14 @@ const BalanceChangeComponent = ({
         'type' in tokenDiff.token && tokenDiff.token.type === TokenType.SPL
     )
 
-  // For swaps, identify if SOL is a main swap token or just for network fees
-  const isNetworkFeeSol = (tokenDiff: TokenDiff): boolean => {
-    // Only check SOL tokens
-    if (!('type' in tokenDiff.token) && tokenDiff.token.symbol === 'SOL') {
-      // In a Solana swap, if SOL is only used for network fees:
-      // 1. It will only appear in the 'outs' array (fees are always outgoing)
-      // 2. It won't be part of the main swap tokens (won't appear in ins)
-      // 3. There will be exactly two other tokens involved (the actual swap pair)
-      const isOnlyInOuts = !balanceChange.ins.some(
-        inToken => !('type' in inToken.token) && inToken.token.symbol === 'SOL'
-      )
-
-      // Count unique tokens excluding SOL
-      const uniqueNonSolTokens = new Set(
-        [...balanceChange.ins, ...balanceChange.outs]
-          .filter(t => t.token.symbol !== 'SOL')
-          .map(t => t.token.symbol)
-      )
-
-      // For a swap, we should see exactly 2 other tokens (the swap pair)
-      const isRegularSwap = uniqueNonSolTokens.size === 2
-
-      return isOnlyInOuts && isRegularSwap
-    }
-    return false
-  }
-
   const filteredOuts = isSwapLikeTransaction
-    ? balanceChange.outs.filter(tokenDiff => !isNetworkFeeSol(tokenDiff))
+    ? balanceChange.outs
     : hasSplTokens
     ? balanceChange.outs.filter(tokenDiff => 'type' in tokenDiff.token)
     : balanceChange.outs
 
   const filteredIns = isSwapLikeTransaction
-    ? balanceChange.ins.filter(tokenDiff => !isNetworkFeeSol(tokenDiff))
+    ? balanceChange.ins
     : hasSplTokens
     ? balanceChange.ins.filter(tokenDiff => 'type' in tokenDiff.token)
     : balanceChange.ins
