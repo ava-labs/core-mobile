@@ -1,11 +1,10 @@
-import React, { FC, useMemo } from 'react'
 import {
   PChainTransactionType,
   XChainTransactionType
 } from '@avalabs/glacier-sdk'
-import { UNKNOWN_AMOUNT } from 'consts/amount'
-import { Transaction } from 'store/transaction'
 import { alpha, PriceChangeStatus, useTheme, View } from '@avalabs/k2-alpine'
+import React, { FC, useMemo } from 'react'
+import { Transaction } from 'store/transaction'
 import ActivityListItem from './ActivityListItem'
 import { TransactionTypeIcon } from './TransactionTypeIcon'
 
@@ -70,7 +69,7 @@ export const XpActivityListItem: FC<Props> = ({
 
   const formattedTokenAmount = useMemo(() => {
     const amount = isNaN(Number(tx.tokens[0]?.amount))
-      ? UNKNOWN_AMOUNT
+      ? null
       : tx.tokens[0]?.amount
     return amount + ' ' + tx.tokens[0]?.symbol
   }, [tx.tokens])

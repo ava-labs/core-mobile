@@ -124,7 +124,7 @@ export const useActivityFilterAndSearch = ({
     return (
       transactions
         // Remove transaction with empty token array
-        .filter(tx => tx.tokens.length)
+        .filter(tx => tx.tokens.length > 0)
         .filter(tx => !isPendingBridge(tx))
     )
   }, [transactions, isPendingBridge])

@@ -1,7 +1,3 @@
-import {
-  isTokenWithBalanceAVM,
-  isTokenWithBalancePVM
-} from '@avalabs/avalanche-module'
 import { BridgeTransfer } from '@avalabs/bridge-unified'
 import { BridgeTransaction } from '@avalabs/core-bridge-sdk'
 import { Network } from '@avalabs/core-chains-sdk'
@@ -11,19 +7,13 @@ import {
   Image,
   SimpleDropdown,
   SPRING_LINEAR_TRANSITION,
-  Text,
   useTheme,
   View
 } from '@avalabs/k2-alpine'
-import { ListRenderItem } from '@shopify/flash-list'
 import { CollapsibleTabs } from 'common/components/CollapsibleTabs'
 import { DropdownSelections } from 'common/components/DropdownSelections'
 import { NetworkLogoWithChain } from 'common/components/NetworkLogoWithChain'
 import { getListItemEnteringAnimation } from 'common/utils/animations'
-import { isXpTransaction } from 'common/utils/isXpTransactions'
-import { PendingBridgeTransactionItem } from 'features/portfolio/assets/components/PendingBridgeTransactionItem'
-import { TokenActivityListItem } from 'features/portfolio/assets/components/TokenActivityListItem'
-import { XpActivityListItem } from 'features/portfolio/assets/components/XpActivityListItem'
 import { ErrorState } from 'new/common/components/ErrorState'
 import { LoadingState } from 'new/common/components/LoadingState'
 import React, { useCallback, useMemo } from 'react'
@@ -31,39 +21,9 @@ import { Platform, ViewStyle } from 'react-native'
 import { useHeaderMeasurements } from 'react-native-collapsible-tab-view'
 import Animated, { useAnimatedStyle, withTiming } from 'react-native-reanimated'
 import { useActivityFilterAndSearch } from '../hooks/useActivityFilterAndSearch'
-import { ActivityListItem } from '../utils'
+import { ActivityList } from '../components/ActivityList'
 
 const errorIcon = require('../../../assets/icons/unamused_emoji.png')
-
-const SectionHeader = ({
-  title,
-  index
-}: {
-  title: string
-  index: number
-}): JSX.Element => {
-  const { theme } = useTheme()
-
-  const isFirstItem = index === 0
-
-  return (
-    <View
-      sx={{
-        paddingHorizontal: 16,
-        paddingTop: isFirstItem ? 12 : 36,
-        paddingBottom: 4,
-        backgroundColor: theme.colors.$surfacePrimary
-      }}>
-      <Text
-        variant="heading3"
-        sx={{
-          color: theme.colors.$textPrimary
-        }}>
-        {title}
-      </Text>
-    </View>
-  )
-}
 
 export const ActivityScreen = ({
   isSearchBarFocused,
@@ -113,7 +73,7 @@ export const ActivityScreen = ({
     }
   })
 
-  const dropdowns = useMemo(() => {
+  const renderHeader = useCallback(() => {
     return (
       <View
         sx={{
@@ -209,67 +169,6 @@ export const ActivityScreen = ({
     )
   }, [containerStyle.minHeight, emptyComponent, keyboardAvoidingStyle])
 
-  const renderItem: ListRenderItem<ActivityListItem> = useCallback(
-    ({ item, index }) => {
-      if (item.type === 'header') {
-        return <SectionHeader title={item.title} index={index} />
-      }
-
-      if (item.type === 'pendingBridge') {
-        return (
-          <PendingBridgeTransactionItem
-            item={item.transaction}
-            index={index}
-            onPress={() => handlePendingBridge(item.transaction)}
-          />
-        )
-      }
-
-      const transaction = item.transaction
-      const isXpTx =
-        isXpTransaction(transaction.txType) &&
-        xpToken &&
-        (isTokenWithBalanceAVM(xpToken) || isTokenWithBalancePVM(xpToken))
-
-      const props = {
-        tx: transaction,
-        index,
-        onPress: () => handleExplorerLink(transaction.explorerLink)
-      }
-
-      const nextItem = data[index + 1]
-      const showSeparator =
-        nextItem?.type !== 'header' && index !== data.length - 1
-
-      if (isXpTx) {
-        return (
-          <XpActivityListItem
-            {...props}
-            index={index}
-            showSeparator={showSeparator}
-          />
-        )
-      }
-
-      return (
-        <TokenActivityListItem
-          {...props}
-          index={index}
-          showSeparator={showSeparator}
-        />
-      )
-    },
-    [data, handleExplorerLink, handlePendingBridge, xpToken]
-  )
-
-  const overrideProps = {
-    contentContainerStyle: {
-      ...containerStyle
-    }
-  }
-
-  const keyExtractor = useCallback((item: ActivityListItem) => item.id, [])
-
   return (
     <Animated.View
       entering={getListItemEnteringAnimation(5)}
@@ -277,17 +176,20 @@ export const ActivityScreen = ({
       style={{
         flex: 1
       }}>
-      <CollapsibleTabs.FlashList
-        overrideProps={overrideProps}
+      <ActivityList
         data={data}
-        renderItem={renderItem}
-        ListHeaderComponent={dropdowns}
-        ListEmptyComponent={renderEmpty}
-        showsVerticalScrollIndicator={false}
-        keyExtractor={keyExtractor}
-        estimatedItemSize={60}
-        refreshing={isRefreshing}
-        onRefresh={refresh}
+        xpToken={xpToken}
+        handlePendingBridge={handlePendingBridge}
+        handleExplorerLink={handleExplorerLink}
+        overrideProps={{
+          contentContainerStyle: {
+            ...containerStyle
+          }
+        }}
+        renderHeader={renderHeader}
+        renderEmpty={renderEmpty}
+        isRefreshing={isRefreshing}
+        refresh={refresh}
       />
     </Animated.View>
   )

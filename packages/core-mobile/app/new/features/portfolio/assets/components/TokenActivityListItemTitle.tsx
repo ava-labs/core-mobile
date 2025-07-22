@@ -48,12 +48,17 @@ export const TokenActivityListItemTitle = ({
   // Build an array of nodes: strings and React elements
   const nodes = useMemo<ReactNode[]>(() => {
     const a1 = tx.tokens[0]?.amount
-    const s1 = tx.tokens[0]?.symbol ?? UNKNOWN_AMOUNT
+    const a2 = tx.tokens[1]?.amount
+    let s1 = tx.tokens[0]?.symbol
     let s2 = tx.tokens[1]?.symbol
+
+    if (!s1) {
+      s1 = tx.tokens[0]?.type
+    }
 
     if (!s2) {
       const foundNetwork = getNetwork(Number(tx.chainId))
-      s2 = foundNetwork?.networkToken.symbol ?? UNKNOWN_AMOUNT
+      s2 = foundNetwork?.networkToken.symbol
     }
 
     switch (tx.txType) {
@@ -77,14 +82,28 @@ export const TokenActivityListItemTitle = ({
       case TransactionType.TRANSFER:
         return [renderAmount(a1), ' ', s1, ' transferred']
 
-      default:
+      default: {
         if (tx.isContractCall) {
-          if (tx.tokens.length > 1) {
-            return [renderAmount(a1), ' ', s1, ' swapped for ', s2]
+          if (tx.tokens.length === 1) {
+            return [renderAmount(a1), ' ', s1]
+          }
+          if (tx.tokens.length === 2) {
+            return [
+              renderAmount(a1),
+              ' ',
+              s1,
+              ' ',
+              'Contract call',
+              ' ',
+              renderAmount(a2),
+              ' ',
+              s2
+            ]
           }
           return ['Contract Call']
         }
         return ['Unknown']
+      }
     }
   }, [
     tx.tokens,

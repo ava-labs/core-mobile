@@ -65,9 +65,9 @@ export const useTokenDetailFilterAndSort = ({
             tx.txType === PChainTransactionType.ADD_PERMISSIONLESS_DELEGATOR_TX
           )
         case TokenDetailFilter.Received:
-          return tx.isIncoming && tx.txType !== TransactionType.BRIDGE
+          return tx.txType === TransactionType.RECEIVE
         case TokenDetailFilter.Sent:
-          return tx.isOutgoing
+          return tx.txType === TransactionType.SEND
         case TokenDetailFilter.Bridge:
           return tx.txType === TransactionType.BRIDGE
         case TokenDetailFilter.Swap:

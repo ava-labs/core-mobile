@@ -12,7 +12,7 @@ import { format, isSameDay, isYesterday } from 'date-fns'
 
 type Props = {
   title: ReactNode
-  subtitle: string
+  subtitle?: string | null
   icon?: React.JSX.Element
   status?: PriceChangeStatus
   accessoryType?: 'outbound' | 'chevron'
@@ -21,6 +21,8 @@ type Props = {
   timestamp?: number
   showSeparator: boolean
 }
+
+export const ACTIVITY_LIST_ITEM_HEIGHT = 60
 
 const ActivityListItem: FC<Props> = ({
   title,
@@ -68,7 +70,8 @@ const ActivityListItem: FC<Props> = ({
           flexDirection: 'row',
           alignItems: 'center',
           gap: 11,
-          paddingLeft: 16
+          paddingLeft: 16,
+          minHeight: ACTIVITY_LIST_ITEM_HEIGHT
         }}>
         {icon}
         <View
@@ -98,27 +101,29 @@ const ActivityListItem: FC<Props> = ({
               }}>
               {title}
             </Text>
-            {subtitleType === 'text' ? (
-              <Text
-                variant="body2"
-                sx={{
-                  color: textColor
-                }}
-                numberOfLines={1}
-                ellipsizeMode="tail">
-                {subtitle}
-              </Text>
-            ) : (
-              <BalanceText
-                variant="body2"
-                sx={{ color: textColor, lineHeight: 16 }}
-                numberOfLines={1}
-                ellipsizeMode="tail"
-                isCurrency={subtitleType === 'amountInCurrency'}
-                maskType="covered">
-                {subtitle}
-              </BalanceText>
-            )}
+            {subtitle ? (
+              subtitleType === 'text' ? (
+                <Text
+                  variant="body2"
+                  sx={{
+                    color: textColor
+                  }}
+                  numberOfLines={1}
+                  ellipsizeMode="tail">
+                  '{subtitle}'
+                </Text>
+              ) : (
+                <BalanceText
+                  variant="body2"
+                  sx={{ color: textColor, lineHeight: 16 }}
+                  numberOfLines={1}
+                  ellipsizeMode="tail"
+                  isCurrency={subtitleType === 'amountInCurrency'}
+                  maskType="covered">
+                  {subtitle}
+                </BalanceText>
+              )
+            ) : null}
           </View>
           {timestamp && (
             <Text
