@@ -16,13 +16,12 @@ export const PARASWAP_PARTNER_FEE_BPS = 85
 
 /**
  * The fee percentage that Core gathers on Markr swaps.
- * Using the same fee as Paraswap for now.
  *
  * An integer representing the basis points (BPS) of the fee percentage.
  *
  * @example 85 -> 0.85%
  */
-export const MARKR_PARTNER_FEE_BPS = PARASWAP_PARTNER_FEE_BPS
+export const MARKR_PARTNER_FEE_BPS = 85 
 
 /**
  * The address ParaSwap uses for EVM native tokens.
