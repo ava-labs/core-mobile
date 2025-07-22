@@ -9,7 +9,11 @@ import ActivityListItem from './ActivityListItem'
 import { TransactionTypeIcon } from './TransactionTypeIcon'
 import { TokenActivityListItemTitle } from './TokenActivityListItemTitle'
 
-export const TokenActivityListItem: FC<Props> = ({ tx, onPress }) => {
+export const TokenActivityListItem: FC<Props> = ({
+  tx,
+  onPress,
+  showSeparator
+}) => {
   const {
     theme: { colors }
   } = useTheme()
@@ -57,6 +61,7 @@ export const TokenActivityListItem: FC<Props> = ({ tx, onPress }) => {
       subtitle={formattedAmountInCurrency}
       subtitleType="amountInCurrency"
       timestamp={tx.timestamp}
+      showSeparator={showSeparator}
       icon={
         <View
           sx={{
@@ -91,4 +96,5 @@ type Props = {
   tx: TokenActivityTransaction
   index: number
   onPress?: () => void
+  showSeparator: boolean
 }

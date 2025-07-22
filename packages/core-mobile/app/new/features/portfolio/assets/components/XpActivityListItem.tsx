@@ -15,9 +15,14 @@ type Props = {
   tx: Transaction
   index: number
   onPress?: () => void
+  showSeparator: boolean
 }
 
-export const XpActivityListItem: FC<Props> = ({ tx, onPress }) => {
+export const XpActivityListItem: FC<Props> = ({
+  tx,
+  onPress,
+  showSeparator
+}) => {
   const {
     theme: { isDark, colors }
   } = useTheme()
@@ -100,6 +105,7 @@ export const XpActivityListItem: FC<Props> = ({ tx, onPress }) => {
       onPress={onPress}
       status={PriceChangeStatus.Neutral}
       timestamp={tx.timestamp}
+      showSeparator={showSeparator}
     />
   )
 }

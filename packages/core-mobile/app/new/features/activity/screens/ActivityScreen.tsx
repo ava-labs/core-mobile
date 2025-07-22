@@ -9,9 +9,9 @@ import {
   ANIMATED,
   Chip,
   Image,
-  Separator,
   SimpleDropdown,
   SPRING_LINEAR_TRANSITION,
+  Text,
   useTheme,
   View
 } from '@avalabs/k2-alpine'
@@ -20,7 +20,6 @@ import { CollapsibleTabs } from 'common/components/CollapsibleTabs'
 import { DropdownSelections } from 'common/components/DropdownSelections'
 import { NetworkLogoWithChain } from 'common/components/NetworkLogoWithChain'
 import { getListItemEnteringAnimation } from 'common/utils/animations'
-import { isPendingBridgeTransaction } from 'common/utils/bridgeUtils'
 import { isXpTransaction } from 'common/utils/isXpTransactions'
 import { PendingBridgeTransactionItem } from 'features/portfolio/assets/components/PendingBridgeTransactionItem'
 import { TokenActivityListItem } from 'features/portfolio/assets/components/TokenActivityListItem'
@@ -31,10 +30,40 @@ import React, { useCallback, useMemo } from 'react'
 import { Platform, ViewStyle } from 'react-native'
 import { useHeaderMeasurements } from 'react-native-collapsible-tab-view'
 import Animated, { useAnimatedStyle, withTiming } from 'react-native-reanimated'
-import { Transaction } from 'store/transaction'
 import { useActivityFilterAndSearch } from '../hooks/useActivityFilterAndSearch'
+import { ActivityListItem } from '../utils'
 
 const errorIcon = require('../../../assets/icons/unamused_emoji.png')
+
+const SectionHeader = ({
+  title,
+  index
+}: {
+  title: string
+  index: number
+}): JSX.Element => {
+  const { theme } = useTheme()
+
+  const isFirstItem = index === 0
+
+  return (
+    <View
+      sx={{
+        paddingHorizontal: 16,
+        paddingTop: isFirstItem ? 12 : 36,
+        paddingBottom: 4,
+        backgroundColor: theme.colors.$surfacePrimary
+      }}>
+      <Text
+        variant="heading3"
+        sx={{
+          color: theme.colors.$textPrimary
+        }}>
+        {title}
+      </Text>
+    </View>
+  )
+}
 
 export const ActivityScreen = ({
   isSearchBarFocused,
@@ -180,43 +209,58 @@ export const ActivityScreen = ({
     )
   }, [containerStyle.minHeight, emptyComponent, keyboardAvoidingStyle])
 
-  const renderItem: ListRenderItem<
-    Transaction | BridgeTransaction | BridgeTransfer
-  > = useCallback(
+  const renderItem: ListRenderItem<ActivityListItem> = useCallback(
     ({ item, index }) => {
-      if (isPendingBridgeTransaction(item)) {
+      if (item.type === 'header') {
+        return <SectionHeader title={item.title} index={index} />
+      }
+
+      if (item.type === 'pendingBridge') {
         return (
           <PendingBridgeTransactionItem
-            item={item}
+            item={item.transaction}
             index={index}
-            onPress={() => handlePendingBridge(item)}
+            onPress={() => handlePendingBridge(item.transaction)}
           />
         )
-      } else {
-        const isXpTx =
-          isXpTransaction(item.txType) &&
-          xpToken &&
-          (isTokenWithBalanceAVM(xpToken) || isTokenWithBalancePVM(xpToken))
-
-        const props = {
-          tx: item,
-          index,
-          onPress: () => handleExplorerLink(item.explorerLink)
-        }
-
-        if (isXpTx) {
-          return <XpActivityListItem {...props} />
-        }
-
-        return <TokenActivityListItem {...props} />
       }
-    },
-    [handleExplorerLink, handlePendingBridge, xpToken]
-  )
 
-  const renderSeparator = useCallback((): JSX.Element => {
-    return <Separator sx={{ marginLeft: 68 }} />
-  }, [])
+      const transaction = item.transaction
+      const isXpTx =
+        isXpTransaction(transaction.txType) &&
+        xpToken &&
+        (isTokenWithBalanceAVM(xpToken) || isTokenWithBalancePVM(xpToken))
+
+      const props = {
+        tx: transaction,
+        index,
+        onPress: () => handleExplorerLink(transaction.explorerLink)
+      }
+
+      const nextItem = data[index + 1]
+      const showSeparator =
+        nextItem?.type !== 'header' && index !== data.length - 1
+
+      if (isXpTx) {
+        return (
+          <XpActivityListItem
+            {...props}
+            index={index}
+            showSeparator={showSeparator}
+          />
+        )
+      }
+
+      return (
+        <TokenActivityListItem
+          {...props}
+          index={index}
+          showSeparator={showSeparator}
+        />
+      )
+    },
+    [data, handleExplorerLink, handlePendingBridge, xpToken]
+  )
 
   const overrideProps = {
     contentContainerStyle: {
@@ -224,16 +268,7 @@ export const ActivityScreen = ({
     }
   }
 
-  const keyExtractor = useCallback(
-    (item: Transaction | BridgeTransaction | BridgeTransfer) => {
-      if (isPendingBridgeTransaction(item)) {
-        return item.sourceTxHash
-      }
-
-      return `${item.hash}`
-    },
-    []
-  )
+  const keyExtractor = useCallback((item: ActivityListItem) => item.id, [])
 
   return (
     <Animated.View
@@ -248,7 +283,6 @@ export const ActivityScreen = ({
         renderItem={renderItem}
         ListHeaderComponent={dropdowns}
         ListEmptyComponent={renderEmpty}
-        ItemSeparatorComponent={renderSeparator}
         showsVerticalScrollIndicator={false}
         keyExtractor={keyExtractor}
         estimatedItemSize={60}
