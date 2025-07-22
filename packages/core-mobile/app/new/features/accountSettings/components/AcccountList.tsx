@@ -14,6 +14,7 @@ import {
 } from 'store/account'
 import { useRecentAccounts } from '../store'
 import { AccountItem } from './AccountItem'
+import { InteractionManager } from 'react-native'
 
 const CARD_PADDING = 12
 
@@ -26,7 +27,7 @@ export const AccountList = (): React.JSX.Element => {
     theme: { colors }
   } = useTheme()
   const dispatch = useDispatch()
-  const { navigate } = useRouter()
+  const { navigate, dismiss } = useRouter()
   const activeAccount = useSelector(selectActiveAccount)
   const accountCollection = useSelector(selectAccounts)
   const flatListRef = useRef<FlatList>(null)
@@ -59,8 +60,9 @@ export const AccountList = (): React.JSX.Element => {
         accountIndex: account.index
       })
       dispatch(setActiveAccount(account.id))
+      dismiss()
     },
-    [dispatch]
+    [dispatch, dismiss]
   )
 
   const gotoAccountDetails = useCallback(
