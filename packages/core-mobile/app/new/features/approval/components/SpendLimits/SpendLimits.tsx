@@ -9,6 +9,7 @@ import { UNKNOWN_AMOUNT } from 'consts/amount'
 import { useWatchlist } from 'hooks/watchlist/useWatchlist'
 import { useSelector } from 'react-redux'
 import { selectSelectedCurrency } from 'store/settings/currency/slice'
+import { Space } from 'common/components/Space'
 import { getDefaultSpendLimitValue } from './utils'
 import { MenuId } from './types'
 import { SpendLimitOptions } from './SpendLimitOptions'
@@ -171,6 +172,7 @@ export const SpendLimits = ({
           </View>
         )}
       </View>
+      <Space y={12} />
       <GroupList
         data={data}
         titleSx={{
