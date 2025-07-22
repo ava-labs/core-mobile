@@ -14,7 +14,6 @@ import {
 } from 'store/account'
 import { useRecentAccounts } from '../store'
 import { AccountItem } from './AccountItem'
-import { InteractionManager } from 'react-native'
 
 const CARD_PADDING = 12
 
