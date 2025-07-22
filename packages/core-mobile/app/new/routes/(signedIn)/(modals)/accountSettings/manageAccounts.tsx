@@ -44,7 +44,7 @@ const ManageAccountsScreen = (): React.JSX.Element => {
     theme: { colors }
   } = useTheme()
   const dispatch = useDispatch()
-  const { navigate, dismiss, canDismiss } = useRouter()
+  const { navigate, dismiss } = useRouter()
   const [searchText, setSearchText] = useState('')
   const accountCollection = useSelector(selectAccounts)
   const allWallets = useSelector(selectWallets)
@@ -128,11 +128,9 @@ const ManageAccountsScreen = (): React.JSX.Element => {
       dispatch(setActiveAccount(accountId))
 
       dismiss()
-      if (canDismiss()) {
-        dismiss()
-      }
+      dismiss()
     },
-    [dispatch, dismiss, canDismiss]
+    [dispatch, dismiss]
   )
 
   const importedWallets = useMemo(() => {
