@@ -70,8 +70,7 @@ const ActivityListItem: FC<Props> = ({
           flexDirection: 'row',
           alignItems: 'center',
           gap: 11,
-          paddingLeft: 16,
-          minHeight: ACTIVITY_LIST_ITEM_HEIGHT
+          paddingLeft: 16
         }}>
         {icon}
         <View
@@ -81,6 +80,7 @@ const ActivityListItem: FC<Props> = ({
             flex: 1,
             alignItems: 'center',
             gap: 8,
+            minHeight: ACTIVITY_LIST_ITEM_HEIGHT,
             paddingTop: 12,
             paddingBottom: 12,
             paddingRight: 16,
