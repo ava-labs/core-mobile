@@ -70,8 +70,7 @@ export const rootReducer = (state: any, action: AnyAction) => {
     // except the following keys
     state = {
       app: state.app,
-      posthog: state.posthog,
-      viewOnce: state.viewOnce
+      posthog: state.posthog
     }
   }
 
