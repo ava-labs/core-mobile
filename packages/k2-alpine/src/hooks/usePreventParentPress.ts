@@ -6,7 +6,9 @@ import { useCallback, useRef } from 'react'
  * @example
  * ```tsx
  * const MyComponent = () => {
- *   const { handleParentPress, createChildPressHandler } = usePreventParentPress(() => {
+ *   const { createParentPressHandler, createChildPressHandler } = usePreventParentPress()
+ *
+ *   const handleParentPress = createParentPressHandler(() => {
  *     console.log('Parent pressed!')
  *   })
  *
@@ -25,26 +27,27 @@ import { useCallback, useRef } from 'react'
  * }
  * ```
  */
-export function usePreventParentPress<T extends any[]>(
-  parentPressHandler: (...args: T) => void
-): {
-  handleParentPress: (...args: T) => void
+export function usePreventParentPress(): {
+  createParentPressHandler: <T extends any[]>(
+    parentPressHandler: (...args: T) => void
+  ) => (...args: T) => void
   createChildPressHandler: <U extends any[]>(
     childPressHandler: (...args: U) => void
   ) => (...args: U) => void
 } {
   const childPressedRef = useRef(false)
 
-  const handleParentPress = useCallback(
-    (...args: T) => {
-      // Only fire parent press if child wasn't pressed
-      if (!childPressedRef.current) {
-        parentPressHandler(...args)
-      }
-      // Reset the flag
-      childPressedRef.current = false
-    },
-    [parentPressHandler]
+  const createParentPressHandler = useCallback(
+    <T extends any[]>(parentPressHandler: (...args: T) => void) =>
+      (...args: T) => {
+        // Only fire parent press if child wasn't pressed
+        if (!childPressedRef.current) {
+          parentPressHandler(...args)
+        }
+        // Reset the flag
+        childPressedRef.current = false
+      },
+    []
   )
 
   const createChildPressHandler = useCallback(
@@ -58,7 +61,7 @@ export function usePreventParentPress<T extends any[]>(
   )
 
   return {
-    handleParentPress,
+    createParentPressHandler,
     createChildPressHandler
   }
 }

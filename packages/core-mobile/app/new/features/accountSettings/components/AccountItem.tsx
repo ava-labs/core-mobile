@@ -51,12 +51,20 @@ export const AccountItem = memo(
     } = useTheme()
     const { formatCurrency } = useFormatCurrency()
 
-    const { handleParentPress, createChildPressHandler } =
-      usePreventParentPress(() => onSelectAccount(account))
+    const { createParentPressHandler, createChildPressHandler } =
+      usePreventParentPress()
 
-    const handleChildPress = createChildPressHandler(() =>
+    const handleSelectAccount = createParentPressHandler(() => {
+      onSelectAccount(account)
+    })
+
+    const handleAccountDetails = createChildPressHandler(() =>
       gotoAccountDetails(account.id)
     )
+
+    const handleFetchBalance = createChildPressHandler(() => {
+      fetchBalance()
+    })
 
     const balance = useMemo(() => {
       // CP-10570: Balances should never show $0.00
@@ -116,12 +124,7 @@ export const AccountItem = memo(
               alignItems: 'center',
               marginLeft: -4
             }}>
-            <Pressable
-              onPress={fetchBalance}
-              onTouchStart={e => {
-                // prevent the parent (the square pressable)from being pressed
-                e.stopPropagation()
-              }}>
+            <Pressable onPress={handleFetchBalance}>
               <Icons.Custom.BalanceRefresh color={colors.$textPrimary} />
             </Pressable>
           </View>
@@ -137,14 +140,14 @@ export const AccountItem = memo(
         />
       )
     }, [
+      isFetchingBalance,
+      isBalanceLoaded,
+      balance,
+      isPrivacyModeEnabled,
       renderMaskView,
       accountNameColor,
-      balance,
-      fetchBalance,
-      isBalanceLoaded,
-      isPrivacyModeEnabled,
-      colors.$textPrimary,
-      isFetchingBalance
+      handleFetchBalance,
+      colors.$textPrimary
     ])
 
     return (
@@ -152,7 +155,7 @@ export const AccountItem = memo(
         entering={getItemEnteringAnimation(index)}
         layout={LinearTransition.springify()}>
         <AnimatedPressable
-          onPress={handleParentPress}
+          onPress={handleSelectAccount}
           style={{
             backgroundColor: containerBackgroundColor,
             width: ACCOUNT_CARD_SIZE,
@@ -177,7 +180,7 @@ export const AccountItem = memo(
               sx={{ color: subtitleColor, lineHeight: 16, marginRight: 8 }}>
               {truncateAddress(account.addressC)}
             </Text>
-            <TouchableOpacity onPress={handleChildPress} hitSlop={16}>
+            <TouchableOpacity onPress={handleAccountDetails} hitSlop={16}>
               <Icons.Alert.AlertCircle
                 color={iconColor}
                 testID={`account_detail_icon__${account.name}`}
