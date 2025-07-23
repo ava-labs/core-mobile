@@ -20,7 +20,6 @@ import { securityReducer as security } from './security/slice'
 import { posthogReducer as posthog } from './posthog/slice'
 import { addressBookReducer as addressBook } from './addressBook/slice'
 import { viewOnceReducer as viewOnce } from './viewOnce/slice'
-import { ViewOnceKey } from './viewOnce/types'
 import settings from './settings'
 import { transactionApi } from './transaction'
 import { rpcReducer as rpc } from './rpc/slice'
@@ -72,13 +71,7 @@ export const rootReducer = (state: any, action: AnyAction) => {
     state = {
       app: state.app,
       posthog: state.posthog,
-      viewOnce: {
-        data: {
-          // Only preserve SOLANA_LAUNCH - reset other onboarding flows
-          [ViewOnceKey.SOLANA_LAUNCH]:
-            state.viewOnce?.data?.[ViewOnceKey.SOLANA_LAUNCH] || false
-        }
-      }
+      viewOnce: state.viewOnce
     }
   }
 
