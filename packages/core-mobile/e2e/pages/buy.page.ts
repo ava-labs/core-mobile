@@ -57,8 +57,8 @@ class BuyPage {
 
   async verifyBuyPage(isWatchlistFlow = false) {
     if (isWatchlistFlow) {
-      await Actions.waitForElementNoSync(this.buyAvaxTitle)
-      await Actions.waitForElementNoSync(this.buyAlert)
+      await Actions.waitForElement(this.buyAvaxTitle)
+      await Actions.waitForElement(this.buyAlert)
     } else {
       await Actions.waitForElement(this.buyTitle)
     }

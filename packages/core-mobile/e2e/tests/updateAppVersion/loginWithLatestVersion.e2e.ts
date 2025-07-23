@@ -1,6 +1,5 @@
-import assertions from '../../helpers/assertions'
 import { warmup } from '../../helpers/warmup'
-import portfolioPage from '../../pages/portfolio.page'
+import bottomTabsPage from '../../pages/bottomTabs.page'
 
 describe('Install latest version of app and login', () => {
   beforeAll(async () => {
@@ -8,8 +7,8 @@ describe('Install latest version of app and login', () => {
     console.log('Logged in successfully!')
   })
 
-  it('Verify collectibles tab is displayed', async () => {
-    console.log('verifying collectibles tab is visible...')
-    await assertions.isVisible(portfolioPage.colectiblesTab)
+  it('Verify the bottom tabs are displayed', async () => {
+    console.log('verifying bottom tabs are visible...')
+    await bottomTabsPage.verifyBottomTabs()
   })
 })
