@@ -11,7 +11,7 @@ describe('Send on P-Chain', () => {
   beforeAll(async () => {
     await warmup()
     await settingsPage.createNthAccount()
-    await portfolioPage.filterNetwork(commonElsLoc.pChain)
+    await commonElsPage.filter(commonElsLoc.pChain)
     await portfolioPage.tapToken()
   })
 

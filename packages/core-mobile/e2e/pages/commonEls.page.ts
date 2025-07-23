@@ -224,6 +224,22 @@ class CommonElsPage {
     return by.text(commonElsLoc.approvePopupSpendTitle)
   }
 
+  get filterDropdown() {
+    return by.id(commonElsLoc.filterDropdown)
+  }
+
+  get networkFilterDropdown() {
+    return by.id(commonElsLoc.networkFilterDropdown)
+  }
+
+  async filter(
+    item = commonElsLoc.cChain_2,
+    filterDropdown = this.filterDropdown
+  ) {
+    await Actions.tap(filterDropdown)
+    await this.selectDropdownItem(item)
+  }
+
   async dismissTransactionOnboarding() {
     try {
       await Actions.tap(this.transactionOnboardingNext)

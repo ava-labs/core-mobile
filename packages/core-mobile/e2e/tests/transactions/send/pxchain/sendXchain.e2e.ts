@@ -12,7 +12,7 @@ describe('Send on X-Chain', () => {
     await warmup()
     await settingsPage.createNthAccount()
     await settingsPage.enableNetwork(commonElsLoc.xChain)
-    await portfolioPage.filterNetwork(commonElsLoc.xChain)
+    await commonElsPage.filter(commonElsLoc.xChain)
     await portfolioPage.tapToken()
   })
 

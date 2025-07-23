@@ -23,7 +23,7 @@ describe('Send AVAX', () => {
 
   it('should verify the AVAX Sent history', async () => {
     // verify the first account tx history
-    await portfolioPage.filterNetwork()
+    await commonElsPage.filter()
     await portfolioPage.tapToken()
     await portfolioPage.verifyActivityItem()
     await commonElsPage.goBack()
