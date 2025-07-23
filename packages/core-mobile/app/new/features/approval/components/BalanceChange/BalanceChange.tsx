@@ -8,7 +8,20 @@ const BalanceChangeComponent = ({
 }: {
   balanceChange: BalanceChange
 }): JSX.Element | null => {
-  // Filter out native tokens when there are SPL tokens being sent
+  // Check if this looks like a swap transaction (both ins and outs with different tokens)
+  const isSwapLikeTransaction =
+    balanceChange.outs.length > 0 &&
+    balanceChange.ins.length > 0 &&
+    // Check if we have different tokens in ins vs outs
+    balanceChange.outs.some(
+      outToken =>
+        !balanceChange.ins.some(
+          inToken => inToken.token.symbol === outToken.token.symbol
+        )
+    )
+
+  // For swap transactions, show all tokens (including native SOL)
+  // For other transactions, filter out native tokens when there are SPL tokens being sent
   // This mimics the behavior of ERC20 transactions where native tokens (ETH, AVAX) aren't shown
   const hasSplTokens =
     balanceChange.outs.some(
@@ -20,11 +33,15 @@ const BalanceChangeComponent = ({
         'type' in tokenDiff.token && tokenDiff.token.type === TokenType.SPL
     )
 
-  const filteredOuts = hasSplTokens
+  const filteredOuts = isSwapLikeTransaction
+    ? balanceChange.outs
+    : hasSplTokens
     ? balanceChange.outs.filter(tokenDiff => 'type' in tokenDiff.token)
     : balanceChange.outs
 
-  const filteredIns = hasSplTokens
+  const filteredIns = isSwapLikeTransaction
+    ? balanceChange.ins
+    : hasSplTokens
     ? balanceChange.ins.filter(tokenDiff => 'type' in tokenDiff.token)
     : balanceChange.ins
 

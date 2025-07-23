@@ -1,6 +1,5 @@
 import { Button } from '@avalabs/k2-alpine'
 import { USDC_AVALANCHE_C_TOKEN_ID } from 'common/consts/swap'
-import { useActiveAccount } from 'common/hooks/useActiveAccount'
 import { useIsSwappable } from 'common/hooks/useIsSwapable'
 import { useIsSwapListLoaded } from 'common/hooks/useIsSwapListLoaded'
 import { useHasEnoughAvaxToStake } from 'hooks/earn/useHasEnoughAvaxToStake'
@@ -11,6 +10,7 @@ import { selectTokenVisibility } from 'store/portfolio'
 import { selectIsEarnBlocked, selectIsSwapBlocked } from 'store/posthog'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { MarketType } from 'store/watchlist'
+import { selectActiveAccount } from 'store/account'
 import { getTokenActions } from '../utils/getTokenActions'
 
 export function useTrackTokenActions({
@@ -30,13 +30,13 @@ export function useTrackTokenActions({
   onStake: () => void
   onSwap: (initialTokenIdTo?: string) => void
 }): { actions: JSX.Element[] } {
-  const activeAccount = useActiveAccount()
+  const activeAccount = useSelector(selectActiveAccount)
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const { isSwappable } = useIsSwappable()
   const isSwapBlocked = useSelector(selectIsSwapBlocked)
   const tokenVisibility = useSelector(selectTokenVisibility)
   const balanceTotal = useSelector(
-    selectBalanceTotalForAccount(activeAccount.id, tokenVisibility)
+    selectBalanceTotalForAccount(activeAccount?.id ?? '', tokenVisibility)
   )
   const isZeroBalance = balanceTotal === 0n
   const { hasEnoughAvax } = useHasEnoughAvaxToStake()

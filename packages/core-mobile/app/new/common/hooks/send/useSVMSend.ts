@@ -5,7 +5,7 @@ import { assertNotUndefined } from 'utils/assertions'
 import { useSendSelectedToken } from 'features/send/store'
 import { useSVMProvider } from 'hooks/networks/networkProviderHooks'
 import { TokenType, TokenWithBalanceSPL } from '@avalabs/vm-module-types'
-import { TokenUnit } from '@avalabs/core-utils-sdk/dist'
+import { TokenUnit } from '@avalabs/core-utils-sdk'
 import Logger from 'utils/Logger'
 import { SendAdapterSVM, SendErrorMessage } from './utils/types'
 import {

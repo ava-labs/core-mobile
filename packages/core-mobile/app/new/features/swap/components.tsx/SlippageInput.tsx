@@ -4,6 +4,7 @@ import {
   showAlertWithTextInput
 } from 'common/utils/alertWithTextInput'
 import React, { useCallback } from 'react'
+import { normalizeNumericTextInput } from '@avalabs/k2-alpine/src/utils/tokenUnitInput'
 import { isSlippageValid } from '../utils/isSlippageValid'
 
 const inputKey = 'slippage'
@@ -21,7 +22,9 @@ export const SlippageInput = ({
 
   const sanitize = useCallback(
     ({ text }: { text: string; key: string }): string => {
-      return text.startsWith('.') ? '0.' : text
+      // Normalize the input to handle locale-specific decimal separators
+      const normalizedInput = normalizeNumericTextInput(text)
+      return normalizedInput.startsWith('.') ? '0.' : normalizedInput
     },
     []
   )

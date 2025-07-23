@@ -17,6 +17,7 @@ import { selectSelectedCurrency } from 'store/settings/currency'
 import { isAvmNetwork } from 'utils/network/isAvalancheNetwork'
 import { sanitizeDecimalInput } from 'utils/units/sanitize'
 import { calculateGasAndFees, Eip1559Fees, GasAndFees } from 'utils/Utils'
+import { normalizeNumericTextInput } from '@avalabs/k2-alpine/src/utils/tokenUnitInput'
 import {
   DEFAULT_NETWORK_TOKEN_DECIMALS,
   DEFAULT_NETWORK_TOKEN_SYMBOL
@@ -198,8 +199,10 @@ export const useNetworkFeeSelector = ({
         // allow only whole numbers (no decimals) for gas limit
         return text.replace(/[^0-9]/g, '')
       } else {
+        // Normalize the input to handle locale-specific decimal separators
+        const normalizedInput = normalizeNumericTextInput(text)
         return sanitizeDecimalInput({
-          text,
+          text: normalizedInput,
           maxDecimals: feeDecimals,
           allowDecimalPoint: !isBaseUnitRate
         })

@@ -1,14 +1,15 @@
 import { swapError } from 'errors/swapError'
-import { resolve } from '@avalabs/core-utils-sdk/dist'
+import { resolve } from '@avalabs/core-utils-sdk'
 import { TransactionParams } from '@avalabs/evm-module'
 import { bigIntToHex } from '@ethereumjs/util'
 import Big from 'big.js'
 import {
+  GetEvmQuoteParams,
   GetQuoteParams,
   isMarkrQuote,
   NormalizedSwapQuote,
   NormalizedSwapQuoteResult,
-  PerformSwapParams,
+  PerformSwapEvmParams,
   SwapProvider,
   SwapProviders
 } from '../types'
@@ -65,7 +66,7 @@ const validateQuoteParams = (params: GetQuoteParams): void => {
   }
 }
 
-const validateSwapParams = (params: PerformSwapParams): void => {
+const validateSwapParams = (params: PerformSwapEvmParams): void => {
   const { srcTokenAddress, destTokenAddress, quote, userAddress, network } =
     params
 
@@ -105,7 +106,7 @@ const calculateSwapAmounts = (
 }
 
 const buildSwapTransaction = async (
-  params: PerformSwapParams,
+  params: PerformSwapEvmParams,
   sourceAmount: string,
   destinationAmount: string
 ): Promise<TransactionParams> => {
@@ -159,7 +160,7 @@ const buildSwapTransaction = async (
 }
 
 const handleTokenApproval = async (
-  params: PerformSwapParams,
+  params: PerformSwapEvmParams,
   tx: TransactionParams,
   sourceAmount: string
 ): Promise<void> => {
@@ -205,7 +206,7 @@ const handleTokenApproval = async (
 }
 
 const executeSwapTransaction = async (
-  params: PerformSwapParams,
+  params: PerformSwapEvmParams,
   tx: TransactionParams
 ): Promise<string> => {
   const { userAddress, signAndSend } = params
@@ -226,7 +227,10 @@ const executeSwapTransaction = async (
   return swapTxHash
 }
 
-export const MarkrProvider: SwapProvider = {
+export const MarkrProvider: SwapProvider<
+  GetEvmQuoteParams,
+  PerformSwapEvmParams
+> = {
   name: SwapProviders.MARKR,
 
   async getQuote(
@@ -239,11 +243,11 @@ export const MarkrProvider: SwapProvider = {
       toTokenDecimals,
       amount,
       network,
-      account,
+      address,
       slippage,
       onUpdate,
       destination
-    }: GetQuoteParams,
+    }: GetEvmQuoteParams,
     abortSignal?: AbortSignal
   ): Promise<NormalizedSwapQuoteResult> {
     validateQuoteParams({
@@ -255,7 +259,7 @@ export const MarkrProvider: SwapProvider = {
       toTokenDecimals,
       amount,
       network,
-      account,
+      address,
       slippage,
       destination
     })
@@ -292,7 +296,7 @@ export const MarkrProvider: SwapProvider = {
       toTokenDecimals,
       amount: amount.toString(),
       network,
-      account,
+      address,
       slippage,
       onUpdate: onUpdateOverridden,
       abortSignal: abortSignal
@@ -310,7 +314,7 @@ export const MarkrProvider: SwapProvider = {
     return result
   },
 
-  async swap(params: PerformSwapParams) {
+  async swap(params: PerformSwapEvmParams) {
     validateSwapParams(params)
 
     const { quote, slippage } = params

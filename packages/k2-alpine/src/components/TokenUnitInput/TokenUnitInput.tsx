@@ -21,7 +21,10 @@ import {
 import { useTheme } from '../../hooks'
 import { Text, View } from '../Primitives'
 import { alpha } from '../../utils'
-import { normalizeValue } from '../../utils/tokenUnitInput'
+import {
+  normalizeValue,
+  normalizeNumericTextInput
+} from '../../utils/tokenUnitInput'
 
 export type TokenUnitInputHandle = {
   setValue: (value: string) => void
@@ -87,7 +90,12 @@ export const TokenUnitInput = forwardRef<
           onChange?.(new TokenUnit(0n, token.maxDecimals, token.symbol))
           return
         }
-        const changedValue = rawValue.startsWith('.') ? '0.' : rawValue
+
+        // Normalize the input to handle locale-specific decimal separators
+        const normalizedInput = normalizeNumericTextInput(rawValue)
+        const changedValue = normalizedInput.startsWith('.')
+          ? '0.'
+          : normalizedInput
 
         /**
          * Split the input and make sure the right side never exceeds
@@ -99,7 +107,7 @@ export const TokenUnitInput = forwardRef<
         // does not exceed the allowed maximum number of decimal digits.
         const isInputValid =
           frontValue !== undefined &&
-          !isNaN(Number(changedValue.replaceAll(',', ''))) &&
+          !isNaN(Number(changedValue)) &&
           (!endValue || endValue.length <= token.maxDecimals)
 
         if (isInputValid) {
@@ -115,8 +123,7 @@ export const TokenUnitInput = forwardRef<
           setValue(normalizedValue)
           onChange?.(
             new TokenUnit(
-              Number(normalizedValue.replace(/,/g, '')) *
-                10 ** token.maxDecimals,
+              Number(normalizedValue) * 10 ** token.maxDecimals,
               token.maxDecimals,
               token.symbol
             )
@@ -190,8 +197,8 @@ export const TokenUnitInput = forwardRef<
                * Using inputMode="numeric" provides the same behavior without the performance issues.
                * See: https://github.com/expo/expo/issues/34156
                */
-              keyboardType={Platform.OS === 'ios' ? 'numeric' : undefined}
-              inputMode={Platform.OS === 'android' ? 'numeric' : undefined}
+              keyboardType={Platform.OS === 'ios' ? 'decimal-pad' : undefined}
+              inputMode={Platform.OS === 'android' ? 'decimal' : undefined}
               placeholder={PLACEHOLDER}
               placeholderTextColor={alpha(colors.$textSecondary, 0.2)}
               value={value}

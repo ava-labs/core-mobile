@@ -26,8 +26,8 @@ export const AccountList = (): React.JSX.Element => {
     theme: { colors }
   } = useTheme()
   const dispatch = useDispatch()
-  const { navigate } = useRouter()
-  const activeAccount = useSelector(selectActiveAccount) //TODO: should use useActiveAccount but crashes if deleting wallet, race condition
+  const { navigate, dismiss } = useRouter()
+  const activeAccount = useSelector(selectActiveAccount)
   const accountCollection = useSelector(selectAccounts)
   const flatListRef = useRef<FlatList>(null)
 
@@ -59,8 +59,9 @@ export const AccountList = (): React.JSX.Element => {
         accountIndex: account.index
       })
       dispatch(setActiveAccount(account.id))
+      dismiss()
     },
-    [dispatch]
+    [dispatch, dismiss]
   )
 
   const gotoAccountDetails = useCallback(

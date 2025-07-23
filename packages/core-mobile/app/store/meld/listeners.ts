@@ -12,7 +12,7 @@ import {
 } from '@avalabs/vm-module-types'
 import { send as sendEVM } from 'common/hooks/send/utils/evm/send'
 import { JsonRpcBatchInternal, SolanaProvider } from '@avalabs/core-wallets-sdk'
-import { TokenUnit } from '@avalabs/core-utils-sdk/dist'
+import { TokenUnit } from '@avalabs/core-utils-sdk'
 import { send as sendSVM } from 'common/hooks/send/utils/svm/send'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { send as sendBTC } from 'common/hooks/send/utils/btc/send'

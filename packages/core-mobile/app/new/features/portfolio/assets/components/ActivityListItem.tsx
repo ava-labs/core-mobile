@@ -60,7 +60,10 @@ const ActivityListItem: FC<Props> = ({
       ? 'Last month'
       : historyDate.toLocaleDateString('en-US', {
           month: 'short',
-          day: 'numeric'
+          day: 'numeric',
+          ...(historyDate.getFullYear() !== now.getFullYear() && {
+            year: 'numeric'
+          })
         })
   }
 
@@ -95,9 +98,7 @@ const ActivityListItem: FC<Props> = ({
               sx={{
                 color: '$textPrimary',
                 lineHeight: 15
-              }}
-              numberOfLines={1}
-              ellipsizeMode="tail">
+              }}>
               {title}
             </Text>
             {subtitleType === 'text' ? (

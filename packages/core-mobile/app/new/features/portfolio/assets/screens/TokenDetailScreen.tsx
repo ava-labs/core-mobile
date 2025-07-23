@@ -18,7 +18,12 @@ import {
 } from 'common/components/CollapsibleTabs'
 import { LinearGradientBottomWrapper } from 'common/components/LinearGradientBottomWrapper'
 import { TokenHeader } from 'common/components/TokenHeader'
-import { AVAX_TOKEN_ID, USDC_AVALANCHE_C_TOKEN_ID } from 'common/consts/swap'
+import {
+  AVAX_TOKEN_ID,
+  SOLANA_TOKEN_LOCAL_ID,
+  USDC_AVALANCHE_C_TOKEN_ID,
+  USDC_SOLANA_TOKEN_ID
+} from 'common/consts/swap'
 import { useErc20ContractTokens } from 'common/hooks/useErc20ContractTokens'
 import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
 import useInAppBrowser from 'common/hooks/useInAppBrowser'
@@ -183,10 +188,25 @@ export const TokenDetailScreen = (): React.JSX.Element => {
 
     if (!isSwapDisabled) {
       const fromTokenId = token?.localId
-      const toTokenId =
-        fromTokenId === AVAX_TOKEN_ID
-          ? USDC_AVALANCHE_C_TOKEN_ID
-          : AVAX_TOKEN_ID
+
+      let toTokenId: string | undefined
+
+      switch (fromTokenId) {
+        case AVAX_TOKEN_ID:
+          toTokenId = USDC_AVALANCHE_C_TOKEN_ID
+          break
+        case USDC_AVALANCHE_C_TOKEN_ID:
+          toTokenId = AVAX_TOKEN_ID
+          break
+        case SOLANA_TOKEN_LOCAL_ID:
+          toTokenId = USDC_SOLANA_TOKEN_ID
+          break
+        case USDC_SOLANA_TOKEN_ID:
+          toTokenId = SOLANA_TOKEN_LOCAL_ID
+          break
+        default:
+          toTokenId = AVAX_TOKEN_ID
+      }
 
       buttons.push({
         title: ActionButtonTitle.Swap,
