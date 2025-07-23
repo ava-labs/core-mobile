@@ -8,7 +8,6 @@ class selectTokenPage {
   }
 
   async selectToken(tokenName: string) {
-    await actions.waitForElement(commonElsPage.searchBar)
     await actions.setInputText(commonElsPage.searchBar, tokenName)
     await actions.tapElementAtIndex(by.id(`token_selector__${tokenName}`), 0)
   }

@@ -15,5 +15,7 @@ export default {
   swapTitle: 'Swap',
   selectTokenTitleId: 'select_token_title',
   selectTokenTitle: 'Select a token',
-  errorMsg: 'error_msg'
+  errorMsg: 'error_msg',
+  youPay: 'You pay',
+  youReceive: 'You receive'
 }
