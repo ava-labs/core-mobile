@@ -13,7 +13,7 @@ describe('Send NFT', () => {
 
   it('should send NFT on C-Chain', async () => {
     await portfolioPage.tapCollectiblesTab()
-    await portfolioPage.filterNetwork(commonElsLoc.cChain)
+    await commonElsPage.filter(commonElsLoc.cChain)
     await portfolioPage.selectView()
     await sendPage.sendNFT()
     await commonElsPage.verifySuccessToast()

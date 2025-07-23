@@ -1,8 +1,8 @@
 import { test } from '@playwright/test'
-import CommonPlaywrightPage from '../../../../pages/commonPlaywrightEls.page'
-import actions from '../../../../helpers/playwrightActions'
-import { playwrightSetup } from '../../../../helpers/playwrightSetup'
-import DappsPlaywrightPage from '../../../../pages/dappsPlaywright.page'
+import CommonPlaywrightPage from '../../../pages/commonPlaywrightEls.page'
+import actions from '../../../helpers/playwrightActions'
+import { playwrightSetup } from '../../../helpers/playwrightSetup'
+import DappsPlaywrightPage from '../../../pages/dappsPlaywright.page'
 
 test('Connect Aave', async () => {
   const { page } = await playwrightSetup()

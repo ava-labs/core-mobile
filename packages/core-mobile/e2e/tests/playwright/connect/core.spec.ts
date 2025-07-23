@@ -1,6 +1,6 @@
 import { test } from '@playwright/test'
-import playwrightActions from '../../../../helpers/playwrightActions'
-import { playwrightSetup } from '../../../../helpers/playwrightSetup'
+import playwrightActions from '../../../helpers/playwrightActions'
+import { playwrightSetup } from '../../../helpers/playwrightSetup'
 
 test('Connect Core', async () => {
   const { common, core } = await playwrightSetup()

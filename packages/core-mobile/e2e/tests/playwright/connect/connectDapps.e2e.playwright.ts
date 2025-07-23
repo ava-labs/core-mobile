@@ -1,8 +1,8 @@
-import actions from '../../../../helpers/actions'
-import { warmup } from '../../../../helpers/warmup'
-import connectToSitePage from '../../../../pages/connectToSite.page'
-import plusMenuPage from '../../../../pages/plusMenu.page'
-import popUpModalPage from '../../../../pages/popUpModal.page'
+import actions from '../../../helpers/actions'
+import { warmup } from '../../../helpers/warmup'
+import connectToSitePage from '../../../pages/connectToSite.page'
+import plusMenuPage from '../../../pages/plusMenu.page'
+import popUpModalPage from '../../../pages/popUpModal.page'
 
 describe('PlayWright Integration', () => {
   it(`should connect ${process.env.DAPP_NAME}`, async () => {

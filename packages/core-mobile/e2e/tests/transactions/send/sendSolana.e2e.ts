@@ -15,7 +15,7 @@ describe('Send on Solana network', () => {
     await commonElsPage.verifySuccessToast()
   })
 
-  it('Should send JUP on Solana  network', async () => {
+  it('Should send JUP on Solana network', async () => {
     await sendPage.send(sendLoc.jupToken, sendLoc.sendingAmount)
     await commonElsPage.verifySuccessToast()
   })

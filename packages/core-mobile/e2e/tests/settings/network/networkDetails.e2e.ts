@@ -2,14 +2,14 @@
 /**
  * @jest-environment ./environment.ts
  */
-import Actions from '../../helpers/actions'
-import PortfolioPage from '../../pages/portfolio.page'
-import NetworksManagePage from '../../pages/networksManage.page'
-import NetworksManageLoc from '../../locators/networksManage.loc'
-import { warmup } from '../../helpers/warmup'
-import commonElsPage from '../../pages/commonEls.page'
-import portfolioLoc from '../../locators/portfolio.loc'
-import { cleanup } from '../../helpers/cleanup'
+import Actions from '../../../helpers/actions'
+import PortfolioPage from '../../../pages/portfolio.page'
+import NetworksManagePage from '../../../pages/networksManage.page'
+import NetworksManageLoc from '../../../locators/networksManage.loc'
+import { warmup } from '../../../helpers/warmup'
+import commonElsPage from '../../../pages/commonEls.page'
+import { cleanup } from '../../../helpers/cleanup'
+import portfolioLoc from '../../../locators/portfolio.loc'
 
 describe('Network Details', () => {
   beforeAll(async () => {

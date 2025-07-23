@@ -2,14 +2,14 @@
 /**
  * @jest-environment ./environment.ts
  */
-import Assert from '../../helpers/assertions'
-import Actions from '../../helpers/actions'
-import PortfolioPage from '../../pages/portfolio.page'
-import NetworksManagePage from '../../pages/networksManage.page'
-import NetworksManageLoc from '../../locators/networksManage.loc'
-import { warmup } from '../../helpers/warmup'
-import commonElsPage from '../../pages/commonEls.page'
-import accountManagePage from '../../pages/accountManage.page'
+import Assert from '../../../helpers/assertions'
+import Actions from '../../../helpers/actions'
+import PortfolioPage from '../../../pages/portfolio.page'
+import NetworksManagePage from '../../../pages/networksManage.page'
+import NetworksManageLoc from '../../../locators/networksManage.loc'
+import { warmup } from '../../../helpers/warmup'
+import commonElsPage from '../../../pages/commonEls.page'
+import accountManagePage from '../../../pages/accountManage.page'
 
 describe('Add custom network', () => {
   beforeAll(async () => {

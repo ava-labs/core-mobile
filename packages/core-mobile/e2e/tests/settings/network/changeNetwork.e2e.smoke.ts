@@ -2,11 +2,11 @@
 /**
  * @jest-environment ./environment.ts
  */
-import PortfolioPage from '../../pages/portfolio.page'
-import NetworksManagePage from '../../pages/networksManage.page'
-import commonElsPage from '../../pages/commonEls.page'
-import { warmup } from '../../helpers/warmup'
-import portfolio from '../../locators/portfolio.loc'
+import PortfolioPage from '../../../pages/portfolio.page'
+import NetworksManagePage from '../../../pages/networksManage.page'
+import commonElsPage from '../../../pages/commonEls.page'
+import { warmup } from '../../../helpers/warmup'
+import portfolio from '../../../locators/portfolio.loc'
 
 describe('Change Network', () => {
   beforeAll(async () => {

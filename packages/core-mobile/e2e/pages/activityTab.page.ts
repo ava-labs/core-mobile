@@ -11,7 +11,7 @@ import BottomsTabsPage from '../pages/bottomTabs.page'
 
 const platformIndex = Action.platform() === Platform.iOS ? 1 : 0
 
-class ActivityPage {
+class ActivityTabPage {
   get allFilter() {
     return by.text(activityTab.allFilter)
   }
@@ -211,11 +211,10 @@ class ActivityPage {
   }
 
   async verifyFilteredItem(filterItem: string, network: string) {
-    // await Assert.hasText(this.activityListItem, filterItem)
-    // await Assert.hasText(this.networkIcon, network)
+    // TODO: Implement this once GA bugs are all addressed
     console.log('filterItem', filterItem)
     console.log('network', network)
   }
 }
 
-export default new ActivityPage()
+export default new ActivityTabPage()
