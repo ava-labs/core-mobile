@@ -7,8 +7,8 @@ import {
   Icons,
   Pressable,
   Text,
-  TouchableOpacity,
   useTheme,
+  usePreventParentPress,
   View
 } from '@avalabs/k2-alpine'
 import { HiddenBalanceText } from 'common/components/HiddenBalanceText'
@@ -16,6 +16,7 @@ import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import { getItemEnteringAnimation } from 'common/utils/animations'
 import { useBalanceForAccount } from 'new/common/contexts/useBalanceForAccount'
 import React, { memo, useCallback, useMemo } from 'react'
+import { TouchableOpacity } from 'react-native'
 import Animated, { LinearTransition } from 'react-native-reanimated'
 import { useSelector } from 'react-redux'
 import { Account } from 'store/account'
@@ -49,6 +50,21 @@ export const AccountItem = memo(
       theme: { colors, isDark }
     } = useTheme()
     const { formatCurrency } = useFormatCurrency()
+
+    const { createParentPressHandler, createChildPressHandler } =
+      usePreventParentPress()
+
+    const handleSelectAccount = createParentPressHandler(() => {
+      onSelectAccount(account)
+    })
+
+    const handleAccountDetails = createChildPressHandler(() =>
+      gotoAccountDetails(account.id)
+    )
+
+    const handleFetchBalance = createChildPressHandler(() => {
+      fetchBalance()
+    })
 
     const balance = useMemo(() => {
       // CP-10570: Balances should never show $0.00
@@ -108,12 +124,7 @@ export const AccountItem = memo(
               alignItems: 'center',
               marginLeft: -4
             }}>
-            <Pressable
-              onPress={fetchBalance}
-              onTouchStart={e => {
-                // prevent the parent (the square pressable)from being pressed
-                e.stopPropagation()
-              }}>
+            <Pressable onPress={handleFetchBalance}>
               <Icons.Custom.BalanceRefresh color={colors.$textPrimary} />
             </Pressable>
           </View>
@@ -129,14 +140,14 @@ export const AccountItem = memo(
         />
       )
     }, [
+      isFetchingBalance,
+      isBalanceLoaded,
+      balance,
+      isPrivacyModeEnabled,
       renderMaskView,
       accountNameColor,
-      balance,
-      fetchBalance,
-      isBalanceLoaded,
-      isPrivacyModeEnabled,
-      colors.$textPrimary,
-      isFetchingBalance
+      handleFetchBalance,
+      colors.$textPrimary
     ])
 
     return (
@@ -144,7 +155,7 @@ export const AccountItem = memo(
         entering={getItemEnteringAnimation(index)}
         layout={LinearTransition.springify()}>
         <AnimatedPressable
-          onPress={() => onSelectAccount(account)}
+          onPress={handleSelectAccount}
           style={{
             backgroundColor: containerBackgroundColor,
             width: ACCOUNT_CARD_SIZE,
@@ -169,16 +180,12 @@ export const AccountItem = memo(
               sx={{ color: subtitleColor, lineHeight: 16, marginRight: 8 }}>
               {truncateAddress(account.addressC)}
             </Text>
-            <View onTouchStart={e => e.stopPropagation()}>
-              <TouchableOpacity
-                onPress={() => gotoAccountDetails(account.id)}
-                hitSlop={16}>
-                <Icons.Alert.AlertCircle
-                  color={iconColor}
-                  testID={`account_detail_icon__${account.name}`}
-                />
-              </TouchableOpacity>
-            </View>
+            <TouchableOpacity onPress={handleAccountDetails} hitSlop={16}>
+              <Icons.Alert.AlertCircle
+                color={iconColor}
+                testID={`account_detail_icon__${account.name}`}
+              />
+            </TouchableOpacity>
           </View>
         </AnimatedPressable>
       </Animated.View>
