@@ -1,10 +1,12 @@
 import React from 'react'
 import {
+  AnimatedPressable,
   Icons,
   MaskedText,
   SPRING_LINEAR_TRANSITION,
   Text,
   TouchableOpacity,
+  usePreventParentPress,
   useTheme,
   View
 } from '@avalabs/k2-alpine'
@@ -36,13 +38,23 @@ export const DeFiGridView = ({
 }): React.JSX.Element => {
   const { theme } = useTheme()
   const isPrivacyModeEnabled = useSelector(selectIsPrivacyModeEnabled)
+  const { createParentPressHandler, createChildPressHandler } =
+    usePreventParentPress()
+
+  const handleOnPress = createParentPressHandler(() => {
+    onPress()
+  })
+
+  const handleOnPressArrow = createChildPressHandler(() => {
+    onPressArrow()
+  })
 
   return (
     <Animated.View
       entering={getListItemEnteringAnimation(index)}
       layout={SPRING_LINEAR_TRANSITION}
       style={style}>
-      <TouchableOpacity onPress={onPress}>
+      <AnimatedPressable onPress={handleOnPress}>
         <View
           sx={{
             borderRadius: 18,
@@ -65,15 +77,13 @@ export const DeFiGridView = ({
                 numberOfLines={1}>
                 {formattedPrice}
               </MaskedText>
-              <View onTouchStart={e => e.stopPropagation()} hitSlop={50}>
-                <TouchableOpacity onPress={onPressArrow} hitSlop={50}>
-                  <Icons.Custom.Outbound color={theme.colors.$textPrimary} />
-                </TouchableOpacity>
-              </View>
+              <TouchableOpacity onPress={handleOnPressArrow} hitSlop={50}>
+                <Icons.Custom.Outbound color={theme.colors.$textPrimary} />
+              </TouchableOpacity>
             </View>
           </View>
         </View>
-      </TouchableOpacity>
+      </AnimatedPressable>
     </Animated.View>
   )
 }

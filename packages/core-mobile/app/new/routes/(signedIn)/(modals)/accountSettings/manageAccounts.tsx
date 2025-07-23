@@ -125,12 +125,15 @@ const ManageAccountsScreen = (): React.JSX.Element => {
 
   const handleSetActiveAccount = useCallback(
     (accountId: string) => {
+      if (accountId === activeAccount?.id) {
+        return
+      }
       dispatch(setActiveAccount(accountId))
 
       dismiss()
       dismiss()
     },
-    [dispatch, dismiss]
+    [activeAccount?.id, dispatch, dismiss]
   )
 
   const importedWallets = useMemo(() => {
