@@ -1,10 +1,12 @@
 import { Button, Text, useTheme, View } from '@avalabs/k2-alpine'
 import { ScrollScreen } from 'common/components/ScrollScreen'
-import { TokenIcon } from 'common/components/TokenIcon'
 import { useFocusEffect, useRouter } from 'expo-router'
 import React, { useCallback } from 'react'
 import { useDispatch } from 'react-redux'
 import { setViewOnce, ViewOnceKey } from 'store/viewOnce'
+
+import { Image } from 'expo-image'
+import Glow from '../../../../assets/glow-solana.png'
 
 export default function SolanaLaunchScreen(): JSX.Element {
   const { theme } = useTheme()
@@ -42,9 +44,10 @@ export default function SolanaLaunchScreen(): JSX.Element {
         alignItems: 'center',
         gap: 50
       }}>
-      <View style={{ borderRadius: 100, overflow: 'hidden' }}>
-        <TokenIcon size={100} symbol="SOL" color={theme.colors.$textPrimary} />
-      </View>
+      <Image
+        source={Glow}
+        style={{ width: 360, height: 360, marginVertical: -120 }}
+      />
       <View
         style={{
           gap: 13
