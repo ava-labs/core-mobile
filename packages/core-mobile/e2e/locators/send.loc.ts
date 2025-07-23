@@ -6,6 +6,8 @@ export default {
   amountField: 'universal_token_selector__amount_field',
   avaxToken: 'AVAX',
   ethToken: 'ETH',
+  solToken: 'SOL',
+  jupToken: 'JUP',
   wrappedEthToken: 'WETH',
   btcToken: 'BTC',
   sendingAmount: '0.00001',

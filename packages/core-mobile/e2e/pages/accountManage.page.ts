@@ -117,19 +117,17 @@ class AccountManagePage {
   async createNthAccountAndSwitchToNth(account: number) {
     await this.tapAccountDropdownTitle()
     await this.tapAddEditAccounts()
-    await device.disableSynchronization()
     await delay(1000)
     for (let i = 1; i < account; i++) {
       await this.tapAddAccountButton()
     }
     await this.tapNthAccount(account)
     await this.tapDoneButton()
-    await device.enableSynchronization()
   }
 
   async tapNthAccount(account: number) {
     try {
-      await Action.waitForElementNoSync(by.text(`Account ${account}`))
+      await Action.waitForElement(by.text(`Account ${account}`))
       await Action.tap(by.id(`account__Account ${account}`))
     } catch (e) {
       console.log('Unable to tap Nth account')
@@ -190,7 +188,7 @@ class AccountManagePage {
   }
 
   async tapAddAccountButton() {
-    await Action.waitForElementNoSync(this.addAccountButton, 5000)
+    await Action.waitForElement(this.addAccountButton, 5000)
     await Action.tapElementAtIndex(this.addAccountButton, 0)
     await delay(1000)
   }
@@ -256,10 +254,6 @@ class AccountManagePage {
         await this.tapFirstAccount()
       }
     }
-  }
-
-  async verifyAccountNameOnMyAccounts(name: string, index = 0) {
-    await Assert.hasText(this.accountTitle, name, index)
   }
 }
 

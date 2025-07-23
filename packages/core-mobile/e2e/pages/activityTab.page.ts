@@ -12,6 +12,26 @@ import BottomsTabsPage from '../pages/bottomTabs.page'
 const platformIndex = Action.platform() === Platform.iOS ? 1 : 0
 
 class ActivityTabPage {
+  get allFilter() {
+    return by.text(activityTab.allFilter)
+  }
+
+  get sentFilter() {
+    return by.text(activityTab.sentFilter)
+  }
+
+  get receivedFilter() {
+    return by.text(activityTab.receivedFilter)
+  }
+
+  get swapFilter() {
+    return by.text(activityTab.swapFilter)
+  }
+
+  get bridgeFilter() {
+    return by.text(activityTab.bridgeFilter)
+  }
+
   get arrowSVG() {
     return by.id(activityTab.arrowUpSVG)
   }
@@ -149,9 +169,7 @@ class ActivityTabPage {
 
   async exitTransactionDetailWebBrowser(transactionType: string) {
     if (device.getPlatform() === 'android') {
-      await device.disableSynchronization()
       await device.pressBack()
-      await device.enableSynchronization()
       await Assert.isVisible(AccountManagePage.accountsDropdown)
       await Assert.isVisible(by.text(transactionType))
     } else {
@@ -190,6 +208,12 @@ class ActivityTabPage {
     await Action.waitForElement(this.activityListItem)
     await Action.waitForElement(by.text(type))
     if (amount) await Action.waitForElement(by.text(amount))
+  }
+
+  async verifyFilteredItem(filterItem: string, network: string) {
+    // TODO: Implement this once GA bugs are all addressed
+    console.log('filterItem', filterItem)
+    console.log('network', network)
   }
 }
 

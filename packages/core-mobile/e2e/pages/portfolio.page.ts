@@ -3,8 +3,7 @@ import Assert from '../helpers/assertions'
 import Action from '../helpers/actions'
 import portfolio from '../locators/portfolio.loc'
 import { Platform } from '../helpers/constants'
-import cm from '../locators/commonEls.loc'
-import commonElsLoc from '../locators/commonEls.loc'
+import cl from '../locators/commonEls.loc'
 import accountManageLoc from '../locators/accountManage.loc'
 import networksManagePage from './networksManage.page'
 import ActivityTabPage from './activityTab.page'
@@ -189,10 +188,6 @@ class PortfolioPage {
 
   get receiveButton() {
     return by.id(portfolio.receiveButton)
-  }
-
-  get filter() {
-    return by.id(portfolio.filter)
   }
 
   get sort() {
@@ -447,8 +442,8 @@ class PortfolioPage {
   }
 
   async displayAssetsByNetwork(network: string) {
-    if (network !== cm.bitcoinNetwork) {
-      if (network === cm.pChain_2 || network === cm.xChain_2) {
+    if (network !== cl.bitcoinNetwork) {
+      if (network === cl.pChain_2 || network === cl.xChain_2) {
         try {
           await Action.waitForElement(by.text('No assets yet'))
           return
@@ -460,11 +455,11 @@ class PortfolioPage {
     }
 
     const networksToHide = {
-      [cm.cChain_2]: [cm.pChain_2, cm.xChain_2, cm.ethereum],
-      [cm.pChain_2]: [cm.cChain_2, cm.xChain_2, cm.ethereum],
-      [cm.xChain_2]: [cm.pChain_2, cm.cChain_2, cm.ethereum],
-      [cm.ethereum]: [cm.pChain_2, cm.xChain_2, cm.cChain_2],
-      default: [cm.pChain_2, cm.xChain_2, cm.ethereum, cm.cChain_2]
+      [cl.cChain_2]: [cl.pChain_2, cl.xChain_2, cl.ethereum],
+      [cl.pChain_2]: [cl.cChain_2, cl.xChain_2, cl.ethereum],
+      [cl.xChain_2]: [cl.pChain_2, cl.cChain_2, cl.ethereum],
+      [cl.ethereum]: [cl.pChain_2, cl.xChain_2, cl.cChain_2],
+      default: [cl.pChain_2, cl.xChain_2, cl.ethereum, cl.cChain_2]
     }
 
     for (const hiddenNetwork of networksToHide[network] ||
@@ -476,8 +471,8 @@ class PortfolioPage {
   }
 
   async displayAssetsByAllNetwork() {
-    await Action.waitForElement(by.id(`network_logo__${cm.cChain_2}`))
-    await Action.waitForElement(by.id(`network_logo__${cm.ethereum}`))
+    await Action.waitForElement(by.id(`network_logo__${cl.cChain_2}`))
+    await Action.waitForElement(by.id(`network_logo__${cl.ethereum}`))
   }
 
   async verifyFiatCurrency(currency = '$') {
@@ -506,11 +501,6 @@ class PortfolioPage {
 
   async tapReceive() {
     await Action.tapElementAtIndex(this.receiveButton, 0)
-  }
-
-  async filterNetwork(network = commonElsLoc.cChain_2) {
-    await Action.tap(this.filter)
-    await commonElsPage.selectDropdownItem(network)
   }
 
   async verifyActivityItem(

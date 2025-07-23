@@ -129,23 +129,23 @@ class PopUpModalPage {
 
   async tapRejectBtn() {
     try {
-      await actions.waitForElementNoSync(this.rejectBtn, 5000)
+      await actions.waitForElement(this.rejectBtn, 5000)
       await actions.tap(this.rejectBtn)
     } catch (e) {
-      await actions.waitForElementNoSync(this.rejectTextBtn, 5000)
+      await actions.waitForElement(this.rejectTextBtn, 5000)
       await actions.tap(this.rejectTextBtn)
     }
   }
 
   async verifyExportDetail(from: string, to: string) {
-    await actions.waitForElementNoSync(this.approveExport, 30000)
+    await actions.waitForElement(this.approveExport, 30000)
     await actions.waitForElement(by.id('Transaction Type_Export'))
     await actions.waitForElement(by.id(`Source Chain_Avalanche ${from}-Chain`))
     await actions.waitForElement(by.id(`Target Chain_Avalanche ${to}-Chain`))
   }
 
   async verifyImportDetail(from: string, to: string) {
-    await actions.waitForElementNoSync(this.approveImport, 30000)
+    await actions.waitForElement(this.approveImport, 30000)
     await actions.waitForElement(by.id('Transaction Type_Import'))
     await actions.waitForElement(by.id(`Source Chain_Avalanche ${from}-Chain`))
     await actions.waitForElement(
@@ -154,7 +154,7 @@ class PopUpModalPage {
   }
 
   async verifyDelegatorDetail() {
-    await actions.waitForElementNoSync(this.addDelegator, 50000)
+    await actions.waitForElement(this.addDelegator, 50000)
     await actions.waitForElement(by.text('Stake Amount'))
     await actions.waitForElement(by.text('Staking Details'))
   }
@@ -173,19 +173,19 @@ class PopUpModalPage {
   }
 
   async switchToSepoliaNetwork() {
-    await actions.waitForElementNoSync(this.switchToSepoliaNetworkTitle, 50000)
+    await actions.waitForElement(this.switchToSepoliaNetworkTitle, 50000)
     await asserts.isVisible(this.rejectBtn)
     await actions.tap(this.approveBtn)
   }
 
   async switchToFujiNetwork() {
-    await actions.waitForElementNoSync(this.switchToFujiNetworkTitle, 50000)
+    await actions.waitForElement(this.switchToFujiNetworkTitle, 50000)
     await asserts.isVisible(this.rejectBtn)
     await actions.tap(this.approveBtn)
   }
 
   async verifyScamTransactionModal() {
-    await actions.waitForElementNoSync(this.scamTransaction, 50000)
+    await actions.waitForElement(this.scamTransaction, 50000)
     await asserts.isVisible(this.scamTransactionContent)
     await asserts.isVisible(this.rejectTransaction)
     await asserts.isVisible(this.proceedAnyway)

@@ -6,7 +6,6 @@ export default {
   buyButton: 'action_button__Buy',
   bridgeButton: 'action_button__Bridge',
   receiveButton: 'action_button__Receive',
-  filter: 'filter_dropdown_btn',
   sort: 'sort_dropdown_btn',
   view: 'view_dropdown_btn',
   // OLD BELOW:

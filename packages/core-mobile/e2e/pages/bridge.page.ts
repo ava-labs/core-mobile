@@ -101,7 +101,7 @@ class BridgePage {
     completedStatusOutgoingNetwork: Detox.NativeMatcher,
     successfullBridgeTransaction: Detox.NativeMatcher
   ) {
-    await Actions.waitForElementNoSync(this.closebutton, timeout)
+    await Actions.waitForElement(this.closebutton, timeout)
     await Assert.isVisible(completedStatusIncomingNetwork)
     await Assert.isVisible(completedStatusOutgoingNetwork)
 
@@ -163,7 +163,7 @@ class BridgePage {
     }
 
     // Select From Token
-    if (await Actions.expectToBeVisible(swapTabPage.selectTokenTitle)) {
+    if (await Actions.isVisible(swapTabPage.selectTokenTitle)) {
       await swapTabPage.tapSelectToken()
       await selectTokenPage.selectToken(token)
     }
@@ -173,7 +173,7 @@ class BridgePage {
     await Actions.tapElementAtIndex(this.bridgeTitle, 0)
 
     // proceed the bridge
-    if (await Actions.expectToBeVisible(commonElsPage.insufficientBalance)) {
+    if (await Actions.isVisible(commonElsPage.insufficientBalance)) {
       await commonElsPage.dismissBottomSheet()
     } else {
       await commonElsPage.tapNextButton()
