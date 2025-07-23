@@ -53,9 +53,18 @@ import {
 } from 'store/posthog'
 import { usePrevious } from 'common/hooks/usePrevious'
 import { SlippageInput } from '../components.tsx/SlippageInput'
-import { JUPITER_PARTNER_FEE_BPS, PARASWAP_PARTNER_FEE_BPS } from '../consts'
+import {
+  JUPITER_PARTNER_FEE_BPS,
+  MARKR_PARTNER_FEE_BPS,
+  PARASWAP_PARTNER_FEE_BPS
+} from '../consts'
 import { useSwapContext } from '../contexts/SwapContext'
-import { isJupiterQuote, isParaswapQuote, SwapProviders } from '../types'
+import {
+  isJupiterQuote,
+  isMarkrQuote,
+  isParaswapQuote,
+  SwapProviders
+} from '../types'
 import { useSwapRate } from '../hooks/useSwapRate'
 
 export const SwapScreen = (): JSX.Element => {
@@ -151,6 +160,8 @@ export const SwapScreen = (): JSX.Element => {
       feeBps = PARASWAP_PARTNER_FEE_BPS
     } else if (isJupiterQuote(quote) && !isSwapFeesJupiterBlocked) {
       feeBps = JUPITER_PARTNER_FEE_BPS
+    } else if (isMarkrQuote(quote) && !isSwapFeesBlocked) {
+      feeBps = MARKR_PARTNER_FEE_BPS
     }
 
     if (!feeBps) return

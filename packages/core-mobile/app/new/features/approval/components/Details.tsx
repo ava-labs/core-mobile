@@ -300,29 +300,41 @@ export const Details = ({
   )
 
   const renderAddressList = useCallback(
-    (addresses: string[]): JSX.Element => (
-      <View sx={{ alignItems: 'flex-start' }}>
-        {addresses.map((address, index) => (
-          <Pressable
-            key={index}
-            onPress={() => {
-              copyToClipboard(address, 'Address copied')
-            }}>
-            <Text
-              variant="mono"
-              numberOfLines={1}
-              style={{
-                fontSize: 15,
-                lineHeight: 22,
-                color: valueTextColor,
-                marginBottom: index < addresses.length - 1 ? 4 : 0
+    (addresses: string[]): JSX.Element => {
+      const moreThanOneAddress = addresses.length > 1
+
+      const copyableAddresses = moreThanOneAddress
+        ? addresses.join(' ')
+        : addresses[0]
+
+      const addressCopiedMessage = moreThanOneAddress
+        ? 'Addresses copied'
+        : 'Address copied'
+
+      return (
+        <View sx={{ alignItems: 'flex-start' }}>
+          {addresses.map((address, index) => (
+            <Pressable
+              key={index}
+              onPress={() => {
+                copyToClipboard(copyableAddresses, addressCopiedMessage)
               }}>
-              {truncateAddress(address, 8)}
-            </Text>
-          </Pressable>
-        ))}
-      </View>
-    ),
+              <Text
+                variant="mono"
+                numberOfLines={1}
+                style={{
+                  fontSize: 15,
+                  lineHeight: 22,
+                  color: valueTextColor,
+                  marginBottom: index < addresses.length - 1 ? 4 : 0
+                }}>
+                {truncateAddress(address, 8)}
+              </Text>
+            </Pressable>
+          ))}
+        </View>
+      )
+    },
     [valueTextColor]
   )
 
