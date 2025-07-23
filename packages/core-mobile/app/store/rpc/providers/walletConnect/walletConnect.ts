@@ -134,18 +134,10 @@ class WalletConnectProvider implements AgnosticRpcProvider {
 
       let transformedResult = result
 
-      // Move Solana result transformation here
       if (request.method === RpcMethod.SOLANA_SIGN_MESSAGE) {
-        transformedResult = { signature: result as string }
+        transformedResult = { signature: result }
       } else if (request.method === RpcMethod.SOLANA_SIGN_TRANSACTION) {
-        try {
-          const signedTxBuffer = Buffer.from(result as string, 'base64')
-          const signature = signedTxBuffer.slice(1, 65)
-          const signatureBase58 = bs58.encode(new Uint8Array(signature))
-          transformedResult = { signature: signatureBase58 }
-        } catch (error) {
-          transformedResult = result
-        }
+        transformedResult = { transaction: result }
       }
 
       try {
