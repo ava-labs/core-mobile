@@ -200,6 +200,10 @@ class CommonElsPage {
     return by.text(commonElsLoc.transactionSuccess)
   }
 
+  get transactionFail() {
+    return by.text(commonElsLoc.transactionFail)
+  }
+
   get dropdownScrollView() {
     return by.id(commonElsLoc.dropdownScrollView)
   }
@@ -428,6 +432,7 @@ class CommonElsPage {
 
   async verifySuccessToast() {
     await Actions.waitForElement(this.transactionSuccess, 40000)
+    await Actions.failIfElementAppearsWithin(this.transactionFail)
   }
 
   async enterAmount(amount: string, index = 0) {

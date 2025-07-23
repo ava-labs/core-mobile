@@ -69,5 +69,6 @@ export default {
   approvePopupSpendTitle: 'Do you approve this spend limit?',
   insufficientBalance: 'Insufficient balance',
   filterDropdown: 'filter_dropdown_btn',
-  networkFilterDropdown: 'network_dropdown_btn'
+  networkFilterDropdown: 'network_dropdown_btn',
+  transactionFail: 'Transaction failed'
 }

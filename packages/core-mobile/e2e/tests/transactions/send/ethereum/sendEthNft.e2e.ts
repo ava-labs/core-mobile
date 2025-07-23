@@ -13,7 +13,7 @@ describe('Send NFT', () => {
 
   it('should send NFT on Ethereum network', async () => {
     await portfolioPage.tapCollectiblesTab()
-    await portfolioPage.filterNetwork(commonElsLoc.ethereum)
+    await commonElsPage.filter(commonElsLoc.ethereum)
     await portfolioPage.selectView()
     await sendPage.sendNFT('Untitled') // the only NFT `Untitled` on Ethereum network on the testing wallet
     await commonElsPage.verifySuccessToast()

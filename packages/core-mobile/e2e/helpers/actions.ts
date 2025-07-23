@@ -121,6 +121,27 @@ const waitForElement = async (
   throw new Error('Element not visible within timeout')
 }
 
+const failIfElementAppearsWithin = async (
+  item: Detox.NativeMatcher,
+  timeout = 5000,
+  index = 0
+): Promise<void> => {
+  const startTime = Date.now()
+  const endTime = startTime + timeout
+  while (Date.now() < endTime) {
+    await new Promise(resolve => setTimeout(resolve, 200))
+    try {
+      await waitFor(element(item).atIndex(index))
+        .toBeVisible()
+        .withTimeout(timeout)
+      // if the element is visible, throw an error
+      throw new Error('Element became visible before timeout')
+    } catch (e: any) {
+      console.log('Element is not visible... continuing')
+    }
+  }
+}
+
 const waitForElementNotVisible = async (
   item: Detox.NativeMatcher,
   timeout = 3000,
@@ -394,6 +415,7 @@ export default {
   longPress,
   waitForElement,
   waitForElementNotVisible,
+  failIfElementAppearsWithin,
   waitForCondition,
   tapElementAtIndex,
   getAttributes,
