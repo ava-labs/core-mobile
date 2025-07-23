@@ -2,12 +2,12 @@
 /**
  * @jest-environment ./environment.ts
  */
-import actions from '../../../../helpers/actions'
-import loginRecoverWallet from '../../../../helpers/loginRecoverWallet'
-import commonElsPage from '../../../../pages/commonEls.page'
-import connectToSitePage from '../../../../pages/connectToSite.page'
-import plusMenuPage from '../../../../pages/plusMenu.page'
-import popup from '../../../../pages/popUpModal.page'
+import actions from '../../../helpers/actions'
+import loginRecoverWallet from '../../../helpers/loginRecoverWallet'
+import commonElsPage from '../../../pages/commonEls.page'
+import connectToSitePage from '../../../pages/connectToSite.page'
+import plusMenuPage from '../../../pages/plusMenu.page'
+import popup from '../../../pages/popUpModal.page'
 
 describe('Swap Dapps', () => {
   beforeAll(async () => {

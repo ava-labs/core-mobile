@@ -3,12 +3,12 @@
  * @jest-environment ./environment.ts
  */
 import { expect } from '@jest/globals'
-import actions from '../../../../helpers/actions'
-import loginRecoverWallet from '../../../../helpers/loginRecoverWallet'
-import playwrightActions from '../../../../helpers/playwrightActions'
-import connectToSitePage from '../../../../pages/connectToSite.page'
-import plusMenuPage from '../../../../pages/plusMenu.page'
-import popup from '../../../../pages/popUpModal.page'
+import actions from '../../../helpers/actions'
+import loginRecoverWallet from '../../../helpers/loginRecoverWallet'
+import playwrightActions from '../../../helpers/playwrightActions'
+import connectToSitePage from '../../../pages/connectToSite.page'
+import plusMenuPage from '../../../pages/plusMenu.page'
+import popup from '../../../pages/popUpModal.page'
 
 describe('Playground', () => {
   afterEach(async () => {

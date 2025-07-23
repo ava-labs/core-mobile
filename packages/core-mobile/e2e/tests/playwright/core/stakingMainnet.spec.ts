@@ -2,8 +2,8 @@ import { test } from '@playwright/test'
 import {
   getCurrentContext,
   playwrightSetup
-} from '../../../../helpers/playwrightSetup'
-import actions from '../../../../helpers/playwrightActions'
+} from '../../../helpers/playwrightSetup'
+import actions from '../../../helpers/playwrightActions'
 
 test.describe.serial('Mainnet - Core.app and Mobile integration', () => {
   test.beforeAll(async () => {

@@ -1,7 +1,7 @@
 import { test } from '@playwright/test'
-import actions from '../../../../helpers/playwrightActions'
-import { playwrightSetup } from '../../../../helpers/playwrightSetup'
-import delay from '../../../../helpers/waits'
+import actions from '../../../helpers/playwrightActions'
+import { playwrightSetup } from '../../../helpers/playwrightSetup'
+import delay from '../../../helpers/waits'
 
 test('Swap on YieldYak', async () => {
   const { common, dapps } = await playwrightSetup()

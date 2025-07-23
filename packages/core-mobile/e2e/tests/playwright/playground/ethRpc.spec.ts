@@ -2,9 +2,9 @@ import { test } from '@playwright/test'
 import {
   getCurrentContext,
   playwrightSetup
-} from '../../../../helpers/playwrightSetup'
-import actions from '../../../../helpers/playwrightActions'
-import delay from '../../../../helpers/waits'
+} from '../../../helpers/playwrightSetup'
+import actions from '../../../helpers/playwrightActions'
+import delay from '../../../helpers/waits'
 
 const rpc = {
   ETH_SEND_TRANSACTION: 'eth_sendTransaction',

@@ -1,9 +1,9 @@
-import Actions from '../../helpers/actions'
-import Assert from '../../helpers/assertions'
-import { warmup } from '../../helpers/warmup'
-import AccountManagePage from '../../pages/accountManage.page'
-import CollectiblesPage from '../../pages/collectibles.page'
-import PortfolioPage from '../../pages/portfolio.page'
+import Actions from '../../../helpers/actions'
+import Assert from '../../../helpers/assertions'
+import { warmup } from '../../../helpers/warmup'
+import AccountManagePage from '../../../pages/accountManage.page'
+import CollectiblesPage from '../../../pages/collectibles.page'
+import PortfolioPage from '../../../pages/portfolio.page'
 
 describe('NFT Error Messages', () => {
   beforeAll(async () => {

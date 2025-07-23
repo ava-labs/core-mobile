@@ -1,8 +1,8 @@
-import actions from '../../helpers/actions'
-import PortfolioPage from '../../pages/portfolio.page'
-import { warmup } from '../../helpers/warmup'
-import commonElsPage from '../../pages/commonEls.page'
-import collectiblesPage from '../../pages/collectibles.page'
+import actions from '../../../helpers/actions'
+import PortfolioPage from '../../../pages/portfolio.page'
+import { warmup } from '../../../helpers/warmup'
+import commonElsPage from '../../../pages/commonEls.page'
+import collectiblesPage from '../../../pages/collectibles.page'
 
 describe('Manage NFT', () => {
   beforeAll(async () => {
