@@ -4,6 +4,7 @@ import {
   AnimatedPressable,
   Icons,
   Text,
+  usePreventParentPress,
   useTheme,
   View
 } from '@avalabs/k2-alpine'
@@ -63,7 +64,20 @@ export const TabItem = ({
 
     return baseRotation
   }, [index])
+
+  const { createParentPressHandler, createChildPressHandler } =
+    usePreventParentPress()
+
+  const handleTabPress = createParentPressHandler(() => {
+    onPress()
+  })
+
+  const handleOnClose = createChildPressHandler(() => {
+    onClose()
+  })
+
   const [verifiedImageSource, setVerifiedImageSource] = useState<string>()
+
   useEffect(() => {
     onVerifyImagePath(imagePath)
       .then(isVerified => {
@@ -97,7 +111,7 @@ export const TabItem = ({
   })
 
   return (
-    <AnimatedPressable onPress={onPress} style={style}>
+    <AnimatedPressable onPress={handleTabPress} style={style}>
       <Animated.View
         style={[
           cardStyle,
@@ -164,10 +178,7 @@ export const TabItem = ({
                 {title}
               </Text>
 
-              <Pressable
-                hitSlop={10}
-                onTouchStart={e => e.stopPropagation()}
-                onPress={onClose}>
+              <Pressable hitSlop={10} onPress={handleOnClose}>
                 <Icons.Content.Close
                   color={theme.colors.$textPrimary}
                   height={24}
