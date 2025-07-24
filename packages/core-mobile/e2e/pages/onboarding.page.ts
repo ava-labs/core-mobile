@@ -224,6 +224,7 @@ class OnboardingPage {
   }
 
   async tapImport() {
+    await Action.tap(this.enterYourRecoveryPhraseTitle)
     await Action.tap(this.import)
   }
 
@@ -241,6 +242,7 @@ class OnboardingPage {
   async enterWalletName(walletName: string) {
     await Action.waitForElement(this.nameWalletInput)
     await element(this.nameWalletInput).replaceText(walletName)
+    await Action.dismissKeyboard('text_input')
   }
 
   async verifyNameYourWalletPage() {

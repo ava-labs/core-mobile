@@ -590,7 +590,7 @@ describe('session_request handler', () => {
       expect(result).toEqual({ success: true, value: expectedNamespaces })
     })
 
-    it('should return success with correct namespaces for a Core dApp when user has not gone through solana migration', async () => {
+    it('should not include solana namespace when user has not gone through solana migration', async () => {
       const testSelectedAccounts = [
         {
           addressC: '0xcA0E993876152ccA6053eeDFC753092c8cE712D0',
@@ -715,25 +715,6 @@ describe('session_request handler', () => {
             'connect'
           ],
           methods: ['bitcoin_sendTransaction', 'bitcoin_signTransaction']
-        },
-        solana: {
-          accounts: [],
-          chains: [
-            'solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp',
-            'solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1'
-          ],
-          events: [
-            'chainChanged',
-            'accountsChanged',
-            'message',
-            'disconnect',
-            'connect'
-          ],
-          methods: [
-            'solana_signMessage',
-            'solana_signTransaction',
-            'solana_signAndSendTransaction'
-          ]
         }
       }
 
