@@ -143,7 +143,8 @@ export const ActivityScreen = ({
         height={
           Number(containerStyle.minHeight) - (Platform.OS === 'ios' ? 50 : 32)
         }>
-        <Animated.View style={keyboardAvoidingStyle}>
+        <Animated.View
+          style={[keyboardAvoidingStyle, { justifyContent: 'center' }]}>
           {emptyComponent}
         </Animated.View>
       </CollapsibleTabs.ContentWrapper>
