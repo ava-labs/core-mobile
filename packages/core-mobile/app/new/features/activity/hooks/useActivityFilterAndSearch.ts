@@ -5,6 +5,7 @@ import { IndexPath } from '@avalabs/k2-alpine'
 import { TokenWithBalance, TransactionType } from '@avalabs/vm-module-types'
 import { useErc20ContractTokens } from 'common/hooks/useErc20ContractTokens'
 import { useSearchableTokenList } from 'common/hooks/useSearchableTokenList'
+import { DropdownSelection } from 'common/types'
 import usePendingBridgeTransactions from 'features/bridge/hooks/usePendingBridgeTransactions'
 import {
   Selection,
@@ -37,6 +38,9 @@ export const useActivityFilterAndSearch = ({
   filter: Selection
   network: Network
   networkOption?: ActivityNetworkFilter
+  networkFilterDropdown: DropdownSelection & {
+    scrollContentMaxHeight: number
+  }
   networkFilters: ActivityNetworkFilter[]
   selectedNetwork: IndexPath
   isLoading: boolean
@@ -131,6 +135,23 @@ export const useActivityFilterAndSearch = ({
     filters
   })
 
+  const networkFilterDropdown = useMemo(() => {
+    return {
+      network,
+      title: networkOption?.filterName ?? '',
+      data: [networkFilters.map(f => f.filterName)],
+      selected: selectedNetwork,
+      onSelected: setSelectedNetwork,
+      scrollContentMaxHeight: 250
+    }
+  }, [
+    network,
+    networkFilters,
+    networkOption?.filterName,
+    selectedNetwork,
+    setSelectedNetwork
+  ])
+
   useEffect(() => {
     // In case the user is searching and the filter is not the default one, reset the filter
     if (searchText.length > 0 && filter.title !== TokenDetailFilter.All) {
@@ -144,70 +165,25 @@ export const useActivityFilterAndSearch = ({
     searchText.length
   ])
 
-  // Helper functions for filtering
-  const filterTransactionBySearch = useCallback(
-    (tx: Transaction, search: string) => {
-      const searchLower = search.toLowerCase()
-      return (
-        tx.tokens.some(t =>
-          [
-            t.symbol,
-            t.name,
-            t.amount.toString(),
-            t.from,
-            t.to,
-            t.type.toString()
-          ].some(field =>
-            typeof field === 'string'
-              ? field.toLowerCase().includes(searchLower)
-              : false
-          )
-        ) ||
-        [tx.hash, tx.to, tx.from].some(field =>
-          field.toLowerCase().includes(searchLower)
-        )
-      )
-    },
-    []
-  )
-
-  const filterPendingBridgeBySearch = useCallback(
-    (tx: BridgeTransaction | BridgeTransfer, search: string) => {
-      const searchLower = search.toLowerCase()
-      return (
-        tx.sourceTxHash.toLowerCase().includes(searchLower) ||
-        tx.targetTxHash?.toLowerCase().includes(searchLower)
-      )
-    },
-    []
-  )
-
   const combinedData = useMemo(() => {
     const filteredPendingBridgeTxs = pendingBridgeTxs.toSorted(
       (a, b) => b.sourceStartedAt - a.sourceStartedAt
     )
 
-    const filteredTransactions =
-      searchText.length > 0
-        ? data.filter(tx => filterTransactionBySearch(tx, searchText))
-        : data
+    if (searchText.length > 0) {
+      const filteredTransactions = data.filter(tx =>
+        filterTransactionBySearch(tx, searchText)
+      )
+      const filteredPendingBridge = filteredPendingBridgeTxs.filter(tx =>
+        filterPendingBridgeBySearch(tx, searchText)
+      )
+      const { todayTxs, monthGroups } = getDateGroups(filteredTransactions)
+      return buildGroupedData(todayTxs, monthGroups, filteredPendingBridge)
+    }
 
-    const filteredPendingBridge =
-      searchText.length > 0
-        ? filteredPendingBridgeTxs.filter(tx =>
-            filterPendingBridgeBySearch(tx, searchText)
-          )
-        : filteredPendingBridgeTxs
-
-    const { todayTxs, monthGroups } = getDateGroups(filteredTransactions)
-    return buildGroupedData(todayTxs, monthGroups, filteredPendingBridge)
-  }, [
-    data,
-    searchText,
-    pendingBridgeTxs,
-    filterTransactionBySearch,
-    filterPendingBridgeBySearch
-  ])
+    const { todayTxs, monthGroups } = getDateGroups(data)
+    return buildGroupedData(todayTxs, monthGroups, filteredPendingBridgeTxs)
+  }, [data, searchText, pendingBridgeTxs])
 
   return {
     data: combinedData as ActivityListItem[],
@@ -222,6 +198,42 @@ export const useActivityFilterAndSearch = ({
     networkOption,
     networkFilters,
     setSelectedNetwork,
-    selectedNetwork
+    selectedNetwork,
+    networkFilterDropdown
   }
+}
+
+function filterTransactionBySearch(tx: Transaction, search: string): boolean {
+  const searchLower = search.toLowerCase()
+  return (
+    tx.tokens.some(t =>
+      [
+        t.symbol,
+        t.name,
+        t.amount.toString(),
+        t.from,
+        t.to,
+        t.type.toString()
+      ].some(field =>
+        typeof field === 'string'
+          ? field.toLowerCase().includes(searchLower)
+          : false
+      )
+    ) ||
+    [tx.hash, tx.to, tx.from].some(field =>
+      field.toLowerCase().includes(searchLower)
+    )
+  )
+}
+
+function filterPendingBridgeBySearch(
+  tx: BridgeTransaction | BridgeTransfer,
+  search: string
+): boolean {
+  const searchLower = search.toLowerCase()
+
+  return Boolean(
+    tx.sourceTxHash.toLowerCase().includes(searchLower) ||
+      tx.targetTxHash?.toLowerCase().includes(searchLower)
+  )
 }

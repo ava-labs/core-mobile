@@ -47,13 +47,10 @@ export const ActivityScreen = ({
     isLoading,
     isRefreshing,
     isError,
-    network,
-    selectedNetwork,
     xpToken,
-    networkFilters,
-    networkOption,
-    refresh,
-    setSelectedNetwork
+    network,
+    networkFilterDropdown,
+    refresh
   } = useActivityFilterAndSearch({ searchText })
 
   const keyboardAvoidingStyle = useAnimatedStyle(() => {
@@ -73,23 +70,6 @@ export const ActivityScreen = ({
     }
   })
 
-  const networkFilterDropdown = useMemo(() => {
-    return {
-      network,
-      title: networkOption?.filterName ?? '',
-      data: [networkFilters.map(f => f.filterName)],
-      selected: selectedNetwork,
-      onSelected: setSelectedNetwork,
-      scrollContentMaxHeight: 250
-    }
-  }, [
-    network,
-    networkFilters,
-    networkOption?.filterName,
-    selectedNetwork,
-    setSelectedNetwork
-  ])
-
   const renderHeader = useCallback(() => {
     return (
       <View
@@ -102,11 +82,10 @@ export const ActivityScreen = ({
           paddingHorizontal: 16
         }}>
         <DropdownSelections filter={filter} />
-
-        <NetworkFilterDropdown {...networkFilterDropdown} />
+        <NetworkFilterDropdown network={network} {...networkFilterDropdown} />
       </View>
     )
-  }, [filter, networkFilterDropdown])
+  }, [filter, network, networkFilterDropdown])
 
   const emptyComponent = useMemo(() => {
     if (isRefreshing || isLoading) {
