@@ -89,6 +89,18 @@ export const TokenActivityListItemTitle = ({
 
       default: {
         if (isCollectibleTransaction(tx)) {
+          if (s1 === tx.tokens[0]?.type) {
+            return [
+              renderAmount(a1),
+              ' ',
+              s1,
+              ' - ',
+              truncateAddress(tx.to, 5),
+              ' - #',
+              tx.tokens[0]?.collectableTokenId ||
+                tx.tokens[1]?.collectableTokenId
+            ]
+          }
           return [
             renderAmount(a1),
             ' ',
