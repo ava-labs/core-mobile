@@ -301,6 +301,11 @@ class WCSessionRequestHandler implements RpcRequestHandler<WCSessionProposal> {
           namespaceToApprove
         )
 
+        // if no accounts are approved, skip the namespace
+        if (accounts.length === 0) {
+          continue
+        }
+
         // Use the namespace's own methods instead of mixing them
         const methods =
           namespace === BlockchainNamespace.EIP155
