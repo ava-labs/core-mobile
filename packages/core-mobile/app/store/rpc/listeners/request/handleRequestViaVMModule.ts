@@ -13,8 +13,8 @@ import { Avalanche } from '@avalabs/core-wallets-sdk'
 import { getAddressByVM } from 'store/account/utils'
 import { Account, selectActiveAccount } from 'store/account'
 import { selectActiveWallet } from 'store/wallet/slice'
-import WalletService from 'services/wallet/WalletService'
 import { WalletType } from 'services/wallet/types'
+import WalletService from 'services/wallet/WalletService'
 import { AgnosticRpcProvider, Request } from '../../types'
 
 export const handleRequestViaVMModule = async ({
@@ -154,13 +154,10 @@ const getContext = async ({
     const context: Record<string, string> = { currentAddress }
 
     if (walletType === WalletType.MNEMONIC && activeAccount) {
-      const publicKey = await WalletService.getPublicKey(
-        walletId,
-        walletType,
-        activeAccount
-      )
-      if (publicKey.xp) {
-        context.xpubXP = publicKey.xp
+      const xpubXP = await WalletService.getRawXpubXP({ walletId, walletType })
+
+      if (xpubXP) {
+        context.xpubXP = xpubXP
       }
     }
 
