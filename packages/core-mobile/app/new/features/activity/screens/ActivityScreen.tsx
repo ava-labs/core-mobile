@@ -44,7 +44,6 @@ export const ActivityScreen = ({
   const {
     data,
     filter,
-    sort,
     isLoading,
     isRefreshing,
     isError,
@@ -74,6 +73,23 @@ export const ActivityScreen = ({
     }
   })
 
+  const networkFilterDropdown = useMemo(() => {
+    return {
+      network,
+      title: networkOption?.filterName ?? '',
+      data: [networkFilters.map(f => f.filterName)],
+      selected: selectedNetwork,
+      onSelected: setSelectedNetwork,
+      scrollContentMaxHeight: 250
+    }
+  }, [
+    network,
+    networkFilters,
+    networkOption?.filterName,
+    selectedNetwork,
+    setSelectedNetwork
+  ])
+
   const renderHeader = useCallback(() => {
     return (
       <View
@@ -85,27 +101,12 @@ export const ActivityScreen = ({
           marginBottom: 16,
           paddingHorizontal: 16
         }}>
-        <DropdownSelections filter={filter} sort={sort} />
+        <DropdownSelections filter={filter} />
 
-        <NetworkFilterDropdown
-          network={network}
-          title={networkOption?.filterName ?? ''}
-          data={[networkFilters.map(f => f.filterName)]}
-          selected={selectedNetwork}
-          onSelected={setSelectedNetwork}
-          scrollContentMaxHeight={250}
-        />
+        <NetworkFilterDropdown {...networkFilterDropdown} />
       </View>
     )
-  }, [
-    filter,
-    network,
-    networkFilters,
-    networkOption?.filterName,
-    selectedNetwork,
-    setSelectedNetwork,
-    sort
-  ])
+  }, [filter, networkFilterDropdown])
 
   const emptyComponent = useMemo(() => {
     if (isRefreshing || isLoading) {

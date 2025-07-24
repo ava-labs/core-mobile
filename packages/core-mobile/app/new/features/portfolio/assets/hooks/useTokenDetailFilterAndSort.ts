@@ -96,19 +96,29 @@ export const useTokenDetailFilterAndSort = ({
     return getSorted(filtered)
   }, [getFiltered, getSorted])
 
-  return {
-    filter: {
+  const filter = useMemo(
+    () => ({
       title: 'Filter',
       data: filters ?? TOKEN_DETAIL_FILTERS,
       selected: selectedFilter,
       onSelected: setSelectedFilter
-    },
-    sort: {
+    }),
+    [filters, selectedFilter]
+  )
+
+  const sort = useMemo(
+    () => ({
       title: 'Sort',
       data: TOKEN_DETAIL_SORTS,
       selected: selectedSort,
       onSelected: setSelectedSort
-    },
+    }),
+    [selectedSort]
+  )
+
+  return {
+    filter,
+    sort,
     data: filteredAndSorted,
     resetFilter
   }
