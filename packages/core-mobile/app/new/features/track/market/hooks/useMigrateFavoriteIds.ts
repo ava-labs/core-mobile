@@ -10,11 +10,12 @@ import {
   selectWatchlistFavoriteIds,
   toggleWatchListFavorite
 } from 'store/watchlist'
+import Logger from 'utils/Logger'
 
 /**
  * @description
- * This hook is used to migrate favorite IDs from coingecko/contract address
- * to internalId
+ * This hook migrates existing user favorites from coingeckoId format to internalId format.
+ * This ensures users don't lose their favorite tokens during the transition.
  */
 export const useMigrateFavoriteIds = (): {
   hasMigratedFavoriteIds: boolean
@@ -28,7 +29,7 @@ export const useMigrateFavoriteIds = (): {
   const dispatch = useDispatch()
   const favoriteIds = useSelector(selectWatchlistFavoriteIds)
   const hasMigratedFavoriteIds = useSelector(
-    selectHasBeenViewedOnce(ViewOnceKey.MIGRATE_TOKEN_FAVORITE_IDS)
+    selectHasBeenViewedOnce(ViewOnceKey.MIGRATE_TOKEN_FAVORITE_IDSv2)
   )
 
   useEffect(() => {
@@ -41,30 +42,34 @@ export const useMigrateFavoriteIds = (): {
       return
 
     favoriteIds.forEach((favoriteId: string) => {
+      // Check if this favorite is already in internalId format
+      if (favoriteId.includes(':')) {
+        // Already in internalId format, skip migration
+        return
+      }
+
+      dispatch(toggleWatchListFavorite(favoriteId)) // Remove old in any case
+
+      // Look for a token with matching coingeckoId in top tokens
       const topToken = topTokens.find(
         token => token.coingeckoId?.toLowerCase() === favoriteId.toLowerCase()
       )
       if (topToken) {
-        // if the token is in the top tokens, we need to remove it from the favorites
-        // and add it again with the new id
-        dispatch(toggleWatchListFavorite(favoriteId))
         dispatch(toggleWatchListFavorite(topToken.id))
         return
       }
-      const trendingToken = trendingTokens.find(token =>
-        token.id.toLowerCase().includes(favoriteId.toLowerCase())
+
+      // Look for a token with matching coingeckoId in trending tokens
+      const trendingToken = trendingTokens.find(
+        token => token.coingeckoId?.toLowerCase() === favoriteId.toLowerCase()
       )
       if (trendingToken) {
-        // if the token is in the trending tokens, we need to remove it from the favorites
-        // and add it again with the new id
-        dispatch(toggleWatchListFavorite(favoriteId))
         dispatch(toggleWatchListFavorite(trendingToken.id))
       }
     })
-
-    // after the migration is done, we need to set the view once
-    // so we don't run the migration again
-    dispatch(setViewOnce(ViewOnceKey.MIGRATE_TOKEN_FAVORITE_IDS))
+    Logger.info('Migrated favorites')
+    // Mark migration as completed
+    dispatch(setViewOnce(ViewOnceKey.MIGRATE_TOKEN_FAVORITE_IDSv2))
   }, [
     hasMigratedFavoriteIds,
     favoriteIds.length,
