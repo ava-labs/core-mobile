@@ -1,17 +1,12 @@
 import { PriceChangeStatus, useTheme, View } from '@avalabs/k2-alpine'
 import { Transaction, TransactionType } from '@avalabs/vm-module-types'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
-import { isCollectibleTransaction } from 'features/activity/utils'
-import { CollectibleRenderer } from 'features/portfolio/collectibles/components/CollectibleRenderer'
 import { useWatchlist } from 'hooks/watchlist/useWatchlist'
 import React, { FC, useMemo } from 'react'
 import { ActivityTransactionType } from 'store/transaction'
 import ActivityListItem from './ActivityListItem'
 import { TokenActivityListItemTitle } from './TokenActivityListItemTitle'
 import { TransactionTypeIcon } from './TransactionTypeIcon'
-import { useNfts } from 'features/portfolio/collectibles/hooks/useNfts'
-import { NftService } from 'services/nft/NftService'
-import { useActiveAccount } from 'hooks/useActiveAccount'
 
 export const TokenActivityListItem: FC<Props> = ({
   tx,
@@ -74,17 +69,6 @@ export const TokenActivityListItem: FC<Props> = ({
   }, [status, currentPrice, tx.tokens, formatTokenInCurrency])
 
   const renderIcon = useMemo(() => {
-    if (isCollectibleTransaction(tx)) {
-      return (
-        <View
-          sx={{
-            width: ICON_SIZE,
-            height: ICON_SIZE
-          }}>
-          {/* <Collectible /> */}
-        </View>
-      )
-    }
     return (
       <View
         sx={{

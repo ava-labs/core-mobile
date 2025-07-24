@@ -48,6 +48,7 @@ export const TokenActivityListItemTitle = ({
   )
 
   // Build an array of nodes: strings and React elements
+  // eslint-disable-next-line sonarjs/cognitive-complexity
   const nodes = useMemo<ReactNode[]>(() => {
     const a1 = tx.tokens[0]?.amount
     const a2 = tx.tokens[1]?.amount
