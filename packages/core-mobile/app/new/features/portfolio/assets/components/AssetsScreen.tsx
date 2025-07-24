@@ -61,7 +61,7 @@ const AssetsScreen: FC<Props> = ({
     isLoading
   } = useAssetsFilterAndSort()
 
-  const activeAccount = useSelector(selectActiveAccount) //TODO: should use useActiveAccount but crashes if deleting wallet or just onboarding, race condition
+  const activeAccount = useSelector(selectActiveAccount)
   const enabledNetworks = useSelector(selectEnabledNetworks)
 
   const isAllBalancesInaccurate = useSelector(

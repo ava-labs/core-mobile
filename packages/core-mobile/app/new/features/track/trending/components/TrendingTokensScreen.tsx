@@ -1,7 +1,6 @@
 import { Separator } from '@avalabs/k2-alpine'
 import { CollapsibleTabs } from 'common/components/CollapsibleTabs'
 import { AVAX_TOKEN_ID } from 'common/consts/swap'
-import { useActiveAccount } from 'common/hooks/useActiveAccount'
 import { useIsSwappable } from 'common/hooks/useIsSwapable'
 import { useBuy } from 'features/meld/hooks/useBuy'
 import { useNavigateToSwap } from 'features/swap/hooks/useNavigateToSwap'
@@ -13,6 +12,7 @@ import { selectBalanceTotalForAccount } from 'store/balance'
 import { selectTokenVisibility } from 'store/portfolio'
 import { selectIsSwapBlocked } from 'store/posthog'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
+import { selectActiveAccount } from 'store/account'
 import { MarketToken, MarketType } from 'store/watchlist'
 import { TrendingTokenListItem } from './TrendingTokenListItem'
 
@@ -32,14 +32,14 @@ const TrendingTokensScreen = ({
 }): JSX.Element => {
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const { navigateToSwap } = useNavigateToSwap()
-  const activeAccount = useActiveAccount()
+  const activeAccount = useSelector(selectActiveAccount)
   const { isSwappable } = useIsSwappable()
   const isSwapBlocked = useSelector(selectIsSwapBlocked)
   const tokenVisibility = useSelector(selectTokenVisibility)
   const { navigateToBuy } = useBuy()
 
   const balanceTotal = useSelector(
-    selectBalanceTotalForAccount(activeAccount.id, tokenVisibility)
+    selectBalanceTotalForAccount(activeAccount?.id ?? '', tokenVisibility)
   )
   const isZeroBalance = balanceTotal === 0n
 

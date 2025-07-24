@@ -345,7 +345,7 @@ class StakePage {
   }
 
   async tapStakeNow() {
-    await Actions.waitForElementNoSync(this.stakeNow, 5000)
+    await Actions.waitForElement(this.stakeNow, 5000)
     await Actions.tapElementAtIndex(this.stakeNow, 0)
   }
 
@@ -543,7 +543,7 @@ class StakePage {
       await Actions.tap(by.text(duration))
     }
     await this.tapNextButton()
-    await Actions.waitForElementNoSync(this.stakeNow, 30000)
+    await Actions.waitForElement(this.stakeNow, 30000)
     await this.tapStakeNow()
   }
 

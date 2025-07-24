@@ -71,7 +71,7 @@ export const selectAccountByAddress =
         acc.addressBTC.toLowerCase() === givenAddress ||
         acc.addressAVM.toLowerCase() === givenAddress ||
         acc.addressPVM.toLowerCase() === givenAddress ||
-        acc.addressSVM.toLowerCase() === givenAddress
+        acc?.addressSVM?.toLowerCase() === givenAddress
       )
     })
   }

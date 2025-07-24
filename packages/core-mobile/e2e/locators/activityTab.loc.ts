@@ -22,5 +22,10 @@ export default {
   usdcIncomingTransactionDetail: '+0.0001 USDC',
   wethOutgoingTransactionDetail: '-0.0001 WETH.e',
   wethIncomingTransactionDetail: '+0.0001 WETH.e',
-  noRecentActivity: 'No recent activity'
+  noRecentActivity: 'No recent activity',
+  allFilter: 'All',
+  sentFilter: 'Sent',
+  receivedFilter: 'Received',
+  swapFilter: 'Swap',
+  bridgeFilter: 'Bridge'
 }

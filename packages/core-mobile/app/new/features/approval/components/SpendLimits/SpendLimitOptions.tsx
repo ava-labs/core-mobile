@@ -6,6 +6,7 @@ import { showAlertWithTextInput } from 'common/utils/alertWithTextInput'
 import { Limit, SpendLimit } from 'hooks/useSpendLimits'
 import { DropdownGroup, DropdownMenu } from 'new/common/components/DropdownMenu'
 import React, { useCallback, useMemo, useState } from 'react'
+import { normalizeNumericTextInput } from '@avalabs/k2-alpine/src/utils/tokenUnitInput'
 import { MenuId } from './types'
 import {
   getDefaultSpendLimitValue,
@@ -75,7 +76,9 @@ export const SpendLimitOptions = ({
                 defaultValue: defaultSpendLimitValue,
                 sanitize: ({ text }) => {
                   if (token.type === TokenType.ERC20) {
-                    return sanitizeAmountInput(text, token.decimals)
+                    // Normalize the input to handle locale-specific decimal separators
+                    const normalizedInput = normalizeNumericTextInput(text)
+                    return sanitizeAmountInput(normalizedInput, token.decimals)
                   }
                   return text
                 }
