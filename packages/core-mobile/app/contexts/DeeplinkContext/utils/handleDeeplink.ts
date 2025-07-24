@@ -71,13 +71,9 @@ export const handleDeeplink = ({
       } else if (action === ACTIONS.WatchList) {
         const tokenId = pathname.split('/')[1]
         if (tokenId) {
-          // Detect if this is an internalId (EIP-155 format) or coingeckoId
-          const isInternalId = tokenId.startsWith('eip155:')
-          const marketType = isInternalId
-            ? MarketType.TRENDING
-            : MarketType.SEARCH
+          // All watchlist tokens now use internalId format
           navigateFromDeeplinkUrl(
-            `/trackTokenDetail?tokenId=${tokenId}&marketType=${marketType}`
+            `/trackTokenDetail?tokenId=${tokenId}&marketType=${MarketType.TRENDING}`
           )
         }
       } else if (action === ACTIONS.OfframpCompleted) {

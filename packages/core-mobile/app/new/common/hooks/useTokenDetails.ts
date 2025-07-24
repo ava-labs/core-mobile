@@ -74,9 +74,8 @@ export const useTokenDetails = ({
   )
   const token = getMarketTokenById(tokenId)
 
-  // when searching, the token id is actually the coingecko id
-  const coingeckoId =
-    marketType === MarketType.SEARCH ? tokenId : token?.coingeckoId ?? ''
+  // All tokens now use internalId, but we still need coingeckoId for Price API calls
+  const coingeckoId = token?.coingeckoId ?? ''
 
   const chainId =
     marketType === MarketType.SEARCH ? undefined : getTokenChainId(token)

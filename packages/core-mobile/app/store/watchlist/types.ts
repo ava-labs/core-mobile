@@ -29,8 +29,7 @@ export enum MarketType {
   SEARCH = 'SEARCH' // these are the tokens that match the search query (fetched via Coingecko directly)
 }
 
-type InternalId = string
-export type CoingeckoId = string
+export type InternalId = string
 
 export type MarketToken =
   | {
@@ -66,9 +65,9 @@ export type PriceData = {
   vol24: number
 }
 
-export type Charts = { [coingeckoID: string]: ChartData }
+export type Charts = { [tokenId: string]: ChartData }
 
-export type Prices = { [coingeckoID: string]: PriceData }
+export type Prices = { [tokenId: string]: PriceData }
 
 export type TokensAndCharts = {
   tokens: Record<string, MarketToken>
@@ -76,5 +75,5 @@ export type TokensAndCharts = {
 }
 
 export type WatchListFavoriteState = {
-  favorites: CoingeckoId[]
+  favorites: InternalId[]
 }
