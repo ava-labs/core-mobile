@@ -5,7 +5,6 @@ import { IndexPath } from '@avalabs/k2-alpine'
 import { TokenWithBalance, TransactionType } from '@avalabs/vm-module-types'
 import { useErc20ContractTokens } from 'common/hooks/useErc20ContractTokens'
 import { useSearchableTokenList } from 'common/hooks/useSearchableTokenList'
-import { getBridgeAssetSymbol } from 'common/utils/bridgeUtils'
 import usePendingBridgeTransactions from 'features/bridge/hooks/usePendingBridgeTransactions'
 import {
   Selection,
@@ -80,17 +79,18 @@ export const useActivityFilterAndSearch = ({
   const xpToken = useMemo(() => {
     return filteredTokenList.find(tk => {
       return (
-        (isPChain(network?.chainId as ChainId) ||
-          isXChain(network?.chainId as ChainId)) &&
-        Number(tk.networkChainId) === Number(network?.chainId)
+        networkOption?.chainId &&
+        (isPChain(networkOption?.chainId) ||
+          isXChain(networkOption?.chainId)) &&
+        Number(tk.networkChainId) === Number(networkOption?.chainId)
       )
     })
-  }, [filteredTokenList, network?.chainId])
+  }, [filteredTokenList, networkOption?.chainId])
 
   const { transactions, refresh, isLoading, isRefreshing, isError } =
     useGetRecentTransactions(network)
 
-  const pendingBridgeTxs = usePendingBridgeTransactions(network?.chainId)
+  const pendingBridgeTxs = usePendingBridgeTransactions(networkOption?.chainId)
   const isPendingBridge = useCallback(
     (tx: Transaction) => {
       return (
@@ -116,7 +116,7 @@ export const useActivityFilterAndSearch = ({
   }, [transactions, isPendingBridge])
 
   const filters: TokenDetailFilters | undefined = useMemo(() => {
-    if (network?.chainId && isPChain(network.chainId)) {
+    if (networkOption?.chainId && isPChain(networkOption?.chainId)) {
       const newFilters = [
         ...(TOKEN_DETAIL_FILTERS[0] ?? []),
         TokenDetailFilter.Stake
@@ -124,7 +124,7 @@ export const useActivityFilterAndSearch = ({
       return [newFilters]
     }
     return undefined
-  }, [network?.chainId])
+  }, [networkOption?.chainId])
 
   const { data, filter, sort, resetFilter } = useTokenDetailFilterAndSort({
     transactions: transactionsBySymbol,
@@ -183,9 +183,9 @@ export const useActivityFilterAndSearch = ({
   )
 
   const combinedData = useMemo(() => {
-    const filteredPendingBridgeTxs = pendingBridgeTxs
-      .toSorted((a, b) => b.sourceStartedAt - a.sourceStartedAt)
-      .filter(tx => getBridgeAssetSymbol(tx) === network?.networkToken?.symbol)
+    const filteredPendingBridgeTxs = pendingBridgeTxs.toSorted(
+      (a, b) => b.sourceStartedAt - a.sourceStartedAt
+    )
 
     const filteredTransactions =
       searchText.length > 0
@@ -205,7 +205,6 @@ export const useActivityFilterAndSearch = ({
     data,
     searchText,
     pendingBridgeTxs,
-    network?.networkToken?.symbol,
     filterTransactionBySearch,
     filterPendingBridgeBySearch
   ])
