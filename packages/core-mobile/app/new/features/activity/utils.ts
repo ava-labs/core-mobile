@@ -1,6 +1,8 @@
 import { BridgeTransfer } from '@avalabs/bridge-unified'
 import { BridgeTransaction } from '@avalabs/core-bridge-sdk'
+import { TokenType, TransactionType } from '@avalabs/vm-module-types'
 import { format, isToday } from 'date-fns'
+import { TokenActivityTransaction } from 'features/portfolio/assets/components/TokenActivityListItem'
 import { Transaction } from 'store/transaction'
 
 export type ActivityListItem =
@@ -101,4 +103,20 @@ export function buildGroupedData(
   })
 
   return flatData
+}
+
+export function isCollectibleTransaction(
+  tx: TokenActivityTransaction
+): boolean {
+  return (
+    ((tx.tokens[0]?.type === TokenType.ERC1155 ||
+      tx.tokens[0]?.type === TokenType.ERC20 ||
+      tx.tokens[0]?.type === TokenType.ERC721) &&
+      Boolean(tx.tokens[1]?.collectableTokenId)) ||
+    [
+      TransactionType.NFT_SEND,
+      TransactionType.NFT_RECEIVE,
+      TransactionType.NFT_BUY
+    ].includes(tx.txType as TransactionType)
+  )
 }

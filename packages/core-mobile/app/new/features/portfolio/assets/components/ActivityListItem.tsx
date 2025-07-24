@@ -79,7 +79,7 @@ const ActivityListItem: FC<Props> = ({
             flexDirection: 'row',
             flex: 1,
             alignItems: 'center',
-            gap: 8,
+            gap: 12,
             minHeight: ACTIVITY_LIST_ITEM_HEIGHT,
             paddingTop: 12,
             paddingBottom: 12,
@@ -125,19 +125,21 @@ const ActivityListItem: FC<Props> = ({
               )
             ) : null}
           </View>
-          {timestamp && (
-            <Text
-              variant="body2"
-              sx={{ color: colors.$textSecondary, textAlign: 'right' }}>
-              {formatDate(timestamp)}
-            </Text>
-          )}
-          {accessoryType === 'outbound' && (
-            <Icons.Custom.Outbound color={colors.$textPrimary} />
-          )}
-          {accessoryType === 'chevron' && (
-            <Icons.Navigation.ChevronRightV2 color={colors.$textPrimary} />
-          )}
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+            {timestamp && (
+              <Text
+                variant="body2"
+                sx={{ color: colors.$textSecondary, textAlign: 'right' }}>
+                {formatDate(timestamp)}
+              </Text>
+            )}
+            {accessoryType === 'outbound' && (
+              <Icons.Custom.Outbound color={colors.$textPrimary} />
+            )}
+            {accessoryType === 'chevron' && (
+              <Icons.Navigation.ChevronRightV2 color={colors.$textPrimary} />
+            )}
+          </View>
         </View>
       </View>
     </TouchableOpacity>

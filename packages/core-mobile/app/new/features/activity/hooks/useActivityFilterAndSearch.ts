@@ -164,8 +164,17 @@ export const useActivityFilterAndSearch = ({
       const searchLower = search.toLowerCase()
       return (
         tx.tokens.some(t =>
-          [t.symbol, t.name, t.amount.toString()].some(field =>
-            field.toLowerCase().includes(searchLower)
+          [
+            t.symbol,
+            t.name,
+            t.amount.toString(),
+            t.from,
+            t.to,
+            t.type.toString()
+          ].some(field =>
+            typeof field === 'string'
+              ? field.toLowerCase().includes(searchLower)
+              : false
           )
         ) ||
         [tx.hash, tx.to, tx.from].some(field =>

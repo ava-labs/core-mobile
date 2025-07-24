@@ -1,12 +1,17 @@
 import { PriceChangeStatus, useTheme, View } from '@avalabs/k2-alpine'
 import { Transaction, TransactionType } from '@avalabs/vm-module-types'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
+import { isCollectibleTransaction } from 'features/activity/utils'
+import { CollectibleRenderer } from 'features/portfolio/collectibles/components/CollectibleRenderer'
 import { useWatchlist } from 'hooks/watchlist/useWatchlist'
 import React, { FC, useMemo } from 'react'
 import { ActivityTransactionType } from 'store/transaction'
 import ActivityListItem from './ActivityListItem'
 import { TokenActivityListItemTitle } from './TokenActivityListItemTitle'
 import { TransactionTypeIcon } from './TransactionTypeIcon'
+import { useNfts } from 'features/portfolio/collectibles/hooks/useNfts'
+import { NftService } from 'services/nft/NftService'
+import { useActiveAccount } from 'hooks/useActiveAccount'
 
 export const TokenActivityListItem: FC<Props> = ({
   tx,
@@ -44,9 +49,6 @@ export const TokenActivityListItem: FC<Props> = ({
         return PriceChangeStatus.Up
       }
       default: {
-        if (tx.txType === TransactionType.UNKNOWN) {
-          return PriceChangeStatus.Up
-        }
         return PriceChangeStatus.Neutral
       }
     }
@@ -71,6 +73,38 @@ export const TokenActivityListItem: FC<Props> = ({
     return amountPrefix + formattedAmount
   }, [status, currentPrice, tx.tokens, formatTokenInCurrency])
 
+  const renderIcon = useMemo(() => {
+    if (isCollectibleTransaction(tx)) {
+      return (
+        <View
+          sx={{
+            width: ICON_SIZE,
+            height: ICON_SIZE
+          }}>
+          {/* <Collectible /> */}
+        </View>
+      )
+    }
+    return (
+      <View
+        sx={{
+          width: ICON_SIZE,
+          height: ICON_SIZE,
+          borderRadius: ICON_SIZE,
+          justifyContent: 'center',
+          alignItems: 'center',
+          overflow: 'hidden',
+          backgroundColor: colors.$borderPrimary,
+          borderColor: colors.$borderPrimary
+        }}>
+        <TransactionTypeIcon
+          txType={tx.txType}
+          isContractCall={tx.isContractCall}
+        />
+      </View>
+    )
+  }, [tx, colors.$borderPrimary])
+
   return (
     <ActivityListItem
       title={<TokenActivityListItemTitle tx={tx} />}
@@ -78,24 +112,7 @@ export const TokenActivityListItem: FC<Props> = ({
       subtitleType="amountInCurrency"
       timestamp={tx.timestamp}
       showSeparator={showSeparator}
-      icon={
-        <View
-          sx={{
-            width: ICON_SIZE,
-            height: ICON_SIZE,
-            borderRadius: ICON_SIZE,
-            justifyContent: 'center',
-            alignItems: 'center',
-            overflow: 'hidden',
-            backgroundColor: colors.$borderPrimary,
-            borderColor: colors.$borderPrimary
-          }}>
-          <TransactionTypeIcon
-            txType={tx.txType}
-            isContractCall={tx.isContractCall}
-          />
-        </View>
-      }
+      icon={renderIcon}
       onPress={onPress}
       status={status}
     />

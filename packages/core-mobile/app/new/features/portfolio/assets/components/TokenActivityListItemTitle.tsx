@@ -1,9 +1,11 @@
+import { truncateAddress } from '@avalabs/core-utils-sdk/dist'
 import { Text, useTheme, View } from '@avalabs/k2-alpine'
 import { TransactionType } from '@avalabs/vm-module-types'
 import { HiddenBalanceText } from 'common/components/HiddenBalanceText'
 import { SubTextNumber } from 'common/components/SubTextNumber'
 import { useBlockchainNames } from 'common/utils/useBlockchainNames'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
+import { isCollectibleTransaction } from 'features/activity/utils'
 import { useNetworks } from 'hooks/networks/useNetworks'
 import React, { ReactNode, useCallback, useMemo } from 'react'
 import { useSelector } from 'react-redux'
@@ -63,26 +65,41 @@ export const TokenActivityListItemTitle = ({
 
     switch (tx.txType) {
       case TransactionType.BRIDGE:
-        return [
-          sourceBlockchain ?? 'Unknown',
-          ' → ',
-          targetBlockchain ?? 'Unknown'
-        ]
-
-      case TransactionType.SWAP: {
+        if (tx.tokens.length === 1) {
+          return [
+            renderAmount(a1),
+            ' ',
+            s1,
+            ' ',
+            sourceBlockchain ?? 'Unknown',
+            ' → ',
+            targetBlockchain ?? 'Unknown'
+          ]
+        }
+        return ['Unknown']
+      case TransactionType.SWAP:
         return [renderAmount(a1), ' ', s1, ' swapped for ', s2]
-      }
-
       case TransactionType.SEND:
         return [renderAmount(a1), ' ', s1, ' sent']
-
       case TransactionType.RECEIVE:
         return [renderAmount(a1), ' ', s1, ' received']
-
       case TransactionType.TRANSFER:
         return [renderAmount(a1), ' ', s1, ' transferred']
 
       default: {
+        if (isCollectibleTransaction(tx)) {
+          return [
+            renderAmount(a1),
+            ' ',
+            s1,
+            ' - ',
+            tx.tokens[0]?.type,
+            ' - ',
+            truncateAddress(tx.to, 5),
+            ' - #',
+            tx.tokens[0]?.collectableTokenId || tx.tokens[1]?.collectableTokenId
+          ]
+        }
         if (tx.isContractCall) {
           if (tx.tokens.length === 1) {
             return [renderAmount(a1), ' ', s1, ' swapped']
@@ -93,7 +110,7 @@ export const TokenActivityListItemTitle = ({
               ' ',
               s1,
               ' ',
-              'Contract call',
+              'contract call',
               ' ',
               renderAmount(a2),
               ' ',
@@ -105,16 +122,7 @@ export const TokenActivityListItemTitle = ({
         return ['Unknown']
       }
     }
-  }, [
-    tx.tokens,
-    tx.txType,
-    tx.isContractCall,
-    tx.chainId,
-    sourceBlockchain,
-    targetBlockchain,
-    renderAmount,
-    getNetwork
-  ])
+  }, [tx, getNetwork, renderAmount, sourceBlockchain, targetBlockchain])
 
   return (
     <View
