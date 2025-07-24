@@ -39,15 +39,13 @@ export const useActivityFilterAndSearch = ({
   network: Network
   networkOption?: ActivityNetworkFilter
   networkFilters: ActivityNetworkFilter[]
-  networkDropdown: Selection & {
-    scrollContentMaxHeight: number
-  }
   selectedNetwork: IndexPath
   isLoading: boolean
   isRefreshing: boolean
   isError: boolean
-  refresh: () => void
   xpToken: TokenWithBalance | undefined
+  refresh: () => void
+  setSelectedNetwork: (network: IndexPath) => void
 } => {
   const { enabledNetworks, getNetwork } = useNetworks()
   const { selectedNetwork, setSelectedNetwork } = useActivity()
@@ -88,18 +86,6 @@ export const useActivityFilterAndSearch = ({
       )
     })
   }, [filteredTokenList, network?.chainId])
-
-  const networkDropdown: Selection & {
-    scrollContentMaxHeight: number
-  } = useMemo(() => {
-    return {
-      title: 'Network',
-      data: [networkFilters.map(f => f.filterName)],
-      selected: selectedNetwork,
-      onSelected: setSelectedNetwork,
-      scrollContentMaxHeight: 250
-    }
-  }, [networkFilters, selectedNetwork, setSelectedNetwork])
 
   const { transactions, refresh, isLoading, isRefreshing, isError } =
     useGetRecentTransactions(network)
@@ -236,7 +222,7 @@ export const useActivityFilterAndSearch = ({
     network: network as Network,
     networkOption,
     networkFilters,
-    networkDropdown,
+    setSelectedNetwork,
     selectedNetwork
   }
 }

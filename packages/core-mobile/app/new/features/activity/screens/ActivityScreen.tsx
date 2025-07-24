@@ -13,6 +13,7 @@ import {
 import { CollapsibleTabs } from 'common/components/CollapsibleTabs'
 import { DropdownSelections } from 'common/components/DropdownSelections'
 import { NetworkLogoWithChain } from 'common/components/NetworkLogoWithChain'
+import { DropdownSelection } from 'common/types'
 import { getListItemEnteringAnimation } from 'common/utils/animations'
 import { ErrorState } from 'new/common/components/ErrorState'
 import { LoadingState } from 'new/common/components/LoadingState'
@@ -20,8 +21,8 @@ import React, { useCallback, useMemo } from 'react'
 import { Platform, ViewStyle } from 'react-native'
 import { useHeaderMeasurements } from 'react-native-collapsible-tab-view'
 import Animated, { useAnimatedStyle, withTiming } from 'react-native-reanimated'
-import { useActivityFilterAndSearch } from '../hooks/useActivityFilterAndSearch'
 import { ActivityList } from '../components/ActivityList'
+import { useActivityFilterAndSearch } from '../hooks/useActivityFilterAndSearch'
 
 const errorIcon = require('../../../assets/icons/unamused_emoji.png')
 
@@ -38,7 +39,6 @@ export const ActivityScreen = ({
   handlePendingBridge: (transaction: BridgeTransaction | BridgeTransfer) => void
   containerStyle: ViewStyle
 }): JSX.Element => {
-  const { theme } = useTheme()
   const header = useHeaderMeasurements()
 
   const {
@@ -48,12 +48,13 @@ export const ActivityScreen = ({
     isLoading,
     isRefreshing,
     isError,
-    refresh,
     network,
-    networkOption,
-    networkDropdown,
     selectedNetwork,
-    xpToken
+    xpToken,
+    networkFilters,
+    networkOption,
+    refresh,
+    setSelectedNetwork
   } = useActivityFilterAndSearch({ searchText })
 
   const keyboardAvoidingStyle = useAnimatedStyle(() => {
@@ -86,45 +87,24 @@ export const ActivityScreen = ({
         }}>
         <DropdownSelections filter={filter} sort={sort} />
 
-        <SimpleDropdown
-          from={
-            <Chip
-              renderLeft={() => (
-                <NetworkLogoWithChain
-                  network={network as Network}
-                  networkSize={18}
-                  outerBorderColor={theme.colors.$surfaceSecondary}
-                  showChainLogo={false}
-                />
-              )}
-              style={{
-                paddingLeft: 6,
-                paddingRight: 10,
-                gap: 4
-              }}
-              size="large"
-              hitSlop={8}
-              testID="network_dropdown_btn">
-              {networkOption?.filterName}
-            </Chip>
-          }
-          sections={networkDropdown.data}
-          selectedRows={[selectedNetwork]}
-          onSelectRow={networkDropdown.onSelected}
-          scrollContentMaxHeight={networkDropdown.scrollContentMaxHeight}
+        <NetworkFilterDropdown
+          network={network}
+          title={networkOption?.filterName ?? ''}
+          data={[networkFilters.map(f => f.filterName)]}
+          selected={selectedNetwork}
+          onSelected={setSelectedNetwork}
+          scrollContentMaxHeight={250}
         />
       </View>
     )
   }, [
     filter,
     network,
-    networkDropdown.data,
-    networkDropdown.onSelected,
-    networkDropdown.scrollContentMaxHeight,
+    networkFilters,
     networkOption?.filterName,
     selectedNetwork,
-    sort,
-    theme.colors.$surfaceSecondary
+    setSelectedNetwork,
+    sort
   ])
 
   const emptyComponent = useMemo(() => {
@@ -192,5 +172,59 @@ export const ActivityScreen = ({
         refresh={refresh}
       />
     </Animated.View>
+  )
+}
+
+const NetworkFilterDropdown = ({
+  network,
+  title,
+  data,
+  selected,
+  onSelected,
+  scrollContentMaxHeight
+}: {
+  network: Network
+  title: DropdownSelection['title']
+  data: DropdownSelection['data']
+  selected: DropdownSelection['selected']
+  onSelected: DropdownSelection['onSelected']
+  scrollContentMaxHeight: DropdownSelection['scrollContentMaxHeight']
+}): JSX.Element => {
+  const { theme } = useTheme()
+
+  const renderLeftIcon = useCallback(() => {
+    if (!network) return <></>
+
+    return (
+      <NetworkLogoWithChain
+        network={network}
+        networkSize={18}
+        outerBorderColor={theme.colors.$surfaceSecondary}
+        showChainLogo={false}
+      />
+    )
+  }, [network, theme.colors.$surfaceSecondary])
+
+  return (
+    <SimpleDropdown
+      from={
+        <Chip
+          renderLeft={renderLeftIcon}
+          style={{
+            paddingLeft: 6,
+            paddingRight: 10,
+            gap: 4
+          }}
+          size="large"
+          hitSlop={8}
+          testID="network_dropdown_btn">
+          {title}
+        </Chip>
+      }
+      sections={data}
+      selectedRows={[selected]}
+      onSelectRow={onSelected}
+      scrollContentMaxHeight={scrollContentMaxHeight}
+    />
   )
 }
