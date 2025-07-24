@@ -396,7 +396,7 @@ __metadata:
     react-native-pager-view: 6.7.0
     react-native-passkey: 3.1.0
     react-native-performance: 5.1.2
-    react-native-permissions: 4.1.5
+    react-native-permissions: 5.4.2
     react-native-popable: 0.4.3
     react-native-popover-view: 6.1.0
     react-native-qrcode-svg: 6.3.2
@@ -27443,9 +27443,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-native-permissions@npm:4.1.5":
-  version: 4.1.5
-  resolution: "react-native-permissions@npm:4.1.5"
+"react-native-permissions@npm:5.4.2":
+  version: 5.4.2
+  resolution: "react-native-permissions@npm:5.4.2"
   peerDependencies:
     react: ">=18.1.0"
     react-native: ">=0.70.0"
@@ -27453,7 +27453,7 @@ __metadata:
   peerDependenciesMeta:
     react-native-windows:
       optional: true
-  checksum: dc4b366a0f561a47f032c027eb703a2be45e801788b915ed583e38f617eea23656eb63a77b17fb3a663fe3199b2ec25788f799e751421634e35a64f5258feed9
+  checksum: fac680b7d85fb979806156d6c9f90dee9c8299b83eb9d2d82bee50aec4baa71b0f5d3cf79e8bf02345e67f77d6cb0fbfbe7e54d02b6822de0ae2e0d9323a6614
   languageName: node
   linkType: hard
 
@@ -27765,7 +27765,7 @@ react-native-webview@ava-labs/react-native-webview:
   peerDependencies:
     react: "*"
     react-native: "*"
-  checksum: 77324747a8b5df0a5558bb99a9a0804a5575d328e84f480e462c56417af97213f38a9930e4582fb749bec374dc4d1a8910a45b006e77af9b14a8e64057b932bf
+  checksum: 81ebfc37d56de7e711912a34cbee9323ee172da46559a967e77b5669da02ead704ae7a18de7eee1b053bfe437bb9580a78a592735963ee278054a55aede30200
   languageName: node
   linkType: hard
 
