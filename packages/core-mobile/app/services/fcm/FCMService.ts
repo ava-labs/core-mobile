@@ -138,7 +138,7 @@ class FCMService {
       }
     } else if (fcmData.type === NotificationTypes.NEWS) {
       return {
-        url: fcmData.urlV2 || fcmData.url // Prioritize urlV2 over url for backward compatibility
+        url: fcmData.urlV2
       }
     }
   }
