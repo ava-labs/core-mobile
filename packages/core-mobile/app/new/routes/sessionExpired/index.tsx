@@ -30,10 +30,12 @@ const SessionExpiredScreen = (): React.JSX.Element => {
   useFocusEffect(
     useCallback(() => {
       const onBackPress = (): boolean => true
-      BackHandler.addEventListener('hardwareBackPress', onBackPress)
+      const backHandler = BackHandler.addEventListener(
+        'hardwareBackPress',
+        onBackPress
+      )
 
-      return () =>
-        BackHandler.removeEventListener('hardwareBackPress', onBackPress)
+      return () => backHandler.remove()
     }, [])
   )
 

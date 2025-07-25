@@ -8,7 +8,9 @@
     "userInterfaceStyle": "automatic",
     "plugins": [
       "./plugins/useWithAndroidNightTheme.js",
-      ["@vonovak/react-native-theme-control"],
+      [
+        "@vonovak/react-native-theme-control"
+      ],
       [
         "react-native-edge-to-edge",
         {
@@ -23,8 +25,14 @@
         {
           "ios": {
             "extraPods": [
-              { "name": "SDWebImage", "modular_headers": true },
-              { "name": "SDWebImageSVGCoder", "modular_headers": true }
+              {
+                "name": "SDWebImage",
+                "modular_headers": true
+              },
+              {
+                "name": "SDWebImageSVGCoder",
+                "modular_headers": true
+              }
             ]
           }
         }
@@ -45,18 +53,27 @@
       [
         "expo-asset",
         {
-          "assets": ["./app/assets", "./app/new/assets"]
+          "assets": [
+            "./app/assets",
+            "./app/new/assets"
+          ]
         }
       ],
       "@config-plugins/detox",
       [
         "react-native-share",
         {
-          "ios": ["twitter"],
-          "android": ["com.twitter.android"],
+          "ios": [
+            "twitter"
+          ],
+          "android": [
+            "com.twitter.android"
+          ],
           "enableBase64ShareAndroid": true
         }
-      ]
+      ],
+      "expo-localization",
+      "expo-video"
     ],
     "experiments": {
       "typedRoutes": true

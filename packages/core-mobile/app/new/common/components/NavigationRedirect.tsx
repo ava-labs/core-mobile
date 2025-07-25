@@ -93,10 +93,12 @@ export const NavigationRedirect = (): null => {
           return false
         }
       }
-      BackHandler.addEventListener('hardwareBackPress', onBackPress)
+      const backHandler = BackHandler.addEventListener(
+        'hardwareBackPress',
+        onBackPress
+      )
 
-      return () =>
-        BackHandler.removeEventListener('hardwareBackPress', onBackPress)
+      return () => backHandler.remove()
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
   )
