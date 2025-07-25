@@ -111,12 +111,7 @@ const waitForElement = async (
         .withTimeout(timeout)
       return
     } catch (error: any) {
-      if (error.message === Constants.idleTimeoutError) {
-        console.error(Constants.animatedConsoleError)
-      } else {
-        console.error(error)
-        throw error
-      }
+      console.error(error)
     }
   }
   console.error('Error: Element not visible within timeout')
@@ -159,11 +154,7 @@ const waitForElementNotVisible = async (
         .withTimeout(timeout)
       return
     } catch (error: any) {
-      if (error.message === Constants.idleTimeoutError) {
-        console.error(Constants.animatedConsoleError)
-      } else {
-        throw error
-      }
+      console.error(error)
     }
   }
   console.error('Error: Element visible within timeout')
