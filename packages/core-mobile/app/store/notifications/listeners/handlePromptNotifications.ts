@@ -8,6 +8,8 @@ import { selectIsEnableNotificationPromptBlocked } from 'store/posthog'
 import { showAlert } from '@avalabs/k2-alpine'
 import { turnOnAllNotifications } from '../slice'
 
+let isWaitingForSolanaLaunchMux = false
+
 export const handlePromptNotifications = async (
   _: AnyAction,
   listenerApi: AppListenerEffectAPI
@@ -18,6 +20,9 @@ export const handlePromptNotifications = async (
   const hasPromptedForNotifications = selectHasBeenViewedOnce(
     ViewOnceKey.NOTIFICATIONS_PROMPT
   )(state)
+
+  if (isWaitingForSolanaLaunchMux) return //if already waiting ignore this handler
+  await waitIfSolanaLaunchScreenIsYetNotDismissed(listenerApi)
 
   const authorizationStatus =
     await NotificationsService.getNotificationSettings()
@@ -70,4 +75,19 @@ export const handlePromptNotifications = async (
       }
     ]
   })
+}
+
+async function waitIfSolanaLaunchScreenIsYetNotDismissed(
+  listenerApi: AppListenerEffectAPI
+): Promise<void> {
+  const { take } = listenerApi
+  const state = listenerApi.getState()
+  let hasSeenSolanaLaunch = selectHasBeenViewedOnce(ViewOnceKey.SOLANA_LAUNCH)(
+    state
+  )
+  while (!hasSeenSolanaLaunch) {
+    isWaitingForSolanaLaunchMux = true
+    const [{ payload }] = await take(setViewOnce.match)
+    hasSeenSolanaLaunch = payload === ViewOnceKey.SOLANA_LAUNCH
+  }
 }

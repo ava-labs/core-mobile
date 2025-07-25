@@ -71,6 +71,14 @@ class SwapTabPage {
     return by.id(swapTab.errorMsg)
   }
 
+  get youPay() {
+    return by.text(swapTab.youPay)
+  }
+
+  get youReceive() {
+    return by.text(swapTab.youReceive)
+  }
+
   async tapAvaxToken() {
     return Actions.tapElementAtIndex(this.avaxToken, 0)
   }
@@ -84,7 +92,7 @@ class SwapTabPage {
   }
 
   async tapReviewOrderButton(index = 0) {
-    await Actions.waitForElementNoSync(this.reviewOrderBtn, 30000)
+    await Actions.waitForElement(this.reviewOrderBtn, 30000)
     while (await Actions.isVisible(this.reviewOrderBtn, index)) {
       await Actions.tapElementAtIndex(this.reviewOrderBtn, index)
       await delay(3000)
@@ -150,6 +158,22 @@ class SwapTabPage {
     await commonElsPage.verifySuccessToast()
   }
 
+  async tapYouPay() {
+    try {
+      await Actions.tap(this.youPay)
+    } catch (e) {
+      await this.tapSelectToken()
+    }
+  }
+
+  async tapYouReceive() {
+    try {
+      await Actions.tap(this.youReceive)
+    } catch (e) {
+      await this.tapSelectToken()
+    }
+  }
+
   async swap(from: string, to: string, amount = '0.000001') {
     // Go to swap form
     await portfolioPage.tapSwap()
@@ -157,13 +181,13 @@ class SwapTabPage {
 
     // Select From Token
     if (from !== 'AVAX') {
-      await this.tapSelectToken()
+      await this.tapYouPay()
       await selectTokenPage.selectToken(from)
     }
 
     // Select To Token
     if (to !== 'USDC') {
-      await this.tapSelectToken(1)
+      await this.tapYouReceive()
       await selectTokenPage.selectToken(to)
     }
 

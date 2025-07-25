@@ -178,6 +178,10 @@ export class MnemonicWallet implements Wallet {
     this.#mnemonic = mnemonic
   }
 
+  public getRawXpubXP(): string {
+    return Avalanche.getXpubFromMnemonic(this.mnemonic)
+  }
+
   /** WALLET INTERFACE IMPLEMENTATION **/
   public async signMessage({
     rpcMethod,
@@ -418,6 +422,7 @@ export class MnemonicWallet implements Wallet {
     return await signer.signMessage(data)
   }
 
+  // eslint-disable-next-line max-params
   private async signEvmMessage(
     data: string | TypedDataV1 | TypedData<MessageTypes>,
     accountIndex: number,

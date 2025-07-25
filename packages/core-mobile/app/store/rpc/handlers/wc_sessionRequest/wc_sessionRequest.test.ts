@@ -589,5 +589,136 @@ describe('session_request handler', () => {
 
       expect(result).toEqual({ success: true, value: expectedNamespaces })
     })
+
+    it('should not include solana namespace when user has not gone through solana migration', async () => {
+      const testSelectedAccounts = [
+        {
+          addressC: '0xcA0E993876152ccA6053eeDFC753092c8cE712D0',
+          addressBTC: 'btcAddress1',
+          addressAVM: 'avmAddress1',
+          addressPVM: 'pvmAddress1',
+          addressCoreEth: 'coreEthAddress1',
+          addressSVM: ''
+        },
+        {
+          addressC: '0xC7E5ffBd7843EdB88cCB2ebaECAa07EC55c65318',
+          addressBTC: 'btcAddress2',
+          addressAVM: 'avmAddress2',
+          addressPVM: 'pvmAddress2',
+          addressCoreEth: 'coreEthAddress2',
+          addressSVM: ''
+        }
+      ]
+
+      const testRequest = createRequest(validRequiredNamespaces)
+
+      const result = await handler.approve({
+        request: testRequest,
+        data: {
+          selectedAccounts: testSelectedAccounts,
+          namespaces: {
+            ...testNamespacesToApprove,
+            ...testNonEVMNamespacesToApprove
+          }
+        }
+      })
+
+      const expectedNamespaces = {
+        eip155: {
+          // all requested accounts
+          accounts: [
+            'eip155:43114:0xcA0E993876152ccA6053eeDFC753092c8cE712D0',
+            'eip155:43114:0xC7E5ffBd7843EdB88cCB2ebaECAa07EC55c65318',
+            'eip155:1:0xcA0E993876152ccA6053eeDFC753092c8cE712D0',
+            'eip155:1:0xC7E5ffBd7843EdB88cCB2ebaECAa07EC55c65318'
+          ],
+          chains: ['eip155:43114', 'eip155:1'],
+          // all methods we support
+          methods: [
+            'eth_sendTransaction',
+            'eth_signTypedData_v3',
+            'eth_signTypedData_v4',
+            'eth_signTypedData_v1',
+            'eth_signTypedData',
+            'personal_sign',
+            'eth_sign',
+            'wallet_addEthereumChain',
+            'wallet_getEthereumChain',
+            'wallet_switchEthereumChain',
+            'avalanche_createContact',
+            'avalanche_getAccountPubKey',
+            'avalanche_getAccounts',
+            'avalanche_getBridgeState',
+            'avalanche_getContacts',
+            'avalanche_removeContact',
+            'avalanche_selectAccount',
+            'avalanche_setDeveloperMode',
+            'avalanche_updateContact',
+            'avalanche_getAddressesInRange',
+            'avalanche_renameAccount'
+          ],
+          // all requested events
+          events: validRequiredNamespaces.eip155.events
+        },
+        avax: {
+          accounts: [
+            'avax:8aDU0Kqh-5d23op-B-r-4YbQFRbsgF9a:0xcA0E993876152ccA6053eeDFC753092c8cE712D0',
+            'avax:8aDU0Kqh-5d23op-B-r-4YbQFRbsgF9a:0xC7E5ffBd7843EdB88cCB2ebaECAa07EC55c65318',
+            'avax:YRLfeDBJpfEqUWe2FYR1OpXsnDDZeKWd:0xcA0E993876152ccA6053eeDFC753092c8cE712D0',
+            'avax:YRLfeDBJpfEqUWe2FYR1OpXsnDDZeKWd:0xC7E5ffBd7843EdB88cCB2ebaECAa07EC55c65318',
+            'avax:Rr9hnPVPxuUvrdCul-vjEsU1zmqKqRDo:pvmAddress1',
+            'avax:Rr9hnPVPxuUvrdCul-vjEsU1zmqKqRDo:pvmAddress2',
+            'avax:Sj7NVE3jXTbJvwFAiu7OEUo_8g8ctXMG:pvmAddress1',
+            'avax:Sj7NVE3jXTbJvwFAiu7OEUo_8g8ctXMG:pvmAddress2',
+            'avax:imji8papUf2EhV3le337w1vgFauqkJg-:avmAddress1',
+            'avax:imji8papUf2EhV3le337w1vgFauqkJg-:avmAddress2',
+            'avax:8AJTpRj3SAqv1e80Mtl9em08LhvKEbkl:avmAddress1',
+            'avax:8AJTpRj3SAqv1e80Mtl9em08LhvKEbkl:avmAddress2'
+          ],
+          chains: [
+            'avax:8aDU0Kqh-5d23op-B-r-4YbQFRbsgF9a',
+            'avax:YRLfeDBJpfEqUWe2FYR1OpXsnDDZeKWd',
+            'avax:Rr9hnPVPxuUvrdCul-vjEsU1zmqKqRDo',
+            'avax:Sj7NVE3jXTbJvwFAiu7OEUo_8g8ctXMG',
+            'avax:imji8papUf2EhV3le337w1vgFauqkJg-',
+            'avax:8AJTpRj3SAqv1e80Mtl9em08LhvKEbkl'
+          ],
+          events: [
+            'chainChanged',
+            'accountsChanged',
+            'message',
+            'disconnect',
+            'connect'
+          ],
+          methods: [
+            'avalanche_sendTransaction',
+            'avalanche_signTransaction',
+            'avalanche_signMessage'
+          ]
+        },
+        bip122: {
+          accounts: [
+            'bip122:000000000019d6689c085ae165831e93:btcAddress1',
+            'bip122:000000000019d6689c085ae165831e93:btcAddress2',
+            'bip122:000000000933ea01ad0ee984209779ba:btcAddress1',
+            'bip122:000000000933ea01ad0ee984209779ba:btcAddress2'
+          ],
+          chains: [
+            'bip122:000000000019d6689c085ae165831e93',
+            'bip122:000000000933ea01ad0ee984209779ba'
+          ],
+          events: [
+            'chainChanged',
+            'accountsChanged',
+            'message',
+            'disconnect',
+            'connect'
+          ],
+          methods: ['bitcoin_sendTransaction', 'bitcoin_signTransaction']
+        }
+      }
+
+      expect(result).toEqual({ success: true, value: expectedNamespaces })
+    })
   })
 })

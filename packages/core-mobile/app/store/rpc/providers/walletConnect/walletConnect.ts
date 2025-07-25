@@ -11,7 +11,6 @@ import AnalyticsService from 'services/analytics/AnalyticsService'
 import { getChainIdFromCaip2 } from 'utils/caip2ChainIds'
 import { getJsonRpcErrorMessage } from 'utils/getJsonRpcErrorMessage/getJsonRpcErrorMessage'
 import { transactionSnackbar } from 'new/common/utils/toast'
-import bs58 from 'bs58'
 import { AgnosticRpcProvider, RpcMethod, RpcProvider } from '../../types'
 import { isSessionProposal, isUserRejectedError } from './utils'
 import { transformSolanaParams } from './solanaRequestUtils'
@@ -134,18 +133,10 @@ class WalletConnectProvider implements AgnosticRpcProvider {
 
       let transformedResult = result
 
-      // Move Solana result transformation here
       if (request.method === RpcMethod.SOLANA_SIGN_MESSAGE) {
-        transformedResult = { signature: result as string }
+        transformedResult = { signature: result }
       } else if (request.method === RpcMethod.SOLANA_SIGN_TRANSACTION) {
-        try {
-          const signedTxBuffer = Buffer.from(result as string, 'base64')
-          const signature = signedTxBuffer.slice(1, 65)
-          const signatureBase58 = bs58.encode(new Uint8Array(signature))
-          transformedResult = { signature: signatureBase58 }
-        } catch (error) {
-          transformedResult = result
-        }
+        transformedResult = { transaction: result }
       }
 
       try {

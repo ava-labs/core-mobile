@@ -307,9 +307,32 @@ class WalletService {
     return await wallet.getPublicKeyFor({ derivationPath, curve })
   }
 
-  // TODO: use getAddresses instead for staking notification setup logic
+  public async getRawXpubXP({
+    walletId,
+    walletType
+  }: {
+    walletId: string
+    walletType: WalletType
+  }): Promise<string> {
+    if (walletType !== WalletType.MNEMONIC) {
+      throw new Error('Unable to get raw xpub XP: unsupported wallet type')
+    }
+
+    const wallet = await WalletFactory.createWallet({
+      walletId,
+      walletType
+    })
+
+    if (!(wallet instanceof MnemonicWallet)) {
+      throw new Error(
+        'Unable to get raw xpub XP: Expected MnemonicWallet instance'
+      )
+    }
+
+    return wallet.getRawXpubXP()
+  }
+
   public async getAddressesByIndices({
-    account,
     walletId,
     walletType,
     indices,
@@ -317,7 +340,6 @@ class WalletService {
     isChange,
     isTestnet
   }: {
-    account: Account
     walletId: string
     walletType: WalletType
     indices: number[]
@@ -335,19 +357,24 @@ class WalletService {
 
     if (walletType === WalletType.MNEMONIC) {
       const provXP = await NetworkService.getAvalancheProviderXP(isTestnet)
-      const publicKeys = await this.getPublicKey(walletId, walletType, account)
-      const xpubXP = publicKeys.xp
+
+      const xpubXP = await this.getRawXpubXP({ walletId, walletType })
 
       return xpubXP
-        ? indices.map(index =>
-            Avalanche.getAddressFromXpub(
-              xpubXP,
-              index,
-              provXP,
-              chainAlias,
-              isChange
-            )
-          )
+        ? indices.map(index => {
+            try {
+              return Avalanche.getAddressFromXpub(
+                xpubXP,
+                index,
+                provXP,
+                chainAlias,
+                isChange
+              )
+            } catch (e) {
+              Logger.error('error getting address from xpub', e)
+              return ''
+            }
+          })
         : []
     }
 

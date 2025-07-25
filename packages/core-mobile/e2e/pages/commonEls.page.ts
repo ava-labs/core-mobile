@@ -200,6 +200,10 @@ class CommonElsPage {
     return by.text(commonElsLoc.transactionSuccess)
   }
 
+  get transactionFail() {
+    return by.text(commonElsLoc.transactionFail)
+  }
+
   get dropdownScrollView() {
     return by.id(commonElsLoc.dropdownScrollView)
   }
@@ -222,6 +226,22 @@ class CommonElsPage {
 
   get approvePopupSpendTitle() {
     return by.text(commonElsLoc.approvePopupSpendTitle)
+  }
+
+  get filterDropdown() {
+    return by.id(commonElsLoc.filterDropdown)
+  }
+
+  get networkFilterDropdown() {
+    return by.id(commonElsLoc.networkFilterDropdown)
+  }
+
+  async filter(
+    item = commonElsLoc.cChain_2,
+    filterDropdown = this.filterDropdown
+  ) {
+    await Actions.tap(filterDropdown)
+    await this.selectDropdownItem(item)
   }
 
   async dismissTransactionOnboarding() {
@@ -397,20 +417,22 @@ class CommonElsPage {
   }
 
   async exitMetro() {
+    await device.disableSynchronization()
     try {
       if (await Actions.isVisible(by.text(/.*8081.*/i), 0)) {
         await Actions.tap(by.text(/.*8081.*/i))
       }
-      await Actions.tap(by.id(/.*x-icon.*/i))
+      const xBtn = by.text(/.*developer menu.*/i)
+      await Actions.waitForElement(xBtn, 10000)
+      await Actions.drag(xBtn, 'down', 0.5)
     } catch (e) {
       console.log('Metro dev menu is not found...')
     }
   }
 
   async verifySuccessToast() {
-    await device.disableSynchronization()
-    await Actions.waitForElementNoSync(this.transactionSuccess, 40000)
-    await device.enableSynchronization()
+    await Actions.waitForElement(this.transactionSuccess, 40000)
+    await Actions.failIfElementAppearsWithin(this.transactionFail)
   }
 
   async enterAmount(amount: string, index = 0) {
@@ -419,7 +441,7 @@ class CommonElsPage {
   }
 
   async tapNextButton() {
-    await Actions.waitForElementNoSync(this.nextButton, 8000)
+    await Actions.waitForElement(this.nextButton, 8000)
     await Actions.tapElementAtIndex(this.nextButton, 0)
   }
 
