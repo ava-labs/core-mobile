@@ -6,7 +6,7 @@ module.exports = {
     '^react-native$': '<rootDir>/node_modules/react-native',
     '^@solana/(.+)$': '<rootDir>/node_modules/@solana/$1/dist/index.node.cjs'
   },
-  testPathIgnorePatterns: ['<rootDir>/e2e/tests/dapps/playwright/'],
+  testPathIgnorePatterns: ['<rootDir>/e2e/tests/playwright/'],
   setupFilesAfterEnv: [
     '<rootDir>/tests/msw/jestSetup.js',
     '<rootDir>/tests/jestSetup/firebase.js',

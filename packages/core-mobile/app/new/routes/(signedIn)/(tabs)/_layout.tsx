@@ -57,14 +57,6 @@ export default function TabLayout(): JSX.Element {
         }}
       />
       <BottomTabs.Screen
-        name="activity"
-        options={{
-          tabBarButtonTestID: 'activity_tab',
-          title: 'Activity',
-          tabBarIcon: () => activityIcon
-        }}
-      />
-      <BottomTabs.Screen
         name="track"
         options={{
           tabBarButtonTestID: 'track_tab',
@@ -86,6 +78,14 @@ export default function TabLayout(): JSX.Element {
           tabBarButtonTestID: 'browser_tab',
           title: 'Browser',
           tabBarIcon: () => browserIcon
+        }}
+      />
+      <BottomTabs.Screen
+        name="activity"
+        options={{
+          tabBarButtonTestID: 'activity_tab',
+          title: 'Activity',
+          tabBarIcon: () => activityIcon
         }}
       />
     </BottomTabs>

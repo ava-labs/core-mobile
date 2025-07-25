@@ -11,7 +11,8 @@ export enum ViewOnceKey {
   SWAP_ONBOARDING,
   SEND_ONBOARDING,
   MIGRATE_TOKEN_FAVORITE_IDS,
-  AUTO_ENABLE_L2_CHAINS
+  AUTO_ENABLE_L2_CHAINS,
+  SOLANA_LAUNCH
 }
 
 export type ViewOnceObjectType = {

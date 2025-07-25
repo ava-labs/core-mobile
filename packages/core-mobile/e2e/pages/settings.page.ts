@@ -262,7 +262,7 @@ class Settings {
   }
 
   async scrollToSettingsFooter() {
-    const isVisible = await Actions.expectToBeVisible(this.securityAndPrivacy)
+    const isVisible = await Actions.isVisible(this.securityAndPrivacy)
     if (!isVisible) {
       await Actions.scrollToBottom(this.settingsScrollView)
     }

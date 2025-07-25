@@ -53,9 +53,18 @@ import {
 } from 'store/posthog'
 import { usePrevious } from 'common/hooks/usePrevious'
 import { SlippageInput } from '../components.tsx/SlippageInput'
-import { JUPITER_PARTNER_FEE_BPS, PARASWAP_PARTNER_FEE_BPS } from '../consts'
+import {
+  JUPITER_PARTNER_FEE_BPS,
+  MARKR_PARTNER_FEE_BPS,
+  PARASWAP_PARTNER_FEE_BPS
+} from '../consts'
 import { useSwapContext } from '../contexts/SwapContext'
-import { isJupiterQuote, isParaswapQuote, SwapProviders } from '../types'
+import {
+  isJupiterQuote,
+  isMarkrQuote,
+  isParaswapQuote,
+  SwapProviders
+} from '../types'
 import { useSwapRate } from '../hooks/useSwapRate'
 
 export const SwapScreen = (): JSX.Element => {
@@ -151,6 +160,8 @@ export const SwapScreen = (): JSX.Element => {
       feeBps = PARASWAP_PARTNER_FEE_BPS
     } else if (isJupiterQuote(quote) && !isSwapFeesJupiterBlocked) {
       feeBps = JUPITER_PARTNER_FEE_BPS
+    } else if (isMarkrQuote(quote) && !isSwapFeesBlocked) {
+      feeBps = MARKR_PARTNER_FEE_BPS
     }
 
     if (!feeBps) return
@@ -377,6 +388,9 @@ export const SwapScreen = (): JSX.Element => {
     [formatCurrency]
   )
 
+  // Track if we've already auto-focused in this session
+  const hasAutoFocused = useRef(false)
+
   const renderFromSection = useCallback(() => {
     return (
       <View
@@ -390,7 +404,7 @@ export const SwapScreen = (): JSX.Element => {
         <TokenInputWidget
           disabled={swapInProcess}
           editable={!swapInProcess}
-          autoFocus={true}
+          autoFocus={!hasAutoFocused.current} // Only auto-focus if we haven't done it yet
           amount={fromTokenValue}
           balance={fromToken?.balance}
           shouldShowBalance={true}
@@ -407,7 +421,11 @@ export const SwapScreen = (): JSX.Element => {
           network={getNetwork(fromToken?.networkChainId)}
           formatInCurrency={amount => formatInCurrency(fromToken, amount)}
           onAmountChange={handleFromAmountChange}
-          onFocus={() => setIsInputFocused(true)}
+          onFocus={() => {
+            setIsInputFocused(true)
+            // Mark that we've auto-focused
+            hasAutoFocused.current = true
+          }}
           onBlur={() => setIsInputFocused(false)}
           onSelectToken={handleSelectFromToken}
           maximum={fromToken?.balance}

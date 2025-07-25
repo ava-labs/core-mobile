@@ -204,6 +204,10 @@ export default function WalletLayout(): JSX.Element {
             name="(modals)/transactionSuccessful"
             options={modalScreensOptions}
           />
+          <Stack.Screen
+            name="(modals)/solanaLaunch"
+            options={modalScreensOptions}
+          />
         </Stack>
         <PolyfillCrypto />
         <LastTransactedNetworks />

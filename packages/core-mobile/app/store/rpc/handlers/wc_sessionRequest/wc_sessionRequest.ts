@@ -85,10 +85,11 @@ class WCSessionRequestHandler implements RpcRequestHandler<WCSessionProposal> {
       selectedAccounts.forEach(acc => {
         const address = getAddressForChainId(chain, acc)
 
-        approvedAccounts.push(`${chain}:${address}`)
+        if (address.trim().length > 0) {
+          approvedAccounts.push(`${chain}:${address}`)
+        }
       })
     })
-
     return approvedAccounts
   }
 
@@ -299,6 +300,11 @@ class WCSessionRequestHandler implements RpcRequestHandler<WCSessionProposal> {
           selectedAccounts,
           namespaceToApprove
         )
+
+        // if no accounts are approved, skip the namespace
+        if (accounts.length === 0) {
+          continue
+        }
 
         // Use the namespace's own methods instead of mixing them
         const methods =
