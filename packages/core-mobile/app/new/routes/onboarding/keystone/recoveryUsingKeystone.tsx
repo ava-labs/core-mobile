@@ -3,7 +3,7 @@ import { useRouter } from 'expo-router'
 import { UR } from '@ngraveio/bc-ur'
 import { RecoveryUsingKeystone as Component } from 'features/onboarding/components/RecoveryUsingKeystone'
 import Logger from 'utils/Logger'
-import KeystoneService from 'hardware/services/KeystoneService'
+import KeystoneService from 'features/keystone/services/KeystoneService'
 
 export default function RecoveryUsingKeystone(): JSX.Element {
   const { navigate, replace } = useRouter()

@@ -30,8 +30,4 @@ export class KeystoneDataStorage {
 
     return walletInfo
   }
-
-  static clearCache(): void {
-    this.cache = undefined
-  }
 }

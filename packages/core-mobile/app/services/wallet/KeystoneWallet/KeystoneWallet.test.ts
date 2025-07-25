@@ -1,8 +1,8 @@
 import { KeystoneDataStorageType } from 'features/keystone/storage/KeystoneDataStorage'
 import { Curve } from 'utils/publicKeys'
 import { BitcoinProvider } from '@avalabs/core-wallets-sdk'
-import { signer } from 'hardware/wallet/keystoneSigner'
-import KeystoneWallet from './KeystoneWallet'
+import { signer } from 'services/wallet/KeystoneWallet/keystoneSigner'
+import KeystoneWallet from 'services/wallet/KeystoneWallet'
 
 const MockedKeystoneData: KeystoneDataStorageType = {
   evm: 'xpub661MyMwAqRbcGSmFWVZk2h773zMrcPFqDUWi7cFRpgPhfn7y9HEPzPsBDEXYxAWfAoGo7E7ijjYfB3xAY86MYzfvGLDHmcy2epZKNeDd4uQ',

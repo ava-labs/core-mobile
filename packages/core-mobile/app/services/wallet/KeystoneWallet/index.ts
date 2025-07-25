@@ -49,7 +49,7 @@ import { BytesLike, AddressLike } from '@ethereumjs/util'
 import { BN } from 'bn.js'
 import { isTypedData } from '@avalabs/evm-module'
 import { convertTxData, makeBigIntLike } from 'services/wallet/utils'
-import { signer } from 'hardware/wallet/keystoneSigner'
+import { signer } from 'services/wallet/KeystoneWallet/keystoneSigner'
 
 export const EVM_DERIVATION_PATH = `m/44'/60'/0'`
 export const AVAX_DERIVATION_PATH = `m/44'/9000'/0'`

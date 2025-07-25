@@ -3,13 +3,13 @@ import { useRouter } from 'expo-router'
 import { CreatePin as Component } from 'features/onboarding/components/CreatePin'
 import { useWallet } from 'hooks/useWallet'
 import React, { useCallback } from 'react'
-import { useSelector } from 'react-redux'
-import AnalyticsService from 'services/analytics/AnalyticsService'
 import { WalletType } from 'services/wallet/types'
-import { selectActiveWalletId } from 'store/wallet/slice'
+import AnalyticsService from 'services/analytics/AnalyticsService'
 import BiometricsSDK from 'utils/BiometricsSDK'
 import Logger from 'utils/Logger'
 import { uuid } from 'utils/uuid'
+import { useSelector } from 'react-redux'
+import { selectActiveWalletId } from 'store/wallet/slice'
 
 export default function CreatePin(): JSX.Element {
   const { navigate } = useRouter()
@@ -18,8 +18,13 @@ export default function CreatePin(): JSX.Element {
     useStoredBiometrics()
   const activeWalletId = useSelector(selectActiveWalletId)
 
+  const navigateToNextStep = useCallback(() => {
+    // @ts-ignore TODO: make routes typesafe
+    navigate('/onboarding/keystone/setWalletName')
+  }, [navigate])
+
   const handleEnteredValidPin = useCallback(
-    (pin: string): void => {
+    (pin: string) => {
       AnalyticsService.capture('OnboardingPasswordSet')
       onPinCreated({
         walletId: activeWalletId ?? uuid(),
@@ -29,16 +34,35 @@ export default function CreatePin(): JSX.Element {
       })
         .then(() => {
           if (useBiometrics) {
-            BiometricsSDK.enableBiometry().catch(Logger.error)
+            BiometricsSDK.enableBiometry()
+              .then(enabled => {
+                if (enabled) {
+                  navigateToNextStep()
+                } else {
+                  // If biometrics fails to enable, disable it and continue with PIN only
+                  setUseBiometrics(false)
+                  navigateToNextStep()
+                }
+              })
+              .catch(error => {
+                Logger.error(error)
+                // On error, disable biometrics and continue with PIN only
+                setUseBiometrics(false)
+                navigateToNextStep()
+              })
+          } else {
+            navigateToNextStep()
           }
-          navigate({
-            // @ts-ignore TODO: make routes typesafe
-            pathname: '/onboarding/keystone/setWalletName'
-          })
         })
         .catch(Logger.error)
     },
-    [navigate, onPinCreated, useBiometrics]
+    [
+      onPinCreated,
+      useBiometrics,
+      setUseBiometrics,
+      navigateToNextStep,
+      activeWalletId
+    ]
   )
 
   return (
