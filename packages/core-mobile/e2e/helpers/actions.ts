@@ -100,6 +100,7 @@ const waitForElement = async (
   timeout = 5000,
   index = 0
 ) => {
+  await device.disableSynchronization()
   const startTime = Date.now()
   const endTime = startTime + timeout
   while (Date.now() < endTime) {
@@ -113,6 +114,7 @@ const waitForElement = async (
       if (error.message === Constants.idleTimeoutError) {
         console.error(Constants.animatedConsoleError)
       } else {
+        console.error(error)
         throw error
       }
     }

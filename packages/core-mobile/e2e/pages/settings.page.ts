@@ -6,6 +6,7 @@ import commonElsLoc from '../locators/commonEls.loc'
 import delay from '../helpers/waits'
 import commonElsPage from './commonEls.page'
 import portfolioPage from './portfolio.page'
+import bottomTabsPage from './bottomTabs.page'
 
 class Settings {
   get eyeIcon() {
@@ -240,6 +241,10 @@ class Settings {
     return by.id(settings.contactPreviewAddress)
   }
 
+  get disconnectAll() {
+    return by.text(settings.disconnectAll)
+  }
+
   async tapAdvanced() {
     await Actions.tapElementAtIndex(this.advanced, 0)
   }
@@ -270,7 +275,14 @@ class Settings {
 
   async tapSecurityAndPrivacy() {
     await this.scrollToSettingsFooter()
-    await Actions.tapElementAtIndex(this.securityAndPrivacy, 0)
+    let tries = 7
+    while (tries > 0) {
+      if (await Actions.isVisible(this.connectedSites, 0)) {
+        break
+      }
+      await Actions.tapElementAtIndex(this.securityAndPrivacy, 0)
+      tries--
+    }
   }
 
   async deleteWallet() {
@@ -292,10 +304,6 @@ class Settings {
 
   async tapConnectedSites() {
     await Actions.tapElementAtIndex(this.connectedSites, 0)
-  }
-
-  async goToConnectedSites() {
-    await this.tapConnectedSites()
   }
 
   async verifyAnalyticsSwitch(isOn = true) {
@@ -650,6 +658,18 @@ class Settings {
 
   async tapContactByName(contactName: string) {
     await Actions.tapElementAtIndex(by.text(contactName), 0)
+  }
+
+  async tapDisconnect(dappName: string) {
+    await Actions.tap(by.id(`disconnect__${dappName}`))
+  }
+
+  async disconnect(dappName: string) {
+    await bottomTabsPage.tapPortfolioTab()
+    await this.goSettings()
+    await this.tapSecurityAndPrivacy()
+    await this.tapConnectedSites()
+    await this.tapDisconnect(dappName)
   }
 }
 
