@@ -43,7 +43,7 @@ export const useMigrateFavoriteIds = (): {
 
     favoriteIds.forEach((favoriteId: string) => {
       // Check if this favorite is already in internalId format
-      if (favoriteId.includes(':')) {
+      if (favoriteId.includes(':') || favoriteId.includes('NATIVE')) {
         // Already in internalId format, skip migration
         return
       }
