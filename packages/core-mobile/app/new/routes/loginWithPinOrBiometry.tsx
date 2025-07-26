@@ -16,6 +16,7 @@ import { ScrollScreen } from 'common/components/ScrollScreen'
 import { usePinOrBiometryLogin } from 'common/hooks/usePinOrBiometryLogin'
 import { usePreventScreenRemoval } from 'common/hooks/usePreventScreenRemoval'
 import { useStoredBiometrics } from 'common/hooks/useStoredBiometrics'
+import { AuthenticationType } from 'expo-local-authentication'
 import { useFocusEffect, useRouter } from 'expo-router'
 import { useWallet } from 'hooks/useWallet'
 import React, { useCallback, useEffect, useRef, useState } from 'react'
@@ -35,7 +36,7 @@ import { selectWalletState, WalletState } from 'store/app'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { selectSelectedAvatar } from 'store/settings/avatar'
 import { selectActiveWalletId } from 'store/wallet/slice'
-import BiometricsSDK, { BiometricType } from 'utils/BiometricsSDK'
+import BiometricsSDK from 'utils/BiometricsSDK'
 import Logger from 'utils/Logger'
 
 const LoginWithPinOrBiometry = (): JSX.Element => {
@@ -98,16 +99,15 @@ const LoginWithPinOrBiometry = (): JSX.Element => {
     verified,
     verifyBiometric,
     disableKeypad,
-    timeRemaining,
-    bioType,
-    isBiometricAvailable
+    timeRemaining
   } = usePinOrBiometryLogin({
     onWrongPin: handleWrongPin,
     onStartLoading: handleStartLoading,
     onStopLoading: handleStopLoading
   })
 
-  const { useBiometrics } = useStoredBiometrics()
+  const { useBiometrics, biometricTypes, isBiometricAvailable } =
+    useStoredBiometrics()
 
   const [isEnteringPin, setIsEnteringPin] = useState(false)
 
@@ -266,6 +266,32 @@ const LoginWithPinOrBiometry = (): JSX.Element => {
     }
   })
 
+  const renderBiometricIcon = (): React.JSX.Element | null => {
+    if (biometricTypes.length === 0) return null
+
+    if (biometricTypes.length === 1) {
+      return (
+        <CircularButton onPress={handlePromptBioLogin}>
+          {biometricTypes[0] === AuthenticationType.FACIAL_RECOGNITION ? (
+            <Icons.Custom.FaceID width={26} height={26} />
+          ) : (
+            <Icons.Custom.TouchID width={26} height={26} />
+          )}
+        </CircularButton>
+      )
+    }
+
+    // if there are multiple bioTypes, we simply show TouchID icon
+    // since we don't distinguish between face unlock and fingerprint
+    // system will prompt the user for the enrolled authentication type
+    // or a modal to select the one of the enrolled authentication types
+    return (
+      <CircularButton onPress={handlePromptBioLogin}>
+        <Icons.Custom.TouchID width={26} height={26} />
+      </CircularButton>
+    )
+  }
+
   return (
     <ScrollScreen
       shouldAvoidKeyboard
@@ -350,15 +376,7 @@ const LoginWithPinOrBiometry = (): JSX.Element => {
                 justifyContent: 'center',
                 gap: 30
               }}>
-              {bioType !== BiometricType.NONE && (
-                <CircularButton onPress={handlePromptBioLogin}>
-                  {bioType === BiometricType.FACE_ID ? (
-                    <Icons.Custom.FaceID width={26} height={26} />
-                  ) : (
-                    <Icons.Custom.TouchID width={26} height={26} />
-                  )}
-                </CircularButton>
-              )}
+              {renderBiometricIcon()}
               {isEnteringPin === false && !disableKeypad && (
                 <CircularButton onPress={handleTogglePinInput}>
                   <Icons.Custom.Pin width={26} height={26} />
