@@ -62,7 +62,7 @@
     "@notifee/react-native": "9.1.8",
     "@openzeppelin/contracts": "5.0.2",
     "@paraswap/sdk": "7.2.3",
-    "@react-native-async-storage/async-storage": "1.23.1",
+    "@react-native-async-storage/async-storage": "2.0.0",
     "@react-native-clipboard/clipboard": "1.15.0",
     "@react-native-community/datetimepicker": "8.2.0",
     "@react-native-community/netinfo": "11.4.1",

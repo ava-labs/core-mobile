@@ -240,7 +240,7 @@ __metadata:
     "@openzeppelin/contracts": 5.0.2
     "@paraswap/sdk": 7.2.3
     "@playwright/test": 1.48.0
-    "@react-native-async-storage/async-storage": 1.23.1
+    "@react-native-async-storage/async-storage": 2.0.0
     "@react-native-clipboard/clipboard": 1.15.0
     "@react-native-community/cli": 15.1.3
     "@react-native-community/datetimepicker": 8.2.0
@@ -9871,17 +9871,6 @@ __metadata:
   version: 1.1.0
   resolution: "@radix-ui/rect@npm:1.1.0"
   checksum: 1ad93efbc9fc3b878bae5e8bb26ffa1005235d8b5b9fca8339eb5dbcf7bf53abc9ccd2a8ce128557820168c8600521e48e0ea4dda96aa5f116381f66f46aeda3
-  languageName: node
-  linkType: hard
-
-"@react-native-async-storage/async-storage@npm:1.23.1":
-  version: 1.23.1
-  resolution: "@react-native-async-storage/async-storage@npm:1.23.1"
-  dependencies:
-    merge-options: ^3.0.4
-  peerDependencies:
-    react-native: ^0.0.0-0 || >=0.60 <1.0
-  checksum: 7096546ed4a5faf1f6e0425e2e15713575f1a7493a04524da386ff35c3844b57b8fd20544fad4157b4a61e048b10235f2f06124f262da5b327edc74fbc31e02b
   languageName: node
   linkType: hard
 
