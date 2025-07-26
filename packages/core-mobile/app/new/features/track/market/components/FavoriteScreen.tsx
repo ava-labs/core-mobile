@@ -8,7 +8,6 @@ import React, { useCallback, useMemo } from 'react'
 import { ViewStyle } from 'react-native'
 import Animated from 'react-native-reanimated'
 import { MarketType } from 'store/watchlist'
-import { useMigrateFavoriteIds } from '../hooks/useMigrateFavoriteIds'
 import { useTrackSortAndView } from '../hooks/useTrackSortAndView'
 import MarketTokensScreen from './MarketTokensScreen'
 
@@ -24,7 +23,6 @@ const FavoriteScreen = ({
   onScrollResync: () => void
 }): JSX.Element => {
   const { favorites, prices, charts, isLoadingFavorites } = useWatchlist()
-  const { hasMigratedFavoriteIds } = useMigrateFavoriteIds()
 
   const { data, sort, view } = useTrackSortAndView(favorites, prices, true)
 
@@ -46,7 +44,7 @@ const FavoriteScreen = ({
     )
   }, [containerStyle.minHeight, emptyComponent])
 
-  if (isLoadingFavorites || !hasMigratedFavoriteIds) {
+  if (isLoadingFavorites) {
     return (
       <LoadingState
         sx={{

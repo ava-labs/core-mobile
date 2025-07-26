@@ -130,10 +130,14 @@ class WatchlistService {
       const prices: Prices = {}
 
       marketsRaw.forEach(market => {
+        // Create a synthetic internalId for search results since they don't have one
+        const syntheticInternalId = `search:${market.id}`
+
         tokens.push({
           marketType: MarketType.SEARCH,
-          id: market.id,
+          id: syntheticInternalId,
           coingeckoId: market.id,
+          platforms: {}, // Search results don't have platform info
           symbol: market.symbol,
           name: market.name,
           logoUri: market.image,
