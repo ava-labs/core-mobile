@@ -38,7 +38,7 @@ class LoginRecoverWallet {
       if (loggedin) {
         await commonElsPage.enterPin()
       }
-      await bottomTabsPage.verifyBottomTabs()
+      await bottomTabsPage.verifyBottomTabs(false)
       return true
     } catch (e) {
       console.log('Pin is not required...')
@@ -47,7 +47,6 @@ class LoginRecoverWallet {
   }
 
   async login(recoverPhrase = ENV.E2E_MNEMONIC as string) {
-    await device.disableSynchronization()
     const isLoggedIn = await this.logged()
     if (!isLoggedIn) {
       await this.recoverMnemonicWallet(recoverPhrase)

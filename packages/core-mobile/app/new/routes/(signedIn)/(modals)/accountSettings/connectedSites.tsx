@@ -115,7 +115,9 @@ const ConnectedSitesScreen = (): JSX.Element => {
                 paddingHorizontal: 12,
                 paddingVertical: 5
               }}>
-              <Text variant="buttonSmall">Disconnect</Text>
+              <Text testID={`disconnect__${name}`} variant="buttonSmall">
+                Disconnect
+              </Text>
             </TouchableOpacity>
           </View>
           <View
