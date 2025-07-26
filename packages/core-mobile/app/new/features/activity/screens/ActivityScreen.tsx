@@ -1,7 +1,3 @@
-import {
-  isTokenWithBalanceAVM,
-  isTokenWithBalancePVM
-} from '@avalabs/avalanche-module'
 import { BridgeTransfer } from '@avalabs/bridge-unified'
 import { BridgeTransaction } from '@avalabs/core-bridge-sdk'
 import { Network } from '@avalabs/core-chains-sdk'
@@ -9,29 +5,23 @@ import {
   ANIMATED,
   Chip,
   Image,
-  Separator,
   SimpleDropdown,
   SPRING_LINEAR_TRANSITION,
   useTheme,
   View
 } from '@avalabs/k2-alpine'
-import { ListRenderItem } from '@shopify/flash-list'
 import { CollapsibleTabs } from 'common/components/CollapsibleTabs'
 import { DropdownSelections } from 'common/components/DropdownSelections'
 import { NetworkLogoWithChain } from 'common/components/NetworkLogoWithChain'
+import { DropdownSelection } from 'common/types'
 import { getListItemEnteringAnimation } from 'common/utils/animations'
-import { isPendingBridgeTransaction } from 'common/utils/bridgeUtils'
-import { isXpTransaction } from 'common/utils/isXpTransactions'
-import { PendingBridgeTransactionItem } from 'features/portfolio/assets/components/PendingBridgeTransactionItem'
-import { TokenActivityListItem } from 'features/portfolio/assets/components/TokenActivityListItem'
-import { XpActivityListItem } from 'features/portfolio/assets/components/XpActivityListItem'
 import { ErrorState } from 'new/common/components/ErrorState'
 import { LoadingState } from 'new/common/components/LoadingState'
 import React, { useCallback, useMemo } from 'react'
 import { Platform, ViewStyle } from 'react-native'
 import { useHeaderMeasurements } from 'react-native-collapsible-tab-view'
 import Animated, { useAnimatedStyle, withTiming } from 'react-native-reanimated'
-import { Transaction } from 'store/transaction'
+import { ActivityList } from '../components/ActivityList'
 import { useActivityFilterAndSearch } from '../hooks/useActivityFilterAndSearch'
 
 const errorIcon = require('../../../assets/icons/unamused_emoji.png')
@@ -49,22 +39,18 @@ export const ActivityScreen = ({
   handlePendingBridge: (transaction: BridgeTransaction | BridgeTransfer) => void
   containerStyle: ViewStyle
 }): JSX.Element => {
-  const { theme } = useTheme()
   const header = useHeaderMeasurements()
 
   const {
     data,
     filter,
-    sort,
     isLoading,
     isRefreshing,
     isError,
-    refresh,
+    xpToken,
     network,
-    networkOption,
-    networkDropdown,
-    selectedNetwork,
-    xpToken
+    networkFilterDropdown,
+    refresh
   } = useActivityFilterAndSearch({ searchText })
 
   const keyboardAvoidingStyle = useAnimatedStyle(() => {
@@ -84,7 +70,7 @@ export const ActivityScreen = ({
     }
   })
 
-  const dropdowns = useMemo(() => {
+  const renderHeader = useCallback(() => {
     return (
       <View
         sx={{
@@ -95,48 +81,11 @@ export const ActivityScreen = ({
           marginBottom: 16,
           paddingHorizontal: 16
         }}>
-        <DropdownSelections filter={filter} sort={sort} />
-
-        <SimpleDropdown
-          from={
-            <Chip
-              renderLeft={() => (
-                <NetworkLogoWithChain
-                  network={network as Network}
-                  networkSize={18}
-                  outerBorderColor={theme.colors.$surfaceSecondary}
-                  showChainLogo={false}
-                />
-              )}
-              style={{
-                paddingLeft: 6,
-                paddingRight: 10,
-                gap: 4
-              }}
-              size="large"
-              hitSlop={8}
-              testID="network_dropdown_btn">
-              {networkOption?.filterName}
-            </Chip>
-          }
-          sections={networkDropdown.data}
-          selectedRows={[selectedNetwork]}
-          onSelectRow={networkDropdown.onSelected}
-          scrollContentMaxHeight={networkDropdown.scrollContentMaxHeight}
-        />
+        <DropdownSelections filter={filter} />
+        <NetworkFilterDropdown network={network} {...networkFilterDropdown} />
       </View>
     )
-  }, [
-    filter,
-    network,
-    networkDropdown.data,
-    networkDropdown.onSelected,
-    networkDropdown.scrollContentMaxHeight,
-    networkOption?.filterName,
-    selectedNetwork,
-    sort,
-    theme.colors.$surfaceSecondary
-  ])
+  }, [filter, network, networkFilterDropdown])
 
   const emptyComponent = useMemo(() => {
     if (isRefreshing || isLoading) {
@@ -173,67 +122,13 @@ export const ActivityScreen = ({
         height={
           Number(containerStyle.minHeight) - (Platform.OS === 'ios' ? 50 : 32)
         }>
-        <Animated.View style={keyboardAvoidingStyle}>
+        <Animated.View
+          style={[keyboardAvoidingStyle, { justifyContent: 'center' }]}>
           {emptyComponent}
         </Animated.View>
       </CollapsibleTabs.ContentWrapper>
     )
   }, [containerStyle.minHeight, emptyComponent, keyboardAvoidingStyle])
-
-  const renderItem: ListRenderItem<
-    Transaction | BridgeTransaction | BridgeTransfer
-  > = useCallback(
-    ({ item, index }) => {
-      if (isPendingBridgeTransaction(item)) {
-        return (
-          <PendingBridgeTransactionItem
-            item={item}
-            index={index}
-            onPress={() => handlePendingBridge(item)}
-          />
-        )
-      } else {
-        const isXpTx =
-          isXpTransaction(item.txType) &&
-          xpToken &&
-          (isTokenWithBalanceAVM(xpToken) || isTokenWithBalancePVM(xpToken))
-
-        const props = {
-          tx: item,
-          index,
-          onPress: () => handleExplorerLink(item.explorerLink)
-        }
-
-        if (isXpTx) {
-          return <XpActivityListItem {...props} />
-        }
-
-        return <TokenActivityListItem {...props} />
-      }
-    },
-    [handleExplorerLink, handlePendingBridge, xpToken]
-  )
-
-  const renderSeparator = useCallback((): JSX.Element => {
-    return <Separator sx={{ marginLeft: 68 }} />
-  }, [])
-
-  const overrideProps = {
-    contentContainerStyle: {
-      ...containerStyle
-    }
-  }
-
-  const keyExtractor = useCallback(
-    (item: Transaction | BridgeTransaction | BridgeTransfer) => {
-      if (isPendingBridgeTransaction(item)) {
-        return item.sourceTxHash
-      }
-
-      return `${item.hash}`
-    },
-    []
-  )
 
   return (
     <Animated.View
@@ -242,19 +137,75 @@ export const ActivityScreen = ({
       style={{
         flex: 1
       }}>
-      <CollapsibleTabs.FlashList
-        overrideProps={overrideProps}
+      <ActivityList
         data={data}
-        renderItem={renderItem}
-        ListHeaderComponent={dropdowns}
-        ListEmptyComponent={renderEmpty}
-        ItemSeparatorComponent={renderSeparator}
-        showsVerticalScrollIndicator={false}
-        keyExtractor={keyExtractor}
-        estimatedItemSize={60}
-        refreshing={isRefreshing}
-        onRefresh={refresh}
+        xpToken={xpToken}
+        handlePendingBridge={handlePendingBridge}
+        handleExplorerLink={handleExplorerLink}
+        overrideProps={{
+          contentContainerStyle: {
+            ...containerStyle
+          }
+        }}
+        renderHeader={renderHeader}
+        renderEmpty={renderEmpty}
+        isRefreshing={isRefreshing}
+        refresh={refresh}
       />
     </Animated.View>
+  )
+}
+
+const NetworkFilterDropdown = ({
+  network,
+  title,
+  data,
+  selected,
+  onSelected,
+  scrollContentMaxHeight
+}: {
+  network: Network
+  title: DropdownSelection['title']
+  data: DropdownSelection['data']
+  selected: DropdownSelection['selected']
+  onSelected: DropdownSelection['onSelected']
+  scrollContentMaxHeight: DropdownSelection['scrollContentMaxHeight']
+}): JSX.Element => {
+  const { theme } = useTheme()
+
+  const renderLeftIcon = useCallback(() => {
+    if (!network) return <></>
+
+    return (
+      <NetworkLogoWithChain
+        network={network}
+        networkSize={18}
+        outerBorderColor={theme.colors.$surfaceSecondary}
+        showChainLogo={false}
+      />
+    )
+  }, [network, theme.colors.$surfaceSecondary])
+
+  return (
+    <SimpleDropdown
+      from={
+        <Chip
+          renderLeft={renderLeftIcon}
+          style={{
+            paddingLeft: 6,
+            paddingRight: 10,
+            gap: 4
+          }}
+          size="large"
+          hitSlop={8}
+          testID="network_dropdown_btn">
+          {title}
+        </Chip>
+      }
+      sections={data}
+      selectedRows={[selected]}
+      onSelectRow={onSelected}
+      scrollContentMaxHeight={scrollContentMaxHeight}
+    />
   )
 }

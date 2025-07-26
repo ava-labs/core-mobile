@@ -14,6 +14,15 @@ import Animated from 'react-native-reanimated'
 import { useDispatch } from 'react-redux'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { addHistoryForActiveTab, addTab, History } from 'store/browser'
+import {
+  format,
+  isSameDay,
+  isYesterday,
+  isSameWeek,
+  isSameMonth,
+  subWeeks,
+  subMonths
+} from 'date-fns'
 import { useBrowserContext } from '../BrowserContext'
 import { HORIZONTAL_MARGIN } from '../consts'
 import {
@@ -52,29 +61,32 @@ export const HistoryList = (
   }
 
   const formatDate = (date: Date): string => {
-    const now = new Date()
-    const historyDate = new Date(date)
-    const diffTime = Math.abs(now.getTime() - historyDate.getTime())
-    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24))
+    if (isSameDay(date, new Date())) {
+      // Today: show just time in 12-hour format
+      return 'Today'
+    }
 
-    return diffDays === 0
-      ? `${historyDate.toLocaleTimeString('en-US', {
-          hour: '2-digit',
-          minute: '2-digit'
-        })}`
-      : diffDays === 1
-      ? 'Yesterday'
-      : diffDays < 7
-      ? 'Last week'
-      : diffDays < 30
-      ? 'Last month'
-      : historyDate.toLocaleDateString('en-US', {
-          month: 'short',
-          day: 'numeric',
-          ...(historyDate.getFullYear() !== now.getFullYear() && {
-            year: 'numeric'
-          })
-        })
+    if (isYesterday(date)) {
+      // Yesterday: show "Yesterday HH:MM AM/PM"
+      return `Yesterday`
+    }
+
+    const today = new Date()
+    const lastWeek = subWeeks(today, 1)
+    const lastMonth = subMonths(today, 1)
+
+    if (isSameWeek(date, lastWeek)) {
+      // Last week: show "Last week"
+      return 'Last week'
+    }
+
+    if (isSameMonth(date, lastMonth)) {
+      // Last month: show "Last month"
+      return 'Last month'
+    }
+
+    // Older dates: show "MM/DD/YY HH:MM AM/PM"
+    return format(date, 'MM/dd/yy h:mm a')
   }
 
   const renderItem: ListRenderItem<History> = ({ item }) => {
