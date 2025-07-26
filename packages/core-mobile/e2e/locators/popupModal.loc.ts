@@ -31,5 +31,8 @@ export default {
   popUpModalScrollView: 'approve_popup_scroll_view',
   slowBaseFee: 'slow_base_fee',
   customBaseFee: 'custom_base_fee',
-  successToast: 'success_toast'
+  successToast: 'success_toast',
+  connectBtn: 'Connect',
+  noSitesFound: 'No sites found',
+  disconnectAll: 'Disconnect all'
 }
