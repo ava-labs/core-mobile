@@ -70,5 +70,6 @@ export default {
   insufficientBalance: 'Insufficient balance',
   filterDropdown: 'filter_dropdown_btn',
   networkFilterDropdown: 'network_dropdown_btn',
-  transactionFail: 'Transaction failed'
+  transactionFail: 'Transaction failed',
+  gotIt: 'Got it'
 }

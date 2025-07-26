@@ -122,9 +122,25 @@ class PopUpModalPage {
     return by.id(popUpModalLoc.successToast)
   }
 
+  get connectBtn() {
+    return by.text(popUpModalLoc.connectBtn)
+  }
+
+  get noSitesFound() {
+    return by.text(popUpModalLoc.noSitesFound)
+  }
+
+  get disconnectAll() {
+    return by.text(popUpModalLoc.disconnectAll)
+  }
+
   async tapApproveBtn() {
     await actions.waitForElement(this.popUpModalScrollView, 40000)
     await actions.tapElementAtIndex(this.approveBtn, 0)
+  }
+
+  async tapConnectBtn() {
+    await actions.tapElementAtIndex(this.connectBtn, 0)
   }
 
   async tapRejectBtn() {
@@ -210,8 +226,23 @@ class PopUpModalPage {
     }
   }
 
+  async selectAccount(accountNum: number) {
+    await actions.waitForElement(by.id(`account__Account ${accountNum}`), 30000)
+    await actions.longPress(by.id(`account__Account ${accountNum}`))
+  }
+
+  async selectAccountAndconnect(accountNum = 1) {
+    await this.selectAccount(accountNum)
+    await this.tapConnectBtn()
+  }
+
   async verifySuccessToast() {
     await actions.waitForElement(this.successToast, 20000)
+  }
+
+  async verifyEmptyConnectedSites() {
+    await actions.waitForElementNotVisible(this.disconnectAll, 2000)
+    await actions.isVisible(this.noSitesFound)
   }
 
   async verifyFeeIsLegit(

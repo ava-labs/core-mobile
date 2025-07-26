@@ -236,6 +236,10 @@ class CommonElsPage {
     return by.id(commonElsLoc.networkFilterDropdown)
   }
 
+  get gotIt() {
+    return by.text(commonElsLoc.gotIt)
+  }
+
   async filter(
     item = commonElsLoc.cChain_2,
     filterDropdown = this.filterDropdown
@@ -417,7 +421,6 @@ class CommonElsPage {
   }
 
   async exitMetro() {
-    await device.disableSynchronization()
     try {
       if (await Actions.isVisible(by.text(/.*8081.*/i), 0)) {
         await Actions.tap(by.text(/.*8081.*/i))
@@ -474,6 +477,13 @@ class CommonElsPage {
 
   async tapRejectButton() {
     await Actions.tap(this.rejectButton)
+  }
+
+  async tapGotIt(gotItIsVisible = true) {
+    if (gotItIsVisible) {
+      await delay(1000)
+      await Actions.tap(this.gotIt)
+    }
   }
 }
 
