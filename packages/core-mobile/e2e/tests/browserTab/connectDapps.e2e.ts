@@ -10,7 +10,7 @@ describe('Dapp Wallet Connect - Others', () => {
   })
 
   it('should connect UniSwap via Wallet Connect', async () => {
-    await browserPage.connectTo('https://app.uniswap.org/')
+    await browserPage.connect('https://app.uniswap.org/')
     const qrUri = await browserPage.getQrUri()
     await plusMenuPage.connectWallet(qrUri)
     await connectToSitePage.selectAccountAndconnect()
@@ -22,7 +22,7 @@ describe('Dapp Wallet Connect - Others', () => {
   })
 
   it('should connect Benqi via Wallet Connect', async () => {
-    await browserPage.connectTo('https://app.benqi.fi/markets')
+    await browserPage.connect('https://app.benqi.fi/markets')
     const qrUri = await browserPage.getQrUri()
     await plusMenuPage.connectWallet(qrUri)
     await connectToSitePage.selectAccountAndconnect()

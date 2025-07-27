@@ -17,10 +17,8 @@ import actions from '../../helpers/actions'
 describe('Dapp - Core Playground', () => {
   it('should connect playground', async () => {
     await warmup()
-    await browserPage.connectTo(
-      'https://ava-labs.github.io/extension-avalanche-playground/',
-      false,
-      false
+    await browserPage.connect(
+      'https://ava-labs.github.io/extension-avalanche-playground/'
     )
     const qrUri = await browserPage.getPlaygroundUri()
     console.log(qrUri)

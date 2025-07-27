@@ -62,20 +62,35 @@ const tap = async (item: Detox.WebMatcher) => {
 
 const tapByXpath = async (xpath: string) => {
   await waitForEleByXpathToBeVisible(xpath)
-  await getWebView().element(by.web.xpath(xpath)).tap()
+  try {
+    await getWebView().element(by.web.xpath(xpath)).tap()
+  } catch (error) {
+    console.error(`Failed to tap on xpath: "${xpath}"`)
+    throw error
+  }
 }
 
 const tapByDataTestId = async (dataTestId: string) => {
-  await getWebView()
-    .element(by.web.xpath(`//*[@data-testid="${dataTestId}"]`))
-    .tap()
+  try {
+    await getWebView()
+      .element(by.web.xpath(`//*[@data-testid="${dataTestId}"]`))
+      .tap()
+  } catch (error) {
+    console.error(`Failed to tap on data-testid: "${dataTestId}"`)
+    throw error
+  }
 }
 
 const tapByText = async (text: string) => {
-  await waitForEleByTextToBeVisible(text)
-  await getWebView()
-    .element(by.web.xpath(`//*[text()="${text}"]`))
-    .tap()
+  try {
+    await waitForEleByTextToBeVisible(text)
+    await getWebView()
+      .element(by.web.xpath(`//*[contains(text(), "${text}")]`))
+      .tap()
+  } catch (error) {
+    console.error(`Failed to tap on text: "${text}"`)
+    throw error
+  }
 }
 
 const isTextVisible = async (text: string) => {
@@ -199,7 +214,7 @@ const scrollToXpath = async (xpath: string) => {
 const scrollToText = async (text: string) => {
   await waitForEleByTextToBeVisible(text)
   await getWebView()
-    .element(by.web.xpath(`//*[text()="${text}"]`))
+    .element(by.web.xpath(`//*[contains(., "${text}")]`))
     .scrollToView()
 }
 

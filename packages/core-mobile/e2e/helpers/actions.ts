@@ -100,6 +100,7 @@ const waitForElement = async (
   timeout = 5000,
   index = 0
 ) => {
+  await device.disableSynchronization()
   const startTime = Date.now()
   const endTime = startTime + timeout
   while (Date.now() < endTime) {
@@ -110,11 +111,7 @@ const waitForElement = async (
         .withTimeout(timeout)
       return
     } catch (error: any) {
-      if (error.message === Constants.idleTimeoutError) {
-        console.error(Constants.animatedConsoleError)
-      } else {
-        throw error
-      }
+      console.error(error)
     }
   }
   console.error('Error: Element not visible within timeout')
@@ -157,11 +154,7 @@ const waitForElementNotVisible = async (
         .withTimeout(timeout)
       return
     } catch (error: any) {
-      if (error.message === Constants.idleTimeoutError) {
-        console.error(Constants.animatedConsoleError)
-      } else {
-        throw error
-      }
+      console.error(error)
     }
   }
   console.error('Error: Element visible within timeout')
