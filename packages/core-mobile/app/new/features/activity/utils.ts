@@ -110,7 +110,6 @@ export function isCollectibleTransaction(
 ): boolean {
   return (
     ((tx.tokens[0]?.type === TokenType.ERC1155 ||
-      tx.tokens[0]?.type === TokenType.ERC20 ||
       tx.tokens[0]?.type === TokenType.ERC721) &&
       Boolean(tx.tokens[1]?.collectableTokenId)) ||
     [

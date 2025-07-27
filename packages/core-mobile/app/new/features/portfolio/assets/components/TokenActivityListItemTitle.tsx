@@ -79,13 +79,26 @@ export const TokenActivityListItemTitle = ({
         }
         return ['Unknown']
       case TransactionType.SWAP:
-        return [renderAmount(a1), ' ', s1, ' swapped for ', s2]
+        if (tx.tokens.length === 1) {
+          return [renderAmount(a1), ' ', s1, ' swapped for ', s2]
+        }
+        return [
+          renderAmount(a1),
+          ' ',
+          s1,
+          ' swapped for ',
+          renderAmount(a2),
+          ' ',
+          s2
+        ]
       case TransactionType.SEND:
         return [renderAmount(a1), ' ', s1, ' sent']
       case TransactionType.RECEIVE:
         return [renderAmount(a1), ' ', s1, ' received']
       case TransactionType.TRANSFER:
         return [renderAmount(a1), ' ', s1, ' transferred']
+      case TransactionType.APPROVE:
+        return [renderAmount(a1), ' ', s1, ' approved']
 
       default: {
         if (isCollectibleTransaction(tx)) {
@@ -101,6 +114,7 @@ export const TokenActivityListItemTitle = ({
                 tx.tokens[1]?.collectableTokenId
             ]
           }
+
           return [
             renderAmount(a1),
             ' ',
@@ -114,22 +128,18 @@ export const TokenActivityListItemTitle = ({
           ]
         }
         if (tx.isContractCall) {
-          if (tx.tokens.length === 1) {
-            return [renderAmount(a1), ' ', s1, ' swapped']
-          }
-          if (tx.tokens.length === 2) {
+          if (tx.tokens.length >= 1) {
             return [
               renderAmount(a1),
               ' ',
               s1,
-              ' ',
-              'contract call',
-              ' ',
+              ' swapped for ',
               renderAmount(a2),
               ' ',
               s2
             ]
           }
+
           return ['Contract Call']
         }
         return ['Unknown']
