@@ -225,9 +225,9 @@ __metadata:
     "@dlenroc/testrail": 1.9.1
     "@ethereumjs/common": 4.4.0
     "@ethereumjs/tx": 5.4.0
-    "@formatjs/intl-locale": latest
-    "@formatjs/intl-numberformat": latest
-    "@formatjs/intl-pluralrules": latest
+    "@formatjs/intl-locale": 4.2.11
+    "@formatjs/intl-numberformat": 8.15.4
+    "@formatjs/intl-pluralrules": 5.4.4
     "@gorhom/bottom-sheet": 4.6.4
     "@hookform/resolvers": 3.9.0
     "@invertase/react-native-apple-authentication": 2.4.0
@@ -257,7 +257,7 @@ __metadata:
     "@react-native/metro-config": 0.77.3
     "@react-native/typescript-config": 0.77.3
     "@react-navigation/bottom-tabs": 7.2.1
-    "@react-navigation/drawer": 7.5.4
+    "@react-navigation/drawer": 7.1.2
     "@react-navigation/elements": 2.2.6
     "@react-navigation/native": 7.0.15
     "@react-navigation/native-stack": 7.2.1
@@ -6660,7 +6660,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@formatjs/intl-locale@npm:latest":
+"@formatjs/intl-locale@npm:4.2.11":
   version: 4.2.11
   resolution: "@formatjs/intl-locale@npm:4.2.11"
   dependencies:
@@ -6681,7 +6681,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@formatjs/intl-numberformat@npm:latest":
+"@formatjs/intl-numberformat@npm:8.15.4":
   version: 8.15.4
   resolution: "@formatjs/intl-numberformat@npm:8.15.4"
   dependencies:
@@ -6693,7 +6693,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@formatjs/intl-pluralrules@npm:latest":
+"@formatjs/intl-pluralrules@npm:5.4.4":
   version: 5.4.4
   resolution: "@formatjs/intl-pluralrules@npm:5.4.4"
   dependencies:
@@ -11046,23 +11046,23 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@react-navigation/drawer@npm:7.5.4":
-  version: 7.5.4
-  resolution: "@react-navigation/drawer@npm:7.5.4"
+"@react-navigation/drawer@npm:7.1.2":
+  version: 7.1.2
+  resolution: "@react-navigation/drawer@npm:7.1.2"
   dependencies:
-    "@react-navigation/elements": ^2.6.0
+    "@react-navigation/elements": ^2.2.6
     color: ^4.2.3
-    react-native-drawer-layout: ^4.1.12
-    use-latest-callback: ^0.2.4
+    react-native-drawer-layout: ^4.1.1
+    use-latest-callback: ^0.2.1
   peerDependencies:
-    "@react-navigation/native": ^7.1.15
+    "@react-navigation/native": ^7.0.15
     react: ">= 18.2.0"
     react-native: "*"
     react-native-gesture-handler: ">= 2.0.0"
     react-native-reanimated: ">= 2.0.0"
     react-native-safe-area-context: ">= 4.0.0"
     react-native-screens: ">= 4.0.0"
-  checksum: 6e3e84a32d57f94e6dbbe83ed7a53c978d9566144fb5c682945b3feb12dc4a1777b43e305cc8b7514a462e9b8c9107ba92d35e52b359cef0cdba872e227694d1
+  checksum: 67e6f1e2beed45af9c62e74e1da0a4bf4e1d068bc112d7fa73251b38b8a589dd4fda303650dbb95403e47f22350be410ed9d0b5dcf7d1f77a9509412a304d33b
   languageName: node
   linkType: hard
 
@@ -11081,26 +11081,6 @@ __metadata:
     "@react-native-masked-view/masked-view":
       optional: true
   checksum: 4979be0fb72ae667f34c7f6a665ac366f29d8bebf50a4e0919b9f0aa74c1ac13a913ca1fd474f5fa829109c041bea2befaf682adf5a91ca09474dbd7b0b9edc1
-  languageName: node
-  linkType: hard
-
-"@react-navigation/elements@npm:^2.6.0":
-  version: 2.6.0
-  resolution: "@react-navigation/elements@npm:2.6.0"
-  dependencies:
-    color: ^4.2.3
-    use-latest-callback: ^0.2.4
-    use-sync-external-store: ^1.5.0
-  peerDependencies:
-    "@react-native-masked-view/masked-view": ">= 0.2.0"
-    "@react-navigation/native": ^7.1.15
-    react: ">= 18.2.0"
-    react-native: "*"
-    react-native-safe-area-context: ">= 4.0.0"
-  peerDependenciesMeta:
-    "@react-native-masked-view/masked-view":
-      optional: true
-  checksum: 27cecba6795c56f101cef3570912e90ead5f36f9b33b3e72d5a136092ed56610a0fae62f9b5bb0d105f3adfd0f3b8e20338f4d9a87ef37736f3f1dcd10f479d0
   languageName: node
   linkType: hard
 
@@ -29307,7 +29287,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-native-drawer-layout@npm:^4.1.12":
+"react-native-drawer-layout@npm:^4.1.1":
   version: 4.1.12
   resolution: "react-native-drawer-layout@npm:4.1.12"
   dependencies:
@@ -34197,15 +34177,6 @@ __metadata:
   peerDependencies:
     react: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
   checksum: dc3843a1b59ac8bd01417bd79498d4c688d5df8bf4801be50008ef4bfaacb349058c0b1605b5b43c828e0a2d62722d7e861573b3f31cea77a7f23e8b0fc2f7e3
-  languageName: node
-  linkType: hard
-
-"use-sync-external-store@npm:^1.5.0":
-  version: 1.5.0
-  resolution: "use-sync-external-store@npm:1.5.0"
-  peerDependencies:
-    react: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
-  checksum: 5e639c9273200adb6985b512c96a3a02c458bc8ca1a72e91da9cdc6426144fc6538dca434b0f99b28fb1baabc82e1c383ba7900b25ccdcb43758fb058dc66c34
   languageName: node
   linkType: hard
 
