@@ -1,16 +1,16 @@
 import { createAction, createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { RootState } from 'store/types'
 import {
-  AVAX_COINGECKO_ID,
-  BITCOIN_COINGECKO_ID,
-  ETHEREUM_COINGECKO_ID
-} from 'consts/coingecko'
-import { initialState } from './types'
+  AVAX_NATIVE_ID,
+  BITCOIN_NATIVE_ID,
+  ETHEREUM_NATIVE_ID
+} from 'consts/internalTokenIds'
+import { initialState, InternalId } from './types'
 
 const DEFAULT_WATCHLIST_FAVORITES = [
-  ETHEREUM_COINGECKO_ID,
-  BITCOIN_COINGECKO_ID,
-  AVAX_COINGECKO_ID
+  ETHEREUM_NATIVE_ID,
+  BITCOIN_NATIVE_ID,
+  AVAX_NATIVE_ID
 ]
 
 export const reducerName = 'watchlist'
@@ -19,15 +19,14 @@ export const watchlistSlice = createSlice({
   name: reducerName,
   initialState,
   reducers: {
-    toggleFavorite: (state, action: PayloadAction<string>) => {
-      const tokenId = action.payload
-
-      if (!state.favorites.includes(tokenId)) {
-        // set favorite
-        state.favorites.push(tokenId)
+    toggleWatchListFavorite: (state, action: PayloadAction<InternalId>) => {
+      const index = state.favorites.findIndex(
+        coingeckoId => coingeckoId === action.payload
+      )
+      if (index !== -1) {
+        state.favorites.splice(index, 1)
       } else {
-        // unset favorite
-        state.favorites = state.favorites.filter(id => id !== tokenId)
+        state.favorites.push(action.payload)
       }
     },
     addDefaultWatchlistFavorites: state => {
@@ -36,31 +35,20 @@ export const watchlistSlice = createSlice({
           state.favorites = [tokenId, ...state.favorites]
         }
       })
-    },
-    reorderFavorites: (state, action: PayloadAction<string[]>) => {
-      state.favorites = action.payload
     }
   }
 })
 
 // selectors
 export const selectIsWatchlistFavorite =
-  (coingeckoId: string) => (state: RootState) =>
-    state.watchlist.favorites.includes(coingeckoId)
+  (internalId: InternalId) => (state: RootState) =>
+    state.watchlist.favorites.includes(internalId)
 
-export const selectWatchlistFavoriteIds = (state: RootState): string[] => {
-  return state.watchlist.favorites
-}
+export const selectWatchlistFavoriteIds = (state: RootState): InternalId[] =>
+  state.watchlist.favorites
 
-export const selectWatchlistFavoritesIsEmpty = (state: RootState): boolean =>
-  state.watchlist.favorites.length === 0
-
-// actions
-export const {
-  toggleFavorite: toggleWatchListFavorite,
-  reorderFavorites,
-  addDefaultWatchlistFavorites
-} = watchlistSlice.actions
+export const { toggleWatchListFavorite, addDefaultWatchlistFavorites } =
+  watchlistSlice.actions
 
 export const fetchWatchlist = createAction(`${reducerName}/fetchWatchlist`)
 

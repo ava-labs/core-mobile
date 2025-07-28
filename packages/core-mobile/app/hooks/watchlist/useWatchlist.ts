@@ -68,6 +68,24 @@ export const useWatchlist = (): UseWatchListReturnType => {
     enabled: isFocused && topTokensCoingeckoIds.length > 0
   })
 
+  // Map prices from coingeckoId back to internalId for consistent access
+  const topTokenPricesById = useMemo(() => {
+    if (!topTokenPrices || !topTokensResponse?.tokens) {
+      return {}
+    }
+
+    const pricesById: Prices = {}
+    Object.values(topTokensResponse.tokens).forEach(token => {
+      const price = token.coingeckoId
+        ? topTokenPrices[token.coingeckoId]
+        : undefined
+      if (price) {
+        pricesById[token.id] = price
+      }
+    })
+    return pricesById
+  }, [topTokenPrices, topTokensResponse?.tokens])
+
   const isLoadingFavorites = favoriteIds.length > 0 && isLoading
 
   const favorites = useMemo(() => {
@@ -126,9 +144,9 @@ export const useWatchlist = (): UseWatchListReturnType => {
   const prices = useMemo(() => {
     return {
       ...transformedTrendingTokens?.prices,
-      ...topTokenPrices
+      ...topTokenPricesById
     }
-  }, [topTokenPrices, transformedTrendingTokens?.prices])
+  }, [topTokenPricesById, transformedTrendingTokens?.prices])
 
   const getWatchlistPrice = useCallback(
     (id: string): PriceData | undefined => {

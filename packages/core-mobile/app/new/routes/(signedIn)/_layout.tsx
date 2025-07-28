@@ -1,4 +1,5 @@
 import { LastTransactedNetworks } from 'common/components/LastTransactedNetworks'
+import { MigrateFavoriteIds } from 'new/common/components/MigrateFavoriteIds'
 import { Stack } from 'common/components/Stack'
 import { stackNavigatorScreenOptions } from 'common/consts/screenOptions'
 import { useModalScreenOptions } from 'common/hooks/useModalScreenOptions'
@@ -203,6 +204,7 @@ export default function WalletLayout(): JSX.Element {
         </Stack>
         <PolyfillCrypto />
         <LastTransactedNetworks />
+        <MigrateFavoriteIds />
       </CollectiblesProvider>
     </BridgeProvider>
   )

@@ -69,10 +69,13 @@ export const handleDeeplink = ({
         deeplink.callback?.()
         navigateFromDeeplinkUrl('/claimStakeReward')
       } else if (action === ACTIONS.WatchList) {
-        const coingeckoId = pathname.split('/')[1]
-        navigateFromDeeplinkUrl(
-          `/trackTokenDetail?tokenId=${coingeckoId}&marketType=${MarketType.SEARCH}`
-        )
+        const tokenId = pathname.split('/')[1]
+        if (tokenId) {
+          // All watchlist tokens now use internalId format
+          navigateFromDeeplinkUrl(
+            `/trackTokenDetail?tokenId=${tokenId}&marketType=${MarketType.TRENDING}`
+          )
+        }
       } else if (action === ACTIONS.OfframpCompleted) {
         dispatch(offrampSend({ searchParams }))
       } else if (action === ACTIONS.OnrampCompleted) {

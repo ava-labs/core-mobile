@@ -138,7 +138,7 @@ class FCMService {
       }
     } else if (fcmData.type === NotificationTypes.NEWS) {
       return {
-        url: fcmData.url
+        url: fcmData.urlV2
       }
     }
   }
