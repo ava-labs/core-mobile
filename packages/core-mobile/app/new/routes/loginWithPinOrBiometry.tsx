@@ -206,7 +206,7 @@ const LoginWithPinOrBiometry = (): JSX.Element => {
   useFocusEffect(
     useCallback(() => {
       InteractionManager.runAfterInteractions(() => {
-        const accessType = BiometricsSDK.getAccessType()
+        let accessType = BiometricsSDK.getAccessType()
 
         /*
          * Fix inconsistent state: if accessType is 'BIO' but biometrics are disabled or not available
@@ -216,19 +216,17 @@ const LoginWithPinOrBiometry = (): JSX.Element => {
          * leaving users in an inconsistent state when biometrics weren't available.
          * We automatically correct this by setting SECURE_ACCESS_SET back to 'PIN'
          */
-        if (accessType === 'BIO' && (!useBiometrics || !isBiometricAvailable)) {
-          commonStorage.set(StorageKey.SECURE_ACCESS_SET, 'PIN')
-          // Re-fetch the corrected access type
-          const correctedAccessType = BiometricsSDK.getAccessType()
+        const isBrokenBioState =
+          accessType === 'BIO' && (!useBiometrics || !isBiometricAvailable)
 
-          if (correctedAccessType === 'PIN') {
-            focusPinInput()
-          }
-        } else if (accessType === 'BIO') {
+        if (isBrokenBioState) {
+          commonStorage.set(StorageKey.SECURE_ACCESS_SET, 'PIN')
+          accessType = BiometricsSDK.getAccessType()
+        }
+
+        if (accessType === 'BIO') {
           handlePromptBioLogin()
-        } else if (accessType === 'PIN') {
-          focusPinInput()
-        } else if (!isBiometricAvailable || !useBiometrics) {
+        } else {
           focusPinInput()
         }
       })
