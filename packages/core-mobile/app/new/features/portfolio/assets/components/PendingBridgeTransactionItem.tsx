@@ -8,13 +8,13 @@ import ActivityListItem from './ActivityListItem'
 
 interface PendingBridgeTransactionItemProps {
   item: BridgeTransaction | BridgeTransfer
-  index: number
   onPress: () => void
+  showSeparator: boolean
 }
 
 export const PendingBridgeTransactionItem: FC<
   PendingBridgeTransactionItemProps
-> = ({ item, onPress }) => {
+> = ({ item, onPress, showSeparator }) => {
   const {
     theme: { colors }
   } = useTheme()
@@ -32,6 +32,7 @@ export const PendingBridgeTransactionItem: FC<
 
   return (
     <ActivityListItem
+      showSeparator={showSeparator}
       icon={
         <View
           sx={{
