@@ -196,7 +196,6 @@ class BiometricsSDK {
   async storeEncryptionKeyWithBiometry(
     encryptionKey: string
   ): Promise<boolean> {
-    commonStorage.set(StorageKey.SECURE_ACCESS_SET, 'BIO')
     try {
       await Keychain.setGenericPassword(
         'encryptionKey',
@@ -204,6 +203,7 @@ class BiometricsSDK {
         bioSetOptions
       )
       this.#encryptionKey = encryptionKey
+      commonStorage.set(StorageKey.SECURE_ACCESS_SET, 'BIO')
       return true
     } catch (e) {
       Logger.error('failed to store encryption key with biometry', e)
