@@ -307,6 +307,31 @@ class WalletService {
     return await wallet.getPublicKeyFor({ derivationPath, curve })
   }
 
+  public async getRawXpubXP({
+    walletId,
+    walletType
+  }: {
+    walletId: string
+    walletType: WalletType
+  }): Promise<string> {
+    if (walletType !== WalletType.MNEMONIC) {
+      throw new Error('Unable to get raw xpub XP: unsupported wallet type')
+    }
+
+    const wallet = await WalletFactory.createWallet({
+      walletId,
+      walletType
+    })
+
+    if (!(wallet instanceof MnemonicWallet)) {
+      throw new Error(
+        'Unable to get raw xpub XP: Expected MnemonicWallet instance'
+      )
+    }
+
+    return wallet.getRawXpubXP()
+  }
+
   public async getAddressesByIndices({
     walletId,
     walletType,
@@ -333,12 +358,7 @@ class WalletService {
     if (walletType === WalletType.MNEMONIC) {
       const provXP = await NetworkService.getAvalancheProviderXP(isTestnet)
 
-      const wallet = (await WalletFactory.createWallet({
-        walletId,
-        walletType
-      })) as MnemonicWallet
-
-      const xpubXP = wallet.getRawXpubXP()
+      const xpubXP = await this.getRawXpubXP({ walletId, walletType })
 
       return xpubXP
         ? indices.map(index => {

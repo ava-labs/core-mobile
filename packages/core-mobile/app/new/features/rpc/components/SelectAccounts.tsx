@@ -85,6 +85,7 @@ export const SelectAccounts = ({
 
               return (
                 <Account
+                  testID={`account__${account.name}`}
                   key={index}
                   account={account}
                   isSelected={isSelected}
@@ -105,12 +106,14 @@ const Account = ({
   account,
   onSelect,
   lastItem,
-  isSelected
+  isSelected,
+  testID
 }: {
   account: Account
   onSelect: (account: Account) => void
   lastItem: boolean
   isSelected: boolean
+  testID?: string
 }): JSX.Element => {
   const {
     theme: { colors }
@@ -196,6 +199,7 @@ const Account = ({
           }}>
           <View>{renderBalance()}</View>
           <Toggle
+            testID={testID}
             value={isSelected}
             onValueChange={() => {
               onSelect(account)

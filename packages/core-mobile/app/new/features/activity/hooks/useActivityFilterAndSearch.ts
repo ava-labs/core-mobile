@@ -1,9 +1,11 @@
+import { BridgeTransfer } from '@avalabs/bridge-unified'
+import { BridgeTransaction } from '@avalabs/core-bridge-sdk'
 import { ChainId, Network } from '@avalabs/core-chains-sdk'
 import { IndexPath } from '@avalabs/k2-alpine'
 import { TokenWithBalance, TransactionType } from '@avalabs/vm-module-types'
 import { useErc20ContractTokens } from 'common/hooks/useErc20ContractTokens'
 import { useSearchableTokenList } from 'common/hooks/useSearchableTokenList'
-import { getBridgeAssetSymbol } from 'common/utils/bridgeUtils'
+import { DropdownSelection } from 'common/types'
 import usePendingBridgeTransactions from 'features/bridge/hooks/usePendingBridgeTransactions'
 import {
   Selection,
@@ -19,6 +21,7 @@ import { Transaction } from 'store/transaction'
 import { useGetRecentTransactions } from 'store/transaction/hooks/useGetRecentTransactions'
 import { isPChain, isXChain } from 'utils/network/isAvalancheNetwork'
 import { useActivity } from '../store'
+import { ActivityListItem, buildGroupedData, getDateGroups } from '../utils'
 
 type ActivityNetworkFilter = {
   filterName: string
@@ -30,21 +33,22 @@ export const useActivityFilterAndSearch = ({
 }: {
   searchText: string
 }): {
-  data: Transaction[]
+  data: ActivityListItem[]
   sort: Selection
   filter: Selection
   network: Network
   networkOption?: ActivityNetworkFilter
-  networkFilters: ActivityNetworkFilter[]
-  networkDropdown: Selection & {
+  networkFilterDropdown: DropdownSelection & {
     scrollContentMaxHeight: number
   }
+  networkFilters: ActivityNetworkFilter[]
   selectedNetwork: IndexPath
   isLoading: boolean
   isRefreshing: boolean
   isError: boolean
-  refresh: () => void
   xpToken: TokenWithBalance | undefined
+  refresh: () => void
+  setSelectedNetwork: (network: IndexPath) => void
 } => {
   const { enabledNetworks, getNetwork } = useNetworks()
   const { selectedNetwork, setSelectedNetwork } = useActivity()
@@ -79,29 +83,18 @@ export const useActivityFilterAndSearch = ({
   const xpToken = useMemo(() => {
     return filteredTokenList.find(tk => {
       return (
-        (isPChain(network?.chainId as ChainId) ||
-          isXChain(network?.chainId as ChainId)) &&
-        Number(tk.networkChainId) === Number(network?.chainId)
+        networkOption?.chainId &&
+        (isPChain(networkOption?.chainId) ||
+          isXChain(networkOption?.chainId)) &&
+        Number(tk.networkChainId) === Number(networkOption?.chainId)
       )
     })
-  }, [filteredTokenList, network?.chainId])
-
-  const networkDropdown: Selection & {
-    scrollContentMaxHeight: number
-  } = useMemo(() => {
-    return {
-      title: 'Network',
-      data: [networkFilters.map(f => f.filterName)],
-      selected: selectedNetwork,
-      onSelected: setSelectedNetwork,
-      scrollContentMaxHeight: 250
-    }
-  }, [networkFilters, selectedNetwork, setSelectedNetwork])
+  }, [filteredTokenList, networkOption?.chainId])
 
   const { transactions, refresh, isLoading, isRefreshing, isError } =
     useGetRecentTransactions(network)
 
-  const pendingBridgeTxs = usePendingBridgeTransactions(network?.chainId)
+  const pendingBridgeTxs = usePendingBridgeTransactions(networkOption?.chainId)
   const isPendingBridge = useCallback(
     (tx: Transaction) => {
       return (
@@ -121,13 +114,13 @@ export const useActivityFilterAndSearch = ({
     return (
       transactions
         // Remove transaction with empty token array
-        .filter(tx => tx.tokens.length)
+        .filter(tx => tx.tokens.length > 0)
         .filter(tx => !isPendingBridge(tx))
     )
   }, [transactions, isPendingBridge])
 
   const filters: TokenDetailFilters | undefined = useMemo(() => {
-    if (network?.chainId && isPChain(network.chainId)) {
+    if (networkOption?.chainId && isPChain(networkOption?.chainId)) {
       const newFilters = [
         ...(TOKEN_DETAIL_FILTERS[0] ?? []),
         TokenDetailFilter.Stake
@@ -135,12 +128,29 @@ export const useActivityFilterAndSearch = ({
       return [newFilters]
     }
     return undefined
-  }, [network?.chainId])
+  }, [networkOption?.chainId])
 
   const { data, filter, sort, resetFilter } = useTokenDetailFilterAndSort({
     transactions: transactionsBySymbol,
     filters
   })
+
+  const networkFilterDropdown = useMemo(() => {
+    return {
+      network,
+      title: networkOption?.filterName ?? '',
+      data: [networkFilters.map(f => f.filterName)],
+      selected: selectedNetwork,
+      onSelected: setSelectedNetwork,
+      scrollContentMaxHeight: 250
+    }
+  }, [
+    network,
+    networkFilters,
+    networkOption?.filterName,
+    selectedNetwork,
+    setSelectedNetwork
+  ])
 
   useEffect(() => {
     // In case the user is searching and the filter is not the default one, reset the filter
@@ -156,38 +166,27 @@ export const useActivityFilterAndSearch = ({
   ])
 
   const combinedData = useMemo(() => {
-    const filteredPendingBridgeTxs = pendingBridgeTxs
-      .toSorted((a, b) => b.sourceStartedAt - a.sourceStartedAt)
-      .filter(tx => getBridgeAssetSymbol(tx) === network?.networkToken?.symbol)
+    const filteredPendingBridgeTxs = pendingBridgeTxs.toSorted(
+      (a, b) => b.sourceStartedAt - a.sourceStartedAt
+    )
 
-    if (searchText.length) {
-      return [
-        ...filteredPendingBridgeTxs.filter(tx => {
-          return (
-            tx.sourceTxHash.toLowerCase().includes(searchText.toLowerCase()) ||
-            tx.targetTxHash?.toLowerCase().includes(searchText.toLowerCase())
-          )
-        }),
-        ...data.filter(tx => {
-          return (
-            tx.tokens.some(t =>
-              [t.symbol, t.name, t.amount.toString()].some(field =>
-                field.toLowerCase().includes(searchText.toLowerCase())
-              )
-            ) ||
-            tx.hash.toLowerCase().includes(searchText.toLowerCase()) ||
-            tx.to.toLowerCase().includes(searchText.toLowerCase()) ||
-            tx.from.toLowerCase().includes(searchText.toLowerCase())
-          )
-        })
-      ]
+    if (searchText.length > 0) {
+      const filteredTransactions = data.filter(tx =>
+        filterTransactionBySearch(tx, searchText)
+      )
+      const filteredPendingBridge = filteredPendingBridgeTxs.filter(tx =>
+        filterPendingBridgeBySearch(tx, searchText)
+      )
+      const { todayTxs, monthGroups } = getDateGroups(filteredTransactions)
+      return buildGroupedData(todayTxs, monthGroups, filteredPendingBridge)
     }
 
-    return [...filteredPendingBridgeTxs, ...data]
-  }, [data, network?.networkToken?.symbol, pendingBridgeTxs, searchText])
+    const { todayTxs, monthGroups } = getDateGroups(data)
+    return buildGroupedData(todayTxs, monthGroups, filteredPendingBridgeTxs)
+  }, [data, searchText, pendingBridgeTxs])
 
   return {
-    data: combinedData as Transaction[],
+    data: combinedData as ActivityListItem[],
     xpToken,
     sort,
     filter,
@@ -198,7 +197,43 @@ export const useActivityFilterAndSearch = ({
     network: network as Network,
     networkOption,
     networkFilters,
-    networkDropdown,
-    selectedNetwork
+    setSelectedNetwork,
+    selectedNetwork,
+    networkFilterDropdown
   }
+}
+
+function filterTransactionBySearch(tx: Transaction, search: string): boolean {
+  const searchLower = search.toLowerCase()
+  return (
+    tx.tokens.some(t =>
+      [
+        t.symbol,
+        t.name,
+        t.amount.toString(),
+        t.from,
+        t.to,
+        t.type.toString()
+      ].some(field =>
+        typeof field === 'string'
+          ? field.toLowerCase().includes(searchLower)
+          : false
+      )
+    ) ||
+    [tx.hash, tx.to, tx.from].some(field =>
+      field.toLowerCase().includes(searchLower)
+    )
+  )
+}
+
+function filterPendingBridgeBySearch(
+  tx: BridgeTransaction | BridgeTransfer,
+  search: string
+): boolean {
+  const searchLower = search.toLowerCase()
+
+  return Boolean(
+    tx.sourceTxHash.toLowerCase().includes(searchLower) ||
+      tx.targetTxHash?.toLowerCase().includes(searchLower)
+  )
 }

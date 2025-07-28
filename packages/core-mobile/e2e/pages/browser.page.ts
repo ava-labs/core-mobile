@@ -2,12 +2,12 @@ import Actions from '../helpers/actions'
 import BrowserLoc from '../locators/browser.loc'
 import Wbs, { WebScripts } from '../helpers/web'
 import delay from '../helpers/waits'
-import commonElsPage from './commonEls.page'
 import bottomTabsPage from './bottomTabs.page'
 import connectToSitePage from './connectToSite.page'
 import plusMenuPage from './plusMenu.page'
 import popUpModalPage from './popUpModal.page'
 import stakePage from './Stake/stake.page'
+import commonElsPage from './commonEls.page'
 
 class BrowserPage {
   get searchBar() {
@@ -35,13 +35,29 @@ class BrowserPage {
     await Actions.tapElementAtIndex(this.searchBar, 0)
   }
 
-  async enterBrowserSearchQuery(query: string) {
+  async setUrl(query: string) {
+    await this.tapSearchBar()
     await Actions.setInputText(this.searchBar, query)
     await element(this.searchBar).tapReturnKey()
   }
 
   async tapAccept() {
-    await Wbs.tapByText('Accept')
+    await Wbs.tapByText('Agree and continue')
+  }
+
+  async tapCoreMobile() {
+    await Wbs.tapByXpath('//span[text()="Core mobile"]')
+  }
+
+  async tapConnectToCoreApp() {
+    const xpath = '//button[contains(text(), "Connect to Core App")]'
+    let tries = 5
+    while (tries > 0) {
+      await Wbs.tapByXpath(xpath)
+      const visible = await Wbs.isVisibleByXpath(xpath, 2000)
+      if (!visible) break
+      tries--
+    }
   }
 
   async tapCoreConnectWallet() {
@@ -54,9 +70,12 @@ class BrowserPage {
     await Wbs.tapByDataTestId('connect-terms-continue-btn')
   }
 
-  async tapConnectWallet(dapp = 'Core') {
+  async tapConnectWallet(dapp: string) {
     let xpath = ''
     switch (dapp) {
+      case 'https://core.app/': // Core
+        xpath = `//*[text()="${BrowserLoc.connectMyWallet}"]`
+        break
       case 'https://app.aave.com/': // Aave
         xpath = '//*[text()="Connect wallet"]'
         break
@@ -139,44 +158,13 @@ class BrowserPage {
   }
 
   async connectLFJ() {
-    await this.connectTo('https://lfj.gg/avalanche', false, false)
+    await this.connect('https://lfj.gg/avalanche')
     await Wbs.tapByText('I read and accept')
     await Wbs.tapByXpath('//button[@data-cy="connector-walletConnect"]')
     const qrUri = await this.getQrUri()
     await plusMenuPage.connectWallet(qrUri)
     await connectToSitePage.selectAccountAndconnect()
     await popUpModalPage.verifySuccessToast()
-  }
-
-  async connectTo(
-    dapp: string,
-    showModal = false,
-    visibleWalletConnectButton = true
-  ) {
-    await Actions.waitForElement(bottomTabsPage.plusIcon)
-    await bottomTabsPage.tapBrowserTab()
-    try {
-      await commonElsPage.tapGetStartedButton()
-    } catch (e) {
-      console.log('The Get Started Button is not displayed')
-    }
-    try {
-      while (await Actions.isVisible(this.browserBackBtn, 0)) {
-        await this.tapBrowserBackBtn()
-      }
-    } catch (e) {
-      console.log('There is no web browser history to go back')
-    }
-    await this.tapSearchBar()
-    await this.enterBrowserSearchQuery(dapp)
-    if (showModal) {
-      await this.dismissConnectWalletModal()
-    }
-    await delay(1000)
-    await this.tapConnectWallet(dapp)
-    if (visibleWalletConnectButton) {
-      await this.tapWalletConnect()
-    }
   }
 
   async tapSend() {
@@ -260,8 +248,40 @@ class BrowserPage {
     }
   }
 
+  async goToUrl(url: string) {
+    await bottomTabsPage.tapBrowserTab()
+    await this.setUrl(url)
+  }
+
+  async getWalletConnectUri(visibleWalletConnectButton = false) {
+    await this.tapWalletConnect()
+    if (visibleWalletConnectButton) {
+      await this.tapWalletConnect()
+    }
+    return await this.getQrUri()
+  }
+
+  async connectToCore() {
+    await this.goToUrl(BrowserLoc.coreApp)
+    await this.tapConnectWallet(BrowserLoc.coreApp)
+    await this.tapCoreMobile()
+    await this.tapAccept()
+    await this.tapConnectToCoreApp()
+    await popUpModalPage.selectAccountAndconnect()
+  }
+
+  async verifyCoreConnected() {
+    await Actions.waitForElement(
+      by.text(`Connected to ${BrowserLoc.coreDappName}`),
+      10000
+    )
+    await Wbs.waitForEleByXpathToBeVisible('//h1[text()="Account 1"]', 30000)
+    await Actions.failIfElementAppearsWithin(commonElsPage.transactionFail)
+  }
+
   async connect(dapp: string) {
-    await this.connectTo(dapp)
+    await this.goToUrl(dapp)
+    await this.getWalletConnectUri()
     const qrUri = await this.getQrUri()
     await plusMenuPage.connectWallet(qrUri)
     await connectToSitePage.selectAccountAndconnect()
@@ -335,10 +355,8 @@ class BrowserPage {
     )
     console.log(`${pChainBalance} AVAX in P-Chain...`)
     if (pChainBalance < 0.1) {
-      await this.connectTo(
-        'https://ava-labs.github.io/extension-avalanche-playground/',
-        false,
-        false
+      await this.connect(
+        'https://ava-labs.github.io/extension-avalanche-playground/'
       )
       const qrUri = await this.getPlaygroundUri()
       console.log(qrUri)

@@ -56,9 +56,9 @@ export default {
   emptyContacts: 'No saved addresses',
   emptyContactsText: 'Save addresses for quick access in future transactions',
   addAddressButton: 'Add an address',
-
+  connectedSites: 'Connected sites',
+  disconnectAll: 'Disconnect all',
   // OLD BELOW:
-  connectedSites: 'Connected Sites',
   participateInCoreAnalytics: 'Participate in Core analytics',
   firstMnemonicWord: 'rebel',
   lastMnemonicWord: 'embark',
