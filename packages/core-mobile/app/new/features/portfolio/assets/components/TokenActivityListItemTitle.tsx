@@ -1,9 +1,11 @@
+import { truncateAddress } from '@avalabs/core-utils-sdk/dist'
 import { Text, useTheme, View } from '@avalabs/k2-alpine'
 import { TransactionType } from '@avalabs/vm-module-types'
 import { HiddenBalanceText } from 'common/components/HiddenBalanceText'
 import { SubTextNumber } from 'common/components/SubTextNumber'
 import { useBlockchainNames } from 'common/utils/useBlockchainNames'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
+import { isCollectibleTransaction } from 'features/activity/utils'
 import { useNetworks } from 'hooks/networks/useNetworks'
 import React, { ReactNode, useCallback, useMemo } from 'react'
 import { useSelector } from 'react-redux'
@@ -46,56 +48,104 @@ export const TokenActivityListItemTitle = ({
   )
 
   // Build an array of nodes: strings and React elements
+  // eslint-disable-next-line sonarjs/cognitive-complexity
   const nodes = useMemo<ReactNode[]>(() => {
     const a1 = tx.tokens[0]?.amount
-    const s1 = tx.tokens[0]?.symbol ?? UNKNOWN_AMOUNT
+    const a2 = tx.tokens[1]?.amount
+    let s1 = tx.tokens[0]?.symbol
     let s2 = tx.tokens[1]?.symbol
+
+    if (!s1) {
+      s1 = tx.tokens[0]?.type
+    }
 
     if (!s2) {
       const foundNetwork = getNetwork(Number(tx.chainId))
-      s2 = foundNetwork?.networkToken.symbol ?? UNKNOWN_AMOUNT
+      s2 = foundNetwork?.networkToken.symbol
     }
 
     switch (tx.txType) {
       case TransactionType.BRIDGE:
+        if (tx.tokens.length === 1) {
+          return [
+            renderAmount(a1),
+            ' ',
+            s1,
+            ' ',
+            sourceBlockchain ?? 'Unknown',
+            ' → ',
+            targetBlockchain ?? 'Unknown'
+          ]
+        }
+        return ['Unknown']
+      case TransactionType.SWAP:
+        if (tx.tokens.length === 1) {
+          return [renderAmount(a1), ' ', s1, ' swapped for ', s2]
+        }
         return [
-          sourceBlockchain ?? 'Unknown',
-          ' → ',
-          targetBlockchain ?? 'Unknown'
+          renderAmount(a1),
+          ' ',
+          s1,
+          ' swapped for ',
+          renderAmount(a2),
+          ' ',
+          s2
         ]
-
-      case TransactionType.SWAP: {
-        return [renderAmount(a1), ' ', s1, ' swapped for ', s2]
-      }
-
       case TransactionType.SEND:
         return [renderAmount(a1), ' ', s1, ' sent']
-
       case TransactionType.RECEIVE:
         return [renderAmount(a1), ' ', s1, ' received']
-
       case TransactionType.TRANSFER:
         return [renderAmount(a1), ' ', s1, ' transferred']
+      case TransactionType.APPROVE:
+        return [renderAmount(a1), ' ', s1, ' approved']
 
-      default:
-        if (tx.isContractCall) {
-          if (tx.tokens.length > 1) {
-            return [renderAmount(a1), ' ', s1, ' swapped for ', s2]
+      default: {
+        if (isCollectibleTransaction(tx)) {
+          if (s1 === tx.tokens[0]?.type) {
+            return [
+              renderAmount(a1),
+              ' ',
+              s1,
+              ' - ',
+              truncateAddress(tx.to, 5),
+              ' - #',
+              tx.tokens[0]?.collectableTokenId ||
+                tx.tokens[1]?.collectableTokenId
+            ]
           }
+
+          return [
+            renderAmount(a1),
+            ' ',
+            s1,
+            ' - ',
+            tx.tokens[0]?.type,
+            ' - ',
+            truncateAddress(tx.to, 5),
+            ' - #',
+            tx.tokens[0]?.collectableTokenId || tx.tokens[1]?.collectableTokenId
+          ]
+        }
+        if (tx.isContractCall) {
+          if (tx.tokens.length >= 1) {
+            return [
+              renderAmount(a1),
+              ' ',
+              s1,
+              ' swapped for ',
+              renderAmount(a2),
+              ' ',
+              s2
+            ]
+          }
+
           return ['Contract Call']
         }
         return ['Unknown']
+      }
     }
-  }, [
-    tx.tokens,
-    tx.txType,
-    tx.isContractCall,
-    tx.chainId,
-    sourceBlockchain,
-    targetBlockchain,
-    renderAmount,
-    getNetwork
-  ])
+  }, [tx, getNetwork, renderAmount, sourceBlockchain, targetBlockchain])
 
   return (
     <View

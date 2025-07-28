@@ -8,17 +8,21 @@ import {
   View
 } from '@avalabs/k2-alpine'
 import { BalanceText } from 'common/components/BalanceText'
+import { format, isSameDay, isYesterday } from 'date-fns'
 
 type Props = {
   title: ReactNode
-  subtitle: string
+  subtitle?: string | null
   icon?: React.JSX.Element
   status?: PriceChangeStatus
   accessoryType?: 'outbound' | 'chevron'
   onPress?: () => void
   subtitleType: 'amountInCurrency' | 'amountInToken' | 'text'
   timestamp?: number
+  showSeparator: boolean
 }
+
+export const ACTIVITY_LIST_ITEM_HEIGHT = 60
 
 const ActivityListItem: FC<Props> = ({
   title,
@@ -28,7 +32,8 @@ const ActivityListItem: FC<Props> = ({
   accessoryType = 'outbound',
   status = PriceChangeStatus.Neutral,
   subtitleType,
-  timestamp
+  timestamp,
+  showSeparator = true
 }) => {
   const {
     theme: { colors }
@@ -41,30 +46,21 @@ const ActivityListItem: FC<Props> = ({
       ? colors.$textDanger
       : colors.$textSecondary
 
-  const formatDate = (date: Date): string => {
-    const now = new Date()
-    const historyDate = new Date(date)
-    const diffTime = Math.abs(now.getTime() - historyDate.getTime())
-    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24))
+  const formatDate = (timestamp: number): string => {
+    const date = new Date(timestamp)
 
-    return diffDays === 0
-      ? `${historyDate.toLocaleTimeString('en-US', {
-          hour: '2-digit',
-          minute: '2-digit'
-        })}`
-      : diffDays === 1
-      ? 'Yesterday'
-      : diffDays < 7
-      ? 'Last week'
-      : diffDays < 30
-      ? 'Last month'
-      : historyDate.toLocaleDateString('en-US', {
-          month: 'short',
-          day: 'numeric',
-          ...(historyDate.getFullYear() !== now.getFullYear() && {
-            year: 'numeric'
-          })
-        })
+    if (isSameDay(date, new Date())) {
+      // Today: show just time in 12-hour format
+      return format(date, 'h:mm a')
+    }
+
+    if (isYesterday(date)) {
+      // Yesterday: show "Yesterday HH:MM AM/PM"
+      return `Yesterday\n${format(date, 'h:mm a')}`
+    }
+
+    // Older dates: show "MM/DD/YY HH:MM AM/PM"
+    return `${format(date, 'MM/dd/yy')}\n${format(date, 'h:mm a')}`
   }
 
   return (
@@ -74,9 +70,7 @@ const ActivityListItem: FC<Props> = ({
           flexDirection: 'row',
           alignItems: 'center',
           gap: 11,
-          paddingHorizontal: 16,
-          paddingTop: 12,
-          paddingBottom: 12
+          paddingLeft: 16
         }}>
         {icon}
         <View
@@ -85,7 +79,13 @@ const ActivityListItem: FC<Props> = ({
             flexDirection: 'row',
             flex: 1,
             alignItems: 'center',
-            gap: 8
+            gap: 12,
+            minHeight: ACTIVITY_LIST_ITEM_HEIGHT,
+            paddingTop: 12,
+            paddingBottom: 12,
+            paddingRight: 16,
+            borderBottomWidth: showSeparator ? 1 : 0,
+            borderBottomColor: colors.$borderPrimary
           }}>
           <View
             sx={{
@@ -101,39 +101,45 @@ const ActivityListItem: FC<Props> = ({
               }}>
               {title}
             </Text>
-            {subtitleType === 'text' ? (
+            {subtitle ? (
+              subtitleType === 'text' ? (
+                <Text
+                  variant="body2"
+                  sx={{
+                    color: textColor
+                  }}
+                  numberOfLines={1}
+                  ellipsizeMode="tail">
+                  '{subtitle}'
+                </Text>
+              ) : (
+                <BalanceText
+                  variant="body2"
+                  sx={{ color: textColor, lineHeight: 16 }}
+                  numberOfLines={1}
+                  ellipsizeMode="tail"
+                  isCurrency={subtitleType === 'amountInCurrency'}
+                  maskType="covered">
+                  {subtitle}
+                </BalanceText>
+              )
+            ) : null}
+          </View>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+            {timestamp && (
               <Text
                 variant="body2"
-                sx={{
-                  color: textColor
-                }}
-                numberOfLines={1}
-                ellipsizeMode="tail">
-                {subtitle}
+                sx={{ color: colors.$textSecondary, textAlign: 'right' }}>
+                {formatDate(timestamp)}
               </Text>
-            ) : (
-              <BalanceText
-                variant="body2"
-                sx={{ color: textColor, lineHeight: 16 }}
-                numberOfLines={1}
-                ellipsizeMode="tail"
-                isCurrency={subtitleType === 'amountInCurrency'}
-                maskType="covered">
-                {subtitle}
-              </BalanceText>
+            )}
+            {accessoryType === 'outbound' && (
+              <Icons.Custom.Outbound color={colors.$textPrimary} />
+            )}
+            {accessoryType === 'chevron' && (
+              <Icons.Navigation.ChevronRightV2 color={colors.$textPrimary} />
             )}
           </View>
-          {timestamp && (
-            <Text variant="body2" sx={{ color: colors.$textSecondary }}>
-              {formatDate(new Date(timestamp))}
-            </Text>
-          )}
-          {accessoryType === 'outbound' && (
-            <Icons.Custom.Outbound color={colors.$textPrimary} />
-          )}
-          {accessoryType === 'chevron' && (
-            <Icons.Navigation.ChevronRightV2 color={colors.$textPrimary} />
-          )}
         </View>
       </View>
     </TouchableOpacity>
