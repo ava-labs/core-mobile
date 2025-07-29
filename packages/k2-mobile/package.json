@@ -16,33 +16,33 @@
     "storybook-watch": "sb-rn-watcher"
   },
   "dependencies": {
-    "@react-native-async-storage/async-storage": "2.0.0",
-    "@react-native-community/datetimepicker": "8.2.0",
-    "@react-native-community/slider": "4.5.3",
+    "@react-native-async-storage/async-storage": "2.1.2",
+    "@react-native-community/datetimepicker": "8.4.1",
+    "@react-native-community/slider": "4.5.6",
     "dripsy": "4.3.7",
-    "react": "18.3.1",
-    "react-dom": "18.3.1",
-    "react-native": "0.76.9",
-    "react-native-mmkv": "2.12.2",
-    "react-native-safe-area-context": "4.11.0",
-    "react-native-svg": "15.8.0"
+    "react": "19.0.0",
+    "react-dom": "19.0.0",
+    "react-native": "0.79.5",
+    "react-native-mmkv": "3.2.0",
+    "react-native-safe-area-context": "5.4.0",
+    "react-native-svg": "15.11.2"
   },
   "devDependencies": {
     "@avalabs/tsconfig-mobile": "workspace:*",
-    "@babel/core": "7.25.7",
+    "@babel/core": "7.28.0",
     "@babel/runtime": "7.25.7",
     "@lavamoat/allow-scripts": "3.2.1",
-    "@react-native/babel-preset": "0.76.9",
-    "@react-native/metro-config": "0.76.9",
+    "@react-native/babel-preset": "0.79.5",
+    "@react-native/metro-config": "0.79.5",
     "@rushstack/eslint-patch": "1.10.4",
     "@storybook/addon-ondevice-actions": "7.6.20",
     "@storybook/addon-ondevice-backgrounds": "7.6.20",
     "@storybook/addon-ondevice-controls": "7.6.20",
     "@storybook/react-native": "7.6.20",
     "@types/jest": "29.5.13",
-    "@types/react": "18.3.12",
-    "@types/react-dom": "18.3.1",
-    "@types/react-test-renderer": "18.3.0",
+    "@types/react": "19.0.0",
+    "@types/react-dom": "19.0.0",
+    "@types/react-test-renderer": "19.0.0",
     "@types/tinycolor2": "1.4.6",
     "babel-jest": "29.7.0",
     "deprecated-react-native-prop-types": "5.0.0",
@@ -52,14 +52,14 @@
     "json-stringify-pretty-compact": "4.0.0",
     "patch-package": "8.0.0",
     "react-native-svg-transformer": "1.5.1",
-    "react-test-renderer": "18.3.1",
+    "react-test-renderer": "19.0.0",
     "tinycolor2": "1.6.0",
     "typescript": "5.6.3"
   },
   "peerDependencies": {
-    "react": "18.2.0",
-    "react-native": "0.76.9",
-    "react-native-svg": "15.8.0"
+    "react": "19.0.0",
+    "react-native": "0.79.5",
+    "react-native-svg": "15.11.2"
   },
   "lavamoat": {
     "allowScripts": {
