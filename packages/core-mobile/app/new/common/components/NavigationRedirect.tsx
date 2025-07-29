@@ -13,6 +13,7 @@ import {
  * See: https://github.com/expo/expo/issues/35383
  */
 import { BackHandler } from 'react-native'
+import Logger from 'utils/Logger'
 
 // eslint-disable-next-line complexity
 export const NavigationRedirect = (): null => {
@@ -71,6 +72,7 @@ export const NavigationRedirect = (): null => {
       if (walletState === WalletState.ACTIVE) {
         // when the login modal is the last route and on top of the (signedIn) stack
         // it means the app just resumed from inactivity
+
         const isReturningFromInactivity =
           isSignedIn && pathName === '/loginWithPinOrBiometry'
 
@@ -85,7 +87,7 @@ export const NavigationRedirect = (): null => {
           // otherwise, pressing the back button will either take users:
           // - to a blank screen (if they are already logged in)
           // - back to the onboarding flow (when they just completed onboarding)
-          while (router.canGoBack()) {
+          if (router.canGoBack()) {
             router.dismissAll()
           }
           // @ts-ignore TODO: make routes typesafe
