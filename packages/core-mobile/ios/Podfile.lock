@@ -1974,7 +1974,7 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
-  - react-native-keyboard-controller (1.17.0):
+  - react-native-keyboard-controller (1.18.2):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -1989,7 +1989,7 @@ PODS:
     - React-hermes
     - React-ImageManager
     - React-jsi
-    - react-native-keyboard-controller/common (= 1.17.0)
+    - react-native-keyboard-controller/common (= 1.18.2)
     - React-NativeModulesApple
     - React-RCTFabric
     - React-renderercss
@@ -1999,7 +1999,7 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
-  - react-native-keyboard-controller/common (1.17.0):
+  - react-native-keyboard-controller/common (1.18.2):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -2156,7 +2156,7 @@ PODS:
     - Yoga
   - react-native-restart (0.0.27):
     - React-Core
-  - react-native-safe-area-context (5.4.0):
+  - react-native-safe-area-context (5.5.2):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -2171,8 +2171,8 @@ PODS:
     - React-hermes
     - React-ImageManager
     - React-jsi
-    - react-native-safe-area-context/common (= 5.4.0)
-    - react-native-safe-area-context/fabric (= 5.4.0)
+    - react-native-safe-area-context/common (= 5.5.2)
+    - react-native-safe-area-context/fabric (= 5.5.2)
     - React-NativeModulesApple
     - React-RCTFabric
     - React-renderercss
@@ -2182,7 +2182,7 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
-  - react-native-safe-area-context/common (5.4.0):
+  - react-native-safe-area-context/common (5.5.2):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -2206,7 +2206,7 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
-  - react-native-safe-area-context/fabric (5.4.0):
+  - react-native-safe-area-context/fabric (5.5.2):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -3919,7 +3919,7 @@ SPEC CHECKSUMS:
   react-native-get-random-values: 21325b2244dfa6b58878f51f9aa42821e7ba3d06
   react-native-ios-context-menu: f5c2bc565a9a8599bb4513c43835a38e00d73b3a
   react-native-ios-utilities: 73c3e0a51544c059f80eecc226a3530609e10c42
-  react-native-keyboard-controller: 5a183e4c6a913a707a1cf648e6f12333fb527100
+  react-native-keyboard-controller: afd3252995bc3727ebe4b4f4997937323c2845c8
   react-native-menu: 8cc212c18ae939db6932e3c3feae9a99a80f0ecb
   react-native-mmkv: 2421db62a08da22d1b97ea4d55adfee9ea0f88a1
   react-native-netinfo: f0a9899081c185db1de5bb2fdc1c88c202a059ac
@@ -3928,7 +3928,7 @@ SPEC CHECKSUMS:
   react-native-quick-base64: 2f2d797c2a3a7d49d77bdef41045f9391f3f4c09
   react-native-quick-crypto: e0b1003058f1706acd425c156f494a485d18509e
   react-native-restart: 7595693413fe3ca15893702f2c8306c62a708162
-  react-native-safe-area-context: 00d03dc688ba86664be66f9e3f203fc7d747d899
+  react-native-safe-area-context: 638038e064cdf9747580a2e47717b09be309a321
   react-native-skia: d4b71ff628f69fd8e1b2d0dbd436d6ab6ee8d669
   react-native-slider: c4c1a975352113af59b59dc783abc111618ec37a
   react-native-theme-control: ad1dbaa6ac374bccf0100024269cadd44c73aa33
