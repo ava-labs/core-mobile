@@ -37,6 +37,8 @@ import { selectSelectedAvatar } from 'store/settings/avatar'
 import { selectActiveWalletId } from 'store/wallet/slice'
 import BiometricsSDK, { BiometricType } from 'utils/BiometricsSDK'
 import Logger from 'utils/Logger'
+import { commonStorage } from 'utils/mmkv'
+import { StorageKey } from 'resources/Constants'
 
 const LoginWithPinOrBiometry = (): JSX.Element => {
   const walletState = useSelector(selectWalletState)
@@ -204,10 +206,27 @@ const LoginWithPinOrBiometry = (): JSX.Element => {
   useFocusEffect(
     useCallback(() => {
       InteractionManager.runAfterInteractions(() => {
-        const accessType = BiometricsSDK.getAccessType()
+        let accessType = BiometricsSDK.getAccessType()
+
+        /*
+         * Fix inconsistent state: if accessType is 'BIO' but biometrics are disabled or not available
+         * This is needed due to previous bug in BiometricsSDK.storeEncryptionKeyWithBiometry()
+         * which was called by KeychainMigrator during app updates/migrations.
+         * The bug set SECURE_ACCESS_SET to 'BIO' before checking if biometric storage succeeded,
+         * leaving users in an inconsistent state when biometrics weren't available.
+         * We automatically correct this by setting SECURE_ACCESS_SET back to 'PIN'
+         */
+        const isBrokenBioState =
+          accessType === 'BIO' && (!useBiometrics || !isBiometricAvailable)
+
+        if (isBrokenBioState) {
+          commonStorage.set(StorageKey.SECURE_ACCESS_SET, 'PIN')
+          accessType = BiometricsSDK.getAccessType()
+        }
+
         if (accessType === 'BIO') {
           handlePromptBioLogin()
-        } else if (!isBiometricAvailable || !useBiometrics) {
+        } else {
           focusPinInput()
         }
       })
