@@ -1,19 +1,18 @@
+import {
+  useFocusEffect,
+  usePathname,
+  useRootNavigationState,
+  useRouter
+} from 'expo-router'
 import { useCallback, useEffect } from 'react'
 import 'react-native-reanimated'
-import { selectWalletState, WalletState } from 'store/app'
 import { useSelector } from 'react-redux'
-import {
-  useRootNavigationState,
-  useRouter,
-  usePathname,
-  useFocusEffect
-} from 'expo-router'
+import { selectWalletState, WalletState } from 'store/app'
 /**
  * Using useFocusEffect from @react-navigation/native as a workaround.
  * See: https://github.com/expo/expo/issues/35383
  */
 import { BackHandler } from 'react-native'
-import Logger from 'utils/Logger'
 
 // eslint-disable-next-line complexity
 export const NavigationRedirect = (): null => {
