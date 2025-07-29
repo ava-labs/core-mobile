@@ -232,7 +232,7 @@ const fetchSeedlessAccountsIfNeeded = async (
   const state = listenerApi.getState()
   const seedlessWallet = selectSeedlessWallet(state)
   if (!seedlessWallet) {
-    throw new Error('Seedless wallet not found')
+    return
   }
 
   const accounts = selectAccountsByWalletId(state, seedlessWallet.id)
@@ -280,6 +280,7 @@ const deriveMissingSeedlessSessionKeys = async (
 
       transactionSnackbar.success({ message: 'Accounts updated' })
     } catch (error) {
+      Logger.error(`Failed to derive missing keys: ${error}`, error)
       transactionSnackbar.error({
         error: 'Failed to update accounts'
       })
