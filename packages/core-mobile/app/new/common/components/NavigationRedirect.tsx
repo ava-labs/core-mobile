@@ -2,20 +2,21 @@ import { useCallback, useEffect } from 'react'
 import 'react-native-reanimated'
 import { selectWalletState, WalletState } from 'store/app'
 import { useSelector } from 'react-redux'
-import { useRootNavigationState, useRouter, usePathname } from 'expo-router'
+import {
+  useRootNavigationState,
+  useRouter,
+  usePathname,
+  useFocusEffect
+} from 'expo-router'
 /**
- * Temporarily import "useNavigation" from @react-navigation/native.
- * This is a workaround due to a render bug in the expo-router version.
+ * Using useFocusEffect from @react-navigation/native as a workaround.
  * See: https://github.com/expo/expo/issues/35383
- * TODO: Adjust import back to expo-router once the bug is resolved.
  */
-import { useNavigation, useFocusEffect } from '@react-navigation/native'
-import { StackActions } from '@react-navigation/native'
 import { BackHandler } from 'react-native'
 
+// eslint-disable-next-line complexity
 export const NavigationRedirect = (): null => {
   const router = useRouter()
-  const navigation = useNavigation()
   const pathName = usePathname()
   const walletState = useSelector(selectWalletState)
   const navigationState = useRootNavigationState()
@@ -25,63 +26,83 @@ export const NavigationRedirect = (): null => {
   )
 
   const isNavigationReady = Boolean(navigationState?.key)
+  // Additional check for Expo Router - ensure segments are loaded
+  const isRouterReady = Boolean(navigationState?.routes?.length > 0)
 
   // please be careful with the dependencies here
   // this effect is responsible for redirecting users
   // to either the sign up flow or the login modal
   // we don't want to include any other dependencies here
   useEffect(() => {
-    if (!isNavigationReady) return
+    if (!isNavigationReady || !isRouterReady) return
 
-    if (walletState === WalletState.NONEXISTENT) {
-      if (router.canGoBack()) {
-        navigation.dispatch(StackActions.popToTop())
-      }
-      // @ts-ignore TODO: make routes typesafe
-      router.replace('/signup')
-    } else if (walletState === WalletState.INACTIVE) {
-      // @ts-ignore TODO: make routes typesafe
-      router.navigate('/loginWithPinOrBiometry')
-    }
-  }, [walletState, router, navigation, isNavigationReady])
-
-  // TODO: refactor this effect so that we don't depend on navigation state
-  useEffect(() => {
-    if (!isNavigationReady) return
-
-    /**
-     * after the wallet is successfully unlocked
-     *
-     * - redirect to the portfolio if:
-     *   - the app was freshly opened
-     *   - the user just completed onboarding (either mnemonic or seedless)
-     * - otherwise, return the user to their previous/last screen if the app was locked due to inactivity.
-     */
-    if (walletState === WalletState.ACTIVE) {
-      // when the login modal is the last route and on top of the (signedIn) stack
-      // it means the app just resumed from inactivity
-      const isReturningFromInactivity =
-        isSignedIn && pathName === '/loginWithPinOrBiometry'
-
-      if (isReturningFromInactivity) {
-        router.canGoBack() && router.back()
-      } else if (
-        pathName === '/onboarding/mnemonic/confirmation' ||
-        pathName === '/onboarding/seedless/confirmation' ||
-        (pathName === '/loginWithPinOrBiometry' && !isSignedIn)
-      ) {
-        // must call dismissAll() here
-        // otherwise, pressing the back button will either take users:
-        // - to a blank screen (if they are already logged in)
-        // - back to the onboarding flow (when they just completed onboarding)
-        while (router.canGoBack()) {
+    // Add small delay to ensure Root Layout is fully mounted
+    const timeoutId = setTimeout(() => {
+      if (walletState === WalletState.NONEXISTENT) {
+        // Use router.dismissAll() instead of navigation.dispatch
+        if (router.canGoBack()) {
           router.dismissAll()
         }
         // @ts-ignore TODO: make routes typesafe
-        router.replace('/portfolio')
+        router.replace('/signup')
+      } else if (walletState === WalletState.INACTIVE) {
+        // @ts-ignore TODO: make routes typesafe
+        router.navigate('/loginWithPinOrBiometry')
       }
-    }
-  }, [walletState, router, isSignedIn, pathName, isNavigationReady])
+    }, 50) // Small delay to ensure layout is ready
+
+    return () => clearTimeout(timeoutId)
+  }, [walletState, router, isNavigationReady, isRouterReady])
+
+  // TODO: refactor this effect so that we don't depend on navigation state
+  useEffect(() => {
+    if (!isNavigationReady || !isRouterReady) return
+
+    // Add small delay to ensure Root Layout is fully mounted
+    const timeoutId = setTimeout(() => {
+      /**
+       * after the wallet is successfully unlocked
+       *
+       * - redirect to the portfolio if:
+       *   - the app was freshly opened
+       *   - the user just completed onboarding (either mnemonic or seedless)
+       * - otherwise, return the user to their previous/last screen if the app was locked due to inactivity.
+       */
+      if (walletState === WalletState.ACTIVE) {
+        // when the login modal is the last route and on top of the (signedIn) stack
+        // it means the app just resumed from inactivity
+        const isReturningFromInactivity =
+          isSignedIn && pathName === '/loginWithPinOrBiometry'
+
+        if (isReturningFromInactivity) {
+          router.canGoBack() && router.back()
+        } else if (
+          pathName === '/onboarding/mnemonic/confirmation' ||
+          pathName === '/onboarding/seedless/confirmation' ||
+          (pathName === '/loginWithPinOrBiometry' && !isSignedIn)
+        ) {
+          // must call dismissAll() here
+          // otherwise, pressing the back button will either take users:
+          // - to a blank screen (if they are already logged in)
+          // - back to the onboarding flow (when they just completed onboarding)
+          while (router.canGoBack()) {
+            router.dismissAll()
+          }
+          // @ts-ignore TODO: make routes typesafe
+          router.replace('/portfolio')
+        }
+      }
+    }, 50) // Small delay to ensure layout is ready
+
+    return () => clearTimeout(timeoutId)
+  }, [
+    walletState,
+    router,
+    isSignedIn,
+    pathName,
+    isNavigationReady,
+    isRouterReady
+  ])
 
   useFocusEffect(
     useCallback(() => {

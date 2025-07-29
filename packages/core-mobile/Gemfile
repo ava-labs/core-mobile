@@ -5,3 +5,9 @@ ruby '3.2.2'
 
 gem 'cocoapods', '1.15.2'
 gem 'activesupport', '7.0.8'
+
+# Ruby 3.4.0 has removed some libraries from the standard library.
+gem 'bigdecimal'
+gem 'logger'
+gem 'benchmark'
+gem 'mutex_m'
