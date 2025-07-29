@@ -36,10 +36,8 @@
 		8E8003662CAAF3F100FFC562 /* Inter-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 8E8003572CAAF3D800FFC562 /* Inter-Regular.ttf */; };
 		8E8003672CAAF3F100FFC562 /* Inter-SemiBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 8E8003562CAAF3D800FFC562 /* Inter-SemiBold.ttf */; };
 		8E858A5E28AFD47300236EF2 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
-		8EA3A01028EF825900F753C2 /* AppDelegate.mm in Sources */ = {isa = PBXBuildFile; fileRef = 8EA3A00D28EF825900F753C2 /* AppDelegate.mm */; };
-		8EA3A01328EF82E100F753C2 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 8EA3A01128EF82E100F753C2 /* main.m */; };
-		8EA4B4D028EF9B4D00A06DBA /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 8EA3A01128EF82E100F753C2 /* main.m */; };
-		8EA4B4D128EF9B8300A06DBA /* AppDelegate.mm in Sources */ = {isa = PBXBuildFile; fileRef = 8EA3A00D28EF825900F753C2 /* AppDelegate.mm */; };
+		8EA3A01428EF82E100F753C2 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8EA3A01228EF82E100F753C2 /* AppDelegate.swift */; };
+		8EA4B4D128EF9B4D00A06DBA /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8EA3A01228EF82E100F753C2 /* AppDelegate.swift */; };
 		8EACAADB2BD84A3300A987BA /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 8EACAADA2BD84A3300A987BA /* PrivacyInfo.xcprivacy */; };
 		8EACAADC2BD84A3300A987BA /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 8EACAADA2BD84A3300A987BA /* PrivacyInfo.xcprivacy */; };
 		8EE7F7A1C0774BC9AFA75FEB /* libPods-common-AvaxWallet.a in Frameworks */ = {isa = PBXBuildFile; fileRef = A8AD8B1AC4F648BE51B1AD70 /* libPods-common-AvaxWallet.a */; };
@@ -155,9 +153,7 @@
 		8E8003592CAAF3D800FFC562 /* DejaVuSansMono.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = DejaVuSansMono.ttf; path = ../app/assets/fonts/DejaVuSansMono.ttf; sourceTree = "<group>"; };
 		8E83528A28F09E0900880FD3 /* OpenSSL.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = OpenSSL.xcframework; path = "Pods/OpenSSL-Universal/Frameworks/OpenSSL.xcframework"; sourceTree = "<group>"; };
 		8E858A6628AFD47300236EF2 /* AvaxWalletInternal.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AvaxWalletInternal.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		8EA3A00D28EF825900F753C2 /* AppDelegate.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = AppDelegate.mm; sourceTree = "<group>"; };
-		8EA3A00E28EF825900F753C2 /* AppDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
-		8EA3A01128EF82E100F753C2 /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
+		8EA3A01228EF82E100F753C2 /* AppDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		8EACAADA2BD84A3300A987BA /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		8EE9988A28B537A40088DE7C /* InfoRelease.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = InfoRelease.plist; path = AvaxWallet/InfoRelease.plist; sourceTree = "<group>"; };
 		98B4FBA16D8159067E38BF66 /* libPods-common-AvaxWalletInternal.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-common-AvaxWalletInternal.a"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -243,9 +239,7 @@
 				8EE9988A28B537A40088DE7C /* InfoRelease.plist */,
 				81ACC3922BD1B2860089FEBA /* BootSplash.storyboard */,
 				0BA5138A27D234C200A25188 /* AvaxWallet-Bridging-Header.h */,
-				8EA3A00E28EF825900F753C2 /* AppDelegate.h */,
-				8EA3A01128EF82E100F753C2 /* main.m */,
-				8EA3A00D28EF825900F753C2 /* AppDelegate.mm */,
+				8EA3A01228EF82E100F753C2 /* AppDelegate.swift */,
 				8EACAADA2BD84A3300A987BA /* PrivacyInfo.xcprivacy */,
 			);
 			name = AvaxWallet;
@@ -859,8 +853,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				8EA4B4D128EF9B8300A06DBA /* AppDelegate.mm in Sources */,
-				8EA4B4D028EF9B4D00A06DBA /* main.m in Sources */,
+				8EA4B4D128EF9B4D00A06DBA /* AppDelegate.swift in Sources */,
 				A96E77CAD2ABB49A6ACACD2C /* ExpoModulesProvider.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -885,8 +878,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				8EA3A01328EF82E100F753C2 /* main.m in Sources */,
-				8EA3A01028EF825900F753C2 /* AppDelegate.mm in Sources */,
+				8EA3A01428EF82E100F753C2 /* AppDelegate.swift in Sources */,
 				C7062D69B313585A64C52506 /* ExpoModulesProvider.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
