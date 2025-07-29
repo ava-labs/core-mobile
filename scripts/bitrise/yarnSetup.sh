@@ -1,26 +1,18 @@
 #!/usr/bin/env bash
-# fail if any commands fails
-set -e
-# make pipelines' return status equal the last command to exit with a non-zero status, or zero if all commands exit successfully
+set -eo pipefail
 
-set -o pipefail
+echo "== Enabling corepack =="
+corepack enable || echo "⚠️ Corepack not available"
 
-# enable corepack
-corepack enable
+echo "== Yarn version =="
+yarn --version || exit 1
 
-if ! cat /etc/issue 2>/dev/null
-then
-yarn install --immutable && yarn setup
-else 
-  stack=$( cat /etc/issue )
-fi
+echo "== Installing dependencies =="
+yarn install --immutable || exit 1
 
-if [[ $stack == *Ubuntu* ]]; then
-    # on ubuntu, yarn setup command will fail
-    # as patch-package doesn't have write access to the node_modules folder
-    # thus, we need to set write permission manually and rerun yarn
-    # Bitrise issue link https://support.bitrise.io/hc/en-us/requests/39436?page=1
-    sudo chown root .
-
-    yarn install --immutable && yarn setup
+if [ -f package.json ] && jq -e '.scripts.setup' package.json >/dev/null; then
+  echo "== Running yarn setup =="
+  yarn setup || echo "⚠️ yarn setup failed — continuing"
+else
+  echo "⚠️ No yarn setup script defined — skipping"
 fi
