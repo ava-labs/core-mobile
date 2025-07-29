@@ -351,7 +351,7 @@ PODS:
     - ExpoModulesCore
   - ExpoHead (5.1.4):
     - ExpoModulesCore
-  - ExpoImage (2.0.7):
+  - ExpoImage (2.0.4):
     - ExpoModulesCore
     - libavif/libdav1d
     - SDWebImage (~> 5.19.1)
@@ -3842,7 +3842,7 @@ SPEC CHECKSUMS:
   ExpoFont: 091a47eeaa1b30b0b760aa1d0a2e7814e8bf6fe6
   ExpoHaptics: 68c215e070f660e0a29c45dcda4f60eeff08aefb
   ExpoHead: 7c1893efc8dc79570bdcbdadce175723f4c037ec
-  ExpoImage: c37f79e5e97e0a662ed1c4b17363464007da3148
+  ExpoImage: 3099001359e4414d60addd7c3e00a5d949df41e0
   ExpoKeepAwake: e8dedc115d9f6f24b153ccd2d1d8efcdfd68a527
   ExpoLinearGradient: ce334cff9859da4635c1d8eff6e291b11b04ccbb
   ExpoLinking: 343a89ea864a851831fd4495e8aea01cf0f6a36f
