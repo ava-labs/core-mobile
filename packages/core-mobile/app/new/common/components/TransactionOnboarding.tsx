@@ -82,11 +82,12 @@ export const TransactionOnboarding = ({
         padding: 16
       }}>
       <View sx={{ marginTop: 50, alignItems: 'center' }}>
-        {icon.component({
-          width: icon.size ?? ICON_DEFAULT_SIZE,
-          height: icon.size ?? ICON_DEFAULT_SIZE,
-          color: theme.colors.$textPrimary
-        })}
+        {typeof icon.component === 'function' &&
+          (icon.component({
+            width: icon.size ?? ICON_DEFAULT_SIZE,
+            height: icon.size ?? ICON_DEFAULT_SIZE,
+            color: theme.colors.$textPrimary
+          }) as React.ReactNode)}
         <Text
           variant="heading3"
           sx={{

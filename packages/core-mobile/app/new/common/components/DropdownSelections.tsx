@@ -8,6 +8,7 @@ import {
 } from '@avalabs/k2-alpine'
 import { DropdownSelection } from 'common/types'
 import React, { memo, useMemo, useRef } from 'react'
+import { NativeMethods } from 'react-native'
 
 const SEPARATOR_HEIGHT = 1
 const POPOVER_HEIGHT = 40
@@ -158,10 +159,10 @@ const Sorts = memo(
     selected: DropdownSelection['selected']
     onSelected: DropdownSelection['onSelected']
   }) => {
-    const sortRef = useRef<React.ElementRef<typeof View>>(null)
+    const sortRef = useRef(null)
 
     const { anchorRect, isPopoverVisible, onShowPopover, onHidePopover } =
-      usePopoverAnchor(sortRef)
+      usePopoverAnchor(sortRef as unknown as React.RefObject<NativeMethods>)
 
     const numberOfItems = data[0]?.length ?? 2
 

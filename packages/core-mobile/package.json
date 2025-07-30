@@ -198,7 +198,7 @@
     "react-native-toast-notifications": "3.4.0",
     "react-native-url-polyfill": "2.0.0",
     "react-native-view-shot": "4.0.3",
-    "react-native-webview": "13.13.5",
+    "react-native-webview": "ava-labs/react-native-webview",
     "react-native-webview-crypto": "0.0.26",
     "react-redux": "9.1.2",
     "react-timer-hook": "3.0.7",
