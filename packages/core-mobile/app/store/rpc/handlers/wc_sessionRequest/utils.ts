@@ -100,7 +100,7 @@ export type CoreAccountAddresses = z.infer<typeof coreAccountAddresses>
 export const getAddressForChainId = (
   caip2ChainId: string,
   account: CoreAccountAddresses
-): string => {
+): string | undefined => {
   return isXChainId(caip2ChainId)
     ? account.addressAVM
     : isPChainId(caip2ChainId)
@@ -118,7 +118,7 @@ const coreAccountAddresses = z.object({
   addressAVM: z.string(),
   addressPVM: z.string(),
   addressCoreEth: z.string(),
-  addressSVM: z.string()
+  addressSVM: z.string().optional()
 })
 
 const namespaceToApproveSchema = z.object({
