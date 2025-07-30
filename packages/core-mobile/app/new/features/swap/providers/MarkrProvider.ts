@@ -116,6 +116,7 @@ const buildSwapTransaction = async (
     isDestTokenNative,
     destTokenAddress,
     quote,
+    provider,
     network,
     userAddress
   } = params
@@ -150,13 +151,27 @@ const buildSwapTransaction = async (
     from: userAddress
   })
 
-  return {
+  const props = {
     from: userAddress,
     to: tx.to,
     gas: undefined,
     data: tx.data,
     value: isSrcTokenNative ? bigIntToHex(BigInt(sourceAmount)) : undefined
   }
+
+  const [swapGasLimit, swapGasLimitError] = await resolve(
+    provider.estimateGas(props)
+  )
+
+  if (swapGasLimitError || !swapGasLimit) {
+    throw swapError.swapTxFailed(swapGasLimitError)
+  }
+
+  const multiplier = 120n
+  const scale = 100n
+  const gas = bigIntToHex((swapGasLimit * multiplier) / scale)
+
+  return { ...props, gas }
 }
 
 const handleTokenApproval = async (
