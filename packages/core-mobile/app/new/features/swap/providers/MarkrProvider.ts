@@ -118,7 +118,8 @@ const buildSwapTransaction = async (
     quote,
     provider,
     network,
-    userAddress
+    userAddress,
+    markrGasMultiplier
   } = params
 
   // These should be validated by validateSwapParams, but adding type guards for safety
@@ -127,7 +128,8 @@ const buildSwapTransaction = async (
     !destTokenAddress ||
     !quote ||
     !userAddress ||
-    !network
+    !network ||
+    !markrGasMultiplier
   ) {
     throw new Error('Required parameters are missing')
   }
@@ -167,16 +169,13 @@ const buildSwapTransaction = async (
     throw swapError.swapTxFailed(swapGasLimitError)
   }
 
-  const multiplier = 120n
-  const scale = 100n
-  const gas = bigIntToHex((swapGasLimit * multiplier) / scale)
+  const gas = bigIntToHex((swapGasLimit * BigInt(markrGasMultiplier)) / 100n)
 
   return { ...props, gas }
 }
 
 const handleTokenApproval = async (
   params: PerformSwapEvmParams,
-  tx: TransactionParams,
   sourceAmount: string
 ): Promise<void> => {
   const {
@@ -184,7 +183,8 @@ const handleTokenApproval = async (
     srcTokenAddress,
     provider,
     signAndSend,
-    userAddress
+    userAddress,
+    network
   } = params
 
   if (isSrcTokenNative) {
@@ -196,11 +196,9 @@ const handleTokenApproval = async (
     throw new Error('Required parameters are missing')
   }
 
-  if (!tx.to) {
-    throw new Error('Transaction to address is missing')
-  }
-
-  const spenderAddress: string = tx.to
+  const spenderAddress = await MarkrService.getSpenderAddress({
+    chainId: network.chainId
+  })
 
   const approvalTxHash = await ensureAllowance({
     amount: BigInt(sourceAmount),
@@ -344,13 +342,13 @@ export const MarkrProvider: SwapProvider<
       slippage
     )
 
+    await handleTokenApproval(params, sourceAmount)
+
     const tx = await buildSwapTransaction(
       params,
       sourceAmount,
       destinationAmount
     )
-
-    await handleTokenApproval(params, tx, sourceAmount)
 
     return await executeSwapTransaction(params, tx)
   }
