@@ -104,6 +104,8 @@ export const TokenActivityListItemTitle = ({
         if (isCollectibleTransaction(tx)) {
           if (s1 === tx.tokens[0]?.type) {
             return [
+              tx.isSender ? 'Sent' : 'Received',
+              ' ',
               renderAmount(a1),
               ' ',
               s1,
@@ -116,6 +118,8 @@ export const TokenActivityListItemTitle = ({
           }
 
           return [
+            tx.isSender ? 'Sent' : 'Received',
+            ' ',
             renderAmount(a1),
             ' ',
             s1,
