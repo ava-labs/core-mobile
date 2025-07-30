@@ -50,7 +50,7 @@ export enum FeatureVars {
   P_FEE_ADJUSTMENT_THRESHOLD = 'p-fee-adjustment-threshold',
   C_BASE_FEE_MULTIPLIER = 'c-base-fee-multiplier',
   CROSS_CHAIN_FEES_MULTIPLIER = 'cross-chain-fees-multiplier',
-  MARKR_GAS_MULTIPLIER = 'markr-swap-gas-buffer'
+  MARKR_SWAP_GAS_BUFFER = 'markr-swap-gas-buffer'
 }
 
 // posthog response can be an empty object when all features are disabled
