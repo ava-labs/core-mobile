@@ -11,11 +11,11 @@ import Glow from '../../../../assets/glow-solana.png'
 export default function SolanaLaunchScreen(): JSX.Element {
   const { theme } = useTheme()
   const dispatch = useDispatch()
-  const { back, canGoBack } = useRouter()
+  const { dismiss } = useRouter()
 
   const handleDismiss = useCallback(() => {
-    canGoBack() && back()
-  }, [canGoBack, back])
+    dismiss()
+  }, [dismiss])
 
   const renderFooter = useCallback(() => {
     return (
