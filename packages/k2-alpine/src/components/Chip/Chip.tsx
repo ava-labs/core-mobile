@@ -28,7 +28,7 @@ interface ChipProps {
 }
 
 export const Chip = forwardRef<
-  React.ElementRef<typeof TouchableOpacity>,
+  React.ComponentRef<typeof TouchableOpacity>,
   ChipProps & PropsWithChildren
 >(
   (

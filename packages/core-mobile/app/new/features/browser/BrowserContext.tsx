@@ -12,7 +12,7 @@ export type BrowserContextType = {
   progress: SharedValue<number>
   inputRef?: React.RefObject<TextInput | null>
   browserRefs: React.RefObject<
-    Record<string, React.RefObject<BrowserTabRef> | null>
+    Record<string, React.RefObject<BrowserTabRef | null>>
   >
   showRecentSearches: SharedValue<boolean>
   isFocused: SharedValue<boolean>
@@ -33,7 +33,7 @@ function useBrowserContextValue(): BrowserContextType {
     activeTab?.activeHistory?.url ?? ''
   )
   const inputRef = useRef<TextInput>(null)
-  const browserRefs = useRef<Record<string, RefObject<BrowserTabRef> | null>>(
+  const browserRefs = useRef<Record<string, RefObject<BrowserTabRef | null>>>(
     {}
   )
 
