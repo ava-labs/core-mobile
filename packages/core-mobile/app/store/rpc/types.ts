@@ -39,6 +39,7 @@ export type RpcState = {
 
 export enum RpcMethod {
   /* standard methods */
+  ETH_REQUEST_ACCOUNTS = 'eth_requestAccounts',
   ETH_SEND_TRANSACTION = 'eth_sendTransaction',
   SIGN_TYPED_DATA_V3 = 'eth_signTypedData_v3',
   SIGN_TYPED_DATA_V4 = 'eth_signTypedData_v4',
