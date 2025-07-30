@@ -8,13 +8,8 @@ import { useCallback, useEffect } from 'react'
 import 'react-native-reanimated'
 import { useSelector } from 'react-redux'
 import { selectWalletState, WalletState } from 'store/app'
-/**
- * Using useFocusEffect from @react-navigation/native as a workaround.
- * See: https://github.com/expo/expo/issues/35383
- */
-import { BackHandler } from 'react-native'
+import { BackHandler, InteractionManager } from 'react-native'
 
-// eslint-disable-next-line complexity
 export const NavigationRedirect = (): null => {
   const router = useRouter()
   const pathName = usePathname()
@@ -27,17 +22,16 @@ export const NavigationRedirect = (): null => {
 
   const isNavigationReady = Boolean(navigationState?.key)
   // Additional check for Expo Router - ensure segments are loaded
-  const isRouterReady = Boolean(navigationState?.routes?.length > 0)
 
   // please be careful with the dependencies here
   // this effect is responsible for redirecting users
   // to either the sign up flow or the login modal
   // we don't want to include any other dependencies here
   useEffect(() => {
-    if (!isNavigationReady || !isRouterReady) return
+    if (!isNavigationReady) return
 
-    // Add small delay to ensure Root Layout is fully mounted
-    const timeoutId = setTimeout(() => {
+    // Ensure Root Layout is fully mounted
+    InteractionManager.runAfterInteractions(() => {
       if (walletState === WalletState.NONEXISTENT) {
         // Use router.dismissAll() instead of navigation.dispatch
         if (router.canGoBack()) {
@@ -49,17 +43,15 @@ export const NavigationRedirect = (): null => {
         // @ts-ignore TODO: make routes typesafe
         router.navigate('/loginWithPinOrBiometry')
       }
-    }, 50) // Small delay to ensure layout is ready
-
-    return () => clearTimeout(timeoutId)
-  }, [walletState, router, isNavigationReady, isRouterReady])
+    })
+  }, [walletState, router, isNavigationReady])
 
   // TODO: refactor this effect so that we don't depend on navigation state
   useEffect(() => {
-    if (!isNavigationReady || !isRouterReady) return
+    if (!isNavigationReady) return
 
-    // Add small delay to ensure Root Layout is fully mounted
-    const timeoutId = setTimeout(() => {
+    // Ensure Root Layout is fully mounted
+    InteractionManager.runAfterInteractions(() => {
       /**
        * after the wallet is successfully unlocked
        *
@@ -71,7 +63,6 @@ export const NavigationRedirect = (): null => {
       if (walletState === WalletState.ACTIVE) {
         // when the login modal is the last route and on top of the (signedIn) stack
         // it means the app just resumed from inactivity
-
         const isReturningFromInactivity =
           isSignedIn && pathName === '/loginWithPinOrBiometry'
 
@@ -93,17 +84,8 @@ export const NavigationRedirect = (): null => {
           router.replace('/portfolio')
         }
       }
-    }, 50) // Small delay to ensure layout is ready
-
-    return () => clearTimeout(timeoutId)
-  }, [
-    walletState,
-    router,
-    isSignedIn,
-    pathName,
-    isNavigationReady,
-    isRouterReady
-  ])
+    })
+  }, [walletState, router, isSignedIn, pathName, isNavigationReady])
 
   useFocusEffect(
     useCallback(() => {
