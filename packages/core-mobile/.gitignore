@@ -28,6 +28,7 @@ local.properties
 *.hprof
 .cxx/
 keystore.properties
+.kotlin/
 
 # node.js
 #
