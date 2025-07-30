@@ -47,20 +47,13 @@ export const setPriceAlertNotifications = async (
       internalId: id
     }))
 
-    // Only call the API if we have tokens to subscribe to
-    if (tokens.length > 0) {
-      await setPriceAlertSubscriptions({
-        tokens,
-        deviceArn
-      })
-      Logger.info(
-        `[TokenChange] Successfully subscribed to token price alerts for ${tokens.length} tokens`
-      )
-    } else {
-      Logger.info(
-        '[TokenChange] No valid internalIds found for favorite tokens, skipping subscription'
-      )
-    }
+    await setPriceAlertSubscriptions({
+      tokens,
+      deviceArn
+    })
+    Logger.info(
+      `[TokenChange] Successfully subscribed to token price alerts for ${tokens.length} tokens`
+    )
   } catch (error) {
     // Handle specific APNS/FCM token errors gracefully
     Logger.error(`[setTokenSubscriptionsForFavorites]${error}`)
