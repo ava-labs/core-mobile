@@ -155,7 +155,7 @@ export type PerformSwapBaseParams = {
   network: Network
   userAddress: string | undefined
   isSwapFeesEnabled?: boolean
-  markrGasMultiplier?: number
+  markrSwapGasBuffer?: number
 }
 
 export type PerformSwapEvmParams = PerformSwapBaseParams & {

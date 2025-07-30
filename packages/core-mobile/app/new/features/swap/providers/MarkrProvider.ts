@@ -119,7 +119,7 @@ const buildSwapTransaction = async (
     provider,
     network,
     userAddress,
-    markrGasMultiplier
+    markrSwapGasBuffer
   } = params
 
   // These should be validated by validateSwapParams, but adding type guards for safety
@@ -129,7 +129,7 @@ const buildSwapTransaction = async (
     !quote ||
     !userAddress ||
     !network ||
-    !markrGasMultiplier
+    !markrSwapGasBuffer
   ) {
     throw new Error('Required parameters are missing')
   }
@@ -169,7 +169,7 @@ const buildSwapTransaction = async (
     throw swapError.swapTxFailed(swapGasLimitError)
   }
 
-  const gas = bigIntToHex((swapGasLimit * BigInt(markrGasMultiplier)) / 100n)
+  const gas = bigIntToHex((swapGasLimit * BigInt(markrSwapGasBuffer)) / 100n)
 
   return { ...props, gas }
 }

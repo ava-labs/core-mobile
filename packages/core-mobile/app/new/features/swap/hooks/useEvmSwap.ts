@@ -36,7 +36,7 @@ export const useEvmSwap = (): {
   const { request } = useInAppRequest()
   const isSwapFeesBlocked = useSelector(selectIsSwapFeesBlocked)
   const isSwapUseMarkrBlocked = useSelector(selectIsSwapUseMarkrBlocked)
-  const markrGasMultiplier = useSelector(selectMarkrSwapGasBuffer)
+  const markrSwapGasBuffer = useSelector(selectMarkrSwapGasBuffer)
 
   const getSwapProvider = (
     isMarkrBlocked: boolean
@@ -144,10 +144,10 @@ export const useEvmSwap = (): {
         signAndSend,
         userAddress: account.addressC,
         isSwapFeesEnabled: !isSwapFeesBlocked,
-        markrGasMultiplier
+        markrSwapGasBuffer
       })
     },
-    [avalancheProvider, isSwapFeesBlocked, request, markrGasMultiplier]
+    [avalancheProvider, isSwapFeesBlocked, request, markrSwapGasBuffer]
   )
 
   return {
