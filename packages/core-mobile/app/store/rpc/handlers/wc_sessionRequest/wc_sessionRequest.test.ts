@@ -416,6 +416,7 @@ describe('session_request handler', () => {
           chains: ['eip155:43114', 'eip155:1'],
           // all methods we support
           methods: [
+            'eth_requestAccounts',
             'eth_sendTransaction',
             'eth_signTypedData_v3',
             'eth_signTypedData_v4',
@@ -480,6 +481,7 @@ describe('session_request handler', () => {
           chains: ['eip155:43114', 'eip155:1'],
           // all methods we support
           methods: [
+            'eth_requestAccounts',
             'eth_sendTransaction',
             'eth_signTypedData_v3',
             'eth_signTypedData_v4',
@@ -635,6 +637,7 @@ describe('session_request handler', () => {
           chains: ['eip155:43114', 'eip155:1'],
           // all methods we support
           methods: [
+            'eth_requestAccounts',
             'eth_sendTransaction',
             'eth_signTypedData_v3',
             'eth_signTypedData_v4',
