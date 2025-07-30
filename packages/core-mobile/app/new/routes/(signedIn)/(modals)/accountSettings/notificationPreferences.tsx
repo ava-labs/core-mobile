@@ -39,7 +39,8 @@ const NotificationPreferencesScreen = (): JSX.Element => {
       [ChannelId.PRODUCT_ANNOUNCEMENTS]: isAllNotificationsBlocked,
       [ChannelId.OFFERS_AND_PROMOTIONS]: isAllNotificationsBlocked,
       [ChannelId.MARKET_NEWS]: isAllNotificationsBlocked,
-      [ChannelId.PRICE_ALERTS]: isAllNotificationsBlocked
+      [ChannelId.PRICE_ALERTS]: isAllNotificationsBlocked,
+      [ChannelId.FAV_TOKEN_PRICE_ALERTS]: isAllNotificationsBlocked
     }
   }, [isAllNotificationsBlocked, isEarnBlocked])
 
