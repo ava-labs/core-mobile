@@ -6,6 +6,7 @@ import React, { useEffect } from 'react'
 import { InteractionManager } from 'react-native'
 import { useSelector } from 'react-redux'
 import { selectWalletState, WalletState } from 'store/app'
+import { selectIsSolanaSupportBlocked } from 'store/posthog'
 import { selectHasBeenViewedOnce, ViewOnceKey } from 'store/viewOnce'
 
 export default function PortfolioLayout(): JSX.Element {
@@ -15,17 +16,22 @@ export default function PortfolioLayout(): JSX.Element {
   const hasBeenViewedSolanaLaunch = useSelector(
     selectHasBeenViewedOnce(ViewOnceKey.SOLANA_LAUNCH)
   )
+  const isSolanaSupportBlocked = useSelector(selectIsSolanaSupportBlocked)
   const walletState = useSelector(selectWalletState)
 
   useEffect(() => {
     InteractionManager.runAfterInteractions(() => {
       // Only show modal when wallet is active and user hasn't seen it before
-      if (!hasBeenViewedSolanaLaunch && walletState === WalletState.ACTIVE) {
+      if (
+        !hasBeenViewedSolanaLaunch &&
+        !isSolanaSupportBlocked &&
+        walletState === WalletState.ACTIVE
+      ) {
         // @ts-ignore TODO: Add types
         navigate('/(signedIn)/(modals)/solanaLaunch')
       }
     })
-  }, [hasBeenViewedSolanaLaunch, navigate, walletState])
+  }, [hasBeenViewedSolanaLaunch, isSolanaSupportBlocked, navigate, walletState])
 
   return (
     <Stack screenOptions={stackNavigatorScreenOptions}>
