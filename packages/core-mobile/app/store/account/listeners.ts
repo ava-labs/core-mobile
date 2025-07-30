@@ -280,7 +280,7 @@ const deriveMissingSeedlessSessionKeys = async (
 
       transactionSnackbar.success({ message: 'Accounts updated' })
     } catch (error) {
-      Logger.error(`Failed to derive missing keys: ${error}`, error)
+      Logger.error('Failed to derive missing keys', error)
       transactionSnackbar.error({
         error: 'Failed to update accounts'
       })

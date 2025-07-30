@@ -80,11 +80,10 @@ class CoreSeedlessAPIService implements CoreSeedlessApiInterface {
       })
 
       if (!response.ok) {
-        const body = await response.json()
-        throw new Error(`HTTP ${response.status} - ${body?.message}`)
+        throw new Error(`HTTP request failed: ${response.status}`)
       }
     } catch (error) {
-      Logger.error('Failed to fetch /v1/addAccount:', error)
+      Logger.error('Failed to fetch /v1/addAccount', error)
       throw error
     }
   }
@@ -113,11 +112,10 @@ class CoreSeedlessAPIService implements CoreSeedlessApiInterface {
       )
 
       if (!response.ok) {
-        const body = await response.json()
-        throw new Error(`HTTP ${response.status} - ${body?.message}`)
+        throw new Error(`HTTP request failed: ${response.status}`)
       }
     } catch (error) {
-      Logger.error('Failed to fetch /v1/deriveMissingKeys:', error)
+      Logger.error('Failed to fetch /v1/deriveMissingKeys', error)
       throw error
     }
   }
