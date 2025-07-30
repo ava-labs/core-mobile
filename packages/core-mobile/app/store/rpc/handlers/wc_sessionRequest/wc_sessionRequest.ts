@@ -86,7 +86,7 @@ class WCSessionRequestHandler implements RpcRequestHandler<WCSessionProposal> {
       selectedAccounts.forEach(acc => {
         const address = getAddressForChainId(chain, acc)
 
-        if (address.trim().length > 0) {
+        if (address && address.trim().length > 0) {
           approvedAccounts.push(`${chain}:${address}`)
         }
       })
