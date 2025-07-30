@@ -5,7 +5,8 @@ import { TransactionParams } from '@avalabs/evm-module'
 import { humanizeParaswapRateError } from 'errors/swapError'
 import {
   selectIsSwapFeesBlocked,
-  selectIsSwapUseMarkrBlocked
+  selectIsSwapUseMarkrBlocked,
+  selectMarkrSwapGasBuffer
 } from 'store/posthog'
 import { useAvalancheEvmProvider } from 'hooks/networks/networkProviderHooks'
 import { useInAppRequest } from 'hooks/useInAppRequest'
@@ -35,6 +36,7 @@ export const useEvmSwap = (): {
   const { request } = useInAppRequest()
   const isSwapFeesBlocked = useSelector(selectIsSwapFeesBlocked)
   const isSwapUseMarkrBlocked = useSelector(selectIsSwapUseMarkrBlocked)
+  const markrSwapGasBuffer = useSelector(selectMarkrSwapGasBuffer)
 
   const getSwapProvider = (
     isMarkrBlocked: boolean
@@ -141,10 +143,11 @@ export const useEvmSwap = (): {
         provider: avalancheProvider,
         signAndSend,
         userAddress: account.addressC,
-        isSwapFeesEnabled: !isSwapFeesBlocked
+        isSwapFeesEnabled: !isSwapFeesBlocked,
+        markrSwapGasBuffer
       })
     },
-    [avalancheProvider, isSwapFeesBlocked, request]
+    [avalancheProvider, isSwapFeesBlocked, request, markrSwapGasBuffer]
   )
 
   return {
