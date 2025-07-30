@@ -198,6 +198,8 @@ const handleTokenApproval = async (
 
   const spenderAddress = await MarkrService.getSpenderAddress({
     chainId: network.chainId
+  }).catch(() => {
+    throw new Error('Error getting spender address')
   })
 
   const approvalTxHash = await ensureAllowance({
