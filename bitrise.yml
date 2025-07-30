@@ -28,7 +28,7 @@ workflows:
         inputs:
         - ndk_version: 27.1.12297006
         - gradlew_path: $ANDROID_PROJECT_LOCATION/gradlew
-    # - restore-gradle-cache@1: {}
+    - restore-gradle-cache@1: {}
     - android-build@1:
         inputs:
         - project_location: $ANDROID_PROJECT_LOCATION
@@ -36,7 +36,7 @@ workflows:
         - build_type: aab
         - cache_level: all
         - variant: $ANDROID_BUILD_VARIANT
-    # - save-gradle-cache@1: {}
+    - save-gradle-cache@1: {}
     - sign-apk@1:
         inputs:
         - android_app: $BITRISE_AAB_PATH
@@ -74,7 +74,7 @@ workflows:
         inputs:
         - ndk_version: 27.1.12297006
         - gradlew_path: $ANDROID_PROJECT_LOCATION/gradlew
-    # - restore-gradle-cache@1: {}
+    - restore-gradle-cache@1: {}
     - script-runner@0:
         title: Fix Android Env Vars
         inputs:
