@@ -6,7 +6,7 @@ import { humanizeParaswapRateError } from 'errors/swapError'
 import {
   selectIsSwapFeesBlocked,
   selectIsSwapUseMarkrBlocked,
-  selectMarkrGasMultiplier
+  selectMarkrSwapGasBuffer
 } from 'store/posthog'
 import { useAvalancheEvmProvider } from 'hooks/networks/networkProviderHooks'
 import { useInAppRequest } from 'hooks/useInAppRequest'
@@ -36,7 +36,7 @@ export const useEvmSwap = (): {
   const { request } = useInAppRequest()
   const isSwapFeesBlocked = useSelector(selectIsSwapFeesBlocked)
   const isSwapUseMarkrBlocked = useSelector(selectIsSwapUseMarkrBlocked)
-  const markrGasMultiplier = useSelector(selectMarkrGasMultiplier)
+  const markrGasMultiplier = useSelector(selectMarkrSwapGasBuffer)
 
   const getSwapProvider = (
     isMarkrBlocked: boolean

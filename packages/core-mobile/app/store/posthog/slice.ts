@@ -376,7 +376,7 @@ export const selectIsSwapUseMarkrBlocked = (state: RootState): boolean => {
   )
 }
 
-export const selectMarkrGasMultiplier = (state: RootState): number => {
+export const selectMarkrSwapGasBuffer = (state: RootState): number => {
   const { featureFlags } = state.posthog
   return parseFloat(featureFlags[FeatureVars.MARKR_SWAP_GAS_BUFFER] as string)
 }
