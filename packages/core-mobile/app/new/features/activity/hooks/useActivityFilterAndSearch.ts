@@ -22,6 +22,7 @@ import { useGetRecentTransactions } from 'store/transaction/hooks/useGetRecentTr
 import { isPChain, isXChain } from 'utils/network/isAvalancheNetwork'
 import { useActivity } from '../store'
 import { ActivityListItem, buildGroupedData, getDateGroups } from '../utils'
+import { isSupportedNftChainId } from '../utils'
 
 type ActivityNetworkFilter = {
   filterName: string
@@ -120,14 +121,19 @@ export const useActivityFilterAndSearch = ({
   }, [transactions, isPendingBridge])
 
   const filters: TokenDetailFilters | undefined = useMemo(() => {
-    if (networkOption?.chainId && isPChain(networkOption?.chainId)) {
-      const newFilters = [
-        ...(TOKEN_DETAIL_FILTERS[0] ?? []),
-        TokenDetailFilter.Stake
-      ]
+    if (networkOption?.chainId) {
+      const newFilters = [...(TOKEN_DETAIL_FILTERS[0] ?? [])]
+      // Stake filter is only available for P-Chain
+      if (isPChain(networkOption?.chainId)) {
+        newFilters.push(TokenDetailFilter.Stake)
+      }
+
+      // Only Avalanche C-Chain and Ethereum are supported for NFTs
+      if (isSupportedNftChainId(networkOption?.chainId)) {
+        newFilters.push(TokenDetailFilter.NFT)
+      }
       return [newFilters]
     }
-    return undefined
   }, [networkOption?.chainId])
 
   const { data, filter, sort, resetFilter } = useTokenDetailFilterAndSort({

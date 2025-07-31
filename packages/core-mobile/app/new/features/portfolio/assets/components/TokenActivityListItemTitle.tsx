@@ -102,7 +102,7 @@ export const TokenActivityListItemTitle = ({
       default: {
         if (isCollectibleTransaction(tx)) {
           if (tx.tokens[0]?.type === TokenType.ERC1155) {
-            return [`${a1} NFT ${tx.isSender ? 'sent' : 'received'}`]
+            return [`NFT ${tx.isSender ? 'sent' : 'received'}`]
           }
 
           return [
