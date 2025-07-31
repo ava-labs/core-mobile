@@ -17,7 +17,7 @@ export const setPriceAlertNotifications = async (
   const state = listenerApi.getState()
 
   const userHasEnabledPriceAlertNotifications = selectNotificationSubscription(
-    ChannelId.PRICE_ALERTS
+    ChannelId.FAV_TOKEN_PRICE_ALERTS
   )(state)
 
   if (!userHasEnabledPriceAlertNotifications) {
@@ -35,10 +35,10 @@ export const setPriceAlertNotifications = async (
     const fcmToken = await FCMService.getFCMToken()
     const deviceArn = await registerDeviceToNotificationSender(fcmToken)
 
-    //check if only PRICE_ALERTS notifications are denied
+    //check if only FAV_TOKEN_PRICE_ALERTS notifications are denied
     const blockedNotifications =
       await NotificationsService.getBlockedNotifications()
-    if (blockedNotifications.has(ChannelId.PRICE_ALERTS)) {
+    if (blockedNotifications.has(ChannelId.FAV_TOKEN_PRICE_ALERTS)) {
       await unsubscribeForPriceAlert()
       return
     }
