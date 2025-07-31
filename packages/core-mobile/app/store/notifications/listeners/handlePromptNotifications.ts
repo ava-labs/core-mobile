@@ -4,7 +4,10 @@ import { selectHasBeenViewedOnce, setViewOnce } from 'store/viewOnce/slice'
 import { ViewOnceKey } from 'store/viewOnce/types'
 import NotificationsService from 'services/notifications/NotificationsService'
 import { AuthorizationStatus } from '@notifee/react-native'
-import { selectIsEnableNotificationPromptBlocked } from 'store/posthog'
+import {
+  selectIsEnableNotificationPromptBlocked,
+  selectIsSolanaSupportBlocked
+} from 'store/posthog'
 import { showAlert } from '@avalabs/k2-alpine'
 import { turnOnAllNotifications } from '../slice'
 
@@ -82,6 +85,9 @@ async function waitIfSolanaLaunchScreenIsYetNotDismissed(
 ): Promise<void> {
   const { take } = listenerApi
   const state = listenerApi.getState()
+  const isSolanaSupportBlocked = selectIsSolanaSupportBlocked(state)
+  if (isSolanaSupportBlocked) return
+
   let hasSeenSolanaLaunch = selectHasBeenViewedOnce(ViewOnceKey.SOLANA_LAUNCH)(
     state
   )
