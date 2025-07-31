@@ -91,7 +91,7 @@ workflows:
         - variant: $ANDROID_BUILD_VARIANT
         - cache_level: all
         - project_location: $ANDROID_PROJECT_LOCATION
-    # - save-gradle-cache@1: {}
+    - save-gradle-cache@1: {}
     - sign-apk@1:
         inputs:
         - android_app: $BITRISE_APK_PATH|$BITRISE_TEST_APK_PATH
@@ -256,8 +256,8 @@ workflows:
         inputs:
         - verbose: "true"
         - source_root_path: $BITRISE_SOURCE_DIR/ios
-    # - save-cocoapods-cache@1: {}
-    - xcode-archive@4:
+    - save-cocoapods-cache@1: {}
+    - xcode-archive@5.8.0:
         inputs:
         - project_path: $IOS_PROJECT_PATH
         - scheme: $IOS_SCHEME

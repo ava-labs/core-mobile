@@ -199,6 +199,26 @@ export const addNotificationsListeners = (
   })
 
   startListening({
+    matcher: isAnyOf(
+      onRehydrationComplete,
+      onFcmTokenChange,
+      turnOnAllNotifications,
+      onNotificationsEnabled,
+      onNotificationsTurnedOnForFavTokenPriceAlerts
+    ),
+    effect: setPriceAlertNotifications
+  })
+
+  startListening({
+    matcher: isAnyOf(onNotificationsTurnedOffForFavTokenPriceAlerts),
+    effect: async () => {
+      await unsubscribeForPriceAlert().catch(reason => {
+        Logger.error(`[listeners.ts][unsubscribeForPriceAlert]${reason}`)
+      })
+    }
+  })
+
+  startListening({
     matcher: isAnyOf(onNotificationsTurnedOffForNews),
     effect: async () => {
       await unsubscribeForPriceAlert().catch(reason => {
@@ -267,6 +287,30 @@ const onNotificationsTurnedOffForNews = {
       channelId === ChannelId.PRODUCT_ANNOUNCEMENTS ||
       channelId === ChannelId.PRICE_ALERTS
     )
+  }
+}
+
+const onNotificationsTurnedOnForFavTokenPriceAlerts = {
+  match: (
+    action: Action<unknown>
+  ): action is PayloadAction<{ channelId: ChannelId }> => {
+    if (!turnOnNotificationsFor.match(action)) {
+      return false
+    }
+
+    return action.payload.channelId === ChannelId.FAV_TOKEN_PRICE_ALERTS
+  }
+}
+
+const onNotificationsTurnedOffForFavTokenPriceAlerts = {
+  match: (
+    action: Action<unknown>
+  ): action is PayloadAction<{ channelId: ChannelId }> => {
+    if (!turnOffNotificationsFor.match(action)) {
+      return false
+    }
+
+    return action.payload.channelId === ChannelId.FAV_TOKEN_PRICE_ALERTS
   }
 }
 

@@ -16,6 +16,7 @@ export const DefaultFeatureFlagConfig = {
   [FeatureVars.P_FEE_ADJUSTMENT_THRESHOLD]: '1e-3', // 0.1%
   [FeatureVars.CROSS_CHAIN_FEES_MULTIPLIER]: '4e0', // 400%
   [FeatureVars.C_BASE_FEE_MULTIPLIER]: '1e0', // 100%
+  [FeatureVars.MARKR_SWAP_GAS_BUFFER]: '120', // 120%
   [FeatureGates.BUY_COINBASE_PAY]: true,
   [FeatureGates.DEFI]: true,
   [FeatureGates.BROWSER]: true,

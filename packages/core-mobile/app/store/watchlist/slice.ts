@@ -21,7 +21,7 @@ export const watchlistSlice = createSlice({
   reducers: {
     toggleWatchListFavorite: (state, action: PayloadAction<InternalId>) => {
       const index = state.favorites.findIndex(
-        coingeckoId => coingeckoId === action.payload
+        tokenId => tokenId === action.payload
       )
       if (index !== -1) {
         state.favorites.splice(index, 1)

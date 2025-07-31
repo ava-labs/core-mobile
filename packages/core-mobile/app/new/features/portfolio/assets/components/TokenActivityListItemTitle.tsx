@@ -1,6 +1,5 @@
-import { truncateAddress } from '@avalabs/core-utils-sdk/dist'
 import { Text, useTheme, View } from '@avalabs/k2-alpine'
-import { TransactionType } from '@avalabs/vm-module-types'
+import { TokenType, TransactionType } from '@avalabs/vm-module-types'
 import { HiddenBalanceText } from 'common/components/HiddenBalanceText'
 import { SubTextNumber } from 'common/components/SubTextNumber'
 import { useBlockchainNames } from 'common/utils/useBlockchainNames'
@@ -102,42 +101,19 @@ export const TokenActivityListItemTitle = ({
 
       default: {
         if (isCollectibleTransaction(tx)) {
-          if (s1 === tx.tokens[0]?.type) {
-            return [
-              renderAmount(a1),
-              ' ',
-              s1,
-              ' - ',
-              truncateAddress(tx.to, 5),
-              ' - #',
-              tx.tokens[0]?.collectableTokenId ||
-                tx.tokens[1]?.collectableTokenId
-            ]
+          if (tx.tokens[0]?.type === TokenType.ERC1155) {
+            return [`NFT ${tx.isSender ? 'sent' : 'received'}`]
           }
 
           return [
-            renderAmount(a1),
-            ' ',
-            s1,
-            ' - ',
-            tx.tokens[0]?.type,
-            ' - ',
-            truncateAddress(tx.to, 5),
-            ' - #',
-            tx.tokens[0]?.collectableTokenId || tx.tokens[1]?.collectableTokenId
+            `${tx.tokens[0]?.name} (${tx?.tokens[0]?.symbol}) ${
+              tx.isSender ? 'sent' : 'received'
+            }`
           ]
         }
         if (tx.isContractCall) {
           if (tx.tokens.length >= 1) {
-            return [
-              renderAmount(a1),
-              ' ',
-              s1,
-              ' swapped for ',
-              renderAmount(a2),
-              ' ',
-              s2
-            ]
+            return [renderAmount(a1), ' ', s1, ' swapped for ', s2]
           }
 
           return ['Contract Call']

@@ -36,6 +36,7 @@ import {
 import { COMMON_EVENTS, NON_EVM_OPTIONAL_NAMESPACES } from './namespaces'
 
 const supportedEvmMethods = [
+  RpcMethod.ETH_REQUEST_ACCOUNTS,
   RpcMethod.ETH_SEND_TRANSACTION,
   RpcMethod.SIGN_TYPED_DATA_V3,
   RpcMethod.SIGN_TYPED_DATA_V4,
@@ -85,7 +86,7 @@ class WCSessionRequestHandler implements RpcRequestHandler<WCSessionProposal> {
       selectedAccounts.forEach(acc => {
         const address = getAddressForChainId(chain, acc)
 
-        if (address.trim().length > 0) {
+        if (address && address.trim().length > 0) {
           approvedAccounts.push(`${chain}:${address}`)
         }
       })

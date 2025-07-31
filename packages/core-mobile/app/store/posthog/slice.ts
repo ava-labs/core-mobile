@@ -376,6 +376,11 @@ export const selectIsSwapUseMarkrBlocked = (state: RootState): boolean => {
   )
 }
 
+export const selectMarkrSwapGasBuffer = (state: RootState): number => {
+  const { featureFlags } = state.posthog
+  return parseFloat(featureFlags[FeatureVars.MARKR_SWAP_GAS_BUFFER] as string)
+}
+
 export const selectIsSwapFeesJupiterBlocked = (state: RootState): boolean => {
   const { featureFlags } = state.posthog
   return (
