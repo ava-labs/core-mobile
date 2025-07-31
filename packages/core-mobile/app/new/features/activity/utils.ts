@@ -3,6 +3,8 @@ import { BridgeTransaction } from '@avalabs/core-bridge-sdk'
 import { TokenType, TransactionType } from '@avalabs/vm-module-types'
 import { format, isToday } from 'date-fns'
 import { TokenActivityTransaction } from 'features/portfolio/assets/components/TokenActivityListItem'
+import { isAvalancheCChainId } from 'services/network/utils/isAvalancheNetwork'
+import { isEthereumChainId } from 'services/network/utils/isEthereumNetwork'
 import { Transaction } from 'store/transaction'
 
 export type ActivityListItem =
@@ -112,10 +114,18 @@ export function isCollectibleTransaction(
     ((tx.tokens[0]?.type === TokenType.ERC1155 ||
       tx.tokens[0]?.type === TokenType.ERC721) &&
       Boolean(tx.tokens[1]?.collectableTokenId)) ||
-    [
-      TransactionType.NFT_SEND,
-      TransactionType.NFT_RECEIVE,
-      TransactionType.NFT_BUY
-    ].includes(tx.txType as TransactionType)
+    isNftTransaction(tx)
   )
+}
+
+export function isNftTransaction(tx: TokenActivityTransaction): boolean {
+  return (
+    tx.txType === TransactionType.NFT_SEND ||
+    tx.txType === TransactionType.NFT_RECEIVE ||
+    tx.txType === TransactionType.NFT_BUY
+  )
+}
+
+export function isSupportedNftChainId(chainId: number): boolean {
+  return isAvalancheCChainId(chainId) || isEthereumChainId(chainId)
 }

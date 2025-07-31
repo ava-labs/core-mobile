@@ -8,13 +8,20 @@ import { LoadingState } from 'common/components/LoadingState'
 import { getListItemEnteringAnimation } from 'common/utils/animations'
 import { getBridgeAssetSymbol } from 'common/utils/bridgeUtils'
 import { ActivityList } from 'features/activity/components/ActivityList'
-import { buildGroupedData, getDateGroups } from 'features/activity/utils'
+import {
+  buildGroupedData,
+  getDateGroups,
+  isCollectibleTransaction,
+  isSupportedNftChainId
+} from 'features/activity/utils'
 import usePendingBridgeTransactions from 'features/bridge/hooks/usePendingBridgeTransactions'
 import { portfolioTabContentHeight } from 'features/portfolio/utils'
 import { useNetworks } from 'hooks/networks/useNetworks'
 import React, { FC, useCallback, useMemo } from 'react'
 import { StyleSheet } from 'react-native'
 import Animated from 'react-native-reanimated'
+import { isAvalancheCChainId } from 'services/network/utils/isAvalancheNetwork'
+import { isEthereumChainId } from 'services/network/utils/isEthereumNetwork'
 import { LocalTokenWithBalance } from 'store/balance'
 import { Transaction, useGetRecentTransactions } from 'store/transaction'
 import { isPChain } from 'utils/network/isAvalancheNetwork'
@@ -65,6 +72,14 @@ const TransactionHistory: FC<Props> = ({
   const transactionsBySymbol = useMemo(() => {
     return transactions
       .filter(tx => {
+        // Filter collectible transactions that support collectible transactions
+        if (
+          isCollectibleTransaction(tx) &&
+          isTokenCollectibleSupported(Number(tx.chainId), token?.symbol ?? '')
+        ) {
+          return true
+        }
+
         return (
           !token?.symbol ||
           (tx.tokens[0]?.symbol && token.symbol === tx.tokens[0].symbol)
@@ -74,15 +89,26 @@ const TransactionHistory: FC<Props> = ({
   }, [token, transactions, isPendingBridge])
 
   const filters: TokenDetailFilters | undefined = useMemo(() => {
-    if (isPChain(token?.networkChainId ?? 0)) {
-      const newFilters = [
-        ...(TOKEN_DETAIL_FILTERS[0] ?? []),
-        TokenDetailFilter.Stake
-      ]
+    if (token?.networkChainId) {
+      const newFilters = [...(TOKEN_DETAIL_FILTERS[0] ?? [])]
+      // Stake filter is only available for P-Chain
+      if (isPChain(token?.networkChainId)) {
+        newFilters.push(TokenDetailFilter.Stake)
+      }
+
+      // Only Avalanche C-Chain and Ethereum are supported for NFTs
+      if (
+        isSupportedNftChainId(token?.networkChainId) &&
+        isTokenCollectibleSupported(
+          Number(token?.networkChainId),
+          token?.symbol ?? ''
+        )
+      ) {
+        newFilters.push(TokenDetailFilter.NFT)
+      }
       return [newFilters]
     }
-    return undefined
-  }, [token?.networkChainId])
+  }, [token?.networkChainId, token?.symbol])
 
   const { data, filter, sort } = useTokenDetailFilterAndSort({
     transactions: transactionsBySymbol,
@@ -164,3 +190,10 @@ const styles = StyleSheet.create({
 })
 
 export default TransactionHistory
+
+function isTokenCollectibleSupported(chainId: number, symbol: string): boolean {
+  return (
+    (isAvalancheCChainId(chainId) && symbol === 'AVAX') ||
+    (isEthereumChainId(chainId) && symbol === 'ETH')
+  )
+}

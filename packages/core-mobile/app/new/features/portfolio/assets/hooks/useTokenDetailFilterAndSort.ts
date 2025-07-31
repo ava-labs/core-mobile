@@ -6,6 +6,7 @@ import {
   TransactionType
 } from '@avalabs/vm-module-types'
 import { sortUndefined } from 'common/utils/sortUndefined'
+import { isCollectibleTransaction } from 'features/activity/utils'
 
 export type Selection = {
   title: string
@@ -64,6 +65,8 @@ export const useTokenDetailFilterAndSort = ({
           return (
             tx.txType === PChainTransactionType.ADD_PERMISSIONLESS_DELEGATOR_TX
           )
+        case TokenDetailFilter.NFT:
+          return isCollectibleTransaction(tx)
         case TokenDetailFilter.Received:
           return tx.txType === TransactionType.RECEIVE
         case TokenDetailFilter.Sent:
@@ -131,7 +134,8 @@ export enum TokenDetailFilter {
   Received = 'Received',
   Bridge = 'Bridge',
   Swap = 'Swap',
-  Stake = 'Stake'
+  Stake = 'Stake',
+  NFT = 'NFT'
 }
 
 export enum TokenDetailSort {

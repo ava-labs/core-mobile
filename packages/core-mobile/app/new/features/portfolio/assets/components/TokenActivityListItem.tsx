@@ -1,6 +1,8 @@
 import { PriceChangeStatus, useTheme, View } from '@avalabs/k2-alpine'
 import { Transaction, TransactionType } from '@avalabs/vm-module-types'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
+import { isCollectibleTransaction } from 'features/activity/utils'
+import { CollectibleFetchAndRender } from 'features/portfolio/collectibles/components/CollectibleFetchAndRender'
 import { useWatchlist } from 'hooks/watchlist/useWatchlist'
 import React, { FC, useMemo } from 'react'
 import { ActivityTransactionType } from 'store/transaction'
@@ -26,6 +28,7 @@ export const TokenActivityListItem: FC<Props> = ({
   const status = useMemo(() => {
     switch (tx.txType) {
       case TransactionType.TRANSFER:
+        return PriceChangeStatus.Neutral
       case TransactionType.SEND:
         return PriceChangeStatus.Down
       case TransactionType.RECEIVE:
@@ -49,7 +52,17 @@ export const TokenActivityListItem: FC<Props> = ({
     }
   }, [tx.isIncoming, tx.isOutgoing, tx.tokens.length, tx.txType])
 
-  const formattedAmountInCurrency = useMemo(() => {
+  const subtitle = useMemo(() => {
+    if (isCollectibleTransaction(tx)) {
+      return `#${
+        tx.tokens[0]?.collectableTokenId || tx.tokens[1]?.collectableTokenId
+      } - ${tx?.tokens[0]?.type}`
+    }
+
+    if (tx.txType === TransactionType.TRANSFER) {
+      return `${tx.tokens[0]?.name}`
+    }
+
     const amount = Number(tx.tokens[0]?.amount.replaceAll(',', ''))
     if (!currentPrice || isNaN(amount)) {
       return null
@@ -66,9 +79,15 @@ export const TokenActivityListItem: FC<Props> = ({
         ? '-'
         : ''
     return amountPrefix + formattedAmount
-  }, [status, currentPrice, tx.tokens, formatTokenInCurrency])
+  }, [tx, currentPrice, formatTokenInCurrency, status])
 
   const renderIcon = useMemo(() => {
+    if (isCollectibleTransaction(tx)) {
+      return (
+        <CollectibleFetchAndRender tx={tx} size={ICON_SIZE} iconSize={20} />
+      )
+    }
+
     return (
       <View
         sx={{
@@ -92,7 +111,7 @@ export const TokenActivityListItem: FC<Props> = ({
   return (
     <ActivityListItem
       title={<TokenActivityListItemTitle tx={tx} />}
-      subtitle={formattedAmountInCurrency}
+      subtitle={subtitle}
       subtitleType="amountInCurrency"
       timestamp={tx.timestamp}
       showSeparator={showSeparator}
