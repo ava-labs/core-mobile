@@ -21,6 +21,7 @@ export interface CollectibleRendererProps {
   style?: ViewStyle
   videoProps?: VideoProps
   onLoaded?: () => void
+  iconSize: number
 }
 
 export const CollectibleRenderer = memo(
@@ -29,7 +30,8 @@ export const CollectibleRenderer = memo(
     children,
     onLoaded,
     videoProps,
-    style
+    style,
+    iconSize = 24
   }: // eslint-disable-next-line sonarjs/cognitive-complexity
   CollectibleRendererProps): ReactNode => {
     const {
@@ -66,8 +68,8 @@ export const CollectibleRenderer = memo(
         return (
           <Icons.Content.HideImage
             color={colors.$textPrimary}
-            width={24}
-            height={24}
+            width={iconSize}
+            height={iconSize}
           />
         )
       if (isLoading) return <CollectibleSkeleton />
@@ -76,11 +78,11 @@ export const CollectibleRenderer = memo(
       return (
         <Icons.Content.HideImage
           color={colors.$textPrimary}
-          width={24}
-          height={24}
+          width={iconSize}
+          height={iconSize}
         />
       )
-    }, [collectible?.status, colors.$textPrimary, error, isLoading])
+    }, [collectible?.status, colors.$textPrimary, error, iconSize, isLoading])
 
     const renderContent = useCallback(() => {
       if (collectible?.imageData?.video)
