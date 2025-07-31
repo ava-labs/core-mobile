@@ -12,7 +12,7 @@ const ScanQrCodeScreen = (): React.JSX.Element => {
   const handleOnSuccess = useCallback(
     (address: string): void => {
       dismiss()
-      setParams({ address, addressType })
+      setParams({ address, addressType } as never)
     },
     [addressType, dismiss, setParams]
   )

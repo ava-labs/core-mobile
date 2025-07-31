@@ -3,7 +3,7 @@ import { NativeMethods } from 'react-native'
 import { Rect } from 'react-native-popover-view'
 
 export const usePopoverAnchor = (
-  sourceRef: React.RefObject<NativeMethods>
+  sourceRef: React.RefObject<NativeMethods | null>
 ): {
   anchorRect: Rect | undefined
   isPopoverVisible: boolean

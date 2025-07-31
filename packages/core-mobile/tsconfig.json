@@ -22,6 +22,7 @@
     ".prettierrc.js",
     "./index.d.ts",
     "./declarations.d.ts",
+    "./global.d.ts",
     "../k2-alpine/src/theme.d.ts",
     "../k2-alpine/src/components/Video/Video.tsx",
     ".expo/types/**/*.ts",

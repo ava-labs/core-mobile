@@ -16,7 +16,6 @@ export async function encrypt(
   publicKey: string,
   keyID?: string
 ): Promise<{ encrypted: string; enc: string; keyID?: string }> {
-  // @ts-ignore
   if (!global.crypto.subtle) {
     throw new Error('crypto.subtle is not available')
   }

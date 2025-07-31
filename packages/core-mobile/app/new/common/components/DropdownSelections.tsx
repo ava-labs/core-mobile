@@ -158,7 +158,7 @@ const Sorts = memo(
     selected: DropdownSelection['selected']
     onSelected: DropdownSelection['onSelected']
   }) => {
-    const sortRef = useRef<React.ElementRef<typeof View>>(null)
+    const sortRef = useRef(null)
 
     const { anchorRect, isPopoverVisible, onShowPopover, onHidePopover } =
       usePopoverAnchor(sortRef)

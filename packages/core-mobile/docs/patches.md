@@ -35,12 +35,6 @@ Calling pino({ level: 'error' }) will throw an error `Cannot assign to read only
 
 commenting out import "react-native-url-polyfill/auto" as we already import it ourselves
 
-### @react-native+0.76.2.patch
-
-commenting out assertions in JSCRuntime.cpp that checked if API object and API string counters are zero in debug to avoid crash in fast refresh
-
-HMRClient.js: adjust stringify logic of object to make logs in Terminal more readable
-
 ### @hpke+core+1.2.7.patch
 
 for some reason, metro can only consume esm folder so we had to adjust the package.json to only expose esm folder
@@ -54,10 +48,9 @@ to prevent a crash on iOS when react-native-svg is unable to render certain svgs
 logger in wallet connect is hard coded to trace. this patch adjusts it to "error" level for local development and "silent" level for production
 https://github.com/WalletConnect/walletconnect-utils/issues/171
 
-### react-native-reanimated+3.17.1.patch
+### react-native-reanimated+3.17.4.patch
 
-invalid call of hasAnimatedRef method will cause a crash. it is fixed but not released yet.
-https://github.com/software-mansion/react-native-reanimated/pull/7158
+added isActive prop for useAnimatedSensor
 
 ### react-native-collapsible-tab-view+8.0.0.patch
 

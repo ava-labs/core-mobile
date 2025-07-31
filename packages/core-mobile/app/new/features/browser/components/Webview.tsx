@@ -8,7 +8,7 @@ import Logger from 'utils/Logger'
 
 export interface WebViewParams extends WebViewProps {
   url: string
-  webViewRef?: React.RefObject<RNWebView>
+  webViewRef?: React.RefObject<RNWebView | null>
   injectedJavaScript?: string
   onLoad?: (event: WebViewNavigationEvent) => void
   onMessage?: (event: WebViewMessageEvent) => void

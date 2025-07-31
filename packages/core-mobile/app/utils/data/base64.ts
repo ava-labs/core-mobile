@@ -9,7 +9,7 @@ export const base64UrlToBuffer = (b64url: string): Buffer => {
   return Buffer.from(b64, 'base64')
 }
 
-export function bufferToBase64Url(buffer: ArrayBuffer): string {
+export function bufferToBase64Url(buffer: Buffer): string {
   // buffer to binary string
   const byteView = new Uint8Array(buffer)
   let str = ''

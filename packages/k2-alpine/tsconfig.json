@@ -5,6 +5,7 @@
     "**/*.tsx",
     "**/*.js",
     "*.d.ts",
+    "../core-mobile/global.d.ts",
     "./.storybook/*.js",
     ".eslintrc.js",
     ".prettierrc.js"

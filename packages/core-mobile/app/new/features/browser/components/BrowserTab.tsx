@@ -98,7 +98,7 @@ export const BrowserTab = forwardRef<BrowserTabRef, { tabId: string }>(
       undefined
     )
 
-    const webViewRef = useRef<RNWebView>(null)
+    const webViewRef = useRef<RNWebView | null>(null)
     const backgroundColor =
       pageStyles?.backgroundColor || theme.colors.$surfacePrimary
 

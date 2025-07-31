@@ -39,7 +39,7 @@ export const SimpleDropdown = <T extends { toString(): string }>({
   scrollContentMaxHeight?: number
 }): JSX.Element => {
   const { theme } = useTheme()
-  const popoverRef = useRef<Popover>()
+  const popoverRef = useRef<Popover>(null)
 
   const isSelected = useCallback(
     (indexPath: IndexPath): boolean => {
@@ -126,7 +126,6 @@ export const SimpleDropdown = <T extends { toString(): string }>({
   return (
     <View>
       <Popover
-        // @ts-expect-error
         ref={popoverRef}
         displayArea={displayArea}
         from={from}
