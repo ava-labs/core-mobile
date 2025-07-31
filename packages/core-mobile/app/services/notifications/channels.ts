@@ -6,7 +6,8 @@ export enum ChannelId {
   PRODUCT_ANNOUNCEMENTS = 'productAnnouncements',
   OFFERS_AND_PROMOTIONS = 'offersAndPromotions',
   MARKET_NEWS = 'marketNews',
-  PRICE_ALERTS = 'priceAlerts'
+  PRICE_ALERTS = 'priceAlerts',
+  FAV_TOKEN_PRICE_ALERTS = 'favTokenPriceAlerts'
 }
 
 export enum NewsChannelId {
@@ -55,7 +56,7 @@ export const notificationChannels = [
     lights: false,
     vibration: false,
     importance: AndroidImportance.DEFAULT,
-    title: 'Product Announcements',
+    title: 'Product announcements',
     subtitle: 'Learn about new features and changes',
     sound: 'default'
   } as AvaxAndroidChannel,
@@ -65,7 +66,7 @@ export const notificationChannels = [
     lights: false,
     vibration: false,
     importance: AndroidImportance.DEFAULT,
-    title: 'Special Offers and Promotions',
+    title: 'Special offers and promotions',
     subtitle: 'Airdrops and promotional offers',
     sound: 'default'
   } as AvaxAndroidChannel,
@@ -75,7 +76,7 @@ export const notificationChannels = [
     lights: false,
     vibration: false,
     importance: AndroidImportance.DEFAULT,
-    title: 'Market News',
+    title: 'Market news',
     subtitle: 'News and market information alerts',
     sound: 'default'
   } as AvaxAndroidChannel,
@@ -85,8 +86,18 @@ export const notificationChannels = [
     lights: false,
     vibration: false,
     importance: AndroidImportance.DEFAULT,
-    title: 'Price Alerts',
+    title: 'Price alerts',
     subtitle: 'Token price movement alerts',
+    sound: 'default'
+  } as AvaxAndroidChannel,
+  {
+    id: ChannelId.FAV_TOKEN_PRICE_ALERTS,
+    name: 'Favorite Token Alerts',
+    lights: false,
+    vibration: false,
+    importance: AndroidImportance.DEFAULT,
+    title: 'Favorite token alerts',
+    subtitle: 'Favorite token price movement alerts',
     sound: 'default'
   } as AvaxAndroidChannel
 ]
