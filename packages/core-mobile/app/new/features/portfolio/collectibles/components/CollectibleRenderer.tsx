@@ -21,7 +21,7 @@ export interface CollectibleRendererProps {
   style?: ViewStyle
   videoProps?: VideoProps
   onLoaded?: () => void
-  iconSize: number
+  iconSize?: number
 }
 
 export const CollectibleRenderer = memo(
