@@ -50,16 +50,17 @@ export const NavigationRedirect = (): null => {
   useEffect(() => {
     if (!isNavigationReady) return
 
+    /**
+     * after the wallet is successfully unlocked
+     *
+     * - redirect to the portfolio if:
+     *   - the app was freshly opened
+     *   - the user just completed onboarding (either mnemonic or seedless)
+     * - otherwise, return the user to their previous/last screen if the app was locked due to inactivity.
+     */
+
     // Ensure Root Layout is fully mounted
     InteractionManager.runAfterInteractions(() => {
-      /**
-       * after the wallet is successfully unlocked
-       *
-       * - redirect to the portfolio if:
-       *   - the app was freshly opened
-       *   - the user just completed onboarding (either mnemonic or seedless)
-       * - otherwise, return the user to their previous/last screen if the app was locked due to inactivity.
-       */
       if (walletState === WalletState.ACTIVE) {
         // when the login modal is the last route and on top of the (signedIn) stack
         // it means the app just resumed from inactivity
