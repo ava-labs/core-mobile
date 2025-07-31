@@ -257,7 +257,7 @@ workflows:
         - verbose: "true"
         - source_root_path: $BITRISE_SOURCE_DIR/ios
     - save-cocoapods-cache@1: {}
-    - xcode-archive@4:
+    - xcode-archive@5.8.0:
         inputs:
         - project_path: $IOS_PROJECT_PATH
         - scheme: $IOS_SCHEME
