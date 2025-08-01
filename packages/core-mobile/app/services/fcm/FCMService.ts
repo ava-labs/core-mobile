@@ -58,8 +58,11 @@ class FCMService {
       const result = NotificationPayloadSchema.safeParse(remoteMessage)
 
       if (!result.success) {
+        // eslint-disable-next-line no-console
+        console.log('listenForMessagesForeground result', result.error)
         Logger.error(
-          `[FCMService.ts][listenForMessagesForeground:NotificationPayloadSchema]${result}`
+          `[FCMService.ts][listenForMessagesForeground:NotificationPayloadSchema]`,
+          result.error
         )
         return
       }
@@ -165,8 +168,11 @@ class FCMService {
       Logger.info('A new FCM message arrived in background', remoteMessage)
       const result = NotificationPayloadSchema.safeParse(remoteMessage)
       if (!result.success) {
+        // eslint-disable-next-line no-console
+        console.log('handleBackgroundMessageIos result', result.error)
         Logger.error(
-          `[FCMService.ts][listenForMessagesBackground:NotificationsBalanceChangeSchema]${result}`
+          `[FCMService.ts][listenForMessagesBackgroundIos:NotificationsBalanceChangeSchema]`,
+          result.error
         )
         return
       }
@@ -206,8 +212,11 @@ class FCMService {
       Logger.info('A new FCM message arrived in background', remoteMessage)
       const result = NotificationPayloadSchema.safeParse(remoteMessage)
       if (!result.success) {
+        // eslint-disable-next-line no-console
+        console.log('handleBackgroundMessageAndroid result', result.error)
         Logger.error(
-          `[FCMService.ts][listenForMessagesBackground:NotificationsBalanceChangeSchema]${result}`
+          `[FCMService.ts][listenForMessagesBackgroundAndroid:NotificationsBalanceChangeSchema]`,
+          result.error
         )
         return
       }

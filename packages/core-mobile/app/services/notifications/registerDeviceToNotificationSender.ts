@@ -28,8 +28,15 @@ export async function registerDeviceToNotificationSender(
   if (response.ok) {
     const { deviceArn } = await response.json()
     commonStorage.set(StorageKey.NOTIFICATIONS_OPTIMIZATION, deviceArn)
+    // eslint-disable-next-line no-console
+    console.log('Device ARN: ' + deviceArn)
     return deviceArn
   } else {
+    // eslint-disable-next-line no-console
+    console.log(
+      'registerDeviceToNotificationSender response',
+      JSON.stringify(response, null, 2)
+    )
     throw new Error(`${response.status}:${response.statusText}`)
   }
 }
