@@ -56,6 +56,11 @@ class FCMService {
     return messaging().onMessage(async remoteMessage => {
       Logger.info('A new FCM message arrived!', remoteMessage)
       const result = NotificationPayloadSchema.safeParse(remoteMessage)
+      // eslint-disable-next-line no-console
+      console.log(
+        'listenForMessagesForeground full payload',
+        JSON.stringify(remoteMessage, null, 2)
+      )
 
       if (!result.success) {
         // eslint-disable-next-line no-console
@@ -211,6 +216,11 @@ class FCMService {
     messaging().setBackgroundMessageHandler(async remoteMessage => {
       Logger.info('A new FCM message arrived in background', remoteMessage)
       const result = NotificationPayloadSchema.safeParse(remoteMessage)
+      // eslint-disable-next-line no-console
+      console.log(
+        'handleBackgroundMessageAndroid full payload',
+        JSON.stringify(remoteMessage, null, 2)
+      )
       if (!result.success) {
         // eslint-disable-next-line no-console
         console.log('handleBackgroundMessageAndroid result', result.error)
