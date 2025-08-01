@@ -1,6 +1,5 @@
 import BiometricsSDK, {
   bioGetOptions,
-  BiometricType,
   bioSetOptions,
   ENCRYPTION_KEY_SERVICE,
   ENCRYPTION_KEY_SERVICE_BIO,
@@ -8,11 +7,15 @@ import BiometricsSDK, {
   passcodeSetOptions,
   walletSecretOptions
 } from 'utils/BiometricsSDK'
-import Keychain, { BIOMETRY_TYPE } from 'react-native-keychain'
+import Keychain from 'react-native-keychain'
 import { commonStorage } from 'utils/mmkv'
 import { StorageKey } from 'resources/Constants'
 import { decrypt, encrypt } from 'utils/EncryptionHelper'
 import Logger from 'utils/Logger'
+import LocalAuthentication, {
+  AuthenticationType
+} from 'expo-local-authentication'
+import DeviceInfo from 'react-native-device-info'
 
 // Mock dependencies
 jest.mock('react-native-keychain', () => ({
@@ -33,12 +36,22 @@ jest.mock('react-native-keychain', () => ({
   },
   SECURITY_RULES: {
     NONE: 'NONE'
-  },
-  BIOMETRY_TYPE: {
-    FACE: 'FACE',
-    FACE_ID: 'FACE_ID',
-    TOUCH_ID: 'TOUCH_ID',
+  }
+}))
+
+// Mock DeviceInfo
+jest.mock('react-native-device-info', () => ({
+  getModel: jest.fn(),
+  getDeviceId: jest.fn()
+}))
+
+jest.mock('expo-local-authentication', () => ({
+  isEnrolledAsync: jest.fn(),
+  hasHardwareAsync: jest.fn(),
+  supportedAuthenticationTypesAsync: jest.fn(),
+  AuthenticationType: {
     FINGERPRINT: 'FINGERPRINT',
+    FACIAL_RECOGNITION: 'FACIAL_RECOGNITION',
     IRIS: 'IRIS'
   }
 }))
@@ -66,6 +79,10 @@ jest.mock('utils/Logger', () => ({
 
 // Cast mocks for type safety
 const mockKeychain = Keychain as jest.Mocked<typeof Keychain>
+const mockDeviceInfo = DeviceInfo as jest.Mocked<typeof DeviceInfo>
+const mockLocalAuthentication = LocalAuthentication as jest.Mocked<
+  typeof LocalAuthentication
+>
 const mockCommonStorage = commonStorage as jest.Mocked<typeof commonStorage>
 const mockEncrypt = encrypt as jest.Mock
 const mockDecrypt = decrypt as jest.Mock
@@ -394,35 +411,63 @@ describe('BiometricsSDK', () => {
     })
 
     it('should check if biometry can be used', async () => {
-      mockKeychain.getSupportedBiometryType.mockResolvedValue(
-        BIOMETRY_TYPE.FACE_ID
+      mockLocalAuthentication.supportedAuthenticationTypesAsync.mockResolvedValue(
+        [AuthenticationType.FINGERPRINT]
       )
-      const result = await BiometricsSDK.canUseBiometry()
-      expect(result).toBe(true)
+      mockDeviceInfo.getDeviceId.mockReturnValue('pixel_7')
+      const result = await BiometricsSDK.getAuthenticationTypes()
+      expect(result).toBeDefined()
 
-      mockKeychain.getSupportedBiometryType.mockResolvedValue(null)
-      const secondResult = await BiometricsSDK.canUseBiometry()
-      expect(secondResult).toBe(false)
+      mockLocalAuthentication.supportedAuthenticationTypesAsync.mockResolvedValue(
+        []
+      )
+      const secondResult = await BiometricsSDK.getAuthenticationTypes()
+      expect(secondResult).toStrictEqual([])
     })
 
     it('should get biometry type', async () => {
-      mockKeychain.getSupportedBiometryType.mockResolvedValue(
-        BIOMETRY_TYPE.FACE_ID
+      mockLocalAuthentication.isEnrolledAsync.mockResolvedValue(true)
+      mockDeviceInfo.getDeviceId.mockReturnValue('pixel_9')
+      mockLocalAuthentication.supportedAuthenticationTypesAsync.mockResolvedValue(
+        [AuthenticationType.FACIAL_RECOGNITION]
       )
-      expect(await BiometricsSDK.getBiometryType()).toBe(BiometricType.FACE_ID)
+      expect(await BiometricsSDK.getAuthenticationTypes()).toStrictEqual([
+        AuthenticationType.FACIAL_RECOGNITION
+      ])
 
-      mockKeychain.getSupportedBiometryType.mockResolvedValue(
-        BIOMETRY_TYPE.TOUCH_ID
+      mockLocalAuthentication.supportedAuthenticationTypesAsync.mockResolvedValue(
+        []
       )
-      expect(await BiometricsSDK.getBiometryType()).toBe(BiometricType.TOUCH_ID)
+      expect(await BiometricsSDK.getAuthenticationTypes()).toStrictEqual([
+        AuthenticationType.FACIAL_RECOGNITION
+      ])
 
-      mockKeychain.getSupportedBiometryType.mockResolvedValue(
-        BIOMETRY_TYPE.IRIS
+      mockDeviceInfo.getDeviceId.mockReturnValue('pixel_7')
+      mockLocalAuthentication.supportedAuthenticationTypesAsync.mockResolvedValue(
+        [AuthenticationType.FACIAL_RECOGNITION]
       )
-      expect(await BiometricsSDK.getBiometryType()).toBe(BiometricType.IRIS)
+      expect(await BiometricsSDK.getAuthenticationTypes()).toStrictEqual([])
 
-      mockKeychain.getSupportedBiometryType.mockResolvedValue(null)
-      expect(await BiometricsSDK.getBiometryType()).toBe(BiometricType.NONE)
+      mockLocalAuthentication.supportedAuthenticationTypesAsync.mockResolvedValue(
+        [AuthenticationType.FACIAL_RECOGNITION, AuthenticationType.FINGERPRINT]
+      )
+      expect(await BiometricsSDK.getAuthenticationTypes()).toStrictEqual([
+        AuthenticationType.FINGERPRINT
+      ])
+
+      mockLocalAuthentication.supportedAuthenticationTypesAsync.mockResolvedValue(
+        [AuthenticationType.FINGERPRINT]
+      )
+      expect(await BiometricsSDK.getAuthenticationTypes()).toStrictEqual([
+        AuthenticationType.FINGERPRINT
+      ])
+
+      mockLocalAuthentication.supportedAuthenticationTypesAsync.mockResolvedValue(
+        [AuthenticationType.IRIS]
+      )
+      expect(await BiometricsSDK.getAuthenticationTypes()).toStrictEqual([
+        AuthenticationType.IRIS
+      ])
     })
 
     it('should warmup', async () => {

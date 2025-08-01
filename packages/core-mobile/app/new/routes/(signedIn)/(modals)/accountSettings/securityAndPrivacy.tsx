@@ -24,6 +24,7 @@ import { useStoredBiometrics } from 'common/hooks/useStoredBiometrics'
 import BiometricsSDK from 'utils/BiometricsSDK'
 import Logger from 'utils/Logger'
 import { useActiveWallet } from 'common/hooks/useActiveWallet'
+import { useBiometricName } from 'hooks/useBiometricName'
 
 const SecurityAndPrivacyScreen = (): JSX.Element => {
   const {
@@ -35,11 +36,12 @@ const SecurityAndPrivacyScreen = (): JSX.Element => {
   const { allApprovedDapps } = useConnectedDapps()
   const wallet = useActiveWallet()
   const {
-    biometricType,
+    biometricTypes,
     isBiometricAvailable,
     useBiometrics,
     setUseBiometrics
   } = useStoredBiometrics()
+  const biometricName = useBiometricName(biometricTypes)
   const { navigate } = useRouter()
 
   const handleSwitchBiometric = useCallback(
@@ -119,7 +121,7 @@ const SecurityAndPrivacyScreen = (): JSX.Element => {
 
     if (isBiometricAvailable) {
       data.push({
-        title: `Use ${biometricType}`,
+        title: `Use ${biometricName}`,
         value: (
           <Toggle onValueChange={handleSwitchBiometric} value={useBiometrics} />
         )
@@ -131,7 +133,7 @@ const SecurityAndPrivacyScreen = (): JSX.Element => {
     isBiometricAvailable,
     handleToggleLockWalletWithPIN,
     navigate,
-    biometricType,
+    biometricName,
     handleSwitchBiometric,
     useBiometrics
   ])
