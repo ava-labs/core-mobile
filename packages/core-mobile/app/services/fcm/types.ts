@@ -20,6 +20,7 @@ export enum BalanceChangeEvents {
   ALLOWANCE_APPROVED = 'ALLOWANCE_APPROVED'
 }
 
+// balance change notification
 export const BalanceChangeDataSchema = object({
   type: literal(NotificationTypes.BALANCE_CHANGES),
   event: nativeEnum(BalanceChangeEvents),
@@ -31,12 +32,23 @@ export const BalanceChangeDataSchema = object({
   url: string() // we need this url to deeplink to in-app browser or screens.
 })
 
+// news notification covers the following:
+// 1/ automated price alerts (fixed list of tokens):
+//    uses urlV2 with internalId
+// 2/ automated price alerts (favorite tokens):
+//    uses urlV2 with internalId
+// 3/ manually triggered notifications:
+//    currently this uses url with internalId
+//    but backend will update it to use urlV2 with internalId soon
 export const NewsDataSchema = object({
   type: literal(NotificationTypes.NEWS),
   event: nativeEnum(NewsEvents),
   title: string(),
   body: string(),
-  urlV2: string()
+  // TODO: completely remove url and use urlV2 only
+  // after backend is updated to send urlV2
+  url: string().optional(),
+  urlV2: string().optional()
 })
 
 export const NotificationPayloadSchema = object({

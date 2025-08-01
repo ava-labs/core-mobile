@@ -57,10 +57,12 @@ const DELAY = 200
 const TrackTokenDetailScreen = (): JSX.Element => {
   const { theme } = useTheme()
 
-  const { tokenId, marketType } = useLocalSearchParams<{
+  const { tokenId, marketType: passedInMarketType } = useLocalSearchParams<{
     tokenId: string
-    marketType: MarketType
+    marketType?: MarketType
   }>()
+
+  const marketType = passedInMarketType ?? MarketType.TRENDING
 
   const { back, navigate } = useRouter()
   const [isChartInteracting, setIsChartInteracting] = useState(false)
@@ -430,7 +432,10 @@ const TrackTokenDetailScreen = (): JSX.Element => {
     isChartInteracting,
     selectedDataIndicatorOpacity,
     selectedData,
-    chartData
+    chartData,
+    tokenInfo?.logoUri,
+    tokenInfo?.name,
+    tokenInfo?.symbol
   ])
 
   if (!tokenId) {
