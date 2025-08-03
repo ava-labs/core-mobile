@@ -151,6 +151,8 @@ const buildSwapTransaction = async (
     appId: MARKR_EVM_PARTNER_ID,
     network,
     from: userAddress
+  }).catch(error => {
+    throw swapError.cannotBuildTx(error)
   })
 
   const props = {
@@ -166,7 +168,7 @@ const buildSwapTransaction = async (
   )
 
   if (swapGasLimitError || !swapGasLimit) {
-    throw swapError.swapTxFailed(swapGasLimitError)
+    throw swapError.unableToEstimateGas(swapGasLimitError)
   }
 
   const gas = bigIntToHex((swapGasLimit * BigInt(markrSwapGasBuffer)) / 100n)

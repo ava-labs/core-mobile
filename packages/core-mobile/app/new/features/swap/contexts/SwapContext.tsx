@@ -13,7 +13,11 @@ import { useDebouncedCallback } from 'use-debounce'
 import Logger from 'utils/Logger'
 import { InteractionManager } from 'react-native'
 import SentryWrapper from 'services/sentry/SentryWrapper'
-import { humanizeSwapError } from 'errors/swapError'
+import {
+  humanizeSwapError,
+  isGasEstimationError,
+  isSwapTxBuildError
+} from 'errors/swapError'
 import { useSelector } from 'react-redux'
 import { TokenType } from '@avalabs/vm-module-types'
 import { Account, selectActiveAccount } from 'store/account'
@@ -24,7 +28,11 @@ import { LocalTokenWithBalance } from 'store/balance'
 import useCChainNetwork from 'hooks/earn/useCChainNetwork'
 import { transactionSnackbar } from 'new/common/utils/toast'
 import useSolanaNetwork from 'hooks/earn/useSolanaNetwork'
-import { NormalizedSwapQuoteResult } from '../types'
+import {
+  NormalizedSwapQuoteResult,
+  NormalizedSwapQuote,
+  SwapProviders
+} from '../types'
 import { useEvmSwap } from '../hooks/useEvmSwap'
 import { getTokenAddress } from '../utils/getTokenAddress'
 import {
@@ -49,7 +57,10 @@ interface SwapContextState {
   setToToken: Dispatch<LocalTokenWithBalance | undefined>
   quotes: NormalizedSwapQuoteResult | undefined
   isFetchingQuote: boolean
-  swap(): void
+  swap(
+    specificProvider?: SwapProviders,
+    specificQuote?: NormalizedSwapQuote
+  ): void
   slippage: number
   setSlippage: Dispatch<number>
   destination: SwapSide
@@ -77,7 +88,7 @@ export const SwapContextProvider = ({
   const [amount, setAmount] = useState<bigint>()
   const [isFetchingQuote, setIsFetchingQuote] = useState(false)
   const [quotes, setQuotes] = useQuotes()
-  const [, setManuallySelected] = useManuallySelected()
+  const [manuallySelected, setManuallySelected] = useManuallySelected()
   const [error, setError] = useState('')
   const cChainNetwork = useCChainNetwork()
   const { getQuote: getEvmQuote, swap: evmSwap } = useEvmSwap()
@@ -236,104 +247,137 @@ export const SwapContextProvider = ({
     []
   )
 
-  // eslint-disable-next-line sonarjs/cognitive-complexity
-  const swap = useCallback(() => {
-    if (!activeAccount || !fromToken || !toToken || !quotes) {
-      return
-    }
+  const swap = useCallback(
+    (specificProvider?: SwapProviders, specificQuote?: NormalizedSwapQuote) => {
+      if (!activeAccount || !fromToken || !toToken || !quotes) {
+        return
+      }
 
-    const quoteToUse = quotes.selected
-    if (!quoteToUse) {
-      return
-    }
+      const quoteToUse = specificQuote || quotes.selected
+      if (!quoteToUse) {
+        return
+      }
 
-    const quote = quoteToUse.quote
-    const swapProvider = quotes.provider
-    const fromTokenAddress = getTokenAddress(fromToken)
-    const isFromTokenNative = fromToken.type === TokenType.NATIVE
-    const toTokenAddress = getTokenAddress(toToken)
-    const isToTokenNative = toToken.type === TokenType.NATIVE
+      const quote = quoteToUse.quote
+      const swapProviderToUse = specificProvider || quotes.provider
 
-    InteractionManager.runAfterInteractions(async () => {
-      let chainId: number | undefined
+      const fromTokenAddress = getTokenAddress(fromToken)
+      const isFromTokenNative = fromToken.type === TokenType.NATIVE
+      const toTokenAddress = getTokenAddress(toToken)
+      const isToTokenNative = toToken.type === TokenType.NATIVE
 
-      SentryWrapper.startSpan({ name: 'swap' }, async span => {
-        try {
-          setSwapStatus('Swapping')
+      InteractionManager.runAfterInteractions(async () => {
+        let chainId: number | undefined
 
-          let swapTxHash: string | undefined
+        SentryWrapper.startSpan({ name: 'swap' }, async span => {
+          try {
+            setSwapStatus('Swapping')
 
-          if (isEvmSwapQuote(quote)) {
-            if (!cChainNetwork) {
-              throw new Error('Invalid network')
+            let swapTxHash: string | undefined
+
+            if (isEvmSwapQuote(quote)) {
+              if (!cChainNetwork) {
+                throw new Error('Invalid network')
+              }
+
+              chainId = cChainNetwork.chainId
+
+              swapTxHash = await evmSwap({
+                account: activeAccount,
+                network: cChainNetwork,
+                fromTokenAddress,
+                isFromTokenNative,
+                toTokenAddress,
+                isToTokenNative,
+                swapProvider: swapProviderToUse,
+                quote,
+                slippage
+              })
+            } else if (isSvmSwapQuote(quote)) {
+              if (!solanaNetwork) {
+                throw new Error('Invalid network')
+              }
+
+              chainId = solanaNetwork.chainId
+
+              swapTxHash = await svmSwap({
+                account: activeAccount,
+                network: solanaNetwork,
+                isFromTokenNative,
+                fromTokenAddress,
+                isToTokenNative,
+                toTokenAddress,
+                swapProvider: swapProviderToUse,
+                quote,
+                slippage
+              })
             }
 
-            chainId = cChainNetwork.chainId
-
-            swapTxHash = await evmSwap({
-              account: activeAccount,
-              network: cChainNetwork,
-              fromTokenAddress,
-              isFromTokenNative,
-              toTokenAddress,
-              isToTokenNative,
-              swapProvider,
-              quote,
-              slippage
-            })
-          } else if (isSvmSwapQuote(quote)) {
-            if (!solanaNetwork) {
-              throw new Error('Invalid network')
+            if (swapTxHash && chainId) {
+              handleSwapSuccess({
+                swapTxHash: swapTxHash,
+                chainId
+              })
             }
+          } catch (err) {
+            setSwapStatus('Fail')
+            if (!isUserRejectedError(err) && chainId && activeAccount) {
+              // Check if there are more quotes available to try
+              if (
+                !manuallySelected &&
+                (isSwapTxBuildError(err) || isGasEstimationError(err)) &&
+                quotes.quotes.length > 1
+              ) {
+                const currentQuoteIndex = quotes.quotes.findIndex(
+                  q => q === quoteToUse
+                )
+                const nextQuoteIndex = currentQuoteIndex + 1
 
-            chainId = solanaNetwork.chainId
+                if (nextQuoteIndex < quotes.quotes.length) {
+                  // Try the next quote automatically
+                  const nextQuote = quotes.quotes[nextQuoteIndex]
+                  const swapProvider = quotes.provider
+                  if (nextQuote) {
+                    setQuotes({
+                      ...quotes,
+                      selected: nextQuote
+                    })
 
-            swapTxHash = await svmSwap({
-              account: activeAccount,
-              network: solanaNetwork,
-              isFromTokenNative,
-              fromTokenAddress,
-              isToTokenNative,
-              toTokenAddress,
-              swapProvider,
-              quote,
-              slippage
-            })
-          }
+                    // Retry swap with next quote without showing error
+                    swap(swapProvider, nextQuote)
+                    return // Don't handle error since we're retrying
+                  }
+                }
+              }
 
-          if (swapTxHash && chainId) {
-            handleSwapSuccess({
-              swapTxHash: swapTxHash,
-              chainId
-            })
+              // No more quotes to try, handle the error
+              handleSwapError({
+                account: activeAccount,
+                chainId,
+                err
+              })
+            }
+          } finally {
+            span?.end()
           }
-        } catch (err) {
-          setSwapStatus('Fail')
-          if (!isUserRejectedError(err) && chainId && activeAccount) {
-            handleSwapError({
-              account: activeAccount,
-              chainId,
-              err
-            })
-          }
-        } finally {
-          span?.end()
-        }
+        })
       })
-    })
-  }, [
-    activeAccount,
-    quotes,
-    slippage,
-    cChainNetwork,
-    solanaNetwork,
-    evmSwap,
-    svmSwap,
-    fromToken,
-    toToken,
-    handleSwapError,
-    handleSwapSuccess
-  ])
+    },
+    [
+      activeAccount,
+      quotes,
+      setQuotes,
+      slippage,
+      cChainNetwork,
+      solanaNetwork,
+      evmSwap,
+      svmSwap,
+      fromToken,
+      toToken,
+      handleSwapError,
+      handleSwapSuccess
+    ]
+  )
 
   const state: SwapContextState = {
     fromToken,
