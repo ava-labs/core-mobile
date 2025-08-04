@@ -331,7 +331,8 @@ export const SwapContextProvider = ({
             if (!isUserRejectedError(err) && chainId && activeAccount) {
               // Check if there are more quotes available to try
               if (
-                !manuallySelected && quotes.provider === SwapProviders.MARKR &&
+                !manuallySelected &&
+                quotes.provider === SwapProviders.MARKR &&
                 retries < maxRetries &&
                 (isSwapTxBuildError(err) || isGasEstimationError(err)) &&
                 quotes.quotes.length > 1
