@@ -59,7 +59,8 @@ class FCMService {
 
       if (!result.success) {
         Logger.error(
-          `[FCMService.ts][listenForMessagesForeground:NotificationPayloadSchema]${result}`
+          `[FCMService.ts][listenForMessagesForeground:NotificationPayloadSchema]`,
+          result.error
         )
         return
       }
@@ -138,7 +139,9 @@ class FCMService {
       }
     } else if (fcmData.type === NotificationTypes.NEWS) {
       return {
-        url: fcmData.urlV2
+        // TODO: remove url and use urlV2 only after backend is updated to send urlV2
+        // for all NEWS notifications
+        url: fcmData.urlV2 ?? fcmData.url ?? ''
       }
     }
   }
@@ -166,7 +169,8 @@ class FCMService {
       const result = NotificationPayloadSchema.safeParse(remoteMessage)
       if (!result.success) {
         Logger.error(
-          `[FCMService.ts][listenForMessagesBackground:NotificationsBalanceChangeSchema]${result}`
+          `[FCMService.ts][handleBackgroundMessageIos:NotificationPayloadSchema]`,
+          result.error
         )
         return
       }
@@ -207,7 +211,8 @@ class FCMService {
       const result = NotificationPayloadSchema.safeParse(remoteMessage)
       if (!result.success) {
         Logger.error(
-          `[FCMService.ts][listenForMessagesBackground:NotificationsBalanceChangeSchema]${result}`
+          `[FCMService.ts][handleBackgroundMessageAndroid:NotificationPayloadSchema]`,
+          result.error
         )
         return
       }

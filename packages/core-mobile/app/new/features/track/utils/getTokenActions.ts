@@ -9,7 +9,7 @@ export const getTokenActions = ({
   hasEnoughAvax,
   isEarnBlocked
 }: {
-  marketType: MarketType | undefined
+  marketType: MarketType
   isAVAX: boolean
   isZeroBalance: boolean
   isSwapBlocked: boolean

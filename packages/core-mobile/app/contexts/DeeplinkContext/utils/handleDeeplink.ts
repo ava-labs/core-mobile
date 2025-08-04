@@ -9,7 +9,6 @@ import { router } from 'expo-router'
 import { History } from 'store/browser'
 import { navigateFromDeeplinkUrl } from 'utils/navigateFromDeeplink'
 import { dismissMeldStack } from 'features/meld/utils'
-import { MarketType } from 'store/watchlist'
 import { offrampSend } from 'store/meld/slice'
 import { closeInAppBrowser } from 'utils/openInAppBrowser'
 import { ACTIONS, DeepLink, PROTOCOLS } from '../types'
@@ -72,9 +71,7 @@ export const handleDeeplink = ({
         const tokenId = pathname.split('/')[1]
         if (tokenId) {
           // All watchlist tokens now use internalId format
-          navigateFromDeeplinkUrl(
-            `/trackTokenDetail?tokenId=${tokenId}&marketType=${MarketType.TRENDING}`
-          )
+          navigateFromDeeplinkUrl(`/trackTokenDetail?tokenId=${tokenId}`)
         }
       } else if (action === ACTIONS.OfframpCompleted) {
         dispatch(offrampSend({ searchParams }))
