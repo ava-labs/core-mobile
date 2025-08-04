@@ -197,8 +197,8 @@ export const TokenUnitInput = forwardRef<
                * Using inputMode="numeric" provides the same behavior without the performance issues.
                * See: https://github.com/expo/expo/issues/34156
                */
-              keyboardType={Platform.OS === 'ios' ? 'decimal-pad' : undefined}
-              inputMode={Platform.OS === 'android' ? 'decimal' : undefined}
+              keyboardType={Platform.OS === 'ios' ? 'numeric' : undefined}
+              inputMode={Platform.OS === 'android' ? 'numeric' : undefined}
               placeholder={PLACEHOLDER}
               placeholderTextColor={alpha(colors.$textSecondary, 0.2)}
               value={value}
