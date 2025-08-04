@@ -47,20 +47,16 @@ export const TokenActivityListItem: FC<Props> = ({
         return PriceChangeStatus.Up
       }
       default: {
+        if (isCollectibleTransaction(tx)) {
+          return PriceChangeStatus.Neutral
+        }
         if (tx.isContractCall) {
           return tx.isSender ? PriceChangeStatus.Down : PriceChangeStatus.Up
         }
         return PriceChangeStatus.Neutral
       }
     }
-  }, [
-    tx.isContractCall,
-    tx.isIncoming,
-    tx.isOutgoing,
-    tx.isSender,
-    tx.tokens,
-    tx.txType
-  ])
+  }, [tx])
 
   const subtitle = useMemo(() => {
     if (isCollectibleTransaction(tx)) {
