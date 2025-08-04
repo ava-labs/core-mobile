@@ -202,13 +202,8 @@ export const selectNetworks = (state: RootState): Networks => {
 }
 
 export const selectEnabledNetworks = createSelector(
-  [selectEnabledChainIds, selectIsDeveloperMode, selectIsSolanaSupportBlocked],
-  (enabledChainIds, isDeveloperMode, isSolanaSupportBlocked) => {
-    const networks = getNetworksFromCache({
-      includeSolana: !isSolanaSupportBlocked
-    })
-    if (networks === undefined) return []
-
+  [selectEnabledChainIds, selectIsDeveloperMode, selectNetworks],
+  (enabledChainIds, isDeveloperMode, networks) => {
     return enabledChainIds.reduce((acc, chainId) => {
       const network = networks[chainId]
       if (network && network.isTestnet === isDeveloperMode) {
