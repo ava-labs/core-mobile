@@ -69,16 +69,23 @@ export const useTokenDetailFilterAndSort = ({
         case TokenDetailFilter.NFT:
           return isCollectibleTransaction(tx)
         case TokenDetailFilter.Received:
+          if (isCollectibleTransaction(tx)) {
+            return !tx.isSender
+          }
           return getTxType(tx) === TransactionType.RECEIVE
         case TokenDetailFilter.Sent:
+          if (isCollectibleTransaction(tx)) {
+            return tx.isSender
+          }
           return getTxType(tx) === TransactionType.SEND
         case TokenDetailFilter.Bridge:
           return tx.txType === TransactionType.BRIDGE
         case TokenDetailFilter.Swap:
           return (
             tx.txType === TransactionType.SWAP ||
-            (tx.isContractCall && tx.tokens.length > 1)
+            getTxType(tx) === TransactionType.SWAP
           )
+
         default:
           return true
       }
