@@ -198,7 +198,7 @@ export const TokenUnitInput = forwardRef<
                * See: https://github.com/expo/expo/issues/34156
                */
               keyboardType={Platform.OS === 'ios' ? 'decimal-pad' : undefined}
-              inputMode={Platform.OS === 'android' ? 'decimal' : undefined}
+              inputMode={Platform.OS === 'android' ? 'numeric' : undefined}
               placeholder={PLACEHOLDER}
               placeholderTextColor={alpha(colors.$textSecondary, 0.2)}
               value={value}
