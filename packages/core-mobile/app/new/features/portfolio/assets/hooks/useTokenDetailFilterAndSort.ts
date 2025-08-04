@@ -6,6 +6,7 @@ import {
   TransactionType
 } from '@avalabs/vm-module-types'
 import { sortUndefined } from 'common/utils/sortUndefined'
+import { isCollectibleTransaction } from 'features/activity/utils'
 
 export type Selection = {
   title: string
@@ -64,10 +65,12 @@ export const useTokenDetailFilterAndSort = ({
           return (
             tx.txType === PChainTransactionType.ADD_PERMISSIONLESS_DELEGATOR_TX
           )
+        case TokenDetailFilter.NFT:
+          return isCollectibleTransaction(tx)
         case TokenDetailFilter.Received:
-          return tx.isIncoming && tx.txType !== TransactionType.BRIDGE
+          return tx.txType === TransactionType.RECEIVE
         case TokenDetailFilter.Sent:
-          return tx.isOutgoing
+          return tx.txType === TransactionType.SEND
         case TokenDetailFilter.Bridge:
           return tx.txType === TransactionType.BRIDGE
         case TokenDetailFilter.Swap:
@@ -96,19 +99,29 @@ export const useTokenDetailFilterAndSort = ({
     return getSorted(filtered)
   }, [getFiltered, getSorted])
 
-  return {
-    filter: {
+  const filter = useMemo(
+    () => ({
       title: 'Filter',
       data: filters ?? TOKEN_DETAIL_FILTERS,
       selected: selectedFilter,
       onSelected: setSelectedFilter
-    },
-    sort: {
+    }),
+    [filters, selectedFilter]
+  )
+
+  const sort = useMemo(
+    () => ({
       title: 'Sort',
       data: TOKEN_DETAIL_SORTS,
       selected: selectedSort,
       onSelected: setSelectedSort
-    },
+    }),
+    [selectedSort]
+  )
+
+  return {
+    filter,
+    sort,
     data: filteredAndSorted,
     resetFilter
   }
@@ -121,7 +134,8 @@ export enum TokenDetailFilter {
   Received = 'Received',
   Bridge = 'Bridge',
   Swap = 'Swap',
-  Stake = 'Stake'
+  Stake = 'Stake',
+  NFT = 'NFT'
 }
 
 export enum TokenDetailSort {

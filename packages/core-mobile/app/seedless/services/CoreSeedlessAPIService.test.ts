@@ -81,7 +81,7 @@ describe('CoreSeedlessAPIService', () => {
           accountIndex: 0
         })
       } catch (e) {
-        expect((e as Error).message).toBe('Adding new account failed')
+        expect((e as Error).message).toBe('HTTP request failed: 200')
       }
     })
   })

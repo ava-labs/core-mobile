@@ -6,13 +6,13 @@ import BiometricsSDK, {
 import {
   Contact,
   CoreAccountType,
-  WalletType as CoreWalletType,
-  CorePrimaryAccount
+  CorePrimaryAccount,
+  WalletType as CoreWalletType
 } from '@avalabs/types'
 import {
   Account,
-  AccountsState,
   AccountCollection,
+  AccountsState,
   PrimaryAccount
 } from 'store/account'
 import { WalletType } from 'services/wallet/types'
@@ -461,6 +461,19 @@ export const migrations = {
         securityPrivacy: {
           ...state.settings.securityPrivacy,
           lockWalletWithPIN: true
+        }
+      }
+    }
+  },
+  24: (state: any) => {
+    // Make favorite token price alerts enabled by default
+    return {
+      ...state,
+      notifications: {
+        ...state.notifications,
+        notificationSubscriptions: {
+          ...state.notifications.notificationSubscriptions,
+          [ChannelId.FAV_TOKEN_PRICE_ALERTS]: true
         }
       }
     }

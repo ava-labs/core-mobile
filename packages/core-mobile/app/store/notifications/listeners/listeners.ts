@@ -12,6 +12,9 @@ import type { Action } from 'redux'
 import { ChannelId, NewsChannelId } from 'services/notifications/channels'
 import { handleProcessNotificationData } from 'store/notifications/listeners/handleProcessNotificationData'
 import { promptEnableNotifications } from 'store/notifications'
+import { toggleWatchListFavorite } from 'store/watchlist'
+import { setPriceAlertNotifications } from 'store/notifications/listeners/setPriceAlertNotifications'
+import { unsubscribeForPriceAlert } from 'services/notifications/priceAlert/unsubscribeForPriceAlert'
 import {
   onFcmTokenChange,
   processNotificationData,
@@ -189,6 +192,40 @@ export const addNotificationsListeners = (
         )
       })
   })
+
+  startListening({
+    actionCreator: toggleWatchListFavorite,
+    effect: setPriceAlertNotifications
+  })
+
+  startListening({
+    matcher: isAnyOf(
+      onRehydrationComplete,
+      onFcmTokenChange,
+      turnOnAllNotifications,
+      onNotificationsEnabled,
+      onNotificationsTurnedOnForFavTokenPriceAlerts
+    ),
+    effect: setPriceAlertNotifications
+  })
+
+  startListening({
+    matcher: isAnyOf(onNotificationsTurnedOffForFavTokenPriceAlerts),
+    effect: async () => {
+      await unsubscribeForPriceAlert().catch(reason => {
+        Logger.error(`[listeners.ts][unsubscribeForPriceAlert]${reason}`)
+      })
+    }
+  })
+
+  startListening({
+    matcher: isAnyOf(onNotificationsTurnedOffForNews),
+    effect: async () => {
+      await unsubscribeForPriceAlert().catch(reason => {
+        Logger.error(`[listeners.ts][unsubscribeForPriceAlert]${reason}`)
+      })
+    }
+  })
 }
 
 const onNotificationsTurnedOnForBalanceChange = {
@@ -250,6 +287,30 @@ const onNotificationsTurnedOffForNews = {
       channelId === ChannelId.PRODUCT_ANNOUNCEMENTS ||
       channelId === ChannelId.PRICE_ALERTS
     )
+  }
+}
+
+const onNotificationsTurnedOnForFavTokenPriceAlerts = {
+  match: (
+    action: Action<unknown>
+  ): action is PayloadAction<{ channelId: ChannelId }> => {
+    if (!turnOnNotificationsFor.match(action)) {
+      return false
+    }
+
+    return action.payload.channelId === ChannelId.FAV_TOKEN_PRICE_ALERTS
+  }
+}
+
+const onNotificationsTurnedOffForFavTokenPriceAlerts = {
+  match: (
+    action: Action<unknown>
+  ): action is PayloadAction<{ channelId: ChannelId }> => {
+    if (!turnOffNotificationsFor.match(action)) {
+      return false
+    }
+
+    return action.payload.channelId === ChannelId.FAV_TOKEN_PRICE_ALERTS
   }
 }
 

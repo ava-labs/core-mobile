@@ -274,6 +274,7 @@ export const BrowserInput = (): ReactNode => {
             }
           ]}>
           <AnimatedTextInput
+            testID="search_bar"
             ref={inputRef}
             value={urlEntry}
             placeholder="Search or type URL"

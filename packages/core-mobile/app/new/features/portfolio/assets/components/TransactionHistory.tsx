@@ -1,27 +1,27 @@
-import {
-  isTokenWithBalanceAVM,
-  isTokenWithBalancePVM
-} from '@avalabs/avalanche-module'
 import { BridgeTransfer } from '@avalabs/bridge-unified'
 import { BridgeTransaction } from '@avalabs/core-bridge-sdk'
-import { Image, Separator, SPRING_LINEAR_TRANSITION } from '@avalabs/k2-alpine'
+import { Image, SPRING_LINEAR_TRANSITION } from '@avalabs/k2-alpine'
 import { TransactionType } from '@avalabs/vm-module-types'
-import { CollapsibleTabs } from 'common/components/CollapsibleTabs'
 import { DropdownSelections } from 'common/components/DropdownSelections'
 import { ErrorState } from 'common/components/ErrorState'
 import { LoadingState } from 'common/components/LoadingState'
 import { getListItemEnteringAnimation } from 'common/utils/animations'
+import { getBridgeAssetSymbol } from 'common/utils/bridgeUtils'
+import { ActivityList } from 'features/activity/components/ActivityList'
 import {
-  getBridgeAssetSymbol,
-  isPendingBridgeTransaction
-} from 'common/utils/bridgeUtils'
-import { isXpTransaction } from 'common/utils/isXpTransactions'
+  buildGroupedData,
+  getDateGroups,
+  isCollectibleTransaction,
+  isSupportedNftChainId
+} from 'features/activity/utils'
 import usePendingBridgeTransactions from 'features/bridge/hooks/usePendingBridgeTransactions'
 import { portfolioTabContentHeight } from 'features/portfolio/utils'
 import { useNetworks } from 'hooks/networks/useNetworks'
 import React, { FC, useCallback, useMemo } from 'react'
 import { StyleSheet } from 'react-native'
 import Animated from 'react-native-reanimated'
+import { isAvalancheCChainId } from 'services/network/utils/isAvalancheNetwork'
+import { isEthereumChainId } from 'services/network/utils/isEthereumNetwork'
 import { LocalTokenWithBalance } from 'store/balance'
 import { Transaction, useGetRecentTransactions } from 'store/transaction'
 import { isPChain } from 'utils/network/isAvalancheNetwork'
@@ -31,9 +31,6 @@ import {
   TokenDetailFilters,
   useTokenDetailFilterAndSort
 } from '../hooks/useTokenDetailFilterAndSort'
-import { PendingBridgeTransactionItem } from './PendingBridgeTransactionItem'
-import { TokenActivityListItem } from './TokenActivityListItem'
-import { XpActivityListItem } from './XpActivityListItem'
 
 const errorIcon = require('../../../../assets/icons/unamused_emoji.png')
 
@@ -75,6 +72,14 @@ const TransactionHistory: FC<Props> = ({
   const transactionsBySymbol = useMemo(() => {
     return transactions
       .filter(tx => {
+        // Filter collectible transactions that support collectible transactions
+        if (
+          isCollectibleTransaction(tx) &&
+          isTokenCollectibleSupported(Number(tx.chainId), token?.symbol ?? '')
+        ) {
+          return true
+        }
+
         return (
           !token?.symbol ||
           (tx.tokens[0]?.symbol && token.symbol === tx.tokens[0].symbol)
@@ -84,36 +89,42 @@ const TransactionHistory: FC<Props> = ({
   }, [token, transactions, isPendingBridge])
 
   const filters: TokenDetailFilters | undefined = useMemo(() => {
-    if (isPChain(token?.networkChainId ?? 0)) {
-      const newFilters = [
-        ...(TOKEN_DETAIL_FILTERS[0] ?? []),
-        TokenDetailFilter.Stake
-      ]
+    if (token?.networkChainId) {
+      const newFilters = [...(TOKEN_DETAIL_FILTERS[0] ?? [])]
+      // Stake filter is only available for P-Chain
+      if (isPChain(token?.networkChainId)) {
+        newFilters.push(TokenDetailFilter.Stake)
+      }
+
+      // Only Avalanche C-Chain and Ethereum are supported for NFTs
+      if (
+        isSupportedNftChainId(token?.networkChainId) &&
+        isTokenCollectibleSupported(
+          Number(token?.networkChainId),
+          token?.symbol ?? ''
+        )
+      ) {
+        newFilters.push(TokenDetailFilter.NFT)
+      }
       return [newFilters]
     }
-    return undefined
-  }, [token?.networkChainId])
+  }, [token?.networkChainId, token?.symbol])
 
   const { data, filter, sort } = useTokenDetailFilterAndSort({
     transactions: transactionsBySymbol,
     filters
   })
 
-  const filteredPendingBridgeTxs = useMemo(
-    () =>
-      pendingBridgeTxs
-        .filter(tx => getBridgeAssetSymbol(tx) === token?.symbol)
-        .sort(
-          (a, b) => b.sourceStartedAt - a.sourceStartedAt // descending
-        ),
-    [pendingBridgeTxs, token]
-  )
-
   const combinedData = useMemo(() => {
-    return [filteredPendingBridgeTxs, data].flat()
-  }, [data, filteredPendingBridgeTxs])
+    const filteredPendingBridgeTxs = pendingBridgeTxs
+      .toSorted((a, b) => b.sourceStartedAt - a.sourceStartedAt)
+      .filter(tx => getBridgeAssetSymbol(tx) === token?.symbol)
 
-  const emptyComponent = useMemo(() => {
+    const { todayTxs, monthGroups } = getDateGroups(data)
+    return buildGroupedData(todayTxs, monthGroups, filteredPendingBridgeTxs)
+  }, [data, pendingBridgeTxs, token?.symbol])
+
+  const renderEmpty = useCallback(() => {
     if (isLoading || isRefreshing) {
       return <LoadingState sx={{ height: portfolioTabContentHeight }} />
     }
@@ -141,49 +152,11 @@ const TransactionHistory: FC<Props> = ({
     )
   }, [isError, isLoading, isRefreshing, refresh])
 
-  const renderItem = useCallback(
-    (
-      item: Transaction | BridgeTransaction | BridgeTransfer,
-      index: number
-    ): React.JSX.Element => {
-      if (isPendingBridgeTransaction(item)) {
-        return (
-          <PendingBridgeTransactionItem
-            item={item}
-            index={index}
-            onPress={() => handlePendingBridge(item)}
-          />
-        )
-      } else {
-        const isXpTx =
-          isXpTransaction(item.txType) &&
-          token &&
-          (isTokenWithBalanceAVM(token) || isTokenWithBalancePVM(token))
-
-        const props = {
-          tx: item,
-          index,
-          onPress: () => handleExplorerLink(item.explorerLink)
-        }
-
-        if (isXpTx) {
-          return <XpActivityListItem {...props} />
-        }
-        return <TokenActivityListItem {...props} />
-      }
-    },
-    [handleExplorerLink, token, handlePendingBridge]
-  )
-
-  const dropdowns = useMemo(() => {
+  const renderHeader = useCallback(() => {
     return (
       <DropdownSelections filter={filter} sort={sort} sx={styles.dropdown} />
     )
   }, [filter, sort])
-
-  const renderSeparator = useCallback((): JSX.Element => {
-    return <Separator sx={{ marginLeft: 63 }} />
-  }, [])
 
   return (
     <Animated.View
@@ -192,17 +165,21 @@ const TransactionHistory: FC<Props> = ({
       style={{
         flex: 1
       }}>
-      <CollapsibleTabs.FlatList
-        contentContainerStyle={{ overflow: 'visible', paddingBottom: 16 }}
+      <ActivityList
         data={combinedData}
-        renderItem={item => renderItem(item.item, item.index)}
-        ListHeaderComponent={dropdowns}
-        ListEmptyComponent={emptyComponent}
-        ItemSeparatorComponent={renderSeparator}
-        showsVerticalScrollIndicator={false}
-        keyExtractor={keyExtractor}
-        refreshing={isRefreshing}
-        onRefresh={refresh}
+        xpToken={token}
+        handlePendingBridge={handlePendingBridge}
+        handleExplorerLink={handleExplorerLink}
+        overrideProps={{
+          contentContainerStyle: {
+            overflow: 'visible',
+            paddingBottom: 16
+          }
+        }}
+        renderHeader={renderHeader}
+        renderEmpty={renderEmpty}
+        isRefreshing={isRefreshing}
+        refresh={refresh}
       />
     </Animated.View>
   )
@@ -212,12 +189,11 @@ const styles = StyleSheet.create({
   dropdown: { paddingHorizontal: 16, marginTop: 4, marginBottom: 16 }
 })
 
-const keyExtractor = (
-  item: Transaction | BridgeTransaction | BridgeTransfer
-): string => {
-  if (isPendingBridgeTransaction(item)) return `pending-${item.sourceTxHash}`
-
-  return item.hash
-}
-
 export default TransactionHistory
+
+function isTokenCollectibleSupported(chainId: number, symbol: string): boolean {
+  return (
+    (isAvalancheCChainId(chainId) && symbol === 'AVAX') ||
+    (isEthereumChainId(chainId) && symbol === 'ETH')
+  )
+}

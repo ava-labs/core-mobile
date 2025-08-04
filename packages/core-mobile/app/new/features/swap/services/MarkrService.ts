@@ -191,6 +191,10 @@ const GetSwapTransactionResponseSchema = z.object({
   value: z.string()
 })
 
+const GetSpenderAddressResponseSchema = z.object({
+  address: z.string()
+})
+
 const markrServiceClient = new Zodios(
   ORCHESTRATOR_URL,
   [
@@ -206,6 +210,19 @@ const markrServiceClient = new Zodios(
         }
       ],
       response: GetSwapTransactionResponseSchema
+    },
+    {
+      method: 'get',
+      path: '/spender-address',
+      alias: 'getSpenderAddress',
+      parameters: [
+        {
+          name: 'chainId',
+          type: 'Query',
+          schema: z.number()
+        }
+      ],
+      response: GetSpenderAddressResponseSchema
     }
   ],
   {
@@ -334,6 +351,13 @@ class MarkrService {
       minAmountOut,
       appId
     })
+  }
+
+  async getSpenderAddress({ chainId }: { chainId: number }): Promise<string> {
+    const { address } = await markrServiceClient.getSpenderAddress({
+      queries: { chainId }
+    })
+    return address
   }
 }
 

@@ -65,23 +65,26 @@ class CoreSeedlessAPIService implements CoreSeedlessApiInterface {
     identityProof: IdentityProof
     mnemonicId: string
   }): Promise<void> {
-    const response = await fetch(Config.SEEDLESS_URL + '/v1/addAccount', {
-      method: 'POST',
-      headers: {
-        Authorization: this.seedlessApiKey,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        accountIndex,
-        identityProof,
-        mnemonicId
+    try {
+      const response = await fetch(Config.SEEDLESS_URL + '/v1/addAccount', {
+        method: 'POST',
+        headers: {
+          Authorization: this.seedlessApiKey,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          accountIndex,
+          identityProof,
+          mnemonicId
+        })
       })
-    })
 
-    if (!response.ok) {
-      Logger.error('Adding new account failed')
-      Logger.info(`${response.status}`, await response.json())
-      throw new Error('Adding new account failed')
+      if (!response.ok) {
+        throw new Error(`HTTP request failed: ${response.status}`)
+      }
+    } catch (error) {
+      Logger.error('Failed to fetch /v1/addAccount', error)
+      throw error
     }
   }
 
@@ -92,25 +95,28 @@ class CoreSeedlessAPIService implements CoreSeedlessApiInterface {
     identityProof: IdentityProof
     mnemonicId: string
   }): Promise<void> {
-    const response = await fetch(
-      Config.SEEDLESS_URL + '/v1/deriveMissingKeys',
-      {
-        method: 'POST',
-        headers: {
-          Authorization: this.seedlessApiKey,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          identityProof,
-          mnemonicId
-        })
-      }
-    )
+    try {
+      const response = await fetch(
+        Config.SEEDLESS_URL + '/v1/deriveMissingKeys',
+        {
+          method: 'POST',
+          headers: {
+            Authorization: this.seedlessApiKey,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            identityProof,
+            mnemonicId
+          })
+        }
+      )
 
-    if (!response.ok) {
-      Logger.error('Deriving missing keys failed')
-      Logger.info(`${response.status}`, await response.json())
-      throw new Error('Deriving missing keys failed')
+      if (!response.ok) {
+        throw new Error(`HTTP request failed: ${response.status}`)
+      }
+    } catch (error) {
+      Logger.error('Failed to fetch /v1/deriveMissingKeys', error)
+      throw error
     }
   }
 }

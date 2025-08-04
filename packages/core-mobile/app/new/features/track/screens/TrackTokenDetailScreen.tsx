@@ -392,9 +392,9 @@ const TrackTokenDetailScreen = (): JSX.Element => {
       <View sx={{ paddingHorizontal: 16 }}>
         <Animated.View style={{ opacity: headerOpacity }}>
           <TokenHeader
-            name={token?.name ?? ''}
-            logoUri={token?.logoUri ?? undefined}
-            symbol={token?.symbol ?? ''}
+            name={token?.name ?? tokenInfo?.name ?? ''}
+            logoUri={token?.logoUri ?? tokenInfo?.logoUri}
+            symbol={token?.symbol ?? tokenInfo?.symbol ?? ''}
             currentPrice={currentPrice}
             ranges={range}
             rank={tokenInfo?.marketCapRank}
