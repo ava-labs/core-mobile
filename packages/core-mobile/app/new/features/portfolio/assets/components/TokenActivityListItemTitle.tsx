@@ -93,7 +93,7 @@ export const TokenActivityListItemTitle = ({
       case TransactionType.SEND:
         return [renderAmount(a1), ' ', s1, ' sent']
       case TransactionType.RECEIVE:
-        return [renderAmount(a1), ' ', s1, ' received']
+        return [renderAmount(a1), ' ', s2, ' received']
       case TransactionType.TRANSFER:
         return [renderAmount(a1), ' ', s1, ' transferred']
       case TransactionType.APPROVE:
@@ -112,8 +112,34 @@ export const TokenActivityListItemTitle = ({
           ]
         }
         if (tx.isContractCall) {
-          if (tx.tokens.length >= 1) {
-            return [renderAmount(a1), ' ', s1, ' swapped for ', s2]
+          if (tx.tokens.length === 1) {
+            return [
+              renderAmount(a1),
+              ' ',
+              s1,
+              tx.isSender ? ' sent' : ' received'
+            ]
+          }
+
+          if (tx.tokens.length > 1) {
+            if (tx.tokens[0]?.symbol === tx.tokens[1]?.symbol) {
+              return [
+                renderAmount(a1),
+                ' ',
+                s1,
+                tx.isSender ? ' sent' : ' received'
+              ]
+            }
+
+            return [
+              renderAmount(a1),
+              ' ',
+              s1,
+              ' swapped for ',
+              renderAmount(a2),
+              ' ',
+              s2
+            ]
           }
 
           return ['Contract Call']
