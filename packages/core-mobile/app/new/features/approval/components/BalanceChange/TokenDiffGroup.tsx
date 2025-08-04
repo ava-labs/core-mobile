@@ -16,7 +16,6 @@ import {
   TokenType
 } from '@avalabs/vm-module-types'
 import { TokenLogo } from 'new/common/components/TokenLogo'
-import { useFormatCurrency } from 'new/common/hooks/useFormatCurrency'
 import { useExchangedAmount } from 'new/common/hooks/useExchangedAmount'
 
 export const TokenDiffGroup = ({
@@ -121,29 +120,10 @@ const TokenDiffItemComponent = ({
     'type' in token &&
     (token.type === TokenType.ERC721 || token.type === TokenType.ERC1155)
 
-  const { formatCurrency } = useFormatCurrency()
   const formatExchangedAmount = useExchangedAmount()
   const {
     theme: { colors }
   } = useTheme()
-
-  // Enhanced debugging for transaction approval currency conversion
-  console.log('=== TRANSACTION APPROVAL CURRENCY DEBUG ===')
-  console.log('Token:', token.symbol)
-  console.log('Display value:', diffItem.displayValue)
-  console.log('Price in selected currency (raw):', diffItem.usdPrice)
-  console.log('Price in selected currency (as number):', Number(diffItem.usdPrice))
-  console.log('Is outgoing:', isOut)
-  
-  if (diffItem.usdPrice !== undefined) {
-    // The usdPrice is actually already in the selected currency, not USD
-    const priceInSelectedCurrency = Number(diffItem.usdPrice)
-    const formattedCurrency = formatCurrency({ amount: priceInSelectedCurrency })
-    console.log('Formatted currency result:', formattedCurrency)
-    console.log('Expected result for £10.00:', '£10.00')
-    console.log('Actual result:', formattedCurrency)
-  }
-  console.log('=== END TRANSACTION DEBUG ===')
 
   const displayValueColor = isOut ? colors.$textDanger : colors.$textPrimary
   const priceInCurrencyColor = useMemo(() => {
@@ -223,7 +203,6 @@ const TokenDiffItemComponent = ({
               color: priceInCurrencyColor
             }}>
             {diffItem.displayValue === undefined && (isOut ? '-' : '+')}
-            {/* Use useExchangedAmount to convert USD to selected currency */}
             {formatExchangedAmount(Number(diffItem.usdPrice))}
           </Text>
         )}
