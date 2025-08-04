@@ -1,11 +1,11 @@
 import { PriceChangeStatus, useTheme, View } from '@avalabs/k2-alpine'
-import { Transaction, TransactionType } from '@avalabs/vm-module-types'
+import { TransactionType } from '@avalabs/vm-module-types'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import { isCollectibleTransaction } from 'features/activity/utils'
 import { CollectibleFetchAndRender } from 'features/portfolio/collectibles/components/CollectibleFetchAndRender'
 import { useWatchlist } from 'hooks/watchlist/useWatchlist'
 import React, { FC, useMemo } from 'react'
-import { ActivityTransactionType } from 'store/transaction'
+import { ActivityTransactionType, Transaction } from 'store/transaction'
 import ActivityListItem from './ActivityListItem'
 import { TokenActivityListItemTitle } from './TokenActivityListItemTitle'
 import { TransactionTypeIcon } from './TransactionTypeIcon'
@@ -47,10 +47,20 @@ export const TokenActivityListItem: FC<Props> = ({
         return PriceChangeStatus.Up
       }
       default: {
+        if (tx.isContractCall) {
+          return tx.isSender ? PriceChangeStatus.Down : PriceChangeStatus.Up
+        }
         return PriceChangeStatus.Neutral
       }
     }
-  }, [tx.isIncoming, tx.isOutgoing, tx.tokens.length, tx.txType])
+  }, [
+    tx.isContractCall,
+    tx.isIncoming,
+    tx.isOutgoing,
+    tx.isSender,
+    tx.tokens,
+    tx.txType
+  ])
 
   const subtitle = useMemo(() => {
     if (isCollectibleTransaction(tx)) {
@@ -88,6 +98,8 @@ export const TokenActivityListItem: FC<Props> = ({
       )
     }
 
+    const txType = getTxType(tx)
+
     return (
       <View
         sx={{
@@ -101,7 +113,7 @@ export const TokenActivityListItem: FC<Props> = ({
           borderColor: colors.$borderPrimary
         }}>
         <TransactionTypeIcon
-          txType={tx.txType}
+          txType={txType}
           isContractCall={tx.isContractCall}
         />
       </View>
@@ -120,6 +132,21 @@ export const TokenActivityListItem: FC<Props> = ({
       status={status}
     />
   )
+}
+
+export function getTxType(tx: Transaction): ActivityTransactionType {
+  if (tx?.txType === TransactionType.UNKNOWN) {
+    if (tx.tokens.length === 1) {
+      return tx.isSender ? TransactionType.SEND : TransactionType.RECEIVE
+    }
+    if (tx.tokens.length > 1) {
+      if (tx.tokens[0]?.symbol === tx.tokens[1]?.symbol) {
+        return tx.isSender ? TransactionType.SEND : TransactionType.RECEIVE
+      }
+      return TransactionType.SWAP
+    }
+  }
+  return tx.txType as ActivityTransactionType
 }
 
 const ICON_SIZE = 36
