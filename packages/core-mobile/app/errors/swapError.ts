@@ -146,7 +146,7 @@ export function humanizeSwapError(err: unknown): string {
   return errorString || 'An unknown error occurred'
 }
 
-export const isSwapTxBuildError = (err: unknown) => {
+export const isSwapTxBuildError = (err: unknown): boolean => {
   if (err instanceof JsonRpcError) {
     return (
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -157,7 +157,7 @@ export const isSwapTxBuildError = (err: unknown) => {
   return false
 }
 
-export const isGasEstimationError = (err: unknown) => {
+export const isGasEstimationError = (err: unknown): boolean => {
   if (err instanceof JsonRpcError) {
     return (
       // eslint-disable-next-line @typescript-eslint/no-explicit-any

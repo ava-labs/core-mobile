@@ -28,6 +28,7 @@ import { LocalTokenWithBalance } from 'store/balance'
 import useCChainNetwork from 'hooks/earn/useCChainNetwork'
 import { transactionSnackbar } from 'new/common/utils/toast'
 import useSolanaNetwork from 'hooks/earn/useSolanaNetwork'
+import { selectMarkrSwapMaxRetries } from 'store/posthog'
 import {
   NormalizedSwapQuoteResult,
   NormalizedSwapQuote,
@@ -94,6 +95,7 @@ export const SwapContextProvider = ({
   const { getQuote: getEvmQuote, swap: evmSwap } = useEvmSwap()
   const solanaNetwork = useSolanaNetwork()
   const { getQuote: getSvmQuote, swap: svmSwap } = useSolanaSwap()
+  const maxRetries = useSelector(selectMarkrSwapMaxRetries)
 
   // debounce since fetching quotes can take awhile
   const debouncedSetAmount = useDebouncedCallback(
@@ -248,7 +250,12 @@ export const SwapContextProvider = ({
   )
 
   const swap = useCallback(
-    (specificProvider?: SwapProviders, specificQuote?: NormalizedSwapQuote) => {
+    (
+      specificProvider?: SwapProviders,
+      specificQuote?: NormalizedSwapQuote,
+      retries = 0
+      // eslint-disable-next-line sonarjs/cognitive-complexity
+    ) => {
       if (!activeAccount || !fromToken || !toToken || !quotes) {
         return
       }
@@ -324,7 +331,8 @@ export const SwapContextProvider = ({
             if (!isUserRejectedError(err) && chainId && activeAccount) {
               // Check if there are more quotes available to try
               if (
-                !manuallySelected &&
+                !manuallySelected && quotes.provider === SwapProviders.MARKR &&
+                retries < maxRetries &&
                 (isSwapTxBuildError(err) || isGasEstimationError(err)) &&
                 quotes.quotes.length > 1
               ) {
@@ -344,7 +352,7 @@ export const SwapContextProvider = ({
                     })
 
                     // Retry swap with next quote without showing error
-                    swap(swapProvider, nextQuote)
+                    swap(swapProvider, nextQuote, retries + 1)
                     return // Don't handle error since we're retrying
                   }
                 }
@@ -375,7 +383,9 @@ export const SwapContextProvider = ({
       fromToken,
       toToken,
       handleSwapError,
-      handleSwapSuccess
+      handleSwapSuccess,
+      manuallySelected,
+      maxRetries
     ]
   )
 
