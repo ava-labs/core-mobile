@@ -94,7 +94,7 @@ export const TokenActivityListItem: FC<Props> = ({
       )
     }
 
-    const txType = getTxType(tx)
+    const txType = fixUnknownTxType(tx)
 
     return (
       <View
@@ -130,7 +130,7 @@ export const TokenActivityListItem: FC<Props> = ({
   )
 }
 
-export function getTxType(tx: Transaction): ActivityTransactionType {
+export function fixUnknownTxType(tx: Transaction): ActivityTransactionType {
   if (tx?.txType === TransactionType.UNKNOWN) {
     if (tx.tokens.length === 1) {
       return tx.isSender ? TransactionType.SEND : TransactionType.RECEIVE

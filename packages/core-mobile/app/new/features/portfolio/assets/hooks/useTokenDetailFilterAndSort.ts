@@ -7,7 +7,7 @@ import {
 } from '@avalabs/vm-module-types'
 import { sortUndefined } from 'common/utils/sortUndefined'
 import { isCollectibleTransaction } from 'features/activity/utils'
-import { getTxType } from '../components/TokenActivityListItem'
+import { fixUnknownTxType } from '../components/TokenActivityListItem'
 
 export type Selection = {
   title: string
@@ -72,18 +72,18 @@ export const useTokenDetailFilterAndSort = ({
           if (isCollectibleTransaction(tx)) {
             return !tx.isSender
           }
-          return getTxType(tx) === TransactionType.RECEIVE
+          return fixUnknownTxType(tx) === TransactionType.RECEIVE
         case TokenDetailFilter.Sent:
           if (isCollectibleTransaction(tx)) {
             return tx.isSender
           }
-          return getTxType(tx) === TransactionType.SEND
+          return fixUnknownTxType(tx) === TransactionType.SEND
         case TokenDetailFilter.Bridge:
           return tx.txType === TransactionType.BRIDGE
         case TokenDetailFilter.Swap:
           return (
             tx.txType === TransactionType.SWAP ||
-            getTxType(tx) === TransactionType.SWAP
+            fixUnknownTxType(tx) === TransactionType.SWAP
           )
 
         default:
