@@ -657,7 +657,7 @@ workflows:
         inputs:
         - variables: |-
             IS_REGRESSION_RUN=$IS_REGRESSION_RUN
-  android-e2e-run-pixel3:
+  android-e2e-run-pixel9:
     before_run:
     - _install-and-set-env
     - _pull_app_files
@@ -691,15 +691,15 @@ workflows:
     steps:
     - avd-manager@1.2:
         inputs:
-        - api_level: "34"
+        - api_level: "35"
         - emulator_id: emulator-5554
         - emulator_channel: "0"
         - create_command_flags: --sdcard 512M
         - tag: default
         - abi: x86_64
-        - profile: pixel_3
+        - profile: pixel_9
     - wait-for-android-emulator@1: {}
-  android-e2e-run-pixel4:
+  android-e2e-run-pixel8:
     before_run:
     - _install-and-set-env
     - _pull_app_files
@@ -733,15 +733,15 @@ workflows:
     steps:
     - avd-manager@1.2:
         inputs:
-        - api_level: "30"
+        - api_level: "35"
         - emulator_id: emulator-5554
         - emulator_channel: "0"
         - create_command_flags: --sdcard 512M
         - tag: default
         - abi: x86_64
-        - profile: pixel_4
+        - profile: pixel_8
     - wait-for-android-emulator@1: {}
-  android-e2e-run-pixel5:
+  android-e2e-run-pixel7:
     before_run:
     - _install-and-set-env
     - _pull_app_files
@@ -781,7 +781,7 @@ workflows:
         - create_command_flags: --sdcard 512M
         - tag: default
         - abi: x86_64
-        - profile: pixel_5
+        - profile: pixel_7
     - wait-for-android-emulator@1: {}
   android-e2e-run-pixel6:
     before_run:
@@ -827,7 +827,7 @@ workflows:
         - abi: x86_64
         - profile: pixel_6
     - wait-for-android-emulator@1: {}
-  android-e2e-run-pixel2-arm:
+  android-e2e-run-pixel5:
     before_run:
     - _install-and-set-env
     - _pull_app_files
@@ -867,7 +867,7 @@ workflows:
         - create_command_flags: --sdcard 512M
         - tag: default
         - abi: x86_64
-        - profile: pixel_2
+        - profile: pixel_5
     - wait-for-android-emulator@1: {}
   ios:
     before_run:
