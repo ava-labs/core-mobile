@@ -10,7 +10,8 @@ enum SwapErrorCode {
   CANNOT_FETCH_SPENDER = 'CANNOT_FETCH_SPENDER',
   APPROVAL_TX_FAILED = 'APPROVAL_TX_FAILED',
   SWAP_TX_FAILED = 'SWAP_TX_FAILED',
-  WRONG_QUOTE_PROVIDER = 'WRONG_QUOTE_PROVIDER'
+  WRONG_QUOTE_PROVIDER = 'WRONG_QUOTE_PROVIDER',
+  UNABLE_TO_ESTIMATE_GAS = 'UNABLE_TO_ESTIMATE_GAS'
 }
 
 export enum ParaswapErrorCode {
@@ -77,6 +78,11 @@ export const swapError = {
       message:
         'Swap transaction failed. The transaction may not have been signed or broadcasted successfully.',
       data: { cause: error, code: SwapErrorCode.SWAP_TX_FAILED }
+    }),
+  unableToEstimateGas: (error: unknown) =>
+    rpcErrors.internal({
+      message: 'Unable to estimate gas',
+      data: { cause: error, code: SwapErrorCode.UNABLE_TO_ESTIMATE_GAS }
     })
 }
 
@@ -138,4 +144,26 @@ export function humanizeSwapError(err: unknown): string {
   }
 
   return errorString || 'An unknown error occurred'
+}
+
+export const isSwapTxBuildError = (err: unknown): boolean => {
+  if (err instanceof JsonRpcError) {
+    return (
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (err.data as any)?.code === SwapErrorCode.CANNOT_BUILD_TRANSACTION
+    )
+  }
+
+  return false
+}
+
+export const isGasEstimationError = (err: unknown): boolean => {
+  if (err instanceof JsonRpcError) {
+    return (
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (err.data as any)?.code === SwapErrorCode.UNABLE_TO_ESTIMATE_GAS
+    )
+  }
+
+  return false
 }
