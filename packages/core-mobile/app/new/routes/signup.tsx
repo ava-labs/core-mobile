@@ -77,6 +77,11 @@ export default function Signup(): JSX.Element {
     })
   }
 
+  const handleContinueWithLedgerDemo = (): void => {
+    // @ts-ignore TODO: make routes typesafe
+    router.navigate('/onboarding/ledger')
+  }
+
   const renderMnemonicOnboarding = (): JSX.Element => {
     return (
       <View sx={{ gap: 16 }}>
@@ -94,6 +99,13 @@ export default function Signup(): JSX.Element {
           onPress={handleAccessExistingWallet}>
           Access existing wallet
         </Button>
+        <Button
+          testID="continueWithLedgerDemo"
+          type="tertiary"
+          size="large"
+          onPress={handleContinueWithLedgerDemo}>
+            Ledger Demo
+          </Button>
       </View>
     )
   }

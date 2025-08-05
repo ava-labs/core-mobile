@@ -48,6 +48,7 @@ allprojects {
         }
         mavenCentral()
         maven { url "$rootDir/../node_modules/expo-camera/android/maven" }
+        maven { url 'https://www.jitpack.io' }
     }
     
     configurations.all {
