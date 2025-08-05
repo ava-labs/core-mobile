@@ -55,7 +55,7 @@ export const KeystoneTroubleshooting = ({
         <Steps
           steps={[
             'Tap “...” on Keystone device and select “Connect Software Wallet”.',
-            'Select  the Core Wallet.',
+            'Select the Core Wallet.',
             'Click on the “Try Again” button below to scan the QR code displayed on the Keystone device.'
           ]}
         />

@@ -13,7 +13,6 @@ const KeystoneTroubleshootingScreen = ({
 }: {
   params: KeystoneTroubleshootingParams
 }): JSX.Element => {
-  const { theme } = useTheme()
   const navigation = useNavigation()
   const { retry } = params
 
@@ -68,11 +67,11 @@ const KeystoneTroubleshootingScreen = ({
           sx={{
             gap: 16
           }}>
-          <Text variant="heading4">Invalid QR Code</Text>
+          <Text variant="heading2">Invalid QR Code</Text>
           <Text
             variant="body1"
             sx={{
-              marginBottom: 40
+              marginBottom: 20
             }}>
             Please ensure you have selected a valid QR code from your Keystone
             device.
@@ -86,16 +85,7 @@ const KeystoneTroubleshootingScreen = ({
             ]}
           />
         </View>
-        <Space y={40} />
-        <Button
-          style={{
-            width: SCREEN_WIDTH - 64
-          }}
-          type="primary"
-          size="large"
-          onPress={closeAndRetry}>
-          Try Again
-        </Button>
+        <Space y={20} />
         <Link
           href="https://guide.keyst.one/docs/core-mobile"
           style={{
@@ -117,6 +107,16 @@ const KeystoneTroubleshootingScreen = ({
             </Text>
           </View>
         </Link>
+        <Space y={20} />
+        <Button
+          style={{
+            width: SCREEN_WIDTH - 64
+          }}
+          type="primary"
+          size="large"
+          onPress={closeAndRetry}>
+          Try Again
+        </Button>
       </View>
     </ScrollScreen>
   )

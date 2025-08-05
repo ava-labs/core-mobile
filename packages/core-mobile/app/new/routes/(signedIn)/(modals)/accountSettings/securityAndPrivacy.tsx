@@ -136,6 +136,11 @@ const SecurityAndPrivacyScreen = (): JSX.Element => {
     useBiometrics
   ])
 
+  const shouldHideRecoveryData = useMemo(
+    () => [WalletType.KEYSTONE].includes(wallet.type),
+    [wallet.type]
+  )
+
   const recoveryData = useMemo(() => {
     const data = [
       {
@@ -220,16 +225,20 @@ const SecurityAndPrivacyScreen = (): JSX.Element => {
         }}
         separatorMarginRight={16}
       />
-      <Space y={12} />
-      <GroupList
-        data={recoveryData}
-        titleSx={{
-          fontSize: 16,
-          lineHeight: 22,
-          fontFamily: 'Inter-Regular'
-        }}
-        separatorMarginRight={16}
-      />
+      {!shouldHideRecoveryData && (
+        <>
+          <Space y={12} />
+          <GroupList
+            data={recoveryData}
+            titleSx={{
+              fontSize: 16,
+              lineHeight: 22,
+              fontFamily: 'Inter-Regular'
+            }}
+            separatorMarginRight={16}
+          />
+        </>
+      )}
       <Space y={24} />
       <GroupList
         data={coreAnalyticsData}

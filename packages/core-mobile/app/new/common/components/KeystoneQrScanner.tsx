@@ -74,6 +74,11 @@ export const KeystoneQrScanner: (props: Props) => JSX.Element = ({
             setProgress(1)
 
             onSuccess(ur)
+
+            setTimeout(() => {
+              setUrDecoder(new URDecoder())
+              setProgress(0)
+            })
           } else {
             throw new Error('Invalid qr code')
           }
