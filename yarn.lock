@@ -237,6 +237,7 @@ __metadata:
     "@keystonehq/keystone-sdk": 0.11.3
     "@lavamoat/allow-scripts": 3.2.1
     "@lavamoat/preinstall-always-fail": 2.1.0
+    "@ledgerhq/react-native-hw-transport-ble": latest
     "@metamask/eth-sig-util": 7.0.3
     "@metamask/rpc-errors": 6.3.0
     "@ngraveio/bc-ur": 1.1.13
@@ -380,6 +381,7 @@ __metadata:
     react-native-aes-crypto: 3.1.0
     react-native-argon2: 2.0.1
     react-native-big-list: 1.6.1
+    react-native-ble-plx: ^3.5.0
     react-native-bootsplash: 6.3.10
     react-native-bottom-tabs: 0.10.1
     react-native-chart-kit: 6.12.0
@@ -7299,6 +7301,18 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@ledgerhq/devices@npm:8.4.8":
+  version: 8.4.8
+  resolution: "@ledgerhq/devices@npm:8.4.8"
+  dependencies:
+    "@ledgerhq/errors": ^6.23.0
+    "@ledgerhq/logs": ^6.13.0
+    rxjs: ^7.8.1
+    semver: ^7.3.5
+  checksum: 9df37a14b3c75dd500fd2d361720be5b0d0fd816522fc0514a19f7ef6a4ecbb333ed3209674a8c34dfcbdde2073b5a75073934c5bf30799a4e9276809b03e7f4
+  languageName: node
+  linkType: hard
+
 "@ledgerhq/devices@npm:^8.0.7":
   version: 8.0.7
   resolution: "@ledgerhq/devices@npm:8.0.7"
@@ -7384,6 +7398,13 @@ __metadata:
   version: 6.19.1
   resolution: "@ledgerhq/errors@npm:6.19.1"
   checksum: f4e1cf0d6a5808c58235c54e2a1565556de8e683552bd94d97609f790e8c25226114bfa2af9914bb329c3e7c314585b60c66ddac8d8f8f1d072b7e791a889ad8
+  languageName: node
+  linkType: hard
+
+"@ledgerhq/errors@npm:^6.23.0":
+  version: 6.23.0
+  resolution: "@ledgerhq/errors@npm:6.23.0"
+  checksum: 532d665f9eccfa9280e297259f5357f2a9bf9e7e17b14250f1156dfe3f64296adcb6b2f850c6f56de1188fbba9dd78800b6a7e982de65a725be6b9f931b4792a
   languageName: node
   linkType: hard
 
@@ -7552,6 +7573,18 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@ledgerhq/hw-transport@npm:^6.31.8":
+  version: 6.31.8
+  resolution: "@ledgerhq/hw-transport@npm:6.31.8"
+  dependencies:
+    "@ledgerhq/devices": 8.4.8
+    "@ledgerhq/errors": ^6.23.0
+    "@ledgerhq/logs": ^6.13.0
+    events: ^3.3.0
+  checksum: 9b85939d657c42f61d73d20959ded1c197a9ffb8bb84bc3b0d806a14014cabc5c7c16441ce7c8a04ef44004be31672ee25678ea43844e911a79ba85f44a44c4a
+  languageName: node
+  linkType: hard
+
 "@ledgerhq/live-env@npm:^0.6.0":
   version: 0.6.0
   resolution: "@ledgerhq/live-env@npm:0.6.0"
@@ -7608,6 +7641,28 @@ __metadata:
   version: 6.12.0
   resolution: "@ledgerhq/logs@npm:6.12.0"
   checksum: 53fb9ceaf26b2a9fd6e7639b19119f4fef2f814d465fdd910e69c9486dce78137a1790e24f019a03bfabc87e19b2e6683f4da93a7fd203a61117a709fdf6484c
+  languageName: node
+  linkType: hard
+
+"@ledgerhq/logs@npm:^6.13.0":
+  version: 6.13.0
+  resolution: "@ledgerhq/logs@npm:6.13.0"
+  checksum: b2b64af45630eb2851f49af505e46a378cd62edfa73b154867a8d86641a684a36c9fee12a5e9ca94fb8fb3d81b47462fdb369ba9f0261079db1c6a81d9c0f12b
+  languageName: node
+  linkType: hard
+
+"@ledgerhq/react-native-hw-transport-ble@npm:latest":
+  version: 6.35.1
+  resolution: "@ledgerhq/react-native-hw-transport-ble@npm:6.35.1"
+  dependencies:
+    "@ledgerhq/devices": 8.4.8
+    "@ledgerhq/errors": ^6.23.0
+    "@ledgerhq/hw-transport": ^6.31.8
+    "@ledgerhq/logs": ^6.13.0
+    react-native-ble-plx: 3.4.0
+    rxjs: ^7.8.1
+    uuid: ^9.0.1
+  checksum: d1a10dd2c6e137edfd11740ef89e320374de0b7d2daa7a0a704fede1f3a50ee201cf1b3a301914893c1de5ec067f906a05cba3fcbd915ee115c139671c1f49be
   languageName: node
   linkType: hard
 
@@ -27812,6 +27867,26 @@ __metadata:
     react: "*"
     react-native: "*"
   checksum: e0e8ce1ab026d7cefdf7e00b46089ef1ae0e7081fdb3b54b93aaafc2469c817e1695279cbbe50099914318a20a437675bd6926d4ca5c45698fa356a7af375f67
+  languageName: node
+  linkType: hard
+
+"react-native-ble-plx@npm:3.4.0":
+  version: 3.4.0
+  resolution: "react-native-ble-plx@npm:3.4.0"
+  peerDependencies:
+    react: "*"
+    react-native: "*"
+  checksum: f255e4ffc621b3656561a571c75d199677eb1332d5ea36c4ed5c5b88926c7135c67f7fea2a09e00cba0fe33df7577ab02308d12bce4b65e6c25f3f9df54d09e1
+  languageName: node
+  linkType: hard
+
+"react-native-ble-plx@npm:^3.5.0":
+  version: 3.5.0
+  resolution: "react-native-ble-plx@npm:3.5.0"
+  peerDependencies:
+    react: "*"
+    react-native: "*"
+  checksum: d84ce1eefdc584c8a4891266941f5951b31c8a800d0993659d7f87ba57cb8c23c4ba09dc3d4d8bfbc1d16f64dbd7405fad2b5fd2cf79fa7578d001a22aee47ae
   languageName: node
   linkType: hard
 
