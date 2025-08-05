@@ -21,6 +21,7 @@ export async function encrypt(
   }
 
   const deserializedPublicKey = await suite.kem.deserializePublicKey(
+    // @ts-ignore TODO: fix this type error
     Buffer.from(publicKey, 'base64')
   )
 
@@ -30,6 +31,7 @@ export async function encrypt(
 
   const aad = keyID !== undefined ? new TextEncoder().encode(keyID) : undefined
   const data = new TextEncoder().encode(message)
+  // @ts-ignore TODO: fix this type error
   const ct = await sender.seal(data, aad)
 
   const encrypted = Buffer.from(ct).toString('base64')
