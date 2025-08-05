@@ -51,6 +51,11 @@
 	<string>$(CURRENT_PROJECT_VERSION)</string>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
+	<key>LSApplicationQueriesSchemes</key>
+	<array>
+		<string>twitter</string>
+		<string>mailto</string>
+	</array>
 	<key>LSMinimumSystemVersion</key>
 	<string>13.3.0</string>
 	<key>LSRequiresIPhoneOS</key>
@@ -99,5 +104,7 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<false/>
+	<key>NSBluetoothAlwaysUsageDescription</key>
+	<string>We use bluetooth to connect to ledger devices</string>
 </dict>
 </plist>
