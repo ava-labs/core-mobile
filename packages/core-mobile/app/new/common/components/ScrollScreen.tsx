@@ -7,7 +7,7 @@ import {
 import { useHeaderHeight } from '@react-navigation/elements'
 import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
 import React, { useCallback, useLayoutEffect, useRef, useState } from 'react'
-import { LayoutRectangle, View } from 'react-native'
+import { LayoutRectangle, StyleProp, View, ViewStyle } from 'react-native'
 import { ScrollView } from 'react-native-gesture-handler'
 import {
   KeyboardAwareScrollView,
@@ -69,6 +69,8 @@ interface ScrollScreenProps extends KeyboardAwareScrollViewProps {
   bottomOffset?: number
   /** Whether this screen should show navigation title when scroll. Default is true. */
   showNavigationHeaderTitle?: boolean
+  /** Custom style for the header */
+  headerStyle?: StyleProp<ViewStyle>
 }
 
 const KeyboardScrollView = Animated.createAnimatedComponent(
@@ -86,6 +88,7 @@ export const ScrollScreen = ({
   shouldAvoidKeyboard,
   disableStickyFooter,
   showNavigationHeaderTitle = true,
+  headerStyle,
   renderHeader,
   renderFooter,
   renderHeaderRight,
@@ -153,9 +156,12 @@ export const ScrollScreen = ({
         <View>
           <View
             ref={headerRef}
-            style={{
-              gap: 8
-            }}>
+            style={[
+              headerStyle,
+              {
+                gap: 8
+              }
+            ]}>
             {title ? (
               <Animated.View style={[animatedHeaderStyle]}>
                 <ScreenHeader
@@ -173,7 +179,7 @@ export const ScrollScreen = ({
         </View>
       )
     }
-  }, [animatedHeaderStyle, renderHeader, subtitle, title, titleSx])
+  }, [animatedHeaderStyle, headerStyle, renderHeader, subtitle, title, titleSx])
 
   const animatedContentContainerStyle = useAnimatedStyle(() => {
     return {

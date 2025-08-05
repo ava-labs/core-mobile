@@ -27,9 +27,11 @@ const SelectContactAvatarScreen = (): JSX.Element => {
     <SelectAvatar
       title={'Select\ncontact avatar'}
       avatars={randomizedAvatars}
+      initialAvatar={newContactAvatar}
       selectedAvatar={selectedAvatar}
       onSubmit={onSubmit}
       setSelectedAvatar={setSelectedAvatar}
+      isModal
       buttonText="Save"
     />
   )
