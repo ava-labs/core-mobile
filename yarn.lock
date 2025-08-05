@@ -605,7 +605,6 @@ __metadata:
     react-native-modal-datetime-picker: 18.0.0
     react-native-popover-view: 6.1.0
     react-native-reanimated: 3.17.5
-    react-native-reanimated-carousel: v4.0.2
     react-native-safe-area-context: 5.5.2
     react-native-svg: 15.11.2
     react-native-svg-transformer: 1.5.1
@@ -27610,18 +27609,6 @@ __metadata:
     string_decoder: ^1.3.0
     util: ^0.12.5
   checksum: 0fd25e84ab6ba02b794cba5d2cb697686e9c97da453c2c6c00c4918eb1f6f469283e6851333a036249dc5fc820c2f900551a3b2db39515625c97f40cf05225e4
-  languageName: node
-  linkType: hard
-
-"react-native-reanimated-carousel@npm:v4.0.2":
-  version: 4.0.2
-  resolution: "react-native-reanimated-carousel@npm:4.0.2"
-  peerDependencies:
-    react: ">=18.0.0"
-    react-native: ">=0.70.3"
-    react-native-gesture-handler: ">=2.9.0"
-    react-native-reanimated: ">=3.0.0"
-  checksum: 1f3d0434410a9e365420d2aa029d7af087a7dee6edd9be62019cbb3e14b13bb25a5ea4790fcc9a158208b027a3e7203ff02e62184753e6c3cb692392f8dcfdf4
   languageName: node
   linkType: hard
 
