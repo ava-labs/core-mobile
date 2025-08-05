@@ -81,4 +81,15 @@ const captureException = (message: string, value?: unknown): void => {
   }
 }
 
-export default { init, isAvailable, captureException, navigationIntegration }
+const getUser = (): Sentry.User | undefined => {
+  const scope = Sentry.getCurrentScope()
+  return scope?.getUser()
+}
+
+export default {
+  init,
+  isAvailable,
+  captureException,
+  navigationIntegration,
+  getUser
+}

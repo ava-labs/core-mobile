@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useCallback, useMemo } from 'react'
 import { GroupList } from '@avalabs/k2-alpine'
 import DeviceInfo from 'react-native-device-info'
 import {
@@ -8,6 +8,7 @@ import {
   PRIVACY_POLICY_URL,
   TERMS_OF_USE_URL
 } from 'common/consts/urls'
+import SentryService from 'services/sentry/SentryService'
 
 const VERSION = DeviceInfo.getReadableVersion()
 
@@ -16,67 +17,87 @@ export const About = ({
 }: {
   onPressItem: ({ url, title }: { url: string; title: string }) => void
 }): React.JSX.Element => {
-  const openHelpCenter = (): void => {
+  const user = useMemo(() => SentryService.getUser(), [])
+
+  const openHelpCenter = useCallback(() => {
     onPressItem({
       url: HELP_URL,
       title: 'Help center'
     })
-  }
+  }, [onPressItem])
 
-  const openBugReport = (): void => {
+  const openBugReport = useCallback(() => {
     onPressItem({
       url: BUG_REPORT_URL,
       title: 'Bug report'
     })
-  }
+  }, [onPressItem])
 
-  const openFeatureRequest = (): void => {
+  const openFeatureRequest = useCallback(() => {
     onPressItem({
       url: FEATURE_REQUEST_URL,
       title: 'Feature request'
     })
-  }
+  }, [onPressItem])
 
-  const openTermsOfUse = (): void => {
+  const openTermsOfUse = useCallback(() => {
     onPressItem({
       url: TERMS_OF_USE_URL,
       title: 'Terms of use'
     })
-  }
+  }, [onPressItem])
 
-  const openPrivacyPolicy = (): void => {
+  const openPrivacyPolicy = useCallback(() => {
     onPressItem({
       url: PRIVACY_POLICY_URL,
       title: 'Privacy policy'
     })
-  }
+  }, [onPressItem])
 
-  const data = [
-    {
-      title: 'Send feedback',
-      onPress: openFeatureRequest
-    },
-    {
-      title: 'Report a bug',
-      onPress: openBugReport
-    },
-    {
-      title: 'Terms of use',
-      onPress: openTermsOfUse
-    },
-    {
-      title: 'Privacy policy',
-      onPress: openPrivacyPolicy
-    },
-    {
-      title: 'Help center',
-      onPress: openHelpCenter
-    },
-    {
-      title: 'App version',
-      value: VERSION
+  const data = useMemo(() => {
+    const items = [
+      {
+        title: 'Send feedback',
+        onPress: openFeatureRequest
+      },
+      {
+        title: 'Report a bug',
+        onPress: openBugReport
+      },
+      {
+        title: 'Terms of use',
+        onPress: openTermsOfUse
+      },
+      {
+        title: 'Privacy policy',
+        onPress: openPrivacyPolicy
+      },
+      {
+        title: 'Help center',
+        onPress: openHelpCenter
+      },
+      {
+        title: 'App version',
+        value: VERSION
+      }
+    ]
+
+    if (user?.id) {
+      items.push({
+        title: 'User ID',
+        value: user.id.toString()
+      })
     }
-  ]
+
+    return items
+  }, [
+    openBugReport,
+    openFeatureRequest,
+    openTermsOfUse,
+    openPrivacyPolicy,
+    openHelpCenter,
+    user
+  ])
 
   return (
     <GroupList
