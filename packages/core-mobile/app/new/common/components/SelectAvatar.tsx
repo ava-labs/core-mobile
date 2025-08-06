@@ -121,7 +121,8 @@ export const SelectAvatar = memo(
 
           <View
             style={{
-              marginBottom: -insets.bottom
+              marginBottom: -insets.bottom,
+              paddingBottom: 16
             }}>
             <AvatarSelector
               selectedId={selectedAvatar?.id}
