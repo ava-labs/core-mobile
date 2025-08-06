@@ -238,7 +238,7 @@ workflows:
         - pipeline_intermediate_files: "$BITRISE_DEPLOY_DIR/app-external-e2e-bitrise-signed.apk:BITRISE_APK_PATH\n$BITRISE_DEPLOY_DIR/app-external-e2e-androidTest-bitrise-signed.apk:BITRISE_TEST_APK_PATH\t"
   _build-ios:
     steps:
-    - restore-cocoapods-cache@1: {}
+    # - restore-cocoapods-cache@1: {}
     - script@1:
         title: Copy Gemfile to iOS folder
         inputs:
@@ -256,7 +256,7 @@ workflows:
         inputs:
         - verbose: "true"
         - source_root_path: $BITRISE_SOURCE_DIR/ios
-    - save-cocoapods-cache@1: {}
+    # - save-cocoapods-cache@1: {}
     - xcode-archive@5.8.0:
         inputs:
         - project_path: $IOS_PROJECT_PATH
@@ -268,7 +268,7 @@ workflows:
         - automatic_code_signing: api-key
   _build-ios-simulator:
     steps:
-    - restore-cocoapods-cache@1: {}
+    # - restore-cocoapods-cache@1: {}
     - script@1:
         title: Copy Gemfile to iOS folder
         inputs:
@@ -285,7 +285,7 @@ workflows:
         inputs:
         - verbose: "true"
         - source_root_path: $BITRISE_SOURCE_DIR/ios
-    - save-cocoapods-cache@1: {}
+    # - save-cocoapods-cache@1: {}
     - xcode-build-for-simulator@0:
         inputs:
         - scheme: $IOS_SCHEME
