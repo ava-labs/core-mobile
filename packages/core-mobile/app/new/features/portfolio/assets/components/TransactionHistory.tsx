@@ -82,7 +82,8 @@ const TransactionHistory: FC<Props> = ({
 
         return (
           !token?.symbol ||
-          (tx.tokens[0]?.symbol && token.symbol === tx.tokens[0].symbol)
+          (tx.tokens[0]?.symbol && token.symbol === tx.tokens[0].symbol) ||
+          (tx.tokens[1]?.symbol && token.symbol === tx.tokens[1].symbol)
         )
       })
       .filter(tx => !isPendingBridge(tx))

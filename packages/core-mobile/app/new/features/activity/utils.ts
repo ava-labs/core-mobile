@@ -129,3 +129,13 @@ export function isNftTransaction(tx: TokenActivityTransaction): boolean {
 export function isSupportedNftChainId(chainId: number): boolean {
   return isAvalancheCChainId(chainId) || isEthereumChainId(chainId)
 }
+
+// To differentiate between swap and sent/received
+// we need to check if the from and to addresses are the same
+// as the from and to addresses of the token
+export function isPotentiallySwap(tx: TokenActivityTransaction): boolean {
+  return (
+    tx.from === tx.tokens[0]?.from?.address &&
+    tx.to === tx.tokens[0]?.to?.address
+  )
+}
