@@ -133,7 +133,7 @@ export function isSupportedNftChainId(chainId: number): boolean {
 // To differentiate between swap and sent/received
 // we need to check if the from and to addresses are the same
 // as the from and to addresses of the token
-export function isUnknownSwap(tx: TokenActivityTransaction): boolean {
+export function isPotentiallySwap(tx: TokenActivityTransaction): boolean {
   return (
     tx.from === tx.tokens[0]?.from?.address &&
     tx.to === tx.tokens[0]?.to?.address

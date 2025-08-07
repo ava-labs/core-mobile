@@ -3,7 +3,7 @@ import { TransactionType } from '@avalabs/vm-module-types'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import {
   isCollectibleTransaction,
-  isUnknownSwap
+  isPotentiallySwap
 } from 'features/activity/utils'
 import { CollectibleFetchAndRender } from 'features/portfolio/collectibles/components/CollectibleFetchAndRender'
 import { useWatchlist } from 'hooks/watchlist/useWatchlist'
@@ -137,7 +137,7 @@ export const TokenActivityListItem: FC<Props> = ({
 export function fixUnknownTxType(tx: Transaction): ActivityTransactionType {
   if (tx?.txType === TransactionType.UNKNOWN) {
     if (tx.tokens.length === 1) {
-      if (isUnknownSwap(tx)) {
+      if (isPotentiallySwap(tx)) {
         return TransactionType.SWAP
       }
       return tx.isSender ? TransactionType.SEND : TransactionType.RECEIVE
