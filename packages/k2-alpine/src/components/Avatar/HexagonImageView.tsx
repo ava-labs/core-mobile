@@ -27,6 +27,7 @@ import { AvatarType } from './Avatar'
 export const HexagonImageView = ({
   source,
   height,
+  imageKey,
   backgroundColor,
   isSelected,
   hasLoading = false,
@@ -35,6 +36,7 @@ export const HexagonImageView = ({
   source?: AvatarType['source']
   height: number
   backgroundColor: string
+  imageKey?: string
   isSelected?: boolean
   hasLoading?: boolean
   showAddIcon?: boolean
@@ -62,6 +64,7 @@ export const HexagonImageView = ({
   }, [isSelected, selectedAnimation])
 
   const isSvgComponent = typeof source === 'function'
+  const hasValidSource = source !== null && source !== undefined
 
   return (
     <MaskedView
@@ -70,20 +73,31 @@ export const HexagonImageView = ({
           <Path d={hexagonPath.path} fill={theme.colors.$surfacePrimary} />
         </Svg>
       }>
-      {isSvgComponent ? (
-        // If source is a local SVG component
-        React.createElement(source, { width: height, height: height })
+      {hasValidSource ? (
+        isSvgComponent ? (
+          // If source is a local SVG component
+          React.createElement(source, { width: height, height: height })
+        ) : (
+          // If source is a regular image
+          <Image
+            key={`image-${imageKey ?? source}`}
+            recyclingKey={`image-recycling-${imageKey ?? source}`}
+            contentFit="cover"
+            source={source}
+            style={{ width: height, height: height, backgroundColor }}
+            onLoadStart={hasLoading ? handleLoadStart : undefined}
+            onLoadEnd={hasLoading ? handleLoadEnd : undefined}
+            cachePolicy="memory-disk"
+          />
+        )
       ) : (
-        // If source is a regular image
-        <Image
-          key={`image-${source}`}
-          recyclingKey={`image-recycling-${source}`}
-          contentFit="cover"
-          source={source}
-          style={{ width: height, height: height, backgroundColor }}
-          onLoadStart={hasLoading ? handleLoadStart : undefined}
-          onLoadEnd={hasLoading ? handleLoadEnd : undefined}
-          cachePolicy="memory-disk"
+        // Render a placeholder background when no source is provided
+        <View
+          style={{
+            width: height,
+            height: height,
+            backgroundColor: backgroundColor || theme.colors.$surfaceSecondary
+          }}
         />
       )}
       {isLoading && (

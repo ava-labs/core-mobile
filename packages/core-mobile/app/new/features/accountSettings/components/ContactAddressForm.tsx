@@ -46,7 +46,7 @@ export const ContactAddressForm = ({
     useCallback(() => {
       if (params.address && params.addressType === title) {
         onUpdateAddress(params.addressType, params.address)
-        setParams({ address: undefined, addressType: undefined })
+        setParams({ address: undefined, addressType: undefined } as never)
       }
     }, [params.address, params.addressType, title, onUpdateAddress, setParams])
   )

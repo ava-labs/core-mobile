@@ -1,11 +1,12 @@
-import React, { useCallback, useMemo } from 'react'
-import { Dimensions, ImageSourcePropType } from 'react-native'
-import Animated, { FadeIn } from 'react-native-reanimated'
-import Carousel, { CarouselRenderItem } from 'react-native-reanimated-carousel'
+import React, { useCallback, useMemo, useRef } from 'react'
+import { ImageSourcePropType, ListRenderItem, Platform } from 'react-native'
+import { FlatList } from 'react-native-gesture-handler'
 import { SvgProps } from 'react-native-svg'
 import { isScreenSmall } from '../../utils'
 import { AnimatedPressable } from '../Animated/AnimatedPressable'
+import { View } from '../Primitives'
 import { Avatar } from './Avatar'
+
 export const AvatarSelector = ({
   avatars,
   selectedId,
@@ -19,10 +20,7 @@ export const AvatarSelector = ({
     ? configuration.avatarWidth.small
     : configuration.avatarWidth.large
 
-  const defaultIndex = useMemo(() => {
-    const foundIndex = avatars.findIndex(item => item.id === selectedId)
-    return foundIndex === -1 ? 0 : foundIndex
-  }, [avatars, selectedId])
+  const flatListRef = useRef<FlatList>(null)
 
   const handleSelect = useCallback(
     (index: number): void => {
@@ -34,49 +32,78 @@ export const AvatarSelector = ({
     [avatars, onSelect]
   )
 
-  const renderItem: CarouselRenderItem<{
+  const gap = useMemo(
+    () => avatarWidth / 2 - configuration.spacing / 2,
+    [avatarWidth]
+  )
+
+  const renderItem: ListRenderItem<{
     id: string
     source: ImageSourcePropType | React.FC<SvgProps>
   }> = useCallback(
-    ({ item, index }): JSX.Element => {
-      const isSelected = item.id === selectedId
+    ({
+      item,
+      index
+    }: {
+      item: { id: string; source: ImageSourcePropType | React.FC<SvgProps> }
+      index: number
+    }): JSX.Element => {
+      const isSelected = item?.id === selectedId
 
       return (
-        <Animated.View
-          key={`${item.source.toString()}-${index}`}
-          entering={FadeIn.delay(index * 15)}
-          style={{ marginTop: index % 2 === 0 ? avatarWidth : 0 }}>
+        <View
+          style={{
+            width: avatarWidth,
+            height: avatarWidth,
+            marginRight: -gap / 2,
+            marginLeft: -gap / 2,
+            zIndex: index % 2 === 0 ? 0 : 1
+          }}>
           <AnimatedPressable
             onPress={() => handleSelect(index)}
             style={{
-              flex: 1
+              top: index % 2 === 0 ? avatarWidth : configuration.spacing,
+              position: 'absolute'
             }}>
             <Avatar
-              source={item.source}
-              key={`${item.source.toString()}-${index}`}
+              source={item?.source}
               size={avatarWidth}
               isSelected={isSelected}
             />
           </AnimatedPressable>
-        </Animated.View>
+        </View>
       )
     },
-    [avatarWidth, handleSelect, selectedId]
+    [avatarWidth, handleSelect, gap, selectedId]
   )
 
+  const contentOffset = useMemo(() => {
+    return {
+      x:
+        (avatars.length * gap -
+          avatarWidth +
+          (Platform.OS === 'ios' ? (isScreenSmall ? 6 : 26) : 22)) /
+        2,
+      y: 0
+    }
+  }, [avatarWidth, avatars.length, gap])
+
   return (
-    <Carousel
-      width={avatarWidth / 2 + configuration.spacing}
-      height={avatarWidth * 2}
+    <FlatList
+      ref={flatListRef}
       data={avatars}
+      horizontal
+      showsHorizontalScrollIndicator={false}
       renderItem={renderItem}
-      defaultIndex={defaultIndex}
-      snapEnabled={false}
-      pagingEnabled={false}
+      windowSize={avatars.length}
+      contentOffset={contentOffset}
+      initialNumToRender={avatars.length}
+      keyExtractor={item => item.id}
+      contentContainerStyle={{
+        paddingHorizontal: gap - configuration.spacing * 2
+      }}
       style={{
-        width: '100%',
-        overflow: 'visible',
-        marginLeft: SCREEN_WIDTH / 2 - avatarWidth / 2
+        height: avatarWidth * 2
       }}
     />
   )
@@ -89,5 +116,3 @@ const configuration = {
   },
   spacing: 6
 }
-
-const SCREEN_WIDTH = Dimensions.get('window').width

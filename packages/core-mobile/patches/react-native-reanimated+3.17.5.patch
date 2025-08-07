@@ -1,5 +1,5 @@
 diff --git a/node_modules/react-native-reanimated/lib/typescript/hook/useAnimatedSensor.d.ts b/node_modules/react-native-reanimated/lib/typescript/hook/useAnimatedSensor.d.ts
-index eada3eb..9e6997b 100644
+index eada3eb..954c97f 100644
 --- a/node_modules/react-native-reanimated/lib/typescript/hook/useAnimatedSensor.d.ts
 +++ b/node_modules/react-native-reanimated/lib/typescript/hook/useAnimatedSensor.d.ts
 @@ -11,6 +11,6 @@ import { SensorType } from '../commonTypes';
@@ -8,64 +8,29 @@ index eada3eb..9e6997b 100644
   */
 -export declare function useAnimatedSensor(sensorType: SensorType.ROTATION, userConfig?: Partial<SensorConfig>): AnimatedSensor<ValueRotation>;
 -export declare function useAnimatedSensor(sensorType: Exclude<SensorType, SensorType.ROTATION>, userConfig?: Partial<SensorConfig>): AnimatedSensor<Value3D>;
-+export declare function useAnimatedSensor(sensorType: SensorType.ROTATION, isActive: boolean, userConfig?: Partial<SensorConfig>): AnimatedSensor<ValueRotation>;
-+export declare function useAnimatedSensor(sensorType: Exclude<SensorType, SensorType.ROTATION>, isActive: boolean, userConfig?: Partial<SensorConfig>): AnimatedSensor<Value3D>;
++export declare function useAnimatedSensor(sensorType: SensorType.ROTATION, isActive?: boolean, userConfig?: Partial<SensorConfig>): AnimatedSensor<ValueRotation>;
++export declare function useAnimatedSensor(sensorType: Exclude<SensorType, SensorType.ROTATION>, isActive?: boolean, userConfig?: Partial<SensorConfig>): AnimatedSensor<Value3D>;
  //# sourceMappingURL=useAnimatedSensor.d.ts.map
 \ No newline at end of file
-diff --git a/node_modules/react-native-reanimated/src/createAnimatedComponent/commonTypes.ts b/node_modules/react-native-reanimated/src/createAnimatedComponent/commonTypes.ts
-index b30e27c..763b9ca 100644
---- a/node_modules/react-native-reanimated/src/createAnimatedComponent/commonTypes.ts
-+++ b/node_modules/react-native-reanimated/src/createAnimatedComponent/commonTypes.ts
-@@ -108,6 +108,7 @@ export interface IAnimatedComponentInternal {
-   jestInlineStyle: NestedArray<StyleProps> | undefined;
-   jestAnimatedStyle: { value: StyleProps };
-   _componentRef: AnimatedComponentRef | HTMLElement | null;
-+  _hasAnimatedRef: boolean;
-   _sharedElementTransition: SharedTransition | null;
-   _jsPropsUpdater: IJSPropsUpdater;
-   _InlinePropManager: IInlinePropManager;
-@@ -121,7 +122,6 @@ export interface IAnimatedComponentInternal {
-    * It is not related to event handling.
-    */
-   getComponentViewTag: () => number;
--  hasAnimatedRef: () => boolean;
- }
- 
- export type NestedArray<T> = T | NestedArray<T>[];
-diff --git a/node_modules/react-native-reanimated/src/createAnimatedComponent/createAnimatedComponent.tsx b/node_modules/react-native-reanimated/src/createAnimatedComponent/createAnimatedComponent.tsx
-index 870544e..63a55ad 100644
---- a/node_modules/react-native-reanimated/src/createAnimatedComponent/createAnimatedComponent.tsx
-+++ b/node_modules/react-native-reanimated/src/createAnimatedComponent/createAnimatedComponent.tsx
-@@ -276,10 +276,6 @@ export function createAnimatedComponent(
-       return this._getViewInfo().viewTag as number;
-     }
- 
--    hasAnimatedRef() {
--      return this._hasAnimatedRef;
--    }
--
-     _detachStyles() {
-       const viewTag = this.getComponentViewTag();
-       if (viewTag !== -1 && this._styles !== null) {
 diff --git a/node_modules/react-native-reanimated/src/hook/useAnimatedSensor.ts b/node_modules/react-native-reanimated/src/hook/useAnimatedSensor.ts
-index 88797da..0dc5885 100644
+index 88797da..1fdc9da 100644
 --- a/node_modules/react-native-reanimated/src/hook/useAnimatedSensor.ts
 +++ b/node_modules/react-native-reanimated/src/hook/useAnimatedSensor.ts
 @@ -88,14 +88,17 @@ function adjustVectorToInterfaceOrientation(data: Value3D) {
   */
  export function useAnimatedSensor(
    sensorType: SensorType.ROTATION,
-+  isActive: boolean,
++  isActive?: boolean,
    userConfig?: Partial<SensorConfig>
  ): AnimatedSensor<ValueRotation>;
  export function useAnimatedSensor(
    sensorType: Exclude<SensorType, SensorType.ROTATION>,
-+  isActive: boolean,
++  isActive?: boolean,
    userConfig?: Partial<SensorConfig>
  ): AnimatedSensor<Value3D>;
  export function useAnimatedSensor(
    sensorType: SensorType,
-+  isActive: boolean,
++  isActive?: boolean,
    userConfig?: Partial<SensorConfig>
  ): AnimatedSensor<ValueRotation> | AnimatedSensor<Value3D> {
    const userConfigRef = useRef(userConfig);
@@ -83,7 +48,7 @@ index 88797da..0dc5885 100644
 +    let id = -1
 +
 +    if (isActive) {
-+      id = registerSensor(sensorType, config, (data) => {
++        id = registerSensor(sensorType, config, (data) => {
 +        'worklet';
 +        if (adjustToInterfaceOrientation) {
 +          if (sensorType === SensorType.ROTATION) {
@@ -103,32 +68,18 @@ index 88797da..0dc5885 100644
  
      if (id !== -1) {
        // if sensor is available
-@@ -171,7 +178,14 @@ export function useAnimatedSensor(
+@@ -171,7 +178,13 @@ export function useAnimatedSensor(
      return () => {
        ref.current.unregister();
      };
 -  }, [sensorType, config]);
 +  }, [sensorType, config, isActive]);
 +
-+
 +  useEffect(() => {
 +    if (!isActive) {
 +      ref.current.unregister();
 +    }
-+  }, [isActive])
++  }, [isActive]);
  
    return ref.current as AnimatedSensor<ValueRotation> | AnimatedSensor<Value3D>;
  }
-diff --git a/node_modules/react-native-reanimated/src/platform-specific/findHostInstance.ts b/node_modules/react-native-reanimated/src/platform-specific/findHostInstance.ts
-index da56c8e..5eff588 100644
---- a/node_modules/react-native-reanimated/src/platform-specific/findHostInstance.ts
-+++ b/node_modules/react-native-reanimated/src/platform-specific/findHostInstance.ts
-@@ -86,7 +86,7 @@ export function findHostInstance(
-     a valid React ref.
-   */
-   return findHostInstance_DEPRECATED(
--    !isFabric() || (component as IAnimatedComponentInternal).hasAnimatedRef()
-+    !isFabric() || (component as IAnimatedComponentInternal)._hasAnimatedRef
-       ? (component as IAnimatedComponentInternal)._componentRef
-       : component
-   );
