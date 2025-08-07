@@ -414,7 +414,7 @@ __metadata:
     react-native-screens: 4.11.1
     react-native-sensors: 7.3.6
     react-native-share: 12.0.9
-    react-native-sound: 0.11.2
+    react-native-sound: 0.12.0
     react-native-svg: 15.11.2
     react-native-svg-transformer: 1.5.1
     react-native-tab-view: 4.0.5
@@ -27712,12 +27712,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-native-sound@npm:0.11.2":
-  version: 0.11.2
-  resolution: "react-native-sound@npm:0.11.2"
+"react-native-sound@npm:0.12.0":
+  version: 0.12.0
+  resolution: "react-native-sound@npm:0.12.0"
   peerDependencies:
-    react-native: ">=0.8.0"
-  checksum: d019de415c5f7bc8af51bc50adff7b9c307cb990aad3ea193933f89df743bbcdbfaa33c4a12bb1143a223137cea39f8b69baf5e1c29f77cf80476616bccc6f91
+    react: "*"
+    react-native: "*"
+  checksum: 1c60b18c99132e59384fa35c1864502cda05b7c7e9c0f23809bd8090066f88e2bba7bb69d0d3088d668c40ff4976ee01da89bc267571e67e0d1006210ee26e2e
   languageName: node
   linkType: hard
 
