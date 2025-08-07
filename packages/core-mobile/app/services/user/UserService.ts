@@ -1,19 +1,14 @@
-import { MMKV } from 'react-native-mmkv'
+import { StorageKey } from 'resources/Constants'
+import { commonStorage } from 'utils/mmkv'
 import { uuid } from 'utils/uuid'
-
-const storage = new MMKV({
-  id: `user`
-})
 
 class UserService {
   static getUniqueID(): string {
-    const UNIQUE_ID_KEY = 'USER_SERVICE_UNIQUE_ID'
-
-    let id = storage.getString(UNIQUE_ID_KEY)
+    let id = commonStorage.getString(StorageKey.USER_UNIQUE_ID)
 
     if (!id) {
       id = uuid()
-      storage.set(UNIQUE_ID_KEY, id)
+      commonStorage.set(StorageKey.USER_UNIQUE_ID, id)
     }
 
     return id
