@@ -1,7 +1,10 @@
 import { PriceChangeStatus, useTheme, View } from '@avalabs/k2-alpine'
 import { TransactionType } from '@avalabs/vm-module-types'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
-import { isCollectibleTransaction } from 'features/activity/utils'
+import {
+  isCollectibleTransaction,
+  isPotentiallySwap
+} from 'features/activity/utils'
 import { CollectibleFetchAndRender } from 'features/portfolio/collectibles/components/CollectibleFetchAndRender'
 import { useWatchlist } from 'hooks/watchlist/useWatchlist'
 import React, { FC, useMemo } from 'react'
@@ -130,9 +133,13 @@ export const TokenActivityListItem: FC<Props> = ({
   )
 }
 
+// eslint-disable-next-line sonarjs/cognitive-complexity
 export function fixUnknownTxType(tx: Transaction): ActivityTransactionType {
   if (tx?.txType === TransactionType.UNKNOWN) {
     if (tx.tokens.length === 1) {
+      if (isPotentiallySwap(tx)) {
+        return TransactionType.SWAP
+      }
       return tx.isSender ? TransactionType.SEND : TransactionType.RECEIVE
     }
     if (tx.tokens.length > 1) {
