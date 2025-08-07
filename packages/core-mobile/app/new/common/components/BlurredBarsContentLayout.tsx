@@ -1,3 +1,5 @@
+import { SxProp, View } from '@avalabs/k2-alpine'
+import { useHeaderHeight } from '@react-navigation/elements'
 import React, {
   PropsWithChildren,
   ReactElement,
@@ -5,8 +7,6 @@ import React, {
   useMemo
 } from 'react'
 import { Platform } from 'react-native'
-import { SxProp, View } from '@avalabs/k2-alpine'
-import { useHeaderHeight } from '@react-navigation/elements'
 import { BottomTabBarHeightContext } from 'react-native-bottom-tabs'
 
 const BlurredBarsContentLayout: React.FC<
@@ -32,8 +32,12 @@ const BlurredBarsContentLayout: React.FC<
     () =>
       React.Children.map(children, child => {
         if (React.isValidElement(child)) {
-          return React.cloneElement(child as ReactElement, {
-            style: { ...child.props.style, overflow: 'visible' }
+          // Fix typing issues by narrowing child type and safely accessing style
+          return React.cloneElement(child as ReactElement<any>, {
+            style: [
+              (child as ReactElement<any>).props?.style || {},
+              { overflow: 'visible' }
+            ]
           })
         }
         return child

@@ -15,10 +15,9 @@ const EditContactAvatarScreen = (): JSX.Element => {
 
   const randomizedAvatars = useRandomizedAvatars()
   const randomAvatar = useRandomAvatar(randomizedAvatars)
+  const initialAvatar = contact?.avatar ?? randomAvatar
 
-  const [selectedAvatar, setSelectedAvatar] = useState(
-    contact?.avatar ?? randomAvatar
-  )
+  const [selectedAvatar, setSelectedAvatar] = useState(initialAvatar)
 
   const onSubmit = (): void => {
     if (!contact || !selectedAvatar) {
@@ -37,9 +36,11 @@ const EditContactAvatarScreen = (): JSX.Element => {
     <SelectAvatar
       title={'Select\ncontact avatar'}
       avatars={randomizedAvatars}
+      initialAvatar={initialAvatar}
       selectedAvatar={selectedAvatar}
       onSubmit={onSubmit}
       setSelectedAvatar={setSelectedAvatar}
+      isModal
       buttonText="Save"
     />
   )

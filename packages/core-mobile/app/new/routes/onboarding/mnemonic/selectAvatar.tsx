@@ -35,6 +35,7 @@ export default function SelectAvatar(): JSX.Element {
       title={`Select your\npersonal avatar`}
       description="Add a display avatar for your wallet. You can change it at any time in the app's settings"
       selectedAvatar={selectedAvatar}
+      initialAvatar={randomAvatar}
       onSubmit={debouncedOnSubmit}
       buttonText="Next"
       setSelectedAvatar={setSelectedAvatar}

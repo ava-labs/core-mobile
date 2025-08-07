@@ -53,7 +53,7 @@ const Browser = (): React.ReactNode => {
   useEffect(() => {
     tabs.forEach(tab => {
       if (!browserRefs.current[tab.id]) {
-        browserRefs.current[tab.id] = React.createRef<BrowserTabRef>()
+        browserRefs.current[tab.id] = React.createRef<BrowserTabRef | null>()
       }
     })
   }, [browserRefs, tabs])
