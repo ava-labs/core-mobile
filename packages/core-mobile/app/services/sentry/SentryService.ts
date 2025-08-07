@@ -4,6 +4,7 @@ import { DefaultSampleRate } from 'services/sentry/SentryWrapper'
 import { scrub } from 'utils/data/scrubber'
 import DevDebuggingConfig from 'utils/debugging/DevDebuggingConfig'
 import { ErrorEvent, TransactionEvent } from '@sentry/core'
+import UserService from 'services/user/UserService'
 
 if (!Config.SENTRY_DSN)
   // (require cycle)
@@ -61,7 +62,10 @@ const init = (): void => {
       tracesSampler: samplingContext => {
         return __DEV__ ? 1 : samplingContext.sampleRate ?? DefaultSampleRate
       },
-      integrations: [navigationIntegration]
+      integrations: [navigationIntegration],
+      onReady: async () => {
+        Sentry.getGlobalScope().setUser({ id: UserService.getUniqueID() })
+      }
     })
   }
 }
@@ -81,15 +85,9 @@ const captureException = (message: string, value?: unknown): void => {
   }
 }
 
-const getUser = (): Sentry.User | undefined => {
-  const scope = Sentry.getCurrentScope()
-  return scope?.getUser()
-}
-
 export default {
   init,
   isAvailable,
   captureException,
-  navigationIntegration,
-  getUser
+  navigationIntegration
 }
