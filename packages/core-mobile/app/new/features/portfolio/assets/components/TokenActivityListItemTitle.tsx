@@ -4,7 +4,10 @@ import { HiddenBalanceText } from 'common/components/HiddenBalanceText'
 import { SubTextNumber } from 'common/components/SubTextNumber'
 import { useBlockchainNames } from 'common/utils/useBlockchainNames'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
-import { isCollectibleTransaction } from 'features/activity/utils'
+import {
+  isCollectibleTransaction,
+  isPotentiallySwap
+} from 'features/activity/utils'
 import { useNetworks } from 'hooks/networks/useNetworks'
 import React, { ReactNode, useCallback, useMemo } from 'react'
 import { useSelector } from 'react-redux'
@@ -113,6 +116,9 @@ export const TokenActivityListItemTitle = ({
         }
         if (tx.isContractCall) {
           if (tx.tokens.length === 1) {
+            if (isPotentiallySwap(tx)) {
+              return [renderAmount(a1), ' ', s1, ' swapped for ', s2]
+            }
             return [
               renderAmount(a1),
               ' ',
