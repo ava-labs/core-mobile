@@ -34,6 +34,7 @@ import {
   togglePrivacyMode
 } from 'store/settings/securityPrivacy'
 import { useCoreBrowser } from 'common/hooks/useCoreBrowser'
+import { Support } from 'features/accountSettings/components/Support'
 
 const AccountSettingsScreen = (): JSX.Element => {
   const { deleteWallet } = useDeleteWallet()
@@ -215,6 +216,7 @@ const AccountSettingsScreen = (): JSX.Element => {
               selectNotificationPreferences={goToNotificationPreferences}
               selectSecurityPrivacy={goToSecurityPrivacy}
             />
+            <Support onPressItem={handlePressAboutItem} />
             <About onPressItem={handlePressAboutItem} />
           </View>
           <TouchableOpacity
