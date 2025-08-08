@@ -107,6 +107,7 @@ export const VerifyCode = <T,>({
         }}>
         <TextInput
           ref={inputRef}
+          allowFontScaling={false}
           containerSx={{
             flex: 1,
             height: 44,

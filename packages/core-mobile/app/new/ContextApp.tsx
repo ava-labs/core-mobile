@@ -38,7 +38,7 @@ const ContextProviders: FC<PropsWithChildren> = ({ children }) => (
 
 const ContextApp = (): JSX.Element => {
   return (
-    <Sentry.ErrorBoundary fallback={<TopLevelErrorFallback />}>
+    <Sentry.ErrorBoundary fallback={TopLevelErrorFallback}>
       <ContextProviders>
         <RootSiblingParent>
           <App />

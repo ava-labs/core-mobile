@@ -153,7 +153,7 @@ describe('overrideContractItem', () => {
     const request: RpcRequest = {
       method: RpcMethod.ETH_SEND_TRANSACTION,
       context: {
-        [RequestContext.NON_CONTRACT_RECIPIENT]: true
+        [RequestContext.NON_CONTRACT_RECIPIENT_ADDRESS]: '0xToAddress'
       },
       requestId: '1',
       sessionId: '1',
@@ -164,7 +164,8 @@ describe('overrideContractItem', () => {
     const result = overrideContractItem(item, request)
     expect(result).toEqual({
       ...item,
-      label: 'To'
+      label: 'To',
+      value: '0xToAddress'
     })
     expect(result).not.toBe(item) // Ensure a new object is returned
   })
@@ -178,7 +179,7 @@ describe('overrideContractItem', () => {
     const request: RpcRequest = {
       method: RpcMethod.ETH_SEND_TRANSACTION,
       context: {
-        [RequestContext.NON_CONTRACT_RECIPIENT]: true
+        [RequestContext.NON_CONTRACT_RECIPIENT_ADDRESS]: '0xToAddress'
       },
       requestId: '1',
       sessionId: '1',
@@ -189,7 +190,8 @@ describe('overrideContractItem', () => {
     const result = overrideContractItem(item, request)
     expect(result).toEqual({
       ...item,
-      label: 'To'
+      label: 'To',
+      value: '0xToAddress'
     })
   })
 

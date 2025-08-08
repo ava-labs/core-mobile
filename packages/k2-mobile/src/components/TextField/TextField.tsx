@@ -67,6 +67,7 @@ const TextField = forwardRef<rTextInput, TextFieldProps>(
           // @ts-ignore
           placeholderTextColor={isActive ? '$neutral50' : '$neutral400'}
           autoCorrect={autoCorrect}
+          allowFontScaling={false}
           onFocus={e => {
             setIsActive(true)
             rest.onFocus?.(e)

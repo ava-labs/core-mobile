@@ -1,4 +1,12 @@
-import React, { useRef, useState, useMemo, useEffect, useCallback } from 'react'
+import React, {
+  useRef,
+  useState,
+  useMemo,
+  useEffect,
+  useCallback,
+  forwardRef,
+  useImperativeHandle
+} from 'react'
 import { SxProp } from 'dripsy'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
 import { ReturnKeyTypeOptions } from 'react-native'
@@ -15,19 +23,11 @@ interface PresetAmount {
   isSelected: boolean
 }
 
-export const SendTokenUnitInputWidget = ({
-  balance,
-  token,
-  amount,
-  onChange,
-  formatInCurrency,
-  validateAmount,
-  accessory,
-  sx,
-  disabled,
-  returnKeyType,
-  autoFocus
-}: {
+export type SendTokenUnitInputWidgetHandle = {
+  setValue: (value: string) => void
+}
+
+type SendTokenUnitInputWidgetProps = {
   amount?: TokenUnit
   balance: TokenUnit
   token: {
@@ -42,165 +42,192 @@ export const SendTokenUnitInputWidget = ({
   disabled?: boolean
   returnKeyType?: ReturnKeyTypeOptions
   autoFocus?: boolean
-}): JSX.Element => {
-  const {
-    theme: { colors }
-  } = useTheme()
+}
 
-  const [errorMessage, setErrorMessage] = useState<string>()
-  const textInputRef = useRef<TokenUnitInputHandle>(null)
-  const [presetAmonuntButtons, setPresetAmonuntButtons] = useState<
-    PresetAmount[]
-  >([])
+export const SendTokenUnitInputWidget = forwardRef<
+  SendTokenUnitInputWidgetHandle,
+  SendTokenUnitInputWidgetProps
+>(
+  (
+    {
+      balance,
+      token,
+      amount,
+      onChange,
+      formatInCurrency,
+      validateAmount,
+      accessory,
+      sx,
+      disabled,
+      returnKeyType,
+      autoFocus
+    },
+    ref
+    // eslint-disable-next-line sonarjs/cognitive-complexity
+  ) => {
+    const {
+      theme: { colors }
+    } = useTheme()
 
-  const presetAmounts = useMemo(() => {
-    const presets = []
-    if (balance.gt(5)) {
+    const [errorMessage, setErrorMessage] = useState<string>()
+    const textInputRef = useRef<TokenUnitInputHandle>(null)
+    const [presetAmonuntButtons, setPresetAmonuntButtons] = useState<
+      PresetAmount[]
+    >([])
+
+    const presetAmounts = useMemo(() => {
+      const presets = []
+      if (balance.gt(5)) {
+        presets.push({
+          text: '5 ' + token.symbol,
+          amount: new TokenUnit(
+            5 * 10 ** token.maxDecimals,
+            balance.getMaxDecimals(),
+            balance.getSymbol()
+          ),
+          isSelected: false
+        })
+      }
+      if (balance.gt(10)) {
+        presets.push({
+          text: '10 ' + token.symbol,
+          amount: new TokenUnit(
+            10 * 10 ** token.maxDecimals,
+            balance.getMaxDecimals(),
+            balance.getSymbol()
+          ),
+          isSelected: false
+        })
+      }
+      if (balance.gt(20)) {
+        presets.push({
+          text: '20 ' + token.symbol,
+          amount: new TokenUnit(
+            20 * 10 ** token.maxDecimals,
+            balance.getMaxDecimals(),
+            balance.getSymbol()
+          ),
+          isSelected: false
+        })
+      }
       presets.push({
-        text: '5 ' + token.symbol,
-        amount: new TokenUnit(
-          5 * 10 ** token.maxDecimals,
-          balance.getMaxDecimals(),
-          balance.getSymbol()
-        ),
+        text: 'Max',
+        amount: balance,
         isSelected: false
       })
-    }
-    if (balance.gt(10)) {
-      presets.push({
-        text: '10 ' + token.symbol,
-        amount: new TokenUnit(
-          10 * 10 ** token.maxDecimals,
-          balance.getMaxDecimals(),
-          balance.getSymbol()
-        ),
-        isSelected: false
-      })
-    }
-    if (balance.gt(20)) {
-      presets.push({
-        text: '20 ' + token.symbol,
-        amount: new TokenUnit(
-          20 * 10 ** token.maxDecimals,
-          balance.getMaxDecimals(),
-          balance.getSymbol()
-        ),
-        isSelected: false
-      })
-    }
-    presets.push({
-      text: 'Max',
-      amount: balance,
-      isSelected: false
-    })
-    return presets
-  }, [balance, token.maxDecimals, token.symbol])
+      return presets
+    }, [balance, token.maxDecimals, token.symbol])
 
-  useEffect(() => {
-    setPresetAmonuntButtons(presetAmounts)
-  }, [presetAmounts])
+    useImperativeHandle(ref, () => ({
+      setValue: (newValue: string) => textInputRef.current?.setValue(newValue)
+    }))
 
-  const handlePressPresetButton = (amt: TokenUnit, index: number): void => {
-    textInputRef.current?.setValue(amt.toDisplay())
+    useEffect(() => {
+      setPresetAmonuntButtons(presetAmounts)
+    }, [presetAmounts])
 
-    onChange?.(amt)
+    const handlePressPresetButton = (amt: TokenUnit, index: number): void => {
+      textInputRef.current?.setValue(amt.toDisplay())
 
-    setPresetAmonuntButtons(prevButtons =>
-      prevButtons.map((b, i) =>
-        i === index ? { ...b, isSelected: true } : { ...b, isSelected: false }
-      )
-    )
-  }
+      onChange?.(amt)
 
-  const handleChange = useCallback(
-    async (value: TokenUnit): Promise<void> => {
       setPresetAmonuntButtons(prevButtons =>
-        prevButtons.map(b => ({
-          ...b,
-          isSelected: value.eq(balance.mul(b.amount))
-        }))
+        prevButtons.map((b, i) =>
+          i === index ? { ...b, isSelected: true } : { ...b, isSelected: false }
+        )
       )
+    }
 
-      onChange?.(value)
+    const handleChange = useCallback(
+      async (value: TokenUnit): Promise<void> => {
+        setPresetAmonuntButtons(prevButtons =>
+          prevButtons.map(b => ({
+            ...b,
+            isSelected: value.eq(balance.mul(b.amount))
+          }))
+        )
 
-      if (validateAmount) {
-        try {
-          await validateAmount(value)
+        onChange?.(value)
 
-          setErrorMessage(undefined)
-        } catch (e) {
-          if (e instanceof Error) {
-            setErrorMessage(e.message)
+        if (validateAmount) {
+          try {
+            await validateAmount(value)
+
+            setErrorMessage(undefined)
+          } catch (e) {
+            if (e instanceof Error) {
+              setErrorMessage(e.message)
+            }
           }
         }
-      }
-    },
-    [onChange, validateAmount, balance]
-  )
+      },
+      [onChange, validateAmount, balance]
+    )
 
-  return (
-    <View sx={{ gap: 8, ...sx }}>
-      <View
-        sx={{
-          backgroundColor: '$surfaceSecondary',
-          borderRadius: 12,
-          alignItems: 'center',
-          paddingTop: 32,
-          paddingHorizontal: 16,
-          paddingBottom: 22
-        }}>
-        <TokenUnitInput
-          returnKeyType={returnKeyType}
-          editable={!disabled}
-          ref={textInputRef}
-          token={token}
-          amount={amount}
-          formatInCurrency={formatInCurrency}
-          onChange={handleChange}
-          autoFocus={autoFocus}
-        />
-        <View sx={{ flexDirection: 'row', gap: 7, marginTop: 25 }}>
-          {presetAmonuntButtons.map((button, index) => (
-            <Button
-              key={index}
-              size="small"
-              type={button.isSelected ? 'primary' : 'secondary'}
-              style={{
-                minWidth: 72
-              }}
-              disabled={disabled}
-              onPress={() => {
-                handlePressPresetButton(button.amount, index)
-              }}>
-              {button.text}
-            </Button>
-          ))}
-        </View>
-        {accessory !== undefined && (
-          <View
-            sx={{
-              position: 'absolute',
-              right: 8,
-              top: 60
-            }}>
-            {accessory}
+    return (
+      <View sx={{ gap: 8, ...sx }}>
+        <View
+          sx={{
+            backgroundColor: '$surfaceSecondary',
+            borderRadius: 12,
+            alignItems: 'center',
+            paddingTop: 32,
+            paddingHorizontal: 16,
+            paddingBottom: 22
+          }}>
+          <TokenUnitInput
+            returnKeyType={returnKeyType}
+            editable={!disabled}
+            ref={textInputRef}
+            token={token}
+            amount={amount}
+            formatInCurrency={formatInCurrency}
+            onChange={handleChange}
+            autoFocus={autoFocus}
+          />
+          <View sx={{ flexDirection: 'row', gap: 7, marginTop: 25 }}>
+            {presetAmonuntButtons.map((button, index) => (
+              <Button
+                key={index}
+                size="small"
+                type={button.isSelected ? 'primary' : 'secondary'}
+                style={{
+                  minWidth: 72
+                }}
+                disabled={disabled}
+                onPress={() => {
+                  handlePressPresetButton(button.amount, index)
+                }}>
+                {button.text}
+              </Button>
+            ))}
           </View>
-        )}
+          {accessory !== undefined && (
+            <View
+              sx={{
+                position: 'absolute',
+                right: 8,
+                top: 60
+              }}>
+              {accessory}
+            </View>
+          )}
+        </View>
+        <Text
+          variant="caption"
+          sx={{
+            paddingHorizontal: 36,
+            color: errorMessage
+              ? '$textDanger'
+              : alpha(colors.$textPrimary, 0.85),
+            alignSelf: 'center',
+            textAlign: 'center'
+          }}>
+          {errorMessage
+            ? normalizeErrorMessage(errorMessage)
+            : `Balance: ${balance.toDisplay()} ${token.symbol}`}
+        </Text>
       </View>
-      <Text
-        variant="caption"
-        sx={{
-          paddingHorizontal: 36,
-          color: errorMessage
-            ? '$textDanger'
-            : alpha(colors.$textPrimary, 0.85),
-          alignSelf: 'center',
-          textAlign: 'center'
-        }}>
-        {errorMessage
-          ? normalizeErrorMessage(errorMessage)
-          : `Balance: ${balance.toDisplay()} ${token.symbol}`}
-      </Text>
-    </View>
-  )
-}
+    )
+  }
+)

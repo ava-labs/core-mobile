@@ -166,6 +166,7 @@ export const SearchBar: FC<Props> = ({
             placeholderTextColor={colors.$textSecondary}
             value={_searchText}
             onChangeText={handleTextChange}
+            allowFontScaling={false}
             onBlur={() => {
               setIsFocused(false)
             }}
