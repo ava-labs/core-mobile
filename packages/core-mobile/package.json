@@ -214,7 +214,7 @@
     "type-fest": "4.26.1",
     "url": "0.11.4",
     "use-debounce": "10.0.4",
-    "viem": "2.21.21",
+    "viem": "2.33.3",
     "vm-browserify": "1.1.2",
     "web-streams-polyfill": "^4.1.0",
     "web3": "4.16.0",
