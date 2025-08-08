@@ -3225,11 +3225,30 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
-  - RNSound (0.11.2):
+  - RNSound (0.12.0):
+    - DoubleConversion
+    - glog
+    - hermes-engine
+    - RCT-Folly (= 2024.11.18.00)
+    - RCTRequired
+    - RCTTypeSafety
     - React-Core
-    - RNSound/Core (= 0.11.2)
-  - RNSound/Core (0.11.2):
-    - React-Core
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
+    - React-hermes
+    - React-ImageManager
+    - React-jsi
+    - React-NativeModulesApple
+    - React-RCTFabric
+    - React-renderercss
+    - React-rendererdebug
+    - React-utils
+    - ReactCodegen
+    - ReactCommon/turbomodule/bridging
+    - ReactCommon/turbomodule/core
+    - Yoga
   - RNSVG (15.11.2):
     - DoubleConversion
     - glog
@@ -3993,7 +4012,7 @@ SPEC CHECKSUMS:
   RNSensors: 117ba71c7eeeea0407ea0c0bb79e3495d602049b
   RNSentry: a1c2583797dd0e7d154e34a47021ebc8bf9d5a06
   RNShare: c57877c95b51671130e531065ed8e9396dd2669f
-  RNSound: 6c156f925295bdc83e8e422e7d8b38d33bc71852
+  RNSound: 99655e437691f6357ffdd8a45f7a3b7aae27624f
   RNSVG: ee32efbed652c5151fd3f98bed13c68af285bc38
   SDWebImage: 8a6b7b160b4d710e2a22b6900e25301075c34cb3
   SDWebImageAVIFCoder: 00310d246aab3232ce77f1d8f0076f8c4b021d90
