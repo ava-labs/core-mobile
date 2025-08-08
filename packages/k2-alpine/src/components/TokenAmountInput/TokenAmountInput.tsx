@@ -97,6 +97,7 @@ export const TokenAmountInput = ({
       numberOfLines={1}
       placeholderTextColor={alpha(theme.colors.$textSecondary, 0.2)}
       selectionColor={theme.colors.$textPrimary}
+      allowFontScaling={false}
       style={[{ color: theme.colors.$textPrimary }, props.style]}
     />
   )

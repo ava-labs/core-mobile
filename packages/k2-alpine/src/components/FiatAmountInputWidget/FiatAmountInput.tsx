@@ -199,6 +199,7 @@ export const FiatAmountInput = forwardRef<
               value={value}
               onChangeText={handleValueChanged}
               maxLength={maxLength}
+              allowFontScaling={false}
               selectionColor={colors.$textPrimary}
             />
             {displayTrailingFiatCurrency && (

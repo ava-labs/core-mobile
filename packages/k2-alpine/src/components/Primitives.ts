@@ -9,18 +9,29 @@ import {
   TouchableHighlight as RNTouchableHighlight,
   TouchableOpacity as RNTouchableOpacity
 } from 'react-native'
+import React from 'react'
 
 export const TouchableHighlight = styled(RNTouchableHighlight)()
 
 export const TouchableOpacity = styled(RNTouchableOpacity)()
 
-export const Text = styled(DripsyText, {
+const StyledText = styled(DripsyText, {
   themeKey: 'text',
   // default variant
   defaultVariant: 'body1'
 })({
   // default color
   color: '$textPrimary'
+})
+export const Text = React.forwardRef<
+  React.ComponentRef<typeof StyledText>,
+  React.ComponentProps<typeof StyledText>
+>((props, ref) => {
+  return React.createElement(StyledText, {
+    ...props,
+    allowFontScaling: false,
+    ref
+  })
 })
 
 export const ScrollView = styled(

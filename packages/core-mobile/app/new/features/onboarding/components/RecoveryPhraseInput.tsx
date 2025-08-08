@@ -159,6 +159,7 @@ export default function RecoveryPhraseInput({
           autoCapitalize={'none'}
           ref={textInputRef}
           autoCorrect={false}
+          allowFontScaling={false}
           returnKeyType="done"
           selectionColor={theme.colors.$textPrimary}
           spellCheck
