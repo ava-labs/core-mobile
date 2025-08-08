@@ -88,6 +88,7 @@ const SlideToConfirm = ({
           </Animated.View>
         </Animated.View>
         <Animated.Text
+          allowFontScaling={false}
           style={[
             {
               fontSize: 15,
