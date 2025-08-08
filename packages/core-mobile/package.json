@@ -216,7 +216,7 @@
     "use-debounce": "10.0.4",
     "viem": "2.21.21",
     "vm-browserify": "1.1.2",
-    "web-streams-polyfill": "4.1.0",
+    "web-streams-polyfill": "^4.1.0",
     "web3": "4.16.0",
     "xss": "1.0.15",
     "zeego": "3.0.6",

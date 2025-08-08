@@ -43,8 +43,5 @@
     "node": ">=20.18.0",
     "yarn": ">=3.6.4"
   },
-  "packageManager": "yarn@3.6.4",
-  "dependencies": {
-    "web-streams-polyfill": "^4.1.0"
-  }
+  "packageManager": "yarn@3.6.4"
 }
