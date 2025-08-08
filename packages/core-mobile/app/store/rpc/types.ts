@@ -164,6 +164,6 @@ export enum RequestContext {
   CONFETTI_DISABLED = 'confettiDisabled',
 
   // used to determine if the recipient/to address is a contract
-  // if true, we will show "To" instead of "Contract" in the approval screen
-  NON_CONTRACT_RECIPIENT = 'nonContractRecipient'
+  // If we set an address for this key, the approval screen will show “To” instead of “Contract” along with the address.
+  NON_CONTRACT_RECIPIENT_ADDRESS = 'nonContractRecipient'
 }
