@@ -205,6 +205,7 @@ export const TokenUnitInput = forwardRef<
               onChangeText={handleValueChanged}
               maxLength={maxLength}
               selectionColor={colors.$textPrimary}
+              allowFontScaling={false}
             />
             <Text
               sx={{

@@ -1,11 +1,4 @@
-import {
-  AppRegistry,
-  Text,
-  TextInput,
-  LogBox,
-  Platform,
-  UIManager
-} from 'react-native'
+import { AppRegistry, LogBox, Platform, UIManager } from 'react-native'
 import './polyfills'
 import Big from 'big.js'
 import FCMService from 'services/fcm/FCMService'
@@ -39,20 +32,6 @@ Logger.setLevel(__DEV__ ? LogLevel.TRACE : LogLevel.ERROR)
 // set Big properties globally to not use exponential notation
 Big.PE = 99
 Big.NE = -18
-
-/**
- * disable font scaling to prevent broken UI
- *
- * notes:
- * - we only disable it for the Text and TextInput components
- * - for native components (Alert, Dialog, DatePicker,...), it's okay
- *   to let them scale their text since they have been well tested
- */
-Text.defaultProps = Text.defaultProps || {}
-Text.defaultProps.allowFontScaling = false
-
-TextInput.defaultProps = TextInput.defaultProps || {}
-TextInput.defaultProps.allowFontScaling = false
 
 let AppEntryPoint = NewApp
 

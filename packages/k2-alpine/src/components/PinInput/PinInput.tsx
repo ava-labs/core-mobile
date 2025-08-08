@@ -166,6 +166,7 @@ export const PinInput = forwardRef<PinInputActions, PinInputProps>(
           onChangeText={handleInputChange}
           keyboardType="number-pad"
           maxLength={length}
+          allowFontScaling={false}
         />
         {/* Display for input dots */}
         <Animated.View
