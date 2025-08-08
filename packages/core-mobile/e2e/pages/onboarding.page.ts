@@ -263,9 +263,10 @@ class OnboardingPage {
     await Assert.isVisible(this.selectedAvatar)
     await Assert.isVisible(this.letsgo)
   }
+
   async tapLetsGo() {
-    await Action.waitForElement(this.letsgo)
-    await Action.longPress(this.letsgo)
+    await Action.waitForElement(this.letsgo, 10000)
+    await Action.tap(this.letsgo)
   }
 
   async verifyNewRecoveryPhrasePage() {

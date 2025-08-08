@@ -1,10 +1,10 @@
-import Actions from '../../../helpers/actions'
-import AdvancedPage from '../../../pages/burgerMenu/advanced.page'
-import BottomTabsPage from '../../../pages/bottomTabs.page'
-import { warmup } from '../../../helpers/warmup'
-import StakePage from '../../../pages/Stake/stake.page'
-import ClaimPage from '../../../pages/Stake/claim.page'
-import advancedPage from '../../../pages/burgerMenu/advanced.page'
+import Actions from '../../helpers/actions'
+import AdvancedPage from '../../pages/burgerMenu/advanced.page'
+import BottomTabsPage from '../../pages/bottomTabs.page'
+import { warmup } from '../../helpers/warmup'
+import StakePage from '../../pages/Stake/stake.page'
+import ClaimPage from '../../pages/Stake/claim.page'
+import advancedPage from '../../pages/burgerMenu/advanced.page'
 
 describe('Stake on Testnet', () => {
   beforeAll(async () => {

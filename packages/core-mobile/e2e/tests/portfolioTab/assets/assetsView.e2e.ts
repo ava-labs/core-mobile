@@ -1,6 +1,6 @@
-import { warmup } from '../../helpers/warmup'
-import commonElsPage from '../../pages/commonEls.page'
-import portfolioPage from '../../pages/portfolio.page'
+import { warmup } from '../../../helpers/warmup'
+import commonElsPage from '../../../pages/commonEls.page'
+import portfolioPage from '../../../pages/portfolio.page'
 
 describe('Assets Tab View', () => {
   beforeAll(async () => {

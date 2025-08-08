@@ -24,7 +24,8 @@ export const GroupList = ({
   valueSx,
   textContainerSx,
   separatorMarginRight,
-  subtitleVariant = 'mono'
+  subtitleVariant = 'mono',
+  testID
 }: {
   data: GroupListItem[]
   itemHeight?: number
@@ -34,6 +35,7 @@ export const GroupList = ({
   textContainerSx?: SxProp
   valueSx?: SxProp
   separatorMarginRight?: number
+  testID?: string
 }): JSX.Element => {
   const { theme } = useTheme()
   const [textMarginLeft, setTextMarginLeft] = useState(0)
@@ -148,7 +150,7 @@ export const GroupList = ({
         } = item
 
         return (
-          <View key={index} sx={containerSx}>
+          <View key={index} sx={containerSx} testID={testID}>
             <TouchableOpacity
               onPress={() => handlePress(item, index)}
               disabled={!onPress && !accordion}
