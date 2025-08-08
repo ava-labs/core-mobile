@@ -4,7 +4,6 @@ import { Alert } from 'react-native'
 import { InvalidVersionError, NoSaltError } from 'utils/EncryptionHelper'
 import Logger from 'utils/Logger'
 import { formatTimer } from 'utils/Utils'
-import { BiometricType } from 'utils/BiometricsSDK'
 import KeychainMigrator, {
   BadPinError,
   MigrationFailedError,
@@ -30,11 +29,7 @@ export function usePinOrBiometryLogin({
   verifyBiometric: () => Promise<WalletLoadingResults>
   disableKeypad: boolean
   timeRemaining: string
-  bioType: BiometricType
-  isBiometricAvailable: boolean
 } {
-  const [isBiometricAvailable, setIsBiometricAvailable] = useState(true)
-  const [bioType, setBioType] = useState<BiometricType>(BiometricType.NONE)
   const [enteredPin, setEnteredPin] = useState('')
   const [verified, setVerified] = useState(false)
   const [disableKeypad, setDisableKeypad] = useState(false)
@@ -179,7 +174,6 @@ export function usePinOrBiometryLogin({
           }
           //already migrated
           const isSuccess = await BiometricsSDK.loadEncryptionKeyWithBiometry()
-
           if (isSuccess) {
             setVerified(true)
             resetRateLimiter()
@@ -203,31 +197,13 @@ export function usePinOrBiometryLogin({
       }
     }, [activeWalletId, alertBadData, resetRateLimiter])
 
-  useEffect(() => {
-    async function getBiometryType(): Promise<void> {
-      const canUseBiometry = await BiometricsSDK.canUseBiometry()
-      setIsBiometricAvailable(canUseBiometry)
-
-      if (!canUseBiometry || BiometricsSDK.getAccessType() !== 'BIO') {
-        return
-      }
-
-      const type = await BiometricsSDK.getBiometryType()
-      setBioType(type)
-    }
-
-    getBiometryType()
-  }, [])
-
   return {
     enteredPin,
     onEnterPin,
     verified,
     verifyBiometric,
     disableKeypad,
-    timeRemaining,
-    bioType,
-    isBiometricAvailable
+    timeRemaining
   }
 }
 
