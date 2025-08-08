@@ -63,7 +63,7 @@ const useEVMSend: SendAdapterEVM = ({
         toAddress: addressToSend,
         amount: amount?.toSubUnit(),
         context: {
-          [RequestContext.NON_CONTRACT_RECIPIENT]: true
+          [RequestContext.NON_CONTRACT_RECIPIENT_ADDRESS]: addressToSend
         }
       })
     } finally {

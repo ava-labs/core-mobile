@@ -1,4 +1,9 @@
-import { RpcRequest, DetailItem, RpcMethod } from '@avalabs/vm-module-types'
+import {
+  RpcRequest,
+  DetailItem,
+  RpcMethod,
+  DetailItemType
+} from '@avalabs/vm-module-types'
 import { RequestContext } from 'store/rpc/types'
 import { isInAppRequest } from 'store/rpc/utils/isInAppRequest'
 
@@ -30,11 +35,16 @@ export const overrideContractItem = (
 
   // evm module hardcodes "Contract" for the to field for all transactions
   // we are overriding this with "To" for non-contract recipients
-  const isNonContractRecipient = Boolean(
-    request.context?.[RequestContext.NON_CONTRACT_RECIPIENT]
-  )
-  if (item.label.toLowerCase() === 'contract' && isNonContractRecipient) {
-    return { ...item, label: 'To' }
+  const nonContractRecipientAddress =
+    request.context?.[RequestContext.NON_CONTRACT_RECIPIENT_ADDRESS]
+
+  if (
+    item.label.toLowerCase() === 'contract' &&
+    nonContractRecipientAddress &&
+    typeof nonContractRecipientAddress === 'string' &&
+    item.type === DetailItemType.ADDRESS
+  ) {
+    return { ...item, label: 'To', value: nonContractRecipientAddress }
   }
 
   return item
