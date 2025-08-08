@@ -222,7 +222,8 @@ const Segment = ({
         <View sx={{ alignItems: 'center', backgroundColor, ...sx }}>
           <Animated.Text
             onLayout={handleTextLayout}
-            style={[styles.text, textColorAnimatedStyle]}>
+            style={[styles.text, textColorAnimatedStyle]}
+            allowFontScaling={false}>
             {text}
           </Animated.Text>
         </View>
