@@ -1,6 +1,7 @@
 import './crypto'
 import 'react-native-gesture-handler'
 import '@walletconnect/react-native-compat'
+import 'web-streams-polyfill/dist/polyfill'
 import 'react-native-url-polyfill/auto'
 import '../shim'
 import './read_as_array_buffer_shim'
