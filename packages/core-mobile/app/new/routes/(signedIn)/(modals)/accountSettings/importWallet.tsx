@@ -66,6 +66,11 @@ const ImportWalletScreen = (): JSX.Element => {
       navigate({ pathname: '/accountSettings/importPrivateKey' })
     }
 
+    const handleImportLedger = (): void => {
+      // @ts-ignore TODO: make routes typesafe
+      navigate({ pathname: '/accountSettings/ledger/connectWallet' })
+    }
+
     const baseData = [
       {
         title: 'Type in a recovery phrase',
@@ -104,6 +109,25 @@ const ImportWalletScreen = (): JSX.Element => {
           <Icons.Navigation.ChevronRight color={colors.$textSecondary} />
         ),
         onPress: handleImportPrivateKey
+      },
+      {
+        title: 'Import from Ledger',
+        subtitle: (
+          <Text variant="caption" sx={{ fontSize: 12, paddingTop: 4 }}>
+            Access with an existing Ledger
+          </Text>
+        ),
+        leftIcon: (
+          <Icons.Device.Encrypted
+            color={colors.$textPrimary}
+            width={24}
+            height={24}
+          />
+        ),
+        accessory: (
+          <Icons.Navigation.ChevronRight color={colors.$textSecondary} />
+        ),
+        onPress: handleImportLedger
       }
     ]
 
@@ -153,5 +177,4 @@ const ImportWalletScreen = (): JSX.Element => {
     </ScrollScreen>
   )
 }
-
 export default ImportWalletScreen
