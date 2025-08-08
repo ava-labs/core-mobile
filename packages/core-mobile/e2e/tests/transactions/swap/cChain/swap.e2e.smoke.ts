@@ -2,7 +2,7 @@ import { warmup } from '../../../../helpers/warmup'
 import commonElsPage from '../../../../pages/commonEls.page'
 import SwapTabPage from '../../../../pages/swapTab.page'
 
-describe('Swap', () => {
+describe('Swap on C-Chain', () => {
   beforeAll(async () => {
     await warmup()
   })
