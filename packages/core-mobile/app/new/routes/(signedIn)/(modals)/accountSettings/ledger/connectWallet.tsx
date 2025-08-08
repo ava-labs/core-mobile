@@ -10,6 +10,9 @@ import {
 
 import TransportBLE from '@ledgerhq/react-native-hw-transport-ble'
 import { Button, Card, Text as K2Text, useTheme } from '@avalabs/k2-alpine'
+import { useRouter } from 'expo-router'
+import { ScrollScreen } from 'common/components/ScrollScreen'
+import { LedgerService } from 'services/ledger/ledgerService'
 
 interface Device {
   id: string
@@ -23,9 +26,11 @@ interface TransportState {
 }
 
 export default function ConnectWallet(): JSX.Element {
+  const router = useRouter()
   const {
     theme: { colors }
   } = useTheme()
+  const [ledgerService] = useState(() => new LedgerService())
   const [transportState, setTransportState] = useState<TransportState>({
     available: false,
     powered: false
@@ -41,7 +46,7 @@ export default function ConnectWallet(): JSX.Element {
       next: event => {
         setTransportState({
           available: event.available,
-          powered: false // Remove powered property since it doesn't exist
+          powered: false
         })
       },
       complete: () => {
@@ -186,21 +191,28 @@ export default function ConnectWallet(): JSX.Element {
     }
   }, [])
 
-  // Connect to a specific device with error handling for TurboModule issue
+  // Connect to a specific device using LedgerService
   const connectToDevice = useCallback(
     async (device: Device) => {
       setIsConnecting(true)
 
       try {
-        const connectionPromise = TransportBLE.open(device.id)
-        const timeoutPromise = new Promise((_, reject) =>
-          setTimeout(() => reject(new Error('Connection timeout')), 15000)
-        )
-
-        await Promise.race([connectionPromise, timeoutPromise])
+        // Use LedgerService to connect
+        await ledgerService.connect(device.id)
 
         setConnectedDevice(device)
-        Alert.alert('Success', `Connected to ${device.name}`)
+        Alert.alert('Success', `Connected to ${device.name}`, [
+          {
+            text: 'Continue',
+            onPress: () => {
+              // Navigate to confirm addresses screen with device ID
+              router.push({
+                pathname: '/accountSettings/ledger/confirmAddresses' as any,
+                params: { deviceId: device.id }
+              })
+            }
+          }
+        ])
       } catch (error) {
         let errorMessage = 'Unknown connection error'
 
@@ -237,13 +249,14 @@ export default function ConnectWallet(): JSX.Element {
         setIsConnecting(false)
       }
     },
-    [openBluetoothSettings]
+    [openBluetoothSettings, router, ledgerService]
   )
 
   // Disconnect from current device
   const disconnectDevice = useCallback(async () => {
     try {
-      // Close any open transport connections
+      // Use LedgerService to disconnect
+      await ledgerService.disconnect()
       setConnectedDevice(null)
       Alert.alert(
         'Disconnected',
@@ -257,7 +270,7 @@ export default function ConnectWallet(): JSX.Element {
         }`
       )
     }
-  }, [])
+  }, [ledgerService])
 
   const renderDevice = ({ item }: { item: Device }) => (
     <Card sx={{ marginBottom: 12, padding: 16 }}>
@@ -292,14 +305,10 @@ export default function ConnectWallet(): JSX.Element {
   )
 
   return (
-    <View
-      style={{ flex: 1, backgroundColor: colors.$surfacePrimary, padding: 16 }}>
-      <K2Text
-        variant="heading4"
-        sx={{ color: colors.$textPrimary, marginBottom: 24 }}>
-        Connect Ledger Device
-      </K2Text>
-
+    <ScrollScreen
+      title="Connect Ledger Device"
+      isModal
+      contentContainerStyle={{ padding: 16, flex: 1 }}>
       {/* BLE Status */}
       <Card sx={{ marginBottom: 16, padding: 16 }}>
         <K2Text
@@ -389,6 +398,6 @@ export default function ConnectWallet(): JSX.Element {
           </K2Text>
         </Card>
       )}
-    </View>
+    </ScrollScreen>
   )
 }
