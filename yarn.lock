@@ -210,7 +210,7 @@ __metadata:
     "@babel/plugin-transform-private-methods": 7.25.7
     "@babel/preset-env": 7.25.7
     "@babel/preset-typescript": 7.25.7
-    "@babel/runtime": 7.25.7
+    "@babel/runtime": 7.28.2
     "@blockaid/client": 0.27.4
     "@bottom-tabs/react-navigation": 0.9.2
     "@coinbase/cbpay-js": 2.2.1
@@ -635,7 +635,7 @@ __metadata:
   dependencies:
     "@avalabs/tsconfig-mobile": "workspace:*"
     "@babel/core": 7.28.0
-    "@babel/runtime": 7.25.7
+    "@babel/runtime": 7.28.2
     "@lavamoat/allow-scripts": 3.2.1
     "@react-native-async-storage/async-storage": 2.1.2
     "@react-native-community/datetimepicker": 8.4.1
@@ -3857,12 +3857,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@babel/runtime@npm:7.25.7":
-  version: 7.25.7
-  resolution: "@babel/runtime@npm:7.25.7"
-  dependencies:
-    regenerator-runtime: ^0.14.0
-  checksum: 1d6133ed1cf1de1533cfe84a4a8f94525271a0d93f6af4f2cdae14884ec3c8a7148664ddf7fd2a14f82cc4485904a1761821a55875ad241c8b4034e95e7134b2
+"@babel/runtime@npm:7.28.2":
+  version: 7.28.2
+  resolution: "@babel/runtime@npm:7.28.2"
+  checksum: 8673eb2311752929f5b0167f42cff4cc1d5fadddd0394baca27d06c1618680ffcf95e9f01061f5c4dc3f6a32b6bbf500e7762c02dc22bcd273c2947b9774ddad
   languageName: node
   linkType: hard
 
@@ -27829,7 +27827,7 @@ react-native-webview@ava-labs/react-native-webview:
   peerDependencies:
     react: "*"
     react-native: "*"
-  checksum: 3e4689674406deb2ad9efa9f529597341b4ab33e379b7c7cd72aff8d5e37862fda1a37aba984951a67cc3938969be138bc3c4469e4963dd170b172148339e056
+  checksum: 6e24cd44624c7f3dce04bca0fc4186915d962c46ec2ff7cf8172c7f1a18394e52aa2bb11176816b96fcd83328fbbde059a3aa16d3aa285a1f73f49c495ca3b06
   languageName: node
   linkType: hard
 
