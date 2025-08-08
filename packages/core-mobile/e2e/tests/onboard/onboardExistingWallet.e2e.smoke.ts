@@ -10,14 +10,14 @@ import onboardingLoc from '../../locators/onboarding.loc'
 import bottomTabsPage from '../../pages/bottomTabs.page'
 import { ENV } from '../../helpers/getEnvs'
 
-describe('Onboarding Existing Wallet', () => {
+describe('Onboarding', () => {
   beforeAll(async () => {
     await device.launchApp()
     await commonElsPage.exitMetro()
     await handleJailbrokenWarning()
   })
 
-  it('should onboard the existing wallet', async () => {
+  it('should onboard an existing wallet', async () => {
     // Start with `Access Existing Wallet` flow
     await onboardingPage.verifyOnboardingPage()
     await onboardingPage.tapAccessExistingWallet()

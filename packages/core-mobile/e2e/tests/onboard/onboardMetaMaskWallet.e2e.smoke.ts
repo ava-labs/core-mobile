@@ -7,14 +7,14 @@ import loginRecoverWallet from '../../helpers/loginRecoverWallet'
 import { handleJailbrokenWarning } from '../../helpers/warmup'
 import commonElsPage from '../../pages/commonEls.page'
 
-describe('Onboard MetaMask wallet', () => {
+describe('Onboard', () => {
   beforeAll(async () => {
     await device.launchApp({ newInstance: true })
     await commonElsPage.exitMetro()
     await handleJailbrokenWarning()
   })
 
-  it('Should login with a metamask wallet', async () => {
+  it('should onboard a metamask wallet', async () => {
     await loginRecoverWallet.login(ENV.E2E_METAMASK_MNEMONIC)
   })
 })

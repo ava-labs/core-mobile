@@ -59,6 +59,7 @@ export const AccountAddresses = memo(
     return (
       <GroupList
         data={walletAddreses}
+        testID={`receive_address__${address}`}
         textContainerSx={{
           width: '65%'
         }}

@@ -1,6 +1,6 @@
-import { warmup } from '../../../helpers/warmup'
-import commonElsPage from '../../../pages/commonEls.page'
-import SwapTabPage from '../../../pages/swapTab.page'
+import { warmup } from '../../../../helpers/warmup'
+import commonElsPage from '../../../../pages/commonEls.page'
+import SwapTabPage from '../../../../pages/swapTab.page'
 
 describe('Swap', () => {
   beforeAll(async () => {

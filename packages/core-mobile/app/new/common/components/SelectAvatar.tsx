@@ -52,7 +52,11 @@ export const SelectAvatar = memo(
 
     const renderFooter = (): React.ReactNode => {
       return (
-        <Button size="large" type="primary" onPress={onSubmit}>
+        <Button
+          testID="avatar_next_button"
+          size="large"
+          type="primary"
+          onPress={onSubmit}>
           {buttonText}
         </Button>
       )
