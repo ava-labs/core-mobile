@@ -285,6 +285,7 @@ export const BrowserInput = (): ReactNode => {
             placeholderTextColor={alpha(theme.colors.$textPrimary, 0.5)}
             keyboardType={Platform.OS === 'ios' ? 'web-search' : 'url'}
             autoCorrect={false}
+            allowFontScaling={false}
             autoCapitalize="none"
             style={[
               animatedInputStyle,
