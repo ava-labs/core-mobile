@@ -12,6 +12,7 @@ import {
   Pressable,
   SCREEN_WIDTH,
   SendTokenUnitInputWidget,
+  SendTokenUnitInputWidgetHandle,
   Text,
   useTheme,
   View
@@ -21,11 +22,12 @@ import { loadAvatar } from 'common/utils/loadAvatar'
 import { useRouter } from 'expo-router'
 import { LogoWithNetwork } from 'features/portfolio/assets/components/LogoWithNetwork'
 import { useWatchlist } from 'hooks/watchlist/useWatchlist'
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { selectSelectedCurrency } from 'store/settings/currency'
 import { TRUNCATE_ADDRESS_LENGTH } from 'common/consts/text'
 import { xpAddressWithoutPrefix } from 'common/utils/xpAddressWIthoutPrefix'
+import { usePrevious } from 'common/hooks/usePrevious'
 import { useSendContext } from '../context/sendContext'
 import { useSendSelectedToken } from '../store'
 
@@ -39,11 +41,13 @@ export const SendToken = ({ onSend }: { onSend: () => void }): JSX.Element => {
     isSending,
     network,
     amount,
-    setAmount
+    setAmount,
+    resetAmount
   } = useSendContext()
 
   const { navigate } = useRouter()
   const [selectedToken] = useSendSelectedToken()
+  const prevSelectedToken = usePrevious(selectedToken)
   const { getMarketTokenBySymbol } = useWatchlist()
   const {
     theme: { colors }
@@ -51,6 +55,15 @@ export const SendToken = ({ onSend }: { onSend: () => void }): JSX.Element => {
   const selectedCurrency = useSelector(selectSelectedCurrency)
   const [isTokenTouched, setIsTokenTouched] = useState(false)
   const [isAmountTouched, setIsAmountTouched] = useState(false)
+
+  const tokenUnitInputWidgetRef = useRef<SendTokenUnitInputWidgetHandle>(null)
+
+  useEffect(() => {
+    if (prevSelectedToken !== selectedToken) {
+      resetAmount()
+      tokenUnitInputWidgetRef.current?.setValue('')
+    }
+  }, [prevSelectedToken, selectedToken, resetAmount])
 
   useEffect(() => {
     if (!isTokenTouched && selectedToken) {
@@ -288,6 +301,7 @@ export const SendToken = ({ onSend }: { onSend: () => void }): JSX.Element => {
       {/* Token amount input widget */}
       {tokenBalance && (
         <SendTokenUnitInputWidget
+          ref={tokenUnitInputWidgetRef}
           sx={{ marginTop: 12 }}
           amount={amount}
           token={{
