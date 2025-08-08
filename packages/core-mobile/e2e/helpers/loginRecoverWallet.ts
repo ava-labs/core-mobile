@@ -22,7 +22,8 @@ class LoginRecoverWallet {
     await Actions.tap(onboardingPage.nameWalletTitle)
     await commonElsPage.tapNext()
     await Actions.waitForElement(onboardingPage.selectAvatarTitle)
-    await commonElsPage.tapNext()
+    // we had to enable sync on `tapNext()` because the app is not working with the desync mode
+    await commonElsPage.tapNext(true)
     await onboardingPage.tapLetsGo()
     await bottomTabsPage.verifyBottomTabs()
   }
@@ -32,22 +33,19 @@ class LoginRecoverWallet {
     await commonElsPage.checkIfMainnet()
   }
 
-  async logged() {
-    const loggedin = await Actions.isVisible(onboardingPage.forgotPin)
-    try {
-      if (loggedin) {
-        await commonElsPage.enterPin()
-      }
+  async loggedIn() {
+    if (process.env.REUSE === 'true') {
+      console.log('REUSE is true, skipping the onboarding process')
+      await commonElsPage.enterPin()
       await bottomTabsPage.verifyBottomTabs(false)
       return true
-    } catch (e) {
-      console.log('Pin is not required...')
+    } else {
       return false
     }
   }
 
   async login(recoverPhrase = ENV.E2E_MNEMONIC as string) {
-    const isLoggedIn = await this.logged()
+    const isLoggedIn = await this.loggedIn()
     if (!isLoggedIn) {
       await this.recoverMnemonicWallet(recoverPhrase)
     }

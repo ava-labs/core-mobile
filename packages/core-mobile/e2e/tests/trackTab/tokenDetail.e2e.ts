@@ -2,11 +2,11 @@
 /**
  * @jest-environment ./environment.ts
  */
-import PortfolioPage from '../../../pages/portfolio.page'
-import { warmup } from '../../../helpers/warmup'
-import commonElsPage from '../../../pages/commonEls.page'
-import tokenDetailPage from '../../../pages/tokenDetail.page'
-import { TokenDetailToken } from '../../../helpers/tokens'
+import PortfolioPage from '../../pages/portfolio.page'
+import { warmup } from '../../helpers/warmup'
+import commonElsPage from '../../pages/commonEls.page'
+import tokenDetailPage from '../../pages/tokenDetail.page'
+import { TokenDetailToken } from '../../helpers/tokens'
 
 describe('Token Detail on Market', () => {
   const tokens: TokenDetailToken[] = [

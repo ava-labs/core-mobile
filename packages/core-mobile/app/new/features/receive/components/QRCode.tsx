@@ -14,6 +14,7 @@ export const QRCode: FC<Props> = ({ address }: Props) => {
 
   return (
     <RNQRCode
+      testID="receive_token_qr_code"
       ecl={'H'}
       size={CONTAINER_SIZE}
       value={address}

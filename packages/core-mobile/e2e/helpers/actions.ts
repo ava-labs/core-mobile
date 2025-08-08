@@ -14,14 +14,22 @@ const balanceToNumber = async (balance: Detox.NativeMatcher, index = 0) => {
   return parseFloat(await availableBalance.text.match(/[\d.]+/)[0])
 }
 
-const tap = async (item: Detox.NativeMatcher) => {
+const tap = async (item: Detox.NativeMatcher, enableSync = false) => {
   await waitForElement(item)
+  if (enableSync) {
+    // some tests are not working with the desync mode, so we need to enable it
+    await device.enableSynchronization()
+  }
   await element(item).tap()
 }
 
-const waitAndTap = async (item: Detox.NativeMatcher) => {
-  await delay(500)
-  await tap(item)
+const waitAndTap = async (
+  item: Detox.NativeMatcher,
+  timeout = 1000,
+  enableSync = false
+) => {
+  await delay(timeout)
+  await tap(item, enableSync)
 }
 
 const tapAtXAndY = async (
@@ -102,20 +110,21 @@ const waitForElement = async (
 ) => {
   await device.disableSynchronization()
   const startTime = Date.now()
-  const endTime = startTime + timeout
-  while (Date.now() < endTime) {
-    await new Promise(resolve => setTimeout(resolve, 500))
+
+  while (Date.now() - startTime < timeout) {
     try {
-      await waitFor(element(item).atIndex(index))
-        .toBeVisible()
-        .withTimeout(timeout)
+      await waitFor(element(item).atIndex(index)).toBeVisible().withTimeout(500)
       return
     } catch (error: any) {
-      console.error(error)
+      await new Promise(resolve => setTimeout(resolve, 500))
     }
   }
   console.error('Error: Element not visible within timeout')
-  throw new Error('Element not visible within timeout')
+  throw new Error(
+    `Element not visible within timeout: matcher=${JSON.stringify(
+      item
+    )} index=${index}`
+  )
 }
 
 const failIfElementAppearsWithin = async (
@@ -124,17 +133,14 @@ const failIfElementAppearsWithin = async (
   index = 0
 ): Promise<void> => {
   const startTime = Date.now()
-  const endTime = startTime + timeout
-  while (Date.now() < endTime) {
-    await new Promise(resolve => setTimeout(resolve, 200))
+
+  while (Date.now() - startTime < timeout) {
     try {
-      await waitFor(element(item).atIndex(index))
-        .toBeVisible()
-        .withTimeout(timeout)
+      await waitFor(element(item).atIndex(index)).toBeVisible().withTimeout(500)
       // if the element is visible, throw an error
       throw new Error('Element became visible before timeout')
     } catch (e: any) {
-      console.log('Element is not visible... continuing')
+      await new Promise(resolve => setTimeout(resolve, 500))
     }
   }
 }
@@ -145,16 +151,15 @@ const waitForElementNotVisible = async (
   index = 0
 ) => {
   const startTime = Date.now()
-  const endTime = startTime + timeout
-  while (Date.now() < endTime) {
-    await new Promise(resolve => setTimeout(resolve, 200))
+
+  while (Date.now() - startTime < timeout) {
     try {
       await waitFor(element(item).atIndex(index))
         .not.toBeVisible()
-        .withTimeout(timeout)
+        .withTimeout(500)
       return
     } catch (error: any) {
-      console.error(error)
+      await new Promise(resolve => setTimeout(resolve, 200))
     }
   }
   console.error('Error: Element visible within timeout')

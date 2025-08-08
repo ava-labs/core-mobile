@@ -380,12 +380,13 @@ class CommonElsPage {
     await Actions.tapElementAtIndex(this.reloadSVG, index)
   }
 
-  async tapNext() {
-    await Actions.tap(this.next)
+  async tapNext(isEnableSync = false) {
+    await Actions.waitAndTap(this.next, 1000, isEnableSync)
   }
 
   async dismissBottomSheet() {
     await Actions.waitForElement(this.grabber, 5000)
+    await delay(1000)
     await Actions.drag(this.grabber, 'down', 0.5)
   }
 
@@ -421,15 +422,18 @@ class CommonElsPage {
   }
 
   async exitMetro() {
-    try {
-      if (await Actions.isVisible(by.text(/.*8081.*/i), 0)) {
-        await Actions.tap(by.text(/.*8081.*/i))
+    if (process.env.E2E !== 'true') {
+      console.log('you are using a dev build, skipping metro dev menu')
+      try {
+        if (await Actions.isVisible(by.text(/.*8081.*/i), 0)) {
+          await Actions.tap(by.text(/.*8081.*/i))
+        }
+        const xBtn = by.text(/.*developer menu.*/i)
+        await Actions.waitForElement(xBtn, 10000)
+        await Actions.drag(xBtn, 'down', 0.5)
+      } catch (e) {
+        console.log('Metro dev menu is not found...')
       }
-      const xBtn = by.text(/.*developer menu.*/i)
-      await Actions.waitForElement(xBtn, 10000)
-      await Actions.drag(xBtn, 'down', 0.5)
-    } catch (e) {
-      console.log('Metro dev menu is not found...')
     }
   }
 
@@ -481,7 +485,7 @@ class CommonElsPage {
 
   async tapGotIt(gotItIsVisible = true) {
     if (gotItIsVisible) {
-      await delay(1000)
+      await delay(2000)
       await Actions.tap(this.gotIt)
     }
   }

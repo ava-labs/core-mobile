@@ -137,7 +137,7 @@ export const ReceiveScreen = (): ReactNode => {
           </TouchableOpacity>
         </View>
         <View style={{ paddingVertical: 16 }}>
-          <QRCode testID="receive_token_qr_code" address={address} />
+          <QRCode address={address} />
         </View>
         {isEvm && (
           <>
@@ -146,6 +146,7 @@ export const ReceiveScreen = (): ReactNode => {
               iconSize={20}
             />
             <Text
+              testID="evm_supported_address_text"
               variant="subtitle2"
               style={{
                 textAlign: 'center',

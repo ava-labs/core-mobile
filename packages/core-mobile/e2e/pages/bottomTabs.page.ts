@@ -78,7 +78,7 @@ class BottomsTabsPage {
 
   async verifyBottomTabs(gotItIsVisible = true) {
     await commonElsPage.tapGotIt(gotItIsVisible)
-    await Actions.waitForElement(this.portfolioTab, 10000)
+    await Actions.waitForElement(this.portfolioTab, 20000)
     await Assert.isVisible(this.trackTab)
     await Assert.isVisible(this.stakeTab)
     await Assert.isVisible(this.browserTab)

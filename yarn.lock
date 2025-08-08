@@ -321,7 +321,7 @@ __metadata:
     coinselect: 3.1.13
     date-fns: 4.1.0
     deprecated-react-native-prop-types: 5.0.0
-    detox: 20.36.3
+    detox: 20.40.2
     es6-promise: 4.2.8
     eslint: 8.50.0
     eslint-plugin-avalabs-mobile: "workspace:*"
@@ -13479,10 +13479,11 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@wix-pilot/core@npm:^3.1.6":
-  version: 3.2.4
-  resolution: "@wix-pilot/core@npm:3.2.4"
+"@wix-pilot/core@npm:^3.4.1":
+  version: 3.4.1
+  resolution: "@wix-pilot/core@npm:3.4.1"
   dependencies:
+    chalk: ^4.1.0
     pngjs: ^7.0.0
     winston: ^3.17.0
   peerDependencies:
@@ -13490,18 +13491,18 @@ __metadata:
   peerDependenciesMeta:
     expect:
       optional: true
-  checksum: 5a4b4167a2c75d3209597ebc19f977edf1521e70bf31745f5014e3689bf293858a98e6311c01368044cac535cd5d263ccb3027081ac59dd07cbc050a55010efb
+  checksum: 63c863ec93d892e59a08fcdeaf20e98c9e7cb16bd5f6a1e7596ab1840aba403c58f7d7b3cf7c48a66e735ab3b859321604212f2c633b0e7aeb62868751e5035a
   languageName: node
   linkType: hard
 
-"@wix-pilot/detox@npm:^1.0.11":
-  version: 1.0.11
-  resolution: "@wix-pilot/detox@npm:1.0.11"
+"@wix-pilot/detox@npm:^1.0.13":
+  version: 1.0.13
+  resolution: "@wix-pilot/detox@npm:1.0.13"
   peerDependencies:
-    "@wix-pilot/core": ^3.1.6
+    "@wix-pilot/core": ^3.4.1
     detox: ">=20.33.0"
     expect: 29.x.x || 28.x.x || ^27.2.5
-  checksum: d48d78f98569ebbcfee918a894b7e0dfb9c352b2bcca729a09c60a007192ca1c60db4d14a24ffd190186294f6c8b3333f42dfd1385786a42a40dccc42edd65a5
+  checksum: eaff282d662f4849317f6601b3cd3e0514e06b7772d850498f294e9e4ad65d4dcd9c8e5dda46796a510b4338e20a37f76ff852959907b92fef5da5abb6c0a152
   languageName: node
   linkType: hard
 
@@ -17222,12 +17223,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"detox@npm:20.36.3":
-  version: 20.36.3
-  resolution: "detox@npm:20.36.3"
+"detox@npm:20.40.2":
+  version: 20.40.2
+  resolution: "detox@npm:20.40.2"
   dependencies:
-    "@wix-pilot/core": ^3.1.6
-    "@wix-pilot/detox": ^1.0.11
+    "@wix-pilot/core": ^3.4.1
+    "@wix-pilot/detox": ^1.0.13
     ajv: ^8.6.3
     bunyan: ^1.8.12
     bunyan-debug-stream: ^3.1.0
@@ -17239,7 +17240,7 @@ __metadata:
     funpermaproxy: ^1.1.0
     glob: ^8.0.3
     ini: ^1.3.4
-    jest-environment-emit: ^1.0.8
+    jest-environment-emit: ^1.2.0
     json-cycle: ^1.3.0
     lodash: ^4.17.11
     multi-sort-stream: ^1.0.3
@@ -17256,7 +17257,7 @@ __metadata:
     stream-json: ^1.7.4
     strip-ansi: ^6.0.1
     telnet-client: 1.2.8
-    tempfile: ^2.0.0
+    tmp: ^0.2.1
     trace-event-lib: ^1.3.1
     which: ^1.3.1
     ws: ^7.0.0
@@ -17264,13 +17265,13 @@ __metadata:
     yargs-parser: ^21.0.0
     yargs-unparser: ^2.0.0
   peerDependencies:
-    jest: 29.x.x || 28.x.x || ^27.2.5
+    jest: 30.x.x || 29.x.x || 28.x.x || ^27.2.5
   peerDependenciesMeta:
     jest:
       optional: true
   bin:
     detox: local-cli/cli.js
-  checksum: bcddcb05064f4796e063d08486e0a1fd540dc82270e88397cbd9e4337126451fb13f3c3c37a4f2974fc185393f05856b518a546e24bf61e2f08ef12b2146deaf
+  checksum: e956f810caa63c6ceac064e736e9d464364d2a573ab99c5cbec6791548bf37614ac808b2b31a08f93359acffe06be8b216c681e44049ed49eb6a29c4fcf249b8
   languageName: node
   linkType: hard
 
@@ -22363,9 +22364,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"jest-environment-emit@npm:^1.0.8":
-  version: 1.0.8
-  resolution: "jest-environment-emit@npm:1.0.8"
+"jest-environment-emit@npm:^1.2.0":
+  version: 1.2.0
+  resolution: "jest-environment-emit@npm:1.2.0"
   dependencies:
     bunyamin: ^1.5.2
     bunyan: ^2.0.5
@@ -22392,7 +22393,7 @@ __metadata:
       optional: true
     jest-environment-node:
       optional: true
-  checksum: 0c7bafbd3a6e5952f6abb45958f0d2997371d29b29f3876afda48d1d734ccd703577aaac0d5afec2e19dc33a9db0e9458721fe73dbe797f0ced21481d908acfd
+  checksum: 58d0652ca6d51dbb3c116e52ae1f1bd046f735e7b94a33704070844775257d15a0aaebd051062b5b24741261571b5120afd88b6c5bc87123d38959856d17ac99
   languageName: node
   linkType: hard
 
@@ -27829,7 +27830,7 @@ react-native-webview@ava-labs/react-native-webview:
   peerDependencies:
     react: "*"
     react-native: "*"
-  checksum: 3e4689674406deb2ad9efa9f529597341b4ab33e379b7c7cd72aff8d5e37862fda1a37aba984951a67cc3938969be138bc3c4469e4963dd170b172148339e056
+  checksum: fbf6f420002cabeaf80eda574a5ebfa1e536fe6dfe822f136e7dfb24feaf874e5702fa31b405b5e601a95d48c343bd502f42274e3e1549c3daddc8721fc3fce6
   languageName: node
   linkType: hard
 
@@ -30580,27 +30581,10 @@ react-native-webview@ava-labs/react-native-webview:
   languageName: node
   linkType: hard
 
-"temp-dir@npm:^1.0.0":
-  version: 1.0.0
-  resolution: "temp-dir@npm:1.0.0"
-  checksum: cb2b58ddfb12efa83e939091386ad73b425c9a8487ea0095fe4653192a40d49184a771a1beba99045fbd011e389fd563122d79f54f82be86a55620667e08a6b2
-  languageName: node
-  linkType: hard
-
 "temp-dir@npm:~2.0.0":
   version: 2.0.0
   resolution: "temp-dir@npm:2.0.0"
   checksum: cc4f0404bf8d6ae1a166e0e64f3f409b423f4d1274d8c02814a59a5529f07db6cd070a749664141b992b2c1af337fa9bb451a460a43bb9bcddc49f235d3115aa
-  languageName: node
-  linkType: hard
-
-"tempfile@npm:^2.0.0":
-  version: 2.0.0
-  resolution: "tempfile@npm:2.0.0"
-  dependencies:
-    temp-dir: ^1.0.0
-    uuid: ^3.0.1
-  checksum: 8a92a0f57e0ae457dfbc156b14c427b42048a86ca6bade311835cc2aeda61b25b82d688f71f2d663dde6f172f479ed07293b53f7981e41cb6f9120a3eb4fe797
   languageName: node
   linkType: hard
 
@@ -30751,6 +30735,13 @@ react-native-webview@ava-labs/react-native-webview:
   dependencies:
     os-tmpdir: ~1.0.2
   checksum: 902d7aceb74453ea02abbf58c203f4a8fc1cead89b60b31e354f74ed5b3fb09ea817f94fb310f884a5d16987dd9fa5a735412a7c2dd088dd3d415aa819ae3a28
+  languageName: node
+  linkType: hard
+
+"tmp@npm:^0.2.1":
+  version: 0.2.4
+  resolution: "tmp@npm:0.2.4"
+  checksum: fde5fcdbd741c957458d6f7310750879172b399ac62b468c6707cef6fd0e77d0e632dd05471f607530a248c483abaa00187a6eee8561030268ac98bfb5e41720
   languageName: node
   linkType: hard
 
@@ -31897,15 +31888,6 @@ react-native-webview@ava-labs/react-native-webview:
   dependencies:
     base64-arraybuffer: ^1.0.2
   checksum: c96fbb7d4d8855a154327da0b18e39b7511cc70a7e4bcc3658e24f424bb884312d72b5ba777500b8858e34d365dc6b1a921dc5ca2f0d341182519c6b78e280a5
-  languageName: node
-  linkType: hard
-
-"uuid@npm:^3.0.1":
-  version: 3.4.0
-  resolution: "uuid@npm:3.4.0"
-  bin:
-    uuid: ./bin/uuid
-  checksum: 58de2feed61c59060b40f8203c0e4ed7fd6f99d42534a499f1741218a1dd0c129f4aa1de797bcf822c8ea5da7e4137aa3673431a96dae729047f7aca7b27866f
   languageName: node
   linkType: hard
 

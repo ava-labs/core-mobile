@@ -484,23 +484,23 @@ class PortfolioPage {
   }
 
   async tapSend() {
-    await Action.tapElementAtIndex(this.sendButton, 0)
+    await Action.waitAndTap(this.sendButton, 2000)
   }
 
   async tapSwap() {
-    await Action.tapElementAtIndex(this.swapButton, 0)
+    await Action.waitAndTap(this.swapButton, 2000)
   }
 
   async tapBuy() {
-    await Action.tapElementAtIndex(this.buyButton, 0)
+    await Action.waitAndTap(this.buyButton, 2000)
   }
 
   async tapBridge() {
-    await Action.tapElementAtIndex(this.bridgeButton, 0)
+    await Action.waitAndTap(this.bridgeButton, 2000)
   }
 
   async tapReceive() {
-    await Action.tapElementAtIndex(this.receiveButton, 0)
+    await Action.waitAndTap(this.receiveButton, 2000)
   }
 
   async verifyActivityItem(

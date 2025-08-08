@@ -2,14 +2,14 @@
 /**
  * @jest-environment ./environment.ts
  */
-import BottomTabsPage from '../../../pages/bottomTabs.page'
-import Actions from '../../../helpers/actions'
-import Assert from '../../../helpers/assertions'
-import WatchListPage from '../../../pages/watchlist.page'
-import PortfolioPage from '../../../pages/portfolio.page'
-import TokenDetailPage from '../../../pages/tokenDetail.page'
-import { warmup } from '../../../helpers/warmup'
-import commonElsPage from '../../../pages/commonEls.page'
+import BottomTabsPage from '../../pages/bottomTabs.page'
+import Actions from '../../helpers/actions'
+import Assert from '../../helpers/assertions'
+import WatchListPage from '../../pages/watchlist.page'
+import PortfolioPage from '../../pages/portfolio.page'
+import TokenDetailPage from '../../pages/tokenDetail.page'
+import { warmup } from '../../helpers/warmup'
+import commonElsPage from '../../pages/commonEls.page'
 
 describe('Favorites Token', () => {
   beforeAll(async () => {

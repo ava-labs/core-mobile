@@ -1,7 +1,7 @@
-import { warmup } from '../../../helpers/warmup'
-import bottomTabsPage from '../../../pages/bottomTabs.page'
-import commonElsPage from '../../../pages/commonEls.page'
-import swapTabPage from '../../../pages/swapTab.page'
+import { warmup } from '../../../../helpers/warmup'
+import bottomTabsPage from '../../../../pages/bottomTabs.page'
+import commonElsPage from '../../../../pages/commonEls.page'
+import swapTabPage from '../../../../pages/swapTab.page'
 
 describe('Swap Top 5 trending tokens', () => {
   beforeEach(async () => {

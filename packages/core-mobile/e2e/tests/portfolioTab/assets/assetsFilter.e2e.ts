@@ -1,8 +1,8 @@
-import assertions from '../../helpers/assertions'
-import { warmup } from '../../helpers/warmup'
-import commonElsLoc from '../../locators/commonEls.loc'
-import commonElsPage from '../../pages/commonEls.page'
-import portfolioPage from '../../pages/portfolio.page'
+import assertions from '../../../helpers/assertions'
+import { warmup } from '../../../helpers/warmup'
+import commonElsLoc from '../../../locators/commonEls.loc'
+import commonElsPage from '../../../pages/commonEls.page'
+import portfolioPage from '../../../pages/portfolio.page'
 
 describe('Assets Tab Filter', () => {
   beforeAll(async () => {
