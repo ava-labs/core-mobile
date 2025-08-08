@@ -7,7 +7,7 @@ import loginRecoverWallet from '../../helpers/loginRecoverWallet'
 import { handleJailbrokenWarning } from '../../helpers/warmup'
 import commonElsPage from '../../pages/commonEls.page'
 
-describe('Onboard', () => {
+describe('Onboarding', () => {
   beforeAll(async () => {
     await device.launchApp({ newInstance: true })
     await commonElsPage.exitMetro()

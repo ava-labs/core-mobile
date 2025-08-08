@@ -9,7 +9,7 @@ import bottomTabsPage from '../../pages/bottomTabs.page'
 import commonElsPage from '../../pages/commonEls.page'
 import onboardingPage from '../../pages/onboarding.page'
 
-describe('Onboard', () => {
+describe('Onboarding', () => {
   beforeAll(async () => {
     await device.launchApp()
     await commonElsPage.exitMetro()
