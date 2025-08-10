@@ -1,10 +1,17 @@
 import TransportBLE from '@ledgerhq/react-native-hw-transport-ble'
 import AppAvalanche from '@avalabs/hw-app-avalanche'
+import AppSolana from '@ledgerhq/hw-app-solana'
 import { NetworkVMType } from '@avalabs/core-chains-sdk'
 import { getAddressDerivationPath } from 'services/wallet/utils'
 import { ChainName } from 'services/network/consts'
-import { getBtcAddressFromPubKey } from '@avalabs/core-wallets-sdk'
+import {
+  getBtcAddressFromPubKey,
+  getSolanaPublicKeyFromLedger,
+  getLedgerAppInfo
+} from '@avalabs/core-wallets-sdk'
 import { networks } from 'bitcoinjs-lib'
+import Logger from 'utils/Logger'
+import bs58 from 'bs58'
 
 export interface AddressInfo {
   id: string
@@ -25,6 +32,17 @@ export interface PublicKeyInfo {
   curve: 'secp256k1' | 'ed25519'
 }
 
+export enum LedgerAppType {
+  AVALANCHE = 'Avalanche',
+  SOLANA = 'Solana',
+  UNKNOWN = 'Unknown'
+}
+
+export interface AppInfo {
+  applicationName: string
+  version: string
+}
+
 export class LedgerService {
   #transport: TransportBLE | null = null
   private currentAppType: LedgerAppType = LedgerAppType.UNKNOWN
@@ -32,7 +50,7 @@ export class LedgerService {
   private appPollingEnabled = false
   private isDisconnected = false
 
-  // Connect to Ledger device
+  // Connect to Ledger device (transport only, no apps)
   async connect(deviceId: string): Promise<void> {
     try {
       Logger.info('Starting BLE connection attempt with deviceId:', deviceId)
@@ -50,6 +68,7 @@ export class LedgerService {
       this.startAppPolling()
       Logger.info('App polling started')
     } catch (error) {
+      Logger.error('Failed to connect to Ledger', error)
       throw new Error(
         `Failed to connect to Ledger: ${
           error instanceof Error ? error.message : 'Unknown error'
@@ -192,46 +211,76 @@ export class LedgerService {
     evm: ExtendedPublicKey
     avalanche: ExtendedPublicKey
   }> {
-    if (!this.avalancheApp) {
-      throw new Error('Avalanche app not initialized')
+    if (!this.transport) {
+      throw new Error('Transport not initialized')
     }
+
+    Logger.info('=== getExtendedPublicKeys STARTED ===')
+    Logger.info('Current app type:', this.currentAppType)
+
+    // Connect to Avalanche app
+    Logger.info('Waiting for Avalanche app...')
+    await this.waitForApp(LedgerAppType.AVALANCHE)
+    Logger.info('Avalanche app detected, creating app instance...')
+
+    // Create Avalanche app instance
+    const avalancheApp = new AppAvalanche(this.transport)
+    Logger.info('Avalanche app instance created')
 
     try {
       // Get EVM extended public key (m/44'/60'/0')
-      const evmXpubResponse = await this.avalancheApp.getExtendedPubKey(
-        getAddressDerivationPath({
-          accountIndex: 0,
-          vmType: NetworkVMType.EVM
-        }).replace('/0/0', ''),
+      Logger.info('Getting EVM extended public key...')
+      const evmPath = getAddressDerivationPath({
+        accountIndex: 0,
+        vmType: NetworkVMType.EVM
+      }).replace('/0/0', '')
+      Logger.info('EVM derivation path:', evmPath)
+      
+      const evmXpubResponse = await avalancheApp.getExtendedPubKey(
+        evmPath,
         false
       )
 
+      Logger.info('EVM response return code:', evmXpubResponse.returnCode)
+      
       // Check for error response
       if (evmXpubResponse.returnCode !== 0x9000) {
+        Logger.error('EVM extended public key error:', evmXpubResponse.errorMessage)
         throw new Error(
           `EVM extended public key error: ${
             evmXpubResponse.errorMessage || 'Unknown error'
           }`
         )
       }
+      
+      Logger.info('EVM extended public key retrieved successfully')
 
       // Get Avalanche extended public key (m/44'/9000'/0')
-      const avalancheXpubResponse = await this.avalancheApp.getExtendedPubKey(
-        getAddressDerivationPath({
-          accountIndex: 0,
-          vmType: NetworkVMType.AVM
-        }).replace('/0/0', ''),
+      Logger.info('Getting Avalanche extended public key...')
+      const avalanchePath = getAddressDerivationPath({
+        accountIndex: 0,
+        vmType: NetworkVMType.AVM
+      }).replace('/0/0', '')
+      Logger.info('Avalanche derivation path:', avalanchePath)
+      
+      const avalancheXpubResponse = await avalancheApp.getExtendedPubKey(
+        avalanchePath,
         false
       )
 
+      Logger.info('Avalanche response return code:', avalancheXpubResponse.returnCode)
+      
       // Check for error response
       if (avalancheXpubResponse.returnCode !== 0x9000) {
+        Logger.error('Avalanche extended public key error:', avalancheXpubResponse.errorMessage)
         throw new Error(
           `Avalanche extended public key error: ${
             avalancheXpubResponse.errorMessage || 'Unknown error'
           }`
         )
       }
+      
+      Logger.info('Avalanche extended public key retrieved successfully')
 
       return {
         evm: {
@@ -272,7 +321,230 @@ export class LedgerService {
           )
         }
       }
+      Logger.error('=== getExtendedPublicKeys FAILED ===', error)
       throw new Error(`Failed to get extended public keys: ${error}`)
+    }
+    
+    Logger.info('=== getExtendedPublicKeys COMPLETED SUCCESSFULLY ===')
+  }
+
+  // Check if Solana app is open
+  async checkSolanaApp(): Promise<boolean> {
+    if (!this.transport) {
+      return false
+    }
+
+    try {
+      // Create fresh Solana app instance
+      const solanaApp = new AppSolana(this.transport)
+      // Try to get a simple address to check if app is open
+      // Use a standard Solana derivation path
+      const testPath = "m/44'/501'/0'"
+      await solanaApp.getAddress(testPath, false)
+      return true
+    } catch (error) {
+      Logger.error('Solana app not open or not available', error)
+      return false
+    }
+  }
+
+  // Get Solana public keys using SDK function (like extension)
+  async getSolanaPublicKeys(startIndex: number): Promise<PublicKeyInfo[]> {
+    if (!this.transport) {
+      throw new Error('Transport not initialized')
+    }
+
+    // Create a fresh AppSolana instance for each call (like the SDK does)
+    const freshSolanaApp = new AppSolana(this.transport)
+
+    // Use correct Solana derivation path format
+    const derivationPath = `44'/501'/0'/0'/${startIndex}`
+
+    try {
+      // Simple direct call to get Solana address using fresh instance
+      const result = await freshSolanaApp.getAddress(derivationPath, false)
+      const publicKey = result.address
+
+      console.log('HIT PUBLIC KEY', publicKey)
+
+      const publicKeys: PublicKeyInfo[] = [
+        {
+          key: publicKey.toString('hex'),
+          derivationPath,
+          curve: 'ed25519'
+        }
+      ]
+
+      return publicKeys
+    } catch (error) {
+      if (error instanceof Error) {
+        if (error.message.includes('6a80')) {
+          throw new Error(
+            'Wrong app open. Please open the Solana app on your Ledger device.'
+          )
+        }
+        throw new Error(`Failed to get Solana address: ${error.message}`)
+      }
+      throw new Error('Failed to get Solana address')
+    }
+  }
+
+  // Alternative method using the SDK function (like the extension does)
+  async getSolanaPublicKeysViaSDK(
+    startIndex: number,
+    _count: number
+  ): Promise<PublicKeyInfo[]> {
+    if (!this.transport) {
+      throw new Error('Transport not initialized')
+    }
+
+    try {
+      // Use the SDK function directly (like the extension does)
+      const publicKey = await getSolanaPublicKeyFromLedger(
+        startIndex,
+        this.transport
+      )
+
+      console.log('HIT PUBLIC KEY via SDK', publicKey)
+
+      const publicKeys: PublicKeyInfo[] = [
+        {
+          key: publicKey.toString('hex'),
+          derivationPath: `44'/501'/0'/0'/${startIndex}`,
+          curve: 'ed25519'
+        }
+      ]
+
+      return publicKeys
+    } catch (error) {
+      if (error instanceof Error) {
+        if (error.message.includes('6a80')) {
+          throw new Error(
+            'Wrong app open. Please open the Solana app on your Ledger device.'
+          )
+        }
+        throw new Error(
+          `Failed to get Solana address via SDK: ${error.message}`
+        )
+      }
+      throw new Error('Failed to get Solana address via SDK')
+    }
+  }
+
+  // Robust method with timeout and retry logic
+  async getSolanaPublicKeysRobust(
+    startIndex: number,
+    _count: number
+  ): Promise<PublicKeyInfo[]> {
+    if (!this.transport) {
+      throw new Error('Transport not initialized')
+    }
+
+    const maxRetries = 3
+    const retryDelay = 1000 // 1 second
+
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        Logger.info(`Solana attempt ${attempt}/${maxRetries}`)
+
+        // Create a fresh transport connection for each attempt
+        const freshTransport = await TransportBLE.open(
+          this.transport.deviceId || 'unknown',
+          15000
+        )
+
+        // Create fresh app instance
+        const freshSolanaApp = new AppSolana(freshTransport)
+
+        // Use derivation path
+        const derivationPath = `44'/501'/0'/0'/${startIndex}`
+
+        // Call with timeout wrapper
+        const timeoutPromise = new Promise<never>((_, reject) => {
+          setTimeout(
+            () => reject(new Error('Solana getAddress timeout')),
+            10000
+          )
+        })
+
+        const getAddressPromise = freshSolanaApp.getAddress(
+          derivationPath,
+          false
+        )
+
+        const result = await Promise.race([getAddressPromise, timeoutPromise])
+        const publicKey = result.address
+
+        console.log('HIT PUBLIC KEY robust method', publicKey)
+
+        // Close the fresh transport
+        await freshTransport.close()
+
+        const publicKeys: PublicKeyInfo[] = [
+          {
+            key: publicKey.toString('hex'),
+            derivationPath,
+            curve: 'ed25519'
+          }
+        ]
+
+        return publicKeys
+      } catch (error) {
+        Logger.error(`Solana attempt ${attempt} failed:`, error)
+
+        if (attempt === maxRetries) {
+          if (error instanceof Error) {
+            if (error.message.includes('6a80')) {
+              throw new Error(
+                'Wrong app open. Please open the Solana app on your Ledger device.'
+              )
+            }
+            if (error.message.includes('DisconnectedDevice')) {
+              throw new Error(
+                'Ledger device disconnected. Please ensure the Solana app is open and try again.'
+              )
+            }
+            throw new Error(
+              `Failed to get Solana address after ${maxRetries} attempts: ${error.message}`
+            )
+          }
+          throw new Error(
+            `Failed to get Solana address after ${maxRetries} attempts`
+          )
+        }
+
+        // Wait before retry
+        await new Promise(resolve => setTimeout(resolve, retryDelay))
+      }
+    }
+
+    throw new Error('Unexpected error in getSolanaPublicKeysRobust')
+  }
+
+  // Get Solana addresses from public keys
+  async getSolanaAddresses(
+    startIndex: number,
+    count: number
+  ): Promise<AddressInfo[]> {
+    Logger.info('Starting getSolanaAddresses')
+    try {
+      const publicKeys = await this.getSolanaPublicKeys(startIndex)
+      Logger.info('Got Solana public keys, converting to addresses')
+
+      return publicKeys.map((pk, index) => {
+        // Convert public key to Solana address (Base58 encoding)
+        const address = bs58.encode(Uint8Array.from(Buffer.from(pk.key, 'hex')))
+
+        return {
+          id: `solana-${startIndex + index}`,
+          address,
+          derivationPath: pk.derivationPath,
+          network: ChainName.SOLANA
+        }
+      })
+    } catch (error) {
+      Logger.error('Failed in getSolanaAddresses', error)
+      throw error
     }
   }
 
@@ -281,9 +553,15 @@ export class LedgerService {
     startIndex: number,
     count: number
   ): Promise<PublicKeyInfo[]> {
-    if (!this.avalancheApp) {
-      throw new Error('Avalanche app not initialized')
+    if (!this.transport) {
+      throw new Error('Transport not initialized')
     }
+
+    // Connect to Avalanche app
+    await this.waitForApp(LedgerAppType.AVALANCHE)
+
+    // Create Avalanche app instance
+    const avalancheApp = new AppAvalanche(this.transport)
 
     const publicKeys: PublicKeyInfo[] = []
 
@@ -294,7 +572,7 @@ export class LedgerService {
           accountIndex: i,
           vmType: NetworkVMType.EVM
         })
-        const evmResponse = await this.avalancheApp.getAddressAndPubKey(
+        const evmResponse = await avalancheApp.getAddressAndPubKey(
           evmPath,
           false,
           'avax'
@@ -310,7 +588,7 @@ export class LedgerService {
           accountIndex: i,
           vmType: NetworkVMType.AVM
         })
-        const avmResponse = await this.avalancheApp.getAddressAndPubKey(
+        const avmResponse = await avalancheApp.getAddressAndPubKey(
           avmPath,
           false,
           'avax'
@@ -326,7 +604,7 @@ export class LedgerService {
           accountIndex: i,
           vmType: NetworkVMType.BITCOIN
         })
-        const btcResponse = await this.avalancheApp.getAddressAndPubKey(
+        const btcResponse = await avalancheApp.getAddressAndPubKey(
           btcPath,
           false,
           'bc'
@@ -349,9 +627,15 @@ export class LedgerService {
     startIndex: number,
     count: number
   ): Promise<AddressInfo[]> {
-    if (!this.avalancheApp) {
-      throw new Error('Avalanche app not initialized')
+    if (!this.transport) {
+      throw new Error('Transport not initialized')
     }
+
+    // Connect to Avalanche app
+    await this.waitForApp(LedgerAppType.AVALANCHE)
+
+    // Create Avalanche app instance
+    const avalancheApp = new AppAvalanche(this.transport)
 
     const addresses: AddressInfo[] = []
 
@@ -363,7 +647,7 @@ export class LedgerService {
           accountIndex: i,
           vmType: NetworkVMType.EVM
         })
-        const evmAddressResponse = await this.avalancheApp.getETHAddress(
+        const evmAddressResponse = await avalancheApp.getETHAddress(
           evmPath,
           false // don't display on device
         )
@@ -379,12 +663,11 @@ export class LedgerService {
           accountIndex: i,
           vmType: NetworkVMType.AVM
         })
-        const xChainAddressResponse =
-          await this.avalancheApp.getAddressAndPubKey(
-            xChainPath,
-            false,
-            'avax' // hrp for mainnet
-          )
+        const xChainAddressResponse = await avalancheApp.getAddressAndPubKey(
+          xChainPath,
+          false,
+          'avax' // hrp for mainnet
+        )
         addresses.push({
           id: `avalanche-x-${i}`,
           address: xChainAddressResponse.address,
@@ -397,13 +680,12 @@ export class LedgerService {
           accountIndex: i,
           vmType: NetworkVMType.AVM
         })
-        const pChainAddressResponse =
-          await this.avalancheApp.getAddressAndPubKey(
-            pChainPath,
-            false,
-            'avax', // hrp for mainnet
-            '2oYMBNV4eNHyqk2fjjV5nVQLDbtmNJzq5s3qs3Lo6ftnC6FByM' // P-Chain ID
-          )
+        const pChainAddressResponse = await avalancheApp.getAddressAndPubKey(
+          pChainPath,
+          false,
+          'avax', // hrp for mainnet
+          '2oYMBNV4eNHyqk2fjjV5nVQLDbtmNJzq5s3qs3Lo6ftnC6FByM' // P-Chain ID
+        )
         addresses.push({
           id: `avalanche-p-${i}`,
           address: pChainAddressResponse.address,
@@ -416,12 +698,11 @@ export class LedgerService {
           accountIndex: i,
           vmType: NetworkVMType.EVM // Use EVM path for Bitcoin
         })
-        const btcPublicKeyResponse =
-          await this.avalancheApp.getAddressAndPubKey(
-            btcPath,
-            false,
-            'avax' // hrp for mainnet
-          )
+        const btcPublicKeyResponse = await avalancheApp.getAddressAndPubKey(
+          btcPath,
+          false,
+          'avax' // hrp for mainnet
+        )
         const btcAddress = getBtcAddressFromPubKey(
           Buffer.from(btcPublicKeyResponse.publicKey.toString('hex'), 'hex'),
           networks.bitcoin // mainnet
@@ -438,6 +719,29 @@ export class LedgerService {
     }
 
     return addresses
+  }
+
+  // Get all addresses including Solana (requires app switching)
+  async getAllAddressesWithSolana(
+    startIndex: number,
+    count: number
+  ): Promise<AddressInfo[]> {
+    const addresses: AddressInfo[] = []
+
+    try {
+      // Get Avalanche addresses first
+      const avalancheAddresses = await this.getAllAddresses(startIndex, count)
+      addresses.push(...avalancheAddresses)
+
+      // Get Solana addresses
+      const solanaAddresses = await this.getSolanaAddresses(startIndex, count)
+      addresses.push(...solanaAddresses)
+
+      return addresses
+    } catch (error) {
+      Logger.error('Failed to get all addresses with Solana', error)
+      throw error
+    }
   }
 
   // Disconnect from Ledger device
