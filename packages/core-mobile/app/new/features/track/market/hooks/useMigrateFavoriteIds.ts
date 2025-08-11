@@ -1,5 +1,5 @@
 import { useWatchlist } from 'hooks/watchlist/useWatchlist'
-import { useEffect } from 'react'
+import { useEffect, useMemo } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import {
   selectHasBeenViewedOnce,
@@ -32,16 +32,22 @@ export const useMigrateFavoriteIds = (): {
     selectHasBeenViewedOnce(ViewOnceKey.MIGRATE_TOKEN_FAVORITE_IDSv2)
   )
 
+  const filteredFavoriteIds = useMemo(() => {
+    return favoriteIds.filter(
+      (favoriteId: string) => typeof favoriteId === 'string'
+    )
+  }, [favoriteIds])
+
   useEffect(() => {
     if (
       hasMigratedFavoriteIds ||
       isLoadingTrendingTokens ||
       isLoadingTopTokens ||
-      favoriteIds.length === 0
+      filteredFavoriteIds.length === 0
     )
       return
 
-    favoriteIds.forEach((favoriteId: string) => {
+    filteredFavoriteIds.forEach((favoriteId: string) => {
       // Check if this favorite is already in internalId format
       if (favoriteId.includes(':') || favoriteId.includes('NATIVE')) {
         // Already in internalId format, skip migration
@@ -72,11 +78,11 @@ export const useMigrateFavoriteIds = (): {
     dispatch(setViewOnce(ViewOnceKey.MIGRATE_TOKEN_FAVORITE_IDSv2))
   }, [
     hasMigratedFavoriteIds,
-    favoriteIds.length,
+    filteredFavoriteIds.length,
     isLoadingTrendingTokens,
     isLoadingTopTokens,
     dispatch,
-    favoriteIds,
+    filteredFavoriteIds,
     topTokens,
     trendingTokens
   ])
