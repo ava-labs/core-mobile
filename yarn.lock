@@ -237,6 +237,7 @@ __metadata:
     "@keystonehq/keystone-sdk": 0.11.3
     "@lavamoat/allow-scripts": 3.2.1
     "@lavamoat/preinstall-always-fail": 2.1.0
+    "@ledgerhq/hw-app-eth": 6.24.1
     "@ledgerhq/hw-app-solana": 6.24.1
     "@ledgerhq/react-native-hw-transport-ble": latest
     "@metamask/eth-sig-util": 7.0.3
@@ -7293,6 +7294,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@ledgerhq/cryptoassets@npm:^6.24.1":
+  version: 6.37.0
+  resolution: "@ledgerhq/cryptoassets@npm:6.37.0"
+  dependencies:
+    invariant: 2
+  checksum: 2418c1751740e976d1509b7ce6da447cc3a0f05e1498db252bab70c635881658c8a4a4eaba39cfbc98f4ad373a355689131eb6f844d3a4fe2f6b2af9ddbd6e90
+  languageName: node
+  linkType: hard
+
 "@ledgerhq/cryptoassets@npm:^9.11.1":
   version: 9.13.0
   resolution: "@ledgerhq/cryptoassets@npm:9.13.0"
@@ -7452,6 +7462,22 @@ __metadata:
     tiny-secp256k1: 1.1.6
     varuint-bitcoin: 1.1.2
   checksum: 25369957d4c52dd40fbb32d5ee3c9cc4f2cac93f5a268c73a908cfb9c6ed26934940c3c4fe54414e68d5c79bebcfcb9757c045f61c86c556dda1b7768faa8458
+  languageName: node
+  linkType: hard
+
+"@ledgerhq/hw-app-eth@npm:6.24.1":
+  version: 6.24.1
+  resolution: "@ledgerhq/hw-app-eth@npm:6.24.1"
+  dependencies:
+    "@ethersproject/abi": ^5.5.0
+    "@ethersproject/rlp": ^5.5.0
+    "@ledgerhq/cryptoassets": ^6.24.1
+    "@ledgerhq/errors": ^6.10.0
+    "@ledgerhq/hw-transport": ^6.24.1
+    "@ledgerhq/logs": ^6.10.0
+    axios: ^0.24.0
+    bignumber.js: ^9.0.2
+  checksum: 8b794441d041949ead1d9ad9d97e58bfb63b24937ad1b8bd8260901070aef01d12e69b12870ebcd6d1a0d526b801ecf71d3cce358c703bf40ba3e38b0d4bf0b2
   languageName: node
   linkType: hard
 
@@ -14818,6 +14844,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"axios@npm:^0.24.0":
+  version: 0.24.0
+  resolution: "axios@npm:0.24.0"
+  dependencies:
+    follow-redirects: ^1.14.4
+  checksum: 468cf496c08a6aadfb7e699bebdac02851e3043d4e7d282350804ea8900e30d368daa6e3cd4ab83b8ddb5a3b1e17a5a21ada13fc9cebd27b74828f47a4236316
+  languageName: node
+  linkType: hard
+
 "axios@npm:^1.3.4":
   version: 1.5.1
   resolution: "axios@npm:1.5.1"
@@ -15290,7 +15325,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"bignumber.js@npm:^9.0.1":
+"bignumber.js@npm:^9.0.2":
   version: 9.3.1
   resolution: "bignumber.js@npm:9.3.1"
   checksum: 6ab100271a23a75bb8b99a4b1a34a1a94967ac0b9a52a198147607bd91064e72c6f356380d7a09cd687bf50d81ad2ed1a0a8edfaa90369c9003ed8bb2440d7f0
@@ -20401,6 +20436,16 @@ __metadata:
   version: 1.1.0
   resolution: "fn.name@npm:1.1.0"
   checksum: e357144f48cfc9a7f52a82bbc6c23df7c8de639fce049cac41d41d62cabb740cdb9f14eddc6485e29c933104455bdd7a69bb14a9012cef9cd4fa252a4d0cf293
+  languageName: node
+  linkType: hard
+
+"follow-redirects@npm:^1.14.4":
+  version: 1.15.11
+  resolution: "follow-redirects@npm:1.15.11"
+  peerDependenciesMeta:
+    debug:
+      optional: true
+  checksum: 20bf55e9504f59e6cc3743ba27edb2ebf41edea1baab34799408f2c050f73f0c612728db21c691276296d2795ea8a812dc532a98e8793619fcab91abe06d017f
   languageName: node
   linkType: hard
 
