@@ -1,9 +1,9 @@
 import assert from 'assert'
-import actions from '../../helpers/actions'
+import actions from '../../../helpers/actions'
 
-import { warmup } from '../../helpers/warmup'
-import commonElsPage from '../../pages/commonEls.page'
-import commonElsLoc from '../../locators/commonEls.loc'
+import { warmup } from '../../../helpers/warmup'
+import commonElsPage from '../../../pages/commonEls.page'
+import commonElsLoc from '../../../locators/commonEls.loc'
 
 describe('Assets Tab Sort', () => {
   beforeAll(async () => {

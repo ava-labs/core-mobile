@@ -2,11 +2,11 @@
 /**
  * @jest-environment ./environment.ts
  */
-import Actions from '../../helpers/actions'
-import { warmup } from '../../helpers/warmup'
-import networksManagePage from '../../pages/networksManage.page'
-import portfolioLoc from '../../locators/portfolio.loc'
-import portfolioPage from '../../pages/portfolio.page'
+import Actions from '../../../helpers/actions'
+import { warmup } from '../../../helpers/warmup'
+import networksManagePage from '../../../pages/networksManage.page'
+import portfolioLoc from '../../../locators/portfolio.loc'
+import portfolioPage from '../../../pages/portfolio.page'
 
 describe('Sub tabs on Portfolio', () => {
   beforeAll(async () => {

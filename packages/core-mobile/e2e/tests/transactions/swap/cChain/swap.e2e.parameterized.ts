@@ -1,8 +1,8 @@
-import { SwapTokens } from '../../../helpers/tokens'
-import { warmup } from '../../../helpers/warmup'
-import swapTabLoc from '../../../locators/swapTab.loc'
-import commonElsPage from '../../../pages/commonEls.page'
-import SwapTabPage from '../../../pages/swapTab.page'
+import { SwapTokens } from '../../../../helpers/tokens'
+import { warmup } from '../../../../helpers/warmup'
+import swapTabLoc from '../../../../locators/swapTab.loc'
+import commonElsPage from '../../../../pages/commonEls.page'
+import SwapTabPage from '../../../../pages/swapTab.page'
 
 describe('Swap Tokens', () => {
   const shuffled = [...SwapTokens].sort(() => 0.5 - Math.random())

@@ -269,7 +269,7 @@
     "babel-plugin-inline-dotenv": "1.7.0",
     "babel-plugin-module-resolver": "5.0.2",
     "babel-plugin-react-require": "4.0.3",
-    "detox": "20.36.3",
+    "detox": "20.40.2",
     "eslint": "8.50.0",
     "eslint-plugin-avalabs-mobile": "workspace:*",
     "jest": "29.7.0",

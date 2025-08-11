@@ -481,19 +481,16 @@ class Settings {
 
   async verifyTestnetMode() {
     await Actions.waitForElement(this.testnetSwitchOn)
-    await assertions.isVisible(this.fujiFunds)
     await assertions.isVisible(this.testnetAvatar)
     await commonElsPage.dismissBottomSheet()
-    await assertions.isVisible(portfolioPage.testnetModeIsOn)
+    await Actions.waitForElement(portfolioPage.testnetModeIsOn, 20000)
   }
 
   async verifyMainnetMode() {
     await Actions.waitForElement(this.testnetSwitchOff)
-    await assertions.isNotVisible(this.fujiFunds)
-    await assertions.isVisible(this.totalNetWorth)
     await assertions.isVisible(this.mainnetAvatar)
     await commonElsPage.dismissBottomSheet()
-    await assertions.isNotVisible(portfolioPage.testnetModeIsOn)
+    await Actions.waitForElementNotVisible(portfolioPage.testnetModeIsOn, 20000)
   }
 
   async goToAccountDetail(

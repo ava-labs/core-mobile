@@ -1,13 +1,13 @@
-import Actions from '../../../helpers/actions'
-import ConfirmStakingPage from '../../../pages/Stake/confirmStaking.page'
-import BottomTabsPage from '../../../pages/bottomTabs.page'
-import DurationPage from '../../../pages/Stake/duration.page'
-import { warmup } from '../../../helpers/warmup'
-import GetStartedScreenPage from '../../../pages/Stake/getStartedScreen.page'
-import StakePage from '../../../pages/Stake/stake.page'
-import AccountManagePage from '../../../pages/accountManage.page'
-import commonElsPage from '../../../pages/commonEls.page'
-import settingsPage from '../../../pages/settings.page'
+import Actions from '../../helpers/actions'
+import ConfirmStakingPage from '../../pages/Stake/confirmStaking.page'
+import BottomTabsPage from '../../pages/bottomTabs.page'
+import DurationPage from '../../pages/Stake/duration.page'
+import { warmup } from '../../helpers/warmup'
+import GetStartedScreenPage from '../../pages/Stake/getStartedScreen.page'
+import StakePage from '../../pages/Stake/stake.page'
+import AccountManagePage from '../../pages/accountManage.page'
+import commonElsPage from '../../pages/commonEls.page'
+import settingsPage from '../../pages/settings.page'
 
 describe('Stake on Mainnet', () => {
   beforeAll(async () => {
