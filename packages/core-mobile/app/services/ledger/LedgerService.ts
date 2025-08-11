@@ -35,6 +35,7 @@ export interface PublicKeyInfo {
 export enum LedgerAppType {
   AVALANCHE = 'Avalanche',
   SOLANA = 'Solana',
+  ETHEREUM = 'Ethereum',
   UNKNOWN = 'Unknown'
 }
 
@@ -753,6 +754,25 @@ export class LedgerService {
       this.currentAppType = LedgerAppType.UNKNOWN
       this.stopAppPolling() // Stop polling on disconnect
     }
+  }
+
+  // Get current transport (for wallet usage)
+  getTransport(): TransportBLE {
+    if (!this.transport) {
+      throw new Error('Transport not initialized. Call connect() first.')
+    }
+    return this.transport
+  }
+
+  // Check if transport is available and connected
+  isConnected(): boolean {
+    return this.transport !== null && !this.transport.isDisconnected
+  }
+
+  // Ensure connection is established for a specific device
+  async ensureConnection(deviceId: string): Promise<TransportBLE> {
+    await this.reconnectIfNeeded(deviceId)
+    return this.getTransport()
   }
 }
 

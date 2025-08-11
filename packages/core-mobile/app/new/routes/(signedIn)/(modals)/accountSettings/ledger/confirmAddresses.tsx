@@ -24,6 +24,7 @@ import { showSnackbar } from 'new/common/utils/toast'
 import { uuid } from 'utils/uuid'
 import Logger from 'utils/Logger'
 import { ScrollScreen } from 'common/components/ScrollScreen'
+import bs58 from 'bs58'
 
 export default function ConfirmAddresses() {
   const params = useLocalSearchParams<{
@@ -148,7 +149,8 @@ export default function ConfirmAddresses() {
       // Set the addresses
       setAvalancheKeys({
         evm: { key: evmAddress },
-        avalanche: { key: xpAddress }
+        avalanche: { key: xpAddress },
+        pvm: { key: pvmAddress }
       })
       setBitcoinAddress(btcAddress)
       setXpAddress(xpAddress)
@@ -218,6 +220,35 @@ export default function ConfirmAddresses() {
           walletSecret: JSON.stringify({
             deviceId: params.deviceId,
             deviceName: params.deviceName || 'Ledger Device',
+            derivationPath: "m/44'/60'/0'/0/0", // Standard EVM derivation path
+            vmType: 'EVM', // NetworkVMType.EVM
+            derivationPathSpec: 'BIP44', // Use BIP44 derivation
+            extendedPublicKeys: {
+              evm: avalancheKeys.evm.key,
+              avalanche: avalancheKeys.avalanche.key
+            },
+            publicKeys: [
+              {
+                key: avalancheKeys.evm.key,
+                derivationPath: "m/44'/60'/0'/0/0",
+                curve: 'secp256k1'
+              },
+              {
+                key: avalancheKeys.avalanche.key,
+                derivationPath: "m/44'/9000'/0'/0/0",
+                curve: 'secp256k1'
+              },
+              {
+                key: avalancheKeys.pvm?.key || avalancheKeys.avalanche.key,
+                derivationPath: "m/44'/9000'/0'/0/0", // P-Chain uses same path as AVM
+                curve: 'secp256k1'
+              },
+              {
+                key: solanaKeys[0]?.key || '',
+                derivationPath: "m/44'/501'/0'/0'",
+                curve: 'ed25519'
+              }
+            ],
             avalancheKeys,
             solanaKeys
           }),
@@ -231,9 +262,9 @@ export default function ConfirmAddresses() {
       const addresses = {
         EVM: avalancheKeys.evm.key,
         AVM: avalancheKeys.avalanche.key,
-        PVM: avalancheKeys.avalanche.key, // Same as AVM for now
+        PVM: avalancheKeys.pvm?.key || avalancheKeys.avalanche.key, // Use P-Chain address if available, fallback to AVM
         BITCOIN: bitcoinAddress,
-        SVM: solanaKeys[0]?.key || '',
+        SVM: solanaKeys[0]?.key ? bs58.encode(new Uint8Array(Buffer.from(solanaKeys[0].key, 'hex'))) : '',
         CoreEth: '' // Not implemented yet
       }
 
