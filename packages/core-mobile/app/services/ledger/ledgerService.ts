@@ -35,6 +35,7 @@ export interface PublicKeyInfo {
 export enum LedgerAppType {
   AVALANCHE = 'Avalanche',
   SOLANA = 'Solana',
+  ETHEREUM = 'Ethereum',
   UNKNOWN = 'Unknown'
 }
 
@@ -52,13 +53,16 @@ export class LedgerService {
   // Connect to Ledger device (transport only, no apps)
   async connect(deviceId: string): Promise<void> {
     try {
+      Logger.info('Starting BLE connection attempt with deviceId:', deviceId)
       // Use a longer timeout for connection (30 seconds)
       this.transport = await TransportBLE.open(deviceId, 30000)
       Logger.info('BLE transport connected successfully')
       this.currentAppType = LedgerAppType.UNKNOWN
 
       // Start passive app detection
+      Logger.info('Starting app polling...')
       this.startAppPolling()
+      Logger.info('App polling started')
     } catch (error) {
       Logger.error('Failed to connect to Ledger', error)
       throw new Error(
@@ -122,6 +126,8 @@ export class LedgerService {
         return LedgerAppType.AVALANCHE
       case 'solana':
         return LedgerAppType.SOLANA
+      case 'ethereum':
+        return LedgerAppType.ETHEREUM
       default:
         return LedgerAppType.UNKNOWN
     }
@@ -173,7 +179,15 @@ export class LedgerService {
 
     if (!this.transport || this.transport.isDisconnected) {
       Logger.info('Transport is disconnected, attempting reconnection')
-      await this.connect(deviceId)
+      try {
+        await this.connect(deviceId)
+        Logger.info('Reconnection successful')
+      } catch (error) {
+        Logger.error('Reconnection failed:', error)
+        throw error // Re-throw to propagate the error
+      }
+    } else {
+      Logger.info('Transport is already connected')
     }
   }
 
@@ -723,6 +737,25 @@ export class LedgerService {
       this.currentAppType = LedgerAppType.UNKNOWN
       this.stopAppPolling() // Stop polling on disconnect
     }
+  }
+
+  // Get current transport (for wallet usage)
+  getTransport(): TransportBLE {
+    if (!this.transport) {
+      throw new Error('Transport not initialized. Call connect() first.')
+    }
+    return this.transport
+  }
+
+  // Check if transport is available and connected
+  isConnected(): boolean {
+    return this.transport !== null && !this.transport.isDisconnected
+  }
+
+  // Ensure connection is established for a specific device
+  async ensureConnection(deviceId: string): Promise<TransportBLE> {
+    await this.reconnectIfNeeded(deviceId)
+    return this.getTransport()
   }
 }
 

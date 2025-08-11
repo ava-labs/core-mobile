@@ -58,6 +58,7 @@
     "@hookform/resolvers": "3.9.0",
     "@invertase/react-native-apple-authentication": "2.4.0",
     "@lavamoat/preinstall-always-fail": "2.1.0",
+    "@ledgerhq/hw-app-eth": "6.24.1",
     "@ledgerhq/hw-app-solana": "6.24.1",
     "@ledgerhq/react-native-hw-transport-ble": "latest",
     "@metamask/eth-sig-util": "7.0.3",
