@@ -37,7 +37,9 @@ export const useMigrateFavoriteIds = (): {
       hasMigratedFavoriteIds ||
       isLoadingTrendingTokens ||
       isLoadingTopTokens ||
-      favoriteIds.length === 0
+      favoriteIds.length === 0 ||
+      favoriteIds === undefined ||
+      favoriteIds === null
     )
       return
 
