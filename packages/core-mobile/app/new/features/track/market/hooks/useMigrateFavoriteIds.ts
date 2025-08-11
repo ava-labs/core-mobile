@@ -37,15 +37,18 @@ export const useMigrateFavoriteIds = (): {
       hasMigratedFavoriteIds ||
       isLoadingTrendingTokens ||
       isLoadingTopTokens ||
-      favoriteIds.length === 0 ||
-      favoriteIds === undefined ||
-      favoriteIds === null
+      favoriteIds.length === 0
     )
       return
 
     favoriteIds.forEach((favoriteId: string) => {
       // Check if this favorite is already in internalId format
-      if (favoriteId.includes(':') || favoriteId.includes('NATIVE')) {
+      if (
+        favoriteId.includes(':') ||
+        favoriteId.includes('NATIVE') ||
+        favoriteId === undefined ||
+        favoriteId === null
+      ) {
         // Already in internalId format, skip migration
         return
       }
