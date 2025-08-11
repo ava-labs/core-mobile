@@ -402,6 +402,13 @@ export const selectIsSolanaSwapBlocked = (state: RootState): boolean => {
   )
 }
 
+export const selectStakeAnnualPercentageYieldBPS = (
+  state: RootState
+): number => {
+  const { featureFlags } = state.posthog
+  return parseInt(featureFlags[FeatureVars.STAKE_APY_BPS] as string)
+}
+
 // actions
 export const { regenerateUserId, toggleAnalytics, setFeatureFlags } =
   posthogSlice.actions

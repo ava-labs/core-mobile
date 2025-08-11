@@ -14,7 +14,7 @@ export const useAddStake = (): {
   const { navigate } = useRouter()
   const { hasEnoughAvax } = useHasEnoughAvaxToStake()
   const [canAddStake, setCanAddStake] = useState(false)
-  const { minStakeAmount } = useStakingParams()
+  const { minStakeAmount, annualPercentageYieldBPS } = useStakingParams()
   const { navigateToSwap } = useNavigateToSwap()
   const { navigateToBuyAmountWithAvax } = useBuy()
   const isAvaxCSupported = useIsAvaxCSupported()
@@ -37,14 +37,16 @@ export const useAddStake = (): {
 
     showAlert({
       title: `${minStakeAmount} available AVAX required`,
-      description:
-        'Staking your AVAX in the Avalanche Network allows you to earn up to 10% APY.',
+      description: `Staking your AVAX in the Avalanche Network allows you to earn up to ${
+        annualPercentageYieldBPS / 100
+      }% APY.`,
       buttons
     })
   }, [
     isAvaxCSupported,
     navigateToSwap,
     minStakeAmount,
+    annualPercentageYieldBPS,
     navigateToBuyAmountWithAvax
   ])
 

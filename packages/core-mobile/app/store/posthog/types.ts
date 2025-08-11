@@ -1,3 +1,4 @@
+import { DEFAULT_ANNUAL_PERCENTAGE_YIELD_BPS } from 'features/stake/consts'
 import { FeatureFlags, FeatureGates, FeatureVars } from 'services/posthog/types'
 import { uuid } from 'utils/uuid'
 
@@ -18,6 +19,7 @@ export const DefaultFeatureFlagConfig = {
   [FeatureVars.C_BASE_FEE_MULTIPLIER]: '1e0', // 100%
   [FeatureVars.MARKR_SWAP_GAS_BUFFER]: '120', // 120%
   [FeatureVars.MARKR_SWAP_MAX_RETRIES]: '3', // 3 retries
+  [FeatureVars.STAKE_APY_BPS]: `${DEFAULT_ANNUAL_PERCENTAGE_YIELD_BPS}`,
   [FeatureGates.BUY_COINBASE_PAY]: true,
   [FeatureGates.DEFI]: true,
   [FeatureGates.BROWSER]: true,

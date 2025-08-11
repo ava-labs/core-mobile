@@ -51,7 +51,8 @@ export enum FeatureVars {
   C_BASE_FEE_MULTIPLIER = 'c-base-fee-multiplier',
   CROSS_CHAIN_FEES_MULTIPLIER = 'cross-chain-fees-multiplier',
   MARKR_SWAP_GAS_BUFFER = 'markr-swap-gas-buffer',
-  MARKR_SWAP_MAX_RETRIES = 'markr-swap-max-retries'
+  MARKR_SWAP_MAX_RETRIES = 'markr-swap-max-retries',
+  STAKE_APY_BPS = 'stake-apy-bps'
 }
 
 // posthog response can be an empty object when all features are disabled
