@@ -477,5 +477,16 @@ export const migrations = {
         }
       }
     }
+  },
+  25: (state: any) => {
+    return {
+      ...state,
+      watchlist: {
+        ...state.watchlist,
+        favorites: state.watchlist.favorites.filter(
+          (favorite: string) => typeof favorite === 'string'
+        )
+      }
+    }
   }
 }
