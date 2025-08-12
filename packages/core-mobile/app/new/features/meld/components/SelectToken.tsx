@@ -11,8 +11,11 @@ import { isAvalancheChainId } from 'services/network/utils/isAvalancheNetwork'
 import { USDC_AVALANCHE_C_TOKEN_ID } from 'common/consts/swap'
 import useCChainNetwork from 'hooks/earn/useCChainNetwork'
 import { LogoWithNetwork } from 'common/components/LogoWithNetwork'
+import { ServiceProviderCategories } from 'features/meld/consts'
+import { TokenType } from '@avalabs/vm-module-types'
 
 interface SelectTokenProps {
+  category: ServiceProviderCategories
   title: string
   isLoadingCryptoCurrencies: boolean
   onSelectOtherToken: () => void
@@ -21,6 +24,7 @@ interface SelectTokenProps {
 }
 
 export const SelectToken = ({
+  category,
   title,
   isLoadingCryptoCurrencies,
   onSelectOtherToken,
@@ -34,7 +38,7 @@ export const SelectToken = ({
   const avalancheErc20ContractTokens = useAvalancheErc20ContractTokens()
   const { filteredTokenList } = useSearchableTokenList({
     tokens: avalancheErc20ContractTokens,
-    hideZeroBalance: false
+    hideZeroBalance: category === ServiceProviderCategories.CRYPTO_OFFRAMP
   })
 
   const usdcAvalancheToken = filteredTokenList.find(
@@ -45,16 +49,33 @@ export const SelectToken = ({
       token.address.toLowerCase() === USDC_AVALANCHE_C_TOKEN_ID.toLowerCase()
   )
 
+  const avaxAvalancheToken = filteredTokenList.find(
+    token =>
+      token.type === TokenType.NATIVE && token.symbol === TokenSymbol.AVAX
+  )
+
   const data = useMemo(() => {
-    const _data: GroupListItem[] = [
-      {
+    const _data: GroupListItem[] = []
+
+    if (
+      category === ServiceProviderCategories.CRYPTO_ONRAMP ||
+      (category === ServiceProviderCategories.CRYPTO_OFFRAMP &&
+        (avaxAvalancheToken?.balance ?? 0) > 0)
+    ) {
+      _data.push({
         title: TokenSymbol.AVAX,
         leftIcon: <TokenLogo symbol={TokenSymbol.AVAX} />,
         onPress: onSelectAvax
-      }
-    ]
+      })
+    }
 
-    if (cChainNetwork && usdcAvalancheToken) {
+    if (
+      cChainNetwork &&
+      usdcAvalancheToken &&
+      (category === ServiceProviderCategories.CRYPTO_ONRAMP ||
+        (category === ServiceProviderCategories.CRYPTO_OFFRAMP &&
+          (usdcAvalancheToken?.balance ?? 0) > 0))
+    ) {
       _data.push({
         title: TokenSymbol.USDC,
         leftIcon: (
@@ -80,7 +101,9 @@ export const SelectToken = ({
     usdcAvalancheToken,
     onSelectOtherToken,
     colors.$surfaceSecondary,
-    onSelectUsdc
+    onSelectUsdc,
+    avaxAvalancheToken,
+    category
   ])
 
   return (
