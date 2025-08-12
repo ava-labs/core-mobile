@@ -447,7 +447,7 @@ __metadata:
     use-debounce: 10.0.4
     viem: 2.21.21
     vm-browserify: 1.1.2
-    web-streams-polyfill: ^4.1.0
+    web-streams-polyfill: 4.1.0
     web3: 4.16.0
     xss: 1.0.15
     zeego: 3.0.6
@@ -32098,17 +32098,17 @@ react-native-webview@ava-labs/react-native-webview:
   languageName: node
   linkType: hard
 
+"web-streams-polyfill@npm:4.1.0":
+  version: 4.1.0
+  resolution: "web-streams-polyfill@npm:4.1.0"
+  checksum: bce16f6bcca895439131fb21e4df15659a34d6f31fedd34b1680ab4fe9c438e02aabd336e4641eb1821e04a8da38dd03c6219fa8ca149ee9a002858a0d32f90d
+  languageName: node
+  linkType: hard
+
 "web-streams-polyfill@npm:^3.0.3":
   version: 3.2.1
   resolution: "web-streams-polyfill@npm:3.2.1"
   checksum: b119c78574b6d65935e35098c2afdcd752b84268e18746606af149e3c424e15621b6f1ff0b42b2676dc012fc4f0d313f964b41a4b5031e525faa03997457da02
-  languageName: node
-  linkType: hard
-
-"web-streams-polyfill@npm:^4.1.0":
-  version: 4.1.0
-  resolution: "web-streams-polyfill@npm:4.1.0"
-  checksum: bce16f6bcca895439131fb21e4df15659a34d6f31fedd34b1680ab4fe9c438e02aabd336e4641eb1821e04a8da38dd03c6219fa8ca149ee9a002858a0d32f90d
   languageName: node
   linkType: hard
 
