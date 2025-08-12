@@ -2,11 +2,16 @@ import { useState, useCallback, useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { Alert, Platform, PermissionsAndroid } from 'react-native'
 import TransportBLE from '@ledgerhq/react-native-hw-transport-ble'
+<<<<<<< HEAD
 import Transport from '@ledgerhq/hw-transport'
 import AppSolana from '@ledgerhq/hw-app-solana'
 import bs58 from 'bs58'
 import LedgerService from 'services/ledger/LedgerService'
 import { LedgerAppType, LedgerDerivationPathType } from 'services/ledger/types'
+=======
+import AppSolana from '@ledgerhq/hw-app-solana'
+import { LedgerService, LedgerAppType } from 'services/ledger/ledgerService'
+>>>>>>> 0070815a2 (ledger provider, modifications to wallet, ui now using hook)
 import { ChainName } from 'services/network/consts'
 import { WalletType } from 'services/wallet/types'
 import { AppThunkDispatch } from 'store/types'
@@ -18,6 +23,7 @@ import { CoreAccountType } from '@avalabs/types'
 import { showSnackbar } from 'new/common/utils/toast'
 import { uuid } from 'utils/uuid'
 import Logger from 'utils/Logger'
+<<<<<<< HEAD
 import { Curve } from 'utils/publicKeys'
 import {
   SetupProgress,
@@ -77,10 +83,62 @@ import {
   SOLANA_DERIVATION_PATH,
   LEDGER_TIMEOUTS
 } from '../consts'
+=======
+
+export interface LedgerDevice {
+  id: string
+  name: string
+  rssi?: number
+}
+
+export interface LedgerTransportState {
+  available: boolean
+  powered: boolean
+}
+
+export interface LedgerKeys {
+  solanaKeys: any[]
+  avalancheKeys: {
+    evm: { key: string; address: string }
+    avalanche: { key: string; address: string }
+    pvm?: { key: string; address: string }
+  } | null
+  bitcoinAddress: string
+  xpAddress: string
+}
+
+export interface UseLedgerWalletReturn {
+  // Device scanning and connection
+  devices: LedgerDevice[]
+  isScanning: boolean
+  isConnecting: boolean
+  transportState: LedgerTransportState
+  scanForDevices: () => Promise<void>
+  connectToDevice: (deviceId: string) => Promise<void>
+  disconnectDevice: () => Promise<void>
+
+  // Key retrieval
+  isLoading: boolean
+  getSolanaKeys: () => Promise<void>
+  getAvalancheKeys: () => Promise<void>
+  resetKeys: () => void
+  keys: LedgerKeys
+
+  // Wallet creation
+  createLedgerWallet: (params: {
+    deviceId: string
+    deviceName?: string
+  }) => Promise<string> // Returns the new wallet ID
+}
+>>>>>>> 0070815a2 (ledger provider, modifications to wallet, ui now using hook)
 
 export function useLedgerWallet(): UseLedgerWalletReturn {
   const dispatch = useDispatch<AppThunkDispatch>()
   const allAccounts = useSelector(selectAccounts)
+<<<<<<< HEAD
+=======
+  const [ledgerService] = useState(() => new LedgerService())
+>>>>>>> 0070815a2 (ledger provider, modifications to wallet, ui now using hook)
   const [transportState, setTransportState] = useState<LedgerTransportState>({
     available: false,
     powered: false
@@ -89,25 +147,40 @@ export function useLedgerWallet(): UseLedgerWalletReturn {
   const [isScanning, setIsScanning] = useState(false)
   const [isConnecting, setIsConnecting] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+<<<<<<< HEAD
   const [setupProgress, setSetupProgress] = useState<SetupProgress | null>(null)
 
   // Key states
   const [solanaKeys, setSolanaKeys] = useState<LedgerKeys['solanaKeys']>([])
   const [avalancheKeys, setAvalancheKeys] =
     useState<LedgerKeys['avalancheKeys']>(null)
+=======
+
+  // Key states
+  const [solanaKeys, setSolanaKeys] = useState<any[]>([])
+  const [avalancheKeys, setAvalancheKeys] = useState<any>(null)
+>>>>>>> 0070815a2 (ledger provider, modifications to wallet, ui now using hook)
   const [bitcoinAddress, setBitcoinAddress] = useState<string>('')
   const [xpAddress, setXpAddress] = useState<string>('')
 
   // Monitor BLE transport state
   useEffect(() => {
     const subscription = TransportBLE.observeState({
+<<<<<<< HEAD
       next: (event: { available: boolean }) => {
+=======
+      next: event => {
+>>>>>>> 0070815a2 (ledger provider, modifications to wallet, ui now using hook)
         setTransportState({
           available: event.available,
           powered: false
         })
       },
+<<<<<<< HEAD
       error: (error: Error) => {
+=======
+      error: error => {
+>>>>>>> 0070815a2 (ledger provider, modifications to wallet, ui now using hook)
         Alert.alert(
           'BLE Error',
           `Failed to monitor BLE state: ${error.message}`
@@ -130,7 +203,11 @@ export function useLedgerWallet(): UseLedgerWalletReturn {
           PermissionsAndroid.PERMISSIONS.BLUETOOTH_SCAN,
           PermissionsAndroid.PERMISSIONS.BLUETOOTH_CONNECT,
           PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION
+<<<<<<< HEAD
         ].filter(Boolean)
+=======
+        ].filter(Boolean) as any[]
+>>>>>>> 0070815a2 (ledger provider, modifications to wallet, ui now using hook)
 
         const granted = await PermissionsAndroid.requestMultiple(permissions)
         return Object.values(granted).every(
@@ -144,7 +221,11 @@ export function useLedgerWallet(): UseLedgerWalletReturn {
   }, [])
 
   // Handle scan errors
+<<<<<<< HEAD
   const handleScanError = useCallback((error: Error) => {
+=======
+  const handleScanError = useCallback((error: any) => {
+>>>>>>> 0070815a2 (ledger provider, modifications to wallet, ui now using hook)
     setIsScanning(false)
 
     if (
@@ -193,10 +274,14 @@ export function useLedgerWallet(): UseLedgerWalletReturn {
 
     try {
       const subscription = TransportBLE.listen({
+<<<<<<< HEAD
         next: (event: {
           type: string
           descriptor: { id: string; name?: string; rssi?: number }
         }) => {
+=======
+        next: event => {
+>>>>>>> 0070815a2 (ledger provider, modifications to wallet, ui now using hook)
           if (event.type === 'add') {
             const device: LedgerDevice = {
               id: event.descriptor.id,
@@ -221,13 +306,20 @@ export function useLedgerWallet(): UseLedgerWalletReturn {
       setTimeout(() => {
         subscription.unsubscribe()
         setIsScanning(false)
+<<<<<<< HEAD
       }, LEDGER_TIMEOUTS.SCAN_TIMEOUT)
     } catch (error) {
       handleScanError(error as Error)
+=======
+      }, 10000)
+    } catch (error) {
+      handleScanError(error)
+>>>>>>> 0070815a2 (ledger provider, modifications to wallet, ui now using hook)
     }
   }, [transportState.available, requestBluetoothPermissions, handleScanError])
 
   // Connect to device
+<<<<<<< HEAD
   const connectToDevice = useCallback(async (deviceId: string) => {
     setIsConnecting(true)
     try {
@@ -240,16 +332,38 @@ export function useLedgerWallet(): UseLedgerWalletReturn {
       setIsConnecting(false)
     }
   }, [])
+=======
+  const connectToDevice = useCallback(
+    async (deviceId: string) => {
+      setIsConnecting(true)
+      try {
+        await ledgerService.connect(deviceId)
+        Logger.info('Connected to Ledger device')
+      } catch (error) {
+        Logger.error('Failed to connect to device', error)
+        throw error
+      } finally {
+        setIsConnecting(false)
+      }
+    },
+    [ledgerService]
+  )
+>>>>>>> 0070815a2 (ledger provider, modifications to wallet, ui now using hook)
 
   // Disconnect device
   const disconnectDevice = useCallback(async () => {
     try {
+<<<<<<< HEAD
       await LedgerService.disconnect()
+=======
+      await ledgerService.disconnect()
+>>>>>>> 0070815a2 (ledger provider, modifications to wallet, ui now using hook)
       Logger.info('Disconnected from Ledger device')
     } catch (error) {
       Logger.error('Failed to disconnect', error)
       throw error
     }
+<<<<<<< HEAD
   }, [])
 
   // Get Solana keys
@@ -260,10 +374,17 @@ export function useLedgerWallet(): UseLedgerWalletReturn {
       return
     }
 
+=======
+  }, [ledgerService])
+
+  // Get Solana keys
+  const getSolanaKeys = useCallback(async () => {
+>>>>>>> 0070815a2 (ledger provider, modifications to wallet, ui now using hook)
     try {
       setIsLoading(true)
       Logger.info('Getting Solana keys with passive app detection')
 
+<<<<<<< HEAD
       await LedgerService.waitForApp(LedgerAppType.SOLANA)
 
       // Get address directly from Solana app
@@ -274,12 +395,28 @@ export function useLedgerWallet(): UseLedgerWalletReturn {
 
       // Convert the Buffer to base58 format (Solana address format)
       const solanaAddress = bs58.encode(new Uint8Array(result.address))
+=======
+      await ledgerService.waitForApp(LedgerAppType.SOLANA)
+
+      // Get address directly from Solana app
+      const solanaApp = new AppSolana(ledgerService.getTransport())
+      const derivationPath = `44'/501'/0'/0'/0`
+      const result = await solanaApp.getAddress(derivationPath, false)
+
+      // result.address is already in base58 format
+      const solanaAddress = result.address.toString()
+>>>>>>> 0070815a2 (ledger provider, modifications to wallet, ui now using hook)
 
       setSolanaKeys([
         {
           key: solanaAddress,
           derivationPath,
+<<<<<<< HEAD
           curve: Curve.ED25519
+=======
+          curve: 'ed25519',
+          publicKey: solanaAddress
+>>>>>>> 0070815a2 (ledger provider, modifications to wallet, ui now using hook)
         }
       ])
       Logger.info('Successfully got Solana address', solanaAddress)
@@ -289,6 +426,7 @@ export function useLedgerWallet(): UseLedgerWalletReturn {
     } finally {
       setIsLoading(false)
     }
+<<<<<<< HEAD
   }, [isLoading])
 
   // Get Avalanche keys
@@ -299,16 +437,30 @@ export function useLedgerWallet(): UseLedgerWalletReturn {
       return
     }
 
+=======
+  }, [ledgerService])
+
+  // Get Avalanche keys
+  const getAvalancheKeys = useCallback(async () => {
+>>>>>>> 0070815a2 (ledger provider, modifications to wallet, ui now using hook)
     try {
       setIsLoading(true)
       Logger.info('Getting Avalanche keys')
 
+<<<<<<< HEAD
       const addresses = await LedgerService.getAllAddresses(0, 1)
+=======
+      const addresses = await ledgerService.getAllAddresses(0, 1)
+>>>>>>> 0070815a2 (ledger provider, modifications to wallet, ui now using hook)
 
       const evmAddress =
         addresses.find(addr => addr.network === ChainName.AVALANCHE_C_EVM)
           ?.address || ''
+<<<<<<< HEAD
       const xChainAddress =
+=======
+      const xpAddress =
+>>>>>>> 0070815a2 (ledger provider, modifications to wallet, ui now using hook)
         addresses.find(addr => addr.network === ChainName.AVALANCHE_X)
           ?.address || ''
       const pvmAddress =
@@ -320,12 +472,21 @@ export function useLedgerWallet(): UseLedgerWalletReturn {
 
       // Store the addresses directly from the device
       setAvalancheKeys({
+<<<<<<< HEAD
         evm: evmAddress,
         avalanche: xChainAddress,
         pvm: pvmAddress
       })
       setBitcoinAddress(btcAddress)
       setXpAddress(xChainAddress)
+=======
+        evm: { key: evmAddress, address: evmAddress },
+        avalanche: { key: xpAddress, address: xpAddress },
+        pvm: { key: pvmAddress, address: pvmAddress }
+      })
+      setBitcoinAddress(btcAddress)
+      setXpAddress(xpAddress)
+>>>>>>> 0070815a2 (ledger provider, modifications to wallet, ui now using hook)
 
       Logger.info('Successfully got Avalanche keys')
     } catch (error) {
@@ -334,7 +495,11 @@ export function useLedgerWallet(): UseLedgerWalletReturn {
     } finally {
       setIsLoading(false)
     }
+<<<<<<< HEAD
   }, [isLoading])
+=======
+  }, [ledgerService])
+>>>>>>> 0070815a2 (ledger provider, modifications to wallet, ui now using hook)
 
   const resetKeys = useCallback(() => {
     setSolanaKeys([])
@@ -343,6 +508,7 @@ export function useLedgerWallet(): UseLedgerWalletReturn {
     setXpAddress('')
   }, [])
 
+<<<<<<< HEAD
   // New method: Get individual keys for Ledger Live (sequential device confirmations)
   const getLedgerLiveKeys = useCallback(
     async (
@@ -483,22 +649,42 @@ export function useLedgerWallet(): UseLedgerWalletReturn {
         Logger.info(
           `Creating ${derivationPathType} Ledger wallet with generated keys...`
         )
+=======
+  const createLedgerWallet = useCallback(
+    async ({
+      deviceId,
+      deviceName = 'Ledger Device'
+    }: {
+      deviceId: string
+      deviceName?: string
+    }) => {
+      try {
+        setIsLoading(true)
+        Logger.info('Creating Ledger wallet with generated keys...')
+>>>>>>> 0070815a2 (ledger provider, modifications to wallet, ui now using hook)
 
         if (!avalancheKeys || solanaKeys.length === 0 || !bitcoinAddress) {
           throw new Error('Missing required keys for wallet creation')
         }
 
+<<<<<<< HEAD
         updateProgress('Generating wallet ID...')
         const newWalletId = uuid()
 
         updateProgress('Storing wallet data...')
         // Store the Ledger wallet with the specified derivation path type
+=======
+        const newWalletId = uuid()
+
+        // Store the Ledger wallet
+>>>>>>> 0070815a2 (ledger provider, modifications to wallet, ui now using hook)
         await dispatch(
           storeWallet({
             walletId: newWalletId,
             walletSecret: JSON.stringify({
               deviceId,
               deviceName,
+<<<<<<< HEAD
               derivationPath: DERIVATION_PATHS.BIP44.EVM,
               vmType: 'EVM',
               derivationPathSpec: derivationPathType,
@@ -542,6 +728,41 @@ export function useLedgerWallet(): UseLedgerWalletReturn {
               derivationPathType === LedgerDerivationPathType.BIP44
                 ? WalletType.LEDGER
                 : WalletType.LEDGER_LIVE
+=======
+              derivationPath: "m/44'/60'/0'/0/0",
+              vmType: 'EVM',
+              derivationPathSpec: 'BIP44',
+              extendedPublicKeys: {
+                evm: avalancheKeys.evm.key,
+                avalanche: avalancheKeys.avalanche.key
+              },
+              publicKeys: [
+                {
+                  key: avalancheKeys.evm.key,
+                  derivationPath: "m/44'/60'/0'/0/0",
+                  curve: 'secp256k1'
+                },
+                {
+                  key: avalancheKeys.avalanche.key,
+                  derivationPath: "m/44'/9000'/0'/0/0",
+                  curve: 'secp256k1'
+                },
+                {
+                  key: avalancheKeys.pvm?.key || avalancheKeys.avalanche.key,
+                  derivationPath: "m/44'/9000'/0'/0/0",
+                  curve: 'secp256k1'
+                },
+                {
+                  key: solanaKeys[0]?.key || '',
+                  derivationPath: "m/44'/501'/0'/0'",
+                  curve: 'ed25519'
+                }
+              ],
+              avalancheKeys,
+              solanaKeys
+            }),
+            type: WalletType.LEDGER
+>>>>>>> 0070815a2 (ledger provider, modifications to wallet, ui now using hook)
           })
         ).unwrap()
 
@@ -549,11 +770,19 @@ export function useLedgerWallet(): UseLedgerWalletReturn {
 
         // Create addresses from the keys
         const addresses = {
+<<<<<<< HEAD
           EVM: avalancheKeys.evm,
           AVM: avalancheKeys.avalanche,
           PVM: avalancheKeys.pvm || avalancheKeys.avalanche,
           BITCOIN: bitcoinAddress,
           SVM: solanaKeys[0]?.key || '',
+=======
+          EVM: avalancheKeys.evm.address,
+          AVM: avalancheKeys.avalanche.address,
+          PVM: avalancheKeys.pvm?.address || avalancheKeys.avalanche.address,
+          BITCOIN: bitcoinAddress,
+          SVM: solanaKeys[0]?.publicKey || '',
+>>>>>>> 0070815a2 (ledger provider, modifications to wallet, ui now using hook)
           CoreEth: ''
         }
 
@@ -583,13 +812,20 @@ export function useLedgerWallet(): UseLedgerWalletReturn {
         throw error
       } finally {
         setIsLoading(false)
+<<<<<<< HEAD
         setSetupProgress(null)
+=======
+>>>>>>> 0070815a2 (ledger provider, modifications to wallet, ui now using hook)
       }
     },
     [avalancheKeys, solanaKeys, bitcoinAddress, dispatch, allAccounts]
   )
 
   return {
+<<<<<<< HEAD
+=======
+    // Device scanning and connection
+>>>>>>> 0070815a2 (ledger provider, modifications to wallet, ui now using hook)
     devices,
     isScanning,
     isConnecting,
@@ -597,18 +833,33 @@ export function useLedgerWallet(): UseLedgerWalletReturn {
     scanForDevices,
     connectToDevice,
     disconnectDevice,
+<<<<<<< HEAD
     isLoading,
     getSolanaKeys,
     getAvalancheKeys,
     getLedgerLiveKeys,
     resetKeys,
+=======
+
+    // Key retrieval
+    isLoading,
+    getSolanaKeys,
+    getAvalancheKeys,
+>>>>>>> 0070815a2 (ledger provider, modifications to wallet, ui now using hook)
     keys: {
       solanaKeys,
       avalancheKeys,
       bitcoinAddress,
       xpAddress
     },
+<<<<<<< HEAD
     createLedgerWallet,
     setupProgress
+=======
+
+    // Wallet creation
+    createLedgerWallet,
+    resetKeys
+>>>>>>> 0070815a2 (ledger provider, modifications to wallet, ui now using hook)
   }
 }

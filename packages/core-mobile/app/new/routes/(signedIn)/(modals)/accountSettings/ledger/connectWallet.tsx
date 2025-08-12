@@ -1,278 +1,55 @@
-import React, { useEffect, useState, useCallback } from 'react'
-import {
-  View,
-  Alert,
-  FlatList,
-  Platform,
-  PermissionsAndroid,
-  Linking
-} from 'react-native'
-
-import TransportBLE from '@ledgerhq/react-native-hw-transport-ble'
+import React from 'react'
+import { View, Alert, FlatList, Linking, Platform } from 'react-native'
 import { Button, Card, Text as K2Text, useTheme } from '@avalabs/k2-alpine'
 import { useRouter } from 'expo-router'
 import { ScrollScreen } from 'common/components/ScrollScreen'
-import { LedgerService } from 'services/ledger/ledgerService'
-
-interface Device {
-  id: string
-  name: string
-  rssi?: number
-}
-
-interface TransportState {
-  available: boolean
-  powered: boolean
-}
+import {
+  useLedgerWallet,
+  LedgerDevice
+} from 'new/features/ledger/hooks/useLedgerWallet'
 
 export default function ConnectWallet(): JSX.Element {
   const router = useRouter()
   const {
     theme: { colors }
   } = useTheme()
-  const [ledgerService] = useState(() => new LedgerService())
-  const [transportState, setTransportState] = useState<TransportState>({
-    available: false,
-    powered: false
-  })
-  const [devices, setDevices] = useState<Device[]>([])
-  const [isScanning, setIsScanning] = useState(false)
-  const [isConnecting, setIsConnecting] = useState(false)
-  const [connectedDevice, setConnectedDevice] = useState<Device | null>(null)
+  const {
+    devices,
+    isScanning,
+    isConnecting,
+    transportState,
+    scanForDevices,
+    connectToDevice
+  } = useLedgerWallet()
 
-  // Monitor BLE transport state
-  useEffect(() => {
-    const subscription = TransportBLE.observeState({
-      next: event => {
-        setTransportState({
-          available: event.available,
-          powered: false
-        })
-      },
-      complete: () => {
-        // Handle completion
-      },
-      error: error => {
-        Alert.alert(
-          'BLE Error',
-          `Failed to monitor BLE state: ${error.message}`
-        )
+  // Handle successful connection
+  const handleDeviceConnection = async (
+    deviceId: string,
+    deviceName: string
+  ): Promise<void> => {
+    Alert.alert('Success', `Connected to ${deviceName}`, [
+      {
+        text: 'Continue',
+        onPress: () => {
+          router.push({
+            pathname: '/accountSettings/ledger/confirmAddresses',
+            params: { deviceId, deviceName }
+          })
+        }
       }
-    })
-
-    return () => {
-      subscription.unsubscribe()
-    }
-  }, [])
-
-  // Request Bluetooth permissions
-  const requestBluetoothPermissions = useCallback(async () => {
-    if (Platform.OS === 'android') {
-      try {
-        const permissions = [
-          PermissionsAndroid.PERMISSIONS.BLUETOOTH_SCAN,
-          PermissionsAndroid.PERMISSIONS.BLUETOOTH_CONNECT,
-          PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION
-        ].filter(Boolean) as any[]
-
-        const granted = await PermissionsAndroid.requestMultiple(permissions)
-
-        return Object.values(granted).every(
-          permission => permission === 'granted'
-        )
-      } catch (err) {
-        return false
-      }
-    } else if (Platform.OS === 'ios') {
-      // iOS permissions are handled automatically by the TransportBLE library
-      return true
-    }
-    return false
-  }, [])
-
-  // Handle scan errors
-  const handleScanError = useCallback((error: any) => {
-    setIsScanning(false)
-
-    // Handle specific authorization errors
-    if (
-      error.message?.includes('not authorized') ||
-      error.message?.includes('Origin: 101')
-    ) {
-      Alert.alert(
-        'Bluetooth Permission Required',
-        'Please enable Bluetooth permissions in your device settings to scan for Ledger devices.',
-        [
-          { text: 'Cancel', style: 'cancel' },
-          {
-            text: 'Open Settings',
-            onPress: () => {
-              // You can add navigation to settings here if needed
-            }
-          }
-        ]
-      )
-    } else {
-      Alert.alert('Scan Error', `Failed to scan for devices: ${error.message}`)
-    }
-  }, [])
-
-  // Scan for Ledger devices
-  const scanForDevices = useCallback(async () => {
-    if (!transportState.available) {
-      Alert.alert(
-        'Bluetooth Unavailable',
-        'Please enable Bluetooth to scan for Ledger devices'
-      )
-      return
-    }
-
-    // Request permissions before scanning
-    const hasPermissions = await requestBluetoothPermissions()
-    if (!hasPermissions) {
-      Alert.alert(
-        'Permission Required',
-        'Bluetooth permissions are required to scan for Ledger devices. Please grant permissions in your device settings.'
-      )
-      return
-    }
-
-    setIsScanning(true)
-    setDevices([])
-
-    try {
-      const subscription = TransportBLE.listen({
-        next: event => {
-          if (event.type === 'add') {
-            const device: Device = {
-              id: event.descriptor.id,
-              name: event.descriptor.name || 'Unknown Device',
-              rssi: event.descriptor.rssi
-            }
-
-            setDevices(prev => {
-              // Avoid duplicates
-              const exists = prev.find(d => d.id === device.id)
-              if (!exists) {
-                return [...prev, device]
-              }
-              return prev
-            })
-          }
-        },
-        complete: () => {
-          setIsScanning(false)
-        },
-        error: handleScanError
-      })
-
-      // Stop scanning after 10 seconds
-      setTimeout(() => {
-        subscription.unsubscribe()
-        setIsScanning(false)
-      }, 10000)
-    } catch (error) {
-      setIsScanning(false)
-      Alert.alert(
-        'Scan Error',
-        `Failed to start scanning: ${
-          error instanceof Error ? error.message : 'Unknown error'
-        }`
-      )
-    }
-  }, [transportState.available, requestBluetoothPermissions, handleScanError])
+    ])
+  }
 
   // Open Bluetooth settings
-  const openBluetoothSettings = useCallback(() => {
+  const openBluetoothSettings = (): void => {
     if (Platform.OS === 'ios') {
       Linking.openURL('App-Prefs:Bluetooth')
     } else {
       Linking.openSettings()
     }
-  }, [])
+  }
 
-  // Connect to a specific device using LedgerService
-  const connectToDevice = useCallback(
-    async (device: Device) => {
-      setIsConnecting(true)
-
-      try {
-        // Use LedgerService to connect
-        await ledgerService.connect(device.id)
-
-        setConnectedDevice(device)
-        Alert.alert('Success', `Connected to ${device.name}`, [
-          {
-            text: 'Continue',
-            onPress: () => {
-              // Navigate to confirm addresses screen with device ID
-              router.push({
-                pathname: '/accountSettings/ledger/confirmAddresses' as any,
-                params: { deviceId: device.id }
-              })
-            }
-          }
-        ])
-      } catch (error) {
-        let errorMessage = 'Unknown connection error'
-
-        if (error instanceof Error) {
-          if (error.message.includes('TurboModule')) {
-            errorMessage =
-              'Connection failed due to compatibility issue. Please try restarting the app or updating to the latest version.'
-          } else if (error.message.includes('timeout')) {
-            errorMessage =
-              'Connection timed out. Please make sure your Ledger device is unlocked and in pairing mode.'
-          } else if (error.message.includes('PeerRemovedPairing')) {
-            Alert.alert(
-              'Pairing Removed',
-              'The pairing with your Ledger device was removed. Would you like to open Bluetooth settings to re-pair?',
-              [
-                { text: 'Cancel', style: 'cancel' },
-                {
-                  text: 'Open Settings',
-                  onPress: openBluetoothSettings
-                }
-              ]
-            )
-            return // Don't show the generic error alert
-          } else {
-            errorMessage = error.message
-          }
-        }
-
-        Alert.alert(
-          'Connection Error',
-          `Failed to connect to ${device.name}: ${errorMessage}`
-        )
-      } finally {
-        setIsConnecting(false)
-      }
-    },
-    [openBluetoothSettings, router, ledgerService]
-  )
-
-  // Disconnect from current device
-  const disconnectDevice = useCallback(async () => {
-    try {
-      // Use LedgerService to disconnect
-      await ledgerService.disconnect()
-      setConnectedDevice(null)
-      Alert.alert(
-        'Disconnected',
-        'Successfully disconnected from Ledger device'
-      )
-    } catch (error) {
-      Alert.alert(
-        'Disconnect Error',
-        `Failed to disconnect: ${
-          error instanceof Error ? error.message : 'Unknown error'
-        }`
-      )
-    }
-  }, [ledgerService])
-
-  const renderDevice = ({ item }: { item: Device }) => (
+  const renderDevice = ({ item }: { item: LedgerDevice }): JSX.Element => (
     <Card sx={{ marginBottom: 12, padding: 16 }}>
       <View
         style={{
@@ -296,7 +73,33 @@ export default function ConnectWallet(): JSX.Element {
         <Button
           type="primary"
           size="medium"
-          onPress={() => connectToDevice(item)}
+          onPress={async () => {
+            try {
+              await connectToDevice(item.id)
+              handleDeviceConnection(item.id, item.name)
+            } catch (error) {
+              if (error instanceof Error) {
+                if (error.message.includes('PeerRemovedPairing')) {
+                  Alert.alert(
+                    'Pairing Removed',
+                    'The pairing with your Ledger device was removed. Would you like to open Bluetooth settings to re-pair?',
+                    [
+                      { text: 'Cancel', style: 'cancel' },
+                      {
+                        text: 'Open Settings',
+                        onPress: openBluetoothSettings
+                      }
+                    ]
+                  )
+                } else {
+                  Alert.alert(
+                    'Connection Error',
+                    `Failed to connect to ${item.name}: ${error.message}`
+                  )
+                }
+              }
+            }
+          }}
           disabled={isConnecting}>
           {isConnecting ? 'Connecting...' : 'Connect'}
         </Button>
@@ -323,32 +126,6 @@ export default function ConnectWallet(): JSX.Element {
           Powered: {transportState.powered ? 'Yes' : 'No'}
         </K2Text>
       </Card>
-
-      {/* Connected Device */}
-      {connectedDevice && (
-        <Card
-          sx={{
-            marginBottom: 16,
-            padding: 16,
-            backgroundColor: colors.$textSuccess + '20'
-          }}>
-          <K2Text
-            variant="heading6"
-            sx={{ color: colors.$textSuccess, marginBottom: 8 }}>
-            Connected Device
-          </K2Text>
-          <K2Text variant="body2" sx={{ color: colors.$textPrimary }}>
-            {connectedDevice.name}
-          </K2Text>
-          <Button
-            type="secondary"
-            size="small"
-            onPress={disconnectDevice}
-            style={{ marginTop: 8 }}>
-            Disconnect
-          </Button>
-        </Card>
-      )}
 
       {/* Scan Button */}
       <Button
