@@ -1,7 +1,6 @@
-import { usePreventRemove } from '@react-navigation/native'
 import { usePathname, useRootNavigationState, useRouter } from 'expo-router'
 import { useEffect } from 'react'
-import { BackHandler, InteractionManager } from 'react-native'
+import { InteractionManager } from 'react-native'
 import 'react-native-reanimated'
 import { useSelector } from 'react-redux'
 import { selectWalletState, WalletState } from 'store/app'
@@ -18,12 +17,6 @@ export const NavigationRedirect = (): null => {
 
   const isNavigationReady = Boolean(navigationState?.key)
   // Additional check for Expo Router - ensure segments are loaded
-
-  // On Android, closing the signed-in stack should exit the app,
-  // even if there is a back stack (e.g., onboarding/confirmation → portfolio)
-  usePreventRemove(walletState === WalletState.ACTIVE, () => {
-    BackHandler.exitApp()
-  })
 
   // please be careful with the dependencies here
   // this effect is responsible for redirecting users
