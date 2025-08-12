@@ -194,35 +194,32 @@ export const SelectAmount = ({
       )
     }
 
-    if (tokenBalance) {
-      return (
-        <View
+    return (
+      <View
+        sx={{
+          alignItems: 'center',
+          marginTop: 12,
+          marginHorizontal: 16,
+          flexDirection: 'row',
+          justifyContent: 'center'
+        }}>
+        <Text
+          variant="caption"
           sx={{
-            alignItems: 'center',
-            marginTop: 12,
-            marginHorizontal: 16,
-            flexDirection: 'row',
-            justifyContent: 'center'
+            fontWeight: 500,
+            color: colors.$textPrimary
           }}>
-          <Text
-            variant="caption"
-            sx={{
-              fontWeight: 500,
-              color: colors.$textPrimary
-            }}>
-            Balance: {token?.tokenWithBalance.balanceCurrencyDisplayValue ?? 0}{' '}
-            {selectedCurrency}
-          </Text>
-        </View>
-      )
-    }
+          Balance: {token?.tokenWithBalance.balanceCurrencyDisplayValue ?? 0}{' '}
+          {selectedCurrency}
+        </Text>
+      </View>
+    )
   }, [
     colors.$textDanger,
     colors.$textPrimary,
     errorMessage,
     createSessionWidgetErrorMessage,
     token?.tokenWithBalance.balanceCurrencyDisplayValue,
-    tokenBalance,
     selectedCurrency
   ])
 
