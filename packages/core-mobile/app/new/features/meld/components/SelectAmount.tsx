@@ -17,7 +17,6 @@ import { selectSelectedCurrency } from 'store/settings/currency'
 import { useSelector } from 'react-redux'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import useInAppBrowser from 'common/hooks/useInAppBrowser'
-import { SubTextNumber } from 'common/components/SubTextNumber'
 import { useSelectAmount } from '../hooks/useSelectAmount'
 import { ServiceProviderCategories } from '../consts'
 import { useOfframpActivityIndicator, useOfframpSessionId } from '../store'
@@ -195,47 +194,33 @@ export const SelectAmount = ({
       )
     }
 
-    if (tokenBalance && token?.tokenWithBalance.symbol) {
-      return (
-        <View
+    return (
+      <View
+        sx={{
+          alignItems: 'center',
+          marginTop: 12,
+          marginHorizontal: 16,
+          flexDirection: 'row',
+          justifyContent: 'center'
+        }}>
+        <Text
+          variant="caption"
           sx={{
-            alignItems: 'center',
-            marginTop: 12,
-            marginHorizontal: 16,
-            flexDirection: 'row',
-            justifyContent: 'center'
+            fontWeight: 500,
+            color: colors.$textPrimary
           }}>
-          <Text
-            variant="caption"
-            sx={{
-              fontWeight: 500,
-              color: colors.$textPrimary
-            }}>
-            {'Balance: '}
-          </Text>
-          <SubTextNumber
-            number={Number(tokenBalance.toDisplay({ asNumber: true }))}
-            textColor={colors.$textPrimary}
-            textVariant="caption"
-          />
-          <Text
-            variant="caption"
-            sx={{
-              fontWeight: 500,
-              color: colors.$textPrimary
-            }}>
-            {' ' + token.tokenWithBalance.symbol}
-          </Text>
-        </View>
-      )
-    }
+          Balance: {token?.tokenWithBalance.balanceCurrencyDisplayValue ?? 0}{' '}
+          {selectedCurrency}
+        </Text>
+      </View>
+    )
   }, [
     colors.$textDanger,
     colors.$textPrimary,
     errorMessage,
     createSessionWidgetErrorMessage,
-    token?.tokenWithBalance.symbol,
-    tokenBalance
+    token?.tokenWithBalance.balanceCurrencyDisplayValue,
+    selectedCurrency
   ])
 
   const renderPayWith = useCallback(() => {
