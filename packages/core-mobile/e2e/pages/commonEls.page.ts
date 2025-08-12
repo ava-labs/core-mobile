@@ -6,6 +6,7 @@ import delay from '../helpers/waits'
 import commonElsLoc from '../locators/commonEls.loc'
 import advancedPage from './burgerMenu/advanced.page'
 import burgerMenuPage from './burgerMenu/burgerMenu.page'
+import accountManagePage from './accountManage.page'
 
 class CommonElsPage {
   get retryBtn() {
@@ -261,8 +262,11 @@ class CommonElsPage {
     await Actions.setInputText(this.pinInputField, pin)
   }
 
-  async getBalanceHeaderAccountName(index = 0) {
-    return await Actions.getElementText(this.balanceHeaderAccountName, index)
+  async getBalanceHeaderAccountName(whichScreen: string) {
+    return await Actions.getElementText(
+      by.id(`${whichScreen}__${commonEls.balanceHeaderAccountName}`),
+      10000
+    )
   }
 
   async tapCarrotSVG(index = 0) {
@@ -306,7 +310,7 @@ class CommonElsPage {
   }
 
   async tapRetryBtn() {
-    await Actions.waitForElement(this.retryBtn, 1)
+    await Actions.waitForElement(this.retryBtn)
     try {
       await Actions.tap(this.retryBtn)
     } catch (error) {
@@ -321,7 +325,7 @@ class CommonElsPage {
   async checkIfMainnet() {
     if (process.env.SEEDLESS_TEST === 'true') {
       try {
-        await Actions.waitForElement(this.testnetBanner, 10000, 0)
+        await Actions.waitForElement(this.testnetBanner)
         await advancedPage.switchToMainnet()
         await this.tapBackButton()
         await burgerMenuPage.swipeLeft()
@@ -344,9 +348,9 @@ class CommonElsPage {
   async goBack() {
     await delay(1000)
     try {
-      await Actions.tapElementAtIndex(this.backButton, 0)
+      await Actions.tapElementAtIndex(this.backButton, 0, 5000)
     } catch (e) {
-      await Actions.tapElementAtIndex(this.backButton, 1)
+      await Actions.tapElementAtIndex(this.backButton, 1, 5000)
     }
     await delay(1500)
   }
@@ -385,9 +389,10 @@ class CommonElsPage {
   }
 
   async dismissBottomSheet() {
-    await Actions.waitForElement(this.grabber, 5000)
+    await Actions.waitForElement(this.grabber)
     await delay(1000)
-    await Actions.drag(this.grabber, 'down', 0.5)
+    await Actions.drag(this.grabber, 'down', 0.5, 0)
+    await delay(1000)
   }
 
   async selectDropdown(name: string, dropdownItem: string) {
@@ -409,12 +414,12 @@ class CommonElsPage {
   }
 
   async tapSave(index = 0) {
-    await Actions.waitForElement(this.save, 10000)
+    await Actions.waitForElement(this.save)
     await Actions.tapElementAtIndex(this.save, index)
   }
 
-  async verifyAccountName(expectedName: string, index = 0) {
-    const UIaccountName = await this.getBalanceHeaderAccountName(index)
+  async verifyAccountName(expectedName: string, whichScreen = 'settings') {
+    const UIaccountName = await this.getBalanceHeaderAccountName(whichScreen)
     assert(
       expectedName === UIaccountName,
       `Account name mismatch: ${expectedName} !== ${UIaccountName}`
@@ -429,7 +434,7 @@ class CommonElsPage {
           await Actions.tap(by.text(/.*8081.*/i))
         }
         const xBtn = by.text(/.*developer menu.*/i)
-        await Actions.waitForElement(xBtn, 10000)
+        await Actions.waitForElement(xBtn, 20000)
         await Actions.drag(xBtn, 'down', 0.5)
       } catch (e) {
         console.log('Metro dev menu is not found...')
@@ -448,7 +453,7 @@ class CommonElsPage {
   }
 
   async tapNextButton() {
-    await Actions.waitForElement(this.nextButton, 8000)
+    await Actions.waitForElement(this.nextButton)
     await Actions.tapElementAtIndex(this.nextButton, 0)
   }
 
@@ -486,8 +491,20 @@ class CommonElsPage {
   async tapGotIt(gotItIsVisible = true) {
     if (gotItIsVisible) {
       await delay(2000)
-      await Actions.tap(this.gotIt)
+      await this.dismissBottomSheet()
     }
+  }
+
+  async verifyLoggedIn(bottomSheetIsVisible = true) {
+    if (bottomSheetIsVisible) {
+      try {
+        await this.dismissBottomSheet()
+      } catch (e) {
+        console.log('Bottom sheet not found')
+      }
+    }
+
+    await Actions.waitForElement(accountManagePage.accountOne, 20000)
   }
 }
 

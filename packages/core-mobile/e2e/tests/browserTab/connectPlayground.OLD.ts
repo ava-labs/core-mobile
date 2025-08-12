@@ -75,7 +75,7 @@ describe('Dapp - Core Playground', () => {
   it('should handle wallet_addEthereumChain', async () => {
     await browserPage.sendRpcCall('wallet_addEthereumChain')
     await popUpModalPage.switchToSepoliaNetwork()
-    await actions.waitForElement(commonElsPage.testnetBanner, 10000)
+    await actions.waitForElement(commonElsPage.testnetBanner)
     await bottomTabsPage.tapPortfolioTab()
     await advancedPage.switchToMainnet()
   })
@@ -84,7 +84,7 @@ describe('Dapp - Core Playground', () => {
     await bottomTabsPage.tapBrowserTab()
     await browserPage.sendRpcCall('wallet_switchEthereumChain')
     await popUpModalPage.switchToFujiNetwork()
-    await actions.waitForElement(commonElsPage.testnetBanner, 10000)
+    await actions.waitForElement(commonElsPage.testnetBanner)
     await bottomTabsPage.tapPortfolioTab()
     await portfolioPage.verifyActiveNetwork('Avalanche (C-Chain)')
     await advancedPage.switchToMainnet()

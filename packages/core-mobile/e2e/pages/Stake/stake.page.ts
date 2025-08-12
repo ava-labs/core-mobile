@@ -336,16 +336,16 @@ class StakePage {
 
   async tapStakeButton() {
     try {
-      await Actions.waitForElement(this.stakePrimaryButton, 3000)
+      await Actions.waitForElement(this.stakePrimaryButton)
       await Actions.tapElementAtIndex(this.stakePrimaryButton, 0)
     } catch {
-      await Actions.waitForElement(this.stakeSecondaryButton, 3000)
+      await Actions.waitForElement(this.stakeSecondaryButton)
       await Actions.tapElementAtIndex(this.stakeSecondaryButton, 0)
     }
   }
 
   async tapStakeNow() {
-    await Actions.waitForElement(this.stakeNow, 5000)
+    await Actions.waitForElement(this.stakeNow)
     await Actions.tapElementAtIndex(this.stakeNow, 0)
   }
 
@@ -431,7 +431,7 @@ class StakePage {
   }
 
   async verifyHistoryTabItems() {
-    await Actions.waitForElement(this.stakeCardTitle, 10000)
+    await Actions.waitForElement(this.stakeCardTitle)
     await Assert.isVisible(this.amountStakedText)
     await Assert.isVisible(this.earnedRewardsText)
     await Assert.isVisible(this.endDateText)
@@ -444,7 +444,7 @@ class StakePage {
 
   async verifyActiveStakeDetails(stakeCardInfo: StakeCard) {
     // Verify the stake detail static text
-    await Actions.waitForElement(this.stakeDetailsTitle, 10000)
+    await Actions.waitForElement(this.stakeDetailsTitle)
     await Assert.isVisible(this.stakedAmountText)
     await Assert.isVisible(this.estimatedRewardsText)
     await Assert.isVisible(this.estimatedRewardsTooltip)
@@ -459,7 +459,7 @@ class StakePage {
 
   async verifyCompletedStakeDetails(stakeCardInfo: StakeCard) {
     // Verify the stake detail static text
-    await Actions.waitForElement(this.stakeDetailsTitle, 10000)
+    await Actions.waitForElement(this.stakeDetailsTitle)
     await Assert.isVisible(this.stakedAmountText)
     await Assert.isVisible(this.earnedRewardsText)
     await Assert.isVisible(this.transactionIdText)
@@ -475,7 +475,7 @@ class StakePage {
   }
 
   async verifyActiveTabItems() {
-    await Actions.waitForElement(this.stakeCardTitle, 10000)
+    await Actions.waitForElement(this.stakeCardTitle)
     await Assert.isVisible(this.stakedAmountText)
     await Assert.isVisible(this.estimatedRewardsText)
     await Assert.isVisible(this.estimatedRewardsTooltip)

@@ -188,7 +188,7 @@ class AccountManagePage {
   }
 
   async tapAddAccountButton() {
-    await Action.waitForElement(this.addAccountButton, 5000)
+    await Action.waitForElement(this.addAccountButton)
     await Action.tapElementAtIndex(this.addAccountButton, 0)
     await delay(1000)
   }
@@ -235,7 +235,7 @@ class AccountManagePage {
   }
 
   async tapSecondAccount() {
-    await Action.waitForElement(this.secondAccount, 10000, 0)
+    await Action.waitForElement(this.secondAccount)
     await Action.tapElementAtIndex(this.secondAccount, 0)
   }
 

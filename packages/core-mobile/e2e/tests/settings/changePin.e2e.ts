@@ -31,7 +31,7 @@ describe('Settings - Change Pin', () => {
     await commonElsPage.enterPin()
 
     // Update the biometrics
-    await actions.waitForElement(settingsPage.enterYourNewPinTitle, 5000)
+    await actions.waitForElement(settingsPage.enterYourNewPinTitle)
     await assertions.isVisible(settingsPage.unlockWithFaceId)
     await settingsPage.tapBiometrics()
     await actions.waitForElement(settingsPage.toggleBiometricsOff)

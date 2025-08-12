@@ -70,12 +70,12 @@ class SendPage {
   }
 
   async tapNextButton() {
-    await Actions.waitForElement(this.nextButton, 8000)
+    await Actions.waitForElement(this.nextButton)
     await Actions.tapElementAtIndex(this.nextButton, 0)
   }
 
   async waitForNextBtnEnabled() {
-    await Actions.waitForElement(this.nextButton, 8000)
+    await Actions.waitForElement(this.nextButton)
   }
 
   async tapSendField() {

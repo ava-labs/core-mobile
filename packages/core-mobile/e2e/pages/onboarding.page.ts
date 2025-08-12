@@ -242,7 +242,7 @@ class OnboardingPage {
   async enterWalletName(walletName: string) {
     await Action.waitForElement(this.nameWalletInput)
     await element(this.nameWalletInput).replaceText(walletName)
-    await Action.dismissKeyboard('text_input')
+    await Action.dismissKeyboard(onboardingLoc.nameWalletInput)
   }
 
   async verifyNameYourWalletPage() {
@@ -265,7 +265,7 @@ class OnboardingPage {
   }
 
   async tapLetsGo() {
-    await Action.waitForElement(this.letsgo, 10000)
+    await Action.waitForElement(this.letsgo)
     await Action.tap(this.letsgo)
   }
 

@@ -1,7 +1,5 @@
 import Actions from '../helpers/actions'
 import bottomTabsLoc from '../locators/bottomTabs.loc'
-import Assert from '../helpers/assertions'
-import commonElsPage from './commonEls.page'
 
 class BottomsTabsPage {
   get watchlistIcon() {
@@ -21,7 +19,7 @@ class BottomsTabsPage {
   }
 
   get portfolioTab() {
-    return by.id(bottomTabsLoc.portfolioTab)
+    return by.text(bottomTabsLoc.portfolioTab)
   }
 
   get trackTab() {
@@ -74,14 +72,6 @@ class BottomsTabsPage {
 
   async tapWatchlistTab() {
     await Actions.tapElementAtIndex(this.watchlistTtab, 1)
-  }
-
-  async verifyBottomTabs(gotItIsVisible = true) {
-    await commonElsPage.tapGotIt(gotItIsVisible)
-    await Actions.waitForElement(this.portfolioTab, 20000)
-    await Assert.isVisible(this.trackTab)
-    await Assert.isVisible(this.stakeTab)
-    await Assert.isVisible(this.browserTab)
   }
 }
 

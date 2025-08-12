@@ -52,7 +52,7 @@ class BurgerMenuPage {
   }
 
   async tapBurgerMenuButton() {
-    await Actions.waitForElement(this.burgerMenuButton, 10000)
+    await Actions.waitForElement(this.burgerMenuButton)
     await Actions.tapElementAtIndex(this.burgerMenuButton, 0)
   }
 

@@ -245,6 +245,10 @@ class Settings {
     return by.text(settings.disconnectAll)
   }
 
+  get manageAccountsTitle() {
+    return by.text(settings.manageAccountsTitle)
+  }
+
   async tapAdvanced() {
     await Actions.tapElementAtIndex(this.advanced, 0)
   }
@@ -367,7 +371,7 @@ class Settings {
   }
 
   async verifyShowRecoveryPhraseScreen() {
-    await Actions.waitForElement(this.showRecoveryPhraseTitle, 5000)
+    await Actions.waitForElement(this.showRecoveryPhraseTitle)
     await assertions.isVisible(this.showRecoveryPhraseDescription)
     await assertions.isVisible(this.showRecoveryPhraseWarning)
     await assertions.isVisible(commonElsPage.copyPhrase)
@@ -375,6 +379,7 @@ class Settings {
 
   async goSettings() {
     await Actions.tap(this.settingsBtn)
+    await delay(1000)
   }
 
   async switchToTestnet() {
@@ -427,9 +432,9 @@ class Settings {
 
   async tapManageAccountsBtn() {
     await Actions.waitForElement(this.settingsScrollView, 10000)
-    while (!(await Actions.isVisible(this.manageAccountsBtn, 0, 0))) {
+    while (!(await Actions.isVisible(this.manageAccountsBtn))) {
       await Actions.swipe(this.accountList, 'left', 'fast', 0.5)
-      await Actions.waitForElement(this.manageAccountsBtn, 1000)
+      await Actions.waitForElement(this.manageAccountsBtn)
     }
     await Actions.tap(this.manageAccountsBtn)
   }
@@ -439,16 +444,11 @@ class Settings {
   }
 
   async addAccount(accountNum = 2) {
-    while (
-      !(await Actions.isVisible(
-        by.id(`manage_accounts_list__Account ${accountNum}`),
-        0,
-        5000
-      ))
-    ) {
+    const ele = by.id(`manage_accounts_list__Account ${accountNum}`)
+    while (!(await Actions.isVisible(ele))) {
       await this.tapAddWalletBtn()
-      await Actions.waitForElement(this.createNewAccountBtn)
       await Actions.tap(this.createNewAccountBtn)
+      await Actions.tap(this.manageAccountsTitle)
     }
   }
 
@@ -520,17 +520,12 @@ class Settings {
 
     // Account name verification
     await Actions.waitForElement(commonElsPage.evm)
-    await commonElsPage.verifyAccountName(portfolioAccountName, 1)
-
-    // Wallet address section verification
-    await assertions.isVisible(commonElsPage.xpChain)
-    await assertions.isVisible(commonElsPage.bitcoin)
-    await assertions.isVisible(commonElsPage.solana)
+    await commonElsPage.verifyAccountName(portfolioAccountName)
   }
 
   async verifyAddressCopied(network: string) {
     await Actions.tap(by.id(commonElsLoc.copyBtn + network))
-    await assertions.isVisible(by.text(network + settings.addressCopied))
+    await Actions.waitForElement(by.text(network + settings.addressCopied))
   }
 
   async tapRenameAccount() {
@@ -558,7 +553,6 @@ class Settings {
   async switchAccount(name = settings.account) {
     await this.goSettings()
     await this.switchAccountByCarousel(name)
-    await commonElsPage.dismissBottomSheet()
   }
 
   async quickSwitchAccount(name = settings.account) {

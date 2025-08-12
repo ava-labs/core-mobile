@@ -81,7 +81,7 @@ class ConnectToSite {
   }
 
   async approveSignMessage(dapp: string) {
-    await Action.waitForElement(this.signMessage, 5000)
+    await Action.waitForElement(this.signMessage)
     await Assert.isVisible(
       by.text(`${dapp} requests you to sign the following message`)
     )
