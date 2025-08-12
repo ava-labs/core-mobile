@@ -1,12 +1,17 @@
+import { usePreventRemove } from '@react-navigation/native'
 import { LastTransactedNetworks } from 'common/components/LastTransactedNetworks'
-import { MigrateFavoriteIds } from 'new/common/components/MigrateFavoriteIds'
 import { Stack } from 'common/components/Stack'
 import { stackNavigatorScreenOptions } from 'common/consts/screenOptions'
 import { useModalScreenOptions } from 'common/hooks/useModalScreenOptions'
 import { BridgeProvider } from 'features/bridge/contexts/BridgeContext'
 import { CollectiblesProvider } from 'features/portfolio/collectibles/CollectiblesContext'
+import { MigrateFavoriteIds } from 'new/common/components/MigrateFavoriteIds'
 import { NavigationPresentationMode } from 'new/common/types'
 import React from 'react'
+import { BackHandler } from 'react-native'
+import { useSelector } from 'react-redux'
+import { selectWalletState } from 'store/app'
+import { WalletState } from 'store/app/types'
 
 const PolyfillCrypto = React.lazy(() => import('react-native-webview-crypto'))
 
@@ -20,6 +25,12 @@ export default function WalletLayout(): JSX.Element {
     formSheetScreensOptions,
     stackModalScreensOptions
   } = useModalScreenOptions()
+
+  const walletState = useSelector(selectWalletState)
+
+  usePreventRemove(walletState === WalletState.ACTIVE, () => {
+    BackHandler.exitApp()
+  })
 
   return (
     <BridgeProvider>

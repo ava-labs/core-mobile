@@ -1,14 +1,9 @@
-import {
-  useFocusEffect,
-  usePathname,
-  useRootNavigationState,
-  useRouter
-} from 'expo-router'
-import { useCallback, useEffect } from 'react'
+import { usePathname, useRootNavigationState, useRouter } from 'expo-router'
+import { useEffect } from 'react'
+import { InteractionManager } from 'react-native'
 import 'react-native-reanimated'
 import { useSelector } from 'react-redux'
 import { selectWalletState, WalletState } from 'store/app'
-import { BackHandler, InteractionManager } from 'react-native'
 
 export const NavigationRedirect = (): null => {
   const router = useRouter()
@@ -87,26 +82,6 @@ export const NavigationRedirect = (): null => {
       }
     })
   }, [walletState, router, isSignedIn, pathName, isNavigationReady])
-
-  useFocusEffect(
-    useCallback(() => {
-      const onBackPress = (): boolean => {
-        if (!router.canGoBack()) {
-          BackHandler.exitApp()
-          return true
-        } else {
-          return false
-        }
-      }
-      const backHandler = BackHandler.addEventListener(
-        'hardwareBackPress',
-        onBackPress
-      )
-
-      return () => backHandler.remove()
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [])
-  )
 
   return null
 }
