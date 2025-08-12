@@ -258,11 +258,11 @@ __metadata:
     "@react-native/eslint-config": 0.79.5
     "@react-native/metro-config": 0.79.5
     "@react-native/typescript-config": 0.79.5
-    "@react-navigation/bottom-tabs": 7.2.1
+    "@react-navigation/bottom-tabs": 7.4.6
     "@react-navigation/drawer": 7.5.5
-    "@react-navigation/elements": 2.2.6
+    "@react-navigation/elements": 2.6.3
     "@react-navigation/native": 7.1.16
-    "@react-navigation/native-stack": 7.2.1
+    "@react-navigation/native-stack": 7.3.25
     "@react-navigation/stack": 7.1.2
     "@reduxjs/toolkit": 1.8.1
     "@reown/walletkit": 1.0.0
@@ -9738,19 +9738,19 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@react-navigation/bottom-tabs@npm:7.2.1":
-  version: 7.2.1
-  resolution: "@react-navigation/bottom-tabs@npm:7.2.1"
+"@react-navigation/bottom-tabs@npm:7.4.6":
+  version: 7.4.6
+  resolution: "@react-navigation/bottom-tabs@npm:7.4.6"
   dependencies:
-    "@react-navigation/elements": ^2.2.6
+    "@react-navigation/elements": ^2.6.3
     color: ^4.2.3
   peerDependencies:
-    "@react-navigation/native": ^7.0.15
+    "@react-navigation/native": ^7.1.17
     react: ">= 18.2.0"
     react-native: "*"
     react-native-safe-area-context: ">= 4.0.0"
     react-native-screens: ">= 4.0.0"
-  checksum: 4529a60dc41292c5979ff504389443d47b42915425cf837147bb6ed6f5652cef8e99b48ecd3a2b96027b24ea41d1550e08ffa0722d2c045c10bd7533b65e690d
+  checksum: 42f6bf8d043a227c2c5cca8e68fd7b6d3870bef269d415a09003fae210b8e53eab1f80fe013c401e2ccb48d360e3afb8cff72642e8c5f952f1aea433300a783c
   languageName: node
   linkType: hard
 
@@ -9807,7 +9807,27 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@react-navigation/elements@npm:2.2.6, @react-navigation/elements@npm:^2.2.6":
+"@react-navigation/elements@npm:2.6.3, @react-navigation/elements@npm:^2.6.3":
+  version: 2.6.3
+  resolution: "@react-navigation/elements@npm:2.6.3"
+  dependencies:
+    color: ^4.2.3
+    use-latest-callback: ^0.2.4
+    use-sync-external-store: ^1.5.0
+  peerDependencies:
+    "@react-native-masked-view/masked-view": ">= 0.2.0"
+    "@react-navigation/native": ^7.1.17
+    react: ">= 18.2.0"
+    react-native: "*"
+    react-native-safe-area-context: ">= 4.0.0"
+  peerDependenciesMeta:
+    "@react-native-masked-view/masked-view":
+      optional: true
+  checksum: e676f1dfed37eca5275d982e2a060ba224ae5c495b6204c6753b34d90b32227093a945ce11ed82c16001dadbcade49474047188c6df9533c61f88dd5dd038c3f
+  languageName: node
+  linkType: hard
+
+"@react-navigation/elements@npm:^2.2.6":
   version: 2.2.6
   resolution: "@react-navigation/elements@npm:2.2.6"
   dependencies:
@@ -9845,19 +9865,19 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@react-navigation/native-stack@npm:7.2.1":
-  version: 7.2.1
-  resolution: "@react-navigation/native-stack@npm:7.2.1"
+"@react-navigation/native-stack@npm:7.3.25":
+  version: 7.3.25
+  resolution: "@react-navigation/native-stack@npm:7.3.25"
   dependencies:
-    "@react-navigation/elements": ^2.2.6
+    "@react-navigation/elements": ^2.6.3
     warn-once: ^0.1.1
   peerDependencies:
-    "@react-navigation/native": ^7.0.15
+    "@react-navigation/native": ^7.1.17
     react: ">= 18.2.0"
     react-native: "*"
     react-native-safe-area-context: ">= 4.0.0"
     react-native-screens: ">= 4.0.0"
-  checksum: a7acbbd4c6f93bb40357c24e39a6da1fe69756f41b4377fffe126cc695ff1fbc0d519ece0e3793faecf689bdde16fbe754a860862b007e10c9638e4406a99248
+  checksum: d1fa49c524767e7aafb6ac189a59519f3251235964973e1cb7902798f02f28af674adcfd1ebec7495dfc2876e18727bf4af59647694bab07abf03bb798d78a59
   languageName: node
   linkType: hard
 
@@ -27830,7 +27850,7 @@ react-native-webview@ava-labs/react-native-webview:
   peerDependencies:
     react: "*"
     react-native: "*"
-  checksum: fbf6f420002cabeaf80eda574a5ebfa1e536fe6dfe822f136e7dfb24feaf874e5702fa31b405b5e601a95d48c343bd502f42274e3e1549c3daddc8721fc3fce6
+  checksum: 3e4689674406deb2ad9efa9f529597341b4ab33e379b7c7cd72aff8d5e37862fda1a37aba984951a67cc3938969be138bc3c4469e4963dd170b172148339e056
   languageName: node
   linkType: hard
 

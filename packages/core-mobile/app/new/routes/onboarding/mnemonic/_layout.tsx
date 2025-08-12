@@ -1,13 +1,13 @@
-import React, { useEffect, useMemo, useState } from 'react'
-import { Stack } from 'common/components/Stack'
 import { PageControl } from '@avalabs/k2-alpine'
+import { Stack } from 'common/components/Stack'
 import { stackNavigatorScreenOptions } from 'common/consts/screenOptions'
-import { useGlobalSearchParams, useNavigationContainerRef } from 'expo-router'
+import { getCurrentPageIndex } from 'common/utils/getCurrentPageIndex'
+import { useLocalSearchParams, usePathname } from 'expo-router'
+import React, { useMemo } from 'react'
 
 export default function MnemonicOnboardingLayout(): JSX.Element {
-  const { recovering } = useGlobalSearchParams<{ recovering: string }>()
-  const [currentPage, setCurrentPage] = useState(0)
-  const rootState = useNavigationContainerRef().getRootState()
+  const { recovering } = useLocalSearchParams<{ recovering: string }>()
+  const pathname = usePathname()
 
   const screens = useMemo(
     () =>
@@ -17,14 +17,7 @@ export default function MnemonicOnboardingLayout(): JSX.Element {
     [recovering]
   )
 
-  useEffect(() => {
-    const mnemonicOnboardingRoute = rootState.routes
-      .find(route => route.name === 'onboarding')
-      ?.state?.routes.find(route => route.name === 'mnemonic')
-    if (mnemonicOnboardingRoute?.state?.index !== undefined) {
-      setCurrentPage(mnemonicOnboardingRoute.state.index)
-    }
-  }, [rootState])
+  const currentPage = getCurrentPageIndex('mnemonic', screens, pathname)
 
   const renderPageControl = (): React.ReactNode => (
     <PageControl numberOfPage={screens.length} currentPage={currentPage} />
