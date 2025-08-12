@@ -1,15 +1,10 @@
-import {
-  useFocusEffect,
-  usePathname,
-  useRootNavigationState,
-  useRouter
-} from 'expo-router'
-import { useCallback, useEffect } from 'react'
+import { usePreventRemove } from '@react-navigation/native'
+import { usePathname, useRootNavigationState, useRouter } from 'expo-router'
+import { useEffect } from 'react'
+import { BackHandler, InteractionManager } from 'react-native'
 import 'react-native-reanimated'
 import { useSelector } from 'react-redux'
 import { selectWalletState, WalletState } from 'store/app'
-import { BackHandler, InteractionManager } from 'react-native'
-import { usePreventRemove } from '@react-navigation/native'
 
 export const NavigationRedirect = (): null => {
   const router = useRouter()
