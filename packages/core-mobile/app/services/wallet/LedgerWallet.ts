@@ -406,6 +406,7 @@ export class LedgerWallet implements Wallet {
     return JSON.stringify(sig.toJSON())
   }
 
+  // eslint-disable-next-line sonarjs/cognitive-complexity
   public async signEvmTransaction({
     accountIndex,
     transaction,
@@ -624,6 +625,7 @@ export class LedgerWallet implements Wallet {
 
       // First verify we can get the correct address
       const addressResult = await solanaApp.getAddress(derivationPath, false)
+      // Convert the Buffer to base58
       const userAddress = bs58.encode(new Uint8Array(addressResult.address))
       Logger.info('Got address from Ledger:', userAddress)
 
@@ -653,12 +655,14 @@ export class LedgerWallet implements Wallet {
       )
       Logger.info('Got signature from Ledger')
 
-      // Get the original signatures map and add our new signature
+      // Get the original signatures map to maintain correct types
       const { signatures } = compileSolanaTx(txMessage)
-      const signatureBytes = Uint8Array.from(signResult.signature)
       const signedTransaction = serializeSolanaTx({
         messageBytes,
-        signatures: { ...signatures, [userAddress]: signatureBytes }
+        signatures: {
+          ...signatures,
+          [userAddress]: Uint8Array.from(signResult.signature)
+        }
       })
 
       Logger.info('Successfully signed transaction')
