@@ -1,7 +1,6 @@
 import React, { useState, useCallback, useEffect } from 'react'
 import { Alert } from 'react-native'
 import { useRouter, useLocalSearchParams } from 'expo-router'
-import { useDispatch, useSelector } from 'react-redux'
 import {
   View,
   Text,
@@ -12,19 +11,8 @@ import {
   CircularProgress
 } from '@avalabs/k2-alpine'
 import { LoadingState } from 'new/common/components/LoadingState'
-import { LedgerService, LedgerAppType } from 'services/ledger/ledgerService'
-import { WalletType } from 'services/wallet/types'
-import { AppThunkDispatch } from 'store/types'
-import { storeWallet } from 'store/wallet/thunks'
-import { setActiveWallet } from 'store/wallet/slice'
-import { setAccount, setActiveAccount, selectAccounts } from 'store/account'
-import { Account } from 'store/account/types'
-import { CoreAccountType } from '@avalabs/types'
-import { showSnackbar } from 'new/common/utils/toast'
-import { uuid } from 'utils/uuid'
-import Logger from 'utils/Logger'
 import { ScrollScreen } from 'common/components/ScrollScreen'
-import bs58 from 'bs58'
+import { useLedgerWallet } from 'new/features/ledger/hooks/useLedgerWallet'
 
 export default function ConfirmAddresses() {
   const params = useLocalSearchParams<{
@@ -34,50 +22,116 @@ export default function ConfirmAddresses() {
   const [step, setStep] = useState<
     'connecting' | 'solana' | 'avalanche' | 'complete'
   >('connecting')
-  const [isLoading, setIsLoading] = useState(false)
-  const [solanaKeys, setSolanaKeys] = useState<any[]>([])
-  const [avalancheKeys, setAvalancheKeys] = useState<any>(null)
-  const [bitcoinAddress, setBitcoinAddress] = useState<string>('')
-  const [xpAddress, setXpAddress] = useState<string>('')
-  const [ledgerService] = useState(() => new LedgerService())
-  const dispatch = useDispatch<AppThunkDispatch>()
   const router = useRouter()
-  const allAccounts = useSelector(selectAccounts)
   const {
     theme: { colors }
   } = useTheme()
+  const {
+    isLoading,
+    keys: { solanaKeys, avalancheKeys, bitcoinAddress, xpAddress },
+    connectToDevice,
+    getSolanaKeys,
+    getAvalancheKeys,
+    createLedgerWallet
+  } = useLedgerWallet()
 
-  const getSolanaKeys = useCallback(async () => {
+  // Track key retrieval states
+  const [solanaKeyState, setSolanaKeyState] = useState<'pending' | 'success' | 'error'>('pending')
+  const [avalancheKeyState, setAvalancheKeyState] = useState<'pending' | 'success' | 'error'>('pending')
+
+  // Handle Solana key retrieval and app switching
+  const handleSolanaKeys = useCallback(async () => {
     try {
-      setIsLoading(true)
-      Logger.info('Getting Solana keys with passive app detection')
-
-      // Wait for Solana app to be open (passive detection)
-      await ledgerService.waitForApp(LedgerAppType.SOLANA)
-
-      // Get Solana keys
-      const keys = await ledgerService.getSolanaPublicKeys(0)
-      setSolanaKeys(keys)
-      Logger.info('Successfully got Solana keys', keys)
-
-      // Prompt for app switch while staying on Solana step
-      promptForAvalancheSwitch()
+      setSolanaKeyState('pending')
+      
+      // Add a small delay to ensure app is ready
+      await new Promise(resolve => setTimeout(resolve, 1000))
+      
+      try {
+        await getSolanaKeys()
+        setSolanaKeyState('success')
+        promptForAvalancheSwitch()
+      } catch (error) {
+        // Check if it's a specific Solana app error
+        if (error instanceof Error) {
+          if (error.message.includes('Solana app is not ready') || 
+              error.message.includes('Solana app is not open')) {
+            setSolanaKeyState('error')
+            Alert.alert(
+              'Solana App Required',
+              'Please open the Solana app on your Ledger device, then tap "I\'ve Switched" when ready.',
+              [
+                { text: 'Cancel', style: 'cancel' },
+                { 
+                  text: "I've Switched", 
+                  onPress: () => {
+                    setSolanaKeyState('pending')
+                    handleSolanaKeys()
+                  }
+                }
+              ]
+            )
+            return
+          }
+          
+          if (error.message.includes('Operation was rejected')) {
+            setSolanaKeyState('error')
+            Alert.alert(
+              'Operation Rejected',
+              'The operation was rejected on your Ledger device. Please try again.',
+              [
+                { text: 'Cancel', style: 'cancel' },
+                { 
+                  text: 'Retry', 
+                  onPress: () => {
+                    setSolanaKeyState('pending')
+                    handleSolanaKeys()
+                  }
+                }
+              ]
+            )
+            return
+          }
+        }
+        
+        // For other errors, show a generic error message
+        setSolanaKeyState('error')
+        Alert.alert(
+          'Error',
+          'Failed to get Solana keys. Please ensure the Solana app is open and try again.',
+          [
+            { text: 'Cancel', style: 'cancel' },
+            { 
+              text: 'Retry', 
+              onPress: () => {
+                setSolanaKeyState('pending')
+                handleSolanaKeys()
+              }
+            }
+          ]
+        )
+      }
     } catch (error) {
-      Logger.error('Failed to get Solana keys', error)
+      setSolanaKeyState('error')
       Alert.alert(
-        'Solana App Required',
-        'Please open the Solana app on your Ledger device, then tap "I\'ve Switched" when ready.',
+        'Error',
+        'An unexpected error occurred. Please try again.',
         [
           { text: 'Cancel', style: 'cancel' },
-          { text: "I've Switched", onPress: getSolanaKeys }
+          { 
+            text: 'Retry', 
+            onPress: () => {
+              setSolanaKeyState('pending')
+              handleSolanaKeys()
+            }
+          }
         ]
       )
-    } finally {
-      setIsLoading(false)
     }
-  }, [ledgerService, promptForAvalancheSwitch])
+  }, [getSolanaKeys, promptForAvalancheSwitch])
 
-  const promptForAvalancheSwitch = useCallback(async () => {
+  // Prompt for Avalanche app switch
+  const promptForAvalancheSwitch = useCallback(() => {
     Alert.alert(
       'Switch to Avalanche App',
       'Please switch to the Avalanche app on your Ledger device, then tap "I\'ve Switched" to continue.',
@@ -87,242 +141,74 @@ export default function ConfirmAddresses() {
           text: "I've Switched",
           onPress: async () => {
             try {
-              setIsLoading(true)
-              Logger.info('=== RECONNECTION STARTED ===')
-              Logger.info(
-                'User confirmed Avalanche app switch, reconnecting...'
-              )
-
-              // Force disconnect and reconnect to refresh the connection
-              Logger.info('Disconnecting...')
-              await ledgerService.disconnect()
-              Logger.info('Disconnected successfully')
-
-              Logger.info('Waiting 1 second...')
-              await new Promise(resolve => setTimeout(resolve, 1000)) // Wait 1 second
-
-              Logger.info('Reconnecting...')
-              await ledgerService.connect(params.deviceId!)
-              Logger.info('Reconnected successfully')
-
-              // Move to Avalanche step and get keys
               setStep('avalanche')
-              Logger.info('Calling getAvalancheKeys...')
+              setAvalancheKeyState('pending')
               await getAvalancheKeys()
-              Logger.info('=== RECONNECTION COMPLETED ===')
+              setAvalancheKeyState('success')
+              setStep('complete')
             } catch (error) {
-              Logger.error('Failed to reconnect for Avalanche:', error)
+              setAvalancheKeyState('error')
               Alert.alert(
-                'Reconnection Failed',
-                'Failed to reconnect to the device. Please try again.',
+                'Avalanche App Required',
+                'Please ensure the Avalanche app is open on your Ledger device, then tap "Retry".',
                 [
                   { text: 'Cancel', style: 'cancel' },
-                  { text: 'Retry', onPress: promptForAvalancheSwitch }
+                  { 
+                    text: 'Retry', 
+                    onPress: () => {
+                      setAvalancheKeyState('pending')
+                      promptForAvalancheSwitch()
+                    }
+                  }
                 ]
               )
-            } finally {
-              setIsLoading(false)
             }
           }
         }
       ]
     )
-  }, [ledgerService, params.deviceId, getAvalancheKeys])
+  }, [getAvalancheKeys])
 
-  const getAvalancheKeys = useCallback(async () => {
+  // Initial connection and setup
+  const handleInitialSetup = useCallback(async () => {
     try {
-      setIsLoading(true)
-      Logger.info('=== getAvalancheKeys STARTED ===')
-
-      // Get Avalanche addresses (getAllAddresses will handle app detection internally)
-      Logger.info('Calling getAllAddresses...')
-      const addresses = await ledgerService.getAllAddresses(0, 1)
-      Logger.info('Avalanche app detected successfully')
-      Logger.info('Successfully got Avalanche addresses:', addresses)
-
-      // Extract addresses from the response
-      const evmAddress = addresses.find(addr => addr.network === 'Avalanche C-Chain/EVM')?.address || ''
-      const xpAddress = addresses.find(addr => addr.network === 'Avalanche X-Chain')?.address || ''
-      const pvmAddress = addresses.find(addr => addr.network === 'Avalanche P-Chain')?.address || ''
-      const btcAddress = addresses.find(addr => addr.network === 'Bitcoin')?.address || ''
-
-      // Set the addresses
-      setAvalancheKeys({
-        evm: { key: evmAddress },
-        avalanche: { key: xpAddress },
-        pvm: { key: pvmAddress }
-      })
-      setBitcoinAddress(btcAddress)
-      setXpAddress(xpAddress)
-      
-      Logger.info('Successfully extracted addresses:', {
-        evm: evmAddress,
-        xp: xpAddress,
-        pvm: pvmAddress,
-        btc: btcAddress
-      })
-
-      // Successfully got all keys, move to complete step
-      Logger.info('Setting step to complete...')
-      setStep('complete')
-      Logger.info('Ledger setup completed successfully')
-    } catch (error) {
-      Logger.error('Failed to get Avalanche keys:', error)
-      Alert.alert(
-        'Avalanche App Required',
-        'Please ensure the Avalanche app is open on your Ledger device, then tap "Retry".',
-        [
-          { text: 'Cancel', style: 'cancel' },
-          { text: 'Retry', onPress: getAvalancheKeys }
-        ]
-      )
-    } finally {
-      setIsLoading(false)
-      Logger.info('=== getAvalancheKeys FINISHED ===')
-    }
-  }, [ledgerService])
-
-  const connectToDevice = useCallback(async () => {
-    try {
-      setIsLoading(true)
-      await ledgerService.connect(params.deviceId)
-      Logger.info('Connected to Ledger device')
+      await connectToDevice(params.deviceId)
       setStep('solana')
-      // Start with Solana keys (passive detection will handle app switching)
-      await getSolanaKeys()
+      await handleSolanaKeys()
     } catch (error) {
-      Logger.error('Failed to connect to device', error)
       Alert.alert(
         'Connection Failed',
         'Failed to connect to Ledger device. Please ensure your device is unlocked and try again.',
         [{ text: 'OK' }]
       )
-    } finally {
-      setIsLoading(false)
     }
-  }, [ledgerService, params.deviceId, getSolanaKeys])
+  }, [connectToDevice, params.deviceId, handleSolanaKeys])
 
-  const createLedgerWallet = useCallback(async () => {
+  // Handle wallet creation
+  const handleCreateWallet = useCallback(async () => {
     try {
-      setIsLoading(true)
-      Logger.info('Creating Ledger wallet with generated keys...')
-
-      if (!avalancheKeys || solanaKeys.length === 0 || !bitcoinAddress) {
-        throw new Error('Missing required keys for wallet creation')
+      const walletId = await createLedgerWallet({
+        deviceId: params.deviceId,
+        deviceName: params.deviceName || 'Ledger Device'
+      })
+      if (walletId) {
+        router.push('/accountSettings/manageAccounts')
       }
-
-      const newWalletId = uuid()
-
-      // Store the Ledger wallet
-      await dispatch(
-        storeWallet({
-          walletId: newWalletId,
-          walletSecret: JSON.stringify({
-            deviceId: params.deviceId,
-            deviceName: params.deviceName || 'Ledger Device',
-            derivationPath: "m/44'/60'/0'/0/0", // Standard EVM derivation path
-            vmType: 'EVM', // NetworkVMType.EVM
-            derivationPathSpec: 'BIP44', // Use BIP44 derivation
-            extendedPublicKeys: {
-              evm: avalancheKeys.evm.key,
-              avalanche: avalancheKeys.avalanche.key
-            },
-            publicKeys: [
-              {
-                key: avalancheKeys.evm.key,
-                derivationPath: "m/44'/60'/0'/0/0",
-                curve: 'secp256k1'
-              },
-              {
-                key: avalancheKeys.avalanche.key,
-                derivationPath: "m/44'/9000'/0'/0/0",
-                curve: 'secp256k1'
-              },
-              {
-                key: avalancheKeys.pvm?.key || avalancheKeys.avalanche.key,
-                derivationPath: "m/44'/9000'/0'/0/0", // P-Chain uses same path as AVM
-                curve: 'secp256k1'
-              },
-              {
-                key: solanaKeys[0]?.key || '',
-                derivationPath: "m/44'/501'/0'/0'",
-                curve: 'ed25519'
-              }
-            ],
-            avalancheKeys,
-            solanaKeys
-          }),
-          type: WalletType.LEDGER
-        })
-      ).unwrap()
-
-      dispatch(setActiveWallet(newWalletId))
-
-      // Create addresses from the keys
-      const addresses = {
-        EVM: avalancheKeys.evm.key,
-        AVM: avalancheKeys.avalanche.key,
-        PVM: avalancheKeys.pvm?.key || avalancheKeys.avalanche.key, // Use P-Chain address if available, fallback to AVM
-        BITCOIN: bitcoinAddress,
-        SVM: solanaKeys[0]?.key ? bs58.encode(new Uint8Array(Buffer.from(solanaKeys[0].key, 'hex'))) : '',
-        CoreEth: '' // Not implemented yet
-      }
-
-      const allAccountsCount = Object.keys(allAccounts).length
-
-      const newAccountId = uuid()
-      const newAccount: Account = {
-        id: newAccountId,
-        walletId: newWalletId,
-        name: `Account ${allAccountsCount + 1}`,
-        type: CoreAccountType.PRIMARY,
-        index: 0,
-        addressC: addresses.EVM,
-        addressBTC: addresses.BITCOIN,
-        addressAVM: addresses.AVM,
-        addressPVM: addresses.PVM,
-        addressSVM: addresses.SVM,
-        addressCoreEth: addresses.CoreEth
-      }
-
-      dispatch(setAccount(newAccount))
-      dispatch(setActiveAccount(newAccountId))
-
-      Logger.info('Ledger wallet created successfully:', newWalletId)
-      showSnackbar('Ledger wallet created successfully!')
-
-      // Navigate to manage accounts
-      router.push('/accountSettings/manageAccounts' as any)
     } catch (error) {
-      Logger.error('Failed to create Ledger wallet:', error)
-      showSnackbar(
-        `Failed to create wallet: ${
-          error instanceof Error ? error.message : 'Unknown error'
-        }`
+      Alert.alert(
+        'Wallet Creation Failed',
+        error instanceof Error ? error.message : 'Unknown error'
       )
-    } finally {
-      setIsLoading(false)
     }
-  }, [
-    avalancheKeys,
-    solanaKeys,
-    bitcoinAddress,
-    dispatch,
-    params.deviceId,
-    params.deviceName,
-    allAccounts,
-    router
-  ])
+  }, [createLedgerWallet, params.deviceId, params.deviceName, router])
 
   useEffect(() => {
     if (params.deviceId) {
-      connectToDevice()
+      handleInitialSetup()
     } else {
-      Logger.error('No deviceId provided in params')
       Alert.alert('Error', 'No device ID provided')
     }
-  }, [connectToDevice, params.deviceId])
-
+  }, [handleInitialSetup, params.deviceId])
 
 
   const renderStepTitle = () => {
@@ -375,12 +261,20 @@ export default function ConfirmAddresses() {
               <View sx={{ alignItems: 'center', padding: 20 }}>
                 {isLoading ? (
                   <LoadingState />
-                ) : (
+                ) : solanaKeyState === 'error' ? (
+                  <Icons.Action.Close
+                    width={48}
+                    height={48}
+                    color={colors.$textDanger}
+                  />
+                ) : solanaKeyState === 'success' ? (
                   <Icons.Action.CheckCircleOutline
                     width={48}
                     height={48}
                     color={colors.$textSuccess}
                   />
+                ) : (
+                  <LoadingState />
                 )}
                 <Text
                   variant="heading6"
@@ -389,7 +283,13 @@ export default function ConfirmAddresses() {
                     textAlign: 'center',
                     color: '$textPrimary'
                   }}>
-                  {isLoading ? 'Getting Solana Keys...' : 'Solana Keys Retrieved'}
+                  {isLoading 
+                    ? 'Getting Solana Keys...' 
+                    : solanaKeyState === 'error'
+                    ? 'Solana Keys Failed'
+                    : solanaKeyState === 'success'
+                    ? 'Solana Keys Retrieved'
+                    : 'Waiting for Solana App...'}
                 </Text>
                 <Text
                   variant="body2"
@@ -400,7 +300,11 @@ export default function ConfirmAddresses() {
                   }}>
                   {isLoading
                     ? 'Please open the Solana app on your Ledger device'
-                    : 'Successfully retrieved Solana public keys'}
+                    : solanaKeyState === 'error'
+                    ? 'Failed to retrieve Solana keys. Please try again.'
+                    : solanaKeyState === 'success'
+                    ? 'Successfully retrieved Solana public keys'
+                    : 'Please open the Solana app on your Ledger device'}
                 </Text>
               </View>
             </Card>
@@ -414,12 +318,20 @@ export default function ConfirmAddresses() {
               <View sx={{ alignItems: 'center', padding: 20 }}>
                 {isLoading ? (
                   <LoadingState />
-                ) : (
+                ) : avalancheKeyState === 'error' ? (
+                  <Icons.Action.Close
+                    width={48}
+                    height={48}
+                    color={colors.$textDanger}
+                  />
+                ) : avalancheKeyState === 'success' ? (
                   <Icons.Action.CheckCircleOutline
                     width={48}
                     height={48}
                     color={colors.$textSuccess}
                   />
+                ) : (
+                  <LoadingState />
                 )}
                 <Text
                   variant="heading6"
@@ -428,7 +340,13 @@ export default function ConfirmAddresses() {
                     textAlign: 'center',
                     color: '$textPrimary'
                   }}>
-                  {isLoading ? 'Getting Avalanche Keys...' : 'Avalanche Keys Retrieved'}
+                  {isLoading 
+                    ? 'Getting Avalanche Keys...' 
+                    : avalancheKeyState === 'error'
+                    ? 'Avalanche Keys Failed'
+                    : avalancheKeyState === 'success'
+                    ? 'Avalanche Keys Retrieved'
+                    : 'Waiting for Avalanche App...'}
                 </Text>
                 <Text
                   variant="body2"
@@ -439,7 +357,11 @@ export default function ConfirmAddresses() {
                   }}>
                   {isLoading
                     ? 'Please open the Avalanche app on your Ledger device'
-                    : 'Successfully retrieved Avalanche public keys'}
+                    : avalancheKeyState === 'error'
+                    ? 'Failed to retrieve Avalanche keys. Please try again.'
+                    : avalancheKeyState === 'success'
+                    ? 'Successfully retrieved Avalanche public keys'
+                    : 'Please open the Avalanche app on your Ledger device'}
                 </Text>
               </View>
             </Card>
@@ -560,7 +482,7 @@ export default function ConfirmAddresses() {
             <Button
               type="primary"
               size="large"
-              onPress={createLedgerWallet}
+              onPress={handleCreateWallet}
               disabled={isLoading}>
               {isLoading ? 'Creating Wallet...' : 'Create Ledger Wallet'}
             </Button>
