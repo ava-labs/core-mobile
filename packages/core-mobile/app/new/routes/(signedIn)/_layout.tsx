@@ -7,6 +7,10 @@ import { BridgeProvider } from 'features/bridge/contexts/BridgeContext'
 import { CollectiblesProvider } from 'features/portfolio/collectibles/CollectiblesContext'
 import { NavigationPresentationMode } from 'new/common/types'
 import React from 'react'
+import { usePreventRemove } from '@react-navigation/native'
+import { WalletState } from 'store/app/types'
+import { useSelector } from 'react-redux'
+import { selectWalletState } from 'store/app'
 
 const PolyfillCrypto = React.lazy(() => import('react-native-webview-crypto'))
 
@@ -20,6 +24,12 @@ export default function WalletLayout(): JSX.Element {
     formSheetScreensOptions,
     stackModalScreensOptions
   } = useModalScreenOptions()
+
+  const walletState = useSelector(selectWalletState)
+
+  usePreventRemove(walletState !== WalletState.NONEXISTENT, () => {
+    // don't allow going back if wallet exists
+  })
 
   return (
     <BridgeProvider>
