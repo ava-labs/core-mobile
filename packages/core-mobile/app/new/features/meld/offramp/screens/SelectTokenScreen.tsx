@@ -2,6 +2,7 @@ import React, { useCallback } from 'react'
 import { useRouter } from 'expo-router'
 import { SelectToken } from 'features/meld/components/SelectToken'
 import { useWithdraw } from 'features/meld/hooks/useWithdraw'
+import { ServiceProviderCategories } from 'features/meld/consts'
 
 export const SelectTokenScreen = (): React.JSX.Element => {
   const { navigate } = useRouter()
@@ -18,6 +19,7 @@ export const SelectTokenScreen = (): React.JSX.Element => {
 
   return (
     <SelectToken
+      category={ServiceProviderCategories.CRYPTO_OFFRAMP}
       title={`What token do\nyou want to withdraw?`}
       isLoadingCryptoCurrencies={isLoadingCryptoCurrencies}
       onSelectOtherToken={selectOtherToken}
