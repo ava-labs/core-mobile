@@ -9,6 +9,7 @@ import 'react-native-reanimated'
 import { useSelector } from 'react-redux'
 import { selectWalletState, WalletState } from 'store/app'
 import { BackHandler, InteractionManager } from 'react-native'
+import { usePreventRemove } from '@react-navigation/native'
 
 export const NavigationRedirect = (): null => {
   const router = useRouter()
@@ -22,6 +23,12 @@ export const NavigationRedirect = (): null => {
 
   const isNavigationReady = Boolean(navigationState?.key)
   // Additional check for Expo Router - ensure segments are loaded
+
+  // On Android, closing the signed-in stack should exit the app,
+  // even if there is a back stack (e.g., onboarding/confirmation → portfolio)
+  usePreventRemove(walletState === WalletState.ACTIVE, () => {
+    BackHandler.exitApp()
+  })
 
   // please be careful with the dependencies here
   // this effect is responsible for redirecting users
@@ -87,26 +94,6 @@ export const NavigationRedirect = (): null => {
       }
     })
   }, [walletState, router, isSignedIn, pathName, isNavigationReady])
-
-  useFocusEffect(
-    useCallback(() => {
-      const onBackPress = (): boolean => {
-        if (!router.canGoBack()) {
-          BackHandler.exitApp()
-          return true
-        } else {
-          return false
-        }
-      }
-      const backHandler = BackHandler.addEventListener(
-        'hardwareBackPress',
-        onBackPress
-      )
-
-      return () => backHandler.remove()
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [])
-  )
 
   return null
 }
