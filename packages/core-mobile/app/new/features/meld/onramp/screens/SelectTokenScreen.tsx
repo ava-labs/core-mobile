@@ -1,6 +1,7 @@
 import React, { useCallback } from 'react'
 import { useRouter } from 'expo-router'
 import { SelectToken } from 'features/meld/components/SelectToken'
+import { ServiceProviderCategories } from 'features/meld/consts'
 import { useBuy } from '../../hooks/useBuy'
 
 export const SelectTokenScreen = (): React.JSX.Element => {
@@ -18,6 +19,7 @@ export const SelectTokenScreen = (): React.JSX.Element => {
 
   return (
     <SelectToken
+      category={ServiceProviderCategories.CRYPTO_ONRAMP}
       title={`What token do\nyou want to buy?`}
       isLoadingCryptoCurrencies={isLoadingCryptoCurrencies}
       onSelectOtherToken={selectOtherToken}

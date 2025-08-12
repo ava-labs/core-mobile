@@ -17,7 +17,6 @@ import { selectSelectedCurrency } from 'store/settings/currency'
 import { useSelector } from 'react-redux'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import useInAppBrowser from 'common/hooks/useInAppBrowser'
-import { SubTextNumber } from 'common/components/SubTextNumber'
 import { useSelectAmount } from '../hooks/useSelectAmount'
 import { ServiceProviderCategories } from '../consts'
 import { useOfframpActivityIndicator, useOfframpSessionId } from '../store'
@@ -195,7 +194,7 @@ export const SelectAmount = ({
       )
     }
 
-    if (tokenBalance && token?.tokenWithBalance.symbol) {
+    if (tokenBalance) {
       return (
         <View
           sx={{
@@ -211,20 +210,8 @@ export const SelectAmount = ({
               fontWeight: 500,
               color: colors.$textPrimary
             }}>
-            {'Balance: '}
-          </Text>
-          <SubTextNumber
-            number={Number(tokenBalance.toDisplay({ asNumber: true }))}
-            textColor={colors.$textPrimary}
-            textVariant="caption"
-          />
-          <Text
-            variant="caption"
-            sx={{
-              fontWeight: 500,
-              color: colors.$textPrimary
-            }}>
-            {' ' + token.tokenWithBalance.symbol}
+            Balance: {token?.tokenWithBalance.balanceCurrencyDisplayValue ?? 0}{' '}
+            {selectedCurrency}
           </Text>
         </View>
       )
@@ -234,8 +221,9 @@ export const SelectAmount = ({
     colors.$textPrimary,
     errorMessage,
     createSessionWidgetErrorMessage,
-    token?.tokenWithBalance.symbol,
-    tokenBalance
+    token?.tokenWithBalance.balanceCurrencyDisplayValue,
+    tokenBalance,
+    selectedCurrency
   ])
 
   const renderPayWith = useCallback(() => {
