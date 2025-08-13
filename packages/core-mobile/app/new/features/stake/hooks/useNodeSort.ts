@@ -1,23 +1,33 @@
-import { IndexPath } from '@avalabs/k2-alpine'
 import { DropdownSelection } from 'common/types'
 import { advancedFilterDropDownItems } from 'consts/earn'
 import { useState, useMemo } from 'react'
+import { AdvancedSortFilter } from 'types/earn'
 
 export const useNodeSort = (): DropdownSelection => {
-  const [selectedIndexPath, setSelectedIndexPath] = useState<IndexPath>({
-    section: 0,
-    row: 0
-  })
+  const [selectedSort, setSelectedSort] = useState<AdvancedSortFilter>(
+    AdvancedSortFilter.UpTimeHighToLow
+  )
 
   const data = useMemo(
-    () => [advancedFilterDropDownItems.map(item => item.key)],
-    []
+    () => [
+      {
+        key: 'node-sort-filters',
+        items: advancedFilterDropDownItems.map(f => ({
+          id: f.key,
+          title: f.key,
+          selected: f.key === selectedSort
+        }))
+      }
+    ],
+    [selectedSort]
   )
 
   return {
     title: 'Sort',
     data,
-    selected: selectedIndexPath,
-    onSelected: setSelectedIndexPath
+    selected: selectedSort,
+    onSelected: (value: string) => {
+      setSelectedSort(value as AdvancedSortFilter)
+    }
   }
 }
