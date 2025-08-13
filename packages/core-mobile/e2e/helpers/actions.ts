@@ -15,9 +15,9 @@ const balanceToNumber = async (balance: Detox.NativeMatcher, index = 0) => {
   return parseFloat(await availableBalance.text.match(/[\d.]+/)[0])
 }
 
-const tap = async (item: Detox.NativeMatcher, disableSync = false) => {
+const tap = async (item: Detox.NativeMatcher, enableSync = false) => {
   await waitForElement(item)
-  if (disableSync) {
+  if (enableSync) {
     // some tests are not working with the desync mode, so we need to enable it
     await device.enableSynchronization()
   }
@@ -243,7 +243,7 @@ const isVisible = async (
     await waitForElement(item, timeout, index)
     return true
   } catch (e) {
-    console.log('Element is not vsssisible ' + e)
+    console.log('Element is not visible ' + e)
     return false
   }
 }

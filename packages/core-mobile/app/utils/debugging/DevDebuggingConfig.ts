@@ -5,11 +5,11 @@
 const DevDebuggingConfig = {
   WDYR: false,
   STORYBOOK_ENABLED: false,
-  LOGBOX_DISABLED: true,
+  LOGBOX_DISABLED: false,
   SHOW_DEMO_NFTS: false,
   API_MOCKING: false,
   SENTRY_SPOTLIGHT: false,
-  METRO_DEV_MENU: true
+  METRO_DEV_MENU: false
 }
 
 export default DevDebuggingConfig

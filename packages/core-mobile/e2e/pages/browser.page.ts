@@ -137,7 +137,7 @@ class BrowserPage {
         ? WebScripts.CLICK_WCM_IOS_MODAL
         : WebScripts.CLICK_WCM_ANDROID_MODAL
 
-    // await device.disableSynchronization()
+    await device.disableSynchronization()
     await Wbs.waitAndRunScript('wcm-modal', clickModal)
     await delay(1000)
     const output = await Wbs.getElementTextByRunScript(
