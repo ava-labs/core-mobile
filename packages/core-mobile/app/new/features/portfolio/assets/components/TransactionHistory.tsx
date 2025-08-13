@@ -91,10 +91,13 @@ const TransactionHistory: FC<Props> = ({
 
   const filters: TokenDetailFilters | undefined = useMemo(() => {
     if (token?.networkChainId) {
-      const newFilters = [...(TOKEN_DETAIL_FILTERS[0] ?? [])]
+      const newFilters = [...(TOKEN_DETAIL_FILTERS[0]?.items ?? [])]
       // Stake filter is only available for P-Chain
       if (isPChain(token?.networkChainId)) {
-        newFilters.push(TokenDetailFilter.Stake)
+        newFilters.push({
+          id: TokenDetailFilter.Stake,
+          title: TokenDetailFilter.Stake
+        })
       }
 
       // Only Avalanche C-Chain and Ethereum are supported for NFTs
@@ -105,9 +108,17 @@ const TransactionHistory: FC<Props> = ({
           token?.symbol ?? ''
         )
       ) {
-        newFilters.push(TokenDetailFilter.NFT)
+        newFilters.push({
+          id: TokenDetailFilter.NFT,
+          title: TokenDetailFilter.NFT
+        })
       }
-      return [newFilters]
+      return [
+        {
+          key: 'token-detail-filters',
+          items: newFilters
+        }
+      ]
     }
   }, [token?.networkChainId, token?.symbol])
 
