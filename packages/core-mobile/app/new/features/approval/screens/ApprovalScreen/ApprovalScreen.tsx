@@ -111,7 +111,7 @@ const ApprovalScreen = ({
   const rejectAndClose = useCallback(
     (message?: string) => {
       onReject(message)
-      router.canGoBack() && router.back()
+      router.canDismiss() && router.dismiss()
     },
     [onReject]
   )
@@ -138,7 +138,6 @@ const ApprovalScreen = ({
         maxPriorityFeePerGas,
         overrideData: hashedCustomSpend
       })
-      router.canDismiss() && router.dismissAll()
     } catch (error: unknown) {
       Logger.error('Error approving transaction', error)
     } finally {

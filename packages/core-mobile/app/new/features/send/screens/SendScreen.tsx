@@ -1,13 +1,4 @@
-import React, { useCallback } from 'react'
-import { useRouter } from 'expo-router'
-import AnalyticsService from 'services/analytics/AnalyticsService'
-import { audioFeedback, Audios } from 'utils/AudioFeedback'
-import { isUserRejectedError } from 'store/rpc/providers/walletConnect/utils'
-import { transactionSnackbar } from 'common/utils/toast'
-import { getJsonRpcErrorMessage } from 'utils/getJsonRpcErrorMessage/getJsonRpcErrorMessage'
-import { useDispatch, useSelector } from 'react-redux'
-import { selectActiveAccount } from 'store/account'
-import { View, ActivityIndicator } from '@avalabs/k2-alpine'
+import { ActivityIndicator, View } from '@avalabs/k2-alpine'
 import {
   NetworkTokenWithBalance,
   NetworkVMType,
@@ -17,21 +8,30 @@ import {
   TokenWithBalanceSVM
 } from '@avalabs/vm-module-types'
 import { ErrorState } from 'common/components/ErrorState'
-import { useNavigation } from '@react-navigation/native'
+import { transactionSnackbar } from 'common/utils/toast'
+import { useNavigation, useRouter } from 'expo-router'
+import React, { useCallback } from 'react'
+import { InteractionManager } from 'react-native'
+import { useDispatch, useSelector } from 'react-redux'
+import AnalyticsService from 'services/analytics/AnalyticsService'
+import { selectActiveAccount } from 'store/account'
 import { addRecentContact } from 'store/addressBook'
-import { useSendContext } from '../context/sendContext'
+import { isUserRejectedError } from 'store/rpc/providers/walletConnect/utils'
+import { audioFeedback, Audios } from 'utils/AudioFeedback'
+import { getJsonRpcErrorMessage } from 'utils/getJsonRpcErrorMessage/getJsonRpcErrorMessage'
 import { SendAVM } from '../components/SendAVM'
-import { SendPVM } from '../components/SendPVM'
 import { SendBTC } from '../components/SendBTC'
 import { SendEVM } from '../components/SendEVM'
+import { SendPVM } from '../components/SendPVM'
+import { SendSVM } from '../components/SendSVM'
+import { useSendContext } from '../context/sendContext'
 import { useNativeTokenWithBalanceByNetwork } from '../hooks/useNativeTokenWithBalanceByNetwork'
 import { useSendSelectedToken } from '../store'
-import { SendSVM } from '../components/SendSVM'
 
 export const SendScreen = (): JSX.Element => {
-  const { canGoBack, back } = useRouter()
   const dispatch = useDispatch()
   const { network, resetAmount, toAddress } = useSendContext()
+  const { canDismiss, dismiss } = useRouter()
   const nativeToken = useNativeTokenWithBalanceByNetwork(network)
   const activeAccount = useSelector(selectActiveAccount)
   const { getState } = useNavigation()
@@ -56,24 +56,29 @@ export const SendScreen = (): JSX.Element => {
           })
         )
 
-      canGoBack() && back()
-      // dismiss recent contacts modal
+      canDismiss() && dismiss()
       const navigationState = getState()
       if (
+        navigationState?.routes[navigationState?.index ?? 0]?.name === 'send' ||
         navigationState?.routes[navigationState?.index ?? 0]?.name ===
-        'recentContacts'
+          'recentContacts'
       ) {
-        canGoBack() && back()
+        canDismiss() && dismiss()
       }
-      // dismiss onboarding modal
-      const state = getState()
-      if (state?.routes[state?.index ?? 0]?.name === 'onboarding') {
-        canGoBack() && back()
-      }
+
+      InteractionManager.runAfterInteractions(() => {
+        const state = getState()
+        if (
+          state?.routes[state?.index ?? 0]?.name === 'recentContacts' ||
+          state?.routes[state?.index ?? 0]?.name === 'send'
+        ) {
+          canDismiss() && dismiss()
+        }
+      })
     },
     [
-      back,
-      canGoBack,
+      canDismiss,
+      dismiss,
       dispatch,
       getState,
       network,
