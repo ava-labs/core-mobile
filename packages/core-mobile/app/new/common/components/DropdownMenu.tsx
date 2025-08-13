@@ -66,7 +66,6 @@ export function DropdownMenu({
             value={selected ? 'on' : 'off'}
             onSelect={() => onPressAction({ nativeEvent: { event: id } })}
             key={id}>
-            <DropdownMenuItemIndicator />
             <DropdownMenuItemTitle>{title}</DropdownMenuItemTitle>
           </DropdownMenuCheckboxItem>
         )
@@ -119,12 +118,16 @@ export function DropdownMenu({
       </DropdownMenuTrigger>
 
       <Content key="dropdown-content">
-        {groups?.map((group, index) => (
-          <DropdownMenuGroup {...group} key={group.key || `group-${index}`}>
-            {group.items.map(renderItem)}
-            <DropdownMenuSeparator />
-          </DropdownMenuGroup>
-        ))}
+        {groups?.map(
+          (group, index) =>
+            group.items &&
+            group.items.length > 0 && (
+              <DropdownMenuGroup {...group} key={group.key || `group-${index}`}>
+                {group.items.map(renderItem)}
+                <DropdownMenuSeparator />
+              </DropdownMenuGroup>
+            )
+        )}
       </Content>
     </Root>
   )
@@ -183,13 +186,6 @@ const DropdownMenuCheckboxItem = create(
     </CheckboxItem>
   ),
   'CheckboxItem'
-)
-
-const DropdownMenuItemIndicator = create(
-  (props: React.ComponentProps<typeof ItemIndicator>) => (
-    <ItemIndicator {...props} />
-  ),
-  'ItemIndicator'
 )
 
 const DropdownMenuImage = create(

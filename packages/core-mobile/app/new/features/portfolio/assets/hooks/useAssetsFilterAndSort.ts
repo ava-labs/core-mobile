@@ -1,9 +1,9 @@
-import { IndexPath } from '@avalabs/k2-alpine'
 import { useCallback, useMemo, useState } from 'react'
 import {
   ASSET_BALANCE_SORTS,
   ASSET_MANAGE_VIEWS,
   AssetBalanceSort,
+  AssetManageView,
   AssetNetworkFilter,
   LocalTokenWithBalance
 } from 'store/balance'
@@ -41,30 +41,86 @@ export const useAssetsFilterAndSort = (): {
         chainId: undefined
       },
       ...enabledNetworksFilter
+      // {
+      //   filterName: '4234',
+      //   chainId: 4234
+      // },
+      // {
+      //   filterName: '423423',
+      //   chainId: 423423
+      // },
+      // {
+      //   filterName: '42334',
+      //   chainId: 4234
+      // },
+      // {
+      //   filterName: '4234233',
+      //   chainId: 423423
+      // },
+      // {
+      //   filterName: '42234',
+      //   chainId: 4234
+      // },
+      // {
+      //   filterName: '4232423',
+      //   chainId: 423423
+      // },
+      // {
+      //   filterName: '14232423',
+      //   chainId: 423423
+      // },
+      // {
+      //   filterName: '422232423',
+      //   chainId: 423423
+      // },
+      // {
+      //   filterName: '42223d2423',
+      //   chainId: 423423
+      // },
+      // {
+      //   filterName: '42223324232',
+      //   chainId: 423423
+      // },
+      // {
+      //   filterName: '422233244232',
+      //   chainId: 423423
+      // },
+      // {
+      //   filterName: '42223324df4232',
+      //   chainId: 423423
+      // },
+      // {
+      //   filterName: '4222332fd4df4232',
+      //   chainId: 423423
+      // },
+      // {
+      //   filterName: '4222332fdd4df4232',
+      //   chainId: 423423
+      // },
+      // {
+      //   filterName: '4222332fdad4df4232',
+      //   chainId: 423423
+      // },
     ]
   }, [enabledNetworks])
 
-  const [selectedFilter, setSelectedFilter] = useState<IndexPath>({
-    section: 0,
-    row: 0
-  })
-  const [selectedSort, setSelectedSort] = useState<IndexPath>({
-    section: 0,
-    row: 0
-  })
-  const [selectedView, setSelectedView] = useState<IndexPath>({
-    section: 0,
-    row: 1
-  })
+  const [selectedFilter, setSelectedFilter] = useState<AssetNetworkFilter>(
+    AssetNetworkFilter.AllNetworks
+  )
+  const [selectedSort, setSelectedSort] = useState<AssetBalanceSort>(
+    AssetBalanceSort.HighToLow
+  )
+  const [selectedView, setSelectedView] = useState<AssetManageView>(
+    AssetManageView.List
+  )
 
   const filterOption = useMemo(() => {
-    return [networkFilters]?.[selectedFilter.section]?.[selectedFilter.row]
-  }, [networkFilters, selectedFilter.row, selectedFilter.section])
+    return networkFilters.find(f => f.filterName === selectedFilter)
+  }, [networkFilters, selectedFilter])
 
   const sortOption = useMemo(() => {
-    return (
-      ASSET_BALANCE_SORTS?.[selectedSort.section]?.[selectedSort.row] ??
-      AssetBalanceSort.HighToLow
+    return ASSET_BALANCE_SORTS.flatMap(s => s.items).find(
+      s => s.id === selectedSort
     )
   }, [selectedSort])
 
@@ -87,7 +143,7 @@ export const useAssetsFilterAndSort = (): {
 
   const getSorted = useCallback(
     (filtered: LocalTokenWithBalance[]) => {
-      if (sortOption === AssetBalanceSort.LowToHigh) {
+      if (sortOption?.id === AssetBalanceSort.LowToHigh) {
         return filtered?.toSorted((a, b) =>
           sortUndefined(a.balanceInCurrency, b.balanceInCurrency)
         )
@@ -106,40 +162,79 @@ export const useAssetsFilterAndSort = (): {
     return getSorted(filtered)
   }, [getFiltered, getSorted])
 
+  const filterData = useMemo(
+    () => [
+      {
+        key: 'network-filters',
+        items: networkFilters.map(f => ({
+          id: f.filterName,
+          title: f.filterName,
+          selected: f.filterName === selectedFilter
+        }))
+      }
+    ],
+    [networkFilters, selectedFilter]
+  )
+
+  const sortData = useMemo(() => {
+    return ASSET_BALANCE_SORTS.map(s => {
+      return {
+        key: s.key,
+        items: s.items.map(i => ({
+          id: i.id,
+          title: i.id,
+          selected: i.id === selectedSort
+        }))
+      }
+    })
+  }, [selectedSort])
+
+  const viewData = useMemo(() => {
+    return ASSET_MANAGE_VIEWS.map(s => {
+      return {
+        key: s.key,
+        items: s.items.map(i => ({
+          id: i.id,
+          title: i.id,
+          selected: i.id === selectedView
+        }))
+      }
+    })
+  }, [selectedView])
+
   const filter = useMemo(
     () => ({
       title: 'Filter',
-      data: [networkFilters.map(f => f.filterName)],
+      data: filterData,
       selected: selectedFilter,
-      onSelected: setSelectedFilter,
-      scrollContentMaxHeight: 250
+      onSelected: (value: string) =>
+        setSelectedFilter(value as AssetNetworkFilter)
     }),
-    [networkFilters, selectedFilter]
+    [filterData, selectedFilter]
   )
 
   const sort = useMemo(
     () => ({
       title: 'Sort',
-      data: ASSET_BALANCE_SORTS,
+      data: sortData,
       selected: selectedSort,
-      onSelected: setSelectedSort,
-      useAnchorRect: true
+      onSelected: (value: string) => setSelectedSort(value as AssetBalanceSort)
     }),
-    [selectedSort, setSelectedSort]
+    [sortData, selectedSort]
   )
 
   const view = useMemo(
     () => ({
       title: 'View',
-      data: ASSET_MANAGE_VIEWS,
+      data: viewData,
       selected: selectedView,
-      onSelected: setSelectedView
+      onSelected: (value: string) => setSelectedView(value as AssetManageView)
     }),
-    [selectedView, setSelectedView]
+    [viewData, selectedView]
   )
 
   const onResetFilter = useCallback((): void => {
-    setSelectedFilter({ section: 0, row: 0 })
+    setSelectedFilter(AssetNetworkFilter.AllNetworks)
   }, [])
 
   return useMemo(
