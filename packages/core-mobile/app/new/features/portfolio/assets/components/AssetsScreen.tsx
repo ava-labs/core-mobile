@@ -164,7 +164,10 @@ const AssetsScreen: FC<Props> = ({
     }
 
     // if the filter is the default filter, this error state does not apply
-    if (filter.selected !== AssetNetworkFilter.AllNetworks && hasNoAssets) {
+    if (
+      filter.selected !== AssetNetworkFilter.AllNetworks &&
+      data.length === 0
+    ) {
       return (
         <ErrorState
           title="No assets found"
@@ -179,11 +182,12 @@ const AssetsScreen: FC<Props> = ({
   }, [
     isLoadingBalance,
     isBalanceLoaded,
+    isBalancePolling,
     isAllBalancesError,
     isAllBalancesInaccurate,
-    hasNoAssets,
     filter.selected,
-    isBalancePolling,
+    hasNoAssets,
+    data.length,
     refetch,
     goToBuy,
     onResetFilter
