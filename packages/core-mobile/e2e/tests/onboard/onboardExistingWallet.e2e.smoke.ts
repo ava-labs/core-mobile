@@ -7,7 +7,6 @@ import commonElsPage from '../../pages/commonEls.page'
 import onboardingPage from '../../pages/onboarding.page'
 import actions from '../../helpers/actions'
 import onboardingLoc from '../../locators/onboarding.loc'
-import { ENV } from '../../helpers/getEnvs'
 
 describe('Onboarding', () => {
   beforeAll(async () => {
@@ -35,7 +34,7 @@ describe('Onboarding', () => {
 
     // Verify `Enter your recovery phrase` page
     await onboardingPage.verifyEnterYourRecoveryPhrasePage()
-    await onboardingPage.enterRecoveryPhrase(ENV.E2E_MNEMONIC as string)
+    await onboardingPage.enterRecoveryPhrase(process.env.E2E_MNEMONIC as string)
     await onboardingPage.tapImport()
 
     // Verify Enter PIN pages

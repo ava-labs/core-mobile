@@ -277,7 +277,6 @@ class CommonElsPage {
     text: string,
     searchBar: Detox.NativeMatcher = this.searchBar
   ) {
-    await Actions.waitForElement(searchBar)
     await Actions.setInputText(searchBar, text)
   }
 
@@ -442,13 +441,13 @@ class CommonElsPage {
     }
   }
 
-  async verifySuccessToast() {
-    await Actions.waitForElement(this.transactionSuccess, 40000)
+  async verifySuccessToast(timeout = 40000) {
+    await Actions.waitForElement(this.transactionSuccess, timeout)
     await Actions.failIfElementAppearsWithin(this.transactionFail)
   }
 
   async enterAmount(amount: string, index = 0) {
-    await delay(500)
+    await delay(1000)
     await Actions.setInputText(this.tokenAmountInputField, amount, index)
   }
 

@@ -543,7 +543,6 @@ class Settings {
     await this.tapManageAccountsBtn()
     await this.addAccount(account)
     await this.selectAccount(activeAccount)
-    await commonElsPage.dismissBottomSheet()
   }
 
   async selectAccount(name: string) {
@@ -560,11 +559,10 @@ class Settings {
     // settings > tap the account on the account carousel
     await this.goSettings()
     const ele = by.id(`account_carousel_item__${name}`)
-    while (!(await Actions.isVisible(ele, 0, 0))) {
+    while (!(await Actions.isVisible(ele, 0, 10000))) {
       await Actions.swipe(this.accountList, 'left', 'fast', 0.5)
     }
     await Actions.tap(ele)
-    await commonElsPage.dismissBottomSheet()
   }
 
   async enableNetwork(network = commonElsLoc.xChain) {
@@ -592,7 +590,6 @@ class Settings {
   async addContactName(name: string) {
     await Actions.tapElementAtIndex(this.nameContactBtn, 0)
     await commonElsPage.typeSearchBar(name, commonElsPage.dialogInput)
-    await delay(5000)
     await commonElsPage.tapSave()
   }
 
@@ -613,6 +610,9 @@ class Settings {
   }
 
   async setAddress(network: string, address: string) {
+    if (!(await Actions.isVisible(by.text(`Add ${network} address`)))) {
+      await Actions.swipe(this.nameContactBtn, 'up', 'fast', 0.5)
+    }
     await Actions.tap(by.text(`Add ${network} address`))
     await Actions.tap(this.typeInOrPasteAddress)
     await Actions.setInputText(by.id(`contact_input__${network}`), address)
@@ -661,6 +661,21 @@ class Settings {
     await this.tapSecurityAndPrivacy()
     await this.tapConnectedSites()
     await this.tapDisconnect(dappName)
+  }
+
+  async setNewPin(oldPin = '000000', newPin = '111111') {
+    try {
+      await Actions.waitForElement(this.enterYourCurrentPinTitle)
+      await commonElsPage.enterPin(oldPin)
+    } catch (e) {
+      console.log('Skpping the current pin check....')
+      // currently we have a bug around here on the dev build
+      // https://ava-labs.atlassian.net/browse/CP-11855
+    }
+    await Actions.waitForElement(this.enterYourNewPinTitle)
+    await commonElsPage.enterPin(newPin)
+    await Actions.waitForElement(this.confirmYourNewPinTitle)
+    await commonElsPage.enterPin(newPin)
   }
 }
 

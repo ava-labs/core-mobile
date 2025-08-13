@@ -84,6 +84,7 @@ class SendPage {
 
   async goToSelectTokenList() {
     await Actions.tap(this.sendSelectTokenListBtn)
+    await Actions.tapElementAtIndex(this.selectTokenTitle, 0)
   }
 
   async tapApproveButton() {

@@ -7,11 +7,15 @@ class BottomsTabsPage {
   }
 
   get activityTab() {
-    return by.id(bottomTabsLoc.activityTab)
+    return by
+      .text(bottomTabsLoc.activityTab)
+      .withAncestor(by.label(bottomTabsLoc.tabBar))
   }
 
-  get watchlistTtab() {
-    return by.id(bottomTabsLoc.watchlistTab)
+  get watchlistTab() {
+    return by
+      .text(bottomTabsLoc.watchlistTab)
+      .withAncestor(by.label(bottomTabsLoc.tabBar))
   }
 
   get plusIcon() {
@@ -19,27 +23,40 @@ class BottomsTabsPage {
   }
 
   get portfolioTab() {
-    return by.text(bottomTabsLoc.portfolioTab)
+    return by
+      .text(bottomTabsLoc.portfolioTab)
+      .withAncestor(by.label(bottomTabsLoc.tabBar))
   }
 
   get trackTab() {
-    return by.id(bottomTabsLoc.trackTab)
+    return by
+      .text(bottomTabsLoc.trackTab)
+      .withAncestor(by.label(bottomTabsLoc.tabBar))
   }
 
   get stakeTab() {
-    return by.id(bottomTabsLoc.stakeTab)
+    return by
+      .text(bottomTabsLoc.stakeTab)
+      .withAncestor(by.label(bottomTabsLoc.tabBar))
   }
 
   get browserTab() {
-    return by.id(bottomTabsLoc.browserTab)
+    return by
+      .text(bottomTabsLoc.browserTab)
+      .withAncestor(by.label(bottomTabsLoc.tabBar))
+  }
+
+  get activityTabTitle() {
+    return by.text(bottomTabsLoc.activityTab)
   }
 
   async tapBrowserTab() {
-    await Actions.tapElementAtIndex(this.browserTab, 0)
+    await Actions.tap(this.browserTab)
   }
 
   async tapActivityTab() {
-    await Actions.tapElementAtIndex(this.activityTab, 0)
+    await Actions.waitAndTap(this.activityTab)
+    await Actions.waitAndTap(this.activityTab)
   }
 
   async tapPlusIcon() {
@@ -63,15 +80,15 @@ class BottomsTabsPage {
   }
 
   async tapTrackTab() {
-    await Actions.tapElementAtIndex(this.trackTab, 0)
+    await Actions.tap(this.trackTab)
   }
 
   async tapStakeTab() {
-    await Actions.tapElementAtIndex(this.stakeTab, 0)
+    await Actions.tap(this.stakeTab)
   }
 
   async tapWatchlistTab() {
-    await Actions.tapElementAtIndex(this.watchlistTtab, 1)
+    await Actions.tap(this.watchlistTab)
   }
 }
 

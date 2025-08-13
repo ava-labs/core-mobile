@@ -3,7 +3,6 @@ import commonElsPage from '../pages/commonEls.page'
 import Actions from '../helpers/actions'
 import onboardingPage from '../pages/onboarding.page'
 import onboardingLoc from '../locators/onboarding.loc'
-import { ENV } from './getEnvs'
 
 class LoginRecoverWallet {
   async recoverMnemonicWallet(recoveryPhrase: string) {
@@ -43,10 +42,11 @@ class LoginRecoverWallet {
     }
   }
 
-  async login(recoverPhrase = ENV.E2E_MNEMONIC as string) {
+  async login(recoverPhrase?: string) {
+    const seed = recoverPhrase ?? (process.env.E2E_MNEMONIC as string)
     const isLoggedIn = await this.loggedIn()
     if (!isLoggedIn) {
-      await this.recoverMnemonicWallet(recoverPhrase)
+      await this.recoverMnemonicWallet(seed)
     }
   }
 }
