@@ -12,6 +12,7 @@ import { ScrollScreen } from 'common/components/ScrollScreen'
 import { useCreatePin } from 'features/onboarding/hooks/useCreatePin'
 import { InteractionManager } from 'react-native'
 import { useStoredBiometrics } from 'common/hooks/useStoredBiometrics'
+import { useBiometricName } from 'hooks/useBiometricName'
 
 export const CreatePin = ({
   useBiometrics,
@@ -33,7 +34,8 @@ export const CreatePin = ({
   isModal?: boolean
 }): React.JSX.Element => {
   const ref = useRef<PinInputActions>(null)
-  const { biometricType } = useStoredBiometrics()
+  const { biometricTypes } = useStoredBiometrics()
+  const biometricName = useBiometricName(biometricTypes)
   const {
     onEnterChosenPin,
     onEnterConfirmedPin,
@@ -72,7 +74,7 @@ export const CreatePin = ({
       <GroupList
         data={[
           {
-            title: `Unlock with ${biometricType}`,
+            title: `Unlock with ${biometricName}`,
             accessory: (
               <Toggle
                 onValueChange={setUseBiometrics}
@@ -88,7 +90,7 @@ export const CreatePin = ({
         ]}
       />
     )
-  }, [useBiometrics, setUseBiometrics, biometricType])
+  }, [useBiometrics, setUseBiometrics, biometricName])
 
   return (
     <ScrollScreen

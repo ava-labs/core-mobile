@@ -1,8 +1,7 @@
 import { useEffect, useState } from 'react'
-import { StorageKey } from 'resources/Constants'
 import Logger from 'utils/Logger'
-import { commonStorage } from 'utils/mmkv'
-import BiometricsSDK, { BiometricType } from 'utils/BiometricsSDK'
+import BiometricsSDK from 'utils/BiometricsSDK'
+import { AuthenticationType } from 'expo-local-authentication'
 
 export const useStoredBiometrics = (): {
   /** Whether biometric authentication is currently enabled by the user */
@@ -12,41 +11,33 @@ export const useStoredBiometrics = (): {
   /** Whether the device supports biometric authentication */
   isBiometricAvailable: boolean
   /** The type of biometric authentication available on the device (e.g. fingerprint, face) */
-  biometricType: BiometricType
+  biometricTypes: AuthenticationType[]
 } => {
-  const [isBiometricAvailable, setIsBiometricAvailable] = useState(false)
   const [useBiometrics, setUseBiometrics] = useState(true)
-  const [biometricType, setBiometricType] = useState<BiometricType>(
-    BiometricType.NONE
-  )
+  const [biometricTypes, setBiometricTypes] = useState<AuthenticationType[]>([])
 
   useEffect(() => {
-    const getBiometryType = async (): Promise<void> => {
-      const type = await BiometricsSDK.getBiometryType()
-      setBiometricType(type)
-    }
-    getBiometryType().catch(Logger.error)
-  }, [])
+    async function getBiometryTypes(): Promise<void> {
+      const authTypes = await BiometricsSDK.getAuthenticationTypes()
+      const canUseBiometry = authTypes.length > 0
 
-  useEffect(() => {
-    BiometricsSDK.canUseBiometry()
-      .then((canUseBiometry: boolean) => {
-        setIsBiometricAvailable(canUseBiometry)
-      })
-      .catch(Logger.error)
-
-    const type = commonStorage.getString(StorageKey.SECURE_ACCESS_SET)
-    if (type) {
-      setUseBiometrics(type === 'BIO')
-    } else {
-      Logger.error('Secure access type not found')
+      if (canUseBiometry) {
+        setBiometricTypes(authTypes)
+        const type = BiometricsSDK.getAccessType()
+        if (type) {
+          setUseBiometrics(type === 'BIO')
+        } else {
+          Logger.error('Secure access type not found')
+        }
+      }
     }
+    getBiometryTypes().catch(Logger.error)
   }, [])
 
   return {
     useBiometrics,
     setUseBiometrics,
-    isBiometricAvailable,
-    biometricType
+    isBiometricAvailable: biometricTypes.length > 0,
+    biometricTypes
   }
 }
