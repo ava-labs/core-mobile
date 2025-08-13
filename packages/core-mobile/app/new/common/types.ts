@@ -6,8 +6,6 @@ export type DropdownSelection = {
   data: DropdownGroup[]
   selected: string
   onSelected: (value: string) => void
-  onDeselect?: (value: string) => void
-  scrollContentMaxHeight?: number
 }
 
 export enum NavigationPresentationMode {
