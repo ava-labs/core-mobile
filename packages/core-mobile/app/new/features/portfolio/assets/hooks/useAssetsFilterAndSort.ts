@@ -41,66 +41,6 @@ export const useAssetsFilterAndSort = (): {
         chainId: undefined
       },
       ...enabledNetworksFilter
-      // {
-      //   filterName: '4234',
-      //   chainId: 4234
-      // },
-      // {
-      //   filterName: '423423',
-      //   chainId: 423423
-      // },
-      // {
-      //   filterName: '42334',
-      //   chainId: 4234
-      // },
-      // {
-      //   filterName: '4234233',
-      //   chainId: 423423
-      // },
-      // {
-      //   filterName: '42234',
-      //   chainId: 4234
-      // },
-      // {
-      //   filterName: '4232423',
-      //   chainId: 423423
-      // },
-      // {
-      //   filterName: '14232423',
-      //   chainId: 423423
-      // },
-      // {
-      //   filterName: '422232423',
-      //   chainId: 423423
-      // },
-      // {
-      //   filterName: '42223d2423',
-      //   chainId: 423423
-      // },
-      // {
-      //   filterName: '42223324232',
-      //   chainId: 423423
-      // },
-      // {
-      //   filterName: '422233244232',
-      //   chainId: 423423
-      // },
-      // {
-      //   filterName: '42223324df4232',
-      //   chainId: 423423
-      // },
-      // {
-      //   filterName: '4222332fd4df4232',
-      //   chainId: 423423
-      // },
-      // {
-      //   filterName: '4222332fdd4df4232',
-      //   chainId: 423423
-      // },
-      // {
-      //   filterName: '4222332fdad4df4232',
-      //   chainId: 423423
-      // },
     ]
   }, [enabledNetworks])
 
@@ -117,12 +57,6 @@ export const useAssetsFilterAndSort = (): {
   const filterOption = useMemo(() => {
     return networkFilters.find(f => f.filterName === selectedFilter)
   }, [networkFilters, selectedFilter])
-
-  const sortOption = useMemo(() => {
-    return ASSET_BALANCE_SORTS.flatMap(s => s.items).find(
-      s => s.id === selectedSort
-    )
-  }, [selectedSort])
 
   const getFiltered = useCallback(() => {
     if (filteredTokenList.length === 0) {
@@ -143,7 +77,7 @@ export const useAssetsFilterAndSort = (): {
 
   const getSorted = useCallback(
     (filtered: LocalTokenWithBalance[]) => {
-      if (sortOption?.id === AssetBalanceSort.LowToHigh) {
+      if (selectedSort === AssetBalanceSort.LowToHigh) {
         return filtered?.toSorted((a, b) =>
           sortUndefined(a.balanceInCurrency, b.balanceInCurrency)
         )
@@ -153,7 +87,7 @@ export const useAssetsFilterAndSort = (): {
         sortUndefined(b.balanceInCurrency, a.balanceInCurrency)
       )
     },
-    [sortOption]
+    [selectedSort]
   )
 
   const filteredAndSorted = useMemo(() => {

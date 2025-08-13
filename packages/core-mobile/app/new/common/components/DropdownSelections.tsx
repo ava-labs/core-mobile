@@ -80,12 +80,6 @@ const Dropdown = memo(
     rightIcon?: React.JSX.Element | 'expandMore'
     testID?: string
   }) => {
-    // const numberOfItems = data[0]?.length ?? 2
-
-    // const selectedRows = useMemo(() => {
-    //   return [selected]
-    // }, [selected])
-
     return (
       <DropdownMenu
         groups={data}

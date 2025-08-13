@@ -59,16 +59,43 @@ export function DropdownMenu({
         destructive: rest.destructive
       })
 
+      const platformCheckboxIcon = getPlatformIcons(
+        DropdownMenuIcon.Check,
+        theme?.isDark,
+        {
+          disabled: rest.disabled,
+          destructive: rest.destructive
+        }
+      )
+
       if (selected) {
-        return (
-          <DropdownMenuCheckboxItem
-            {...rest}
-            value={selected ? 'on' : 'off'}
-            onSelect={() => onPressAction({ nativeEvent: { event: id } })}
-            key={id}>
-            <DropdownMenuItemTitle>{title}</DropdownMenuItemTitle>
-          </DropdownMenuCheckboxItem>
-        )
+        return Platform.select({
+          ios: platformCheckboxIcon?.ios ? (
+            <DropdownMenuItem
+              {...rest}
+              key={id}
+              onSelect={() => onPressAction({ nativeEvent: { event: id } })}>
+              <DropdownMenuItemTitle
+                color={
+                  rest.destructive
+                    ? theme.colors?.$textDanger
+                    : theme.colors?.$textPrimary
+                }>
+                {title}
+              </DropdownMenuItemTitle>
+              <DropdownMenuImage source={platformCheckboxIcon.ios} />
+            </DropdownMenuItem>
+          ) : null,
+          android: (
+            <DropdownMenuCheckboxItem
+              {...rest}
+              value={selected}
+              onSelect={() => onPressAction({ nativeEvent: { event: id } })}
+              key={id}>
+              <DropdownMenuItemTitle>{title}</DropdownMenuItemTitle>
+            </DropdownMenuCheckboxItem>
+          )
+        })
       }
 
       return (

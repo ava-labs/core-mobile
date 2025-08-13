@@ -22,7 +22,6 @@ import {
   Platform,
   ViewStyle
 } from 'react-native'
-
 import { DropdownSelections } from 'common/components/DropdownSelections'
 import { LoadingState } from 'common/components/LoadingState'
 import { getListItemEnteringAnimation } from 'common/utils/animations'
@@ -143,7 +142,8 @@ export const CollectiblesScreen = ({
 
   const hasFilters =
     Array.isArray(filter.selected) &&
-    (filter.selected[0]?.row !== 0 || filter.selected[1]?.row !== 0)
+    (filter.selected[0] !== AssetNetworkFilter.AllNetworks ||
+      filter.selected[1] !== CollectibleTypeFilter.AllContents)
 
   const emptyComponent = useMemo((): JSX.Element | undefined => {
     if (isLoading || !isEnabled) return <LoadingState />

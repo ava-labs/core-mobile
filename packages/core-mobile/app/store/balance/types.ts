@@ -118,15 +118,11 @@ export const ASSET_MANAGE_VIEWS: DropdownGroup[] = [
       {
         id: AssetManageView.List,
         title: AssetManageView.List
-      },
-      {
-        id: AssetManageView.ManageList,
-        title: AssetManageView.ManageList
       }
     ]
   },
   {
-    key: 'manage-list',
+    key: 'asset-manage-list',
     items: [
       {
         id: AssetManageView.ManageList,
