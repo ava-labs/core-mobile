@@ -148,6 +148,9 @@ export enum CollectibleTypeFilter {
   Videos = 'Videos'
 }
 
+export type AssetNetworkFilterType = AssetNetworkFilter | CollectibleStatus
+export type CollectibleFilterType = CollectibleTypeFilter | CollectibleStatus
+
 export enum CollectibleSort {
   NameAToZ = 'Name A to Z',
   NameZToA = 'Name Z to A',
@@ -160,13 +163,6 @@ export enum CollectibleView {
   ListView = 'List view',
   ManageList = 'Manage list'
 }
-
-export type CollectibleSorts = CollectibleSort[][]
-export type CollectibleFilters = (
-  | (AssetNetworkFilter | CollectibleStatus)[]
-  | (CollectibleTypeFilter | CollectibleStatus)[]
-)[]
-export type CollectibleViews = CollectibleView[][]
 
 export const COLLECTIBLE_NETWORK_FILTERS = [
   AssetNetworkFilter.AllNetworks,
@@ -182,9 +178,21 @@ export const COLLECTIBLE_TYPE_FILTERS = [
   CollectibleStatus.Hidden
 ]
 
-export const COLLECTIBLE_FILTERS: CollectibleFilters = [
-  COLLECTIBLE_NETWORK_FILTERS,
-  COLLECTIBLE_TYPE_FILTERS
+export const COLLECTIBLE_FILTERS: DropdownGroup[] = [
+  {
+    key: 'collectible-network-filters',
+    items: COLLECTIBLE_NETWORK_FILTERS.map(f => ({
+      id: f,
+      title: f
+    }))
+  },
+  {
+    key: 'collectible-type-filters',
+    items: COLLECTIBLE_TYPE_FILTERS.map(f => ({
+      id: f,
+      title: f
+    }))
+  }
 ]
 
 export const COLLECTIBLE_SORTS: DropdownGroup[] = [
