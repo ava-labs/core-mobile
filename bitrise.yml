@@ -290,7 +290,7 @@ workflows:
         inputs:
         - scheme: $IOS_SCHEME
         - project_path: $IOS_PROJECT_PATH
-        - destination: platform=iOS\ Simulator,name=iPhone\ 16\ Pro,OS=18.5
+        - destination: "platform=iOS Simulator,name=iPhone 16 Pro,OS=18.5"
         - configuration: $IOS_CONFIGURATION
         - code_signing_allowed: "no"
         - log_formatter: xcodebuild
