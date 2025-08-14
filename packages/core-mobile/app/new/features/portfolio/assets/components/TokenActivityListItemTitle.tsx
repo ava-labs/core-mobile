@@ -157,7 +157,6 @@ export const TokenActivityListItemTitle = ({
 
   return (
     <View
-      testID={`tx__from_${tx.from.toLowerCase()}_to_${tx.to.toLowerCase()}`}
       style={{
         flexDirection: 'row',
         alignItems: 'baseline',

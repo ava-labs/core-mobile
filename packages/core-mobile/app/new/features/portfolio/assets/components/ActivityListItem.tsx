@@ -20,6 +20,7 @@ type Props = {
   subtitleType: 'amountInCurrency' | 'amountInToken' | 'text'
   timestamp?: number
   showSeparator: boolean
+  testID?: string
 }
 
 export const ACTIVITY_LIST_ITEM_HEIGHT = 60
@@ -33,7 +34,8 @@ const ActivityListItem: FC<Props> = ({
   status = PriceChangeStatus.Neutral,
   subtitleType,
   timestamp,
-  showSeparator = true
+  showSeparator = true,
+  testID
 }) => {
   const {
     theme: { colors }
@@ -64,8 +66,9 @@ const ActivityListItem: FC<Props> = ({
   }
 
   return (
-    <TouchableOpacity onPress={onPress} testID="activityListItem">
+    <TouchableOpacity onPress={onPress}>
       <View
+        testID={testID}
         style={{
           flexDirection: 'row',
           alignItems: 'center',

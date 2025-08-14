@@ -12,7 +12,7 @@ describe('NFT Error Messages', () => {
 
   it('should have NFT send warning', async () => {
     await PortfolioPage.tapCollectiblesTab()
-    await Actions.waitForElement(CollectiblesPage.gridItem, 5000)
+    await Actions.waitForElement(CollectiblesPage.gridItem)
     await CollectiblesPage.tapListSvg()
     await CollectiblesPage.tapInvalidNFT()
     await CollectiblesPage.tapSendButton()

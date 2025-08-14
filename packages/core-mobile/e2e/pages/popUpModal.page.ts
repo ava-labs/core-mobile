@@ -145,10 +145,10 @@ class PopUpModalPage {
 
   async tapRejectBtn() {
     try {
-      await actions.waitForElement(this.rejectBtn, 5000)
+      await actions.waitForElement(this.rejectBtn)
       await actions.tap(this.rejectBtn)
     } catch (e) {
-      await actions.waitForElement(this.rejectTextBtn, 5000)
+      await actions.waitForElement(this.rejectTextBtn)
       await actions.tap(this.rejectTextBtn)
     }
   }
@@ -212,7 +212,7 @@ class PopUpModalPage {
   }
 
   async verifyCreateContactModal() {
-    await actions.waitForElement(this.createContact, 8000)
+    await actions.waitForElement(this.createContact)
     await asserts.isVisible(this.approveBtn)
     await asserts.isVisible(this.rejectBtn)
     await asserts.isVisible(by.text('Bob'))

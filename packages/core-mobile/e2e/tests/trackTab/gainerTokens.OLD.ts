@@ -24,7 +24,7 @@ describe('Gainers Tokens', () => {
     await watchlistPage.tapAllTab()
     await watchlistPage.tapSortBtn()
     await watchlistPage.selectSortOption('Gainers')
-    await actions.waitForElement(by.text(`Sort by: Gainers`), 2000)
+    await actions.waitForElement(by.text(`Sort by: Gainers`))
 
     // Verify the token we grab on CoinGecko API displayed on the gainer list
     // the list on the app & api could be different. We're allowing 3 tries to verify the list

@@ -7,7 +7,13 @@ class selectTokenPage {
     return by.text(selectTokenLoc.title)
   }
 
-  async selectToken(tokenName: string) {
+  async selectToken(
+    tokenName: string,
+    network: string | undefined = undefined
+  ) {
+    if (network) {
+      await actions.tap(by.id(`network_selector__${network}`))
+    }
     await actions.setInputText(commonElsPage.searchBar, tokenName)
     await actions.tapElementAtIndex(by.id(`token_selector__${tokenName}`), 0)
   }

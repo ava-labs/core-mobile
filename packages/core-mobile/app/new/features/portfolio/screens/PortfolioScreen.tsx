@@ -310,6 +310,7 @@ const PortfolioHomeScreen = (): JSX.Element => {
               animatedHeaderStyle
             ]}>
             <BalanceHeader
+              testID="portfolio"
               accountName={activeAccount?.name}
               formattedBalance={formattedBalance}
               currency={selectedCurrency}
