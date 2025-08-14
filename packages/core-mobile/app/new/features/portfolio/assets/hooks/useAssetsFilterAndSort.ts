@@ -1,9 +1,9 @@
-import { IndexPath } from '@avalabs/k2-alpine'
 import { useCallback, useMemo, useState } from 'react'
 import {
   ASSET_BALANCE_SORTS,
   ASSET_MANAGE_VIEWS,
   AssetBalanceSort,
+  AssetManageView,
   AssetNetworkFilter,
   LocalTokenWithBalance
 } from 'store/balance'
@@ -44,29 +44,19 @@ export const useAssetsFilterAndSort = (): {
     ]
   }, [enabledNetworks])
 
-  const [selectedFilter, setSelectedFilter] = useState<IndexPath>({
-    section: 0,
-    row: 0
-  })
-  const [selectedSort, setSelectedSort] = useState<IndexPath>({
-    section: 0,
-    row: 0
-  })
-  const [selectedView, setSelectedView] = useState<IndexPath>({
-    section: 0,
-    row: 1
-  })
+  const [selectedFilter, setSelectedFilter] = useState<AssetNetworkFilter>(
+    AssetNetworkFilter.AllNetworks
+  )
+  const [selectedSort, setSelectedSort] = useState<AssetBalanceSort>(
+    AssetBalanceSort.HighToLow
+  )
+  const [selectedView, setSelectedView] = useState<AssetManageView>(
+    AssetManageView.List
+  )
 
   const filterOption = useMemo(() => {
-    return [networkFilters]?.[selectedFilter.section]?.[selectedFilter.row]
-  }, [networkFilters, selectedFilter.row, selectedFilter.section])
-
-  const sortOption = useMemo(() => {
-    return (
-      ASSET_BALANCE_SORTS?.[selectedSort.section]?.[selectedSort.row] ??
-      AssetBalanceSort.HighToLow
-    )
-  }, [selectedSort])
+    return networkFilters.find(f => f.filterName === selectedFilter)
+  }, [networkFilters, selectedFilter])
 
   const getFiltered = useCallback(() => {
     if (filteredTokenList.length === 0) {
@@ -87,7 +77,7 @@ export const useAssetsFilterAndSort = (): {
 
   const getSorted = useCallback(
     (filtered: LocalTokenWithBalance[]) => {
-      if (sortOption === AssetBalanceSort.LowToHigh) {
+      if (selectedSort === AssetBalanceSort.LowToHigh) {
         return filtered?.toSorted((a, b) =>
           sortUndefined(a.balanceInCurrency, b.balanceInCurrency)
         )
@@ -97,7 +87,7 @@ export const useAssetsFilterAndSort = (): {
         sortUndefined(b.balanceInCurrency, a.balanceInCurrency)
       )
     },
-    [sortOption]
+    [selectedSort]
   )
 
   const filteredAndSorted = useMemo(() => {
@@ -106,40 +96,79 @@ export const useAssetsFilterAndSort = (): {
     return getSorted(filtered)
   }, [getFiltered, getSorted])
 
+  const filterData = useMemo(
+    () => [
+      {
+        key: 'network-filters',
+        items: networkFilters.map(f => ({
+          id: f.filterName,
+          title: f.filterName,
+          selected: f.filterName === selectedFilter
+        }))
+      }
+    ],
+    [networkFilters, selectedFilter]
+  )
+
+  const sortData = useMemo(() => {
+    return ASSET_BALANCE_SORTS.map(s => {
+      return {
+        key: s.key,
+        items: s.items.map(i => ({
+          id: i.id,
+          title: i.id,
+          selected: i.id === selectedSort
+        }))
+      }
+    })
+  }, [selectedSort])
+
+  const viewData = useMemo(() => {
+    return ASSET_MANAGE_VIEWS.map(s => {
+      return {
+        key: s.key,
+        items: s.items.map(i => ({
+          id: i.id,
+          title: i.id,
+          selected: i.id === selectedView
+        }))
+      }
+    })
+  }, [selectedView])
+
   const filter = useMemo(
     () => ({
       title: 'Filter',
-      data: [networkFilters.map(f => f.filterName)],
+      data: filterData,
       selected: selectedFilter,
-      onSelected: setSelectedFilter,
-      scrollContentMaxHeight: 250
+      onSelected: (value: string) =>
+        setSelectedFilter(value as AssetNetworkFilter)
     }),
-    [networkFilters, selectedFilter]
+    [filterData, selectedFilter]
   )
 
   const sort = useMemo(
     () => ({
       title: 'Sort',
-      data: ASSET_BALANCE_SORTS,
+      data: sortData,
       selected: selectedSort,
-      onSelected: setSelectedSort,
-      useAnchorRect: true
+      onSelected: (value: string) => setSelectedSort(value as AssetBalanceSort)
     }),
-    [selectedSort, setSelectedSort]
+    [sortData, selectedSort]
   )
 
   const view = useMemo(
     () => ({
       title: 'View',
-      data: ASSET_MANAGE_VIEWS,
+      data: viewData,
       selected: selectedView,
-      onSelected: setSelectedView
+      onSelected: (value: string) => setSelectedView(value as AssetManageView)
     }),
-    [selectedView, setSelectedView]
+    [viewData, selectedView]
   )
 
   const onResetFilter = useCallback((): void => {
-    setSelectedFilter({ section: 0, row: 0 })
+    setSelectedFilter(AssetNetworkFilter.AllNetworks)
   }, [])
 
   return useMemo(

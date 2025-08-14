@@ -1,4 +1,3 @@
-import { IndexPath } from '@avalabs/k2-alpine'
 import { useMemo, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { DeFiChain, DeFiSimpleProtocol } from 'services/defi/types'
@@ -7,7 +6,12 @@ import { useDeFiProtocolList } from 'hooks/defi/useDeFiProtocolList'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { useNetworks } from 'hooks/networks/useNetworks'
 import { DropdownSelection } from 'common/types'
-import { DEFI_SORT_OPTIONS, DEFI_VIEW_OPTIONS, DeFiSortOption } from '../types'
+import {
+  DEFI_SORT_OPTIONS,
+  DEFI_VIEW_OPTIONS,
+  DeFiSortOption,
+  DeFiViewOption
+} from '../types'
 
 export const useDeFiProtocols = (): {
   data: DeFiSimpleProtocol[]
@@ -36,25 +40,12 @@ export const useDeFiProtocols = (): {
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const { networks } = useNetworks()
 
-  const [selectedSort, setSelectedSort] = useState<IndexPath>({
-    section: 0,
-    row: 0
-  })
-  const [selectedView, setSelectedView] = useState<IndexPath>({
-    section: 0,
-    row: 0
-  })
-
-  const sortOption = useMemo(() => {
-    return (
-      DEFI_SORT_OPTIONS?.[selectedSort.section]?.[selectedSort.row] ??
-      DeFiSortOption.NameAtoZ
-    )
-  }, [selectedSort])
-
-  const onSelectedView = (indexPath: IndexPath): void => {
-    setSelectedView(indexPath)
-  }
+  const [selectedSort, setSelectedSort] = useState<DeFiSortOption>(
+    DeFiSortOption.NameAtoZ
+  )
+  const [selectedView, setSelectedView] = useState<DeFiViewOption>(
+    DeFiViewOption.GridView
+  )
 
   const filteredProtocols = useMemo(() => {
     if (!data) return []
@@ -74,29 +65,58 @@ export const useDeFiProtocols = (): {
     return filtered.sort((a, b) => {
       const aName = a.name ?? ''
       const bName = b.name ?? ''
-      if (sortOption === DeFiSortOption.NameAtoZ) {
+      if (selectedSort === DeFiSortOption.NameAtoZ) {
         return aName.localeCompare(bName)
       }
-      if (sortOption === DeFiSortOption.NameZtoA) {
+      if (selectedSort === DeFiSortOption.NameZtoA) {
         return bName.localeCompare(aName)
       }
       return 0
     })
-  }, [data, chainList, networks, isDeveloperMode, sortOption])
+  }, [data, chainList, networks, isDeveloperMode, selectedSort])
+
+  const sortData = useMemo(
+    () => [
+      {
+        key: DEFI_SORT_OPTIONS.key,
+        items: DEFI_SORT_OPTIONS.items.map(i => ({
+          ...i,
+          selected: i.id === selectedSort
+        }))
+      }
+    ],
+    [selectedSort]
+  )
+
+  const viewData = useMemo(
+    () => [
+      {
+        key: DEFI_VIEW_OPTIONS.key,
+        items: DEFI_VIEW_OPTIONS.items.map(i => ({
+          ...i,
+          selected: i.id === selectedView
+        }))
+      }
+    ],
+    [selectedView]
+  )
 
   return {
     sort: {
       title: 'Sort',
-      data: DEFI_SORT_OPTIONS,
+      data: sortData,
       selected: selectedSort,
-      useAnchorRect: true,
-      onSelected: setSelectedSort
+      onSelected: (value: string) => {
+        setSelectedSort(value as DeFiSortOption)
+      }
     },
     view: {
       title: 'View',
-      data: DEFI_VIEW_OPTIONS,
+      data: viewData,
       selected: selectedView,
-      onSelected: onSelectedView
+      onSelected: (value: string) => {
+        setSelectedView(value as DeFiViewOption)
+      }
     },
     data: filteredProtocols,
     isSuccess,

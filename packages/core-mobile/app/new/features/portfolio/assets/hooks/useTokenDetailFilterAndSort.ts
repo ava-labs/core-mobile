@@ -1,4 +1,3 @@
-import { IndexPath } from '@avalabs/k2-alpine'
 import { useCallback, useMemo, useState } from 'react'
 import { Transaction } from 'store/transaction'
 import {
@@ -6,54 +5,36 @@ import {
   TransactionType
 } from '@avalabs/vm-module-types'
 import { sortUndefined } from 'common/utils/sortUndefined'
+import { DropdownSelection } from 'common/types'
 import { isCollectibleTransaction } from 'features/activity/utils'
+import { DropdownGroup } from 'common/components/DropdownMenu'
 import { fixUnknownTxType } from '../components/TokenActivityListItem'
-
-export type Selection = {
-  title: string
-  data: string[][]
-  selected: IndexPath
-  onSelected: (index: IndexPath) => void
-}
 
 export const useTokenDetailFilterAndSort = ({
   transactions,
   filters
 }: {
   transactions: Transaction[]
-  filters?: TokenDetailFilters
+  filters?: DropdownGroup[]
 }): {
   data: Transaction[]
-  filter: Selection
-  sort: Selection
+  filter: DropdownSelection
+  sort: DropdownSelection
   resetFilter: () => void
 } => {
-  const [selectedFilter, setSelectedFilter] = useState<IndexPath>({
-    section: 0,
-    row: 0
-  })
-  const [selectedSort, setSelectedSort] = useState<IndexPath>({
-    section: 0,
-    row: 0
-  })
+  const [selectedFilter, setSelectedFilter] = useState<TokenDetailFilter>(
+    TokenDetailFilter.All
+  )
+  const [selectedSort, setSelectedSort] = useState<TokenDetailSort>(
+    TokenDetailSort.NewToOld
+  )
 
   const resetFilter = useCallback(() => {
-    setSelectedFilter({ section: 0, row: 0 })
+    setSelectedFilter(TokenDetailFilter.All)
   }, [])
 
-  const filterOption = useMemo(() => {
-    return (
-      (filters ?? TOKEN_DETAIL_FILTERS)?.[selectedFilter.section]?.[
-        selectedFilter.row
-      ] ?? TokenDetailFilter.All
-    )
-  }, [filters, selectedFilter.row, selectedFilter.section])
-
   const sortOption = useMemo(() => {
-    return (
-      TOKEN_DETAIL_SORTS?.[selectedSort.section]?.[selectedSort.row] ??
-      TokenDetailSort.NewToOld
-    )
+    return selectedSort ?? TokenDetailSort.NewToOld
   }, [selectedSort])
 
   const getFiltered = useCallback(() => {
@@ -61,7 +42,7 @@ export const useTokenDetailFilterAndSort = ({
       return []
     }
     return transactions.filter(tx => {
-      switch (filterOption) {
+      switch (selectedFilter) {
         case TokenDetailFilter.Stake:
           return (
             tx.txType === PChainTransactionType.ADD_PERMISSIONLESS_DELEGATOR_TX
@@ -90,7 +71,7 @@ export const useTokenDetailFilterAndSort = ({
           return true
       }
     })
-  }, [filterOption, transactions])
+  }, [selectedFilter, transactions])
 
   const getSorted = useCallback(
     (txs: Transaction[]) => {
@@ -107,24 +88,56 @@ export const useTokenDetailFilterAndSort = ({
     return getSorted(filtered)
   }, [getFiltered, getSorted])
 
+  const filterData = useMemo(() => {
+    return (filters ?? TOKEN_DETAIL_FILTERS).map(s => {
+      return {
+        key: s.key,
+        items: s.items.map(i => ({
+          id: i.id,
+          title: i.id,
+          selected: i.id === selectedFilter
+        }))
+      }
+    })
+  }, [filters, selectedFilter])
+
+  const sortData = useMemo(
+    () => [
+      {
+        key: 'token-detail-sorts',
+        items: TOKEN_DETAIL_SORTS.map(f => ({
+          id: f.items.find(i => i.id === selectedSort)?.id ?? '',
+          title: f.items.find(i => i.id === selectedSort)?.title ?? '',
+          selected:
+            f.items.find(i => i.id === selectedSort)?.id === selectedSort
+        }))
+      }
+    ],
+    [selectedSort]
+  )
+
   const filter = useMemo(
     () => ({
       title: 'Filter',
-      data: filters ?? TOKEN_DETAIL_FILTERS,
+      data: filterData,
       selected: selectedFilter,
-      onSelected: setSelectedFilter
+      onSelected: (value: string) => {
+        setSelectedFilter(value as TokenDetailFilter)
+      }
     }),
-    [filters, selectedFilter]
+    [filterData, selectedFilter]
   )
 
   const sort = useMemo(
     () => ({
       title: 'Sort',
-      data: TOKEN_DETAIL_SORTS,
+      data: sortData,
       selected: selectedSort,
-      onSelected: setSelectedSort
+      onSelected: (value: string) => {
+        setSelectedSort(value as TokenDetailSort)
+      }
     }),
-    [selectedSort]
+    [sortData, selectedSort]
   )
 
   return {
@@ -151,19 +164,46 @@ export enum TokenDetailSort {
   OldToNew = 'Oldest to newest'
 }
 
-export type TokenDetailFilters = TokenDetailFilter[][]
-type TokenDetailSorts = TokenDetailSort[][]
-
-export const TOKEN_DETAIL_FILTERS: TokenDetailFilters = [
-  [
-    TokenDetailFilter.All,
-    TokenDetailFilter.Sent,
-    TokenDetailFilter.Received,
-    TokenDetailFilter.Swap,
-    TokenDetailFilter.Bridge
-  ]
+export const TOKEN_DETAIL_FILTERS: DropdownGroup[] = [
+  {
+    key: 'token-detail-filters',
+    items: [
+      {
+        id: TokenDetailFilter.All,
+        title: TokenDetailFilter.All
+      },
+      {
+        id: TokenDetailFilter.Sent,
+        title: TokenDetailFilter.Sent
+      },
+      {
+        id: TokenDetailFilter.Received,
+        title: TokenDetailFilter.Received
+      },
+      {
+        id: TokenDetailFilter.Swap,
+        title: TokenDetailFilter.Swap
+      },
+      {
+        id: TokenDetailFilter.Bridge,
+        title: TokenDetailFilter.Bridge
+      }
+    ]
+  }
 ]
 
-const TOKEN_DETAIL_SORTS: TokenDetailSorts = [
-  [TokenDetailSort.NewToOld, TokenDetailSort.OldToNew]
+export const TOKEN_DETAIL_SORTS: DropdownGroup[] = [
+  {
+    key: 'token-detail-sorts',
+    items: [
+      {
+        id: TokenDetailSort.NewToOld,
+        title: TokenDetailSort.NewToOld
+      },
+      {
+        id: TokenDetailSort.OldToNew,
+        title: TokenDetailSort.OldToNew
+      }
+    ]
+  }
 ]

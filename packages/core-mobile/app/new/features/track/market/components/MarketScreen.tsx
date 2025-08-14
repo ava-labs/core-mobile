@@ -1,4 +1,4 @@
-import { IndexPath, SPRING_LINEAR_TRANSITION } from '@avalabs/k2-alpine'
+import { SPRING_LINEAR_TRANSITION } from '@avalabs/k2-alpine'
 import { CollapsibleTabs } from 'common/components/CollapsibleTabs'
 import { ErrorState } from 'common/components/ErrorState'
 import { LoadingState } from 'common/components/LoadingState'
@@ -79,9 +79,9 @@ const MarketScreen = ({
         sort={sort}
         view={{
           ...view,
-          onSelected: (indexPath: IndexPath) => {
+          onSelected: (value: string) => {
             onScrollResync()
-            view.onSelected(indexPath)
+            view.onSelected(value)
           }
         }}
         goToMarketDetail={goToMarketDetail}

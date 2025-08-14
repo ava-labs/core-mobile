@@ -1,8 +1,8 @@
-import { IndexPath } from '@avalabs/k2-alpine'
 import { useMemo, useState } from 'react'
 import { DropdownSelection } from 'new/common/types'
 import { Contact, selectContacts } from 'store/addressBook'
 import { useSelector } from 'react-redux'
+import { DropdownGroup } from 'common/components/DropdownMenu'
 
 export const useSortedContacts = (): {
   data: Contact[]
@@ -13,21 +13,20 @@ export const useSortedContacts = (): {
     return Object.values(contactCollection)
   }, [contactCollection])
 
-  const [selectedSort, setSelectedSort] = useState<IndexPath>({
-    section: 0,
-    row: 0
-  })
+  const [selectedSort, setSelectedSort] = useState<ContactSort>(
+    ContactSort.NameAtoZ
+  )
 
   const sortedContacts = useMemo(() => {
-    if (selectedSort.row === 0) {
-      return contacts.sort((a, b) => {
+    if (selectedSort === ContactSort.NameAtoZ) {
+      return contacts.toSorted((a, b) => {
         if (a.name && b.name) {
           return a.name.toLowerCase().localeCompare(b.name.toLowerCase())
         }
         return a.name ? -1 : 1
       })
     }
-    return contacts.sort((a, b) => {
+    return contacts.toSorted((a, b) => {
       if (a.name && b.name) {
         return b.name.toLowerCase().localeCompare(a.name.toLowerCase())
       }
@@ -35,12 +34,27 @@ export const useSortedContacts = (): {
     })
   }, [selectedSort, contacts])
 
+  const sortedData = useMemo(() => {
+    return CONTACT_SORTS.map(s => {
+      return {
+        key: s.key,
+        items: s.items.map(i => ({
+          id: i.id,
+          title: i.id,
+          selected: i.id === selectedSort
+        }))
+      }
+    })
+  }, [selectedSort])
+
   return {
     sort: {
       title: 'Sort',
-      data: CONTACT_SORTS,
+      data: sortedData,
       selected: selectedSort,
-      onSelected: setSelectedSort
+      onSelected: (value: string) => {
+        setSelectedSort(value as ContactSort)
+      }
     },
     data: sortedContacts
   }
@@ -51,8 +65,18 @@ enum ContactSort {
   NameZtoA = 'Name Z to A'
 }
 
-type ContactSorts = ContactSort[][]
-
-const CONTACT_SORTS: ContactSorts = [
-  [ContactSort.NameAtoZ, ContactSort.NameZtoA]
+export const CONTACT_SORTS: DropdownGroup[] = [
+  {
+    key: 'contact-sorts',
+    items: [
+      {
+        id: ContactSort.NameAtoZ,
+        title: ContactSort.NameAtoZ
+      },
+      {
+        id: ContactSort.NameZtoA,
+        title: ContactSort.NameZtoA
+      }
+    ]
+  }
 ]

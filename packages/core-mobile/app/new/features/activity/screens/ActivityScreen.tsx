@@ -5,7 +5,6 @@ import {
   ANIMATED,
   Chip,
   Image,
-  SimpleDropdown,
   SPRING_LINEAR_TRANSITION,
   useTheme,
   View
@@ -20,6 +19,7 @@ import { LoadingState } from 'new/common/components/LoadingState'
 import React, { useCallback, useMemo } from 'react'
 import { Platform, ViewStyle } from 'react-native'
 import { useHeaderMeasurements } from 'react-native-collapsible-tab-view'
+import { DropdownMenu } from 'common/components/DropdownMenu'
 import Animated, { useAnimatedStyle, withTiming } from 'react-native-reanimated'
 import { ActivityList } from '../components/ActivityList'
 import { useActivityFilterAndSearch } from '../hooks/useActivityFilterAndSearch'
@@ -160,16 +160,12 @@ const NetworkFilterDropdown = ({
   network,
   title,
   data,
-  selected,
-  onSelected,
-  scrollContentMaxHeight
+  onSelected
 }: {
   network: Network
   title: DropdownSelection['title']
   data: DropdownSelection['data']
-  selected: DropdownSelection['selected']
   onSelected: DropdownSelection['onSelected']
-  scrollContentMaxHeight: DropdownSelection['scrollContentMaxHeight']
 }): JSX.Element => {
   const { theme } = useTheme()
 
@@ -187,25 +183,23 @@ const NetworkFilterDropdown = ({
   }, [network, theme.colors.$surfaceSecondary])
 
   return (
-    <SimpleDropdown
-      from={
-        <Chip
-          renderLeft={renderLeftIcon}
-          style={{
-            paddingLeft: 6,
-            paddingRight: 10,
-            gap: 4
-          }}
-          size="large"
-          hitSlop={8}
-          testID="network_dropdown_btn">
-          {title}
-        </Chip>
-      }
-      sections={data}
-      selectedRows={[selected]}
-      onSelectRow={onSelected}
-      scrollContentMaxHeight={scrollContentMaxHeight}
-    />
+    <DropdownMenu
+      groups={data}
+      onPressAction={(event: { nativeEvent: { event: string } }) =>
+        onSelected(event.nativeEvent.event)
+      }>
+      <Chip
+        renderLeft={renderLeftIcon}
+        style={{
+          paddingLeft: 6,
+          paddingRight: 10,
+          gap: 4
+        }}
+        size="large"
+        hitSlop={8}
+        testID="network_dropdown_btn">
+        {title}
+      </Chip>
+    </DropdownMenu>
   )
 }
