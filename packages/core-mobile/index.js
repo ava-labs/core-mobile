@@ -11,6 +11,11 @@ import NewApp from 'new/ContextApp'
 import { hideMenu } from 'expo-dev-client'
 import { expo } from './app.json'
 import { server } from './tests/msw/native/server'
+import { runBenchmark } from './benchmark'
+
+setTimeout(() => {
+  runBenchmark()
+}, 5000)
 
 if (__DEV__) {
   require('./ReactotronConfig')
