@@ -8,7 +8,6 @@ import { CollectiblesProvider } from 'features/portfolio/collectibles/Collectibl
 import { MigrateFavoriteIds } from 'new/common/components/MigrateFavoriteIds'
 import { NavigationPresentationMode } from 'new/common/types'
 import React from 'react'
-import { BackHandler } from 'react-native'
 import { useSelector } from 'react-redux'
 import { selectWalletState } from 'store/app'
 import { WalletState } from 'store/app/types'
@@ -29,7 +28,10 @@ export default function WalletLayout(): JSX.Element {
   const walletState = useSelector(selectWalletState)
 
   usePreventRemove(walletState === WalletState.ACTIVE, () => {
-    BackHandler.exitApp()
+    // TODO: uncomment this after we fix the multiple back() calls
+    // back() calls are triggered too many times when closing a bunch of modals
+    // which closes the app on Android
+    // BackHandler.exitApp()
   })
 
   return (

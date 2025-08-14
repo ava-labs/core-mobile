@@ -69,13 +69,6 @@ export const NavigationRedirect = (): null => {
           pathName === '/onboarding/seedless/confirmation' ||
           (pathName === '/loginWithPinOrBiometry' && !isSignedIn)
         ) {
-          // must call dismissAll() here
-          // otherwise, pressing the back button will either take users:
-          // - to a blank screen (if they are already logged in)
-          // - back to the onboarding flow (when they just completed onboarding)
-          if (router.canGoBack()) {
-            router.dismissAll()
-          }
           // @ts-ignore TODO: make routes typesafe
           router.replace('/portfolio')
         }
