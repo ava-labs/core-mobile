@@ -45,6 +45,7 @@ class AvalancheGetAddressesInRangeHandler
       result.data as RequestParams
 
     try {
+      const start = performance.now()
       const addresses = await getAddressesInRange({
         isDeveloperMode: isDeveloperMode,
         walletId: activeWallet.id,
@@ -56,6 +57,9 @@ class AvalancheGetAddressesInRangeHandler
           internalLimit
         }
       })
+      const end = performance.now()
+      // eslint-disable-next-line no-alert
+      alert(`getAddressesInRange took ${end - start} ms`)
       return { success: true, value: addresses }
     } catch (e) {
       return {
