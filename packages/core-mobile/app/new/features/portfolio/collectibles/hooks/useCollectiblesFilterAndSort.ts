@@ -1,4 +1,3 @@
-import { IndexPath } from '@avalabs/k2-alpine'
 import { DropdownSelection } from 'common/types'
 import { useCallback, useMemo, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
@@ -8,11 +7,14 @@ import { NftItem, NftLocalStatus } from 'services/nft/types'
 import {
   AssetNetworkFilter,
   COLLECTIBLE_FILTERS,
+  COLLECTIBLE_NETWORK_FILTERS,
   COLLECTIBLE_SORTS,
+  COLLECTIBLE_TYPE_FILTERS,
   COLLECTIBLE_VIEWS,
   CollectibleSort,
   CollectibleStatus,
-  CollectibleTypeFilter
+  CollectibleTypeFilter,
+  CollectibleView
 } from 'store/balance'
 import { NftContentType } from 'store/nft'
 import { isCollectibleVisible } from 'store/nft/utils'
@@ -27,17 +29,17 @@ import { getCollectibleName } from '../consts'
 
 export type CollectibleFilterAndSortInitialState = {
   filters: {
-    network: IndexPath
-    contentType: IndexPath
+    network: AssetNetworkFilter
+    contentType: CollectibleTypeFilter
   }
-  sort: IndexPath
+  sort: CollectibleSort
 }
 
 export const useCollectiblesFilterAndSort = (
   initial?: CollectibleFilterAndSortInitialState
 ): {
   filteredAndSorted: NftItem[]
-  filter: DropdownSelection & { selected: IndexPath[] }
+  filter: DropdownSelection & { selected: string[] }
   sort: DropdownSelection
   view: DropdownSelection
   isEveryCollectibleHidden: boolean
@@ -48,98 +50,106 @@ export const useCollectiblesFilterAndSort = (
 } => {
   const { collectibles } = useCollectiblesContext()
   const collectiblesVisibility = useSelector(selectCollectibleVisibility)
-  const [selectedNetworkFilter, setSelectedNetworkFilter] = useState<IndexPath>(
-    initial?.filters?.network ?? {
-      section: 0,
-      row: 0
-    }
-  )
-
-  const [selectedContentTypeFilter, setSelectedContentTypeFilter] =
-    useState<IndexPath>(
-      initial?.filters?.contentType ?? {
-        section: 1,
-        row: 0
-      }
+  const [selectedNetworkFilter, setSelectedNetworkFilter] =
+    useState<AssetNetworkFilter>(
+      initial?.filters?.network ?? AssetNetworkFilter.AllNetworks
     )
 
-  const [selectedSort, setSelectedSort] = useState<IndexPath>(
-    initial?.sort ?? {
-      section: 0,
-      row: 2
-    }
+  const [selectedContentTypeFilter, setSelectedContentTypeFilter] = useState<
+    CollectibleTypeFilter | CollectibleStatus
+  >(initial?.filters?.contentType ?? CollectibleTypeFilter.AllContents)
+
+  const [selectedSort, setSelectedSort] = useState<CollectibleSort>(
+    initial?.sort ?? CollectibleSort.NameAToZ
   )
 
-  const [selectedView, setSelectedView] = useState<IndexPath>({
-    section: 0,
-    row: 0
-  })
+  const [selectedView, setSelectedView] = useState<CollectibleView>(
+    CollectibleView.LargeGrid
+  )
 
-  const filterOption = useMemo(() => {
-    return [
-      COLLECTIBLE_FILTERS?.[selectedNetworkFilter.section]?.[
-        selectedNetworkFilter.row
-      ] ?? undefined,
-      COLLECTIBLE_FILTERS?.[selectedContentTypeFilter.section]?.[
-        selectedContentTypeFilter.row
-      ] ?? undefined
-    ]
+  const filterData = useMemo(() => {
+    return COLLECTIBLE_FILTERS.map(s => {
+      return {
+        key: s.key,
+        items: s.items.map(i => ({
+          id: i.id,
+          title: i.id,
+          selected:
+            i.id === selectedNetworkFilter || i.id === selectedContentTypeFilter
+        }))
+      }
+    })
   }, [selectedContentTypeFilter, selectedNetworkFilter])
 
-  const sortOption = useMemo(() => {
-    return (
-      COLLECTIBLE_SORTS?.[selectedSort.section]?.[selectedSort.row] ??
-      CollectibleSort.NameAToZ
-    )
+  const sortData = useMemo(() => {
+    return COLLECTIBLE_SORTS.map(s => {
+      return {
+        key: s.key,
+        items: s.items.map(i => ({
+          id: i.id,
+          title: i.id,
+          selected: i.id === selectedSort
+        }))
+      }
+    })
   }, [selectedSort])
+
+  const viewData = useMemo(() => {
+    return COLLECTIBLE_VIEWS.map(s => {
+      return {
+        key: s.key,
+        items: s.items.map(i => ({
+          id: i.id,
+          title: i.id,
+          selected: i.id === selectedView
+        }))
+      }
+    })
+  }, [selectedView])
 
   const filter = useMemo(
     () => ({
       title: 'Filter',
-      data: COLLECTIBLE_FILTERS,
+      data: filterData,
       selected: [selectedNetworkFilter, selectedContentTypeFilter],
-      onSelected: (value: IndexPath) => {
-        if (value.section === 0) {
-          setSelectedNetworkFilter(value)
-        } else if (value.section === 1) {
-          setSelectedContentTypeFilter(value)
+      onSelected: (value: AssetNetworkFilter | CollectibleTypeFilter) => {
+        if (COLLECTIBLE_NETWORK_FILTERS.includes(value as AssetNetworkFilter)) {
+          value === selectedNetworkFilter
+            ? setSelectedNetworkFilter(AssetNetworkFilter.AllNetworks)
+            : setSelectedNetworkFilter(value as AssetNetworkFilter)
+        } else if (
+          COLLECTIBLE_TYPE_FILTERS.includes(value as CollectibleTypeFilter)
+        ) {
+          value === selectedContentTypeFilter
+            ? setSelectedContentTypeFilter(CollectibleTypeFilter.AllContents)
+            : setSelectedContentTypeFilter(value as CollectibleTypeFilter)
         }
-      },
-      onDeselect: (value: IndexPath) => {
-        if (value.section === 0) {
-          setSelectedNetworkFilter({
-            section: 0,
-            row: 0
-          })
-        }
-        if (value.section === 1)
-          setSelectedContentTypeFilter({
-            section: 1,
-            row: 0
-          })
       }
     }),
-    [selectedContentTypeFilter, selectedNetworkFilter]
+    [filterData, selectedContentTypeFilter, selectedNetworkFilter]
   )
   const sort = useMemo(
     () => ({
       title: 'Sort',
-      data: COLLECTIBLE_SORTS,
+      data: sortData,
       selected: selectedSort,
-      onSelected: setSelectedSort,
-      useAnchorRect: true
+      onSelected: (value: string) => {
+        setSelectedSort(value as CollectibleSort)
+      }
     }),
-    [selectedSort]
+    [sortData, selectedSort]
   )
 
   const view = useMemo(
     () => ({
       title: 'View',
-      data: COLLECTIBLE_VIEWS,
+      data: viewData,
       selected: selectedView,
-      onSelected: setSelectedView
+      onSelected: (value: string) => {
+        setSelectedView(value as CollectibleView)
+      }
     }),
-    [selectedView]
+    [viewData, selectedView]
   )
 
   const isUnprocessableHidden = useSelector(
@@ -150,7 +160,7 @@ export const useCollectiblesFilterAndSort = (
     (nfts: NftItem[]) => {
       if (nfts.length === 0) return []
 
-      const [network, contentType] = filterOption
+      const [network, contentType] = filter.selected
 
       const availableNetworks = [
         AssetNetworkFilter.AvalancheCChain,
@@ -206,41 +216,38 @@ export const useCollectiblesFilterAndSort = (
 
       return nfts
     },
-    [filterOption, isUnprocessableHidden, collectiblesVisibility]
+    [filter.selected, isUnprocessableHidden, collectiblesVisibility]
   )
 
   const getSorted = useCallback(
     (filtered: NftItem[]) => {
-      if (sortOption === CollectibleSort.NameAToZ)
+      if (sort.selected === CollectibleSort.NameAToZ)
         return filtered.sort((a, b) =>
           getCollectibleName(a) > getCollectibleName(b) ? 1 : -1
         )
 
-      if (sortOption === CollectibleSort.NameZToA)
+      if (sort.selected === CollectibleSort.NameZToA)
         return filtered.sort((a, b) =>
           getCollectibleName(a) < getCollectibleName(b) ? 1 : -1
         )
 
-      if (sortOption === CollectibleSort.DateAdded)
+      if (sort.selected === CollectibleSort.DateAdded)
         return filtered.sort(sortNftsByDateUpdated)
 
       return filtered
     },
-    [sortOption]
+    [sort.selected]
   )
 
   const dispatch = useDispatch()
 
   const onResetFilter = (): void => {
-    setSelectedNetworkFilter({ section: 0, row: 0 })
-    setSelectedContentTypeFilter({ section: 0, row: 0 })
+    setSelectedNetworkFilter(AssetNetworkFilter.AllNetworks)
+    setSelectedContentTypeFilter(CollectibleTypeFilter.AllContents)
   }
 
   const onShowHidden = (): void => {
-    setSelectedContentTypeFilter({
-      section: 1,
-      row: 3
-    })
+    setSelectedContentTypeFilter(CollectibleStatus.Hidden)
     if (isUnprocessableHidden && isEveryCollectibleHidden) {
       dispatch(toggleCollectibleUnprocessableVisibility())
     }
@@ -259,11 +266,11 @@ export const useCollectiblesFilterAndSort = (
     [collectibles?.length, collectiblesVisibility, filteredAndSorted]
   )
 
-  const isHiddenVisible = filter.selected[1]?.row !== 3
+  const isHiddenVisible = filter.selected[1] !== CollectibleStatus.Hidden
 
   return {
     filteredAndSorted,
-    filter: filter as DropdownSelection & { selected: IndexPath[] },
+    filter: filter as DropdownSelection & { selected: string[] },
     sort,
     view,
     isHiddenVisible,

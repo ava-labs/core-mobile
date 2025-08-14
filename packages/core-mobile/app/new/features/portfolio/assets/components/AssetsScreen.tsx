@@ -1,4 +1,4 @@
-import { IndexPath, SPRING_LINEAR_TRANSITION, View } from '@avalabs/k2-alpine'
+import { SPRING_LINEAR_TRANSITION, View } from '@avalabs/k2-alpine'
 import { CollapsibleTabs } from 'common/components/CollapsibleTabs'
 import { DropdownSelections } from 'common/components/DropdownSelections'
 import { ErrorState } from 'common/components/ErrorState'
@@ -18,7 +18,6 @@ import { useSelector } from 'react-redux'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { selectActiveAccount } from 'store/account'
 import {
-  ASSET_MANAGE_VIEWS,
   AssetManageView,
   LocalTokenWithBalance,
   selectBalanceTotalInCurrencyForAccount,
@@ -27,7 +26,8 @@ import {
   selectIsPollingBalances,
   selectIsLoadingBalances,
   selectIsRefetchingBalances,
-  selectIsBalanceLoadedForAccount
+  selectIsBalanceLoadedForAccount,
+  AssetNetworkFilter
 } from 'store/balance'
 import { selectEnabledNetworks } from 'store/network'
 import { selectTokenVisibility } from 'store/portfolio'
@@ -84,22 +84,20 @@ const AssetsScreen: FC<Props> = ({
   const [headerLayout, setHeaderLayout] = useState<LayoutRectangle | null>(null)
 
   const handleManageList = useCallback(
-    (indexPath: IndexPath): void => {
-      const manageList =
-        ASSET_MANAGE_VIEWS?.[indexPath.section]?.[indexPath.row]
-      if (manageList === AssetManageView.ManageList) {
+    (value: string): void => {
+      if (value === AssetManageView.ManageList) {
         AnalyticsService.capture('PortfolioManageTokenListClicked')
         goToTokenManagement()
         return
       }
       onScrollResync()
-      view.onSelected(indexPath)
+      view.onSelected(value)
     },
     [goToTokenManagement, view, onScrollResync]
   )
 
   const isLoadingBalance = isRefetchingBalance || isBalanceLoading
-  const isGridView = view.data[0]?.[view.selected.row] === AssetManageView.Grid
+  const isGridView = view.selected === AssetManageView.Grid
   const numColumns = isGridView ? 2 : 1
 
   const hasNoAssets =
@@ -161,19 +159,14 @@ const AssetsScreen: FC<Props> = ({
       )
     }
 
-    if (
-      filter.selected.section === 0 &&
-      filter.selected.row === 0 &&
-      hasNoAssets
-    ) {
+    if (filter.selected === AssetNetworkFilter.AllNetworks && hasNoAssets) {
       return <EmptyState goToBuy={goToBuy} />
     }
 
     // if the filter is the default filter, this error state does not apply
     if (
-      filter.selected.section !== 0 &&
-      filter.selected.row !== 0 &&
-      hasNoAssets
+      filter.selected !== AssetNetworkFilter.AllNetworks &&
+      data.length === 0
     ) {
       return (
         <ErrorState
@@ -189,12 +182,12 @@ const AssetsScreen: FC<Props> = ({
   }, [
     isLoadingBalance,
     isBalanceLoaded,
+    isBalancePolling,
     isAllBalancesError,
     isAllBalancesInaccurate,
+    filter.selected,
     hasNoAssets,
-    filter.selected.section,
-    filter.selected.row,
-    isBalancePolling,
+    data.length,
     refetch,
     goToBuy,
     onResetFilter

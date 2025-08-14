@@ -1,17 +1,14 @@
 import { BridgeTransfer } from '@avalabs/bridge-unified'
 import { BridgeTransaction } from '@avalabs/core-bridge-sdk'
 import { ChainId, Network } from '@avalabs/core-chains-sdk'
-import { IndexPath } from '@avalabs/k2-alpine'
 import { TokenWithBalance, TransactionType } from '@avalabs/vm-module-types'
 import { useErc20ContractTokens } from 'common/hooks/useErc20ContractTokens'
 import { useSearchableTokenList } from 'common/hooks/useSearchableTokenList'
 import { DropdownSelection } from 'common/types'
 import usePendingBridgeTransactions from 'features/bridge/hooks/usePendingBridgeTransactions'
 import {
-  Selection,
   TOKEN_DETAIL_FILTERS,
   TokenDetailFilter,
-  TokenDetailFilters,
   useTokenDetailFilterAndSort
 } from 'features/portfolio/assets/hooks/useTokenDetailFilterAndSort'
 import { useNetworks } from 'hooks/networks/useNetworks'
@@ -20,11 +17,12 @@ import { isAvalancheNetwork } from 'services/network/utils/isAvalancheNetwork'
 import { Transaction } from 'store/transaction'
 import { useGetRecentTransactions } from 'store/transaction/hooks/useGetRecentTransactions'
 import { isPChain, isXChain } from 'utils/network/isAvalancheNetwork'
+import { DropdownGroup } from 'common/components/DropdownMenu'
 import { useActivity } from '../store'
 import { ActivityListItem, buildGroupedData, getDateGroups } from '../utils'
 import { isSupportedNftChainId } from '../utils'
 
-type ActivityNetworkFilter = {
+export type ActivityNetworkFilter = {
   filterName: string
   chainId: number
 }
@@ -35,21 +33,18 @@ export const useActivityFilterAndSearch = ({
   searchText: string
 }): {
   data: ActivityListItem[]
-  sort: Selection
-  filter: Selection
+  sort: DropdownSelection
+  filter: DropdownSelection
   network: Network
-  networkOption?: ActivityNetworkFilter
-  networkFilterDropdown: DropdownSelection & {
-    scrollContentMaxHeight: number
-  }
+  networkFilterDropdown: DropdownSelection
   networkFilters: ActivityNetworkFilter[]
-  selectedNetwork: IndexPath
+  selectedNetwork?: ActivityNetworkFilter
   isLoading: boolean
   isRefreshing: boolean
   isError: boolean
   xpToken: TokenWithBalance | undefined
   refresh: () => void
-  setSelectedNetwork: (network: IndexPath) => void
+  setSelectedNetwork: (network: ActivityNetworkFilter) => void
 } => {
   const { enabledNetworks, getNetwork } = useNetworks()
   const { selectedNetwork, setSelectedNetwork } = useActivity()
@@ -70,32 +65,33 @@ export const useActivityFilterAndSearch = ({
     }))
   }, [enabledNetworks])
 
-  const networkOption: ActivityNetworkFilter | undefined = useMemo(() => {
-    return (
-      [networkFilters]?.[selectedNetwork.section]?.[selectedNetwork.row] ||
-      networkFilters[0]
-    )
-  }, [networkFilters, selectedNetwork.row, selectedNetwork.section])
+  useEffect(() => {
+    if (!selectedNetwork && networkFilters[0]) {
+      setSelectedNetwork(networkFilters[0])
+    }
+  }, [selectedNetwork, setSelectedNetwork, networkFilters])
 
   const network = useMemo(() => {
-    return getNetwork(networkOption?.chainId)
-  }, [getNetwork, networkOption?.chainId])
+    return getNetwork(selectedNetwork?.chainId)
+  }, [getNetwork, selectedNetwork?.chainId])
 
   const xpToken = useMemo(() => {
     return filteredTokenList.find(tk => {
       return (
-        networkOption?.chainId &&
-        (isPChain(networkOption?.chainId) ||
-          isXChain(networkOption?.chainId)) &&
-        Number(tk.networkChainId) === Number(networkOption?.chainId)
+        selectedNetwork?.chainId &&
+        (isPChain(selectedNetwork?.chainId) ||
+          isXChain(selectedNetwork?.chainId)) &&
+        Number(tk.networkChainId) === Number(selectedNetwork?.chainId)
       )
     })
-  }, [filteredTokenList, networkOption?.chainId])
+  }, [filteredTokenList, selectedNetwork?.chainId])
 
   const { transactions, refresh, isLoading, isRefreshing, isError } =
     useGetRecentTransactions(network)
 
-  const pendingBridgeTxs = usePendingBridgeTransactions(networkOption?.chainId)
+  const pendingBridgeTxs = usePendingBridgeTransactions(
+    selectedNetwork?.chainId
+  )
   const isPendingBridge = useCallback(
     (tx: Transaction) => {
       return (
@@ -120,56 +116,77 @@ export const useActivityFilterAndSearch = ({
     )
   }, [transactions, isPendingBridge])
 
-  const filters: TokenDetailFilters | undefined = useMemo(() => {
-    if (networkOption?.chainId) {
-      const newFilters = [...(TOKEN_DETAIL_FILTERS[0] ?? [])]
+  const filters: DropdownGroup[] | undefined = useMemo(() => {
+    if (selectedNetwork?.chainId) {
+      const newFilters = [...(TOKEN_DETAIL_FILTERS[0]?.items ?? [])]
       // Stake filter is only available for P-Chain
-      if (isPChain(networkOption?.chainId)) {
-        newFilters.push(TokenDetailFilter.Stake)
+      if (isPChain(selectedNetwork?.chainId)) {
+        newFilters.push({
+          id: TokenDetailFilter.Stake,
+          title: TokenDetailFilter.Stake
+        })
       }
 
       // Only Avalanche C-Chain and Ethereum are supported for NFTs
-      if (isSupportedNftChainId(networkOption?.chainId)) {
-        newFilters.push(TokenDetailFilter.NFT)
+      if (isSupportedNftChainId(selectedNetwork?.chainId)) {
+        newFilters.push({
+          id: TokenDetailFilter.NFT,
+          title: TokenDetailFilter.NFT
+        })
       }
-      return [newFilters]
+      return [
+        {
+          key: 'token-detail-filters',
+          items: newFilters
+        }
+      ]
     }
-  }, [networkOption?.chainId])
+  }, [selectedNetwork?.chainId])
 
   const { data, filter, sort, resetFilter } = useTokenDetailFilterAndSort({
     transactions: transactionsBySymbol,
     filters
   })
 
+  const networkFilterData = useMemo(
+    () => [
+      {
+        key: 'activity-network-filters',
+        items: networkFilters.map(f => ({
+          id: f.filterName,
+          title: f.filterName,
+          selected: f.filterName === selectedNetwork?.filterName
+        }))
+      }
+    ],
+    [networkFilters, selectedNetwork?.filterName]
+  )
+
   const networkFilterDropdown = useMemo(() => {
     return {
       network,
-      title: networkOption?.filterName ?? '',
-      data: [networkFilters.map(f => f.filterName)],
-      selected: selectedNetwork,
-      onSelected: setSelectedNetwork,
-      scrollContentMaxHeight: 250
+      title: selectedNetwork?.filterName ?? '',
+      data: networkFilterData,
+      selected: selectedNetwork?.filterName ?? '',
+      onSelected: (value: string) => {
+        const n = networkFilters.find(f => f.filterName === value)
+        n && setSelectedNetwork(n)
+      }
     }
   }, [
     network,
+    networkFilterData,
     networkFilters,
-    networkOption?.filterName,
     selectedNetwork,
     setSelectedNetwork
   ])
 
   useEffect(() => {
     // In case the user is searching and the filter is not the default one, reset the filter
-    if (searchText.length > 0 && filter.title !== TokenDetailFilter.All) {
+    if (searchText.length > 0 && filter.selected !== TokenDetailFilter.All) {
       resetFilter()
     }
-  }, [
-    filter.selected.row,
-    filter.selected.section,
-    filter.title,
-    resetFilter,
-    searchText.length
-  ])
+  }, [filter.selected, resetFilter, searchText.length])
 
   const combinedData = useMemo(() => {
     const filteredPendingBridgeTxs = pendingBridgeTxs.toSorted(
@@ -201,7 +218,6 @@ export const useActivityFilterAndSearch = ({
     isError,
     refresh,
     network: network as Network,
-    networkOption,
     networkFilters,
     setSelectedNetwork,
     selectedNetwork,

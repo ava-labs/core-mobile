@@ -1,7 +1,6 @@
 import {
   AnimatedPressable,
   Icons,
-  IndexPath,
   SCREEN_WIDTH,
   SPRING_LINEAR_TRANSITION,
   useTheme,
@@ -23,7 +22,6 @@ import {
   Platform,
   ViewStyle
 } from 'react-native'
-
 import { DropdownSelections } from 'common/components/DropdownSelections'
 import { LoadingState } from 'common/components/LoadingState'
 import { getListItemEnteringAnimation } from 'common/utils/animations'
@@ -31,8 +29,10 @@ import { useHeaderMeasurements } from 'react-native-collapsible-tab-view'
 import Animated from 'react-native-reanimated'
 import { NftItem } from 'services/nft/types'
 import {
-  ASSET_MANAGE_VIEWS,
   AssetManageView,
+  AssetNetworkFilter,
+  CollectibleSort,
+  CollectibleTypeFilter,
   CollectibleView
 } from 'store/balance'
 import { useCollectiblesContext } from '../CollectiblesContext'
@@ -98,7 +98,7 @@ export const CollectiblesScreen = ({
     }
   }, [isEnabled, isLoading, onScrollResync])
 
-  const listType = view.data[0]?.[view.selected.row] as CollectibleView
+  const listType = view.selected as CollectibleView
   const columns =
     listType === CollectibleView.CompactGrid
       ? 3
@@ -107,15 +107,13 @@ export const CollectiblesScreen = ({
       : 1
 
   const handleManageList = useCallback(
-    (indexPath: IndexPath): void => {
-      const manageList =
-        ASSET_MANAGE_VIEWS?.[indexPath.section]?.[indexPath.row]
-      if (manageList === AssetManageView.ManageList) {
+    (value: string): void => {
+      if (value === AssetManageView.ManageList) {
         goToCollectibleManagement()
         return
       }
       onScrollResync()
-      view.onSelected(indexPath)
+      view.onSelected(value)
     },
     [goToCollectibleManagement, view, onScrollResync]
   )
@@ -127,10 +125,10 @@ export const CollectiblesScreen = ({
           onPress={() => {
             goToCollectibleDetail(item.localId, {
               filters: {
-                network: filter?.selected[0] as IndexPath,
-                contentType: filter?.selected[1] as IndexPath
+                network: filter?.selected[0] as AssetNetworkFilter,
+                contentType: filter?.selected[1] as CollectibleTypeFilter
               },
-              sort: sort.selected
+              sort: sort.selected as CollectibleSort
             })
           }}
           collectible={item}
@@ -144,7 +142,8 @@ export const CollectiblesScreen = ({
 
   const hasFilters =
     Array.isArray(filter.selected) &&
-    (filter.selected[0]?.row !== 0 || filter.selected[1]?.row !== 0)
+    (filter.selected[0] !== AssetNetworkFilter.AllNetworks ||
+      filter.selected[1] !== CollectibleTypeFilter.AllContents)
 
   const emptyComponent = useMemo((): JSX.Element | undefined => {
     if (isLoading || !isEnabled) return <LoadingState />

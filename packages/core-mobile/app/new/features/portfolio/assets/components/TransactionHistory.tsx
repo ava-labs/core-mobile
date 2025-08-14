@@ -24,11 +24,11 @@ import { isAvalancheCChainId } from 'services/network/utils/isAvalancheNetwork'
 import { isEthereumChainId } from 'services/network/utils/isEthereumNetwork'
 import { LocalTokenWithBalance } from 'store/balance'
 import { Transaction, useGetRecentTransactions } from 'store/transaction'
+import { DropdownGroup } from 'common/components/DropdownMenu'
 import { isPChain } from 'utils/network/isAvalancheNetwork'
 import {
   TOKEN_DETAIL_FILTERS,
   TokenDetailFilter,
-  TokenDetailFilters,
   useTokenDetailFilterAndSort
 } from '../hooks/useTokenDetailFilterAndSort'
 
@@ -89,12 +89,15 @@ const TransactionHistory: FC<Props> = ({
       .filter(tx => !isPendingBridge(tx))
   }, [token, transactions, isPendingBridge])
 
-  const filters: TokenDetailFilters | undefined = useMemo(() => {
+  const filters: DropdownGroup[] | undefined = useMemo(() => {
     if (token?.networkChainId) {
-      const newFilters = [...(TOKEN_DETAIL_FILTERS[0] ?? [])]
+      const newFilters = [...(TOKEN_DETAIL_FILTERS[0]?.items ?? [])]
       // Stake filter is only available for P-Chain
       if (isPChain(token?.networkChainId)) {
-        newFilters.push(TokenDetailFilter.Stake)
+        newFilters.push({
+          id: TokenDetailFilter.Stake,
+          title: TokenDetailFilter.Stake
+        })
       }
 
       // Only Avalanche C-Chain and Ethereum are supported for NFTs
@@ -105,9 +108,17 @@ const TransactionHistory: FC<Props> = ({
           token?.symbol ?? ''
         )
       ) {
-        newFilters.push(TokenDetailFilter.NFT)
+        newFilters.push({
+          id: TokenDetailFilter.NFT,
+          title: TokenDetailFilter.NFT
+        })
       }
-      return [newFilters]
+      return [
+        {
+          key: 'token-detail-filters',
+          items: newFilters
+        }
+      ]
     }
   }, [token?.networkChainId, token?.symbol])
 
