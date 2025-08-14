@@ -199,6 +199,13 @@ workflows:
             BITRISE_TEST_APK_PATH=$BITRISE_TEST_APK_PATH
             BITRISE_APK_PATH=$BITRISE_APK_PATH
             IS_INTERNAL_BUILD=$IS_INTERNAL_BUILD
+        - api_level: "34"
+        - emulator_id: emulator-5554
+        - emulator_channel: "0"
+        - create_command_flags: --sdcard 2048M
+        - tag: default
+        - abi: x86_64
+        - profile: pixel_7_pro
   _install-old-android-version:
     steps:
     - script-runner@0:
@@ -281,7 +288,7 @@ workflows:
         - project_path: $IOS_PROJECT_PATH
         - destination: "platform=iOS Simulator,name=iPhone 16 Pro,OS=18.5"
         - configuration: $IOS_CONFIGURATION
-        - code_signing_allowed: "no"
+        - code_signing_allowed: "yes"
         - log_formatter: xcodebuild
     - script-runner@0:
         title: Create iOS Test Run
