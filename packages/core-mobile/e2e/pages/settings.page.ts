@@ -271,7 +271,7 @@ class Settings {
   }
 
   async scrollToSettingsFooter() {
-    const isVisible = await Actions.isVisible(this.securityAndPrivacy)
+    const isVisible = await Actions.isVisible(this.securityAndPrivacy, 0, 2000)
     if (!isVisible) {
       await Actions.scrollToBottom(this.settingsScrollView)
     }
@@ -281,10 +281,10 @@ class Settings {
     await this.scrollToSettingsFooter()
     let tries = 7
     while (tries > 0) {
-      if (await Actions.isVisible(this.connectedSites, 0)) {
+      if (await Actions.isVisible(this.connectedSites, 0, 2000)) {
         break
       }
-      await Actions.tapElementAtIndex(this.securityAndPrivacy, 0)
+      await Actions.tap(this.securityAndPrivacy)
       tries--
     }
   }

@@ -199,13 +199,6 @@ workflows:
             BITRISE_TEST_APK_PATH=$BITRISE_TEST_APK_PATH
             BITRISE_APK_PATH=$BITRISE_APK_PATH
             IS_INTERNAL_BUILD=$IS_INTERNAL_BUILD
-        - api_level: "34"
-        - emulator_id: emulator-5554
-        - emulator_channel: "0"
-        - create_command_flags: --sdcard 2048M
-        - tag: default
-        - abi: x86_64
-        - profile: pixel_7_pro
   _install-old-android-version:
     steps:
     - script-runner@0:
@@ -274,11 +267,7 @@ workflows:
         inputs:
         - content: |-
             #!/usr/bin/env bash
-            # fail if any commands fails
-            set -e
-            # make pipelines' return status equal the last command to exit with a non-zero status, or zero if all commands exit successfully
-            set -o pipefail
-            # we need to do this to make sure the cocoapods install step consider our Gemfile
+            set -euo pipefail
             cp Gemfile ios
             cp Gemfile.lock ios
     - cocoapods-install@2:
@@ -286,13 +275,25 @@ workflows:
         - verbose: "true"
         - source_root_path: $BITRISE_SOURCE_DIR/ios
     - save-cocoapods-cache@1: {}
-    - xcode-build-for-simulator@0:
+    - script@1:
+        title: Resolve Swift Package Dependencies
+        inputs:
+        - content: |-
+            #!/usr/bin/env bash
+            set -euo pipefail
+            if [[ "$IOS_PROJECT_PATH" == *.xcworkspace ]]; then
+              xcodebuild -workspace "$IOS_PROJECT_PATH" -scheme "$IOS_SCHEME" -resolvePackageDependencies
+            else
+              xcodebuild -project "$IOS_PROJECT_PATH" -scheme "$IOS_SCHEME" -resolvePackageDependencies
+            fi
+    - xcode-build-for-simulator@3:
         inputs:
         - scheme: $IOS_SCHEME
-        - simulator_device: iPhone 16 Pro
-        - configuration: $IOS_CONFIGURATION
         - project_path: $IOS_PROJECT_PATH
-        - code_signing_allowed: "yes"
+        - destination: platform=iOS\ Simulator,name=iPhone\ 16\ Pro,OS=18.5
+        - configuration: $IOS_CONFIGURATION
+        - code_signing_allowed: "no"
+        - log_formatter: xcodebuild
     - script-runner@0:
         title: Create iOS Test Run
         inputs:
