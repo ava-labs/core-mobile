@@ -1,0 +1,1069 @@
+diff --git a/node_modules/@noble/hashes/hmac.js b/node_modules/@noble/hashes/hmac.js
+index 060cf57..e296575 100644
+--- a/node_modules/@noble/hashes/hmac.js
++++ b/node_modules/@noble/hashes/hmac.js
+@@ -1,91 +1,76 @@
+-"use strict";
+-Object.defineProperty(exports, "__esModule", { value: true });
+-exports.hmac = exports.HMAC = void 0;
++'use strict'
++Object.defineProperty(exports, '__esModule', { value: true })
++exports.hmac = exports.HMAC = void 0
+ /**
+  * HMAC: RFC2104 message authentication code.
+  * @module
+  */
+-const utils_ts_1 = require("./utils.js");
++const createHmac = global.crypto.createHmac
++const utils_ts_1 = require('./utils.js')
++const { sha256 } = require('./sha256.js')
++const { sha512 } = require('./sha512.js')
++
++// Map Noble hash function refs to algo strings
++const algoMap = new Map([
++  [sha256, 'sha256'],
++  [sha512, 'sha512']
++])
++
++function getAlgoName(hashFn) {
++  const algo = algoMap.get(hashFn)
++  if (!algo) {
++    throw new Error('Unsupported hash function for quick-crypto HMAC')
++  }
++  return algo
++}
++
+ class HMAC extends utils_ts_1.Hash {
+-    constructor(hash, _key) {
+-        super();
+-        this.finished = false;
+-        this.destroyed = false;
+-        (0, utils_ts_1.ahash)(hash);
+-        const key = (0, utils_ts_1.toBytes)(_key);
+-        this.iHash = hash.create();
+-        if (typeof this.iHash.update !== 'function')
+-            throw new Error('Expected instance of class which extends utils.Hash');
+-        this.blockLen = this.iHash.blockLen;
+-        this.outputLen = this.iHash.outputLen;
+-        const blockLen = this.blockLen;
+-        const pad = new Uint8Array(blockLen);
+-        // blockLen can be bigger than outputLen
+-        pad.set(key.length > blockLen ? hash.create().update(key).digest() : key);
+-        for (let i = 0; i < pad.length; i++)
+-            pad[i] ^= 0x36;
+-        this.iHash.update(pad);
+-        // By doing update (processing of first block) of outer hash here we can re-use it between multiple calls via clone
+-        this.oHash = hash.create();
+-        // Undo internal XOR && apply outer XOR
+-        for (let i = 0; i < pad.length; i++)
+-            pad[i] ^= 0x36 ^ 0x5c;
+-        this.oHash.update(pad);
+-        (0, utils_ts_1.clean)(pad);
+-    }
+-    update(buf) {
+-        (0, utils_ts_1.aexists)(this);
+-        this.iHash.update(buf);
+-        return this;
+-    }
+-    digestInto(out) {
+-        (0, utils_ts_1.aexists)(this);
+-        (0, utils_ts_1.abytes)(out, this.outputLen);
+-        this.finished = true;
+-        this.iHash.digestInto(out);
+-        this.oHash.update(out);
+-        this.oHash.digestInto(out);
+-        this.destroy();
+-    }
+-    digest() {
+-        const out = new Uint8Array(this.oHash.outputLen);
+-        this.digestInto(out);
+-        return out;
+-    }
+-    _cloneInto(to) {
+-        // Create new instance without calling constructor since key already in state and we don't know it.
+-        to || (to = Object.create(Object.getPrototypeOf(this), {}));
+-        const { oHash, iHash, finished, destroyed, blockLen, outputLen } = this;
+-        to = to;
+-        to.finished = finished;
+-        to.destroyed = destroyed;
+-        to.blockLen = blockLen;
+-        to.outputLen = outputLen;
+-        to.oHash = oHash._cloneInto(to.oHash);
+-        to.iHash = iHash._cloneInto(to.iHash);
+-        return to;
+-    }
+-    clone() {
+-        return this._cloneInto();
+-    }
+-    destroy() {
+-        this.destroyed = true;
+-        this.oHash.destroy();
+-        this.iHash.destroy();
+-    }
++  constructor(hash, _key) {
++    super()
++
++    this.algo = getAlgoName(hash)
++    this.key = utils_ts_1.toBytes(key)
++    this.buffer = []
++  }
++  update(buf) {
++    this.buffer.push(utils_ts_1.toBytes(buf))
++    return this
++  }
++  digest() {
++    const data =
++      this.buffer.length > 1 ? Buffer.concat(this.buffer) : this.buffer[0]
++    return new Uint8Array(createHmac(this.algo, this.key).update(data).digest())
++  }
++  digestInto(out) {
++    const mac = this.digest()
++    out.set(mac)
++    this.destroy()
++  }
++  _cloneInto(to) {
++    to = to || new HMAC(this.algo, this.key)
++    to.buffer = [...this.buffer]
++    return to
++  }
++  clone() {
++    return this._cloneInto()
++  }
++  destroy() {
++    this.key = undefined
++    this.buffer = undefined
++  }
+ }
+-exports.HMAC = HMAC;
+-/**
+- * HMAC: RFC2104 message authentication code.
+- * @param hash - function that would be used e.g. sha256
+- * @param key - message key
+- * @param message - message data
+- * @example
+- * import { hmac } from '@noble/hashes/hmac';
+- * import { sha256 } from '@noble/hashes/sha2';
+- * const mac1 = hmac(sha256, 'key', 'message');
+- */
+-const hmac = (hash, key, message) => new HMAC(hash, key).update(message).digest();
+-exports.hmac = hmac;
+-exports.hmac.create = (hash, key) => new HMAC(hash, key);
+-//# sourceMappingURL=hmac.js.map
+\ No newline at end of file
++exports.HMAC = HMAC
++
++// Direct hmac function
++const hmac = (hash, key, message) => {
++  const algo = getAlgoName(hash)
++  return new Uint8Array(
++    createHmac(algo, utils_ts_1.toBytes(key))
++      .update(utils_ts_1.toBytes(message))
++      .digest()
++  )
++}
++exports.hmac = hmac
++
++// hmac.create method
++exports.hmac.create = (hash, key) => new HMAC(hash, key)
+diff --git a/node_modules/@noble/hashes/pbkdf2.js b/node_modules/@noble/hashes/pbkdf2.js
+index 0d8cab0..ad23d13 100644
+--- a/node_modules/@noble/hashes/pbkdf2.js
++++ b/node_modules/@noble/hashes/pbkdf2.js
+@@ -1,101 +1,56 @@
+-"use strict";
+-Object.defineProperty(exports, "__esModule", { value: true });
+-exports.pbkdf2 = pbkdf2;
+-exports.pbkdf2Async = pbkdf2Async;
+-/**
+- * PBKDF (RFC 2898). Can be used to create a key from password and salt.
+- * @module
+- */
+-const hmac_ts_1 = require("./hmac.js");
+-// prettier-ignore
+-const utils_ts_1 = require("./utils.js");
+-// Common prologue and epilogue for sync/async functions
+-function pbkdf2Init(hash, _password, _salt, _opts) {
+-    (0, utils_ts_1.ahash)(hash);
+-    const opts = (0, utils_ts_1.checkOpts)({ dkLen: 32, asyncTick: 10 }, _opts);
+-    const { c, dkLen, asyncTick } = opts;
+-    (0, utils_ts_1.anumber)(c);
+-    (0, utils_ts_1.anumber)(dkLen);
+-    (0, utils_ts_1.anumber)(asyncTick);
+-    if (c < 1)
+-        throw new Error('iterations (c) should be >= 1');
+-    const password = (0, utils_ts_1.kdfInputToBytes)(_password);
+-    const salt = (0, utils_ts_1.kdfInputToBytes)(_salt);
+-    // DK = PBKDF2(PRF, Password, Salt, c, dkLen);
+-    const DK = new Uint8Array(dkLen);
+-    // U1 = PRF(Password, Salt + INT_32_BE(i))
+-    const PRF = hmac_ts_1.hmac.create(hash, password);
+-    const PRFSalt = PRF._cloneInto().update(salt);
+-    return { c, dkLen, asyncTick, DK, PRF, PRFSalt };
++'use strict'
++Object.defineProperty(exports, '__esModule', { value: true })
++exports.pbkdf2 = pbkdf2
++exports.pbkdf2Async = pbkdf2Async
++
++const {
++  pbkdf2Sync: pbkdf2SyncNative,
++  pbkdf2: pbkdf2Native
++} = require('react-native-quick-crypto')
++const { sha256 } = require('@noble/hashes/sha256')
++const { sha512 } = require('@noble/hashes/sha512')
++
++function algoName(hash) {
++  if (typeof hash === 'string') {
++    const lower = hash.toLowerCase()
++    if (lower === 'sha256') return 'sha256'
++    if (lower === 'sha512') return 'sha512'
++  }
++  if (hash === sha256) return 'sha256'
++  if (hash === sha512) return 'sha512'
++  throw new Error(`Unsupported hash function for pbkdf2 override: ${hash}`)
+ }
+-function pbkdf2Output(PRF, PRFSalt, DK, prfW, u) {
+-    PRF.destroy();
+-    PRFSalt.destroy();
+-    if (prfW)
+-        prfW.destroy();
+-    (0, utils_ts_1.clean)(u);
+-    return DK;
++
++function pbkdf2(hash, password, salt, opts = {}) {
++  const { c, dkLen } = opts
++  if (!c || !dkLen) {
++    throw new Error(
++      'pbkdf2: must provide opts.c (iterations) and opts.dkLen (derived key length)'
++    )
++  }
++  return pbkdf2SyncNative(password, salt, c, dkLen, algoName(hash))
+ }
+-/**
+- * PBKDF2-HMAC: RFC 2898 key derivation function
+- * @param hash - hash function that would be used e.g. sha256
+- * @param password - password from which a derived key is generated
+- * @param salt - cryptographic salt
+- * @param opts - {c, dkLen} where c is work factor and dkLen is output message size
+- * @example
+- * const key = pbkdf2(sha256, 'password', 'salt', { dkLen: 32, c: Math.pow(2, 18) });
+- */
+-function pbkdf2(hash, password, salt, opts) {
+-    const { c, dkLen, DK, PRF, PRFSalt } = pbkdf2Init(hash, password, salt, opts);
+-    let prfW; // Working copy
+-    const arr = new Uint8Array(4);
+-    const view = (0, utils_ts_1.createView)(arr);
+-    const u = new Uint8Array(PRF.outputLen);
+-    // DK = T1 + T2 + ⋯ + Tdklen/hlen
+-    for (let ti = 1, pos = 0; pos < dkLen; ti++, pos += PRF.outputLen) {
+-        // Ti = F(Password, Salt, c, i)
+-        const Ti = DK.subarray(pos, pos + PRF.outputLen);
+-        view.setInt32(0, ti, false);
+-        // F(Password, Salt, c, i) = U1 ^ U2 ^ ⋯ ^ Uc
+-        // U1 = PRF(Password, Salt + INT_32_BE(i))
+-        (prfW = PRFSalt._cloneInto(prfW)).update(arr).digestInto(u);
+-        Ti.set(u.subarray(0, Ti.length));
+-        for (let ui = 1; ui < c; ui++) {
+-            // Uc = PRF(Password, Uc−1)
+-            PRF._cloneInto(prfW).update(u).digestInto(u);
+-            for (let i = 0; i < Ti.length; i++)
+-                Ti[i] ^= u[i];
+-        }
+-    }
+-    return pbkdf2Output(PRF, PRFSalt, DK, prfW, u);
++
++function pbkdf2Async(hash, password, salt, opts = {}) {
++  const { c, dkLen } = opts
++  if (!c || !dkLen) {
++    return Promise.reject(
++      new Error(
++        'pbkdf2Async: must provide opts.c (iterations) and opts.dkLen (derived key length)'
++      )
++    )
++  }
++  return new Promise((resolve, reject) => {
++    pbkdf2Native(
++      password,
++      salt,
++      c,
++      dkLen,
++      algoName(hash),
++      (err, derivedKey) => {
++        if (err) return reject(err)
++        resolve(derivedKey)
++      }
++    )
++  })
+ }
+-/**
+- * PBKDF2-HMAC: RFC 2898 key derivation function. Async version.
+- * @example
+- * await pbkdf2Async(sha256, 'password', 'salt', { dkLen: 32, c: 500_000 });
+- */
+-async function pbkdf2Async(hash, password, salt, opts) {
+-    const { c, dkLen, asyncTick, DK, PRF, PRFSalt } = pbkdf2Init(hash, password, salt, opts);
+-    let prfW; // Working copy
+-    const arr = new Uint8Array(4);
+-    const view = (0, utils_ts_1.createView)(arr);
+-    const u = new Uint8Array(PRF.outputLen);
+-    // DK = T1 + T2 + ⋯ + Tdklen/hlen
+-    for (let ti = 1, pos = 0; pos < dkLen; ti++, pos += PRF.outputLen) {
+-        // Ti = F(Password, Salt, c, i)
+-        const Ti = DK.subarray(pos, pos + PRF.outputLen);
+-        view.setInt32(0, ti, false);
+-        // F(Password, Salt, c, i) = U1 ^ U2 ^ ⋯ ^ Uc
+-        // U1 = PRF(Password, Salt + INT_32_BE(i))
+-        (prfW = PRFSalt._cloneInto(prfW)).update(arr).digestInto(u);
+-        Ti.set(u.subarray(0, Ti.length));
+-        await (0, utils_ts_1.asyncLoop)(c - 1, asyncTick, () => {
+-            // Uc = PRF(Password, Uc−1)
+-            PRF._cloneInto(prfW).update(u).digestInto(u);
+-            for (let i = 0; i < Ti.length; i++)
+-                Ti[i] ^= u[i];
+-        });
+-    }
+-    return pbkdf2Output(PRF, PRFSalt, DK, prfW, u);
+-}
+-//# sourceMappingURL=pbkdf2.js.map
+\ No newline at end of file
+diff --git a/node_modules/@noble/hashes/ripemd160.js b/node_modules/@noble/hashes/ripemd160.js
+index 9561e7b..9aecd3f 100644
+--- a/node_modules/@noble/hashes/ripemd160.js
++++ b/node_modules/@noble/hashes/ripemd160.js
+@@ -1,16 +1,20 @@
+ "use strict";
+-Object.defineProperty(exports, "__esModule", { value: true });
+-exports.ripemd160 = exports.RIPEMD160 = void 0;
+-/**
+- * RIPEMD-160 legacy hash function.
+- * https://homes.esat.kuleuven.be/~bosselae/ripemd160.html
+- * https://homes.esat.kuleuven.be/~bosselae/ripemd160/pdf/AB-9601/AB-9601.pdf
+- * @module
+- * @deprecated
+- */
+-const legacy_ts_1 = require("./legacy.js");
+-/** @deprecated Use import from `noble/hashes/legacy` module */
+-exports.RIPEMD160 = legacy_ts_1.RIPEMD160;
+-/** @deprecated Use import from `noble/hashes/legacy` module */
+-exports.ripemd160 = legacy_ts_1.ripemd160;
+-//# sourceMappingURL=ripemd160.js.map
+\ No newline at end of file
++const crypto = global.crypto;
++
++// Replace RIPEMD160 export with native version
++exports.RIPEMD160 = function RIPEMD160() {
++  return {
++    update: (data) => {
++      if (!this._hash) this._hash = crypto.createHash('ripemd160');
++      this._hash.update(data);
++      return this;
++    },
++    digest: (encoding) => {
++      return this._hash.digest(encoding);
++    },
++  };
++};
++
++exports.ripemd160 = (msg) => {
++  return crypto.createHash('ripemd160').update(msg).digest();
++};
+\ No newline at end of file
+diff --git a/node_modules/@noble/hashes/sha2.js b/node_modules/@noble/hashes/sha2.js
+index 962a9ac..3e38855 100644
+--- a/node_modules/@noble/hashes/sha2.js
++++ b/node_modules/@noble/hashes/sha2.js
+@@ -1,6 +1,18 @@
+-"use strict";
+-Object.defineProperty(exports, "__esModule", { value: true });
+-exports.sha512_224 = exports.sha512_256 = exports.sha384 = exports.sha512 = exports.sha224 = exports.sha256 = exports.SHA512_256 = exports.SHA512_224 = exports.SHA384 = exports.SHA512 = exports.SHA224 = exports.SHA256 = void 0;
++'use strict'
++Object.defineProperty(exports, '__esModule', { value: true })
++exports.sha512_224 =
++  exports.sha512_256 =
++  exports.sha384 =
++  exports.sha512 =
++  exports.sha224 =
++  exports.sha256 =
++  exports.SHA512_256 =
++  exports.SHA512_224 =
++  exports.SHA384 =
++  exports.SHA512 =
++  exports.SHA224 =
++  exports.SHA256 =
++    void 0
+ /**
+  * SHA2 hash function. A.k.a. sha256, sha384, sha512, sha512_224, sha512_256.
+  * SHA256 is the fastest hash implementable in JS, even faster than Blake3.
+@@ -8,9 +20,41 @@ exports.sha512_224 = exports.sha512_256 = exports.sha384 = exports.sha512 = expo
+  * [FIPS 180-4](https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.180-4.pdf).
+  * @module
+  */
+-const _md_ts_1 = require("./_md.js");
+-const u64 = require("./_u64.js");
+-const utils_ts_1 = require("./utils.js");
++const _md_ts_1 = require('./_md.js')
++const u64 = require('./_u64.js')
++const utils_ts_1 = require('./utils.js')
++const qcCreateHash = global.crypto.createHash
++
++function toBuf(data) {
++  if (typeof Buffer !== 'undefined' && Buffer.from) return Buffer.from(data)
++  return data instanceof Uint8Array ? data : new Uint8Array(data)
++}
++function toU8(out) {
++  return out instanceof Uint8Array ? out : new Uint8Array(out)
++}
++function makeQCAlgo(algo, outputLen, blockLen) {
++  function fn(msg) {
++    const h = qcCreateHash(algo)
++    h.update(toBuf(msg))
++    return toU8(h.digest())
++  }
++  fn.blockLen = blockLen
++  fn.outputLen = outputLen
++  fn.create = function () {
++    const h = qcCreateHash(algo)
++    return {
++      update(data) {
++        h.update(toBuf(data))
++        return this
++      },
++      digest() {
++        return toU8(h.digest())
++      }
++    }
++  }
++  return fn
++}
++
+ /**
+  * Round constants:
+  * First 32 bits of fractional parts of the cube roots of the first 64 primes 2..311)
+@@ -27,27 +71,27 @@ const SHA256_K = /* @__PURE__ */ Uint32Array.from([
+     0x748f82ee, 0x78a5636f, 0x84c87814, 0x8cc70208, 0x90befffa, 0xa4506ceb, 0xbef9a3f7, 0xc67178f2
+ ]);
+ /** Reusable temporary buffer. "W" comes straight from spec. */
+-const SHA256_W = /* @__PURE__ */ new Uint32Array(64);
++const SHA256_W = /* @__PURE__ */ new Uint32Array(64)
+ class SHA256 extends _md_ts_1.HashMD {
+-    constructor(outputLen = 32) {
+-        super(64, outputLen, 8, false);
+-        // We cannot use array here since array allows indexing by variable
+-        // which means optimizer/compiler cannot use registers.
+-        this.A = _md_ts_1.SHA256_IV[0] | 0;
+-        this.B = _md_ts_1.SHA256_IV[1] | 0;
+-        this.C = _md_ts_1.SHA256_IV[2] | 0;
+-        this.D = _md_ts_1.SHA256_IV[3] | 0;
+-        this.E = _md_ts_1.SHA256_IV[4] | 0;
+-        this.F = _md_ts_1.SHA256_IV[5] | 0;
+-        this.G = _md_ts_1.SHA256_IV[6] | 0;
+-        this.H = _md_ts_1.SHA256_IV[7] | 0;
+-    }
+-    get() {
+-        const { A, B, C, D, E, F, G, H } = this;
+-        return [A, B, C, D, E, F, G, H];
+-    }
+-    // prettier-ignore
+-    set(A, B, C, D, E, F, G, H) {
++  constructor(outputLen = 32) {
++    super(64, outputLen, 8, false)
++    // We cannot use array here since array allows indexing by variable
++    // which means optimizer/compiler cannot use registers.
++    this.A = _md_ts_1.SHA256_IV[0] | 0
++    this.B = _md_ts_1.SHA256_IV[1] | 0
++    this.C = _md_ts_1.SHA256_IV[2] | 0
++    this.D = _md_ts_1.SHA256_IV[3] | 0
++    this.E = _md_ts_1.SHA256_IV[4] | 0
++    this.F = _md_ts_1.SHA256_IV[5] | 0
++    this.G = _md_ts_1.SHA256_IV[6] | 0
++    this.H = _md_ts_1.SHA256_IV[7] | 0
++  }
++  get() {
++    const { A, B, C, D, E, F, G, H } = this
++    return [A, B, C, D, E, F, G, H]
++  }
++  // prettier-ignore
++  set(A, B, C, D, E, F, G, H) {
+         this.A = A | 0;
+         this.B = B | 0;
+         this.C = C | 0;
+@@ -57,67 +101,81 @@ class SHA256 extends _md_ts_1.HashMD {
+         this.G = G | 0;
+         this.H = H | 0;
+     }
+-    process(view, offset) {
+-        // Extend the first 16 words into the remaining 48 words w[16..63] of the message schedule array
+-        for (let i = 0; i < 16; i++, offset += 4)
+-            SHA256_W[i] = view.getUint32(offset, false);
+-        for (let i = 16; i < 64; i++) {
+-            const W15 = SHA256_W[i - 15];
+-            const W2 = SHA256_W[i - 2];
+-            const s0 = (0, utils_ts_1.rotr)(W15, 7) ^ (0, utils_ts_1.rotr)(W15, 18) ^ (W15 >>> 3);
+-            const s1 = (0, utils_ts_1.rotr)(W2, 17) ^ (0, utils_ts_1.rotr)(W2, 19) ^ (W2 >>> 10);
+-            SHA256_W[i] = (s1 + SHA256_W[i - 7] + s0 + SHA256_W[i - 16]) | 0;
+-        }
+-        // Compression function main loop, 64 rounds
+-        let { A, B, C, D, E, F, G, H } = this;
+-        for (let i = 0; i < 64; i++) {
+-            const sigma1 = (0, utils_ts_1.rotr)(E, 6) ^ (0, utils_ts_1.rotr)(E, 11) ^ (0, utils_ts_1.rotr)(E, 25);
+-            const T1 = (H + sigma1 + (0, _md_ts_1.Chi)(E, F, G) + SHA256_K[i] + SHA256_W[i]) | 0;
+-            const sigma0 = (0, utils_ts_1.rotr)(A, 2) ^ (0, utils_ts_1.rotr)(A, 13) ^ (0, utils_ts_1.rotr)(A, 22);
+-            const T2 = (sigma0 + (0, _md_ts_1.Maj)(A, B, C)) | 0;
+-            H = G;
+-            G = F;
+-            F = E;
+-            E = (D + T1) | 0;
+-            D = C;
+-            C = B;
+-            B = A;
+-            A = (T1 + T2) | 0;
+-        }
+-        // Add the compressed chunk to the current hash value
+-        A = (A + this.A) | 0;
+-        B = (B + this.B) | 0;
+-        C = (C + this.C) | 0;
+-        D = (D + this.D) | 0;
+-        E = (E + this.E) | 0;
+-        F = (F + this.F) | 0;
+-        G = (G + this.G) | 0;
+-        H = (H + this.H) | 0;
+-        this.set(A, B, C, D, E, F, G, H);
+-    }
+-    roundClean() {
+-        (0, utils_ts_1.clean)(SHA256_W);
++  process(view, offset) {
++    // Extend the first 16 words into the remaining 48 words w[16..63] of the message schedule array
++    for (let i = 0; i < 16; i++, offset += 4)
++      SHA256_W[i] = view.getUint32(offset, false)
++    for (let i = 16; i < 64; i++) {
++      const W15 = SHA256_W[i - 15]
++      const W2 = SHA256_W[i - 2]
++      const s0 =
++        (0, utils_ts_1.rotr)(W15, 7) ^
++        (0, utils_ts_1.rotr)(W15, 18) ^
++        (W15 >>> 3)
++      const s1 =
++        (0, utils_ts_1.rotr)(W2, 17) ^
++        (0, utils_ts_1.rotr)(W2, 19) ^
++        (W2 >>> 10)
++      SHA256_W[i] = (s1 + SHA256_W[i - 7] + s0 + SHA256_W[i - 16]) | 0
+     }
+-    destroy() {
+-        this.set(0, 0, 0, 0, 0, 0, 0, 0);
+-        (0, utils_ts_1.clean)(this.buffer);
++    // Compression function main loop, 64 rounds
++    let { A, B, C, D, E, F, G, H } = this
++    for (let i = 0; i < 64; i++) {
++      const sigma1 =
++        (0, utils_ts_1.rotr)(E, 6) ^
++        (0, utils_ts_1.rotr)(E, 11) ^
++        (0, utils_ts_1.rotr)(E, 25)
++      const T1 =
++        (H + sigma1 + (0, _md_ts_1.Chi)(E, F, G) + SHA256_K[i] + SHA256_W[i]) |
++        0
++      const sigma0 =
++        (0, utils_ts_1.rotr)(A, 2) ^
++        (0, utils_ts_1.rotr)(A, 13) ^
++        (0, utils_ts_1.rotr)(A, 22)
++      const T2 = (sigma0 + (0, _md_ts_1.Maj)(A, B, C)) | 0
++      H = G
++      G = F
++      F = E
++      E = (D + T1) | 0
++      D = C
++      C = B
++      B = A
++      A = (T1 + T2) | 0
+     }
++    // Add the compressed chunk to the current hash value
++    A = (A + this.A) | 0
++    B = (B + this.B) | 0
++    C = (C + this.C) | 0
++    D = (D + this.D) | 0
++    E = (E + this.E) | 0
++    F = (F + this.F) | 0
++    G = (G + this.G) | 0
++    H = (H + this.H) | 0
++    this.set(A, B, C, D, E, F, G, H)
++  }
++  roundClean() {
++    ;(0, utils_ts_1.clean)(SHA256_W)
++  }
++  destroy() {
++    this.set(0, 0, 0, 0, 0, 0, 0, 0)
++    ;(0, utils_ts_1.clean)(this.buffer)
++  }
+ }
+-exports.SHA256 = SHA256;
++exports.SHA256 = SHA256
+ class SHA224 extends SHA256 {
+-    constructor() {
+-        super(28);
+-        this.A = _md_ts_1.SHA224_IV[0] | 0;
+-        this.B = _md_ts_1.SHA224_IV[1] | 0;
+-        this.C = _md_ts_1.SHA224_IV[2] | 0;
+-        this.D = _md_ts_1.SHA224_IV[3] | 0;
+-        this.E = _md_ts_1.SHA224_IV[4] | 0;
+-        this.F = _md_ts_1.SHA224_IV[5] | 0;
+-        this.G = _md_ts_1.SHA224_IV[6] | 0;
+-        this.H = _md_ts_1.SHA224_IV[7] | 0;
+-    }
++  constructor() {
++    super(28)
++    this.A = _md_ts_1.SHA224_IV[0] | 0
++    this.B = _md_ts_1.SHA224_IV[1] | 0
++    this.C = _md_ts_1.SHA224_IV[2] | 0
++    this.D = _md_ts_1.SHA224_IV[3] | 0
++    this.E = _md_ts_1.SHA224_IV[4] | 0
++    this.F = _md_ts_1.SHA224_IV[5] | 0
++    this.G = _md_ts_1.SHA224_IV[6] | 0
++    this.H = _md_ts_1.SHA224_IV[7] | 0
++  }
+ }
+-exports.SHA224 = SHA224;
++exports.SHA224 = SHA224
+ // SHA2-512 is slower than sha256 in js because u64 operations are slow.
+ // Round contants
+ // First 32 bits of the fractional parts of the cube roots of the first 80 primes 2..409
+@@ -144,41 +202,41 @@ const K512 = /* @__PURE__ */ (() => u64.split([
+     '0x28db77f523047d84', '0x32caab7b40c72493', '0x3c9ebe0a15c9bebc', '0x431d67c49c100d4c',
+     '0x4cc5d4becb3e42b6', '0x597f299cfc657e2a', '0x5fcb6fab3ad6faec', '0x6c44198c4a475817'
+ ].map(n => BigInt(n))))();
+-const SHA512_Kh = /* @__PURE__ */ (() => K512[0])();
+-const SHA512_Kl = /* @__PURE__ */ (() => K512[1])();
++const SHA512_Kh = /* @__PURE__ */ (() => K512[0])()
++const SHA512_Kl = /* @__PURE__ */ (() => K512[1])()
+ // Reusable temporary buffers
+-const SHA512_W_H = /* @__PURE__ */ new Uint32Array(80);
+-const SHA512_W_L = /* @__PURE__ */ new Uint32Array(80);
++const SHA512_W_H = /* @__PURE__ */ new Uint32Array(80)
++const SHA512_W_L = /* @__PURE__ */ new Uint32Array(80)
+ class SHA512 extends _md_ts_1.HashMD {
+-    constructor(outputLen = 64) {
+-        super(128, outputLen, 16, false);
+-        // We cannot use array here since array allows indexing by variable
+-        // which means optimizer/compiler cannot use registers.
+-        // h -- high 32 bits, l -- low 32 bits
+-        this.Ah = _md_ts_1.SHA512_IV[0] | 0;
+-        this.Al = _md_ts_1.SHA512_IV[1] | 0;
+-        this.Bh = _md_ts_1.SHA512_IV[2] | 0;
+-        this.Bl = _md_ts_1.SHA512_IV[3] | 0;
+-        this.Ch = _md_ts_1.SHA512_IV[4] | 0;
+-        this.Cl = _md_ts_1.SHA512_IV[5] | 0;
+-        this.Dh = _md_ts_1.SHA512_IV[6] | 0;
+-        this.Dl = _md_ts_1.SHA512_IV[7] | 0;
+-        this.Eh = _md_ts_1.SHA512_IV[8] | 0;
+-        this.El = _md_ts_1.SHA512_IV[9] | 0;
+-        this.Fh = _md_ts_1.SHA512_IV[10] | 0;
+-        this.Fl = _md_ts_1.SHA512_IV[11] | 0;
+-        this.Gh = _md_ts_1.SHA512_IV[12] | 0;
+-        this.Gl = _md_ts_1.SHA512_IV[13] | 0;
+-        this.Hh = _md_ts_1.SHA512_IV[14] | 0;
+-        this.Hl = _md_ts_1.SHA512_IV[15] | 0;
+-    }
+-    // prettier-ignore
+-    get() {
++  constructor(outputLen = 64) {
++    super(128, outputLen, 16, false)
++    // We cannot use array here since array allows indexing by variable
++    // which means optimizer/compiler cannot use registers.
++    // h -- high 32 bits, l -- low 32 bits
++    this.Ah = _md_ts_1.SHA512_IV[0] | 0
++    this.Al = _md_ts_1.SHA512_IV[1] | 0
++    this.Bh = _md_ts_1.SHA512_IV[2] | 0
++    this.Bl = _md_ts_1.SHA512_IV[3] | 0
++    this.Ch = _md_ts_1.SHA512_IV[4] | 0
++    this.Cl = _md_ts_1.SHA512_IV[5] | 0
++    this.Dh = _md_ts_1.SHA512_IV[6] | 0
++    this.Dl = _md_ts_1.SHA512_IV[7] | 0
++    this.Eh = _md_ts_1.SHA512_IV[8] | 0
++    this.El = _md_ts_1.SHA512_IV[9] | 0
++    this.Fh = _md_ts_1.SHA512_IV[10] | 0
++    this.Fl = _md_ts_1.SHA512_IV[11] | 0
++    this.Gh = _md_ts_1.SHA512_IV[12] | 0
++    this.Gl = _md_ts_1.SHA512_IV[13] | 0
++    this.Hh = _md_ts_1.SHA512_IV[14] | 0
++    this.Hl = _md_ts_1.SHA512_IV[15] | 0
++  }
++  // prettier-ignore
++  get() {
+         const { Ah, Al, Bh, Bl, Ch, Cl, Dh, Dl, Eh, El, Fh, Fl, Gh, Gl, Hh, Hl } = this;
+         return [Ah, Al, Bh, Bl, Ch, Cl, Dh, Dl, Eh, El, Fh, Fl, Gh, Gl, Hh, Hl];
+     }
+-    // prettier-ignore
+-    set(Ah, Al, Bh, Bl, Ch, Cl, Dh, Dl, Eh, El, Fh, Fl, Gh, Gl, Hh, Hl) {
++  // prettier-ignore
++  set(Ah, Al, Bh, Bl, Ch, Cl, Dh, Dl, Eh, El, Fh, Fl, Gh, Gl, Hh, Hl) {
+         this.Ah = Ah | 0;
+         this.Al = Al | 0;
+         this.Bh = Bh | 0;
+@@ -196,107 +254,137 @@ class SHA512 extends _md_ts_1.HashMD {
+         this.Hh = Hh | 0;
+         this.Hl = Hl | 0;
+     }
+-    process(view, offset) {
+-        // Extend the first 16 words into the remaining 64 words w[16..79] of the message schedule array
+-        for (let i = 0; i < 16; i++, offset += 4) {
+-            SHA512_W_H[i] = view.getUint32(offset);
+-            SHA512_W_L[i] = view.getUint32((offset += 4));
+-        }
+-        for (let i = 16; i < 80; i++) {
+-            // s0 := (w[i-15] rightrotate 1) xor (w[i-15] rightrotate 8) xor (w[i-15] rightshift 7)
+-            const W15h = SHA512_W_H[i - 15] | 0;
+-            const W15l = SHA512_W_L[i - 15] | 0;
+-            const s0h = u64.rotrSH(W15h, W15l, 1) ^ u64.rotrSH(W15h, W15l, 8) ^ u64.shrSH(W15h, W15l, 7);
+-            const s0l = u64.rotrSL(W15h, W15l, 1) ^ u64.rotrSL(W15h, W15l, 8) ^ u64.shrSL(W15h, W15l, 7);
+-            // s1 := (w[i-2] rightrotate 19) xor (w[i-2] rightrotate 61) xor (w[i-2] rightshift 6)
+-            const W2h = SHA512_W_H[i - 2] | 0;
+-            const W2l = SHA512_W_L[i - 2] | 0;
+-            const s1h = u64.rotrSH(W2h, W2l, 19) ^ u64.rotrBH(W2h, W2l, 61) ^ u64.shrSH(W2h, W2l, 6);
+-            const s1l = u64.rotrSL(W2h, W2l, 19) ^ u64.rotrBL(W2h, W2l, 61) ^ u64.shrSL(W2h, W2l, 6);
+-            // SHA256_W[i] = s0 + s1 + SHA256_W[i - 7] + SHA256_W[i - 16];
+-            const SUMl = u64.add4L(s0l, s1l, SHA512_W_L[i - 7], SHA512_W_L[i - 16]);
+-            const SUMh = u64.add4H(SUMl, s0h, s1h, SHA512_W_H[i - 7], SHA512_W_H[i - 16]);
+-            SHA512_W_H[i] = SUMh | 0;
+-            SHA512_W_L[i] = SUMl | 0;
+-        }
+-        let { Ah, Al, Bh, Bl, Ch, Cl, Dh, Dl, Eh, El, Fh, Fl, Gh, Gl, Hh, Hl } = this;
+-        // Compression function main loop, 80 rounds
+-        for (let i = 0; i < 80; i++) {
+-            // S1 := (e rightrotate 14) xor (e rightrotate 18) xor (e rightrotate 41)
+-            const sigma1h = u64.rotrSH(Eh, El, 14) ^ u64.rotrSH(Eh, El, 18) ^ u64.rotrBH(Eh, El, 41);
+-            const sigma1l = u64.rotrSL(Eh, El, 14) ^ u64.rotrSL(Eh, El, 18) ^ u64.rotrBL(Eh, El, 41);
+-            //const T1 = (H + sigma1 + Chi(E, F, G) + SHA256_K[i] + SHA256_W[i]) | 0;
+-            const CHIh = (Eh & Fh) ^ (~Eh & Gh);
+-            const CHIl = (El & Fl) ^ (~El & Gl);
+-            // T1 = H + sigma1 + Chi(E, F, G) + SHA512_K[i] + SHA512_W[i]
+-            // prettier-ignore
+-            const T1ll = u64.add5L(Hl, sigma1l, CHIl, SHA512_Kl[i], SHA512_W_L[i]);
+-            const T1h = u64.add5H(T1ll, Hh, sigma1h, CHIh, SHA512_Kh[i], SHA512_W_H[i]);
+-            const T1l = T1ll | 0;
+-            // S0 := (a rightrotate 28) xor (a rightrotate 34) xor (a rightrotate 39)
+-            const sigma0h = u64.rotrSH(Ah, Al, 28) ^ u64.rotrBH(Ah, Al, 34) ^ u64.rotrBH(Ah, Al, 39);
+-            const sigma0l = u64.rotrSL(Ah, Al, 28) ^ u64.rotrBL(Ah, Al, 34) ^ u64.rotrBL(Ah, Al, 39);
+-            const MAJh = (Ah & Bh) ^ (Ah & Ch) ^ (Bh & Ch);
+-            const MAJl = (Al & Bl) ^ (Al & Cl) ^ (Bl & Cl);
+-            Hh = Gh | 0;
+-            Hl = Gl | 0;
+-            Gh = Fh | 0;
+-            Gl = Fl | 0;
+-            Fh = Eh | 0;
+-            Fl = El | 0;
+-            ({ h: Eh, l: El } = u64.add(Dh | 0, Dl | 0, T1h | 0, T1l | 0));
+-            Dh = Ch | 0;
+-            Dl = Cl | 0;
+-            Ch = Bh | 0;
+-            Cl = Bl | 0;
+-            Bh = Ah | 0;
+-            Bl = Al | 0;
+-            const All = u64.add3L(T1l, sigma0l, MAJl);
+-            Ah = u64.add3H(All, T1h, sigma0h, MAJh);
+-            Al = All | 0;
+-        }
+-        // Add the compressed chunk to the current hash value
+-        ({ h: Ah, l: Al } = u64.add(this.Ah | 0, this.Al | 0, Ah | 0, Al | 0));
+-        ({ h: Bh, l: Bl } = u64.add(this.Bh | 0, this.Bl | 0, Bh | 0, Bl | 0));
+-        ({ h: Ch, l: Cl } = u64.add(this.Ch | 0, this.Cl | 0, Ch | 0, Cl | 0));
+-        ({ h: Dh, l: Dl } = u64.add(this.Dh | 0, this.Dl | 0, Dh | 0, Dl | 0));
+-        ({ h: Eh, l: El } = u64.add(this.Eh | 0, this.El | 0, Eh | 0, El | 0));
+-        ({ h: Fh, l: Fl } = u64.add(this.Fh | 0, this.Fl | 0, Fh | 0, Fl | 0));
+-        ({ h: Gh, l: Gl } = u64.add(this.Gh | 0, this.Gl | 0, Gh | 0, Gl | 0));
+-        ({ h: Hh, l: Hl } = u64.add(this.Hh | 0, this.Hl | 0, Hh | 0, Hl | 0));
+-        this.set(Ah, Al, Bh, Bl, Ch, Cl, Dh, Dl, Eh, El, Fh, Fl, Gh, Gl, Hh, Hl);
++  process(view, offset) {
++    // Extend the first 16 words into the remaining 64 words w[16..79] of the message schedule array
++    for (let i = 0; i < 16; i++, offset += 4) {
++      SHA512_W_H[i] = view.getUint32(offset)
++      SHA512_W_L[i] = view.getUint32((offset += 4))
+     }
+-    roundClean() {
+-        (0, utils_ts_1.clean)(SHA512_W_H, SHA512_W_L);
++    for (let i = 16; i < 80; i++) {
++      // s0 := (w[i-15] rightrotate 1) xor (w[i-15] rightrotate 8) xor (w[i-15] rightshift 7)
++      const W15h = SHA512_W_H[i - 15] | 0
++      const W15l = SHA512_W_L[i - 15] | 0
++      const s0h =
++        u64.rotrSH(W15h, W15l, 1) ^
++        u64.rotrSH(W15h, W15l, 8) ^
++        u64.shrSH(W15h, W15l, 7)
++      const s0l =
++        u64.rotrSL(W15h, W15l, 1) ^
++        u64.rotrSL(W15h, W15l, 8) ^
++        u64.shrSL(W15h, W15l, 7)
++      // s1 := (w[i-2] rightrotate 19) xor (w[i-2] rightrotate 61) xor (w[i-2] rightshift 6)
++      const W2h = SHA512_W_H[i - 2] | 0
++      const W2l = SHA512_W_L[i - 2] | 0
++      const s1h =
++        u64.rotrSH(W2h, W2l, 19) ^
++        u64.rotrBH(W2h, W2l, 61) ^
++        u64.shrSH(W2h, W2l, 6)
++      const s1l =
++        u64.rotrSL(W2h, W2l, 19) ^
++        u64.rotrBL(W2h, W2l, 61) ^
++        u64.shrSL(W2h, W2l, 6)
++      // SHA256_W[i] = s0 + s1 + SHA256_W[i - 7] + SHA256_W[i - 16];
++      const SUMl = u64.add4L(s0l, s1l, SHA512_W_L[i - 7], SHA512_W_L[i - 16])
++      const SUMh = u64.add4H(
++        SUMl,
++        s0h,
++        s1h,
++        SHA512_W_H[i - 7],
++        SHA512_W_H[i - 16]
++      )
++      SHA512_W_H[i] = SUMh | 0
++      SHA512_W_L[i] = SUMl | 0
+     }
+-    destroy() {
+-        (0, utils_ts_1.clean)(this.buffer);
+-        this.set(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
++    let { Ah, Al, Bh, Bl, Ch, Cl, Dh, Dl, Eh, El, Fh, Fl, Gh, Gl, Hh, Hl } =
++      this
++    // Compression function main loop, 80 rounds
++    for (let i = 0; i < 80; i++) {
++      // S1 := (e rightrotate 14) xor (e rightrotate 18) xor (e rightrotate 41)
++      const sigma1h =
++        u64.rotrSH(Eh, El, 14) ^ u64.rotrSH(Eh, El, 18) ^ u64.rotrBH(Eh, El, 41)
++      const sigma1l =
++        u64.rotrSL(Eh, El, 14) ^ u64.rotrSL(Eh, El, 18) ^ u64.rotrBL(Eh, El, 41)
++      //const T1 = (H + sigma1 + Chi(E, F, G) + SHA256_K[i] + SHA256_W[i]) | 0;
++      const CHIh = (Eh & Fh) ^ (~Eh & Gh)
++      const CHIl = (El & Fl) ^ (~El & Gl)
++      // T1 = H + sigma1 + Chi(E, F, G) + SHA512_K[i] + SHA512_W[i]
++      // prettier-ignore
++      const T1ll = u64.add5L(Hl, sigma1l, CHIl, SHA512_Kl[i], SHA512_W_L[i]);
++      const T1h = u64.add5H(
++        T1ll,
++        Hh,
++        sigma1h,
++        CHIh,
++        SHA512_Kh[i],
++        SHA512_W_H[i]
++      )
++      const T1l = T1ll | 0
++      // S0 := (a rightrotate 28) xor (a rightrotate 34) xor (a rightrotate 39)
++      const sigma0h =
++        u64.rotrSH(Ah, Al, 28) ^ u64.rotrBH(Ah, Al, 34) ^ u64.rotrBH(Ah, Al, 39)
++      const sigma0l =
++        u64.rotrSL(Ah, Al, 28) ^ u64.rotrBL(Ah, Al, 34) ^ u64.rotrBL(Ah, Al, 39)
++      const MAJh = (Ah & Bh) ^ (Ah & Ch) ^ (Bh & Ch)
++      const MAJl = (Al & Bl) ^ (Al & Cl) ^ (Bl & Cl)
++      Hh = Gh | 0
++      Hl = Gl | 0
++      Gh = Fh | 0
++      Gl = Fl | 0
++      Fh = Eh | 0
++      Fl = El | 0
++      ;({ h: Eh, l: El } = u64.add(Dh | 0, Dl | 0, T1h | 0, T1l | 0))
++      Dh = Ch | 0
++      Dl = Cl | 0
++      Ch = Bh | 0
++      Cl = Bl | 0
++      Bh = Ah | 0
++      Bl = Al | 0
++      const All = u64.add3L(T1l, sigma0l, MAJl)
++      Ah = u64.add3H(All, T1h, sigma0h, MAJh)
++      Al = All | 0
+     }
++    // Add the compressed chunk to the current hash value
++    ;({ h: Ah, l: Al } = u64.add(this.Ah | 0, this.Al | 0, Ah | 0, Al | 0))
++    ;({ h: Bh, l: Bl } = u64.add(this.Bh | 0, this.Bl | 0, Bh | 0, Bl | 0))
++    ;({ h: Ch, l: Cl } = u64.add(this.Ch | 0, this.Cl | 0, Ch | 0, Cl | 0))
++    ;({ h: Dh, l: Dl } = u64.add(this.Dh | 0, this.Dl | 0, Dh | 0, Dl | 0))
++    ;({ h: Eh, l: El } = u64.add(this.Eh | 0, this.El | 0, Eh | 0, El | 0))
++    ;({ h: Fh, l: Fl } = u64.add(this.Fh | 0, this.Fl | 0, Fh | 0, Fl | 0))
++    ;({ h: Gh, l: Gl } = u64.add(this.Gh | 0, this.Gl | 0, Gh | 0, Gl | 0))
++    ;({ h: Hh, l: Hl } = u64.add(this.Hh | 0, this.Hl | 0, Hh | 0, Hl | 0))
++    this.set(Ah, Al, Bh, Bl, Ch, Cl, Dh, Dl, Eh, El, Fh, Fl, Gh, Gl, Hh, Hl)
++  }
++  roundClean() {
++    ;(0, utils_ts_1.clean)(SHA512_W_H, SHA512_W_L)
++  }
++  destroy() {
++    ;(0, utils_ts_1.clean)(this.buffer)
++    this.set(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
++  }
+ }
+-exports.SHA512 = SHA512;
++exports.SHA512 = SHA512
+ class SHA384 extends SHA512 {
+-    constructor() {
+-        super(48);
+-        this.Ah = _md_ts_1.SHA384_IV[0] | 0;
+-        this.Al = _md_ts_1.SHA384_IV[1] | 0;
+-        this.Bh = _md_ts_1.SHA384_IV[2] | 0;
+-        this.Bl = _md_ts_1.SHA384_IV[3] | 0;
+-        this.Ch = _md_ts_1.SHA384_IV[4] | 0;
+-        this.Cl = _md_ts_1.SHA384_IV[5] | 0;
+-        this.Dh = _md_ts_1.SHA384_IV[6] | 0;
+-        this.Dl = _md_ts_1.SHA384_IV[7] | 0;
+-        this.Eh = _md_ts_1.SHA384_IV[8] | 0;
+-        this.El = _md_ts_1.SHA384_IV[9] | 0;
+-        this.Fh = _md_ts_1.SHA384_IV[10] | 0;
+-        this.Fl = _md_ts_1.SHA384_IV[11] | 0;
+-        this.Gh = _md_ts_1.SHA384_IV[12] | 0;
+-        this.Gl = _md_ts_1.SHA384_IV[13] | 0;
+-        this.Hh = _md_ts_1.SHA384_IV[14] | 0;
+-        this.Hl = _md_ts_1.SHA384_IV[15] | 0;
+-    }
++  constructor() {
++    super(48)
++    this.Ah = _md_ts_1.SHA384_IV[0] | 0
++    this.Al = _md_ts_1.SHA384_IV[1] | 0
++    this.Bh = _md_ts_1.SHA384_IV[2] | 0
++    this.Bl = _md_ts_1.SHA384_IV[3] | 0
++    this.Ch = _md_ts_1.SHA384_IV[4] | 0
++    this.Cl = _md_ts_1.SHA384_IV[5] | 0
++    this.Dh = _md_ts_1.SHA384_IV[6] | 0
++    this.Dl = _md_ts_1.SHA384_IV[7] | 0
++    this.Eh = _md_ts_1.SHA384_IV[8] | 0
++    this.El = _md_ts_1.SHA384_IV[9] | 0
++    this.Fh = _md_ts_1.SHA384_IV[10] | 0
++    this.Fl = _md_ts_1.SHA384_IV[11] | 0
++    this.Gh = _md_ts_1.SHA384_IV[12] | 0
++    this.Gl = _md_ts_1.SHA384_IV[13] | 0
++    this.Hh = _md_ts_1.SHA384_IV[14] | 0
++    this.Hl = _md_ts_1.SHA384_IV[15] | 0
++  }
+ }
+-exports.SHA384 = SHA384;
++exports.SHA384 = SHA384
+ /**
+  * Truncated SHA512/256 and SHA512/224.
+  * SHA512_IV is XORed with 0xa5a5a5a5a5a5a5a5, then used as "intermediary" IV of SHA512/t.
+@@ -305,80 +393,65 @@ exports.SHA384 = SHA384;
+  */
+ /** SHA512/224 IV */
+ const T224_IV = /* @__PURE__ */ Uint32Array.from([
+-    0x8c3d37c8, 0x19544da2, 0x73e19966, 0x89dcd4d6, 0x1dfab7ae, 0x32ff9c82, 0x679dd514, 0x582f9fcf,
+-    0x0f6d2b69, 0x7bd44da8, 0x77e36f73, 0x04c48942, 0x3f9d85a8, 0x6a1d36c8, 0x1112e6ad, 0x91d692a1,
+-]);
++  0x8c3d37c8, 0x19544da2, 0x73e19966, 0x89dcd4d6, 0x1dfab7ae, 0x32ff9c82,
++  0x679dd514, 0x582f9fcf, 0x0f6d2b69, 0x7bd44da8, 0x77e36f73, 0x04c48942,
++  0x3f9d85a8, 0x6a1d36c8, 0x1112e6ad, 0x91d692a1
++])
+ /** SHA512/256 IV */
+ const T256_IV = /* @__PURE__ */ Uint32Array.from([
+-    0x22312194, 0xfc2bf72c, 0x9f555fa3, 0xc84c64c2, 0x2393b86b, 0x6f53b151, 0x96387719, 0x5940eabd,
+-    0x96283ee2, 0xa88effe3, 0xbe5e1e25, 0x53863992, 0x2b0199fc, 0x2c85b8aa, 0x0eb72ddc, 0x81c52ca2,
+-]);
++  0x22312194, 0xfc2bf72c, 0x9f555fa3, 0xc84c64c2, 0x2393b86b, 0x6f53b151,
++  0x96387719, 0x5940eabd, 0x96283ee2, 0xa88effe3, 0xbe5e1e25, 0x53863992,
++  0x2b0199fc, 0x2c85b8aa, 0x0eb72ddc, 0x81c52ca2
++])
+ class SHA512_224 extends SHA512 {
+-    constructor() {
+-        super(28);
+-        this.Ah = T224_IV[0] | 0;
+-        this.Al = T224_IV[1] | 0;
+-        this.Bh = T224_IV[2] | 0;
+-        this.Bl = T224_IV[3] | 0;
+-        this.Ch = T224_IV[4] | 0;
+-        this.Cl = T224_IV[5] | 0;
+-        this.Dh = T224_IV[6] | 0;
+-        this.Dl = T224_IV[7] | 0;
+-        this.Eh = T224_IV[8] | 0;
+-        this.El = T224_IV[9] | 0;
+-        this.Fh = T224_IV[10] | 0;
+-        this.Fl = T224_IV[11] | 0;
+-        this.Gh = T224_IV[12] | 0;
+-        this.Gl = T224_IV[13] | 0;
+-        this.Hh = T224_IV[14] | 0;
+-        this.Hl = T224_IV[15] | 0;
+-    }
++  constructor() {
++    super(28)
++    this.Ah = T224_IV[0] | 0
++    this.Al = T224_IV[1] | 0
++    this.Bh = T224_IV[2] | 0
++    this.Bl = T224_IV[3] | 0
++    this.Ch = T224_IV[4] | 0
++    this.Cl = T224_IV[5] | 0
++    this.Dh = T224_IV[6] | 0
++    this.Dl = T224_IV[7] | 0
++    this.Eh = T224_IV[8] | 0
++    this.El = T224_IV[9] | 0
++    this.Fh = T224_IV[10] | 0
++    this.Fl = T224_IV[11] | 0
++    this.Gh = T224_IV[12] | 0
++    this.Gl = T224_IV[13] | 0
++    this.Hh = T224_IV[14] | 0
++    this.Hl = T224_IV[15] | 0
++  }
+ }
+-exports.SHA512_224 = SHA512_224;
++exports.SHA512_224 = SHA512_224
+ class SHA512_256 extends SHA512 {
+-    constructor() {
+-        super(32);
+-        this.Ah = T256_IV[0] | 0;
+-        this.Al = T256_IV[1] | 0;
+-        this.Bh = T256_IV[2] | 0;
+-        this.Bl = T256_IV[3] | 0;
+-        this.Ch = T256_IV[4] | 0;
+-        this.Cl = T256_IV[5] | 0;
+-        this.Dh = T256_IV[6] | 0;
+-        this.Dl = T256_IV[7] | 0;
+-        this.Eh = T256_IV[8] | 0;
+-        this.El = T256_IV[9] | 0;
+-        this.Fh = T256_IV[10] | 0;
+-        this.Fl = T256_IV[11] | 0;
+-        this.Gh = T256_IV[12] | 0;
+-        this.Gl = T256_IV[13] | 0;
+-        this.Hh = T256_IV[14] | 0;
+-        this.Hl = T256_IV[15] | 0;
+-    }
++  constructor() {
++    super(32)
++    this.Ah = T256_IV[0] | 0
++    this.Al = T256_IV[1] | 0
++    this.Bh = T256_IV[2] | 0
++    this.Bl = T256_IV[3] | 0
++    this.Ch = T256_IV[4] | 0
++    this.Cl = T256_IV[5] | 0
++    this.Dh = T256_IV[6] | 0
++    this.Dl = T256_IV[7] | 0
++    this.Eh = T256_IV[8] | 0
++    this.El = T256_IV[9] | 0
++    this.Fh = T256_IV[10] | 0
++    this.Fl = T256_IV[11] | 0
++    this.Gh = T256_IV[12] | 0
++    this.Gl = T256_IV[13] | 0
++    this.Hh = T256_IV[14] | 0
++    this.Hl = T256_IV[15] | 0
++  }
+ }
+-exports.SHA512_256 = SHA512_256;
+-/**
+- * SHA2-256 hash function from RFC 4634.
+- *
+- * It is the fastest JS hash, even faster than Blake3.
+- * To break sha256 using birthday attack, attackers need to try 2^128 hashes.
+- * BTC network is doing 2^70 hashes/sec (2^95 hashes/year) as per 2025.
+- */
+-exports.sha256 = (0, utils_ts_1.createHasher)(() => new SHA256());
+-/** SHA2-224 hash function from RFC 4634 */
+-exports.sha224 = (0, utils_ts_1.createHasher)(() => new SHA224());
+-/** SHA2-512 hash function from RFC 4634. */
+-exports.sha512 = (0, utils_ts_1.createHasher)(() => new SHA512());
+-/** SHA2-384 hash function from RFC 4634. */
+-exports.sha384 = (0, utils_ts_1.createHasher)(() => new SHA384());
+-/**
+- * SHA2-512/256 "truncated" hash function, with improved resistance to length extension attacks.
+- * See the paper on [truncated SHA512](https://eprint.iacr.org/2010/548.pdf).
+- */
+-exports.sha512_256 = (0, utils_ts_1.createHasher)(() => new SHA512_256());
+-/**
+- * SHA2-512/224 "truncated" hash function, with improved resistance to length extension attacks.
+- * See the paper on [truncated SHA512](https://eprint.iacr.org/2010/548.pdf).
+- */
+-exports.sha512_224 = (0, utils_ts_1.createHasher)(() => new SHA512_224());
+-//# sourceMappingURL=sha2.js.map
+\ No newline at end of file
++
++exports.SHA512_256 = SHA512_256
++
++exports.sha256 = makeQCAlgo('sha256', 32, 64)
++exports.sha224 = makeQCAlgo('sha224', 28, 64)
++exports.sha512 = makeQCAlgo('sha512', 64, 128)
++exports.sha384 = makeQCAlgo('sha384', 48, 128)
++exports.sha512_256 = makeQCAlgo('sha512-256', 32, 128)
++exports.sha512_224 = makeQCAlgo('sha512-224', 28, 128)

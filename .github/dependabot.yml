@@ -36,7 +36,7 @@ updates:
       - dependency-name: "@react-native-community/eslint-config" # to use the latest version, update eslint first
       - dependency-name: "bip174" # we should be using bip174 2.1.0 (please refer to dependencies_resolutions.md)
       - dependency-name: "bitcoinjs-lib" # we should be using bitcoinjs-lib 5.2.0 (please refer to dependencies_resolutions.md)
-      - dependency-name: "bip39" # we should be using patched version of bip39 3.0.4 (please refer to /patches/bip39+3.0.4.patch) 
+      - dependency-name: "bip39" # we should be using bip39 3.1.0 (please refer to dependencies_resolutions.md) 
       - dependency-name: "@shopify/react-native-skia" # the latest version is not compatible with react-native-graph 1.1.0.
       - dependency-name: "react-native-quick-crypto" # the latest version has conflicts with @wallet-connect/react-native-compat. consider to update @walletconnect/* first
       - dependency-name: "react-native-keychain" # the latest version slows down android app launch time. https://github.com/oblador/react-native-keychain/issues/630 please update after this issue is resolved

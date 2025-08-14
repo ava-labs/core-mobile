@@ -23,7 +23,8 @@ const baseConfig = {
     // mute warnings about circular dependencies
     requireCycleIgnorePatterns: [/^app\/.*/, /^node_modules\/.*/],
     extraNodeModules: {
-      stream: require.resolve('./node_modules/stream-browserify')
+      stream: require.resolve('./node_modules/stream-browserify'),
+      '@noble/hashes': require.resolve('./node_modules/@noble/hashes')
     },
     // TODO: should this be a temporary fix?
     unstable_enablePackageExports: false,
