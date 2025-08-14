@@ -199,13 +199,13 @@ workflows:
             BITRISE_TEST_APK_PATH=$BITRISE_TEST_APK_PATH
             BITRISE_APK_PATH=$BITRISE_APK_PATH
             IS_INTERNAL_BUILD=$IS_INTERNAL_BUILD
-        - api_level: "28"
+        - api_level: "34"
         - emulator_id: emulator-5554
         - emulator_channel: "0"
         - create_command_flags: --sdcard 2048M
         - tag: default
         - abi: x86_64
-        - profile: pixel_4
+        - profile: pixel_7_pro
   _install-old-android-version:
     steps:
     - script-runner@0:
