@@ -286,10 +286,10 @@ workflows:
         inputs:
         - scheme: $IOS_SCHEME
         - project_path: $IOS_PROJECT_PATH
-        - destination: "platform=iOS Simulator,name=iPhone 16 Pro,OS=18.5"
+        - destination: "platform=iOS Simulator,name=iPhone 16 Pro,OS=18.4"
         - configuration: $IOS_CONFIGURATION
         - code_signing_allowed: "yes"
-        - log_formatter: xcodebuild
+        - log_formatter: xcpretty
     - script-runner@0:
         title: Create iOS Test Run
         inputs:
