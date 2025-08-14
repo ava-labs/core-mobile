@@ -1,14 +1,11 @@
-import { IndexPath } from '@avalabs/k2-alpine'
 import { WalletType } from 'services/wallet/types'
+import { DropdownGroup } from './components/DropdownMenu'
 
 export type DropdownSelection = {
   title: string
-  data: string[][]
-  selected: IndexPath
-  onSelected: (index: IndexPath) => void
-  onDeselect?: (index: IndexPath) => void
-  useAnchorRect?: boolean
-  scrollContentMaxHeight?: number
+  data: DropdownGroup[]
+  selected: string
+  onSelected: (value: string) => void
 }
 
 export enum NavigationPresentationMode {

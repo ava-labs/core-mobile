@@ -43,7 +43,6 @@ import {
   useSafeAreaInsets
 } from 'react-native-safe-area-context'
 import { MarketType } from 'store/watchlist'
-// const SEARCH_BAR_MARGIN_TOP = Platform.OS === 'ios' ? 60 : 55
 
 const TrackHomeScreen = (): JSX.Element => {
   const { navigate } = useRouter()

@@ -1,6 +1,5 @@
 import {
   Image,
-  IndexPath,
   SCREEN_WIDTH,
   SPRING_LINEAR_TRANSITION,
   View
@@ -53,8 +52,7 @@ export const DeFiScreen = ({
 
   const getAmount = useExchangedAmount()
 
-  const isGridView =
-    view.data[0]?.[view.selected.row] === DeFiViewOption.GridView
+  const isGridView = view.selected === DeFiViewOption.GridView
   const numColumns = isGridView ? 2 : 1
 
   useEffect(() => {
@@ -186,9 +184,9 @@ export const DeFiScreen = ({
           sort={sort}
           view={{
             ...view,
-            onSelected: (indexPath: IndexPath) => {
+            onSelected: (value: string) => {
               onScrollResync()
-              view.onSelected(indexPath)
+              view.onSelected(value)
             }
           }}
         />

@@ -1,3 +1,4 @@
+/* eslint-disable max-params */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /*eslint max-params: ["error", 4]*/
 
@@ -46,12 +47,16 @@ const multiTap = async (
   count: number,
   index: number
 ) => {
-  await waitForElement(item, 3000, index)
+  await waitForElement(item, 10000, index)
   await element(item).atIndex(index).multiTap(count)
 }
 
-const tapElementAtIndex = async (item: Detox.NativeMatcher, num: number) => {
-  await waitForElement(item)
+const tapElementAtIndex = async (
+  item: Detox.NativeMatcher,
+  num: number,
+  timeout = 10000
+) => {
+  await waitForElement(item, timeout, num)
   await element(item).atIndex(num).tap()
 }
 
@@ -77,7 +82,7 @@ const setInputText = async (
     await waitForElement(item)
     await element(item).replaceText(value)
   } else {
-    await waitForElement(item, 3000, index)
+    await waitForElement(item, 10000, index)
     await element(item).atIndex(index).replaceText(value)
   }
 }
@@ -105,14 +110,14 @@ const dismissKeyboard = async (searchBarId = 'search_bar') => {
 
 const waitForElement = async (
   item: Detox.NativeMatcher,
-  timeout = 5000,
+  timeout = 10000,
   index = 0
 ) => {
-  await device.disableSynchronization()
   const startTime = Date.now()
-
+  await device.disableSynchronization()
   while (Date.now() - startTime < timeout) {
     try {
+      await new Promise(resolve => setTimeout(resolve, 1000))
       await waitFor(element(item).atIndex(index)).toBeVisible().withTimeout(500)
       return
     } catch (error: any) {
@@ -147,7 +152,7 @@ const failIfElementAppearsWithin = async (
 
 const waitForElementNotVisible = async (
   item: Detox.NativeMatcher,
-  timeout = 3000,
+  timeout = 5000,
   index = 0
 ) => {
   const startTime = Date.now()
@@ -194,6 +199,7 @@ const getElementText = async (
   timeout = 2000,
   index = 0
 ) => {
+  await waitForElement(item, timeout, index)
   const startTime = Date.now()
   const endTime = startTime + timeout
   while (Date.now() < endTime) {
@@ -231,7 +237,7 @@ const getElementsByTestId = async (testID: string) => {
 const isVisible = async (
   item: Detox.NativeMatcher,
   index = 0,
-  timeout = 2000
+  timeout = 10000
 ) => {
   try {
     await waitForElement(item, timeout, index)
@@ -361,7 +367,7 @@ const drag = async (
   percentage = 0.2,
   index = 0
 ) => {
-  await waitForElement(item, 3000, index)
+  await waitForElement(item, 10000, index)
   await element(item).atIndex(index).longPress()
   await element(item).atIndex(index).swipe(direction, 'fast', percentage)
 }

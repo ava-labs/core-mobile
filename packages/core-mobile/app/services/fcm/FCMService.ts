@@ -65,8 +65,11 @@ class FCMService {
         return
       }
 
-      if (result.data.data.event === BalanceChangeEvents.BALANCES_SPENT) {
-        // skip showing notification if user just spent balance in app
+      if (
+        result.data.data.event === BalanceChangeEvents.BALANCES_SPENT ||
+        result.data.data.event === BalanceChangeEvents.BALANCES_TRANSFERRED
+      ) {
+        // skip showing notification if user just spent balance in app, or transferred balance between user's own accounts
         return
       }
 

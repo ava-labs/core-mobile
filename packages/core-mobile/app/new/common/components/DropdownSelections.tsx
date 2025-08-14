@@ -1,20 +1,10 @@
-import {
-  Chip,
-  IndexPath,
-  SimpleDropdown,
-  SxProp,
-  usePopoverAnchor,
-  View
-} from '@avalabs/k2-alpine'
+import { Chip, SxProp, View } from '@avalabs/k2-alpine'
 import { DropdownSelection } from 'common/types'
-import React, { memo, useMemo, useRef } from 'react'
-
-const SEPARATOR_HEIGHT = 1
-const POPOVER_HEIGHT = 40
-const POPOVER_WIDTH = 250
+import React, { memo } from 'react'
+import { DropdownMenu } from './DropdownMenu'
 
 interface Props {
-  filter?: DropdownSelection & { selected: IndexPath | IndexPath[] }
+  filter?: DropdownSelection & { selected: string | string[] }
   sort?: DropdownSelection
   view?: DropdownSelection
   network?: DropdownSelection
@@ -28,40 +18,6 @@ export const DropdownSelections = ({
   view,
   sx
 }: Props): React.JSX.Element => {
-  const networkDropdown = useMemo(() => {
-    if (!network) return
-
-    return (
-      <SimpleDropdown
-        from={
-          <Chip size="large" hitSlop={8} testID="network_dropdown_btn">
-            {network.title}
-          </Chip>
-        }
-        sections={network.data}
-        selectedRows={[network.selected]}
-        onSelectRow={network.onSelected}
-      />
-    )
-  }, [network])
-
-  const viewDropdown = useMemo(() => {
-    if (!view) return
-
-    return (
-      <SimpleDropdown
-        from={
-          <Chip size="large" hitSlop={8} testID="view_dropdown_btn">
-            {view.title}
-          </Chip>
-        }
-        sections={view.data}
-        selectedRows={[view.selected]}
-        onSelectRow={view.onSelected}
-      />
-    )
-  }, [view])
-
   return (
     <View
       sx={{
@@ -71,161 +27,69 @@ export const DropdownSelections = ({
       }}>
       <View sx={{ flexDirection: 'row', gap: 8 }}>
         {filter && (
-          <Filters
+          <Dropdown
             title={filter.title}
             data={filter.data}
-            selected={filter.selected}
             onSelected={filter.onSelected}
-            onDeselect={filter.onDeselect}
-            scrollContentMaxHeight={filter.scrollContentMaxHeight}
+            testID="filter_dropdown_btn"
+            rightIcon="expandMore"
           />
         )}
 
         {sort && (
-          <Sorts
-            useAnchorRect={sort.useAnchorRect}
+          <Dropdown
             title={sort.title}
             data={sort.data}
-            selected={sort.selected}
             onSelected={sort.onSelected}
+            testID="sort_dropdown_btn"
+            rightIcon="expandMore"
           />
         )}
       </View>
-      {viewDropdown}
-      {networkDropdown}
+      {view && (
+        <Dropdown
+          title={view.title}
+          data={view.data}
+          onSelected={view.onSelected}
+          testID="view_dropdown_btn"
+        />
+      )}
+      {network && (
+        <Dropdown
+          title={network.title}
+          data={network.data}
+          onSelected={network.onSelected}
+          testID="network_dropdown_btn"
+        />
+      )}
     </View>
   )
 }
 
-const Filters = memo(
+const Dropdown = memo(
   ({
     title,
     data,
-    selected,
     onSelected,
-    onDeselect,
-    scrollContentMaxHeight
+    rightIcon,
+    testID
   }: {
     title: DropdownSelection['title']
     data: DropdownSelection['data']
-    selected: DropdownSelection['selected']
     onSelected: DropdownSelection['onSelected']
-    onDeselect: DropdownSelection['onDeselect']
-    scrollContentMaxHeight: DropdownSelection['scrollContentMaxHeight']
+    rightIcon?: React.JSX.Element | 'expandMore'
+    testID?: string
   }) => {
-    const selectedRows = useMemo(
-      () => (Array.isArray(selected) ? selected : [selected]),
-      [selected]
-    )
-
-    const chip = useMemo(() => {
-      return (
-        <Chip
-          size="large"
-          hitSlop={8}
-          rightIcon={'expandMore'}
-          testID="filter_dropdown_btn">
+    return (
+      <DropdownMenu
+        groups={data}
+        onPressAction={(event: { nativeEvent: { event: string } }) =>
+          onSelected(event.nativeEvent.event)
+        }>
+        <Chip size="large" hitSlop={8} rightIcon={rightIcon} testID={testID}>
           {title}
         </Chip>
-      )
-    }, [title])
-
-    return (
-      <SimpleDropdown
-        from={chip}
-        sections={data}
-        selectedRows={selectedRows}
-        onSelectRow={onSelected}
-        onDeselectRow={onDeselect}
-        minWidth={POPOVER_WIDTH}
-        scrollContentMaxHeight={scrollContentMaxHeight}
-      />
-    )
-  }
-)
-
-const Sorts = memo(
-  ({
-    useAnchorRect,
-    title,
-    data,
-    selected,
-    onSelected
-  }: {
-    useAnchorRect: DropdownSelection['useAnchorRect']
-    title: DropdownSelection['title']
-    data: DropdownSelection['data']
-    selected: DropdownSelection['selected']
-    onSelected: DropdownSelection['onSelected']
-  }) => {
-    const sortRef = useRef(null)
-
-    const { anchorRect, isPopoverVisible, onShowPopover, onHidePopover } =
-      usePopoverAnchor(sortRef)
-
-    const numberOfItems = data[0]?.length ?? 2
-
-    const selectedRows = useMemo(() => {
-      return [selected]
-    }, [selected])
-
-    const chip = useMemo(() => {
-      if (!useAnchorRect) return null
-
-      return (
-        <Chip size="large" hitSlop={8} rightIcon={'expandMore'}>
-          {title}
-        </Chip>
-      )
-    }, [title, useAnchorRect])
-
-    const displayArea = useMemo(() => {
-      if (!anchorRect) return
-
-      const separatorHeight = (numberOfItems - 1) * SEPARATOR_HEIGHT
-      const displayAreaHeight = numberOfItems * POPOVER_HEIGHT + separatorHeight
-
-      return {
-        x: anchorRect.x,
-        y: anchorRect.y + anchorRect.height,
-        width: POPOVER_WIDTH,
-        height: displayAreaHeight
-      }
-    }, [anchorRect, numberOfItems])
-
-    if (useAnchorRect === true) {
-      return (
-        <>
-          <Chip
-            ref={sortRef}
-            size="large"
-            hitSlop={8}
-            rightIcon={'expandMore'}
-            onPress={onShowPopover}
-            testID="sort_dropdown_btn">
-            {title}
-          </Chip>
-          <SimpleDropdown
-            displayArea={displayArea}
-            isVisible={isPopoverVisible}
-            onRequestClose={onHidePopover}
-            sections={data}
-            selectedRows={selectedRows}
-            onSelectRow={onSelected}
-            minWidth={POPOVER_WIDTH}
-          />
-        </>
-      )
-    }
-
-    return (
-      <SimpleDropdown
-        from={chip}
-        sections={data}
-        selectedRows={selectedRows}
-        onSelectRow={onSelected}
-        minWidth={POPOVER_WIDTH}
-      />
+      </DropdownMenu>
     )
   }
 )

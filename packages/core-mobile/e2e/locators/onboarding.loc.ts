@@ -36,7 +36,7 @@ export default {
   enterYourRecoveryPhraseDescription:
     'This phrase should contain 12, 18, or 24 words. Use a space between each word.',
   import: `Import`,
-  nameWalletInput: 'text_input',
+  nameWalletInput: 'name_text_input',
   nameWalletTitle: 'Add a name for your wallet',
   letsgo: 'lets_go_btn',
   confirmationTitle: `That's it!\nEnjoy your wallet`,

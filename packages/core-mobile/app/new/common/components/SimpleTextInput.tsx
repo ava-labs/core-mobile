@@ -15,7 +15,8 @@ export const SimpleTextInput = ({
   placeholder,
   maxLength,
   autoFocus,
-  secureTextEntry
+  secureTextEntry,
+  testID = 'text_input'
 }: {
   value: string
   onChangeText: (name: string) => void
@@ -23,6 +24,7 @@ export const SimpleTextInput = ({
   maxLength?: number
   autoFocus?: boolean
   secureTextEntry?: boolean
+  testID?: string
 }): React.JSX.Element => {
   const {
     theme: { colors }
@@ -65,7 +67,7 @@ export const SimpleTextInput = ({
         onChangeText={onChangeText}
         placeholder={placeholder}
         maxLength={maxLength}
-        testID="text_input"
+        testID={testID}
         secureTextEntry={secureTextEntry}
       />
       {value.length !== 0 && (

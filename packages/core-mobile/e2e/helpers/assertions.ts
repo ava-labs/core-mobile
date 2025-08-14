@@ -7,6 +7,7 @@ import Constants from './constants'
 import Actions from './actions'
 
 const isVisible = async (item: Detox.NativeMatcher, num = 0) => {
+  await Actions.waitForElement(item, 10000, num)
   await expect(element(item).atIndex(num)).toBeVisible()
   return true
 }

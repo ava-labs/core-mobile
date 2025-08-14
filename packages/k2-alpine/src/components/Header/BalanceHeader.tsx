@@ -19,7 +19,8 @@ export const BalanceHeader = ({
   isLoading,
   isPrivacyModeEnabled = false,
   isDeveloperModeEnabled = false,
-  renderMaskView
+  renderMaskView,
+  testID
 }: {
   accountName?: string
   formattedBalance: string
@@ -30,6 +31,7 @@ export const BalanceHeader = ({
   isLoading?: boolean
   isPrivacyModeEnabled?: boolean
   isDeveloperModeEnabled?: boolean
+  testID?: string
   renderMaskView?: () => React.JSX.Element
 }): React.JSX.Element => {
   const renderPriceChangeIndicator = useCallback((): React.JSX.Element => {
@@ -126,7 +128,7 @@ export const BalanceHeader = ({
     <View onLayout={onLayout}>
       {accountName && (
         <Text
-          testID="balance_header_account_name"
+          testID={`${testID}__balance_header_account_name`}
           variant="heading2"
           sx={{ color: '$textSecondary', lineHeight: 38 }}
           numberOfLines={1}>

@@ -11,7 +11,8 @@ import actions from '../../helpers/actions'
 const networkAndAddress: Record<string, string> = {
   [cl.evm]: cl.myEvmAddress,
   [cl.xpChain]: cl.myXpAddress,
-  [cl.bitcoin]: cl.myBtcAddress
+  [cl.bitcoin]: cl.myBtcAddress,
+  [cl.solana]: cl.mySolanaAddress
 }
 
 const newAddress: Record<string, string> = {

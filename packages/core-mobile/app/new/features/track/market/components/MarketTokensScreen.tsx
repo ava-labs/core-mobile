@@ -26,7 +26,7 @@ const MarketTokensScreen = ({
   renderEmpty: () => React.JSX.Element
   containerStyle: ViewStyle
 }): JSX.Element => {
-  const isGridView = view.data[0]?.[view.selected.row] === MarketView.Grid
+  const isGridView = view.selected === MarketView.Grid
   const numColumns = isGridView ? 2 : 1
 
   const dataLength = data.length

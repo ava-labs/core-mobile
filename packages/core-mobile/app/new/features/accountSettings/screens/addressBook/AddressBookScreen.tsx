@@ -1,11 +1,4 @@
-import {
-  Chip,
-  Icons,
-  Image,
-  SimpleDropdown,
-  useTheme,
-  View
-} from '@avalabs/k2-alpine'
+import { Chip, Icons, Image, useTheme, View } from '@avalabs/k2-alpine'
 import { ContactList } from 'common/components/ContactList'
 import { ErrorState } from 'common/components/ErrorState'
 import NavigationBarButton from 'common/components/NavigationBarButton'
@@ -13,6 +6,7 @@ import { useRouter } from 'expo-router'
 import { useSortedContacts } from 'features/accountSettings/hooks/useSortedContacts'
 import React, { useCallback } from 'react'
 import { uuid } from 'utils/uuid'
+import { DropdownMenu } from 'common/components/DropdownMenu'
 import EMPTY_ADDRESS_BOOK_ICON from '../../../../assets/icons/address_book_empty.png'
 
 export const AddressBookScreen = (): JSX.Element => {
@@ -55,20 +49,19 @@ export const AddressBookScreen = (): JSX.Element => {
 
   const renderListHeader = useCallback(() => {
     return contacts.length > 0 ? (
-      <View>
-        <SimpleDropdown
-          from={
-            <Chip size="large" hitSlop={8} rightIcon={'expandMore'}>
-              {sort.title}
-            </Chip>
-          }
-          sections={sort.data}
-          selectedRows={[sort.selected]}
-          onSelectRow={sort.onSelected}
-        />
+      <View style={{ flexDirection: 'row' }}>
+        <DropdownMenu
+          groups={sort.data}
+          onPressAction={(event: { nativeEvent: { event: string } }) =>
+            sort.onSelected(event.nativeEvent.event)
+          }>
+          <Chip size="large" hitSlop={8} rightIcon={'expandMore'}>
+            {sort.title}
+          </Chip>
+        </DropdownMenu>
       </View>
     ) : undefined
-  }, [contacts.length, sort.data, sort.onSelected, sort.selected, sort.title])
+  }, [contacts.length, sort])
 
   return (
     <ContactList
