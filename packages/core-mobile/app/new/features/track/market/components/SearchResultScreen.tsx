@@ -1,4 +1,4 @@
-import { ANIMATED, Image, IndexPath } from '@avalabs/k2-alpine'
+import { ANIMATED, Image } from '@avalabs/k2-alpine'
 import { CollapsibleTabs } from 'common/components/CollapsibleTabs'
 import { ErrorState } from 'common/components/ErrorState'
 import { LoadingState } from 'common/components/LoadingState'
@@ -124,9 +124,9 @@ const SearchResultScreen = ({
       sort={sort}
       view={{
         ...view,
-        onSelected: (indexPath: IndexPath) => {
+        onSelected: (value: string) => {
           handleScrollResync()
-          view.onSelected(indexPath)
+          view.onSelected(value)
         }
       }}
       goToMarketDetail={goToMarketDetail}

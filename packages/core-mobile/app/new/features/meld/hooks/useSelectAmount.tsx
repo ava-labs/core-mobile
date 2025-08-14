@@ -292,7 +292,7 @@ export const useSelectAmount = ({
         category === ServiceProviderCategories.CRYPTO_ONRAMP
           ? 'purchased'
           : 'withdrawn'
-      } at the moment, please try again later.`
+      } at the moment, please adjust the amount or try again later.`
     }
 
     if (cryptoQuotesError?.message) {

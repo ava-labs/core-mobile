@@ -1,4 +1,5 @@
 import { TokenWithBalance } from '@avalabs/vm-module-types'
+import { DropdownGroup } from 'common/components/DropdownMenu'
 
 export type LocalTokenId = string
 
@@ -90,16 +91,45 @@ export enum AssetManageView {
   ManageList = 'Manage list'
 }
 
-export type AssetBalanceSorts = AssetBalanceSort[][]
-export type AssetManageViews = AssetManageView[][]
-
-export const ASSET_BALANCE_SORTS: AssetBalanceSorts = [
-  [AssetBalanceSort.HighToLow, AssetBalanceSort.LowToHigh]
+export const ASSET_BALANCE_SORTS: DropdownGroup[] = [
+  {
+    key: 'asset-balance-sorts',
+    items: [
+      {
+        id: AssetBalanceSort.HighToLow,
+        title: AssetBalanceSort.HighToLow
+      },
+      {
+        id: AssetBalanceSort.LowToHigh,
+        title: AssetBalanceSort.LowToHigh
+      }
+    ]
+  }
 ]
 
-export const ASSET_MANAGE_VIEWS: AssetManageViews = [
-  [AssetManageView.Grid, AssetManageView.List],
-  [AssetManageView.ManageList]
+export const ASSET_MANAGE_VIEWS: DropdownGroup[] = [
+  {
+    key: 'asset-manage-views',
+    items: [
+      {
+        id: AssetManageView.Grid,
+        title: AssetManageView.Grid
+      },
+      {
+        id: AssetManageView.List,
+        title: AssetManageView.List
+      }
+    ]
+  },
+  {
+    key: 'asset-manage-list',
+    items: [
+      {
+        id: AssetManageView.ManageList,
+        title: AssetManageView.ManageList
+      }
+    ]
+  }
 ]
 
 // Collectibles
@@ -114,6 +144,9 @@ export enum CollectibleTypeFilter {
   Videos = 'Videos'
 }
 
+export type AssetNetworkFilterType = AssetNetworkFilter | CollectibleStatus
+export type CollectibleFilterType = CollectibleTypeFilter | CollectibleStatus
+
 export enum CollectibleSort {
   NameAToZ = 'Name A to Z',
   NameZToA = 'Name Z to A',
@@ -126,13 +159,6 @@ export enum CollectibleView {
   ListView = 'List view',
   ManageList = 'Manage list'
 }
-
-export type CollectibleSorts = CollectibleSort[][]
-export type CollectibleFilters = (
-  | (AssetNetworkFilter | CollectibleStatus)[]
-  | (CollectibleTypeFilter | CollectibleStatus)[]
-)[]
-export type CollectibleViews = CollectibleView[][]
 
 export const COLLECTIBLE_NETWORK_FILTERS = [
   AssetNetworkFilter.AllNetworks,
@@ -148,24 +174,68 @@ export const COLLECTIBLE_TYPE_FILTERS = [
   CollectibleStatus.Hidden
 ]
 
-export const COLLECTIBLE_FILTERS: CollectibleFilters = [
-  COLLECTIBLE_NETWORK_FILTERS,
-  COLLECTIBLE_TYPE_FILTERS
+export const COLLECTIBLE_FILTERS: DropdownGroup[] = [
+  {
+    key: 'collectible-network-filters',
+    items: COLLECTIBLE_NETWORK_FILTERS.map(f => ({
+      id: f,
+      title: f
+    }))
+  },
+  {
+    key: 'collectible-type-filters',
+    items: COLLECTIBLE_TYPE_FILTERS.map(f => ({
+      id: f,
+      title: f
+    }))
+  }
 ]
 
-export const COLLECTIBLE_SORTS: CollectibleSorts = [
-  [
-    CollectibleSort.NameAToZ,
-    CollectibleSort.NameZToA,
-    CollectibleSort.DateAdded
-  ]
+export const COLLECTIBLE_SORTS: DropdownGroup[] = [
+  {
+    key: 'collectible-sorts',
+    items: [
+      {
+        id: CollectibleSort.NameAToZ,
+        title: CollectibleSort.NameAToZ
+      },
+      {
+        id: CollectibleSort.NameZToA,
+        title: CollectibleSort.NameZToA
+      },
+      {
+        id: CollectibleSort.DateAdded,
+        title: CollectibleSort.DateAdded
+      }
+    ]
+  }
 ]
 
-export const COLLECTIBLE_VIEWS: CollectibleViews = [
-  [
-    CollectibleView.LargeGrid,
-    CollectibleView.CompactGrid,
-    CollectibleView.ListView
-  ],
-  [CollectibleView.ManageList]
+export const COLLECTIBLE_VIEWS: DropdownGroup[] = [
+  {
+    key: 'collectible-views',
+    items: [
+      {
+        id: CollectibleView.LargeGrid,
+        title: CollectibleView.LargeGrid
+      },
+      {
+        id: CollectibleView.CompactGrid,
+        title: CollectibleView.CompactGrid
+      },
+      {
+        id: CollectibleView.ListView,
+        title: CollectibleView.ListView
+      }
+    ]
+  },
+  {
+    key: 'manage-list',
+    items: [
+      {
+        id: CollectibleView.ManageList,
+        title: CollectibleView.ManageList
+      }
+    ]
+  }
 ]
