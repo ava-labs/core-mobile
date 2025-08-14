@@ -27,7 +27,22 @@ export const activityStore = create<ActivityState>()(
     }),
     {
       name: ZustandStorageKeys.ACTIVITY,
-      storage: zustandMMKVStorage
+      storage: zustandMMKVStorage,
+      migrate: (persistedState: any) => {
+        // Check if this is legacy data with recentAccountIndexes
+        if (
+          persistedState &&
+          'selectedNetwork' in persistedState &&
+          persistedState.selectedNetwork?.section !== undefined &&
+          persistedState.selectedNetwork?.row !== undefined
+        ) {
+          // This is to default the selected network to the first network when user is upgrading from older version of the app
+          // the selected network was set to IndexPath object instead of ActivityNetworkFilter
+          persistedState.selectedNetwork = undefined
+        }
+        return persistedState
+      },
+      version: 1
     }
   )
 )
