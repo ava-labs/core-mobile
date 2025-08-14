@@ -44,7 +44,8 @@ export const getAddressesInRange = async ({
   const cacheKey = `${
     StorageKey.ADDRESSES_IN_RANGE
   }.${isDeveloperMode}.${JSON.stringify(params)}`
-  const cachedResult = commonStorage.getString(cacheKey)
+  // const cachedResult = commonStorage.getString(cacheKey)
+  const cachedResult = undefined
   const parsedCachedResult = addressesInRangeCacheSchema.safeParse(
     JSON.parse(cachedResult ?? '{}')
   )
