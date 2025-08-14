@@ -15,28 +15,16 @@ import {
 import { TokenWithBalance } from '@avalabs/vm-module-types'
 import { SwapSide } from '@paraswap/sdk'
 import { useNavigation } from '@react-navigation/native'
-import Big from 'big.js'
 import { ScrollScreen } from 'common/components/ScrollScreen'
 import { TokenInputWidget } from 'common/components/TokenInputWidget'
-import {
-  AVAX_TOKEN_ID,
-  SOLANA_TOKEN_LOCAL_ID,
-  USDC_AVALANCHE_C_TOKEN_ID,
-  USDC_SOLANA_TOKEN_ID
-} from 'common/consts/swap'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import { usePreventScreenRemoval } from 'common/hooks/usePreventScreenRemoval'
-import { usePrevious } from 'common/hooks/usePrevious'
-import { useSwapList } from 'common/hooks/useSwapList'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
 import { ParaswapError, ParaswapErrorCode } from 'errors/swapError'
 import { useGlobalSearchParams, useRouter } from 'expo-router'
 import useCChainNetwork from 'hooks/earn/useCChainNetwork'
-import useSolanaNetwork from 'hooks/earn/useSolanaNetwork'
-import { useNetworks } from 'hooks/networks/useNetworks'
 import { useWatchlist } from 'hooks/watchlist/useWatchlist'
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { InteractionManager } from 'react-native'
 import Animated, {
   FadeIn,
   FadeOut,
@@ -48,11 +36,22 @@ import {
   LocalTokenWithBalance,
   selectTokensWithZeroBalanceByNetworks
 } from 'store/balance'
+import { basisPointsToPercentage } from 'utils/basisPointsToPercentage'
+import Big from 'big.js'
+import { useSwapList } from 'common/hooks/useSwapList'
+import useSolanaNetwork from 'hooks/earn/useSolanaNetwork'
+import { useNetworks } from 'hooks/networks/useNetworks'
+import {
+  AVAX_TOKEN_ID,
+  SOLANA_TOKEN_LOCAL_ID,
+  USDC_AVALANCHE_C_TOKEN_ID,
+  USDC_SOLANA_TOKEN_ID
+} from 'common/consts/swap'
 import {
   selectIsSwapFeesBlocked,
   selectIsSwapFeesJupiterBlocked
 } from 'store/posthog'
-import { basisPointsToPercentage } from 'utils/basisPointsToPercentage'
+import { usePrevious } from 'common/hooks/usePrevious'
 import { SlippageInput } from '../components.tsx/SlippageInput'
 import {
   JUPITER_PARTNER_FEE_BPS,
@@ -60,17 +59,17 @@ import {
   PARASWAP_PARTNER_FEE_BPS
 } from '../consts'
 import { useSwapContext } from '../contexts/SwapContext'
-import { useSwapRate } from '../hooks/useSwapRate'
 import {
   isJupiterQuote,
   isMarkrQuote,
   isParaswapQuote,
   SwapProviders
 } from '../types'
+import { useSwapRate } from '../hooks/useSwapRate'
 
 export const SwapScreen = (): JSX.Element => {
   const { theme } = useTheme()
-  const { navigate, canDismiss, dismiss } = useRouter()
+  const { navigate, back, canGoBack } = useRouter()
   const { getState } = useNavigation()
   const params = useGlobalSearchParams<{
     initialTokenIdFrom?: string
@@ -557,15 +556,13 @@ export const SwapScreen = (): JSX.Element => {
 
   useEffect(() => {
     if (swapStatus === 'Success') {
-      dismiss()
-      InteractionManager.runAfterInteractions(() => {
-        const state = getState()
-        if (state?.routes[state?.index ?? 0]?.name === 'swap') {
-          canDismiss() && dismiss()
-        }
-      })
+      back()
+      const state = getState()
+      if (state?.routes.some(route => route.name === 'onboarding')) {
+        canGoBack() && back()
+      }
     }
-  }, [dismiss, canDismiss, getState, swapStatus])
+  }, [back, canGoBack, getState, swapStatus])
 
   useEffect(validateInputs, [validateInputs])
   useEffect(applyQuote, [applyQuote])
