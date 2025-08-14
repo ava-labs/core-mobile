@@ -11,7 +11,8 @@ enum SwapErrorCode {
   APPROVAL_TX_FAILED = 'APPROVAL_TX_FAILED',
   SWAP_TX_FAILED = 'SWAP_TX_FAILED',
   WRONG_QUOTE_PROVIDER = 'WRONG_QUOTE_PROVIDER',
-  UNABLE_TO_ESTIMATE_GAS = 'UNABLE_TO_ESTIMATE_GAS'
+  UNABLE_TO_ESTIMATE_GAS = 'UNABLE_TO_ESTIMATE_GAS',
+  INSUFFICIENT_BALANCE = 'INSUFFICIENT_BALANCE'
 }
 
 export enum ParaswapErrorCode {
@@ -72,6 +73,11 @@ export const swapError = {
       message:
         'Token approval transaction failed. The transaction may not have been signed or broadcasted successfully.',
       data: { cause: error, code: SwapErrorCode.APPROVAL_TX_FAILED }
+    }),
+  insufficientFunds: (error: unknown) =>
+    rpcErrors.internal({
+      message: 'Insufficient balance for swap',
+      data: { cause: error, code: SwapErrorCode.INSUFFICIENT_BALANCE }
     }),
   swapTxFailed: (error: unknown) =>
     rpcErrors.internal({

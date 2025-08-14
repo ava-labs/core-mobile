@@ -166,40 +166,40 @@ export const selectNetwork =
     return allNetworks[chainId]
   }
 
-export const selectNetworks = (state: RootState): Networks => {
-  const isDeveloperMode = selectIsDeveloperMode(state)
-  const customNetworks = selectCustomNetworks(state)
-  const isSolanaSupportBlocked = selectIsSolanaSupportBlocked(state)
-  const rawNetworks = getNetworksFromCache({
-    includeSolana: !isSolanaSupportBlocked
-  })
+export const selectNetworks = createSelector(
+  [selectIsDeveloperMode, selectCustomNetworks, selectIsSolanaSupportBlocked],
+  (isDeveloperMode, customNetworks, isSolanaSupportBlocked) => {
+    const rawNetworks = getNetworksFromCache({
+      includeSolana: !isSolanaSupportBlocked
+    })
 
-  const populatedNetworks = Object.keys(rawNetworks ?? {}).reduce(
-    (reducedNetworks, key) => {
-      const chainId = parseInt(key)
-      const network = rawNetworks?.[chainId]
-      if (network && network.isTestnet === isDeveloperMode) {
-        reducedNetworks[chainId] = network
-      }
-      return reducedNetworks
-    },
-    {} as Record<number, Network>
-  )
+    const populatedNetworks = Object.keys(rawNetworks ?? {}).reduce(
+      (reducedNetworks, key) => {
+        const chainId = parseInt(key)
+        const network = rawNetworks?.[chainId]
+        if (network && network.isTestnet === isDeveloperMode) {
+          reducedNetworks[chainId] = network
+        }
+        return reducedNetworks
+      },
+      {} as Record<number, Network>
+    )
 
-  const populatedCustomNetworks = Object.keys(customNetworks).reduce(
-    (reducedNetworks, key) => {
-      const chainId = parseInt(key)
-      const network = customNetworks[chainId]
+    const populatedCustomNetworks = Object.keys(customNetworks).reduce(
+      (reducedNetworks, key) => {
+        const chainId = parseInt(key)
+        const network = customNetworks[chainId]
 
-      if (network && network.isTestnet === isDeveloperMode) {
-        reducedNetworks[chainId] = network
-      }
-      return reducedNetworks
-    },
-    {} as Record<number, Network>
-  )
-  return { ...populatedNetworks, ...populatedCustomNetworks }
-}
+        if (network && network.isTestnet === isDeveloperMode) {
+          reducedNetworks[chainId] = network
+        }
+        return reducedNetworks
+      },
+      {} as Record<number, Network>
+    )
+    return { ...populatedNetworks, ...populatedCustomNetworks }
+  }
+)
 
 export const selectEnabledNetworks = createSelector(
   [selectEnabledChainIds, selectIsDeveloperMode, selectNetworks],

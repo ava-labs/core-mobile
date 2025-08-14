@@ -3,14 +3,12 @@ import React, { CSSProperties, useCallback } from 'react'
 import { Platform } from 'react-native'
 import { Pressable } from 'react-native-gesture-handler'
 import {
-  CheckboxItem,
   Content,
   create,
   Group,
   Item,
   ItemIcon,
   ItemImage,
-  ItemIndicator,
   ItemTitle,
   Root,
   Separator,
@@ -69,33 +67,31 @@ export function DropdownMenu({
       )
 
       if (selected) {
-        return Platform.select({
-          ios: platformCheckboxIcon?.ios ? (
-            <DropdownMenuItem
-              {...rest}
-              key={id}
-              onSelect={() => onPressAction({ nativeEvent: { event: id } })}>
-              <DropdownMenuItemTitle
-                color={
-                  rest.destructive
-                    ? theme.colors?.$textDanger
-                    : theme.colors?.$textPrimary
-                }>
-                {title}
-              </DropdownMenuItemTitle>
-              <DropdownMenuImage source={platformCheckboxIcon.ios} />
-            </DropdownMenuItem>
-          ) : null,
-          android: (
-            <DropdownMenuCheckboxItem
-              {...rest}
-              value={selected}
-              onSelect={() => onPressAction({ nativeEvent: { event: id } })}
-              key={id}>
-              <DropdownMenuItemTitle>{title}</DropdownMenuItemTitle>
-            </DropdownMenuCheckboxItem>
-          )
-        })
+        return (
+          <DropdownMenuItem
+            {...rest}
+            key={id}
+            onSelect={() => onPressAction({ nativeEvent: { event: id } })}>
+            <DropdownMenuItemTitle
+              color={
+                rest.destructive
+                  ? theme.colors?.$textDanger
+                  : theme.colors?.$textPrimary
+              }>
+              {title}
+            </DropdownMenuItemTitle>
+            {Platform.select({
+              ios: platformCheckboxIcon?.ios ? (
+                <DropdownMenuImage source={platformCheckboxIcon.ios} />
+              ) : null,
+              android: platformCheckboxIcon?.android ? (
+                <DropdownMenuItemIcon
+                  androidIconName={platformCheckboxIcon.android}
+                />
+              ) : null
+            })}
+          </DropdownMenuItem>
+        )
       }
 
       return (
@@ -199,20 +195,6 @@ const DropdownMenuSeparator = create(
     />
   ),
   'Separator'
-)
-
-const DropdownMenuCheckboxItem = create(
-  (props: React.ComponentProps<typeof CheckboxItem>) => (
-    <CheckboxItem
-      {...props}
-      style={{ ...props.style, display: 'flex', alignItems: 'center', gap: 8 }}>
-      <Pressable>
-        <ItemIndicator />
-        {props.children}
-      </Pressable>
-    </CheckboxItem>
-  ),
-  'CheckboxItem'
 )
 
 const DropdownMenuImage = create(
