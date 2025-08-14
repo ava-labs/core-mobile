@@ -63,7 +63,7 @@ export const RecentContactsScreen = (): JSX.Element | null => {
             canGoBack() && back()
             // dismiss onboarding modal
             const state = getState()
-            if (state?.routes[state?.index ?? 0]?.name === 'onboarding') {
+            if (state?.routes.some(route => route.name === 'onboarding')) {
               canGoBack() && back()
             }
             contact?.type &&

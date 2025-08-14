@@ -5,20 +5,19 @@ import {
   useTheme,
   View
 } from '@avalabs/k2-alpine'
+import React, { useCallback, useMemo, useState } from 'react'
 import { useHeaderHeight } from '@react-navigation/elements'
 import { useNavigation } from '@react-navigation/native'
 import { QrCodeScanner } from 'common/components/QrCodeScanner'
 import { useCollectibleSend } from 'common/hooks/send/useCollectibleSend'
-import { isAddress } from 'ethers'
 import { useRouter } from 'expo-router'
 import { useNativeTokenWithBalanceByNetwork } from 'features/send/hooks/useNativeTokenWithBalanceByNetwork'
 import { useSendSelectedToken } from 'features/send/store'
 import { useNetworks } from 'hooks/networks/useNetworks'
 import { useNetworkFee } from 'hooks/useNetworkFee'
-import React, { useCallback, useMemo, useState } from 'react'
-import { InteractionManager } from 'react-native'
 import { useSelector } from 'react-redux'
 import { selectActiveAccount } from 'store/account'
+import { isAddress } from 'ethers'
 import { useSendTransactionCallbacks } from '../hooks/useSendTransactionCallbacks'
 
 export const ScanQrCodeScreen = (): JSX.Element => {
@@ -27,7 +26,7 @@ export const ScanQrCodeScreen = (): JSX.Element => {
   } = useTheme()
   const headerHeight = useHeaderHeight()
   const { getNetwork } = useNetworks()
-  const { canDismiss, dismiss } = useRouter()
+  const { canGoBack, back } = useRouter()
   const { getState } = useNavigation()
   const fromAddress = useSelector(selectActiveAccount)?.addressC ?? ''
   const [selectedToken] = useSendSelectedToken()
@@ -64,16 +63,22 @@ export const ScanQrCodeScreen = (): JSX.Element => {
         onSuccess({
           txHash,
           onDismiss: () => {
-            canDismiss() && dismiss()
-            InteractionManager.runAfterInteractions(() => {
-              const navigationState = getState()
-              if (
-                navigationState?.routes[navigationState?.index ?? 0]?.name ===
-                'recentContacts'
-              ) {
-                canDismiss() && dismiss()
-              }
-            })
+            // dismiss QR code modal
+            canGoBack() && back()
+            // dismiss recent contacts modal
+            const navigationState = getState()
+            if (
+              navigationState?.routes.some(
+                route => route.name === 'recentContacts'
+              )
+            ) {
+              canGoBack() && back()
+            }
+            // dismiss onboarding modal
+            const state = getState()
+            if (state?.routes.some(route => route.name === 'onboarding')) {
+              canGoBack() && back()
+            }
           }
         })
       } catch (reason) {
@@ -82,7 +87,7 @@ export const ScanQrCodeScreen = (): JSX.Element => {
         setIsSending(false)
       }
     },
-    [canDismiss, dismiss, getState, onFailure, onSuccess, selectedToken, send]
+    [back, canGoBack, getState, onFailure, onSuccess, selectedToken, send]
   )
 
   return (

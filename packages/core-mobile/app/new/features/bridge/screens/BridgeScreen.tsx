@@ -201,7 +201,7 @@ export const BridgeScreen = (): JSX.Element => {
       audioFeedback(Audios.Send)
       back()
       const state = getState()
-      if (state?.routes[state?.index ?? 0]?.name === 'onboarding') {
+      if (state?.routes.some(route => route.name === 'onboarding')) {
         canGoBack() && back()
       }
       navigate({
