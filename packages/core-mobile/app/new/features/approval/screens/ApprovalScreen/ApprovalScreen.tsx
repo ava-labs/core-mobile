@@ -111,7 +111,7 @@ const ApprovalScreen = ({
   const rejectAndClose = useCallback(
     (message?: string) => {
       onReject(message)
-      router.canDismiss() && router.dismiss()
+      router.canGoBack() && router.back()
     },
     [onReject]
   )
