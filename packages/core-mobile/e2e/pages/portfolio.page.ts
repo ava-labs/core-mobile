@@ -508,6 +508,7 @@ class PortfolioPage {
     to = accountManageLoc.accountTwoAddress
   ) {
     await Action.waitForElement(by.id(`tx__from_${from}_to_${to}`))
+    console.log(`Verified the transaction activity: tx__from_${from}_to_${to}`)
   }
 
   async selectView(viewType = 'List view') {

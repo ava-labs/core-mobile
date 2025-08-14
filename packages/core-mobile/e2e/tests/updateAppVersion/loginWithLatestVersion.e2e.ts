@@ -1,5 +1,5 @@
 import { warmup } from '../../helpers/warmup'
-import bottomTabsPage from '../../pages/bottomTabs.page'
+import commonElsPage from '../../pages/commonEls.page'
 
 describe('Install latest version of app and login', () => {
   beforeAll(async () => {
@@ -9,6 +9,6 @@ describe('Install latest version of app and login', () => {
 
   it('Verify the bottom tabs are displayed', async () => {
     console.log('verifying bottom tabs are visible...')
-    await bottomTabsPage.verifyBottomTabs()
+    await commonElsPage.verifyLoggedIn()
   })
 })

@@ -5,7 +5,6 @@
 import actions from '../../helpers/actions'
 import { handleJailbrokenWarning } from '../../helpers/warmup'
 import onboardingLoc from '../../locators/onboarding.loc'
-import bottomTabsPage from '../../pages/bottomTabs.page'
 import commonElsPage from '../../pages/commonEls.page'
 import onboardingPage from '../../pages/onboarding.page'
 
@@ -62,6 +61,6 @@ describe('Onboarding', () => {
     await onboardingPage.tapLetsGo()
 
     // Verify `Portfolio` page
-    await bottomTabsPage.verifyBottomTabs()
+    await commonElsPage.verifyLoggedIn()
   })
 })

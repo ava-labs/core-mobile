@@ -121,6 +121,7 @@ export const TokenActivityListItem: FC<Props> = ({
 
   return (
     <ActivityListItem
+      testID={`tx__from_${tx.from.toLowerCase()}_to_${tx.to.toLowerCase()}`}
       title={<TokenActivityListItemTitle tx={tx} />}
       subtitle={subtitle}
       subtitleType="amountInCurrency"
