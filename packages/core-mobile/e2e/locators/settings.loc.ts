@@ -14,7 +14,7 @@ export default {
   securityAndPrivacyTitle: 'Security\n& privacy',
   appearance: 'Theme',
   networks: 'Networks',
-  appearanceTitle: 'Customize the\napp theme',
+  appearanceTitle: 'Customize the\napp appearance',
   system: 'System',
   light: 'Light',
   dark: 'Dark',
@@ -58,6 +58,7 @@ export default {
   addAddressButton: 'Add an address',
   connectedSites: 'Connected sites',
   disconnectAll: 'Disconnect all',
+  manageAccountsTitle: 'Manage accounts',
   // OLD BELOW:
   participateInCoreAnalytics: 'Participate in Core analytics',
   firstMnemonicWord: 'rebel',

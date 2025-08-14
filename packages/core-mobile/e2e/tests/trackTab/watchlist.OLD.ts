@@ -63,7 +63,7 @@ describe('Watchlist', () => {
       await watchlistPage.tapSortBtn()
       await watchlistPage.verifyWatchlistDropdownItems(previousOption)
       await watchlistPage.selectSortOption(option)
-      await actions.waitForElement(by.text(`Sort by: ${option}`), 2000)
+      await actions.waitForElement(by.text(`Sort by: ${option}`))
 
       // Get the top token price after sort
       const afterSort = await watchlistPage.getTopTokenPriceFromList()

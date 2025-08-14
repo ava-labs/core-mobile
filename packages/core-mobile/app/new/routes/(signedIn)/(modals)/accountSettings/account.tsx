@@ -90,6 +90,7 @@ const AccountScreen = (): JSX.Element => {
   const renderHeader = (): JSX.Element => {
     return (
       <BalanceHeader
+        testID="settings"
         accountName={account.name}
         formattedBalance={formattedBalance}
         currency={selectedCurrency}

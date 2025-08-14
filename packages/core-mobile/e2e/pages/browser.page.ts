@@ -152,9 +152,9 @@ class BrowserPage {
   }
 
   async dismissConnectWalletModal() {
-    await Actions.waitForElement(this.continueBtn, 10000)
+    await Actions.waitForElement(this.continueBtn)
     await Actions.tap(this.continueBtn)
-    await Actions.waitForElementNotVisible(this.continueBtn, 5000)
+    await Actions.waitForElementNotVisible(this.continueBtn)
   }
 
   async connectLFJ() {
@@ -241,7 +241,7 @@ class BrowserPage {
 
   async tapContinue() {
     try {
-      await Actions.waitForElement(by.text('Continue'), 10000)
+      await Actions.waitForElement(by.text('Continue'))
       await Actions.tap(by.text('Continue'))
     } catch (e) {
       console.log('The Continue button is not displayed')
