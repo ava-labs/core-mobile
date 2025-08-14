@@ -57,20 +57,11 @@ export const SendScreen = (): JSX.Element => {
         )
 
       canDismiss() && dismiss()
-      const navigationState = getState()
-      if (
-        navigationState?.routes[navigationState?.index ?? 0]?.name === 'send' ||
-        navigationState?.routes[navigationState?.index ?? 0]?.name ===
-          'recentContacts'
-      ) {
-        canDismiss() && dismiss()
-      }
-
       InteractionManager.runAfterInteractions(() => {
-        const state = getState()
+        const navigationState = getState()
         if (
-          state?.routes[state?.index ?? 0]?.name === 'recentContacts' ||
-          state?.routes[state?.index ?? 0]?.name === 'send'
+          navigationState?.routes[navigationState?.index ?? 0]?.name ===
+          'recentContacts'
         ) {
           canDismiss() && dismiss()
         }

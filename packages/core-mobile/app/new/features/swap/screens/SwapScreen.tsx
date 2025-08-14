@@ -557,7 +557,6 @@ export const SwapScreen = (): JSX.Element => {
 
   useEffect(() => {
     if (swapStatus === 'Success') {
-      dismiss()
       InteractionManager.runAfterInteractions(() => {
         const state = getState()
         if (state?.routes[state?.index ?? 0]?.name === 'swap') {

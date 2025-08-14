@@ -16,6 +16,7 @@ import { useSendSelectedToken } from 'features/send/store'
 import { useNetworks } from 'hooks/networks/useNetworks'
 import { useNetworkFee } from 'hooks/useNetworkFee'
 import React, { useCallback, useMemo, useState } from 'react'
+import { InteractionManager } from 'react-native'
 import { useSelector } from 'react-redux'
 import { selectActiveAccount } from 'store/account'
 import { useSendTransactionCallbacks } from '../hooks/useSendTransactionCallbacks'
@@ -64,13 +65,15 @@ export const ScanQrCodeScreen = (): JSX.Element => {
           txHash,
           onDismiss: () => {
             canDismiss() && dismiss()
-            const navigationState = getState()
-            if (
-              navigationState?.routes[navigationState?.index ?? 0]?.name ===
-              'recentContacts'
-            ) {
-              canDismiss() && dismiss()
-            }
+            InteractionManager.runAfterInteractions(() => {
+              const navigationState = getState()
+              if (
+                navigationState?.routes[navigationState?.index ?? 0]?.name ===
+                'recentContacts'
+              ) {
+                canDismiss() && dismiss()
+              }
+            })
           }
         })
       } catch (reason) {
