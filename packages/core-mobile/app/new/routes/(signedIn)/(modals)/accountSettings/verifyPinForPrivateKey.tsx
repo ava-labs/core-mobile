@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useCallback } from 'react'
 import { VerifyWithPinOrBiometry } from 'common/components/VerifyWithPinOrBiometry'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import Logger from 'utils/Logger'
@@ -19,18 +19,18 @@ const VerifyPinForPrivateKeyScreen = (): JSX.Element => {
   const cChainNetwork = useCChainNetwork()
   const wallet = useSelector(selectWalletById(walletId))
 
-  const getPrivateKeyFromMnemonic = async (
-    mnemonic: string,
-    network: Network
-  ): Promise<string> => {
-    return WalletService.getPrivateKeyFromMnemonic(
-      mnemonic,
-      network,
-      parseInt(accountIndex)
-    )
-  }
+  const getPrivateKeyFromMnemonic = useCallback(
+    async (mnemonic: string, network: Network): Promise<string> => {
+      return WalletService.getPrivateKeyFromMnemonic(
+        mnemonic,
+        network,
+        parseInt(accountIndex)
+      )
+    },
+    [accountIndex]
+  )
 
-  const handleLoginSuccess = async (): Promise<void> => {
+  const handleLoginSuccess = useCallback(async (): Promise<void> => {
     if (!wallet) {
       Logger.error('Wallet not found for ID:', walletId)
       return
@@ -67,7 +67,7 @@ const VerifyPinForPrivateKeyScreen = (): JSX.Element => {
           Logger.error('Error getting private key from mnemonic', error)
         })
     }
-  }
+  }, [wallet, walletId, replace, cChainNetwork, getPrivateKeyFromMnemonic])
 
   return <VerifyWithPinOrBiometry onVerifySuccess={handleLoginSuccess} />
 }
