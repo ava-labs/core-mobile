@@ -71,6 +71,19 @@ export const useActivityFilterAndSearch = ({
     }
   }, [selectedNetwork, setSelectedNetwork, networkFilters])
 
+  // This is to default the selected network to the first network when user is upgrading from older version of the app
+  // the selected network was set to IndexPath object instead of ActivityNetworkFilter
+  useEffect(() => {
+    if (
+      selectedNetwork &&
+      selectedNetwork.filterName === undefined &&
+      selectedNetwork.chainId === undefined &&
+      networkFilters[0]
+    ) {
+      setSelectedNetwork(networkFilters[0])
+    }
+  }, [selectedNetwork, setSelectedNetwork, networkFilters])
+
   const network = useMemo(() => {
     return getNetwork(selectedNetwork?.chainId)
   }, [getNetwork, selectedNetwork?.chainId])
