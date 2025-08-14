@@ -1,0 +1,22 @@
+diff --git a/node_modules/bip32/src/index.js b/node_modules/bip32/src/index.js
+index 612dfd1..7277442 100644
+--- a/node_modules/bip32/src/index.js
++++ b/node_modules/bip32/src/index.js
+@@ -1,5 +1,12 @@
+-"use strict";
+-Object.defineProperty(exports, "__esModule", { value: true });
+-var bip32_1 = require("./bip32");
+-exports.default = bip32_1.BIP32Factory;
+-exports.BIP32Factory = bip32_1.BIP32Factory;
++const ecc = require('@bitcoinerlab/secp256k1')
++
++const { BIP32Factory } = require('./bip32')
++const instance = BIP32Factory(ecc)
++
++exports.fromBase58 = instance.fromBase58
++exports.fromPrivateKey = instance.fromPrivateKey
++exports.fromPublicKey = instance.fromPublicKey
++exports.fromSeed = instance.fromSeed
++
++exports.default = instance
++exports.BIP32Factory = BIP32Factory
