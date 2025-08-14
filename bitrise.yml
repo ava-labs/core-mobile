@@ -289,7 +289,7 @@ workflows:
     - xcode-build-for-simulator@0:
         inputs:
         - scheme: $IOS_SCHEME
-        - simulator_device: iPhone 13
+        - simulator_device: iPhone 16 Pro
         - configuration: $IOS_CONFIGURATION
         - project_path: $IOS_PROJECT_PATH
         - code_signing_allowed: "yes"
