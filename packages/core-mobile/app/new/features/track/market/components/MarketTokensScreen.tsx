@@ -16,7 +16,8 @@ const MarketTokensScreen = ({
   view,
   goToMarketDetail,
   renderEmpty,
-  containerStyle
+  containerStyle,
+  key
 }: {
   data: MarketToken[]
   charts: Charts
@@ -25,6 +26,7 @@ const MarketTokensScreen = ({
   goToMarketDetail: (tokenId: string, marketType: MarketType) => void
   renderEmpty: () => React.JSX.Element
   containerStyle: ViewStyle
+  key?: React.Key | null
 }): JSX.Element => {
   const isGridView = view.selected === MarketView.Grid
   const numColumns = isGridView ? 2 : 1
@@ -93,6 +95,7 @@ const MarketTokensScreen = ({
 
   return (
     <CollapsibleTabs.FlashList
+      key={key}
       overrideProps={overrideProps}
       data={data}
       numColumns={numColumns}
