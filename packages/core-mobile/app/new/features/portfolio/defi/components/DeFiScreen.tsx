@@ -49,6 +49,7 @@ export const DeFiScreen = ({
     refetch,
     chainList
   } = useDeFiProtocols()
+  const listType = view.selected as DeFiViewOption
 
   const getAmount = useExchangedAmount()
 
@@ -220,6 +221,7 @@ export const DeFiScreen = ({
         flex: 1
       }}>
       <CollapsibleTabs.FlashList
+        key={`assets-list-${listType}`}
         data={data}
         extraData={{ isGridView }}
         keyExtractor={item => item.id}
