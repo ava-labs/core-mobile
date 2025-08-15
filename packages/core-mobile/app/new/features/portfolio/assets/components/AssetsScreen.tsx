@@ -60,6 +60,7 @@ const AssetsScreen: FC<Props> = ({
     isRefetching,
     isLoading
   } = useAssetsFilterAndSort()
+  const listType = view.selected as AssetManageView
 
   const activeAccount = useSelector(selectActiveAccount)
   const enabledNetworks = useSelector(selectEnabledNetworks)
@@ -265,6 +266,7 @@ const AssetsScreen: FC<Props> = ({
         flex: 1
       }}>
       <CollapsibleTabs.FlashList
+        key={`assets-list-${listType}`}
         data={data}
         keyExtractor={(item, index) =>
           `${index}-${item.networkChainId}-${item.localId}`
