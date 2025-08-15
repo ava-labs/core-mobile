@@ -169,32 +169,36 @@ export const BrowserTab = forwardRef<BrowserTabRef, { tabId: string }>(
 
     const parseDescriptionAndFavicon = useCallback(
       (wrapper: InjectedJsMessageWrapper, _: WebViewMessageEvent) => {
-        const { favicon: favi, description: desc } = JSON.parse(
-          wrapper.payload
-        ) as GetDescriptionAndFavicon
+        try {
+          const { favicon: favi, description: desc } = JSON.parse(
+            wrapper.payload
+          ) as GetDescriptionAndFavicon
 
-        if (favi || desc) {
-          // if the favicon is already set to static favicon from suggested list, don't update it
-          const icon = isSuggestedSiteName(activeHistory?.favicon)
-            ? activeHistory?.favicon
-            : favi === 'null'
-            ? undefined
-            : favi
-          setFavicon(icon)
-          setDescription(desc)
-          activeTab &&
-            activeTab.activeHistory &&
-            dispatch(
-              updateActiveHistoryForTab({
-                id: activeTab.id,
-                activeHistoryIndex: activeTab.activeHistoryIndex,
-                activeHistory: {
-                  ...activeTab.activeHistory,
-                  favicon: icon,
-                  description: desc
-                }
-              })
-            )
+          if (favi || desc) {
+            // if the favicon is already set to static favicon from suggested list, don't update it
+            const icon = isSuggestedSiteName(activeHistory?.favicon)
+              ? activeHistory?.favicon
+              : favi === 'null'
+              ? undefined
+              : favi
+            setFavicon(icon)
+            setDescription(desc)
+            activeTab &&
+              activeTab.activeHistory &&
+              dispatch(
+                updateActiveHistoryForTab({
+                  id: activeTab.id,
+                  activeHistoryIndex: activeTab.activeHistoryIndex,
+                  activeHistory: {
+                    ...activeTab.activeHistory,
+                    favicon: icon,
+                    description: desc
+                  }
+                })
+              )
+          }
+        } catch (e) {
+          Logger.error('WebView onMessage error', e)
         }
       },
       [dispatch, activeTab, activeHistory]
@@ -202,9 +206,13 @@ export const BrowserTab = forwardRef<BrowserTabRef, { tabId: string }>(
 
     const parsePageStyles = useCallback(
       (wrapper: InjectedJsMessageWrapper, _: WebViewMessageEvent) => {
-        const styles = JSON.parse(wrapper.payload) as GetPageStyles
-        if (styles) {
-          setPageStyles(styles)
+        try {
+          const styles = JSON.parse(wrapper.payload) as GetPageStyles
+          if (styles) {
+            setPageStyles(styles)
+          }
+        } catch (e) {
+          Logger.error('WebView onMessage error', e)
         }
       },
       []
@@ -221,38 +229,42 @@ export const BrowserTab = forwardRef<BrowserTabRef, { tabId: string }>(
 
     const onMessageHandler = useCallback(
       (event: WebViewMessageEvent) => {
-        const wrapper = JSON.parse(
-          event.nativeEvent.data
-        ) as InjectedJsMessageWrapper
-        switch (wrapper.method) {
-          case 'page_styles':
-            parsePageStyles(wrapper, event)
-            break
-          case 'desc_and_favicon':
-            parseDescriptionAndFavicon(wrapper, event)
-            break
-          case 'window_ethereum_used': {
-            const sessions = WalletConnectService.getSessions()
-            if (
-              sessions.find(session =>
-                urlToLoad.startsWith(session.peer.metadata.url)
-              ) === undefined
-            ) {
-              showWalletConnectDialog()
+        try {
+          const wrapper = JSON.parse(
+            event.nativeEvent.data
+          ) as InjectedJsMessageWrapper
+          switch (wrapper.method) {
+            case 'page_styles':
+              parsePageStyles(wrapper, event)
+              break
+            case 'desc_and_favicon':
+              parseDescriptionAndFavicon(wrapper, event)
+              break
+            case 'window_ethereum_used': {
+              const sessions = WalletConnectService.getSessions()
+              if (
+                sessions.find(session =>
+                  urlToLoad.startsWith(session.peer.metadata.url)
+                ) === undefined
+              ) {
+                showWalletConnectDialog()
+              }
+              break
             }
-            break
+            case 'log':
+              Logger.trace('------> wrapper.payload', wrapper.payload)
+              break
+            case 'walletConnect_deeplink_blocked':
+              Logger.info(
+                'walletConnect_deeplink_blocked, url: ',
+                wrapper.payload
+              )
+              break
+            default:
+              break
           }
-          case 'log':
-            Logger.trace('------> wrapper.payload', wrapper.payload)
-            break
-          case 'walletConnect_deeplink_blocked':
-            Logger.info(
-              'walletConnect_deeplink_blocked, url: ',
-              wrapper.payload
-            )
-            break
-          default:
-            break
+        } catch (e) {
+          Logger.error('WebView onMessage error', e)
         }
 
         //do not remove this listener, https://github.com/react-native-webview/react-native-webview/blob/master/docs/Reference.md#injectedjavascript
