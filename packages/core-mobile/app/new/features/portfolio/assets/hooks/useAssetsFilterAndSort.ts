@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import {
   ASSET_BALANCE_SORTS,
   ASSET_MANAGE_VIEWS,
@@ -13,6 +13,9 @@ import { DropdownSelection } from 'common/types'
 import { useErc20ContractTokens } from 'common/hooks/useErc20ContractTokens'
 import { useSelector } from 'react-redux'
 import { selectEnabledNetworks } from 'store/network'
+import { usePrevious } from 'common/hooks/usePrevious'
+import { ActivityNetworkFilter } from 'features/activity/hooks/useActivityFilterAndSearch'
+import { isEqual } from 'lodash'
 
 export const useAssetsFilterAndSort = (): {
   onResetFilter: () => void
@@ -43,6 +46,18 @@ export const useAssetsFilterAndSort = (): {
       ...enabledNetworksFilter
     ]
   }, [enabledNetworks])
+
+  const [selectedNetworkFilters, setSelectedNetworkFilters] =
+    useState<ActivityNetworkFilter[]>(networkFilters)
+
+  const prevNetworkFilters = usePrevious(networkFilters)
+
+  useEffect(() => {
+    if (isEqual(prevNetworkFilters, networkFilters)) {
+      return
+    }
+    setSelectedNetworkFilters(networkFilters)
+  }, [networkFilters, prevNetworkFilters])
 
   const [selectedFilter, setSelectedFilter] = useState<AssetNetworkFilter>(
     AssetNetworkFilter.AllNetworks
@@ -100,14 +115,14 @@ export const useAssetsFilterAndSort = (): {
     () => [
       {
         key: 'network-filters',
-        items: networkFilters.map(f => ({
+        items: selectedNetworkFilters.map(f => ({
           id: f.filterName,
           title: f.filterName,
           selected: f.filterName === selectedFilter
         }))
       }
     ],
-    [networkFilters, selectedFilter]
+    [selectedNetworkFilters, selectedFilter]
   )
 
   const sortData = useMemo(() => {
