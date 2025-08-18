@@ -1,15 +1,29 @@
-import React from 'react'
-import { useTheme, Text, View, Button } from '@avalabs/k2-alpine'
+import React, { useMemo } from 'react'
+import {
+  useTheme,
+  Text,
+  View,
+  Button,
+  SafeAreaView,
+  showAlert,
+  GroupList,
+  GroupListItem,
+  TouchableOpacity
+} from '@avalabs/k2-alpine'
+import Clipboard from '@react-native-clipboard/clipboard'
+import { useUserUniqueID } from 'common/hooks/useUserUniqueID'
 import CoreAppIconLight from '../../assets/icons/core-app-icon-light.svg'
 import CoreAppIconDark from '../../assets/icons/core-app-icon-dark.svg'
 
 export const FullScreenWarning = ({
   title,
   description,
+  error,
   action
 }: {
   title: string
   description: string
+  error?: unknown
   action: {
     label: string
     onPress: () => void
@@ -18,37 +32,57 @@ export const FullScreenWarning = ({
   const {
     theme: { isDark }
   } = useTheme()
+  const userUniqueID = useUserUniqueID()
+
+  const errorData: GroupListItem[] | undefined = useMemo(() => {
+    if (!error) return undefined
+
+    return [
+      {
+        title: 'View details',
+        onPress: () => {
+          showAlert({
+            title: 'Error Details',
+            description: error instanceof Error ? error.message : String(error),
+            buttons: [{ text: 'Close' }]
+          })
+        }
+      }
+    ]
+  }, [error])
+
+  const handlePressUniqueUserId = (): void => {
+    Clipboard.setString(userUniqueID)
+    showAlert({
+      title: '',
+      description: 'Unique user ID copied to clipboard',
+      buttons: [{ text: 'OK' }]
+    })
+  }
 
   return (
-    <View
+    <SafeAreaView
       sx={{
         backgroundColor: '$surfacePrimary',
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        justifyContent: 'center',
-        alignItems: 'center'
+        flex: 1
       }}>
-      <View>
-        <View
-          style={{
-            justifyContent: 'center',
-            alignItems: 'center'
-          }}>
-          <View style={{ marginBottom: 28 }}>
-            {isDark ? <CoreAppIconLight /> : <CoreAppIconDark />}
-            <View
-              style={{
-                position: 'absolute',
-                bottom: -15,
-                right: -14
-              }}>
-              <Text variant="heading6" sx={{ fontSize: 36, lineHeight: 44 }}>
-                ⚠️
-              </Text>
-            </View>
+      <View
+        sx={{
+          flex: 1,
+          justifyContent: 'center',
+          alignItems: 'center'
+        }}>
+        <View style={{ marginBottom: 28 }}>
+          {isDark ? <CoreAppIconLight /> : <CoreAppIconDark />}
+          <View
+            style={{
+              position: 'absolute',
+              bottom: -15,
+              right: -14
+            }}>
+            <Text variant="heading6" sx={{ fontSize: 36, lineHeight: 44 }}>
+              ⚠️
+            </Text>
           </View>
         </View>
         <View style={{ width: '60%' }}>
@@ -67,12 +101,33 @@ export const FullScreenWarning = ({
             {description}
           </Text>
         </View>
-      </View>
-      <View style={{ paddingHorizontal: 0 }}>
         <Button type="secondary" size="medium" onPress={action.onPress}>
           {action.label}
         </Button>
       </View>
-    </View>
+      <View
+        sx={{
+          alignItems: 'center',
+          gap: 3,
+          marginHorizontal: 16
+        }}>
+        <Text
+          variant="body2"
+          sx={{
+            textAlign: 'center',
+            color: '$textSecondary'
+          }}>
+          Please reference this unique user ID when contacting support:
+        </Text>
+        <TouchableOpacity onPress={handlePressUniqueUserId}>
+          <Text variant="mono">{userUniqueID}</Text>
+        </TouchableOpacity>
+      </View>
+      {errorData && (
+        <View sx={{ marginHorizontal: 16, marginVertical: 24 }}>
+          <GroupList data={errorData} />
+        </View>
+      )}
+    </SafeAreaView>
   )
 }

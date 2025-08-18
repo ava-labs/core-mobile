@@ -16,7 +16,7 @@ import {
   TokenType
 } from '@avalabs/vm-module-types'
 import { TokenLogo } from 'new/common/components/TokenLogo'
-import { useFormatCurrency } from 'new/common/hooks/useFormatCurrency'
+import { useExchangedAmount } from 'new/common/hooks/useExchangedAmount'
 
 export const TokenDiffGroup = ({
   tokenDiff,
@@ -120,7 +120,7 @@ const TokenDiffItemComponent = ({
     'type' in token &&
     (token.type === TokenType.ERC721 || token.type === TokenType.ERC1155)
 
-  const { formatCurrency } = useFormatCurrency()
+  const formatExchangedAmount = useExchangedAmount()
   const {
     theme: { colors }
   } = useTheme()
@@ -203,7 +203,7 @@ const TokenDiffItemComponent = ({
               color: priceInCurrencyColor
             }}>
             {diffItem.displayValue === undefined && (isOut ? '-' : '+')}
-            {formatCurrency({ amount: Number(diffItem.usdPrice) })}
+            {formatExchangedAmount(Number(diffItem.usdPrice))}
           </Text>
         )}
       </View>

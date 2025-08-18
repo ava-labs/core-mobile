@@ -1,6 +1,6 @@
+import { SelectAvatar } from 'common/components/SelectAvatar'
 import { useAvatar } from 'common/hooks/useAvatar'
 import { useRouter } from 'expo-router'
-import { SelectAvatar } from 'common/components/SelectAvatar'
 import { useRandomizedAvatars } from 'features/onboarding/hooks/useRandomizedAvatars'
 import React, { useState } from 'react'
 
@@ -23,10 +23,12 @@ const SelectAvatarScreen = (): JSX.Element => {
     <SelectAvatar
       title={`Select your\npersonal avatar`}
       avatars={randomizedAvatars}
+      initialAvatar={avatar}
       selectedAvatar={selectedAvatar}
       onSubmit={onSubmit}
       setSelectedAvatar={setSelectedAvatar}
       buttonText="Save"
+      isModal
     />
   )
 }

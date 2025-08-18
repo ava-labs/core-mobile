@@ -45,6 +45,11 @@ export const SelectTokenScreen = <T extends object>({
     ({ item }: { item: NetworkFilter }) => {
       return (
         <Button
+          testID={
+            typeof item === 'string'
+              ? `network_selector__${item}`
+              : `network_selector__${item.chainName}`
+          }
           size="small"
           type={item === selectedNetworkFilter ? 'primary' : 'secondary'}
           hitSlop={8}

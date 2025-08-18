@@ -242,7 +242,7 @@ class OnboardingPage {
   async enterWalletName(walletName: string) {
     await Action.waitForElement(this.nameWalletInput)
     await element(this.nameWalletInput).replaceText(walletName)
-    await Action.dismissKeyboard('text_input')
+    await Action.dismissKeyboard(onboardingLoc.nameWalletInput)
   }
 
   async verifyNameYourWalletPage() {
@@ -263,9 +263,10 @@ class OnboardingPage {
     await Assert.isVisible(this.selectedAvatar)
     await Assert.isVisible(this.letsgo)
   }
+
   async tapLetsGo() {
     await Action.waitForElement(this.letsgo)
-    await Action.longPress(this.letsgo)
+    await Action.tap(this.letsgo)
   }
 
   async verifyNewRecoveryPhrasePage() {

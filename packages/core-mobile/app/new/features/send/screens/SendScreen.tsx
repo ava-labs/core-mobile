@@ -60,14 +60,13 @@ export const SendScreen = (): JSX.Element => {
       // dismiss recent contacts modal
       const navigationState = getState()
       if (
-        navigationState?.routes[navigationState?.index ?? 0]?.name ===
-        'recentContacts'
+        navigationState?.routes.some(route => route.name === 'recentContacts')
       ) {
         canGoBack() && back()
       }
       // dismiss onboarding modal
       const state = getState()
-      if (state?.routes[state?.index ?? 0]?.name === 'onboarding') {
+      if (state?.routes.some(route => route.name === 'onboarding')) {
         canGoBack() && back()
       }
     },

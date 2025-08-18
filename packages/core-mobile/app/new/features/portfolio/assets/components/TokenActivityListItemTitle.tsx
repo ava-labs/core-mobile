@@ -4,7 +4,10 @@ import { HiddenBalanceText } from 'common/components/HiddenBalanceText'
 import { SubTextNumber } from 'common/components/SubTextNumber'
 import { useBlockchainNames } from 'common/utils/useBlockchainNames'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
-import { isCollectibleTransaction } from 'features/activity/utils'
+import {
+  isCollectibleTransaction,
+  isPotentiallySwap
+} from 'features/activity/utils'
 import { useNetworks } from 'hooks/networks/useNetworks'
 import React, { ReactNode, useCallback, useMemo } from 'react'
 import { useSelector } from 'react-redux'
@@ -93,7 +96,7 @@ export const TokenActivityListItemTitle = ({
       case TransactionType.SEND:
         return [renderAmount(a1), ' ', s1, ' sent']
       case TransactionType.RECEIVE:
-        return [renderAmount(a1), ' ', s1, ' received']
+        return [renderAmount(a1), ' ', s2, ' received']
       case TransactionType.TRANSFER:
         return [renderAmount(a1), ' ', s1, ' transferred']
       case TransactionType.APPROVE:
@@ -112,8 +115,37 @@ export const TokenActivityListItemTitle = ({
           ]
         }
         if (tx.isContractCall) {
-          if (tx.tokens.length >= 1) {
-            return [renderAmount(a1), ' ', s1, ' swapped for ', s2]
+          if (tx.tokens.length === 1) {
+            if (isPotentiallySwap(tx)) {
+              return [renderAmount(a1), ' ', s1, ' swapped for ', s2]
+            }
+            return [
+              renderAmount(a1),
+              ' ',
+              s1,
+              tx.isSender ? ' sent' : ' received'
+            ]
+          }
+
+          if (tx.tokens.length > 1) {
+            if (tx.tokens[0]?.symbol === tx.tokens[1]?.symbol) {
+              return [
+                renderAmount(a1),
+                ' ',
+                s1,
+                tx.isSender ? ' sent' : ' received'
+              ]
+            }
+
+            return [
+              renderAmount(a1),
+              ' ',
+              s1,
+              ' swapped for ',
+              renderAmount(a2),
+              ' ',
+              s2
+            ]
           }
 
           return ['Contract Call']
@@ -125,7 +157,6 @@ export const TokenActivityListItemTitle = ({
 
   return (
     <View
-      testID={`tx__from_${tx.from.toLowerCase()}_to_${tx.to.toLowerCase()}`}
       style={{
         flexDirection: 'row',
         alignItems: 'baseline',

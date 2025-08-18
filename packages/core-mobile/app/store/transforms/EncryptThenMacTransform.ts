@@ -56,6 +56,7 @@ export const EncryptThenMacTransform: (
       // The iv must never be reused with a given key. It doesn't need to be secret, only random.
       const iv = Crypto.randomBytes(16)
 
+      // @ts-ignore TODO: fix this type error
       const cipher = Crypto.createCipheriv(
         ALGORITHM,
         Buffer.from(secretKey, SECRET_KEY_ENCODING),
@@ -114,6 +115,7 @@ export const EncryptThenMacTransform: (
         return undefined
       }
 
+      // @ts-ignore TODO: fix this type error
       const decipher = Crypto.createDecipheriv(
         ALGORITHM,
         Buffer.from(secretKey, SECRET_KEY_ENCODING),

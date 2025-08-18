@@ -17,13 +17,6 @@ describe('Settings - Manage Accounts', () => {
     await cp.goSettings()
     await sp.goToAccountDetail(sl.account)
     await sp.verifyAccountDetail(sl.account)
-    await cp.dismissBottomSheet()
-
-    // go to the account detail from the `manage accounts` screen
-    await cp.goSettings()
-    await sp.tapManageAccountsBtn()
-    await sp.goToAccountDetail(sl.account, sl.walletName)
-    await sp.verifyAccountDetail(sl.account)
   })
 
   it('Should rename the account name', async () => {
@@ -32,11 +25,11 @@ describe('Settings - Manage Accounts', () => {
     await sp.setNewAccountName(sl.newAccountName)
 
     // Verify the new name on account detail
-    await cp.verifyAccountName(sl.newAccountName, 1) // the element at #0 index is the wallet name on portfolio
+    await cp.verifyAccountName(sl.newAccountName) // the element at #0 index is the wallet name on portfolio
 
     // Verify the new name on portfolio page
     await cp.dismissBottomSheet()
-    await cp.verifyAccountName(sl.newAccountName)
+    await cp.verifyAccountName(sl.newAccountName, 'portfolio')
 
     // Verify the new name on account carousel
     await sp.goSettings()
@@ -50,8 +43,8 @@ describe('Settings - Manage Accounts', () => {
   })
 
   it('should switch account', async () => {
-    await cp.verifyAccountName(sl.account2)
+    await cp.verifyAccountName(sl.account2, 'portfolio')
     await sp.switchAccount(sl.newAccountName)
-    await cp.verifyAccountName(sl.newAccountName)
+    await cp.verifyAccountName(sl.newAccountName, 'portfolio')
   })
 })

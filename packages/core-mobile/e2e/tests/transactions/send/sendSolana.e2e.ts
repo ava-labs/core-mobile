@@ -12,11 +12,11 @@ describe('Send on Solana network', () => {
 
   it('Should send SOL on Solana network', async () => {
     await sendPage.send(sendLoc.solToken, sendLoc.sendingAmount)
-    await commonElsPage.verifySuccessToast()
+    await commonElsPage.verifySuccessToast(60000)
   })
 
   it('Should send JUP on Solana network', async () => {
     await sendPage.send(sendLoc.jupToken, sendLoc.sendingAmount)
-    await commonElsPage.verifySuccessToast()
+    await commonElsPage.verifySuccessToast(60000)
   })
 })

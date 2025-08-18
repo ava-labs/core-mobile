@@ -5,18 +5,17 @@
 import actions from '../../helpers/actions'
 import { handleJailbrokenWarning } from '../../helpers/warmup'
 import onboardingLoc from '../../locators/onboarding.loc'
-import bottomTabsPage from '../../pages/bottomTabs.page'
 import commonElsPage from '../../pages/commonEls.page'
 import onboardingPage from '../../pages/onboarding.page'
 
-describe('Onboard New Wallet', () => {
+describe('Onboarding', () => {
   beforeAll(async () => {
     await device.launchApp()
     await commonElsPage.exitMetro()
     await handleJailbrokenWarning()
   })
 
-  it('should onboard the new wallet', async () => {
+  it('should onboard a new wallet', async () => {
     // Start with `Access Existing Wallet` flow
     await onboardingPage.verifyOnboardingPage()
     await onboardingPage.tapManuallyCreateNewWallet()
@@ -62,6 +61,6 @@ describe('Onboard New Wallet', () => {
     await onboardingPage.tapLetsGo()
 
     // Verify `Portfolio` page
-    await bottomTabsPage.verifyBottomTabs()
+    await commonElsPage.verifyLoggedIn()
   })
 })

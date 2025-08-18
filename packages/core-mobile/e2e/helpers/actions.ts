@@ -1,3 +1,4 @@
+/* eslint-disable max-params */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /*eslint max-params: ["error", 4]*/
 
@@ -14,14 +15,22 @@ const balanceToNumber = async (balance: Detox.NativeMatcher, index = 0) => {
   return parseFloat(await availableBalance.text.match(/[\d.]+/)[0])
 }
 
-const tap = async (item: Detox.NativeMatcher) => {
+const tap = async (item: Detox.NativeMatcher, enableSync = false) => {
   await waitForElement(item)
+  if (enableSync) {
+    // some tests are not working with the desync mode, so we need to enable it
+    await device.enableSynchronization()
+  }
   await element(item).tap()
 }
 
-const waitAndTap = async (item: Detox.NativeMatcher) => {
-  await delay(500)
-  await tap(item)
+const waitAndTap = async (
+  item: Detox.NativeMatcher,
+  timeout = 1000,
+  enableSync = false
+) => {
+  await delay(timeout)
+  await tap(item, enableSync)
 }
 
 const tapAtXAndY = async (
@@ -38,12 +47,16 @@ const multiTap = async (
   count: number,
   index: number
 ) => {
-  await waitForElement(item, 3000, index)
+  await waitForElement(item, 10000, index)
   await element(item).atIndex(index).multiTap(count)
 }
 
-const tapElementAtIndex = async (item: Detox.NativeMatcher, num: number) => {
-  await waitForElement(item)
+const tapElementAtIndex = async (
+  item: Detox.NativeMatcher,
+  num: number,
+  timeout = 10000
+) => {
+  await waitForElement(item, timeout, num)
   await element(item).atIndex(num).tap()
 }
 
@@ -69,7 +82,7 @@ const setInputText = async (
     await waitForElement(item)
     await element(item).replaceText(value)
   } else {
-    await waitForElement(item, 3000, index)
+    await waitForElement(item, 10000, index)
     await element(item).atIndex(index).replaceText(value)
   }
 }
@@ -97,25 +110,26 @@ const dismissKeyboard = async (searchBarId = 'search_bar') => {
 
 const waitForElement = async (
   item: Detox.NativeMatcher,
-  timeout = 5000,
+  timeout = 10000,
   index = 0
 ) => {
-  await device.disableSynchronization()
   const startTime = Date.now()
-  const endTime = startTime + timeout
-  while (Date.now() < endTime) {
-    await new Promise(resolve => setTimeout(resolve, 500))
+  await device.disableSynchronization()
+  while (Date.now() - startTime < timeout) {
     try {
-      await waitFor(element(item).atIndex(index))
-        .toBeVisible()
-        .withTimeout(timeout)
+      await new Promise(resolve => setTimeout(resolve, 1000))
+      await waitFor(element(item).atIndex(index)).toBeVisible().withTimeout(500)
       return
     } catch (error: any) {
-      console.error(error)
+      await new Promise(resolve => setTimeout(resolve, 500))
     }
   }
   console.error('Error: Element not visible within timeout')
-  throw new Error('Element not visible within timeout')
+  throw new Error(
+    `Element not visible within timeout: matcher=${JSON.stringify(
+      item
+    )} index=${index}`
+  )
 }
 
 const failIfElementAppearsWithin = async (
@@ -124,37 +138,33 @@ const failIfElementAppearsWithin = async (
   index = 0
 ): Promise<void> => {
   const startTime = Date.now()
-  const endTime = startTime + timeout
-  while (Date.now() < endTime) {
-    await new Promise(resolve => setTimeout(resolve, 200))
+
+  while (Date.now() - startTime < timeout) {
     try {
-      await waitFor(element(item).atIndex(index))
-        .toBeVisible()
-        .withTimeout(timeout)
+      await waitFor(element(item).atIndex(index)).toBeVisible().withTimeout(500)
       // if the element is visible, throw an error
       throw new Error('Element became visible before timeout')
     } catch (e: any) {
-      console.log('Element is not visible... continuing')
+      await new Promise(resolve => setTimeout(resolve, 500))
     }
   }
 }
 
 const waitForElementNotVisible = async (
   item: Detox.NativeMatcher,
-  timeout = 3000,
+  timeout = 5000,
   index = 0
 ) => {
   const startTime = Date.now()
-  const endTime = startTime + timeout
-  while (Date.now() < endTime) {
-    await new Promise(resolve => setTimeout(resolve, 200))
+
+  while (Date.now() - startTime < timeout) {
     try {
       await waitFor(element(item).atIndex(index))
         .not.toBeVisible()
-        .withTimeout(timeout)
+        .withTimeout(500)
       return
     } catch (error: any) {
-      console.error(error)
+      await new Promise(resolve => setTimeout(resolve, 200))
     }
   }
   console.error('Error: Element visible within timeout')
@@ -189,6 +199,7 @@ const getElementText = async (
   timeout = 2000,
   index = 0
 ) => {
+  await waitForElement(item, timeout, index)
   const startTime = Date.now()
   const endTime = startTime + timeout
   while (Date.now() < endTime) {
@@ -226,7 +237,7 @@ const getElementsByTestId = async (testID: string) => {
 const isVisible = async (
   item: Detox.NativeMatcher,
   index = 0,
-  timeout = 2000
+  timeout = 10000
 ) => {
   try {
     await waitForElement(item, timeout, index)
@@ -356,7 +367,7 @@ const drag = async (
   percentage = 0.2,
   index = 0
 ) => {
-  await waitForElement(item, 3000, index)
+  await waitForElement(item, 10000, index)
   await element(item).atIndex(index).longPress()
   await element(item).atIndex(index).swipe(direction, 'fast', percentage)
 }

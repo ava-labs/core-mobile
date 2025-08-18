@@ -3,13 +3,12 @@ import {
   Chip,
   Image,
   SearchBar,
-  SimpleDropdown,
   View
 } from '@avalabs/k2-alpine'
 import { UTCDate } from '@date-fns/utc'
+import { DropdownMenu } from 'common/components/DropdownMenu'
 import { ErrorState } from 'common/components/ErrorState'
 import { ListScreen } from 'common/components/ListScreen'
-import { advancedFilterDropDownItems } from 'consts/earn'
 import { useDelegationContext } from 'contexts/DelegationContext'
 import { secondsToMilliseconds } from 'date-fns'
 import { useLocalSearchParams, useRouter } from 'expo-router'
@@ -18,7 +17,7 @@ import { useNodeSort } from 'features/stake/hooks/useNodeSort'
 import { useAdvancedSearchNodes } from 'hooks/earn/useAdvancedSearchNodes'
 import { useNodes } from 'hooks/earn/useNodes'
 import React, { useCallback, useMemo, useState } from 'react'
-import { NodeValidator } from 'types/earn'
+import { AdvancedSortFilter, NodeValidator } from 'types/earn'
 
 const errorIcon = require('../../../../assets/icons/melting_face.png')
 
@@ -45,7 +44,7 @@ const StakeSelectNode = (): JSX.Element => {
       stakingEndTime,
       minUpTime: Number(minUptime),
       maxFee: Number(maxDelegationFee),
-      sortFilter: advancedFilterDropDownItems[sort.selected.row]?.key,
+      sortFilter: sort.selected as AdvancedSortFilter,
       searchText
     })
 
@@ -68,16 +67,17 @@ const StakeSelectNode = (): JSX.Element => {
     return (
       <View style={{ gap: 12 }}>
         <SearchBar searchText={searchText} onTextChanged={setSearchText} />
-        <SimpleDropdown
-          from={
+        <View style={{ flexDirection: 'row' }}>
+          <DropdownMenu
+            groups={sort.data}
+            onPressAction={(event: { nativeEvent: { event: string } }) =>
+              sort.onSelected(event.nativeEvent.event)
+            }>
             <Chip size="large" hitSlop={8} rightIcon={'expandMore'}>
-              Sort
+              {sort.title}
             </Chip>
-          }
-          sections={sort.data}
-          selectedRows={[sort.selected]}
-          onSelectRow={sort.onSelected}
-        />
+          </DropdownMenu>
+        </View>
       </View>
     )
   }, [searchText, setSearchText, sort])

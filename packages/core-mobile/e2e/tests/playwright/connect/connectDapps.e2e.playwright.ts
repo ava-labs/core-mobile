@@ -9,7 +9,7 @@ describe('PlayWright Integration', () => {
     await warmup()
     await plusMenuPage.connectWallet()
     try {
-      await actions.waitForElement(popUpModalPage.approveBtn, 10000)
+      await actions.waitForElement(popUpModalPage.approveBtn)
       await actions.tap(popUpModalPage.approveBtn)
     } catch (e) {
       console.log('No approve button is displayed')

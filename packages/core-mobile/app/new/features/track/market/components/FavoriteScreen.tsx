@@ -1,4 +1,4 @@
-import { Image, IndexPath, SPRING_LINEAR_TRANSITION } from '@avalabs/k2-alpine'
+import { Image, SPRING_LINEAR_TRANSITION } from '@avalabs/k2-alpine'
 import { CollapsibleTabs } from 'common/components/CollapsibleTabs'
 import { ErrorState } from 'common/components/ErrorState'
 import { LoadingState } from 'common/components/LoadingState'
@@ -8,7 +8,7 @@ import React, { useCallback, useMemo } from 'react'
 import { ViewStyle } from 'react-native'
 import Animated from 'react-native-reanimated'
 import { MarketType } from 'store/watchlist'
-import { useTrackSortAndView } from '../hooks/useTrackSortAndView'
+import { MarketView, useTrackSortAndView } from '../hooks/useTrackSortAndView'
 import MarketTokensScreen from './MarketTokensScreen'
 
 const errorIcon = require('../../../../assets/icons/star_struck_emoji.png')
@@ -25,6 +25,7 @@ const FavoriteScreen = ({
   const { favorites, prices, charts, isLoadingFavorites } = useWatchlist()
 
   const { data, sort, view } = useTrackSortAndView(favorites, prices, true)
+  const listType = view.selected as MarketView
 
   const emptyComponent = useMemo(() => {
     return (
@@ -64,14 +65,15 @@ const FavoriteScreen = ({
         flex: 1
       }}>
       <MarketTokensScreen
+        key={`favorite-tokens-list-${listType}`}
         data={data}
         charts={charts}
         sort={sort}
         view={{
           ...view,
-          onSelected: (indexPath: IndexPath) => {
+          onSelected: (value: string) => {
             onScrollResync()
-            view.onSelected(indexPath)
+            view.onSelected(value)
           }
         }}
         goToMarketDetail={goToMarketDetail}

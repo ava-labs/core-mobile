@@ -7,17 +7,15 @@ import commonElsPage from '../../pages/commonEls.page'
 import onboardingPage from '../../pages/onboarding.page'
 import actions from '../../helpers/actions'
 import onboardingLoc from '../../locators/onboarding.loc'
-import bottomTabsPage from '../../pages/bottomTabs.page'
-import { ENV } from '../../helpers/getEnvs'
 
-describe('Onboarding Existing Wallet', () => {
+describe('Onboarding', () => {
   beforeAll(async () => {
     await device.launchApp()
     await commonElsPage.exitMetro()
     await handleJailbrokenWarning()
   })
 
-  it('should onboard the existing wallet', async () => {
+  it('should onboard an existing wallet', async () => {
     // Start with `Access Existing Wallet` flow
     await onboardingPage.verifyOnboardingPage()
     await onboardingPage.tapAccessExistingWallet()
@@ -36,7 +34,7 @@ describe('Onboarding Existing Wallet', () => {
 
     // Verify `Enter your recovery phrase` page
     await onboardingPage.verifyEnterYourRecoveryPhrasePage()
-    await onboardingPage.enterRecoveryPhrase(ENV.E2E_MNEMONIC as string)
+    await onboardingPage.enterRecoveryPhrase(process.env.E2E_MNEMONIC as string)
     await onboardingPage.tapImport()
 
     // Verify Enter PIN pages
@@ -59,6 +57,6 @@ describe('Onboarding Existing Wallet', () => {
     await onboardingPage.tapLetsGo()
 
     // Verify `Portfolio` page
-    await bottomTabsPage.verifyBottomTabs()
+    await commonElsPage.verifyLoggedIn()
   })
 })

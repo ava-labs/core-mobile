@@ -132,9 +132,9 @@ class BridgePage {
     network: string
   ) {
     try {
-      await Actions.waitForElement(commonElsPage.approvePopupSpendTitle, 10000)
+      await Actions.waitForElement(commonElsPage.approvePopupSpendTitle)
     } catch (e) {
-      await Actions.waitForElement(commonElsPage.approvePopupTitle, 10000)
+      await Actions.waitForElement(commonElsPage.approvePopupTitle)
     }
     await Assert.isVisible(by.id(`address__${accountAddress}`))
     await Assert.isVisible(by.id(`address__${tokenAddress}`))

@@ -104,6 +104,7 @@ export const DashedLine = ({
           alignItems: 'center'
         }}>
         <Animated.Text
+          allowFontScaling={false}
           style={[
             {
               fontFamily: 'Inter-Regular',

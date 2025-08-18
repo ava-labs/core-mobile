@@ -116,6 +116,7 @@ export const AddCustomTokenScreen = (): JSX.Element => {
               Token contract address
             </Text>
             <TextInput
+              allowFontScaling={false}
               onChangeText={setTokenAddress}
               numberOfLines={2}
               multiline

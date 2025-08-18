@@ -37,7 +37,12 @@ export const SetWalletName = ({
           marginTop: 24,
           marginBottom: 16
         }}>
-        <SimpleTextInput autoFocus value={name} onChangeText={setName} />
+        <SimpleTextInput
+          testID="name_text_input"
+          autoFocus
+          value={name}
+          onChangeText={setName}
+        />
       </View>
     </ScrollScreen>
   )

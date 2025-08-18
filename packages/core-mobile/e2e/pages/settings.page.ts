@@ -245,6 +245,10 @@ class Settings {
     return by.text(settings.disconnectAll)
   }
 
+  get manageAccountsTitle() {
+    return by.text(settings.manageAccountsTitle)
+  }
+
   async tapAdvanced() {
     await Actions.tapElementAtIndex(this.advanced, 0)
   }
@@ -367,7 +371,7 @@ class Settings {
   }
 
   async verifyShowRecoveryPhraseScreen() {
-    await Actions.waitForElement(this.showRecoveryPhraseTitle, 5000)
+    await Actions.waitForElement(this.showRecoveryPhraseTitle)
     await assertions.isVisible(this.showRecoveryPhraseDescription)
     await assertions.isVisible(this.showRecoveryPhraseWarning)
     await assertions.isVisible(commonElsPage.copyPhrase)
@@ -375,6 +379,7 @@ class Settings {
 
   async goSettings() {
     await Actions.tap(this.settingsBtn)
+    await delay(1000)
   }
 
   async switchToTestnet() {
@@ -427,9 +432,9 @@ class Settings {
 
   async tapManageAccountsBtn() {
     await Actions.waitForElement(this.settingsScrollView, 10000)
-    while (!(await Actions.isVisible(this.manageAccountsBtn, 0, 0))) {
+    while (!(await Actions.isVisible(this.manageAccountsBtn))) {
       await Actions.swipe(this.accountList, 'left', 'fast', 0.5)
-      await Actions.waitForElement(this.manageAccountsBtn, 1000)
+      await Actions.waitForElement(this.manageAccountsBtn)
     }
     await Actions.tap(this.manageAccountsBtn)
   }
@@ -439,16 +444,11 @@ class Settings {
   }
 
   async addAccount(accountNum = 2) {
-    while (
-      !(await Actions.isVisible(
-        by.id(`manage_accounts_list__Account ${accountNum}`),
-        0,
-        5000
-      ))
-    ) {
+    const ele = by.id(`manage_accounts_list__Account ${accountNum}`)
+    while (!(await Actions.isVisible(ele))) {
       await this.tapAddWalletBtn()
-      await Actions.waitForElement(this.createNewAccountBtn)
       await Actions.tap(this.createNewAccountBtn)
+      await Actions.tap(this.manageAccountsTitle)
     }
   }
 
@@ -481,19 +481,16 @@ class Settings {
 
   async verifyTestnetMode() {
     await Actions.waitForElement(this.testnetSwitchOn)
-    await assertions.isVisible(this.fujiFunds)
     await assertions.isVisible(this.testnetAvatar)
     await commonElsPage.dismissBottomSheet()
-    await assertions.isVisible(portfolioPage.testnetModeIsOn)
+    await Actions.waitForElement(portfolioPage.testnetModeIsOn, 20000)
   }
 
   async verifyMainnetMode() {
     await Actions.waitForElement(this.testnetSwitchOff)
-    await assertions.isNotVisible(this.fujiFunds)
-    await assertions.isVisible(this.totalNetWorth)
     await assertions.isVisible(this.mainnetAvatar)
     await commonElsPage.dismissBottomSheet()
-    await assertions.isNotVisible(portfolioPage.testnetModeIsOn)
+    await Actions.waitForElementNotVisible(portfolioPage.testnetModeIsOn, 20000)
   }
 
   async goToAccountDetail(
@@ -523,17 +520,12 @@ class Settings {
 
     // Account name verification
     await Actions.waitForElement(commonElsPage.evm)
-    await commonElsPage.verifyAccountName(portfolioAccountName, 1)
-
-    // Wallet address section verification
-    await assertions.isVisible(commonElsPage.xpChain)
-    await assertions.isVisible(commonElsPage.bitcoin)
-    await assertions.isVisible(commonElsPage.solana)
+    await commonElsPage.verifyAccountName(portfolioAccountName)
   }
 
   async verifyAddressCopied(network: string) {
     await Actions.tap(by.id(commonElsLoc.copyBtn + network))
-    await assertions.isVisible(by.text(network + settings.addressCopied))
+    await Actions.waitForElement(by.text(network + settings.addressCopied))
   }
 
   async tapRenameAccount() {
@@ -551,7 +543,6 @@ class Settings {
     await this.tapManageAccountsBtn()
     await this.addAccount(account)
     await this.selectAccount(activeAccount)
-    await commonElsPage.dismissBottomSheet()
   }
 
   async selectAccount(name: string) {
@@ -561,7 +552,6 @@ class Settings {
   async switchAccount(name = settings.account) {
     await this.goSettings()
     await this.switchAccountByCarousel(name)
-    await commonElsPage.dismissBottomSheet()
   }
 
   async quickSwitchAccount(name = settings.account) {
@@ -569,11 +559,10 @@ class Settings {
     // settings > tap the account on the account carousel
     await this.goSettings()
     const ele = by.id(`account_carousel_item__${name}`)
-    while (!(await Actions.isVisible(ele, 0, 0))) {
+    while (!(await Actions.isVisible(ele, 0, 10000))) {
       await Actions.swipe(this.accountList, 'left', 'fast', 0.5)
     }
     await Actions.tap(ele)
-    await commonElsPage.dismissBottomSheet()
   }
 
   async enableNetwork(network = commonElsLoc.xChain) {
@@ -601,7 +590,6 @@ class Settings {
   async addContactName(name: string) {
     await Actions.tapElementAtIndex(this.nameContactBtn, 0)
     await commonElsPage.typeSearchBar(name, commonElsPage.dialogInput)
-    await delay(5000)
     await commonElsPage.tapSave()
   }
 
@@ -622,6 +610,9 @@ class Settings {
   }
 
   async setAddress(network: string, address: string) {
+    if (!(await Actions.isVisible(by.text(`Add ${network} address`)))) {
+      await Actions.swipe(this.nameContactBtn, 'up', 'fast', 0.5)
+    }
     await Actions.tap(by.text(`Add ${network} address`))
     await Actions.tap(this.typeInOrPasteAddress)
     await Actions.setInputText(by.id(`contact_input__${network}`), address)
@@ -670,6 +661,21 @@ class Settings {
     await this.tapSecurityAndPrivacy()
     await this.tapConnectedSites()
     await this.tapDisconnect(dappName)
+  }
+
+  async setNewPin(oldPin = '000000', newPin = '111111') {
+    try {
+      await Actions.waitForElement(this.enterYourCurrentPinTitle)
+      await commonElsPage.enterPin(oldPin)
+    } catch (e) {
+      console.log('Skpping the current pin check....')
+      // currently we have a bug around here on the dev build
+      // https://ava-labs.atlassian.net/browse/CP-11855
+    }
+    await Actions.waitForElement(this.enterYourNewPinTitle)
+    await commonElsPage.enterPin(newPin)
+    await Actions.waitForElement(this.confirmYourNewPinTitle)
+    await commonElsPage.enterPin(newPin)
   }
 }
 

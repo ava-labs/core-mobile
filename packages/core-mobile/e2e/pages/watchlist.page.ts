@@ -111,7 +111,7 @@ class WatchListPage {
   }
 
   async tapWatchListToken(tokenSymbol: string, index = 0) {
-    await Action.waitForElement(by.id(`watchlist_item__${tokenSymbol}`), 5000)
+    await Action.waitForElement(by.id(`watchlist_item__${tokenSymbol}`))
     await Action.tapElementAtIndex(
       by.id(`watchlist_item__${tokenSymbol}`),
       index

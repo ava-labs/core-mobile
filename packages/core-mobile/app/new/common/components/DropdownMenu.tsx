@@ -3,14 +3,12 @@ import React, { CSSProperties, useCallback } from 'react'
 import { Platform } from 'react-native'
 import { Pressable } from 'react-native-gesture-handler'
 import {
-  CheckboxItem,
   Content,
   create,
   Group,
   Item,
   ItemIcon,
   ItemImage,
-  ItemIndicator,
   ItemTitle,
   Root,
   Separator,
@@ -59,16 +57,40 @@ export function DropdownMenu({
         destructive: rest.destructive
       })
 
+      const platformCheckboxIcon = getPlatformIcons(
+        DropdownMenuIcon.Check,
+        theme?.isDark,
+        {
+          disabled: rest.disabled,
+          destructive: rest.destructive
+        }
+      )
+
       if (selected) {
         return (
-          <DropdownMenuCheckboxItem
+          <DropdownMenuItem
             {...rest}
-            value={selected ? 'on' : 'off'}
-            onSelect={() => onPressAction({ nativeEvent: { event: id } })}
-            key={id}>
-            <DropdownMenuItemIndicator />
-            <DropdownMenuItemTitle>{title}</DropdownMenuItemTitle>
-          </DropdownMenuCheckboxItem>
+            key={id}
+            onSelect={() => onPressAction({ nativeEvent: { event: id } })}>
+            <DropdownMenuItemTitle
+              color={
+                rest.destructive
+                  ? theme.colors?.$textDanger
+                  : theme.colors?.$textPrimary
+              }>
+              {title}
+            </DropdownMenuItemTitle>
+            {Platform.select({
+              ios: platformCheckboxIcon?.ios ? (
+                <DropdownMenuImage source={platformCheckboxIcon.ios} />
+              ) : null,
+              android: platformCheckboxIcon?.android ? (
+                <DropdownMenuItemIcon
+                  androidIconName={platformCheckboxIcon.android}
+                />
+              ) : null
+            })}
+          </DropdownMenuItem>
         )
       }
 
@@ -119,12 +141,16 @@ export function DropdownMenu({
       </DropdownMenuTrigger>
 
       <Content key="dropdown-content">
-        {groups?.map((group, index) => (
-          <DropdownMenuGroup {...group} key={group.key || `group-${index}`}>
-            {group.items.map(renderItem)}
-            <DropdownMenuSeparator />
-          </DropdownMenuGroup>
-        ))}
+        {groups?.map(
+          (group, index) =>
+            group.items &&
+            group.items.length > 0 && (
+              <DropdownMenuGroup {...group} key={group.key || `group-${index}`}>
+                {group.items.map(renderItem)}
+                <DropdownMenuSeparator />
+              </DropdownMenuGroup>
+            )
+        )}
       </Content>
     </Root>
   )
@@ -169,27 +195,6 @@ const DropdownMenuSeparator = create(
     />
   ),
   'Separator'
-)
-
-const DropdownMenuCheckboxItem = create(
-  (props: React.ComponentProps<typeof CheckboxItem>) => (
-    <CheckboxItem
-      {...props}
-      style={{ ...props.style, display: 'flex', alignItems: 'center', gap: 8 }}>
-      <Pressable>
-        <ItemIndicator />
-        {props.children}
-      </Pressable>
-    </CheckboxItem>
-  ),
-  'CheckboxItem'
-)
-
-const DropdownMenuItemIndicator = create(
-  (props: React.ComponentProps<typeof ItemIndicator>) => (
-    <ItemIndicator {...props} />
-  ),
-  'ItemIndicator'
 )
 
 const DropdownMenuImage = create(

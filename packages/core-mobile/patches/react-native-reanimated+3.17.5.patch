@@ -1,0 +1,85 @@
+diff --git a/node_modules/react-native-reanimated/lib/typescript/hook/useAnimatedSensor.d.ts b/node_modules/react-native-reanimated/lib/typescript/hook/useAnimatedSensor.d.ts
+index eada3eb..954c97f 100644
+--- a/node_modules/react-native-reanimated/lib/typescript/hook/useAnimatedSensor.d.ts
++++ b/node_modules/react-native-reanimated/lib/typescript/hook/useAnimatedSensor.d.ts
+@@ -11,6 +11,6 @@ import { SensorType } from '../commonTypes';
+  *   and a function to unregister the sensor
+  * @see https://docs.swmansion.com/react-native-reanimated/docs/device/useAnimatedSensor
+  */
+-export declare function useAnimatedSensor(sensorType: SensorType.ROTATION, userConfig?: Partial<SensorConfig>): AnimatedSensor<ValueRotation>;
+-export declare function useAnimatedSensor(sensorType: Exclude<SensorType, SensorType.ROTATION>, userConfig?: Partial<SensorConfig>): AnimatedSensor<Value3D>;
++export declare function useAnimatedSensor(sensorType: SensorType.ROTATION, isActive?: boolean, userConfig?: Partial<SensorConfig>): AnimatedSensor<ValueRotation>;
++export declare function useAnimatedSensor(sensorType: Exclude<SensorType, SensorType.ROTATION>, isActive?: boolean, userConfig?: Partial<SensorConfig>): AnimatedSensor<Value3D>;
+ //# sourceMappingURL=useAnimatedSensor.d.ts.map
+\ No newline at end of file
+diff --git a/node_modules/react-native-reanimated/src/hook/useAnimatedSensor.ts b/node_modules/react-native-reanimated/src/hook/useAnimatedSensor.ts
+index 88797da..1fdc9da 100644
+--- a/node_modules/react-native-reanimated/src/hook/useAnimatedSensor.ts
++++ b/node_modules/react-native-reanimated/src/hook/useAnimatedSensor.ts
+@@ -88,14 +88,17 @@ function adjustVectorToInterfaceOrientation(data: Value3D) {
+  */
+ export function useAnimatedSensor(
+   sensorType: SensorType.ROTATION,
++  isActive?: boolean,
+   userConfig?: Partial<SensorConfig>
+ ): AnimatedSensor<ValueRotation>;
+ export function useAnimatedSensor(
+   sensorType: Exclude<SensorType, SensorType.ROTATION>,
++  isActive?: boolean,
+   userConfig?: Partial<SensorConfig>
+ ): AnimatedSensor<Value3D>;
+ export function useAnimatedSensor(
+   sensorType: SensorType,
++  isActive?: boolean,
+   userConfig?: Partial<SensorConfig>
+ ): AnimatedSensor<ValueRotation> | AnimatedSensor<Value3D> {
+   const userConfigRef = useRef(userConfig);
+@@ -143,18 +146,22 @@ export function useAnimatedSensor(
+     const adjustToInterfaceOrientation =
+       ref.current.config.adjustToInterfaceOrientation;
+ 
+-    const id = registerSensor(sensorType, config, (data) => {
+-      'worklet';
+-      if (adjustToInterfaceOrientation) {
+-        if (sensorType === SensorType.ROTATION) {
+-          data = adjustRotationToInterfaceOrientation(data as ValueRotation);
+-        } else {
+-          data = adjustVectorToInterfaceOrientation(data as Value3D);
++    let id = -1
++
++    if (isActive) {
++        id = registerSensor(sensorType, config, (data) => {
++        'worklet';
++        if (adjustToInterfaceOrientation) {
++          if (sensorType === SensorType.ROTATION) {
++            data = adjustRotationToInterfaceOrientation(data as ValueRotation);
++          } else {
++            data = adjustVectorToInterfaceOrientation(data as Value3D);
++          }
+         }
+-      }
+-      sensorData.value = data;
+-      callMicrotasks();
+-    });
++        sensorData.value = data;
++        callMicrotasks();
++      });
++    }
+ 
+     if (id !== -1) {
+       // if sensor is available
+@@ -171,7 +178,13 @@ export function useAnimatedSensor(
+     return () => {
+       ref.current.unregister();
+     };
+-  }, [sensorType, config]);
++  }, [sensorType, config, isActive]);
++
++  useEffect(() => {
++    if (!isActive) {
++      ref.current.unregister();
++    }
++  }, [isActive]);
+ 
+   return ref.current as AnimatedSensor<ValueRotation> | AnimatedSensor<Value3D>;
+ }

@@ -91,6 +91,7 @@ export const TextInput = forwardRef<TextInputRef, TextInputProps>(
           {leftIcon}
           <View sx={{ flex: 1 }}>
             <_TextInput
+              allowFontScaling={false}
               textAlign={textAlign}
               ref={inputRef}
               onBlur={onBlur}
