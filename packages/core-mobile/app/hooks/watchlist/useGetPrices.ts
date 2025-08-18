@@ -4,6 +4,7 @@ import { useSelector } from 'react-redux'
 import WatchlistService from 'services/watchlist/WatchlistService'
 import { selectSelectedCurrency } from 'store/settings/currency'
 import { Prices } from 'store/watchlist'
+import { runAfterInteractions } from 'utils/runAfterInteractions'
 
 export const useGetPrices = ({
   coingeckoIds,
@@ -17,7 +18,13 @@ export const useGetPrices = ({
   return useQuery({
     enabled,
     queryKey: [ReactQueryKeys.WATCHLIST_PRICES, currency, coingeckoIds],
-    queryFn: () => WatchlistService.getPrices(coingeckoIds, currency),
+    queryFn: async () => {
+      const prices = await runAfterInteractions(async () => {
+        return WatchlistService.getPrices(coingeckoIds, currency)
+      })
+
+      return prices ?? {}
+    },
     refetchInterval: 30000 // 30 seconds
   })
 }

@@ -5,6 +5,7 @@ import { useSelector } from 'react-redux'
 import WatchlistService from 'services/watchlist/WatchlistService'
 import { selectSelectedCurrency } from 'store/settings/currency'
 import { TokensAndCharts } from 'store/watchlist'
+import { runAfterInteractions } from 'utils/runAfterInteractions'
 
 export const useGetTokensAndCharts = (): UseQueryResult<
   TokensAndCharts,
@@ -16,7 +17,11 @@ export const useGetTokensAndCharts = (): UseQueryResult<
   return useQuery({
     enabled: isFocused,
     queryKey: [ReactQueryKeys.WATCHLIST_TOKENS_AND_CHARTS, currency],
-    queryFn: () => WatchlistService.getTokens(currency),
+    queryFn: () => {
+      return runAfterInteractions(async () => {
+        return WatchlistService.getTokens(currency)
+      })
+    },
     refetchInterval: 60000 // 1 minute
   })
 }

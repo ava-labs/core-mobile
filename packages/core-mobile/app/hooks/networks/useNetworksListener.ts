@@ -6,7 +6,6 @@ import { useDispatch } from 'react-redux'
 import { onAppUnlocked } from 'store/app'
 import { onNetworksFetchedSuccess } from 'store/network'
 import { toggleDeveloperMode } from 'store/settings/advanced'
-import { runAfterInteractions } from 'utils/runAfterInteractions'
 
 export const useNetworksListener = (queryClient: QueryClient): void => {
   const dispatch = useDispatch()
@@ -20,10 +19,8 @@ export const useNetworksListener = (queryClient: QueryClient): void => {
       addListener({
         matcher: isAnyOf(toggleDeveloperMode, onAppUnlocked),
         effect: async () => {
-          runAfterInteractions(async () => {
-            queryClient.invalidateQueries({
-              queryKey: [ReactQueryKeys.NETWORKS]
-            })
+          queryClient.invalidateQueries({
+            queryKey: [ReactQueryKeys.NETWORKS]
           })
         }
       })
