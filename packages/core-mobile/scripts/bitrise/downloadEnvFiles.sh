@@ -9,5 +9,5 @@ curl -Lfo "$BITRISE_SOURCE_DIR/envs.zip" "$BITRISEIO_ENV_FILES_URL"
 unzip -u "$BITRISE_SOURCE_DIR/envs" -d "$BITRISE_SOURCE_DIR"
 
 # download and unzip google services files
-curl -Lfo "$BITRISE_SOURCE_DIR/googleservices.zip" "$BITRISEIO_GOOGLE_SERVICES_FILES_URL"
+curl -Lfo "$BITRISE_SOURCE_DIR/googleservices.zip" "$BITRISEIO_GOOGLE_SERVICES_FILES_2_URL"
 unzip -u "$BITRISE_SOURCE_DIR/googleservices" -d "$BITRISE_SOURCE_DIR"
