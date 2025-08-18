@@ -236,7 +236,7 @@ const AnimatedDot = ({
           width: 16,
           height: 16,
           borderRadius: 8,
-          borderWidth: 2,
+          borderWidth: shouldFill ? 0 : 2,
           borderColor: shouldFill ? 'transparent' : theme.colors.$borderPrimary,
           backgroundColor: shouldFill
             ? theme.colors.$textPrimary
