@@ -24,7 +24,7 @@ import { isSupportedNftChainId } from '../utils'
 
 export type ActivityNetworkFilter = {
   filterName: string
-  chainId: number
+  chainId?: number
 }
 
 export const useActivityFilterAndSearch = ({
