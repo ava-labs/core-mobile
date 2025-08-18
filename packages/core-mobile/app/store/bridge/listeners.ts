@@ -5,6 +5,7 @@ import { isAnyOf, TaskAbortError } from '@reduxjs/toolkit'
 import Logger from 'utils/Logger'
 import BridgeService from 'services/bridge/BridgeService'
 import { uuid } from 'utils/uuid'
+import { runAfterInteractions } from 'utils/runAfterInteractions'
 import { setConfig } from './slice'
 
 const CONFIG_FETCH_INTERVAL = 15000
@@ -28,8 +29,11 @@ const fetchConfigPeriodically = async (
       // eslint-disable-next-line no-constant-condition
       while (true) {
         // cancellation-aware wait for the fetch to be done
-        const config = await forkApi.pause(BridgeService.getConfig())
-        dispatch(setConfig(config))
+        const config = await runAfterInteractions(async () => {
+          return forkApi.pause(BridgeService.getConfig())
+        })
+
+        config && dispatch(setConfig(config))
 
         // cancellation-aware delay
         await forkApi.delay(CONFIG_FETCH_INTERVAL)
