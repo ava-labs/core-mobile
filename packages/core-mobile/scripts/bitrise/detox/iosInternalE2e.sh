@@ -5,9 +5,14 @@ set -o pipefail
 
 npm rebuild detox
 
-xcrun simctl boot 'iPhone 15 Pro' && sleep 10
+xcrun simctl boot 'iPhone 16 Pro' || true
+xcrun simctl bootstatus booted -b
 
-open -a Simulator
+if [ -z "$CI" ] || [ "$CI" = "false" ]; then
+  echo "CI is not set or is false, opening Simulator"
+  open -a Simulator
+fi
+
 
 ./node_modules/.bin/detox test --configuration ios.internal.release.smoke.ci --retries 1 --max-workers 2; test_result=$?
 

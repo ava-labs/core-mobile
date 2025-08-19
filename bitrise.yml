@@ -996,7 +996,6 @@ workflows:
     - _install-and-set-env
     - _set-version
     - _pull_app_files
-    - _pull_external_app_files
     after_run:
     - _upload-detox-artifacts
     - _send-test-result-notification-slack
@@ -1036,7 +1035,6 @@ workflows:
     - _install-and-set-env
     - _set-version
     - _pull_app_files
-    - _pull_external_app_files
     envs:
     - ENVIRONMENT: production
       opts:
