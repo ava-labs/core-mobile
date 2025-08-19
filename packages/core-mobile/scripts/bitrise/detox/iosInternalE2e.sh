@@ -28,7 +28,7 @@ APP_BIN="$BITRISE_APP_DIR_PATH/$(defaults read "$BITRISE_APP_DIR_PATH/Info.plist
 lipo -info "$APP_BIN"
 echo "Check simulator app"
 
-./node_modules/.bin/detox test --configuration ios.internal.release.smoke.ci --retries 1 --max-workers 1; test_result=$?
+./node_modules/.bin/detox test --configuration ios.internal.release.smoke.ci --retries 1 --max-workers 2; test_result=$?
 
 npx ts-node ./e2e/attachLogsSendResultsToTestrail.ts && sleep 5
 
