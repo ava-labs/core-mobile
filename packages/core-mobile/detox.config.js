@@ -1,5 +1,8 @@
 /** @type {Detox.DetoxConfig} */
 
+// eslint-disable-next-line no-console
+console.log('👉 LETS! BITRISE_APP_DIR_PATH =', process.env.BITRISE_APP_DIR_PATH)
+
 module.exports = {
   testRunner: {
     $0: 'jest',
