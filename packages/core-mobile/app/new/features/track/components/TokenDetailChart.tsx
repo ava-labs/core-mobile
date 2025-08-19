@@ -12,6 +12,7 @@ import { formatCurrency } from 'utils/FormatCurrency'
 import { hapticFeedback } from 'utils/HapticFeedback'
 import { ChartOverlay } from './ChartOverlay'
 import SparklineChart from './SparklineChart'
+import { LoadingState } from 'common/components/LoadingState'
 
 export const TokenDetailChart = ({
   chartData,
@@ -19,7 +20,8 @@ export const TokenDetailChart = ({
   negative,
   onDataSelected,
   onGestureStart,
-  onGestureEnd
+  onGestureEnd,
+  isUpdatingChartData
 }: {
   negative: boolean
   ranges: {
@@ -34,6 +36,7 @@ export const TokenDetailChart = ({
   onDataSelected?: (p: GraphPoint) => void
   onGestureStart?: () => void
   onGestureEnd?: () => void
+  isUpdatingChartData: boolean
 }): JSX.Element => {
   const selectedCurrency = useSelector(selectSelectedCurrency)
   const hasBeenViewedChart = useSelector(
@@ -83,7 +86,8 @@ export const TokenDetailChart = ({
       <SparklineChart
         style={{
           width: '100%',
-          height: '100%'
+          height: '100%',
+          opacity: isUpdatingChartData ? 0.3 : 1
         }}
         labels={chartLabels}
         data={chartData ?? []}
@@ -99,6 +103,11 @@ export const TokenDetailChart = ({
         shouldShowInstruction={!hasBeenViewedChart}
         onInstructionRead={handleInstructionRead}
       />
+      {isUpdatingChartData && (
+        <LoadingState
+          sx={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}
+        />
+      )}
     </View>
   )
 }
