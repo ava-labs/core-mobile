@@ -69,7 +69,7 @@ describe('failure case', () => {
     expect(getAndIncrementCounter).toHaveBeenCalledTimes(2)
   })
 
-  it('should stop polling when isStopping is true', async () => {
+  it('should stop retrying when shouldStop is true', async () => {
     const getAndIncrementCounter = jest.fn().mockImplementation(() => {
       return 0
     })

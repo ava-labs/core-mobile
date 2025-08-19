@@ -14,7 +14,7 @@ type RetryParams<T> = {
  * Retries an operation with defined backoff policy.
  *
  * @param operation - The operation to retry.
- * @param shouldStop - The predicate to check if the operation should stop polling.
+ * @param shouldStop - The predicate to check if the operation should stop retrying.
  * @param maxRetries - The maximum number of retries.
  * @param backoffPolicy - Function to generate delay time based on current retry count.
  *
