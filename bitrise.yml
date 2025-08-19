@@ -227,7 +227,7 @@ workflows:
           {{getenv "IS_INTERNAL_BUILD" | eq "true"}}
         inputs:
         - artifact_sources: .*
-        - pipeline_intermediate_files: "$BITRISE_DEPLOY_DIR/app-internal-e2e-bitrise-signed.apk:BITRISE_APK_PATH\n$BITRISE_DEPLOY_DIR/app-internal-e2e-androidTest-bitrise-signed.apk:BITRISE_TEST_APK_PATH\t"
+        - pipeline_intermediate_files: "$BITRISE_DEPLOY_DIR/app-internal-e2e-bitrise-signed.apk:BITRISE_APK_PATH\n$BITRISE_DEPLOY_DIR/app-internal-e2e-androidTest-bitrise-signed.apk:BITRISE_TEST_APK_PATH\n$BITRISE_DEPLOY_DIR/AvaxWalletInternal.app:BITRISE_APP_DIR_PATH\t"
   _pull_external_app_files:
     steps:
     - pull-intermediate-files@1:
@@ -286,10 +286,19 @@ workflows:
         inputs:
         - scheme: $IOS_SCHEME
         - project_path: $IOS_PROJECT_PATH
-        - destination: "platform=iOS Simulator,name=iPhone 16 Pro,OS=18.4"
+        - destination: "generic/platform=iOS Simulator"
         - configuration: $IOS_CONFIGURATION
-        - code_signing_allowed: "yes"
+        - code_signing_allowed: "no"
         - log_formatter: xcpretty
+    - script@1:
+        title: build check
+        inputs:
+        - content: |-
+            #!/usr/bin/env bash
+            set -euo pipefail
+            APP_BIN="$BITRISE_APP_DIR_PATH/$(plutil -extract CFBundleExecutable raw $BITRISE_APP_DIR_PATH/Info.plist)"
+            echo "Check binary arch:"
+            lipo -info "$APP_BIN"
     - script-runner@0:
         title: Create iOS Test Run
         inputs:
@@ -996,6 +1005,7 @@ workflows:
     - _install-and-set-env
     - _set-version
     - _pull_app_files
+    - _pull_external_app_files
     after_run:
     - _upload-detox-artifacts
     - _send-test-result-notification-slack
