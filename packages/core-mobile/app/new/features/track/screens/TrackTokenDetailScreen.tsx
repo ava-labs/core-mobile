@@ -458,7 +458,7 @@ const TrackTokenDetailScreen = (): JSX.Element => {
         onGestureEnd={handleChartGestureEnd}
       />
 
-      {lastUpdatedDate && (
+      {lastUpdatedDate ? (
         <View sx={styles.lastUpdatedContainer}>
           <Animated.View
             entering={FadeIn.delay(DELAY * 3)}
@@ -482,6 +482,8 @@ const TrackTokenDetailScreen = (): JSX.Element => {
             </Animated.View>
           </Animated.View>
         </View>
+      ) : (
+        <View sx={styles.lastUpdatedContainer} />
       )}
       {tokenInfo?.has24hChartDataOnly === false && (
         <Animated.View

@@ -114,44 +114,45 @@ export const useTokenDetails = ({
     return getWatchlistPrice(tokenId)
   }, [trendingTokenData, getWatchlistPrice, token, tokenId])
 
+  const extractChartData = useCallback((): void => {
+    const chart = getWatchlistChart(tokenId)
+
+    if (chart) {
+      setChartData(chart.dataPoints)
+      setRanges(chart.ranges)
+    } else {
+      // simply set to empty to hide the loading state.
+      setChartData([])
+    }
+  }, [getWatchlistChart, tokenId])
+
+  const getChartDataFromCoingecko = useCallback(async (): Promise<void> => {
+    const data = await TokenService.getChartDataForCoinId({
+      coingeckoId,
+      days: chartDays,
+      currency
+    })
+
+    if (data) {
+      setChartData(data.dataPoints)
+      setRanges(data.ranges)
+    } else {
+      // simply set to empty to hide the loading state.
+      setChartData([])
+    }
+  }, [coingeckoId, chartDays, currency])
+
   // get chart data
   useEffect(() => {
-    const extractChartData = (): void => {
-      const chart = getWatchlistChart(tokenId)
-
-      if (chart) {
-        setChartData(chart.dataPoints)
-        setRanges(chart.ranges)
-      } else {
-        // simply set to empty to hide the loading state.
-        setChartData([])
-      }
-    }
-
-    const getChartDataFromCoingecko = async (): Promise<void> => {
-      const data = await TokenService.getChartDataForCoinId({
-        coingeckoId,
-        days: chartDays,
-        currency
-      })
-
-      if (data) {
-        setChartData(data.dataPoints)
-        setRanges(data.ranges)
-      } else {
-        // simply set to empty to hide the loading state.
-        setChartData([])
-      }
-    }
-
     InteractionManager.runAfterInteractions(() => {
+      setChartData(undefined)
       if (coingeckoId) {
         getChartDataFromCoingecko()
       } else {
         extractChartData()
       }
     })
-  }, [getWatchlistChart, token, tokenId, chartDays, coingeckoId, currency])
+  }, [coingeckoId, getChartDataFromCoingecko, extractChartData])
 
   // get market cap, volume, etc
   useEffect(() => {
