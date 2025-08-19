@@ -1,5 +1,6 @@
 import { UnsignedTx } from '@avalabs/avalanchejs'
 import { GetAtomicTxStatusResponse } from '@avalabs/avalanchejs/dist/vms/evm/model'
+import { ErrorBase } from 'errors/ErrorBase'
 import { FundsStuckError } from 'hooks/earn/errors'
 import NetworkService from 'services/network/NetworkService'
 import { AvalancheTransactionRequest, WalletType } from 'services/wallet/types'
@@ -11,7 +12,6 @@ import { retry } from 'utils/js/retry'
 import Logger from 'utils/Logger'
 import { weiToNano } from 'utils/units/converter'
 import { maxTransactionStatusCheckRetries } from './utils'
-import { ErrorBase } from 'errors/ErrorBase'
 
 export type ExportCParams = {
   walletId: string
