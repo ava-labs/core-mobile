@@ -116,6 +116,10 @@ export const JupiterProvider: SwapProvider<
 
     // The /swap endpoint may return errors, as it attempts to simulate the transaction too.
     if (txResponse.simulationError) {
+      if (txResponse.simulationError.error.includes('insufficient funds')) {
+        throw swapError.insufficientFunds(txResponse.simulationError)
+      }
+
       throw swapError.swapTxFailed(txResponse.simulationError)
     }
 

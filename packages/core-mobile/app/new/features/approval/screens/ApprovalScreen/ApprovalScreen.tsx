@@ -138,7 +138,7 @@ const ApprovalScreen = ({
         maxPriorityFeePerGas,
         overrideData: hashedCustomSpend
       })
-      router.canDismiss() && router.dismissAll()
+      router.canGoBack() && router.back()
     } catch (error: unknown) {
       Logger.error('Error approving transaction', error)
     } finally {

@@ -33,10 +33,6 @@ export const useTokenDetailFilterAndSort = ({
     setSelectedFilter(TokenDetailFilter.All)
   }, [])
 
-  const sortOption = useMemo(() => {
-    return selectedSort ?? TokenDetailSort.NewToOld
-  }, [selectedSort])
-
   const getFiltered = useCallback(() => {
     if (transactions.length === 0) {
       return []
@@ -75,12 +71,12 @@ export const useTokenDetailFilterAndSort = ({
 
   const getSorted = useCallback(
     (txs: Transaction[]) => {
-      if (sortOption === TokenDetailSort.OldToNew) {
+      if (selectedSort === TokenDetailSort.OldToNew) {
         return txs?.sort((a, b) => sortUndefined(a.timestamp, b.timestamp))
       }
       return txs?.sort((a, b) => sortUndefined(b.timestamp, a.timestamp))
     },
-    [sortOption]
+    [selectedSort]
   )
 
   const filteredAndSorted = useMemo(() => {
@@ -101,20 +97,18 @@ export const useTokenDetailFilterAndSort = ({
     })
   }, [filters, selectedFilter])
 
-  const sortData = useMemo(
-    () => [
-      {
-        key: 'token-detail-sorts',
-        items: TOKEN_DETAIL_SORTS.map(f => ({
-          id: f.items.find(i => i.id === selectedSort)?.id ?? '',
-          title: f.items.find(i => i.id === selectedSort)?.title ?? '',
-          selected:
-            f.items.find(i => i.id === selectedSort)?.id === selectedSort
+  const sortData = useMemo(() => {
+    return TOKEN_DETAIL_SORTS.map(s => {
+      return {
+        key: s.key,
+        items: s.items.map(i => ({
+          id: i.id,
+          title: i.id,
+          selected: i.id === selectedSort
         }))
       }
-    ],
-    [selectedSort]
-  )
+    })
+  }, [selectedSort])
 
   const filter = useMemo(
     () => ({

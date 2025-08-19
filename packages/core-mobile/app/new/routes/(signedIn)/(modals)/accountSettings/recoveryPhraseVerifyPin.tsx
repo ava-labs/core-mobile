@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useCallback } from 'react'
 import { VerifyWithPinOrBiometry } from 'common/components/VerifyWithPinOrBiometry'
 import { useRouter } from 'expo-router'
 import { useActiveWalletId } from 'common/hooks/useActiveWallet'
@@ -9,7 +9,7 @@ const RecoveryPhraseVerifyPinScreen = (): JSX.Element => {
   const { replace } = useRouter()
   const walletId = useActiveWalletId()
 
-  const handleVerifySuccess = async (): Promise<void> => {
+  const handleVerifySuccess = useCallback(async (): Promise<void> => {
     try {
       const result = await BiometricsSDK.loadWalletSecret(walletId)
       if (!result.success) {
@@ -26,7 +26,7 @@ const RecoveryPhraseVerifyPinScreen = (): JSX.Element => {
     } catch (err) {
       Logger.error('Error loading wallet secret', err)
     }
-  }
+  }, [replace, walletId])
 
   return <VerifyWithPinOrBiometry onVerifySuccess={handleVerifySuccess} />
 }
