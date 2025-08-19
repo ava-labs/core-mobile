@@ -290,15 +290,6 @@ workflows:
         - configuration: $IOS_CONFIGURATION
         - code_signing_allowed: "no"
         - log_formatter: xcpretty
-    - script@1:
-        title: build check
-        inputs:
-        - content: |-
-            #!/usr/bin/env bash
-            set -euo pipefail
-            APP_BIN="$BITRISE_APP_DIR_PATH/$(plutil -extract CFBundleExecutable raw $BITRISE_APP_DIR_PATH/Info.plist)"
-            echo "Check binary arch:"
-            lipo -info "$APP_BIN"
     - script-runner@0:
         title: Create iOS Test Run
         inputs:
@@ -1005,7 +996,6 @@ workflows:
     - _install-and-set-env
     - _set-version
     - _pull_app_files
-    - _pull_external_app_files
     after_run:
     - _upload-detox-artifacts
     - _send-test-result-notification-slack
