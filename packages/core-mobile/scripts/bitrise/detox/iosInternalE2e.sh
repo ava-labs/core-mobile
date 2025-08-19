@@ -5,14 +5,28 @@ set -o pipefail
 
 npm rebuild detox
 
-xcrun simctl boot 'iPhone 16 Pro' || true
-xcrun simctl bootstatus booted -b
+echo "Check bundle: Testing app bundle path: $BITRISE_APP_DIR_PATH"
 
-if [ -z "$CI" ] || [ "$CI" = "false" ]; then
-  echo "CI is not set or is false, opening Simulator"
-  open -a Simulator
+ls -la "$BITRISE_APP_DIR_PATH"
+plutil -p "$BITRISE_APP_DIR_PATH/Info.plist" | grep CFBundleIdentifier
+
+BUNDLE_ID=$(plutil -extract CFBundleIdentifier raw "$BITRISE_APP_DIR_PATH/Info.plist")
+echo "Check bundle: Found CFBundleIdentifier: $BUNDLE_ID"
+
+EXPECTED_BUNDLE_ID="org.avalabs.avaxwallet.internal"
+
+if [ "$BUNDLE_ID" != "$EXPECTED_BUNDLE_ID" ]; then
+  echo "Bundle ID mismatch!"
+  echo "Expected: $EXPECTED_BUNDLE_ID"
+  echo "Actual:   $BUNDLE_ID"
+  exit 1
 fi
 
+echo "Bundle ID matches expected: $EXPECTED_BUNDLE_ID"
+
+APP_BIN="$BITRISE_APP_DIR_PATH/$(defaults read "$BITRISE_APP_DIR_PATH/Info.plist" CFBundleExecutable)"
+lipo -info "$APP_BIN"
+echo "Check simulator app"
 
 ./node_modules/.bin/detox test --configuration ios.internal.release.smoke.ci --retries 1 --max-workers 2; test_result=$?
 
