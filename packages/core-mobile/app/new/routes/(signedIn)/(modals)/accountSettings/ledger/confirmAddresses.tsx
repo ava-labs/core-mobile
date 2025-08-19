@@ -36,17 +36,21 @@ export default function ConfirmAddresses() {
   } = useLedgerWallet()
 
   // Track key retrieval states
-  const [solanaKeyState, setSolanaKeyState] = useState<'pending' | 'success' | 'error'>('pending')
-  const [avalancheKeyState, setAvalancheKeyState] = useState<'pending' | 'success' | 'error'>('pending')
+  const [solanaKeyState, setSolanaKeyState] = useState<
+    'pending' | 'success' | 'error'
+  >('pending')
+  const [avalancheKeyState, setAvalancheKeyState] = useState<
+    'pending' | 'success' | 'error'
+  >('pending')
 
   // Handle Solana key retrieval and app switching
   const handleSolanaKeys = useCallback(async () => {
     try {
       setSolanaKeyState('pending')
-      
+
       // Add a small delay to ensure app is ready
       await new Promise(resolve => setTimeout(resolve, 1000))
-      
+
       try {
         await getSolanaKeys()
         setSolanaKeyState('success')
@@ -54,16 +58,18 @@ export default function ConfirmAddresses() {
       } catch (error) {
         // Check if it's a specific Solana app error
         if (error instanceof Error) {
-          if (error.message.includes('Solana app is not ready') || 
-              error.message.includes('Solana app is not open')) {
+          if (
+            error.message.includes('Solana app is not ready') ||
+            error.message.includes('Solana app is not open')
+          ) {
             setSolanaKeyState('error')
             Alert.alert(
               'Solana App Required',
               'Please open the Solana app on your Ledger device, then tap "I\'ve Switched" when ready.',
               [
                 { text: 'Cancel', style: 'cancel' },
-                { 
-                  text: "I've Switched", 
+                {
+                  text: "I've Switched",
                   onPress: () => {
                     setSolanaKeyState('pending')
                     handleSolanaKeys()
@@ -73,7 +79,7 @@ export default function ConfirmAddresses() {
             )
             return
           }
-          
+
           if (error.message.includes('Operation was rejected')) {
             setSolanaKeyState('error')
             Alert.alert(
@@ -81,8 +87,8 @@ export default function ConfirmAddresses() {
               'The operation was rejected on your Ledger device. Please try again.',
               [
                 { text: 'Cancel', style: 'cancel' },
-                { 
-                  text: 'Retry', 
+                {
+                  text: 'Retry',
                   onPress: () => {
                     setSolanaKeyState('pending')
                     handleSolanaKeys()
@@ -93,7 +99,7 @@ export default function ConfirmAddresses() {
             return
           }
         }
-        
+
         // For other errors, show a generic error message
         setSolanaKeyState('error')
         Alert.alert(
@@ -101,8 +107,8 @@ export default function ConfirmAddresses() {
           'Failed to get Solana keys. Please ensure the Solana app is open and try again.',
           [
             { text: 'Cancel', style: 'cancel' },
-            { 
-              text: 'Retry', 
+            {
+              text: 'Retry',
               onPress: () => {
                 setSolanaKeyState('pending')
                 handleSolanaKeys()
@@ -113,20 +119,16 @@ export default function ConfirmAddresses() {
       }
     } catch (error) {
       setSolanaKeyState('error')
-      Alert.alert(
-        'Error',
-        'An unexpected error occurred. Please try again.',
-        [
-          { text: 'Cancel', style: 'cancel' },
-          { 
-            text: 'Retry', 
-            onPress: () => {
-              setSolanaKeyState('pending')
-              handleSolanaKeys()
-            }
+      Alert.alert('Error', 'An unexpected error occurred. Please try again.', [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Retry',
+          onPress: () => {
+            setSolanaKeyState('pending')
+            handleSolanaKeys()
           }
-        ]
-      )
+        }
+      ])
     }
   }, [getSolanaKeys, promptForAvalancheSwitch])
 
@@ -153,8 +155,8 @@ export default function ConfirmAddresses() {
                 'Please ensure the Avalanche app is open on your Ledger device, then tap "Retry".',
                 [
                   { text: 'Cancel', style: 'cancel' },
-                  { 
-                    text: 'Retry', 
+                  {
+                    text: 'Retry',
                     onPress: () => {
                       setAvalancheKeyState('pending')
                       promptForAvalancheSwitch()
@@ -209,7 +211,6 @@ export default function ConfirmAddresses() {
       Alert.alert('Error', 'No device ID provided')
     }
   }, [handleInitialSetup, params.deviceId])
-
 
   const renderStepTitle = () => {
     switch (step) {
@@ -283,8 +284,8 @@ export default function ConfirmAddresses() {
                     textAlign: 'center',
                     color: '$textPrimary'
                   }}>
-                  {isLoading 
-                    ? 'Getting Solana Keys...' 
+                  {isLoading
+                    ? 'Getting Solana Keys...'
                     : solanaKeyState === 'error'
                     ? 'Solana Keys Failed'
                     : solanaKeyState === 'success'
@@ -340,8 +341,8 @@ export default function ConfirmAddresses() {
                     textAlign: 'center',
                     color: '$textPrimary'
                   }}>
-                  {isLoading 
-                    ? 'Getting Avalanche Keys...' 
+                  {isLoading
+                    ? 'Getting Avalanche Keys...'
                     : avalancheKeyState === 'error'
                     ? 'Avalanche Keys Failed'
                     : avalancheKeyState === 'success'
