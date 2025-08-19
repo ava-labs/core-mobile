@@ -92,6 +92,7 @@ abstract_target 'common' do
   end
   
   target 'AvaxWalletInternal' do
+    pod 'Detox', :path => '../node_modules/detox'
   end
 
   post_install do |installer|
