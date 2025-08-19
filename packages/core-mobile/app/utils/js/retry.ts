@@ -61,6 +61,7 @@ export const retry = async <T>({
       }
 
       if (isSuccess(result)) {
+        stopPolling = true
         return result
       }
     } catch (err) {
