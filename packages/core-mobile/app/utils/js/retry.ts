@@ -6,6 +6,7 @@ const DEFAULT_MAX_RETRIES = 10
 type RetryParams<T> = {
   operation: (retryIndex: number) => Promise<T>
   isSuccess: (result: T) => boolean
+  isStopping?: (result: T) => boolean
   maxRetries?: number
   backoffPolicy?: RetryBackoffPolicyInterface
 }
@@ -15,6 +16,7 @@ type RetryParams<T> = {
  *
  * @param operation - The operation to retry.
  * @param isSuccess - The predicate to check if the operation succeeded.
+ * @param isStopping - The predicate to check if the operation should stop polling.
  * @param maxRetries - The maximum number of retries.
  * @param backoffPolicy - Function to generate delay time based on current retry count.
  *
@@ -33,14 +35,16 @@ type RetryParams<T> = {
 export const retry = async <T>({
   operation,
   isSuccess,
+  isStopping,
   maxRetries = DEFAULT_MAX_RETRIES,
   backoffPolicy = RetryBackoffPolicy.exponential()
 }: RetryParams<T>): Promise<T> => {
   let backoffPeriodMillis = 0
   let retries = 0
   let lastError: unknown
+  let stopPolling = false
 
-  while (retries < maxRetries) {
+  while (retries < maxRetries && !stopPolling) {
     if (retries > 0) {
       Logger.info(`retry in ${backoffPeriodMillis} millis`)
       Logger.info(`retry count: ${retries}`)
@@ -49,6 +53,12 @@ export const retry = async <T>({
 
     try {
       const result = await operation(retries)
+
+      if (isStopping?.(result)) {
+        stopPolling = true
+        Logger.info('Operation stopped due to stopping condition')
+        return result
+      }
 
       if (isSuccess(result)) {
         return result
