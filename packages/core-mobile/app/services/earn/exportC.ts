@@ -82,8 +82,8 @@ export async function exportC({
   try {
     await retry({
       operation: () => avaxProvider.getApiC().getAtomicTxStatus(txID),
-      isSuccess: result => result.status === 'Accepted',
-      isStopping: result => result.status === 'Dropped',
+      shouldStop: result =>
+        result.status === 'Accepted' || result.status === 'Dropped',
       maxRetries: maxTransactionStatusCheckRetries
     })
   } catch (e) {

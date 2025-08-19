@@ -1,15 +1,15 @@
+import { UnsignedTx } from '@avalabs/avalanchejs'
+import { TokenUnit } from '@avalabs/core-utils-sdk'
+import { FundsStuckError } from 'hooks/earn/errors'
+import NetworkService from 'services/network/NetworkService'
+import { AvalancheTransactionRequest, WalletType } from 'services/wallet/types'
+import { addBufferToCChainBaseFee } from 'services/wallet/utils'
+import WalletService from 'services/wallet/WalletService'
+import { Account } from 'store/account'
 import { retry } from 'utils/js/retry'
 import Logger from 'utils/Logger'
-import WalletService from 'services/wallet/WalletService'
-import NetworkService from 'services/network/NetworkService'
-import { Account } from 'store/account'
-import { AvalancheTransactionRequest, WalletType } from 'services/wallet/types'
-import { UnsignedTx } from '@avalabs/avalanchejs'
-import { FundsStuckError } from 'hooks/earn/errors'
-import { TokenUnit } from '@avalabs/core-utils-sdk'
-import { cChainToken } from 'utils/units/knownTokens'
 import { weiToNano } from 'utils/units/converter'
-import { addBufferToCChainBaseFee } from 'services/wallet/utils'
+import { cChainToken } from 'utils/units/knownTokens'
 import {
   maxTransactionCreationRetries,
   maxTransactionStatusCheckRetries
@@ -75,7 +75,7 @@ export async function importC({
     txID = await retry({
       operation: () =>
         NetworkService.sendTransaction({ signedTx, network: avaxXPNetwork }),
-      isSuccess: result => result !== '',
+      shouldStop: result => result !== '',
       maxRetries: maxTransactionCreationRetries
     })
   } catch (e) {
@@ -92,8 +92,8 @@ export async function importC({
   try {
     await retry({
       operation: () => avaxProvider.getApiC().getAtomicTxStatus(txID),
-      isSuccess: result => result.status === 'Accepted',
-      isStopping: result => result.status === 'Dropped',
+      shouldStop: result =>
+        result.status === 'Accepted' || result.status === 'Dropped',
       maxRetries: maxTransactionStatusCheckRetries
     })
   } catch (e) {

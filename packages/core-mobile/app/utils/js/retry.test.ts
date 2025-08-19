@@ -9,7 +9,7 @@ describe('success case', () => {
     }
     const output = await retry({
       operation: getAndIncrementCounter,
-      isSuccess: result => result === 1
+      shouldStop: result => result === 1
     })
     const elapsedTimeMs = new Date().getTime() - startTs
     expect(elapsedTimeMs).toBeGreaterThanOrEqual(1000)
@@ -26,7 +26,7 @@ describe('success case', () => {
     }
     const output = await retry({
       operation: getAndIncrementCounter,
-      isSuccess: result => result === 2
+      shouldStop: result => result === 2
     })
     const elapsedTimeMs = new Date().getTime() - startTs
     expect(elapsedTimeMs).toBeGreaterThanOrEqual(3000)
@@ -44,7 +44,7 @@ describe('failure case', () => {
     await expect(async () => {
       await retry({
         operation: getAndIncrementCounter,
-        isSuccess: () => false,
+        shouldStop: () => false,
         maxRetries: 2
       })
     }).rejects.toThrow('Max retry exceeded.')
@@ -59,7 +59,7 @@ describe('failure case', () => {
     await expect(async () => {
       await retry({
         operation: getAndIncrementCounter,
-        isSuccess: () => false,
+        shouldStop: () => false,
         maxRetries: 2
       })
     }).rejects.toThrow(
@@ -75,8 +75,7 @@ describe('failure case', () => {
     })
     const output = await retry({
       operation: getAndIncrementCounter,
-      isSuccess: () => false,
-      isStopping: () => true,
+      shouldStop: () => true,
       maxRetries: 2
     })
     expect(output).toBe(0)
