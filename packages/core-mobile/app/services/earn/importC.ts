@@ -1,5 +1,7 @@
 import { UnsignedTx } from '@avalabs/avalanchejs'
+import { GetAtomicTxStatusResponse } from '@avalabs/avalanchejs/dist/vms/evm'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
+import { ErrorBase } from 'errors/ErrorBase'
 import { FundsStuckError } from 'hooks/earn/errors'
 import NetworkService from 'services/network/NetworkService'
 import { AvalancheTransactionRequest, WalletType } from 'services/wallet/types'
@@ -90,12 +92,19 @@ export async function importC({
   Logger.trace('txID', txID)
 
   try {
-    await retry({
+    const { status } = await retry<GetAtomicTxStatusResponse>({
       operation: () => avaxProvider.getApiC().getAtomicTxStatus(txID),
       shouldStop: result =>
         result.status === 'Accepted' || result.status === 'Dropped',
       maxRetries: maxTransactionStatusCheckRetries
     })
+    if (status === 'Dropped') {
+      throw new ErrorBase({
+        name: 'IMPORT_DROPPED',
+        message: 'Import was dropped',
+        cause: new Error('Import was dropped')
+      })
+    }
   } catch (e) {
     Logger.error('importC failed', e)
     throw new FundsStuckError({
