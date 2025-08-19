@@ -83,7 +83,7 @@ export const coingeckoRetry = <T>(
     operation: (retryIndex: number) => operation(retryIndex > 0),
     maxRetries: 2,
     backoffPolicy: RetryBackoffPolicy.constant(1),
-    isSuccess: (response: T | Error) => {
+    shouldStop: (response: T | Error) => {
       const errorStatus = (response as Error)?.status
       if (errorStatus?.error_code === 429) {
         Logger.error(errorStatus?.error_message, errorStatus)

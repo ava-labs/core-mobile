@@ -92,7 +92,7 @@ class EarnService {
           avaxXPNetwork
         })
       },
-      isSuccess: result => !!result.pChainUtxo && !!result.cChainUtxo,
+      shouldStop: result => !!result.pChainUtxo && !!result.cChainUtxo,
       maxRetries: maxGetAtomicUTXOsRetries,
       backoffPolicy: RetryBackoffPolicy.constant(2)
     })
@@ -281,7 +281,7 @@ class EarnService {
     try {
       await retry({
         operation: () => avaxProvider.getApiP().getTxStatus({ txID }),
-        isSuccess: result => result.status === 'Committed',
+        shouldStop: result => result.status === 'Committed',
         maxRetries: maxTransactionStatusCheckRetries
       })
     } catch (e) {
