@@ -10,9 +10,9 @@ import {
 } from 'store/viewOnce'
 import { formatCurrency } from 'utils/FormatCurrency'
 import { hapticFeedback } from 'utils/HapticFeedback'
+import { LoadingState } from 'common/components/LoadingState'
 import { ChartOverlay } from './ChartOverlay'
 import SparklineChart from './SparklineChart'
-import { LoadingState } from 'common/components/LoadingState'
 
 export const TokenDetailChart = ({
   chartData,
