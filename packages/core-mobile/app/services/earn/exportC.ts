@@ -1,14 +1,16 @@
-import { retry } from 'utils/js/retry'
-import Logger from 'utils/Logger'
+import { UnsignedTx } from '@avalabs/avalanchejs'
+import { GetAtomicTxStatusResponse } from '@avalabs/avalanchejs/dist/vms/evm/model'
+import { ErrorBase } from 'errors/ErrorBase'
+import { FundsStuckError } from 'hooks/earn/errors'
+import NetworkService from 'services/network/NetworkService'
+import { AvalancheTransactionRequest, WalletType } from 'services/wallet/types'
+import { addBufferToCChainBaseFee } from 'services/wallet/utils'
 import WalletService from 'services/wallet/WalletService'
 import { Account } from 'store/account/types'
-import { AvalancheTransactionRequest, WalletType } from 'services/wallet/types'
-import { UnsignedTx } from '@avalabs/avalanchejs'
-import NetworkService from 'services/network/NetworkService'
-import { FundsStuckError } from 'hooks/earn/errors'
 import { AvaxC } from 'types/AvaxC'
+import { retry } from 'utils/js/retry'
+import Logger from 'utils/Logger'
 import { weiToNano } from 'utils/units/converter'
-import { addBufferToCChainBaseFee } from 'services/wallet/utils'
 import { maxTransactionStatusCheckRetries } from './utils'
 
 export type ExportCParams = {
@@ -80,11 +82,19 @@ export async function exportC({
   Logger.trace('txID', txID)
 
   try {
-    await retry({
+    const { status } = await retry<GetAtomicTxStatusResponse>({
       operation: () => avaxProvider.getApiC().getAtomicTxStatus(txID),
-      isSuccess: result => result.status === 'Accepted',
+      shouldStop: result =>
+        result.status === 'Accepted' || result.status === 'Dropped',
       maxRetries: maxTransactionStatusCheckRetries
     })
+    if (status === 'Dropped') {
+      throw new ErrorBase({
+        name: 'EXPORT_DROPPED',
+        message: 'Export was dropped',
+        cause: new Error('Export was dropped')
+      })
+    }
   } catch (e) {
     Logger.error('exportC failed', e)
     throw new FundsStuckError({

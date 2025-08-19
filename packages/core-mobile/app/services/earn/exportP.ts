@@ -66,7 +66,7 @@ export async function exportP({
   try {
     await retry({
       operation: () => avaxProvider.getApiP().getTxStatus({ txID }),
-      isSuccess: result => result.status === 'Committed',
+      shouldStop: result => result.status === 'Committed',
       maxRetries: maxTransactionStatusCheckRetries
     })
   } catch (e) {

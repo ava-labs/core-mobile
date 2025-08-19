@@ -59,7 +59,7 @@ export async function importP({
     txID = await retry({
       operation: () =>
         NetworkService.sendTransaction({ signedTx, network: avaxPNetwork }),
-      isSuccess: result => result !== '',
+      shouldStop: result => result !== '',
       maxRetries: maxTransactionCreationRetries
     })
   } catch (e) {
@@ -78,7 +78,7 @@ export async function importP({
   try {
     await retry({
       operation: () => avaxProvider.getApiP().getTxStatus({ txID }),
-      isSuccess: result => result.status === 'Committed',
+      shouldStop: result => result.status === 'Committed',
       maxRetries: maxTransactionStatusCheckRetries
     })
   } catch (e) {
@@ -155,7 +155,7 @@ export async function importPWithBalanceCheck({
         addressPVM,
         selectedCurrency
       }),
-    isSuccess: unlockedUnstakedAfterImport => {
+    shouldStop: unlockedUnstakedAfterImport => {
       return unlockedUnstakedAfterImport !== unlockedUnstakedBeforeImport
     },
     maxRetries: maxBalanceCheckRetries,
