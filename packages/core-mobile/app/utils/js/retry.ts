@@ -42,9 +42,8 @@ export const retry = async <T>({
   let backoffPeriodMillis = 0
   let retries = 0
   let lastError: unknown
-  let stopPolling = false
 
-  while (retries < maxRetries && !stopPolling) {
+  while (retries < maxRetries) {
     if (retries > 0) {
       Logger.info(`retry in ${backoffPeriodMillis} millis`)
       Logger.info(`retry count: ${retries}`)
@@ -55,13 +54,11 @@ export const retry = async <T>({
       const result = await operation(retries)
 
       if (isStopping?.(result)) {
-        stopPolling = true
         Logger.info('Operation stopped due to stopping condition')
         return result
       }
 
       if (isSuccess(result)) {
-        stopPolling = true
         return result
       }
     } catch (err) {
