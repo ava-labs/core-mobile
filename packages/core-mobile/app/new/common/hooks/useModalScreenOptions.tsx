@@ -71,7 +71,7 @@ export function useModalScreenOptions(): {
     Platform.OS === 'android'
       ? {
           animation: 'slide_from_right',
-          presentation: 'card',
+          presentation: 'pageSheet',
           gestureDirection: 'horizontal',
           gestureEnabled: true
           // cardStyle: {

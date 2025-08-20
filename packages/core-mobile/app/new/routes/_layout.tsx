@@ -26,6 +26,7 @@ import {
   setSelectedColorScheme
 } from 'store/settings/appearance'
 import { selectWalletState, WalletState } from 'store/app'
+import { stackNavigatorScreenOptions } from 'common/consts/screenOptions'
 
 export default function Root(): JSX.Element | null {
   const dispatch = useDispatch()
@@ -84,13 +85,7 @@ export default function Root(): JSX.Element | null {
                     ? 'loginWithPinOrBiometry'
                     : 'signup'
                 }
-                screenOptions={
-                  {
-                    // ...stackNavigatorScreenOptions,
-                    // headerShown: false
-                  }
-                }>
-                {/* <Stack.Screen name="index" options={{ animation: 'none' }} /> */}
+                screenOptions={stackNavigatorScreenOptions}>
                 <Stack.Screen name="signup" options={{ animation: 'none' }} />
                 <Stack.Screen
                   name="accessWallet"
@@ -107,10 +102,10 @@ export default function Root(): JSX.Element | null {
                 <Stack.Screen
                   name="loginWithPinOrBiometry"
                   options={{
-                    presentation: 'modal',
+                    presentation: 'fullScreenModal',
+                    animation: 'none',
                     headerShown: false,
                     gestureEnabled: false
-                    // cardStyleInterpolator: forNoAnimation
                   }}
                 />
                 <Stack.Screen
