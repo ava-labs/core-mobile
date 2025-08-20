@@ -17,21 +17,7 @@ class AppDelegate: ExpoAppDelegate {
     // Firebase App Check and configuration
     RNFBAppCheckModule.sharedInstance()
     FirebaseApp.configure()
-
-  
-    #if DETOX
-    print("Detox going")
-    if let cls = NSClassFromString("DetoxAppDelegate") as? NSObject.Type,
-      let shared = cls.perform(NSSelectorFromString("shared"))?.takeUnretainedValue() {
-      _ = (shared as AnyObject).perform(
-            NSSelectorFromString("application:didFinishLaunchingWithOptions:"),
-            with: application,
-            with: launchOptions
-          )
-    }
-    #endif
-
-
+    
     let delegate = ReactNativeDelegate()
     let factory = ExpoReactNativeFactory(delegate: delegate)
     delegate.dependencyProvider = RCTAppDependencyProvider()

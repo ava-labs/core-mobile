@@ -305,7 +305,7 @@
       "@sentry/react-native>@sentry/cli": false,
       "@storybook/react-native>@storybook/core-common>esbuild": false,
       "bitcoinjs-lib>tiny-secp256k1": false,
-      "detox": false,
+      "detox": true,
       "detox>bunyan>dtrace-provider": false,
       "msw": false,
       "postinstall-postinstall": false,

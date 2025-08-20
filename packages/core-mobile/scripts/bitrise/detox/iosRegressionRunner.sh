@@ -9,14 +9,6 @@ npm rebuild detox
 
 ./node_modules/.bin/detox reset-lock-file
 
-xcrun simctl boot 'iPhone 16 Pro' || true
-xcrun simctl bootstatus booted -b
-
-if [ -z "$CI" ] || [ "$CI" = "false" ]; then
-  echo "CI is not set or is false, opening Simulator"
-  open -a Simulator
-fi
-
 if [ "$IS_INTERNAL_BUILD" = true ]; then
   QT_QPA_PLATFORM=xcb; ./node_modules/.bin/detox test -c ios.internal.release.regression.ci --headless --max-workers 2; test_result=$?
 else
