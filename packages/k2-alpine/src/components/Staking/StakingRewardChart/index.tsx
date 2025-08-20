@@ -116,11 +116,14 @@ export const StakeRewardChart = forwardRef<
     )
 
     useEffect(() => {
-      InteractionManager.runAfterInteractions(() => {
+      const task = InteractionManager.runAfterInteractions(() => {
         if (graphSize.width > 0 && graphSize.height > 0) {
           selectIndex(initialIndex, 0)
         }
       })
+      return () => {
+        task.cancel()
+      }
     }, [initialIndex, selectIndex, graphSize])
 
     const {

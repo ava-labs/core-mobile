@@ -1,17 +1,16 @@
 import { AccountSettingBarButton } from 'common/components/AccountSettingBarButton'
-import { StackNavigationOptions } from '@react-navigation/stack'
 import { ConnectButton } from 'common/components/ConnectButton'
 import React from 'react'
 import { View } from '@avalabs/k2-alpine'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { NativeStackNavigationOptions } from '@react-navigation/native-stack'
 
-export function useHomeScreenOptions(): StackNavigationOptions {
-  const insets = useSafeAreaInsets()
+export function useHomeScreenOptions(): NativeStackNavigationOptions {
+  // const insets = useSafeAreaInsets()
 
-  const homeScreenOptions: StackNavigationOptions = {
-    headerStyle: {
-      height: insets.top + 50
-    },
+  const homeScreenOptions: NativeStackNavigationOptions = {
+    // headerStyle: {
+    //   height: insets.top + 50
+    // },
     headerLeft: () => <AccountSettingBarButton />,
     headerRight: () => {
       return (

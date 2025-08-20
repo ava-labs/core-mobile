@@ -147,13 +147,16 @@ export const useTokenDetails = ({
 
   // get chart data
   useEffect(() => {
-    InteractionManager.runAfterInteractions(() => {
+    const task = InteractionManager.runAfterInteractions(() => {
       if (coingeckoId) {
         getChartDataFromCoingecko()
       } else {
         extractChartData()
       }
     })
+    return () => {
+      task.cancel()
+    }
   }, [coingeckoId, getChartDataFromCoingecko, extractChartData])
 
   // get market cap, volume, etc
@@ -203,13 +206,16 @@ export const useTokenDetails = ({
       })
     }
 
-    InteractionManager.runAfterInteractions(() => {
+    const task = InteractionManager.runAfterInteractions(() => {
       if (coingeckoId) {
         getMarketDetailsFromCoingecko()
       } else if (isTrendingToken(token)) {
         extractMarketDetails()
       }
     })
+    return () => {
+      task.cancel()
+    }
   }, [
     coingeckoId,
     currency,

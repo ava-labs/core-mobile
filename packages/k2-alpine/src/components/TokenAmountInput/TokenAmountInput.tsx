@@ -1,12 +1,7 @@
 import { bigintToBig, bigToBigInt } from '@avalabs/core-utils-sdk'
 import Big from 'big.js'
 import React, { useEffect, useRef, useState } from 'react'
-import {
-  InteractionManager,
-  Platform,
-  TextInput,
-  TextInputProps
-} from 'react-native'
+import { Platform, TextInput, TextInputProps } from 'react-native'
 import { useTheme } from '../../hooks'
 import { alpha } from '../../utils'
 import {
@@ -68,13 +63,13 @@ export const TokenAmountInput = ({
     }
   }
 
-  useEffect(() => {
-    if (autoFocus) {
-      InteractionManager.runAfterInteractions(() => {
-        inputRef.current?.focus()
-      })
-    }
-  }, [autoFocus])
+  // useEffect(() => {
+  //   if (autoFocus) {
+  //     InteractionManager.runAfterInteractions(() => {
+  //       inputRef.current?.focus()
+  //     })
+  //   }
+  // }, [autoFocus])
 
   useEffect(() => {
     if (inputRef.current) {
@@ -91,6 +86,7 @@ export const TokenAmountInput = ({
        * Using inputMode="numeric" provides the same behavior without the performance issues.
        * See: https://github.com/expo/expo/issues/34156
        */
+      autoFocus={autoFocus}
       keyboardType={Platform.OS === 'ios' ? 'numeric' : undefined}
       inputMode={Platform.OS === 'android' ? 'numeric' : undefined}
       onChangeText={handleChangeText}

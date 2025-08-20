@@ -29,10 +29,6 @@ import {
   Platform,
   StyleSheet
 } from 'react-native'
-import {
-  AndroidSoftInputModes,
-  KeyboardController
-} from 'react-native-keyboard-controller'
 import Animated, {
   interpolate,
   useAnimatedStyle,
@@ -343,18 +339,18 @@ const TrackHomeScreen = (): JSX.Element => {
     showSearchResults
   ])
 
-  useFocusEffect(() => {
-    if (!KeyboardController.isVisible()) {
-      KeyboardController.setInputMode(
-        AndroidSoftInputModes.SOFT_INPUT_ADJUST_NOTHING
-      )
-    }
-    return () => {
-      if (!KeyboardController.isVisible()) {
-        KeyboardController.setDefaultMode()
-      }
-    }
-  })
+  // useFocusEffect(() => {
+  //   if (!KeyboardController.isVisible()) {
+  //     KeyboardController.setInputMode(
+  //       AndroidSoftInputModes.SOFT_INPUT_ADJUST_NOTHING
+  //     )
+  //   }
+  //   return () => {
+  //     if (!KeyboardController.isVisible()) {
+  //       KeyboardController.setDefaultMode()
+  //     }
+  //   }
+  // })
 
   return (
     <BlurredBarsContentLayout>

@@ -17,14 +17,14 @@ export default function BrowserLayout(): JSX.Element {
           name="tabs"
           options={{
             headerShown: false,
-            presentation: 'modal',
-            cardStyleInterpolator: ({ current: { progress } }) => {
-              return {
-                cardStyle: {
-                  opacity: progress
-                }
-              }
-            }
+            presentation: 'modal'
+            // cardStyleInterpolator: ({ current: { progress } }) => {
+            //   return {
+            //     cardStyle: {
+            //       opacity: progress
+            //     }
+            //   }
+            // }
           }}
         />
         <Stack.Screen

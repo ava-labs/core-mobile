@@ -1,10 +1,6 @@
 import { K2AlpineThemeProvider } from '@avalabs/k2-alpine'
 import { LogoModal } from 'common/components/LogoModal'
 import { Stack } from 'common/components/Stack'
-import {
-  forNoAnimation,
-  stackNavigatorScreenOptions
-} from 'common/consts/screenOptions'
 import NavigationThemeProvider from 'common/contexts/NavigationThemeProvider'
 import { useBgDetect } from 'common/hooks/useBgDetect'
 import { useLoadFonts } from 'common/hooks/useLoadFonts'
@@ -18,6 +14,7 @@ import React, { useCallback, useEffect, useState } from 'react'
 import { Platform, Appearance as RnAppearance } from 'react-native'
 import Bootsplash from 'react-native-bootsplash'
 import { SystemBars } from 'react-native-edge-to-edge'
+import { GestureHandlerRootView } from 'react-native-gesture-handler'
 import { KeyboardProvider } from 'react-native-keyboard-controller'
 import 'react-native-reanimated'
 import { useDispatch, useSelector } from 'react-redux'
@@ -28,6 +25,7 @@ import {
   selectSelectedColorScheme,
   setSelectedColorScheme
 } from 'store/settings/appearance'
+import { selectWalletState, WalletState } from 'store/app'
 
 export default function Root(): JSX.Element | null {
   const dispatch = useDispatch()
@@ -69,57 +67,73 @@ export default function Root(): JSX.Element | null {
     Bootsplash.hide()
   }, [])
 
+  const walletState = useSelector(selectWalletState)
+
   return (
     <KeyboardProvider>
-      <K2AlpineThemeProvider colorScheme={colorScheme}>
-        <NavigationThemeProvider>
-          <RecoveryMethodProvider>
-            <NavigationRedirect />
-            <Stack
-              screenOptions={{
-                ...stackNavigatorScreenOptions,
-                headerShown: false
-              }}>
-              <Stack.Screen name="index" options={{ animation: 'none' }} />
-              <Stack.Screen name="signup" options={{ animation: 'none' }} />
-              <Stack.Screen
-                name="accessWallet"
-                options={{ headerShown: true }}
-              />
-              <Stack.Screen
-                name="(signedIn)"
-                options={{
-                  headerShown: false,
-                  animation: 'none',
-                  gestureEnabled: false
-                }}
-              />
-              <Stack.Screen
-                name="loginWithPinOrBiometry"
-                options={{
-                  presentation: 'modal',
-                  headerShown: false,
-                  gestureEnabled: false,
-                  cardStyleInterpolator: forNoAnimation
-                }}
-              />
-              <Stack.Screen name="forgotPin" options={{ headerShown: true }} />
-              <Stack.Screen name="+not-found" />
-              <Stack.Screen name="onboarding" />
-              <Stack.Screen
-                name="sessionExpired"
-                options={{
-                  ...modalScreensOptions,
-                  gestureEnabled: false
-                }}
-              />
-            </Stack>
-            {enabledPrivacyScreen && <LogoModal />}
-          </RecoveryMethodProvider>
-        </NavigationThemeProvider>
-        <GlobalToast />
-        <GlobalAlertWithTextInput />
-      </K2AlpineThemeProvider>
+      <GestureHandlerRootView>
+        <K2AlpineThemeProvider colorScheme={colorScheme}>
+          <NavigationThemeProvider>
+            <RecoveryMethodProvider>
+              <NavigationRedirect />
+              <Stack
+                initialRouteName={
+                  walletState === WalletState.ACTIVE
+                    ? '(signedIn)'
+                    : walletState === WalletState.INACTIVE
+                    ? 'loginWithPinOrBiometry'
+                    : 'signup'
+                }
+                screenOptions={
+                  {
+                    // ...stackNavigatorScreenOptions,
+                    // headerShown: false
+                  }
+                }>
+                {/* <Stack.Screen name="index" options={{ animation: 'none' }} /> */}
+                <Stack.Screen name="signup" options={{ animation: 'none' }} />
+                <Stack.Screen
+                  name="accessWallet"
+                  options={{ headerShown: true }}
+                />
+                <Stack.Screen
+                  name="(signedIn)"
+                  options={{
+                    headerShown: false,
+                    animation: 'none',
+                    gestureEnabled: false
+                  }}
+                />
+                <Stack.Screen
+                  name="loginWithPinOrBiometry"
+                  options={{
+                    presentation: 'modal',
+                    headerShown: false,
+                    gestureEnabled: false
+                    // cardStyleInterpolator: forNoAnimation
+                  }}
+                />
+                <Stack.Screen
+                  name="forgotPin"
+                  options={{ headerShown: true }}
+                />
+                <Stack.Screen name="+not-found" />
+                <Stack.Screen name="onboarding" />
+                <Stack.Screen
+                  name="sessionExpired"
+                  options={{
+                    ...modalScreensOptions,
+                    gestureEnabled: false
+                  }}
+                />
+              </Stack>
+              {enabledPrivacyScreen && <LogoModal />}
+            </RecoveryMethodProvider>
+          </NavigationThemeProvider>
+          <GlobalToast />
+          <GlobalAlertWithTextInput />
+        </K2AlpineThemeProvider>
+      </GestureHandlerRootView>
     </KeyboardProvider>
   )
 }

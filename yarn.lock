@@ -396,6 +396,9 @@ __metadata:
     react-native-localize: 3.2.1
     react-native-mmkv: 3.2.0
     react-native-modal-datetime-picker: 18.0.0
+    react-native-nitro-image: ^0.6.1
+    react-native-nitro-modules: ^0.28.1
+    react-native-nitro-web-image: ^0.6.1
     react-native-os: 1.2.6
     react-native-pager-view: 6.7.1
     react-native-passkey: 3.1.0
@@ -27492,6 +27495,39 @@ __metadata:
   languageName: node
   linkType: hard
 
+"react-native-nitro-image@npm:^0.6.1":
+  version: 0.6.1
+  resolution: "react-native-nitro-image@npm:0.6.1"
+  peerDependencies:
+    react: "*"
+    react-native: "*"
+    react-native-nitro-modules: "*"
+  checksum: da8de85bd8bef99525850649fd16e5e8d8b819f0ec3b60a79d5fd0efac557519902d1783e5b48be3f977b1cb8054c3e3b0d6991cc89c74fcbf8ffe0efa8980bd
+  languageName: node
+  linkType: hard
+
+"react-native-nitro-modules@npm:^0.28.1":
+  version: 0.28.1
+  resolution: "react-native-nitro-modules@npm:0.28.1"
+  peerDependencies:
+    react: "*"
+    react-native: "*"
+  checksum: 9e758e57f32a6ce5dc7358fcd16870fa261a3086f9d18813616f04c7841251d3a22b17b01f6c7e9c1d76d2874c21ab131e0c99af3c2f37245f3c0e7e82dc103f
+  languageName: node
+  linkType: hard
+
+"react-native-nitro-web-image@npm:^0.6.1":
+  version: 0.6.1
+  resolution: "react-native-nitro-web-image@npm:0.6.1"
+  peerDependencies:
+    react: "*"
+    react-native: "*"
+    react-native-nitro-image: "*"
+    react-native-nitro-modules: "*"
+  checksum: c894b6790929736451a21fe1f7abc200c000f751325cdf3cec639a73f6be1d8087702585259b083ced28336d7a3c75a7309faff882f061758b7cb6200278a5fc
+  languageName: node
+  linkType: hard
+
 "react-native-os@npm:1.2.6":
   version: 1.2.6
   resolution: "react-native-os@npm:1.2.6"
@@ -27820,7 +27856,7 @@ react-native-webview@ava-labs/react-native-webview:
   peerDependencies:
     react: "*"
     react-native: "*"
-  checksum: 44ee8c8ebc4dc4d3423e9045e1aebac31829eb518824e24f41b2bd10ab1e8343e824e9d912f259bfec7bfa798e96513cc05dbdcdf36087b2a43806f74a3b0fa2
+  checksum: 3e4689674406deb2ad9efa9f529597341b4ab33e379b7c7cd72aff8d5e37862fda1a37aba984951a67cc3938969be138bc3c4469e4963dd170b172148339e056
   languageName: node
   linkType: hard
 

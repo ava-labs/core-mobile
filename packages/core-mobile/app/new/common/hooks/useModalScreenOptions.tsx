@@ -1,32 +1,24 @@
+import { NativeStackNavigationOptions } from '@react-navigation/native-stack'
+
 import {
-  CardStyleInterpolators,
-  StackCardInterpolatedStyle,
-  StackCardInterpolationProps,
-  StackNavigationOptions
-} from '@react-navigation/stack'
-import {
-  androidModalTransitionSpec,
-  MODAL_BORDER_RADIUS,
-  MODAL_HEADER_HEIGHT,
   MODAL_TOP_MARGIN,
   modalStackNavigatorScreenOptions
 } from 'common/consts/screenOptions'
 import { useMemo } from 'react'
-import { Animated, Platform } from 'react-native'
+import { Platform } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import * as stackModalInterpolator from '../utils/stackModalInterpolator'
 
 export function useModalScreenOptions(): {
   topMarginOffset: number
-  modalScreensOptions: StackNavigationOptions
-  formSheetScreensOptions: StackNavigationOptions
-  modalStackNavigatorScreenOptions: StackNavigationOptions
-  modalFirstScreenOptions: StackNavigationOptions
+  modalScreensOptions: NativeStackNavigationOptions
+  formSheetScreensOptions: NativeStackNavigationOptions
+  modalStackNavigatorScreenOptions: NativeStackNavigationOptions
+  modalFirstScreenOptions: NativeStackNavigationOptions
   // When opening a modal from a stacked navigator which is itself a modal we need to use a different effect
   // This is because the modal effect is not supported on Android and the screen zIndex is not respected
   // Use this when you have a detail screen that has to be on top of the tabbar
   // Ex: TokenDetail/CollectibleDetail screen which opens a modal
-  stackModalScreensOptions: StackNavigationOptions | undefined
+  stackModalScreensOptions: NativeStackNavigationOptions | undefined
 } {
   const insets = useSafeAreaInsets()
 
@@ -34,69 +26,72 @@ export function useModalScreenOptions(): {
     return insets.top + MODAL_TOP_MARGIN
   }, [insets])
 
-  const modalOptions: StackNavigationOptions = {
-    presentation: 'modal',
-    cardStyle: {
-      marginTop: topMarginOffset,
-      borderTopLeftRadius: MODAL_BORDER_RADIUS,
-      borderTopRightRadius: MODAL_BORDER_RADIUS
-    },
-    ...(Platform.OS === 'android' && {
-      transitionSpec: androidModalTransitionSpec
-    }),
+  const modalOptions: NativeStackNavigationOptions = {
+    presentation: 'pageSheet',
+    headerBackButtonDisplayMode: 'minimal',
+    // animation: 'fade_from_bottom',
+    // cardStyle: {
+    //   marginTop: topMarginOffset,
+    //   borderTopLeftRadius: MODAL_BORDER_RADIUS,
+    //   borderTopRightRadius: MODAL_BORDER_RADIUS
+    // },
+    // ...(Platform.OS === 'android' && {
+    //   transitionSpec: androidModalTransitionSpec
+    // }),
     gestureEnabled: true,
     // Make the whole screen gestureable for dismissing the modal
     // This breaks keyboard open interaction on Android
     // Does work for Android when inside a scrollable screen if content height isn't greater than screen height
     // Does not work for iOS when inside a scrollable screen only if scrollEnabled is false
-    gestureResponseDistance: MODAL_HEADER_HEIGHT + topMarginOffset,
+    // gestureResponseDistance: MODAL_HEADER_HEIGHT + topMarginOffset,
     headerStyle: {
-      height: MODAL_HEADER_HEIGHT
+      // height: MODAL_HEADER_HEIGHT
     }
   }
 
-  const modalScreensOptions: StackNavigationOptions = {
-    ...modalOptions,
-    cardStyleInterpolator: forModalPresentationIOS
+  const modalScreensOptions: NativeStackNavigationOptions = {
+    ...modalOptions
+    // cardStyleInterpolator: forModalPresentationIOS
   }
 
-  const formSheetScreensOptions: StackNavigationOptions = {
-    ...modalOptions,
-    gestureResponseDistance: MODAL_HEADER_HEIGHT * 2 + topMarginOffset,
-    cardStyle: {
-      marginTop: Platform.OS === 'ios' ? topMarginOffset - 4 : MODAL_TOP_MARGIN,
-      borderTopLeftRadius: MODAL_BORDER_RADIUS,
-      borderTopRightRadius: MODAL_BORDER_RADIUS
-    },
+  const formSheetScreensOptions: NativeStackNavigationOptions = {
+    ...modalOptions
+    // gestureResponseDistance: MODAL_HEADER_HEIGHT * 2 + topMarginOffset,
+    // cardStyle: {
+    //   marginTop: Platform.OS === 'ios' ? topMarginOffset - 4 : MODAL_TOP_MARGIN,
+    //   borderTopLeftRadius: MODAL_BORDER_RADIUS,
+    //   borderTopRightRadius: MODAL_BORDER_RADIUS
+    // }
     // we patched @react-navigation/stack to support a custom "formSheet" effect
     // for modals on both iOS and Android
-    cardStyleInterpolator: CardStyleInterpolators.forModalPresentationIOS
+    // cardStyleInterpolator: CardStyleInterpolators.forModalPresentationIOS
   }
 
-  const stackModalScreensOptions: StackNavigationOptions | undefined =
+  const stackModalScreensOptions: NativeStackNavigationOptions | undefined =
     Platform.OS === 'android'
       ? {
+          animation: 'slide_from_right',
           presentation: 'card',
           gestureDirection: 'horizontal',
-          gestureEnabled: true,
-          cardStyle: {
-            marginTop: 0,
-            paddingTop: insets.top
-          },
-          transitionSpec: androidModalTransitionSpec,
-          cardStyleInterpolator: stackModalInterpolator.forModalPresentationIOS
+          gestureEnabled: true
+          // cardStyle: {
+          //   marginTop: 0,
+          //   paddingTop: insets.top
+          // },
+          // transitionSpec: androidModalTransitionSpec,
+          // cardStyleInterpolator: stackModalInterpolator.forModalPresentationIOS
         }
       : {
-          cardStyle: {
-            marginTop: 0,
-            paddingTop: 0
-          }
+          // cardStyle: {
+          //   marginTop: 0,
+          //   paddingTop: 0
+          // }
         }
 
   // Options for the first screen of a modal stack navigator.
   // This screen does not have a back button, so we need to hide it.
-  const modalFirstScreenOptions: StackNavigationOptions = {
-    headerBackImage: () => null
+  const modalFirstScreenOptions: NativeStackNavigationOptions = {
+    // headerBackImage: () => null
   }
 
   return {
@@ -120,45 +115,45 @@ export function useModalScreenOptions(): {
  * This is different from CardStyleInterpolators.forModalPresentationIOS
  */
 
-function forModalPresentationIOS({
-  current,
-  next,
-  inverted,
-  layouts: { screen }
-}: StackCardInterpolationProps): StackCardInterpolatedStyle {
-  const progress = Animated.add(
-    current.progress.interpolate({
-      inputRange: [0, 1],
-      outputRange: [0, 1],
-      extrapolate: 'clamp'
-    }),
-    next
-      ? next.progress.interpolate({
-          inputRange: [0, 1],
-          outputRange: [0, 1],
-          extrapolate: 'clamp'
-        })
-      : 0
-  )
+// function forModalPresentationIOS({
+//   current,
+//   next,
+//   inverted,
+//   layouts: { screen }
+// }: NativeStackCardInterpolationProps): NativeStackCardInterpolatedStyle {
+//   const progress = Animated.add(
+//     current.progress.interpolate({
+//       inputRange: [0, 1],
+//       outputRange: [0, 1],
+//       extrapolate: 'clamp'
+//     }),
+//     next
+//       ? next.progress.interpolate({
+//           inputRange: [0, 1],
+//           outputRange: [0, 1],
+//           extrapolate: 'clamp'
+//         })
+//       : 0
+//   )
 
-  const translateY = Animated.multiply(
-    progress.interpolate({
-      inputRange: [0, 1, 2],
-      outputRange: [screen.height, 0, 0]
-    }),
-    inverted
-  )
+//   const translateY = Animated.multiply(
+//     progress.interpolate({
+//       inputRange: [0, 1, 2],
+//       outputRange: [screen.height, 0, 0]
+//     }),
+//     inverted
+//   )
 
-  const overlayOpacity = progress.interpolate({
-    inputRange: [0, 1, 1.0001, 2],
-    outputRange: [0, 0.5, 0.5, 0.5]
-  })
+//   const overlayOpacity = progress.interpolate({
+//     inputRange: [0, 1, 1.0001, 2],
+//     outputRange: [0, 0.5, 0.5, 0.5]
+//   })
 
-  return {
-    cardStyle: {
-      overflow: 'hidden',
-      transform: [{ translateY }]
-    },
-    overlayStyle: { opacity: overlayOpacity }
-  }
-}
+//   return {
+//     cardStyle: {
+//       overflow: 'hidden',
+//       transform: [{ translateY }]
+//     },
+//     overlayStyle: { opacity: overlayOpacity }
+//   }
+// }

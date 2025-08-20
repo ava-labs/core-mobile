@@ -55,9 +55,12 @@ export const CreatePin = ({
   useFocusEffect(
     useCallback(() => {
       resetPin()
-      InteractionManager.runAfterInteractions(() => {
+      const task = InteractionManager.runAfterInteractions(() => {
         ref.current?.focus()
       })
+      return () => {
+        task.cancel()
+      }
     }, [resetPin])
   )
 
