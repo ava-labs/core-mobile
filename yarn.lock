@@ -396,9 +396,6 @@ __metadata:
     react-native-localize: 3.2.1
     react-native-mmkv: 3.2.0
     react-native-modal-datetime-picker: 18.0.0
-    react-native-nitro-image: ^0.6.1
-    react-native-nitro-modules: ^0.28.1
-    react-native-nitro-web-image: ^0.6.1
     react-native-os: 1.2.6
     react-native-pager-view: 6.7.1
     react-native-passkey: 3.1.0
@@ -27492,39 +27489,6 @@ __metadata:
   dependencies:
     prop-types: ^15.5.10
   checksum: c7b00ebceb6fe15e025ef1655483bc98fdb150453fb27e71d17a282a87317c5b1e242a1108f5247fac99594e6778470513d19c21e02eb2ce81f80688dd616419
-  languageName: node
-  linkType: hard
-
-"react-native-nitro-image@npm:^0.6.1":
-  version: 0.6.1
-  resolution: "react-native-nitro-image@npm:0.6.1"
-  peerDependencies:
-    react: "*"
-    react-native: "*"
-    react-native-nitro-modules: "*"
-  checksum: da8de85bd8bef99525850649fd16e5e8d8b819f0ec3b60a79d5fd0efac557519902d1783e5b48be3f977b1cb8054c3e3b0d6991cc89c74fcbf8ffe0efa8980bd
-  languageName: node
-  linkType: hard
-
-"react-native-nitro-modules@npm:^0.28.1":
-  version: 0.28.1
-  resolution: "react-native-nitro-modules@npm:0.28.1"
-  peerDependencies:
-    react: "*"
-    react-native: "*"
-  checksum: 9e758e57f32a6ce5dc7358fcd16870fa261a3086f9d18813616f04c7841251d3a22b17b01f6c7e9c1d76d2874c21ab131e0c99af3c2f37245f3c0e7e82dc103f
-  languageName: node
-  linkType: hard
-
-"react-native-nitro-web-image@npm:^0.6.1":
-  version: 0.6.1
-  resolution: "react-native-nitro-web-image@npm:0.6.1"
-  peerDependencies:
-    react: "*"
-    react-native: "*"
-    react-native-nitro-image: "*"
-    react-native-nitro-modules: "*"
-  checksum: c894b6790929736451a21fe1f7abc200c000f751325cdf3cec639a73f6be1d8087702585259b083ced28336d7a3c75a7309faff882f061758b7cb6200278a5fc
   languageName: node
   linkType: hard
 
