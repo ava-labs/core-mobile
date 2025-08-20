@@ -2,9 +2,6 @@ import Expo
 import Firebase
 import React
 import ReactAppDependencyProvider
-#if DETOX
-import Detox
-#endif
 
 @main
 class AppDelegate: ExpoAppDelegate {
@@ -21,10 +18,20 @@ class AppDelegate: ExpoAppDelegate {
     RNFBAppCheckModule.sharedInstance()
     FirebaseApp.configure()
 
+  
     #if DETOX
-    DetoxAppDelegate.shared().application(application, didFinishLaunchingWithOptions: launchOptions)
+    print("Detox going")
+    if let cls = NSClassFromString("DetoxAppDelegate") as? NSObject.Type,
+      let shared = cls.perform(NSSelectorFromString("shared"))?.takeUnretainedValue() {
+      _ = (shared as AnyObject).perform(
+            NSSelectorFromString("application:didFinishLaunchingWithOptions:"),
+            with: application,
+            with: launchOptions
+          )
+    }
     #endif
-    
+
+
     let delegate = ReactNativeDelegate()
     let factory = ExpoReactNativeFactory(delegate: delegate)
     delegate.dependencyProvider = RCTAppDependencyProvider()
