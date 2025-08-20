@@ -22,12 +22,9 @@ export const warmup = async (newInstance = false) => {
     console.log('CI is true, setting newInstance to true')
     initialArgs.newInstance = true
   }
-
+  await device.reloadReactNative()
   await device.launchApp(initialArgs)
-
-  if (process.env.CI === 'true') {
-    await device.reloadReactNative()
-  }
+  await device.reloadReactNative()
 
   // Jailbreak Check
   await handleJailbrokenWarning()
