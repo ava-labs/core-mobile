@@ -1,4 +1,5 @@
 import {
+  ActivityIndicator,
   Avatar,
   AvatarSelector,
   AvatarType,
@@ -8,8 +9,9 @@ import {
   View
 } from '@avalabs/k2-alpine'
 import { loadAvatar } from 'common/utils/loadAvatar'
-import React, { memo, useMemo } from 'react'
+import React, { memo, useCallback, useMemo, useState } from 'react'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { useFocusEffect } from 'expo-router'
 import { ScrollScreen } from './ScrollScreen'
 
 export const SelectAvatar = memo(
@@ -39,6 +41,21 @@ export const SelectAvatar = memo(
       theme: { colors }
     } = useTheme()
 
+    const [isLoading, setIsLoading] = useState(false)
+
+    useFocusEffect(
+      useCallback(() => {
+        return () => setIsLoading(false)
+      }, [])
+    )
+
+    const handleSubmit = useCallback(() => {
+      setIsLoading(true)
+      setTimeout(() => {
+        onSubmit()
+      }, 100)
+    }, [onSubmit])
+
     const onSelect = (id: string): void => {
       const avatar = avatars.find(a => a.id === id)
       if (avatar) {
@@ -50,13 +67,17 @@ export const SelectAvatar = memo(
       return loadAvatar(selectedAvatar)
     }, [selectedAvatar])
 
-    const renderFooter = (): React.ReactNode => {
+    const renderFooter = useCallback((): React.ReactNode => {
       return (
-        <Button size="large" type="primary" onPress={onSubmit}>
-          {buttonText}
+        <Button
+          size="large"
+          type="primary"
+          onPress={handleSubmit}
+          disabled={isLoading}>
+          {isLoading ? <ActivityIndicator /> : buttonText}
         </Button>
       )
-    }
+    }, [handleSubmit, buttonText, isLoading])
 
     const avatarsWithSelectedAsMiddle = useMemo(() => {
       if (!initialAvatar || !initialAvatar.source) {
