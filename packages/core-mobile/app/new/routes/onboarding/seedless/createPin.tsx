@@ -24,56 +24,31 @@ export default function CreatePin(): JSX.Element {
   }, [navigate])
 
   const handleEnteredValidPin = useCallback(
-    (pin: string) => {
+    async (pin: string): Promise<void> => {
       AnalyticsService.capture('OnboardingPasswordSet')
-
-      /**
-       * we are using a dummy mnemonic here
-       * even though we are creating a seedless wallet.
-       * this allows our pin/biometric logic to work normally
-       */
-      onPinCreated({
-        walletId: activeWalletId ?? uuid(),
-        mnemonic: uuid(),
-        pin,
-        walletType: WalletType.SEEDLESS
-      })
-        .then(() => {
-          if (useBiometrics) {
-            BiometricsSDK.enableBiometry()
-              .then(enabled => {
-                if (enabled) {
-                  navigateToNextStep()
-                } else {
-                  // If biometrics fails to enable, disable it and continue with PIN only
-                  setUseBiometrics(false)
-                  navigateToNextStep()
-                }
-              })
-              .catch(error => {
-                Logger.error(error)
-                // On error, disable biometrics and continue with PIN only
-                setUseBiometrics(false)
-                navigateToNextStep()
-              })
-          } else {
-            navigateToNextStep()
-          }
+      try {
+        await onPinCreated({
+          walletId: activeWalletId ?? uuid(),
+          mnemonic: uuid(),
+          pin,
+          walletType: WalletType.SEEDLESS
         })
-        .catch(Logger.error)
+        if (useBiometrics) {
+          await BiometricsSDK.enableBiometry()
+        }
+        navigateToNextStep()
+      } catch (error) {
+        Logger.error('Failed to create pin', error)
+      }
     },
-    [
-      onPinCreated,
-      useBiometrics,
-      setUseBiometrics,
-      navigateToNextStep,
-      activeWalletId
-    ]
+    [activeWalletId, onPinCreated, useBiometrics, navigateToNextStep]
   )
 
   return (
     <Component
-      onEnteredValidPin={handleEnteredValidPin}
+      onEnteredValidPin={async (pin: string) =>
+        await handleEnteredValidPin(pin)
+      }
       useBiometrics={useBiometrics}
       setUseBiometrics={setUseBiometrics}
       newPinTitle={`Secure your wallet\nwith a PIN`}
