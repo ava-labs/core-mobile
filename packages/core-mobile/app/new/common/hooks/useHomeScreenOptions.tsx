@@ -5,12 +5,7 @@ import { View } from '@avalabs/k2-alpine'
 import { NativeStackNavigationOptions } from '@react-navigation/native-stack'
 
 export function useHomeScreenOptions(): NativeStackNavigationOptions {
-  // const insets = useSafeAreaInsets()
-
   const homeScreenOptions: NativeStackNavigationOptions = {
-    // headerStyle: {
-    //   height: insets.top + 50
-    // },
     headerLeft: () => <AccountSettingBarButton />,
     headerRight: () => {
       return (

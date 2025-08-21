@@ -21,8 +21,8 @@ export const unstable_settings = {
 export default function WalletLayout(): JSX.Element {
   const {
     modalScreensOptions,
-    formSheetScreensOptions
-    // stackModalScreensOptions
+    formSheetScreensOptions,
+    stackModalScreensOptions
   } = useModalScreenOptions()
 
   const walletState = useSelector(selectWalletState)
@@ -101,7 +101,7 @@ export default function WalletLayout(): JSX.Element {
             name="(modals)/tokenManagement"
             options={modalScreensOptions}
           />
-          {/* <Stack.Screen
+          <Stack.Screen
             name="(modals)/tokenDetail"
             options={stackModalScreensOptions}
           />
@@ -112,7 +112,7 @@ export default function WalletLayout(): JSX.Element {
           <Stack.Screen
             name="(modals)/collectibleDetail"
             options={stackModalScreensOptions}
-          /> */}
+          />
           <Stack.Screen
             name="(modals)/trackTokenDetail"
             options={modalScreensOptions}
@@ -156,7 +156,7 @@ export default function WalletLayout(): JSX.Element {
           />
           <Stack.Screen
             name="(modals)/editContact"
-            options={modalScreensOptions}
+            options={stackNavigatorScreenOptions}
           />
           <Stack.Screen
             name="(modals)/addEthereumChain"

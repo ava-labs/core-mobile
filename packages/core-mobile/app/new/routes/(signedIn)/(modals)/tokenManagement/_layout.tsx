@@ -1,5 +1,4 @@
 import { Stack } from 'common/components/Stack'
-import { modalScreenOptionsWithHeaderBack } from 'common/consts/screenOptions'
 import { useModalScreenOptions } from 'common/hooks/useModalScreenOptions'
 import React from 'react'
 
@@ -11,11 +10,11 @@ export default function TokenManagementLayout(): JSX.Element {
       <Stack.Screen name="index" options={modalFirstScreenOptions} />
       <Stack.Screen
         name="addCustomToken"
-        options={modalScreenOptionsWithHeaderBack}
+        // options={modalScreenOptionsWithHeaderBack}
       />
       <Stack.Screen
         name="scanQrCode"
-        options={modalScreenOptionsWithHeaderBack}
+        // options={modalScreenOptionsWithHeaderBack}
       />
     </Stack>
   )

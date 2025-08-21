@@ -1,15 +1,11 @@
 import { NativeStackNavigationOptions } from '@react-navigation/native-stack'
+import React from 'react'
+import BackBarButton from 'common/components/BackBarButton'
 
-import {
-  MODAL_TOP_MARGIN,
-  modalStackNavigatorScreenOptions
-} from 'common/consts/screenOptions'
-import { useMemo } from 'react'
+import { modalStackNavigatorScreenOptions } from 'common/consts/screenOptions'
 import { Platform } from 'react-native'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 export function useModalScreenOptions(): {
-  topMarginOffset: number
   modalScreensOptions: NativeStackNavigationOptions
   formSheetScreensOptions: NativeStackNavigationOptions
   modalStackNavigatorScreenOptions: NativeStackNavigationOptions
@@ -20,140 +16,51 @@ export function useModalScreenOptions(): {
   // Ex: TokenDetail/CollectibleDetail screen which opens a modal
   stackModalScreensOptions: NativeStackNavigationOptions | undefined
 } {
-  const insets = useSafeAreaInsets()
-
-  const topMarginOffset = useMemo(() => {
-    return insets.top + MODAL_TOP_MARGIN
-  }, [insets])
-
   const modalOptions: NativeStackNavigationOptions = {
-    presentation: 'pageSheet',
+    presentation: Platform.OS === 'android' ? 'formSheet' : 'pageSheet',
+    // presentation: 'formSheet',
     headerBackButtonDisplayMode: 'minimal',
-    // animation: 'fade_from_bottom',
-    // cardStyle: {
-    //   marginTop: topMarginOffset,
-    //   borderTopLeftRadius: MODAL_BORDER_RADIUS,
-    //   borderTopRightRadius: MODAL_BORDER_RADIUS
-    // },
-    // ...(Platform.OS === 'android' && {
-    //   transitionSpec: androidModalTransitionSpec
-    // }),
+    sheetCornerRadius: 20,
+    ...(Platform.OS === 'android' && {
+      sheetAllowedDetents: [0.94]
+    }),
     gestureEnabled: true,
-    // Make the whole screen gestureable for dismissing the modal
-    // This breaks keyboard open interaction on Android
-    // Does work for Android when inside a scrollable screen if content height isn't greater than screen height
-    // Does not work for iOS when inside a scrollable screen only if scrollEnabled is false
-    // gestureResponseDistance: MODAL_HEADER_HEIGHT + topMarginOffset,
-    headerStyle: {
-      // height: MODAL_HEADER_HEIGHT
-    }
+    sheetGrabberVisible: true
   }
 
   const modalScreensOptions: NativeStackNavigationOptions = {
     ...modalOptions
-    // cardStyleInterpolator: forModalPresentationIOS
   }
 
   const formSheetScreensOptions: NativeStackNavigationOptions = {
-    ...modalOptions
-    // gestureResponseDistance: MODAL_HEADER_HEIGHT * 2 + topMarginOffset,
-    // cardStyle: {
-    //   marginTop: Platform.OS === 'ios' ? topMarginOffset - 4 : MODAL_TOP_MARGIN,
-    //   borderTopLeftRadius: MODAL_BORDER_RADIUS,
-    //   borderTopRightRadius: MODAL_BORDER_RADIUS
-    // }
-    // we patched @react-navigation/stack to support a custom "formSheet" effect
-    // for modals on both iOS and Android
-    // cardStyleInterpolator: CardStyleInterpolators.forModalPresentationIOS
+    ...modalOptions,
+    ...(Platform.OS === 'android' && {
+      sheetAllowedDetents: [0.91]
+    })
   }
 
-  const stackModalScreensOptions: NativeStackNavigationOptions | undefined =
-    Platform.OS === 'android'
-      ? {
-          animation: 'slide_from_right',
-          presentation: 'pageSheet',
-          gestureDirection: 'horizontal',
-          gestureEnabled: true
-          // cardStyle: {
-          //   marginTop: 0,
-          //   paddingTop: insets.top
-          // },
-          // transitionSpec: androidModalTransitionSpec,
-          // cardStyleInterpolator: stackModalInterpolator.forModalPresentationIOS
-        }
-      : {
-          // cardStyle: {
-          //   marginTop: 0,
-          //   paddingTop: 0
-          // }
-        }
+  const stackModalScreensOptions: NativeStackNavigationOptions | undefined = {
+    presentation: 'card',
+    headerLeft: () => <BackBarButton />,
+    headerBackButtonDisplayMode: 'minimal',
+    headerTransparent: true,
+    animation: 'slide_from_right'
+  }
 
   // Options for the first screen of a modal stack navigator.
   // This screen does not have a back button, so we need to hide it.
   const modalFirstScreenOptions: NativeStackNavigationOptions = {
-    // headerBackImage: () => null
+    headerBackVisible: false,
+    sheetGrabberVisible: true,
+    headerLeft: () => null
   }
 
   return {
     modalScreensOptions,
     formSheetScreensOptions,
     modalStackNavigatorScreenOptions,
-    topMarginOffset,
+    // topMarginOffset,
     modalFirstScreenOptions,
     stackModalScreensOptions
   }
 }
-
-/**
- * Custom card transition interpolator for modal presentations.
- *
- * This function defines the animations for modal screens, making them slide in
- * from the bottom and adding an overlay fade effect. It calculates the progress
- * of the transition between screens and applies vertical translation and opacity
- * to achieve smooth animations.
- *
- * This is different from CardStyleInterpolators.forModalPresentationIOS
- */
-
-// function forModalPresentationIOS({
-//   current,
-//   next,
-//   inverted,
-//   layouts: { screen }
-// }: NativeStackCardInterpolationProps): NativeStackCardInterpolatedStyle {
-//   const progress = Animated.add(
-//     current.progress.interpolate({
-//       inputRange: [0, 1],
-//       outputRange: [0, 1],
-//       extrapolate: 'clamp'
-//     }),
-//     next
-//       ? next.progress.interpolate({
-//           inputRange: [0, 1],
-//           outputRange: [0, 1],
-//           extrapolate: 'clamp'
-//         })
-//       : 0
-//   )
-
-//   const translateY = Animated.multiply(
-//     progress.interpolate({
-//       inputRange: [0, 1, 2],
-//       outputRange: [screen.height, 0, 0]
-//     }),
-//     inverted
-//   )
-
-//   const overlayOpacity = progress.interpolate({
-//     inputRange: [0, 1, 1.0001, 2],
-//     outputRange: [0, 0.5, 0.5, 0.5]
-//   })
-
-//   return {
-//     cardStyle: {
-//       overflow: 'hidden',
-//       transform: [{ translateY }]
-//     },
-//     overlayStyle: { opacity: overlayOpacity }
-//   }
-// }

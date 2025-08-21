@@ -27,7 +27,8 @@ export default function MnemonicOnboardingLayout(): JSX.Element {
     <Stack
       screenOptions={{
         ...stackNavigatorScreenOptions,
-        headerTitle: renderPageControl
+        headerTitle: renderPageControl,
+        headerShown: false
       }}>
       {screens.map(screen => {
         return <Stack.Screen key={screen} name={screen} />

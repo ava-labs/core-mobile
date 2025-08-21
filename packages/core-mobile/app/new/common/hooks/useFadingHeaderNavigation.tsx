@@ -135,7 +135,7 @@ export const useFadingHeaderNavigation = ({
         ) : (
           <BlurredBackgroundView
             shouldDelayBlurOniOS={shouldDelayBlurOniOS}
-            hasGrabber={shouldHeaderHaveGrabber}
+            // hasGrabber={shouldHeaderHaveGrabber}
             separator={
               hasSeparator
                 ? {

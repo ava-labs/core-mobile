@@ -1,6 +1,6 @@
 import { Pressable, View } from '@avalabs/k2-alpine'
 import React from 'react'
-import { Platform, StyleProp, ViewStyle } from 'react-native'
+import { StyleProp, ViewStyle } from 'react-native'
 
 const NavigationBarButton = ({
   onPress,
@@ -23,24 +23,22 @@ const NavigationBarButton = ({
       testID={testID}
       style={[
         {
-          marginLeft: isLeft ? (Platform.OS === 'ios' ? 0 : -12) : 0,
-          marginTop: -6,
-          paddingLeft: 16,
-          paddingRight: 16,
-          paddingVertical: 16,
-          justifyContent: 'center'
+          paddingLeft: isLeft ? 0 : 8,
+          paddingRight: isLeft ? 8 : 0,
+          paddingTop: isModal ? 3 : 0,
+          height: '100%',
+          justifyContent: 'center',
+          alignItems: 'center',
+          backgroundColor: 'red'
         },
         style
       ]}>
       <View
-        style={
-          isModal
-            ? {
-                marginTop: 10,
-                marginBottom: -10
-              }
-            : undefined
-        }>
+        style={{
+          height: '100%',
+          justifyContent: 'center',
+          alignItems: 'center'
+        }}>
         {children}
       </View>
     </Pressable>

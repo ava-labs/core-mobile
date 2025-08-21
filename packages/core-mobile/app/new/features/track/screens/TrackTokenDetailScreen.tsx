@@ -341,8 +341,8 @@ const TrackTokenDetailScreen = (): JSX.Element => {
           onPress={handleShare}
           isModal
           style={{
-            paddingRight: 30,
-            paddingLeft: 12
+            paddingRight: 12,
+            paddingLeft: 8
           }}
         />
       </View>

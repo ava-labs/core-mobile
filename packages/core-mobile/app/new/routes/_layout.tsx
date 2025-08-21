@@ -89,7 +89,7 @@ export default function Root(): JSX.Element | null {
                 <Stack.Screen name="signup" options={{ animation: 'none' }} />
                 <Stack.Screen
                   name="accessWallet"
-                  options={{ headerShown: true }}
+                  options={{ animation: 'slide_from_right' }}
                 />
                 <Stack.Screen
                   name="(signedIn)"
@@ -113,7 +113,10 @@ export default function Root(): JSX.Element | null {
                   options={{ headerShown: true }}
                 />
                 <Stack.Screen name="+not-found" />
-                <Stack.Screen name="onboarding" />
+                <Stack.Screen
+                  name="onboarding"
+                  options={stackNavigatorScreenOptions}
+                />
                 <Stack.Screen
                   name="sessionExpired"
                   options={{

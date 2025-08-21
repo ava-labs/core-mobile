@@ -388,9 +388,6 @@ export const SwapScreen = (): JSX.Element => {
     [formatCurrency]
   )
 
-  // Track if we've already auto-focused in this session
-  const hasAutoFocused = useRef(false)
-
   const renderFromSection = useCallback(() => {
     return (
       <View
@@ -404,7 +401,6 @@ export const SwapScreen = (): JSX.Element => {
         <TokenInputWidget
           disabled={swapInProcess}
           editable={!swapInProcess}
-          autoFocus={!hasAutoFocused.current} // Only auto-focus if we haven't done it yet
           amount={fromTokenValue}
           balance={fromToken?.balance}
           shouldShowBalance={true}
@@ -423,8 +419,6 @@ export const SwapScreen = (): JSX.Element => {
           onAmountChange={handleFromAmountChange}
           onFocus={() => {
             setIsInputFocused(true)
-            // Mark that we've auto-focused
-            hasAutoFocused.current = true
           }}
           onBlur={() => setIsInputFocused(false)}
           onSelectToken={handleSelectFromToken}
