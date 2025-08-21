@@ -1,13 +1,14 @@
 import { Stack } from 'common/components/Stack'
-import { useModalScreenOptions } from 'common/hooks/useModalScreenOptions'
+import {
+  modalFirstScreenOptions,
+  modalStackNavigatorScreenOptions
+} from 'common/consts/screenOptions'
 import { SwapContextProvider } from 'features/swap/contexts/SwapContext'
 import React from 'react'
 import { useSelector } from 'react-redux'
 import { selectHasBeenViewedOnce, ViewOnceKey } from 'store/viewOnce'
 
 export default function SwapLayout(): JSX.Element {
-  const { modalStackNavigatorScreenOptions, modalFirstScreenOptions } =
-    useModalScreenOptions()
   const shouldHideOnboarding = useSelector(
     selectHasBeenViewedOnce(ViewOnceKey.SWAP_ONBOARDING)
   )

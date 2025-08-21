@@ -1,8 +1,13 @@
 import { usePreventRemove } from '@react-navigation/native'
 import { LastTransactedNetworks } from 'common/components/LastTransactedNetworks'
 import { Stack } from 'common/components/Stack'
-import { stackNavigatorScreenOptions } from 'common/consts/screenOptions'
-import { useModalScreenOptions } from 'common/hooks/useModalScreenOptions'
+import {
+  formSheetScreensOptions,
+  modalScreensOptions,
+  stackModalScreensOptions,
+  stackNavigatorScreenOptions
+} from 'common/consts/screenOptions'
+
 import { BridgeProvider } from 'features/bridge/contexts/BridgeContext'
 import { CollectiblesProvider } from 'features/portfolio/collectibles/CollectiblesContext'
 import { MigrateFavoriteIds } from 'new/common/components/MigrateFavoriteIds'
@@ -19,12 +24,6 @@ export const unstable_settings = {
 }
 
 export default function WalletLayout(): JSX.Element {
-  const {
-    modalScreensOptions,
-    formSheetScreensOptions,
-    stackModalScreensOptions
-  } = useModalScreenOptions()
-
   const walletState = useSelector(selectWalletState)
 
   usePreventRemove(walletState === WalletState.ACTIVE, () => {

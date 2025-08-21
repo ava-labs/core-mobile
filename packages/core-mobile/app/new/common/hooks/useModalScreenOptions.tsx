@@ -52,7 +52,6 @@ export function useModalScreenOptions(): {
   const modalFirstScreenOptions: NativeStackNavigationOptions = {
     headerBackVisible: false,
     sheetGrabberVisible: true,
-    headerTitleAlign: 'center',
     headerLeft: () => null
   }
 

@@ -1,6 +1,10 @@
 import { K2AlpineThemeProvider } from '@avalabs/k2-alpine'
 import { LogoModal } from 'common/components/LogoModal'
 import { Stack } from 'common/components/Stack'
+import {
+  stackModalScreensOptions,
+  stackNavigatorScreenOptions
+} from 'common/consts/screenOptions'
 import NavigationThemeProvider from 'common/contexts/NavigationThemeProvider'
 import { useBgDetect } from 'common/hooks/useBgDetect'
 import { useLoadFonts } from 'common/hooks/useLoadFonts'
@@ -18,6 +22,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler'
 import { KeyboardProvider } from 'react-native-keyboard-controller'
 import 'react-native-reanimated'
 import { useDispatch, useSelector } from 'react-redux'
+import { selectWalletState, WalletState } from 'store/app'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import {
   Appearance,
@@ -25,8 +30,6 @@ import {
   selectSelectedColorScheme,
   setSelectedColorScheme
 } from 'store/settings/appearance'
-import { selectWalletState, WalletState } from 'store/app'
-import { stackNavigatorScreenOptions } from 'common/consts/screenOptions'
 
 export default function Root(): JSX.Element | null {
   const dispatch = useDispatch()
@@ -89,7 +92,7 @@ export default function Root(): JSX.Element | null {
                 <Stack.Screen name="signup" options={{ animation: 'none' }} />
                 <Stack.Screen
                   name="accessWallet"
-                  options={{ animation: 'slide_from_right' }}
+                  options={stackModalScreensOptions}
                 />
                 <Stack.Screen
                   name="(signedIn)"
@@ -115,7 +118,7 @@ export default function Root(): JSX.Element | null {
                 <Stack.Screen name="+not-found" />
                 <Stack.Screen
                   name="onboarding"
-                  options={stackNavigatorScreenOptions}
+                  options={stackModalScreensOptions}
                 />
                 <Stack.Screen
                   name="sessionExpired"
