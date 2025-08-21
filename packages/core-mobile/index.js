@@ -1,7 +1,6 @@
 import { AppRegistry, LogBox, Platform, UIManager } from 'react-native'
 import './polyfills'
 import { enableScreens } from 'react-native-screens'
-
 enableScreens()
 import Big from 'big.js'
 import FCMService from 'services/fcm/FCMService'
