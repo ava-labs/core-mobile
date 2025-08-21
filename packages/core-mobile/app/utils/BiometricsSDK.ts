@@ -77,13 +77,25 @@ class BiometricsSDK {
     return commonStorage.getString(StorageKey.SECURE_ACCESS_SET)
   }
 
-  // Generate a new encryption key
+  // Generate a new encryption key during onboarding, it is not used for migration
+  // it returns the key if it is already generated, to avoid generating it again during re-render
   async generateEncryptionKey(): Promise<string> {
-    return Aes.randomKey(32)
+    if (this.#encryptionKey) {
+      return this.#encryptionKey
+    }
+    this.#encryptionKey = await Aes.randomKey(32)
+    return this.#encryptionKey
   }
 
   clearEncryptionKey(): void {
     this.#encryptionKey = null
+  }
+
+  // Generate a new encryption key during migration, it is not used for onboarding
+  async generateMigrationEncryptionKey(): Promise<string> {
+    this.clearEncryptionKey()
+    this.#encryptionKey = await Aes.randomKey(32)
+    return this.#encryptionKey
   }
 
   // Migration-specific methods

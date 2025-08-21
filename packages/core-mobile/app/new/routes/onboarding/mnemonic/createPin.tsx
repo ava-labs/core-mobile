@@ -39,26 +39,20 @@ export default function CreatePin(): JSX.Element {
           pin,
           walletType: WalletType.MNEMONIC
         })
-        if (useBiometrics === false) {
-          navigateToSetWalletName()
-          return
+        if (useBiometrics) {
+          await BiometricsSDK.enableBiometry()
         }
-        setTimeout(async () => {
-          const enabled = await BiometricsSDK.enableBiometry()
-          if (enabled === false) setUseBiometrics(false)
-          navigateToSetWalletName()
-        }, 100)
+        navigateToSetWalletName()
       } catch (error) {
         Logger.error('Failed to create pin', error)
       }
     },
     [
       mnemonic,
+      activeWalletId,
       onPinCreated,
       useBiometrics,
-      setUseBiometrics,
-      navigateToSetWalletName,
-      activeWalletId
+      navigateToSetWalletName
     ]
   )
 
