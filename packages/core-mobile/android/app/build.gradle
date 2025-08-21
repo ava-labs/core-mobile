@@ -148,7 +148,7 @@ android {
 
     productFlavors {
         internal {
-            applicationIdSuffix ".internal2"
+            applicationIdSuffix ".internal"
         }
         external {}
     }
