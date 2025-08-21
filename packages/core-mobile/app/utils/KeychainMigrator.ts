@@ -132,7 +132,8 @@ class KeychainMigrator {
     if (!mnemonicResult.success) {
       throw mnemonicResult.error
     }
-    const newEncryptionKey = await BiometricsSDK.generateEncryptionKey()
+    const newEncryptionKey =
+      await BiometricsSDK.generateMigrationEncryptionKey()
 
     // Store new encryption key for PIN and also Biometry (if applicable)
     await BiometricsSDK.storeEncryptionKeyWithPin(newEncryptionKey, pin)
@@ -165,8 +166,8 @@ class KeychainMigrator {
         message: mnemonicResult.error.message
       })
     }
-
-    const newEncryptionKey = await BiometricsSDK.generateEncryptionKey()
+    const newEncryptionKey =
+      await BiometricsSDK.generateMigrationEncryptionKey()
 
     // Store raw encryption key in biometric storage ONLY
     await BiometricsSDK.storeEncryptionKeyWithBiometry(newEncryptionKey)
@@ -196,7 +197,8 @@ class KeychainMigrator {
       throw mnemonicResult.error
     }
     // 2. Generate new encryption key
-    const newEncryptionKey = await BiometricsSDK.generateEncryptionKey()
+    const newEncryptionKey =
+      await BiometricsSDK.generateMigrationEncryptionKey()
     // 3. Store new encryption key for both PIN and Biometry
     await BiometricsSDK.storeEncryptionKeyWithPin(newEncryptionKey, pin)
     await BiometricsSDK.storeEncryptionKeyWithBiometry(newEncryptionKey)

@@ -1,7 +1,8 @@
-import { Button, View } from '@avalabs/k2-alpine'
+import { ActivityIndicator, Button, View } from '@avalabs/k2-alpine'
 import { ScrollScreen } from 'common/components/ScrollScreen'
 import { SimpleTextInput } from 'common/components/SimpleTextInput'
-import React, { useCallback } from 'react'
+import { useFocusEffect } from 'expo-router'
+import React, { useCallback, useState } from 'react'
 
 export const SetWalletName = ({
   name,
@@ -12,17 +13,32 @@ export const SetWalletName = ({
   setName: (value: string) => void
   onNext: () => void
 }): React.JSX.Element => {
+  const [isLoading, setIsLoading] = useState(false)
+
+  useFocusEffect(
+    useCallback(() => {
+      return () => setIsLoading(false)
+    }, [])
+  )
+
+  const handleNext = useCallback(() => {
+    setIsLoading(true)
+    setTimeout(() => {
+      onNext()
+    }, 100)
+  }, [onNext])
+
   const renderFooter = useCallback(() => {
     return (
       <Button
         size="large"
         type="primary"
-        onPress={onNext}
-        disabled={name.length === 0}>
-        Next
+        onPress={handleNext}
+        disabled={name.length === 0 || isLoading}>
+        {isLoading ? <ActivityIndicator /> : 'Next'}
       </Button>
     )
-  }, [name, onNext])
+  }, [name, handleNext, isLoading])
 
   return (
     <ScrollScreen

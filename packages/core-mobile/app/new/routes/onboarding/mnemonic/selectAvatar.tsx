@@ -3,8 +3,7 @@ import { useAvatar } from 'common/hooks/useAvatar'
 import { useRouter } from 'expo-router'
 import { useRandomAvatar } from 'features/onboarding/hooks/useRandomAvatar'
 import { useRandomizedAvatars } from 'features/onboarding/hooks/useRandomizedAvatars'
-import React, { useState } from 'react'
-import { useDebouncedCallback } from 'use-debounce'
+import React, { useCallback, useState } from 'react'
 
 export default function SelectAvatar(): JSX.Element {
   const { navigate } = useRouter()
@@ -15,7 +14,7 @@ export default function SelectAvatar(): JSX.Element {
 
   const [selectedAvatar, setSelectedAvatar] = useState(randomAvatar)
 
-  const onSubmit = (): void => {
+  const onSubmit = useCallback((): void => {
     if (selectedAvatar) {
       saveLocalAvatar(selectedAvatar.id)
     }
@@ -25,9 +24,7 @@ export default function SelectAvatar(): JSX.Element {
       pathname: '/onboarding/mnemonic/confirmation',
       params: { selectedAvatarId: selectedAvatar?.id }
     })
-  }
-
-  const debouncedOnSubmit = useDebouncedCallback(onSubmit, 1000)
+  }, [selectedAvatar, saveLocalAvatar, navigate])
 
   return (
     <Component
@@ -36,7 +33,7 @@ export default function SelectAvatar(): JSX.Element {
       description="Add a display avatar for your wallet. You can change it at any time in the app's settings"
       selectedAvatar={selectedAvatar}
       initialAvatar={randomAvatar}
-      onSubmit={debouncedOnSubmit}
+      onSubmit={onSubmit}
       buttonText="Next"
       setSelectedAvatar={setSelectedAvatar}
     />
