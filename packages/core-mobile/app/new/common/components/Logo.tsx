@@ -1,7 +1,5 @@
 import React from 'react'
 import { Image } from 'expo-image'
-// import { NitroImage } from 'react-native-nitro-image'
-// import WebImage from 'react-native-nitro-web-image'
 import { FC, useState } from 'react'
 import { formatUriImageToPng, isContentfulImageUri } from 'utils/Contentful'
 import { SvgUri } from 'react-native-svg'
@@ -65,22 +63,6 @@ export const Logo: FC<LogoProps> = ({
       testID="avatar__logo_avatar"
     />
   ) : (
-    // <NitroImage
-    //   image={{
-    //     url: isContentfulImageUri(logoUri)
-    //       ? formatUriImageToPng(logoUri, size)
-    //       : logoUri
-    //   }}
-    //   style={{
-    //     borderRadius: borderRadiusValue,
-    //     width: size,
-    //     height: size,
-    //     backgroundColor: backgroundColor,
-    //     borderWidth,
-    //     borderColor
-    //   }}
-    //   testID="avatar__logo_avatar"
-    // />
     <Image
       style={{
         borderRadius: borderRadiusValue,

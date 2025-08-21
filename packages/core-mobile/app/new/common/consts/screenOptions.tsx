@@ -21,54 +21,52 @@ export const stackNavigatorScreenOptions: NativeStackNavigationOptions = {
   headerTitleAlign: 'center'
 }
 
-export const modalStackNavigatorScreenOptions: NativeStackNavigationOptions = {
-  ...commonNavigatorScreenOptions,
-  headerBackground: () => <BlurredBackgroundView hasGrabber={true} />,
-  headerTransparent: true,
-  headerTitleAlign: 'center',
-  sheetGrabberVisible: true,
-  headerLeft: () => <BackBarButton />
-}
-
 export const stackModalScreensOptions:
   | NativeStackNavigationOptions
   | undefined = {
-  headerLeft: () => <BackBarButton />,
   headerBackButtonDisplayMode: 'minimal',
   headerTransparent: true,
   headerTitleAlign: 'center',
-  animation: 'slide_from_right'
+  animation: 'slide_from_right',
+  headerLeft: () => <BackBarButton />
 }
 
-// Modals
-const modalOptions: NativeStackNavigationOptions = {
-  presentation: Platform.OS === 'android' ? 'formSheet' : 'pageSheet',
+export const modalStackNavigatorScreenOptions: NativeStackNavigationOptions = {
+  ...commonNavigatorScreenOptions,
+  headerTransparent: true,
+  headerTitleAlign: 'center',
+  sheetGrabberVisible: true,
+  headerBackground: () => <BlurredBackgroundView hasGrabber={true} />
+}
+
+export const modalScreensOptions: NativeStackNavigationOptions = {
+  // TODO: Figure out why this doesn't work for iOS
+  // the content is not visible when formSheet is open
+  // https://reactnavigation.org/docs/native-stack-navigator/#using-form-sheet
+  // this also helps with borderRadius on iOS and opening height
   // presentation: 'formSheet',
-  headerBackButtonDisplayMode: 'minimal',
-  sheetCornerRadius: 20,
+  // sheetCornerRadius: 20,
+  presentation: Platform.OS === 'android' ? 'formSheet' : 'modal',
   ...(Platform.OS === 'android' && {
     sheetAllowedDetents: [0.94]
   }),
   gestureEnabled: true,
-  sheetGrabberVisible: true
+  sheetGrabberVisible: true,
+  headerLeft: () => <BackBarButton />
 }
 
-export const modalScreensOptions: NativeStackNavigationOptions = {
-  ...modalOptions
+export const formSheetScreensOptions: NativeStackNavigationOptions = {
+  ...modalScreensOptions,
+  ...(Platform.OS === 'android' && {
+    sheetAllowedDetents: [0.91]
+  })
 }
 
 // Options for the first screen of a modal stack navigator.
 // This screen does not have a back button, so we need to hide it.
 export const modalFirstScreenOptions: NativeStackNavigationOptions = {
   headerBackVisible: false,
-  sheetGrabberVisible: true,
   headerTitleAlign: 'center',
+  sheetGrabberVisible: true,
   headerLeft: () => null
-}
-
-export const formSheetScreensOptions: NativeStackNavigationOptions = {
-  ...modalOptions,
-  ...(Platform.OS === 'android' && {
-    sheetAllowedDetents: [0.91]
-  })
 }

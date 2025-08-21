@@ -88,12 +88,6 @@ const Browser = (): React.ReactNode => {
     }
   })
 
-  // useFocusEffect(() => {
-  //   KeyboardController.setInputMode(
-  //     AndroidSoftInputModes.SOFT_INPUT_ADJUST_NOTHING
-  //   )
-  // })
-
   return (
     <BrowserSnapshot>
       <View

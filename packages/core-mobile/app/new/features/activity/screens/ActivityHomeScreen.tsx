@@ -269,19 +269,6 @@ const ActivityHomeScreen = (): JSX.Element => {
     isSearchBarFocused
   ])
 
-  // useFocusEffect(() => {
-  //   if (!KeyboardController.isVisible()) {
-  //     KeyboardController.setInputMode(
-  //       AndroidSoftInputModes.SOFT_INPUT_ADJUST_NOTHING
-  //     )
-  //   }
-  //   return () => {
-  //     if (!KeyboardController.isVisible()) {
-  //       KeyboardController.setDefaultMode()
-  //     }
-  //   }
-  // })
-
   return (
     <BlurredBarsContentLayout>
       <CollapsibleTabs.Container

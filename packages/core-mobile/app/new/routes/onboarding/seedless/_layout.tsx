@@ -1,9 +1,6 @@
 import { PageControl } from '@avalabs/k2-alpine'
 import { Stack } from 'common/components/Stack'
-import {
-  stackModalScreensOptions,
-  stackNavigatorScreenOptions
-} from 'common/consts/screenOptions'
+import { stackModalScreensOptions } from 'common/consts/screenOptions'
 import { getCurrentPageIndex } from 'common/utils/getCurrentPageIndex'
 import { useLocalSearchParams, usePathname } from 'expo-router'
 import React, { useMemo } from 'react'

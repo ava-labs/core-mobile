@@ -2,13 +2,13 @@ import { K2AlpineThemeProvider } from '@avalabs/k2-alpine'
 import { LogoModal } from 'common/components/LogoModal'
 import { Stack } from 'common/components/Stack'
 import {
+  modalScreensOptions,
   stackModalScreensOptions,
   stackNavigatorScreenOptions
 } from 'common/consts/screenOptions'
 import NavigationThemeProvider from 'common/contexts/NavigationThemeProvider'
 import { useBgDetect } from 'common/hooks/useBgDetect'
 import { useLoadFonts } from 'common/hooks/useLoadFonts'
-import { useModalScreenOptions } from 'common/hooks/useModalScreenOptions'
 import { GlobalAlertWithTextInput } from 'common/utils/alertWithTextInput'
 import { GlobalToast } from 'common/utils/toast'
 import { useFocusEffect } from 'expo-router'
@@ -38,8 +38,6 @@ export default function Root(): JSX.Element | null {
   const { inBackground } = useBgDetect()
   const [enabledPrivacyScreen, setEnabledPrivacyScreen] = useState(false)
   const colorScheme = useSelector(selectSelectedColorScheme)
-
-  const { modalScreensOptions } = useModalScreenOptions()
 
   useEffect(() => {
     const subscription = RnAppearance.addChangeListener(
