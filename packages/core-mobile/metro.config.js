@@ -17,6 +17,12 @@ const baseConfig = {
   transformer: {
     ...defaultConfig.transformer,
     unstable_allowRequireContext: true,
+    getTransformOptions: async () => ({
+      transform: {
+        experimentalImportSupport: true,
+        inlineRequires: true
+      }
+    }),
     babelTransformerPath: require.resolve('react-native-svg-transformer')
   },
   resolver: {
