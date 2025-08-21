@@ -546,7 +546,6 @@ const PortfolioHomeScreen = (): JSX.Element => {
         />
       )
     }
-
     return (
       <LinearGradientBottomWrapper shouldDelayBlurOniOS={true}>
         <SegmentedControl

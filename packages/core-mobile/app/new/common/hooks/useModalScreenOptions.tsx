@@ -40,11 +40,11 @@ export function useModalScreenOptions(): {
   }
 
   const stackModalScreensOptions: NativeStackNavigationOptions | undefined = {
-    presentation: 'card',
     headerLeft: () => <BackBarButton />,
     headerBackButtonDisplayMode: 'minimal',
     headerTransparent: true,
-    animation: 'slide_from_right'
+    headerTitleAlign: 'center'
+    // animation: 'slide_from_right'
   }
 
   // Options for the first screen of a modal stack navigator.
@@ -52,6 +52,7 @@ export function useModalScreenOptions(): {
   const modalFirstScreenOptions: NativeStackNavigationOptions = {
     headerBackVisible: false,
     sheetGrabberVisible: true,
+    headerTitleAlign: 'center',
     headerLeft: () => null
   }
 

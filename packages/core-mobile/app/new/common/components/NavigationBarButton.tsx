@@ -1,4 +1,4 @@
-import { Pressable, View } from '@avalabs/k2-alpine'
+import { TouchableOpacity, View } from '@avalabs/k2-alpine'
 import React from 'react'
 import { StyleProp, ViewStyle } from 'react-native'
 
@@ -18,18 +18,17 @@ const NavigationBarButton = ({
   style?: StyleProp<ViewStyle>
 }): JSX.Element => {
   return (
-    <Pressable
+    <TouchableOpacity
       onPress={onPress}
       testID={testID}
       style={[
         {
-          paddingLeft: isLeft ? 0 : 8,
-          paddingRight: isLeft ? 8 : 0,
-          paddingTop: isModal ? 3 : 0,
+          paddingLeft: isLeft ? 4 : 8,
+          paddingRight: isLeft ? 8 : 4,
+          paddingTop: isModal ? 6 : 0,
           height: '100%',
           justifyContent: 'center',
-          alignItems: 'center',
-          backgroundColor: 'red'
+          alignItems: 'center'
         },
         style
       ]}>
@@ -41,7 +40,7 @@ const NavigationBarButton = ({
         }}>
         {children}
       </View>
-    </Pressable>
+    </TouchableOpacity>
   )
 }
 

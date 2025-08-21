@@ -1,10 +1,11 @@
 import React from 'react'
 import { Stack } from 'common/components/Stack'
-import { stackNavigatorScreenOptions } from 'common/consts/screenOptions'
+import { useModalScreenOptions } from 'common/hooks/useModalScreenOptions'
 
 export default function CollectibleDetailScreenLayout(): JSX.Element {
+  const { stackModalScreensOptions } = useModalScreenOptions()
   return (
-    <Stack screenOptions={stackNavigatorScreenOptions}>
+    <Stack screenOptions={stackModalScreensOptions}>
       <Stack.Screen name="index" />
     </Stack>
   )

@@ -9,7 +9,6 @@ export const MODAL_HEADER_HEIGHT = 62
 
 export const commonNavigatorScreenOptions: NativeStackNavigationOptions = {
   title: '',
-  headerBackButtonDisplayMode: 'minimal',
   headerTitleAlign: 'center'
 }
 
