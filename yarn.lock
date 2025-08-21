@@ -409,7 +409,6 @@ __metadata:
     react-native-quick-crypto: 0.7.15
     react-native-reanimated: 3.17.5
     react-native-redash: 18.1.3
-    react-native-release-profiler: 0.4.0
     react-native-restart: 0.0.27
     react-native-root-siblings: 5.0.1
     react-native-safe-area-context: 5.5.2
@@ -7251,15 +7250,6 @@ __metadata:
     bignumber.js: ^9.1.2
     rxjs: ^7.8.1
   checksum: 8e77403f68b8d654541421cafa214d248449cf86651a55e6c3c234e3e41706ce370979b4e99bdf60e5a9e527de1c8f849cf8512383aff52461b9101d7979e4a5
-  languageName: node
-  linkType: hard
-
-"@margelo/hermes-profile-transformer@npm:^0.0.10":
-  version: 0.0.10
-  resolution: "@margelo/hermes-profile-transformer@npm:0.0.10"
-  dependencies:
-    source-map: ^0.7.3
-  checksum: 6ae29435917dc2a0da256a5d83d041d27c99625b72158e7ba73a22fa7cf2a76b5a09630d898917b134f2cb5ed2bb737db2c114f1ce30ba1e5712bd6f5d9ce315
   languageName: node
   linkType: hard
 
@@ -15965,13 +15955,6 @@ __metadata:
   version: 7.2.0
   resolution: "commander@npm:7.2.0"
   checksum: 53501cbeee61d5157546c0bef0fedb6cdfc763a882136284bed9a07225f09a14b82d2a84e7637edfd1a679fb35ed9502fd58ef1d091e6287f60d790147f68ddc
-  languageName: node
-  linkType: hard
-
-"commander@npm:^11.1.0":
-  version: 11.1.0
-  resolution: "commander@npm:11.1.0"
-  checksum: fd1a8557c6b5b622c89ecdfde703242ab7db3b628ea5d1755784c79b8e7cb0d74d65b4a262289b533359cd58e1bfc0bf50245dfbcd2954682a6f367c828b79ef
   languageName: node
   linkType: hard
 
@@ -27571,21 +27554,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-native-release-profiler@npm:0.4.0":
-  version: 0.4.0
-  resolution: "react-native-release-profiler@npm:0.4.0"
-  dependencies:
-    "@margelo/hermes-profile-transformer": ^0.0.10
-    commander: ^11.1.0
-  peerDependencies:
-    react: "*"
-    react-native: "*"
-  bin:
-    react-native-release-profiler: lib/commonjs/cli.js
-  checksum: 12fc5317c761166a56fed82bc15a41c40b437465def22533416b1ef152683706e89e9907bf4d9b3a7748cb86e6bdcbf95a958d2a62b383eb6e12079452c783c9
-  languageName: node
-  linkType: hard
-
 "react-native-restart@npm:0.0.27":
   version: 0.0.27
   resolution: "react-native-restart@npm:0.0.27"
@@ -29709,13 +29677,6 @@ react-native-webview@ava-labs/react-native-webview:
   version: 0.6.1
   resolution: "source-map@npm:0.6.1"
   checksum: 59ce8640cf3f3124f64ac289012c2b8bd377c238e316fb323ea22fbfe83da07d81e000071d7242cad7a23cd91c7de98e4df8830ec3f133cb6133a5f6e9f67bc2
-  languageName: node
-  linkType: hard
-
-"source-map@npm:^0.7.3":
-  version: 0.7.6
-  resolution: "source-map@npm:0.7.6"
-  checksum: 932f4a2390aa7100e91357d88cc272de984ad29139ac09eedfde8cc78d46da35f389065d0c5343c5d71d054a6ebd4939a8c0f2c98d5df64fe97bb8a730596c2d
   languageName: node
   linkType: hard
 
