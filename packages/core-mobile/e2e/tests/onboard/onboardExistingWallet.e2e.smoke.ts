@@ -10,9 +10,7 @@ import onboardingLoc from '../../locators/onboarding.loc'
 
 describe('Onboarding', () => {
   beforeAll(async () => {
-    await device.reloadReactNative()
     await device.launchApp({ newInstance: true })
-    await device.reloadReactNative()
     await commonElsPage.exitMetro()
     await handleJailbrokenWarning()
   })
