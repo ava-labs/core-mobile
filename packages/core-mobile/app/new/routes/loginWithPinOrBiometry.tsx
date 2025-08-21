@@ -205,7 +205,7 @@ const LoginWithPinOrBiometry = (): JSX.Element => {
 
   useFocusEffect(
     useCallback(() => {
-      const task = InteractionManager.runAfterInteractions(() => {
+      InteractionManager.runAfterInteractions(() => {
         let accessType = BiometricsSDK.getAccessType()
 
         /*
@@ -233,7 +233,6 @@ const LoginWithPinOrBiometry = (): JSX.Element => {
 
       return () => {
         blurPinInput()
-        task.cancel()
       }
     }, [
       isBiometricAvailable,

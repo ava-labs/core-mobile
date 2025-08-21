@@ -80,7 +80,7 @@ export const VerifyWithPinOrBiometry = ({
 
   useFocusEffect(
     useCallback(() => {
-      const task = InteractionManager.runAfterInteractions(() => {
+      InteractionManager.runAfterInteractions(() => {
         const accessType = BiometricsSDK.getAccessType()
         if (accessType === 'BIO') {
           handlePromptBioLogin().catch(Logger.error)
@@ -91,7 +91,6 @@ export const VerifyWithPinOrBiometry = ({
 
       return () => {
         blurPinInput()
-        task.cancel()
       }
     }, [handlePromptBioLogin, focusPinInput])
   )

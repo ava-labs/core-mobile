@@ -80,12 +80,9 @@ export const useGetRecentTransactions = (
 
   useFocusEffect(
     useCallback(() => {
-      const task = InteractionManager.runAfterInteractions(() => {
+      InteractionManager.runAfterInteractions(() => {
         refetch()
       })
-      return () => {
-        task.cancel()
-      }
     }, [refetch])
   )
 

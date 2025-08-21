@@ -18,16 +18,13 @@ export default function RecoveryPhrase(): JSX.Element {
   }
 
   useEffect(() => {
-    const task = InteractionManager.runAfterInteractions(() => {
+    InteractionManager.runAfterInteractions(() => {
       ;(async () => {
         const newPhrase = await WalletSDK.generateMnemonic()
         setLocalMnemonic(newPhrase)
         setIsLoading(false)
       })()
     })
-    return () => {
-      task.cancel()
-    }
   }, [])
 
   return (

@@ -20,7 +20,7 @@ export default function PortfolioLayout(): JSX.Element {
   const walletState = useSelector(selectWalletState)
 
   useEffect(() => {
-    const task = InteractionManager.runAfterInteractions(() => {
+    InteractionManager.runAfterInteractions(() => {
       // Only show modal when wallet is active and user hasn't seen it before
       if (
         !hasBeenViewedSolanaLaunch &&
@@ -31,9 +31,6 @@ export default function PortfolioLayout(): JSX.Element {
         navigate('/(signedIn)/(modals)/solanaLaunch')
       }
     })
-    return () => {
-      task.cancel()
-    }
   }, [hasBeenViewedSolanaLaunch, isSolanaSupportBlocked, navigate, walletState])
 
   return (
