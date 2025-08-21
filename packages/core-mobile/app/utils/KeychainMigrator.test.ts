@@ -67,7 +67,9 @@ describe('KeychainMigrator', () => {
         success: true,
         value: 'test-mnemonic'
       })
-      mockBiometricsSDK.generateEncryptionKey.mockResolvedValue('new-key')
+      mockBiometricsSDK.generateMigrationEncryptionKey.mockResolvedValue(
+        'new-key'
+      )
       mockBiometricsSDK.getAccessType.mockReturnValue('PIN')
       mockBiometricsSDK.isPinCorrect.mockResolvedValue(true)
 
@@ -89,7 +91,9 @@ describe('KeychainMigrator', () => {
         success: true,
         value: 'test-mnemonic'
       })
-      mockBiometricsSDK.generateEncryptionKey.mockResolvedValue('new-key')
+      mockBiometricsSDK.generateMigrationEncryptionKey.mockResolvedValue(
+        'new-key'
+      )
 
       await keychainMigrator.migrateIfNeeded('BIO')
 
@@ -107,7 +111,9 @@ describe('KeychainMigrator', () => {
         success: true,
         value: 'test-mnemonic'
       })
-      mockBiometricsSDK.generateEncryptionKey.mockResolvedValue('new-key')
+      mockBiometricsSDK.generateMigrationEncryptionKey.mockResolvedValue(
+        'new-key'
+      )
       mockBiometricsSDK.isPinCorrect.mockResolvedValue(true)
 
       await keychainMigrator.migrateIfNeeded('PIN', pin)
@@ -165,7 +171,7 @@ describe('KeychainMigrator', () => {
         success: true,
         value: mnemonic
       })
-      mockBiometricsSDK.generateEncryptionKey.mockResolvedValue(
+      mockBiometricsSDK.generateMigrationEncryptionKey.mockResolvedValue(
         newEncryptionKey
       )
       mockBiometricsSDK.getAccessType.mockReturnValue('PIN')
@@ -203,7 +209,7 @@ describe('KeychainMigrator', () => {
         success: true,
         value: mnemonic
       })
-      mockBiometricsSDK.generateEncryptionKey.mockResolvedValue(
+      mockBiometricsSDK.generateMigrationEncryptionKey.mockResolvedValue(
         newEncryptionKey
       )
       mockBiometricsSDK.getAccessType.mockReturnValue('BIO')
@@ -242,7 +248,7 @@ describe('KeychainMigrator', () => {
         success: true,
         value: mnemonic
       })
-      mockBiometricsSDK.generateEncryptionKey.mockResolvedValue(
+      mockBiometricsSDK.generateMigrationEncryptionKey.mockResolvedValue(
         newEncryptionKey
       )
 
@@ -297,7 +303,7 @@ describe('KeychainMigrator', () => {
         success: true,
         value: mnemonic
       })
-      mockBiometricsSDK.generateEncryptionKey.mockResolvedValue(
+      mockBiometricsSDK.generateMigrationEncryptionKey.mockResolvedValue(
         newEncryptionKey
       )
 
@@ -309,7 +315,9 @@ describe('KeychainMigrator', () => {
       expect(mockBiometricsSDK.loadLegacyWalletWithPin).toHaveBeenCalledWith(
         pin
       )
-      expect(mockBiometricsSDK.generateEncryptionKey).toHaveBeenCalled()
+      expect(
+        mockBiometricsSDK.generateMigrationEncryptionKey
+      ).toHaveBeenCalled()
       expect(mockBiometricsSDK.storeEncryptionKeyWithPin).toHaveBeenCalledWith(
         newEncryptionKey,
         pin
