@@ -2,7 +2,7 @@ import { warmup } from '../../helpers/warmup'
 import commonElsPage from '../../pages/commonEls.page'
 import settingsPage from '../../pages/settings.page'
 
-describe('Settings - Core Analytics', () => {
+describe('Settings', () => {
   it('should have the Core Analystics ON by default after login', async () => {
     await warmup()
     await settingsPage.goSettings()

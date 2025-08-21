@@ -8,6 +8,7 @@ export default {
   celoWrongNetworkName: 'Kelo Mainnet',
   celoChainID: '42220',
   celoNativeTokenSymbol: 'CELO',
+  celoNativeTokenName: 'Celo',
   celoExplorerUrl: 'https://explorer.celo.org',
   polygonCustomNetworkName: 'Polygon',
   polygonCustomRpcUrl: 'https://polygon-rpc.com/',

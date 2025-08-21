@@ -19,7 +19,7 @@ const newAddress: Record<string, string> = {
   [cl.evm]: cl.myEvmAddress2
 }
 
-describe('Settings - Contacts', () => {
+describe('Settings', () => {
   beforeAll(async () => {
     await warmup()
   })

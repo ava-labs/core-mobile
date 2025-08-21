@@ -2,59 +2,29 @@
 /**
  * @jest-environment ./environment.ts
  */
-import Actions from '../../../helpers/actions'
-import PortfolioPage from '../../../pages/portfolio.page'
-import NetworksManagePage from '../../../pages/networksManage.page'
-import NetworksManageLoc from '../../../locators/networksManage.loc'
+import actions from '../../../helpers/actions'
 import { warmup } from '../../../helpers/warmup'
-import commonElsPage from '../../../pages/commonEls.page'
-import { cleanup } from '../../../helpers/cleanup'
-import portfolioLoc from '../../../locators/portfolio.loc'
+import cp from '../../../pages/commonEls.page'
+import cl from '../../../locators/commonEls.loc'
+import sp from '../../../pages/settings.page'
+import assertions from '../../../helpers/assertions'
 
 describe('Network Details', () => {
   beforeAll(async () => {
     await warmup()
+    await sp.goSettings()
+    await sp.tapNetworksRow()
   })
 
-  afterAll(async () => {
-    await cleanup()
-  })
+  const networks = [cl.cChain, cl.pChain, cl.bitcoin, cl.ethereum, cl.solana]
 
-  it('should verify C-Chain Network Details', async () => {
-    await PortfolioPage.tapNetworksDropdown()
-    await PortfolioPage.tapManageNetworks()
-    await NetworksManagePage.tapNetworkInfo(portfolioLoc.avaxNetwork)
-    await NetworksManagePage.verifyNetworkDetails({
-      title: portfolioLoc.avaxNetwork,
-      url: NetworksManageLoc.avaxRpcUrl,
-      chainId: NetworksManageLoc.avaxChainID,
-      tokenSymbol: NetworksManageLoc.avaxSymbol,
-      tokenName: NetworksManageLoc.avaxTokenName,
-      explorerUrl: NetworksManageLoc.avaxExplorerUrl
+  networks.forEach(network => {
+    it(`should verify ${network} details on settings`, async () => {
+      await assertions.isNotVisible(by.id(`network__${network}_enabled`))
+      await assertions.isNotVisible(by.id(`network__${network}_disabled`))
+      await actions.tap(by.id(`network_name__${network}`))
+      await sp.verifyNetworkDetails(network)
+      await cp.goBack()
     })
-    await commonElsPage.goBack()
-  })
-
-  it('should verify Ethereum Network Details', async () => {
-    await NetworksManagePage.tapNetworkInfo(portfolioLoc.ethNetwork)
-    await NetworksManagePage.verifyNetworkDetails({
-      title: portfolioLoc.ethNetwork,
-      url: NetworksManageLoc.ethRpcUrl,
-      chainId: NetworksManageLoc.ethChainID,
-      tokenSymbol: NetworksManageLoc.ethNetworkSymbol,
-      tokenName: NetworksManageLoc.ethNetworkTokenName,
-      explorerUrl: NetworksManageLoc.ethExplorerUrl
-    })
-  })
-
-  it('should connect network via Network Details', async () => {
-    await Actions.swipeUp(
-      NetworksManagePage.networkTokenNameText,
-      'fast',
-      0.2,
-      0
-    )
-    await NetworksManagePage.tapConnect()
-    await PortfolioPage.verifyActiveNetwork(portfolioLoc.ethNetwork)
   })
 })

@@ -2,15 +2,15 @@
 import { warmup } from '../../helpers/warmup'
 import settingsPage from '../../pages/settings.page'
 
-describe('Settings - Notifications', () => {
+describe('Settings', () => {
   
   const notiData = {
     'Stake': 'Stake complete alerts',
     'Balance': 'Wallet balance change alerts',
-    'Product Announcements': 'Learn about new features and changes',
-    'Special Offers and Promotions': 'Airdrops and promotional offers',
-    'Market News': 'News and market information alerts',
-    'Price Alerts': 'Token price movement alerts',
+    'Product announcements': 'Learn about new features and changes',
+    'Special offers and promotions': 'Airdrops and promotional offers',
+    'Market news': 'News and market information alerts',
+    'Price alerts': 'Token price movement alerts',
     'Favorite token alerts': 'Favorite token price movement alerts'
   }
   

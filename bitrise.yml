@@ -294,8 +294,6 @@ workflows:
         - configuration: $IOS_CONFIGURATION
         - code_signing_allowed: "no"
         - log_formatter: xcpretty
-        - xcconfig_content: |-
-            SWIFT_ACTIVE_COMPILATION_CONDITIONS=$(inherited) DETOX
     - script-runner@0:
         title: Create iOS Test Run
         inputs:

@@ -35,7 +35,6 @@ describe('Bitcoin Transaction', () => {
   it('Should send BTC on testnet', async () => {
     await bottomTabsPage.tapPortfolioTab()
     await advancedPage.switchToTestnet()
-    await networksManagePage.switchToBitcoinTestNet()
     await actions.waitForElement(
       networksManagePage.bitcoinTestnetNetwork,
       60000

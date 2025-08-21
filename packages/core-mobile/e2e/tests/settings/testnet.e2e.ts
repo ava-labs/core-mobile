@@ -1,7 +1,7 @@
 import { warmup } from '../../helpers/warmup'
 import settingsPage from '../../pages/settings.page'
 
-describe('Settings - Testnet', () => {
+describe('Settings', () => {
   beforeAll(async () => {
     await warmup()
   })

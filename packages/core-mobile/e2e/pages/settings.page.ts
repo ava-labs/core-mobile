@@ -129,6 +129,10 @@ class Settings {
     return by.id(settings.addWalletBtn)
   }
 
+  get addNetworkBtn() {
+    return by.id(settings.addNetworkBtn)
+  }
+
   get createNewAccountBtn() {
     return by.id(settings.createNewAccountBtn)
   }
@@ -443,6 +447,67 @@ class Settings {
     await Actions.tap(this.addWalletBtn)
   }
 
+  async tapAddNetworkBtn() {
+    await Actions.tap(this.addNetworkBtn)
+  }
+
+  async setNetworkData(type: string, value: string) {
+    await Actions.tap(by.text(`Add ${type}`))
+    await Actions.setInputText(
+      by.id(`advanced_input__${type.toLowerCase()}`),
+      value
+    )
+    await Actions.dismissKeyboard(`advanced_input__${type.toLowerCase()}`)
+  }
+
+  async verifyNetworkRow(
+    networkName: string,
+    hasToggle = false,
+    isEnabled = false
+  ) {
+    if (!(await Actions.isVisible(by.id(`network_list__${networkName}`)))) {
+      await Actions.swipe(this.networks, 'up', 'fast', 0.2)
+    }
+    await Actions.waitForElement(by.id(`network_list__${networkName}`))
+    if (hasToggle) {
+      const toggle = isEnabled ? 'enabled' : 'disabled'
+      await assertions.isVisible(
+        by.id(`network_toggle_${toggle}__${networkName}`)
+      )
+    } else {
+      await assertions.isNotVisible(
+        by.id(`network_toggle_enabled__${networkName}`)
+      )
+      await assertions.isNotVisible(
+        by.id(`network_toggle_disabled__${networkName}`)
+      )
+    }
+  }
+
+  async tapNetworkByName(networkName: string) {
+    if (!(await Actions.isVisible(by.id(`network_list__${networkName}`)))) {
+      await Actions.swipe(this.networks, 'up', 'fast', 0.2)
+    }
+    await Actions.tap(by.id(`network_list__${networkName}`))
+  }
+
+  // eslint-disable-next-line max-params
+  async addNetwork(
+    networkName: string,
+    rpcUrl: string,
+    chainId: string,
+    nativeTokenSymbol: string,
+    nativeTokenName: string
+  ) {
+    await this.tapAddNetworkBtn()
+    await this.addContactOrNetworkName(networkName)
+    await this.setNetworkData('Network RPC URL', rpcUrl)
+    await this.setNetworkData('Chain ID', chainId)
+    await this.setNetworkData('token symbol', nativeTokenSymbol)
+    await this.setNetworkData('token name', nativeTokenName)
+    await commonElsPage.tapSave()
+  }
+
   async addAccount(accountNum = 2) {
     const ele = by.id(`manage_accounts_list__Account ${accountNum}`)
     while (!(await Actions.isVisible(ele))) {
@@ -476,7 +541,7 @@ class Settings {
 
   async tapNotificationSwitch(isSwitchOn = 'enabled', notiType = 'Stake') {
     const switchTestID = `${notiType}_${isSwitchOn}_switch`
-    await Actions.tap(by.id(switchTestID))
+    await Actions.longPress(by.id(switchTestID))
   }
 
   async verifyTestnetMode() {
@@ -587,10 +652,13 @@ class Settings {
     await Actions.tapElementAtIndex(this.addAddressButton, 0)
   }
 
-  async addContactName(name: string) {
+  async addContactOrNetworkName(name: string, isEdit = false) {
     await Actions.tapElementAtIndex(this.nameContactBtn, 0)
     await commonElsPage.typeSearchBar(name, commonElsPage.dialogInput)
     await commonElsPage.tapSave()
+    if (isEdit) {
+      await commonElsPage.tapSave()
+    }
   }
 
   async addContactAddress(
@@ -598,7 +666,7 @@ class Settings {
     contactName: string
   ) {
     // add contact name
-    await this.addContactName(contactName)
+    await this.addContactOrNetworkName(contactName)
 
     // add contact addresses
     for (const [network, address] of Object.entries(networkAndAddress)) {
@@ -615,8 +683,11 @@ class Settings {
     }
     await Actions.tap(by.text(`Add ${network} address`))
     await Actions.tap(this.typeInOrPasteAddress)
-    await Actions.setInputText(by.id(`contact_input__${network}`), address)
-    await Actions.dismissKeyboard(`contact_input__${network}`)
+    await Actions.setInputText(
+      by.id(`advanced_input__${network.toLowerCase()}`),
+      address
+    )
+    await Actions.dismissKeyboard(`advanced_input__${network.toLowerCase()}`)
   }
 
   async editContactAddress(
@@ -625,7 +696,7 @@ class Settings {
   ) {
     // add contact name
     if (contactName) {
-      await this.addContactName(contactName)
+      await this.addContactOrNetworkName(contactName)
     }
 
     // add contact addresses
@@ -676,6 +747,15 @@ class Settings {
     await commonElsPage.enterPin(newPin)
     await Actions.waitForElement(this.confirmYourNewPinTitle)
     await commonElsPage.enterPin(newPin)
+  }
+
+  async verifyNetworkDetails(network: string) {
+    await assertions.isVisible(by.id(`network_name__${network}`))
+    await assertions.isVisible(by.id(`network_rpc_url__${network}`))
+    await assertions.isVisible(by.id(`network_chain_id__${network}`))
+    await assertions.isVisible(by.id(`network_native_token_symbol__${network}`))
+    await assertions.isVisible(by.id(`network_native_token_name__${network}`))
+    await assertions.isVisible(by.id(`network_explorer_url__${network}`))
   }
 }
 
