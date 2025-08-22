@@ -1,15 +1,13 @@
+import { SxProp } from 'dripsy'
 import React, {
   forwardRef,
   useCallback,
-  useEffect,
   useImperativeHandle,
   useMemo,
   useRef,
   useState
 } from 'react'
-import { SxProp } from 'dripsy'
 import {
-  InteractionManager,
   Platform,
   ReturnKeyTypeOptions,
   StyleSheet,
@@ -17,10 +15,12 @@ import {
   TouchableWithoutFeedback
 } from 'react-native'
 import { useTheme } from '../../hooks'
-import { Text, View } from '../Primitives'
 import { alpha } from '../../utils'
-import { normalizeValue } from '../../utils/tokenUnitInput'
-import { normalizeNumericTextInput } from '../../utils/tokenUnitInput'
+import {
+  normalizeNumericTextInput,
+  normalizeValue
+} from '../../utils/tokenUnitInput'
+import { Text, View } from '../Primitives'
 
 export type FiatAmountInputHandle = {
   setValue: (value: string) => void
@@ -139,14 +139,6 @@ export const FiatAmountInput = forwardRef<
       blur: () => textInputRef.current?.blur()
     }))
 
-    useEffect(() => {
-      if (autoFocus) {
-        InteractionManager.runAfterInteractions(() => {
-          textInputRef.current?.focus()
-        })
-      }
-    }, [autoFocus])
-
     return (
       <View
         sx={{
@@ -187,6 +179,7 @@ export const FiatAmountInput = forwardRef<
                   textAlign: 'right'
                 }
               ]}
+              autoFocus={autoFocus}
               /**
                * keyboardType="numeric" causes noticeable input lag on Android.
                * Using inputMode="numeric" provides the same behavior without the performance issues.

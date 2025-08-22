@@ -1,9 +1,10 @@
-import React from 'react'
-import { useWatchlist } from 'hooks/watchlist/useWatchlist'
-import { LocalTokenWithBalance } from 'store/balance'
 import { PriceChangeStatus } from '@avalabs/k2-alpine'
-import { useFormatCurrency } from 'new/common/hooks/useFormatCurrency'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
+import { useWatchlist } from 'hooks/watchlist/useWatchlist'
+import { useFormatCurrency } from 'new/common/hooks/useFormatCurrency'
+import React from 'react'
+import { LocalTokenWithBalance } from 'store/balance'
+import { useThrottledCallback } from 'use-debounce'
 import { TokenGridView } from './TokenGridView'
 import { TokenListView } from './TokenListView'
 
@@ -45,11 +46,13 @@ export const TokenListItem = ({
       : PriceChangeStatus.Neutral
     : PriceChangeStatus.Neutral
 
+  const onPressThrottled = useThrottledCallback(onPress, 500)
+
   return isGridView ? (
     <TokenGridView
       token={token}
       index={index}
-      onPress={onPress}
+      onPress={onPressThrottled}
       priceChangeStatus={status}
       formattedBalance={formattedBalance}
       formattedPrice={formattedPrice}
@@ -58,7 +61,7 @@ export const TokenListItem = ({
     <TokenListView
       token={token}
       index={index}
-      onPress={onPress}
+      onPress={onPressThrottled}
       priceChangeStatus={status}
       formattedBalance={formattedBalance}
       formattedPrice={formattedPrice}

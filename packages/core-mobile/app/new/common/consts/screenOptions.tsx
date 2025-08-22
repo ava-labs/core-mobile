@@ -39,6 +39,9 @@ export const modalScreensOptions: NativeStackNavigationOptions = {
   headerTransparent: true,
   headerTitleAlign: 'center',
   title: '',
+  headerStyle: {
+    backgroundColor: 'transparent'
+  },
   contentStyle: {
     // iOS will display empty content without this
     height: '100%',
