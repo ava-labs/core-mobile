@@ -27,8 +27,7 @@ const NavigationBarButton = ({
           paddingRight: isLeft ? 8 : 4,
           height: Platform.OS === 'ios' ? '100%' : 56,
           justifyContent: 'center',
-          alignItems: 'center',
-          backgroundColor: 'red'
+          alignItems: 'center'
         },
         style
       ]}>
