@@ -1,6 +1,5 @@
 import { NativeStackNavigationOptions } from '@react-navigation/native-stack'
 import BackBarButton from 'common/components/BackBarButton'
-import BlurredBackgroundView from 'common/components/BlurredBackgroundView'
 import React from 'react'
 import { Platform } from 'react-native'
 
@@ -15,15 +14,6 @@ export const stackNavigatorScreenOptions: NativeStackNavigationOptions = {
   headerTransparent: true,
   animation: 'slide_from_right',
   headerTitleAlign: 'center'
-}
-
-export const modalStackNavigatorScreenOptions: NativeStackNavigationOptions = {
-  ...commonNavigatorScreenOptions,
-  headerBackground: () => <BlurredBackgroundView hasGrabber={true} />,
-  headerTransparent: true,
-  headerTitleAlign: 'center',
-  sheetGrabberVisible: true,
-  headerLeft: () => <BackBarButton />
 }
 
 export const stackModalScreensOptions:
@@ -42,14 +32,24 @@ export const modalScreensOptions: NativeStackNavigationOptions = {
   presentation: 'formSheet',
   headerBackButtonDisplayMode: 'minimal',
   sheetCornerRadius: 24,
-  sheetAllowedDetents: [Platform.OS === 'android' ? 0.94 : 0.99],
+  sheetAllowedDetents: [Platform.OS === 'android' ? 0.93 : 0.99],
+  headerLeft: () => <BackBarButton />,
   gestureEnabled: true,
   sheetGrabberVisible: true,
-  headerLeft: () => <BackBarButton />,
+  headerTransparent: true,
+  headerTitleAlign: 'center',
+  title: '',
   contentStyle: {
     // iOS will display empty content without this
-    height: '100%'
+    height: '100%',
+    marginTop: 0, // remove extra top spacing
+    paddingTop: 0
   }
+}
+
+export const modalStackNavigatorScreenOptions: NativeStackNavigationOptions = {
+  ...modalScreensOptions,
+  presentation: 'card'
 }
 
 // Options for the first screen of a modal stack navigator.
@@ -63,6 +63,6 @@ export const modalFirstScreenOptions: NativeStackNavigationOptions = {
 
 export const formSheetScreensOptions: NativeStackNavigationOptions = {
   ...modalScreensOptions,
-  presentation: Platform.OS === 'android' ? 'formSheet' : 'pageSheet',
-  sheetAllowedDetents: [0.91]
+  presentation: 'formSheet',
+  sheetAllowedDetents: [Platform.OS === 'android' ? 0.9 : 0.99]
 }

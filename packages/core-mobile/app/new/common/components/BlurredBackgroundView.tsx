@@ -1,12 +1,12 @@
-import React from 'react'
 import { Separator, View } from '@avalabs/k2-alpine'
+import React from 'react'
+import { Platform } from 'react-native'
 import Animated, {
   SharedValue,
   useAnimatedStyle
 } from 'react-native-reanimated'
 import { BlurViewWithFallback } from './BlurViewWithFallback'
 import Grabber from './Grabber'
-import { Platform } from 'react-native'
 
 const BlurredBackgroundView = ({
   hasGrabber = false,
