@@ -15,6 +15,7 @@ export const ConnectButton = forwardRef<RNView>((props, ref): JSX.Element => {
   return (
     <TouchableOpacity
       ref={ref}
+      // onPress doesn't work for Android when using svgs (only on production)
       onPressOut={handlePress}
       testID="connect_icon"
       style={{

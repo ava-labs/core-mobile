@@ -21,6 +21,7 @@ export const AccountSettingBarButton = forwardRef<RNView>(
       <TouchableOpacity
         testID="account_setting_bar_btn"
         ref={ref}
+        // onPress doesn't work for Android when using svgs (only on production)
         onPressOut={handlePress}
         style={{
           paddingRight: 8,
