@@ -57,7 +57,7 @@ added isActive prop for useAnimatedSensor
 perf improvement
 https://github.com/PedroBern/react-native-collapsible-tab-view/pull/461
 
-exposed toggleSyncScrollFrame using scrollResync ref for manually recomputing layout 
+exposed toggleSyncScrollFrame using scrollResync ref for manually recomputing layout
 
 ### react-native-webview-crypto+0.0.26.patch
 
@@ -68,3 +68,18 @@ to fix it, we patched the lib so that the webview is still rendered but won't be
 ### @datadog+mobile-react-native+2.6.4.patch
 
 we can't build Android with this version of datadog. they have fixed this in 2.6.5 but haven't released yet.
+
+### @noble+hashes+1.8.0.patch
+
+we replace several hash + key derivation functions with the ones from react-native-quick-crypto:
+
+- hmacSHA512
+- sha256
+- sha512
+- ripemd160
+- pbkdf2Sync
+- pbkdf2Async
+
+### bip32+3.0.1.patch
+
+we replace tiny-secp256k1 with @bitcoinerlab/secp256k1 (which uses @noble/secp256k1) and use that as the default ECC instance

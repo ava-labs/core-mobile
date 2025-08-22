@@ -6,6 +6,7 @@ import { useSelector } from 'react-redux'
 import { TrendingToken } from 'services/token/types'
 import WatchlistService from 'services/watchlist/WatchlistService'
 import { selectSelectedCurrency } from 'store/settings/currency'
+import { runAfterInteractions } from 'utils/runAfterInteractions'
 
 export const useGetTrendingTokens = <TData = TrendingToken[]>(
   select?: (data: TrendingToken[]) => TData
@@ -21,7 +22,13 @@ export const useGetTrendingTokens = <TData = TrendingToken[]>(
       ReactQueryKeys.WATCHLIST_TRENDING_TOKENS_AND_CHARTS,
       exchangeRate
     ],
-    queryFn: async () => WatchlistService.getTrendingTokens(exchangeRate),
+    queryFn: async () => {
+      const tokens = await runAfterInteractions(async () => {
+        return WatchlistService.getTrendingTokens(exchangeRate)
+      })
+
+      return tokens ?? []
+    },
     refetchInterval: 120000, // 2 mins
     select
   })

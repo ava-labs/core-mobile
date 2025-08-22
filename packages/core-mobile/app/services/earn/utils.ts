@@ -16,6 +16,7 @@ import { Peer } from '@avalabs/avalanchejs/dist/info/model'
 import { PChainTransaction } from '@avalabs/glacier-sdk'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
 import { UTCDate } from '@date-fns/utc'
+import { runAfterInteractions } from 'utils/runAfterInteractions'
 import EarnService from './EarnService'
 
 // the max num of times we should check transaction status
@@ -344,11 +345,17 @@ export const getTransformedTransactions = async (
   (PChainTransaction & { index: number; isDeveloperMode: boolean })[]
 > => {
   try {
-    const stakes = await EarnService.getAllStakes({
-      isTestnet,
-      addresses,
-      startTimestamp
+    const stakes = await runAfterInteractions(async () => {
+      return EarnService.getAllStakes({
+        isTestnet,
+        addresses,
+        startTimestamp
+      })
     })
+
+    if (!stakes) {
+      return []
+    }
 
     return stakes.map(transaction => {
       const pAddr = transaction.emittedUtxos.find(utxo => utxo.staked === true)
