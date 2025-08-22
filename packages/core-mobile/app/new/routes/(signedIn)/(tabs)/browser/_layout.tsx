@@ -1,18 +1,28 @@
 import { Stack } from 'common/components/Stack'
-import { stackNavigatorScreenOptions } from 'common/consts/screenOptions'
+import {
+  stackNavigatorScreenOptions,
+  stackScreensOptions
+} from 'common/consts/screenOptions'
+import { BrowserProvider } from 'features/browser/BrowserContext'
 import React from 'react'
 
 export default function BrowserLayout(): JSX.Element {
   return (
-    <Stack screenOptions={stackNavigatorScreenOptions}>
-      <Stack.Screen
-        name="index"
-        options={{
-          headerShown: false
-        }}
-      />
+    <BrowserProvider>
+      <Stack screenOptions={stackNavigatorScreenOptions}>
+        <Stack.Screen
+          name="index"
+          options={{
+            headerShown: false
+          }}
+        />
+        <Stack.Screen
+          name="tabs"
+          options={{ animation: 'fade', headerShown: false }}
+        />
+        <Stack.Screen name="history" options={stackScreensOptions} />
 
-      {/* 
+        {/* 
           <Stack.Screen
           name={AppNavigation.Modal.UseWalletConnect}
           options={{
@@ -21,6 +31,7 @@ export default function BrowserLayout(): JSX.Element {
           component={UseWalletConnectModal}
           /> 
           */}
-    </Stack>
+      </Stack>
+    </BrowserProvider>
   )
 }

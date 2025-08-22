@@ -142,7 +142,7 @@ const TabsScreen = (): JSX.Element => {
 
   const handleViewHistory = useCallback((): void => {
     // @ts-ignore TODO: make routes typesafe
-    navigation.navigate('(modals)/browserHistory')
+    navigation.navigate('history')
   }, [navigation])
 
   const onPressAction = useCallback(

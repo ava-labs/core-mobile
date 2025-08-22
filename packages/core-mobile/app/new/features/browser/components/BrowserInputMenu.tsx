@@ -13,7 +13,7 @@ import {
   selectActiveTab
 } from 'store/browser/slices/tabs'
 import Logger from 'utils/Logger'
-import { useRouter } from 'expo-router'
+import { useNavigation } from '@react-navigation/native'
 import { useBrowserContext } from '../BrowserContext'
 import { isValidUrl } from '../utils'
 
@@ -37,7 +37,7 @@ export const BrowserInputMenu = ({
 }): JSX.Element => {
   const { theme } = useTheme()
   const dispatch = useDispatch()
-  const { navigate } = useRouter()
+  const { navigate } = useNavigation()
   const { handleClearAndFocus, browserRefs } = useBrowserContext()
   const activeHistory = useSelector(selectActiveHistory)
   const activeTab = useSelector(selectActiveTab)
@@ -134,7 +134,7 @@ export const BrowserInputMenu = ({
   const handleHistory = useCallback((): void => {
     AnalyticsService.capture('BrowserViewHistoryTapped')
     // @ts-ignore TODO: make routes typesafe
-    navigate('(modals)/browserHistory')
+    navigate('history')
   }, [navigate])
 
   const handleFavorite = useCallback((): void => {

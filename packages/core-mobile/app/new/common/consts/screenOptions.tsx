@@ -39,6 +39,11 @@ export const modalScreensOptions: NativeStackNavigationOptions = {
   }
 }
 
+export const secondaryModalScreensOptions: NativeStackNavigationOptions = {
+  ...modalScreensOptions,
+  sheetAllowedDetents: [Platform.OS === 'android' ? 0.92 : 0.99]
+}
+
 export const modalStackNavigatorScreenOptions: NativeStackNavigationOptions = {
   ...modalScreensOptions,
   presentation: 'card'
@@ -46,7 +51,7 @@ export const modalStackNavigatorScreenOptions: NativeStackNavigationOptions = {
 
 export const formSheetScreensOptions: NativeStackNavigationOptions = {
   ...modalScreensOptions,
-  sheetAllowedDetents: [Platform.OS === 'android' ? 0.92 : 0.99]
+  presentation: 'formSheet'
 }
 
 // Options for the first screen of a modal stack navigator.

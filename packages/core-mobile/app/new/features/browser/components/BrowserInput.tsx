@@ -104,7 +104,7 @@ export const BrowserInput = (): ReactNode => {
   const navigateToTabs = useCallback((): void => {
     AnalyticsService.capture('BrowserTabsOpened').catch(Logger.error)
     // @ts-ignore TODO: make routes typesafe
-    navigate('(modals)/browserTabs')
+    navigate('tabs')
   }, [navigate])
 
   const renderPlaceholder = useCallback((): ReactNode => {
