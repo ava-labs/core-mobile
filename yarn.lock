@@ -259,7 +259,6 @@ __metadata:
     "@react-native/metro-config": 0.79.5
     "@react-native/typescript-config": 0.79.5
     "@react-navigation/bottom-tabs": 7.4.6
-    "@react-navigation/drawer": 7.5.5
     "@react-navigation/elements": 2.6.3
     "@react-navigation/native": 7.1.16
     "@react-navigation/native-stack": 7.3.25
@@ -9774,26 +9773,6 @@ __metadata:
   peerDependencies:
     react: ">= 18.2.0"
   checksum: 739b500673c93a0a1eaab7e816f6cb215c06f51e39fa73376af88734c6d17bb599a8cbfc94786e19e651aa4a137b968bce080b27779f0858ea9efa112190d5ff
-  languageName: node
-  linkType: hard
-
-"@react-navigation/drawer@npm:7.5.5":
-  version: 7.5.5
-  resolution: "@react-navigation/drawer@npm:7.5.5"
-  dependencies:
-    "@react-navigation/elements": ^2.6.1
-    color: ^4.2.3
-    react-native-drawer-layout: ^4.1.12
-    use-latest-callback: ^0.2.4
-  peerDependencies:
-    "@react-navigation/native": ^7.1.16
-    react: ">= 18.2.0"
-    react-native: "*"
-    react-native-gesture-handler: ">= 2.0.0"
-    react-native-reanimated: ">= 2.0.0"
-    react-native-safe-area-context: ">= 4.0.0"
-    react-native-screens: ">= 4.0.0"
-  checksum: 3acbf6e44edeabf51425c84c75d07620c802b5cdf816abe5cbafae849be82d6e481accec88374dc2c05b369f3c831d9a7094b7921c5533026422342497d5e730
   languageName: node
   linkType: hard
 
@@ -27209,20 +27188,6 @@ __metadata:
   peerDependencies:
     react-native: ">=0.63.0"
   checksum: 148fcd9e4cb3001a8bbed02f465833329a83bc60efbf763a9bf227ec81208a41e03055e8bc213aea838933878f3cc7c3ca18a15446e819c17509cad75362d7ca
-  languageName: node
-  linkType: hard
-
-"react-native-drawer-layout@npm:^4.1.12":
-  version: 4.1.12
-  resolution: "react-native-drawer-layout@npm:4.1.12"
-  dependencies:
-    use-latest-callback: ^0.2.4
-  peerDependencies:
-    react: ">= 18.2.0"
-    react-native: "*"
-    react-native-gesture-handler: ">= 2.0.0"
-    react-native-reanimated: ">= 2.0.0"
-  checksum: fd61fec9663e03caf3ac2a7a4cf031c6944f3841fb8af9dcd8c0a4dbe29c50cc869625b0648c85c36c76685b527a78f85efb37b2ddc0d1307bd56d6eddc8eec4
   languageName: node
   linkType: hard
 

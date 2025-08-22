@@ -5,8 +5,7 @@ import {
   LayoutChangeEvent,
   LayoutRectangle,
   NativeScrollEvent,
-  NativeSyntheticEvent,
-  Platform
+  NativeSyntheticEvent
 } from 'react-native'
 import Animated, {
   SharedValue,
