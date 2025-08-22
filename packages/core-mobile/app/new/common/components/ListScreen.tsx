@@ -270,7 +270,7 @@ export const ListScreen = <T,>({
   }, [insets.bottom, hasTabBar, rest?.contentContainerStyle, data.length])
 
   const animatedContainerStyle = useAnimatedStyle(() => {
-    let bottomOffset = keyboard.isVisible ? keyboard.height - insets.bottom : 0
+    let bottomOffset = keyboard.isVisible ? keyboard.height : 0
 
     if (hasTabBar) {
       if (keyboard.isVisible) {

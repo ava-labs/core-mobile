@@ -134,7 +134,7 @@ export const BrowserInputMenu = ({
   const handleHistory = useCallback((): void => {
     AnalyticsService.capture('BrowserViewHistoryTapped')
     // @ts-ignore TODO: make routes typesafe
-    navigate('/browser/history')
+    navigate('(modals)/browserHistory')
   }, [navigate])
 
   const handleFavorite = useCallback((): void => {
