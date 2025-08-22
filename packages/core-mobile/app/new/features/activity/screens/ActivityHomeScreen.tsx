@@ -21,6 +21,10 @@ import { getSourceChainId } from 'common/utils/bridgeUtils'
 import { useFocusEffect, useRouter } from 'expo-router'
 import React, { useCallback, useMemo, useRef, useState } from 'react'
 import { LayoutChangeEvent, LayoutRectangle, Platform } from 'react-native'
+import {
+  AndroidSoftInputModes,
+  KeyboardController
+} from 'react-native-keyboard-controller'
 import Animated, {
   interpolate,
   useAnimatedStyle,
@@ -268,6 +272,19 @@ const ActivityHomeScreen = (): JSX.Element => {
     searchText,
     isSearchBarFocused
   ])
+
+  useFocusEffect(() => {
+    if (!KeyboardController.isVisible()) {
+      KeyboardController.setInputMode(
+        AndroidSoftInputModes.SOFT_INPUT_ADJUST_NOTHING
+      )
+    }
+    return () => {
+      if (!KeyboardController.isVisible()) {
+        KeyboardController.setDefaultMode()
+      }
+    }
+  })
 
   return (
     <BlurredBarsContentLayout>

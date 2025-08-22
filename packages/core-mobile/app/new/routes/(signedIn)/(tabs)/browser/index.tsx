@@ -1,6 +1,6 @@
 import { ANIMATED, View } from '@avalabs/k2-alpine'
 import { useBottomTabBarHeight } from 'common/hooks/useBottomTabBarHeight'
-import { useGlobalSearchParams, useRouter } from 'expo-router'
+import { useFocusEffect, useGlobalSearchParams, useRouter } from 'expo-router'
 import { useBrowserContext } from 'features/browser/BrowserContext'
 import { BrowserControls } from 'features/browser/components/BrowserControls'
 import { BrowserSnapshot } from 'features/browser/components/BrowserSnapshot'
@@ -12,6 +12,10 @@ import { Discover } from 'features/browser/components/Discover'
 import { BROWSER_CONTROLS_HEIGHT } from 'features/browser/consts'
 import React, { useCallback, useEffect, useMemo } from 'react'
 import { Platform } from 'react-native'
+import {
+  AndroidSoftInputModes,
+  KeyboardController
+} from 'react-native-keyboard-controller'
 import Animated, { useAnimatedStyle, withTiming } from 'react-native-reanimated'
 import { useDispatch, useSelector } from 'react-redux'
 import {
@@ -85,6 +89,15 @@ const Browser = (): React.ReactNode => {
   const tabsStyle = useAnimatedStyle(() => {
     return {
       opacity: withTiming(showEmptyTab ? 0 : 1, ANIMATED.TIMING_CONFIG)
+    }
+  })
+
+  useFocusEffect(() => {
+    KeyboardController.setInputMode(
+      AndroidSoftInputModes.SOFT_INPUT_ADJUST_NOTHING
+    )
+    return () => {
+      KeyboardController.setDefaultMode()
     }
   })
 
