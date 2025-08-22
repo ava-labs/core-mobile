@@ -57,9 +57,11 @@ export const useWatchlist = (): UseWatchListReturnType => {
     [trendingTokensResponse]
   )
 
-  const topTokensCoingeckoIds = Object.values(topTokensResponse?.tokens ?? {})
-    .map(token => token.coingeckoId)
-    .filter((id): id is string => typeof id === 'string')
+  const topTokensCoingeckoIds = useMemo(() => {
+    return Object.values(topTokensResponse?.tokens ?? {})
+      .map(token => token.coingeckoId)
+      .filter((id): id is string => typeof id === 'string')
+  }, [topTokensResponse?.tokens])
 
   const isFocused = useIsFocused()
 

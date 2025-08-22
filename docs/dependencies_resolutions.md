@@ -49,3 +49,27 @@ supports promise out of the box
 ### "@noble/secp256k1": "2.1.0"
 
 before, we were using secp256k1 < 2.0.0 and to make it use react-native-quick-crypto, we had to patch it. we now force it to be 2.1.0 so we can remove the manual patch. secp256k1 is being used in multiple places: @avalabs/avalanchejs, @avalabs/core-mobile, ethereum-cryptography,...
+
+### "bip32": "3.0.1"
+
+we need to force this version so that our code as well as any dependencies that use bip32 (wallets sdk, avalanchejs,...) will use the patched 3.0.1 bip32 version (that utilizes @bitcoinerlab/secp256k1 for all the ECC operations)
+
+### "bip39": "3.1.0"
+
+### "@noble/hashes": "1.8.0"
+
+"@avalabs/avalanchejs/@noble/hashes": "1.8.0",
+"@avalabs/bridge-unified/@noble/hashes": "1.8.0",
+"@avalabs/core-gasless-sdk/@noble/hashes": "1.8.0",
+"@avalabs/core-wallets-sdk/@noble/hashes": "1.8.0",
+"micro-eth-signer/@noble/hashes": "1.8.0",
+"ethers/@noble/hashes": "1.8.0",
+"viem/@noble/hashes": "1.8.0",
+"@noble/curves/@noble/hashes": "1.8.0",
+"@scure/bip32/@noble/hashes": "1.8.0",
+"@scure/bip39/@noble/hashes": "1.8.0",
+"@scure/btc-signer/@noble/hashes": "1.8.0"
+
+we need to force 1.8.0 so that our patch (that switches js implementation with react native quick crypto) will apply to all dependencies.
+
+note: we cannot force all dependencies as there are conflicts with some of them (for example ethereum-cryptography) that prevents the app from starting.

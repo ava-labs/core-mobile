@@ -38,7 +38,7 @@ import { isTypedData } from '@avalabs/evm-module'
 import { Curve } from 'utils/publicKeys'
 import slip10 from 'micro-key-producer/slip10.js'
 import { mnemonicToSeed, mnemonicToSeedSync } from 'bip39'
-import { fromSeed } from 'bip32'
+import { bip32 } from 'utils/bip32'
 import { hex } from '@scure/base'
 import ModuleManager from 'vmModule/ModuleManager'
 import { getAddressDerivationPath } from './utils'
@@ -347,7 +347,7 @@ export class MnemonicWallet implements Wallet {
 
     switch (curve) {
       case Curve.SECP256K1: {
-        const seedNode = fromSeed(seed)
+        const seedNode = bip32.fromSeed(seed)
         return hex.encode(
           new Uint8Array(seedNode.derivePath(derivationPath).publicKey)
         )

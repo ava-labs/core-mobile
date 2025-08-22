@@ -1,3 +1,4 @@
+import { InteractionManager } from 'react-native'
 import {
   ActionCreator,
   configureStore,
@@ -13,6 +14,17 @@ import { BridgeConfig } from '@avalabs/core-bridge-sdk'
 import { assertNotUndefined } from 'utils/assertions'
 import { addBridgeListeners } from './listeners'
 import { bridgeReducer, reducerName, selectBridgeConfig } from './slice'
+
+beforeAll(() => {
+  jest
+    .spyOn(InteractionManager, 'runAfterInteractions')
+    // @ts-ignore
+    .mockImplementation(cb => {
+      // @ts-ignore
+      cb() // run immediately
+      return { cancel: jest.fn() }
+    })
+})
 
 // mocks
 const getBridgeConfig = BridgeService.getConfig as jest.Mock<
