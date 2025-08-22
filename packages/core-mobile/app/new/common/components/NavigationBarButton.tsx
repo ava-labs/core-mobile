@@ -19,7 +19,7 @@ const NavigationBarButton = ({
   return (
     <TouchableOpacity
       // onPress doesn't work for Android when using svgs (only on production)
-      onPressIn={onPress}
+      onPressOut={onPress}
       testID={testID}
       style={[
         {

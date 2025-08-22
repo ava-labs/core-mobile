@@ -43,7 +43,7 @@ const BlurredBackgroundView = ({
           }}
         />
       )}
-      {hasGrabber === true && Platform.OS === 'android' && <Grabber />}
+      {hasGrabber === true && <Grabber />}
       {separator?.position === 'bottom' && (
         <Animated.View style={animatedBorderStyle}>
           <Separator />

@@ -130,9 +130,7 @@ export const useFadingHeaderNavigation = ({
         hideHeaderBackground ? (
           // Use a Pressable to receive gesture events for modal gestures
           <Pressable style={{ flex: 1 }}>
-            {shouldHeaderHaveGrabber === true && Platform.OS === 'android' ? (
-              <Grabber />
-            ) : null}
+            {shouldHeaderHaveGrabber === true ? <Grabber /> : null}
           </Pressable>
         ) : (
           <BlurredBackgroundView

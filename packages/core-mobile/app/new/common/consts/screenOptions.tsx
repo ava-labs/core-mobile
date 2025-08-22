@@ -27,9 +27,9 @@ export const stackScreensOptions: NativeStackNavigationOptions | undefined = {
 
 // Modals
 export const modalScreensOptions: NativeStackNavigationOptions = {
-  presentation: 'formSheet',
+  presentation: Platform.OS === 'ios' ? 'pageSheet' : 'formSheet',
+  sheetElevation: 48,
   headerBackButtonDisplayMode: 'minimal',
-  sheetCornerRadius: 24,
   sheetAllowedDetents: [Platform.OS === 'android' ? 0.93 : 0.99],
   headerLeft: () => <BackBarButton />,
   gestureEnabled: true,
@@ -55,8 +55,8 @@ export const modalStackNavigatorScreenOptions: NativeStackNavigationOptions = {
 
 export const formSheetScreensOptions: NativeStackNavigationOptions = {
   ...modalScreensOptions,
-  presentation: 'formSheet',
-  sheetAllowedDetents: [Platform.OS === 'android' ? 0.9 : 0.99]
+  presentation: Platform.OS === 'ios' ? 'pageSheet' : 'formSheet',
+  sheetAllowedDetents: [Platform.OS === 'android' ? 0.92 : 0.99]
 }
 
 // Options for the first screen of a modal stack navigator.
