@@ -10,7 +10,6 @@ import {
 } from 'common/consts/screenOptions'
 
 import { BridgeProvider } from 'features/bridge/contexts/BridgeContext'
-import { BrowserProvider } from 'features/browser/BrowserContext'
 import { CollectiblesProvider } from 'features/portfolio/collectibles/CollectiblesContext'
 import { MigrateFavoriteIds } from 'new/common/components/MigrateFavoriteIds'
 import { NavigationPresentationMode } from 'new/common/types'

@@ -1,6 +1,5 @@
 import { Separator, View } from '@avalabs/k2-alpine'
 import React from 'react'
-import { Platform } from 'react-native'
 import Animated, {
   SharedValue,
   useAnimatedStyle
