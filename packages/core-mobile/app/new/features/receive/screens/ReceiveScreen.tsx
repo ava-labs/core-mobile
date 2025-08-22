@@ -16,7 +16,7 @@ import { useReceiveSelectedNetwork } from '../store'
 import { SupportedReceiveEvmTokens } from '../components/SupportedReceiveEvmTokens'
 
 export const ReceiveScreen = (): ReactNode => {
-  const { defaultNetwork } = useLocalSearchParams<{ defaultNetwork: string }>()
+  const { vmName } = useLocalSearchParams<{ vmName: string }>()
   const { theme } = useTheme()
   const { networks } = useCombinedPrimaryNetworks()
 
@@ -29,13 +29,13 @@ export const ReceiveScreen = (): ReactNode => {
 
   useFocusEffect(
     useCallback(() => {
-      if (defaultNetwork && networks.length > 0) {
+      if (vmName && networks.length > 0) {
         const network = networks.find(
-          n => n.vmName.toLowerCase() === defaultNetwork.toLowerCase()
+          n => n.vmName.toLowerCase() === vmName.toLowerCase()
         )
         if (network) setSelectedNetwork(network)
       }
-    }, [defaultNetwork, networks, setSelectedNetwork])
+    }, [vmName, networks, setSelectedNetwork])
   )
 
   const address = useMemo(() => {
