@@ -1,11 +1,10 @@
 import { TouchableOpacity, View } from '@avalabs/k2-alpine'
 import React from 'react'
-import { StyleProp, ViewStyle } from 'react-native'
+import { Platform, StyleProp, ViewStyle } from 'react-native'
 
 const NavigationBarButton = ({
   onPress,
   children,
-  isModal = false,
   isLeft = false,
   testID,
   style
@@ -19,16 +18,17 @@ const NavigationBarButton = ({
 }): JSX.Element => {
   return (
     <TouchableOpacity
-      onPress={onPress}
+      // onPress doesn't work for Android when using svgs (only on production)
+      onPressIn={onPress}
       testID={testID}
       style={[
         {
           paddingLeft: isLeft ? 4 : 8,
           paddingRight: isLeft ? 8 : 4,
-          paddingTop: isModal ? 6 : 0,
-          height: '100%',
+          height: Platform.OS === 'ios' ? '100%' : 56,
           justifyContent: 'center',
-          alignItems: 'center'
+          alignItems: 'center',
+          backgroundColor: 'red'
         },
         style
       ]}>

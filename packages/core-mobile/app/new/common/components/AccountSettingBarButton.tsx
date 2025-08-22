@@ -21,7 +21,7 @@ export const AccountSettingBarButton = forwardRef<RNView>(
       <TouchableOpacity
         testID="account_setting_bar_btn"
         ref={ref}
-        onPress={handlePress}
+        onPressOut={handlePress}
         style={{
           paddingRight: 8,
           height: '100%'

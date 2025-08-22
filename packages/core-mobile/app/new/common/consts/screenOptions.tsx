@@ -39,22 +39,17 @@ export const stackModalScreensOptions:
 // Modals
 
 export const modalScreensOptions: NativeStackNavigationOptions = {
-  // TODO: Figure out why this doesn't work for iOS
-  // the content is not visible when formSheet is open
-  // https://reactnavigation.org/docs/native-stack-navigator/#using-form-sheet
-  // this also helps with borderRadius on iOS and opening height
-  // presentation: 'formSheet',
-  // sheetCornerRadius: 20,
-  presentation: Platform.OS === 'android' ? 'formSheet' : 'pageSheet',
-  // presentation: 'formSheet',
+  presentation: 'formSheet',
   headerBackButtonDisplayMode: 'minimal',
-  sheetCornerRadius: 20,
-  ...(Platform.OS === 'android' && {
-    sheetAllowedDetents: [0.94]
-  }),
+  sheetCornerRadius: 24,
+  sheetAllowedDetents: [Platform.OS === 'android' ? 0.94 : 0.99],
   gestureEnabled: true,
   sheetGrabberVisible: true,
-  headerLeft: () => <BackBarButton />
+  headerLeft: () => <BackBarButton />,
+  contentStyle: {
+    // iOS will display empty content without this
+    height: '100%'
+  }
 }
 
 // Options for the first screen of a modal stack navigator.
@@ -68,7 +63,6 @@ export const modalFirstScreenOptions: NativeStackNavigationOptions = {
 
 export const formSheetScreensOptions: NativeStackNavigationOptions = {
   ...modalScreensOptions,
-  ...(Platform.OS === 'android' && {
-    sheetAllowedDetents: [0.91]
-  })
+  presentation: Platform.OS === 'android' ? 'formSheet' : 'pageSheet',
+  sheetAllowedDetents: [0.91]
 }

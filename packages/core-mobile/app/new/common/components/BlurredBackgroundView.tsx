@@ -6,6 +6,7 @@ import Animated, {
 } from 'react-native-reanimated'
 import { BlurViewWithFallback } from './BlurViewWithFallback'
 import Grabber from './Grabber'
+import { Platform } from 'react-native'
 
 const BlurredBackgroundView = ({
   hasGrabber = false,
@@ -25,6 +26,7 @@ const BlurredBackgroundView = ({
 
   return (
     <View
+      pointerEvents={hasGrabber ? 'auto' : 'none'}
       style={{
         flex: 1
       }}>
@@ -41,7 +43,7 @@ const BlurredBackgroundView = ({
           }}
         />
       )}
-      {hasGrabber === true && <Grabber />}
+      {hasGrabber === true && Platform.OS === 'android' && <Grabber />}
       {separator?.position === 'bottom' && (
         <Animated.View style={animatedBorderStyle}>
           <Separator />

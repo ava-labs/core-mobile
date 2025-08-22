@@ -404,6 +404,7 @@ export const SwapScreen = (): JSX.Element => {
         <TokenInputWidget
           disabled={swapInProcess}
           editable={!swapInProcess}
+          autoFocus={!hasAutoFocused.current} // Only auto-focus if we haven't done it yet
           amount={fromTokenValue}
           balance={fromToken?.balance}
           shouldShowBalance={true}

@@ -15,7 +15,7 @@ export const ConnectButton = forwardRef<RNView>((props, ref): JSX.Element => {
   return (
     <TouchableOpacity
       ref={ref}
-      onPress={handlePress}
+      onPressOut={handlePress}
       testID="connect_icon"
       style={{
         paddingLeft: 14,

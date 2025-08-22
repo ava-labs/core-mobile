@@ -333,13 +333,11 @@ const TrackTokenDetailScreen = (): JSX.Element => {
           <FavoriteBarButton
             isFavorite={isFavorite}
             onPress={handleFavorite}
-            isModal
             style={{ paddingRight: 12 }}
           />
         )}
         <ShareBarButton
           onPress={handleShare}
-          isModal
           style={{
             paddingRight: 12,
             paddingLeft: 8

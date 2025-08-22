@@ -22,9 +22,9 @@ import Animated, {
  * TODO: Adjust import back to expo-router once the bug is resolved.
  */
 import { useFocusEffect, useNavigation } from '@react-navigation/native'
-import { StackNavigationOptions } from '@react-navigation/stack'
-import Grabber from 'common/components/Grabber'
+import { NativeStackNavigationOptions } from '@react-navigation/native-stack'
 import { Pressable } from 'react-native-gesture-handler'
+import Grabber from 'common/components/Grabber'
 
 export const useFadingHeaderNavigation = ({
   header,
@@ -117,7 +117,7 @@ export const useFadingHeaderNavigation = ({
       opacity: targetHiddenProgress.value,
       transform: [
         {
-          translateY: translateY + HEADER_BOTTOM_INSET
+          translateY: translateY
         }
       ]
     }
@@ -125,17 +125,19 @@ export const useFadingHeaderNavigation = ({
 
   // eslint-disable-next-line sonarjs/cognitive-complexity
   useFocusEffect(() => {
-    const navigationOptions: StackNavigationOptions = {
+    const navigationOptions: NativeStackNavigationOptions = {
       headerBackground: () =>
         hideHeaderBackground ? (
           // Use a Pressable to receive gesture events for modal gestures
           <Pressable style={{ flex: 1 }}>
-            {shouldHeaderHaveGrabber === true ? <Grabber /> : null}
+            {shouldHeaderHaveGrabber === true && Platform.OS === 'android' ? (
+              <Grabber />
+            ) : null}
           </Pressable>
         ) : (
           <BlurredBackgroundView
             shouldDelayBlurOniOS={shouldDelayBlurOniOS}
-            // hasGrabber={shouldHeaderHaveGrabber}
+            hasGrabber={shouldHeaderHaveGrabber}
             separator={
               hasSeparator
                 ? {
@@ -145,22 +147,13 @@ export const useFadingHeaderNavigation = ({
                 : undefined
             }
           />
-        ),
-      headerTitleStyle: {
-        height: '100%',
-        justifyContent: 'center'
-      }
+        )
     }
 
     if (showNavigationHeaderTitle && header) {
       navigationOptions.headerTitle = () => (
         <View
           sx={{
-            marginTop: shouldHeaderHaveGrabber
-              ? Platform.OS === 'ios'
-                ? 22
-                : 16
-              : 0,
             justifyContent: 'center',
             overflow: 'hidden'
           }}>
@@ -213,5 +206,3 @@ export const useFadingHeaderNavigation = ({
     scrollY
   }
 }
-
-const HEADER_BOTTOM_INSET = Platform.OS === 'ios' ? -4 : 0
