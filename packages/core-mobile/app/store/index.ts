@@ -31,6 +31,7 @@ import { reduxStorage } from './reduxStorage'
 import { walletsReducer as wallet } from './wallet/slice'
 
 const VERSION = 25
+const STORAGE_WRITE_THROTTLE = 200
 
 // list of reducers that don't need to be persisted
 // for nested/partial blacklist, please use transform
@@ -90,7 +91,8 @@ export function configureEncryptedStore(secretKey: string, macSecret: string) {
       EncryptThenMacTransform(secretKey, macSecret) // last!
     ],
     migrate: createMigrate(migrations, { debug: __DEV__ }),
-    version: VERSION
+    version: VERSION,
+    throttle: STORAGE_WRITE_THROTTLE
   }
 
   const persistedReducer = persistReducer(persistConfig, rootReducer)
