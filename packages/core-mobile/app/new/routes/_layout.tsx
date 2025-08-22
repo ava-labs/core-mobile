@@ -3,8 +3,8 @@ import { LogoModal } from 'common/components/LogoModal'
 import { Stack } from 'common/components/Stack'
 import {
   modalScreensOptions,
-  stackModalScreensOptions,
-  stackNavigatorScreenOptions
+  stackNavigatorScreenOptions,
+  stackScreensOptions
 } from 'common/consts/screenOptions'
 import NavigationThemeProvider from 'common/contexts/NavigationThemeProvider'
 import { useBgDetect } from 'common/hooks/useBgDetect'
@@ -90,7 +90,7 @@ export default function Root(): JSX.Element | null {
                 <Stack.Screen name="signup" options={{ animation: 'none' }} />
                 <Stack.Screen
                   name="accessWallet"
-                  options={stackModalScreensOptions}
+                  options={stackScreensOptions}
                 />
                 <Stack.Screen
                   name="(signedIn)"
@@ -114,10 +114,7 @@ export default function Root(): JSX.Element | null {
                   options={{ headerShown: true }}
                 />
                 <Stack.Screen name="+not-found" />
-                <Stack.Screen
-                  name="onboarding"
-                  options={stackModalScreensOptions}
-                />
+                <Stack.Screen name="onboarding" options={stackScreensOptions} />
                 <Stack.Screen
                   name="sessionExpired"
                   options={{

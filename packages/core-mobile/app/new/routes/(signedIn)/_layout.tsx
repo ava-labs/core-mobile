@@ -4,8 +4,8 @@ import { Stack } from 'common/components/Stack'
 import {
   formSheetScreensOptions,
   modalScreensOptions,
-  stackModalScreensOptions,
-  stackNavigatorScreenOptions
+  stackNavigatorScreenOptions,
+  stackScreensOptions
 } from 'common/consts/screenOptions'
 
 import { BridgeProvider } from 'features/bridge/contexts/BridgeContext'
@@ -102,15 +102,15 @@ export default function WalletLayout(): JSX.Element {
           />
           <Stack.Screen
             name="(modals)/tokenDetail"
-            options={stackModalScreensOptions}
+            options={stackScreensOptions}
           />
           <Stack.Screen
             name="(modals)/defiDetail"
-            options={stackModalScreensOptions}
+            options={stackScreensOptions}
           />
           <Stack.Screen
             name="(modals)/collectibleDetail"
-            options={stackModalScreensOptions}
+            options={stackScreensOptions}
           />
           <Stack.Screen
             name="(modals)/trackTokenDetail"

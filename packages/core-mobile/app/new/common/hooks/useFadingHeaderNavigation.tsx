@@ -5,7 +5,8 @@ import {
   LayoutChangeEvent,
   LayoutRectangle,
   NativeScrollEvent,
-  NativeSyntheticEvent
+  NativeSyntheticEvent,
+  Platform
 } from 'react-native'
 import Animated, {
   SharedValue,
@@ -22,11 +23,14 @@ import Animated, {
  */
 import { useFocusEffect, useNavigation } from '@react-navigation/native'
 import { NativeStackNavigationOptions } from '@react-navigation/native-stack'
+import { Pressable } from 'react-native-gesture-handler'
+import Grabber from 'common/components/Grabber'
 
 export const useFadingHeaderNavigation = ({
   header,
   targetLayout,
   shouldHeaderHaveGrabber = false,
+  hideHeaderBackground = false,
   hasSeparator = true,
   shouldDelayBlurOniOS = false,
   hasParent = false,
@@ -36,6 +40,7 @@ export const useFadingHeaderNavigation = ({
   header?: React.ReactNode
   targetLayout?: LayoutRectangle
   shouldHeaderHaveGrabber?: boolean
+  hideHeaderBackground?: boolean
   hasSeparator?: boolean
   shouldDelayBlurOniOS?: boolean
   hasParent?: boolean
@@ -121,21 +126,28 @@ export const useFadingHeaderNavigation = ({
   // eslint-disable-next-line sonarjs/cognitive-complexity
   useFocusEffect(() => {
     const navigationOptions: NativeStackNavigationOptions = {
-      headerBackground: () => (
-        <BlurredBackgroundView
-          shouldDelayBlurOniOS={shouldDelayBlurOniOS}
-          hasGrabber={shouldHeaderHaveGrabber}
-          separator={
-            hasSeparator
-              ? {
-                  position: 'bottom',
-                  opacity: targetHiddenProgress
-                }
-              : undefined
-          }
-        />
-      )
-      // )
+      headerBackground: () =>
+        hideHeaderBackground ? (
+          // Use a Pressable to receive gesture events for modal gestures
+          <Pressable style={{ flex: 1 }}>
+            {shouldHeaderHaveGrabber === true && Platform.OS === 'android' ? (
+              <Grabber />
+            ) : null}
+          </Pressable>
+        ) : (
+          <BlurredBackgroundView
+            shouldDelayBlurOniOS={shouldDelayBlurOniOS}
+            hasGrabber={shouldHeaderHaveGrabber}
+            separator={
+              hasSeparator
+                ? {
+                    position: 'bottom',
+                    opacity: targetHiddenProgress
+                  }
+                : undefined
+            }
+          />
+        )
     }
 
     if (showNavigationHeaderTitle && header) {

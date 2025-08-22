@@ -1,6 +1,6 @@
 import { PageControl } from '@avalabs/k2-alpine'
 import { Stack } from 'common/components/Stack'
-import { stackModalScreensOptions } from 'common/consts/screenOptions'
+import { stackScreensOptions } from 'common/consts/screenOptions'
 import { getCurrentPageIndex } from 'common/utils/getCurrentPageIndex'
 import { useLocalSearchParams, usePathname } from 'expo-router'
 import React, { useMemo } from 'react'
@@ -26,7 +26,7 @@ export default function MnemonicOnboardingLayout(): JSX.Element {
   return (
     <Stack
       screenOptions={{
-        ...stackModalScreensOptions,
+        ...stackScreensOptions,
         headerTitle: renderPageControl,
         headerShown: false
       }}>
