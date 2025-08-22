@@ -388,6 +388,9 @@ export const SwapScreen = (): JSX.Element => {
     [formatCurrency]
   )
 
+  // Track if we've already auto-focused in this session
+  const hasAutoFocused = useRef(false)
+
   const renderFromSection = useCallback(() => {
     return (
       <View
@@ -419,6 +422,8 @@ export const SwapScreen = (): JSX.Element => {
           onAmountChange={handleFromAmountChange}
           onFocus={() => {
             setIsInputFocused(true)
+            // Mark that we've auto-focused
+            hasAutoFocused.current = true
           }}
           onBlur={() => setIsInputFocused(false)}
           onSelectToken={handleSelectFromToken}
