@@ -1,7 +1,7 @@
 import { NetworkVMType } from '@avalabs/core-chains-sdk'
 import { Icons, Text, TouchableOpacity, useTheme } from '@avalabs/k2-alpine'
 import { ScrollScreen } from 'common/components/ScrollScreen'
-import { router } from 'expo-router'
+import { router, useFocusEffect, useLocalSearchParams } from 'expo-router'
 import React, { ReactNode, useCallback, useEffect, useMemo } from 'react'
 import { View } from 'react-native'
 import { useSelector } from 'react-redux'
@@ -16,6 +16,7 @@ import { useReceiveSelectedNetwork } from '../store'
 import { SupportedReceiveEvmTokens } from '../components/SupportedReceiveEvmTokens'
 
 export const ReceiveScreen = (): ReactNode => {
+  const { defaultNetwork } = useLocalSearchParams<{ defaultNetwork: string }>()
   const { theme } = useTheme()
   const { networks } = useCombinedPrimaryNetworks()
 
@@ -25,6 +26,17 @@ export const ReceiveScreen = (): ReactNode => {
   const activeAccount = useSelector(selectActiveAccount)
 
   const isEvm = selectedNetwork.vmName === NetworkVMType.EVM
+
+  useFocusEffect(
+    useCallback(() => {
+      if (defaultNetwork && networks.length > 0) {
+        const network = networks.find(
+          n => n.vmName.toLowerCase() === defaultNetwork.toLowerCase()
+        )
+        if (network) setSelectedNetwork(network)
+      }
+    }, [defaultNetwork, networks, setSelectedNetwork])
+  )
 
   const address = useMemo(() => {
     switch (selectedNetwork.vmName) {
