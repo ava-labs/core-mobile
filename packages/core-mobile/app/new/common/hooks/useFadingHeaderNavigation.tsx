@@ -5,7 +5,8 @@ import {
   LayoutChangeEvent,
   LayoutRectangle,
   NativeScrollEvent,
-  NativeSyntheticEvent
+  NativeSyntheticEvent,
+  Platform
 } from 'react-native'
 import Animated, {
   SharedValue,
@@ -93,7 +94,7 @@ export const useFadingHeaderNavigation = ({
 
     if (latestTargetLayout && contentOffsetY !== undefined) {
       targetHiddenProgress.value = clamp(
-        contentOffsetY / (latestTargetLayout.y + latestTargetLayout.height),
+        contentOffsetY / latestTargetLayout.height,
         0,
         1
       )
@@ -108,8 +109,9 @@ export const useFadingHeaderNavigation = ({
   const animatedHeaderStyle = useAnimatedStyle(() => {
     const translateY = interpolate(
       targetHiddenProgress.value,
-      [0, 1],
-      [headerHeight, 0]
+      [0, 0.7],
+      [headerHeight, 0],
+      'clamp'
     )
 
     return {
@@ -150,10 +152,21 @@ export const useFadingHeaderNavigation = ({
     if (showNavigationHeaderTitle && header) {
       navigationOptions.headerTitle = () => (
         <View
-          sx={{
-            justifyContent: 'center',
-            overflow: 'hidden'
-          }}>
+          style={[
+            {
+              justifyContent: 'center',
+              overflow: 'hidden'
+            },
+            Platform.OS === 'ios'
+              ? {
+                  paddingTop: shouldHeaderHaveGrabber ? 4 : 0,
+                  height: '100%'
+                }
+              : {
+                  // Hardcoded value for Android because 100% doesn't work properly
+                  height: 56
+                }
+          ]}>
           <View onLayout={handleLayout}>
             <Animated.View style={[animatedHeaderStyle]}>
               {header}
