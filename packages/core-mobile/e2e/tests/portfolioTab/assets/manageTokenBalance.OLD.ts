@@ -4,7 +4,6 @@ import { warmup } from '../../../helpers/warmup'
 import portfolioLoc from '../../../locators/portfolio.loc'
 import commonElsPage from '../../../pages/commonEls.page'
 import manageTokensPage from '../../../pages/manageTokens.page'
-import networksManagePage from '../../../pages/networksManage.page'
 import portfolioPage from '../../../pages/portfolio.page'
 
 describe('Balance After Managing Token', () => {
@@ -61,7 +60,6 @@ describe('Balance After Managing Token', () => {
 
   it('should deduct balance after hiding token on Ethereum', async () => {
     // Get balances before hiding token
-    await networksManagePage.switchActiveNetwork(portfolioLoc.ethNetwork)
     const fullBal = await portfolioPage.getTotalBalance()
     const activeNetworkBal = await portfolioPage.getActiveNetworkBalance()
     await portfolioPage.tapActiveNetwork(portfolioLoc.ethNetwork)
@@ -164,7 +162,6 @@ describe('Balance After Managing Token', () => {
 
   it('should update balance after showing token on C-Chain', async () => {
     // Get balances before showing token
-    await networksManagePage.switchActiveNetwork()
     const fullBal = await portfolioPage.getTotalBalance()
     const activeNetworkBal = await portfolioPage.getActiveNetworkBalance()
     await portfolioPage.tapActiveNetwork()

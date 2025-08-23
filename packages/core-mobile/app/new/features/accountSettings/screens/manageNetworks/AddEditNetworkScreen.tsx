@@ -309,6 +309,7 @@ export const AddEditNetworkScreen = (): JSX.Element => {
         {(isCustomNetwork || mode === Mode.ADD) && (
           <View>
             <Button
+              testID="name_btn"
               onPress={handleShowAlertWithTextInput}
               type="secondary"
               size="small">

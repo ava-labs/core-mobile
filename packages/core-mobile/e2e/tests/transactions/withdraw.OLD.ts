@@ -7,7 +7,6 @@ import plusMenuPage from '../../pages/plusMenu.page'
 describe('Withdraw', () => {
   beforeAll(async () => {
     await warmup()
-    await networksManagePage.switchToAvalancheNetwork()
   })
 
   it('should navigate Moonpay to buy AVAX', async () => {

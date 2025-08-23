@@ -2,7 +2,6 @@ import Action from '../helpers/actions'
 import Assert from '../helpers/assertions'
 import networksManage from '../locators/networksManage.loc'
 import { Platform } from '../helpers/constants'
-import portfolioLoc from '../locators/portfolio.loc'
 import commonElsLoc from '../locators/commonEls.loc'
 import PortfolioPage from './portfolio.page'
 import commonElsPage from './commonEls.page'
@@ -288,48 +287,6 @@ class NetworksPage {
       by.id(`network_dropdown__${network}`),
       platformIndex
     )
-  }
-
-  async switchActiveNetwork(network = 'Avalanche (C-Chain)') {
-    await Action.scrollToTop(by.id(portfolioLoc.tokensTabListView))
-    if (
-      !(await Action.isVisible(by.id(portfolioLoc.activeNetwork + network), 0))
-    ) {
-      await this.switchNetwork(network)
-    }
-  }
-
-  async switchToBitcoinTestNet() {
-    await PortfolioPage.tapNetworksDropdown()
-    await PortfolioPage.tapNetworksDropdownBTCTestNet()
-  }
-
-  async verifyNetworkRow(network: string) {
-    await Action.waitForElement(by.id(`network_list_item__${network}`))
-  }
-
-  async switchToAvalancheNetwork() {
-    try {
-      await PortfolioPage.tapNetworksDropdown()
-    } catch (error) {
-      console.log(
-        'Networks dropdown is not visible, or has already been tapped'
-      )
-    }
-    await PortfolioPage.tapNetworksDropdownAVAX()
-  }
-
-  async switchToFujiAvalanche(network = 'Avalanche (P-Chain)') {
-    await PortfolioPage.tapNetworksDropdown()
-    await PortfolioPage.tapManageNetworks()
-    await this.tapNetworksTab()
-    await this.searchNetworks(network)
-    await this.tapStarSvgByNetwork(network)
-    await Action.tapElementAtIndex(by.text(network), 1)
-  }
-
-  async tapConnect() {
-    await Action.tapElementAtIndex(this.connect, 0)
   }
 }
 

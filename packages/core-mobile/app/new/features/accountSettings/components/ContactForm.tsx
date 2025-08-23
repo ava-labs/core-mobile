@@ -138,7 +138,7 @@ export const ContactForm = ({
             {contact.name}
           </Text>
           <Button
-            testID="name_contact_btn"
+            testID="name_btn"
             type="secondary"
             size="small"
             style={{ width: 90 }}
@@ -151,7 +151,7 @@ export const ContactForm = ({
 
     return (
       <Button
-        testID="name_contact_btn"
+        testID="name_btn"
         onPress={handleShowAlertWithTextInput}
         type="secondary"
         size="small"
