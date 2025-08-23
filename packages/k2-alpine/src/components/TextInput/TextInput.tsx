@@ -1,16 +1,10 @@
-import React, {
-  useRef,
-  forwardRef,
-  useImperativeHandle,
-  useEffect
-} from 'react'
-import {
-  TextInputProps as _TextInputProps,
-  TextInput as _TextInput,
-  TextStyle,
-  InteractionManager
-} from 'react-native'
 import { SxProp } from 'dripsy'
+import React, { forwardRef, useImperativeHandle, useRef } from 'react'
+import {
+  TextInput as _TextInput,
+  TextInputProps as _TextInputProps,
+  TextStyle
+} from 'react-native'
 import { View } from '../../components/Primitives'
 import { useTheme } from '../../hooks'
 
@@ -62,14 +56,6 @@ export const TextInput = forwardRef<TextInputRef, TextInputProps>(
       clear: () => inputRef.current?.clear()
     }))
 
-    useEffect(() => {
-      if (autoFocus) {
-        InteractionManager.runAfterInteractions(() => {
-          inputRef.current?.focus()
-        })
-      }
-    }, [autoFocus])
-
     return (
       <View
         sx={{
@@ -100,6 +86,7 @@ export const TextInput = forwardRef<TextInputRef, TextInputProps>(
               submitBehavior={submitBehavior}
               autoCorrect={autoCorrect}
               testID={testID}
+              autoFocus={autoFocus}
               style={{
                 fontFamily: 'Inter-Regular',
                 height: 44,

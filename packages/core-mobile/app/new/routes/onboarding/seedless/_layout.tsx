@@ -1,6 +1,6 @@
 import { PageControl } from '@avalabs/k2-alpine'
 import { Stack } from 'common/components/Stack'
-import { stackNavigatorScreenOptions } from 'common/consts/screenOptions'
+import { stackScreensOptions } from 'common/consts/screenOptions'
 import { getCurrentPageIndex } from 'common/utils/getCurrentPageIndex'
 import { useLocalSearchParams, usePathname } from 'expo-router'
 import React, { useMemo } from 'react'
@@ -29,8 +29,9 @@ export default function SeedlessOnboardingLayout(): JSX.Element {
   return (
     <Stack
       screenOptions={{
-        ...stackNavigatorScreenOptions,
-        headerTitle: renderPageControl
+        ...stackScreensOptions,
+        headerTitle: renderPageControl,
+        headerShown: false
       }}>
       {SEEDLESS_ONBOARDING_SCREENS.map(screen => {
         return <Stack.Screen key={screen} name={screen} />

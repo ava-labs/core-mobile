@@ -1,11 +1,10 @@
-import { Pressable, View } from '@avalabs/k2-alpine'
+import { TouchableOpacity, View } from '@avalabs/k2-alpine'
 import React from 'react'
 import { Platform, StyleProp, ViewStyle } from 'react-native'
 
 const NavigationBarButton = ({
   onPress,
   children,
-  isModal = false,
   isLeft = false,
   testID,
   style
@@ -18,32 +17,29 @@ const NavigationBarButton = ({
   style?: StyleProp<ViewStyle>
 }): JSX.Element => {
   return (
-    <Pressable
-      onPress={onPress}
+    <TouchableOpacity
+      // onPress doesn't work for Android when using svgs (only on production)
+      onPressOut={onPress}
       testID={testID}
       style={[
         {
-          marginLeft: isLeft ? (Platform.OS === 'ios' ? 0 : -12) : 0,
-          marginTop: -6,
-          paddingLeft: 16,
-          paddingRight: 16,
-          paddingVertical: 16,
-          justifyContent: 'center'
+          paddingLeft: isLeft ? 4 : 8,
+          paddingRight: isLeft ? 8 : 4,
+          height: Platform.OS === 'ios' ? '100%' : 56,
+          justifyContent: 'center',
+          alignItems: 'center'
         },
         style
       ]}>
       <View
-        style={
-          isModal
-            ? {
-                marginTop: 10,
-                marginBottom: -10
-              }
-            : undefined
-        }>
+        style={{
+          height: '100%',
+          justifyContent: 'center',
+          alignItems: 'center'
+        }}>
         {children}
       </View>
-    </Pressable>
+    </TouchableOpacity>
   )
 }
 

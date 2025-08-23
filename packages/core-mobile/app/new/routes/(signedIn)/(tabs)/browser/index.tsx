@@ -96,6 +96,9 @@ const Browser = (): React.ReactNode => {
     KeyboardController.setInputMode(
       AndroidSoftInputModes.SOFT_INPUT_ADJUST_NOTHING
     )
+    return () => {
+      KeyboardController.setDefaultMode()
+    }
   })
 
   return (

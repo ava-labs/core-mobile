@@ -4,17 +4,15 @@ import NavigationBarButton from './NavigationBarButton'
 
 export const VisibilityBarButton = ({
   isPrivacyModeEnabled,
-  isModal,
   onPress
 }: {
   isPrivacyModeEnabled: boolean
-  isModal?: boolean
   onPress?: () => void
 }): JSX.Element => {
   const { theme } = useTheme()
 
   return (
-    <NavigationBarButton testID="eye_icon" isModal={isModal} onPress={onPress}>
+    <NavigationBarButton testID="eye_icon" onPress={onPress}>
       {isPrivacyModeEnabled ? (
         <Icons.Action.VisibilityOff
           color={alpha(theme.colors.$textPrimary, 0.6)}

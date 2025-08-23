@@ -1,5 +1,8 @@
 import { Stack } from 'common/components/Stack'
-import { stackNavigatorScreenOptions } from 'common/consts/screenOptions'
+import {
+  stackNavigatorScreenOptions,
+  stackScreensOptions
+} from 'common/consts/screenOptions'
 import { BrowserProvider } from 'features/browser/BrowserContext'
 import React from 'react'
 
@@ -15,24 +18,9 @@ export default function BrowserLayout(): JSX.Element {
         />
         <Stack.Screen
           name="tabs"
-          options={{
-            headerShown: false,
-            presentation: 'modal',
-            cardStyleInterpolator: ({ current: { progress } }) => {
-              return {
-                cardStyle: {
-                  opacity: progress
-                }
-              }
-            }
-          }}
+          options={{ animation: 'fade', headerShown: false }}
         />
-        <Stack.Screen
-          name="history"
-          options={{
-            headerTransparent: true
-          }}
-        />
+        <Stack.Screen name="history" options={stackScreensOptions} />
 
         {/* 
           <Stack.Screen
