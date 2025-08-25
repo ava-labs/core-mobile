@@ -4,18 +4,12 @@
  */
 import Actions from '../../../helpers/actions'
 import { warmup } from '../../../helpers/warmup'
-import networksManagePage from '../../../pages/networksManage.page'
 import portfolioLoc from '../../../locators/portfolio.loc'
 import portfolioPage from '../../../pages/portfolio.page'
 
 describe('Sub tabs on Portfolio', () => {
   beforeAll(async () => {
     await warmup()
-    await networksManagePage.switchNetwork(portfolioLoc.avaxNetwork)
-  })
-
-  afterAll(async () => {
-    await networksManagePage.switchNetwork(portfolioLoc.avaxNetwork)
   })
 
   const subTabs: string[] = [
@@ -51,28 +45,16 @@ describe('Sub tabs on Portfolio', () => {
         const all =
           network === portfolioLoc.avaxNetwork ||
           network === portfolioLoc.ethNetwork
-        await networksManagePage.switchNetwork(network)
         await portfolioPage.verifySubTabs(all)
       }
     }
   })
 
   it('should have three sub tabs', async () => {
-    await networksManagePage.switchNetwork(portfolioLoc.ethNetwork)
-    await portfolioPage.verifySubTabs()
-
-    await networksManagePage.switchNetwork(portfolioLoc.avaxNetwork)
     await portfolioPage.verifySubTabs()
   })
 
   it('should have two sub tabs', async () => {
-    await networksManagePage.switchNetwork(portfolioLoc.avaxPNetwork)
-    await portfolioPage.verifySubTabs(false)
-
-    await networksManagePage.switchNetwork(portfolioLoc.avaxXNetwork)
-    await portfolioPage.verifySubTabs(false)
-
-    await networksManagePage.switchNetwork(portfolioLoc.btcNetwork)
     await portfolioPage.verifySubTabs(false)
   })
 })
