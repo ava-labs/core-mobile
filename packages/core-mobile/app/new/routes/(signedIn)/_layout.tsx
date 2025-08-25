@@ -1,8 +1,14 @@
 import { usePreventRemove } from '@react-navigation/native'
 import { LastTransactedNetworks } from 'common/components/LastTransactedNetworks'
 import { Stack } from 'common/components/Stack'
-import { stackNavigatorScreenOptions } from 'common/consts/screenOptions'
-import { useModalScreenOptions } from 'common/hooks/useModalScreenOptions'
+import {
+  formSheetScreensOptions,
+  modalScreensOptions,
+  secondaryModalScreensOptions,
+  stackNavigatorScreenOptions,
+  stackScreensOptions
+} from 'common/consts/screenOptions'
+
 import { BridgeProvider } from 'features/bridge/contexts/BridgeContext'
 import { CollectiblesProvider } from 'features/portfolio/collectibles/CollectiblesContext'
 import { MigrateFavoriteIds } from 'new/common/components/MigrateFavoriteIds'
@@ -19,12 +25,6 @@ export const unstable_settings = {
 }
 
 export default function WalletLayout(): JSX.Element {
-  const {
-    modalScreensOptions,
-    formSheetScreensOptions,
-    stackModalScreensOptions
-  } = useModalScreenOptions()
-
   const walletState = useSelector(selectWalletState)
 
   usePreventRemove(walletState === WalletState.ACTIVE, () => {
@@ -41,7 +41,8 @@ export default function WalletLayout(): JSX.Element {
           <Stack.Screen name="(tabs)" options={{ animation: 'none' }} />
           <Stack.Screen
             name="(modals)/accountSettings"
-            options={modalScreensOptions}
+            // keep this as formSheet for iOS, we don't want to scale the portfolio
+            options={{ ...modalScreensOptions, presentation: 'formSheet' }}
           />
           <Stack.Screen
             name="(modals)/approval"
@@ -51,7 +52,7 @@ export default function WalletLayout(): JSX.Element {
                 route.params?.presentationMode ===
                 NavigationPresentationMode.FORM_SHEET
               ) {
-                return formSheetScreensOptions
+                return secondaryModalScreensOptions
               }
 
               return modalScreensOptions
@@ -78,24 +79,24 @@ export default function WalletLayout(): JSX.Element {
           <Stack.Screen name="(modals)/swap" options={modalScreensOptions} />
           <Stack.Screen
             name="(modals)/selectSwapFromToken"
-            options={formSheetScreensOptions}
+            options={secondaryModalScreensOptions}
           />
           <Stack.Screen
             name="(modals)/selectSwapToToken"
-            options={formSheetScreensOptions}
+            options={secondaryModalScreensOptions}
           />
           <Stack.Screen
             name="(modals)/swapPricingDetails"
-            options={formSheetScreensOptions}
+            options={secondaryModalScreensOptions}
           />
           <Stack.Screen name="(modals)/buy" options={modalScreensOptions} />
           <Stack.Screen
             name="(modals)/selectSendToken"
-            options={formSheetScreensOptions}
+            options={secondaryModalScreensOptions}
           />
           <Stack.Screen
             name="(modals)/selectReceiveNetwork"
-            options={formSheetScreensOptions}
+            options={secondaryModalScreensOptions}
           />
           <Stack.Screen
             name="(modals)/tokenManagement"
@@ -103,19 +104,19 @@ export default function WalletLayout(): JSX.Element {
           />
           <Stack.Screen
             name="(modals)/tokenDetail"
-            options={stackModalScreensOptions}
+            options={stackScreensOptions}
           />
           <Stack.Screen
             name="(modals)/defiDetail"
-            options={stackModalScreensOptions}
+            options={stackScreensOptions}
           />
           <Stack.Screen
             name="(modals)/collectibleDetail"
-            options={stackModalScreensOptions}
+            options={stackScreensOptions}
           />
           <Stack.Screen
             name="(modals)/trackTokenDetail"
-            options={modalScreensOptions}
+            options={formSheetScreensOptions}
           />
           <Stack.Screen
             name="(modals)/collectibleManagement"
@@ -156,7 +157,7 @@ export default function WalletLayout(): JSX.Element {
           />
           <Stack.Screen
             name="(modals)/editContact"
-            options={modalScreensOptions}
+            options={stackNavigatorScreenOptions}
           />
           <Stack.Screen
             name="(modals)/addEthereumChain"

@@ -6,8 +6,7 @@ import {
   useTheme,
   View
 } from '@avalabs/k2-alpine'
-import React, { useEffect, useRef } from 'react'
-import { InteractionManager } from 'react-native'
+import React, { useRef } from 'react'
 
 export const SimpleTextInput = ({
   value,
@@ -31,14 +30,6 @@ export const SimpleTextInput = ({
   } = useTheme()
   const ref = useRef<TextInputRef>(null)
 
-  useEffect(() => {
-    if (autoFocus) {
-      InteractionManager.runAfterInteractions(() => {
-        ref.current?.focus()
-      })
-    }
-  }, [autoFocus])
-
   return (
     <View
       sx={{
@@ -57,6 +48,7 @@ export const SimpleTextInput = ({
           backgroundColor: 'transparent',
           marginRight: 13
         }}
+        autoFocus={autoFocus}
         textInputSx={{
           fontFamily: 'Inter-Regular',
           height: 44,

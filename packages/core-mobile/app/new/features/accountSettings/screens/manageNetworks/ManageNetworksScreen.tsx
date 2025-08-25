@@ -261,7 +261,7 @@ export const ManageNetworksScreen = (): JSX.Element => {
 
   const renderHeaderRight = useCallback(() => {
     return (
-      <NavigationBarButton isModal onPress={goToAddCustomNetwork}>
+      <NavigationBarButton onPress={goToAddCustomNetwork}>
         <Icons.Content.Add color={theme.colors.$textPrimary} />
       </NavigationBarButton>
     )

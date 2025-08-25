@@ -1,12 +1,13 @@
 import { Stack } from 'common/components/Stack'
-import { useModalScreenOptions } from 'common/hooks/useModalScreenOptions'
+import {
+  modalFirstScreenOptions,
+  modalStackNavigatorScreenOptions
+} from 'common/consts/screenOptions'
 import { SendContextProvider } from 'features/send/context/sendContext'
 import React from 'react'
 import { useSelector } from 'react-redux'
 import { selectHasBeenViewedOnce, ViewOnceKey } from 'store/viewOnce'
 export default function SendLayout(): JSX.Element {
-  const { modalStackNavigatorScreenOptions, modalFirstScreenOptions } =
-    useModalScreenOptions()
   const hasBeenViewedOnboarding = useSelector(
     selectHasBeenViewedOnce(ViewOnceKey.SEND_ONBOARDING)
   )

@@ -4,13 +4,7 @@ import React from 'react'
 import { Keyboard } from 'react-native'
 import NavigationBarButton from './NavigationBarButton'
 
-const BackBarButton = ({
-  onBack,
-  isModal
-}: {
-  onBack?: () => void
-  isModal?: boolean
-}): JSX.Element => {
+const BackBarButton = ({ onBack }: { onBack?: () => void }): JSX.Element => {
   const { theme } = useTheme()
 
   const handleBack = (): void => {
@@ -19,11 +13,7 @@ const BackBarButton = ({
   }
 
   return (
-    <NavigationBarButton
-      isModal={isModal}
-      isLeft
-      testID="header_back"
-      onPress={handleBack}>
+    <NavigationBarButton isLeft testID="header_back" onPress={handleBack}>
       <Icons.Custom.BackArrowCustom color={theme.colors.$textPrimary} />
     </NavigationBarButton>
   )

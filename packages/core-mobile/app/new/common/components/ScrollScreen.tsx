@@ -238,6 +238,7 @@ export const ScrollScreen = ({
         ) : null}
 
         <View
+          pointerEvents="none"
           style={{
             position: 'absolute',
             top: 0,
@@ -291,6 +292,7 @@ export const ScrollScreen = ({
       </ScrollView>
 
       <View
+        pointerEvents="none"
         style={{
           position: 'absolute',
           top: 0,

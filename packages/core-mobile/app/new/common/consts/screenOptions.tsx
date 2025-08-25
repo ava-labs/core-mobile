@@ -1,58 +1,63 @@
-import {
-  StackCardInterpolatedStyle,
-  StackNavigationOptions,
-  TransitionPresets,
-  TransitionSpecs
-} from '@react-navigation/stack'
+import { NativeStackNavigationOptions } from '@react-navigation/native-stack'
 import BackBarButton from 'common/components/BackBarButton'
 import React from 'react'
 import { Platform } from 'react-native'
-import BlurredBackgroundView from 'common/components/BlurredBackgroundView'
-import { TransitionSpec } from '@react-navigation/stack/lib/typescript/commonjs/src/types'
 
-export const MODAL_TOP_MARGIN = 28
-export const MODAL_BORDER_RADIUS = 40
-export const MODAL_HEADER_HEIGHT = 62
-
-export const commonNavigatorScreenOptions: StackNavigationOptions = {
+export const commonNavigatorScreenOptions: NativeStackNavigationOptions = {
   title: '',
-  headerBackButtonDisplayMode: 'minimal',
-  headerShadowVisible: false,
   headerTitleAlign: 'center',
-  headerBackImage: () => <BackBarButton />,
-  ...TransitionPresets.SlideFromRightIOS
+  headerBackButtonDisplayMode: 'minimal'
 }
 
-export const stackNavigatorScreenOptions: StackNavigationOptions = {
+// Stacks
+export const stackNavigatorScreenOptions: NativeStackNavigationOptions = {
   ...commonNavigatorScreenOptions,
-  headerTransparent: true
-}
-
-export const modalStackNavigatorScreenOptions: StackNavigationOptions = {
-  ...commonNavigatorScreenOptions,
-  headerBackground: () => <BlurredBackgroundView hasGrabber={true} />,
-  headerBackImage: () => <BackBarButton isModal />,
   headerTransparent: true,
-  headerStyle: {
-    height: MODAL_HEADER_HEIGHT
-  },
-  // on iOS,we need to set headerStatusBarHeight to 0 to
-  // prevent the header from jumping when navigating
-  ...(Platform.OS === 'ios' && { headerStatusBarHeight: 0 })
+  animation: 'slide_from_right'
 }
 
-export const modalScreenOptionsWithHeaderBack: StackNavigationOptions = {
-  headerBackImage: () => <BackBarButton isModal />
+export const stackScreensOptions: NativeStackNavigationOptions | undefined = {
+  ...stackNavigatorScreenOptions,
+  headerLeft: () => <BackBarButton />,
+  headerTransparent: true,
+  headerTitleAlign: 'center',
+  animation: 'slide_from_right'
 }
 
-export function forNoAnimation(): StackCardInterpolatedStyle {
-  return {}
+// Modals
+export const modalScreensOptions: NativeStackNavigationOptions = {
+  ...commonNavigatorScreenOptions,
+  presentation: Platform.OS === 'ios' ? 'pageSheet' : 'formSheet',
+  sheetElevation: 48,
+  sheetAllowedDetents: [Platform.OS === 'android' ? 0.93 : 0.99],
+  headerLeft: () => <BackBarButton />,
+  gestureEnabled: true,
+  headerTransparent: true,
+  contentStyle: {
+    // iOS will display empty content without this
+    height: '100%'
+  }
 }
 
-export const androidModalTransitionSpec = {
-  open: TransitionSpecs.BottomSheetSlideInSpec,
-  close: {
-    animation: 'timing',
-    config: { duration: 0 }
-  } as TransitionSpec
+export const secondaryModalScreensOptions: NativeStackNavigationOptions = {
+  ...modalScreensOptions,
+  sheetAllowedDetents: [Platform.OS === 'android' ? 0.92 : 0.99]
+}
+
+export const modalStackNavigatorScreenOptions: NativeStackNavigationOptions = {
+  ...modalScreensOptions,
+  presentation: 'card'
+}
+
+export const formSheetScreensOptions: NativeStackNavigationOptions = {
+  ...modalScreensOptions,
+  presentation: 'formSheet'
+}
+
+// Options for the first screen of a modal stack navigator.
+// This screen does not have a back button, so we need to hide it.
+export const modalFirstScreenOptions: NativeStackNavigationOptions = {
+  ...commonNavigatorScreenOptions,
+  headerBackVisible: false,
+  headerLeft: () => null
 }

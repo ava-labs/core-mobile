@@ -72,12 +72,13 @@ const tabSlice = createSlice({
       const lastVisited = getUnixTime(new Date())
 
       const historyPayload = action.payload
-      historyPayload.url = trimTrailingSlash(historyPayload.url)
-      const historyId = createHash(historyPayload.url)
+      const trimmedUrl = trimTrailingSlash(historyPayload.url)
+      const historyId = createHash(trimmedUrl)
       const history = {
         id: historyId,
         lastVisited,
-        ...historyPayload
+        ...historyPayload,
+        url: trimmedUrl
       } as History
       const activeTabId = state.activeTabId
       if (activeTabId === undefined) return
