@@ -18,6 +18,14 @@ const tabLabelStyle = {
 
 const tabBarInactiveTintOpacity = 0.6
 
+/**
+ * On Android, we enable freezeOnBlur to improve performance.
+ * On iOS, it remains disabled since performance is already good.
+ * Additionally, our testing showed that enabling freezeOnBlur on iOS
+ * caused issues with SegmentedControl and the Browser tab.
+ */
+const freezeOnBlur = isIOS ? false : true
+
 export default function TabLayout(): JSX.Element {
   const { theme } = useTheme()
 
@@ -54,7 +62,7 @@ export default function TabLayout(): JSX.Element {
           tabBarButtonTestID: 'portfolio_tab',
           title: 'Portfolio',
           tabBarIcon: () => portfolioIcon,
-          freezeOnBlur: true
+          freezeOnBlur
         }}
       />
       <BottomTabs.Screen
@@ -63,7 +71,7 @@ export default function TabLayout(): JSX.Element {
           tabBarButtonTestID: 'track_tab',
           title: 'Track',
           tabBarIcon: () => trackIcon,
-          freezeOnBlur: true
+          freezeOnBlur
         }}
       />
       <BottomTabs.Screen
@@ -72,7 +80,7 @@ export default function TabLayout(): JSX.Element {
           tabBarButtonTestID: 'stake_tab',
           title: 'Stake',
           tabBarIcon: () => stakeIcon,
-          freezeOnBlur: true
+          freezeOnBlur
         }}
       />
       <BottomTabs.Screen
@@ -81,7 +89,7 @@ export default function TabLayout(): JSX.Element {
           tabBarButtonTestID: 'browser_tab',
           title: 'Browser',
           tabBarIcon: () => browserIcon,
-          freezeOnBlur: true
+          freezeOnBlur
         }}
       />
       <BottomTabs.Screen
@@ -90,7 +98,7 @@ export default function TabLayout(): JSX.Element {
           tabBarButtonTestID: 'activity_tab',
           title: 'Activity',
           tabBarIcon: () => activityIcon,
-          freezeOnBlur: true
+          freezeOnBlur
         }}
       />
     </BottomTabs>
