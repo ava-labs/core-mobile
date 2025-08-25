@@ -25,18 +25,6 @@ class Settings {
     return by.text(settings.showRecoveryPhrase)
   }
 
-  get participateInCoreAnalytics() {
-    return by.text(settings.participateInCoreAnalytics)
-  }
-
-  get firstMnemonicWord() {
-    return by.text(settings.firstMnemonicWord)
-  }
-
-  get lastMnemonicWord() {
-    return by.text(settings.lastMnemonicWord)
-  }
-
   get iWroteItDownButton() {
     return by.text(settings.iWroteItDownButton)
   }
@@ -49,16 +37,8 @@ class Settings {
     return by.id(settings.analyticsOff)
   }
 
-  get settingsFooter() {
-    return by.id(settings.settingsFooter)
-  }
-
   get settingsScrollView() {
     return by.id(settings.settingsScrollView)
-  }
-
-  get advanced() {
-    return by.text(settings.advanced)
   }
 
   get contacts() {
@@ -237,10 +217,6 @@ class Settings {
     return by.text(settings.typeInOrPasteAddress)
   }
 
-  get contactAddressInput() {
-    return by.id(settings.contactAddressInput)
-  }
-
   get contactPreviewAddress() {
     return by.id(settings.contactPreviewAddress)
   }
@@ -271,10 +247,6 @@ class Settings {
 
   get explorerUrl() {
     return by.text(settings.explorerUrl)
-  }
-
-  async tapAdvanced() {
-    await Actions.tapElementAtIndex(this.advanced, 0)
   }
 
   async tapContacts() {
@@ -324,10 +296,6 @@ class Settings {
 
   async tapShowRecoveryPhrase() {
     await Actions.tapElementAtIndex(this.showRecoveryPhrase, 0)
-  }
-
-  async tapIWroteItDownButton() {
-    await Actions.tapElementAtIndex(this.iWroteItDownButton, 0)
   }
 
   async tapConnectedSites() {

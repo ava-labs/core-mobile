@@ -57,7 +57,7 @@ allprojects {
         }
 
         google() // TODO: Verify if this is needed
-        maven { url("$rootDir/../node_modules/detox/Detox-android") }
+        maven { url("$rootDir/../node_modules/detox/Detox-android") } // This is required for detox to work
         mavenCentral()
         maven { url "$rootDir/../node_modules/expo-camera/android/maven" }
     }
