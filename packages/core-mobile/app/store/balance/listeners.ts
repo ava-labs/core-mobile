@@ -41,6 +41,7 @@ import SentryWrapper from 'services/sentry/SentryWrapper'
 import { ReactQueryKeys } from 'consts/reactQueryKeys'
 import { queryClient } from 'contexts/ReactQueryProvider'
 import { selectIsSolanaSupportBlocked } from 'store/posthog'
+import { runAfterInteractions } from 'utils/runAfterInteractions'
 import { Balances, LocalTokenWithBalance, QueryStatus } from './types'
 import {
   fetchBalanceForAccount,
@@ -107,7 +108,7 @@ const onBalancePolling = async ({
     address: account?.addressC ?? ''
   })
 
-  onBalanceUpdateCore({
+  return onBalanceUpdateCore({
     queryStatus,
     listenerApi,
     networks,
@@ -183,7 +184,7 @@ const fetchBalancePeriodically = async (
   listenerApi: AppListenerEffectAPI
   // eslint-disable-next-line sonarjs/cognitive-complexity
 ): Promise<void> => {
-  const { condition, getState } = listenerApi
+  const { condition, getState, delay } = listenerApi
   const state = getState()
   const isDeveloperMode = selectIsDeveloperMode(state)
   const selectedEnabledNetworks = selectEnabledNetworks(state)
@@ -208,12 +209,16 @@ const fetchBalancePeriodically = async (
     enabledNetworks = selectEnabledNetworks(state)
   }
 
-  onBalanceUpdate(QueryStatus.LOADING, listenerApi).catch(Logger.error)
+  runAfterInteractions(() => {
+    onBalanceUpdate(QueryStatus.LOADING, listenerApi).catch(Logger.error)
+  })
 
   const pollingConfig = getPollingConfig({ isDeveloperMode, enabledNetworks })
 
   const allNetworksOperand =
     pollingConfig.allNetworks / pollingConfig.primaryNetworks
+
+  await delay(pollingConfig.primaryNetworks)
 
   const pollingTask = listenerApi.fork(async forkApi => {
     const taskId = uuid().slice(0, 8)
@@ -232,14 +237,17 @@ const fetchBalancePeriodically = async (
 
         // cancellation-aware wait for the balance update to be done
         await forkApi.pause(
-          onBalancePolling({
-            queryStatus: QueryStatus.POLLING,
-            listenerApi,
-            iteration,
-            pullPrimaryNetworks,
-            nonPrimaryNetworksIteration
+          runAfterInteractions(async () => {
+            await onBalancePolling({
+              queryStatus: QueryStatus.POLLING,
+              listenerApi,
+              iteration,
+              pullPrimaryNetworks,
+              nonPrimaryNetworksIteration
+            })
           })
         )
+
         iteration += 1
 
         if (pullPrimaryNetworks === false) {
@@ -401,13 +409,16 @@ const addXChainToEnabledChainIdsIfNeeded = async (
     Logger.trace('No active account, skipping add for X-chain')
     return
   }
-  const activities = await ActivityService.getActivities({
-    network: avalancheNetworkX,
-    account: activeAccount,
-    shouldAnalyzeBridgeTxs: false
+
+  const activities = await runAfterInteractions(async () => {
+    return ActivityService.getActivities({
+      network: avalancheNetworkX,
+      account: activeAccount,
+      shouldAnalyzeBridgeTxs: false
+    })
   })
 
-  if (activities.transactions.length === 0) {
+  if (activities?.transactions?.length === 0) {
     Logger.trace('No activities, skipping add for X-chain')
     return
   }

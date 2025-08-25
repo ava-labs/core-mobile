@@ -19,7 +19,7 @@ export const useNetworksListener = (queryClient: QueryClient): void => {
       addListener({
         matcher: isAnyOf(toggleDeveloperMode, onAppUnlocked),
         effect: async () => {
-          await queryClient.invalidateQueries({
+          queryClient.invalidateQueries({
             queryKey: [ReactQueryKeys.NETWORKS]
           })
         }

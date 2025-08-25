@@ -27,54 +27,40 @@ export default function CreatePin(): JSX.Element {
   }, [navigate])
 
   const handleEnteredValidPin = useCallback(
-    (pin: string): void => {
+    async (pin: string): Promise<void> => {
       if (!mnemonic) {
         return
       }
       AnalyticsService.capture('OnboardingPasswordSet')
-      onPinCreated({
-        walletId: activeWalletId ?? uuid(),
-        mnemonic,
-        pin,
-        walletType: WalletType.MNEMONIC
-      })
-        .then(() => {
-          if (useBiometrics) {
-            BiometricsSDK.enableBiometry()
-              .then(enabled => {
-                if (enabled) {
-                  navigateToSetWalletName()
-                } else {
-                  // If biometrics fails to enable, disable it and continue with PIN only
-                  setUseBiometrics(false)
-                  navigateToSetWalletName()
-                }
-              })
-              .catch(error => {
-                Logger.error(error)
-                // On error, disable biometrics and continue with PIN only
-                setUseBiometrics(false)
-                navigateToSetWalletName()
-              })
-          } else {
-            navigateToSetWalletName()
-          }
+      try {
+        await onPinCreated({
+          walletId: activeWalletId ?? uuid(),
+          mnemonic,
+          pin,
+          walletType: WalletType.MNEMONIC
         })
-        .catch(Logger.error)
+        if (useBiometrics) {
+          await BiometricsSDK.enableBiometry()
+        }
+        navigateToSetWalletName()
+      } catch (error) {
+        Logger.error('Failed to create pin', error)
+      }
     },
     [
       mnemonic,
+      activeWalletId,
       onPinCreated,
       useBiometrics,
-      setUseBiometrics,
-      navigateToSetWalletName,
-      activeWalletId
+      navigateToSetWalletName
     ]
   )
 
   return (
     <Component
-      onEnteredValidPin={handleEnteredValidPin}
+      onEnteredValidPin={async (pin: string) =>
+        await handleEnteredValidPin(pin)
+      }
       useBiometrics={useBiometrics}
       setUseBiometrics={setUseBiometrics}
       newPinTitle={`Secure your wallet\nwith a PIN`}

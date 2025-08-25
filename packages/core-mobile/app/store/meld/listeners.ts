@@ -58,7 +58,7 @@ const handleOfframpSend = async (
           sessionId
         })
       },
-      isSuccess: result => result?.transaction !== undefined,
+      shouldStop: result => result?.transaction !== undefined,
       maxRetries: 2
     })
   } catch (error) {

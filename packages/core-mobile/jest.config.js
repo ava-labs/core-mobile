@@ -11,6 +11,7 @@ module.exports = {
     '<rootDir>/tests/msw/jestSetup.js',
     '<rootDir>/tests/jestSetup/firebase.js',
     '<rootDir>/tests/jestSetup/toast.js',
+    '<rootDir>/tests/jestSetup/crypto.js',
     './node_modules/@react-native-google-signin/google-signin/jest/build/jest/setup.js'
   ],
   transformIgnorePatterns: [
