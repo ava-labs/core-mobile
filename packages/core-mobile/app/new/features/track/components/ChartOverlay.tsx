@@ -17,7 +17,7 @@ export const ChartOverlay = ({
   const { theme } = useTheme()
 
   let content
-  if (!chartData) {
+  if (!chartData || chartData.length === 0) {
     content = <LoadingState />
   } else if (chartData.length < 2) {
     content = (
