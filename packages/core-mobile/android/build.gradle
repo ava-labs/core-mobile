@@ -54,13 +54,10 @@ allprojects {
         maven {
             // All of React Native (JS, Obj-C sources, Android binaries) is installed from npm
             url(reactNativeAndroidDir)
-
-            // TODO: Verify if this is needed
-            // All of Detox' artifacts are provided via the npm module
-            // url "$rootDir/../node_modules/detox/Detox-android"
         }
 
         google() // TODO: Verify if this is needed
+        maven { url("$rootDir/../node_modules/detox/Detox-android") } // This is required for detox to work
         mavenCentral()
         maven { url "$rootDir/../node_modules/expo-camera/android/maven" }
     }

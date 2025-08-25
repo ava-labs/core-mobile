@@ -10,7 +10,7 @@ import onboardingLoc from '../../locators/onboarding.loc'
 
 describe('Onboarding', () => {
   beforeAll(async () => {
-    await device.launchApp()
+    await device.launchApp({ newInstance: true })
     await commonElsPage.exitMetro()
     await handleJailbrokenWarning()
   })

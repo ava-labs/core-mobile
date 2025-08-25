@@ -63,6 +63,7 @@ const tapElementAtIndex = async (
 const longPress = async (item: Detox.NativeMatcher, duration = 100) => {
   await waitForElement(item)
   await element(item).longPress(duration)
+  await delay(1000)
 }
 
 const setColumnToValue = async (
@@ -117,7 +118,7 @@ const waitForElement = async (
   await device.disableSynchronization()
   while (Date.now() - startTime < timeout) {
     try {
-      await new Promise(resolve => setTimeout(resolve, 1000))
+      await new Promise(resolve => setTimeout(resolve, 500))
       await waitFor(element(item).atIndex(index)).toBeVisible().withTimeout(500)
       return
     } catch (error: any) {

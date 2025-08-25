@@ -347,9 +347,9 @@ class CommonElsPage {
   async goBack() {
     await delay(1000)
     try {
-      await Actions.tapElementAtIndex(this.backButton, 0, 5000)
+      await Actions.tapElementAtIndex(this.backButton, 1, 3000)
     } catch (e) {
-      await Actions.tapElementAtIndex(this.backButton, 1, 5000)
+      await Actions.tapElementAtIndex(this.backButton, 0, 3000)
     }
     await delay(1500)
   }

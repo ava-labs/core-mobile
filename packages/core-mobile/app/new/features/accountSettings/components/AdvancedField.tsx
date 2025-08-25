@@ -237,6 +237,7 @@ export const AdvancedField = forwardRef<AdvancedFieldRef, AdvancedFieldProps>(
       return (
         <>
           <Text
+            testID={`advanced_title__${title}`}
             variant="buttonMedium"
             sx={{
               fontFamily: 'Inter-Medium',
@@ -246,6 +247,7 @@ export const AdvancedField = forwardRef<AdvancedFieldRef, AdvancedFieldProps>(
             {title}
           </Text>
           <Text
+            testID={`advanced_subtitle__${inputValue}`}
             variant="mono"
             sx={{
               color: '$textSecondary',
@@ -399,7 +401,7 @@ export const AdvancedField = forwardRef<AdvancedFieldRef, AdvancedFieldProps>(
             value={inputValue}
             keyboardType={keyboardType}
             onChangeText={setInputValue}
-            testID={`contact_input__${title}`}
+            testID={`advanced_input__${title.toLowerCase()}`}
             placeholder={placeholder}
             textInputSx={{ height: undefined }}
             containerSx={{

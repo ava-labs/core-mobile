@@ -14,14 +14,14 @@ describe('Settings - Core Analytics', () => {
     // disable the switch and verify it is off
     await settingsPage.tapAnalyticsSwitch()
     await settingsPage.verifyAnalyticsSwitch(false)
-    await commonElsPage.tapBackButton()
+    await commonElsPage.goBack()
     await settingsPage.tapSecurityAndPrivacy()
     await settingsPage.verifyAnalyticsSwitch(false)
 
     // enable the switch and verify it's ON
     await settingsPage.tapAnalyticsSwitch(false)
-    await commonElsPage.tapBackButton()
+    await commonElsPage.goBack()
     await settingsPage.tapSecurityAndPrivacy()
-    await settingsPage.verifyAnalyticsSwitch(true)
+    await settingsPage.verifyAnalyticsSwitch()
   })
 })
