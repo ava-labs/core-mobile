@@ -1,11 +1,4 @@
-import {
-  alpha,
-  ANIMATED,
-  SPRING_LINEAR_TRANSITION,
-  Text,
-  useTheme,
-  View
-} from '@avalabs/k2-alpine'
+import { alpha, ANIMATED, Text, useTheme, View } from '@avalabs/k2-alpine'
 import { K2AlpineTheme } from '@avalabs/k2-alpine/src/theme/theme'
 import { HORIZONTAL_MARGIN } from 'common/consts'
 import React, { FC, useCallback } from 'react'
@@ -85,9 +78,7 @@ const SparklineChart: FC<Props> = ({
         isLoading={data.length === 0}
       />
       {data?.length ? (
-        <Animated.View
-          entering={FadeIn.delay(100).duration(600)}
-          layout={SPRING_LINEAR_TRANSITION}>
+        <Animated.View entering={FadeIn.delay(100).duration(600)}>
           <LineGraph
             style={{ width: '100%', height: '100%' }}
             verticalPadding={verticalPadding}

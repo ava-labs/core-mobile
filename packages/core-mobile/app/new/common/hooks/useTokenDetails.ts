@@ -16,6 +16,7 @@ import { Ranges, TrendingToken } from 'services/token/types'
 import { selectSelectedCurrency } from 'store/settings/currency'
 import { useCoreBrowser } from 'new/common/hooks/useCoreBrowser'
 import { getTokenAddress, getTokenChainId } from 'features/track/utils/utils'
+import { usePrevious } from './usePrevious'
 
 const isTrendingToken = (token: MarketToken | undefined): boolean =>
   token !== undefined && token.marketType === MarketType.TRENDING
@@ -45,6 +46,7 @@ export const useTokenDetails = ({
   tokenId: string
 }): {
   isFavorite: boolean
+  isUpdatingChartData: boolean
   openUrl: ({ url, title }: { url: string; title: string }) => void
   handleFavorite: () => void
   chainId: number | undefined
@@ -89,6 +91,7 @@ export const useTokenDetails = ({
 
   const [tokenInfo, setTokenInfo] = useState<TokenInfo>()
   const [chartData, setChartData] = useState<{ date: Date; value: number }[]>()
+  const [isUpdatingChartData, setIsUpdatingChartData] = useState(false)
   const [chartDays, setChartDays] = useState(1)
   const [ranges, setRanges] = useState<Ranges>({
     minDate: 0,
@@ -114,36 +117,36 @@ export const useTokenDetails = ({
     return getWatchlistPrice(tokenId)
   }, [trendingTokenData, getWatchlistPrice, token, tokenId])
 
+  const updateDataPoints = useCallback(
+    (dataPoints?: { date: Date; value: number }[], r?: Ranges) => {
+      if (dataPoints && r) {
+        setChartData(dataPoints)
+        setRanges(r)
+        setIsUpdatingChartData(false)
+      } else {
+        // simply set to empty to hide the loading state.
+        setChartData([])
+      }
+    },
+    []
+  )
+
+  const extractChartData = useCallback((): void => {
+    const chart = getWatchlistChart(tokenId)
+    updateDataPoints(chart.dataPoints, chart.ranges)
+  }, [getWatchlistChart, tokenId, updateDataPoints])
+
+  const getChartDataFromCoingecko = useCallback(async (): Promise<void> => {
+    const data = await TokenService.getChartDataForCoinId({
+      coingeckoId,
+      days: chartDays,
+      currency
+    })
+    updateDataPoints(data?.dataPoints, data?.ranges)
+  }, [coingeckoId, chartDays, currency, updateDataPoints])
+
   // get chart data
   useEffect(() => {
-    const extractChartData = (): void => {
-      const chart = getWatchlistChart(tokenId)
-
-      if (chart) {
-        setChartData(chart.dataPoints)
-        setRanges(chart.ranges)
-      } else {
-        // simply set to empty to hide the loading state.
-        setChartData([])
-      }
-    }
-
-    const getChartDataFromCoingecko = async (): Promise<void> => {
-      const data = await TokenService.getChartDataForCoinId({
-        coingeckoId,
-        days: chartDays,
-        currency
-      })
-
-      if (data) {
-        setChartData(data.dataPoints)
-        setRanges(data.ranges)
-      } else {
-        // simply set to empty to hide the loading state.
-        setChartData([])
-      }
-    }
-
     InteractionManager.runAfterInteractions(() => {
       if (coingeckoId) {
         getChartDataFromCoingecko()
@@ -151,7 +154,7 @@ export const useTokenDetails = ({
         extractChartData()
       }
     })
-  }, [getWatchlistChart, token, tokenId, chartDays, coingeckoId, currency])
+  }, [coingeckoId, getChartDataFromCoingecko, extractChartData])
 
   // get market cap, volume, etc
   useEffect(() => {
@@ -221,12 +224,21 @@ export const useTokenDetails = ({
     dispatch(toggleWatchListFavorite(tokenId))
   }, [tokenId, dispatch])
 
-  const changeChartDays = useCallback((days: number) => {
-    setChartDays(days)
-  }, [])
+  const prevChartDays = usePrevious(chartDays)
+
+  const changeChartDays = useCallback(
+    (days: number) => {
+      if (prevChartDays !== days) {
+        setChartDays(days)
+        setIsUpdatingChartData(true)
+      }
+    },
+    [prevChartDays]
+  )
 
   return {
     isFavorite,
+    isUpdatingChartData,
     coingeckoId,
     chainId,
     openUrl,

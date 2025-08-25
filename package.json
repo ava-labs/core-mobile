@@ -37,7 +37,21 @@
     "ethers": "6.8.1",
     "web3": "4.16.0",
     "@hpke/core": "1.2.7",
-    "@noble/secp256k1": "2.1.0"
+    "@noble/secp256k1": "2.1.0",
+    "bip32": "3.0.1",
+    "bip39": "3.1.0",
+    "@avalabs/avalanchejs/@noble/hashes": "1.8.0",
+    "@avalabs/bridge-unified/@noble/hashes": "1.8.0",
+    "@avalabs/core-gasless-sdk/@noble/hashes": "1.8.0",
+    "@avalabs/core-wallets-sdk/@noble/hashes": "1.8.0",
+    "micro-eth-signer/@noble/hashes": "1.8.0",
+    "ethers/@noble/hashes": "1.8.0",
+    "viem/@noble/hashes": "1.8.0",
+    "@noble/curves/@noble/hashes": "1.8.0",
+    "@scure/bip32/@noble/hashes": "1.8.0",
+    "@scure/bip39/@noble/hashes": "1.8.0",
+    "@scure/btc-signer/@noble/hashes": "1.8.0",
+    "lodash@4.17.3": "4.17.21"
   },
   "engines": {
     "node": ">=20.18.0",

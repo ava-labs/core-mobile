@@ -49,10 +49,12 @@ import { MarketType } from 'store/watchlist'
 import { getDomainFromUrl } from 'utils/getDomainFromUrl/getDomainFromUrl'
 import { isPositiveNumber } from 'utils/isPositiveNumber/isPositiveNumber'
 import { formatLargeCurrency } from 'utils/Utils'
+import { useDebouncedCallback } from 'use-debounce'
 import { useTrackTokenActions } from '../hooks/useTrackTokenActions'
 
 const MAX_VALUE_WIDTH = '80%'
 const DELAY = 200
+const DEFAULT_DEBOUNCE_MILLISECONDS = 500
 
 const TrackTokenDetailScreen = (): JSX.Element => {
   const { theme } = useTheme()
@@ -81,6 +83,7 @@ const TrackTokenDetailScreen = (): JSX.Element => {
     chartData,
     ranges,
     changeChartDays,
+    isUpdatingChartData,
     tokenInfo,
     isFavorite,
     handleFavorite,
@@ -150,15 +153,20 @@ const TrackTokenDetailScreen = (): JSX.Element => {
     []
   )
 
+  const debouncedHandleDataSelected = useDebouncedCallback(
+    (index: number) =>
+      changeChartDays(
+        SEGMENT_INDEX_MAP[index] ?? 1 // default to 1 day if index is not found
+      ),
+    DEFAULT_DEBOUNCE_MILLISECONDS
+  )
+
   const handleSelectSegment = useCallback(
     (index: number) => {
       selectedSegmentIndex.value = index
-
-      changeChartDays(
-        SEGMENT_INDEX_MAP[index] ?? 1 // default to 1 day if index is not found
-      )
+      debouncedHandleDataSelected(index)
     },
-    [selectedSegmentIndex, changeChartDays]
+    [selectedSegmentIndex, debouncedHandleDataSelected]
   )
 
   const handleChartGestureStart = useCallback((): void => {
@@ -456,9 +464,10 @@ const TrackTokenDetailScreen = (): JSX.Element => {
         onDataSelected={handleDataSelected}
         onGestureStart={handleChartGestureStart}
         onGestureEnd={handleChartGestureEnd}
+        isUpdatingChartData={isUpdatingChartData}
       />
 
-      {lastUpdatedDate && (
+      {lastUpdatedDate ? (
         <View sx={styles.lastUpdatedContainer}>
           <Animated.View
             entering={FadeIn.delay(DELAY * 3)}
@@ -482,6 +491,8 @@ const TrackTokenDetailScreen = (): JSX.Element => {
             </Animated.View>
           </Animated.View>
         </View>
+      ) : (
+        <View sx={styles.lastUpdatedContainer} />
       )}
       {tokenInfo?.has24hChartDataOnly === false && (
         <Animated.View
