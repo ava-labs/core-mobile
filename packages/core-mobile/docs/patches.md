@@ -87,3 +87,7 @@ we replace several hash + key derivation functions with the ones from react-nati
 ### bip32+3.0.1.patch
 
 we replace tiny-secp256k1 with @bitcoinerlab/secp256k1 (which uses @noble/secp256k1) and use that as the default ECC instance
+
+### react-native-reanimated+3.18.0.patch
+
+there is a perf issue with reanimated around executeOnUIRuntimeSync https://github.com/rainbow-me/rainbow/pull/6774
