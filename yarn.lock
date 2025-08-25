@@ -213,7 +213,7 @@ __metadata:
     "@babel/runtime": 7.25.7
     "@bitcoinerlab/secp256k1": 1.2.0
     "@blockaid/client": 0.27.4
-    "@bottom-tabs/react-navigation": 0.9.2
+    "@bottom-tabs/react-navigation": 0.10.1
     "@coinbase/cbpay-js": 2.2.1
     "@config-plugins/detox": 9.0.0
     "@contentful/rich-text-react-renderer": 16.0.2
@@ -378,7 +378,7 @@ __metadata:
     react-native-argon2: 2.0.1
     react-native-big-list: 1.6.1
     react-native-bootsplash: 6.3.10
-    react-native-bottom-tabs: 0.9.2
+    react-native-bottom-tabs: 0.10.1
     react-native-chart-kit: 6.12.0
     react-native-circular-progress: 1.4.0
     react-native-collapsible: 1.6.2
@@ -4243,9 +4243,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@bottom-tabs/react-navigation@npm:0.9.2":
-  version: 0.9.2
-  resolution: "@bottom-tabs/react-navigation@npm:0.9.2"
+"@bottom-tabs/react-navigation@npm:0.10.1":
+  version: 0.10.1
+  resolution: "@bottom-tabs/react-navigation@npm:0.10.1"
   dependencies:
     color: ^4.2.3
   peerDependencies:
@@ -4253,7 +4253,7 @@ __metadata:
     react: "*"
     react-native: "*"
     react-native-bottom-tabs: "*"
-  checksum: 380963c05a41f6001392021d7962a8ded5d30270ca7d402b514f1d891ff4d758bd9fb577d549ad5a0cd160400662e0f194ae84b4d8b3fae8277929ee247a1d99
+  checksum: 34408573595c06820a4dbafd2c50727655a70915de84ef787aff072f1d5c06f48a521cab9fcaca9bd0700bb870ad4136e987dbe1747248c04e22f6976c7ba2fb
   languageName: node
   linkType: hard
 
@@ -27061,9 +27061,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-native-bottom-tabs@npm:0.9.2":
-  version: 0.9.2
-  resolution: "react-native-bottom-tabs@npm:0.9.2"
+"react-native-bottom-tabs@npm:0.10.1":
+  version: 0.10.1
+  resolution: "react-native-bottom-tabs@npm:0.10.1"
   dependencies:
     react-freeze: ^1.0.0
     sf-symbols-typescript: ^2.0.0
@@ -27071,7 +27071,7 @@ __metadata:
   peerDependencies:
     react: "*"
     react-native: "*"
-  checksum: e20433301dd04eb6ead537bdb8836c3740beb8347db5b6ac79503a1908f2d40e24fe2d9dd546dfdce26f965bbec8e36342939c5bd4b7cfd3d15eee9f0b6f0d77
+  checksum: 3aa6fcce576db3e0497f54f4949bde63163637e17840fb34a47d5011548d9295a9e746cd21e4b717eb81398a33be1897e3e1335511f2f1e5ab7c0a21ca048836
   languageName: node
   linkType: hard
 
