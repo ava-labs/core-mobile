@@ -1,0 +1,25 @@
+diff --git a/node_modules/react-native-bottom-tabs/android/src/main/java/com/rcttabview/RCTTabView.kt b/node_modules/react-native-bottom-tabs/android/src/main/java/com/rcttabview/RCTTabView.kt
+index 1e1040e..20f4a51 100644
+--- a/node_modules/react-native-bottom-tabs/android/src/main/java/com/rcttabview/RCTTabView.kt
++++ b/node_modules/react-native-bottom-tabs/android/src/main/java/com/rcttabview/RCTTabView.kt
+@@ -261,6 +261,7 @@ class ReactBottomNavigationView(context: Context) : LinearLayout(context) {
+           }
+           view.setOnClickListener {
+             onTabSelected(menuItem)
++            true
+           }
+ 
+           item.testID?.let { testId ->
+diff --git a/node_modules/react-native-bottom-tabs/ios/TabItemEventModifier.swift b/node_modules/react-native-bottom-tabs/ios/TabItemEventModifier.swift
+index d298ad3..6536be4 100644
+--- a/node_modules/react-native-bottom-tabs/ios/TabItemEventModifier.swift
++++ b/node_modules/react-native-bottom-tabs/ios/TabItemEventModifier.swift
+@@ -20,7 +20,7 @@ private final class TabBarDelegate: NSObject, UITabBarControllerDelegate {
+     if let index = tabBarController.viewControllers?.firstIndex(of: viewController) {
+       onClick?(index)
+     }
+-    return false
++    return true
+   }
+ }
+ 

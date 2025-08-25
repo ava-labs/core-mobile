@@ -91,3 +91,9 @@ we replace tiny-secp256k1 with @bitcoinerlab/secp256k1 (which uses @noble/secp25
 ### react-native-reanimated+3.18.0.patch
 
 there is a perf issue with reanimated around executeOnUIRuntimeSync https://github.com/rainbow-me/rainbow/pull/6774
+
+### react-native-bottom-tabs+0.10.1.patch
+
+we patched the tab selection handlers to allow native tab bars (iOS UITabBarController, Android BottomNavigationView) to handle selection directly, instead of routing everything through JS. this removes the extra JS roundtrip that caused visible delays/flicker.
+https://github.com/callstackincubator/react-native-bottom-tabs/issues/383
+https://github.com/callstackincubator/react-native-bottom-tabs/pull/408
