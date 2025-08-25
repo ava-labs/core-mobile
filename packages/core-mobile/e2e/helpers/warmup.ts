@@ -18,10 +18,10 @@ export const warmup = async (newInstance = false) => {
       ]
     }
   }
-  if (newInstance) {
+  if (newInstance || process.env.CI === 'true') {
+    console.log('CI is true, setting newInstance to true')
     initialArgs.newInstance = true
   }
-
   await device.launchApp(initialArgs)
 
   // Jailbreak Check

@@ -5,7 +5,6 @@ import portfolio from '../locators/portfolio.loc'
 import { Platform } from '../helpers/constants'
 import cl from '../locators/commonEls.loc'
 import accountManageLoc from '../locators/accountManage.loc'
-import networksManagePage from './networksManage.page'
 import ActivityTabPage from './activityTab.page'
 import collectiblesPage from './collectibles.page'
 import accountManagePage from './accountManage.page'
@@ -300,8 +299,6 @@ class PortfolioPage {
     } catch (error) {
       console.log(error)
       await Action.tapElementAtIndex(this.manageNetworks, 1)
-      await Action.tapElementAtIndex(networksManagePage.networksTab, 1)
-      await networksManagePage.tapBitcoin()
     }
   }
 

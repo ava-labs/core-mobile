@@ -7,7 +7,6 @@ import { warmup } from '../../../helpers/warmup'
 import tokenDetailPage from '../../../pages/tokenDetail.page'
 import commonElsPage from '../../../pages/commonEls.page'
 import bottomTabsPage from '../../../pages/bottomTabs.page'
-import networksManagePage from '../../../pages/networksManage.page'
 
 describe('Owned Token Detail', () => {
   beforeAll(async () => {
@@ -40,7 +39,6 @@ describe('Owned Token Detail', () => {
   )
 
   it('should verify owned token detail on Ethereum network', async () => {
-    await networksManagePage.switchNetwork('Ethereum')
     await PortfolioPage.tapActiveNetwork('Ethereum')
     await PortfolioPage.tapToken('ETH')
     await tokenDetailPage.verifyOwnedTokenActionButtons(true, false)
@@ -53,7 +51,6 @@ describe('Owned Token Detail', () => {
   })
 
   it('should verify owned token detail on Bitcoin network', async () => {
-    await networksManagePage.switchNetwork('Bitcoin')
     await PortfolioPage.tapActiveNetwork('Bitcoin')
     await PortfolioPage.tapToken('Bitcoin')
     await tokenDetailPage.verifyOwnedTokenActionButtons(true, false)

@@ -199,13 +199,13 @@ workflows:
             BITRISE_TEST_APK_PATH=$BITRISE_TEST_APK_PATH
             BITRISE_APK_PATH=$BITRISE_APK_PATH
             IS_INTERNAL_BUILD=$IS_INTERNAL_BUILD
-        - api_level: "28"
+        - api_level: "34"
         - emulator_id: emulator-5554
         - emulator_channel: "0"
         - create_command_flags: --sdcard 2048M
         - tag: default
         - abi: x86_64
-        - profile: pixel_4
+        - profile: pixel_7_pro
   _install-old-android-version:
     steps:
     - script-runner@0:
@@ -227,7 +227,11 @@ workflows:
           {{getenv "IS_INTERNAL_BUILD" | eq "true"}}
         inputs:
         - artifact_sources: .*
-        - pipeline_intermediate_files: "$BITRISE_DEPLOY_DIR/app-internal-e2e-bitrise-signed.apk:BITRISE_APK_PATH\n$BITRISE_DEPLOY_DIR/app-internal-e2e-androidTest-bitrise-signed.apk:BITRISE_TEST_APK_PATH\t"
+        - pipeline_intermediate_files: |-
+            $BITRISE_DEPLOY_DIR/app-internal-e2e-bitrise-signed.apk:BITRISE_APK_PATH
+            $BITRISE_DEPLOY_DIR/app-internal-e2e-androidTest-bitrise-signed.apk:BITRISE_TEST_APK_PATH
+            $BITRISE_DEPLOY_DIR/AvaxWalletInternal.app:BITRISE_APP_DIR_PATH
+
   _pull_external_app_files:
     steps:
     - pull-intermediate-files@1:
@@ -274,11 +278,7 @@ workflows:
         inputs:
         - content: |-
             #!/usr/bin/env bash
-            # fail if any commands fails
-            set -e
-            # make pipelines' return status equal the last command to exit with a non-zero status, or zero if all commands exit successfully
-            set -o pipefail
-            # we need to do this to make sure the cocoapods install step consider our Gemfile
+            set -euo pipefail
             cp Gemfile ios
             cp Gemfile.lock ios
     - cocoapods-install@2:
@@ -286,13 +286,14 @@ workflows:
         - verbose: "true"
         - source_root_path: $BITRISE_SOURCE_DIR/ios
     - save-cocoapods-cache@1: {}
-    - xcode-build-for-simulator@0:
+    - xcode-build-for-simulator@3:
         inputs:
         - scheme: $IOS_SCHEME
-        - simulator_device: iPhone 13
-        - configuration: $IOS_CONFIGURATION
         - project_path: $IOS_PROJECT_PATH
-        - code_signing_allowed: "yes"
+        - destination: "platform=iOS Simulator,name=iPhone 16 Pro,OS=latest"
+        - configuration: $IOS_CONFIGURATION
+        - code_signing_allowed: "no"
+        - log_formatter: xcpretty
     - script-runner@0:
         title: Create iOS Test Run
         inputs:
@@ -999,7 +1000,6 @@ workflows:
     - _install-and-set-env
     - _set-version
     - _pull_app_files
-    - _pull_external_app_files
     after_run:
     - _upload-detox-artifacts
     - _send-test-result-notification-slack
@@ -1039,7 +1039,6 @@ workflows:
     - _install-and-set-env
     - _set-version
     - _pull_app_files
-    - _pull_external_app_files
     envs:
     - ENVIRONMENT: production
       opts:
