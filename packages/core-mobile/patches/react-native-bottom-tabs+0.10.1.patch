@@ -1,15 +1,29 @@
 diff --git a/node_modules/react-native-bottom-tabs/android/src/main/java/com/rcttabview/RCTTabView.kt b/node_modules/react-native-bottom-tabs/android/src/main/java/com/rcttabview/RCTTabView.kt
-index 1e1040e..20f4a51 100644
+index 1e1040e..817b5e6 100644
 --- a/node_modules/react-native-bottom-tabs/android/src/main/java/com/rcttabview/RCTTabView.kt
 +++ b/node_modules/react-native-bottom-tabs/android/src/main/java/com/rcttabview/RCTTabView.kt
-@@ -261,6 +261,7 @@ class ReactBottomNavigationView(context: Context) : LinearLayout(context) {
+@@ -259,9 +259,6 @@ class ReactBottomNavigationView(context: Context) : LinearLayout(context) {
+             onTabLongPressed(menuItem)
+             true
            }
-           view.setOnClickListener {
-             onTabSelected(menuItem)
-+            true
-           }
- 
+-          view.setOnClickListener {
+-            onTabSelected(menuItem)
+-          }
+          
            item.testID?.let { testId ->
+             view.findViewById<View>(com.google.android.material.R.id.navigation_bar_item_content_container)
+@@ -276,6 +273,11 @@ class ReactBottomNavigationView(context: Context) : LinearLayout(context) {
+     post {
+       updateTextAppearance()
+       updateTintColors()
++
++      bottomNavigation.setOnItemSelectedListener { item ->
++        onTabSelected(item)
++        true
++      }
+     }
+   }
+ 
 diff --git a/node_modules/react-native-bottom-tabs/ios/TabItemEventModifier.swift b/node_modules/react-native-bottom-tabs/ios/TabItemEventModifier.swift
 index d298ad3..6536be4 100644
 --- a/node_modules/react-native-bottom-tabs/ios/TabItemEventModifier.swift
