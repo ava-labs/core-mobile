@@ -253,6 +253,26 @@ class Settings {
     return by.text(settings.manageAccountsTitle)
   }
 
+  get networkRpcUrl() {
+    return by.text(settings.networkRpcUrl)
+  }
+
+  get chainId() {
+    return by.text(settings.chainId)
+  }
+
+  get tokenSymbol() {
+    return by.text(settings.tokenSymbol)
+  }
+
+  get tokenName() {
+    return by.text(settings.tokenName)
+  }
+
+  get explorerUrl() {
+    return by.text(settings.explorerUrl)
+  }
+
   async tapAdvanced() {
     await Actions.tapElementAtIndex(this.advanced, 0)
   }
@@ -544,6 +564,11 @@ class Settings {
     await Actions.longPress(by.id(switchTestID))
   }
 
+  async tapNetworkSwitch(network: string, isEnabled = true) {
+    const toggle = isEnabled ? 'enabled' : 'disabled'
+    const networkPrefix = `network_toggle_${toggle}__${network}`
+    await Actions.longPress(by.id(networkPrefix))
+  }
   async verifyTestnetMode() {
     await Actions.waitForElement(this.testnetSwitchOn)
     await assertions.isVisible(this.testnetAvatar)
@@ -749,13 +774,22 @@ class Settings {
     await commonElsPage.enterPin(newPin)
   }
 
-  async verifyNetworkDetails(network: string) {
-    await assertions.isVisible(by.id(`network_name__${network}`))
-    await assertions.isVisible(by.id(`network_rpc_url__${network}`))
-    await assertions.isVisible(by.id(`network_chain_id__${network}`))
-    await assertions.isVisible(by.id(`network_native_token_symbol__${network}`))
-    await assertions.isVisible(by.id(`network_native_token_name__${network}`))
-    await assertions.isVisible(by.id(`network_explorer_url__${network}`))
+  async verifyNetworkDetails(network: string, networkData: any) {
+    const subtitle = 'advanced_subtitle__'
+    await Actions.waitForElement(by.id(`network_name__${network}`))
+    if (network === commonElsLoc.bitcoin || network === commonElsLoc.solana) {
+      await assertions.isNotVisible(this.networkRpcUrl)
+    } else {
+      await assertions.isVisible(this.networkRpcUrl)
+    }
+    await assertions.isVisible(this.chainId)
+    await assertions.isVisible(this.tokenSymbol)
+    await assertions.isVisible(this.tokenName)
+    await assertions.isVisible(this.explorerUrl)
+    await assertions.isVisible(by.id(`${subtitle}${networkData.explorerUrl}`))
+    await assertions.isVisible(by.id(`${subtitle}${networkData.chainId}`))
+    await assertions.isVisible(by.id(`${subtitle}${networkData.tokenSymbol}`))
+    await assertions.isVisible(by.id(`${subtitle}${networkData.tokenName}`))
   }
 }
 

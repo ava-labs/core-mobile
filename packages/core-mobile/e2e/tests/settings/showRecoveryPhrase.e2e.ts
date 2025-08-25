@@ -10,7 +10,7 @@ import onboardingPage from '../../pages/onboarding.page'
 import actions from '../../helpers/actions'
 import { ENV } from '../../helpers/getEnvs'
 
-describe('Settings', () => {
+describe('Settings - Show Recovery Phrase', () => {
   beforeAll(async () => {
     await warmup()
   })

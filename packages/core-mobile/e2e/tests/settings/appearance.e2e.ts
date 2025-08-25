@@ -3,7 +3,7 @@ import sl from '../../locators/settings.loc'
 import commonElsPage from '../../pages/commonEls.page'
 import settingsPage from '../../pages/settings.page'
 
-describe('Settings', () => {
+describe('Settings - Appearance', () => {
   it('should have system appereance by default', async () => {
     await warmup()
     await settingsPage.goSettings()

@@ -9,7 +9,7 @@ import cp from '../../../pages/commonEls.page'
 import Assert from '../../../helpers/assertions'
 import commonElsPage from '../../../pages/commonEls.page'
 
-describe('Settings', () => {
+describe('Settings - Networks', () => {
   beforeAll(async () => {
     await warmup()
   })

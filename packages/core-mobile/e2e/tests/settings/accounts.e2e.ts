@@ -7,7 +7,7 @@ import sp from '../../pages/settings.page'
 import sl from '../../locators/settings.loc'
 import cp from '../../pages/commonEls.page'
 
-describe('Settings', () => {
+describe('Settings - Accounts', () => {
   beforeAll(async () => {
     await warmup()
   })

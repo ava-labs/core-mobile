@@ -8,7 +8,7 @@ import actions from '../../helpers/actions'
 import commonElsPage from '../../pages/commonEls.page'
 import onboardingPage from '../../pages/onboarding.page'
 
-describe('Settings', () => {
+describe('Settings - Change PIN', () => {
   beforeAll(async () => {
     await warmup()
   })

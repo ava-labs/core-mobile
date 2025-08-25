@@ -237,6 +237,7 @@ export const AdvancedField = forwardRef<AdvancedFieldRef, AdvancedFieldProps>(
       return (
         <>
           <Text
+            testID={`advanced_title__${title}`}
             variant="buttonMedium"
             sx={{
               fontFamily: 'Inter-Medium',
@@ -246,6 +247,7 @@ export const AdvancedField = forwardRef<AdvancedFieldRef, AdvancedFieldProps>(
             {title}
           </Text>
           <Text
+            testID={`advanced_subtitle__${inputValue}`}
             variant="mono"
             sx={{
               color: '$textSecondary',

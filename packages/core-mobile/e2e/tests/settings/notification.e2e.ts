@@ -2,7 +2,7 @@
 import { warmup } from '../../helpers/warmup'
 import settingsPage from '../../pages/settings.page'
 
-describe('Settings', () => {
+describe('Settings - Notifications', () => {
   
   const notiData = {
     'Stake': 'Stake complete alerts',
