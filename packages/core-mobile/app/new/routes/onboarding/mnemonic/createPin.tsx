@@ -40,7 +40,8 @@ export default function CreatePin(): JSX.Element {
           walletType: WalletType.MNEMONIC
         })
         if (useBiometrics) {
-          await BiometricsSDK.enableBiometry()
+          const enabled = await BiometricsSDK.enableBiometry()
+          setUseBiometrics(enabled)
         }
         navigateToSetWalletName()
       } catch (error) {
@@ -49,10 +50,11 @@ export default function CreatePin(): JSX.Element {
     },
     [
       mnemonic,
-      activeWalletId,
       onPinCreated,
+      activeWalletId,
       useBiometrics,
-      navigateToSetWalletName
+      navigateToSetWalletName,
+      setUseBiometrics
     ]
   )
 
