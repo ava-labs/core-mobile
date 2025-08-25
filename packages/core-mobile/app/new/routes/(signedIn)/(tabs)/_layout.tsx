@@ -53,7 +53,8 @@ export default function TabLayout(): JSX.Element {
         options={{
           tabBarButtonTestID: 'portfolio_tab',
           title: 'Portfolio',
-          tabBarIcon: () => portfolioIcon
+          tabBarIcon: () => portfolioIcon,
+          freezeOnBlur: true
         }}
       />
       <BottomTabs.Screen
@@ -61,7 +62,8 @@ export default function TabLayout(): JSX.Element {
         options={{
           tabBarButtonTestID: 'track_tab',
           title: 'Track',
-          tabBarIcon: () => trackIcon
+          tabBarIcon: () => trackIcon,
+          freezeOnBlur: true
         }}
       />
       <BottomTabs.Screen
@@ -69,7 +71,8 @@ export default function TabLayout(): JSX.Element {
         options={{
           tabBarButtonTestID: 'stake_tab',
           title: 'Stake',
-          tabBarIcon: () => stakeIcon
+          tabBarIcon: () => stakeIcon,
+          freezeOnBlur: true
         }}
       />
       <BottomTabs.Screen
@@ -77,7 +80,8 @@ export default function TabLayout(): JSX.Element {
         options={{
           tabBarButtonTestID: 'browser_tab',
           title: 'Browser',
-          tabBarIcon: () => browserIcon
+          tabBarIcon: () => browserIcon,
+          freezeOnBlur: true
         }}
       />
       <BottomTabs.Screen
@@ -85,7 +89,8 @@ export default function TabLayout(): JSX.Element {
         options={{
           tabBarButtonTestID: 'activity_tab',
           title: 'Activity',
-          tabBarIcon: () => activityIcon
+          tabBarIcon: () => activityIcon,
+          freezeOnBlur: true
         }}
       />
     </BottomTabs>
