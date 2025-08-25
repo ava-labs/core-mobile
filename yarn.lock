@@ -23526,13 +23526,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"lodash@npm:4.17.3":
-  version: 4.17.3
-  resolution: "lodash@npm:4.17.3"
-  checksum: 5811ce6f39de420142631be6ee8c4bab321474ad1b79b43277baad6a4b2352e854558c8efd2845d1b61fb335902b43593baa73cfa0a12edfc80a8119ed6e8121
-  languageName: node
-  linkType: hard
-
 "log-symbols@npm:^2.2.0":
   version: 2.2.0
   resolution: "log-symbols@npm:2.2.0"
