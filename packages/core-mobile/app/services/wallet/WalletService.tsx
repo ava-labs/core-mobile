@@ -355,7 +355,7 @@ class WalletService {
       return []
     }
 
-    if (walletType === WalletType.MNEMONIC) {
+    if ([WalletType.MNEMONIC, WalletType.KEYSTONE].includes(walletType)) {
       const provXP = await NetworkService.getAvalancheProviderXP(isTestnet)
 
       const xpubXP = await this.getRawXpubXP({ walletId, walletType })

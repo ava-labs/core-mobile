@@ -368,6 +368,14 @@ export const selectIsMeldOfframpBlocked = (state: RootState): boolean => {
   )
 }
 
+export const selectIsKeystoneBlocked = (state: RootState): boolean => {
+  const { featureFlags } = state.posthog
+  return (
+    !featureFlags[FeatureGates.KEYSTONE] ||
+    !featureFlags[FeatureGates.EVERYTHING]
+  )
+}
+
 export const selectIsSwapUseMarkrBlocked = (state: RootState): boolean => {
   const { featureFlags } = state.posthog
   return (

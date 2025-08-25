@@ -155,7 +155,13 @@ export const useManageWallet = (): {
         })
       }
 
-      if ([WalletType.MNEMONIC, WalletType.SEEDLESS].includes(wallet.type)) {
+      if (
+        [
+          WalletType.MNEMONIC,
+          WalletType.SEEDLESS,
+          WalletType.KEYSTONE
+        ].includes(wallet.type)
+      ) {
         baseItems.push({
           id: 'add_account',
           title: 'Add account to this wallet'
