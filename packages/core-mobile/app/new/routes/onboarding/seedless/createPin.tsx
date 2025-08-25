@@ -34,14 +34,21 @@ export default function CreatePin(): JSX.Element {
           walletType: WalletType.SEEDLESS
         })
         if (useBiometrics) {
-          await BiometricsSDK.enableBiometry()
+          const enabled = await BiometricsSDK.enableBiometry()
+          setUseBiometrics(enabled)
         }
         navigateToNextStep()
       } catch (error) {
         Logger.error('Failed to create pin', error)
       }
     },
-    [activeWalletId, onPinCreated, useBiometrics, navigateToNextStep]
+    [
+      activeWalletId,
+      onPinCreated,
+      useBiometrics,
+      navigateToNextStep,
+      setUseBiometrics
+    ]
   )
 
   return (
