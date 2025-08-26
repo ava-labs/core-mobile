@@ -18,6 +18,14 @@ const tabLabelStyle = {
 
 const tabBarInactiveTintOpacity = 0.6
 
+/**
+ * On Android, we enable freezeOnBlur to improve performance.
+ * On iOS, it remains disabled since performance is already good.
+ * Additionally, our testing showed that enabling freezeOnBlur on iOS
+ * caused issues with SegmentedControl and the Browser tab.
+ */
+const freezeOnBlur = isIOS ? false : true
+
 export default function TabLayout(): JSX.Element {
   const { theme } = useTheme()
 
@@ -53,7 +61,8 @@ export default function TabLayout(): JSX.Element {
         options={{
           tabBarButtonTestID: 'portfolio_tab',
           title: 'Portfolio',
-          tabBarIcon: () => portfolioIcon
+          tabBarIcon: () => portfolioIcon,
+          freezeOnBlur
         }}
       />
       <BottomTabs.Screen
@@ -61,7 +70,8 @@ export default function TabLayout(): JSX.Element {
         options={{
           tabBarButtonTestID: 'track_tab',
           title: 'Track',
-          tabBarIcon: () => trackIcon
+          tabBarIcon: () => trackIcon,
+          freezeOnBlur
         }}
       />
       <BottomTabs.Screen
@@ -69,7 +79,8 @@ export default function TabLayout(): JSX.Element {
         options={{
           tabBarButtonTestID: 'stake_tab',
           title: 'Stake',
-          tabBarIcon: () => stakeIcon
+          tabBarIcon: () => stakeIcon,
+          freezeOnBlur
         }}
       />
       <BottomTabs.Screen
@@ -77,7 +88,8 @@ export default function TabLayout(): JSX.Element {
         options={{
           tabBarButtonTestID: 'browser_tab',
           title: 'Browser',
-          tabBarIcon: () => browserIcon
+          tabBarIcon: () => browserIcon,
+          freezeOnBlur
         }}
       />
       <BottomTabs.Screen
@@ -85,7 +97,8 @@ export default function TabLayout(): JSX.Element {
         options={{
           tabBarButtonTestID: 'activity_tab',
           title: 'Activity',
-          tabBarIcon: () => activityIcon
+          tabBarIcon: () => activityIcon,
+          freezeOnBlur
         }}
       />
     </BottomTabs>
