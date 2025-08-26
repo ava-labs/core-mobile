@@ -6,7 +6,7 @@ import React, {
   useState
 } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { selectWalletState, WalletState } from 'store/app'
+import { selectIsLocked, selectWalletState, WalletState } from 'store/app'
 import { noop } from '@avalabs/core-utils-sdk'
 import { Linking } from 'react-native'
 import NotificationsService from 'services/notifications/NotificationsService'
@@ -40,6 +40,7 @@ export const DeeplinkContextProvider = ({
   const dispatch = useDispatch()
   const walletState = useSelector(selectWalletState)
   const isWalletActive = walletState === WalletState.ACTIVE
+  const isLocked = useSelector(selectIsLocked)
   const isAllNotificationsBlocked = useSelector(selectIsAllNotificationsBlocked)
   const isEarnBlocked = useSelector(selectIsEarnBlocked)
   const [pendingDeepLink, setPendingDeepLink] = useState<DeepLink>()
@@ -135,7 +136,7 @@ export const DeeplinkContextProvider = ({
    * Process deep link if there is one pending and app is unlocked
    *****************************************************************************/
   useEffect(() => {
-    if (pendingDeepLink && isWalletActive) {
+    if (pendingDeepLink && isWalletActive && !isLocked) {
       handleDeeplink({
         deeplink: pendingDeepLink,
         dispatch,
@@ -145,7 +146,14 @@ export const DeeplinkContextProvider = ({
       // once we used the url, we can expire it
       setPendingDeepLink(undefined)
     }
-  }, [isWalletActive, pendingDeepLink, dispatch, isEarnBlocked, openUrl])
+  }, [
+    isWalletActive,
+    pendingDeepLink,
+    dispatch,
+    isEarnBlocked,
+    openUrl,
+    isLocked
+  ])
 
   return (
     <DeeplinkContext.Provider
