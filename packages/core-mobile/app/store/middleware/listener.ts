@@ -3,7 +3,6 @@ import { addAppListeners } from 'store/app/listeners'
 import { addBalanceListeners } from 'store/balance/listeners'
 import { addAccountListeners } from 'store/account/listeners'
 import { addNetworkListeners } from 'store/network/listeners'
-import { addBridgeListeners } from 'store/bridge/listeners'
 import { addBrowserListener } from 'store/browser/listener'
 import { addPosthogListeners } from 'store/posthog/listeners'
 import { addWCListeners } from 'store/walletConnectV2/listeners'
@@ -34,8 +33,6 @@ addBalanceListeners(startListening)
 addAccountListeners(startListening)
 
 addNetworkListeners(startListening)
-
-addBridgeListeners(startListening)
 
 addUnifiedBridgeListeners(startListening)
 

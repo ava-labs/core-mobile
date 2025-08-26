@@ -10,9 +10,9 @@ import { useDispatch, useSelector } from 'react-redux'
 import {
   addBridgeTransaction,
   popBridgeTransaction,
-  selectBridgeConfig,
   selectBridgeTransactions
 } from 'store/bridge'
+import { useBridgeConfig } from 'hooks/bridge/useBridgeConfig'
 import {
   useAvalancheEvmProvider,
   useBitcoinProvider,
@@ -55,7 +55,7 @@ function LocalBridgeProvider({
   children: ReactNode
 }): JSX.Element {
   const dispatch = useDispatch()
-  const bridgeConfig = useSelector(selectBridgeConfig)
+  const { config: bridgeConfig } = useBridgeConfig()
   const config = bridgeConfig?.config
   const bridgeTransactions = useSelector(selectBridgeTransactions)
   const ethereumProvider = useEthereumProvider()
@@ -81,8 +81,7 @@ function LocalBridgeProvider({
   useEffect(() => {
     // sync bridge config in bridge sdk with ours
     // this is necessary because:
-    // 1/ we don't use useBridgeConfigUpdater() any more.
-    //    instead, we have a redux listener that fetches the config periodically
+    // 1/ we now use useBridgeConfig hook with MMKV caching instead of Redux
     // 2/ we still depend on a lot of things in the bridge sdk (avalancheAssets, ethereumAssets,...)
     if (bridgeConfig && !isEqual(bridgeConfig, bridgeConfigSDK)) {
       setBridgeConfig(bridgeConfig)
