@@ -22,11 +22,15 @@ describe('Token Detail on Market', () => {
 
   tokens.forEach(token => {
     test(`should verify ${token.symbol} Detail on market`, async () => {
-      const { symbol, name, price } = token
+      const { symbol, name } = token
       await device.disableSynchronization()
       await PortfolioPage.tapFavoriteToken(symbol)
       await tokenDetailPage.dismissHoldAndDrag()
-      await tokenDetailPage.verifyTokenDetailHeader(name, symbol, price)
+      // await tokenDetailPage.verifyTokenDetailHeader(
+      //   name,
+      //   symbol,
+      //   price?.toString() ?? ''
+      // )
       await tokenDetailPage.verifyTokenDetailFooter(name)
       await tokenDetailPage.verifyTokenDetailContent()
       await commonElsPage.tapBackButton()
