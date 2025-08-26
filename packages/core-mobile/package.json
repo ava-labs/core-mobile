@@ -133,6 +133,7 @@
     "expo-router": "5.1.4",
     "expo-sms": "13.1.4",
     "expo-video": "2.2.2",
+    "fast-equals": "5.2.2",
     "https-browserify": "1.0.0",
     "hypersdk-client": "0.4.16",
     "jail-monkey": "2.8.0",

@@ -1,3 +1,4 @@
+import { useDeepCompareMemo } from 'common/hooks/useDeepCompareMemo'
 import { hasRouteByName } from 'common/utils/hasRouteByName'
 import { usePathname, useRootNavigationState, useRouter } from 'expo-router'
 import { useEffect } from 'react'
@@ -12,7 +13,9 @@ export const NavigationRedirect = (): null => {
   const walletState = useSelector(selectWalletState)
   const navigationState = useRootNavigationState()
 
-  const isSignedIn = hasRouteByName(navigationState, '(signedIn)')
+  const isSignedIn = useDeepCompareMemo(() => {
+    return hasRouteByName(navigationState, '(signedIn)')
+  }, [navigationState])
 
   const isNavigationReady = Boolean(navigationState?.key)
   // Additional check for Expo Router - ensure segments are loaded
