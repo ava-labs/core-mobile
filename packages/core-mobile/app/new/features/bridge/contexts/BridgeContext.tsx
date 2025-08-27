@@ -55,7 +55,7 @@ function LocalBridgeProvider({
   children: ReactNode
 }): JSX.Element {
   const dispatch = useDispatch()
-  const { config: bridgeConfig } = useBridgeConfig()
+  const { data: bridgeConfig } = useBridgeConfig()
   const config = bridgeConfig?.config
   const bridgeTransactions = useSelector(selectBridgeTransactions)
   const ethereumProvider = useEthereumProvider()
