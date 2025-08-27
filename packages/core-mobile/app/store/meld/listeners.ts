@@ -79,13 +79,18 @@ const handleOfframpSend = async (
     return
   }
 
-  const chainId = response?.transaction?.cryptoDetails?.chainId ?? undefined
-  const destinationWalletAddress =
-    response?.transaction?.cryptoDetails?.destinationWalletAddress ?? undefined
-  const sourceAmount = response?.transaction?.sourceAmount ?? undefined
   const symbol =
     response?.transaction?.serviceProviderDetails?.details.cryptoCurrency ??
     undefined
+
+  const chainId =
+    symbol === 'SOL'
+      ? 4503599627369476
+      : response?.transaction?.cryptoDetails?.chainId ?? undefined
+
+  const destinationWalletAddress =
+    response?.transaction?.cryptoDetails?.destinationWalletAddress ?? undefined
+  const sourceAmount = response?.transaction?.sourceAmount ?? undefined
 
   const network = response?.transaction?.cryptoDetails?.chainId
     ? selectNetwork(Number(chainId))(state)
@@ -93,7 +98,13 @@ const handleOfframpSend = async (
 
   const tokens = selectTokensWithBalanceForAccount(state, activeAccount?.id)
   const token = tokens.find(
-    tk => tk.symbol === symbol && tk.networkChainId === Number(chainId)
+    tk =>
+      (tk.symbol === symbol && tk.networkChainId === Number(chainId)) ||
+      // the solana chain id from meld is 101, and our chain id for solana is 4503599627369476, so we only want to check
+      // if it is native token type and if the symbol matches
+      ((symbol === 'SOL' || symbol === 'BTC') &&
+        tk.symbol === symbol &&
+        tk.type === TokenType.NATIVE)
   )
 
   if (
