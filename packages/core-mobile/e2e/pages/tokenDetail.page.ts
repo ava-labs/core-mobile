@@ -1,4 +1,3 @@
-import assert from 'assert'
 import tokenDetail from '../locators/tokenDetail.loc'
 import Assert from '../helpers/assertions'
 import Action from '../helpers/actions'
@@ -6,7 +5,6 @@ import { Coin, TokenDetailToken, TokenPriceResponse } from '../helpers/tokens'
 import delay from '../helpers/waits'
 import sendPage from './send.page'
 import commonElsPage from './commonEls.page'
-//import receivePage from './receive.page'
 import swapTabPage from './swapTab.page'
 import bridgeTabPage from './bridge.page'
 
@@ -211,33 +209,6 @@ class TokenDetailsPage {
       await Action.tap(this.gotItBtn)
     } catch (e) {
       console.log('No hold and drag modal found')
-    }
-  }
-
-  async verifyTokenDetailHeader(
-    name: string,
-    symbol: string,
-    expectedPrice: number | undefined
-  ) {
-    // test Symbol
-    await Action.waitForElement(by.text(symbol), 20000)
-
-    // test name
-    try {
-      const titledName = name.replace(/^\w/, char => char.toUpperCase())
-      await Action.waitForElement(by.text(titledName))
-    } catch (e) {
-      await Action.waitForElement(by.text(name))
-    }
-
-    // testprice
-    const displayedPrice = await Action.getElementText(this.price)
-    if (expectedPrice && displayedPrice) {
-      const isValid = await this.isPriceValid(expectedPrice, displayedPrice)
-      assert(
-        isValid,
-        `Displayed price is NOT valid! Expected Price from CoinGekco: ${expectedPrice} / Displayed Price: ${displayedPrice} `
-      )
     }
   }
 

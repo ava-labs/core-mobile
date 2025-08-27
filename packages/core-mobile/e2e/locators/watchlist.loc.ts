@@ -14,8 +14,12 @@ export default {
   topTrendingTokenName: 'trending_token_name__1',
   topTrendingTokenSymbol: 'trending_token_symbol__1',
   topTrendingTokenValue: 'trending_token_value__1',
-  topTrendingTokenBuyBtn: 'trending_token_value__1_buy_btn',
-  topTrendingTokenLogo: 'trending_token_logo__1',
+  topTrendingTokenBuyBtn: 'trending_token_buy_btn__1',
+  topTrendingTokenViewBtn: 'trending_token_view_btn__1',
+  topTrendingTokenCrown: 'trending_token_crown__1',
   trackBuyBtn: 'track_buy_btn',
-  trackViewBtn: 'track_view_btn'
+  trackViewBtn: 'track_view_btn',
+  starFilled: 'star_filled',
+  starOutline: 'star_outline',
+  tokenDetailSwapBtn: 'token_detail_swap_btn'
 }

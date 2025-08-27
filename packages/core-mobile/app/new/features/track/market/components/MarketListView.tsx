@@ -56,6 +56,7 @@ export const MarketListView = memo(
                 flex: 1
               }}>
               <Text
+                testID={`market_token__${token.name}`}
                 variant="buttonMedium"
                 numberOfLines={1}
                 ellipsizeMode="tail"
