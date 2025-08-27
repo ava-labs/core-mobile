@@ -41,7 +41,7 @@ import {
   onLogOut,
   selectAppState,
   selectIsLocked,
-  setIsLocking,
+  setIsIdled,
   setWalletType
 } from './slice'
 
@@ -114,18 +114,17 @@ const lockApp = async (
   const lockWalletWithPIN = selectLockWalletWithPIN(state)
   const isLocked = selectIsLocked(state)
 
-  dispatch(setIsLocking(true))
+  dispatch(setIsIdled(true))
 
   if (isLocked || !lockWalletWithPIN) {
     // bail out if already locked or if lock wallet with PIN is disabled
-    dispatch(setIsLocking(false))
+    dispatch(setIsIdled(false))
     return
   }
 
   const backgroundStarted = new Date()
 
   await condition(isAnyOf(onForeground))
-  dispatch(setIsLocking(false))
 
   const foregroundResumed = new Date()
 
@@ -143,6 +142,10 @@ const lockApp = async (
       dispatch(setWalletState(WalletState.INACTIVE))
     }
   }
+
+  setTimeout(() => {
+    dispatch(setIsIdled(false))
+  }, 100)
 }
 
 const setStateToUnlocked = async (

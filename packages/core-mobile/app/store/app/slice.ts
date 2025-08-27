@@ -9,7 +9,7 @@ export const reducerName = 'app'
 export const initialState: AppState = {
   isReady: false,
   isLocked: true,
-  isLocking: false,
+  isIdled: false,
   appState: 'active',
   walletState: WalletState.NONEXISTENT,
   walletType: WalletType.UNSET
@@ -25,8 +25,8 @@ export const appSlice = createSlice({
     setIsLocked: (state, action: PayloadAction<boolean>) => {
       state.isLocked = action.payload
     },
-    setIsLocking: (state, action: PayloadAction<boolean>) => {
-      state.isLocking = action.payload
+    setIsIdled: (state, action: PayloadAction<boolean>) => {
+      state.isIdled = action.payload
     },
     setAppState: (state, action: PayloadAction<AppStateStatus>) => {
       state.appState = action.payload
@@ -45,7 +45,7 @@ export const selectIsReady = (state: RootState): boolean => state.app.isReady
 
 export const selectIsLocked = (state: RootState): boolean => state.app.isLocked
 
-export const selectIsLocking = (state: RootState): boolean => state.app.isLocking
+export const selectIsIdled = (state: RootState): boolean => state.app.isIdled
 
 export const selectAppState = (state: RootState): AppStateStatus =>
   state.app.appState
@@ -82,7 +82,7 @@ export const onLogOut = createAction(`${reducerName}/onLogOut`)
 export const {
   setIsReady,
   setIsLocked,
-  setIsLocking,
+  setIsIdled,
   setAppState,
   setWalletState,
   setWalletType

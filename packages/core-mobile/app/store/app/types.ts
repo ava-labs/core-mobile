@@ -25,7 +25,7 @@ export type AppState = {
   // indicates the type of wallet (unset, seedless or mnemonic)
   walletType: WalletType
 
-  // indicates whether app is locking
-  // this is used to prevent deep links from being processed when app is locking
-  isLocking: boolean
+  // indicates whether app is idled
+  // this is used to prevent deep links from being processed when app is idled
+  isIdled: boolean
 }

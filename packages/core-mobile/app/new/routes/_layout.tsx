@@ -6,23 +6,22 @@ import {
   stackNavigatorScreenOptions
 } from 'common/consts/screenOptions'
 import NavigationThemeProvider from 'common/contexts/NavigationThemeProvider'
-import { useBgDetect } from 'common/hooks/useBgDetect'
 import { useLoadFonts } from 'common/hooks/useLoadFonts'
 import { useModalScreenOptions } from 'common/hooks/useModalScreenOptions'
 import { GlobalAlertWithTextInput } from 'common/utils/alertWithTextInput'
 import { GlobalToast } from 'common/utils/toast'
 import { DeeplinkContextProvider } from 'contexts/DeeplinkContext/DeeplinkContext'
-import { useFocusEffect } from 'expo-router'
 import { RecoveryMethodProvider } from 'features/onboarding/contexts/RecoveryMethodProvider'
 import { NavigationRedirect } from 'new/common/components/NavigationRedirect'
-import React, { useCallback, useEffect, useState } from 'react'
-import { Platform, Appearance as RnAppearance } from 'react-native'
+import React, { useEffect } from 'react'
+import { Appearance as RnAppearance } from 'react-native'
 import Bootsplash from 'react-native-bootsplash'
 import { SystemBars } from 'react-native-edge-to-edge'
 import { KeyboardProvider } from 'react-native-keyboard-controller'
 import 'react-native-reanimated'
 import { useDispatch, useSelector } from 'react-redux'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
+import { selectIsIdled } from 'store/app'
 import {
   Appearance,
   selectSelectedAppearance,
@@ -34,9 +33,8 @@ export default function Root(): JSX.Element | null {
   const dispatch = useDispatch()
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const selectedAppearance = useSelector(selectSelectedAppearance)
-  const { inBackground } = useBgDetect()
-  const [enabledPrivacyScreen, setEnabledPrivacyScreen] = useState(false)
   const colorScheme = useSelector(selectSelectedColorScheme)
+  const isIdled = useSelector(selectIsIdled)
 
   const { modalScreensOptions } = useModalScreenOptions()
 
@@ -57,14 +55,6 @@ export default function Root(): JSX.Element | null {
   }, [colorScheme])
 
   useLoadFonts()
-
-  useFocusEffect(
-    useCallback(() => {
-      setTimeout(() => {
-        setEnabledPrivacyScreen(inBackground)
-      }, DELAY)
-    }, [inBackground])
-  )
 
   useEffect(() => {
     Bootsplash.hide()
@@ -119,7 +109,7 @@ export default function Root(): JSX.Element | null {
                   }}
                 />
               </Stack>
-              {enabledPrivacyScreen && <LogoModal />}
+              {isIdled && <LogoModal />}
             </RecoveryMethodProvider>
           </DeeplinkContextProvider>
         </NavigationThemeProvider>
@@ -129,5 +119,3 @@ export default function Root(): JSX.Element | null {
     </KeyboardProvider>
   )
 }
-
-const DELAY = Platform.OS === 'android' ? 0 : 100
