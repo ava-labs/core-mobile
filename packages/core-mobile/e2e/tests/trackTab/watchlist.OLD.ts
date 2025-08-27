@@ -5,7 +5,7 @@
 import assert from 'assert'
 import BottomTabsPage from '../../pages/bottomTabs.page'
 import { warmup } from '../../helpers/warmup'
-import watchlistPage from '../../pages/watchlist.page'
+import watchlistPage from '../../pages/track.page'
 import actions from '../../helpers/actions'
 import { TokenDetailToken } from '../../helpers/tokens'
 import tokenDetailPage from '../../pages/tokenDetail.page'

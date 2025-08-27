@@ -1,6 +1,6 @@
 import { Text, useTheme } from '@avalabs/k2-alpine'
 import React, { CSSProperties, useCallback } from 'react'
-import { Platform } from 'react-native'
+import { Platform, View } from 'react-native'
 import { Pressable } from 'react-native-gesture-handler'
 import {
   Content,
@@ -23,6 +23,7 @@ export interface DropdownItem {
   icon?: DropdownMenuIcon
   disabled?: boolean
   destructive?: boolean
+  testID?: string
 }
 
 export interface DropdownGroup
@@ -51,7 +52,7 @@ export function DropdownMenu({
   const { theme } = useTheme()
 
   const renderItem = useCallback(
-    ({ title, id, icon, selected, ...rest }: DropdownItem) => {
+    ({ title, id, icon, selected, testID, ...rest }: DropdownItem) => {
       const platformIcon = getPlatformIcons(icon, theme?.isDark, {
         disabled: rest.disabled,
         destructive: rest.destructive
@@ -71,6 +72,7 @@ export function DropdownMenu({
           <DropdownMenuItem
             {...rest}
             key={id}
+            testID={testID}
             onSelect={() => onPressAction({ nativeEvent: { event: id } })}>
             <DropdownMenuItemTitle
               color={
@@ -98,6 +100,7 @@ export function DropdownMenu({
         <DropdownMenuItem
           {...rest}
           key={id}
+          testID={testID}
           onSelect={() => onPressAction({ nativeEvent: { event: id } })}>
           <DropdownMenuItemTitle
             color={
@@ -165,11 +168,16 @@ const DropdownMenuTrigger = create(
   'Trigger'
 )
 const DropdownMenuItem = create(
-  (props: React.ComponentProps<typeof Item>) => (
-    <Item {...props}>
-      <Pressable>{props.children}</Pressable>
-    </Item>
-  ),
+  (props: React.ComponentProps<typeof Item> & { testID?: string }) => {
+    const { testID, ...itemProps } = props
+    return (
+      <Item {...itemProps}>
+        <View testID={testID}>
+          <Pressable>{props.children}</Pressable>
+        </View>
+      </Item>
+    )
+  },
   'Item'
 )
 const DropdownMenuItemTitle = create(

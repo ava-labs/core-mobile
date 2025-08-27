@@ -6,7 +6,7 @@ import swapTab from '../locators/swapTab.loc'
 import commonElsPage from './commonEls.page'
 import portfolioPage from './portfolio.page'
 import selectTokenPage from './selectToken.page'
-import watchlistPage from './watchlist.page'
+import watchlistPage from './track.page'
 
 const platformIndex = Actions.platform() === Platform.Android ? 1 : 0
 

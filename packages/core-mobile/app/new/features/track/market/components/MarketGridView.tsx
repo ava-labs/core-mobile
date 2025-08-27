@@ -63,7 +63,10 @@ export const MarketGridView = memo(
               logoUri={token.logoUri}
             />
             <View sx={{ marginTop: 8 }}>
-              <Text variant="buttonMedium" numberOfLines={1}>
+              <Text
+                testID={`market_token__${token.name}`}
+                variant="buttonMedium"
+                numberOfLines={1}>
                 {token.name}
               </Text>
               <View sx={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>

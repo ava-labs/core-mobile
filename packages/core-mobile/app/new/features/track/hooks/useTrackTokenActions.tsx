@@ -80,6 +80,7 @@ export function useTrackTokenActions({
   const generateSwapButton = useCallback(
     (initialTokenIdTo?: string): JSX.Element => (
       <Button
+        testID="token_detail_swap_btn"
         key="swap"
         type={'primary'}
         size={'large'}

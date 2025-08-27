@@ -125,7 +125,11 @@ const waitForElement = async (
       await new Promise(resolve => setTimeout(resolve, 500))
     }
   }
-  console.error('Error: Element not visible within timeout')
+  console.error(
+    `Element not visible within timeout: matcher=${JSON.stringify(
+      item
+    )} index=${index}`
+  )
   throw new Error(
     `Element not visible within timeout: matcher=${JSON.stringify(
       item
