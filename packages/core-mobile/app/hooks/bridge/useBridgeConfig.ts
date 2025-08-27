@@ -20,7 +20,7 @@ export function useBridgeConfig(): UseQueryResult<BridgeConfig, Error> {
     queryKey: [ReactQueryKeys.BRIDGE_CONFIG, isDeveloperMode],
     queryFn: async (): Promise<BridgeConfig> => {
       const config = await BridgeService.getConfig()
-      
+
       if (!config) {
         throw new Error('Failed to fetch bridge config from API')
       }
