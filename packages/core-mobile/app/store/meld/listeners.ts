@@ -35,6 +35,7 @@ import { offrampSend } from './slice'
 const handleOfframpSend = async (
   searchParams: URLSearchParams,
   listenerApi: AppListenerEffectAPI
+  // eslint-disable-next-line sonarjs/cognitive-complexity
 ): Promise<void> => {
   const { getState, dispatch } = listenerApi
   const state = getState()
