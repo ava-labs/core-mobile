@@ -56,6 +56,7 @@ const createTestStore = () => {
       app: {
         isReady: true,
         isLocked: true,
+        isIdled: false,
         appState: 'active',
         walletState: WalletState.NONEXISTENT,
         walletType: WalletType.MNEMONIC

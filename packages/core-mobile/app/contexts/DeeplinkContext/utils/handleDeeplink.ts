@@ -25,7 +25,7 @@ export const handleDeeplink = ({
   dispatch: Dispatch
   isEarnBlocked: boolean
   openUrl: (history: Pick<History, 'url' | 'title'>) => void
-  navigationState: NavState
+  navigationState?: NavState
   // eslint-disable-next-line sonarjs/cognitive-complexity
 }): void => {
   let url
