@@ -13,6 +13,9 @@ import {
   RpcRequestHandler
 } from '../../types'
 import { parseRequestParams, parseApproveData } from './utils'
+import { isAddress, isBech32Address } from '@metamask/controller-utils'
+import { NetworkVMType } from '@metamask/network-controller'
+import { Avalanche } from '@metamask/controller-utils'
 
 export type AvalancheCreateContactRequest =
   RpcRequest<RpcMethod.AVALANCHE_CREATE_CONTACT>
@@ -77,6 +80,7 @@ class AvalancheCreateContactHandler
         address: contact.address ? contact.address : undefined,
         addressBTC: contact.addressBTC ? contact.addressBTC : undefined,
         addressXP: contact.addressXP ? contact.addressXP : undefined,
+        addressSVM: contact.addressSVM ? contact.addressSVM : undefined,
         name: contact.name,
         id: contact.id
       })
