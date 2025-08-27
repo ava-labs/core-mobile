@@ -6,7 +6,7 @@ import React, {
   useState
 } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { selectIsLocked, selectWalletState, WalletState } from 'store/app'
+import { selectIsLocking, selectWalletState, WalletState } from 'store/app'
 import { noop } from '@avalabs/core-utils-sdk'
 import { Linking } from 'react-native'
 import NotificationsService from 'services/notifications/NotificationsService'
@@ -17,6 +17,7 @@ import {
 } from 'store/posthog'
 import { FIDO_CALLBACK_URL } from 'services/passkey/consts'
 import { processNotificationData } from 'store/notifications'
+import { useRootNavigationState } from 'expo-router'
 import { useCoreBrowser } from 'common/hooks/useCoreBrowser'
 import { handleDeeplink } from './utils/handleDeeplink'
 import {
@@ -40,11 +41,12 @@ export const DeeplinkContextProvider = ({
   const dispatch = useDispatch()
   const walletState = useSelector(selectWalletState)
   const isWalletActive = walletState === WalletState.ACTIVE
-  const isLocked = useSelector(selectIsLocked)
   const isAllNotificationsBlocked = useSelector(selectIsAllNotificationsBlocked)
   const isEarnBlocked = useSelector(selectIsEarnBlocked)
+  const isLocking = useSelector(selectIsLocking)
   const [pendingDeepLink, setPendingDeepLink] = useState<DeepLink>()
   const { openUrl } = useCoreBrowser()
+  const navigationState = useRootNavigationState()
 
   const handleNotificationCallback: HandleNotificationCallback = useCallback(
     (data: NotificationData | undefined) => {
@@ -136,12 +138,13 @@ export const DeeplinkContextProvider = ({
    * Process deep link if there is one pending and app is unlocked
    *****************************************************************************/
   useEffect(() => {
-    if (pendingDeepLink && isWalletActive && !isLocked) {
+    if (pendingDeepLink && isWalletActive && !isLocking) {
       handleDeeplink({
         deeplink: pendingDeepLink,
         dispatch,
         isEarnBlocked,
-        openUrl
+        openUrl,
+        navigationState
       })
       // once we used the url, we can expire it
       setPendingDeepLink(undefined)
@@ -152,7 +155,8 @@ export const DeeplinkContextProvider = ({
     dispatch,
     isEarnBlocked,
     openUrl,
-    isLocked
+    isLocking,
+    navigationState
   ])
 
   return (

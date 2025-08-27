@@ -11,6 +11,7 @@ import { useLoadFonts } from 'common/hooks/useLoadFonts'
 import { useModalScreenOptions } from 'common/hooks/useModalScreenOptions'
 import { GlobalAlertWithTextInput } from 'common/utils/alertWithTextInput'
 import { GlobalToast } from 'common/utils/toast'
+import { DeeplinkContextProvider } from 'contexts/DeeplinkContext/DeeplinkContext'
 import { useFocusEffect } from 'expo-router'
 import { RecoveryMethodProvider } from 'features/onboarding/contexts/RecoveryMethodProvider'
 import { NavigationRedirect } from 'new/common/components/NavigationRedirect'
@@ -73,49 +74,54 @@ export default function Root(): JSX.Element | null {
     <KeyboardProvider>
       <K2AlpineThemeProvider colorScheme={colorScheme}>
         <NavigationThemeProvider>
-          <RecoveryMethodProvider>
-            <NavigationRedirect />
-            <Stack
-              screenOptions={{
-                ...stackNavigatorScreenOptions,
-                headerShown: false
-              }}>
-              <Stack.Screen name="index" options={{ animation: 'none' }} />
-              <Stack.Screen name="signup" options={{ animation: 'none' }} />
-              <Stack.Screen
-                name="accessWallet"
-                options={{ headerShown: true }}
-              />
-              <Stack.Screen
-                name="(signedIn)"
-                options={{
-                  headerShown: false,
-                  animation: 'none',
-                  gestureEnabled: false
-                }}
-              />
-              <Stack.Screen
-                name="loginWithPinOrBiometry"
-                options={{
-                  presentation: 'modal',
-                  headerShown: false,
-                  gestureEnabled: false,
-                  cardStyleInterpolator: forNoAnimation
-                }}
-              />
-              <Stack.Screen name="forgotPin" options={{ headerShown: true }} />
-              <Stack.Screen name="+not-found" />
-              <Stack.Screen name="onboarding" />
-              <Stack.Screen
-                name="sessionExpired"
-                options={{
-                  ...modalScreensOptions,
-                  gestureEnabled: false
-                }}
-              />
-            </Stack>
-            {enabledPrivacyScreen && <LogoModal />}
-          </RecoveryMethodProvider>
+          <DeeplinkContextProvider>
+            <RecoveryMethodProvider>
+              <NavigationRedirect />
+              <Stack
+                screenOptions={{
+                  ...stackNavigatorScreenOptions,
+                  headerShown: false
+                }}>
+                <Stack.Screen name="index" options={{ animation: 'none' }} />
+                <Stack.Screen name="signup" options={{ animation: 'none' }} />
+                <Stack.Screen
+                  name="accessWallet"
+                  options={{ headerShown: true }}
+                />
+                <Stack.Screen
+                  name="(signedIn)"
+                  options={{
+                    headerShown: false,
+                    animation: 'none',
+                    gestureEnabled: false
+                  }}
+                />
+                <Stack.Screen
+                  name="loginWithPinOrBiometry"
+                  options={{
+                    presentation: 'modal',
+                    headerShown: false,
+                    gestureEnabled: false,
+                    cardStyleInterpolator: forNoAnimation
+                  }}
+                />
+                <Stack.Screen
+                  name="forgotPin"
+                  options={{ headerShown: true }}
+                />
+                <Stack.Screen name="+not-found" />
+                <Stack.Screen name="onboarding" />
+                <Stack.Screen
+                  name="sessionExpired"
+                  options={{
+                    ...modalScreensOptions,
+                    gestureEnabled: false
+                  }}
+                />
+              </Stack>
+              {enabledPrivacyScreen && <LogoModal />}
+            </RecoveryMethodProvider>
+          </DeeplinkContextProvider>
         </NavigationThemeProvider>
         <GlobalToast />
         <GlobalAlertWithTextInput />

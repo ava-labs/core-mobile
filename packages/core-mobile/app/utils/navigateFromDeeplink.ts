@@ -8,9 +8,12 @@ then it navigates to the specific route after a short delay
 this is done to ensure that the app is fully loaded before navigating to the specific route
 @example navigateFromDeeplinkUrl('/claimStakeReward')
 **/
-export const navigateFromDeeplinkUrl = (href: string): void => {
+export const navigateFromDeeplinkUrl = (
+  href: string,
+  hasPortfolioRoute = false
+): void => {
   // @ts-ignore TODO: make routes typesafe
-  router.navigate('/portfolio')
+  hasPortfolioRoute === false && router.navigate('/portfolio')
   setTimeout(() => {
     // @ts-ignore TODO: make routes typesafe
     router.navigate(href)
