@@ -15,14 +15,18 @@ import {
   View
 } from '@avalabs/k2-alpine'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
-import { Platform } from 'react-native'
+import {
+  NativeSyntheticEvent,
+  Platform,
+  TextInputSelectionChangeEventData
+} from 'react-native'
 import Animated, {
   Easing,
   FadeIn,
   FadeOut,
   LinearTransition
 } from 'react-native-reanimated'
-import { roundToUnitOrSignificantDigit } from 'common/utils/roundToUnitOrSignificantDigit'
+import { useTextInputSelection } from 'common/hooks/useTextInputSelection'
 import { LogoWithNetwork } from './LogoWithNetwork'
 
 export const TokenInputWidget = ({
@@ -73,6 +77,9 @@ export const TokenInputWidget = ({
     PercentageButton[]
   >([])
 
+  const { setShouldResetSelection, selection, setSelection } =
+    useTextInputSelection()
+
   const handlePressPercentageButton = (
     button: PercentageButton,
     index: number
@@ -84,8 +91,6 @@ export const TokenInputWidget = ({
       value = BigInt(Math.floor(Number(balance ?? 0n) * button.percent))
     }
 
-    value = roundToUnitOrSignificantDigit(value, 14)
-
     onAmountChange?.(value)
 
     setPercentageButtons(prevButtons =>
@@ -93,6 +98,8 @@ export const TokenInputWidget = ({
         i === index ? { ...b, isSelected: true } : { ...b, isSelected: false }
       )
     )
+
+    setShouldResetSelection(true)
   }
 
   const handleAmountChange = useCallback(
@@ -119,6 +126,12 @@ export const TokenInputWidget = ({
   const handleBlur = (): void => {
     onBlur?.()
     setIsAmountInputFocused(false)
+  }
+
+  const handleSelectionChange = (
+    e: NativeSyntheticEvent<TextInputSelectionChangeEventData>
+  ): void => {
+    setSelection(e.nativeEvent.selection)
   }
 
   const isTokenSelectable = onSelectToken !== undefined
@@ -243,6 +256,8 @@ export const TokenInputWidget = ({
                         onFocus={handleFocus}
                         onBlur={handleBlur}
                         placeholder="0.00"
+                        selection={selection}
+                        onSelectionChange={handleSelectionChange}
                       />
                     ) : (
                       <View
