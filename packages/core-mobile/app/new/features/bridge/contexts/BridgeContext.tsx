@@ -1,4 +1,11 @@
-import React, { ReactNode, useCallback, useEffect } from 'react'
+import React, {
+  createContext,
+  useContext,
+  useState,
+  ReactNode,
+  useEffect,
+  useCallback
+} from 'react'
 import {
   BridgeSDKProvider,
   BridgeTransaction,
@@ -35,27 +42,47 @@ export type PartialBridgeTransaction = Pick<
   | 'symbol'
 >
 
+// Create a simple context for controlling config fetching
+const BridgeConfigContext = createContext<{
+  enableConfig: () => void
+  disableConfig: () => void
+}>({
+  enableConfig: () => {}, // eslint-disable-line @typescript-eslint/no-empty-function
+  disableConfig: () => {} // eslint-disable-line @typescript-eslint/no-empty-function
+})
+
 export function BridgeProvider({
   children
 }: {
   children: ReactNode
 }): JSX.Element {
+  const [configEnabled, setConfigEnabled] = useState(false)
+
+  const enableConfig = () => setConfigEnabled(true)
+  const disableConfig = () => setConfigEnabled(false)
+
   return (
-    <BridgeSDKProvider>
-      <LocalBridgeProvider>{children}</LocalBridgeProvider>
-    </BridgeSDKProvider>
+    <BridgeConfigContext.Provider value={{ enableConfig, disableConfig }}>
+      <BridgeSDKProvider>
+        <LocalBridgeProvider enabled={configEnabled}>
+          {children}
+        </LocalBridgeProvider>
+      </BridgeSDKProvider>
+    </BridgeConfigContext.Provider>
   )
 }
 
 const TrackerSubscriptions = new Map<string, TrackerSubscription>()
 
 function LocalBridgeProvider({
-  children
+  children,
+  enabled
 }: {
   children: ReactNode
+  enabled: boolean
 }): JSX.Element {
   const dispatch = useDispatch()
-  const { data: bridgeConfig } = useBridgeConfig()
+  const { data: bridgeConfig } = useBridgeConfig(enabled)
   const config = bridgeConfig?.config
   const bridgeTransactions = useSelector(selectBridgeTransactions)
   const ethereumProvider = useEthereumProvider()
@@ -150,3 +177,6 @@ function LocalBridgeProvider({
 
   return <>{children}</>
 }
+
+// Export hook to control config fetching
+export const useBridgeConfigControl = () => useContext(BridgeConfigContext)
