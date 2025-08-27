@@ -83,7 +83,6 @@ export const handleDeeplink = ({
         dismissMeldStack(action, searchParams)
       } else {
         const hasPortfolioRoute = hasRouteByName(navigationState, 'portfolio')
-        console.log('navigateFromDeeplinkUrl', hasPortfolioRoute)
         const path = deeplink.url.split(':/')[1]
         path && navigateFromDeeplinkUrl(path, hasPortfolioRoute)
       }
