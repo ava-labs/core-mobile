@@ -2,7 +2,6 @@
  * Context wrapper for App
  **/
 import * as Sentry from '@sentry/react-native'
-import { DeeplinkContextProvider } from 'contexts/DeeplinkContext/DeeplinkContext'
 import { EncryptedStoreProvider } from 'contexts/EncryptedStoreProvider'
 import { PosthogContextProvider } from 'contexts/PosthogContext'
 import { ReactQueryProvider } from 'contexts/ReactQueryProvider'
@@ -29,9 +28,7 @@ const setGlobalConfetti = (confetti: ConfettiMethods): void => {
 const ContextProviders: FC<PropsWithChildren> = ({ children }) => (
   <EncryptedStoreProvider>
     <ReactQueryProvider>
-      <PosthogContextProvider>
-        <DeeplinkContextProvider>{children}</DeeplinkContextProvider>
-      </PosthogContextProvider>
+      <PosthogContextProvider>{children}</PosthogContextProvider>
     </ReactQueryProvider>
   </EncryptedStoreProvider>
 )

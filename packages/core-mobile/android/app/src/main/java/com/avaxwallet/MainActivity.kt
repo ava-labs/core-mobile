@@ -2,7 +2,7 @@ package com.avaxwallet
 
 import android.os.Bundle
 import android.view.View
-import android.widget.FrameLayout
+import android.view.WindowManager
 import androidx.appcompat.app.AppCompatDelegate
 import com.facebook.react.ReactActivity
 import com.facebook.react.ReactActivityDelegate
@@ -30,34 +30,15 @@ class MainActivity : ReactActivity() {
                     DefaultReactActivityDelegate(this, mainComponentName, fabricEnabled)
             )
 
-    private var privacyView: View? = null
-    private var isPrivacyViewOn = false
-
     override fun onCreate(savedInstanceState: Bundle?) {
         RNBootSplash.init(this, R.style.BootTheme)
         super.onCreate(null)
         // this is needed to set the theme correctly in app when night mode is enabled on the device
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM)
-        privacyView = View.inflate(this, R.layout.privacy_layout, null)
-    }
 
-    override fun onWindowFocusChanged(hasFocus: Boolean) {
-        super.onWindowFocusChanged(hasFocus)
-    }
-
-    override fun onPause() {
-        super.onPause()
-        val rootLayout = findViewById<FrameLayout>(android.R.id.content)
-        rootLayout.addView(privacyView)
-        isPrivacyViewOn = true
-    }
-
-    override fun onResume() {
-        super.onResume()
-        if (isPrivacyViewOn) {
-            val rootLayout = findViewById<FrameLayout>(android.R.id.content)
-            rootLayout.removeViewAt(rootLayout.childCount - 1)
-            isPrivacyViewOn = false
-        }
+        window?.setFlags(
+                WindowManager.LayoutParams.FLAG_SECURE,
+                WindowManager.LayoutParams.FLAG_SECURE
+        )
     }
 }
