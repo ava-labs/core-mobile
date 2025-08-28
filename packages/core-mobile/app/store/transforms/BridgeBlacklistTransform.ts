@@ -4,9 +4,7 @@ import Big from 'big.js'
 import { RawRootState } from 'store/types'
 import { BridgeState, reducerName } from 'store/bridge'
 
-// a transform for bridge that:
-// 1/ blacklists config
-// 2/ transforms Big string to Big during deserialization
+// a transform for bridge that transforms Big string to Big during deserialization
 export const BridgeBlacklistTransform = createTransform<
   BridgeState,
   BridgeState,
@@ -16,7 +14,6 @@ export const BridgeBlacklistTransform = createTransform<
   // transform state before it gets serialized and persisted
   (inboundState: BridgeState) => {
     return {
-      config: undefined,
       bridgeTransactions: inboundState.bridgeTransactions
     }
   },
@@ -36,7 +33,6 @@ export const BridgeBlacklistTransform = createTransform<
     }, {})
 
     return {
-      config: undefined,
       bridgeTransactions
     }
   },
