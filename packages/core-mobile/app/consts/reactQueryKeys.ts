@@ -37,5 +37,8 @@ export enum ReactQueryKeys {
   MELD_SEARCH_PAYMENT_METHODS = 'meldSearchPaymentMethods',
   MELD_CREATE_CRYPTO_QUOTE = 'meldCreateCryptoQuote',
 
-  TERMS_OF_USE = 'termsOfUse'
+  TERMS_OF_USE = 'termsOfUse',
+
+  // bridge
+  BRIDGE_CONFIG = 'bridgeConfig'
 }

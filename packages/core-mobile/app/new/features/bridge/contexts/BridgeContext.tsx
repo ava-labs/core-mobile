@@ -1,4 +1,11 @@
-import React, { ReactNode, useCallback, useEffect } from 'react'
+import React, {
+  createContext,
+  useContext,
+  useState,
+  ReactNode,
+  useEffect,
+  useCallback
+} from 'react'
 import {
   BridgeSDKProvider,
   BridgeTransaction,
@@ -10,9 +17,9 @@ import { useDispatch, useSelector } from 'react-redux'
 import {
   addBridgeTransaction,
   popBridgeTransaction,
-  selectBridgeConfig,
   selectBridgeTransactions
 } from 'store/bridge'
+import { useBridgeConfig } from 'hooks/bridge/useBridgeConfig'
 import {
   useAvalancheEvmProvider,
   useBitcoinProvider,
@@ -35,27 +42,47 @@ export type PartialBridgeTransaction = Pick<
   | 'symbol'
 >
 
+// Create a simple context for controlling config fetching
+const BridgeConfigContext = createContext<{
+  enableConfig: () => void
+  disableConfig: () => void
+}>({
+  enableConfig: () => {}, // eslint-disable-line @typescript-eslint/no-empty-function
+  disableConfig: () => {} // eslint-disable-line @typescript-eslint/no-empty-function
+})
+
 export function BridgeProvider({
   children
 }: {
   children: ReactNode
 }): JSX.Element {
+  const [configEnabled, setConfigEnabled] = useState(false)
+
+  const enableConfig = () => setConfigEnabled(true)
+  const disableConfig = () => setConfigEnabled(false)
+
   return (
-    <BridgeSDKProvider>
-      <LocalBridgeProvider>{children}</LocalBridgeProvider>
-    </BridgeSDKProvider>
+    <BridgeConfigContext.Provider value={{ enableConfig, disableConfig }}>
+      <BridgeSDKProvider>
+        <LocalBridgeProvider enabled={configEnabled}>
+          {children}
+        </LocalBridgeProvider>
+      </BridgeSDKProvider>
+    </BridgeConfigContext.Provider>
   )
 }
 
 const TrackerSubscriptions = new Map<string, TrackerSubscription>()
 
 function LocalBridgeProvider({
-  children
+  children,
+  enabled
 }: {
   children: ReactNode
+  enabled: boolean
 }): JSX.Element {
   const dispatch = useDispatch()
-  const bridgeConfig = useSelector(selectBridgeConfig)
+  const { data: bridgeConfig } = useBridgeConfig(enabled)
   const config = bridgeConfig?.config
   const bridgeTransactions = useSelector(selectBridgeTransactions)
   const ethereumProvider = useEthereumProvider()
@@ -79,11 +106,6 @@ function LocalBridgeProvider({
   )
 
   useEffect(() => {
-    // sync bridge config in bridge sdk with ours
-    // this is necessary because:
-    // 1/ we don't use useBridgeConfigUpdater() any more.
-    //    instead, we have a redux listener that fetches the config periodically
-    // 2/ we still depend on a lot of things in the bridge sdk (avalancheAssets, ethereumAssets,...)
     if (bridgeConfig && !isEqual(bridgeConfig, bridgeConfigSDK)) {
       setBridgeConfig(bridgeConfig)
     }
@@ -151,3 +173,6 @@ function LocalBridgeProvider({
 
   return <>{children}</>
 }
+
+// Export hook to control config fetching
+export const useBridgeConfigControl = () => useContext(BridgeConfigContext)
