@@ -1,5 +1,4 @@
 import { K2AlpineThemeProvider } from '@avalabs/k2-alpine'
-import { LogoModal } from 'common/components/LogoModal'
 import { Stack } from 'common/components/Stack'
 import {
   forNoAnimation,
@@ -21,20 +20,19 @@ import { KeyboardProvider } from 'react-native-keyboard-controller'
 import 'react-native-reanimated'
 import { useDispatch, useSelector } from 'react-redux'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
-import { selectIsIdled } from 'store/app'
 import {
   Appearance,
   selectSelectedAppearance,
   selectSelectedColorScheme,
   setSelectedColorScheme
 } from 'store/settings/appearance'
+import { PrivacyScreen } from 'features/privacyScreen/components/PrivacyScreen'
 
 export default function Root(): JSX.Element | null {
   const dispatch = useDispatch()
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const selectedAppearance = useSelector(selectSelectedAppearance)
   const colorScheme = useSelector(selectSelectedColorScheme)
-  const isIdled = useSelector(selectIsIdled)
 
   const { modalScreensOptions } = useModalScreenOptions()
 
@@ -109,7 +107,7 @@ export default function Root(): JSX.Element | null {
                   }}
                 />
               </Stack>
-              {isIdled && <LogoModal />}
+              <PrivacyScreen />
             </RecoveryMethodProvider>
           </DeeplinkContextProvider>
         </NavigationThemeProvider>

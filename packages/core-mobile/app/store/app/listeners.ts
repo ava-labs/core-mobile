@@ -114,13 +114,12 @@ const lockApp = async (
   const lockWalletWithPIN = selectLockWalletWithPIN(state)
   const isLocked = selectIsLocked(state)
 
-  dispatch(setIsIdled(true))
-
   if (isLocked || !lockWalletWithPIN) {
     // bail out if already locked or if lock wallet with PIN is disabled
-    dispatch(setIsIdled(false))
     return
   }
+
+  dispatch(setIsIdled(true))
 
   const backgroundStarted = new Date()
 
