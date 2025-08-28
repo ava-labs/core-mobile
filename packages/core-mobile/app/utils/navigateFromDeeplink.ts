@@ -13,6 +13,9 @@ export const navigateFromDeeplinkUrl = (
   href: string,
   hasPortfolioRoute = false
 ): void => {
+  // added InteractionManager and setTimeout of 1000ms here,
+  // so that it doesn't navigate too fast before screen re-renders,
+  // and the deeplinked screen goes away because of the re-rendering.
   InteractionManager.runAfterInteractions(() => {
     // @ts-ignore TODO: make routes typesafe
     hasPortfolioRoute === false && router.navigate('/portfolio')
