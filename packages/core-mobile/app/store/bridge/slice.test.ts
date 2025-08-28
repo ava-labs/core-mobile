@@ -1,12 +1,9 @@
-import testConfig from 'tests/fixtures/bridgeConfig'
 import Big from 'big.js'
 import { Blockchain, BridgeTransaction } from '@avalabs/core-bridge-sdk'
-import { assertNotUndefined } from 'utils/assertions'
 import {
   addBridgeTransaction,
   bridgeReducer as reducer,
-  popBridgeTransaction,
-  setConfig
+  popBridgeTransaction
 } from './slice'
 import { initialState } from './types'
 
@@ -46,43 +43,12 @@ describe('bridge - reducer', () => {
     expect(state).toBe(initialState)
   })
 
-  describe('setConfig', () => {
-    it('should save new config', () => {
-      const currentState = initialState
-      const state = reducer(currentState, setConfig(testConfig))
-
-      expect(state).toStrictEqual({
-        bridgeTransactions: {},
-        config: testConfig
-      })
-    })
-
-    it('should update existing config', () => {
-      const newConfig = testConfig
-      assertNotUndefined(newConfig.config)
-      newConfig.config.critical.addressBlocklist = [
-        '0x14dba1194ee20112fe6c3207c0687def0e78bacf'
-      ]
-      const currentState = {
-        bridgeTransactions: {},
-        config: testConfig
-      }
-      const state = reducer(currentState, setConfig(newConfig))
-
-      expect(state).toStrictEqual({
-        bridgeTransactions: {},
-        config: newConfig
-      })
-    })
-  })
-
   describe('addBridgeTransaction', () => {
     it('should save new transaction', () => {
       const currentState = {
         bridgeTransactions: {
           [bridgeTx1.sourceTxHash]: bridgeTx1
-        },
-        config: undefined
+        }
       }
       const state = reducer(currentState, addBridgeTransaction(bridgeTx2))
 
@@ -90,8 +56,7 @@ describe('bridge - reducer', () => {
         bridgeTransactions: {
           [bridgeTx1.sourceTxHash]: bridgeTx1,
           [bridgeTx2.sourceTxHash]: bridgeTx2
-        },
-        config: undefined
+        }
       })
     })
 
@@ -103,16 +68,14 @@ describe('bridge - reducer', () => {
       const currentState = {
         bridgeTransactions: {
           [bridgeTx1.sourceTxHash]: bridgeTx1
-        },
-        config: undefined
+        }
       }
       const state = reducer(currentState, addBridgeTransaction(newBridgeTx))
 
       expect(state).toStrictEqual({
         bridgeTransactions: {
           [bridgeTx1.sourceTxHash]: newBridgeTx
-        },
-        config: undefined
+        }
       })
     })
   })
@@ -123,8 +86,7 @@ describe('bridge - reducer', () => {
         bridgeTransactions: {
           [bridgeTx1.sourceTxHash]: bridgeTx1,
           [bridgeTx2.sourceTxHash]: bridgeTx2
-        },
-        config: undefined
+        }
       }
       const state = reducer(
         currentState,
@@ -134,8 +96,7 @@ describe('bridge - reducer', () => {
       expect(state).toStrictEqual({
         bridgeTransactions: {
           [bridgeTx1.sourceTxHash]: bridgeTx1
-        },
-        config: undefined
+        }
       })
     })
 
@@ -144,8 +105,7 @@ describe('bridge - reducer', () => {
         bridgeTransactions: {
           [bridgeTx1.sourceTxHash]: bridgeTx1,
           [bridgeTx2.sourceTxHash]: bridgeTx2
-        },
-        config: undefined
+        }
       }
       const state = reducer(currentState, popBridgeTransaction('randomHash'))
 
@@ -153,8 +113,7 @@ describe('bridge - reducer', () => {
         bridgeTransactions: {
           [bridgeTx1.sourceTxHash]: bridgeTx1,
           [bridgeTx2.sourceTxHash]: bridgeTx2
-        },
-        config: undefined
+        }
       })
     })
   })
