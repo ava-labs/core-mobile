@@ -106,10 +106,6 @@ function LocalBridgeProvider({
   )
 
   useEffect(() => {
-    // sync bridge config in bridge sdk with ours
-    // this is necessary because:
-    // 1/ we now use useBridgeConfig hook with MMKV caching instead of Redux
-    // 2/ we still depend on a lot of things in the bridge sdk (avalancheAssets, ethereumAssets,...)
     if (bridgeConfig && !isEqual(bridgeConfig, bridgeConfigSDK)) {
       setBridgeConfig(bridgeConfig)
     }
