@@ -41,6 +41,7 @@ import {
   onLogOut,
   selectAppState,
   selectIsLocked,
+  setIsIdled,
   setWalletType
 } from './slice'
 
@@ -118,6 +119,8 @@ const lockApp = async (
     return
   }
 
+  dispatch(setIsIdled(true))
+
   const backgroundStarted = new Date()
 
   await condition(isAnyOf(onForeground))
@@ -138,6 +141,10 @@ const lockApp = async (
       dispatch(setWalletState(WalletState.INACTIVE))
     }
   }
+
+  setTimeout(() => {
+    dispatch(setIsIdled(false))
+  }, 100)
 }
 
 const setStateToUnlocked = async (
