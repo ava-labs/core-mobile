@@ -15,7 +15,7 @@ import {
 } from 'common/utils/alertWithTextInput'
 import { isValidContactName } from 'common/utils/isValidContactName'
 import { loadAvatar } from 'common/utils/loadAvatar'
-import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router'
+import { useFocusEffect, useGlobalSearchParams, useRouter } from 'expo-router'
 import React, { useCallback, useMemo, useRef } from 'react'
 import { Contact } from 'store/addressBook'
 import { useSelector } from 'react-redux'
@@ -213,7 +213,7 @@ const ContactFormField = ({
 }): React.ReactNode => {
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const { theme } = useTheme()
-  const params = useLocalSearchParams<{
+  const params = useGlobalSearchParams<{
     address: string
     addressType: AddressType
   }>()
@@ -252,6 +252,7 @@ const ContactFormField = ({
         onUpdateAddress(params.addressType, params.address)
         ref.current?.setInputValue(params.address)
         // @ts-ignore TODO: make route params typesafe
+        // Clear params immediately after use to prevent pollution
         setParams({ address: undefined, addressType: undefined })
       }
     }, [
