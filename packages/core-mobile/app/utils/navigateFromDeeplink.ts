@@ -1,4 +1,5 @@
 import { router } from 'expo-router'
+import { InteractionManager } from 'react-native'
 
 /**
 this function is used to navigate to a specific route in the app
@@ -12,10 +13,12 @@ export const navigateFromDeeplinkUrl = (
   href: string,
   hasPortfolioRoute = false
 ): void => {
-  // @ts-ignore TODO: make routes typesafe
-  hasPortfolioRoute === false && router.navigate('/portfolio')
-  setTimeout(() => {
+  InteractionManager.runAfterInteractions(() => {
     // @ts-ignore TODO: make routes typesafe
-    router.navigate(href)
-  }, 100)
+    hasPortfolioRoute === false && router.navigate('/portfolio')
+    setTimeout(() => {
+      // @ts-ignore TODO: make routes typesafe
+      router.navigate(href)
+    }, 1000)
+  })
 }

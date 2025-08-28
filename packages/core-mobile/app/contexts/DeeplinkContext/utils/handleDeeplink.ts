@@ -62,10 +62,6 @@ export const handleDeeplink = ({
       const { host: action, pathname, searchParams } = url
       if (action === ACTIONS.WC) {
         startWalletConnectSession({ url, dispatch, deeplink })
-      } else if (action === ACTIONS.Portfolio) {
-        deeplink.callback?.()
-        // @ts-ignore TODO: make routes typesafe
-        router.navigate('/portfolio')
       } else if (action === ACTIONS.StakeComplete) {
         if (isEarnBlocked) return
         deeplink.callback?.()
