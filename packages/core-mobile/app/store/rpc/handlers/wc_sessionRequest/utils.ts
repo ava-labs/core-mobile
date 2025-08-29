@@ -27,7 +27,8 @@ const CORE_WEB_HOSTNAMES = [
   'localhost',
   '127.0.0.1',
   'core.app',
-  'test.core.app',
+  'staging.core.app',
+  'develop.core.app',
   'ava-labs.github.io' // internal playground
 ]
 
@@ -45,8 +46,8 @@ const CORE_EXT_HOSTNAMES = [
 ]
 
 const CORE_WEB_URLS_REGEX = [
-  'https://[a-zA-Z0-9-]+\\.core-web\\.pages\\.dev', // for all https://*.core-web.pages.dev urls
-  'https://[a-zA-Z0-9-]+\\.redesign-aa3\\.pages\\.dev' // for all https://*.redesign-aa3.pages.dev urls
+  // core web preview deploys (ex. https://d0ce77c0-core-web-dev.avalabs.workers.dev)
+  'https://[a-zA-Z0-9]+-core-web-dev\\.avalabs\\.workers\\.dev'
 ]
 
 export const isCoreMethod = (method: string): boolean =>
