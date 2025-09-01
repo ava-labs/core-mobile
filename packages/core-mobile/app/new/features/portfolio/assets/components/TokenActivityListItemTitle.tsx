@@ -127,6 +127,34 @@ export const TokenActivityListItemTitle = ({
             ]
           }
 
+          // if the tx has 3 tokens, it means we funded the gas
+          if (tx.tokens.length > 2) {
+            const a3 = tx.tokens[2]?.amount
+            const s3 = tx.tokens[2]?.symbol
+            // if all the tokens have the same symbol, it's a send/receive
+            if (
+              tx.tokens[0]?.symbol === tx.tokens[1]?.symbol &&
+              tx.tokens[1]?.symbol === tx.tokens[2]?.symbol
+            ) {
+              return [
+                renderAmount(a1),
+                ' ',
+                s1,
+                tx.isSender ? ' sent' : ' received'
+              ]
+            }
+
+            return [
+              renderAmount(a1),
+              ' ',
+              s1,
+              ' swapped for ',
+              renderAmount(a3),
+              ' ',
+              s3
+            ]
+          }
+
           if (tx.tokens.length > 1) {
             if (tx.tokens[0]?.symbol === tx.tokens[1]?.symbol) {
               return [
