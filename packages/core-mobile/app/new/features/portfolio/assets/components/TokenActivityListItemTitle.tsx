@@ -115,18 +115,6 @@ export const TokenActivityListItemTitle = ({
           ]
         }
         if (tx.isContractCall) {
-          if (tx.tokens.length === 1) {
-            if (isPotentiallySwap(tx)) {
-              return [renderAmount(a1), ' ', s1, ' swapped for ', s2]
-            }
-            return [
-              renderAmount(a1),
-              ' ',
-              s1,
-              tx.isSender ? ' sent' : ' received'
-            ]
-          }
-
           // if the tx has 3 tokens, it means we funded the gas
           if (tx.tokens.length > 2) {
             const a3 = tx.tokens[2]?.amount
@@ -173,6 +161,18 @@ export const TokenActivityListItemTitle = ({
               renderAmount(a2),
               ' ',
               s2
+            ]
+          }
+
+          if (tx.tokens.length === 1) {
+            if (isPotentiallySwap(tx)) {
+              return [renderAmount(a1), ' ', s1, ' swapped for ', s2]
+            }
+            return [
+              renderAmount(a1),
+              ' ',
+              s1,
+              tx.isSender ? ' sent' : ' received'
             ]
           }
 
