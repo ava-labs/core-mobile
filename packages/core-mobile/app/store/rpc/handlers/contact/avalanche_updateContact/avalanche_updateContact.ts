@@ -87,6 +87,7 @@ class AvalancheUpdateContactHandler
         address: contact.address ? contact.address : undefined,
         addressBTC: contact.addressBTC ? contact.addressBTC : undefined,
         addressXP: contact.addressXP ? contact.addressXP : undefined,
+        addressSVM: contact.addressSVM ? contact.addressSVM : undefined,
         name: contact.name,
         id: contact.id
       })

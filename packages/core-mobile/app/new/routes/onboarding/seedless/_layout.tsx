@@ -30,8 +30,7 @@ export default function SeedlessOnboardingLayout(): JSX.Element {
     <Stack
       screenOptions={{
         ...stackScreensOptions,
-        headerTitle: renderPageControl,
-        headerShown: false
+        headerTitle: renderPageControl
       }}>
       {SEEDLESS_ONBOARDING_SCREENS.map(screen => {
         return <Stack.Screen key={screen} name={screen} />

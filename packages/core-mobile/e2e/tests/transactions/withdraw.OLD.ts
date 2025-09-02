@@ -1,13 +1,11 @@
 import { warmup } from '../../helpers/warmup'
 import bottomTabsPage from '../../pages/bottomTabs.page'
 import buyPage from '../../pages/buy.page'
-import networksManagePage from '../../pages/networksManage.page'
 import plusMenuPage from '../../pages/plusMenu.page'
 
 describe('Withdraw', () => {
   beforeAll(async () => {
     await warmup()
-    await networksManagePage.switchToAvalancheNetwork()
   })
 
   it('should navigate Moonpay to buy AVAX', async () => {

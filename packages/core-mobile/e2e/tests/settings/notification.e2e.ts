@@ -7,10 +7,11 @@ describe('Settings - Notifications', () => {
   const notiData = {
     'Stake': 'Stake complete alerts',
     'Balance': 'Wallet balance change alerts',
-    'Product Announcements': 'Learn about new features and changes',
-    'Market News': 'News and market information alerts',
-    'Price Alerts': 'Token price movement alerts',
-    'Special Offers and Promotions': 'Airdrops and promotional offers'
+    'Product announcements': 'Learn about new features and changes',
+    'Special offers and promotions': 'Airdrops and promotional offers',
+    'Market news': 'News and market information alerts',
+    'Price alerts': 'Token price movement alerts',
+    'Favorite token alerts': 'Favorite token price movement alerts'
   }
   
   it('should turn ON all notifications by default', async () => {

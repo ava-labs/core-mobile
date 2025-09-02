@@ -50,7 +50,8 @@
     "@noble/curves/@noble/hashes": "1.8.0",
     "@scure/bip32/@noble/hashes": "1.8.0",
     "@scure/bip39/@noble/hashes": "1.8.0",
-    "@scure/btc-signer/@noble/hashes": "1.8.0"
+    "@scure/btc-signer/@noble/hashes": "1.8.0",
+    "lodash@4.17.3": "4.17.21"
   },
   "engines": {
     "node": ">=20.18.0",

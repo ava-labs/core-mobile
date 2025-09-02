@@ -220,7 +220,9 @@ export const ManageNetworksScreen = (): JSX.Element => {
             borderColor: theme.colors.$borderPrimary,
             paddingRight: 16
           }}>
-          <Text style={{ flex: 1 }}>{item.chainName}</Text>
+          <Text testID={`network_list__${item.chainName}`} style={{ flex: 1 }}>
+            {item.chainName}
+          </Text>
           {!alwaysEnabledChainIds.includes(item.chainId) && (
             <Toggle
               testID={
@@ -261,7 +263,9 @@ export const ManageNetworksScreen = (): JSX.Element => {
 
   const renderHeaderRight = useCallback(() => {
     return (
-      <NavigationBarButton onPress={goToAddCustomNetwork}>
+      <NavigationBarButton
+        testID="add_network_btn"
+        onPress={goToAddCustomNetwork}>
         <Icons.Content.Add color={theme.colors.$textPrimary} />
       </NavigationBarButton>
     )
