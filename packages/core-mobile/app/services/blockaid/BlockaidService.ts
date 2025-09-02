@@ -9,7 +9,7 @@ if (!Config.PROXY_URL)
 
 const baseURL = Config.PROXY_URL + '/proxy/blockaid/'
 
-export const blockaid = new Blockaid({
+const blockaid = new Blockaid({
   baseURL,
   apiKey: 'DUMMY_API_KEY', // since we're using our own proxy and api key is handled there, we can use a dummy key here
   fetch: global.fetch,
