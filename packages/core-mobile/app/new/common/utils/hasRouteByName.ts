@@ -1,4 +1,4 @@
-type NavState = {
+export type NavState = {
   routes?: Array<{ name?: string; state?: NavState }>
 }
 

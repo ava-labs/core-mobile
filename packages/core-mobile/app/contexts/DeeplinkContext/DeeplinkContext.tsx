@@ -6,7 +6,7 @@ import React, {
   useState
 } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { selectWalletState, WalletState } from 'store/app'
+import { selectIsIdled, selectWalletState, WalletState } from 'store/app'
 import { noop } from '@avalabs/core-utils-sdk'
 import { Linking } from 'react-native'
 import NotificationsService from 'services/notifications/NotificationsService'
@@ -17,6 +17,7 @@ import {
 } from 'store/posthog'
 import { FIDO_CALLBACK_URL } from 'services/passkey/consts'
 import { processNotificationData } from 'store/notifications'
+import { useRootNavigationState } from 'expo-router'
 import { useCoreBrowser } from 'common/hooks/useCoreBrowser'
 import { handleDeeplink } from './utils/handleDeeplink'
 import {
@@ -42,8 +43,10 @@ export const DeeplinkContextProvider = ({
   const isWalletActive = walletState === WalletState.ACTIVE
   const isAllNotificationsBlocked = useSelector(selectIsAllNotificationsBlocked)
   const isEarnBlocked = useSelector(selectIsEarnBlocked)
+  const isIdled = useSelector(selectIsIdled)
   const [pendingDeepLink, setPendingDeepLink] = useState<DeepLink>()
   const { openUrl } = useCoreBrowser()
+  const navigationState = useRootNavigationState()
 
   const handleNotificationCallback: HandleNotificationCallback = useCallback(
     (data: NotificationData | undefined) => {
@@ -135,17 +138,26 @@ export const DeeplinkContextProvider = ({
    * Process deep link if there is one pending and app is unlocked
    *****************************************************************************/
   useEffect(() => {
-    if (pendingDeepLink && isWalletActive) {
+    if (pendingDeepLink && isWalletActive && !isIdled) {
       handleDeeplink({
         deeplink: pendingDeepLink,
         dispatch,
         isEarnBlocked,
-        openUrl
+        openUrl,
+        navigationState
       })
       // once we used the url, we can expire it
       setPendingDeepLink(undefined)
     }
-  }, [isWalletActive, pendingDeepLink, dispatch, isEarnBlocked, openUrl])
+  }, [
+    isWalletActive,
+    pendingDeepLink,
+    dispatch,
+    isEarnBlocked,
+    openUrl,
+    isIdled,
+    navigationState
+  ])
 
   return (
     <DeeplinkContext.Provider

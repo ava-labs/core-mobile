@@ -109,6 +109,12 @@ const EditContactScreen = ({
         value: renderAddress(contact.addressBTC)
       })
 
+    contact.addressSVM &&
+      data.push({
+        title: 'Solana',
+        value: renderAddress(contact.addressSVM)
+      })
+
     return (
       <GroupList
         data={data}
