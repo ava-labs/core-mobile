@@ -24,6 +24,7 @@ import { APPLICATION_NAME, APPLICATION_VERSION } from 'utils/network/constants'
 import { DerivationPath } from '@avalabs/core-wallets-sdk'
 import { emptyAddresses } from 'utils/publicKeys'
 import { WalletType } from 'services/wallet/types'
+import { blockaid } from 'services/blockaid/BlockaidService'
 import { ModuleErrors, VmModuleErrors } from './errors'
 import { approvalController } from './ApprovalController/ApprovalController'
 
@@ -92,7 +93,8 @@ class ModuleManager {
       appInfo: {
         name: APPLICATION_NAME,
         version: APPLICATION_VERSION
-      }
+      },
+      blockaid
     }
 
     this.modules = [
