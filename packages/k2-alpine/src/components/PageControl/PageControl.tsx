@@ -65,7 +65,10 @@ export const PageControl = ({
       style={[
         {
           padding: 0,
-          overflow: 'hidden'
+          overflow: 'hidden',
+          flex: 1,
+          alignItems: 'center',
+          paddingRight: 16
         },
         style
       ]}>
@@ -74,7 +77,9 @@ export const PageControl = ({
           {
             marginHorizontal: Configuration.gap + Configuration.dot.width,
             maxWidth: viewPortWidth,
-            justifyContent: 'center'
+            justifyContent: 'center',
+            alignItems: 'center',
+            flex: 1
           }
         ]}>
         <Animated.View

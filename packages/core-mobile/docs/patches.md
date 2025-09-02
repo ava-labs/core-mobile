@@ -93,3 +93,21 @@ there is a perf issue with reanimated around executeOnUIRuntimeSync https://gith
 we patched the tab selection handlers to allow native tab bars (iOS UITabBarController, Android BottomNavigationView) to handle selection directly, instead of routing everything through JS. this removes the extra JS roundtrip that caused visible delays/flicker.
 https://github.com/callstackincubator/react-native-bottom-tabs/issues/383
 https://github.com/callstackincubator/react-native-bottom-tabs/pull/408
+
+
+### react-native-toast-notifications
+
+We patched this to fix /native-stack toast displaying on top of all screens.
+You can wrap a toast container with a custom wrapper.
+
+```js
+<ToastProvider
+    ToastContainerWrapper={{
+      component: FooComponent,
+      props: {style: { flex: 1}}
+    }}
+>
+...
+</>
+
+// In order to display a toast over a native-stack modal, use [FullWindowOverlay component](https://github.com/software-mansion/react-native-screens?tab=readme-ov-file#fullwindowoverlay).
