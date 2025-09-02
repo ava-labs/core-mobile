@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { ViewStyle, View } from 'react-native'
+import { ViewStyle, View, Platform } from 'react-native'
 import Animated, {
   runOnJS,
   useAnimatedStyle,
@@ -66,9 +66,10 @@ export const PageControl = ({
         {
           padding: 0,
           overflow: 'hidden',
-          flex: 1,
           alignItems: 'center',
-          paddingRight: 16
+          flex: 1,
+          height: '100%',
+          paddingRight: Platform.OS === 'ios' ? 44 : 0
         },
         style
       ]}>

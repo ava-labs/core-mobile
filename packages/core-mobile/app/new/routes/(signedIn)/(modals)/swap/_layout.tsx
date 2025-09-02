@@ -18,7 +18,9 @@ export default function SwapLayout(): JSX.Element {
   return (
     <SwapContextProvider>
       <Stack
-        screenOptions={modalStackNavigatorScreenOptions}
+        screenOptions={{
+          ...modalStackNavigatorScreenOptions
+        }}
         initialRouteName={initialRouteName}>
         <Stack.Screen name="onboarding" options={modalFirstScreenOptions} />
         <Stack.Screen

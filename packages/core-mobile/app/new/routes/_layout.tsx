@@ -110,7 +110,7 @@ export default function Root(): JSX.Element | null {
                   <Stack.Screen name="+not-found" />
                   <Stack.Screen
                     name="onboarding"
-                    options={stackScreensOptions}
+                    options={{ ...stackScreensOptions, headerShown: true }}
                   />
                   <Stack.Screen
                     name="sessionExpired"
