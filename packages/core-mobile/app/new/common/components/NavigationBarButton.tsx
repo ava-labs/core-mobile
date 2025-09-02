@@ -7,6 +7,7 @@ const NavigationBarButton = ({
   children,
   isLeft = false,
   testID,
+  disabled,
   style
 }: {
   onPress?: () => void
@@ -14,6 +15,7 @@ const NavigationBarButton = ({
   testID?: string
   isModal?: boolean
   isLeft?: boolean
+  disabled?: boolean
   style?: StyleProp<ViewStyle>
 }): JSX.Element => {
   return (
@@ -21,6 +23,7 @@ const NavigationBarButton = ({
       // onPress doesn't work for Android when using svgs (only on production)
       onPressOut={onPress}
       testID={testID}
+      disabled={disabled}
       style={[
         {
           paddingLeft: isLeft ? 4 : 8,
@@ -35,7 +38,8 @@ const NavigationBarButton = ({
         style={{
           height: '100%',
           justifyContent: 'center',
-          alignItems: 'center'
+          alignItems: 'center',
+          opacity: disabled ? 0.4 : 1
         }}>
         {children}
       </View>

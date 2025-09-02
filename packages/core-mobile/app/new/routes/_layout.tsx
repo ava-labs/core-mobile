@@ -84,7 +84,7 @@ export default function Root(): JSX.Element | null {
                   <Stack.Screen name="signup" options={{ animation: 'none' }} />
                   <Stack.Screen
                     name="accessWallet"
-                    options={{ headerShown: true }}
+                    options={{ ...stackScreensOptions, headerShown: true }}
                   />
                   <Stack.Screen
                     name="(signedIn)"

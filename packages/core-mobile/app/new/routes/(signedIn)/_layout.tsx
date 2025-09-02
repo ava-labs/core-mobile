@@ -2,7 +2,6 @@ import { usePreventRemove } from '@react-navigation/native'
 import { LastTransactedNetworks } from 'common/components/LastTransactedNetworks'
 import { Stack } from 'common/components/Stack'
 import {
-  formSheetScreensOptions,
   modalScreensOptions,
   secondaryModalScreensOptions,
   stackNavigatorScreenOptions,
@@ -41,8 +40,7 @@ export default function WalletLayout(): JSX.Element {
           <Stack.Screen name="(tabs)" options={{ animation: 'none' }} />
           <Stack.Screen
             name="(modals)/accountSettings"
-            // keep this as formSheet for iOS, we don't want to scale the portfolio
-            options={{ ...modalScreensOptions, presentation: 'formSheet' }}
+            options={modalScreensOptions}
           />
           <Stack.Screen
             name="(modals)/approval"
@@ -116,7 +114,7 @@ export default function WalletLayout(): JSX.Element {
           />
           <Stack.Screen
             name="(modals)/trackTokenDetail"
-            options={formSheetScreensOptions}
+            options={modalScreensOptions}
           />
           <Stack.Screen
             name="(modals)/collectibleManagement"
@@ -129,15 +127,15 @@ export default function WalletLayout(): JSX.Element {
           />
           <Stack.Screen
             name="(modals)/selectBridgeSourceNetwork"
-            options={formSheetScreensOptions}
+            options={secondaryModalScreensOptions}
           />
           <Stack.Screen
             name="(modals)/selectBridgeTargetNetwork"
-            options={formSheetScreensOptions}
+            options={secondaryModalScreensOptions}
           />
           <Stack.Screen
             name="(modals)/selectBridgeToken"
-            options={formSheetScreensOptions}
+            options={secondaryModalScreensOptions}
           />
           <Stack.Screen
             name="(modals)/addStake"
@@ -165,7 +163,7 @@ export default function WalletLayout(): JSX.Element {
           />
           <Stack.Screen
             name="(modals)/selectCustomTokenNetwork"
-            options={formSheetScreensOptions}
+            options={secondaryModalScreensOptions}
           />
           <Stack.Screen
             name="(modals)/meld/onramp"
@@ -177,35 +175,35 @@ export default function WalletLayout(): JSX.Element {
           />
           <Stack.Screen
             name="(modals)/meldOnrampTokenList"
-            options={formSheetScreensOptions}
+            options={secondaryModalScreensOptions}
           />
           <Stack.Screen
             name="(modals)/meldOfframpTokenList"
-            options={formSheetScreensOptions}
+            options={secondaryModalScreensOptions}
           />
           <Stack.Screen
             name="(modals)/meldOnrampPaymentMethod"
-            options={formSheetScreensOptions}
+            options={secondaryModalScreensOptions}
           />
           <Stack.Screen
             name="(modals)/meldOfframpPaymentMethod"
-            options={formSheetScreensOptions}
+            options={secondaryModalScreensOptions}
           />
           <Stack.Screen
             name="(modals)/meldOnrampCountry"
-            options={formSheetScreensOptions}
+            options={secondaryModalScreensOptions}
           />
           <Stack.Screen
             name="(modals)/meldOnrampCurrency"
-            options={formSheetScreensOptions}
+            options={secondaryModalScreensOptions}
           />
           <Stack.Screen
             name="(modals)/meldOfframpCountry"
-            options={formSheetScreensOptions}
+            options={secondaryModalScreensOptions}
           />
           <Stack.Screen
             name="(modals)/meldOfframpCurrency"
-            options={formSheetScreensOptions}
+            options={secondaryModalScreensOptions}
           />
           <Stack.Screen
             name="(modals)/transactionSuccessful"

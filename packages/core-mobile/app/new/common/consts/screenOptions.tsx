@@ -49,11 +49,6 @@ export const modalStackNavigatorScreenOptions: NativeStackNavigationOptions = {
   presentation: 'card'
 }
 
-export const formSheetScreensOptions: NativeStackNavigationOptions = {
-  ...modalScreensOptions,
-  presentation: 'formSheet'
-}
-
 // Options for the first screen of a modal stack navigator.
 // This screen does not have a back button, so we need to hide it.
 export const modalFirstScreenOptions: NativeStackNavigationOptions = {
