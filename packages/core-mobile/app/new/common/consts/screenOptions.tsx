@@ -28,8 +28,7 @@ export const stackScreensOptions: NativeStackNavigationOptions | undefined = {
 export const modalScreensOptions: NativeStackNavigationOptions = {
   ...commonNavigatorScreenOptions,
   presentation: Platform.OS === 'ios' ? 'pageSheet' : 'formSheet',
-  sheetElevation: 48,
-  sheetAllowedDetents: [Platform.OS === 'android' ? 0.93 : 0.99],
+  sheetAllowedDetents: [Platform.OS === 'android' ? 0.94 : 0.99],
   headerLeft: () => <BackBarButton />,
   gestureEnabled: true,
   headerTransparent: true,

@@ -260,7 +260,7 @@ __metadata:
     "@react-native/eslint-config": 0.79.5
     "@react-native/metro-config": 0.79.5
     "@react-native/typescript-config": 0.79.5
-    "@react-navigation/bottom-tabs": 7.4.6
+    "@react-navigation/bottom-tabs": 7.4.7
     "@react-navigation/elements": 2.6.3
     "@react-navigation/native": 7.1.16
     "@react-navigation/native-stack": 7.3.25
@@ -393,7 +393,7 @@ __metadata:
     react-native-inappbrowser-reborn: 3.7.0
     react-native-ios-context-menu: 3.1.0
     react-native-ios-utilities: 5.1.2
-    react-native-keyboard-controller: 1.18.2
+    react-native-keyboard-controller: 1.18.6
     react-native-keychain: 10.0.0
     react-native-level-fs: 3.0.1
     react-native-localize: 3.2.1
@@ -413,7 +413,7 @@ __metadata:
     react-native-restart: 0.0.27
     react-native-root-siblings: 5.0.1
     react-native-safe-area-context: 5.5.2
-    react-native-screens: 4.11.1
+    react-native-screens: 4.15.4
     react-native-sensors: 7.3.6
     react-native-share: 12.0.9
     react-native-sound: 0.12.0
@@ -9715,11 +9715,11 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@react-navigation/bottom-tabs@npm:7.4.6":
-  version: 7.4.6
-  resolution: "@react-navigation/bottom-tabs@npm:7.4.6"
+"@react-navigation/bottom-tabs@npm:7.4.7":
+  version: 7.4.7
+  resolution: "@react-navigation/bottom-tabs@npm:7.4.7"
   dependencies:
-    "@react-navigation/elements": ^2.6.3
+    "@react-navigation/elements": ^2.6.4
     color: ^4.2.3
   peerDependencies:
     "@react-navigation/native": ^7.1.17
@@ -9727,7 +9727,7 @@ __metadata:
     react-native: "*"
     react-native-safe-area-context: ">= 4.0.0"
     react-native-screens: ">= 4.0.0"
-  checksum: 42f6bf8d043a227c2c5cca8e68fd7b6d3870bef269d415a09003fae210b8e53eab1f80fe013c401e2ccb48d360e3afb8cff72642e8c5f952f1aea433300a783c
+  checksum: 9ff291b086b00d4f656d67fd29b084c7d801c68e8db41c3b18192076d9593e6d4c9d4d28d1bde12be71c0499b6af83331cbe348549c15ff5fa5f8daf42c6bae3
   languageName: node
   linkType: hard
 
@@ -9784,7 +9784,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@react-navigation/elements@npm:^2.2.6":
+"@react-navigation/elements@npm:^2.2.6, @react-navigation/elements@npm:^2.6.4":
   version: 2.6.4
   resolution: "@react-navigation/elements@npm:2.6.4"
   dependencies:
@@ -27281,7 +27281,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-native-is-edge-to-edge@npm:^1.1.7, react-native-is-edge-to-edge@npm:^1.2.1":
+"react-native-is-edge-to-edge@npm:^1.2.1":
   version: 1.2.1
   resolution: "react-native-is-edge-to-edge@npm:1.2.1"
   peerDependencies:
@@ -27291,16 +27291,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-native-keyboard-controller@npm:1.18.2":
-  version: 1.18.2
-  resolution: "react-native-keyboard-controller@npm:1.18.2"
+"react-native-keyboard-controller@npm:1.18.6":
+  version: 1.18.6
+  resolution: "react-native-keyboard-controller@npm:1.18.6"
   dependencies:
     react-native-is-edge-to-edge: ^1.2.1
   peerDependencies:
     react: "*"
     react-native: "*"
     react-native-reanimated: ">=3.0.0"
-  checksum: 2d1fb8a43d70d172196d77acc7481d063592691fb26168bda4b75138055db7cf58872f7dafd631bb00b6311edbf9d424a69c4b401257c9f9f549646711a34a03
+  checksum: 3de794b78c115a2c3ce2b7dac5971c04a3cde6be43dd38065522ce0e987eff8a76bda226bad6c0bfa19ace9b64e19a9001f3c7a4e7cf8fa57906573d9ab19674
   languageName: node
   linkType: hard
 
@@ -27583,17 +27583,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-native-screens@npm:4.11.1":
-  version: 4.11.1
-  resolution: "react-native-screens@npm:4.11.1"
+"react-native-screens@npm:4.15.4":
+  version: 4.15.4
+  resolution: "react-native-screens@npm:4.15.4"
   dependencies:
     react-freeze: ^1.0.0
-    react-native-is-edge-to-edge: ^1.1.7
+    react-native-is-edge-to-edge: ^1.2.1
     warn-once: ^0.1.0
   peerDependencies:
     react: "*"
     react-native: "*"
-  checksum: 22d3c302ef90a1cb20eed8c130b32e53d49288a19eba844f506a5e38342ef2add0d4f7a2ff5501cc05052aef6bf7f180db26a067b01f70f3cc12d3e1497329d6
+  checksum: e0e5fbfcb77f0cd1b5358faa09b46661ef26fbcfa191ac49019967f2068feccf7cd3fa83e8dd7d52207443cd5f6263831440c365ba276fbb97def596a77626bb
   languageName: node
   linkType: hard
 
