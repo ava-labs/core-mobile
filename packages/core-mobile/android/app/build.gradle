@@ -159,7 +159,7 @@ android {
 }
 
 dependencies {
-    androidTestImplementation('com.wix:detox:+')
+    androidTestImplementation('com.wix:detox:20.40.2')
     implementation fileTree(dir: "libs", include: ["*.jar"])
     implementation 'com.google.firebase:firebase-messaging:24.0.1'
 

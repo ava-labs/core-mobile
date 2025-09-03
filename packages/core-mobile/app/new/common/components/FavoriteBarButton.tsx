@@ -19,9 +19,15 @@ export const FavoriteBarButton = ({
   return (
     <NavigationBarButton onPress={onPress} isModal={isModal} style={style}>
       {isFavorite === true ? (
-        <Icons.Toggle.StarFilled color={'#F7B500'} width={24} height={24} />
+        <Icons.Toggle.StarFilled
+          testID="star_filled"
+          color={'#F7B500'}
+          width={24}
+          height={24}
+        />
       ) : (
         <Icons.Toggle.StarOutline
+          testID="star_outline"
           color={theme.colors.$textPrimary}
           width={24}
           height={24}

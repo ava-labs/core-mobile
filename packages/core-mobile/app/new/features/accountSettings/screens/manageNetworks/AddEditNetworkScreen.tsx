@@ -300,6 +300,7 @@ export const AddEditNetworkScreen = (): JSX.Element => {
       <View sx={{ gap: 24, alignItems: 'center' }}>
         {formState.chainName && (
           <Text
+            testID={`network_name__${formState.chainName}`}
             variant="heading2"
             sx={{ color: '$textPrimary', textAlign: 'center' }}>
             {formState.chainName}
@@ -309,6 +310,7 @@ export const AddEditNetworkScreen = (): JSX.Element => {
         {(isCustomNetwork || mode === Mode.ADD) && (
           <View>
             <Button
+              testID="name_btn"
               onPress={handleShowAlertWithTextInput}
               type="secondary"
               size="small">

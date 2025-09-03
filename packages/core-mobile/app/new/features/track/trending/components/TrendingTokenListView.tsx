@@ -46,7 +46,11 @@ export const TrendingTokenListView = memo(
               logoUri={token.logoUri}
             />
             <View style={styles.crownContainer}>
-              <Text variant="heading6">👑</Text>
+              <Text
+                testID={`trending_token_crown__${index + 1}`}
+                variant="heading6">
+                👑
+              </Text>
             </View>
           </View>
         )
@@ -89,6 +93,7 @@ export const TrendingTokenListView = memo(
                   flex: 1
                 }}>
                 <Text
+                  testID={`trending_token_name__${index + 1}`}
                   variant="buttonMedium"
                   numberOfLines={1}
                   ellipsizeMode="tail"
@@ -96,6 +101,7 @@ export const TrendingTokenListView = memo(
                   {index + 1}. {token.name}
                 </Text>
                 <Text
+                  testID={`trending_token_value__${index + 1}`}
                   variant="buttonMedium"
                   numberOfLines={1}
                   ellipsizeMode="tail"
@@ -116,6 +122,7 @@ export const TrendingTokenListView = memo(
               }}>
               <View sx={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
                 <Text
+                  testID={`trending_token_symbol__${index + 1}`}
                   variant="body2"
                   sx={{ color: '$textSecondary', lineHeight: 18 }}
                   numberOfLines={1}
@@ -138,7 +145,11 @@ export const TrendingTokenListView = memo(
           </View>
           <View style={{ justifyContent: 'center' }}>
             <Button
-              testID={showBuyButton ? 'track_buy_btn' : 'track_view_btn'}
+              testID={
+                showBuyButton
+                  ? `trending_token_buy_btn__${index + 1}`
+                  : `trending_token_view_btn__${index + 1}`
+              }
               type="secondary"
               size="small"
               style={styles.buyButton}

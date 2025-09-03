@@ -5,9 +5,8 @@ import Assert from '../helpers/assertions'
 import delay from '../helpers/waits'
 import { Coin } from '../helpers/tokens'
 import commonElsPage from './commonEls.page'
-import buyPage from './buy.page'
 import swapTabPage from './swapTab.page'
-import tokenDetailPage from './tokenDetail.page'
+import bottomTabsPage from './bottomTabs.page'
 
 class WatchListPage {
   get allTab() {
@@ -125,16 +124,58 @@ class WatchListPage {
 
   async verifyFavorites(tokens: string[]) {
     for (const token of tokens) {
+      await Action.waitForElement(by.id(`market_token__${token}`))
+    }
+  }
+
+  async goToFavorites() {
+    await bottomTabsPage.tapTrackTab()
+    await this.tapFavoritesTab()
+  }
+
+  async tapToken(token: string) {
+    await Action.tapElementAtIndex(by.id(`market_token__${token}`), 0)
+  }
+
+  async addFavoriteToken(token: string) {
+    await commonElsPage.typeSearchBar(token)
+    await Action.dismissKeyboard()
+    await this.tapToken(token)
+    await this.tapStarOutline()
+    await commonElsPage.dismissBottomSheet()
+    await commonElsPage.clearSearchBar()
+  }
+
+  async removeFavoriteToken(token: string) {
+    await this.tapToken(token)
+    await this.tapStarFilled()
+    await commonElsPage.dismissBottomSheet()
+  }
+
+  async tapStarOutline() {
+    await delay(1000)
+    await Action.tap(this.starOutline)
+  }
+
+  async tapStarFilled() {
+    await delay(1000)
+    await Action.tap(this.starFilled)
+  }
+
+  async verifyWatchListCarousel(tokens: string[]) {
+    for (const token of tokens) {
       await Action.waitForElement(
-        by.id(`watchlist_item__${token.toLowerCase()}`),
-        10000
+        by.id(`watchlist_carousel__${token.toLowerCase()}`)
+      )
+      await Assert.isVisible(
+        by.id(`watchlist_carousel__${token.toLowerCase()}`)
       )
     }
   }
 
   async verifyTrendingTokens() {
     let i = 1
-    while (i < 21) {
+    while (i < 10) {
       try {
         await Action.waitForElement(by.id(`trending_token_name__${i}`))
       } catch (e) {
@@ -165,50 +206,56 @@ class WatchListPage {
     return by.id(watchlist.topTrendingTokenBuyBtn)
   }
 
-  get topTrendingTokenLogo() {
-    return by.id(watchlist.topTrendingTokenLogo)
+  get topTrendingTokenCrown() {
+    return by.id(watchlist.topTrendingTokenCrown)
   }
 
-  async topTrendingTokenOnWatchlist() {
-    await Action.waitForElement(this.topTrendingTokenName, 20000)
-    await Action.waitForElement(this.topTrendingTokenValue)
-    await Action.waitForElement(this.topTrendingTokenBuyBtn)
-    await Action.waitForElement(this.topTrendingTokenLogo)
+  get starFilled() {
+    return by.id(watchlist.starFilled)
   }
 
-  async topTrendingTokenBuyFlow() {
-    await Action.tap(this.topTrendingTokenBuyBtn)
-    await swapTabPage.verifySwapScreen()
-    // const toToken = await Action.getElementText(swapTabPage.toTokenSelector)
-    // const fromToken = await Action.getElementText(swapTabPage.fromTokenSelector)
-    // assert(fromToken === 'AVAX', 'From token should be AVAX')
-    // assert(toToken === symbol, `${toToken} !== ${symbol}`)
-    await commonElsPage.goBack()
+  get starOutline() {
+    return by.id(watchlist.starOutline)
   }
 
-  async topTrendingTokenDetailBuyFlow() {
-    await Action.waitForElement(this.topTrendingTokenName, 20000)
-    await Action.tap(this.topTrendingTokenName)
-    await Action.waitForElement(tokenDetailPage.footerBuyBtn, 20000)
-    await Action.tap(tokenDetailPage.footerBuyBtn)
-    await buyPage.verifyBuyPage(true)
-    await commonElsPage.goBack()
+  get tokenDetailSwapBtn() {
+    return by.id(watchlist.tokenDetailSwapBtn)
   }
 
-  async topTrendingTokenDetailSwapFlow() {
-    await Action.waitForElement(tokenDetailPage.footerSwapBtn, 20000)
-    await Action.tap(tokenDetailPage.footerSwapBtn)
-    await swapTabPage.verifySwapScreen()
-    await commonElsPage.goBack()
+  async tapBuyViaTokenDetail(tokenIndex = 1) {
+    await this.tapTrendingToken(tokenIndex)
+    await Action.waitForElement(this.tokenDetailSwapBtn, 20000)
+    await Action.tap(this.tokenDetailSwapBtn)
   }
 
-  async searchToken(tokenSymbol: string) {
-    await Action.setInputText(this.searchBar, tokenSymbol)
+  async tapBuyViaTrack(tokenIndex = 1) {
+    await Action.tap(by.id(`trending_token_buy_btn__${tokenIndex}`))
   }
 
-  async clearSearchBar() {
-    await Action.tap(this.searchBar)
-    await Action.tap(by.text('Cancel'))
+  async swap(onTrackTab = true, tokenIndex = 1) {
+    const symbol =
+      (await Action.getElementText(
+        by.id(`trending_token_symbol__${tokenIndex}`)
+      )) ?? ''
+    if (onTrackTab) {
+      await this.tapBuyViaTrack(tokenIndex)
+    } else {
+      await this.tapBuyViaTokenDetail(tokenIndex)
+    }
+    console.log(`Swapping AVAX to ${symbol}....`)
+    await commonElsPage.dismissTransactionOnboarding()
+    await Action.waitForElement(swapTabPage.selectTokenTitleId, 20000)
+    await Assert.hasText(swapTabPage.selectTokenTitleId, symbol, 1)
+    await swapTabPage.enterAmountAndAdjust('0.00001')
+    await commonElsPage.tapNextButton()
+    await commonElsPage.tapApproveButton()
+  }
+
+  async verifyTopTrendingToken() {
+    await Action.waitForElement(this.topTrendingTokenName)
+    await Assert.isVisible(this.topTrendingTokenValue)
+    await Assert.isVisible(this.topTrendingTokenBuyBtn)
+    await Assert.isVisible(this.topTrendingTokenCrown)
   }
 
   async verifyTokenRow(token: Coin, tolerance = 7) {
@@ -327,18 +374,30 @@ class WatchListPage {
     )
   }
 
-  async tapTopTrendingToken() {
-    await Action.tap(this.topTrendingTokenName)
+  async tapTrendingToken(tokenIndex = 1) {
+    await Action.tap(by.id(`trending_token_name__${tokenIndex}`))
+  }
+
+  async verifyTokenDetailHeader(
+    name: string,
+    symbol: string,
+    expectedPrice: string
+  ) {
+    await Action.waitForElement(by.text(symbol), 20000)
+    await Assert.isVisible(by.text(name))
+    await Assert.isVisible(by.text(expectedPrice), 1)
   }
 
   async getTopToken() {
-    const name = await Action.getElementText(this.topTrendingTokenName)
-    const sybl: string =
-      (await Action.getElementText(this.topTrendingTokenSymbol)) || ''
-    const symbol: string = sybl?.split('. ')[1] || ''
-    const valueText = await Action.getElementText(this.topTrendingTokenValue)
-    const value: number = parseFloat(valueText || '0')
-    return [name, symbol, value]
+    await Action.waitForElement(this.topTrendingTokenCrown)
+    const name =
+      (await Action.getElementText(this.topTrendingTokenName))?.split(
+        '. '
+      )[1] ?? ''
+
+    const symbol = await Action.getElementText(this.topTrendingTokenSymbol)
+    const amount = await Action.getElementText(this.topTrendingTokenValue)
+    return [name, symbol, amount]
   }
 }
 

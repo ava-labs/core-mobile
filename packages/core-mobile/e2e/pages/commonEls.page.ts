@@ -292,8 +292,9 @@ class CommonElsPage {
     await Actions.setInputText(this.inputTextField, inputText, index)
   }
 
-  async clearTextInput(inputText: string, index = 0) {
-    await Actions.setInputText(this.inputTextField, inputText, index)
+  async clearSearchBar() {
+    await Actions.clearTextInput(this.searchBar)
+    await Actions.tap(this.cancel)
   }
 
   async waitForToastMsgGone(index?: number) {
@@ -347,9 +348,9 @@ class CommonElsPage {
   async goBack() {
     await delay(1000)
     try {
-      await Actions.tapElementAtIndex(this.backButton, 0, 5000)
+      await Actions.tapElementAtIndex(this.backButton, 1, 3000)
     } catch (e) {
-      await Actions.tapElementAtIndex(this.backButton, 1, 5000)
+      await Actions.tapElementAtIndex(this.backButton, 0, 3000)
     }
     await delay(1500)
   }
@@ -389,7 +390,7 @@ class CommonElsPage {
 
   async dismissBottomSheet() {
     await Actions.waitForElement(this.grabber)
-    await delay(1000)
+    await delay(2000)
     await Actions.drag(this.grabber, 'down', 0.5, 0)
     await delay(1000)
   }

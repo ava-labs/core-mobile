@@ -9,6 +9,7 @@ import {
   TokenType
 } from '@avalabs/vm-module-types'
 import { hexToBigInt, isHex } from 'viem'
+import { safeBigInt } from 'common/utils/safeBigInt'
 
 export const useSpendLimits = (
   tokenApprovals: TokenApprovals | undefined
@@ -34,7 +35,7 @@ export const useSpendLimits = (
       if (token.type === TokenType.ERC20 && tokenApproval.value) {
         const defaultLimitBN = isHex(tokenApproval.value)
           ? hexToBigInt(tokenApproval.value)
-          : 0n
+          : safeBigInt(tokenApproval.value, 0n)
         _spendLimits.push({
           limitType: Limit.DEFAULT,
           value: {
@@ -80,7 +81,7 @@ export const useSpendLimits = (
       } else if (newSpendData.limitType === Limit.DEFAULT) {
         const bn = isHex(spendLimit.tokenApproval.value)
           ? hexToBigInt(spendLimit.tokenApproval.value)
-          : 0n
+          : safeBigInt(spendLimit.tokenApproval.value, 0n)
         setSpendLimits([
           {
             ...spendLimit,

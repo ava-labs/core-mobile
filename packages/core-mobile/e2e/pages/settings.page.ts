@@ -25,18 +25,6 @@ class Settings {
     return by.text(settings.showRecoveryPhrase)
   }
 
-  get participateInCoreAnalytics() {
-    return by.text(settings.participateInCoreAnalytics)
-  }
-
-  get firstMnemonicWord() {
-    return by.text(settings.firstMnemonicWord)
-  }
-
-  get lastMnemonicWord() {
-    return by.text(settings.lastMnemonicWord)
-  }
-
   get iWroteItDownButton() {
     return by.text(settings.iWroteItDownButton)
   }
@@ -49,16 +37,8 @@ class Settings {
     return by.id(settings.analyticsOff)
   }
 
-  get settingsFooter() {
-    return by.id(settings.settingsFooter)
-  }
-
   get settingsScrollView() {
     return by.id(settings.settingsScrollView)
-  }
-
-  get advanced() {
-    return by.text(settings.advanced)
   }
 
   get contacts() {
@@ -127,6 +107,10 @@ class Settings {
 
   get addWalletBtn() {
     return by.id(settings.addWalletBtn)
+  }
+
+  get addNetworkBtn() {
+    return by.id(settings.addNetworkBtn)
   }
 
   get createNewAccountBtn() {
@@ -233,10 +217,6 @@ class Settings {
     return by.text(settings.typeInOrPasteAddress)
   }
 
-  get contactAddressInput() {
-    return by.id(settings.contactAddressInput)
-  }
-
   get contactPreviewAddress() {
     return by.id(settings.contactPreviewAddress)
   }
@@ -249,8 +229,24 @@ class Settings {
     return by.text(settings.manageAccountsTitle)
   }
 
-  async tapAdvanced() {
-    await Actions.tapElementAtIndex(this.advanced, 0)
+  get networkRpcUrl() {
+    return by.text(settings.networkRpcUrl)
+  }
+
+  get chainId() {
+    return by.text(settings.chainId)
+  }
+
+  get tokenSymbol() {
+    return by.text(settings.tokenSymbol)
+  }
+
+  get tokenName() {
+    return by.text(settings.tokenName)
+  }
+
+  get explorerUrl() {
+    return by.text(settings.explorerUrl)
   }
 
   async tapContacts() {
@@ -271,7 +267,7 @@ class Settings {
   }
 
   async scrollToSettingsFooter() {
-    const isVisible = await Actions.isVisible(this.securityAndPrivacy)
+    const isVisible = await Actions.isVisible(this.securityAndPrivacy, 0, 2000)
     if (!isVisible) {
       await Actions.scrollToBottom(this.settingsScrollView)
     }
@@ -281,10 +277,10 @@ class Settings {
     await this.scrollToSettingsFooter()
     let tries = 7
     while (tries > 0) {
-      if (await Actions.isVisible(this.connectedSites, 0)) {
+      if (await Actions.isVisible(this.connectedSites, 0, 2000)) {
         break
       }
-      await Actions.tapElementAtIndex(this.securityAndPrivacy, 0)
+      await Actions.tap(this.securityAndPrivacy)
       tries--
     }
   }
@@ -300,10 +296,6 @@ class Settings {
 
   async tapShowRecoveryPhrase() {
     await Actions.tapElementAtIndex(this.showRecoveryPhrase, 0)
-  }
-
-  async tapIWroteItDownButton() {
-    await Actions.tapElementAtIndex(this.iWroteItDownButton, 0)
   }
 
   async tapConnectedSites() {
@@ -443,6 +435,67 @@ class Settings {
     await Actions.tap(this.addWalletBtn)
   }
 
+  async tapAddNetworkBtn() {
+    await Actions.tap(this.addNetworkBtn)
+  }
+
+  async setNetworkData(type: string, value: string) {
+    await Actions.tap(by.text(`Add ${type}`))
+    await Actions.setInputText(
+      by.id(`advanced_input__${type.toLowerCase()}`),
+      value
+    )
+    await Actions.dismissKeyboard(`advanced_input__${type.toLowerCase()}`)
+  }
+
+  async verifyNetworkRow(
+    networkName: string,
+    hasToggle = false,
+    isEnabled = false
+  ) {
+    if (!(await Actions.isVisible(by.id(`network_list__${networkName}`)))) {
+      await Actions.swipe(this.networks, 'up', 'fast', 0.2)
+    }
+    await Actions.waitForElement(by.id(`network_list__${networkName}`))
+    if (hasToggle) {
+      const toggle = isEnabled ? 'enabled' : 'disabled'
+      await assertions.isVisible(
+        by.id(`network_toggle_${toggle}__${networkName}`)
+      )
+    } else {
+      await assertions.isNotVisible(
+        by.id(`network_toggle_enabled__${networkName}`)
+      )
+      await assertions.isNotVisible(
+        by.id(`network_toggle_disabled__${networkName}`)
+      )
+    }
+  }
+
+  async tapNetworkByName(networkName: string) {
+    if (!(await Actions.isVisible(by.id(`network_list__${networkName}`)))) {
+      await Actions.swipe(this.networks, 'up', 'fast', 0.2)
+    }
+    await Actions.tap(by.id(`network_list__${networkName}`))
+  }
+
+  // eslint-disable-next-line max-params
+  async addNetwork(
+    networkName: string,
+    rpcUrl: string,
+    chainId: string,
+    nativeTokenSymbol: string,
+    nativeTokenName: string
+  ) {
+    await this.tapAddNetworkBtn()
+    await this.addContactOrNetworkName(networkName)
+    await this.setNetworkData('Network RPC URL', rpcUrl)
+    await this.setNetworkData('Chain ID', chainId)
+    await this.setNetworkData('token symbol', nativeTokenSymbol)
+    await this.setNetworkData('token name', nativeTokenName)
+    await commonElsPage.tapSave()
+  }
+
   async addAccount(accountNum = 2) {
     const ele = by.id(`manage_accounts_list__Account ${accountNum}`)
     while (!(await Actions.isVisible(ele))) {
@@ -476,9 +529,14 @@ class Settings {
 
   async tapNotificationSwitch(isSwitchOn = 'enabled', notiType = 'Stake') {
     const switchTestID = `${notiType}_${isSwitchOn}_switch`
-    await Actions.tap(by.id(switchTestID))
+    await Actions.longPress(by.id(switchTestID))
   }
 
+  async tapNetworkSwitch(network: string, isEnabled = true) {
+    const toggle = isEnabled ? 'enabled' : 'disabled'
+    const networkPrefix = `network_toggle_${toggle}__${network}`
+    await Actions.longPress(by.id(networkPrefix))
+  }
   async verifyTestnetMode() {
     await Actions.waitForElement(this.testnetSwitchOn)
     await assertions.isVisible(this.testnetAvatar)
@@ -587,10 +645,13 @@ class Settings {
     await Actions.tapElementAtIndex(this.addAddressButton, 0)
   }
 
-  async addContactName(name: string) {
+  async addContactOrNetworkName(name: string, isEdit = false) {
     await Actions.tapElementAtIndex(this.nameContactBtn, 0)
     await commonElsPage.typeSearchBar(name, commonElsPage.dialogInput)
     await commonElsPage.tapSave()
+    if (isEdit) {
+      await commonElsPage.tapSave()
+    }
   }
 
   async addContactAddress(
@@ -598,7 +659,7 @@ class Settings {
     contactName: string
   ) {
     // add contact name
-    await this.addContactName(contactName)
+    await this.addContactOrNetworkName(contactName)
 
     // add contact addresses
     for (const [network, address] of Object.entries(networkAndAddress)) {
@@ -615,8 +676,11 @@ class Settings {
     }
     await Actions.tap(by.text(`Add ${network} address`))
     await Actions.tap(this.typeInOrPasteAddress)
-    await Actions.setInputText(by.id(`contact_input__${network}`), address)
-    await Actions.dismissKeyboard(`contact_input__${network}`)
+    await Actions.setInputText(
+      by.id(`advanced_input__${network.toLowerCase()}`),
+      address
+    )
+    await Actions.dismissKeyboard(`advanced_input__${network.toLowerCase()}`)
   }
 
   async editContactAddress(
@@ -625,7 +689,7 @@ class Settings {
   ) {
     // add contact name
     if (contactName) {
-      await this.addContactName(contactName)
+      await this.addContactOrNetworkName(contactName)
     }
 
     // add contact addresses
@@ -676,6 +740,24 @@ class Settings {
     await commonElsPage.enterPin(newPin)
     await Actions.waitForElement(this.confirmYourNewPinTitle)
     await commonElsPage.enterPin(newPin)
+  }
+
+  async verifyNetworkDetails(network: string, networkData: any) {
+    const subtitle = 'advanced_subtitle__'
+    await Actions.waitForElement(by.id(`network_name__${network}`))
+    if (network === commonElsLoc.bitcoin || network === commonElsLoc.solana) {
+      await assertions.isNotVisible(this.networkRpcUrl)
+    } else {
+      await assertions.isVisible(this.networkRpcUrl)
+    }
+    await assertions.isVisible(this.chainId)
+    await assertions.isVisible(this.tokenSymbol)
+    await assertions.isVisible(this.tokenName)
+    await assertions.isVisible(this.explorerUrl)
+    await assertions.isVisible(by.id(`${subtitle}${networkData.explorerUrl}`))
+    await assertions.isVisible(by.id(`${subtitle}${networkData.chainId}`))
+    await assertions.isVisible(by.id(`${subtitle}${networkData.tokenSymbol}`))
+    await assertions.isVisible(by.id(`${subtitle}${networkData.tokenName}`))
   }
 }
 

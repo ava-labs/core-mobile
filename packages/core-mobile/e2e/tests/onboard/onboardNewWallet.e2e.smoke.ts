@@ -10,7 +10,7 @@ import onboardingPage from '../../pages/onboarding.page'
 
 describe('Onboarding', () => {
   beforeAll(async () => {
-    await device.launchApp()
+    await device.launchApp({ newInstance: true })
     await commonElsPage.exitMetro()
     await handleJailbrokenWarning()
   })

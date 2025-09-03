@@ -4,7 +4,7 @@
  */
 import assert from 'assert'
 import { warmup } from '../../helpers/warmup'
-import watchlistPage from '../../pages/watchlist.page'
+import watchlistPage from '../../pages/track.page'
 import bottomTabsPage from '../../pages/bottomTabs.page'
 import actions from '../../helpers/actions'
 import { Coin } from '../../helpers/tokens'
