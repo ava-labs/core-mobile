@@ -30,6 +30,7 @@ import { closeInAppBrowser } from 'utils/openInAppBrowser'
 import { retry } from 'utils/js/retry'
 import { showAlert } from '@avalabs/k2-alpine'
 import { MeldTransaction } from 'features/meld/types'
+import { ChainId } from '@avalabs/core-chains-sdk'
 import { offrampSend } from './slice'
 
 const handleOfframpSend = async (
@@ -86,7 +87,7 @@ const handleOfframpSend = async (
 
   const chainId =
     symbol === 'SOL'
-      ? 4503599627369476
+      ? ChainId.SOLANA_MAINNET_ID
       : response?.transaction?.cryptoDetails?.chainId ?? undefined
 
   const destinationWalletAddress =
