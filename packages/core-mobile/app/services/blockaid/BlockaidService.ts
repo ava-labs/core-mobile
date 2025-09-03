@@ -1,3 +1,4 @@
+import http from 'http'
 import Blockaid from '@blockaid/client'
 import Config from 'react-native-config'
 import Logger from 'utils/Logger'
@@ -10,7 +11,9 @@ const baseURL = Config.PROXY_URL + '/proxy/blockaid/'
 
 const blockaid = new Blockaid({
   baseURL,
-  apiKey: 'DUMMY_API_KEY' // since we're using our own proxy and api key is handled there, we can use a dummy key here
+  apiKey: 'DUMMY_API_KEY', // since we're using our own proxy and api key is handled there, we can use a dummy key here
+  fetch: global.fetch,
+  httpAgent: new http.Agent()
 })
 
 class BlockaidService {
