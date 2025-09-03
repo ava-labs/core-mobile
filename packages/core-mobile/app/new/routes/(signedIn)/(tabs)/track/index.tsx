@@ -15,7 +15,6 @@ import {
 } from 'common/components/CollapsibleTabs'
 import { LinearGradientBottomWrapper } from 'common/components/LinearGradientBottomWrapper'
 import { TAB_BAR_HEIGHT } from 'common/consts/screenOptions'
-import { useBottomTabBarHeight } from 'common/hooks/useBottomTabBarHeight'
 import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
 import { useFocusEffect, useRouter } from 'expo-router'
 import FavoriteScreen from 'features/track/market/components/FavoriteScreen'
@@ -47,7 +46,6 @@ import { MarketType } from 'store/watchlist'
 const TrackHomeScreen = (): JSX.Element => {
   const { navigate } = useRouter()
   const { theme } = useTheme()
-  const tabBarHeight = useBottomTabBarHeight()
   const headerHeight = useHeaderHeight()
   const [isSearchBarFocused, setSearchBarFocused] = useState(false)
   const [searchText, setSearchText] = useState('')
@@ -185,7 +183,6 @@ const TrackHomeScreen = (): JSX.Element => {
     return Platform.select({
       ios:
         frame.height -
-        tabBarHeight -
         headerHeight -
         (tabBarLayout?.height ?? 0) -
         (searchBarLayout?.height ?? 0),
@@ -197,7 +194,6 @@ const TrackHomeScreen = (): JSX.Element => {
     })
   }, [
     frame.height,
-    tabBarHeight,
     headerHeight,
     tabBarLayout?.height,
     searchBarLayout?.height,
