@@ -9,9 +9,10 @@ import {
 import { BottomTabBarProps } from '@bottom-tabs/react-navigation'
 import { BottomTabs } from 'common/components/BottomTabs'
 import { TAB_BAR_HEIGHT } from 'common/consts/screenOptions'
-import React, { useMemo } from 'react'
+import React, { FC, useMemo } from 'react'
 import { Platform } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { SvgProps } from 'react-native-svg'
 
 const isIOS = Platform.OS === 'ios'
 
@@ -133,12 +134,11 @@ const TabBar = ({
         right: 0,
         flexDirection: 'row',
         paddingBottom: insets.bottom
-        // backgroundColor: theme.isDark
-        //   ? alpha('#121213', isIOS ? 0.8 : 1)
-        //   : alpha(theme.colors.$white, isIOS ? 0.8 : 1)
       }}>
       {state.routes.map((route, index) => {
         const isActive = state.index === index
+        const Icon = getIcon(route.name)
+
         return (
           <Pressable
             key={index}
@@ -152,11 +152,11 @@ const TabBar = ({
               height: TAB_BAR_HEIGHT,
               gap: 4
             }}>
-            <Icons.Navigation.Layers color={theme.colors.$textPrimary} />
+            <Icon color={theme.colors.$textPrimary} />
             <Text
-              variant="buttonSmall"
               style={{
-                fontFamily: 'Inter-Medium'
+                fontFamily: 'Inter-SemiBold',
+                fontSize: 10
               }}>
               {route.name.charAt(0).toUpperCase() + route.name.slice(1)}
             </Text>
@@ -165,4 +165,21 @@ const TabBar = ({
       })}
     </View>
   )
+}
+
+function getIcon(name: string): FC<SvgProps> {
+  switch (name) {
+    case 'portfolio':
+      return Icons.Navigation.Layers
+    case 'track':
+      return Icons.Navigation.Track
+    case 'stake':
+      return Icons.Navigation.Stake
+    case 'browser':
+      return Icons.Navigation.Browser
+    case 'activity':
+      return Icons.Navigation.History
+    default:
+      return Icons.Navigation.Layers
+  }
 }
