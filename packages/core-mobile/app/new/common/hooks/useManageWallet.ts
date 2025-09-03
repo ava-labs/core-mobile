@@ -125,9 +125,12 @@ export const useManageWallet = (): {
       // 1. Seedless wallets cannot be removed
       if (wallet.type === WalletType.SEEDLESS) return false
 
-      // 2. Mnemonic wallets can be removed if there are multiple mnemonic or seedless wallets
+      // 2. Mnemonic wallets can be removed if there are multiple mnemonic/seedless/keystone wallets
       const walletCount = Object.values(wallets).filter(
-        w => w.type === WalletType.MNEMONIC || w.type === WalletType.SEEDLESS
+        w =>
+          w.type === WalletType.MNEMONIC ||
+          w.type === WalletType.SEEDLESS ||
+          w.type === WalletType.KEYSTONE
       ).length
 
       const isLastRemovableMnemonic =
