@@ -14,7 +14,8 @@ import {
   CollapsibleTabsRef,
   OnTabChange
 } from 'common/components/CollapsibleTabs'
-import { useBottomTabBarHeight } from 'common/hooks/useBottomTabBarHeight'
+import { LinearGradientBottomWrapper } from 'common/components/LinearGradientBottomWrapper'
+import { TAB_BAR_HEIGHT } from 'common/consts/screenOptions'
 import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
 import useInAppBrowser from 'common/hooks/useInAppBrowser'
 import { getSourceChainId } from 'common/utils/bridgeUtils'
@@ -42,7 +43,7 @@ import { ActivityScreen } from './ActivityScreen'
 const ActivityHomeScreen = (): JSX.Element => {
   const { navigate } = useRouter()
   const { theme } = useTheme()
-  const tabBarHeight = useBottomTabBarHeight()
+
   const headerHeight = useHeaderHeight()
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const [searchText, setSearchText] = useState('')
@@ -169,7 +170,8 @@ const ActivityHomeScreen = (): JSX.Element => {
     return Platform.select({
       ios:
         frame.height -
-        tabBarHeight -
+        TAB_BAR_HEIGHT -
+        insets.bottom -
         headerHeight -
         (searchBarLayout?.height ?? 0),
       android:
@@ -179,21 +181,15 @@ const ActivityHomeScreen = (): JSX.Element => {
         (searchBarLayout?.height ?? 0) +
         56
     })
-  }, [
-    frame.height,
-    tabBarHeight,
-    headerHeight,
-    searchBarLayout?.height,
-    insets.bottom
-  ])
+  }, [frame.height, headerHeight, searchBarLayout?.height, insets.bottom])
 
   const contentContainerStyle = useMemo(() => {
     return {
-      paddingBottom: 16,
+      paddingBottom: TAB_BAR_HEIGHT + insets.bottom + 16,
       paddingTop: 10,
       minHeight: tabHeight
     }
-  }, [tabHeight])
+  }, [insets.bottom, tabHeight])
 
   const renderEmptyTabBar = useCallback((): JSX.Element => <></>, [])
 
@@ -297,6 +293,21 @@ const ActivityHomeScreen = (): JSX.Element => {
         tabs={tabs}
         minHeaderHeight={searchBarLayout?.height ?? 0}
       />
+      <View
+        style={{
+          position: 'absolute',
+          bottom: 0,
+          left: 0,
+          right: 0
+        }}>
+        <LinearGradientBottomWrapper>
+          <View
+            style={{
+              height: TAB_BAR_HEIGHT + insets.bottom
+            }}
+          />
+        </LinearGradientBottomWrapper>
+      </View>
     </BlurredBarsContentLayout>
   )
 }

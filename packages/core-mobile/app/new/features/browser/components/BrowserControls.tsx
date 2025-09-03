@@ -8,7 +8,7 @@ import {
 } from '@avalabs/k2-alpine'
 import { BlurViewWithFallback } from 'common/components/BlurViewWithFallback'
 import { KeyboardAvoidingView } from 'common/components/KeyboardAvoidingView'
-import { useBottomTabBarHeight } from 'common/hooks/useBottomTabBarHeight'
+import { TAB_BAR_HEIGHT } from 'common/consts/screenOptions'
 import { LinearGradient } from 'expo-linear-gradient'
 import React, { ReactNode, useMemo } from 'react'
 import { Platform } from 'react-native'
@@ -27,13 +27,13 @@ import { BROWSER_CONTROLS_HEIGHT, HORIZONTAL_MARGIN } from '../consts'
 import { BrowserInput } from './BrowserInput'
 import { FavoritesList } from './FavoritesList'
 import { HistoryList } from './HistoryList'
+import { LinearGradientBottomWrapper } from 'common/components/LinearGradientBottomWrapper'
 
 export const BrowserControls = (): ReactNode => {
   const { theme } = useTheme()
   const { inputRef, isRenameFavoriteVisible, showRecentSearches, isFocused } =
     useBrowserContext()
   const insets = useSafeAreaInsets()
-  const tabBarHeight = useBottomTabBarHeight()
   const gestureProgress = useSharedValue(0)
 
   const onCollapse = (): void => {
@@ -168,10 +168,10 @@ export const BrowserControls = (): ReactNode => {
 
   const browserInputStyle = useAnimatedStyle(() => {
     return {
-      backgroundColor:
-        isRenameFavoriteVisible.value || isFocused.value
-          ? 'transparent'
-          : backgroundColor
+      // backgroundColor:
+      //   isRenameFavoriteVisible.value || isFocused.value
+      //     ? 'transparent'
+      //     : backgroundColor
     }
   })
 
@@ -212,7 +212,7 @@ export const BrowserControls = (): ReactNode => {
             focusStyle,
             {
               position: 'absolute',
-              backgroundColor: alpha(theme.colors.$surfacePrimary, 0.6),
+              // backgroundColor: alpha(theme.colors.$surfacePrimary, 0.6),
               top: 0,
               left: 0,
               right: 0,
@@ -338,7 +338,10 @@ export const BrowserControls = (): ReactNode => {
         style={{
           zIndex: 11
         }}
-        offset={{ opened: tabBarHeight, closed: 0 }}>
+        offset={{
+          opened: -TAB_BAR_HEIGHT,
+          closed: -TAB_BAR_HEIGHT - insets.bottom - BROWSER_CONTROLS_HEIGHT
+        }}>
         <Animated.View
           style={[
             browserInputStyle,
