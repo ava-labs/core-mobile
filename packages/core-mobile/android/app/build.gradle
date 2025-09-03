@@ -149,8 +149,11 @@ android {
     productFlavors {
         internal {
             applicationIdSuffix ".internal"
+            buildConfigField "boolean", "ENABLE_FLAG_SECURE", "false"
         }
-        external {}
+        external {
+            buildConfigField "boolean", "ENABLE_FLAG_SECURE", "true"
+        }
     }
 
     packagingOptions {
