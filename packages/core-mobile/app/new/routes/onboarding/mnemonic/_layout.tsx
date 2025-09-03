@@ -1,7 +1,7 @@
 import { PageControl } from '@avalabs/k2-alpine'
 import { NativeStackNavigationOptions } from '@react-navigation/native-stack'
 import { Stack } from 'common/components/Stack'
-import { stackScreensOptions } from 'common/consts/screenOptions'
+import { stackNavigatorScreenOptions } from 'common/consts/screenOptions'
 import { getCurrentPageIndex } from 'common/utils/getCurrentPageIndex'
 import { useLocalSearchParams, useNavigation, usePathname } from 'expo-router'
 import React, { useCallback, useEffect, useMemo } from 'react'
@@ -38,7 +38,7 @@ export default function MnemonicOnboardingLayout(): JSX.Element {
   return (
     <Stack
       screenOptions={{
-        ...stackScreensOptions,
+        ...stackNavigatorScreenOptions,
         headerShown: false
       }}>
       {screens.map(screen => {

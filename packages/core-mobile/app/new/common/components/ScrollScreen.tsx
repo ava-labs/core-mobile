@@ -7,7 +7,13 @@ import {
 import { useHeaderHeight } from '@react-navigation/elements'
 import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
 import React, { useCallback, useLayoutEffect, useRef, useState } from 'react'
-import { LayoutRectangle, StyleProp, View, ViewStyle } from 'react-native'
+import {
+  LayoutRectangle,
+  Platform,
+  StyleProp,
+  View,
+  ViewStyle
+} from 'react-native'
 import { ScrollView } from 'react-native-gesture-handler'
 import {
   KeyboardAwareScrollView,
@@ -209,7 +215,7 @@ export const ScrollScreen = ({
             props?.contentContainerStyle,
             animatedContentContainerStyle,
             {
-              paddingTop: headerHeight
+              paddingTop: headerHeight + (Platform.OS === 'ios' ? 16 : 0)
             }
           ]}
           onScroll={onScroll}>
@@ -283,7 +289,7 @@ export const ScrollScreen = ({
           props?.contentContainerStyle,
           {
             paddingBottom: insets.bottom + 32,
-            paddingTop: headerHeight
+            paddingTop: headerHeight + (Platform.OS === 'ios' ? 16 : 0)
           }
         ]}
         onScroll={onScroll}>

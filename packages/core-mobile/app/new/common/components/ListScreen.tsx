@@ -187,7 +187,7 @@ export const ListScreen = <T,>({
         <BlurViewWithFallback
           style={{
             paddingHorizontal: 16,
-            paddingTop: renderHeader ? 12 : 0
+            paddingTop: renderHeader ? 16 : 0
           }}>
           {title ? (
             <Animated.View
