@@ -1,6 +1,6 @@
 import { AppListenerEffectAPI, AppStartListening } from 'store/types'
 import { selectTokensWithBalanceForAccount } from 'store/balance'
-import { selectActiveAccount } from 'store/account'
+import { Account, selectActiveAccount } from 'store/account'
 import { createInAppRequest } from 'store/rpc/utils/createInAppRequest'
 import NetworkService from 'services/network/NetworkService'
 import { selectNetwork } from 'store/network'
@@ -8,10 +8,16 @@ import Logger from 'utils/Logger'
 import {
   NetworkTokenWithBalance,
   NetworkVMType,
+  TokenWithBalance,
   TokenWithBalanceSVM
 } from '@avalabs/vm-module-types'
 import { send as sendEVM } from 'common/hooks/send/utils/evm/send'
-import { JsonRpcBatchInternal, SolanaProvider } from '@avalabs/core-wallets-sdk'
+import {
+  Avalanche,
+  BitcoinProvider,
+  JsonRpcBatchInternal,
+  SolanaProvider
+} from '@avalabs/core-wallets-sdk'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
 import { send as sendSVM } from 'common/hooks/send/utils/svm/send'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
@@ -20,6 +26,7 @@ import NetworkFeeService from 'services/networkFee/NetworkFeeService'
 import { dismissMeldStack } from 'features/meld/utils'
 import { ACTIONS } from 'contexts/DeeplinkContext/types'
 import { RequestContext } from 'store/rpc'
+import { Request } from 'store/rpc/utils/createInAppRequest'
 import MeldService from 'features/meld/services/MeldService'
 import {
   offrampActivityIndicatorStore,
@@ -30,13 +37,13 @@ import { closeInAppBrowser } from 'utils/openInAppBrowser'
 import { retry } from 'utils/js/retry'
 import { showAlert } from '@avalabs/k2-alpine'
 import { MeldTransaction } from 'features/meld/types'
-import { ChainId } from '@avalabs/core-chains-sdk'
+import { ChainId, Network } from '@avalabs/core-chains-sdk'
+import { HyperSDKClient } from 'hypersdk-client'
 import { offrampSend } from './slice'
 
 const handleOfframpSend = async (
   searchParams: URLSearchParams,
   listenerApi: AppListenerEffectAPI
-  // eslint-disable-next-line sonarjs/cognitive-complexity
 ): Promise<void> => {
   const { getState, dispatch } = listenerApi
   const state = getState()
@@ -85,10 +92,10 @@ const handleOfframpSend = async (
     response?.transaction?.serviceProviderDetails?.details.cryptoCurrency ??
     undefined
 
-  const chainId =
-    symbol === 'SOL'
-      ? ChainId.SOLANA_MAINNET_ID
-      : response?.transaction?.cryptoDetails?.chainId ?? undefined
+  const chainId = getChainId(
+    symbol,
+    response?.transaction?.cryptoDetails?.chainId ?? undefined
+  )
 
   const destinationWalletAddress =
     response?.transaction?.cryptoDetails?.destinationWalletAddress ?? undefined
@@ -121,12 +128,7 @@ const handleOfframpSend = async (
     return
   }
 
-  const decimals =
-    token.type === TokenType.NATIVE ||
-    token.type === TokenType.ERC20 ||
-    token.type === TokenType.SPL
-      ? token.decimals
-      : network.networkToken.decimals
+  const decimals = getDecimals(token, network)
 
   const amountTokenUnit = new TokenUnit(
     Number(sourceAmount) * 10 ** decimals,
@@ -136,59 +138,21 @@ const handleOfframpSend = async (
 
   const provider = await NetworkService.getProviderForNetwork(network)
 
-  let txHash: string | undefined
-
   try {
     setAnimating(true)
     closeInAppBrowser()
-    switch (network.vmName) {
-      case NetworkVMType.EVM: {
-        txHash = await sendEVM({
-          request,
-          fromAddress: activeAccount.addressC,
-          chainId: Number(chainId),
-          provider: provider as JsonRpcBatchInternal,
-          token: token as NetworkTokenWithBalance,
-          toAddress: destinationWalletAddress,
-          amount: amountTokenUnit.toSubUnit(),
-          context: {
-            [RequestContext.CONFETTI_DISABLED]: true
-          }
-        })
-        break
-      }
-      case NetworkVMType.SVM: {
-        txHash = await sendSVM({
-          request,
-          fromAddress: activeAccount.addressSVM,
-          chainId: Number(chainId),
-          provider: provider as SolanaProvider,
-          token: token as TokenWithBalanceSVM,
-          toAddress: destinationWalletAddress,
-          amount: amountTokenUnit.toSubUnit(),
-          account: activeAccount,
-          context: {
-            [RequestContext.CONFETTI_DISABLED]: true
-          }
-        })
-        break
-      }
-      case NetworkVMType.BITCOIN: {
-        const networkFee = await NetworkFeeService.getNetworkFee(network)
-        txHash = await sendBTC({
-          request,
-          fromAddress: activeAccount.addressBTC,
-          toAddress: destinationWalletAddress,
-          amount: amountTokenUnit.toSubUnit(),
-          feeRate: networkFee?.low.maxFeePerGas,
-          isMainnet: !isDeveloperMode,
-          context: {
-            [RequestContext.CONFETTI_DISABLED]: true
-          }
-        })
-        break
-      }
-    }
+    const txHash = await handleSend({
+      vmName: network.vmName,
+      request,
+      activeAccount,
+      destinationWalletAddress,
+      amountTokenUnit,
+      chainId: Number(chainId),
+      provider,
+      token,
+      network,
+      isDeveloperMode
+    })
     if (txHash) {
       dismissMeldStack(ACTIONS.OfframpCompleted, searchParams)
     }
@@ -197,6 +161,106 @@ const handleOfframpSend = async (
   } finally {
     setAnimating(false)
   }
+}
+
+const handleSend = async ({
+  vmName,
+  request,
+  activeAccount,
+  destinationWalletAddress,
+  amountTokenUnit,
+  chainId,
+  provider,
+  token,
+  network,
+  isDeveloperMode
+}: {
+  vmName: NetworkVMType
+  request: Request
+  activeAccount: Account
+  destinationWalletAddress: string
+  amountTokenUnit: TokenUnit
+  chainId: number
+  provider:
+    | JsonRpcBatchInternal
+    | BitcoinProvider
+    | Avalanche.JsonRpcProvider
+    | HyperSDKClient
+    | SolanaProvider
+  token: TokenWithBalance
+  network: Network
+  isDeveloperMode: boolean
+}): Promise<string | undefined> => {
+  let txHash: string | undefined
+
+  switch (vmName) {
+    case NetworkVMType.EVM: {
+      txHash = await sendEVM({
+        request,
+        fromAddress: activeAccount.addressC,
+        chainId,
+        provider: provider as JsonRpcBatchInternal,
+        token: token as NetworkTokenWithBalance,
+        toAddress: destinationWalletAddress,
+        amount: amountTokenUnit.toSubUnit(),
+        context: {
+          [RequestContext.CONFETTI_DISABLED]: true
+        }
+      })
+      break
+    }
+    case NetworkVMType.SVM: {
+      txHash = await sendSVM({
+        request,
+        fromAddress: activeAccount.addressSVM,
+        chainId,
+        provider: provider as SolanaProvider,
+        token: token as TokenWithBalanceSVM,
+        toAddress: destinationWalletAddress,
+        amount: amountTokenUnit.toSubUnit(),
+        account: activeAccount,
+        context: {
+          [RequestContext.CONFETTI_DISABLED]: true
+        }
+      })
+      break
+    }
+    case NetworkVMType.BITCOIN: {
+      const networkFee = await NetworkFeeService.getNetworkFee(network)
+      txHash = await sendBTC({
+        request,
+        fromAddress: activeAccount.addressBTC,
+        toAddress: destinationWalletAddress,
+        amount: amountTokenUnit.toSubUnit(),
+        feeRate: networkFee?.low.maxFeePerGas,
+        isMainnet: !isDeveloperMode,
+        context: {
+          [RequestContext.CONFETTI_DISABLED]: true
+        }
+      })
+      break
+    }
+  }
+
+  return txHash
+}
+
+const getChainId = (
+  symbol?: string,
+  meldChainId?: string
+): number | undefined => {
+  if (symbol === 'SOL') {
+    return ChainId.SOLANA_MAINNET_ID
+  }
+  return meldChainId ? Number(meldChainId) : undefined
+}
+
+const getDecimals = (token: TokenWithBalance, network: Network): number => {
+  return token.type === TokenType.NATIVE ||
+    token.type === TokenType.ERC20 ||
+    token.type === TokenType.SPL
+    ? token.decimals
+    : network.networkToken.decimals
 }
 
 export const addMeldListeners = (startListening: AppStartListening): void => {
