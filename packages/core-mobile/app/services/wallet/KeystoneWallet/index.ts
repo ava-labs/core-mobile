@@ -96,6 +96,10 @@ export default class KeystoneWallet implements Wallet {
     return { r, s, v }
   }
 
+  public getRawXpubXP(): string {
+    return this.xpubXP
+  }
+
   public async signMessage({
     rpcMethod,
     data,

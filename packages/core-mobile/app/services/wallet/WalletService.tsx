@@ -50,6 +50,7 @@ import {
 } from './utils'
 import WalletFactory from './WalletFactory'
 import { MnemonicWallet } from './MnemonicWallet'
+import KeystoneWallet from './KeystoneWallet'
 
 // Tolerate 50% buffer for burn amount for EVM transactions
 const EVM_FEE_TOLERANCE = 50
@@ -314,7 +315,7 @@ class WalletService {
     walletId: string
     walletType: WalletType
   }): Promise<string> {
-    if (walletType !== WalletType.MNEMONIC) {
+    if (![WalletType.MNEMONIC, WalletType.KEYSTONE].includes(walletType)) {
       throw new Error('Unable to get raw xpub XP: unsupported wallet type')
     }
 
@@ -323,9 +324,12 @@ class WalletService {
       walletType
     })
 
-    if (!(wallet instanceof MnemonicWallet)) {
+    if (
+      !(wallet instanceof MnemonicWallet) &&
+      !(wallet instanceof KeystoneWallet)
+    ) {
       throw new Error(
-        'Unable to get raw xpub XP: Expected MnemonicWallet instance'
+        'Unable to get raw xpub XP: Expected MnemonicWallet or KeystoneWallet instance'
       )
     }
 
