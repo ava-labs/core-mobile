@@ -458,7 +458,7 @@ const PortfolioHomeScreen = (): JSX.Element => {
     return Platform.select({
       ios: frame.height - headerHeight,
       android:
-        frame.height -
+        frame.height +
         headerHeight +
         (totalPriceChanged > 0 ? 16 : 0) +
         insets.bottom +

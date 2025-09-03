@@ -187,7 +187,7 @@ const TrackHomeScreen = (): JSX.Element => {
         (tabBarLayout?.height ?? 0) -
         (searchBarLayout?.height ?? 0),
       android:
-        frame.height -
+        frame.height +
         headerHeight -
         insets.bottom -
         (searchBarLayout?.height ?? 0)

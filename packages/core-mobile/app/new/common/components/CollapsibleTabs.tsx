@@ -1,6 +1,8 @@
 import { ANIMATED, View } from '@avalabs/k2-alpine'
+import { TAB_BAR_HEIGHT } from 'common/consts/screenOptions'
 import React, { forwardRef, useMemo } from 'react'
 import { Platform, StyleSheet } from 'react-native'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import {
   CollapsibleRef,
   OnTabChangeCallback,
@@ -108,6 +110,7 @@ const ContentWrapper = ({
 }): JSX.Element => {
   const scrollY = useCurrentTabScrollY()
   const header = useHeaderMeasurements()
+  const insets = useSafeAreaInsets()
 
   const animatedStyle = useAnimatedStyle(() => {
     const translateY = interpolate(
@@ -131,7 +134,11 @@ const ContentWrapper = ({
   return (
     <View
       style={{
-        height: height - (Platform.OS === 'android' ? header.height + 32 : 24),
+        height:
+          height -
+          TAB_BAR_HEIGHT -
+          insets.bottom -
+          (Platform.OS === 'android' ? header.height + 32 : 24),
         justifyContent: 'center',
         alignItems: 'center'
       }}>
