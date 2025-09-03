@@ -135,7 +135,10 @@ export const SendToken = ({ onSend }: { onSend: () => void }): JSX.Element => {
     selectedToken !== undefined &&
     addressToSend !== undefined &&
     tokenBalance &&
-    (amount.lt(tokenBalance) || amount?.eq(tokenBalance))
+    (amount.lt(tokenBalance) || amount?.eq(tokenBalance)) &&
+    ((selectedToken?.symbol === 'BTC' &&
+      amount.toSubUnit() >= MINIMUM_SATOSHI_SEND_AMOUNT) ||
+      selectedToken?.symbol !== 'BTC')
 
   const handleSelectToken = useCallback((): void => {
     // @ts-ignore TODO: make routes typesafe
