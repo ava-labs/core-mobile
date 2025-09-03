@@ -160,7 +160,7 @@ const TokenDiffItemComponent = ({
           flexDirection: 'row',
           alignItems: 'center',
           gap: 12,
-          width: '35%'
+          width: '20%'
         }}>
         {renderTokenLogo()}
         <Text
@@ -177,7 +177,7 @@ const TokenDiffItemComponent = ({
       <View
         sx={{
           alignItems: 'flex-end',
-          flex: 1
+          width: '65%'
         }}>
         {diffItem.displayValue !== undefined && (
           <Text
