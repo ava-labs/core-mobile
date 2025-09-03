@@ -1,7 +1,6 @@
 package com.avaxwallet
 
 import android.os.Bundle
-import android.view.View
 import android.view.WindowManager
 import androidx.appcompat.app.AppCompatDelegate
 import com.facebook.react.ReactActivity
@@ -36,9 +35,11 @@ class MainActivity : ReactActivity() {
         // this is needed to set the theme correctly in app when night mode is enabled on the device
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM)
 
-        window?.setFlags(
-                WindowManager.LayoutParams.FLAG_SECURE,
-                WindowManager.LayoutParams.FLAG_SECURE
-        )
+        if (BuildConfig.ENABLE_FLAG_SECURE == true) {
+            window?.setFlags(
+                    WindowManager.LayoutParams.FLAG_SECURE,
+                    WindowManager.LayoutParams.FLAG_SECURE
+            )
+        }
     }
 }
