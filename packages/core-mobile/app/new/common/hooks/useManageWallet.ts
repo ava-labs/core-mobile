@@ -134,7 +134,9 @@ export const useManageWallet = (): {
       ).length
 
       const isLastRemovableMnemonic =
-        walletCount === 1 && wallet.type === WalletType.MNEMONIC
+        walletCount === 1 &&
+        (wallet.type === WalletType.MNEMONIC ||
+          wallet.type === WalletType.KEYSTONE)
 
       return !isLastRemovableMnemonic
     },
