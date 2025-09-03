@@ -137,17 +137,28 @@ export const TokenActivityListItem: FC<Props> = ({
 // eslint-disable-next-line sonarjs/cognitive-complexity
 export function fixUnknownTxType(tx: Transaction): ActivityTransactionType {
   if (tx?.txType === TransactionType.UNKNOWN) {
-    if (tx.tokens.length === 1) {
-      if (isPotentiallySwap(tx)) {
-        return TransactionType.SWAP
+    // if the tx has 3 tokens, it means we funded the gas
+    if (tx.tokens.length > 2) {
+      // if all the tokens have the same symbol, it's a send/receive
+      if (
+        tx.tokens[0]?.symbol === tx.tokens[1]?.symbol &&
+        tx.tokens[1]?.symbol === tx.tokens[2]?.symbol
+      ) {
+        return tx.isSender ? TransactionType.SEND : TransactionType.RECEIVE
       }
-      return tx.isSender ? TransactionType.SEND : TransactionType.RECEIVE
+      return TransactionType.SWAP
     }
     if (tx.tokens.length > 1) {
       if (tx.tokens[0]?.symbol === tx.tokens[1]?.symbol) {
         return tx.isSender ? TransactionType.SEND : TransactionType.RECEIVE
       }
       return TransactionType.SWAP
+    }
+    if (tx.tokens.length === 1) {
+      if (isPotentiallySwap(tx)) {
+        return TransactionType.SWAP
+      }
+      return tx.isSender ? TransactionType.SEND : TransactionType.RECEIVE
     }
   }
   return tx.txType as ActivityTransactionType
