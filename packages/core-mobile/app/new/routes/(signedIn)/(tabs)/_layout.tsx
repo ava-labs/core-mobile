@@ -117,11 +117,7 @@ export default function TabLayout(): JSX.Element {
   )
 }
 
-const TabBar = ({
-  state,
-  descriptors,
-  navigation
-}: BottomTabBarProps): JSX.Element => {
+const TabBar = ({ state, navigation }: BottomTabBarProps): JSX.Element => {
   const insets = useSafeAreaInsets()
   const { theme } = useTheme()
 
