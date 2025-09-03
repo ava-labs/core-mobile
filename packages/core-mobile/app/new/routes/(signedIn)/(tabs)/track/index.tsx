@@ -14,7 +14,7 @@ import {
   OnTabChange
 } from 'common/components/CollapsibleTabs'
 import { LinearGradientBottomWrapper } from 'common/components/LinearGradientBottomWrapper'
-import { useBottomTabBarHeight } from 'common/hooks/useBottomTabBarHeight'
+import { TAB_BAR_HEIGHT } from 'common/consts/screenOptions'
 import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
 import { useFocusEffect, useRouter } from 'expo-router'
 import FavoriteScreen from 'features/track/market/components/FavoriteScreen'
@@ -26,8 +26,7 @@ import {
   InteractionManager,
   LayoutChangeEvent,
   LayoutRectangle,
-  Platform,
-  StyleSheet
+  Platform
 } from 'react-native'
 import {
   AndroidSoftInputModes,
@@ -47,7 +46,6 @@ import { MarketType } from 'store/watchlist'
 const TrackHomeScreen = (): JSX.Element => {
   const { navigate } = useRouter()
   const { theme } = useTheme()
-  const tabBarHeight = useBottomTabBarHeight()
   const headerHeight = useHeaderHeight()
   const [isSearchBarFocused, setSearchBarFocused] = useState(false)
   const [searchText, setSearchText] = useState('')
@@ -185,7 +183,6 @@ const TrackHomeScreen = (): JSX.Element => {
     return Platform.select({
       ios:
         frame.height -
-        tabBarHeight -
         headerHeight -
         (tabBarLayout?.height ?? 0) -
         (searchBarLayout?.height ?? 0),
@@ -197,7 +194,6 @@ const TrackHomeScreen = (): JSX.Element => {
     })
   }, [
     frame.height,
-    tabBarHeight,
     headerHeight,
     tabBarLayout?.height,
     searchBarLayout?.height,
@@ -206,11 +202,11 @@ const TrackHomeScreen = (): JSX.Element => {
 
   const contentContainerStyle = useMemo(() => {
     return {
-      paddingBottom: 16,
+      paddingBottom: (tabBarLayout?.height ?? 0) + 32,
       paddingTop: 10,
       minHeight: tabHeight
     }
-  }, [tabHeight])
+  }, [tabBarLayout?.height, tabHeight])
 
   const renderEmptyTabBar = useCallback((): JSX.Element => <></>, [])
 
@@ -368,14 +364,25 @@ const TrackHomeScreen = (): JSX.Element => {
         minHeaderHeight={searchBarLayout?.height ?? 0}
       />
       {!showSearchResults && (
-        <View onLayout={handleTabBarLayout}>
+        <View
+          onLayout={handleTabBarLayout}
+          style={{
+            position: 'absolute',
+            bottom: 0,
+            left: 0,
+            right: 0
+          }}>
           <LinearGradientBottomWrapper>
             <SegmentedControl
               dynamicItemWidth={false}
               items={SEGMENT_ITEMS}
               selectedSegmentIndex={selectedSegmentIndex}
               onSelectSegment={handleSelectSegment}
-              style={styles.segmentedControl}
+              style={{
+                paddingBottom: TAB_BAR_HEIGHT + insets.bottom,
+                marginHorizontal: 16,
+                marginBottom: 16
+              }}
             />
           </LinearGradientBottomWrapper>
         </View>
@@ -395,9 +402,5 @@ const SEGMENT_ITEMS = [
   TrackHomeScreenTab.Favorites,
   TrackHomeScreenTab.Market
 ]
-
-const styles = StyleSheet.create({
-  segmentedControl: { marginHorizontal: 16, marginBottom: 16 }
-})
 
 export default TrackHomeScreen

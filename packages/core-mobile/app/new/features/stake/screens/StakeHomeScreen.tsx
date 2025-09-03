@@ -36,6 +36,8 @@ import { ActiveStakesScreen } from 'features/stake/components/ActiveStakesScreen
 import { CompletedStakesScreen } from 'features/stake/components/CompletedStakesScreen'
 import { useIsFocused } from '@react-navigation/native'
 import { Platform } from 'react-native'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { TAB_BAR_HEIGHT } from 'common/consts/screenOptions'
 
 export const StakeHomeScreen = (): JSX.Element => {
   const { navigate } = useRouter()
@@ -190,6 +192,8 @@ export const StakeHomeScreen = (): JSX.Element => {
     }
   }, [])
 
+  const insets = useSafeAreaInsets()
+
   if (isLoading) {
     return <LoadingState sx={{ flex: 1 }} />
   }
@@ -204,8 +208,10 @@ export const StakeHomeScreen = (): JSX.Element => {
         onScrollY={onScroll}
         tabs={tabs}
       />
-      {!isEmpty && (
-        <LinearGradientBottomWrapper>
+      <LinearGradientBottomWrapper>
+        {isEmpty ? (
+          <View style={{ height: TAB_BAR_HEIGHT + insets.bottom }} />
+        ) : (
           <SegmentedControl
             dynamicItemWidth={false}
             items={SEGMENT_ITEMS}
@@ -213,8 +219,8 @@ export const StakeHomeScreen = (): JSX.Element => {
             onSelectSegment={handleSelectSegment}
             style={styles.segmentedControl}
           />
-        </LinearGradientBottomWrapper>
-      )}
+        )}
+      </LinearGradientBottomWrapper>
     </BlurredBarsContentLayout>
   )
 }

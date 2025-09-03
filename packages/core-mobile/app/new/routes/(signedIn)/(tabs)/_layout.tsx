@@ -1,7 +1,18 @@
-import { alpha, useTheme } from '@avalabs/k2-alpine'
+import {
+  alpha,
+  Icons,
+  Pressable,
+  Text,
+  useTheme,
+  View
+} from '@avalabs/k2-alpine'
+import { BottomTabBarProps } from '@bottom-tabs/react-navigation'
 import { BottomTabs } from 'common/components/BottomTabs'
-import React, { useMemo } from 'react'
+import { TAB_BAR_HEIGHT } from 'common/consts/screenOptions'
+import React, { FC, useMemo } from 'react'
 import { Platform } from 'react-native'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { SvgProps } from 'react-native-svg'
 
 const isIOS = Platform.OS === 'ios'
 
@@ -55,6 +66,7 @@ export default function TabLayout(): JSX.Element {
       scrollEdgeAppearance={'default'}
       tabBarInactiveTintColor={tabBarInactiveTintColor}
       tabBarStyle={tabBarStyle}
+      tabBar={TabBar}
       tabLabelStyle={tabLabelStyle}>
       <BottomTabs.Screen
         name="portfolio"
@@ -103,4 +115,67 @@ export default function TabLayout(): JSX.Element {
       />
     </BottomTabs>
   )
+}
+
+const TabBar = ({ state, navigation }: BottomTabBarProps): JSX.Element => {
+  const insets = useSafeAreaInsets()
+  const { theme } = useTheme()
+
+  return (
+    <View
+      style={{
+        position: 'absolute',
+        bottom: 0,
+        left: 0,
+        right: 0,
+        flexDirection: 'row',
+        paddingBottom: insets.bottom
+      }}>
+      {state.routes.map((route, index) => {
+        const isActive = state.index === index
+        const Icon = getIcon(route.name)
+
+        return (
+          <Pressable
+            key={index}
+            onPress={() => navigation.navigate(route.name)}
+            style={{
+              opacity: isActive ? 1 : 0.6,
+              paddingVertical: 12,
+              flex: 1,
+              alignItems: 'center',
+              justifyContent: 'center',
+              height: TAB_BAR_HEIGHT,
+              gap: 4
+            }}>
+            <Icon color={theme.colors.$textPrimary} />
+            <Text
+              style={{
+                fontFamily: 'Inter-SemiBold',
+                fontSize: 10
+              }}>
+              {route.name.charAt(0).toUpperCase() + route.name.slice(1)}
+            </Text>
+          </Pressable>
+        )
+      })}
+    </View>
+  )
+}
+
+function getIcon(name: string): FC<SvgProps> {
+  switch (name) {
+    case 'portfolio':
+      return Icons.Navigation.Layers
+    case 'track':
+      return Icons.Navigation.Track
+    case 'stake':
+      return Icons.Navigation.Stake
+    case 'browser':
+      return Icons.Navigation.Browser
+    case 'activity':
+      return Icons.Navigation.History
+    default:
+      return Icons.Navigation.Layers
+  }
 }

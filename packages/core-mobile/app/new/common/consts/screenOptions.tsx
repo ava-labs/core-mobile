@@ -3,6 +3,8 @@ import BackBarButton from 'common/components/BackBarButton'
 import React from 'react'
 import { Platform } from 'react-native'
 
+export const TAB_BAR_HEIGHT = 60
+
 export const commonNavigatorScreenOptions: NativeStackNavigationOptions = {
   title: '',
   headerTitleAlign: 'center',
@@ -32,10 +34,12 @@ export const modalScreensOptions: NativeStackNavigationOptions = {
   headerLeft: () => <BackBarButton />,
   gestureEnabled: true,
   headerTransparent: true,
-  contentStyle: {
+  ...(Platform.OS === 'ios' && {
     // iOS will display empty content without this
-    height: '100%'
-  }
+    contentStyle: {
+      height: '100%'
+    }
+  })
 }
 
 export const secondaryModalScreensOptions: NativeStackNavigationOptions = {

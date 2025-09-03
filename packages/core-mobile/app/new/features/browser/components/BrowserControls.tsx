@@ -8,10 +8,9 @@ import {
 } from '@avalabs/k2-alpine'
 import { BlurViewWithFallback } from 'common/components/BlurViewWithFallback'
 import { KeyboardAvoidingView } from 'common/components/KeyboardAvoidingView'
-import { useBottomTabBarHeight } from 'common/hooks/useBottomTabBarHeight'
+import { TAB_BAR_HEIGHT } from 'common/consts/screenOptions'
 import { LinearGradient } from 'expo-linear-gradient'
-import React, { ReactNode, useMemo } from 'react'
-import { Platform } from 'react-native'
+import React, { ReactNode } from 'react'
 import { Gesture, GestureDetector } from 'react-native-gesture-handler'
 import { KeyboardStickyView } from 'react-native-keyboard-controller'
 import Animated, {
@@ -33,7 +32,6 @@ export const BrowserControls = (): ReactNode => {
   const { inputRef, isRenameFavoriteVisible, showRecentSearches, isFocused } =
     useBrowserContext()
   const insets = useSafeAreaInsets()
-  const tabBarHeight = useBottomTabBarHeight()
   const gestureProgress = useSharedValue(0)
 
   const onCollapse = (): void => {
@@ -158,20 +156,20 @@ export const BrowserControls = (): ReactNode => {
   // mostly copied from routes/(signedIn)/(tabs)/_layout.tsx
   // as the background color of the browser controls
   // needs to match the background color of the bottom tab bar
-  const backgroundColor = useMemo(() => {
-    const isIOS = Platform.OS === 'ios'
+  // const backgroundColor = useMemo(() => {
+  //   const isIOS = Platform.OS === 'ios'
 
-    return theme.isDark
-      ? alpha('#121213', isIOS ? 0.8 : 1)
-      : alpha(theme.colors.$white, isIOS ? 0.8 : 1)
-  }, [theme.isDark, theme.colors.$white])
+  //   return theme.isDark
+  //     ? alpha('#121213', isIOS ? 0.8 : 1)
+  //     : alpha(theme.colors.$white, isIOS ? 0.8 : 1)
+  // }, [theme.isDark, theme.colors.$white])
 
   const browserInputStyle = useAnimatedStyle(() => {
     return {
-      backgroundColor:
-        isRenameFavoriteVisible.value || isFocused.value
-          ? 'transparent'
-          : backgroundColor
+      // backgroundColor:
+      //   isRenameFavoriteVisible.value || isFocused.value
+      //     ? 'transparent'
+      //     : backgroundColor
     }
   })
 
@@ -212,7 +210,7 @@ export const BrowserControls = (): ReactNode => {
             focusStyle,
             {
               position: 'absolute',
-              backgroundColor: alpha(theme.colors.$surfacePrimary, 0.6),
+              // backgroundColor: alpha(theme.colors.$surfacePrimary, 0.6),
               top: 0,
               left: 0,
               right: 0,
@@ -338,7 +336,10 @@ export const BrowserControls = (): ReactNode => {
         style={{
           zIndex: 11
         }}
-        offset={{ opened: tabBarHeight, closed: 0 }}>
+        offset={{
+          opened: -TAB_BAR_HEIGHT,
+          closed: -TAB_BAR_HEIGHT - insets.bottom - BROWSER_CONTROLS_HEIGHT
+        }}>
         <Animated.View
           style={[
             browserInputStyle,
