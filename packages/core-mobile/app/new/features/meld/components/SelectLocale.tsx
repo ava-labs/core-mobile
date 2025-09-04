@@ -50,7 +50,9 @@ export const SelectLocale = ({
     return (
       <Text
         variant="body2"
+        numberOfLines={1}
         sx={{
+          maxWidth: '80%',
           color: colors.$textSecondary,
           fontSize: 16,
           lineHeight: 22,
