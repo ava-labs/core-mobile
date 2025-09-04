@@ -28,6 +28,7 @@ import { selectSelectedCurrency } from 'store/settings/currency'
 import { TRUNCATE_ADDRESS_LENGTH } from 'common/consts/text'
 import { xpAddressWithoutPrefix } from 'common/utils/xpAddressWIthoutPrefix'
 import { usePrevious } from 'common/hooks/usePrevious'
+import { MINIMUM_SATOSHI_SEND_AMOUNT } from 'consts/amount'
 import { useSendContext } from '../context/sendContext'
 import { useSendSelectedToken } from '../store'
 
@@ -134,7 +135,10 @@ export const SendToken = ({ onSend }: { onSend: () => void }): JSX.Element => {
     selectedToken !== undefined &&
     addressToSend !== undefined &&
     tokenBalance &&
-    (amount.lt(tokenBalance) || amount?.eq(tokenBalance))
+    (amount.lt(tokenBalance) || amount?.eq(tokenBalance)) &&
+    ((selectedToken?.symbol === 'BTC' &&
+      amount.toSubUnit() >= MINIMUM_SATOSHI_SEND_AMOUNT) ||
+      selectedToken?.symbol !== 'BTC')
 
   const handleSelectToken = useCallback((): void => {
     // @ts-ignore TODO: make routes typesafe
@@ -149,8 +153,15 @@ export const SendToken = ({ onSend }: { onSend: () => void }): JSX.Element => {
           'The specified send amount exceeds the available balance'
         )
       }
+      if (
+        amt.toSubUnit() < MINIMUM_SATOSHI_SEND_AMOUNT &&
+        selectedToken?.symbol === 'BTC'
+      ) {
+        setError('The specified send amount is too low')
+        throw new Error('The specified send amount is too low')
+      }
     },
-    [setError, tokenBalance]
+    [setError, tokenBalance, selectedToken?.symbol]
   )
 
   const formatInCurrency = useCallback(
