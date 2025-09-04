@@ -181,11 +181,7 @@ const TrackHomeScreen = (): JSX.Element => {
 
   const tabHeight = useMemo(() => {
     return Platform.select({
-      ios:
-        frame.height -
-        headerHeight -
-        (tabBarLayout?.height ?? 0) -
-        (searchBarLayout?.height ?? 0),
+      ios: frame.height - headerHeight - (searchBarLayout?.height ?? 0),
       android:
         frame.height +
         headerHeight -
@@ -194,13 +190,7 @@ const TrackHomeScreen = (): JSX.Element => {
         (searchBarLayout?.height ?? 0) -
         44
     })
-  }, [
-    frame.height,
-    headerHeight,
-    tabBarLayout?.height,
-    searchBarLayout?.height,
-    insets.bottom
-  ])
+  }, [frame.height, headerHeight, searchBarLayout?.height, insets.bottom])
 
   const contentContainerStyle = useMemo(() => {
     return {
