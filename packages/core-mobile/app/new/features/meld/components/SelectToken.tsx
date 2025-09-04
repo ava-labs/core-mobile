@@ -13,6 +13,7 @@ import useCChainNetwork from 'hooks/earn/useCChainNetwork'
 import { LogoWithNetwork } from 'common/components/LogoWithNetwork'
 import { ServiceProviderCategories } from 'features/meld/consts'
 import { TokenType } from '@avalabs/vm-module-types'
+import { useResetMeldTokenList } from '../hooks/useResetMeldTokenList'
 
 interface SelectTokenProps {
   category: ServiceProviderCategories
@@ -40,6 +41,8 @@ export const SelectToken = ({
     tokens: avalancheErc20ContractTokens,
     hideZeroBalance: category === ServiceProviderCategories.CRYPTO_OFFRAMP
   })
+
+  useResetMeldTokenList()
 
   const usdcAvalancheToken = filteredTokenList.find(
     token =>

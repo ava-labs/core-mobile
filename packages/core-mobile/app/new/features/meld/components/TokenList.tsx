@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { SelectTokenScreen } from 'common/screens/SelectTokenScreen'
 import {
   Icons,
@@ -17,8 +17,8 @@ import { LogoWithNetwork } from 'features/portfolio/assets/components/LogoWithNe
 import { LoadingState } from 'common/components/LoadingState'
 import { SubTextNumber } from 'common/components/SubTextNumber'
 import { CryptoCurrency, CryptoCurrencyWithBalance } from '../types'
-import { isTokenTradable } from '../utils'
 import { MELD_CURRENCY_CODES, ServiceProviderCategories } from '../consts'
+import { useSupportedCryptoCurrencies, useTokenIndex } from '../store'
 
 export const TokenList = ({
   category,
@@ -37,24 +37,27 @@ export const TokenList = ({
     theme: { colors }
   } = useTheme()
   const [searchText, setSearchText] = useState<string>('')
+  const { tokenIndex, setTokenIndex } = useTokenIndex()
+  const { supportedCryptoCurrencies, setSupportedCryptoCurrencies } =
+    useSupportedCryptoCurrencies()
+
   const erc20ContractTokens = useErc20ContractTokens()
   const { filteredTokenList } = useSearchableTokenList({
     tokens: erc20ContractTokens,
     hideZeroBalance: category !== ServiceProviderCategories.CRYPTO_ONRAMP
   })
 
-  const supportedCryptoCurrencies = useMemo(() => {
-    return cryptoCurrencies?.reduce((acc, crypto) => {
-      const token = filteredTokenList.find(tk => isTokenTradable(crypto, tk))
-      if (token) {
-        acc.push({
-          ...crypto,
-          tokenWithBalance: token
-        })
-      }
-      return acc
-    }, [] as CryptoCurrencyWithBalance[])
-  }, [cryptoCurrencies, filteredTokenList])
+  useEffect(() => {
+    if (filteredTokenList?.length) {
+      setTokenIndex(filteredTokenList)
+    }
+  }, [filteredTokenList, setTokenIndex])
+
+  useEffect(() => {
+    if (cryptoCurrencies && tokenIndex) {
+      setSupportedCryptoCurrencies(cryptoCurrencies, tokenIndex)
+    }
+  }, [cryptoCurrencies, tokenIndex, setSupportedCryptoCurrencies])
 
   const searchResults = useMemo(() => {
     if (searchText.length === 0) {
