@@ -1,9 +1,7 @@
 import { BridgeTransfer } from '@avalabs/bridge-unified'
 import { BridgeTransaction } from '@avalabs/core-bridge-sdk'
 import { ChainId, Network } from '@avalabs/core-chains-sdk'
-import { TokenWithBalance, TransactionType } from '@avalabs/vm-module-types'
-import { useErc20ContractTokens } from 'common/hooks/useErc20ContractTokens'
-import { useSearchableTokenList } from 'common/hooks/useSearchableTokenList'
+import { TransactionType } from '@avalabs/vm-module-types'
 import { DropdownSelection } from 'common/types'
 import usePendingBridgeTransactions from 'features/bridge/hooks/usePendingBridgeTransactions'
 import {
@@ -16,7 +14,7 @@ import { useCallback, useEffect, useMemo } from 'react'
 import { isAvalancheNetwork } from 'services/network/utils/isAvalancheNetwork'
 import { Transaction } from 'store/transaction'
 import { useGetRecentTransactions } from 'store/transaction/hooks/useGetRecentTransactions'
-import { isPChain, isXChain } from 'utils/network/isAvalancheNetwork'
+import { isPChain } from 'utils/network/isAvalancheNetwork'
 import { DropdownGroup } from 'common/components/DropdownMenu'
 import { useActivity } from '../store'
 import { ActivityListItem, buildGroupedData, getDateGroups } from '../utils'
@@ -42,17 +40,11 @@ export const useActivityFilterAndSearch = ({
   isLoading: boolean
   isRefreshing: boolean
   isError: boolean
-  xpToken: TokenWithBalance | undefined
   refresh: () => void
   setSelectedNetwork: (network: ActivityNetworkFilter) => void
 } => {
   const { enabledNetworks, getNetwork } = useNetworks()
   const { selectedNetwork, setSelectedNetwork } = useActivity()
-
-  const erc20ContractTokens = useErc20ContractTokens()
-  const { filteredTokenList } = useSearchableTokenList({
-    tokens: erc20ContractTokens
-  })
 
   const networkFilters: ActivityNetworkFilter[] = useMemo(() => {
     return enabledNetworks.map(network => ({
@@ -74,17 +66,6 @@ export const useActivityFilterAndSearch = ({
   const network = useMemo(() => {
     return getNetwork(selectedNetwork?.chainId)
   }, [getNetwork, selectedNetwork?.chainId])
-
-  const xpToken = useMemo(() => {
-    return filteredTokenList.find(tk => {
-      return (
-        selectedNetwork?.chainId &&
-        (isPChain(selectedNetwork?.chainId) ||
-          isXChain(selectedNetwork?.chainId)) &&
-        Number(tk.networkChainId) === Number(selectedNetwork?.chainId)
-      )
-    })
-  }, [filteredTokenList, selectedNetwork?.chainId])
 
   const { transactions, refresh, isLoading, isRefreshing, isError } =
     useGetRecentTransactions(network)
@@ -210,7 +191,6 @@ export const useActivityFilterAndSearch = ({
 
   return {
     data: combinedData as ActivityListItem[],
-    xpToken,
     sort,
     filter,
     isLoading,

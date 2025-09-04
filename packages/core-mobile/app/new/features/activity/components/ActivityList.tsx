@@ -1,11 +1,6 @@
-import {
-  isTokenWithBalanceAVM,
-  isTokenWithBalancePVM
-} from '@avalabs/avalanche-module'
 import { BridgeTransfer } from '@avalabs/bridge-unified'
 import { BridgeTransaction } from '@avalabs/core-bridge-sdk'
 import { Text, useTheme, View } from '@avalabs/k2-alpine'
-import { TokenWithBalance } from '@avalabs/vm-module-types'
 import { FlashListProps, ListRenderItem } from '@shopify/flash-list'
 import { CollapsibleTabs } from 'common/components/CollapsibleTabs'
 import { isXpTransaction } from 'common/utils/isXpTransactions'
@@ -18,7 +13,6 @@ import { ActivityListItem } from '../utils'
 
 export const ActivityList = ({
   data,
-  xpToken,
   overrideProps,
   isRefreshing,
   refresh,
@@ -29,7 +23,6 @@ export const ActivityList = ({
 }: {
   data: ActivityListItem[]
   overrideProps?: FlashListProps<ActivityListItem>['overrideProps']
-  xpToken: TokenWithBalance | undefined
   isRefreshing: boolean
   handlePendingBridge: (transaction: BridgeTransaction | BridgeTransfer) => void
   handleExplorerLink: (explorerLink: string) => void
@@ -54,10 +47,7 @@ export const ActivityList = ({
       }
 
       const transaction = item.transaction
-      const isXpTx =
-        isXpTransaction(transaction.txType) &&
-        xpToken &&
-        (isTokenWithBalanceAVM(xpToken) || isTokenWithBalancePVM(xpToken))
+      const isXpTx = isXpTransaction(transaction.txType)
 
       const props = {
         tx: transaction,
@@ -87,7 +77,7 @@ export const ActivityList = ({
         />
       )
     },
-    [data, handleExplorerLink, handlePendingBridge, xpToken]
+    [data, handleExplorerLink, handlePendingBridge]
   )
 
   const keyExtractor = useCallback((item: ActivityListItem) => item.id, [])

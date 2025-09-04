@@ -47,7 +47,6 @@ export const ActivityScreen = ({
     isLoading,
     isRefreshing,
     isError,
-    xpToken,
     network,
     networkFilterDropdown,
     refresh
@@ -139,7 +138,6 @@ export const ActivityScreen = ({
       }}>
       <ActivityList
         data={data}
-        xpToken={xpToken}
         handlePendingBridge={handlePendingBridge}
         handleExplorerLink={handleExplorerLink}
         overrideProps={{
