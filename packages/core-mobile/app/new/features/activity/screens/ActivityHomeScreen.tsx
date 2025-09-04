@@ -168,17 +168,13 @@ const ActivityHomeScreen = (): JSX.Element => {
 
   const tabHeight = useMemo(() => {
     return Platform.select({
-      ios:
-        frame.height -
-        TAB_BAR_HEIGHT -
-        insets.bottom -
-        headerHeight -
-        (searchBarLayout?.height ?? 0),
+      ios: frame.height - headerHeight - (searchBarLayout?.height ?? 0),
       android:
-        frame.height -
+        frame.height +
         headerHeight -
         insets.bottom -
-        (searchBarLayout?.height ?? 0) +
+        TAB_BAR_HEIGHT -
+        (searchBarLayout?.height ?? 0) -
         56
     })
   }, [frame.height, headerHeight, searchBarLayout?.height, insets.bottom])

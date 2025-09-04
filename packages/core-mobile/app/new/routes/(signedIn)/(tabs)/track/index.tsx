@@ -189,8 +189,10 @@ const TrackHomeScreen = (): JSX.Element => {
       android:
         frame.height +
         headerHeight -
+        TAB_BAR_HEIGHT -
         insets.bottom -
-        (searchBarLayout?.height ?? 0)
+        (searchBarLayout?.height ?? 0) -
+        44
     })
   }, [
     frame.height,
@@ -202,11 +204,11 @@ const TrackHomeScreen = (): JSX.Element => {
 
   const contentContainerStyle = useMemo(() => {
     return {
-      paddingBottom: (tabBarLayout?.height ?? 0) + 32,
+      paddingBottom: TAB_BAR_HEIGHT + insets.bottom + 16,
       paddingTop: 10,
       minHeight: tabHeight
     }
-  }, [tabBarLayout?.height, tabHeight])
+  }, [insets.bottom, tabHeight])
 
   const renderEmptyTabBar = useCallback((): JSX.Element => <></>, [])
 

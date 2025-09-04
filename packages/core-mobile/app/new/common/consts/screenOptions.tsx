@@ -30,6 +30,8 @@ export const stackScreensOptions: NativeStackNavigationOptions | undefined = {
 export const modalScreensOptions: NativeStackNavigationOptions = {
   ...commonNavigatorScreenOptions,
   presentation: Platform.OS === 'ios' ? 'pageSheet' : 'formSheet',
+  sheetElevation: 0,
+  sheetInitialDetentIndex: 0,
   sheetAllowedDetents: [Platform.OS === 'android' ? 0.93 : 0.99],
   headerLeft: () => <BackBarButton />,
   gestureEnabled: true,
@@ -49,7 +51,6 @@ export const secondaryModalScreensOptions: NativeStackNavigationOptions = {
 
 export const modalStackNavigatorScreenOptions: NativeStackNavigationOptions = {
   ...modalScreensOptions,
-  headerTransparent: true,
   presentation: 'card'
 }
 

@@ -196,7 +196,7 @@ const AssetsScreen: FC<Props> = ({
 
   const renderEmpty = useCallback(() => {
     const height =
-      Number(containerStyle.minHeight) - (headerLayout?.height ?? 0)
+      Number(containerStyle.minHeight) - (headerLayout?.height ?? 0) - 80
     return (
       <CollapsibleTabs.ContentWrapper height={height}>
         {renderEmptyComponent()}

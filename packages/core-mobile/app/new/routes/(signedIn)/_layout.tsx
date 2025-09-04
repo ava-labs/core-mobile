@@ -40,7 +40,7 @@ export default function WalletLayout(): JSX.Element {
           <Stack.Screen name="(tabs)" options={{ animation: 'none' }} />
           <Stack.Screen
             name="(modals)/accountSettings"
-            options={modalScreensOptions}
+            options={{ ...modalScreensOptions }}
           />
           <Stack.Screen
             name="(modals)/approval"

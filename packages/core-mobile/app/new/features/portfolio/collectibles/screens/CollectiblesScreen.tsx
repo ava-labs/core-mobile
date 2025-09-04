@@ -202,7 +202,9 @@ export const CollectiblesScreen = ({
   const renderEmpty = useMemo(() => {
     return (
       <CollapsibleTabs.ContentWrapper
-        height={Number(containerStyle.minHeight) - (headerLayout?.height ?? 0)}>
+        height={
+          Number(containerStyle.minHeight) - (headerLayout?.height ?? 0) - 80
+        }>
         {emptyComponent}
       </CollapsibleTabs.ContentWrapper>
     )

@@ -456,13 +456,15 @@ const PortfolioHomeScreen = (): JSX.Element => {
 
   const tabHeight = useMemo(() => {
     return Platform.select({
-      ios: frame.height - headerHeight,
+      ios: frame.height - headerHeight - (totalPriceChanged > 0 ? 16 : 0),
       android:
         frame.height +
-        headerHeight +
+        headerHeight -
+        TAB_BAR_HEIGHT -
+        insets.bottom -
         (totalPriceChanged > 0 ? 16 : 0) +
-        insets.bottom +
-        (isAndroidWithBottomBar ? 0 : 48)
+        (isAndroidWithBottomBar ? 0 : 48) -
+        10
     })
   }, [
     frame.height,

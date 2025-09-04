@@ -117,7 +117,7 @@ export default function TabLayout(): JSX.Element {
   )
 }
 
-const TabBar = ({ state, navigation }: BottomTabBarProps): JSX.Element => {
+const TabBar = ({ state, descriptors }: BottomTabBarProps): JSX.Element => {
   const insets = useSafeAreaInsets()
   const { theme } = useTheme()
 
@@ -134,11 +134,14 @@ const TabBar = ({ state, navigation }: BottomTabBarProps): JSX.Element => {
       {state.routes.map((route, index) => {
         const isActive = state.index === index
         const Icon = getIcon(route.name)
+        const title = descriptors[route.key]?.options?.title ?? route.name
 
         return (
           <Pressable
             key={index}
-            onPress={() => navigation.navigate(route.name)}
+            onPress={() =>
+              descriptors[route.key]?.navigation.navigate(route.name)
+            }
             style={{
               opacity: isActive ? 1 : 0.6,
               paddingVertical: 12,
@@ -154,7 +157,7 @@ const TabBar = ({ state, navigation }: BottomTabBarProps): JSX.Element => {
                 fontFamily: 'Inter-SemiBold',
                 fontSize: 10
               }}>
-              {route.name.charAt(0).toUpperCase() + route.name.slice(1)}
+              {title}
             </Text>
           </Pressable>
         )

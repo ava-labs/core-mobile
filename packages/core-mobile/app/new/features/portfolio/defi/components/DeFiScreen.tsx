@@ -96,7 +96,7 @@ export const DeFiScreen = ({
     if (isLoading) {
       return (
         <CollapsibleTabs.ContentWrapper
-          height={Number(containerStyle.minHeight)}>
+          height={Number(containerStyle.minHeight) - 56}>
           <LoadingState />
         </CollapsibleTabs.ContentWrapper>
       )
@@ -105,7 +105,7 @@ export const DeFiScreen = ({
     if (error || (isPaused && !isSuccess)) {
       return (
         <CollapsibleTabs.ContentWrapper
-          height={Number(containerStyle.minHeight)}>
+          height={Number(containerStyle.minHeight) - 56}>
           <ErrorState
             description="Please hit refresh or try again later"
             button={{
@@ -118,7 +118,8 @@ export const DeFiScreen = ({
     }
 
     return (
-      <CollapsibleTabs.ContentWrapper height={Number(containerStyle.minHeight)}>
+      <CollapsibleTabs.ContentWrapper
+        height={Number(containerStyle.minHeight) - 56}>
         <Placeholder
           icon={
             <Image source={placeholderIcon} sx={{ width: 42, height: 42 }} />
