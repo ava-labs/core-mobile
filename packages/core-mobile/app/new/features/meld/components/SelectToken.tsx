@@ -14,6 +14,8 @@ import { LogoWithNetwork } from 'common/components/LogoWithNetwork'
 import { ServiceProviderCategories } from 'features/meld/consts'
 import { TokenType } from '@avalabs/vm-module-types'
 import { useResetMeldTokenList } from '../hooks/useResetMeldTokenList'
+import { useBuy } from '../hooks/useBuy'
+import { useWithdraw } from '../hooks/useWithdraw'
 
 interface SelectTokenProps {
   category: ServiceProviderCategories
@@ -41,6 +43,8 @@ export const SelectToken = ({
     tokens: avalancheErc20ContractTokens,
     hideZeroBalance: category === ServiceProviderCategories.CRYPTO_OFFRAMP
   })
+  const { isAvaxCBuyable, isUsdcBuyable } = useBuy()
+  const { isAvaxCWithdrawable, isUsdcWithdrawable } = useWithdraw()
 
   useResetMeldTokenList()
 
@@ -61,8 +65,10 @@ export const SelectToken = ({
     const _data: GroupListItem[] = []
 
     if (
-      category === ServiceProviderCategories.CRYPTO_ONRAMP ||
+      (category === ServiceProviderCategories.CRYPTO_ONRAMP &&
+        isAvaxCBuyable()) ||
       (category === ServiceProviderCategories.CRYPTO_OFFRAMP &&
+        isAvaxCWithdrawable() &&
         (avaxAvalancheToken?.balance ?? 0) > 0)
     ) {
       _data.push({
@@ -75,8 +81,10 @@ export const SelectToken = ({
     if (
       cChainNetwork &&
       usdcAvalancheToken &&
-      (category === ServiceProviderCategories.CRYPTO_ONRAMP ||
+      ((category === ServiceProviderCategories.CRYPTO_ONRAMP &&
+        isUsdcBuyable()) ||
         (category === ServiceProviderCategories.CRYPTO_OFFRAMP &&
+          isUsdcWithdrawable() &&
           (usdcAvalancheToken?.balance ?? 0) > 0))
     ) {
       _data.push({
@@ -106,7 +114,11 @@ export const SelectToken = ({
     colors.$surfaceSecondary,
     onSelectUsdc,
     avaxAvalancheToken,
-    category
+    category,
+    isAvaxCBuyable,
+    isAvaxCWithdrawable,
+    isUsdcBuyable,
+    isUsdcWithdrawable
   ])
 
   return (
