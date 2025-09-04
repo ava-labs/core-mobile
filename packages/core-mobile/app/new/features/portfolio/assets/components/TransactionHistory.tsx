@@ -179,7 +179,6 @@ const TransactionHistory: FC<Props> = ({
       }}>
       <ActivityList
         data={combinedData}
-        xpToken={token}
         handlePendingBridge={handlePendingBridge}
         handleExplorerLink={handleExplorerLink}
         overrideProps={{
