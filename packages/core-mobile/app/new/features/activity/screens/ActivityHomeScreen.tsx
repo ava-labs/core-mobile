@@ -49,11 +49,17 @@ const ActivityHomeScreen = (): JSX.Element => {
   const [searchText, setSearchText] = useState('')
   const [isSearchBarFocused, setSearchBarFocused] = useState(false)
   const tabViewRef = useRef<CollapsibleTabsRef>(null)
+  const [stickyHeaderLayout, setStickyHeaderLayout] = useState<
+    LayoutRectangle | undefined
+  >()
   const [balanceHeaderLayout, setBalanceHeaderLayout] = useState<
     LayoutRectangle | undefined
   >()
 
   const [searchBarLayout, setSearchBarLayout] = useState<
+    LayoutRectangle | undefined
+  >()
+  const [segmentedControlLayout, setSegmentedControlLayout] = useState<
     LayoutRectangle | undefined
   >()
 
@@ -163,35 +169,59 @@ const ActivityHomeScreen = (): JSX.Element => {
     setSearchBarLayout(event.nativeEvent.layout)
   }, [])
 
+  const handleStickyHeaderLayout = useCallback((event: LayoutChangeEvent) => {
+    setStickyHeaderLayout(event.nativeEvent.layout)
+  }, [])
+
+  const handleSegmentedControlLayout = useCallback(
+    (event: LayoutChangeEvent) => {
+      setSegmentedControlLayout(event.nativeEvent.layout)
+    },
+    []
+  )
+
   const insets = useSafeAreaInsets()
   const frame = useSafeAreaFrame()
 
   const tabHeight = useMemo(() => {
     return Platform.select({
-      ios: frame.height - headerHeight - (searchBarLayout?.height ?? 0),
-      android:
+      ios:
         frame.height +
         headerHeight -
-        insets.bottom -
-        TAB_BAR_HEIGHT -
+        (stickyHeaderLayout?.height ?? 0) -
+        (segmentedControlLayout?.height ?? 0) -
         (searchBarLayout?.height ?? 0) -
-        56
+        10,
+      android:
+        frame.height -
+        headerHeight +
+        (stickyHeaderLayout?.height ?? 0) -
+        (searchBarLayout?.height ?? 0) -
+        10
     })
-  }, [frame.height, headerHeight, searchBarLayout?.height, insets.bottom])
+  }, [
+    frame.height,
+    headerHeight,
+    stickyHeaderLayout?.height,
+    segmentedControlLayout?.height,
+    searchBarLayout?.height
+  ])
 
   const contentContainerStyle = useMemo(() => {
     return {
-      paddingBottom: TAB_BAR_HEIGHT + insets.bottom + 16,
+      paddingBottom: (segmentedControlLayout?.height ?? 0) + 16,
       paddingTop: 10,
       minHeight: tabHeight
     }
-  }, [insets.bottom, tabHeight])
+  }, [segmentedControlLayout?.height, tabHeight])
 
   const renderEmptyTabBar = useCallback((): JSX.Element => <></>, [])
 
   const renderHeader = useCallback((): JSX.Element => {
     return (
-      <View style={{ backgroundColor: theme.colors.$surfacePrimary }}>
+      <View
+        style={{ backgroundColor: theme.colors.$surfacePrimary }}
+        onLayout={handleStickyHeaderLayout}>
         <Animated.View style={[animatedHeaderStyle]}>
           <View
             onLayout={handleBalanceHeaderLayout}
@@ -233,6 +263,7 @@ const ActivityHomeScreen = (): JSX.Element => {
   }, [
     theme.colors.$surfacePrimary,
     theme.colors.$surfaceSecondary,
+    handleStickyHeaderLayout,
     animatedHeaderStyle,
     handleBalanceHeaderLayout,
     handleSearchBarLayout,
@@ -295,7 +326,8 @@ const ActivityHomeScreen = (): JSX.Element => {
           bottom: 0,
           left: 0,
           right: 0
-        }}>
+        }}
+        onLayout={handleSegmentedControlLayout}>
         <LinearGradientBottomWrapper>
           <View
             style={{

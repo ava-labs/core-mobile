@@ -18,7 +18,6 @@ import { LinearGradientBottomWrapper } from 'common/components/LinearGradientBot
 import { LoadingState } from 'common/components/LoadingState'
 import { TAB_BAR_HEIGHT } from 'common/consts/screenOptions'
 import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
-import { useIsAndroidWithBottomBar } from 'common/hooks/useIsAndroidWithBottomBar'
 import { useRouter } from 'expo-router'
 import { ActiveStakesScreen } from 'features/stake/components/ActiveStakesScreen'
 import { AllStakesScreen } from 'features/stake/components/AllStakesScreen'
@@ -50,6 +49,9 @@ export const StakeHomeScreen = (): JSX.Element => {
   const tabViewRef = useRef<CollapsibleTabsRef>(null)
   const insets = useSafeAreaInsets()
 
+  const [stickyHeaderLayout, setStickyHeaderLayout] = useState<
+    LayoutRectangle | undefined
+  >()
   const [balanceHeaderLayout, setBalanceHeaderLayout] = useState<
     LayoutRectangle | undefined
   >()
@@ -69,6 +71,10 @@ export const StakeHomeScreen = (): JSX.Element => {
   const motion = useMotion(isMotionActive)
   const isEmpty = !data || data.length === 0
   const { addStake, canAddStake } = useAddStake()
+
+  const handleStickyHeaderLayout = useCallback((event: LayoutChangeEvent) => {
+    setStickyHeaderLayout(event.nativeEvent.layout)
+  }, [])
 
   const handleBalanceHeaderLayout = useCallback(
     (event: LayoutChangeEvent): void => {
@@ -91,7 +97,9 @@ export const StakeHomeScreen = (): JSX.Element => {
 
   const renderHeader = useCallback((): JSX.Element => {
     return (
-      <View sx={{ backgroundColor: theme.colors.$surfacePrimary }}>
+      <View
+        sx={{ backgroundColor: theme.colors.$surfacePrimary }}
+        onLayout={handleStickyHeaderLayout}>
         <Animated.View
           onLayout={handleBalanceHeaderLayout}
           style={[
@@ -149,18 +157,24 @@ export const StakeHomeScreen = (): JSX.Element => {
 
   const headerHeight = useHeaderHeight()
   const frame = useSafeAreaFrame()
-  const isAndroidWithBottomBar = useIsAndroidWithBottomBar()
 
   const tabHeight = useMemo(() => {
     return Platform.select({
-      ios: frame.height - headerHeight,
-      android:
+      ios:
         frame.height +
         headerHeight -
-        TAB_BAR_HEIGHT -
-        (isAndroidWithBottomBar ? 0 : 48)
+        (stickyHeaderLayout?.height ?? 0) -
+        (segmentedControlLayout?.height ?? 0) +
+        90,
+      android:
+        frame.height - headerHeight + (stickyHeaderLayout?.height ?? 0) - 10
     })
-  }, [frame.height, headerHeight, isAndroidWithBottomBar])
+  }, [
+    frame.height,
+    headerHeight,
+    segmentedControlLayout?.height,
+    stickyHeaderLayout?.height
+  ])
 
   const contentContainerStyle = useMemo(() => {
     return {

@@ -203,7 +203,7 @@ export const CollectiblesScreen = ({
     return (
       <CollapsibleTabs.ContentWrapper
         height={
-          Number(containerStyle.minHeight) - (headerLayout?.height ?? 0) - 80
+          Number(containerStyle.minHeight) - (headerLayout?.height ?? 0) - 100
         }>
         {emptyComponent}
       </CollapsibleTabs.ContentWrapper>

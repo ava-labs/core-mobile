@@ -18,7 +18,6 @@ import { LinearGradientBottomWrapper } from 'common/components/LinearGradientBot
 import { TAB_BAR_HEIGHT } from 'common/consts/screenOptions'
 import { useErc20ContractTokens } from 'common/hooks/useErc20ContractTokens'
 import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
-import { useIsAndroidWithBottomBar } from 'common/hooks/useIsAndroidWithBottomBar'
 import { useSearchableTokenList } from 'common/hooks/useSearchableTokenList'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
 import { useFocusEffect, useRouter } from 'expo-router'
@@ -83,6 +82,9 @@ const SEGMENT_EVENT_MAP: Record<number, AnalyticsEventName> = {
 }
 
 const PortfolioHomeScreen = (): JSX.Element => {
+  const insets = useSafeAreaInsets()
+  const frame = useSafeAreaFrame()
+  const headerHeight = useHeaderHeight()
   const isMeldOfframpBlocked = useSelector(selectIsMeldOfframpBlocked)
 
   const { navigateToBuy } = useBuy()
@@ -93,6 +95,9 @@ const PortfolioHomeScreen = (): JSX.Element => {
   const dispatch = useDispatch()
   const { navigate, push } = useRouter()
   const { navigateToSwap } = useNavigateToSwap()
+  const [stickyHeaderLayout, setStickyHeaderLayout] = useState<
+    LayoutRectangle | undefined
+  >()
   const [balanceHeaderLayout, setBalanceHeaderLayout] = useState<
     LayoutRectangle | undefined
   >()
@@ -176,6 +181,13 @@ const PortfolioHomeScreen = (): JSX.Element => {
         ? undefined
         : totalPriceChangedInPercent.toFixed(2) + '%',
     [totalPriceChangedInPercent]
+  )
+
+  const handleStickyHeaderLayout = useCallback(
+    (event: LayoutChangeEvent): void => {
+      setStickyHeaderLayout(event.nativeEvent.layout)
+    },
+    []
   )
 
   const handleBalanceHeaderLayout = useCallback(
@@ -295,6 +307,7 @@ const PortfolioHomeScreen = (): JSX.Element => {
   const renderHeader = useCallback((): JSX.Element => {
     return (
       <View
+        onLayout={handleStickyHeaderLayout}
         style={{
           backgroundColor: theme.colors.$surfacePrimary
         }}>
@@ -345,6 +358,7 @@ const PortfolioHomeScreen = (): JSX.Element => {
       </View>
     )
   }, [
+    handleStickyHeaderLayout,
     theme.colors.$surfacePrimary,
     handleBalanceHeaderLayout,
     animatedHeaderStyle,
@@ -449,30 +463,12 @@ const PortfolioHomeScreen = (): JSX.Element => {
     }, [])
   )
 
-  const headerHeight = useHeaderHeight()
-  const insets = useSafeAreaInsets()
-  const isAndroidWithBottomBar = useIsAndroidWithBottomBar()
-  const frame = useSafeAreaFrame()
-
   const tabHeight = useMemo(() => {
     return Platform.select({
-      ios: frame.height - headerHeight - (totalPriceChanged > 0 ? 16 : 0),
-      android:
-        frame.height +
-        headerHeight -
-        TAB_BAR_HEIGHT -
-        insets.bottom -
-        (totalPriceChanged > 0 ? 16 : 0) +
-        (isAndroidWithBottomBar ? 0 : 48) -
-        10
+      ios: frame.height + headerHeight - (stickyHeaderLayout?.height ?? 0),
+      android: frame.height - headerHeight + (stickyHeaderLayout?.height ?? 0)
     })
-  }, [
-    frame.height,
-    headerHeight,
-    totalPriceChanged,
-    insets.bottom,
-    isAndroidWithBottomBar
-  ])
+  }, [frame.height, headerHeight, stickyHeaderLayout?.height])
 
   const contentContainerStyle = useMemo(() => {
     return {

@@ -46,10 +46,16 @@ import { MarketType } from 'store/watchlist'
 const TrackHomeScreen = (): JSX.Element => {
   const { navigate } = useRouter()
   const { theme } = useTheme()
+  const insets = useSafeAreaInsets()
+  const frame = useSafeAreaFrame()
   const headerHeight = useHeaderHeight()
+
   const [isSearchBarFocused, setSearchBarFocused] = useState(false)
   const [searchText, setSearchText] = useState('')
   const tabViewRef = useRef<CollapsibleTabsRef>(null)
+  const [stickyHeaderLayout, setStickyHeaderLayout] = useState<
+    LayoutRectangle | undefined
+  >()
   const [balanceHeaderLayout, setBalanceHeaderLayout] = useState<
     LayoutRectangle | undefined
   >()
@@ -168,6 +174,10 @@ const TrackHomeScreen = (): JSX.Element => {
     }, [handleScrollResync])
   )
 
+  const handleStickyHeaderLayout = useCallback((event: LayoutChangeEvent) => {
+    setStickyHeaderLayout(event.nativeEvent.layout)
+  }, [])
+
   const handleSearchBarLayout = useCallback((event: LayoutChangeEvent) => {
     setSearchBarLayout(event.nativeEvent.layout)
   }, [])
@@ -176,35 +186,36 @@ const TrackHomeScreen = (): JSX.Element => {
     setTabBarLayout(event.nativeEvent.layout)
   }, [])
 
-  const insets = useSafeAreaInsets()
-  const frame = useSafeAreaFrame()
-
   const tabHeight = useMemo(() => {
     return Platform.select({
-      ios: frame.height - headerHeight - (searchBarLayout?.height ?? 0),
-      android:
-        frame.height +
-        headerHeight -
-        TAB_BAR_HEIGHT -
-        insets.bottom -
-        (searchBarLayout?.height ?? 0) -
-        44
+      ios:
+        frame.height -
+        (stickyHeaderLayout?.height ?? 0) -
+        (searchBarLayout?.height ?? 0),
+      android: frame.height - headerHeight + (searchBarLayout?.height ?? 0) - 24
     })
-  }, [frame.height, headerHeight, searchBarLayout?.height, insets.bottom])
+  }, [
+    frame.height,
+    headerHeight,
+    searchBarLayout?.height,
+    stickyHeaderLayout?.height
+  ])
 
   const contentContainerStyle = useMemo(() => {
     return {
-      paddingBottom: TAB_BAR_HEIGHT + insets.bottom + 16,
+      paddingBottom: (tabBarLayout?.height ?? 0) + 16,
       paddingTop: 10,
       minHeight: tabHeight
     }
-  }, [insets.bottom, tabHeight])
+  }, [tabBarLayout?.height, tabHeight])
 
   const renderEmptyTabBar = useCallback((): JSX.Element => <></>, [])
 
   const renderHeader = useCallback((): JSX.Element => {
     return (
-      <View style={{ backgroundColor: theme.colors.$surfacePrimary }}>
+      <View
+        style={{ backgroundColor: theme.colors.$surfacePrimary }}
+        onLayout={handleStickyHeaderLayout}>
         <Animated.View style={[animatedHeaderStyle]}>
           <View
             onLayout={handleBalanceHeaderLayout}
@@ -248,6 +259,7 @@ const TrackHomeScreen = (): JSX.Element => {
   }, [
     theme.colors.$surfacePrimary,
     theme.colors.$surfaceSecondary,
+    handleStickyHeaderLayout,
     animatedHeaderStyle,
     handleBalanceHeaderLayout,
     handleSearchBarLayout,

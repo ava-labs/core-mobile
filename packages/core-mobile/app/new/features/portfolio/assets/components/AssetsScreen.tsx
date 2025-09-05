@@ -19,21 +19,21 @@ import AnalyticsService from 'services/analytics/AnalyticsService'
 import { selectActiveAccount } from 'store/account'
 import {
   AssetManageView,
+  AssetNetworkFilter,
   LocalTokenWithBalance,
   selectBalanceTotalInCurrencyForAccount,
   selectIsAllBalancesError,
   selectIsAllBalancesInaccurate,
-  selectIsPollingBalances,
-  selectIsLoadingBalances,
-  selectIsRefetchingBalances,
   selectIsBalanceLoadedForAccount,
-  AssetNetworkFilter
+  selectIsLoadingBalances,
+  selectIsPollingBalances,
+  selectIsRefetchingBalances
 } from 'store/balance'
 import { selectEnabledNetworks } from 'store/network'
 import { selectTokenVisibility } from 'store/portfolio'
 import { useAssetsFilterAndSort } from '../hooks/useAssetsFilterAndSort'
-import { TokenListItem } from './TokenListItem'
 import { EmptyState } from './EmptyState'
+import { TokenListItem } from './TokenListItem'
 
 interface Props {
   containerStyle: ViewStyle
