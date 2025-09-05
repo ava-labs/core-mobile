@@ -9,10 +9,16 @@ import { PendingBridgeTransactionItem } from 'features/portfolio/assets/componen
 import { TokenActivityListItem } from 'features/portfolio/assets/components/TokenActivityListItem'
 import { XpActivityListItem } from 'features/portfolio/assets/components/XpActivityListItem'
 import React, { useCallback } from 'react'
+import { TokenWithBalance } from '@avalabs/vm-module-types'
+import {
+  isTokenWithBalanceAVM,
+  isTokenWithBalancePVM
+} from '@avalabs/avalanche-module'
 import { ActivityListItem } from '../utils'
 
 export const ActivityList = ({
   data,
+  xpToken,
   overrideProps,
   isRefreshing,
   refresh,
@@ -23,6 +29,7 @@ export const ActivityList = ({
 }: {
   data: ActivityListItem[]
   overrideProps?: FlashListProps<ActivityListItem>['overrideProps']
+  xpToken: TokenWithBalance | undefined
   isRefreshing: boolean
   handlePendingBridge: (transaction: BridgeTransaction | BridgeTransfer) => void
   handleExplorerLink: (explorerLink: string) => void
@@ -47,7 +54,10 @@ export const ActivityList = ({
       }
 
       const transaction = item.transaction
-      const isXpTx = isXpTransaction(transaction.txType)
+      const isXpTx =
+        isXpTransaction(transaction.txType) &&
+        xpToken &&
+        (isTokenWithBalanceAVM(xpToken) || isTokenWithBalancePVM(xpToken))
 
       const props = {
         tx: transaction,
@@ -77,13 +87,14 @@ export const ActivityList = ({
         />
       )
     },
-    [data, handleExplorerLink, handlePendingBridge]
+    [data, handleExplorerLink, handlePendingBridge, xpToken]
   )
 
   const keyExtractor = useCallback((item: ActivityListItem) => item.id, [])
 
   return (
     <CollapsibleTabs.FlashList
+      key={xpToken?.symbol}
       overrideProps={overrideProps}
       data={data}
       renderItem={renderItem}
