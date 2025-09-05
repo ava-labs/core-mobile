@@ -46,17 +46,24 @@ export const SelectPaymentMethod = ({
       categories: [category]
     })
 
+  const isOnramp = category === ServiceProviderCategories.CRYPTO_ONRAMP
+
   const { crytoQuotes } = useServiceProviders({
+    enabled: !isOnramp,
     category
   })
 
   const supportedPaymentMethods = useMemo(() => {
+    if (isOnramp) {
+      return paymentMethods
+    }
+
     return paymentMethods?.filter(paymentMethod =>
       crytoQuotes?.some(
         quote => quote.paymentMethodType === paymentMethod.paymentMethod
       )
     )
-  }, [paymentMethods, crytoQuotes])
+  }, [isOnramp, paymentMethods, crytoQuotes])
 
   const dismissPaymentMethod = useCallback(() => {
     setMeldPaymentMethod(selectedPaymentMethod)
@@ -91,7 +98,7 @@ export const SelectPaymentMethod = ({
             <Icons.Navigation.ChevronRightV2 color={colors.$textPrimary} />
           </View>
         </Pressable>
-        {category === ServiceProviderCategories.CRYPTO_ONRAMP && (
+        {isOnramp && (
           <View
             sx={{
               flexDirection: 'row',
@@ -110,7 +117,7 @@ export const SelectPaymentMethod = ({
       </View>
     )
   }, [
-    category,
+    isOnramp,
     colors.$surfaceSecondary,
     colors.$textPrimary,
     onSelectServiceProvider
