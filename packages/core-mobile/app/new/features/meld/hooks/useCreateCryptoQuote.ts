@@ -4,7 +4,6 @@ import { useMemo } from 'react'
 import MeldService from '../services/MeldService'
 import { CreateCryptoQuote, CreateCryptoQuoteParams } from '../types'
 import { ServiceProviderCategories } from '../consts'
-import {} from '../store'
 import { useSearchServiceProviders } from './useSearchServiceProviders'
 import { useFiatSourceAmount } from './useFiatSourceAmount'
 
