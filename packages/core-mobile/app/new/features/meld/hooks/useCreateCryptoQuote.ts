@@ -9,6 +9,7 @@ import { useSearchServiceProviders } from './useSearchServiceProviders'
 import { useFiatSourceAmount } from './useFiatSourceAmount'
 
 export const useCreateCryptoQuote = ({
+  enabled: enabledCreateCryptoQuote,
   category,
   countryCode,
   walletAddress,
@@ -17,6 +18,7 @@ export const useCreateCryptoQuote = ({
   paymentMethodType
 }: CreateCryptoQuoteParams & {
   category: ServiceProviderCategories
+  enabled?: boolean
 }): UseQueryResult<CreateCryptoQuote | undefined, Error> => {
   const { data: serviceProvidersData } = useSearchServiceProviders({
     categories: [category]
@@ -43,7 +45,10 @@ export const useCreateCryptoQuote = ({
   const isSourceAmountValid = hasValidSourceAmount && sourceAmount !== undefined
 
   const enabled =
-    isSourceAmountValid && hasDestinationCurrencyCode && hasSourceCurrencyCode
+    isSourceAmountValid &&
+    hasDestinationCurrencyCode &&
+    hasSourceCurrencyCode &&
+    enabledCreateCryptoQuote
 
   return useQuery<CreateCryptoQuote | undefined>({
     enabled,

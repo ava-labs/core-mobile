@@ -9,9 +9,11 @@ import { getErrorMessage } from '../utils'
 import { useCreateCryptoQuote } from './useCreateCryptoQuote'
 
 export const useServiceProviders = ({
+  enabled,
   category,
   paymentMethodType
 }: {
+  enabled?: boolean
   category: ServiceProviderCategories
   paymentMethodType?: PaymentMethods
 }): {
@@ -46,6 +48,7 @@ export const useServiceProviders = ({
     isRefetching: isRefetchingCryptoQuotes,
     error
   } = useCreateCryptoQuote({
+    enabled,
     category,
     destinationCurrencyCode,
     sourceCurrencyCode,

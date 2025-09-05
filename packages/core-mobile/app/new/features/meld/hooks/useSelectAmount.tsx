@@ -88,9 +88,6 @@ export const useSelectAmount = ({
     DEFAULT_DEBOUNCE_MILLISECONDS
   )
 
-  const { crytoQuotes, isLoadingCryptoQuotes, cryptoQuotesError } =
-    useServiceProviders({ category, paymentMethodType: paymentMethod })
-
   const { data: defaultsByCountry, isLoading: isLoadingDefaultsByCountry } =
     useSearchDefaultsByCountry({
       categories: [category]
@@ -102,6 +99,65 @@ export const useSelectAmount = ({
     () => getFromPopulatedNetwork(token?.tokenWithBalance?.networkChainId),
     [getFromPopulatedNetwork, token?.tokenWithBalance?.networkChainId]
   )
+  const tokenBalance = useMemo(() => {
+    if (token?.tokenWithBalance === undefined) {
+      return undefined
+    }
+
+    return new TokenUnit(
+      token?.tokenWithBalance?.balance ?? 0,
+      token?.tokenWithBalance && 'decimals' in token.tokenWithBalance
+        ? token.tokenWithBalance.decimals
+        : network?.networkToken.decimals ?? 0,
+      token?.tokenWithBalance?.symbol ?? ''
+    )
+  }, [network?.networkToken.decimals, token?.tokenWithBalance])
+
+  const getSourceAmountInTokenUnit = useCallback(
+    (amt: number | undefined | null): TokenUnit => {
+      const currentPrice = token?.tokenWithBalance.symbol
+        ? getMarketTokenBySymbol(token.tokenWithBalance.symbol)?.currentPrice ??
+          0
+        : 0
+
+      const maxDecimals =
+        token?.tokenWithBalance && 'decimals' in token.tokenWithBalance
+          ? token.tokenWithBalance.decimals
+          : 0
+
+      const tokenAmount =
+        amt !== null && amt !== undefined && currentPrice !== 0
+          ? (amt / currentPrice) * 10 ** maxDecimals
+          : 0
+
+      return new TokenUnit(
+        tokenAmount,
+        maxDecimals,
+        token?.tokenWithBalance.symbol ?? ''
+      )
+    },
+    [getMarketTokenBySymbol, token?.tokenWithBalance]
+  )
+
+  const hasEnoughBalance = useMemo(() => {
+    return (
+      tokenBalance !== undefined &&
+      sourceAmount !== undefined &&
+      getSourceAmountInTokenUnit(sourceAmount).lt(tokenBalance)
+    )
+  }, [getSourceAmountInTokenUnit, sourceAmount, tokenBalance])
+
+  const { crytoQuotes, isLoadingCryptoQuotes, cryptoQuotesError } =
+    useServiceProviders({
+      category,
+      paymentMethodType: paymentMethod,
+      enabled: hasValidSourceAmount && hasEnoughBalance
+    })
+
+  useEffect(() => {
+    setPaymentMethod(undefined)
+    setServiceProvider(undefined)
+  }, [setPaymentMethod, setServiceProvider, token?.currencyCode])
 
   const walletAddress = useMemo(() => {
     return account && network && getAddressByNetwork(account, network)
@@ -164,20 +220,6 @@ export const useSelectAmount = ({
     paymentMethod
   ])
 
-  const tokenBalance = useMemo(() => {
-    if (token?.tokenWithBalance === undefined) {
-      return undefined
-    }
-
-    return new TokenUnit(
-      token?.tokenWithBalance?.balance ?? 0,
-      token?.tokenWithBalance && 'decimals' in token.tokenWithBalance
-        ? token.tokenWithBalance.decimals
-        : network?.networkToken.decimals ?? 0,
-      token?.tokenWithBalance?.symbol ?? ''
-    )
-  }, [network?.networkToken.decimals, token?.tokenWithBalance])
-
   const defaultPaymentMethod = useMemo(() => {
     if (category === ServiceProviderCategories.CRYPTO_ONRAMP) {
       return defaultsByCountry?.find(d => d.countryCode === countryCode)
@@ -225,38 +267,10 @@ export const useSelectAmount = ({
     setServiceProvider
   ])
 
-  const getSourceAmountInTokenUnit = useCallback(
-    (amt: number | undefined | null): TokenUnit => {
-      const currentPrice = token?.tokenWithBalance.symbol
-        ? getMarketTokenBySymbol(token.tokenWithBalance.symbol)?.currentPrice ??
-          0
-        : 0
-
-      const maxDecimals =
-        token?.tokenWithBalance && 'decimals' in token.tokenWithBalance
-          ? token.tokenWithBalance.decimals
-          : 0
-
-      const tokenAmount =
-        amt !== null && amt !== undefined && currentPrice !== 0
-          ? (amt / currentPrice) * 10 ** maxDecimals
-          : 0
-
-      return new TokenUnit(
-        tokenAmount,
-        maxDecimals,
-        token?.tokenWithBalance.symbol ?? ''
-      )
-    },
-    [getMarketTokenBySymbol, token?.tokenWithBalance]
-  )
-
   const errorMessage = useMemo(() => {
     if (
       category === ServiceProviderCategories.CRYPTO_OFFRAMP &&
-      tokenBalance &&
-      sourceAmount &&
-      getSourceAmountInTokenUnit(sourceAmount).gt(tokenBalance)
+      hasEnoughBalance === false
     ) {
       return `You don't have enough ${token?.tokenWithBalance.symbol} to withdraw`
     }
@@ -302,11 +316,10 @@ export const useSelectAmount = ({
     return undefined
   }, [
     category,
-    tokenBalance,
-    sourceAmount,
-    getSourceAmountInTokenUnit,
+    hasEnoughBalance,
     isAboveMinimumLimit,
     minimumLimit,
+    sourceAmount,
     isBelowMaximumLimit,
     maximumLimit,
     cryptoQuotesError?.statusCode,
