@@ -14,6 +14,7 @@ import SentryService from 'services/sentry/SentryService'
 import { App } from './App'
 import JailbreakCheck from './common/components/JailbreakCheck'
 import TopLevelErrorFallback from './common/components/TopLevelErrorFallback'
+import { Platform } from 'react-native'
 
 const setGlobalToast = (toast: Toast): void => {
   global.toast = toast
@@ -43,10 +44,14 @@ const ContextApp = (): JSX.Element => {
         </RootSiblingParent>
         <JailbreakCheck />
         <Toast
-          ToastContainerWrapper={{
-            component: FullWindowOverlay,
-            props: { children: undefined }
-          }}
+          ToastContainerWrapper={
+            Platform.OS === 'ios'
+              ? {
+                  component: FullWindowOverlay,
+                  props: { children: undefined }
+                }
+              : undefined
+          }
           ref={setGlobalToast}
           offsetTop={30}
           normalColor={'00FFFFFF'}
