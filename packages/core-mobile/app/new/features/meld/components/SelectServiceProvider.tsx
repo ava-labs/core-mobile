@@ -15,7 +15,7 @@ import { TokenUnit } from '@avalabs/core-utils-sdk'
 import { useNetworks } from 'hooks/networks/useNetworks'
 import { LoadingState } from 'common/components/LoadingState'
 import { ErrorState } from 'common/components/ErrorState'
-import { useMeldServiceProvider } from '../store'
+import { useMeldPaymentMethod, useMeldServiceProvider } from '../store'
 import { useSearchServiceProviders } from '../hooks/useSearchServiceProviders'
 import { ServiceProviderCategories, ServiceProviderNames } from '../consts'
 import { Quote } from '../types'
@@ -40,12 +40,13 @@ export const SelectServiceProvider = ({
   const { formatCurrency } = useFormatCurrency()
   const [_, setMeldServiceProvider] = useMeldServiceProvider()
   const [newQuoteTime, setNewQuoteTime] = useState(NEW_QUOTE_TIME)
+  const [meldPaymentMethod] = useMeldPaymentMethod()
   const {
     crytoQuotes,
     isLoadingCryptoQuotes,
     refetch,
     isRefetchingCryptoQuotes
-  } = useServiceProviders({ category })
+  } = useServiceProviders({ category, paymentMethodType: meldPaymentMethod })
 
   const { data: serviceProviders } = useSearchServiceProviders({
     categories: [category]
