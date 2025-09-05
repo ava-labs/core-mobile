@@ -48,8 +48,6 @@ export const SelectServiceProvider = ({
     isRefetchingCryptoQuotes
   } = useServiceProviders({ category, paymentMethodType: meldPaymentMethod })
 
-  console.log('crytoQuotes', crytoQuotes)
-
   const { data: serviceProviders } = useSearchServiceProviders({
     categories: [category]
   })
