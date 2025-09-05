@@ -15,15 +15,13 @@ export const commonNavigatorScreenOptions: NativeStackNavigationOptions = {
 export const stackNavigatorScreenOptions: NativeStackNavigationOptions = {
   ...commonNavigatorScreenOptions,
   headerTransparent: true,
+  headerTitleAlign: 'center',
   animation: 'slide_from_right'
 }
 
 export const stackScreensOptions: NativeStackNavigationOptions | undefined = {
   ...stackNavigatorScreenOptions,
-  headerLeft: () => <BackBarButton />,
-  headerTransparent: true,
-  headerTitleAlign: 'center',
-  animation: 'slide_from_right'
+  headerLeft: () => <BackBarButton />
 }
 
 // Modals

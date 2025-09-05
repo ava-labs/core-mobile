@@ -186,7 +186,6 @@ export const ListScreen = <T,>({
       <Animated.View style={[animatedHeaderContainerStyle, { gap: 12 }]}>
         <BlurViewWithFallback
           style={{
-            paddingHorizontal: 16,
             paddingTop: renderHeader ? 16 : 0
           }}>
           {title ? (
@@ -194,7 +193,8 @@ export const ListScreen = <T,>({
               style={[
                 animatedHeaderStyle,
                 {
-                  paddingTop: headerHeight
+                  paddingTop: headerHeight,
+                  paddingHorizontal: 16
                 }
               ]}>
               <View
@@ -207,7 +207,11 @@ export const ListScreen = <T,>({
             </Animated.View>
           ) : null}
 
-          <View style={{ paddingBottom: renderHeader ? 12 : 0 }}>
+          <View
+            style={{
+              paddingBottom: renderHeader ? 12 : 0,
+              paddingHorizontal: 16
+            }}>
             {renderHeader?.()}
           </View>
           <Animated.View
