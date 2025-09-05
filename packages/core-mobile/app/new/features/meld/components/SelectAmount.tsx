@@ -21,6 +21,7 @@ import { useSelectAmount } from '../hooks/useSelectAmount'
 import { ServiceProviderCategories } from '../consts'
 import { useOfframpActivityIndicator, useOfframpSessionId } from '../store'
 import { getErrorMessage } from '../utils'
+import { useResetMeldTokenList } from '../hooks/useResetMeldTokenList'
 
 interface SelectAmountProps {
   title: string
@@ -42,6 +43,8 @@ export const SelectAmount = ({
   } = useTheme()
   const { theme: inversedTheme } = useInversedTheme({ isDark })
   const { animating } = useOfframpActivityIndicator()
+
+  useResetMeldTokenList()
 
   const {
     formatInSubTextNumber,
