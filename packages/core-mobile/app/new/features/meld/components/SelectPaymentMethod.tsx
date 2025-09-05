@@ -20,7 +20,8 @@ import {
   PaymentMethodTimeLimits,
   PaymentMethods
 } from '../consts'
-import { useMeldPaymentMethod, useMeldServiceProvider } from '../store'
+import { useMeldPaymentMethod } from '../store'
+import { useServiceProviders } from '../hooks/useServiceProviders'
 import { PaymentMethodIcon } from './PaymentMethodIcon'
 
 export const SelectPaymentMethod = ({
@@ -36,17 +37,26 @@ export const SelectPaymentMethod = ({
     theme: { colors }
   } = useTheme()
   const { back, canGoBack } = useRouter()
-  const [meldPaymentMethod] = useMeldPaymentMethod()
-  const [meldServiceProvider] = useMeldServiceProvider()
+  const [meldPaymentMethod, setMeldPaymentMethod] = useMeldPaymentMethod()
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<
     PaymentMethods | undefined
   >(meldPaymentMethod)
-  const [_, setMeldPaymentMethod] = useMeldPaymentMethod()
   const { data: paymentMethods, isLoading: isLoadingPaymentMethods } =
     useSearchPaymentMethods({
-      categories: [category],
-      serviceProviders: meldServiceProvider ? [meldServiceProvider] : undefined
+      categories: [category]
     })
+
+  const { crytoQuotes } = useServiceProviders({
+    category
+  })
+
+  const supportedPaymentMethods = useMemo(() => {
+    return paymentMethods?.filter(paymentMethod =>
+      crytoQuotes?.some(
+        quote => quote.paymentMethodType === paymentMethod.paymentMethod
+      )
+    )
+  }, [paymentMethods, crytoQuotes])
 
   const dismissPaymentMethod = useCallback(() => {
     setMeldPaymentMethod(selectedPaymentMethod)
@@ -116,9 +126,9 @@ export const SelectPaymentMethod = ({
   }, [dismissPaymentMethod])
 
   const data = useMemo(() => {
-    if (!paymentMethods) return []
+    if (!supportedPaymentMethods) return []
 
-    return paymentMethods.map(paymentMethod => {
+    return supportedPaymentMethods.map(paymentMethod => {
       return {
         title: paymentMethod.paymentMethod
           ? PaymentMethodNames[paymentMethod.paymentMethod]
@@ -126,9 +136,12 @@ export const SelectPaymentMethod = ({
         subtitle: paymentMethod.paymentMethod
           ? PaymentMethodTimeLimits[paymentMethod.paymentMethod]
           : '',
-        onPress: () =>
-          paymentMethod.paymentMethod &&
-          setSelectedPaymentMethod(paymentMethod.paymentMethod),
+        onPress: () => {
+          if (paymentMethod.paymentMethod) {
+            setSelectedPaymentMethod(paymentMethod.paymentMethod)
+            setMeldPaymentMethod(paymentMethod.paymentMethod)
+          }
+        },
         accessory:
           selectedPaymentMethod === paymentMethod.paymentMethod ? (
             <Icons.Custom.CheckSmall color={colors.$textPrimary} />
@@ -138,7 +151,12 @@ export const SelectPaymentMethod = ({
         leftIcon: <PaymentMethodIcon paymentMethod={paymentMethod} />
       }
     })
-  }, [paymentMethods, selectedPaymentMethod, colors.$textPrimary])
+  }, [
+    supportedPaymentMethods,
+    selectedPaymentMethod,
+    colors.$textPrimary,
+    setMeldPaymentMethod
+  ])
 
   return (
     <ScrollScreen

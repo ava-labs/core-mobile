@@ -89,7 +89,7 @@ export const useSelectAmount = ({
   )
 
   const { crytoQuotes, isLoadingCryptoQuotes, cryptoQuotesError } =
-    useServiceProviders({ category })
+    useServiceProviders({ category, paymentMethodType: paymentMethod })
 
   const { data: defaultsByCountry, isLoading: isLoadingDefaultsByCountry } =
     useSearchDefaultsByCountry({
