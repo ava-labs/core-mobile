@@ -147,11 +147,18 @@ export const useSelectAmount = ({
     )
   }, [getSourceAmountInTokenUnit, sourceAmount, tokenBalance])
 
+  const enabled = useMemo(() => {
+    if (category === ServiceProviderCategories.CRYPTO_ONRAMP) {
+      return hasValidSourceAmount
+    }
+    return hasValidSourceAmount && hasEnoughBalance
+  }, [category, hasValidSourceAmount, hasEnoughBalance])
+
   const { crytoQuotes, isLoadingCryptoQuotes, cryptoQuotesError } =
     useServiceProviders({
       category,
       paymentMethodType: paymentMethod,
-      enabled: hasValidSourceAmount && hasEnoughBalance
+      enabled
     })
 
   useEffect(() => {
