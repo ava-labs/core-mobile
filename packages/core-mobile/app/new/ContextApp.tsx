@@ -7,6 +7,7 @@ import { EncryptedStoreProvider } from 'contexts/EncryptedStoreProvider'
 import { PosthogContextProvider } from 'contexts/PosthogContext'
 import { ReactQueryProvider } from 'contexts/ReactQueryProvider'
 import React, { FC, PropsWithChildren } from 'react'
+import { Platform } from 'react-native'
 import { RootSiblingParent } from 'react-native-root-siblings'
 import { FullWindowOverlay } from 'react-native-screens'
 import Toast from 'react-native-toast-notifications'
@@ -14,7 +15,6 @@ import SentryService from 'services/sentry/SentryService'
 import { App } from './App'
 import JailbreakCheck from './common/components/JailbreakCheck'
 import TopLevelErrorFallback from './common/components/TopLevelErrorFallback'
-import { Platform } from 'react-native'
 
 const setGlobalToast = (toast: Toast): void => {
   global.toast = toast
