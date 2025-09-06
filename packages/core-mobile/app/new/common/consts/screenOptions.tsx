@@ -1,6 +1,9 @@
 import { NativeStackNavigationOptions } from '@react-navigation/native-stack'
+import { AccountSettingBarButton } from 'common/components/AccountSettingBarButton'
 import BackBarButton from 'common/components/BackBarButton'
+import { ConnectButton } from 'common/components/ConnectButton'
 import React from 'react'
+import { View } from '@avalabs/k2-alpine'
 import { Platform } from 'react-native'
 
 export const TAB_BAR_HEIGHT = 60
@@ -58,4 +61,24 @@ export const modalFirstScreenOptions: NativeStackNavigationOptions = {
   ...commonNavigatorScreenOptions,
   headerBackVisible: false,
   headerLeft: () => null
+}
+
+export const homeScreenOptions: NativeStackNavigationOptions = {
+  headerLeft: () => <AccountSettingBarButton />,
+  headerRight: () => {
+    return (
+      <View
+        sx={{
+          flexDirection: 'row',
+          gap: 12,
+          height: '100%',
+          alignItems: 'center'
+        }}>
+        <ConnectButton />
+        {/* <Link href="/notifications/" asChild>
+            <NotificationBarButton />
+          </Link> */}
+      </View>
+    )
+  }
 }

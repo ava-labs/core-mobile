@@ -97,7 +97,7 @@ export default function Root(): JSX.Element | null {
                   <Stack.Screen
                     name="loginWithPinOrBiometry"
                     options={{
-                      presentation: 'modal',
+                      presentation: 'fullScreenModal',
                       animation: 'none',
                       headerShown: false,
                       gestureEnabled: false
