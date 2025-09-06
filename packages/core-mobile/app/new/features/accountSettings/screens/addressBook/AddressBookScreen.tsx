@@ -38,10 +38,7 @@ export const AddressBookScreen = (): JSX.Element => {
 
   const renderHeaderRight = useCallback(() => {
     return (
-      <NavigationBarButton
-        isModal
-        testID="add_contact_btn"
-        onPress={goToAddContact}>
+      <NavigationBarButton testID="add_contact_btn" onPress={goToAddContact}>
         <Icons.Content.Add width={24} height={24} color={colors.$textPrimary} />
       </NavigationBarButton>
     )

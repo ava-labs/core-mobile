@@ -1,9 +1,9 @@
-import React from 'react'
-import { useWatchlist } from 'hooks/watchlist/useWatchlist'
-import { LocalTokenWithBalance } from 'store/balance'
 import { PriceChangeStatus } from '@avalabs/k2-alpine'
-import { useFormatCurrency } from 'new/common/hooks/useFormatCurrency'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
+import { useWatchlist } from 'hooks/watchlist/useWatchlist'
+import { useFormatCurrency } from 'new/common/hooks/useFormatCurrency'
+import React, { useRef, useCallback } from 'react'
+import { LocalTokenWithBalance } from 'store/balance'
 import { TokenGridView } from './TokenGridView'
 import { TokenListView } from './TokenListView'
 
@@ -45,11 +45,28 @@ export const TokenListItem = ({
       : PriceChangeStatus.Neutral
     : PriceChangeStatus.Neutral
 
+  const isPressDisabledRef = useRef(false)
+
+  const handlePress = useCallback(() => {
+    // Prevent multiple presses
+    if (isPressDisabledRef.current) return
+
+    // Disable further presses
+    isPressDisabledRef.current = true
+
+    onPress()
+
+    // Re-enable after 300ms
+    setTimeout(() => {
+      isPressDisabledRef.current = false
+    }, 300)
+  }, [onPress])
+
   return isGridView ? (
     <TokenGridView
       token={token}
       index={index}
-      onPress={onPress}
+      onPress={handlePress}
       priceChangeStatus={status}
       formattedBalance={formattedBalance}
       formattedPrice={formattedPrice}
@@ -58,7 +75,7 @@ export const TokenListItem = ({
     <TokenListView
       token={token}
       index={index}
-      onPress={onPress}
+      onPress={handlePress}
       priceChangeStatus={status}
       formattedBalance={formattedBalance}
       formattedPrice={formattedPrice}

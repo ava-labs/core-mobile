@@ -1,6 +1,8 @@
 import { Stack } from 'common/components/Stack'
-import { stackNavigatorScreenOptions } from 'common/consts/screenOptions'
-import { useHomeScreenOptions } from 'common/hooks/useHomeScreenOptions'
+import {
+  homeScreenOptions,
+  stackNavigatorScreenOptions
+} from 'common/consts/screenOptions'
 import { useRouter } from 'expo-router'
 import React, { useEffect } from 'react'
 import { InteractionManager } from 'react-native'
@@ -11,7 +13,6 @@ import { selectIsSolanaSupportBlocked } from 'store/posthog'
 import { selectHasBeenViewedOnce, ViewOnceKey } from 'store/viewOnce'
 
 export default function PortfolioLayout(): JSX.Element {
-  const homeScreenOptions = useHomeScreenOptions()
   const { navigate } = useRouter()
   const activeAccount = useSelector(selectActiveAccount)
   const hasBeenViewedSolanaLaunch = useSelector(

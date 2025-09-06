@@ -47,7 +47,8 @@ import React, { useCallback, useMemo, useRef, useState } from 'react'
 import {
   InteractionManager,
   LayoutChangeEvent,
-  LayoutRectangle
+  LayoutRectangle,
+  Platform
 } from 'react-native'
 import Animated, {
   useAnimatedStyle,
@@ -340,7 +341,8 @@ export const TokenDetailScreen = (): React.JSX.Element => {
         style={{
           backgroundColor: colors.$surfacePrimary,
           paddingHorizontal: 16,
-          paddingBottom: 16
+          paddingBottom: 16,
+          paddingTop: Platform.OS === 'ios' ? 16 : 0
         }}>
         <View onLayout={handleHeaderLayout}>
           <Animated.View

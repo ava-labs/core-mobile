@@ -1,50 +1,65 @@
-import React, { useCallback, useRef, useState, useMemo, useEffect } from 'react'
 import {
-  View,
   NavigationTitleHeader,
-  useTheme,
   SegmentedControl,
   Text,
-  useMotion
+  useMotion,
+  useTheme,
+  View
 } from '@avalabs/k2-alpine'
+import { useIsFocused } from '@react-navigation/native'
 import BlurredBarsContentLayout from 'common/components/BlurredBarsContentLayout'
-import {
-  LayoutChangeEvent,
-  LayoutRectangle,
-  StyleSheet,
-  InteractionManager,
-  AppState
-} from 'react-native'
-import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
-import Animated, {
-  useAnimatedStyle,
-  useSharedValue
-} from 'react-native-reanimated'
 import {
   CollapsibleTabs,
   CollapsibleTabsRef,
   OnTabChange
 } from 'common/components/CollapsibleTabs'
 import { LinearGradientBottomWrapper } from 'common/components/LinearGradientBottomWrapper'
-import { useRouter } from 'expo-router'
-import { useStakes } from 'hooks/earn/useStakes'
-import { Banner } from 'features/stake/components/Banner'
 import { LoadingState } from 'common/components/LoadingState'
-import { useAddStake } from 'features/stake/hooks/useAddStake'
-import { AllStakesScreen } from 'features/stake/components/AllStakesScreen'
+import { TAB_BAR_HEIGHT } from 'common/consts/screenOptions'
+import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
+import { useRouter } from 'expo-router'
 import { ActiveStakesScreen } from 'features/stake/components/ActiveStakesScreen'
+import { AllStakesScreen } from 'features/stake/components/AllStakesScreen'
+import { Banner } from 'features/stake/components/Banner'
 import { CompletedStakesScreen } from 'features/stake/components/CompletedStakesScreen'
-import { useIsFocused } from '@react-navigation/native'
-import { Platform } from 'react-native'
+import { useAddStake } from 'features/stake/hooks/useAddStake'
+import { useStakes } from 'hooks/earn/useStakes'
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import {
+  AppState,
+  InteractionManager,
+  LayoutChangeEvent,
+  LayoutRectangle,
+  Platform
+} from 'react-native'
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue
+} from 'react-native-reanimated'
+import {
+  useSafeAreaFrame,
+  useSafeAreaInsets
+} from 'react-native-safe-area-context'
 
 export const StakeHomeScreen = (): JSX.Element => {
   const { navigate } = useRouter()
   const { data, isLoading } = useStakes()
   const { theme } = useTheme()
   const tabViewRef = useRef<CollapsibleTabsRef>(null)
+  const insets = useSafeAreaInsets()
+
+  const [stickyHeaderLayout, setStickyHeaderLayout] = useState<
+    LayoutRectangle | undefined
+  >()
+
   const [balanceHeaderLayout, setBalanceHeaderLayout] = useState<
     LayoutRectangle | undefined
   >()
+
+  const [segmentedControlLayout, setSegmentedControlLayout] = useState<
+    LayoutRectangle | undefined
+  >()
+
   const selectedSegmentIndex = useSharedValue(0)
   const isFocused = useIsFocused()
   const [appState, setAppState] = useState(AppState.currentState)
@@ -64,6 +79,13 @@ export const StakeHomeScreen = (): JSX.Element => {
     []
   )
 
+  const handleStickyHeaderLayout = useCallback(
+    (event: LayoutChangeEvent): void => {
+      setStickyHeaderLayout(event.nativeEvent.layout)
+    },
+    []
+  )
+
   const header = useMemo(() => <NavigationTitleHeader title={'Stakes'} />, [])
 
   const { onScroll, targetHiddenProgress } = useFadingHeaderNavigation({
@@ -78,7 +100,12 @@ export const StakeHomeScreen = (): JSX.Element => {
 
   const renderHeader = useCallback((): JSX.Element => {
     return (
-      <View sx={{ backgroundColor: theme.colors.$surfacePrimary }}>
+      <View
+        sx={{
+          backgroundColor: theme.colors.$surfacePrimary,
+          paddingBottom: 16
+        }}
+        onLayout={handleStickyHeaderLayout}>
         <Animated.View
           onLayout={handleBalanceHeaderLayout}
           style={[
@@ -95,7 +122,12 @@ export const StakeHomeScreen = (): JSX.Element => {
         <Banner />
       </View>
     )
-  }, [handleBalanceHeaderLayout, animatedHeaderStyle, theme.colors])
+  }, [
+    theme.colors.$surfacePrimary,
+    handleBalanceHeaderLayout,
+    handleStickyHeaderLayout,
+    animatedHeaderStyle
+  ])
 
   const handleSelectSegment = useCallback(
     (index: number): void => {
@@ -134,6 +166,23 @@ export const StakeHomeScreen = (): JSX.Element => {
 
   const renderEmptyTabBar = useCallback((): JSX.Element => <></>, [])
 
+  const frame = useSafeAreaFrame()
+
+  const tabHeight = useMemo(() => {
+    return Platform.select({
+      ios: frame.height - insets.top - (stickyHeaderLayout?.height ?? 0) + 16,
+      android: frame.height - insets.top
+    })
+  }, [frame.height, insets.top, stickyHeaderLayout?.height])
+
+  const contentContainerStyle = useMemo(() => {
+    return {
+      paddingBottom: (segmentedControlLayout?.height ?? 0) + 32,
+      paddingTop: 10,
+      minHeight: tabHeight
+    }
+  }, [segmentedControlLayout?.height, tabHeight])
+
   const tabs = useMemo(() => {
     const allTab = {
       tabName: StakeHomeScreenTab.All,
@@ -144,6 +193,7 @@ export const StakeHomeScreen = (): JSX.Element => {
           onClaim={handleClaim}
           motion={motion}
           canAddStake={canAddStake}
+          containerStyle={contentContainerStyle}
         />
       )
     }
@@ -163,6 +213,7 @@ export const StakeHomeScreen = (): JSX.Element => {
             onClaim={handleClaim}
             motion={motion}
             canAddStake={canAddStake}
+            containerStyle={contentContainerStyle}
           />
         )
       },
@@ -174,11 +225,20 @@ export const StakeHomeScreen = (): JSX.Element => {
             onAddStake={addStake}
             onClaim={handleClaim}
             canAddStake={canAddStake}
+            containerStyle={contentContainerStyle}
           />
         )
       }
     ]
-  }, [isEmpty, motion, handlePressStake, addStake, canAddStake, handleClaim])
+  }, [
+    handlePressStake,
+    addStake,
+    handleClaim,
+    motion,
+    canAddStake,
+    contentContainerStyle,
+    isEmpty
+  ])
 
   useEffect(() => {
     const subscription = AppState.addEventListener('change', nextAppState => {
@@ -189,6 +249,13 @@ export const StakeHomeScreen = (): JSX.Element => {
       subscription.remove()
     }
   }, [])
+
+  const handleSegmentedControlLayout = useCallback(
+    (event: LayoutChangeEvent): void => {
+      setSegmentedControlLayout(event.nativeEvent.layout)
+    },
+    []
+  )
 
   if (isLoading) {
     return <LoadingState sx={{ flex: 1 }} />
@@ -204,17 +271,32 @@ export const StakeHomeScreen = (): JSX.Element => {
         onScrollY={onScroll}
         tabs={tabs}
       />
-      {!isEmpty && (
+      <View
+        style={{
+          position: 'absolute',
+          bottom: 0,
+          left: 0,
+          right: 0
+        }}
+        onLayout={handleSegmentedControlLayout}>
         <LinearGradientBottomWrapper>
-          <SegmentedControl
-            dynamicItemWidth={false}
-            items={SEGMENT_ITEMS}
-            selectedSegmentIndex={selectedSegmentIndex}
-            onSelectSegment={handleSelectSegment}
-            style={styles.segmentedControl}
-          />
+          {isEmpty ? (
+            <View style={{ height: TAB_BAR_HEIGHT + insets.bottom }} />
+          ) : (
+            <SegmentedControl
+              dynamicItemWidth={false}
+              items={SEGMENT_ITEMS}
+              selectedSegmentIndex={selectedSegmentIndex}
+              onSelectSegment={handleSelectSegment}
+              style={{
+                paddingBottom: TAB_BAR_HEIGHT + insets.bottom,
+                marginHorizontal: 16,
+                marginBottom: 16
+              }}
+            />
+          )}
         </LinearGradientBottomWrapper>
-      )}
+      </View>
     </BlurredBarsContentLayout>
   )
 }
@@ -230,7 +312,3 @@ const SEGMENT_ITEMS = [
   StakeHomeScreenTab.Active,
   StakeHomeScreenTab.Completed
 ]
-
-const styles = StyleSheet.create({
-  segmentedControl: { marginHorizontal: 16, marginBottom: 16 }
-})

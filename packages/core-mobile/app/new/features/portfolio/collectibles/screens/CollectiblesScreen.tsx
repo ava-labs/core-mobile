@@ -8,23 +8,12 @@ import {
 } from '@avalabs/k2-alpine'
 import { ListRenderItem } from '@shopify/flash-list'
 import { CollapsibleTabs } from 'common/components/CollapsibleTabs'
-import { ErrorState } from 'common/components/ErrorState'
-import React, {
-  ReactNode,
-  useCallback,
-  useEffect,
-  useMemo,
-  useState
-} from 'react'
-import {
-  LayoutChangeEvent,
-  LayoutRectangle,
-  Platform,
-  ViewStyle
-} from 'react-native'
 import { DropdownSelections } from 'common/components/DropdownSelections'
+import { ErrorState } from 'common/components/ErrorState'
 import { LoadingState } from 'common/components/LoadingState'
 import { getListItemEnteringAnimation } from 'common/utils/animations'
+import React, { ReactNode, useCallback, useEffect, useMemo } from 'react'
+import { Platform, ViewStyle } from 'react-native'
 import { useHeaderMeasurements } from 'react-native-collapsible-tab-view'
 import Animated from 'react-native-reanimated'
 import { NftItem } from 'services/nft/types'
@@ -84,8 +73,6 @@ export const CollectiblesScreen = ({
     onResetFilter,
     onShowHidden
   } = useCollectiblesFilterAndSort()
-
-  const [headerLayout, setHeaderLayout] = useState<LayoutRectangle | null>(null)
 
   useEffect(() => {
     setIsEnabled(true)
@@ -201,16 +188,11 @@ export const CollectiblesScreen = ({
 
   const renderEmpty = useMemo(() => {
     return (
-      <CollapsibleTabs.ContentWrapper
-        height={Number(containerStyle.minHeight) - (headerLayout?.height ?? 0)}>
+      <CollapsibleTabs.ContentWrapper>
         {emptyComponent}
       </CollapsibleTabs.ContentWrapper>
     )
-  }, [containerStyle.minHeight, headerLayout?.height, emptyComponent])
-
-  const onHeaderLayout = useCallback((e: LayoutChangeEvent) => {
-    setHeaderLayout(e.nativeEvent.layout)
-  }, [])
+  }, [emptyComponent])
 
   const renderHeader = useMemo((): JSX.Element | null => {
     if (collectibles.length === 0 && (!isEnabled || isLoading)) return null
@@ -218,7 +200,6 @@ export const CollectiblesScreen = ({
 
     return (
       <View
-        onLayout={onHeaderLayout}
         style={[
           {
             alignSelf: 'center',
@@ -239,7 +220,6 @@ export const CollectiblesScreen = ({
     collectibles.length,
     isEnabled,
     isLoading,
-    onHeaderLayout,
     listType,
     filter,
     sort,

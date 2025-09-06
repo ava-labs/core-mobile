@@ -1,5 +1,5 @@
-import React from 'react'
 import { Separator, View } from '@avalabs/k2-alpine'
+import React from 'react'
 import Animated, {
   SharedValue,
   useAnimatedStyle
@@ -25,6 +25,7 @@ const BlurredBackgroundView = ({
 
   return (
     <View
+      pointerEvents={hasGrabber ? 'auto' : 'none'}
       style={{
         flex: 1
       }}>

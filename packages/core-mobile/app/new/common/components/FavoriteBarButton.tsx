@@ -5,19 +5,17 @@ import NavigationBarButton from './NavigationBarButton'
 
 export const FavoriteBarButton = ({
   isFavorite,
-  isModal,
   onPress,
   style
 }: {
   isFavorite: boolean
-  isModal?: boolean
   onPress?: () => void
   style?: StyleProp<ViewStyle>
 }): JSX.Element => {
   const { theme } = useTheme()
 
   return (
-    <NavigationBarButton onPress={onPress} isModal={isModal} style={style}>
+    <NavigationBarButton onPress={onPress} style={style}>
       {isFavorite === true ? (
         <Icons.Toggle.StarFilled
           testID="star_filled"

@@ -1,6 +1,7 @@
-import React from 'react'
-import { useStakes } from 'hooks/earn/useStakes'
 import { Motion } from '@avalabs/k2-alpine'
+import { useStakes } from 'hooks/earn/useStakes'
+import React from 'react'
+import { StyleProp, ViewStyle } from 'react-native'
 import StakesScreen from './StakesScreen'
 
 export const AllStakesScreen = ({
@@ -8,13 +9,15 @@ export const AllStakesScreen = ({
   onAddStake,
   onClaim,
   motion,
-  canAddStake
+  canAddStake,
+  containerStyle
 }: {
   onPressStake: (txHash: string) => void
   onAddStake: () => void
   onClaim: () => void
   motion?: Motion
   canAddStake: boolean
+  containerStyle?: StyleProp<ViewStyle>
 }): JSX.Element => {
   const { data, isRefreshing, pullToRefresh } = useStakes()
 
@@ -28,6 +31,7 @@ export const AllStakesScreen = ({
       isRefreshing={isRefreshing}
       motion={motion}
       canAddStake={canAddStake}
+      containerStyle={containerStyle}
     />
   )
 }

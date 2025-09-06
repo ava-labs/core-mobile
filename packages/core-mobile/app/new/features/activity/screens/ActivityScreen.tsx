@@ -10,6 +10,7 @@ import {
   View
 } from '@avalabs/k2-alpine'
 import { CollapsibleTabs } from 'common/components/CollapsibleTabs'
+import { DropdownMenu } from 'common/components/DropdownMenu'
 import { DropdownSelections } from 'common/components/DropdownSelections'
 import { NetworkLogoWithChain } from 'common/components/NetworkLogoWithChain'
 import { DropdownSelection } from 'common/types'
@@ -19,7 +20,6 @@ import { LoadingState } from 'new/common/components/LoadingState'
 import React, { useCallback, useMemo } from 'react'
 import { Platform, ViewStyle } from 'react-native'
 import { useHeaderMeasurements } from 'react-native-collapsible-tab-view'
-import { DropdownMenu } from 'common/components/DropdownMenu'
 import Animated, { useAnimatedStyle, withTiming } from 'react-native-reanimated'
 import { ActivityList } from '../components/ActivityList'
 import { useActivityFilterAndSearch } from '../hooks/useActivityFilterAndSearch'
@@ -130,17 +130,14 @@ export const ActivityScreen = ({
 
   const renderEmpty = useCallback(() => {
     return (
-      <CollapsibleTabs.ContentWrapper
-        height={
-          Number(containerStyle.minHeight) - (Platform.OS === 'ios' ? 50 : 32)
-        }>
+      <CollapsibleTabs.ContentWrapper extraOffset={100}>
         <Animated.View
           style={[keyboardAvoidingStyle, { justifyContent: 'center' }]}>
           {emptyComponent}
         </Animated.View>
       </CollapsibleTabs.ContentWrapper>
     )
-  }, [containerStyle.minHeight, emptyComponent, keyboardAvoidingStyle])
+  }, [emptyComponent, keyboardAvoidingStyle])
 
   const activityListData = useMemo(() => {
     return isLoadingXpToken ? [] : data

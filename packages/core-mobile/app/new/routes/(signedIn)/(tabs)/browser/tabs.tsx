@@ -12,7 +12,6 @@ import { FlashList, ListRenderItem } from '@shopify/flash-list'
 import BlurredBackgroundView from 'common/components/BlurredBackgroundView'
 import { DropdownItem, DropdownMenu } from 'common/components/DropdownMenu'
 import { DropdownMenuIcon } from 'common/components/DropdownMenuIcons'
-import { useBottomTabBarHeight } from 'common/hooks/useBottomTabBarHeight'
 import { useBrowserContext } from 'features/browser/BrowserContext'
 import { TabItem } from 'features/browser/components/TabItem'
 import { HORIZONTAL_MARGIN } from 'features/browser/consts'
@@ -243,18 +242,13 @@ const TabsScreen = (): JSX.Element => {
     )
   }
 
-  const tabBarHeight = useBottomTabBarHeight()
-
   return (
     <View style={{ flex: 1 }}>
       <FlashList
         data={sortedTabs}
         contentContainerStyle={{
           paddingTop: insets.top + DEFAULT_HEADER_HEIGHT,
-          paddingBottom:
-            Platform.OS === 'ios'
-              ? tabBarHeight + HORIZONTAL_MARGIN
-              : HORIZONTAL_MARGIN,
+          paddingBottom: HORIZONTAL_MARGIN,
           paddingHorizontal: HORIZONTAL_MARGIN / 2
         }}
         showsVerticalScrollIndicator={false}

@@ -103,7 +103,6 @@ const ManageRecoveryMethodsScreen = (): JSX.Element => {
   const renderHeaderRight = useCallback(() => {
     return (
       <NavigationBarButton
-        isModal
         onPress={() =>
           // @ts-ignore TODO: make routes typesafe
           navigate('/accountSettings/addRecoveryMethods/available')

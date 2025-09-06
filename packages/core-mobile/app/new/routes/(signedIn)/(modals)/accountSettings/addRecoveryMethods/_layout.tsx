@@ -1,4 +1,5 @@
 import { Stack } from 'common/components/Stack'
+import { stackNavigatorScreenOptions } from 'common/consts/screenOptions'
 import { RecoverMethodsProvider } from 'features/accountSettings/context/RecoverMethodsProvider'
 import React from 'react'
 
@@ -7,6 +8,7 @@ export default function AddRecoveryMethodsLayout(): JSX.Element {
     <RecoverMethodsProvider>
       <Stack
         screenOptions={{
+          ...stackNavigatorScreenOptions,
           headerShown: false
         }}>
         <Stack.Screen name="index" />

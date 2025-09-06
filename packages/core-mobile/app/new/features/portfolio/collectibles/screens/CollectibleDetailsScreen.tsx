@@ -2,8 +2,8 @@ import { ANIMATED, Icons, useTheme, View } from '@avalabs/k2-alpine'
 import { useHeaderHeight } from '@react-navigation/elements'
 import { useNavigation } from '@react-navigation/native'
 import { ErrorState } from 'common/components/ErrorState'
+import NavigationBarButton from 'common/components/NavigationBarButton'
 import { showSnackbar } from 'common/utils/toast'
-import { HORIZONTAL_MARGIN } from 'features/portfolio/collectibles/consts'
 import React, {
   ReactNode,
   useCallback,
@@ -12,7 +12,6 @@ import React, {
   useRef,
   useState
 } from 'react'
-import { Platform } from 'react-native'
 import { Pressable } from 'react-native-gesture-handler'
 import Animated, {
   Extrapolation,
@@ -157,20 +156,10 @@ export const CollectibleDetailsScreen = ({
     if (!collectible) return null
 
     return (
-      <View style={{ flexDirection: 'row', paddingRight: HORIZONTAL_MARGIN }}>
-        <Pressable
-          disabled={isFirst}
-          style={{
-            height: '100%'
-          }}
-          onPress={onPrevious}>
+      <View style={{ flexDirection: 'row' }}>
+        <NavigationBarButton onPress={onPrevious} disabled={isFirst}>
           <View
             style={{
-              padding: 8,
-              height: '100%',
-              opacity: isFirst ? 0.4 : 1,
-              justifyContent: 'center',
-              alignItems: 'center',
               transform: [{ rotate: '180deg' }]
             }}>
             <Icons.Custom.ArrowDown
@@ -179,34 +168,14 @@ export const CollectibleDetailsScreen = ({
               height={24}
             />
           </View>
-        </Pressable>
-        <Pressable
-          style={{
-            height: '100%'
-          }}
-          hitSlop={{
-            top: 0,
-            right: HORIZONTAL_MARGIN,
-            bottom: 0,
-            left: 0
-          }}
-          disabled={isLast}
-          onPress={onNext}>
-          <View
-            style={{
-              height: '100%',
-              padding: 8,
-              opacity: isLast ? 0.4 : 1,
-              justifyContent: 'center',
-              alignItems: 'center'
-            }}>
-            <Icons.Custom.ArrowDown
-              color={colors.$textPrimary}
-              width={24}
-              height={24}
-            />
-          </View>
-        </Pressable>
+        </NavigationBarButton>
+        <NavigationBarButton onPress={onNext} disabled={isLast}>
+          <Icons.Custom.ArrowDown
+            color={colors.$textPrimary}
+            width={24}
+            height={24}
+          />
+        </NavigationBarButton>
       </View>
     )
   }, [collectible, colors.$textPrimary, isFirst, isLast, onNext, onPrevious])
@@ -246,11 +215,7 @@ export const CollectibleDetailsScreen = ({
     const height = interpolate(
       scrollY.value,
       [0, SNAP_DISTANCE],
-      [
-        // Android viewport ignores the status bar, so we need to adjust it
-        frame.height - (Platform.OS === 'ios' ? 0 : insets.top),
-        CARD_SIZE_SMALL
-      ],
+      [frame.height, CARD_SIZE_SMALL],
       Extrapolation.CLAMP
     )
 
@@ -265,13 +230,7 @@ export const CollectibleDetailsScreen = ({
   })
 
   const contentStyle = useAnimatedStyle(() => {
-    const height =
-      frame.height -
-      // Android viewport ignores the status bar, so we need to adjust it
-      (Platform.OS === 'ios' ? 0 : insets.top) -
-      headerHeight -
-      SNAP_DISTANCE +
-      10
+    const height = frame.height - headerHeight - SNAP_DISTANCE + 10
 
     const translateY = interpolate(
       scrollY.value,
@@ -318,13 +277,9 @@ export const CollectibleDetailsScreen = ({
   const contentContainerStyle = useMemo(() => {
     return {
       paddingBottom: insets.bottom,
-      minHeight:
-        frame.height -
-        // Android viewport ignores the status bar, so we need to adjust it
-        (Platform.OS === 'ios' ? 0 : insets.top) +
-        SNAP_DISTANCE
+      minHeight: frame.height + SNAP_DISTANCE
     }
-  }, [frame.height, insets.bottom, insets.top])
+  }, [frame.height, insets.bottom])
 
   return (
     <View

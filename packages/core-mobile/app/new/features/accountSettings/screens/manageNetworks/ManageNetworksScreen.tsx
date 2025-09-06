@@ -265,7 +265,6 @@ export const ManageNetworksScreen = (): JSX.Element => {
     return (
       <NavigationBarButton
         testID="add_network_btn"
-        isModal
         onPress={goToAddCustomNetwork}>
         <Icons.Content.Add color={theme.colors.$textPrimary} />
       </NavigationBarButton>

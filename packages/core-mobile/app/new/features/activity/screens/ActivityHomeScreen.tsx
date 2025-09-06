@@ -14,7 +14,8 @@ import {
   CollapsibleTabsRef,
   OnTabChange
 } from 'common/components/CollapsibleTabs'
-import { useBottomTabBarHeight } from 'common/hooks/useBottomTabBarHeight'
+import { LinearGradientBottomWrapper } from 'common/components/LinearGradientBottomWrapper'
+import { TAB_BAR_HEIGHT } from 'common/consts/screenOptions'
 import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
 import useInAppBrowser from 'common/hooks/useInAppBrowser'
 import { getSourceChainId } from 'common/utils/bridgeUtils'
@@ -42,17 +43,20 @@ import { ActivityScreen } from './ActivityScreen'
 const ActivityHomeScreen = (): JSX.Element => {
   const { navigate } = useRouter()
   const { theme } = useTheme()
-  const tabBarHeight = useBottomTabBarHeight()
-  const headerHeight = useHeaderHeight()
+
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const [searchText, setSearchText] = useState('')
   const [isSearchBarFocused, setSearchBarFocused] = useState(false)
   const tabViewRef = useRef<CollapsibleTabsRef>(null)
+
   const [balanceHeaderLayout, setBalanceHeaderLayout] = useState<
     LayoutRectangle | undefined
   >()
 
   const [searchBarLayout, setSearchBarLayout] = useState<
+    LayoutRectangle | undefined
+  >()
+  const [segmentedControlLayout, setSegmentedControlLayout] = useState<
     LayoutRectangle | undefined
   >()
 
@@ -162,38 +166,31 @@ const ActivityHomeScreen = (): JSX.Element => {
     setSearchBarLayout(event.nativeEvent.layout)
   }, [])
 
+  const handleSegmentedControlLayout = useCallback(
+    (event: LayoutChangeEvent) => {
+      setSegmentedControlLayout(event.nativeEvent.layout)
+    },
+    []
+  )
+
   const insets = useSafeAreaInsets()
   const frame = useSafeAreaFrame()
+  const headerHeight = useHeaderHeight()
 
   const tabHeight = useMemo(() => {
     return Platform.select({
-      ios:
-        frame.height -
-        tabBarHeight -
-        headerHeight -
-        (searchBarLayout?.height ?? 0),
-      android:
-        frame.height -
-        headerHeight -
-        insets.bottom -
-        (searchBarLayout?.height ?? 0) +
-        56
+      ios: frame.height - headerHeight - (searchBarLayout?.height ?? 0),
+      android: frame.height - insets.top
     })
-  }, [
-    frame.height,
-    tabBarHeight,
-    headerHeight,
-    searchBarLayout?.height,
-    insets.bottom
-  ])
+  }, [frame.height, headerHeight, insets.top, searchBarLayout?.height])
 
   const contentContainerStyle = useMemo(() => {
     return {
-      paddingBottom: 16,
+      paddingBottom: (segmentedControlLayout?.height ?? 0) + 16,
       paddingTop: 10,
       minHeight: tabHeight
     }
-  }, [tabHeight])
+  }, [segmentedControlLayout?.height, tabHeight])
 
   const renderEmptyTabBar = useCallback((): JSX.Element => <></>, [])
 
@@ -297,6 +294,22 @@ const ActivityHomeScreen = (): JSX.Element => {
         tabs={tabs}
         minHeaderHeight={searchBarLayout?.height ?? 0}
       />
+      <View
+        style={{
+          position: 'absolute',
+          bottom: 0,
+          left: 0,
+          right: 0
+        }}
+        onLayout={handleSegmentedControlLayout}>
+        <LinearGradientBottomWrapper>
+          <View
+            style={{
+              height: TAB_BAR_HEIGHT + insets.bottom
+            }}
+          />
+        </LinearGradientBottomWrapper>
+      </View>
     </BlurredBarsContentLayout>
   )
 }

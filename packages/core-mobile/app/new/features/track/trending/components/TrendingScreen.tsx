@@ -30,15 +30,14 @@ export const TrendingScreen = ({
   const emptyComponent = useMemo(() => {
     if (isRefetchingTrendingTokens) {
       return (
-        <CollapsibleTabs.ContentWrapper
-          height={Number(containerStyle.minHeight)}>
+        <CollapsibleTabs.ContentWrapper>
           <LoadingState />
         </CollapsibleTabs.ContentWrapper>
       )
     }
 
     return (
-      <CollapsibleTabs.ContentWrapper height={Number(containerStyle.minHeight)}>
+      <CollapsibleTabs.ContentWrapper>
         <ErrorState
           button={{
             title: 'Refresh',
@@ -47,11 +46,7 @@ export const TrendingScreen = ({
         />
       </CollapsibleTabs.ContentWrapper>
     )
-  }, [
-    containerStyle.minHeight,
-    isRefetchingTrendingTokens,
-    refetchTrendingTokens
-  ])
+  }, [isRefetchingTrendingTokens, refetchTrendingTokens])
 
   const showLoading =
     isLoadingTrendingTokens ||

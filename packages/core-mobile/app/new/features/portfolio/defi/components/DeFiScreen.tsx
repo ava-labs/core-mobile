@@ -95,8 +95,7 @@ export const DeFiScreen = ({
   const emptyComponent = useMemo(() => {
     if (isLoading) {
       return (
-        <CollapsibleTabs.ContentWrapper
-          height={Number(containerStyle.minHeight)}>
+        <CollapsibleTabs.ContentWrapper>
           <LoadingState />
         </CollapsibleTabs.ContentWrapper>
       )
@@ -104,8 +103,7 @@ export const DeFiScreen = ({
 
     if (error || (isPaused && !isSuccess)) {
       return (
-        <CollapsibleTabs.ContentWrapper
-          height={Number(containerStyle.minHeight)}>
+        <CollapsibleTabs.ContentWrapper>
           <ErrorState
             description="Please hit refresh or try again later"
             button={{
@@ -118,7 +116,7 @@ export const DeFiScreen = ({
     }
 
     return (
-      <CollapsibleTabs.ContentWrapper height={Number(containerStyle.minHeight)}>
+      <CollapsibleTabs.ContentWrapper>
         <Placeholder
           icon={
             <Image source={placeholderIcon} sx={{ width: 42, height: 42 }} />
@@ -132,15 +130,7 @@ export const DeFiScreen = ({
         />
       </CollapsibleTabs.ContentWrapper>
     )
-  }, [
-    isLoading,
-    error,
-    isPaused,
-    isSuccess,
-    containerStyle.minHeight,
-    handleExplore,
-    refetch
-  ])
+  }, [isLoading, error, isPaused, isSuccess, handleExplore, refetch])
 
   const renderItem: ListRenderItem<DeFiSimpleProtocol> = useCallback(
     ({ item, index }): JSX.Element => {
