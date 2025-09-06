@@ -12,6 +12,9 @@ import { useNetworks } from 'hooks/networks/useNetworks'
 import React, { ReactNode, useCallback, useMemo } from 'react'
 import { useSelector } from 'react-redux'
 import { selectIsPrivacyModeEnabled } from 'store/settings/securityPrivacy'
+import { selectActiveAccount } from 'store/account'
+import { getAddressByNetwork } from 'store/account/utils'
+import Logger from 'utils/Logger'
 import { TokenActivityTransaction } from './TokenActivityListItem'
 
 export const TokenActivityListItemTitle = ({
@@ -24,6 +27,7 @@ export const TokenActivityListItemTitle = ({
   } = useTheme()
   const { sourceBlockchain, targetBlockchain } = useBlockchainNames(tx)
   const isPrivacyModeEnabled = useSelector(selectIsPrivacyModeEnabled)
+  const activeAccount = useSelector(selectActiveAccount)
   const textVariant = 'buttonMedium'
   const { getNetwork } = useNetworks()
 
@@ -49,9 +53,7 @@ export const TokenActivityListItemTitle = ({
     [colors, isPrivacyModeEnabled]
   )
 
-  // Build an array of nodes: strings and React elements
-  // eslint-disable-next-line sonarjs/cognitive-complexity
-  const nodes = useMemo<ReactNode[]>(() => {
+  const getIOTokenAmountAndSymbol = useCallback(() => {
     const a1 = tx.tokens[0]?.amount
     const a2 = tx.tokens[1]?.amount
     let s1 = tx.tokens[0]?.symbol
@@ -65,6 +67,97 @@ export const TokenActivityListItemTitle = ({
       const foundNetwork = getNetwork(Number(tx.chainId))
       s2 = foundNetwork?.networkToken.symbol
     }
+
+    return {
+      a1,
+      a2,
+      s1,
+      s2
+    }
+  }, [tx, getNetwork])
+
+  // Smart swap title generation that identifies input vs output tokens
+  const getSwapTitle = useCallback(
+    (transaction: TokenActivityTransaction): ReactNode[] => {
+      // worst case scenario, just return 'Swap'
+      if (!transaction.tokens || transaction.tokens.length === 0) {
+        Logger.warn('No tokens found in swap transaction')
+        return ['Swap']
+      }
+
+      // For swap transactions, we need to identify the user's actual input and output tokens
+      // Get the current user's address for the specific network from Redux store
+      const network = getNetwork(Number(transaction.chainId))
+      const userAddress =
+        network && activeAccount
+          ? getAddressByNetwork(activeAccount, network)
+          : transaction.from
+
+      // Find tokens that are actually sent FROM the user (input tokens)
+      // Note: For swaps, the user's wallet should be in transaction.from
+      const inputTokens = transaction.tokens.filter(token => {
+        const isFromUser = token.from?.address === userAddress
+        const hasSignificantAmount =
+          parseFloat(token.amount.replace(/,/g, '')) > 0.0001
+        return isFromUser && hasSignificantAmount
+      })
+
+      // Find tokens that are actually sent TO the user (output tokens)
+      const outputTokens = transaction.tokens.filter(token => {
+        const isToUser = token.to?.address === userAddress
+        const hasSignificantAmount =
+          parseFloat(token.amount.replace(/,/g, '')) > 0.0001
+        return isToUser && hasSignificantAmount
+      })
+
+      // If we can identify input and output tokens, use them
+      if (inputTokens.length > 0 && outputTokens.length > 0) {
+        const inputToken = inputTokens[0]
+        const outputToken = outputTokens[0]
+
+        if (inputToken && outputToken) {
+          return [
+            renderAmount(inputToken.amount),
+            ' ',
+            inputToken.symbol,
+            ' swapped for ',
+            renderAmount(outputToken.amount),
+            ' ',
+            outputToken.symbol
+          ]
+        }
+      }
+
+      // fallback to original logic if we can't identify input and output tokens
+      const { a1, a2, s1, s2 } = getIOTokenAmountAndSymbol()
+
+      if (tx.tokens.length === 1) {
+        return [renderAmount(a1), ' ', s1, ' swapped for ', s2]
+      }
+
+      return [
+        renderAmount(a1),
+        ' ',
+        s1,
+        ' swapped for ',
+        renderAmount(a2),
+        ' ',
+        s2
+      ]
+    },
+    [
+      activeAccount,
+      getIOTokenAmountAndSymbol,
+      getNetwork,
+      renderAmount,
+      tx.tokens.length
+    ]
+  )
+
+  // Build an array of nodes: strings and React elements
+  // eslint-disable-next-line sonarjs/cognitive-complexity
+  const nodes = useMemo<ReactNode[]>(() => {
+    const { a1, a2, s1, s2 } = getIOTokenAmountAndSymbol()
 
     switch (tx.txType) {
       case TransactionType.BRIDGE:
@@ -81,22 +174,11 @@ export const TokenActivityListItemTitle = ({
         }
         return ['Unknown']
       case TransactionType.SWAP:
-        if (tx.tokens.length === 1) {
-          return [renderAmount(a1), ' ', s1, ' swapped for ', s2]
-        }
-        return [
-          renderAmount(a1),
-          ' ',
-          s1,
-          ' swapped for ',
-          renderAmount(a2),
-          ' ',
-          s2
-        ]
+        return getSwapTitle(tx)
       case TransactionType.SEND:
         return [renderAmount(a1), ' ', s1, ' sent']
       case TransactionType.RECEIVE:
-        return [renderAmount(a1), ' ', s2, ' received']
+        return [renderAmount(a1), ' ', s1, ' received']
       case TransactionType.TRANSFER:
         return [renderAmount(a1), ' ', s1, ' transferred']
       case TransactionType.APPROVE:
@@ -181,7 +263,14 @@ export const TokenActivityListItemTitle = ({
         return ['Unknown']
       }
     }
-  }, [tx, getNetwork, renderAmount, sourceBlockchain, targetBlockchain])
+  }, [
+    getIOTokenAmountAndSymbol,
+    tx,
+    getSwapTitle,
+    renderAmount,
+    sourceBlockchain,
+    targetBlockchain
+  ])
 
   return (
     <View
