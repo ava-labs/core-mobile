@@ -95,9 +95,11 @@ const PortfolioHomeScreen = (): JSX.Element => {
   const dispatch = useDispatch()
   const { navigate, push } = useRouter()
   const { navigateToSwap } = useNavigateToSwap()
+
   const [stickyHeaderLayout, setStickyHeaderLayout] = useState<
     LayoutRectangle | undefined
   >()
+
   const [balanceHeaderLayout, setBalanceHeaderLayout] = useState<
     LayoutRectangle | undefined
   >()
@@ -307,10 +309,10 @@ const PortfolioHomeScreen = (): JSX.Element => {
   const renderHeader = useCallback((): JSX.Element => {
     return (
       <View
-        onLayout={handleStickyHeaderLayout}
         style={{
           backgroundColor: theme.colors.$surfacePrimary
-        }}>
+        }}
+        onLayout={handleStickyHeaderLayout}>
         <View onLayout={handleBalanceHeaderLayout}>
           <Animated.View
             style={[
@@ -358,8 +360,8 @@ const PortfolioHomeScreen = (): JSX.Element => {
       </View>
     )
   }, [
-    handleStickyHeaderLayout,
     theme.colors.$surfacePrimary,
+    handleStickyHeaderLayout,
     handleBalanceHeaderLayout,
     animatedHeaderStyle,
     activeAccount?.name,
@@ -465,8 +467,8 @@ const PortfolioHomeScreen = (): JSX.Element => {
 
   const tabHeight = useMemo(() => {
     return Platform.select({
-      ios: frame.height + headerHeight - (stickyHeaderLayout?.height ?? 0),
-      android: frame.height - headerHeight + (stickyHeaderLayout?.height ?? 0)
+      ios: frame.height - headerHeight,
+      android: frame.height + (stickyHeaderLayout?.height ?? 0) - headerHeight
     })
   }, [frame.height, headerHeight, stickyHeaderLayout?.height])
 

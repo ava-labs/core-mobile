@@ -53,14 +53,12 @@ const TrackHomeScreen = (): JSX.Element => {
   const [isSearchBarFocused, setSearchBarFocused] = useState(false)
   const [searchText, setSearchText] = useState('')
   const tabViewRef = useRef<CollapsibleTabsRef>(null)
-  const [stickyHeaderLayout, setStickyHeaderLayout] = useState<
-    LayoutRectangle | undefined
-  >()
+
   const [balanceHeaderLayout, setBalanceHeaderLayout] = useState<
     LayoutRectangle | undefined
   >()
 
-  const [tabBarLayout, setTabBarLayout] = useState<
+  const [segmentedControlLayout, setSegmentedControlLayout] = useState<
     LayoutRectangle | undefined
   >()
 
@@ -174,48 +172,37 @@ const TrackHomeScreen = (): JSX.Element => {
     }, [handleScrollResync])
   )
 
-  const handleStickyHeaderLayout = useCallback((event: LayoutChangeEvent) => {
-    setStickyHeaderLayout(event.nativeEvent.layout)
-  }, [])
-
   const handleSearchBarLayout = useCallback((event: LayoutChangeEvent) => {
     setSearchBarLayout(event.nativeEvent.layout)
   }, [])
 
-  const handleTabBarLayout = useCallback((event: LayoutChangeEvent) => {
-    setTabBarLayout(event.nativeEvent.layout)
-  }, [])
+  const handleSegmentedControlLayout = useCallback(
+    (event: LayoutChangeEvent) => {
+      setSegmentedControlLayout(event.nativeEvent.layout)
+    },
+    []
+  )
 
   const tabHeight = useMemo(() => {
     return Platform.select({
-      ios:
-        frame.height -
-        (stickyHeaderLayout?.height ?? 0) -
-        (searchBarLayout?.height ?? 0),
-      android: frame.height - headerHeight + (searchBarLayout?.height ?? 0) - 24
+      ios: frame.height - headerHeight - (searchBarLayout?.height ?? 0),
+      android: frame.height - insets.top
     })
-  }, [
-    frame.height,
-    headerHeight,
-    searchBarLayout?.height,
-    stickyHeaderLayout?.height
-  ])
+  }, [frame.height, headerHeight, insets.top, searchBarLayout?.height])
 
   const contentContainerStyle = useMemo(() => {
     return {
-      paddingBottom: (tabBarLayout?.height ?? 0) + 16,
+      paddingBottom: (segmentedControlLayout?.height ?? 0) + 16,
       paddingTop: 10,
       minHeight: tabHeight
     }
-  }, [tabBarLayout?.height, tabHeight])
+  }, [segmentedControlLayout?.height, tabHeight])
 
   const renderEmptyTabBar = useCallback((): JSX.Element => <></>, [])
 
   const renderHeader = useCallback((): JSX.Element => {
     return (
-      <View
-        style={{ backgroundColor: theme.colors.$surfacePrimary }}
-        onLayout={handleStickyHeaderLayout}>
+      <View style={{ backgroundColor: theme.colors.$surfacePrimary }}>
         <Animated.View style={[animatedHeaderStyle]}>
           <View
             onLayout={handleBalanceHeaderLayout}
@@ -259,7 +246,6 @@ const TrackHomeScreen = (): JSX.Element => {
   }, [
     theme.colors.$surfacePrimary,
     theme.colors.$surfaceSecondary,
-    handleStickyHeaderLayout,
     animatedHeaderStyle,
     handleBalanceHeaderLayout,
     handleSearchBarLayout,
@@ -272,7 +258,7 @@ const TrackHomeScreen = (): JSX.Element => {
   const renderSearchResults = useCallback(() => {
     const containerStyle = {
       ...contentContainerStyle,
-      minHeight: (tabHeight ?? 0) + (tabBarLayout?.height ?? 0)
+      minHeight: (tabHeight ?? 0) + (segmentedControlLayout?.height ?? 0)
     }
     return (
       <SearchResultScreen
@@ -289,7 +275,7 @@ const TrackHomeScreen = (): JSX.Element => {
     handleScrollResync,
     isSearchBarFocused,
     searchText,
-    tabBarLayout?.height,
+    segmentedControlLayout?.height,
     tabHeight
   ])
 
@@ -369,7 +355,7 @@ const TrackHomeScreen = (): JSX.Element => {
       />
       {!showSearchResults && (
         <View
-          onLayout={handleTabBarLayout}
+          onLayout={handleSegmentedControlLayout}
           style={{
             position: 'absolute',
             bottom: 0,

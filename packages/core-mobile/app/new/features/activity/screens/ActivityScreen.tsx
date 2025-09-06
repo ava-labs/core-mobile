@@ -10,21 +10,16 @@ import {
   View
 } from '@avalabs/k2-alpine'
 import { CollapsibleTabs } from 'common/components/CollapsibleTabs'
+import { DropdownMenu } from 'common/components/DropdownMenu'
 import { DropdownSelections } from 'common/components/DropdownSelections'
 import { NetworkLogoWithChain } from 'common/components/NetworkLogoWithChain'
 import { DropdownSelection } from 'common/types'
 import { getListItemEnteringAnimation } from 'common/utils/animations'
 import { ErrorState } from 'new/common/components/ErrorState'
 import { LoadingState } from 'new/common/components/LoadingState'
-import React, { useCallback, useMemo, useState } from 'react'
-import {
-  LayoutChangeEvent,
-  LayoutRectangle,
-  Platform,
-  ViewStyle
-} from 'react-native'
+import React, { useCallback, useMemo } from 'react'
+import { Platform, ViewStyle } from 'react-native'
 import { useHeaderMeasurements } from 'react-native-collapsible-tab-view'
-import { DropdownMenu } from 'common/components/DropdownMenu'
 import Animated, { useAnimatedStyle, withTiming } from 'react-native-reanimated'
 import { ActivityList } from '../components/ActivityList'
 import { useActivityFilterAndSearch } from '../hooks/useActivityFilterAndSearch'
@@ -45,14 +40,6 @@ export const ActivityScreen = ({
   containerStyle: ViewStyle
 }): JSX.Element => {
   const header = useHeaderMeasurements()
-
-  const [headerLayout, setHeaderLayout] = useState<LayoutRectangle | undefined>(
-    undefined
-  )
-
-  const onHeaderLayout = useCallback((event: LayoutChangeEvent) => {
-    setHeaderLayout(event.nativeEvent.layout)
-  }, [])
 
   const {
     data,
@@ -93,13 +80,12 @@ export const ActivityScreen = ({
           marginTop: 4,
           marginBottom: 16,
           paddingHorizontal: 16
-        }}
-        onLayout={onHeaderLayout}>
+        }}>
         <DropdownSelections filter={filter} />
         <NetworkFilterDropdown network={network} {...networkFilterDropdown} />
       </View>
     )
-  }, [filter, network, networkFilterDropdown, onHeaderLayout])
+  }, [filter, network, networkFilterDropdown])
 
   const emptyComponent = useMemo(() => {
     if (isRefreshing || isLoading) {
@@ -131,22 +117,15 @@ export const ActivityScreen = ({
   }, [isError, isLoading, isRefreshing, refresh, searchText.length])
 
   const renderEmpty = useCallback(() => {
-    const height =
-      Number(containerStyle.minHeight) - (headerLayout?.height ?? 0)
     return (
-      <CollapsibleTabs.ContentWrapper height={height}>
+      <CollapsibleTabs.ContentWrapper extraOffset={100}>
         <Animated.View
           style={[keyboardAvoidingStyle, { justifyContent: 'center' }]}>
           {emptyComponent}
         </Animated.View>
       </CollapsibleTabs.ContentWrapper>
     )
-  }, [
-    containerStyle.minHeight,
-    emptyComponent,
-    headerLayout?.height,
-    keyboardAvoidingStyle
-  ])
+  }, [emptyComponent, keyboardAvoidingStyle])
 
   return (
     <Animated.View

@@ -5,14 +5,8 @@ import { ErrorState } from 'common/components/ErrorState'
 import { LoadingState } from 'common/components/LoadingState'
 import { Space } from 'common/components/Space'
 import { getListItemEnteringAnimation } from 'common/utils/animations'
-import React, { FC, memo, useCallback, useState } from 'react'
-import {
-  LayoutChangeEvent,
-  LayoutRectangle,
-  Platform,
-  ViewStyle
-} from 'react-native'
-import { useHeaderMeasurements } from 'react-native-collapsible-tab-view'
+import React, { FC, memo, useCallback } from 'react'
+import { ViewStyle } from 'react-native'
 import Animated from 'react-native-reanimated'
 import { useSelector } from 'react-redux'
 import AnalyticsService from 'services/analytics/AnalyticsService'
@@ -82,7 +76,6 @@ const AssetsScreen: FC<Props> = ({
       tokenVisibility
     )
   )
-  const [headerLayout, setHeaderLayout] = useState<LayoutRectangle | null>(null)
 
   const handleManageList = useCallback(
     (value: string): void => {
@@ -195,18 +188,12 @@ const AssetsScreen: FC<Props> = ({
   ])
 
   const renderEmpty = useCallback(() => {
-    const height =
-      Number(containerStyle.minHeight) - (headerLayout?.height ?? 0) - 80
     return (
-      <CollapsibleTabs.ContentWrapper height={height}>
+      <CollapsibleTabs.ContentWrapper>
         {renderEmptyComponent()}
       </CollapsibleTabs.ContentWrapper>
     )
-  }, [containerStyle.minHeight, renderEmptyComponent, headerLayout?.height])
-
-  const onHeaderLayout = useCallback((e: LayoutChangeEvent) => {
-    setHeaderLayout(e.nativeEvent.layout)
-  }, [])
+  }, [renderEmptyComponent])
 
   const renderHeader = useCallback(() => {
     if (hasNoAssets || isLoadingBalance) {
@@ -215,7 +202,6 @@ const AssetsScreen: FC<Props> = ({
 
     return (
       <View
-        onLayout={onHeaderLayout}
         style={{
           paddingHorizontal: 16
         }}>
@@ -227,15 +213,7 @@ const AssetsScreen: FC<Props> = ({
         />
       </View>
     )
-  }, [
-    hasNoAssets,
-    isLoadingBalance,
-    onHeaderLayout,
-    filter,
-    sort,
-    view,
-    handleManageList
-  ])
+  }, [hasNoAssets, isLoadingBalance, filter, sort, view, handleManageList])
 
   const overrideProps = {
     contentContainerStyle: {
@@ -243,13 +221,10 @@ const AssetsScreen: FC<Props> = ({
     }
   }
 
-  const header = useHeaderMeasurements()
-
   if (isBalanceLoading || enabledNetworks.length === 0) {
     return (
       <LoadingState
         sx={{
-          paddingTop: Platform.OS === 'ios' ? header.height : 0,
           minHeight: containerStyle.minHeight,
           justifyContent: 'center',
           alignItems: 'center'

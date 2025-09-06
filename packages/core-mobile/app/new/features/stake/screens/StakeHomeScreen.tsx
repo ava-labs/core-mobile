@@ -49,9 +49,6 @@ export const StakeHomeScreen = (): JSX.Element => {
   const tabViewRef = useRef<CollapsibleTabsRef>(null)
   const insets = useSafeAreaInsets()
 
-  const [stickyHeaderLayout, setStickyHeaderLayout] = useState<
-    LayoutRectangle | undefined
-  >()
   const [balanceHeaderLayout, setBalanceHeaderLayout] = useState<
     LayoutRectangle | undefined
   >()
@@ -71,10 +68,6 @@ export const StakeHomeScreen = (): JSX.Element => {
   const motion = useMotion(isMotionActive)
   const isEmpty = !data || data.length === 0
   const { addStake, canAddStake } = useAddStake()
-
-  const handleStickyHeaderLayout = useCallback((event: LayoutChangeEvent) => {
-    setStickyHeaderLayout(event.nativeEvent.layout)
-  }, [])
 
   const handleBalanceHeaderLayout = useCallback(
     (event: LayoutChangeEvent): void => {
@@ -97,9 +90,7 @@ export const StakeHomeScreen = (): JSX.Element => {
 
   const renderHeader = useCallback((): JSX.Element => {
     return (
-      <View
-        sx={{ backgroundColor: theme.colors.$surfacePrimary }}
-        onLayout={handleStickyHeaderLayout}>
+      <View sx={{ backgroundColor: theme.colors.$surfacePrimary }}>
         <Animated.View
           onLayout={handleBalanceHeaderLayout}
           style={[
@@ -116,7 +107,11 @@ export const StakeHomeScreen = (): JSX.Element => {
         <Banner />
       </View>
     )
-  }, [handleBalanceHeaderLayout, animatedHeaderStyle, theme.colors])
+  }, [
+    theme.colors.$surfacePrimary,
+    handleBalanceHeaderLayout,
+    animatedHeaderStyle
+  ])
 
   const handleSelectSegment = useCallback(
     (index: number): void => {
@@ -160,21 +155,10 @@ export const StakeHomeScreen = (): JSX.Element => {
 
   const tabHeight = useMemo(() => {
     return Platform.select({
-      ios:
-        frame.height +
-        headerHeight -
-        (stickyHeaderLayout?.height ?? 0) -
-        (segmentedControlLayout?.height ?? 0) +
-        90,
-      android:
-        frame.height - headerHeight + (stickyHeaderLayout?.height ?? 0) - 10
+      ios: frame.height - headerHeight - 80,
+      android: frame.height - insets.top
     })
-  }, [
-    frame.height,
-    headerHeight,
-    segmentedControlLayout?.height,
-    stickyHeaderLayout?.height
-  ])
+  }, [frame.height, headerHeight, insets.top])
 
   const contentContainerStyle = useMemo(() => {
     return {

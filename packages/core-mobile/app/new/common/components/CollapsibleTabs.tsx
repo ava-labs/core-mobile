@@ -1,8 +1,8 @@
 import { ANIMATED, View } from '@avalabs/k2-alpine'
+import { useHeaderHeight } from '@react-navigation/elements'
 import { TAB_BAR_HEIGHT } from 'common/consts/screenOptions'
 import React, { forwardRef, useMemo } from 'react'
 import { Platform, StyleSheet } from 'react-native'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import {
   CollapsibleRef,
   OnTabChangeCallback,
@@ -19,6 +19,10 @@ import Animated, {
   useAnimatedStyle,
   withTiming
 } from 'react-native-reanimated'
+import {
+  useSafeAreaFrame,
+  useSafeAreaInsets
+} from 'react-native-safe-area-context'
 
 export type OnTabChange = OnTabChangeCallback<string>
 
@@ -103,14 +107,20 @@ const CollapsibleTabWrapper = ({
 
 const ContentWrapper = ({
   children,
-  height
+  extraOffset = 0
 }: {
   children: React.ReactNode
-  height: number
+  /**
+   * Additional offset to subtract from content height calculation on Android.
+   * Useful when there are missing UI elements (like SegmentedControl)
+   * that need to be accounted for in the available content space.
+   * @default 0
+   */
+  extraOffset?: number
 }): JSX.Element => {
   const scrollY = useCurrentTabScrollY()
   const header = useHeaderMeasurements()
-  const insets = useSafeAreaInsets()
+  const headerHeight = useHeaderHeight()
 
   const animatedStyle = useAnimatedStyle(() => {
     const translateY = interpolate(
@@ -131,14 +141,23 @@ const ContentWrapper = ({
     }
   })
 
+  const insets = useSafeAreaInsets()
+  const frame = useSafeAreaFrame()
+
   return (
     <View
       style={{
+        // iOS works with 100%, but android needs specific height
         height:
-          height -
-          TAB_BAR_HEIGHT -
-          insets.bottom -
-          (Platform.OS === 'android' ? header.height + 32 : 24),
+          Platform.OS === 'ios'
+            ? '100%'
+            : frame.height -
+              header.height -
+              headerHeight -
+              insets.bottom -
+              extraOffset,
+        paddingBottom:
+          Platform.OS === 'ios' ? TAB_BAR_HEIGHT + insets.bottom : 0,
         justifyContent: 'center',
         alignItems: 'center'
       }}>

@@ -44,14 +44,11 @@ const ActivityHomeScreen = (): JSX.Element => {
   const { navigate } = useRouter()
   const { theme } = useTheme()
 
-  const headerHeight = useHeaderHeight()
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const [searchText, setSearchText] = useState('')
   const [isSearchBarFocused, setSearchBarFocused] = useState(false)
   const tabViewRef = useRef<CollapsibleTabsRef>(null)
-  const [stickyHeaderLayout, setStickyHeaderLayout] = useState<
-    LayoutRectangle | undefined
-  >()
+
   const [balanceHeaderLayout, setBalanceHeaderLayout] = useState<
     LayoutRectangle | undefined
   >()
@@ -169,10 +166,6 @@ const ActivityHomeScreen = (): JSX.Element => {
     setSearchBarLayout(event.nativeEvent.layout)
   }, [])
 
-  const handleStickyHeaderLayout = useCallback((event: LayoutChangeEvent) => {
-    setStickyHeaderLayout(event.nativeEvent.layout)
-  }, [])
-
   const handleSegmentedControlLayout = useCallback(
     (event: LayoutChangeEvent) => {
       setSegmentedControlLayout(event.nativeEvent.layout)
@@ -182,30 +175,14 @@ const ActivityHomeScreen = (): JSX.Element => {
 
   const insets = useSafeAreaInsets()
   const frame = useSafeAreaFrame()
+  const headerHeight = useHeaderHeight()
 
   const tabHeight = useMemo(() => {
     return Platform.select({
-      ios:
-        frame.height +
-        headerHeight -
-        (stickyHeaderLayout?.height ?? 0) -
-        (segmentedControlLayout?.height ?? 0) -
-        (searchBarLayout?.height ?? 0) -
-        10,
-      android:
-        frame.height -
-        headerHeight +
-        (stickyHeaderLayout?.height ?? 0) -
-        (searchBarLayout?.height ?? 0) -
-        10
+      ios: frame.height - headerHeight - (searchBarLayout?.height ?? 0),
+      android: frame.height - insets.top
     })
-  }, [
-    frame.height,
-    headerHeight,
-    stickyHeaderLayout?.height,
-    segmentedControlLayout?.height,
-    searchBarLayout?.height
-  ])
+  }, [frame.height, headerHeight, insets.top, searchBarLayout?.height])
 
   const contentContainerStyle = useMemo(() => {
     return {
@@ -219,9 +196,7 @@ const ActivityHomeScreen = (): JSX.Element => {
 
   const renderHeader = useCallback((): JSX.Element => {
     return (
-      <View
-        style={{ backgroundColor: theme.colors.$surfacePrimary }}
-        onLayout={handleStickyHeaderLayout}>
+      <View style={{ backgroundColor: theme.colors.$surfacePrimary }}>
         <Animated.View style={[animatedHeaderStyle]}>
           <View
             onLayout={handleBalanceHeaderLayout}
@@ -263,7 +238,6 @@ const ActivityHomeScreen = (): JSX.Element => {
   }, [
     theme.colors.$surfacePrimary,
     theme.colors.$surfaceSecondary,
-    handleStickyHeaderLayout,
     animatedHeaderStyle,
     handleBalanceHeaderLayout,
     handleSearchBarLayout,
