@@ -468,7 +468,7 @@ const PortfolioHomeScreen = (): JSX.Element => {
   const tabHeight = useMemo(() => {
     return Platform.select({
       ios: frame.height - headerHeight,
-      android: frame.height + (stickyHeaderLayout?.height ?? 0) - headerHeight
+      android: frame.height - headerHeight + (stickyHeaderLayout?.height ?? 0)
     })
   }, [frame.height, headerHeight, stickyHeaderLayout?.height])
 

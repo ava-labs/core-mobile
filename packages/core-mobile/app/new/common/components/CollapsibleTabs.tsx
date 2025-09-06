@@ -1,6 +1,5 @@
 import { ANIMATED, View } from '@avalabs/k2-alpine'
 import { useHeaderHeight } from '@react-navigation/elements'
-import { TAB_BAR_HEIGHT } from 'common/consts/screenOptions'
 import React, { forwardRef, useMemo } from 'react'
 import { Platform, StyleSheet } from 'react-native'
 import {
@@ -156,8 +155,7 @@ const ContentWrapper = ({
               headerHeight -
               insets.bottom -
               extraOffset,
-        paddingBottom:
-          Platform.OS === 'ios' ? TAB_BAR_HEIGHT + insets.bottom : 0,
+
         justifyContent: 'center',
         alignItems: 'center'
       }}>
