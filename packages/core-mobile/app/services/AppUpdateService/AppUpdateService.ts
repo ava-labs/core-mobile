@@ -33,7 +33,7 @@ export class AppUpdateService {
     }
   }
 
-  static hasSeenUpdateAppScreen(version: string): boolean {
+  static hasSeenAppUpdateScreen(version: string): boolean {
     const lastSeenVersion = commonStorage.getString(
       StorageKey.LAST_SEEN_UPDATE_APP_VERSION
     )
@@ -41,7 +41,7 @@ export class AppUpdateService {
     return lastSeenVersion === version
   }
 
-  static markUpdateAppScreenAsSeen(version: string): void {
+  static markAppUpdateScreenAsSeen(version: string): void {
     if (!version) return
 
     commonStorage.set(StorageKey.LAST_SEEN_UPDATE_APP_VERSION, version)

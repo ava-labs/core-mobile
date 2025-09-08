@@ -7,7 +7,7 @@ import { AppUpdateService } from 'services/AppUpdateService/AppUpdateService'
 import { CoreLogoWithTokens } from 'common/components/CoreLogoWithTokens'
 import { useLocalSearchParams } from 'expo-router'
 
-function UpdateAppScreen(): JSX.Element {
+function AppUpdateScreen(): JSX.Element {
   const { storeVersion } = useLocalSearchParams<{ storeVersion: string }>()
   const dispatch = useDispatch()
 
@@ -25,7 +25,7 @@ function UpdateAppScreen(): JSX.Element {
 
   useEffect(() => {
     return () => {
-      AppUpdateService.markUpdateAppScreenAsSeen(storeVersion)
+      AppUpdateService.markAppUpdateScreenAsSeen(storeVersion)
     }
   }, [dispatch, storeVersion])
 
@@ -57,4 +57,4 @@ function UpdateAppScreen(): JSX.Element {
   )
 }
 
-export default withNavigationResolve(UpdateAppScreen)
+export default withNavigationResolve(AppUpdateScreen)

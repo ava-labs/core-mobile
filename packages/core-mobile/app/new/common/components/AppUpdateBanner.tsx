@@ -4,7 +4,7 @@ import { useSelector } from 'react-redux'
 import { selectSelectedColorScheme } from 'store/settings/appearance'
 import { AppUpdateService } from 'services/AppUpdateService/AppUpdateService'
 
-export const UpdateAppBanner = (): JSX.Element => {
+export const AppUpdateBanner = (): JSX.Element => {
   const selectedColorScheme = useSelector(selectSelectedColorScheme)
 
   const handleUpdate = (): void => {
