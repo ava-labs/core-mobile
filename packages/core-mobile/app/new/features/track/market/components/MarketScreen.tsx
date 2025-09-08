@@ -29,7 +29,7 @@ const MarketScreen = ({
     refetchTopTokens
   } = useWatchlist()
 
-  const { data, sort, view } = useTrackSortAndView(topTokens, prices, false)
+  const { data, sort, view } = useTrackSortAndView(topTokens, prices)
   const listType = view.selected as MarketView
 
   const emptyComponent = useMemo(() => {
