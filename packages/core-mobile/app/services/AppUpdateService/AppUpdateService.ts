@@ -6,10 +6,13 @@ import { commonStorage } from 'utils/mmkv'
 
 const inAppUpdates = new SpInAppUpdates(false)
 
+const FAKE_CURRENT_VERSION_FOR_TESTING = '1.0.8'
 export class AppUpdateService {
   static async checkAppUpdateStatus(): Promise<AppUpdateStatus | undefined> {
     try {
-      return await inAppUpdates.checkNeedsUpdate()
+      return await inAppUpdates.checkNeedsUpdate({
+        curVersion: FAKE_CURRENT_VERSION_FOR_TESTING
+      })
     } catch (e) {
       Logger.error('checkAppUpdateStatus failed', e)
       return undefined
