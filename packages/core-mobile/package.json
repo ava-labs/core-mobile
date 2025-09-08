@@ -211,6 +211,7 @@
     "rn-nodeify": "10.3.0",
     "rxjs": "7.8.1",
     "semver": "7.5.4",
+    "sp-react-native-in-app-updates": "^1.5.0",
     "stream-browserify": "3.0.0",
     "text-encoding": "0.7.0",
     "type-fest": "4.26.1",

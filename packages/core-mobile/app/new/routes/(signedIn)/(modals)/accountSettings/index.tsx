@@ -35,6 +35,8 @@ import {
 } from 'store/settings/securityPrivacy'
 import { useCoreBrowser } from 'common/hooks/useCoreBrowser'
 import { Support } from 'features/accountSettings/components/Support'
+import { useAppUpdateStatus } from 'common/hooks/useAppUpdateStatus'
+import { UpdateAppBanner } from 'common/components/UpdateAppBanner'
 
 const AccountSettingsScreen = (): JSX.Element => {
   const { deleteWallet } = useDeleteWallet()
@@ -47,8 +49,8 @@ const AccountSettingsScreen = (): JSX.Element => {
   const contacts = useSelector(selectContacts)
   const { navigate, back } = useRouter()
   const { openUrl } = useCoreBrowser()
-
   const { avatar } = useAvatar()
+  const appUpdateStatus = useAppUpdateStatus()
 
   const renderHeaderRight = useCallback(() => {
     return (
@@ -103,6 +105,12 @@ const AccountSettingsScreen = (): JSX.Element => {
     [openUrl, back]
   )
 
+  const renderUpdateAppBanner = useCallback(() => {
+    if (appUpdateStatus?.shouldUpdate === true) return <UpdateAppBanner />
+
+    return undefined
+  }, [appUpdateStatus])
+
   return (
     <ScrollScreen
       isModal
@@ -133,6 +141,7 @@ const AccountSettingsScreen = (): JSX.Element => {
         <AccountList />
 
         <View sx={{ gap: 24, paddingHorizontal: 16 }}>
+          {renderUpdateAppBanner()}
           <View sx={{ gap: 12 }}>
             {/* Testnet mode */}
             <GroupList
