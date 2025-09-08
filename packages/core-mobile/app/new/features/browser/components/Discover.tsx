@@ -1,5 +1,5 @@
 import { alpha, Text, useTheme, View } from '@avalabs/k2-alpine'
-import { TAB_BAR_HEIGHT } from 'common/consts/screenOptions'
+import { useBottomTabBarHeight } from 'common/hooks/useBottomTabBarHeight'
 import { LinearGradient } from 'expo-linear-gradient'
 import React from 'react'
 import { ScrollView } from 'react-native-gesture-handler'
@@ -13,6 +13,7 @@ import { DiscoverLearn } from './DiscoverLearn'
 
 export const Discover = (): JSX.Element => {
   const insets = useSafeAreaInsets()
+  const tabBarHeight = useBottomTabBarHeight()
   const { theme } = useTheme()
 
   return (
@@ -26,7 +27,7 @@ export const Discover = (): JSX.Element => {
       stickyHeaderIndices={[0]}
       contentContainerStyle={{
         paddingTop: insets.top + 66,
-        paddingBottom: TAB_BAR_HEIGHT + insets.bottom + BROWSER_CONTROLS_HEIGHT
+        paddingBottom: tabBarHeight + BROWSER_CONTROLS_HEIGHT
       }}>
       <Animated.View
         pointerEvents="none"

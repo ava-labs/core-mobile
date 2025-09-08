@@ -1,7 +1,7 @@
 import { ANIMATED, View } from '@avalabs/k2-alpine'
 import { BlurViewWithFallback } from 'common/components/BlurViewWithFallback'
 import { LinearGradientBottomWrapper } from 'common/components/LinearGradientBottomWrapper'
-import { TAB_BAR_HEIGHT } from 'common/consts/screenOptions'
+import { useBottomTabBarHeight } from 'common/hooks/useBottomTabBarHeight'
 import { useFocusEffect, useGlobalSearchParams, useRouter } from 'expo-router'
 import { useBrowserContext } from 'features/browser/BrowserContext'
 import { BrowserControls } from 'features/browser/components/BrowserControls'
@@ -18,7 +18,6 @@ import {
   KeyboardController
 } from 'react-native-keyboard-controller'
 import Animated, { useAnimatedStyle, withTiming } from 'react-native-reanimated'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useDispatch, useSelector } from 'react-redux'
 import {
   addHistoryForActiveTab,
@@ -29,6 +28,7 @@ import {
 } from 'store/browser'
 
 const Browser = (): React.ReactNode => {
+  const tabBarHeight = useBottomTabBarHeight()
   const { browserRefs } = useBrowserContext()
   const dispatch = useDispatch()
   const router = useRouter()
@@ -101,8 +101,6 @@ const Browser = (): React.ReactNode => {
     }
   })
 
-  const insets = useSafeAreaInsets()
-
   return (
     <BrowserSnapshot>
       <View
@@ -131,7 +129,7 @@ const Browser = (): React.ReactNode => {
               top: 0,
               left: 0,
               right: 0,
-              bottom: TAB_BAR_HEIGHT + insets.bottom + BROWSER_CONTROLS_HEIGHT,
+              bottom: tabBarHeight + BROWSER_CONTROLS_HEIGHT,
               zIndex: showEmptyTab ? -1 : 1,
               pointerEvents: showEmptyTab ? 'none' : 'auto'
             }
@@ -153,14 +151,14 @@ const Browser = (): React.ReactNode => {
           <LinearGradientBottomWrapper>
             <View
               style={{
-                height: TAB_BAR_HEIGHT + insets.bottom + BROWSER_CONTROLS_HEIGHT
+                height: tabBarHeight + BROWSER_CONTROLS_HEIGHT
               }}
             />
           </LinearGradientBottomWrapper>
         ) : (
           <BlurViewWithFallback
             style={{
-              height: TAB_BAR_HEIGHT + insets.bottom + BROWSER_CONTROLS_HEIGHT
+              height: tabBarHeight + BROWSER_CONTROLS_HEIGHT
             }}
           />
         )}

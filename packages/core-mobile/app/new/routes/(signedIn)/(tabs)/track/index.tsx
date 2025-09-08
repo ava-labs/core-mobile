@@ -13,7 +13,8 @@ import {
   OnTabChange
 } from 'common/components/CollapsibleTabs'
 import { LinearGradientBottomWrapper } from 'common/components/LinearGradientBottomWrapper'
-import { TAB_BAR_HEIGHT } from 'common/consts/screenOptions'
+import { useBottomTabBarHeight } from 'common/hooks/useBottomTabBarHeight'
+
 import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
 import { useFocusEffect, useRouter } from 'expo-router'
 import FavoriteScreen from 'features/track/market/components/FavoriteScreen'
@@ -47,6 +48,7 @@ const TrackHomeScreen = (): JSX.Element => {
   const { theme } = useTheme()
   const insets = useSafeAreaInsets()
   const frame = useSafeAreaFrame()
+  const tabBarHeight = useBottomTabBarHeight()
 
   const [isSearchBarFocused, setSearchBarFocused] = useState(false)
   const [searchText, setSearchText] = useState('')
@@ -380,7 +382,7 @@ const TrackHomeScreen = (): JSX.Element => {
               selectedSegmentIndex={selectedSegmentIndex}
               onSelectSegment={handleSelectSegment}
               style={{
-                paddingBottom: TAB_BAR_HEIGHT + insets.bottom,
+                paddingBottom: tabBarHeight,
                 marginHorizontal: 16,
                 marginBottom: 16
               }}

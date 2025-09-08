@@ -16,7 +16,7 @@ import {
 } from 'common/components/CollapsibleTabs'
 import { LinearGradientBottomWrapper } from 'common/components/LinearGradientBottomWrapper'
 import { LoadingState } from 'common/components/LoadingState'
-import { TAB_BAR_HEIGHT } from 'common/consts/screenOptions'
+import { useBottomTabBarHeight } from 'common/hooks/useBottomTabBarHeight'
 import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
 import { useRouter } from 'expo-router'
 import { ActiveStakesScreen } from 'features/stake/components/ActiveStakesScreen'
@@ -37,17 +37,16 @@ import Animated, {
   useAnimatedStyle,
   useSharedValue
 } from 'react-native-reanimated'
-import {
-  useSafeAreaFrame,
-  useSafeAreaInsets
-} from 'react-native-safe-area-context'
+import { useSafeAreaFrame } from 'react-native-safe-area-context'
 
 export const StakeHomeScreen = (): JSX.Element => {
   const { navigate } = useRouter()
+  const frame = useSafeAreaFrame()
+  const headerHeight = useHeaderHeight()
+  const tabBarHeight = useBottomTabBarHeight()
   const { data, isLoading } = useStakes()
   const { theme } = useTheme()
   const tabViewRef = useRef<CollapsibleTabsRef>(null)
-  const insets = useSafeAreaInsets()
 
   const [balanceHeaderLayout, setBalanceHeaderLayout] = useState<
     LayoutRectangle | undefined
@@ -153,9 +152,6 @@ export const StakeHomeScreen = (): JSX.Element => {
   }, [navigate])
 
   const renderEmptyTabBar = useCallback((): JSX.Element => <></>, [])
-
-  const frame = useSafeAreaFrame()
-  const headerHeight = useHeaderHeight()
 
   const tabHeight = useMemo(() => {
     return frame.height - headerHeight
@@ -267,7 +263,7 @@ export const StakeHomeScreen = (): JSX.Element => {
         onLayout={handleSegmentedControlLayout}>
         <LinearGradientBottomWrapper>
           {isEmpty ? (
-            <View style={{ height: TAB_BAR_HEIGHT + insets.bottom }} />
+            <View style={{ height: tabBarHeight }} />
           ) : (
             <SegmentedControl
               dynamicItemWidth={false}
@@ -275,7 +271,7 @@ export const StakeHomeScreen = (): JSX.Element => {
               selectedSegmentIndex={selectedSegmentIndex}
               onSelectSegment={handleSelectSegment}
               style={{
-                paddingBottom: TAB_BAR_HEIGHT + insets.bottom,
+                paddingBottom: tabBarHeight,
                 marginHorizontal: 16,
                 marginBottom: 16
               }}

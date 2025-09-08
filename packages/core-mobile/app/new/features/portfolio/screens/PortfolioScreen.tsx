@@ -15,7 +15,8 @@ import {
 } from 'common/components/CollapsibleTabs'
 import { HiddenBalanceText } from 'common/components/HiddenBalanceText'
 import { LinearGradientBottomWrapper } from 'common/components/LinearGradientBottomWrapper'
-import { TAB_BAR_HEIGHT } from 'common/consts/screenOptions'
+import { useBottomTabBarHeight } from 'common/hooks/useBottomTabBarHeight'
+
 import { useErc20ContractTokens } from 'common/hooks/useErc20ContractTokens'
 import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
 import { useSearchableTokenList } from 'common/hooks/useSearchableTokenList'
@@ -85,6 +86,7 @@ const PortfolioHomeScreen = (): JSX.Element => {
   const insets = useSafeAreaInsets()
   const frame = useSafeAreaFrame()
   const headerHeight = useHeaderHeight()
+  const tabBarHeight = useBottomTabBarHeight()
   const isMeldOfframpBlocked = useSelector(selectIsMeldOfframpBlocked)
 
   const { navigateToBuy } = useBuy()
@@ -536,7 +538,7 @@ const PortfolioHomeScreen = (): JSX.Element => {
           selectedSegmentIndex={selectedSegmentIndex}
           onSelectSegment={handleSelectSegment}
           style={{
-            paddingBottom: TAB_BAR_HEIGHT + insets.bottom,
+            paddingBottom: tabBarHeight,
             marginHorizontal: 16,
             marginBottom: 16
           }}
@@ -551,7 +553,7 @@ const PortfolioHomeScreen = (): JSX.Element => {
           selectedSegmentIndex={selectedSegmentIndex}
           onSelectSegment={handleSelectSegment}
           style={{
-            paddingBottom: TAB_BAR_HEIGHT + insets.bottom,
+            paddingBottom: tabBarHeight,
             marginHorizontal: 16,
             marginBottom: 16
           }}

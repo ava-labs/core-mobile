@@ -1,11 +1,10 @@
-import { useBottomTabBarHeight as useRNTabBarHeight } from 'react-native-bottom-tabs'
+import { TAB_BAR_HEIGHT } from 'common/consts/screenOptions'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
-// This hook throws an error if it's not under a Tab Navigator
-// Use this hook instead of importing react-native-bottom-tabs directly
-// In case there is no Tab Navigator, then tab bar has no height
 export function useBottomTabBarHeight(): number {
+  const insets = useSafeAreaInsets()
   try {
-    return useRNTabBarHeight()
+    return TAB_BAR_HEIGHT + insets.bottom
   } catch (e) {
     return 0
   }

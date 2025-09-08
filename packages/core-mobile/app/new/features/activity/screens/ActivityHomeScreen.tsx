@@ -14,7 +14,7 @@ import {
   OnTabChange
 } from 'common/components/CollapsibleTabs'
 import { LinearGradientBottomWrapper } from 'common/components/LinearGradientBottomWrapper'
-import { TAB_BAR_HEIGHT } from 'common/consts/screenOptions'
+import { useBottomTabBarHeight } from 'common/hooks/useBottomTabBarHeight'
 import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
 import useInAppBrowser from 'common/hooks/useInAppBrowser'
 import { getSourceChainId } from 'common/utils/bridgeUtils'
@@ -44,6 +44,7 @@ const ActivityHomeScreen = (): JSX.Element => {
   const { theme } = useTheme()
   const insets = useSafeAreaInsets()
   const frame = useSafeAreaFrame()
+  const tabBarHeight = useBottomTabBarHeight()
 
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const [searchText, setSearchText] = useState('')
@@ -316,7 +317,7 @@ const ActivityHomeScreen = (): JSX.Element => {
         <LinearGradientBottomWrapper>
           <View
             style={{
-              height: TAB_BAR_HEIGHT + insets.bottom
+              height: tabBarHeight
             }}
           />
         </LinearGradientBottomWrapper>

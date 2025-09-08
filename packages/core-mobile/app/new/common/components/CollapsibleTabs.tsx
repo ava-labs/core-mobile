@@ -1,6 +1,6 @@
 import { ANIMATED, View } from '@avalabs/k2-alpine'
 import { useHeaderHeight } from '@react-navigation/elements'
-import { TAB_BAR_HEIGHT } from 'common/consts/screenOptions'
+import { useBottomTabBarHeight } from 'common/hooks/useBottomTabBarHeight'
 import React, { forwardRef, useMemo } from 'react'
 import { Platform, StyleSheet } from 'react-native'
 import {
@@ -123,6 +123,7 @@ const ContentWrapper = ({
   const frame = useSafeAreaFrame()
   const header = useHeaderMeasurements()
   const headerHeight = useHeaderHeight()
+  const tabBarHeight = useBottomTabBarHeight()
 
   const animatedStyle = useAnimatedStyle(() => {
     const translateY = interpolate(
@@ -150,7 +151,7 @@ const ContentWrapper = ({
           ? {
               // iOS works with 100%, but android needs specific height
               height: '100%',
-              paddingBottom: TAB_BAR_HEIGHT + insets.bottom
+              paddingBottom: tabBarHeight
             }
           : {
               height:
