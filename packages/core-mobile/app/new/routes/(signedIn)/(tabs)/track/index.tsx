@@ -7,13 +7,12 @@ import {
   View
 } from '@avalabs/k2-alpine'
 import BlurredBarsContentLayout from 'common/components/BlurredBarsContentLayout'
+import { BottomTabWrapper } from 'common/components/BlurredBottomWrapper'
 import {
   CollapsibleTabs,
   CollapsibleTabsRef,
   OnTabChange
 } from 'common/components/CollapsibleTabs'
-import { LinearGradientBottomWrapper } from 'common/components/LinearGradientBottomWrapper'
-import { useBottomTabBarHeight } from 'common/hooks/useBottomTabBarHeight'
 
 import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
 import { useFocusEffect, useRouter } from 'expo-router'
@@ -48,7 +47,6 @@ const TrackHomeScreen = (): JSX.Element => {
   const { theme } = useTheme()
   const insets = useSafeAreaInsets()
   const frame = useSafeAreaFrame()
-  const tabBarHeight = useBottomTabBarHeight()
 
   const [isSearchBarFocused, setSearchBarFocused] = useState(false)
   const [searchText, setSearchText] = useState('')
@@ -375,19 +373,18 @@ const TrackHomeScreen = (): JSX.Element => {
             left: 0,
             right: 0
           }}>
-          <LinearGradientBottomWrapper>
+          <BottomTabWrapper>
             <SegmentedControl
               dynamicItemWidth={false}
               items={SEGMENT_ITEMS}
               selectedSegmentIndex={selectedSegmentIndex}
               onSelectSegment={handleSelectSegment}
               style={{
-                paddingBottom: tabBarHeight,
                 marginHorizontal: 16,
                 marginBottom: 16
               }}
             />
-          </LinearGradientBottomWrapper>
+          </BottomTabWrapper>
         </View>
       )}
     </BlurredBarsContentLayout>

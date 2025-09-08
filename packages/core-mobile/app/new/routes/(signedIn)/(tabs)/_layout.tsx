@@ -1,12 +1,6 @@
-import {
-  alpha,
-  Icons,
-  Pressable,
-  Text,
-  useTheme,
-  View
-} from '@avalabs/k2-alpine'
+import { alpha, Icons, Pressable, Text, useTheme } from '@avalabs/k2-alpine'
 import { BottomTabBarProps } from '@bottom-tabs/react-navigation'
+import { BlurViewWithFallback } from 'common/components/BlurViewWithFallback'
 import { BottomTabs } from 'common/components/BottomTabs'
 import { TAB_BAR_HEIGHT } from 'common/consts/screenOptions'
 import React, { FC, useMemo } from 'react'
@@ -121,15 +115,31 @@ const TabBar = ({ state, descriptors }: BottomTabBarProps): JSX.Element => {
   const insets = useSafeAreaInsets()
   const { theme } = useTheme()
 
+  const backgroundColor = useMemo(() => {
+    return theme.isDark
+      ? isIOS
+        ? alpha('#121213', 0.8)
+        : theme.colors.$surfacePrimary
+      : alpha(theme.colors.$surfacePrimary, isIOS ? 0.8 : 1)
+  }, [theme.colors.$surfacePrimary, theme.isDark])
+
   return (
-    <View
+    <BlurViewWithFallback
       style={{
         position: 'absolute',
         bottom: 0,
         left: 0,
         right: 0,
         flexDirection: 'row',
-        paddingBottom: insets.bottom
+        paddingBottom: insets.bottom,
+        backgroundColor,
+        borderTopWidth: 0.5,
+        borderColor:
+          Platform.OS === 'ios'
+            ? theme.isDark
+              ? '#333335'
+              : '#F1F1F2'
+            : 'transparent'
       }}>
       {state.routes.map((route, index) => {
         const isActive = state.index === index
@@ -162,7 +172,7 @@ const TabBar = ({ state, descriptors }: BottomTabBarProps): JSX.Element => {
           </Pressable>
         )
       })}
-    </View>
+    </BlurViewWithFallback>
   )
 }
 

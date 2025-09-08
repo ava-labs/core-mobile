@@ -1,6 +1,5 @@
-import { ANIMATED, View } from '@avalabs/k2-alpine'
+import { alpha, ANIMATED, useTheme, View } from '@avalabs/k2-alpine'
 import { BlurViewWithFallback } from 'common/components/BlurViewWithFallback'
-import { LinearGradientBottomWrapper } from 'common/components/LinearGradientBottomWrapper'
 import { useBottomTabBarHeight } from 'common/hooks/useBottomTabBarHeight'
 import { useFocusEffect, useGlobalSearchParams, useRouter } from 'expo-router'
 import { useBrowserContext } from 'features/browser/BrowserContext'
@@ -13,6 +12,7 @@ import {
 import { Discover } from 'features/browser/components/Discover'
 import { BROWSER_CONTROLS_HEIGHT } from 'features/browser/consts'
 import React, { useCallback, useEffect, useMemo } from 'react'
+import { Platform } from 'react-native'
 import {
   AndroidSoftInputModes,
   KeyboardController
@@ -28,6 +28,7 @@ import {
 } from 'store/browser'
 
 const Browser = (): React.ReactNode => {
+  const { theme } = useTheme()
   const tabBarHeight = useBottomTabBarHeight()
   const { browserRefs } = useBrowserContext()
   const dispatch = useDispatch()
@@ -101,6 +102,14 @@ const Browser = (): React.ReactNode => {
     }
   })
 
+  const backgroundColor = useMemo(() => {
+    return theme.isDark
+      ? Platform.OS === 'ios'
+        ? alpha('#121213', 0.8)
+        : theme.colors.$surfacePrimary
+      : alpha(theme.colors.$surfacePrimary, Platform.OS === 'ios' ? 0.8 : 1)
+  }, [theme.colors.$surfacePrimary, theme.isDark])
+
   return (
     <BrowserSnapshot>
       <View
@@ -139,29 +148,25 @@ const Browser = (): React.ReactNode => {
 
         <BrowserControls />
       </View>
+
       <View
         style={{
           position: 'absolute',
-          bottom: 0,
+          bottom: tabBarHeight,
           left: 0,
           right: 0,
           zIndex: 10
         }}>
-        {showEmptyTab ? (
-          <LinearGradientBottomWrapper>
-            <View
-              style={{
-                height: tabBarHeight + BROWSER_CONTROLS_HEIGHT
-              }}
-            />
-          </LinearGradientBottomWrapper>
-        ) : (
-          <BlurViewWithFallback
+        <BlurViewWithFallback
+          style={{
+            backgroundColor: backgroundColor
+          }}>
+          <View
             style={{
-              height: tabBarHeight + BROWSER_CONTROLS_HEIGHT
+              height: BROWSER_CONTROLS_HEIGHT
             }}
           />
-        )}
+        </BlurViewWithFallback>
       </View>
     </BrowserSnapshot>
   )

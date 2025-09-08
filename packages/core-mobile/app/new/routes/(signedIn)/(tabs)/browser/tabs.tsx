@@ -10,8 +10,11 @@ import {
 import { useNavigation } from '@react-navigation/native'
 import { FlashList, ListRenderItem } from '@shopify/flash-list'
 import BlurredBackgroundView from 'common/components/BlurredBackgroundView'
+import { BlurredBottomWrapper } from 'common/components/BlurredBottomWrapper'
 import { DropdownItem, DropdownMenu } from 'common/components/DropdownMenu'
 import { DropdownMenuIcon } from 'common/components/DropdownMenuIcons'
+import { LinearGradientBottomWrapper } from 'common/components/LinearGradientBottomWrapper'
+import { useBottomTabBarHeight } from 'common/hooks/useBottomTabBarHeight'
 import { useBrowserContext } from 'features/browser/BrowserContext'
 import { TabItem } from 'features/browser/components/TabItem'
 import { HORIZONTAL_MARGIN } from 'features/browser/consts'
@@ -242,13 +245,15 @@ const TabsScreen = (): JSX.Element => {
     )
   }
 
+  const tabBarHeight = useBottomTabBarHeight()
+
   return (
     <View style={{ flex: 1 }}>
       <FlashList
         data={sortedTabs}
         contentContainerStyle={{
           paddingTop: insets.top + DEFAULT_HEADER_HEIGHT,
-          paddingBottom: HORIZONTAL_MARGIN,
+          paddingBottom: tabBarHeight + HORIZONTAL_MARGIN,
           paddingHorizontal: HORIZONTAL_MARGIN / 2
         }}
         showsVerticalScrollIndicator={false}

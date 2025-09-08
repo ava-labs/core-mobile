@@ -8,14 +8,13 @@ import {
 } from '@avalabs/k2-alpine'
 import { useHeaderHeight } from '@react-navigation/elements'
 import BlurredBarsContentLayout from 'common/components/BlurredBarsContentLayout'
+import { BottomTabWrapper } from 'common/components/BlurredBottomWrapper'
 import {
   CollapsibleTabs,
   CollapsibleTabsRef,
   OnTabChange
 } from 'common/components/CollapsibleTabs'
 import { HiddenBalanceText } from 'common/components/HiddenBalanceText'
-import { LinearGradientBottomWrapper } from 'common/components/LinearGradientBottomWrapper'
-import { useBottomTabBarHeight } from 'common/hooks/useBottomTabBarHeight'
 
 import { useErc20ContractTokens } from 'common/hooks/useErc20ContractTokens'
 import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
@@ -48,10 +47,7 @@ import Animated, {
   useAnimatedStyle,
   useSharedValue
 } from 'react-native-reanimated'
-import {
-  useSafeAreaFrame,
-  useSafeAreaInsets
-} from 'react-native-safe-area-context'
+import { useSafeAreaFrame } from 'react-native-safe-area-context'
 import { useDispatch, useSelector } from 'react-redux'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { AnalyticsEventName } from 'services/analytics/types'
@@ -83,10 +79,8 @@ const SEGMENT_EVENT_MAP: Record<number, AnalyticsEventName> = {
 }
 
 const PortfolioHomeScreen = (): JSX.Element => {
-  const insets = useSafeAreaInsets()
   const frame = useSafeAreaFrame()
   const headerHeight = useHeaderHeight()
-  const tabBarHeight = useBottomTabBarHeight()
   const isMeldOfframpBlocked = useSelector(selectIsMeldOfframpBlocked)
 
   const { navigateToBuy } = useBuy()
@@ -530,42 +524,19 @@ const PortfolioHomeScreen = (): JSX.Element => {
   ])
 
   const renderSegmentedControl = useCallback((): JSX.Element => {
-    if (filteredTokenList.length === 0) {
-      return (
-        <SegmentedControl
-          dynamicItemWidth={false}
-          items={SEGMENT_ITEMS}
-          selectedSegmentIndex={selectedSegmentIndex}
-          onSelectSegment={handleSelectSegment}
-          style={{
-            paddingBottom: tabBarHeight,
-            marginHorizontal: 16,
-            marginBottom: 16
-          }}
-        />
-      )
-    }
     return (
-      <LinearGradientBottomWrapper shouldDelayBlurOniOS={true}>
-        <SegmentedControl
-          dynamicItemWidth={false}
-          items={SEGMENT_ITEMS}
-          selectedSegmentIndex={selectedSegmentIndex}
-          onSelectSegment={handleSelectSegment}
-          style={{
-            paddingBottom: tabBarHeight,
-            marginHorizontal: 16,
-            marginBottom: 16
-          }}
-        />
-      </LinearGradientBottomWrapper>
+      <SegmentedControl
+        dynamicItemWidth={false}
+        items={SEGMENT_ITEMS}
+        selectedSegmentIndex={selectedSegmentIndex}
+        onSelectSegment={handleSelectSegment}
+        style={{
+          marginHorizontal: 16,
+          marginBottom: 16
+        }}
+      />
     )
-  }, [
-    filteredTokenList.length,
-    handleSelectSegment,
-    insets.bottom,
-    selectedSegmentIndex
-  ])
+  }, [handleSelectSegment, selectedSegmentIndex])
 
   return (
     <BlurredBarsContentLayout>
@@ -586,7 +557,7 @@ const PortfolioHomeScreen = (): JSX.Element => {
           right: 0
         }}
         onLayout={handleSegmentedControlLayout}>
-        {renderSegmentedControl()}
+        <BottomTabWrapper>{renderSegmentedControl()}</BottomTabWrapper>
       </View>
     </BlurredBarsContentLayout>
   )

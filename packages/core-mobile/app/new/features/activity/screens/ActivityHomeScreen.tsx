@@ -13,8 +13,6 @@ import {
   CollapsibleTabsRef,
   OnTabChange
 } from 'common/components/CollapsibleTabs'
-import { LinearGradientBottomWrapper } from 'common/components/LinearGradientBottomWrapper'
-import { useBottomTabBarHeight } from 'common/hooks/useBottomTabBarHeight'
 import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
 import useInAppBrowser from 'common/hooks/useInAppBrowser'
 import { getSourceChainId } from 'common/utils/bridgeUtils'
@@ -44,7 +42,6 @@ const ActivityHomeScreen = (): JSX.Element => {
   const { theme } = useTheme()
   const insets = useSafeAreaInsets()
   const frame = useSafeAreaFrame()
-  const tabBarHeight = useBottomTabBarHeight()
 
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const [searchText, setSearchText] = useState('')
@@ -60,9 +57,6 @@ const ActivityHomeScreen = (): JSX.Element => {
   >()
 
   const [searchBarLayout, setSearchBarLayout] = useState<
-    LayoutRectangle | undefined
-  >()
-  const [segmentedControlLayout, setSegmentedControlLayout] = useState<
     LayoutRectangle | undefined
   >()
 
@@ -179,13 +173,6 @@ const ActivityHomeScreen = (): JSX.Element => {
     setSearchBarLayout(event.nativeEvent.layout)
   }, [])
 
-  const handleSegmentedControlLayout = useCallback(
-    (event: LayoutChangeEvent) => {
-      setSegmentedControlLayout(event.nativeEvent.layout)
-    },
-    []
-  )
-
   const tabHeight = useMemo(() => {
     return Platform.select({
       ios: frame.height - (stickyHeaderLayout?.height ?? 0) - insets.top + 10,
@@ -195,11 +182,11 @@ const ActivityHomeScreen = (): JSX.Element => {
 
   const contentContainerStyle = useMemo(() => {
     return {
-      paddingBottom: (segmentedControlLayout?.height ?? 0) + 16,
+      paddingBottom: 16,
       paddingTop: 10,
       minHeight: tabHeight
     }
-  }, [segmentedControlLayout?.height, tabHeight])
+  }, [tabHeight])
 
   const renderEmptyTabBar = useCallback((): JSX.Element => <></>, [])
 
@@ -306,22 +293,6 @@ const ActivityHomeScreen = (): JSX.Element => {
         tabs={tabs}
         minHeaderHeight={searchBarLayout?.height ?? 0}
       />
-      <View
-        style={{
-          position: 'absolute',
-          bottom: 0,
-          left: 0,
-          right: 0
-        }}
-        onLayout={handleSegmentedControlLayout}>
-        <LinearGradientBottomWrapper>
-          <View
-            style={{
-              height: tabBarHeight
-            }}
-          />
-        </LinearGradientBottomWrapper>
-      </View>
     </BlurredBarsContentLayout>
   )
 }

@@ -9,14 +9,13 @@ import {
 import { useHeaderHeight } from '@react-navigation/elements'
 import { useIsFocused } from '@react-navigation/native'
 import BlurredBarsContentLayout from 'common/components/BlurredBarsContentLayout'
+import { BottomTabWrapper } from 'common/components/BlurredBottomWrapper'
 import {
   CollapsibleTabs,
   CollapsibleTabsRef,
   OnTabChange
 } from 'common/components/CollapsibleTabs'
-import { LinearGradientBottomWrapper } from 'common/components/LinearGradientBottomWrapper'
 import { LoadingState } from 'common/components/LoadingState'
-import { useBottomTabBarHeight } from 'common/hooks/useBottomTabBarHeight'
 import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
 import { useRouter } from 'expo-router'
 import { ActiveStakesScreen } from 'features/stake/components/ActiveStakesScreen'
@@ -43,7 +42,6 @@ export const StakeHomeScreen = (): JSX.Element => {
   const { navigate } = useRouter()
   const frame = useSafeAreaFrame()
   const headerHeight = useHeaderHeight()
-  const tabBarHeight = useBottomTabBarHeight()
   const { data, isLoading } = useStakes()
   const { theme } = useTheme()
   const tabViewRef = useRef<CollapsibleTabsRef>(null)
@@ -261,23 +259,18 @@ export const StakeHomeScreen = (): JSX.Element => {
           right: 0
         }}
         onLayout={handleSegmentedControlLayout}>
-        <LinearGradientBottomWrapper>
-          {isEmpty ? (
-            <View style={{ height: tabBarHeight }} />
-          ) : (
-            <SegmentedControl
-              dynamicItemWidth={false}
-              items={SEGMENT_ITEMS}
-              selectedSegmentIndex={selectedSegmentIndex}
-              onSelectSegment={handleSelectSegment}
-              style={{
-                paddingBottom: tabBarHeight,
-                marginHorizontal: 16,
-                marginBottom: 16
-              }}
-            />
-          )}
-        </LinearGradientBottomWrapper>
+        <BottomTabWrapper>
+          <SegmentedControl
+            dynamicItemWidth={false}
+            items={SEGMENT_ITEMS}
+            selectedSegmentIndex={selectedSegmentIndex}
+            onSelectSegment={handleSelectSegment}
+            style={{
+              marginHorizontal: 16,
+              marginBottom: 16
+            }}
+          />
+        </BottomTabWrapper>
       </View>
     </BlurredBarsContentLayout>
   )
