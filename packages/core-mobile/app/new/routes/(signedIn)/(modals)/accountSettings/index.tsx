@@ -36,7 +36,7 @@ import {
 import { useCoreBrowser } from 'common/hooks/useCoreBrowser'
 import { Support } from 'features/accountSettings/components/Support'
 import { useAppUpdateStatus } from 'common/hooks/useAppUpdateStatus'
-import { UpdateAppBanner } from 'common/components/UpdateAppBanner'
+import { AppUpdateBanner } from 'common/components/AppUpdateBanner'
 
 const AccountSettingsScreen = (): JSX.Element => {
   const { deleteWallet } = useDeleteWallet()
@@ -105,8 +105,8 @@ const AccountSettingsScreen = (): JSX.Element => {
     [openUrl, back]
   )
 
-  const renderUpdateAppBanner = useCallback(() => {
-    if (appUpdateStatus?.shouldUpdate === true) return <UpdateAppBanner />
+  const renderAppUpdateBanner = useCallback(() => {
+    if (appUpdateStatus?.shouldUpdate === true) return <AppUpdateBanner />
 
     return undefined
   }, [appUpdateStatus])
@@ -141,7 +141,7 @@ const AccountSettingsScreen = (): JSX.Element => {
         <AccountList />
 
         <View sx={{ gap: 24, paddingHorizontal: 16 }}>
-          {renderUpdateAppBanner()}
+          {renderAppUpdateBanner()}
           <View sx={{ gap: 12 }}>
             {/* Testnet mode */}
             <GroupList

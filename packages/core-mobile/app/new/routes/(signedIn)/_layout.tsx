@@ -226,7 +226,7 @@ export default function WalletLayout(): JSX.Element {
             options={modalScreensOptions}
           />
           <Stack.Screen
-            name="(modals)/updateApp"
+            name="(modals)/appUpdate"
             options={modalScreensOptions}
           />
         </Stack>

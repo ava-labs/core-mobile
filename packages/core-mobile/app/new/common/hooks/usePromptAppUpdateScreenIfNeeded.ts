@@ -4,22 +4,22 @@ import { navigateWithPromise } from 'common/utils/navigateWithPromise'
 import { noop } from '@avalabs/core-utils-sdk/dist'
 import { AppUpdateService } from 'services/AppUpdateService/AppUpdateService'
 
-export const usePromptUpdateAppScreenIfNeeded = (): (() => Promise<void>) => {
+export const usePromptAppUpdateScreenIfNeeded = (): (() => Promise<void>) => {
   return useCallback(async () => {
     const appUpdateStatus = await AppUpdateService.checkAppUpdateStatus()
 
     if (!appUpdateStatus) return
 
-    const hasBeenViewedUpdateAppScreen =
-      AppUpdateService.hasSeenUpdateAppScreen(appUpdateStatus.storeVersion)
-    const shouldShowUpdateAppScreen =
-      hasBeenViewedUpdateAppScreen === false &&
+    const hasBeenViewedAppUpdateScreen =
+      AppUpdateService.hasSeenAppUpdateScreen(appUpdateStatus.storeVersion)
+    const shouldShowAppUpdateScreen =
+      hasBeenViewedAppUpdateScreen === false &&
       appUpdateStatus.shouldUpdate === true
-    if (shouldShowUpdateAppScreen) {
+    if (shouldShowAppUpdateScreen) {
       await new Promise<void>(resolve => {
         InteractionManager.runAfterInteractions(() => {
           navigateWithPromise({
-            pathname: '/(signedIn)/(modals)/updateApp',
+            pathname: '/(signedIn)/(modals)/appUpdate',
             params: {
               storeVersion: appUpdateStatus.storeVersion
             }
