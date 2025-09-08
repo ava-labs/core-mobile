@@ -4,14 +4,18 @@ import { QueryObserverResult, RefetchOptions } from '@tanstack/react-query'
 import { useMemo } from 'react'
 import { useMeldCountryCode, useMeldToken } from '../store'
 import { CreateCryptoQuote, CryptoQuotesError, Quote } from '../types'
-import { ServiceProviderCategories } from '../consts'
+import { PaymentMethods, ServiceProviderCategories } from '../consts'
 import { getErrorMessage } from '../utils'
 import { useCreateCryptoQuote } from './useCreateCryptoQuote'
 
 export const useServiceProviders = ({
-  category
+  enabled,
+  category,
+  paymentMethodType
 }: {
+  enabled?: boolean
   category: ServiceProviderCategories
+  paymentMethodType?: PaymentMethods
 }): {
   crytoQuotes: Quote[]
   isLoadingCryptoQuotes: boolean
@@ -44,10 +48,12 @@ export const useServiceProviders = ({
     isRefetching: isRefetchingCryptoQuotes,
     error
   } = useCreateCryptoQuote({
+    enabled,
     category,
     destinationCurrencyCode,
     sourceCurrencyCode,
-    countryCode
+    countryCode,
+    paymentMethodType
   })
 
   const cryptoQuotesError = useMemo(() => {

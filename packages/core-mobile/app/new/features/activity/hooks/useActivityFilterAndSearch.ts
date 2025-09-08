@@ -2,8 +2,6 @@ import { BridgeTransfer } from '@avalabs/bridge-unified'
 import { BridgeTransaction } from '@avalabs/core-bridge-sdk'
 import { ChainId, Network } from '@avalabs/core-chains-sdk'
 import { TokenWithBalance, TransactionType } from '@avalabs/vm-module-types'
-import { useErc20ContractTokens } from 'common/hooks/useErc20ContractTokens'
-import { useSearchableTokenList } from 'common/hooks/useSearchableTokenList'
 import { DropdownSelection } from 'common/types'
 import usePendingBridgeTransactions from 'features/bridge/hooks/usePendingBridgeTransactions'
 import {
@@ -17,6 +15,8 @@ import { isAvalancheNetwork } from 'services/network/utils/isAvalancheNetwork'
 import { Transaction } from 'store/transaction'
 import { useGetRecentTransactions } from 'store/transaction/hooks/useGetRecentTransactions'
 import { isPChain, isXChain } from 'utils/network/isAvalancheNetwork'
+import { useSearchableTokenList } from 'common/hooks/useSearchableTokenList'
+import { useErc20ContractTokens } from 'common/hooks/useErc20ContractTokens'
 import { DropdownGroup } from 'common/components/DropdownMenu'
 import { useActivity } from '../store'
 import { ActivityListItem, buildGroupedData, getDateGroups } from '../utils'
@@ -43,6 +43,7 @@ export const useActivityFilterAndSearch = ({
   isRefreshing: boolean
   isError: boolean
   xpToken: TokenWithBalance | undefined
+  isXpChain: boolean
   refresh: () => void
   setSelectedNetwork: (network: ActivityNetworkFilter) => void
 } => {
@@ -75,16 +76,22 @@ export const useActivityFilterAndSearch = ({
     return getNetwork(selectedNetwork?.chainId)
   }, [getNetwork, selectedNetwork?.chainId])
 
+  const isXpChain = useMemo(() => {
+    return (
+      selectedNetwork?.chainId !== undefined &&
+      (isPChain(selectedNetwork?.chainId) || isXChain(selectedNetwork?.chainId))
+    )
+  }, [selectedNetwork?.chainId])
+
   const xpToken = useMemo(() => {
     return filteredTokenList.find(tk => {
       return (
         selectedNetwork?.chainId &&
-        (isPChain(selectedNetwork?.chainId) ||
-          isXChain(selectedNetwork?.chainId)) &&
-        Number(tk.networkChainId) === Number(selectedNetwork?.chainId)
+        isXpChain &&
+        Number(tk.networkChainId) === Number(selectedNetwork.chainId)
       )
     })
-  }, [filteredTokenList, selectedNetwork?.chainId])
+  }, [filteredTokenList, selectedNetwork?.chainId, isXpChain])
 
   const { transactions, refresh, isLoading, isRefreshing, isError } =
     useGetRecentTransactions(network)
@@ -213,9 +220,10 @@ export const useActivityFilterAndSearch = ({
     xpToken,
     sort,
     filter,
-    isLoading,
+    isLoading: isLoading,
     isRefreshing,
     isError,
+    isXpChain,
     refresh,
     network: network as Network,
     networkFilters,

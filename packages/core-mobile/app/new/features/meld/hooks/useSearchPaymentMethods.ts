@@ -36,7 +36,6 @@ export const useSearchPaymentMethods = ({
   const cryptoCurrencyCode = meldToken?.currencyCode
 
   return useQuery<SearchPaymentMethods[]>({
-    enabled: serviceProviders !== undefined,
     queryKey: [
       ReactQueryKeys.MELD_SEARCH_PAYMENT_METHODS,
       categories,
