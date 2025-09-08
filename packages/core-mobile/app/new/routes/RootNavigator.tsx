@@ -28,6 +28,13 @@ export function RootNavigator(): JSX.Element {
             gestureEnabled: false
           }}
         />
+        <Stack.Screen
+          name="sessionExpired"
+          options={{
+            ...modalScreensOptions,
+            gestureEnabled: false
+          }}
+        />
       </Stack.Protected>
 
       {/* not verified */}
@@ -44,14 +51,6 @@ export function RootNavigator(): JSX.Element {
             }}
           />
           <Stack.Screen name="forgotPin" options={{ headerShown: true }} />
-          <Stack.Screen name="+not-found" />
-          <Stack.Screen
-            name="sessionExpired"
-            options={{
-              ...modalScreensOptions,
-              gestureEnabled: false
-            }}
-          />
         </Stack.Protected>
 
         {/* wallet nonexistent */}
@@ -61,6 +60,8 @@ export function RootNavigator(): JSX.Element {
           <Stack.Screen name="accessWallet" options={{ headerShown: true }} />
         </Stack.Protected>
       </Stack.Protected>
+
+      <Stack.Screen name="+not-found" />
     </Stack>
   )
 }
