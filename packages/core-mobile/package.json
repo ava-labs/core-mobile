@@ -272,7 +272,7 @@
     "babel-plugin-module-resolver": "5.0.2",
     "babel-plugin-react-compiler": "19.1.0-rc.2",
     "babel-plugin-react-require": "4.0.3",
-    "detox": "20.40.2",
+    "detox": "20.41.0",
     "eslint": "8.50.0",
     "eslint-plugin-avalabs-mobile": "workspace:*",
     "jest": "29.7.0",

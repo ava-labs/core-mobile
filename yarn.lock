@@ -324,7 +324,7 @@ __metadata:
     coinselect: 3.1.13
     date-fns: 4.1.0
     deprecated-react-native-prop-types: 5.0.0
-    detox: 20.40.2
+    detox: 20.41.0
     es6-promise: 4.2.8
     eslint: 8.50.0
     eslint-plugin-avalabs-mobile: "workspace:*"
@@ -17122,9 +17122,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"detox@npm:20.40.2":
-  version: 20.40.2
-  resolution: "detox@npm:20.40.2"
+"detox@npm:20.41.0":
+  version: 20.41.0
+  resolution: "detox@npm:20.41.0"
   dependencies:
     "@wix-pilot/core": ^3.4.1
     "@wix-pilot/detox": ^1.0.13
@@ -17170,7 +17170,7 @@ __metadata:
       optional: true
   bin:
     detox: local-cli/cli.js
-  checksum: e956f810caa63c6ceac064e736e9d464364d2a573ab99c5cbec6791548bf37614ac808b2b31a08f93359acffe06be8b216c681e44049ed49eb6a29c4fcf249b8
+  checksum: deaf8e2950054d0a901089ae51f4aa9df07854906ef9e2a27fa0ea6d7166709f690fea176593a9ae02e52f9b844f51c1a0c26586e1cf7ec803edcdbf83524828
   languageName: node
   linkType: hard
 
@@ -27736,7 +27736,7 @@ react-native-webview@ava-labs/react-native-webview:
   peerDependencies:
     react: "*"
     react-native: "*"
-  checksum: 3e4689674406deb2ad9efa9f529597341b4ab33e379b7c7cd72aff8d5e37862fda1a37aba984951a67cc3938969be138bc3c4469e4963dd170b172148339e056
+  checksum: fbf6f420002cabeaf80eda574a5ebfa1e536fe6dfe822f136e7dfb24feaf874e5702fa31b405b5e601a95d48c343bd502f42274e3e1549c3daddc8721fc3fce6
   languageName: node
   linkType: hard
 
