@@ -8,12 +8,14 @@ import {
   stackScreensOptions
 } from 'common/consts/screenOptions'
 
+import { usePerformAfterLoginFlows } from 'common/hooks/usePerformAfterLoginFlows'
 import { BridgeProvider } from 'features/bridge/contexts/BridgeContext'
 import { CollectiblesProvider } from 'features/portfolio/collectibles/CollectiblesContext'
 import { MigrateFavoriteIds } from 'new/common/components/MigrateFavoriteIds'
 import { NavigationPresentationMode } from 'new/common/types'
-import React from 'react'
+import React, { useEffect } from 'react'
 import { useSelector } from 'react-redux'
+import { selectActiveAccount } from 'store/account'
 import { selectWalletState } from 'store/app'
 import { WalletState } from 'store/app/types'
 
@@ -25,6 +27,7 @@ export const unstable_settings = {
 
 export default function WalletLayout(): JSX.Element {
   const walletState = useSelector(selectWalletState)
+  const activeAccount = useSelector(selectActiveAccount)
 
   usePreventRemove(walletState === WalletState.ACTIVE, () => {
     // TODO: uncomment this after we fix the multiple back() calls
@@ -32,6 +35,14 @@ export default function WalletLayout(): JSX.Element {
     // which closes the app on Android
     // BackHandler.exitApp()
   })
+
+  const performAfterLoginFlows = usePerformAfterLoginFlows()
+
+  useEffect(() => {
+    if (walletState !== WalletState.ACTIVE || !activeAccount) return
+
+    performAfterLoginFlows()
+  }, [walletState, activeAccount, performAfterLoginFlows])
 
   return (
     <BridgeProvider>
@@ -211,6 +222,10 @@ export default function WalletLayout(): JSX.Element {
           />
           <Stack.Screen
             name="(modals)/solanaLaunch"
+            options={modalScreensOptions}
+          />
+          <Stack.Screen
+            name="(modals)/appUpdate"
             options={modalScreensOptions}
           />
         </Stack>
