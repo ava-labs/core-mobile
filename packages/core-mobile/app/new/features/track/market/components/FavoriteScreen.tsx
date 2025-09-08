@@ -24,7 +24,7 @@ const FavoriteScreen = ({
 }): JSX.Element => {
   const { favorites, prices, charts, isLoadingFavorites } = useWatchlist()
 
-  const { data, sort, view } = useTrackSortAndView(favorites, prices, true)
+  const { data, sort, view } = useTrackSortAndView(favorites, prices)
   const listType = view.selected as MarketView
 
   const emptyComponent = useMemo(() => {

@@ -6,8 +6,7 @@ import { DropdownGroup } from 'common/components/DropdownMenu'
 
 export const useTrackSortAndView = (
   tokens: MarketToken[],
-  prices: Prices,
-  isFavoriteScreen: boolean
+  prices: Prices
 ): {
   data: MarketToken[]
   sort: DropdownSelection
@@ -16,9 +15,7 @@ export const useTrackSortAndView = (
   const [selectedSort, setSelectedSort] = useState<MarketSort>(
     MarketSort.MarketCap
   )
-  const [selectedView, setSelectedView] = useState<MarketView>(
-    isFavoriteScreen ? MarketView.Grid : MarketView.List
-  )
+  const [selectedView, setSelectedView] = useState<MarketView>(MarketView.List)
 
   const sortedTokens = useMemo(() => {
     if (Object.keys(prices).length === 0) return tokens
