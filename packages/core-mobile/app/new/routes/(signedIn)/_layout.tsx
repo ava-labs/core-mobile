@@ -2,13 +2,15 @@ import { usePreventRemove } from '@react-navigation/native'
 import { LastTransactedNetworks } from 'common/components/LastTransactedNetworks'
 import { Stack } from 'common/components/Stack'
 import { stackNavigatorScreenOptions } from 'common/consts/screenOptions'
+import { usePerformAfterLoginFlows } from 'common/hooks/usePerformAfterLoginFlows'
 import { useModalScreenOptions } from 'common/hooks/useModalScreenOptions'
 import { BridgeProvider } from 'features/bridge/contexts/BridgeContext'
 import { CollectiblesProvider } from 'features/portfolio/collectibles/CollectiblesContext'
 import { MigrateFavoriteIds } from 'new/common/components/MigrateFavoriteIds'
 import { NavigationPresentationMode } from 'new/common/types'
-import React from 'react'
+import React, { useEffect } from 'react'
 import { useSelector } from 'react-redux'
+import { selectActiveAccount } from 'store/account'
 import { selectWalletState } from 'store/app'
 import { WalletState } from 'store/app/types'
 
@@ -26,6 +28,7 @@ export default function WalletLayout(): JSX.Element {
   } = useModalScreenOptions()
 
   const walletState = useSelector(selectWalletState)
+  const activeAccount = useSelector(selectActiveAccount)
 
   usePreventRemove(walletState === WalletState.ACTIVE, () => {
     // TODO: uncomment this after we fix the multiple back() calls
@@ -33,6 +36,14 @@ export default function WalletLayout(): JSX.Element {
     // which closes the app on Android
     // BackHandler.exitApp()
   })
+
+  const performAfterLoginFlows = usePerformAfterLoginFlows()
+
+  useEffect(() => {
+    if (walletState !== WalletState.ACTIVE || !activeAccount) return
+
+    performAfterLoginFlows()
+  }, [walletState, activeAccount, performAfterLoginFlows])
 
   return (
     <BridgeProvider>
@@ -212,6 +223,10 @@ export default function WalletLayout(): JSX.Element {
           />
           <Stack.Screen
             name="(modals)/solanaLaunch"
+            options={modalScreensOptions}
+          />
+          <Stack.Screen
+            name="(modals)/updateApp"
             options={modalScreensOptions}
           />
         </Stack>
