@@ -6,6 +6,7 @@ import {
   useTheme,
   View
 } from '@avalabs/k2-alpine'
+import { useHeaderHeight } from '@react-navigation/elements'
 import { useIsFocused } from '@react-navigation/native'
 import BlurredBarsContentLayout from 'common/components/BlurredBarsContentLayout'
 import {
@@ -48,10 +49,6 @@ export const StakeHomeScreen = (): JSX.Element => {
   const tabViewRef = useRef<CollapsibleTabsRef>(null)
   const insets = useSafeAreaInsets()
 
-  const [stickyHeaderLayout, setStickyHeaderLayout] = useState<
-    LayoutRectangle | undefined
-  >()
-
   const [balanceHeaderLayout, setBalanceHeaderLayout] = useState<
     LayoutRectangle | undefined
   >()
@@ -79,13 +76,6 @@ export const StakeHomeScreen = (): JSX.Element => {
     []
   )
 
-  const handleStickyHeaderLayout = useCallback(
-    (event: LayoutChangeEvent): void => {
-      setStickyHeaderLayout(event.nativeEvent.layout)
-    },
-    []
-  )
-
   const header = useMemo(() => <NavigationTitleHeader title={'Stakes'} />, [])
 
   const { onScroll, targetHiddenProgress } = useFadingHeaderNavigation({
@@ -104,8 +94,7 @@ export const StakeHomeScreen = (): JSX.Element => {
         sx={{
           backgroundColor: theme.colors.$surfacePrimary,
           paddingBottom: 16
-        }}
-        onLayout={handleStickyHeaderLayout}>
+        }}>
         <Animated.View
           onLayout={handleBalanceHeaderLayout}
           style={[
@@ -125,7 +114,6 @@ export const StakeHomeScreen = (): JSX.Element => {
   }, [
     theme.colors.$surfacePrimary,
     handleBalanceHeaderLayout,
-    handleStickyHeaderLayout,
     animatedHeaderStyle
   ])
 
@@ -167,13 +155,11 @@ export const StakeHomeScreen = (): JSX.Element => {
   const renderEmptyTabBar = useCallback((): JSX.Element => <></>, [])
 
   const frame = useSafeAreaFrame()
+  const headerHeight = useHeaderHeight()
 
   const tabHeight = useMemo(() => {
-    return Platform.select({
-      ios: frame.height - insets.top - (stickyHeaderLayout?.height ?? 0) + 16,
-      android: frame.height - insets.top
-    })
-  }, [frame.height, insets.top, stickyHeaderLayout?.height])
+    return frame.height - headerHeight
+  }, [frame.height, headerHeight])
 
   const contentContainerStyle = useMemo(() => {
     return {

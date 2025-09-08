@@ -6,7 +6,6 @@ import {
   useTheme,
   View
 } from '@avalabs/k2-alpine'
-import { useHeaderHeight } from '@react-navigation/elements'
 import BlurredBarsContentLayout from 'common/components/BlurredBarsContentLayout'
 import {
   CollapsibleTabs,
@@ -48,12 +47,14 @@ const TrackHomeScreen = (): JSX.Element => {
   const { theme } = useTheme()
   const insets = useSafeAreaInsets()
   const frame = useSafeAreaFrame()
-  const headerHeight = useHeaderHeight()
 
   const [isSearchBarFocused, setSearchBarFocused] = useState(false)
   const [searchText, setSearchText] = useState('')
   const tabViewRef = useRef<CollapsibleTabsRef>(null)
 
+  const [stickyHeaderLayout, setStickyHeaderLayout] = useState<
+    LayoutRectangle | undefined
+  >()
   const [balanceHeaderLayout, setBalanceHeaderLayout] = useState<
     LayoutRectangle | undefined
   >()
@@ -126,6 +127,13 @@ const TrackHomeScreen = (): JSX.Element => {
     [handleScrollResync]
   )
 
+  const handleStickyHeaderLayout = useCallback(
+    (event: LayoutChangeEvent): void => {
+      setStickyHeaderLayout(event.nativeEvent.layout)
+    },
+    []
+  )
+
   const handleBalanceHeaderLayout = useCallback(
     (event: LayoutChangeEvent): void => {
       setBalanceHeaderLayout(event.nativeEvent.layout)
@@ -185,10 +193,10 @@ const TrackHomeScreen = (): JSX.Element => {
 
   const tabHeight = useMemo(() => {
     return Platform.select({
-      ios: frame.height - headerHeight - (searchBarLayout?.height ?? 0),
+      ios: frame.height - (stickyHeaderLayout?.height ?? 0) - insets.top + 10,
       android: frame.height - insets.top - 4
     })
-  }, [frame.height, headerHeight, insets.top, searchBarLayout?.height])
+  }, [frame.height, insets.top, stickyHeaderLayout?.height])
 
   const contentContainerStyle = useMemo(() => {
     return {
@@ -202,7 +210,9 @@ const TrackHomeScreen = (): JSX.Element => {
 
   const renderHeader = useCallback((): JSX.Element => {
     return (
-      <View style={{ backgroundColor: theme.colors.$surfacePrimary }}>
+      <View
+        style={{ backgroundColor: theme.colors.$surfacePrimary }}
+        onLayout={handleStickyHeaderLayout}>
         <Animated.View style={[animatedHeaderStyle]}>
           <View
             onLayout={handleBalanceHeaderLayout}
@@ -246,6 +256,7 @@ const TrackHomeScreen = (): JSX.Element => {
   }, [
     theme.colors.$surfacePrimary,
     theme.colors.$surfaceSecondary,
+    handleStickyHeaderLayout,
     animatedHeaderStyle,
     handleBalanceHeaderLayout,
     handleSearchBarLayout,

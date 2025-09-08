@@ -28,6 +28,9 @@ const FavoriteScreen = ({
   const listType = view.selected as MarketView
 
   const emptyComponent = useMemo(() => {
+    if (isLoadingFavorites) {
+      return <LoadingState />
+    }
     return (
       <ErrorState
         icon={<Image source={errorIcon} sx={{ width: 42, height: 42 }} />}
@@ -35,7 +38,7 @@ const FavoriteScreen = ({
         description="Star any token to add it to this screen"
       />
     )
-  }, [])
+  }, [isLoadingFavorites])
 
   const renderEmpty = useCallback(() => {
     return (
@@ -44,18 +47,6 @@ const FavoriteScreen = ({
       </CollapsibleTabs.ContentWrapper>
     )
   }, [emptyComponent])
-
-  if (isLoadingFavorites) {
-    return (
-      <LoadingState
-        sx={{
-          minHeight: containerStyle.minHeight,
-          justifyContent: 'center',
-          alignItems: 'center'
-        }}
-      />
-    )
-  }
 
   return (
     <Animated.View

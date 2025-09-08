@@ -1,5 +1,6 @@
 import { ANIMATED, View } from '@avalabs/k2-alpine'
 import { useHeaderHeight } from '@react-navigation/elements'
+import { TAB_BAR_HEIGHT } from 'common/consts/screenOptions'
 import React, { forwardRef, useMemo } from 'react'
 import { Platform, StyleSheet } from 'react-native'
 import {
@@ -118,6 +119,8 @@ const ContentWrapper = ({
   extraOffset?: number
 }): JSX.Element => {
   const scrollY = useCurrentTabScrollY()
+  const insets = useSafeAreaInsets()
+  const frame = useSafeAreaFrame()
   const header = useHeaderMeasurements()
   const headerHeight = useHeaderHeight()
 
@@ -140,25 +143,28 @@ const ContentWrapper = ({
     }
   })
 
-  const insets = useSafeAreaInsets()
-  const frame = useSafeAreaFrame()
-
   return (
     <View
-      style={{
-        // iOS works with 100%, but android needs specific height
-        height:
-          Platform.OS === 'ios'
-            ? '100%'
-            : frame.height -
-              header.height -
-              headerHeight -
-              insets.bottom -
-              extraOffset,
-
-        justifyContent: 'center',
-        alignItems: 'center'
-      }}>
+      style={[
+        Platform.OS === 'ios'
+          ? {
+              // iOS works with 100%, but android needs specific height
+              height: '100%',
+              paddingBottom: TAB_BAR_HEIGHT + insets.bottom
+            }
+          : {
+              height:
+                frame.height -
+                header.height -
+                headerHeight -
+                insets.bottom -
+                extraOffset
+            },
+        {
+          justifyContent: 'center',
+          alignItems: 'center'
+        }
+      ]}>
       <Animated.View style={animatedStyle}>{children}</Animated.View>
     </View>
   )
