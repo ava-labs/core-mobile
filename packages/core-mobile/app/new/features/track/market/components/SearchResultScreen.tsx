@@ -58,8 +58,7 @@ const SearchResultScreen = ({
 
   const { data, sort, view } = useTrackSortAndView(
     tokensToDisplay,
-    pricesToDisplay,
-    false
+    pricesToDisplay
   )
 
   const header = useHeaderMeasurements()

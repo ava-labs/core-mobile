@@ -4,20 +4,21 @@ import { useMemo } from 'react'
 import MeldService from '../services/MeldService'
 import { CreateCryptoQuote, CreateCryptoQuoteParams } from '../types'
 import { ServiceProviderCategories } from '../consts'
-import { useMeldPaymentMethod } from '../store'
 import { useSearchServiceProviders } from './useSearchServiceProviders'
 import { useFiatSourceAmount } from './useFiatSourceAmount'
 
 export const useCreateCryptoQuote = ({
+  enabled: enabledCreateCryptoQuote,
   category,
   countryCode,
   walletAddress,
   destinationCurrencyCode,
-  sourceCurrencyCode
+  sourceCurrencyCode,
+  paymentMethodType
 }: CreateCryptoQuoteParams & {
   category: ServiceProviderCategories
+  enabled?: boolean
 }): UseQueryResult<CreateCryptoQuote | undefined, Error> => {
-  const [meldPaymentMethod] = useMeldPaymentMethod()
   const { data: serviceProvidersData } = useSearchServiceProviders({
     categories: [category]
   })
@@ -43,7 +44,10 @@ export const useCreateCryptoQuote = ({
   const isSourceAmountValid = hasValidSourceAmount && sourceAmount !== undefined
 
   const enabled =
-    isSourceAmountValid && hasDestinationCurrencyCode && hasSourceCurrencyCode
+    isSourceAmountValid &&
+    hasDestinationCurrencyCode &&
+    hasSourceCurrencyCode &&
+    enabledCreateCryptoQuote
 
   return useQuery<CreateCryptoQuote | undefined>({
     enabled,
@@ -56,7 +60,7 @@ export const useCreateCryptoQuote = ({
       destinationCurrencyCode,
       sourceCurrencyCode,
       hasValidSourceAmount,
-      meldPaymentMethod
+      paymentMethodType
     ],
     queryFn: () => {
       return MeldService.createCryptoQuote({
@@ -66,7 +70,7 @@ export const useCreateCryptoQuote = ({
         countryCode,
         destinationCurrencyCode,
         sourceCurrencyCode,
-        paymentMethodType: meldPaymentMethod
+        paymentMethodType
       })
     },
     staleTime: 1000 * 60 * 1 // 1 minute

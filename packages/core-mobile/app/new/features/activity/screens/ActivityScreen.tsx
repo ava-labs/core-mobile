@@ -50,8 +50,13 @@ export const ActivityScreen = ({
     xpToken,
     network,
     networkFilterDropdown,
+    isXpChain,
     refresh
   } = useActivityFilterAndSearch({ searchText })
+
+  const isLoadingXpToken = useMemo(() => {
+    return isXpChain && !xpToken
+  }, [isXpChain, xpToken])
 
   const keyboardAvoidingStyle = useAnimatedStyle(() => {
     return {
@@ -88,7 +93,7 @@ export const ActivityScreen = ({
   }, [filter, network, networkFilterDropdown])
 
   const emptyComponent = useMemo(() => {
-    if (isRefreshing || isLoading) {
+    if (isRefreshing || isLoading || isLoadingXpToken) {
       return <LoadingState />
     }
 
@@ -114,7 +119,14 @@ export const ActivityScreen = ({
         description="Interact with this token onchain and see your activity here"
       />
     )
-  }, [isError, isLoading, isRefreshing, refresh, searchText.length])
+  }, [
+    isError,
+    isLoading,
+    isLoadingXpToken,
+    isRefreshing,
+    refresh,
+    searchText.length
+  ])
 
   const renderEmpty = useCallback(() => {
     return (
@@ -127,6 +139,10 @@ export const ActivityScreen = ({
     )
   }, [emptyComponent, keyboardAvoidingStyle])
 
+  const activityListData = useMemo(() => {
+    return isLoadingXpToken ? [] : data
+  }, [data, isLoadingXpToken])
+
   return (
     <Animated.View
       entering={getListItemEnteringAnimation(5)}
@@ -135,7 +151,7 @@ export const ActivityScreen = ({
         flex: 1
       }}>
       <ActivityList
-        data={data}
+        data={activityListData}
         xpToken={xpToken}
         handlePendingBridge={handlePendingBridge}
         handleExplorerLink={handleExplorerLink}
