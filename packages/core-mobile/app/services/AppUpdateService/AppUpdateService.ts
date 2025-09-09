@@ -3,6 +3,7 @@ import { StorageKey } from 'resources/Constants'
 import SpInAppUpdates, { IAUUpdateKind } from 'sp-react-native-in-app-updates'
 import Logger from 'utils/Logger'
 import { commonStorage } from 'utils/mmkv'
+import DeviceInfo from 'react-native-device-info'
 
 const inAppUpdates = new SpInAppUpdates(true)
 
@@ -10,7 +11,9 @@ const FAKE_CURRENT_VERSION_FOR_TESTING = '1.0.8'
 export class AppUpdateService {
   static async checkAppUpdateStatus(): Promise<AppUpdateStatus | undefined> {
     try {
-      Alert.alert('checkAppUpdateStatus')
+      Alert.alert(
+        `checkAppUpdateStatus: getVersion: ${DeviceInfo.getVersion()}`
+      )
       const response = await inAppUpdates.checkNeedsUpdate({
         curVersion: FAKE_CURRENT_VERSION_FOR_TESTING
       })
