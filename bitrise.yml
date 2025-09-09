@@ -1000,6 +1000,7 @@ workflows:
     - _install-and-set-env
     - _set-version
     - _pull_app_files
+    - _build-ios-simulator
     after_run:
     - _upload-detox-artifacts
     - _send-test-result-notification-slack
