@@ -8,7 +8,7 @@ import { CoreLogoWithTokens } from 'common/components/CoreLogoWithTokens'
 import { useLocalSearchParams } from 'expo-router'
 
 function AppUpdateScreen(): JSX.Element {
-  const { storeVersion } = useLocalSearchParams<{ storeVersion: string }>()
+  const { appVersion } = useLocalSearchParams<{ appVersion: string }>()
   const dispatch = useDispatch()
 
   const handleDismiss = useCallback(() => {
@@ -25,9 +25,9 @@ function AppUpdateScreen(): JSX.Element {
 
   useEffect(() => {
     return () => {
-      AppUpdateService.markAppUpdateScreenAsSeen(storeVersion)
+      AppUpdateService.markAppUpdateScreenAsSeen(appVersion)
     }
-  }, [dispatch, storeVersion])
+  }, [dispatch, appVersion])
 
   return (
     <ScrollScreen

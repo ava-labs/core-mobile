@@ -11,17 +11,17 @@ export const usePromptAppUpdateScreenIfNeeded = (): (() => Promise<void>) => {
     if (!appUpdateStatus) return
 
     const hasBeenViewedAppUpdateScreen =
-      AppUpdateService.hasSeenAppUpdateScreen(appUpdateStatus.storeVersion)
+      AppUpdateService.hasSeenAppUpdateScreen(appUpdateStatus.version)
     const shouldShowAppUpdateScreen =
       hasBeenViewedAppUpdateScreen === false &&
-      appUpdateStatus.shouldUpdate === true
+      appUpdateStatus.needsUpdate === true
     if (shouldShowAppUpdateScreen) {
       await new Promise<void>(resolve => {
         InteractionManager.runAfterInteractions(() => {
           navigateWithPromise({
             pathname: '/(signedIn)/(modals)/appUpdate',
             params: {
-              storeVersion: appUpdateStatus.storeVersion
+              appVersion: appUpdateStatus.version
             }
           })
             .then(resolve)

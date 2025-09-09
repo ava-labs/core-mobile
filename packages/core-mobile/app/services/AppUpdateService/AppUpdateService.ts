@@ -1,15 +1,14 @@
 import { Linking, Platform } from 'react-native'
 import { StorageKey } from 'resources/Constants'
-import SpInAppUpdates, { IAUUpdateKind } from 'sp-react-native-in-app-updates'
 import Logger from 'utils/Logger'
 import { commonStorage } from 'utils/mmkv'
-
-const inAppUpdates = new SpInAppUpdates(false)
+import { checkVersion } from 'react-native-check-version'
+import { checkForUpdate, UpdateFlow } from 'react-native-in-app-updates'
 
 export class AppUpdateService {
   static async checkAppUpdateStatus(): Promise<AppUpdateStatus | undefined> {
     try {
-      return await inAppUpdates.checkNeedsUpdate()
+      return await checkVersion()
     } catch (e) {
       Logger.error('checkAppUpdateStatus failed', e)
       return undefined
@@ -18,7 +17,7 @@ export class AppUpdateService {
 
   static async performUpdate(): Promise<void> {
     if (Platform.OS === 'android') {
-      await inAppUpdates.startUpdate({ updateType: IAUUpdateKind.FLEXIBLE })
+      await checkForUpdate(UpdateFlow.FLEXIBLE)
     } else {
       const appId = '6443685999'
       const appStoreURI = `itms-apps://apps.apple.com/app/id${appId}`
@@ -49,6 +48,6 @@ export class AppUpdateService {
 }
 
 export type AppUpdateStatus = {
-  shouldUpdate: boolean
-  storeVersion: string
+  needsUpdate: boolean
+  version: string
 }
