@@ -8,6 +8,7 @@ import DeviceInfo from 'react-native-device-info'
 const inAppUpdates = new SpInAppUpdates(true)
 
 const FAKE_CURRENT_VERSION_FOR_TESTING = '1.0.8'
+const FAKE_CURRENT_BUILD_NUMBER_FOR_TESTING = '5000'
 export class AppUpdateService {
   static async checkAppUpdateStatus(): Promise<AppUpdateStatus | undefined> {
     try {
@@ -15,16 +16,25 @@ export class AppUpdateService {
         `checkAppUpdateStatus: getVersion: ${DeviceInfo.getVersion()}`
       )
       const response = await inAppUpdates.checkNeedsUpdate({
-        curVersion: FAKE_CURRENT_VERSION_FOR_TESTING
+        curVersion:
+          Platform.OS === 'android'
+            ? FAKE_CURRENT_BUILD_NUMBER_FOR_TESTING
+            : FAKE_CURRENT_VERSION_FOR_TESTING,
+        customVersionComparator:
+          Platform.OS === 'android'
+            ? (v1, v2) => {
+                return v1 > v2 ? 1 : v1 < v2 ? -1 : 0
+              }
+            : undefined
       })
 
       Alert.alert('checkAppUpdateStatus response', JSON.stringify(response))
 
       return response
     } catch (e) {
-      if (typeof e === 'object' && e && 'message' in e) {
-        Alert.alert('checkAppUpdateStatus failed', e.message as string)
-      }
+      // if (typeof e === 'object' && e && 'message' in e) {
+      //   Alert.alert('checkAppUpdateStatus failed', e.message as string)
+      // }
       Logger.error('checkAppUpdateStatus failed', e)
       return undefined
     }
