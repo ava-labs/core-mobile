@@ -6,7 +6,7 @@ import Action from './actions'
 import { Platform } from './constants'
 import loginRecoverWallet from './loginRecoverWallet'
 
-export const warmup = async (newInstance = true) => {
+export const warmup = async (newInstance = false) => {
   const initialArgs: DeviceLaunchAppConfig = {
     permissions: { notifications: 'YES', camera: 'YES' },
     launchArgs: {
@@ -18,8 +18,7 @@ export const warmup = async (newInstance = true) => {
       ]
     }
   }
-  if (newInstance || process.env.CI === 'true') {
-    console.log('CI is true, setting newInstance to true')
+  if (newInstance) {
     initialArgs.newInstance = true
   }
   await device.launchApp(initialArgs)
