@@ -18,14 +18,14 @@ export CI=true
 npm rebuild detox
 
 
-APP_BUNDLE_PATH="${APP_BUNDLE_PATH:-$BITRISE_DEPLOY_DIR/AvaWalletInternal.app}"
 if ! xcrun simctl get_app_container booted org.avalabs.avaxwallet.internal >/dev/null 2>&1; then
   echo "[E2E] App not installed. Installing..."
-  if [[ ! -d "$APP_BUNDLE_PATH" ]]; then
-    echo "APP_BUNDLE_PATH not found: $APP_BUNDLE_PATH"
+  if [[ ! -d "$BITRISE_APP_DIR_PATH" ]]; then
+    echo "BITRISE_APP_DIR_PATH not found: $BITRISE_APP_DIR_PATH"
     exit 1
   fi
-  xcrun simctl install booted "$APP_BUNDLE_PATH"
+  echo "Installing app from: $BITRISE_APP_DIR_PATH"
+  xcrun simctl install booted "$BITRISE_APP_DIR_PATH"
   echo "App installed"
 fi
 
