@@ -4,7 +4,7 @@ import { BlurViewWithFallback } from 'common/components/BlurViewWithFallback'
 import { BottomTabs } from 'common/components/BottomTabs'
 import { TAB_BAR_HEIGHT } from 'common/consts/screenOptions'
 import React, { FC, useMemo } from 'react'
-import { Platform } from 'react-native'
+import { Platform, StyleSheet } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { SvgProps } from 'react-native-svg'
 
@@ -111,7 +111,11 @@ export default function TabLayout(): JSX.Element {
   )
 }
 
-const TabBar = ({ state, descriptors }: BottomTabBarProps): JSX.Element => {
+const TabBar = ({
+  state,
+  descriptors,
+  navigation
+}: BottomTabBarProps): JSX.Element => {
   const insets = useSafeAreaInsets()
   const { theme } = useTheme()
 
@@ -133,7 +137,7 @@ const TabBar = ({ state, descriptors }: BottomTabBarProps): JSX.Element => {
         flexDirection: 'row',
         paddingBottom: insets.bottom,
         backgroundColor,
-        borderTopWidth: 0.5,
+        borderTopWidth: StyleSheet.hairlineWidth,
         borderColor:
           Platform.OS === 'ios'
             ? theme.isDark
@@ -149,9 +153,18 @@ const TabBar = ({ state, descriptors }: BottomTabBarProps): JSX.Element => {
         return (
           <Pressable
             key={index}
-            onPress={() =>
-              descriptors[route.key]?.navigation.navigate(route.name)
-            }
+            onPress={() => {
+              // in case of a tab press, we navigate to the root index of the tab
+              const event = navigation.emit({
+                type: 'tabPress',
+                target: route.key,
+                canPreventDefault: true
+              })
+
+              if (!isActive && !event.defaultPrevented) {
+                navigation.navigate(route.name)
+              }
+            }}
             style={{
               opacity: isActive ? 1 : 0.6,
               paddingVertical: 12,
