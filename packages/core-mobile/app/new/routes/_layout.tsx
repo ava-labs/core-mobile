@@ -3,7 +3,6 @@ import NavigationThemeProvider from 'common/contexts/NavigationThemeProvider'
 import { useLoadFonts } from 'common/hooks/useLoadFonts'
 import { GlobalAlertWithTextInput } from 'common/utils/alertWithTextInput'
 import { GlobalToast } from 'common/utils/toast'
-import { DeeplinkContextProvider } from 'contexts/DeeplinkContext/DeeplinkContext'
 import { RecoveryMethodProvider } from 'features/onboarding/contexts/RecoveryMethodProvider'
 import { PrivacyScreen } from 'features/privacyScreen/components/PrivacyScreen'
 import React, { useEffect } from 'react'
@@ -15,6 +14,7 @@ import { KeyboardProvider } from 'react-native-keyboard-controller'
 import 'react-native-reanimated'
 import { useDispatch, useSelector } from 'react-redux'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
+import { DeeplinkContextProvider } from 'contexts/DeeplinkContext/DeeplinkContext'
 import {
   Appearance,
   selectSelectedAppearance,
