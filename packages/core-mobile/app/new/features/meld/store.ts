@@ -125,6 +125,7 @@ type SupportedCryptoCurrenciesStore = {
 const supportedCryptoCurrenciesStore = create<SupportedCryptoCurrenciesStore>(
   (set, get) => ({
     supportedCryptoCurrencies: [],
+    // eslint-disable-next-line sonarjs/cognitive-complexity
     setSupportedCryptoCurrencies: (cryptos, tokenIndexes) => {
       if (get().supportedCryptoCurrencies.length > 0) return // already built, skip
 
