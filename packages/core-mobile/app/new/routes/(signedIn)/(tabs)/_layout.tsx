@@ -155,11 +155,15 @@ const TabBar = ({
           <Pressable
             key={index}
             onPress={() => {
-              navigation.emit({
-                type: 'tabPress',
-                target: route.key,
-                canPreventDefault: true
-              })
+              if (isActive) {
+                navigation.emit({
+                  type: 'tabPress',
+                  target: route.key,
+                  canPreventDefault: true
+                })
+              }
+
+              navigation.navigate(route.name)
             }}
             style={{
               opacity: isActive ? 1 : 0.6,
