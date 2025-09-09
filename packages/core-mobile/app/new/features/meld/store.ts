@@ -5,6 +5,7 @@ import { ChainId } from '@avalabs/core-chains-sdk'
 import { LocalTokenWithBalance } from 'store/balance'
 import { CryptoCurrency, CryptoCurrencyWithBalance } from './types'
 import {
+  NATIVE_ERC20_TOKEN_CONTRACT_ADDRESS,
   PaymentMethods,
   ServiceProviders,
   SOLANA_MELD_CHAIN_ID
@@ -140,6 +141,14 @@ const supportedCryptoCurrenciesStore = create<SupportedCryptoCurrenciesStore>(
           match = tokenIndexes.nativeMap.get(
             ChainId.SOLANA_MAINNET_ID.toString()
           )
+        }
+
+        if (
+          crypto.name === 'Ethereum' &&
+          crypto.chainId &&
+          crypto.contractAddress === NATIVE_ERC20_TOKEN_CONTRACT_ADDRESS
+        ) {
+          match = tokenIndexes.nativeMap.get(crypto.chainId.toString())
         }
 
         // ERC-20 token
