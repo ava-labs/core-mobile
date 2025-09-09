@@ -5,10 +5,13 @@ import { commonStorage } from 'utils/mmkv'
 import { checkVersion } from 'react-native-check-version'
 import { checkForUpdate, UpdateFlow } from 'react-native-in-app-updates'
 
+const FAKE_APP_VERSION_FOR_TESTING = '1.0.8'
 export class AppUpdateService {
   static async checkAppUpdateStatus(): Promise<AppUpdateStatus | undefined> {
     try {
-      return await checkVersion()
+      return await checkVersion({
+        currentVersion: FAKE_APP_VERSION_FOR_TESTING
+      })
     } catch (e) {
       Logger.error('checkAppUpdateStatus failed', e)
       return undefined
