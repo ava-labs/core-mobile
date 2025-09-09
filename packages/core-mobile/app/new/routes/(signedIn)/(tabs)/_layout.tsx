@@ -156,14 +156,18 @@ const TabBar = ({
             key={index}
             onPress={() => {
               if (isActive) {
-                navigation.emit({
+                const event = navigation.emit({
                   type: 'tabPress',
                   target: route.key,
                   canPreventDefault: true
                 })
-              }
 
-              navigation.navigate(route.name)
+                if (!event.defaultPrevented) {
+                  navigation.navigate(route.name, route.params)
+                }
+              } else {
+                navigation.navigate(route.name, route.params)
+              }
             }}
             style={{
               opacity: isActive ? 1 : 0.6,
