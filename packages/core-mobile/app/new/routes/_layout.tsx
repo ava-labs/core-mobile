@@ -11,6 +11,7 @@ import { GlobalAlertWithTextInput } from 'common/utils/alertWithTextInput'
 import { GlobalToast } from 'common/utils/toast'
 import { DeeplinkContextProvider } from 'contexts/DeeplinkContext/DeeplinkContext'
 import { RecoveryMethodProvider } from 'features/onboarding/contexts/RecoveryMethodProvider'
+import { PrivacyScreen } from 'features/privacyScreen/components/PrivacyScreen'
 import { NavigationRedirect } from 'new/common/components/NavigationRedirect'
 import React, { useEffect } from 'react'
 import { Appearance as RnAppearance } from 'react-native'
@@ -28,7 +29,6 @@ import {
   selectSelectedColorScheme,
   setSelectedColorScheme
 } from 'store/settings/appearance'
-import { PrivacyScreen } from 'features/privacyScreen/components/PrivacyScreen'
 
 export default function Root(): JSX.Element | null {
   const dispatch = useDispatch()
