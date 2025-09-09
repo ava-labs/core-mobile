@@ -10,7 +10,7 @@ import {
   CryptoQuotesError
 } from './types'
 
-export const isSupportedNativeToken = (
+export const isSupportedNativeErc20Token = (
   crypto: CryptoCurrency,
   token: LocalTokenWithBalance
 ): boolean =>
@@ -32,13 +32,19 @@ export const isBtcToken = (
   token: LocalTokenWithBalance
 ): boolean => crypto.currencyCode === 'BTC' && token.symbol === 'BTC'
 
+export const isSolToken = (
+  crypto: CryptoCurrency,
+  token: LocalTokenWithBalance
+): boolean => crypto.currencyCode === 'SOL' && token.symbol === 'SOL'
+
 export const isTokenTradable = (
   crypto: CryptoCurrency,
   token: LocalTokenWithBalance
 ): boolean =>
-  isSupportedNativeToken(crypto, token) ||
+  isSupportedNativeErc20Token(crypto, token) ||
   isSupportedToken(crypto, token) ||
-  isBtcToken(crypto, token)
+  isBtcToken(crypto, token) ||
+  isSolToken(crypto, token)
 
 export const dismissMeldStack = (
   _: typeof ACTIONS.OnrampCompleted | typeof ACTIONS.OfframpCompleted,
