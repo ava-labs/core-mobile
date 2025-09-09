@@ -290,7 +290,7 @@ workflows:
         inputs:
         - scheme: $IOS_SCHEME
         - project_path: $IOS_PROJECT_PATH
-        - destination: "platform=iOS Simulator,name=iPhone 16 Pro,OS=18.2"
+        - destination: "platform=iOS Simulator,name=iPhone 15 Pro,OS=17.5"
         - configuration: $IOS_CONFIGURATION
         - code_signing_allowed: "no"
         - log_formatter: xcpretty
@@ -1000,7 +1000,6 @@ workflows:
     - _install-and-set-env
     - _set-version
     - _pull_app_files
-    - _build-ios-simulator
     after_run:
     - _upload-detox-artifacts
     - _send-test-result-notification-slack
