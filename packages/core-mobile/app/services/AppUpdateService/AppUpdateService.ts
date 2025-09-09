@@ -1,19 +1,27 @@
-import { Linking, Platform } from 'react-native'
+import { Alert, Linking, Platform } from 'react-native'
 import { StorageKey } from 'resources/Constants'
 import SpInAppUpdates, { IAUUpdateKind } from 'sp-react-native-in-app-updates'
 import Logger from 'utils/Logger'
 import { commonStorage } from 'utils/mmkv'
 
-const inAppUpdates = new SpInAppUpdates(false)
+const inAppUpdates = new SpInAppUpdates(true)
 
 const FAKE_CURRENT_VERSION_FOR_TESTING = '1.0.8'
 export class AppUpdateService {
   static async checkAppUpdateStatus(): Promise<AppUpdateStatus | undefined> {
     try {
-      return await inAppUpdates.checkNeedsUpdate({
+      Alert.alert('checkAppUpdateStatus')
+      const response = await inAppUpdates.checkNeedsUpdate({
         curVersion: FAKE_CURRENT_VERSION_FOR_TESTING
       })
+
+      Alert.alert('checkAppUpdateStatus response', JSON.stringify(response))
+
+      return response
     } catch (e) {
+      if (typeof e === 'object' && e && 'message' in e) {
+        Alert.alert('checkAppUpdateStatus failed', e.message as string)
+      }
       Logger.error('checkAppUpdateStatus failed', e)
       return undefined
     }
