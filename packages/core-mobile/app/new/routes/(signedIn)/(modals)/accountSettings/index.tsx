@@ -106,7 +106,7 @@ const AccountSettingsScreen = (): JSX.Element => {
   )
 
   const renderAppUpdateBanner = useCallback(() => {
-    if (appUpdateStatus?.shouldUpdate === true) return <AppUpdateBanner />
+    if (appUpdateStatus?.needsUpdate === true) return <AppUpdateBanner />
 
     return undefined
   }, [appUpdateStatus])
