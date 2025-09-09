@@ -107,7 +107,7 @@ export const NETWORK_X_TEST = {
 } as Network
 
 export const NETWORK_SOLANA = {
-  chainId: 4503599627369476,
+  chainId: ChainId.SOLANA_MAINNET_ID,
   chainName: 'Solana',
   description: '',
   explorerUrl: 'https://solscan.io/',
@@ -136,7 +136,7 @@ export const NETWORK_SOLANA = {
 } as Network
 
 export const NETWORK_SOLANA_DEVNET = {
-  chainId: 4503599627369466,
+  chainId: ChainId.SOLANA_DEVNET_ID,
   chainName: 'Solana (Devnet)',
   description: '',
   explorerUrl: 'https://solscan.io/?cluster=devnet',
