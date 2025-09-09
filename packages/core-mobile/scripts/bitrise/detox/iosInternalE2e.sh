@@ -1,12 +1,24 @@
 #!/usr/bin/env bash
 set -o pipefail
 
+
 xcrun simctl boot "iPhone 15 Pro" || true
 xcrun simctl bootstatus "iPhone 15 Pro" -b || true
 open -a Simulator || true
+sleep 3
+xcrun simctl bootstatus booted -b || true
 
-yarn start &
+
 npm rebuild detox
+
+
+echo "[DEBUG] App dir: $BITRISE_APP_DIR_PATH"
+defaults read "$BITRISE_APP_DIR_PATH/Info.plist" CFBundleIdentifier || true
+defaults read "$BITRISE_APP_DIR_PATH/Info.plist" MinimumOSVersion || true
+BIN="$BITRISE_APP_DIR_PATH/$(defaults read "$BITRISE_APP_DIR_PATH/Info.plist" CFBundleExecutable)"
+echo "[DEBUG] Binary path: $BIN"
+file "$BIN" || true
+
 
 ./node_modules/.bin/detox test \
   --configuration ios.internal.release.smoke.ci \
@@ -14,6 +26,7 @@ npm rebuild detox
   --retries 1 \
   --headless \
   --max-workers 1; test_result=$?
+
 
 npx ts-node ./e2e/attachLogsSendResultsToTestrail.ts && sleep 5
 
