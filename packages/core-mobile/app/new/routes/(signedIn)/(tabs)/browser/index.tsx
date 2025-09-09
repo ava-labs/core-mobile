@@ -1,4 +1,5 @@
 import { alpha, ANIMATED, useTheme, View } from '@avalabs/k2-alpine'
+import { colors } from '@avalabs/k2-alpine/src/theme/tokens/colors'
 import { BlurViewWithFallback } from 'common/components/BlurViewWithFallback'
 import { useBottomTabBarHeight } from 'common/hooks/useBottomTabBarHeight'
 import { useFocusEffect, useGlobalSearchParams, useRouter } from 'expo-router'
@@ -105,7 +106,7 @@ const Browser = (): React.ReactNode => {
   const backgroundColor = useMemo(() => {
     return theme.isDark
       ? Platform.OS === 'ios'
-        ? alpha('#121213', 0.8)
+        ? alpha(colors.$neutral950, 0.8)
         : theme.colors.$surfacePrimary
       : alpha(theme.colors.$surfacePrimary, Platform.OS === 'ios' ? 0.8 : 1)
   }, [theme.colors.$surfacePrimary, theme.isDark])

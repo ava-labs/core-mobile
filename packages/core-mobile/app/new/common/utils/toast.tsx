@@ -35,10 +35,14 @@ export const GlobalToast = (): JSX.Element => {
           global.toast = ref
         }
       }}
-      ToastContainerWrapper={{
-        component: FullWindowOverlay,
-        props: { children: undefined }
-      }}
+      ToastContainerWrapper={
+        Platform.OS === 'ios'
+          ? {
+              component: FullWindowOverlay,
+              props: { children: undefined }
+            }
+          : undefined
+      }
       placement="top"
       animationType="slide-in"
       offsetTop={offsetTop}

@@ -153,26 +153,6 @@ export const BrowserControls = (): ReactNode => {
     }
   })
 
-  // mostly copied from routes/(signedIn)/(tabs)/_layout.tsx
-  // as the background color of the browser controls
-  // needs to match the background color of the bottom tab bar
-  // const backgroundColor = useMemo(() => {
-  //   const isIOS = Platform.OS === 'ios'
-
-  //   return theme.isDark
-  //     ? alpha('#121213', isIOS ? 0.8 : 1)
-  //     : alpha(theme.colors.$white, isIOS ? 0.8 : 1)
-  // }, [theme.isDark, theme.colors.$white])
-
-  const browserInputStyle = useAnimatedStyle(() => {
-    return {
-      // backgroundColor:
-      //   isRenameFavoriteVisible.value || isFocused.value
-      //     ? 'transparent'
-      //     : backgroundColor
-    }
-  })
-
   const contentStyle = useAnimatedStyle(() => {
     let zIndex = -1
     if (
@@ -340,16 +320,15 @@ export const BrowserControls = (): ReactNode => {
           opened: -TAB_BAR_HEIGHT,
           closed: -TAB_BAR_HEIGHT - insets.bottom - BROWSER_CONTROLS_HEIGHT
         }}>
-        <Animated.View
+        <View
           style={[
-            browserInputStyle,
             {
               padding: HORIZONTAL_MARGIN,
               paddingVertical: 12
             }
           ]}>
           <BrowserInput />
-        </Animated.View>
+        </View>
       </KeyboardStickyView>
     </>
   )

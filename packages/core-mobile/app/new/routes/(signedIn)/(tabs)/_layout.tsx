@@ -1,4 +1,5 @@
 import { alpha, Icons, Pressable, Text, useTheme } from '@avalabs/k2-alpine'
+import { colors } from '@avalabs/k2-alpine/src/theme/tokens/colors'
 import { BottomTabBarProps } from '@bottom-tabs/react-navigation'
 import { BlurViewWithFallback } from 'common/components/BlurViewWithFallback'
 import { BottomTabs } from 'common/components/BottomTabs'
@@ -37,13 +38,13 @@ export default function TabLayout(): JSX.Element {
   const tabBarInactiveTintColor = useMemo(() => {
     return theme.isDark
       ? alpha(theme.colors.$white, tabBarInactiveTintOpacity)
-      : alpha('#121213', tabBarInactiveTintOpacity)
+      : alpha(colors.$neutral950, tabBarInactiveTintOpacity)
   }, [theme.colors.$white, theme.isDark])
 
   const tabBarStyle = useMemo(() => {
     return {
       backgroundColor: theme.isDark
-        ? alpha('#121213', isIOS ? 0.8 : 1)
+        ? alpha(colors.$neutral950, isIOS ? 0.8 : 1)
         : alpha(theme.colors.$white, isIOS ? 0.8 : 1)
     }
   }, [theme.colors.$white, theme.isDark])
@@ -122,7 +123,7 @@ const TabBar = ({
   const backgroundColor = useMemo(() => {
     return theme.isDark
       ? isIOS
-        ? alpha('#121213', 0.8)
+        ? alpha(colors.$neutral950, 0.8)
         : theme.colors.$surfacePrimary
       : alpha(theme.colors.$surfacePrimary, isIOS ? 0.8 : 1)
   }, [theme.colors.$surfacePrimary, theme.isDark])
@@ -154,16 +155,11 @@ const TabBar = ({
           <Pressable
             key={index}
             onPress={() => {
-              // in case of a tab press, we navigate to the root index of the tab
-              const event = navigation.emit({
+              navigation.emit({
                 type: 'tabPress',
                 target: route.key,
                 canPreventDefault: true
               })
-
-              if (!isActive && !event.defaultPrevented) {
-                navigation.navigate(route.name)
-              }
             }}
             style={{
               opacity: isActive ? 1 : 0.6,
