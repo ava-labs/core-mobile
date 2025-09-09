@@ -7,7 +7,7 @@ import { exportP } from 'services/earn/exportP'
 import WalletService from 'services/wallet/WalletService'
 import { AvalancheTransactionRequest, WalletType } from 'services/wallet/types'
 import NetworkService from 'services/network/NetworkService'
-import { pvm, UnsignedTx } from '@avalabs/avalanchejs'
+import { pvm, UnsignedTx, info } from '@avalabs/avalanchejs'
 import Logger from 'utils/Logger'
 import { retry, RetryBackoffPolicy } from 'utils/js/retry'
 import {
@@ -15,10 +15,6 @@ import {
   RecoveryEvents
 } from 'services/earn/types'
 import { getUnixTime } from 'date-fns'
-import {
-  GetCurrentSupplyResponse,
-  GetCurrentValidatorsResponse
-} from '@avalabs/avalanchejs/dist/vms/pvm'
 import { Seconds } from 'types/siUnits'
 import {
   BlockchainId,
@@ -27,7 +23,6 @@ import {
   PChainTransactionType,
   SortOrder
 } from '@avalabs/glacier-sdk'
-import { GetPeersResponse } from '@avalabs/avalanchejs/dist/info/model'
 import { isOnGoing } from 'utils/earn/status'
 import { glacierApi } from 'utils/network/glacier'
 import AnalyticsService from 'services/analytics/AnalyticsService'
@@ -47,7 +42,7 @@ class EarnService {
    */
   getCurrentValidators = (
     provider: Avalanche.JsonRpcProvider
-  ): Promise<GetCurrentValidatorsResponse> => {
+  ): Promise<pvm.GetCurrentValidatorsResponse> => {
     return provider.getApiP().getCurrentValidators()
   }
 
@@ -297,7 +292,7 @@ class EarnService {
    */
   getCurrentSupply(
     provider: Avalanche.JsonRpcProvider
-  ): Promise<GetCurrentSupplyResponse> {
+  ): Promise<pvm.GetCurrentSupplyResponse> {
     return provider.getApiP().getCurrentSupply()
   }
 
@@ -430,7 +425,7 @@ class EarnService {
   getPeers = (
     provider: Avalanche.JsonRpcProvider,
     nodeIds?: string[]
-  ): Promise<GetPeersResponse> => {
+  ): Promise<info.GetPeersResponse> => {
     return provider.getInfo().peers(nodeIds)
   }
 }
