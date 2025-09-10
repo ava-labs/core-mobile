@@ -10,7 +10,7 @@
     "jsx": "react",
     "lib": ["DOM", "ESNext"],
     "skipLibCheck": true,
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
     "noEmit": true,
     "strict": true,
     "target": "ES2020",
