@@ -24,6 +24,24 @@ xcrun simctl bootstatus booted -b || true
 npx detox clean-framework-cache && npx detox build-framework-cache
 npm rebuild detox
 
+APP_PATH="$BITRISE_APP_DIR_PATH"
+
+echo "[DEBUG] App dir: $APP_PATH"
+defaults read "$APP_PATH/Info.plist" CFBundleIdentifier || true
+defaults read "$APP_PATH/Info.plist" MinimumOSVersion || true
+defaults read "$APP_PATH/Info.plist" DTPlatformName || true
+
+EXE_NAME=$(defaults read "$APP_PATH/Info.plist" CFBundleExecutable)
+BIN="$APP_PATH/$EXE_NAME"
+echo "[DEBUG] Binary path: $BIN"
+file "$BIN" || true
+
+echo "[DEBUG] vtool build info:"
+xcrun vtool -show-build -arch arm64 "$BIN" || true
+
+echo "[DEBUG] otool LC_BUILD_VERSION:"
+xcrun otool -l "$BIN" | sed -n '/LC_BUILD_VERSION/,+6p' || true
+
 
 ./node_modules/.bin/detox test \
   --configuration ios.internal.release.smoke.ci \
