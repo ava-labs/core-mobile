@@ -1,4 +1,4 @@
-import { Avatar, TouchableOpacity } from '@avalabs/k2-alpine'
+import { Avatar, TouchableOpacity, View } from '@avalabs/k2-alpine'
 import { useAvatar } from 'common/hooks/useAvatar'
 import { useRouter } from 'expo-router'
 import React, { forwardRef } from 'react'
@@ -21,20 +21,26 @@ export const AccountSettingBarButton = forwardRef<RNView>(
       <TouchableOpacity
         testID="account_setting_bar_btn"
         ref={ref}
-        onPress={handlePress}
+        // onPress doesn't work for Android when using svgs (only on production)
+        onPressOut={handlePress}
         style={{
-          paddingHorizontal: 14,
-          height: '100%',
-          justifyContent: 'center',
-          alignItems: 'center'
+          paddingRight: 8,
+          height: '100%'
         }}>
-        <Avatar
-          size={34}
-          source={avatar.source}
-          hasBlur={false}
-          hasLoading={false}
-          isDeveloperMode={isDeveloperMode}
-        />
+        <View
+          sx={{
+            height: '100%',
+            justifyContent: 'center',
+            alignItems: 'center'
+          }}>
+          <Avatar
+            size={34}
+            source={avatar.source}
+            hasBlur={false}
+            hasLoading={false}
+            isDeveloperMode={isDeveloperMode}
+          />
+        </View>
       </TouchableOpacity>
     )
   }

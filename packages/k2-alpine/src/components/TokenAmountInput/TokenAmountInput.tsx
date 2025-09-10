@@ -1,12 +1,7 @@
 import { bigintToBig, bigToBigInt } from '@avalabs/core-utils-sdk'
 import Big from 'big.js'
 import React, { useEffect, useRef, useState } from 'react'
-import {
-  InteractionManager,
-  Platform,
-  TextInput,
-  TextInputProps
-} from 'react-native'
+import { Platform, TextInput, TextInputProps } from 'react-native'
 import { useTheme } from '../../hooks'
 import { alpha } from '../../utils'
 import {
@@ -69,14 +64,6 @@ export const TokenAmountInput = ({
   }
 
   useEffect(() => {
-    if (autoFocus) {
-      InteractionManager.runAfterInteractions(() => {
-        inputRef.current?.focus()
-      })
-    }
-  }, [autoFocus])
-
-  useEffect(() => {
     if (inputRef.current) {
       inputRef.current?.setNativeProps({ text: valueAsString })
     }
@@ -98,6 +85,7 @@ export const TokenAmountInput = ({
       placeholderTextColor={alpha(theme.colors.$textSecondary, 0.2)}
       selectionColor={theme.colors.$textPrimary}
       allowFontScaling={false}
+      autoFocus={autoFocus}
       style={[{ color: theme.colors.$textPrimary }, props.style]}
     />
   )

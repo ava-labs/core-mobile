@@ -1,6 +1,3 @@
-import React, { useMemo, useCallback } from 'react'
-import { StyleSheet } from 'react-native'
-import { CollapsibleTabs } from 'common/components/CollapsibleTabs'
 import { PChainTransaction } from '@avalabs/glacier-sdk'
 import {
   AddCard,
@@ -13,17 +10,20 @@ import {
   SPRING_LINEAR_TRANSITION,
   useTheme
 } from '@avalabs/k2-alpine'
-import { isCompleted, isOnGoing } from 'utils/earn/status'
-import { useSelector } from 'react-redux'
-import { selectIsDeveloperMode } from 'store/settings/advanced'
-import NetworkService from 'services/network/NetworkService'
-import { useGetClaimableBalance } from 'hooks/earn/useGetClaimableBalance'
-import Animated from 'react-native-reanimated'
-import { getListItemEnteringAnimation } from 'common/utils/animations'
 import { ListRenderItemInfo } from '@shopify/flash-list'
-import { getActiveStakeProgress, getStakeTitle } from '../utils'
+import { CollapsibleTabs } from 'common/components/CollapsibleTabs'
+import { getListItemEnteringAnimation } from 'common/utils/animations'
+import { useGetClaimableBalance } from 'hooks/earn/useGetClaimableBalance'
+import React, { useCallback, useMemo } from 'react'
+import { StyleProp, ViewStyle } from 'react-native'
+import Animated from 'react-native-reanimated'
+import { useSelector } from 'react-redux'
+import NetworkService from 'services/network/NetworkService'
+import { selectIsDeveloperMode } from 'store/settings/advanced'
+import { isCompleted, isOnGoing } from 'utils/earn/status'
 import CompleteCardBackgroundImageDark from '../../../assets/icons/complete-card-bg-dark.png'
 import CompleteCardBackgroundImageLight from '../../../assets/icons/complete-card-bg-light.png'
+import { getActiveStakeProgress, getStakeTitle } from '../utils'
 
 const StakesScreen = ({
   stakes,
@@ -33,7 +33,8 @@ const StakesScreen = ({
   onRefresh,
   isRefreshing,
   motion,
-  canAddStake
+  canAddStake,
+  containerStyle
 }: {
   stakes: PChainTransaction[]
   onAddStake: () => void
@@ -43,6 +44,7 @@ const StakesScreen = ({
   isRefreshing: boolean
   motion?: Motion
   canAddStake: boolean
+  containerStyle?: StyleProp<ViewStyle>
 }): JSX.Element => {
   const { theme } = useTheme()
   const isDevMode = useSelector(selectIsDeveloperMode)
@@ -129,8 +131,8 @@ const StakesScreen = ({
           <Animated.View
             style={{
               marginBottom: 14,
-              marginRight: index % 2 === 0 ? 6 : 0,
-              marginLeft: index % 2 !== 0 ? 6 : 0
+              marginRight: index % 2 === 0 ? 6 : 16,
+              marginLeft: index % 2 !== 0 ? 6 : 16
             }}
             entering={getListItemEnteringAnimation(index)}
             layout={SPRING_LINEAR_TRANSITION}>
@@ -153,9 +155,13 @@ const StakesScreen = ({
     ]
   )
 
+  const overrideProps = {
+    contentContainerStyle: containerStyle
+  }
+
   return (
     <CollapsibleTabs.FlashList
-      contentContainerStyle={styles.container}
+      overrideProps={overrideProps}
       data={data}
       numColumns={2}
       renderItem={renderItem}
@@ -168,10 +174,6 @@ const StakesScreen = ({
     />
   )
 }
-
-const styles = StyleSheet.create({
-  container: { padding: 16, paddingBottom: 32 }
-})
 
 enum StaticCard {
   Add = 'Add',

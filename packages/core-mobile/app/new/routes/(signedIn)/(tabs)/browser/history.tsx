@@ -3,6 +3,7 @@ import { useNavigation } from '@react-navigation/native'
 import { ErrorState } from 'common/components/ErrorState'
 import { ListScreen } from 'common/components/ListScreen'
 import NavigationBarButton from 'common/components/NavigationBarButton'
+import { useBottomTabBarHeight } from 'common/hooks/useBottomTabBarHeight'
 import { BrowserItem } from 'features/browser/components/BrowserItem'
 import { useSearchHistory } from 'features/browser/hooks/useSearchHistory'
 import {
@@ -27,6 +28,7 @@ import {
 const HistoryScreen = (): JSX.Element => {
   const { navigate } = useNavigation()
   const dispatch = useDispatch()
+  const tabBarHeight = useBottomTabBarHeight()
 
   const { searchText, setSearchText, filterHistories, hasHistory } =
     useSearchHistory()
@@ -140,6 +142,9 @@ const HistoryScreen = (): JSX.Element => {
       renderHeader={renderHeader}
       renderEmpty={renderEmpty}
       renderHeaderRight={renderHeaderRight}
+      contentContainerStyle={{
+        paddingBottom: tabBarHeight + 16
+      }}
       keyExtractor={item => (item as History).id}
     />
   )

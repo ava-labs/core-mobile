@@ -7,14 +7,12 @@ import {
   useTheme,
   View
 } from '@avalabs/k2-alpine'
-import { useHeaderHeight } from '@react-navigation/elements'
 import BlurredBarsContentLayout from 'common/components/BlurredBarsContentLayout'
 import {
   CollapsibleTabs,
   CollapsibleTabsRef,
   OnTabChange
 } from 'common/components/CollapsibleTabs'
-import { useBottomTabBarHeight } from 'common/hooks/useBottomTabBarHeight'
 import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
 import useInAppBrowser from 'common/hooks/useInAppBrowser'
 import { getSourceChainId } from 'common/utils/bridgeUtils'
@@ -42,12 +40,18 @@ import { ActivityScreen } from './ActivityScreen'
 const ActivityHomeScreen = (): JSX.Element => {
   const { navigate } = useRouter()
   const { theme } = useTheme()
-  const tabBarHeight = useBottomTabBarHeight()
-  const headerHeight = useHeaderHeight()
+  const insets = useSafeAreaInsets()
+  const frame = useSafeAreaFrame()
+
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const [searchText, setSearchText] = useState('')
   const [isSearchBarFocused, setSearchBarFocused] = useState(false)
   const tabViewRef = useRef<CollapsibleTabsRef>(null)
+
+  const [stickyHeaderLayout, setStickyHeaderLayout] = useState<
+    LayoutRectangle | undefined
+  >()
+
   const [balanceHeaderLayout, setBalanceHeaderLayout] = useState<
     LayoutRectangle | undefined
   >()
@@ -112,6 +116,13 @@ const ActivityHomeScreen = (): JSX.Element => {
     [handleScrollResync]
   )
 
+  const handleStickyHeaderLayout = useCallback(
+    (event: LayoutChangeEvent): void => {
+      setStickyHeaderLayout(event.nativeEvent.layout)
+    },
+    []
+  )
+
   const handleBalanceHeaderLayout = useCallback(
     (event: LayoutChangeEvent): void => {
       setBalanceHeaderLayout(event.nativeEvent.layout)
@@ -162,30 +173,12 @@ const ActivityHomeScreen = (): JSX.Element => {
     setSearchBarLayout(event.nativeEvent.layout)
   }, [])
 
-  const insets = useSafeAreaInsets()
-  const frame = useSafeAreaFrame()
-
   const tabHeight = useMemo(() => {
     return Platform.select({
-      ios:
-        frame.height -
-        tabBarHeight -
-        headerHeight -
-        (searchBarLayout?.height ?? 0),
-      android:
-        frame.height -
-        headerHeight -
-        insets.bottom -
-        (searchBarLayout?.height ?? 0) +
-        56
+      ios: frame.height - (stickyHeaderLayout?.height ?? 0) - insets.top + 10,
+      android: frame.height - insets.top
     })
-  }, [
-    frame.height,
-    tabBarHeight,
-    headerHeight,
-    searchBarLayout?.height,
-    insets.bottom
-  ])
+  }, [frame.height, insets.top, stickyHeaderLayout?.height])
 
   const contentContainerStyle = useMemo(() => {
     return {
@@ -199,7 +192,9 @@ const ActivityHomeScreen = (): JSX.Element => {
 
   const renderHeader = useCallback((): JSX.Element => {
     return (
-      <View style={{ backgroundColor: theme.colors.$surfacePrimary }}>
+      <View
+        style={{ backgroundColor: theme.colors.$surfacePrimary }}
+        onLayout={handleStickyHeaderLayout}>
         <Animated.View style={[animatedHeaderStyle]}>
           <View
             onLayout={handleBalanceHeaderLayout}
@@ -241,6 +236,7 @@ const ActivityHomeScreen = (): JSX.Element => {
   }, [
     theme.colors.$surfacePrimary,
     theme.colors.$surfaceSecondary,
+    handleStickyHeaderLayout,
     animatedHeaderStyle,
     handleBalanceHeaderLayout,
     handleSearchBarLayout,

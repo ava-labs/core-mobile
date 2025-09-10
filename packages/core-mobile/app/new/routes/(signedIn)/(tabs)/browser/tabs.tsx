@@ -251,10 +251,7 @@ const TabsScreen = (): JSX.Element => {
         data={sortedTabs}
         contentContainerStyle={{
           paddingTop: insets.top + DEFAULT_HEADER_HEIGHT,
-          paddingBottom:
-            Platform.OS === 'ios'
-              ? tabBarHeight + HORIZONTAL_MARGIN
-              : HORIZONTAL_MARGIN,
+          paddingBottom: tabBarHeight + HORIZONTAL_MARGIN,
           paddingHorizontal: HORIZONTAL_MARGIN / 2
         }}
         showsVerticalScrollIndicator={false}

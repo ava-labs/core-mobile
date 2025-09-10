@@ -1,3 +1,131 @@
+diff --git a/node_modules/react-native-toast-notifications/lib/typescript/toast-container.d.ts b/node_modules/react-native-toast-notifications/lib/typescript/toast-container.d.ts
+index 0b942aa..a6e289b 100644
+--- a/node_modules/react-native-toast-notifications/lib/typescript/toast-container.d.ts
++++ b/node_modules/react-native-toast-notifications/lib/typescript/toast-container.d.ts
+@@ -9,6 +9,11 @@ export interface Props extends ToastOptions {
+     offsetTop?: number;
+     offsetBottom?: number;
+     swipeEnabled?: boolean;
++    ToastContainerWrapper?: {
++        component: React.ComponentType<any>;
++        props: any;
++    };
++    containerStyle?: ViewStyle
+ }
+ interface State {
+     toasts: Array<ToastProps>;
+diff --git a/node_modules/react-native-toast-notifications/src/toast-container.tsx b/node_modules/react-native-toast-notifications/src/toast-container.tsx
+index 5d2a8b4..8230603 100644
+--- a/node_modules/react-native-toast-notifications/src/toast-container.tsx
++++ b/node_modules/react-native-toast-notifications/src/toast-container.tsx
+@@ -4,7 +4,8 @@ import {
+   ViewStyle,
+   KeyboardAvoidingView,
+   Platform,
+-  Dimensions, SafeAreaView,
++  Dimensions,
++  SafeAreaView,
+ } from "react-native";
+ import Toast, { ToastOptions, ToastProps } from "./toast";
+ 
+@@ -17,6 +18,11 @@ export interface Props extends ToastOptions {
+   offsetTop?: number;
+   offsetBottom?: number;
+   swipeEnabled?: boolean;
++  ToastContainerWrapper?: {
++    component: React.ComponentType<any>;
++    props: any;
++  };
++  containerStyle?: ViewStyle
+ }
+ 
+ interface State {
+@@ -111,7 +117,7 @@ class ToastContainer extends Component<Props, State> {
+ 
+   renderBottomToasts() {
+     const { toasts } = this.state;
+-    let { offset, offsetBottom } = this.props;
++    let { offset, offsetBottom, containerStyle } = this.props;
+     let style: ViewStyle = {
+       bottom: offsetBottom || offset,
+       width: width,
+@@ -121,7 +127,7 @@ class ToastContainer extends Component<Props, State> {
+     return (
+       <KeyboardAvoidingView
+         behavior={Platform.OS === "ios" ? "position" : undefined}
+-        style={[styles.container, style]}
++        style={[styles.container, style, containerStyle]}
+         pointerEvents="box-none"
+       >
+         <SafeAreaView>
+@@ -137,7 +143,7 @@ class ToastContainer extends Component<Props, State> {
+ 
+   renderTopToasts() {
+     const { toasts } = this.state;
+-    let { offset, offsetTop } = this.props;
++    let { offset, offsetTop, containerStyle } = this.props;
+     let style: ViewStyle = {
+       top: offsetTop || offset,
+       width: width,
+@@ -147,7 +153,7 @@ class ToastContainer extends Component<Props, State> {
+     return (
+       <KeyboardAvoidingView
+         behavior={Platform.OS === "ios" ? "position" : undefined}
+-        style={[styles.container, style]}
++        style={[styles.container, style, containerStyle]}
+         pointerEvents="box-none"
+       >
+         <SafeAreaView>
+@@ -163,7 +169,7 @@ class ToastContainer extends Component<Props, State> {
+ 
+   renderCenterToasts() {
+     const { toasts } = this.state;
+-    let { offset, offsetTop } = this.props;
++    let { offset, offsetTop, containerStyle } = this.props;
+     let style: ViewStyle = {
+       top: offsetTop || offset,
+       height: height,
+@@ -180,7 +186,7 @@ class ToastContainer extends Component<Props, State> {
+     return (
+       <KeyboardAvoidingView
+         behavior={Platform.OS === "ios" ? "position" : undefined}
+-        style={[styles.container, style]}
++        style={[styles.container, style, containerStyle]}
+         pointerEvents="box-none"
+       >
+         {toasts
+@@ -193,7 +199,15 @@ class ToastContainer extends Component<Props, State> {
+   }
+ 
+   render() {
+-    return (
++    const { ToastContainerWrapper } = this.props;
++
++    return ToastContainerWrapper ? (
++      <ToastContainerWrapper.component {...ToastContainerWrapper.props}>
++        {this.renderTopToasts()}
++        {this.renderBottomToasts()}
++        {this.renderCenterToasts()}
++      </ToastContainerWrapper.component>
++    ) : (
+       <>
+         {this.renderTopToasts()}
+         {this.renderBottomToasts()}
+@@ -211,9 +225,12 @@ const styles = StyleSheet.create({
+     maxWidth: "100%",
+     zIndex: 999999,
+     elevation: 999999,
+-    alignSelf: 'center',
+-    ...(Platform.OS === "web" ? { overflow: "hidden", userSelect: 'none' } : null),
++    alignSelf: "center",
++    ...(Platform.OS === "web"
++      ? { overflow: "hidden", userSelect: "none" }
++      : null),
+   },
++  
+   message: {
+     color: "#333",
+   },
 diff --git a/node_modules/react-native-toast-notifications/src/toast.tsx b/node_modules/react-native-toast-notifications/src/toast.tsx
 index bbabca6..72936a4 100644
 --- a/node_modules/react-native-toast-notifications/src/toast.tsx

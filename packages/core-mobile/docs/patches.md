@@ -69,10 +69,6 @@ to fix it, we patched the lib so that the webview is still rendered but won't be
 
 we can't build Android with this version of datadog. they have fixed this in 2.6.5 but haven't released yet.
 
-### @react-navigation+stack+7.1.2.patch
-
-we need to override CardStyleInterpolators.forModalPresentationIOS to support a custom "formSheet" effect for modals on both iOS and Android
-
 ### @noble+hashes+1.8.0.patch
 
 we replace several hash + key derivation functions with the ones from react-native-quick-crypto:
@@ -97,3 +93,21 @@ there is a perf issue with reanimated around executeOnUIRuntimeSync https://gith
 we patched the tab selection handlers to allow native tab bars (iOS UITabBarController, Android BottomNavigationView) to handle selection directly, instead of routing everything through JS. this removes the extra JS roundtrip that caused visible delays/flicker.
 https://github.com/callstackincubator/react-native-bottom-tabs/issues/383
 https://github.com/callstackincubator/react-native-bottom-tabs/pull/408
+
+
+### react-native-toast-notifications
+
+We patched this to fix /native-stack toast displaying on top of all screens.
+You can wrap a toast container with a custom wrapper.
+
+```js
+<ToastProvider
+    ToastContainerWrapper={{
+      component: FooComponent,
+      props: {style: { flex: 1}}
+    }}
+>
+...
+</>
+
+// In order to display a toast over a native-stack modal, use [FullWindowOverlay component](https://github.com/software-mansion/react-native-screens?tab=readme-ov-file#fullwindowoverlay).
