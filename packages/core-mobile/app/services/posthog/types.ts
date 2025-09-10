@@ -42,7 +42,8 @@ export enum FeatureGates {
   SWAP_USE_MARKR = 'swap-use-markr',
   MELD_INTEGRATION = 'meld-integration',
   SWAP_FEES_JUPITER = 'swap-fees-jupiter',
-  SWAP_SOLANA = 'swap-solana'
+  SWAP_SOLANA = 'swap-solana',
+  IN_APP_UPDATE_ANDROID = 'in-app-update-android'
 }
 
 export enum FeatureVars {

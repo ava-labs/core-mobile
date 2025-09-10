@@ -1,10 +1,11 @@
 import { Stack } from 'common/components/Stack'
-import { useModalScreenOptions } from 'common/hooks/useModalScreenOptions'
+import {
+  modalFirstScreenOptions,
+  modalStackNavigatorScreenOptions
+} from 'common/consts/screenOptions'
 import React from 'react'
-export default function AppUpdateLayout(): JSX.Element {
-  const { modalStackNavigatorScreenOptions, modalFirstScreenOptions } =
-    useModalScreenOptions()
 
+export default function AppUpdateLayout(): JSX.Element {
   return (
     <Stack screenOptions={modalStackNavigatorScreenOptions}>
       <Stack.Screen name="index" options={modalFirstScreenOptions} />
