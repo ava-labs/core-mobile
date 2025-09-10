@@ -4,12 +4,13 @@ import {
   stackNavigatorScreenOptions
 } from 'common/consts/screenOptions'
 import { useModalScreenOptions } from 'common/hooks/useModalScreenOptions'
-import { useWalletState } from 'contexts/WalletStateContext'
 import { Stack } from 'common/components/Stack'
 import { WalletState } from 'store/app/types'
+import { useSelector } from 'react-redux'
+import { selectWalletState } from 'store/app/slice'
 
 export function RootNavigator(): JSX.Element {
-  const { isLocked, walletState } = useWalletState()
+  const walletState = useSelector(selectWalletState)
   const { modalScreensOptions } = useModalScreenOptions()
 
   return (
@@ -19,7 +20,7 @@ export function RootNavigator(): JSX.Element {
         headerShown: false
       }}>
       {/* verified and wallet active */}
-      <Stack.Protected guard={!isLocked && walletState === WalletState.ACTIVE}>
+      <Stack.Protected guard={walletState === WalletState.ACTIVE}>
         <Stack.Screen
           name="(signedIn)"
           options={{
@@ -37,28 +38,25 @@ export function RootNavigator(): JSX.Element {
         />
       </Stack.Protected>
 
-      {/* not verified */}
-      <Stack.Protected guard={isLocked}>
-        {/* wallet inactive */}
-        <Stack.Protected guard={walletState === WalletState.INACTIVE}>
-          <Stack.Screen
-            name="loginWithPinOrBiometry"
-            options={{
-              presentation: 'modal',
-              headerShown: false,
-              gestureEnabled: false,
-              cardStyleInterpolator: forNoAnimation
-            }}
-          />
-          <Stack.Screen name="forgotPin" options={{ headerShown: true }} />
-        </Stack.Protected>
+      {/* wallet inactive */}
+      <Stack.Protected guard={walletState === WalletState.INACTIVE}>
+        <Stack.Screen
+          name="loginWithPinOrBiometry"
+          options={{
+            presentation: 'modal',
+            headerShown: false,
+            gestureEnabled: false,
+            cardStyleInterpolator: forNoAnimation
+          }}
+        />
+        <Stack.Screen name="forgotPin" options={{ headerShown: true }} />
+      </Stack.Protected>
 
-        {/* wallet nonexistent */}
-        <Stack.Protected guard={walletState === WalletState.NONEXISTENT}>
-          <Stack.Screen name="signup" />
-          <Stack.Screen name="onboarding" />
-          <Stack.Screen name="accessWallet" options={{ headerShown: true }} />
-        </Stack.Protected>
+      {/* wallet nonexistent */}
+      <Stack.Protected guard={walletState === WalletState.NONEXISTENT}>
+        <Stack.Screen name="signup" />
+        <Stack.Screen name="onboarding" />
+        <Stack.Screen name="accessWallet" options={{ headerShown: true }} />
       </Stack.Protected>
 
       <Stack.Screen name="+not-found" />
