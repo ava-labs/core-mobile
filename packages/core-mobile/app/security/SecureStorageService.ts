@@ -9,7 +9,8 @@ export enum KeySlot {
   SignerSessionData = 'SignerSessionData',
   SeedlessPubKeys = 'SeedlessPubKeysV2',
   OidcProvider = 'OidcProvider',
-  OidcUserId = 'OidcUserId'
+  OidcUserId = 'OidcUserId',
+  KeystoneData = 'KeystoneData'
 }
 
 /**
