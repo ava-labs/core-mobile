@@ -4,7 +4,7 @@ import { AccountSettingBarButton } from 'common/components/AccountSettingBarButt
 import BackBarButton from 'common/components/BackBarButton'
 import { ConnectButton } from 'common/components/ConnectButton'
 import React from 'react'
-import { Animated, Platform } from 'react-native'
+import { Platform } from 'react-native'
 
 export const TAB_BAR_HEIGHT = 60
 
@@ -82,19 +82,3 @@ export const homeScreenOptions: NativeStackNavigationOptions = {
     )
   }
 }
-
-export type TransitionSpec =
-  | {
-      animation: 'spring'
-      config: Omit<
-        Animated.SpringAnimationConfig,
-        'toValue' | keyof Animated.AnimationConfig
-      >
-    }
-  | {
-      animation: 'timing'
-      config: Omit<
-        Animated.TimingAnimationConfig,
-        'toValue' | keyof Animated.AnimationConfig
-      >
-    }
