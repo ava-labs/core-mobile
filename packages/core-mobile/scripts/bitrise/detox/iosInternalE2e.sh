@@ -55,6 +55,8 @@ xcrun vtool -show-build -arch arm64 "$BIN" || true
 echo "[DEBUG] otool LC_BUILD_VERSION:"
 xcrun otool -l "$BIN" | sed -n '/LC_BUILD_VERSION/,+6p' || true
 
+./node_modules/.bin/detox clean-framework-cache && ./node_modules/.bin/detox build-framework-cache
+
 ./node_modules/.bin/detox test \
   --configuration ios.internal.release.smoke.ci \
   --record-logs all \
