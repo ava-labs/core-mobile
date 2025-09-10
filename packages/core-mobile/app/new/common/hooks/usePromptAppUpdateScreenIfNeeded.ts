@@ -1,8 +1,7 @@
 import { useCallback } from 'react'
-import { InteractionManager } from 'react-native'
 import { navigateWithPromise } from 'common/utils/navigateWithPromise'
-import { noop } from '@avalabs/core-utils-sdk/dist'
 import { AppUpdateService } from 'services/AppUpdateService/AppUpdateService'
+import { waitForInteractions } from 'common/utils/waitForInteractions'
 
 export const usePromptAppUpdateScreenIfNeeded = (): (() => Promise<void>) => {
   return useCallback(async () => {
@@ -16,17 +15,13 @@ export const usePromptAppUpdateScreenIfNeeded = (): (() => Promise<void>) => {
       hasBeenViewedAppUpdateScreen === false &&
       appUpdateStatus.needsUpdate === true
     if (shouldShowAppUpdateScreen) {
-      await new Promise<void>(resolve => {
-        InteractionManager.runAfterInteractions(() => {
-          navigateWithPromise({
-            pathname: '/(signedIn)/(modals)/appUpdate',
-            params: {
-              appVersion: appUpdateStatus.version
-            }
-          })
-            .then(resolve)
-            .catch(noop)
-        })
+      await waitForInteractions()
+
+      await navigateWithPromise({
+        pathname: '/(signedIn)/(modals)/appUpdate',
+        params: {
+          appVersion: appUpdateStatus.version
+        }
       })
     }
   }, [])

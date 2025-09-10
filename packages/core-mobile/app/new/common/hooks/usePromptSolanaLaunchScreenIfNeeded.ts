@@ -1,10 +1,9 @@
 import { useCallback } from 'react'
 import { selectIsSolanaSupportBlocked } from 'store/posthog'
 import { selectHasBeenViewedOnce, ViewOnceKey } from 'store/viewOnce'
-import { InteractionManager } from 'react-native'
 import { navigateWithPromise } from 'common/utils/navigateWithPromise'
-import { noop } from '@avalabs/core-utils-sdk/dist'
 import { useSelector } from 'react-redux'
+import { waitForInteractions } from 'common/utils/waitForInteractions'
 
 export const usePromptSolanaLaunchScreenIfNeeded =
   (): (() => Promise<void>) => {
@@ -17,14 +16,10 @@ export const usePromptSolanaLaunchScreenIfNeeded =
       const shouldShowSolanaLaunchModal =
         !hasBeenViewedSolanaLaunch && !isSolanaSupportBlocked
       if (shouldShowSolanaLaunchModal) {
-        await new Promise<void>(resolve => {
-          InteractionManager.runAfterInteractions(() => {
-            navigateWithPromise({
-              pathname: '/(signedIn)/(modals)/solanaLaunch'
-            })
-              .then(resolve)
-              .catch(noop)
-          })
+        await waitForInteractions()
+
+        await navigateWithPromise({
+          pathname: '/(signedIn)/(modals)/solanaLaunch'
         })
       }
     }, [hasBeenViewedSolanaLaunch, isSolanaSupportBlocked])
