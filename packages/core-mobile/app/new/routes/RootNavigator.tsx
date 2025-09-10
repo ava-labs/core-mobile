@@ -1,9 +1,9 @@
 import React from 'react'
 import {
-  forNoAnimation,
-  stackNavigatorScreenOptions
+  modalScreensOptions,
+  stackNavigatorScreenOptions,
+  stackScreensOptions
 } from 'common/consts/screenOptions'
-import { useModalScreenOptions } from 'common/hooks/useModalScreenOptions'
 import { Stack } from 'common/components/Stack'
 import { WalletState } from 'store/app/types'
 import { useSelector } from 'react-redux'
@@ -11,7 +11,6 @@ import { selectWalletState } from 'store/app/slice'
 
 export function RootNavigator(): JSX.Element {
   const walletState = useSelector(selectWalletState)
-  const { modalScreensOptions } = useModalScreenOptions()
 
   return (
     <Stack
@@ -43,10 +42,9 @@ export function RootNavigator(): JSX.Element {
         <Stack.Screen
           name="loginWithPinOrBiometry"
           options={{
-            presentation: 'modal',
+            presentation: 'fullScreenModal',
             headerShown: false,
-            gestureEnabled: false,
-            cardStyleInterpolator: forNoAnimation
+            gestureEnabled: false
           }}
         />
         <Stack.Screen name="forgotPin" options={{ headerShown: true }} />
@@ -54,9 +52,15 @@ export function RootNavigator(): JSX.Element {
 
       {/* wallet nonexistent */}
       <Stack.Protected guard={walletState === WalletState.NONEXISTENT}>
-        <Stack.Screen name="signup" />
-        <Stack.Screen name="onboarding" />
-        <Stack.Screen name="accessWallet" options={{ headerShown: true }} />
+        <Stack.Screen name="signup" options={{ animation: 'none' }} />
+        <Stack.Screen
+          name="onboarding"
+          options={{ ...stackScreensOptions, headerShown: true }}
+        />
+        <Stack.Screen
+          name="accessWallet"
+          options={{ ...stackScreensOptions, headerShown: true }}
+        />
       </Stack.Protected>
 
       <Stack.Screen name="+not-found" />
