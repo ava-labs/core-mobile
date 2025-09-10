@@ -483,19 +483,20 @@ workflows:
   _upload-e2e-artifacts:
     steps:
     - script@1:
-      title: Move .app to Deploy Dir
-      inputs:
-    - content: |-
-        #!/usr/bin/env bash
-        set -euo pipefail
-        echo "Looking for built .app..."
-        APP_PATH=$(find $BITRISE_SOURCE_DIR -type d -name "AvaxWalletInternal.app" | head -n 1)
-        echo "Found at: $APP_PATH"
-        cp -R "$APP_PATH" "$BITRISE_DEPLOY_DIR/AvaxWalletInternal.app"
-        envman add --key BITRISE_APP_DIR_PATH --value "$BITRISE_DEPLOY_DIR/AvaxWalletInternal.app"
+        title: Deploy e2e Artifacts
+        inputs:
+        - content: |-
+            #!/usr/bin/env bash
+            set -euo pipefail
+            echo "Looking for built .app..."
+            APP_PATH=$(find $BITRISE_SOURCE_DIR -type d -name "AvaxWalletInternal.app" | head -n 1)
+            echo "Found at: $APP_PATH"
+            cp -R "$APP_PATH" "$BITRISE_DEPLOY_DIR/AvaxWalletInternal.app"
+            envman add --key BITRISE_APP_DIR_PATH --value "$BITRISE_DEPLOY_DIR/AvaxWalletInternal.app"
     - deploy-to-bitrise-io@2:
         inputs:
         - pipeline_intermediate_files: $BITRISE_DEPLOY_DIR/AvaxWalletInternal.app:BITRISE_APP_DIR_PATH
+
   android:
     before_run:
     - _install-and-set-env
