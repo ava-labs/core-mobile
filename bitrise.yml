@@ -286,11 +286,11 @@ workflows:
         - verbose: "true"
         - source_root_path: $BITRISE_SOURCE_DIR/ios
     - save-cocoapods-cache@1: {}
-    - xcode-build-for-simulator@3:
+    - xcode-build-for-simulator@1:
         inputs:
         - scheme: $IOS_SCHEME
         - project_path: $IOS_PROJECT_PATH
-        - destination: "platform=iOS Simulator,name=iPhone 16 Pro,OS=latest"
+        - destination: "platform=iOS Simulator,name=iPhone 15 Pro,OS=17.5"
         - configuration: $IOS_CONFIGURATION
         - code_signing_allowed: "no"
         - log_formatter: xcpretty
