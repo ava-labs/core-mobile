@@ -5,6 +5,7 @@ import { stackNavigatorScreenOptions } from 'common/consts/screenOptions'
 import { getCurrentPageIndex } from 'common/utils/getCurrentPageIndex'
 import { useLocalSearchParams, useNavigation, usePathname } from 'expo-router'
 import React, { useCallback, useEffect, useMemo } from 'react'
+import { Platform } from 'react-native'
 
 export default function SeedlessOnboardingLayout(): JSX.Element {
   const { recovering } = useLocalSearchParams<{ recovering: string }>()
@@ -29,10 +30,12 @@ export default function SeedlessOnboardingLayout(): JSX.Element {
   )
 
   useEffect(() => {
-    const navigationOptions: NativeStackNavigationOptions = {
-      headerTitle: renderPageControl
+    if (Platform.OS === 'ios') {
+      const navigationOptions: NativeStackNavigationOptions = {
+        headerTitle: renderPageControl
+      }
+      navigation.getParent()?.setOptions(navigationOptions)
     }
-    navigation.getParent()?.setOptions(navigationOptions)
   }, [navigation, renderPageControl])
 
   return (
