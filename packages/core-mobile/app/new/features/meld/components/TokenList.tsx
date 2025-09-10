@@ -19,7 +19,7 @@ import { SubTextNumber } from 'common/components/SubTextNumber'
 import { useSolanaTokens } from 'common/hooks/useSolanaTokens'
 import { USDC_SOLANA_TOKEN_ID } from 'common/consts/swap'
 import { ChainId } from '@avalabs/core-chains-sdk'
-import { selectIsSolanaSwapBlocked } from 'store/posthog'
+import { selectIsSolanaSupportBlocked } from 'store/posthog'
 import { useSelector } from 'react-redux'
 import { useSupportedCryptoCurrencies, useTokenIndex } from '../store'
 import { CryptoCurrency, CryptoCurrencyWithBalance } from '../types'
@@ -50,7 +50,7 @@ export const TokenList = ({
     setSupportedCryptoCurrencies,
     setSupportedSplCryptoCurrencies
   } = useSupportedCryptoCurrencies()
-  const isSolanaSwapBlocked = useSelector(selectIsSolanaSwapBlocked)
+  const isSolanaSupportBlocked = useSelector(selectIsSolanaSupportBlocked)
 
   const erc20ContractTokens = useErc20ContractTokens()
   const solanaTokens = useSolanaTokens()
@@ -67,7 +67,7 @@ export const TokenList = ({
   const { filteredTokenList } = useSearchableTokenList({
     tokens: [
       ...erc20ContractTokens,
-      ...(usdcSolanaToken && !isSolanaSwapBlocked ? [usdcSolanaToken] : [])
+      ...(usdcSolanaToken && !isSolanaSupportBlocked ? [usdcSolanaToken] : [])
     ],
     hideZeroBalance: category !== ServiceProviderCategories.CRYPTO_ONRAMP
   })
