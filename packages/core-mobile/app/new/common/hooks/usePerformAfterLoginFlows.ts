@@ -1,5 +1,4 @@
 import { useCallback } from 'react'
-import { InteractionManager } from 'react-native'
 import { usePromptSolanaLaunchScreenIfNeeded } from './usePromptSolanaLaunchScreenIfNeeded'
 import { usePromptEnableNotificationsIfNeeded } from './usePromptEnableNotificationsIfNeeded'
 import { usePromptAppUpdateScreenIfNeeded } from './usePromptAppUpdateScreenIfNeeded'
@@ -11,11 +10,6 @@ export const usePerformAfterLoginFlows = (): (() => Promise<void>) => {
     usePromptEnableNotificationsIfNeeded()
 
   return useCallback(async () => {
-    // wait until interactions finish
-    await new Promise<void>(resolve => {
-      InteractionManager.runAfterInteractions(() => resolve())
-    })
-
     await promptAppUpdateScreenIfNeeded()
     await promptEnableNotificationsIfNeeded()
     await promptSolanaLaunchModalIfNeeded()
