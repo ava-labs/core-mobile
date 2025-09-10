@@ -28,7 +28,7 @@ npm rebuild detox
 ./node_modules/.bin/detox test \
   --configuration ios.internal.release.smoke.ci \
   --record-logs all \
-  --cleanup \                 # 앱 재설치 보장
+  --cleanup \
   --retries 1 \
   --headless \
   --max-workers 1; test_result=$?
