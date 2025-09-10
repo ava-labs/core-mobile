@@ -248,10 +248,3 @@ export const TokenList = ({
     />
   )
 }
-
-const getUsdcSolanaToken = (
-  solanaTokens: SolanaToken[],
-  filteredSolanaTokens: SolanaToken[]
-) => {
-  return filteredSolanaTokens.find(tk => tk.address === USDC_SOLANA_TOKEN_ID)
-}
