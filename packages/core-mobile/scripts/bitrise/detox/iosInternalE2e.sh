@@ -9,9 +9,8 @@ if [[ "$(uname -m)" == "arm64" ]]; then
   fi
 fi
 
-
-brew uninstall applesimutils || true
-brew install applesimutils --HEAD
+brew tap wix/brew
+brew install applesimutils
 
 
 xcrun simctl boot "iPhone 15 Pro" || true
@@ -20,10 +19,6 @@ open -a Simulator || true
 sleep 3
 xcrun simctl bootstatus booted -b || true
 
-
-npx detox clean-framework-cache && npx detox build-framework-cache
-npm rebuild detox
-
 APP_PATH="$BITRISE_APP_DIR_PATH"
 
 echo "[DEBUG] App dir: $APP_PATH"
@@ -59,7 +54,6 @@ xcrun vtool -show-build -arch arm64 "$BIN" || true
 
 echo "[DEBUG] otool LC_BUILD_VERSION:"
 xcrun otool -l "$BIN" | sed -n '/LC_BUILD_VERSION/,+6p' || true
-
 
 ./node_modules/.bin/detox test \
   --configuration ios.internal.release.smoke.ci \

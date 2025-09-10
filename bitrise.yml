@@ -296,7 +296,9 @@ workflows:
             CODE_SIGNING_ALLOWED=YES            
             COMPILER_INDEX_STORE_ENABLE = NO
         - log_formatter: xcpretty
-    - deploy-to-bitrise-io@2: {}
+    - deploy-to-bitrise-io@2:
+        inputs:
+        - pipeline_intermediate_files: $BITRISE_APP_DIR_PATH:BITRISE_APP_DIR_PATH
     - script-runner@0:
         title: Create iOS Test Run
         inputs:
