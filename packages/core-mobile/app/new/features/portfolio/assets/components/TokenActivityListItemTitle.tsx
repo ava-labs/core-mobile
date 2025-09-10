@@ -96,20 +96,13 @@ export const TokenActivityListItemTitle = ({
       // Find tokens that are actually sent FROM the user (input tokens)
       // Note: For swaps, the user's wallet should be in transaction.from
       const inputTokens = transaction.tokens.filter(token => {
-        const isFromUser = token.from?.address === userAddress
-        // filter out dust that might be part of the transaction but aren't meaningful to display to the user
-        const hasSignificantAmount =
-          parseFloat(token.amount.replace(/,/g, '')) > 0.0001
-        return isFromUser && hasSignificantAmount
+
+        return token.from?.address === userAddress
       })
 
       // Find tokens that are actually sent TO the user (output tokens)
       const outputTokens = transaction.tokens.filter(token => {
-        const isToUser = token.to?.address === userAddress
-        // filter out dust that might be part of the transaction but aren't meaningful to display to the user
-        const hasSignificantAmount =
-          parseFloat(token.amount.replace(/,/g, '')) > 0.0001
-        return isToUser && hasSignificantAmount
+        return token.to?.address === userAddress
       })
 
       // If we can identify input and output tokens, use them
@@ -147,7 +140,13 @@ export const TokenActivityListItemTitle = ({
         s2
       ]
     },
-    [activeAccount, getIOTokenAmountAndSymbol, getNetwork, renderAmount, tx.tokens.length]
+    [
+      activeAccount,
+      getIOTokenAmountAndSymbol,
+      getNetwork,
+      renderAmount,
+      tx.tokens.length
+    ]
   )
 
   // Build an array of nodes: strings and React elements
