@@ -294,6 +294,9 @@ workflows:
         - configuration: $IOS_CONFIGURATION
         - code_signing_allowed: "no"
         - log_formatter: xcpretty
+    - deploy-to-bitrise-io@2:
+        inputs:
+        - pipeline_intermediate_files: $BITRISE_APP_DIR_PATH:BITRISE_APP_DIR_PATH
     - script-runner@0:
         title: Create iOS Test Run
         inputs:
@@ -304,9 +307,6 @@ workflows:
         inputs:
         - variables: |-
             TESTRAIL_RUN_ID=$TESTRAIL_RUN_ID
-    - deploy-to-bitrise-io@2:
-        inputs:
-        - pipeline_intermediate_files: $BITRISE_APP_DIR_PATH:BITRISE_APP_DIR_PATH
   _install-and-set-env:
     before_run:
     - _install-node-20
@@ -480,23 +480,6 @@ workflows:
         - is_enable_public_page: "false"
         - deploy_path: $BITRISE_DEPLOY_DIR/detox
         - is_compress: "true"
-  _upload-e2e-artifacts:
-    steps:
-    - script@1:
-        title: Deploy e2e Artifacts
-        inputs:
-        - content: |-
-            #!/usr/bin/env bash
-            set -euo pipefail
-            echo "Looking for built .app..."
-            APP_PATH=$(find $BITRISE_SOURCE_DIR -type d -name "AvaxWalletInternal.app" | head -n 1)
-            echo "Found at: $APP_PATH"
-            cp -R "$APP_PATH" "$BITRISE_DEPLOY_DIR/AvaxWalletInternal.app"
-            envman add --key BITRISE_APP_DIR_PATH --value "$BITRISE_DEPLOY_DIR/AvaxWalletInternal.app"
-    - deploy-to-bitrise-io@2:
-        inputs:
-        - pipeline_intermediate_files: $BITRISE_DEPLOY_DIR/AvaxWalletInternal.app:BITRISE_APP_DIR_PATH
-
   android:
     before_run:
     - _install-and-set-env
