@@ -6,22 +6,21 @@ import { withNavigationResolve } from 'common/utils/navigateWithPromise'
 import { AppUpdateService } from 'services/AppUpdateService/AppUpdateService'
 import { CoreLogoWithTokens } from 'common/components/CoreLogoWithTokens'
 import { useLocalSearchParams } from 'expo-router'
+import { useUpdateApp } from 'common/hooks/useUpdateApp'
 
 function AppUpdateScreen(): JSX.Element {
   const { appVersion } = useLocalSearchParams<{ appVersion: string }>()
   const dispatch = useDispatch()
 
-  const handleDismiss = useCallback(() => {
-    AppUpdateService.performUpdate()
-  }, [])
+  const handleUpdate = useUpdateApp()
 
   const renderFooter = useCallback(() => {
     return (
-      <Button type="primary" size="large" onPress={handleDismiss}>
+      <Button type="primary" size="large" onPress={handleUpdate}>
         Update Core
       </Button>
     )
-  }, [handleDismiss])
+  }, [handleUpdate])
 
   useEffect(() => {
     return () => {

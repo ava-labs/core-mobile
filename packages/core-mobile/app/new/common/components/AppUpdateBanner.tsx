@@ -2,14 +2,11 @@ import React from 'react'
 import { Button, Logos, Text, View } from '@avalabs/k2-alpine'
 import { useSelector } from 'react-redux'
 import { selectSelectedColorScheme } from 'store/settings/appearance'
-import { AppUpdateService } from 'services/AppUpdateService/AppUpdateService'
+import { useUpdateApp } from 'common/hooks/useUpdateApp'
 
 export const AppUpdateBanner = (): JSX.Element => {
   const selectedColorScheme = useSelector(selectSelectedColorScheme)
-
-  const handleUpdate = (): void => {
-    AppUpdateService.performUpdate()
-  }
+  const handleUpdate = useUpdateApp()
 
   return (
     <View
