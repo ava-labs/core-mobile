@@ -25,6 +25,10 @@ export class AppUpdateService {
       if (typeof result === 'string') {
         Alert.alert(result)
       }
+
+      const playStoreURL =
+        'https://play.google.com/store/apps/details?id=com.avaxwallet'
+      Linking.openURL(playStoreURL)
     } else {
       const appId = '6443685999'
       const appStoreURI = `itms-apps://apps.apple.com/app/id${appId}`
