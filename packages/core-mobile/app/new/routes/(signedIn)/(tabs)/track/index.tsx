@@ -6,15 +6,14 @@ import {
   useTheme,
   View
 } from '@avalabs/k2-alpine'
-import { useHeaderHeight } from '@react-navigation/elements'
 import BlurredBarsContentLayout from 'common/components/BlurredBarsContentLayout'
+import { BottomTabWrapper } from 'common/components/BlurredBottomWrapper'
 import {
   CollapsibleTabs,
   CollapsibleTabsRef,
   OnTabChange
 } from 'common/components/CollapsibleTabs'
-import { LinearGradientBottomWrapper } from 'common/components/LinearGradientBottomWrapper'
-import { useBottomTabBarHeight } from 'common/hooks/useBottomTabBarHeight'
+
 import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
 import { useFocusEffect, useRouter } from 'expo-router'
 import FavoriteScreen from 'features/track/market/components/FavoriteScreen'
@@ -26,8 +25,7 @@ import {
   InteractionManager,
   LayoutChangeEvent,
   LayoutRectangle,
-  Platform,
-  StyleSheet
+  Platform
 } from 'react-native'
 import {
   AndroidSoftInputModes,
@@ -47,16 +45,21 @@ import { MarketType } from 'store/watchlist'
 const TrackHomeScreen = (): JSX.Element => {
   const { navigate } = useRouter()
   const { theme } = useTheme()
-  const tabBarHeight = useBottomTabBarHeight()
-  const headerHeight = useHeaderHeight()
+  const insets = useSafeAreaInsets()
+  const frame = useSafeAreaFrame()
+
   const [isSearchBarFocused, setSearchBarFocused] = useState(false)
   const [searchText, setSearchText] = useState('')
   const tabViewRef = useRef<CollapsibleTabsRef>(null)
+
+  const [stickyHeaderLayout, setStickyHeaderLayout] = useState<
+    LayoutRectangle | undefined
+  >()
   const [balanceHeaderLayout, setBalanceHeaderLayout] = useState<
     LayoutRectangle | undefined
   >()
 
-  const [tabBarLayout, setTabBarLayout] = useState<
+  const [segmentedControlLayout, setSegmentedControlLayout] = useState<
     LayoutRectangle | undefined
   >()
 
@@ -124,6 +127,13 @@ const TrackHomeScreen = (): JSX.Element => {
     [handleScrollResync]
   )
 
+  const handleStickyHeaderLayout = useCallback(
+    (event: LayoutChangeEvent): void => {
+      setStickyHeaderLayout(event.nativeEvent.layout)
+    },
+    []
+  )
+
   const handleBalanceHeaderLayout = useCallback(
     (event: LayoutChangeEvent): void => {
       setBalanceHeaderLayout(event.nativeEvent.layout)
@@ -174,49 +184,35 @@ const TrackHomeScreen = (): JSX.Element => {
     setSearchBarLayout(event.nativeEvent.layout)
   }, [])
 
-  const handleTabBarLayout = useCallback((event: LayoutChangeEvent) => {
-    setTabBarLayout(event.nativeEvent.layout)
-  }, [])
-
-  const insets = useSafeAreaInsets()
-  const frame = useSafeAreaFrame()
+  const handleSegmentedControlLayout = useCallback(
+    (event: LayoutChangeEvent) => {
+      setSegmentedControlLayout(event.nativeEvent.layout)
+    },
+    []
+  )
 
   const tabHeight = useMemo(() => {
     return Platform.select({
-      ios:
-        frame.height -
-        tabBarHeight -
-        headerHeight -
-        (tabBarLayout?.height ?? 0) -
-        (searchBarLayout?.height ?? 0),
-      android:
-        frame.height -
-        headerHeight -
-        insets.bottom -
-        (searchBarLayout?.height ?? 0)
+      ios: frame.height - (stickyHeaderLayout?.height ?? 0) - insets.top + 10,
+      android: frame.height - insets.top - 4
     })
-  }, [
-    frame.height,
-    tabBarHeight,
-    headerHeight,
-    tabBarLayout?.height,
-    searchBarLayout?.height,
-    insets.bottom
-  ])
+  }, [frame.height, insets.top, stickyHeaderLayout?.height])
 
   const contentContainerStyle = useMemo(() => {
     return {
-      paddingBottom: 16,
+      paddingBottom: (segmentedControlLayout?.height ?? 0) + 16,
       paddingTop: 10,
       minHeight: tabHeight
     }
-  }, [tabHeight])
+  }, [segmentedControlLayout?.height, tabHeight])
 
   const renderEmptyTabBar = useCallback((): JSX.Element => <></>, [])
 
   const renderHeader = useCallback((): JSX.Element => {
     return (
-      <View style={{ backgroundColor: theme.colors.$surfacePrimary }}>
+      <View
+        style={{ backgroundColor: theme.colors.$surfacePrimary }}
+        onLayout={handleStickyHeaderLayout}>
         <Animated.View style={[animatedHeaderStyle]}>
           <View
             onLayout={handleBalanceHeaderLayout}
@@ -260,6 +256,7 @@ const TrackHomeScreen = (): JSX.Element => {
   }, [
     theme.colors.$surfacePrimary,
     theme.colors.$surfaceSecondary,
+    handleStickyHeaderLayout,
     animatedHeaderStyle,
     handleBalanceHeaderLayout,
     handleSearchBarLayout,
@@ -272,7 +269,7 @@ const TrackHomeScreen = (): JSX.Element => {
   const renderSearchResults = useCallback(() => {
     const containerStyle = {
       ...contentContainerStyle,
-      minHeight: (tabHeight ?? 0) + (tabBarLayout?.height ?? 0)
+      minHeight: (tabHeight ?? 0) + (segmentedControlLayout?.height ?? 0)
     }
     return (
       <SearchResultScreen
@@ -289,7 +286,7 @@ const TrackHomeScreen = (): JSX.Element => {
     handleScrollResync,
     isSearchBarFocused,
     searchText,
-    tabBarLayout?.height,
+    segmentedControlLayout?.height,
     tabHeight
   ])
 
@@ -368,16 +365,26 @@ const TrackHomeScreen = (): JSX.Element => {
         minHeaderHeight={searchBarLayout?.height ?? 0}
       />
       {!showSearchResults && (
-        <View onLayout={handleTabBarLayout}>
-          <LinearGradientBottomWrapper>
+        <View
+          onLayout={handleSegmentedControlLayout}
+          style={{
+            position: 'absolute',
+            bottom: 0,
+            left: 0,
+            right: 0
+          }}>
+          <BottomTabWrapper>
             <SegmentedControl
               dynamicItemWidth={false}
               items={SEGMENT_ITEMS}
               selectedSegmentIndex={selectedSegmentIndex}
               onSelectSegment={handleSelectSegment}
-              style={styles.segmentedControl}
+              style={{
+                marginHorizontal: 16,
+                marginBottom: 16
+              }}
             />
-          </LinearGradientBottomWrapper>
+          </BottomTabWrapper>
         </View>
       )}
     </BlurredBarsContentLayout>
@@ -395,9 +402,5 @@ const SEGMENT_ITEMS = [
   TrackHomeScreenTab.Favorites,
   TrackHomeScreenTab.Market
 ]
-
-const styles = StyleSheet.create({
-  segmentedControl: { marginHorizontal: 16, marginBottom: 16 }
-})
 
 export default TrackHomeScreen

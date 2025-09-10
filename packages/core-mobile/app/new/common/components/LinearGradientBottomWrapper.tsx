@@ -1,7 +1,7 @@
 import { alpha, useTheme } from '@avalabs/k2-alpine'
 import { LinearGradient } from 'expo-linear-gradient'
 import React, { useMemo } from 'react'
-import { View, StyleSheet } from 'react-native'
+import { View, StyleSheet, Platform } from 'react-native'
 import { BlurViewWithFallback } from './BlurViewWithFallback'
 
 const start = { x: 0.5, y: 0 }
@@ -20,7 +20,7 @@ export const LinearGradientBottomWrapper = ({
   const colors: [string, string, ...string[]] = useMemo(
     () => [
       alpha(theme.colors.$surfacePrimary, 0),
-      alpha(theme.colors.$surfacePrimary, 0.9)
+      alpha(theme.colors.$surfacePrimary, Platform.OS === 'ios' ? 0.96 : 1)
     ],
     [theme.colors.$surfacePrimary]
   )

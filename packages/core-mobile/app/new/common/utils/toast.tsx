@@ -1,4 +1,3 @@
-import Toast from 'react-native-toast-notifications'
 import {
   NotificationAlert,
   NotificationAlertType,
@@ -7,9 +6,11 @@ import {
   TransactionSnackbar
 } from '@avalabs/k2-alpine'
 import React from 'react'
-import { uuid } from 'utils/uuid'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { Platform } from 'react-native'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { FullWindowOverlay } from 'react-native-screens'
+import Toast from 'react-native-toast-notifications'
+import { uuid } from 'utils/uuid'
 import { useCoreBrowser } from '../hooks/useCoreBrowser'
 
 const DURATION_INDEFINITE = 0 // 0 means indefinite in react-native-toast-notifications
@@ -34,6 +35,14 @@ export const GlobalToast = (): JSX.Element => {
           global.toast = ref
         }
       }}
+      ToastContainerWrapper={
+        Platform.OS === 'ios'
+          ? {
+              component: FullWindowOverlay,
+              props: { children: undefined }
+            }
+          : undefined
+      }
       placement="top"
       animationType="slide-in"
       offsetTop={offsetTop}

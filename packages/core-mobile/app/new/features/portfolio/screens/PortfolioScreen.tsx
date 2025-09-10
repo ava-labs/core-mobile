@@ -8,20 +8,21 @@ import {
 } from '@avalabs/k2-alpine'
 import { useHeaderHeight } from '@react-navigation/elements'
 import BlurredBarsContentLayout from 'common/components/BlurredBarsContentLayout'
+import { BottomTabWrapper } from 'common/components/BlurredBottomWrapper'
 import {
   CollapsibleTabs,
   CollapsibleTabsRef,
   OnTabChange
 } from 'common/components/CollapsibleTabs'
 import { HiddenBalanceText } from 'common/components/HiddenBalanceText'
-import { LinearGradientBottomWrapper } from 'common/components/LinearGradientBottomWrapper'
-import { useBottomTabBarHeight } from 'common/hooks/useBottomTabBarHeight'
+
 import { useErc20ContractTokens } from 'common/hooks/useErc20ContractTokens'
 import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
 import { useSearchableTokenList } from 'common/hooks/useSearchableTokenList'
-import { useIsAndroidWithBottomBar } from 'common/hooks/useIsAndroidWithBottomBar'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
 import { useFocusEffect, useRouter } from 'expo-router'
+import { useBuy } from 'features/meld/hooks/useBuy'
+import { useWithdraw } from 'features/meld/hooks/useWithdraw'
 import {
   ActionButton,
   ActionButtons
@@ -40,17 +41,13 @@ import {
   InteractionManager,
   LayoutChangeEvent,
   LayoutRectangle,
-  Platform,
-  StyleSheet
+  Platform
 } from 'react-native'
 import Animated, {
   useAnimatedStyle,
   useSharedValue
 } from 'react-native-reanimated'
-import {
-  useSafeAreaFrame,
-  useSafeAreaInsets
-} from 'react-native-safe-area-context'
+import { useSafeAreaFrame } from 'react-native-safe-area-context'
 import { useDispatch, useSelector } from 'react-redux'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { AnalyticsEventName } from 'services/analytics/types'
@@ -66,14 +63,12 @@ import {
 } from 'store/balance'
 import { promptEnableNotifications } from 'store/notifications'
 import { selectTokenVisibility } from 'store/portfolio'
+import { selectIsMeldOfframpBlocked } from 'store/posthog'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { selectSelectedCurrency } from 'store/settings/currency'
 import { selectIsPrivacyModeEnabled } from 'store/settings/securityPrivacy'
 import { RootState } from 'store/types'
 import { useFocusedSelector } from 'utils/performance/useFocusedSelector'
-import { useBuy } from 'features/meld/hooks/useBuy'
-import { useWithdraw } from 'features/meld/hooks/useWithdraw'
-import { selectIsMeldOfframpBlocked } from 'store/posthog'
 
 const SEGMENT_ITEMS = ['Assets', 'Collectibles', 'DeFi']
 
@@ -84,8 +79,10 @@ const SEGMENT_EVENT_MAP: Record<number, AnalyticsEventName> = {
 }
 
 const PortfolioHomeScreen = (): JSX.Element => {
+  const frame = useSafeAreaFrame()
+  const headerHeight = useHeaderHeight()
   const isMeldOfframpBlocked = useSelector(selectIsMeldOfframpBlocked)
-  const tabBarHeight = useBottomTabBarHeight()
+
   const { navigateToBuy } = useBuy()
   const { navigateToWithdraw } = useWithdraw()
   const isPrivacyModeEnabled = useFocusedSelector(selectIsPrivacyModeEnabled)
@@ -94,6 +91,11 @@ const PortfolioHomeScreen = (): JSX.Element => {
   const dispatch = useDispatch()
   const { navigate, push } = useRouter()
   const { navigateToSwap } = useNavigateToSwap()
+
+  const [stickyHeaderLayout, setStickyHeaderLayout] = useState<
+    LayoutRectangle | undefined
+  >()
+
   const [balanceHeaderLayout, setBalanceHeaderLayout] = useState<
     LayoutRectangle | undefined
   >()
@@ -177,6 +179,13 @@ const PortfolioHomeScreen = (): JSX.Element => {
         ? undefined
         : totalPriceChangedInPercent.toFixed(2) + '%',
     [totalPriceChangedInPercent]
+  )
+
+  const handleStickyHeaderLayout = useCallback(
+    (event: LayoutChangeEvent): void => {
+      setStickyHeaderLayout(event.nativeEvent.layout)
+    },
+    []
   )
 
   const handleBalanceHeaderLayout = useCallback(
@@ -298,7 +307,8 @@ const PortfolioHomeScreen = (): JSX.Element => {
       <View
         style={{
           backgroundColor: theme.colors.$surfacePrimary
-        }}>
+        }}
+        onLayout={handleStickyHeaderLayout}>
         <View onLayout={handleBalanceHeaderLayout}>
           <Animated.View
             style={[
@@ -347,6 +357,7 @@ const PortfolioHomeScreen = (): JSX.Element => {
     )
   }, [
     theme.colors.$surfacePrimary,
+    handleStickyHeaderLayout,
     handleBalanceHeaderLayout,
     animatedHeaderStyle,
     activeAccount?.name,
@@ -450,42 +461,20 @@ const PortfolioHomeScreen = (): JSX.Element => {
     }, [])
   )
 
-  const headerHeight = useHeaderHeight()
-  const insets = useSafeAreaInsets()
-  const isAndroidWithBottomBar = useIsAndroidWithBottomBar()
-  const frame = useSafeAreaFrame()
-
   const tabHeight = useMemo(() => {
     return Platform.select({
-      ios:
-        frame.height -
-        tabBarHeight -
-        headerHeight -
-        (segmentedControlLayout?.height ?? 0),
-      android:
-        frame.height -
-        headerHeight +
-        (totalPriceChanged > 0 ? 16 : 0) +
-        insets.bottom +
-        (isAndroidWithBottomBar ? 0 : 48)
+      ios: frame.height - headerHeight,
+      android: frame.height - headerHeight + (stickyHeaderLayout?.height ?? 0)
     })
-  }, [
-    frame.height,
-    tabBarHeight,
-    headerHeight,
-    segmentedControlLayout?.height,
-    totalPriceChanged,
-    insets.bottom,
-    isAndroidWithBottomBar
-  ])
+  }, [frame.height, headerHeight, stickyHeaderLayout?.height])
 
   const contentContainerStyle = useMemo(() => {
     return {
-      paddingBottom: 16,
+      paddingBottom: (segmentedControlLayout?.height ?? 0) + 32,
       paddingTop: 10,
       minHeight: tabHeight
     }
-  }, [tabHeight])
+  }, [segmentedControlLayout?.height, tabHeight])
 
   const tabs = useMemo(() => {
     return [
@@ -535,29 +524,19 @@ const PortfolioHomeScreen = (): JSX.Element => {
   ])
 
   const renderSegmentedControl = useCallback((): JSX.Element => {
-    if (filteredTokenList.length === 0) {
-      return (
-        <SegmentedControl
-          dynamicItemWidth={false}
-          items={SEGMENT_ITEMS}
-          selectedSegmentIndex={selectedSegmentIndex}
-          onSelectSegment={handleSelectSegment}
-          style={styles.segmentedControl}
-        />
-      )
-    }
     return (
-      <LinearGradientBottomWrapper shouldDelayBlurOniOS={true}>
-        <SegmentedControl
-          dynamicItemWidth={false}
-          items={SEGMENT_ITEMS}
-          selectedSegmentIndex={selectedSegmentIndex}
-          onSelectSegment={handleSelectSegment}
-          style={styles.segmentedControl}
-        />
-      </LinearGradientBottomWrapper>
+      <SegmentedControl
+        dynamicItemWidth={false}
+        items={SEGMENT_ITEMS}
+        selectedSegmentIndex={selectedSegmentIndex}
+        onSelectSegment={handleSelectSegment}
+        style={{
+          marginHorizontal: 16,
+          marginBottom: 16
+        }}
+      />
     )
-  }, [filteredTokenList.length, handleSelectSegment, selectedSegmentIndex])
+  }, [handleSelectSegment, selectedSegmentIndex])
 
   return (
     <BlurredBarsContentLayout>
@@ -570,15 +549,18 @@ const PortfolioHomeScreen = (): JSX.Element => {
         tabs={tabs}
       />
 
-      <View onLayout={handleSegmentedControlLayout}>
-        {renderSegmentedControl()}
+      <View
+        style={{
+          position: 'absolute',
+          bottom: 0,
+          left: 0,
+          right: 0
+        }}
+        onLayout={handleSegmentedControlLayout}>
+        <BottomTabWrapper>{renderSegmentedControl()}</BottomTabWrapper>
       </View>
     </BlurredBarsContentLayout>
   )
 }
-
-const styles = StyleSheet.create({
-  segmentedControl: { marginHorizontal: 16, marginBottom: 16 }
-})
 
 export default PortfolioHomeScreen

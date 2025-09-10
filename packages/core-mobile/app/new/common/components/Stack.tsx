@@ -1,16 +1,16 @@
 import { ParamListBase, StackNavigationState } from '@react-navigation/native'
 import {
-  createStackNavigator,
-  StackNavigationEventMap,
-  StackNavigationOptions
-} from '@react-navigation/stack'
+  createNativeStackNavigator,
+  NativeStackNavigationEventMap,
+  NativeStackNavigationOptions
+} from '@react-navigation/native-stack'
 import { withLayoutContext } from 'expo-router'
 
-const { Navigator } = createStackNavigator()
+const { Navigator } = createNativeStackNavigator()
 
 export const Stack = withLayoutContext<
-  StackNavigationOptions,
+  NativeStackNavigationOptions,
   typeof Navigator,
   StackNavigationState<ParamListBase>,
-  StackNavigationEventMap
+  NativeStackNavigationEventMap
 >(Navigator)

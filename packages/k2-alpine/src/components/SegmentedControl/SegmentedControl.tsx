@@ -1,26 +1,27 @@
+import { SxProp } from 'dripsy'
+import { BlurView } from 'expo-blur'
+import throttle from 'lodash/throttle'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import {
+  InteractionManager,
   LayoutChangeEvent,
   Pressable,
-  ViewStyle,
   StyleSheet,
-  InteractionManager
+  ViewStyle
 } from 'react-native'
 import Animated, {
-  interpolateColor,
-  useAnimatedStyle,
-  withSpring,
-  withTiming,
-  useDerivedValue,
-  SharedValue,
   DerivedValue,
-  useSharedValue
+  interpolateColor,
+  SharedValue,
+  useAnimatedStyle,
+  useDerivedValue,
+  useSharedValue,
+  withSpring,
+  withTiming
 } from 'react-native-reanimated'
-import throttle from 'lodash/throttle'
-import { SxProp } from 'dripsy'
-import { View } from '../Primitives'
-import { darkModeColors, lightModeColors } from '../../theme/tokens/colors'
 import { useTheme } from '../../hooks'
+import { darkModeColors, lightModeColors } from '../../theme/tokens/colors'
+import { View } from '../Primitives'
 
 export const SegmentedControl = ({
   items,
@@ -120,10 +121,12 @@ export const SegmentedControl = ({
 
   return (
     <View style={style}>
-      <View
-        sx={{
+      <BlurView
+        intensity={30}
+        style={{
           borderRadius: 100,
-          backgroundColor: theme.isDark ? '#C5C5C840' : '#99999940'
+          overflow: 'hidden',
+          backgroundColor: theme.isDark ? '#C5C5C840' : '#28282820'
         }}>
         <View style={styles.container} onLayout={handleLayout}>
           <Animated.View
@@ -150,7 +153,7 @@ export const SegmentedControl = ({
             )
           })}
         </View>
-      </View>
+      </BlurView>
     </View>
   )
 }

@@ -1,4 +1,4 @@
-import { Icons, TouchableOpacity, useTheme } from '@avalabs/k2-alpine'
+import { Icons, TouchableOpacity, useTheme, View } from '@avalabs/k2-alpine'
 import { useRouter } from 'expo-router'
 import React, { forwardRef } from 'react'
 import { View as RNView } from 'react-native'
@@ -15,15 +15,24 @@ export const ConnectButton = forwardRef<RNView>((props, ref): JSX.Element => {
   return (
     <TouchableOpacity
       ref={ref}
-      onPress={handlePress}
+      // onPress doesn't work for Android when using svgs (only on production)
+      onPressOut={handlePress}
       testID="connect_icon"
       style={{
-        padding: 14,
+        paddingLeft: 14,
+        paddingRight: 8,
         height: '100%',
         alignItems: 'center',
         justifyContent: 'center'
       }}>
-      <Icons.Custom.QRScanCustom color={theme.colors.$textPrimary} />
+      <View
+        sx={{
+          height: '100%',
+          justifyContent: 'center',
+          alignItems: 'center'
+        }}>
+        <Icons.Custom.QRScanCustom color={theme.colors.$textPrimary} />
+      </View>
     </TouchableOpacity>
   )
 })

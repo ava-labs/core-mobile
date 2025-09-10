@@ -6,7 +6,6 @@ import {
   Text
 } from '@avalabs/k2-alpine'
 import { useHeaderHeight } from '@react-navigation/elements'
-import { useBottomTabBarHeight } from 'common/hooks/useBottomTabBarHeight'
 import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
 import { getListItemEnteringAnimation } from 'common/utils/animations'
 import React, {
@@ -36,10 +35,12 @@ import Animated, {
   interpolate,
   useAnimatedStyle,
   useSharedValue,
-  withSpring,
-  withTiming
+  withSpring
 } from 'react-native-reanimated'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import {
+  useSafeAreaFrame,
+  useSafeAreaInsets
+} from 'react-native-safe-area-context'
 import { BlurViewWithFallback } from './BlurViewWithFallback'
 import { ErrorState } from './ErrorState'
 
@@ -106,8 +107,6 @@ export const ListScreen = <T,>({
   const contentHeaderHeight = useSharedValue<number>(0)
   const keyboard = useKeyboardState()
 
-  const tabBarHeight = useBottomTabBarHeight()
-
   const { onScroll, scrollY, targetHiddenProgress } = useFadingHeaderNavigation(
     {
       header: <NavigationTitleHeader title={navigationTitle ?? title ?? ''} />,
@@ -125,10 +124,10 @@ export const ListScreen = <T,>({
     const scale = interpolate(
       scrollY.value,
       [-contentHeaderHeight.value, 0, contentHeaderHeight.value],
-      [0.95, 1, 0.95]
+      [0.94, 1, 0.94]
     )
     return {
-      opacity: 1 - targetHiddenProgress.value * 2,
+      opacity: 1 - targetHiddenProgress.value,
       transform: [{ scale: data.length === 0 ? 1 : scale }]
     }
   })
@@ -187,15 +186,15 @@ export const ListScreen = <T,>({
       <Animated.View style={[animatedHeaderContainerStyle, { gap: 12 }]}>
         <BlurViewWithFallback
           style={{
-            paddingHorizontal: 16,
-            paddingTop: renderHeader ? 12 : 0
+            paddingTop: renderHeader ? 16 : 0
           }}>
           {title ? (
             <Animated.View
               style={[
                 animatedHeaderStyle,
                 {
-                  paddingTop: headerHeight
+                  paddingTop: headerHeight,
+                  paddingHorizontal: 16
                 }
               ]}>
               <View
@@ -208,7 +207,11 @@ export const ListScreen = <T,>({
             </Animated.View>
           ) : null}
 
-          <View style={{ paddingBottom: renderHeader ? 12 : 0 }}>
+          <View
+            style={{
+              paddingBottom: renderHeader ? 12 : 0,
+              paddingHorizontal: 16
+            }}>
             {renderHeader?.()}
           </View>
           <Animated.View
@@ -248,12 +251,12 @@ export const ListScreen = <T,>({
     )
   }, [renderEmpty])
 
-  const contentContainerStyle = useMemo(() => {
-    let paddingBottom = hasTabBar ? 16 : insets.bottom + 16
+  const frame = useSafeAreaFrame()
 
-    if (hasTabBar) {
-      paddingBottom = 16
-    }
+  const contentContainerStyle = useMemo(() => {
+    const paddingBottom = keyboard.isVisible
+      ? keyboard.height + 16
+      : insets.bottom + 16
 
     return [
       rest?.contentContainerStyle,
@@ -264,36 +267,23 @@ export const ListScreen = <T,>({
           }
         : {},
       {
-        paddingBottom
+        paddingBottom,
+        minHeight: frame.height - (headerLayout?.height ?? 0)
       }
     ] as StyleProp<ViewStyle>[]
-  }, [insets.bottom, hasTabBar, rest?.contentContainerStyle, data.length])
-
-  const animatedContainerStyle = useAnimatedStyle(() => {
-    let bottomOffset = keyboard.isVisible ? keyboard.height - insets.bottom : 0
-
-    if (hasTabBar) {
-      if (keyboard.isVisible) {
-        bottomOffset =
-          keyboard.height - (Platform.OS === 'ios' ? 0 : tabBarHeight)
-      } else {
-        bottomOffset = Platform.OS === 'ios' ? tabBarHeight : 0
-      }
-    }
-
-    return {
-      // TODO: Couldn't make Android work with keyboard avoidance, so we need to add a bottom offset
-      // iOS works with automaticallyAdjustKeyboardInsets but we do keep the same thing here for consistency
-      paddingBottom: withTiming(bottomOffset, {
-        ...ANIMATED.TIMING_CONFIG,
-        duration: 50
-      })
-    }
-  })
+  }, [
+    keyboard.isVisible,
+    keyboard.height,
+    insets.bottom,
+    rest?.contentContainerStyle,
+    data.length,
+    frame.height,
+    headerLayout?.height
+  ])
 
   return (
     <Animated.View
-      style={[animatedContainerStyle, { flex: 1 }]}
+      style={[{ flex: 1 }]}
       layout={SPRING_LINEAR_TRANSITION}
       entering={getListItemEnteringAnimation(0)}>
       {/* @ts-expect-error */}

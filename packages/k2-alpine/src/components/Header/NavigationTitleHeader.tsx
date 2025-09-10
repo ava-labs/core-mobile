@@ -17,7 +17,8 @@ export const NavigationTitleHeader = memo(
         style={[
           {
             alignItems: 'center',
-            justifyContent: 'center'
+            justifyContent: 'center',
+            height: '100%'
           }
         ]}>
         <Text

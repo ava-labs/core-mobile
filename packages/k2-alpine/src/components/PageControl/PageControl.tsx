@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { ViewStyle, View } from 'react-native'
+import { ViewStyle, View, Platform } from 'react-native'
 import Animated, {
   runOnJS,
   useAnimatedStyle,
@@ -50,45 +50,29 @@ export const PageControl = ({
         : targetTranslation
   }, [currentPage, translationAnimation, viewPortWidth, translatedX])
 
-  const translationAnimatedStyle = useAnimatedStyle(() => {
-    return {
-      transform: [
-        {
-          translateX: translationAnimation.value
-        }
-      ]
-    }
-  })
-
   return (
     <View
       style={[
         {
           padding: 0,
-          overflow: 'hidden'
+          overflow: 'hidden',
+          alignItems: 'center',
+          flex: 1,
+          height: '100%',
+          marginRight: Platform.OS === 'ios' ? 64 : 0
         },
         style
       ]}>
       <View
         style={[
           {
-            marginHorizontal: Configuration.gap + Configuration.dot.width,
-            maxWidth: viewPortWidth,
-            justifyContent: 'center'
+            gap: Configuration.gap,
+            flexDirection: 'row'
           }
         ]}>
-        <Animated.View
-          style={[
-            {
-              gap: Configuration.gap,
-              flexDirection: 'row'
-            },
-            translationAnimatedStyle
-          ]}>
-          {Array.from({ length: numberOfPage }).map((_, index) => {
-            return <AnimatedDot key={index} selected={index === currentPage} />
-          })}
-        </Animated.View>
+        {Array.from({ length: numberOfPage }).map((_, index) => {
+          return <AnimatedDot key={index} selected={index === currentPage} />
+        })}
       </View>
     </View>
   )

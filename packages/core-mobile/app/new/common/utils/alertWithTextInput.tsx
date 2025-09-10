@@ -1,9 +1,11 @@
 import { AlertWithTextInputs } from '@avalabs/k2-alpine'
 import { ShowAlertWithTextInputsConfig } from '@avalabs/k2-alpine/src/components/Alert/types'
 import React from 'react'
+import { Platform } from 'react-native'
+import { FullWindowOverlay } from 'react-native-screens'
 
 export const GlobalAlertWithTextInput = (): JSX.Element => {
-  return (
+  const AlertComponent = (
     <AlertWithTextInputs
       ref={ref => {
         if (ref) {
@@ -12,6 +14,14 @@ export const GlobalAlertWithTextInput = (): JSX.Element => {
         }
       }}
     />
+  )
+
+  // On iOS, wrap with FullWindowOverlay to ensure dialog appears above native screens
+  // On Android, the dialog should work without FullWindowOverlay
+  return Platform.OS === 'ios' ? (
+    <FullWindowOverlay>{AlertComponent}</FullWindowOverlay>
+  ) : (
+    AlertComponent
   )
 }
 

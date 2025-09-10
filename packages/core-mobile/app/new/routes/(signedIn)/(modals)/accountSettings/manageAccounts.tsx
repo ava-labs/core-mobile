@@ -357,10 +357,7 @@ const ManageAccountsScreen = (): React.JSX.Element => {
 
   const renderHeaderRight = useCallback(() => {
     return (
-      <NavigationBarButton
-        isModal
-        testID="add_wallet_btn"
-        onPress={handleAddAccount}>
+      <NavigationBarButton testID="add_wallet_btn" onPress={handleAddAccount}>
         <Icons.Content.Add color={colors.$textPrimary} />
       </NavigationBarButton>
     )
