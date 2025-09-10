@@ -1,4 +1,4 @@
-import { Linking, Platform } from 'react-native'
+import { Alert, Linking, Platform } from 'react-native'
 import { StorageKey } from 'resources/Constants'
 import Logger from 'utils/Logger'
 import { commonStorage } from 'utils/mmkv'
@@ -10,7 +10,8 @@ export class AppUpdateService {
   static async checkAppUpdateStatus(): Promise<AppUpdateStatus | undefined> {
     try {
       return await checkVersion({
-        currentVersion: FAKE_APP_VERSION_FOR_TESTING
+        currentVersion: FAKE_APP_VERSION_FOR_TESTING,
+        bundleId: 'com.avaxwallet'
       })
     } catch (e) {
       Logger.error('checkAppUpdateStatus failed', e)
@@ -20,7 +21,10 @@ export class AppUpdateService {
 
   static async performUpdate(): Promise<void> {
     if (Platform.OS === 'android') {
-      await checkForUpdate(UpdateFlow.FLEXIBLE)
+      const result = await checkForUpdate(UpdateFlow.FLEXIBLE)
+      if (typeof result === 'string') {
+        Alert.alert(result)
+      }
     } else {
       const appId = '6443685999'
       const appStoreURI = `itms-apps://apps.apple.com/app/id${appId}`
