@@ -419,3 +419,5 @@ export const ServiceProviderNames: Record<ServiceProviders, string> = {
   [ServiceProviders.YELLOWCARD]: 'Yellow Card',
   [ServiceProviders.YODLEE]: 'Yodlee'
 }
+
+export const SOLANA_MELD_CHAIN_ID = 101

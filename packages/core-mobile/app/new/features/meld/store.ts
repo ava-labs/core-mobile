@@ -1,12 +1,14 @@
 import { createZustandStore } from 'common/utils/createZustandStore'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
 import { create } from 'zustand'
+import { ChainId } from '@avalabs/core-chains-sdk'
 import { LocalTokenWithBalance } from 'store/balance'
 import { CryptoCurrency, CryptoCurrencyWithBalance } from './types'
 import {
   NATIVE_ERC20_TOKEN_CONTRACT_ADDRESS,
   PaymentMethods,
-  ServiceProviders
+  ServiceProviders,
+  SOLANA_MELD_CHAIN_ID
 } from './consts'
 
 export const useMeldCountryCode = createZustandStore<string | undefined>(
@@ -66,7 +68,7 @@ export const useOfframpActivityIndicator = (): {
 type TokenIndex = {
   nativeMap: Map<string, LocalTokenWithBalance>
   erc20Map: Map<string, LocalTokenWithBalance>
-  btcToken?: LocalTokenWithBalance
+  splMap: Map<string, LocalTokenWithBalance>
 }
 
 type TokenIndexStore = {
@@ -82,7 +84,7 @@ const tokenIndexStore = create<TokenIndexStore>((set, get) => ({
 
     const nativeMap = new Map<string, LocalTokenWithBalance>()
     const erc20Map = new Map<string, LocalTokenWithBalance>()
-    let btcToken: LocalTokenWithBalance | undefined
+    const splMap = new Map<string, LocalTokenWithBalance>()
 
     for (const token of tokens) {
       if (token.type === 'NATIVE') {
@@ -91,12 +93,18 @@ const tokenIndexStore = create<TokenIndexStore>((set, get) => ({
       if ('chainId' in token && token.address) {
         erc20Map.set(`${token.chainId}-${token.address.toLowerCase()}`, token)
       }
-      if (token.symbol === 'BTC') {
-        btcToken = token
+      if (
+        token.type === 'SPL' &&
+        token.networkChainId === ChainId.SOLANA_MAINNET_ID
+      ) {
+        splMap.set(
+          `${ChainId.SOLANA_MAINNET_ID}-${token.address.toLowerCase()}`,
+          token
+        )
       }
     }
 
-    set({ tokenIndex: { nativeMap, erc20Map, btcToken } })
+    set({ tokenIndex: { nativeMap, erc20Map, splMap } })
   },
   reset: () => set({ tokenIndex: null })
 }))
@@ -117,6 +125,7 @@ type SupportedCryptoCurrenciesStore = {
 const supportedCryptoCurrenciesStore = create<SupportedCryptoCurrenciesStore>(
   (set, get) => ({
     supportedCryptoCurrencies: [],
+    // eslint-disable-next-line sonarjs/cognitive-complexity
     setSupportedCryptoCurrencies: (cryptos, tokenIndexes) => {
       if (get().supportedCryptoCurrencies.length > 0) return // already built, skip
 
@@ -126,12 +135,21 @@ const supportedCryptoCurrenciesStore = create<SupportedCryptoCurrenciesStore>(
         let match: LocalTokenWithBalance | undefined
 
         // Native token
+        if (crypto.currencyCode === 'BTC') {
+          match = tokenIndexes.nativeMap.get(ChainId.BITCOIN.toString())
+        }
+        if (crypto.currencyCode === 'SOL') {
+          match = tokenIndexes.nativeMap.get(
+            ChainId.SOLANA_MAINNET_ID.toString()
+          )
+        }
+
         if (
+          crypto.name === 'Ethereum' &&
           crypto.chainId &&
-          crypto.contractAddress?.toLowerCase() ===
-            NATIVE_ERC20_TOKEN_CONTRACT_ADDRESS.toLowerCase()
+          crypto.contractAddress === NATIVE_ERC20_TOKEN_CONTRACT_ADDRESS
         ) {
-          match = tokenIndexes.nativeMap.get(crypto.chainId)
+          match = tokenIndexes.nativeMap.get(crypto.chainId.toString())
         }
 
         // ERC-20 token
@@ -141,9 +159,17 @@ const supportedCryptoCurrenciesStore = create<SupportedCryptoCurrenciesStore>(
           )
         }
 
-        // BTC
-        if (!match && crypto.currencyCode === 'BTC') {
-          match = tokenIndexes.btcToken
+        // SPL token
+        if (
+          !match &&
+          crypto.contractAddress &&
+          crypto.chainId === SOLANA_MELD_CHAIN_ID.toString()
+        ) {
+          match = tokenIndexes.splMap.get(
+            `${
+              ChainId.SOLANA_MAINNET_ID
+            }-${crypto.contractAddress.toLowerCase()}`
+          )
         }
 
         if (match) {
