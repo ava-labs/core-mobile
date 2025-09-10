@@ -6,9 +6,8 @@ import {
 } from '@react-navigation/stack'
 import BackBarButton from 'common/components/BackBarButton'
 import React from 'react'
-import { Platform } from 'react-native'
+import { Animated, Platform } from 'react-native'
 import BlurredBackgroundView from 'common/components/BlurredBackgroundView'
-import { TransitionSpec } from '@react-navigation/stack/lib/typescript/commonjs/src/types'
 
 export const MODAL_TOP_MARGIN = 28
 export const MODAL_BORDER_RADIUS = 40
@@ -56,3 +55,19 @@ export const androidModalTransitionSpec = {
     config: { duration: 0 }
   } as TransitionSpec
 }
+
+export type TransitionSpec =
+  | {
+      animation: 'spring'
+      config: Omit<
+        Animated.SpringAnimationConfig,
+        'toValue' | keyof Animated.AnimationConfig
+      >
+    }
+  | {
+      animation: 'timing'
+      config: Omit<
+        Animated.TimingAnimationConfig,
+        'toValue' | keyof Animated.AnimationConfig
+      >
+    }

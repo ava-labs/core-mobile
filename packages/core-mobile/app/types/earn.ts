@@ -1,9 +1,10 @@
-import type { GetCurrentValidatorsResponse } from '@avalabs/avalanchejs/dist/vms/pvm'
+import type { pvm } from '@avalabs/avalanchejs'
 
-export type NodeValidator = GetCurrentValidatorsResponse['validators'][0] & {
-  delegatorCount?: string
-  delegatorWeight?: string
-}
+export type NodeValidator =
+  pvm.GetCurrentValidatorsResponse['validators'][0] & {
+    delegatorCount?: string
+    delegatorWeight?: string
+  }
 
 export type NodeValidators = NodeValidator[]
 
