@@ -290,13 +290,13 @@ workflows:
         inputs:
         - scheme: $IOS_SCHEME
         - project_path: $IOS_PROJECT_PATH
-        - destination: "platform=iOS Simulator,name=iPhone 15 Pro,OS=17.5"
+        - destination: generic/platform=iOS Simulator
         - configuration: $IOS_CONFIGURATION
-        - code_signing_allowed: "no"
+        - xcconfig_content: |-
+            CODE_SIGNING_ALLOWED=YES            
+            COMPILER_INDEX_STORE_ENABLE = NO
         - log_formatter: xcpretty
-    - deploy-to-bitrise-io@2:
-        inputs:
-        - pipeline_intermediate_files: $BITRISE_APP_DIR_PATH:BITRISE_APP_DIR_PATH
+    - deploy-to-bitrise-io
     - script-runner@0:
         title: Create iOS Test Run
         inputs:
