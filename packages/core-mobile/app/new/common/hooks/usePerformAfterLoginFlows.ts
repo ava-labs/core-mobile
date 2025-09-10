@@ -11,11 +11,14 @@ export const usePerformAfterLoginFlows = (): (() => Promise<void>) => {
     usePromptEnableNotificationsIfNeeded()
 
   return useCallback(async () => {
-    InteractionManager.runAfterInteractions(async () => {
-      await promptAppUpdateScreenIfNeeded()
-      await promptEnableNotificationsIfNeeded()
-      await promptSolanaLaunchModalIfNeeded()
+    // wait until interactions finish
+    await new Promise<void>(resolve => {
+      InteractionManager.runAfterInteractions(() => resolve())
     })
+
+    await promptAppUpdateScreenIfNeeded()
+    await promptEnableNotificationsIfNeeded()
+    await promptSolanaLaunchModalIfNeeded()
   }, [
     promptEnableNotificationsIfNeeded,
     promptSolanaLaunchModalIfNeeded,
