@@ -970,8 +970,6 @@ workflows:
     - _install-and-set-env
     - _set-version
     - _build-ios-simulator
-    after_run:
-    - _upload-e2e-artifacts
     envs:
     - ENVIRONMENT: production
       opts:
