@@ -12,7 +12,7 @@ import { FujiParams, MainnetParams, StakingConfig } from 'utils/NetworkParams'
 import { MAX_VALIDATOR_WEIGHT_FACTOR } from 'consts/earn'
 import Logger from 'utils/Logger'
 import { valid, compare } from 'semver'
-import { Peer } from '@avalabs/avalanchejs/dist/info/model'
+import { info } from '@avalabs/avalanchejs'
 import { PChainTransaction } from '@avalabs/glacier-sdk'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
 import { UTCDate } from '@date-fns/utc'
@@ -217,7 +217,7 @@ export const getFilteredValidators = ({
  */
 export const getSimpleSortedValidators = (
   validators: NodeValidators,
-  peers?: Record<string, Peer>,
+  peers?: Record<string, info.Peer>,
   isEndTimeOverOneYear = false
 ): NodeValidators => {
   if (isEndTimeOverOneYear) {
@@ -280,7 +280,7 @@ export const getRandomValidator = (
 export const getAdvancedSortedValidators = (
   validators: NodeValidators,
   sortFilter: AdvancedSortFilter,
-  peers?: Record<string, Peer>
+  peers?: Record<string, info.Peer>
 ): NodeValidators => {
   const clonedValidators = [...validators]
   switch (sortFilter) {
