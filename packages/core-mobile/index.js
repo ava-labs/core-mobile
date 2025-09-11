@@ -9,6 +9,7 @@ import DevDebuggingConfig from 'utils/debugging/DevDebuggingConfig'
 import SentryService from 'services/sentry/SentryService'
 import NewApp from 'new/ContextApp'
 import { hideMenu } from 'expo-dev-client'
+import DetoxPlaceholderScreen from 'new/common/screens/DetoxPlaceholderScreen'
 import { expo } from './app.json'
 import { server } from './tests/msw/native/server'
 
@@ -34,6 +35,11 @@ Big.PE = 99
 Big.NE = -18
 
 let AppEntryPoint = NewApp
+
+if (process.env.DETOX_CI) {
+  Logger.info('Detox CI mode')
+  AppEntryPoint = DetoxPlaceholderScreen
+}
 
 if (DevDebuggingConfig.STORYBOOK_ENABLED) {
   Bootsplash.hide()

@@ -21,6 +21,7 @@ export const warmup = async (newInstance = false) => {
   if (newInstance) {
     initialArgs.newInstance = true
   }
+
   await device.launchApp(initialArgs)
   await device.disableSynchronization()
 

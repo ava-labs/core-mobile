@@ -12,14 +12,6 @@ fi
 brew tap wix/brew
 brew install applesimutils
 
-
-xcrun simctl list devices
-
-xcrun simctl boot "iPhone 16 Pro (18.4)" || true
-
-xcrun simctl bootstatus "iPhone 16 Pro (18.4)" -b
-
-
 APP_PATH="$BITRISE_APP_DIR_PATH"
 
 echo "[DEBUG] App dir: $APP_PATH"
@@ -58,7 +50,7 @@ xcrun otool -l "$BIN" | sed -n '/LC_BUILD_VERSION/,+6p' || true
 
 ./node_modules/.bin/detox clean-framework-cache && ./node_modules/.bin/detox build-framework-cache
 
-./node_modules/.bin/detox test \
+DETOX_CI=true ./node_modules/.bin/detox test \
   --configuration ios.internal.release.smoke.ci \
   --record-logs all \
   --cleanup \
