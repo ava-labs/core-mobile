@@ -37,19 +37,21 @@ import {
 } from './types'
 import { getAddressDerivationPath } from './utils'
 
-export interface LedgerWalletData {
+// Define the derivation path type as an enum for type safety
+export enum LedgerDerivationPathType {
+  BIP44 = 'BIP44',
+  LedgerLive = 'LedgerLive'
+}
+
+// Base interface for common wallet data
+interface BaseLedgerWalletData {
   deviceId: string
-  derivationPath: string
   vmType: NetworkVMType
-  derivationPathSpec?: 'BIP44' | 'LedgerLive'
-  extendedPublicKeys?: {
-    evm?: string
-    avalanche?: string
-  }
-  publicKeys?: Array<{
+  transport?: TransportBLE // Optional for backward compatibility
+  publicKeys: Array<{
     key: string
     derivationPath: string
-    curve: 'secp256k1' | 'ed25519'
+    curve: Curve
     btcWalletPolicy?: {
       hmacHex: string
       xpub: string
@@ -57,16 +59,47 @@ export interface LedgerWalletData {
       name: string
     }
   }>
-  transport?: TransportBLE // Optional for backward compatibility
 }
+
+// BIP44 specific wallet data
+interface BIP44LedgerWalletData extends BaseLedgerWalletData {
+  derivationPathSpec: LedgerDerivationPathType.BIP44
+  derivationPath: string
+  // Extended keys required for BIP44
+  extendedPublicKeys: {
+    evm: string
+    avalanche: string
+  }
+}
+
+// Ledger Live specific wallet data
+interface LedgerLiveWalletData extends BaseLedgerWalletData {
+  derivationPathSpec: LedgerDerivationPathType.LedgerLive
+  derivationPath: string
+  // No extended keys for Ledger Live
+  extendedPublicKeys?: never
+}
+
+// Union type for all possible Ledger wallet data
+export type LedgerWalletData = BIP44LedgerWalletData | LedgerLiveWalletData
 
 export class LedgerWallet implements Wallet {
   private deviceId: string
   private derivationPath: string
   private vmType: NetworkVMType
-  private derivationPathSpec?: string
-  private extendedPublicKeys?: any
-  private publicKeys?: any[]
+  private derivationPathSpec: LedgerDerivationPathType
+  private extendedPublicKeys?: { evm: string; avalanche: string }
+  private publicKeys: Array<{
+    key: string
+    derivationPath: string
+    curve: Curve
+    btcWalletPolicy?: {
+      hmacHex: string
+      xpub: string
+      masterFingerprint: string
+      name: string
+    }
+  }>
   private transport?: TransportBLE // Keep for backward compatibility
   private ledgerService: LedgerService
   private evmSigner?: LedgerSigner
@@ -80,9 +113,14 @@ export class LedgerWallet implements Wallet {
     this.derivationPath = ledgerData.derivationPath
     this.vmType = ledgerData.vmType
     this.derivationPathSpec = ledgerData.derivationPathSpec
-    this.extendedPublicKeys = ledgerData.extendedPublicKeys
     this.publicKeys = ledgerData.publicKeys
     this.transport = ledgerData.transport // Keep for backward compatibility
+
+    // Handle extended keys based on derivation path type
+    if (ledgerData.derivationPathSpec === LedgerDerivationPathType.BIP44) {
+      this.extendedPublicKeys = ledgerData.extendedPublicKeys
+    }
+    // For Ledger Live, extendedPublicKeys remains undefined
 
     // Use provided LedgerService or create new one
     if (ledgerService) {
@@ -182,7 +220,7 @@ export class LedgerWallet implements Wallet {
 
       const transport = await this.getTransport()
 
-      if (this.derivationPathSpec === 'BIP44') {
+      if (this.derivationPathSpec === LedgerDerivationPathType.BIP44) {
         // BIP44 mode - use extended public keys
         const extPublicKey = this.getExtendedPublicKeyFor(NetworkVMType.AVM)
         if (!extPublicKey) {
@@ -285,29 +323,72 @@ export class LedgerWallet implements Wallet {
     return this.bitcoinWallet
   }
 
-  private getExtendedPublicKeyFor(chain: string): any {
-    if (!this.extendedPublicKeys) return null
+  private getDerivationPath(
+    accountIndex: number,
+    chain: Exclude<NetworkVMType, NetworkVMType.PVM | NetworkVMType.HVM>
+  ): string {
+    // Convert our enum to the expected derivation path type
+    const derivationPathType = this.derivationPathSpec === LedgerDerivationPathType.LedgerLive 
+      ? 'ledger_live' 
+      : 'bip44'
+      
+    return getAddressDerivationPath({
+      accountIndex,
+      vmType: chain,
+      derivationPathType
+    })
+  }
 
-    switch (chain) {
+  /**
+   * Check if this wallet uses BIP44 derivation
+   */
+  public isBIP44(): boolean {
+    return this.derivationPathSpec === LedgerDerivationPathType.BIP44
+  }
+
+  /**
+   * Check if this wallet uses Ledger Live derivation
+   */
+  public isLedgerLive(): boolean {
+    return this.derivationPathSpec === LedgerDerivationPathType.LedgerLive
+  }
+
+  /**
+   * Get extended public key for BIP44 wallets
+   * Throws error for Ledger Live wallets
+   */
+  private getExtendedPublicKeyFor(
+    vmType: NetworkVMType
+  ): { key: string } | null {
+    if (this.isLedgerLive()) {
+      throw new Error(
+        'Extended public keys are not available for Ledger Live wallets'
+      )
+    }
+
+    if (!this.extendedPublicKeys) {
+      return null
+    }
+
+    switch (vmType) {
       case NetworkVMType.EVM:
         return this.extendedPublicKeys.evm
+          ? { key: this.extendedPublicKeys.evm }
+          : null
       case NetworkVMType.AVM:
         return this.extendedPublicKeys.avalanche
+          ? { key: this.extendedPublicKeys.avalanche }
+          : null
       default:
         return null
     }
   }
 
-  private getDerivationPath(
-    accountIndex: number,
-    chain: Exclude<NetworkVMType, NetworkVMType.PVM | NetworkVMType.HVM>
-  ): string {
-    return getAddressDerivationPath({
-      accountIndex,
-      vmType: chain,
-      derivationPathType:
-        (this.derivationPathSpec?.toLowerCase() as any) || 'bip44'
-    })
+  /**
+   * Check if new account creation requires device connection
+   */
+  public requiresDeviceForNewAccounts(): boolean {
+    return this.isLedgerLive()
   }
 
   public async signMessage({
@@ -449,7 +530,7 @@ export class LedgerWallet implements Wallet {
     Logger.info('Got transport')
 
     // Create Avalanche app instance
-    const avaxApp = new AppAvax(transport)
+    const avaxApp = new AppAvax(transport as any) // Type compatibility issue with different @ledgerhq versions
     Logger.info('Created Avalanche app instance')
 
     try {

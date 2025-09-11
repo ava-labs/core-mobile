@@ -3,7 +3,9 @@ import { useDispatch, useSelector } from 'react-redux'
 import { Alert, Platform, PermissionsAndroid } from 'react-native'
 import TransportBLE from '@ledgerhq/react-native-hw-transport-ble'
 import AppSolana from '@ledgerhq/hw-app-solana'
+import bs58 from 'bs58'
 import { LedgerService, LedgerAppType } from 'services/ledger/ledgerService'
+import { LedgerDerivationPathType } from 'services/wallet/LedgerWallet'
 import { ChainName } from 'services/network/consts'
 import { WalletType } from 'services/wallet/types'
 import { AppThunkDispatch } from 'store/types'
@@ -38,6 +40,26 @@ export interface LedgerKeys {
   xpAddress: string
 }
 
+export interface WalletCreationOptions {
+  deviceId: string
+  deviceName?: string
+  derivationPathType: LedgerDerivationPathType
+  accountCount?: number
+  individualKeys?: any[] // For Ledger Live - individual keys retrieved from device
+  progressCallback?: (
+    step: string,
+    progress: number,
+    totalSteps: number
+  ) => void
+}
+
+export interface SetupProgress {
+  currentStep: string
+  progress: number
+  totalSteps: number
+  estimatedTimeRemaining?: number
+}
+
 export interface UseLedgerWalletReturn {
   // Device scanning and connection
   devices: LedgerDevice[]
@@ -52,14 +74,15 @@ export interface UseLedgerWalletReturn {
   isLoading: boolean
   getSolanaKeys: () => Promise<void>
   getAvalancheKeys: () => Promise<void>
+  getLedgerLiveKeys: (accountCount?: number, progressCallback?: (step: string, progress: number, totalSteps: number) => void) => Promise<{ avalancheKeys: any, individualKeys: any[] }>
   resetKeys: () => void
   keys: LedgerKeys
 
   // Wallet creation
-  createLedgerWallet: (params: {
-    deviceId: string
-    deviceName?: string
-  }) => Promise<string> // Returns the new wallet ID
+  createLedgerWallet: (options: WalletCreationOptions) => Promise<string> // Returns the new wallet ID
+
+  // Setup progress
+  setupProgress: SetupProgress | null
 }
 
 export function useLedgerWallet(): UseLedgerWalletReturn {
@@ -74,6 +97,7 @@ export function useLedgerWallet(): UseLedgerWalletReturn {
   const [isScanning, setIsScanning] = useState(false)
   const [isConnecting, setIsConnecting] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+  const [setupProgress, setSetupProgress] = useState<SetupProgress | null>(null)
 
   // Key states
   const [solanaKeys, setSolanaKeys] = useState<any[]>([])
@@ -248,8 +272,8 @@ export function useLedgerWallet(): UseLedgerWalletReturn {
       const derivationPath = `44'/501'/0'/0'/0`
       const result = await solanaApp.getAddress(derivationPath, false)
 
-      // result.address is already in base58 format
-      const solanaAddress = result.address.toString()
+      // Convert the Buffer to base58 format (Solana address format)
+      const solanaAddress = bs58.encode(new Uint8Array(result.address))
 
       setSolanaKeys([
         {
@@ -314,25 +338,137 @@ export function useLedgerWallet(): UseLedgerWalletReturn {
     setXpAddress('')
   }, [])
 
+  // New method: Get individual keys for Ledger Live (sequential device confirmations)
+  const getLedgerLiveKeys = useCallback(async (
+    accountCount: number = 3,
+    progressCallback?: (step: string, progress: number, totalSteps: number) => void
+  ) => {
+    try {
+      setIsLoading(true)
+      Logger.info(`Starting Ledger Live key retrieval for ${accountCount} accounts`)
+      
+      const totalSteps = accountCount // One step per account (gets both EVM and AVM)
+      const individualKeys: any[] = []
+      let avalancheKeysResult: any = null
+
+      // Sequential address retrieval - each account requires device confirmation
+      for (let accountIndex = 0; accountIndex < accountCount; accountIndex++) {
+        const stepName = `Getting keys for account ${accountIndex + 1}...`
+        const progress = Math.round(((accountIndex + 1) / totalSteps) * 100)
+        progressCallback?.(stepName, progress, totalSteps)
+        
+        Logger.info(`Requesting addresses for account ${accountIndex} (Ledger Live style)`)
+        
+        // Get public keys for this specific account (1 at a time for device confirmation)
+        const publicKeys = await ledgerService.getPublicKeys(accountIndex, 1)
+        
+        // Also get addresses for display purposes
+        const addresses = await ledgerService.getAllAddresses(accountIndex, 1)
+        
+        // Extract the keys for this account
+        const evmPublicKey = publicKeys.find(key => key.derivationPath.includes("44'/60'"))
+        const avmPublicKey = publicKeys.find(key => key.derivationPath.includes("44'/9000'"))
+        
+        // Extract addresses for this account
+        const evmAddress = addresses.find(addr => addr.network === ChainName.AVALANCHE_C_EVM)
+        const xpAddress = addresses.find(addr => addr.network === ChainName.AVALANCHE_X)
+        
+        if (evmPublicKey) {
+          individualKeys.push({
+            key: evmPublicKey.key,
+            derivationPath: `m/44'/60'/${accountIndex}'/0/0`, // Ledger Live path
+            curve: evmPublicKey.curve
+          })
+        }
+        
+        if (avmPublicKey) {
+          individualKeys.push({
+            key: avmPublicKey.key,
+            derivationPath: `m/44'/9000'/${accountIndex}'/0/0`, // Ledger Live path
+            curve: avmPublicKey.curve
+          })
+        }
+
+        // Store first account's keys as primary
+        if (accountIndex === 0) {
+          avalancheKeysResult = {
+            evm: {
+              key: evmPublicKey?.key || '',
+              address: evmAddress?.address || ''
+            },
+            avalanche: {
+              key: avmPublicKey?.key || '',
+              address: xpAddress?.address || ''
+            }
+          }
+        }
+      }
+
+      // Update state with the retrieved keys
+      if (avalancheKeysResult) {
+        setAvalancheKeys(avalancheKeysResult)
+      }
+      
+      Logger.info(`Successfully retrieved Ledger Live keys for ${accountCount} accounts`)
+      Logger.info('Individual keys count:', individualKeys.length)
+      
+      return { avalancheKeys: avalancheKeysResult, individualKeys }
+      
+    } catch (error) {
+      Logger.error('Failed to get Ledger Live keys:', error)
+      throw error
+    } finally {
+      setIsLoading(false)
+    }
+  }, [ledgerService])
+
   const createLedgerWallet = useCallback(
     async ({
       deviceId,
-      deviceName = 'Ledger Device'
-    }: {
-      deviceId: string
-      deviceName?: string
-    }) => {
+      deviceName = 'Ledger Device',
+      derivationPathType = LedgerDerivationPathType.BIP44,
+      accountCount = derivationPathType === LedgerDerivationPathType.BIP44
+        ? 3
+        : 1,
+      individualKeys = [],
+      progressCallback
+    }: WalletCreationOptions) => {
       try {
         setIsLoading(true)
-        Logger.info('Creating Ledger wallet with generated keys...')
+
+        // Initialize progress tracking
+        const totalSteps =
+          derivationPathType === LedgerDerivationPathType.BIP44 ? 3 : 6
+        let currentStep = 1
+
+        const updateProgress = (stepName: string) => {
+          const progress = {
+            currentStep: stepName,
+            progress: Math.round((currentStep / totalSteps) * 100),
+            totalSteps,
+            estimatedTimeRemaining:
+              (totalSteps - currentStep) *
+              (derivationPathType === LedgerDerivationPathType.BIP44 ? 5 : 8)
+          }
+          setSetupProgress(progress)
+          progressCallback?.(stepName, progress.progress, totalSteps)
+          currentStep++
+        }
+
+        updateProgress('Validating keys...')
+        Logger.info(
+          `Creating ${derivationPathType} Ledger wallet with generated keys...`
+        )
 
         if (!avalancheKeys || solanaKeys.length === 0 || !bitcoinAddress) {
           throw new Error('Missing required keys for wallet creation')
         }
 
+        updateProgress('Generating wallet ID...')
         const newWalletId = uuid()
 
-        // Store the Ledger wallet
+        updateProgress('Storing wallet data...')
+        // Store the Ledger wallet with the specified derivation path type
         await dispatch(
           storeWallet({
             walletId: newWalletId,
@@ -341,12 +477,16 @@ export function useLedgerWallet(): UseLedgerWalletReturn {
               deviceName,
               derivationPath: "m/44'/60'/0'/0/0",
               vmType: 'EVM',
-              derivationPathSpec: 'BIP44',
-              extendedPublicKeys: {
-                evm: avalancheKeys.evm.key,
-                avalanche: avalancheKeys.avalanche.key
-              },
-              publicKeys: [
+              derivationPathSpec: derivationPathType,
+              ...(derivationPathType === LedgerDerivationPathType.BIP44 && {
+                extendedPublicKeys: {
+                  evm: avalancheKeys.evm.key,
+                  avalanche: avalancheKeys.avalanche.key
+                }
+              }),
+              publicKeys: derivationPathType === LedgerDerivationPathType.LedgerLive && individualKeys.length > 0
+                ? individualKeys // Use individual keys for Ledger Live
+                : [ // Use existing keys for BIP44
                 {
                   key: avalancheKeys.evm.key,
                   derivationPath: "m/44'/60'/0'/0/0",
@@ -413,6 +553,7 @@ export function useLedgerWallet(): UseLedgerWalletReturn {
         throw error
       } finally {
         setIsLoading(false)
+        setSetupProgress(null)
       }
     },
     [avalancheKeys, solanaKeys, bitcoinAddress, dispatch, allAccounts]
@@ -432,6 +573,8 @@ export function useLedgerWallet(): UseLedgerWalletReturn {
     isLoading,
     getSolanaKeys,
     getAvalancheKeys,
+    getLedgerLiveKeys,
+    resetKeys,
     keys: {
       solanaKeys,
       avalancheKeys,
@@ -441,6 +584,8 @@ export function useLedgerWallet(): UseLedgerWalletReturn {
 
     // Wallet creation
     createLedgerWallet,
-    resetKeys
+
+    // Setup progress
+    setupProgress
   }
 }
