@@ -286,6 +286,13 @@ workflows:
         - verbose: "true"
         - source_root_path: $BITRISE_SOURCE_DIR/ios
     - save-cocoapods-cache@1: {}
+    - script@1:
+        title: Bundle React Native JS
+        inputs:
+        - content: |-
+            #!/usr/bin/env bash
+            set -euo pipefail
+            npx react-native bundle --platform ios --dev false --entry-file index.js --bundle-output ios/main.jsbundle --assets-dest ios
     - xcode-build-for-simulator@3:
         inputs:
         - scheme: $IOS_SCHEME
@@ -1031,6 +1038,14 @@ workflows:
       opts:
         is_expand: false
     steps:
+    - script@1:
+        title: Boot Simulator
+        inputs:
+        - content: |-
+            #!/usr/bin/env bash
+            set -euo pipefail
+            xcrun simctl boot "iPhone 16 Pro" || true
+            xcrun simctl bootstatus "iPhone 16 Pro" -b
     - script-runner@0:
         title: Detox
         no_output_timeout: 300
@@ -1118,6 +1133,14 @@ workflows:
         opts:
           is_expand: false
       steps:
+      - script@1:
+          title: Boot Simulator
+          inputs:
+          - content: |-
+              #!/usr/bin/env bash
+              set -euo pipefail
+              xcrun simctl boot "iPhone 16 Pro" || true
+              xcrun simctl bootstatus "iPhone 16 Pro" -b
       - script-runner@0:
           title: Detox
           inputs:
