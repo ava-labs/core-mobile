@@ -10,17 +10,11 @@ import {
   View
 } from '@avalabs/k2-alpine'
 import { ListRenderItem } from '@shopify/flash-list'
-import { useSearchableTokenList } from 'common/hooks/useSearchableTokenList'
-import { useErc20ContractTokens } from 'common/hooks/useErc20ContractTokens'
 import { CHAIN_IDS_WITH_INCORRECT_SYMBOL } from 'consts/chainIdsWithIncorrectSymbol'
 import { LogoWithNetwork } from 'features/portfolio/assets/components/LogoWithNetwork'
 import { LoadingState } from 'common/components/LoadingState'
 import { SubTextNumber } from 'common/components/SubTextNumber'
-import { useSolanaTokens } from 'common/hooks/useSolanaTokens'
-import { USDC_SOLANA_TOKEN_ID } from 'common/consts/swap'
-import { ChainId } from '@avalabs/core-chains-sdk'
-import { selectIsSolanaSupportBlocked } from 'store/posthog'
-import { useSelector } from 'react-redux'
+import { useSearchableERC20AndSolanaTokenList } from 'common/hooks/useSearchableERC20AndSolanaTokenList'
 import { useSupportedCryptoCurrencies, useTokenIndex } from '../store'
 import { CryptoCurrency, CryptoCurrencyWithBalance } from '../types'
 import { MELD_CURRENCY_CODES, ServiceProviderCategories } from '../consts'
@@ -50,54 +44,23 @@ export const TokenList = ({
     setSupportedCryptoCurrencies,
     setSupportedSplCryptoCurrencies
   } = useSupportedCryptoCurrencies()
-  const isSolanaSupportBlocked = useSelector(selectIsSolanaSupportBlocked)
-
-  const erc20ContractTokens = useErc20ContractTokens()
-  const solanaTokens = useSolanaTokens()
-
-  const usdcSolanaToken = useMemo(() => {
-    return solanaTokens.find(
-      tk =>
-        'chainId' in tk &&
-        tk.chainId === ChainId.SOLANA_MAINNET_ID &&
-        tk.address === USDC_SOLANA_TOKEN_ID
+  const { filteredErc20TokenList, filteredSolanaTokenList } =
+    useSearchableERC20AndSolanaTokenList(
+      category !== ServiceProviderCategories.CRYPTO_ONRAMP
     )
-  }, [solanaTokens])
-
-  const { filteredTokenList: filteredErc20ContractTokens } =
-    useSearchableTokenList({
-      tokens: erc20ContractTokens,
-      hideZeroBalance: category !== ServiceProviderCategories.CRYPTO_ONRAMP
-    })
-
-  const { filteredTokenList: filteredUsdcSolanaTokenList } =
-    useSearchableTokenList({
-      tokens:
-        usdcSolanaToken && !isSolanaSupportBlocked ? [usdcSolanaToken] : [],
-      hideZeroBalance: category !== ServiceProviderCategories.CRYPTO_ONRAMP
-    })
-
-  const filteredUsdcSolanaToken = useMemo(() => {
-    return filteredUsdcSolanaTokenList.find(
-      tk =>
-        // @ts-expect-error: there is no chainId for SPL tokens
-        tk.address === USDC_SOLANA_TOKEN_ID &&
-        tk.networkChainId === ChainId.SOLANA_MAINNET_ID
-    )
-  }, [filteredUsdcSolanaTokenList])
 
   useEffect(() => {
-    if (filteredErc20ContractTokens?.length) {
-      setTokenIndex(filteredErc20ContractTokens)
+    if (filteredErc20TokenList?.length) {
+      setTokenIndex(filteredErc20TokenList)
     }
-    if (filteredUsdcSolanaToken) {
-      setSplTokenIndex([filteredUsdcSolanaToken])
+    if (filteredSolanaTokenList) {
+      setSplTokenIndex(filteredSolanaTokenList)
     }
   }, [
-    filteredErc20ContractTokens,
+    filteredErc20TokenList,
     setTokenIndex,
     setSplTokenIndex,
-    filteredUsdcSolanaToken
+    filteredSolanaTokenList
   ])
 
   useEffect(() => {

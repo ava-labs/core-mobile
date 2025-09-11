@@ -1,7 +1,6 @@
 import { useMemo } from 'react'
-import { useSearchableTokenList } from 'common/hooks/useSearchableTokenList'
-import { useErc20ContractTokens } from 'common/hooks/useErc20ContractTokens'
 import { LocalTokenWithBalance } from 'store/balance'
+import { useSearchableERC20AndSolanaTokenList } from 'common/hooks/useSearchableERC20AndSolanaTokenList'
 import { ServiceProviderCategories } from '../consts'
 import { CryptoCurrency } from '../types'
 import { useMeldToken } from '../store'
@@ -15,14 +14,13 @@ export const useMeldTokenWithBalance = ({
   | (CryptoCurrency & { tokenWithBalance: LocalTokenWithBalance })
   | undefined => {
   const [meldToken] = useMeldToken()
-  const erc20ContractTokens = useErc20ContractTokens()
-  const { filteredTokenList } = useSearchableTokenList({
-    tokens: erc20ContractTokens,
-    hideZeroBalance: category !== ServiceProviderCategories.CRYPTO_ONRAMP
-  })
+  const { filteredErc20TokenList, filteredSolanaTokenList } =
+    useSearchableERC20AndSolanaTokenList(
+      category !== ServiceProviderCategories.CRYPTO_ONRAMP
+    )
 
   return useMemo(() => {
-    const t = filteredTokenList.find(
+    const t = [...filteredErc20TokenList, ...filteredSolanaTokenList].find(
       tk => meldToken && isTokenTradable(meldToken, tk)
     )
     if (t) {
@@ -31,5 +29,5 @@ export const useMeldTokenWithBalance = ({
         tokenWithBalance: t
       }
     }
-  }, [filteredTokenList, meldToken])
+  }, [filteredErc20TokenList, filteredSolanaTokenList, meldToken])
 }
