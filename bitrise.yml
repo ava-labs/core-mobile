@@ -299,6 +299,14 @@ workflows:
     - deploy-to-bitrise-io@2:
         inputs:
         - pipeline_intermediate_files: $BITRISE_APP_DIR_PATH:BITRISE_APP_DIR_PATH
+    - script@1:
+        title: Bundle React Native JS
+        inputs:
+        - content: |-
+            #!/usr/bin/env bash
+            set -euo pipefail
+            cd $BITRISE_SOURCE_DIR/packages/core-mobile
+            npx react-native bundle --platform ios --dev false --entry-file index.js --bundle-output ios/main.jsbundle --assets-dest ios
     - script-runner@0:
         title: Create iOS Test Run
         inputs:
