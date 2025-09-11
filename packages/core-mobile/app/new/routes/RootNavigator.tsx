@@ -42,6 +42,7 @@ export function RootNavigator(): JSX.Element {
         <Stack.Screen
           name="loginWithPinOrBiometry"
           options={{
+            animation: 'none',
             presentation: 'fullScreenModal',
             headerShown: false,
             gestureEnabled: false

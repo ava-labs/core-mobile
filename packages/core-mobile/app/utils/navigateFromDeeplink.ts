@@ -18,7 +18,6 @@ export const navigateFromDeeplinkUrl = (
   // and the deeplinked screen goes away because of the re-rendering.
   InteractionManager.runAfterInteractions(() => {
     // @ts-ignore TODO: make routes typesafe
-    hasPortfolioRoute === false && router.navigate('/portfolio')
     setTimeout(() => {
       // @ts-ignore TODO: make routes typesafe
       router.navigate(href)
