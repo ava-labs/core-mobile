@@ -56,6 +56,10 @@ export const selectAllNotificationSubscriptions = (
 //actions
 export const { setNotificationSubscriptions } = notificationsSlice.actions
 
+export const afterLoginFlowsRequested = createAction(
+  `${reducerName}/afterLoginFlowsRequested`
+)
+
 export const processNotificationData = createAction<{ data: NotificationData }>(
   `${reducerName}/processNotificationData`
 )

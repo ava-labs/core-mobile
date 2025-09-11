@@ -15,6 +15,7 @@ import { toggleWatchListFavorite } from 'store/watchlist'
 import { setPriceAlertNotifications } from 'store/notifications/listeners/setPriceAlertNotifications'
 import { unsubscribeForPriceAlert } from 'services/notifications/priceAlert/unsubscribeForPriceAlert'
 import {
+  afterLoginFlowsRequested,
   onFcmTokenChange,
   processNotificationData,
   scheduleStakingCompleteNotifications,
@@ -32,10 +33,16 @@ import { manageNotificationChannelsCreation } from './manageNotificationChannels
 import { unsubscribeAllNotifications } from './unsubscribeAllNotifications'
 import { unsubscribeNewsNotifications } from './unsubscribeNewsNotifications'
 import { subscribeNewsNotifications } from './subscribeNewsNotifications'
+import { handleAfterLoginFlows } from './handleAfterLoginFlows'
 
 export const addNotificationsListeners = (
   startListening: AppStartListening
 ): void => {
+  startListening({
+    actionCreator: afterLoginFlowsRequested,
+    effect: handleAfterLoginFlows
+  })
+
   startListening({
     actionCreator: turnOnNotificationsFor,
     effect: async (action: AnyAction, listenerApi) => {
