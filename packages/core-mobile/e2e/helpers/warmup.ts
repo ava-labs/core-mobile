@@ -22,6 +22,7 @@ export const warmup = async (newInstance = false) => {
     initialArgs.newInstance = true
   }
   await device.launchApp(initialArgs)
+  await device.disableSynchronization()
 
   // Jailbreak Check
   await handleJailbrokenWarning()
