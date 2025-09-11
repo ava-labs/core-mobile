@@ -215,7 +215,7 @@ __metadata:
     "@blockaid/client": 0.48.0
     "@bottom-tabs/react-navigation": 0.10.1
     "@coinbase/cbpay-js": 2.2.1
-    "@config-plugins/detox": 9.0.0
+    "@config-plugins/detox": 11.0.0
     "@contentful/rich-text-react-renderer": 16.0.2
     "@contentful/rich-text-types": 17.0.1
     "@cubist-labs/cubesigner-sdk": 0.4.117-0
@@ -4246,14 +4246,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@config-plugins/detox@npm:9.0.0":
-  version: 9.0.0
-  resolution: "@config-plugins/detox@npm:9.0.0"
+"@config-plugins/detox@npm:11.0.0":
+  version: 11.0.0
+  resolution: "@config-plugins/detox@npm:11.0.0"
   dependencies:
     expo-build-properties: ^0.13.1
   peerDependencies:
-    expo: ^52
-  checksum: b4a07a0ee0ef8937a3c8e77aa8d5c257cad74704c0f2633c871a303153987ee84475782860edb26a3233943c560337ffd61af99024e73cbe4c958c290db114e1
+    expo: ^53
+  checksum: 5fe134f94f0d091167c85a968ba9efdb8d7cd350d07d47426a5ab5722d0ecfa11722020b93017ae4e600897698d467eae16eaa73d892e45a18eda21c54fb87ae
   languageName: node
   linkType: hard
 

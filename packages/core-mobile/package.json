@@ -41,7 +41,7 @@
     "@blockaid/client": "0.48.0",
     "@bottom-tabs/react-navigation": "0.10.1",
     "@coinbase/cbpay-js": "2.2.1",
-    "@config-plugins/detox": "9.0.0",
+    "@config-plugins/detox": "11.0.0",
     "@contentful/rich-text-react-renderer": "16.0.2",
     "@contentful/rich-text-types": "17.0.1",
     "@cubist-labs/cubesigner-sdk": "0.4.117-0",
