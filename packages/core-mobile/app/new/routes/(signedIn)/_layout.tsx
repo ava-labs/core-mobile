@@ -7,16 +7,15 @@ import {
   stackNavigatorScreenOptions,
   stackScreensOptions
 } from 'common/consts/screenOptions'
+import { useTriggerAfterLoginFlows } from 'common/hooks/useTriggerAfterLoginFlows'
 import { BridgeProvider } from 'features/bridge/contexts/BridgeContext'
 import { CollectiblesProvider } from 'features/portfolio/collectibles/CollectiblesContext'
 import { MigrateFavoriteIds } from 'new/common/components/MigrateFavoriteIds'
 import { NavigationPresentationMode } from 'new/common/types'
-import React, { useEffect } from 'react'
-import { useDispatch, useSelector } from 'react-redux'
-import { selectActiveAccount } from 'store/account'
+import React from 'react'
+import { useSelector } from 'react-redux'
 import { selectWalletState } from 'store/app'
 import { WalletState } from 'store/app/types'
-import { afterLoginFlowsRequested } from 'store/notifications'
 
 const PolyfillCrypto = React.lazy(() => import('react-native-webview-crypto'))
 
@@ -26,8 +25,6 @@ export const unstable_settings = {
 
 export default function WalletLayout(): JSX.Element {
   const walletState = useSelector(selectWalletState)
-  const activeAccount = useSelector(selectActiveAccount)
-  const dispatch = useDispatch()
 
   usePreventRemove(walletState === WalletState.ACTIVE, () => {
     // TODO: uncomment this after we fix the multiple back() calls
@@ -36,11 +33,7 @@ export default function WalletLayout(): JSX.Element {
     // BackHandler.exitApp()
   })
 
-  useEffect(() => {
-    if (walletState !== WalletState.ACTIVE || !activeAccount) return
-
-    dispatch(afterLoginFlowsRequested)
-  }, [walletState, activeAccount, dispatch])
+  useTriggerAfterLoginFlows()
 
   return (
     <BridgeProvider>
