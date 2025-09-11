@@ -305,7 +305,7 @@ workflows:
         - content: |-
             #!/usr/bin/env bash
             set -euo pipefail
-            cd $BITRISE_SOURCE_DIR/packages/core-mobile
+            cd $BITRISE_SOURCE_DIR
             npx react-native bundle --platform ios --dev false --entry-file index.js --bundle-output ios/main.jsbundle --assets-dest ios
     - script-runner@0:
         title: Create iOS Test Run
