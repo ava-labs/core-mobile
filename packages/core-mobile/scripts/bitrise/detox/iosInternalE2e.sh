@@ -13,11 +13,12 @@ brew tap wix/brew
 brew install applesimutils
 
 
-xcrun simctl boot "iPhone 15 Pro" || true
-xcrun simctl bootstatus "iPhone 15 Pro" -b || true
-open -a Simulator || true
-sleep 3
-xcrun simctl bootstatus booted -b || true
+xcrun simctl list devices
+
+xcrun simctl boot "iPhone 16 Pro (18.4)" || true
+
+xcrun simctl bootstatus "iPhone 16 Pro (18.4)" -b
+
 
 APP_PATH="$BITRISE_APP_DIR_PATH"
 
