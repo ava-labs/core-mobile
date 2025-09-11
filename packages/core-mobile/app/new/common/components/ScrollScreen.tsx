@@ -197,7 +197,7 @@ export const ScrollScreen = ({
   // If you have an input on the screen, you need to enable this prop
   if (shouldAvoidKeyboard) {
     return (
-      <View style={{ flex: 1, backgroundColor: 'blue' }}>
+      <View style={{ flex: 1 }}>
         <KeyboardScrollView
           extraKeyboardSpace={
             disableStickyFooter ? -footerHeight.value - insets.bottom : 0
