@@ -64,32 +64,37 @@ export const TokenList = ({
     )
   }, [solanaTokens])
 
-  const { filteredTokenList } = useSearchableTokenList({
-    tokens: [
-      ...erc20ContractTokens,
-      ...(usdcSolanaToken && !isSolanaSupportBlocked ? [usdcSolanaToken] : [])
-    ],
-    hideZeroBalance: category !== ServiceProviderCategories.CRYPTO_ONRAMP
-  })
+  const { filteredTokenList: filteredErc20ContractTokens } =
+    useSearchableTokenList({
+      tokens: erc20ContractTokens,
+      hideZeroBalance: category !== ServiceProviderCategories.CRYPTO_ONRAMP
+    })
+
+  const { filteredTokenList: filteredUsdcSolanaTokenList } =
+    useSearchableTokenList({
+      tokens:
+        usdcSolanaToken && !isSolanaSupportBlocked ? [usdcSolanaToken] : [],
+      hideZeroBalance: category !== ServiceProviderCategories.CRYPTO_ONRAMP
+    })
 
   const filteredUsdcSolanaToken = useMemo(() => {
-    return filteredTokenList.find(
+    return filteredUsdcSolanaTokenList.find(
       tk =>
         // @ts-expect-error: there is no chainId for SPL tokens
         tk.address === USDC_SOLANA_TOKEN_ID &&
         tk.networkChainId === ChainId.SOLANA_MAINNET_ID
     )
-  }, [filteredTokenList])
+  }, [filteredUsdcSolanaTokenList])
 
   useEffect(() => {
-    if (filteredTokenList?.length) {
-      setTokenIndex(filteredTokenList)
+    if (filteredErc20ContractTokens?.length) {
+      setTokenIndex(filteredErc20ContractTokens)
     }
     if (filteredUsdcSolanaToken) {
       setSplTokenIndex([filteredUsdcSolanaToken])
     }
   }, [
-    filteredTokenList,
+    filteredErc20ContractTokens,
     setTokenIndex,
     setSplTokenIndex,
     filteredUsdcSolanaToken
