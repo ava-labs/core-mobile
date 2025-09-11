@@ -180,7 +180,7 @@ class OnboardingPage {
   }
 
   async tapTypeInRecoveryPhase() {
-    await Action.tap(this.typeRecoveryPhraseBtn)
+    await Action.tap(this.typeRecoveryPhraseBtn, true)
   }
 
   async tapCreateNewWalletBtn() {
