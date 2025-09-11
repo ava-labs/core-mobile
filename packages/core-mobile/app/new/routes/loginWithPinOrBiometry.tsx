@@ -288,6 +288,7 @@ const LoginWithPinOrBiometry = (): JSX.Element => {
   return (
     <ScrollScreen
       shouldAvoidKeyboard
+      hideHeaderBackground
       scrollEnabled={false}
       contentContainerStyle={{ flex: 1 }}>
       <TouchableWithoutFeedback
