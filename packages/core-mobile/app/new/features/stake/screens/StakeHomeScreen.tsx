@@ -259,18 +259,20 @@ export const StakeHomeScreen = (): JSX.Element => {
           right: 0
         }}
         onLayout={handleSegmentedControlLayout}>
-        <BottomTabWrapper>
-          <SegmentedControl
-            dynamicItemWidth={false}
-            items={SEGMENT_ITEMS}
-            selectedSegmentIndex={selectedSegmentIndex}
-            onSelectSegment={handleSelectSegment}
-            style={{
-              marginHorizontal: 16,
-              marginBottom: 16
-            }}
-          />
-        </BottomTabWrapper>
+        {isEmpty ? null : (
+          <BottomTabWrapper>
+            <SegmentedControl
+              dynamicItemWidth={false}
+              items={SEGMENT_ITEMS}
+              selectedSegmentIndex={selectedSegmentIndex}
+              onSelectSegment={handleSelectSegment}
+              style={{
+                marginHorizontal: 16,
+                marginBottom: 16
+              }}
+            />
+          </BottomTabWrapper>
+        )}
       </View>
     </BlurredBarsContentLayout>
   )

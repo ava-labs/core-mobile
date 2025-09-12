@@ -131,6 +131,7 @@ export const VerifyWithPinOrBiometry = ({
         <PinInput
           disabled={disableKeypad}
           ref={pinInputRef}
+          autoFocus={true}
           length={6}
           onChangePin={onEnterPin}
           value={enteredPin}

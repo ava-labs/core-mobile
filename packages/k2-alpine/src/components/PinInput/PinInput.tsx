@@ -15,7 +15,10 @@ import { TouchableOpacity } from '../Primitives'
 import { useTheme } from '../../hooks'
 
 export const PinInput = forwardRef<PinInputActions, PinInputProps>(
-  ({ value, onChangePin, length = 6, disabled, style }, ref) => {
+  (
+    { value, onChangePin, length = 6, disabled, style, autoFocus = false },
+    ref
+  ) => {
     const textInputRef = useRef<TextInput>(null)
     const wrongPinAnimation = useSharedValue(0)
     const loadingDotAnimations = useLoadingDotAnimations(length)
@@ -165,8 +168,8 @@ export const PinInput = forwardRef<PinInputActions, PinInputProps>(
           value={value}
           onChangeText={handleInputChange}
           keyboardType="number-pad"
+          autoFocus={autoFocus}
           maxLength={length}
-          autoFocus={true}
           allowFontScaling={false}
         />
         {/* Display for input dots */}
@@ -215,6 +218,7 @@ type PinInputProps = {
   length?: 6 | 8
   style?: ViewStyle
   disabled?: boolean
+  autoFocus?: boolean
 }
 
 const AnimatedDot = ({
