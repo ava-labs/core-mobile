@@ -6,10 +6,12 @@ import Action from './actions'
 import { Platform } from './constants'
 import loginRecoverWallet from './loginRecoverWallet'
 
-export const warmup = async (newInstance = false) => {
+export const warmup = async (newInstance = true) => {
   const initialArgs: DeviceLaunchAppConfig = {
     permissions: { notifications: 'YES', camera: 'YES' },
     launchArgs: {
+      synchronization: 0,
+      detoxEnableSynchronization: 0,
       detoxURLBlacklistRegex: [
         '.*cloudflare-ipfs.*',
         '.*[ipfs.io/ipfs].*',
@@ -18,11 +20,12 @@ export const warmup = async (newInstance = false) => {
       ]
     }
   }
-  if (newInstance || process.env.CI === 'true') {
-    console.log('CI is true, setting newInstance to true')
+  if (newInstance) {
     initialArgs.newInstance = true
   }
+
   await device.launchApp(initialArgs)
+  await device.disableSynchronization()
 
   // Jailbreak Check
   await handleJailbrokenWarning()

@@ -244,7 +244,7 @@ workflows:
     steps:
     - restore-cocoapods-cache@1: {}
     - script@1:
-        title: Copy Gemfile to iOS folder
+        title: Copy Gemfile to iOS"P folder
         inputs:
         - content: |-
             #!/usr/bin/env bash
@@ -290,10 +290,15 @@ workflows:
         inputs:
         - scheme: $IOS_SCHEME
         - project_path: $IOS_PROJECT_PATH
-        - destination: "platform=iOS Simulator,name=iPhone 16 Pro,OS=latest"
+        - destination: generic/platform=iOS Simulator
         - configuration: $IOS_CONFIGURATION
-        - code_signing_allowed: "no"
+        - xcconfig_content: |-
+            CODE_SIGNING_ALLOWED=YES            
+            COMPILER_INDEX_STORE_ENABLE = NO
         - log_formatter: xcpretty
+    - deploy-to-bitrise-io@2:
+        inputs:
+        - pipeline_intermediate_files: $BITRISE_APP_DIR_PATH:BITRISE_APP_DIR_PATH
     - script-runner@0:
         title: Create iOS Test Run
         inputs:
@@ -304,9 +309,6 @@ workflows:
         inputs:
         - variables: |-
             TESTRAIL_RUN_ID=$TESTRAIL_RUN_ID
-    - deploy-to-bitrise-io@2:
-        inputs:
-        - pipeline_intermediate_files: $BITRISE_APP_DIR_PATH:BITRISE_APP_DIR_PATH
   _install-and-set-env:
     before_run:
     - _install-node-20
