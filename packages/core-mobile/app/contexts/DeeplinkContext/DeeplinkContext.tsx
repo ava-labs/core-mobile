@@ -17,7 +17,6 @@ import {
 } from 'store/posthog'
 import { FIDO_CALLBACK_URL } from 'services/passkey/consts'
 import { processNotificationData } from 'store/notifications'
-import { useRootNavigationState } from 'expo-router'
 import { useCoreBrowser } from 'common/hooks/useCoreBrowser'
 import { handleDeeplink } from './utils/handleDeeplink'
 import {
@@ -46,7 +45,6 @@ export const DeeplinkContextProvider = ({
   const isIdled = useSelector(selectIsIdled)
   const [pendingDeepLink, setPendingDeepLink] = useState<DeepLink>()
   const { openUrl } = useCoreBrowser()
-  const navigationState = useRootNavigationState()
 
   const handleNotificationCallback: HandleNotificationCallback = useCallback(
     (data: NotificationData | undefined) => {
@@ -143,8 +141,7 @@ export const DeeplinkContextProvider = ({
         deeplink: pendingDeepLink,
         dispatch,
         isEarnBlocked,
-        openUrl,
-        navigationState
+        openUrl
       })
       // once we used the url, we can expire it
       setPendingDeepLink(undefined)
@@ -155,8 +152,7 @@ export const DeeplinkContextProvider = ({
     dispatch,
     isEarnBlocked,
     openUrl,
-    isIdled,
-    navigationState
+    isIdled
   ])
 
   return (

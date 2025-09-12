@@ -1,12 +1,13 @@
 import { Logos, View, useTheme } from '@avalabs/k2-alpine'
 import React from 'react'
-import { useBgDetect } from 'common/hooks/useBgDetect'
+import { selectIsIdled } from 'store/app/slice'
 import { useSelector } from 'react-redux'
-import { selectIsIdled } from 'store/app'
+import { useBgDetect } from 'common/hooks/useBgDetect'
 
 export const PrivacyScreen = (): JSX.Element | null => {
-  const { inBackground } = useBgDetect()
   const isIdled = useSelector(selectIsIdled)
+  const { inBackground } = useBgDetect()
+
   const { theme } = useTheme()
 
   if (isIdled || inBackground) {
