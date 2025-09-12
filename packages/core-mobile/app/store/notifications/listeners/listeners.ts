@@ -11,11 +11,11 @@ import { FeatureFlags, FeatureGates } from 'services/posthog/types'
 import type { Action } from 'redux'
 import { ChannelId, NewsChannelId } from 'services/notifications/channels'
 import { handleProcessNotificationData } from 'store/notifications/listeners/handleProcessNotificationData'
-import { promptEnableNotifications } from 'store/notifications'
 import { toggleWatchListFavorite } from 'store/watchlist'
 import { setPriceAlertNotifications } from 'store/notifications/listeners/setPriceAlertNotifications'
 import { unsubscribeForPriceAlert } from 'services/notifications/priceAlert/unsubscribeForPriceAlert'
 import {
+  afterLoginFlowsRequested,
   onFcmTokenChange,
   processNotificationData,
   scheduleStakingCompleteNotifications,
@@ -28,19 +28,19 @@ import { handleNotificationCleanup } from './handleNotificationCleanup'
 import { handleTurnOnNotificationsFor } from './handleTurnOnNotificationsFor'
 import { handleTurnOffNotificationsFor } from './handleTurnOffNotificationsFor'
 import { scheduleNotificationsForActiveStakesPeriodically } from './scheduleNotificationsForActiveStakesPeriodically'
-import { handlePromptNotifications } from './handlePromptNotifications'
 import { handleTurnOnAllNotifications } from './handleTurnOnAllNotifications'
 import { manageNotificationChannelsCreation } from './manageNotificationChannelsCreation'
 import { unsubscribeAllNotifications } from './unsubscribeAllNotifications'
 import { unsubscribeNewsNotifications } from './unsubscribeNewsNotifications'
 import { subscribeNewsNotifications } from './subscribeNewsNotifications'
+import { handleAfterLoginFlows } from './handleAfterLoginFlows'
 
 export const addNotificationsListeners = (
   startListening: AppStartListening
 ): void => {
   startListening({
-    actionCreator: promptEnableNotifications,
-    effect: handlePromptNotifications
+    actionCreator: afterLoginFlowsRequested,
+    effect: handleAfterLoginFlows
   })
 
   startListening({

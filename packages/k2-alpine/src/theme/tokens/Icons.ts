@@ -157,6 +157,7 @@ import XLM from '../../assets/tokenLogos/XLM.svg'
 import XRP from '../../assets/tokenLogos/XRP.svg'
 import OP from '../../assets/tokenLogos/OP.svg'
 import BASE from '../../assets/tokenLogos/BASE.svg'
+import HYPE from '../../assets/tokenLogos/HYPE.svg'
 import IconAvaxP from '../../assets/tokenLogos/AVAX_P_LIGHT.svg'
 import IconAvaxX from '../../assets/tokenLogos/AVAX_X_LIGHT.svg'
 import IconAvaxPDark from '../../assets/tokenLogos/AVAX_P_DARK.svg'
@@ -392,6 +393,7 @@ export const Icons = {
     XRP: XRP,
     OP: OP,
     BASE: BASE,
+    HYPE: HYPE,
     AVAX_P_LIGHT: IconAvaxP,
     AVAX_X_LIGHT: IconAvaxX,
     AVAX_P_DARK: IconAvaxPDark,

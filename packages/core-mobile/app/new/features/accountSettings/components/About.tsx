@@ -2,6 +2,7 @@ import React, { useCallback, useMemo } from 'react'
 import { GroupList, GroupListItem } from '@avalabs/k2-alpine'
 import DeviceInfo from 'react-native-device-info'
 import { PRIVACY_POLICY_URL, TERMS_OF_USE_URL } from 'common/consts/urls'
+import { copyToClipboard } from 'common/utils/clipboard'
 
 const VERSION = DeviceInfo.getReadableVersion()
 
@@ -24,6 +25,10 @@ export const About = ({
     })
   }, [onPressItem])
 
+  const copyAppVersion = useCallback(() => {
+    copyToClipboard(VERSION, 'App version copied to clipboard')
+  }, [])
+
   const data = useMemo(() => {
     const items: GroupListItem[] = [
       {
@@ -36,12 +41,13 @@ export const About = ({
       },
       {
         title: 'App version',
-        value: VERSION
+        value: VERSION,
+        onPress: copyAppVersion
       }
     ]
 
     return items
-  }, [openTermsOfUse, openPrivacyPolicy])
+  }, [openTermsOfUse, openPrivacyPolicy, copyAppVersion])
 
   return (
     <GroupList

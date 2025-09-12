@@ -1919,6 +1919,30 @@ PODS:
     - React-Core
   - react-native-get-random-values (1.11.0):
     - React-Core
+  - react-native-in-app-updates (0.2.2):
+    - DoubleConversion
+    - glog
+    - hermes-engine
+    - RCT-Folly (= 2024.11.18.00)
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Core
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
+    - React-hermes
+    - React-ImageManager
+    - React-jsi
+    - React-NativeModulesApple
+    - React-RCTFabric
+    - React-renderercss
+    - React-rendererdebug
+    - React-utils
+    - ReactCodegen
+    - ReactCommon/turbomodule/bridging
+    - ReactCommon/turbomodule/core
+    - Yoga
   - react-native-ios-context-menu (3.1.0):
     - ContextMenuAuxiliaryPreview (~> 0.5)
     - DGSwiftUtilities
@@ -3395,6 +3419,7 @@ DEPENDENCIES:
   - "react-native-compat (from `../node_modules/@walletconnect/react-native-compat`)"
   - react-native-config (from `../node_modules/react-native-config`)
   - react-native-get-random-values (from `../node_modules/react-native-get-random-values`)
+  - react-native-in-app-updates (from `../node_modules/react-native-in-app-updates`)
   - react-native-ios-context-menu (from `../node_modules/react-native-ios-context-menu`)
   - react-native-ios-utilities (from `../node_modules/react-native-ios-utilities`)
   - react-native-keyboard-controller (from `../node_modules/react-native-keyboard-controller`)
@@ -3668,6 +3693,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-config"
   react-native-get-random-values:
     :path: "../node_modules/react-native-get-random-values"
+  react-native-in-app-updates:
+    :path: "../node_modules/react-native-in-app-updates"
   react-native-ios-context-menu:
     :path: "../node_modules/react-native-ios-context-menu"
   react-native-ios-utilities:
@@ -3843,7 +3870,7 @@ SPEC CHECKSUMS:
   DatadogTrace: 23df8545911d219d4c15446a4c6c04862ff76175
   DatadogWebViewTracking: e88b8057eb5ff06a68baf232ae37637b8bb7518b
   DGSwiftUtilities: 567f8d5ee618f0b7afb185b17aa45ff356315a0f
-  DoubleConversion: cb417026b2400c8f53ae97020b2be961b59470cb
+  DoubleConversion: fea03f2699887d960129cc54bba7e52542b6f953
   EXApplication: 50cc8ea58c138da6e3f25cd789634219c86b90d5
   EXConstants: 9d62a46a36eae6d28cb978efcbc68aef354d1704
   EXJSONUtils: 1d3e4590438c3ee593684186007028a14b3686cd
@@ -3882,7 +3909,7 @@ SPEC CHECKSUMS:
   FirebaseInstallations: d8063d302a426d114ac531cd82b1e335a0565745
   FirebaseMessaging: 9f4e42053241bd45ce8565c881bfdd9c1df2f7da
   fmt: a40bb5bd0294ea969aaaba240a927bd33d878cdd
-  glog: 5683914934d5b6e4240e497e0f4a3b42d1854183
+  glog: c5d68082e772fa1c511173d6b30a9de2c05a69a2
   GoogleDataTransport: aae35b7ea0c09004c3797d53c8c41f66f219d6a7
   GoogleSignIn: d4281ab6cf21542b1cfaff85c191f230b399d2db
   GoogleUtilities: 00c88b9a86066ef77f0da2fab05f65d7768ed8e1
@@ -3936,6 +3963,7 @@ SPEC CHECKSUMS:
   react-native-compat: 8fd509839fcf4e5646b4ff2281912d95bbd66334
   react-native-config: 8f7283449bbb048902f4e764affbbf24504454af
   react-native-get-random-values: 21325b2244dfa6b58878f51f9aa42821e7ba3d06
+  react-native-in-app-updates: 3073ae1fce86831386a270980dab9dc5bdb6a229
   react-native-ios-context-menu: f5c2bc565a9a8599bb4513c43835a38e00d73b3a
   react-native-ios-utilities: 73c3e0a51544c059f80eecc226a3530609e10c42
   react-native-keyboard-controller: 140bd6036203cf520c811ec7ea67950a6332ff68
