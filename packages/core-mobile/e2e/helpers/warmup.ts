@@ -15,7 +15,8 @@ export const warmup = async (newInstance = false) => {
         '.*[ipfs.io/ipfs].*',
         '.*[amazonaws.com].*',
         '*facebook.react.*'
-      ]
+      ],
+      detoxEnableSynchronization: 0
     }
   }
   if (newInstance) {

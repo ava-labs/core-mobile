@@ -1,10 +1,4 @@
-import {
-  AppRegistry,
-  LogBox,
-  Platform,
-  UIManager,
-  NativeModules
-} from 'react-native'
+import { AppRegistry, LogBox, Platform, UIManager } from 'react-native'
 import './polyfills'
 import Big from 'big.js'
 import FCMService from 'services/fcm/FCMService'
@@ -41,8 +35,8 @@ Big.PE = 99
 Big.NE = -18
 
 let AppEntryPoint = NewApp
-const buildFlavor = NativeModules.RNDeviceInfo.appBuildFlavor
-if (buildFlavor === 'e2e' || Config.E2E_MNEMONIC) {
+
+if (Config.E2E_MNEMONIC || __DEV__) {
   Logger.info('Detox CI mode')
   AppEntryPoint = DetoxPlaceholderScreen
 }
