@@ -286,15 +286,10 @@ workflows:
         - verbose: "true"
         - source_root_path: $BITRISE_SOURCE_DIR/ios
     - save-cocoapods-cache@1: {}
-    - xcode-build-for-simulator:
+    - script-runner@0:
+        title: Build iOS Simulator
         inputs:
-        - scheme: $IOS_SCHEME
-        - project_path: $IOS_PROJECT_PATH
-        - destination: generic/platform=iOS Simulator
-        - configuration: $IOS_CONFIGURATION
-        - xcconfig_content: |-
-              CODE_SIGNING_ALLOWED=YES            
-              COMPILER_INDEX_STORE_ENABLE = NO
+        - file_path: scripts/bitrise/buildSimulator.sh
     - deploy-to-bitrise-io@2:
         inputs:
         - pipeline_intermediate_files: $BITRISE_APP_DIR_PATH:BITRISE_APP_DIR_PATH
