@@ -6,12 +6,12 @@ import Action from './actions'
 import { Platform } from './constants'
 import loginRecoverWallet from './loginRecoverWallet'
 
-export const warmup = async (newInstance = true) => {
+export const warmup = async () => {
   const initialArgs: DeviceLaunchAppConfig = {
     permissions: { notifications: 'YES', camera: 'YES' },
+    newInstance: true,
     launchArgs: {
-      synchronization: 0,
-      detoxEnableSynchronization: 0,
+      detoxEnableSynchronization: false,
       detoxURLBlacklistRegex: [
         '.*cloudflare-ipfs.*',
         '.*[ipfs.io/ipfs].*',
@@ -19,9 +19,6 @@ export const warmup = async (newInstance = true) => {
         '*facebook.react.*'
       ]
     }
-  }
-  if (newInstance) {
-    initialArgs.newInstance = true
   }
 
   await device.launchApp(initialArgs)

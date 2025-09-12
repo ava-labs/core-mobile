@@ -8,8 +8,6 @@ import Logger, { LogLevel } from 'utils/Logger'
 import DevDebuggingConfig from 'utils/debugging/DevDebuggingConfig'
 import SentryService from 'services/sentry/SentryService'
 import NewApp from 'new/ContextApp'
-import DetoxPlaceholderScreen from 'new/common/screens/DetoxPlaceholderScreen'
-import Config from 'react-native-config'
 import { expo } from './app.json'
 import { server } from './tests/msw/native/server'
 
@@ -35,11 +33,6 @@ Big.PE = 99
 Big.NE = -18
 
 let AppEntryPoint = NewApp
-
-if (DevDebuggingConfig.METRO_DEV_MENU) {
-  Logger.info('Detox CI mode')
-  AppEntryPoint = DetoxPlaceholderScreen
-}
 
 if (DevDebuggingConfig.STORYBOOK_ENABLED) {
   Bootsplash.hide()
