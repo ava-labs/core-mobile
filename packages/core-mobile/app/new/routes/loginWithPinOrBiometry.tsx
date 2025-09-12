@@ -175,7 +175,10 @@ const LoginWithPinOrBiometry = (): JSX.Element => {
   }
 
   const handlePromptBioLogin = useCallback(() => {
-    verifyBiometric().catch(Logger.error)
+    blurPinInput()
+    InteractionManager.runAfterInteractions(() => {
+      verifyBiometric().catch(Logger.error)
+    })
   }, [verifyBiometric])
 
   const handlePressBackground = (): void => {
@@ -225,21 +228,18 @@ const LoginWithPinOrBiometry = (): JSX.Element => {
         }
 
         if (accessType === 'BIO') {
+          blurPinInput()
           handlePromptBioLogin()
         } else {
-          focusPinInput()
+          pinInputRef.current?.focus()
+          setIsEnteringPin(true)
         }
       })
 
       return () => {
         blurPinInput()
       }
-    }, [
-      isBiometricAvailable,
-      useBiometrics,
-      handlePromptBioLogin,
-      focusPinInput
-    ])
+    }, [isBiometricAvailable, useBiometrics, handlePromptBioLogin])
   )
 
   useEffect(() => {
