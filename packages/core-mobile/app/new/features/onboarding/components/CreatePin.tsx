@@ -113,6 +113,7 @@ export const CreatePin = ({
         }}>
         <PinInput
           ref={ref}
+          autoFocus={true}
           length={6}
           value={chosenPinEntered ? confirmedPin : chosenPin}
           onChangePin={

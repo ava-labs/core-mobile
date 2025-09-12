@@ -175,6 +175,7 @@ const LoginWithPinOrBiometry = (): JSX.Element => {
   }
 
   const handlePromptBioLogin = useCallback(() => {
+    blurPinInput()
     verifyBiometric().catch(Logger.error)
   }, [verifyBiometric])
 
