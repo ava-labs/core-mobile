@@ -36,7 +36,7 @@ Big.NE = -18
 
 let AppEntryPoint = NewApp
 
-if (Config.E2E_MNEMONIC || __DEV__) {
+if (DevDebuggingConfig.METRO_DEV_MENU) {
   Logger.info('Detox CI mode')
   AppEntryPoint = DetoxPlaceholderScreen
 }
