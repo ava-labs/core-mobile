@@ -226,19 +226,21 @@ const LoginWithPinOrBiometry = (): JSX.Element => {
         }
 
         if (accessType === 'BIO') {
-          pinInputRef.current?.blur()
-          setIsEnteringPin(false)
-          verifyBiometric().catch(Logger.error)
+          handlePromptBioLogin()
         } else {
-          pinInputRef.current?.focus()
-          setIsEnteringPin(true)
+          focusPinInput()
         }
       })
 
       return () => {
         blurPinInput()
       }
-    }, [useBiometrics, isBiometricAvailable, verifyBiometric])
+    }, [
+      isBiometricAvailable,
+      useBiometrics,
+      handlePromptBioLogin,
+      focusPinInput
+    ])
   )
 
   useEffect(() => {
