@@ -294,11 +294,11 @@ workflows:
             set -euo pipefail
 
             xcodebuild \
-              -workspace '$IOS_PROJECT_PATH' \
-              -scheme '$IOS_SCHEME' \
-              -configuration '$IOS_CONFIGURATION' \
+              -workspace $IOS_PROJECT_PATH \
+              -scheme $IOS_SCHEME \
+              -configuration $IOS_CONFIGURATION \
               -destination 'generic/platform=iOS Simulator' \
-              -derivedDataPath '$BITRISE_DEPLOY_DIR/' \
+              -derivedDataPath $BITRISE_DEPLOY_DIR/ \
               CODE_SIGNING_ALLOWED=YES \
               COMPILER_INDEX_STORE_ENABLE=NO \
               | xcpretty
