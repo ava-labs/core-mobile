@@ -18,8 +18,7 @@ export const warmup = async (newInstance = false) => {
       ]
     }
   }
-  if (newInstance || process.env.CI === 'true') {
-    console.log('CI is true, setting newInstance to true')
+  if (newInstance) {
     initialArgs.newInstance = true
   }
   await device.launchApp(initialArgs)
