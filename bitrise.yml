@@ -298,11 +298,7 @@ workflows:
               -scheme $IOS_SCHEME \
               -configuration $IOS_CONFIGURATION \
               -destination 'generic/platform=iOS Simulator' \
-              -derivedDataPath $BITRISE_DEPLOY_DIR/ \
-              CODE_SIGNING_ALLOWED=YES \
-              COMPILER_INDEX_STORE_ENABLE=NO \
-              | xcpretty
-
+              -derivedDataPath $BITRISE_DEPLOY_DIR/
             APP_PATH="$BITRISE_DEPLOY_DIR/Build/Products/$IOS_CONFIGURATION-iphonesimulator/$IOS_SCHEME.app"
             echo "Built app at: $APP_PATH"
             envman add --key BITRISE_APP_DIR_PATH --value "$APP_PATH"
