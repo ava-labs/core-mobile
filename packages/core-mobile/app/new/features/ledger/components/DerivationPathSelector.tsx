@@ -1,6 +1,7 @@
-import React, { useState } from 'react'
-import { View, TouchableOpacity } from 'react-native'
-import { Text, Button, useTheme } from '@avalabs/k2-alpine'
+import React, { useState, useCallback } from 'react'
+import { View } from 'react-native'
+import { Text, Button, useTheme, GroupList, Icons } from '@avalabs/k2-alpine'
+import { ScrollScreen } from 'common/components/ScrollScreen'
 import { LedgerDerivationPathType } from 'services/wallet/LedgerWallet'
 
 interface DerivationPathOption {
@@ -61,91 +62,121 @@ export const DerivationPathSelector: React.FC<DerivationPathSelectorProps> = ({
   const [selectedType, setSelectedType] =
     useState<LedgerDerivationPathType | null>(null)
 
-  const handleOptionPress = (type: LedgerDerivationPathType) => {
-    setSelectedType(type)
-  }
+  const selectedOption = derivationPathOptions.find(
+    option => option.type === selectedType
+  )
 
-  const handleContinue = () => {
-    if (selectedType) {
-      onSelect(selectedType)
-    }
-  }
+  const renderFooter = useCallback(() => {
+    return (
+      <View style={{ padding: 16, gap: 12 }}>
+        <Button
+          type="primary"
+          size="large"
+          disabled={!selectedType}
+          onPress={() => selectedType && onSelect(selectedType)}>
+          Continue
+        </Button>
+
+        {onCancel && (
+          <Button type="tertiary" size="large" onPress={onCancel}>
+            Cancel
+          </Button>
+        )}
+      </View>
+    )
+  }, [selectedType, onSelect, onCancel])
+
+  const groupListData = derivationPathOptions.map(option => ({
+    title: option.title,
+    subtitle: (
+      <Text variant="caption" sx={{ fontSize: 12, paddingTop: 4 }}>
+        {option.subtitle}
+      </Text>
+    ),
+    leftIcon: (
+      <View
+        style={{
+          width: 40,
+          height: 40,
+          borderRadius: 20,
+          backgroundColor: option.recommended
+            ? colors.$textSuccess
+            : colors.$surfaceSecondary,
+          alignItems: 'center',
+          justifyContent: 'center'
+        }}>
+        <Icons.Device.Encrypted
+          color={option.recommended ? colors.$white : colors.$textPrimary}
+          width={20}
+          height={20}
+        />
+      </View>
+    ),
+    accessory:
+      selectedType === option.type ? (
+        <Icons.Action.CheckCircle
+          color={colors.$textSuccess}
+          width={24}
+          height={24}
+        />
+      ) : (
+        <View
+          style={{
+            width: 24,
+            height: 24,
+            borderRadius: 12,
+            borderWidth: 2,
+            borderColor: colors.$borderPrimary
+          }}
+        />
+      ),
+    onPress: () => setSelectedType(option.type)
+  }))
 
   return (
-    <View style={{ flex: 1, padding: 24 }}>
-      {/* Header */}
-      <View style={{ marginBottom: 32 }}>
-        <Text variant="heading4" style={{ marginBottom: 8 }}>
-          Choose Setup Method
-        </Text>
-        <Text variant="body1" style={{ color: colors.$textSecondary }}>
-          Select how you'd like to set up your Ledger wallet. Both options are
-          secure.
-        </Text>
+    <ScrollScreen
+      title="Choose Setup Method"
+      subtitle="Select how you'd like to set up your Ledger wallet. Both options are secure."
+      isModal
+      renderFooter={renderFooter}
+      contentContainerStyle={{ padding: 16, flex: 1 }}>
+      <View style={{ marginTop: 24 }}>
+        <GroupList itemHeight={70} data={groupListData} />
       </View>
 
-      {/* Options */}
-      <View style={{ flex: 1 }}>
-        {derivationPathOptions.map(option => (
-          <TouchableOpacity
-            key={option.type}
-            style={{
-              borderWidth: 2,
-              borderColor:
-                selectedType === option.type
-                  ? colors.$textPrimary
-                  : colors.$borderPrimary,
-              borderRadius: 16,
-              padding: 20,
-              marginBottom: 16,
-              backgroundColor:
-                selectedType === option.type
-                  ? colors.$surfaceSecondary
-                  : colors.$surfacePrimary
-            }}
-            onPress={() => handleOptionPress(option.type)}>
-            {/* Header with recommendation badge */}
+      {selectedOption && (
+        <View style={{ marginTop: 32 }}>
+          {/* Recommendation badge */}
+          {selectedOption.recommended && (
             <View
               style={{
-                flexDirection: 'row',
-                alignItems: 'center',
-                marginBottom: 8
+                backgroundColor: colors.$textSuccess,
+                paddingHorizontal: 12,
+                paddingVertical: 6,
+                borderRadius: 16,
+                alignSelf: 'flex-start',
+                marginBottom: 16
               }}>
-              <Text variant="heading6" style={{ flex: 1 }}>
-                {option.title}
+              <Text
+                variant="caption"
+                style={{ color: colors.$white, fontWeight: '600' }}>
+                RECOMMENDED
               </Text>
-              {option.recommended && (
-                <View
-                  style={{
-                    backgroundColor: colors.$textSuccess,
-                    paddingHorizontal: 8,
-                    paddingVertical: 2,
-                    borderRadius: 12
-                  }}>
-                  <Text variant="caption" style={{ color: colors.$white }}>
-                    RECOMMENDED
-                  </Text>
-                </View>
-              )}
             </View>
+          )}
 
-            {/* Subtitle */}
-            <Text
-              variant="body2"
-              style={{ color: colors.$textSecondary, marginBottom: 16 }}>
-              {option.subtitle}
-            </Text>
-
-            {/* Quick stats */}
+          {/* Quick stats */}
+          <View
+            style={{
+              backgroundColor: colors.$surfaceSecondary,
+              borderRadius: 12,
+              padding: 16,
+              marginBottom: 24
+            }}>
             <View
               style={{
                 flexDirection: 'row',
-                justifyContent: 'space-between',
-                marginBottom: 16,
-                paddingVertical: 12,
-                paddingHorizontal: 16,
-                backgroundColor: colors.$surfaceSecondary,
-                borderRadius: 8
+                justifyContent: 'space-between'
               }}>
               <View style={{ flex: 1 }}>
                 <Text
@@ -153,8 +184,10 @@ export const DerivationPathSelector: React.FC<DerivationPathSelectorProps> = ({
                   style={{ color: colors.$textSecondary }}>
                   Setup Time
                 </Text>
-                <Text variant="body2" style={{ fontWeight: '600' }}>
-                  {option.setupTime}
+                <Text
+                  variant="body1"
+                  style={{ fontWeight: '600', marginTop: 4 }}>
+                  {selectedOption.setupTime}
                 </Text>
               </View>
               <View style={{ flex: 1 }}>
@@ -163,86 +196,76 @@ export const DerivationPathSelector: React.FC<DerivationPathSelectorProps> = ({
                   style={{ color: colors.$textSecondary }}>
                   New Accounts
                 </Text>
-                <Text variant="body2" style={{ fontWeight: '600' }}>
-                  {option.newAccountRequirement}
+                <Text
+                  variant="body1"
+                  style={{ fontWeight: '600', marginTop: 4 }}>
+                  {selectedOption.newAccountRequirement}
                 </Text>
               </View>
             </View>
+          </View>
 
-            {/* Benefits */}
-            <View style={{ marginBottom: 12 }}>
-              <Text
-                variant="subtitle2"
-                style={{ marginBottom: 8, color: colors.$textSuccess }}>
-                ✓ Benefits
-              </Text>
-              {option.benefits.map((benefit, index) => (
+          {/* Benefits */}
+          <View style={{ marginBottom: 24 }}>
+            <Text
+              variant="heading6"
+              style={{ marginBottom: 12, color: colors.$textSuccess }}>
+              ✓ Benefits
+            </Text>
+            {selectedOption.benefits.map((benefit, index) => (
+              <View
+                key={index}
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'flex-start',
+                  marginBottom: 8
+                }}>
                 <Text
-                  key={index}
                   variant="body2"
-                  style={{
-                    marginBottom: 4,
-                    marginLeft: 16,
-                    color: colors.$textSecondary
-                  }}>
-                  • {benefit}
+                  style={{ color: colors.$textSuccess, marginRight: 8 }}>
+                  •
                 </Text>
+                <Text
+                  variant="body2"
+                  style={{ color: colors.$textSecondary, flex: 1 }}>
+                  {benefit}
+                </Text>
+              </View>
+            ))}
+          </View>
+
+          {/* Considerations */}
+          {selectedOption.warnings.length > 0 && (
+            <View>
+              <Text
+                variant="heading6"
+                style={{ marginBottom: 12, color: colors.$textSecondary }}>
+                ⚠️ Considerations
+              </Text>
+              {selectedOption.warnings.map((warning, index) => (
+                <View
+                  key={index}
+                  style={{
+                    flexDirection: 'row',
+                    alignItems: 'flex-start',
+                    marginBottom: 8
+                  }}>
+                  <Text
+                    variant="body2"
+                    style={{ color: colors.$textSecondary, marginRight: 8 }}>
+                    •
+                  </Text>
+                  <Text
+                    variant="body2"
+                    style={{ color: colors.$textSecondary, flex: 1 }}>
+                    {warning}
+                  </Text>
+                </View>
               ))}
             </View>
-
-            {/* Warnings */}
-            {option.warnings.length > 0 && (
-              <View>
-                <Text
-                  variant="subtitle2"
-                  style={{ marginBottom: 8, color: colors.$textSecondary }}>
-                  ⚠️ Considerations
-                </Text>
-                {option.warnings.map((warning, index) => (
-                  <Text
-                    key={index}
-                    variant="body2"
-                    style={{
-                      marginBottom: 4,
-                      marginLeft: 16,
-                      color: colors.$textSecondary
-                    }}>
-                    • {warning}
-                  </Text>
-                ))}
-              </View>
-            )}
-          </TouchableOpacity>
-        ))}
-      </View>
-
-      {/* Action buttons */}
-      <View
-        style={{
-          flexDirection: 'row',
-          gap: 12,
-          paddingTop: 24,
-          borderTopWidth: 1,
-          borderTopColor: colors.$borderPrimary
-        }}>
-        {onCancel && (
-          <Button
-            type="secondary"
-            size="large"
-            style={{ flex: 1 }}
-            onPress={onCancel}>
-            Cancel
-          </Button>
-        )}
-        <Button
-          type="primary"
-          size="large"
-          style={{ flex: 1 }}
-          disabled={!selectedType}
-          onPress={handleContinue}>
-          Continue
-        </Button>
-      </View>
-    </View>
+          )}
+        </View>
+      )}
+    </ScrollScreen>
   )
 }

@@ -1,13 +1,25 @@
-import React, { useState, useCallback } from 'react'
+import React, { useState, useCallback, useEffect } from 'react'
 import { View, Alert } from 'react-native'
-import { Text, Button, useTheme } from '@avalabs/k2-alpine'
+import { Text, Button, useTheme, GroupList, Icons } from '@avalabs/k2-alpine'
+import { ScrollScreen } from 'common/components/ScrollScreen'
+import { LoadingState } from 'common/components/LoadingState'
 import { LedgerDerivationPathType } from 'services/wallet/LedgerWallet'
-import { useLedgerWallet, WalletCreationOptions } from '../hooks/useLedgerWallet'
+import {
+  useLedgerWallet,
+  WalletCreationOptions
+} from '../hooks/useLedgerWallet'
 import { DerivationPathSelector } from './DerivationPathSelector'
 import { DerivationPathEducation } from './DerivationPathEducation'
 import { LedgerSetupProgress } from './LedgerSetupProgress'
+import { LedgerAppConnection } from './LedgerAppConnection'
 
-type SetupStep = 'device-connection' | 'path-selection' | 'education' | 'setup-progress' | 'complete'
+type SetupStep =
+  | 'path-selection'
+  | 'education'
+  | 'device-connection'
+  | 'app-connection'
+  | 'setup-progress'
+  | 'complete'
 
 interface EnhancedLedgerSetupProps {
   onComplete: (walletId: string) => void
@@ -18,105 +30,83 @@ export const EnhancedLedgerSetup: React.FC<EnhancedLedgerSetupProps> = ({
   onComplete,
   onCancel
 }) => {
-  const { theme: { colors } } = useTheme()
-  const [currentStep, setCurrentStep] = useState<SetupStep>('device-connection')
-  const [selectedDerivationPath, setSelectedDerivationPath] = useState<LedgerDerivationPathType | null>(null)
-  const [connectedDeviceId, setConnectedDeviceId] = useState<string | null>(null)
-  const [connectedDeviceName, setConnectedDeviceName] = useState<string>('Ledger Device')
+  const {
+    theme: { colors }
+  } = useTheme()
+  const [currentStep, setCurrentStep] = useState<SetupStep>('path-selection')
+  const [selectedDerivationPath, setSelectedDerivationPath] =
+    useState<LedgerDerivationPathType | null>(null)
+  const [connectedDeviceId, setConnectedDeviceId] = useState<string | null>(
+    null
+  )
+  const [connectedDeviceName, setConnectedDeviceName] =
+    useState<string>('Ledger Device')
+  const [isCreatingWallet, setIsCreatingWallet] = useState<boolean>(false)
 
   const {
     devices,
     isScanning,
     isConnecting,
-    isLoading,
     transportState,
     scanForDevices,
     connectToDevice,
     disconnectDevice,
     getSolanaKeys,
     getAvalancheKeys,
-    getLedgerLiveKeys,
     createLedgerWallet,
     setupProgress,
     keys
   } = useLedgerWallet()
 
-  // Check if keys are available and auto-progress to path selection
-  React.useEffect(() => {
-    if (keys.avalancheKeys && keys.solanaKeys.length > 0 && currentStep === 'device-connection') {
-      // Set a device ID if not set (keys were retrieved so device must be connected)
-      if (!connectedDeviceId) {
-        setConnectedDeviceId('auto-detected')
-        setConnectedDeviceName('Ledger Device')
-        // Don't change step yet, let the next effect cycle handle it
-        return
-      }
-      
-      setCurrentStep('path-selection')
+  // Check if keys are available and auto-progress to setup
+  useEffect(() => {
+    if (
+      keys.avalancheKeys &&
+      keys.solanaKeys.length > 0 &&
+      currentStep === 'app-connection'
+    ) {
+      setCurrentStep('setup-progress')
     }
-  }, [keys.avalancheKeys, keys.solanaKeys, currentStep, connectedDeviceId])
+  }, [keys.avalancheKeys, keys.solanaKeys, currentStep])
 
   // Handle device connection
-  const handleDeviceConnection = useCallback(async (deviceId: string, deviceName: string) => {
-    try {
-      await connectToDevice(deviceId)
-      setConnectedDeviceId(deviceId)
-      setConnectedDeviceName(deviceName)
-      
-      // Get keys for both derivation paths
-      await Promise.all([
-        getSolanaKeys(),
-        getAvalancheKeys()
-      ])
-      
-      setCurrentStep('path-selection')
-    } catch (error) {
-      Alert.alert(
-        'Connection Failed',
-        'Failed to connect to Ledger device. Please try again.',
-        [{ text: 'OK' }]
-      )
-    }
-  }, [connectToDevice, getSolanaKeys, getAvalancheKeys])
+  const handleDeviceConnection = useCallback(
+    async (deviceId: string, deviceName: string) => {
+      try {
+        await connectToDevice(deviceId)
+        setConnectedDeviceId(deviceId)
+        setConnectedDeviceName(deviceName)
 
-  // Handle derivation path selection
-  const handleDerivationPathSelect = useCallback((derivationPathType: LedgerDerivationPathType) => {
-    setSelectedDerivationPath(derivationPathType)
-    handleStartSetup(derivationPathType)
-  }, [handleStartSetup])
+        // Move to app connection step instead of getting keys immediately
+        setCurrentStep('app-connection')
+      } catch (error) {
+        Alert.alert(
+          'Connection Failed',
+          'Failed to connect to Ledger device. Please try again.',
+          [{ text: 'OK' }]
+        )
+      }
+    },
+    [connectToDevice]
+  )
 
-  // Start wallet setup
-  const handleStartSetup = useCallback(async (derivationPathType: LedgerDerivationPathType) => {
-    if (!connectedDeviceId) {
+  // Start wallet setup (called from setup-progress step)
+  const handleStartSetup = useCallback(async () => {
+    if (!connectedDeviceId || !selectedDerivationPath || isCreatingWallet) {
       return
     }
 
     try {
-      setCurrentStep('setup-progress')
-      
-      let individualKeys: any[] = []
-      
-      // Different key retrieval based on derivation path type
-      if (derivationPathType === LedgerDerivationPathType.LedgerLive) {
-        const accountCount = 3 // Default 3 accounts for Ledger Live
-        const result = await getLedgerLiveKeys(accountCount, (step, progress, totalSteps) => {
-          // Progress callback for UI updates
-        })
-        
-        individualKeys = result.individualKeys
-        
-      } else {
-        // For BIP44, we use the existing keys that were already retrieved
-        // This maintains backward compatibility
-      }
-      
+      setIsCreatingWallet(true)
+      // We already have all the keys we need from the app connection step
+      // No need to retrieve keys again - just create the wallet with what we have
       const walletCreationOptions: WalletCreationOptions = {
         deviceId: connectedDeviceId,
         deviceName: connectedDeviceName,
-        derivationPathType,
-        accountCount: derivationPathType === LedgerDerivationPathType.BIP44 ? 3 : 1,
-        individualKeys, // Pass the individual keys for Ledger Live
-        progressCallback: (step, progress, totalSteps) => {
+        derivationPathType: selectedDerivationPath,
+        accountCount: 3, // Standard 3 accounts for both BIP44 and Ledger Live
+        // Don't pass individualKeys - let the wallet creation use the keys already stored
+        progressCallback: (_step, _progress, _totalSteps) => {
           // Progress callback for UI updates
         }
       }
@@ -125,17 +115,66 @@ export const EnhancedLedgerSetup: React.FC<EnhancedLedgerSetupProps> = ({
       setCurrentStep('complete')
       onComplete(walletId)
     } catch (error) {
-      console.error('Wallet creation failed:', error)
+      // Wallet creation failed
       Alert.alert(
         'Setup Failed',
         'Failed to create Ledger wallet. Please try again.',
         [
-          { text: 'Try Again', onPress: () => setCurrentStep('path-selection') },
-          { text: 'Cancel', onPress: onCancel }
+          {
+            text: 'Try Again',
+            onPress: () => {
+              setIsCreatingWallet(false)
+              setCurrentStep('app-connection')
+            }
+          },
+          {
+            text: 'Cancel',
+            onPress: () => {
+              setIsCreatingWallet(false)
+              onCancel?.()
+            }
+          }
         ]
       )
+    } finally {
+      setIsCreatingWallet(false)
     }
-  }, [connectedDeviceId, connectedDeviceName, createLedgerWallet, getLedgerLiveKeys, onComplete, onCancel])
+  }, [
+    connectedDeviceId,
+    connectedDeviceName,
+    selectedDerivationPath,
+    isCreatingWallet,
+    createLedgerWallet,
+    onComplete,
+    onCancel
+  ])
+
+  // Auto-start wallet creation when entering setup-progress step
+  useEffect(() => {
+    if (
+      currentStep === 'setup-progress' &&
+      selectedDerivationPath &&
+      connectedDeviceId &&
+      !isCreatingWallet
+    ) {
+      handleStartSetup()
+    }
+  }, [
+    currentStep,
+    selectedDerivationPath,
+    connectedDeviceId,
+    isCreatingWallet,
+    handleStartSetup
+  ])
+
+  // Handle derivation path selection
+  const handleDerivationPathSelect = useCallback(
+    (derivationPathType: LedgerDerivationPathType) => {
+      setSelectedDerivationPath(derivationPathType)
+      setCurrentStep('device-connection')
+    },
+    []
+  )
 
   // Handle education flow
   const handleShowEducation = useCallback(() => {
@@ -148,8 +187,8 @@ export const EnhancedLedgerSetup: React.FC<EnhancedLedgerSetupProps> = ({
 
   const handleEducationRecommended = useCallback(() => {
     setSelectedDerivationPath(LedgerDerivationPathType.BIP44)
-    handleStartSetup(LedgerDerivationPathType.BIP44)
-  }, [handleStartSetup])
+    setCurrentStep('device-connection')
+  }, [])
 
   // Handle cancellation
   const handleCancel = useCallback(async () => {
@@ -160,21 +199,8 @@ export const EnhancedLedgerSetup: React.FC<EnhancedLedgerSetupProps> = ({
   }, [connectedDeviceId, disconnectDevice, onCancel])
 
   // Render current step
-  const renderCurrentStep = () => {
+  const renderCurrentStep = (): React.ReactNode => {
     switch (currentStep) {
-      case 'device-connection':
-        return (
-          <DeviceConnectionStep
-            devices={devices}
-            isScanning={isScanning}
-            isConnecting={isConnecting}
-            transportState={transportState}
-            onScan={scanForDevices}
-            onConnect={handleDeviceConnection}
-            onCancel={handleCancel}
-          />
-        )
-
       case 'path-selection':
         return (
           <View style={{ flex: 1 }}>
@@ -182,18 +208,18 @@ export const EnhancedLedgerSetup: React.FC<EnhancedLedgerSetupProps> = ({
               onSelect={handleDerivationPathSelect}
               onCancel={handleCancel}
             />
-            
+
             {/* Help button */}
-            <View style={{ 
-              position: 'absolute', 
-              top: 24, 
-              right: 24 
-            }}>
+            <View
+              style={{
+                position: 'absolute',
+                top: 24,
+                right: 24
+              }}>
               <Button
                 type="tertiary"
                 size="small"
-                onPress={handleShowEducation}
-              >
+                onPress={handleShowEducation}>
                 Need Help?
               </Button>
             </View>
@@ -208,37 +234,71 @@ export const EnhancedLedgerSetup: React.FC<EnhancedLedgerSetupProps> = ({
           />
         )
 
+      case 'device-connection':
+        return (
+          <DeviceConnectionStep
+            devices={devices}
+            isScanning={isScanning}
+            isConnecting={isConnecting}
+            transportState={transportState}
+            onScan={scanForDevices}
+            onConnect={handleDeviceConnection}
+            onCancel={handleCancel}
+          />
+        )
+
+      case 'app-connection':
+        return (
+          <LedgerAppConnection
+            onComplete={() => setCurrentStep('setup-progress')}
+            onCancel={handleCancel}
+            getSolanaKeys={getSolanaKeys}
+            getAvalancheKeys={getAvalancheKeys}
+            deviceName={connectedDeviceName}
+            selectedDerivationPath={selectedDerivationPath}
+          />
+        )
+
       case 'setup-progress':
         return setupProgress ? (
           <LedgerSetupProgress
             progress={setupProgress}
-            derivationPathType={selectedDerivationPath!}
+            derivationPathType={
+              selectedDerivationPath || LedgerDerivationPathType.BIP44
+            }
             onCancel={handleCancel}
           />
         ) : (
-          <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+          <View
+            style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
             <Text>Initializing setup...</Text>
           </View>
         )
 
       case 'complete':
         return (
-          <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 24 }}>
-            <Text variant="heading4" style={{ textAlign: 'center', marginBottom: 16 }}>
+          <View
+            style={{
+              flex: 1,
+              justifyContent: 'center',
+              alignItems: 'center',
+              padding: 24
+            }}>
+            <Text
+              variant="heading4"
+              style={{ textAlign: 'center', marginBottom: 16 }}>
               🎉 Wallet Created Successfully!
             </Text>
-            <Text variant="body1" style={{ 
-              textAlign: 'center', 
-              color: colors.$textSecondary,
-              marginBottom: 32
-            }}>
+            <Text
+              variant="body1"
+              style={{
+                textAlign: 'center',
+                color: colors.$textSecondary,
+                marginBottom: 32
+              }}>
               Your Ledger wallet has been set up and is ready to use.
             </Text>
-            <Button
-              type="primary"
-              size="large"
-              onPress={() => onComplete('')}
-            >
+            <Button type="primary" size="large" onPress={() => onComplete('')}>
               Continue to Wallet
             </Button>
           </View>
@@ -256,65 +316,124 @@ export const EnhancedLedgerSetup: React.FC<EnhancedLedgerSetupProps> = ({
   )
 }
 
-// Simple device connection component (placeholder - would need full implementation)
+interface LedgerDevice {
+  id: string
+  name: string
+}
+
+// Enhanced device connection component
 const DeviceConnectionStep: React.FC<{
-  devices: any[]
+  devices: LedgerDevice[]
   isScanning: boolean
   isConnecting: boolean
-  transportState: any
+  transportState: unknown
   onScan: () => void
   onConnect: (deviceId: string, deviceName: string) => void
   onCancel: () => void
 }> = ({ devices, isScanning, isConnecting, onScan, onConnect, onCancel }) => {
-  const { theme: { colors } } = useTheme()
+  const {
+    theme: { colors }
+  } = useTheme()
+
+  const renderFooter = useCallback(() => {
+    return (
+      <View style={{ padding: 16, gap: 12 }}>
+        <Button
+          type="primary"
+          size="large"
+          onPress={onScan}
+          disabled={isScanning || isConnecting}>
+          {isScanning ? 'Scanning for devices...' : 'Scan for Devices'}
+        </Button>
+
+        <Button type="tertiary" size="large" onPress={onCancel}>
+          Cancel
+        </Button>
+      </View>
+    )
+  }, [isScanning, isConnecting, onScan, onCancel])
+
+  const deviceListData = devices.map(device => ({
+    title: device.name || 'Ledger Device',
+    subtitle: (
+      <Text variant="caption" sx={{ fontSize: 12, paddingTop: 4 }}>
+        {device.id ? `ID: ${device.id.slice(0, 8)}...` : 'Ready to connect'}
+      </Text>
+    ),
+    leftIcon: (
+      <Icons.Device.Encrypted
+        color={colors.$textPrimary}
+        width={24}
+        height={24}
+      />
+    ),
+    accessory: (
+      <Button
+        type="secondary"
+        size="small"
+        onPress={() => onConnect(device.id, device.name)}
+        disabled={isConnecting}>
+        {isConnecting ? 'Connecting...' : 'Connect'}
+      </Button>
+    ),
+    onPress: () => onConnect(device.id, device.name)
+  }))
 
   return (
-    <View style={{ flex: 1, padding: 24, justifyContent: 'center' }}>
-      <Text variant="heading4" style={{ textAlign: 'center', marginBottom: 16 }}>
-        Connect Your Ledger
-      </Text>
-      <Text variant="body1" style={{ 
-        textAlign: 'center', 
-        color: colors.$textSecondary,
-        marginBottom: 32
-      }}>
-        Make sure your Ledger device is unlocked and the Avalanche app is open.
-      </Text>
-      
-      <Button
-        type="primary"
-        size="large"
-        onPress={onScan}
-        disabled={isScanning || isConnecting}
-        style={{ marginBottom: 16 }}
-      >
-        {isScanning ? 'Scanning...' : 'Scan for Devices'}
-      </Button>
-
-      {devices.length > 0 && (
-        <View style={{ marginBottom: 16 }}>
-          {devices.map((device) => (
-            <Button
-              key={device.id}
-              type="secondary"
-              size="large"
-              onPress={() => onConnect(device.id, device.name)}
-              disabled={isConnecting}
-              style={{ marginBottom: 8 }}
-            >
-              {isConnecting ? 'Connecting...' : `Connect to ${device.name}`}
-            </Button>
-          ))}
+    <ScrollScreen
+      title="Connect Your Ledger"
+      subtitle="Make sure your Ledger device is unlocked and the Avalanche app is open."
+      isModal
+      renderFooter={renderFooter}
+      contentContainerStyle={{ padding: 16, flex: 1 }}>
+      {isScanning && (
+        <View style={{ marginTop: 24 }}>
+          <LoadingState sx={{ marginBottom: 16 }} />
+          <Text
+            variant="body2"
+            style={{
+              textAlign: 'center',
+              color: colors.$textSecondary
+            }}>
+            Searching for Ledger devices...
+          </Text>
         </View>
       )}
 
-      <Button
-        type="tertiary"
-        size="large"
-        onPress={onCancel}
-      >
-        Cancel
-      </Button>
-    </View>
+      {!isScanning && devices.length === 0 && (
+        <View
+          style={{
+            flex: 1,
+            justifyContent: 'center',
+            alignItems: 'center',
+            paddingVertical: 48
+          }}>
+          <Icons.Device.Encrypted
+            color={colors.$textSecondary}
+            width={48}
+            height={48}
+          />
+          <Text
+            variant="body1"
+            style={{
+              textAlign: 'center',
+              color: colors.$textSecondary,
+              marginTop: 16,
+              maxWidth: 280
+            }}>
+            No devices found. Make sure your Ledger is connected and unlocked.
+          </Text>
+        </View>
+      )}
+
+      {devices.length > 0 && (
+        <View style={{ marginTop: 24 }}>
+          <Text variant="heading6" style={{ marginBottom: 16 }}>
+            Available Devices
+          </Text>
+          <GroupList itemHeight={70} data={deviceListData} />
+        </View>
+      )}
+    </ScrollScreen>
   )
 }
