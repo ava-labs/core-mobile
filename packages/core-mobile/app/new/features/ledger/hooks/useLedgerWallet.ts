@@ -146,7 +146,14 @@ export interface UseLedgerWalletReturn {
   isLoading: boolean
   getSolanaKeys: () => Promise<void>
   getAvalancheKeys: () => Promise<void>
-  getLedgerLiveKeys: (accountCount?: number, progressCallback?: (step: string, progress: number, totalSteps: number) => void) => Promise<{ avalancheKeys: any, individualKeys: any[] }>
+  getLedgerLiveKeys: (
+    accountCount?: number,
+    progressCallback?: (
+      step: string,
+      progress: number,
+      totalSteps: number
+    ) => void
+  ) => Promise<{ avalancheKeys: any; individualKeys: any[] }>
   resetKeys: () => void
   keys: LedgerKeys
 
@@ -688,88 +695,112 @@ export function useLedgerWallet(): UseLedgerWalletReturn {
 =======
 =======
   // New method: Get individual keys for Ledger Live (sequential device confirmations)
-  const getLedgerLiveKeys = useCallback(async (
-    accountCount: number = 3,
-    progressCallback?: (step: string, progress: number, totalSteps: number) => void
-  ) => {
-    try {
-      setIsLoading(true)
-      Logger.info(`Starting Ledger Live key retrieval for ${accountCount} accounts`)
-      
-      const totalSteps = accountCount // One step per account (gets both EVM and AVM)
-      const individualKeys: any[] = []
-      let avalancheKeysResult: any = null
+  const getLedgerLiveKeys = useCallback(
+    async (
+      accountCount = 3,
+      progressCallback?: (
+        step: string,
+        progress: number,
+        totalSteps: number
+      ) => void
+    ) => {
+      try {
+        setIsLoading(true)
+        Logger.info(
+          `Starting Ledger Live key retrieval for ${accountCount} accounts`
+        )
 
-      // Sequential address retrieval - each account requires device confirmation
-      for (let accountIndex = 0; accountIndex < accountCount; accountIndex++) {
-        const stepName = `Getting keys for account ${accountIndex + 1}...`
-        const progress = Math.round(((accountIndex + 1) / totalSteps) * 100)
-        progressCallback?.(stepName, progress, totalSteps)
-        
-        Logger.info(`Requesting addresses for account ${accountIndex} (Ledger Live style)`)
-        
-        // Get public keys for this specific account (1 at a time for device confirmation)
-        const publicKeys = await ledgerService.getPublicKeys(accountIndex, 1)
-        
-        // Also get addresses for display purposes
-        const addresses = await ledgerService.getAllAddresses(accountIndex, 1)
-        
-        // Extract the keys for this account
-        const evmPublicKey = publicKeys.find(key => key.derivationPath.includes("44'/60'"))
-        const avmPublicKey = publicKeys.find(key => key.derivationPath.includes("44'/9000'"))
-        
-        // Extract addresses for this account
-        const evmAddress = addresses.find(addr => addr.network === ChainName.AVALANCHE_C_EVM)
-        const xpAddress = addresses.find(addr => addr.network === ChainName.AVALANCHE_X)
-        
-        if (evmPublicKey) {
-          individualKeys.push({
-            key: evmPublicKey.key,
-            derivationPath: `m/44'/60'/${accountIndex}'/0/0`, // Ledger Live path
-            curve: evmPublicKey.curve
-          })
-        }
-        
-        if (avmPublicKey) {
-          individualKeys.push({
-            key: avmPublicKey.key,
-            derivationPath: `m/44'/9000'/${accountIndex}'/0/0`, // Ledger Live path
-            curve: avmPublicKey.curve
-          })
-        }
+        const totalSteps = accountCount // One step per account (gets both EVM and AVM)
+        const individualKeys: any[] = []
+        let avalancheKeysResult: any = null
 
-        // Store first account's keys as primary
-        if (accountIndex === 0) {
-          avalancheKeysResult = {
-            evm: {
-              key: evmPublicKey?.key || '',
-              address: evmAddress?.address || ''
-            },
-            avalanche: {
-              key: avmPublicKey?.key || '',
-              address: xpAddress?.address || ''
+        // Sequential address retrieval - each account requires device confirmation
+        for (
+          let accountIndex = 0;
+          accountIndex < accountCount;
+          accountIndex++
+        ) {
+          const stepName = `Getting keys for account ${accountIndex + 1}...`
+          const progress = Math.round(((accountIndex + 1) / totalSteps) * 100)
+          progressCallback?.(stepName, progress, totalSteps)
+
+          Logger.info(
+            `Requesting addresses for account ${accountIndex} (Ledger Live style)`
+          )
+
+          // Get public keys for this specific account (1 at a time for device confirmation)
+          const publicKeys = await ledgerService.getPublicKeys(accountIndex, 1)
+
+          // Also get addresses for display purposes
+          const addresses = await ledgerService.getAllAddresses(accountIndex, 1)
+
+          // Extract the keys for this account
+          const evmPublicKey = publicKeys.find(key =>
+            key.derivationPath.includes("44'/60'")
+          )
+          const avmPublicKey = publicKeys.find(key =>
+            key.derivationPath.includes("44'/9000'")
+          )
+
+          // Extract addresses for this account
+          const evmAddress = addresses.find(
+            addr => addr.network === ChainName.AVALANCHE_C_EVM
+          )
+          const xpAddress = addresses.find(
+            addr => addr.network === ChainName.AVALANCHE_X
+          )
+
+          if (evmPublicKey) {
+            individualKeys.push({
+              key: evmPublicKey.key,
+              derivationPath: `m/44'/60'/${accountIndex}'/0/0`, // Ledger Live path
+              curve: evmPublicKey.curve
+            })
+          }
+
+          if (avmPublicKey) {
+            individualKeys.push({
+              key: avmPublicKey.key,
+              derivationPath: `m/44'/9000'/${accountIndex}'/0/0`, // Ledger Live path
+              curve: avmPublicKey.curve
+            })
+          }
+
+          // Store first account's keys as primary
+          if (accountIndex === 0) {
+            avalancheKeysResult = {
+              evm: {
+                key: evmPublicKey?.key || '',
+                address: evmAddress?.address || ''
+              },
+              avalanche: {
+                key: avmPublicKey?.key || '',
+                address: xpAddress?.address || ''
+              }
             }
           }
         }
-      }
 
-      // Update state with the retrieved keys
-      if (avalancheKeysResult) {
-        setAvalancheKeys(avalancheKeysResult)
+        // Update state with the retrieved keys
+        if (avalancheKeysResult) {
+          setAvalancheKeys(avalancheKeysResult)
+        }
+
+        Logger.info(
+          `Successfully retrieved Ledger Live keys for ${accountCount} accounts`
+        )
+        Logger.info('Individual keys count:', individualKeys.length)
+
+        return { avalancheKeys: avalancheKeysResult, individualKeys }
+      } catch (error) {
+        Logger.error('Failed to get Ledger Live keys:', error)
+        throw error
+      } finally {
+        setIsLoading(false)
       }
-      
-      Logger.info(`Successfully retrieved Ledger Live keys for ${accountCount} accounts`)
-      Logger.info('Individual keys count:', individualKeys.length)
-      
-      return { avalancheKeys: avalancheKeysResult, individualKeys }
-      
-    } catch (error) {
-      Logger.error('Failed to get Ledger Live keys:', error)
-      throw error
-    } finally {
-      setIsLoading(false)
-    }
-  }, [ledgerService])
+    },
+    [ledgerService]
+  )
 
 >>>>>>> 6a596f952 (ledger live address derivation working, transactiosn on avalanche and solana proven with this setup)
   const createLedgerWallet = useCallback(
@@ -898,30 +929,34 @@ export function useLedgerWallet(): UseLedgerWalletReturn {
                   avalanche: avalancheKeys.avalanche.key
                 }
               }),
-              publicKeys: derivationPathType === LedgerDerivationPathType.LedgerLive && individualKeys.length > 0
-                ? individualKeys // Use individual keys for Ledger Live
-                : [ // Use existing keys for BIP44
-                {
-                  key: avalancheKeys.evm.key,
-                  derivationPath: "m/44'/60'/0'/0/0",
-                  curve: 'secp256k1'
-                },
-                {
-                  key: avalancheKeys.avalanche.key,
-                  derivationPath: "m/44'/9000'/0'/0/0",
-                  curve: 'secp256k1'
-                },
-                {
-                  key: avalancheKeys.pvm?.key || avalancheKeys.avalanche.key,
-                  derivationPath: "m/44'/9000'/0'/0/0",
-                  curve: 'secp256k1'
-                },
-                {
-                  key: solanaKeys[0]?.key || '',
-                  derivationPath: "m/44'/501'/0'/0'",
-                  curve: 'ed25519'
-                }
-              ],
+              publicKeys:
+                derivationPathType === LedgerDerivationPathType.LedgerLive &&
+                individualKeys.length > 0
+                  ? individualKeys // Use individual keys for Ledger Live
+                  : [
+                      // Use existing keys for BIP44
+                      {
+                        key: avalancheKeys.evm.key,
+                        derivationPath: "m/44'/60'/0'/0/0",
+                        curve: 'secp256k1'
+                      },
+                      {
+                        key: avalancheKeys.avalanche.key,
+                        derivationPath: "m/44'/9000'/0'/0/0",
+                        curve: 'secp256k1'
+                      },
+                      {
+                        key:
+                          avalancheKeys.pvm?.key || avalancheKeys.avalanche.key,
+                        derivationPath: "m/44'/9000'/0'/0/0",
+                        curve: 'secp256k1'
+                      },
+                      {
+                        key: solanaKeys[0]?.key || '',
+                        derivationPath: "m/44'/501'/0'/0'",
+                        curve: 'ed25519'
+                      }
+                    ],
               avalancheKeys,
               solanaKeys
             }),

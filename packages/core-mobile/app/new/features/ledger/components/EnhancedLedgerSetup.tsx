@@ -211,6 +211,31 @@ export const EnhancedLedgerSetup: React.FC<EnhancedLedgerSetupProps> = ({
           />
         )
 
+      case 'device-connection':
+        return (
+          <DeviceConnectionStep
+            devices={devices}
+            isScanning={isScanning}
+            isConnecting={isConnecting}
+            transportState={transportState}
+            onScan={scanForDevices}
+            onConnect={handleDeviceConnection}
+            onCancel={handleCancel}
+          />
+        )
+
+      case 'app-connection':
+        return (
+          <LedgerAppConnection
+            onComplete={() => setCurrentStep('setup-progress')}
+            onCancel={handleCancel}
+            getSolanaKeys={getSolanaKeys}
+            getAvalancheKeys={getAvalancheKeys}
+            deviceName={connectedDeviceName}
+            selectedDerivationPath={selectedDerivationPath}
+          />
+        )
+
       case 'setup-progress':
         return setupProgress ? (
           <LedgerSetupProgress
