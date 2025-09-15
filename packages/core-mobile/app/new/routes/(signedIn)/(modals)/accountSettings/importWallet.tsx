@@ -111,25 +111,6 @@ const ImportWalletScreen = (): JSX.Element => {
           <Icons.Navigation.ChevronRight color={colors.$textSecondary} />
         ),
         onPress: handleImportPrivateKey
-      },
-      {
-        title: 'Import from Ledger',
-        subtitle: (
-          <Text variant="caption" sx={{ fontSize: 12, paddingTop: 4 }}>
-            Access with an existing Ledger
-          </Text>
-        ),
-        leftIcon: (
-          <Icons.Device.Encrypted
-            color={colors.$textPrimary}
-            width={24}
-            height={24}
-          />
-        ),
-        accessory: (
-          <Icons.Navigation.ChevronRight color={colors.$textSecondary} />
-        ),
-        onPress: handleImportLedger
       }
     ]
 
