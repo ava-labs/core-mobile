@@ -7,87 +7,85 @@ import {
 import { Stack } from 'common/components/Stack'
 import { WalletState } from 'store/app/types'
 import { useSelector } from 'react-redux'
-import { selectWalletState } from 'store/app/slice'
-import { useRouter } from 'expo-router'
-import { usePathname } from 'expo-router'
+import { selectIsReady, selectWalletState } from 'store/app/slice'
+import { PinScreenOverlay } from 'common/components/PinScreenOverlay'
 
 export function RootNavigator(): JSX.Element {
   const walletState = useSelector(selectWalletState)
-  const pathname = usePathname()
-  const { navigate } = useRouter()
-  const [signedInRoute, setSignedInRoute] = useState<string | null>(null)
+  const appIsReady = useSelector(selectIsReady)
+  const [shouldRenderOnlyPinScreen, setShouldRenderOnlyPinScreen] =
+    useState(true)
 
   useEffect(() => {
-    if (
-      walletState === WalletState.INACTIVE &&
-      pathname !== '/loginWithPinOrBiometry' &&
-      pathname !== '/'
-    ) {
-      setSignedInRoute(pathname)
-    }
-  }, [walletState, pathname])
+    // set shouldRenderOnlyPinScreen to false once wallet is unlocked
+    // do nothing if app is not ready (as we need to sync wallet state after rehydration)
+    // or if we have already set shouldRenderOnlyPinScreen to false
+    if (!appIsReady || shouldRenderOnlyPinScreen === false) return
 
-  useEffect(() => {
-    if (signedInRoute && walletState === WalletState.ACTIVE) {
-      // @ts-ignore TODO: make routes typesafe
-      navigate(signedInRoute)
-      setSignedInRoute(null)
-    }
-  }, [signedInRoute, navigate, walletState])
+    setShouldRenderOnlyPinScreen(walletState !== WalletState.ACTIVE)
+  }, [appIsReady, shouldRenderOnlyPinScreen, walletState])
 
   return (
-    <Stack
-      screenOptions={{
-        ...stackNavigatorScreenOptions,
-        headerShown: false
-      }}>
-      {/* verified and wallet active */}
-      <Stack.Protected guard={walletState === WalletState.ACTIVE}>
-        <Stack.Screen
-          name="(signedIn)"
-          options={{
-            headerShown: false,
-            animation: 'none',
-            gestureEnabled: false
-          }}
-        />
-        <Stack.Screen
-          name="sessionExpired"
-          options={{
-            ...modalScreensOptions,
-            gestureEnabled: false
-          }}
-        />
-      </Stack.Protected>
+    <>
+      <Stack
+        screenOptions={{
+          ...stackNavigatorScreenOptions,
+          headerShown: false
+        }}>
+        {/* verified and wallet active */}
+        <Stack.Protected guard={walletState !== WalletState.NONEXISTENT}>
+          <Stack.Protected guard={!shouldRenderOnlyPinScreen}>
+            <Stack.Screen
+              name="(signedIn)"
+              options={{
+                headerShown: false,
+                animation: 'none',
+                gestureEnabled: false
+              }}
+            />
+            <Stack.Screen
+              name="sessionExpired"
+              options={{
+                ...modalScreensOptions,
+                gestureEnabled: false
+              }}
+            />
+          </Stack.Protected>
+          {/* should render only pin screen */}
+          <Stack.Protected guard={shouldRenderOnlyPinScreen}>
+            <Stack.Screen
+              name="loginWithPinOrBiometry"
+              options={{
+                animation: 'none',
+                presentation: 'fullScreenModal',
+                headerShown: false,
+                gestureEnabled: false
+              }}
+            />
+          </Stack.Protected>
+          <Stack.Screen name="forgotPin" options={{ headerShown: true }} />
+        </Stack.Protected>
 
-      {/* wallet inactive */}
-      <Stack.Protected guard={walletState === WalletState.INACTIVE}>
-        <Stack.Screen
-          name="loginWithPinOrBiometry"
-          options={{
-            animation: 'none',
-            presentation: 'fullScreenModal',
-            headerShown: false,
-            gestureEnabled: false
-          }}
-        />
-        <Stack.Screen name="forgotPin" options={{ headerShown: true }} />
-      </Stack.Protected>
+        {/* wallet nonexistent */}
+        <Stack.Protected guard={walletState === WalletState.NONEXISTENT}>
+          <Stack.Screen name="signup" options={{ animation: 'none' }} />
+          <Stack.Screen
+            name="onboarding"
+            options={{ ...stackScreensOptions, headerShown: true }}
+          />
+          <Stack.Screen
+            name="accessWallet"
+            options={{ ...stackScreensOptions, headerShown: true }}
+          />
+        </Stack.Protected>
 
-      {/* wallet nonexistent */}
-      <Stack.Protected guard={walletState === WalletState.NONEXISTENT}>
-        <Stack.Screen name="signup" options={{ animation: 'none' }} />
-        <Stack.Screen
-          name="onboarding"
-          options={{ ...stackScreensOptions, headerShown: true }}
-        />
-        <Stack.Screen
-          name="accessWallet"
-          options={{ ...stackScreensOptions, headerShown: true }}
-        />
-      </Stack.Protected>
+        <Stack.Screen name="+not-found" />
+      </Stack>
 
-      <Stack.Screen name="+not-found" />
-    </Stack>
+      {/* render this pin screen as full window overlay if walletState is previously active and app is coming back from background state */}
+      {!shouldRenderOnlyPinScreen && walletState === WalletState.INACTIVE && (
+        <PinScreenOverlay />
+      )}
+    </>
   )
 }
