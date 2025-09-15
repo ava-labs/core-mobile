@@ -33,37 +33,42 @@ export function RootNavigator(): JSX.Element {
           headerShown: false
         }}>
         {/* verified and wallet active */}
-        <Stack.Protected guard={walletState !== WalletState.NONEXISTENT}>
-          <Stack.Protected guard={!shouldRenderOnlyPinScreen}>
-            <Stack.Screen
-              name="(signedIn)"
-              options={{
-                headerShown: false,
-                animation: 'none',
-                gestureEnabled: false
-              }}
-            />
-            <Stack.Screen
-              name="sessionExpired"
-              options={{
-                ...modalScreensOptions,
-                gestureEnabled: false
-              }}
-            />
-          </Stack.Protected>
-          {/* should render only pin screen */}
-          <Stack.Protected guard={shouldRenderOnlyPinScreen}>
-            <Stack.Screen
-              name="loginWithPinOrBiometry"
-              options={{
-                animation: 'none',
-                presentation: 'fullScreenModal',
-                headerShown: false,
-                gestureEnabled: false
-              }}
-            />
-          </Stack.Protected>
-          <Stack.Screen name="forgotPin" options={{ headerShown: true }} />
+        <Stack.Protected
+          guard={
+            !shouldRenderOnlyPinScreen &&
+            walletState !== WalletState.NONEXISTENT
+          }>
+          <Stack.Screen
+            name="(signedIn)"
+            options={{
+              headerShown: false,
+              animation: 'none',
+              gestureEnabled: false
+            }}
+          />
+          <Stack.Screen
+            name="sessionExpired"
+            options={{
+              ...modalScreensOptions,
+              gestureEnabled: false
+            }}
+          />
+        </Stack.Protected>
+
+        {/* should render only pin screen */}
+        <Stack.Protected
+          guard={
+            shouldRenderOnlyPinScreen && walletState !== WalletState.NONEXISTENT
+          }>
+          <Stack.Screen
+            name="loginWithPinOrBiometry"
+            options={{
+              animation: 'none',
+              presentation: 'fullScreenModal',
+              headerShown: false,
+              gestureEnabled: false
+            }}
+          />
         </Stack.Protected>
 
         {/* wallet nonexistent */}
@@ -80,6 +85,7 @@ export function RootNavigator(): JSX.Element {
         </Stack.Protected>
 
         <Stack.Screen name="+not-found" />
+        <Stack.Screen name="forgotPin" options={{ headerShown: true }} />
       </Stack>
 
       {/* render this pin screen as full window overlay if walletState is previously active and app is coming back from background state */}
