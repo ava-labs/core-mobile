@@ -47,6 +47,7 @@ export enum FeatureGates {
   SWAP_SOLANA = 'swap-solana',
   IN_APP_UPDATE_ANDROID = 'in-app-update-android',
   ENABLE_MELD_SANDBOX = 'enable-meld-sandbox',
+  LEDGER_SUPPORT = 'ledger-support',
   IN_APP_DEFI = 'in-app-defi',
   IN_APP_DEFI_IS_NEW = 'in-app-defi-is-new'
 }
