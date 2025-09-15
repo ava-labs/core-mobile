@@ -11,6 +11,7 @@ import { selectSelectedCurrency } from 'store/settings/currency/slice'
 import Logger from 'utils/Logger'
 import { FundsStuckError } from 'hooks/earn/errors'
 import { useDelegationContext } from 'contexts/DelegationContext'
+import { useEffect, useState } from 'react'
 
 export const useIssueDelegation = (
   onSuccess: (txId: string) => void,
@@ -37,6 +38,29 @@ export const useIssueDelegation = (
 
   const pAddress = activeAccount?.addressPVM ?? ''
   const cAddress = activeAccount?.addressC ?? ''
+
+  const [delegationTxHash, setDelegationTxHash] = useState<string>()
+  const [delegationError, setDelegationError] = useState<Error>()
+
+  useEffect(() => {
+    if (!delegationTxHash) return
+
+    onSuccess(delegationTxHash)
+
+    setDelegationTxHash(undefined)
+  }, [delegationTxHash, onSuccess])
+
+  useEffect(() => {
+    if (!delegationError) return
+
+    if (delegationError instanceof FundsStuckError) {
+      onFundsStuck(delegationError)
+    } else {
+      onError(delegationError)
+    }
+
+    setDelegationError(undefined)
+  }, [delegationError, onFundsStuck, onError])
 
   const issueDelegationMutation = useMutation({
     mutationFn: async ({
@@ -76,15 +100,11 @@ export const useIssueDelegation = (
         selectedCurrency
       })
       // handle UI success state
-      onSuccess(txId)
+      setDelegationTxHash(txId)
     },
     onError: error => {
       Logger.error('delegation failed', error)
-      if (error instanceof FundsStuckError) {
-        onFundsStuck(error)
-      } else {
-        onError(error)
-      }
+      setDelegationError(error)
     }
   })
 
