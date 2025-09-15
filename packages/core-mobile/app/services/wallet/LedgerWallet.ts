@@ -5,28 +5,31 @@ import {
   BitcoinProvider,
   deserializeTransactionMessage,
   compileSolanaTx,
-  serializeSolanaTx
+  serializeSolanaTx,
+  getEvmAddressFromPubKey,
+  getBtcAddressFromPubKey
 } from '@avalabs/core-wallets-sdk'
 import { NetworkVMType } from '@avalabs/core-chains-sdk'
-import { now } from 'moment'
-import Logger from 'utils/Logger'
-import { TransactionRequest } from 'ethers'
 import { Network } from '@avalabs/core-chains-sdk'
 import { JsonRpcBatchInternal, SolanaProvider } from '@avalabs/core-wallets-sdk'
-import TransportBLE from '@ledgerhq/react-native-hw-transport-ble'
-import AppSolana from '@ledgerhq/hw-app-solana'
-import AppAvax from '@avalabs/hw-app-avalanche'
-import bs58 from 'bs58'
-import { getBitcoinProvider } from 'services/network/utils/providerUtils'
-import { LedgerService } from 'services/ledger/ledgerService'
-import { LedgerAppType } from 'services/ledger/ledgerService'
-
 import {
   RpcMethod,
   TypedDataV1,
   TypedData,
   MessageTypes
 } from '@avalabs/vm-module-types'
+import AppAvax from '@avalabs/hw-app-avalanche'
+import AppSolana from '@ledgerhq/hw-app-solana'
+import TransportBLE from '@ledgerhq/react-native-hw-transport-ble'
+import { networks } from 'bitcoinjs-lib'
+import bs58 from 'bs58'
+import { TransactionRequest } from 'ethers'
+import { now } from 'moment'
+import { getBitcoinProvider } from 'services/network/utils/providerUtils'
+import { LedgerService } from 'services/ledger/ledgerService'
+import { LedgerAppType } from 'services/ledger/ledgerService'
+import { bip32 } from 'utils/bip32'
+import Logger from 'utils/Logger'
 import { Curve } from 'utils/publicKeys'
 import { BitcoinWalletPolicyService } from './BitcoinWalletPolicyService'
 import {
@@ -328,10 +331,11 @@ export class LedgerWallet implements Wallet {
     chain: Exclude<NetworkVMType, NetworkVMType.PVM | NetworkVMType.HVM>
   ): string {
     // Convert our enum to the expected derivation path type
-    const derivationPathType = this.derivationPathSpec === LedgerDerivationPathType.LedgerLive 
-      ? 'ledger_live' 
-      : 'bip44'
-      
+    const derivationPathType =
+      this.derivationPathSpec === LedgerDerivationPathType.LedgerLive
+        ? 'ledger_live'
+        : 'bip44'
+
     return getAddressDerivationPath({
       accountIndex,
       vmType: chain,
@@ -381,6 +385,67 @@ export class LedgerWallet implements Wallet {
           : null
       default:
         return null
+    }
+  }
+
+  /**
+   * Derive address from extended public key for BIP44 wallets
+   * This allows creating new accounts without connecting to the device
+   */
+  public deriveAddressFromXpub(
+    accountIndex: number,
+    vmType: NetworkVMType,
+    isTestnet = false
+  ): string | null {
+    if (this.isLedgerLive()) {
+      throw new Error(
+        'Address derivation from xpub is not supported for Ledger Live wallets'
+      )
+    }
+
+    const extendedKey = this.getExtendedPublicKeyFor(vmType)
+    if (!extendedKey) {
+      return null
+    }
+
+    try {
+      // Parse the extended public key
+      const hdNode = bip32.fromBase58(extendedKey.key)
+
+      // For BIP44, we derive: m/44'/coin_type'/account'/change/address_index
+      // The extended key is already at m/44'/coin_type'/0' level
+      // So we need to derive: change/address_index (0/accountIndex for BIP44)
+      const childNode = hdNode.derive(0).derive(accountIndex)
+
+      if (!childNode.publicKey) {
+        throw new Error('Failed to derive public key')
+      }
+
+      // Convert public key to address based on VM type
+      switch (vmType) {
+        case NetworkVMType.EVM: {
+          // For EVM, convert public key to Ethereum address
+          return getEvmAddressFromPubKey(childNode.publicKey)
+        }
+        case NetworkVMType.AVM: {
+          // For AVM (Avalanche X-Chain), we need to use Avalanche address format
+          // This is more complex and would require Avalanche-specific address generation
+          // For now, we'll return null and let it fall back to device connection
+          return null
+        }
+        case NetworkVMType.BITCOIN: {
+          // For Bitcoin, convert public key to Bitcoin address
+          return getBtcAddressFromPubKey(
+            childNode.publicKey,
+            isTestnet ? networks.testnet : networks.bitcoin
+          )
+        }
+        default:
+          return null
+      }
+    } catch (error) {
+      Logger.error('Failed to derive address from extended public key:', error)
+      return null
     }
   }
 
@@ -492,7 +557,7 @@ export class LedgerWallet implements Wallet {
     accountIndex,
     transaction,
     network: _network,
-    provider
+    provider: _provider
   }: {
     accountIndex: number
     transaction: TransactionRequest
@@ -654,7 +719,7 @@ export class LedgerWallet implements Wallet {
     accountIndex,
     transaction,
     network: _network,
-    provider
+    provider: _provider
   }: {
     accountIndex: number
     transaction: SolanaTransactionRequest
@@ -721,7 +786,7 @@ export class LedgerWallet implements Wallet {
       Logger.info('Deserializing transaction message')
       const txMessage = await deserializeTransactionMessage(
         transaction.serializedTx,
-        provider
+        _provider
       )
 
       Logger.info('Compiling Solana transaction')

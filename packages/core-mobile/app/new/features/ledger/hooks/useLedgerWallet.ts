@@ -558,7 +558,10 @@ export function useLedgerWallet(): UseLedgerWalletReturn {
               avalancheKeys,
               solanaKeys
             }),
-            type: WalletType.LEDGER
+            type:
+              derivationPathType === LedgerDerivationPathType.BIP44
+                ? WalletType.LEDGER
+                : WalletType.LEDGER_LIVE
           })
         ).unwrap()
 
