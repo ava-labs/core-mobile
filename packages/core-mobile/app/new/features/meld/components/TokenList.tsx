@@ -18,6 +18,7 @@ import { useSearchableERC20AndSolanaTokenList } from 'common/hooks/useSearchable
 import { useSupportedCryptoCurrencies, useTokenIndex } from '../store'
 import { CryptoCurrency, CryptoCurrencyWithBalance } from '../types'
 import { MELD_CURRENCY_CODES, ServiceProviderCategories } from '../consts'
+import { lightModeColors } from '../../../../../../k2-alpine/src/theme/tokens/colors'
 
 export const TokenList = ({
   category,
@@ -50,10 +51,10 @@ export const TokenList = ({
     )
 
   useEffect(() => {
-    if (filteredErc20TokenList?.length) {
+    if (filteredErc20TokenList.length > 0) {
       setTokenIndex(filteredErc20TokenList)
     }
-    if (filteredSolanaTokenList) {
+    if (filteredSolanaTokenList.length > 0) {
       setSplTokenIndex(filteredSolanaTokenList)
     }
   }, [
