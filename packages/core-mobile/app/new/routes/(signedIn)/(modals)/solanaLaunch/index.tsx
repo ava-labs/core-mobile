@@ -6,7 +6,7 @@ import { useDispatch } from 'react-redux'
 import { setViewOnce, ViewOnceKey } from 'store/viewOnce'
 
 import { Image } from 'expo-image'
-import { withNavigationResolve } from 'common/utils/navigateWithPromise'
+import { withNavigationEvents } from 'common/utils/navigateWithPromise'
 import Glow from '../../../../assets/glow-solana.png'
 
 function SolanaLaunchScreen(): JSX.Element {
@@ -86,4 +86,4 @@ function SolanaLaunchScreen(): JSX.Element {
   )
 }
 
-export default withNavigationResolve(SolanaLaunchScreen)
+export default withNavigationEvents(SolanaLaunchScreen)

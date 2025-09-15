@@ -10,15 +10,30 @@ const navigationEvents = new EventEmitter()
 /** Open a screen and resolve when it closes */
 export function navigateWithPromise({
   pathname,
-  params = {}
+  params = {},
+  timeoutMs = 15000
 }: {
   pathname: string
   params?: Record<string, string | number | boolean>
+  timeoutMs?: number
 }): Promise<void> {
   const id = uuid()
 
   return new Promise<void>(resolve => {
-    navigationEvents.once(`closed:${id}`, resolve)
+    let settled = false
+    const resolveOnce = (): void => {
+      if (settled) return
+      settled = true
+      clearTimeout(timer)
+      navigationEvents.removeListener(`closed:${id}`, resolveOnce)
+      resolve()
+    }
+
+    navigationEvents.once(`closed:${id}`, resolveOnce)
+
+    const timer = setTimeout(() => {
+      resolveOnce()
+    }, timeoutMs)
 
     // @ts-ignore TODO: make routes typesafe
     router.navigate({ pathname, params: { ...params, navId: id } })
@@ -26,7 +41,7 @@ export function navigateWithPromise({
 }
 
 /** No-op unless navId exists (i.e., launched via navigateWithPromise) */
-export function useNavigationResolve(): void {
+function useNavigationEvents(): void {
   const { navId } = useLocalSearchParams<{ navId?: string }>()
   useEffect(() => {
     if (!navId) return
@@ -36,15 +51,15 @@ export function useNavigationResolve(): void {
   }, [navId])
 }
 
-export function withNavigationResolve<P extends object>(
+export function withNavigationEvents<P extends object>(
   Wrapped: React.ComponentType<P>
 ): React.FC<P> {
   const Wrapper: React.FC<P> = props => {
-    useNavigationResolve() // navId 없으면 no-op
+    useNavigationEvents()
     return <Wrapped {...props} />
   }
 
-  Wrapper.displayName = `withNavigationResolve(${
+  Wrapper.displayName = `withNavigationEvents(${
     Wrapped.displayName ?? Wrapped.name ?? 'Component'
   })`
 

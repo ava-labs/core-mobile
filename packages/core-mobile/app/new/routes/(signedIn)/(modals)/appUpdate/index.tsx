@@ -2,7 +2,7 @@ import { Button, Text, View } from '@avalabs/k2-alpine'
 import { ScrollScreen } from 'common/components/ScrollScreen'
 import React, { useCallback, useEffect } from 'react'
 import { useDispatch } from 'react-redux'
-import { withNavigationResolve } from 'common/utils/navigateWithPromise'
+import { withNavigationEvents } from 'common/utils/navigateWithPromise'
 import { AppUpdateService } from 'services/AppUpdateService/AppUpdateService'
 import { CoreLogoWithTokens } from 'common/components/CoreLogoWithTokens'
 import { useLocalSearchParams } from 'expo-router'
@@ -56,4 +56,4 @@ function AppUpdateScreen(): JSX.Element {
   )
 }
 
-export default withNavigationResolve(AppUpdateScreen)
+export default withNavigationEvents(AppUpdateScreen)

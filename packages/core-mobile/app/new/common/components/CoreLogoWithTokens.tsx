@@ -9,8 +9,9 @@ import Animated, {
   withDelay,
   interpolate
 } from 'react-native-reanimated'
-import { InteractionManager, LayoutChangeEvent } from 'react-native'
+import { LayoutChangeEvent } from 'react-native'
 import { usePopSpringAnimation } from 'common/hooks/usePopSpringAnimation'
+import { runAfterInteractions } from 'utils/runAfterInteractions'
 
 export const CoreLogoWithTokens = (): JSX.Element => {
   const selectedColorScheme = useSelector(selectSelectedColorScheme)
@@ -31,7 +32,7 @@ export const CoreLogoWithTokens = (): JSX.Element => {
     if (hasRun.current) return
     hasRun.current = true
 
-    InteractionManager.runAfterInteractions(() => {
+    runAfterInteractions(() => {
       setStartTokenAnimation(true)
       coreLogoPop()
     })
