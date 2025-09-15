@@ -16,6 +16,8 @@ export const useNavigateToSwap = (): {
           initialTokenIdTo: USDC_AVALANCHE_C_TOKEN_ID
         }
       })
+
+      return
     }
 
     navigate({
