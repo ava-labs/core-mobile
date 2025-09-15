@@ -402,6 +402,14 @@ export const selectIsSolanaSwapBlocked = (state: RootState): boolean => {
   )
 }
 
+export const selectIsLedgerSupportBlocked = (state: RootState): boolean => {
+  const { featureFlags } = state.posthog
+  return (
+    !featureFlags[FeatureGates.LEDGER_SUPPORT] ||
+    !featureFlags[FeatureGates.EVERYTHING]
+  )
+}
+
 export const selectStakeAnnualPercentageYieldBPS = (
   state: RootState
 ): number => {

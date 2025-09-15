@@ -10,6 +10,7 @@ import AnalyticsService from 'services/analytics/AnalyticsService'
 import { WalletType } from 'services/wallet/types'
 import { addAccount } from 'store/account'
 import { selectAccounts } from 'store/account/slice'
+import { selectIsLedgerSupportBlocked } from 'store/posthog'
 import { AppThunkDispatch } from 'store/types'
 import Logger from 'utils/Logger'
 
@@ -24,6 +25,7 @@ const ImportWalletScreen = (): JSX.Element => {
   const accounts = useSelector(selectAccounts)
   const dispatch = useDispatch<AppThunkDispatch>()
   const activeWallet = useActiveWallet()
+  const isLedgerSupportBlocked = useSelector(selectIsLedgerSupportBlocked)
 
   const handleCreateNewAccount = useCallback(async (): Promise<void> => {
     if (isAddingAccount) return
@@ -131,6 +133,28 @@ const ImportWalletScreen = (): JSX.Element => {
       }
     ]
 
+    if (!isLedgerSupportBlocked) {
+      baseData.push({
+        title: 'Import from Ledger',
+        subtitle: (
+          <Text variant="caption" sx={{ fontSize: 12, paddingTop: 4 }}>
+            Access with an existing Ledger
+          </Text>
+        ),
+        leftIcon: (
+          <Icons.Device.Encrypted
+            color={colors.$textPrimary}
+            width={24}
+            height={24}
+          />
+        ),
+        accessory: (
+          <Icons.Navigation.ChevronRight color={colors.$textSecondary} />
+        ),
+        onPress: handleImportLedger
+      })
+    }
+
     if (activeWallet?.type !== WalletType.PRIVATE_KEY) {
       return [
         {
@@ -160,7 +184,13 @@ const ImportWalletScreen = (): JSX.Element => {
     }
 
     return baseData
-  }, [navigate, activeWallet?.type, colors, handleCreateNewAccount])
+  }, [
+    navigate,
+    activeWallet?.type,
+    colors,
+    handleCreateNewAccount,
+    isLedgerSupportBlocked
+  ])
 
   return (
     <ScrollScreen
