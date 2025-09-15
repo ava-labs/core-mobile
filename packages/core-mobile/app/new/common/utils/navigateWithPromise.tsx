@@ -11,7 +11,7 @@ const navigationEvents = new EventEmitter()
 export function navigateWithPromise({
   pathname,
   params = {},
-  timeoutMs = 15000
+  timeoutMs = 60000
 }: {
   pathname: string
   params?: Record<string, string | number | boolean>
