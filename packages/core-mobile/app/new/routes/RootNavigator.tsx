@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import {
   modalScreensOptions,
   stackNavigatorScreenOptions,
@@ -8,9 +8,32 @@ import { Stack } from 'common/components/Stack'
 import { WalletState } from 'store/app/types'
 import { useSelector } from 'react-redux'
 import { selectWalletState } from 'store/app/slice'
+import { useRouter } from 'expo-router'
+import { usePathname } from 'expo-router'
 
 export function RootNavigator(): JSX.Element {
   const walletState = useSelector(selectWalletState)
+  const pathname = usePathname()
+  const { navigate } = useRouter()
+  const [signedInRoute, setSignedInRoute] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (
+      walletState === WalletState.INACTIVE &&
+      pathname !== '/loginWithPinOrBiometry' &&
+      pathname !== '/'
+    ) {
+      setSignedInRoute(pathname)
+    }
+  }, [walletState, pathname])
+
+  useEffect(() => {
+    if (signedInRoute && walletState === WalletState.ACTIVE) {
+      // @ts-ignore TODO: make routes typesafe
+      navigate(signedInRoute)
+      setSignedInRoute(null)
+    }
+  }, [signedInRoute, navigate, walletState])
 
   return (
     <Stack
