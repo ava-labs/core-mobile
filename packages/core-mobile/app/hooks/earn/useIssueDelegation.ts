@@ -13,6 +13,19 @@ import { FundsStuckError } from 'hooks/earn/errors'
 import { useDelegationContext } from 'contexts/DelegationContext'
 import { useEffect, useState } from 'react'
 
+/**
+ * Custom hook to issue a staking delegation transaction.
+ *
+ * This wraps a React Query mutation and triggers UI callbacks (onSuccess/onError)
+ * via state + useEffect rather than directly in the mutation callbacks.
+ *
+ * Why?
+ *  - React Query's `onSuccess`/`onError` are invoked in the same render frame as the mutation resolution.
+ *    Triggering heavy UI actions (navigation, dismissing modals, snackbars) in that timing
+ *    caused race conditions with native-stack transitions and layout.
+ *  - By setting a state value (`delegationTxHash` or `delegationError`) and handling it in `useEffect`,
+ *    we ensure the UI callbacks are fired on the next render frame, making transitions more stable.
+ */
 export const useIssueDelegation = (
   onSuccess: (txId: string) => void,
   onError: (error: Error) => void,
@@ -39,17 +52,19 @@ export const useIssueDelegation = (
   const pAddress = activeAccount?.addressPVM ?? ''
   const cAddress = activeAccount?.addressC ?? ''
 
+  // Store mutation results/errors temporarily to trigger callbacks
   const [delegationTxHash, setDelegationTxHash] = useState<string>()
   const [delegationError, setDelegationError] = useState<Error>()
 
+  // When tx hash is set, trigger success callback in next render frame
   useEffect(() => {
     if (!delegationTxHash) return
 
     onSuccess(delegationTxHash)
-
     setDelegationTxHash(undefined)
   }, [delegationTxHash, onSuccess])
 
+  // When error is set, trigger appropriate error callback in next render frame
   useEffect(() => {
     if (!delegationError) return
 
