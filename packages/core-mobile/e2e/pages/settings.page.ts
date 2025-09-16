@@ -426,9 +426,9 @@ class Settings {
     await Actions.waitForElement(this.settingsScrollView, 10000)
     while (!(await Actions.isVisible(this.manageAccountsBtn))) {
       await Actions.swipe(this.accountList, 'left', 'fast', 0.5)
-      await Actions.waitForElement(this.manageAccountsBtn)
+      await Actions.waitForElement(this.manageAccountsBtn, 3000, 0)
     }
-    await Actions.tap(this.manageAccountsBtn)
+    await Actions.tapElementAtIndex(this.manageAccountsBtn, 0)
   }
 
   async tapAddWalletBtn() {
@@ -501,7 +501,7 @@ class Settings {
     while (!(await Actions.isVisible(ele))) {
       await this.tapAddWalletBtn()
       await Actions.tap(this.createNewAccountBtn)
-      await Actions.tap(this.manageAccountsTitle)
+      await Actions.tapElementAtIndex(this.manageAccountsTitle, 0)
     }
   }
 
