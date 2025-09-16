@@ -279,9 +279,7 @@ const initMeldService = async (
 
   const isSandboxBlocked = selectIsEnableMeldSandboxBlocked(state)
 
-  MeldService.init({
-    sandbox: !isSandboxBlocked
-  })
+  MeldService.init(!isSandboxBlocked)
 }
 
 // Check if the ff has changed

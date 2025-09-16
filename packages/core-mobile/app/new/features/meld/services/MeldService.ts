@@ -24,8 +24,12 @@ import { meldApiClient } from './apiClient'
 class MeldService {
   #meldApiClient: ReturnType<typeof meldApiClient>
 
-  init({ sandbox }: { sandbox?: boolean }): void {
+  init(sandbox?: boolean): void {
     this.#meldApiClient = meldApiClient(sandbox)
+  }
+
+  constructor(sandbox?: boolean) {
+    this.init(sandbox)
   }
 
   async searchCountries({
