@@ -6,8 +6,14 @@ import {
 } from '@avalabs/k2-alpine'
 import { useHeaderHeight } from '@react-navigation/elements'
 import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
-import React, { useCallback, useLayoutEffect, useRef, useState } from 'react'
-import { LayoutRectangle, StyleProp, View, ViewStyle } from 'react-native'
+import React, { useCallback, useRef, useState } from 'react'
+import {
+  LayoutChangeEvent,
+  LayoutRectangle,
+  StyleProp,
+  View,
+  ViewStyle
+} from 'react-native'
 import { ScrollView } from 'react-native-gesture-handler'
 import {
   KeyboardAwareScrollView,
@@ -103,9 +109,7 @@ export const ScrollScreen = ({
     LayoutRectangle | undefined
   >()
 
-  const headerRef = useRef<View>(null)
   const contentHeaderHeight = useSharedValue<number>(0)
-  const footerRef = useRef<View>(null)
   const footerHeight = useSharedValue<number>(0)
 
   const { onScroll, scrollY, targetHiddenProgress } = useFadingHeaderNavigation(
@@ -132,20 +136,22 @@ export const ScrollScreen = ({
     }
   })
 
-  useLayoutEffect(() => {
-    // eslint-disable-next-line max-params
-    headerRef?.current?.measure((x, y, width, height) => {
+  const handleHeaderLayout = useCallback(
+    (event: LayoutChangeEvent) => {
+      const { x, y, width, height } = event.nativeEvent.layout
       contentHeaderHeight.value = height
       setHeaderLayout({ x, y, width, height })
-    })
-  }, [contentHeaderHeight])
+    },
+    [contentHeaderHeight]
+  )
 
-  useLayoutEffect(() => {
-    // eslint-disable-next-line max-params
-    footerRef?.current?.measure((x, y, width, height) => {
+  const handleFooterLayout = useCallback(
+    (event: LayoutChangeEvent) => {
+      const { height } = event.nativeEvent.layout
       footerHeight.value = height
-    })
-  }, [footerHeight])
+    },
+    [footerHeight]
+  )
 
   const animatedBorderStyle = useAnimatedStyle(() => {
     const opacity = interpolate(scrollY.value, [0, headerHeight], [0, 1])
@@ -159,7 +165,7 @@ export const ScrollScreen = ({
       return (
         <View>
           <View
-            ref={headerRef}
+            onLayout={handleHeaderLayout}
             style={[
               headerStyle,
               {
@@ -182,16 +188,31 @@ export const ScrollScreen = ({
           {renderHeader?.()}
         </View>
       )
+    } else {
+      return (
+        <View
+          onLayout={handleHeaderLayout}
+          style={[
+            headerStyle,
+            {
+              position: 'absolute',
+              minHeight: headerHeight,
+              pointerEvents: 'none'
+            }
+          ]}
+        />
+      )
     }
-  }, [animatedHeaderStyle, headerStyle, renderHeader, subtitle, title, titleSx])
-
-  const animatedContentContainerStyle = useAnimatedStyle(() => {
-    return {
-      paddingBottom: disableStickyFooter
-        ? insets.bottom + 24
-        : footerHeight.value
-    }
-  })
+  }, [
+    animatedHeaderStyle,
+    handleHeaderLayout,
+    headerHeight,
+    headerStyle,
+    renderHeader,
+    subtitle,
+    title,
+    titleSx
+  ])
 
   // 90% of our screens reuse this component but only some need keyboard avoiding
   // If you have an input on the screen, you need to enable this prop
@@ -211,8 +232,10 @@ export const ScrollScreen = ({
           }}
           contentContainerStyle={[
             props?.contentContainerStyle,
-            animatedContentContainerStyle,
             {
+              paddingBottom: disableStickyFooter
+                ? insets.bottom + 24
+                : footerHeight.value + 16,
               paddingTop: headerHeight
             }
           ]}
@@ -230,7 +253,7 @@ export const ScrollScreen = ({
             }}>
             <LinearGradientBottomWrapper>
               <View
-                ref={footerRef}
+                onLayout={handleFooterLayout}
                 style={{
                   padding: 16,
                   paddingTop: 0

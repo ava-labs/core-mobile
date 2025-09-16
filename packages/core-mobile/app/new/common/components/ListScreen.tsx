@@ -8,15 +8,10 @@ import {
 import { useHeaderHeight } from '@react-navigation/elements'
 import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
 import { getListItemEnteringAnimation } from 'common/utils/animations'
-import React, {
-  useCallback,
-  useLayoutEffect,
-  useMemo,
-  useRef,
-  useState
-} from 'react'
+import React, { useCallback, useMemo, useState } from 'react'
 import {
   FlatListProps,
+  LayoutChangeEvent,
   LayoutRectangle,
   NativeScrollEvent,
   NativeSyntheticEvent,
@@ -103,7 +98,6 @@ export const ListScreen = <T,>({
   const [headerLayout, setHeaderLayout] = useState<
     LayoutRectangle | undefined
   >()
-  const headerRef = useRef<View>(null)
   const contentHeaderHeight = useSharedValue<number>(0)
   const keyboard = useKeyboardState()
 
@@ -132,15 +126,14 @@ export const ListScreen = <T,>({
     }
   })
 
-  useLayoutEffect(() => {
-    if (headerRef.current) {
-      // eslint-disable-next-line max-params
-      headerRef.current.measure((x, y, w, h) => {
-        contentHeaderHeight.value = h
-        setHeaderLayout({ x, y, width: w, height: h / 2 })
-      })
-    }
-  }, [contentHeaderHeight])
+  const handleHeaderLayout = useCallback(
+    (event: LayoutChangeEvent) => {
+      const { x, y, width, height } = event.nativeEvent.layout
+      contentHeaderHeight.value = height
+      setHeaderLayout({ x, y, width, height: height / 2 })
+    },
+    [contentHeaderHeight]
+  )
 
   const onScrollEvent = useCallback(
     (event: NativeSyntheticEvent<NativeScrollEvent>) => {
@@ -198,7 +191,7 @@ export const ListScreen = <T,>({
                 }
               ]}>
               <View
-                ref={headerRef}
+                onLayout={handleHeaderLayout}
                 style={{
                   paddingBottom: 12
                 }}>
@@ -233,6 +226,7 @@ export const ListScreen = <T,>({
     animatedBorderStyle,
     animatedHeaderContainerStyle,
     animatedHeaderStyle,
+    handleHeaderLayout,
     headerHeight,
     renderHeader,
     title
@@ -268,17 +262,24 @@ export const ListScreen = <T,>({
         : {},
       {
         paddingBottom,
-        minHeight: frame.height - (headerLayout?.height ?? 0)
+        minHeight:
+          frame.height -
+          (headerLayout?.height ?? 0) +
+          // Android formsheet in native-stack has a default top padding of insets.top
+          // so we need to add this to adjust the height of the list
+          (isModal && Platform.OS === 'android' ? insets.top : 0)
       }
     ] as StyleProp<ViewStyle>[]
   }, [
     keyboard.isVisible,
     keyboard.height,
     insets.bottom,
+    insets.top,
     rest?.contentContainerStyle,
     data.length,
     frame.height,
-    headerLayout?.height
+    headerLayout?.height,
+    isModal
   ])
 
   return (
