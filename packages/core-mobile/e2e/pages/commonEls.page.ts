@@ -251,7 +251,8 @@ class CommonElsPage {
 
   async dismissTransactionOnboarding() {
     try {
-      await Actions.tap(this.transactionOnboardingNext)
+      await Actions.waitForElement(this.transactionOnboardingNext)
+      await Actions.longPress(this.transactionOnboardingNext)
     } catch (e) {
       console.log('Transaction onboarding not found')
     }
@@ -389,7 +390,7 @@ class CommonElsPage {
   }
 
   async dismissBottomSheet() {
-    await Actions.waitForElement(this.grabber)
+    await Actions.waitForElement(this.grabber, 20000)
     await delay(2000)
     await Actions.drag(this.grabber, 'down', 0.5, 0)
     await delay(1000)
