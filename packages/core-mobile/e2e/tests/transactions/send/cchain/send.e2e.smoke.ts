@@ -22,7 +22,7 @@ describe('Send AVAX', () => {
     await commonElsPage.verifySuccessToast()
   })
 
-  it('should send USDC', async () => {
+  it('should send ERC20', async () => {
     await sendPage.send(loc.coqInu, loc.sendingAmount)
     await commonElsPage.verifySuccessToast()
   })

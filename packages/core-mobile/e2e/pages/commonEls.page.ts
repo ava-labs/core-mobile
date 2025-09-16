@@ -251,7 +251,8 @@ class CommonElsPage {
 
   async dismissTransactionOnboarding() {
     try {
-      await Actions.tap(this.transactionOnboardingNext)
+      await Actions.waitForElement(this.transactionOnboardingNext)
+      await Actions.longPress(this.transactionOnboardingNext)
     } catch (e) {
       console.log('Transaction onboarding not found')
     }
