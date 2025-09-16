@@ -164,6 +164,7 @@ export default function RecoveryPhraseInput({
           selectionColor={theme.colors.$textPrimary}
           spellCheck
           multiline
+          autoFocus
           onChangeText={handleChangeText}
           onSelectionChange={handleSelectionChange}
           blurOnSubmit

@@ -22,6 +22,8 @@ export const useWithdraw = (): {
   navigateToWithdrawAmountWithUsdc: () => void
   isWithdrawable: (token?: LocalTokenWithBalance, address?: string) => boolean
   isLoadingCryptoCurrencies: boolean
+  isAvaxCWithdrawable: () => boolean
+  isUsdcWithdrawable: () => boolean
 } => {
   const { navigate } = useRouter()
   const [_, setOfframpToken] = useMeldToken()
@@ -100,12 +102,22 @@ export const useWithdraw = (): {
     navigate('/meld/offramp/selectWithdrawAmount')
   }, [usdc, isMeldOfframpBlocked, navigate, setOfframpToken])
 
+  const isAvaxCWithdrawable = useCallback(() => {
+    return avax !== undefined
+  }, [avax])
+
+  const isUsdcWithdrawable = useCallback(() => {
+    return usdc !== undefined
+  }, [usdc])
+
   return {
     navigateToWithdraw,
     navigateToWithdrawAmountWithToken,
     navigateToWithdrawAmountWithAvax,
     navigateToWithdrawAmountWithUsdc,
     isWithdrawable,
-    isLoadingCryptoCurrencies
+    isLoadingCryptoCurrencies,
+    isAvaxCWithdrawable,
+    isUsdcWithdrawable
   }
 }

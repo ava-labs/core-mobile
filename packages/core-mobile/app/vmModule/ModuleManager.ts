@@ -1,3 +1,4 @@
+import http from 'http'
 import { EvmModule } from '@avalabs/evm-module'
 import Logger from 'utils/Logger'
 import {
@@ -92,6 +93,10 @@ class ModuleManager {
       appInfo: {
         name: APPLICATION_NAME,
         version: APPLICATION_VERSION
+      },
+      runtime: {
+        fetch: global.fetch,
+        httpAgent: new http.Agent()
       }
     }
 

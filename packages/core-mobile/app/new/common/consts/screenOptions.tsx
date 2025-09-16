@@ -1,58 +1,84 @@
-import {
-  StackCardInterpolatedStyle,
-  StackNavigationOptions,
-  TransitionPresets,
-  TransitionSpecs
-} from '@react-navigation/stack'
+import { View } from '@avalabs/k2-alpine'
+import { NativeStackNavigationOptions } from '@react-navigation/native-stack'
+import { AccountSettingBarButton } from 'common/components/AccountSettingBarButton'
 import BackBarButton from 'common/components/BackBarButton'
+import { ConnectButton } from 'common/components/ConnectButton'
 import React from 'react'
 import { Platform } from 'react-native'
-import BlurredBackgroundView from 'common/components/BlurredBackgroundView'
-import { TransitionSpec } from '@react-navigation/stack/lib/typescript/commonjs/src/types'
 
-export const MODAL_TOP_MARGIN = 28
-export const MODAL_BORDER_RADIUS = 40
-export const MODAL_HEADER_HEIGHT = 62
+export const TAB_BAR_HEIGHT = 60
 
-export const commonNavigatorScreenOptions: StackNavigationOptions = {
+export const commonNavigatorScreenOptions: NativeStackNavigationOptions = {
   title: '',
-  headerBackButtonDisplayMode: 'minimal',
-  headerShadowVisible: false,
   headerTitleAlign: 'center',
-  headerBackImage: () => <BackBarButton />,
-  ...TransitionPresets.SlideFromRightIOS
+  headerBackButtonDisplayMode: 'minimal'
 }
 
-export const stackNavigatorScreenOptions: StackNavigationOptions = {
+// Stacks
+export const stackNavigatorScreenOptions: NativeStackNavigationOptions = {
   ...commonNavigatorScreenOptions,
-  headerTransparent: true
-}
-
-export const modalStackNavigatorScreenOptions: StackNavigationOptions = {
-  ...commonNavigatorScreenOptions,
-  headerBackground: () => <BlurredBackgroundView hasGrabber={true} />,
-  headerBackImage: () => <BackBarButton isModal />,
   headerTransparent: true,
-  headerStyle: {
-    height: MODAL_HEADER_HEIGHT
-  },
-  // on iOS,we need to set headerStatusBarHeight to 0 to
-  // prevent the header from jumping when navigating
-  ...(Platform.OS === 'ios' && { headerStatusBarHeight: 0 })
+  headerTitleAlign: 'center',
+  animation: 'slide_from_right'
 }
 
-export const modalScreenOptionsWithHeaderBack: StackNavigationOptions = {
-  headerBackImage: () => <BackBarButton isModal />
+export const stackScreensOptions: NativeStackNavigationOptions | undefined = {
+  ...stackNavigatorScreenOptions,
+  headerLeft: () => <BackBarButton />
 }
 
-export function forNoAnimation(): StackCardInterpolatedStyle {
-  return {}
+// Modals
+export const modalScreensOptions: NativeStackNavigationOptions = {
+  ...commonNavigatorScreenOptions,
+  presentation: Platform.OS === 'ios' ? 'pageSheet' : 'formSheet',
+  sheetElevation: 0,
+  sheetInitialDetentIndex: 0,
+  sheetAllowedDetents: [Platform.OS === 'android' ? 0.93 : 0.99],
+  headerLeft: () => <BackBarButton />,
+  gestureEnabled: true,
+  headerTransparent: true,
+  ...(Platform.OS === 'ios' && {
+    // iOS will display empty content without this
+    contentStyle: {
+      height: '100%'
+    }
+  })
 }
 
-export const androidModalTransitionSpec = {
-  open: TransitionSpecs.BottomSheetSlideInSpec,
-  close: {
-    animation: 'timing',
-    config: { duration: 0 }
-  } as TransitionSpec
+export const secondaryModalScreensOptions: NativeStackNavigationOptions = {
+  ...modalScreensOptions,
+  sheetAllowedDetents: [Platform.OS === 'android' ? 0.92 : 0.99]
+}
+
+export const modalStackNavigatorScreenOptions: NativeStackNavigationOptions = {
+  ...modalScreensOptions,
+  presentation: 'card'
+}
+
+// Options for the first screen of a modal stack navigator.
+// This screen does not have a back button, so we need to hide it.
+export const modalFirstScreenOptions: NativeStackNavigationOptions = {
+  ...commonNavigatorScreenOptions,
+  headerBackVisible: false,
+  headerLeft: () => null
+}
+
+export const homeScreenOptions: NativeStackNavigationOptions = {
+  headerLeft: () => <AccountSettingBarButton />,
+  headerRight: () => {
+    return (
+      <View
+        sx={{
+          flexDirection: 'row',
+          gap: 12,
+          height: '100%',
+          alignItems: 'center'
+        }}>
+        <ConnectButton />
+        {/* <Link href="/notifications/" asChild>
+            <NotificationBarButton />
+          </Link> */}
+      </View>
+    )
+  }
 }

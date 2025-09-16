@@ -58,8 +58,7 @@ const SearchResultScreen = ({
 
   const { data, sort, view } = useTrackSortAndView(
     tokensToDisplay,
-    pricesToDisplay,
-    false
+    pricesToDisplay
   )
 
   const header = useHeaderMeasurements()
@@ -109,13 +108,13 @@ const SearchResultScreen = ({
 
   const renderEmpty = useCallback(() => {
     return (
-      <CollapsibleTabs.ContentWrapper height={Number(containerStyle.minHeight)}>
+      <CollapsibleTabs.ContentWrapper>
         <Animated.View style={keyboardAvoidingStyle}>
           {emptyComponent}
         </Animated.View>
       </CollapsibleTabs.ContentWrapper>
     )
-  }, [containerStyle.minHeight, emptyComponent, keyboardAvoidingStyle])
+  }, [emptyComponent, keyboardAvoidingStyle])
 
   return (
     <MarketTokensScreen

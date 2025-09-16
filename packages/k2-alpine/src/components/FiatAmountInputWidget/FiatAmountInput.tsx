@@ -1,3 +1,4 @@
+import { SxProp } from 'dripsy'
 import React, {
   forwardRef,
   useCallback,
@@ -7,7 +8,6 @@ import React, {
   useRef,
   useState
 } from 'react'
-import { SxProp } from 'dripsy'
 import {
   InteractionManager,
   Platform,
@@ -17,10 +17,12 @@ import {
   TouchableWithoutFeedback
 } from 'react-native'
 import { useTheme } from '../../hooks'
-import { Text, View } from '../Primitives'
 import { alpha } from '../../utils'
-import { normalizeValue } from '../../utils/tokenUnitInput'
-import { normalizeNumericTextInput } from '../../utils/tokenUnitInput'
+import {
+  normalizeNumericTextInput,
+  normalizeValue
+} from '../../utils/tokenUnitInput'
+import { Text, View } from '../Primitives'
 
 export type FiatAmountInputHandle = {
   setValue: (value: string) => void
@@ -133,12 +135,6 @@ export const FiatAmountInput = forwardRef<
       textInputRef.current?.focus()
     }
 
-    useImperativeHandle(ref, () => ({
-      setValue: (newValue: string) => setValue(newValue),
-      focus: () => textInputRef.current?.focus(),
-      blur: () => textInputRef.current?.blur()
-    }))
-
     useEffect(() => {
       if (autoFocus) {
         InteractionManager.runAfterInteractions(() => {
@@ -146,6 +142,12 @@ export const FiatAmountInput = forwardRef<
         })
       }
     }, [autoFocus])
+
+    useImperativeHandle(ref, () => ({
+      setValue: (newValue: string) => setValue(newValue),
+      focus: () => textInputRef.current?.focus(),
+      blur: () => textInputRef.current?.blur()
+    }))
 
     return (
       <View

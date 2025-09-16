@@ -1,4 +1,6 @@
-import { ANIMATED, View } from '@avalabs/k2-alpine'
+import { alpha, ANIMATED, useTheme, View } from '@avalabs/k2-alpine'
+import { colors } from '@avalabs/k2-alpine/src/theme/tokens/colors'
+import { BlurViewWithFallback } from 'common/components/BlurViewWithFallback'
 import { useBottomTabBarHeight } from 'common/hooks/useBottomTabBarHeight'
 import { useFocusEffect, useGlobalSearchParams, useRouter } from 'expo-router'
 import { useBrowserContext } from 'features/browser/BrowserContext'
@@ -27,6 +29,8 @@ import {
 } from 'store/browser'
 
 const Browser = (): React.ReactNode => {
+  const { theme } = useTheme()
+  const tabBarHeight = useBottomTabBarHeight()
   const { browserRefs } = useBrowserContext()
   const dispatch = useDispatch()
   const router = useRouter()
@@ -34,8 +38,6 @@ const Browser = (): React.ReactNode => {
   const activeTab = useSelector(selectActiveTab)
   const allTabs = useSelector(selectAllTabs)
   const showEmptyTab = useSelector(selectIsTabEmpty)
-
-  const tabBarHeight = useBottomTabBarHeight()
 
   const tabs = useMemo(() => {
     if (!activeTab) return allTabs.slice(0, 5)
@@ -96,20 +98,30 @@ const Browser = (): React.ReactNode => {
     KeyboardController.setInputMode(
       AndroidSoftInputModes.SOFT_INPUT_ADJUST_NOTHING
     )
+    return () => {
+      KeyboardController.setDefaultMode()
+    }
   })
+
+  const backgroundColor = useMemo(() => {
+    return theme.isDark
+      ? Platform.OS === 'ios'
+        ? alpha(colors.$neutral950, 0.8)
+        : theme.colors.$surfacePrimary
+      : alpha(theme.colors.$surfacePrimary, Platform.OS === 'ios' ? 0.8 : 1)
+  }, [theme.colors.$surfacePrimary, theme.isDark])
 
   return (
     <BrowserSnapshot>
       <View
         style={{
-          marginBottom: Platform.OS === 'ios' ? tabBarHeight : 0,
           flex: 1
         }}>
         <Animated.View
           style={[
             discoverStyle,
             {
-              flex: 1,
+              height: '100%',
               zIndex: showEmptyTab ? 1 : -1,
               pointerEvents: showEmptyTab ? 'auto' : 'none',
               overflow: 'hidden'
@@ -127,7 +139,7 @@ const Browser = (): React.ReactNode => {
               top: 0,
               left: 0,
               right: 0,
-              bottom: BROWSER_CONTROLS_HEIGHT,
+              bottom: tabBarHeight + BROWSER_CONTROLS_HEIGHT,
               zIndex: showEmptyTab ? -1 : 1,
               pointerEvents: showEmptyTab ? 'none' : 'auto'
             }
@@ -136,6 +148,26 @@ const Browser = (): React.ReactNode => {
         </Animated.View>
 
         <BrowserControls />
+      </View>
+
+      <View
+        style={{
+          position: 'absolute',
+          bottom: tabBarHeight,
+          left: 0,
+          right: 0,
+          zIndex: 10
+        }}>
+        <BlurViewWithFallback
+          style={{
+            backgroundColor: backgroundColor
+          }}>
+          <View
+            style={{
+              height: BROWSER_CONTROLS_HEIGHT
+            }}
+          />
+        </BlurViewWithFallback>
       </View>
     </BrowserSnapshot>
   )

@@ -53,7 +53,6 @@ const AccountSettingsScreen = (): JSX.Element => {
   const renderHeaderRight = useCallback(() => {
     return (
       <VisibilityBarButton
-        isModal
         isPrivacyModeEnabled={isPrivacyModeEnabled}
         onPress={() => dispatch(togglePrivacyMode())}
       />

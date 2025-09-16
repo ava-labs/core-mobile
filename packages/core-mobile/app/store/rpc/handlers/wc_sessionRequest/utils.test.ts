@@ -38,8 +38,9 @@ describe('isCoreDomain', () => {
       'http://127.0.0.1:1234',
       'http://localhost:1234',
       'https://core.app',
-      'https://test.core.app',
-      'https://some-feature.core-web.pages.dev',
+      'https://staging.core.app',
+      'https://develop.core.app',
+      'https://d0ce77c0-core-web-dev.avalabs.workers.dev',
       'https://ava-labs.github.io/extension-avalanche-playground/',
       'https://ava-labs.github.io/ab-cd'
     ]

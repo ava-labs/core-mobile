@@ -1,5 +1,4 @@
-import { UnsignedTx } from '@avalabs/avalanchejs'
-import { GetAtomicTxStatusResponse } from '@avalabs/avalanchejs/dist/vms/evm'
+import { evm, UnsignedTx } from '@avalabs/avalanchejs'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
 import { ErrorBase } from 'errors/ErrorBase'
 import { FundsStuckError } from 'hooks/earn/errors'
@@ -92,7 +91,7 @@ export async function importC({
   Logger.trace('txID', txID)
 
   try {
-    const { status } = await retry<GetAtomicTxStatusResponse>({
+    const { status } = await retry<evm.GetAtomicTxStatusResponse>({
       operation: () => avaxProvider.getApiC().getAtomicTxStatus(txID),
       shouldStop: result =>
         result.status === 'Accepted' || result.status === 'Dropped',

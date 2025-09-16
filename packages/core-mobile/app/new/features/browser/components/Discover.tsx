@@ -1,10 +1,11 @@
 import { alpha, Text, useTheme, View } from '@avalabs/k2-alpine'
+import { useBottomTabBarHeight } from 'common/hooks/useBottomTabBarHeight'
 import { LinearGradient } from 'expo-linear-gradient'
 import React from 'react'
 import { ScrollView } from 'react-native-gesture-handler'
 import Animated from 'react-native-reanimated'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { HORIZONTAL_MARGIN } from '../consts'
+import { BROWSER_CONTROLS_HEIGHT, HORIZONTAL_MARGIN } from '../consts'
 import { DiscoverCollectibles } from './DiscoverCollectibles'
 import { DiscoverEcosystemProjects } from './DiscoverEcosystemProjects'
 import { DiscoverFeaturedProjects } from './DiscoverFeaturedProjects'
@@ -12,6 +13,7 @@ import { DiscoverLearn } from './DiscoverLearn'
 
 export const Discover = (): JSX.Element => {
   const insets = useSafeAreaInsets()
+  const tabBarHeight = useBottomTabBarHeight()
   const { theme } = useTheme()
 
   return (
@@ -24,7 +26,8 @@ export const Discover = (): JSX.Element => {
       nestedScrollEnabled
       stickyHeaderIndices={[0]}
       contentContainerStyle={{
-        paddingTop: insets.top + 66
+        paddingTop: insets.top + 66,
+        paddingBottom: tabBarHeight + BROWSER_CONTROLS_HEIGHT
       }}>
       <Animated.View
         pointerEvents="none"

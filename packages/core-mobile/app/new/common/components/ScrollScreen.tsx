@@ -71,6 +71,8 @@ interface ScrollScreenProps extends KeyboardAwareScrollViewProps {
   showNavigationHeaderTitle?: boolean
   /** Custom style for the header */
   headerStyle?: StyleProp<ViewStyle>
+  /** Whether this screen should hide the header background  */
+  hideHeaderBackground?: boolean
 }
 
 const KeyboardScrollView = Animated.createAnimatedComponent(
@@ -88,6 +90,7 @@ export const ScrollScreen = ({
   shouldAvoidKeyboard,
   disableStickyFooter,
   showNavigationHeaderTitle = true,
+  hideHeaderBackground,
   headerStyle,
   renderHeader,
   renderFooter,
@@ -111,6 +114,7 @@ export const ScrollScreen = ({
       targetLayout: headerLayout,
       shouldHeaderHaveGrabber: isModal,
       hasParent,
+      hideHeaderBackground,
       renderHeaderRight,
       showNavigationHeaderTitle
     }
@@ -238,6 +242,7 @@ export const ScrollScreen = ({
         ) : null}
 
         <View
+          pointerEvents="none"
           style={{
             position: 'absolute',
             top: 0,
@@ -291,6 +296,7 @@ export const ScrollScreen = ({
       </ScrollView>
 
       <View
+        pointerEvents="none"
         style={{
           position: 'absolute',
           top: 0,

@@ -1,5 +1,6 @@
 import { LocalTokenWithBalance } from 'store/balance'
 import { TokenType } from '@avalabs/vm-module-types'
+import { ChainId } from '@avalabs/core-chains-sdk'
 import { router } from 'expo-router'
 import { ACTIONS } from '../../../contexts/DeeplinkContext/types'
 import { NATIVE_ERC20_TOKEN_CONTRACT_ADDRESS } from './consts'
@@ -10,7 +11,7 @@ import {
   CryptoQuotesError
 } from './types'
 
-export const isSupportedNativeToken = (
+export const isSupportedNativeErc20Token = (
   crypto: CryptoCurrency,
   token: LocalTokenWithBalance
 ): boolean =>
@@ -27,18 +28,34 @@ export const isSupportedToken = (
   token.chainId?.toString() === crypto.chainId &&
   crypto.contractAddress?.toLowerCase() === token.address.toLowerCase()
 
+export const isSupportedSPLToken = (
+  crypto: CryptoCurrency,
+  token: LocalTokenWithBalance
+): boolean =>
+  token.networkChainId === ChainId.SOLANA_MAINNET_ID &&
+  token.type === TokenType.SPL &&
+  // @ts-ignore: there is no chainId but has token address for solana
+  crypto.contractAddress?.toLowerCase() === token.address.toLowerCase()
+
 export const isBtcToken = (
   crypto: CryptoCurrency,
   token: LocalTokenWithBalance
 ): boolean => crypto.currencyCode === 'BTC' && token.symbol === 'BTC'
 
+export const isSolToken = (
+  crypto: CryptoCurrency,
+  token: LocalTokenWithBalance
+): boolean => crypto.currencyCode === 'SOL' && token.symbol === 'SOL'
+
 export const isTokenTradable = (
   crypto: CryptoCurrency,
   token: LocalTokenWithBalance
 ): boolean =>
-  isSupportedNativeToken(crypto, token) ||
+  isSupportedNativeErc20Token(crypto, token) ||
   isSupportedToken(crypto, token) ||
-  isBtcToken(crypto, token)
+  isBtcToken(crypto, token) ||
+  isSolToken(crypto, token) ||
+  isSupportedSPLToken(crypto, token)
 
 export const dismissMeldStack = (
   _: typeof ACTIONS.OnrampCompleted | typeof ACTIONS.OfframpCompleted,

@@ -190,10 +190,7 @@ export const selectBalanceTotalForAccount =
           isTokenVisible(tokenVisibility, token) &&
           enabledChainIds.includes(token.networkChainId)
       )
-      .reduce((total, token) => {
-        total += token.balance ?? 0n
-        return total
-      }, 0n)
+      .reduce((acc, token) => acc + (token.balance ?? 0n), 0n)
   }
 
 export const selectBalanceTotalInCurrencyForAccount =
@@ -208,10 +205,7 @@ export const selectBalanceTotalInCurrencyForAccount =
           isTokenVisible(tokenVisibility, token) &&
           enabledChainIds.includes(token.networkChainId)
       )
-      .reduce((total, token) => {
-        total += token.balanceInCurrency ?? 0
-        return total
-      }, 0)
+      .reduce((acc, token) => acc + (token.balanceInCurrency ?? 0), 0)
   }
 
 export const selectBalanceForAccountIsAccurate =

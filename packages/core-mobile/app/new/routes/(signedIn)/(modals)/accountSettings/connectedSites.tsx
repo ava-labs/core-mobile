@@ -169,7 +169,7 @@ const ConnectedSitesScreen = (): JSX.Element => {
 
   const renderHeaderRight = (): JSX.Element => {
     return (
-      <NavigationBarButton isModal>
+      <NavigationBarButton>
         {allApprovedDapps.length ? (
           <Button size="small" onPress={disconnectAll} type="secondary">
             Disconnect all

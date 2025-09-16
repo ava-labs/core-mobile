@@ -1,10 +1,10 @@
-import React from 'react'
 import { Stack } from 'common/components/Stack'
-import { stackNavigatorScreenOptions } from 'common/consts/screenOptions'
+import { stackScreensOptions } from 'common/consts/screenOptions'
+import React from 'react'
 
 export default function CollectibleDetailScreenLayout(): JSX.Element {
   return (
-    <Stack screenOptions={stackNavigatorScreenOptions}>
+    <Stack screenOptions={stackScreensOptions}>
       <Stack.Screen name="index" />
     </Stack>
   )
