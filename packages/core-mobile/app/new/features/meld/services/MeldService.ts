@@ -23,12 +23,13 @@ import { meldApiClient } from './apiClient'
 
 class MeldService {
   async searchCountries({
+    sandbox,
     accountFilter,
     categories,
     serviceProviders,
     countries
   }: MeldDefaultParams): Promise<Country[]> {
-    return meldApiClient.getCountries({
+    return meldApiClient(sandbox).getCountries({
       queries: {
         serviceProviders: serviceProviders?.join(','),
         categories: categories.join(','),
@@ -39,13 +40,14 @@ class MeldService {
   }
 
   async searchFiatCurrencies({
+    sandbox,
     categories,
     accountFilter,
     serviceProviders,
     fiatCurrencies,
     countries
   }: SearchFiatCurrenciesParams): Promise<FiatCurrency[]> {
-    return meldApiClient.getFiatCurrencies({
+    return meldApiClient(sandbox).getFiatCurrencies({
       queries: {
         serviceProviders: serviceProviders?.join(','),
         categories: categories.join(','),
@@ -57,6 +59,7 @@ class MeldService {
   }
 
   async searchCryptoCurrencies({
+    sandbox,
     categories,
     countries,
     serviceProviders,
@@ -70,12 +73,13 @@ class MeldService {
       countries: countries?.join(','),
       cryptoCurrencies: cryptoCurrencies?.join(',')
     }
-    return meldApiClient.getCryptoCurrencies({
+    return meldApiClient(sandbox).getCryptoCurrencies({
       queries
     })
   }
 
   async searchServiceProviders({
+    sandbox,
     categories,
     countries,
     accountFilter = true,
@@ -87,12 +91,13 @@ class MeldService {
       countries: countries?.join(','),
       cryptoCurrencies: cryptoCurrencies?.join(',')
     }
-    return meldApiClient.getServiceProviders({
+    return meldApiClient(sandbox).getServiceProviders({
       queries
     })
   }
 
   async searchDefaultsByCountry({
+    sandbox,
     categories,
     countries,
     accountFilter = true
@@ -102,10 +107,11 @@ class MeldService {
       accountFilter,
       countries: countries?.join(',')
     }
-    return meldApiClient.getDefaultsByCountry({ queries })
+    return meldApiClient(sandbox).getDefaultsByCountry({ queries })
   }
 
   async getPurchaseLimits({
+    sandbox,
     categories,
     countries,
     accountFilter = true,
@@ -123,10 +129,11 @@ class MeldService {
       cryptoCurrencies: cryptoCurrencyCodes?.join(','),
       includeDetails
     }
-    return meldApiClient.getPurchaseLimits({ queries })
+    return meldApiClient(sandbox).getPurchaseLimits({ queries })
   }
 
   async getSellLimits({
+    sandbox,
     categories,
     countries,
     accountFilter = true,
@@ -144,10 +151,11 @@ class MeldService {
       cryptoCurrencies: cryptoCurrencyCodes?.join(','),
       includeDetails
     }
-    return meldApiClient.getSellLimits({ queries })
+    return meldApiClient(sandbox).getSellLimits({ queries })
   }
 
   async searchPaymentMethods({
+    sandbox,
     categories,
     countries,
     accountFilter = true,
@@ -163,10 +171,11 @@ class MeldService {
       fiatCurrencies: fiatCurrencies?.join(','),
       cryptoCurrencies: cryptoCurrencyCodes?.join(',')
     }
-    return meldApiClient.getPaymentMethods({ queries })
+    return meldApiClient(sandbox).getPaymentMethods({ queries })
   }
 
   async createCryptoQuote({
+    sandbox,
     serviceProviders,
     sourceAmount,
     walletAddress,
@@ -175,7 +184,9 @@ class MeldService {
     destinationCurrencyCode,
     paymentMethodType,
     subdivision
-  }: CreateCryptoQuoteParams): Promise<CreateCryptoQuote | undefined> {
+  }: CreateCryptoQuoteParams & {
+    sandbox?: boolean
+  }): Promise<CreateCryptoQuote | undefined> {
     const body = {
       serviceProviders,
       countryCode,
@@ -186,10 +197,11 @@ class MeldService {
       subdivision,
       paymentMethodType
     }
-    return meldApiClient.createCryptoQuotes(body)
+    return meldApiClient(sandbox).createCryptoQuotes(body)
   }
 
   async createSessionWidget({
+    sandbox,
     sessionType,
     sessionData: {
       serviceProvider,
@@ -202,7 +214,9 @@ class MeldService {
       destinationCurrencyCode,
       paymentMethodType
     }
-  }: CreateSessionWidgetParams): Promise<CreateSessionWidget | undefined> {
+  }: CreateSessionWidgetParams & {
+    sandbox?: boolean
+  }): Promise<CreateSessionWidget | undefined> {
     const body = {
       sessionType,
       sessionData: {
@@ -217,7 +231,7 @@ class MeldService {
         walletAddress
       }
     }
-    return meldApiClient.createSessionWidget(body)
+    return meldApiClient(sandbox).createSessionWidget(body)
   }
 
   // Fetch transaction by session id
@@ -226,11 +240,13 @@ class MeldService {
   // - Meld has webhook setup to get the transaction details from the service provider
   // - this endpoint is used to ask Meld to fetch the transaction details from the service provider immediately
   async fetchTrasactionBySessionId({
-    sessionId
+    sessionId,
+    sandbox
   }: {
     sessionId: string
+    sandbox?: boolean
   }): Promise<MeldTransaction | undefined> {
-    return await meldApiClient.fetchTransactionBySessionId({
+    return await meldApiClient(sandbox).fetchTransactionBySessionId({
       params: { id: sessionId }
     })
   }

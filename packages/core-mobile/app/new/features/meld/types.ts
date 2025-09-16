@@ -44,6 +44,7 @@ export type CreateSessionWidget = z.infer<typeof CreateSessionWidgetSchema>
 export type MeldTransaction = z.infer<typeof MeldTransactionSchema>
 
 export type MeldDefaultParams = {
+  sandbox?: boolean
   categories: ServiceProviderCategories[]
   serviceProviders?: string[]
   countries?: string[]

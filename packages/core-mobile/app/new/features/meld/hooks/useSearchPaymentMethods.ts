@@ -3,20 +3,13 @@ import { ReactQueryKeys } from 'consts/reactQueryKeys'
 import { selectSelectedCurrency } from 'store/settings/currency'
 import { useSelector } from 'react-redux'
 import { isAndroid, isIOS } from 'utils/Utils'
-import {
-  PaymentMethods,
-  ServiceProviderCategories,
-  ServiceProviders
-} from '../consts'
+import { selectIsEnableMeldSandboxBlocked } from 'store/posthog/slice'
+import { PaymentMethods } from '../consts'
 import MeldService from '../services/MeldService'
-import { SearchPaymentMethods } from '../types'
+import { MeldDefaultParams, SearchPaymentMethods } from '../types'
 import { useMeldCountryCode, useMeldToken } from '../store'
 
-export type SearchPaymentMethodsParams = {
-  categories: ServiceProviderCategories[]
-  countries?: string[]
-  serviceProviders?: ServiceProviders[]
-  accountFilter?: boolean
+export type SearchPaymentMethodsParams = MeldDefaultParams & {
   fiatCurrencies?: string[]
   cryptoCurrencyCodes?: string[]
 }
@@ -29,6 +22,7 @@ export const useSearchPaymentMethods = ({
   SearchPaymentMethods[],
   Error
 > => {
+  const isSandboxBlocked = useSelector(selectIsEnableMeldSandboxBlocked)
   const [meldToken] = useMeldToken()
   const selectedCurrency = useSelector(selectSelectedCurrency)
 
@@ -43,10 +37,12 @@ export const useSearchPaymentMethods = ({
       serviceProviders,
       accountFilter,
       selectedCurrency,
-      cryptoCurrencyCode
+      cryptoCurrencyCode,
+      isSandboxBlocked
     ],
     queryFn: () =>
       MeldService.searchPaymentMethods({
+        sandbox: !isSandboxBlocked,
         fiatCurrencies: [selectedCurrency],
         cryptoCurrencyCodes: cryptoCurrencyCode
           ? [cryptoCurrencyCode]

@@ -38,6 +38,7 @@ import { retry } from 'utils/js/retry'
 import { showAlert } from '@avalabs/k2-alpine'
 import { MeldTransaction } from 'features/meld/types'
 import { ChainId, Network } from '@avalabs/core-chains-sdk'
+import { selectIsEnableMeldSandboxBlocked } from 'store/posthog/slice'
 import { HyperSDKClient } from 'hypersdk-client'
 import { offrampSend } from './slice'
 
@@ -47,6 +48,7 @@ const handleOfframpSend = async (
 ): Promise<void> => {
   const { getState, dispatch } = listenerApi
   const state = getState()
+  const isSandboxBlocked = selectIsEnableMeldSandboxBlocked(state)
   const request = createInAppRequest(dispatch)
   const isDeveloperMode = selectIsDeveloperMode(state)
   const activeAccount = selectActiveAccount(state)
@@ -64,7 +66,8 @@ const handleOfframpSend = async (
     response = await retry({
       operation: () => {
         return MeldService.fetchTrasactionBySessionId({
-          sessionId
+          sessionId,
+          sandbox: !isSandboxBlocked
         })
       },
       shouldStop: result => result?.transaction !== undefined,

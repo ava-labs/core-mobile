@@ -1,6 +1,8 @@
 import { useQuery, UseQueryResult } from '@tanstack/react-query'
 import MeldService from 'features/meld/services/MeldService'
 import { ReactQueryKeys } from 'consts/reactQueryKeys'
+import { selectIsEnableMeldSandboxBlocked } from 'store/posthog/slice'
+import { useSelector } from 'react-redux'
 import { MeldDefaultParams, ServiceProvider } from '../types'
 
 export type SearchServiceProvidersParams = Omit<
@@ -18,15 +20,18 @@ export const useSearchServiceProviders = ({
   ServiceProvider[],
   Error
 > => {
+  const isSandboxBlocked = useSelector(selectIsEnableMeldSandboxBlocked)
   return useQuery<ServiceProvider[]>({
     queryKey: [
       ReactQueryKeys.MELD_SEARCH_SERVICE_PROVIDERS,
       categories,
       accountFilter,
-      cryptoCurrencies
+      cryptoCurrencies,
+      isSandboxBlocked
     ],
     queryFn: () =>
       MeldService.searchServiceProviders({
+        sandbox: !isSandboxBlocked,
         categories,
         accountFilter,
         cryptoCurrencies

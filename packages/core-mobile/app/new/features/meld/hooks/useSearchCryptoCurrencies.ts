@@ -1,4 +1,6 @@
 import { useQuery, UseQueryResult } from '@tanstack/react-query'
+import { selectIsEnableMeldSandboxBlocked } from 'store/posthog/slice'
+import { useSelector } from 'react-redux'
 import MeldService from 'features/meld/services/MeldService'
 import { ReactQueryKeys } from 'consts/reactQueryKeys'
 import { CryptoCurrency, MeldDefaultParams } from '../types'
@@ -17,6 +19,7 @@ export const useSearchCryptoCurrencies = ({
   SearchCryptoCurrenciesParams,
   'countries' | 'serviceProviders'
 >): UseQueryResult<CryptoCurrency[], Error> => {
+  const isSandboxBlocked = useSelector(selectIsEnableMeldSandboxBlocked)
   const { data: serviceProvidersData } = useSearchServiceProviders({
     categories
   })
@@ -33,10 +36,12 @@ export const useSearchCryptoCurrencies = ({
       serviceProviders,
       countryCode,
       accountFilter,
-      cryptoCurrencies
+      cryptoCurrencies,
+      isSandboxBlocked
     ],
     queryFn: () =>
       MeldService.searchCryptoCurrencies({
+        sandbox: !isSandboxBlocked,
         cryptoCurrencies,
         categories,
         serviceProviders,
