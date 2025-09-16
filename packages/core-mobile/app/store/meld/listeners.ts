@@ -273,23 +273,8 @@ const initMeldService = async (
   listenerApi: AppListenerEffectAPI
 ): Promise<void> => {
   const state = listenerApi.getState()
-
-  const prevState = listenerApi.getOriginalState()
-  if (!shouldReinitializeMeldService(prevState, state)) return
-
   const isSandboxBlocked = selectIsEnableMeldSandboxBlocked(state)
-
   MeldService.init(!isSandboxBlocked)
-}
-
-// Check if the ff has changed
-export const shouldReinitializeMeldService = (
-  prevState: RootState,
-  currState: RootState
-): boolean => {
-  const prevSandboxBlocked = selectIsEnableMeldSandboxBlocked(prevState)
-  const currSandboxBlocked = selectIsEnableMeldSandboxBlocked(currState)
-  return prevSandboxBlocked !== currSandboxBlocked
 }
 
 export const addMeldListeners = (startListening: AppStartListening): void => {

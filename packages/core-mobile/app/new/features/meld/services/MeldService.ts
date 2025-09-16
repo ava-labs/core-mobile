@@ -28,10 +28,6 @@ class MeldService {
     this.#meldApiClient = meldApiClient(sandbox)
   }
 
-  constructor(sandbox?: boolean) {
-    this.init(sandbox)
-  }
-
   async searchCountries({
     accountFilter,
     categories,
