@@ -20,7 +20,7 @@ import {
 if (!Config.PROXY_URL)
   Logger.warn('PROXY_URL is missing. Meld service disabled.')
 
-const baseUrl = Config.PROXY_URL + '/proxy/meld'
+const baseUrl = Config.PROXY_URL + '/proxy/meld-sandbox'
 
 export const meldApiClient = new Zodios(
   baseUrl,
