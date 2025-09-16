@@ -244,7 +244,7 @@ workflows:
     steps:
     - restore-cocoapods-cache@1: {}
     - script@1:
-        title: Copy Gemfile to iOS"P folder
+        title: Copy Gemfile to iOS folder
         inputs:
         - content: |-
             #!/usr/bin/env bash

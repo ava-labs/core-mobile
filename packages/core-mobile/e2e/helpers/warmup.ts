@@ -6,10 +6,9 @@ import Action from './actions'
 import { Platform } from './constants'
 import loginRecoverWallet from './loginRecoverWallet'
 
-export const warmup = async () => {
+export const warmup = async (newInstance = false) => {
   const initialArgs: DeviceLaunchAppConfig = {
     permissions: { notifications: 'YES', camera: 'YES' },
-    newInstance: true,
     launchArgs: {
       detoxEnableSynchronization: false,
       detoxURLBlacklistRegex: [
@@ -21,8 +20,12 @@ export const warmup = async () => {
     }
   }
 
+  if (newInstance) {
+    console.log('CI is true, setting newInstance to true')
+    initialArgs.newInstance = true
+  }
+
   await device.launchApp(initialArgs)
-  await device.disableSynchronization()
 
   // Jailbreak Check
   await handleJailbrokenWarning()
