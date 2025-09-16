@@ -183,6 +183,8 @@ export const ScrollScreen = ({
         </View>
       )
     } else {
+      // If we don't have a title or subtitle, we need to render an empty header
+      // so that the header height is not undefined
       return (
         <View
           ref={headerRef}
