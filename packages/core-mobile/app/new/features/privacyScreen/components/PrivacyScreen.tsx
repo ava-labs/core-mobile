@@ -25,6 +25,7 @@ export const PrivacyScreen = (): JSX.Element | null => {
         <View
           style={{
             flex: 1,
+            backgroundColor: colors.$surfacePrimary,
             alignItems: 'center',
             justifyContent: 'center'
           }}>

@@ -20,7 +20,8 @@ export const PinScreenOverlay = (): JSX.Element => {
       }}>
       <View
         sx={{
-          flex: 1
+          flex: 1,
+          backgroundColor: colors.$surfacePrimary
         }}>
         <KeyboardAwareScrollView
           keyboardDismissMode="interactive"
