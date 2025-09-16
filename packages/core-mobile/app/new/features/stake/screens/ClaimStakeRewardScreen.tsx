@@ -18,7 +18,7 @@ import { usePreventScreenRemoval } from 'common/hooks/usePreventScreenRemoval'
 import { transactionSnackbar } from 'common/utils/toast'
 import { useRouter } from 'expo-router'
 import { StakeTokenUnitValue } from 'features/stake/components/StakeTokenUnitValue'
-import { refetchQueries, useClaimRewards } from 'hooks/earn/useClaimRewards'
+import { useClaimRewards } from 'hooks/earn/useClaimRewards'
 import { usePChainBalance } from 'hooks/earn/usePChainBalance'
 import { useAvaxTokenPriceInSelectedCurrency } from 'hooks/useAvaxTokenPriceInSelectedCurrency'
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
@@ -26,9 +26,7 @@ import { useSelector } from 'react-redux'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import NetworkService from 'services/network/NetworkService'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
-import { selectActiveAccount } from 'store/account'
-import { useQueryClient } from '@tanstack/react-query'
-import { selectSelectedCurrency } from 'store/settings/currency'
+import { useRefreshStakingBalances } from 'hooks/earn/useRefreshStakingBalances'
 
 export const ClaimStakeRewardScreen = (): JSX.Element => {
   const { navigate, back } = useRouter()
@@ -40,20 +38,9 @@ export const ClaimStakeRewardScreen = (): JSX.Element => {
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const pNetwork = NetworkService.getAvalancheNetworkP(isDeveloperMode)
   const avaxPrice = useAvaxTokenPriceInSelectedCurrency()
-  const activeAccount = useSelector(selectActiveAccount)
-  const queryClient = useQueryClient()
-  const selectedCurrency = useSelector(selectSelectedCurrency)
+  const refreshStakingBalances = useRefreshStakingBalances()
   const onClaimSuccess = (): void => {
-    const pAddress = activeAccount?.addressPVM ?? ''
-    const cAddress = activeAccount?.addressC ?? ''
-
-    refetchQueries({
-      isDeveloperMode,
-      queryClient,
-      pAddress,
-      cAddress,
-      selectedCurrency
-    })
+    refreshStakingBalances({ shouldRefreshStakes: false })
 
     AnalyticsService.capture('StakeClaimSuccess')
 

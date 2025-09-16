@@ -1,4 +1,3 @@
-import { QueryClient } from '@tanstack/react-query'
 import { useDelegationContext } from 'contexts/DelegationContext'
 import { useCallback } from 'react'
 import { useUiSafeMutation } from 'hooks/useUiSafeMutation'
@@ -82,40 +81,4 @@ export const useIssueDelegation = ({
     issueDelegation: safeMutate,
     isPending
   }
-}
-
-/**
- * refetch stakes as well as c + p balances with 2 second delay
- * since glacier will have some delay
- * @param queryClient
- * @param isDeveloperMode
- * @param pAddress
- * @param cAddress
- * @param selectedCurrency
- */
-
-export const refetchQueries = ({
-  queryClient,
-  isDeveloperMode,
-  pAddress,
-  cAddress,
-  selectedCurrency
-}: {
-  queryClient: QueryClient
-  isDeveloperMode: boolean
-  pAddress: string
-  cAddress: string
-  selectedCurrency: string
-}): void => {
-  setTimeout(() => {
-    queryClient.invalidateQueries({
-      queryKey: ['stakes', isDeveloperMode, pAddress]
-    })
-    queryClient.invalidateQueries({
-      queryKey: ['pChainBalance', isDeveloperMode, pAddress]
-    })
-    queryClient.invalidateQueries({
-      queryKey: ['cChainBalance', isDeveloperMode, cAddress, selectedCurrency]
-    })
-  }, 2000)
 }

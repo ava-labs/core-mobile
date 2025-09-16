@@ -11,7 +11,6 @@ import {
   View
 } from '@avalabs/k2-alpine'
 import { UTCDate } from '@date-fns/utc'
-import { useQueryClient } from '@tanstack/react-query'
 import { ScrollScreen } from 'common/components/ScrollScreen'
 import { usePreventScreenRemoval } from 'common/hooks/usePreventScreenRemoval'
 import { copyToClipboard } from 'common/utils/clipboard'
@@ -28,11 +27,9 @@ import { StakeTokenUnitValue } from 'features/stake/components/StakeTokenUnitVal
 import { useStakeEstimatedReward } from 'features/stake/hooks/useStakeEstimatedReward'
 import { useValidateStakingEndTime } from 'features/stake/utils/useValidateStakingEndTime'
 import { useGetValidatorByNodeId } from 'hooks/earn/useGetValidatorByNodeId'
-import {
-  refetchQueries,
-  useIssueDelegation
-} from 'hooks/earn/useIssueDelegation'
+import { useIssueDelegation } from 'hooks/earn/useIssueDelegation'
 import { useNodes } from 'hooks/earn/useNodes'
+import { useRefreshStakingBalances } from 'hooks/earn/useRefreshStakingBalances'
 import { useSearchNode } from 'hooks/earn/useSearchNode'
 import { useNow } from 'hooks/time/useNow'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
@@ -42,7 +39,6 @@ import NetworkService from 'services/network/NetworkService'
 import { selectActiveAccount } from 'store/account'
 import { scheduleStakingCompleteNotifications } from 'store/notifications'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
-import { selectSelectedCurrency } from 'store/settings/currency'
 import { truncateNodeId } from 'utils/Utils'
 
 const StakeConfirmScreen = (): JSX.Element => {
@@ -100,8 +96,7 @@ const StakeConfirmScreen = (): JSX.Element => {
   const [isAlertVisible, setIsAlertVisible] = useState(false)
 
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
-  const queryClient = useQueryClient()
-  const selectedCurrency = useSelector(selectSelectedCurrency)
+  const refreshStakingBalances = useRefreshStakingBalances()
 
   const pNetwork = NetworkService.getAvalancheNetworkP(isDeveloperMode)
   const networkFeesInAvax = useMemo(
@@ -231,16 +226,7 @@ const StakeConfirmScreen = (): JSX.Element => {
 
   const onDelegationSuccess = useCallback(
     (txHash: string): void => {
-      const pAddress = activeAccount?.addressPVM ?? ''
-      const cAddress = activeAccount?.addressC ?? ''
-
-      refetchQueries({
-        isDeveloperMode,
-        queryClient,
-        pAddress,
-        cAddress,
-        selectedCurrency
-      })
+      refreshStakingBalances({ shouldRefreshStakes: true })
 
       AnalyticsService.capture('StakeDelegationSuccess')
       transactionSnackbar.success({ message: 'Stake successful' })
@@ -266,9 +252,8 @@ const StakeConfirmScreen = (): JSX.Element => {
       validatedStakingEndTime,
       handleDismiss,
       navigate,
-      selectedCurrency,
       activeAccount,
-      queryClient
+      refreshStakingBalances
     ]
   )
 

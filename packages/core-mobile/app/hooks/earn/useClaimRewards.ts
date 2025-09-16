@@ -1,4 +1,3 @@
-import { QueryClient } from '@tanstack/react-query'
 import { useSelector } from 'react-redux'
 import EarnService from 'services/earn/EarnService'
 import { selectIsDeveloperMode } from 'store/settings/advanced/slice'
@@ -103,37 +102,4 @@ export const useClaimRewards = (
     totalFees,
     feeCalculationError
   }
-}
-
-/**
- * refetch c + p balances with 2 second delay
- * since glacier will have some delay
- * @param queryClient
- * @param isDeveloperMode
- * @param pAddress
- * @param cAddress
- * @param selectedCurrency
- */
-
-export const refetchQueries = ({
-  queryClient,
-  isDeveloperMode,
-  pAddress,
-  cAddress,
-  selectedCurrency
-}: {
-  queryClient: QueryClient
-  isDeveloperMode: boolean
-  pAddress: string
-  cAddress: string
-  selectedCurrency: string
-}): void => {
-  setTimeout(() => {
-    queryClient.invalidateQueries({
-      queryKey: ['pChainBalance', isDeveloperMode, pAddress]
-    })
-    queryClient.invalidateQueries({
-      queryKey: ['cChainBalance', isDeveloperMode, cAddress, selectedCurrency]
-    })
-  }, 2000)
 }
