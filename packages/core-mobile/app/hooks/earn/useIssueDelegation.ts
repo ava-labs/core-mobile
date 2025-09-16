@@ -1,12 +1,8 @@
-import { useMutation, QueryClient, useQueryClient } from '@tanstack/react-query'
+import { useMutation, QueryClient } from '@tanstack/react-query'
 import { useDelegationContext } from 'contexts/DelegationContext'
 import { useCallback } from 'react'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import Logger from 'utils/Logger'
-import { useSelector } from 'react-redux'
-import { selectSelectedCurrency } from 'store/settings/currency'
-import { selectIsDeveloperMode } from 'store/settings/advanced'
-import { selectActiveAccount } from 'store/account'
 import { FundsStuckError } from './errors'
 
 export const useIssueDelegation = ({
@@ -32,10 +28,6 @@ export const useIssueDelegation = ({
   isPending: boolean
 } => {
   const { delegate, compute, steps, stakeAmount } = useDelegationContext()
-  const queryClient = useQueryClient()
-  const selectedCurrency = useSelector(selectSelectedCurrency)
-  const isDeveloperMode = useSelector(selectIsDeveloperMode)
-  const activeAccount = useSelector(selectActiveAccount)
 
   const { mutateAsync: issueDelegationMutateAsync, isPending } = useMutation({
     mutationFn: async ({
@@ -90,17 +82,6 @@ export const useIssueDelegation = ({
           recomputeSteps
         })
 
-        const pAddress = activeAccount?.addressPVM ?? ''
-        const cAddress = activeAccount?.addressC ?? ''
-
-        refetchQueries({
-          isDeveloperMode,
-          queryClient,
-          pAddress,
-          cAddress,
-          selectedCurrency
-        })
-
         onSuccess(txHash)
       } catch (e) {
         Logger.error('delegation failed', e)
@@ -111,16 +92,7 @@ export const useIssueDelegation = ({
         }
       }
     },
-    [
-      issueDelegationMutateAsync,
-      activeAccount,
-      isDeveloperMode,
-      queryClient,
-      selectedCurrency,
-      onSuccess,
-      onError,
-      onFundsStuck
-    ]
+    [issueDelegationMutateAsync, onSuccess, onError, onFundsStuck]
   )
 
   return {
