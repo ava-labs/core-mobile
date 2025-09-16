@@ -1,6 +1,4 @@
 import { useQuery, UseQueryResult } from '@tanstack/react-query'
-import { selectIsEnableMeldSandboxBlocked } from 'store/posthog/slice'
-import { useSelector } from 'react-redux'
 import { ReactQueryKeys } from 'consts/reactQueryKeys'
 import { useMemo } from 'react'
 import MeldService from '../services/MeldService'
@@ -21,7 +19,6 @@ export const useCreateCryptoQuote = ({
   category: ServiceProviderCategories
   enabled?: boolean
 }): UseQueryResult<CreateCryptoQuote | undefined, Error> => {
-  const isSandboxBlocked = useSelector(selectIsEnableMeldSandboxBlocked)
   const { data: serviceProvidersData } = useSearchServiceProviders({
     categories: [category]
   })
@@ -63,12 +60,10 @@ export const useCreateCryptoQuote = ({
       destinationCurrencyCode,
       sourceCurrencyCode,
       hasValidSourceAmount,
-      paymentMethodType,
-      isSandboxBlocked
+      paymentMethodType
     ],
     queryFn: () => {
       return MeldService.createCryptoQuote({
-        sandbox: !isSandboxBlocked,
         serviceProviders,
         walletAddress,
         sourceAmount,

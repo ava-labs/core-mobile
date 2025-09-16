@@ -3,7 +3,6 @@ import { ReactQueryKeys } from 'consts/reactQueryKeys'
 import { selectSelectedCurrency } from 'store/settings/currency'
 import { useSelector } from 'react-redux'
 import { isAndroid, isIOS } from 'utils/Utils'
-import { selectIsEnableMeldSandboxBlocked } from 'store/posthog/slice'
 import { PaymentMethods } from '../consts'
 import MeldService from '../services/MeldService'
 import { MeldDefaultParams, SearchPaymentMethods } from '../types'
@@ -22,7 +21,6 @@ export const useSearchPaymentMethods = ({
   SearchPaymentMethods[],
   Error
 > => {
-  const isSandboxBlocked = useSelector(selectIsEnableMeldSandboxBlocked)
   const [meldToken] = useMeldToken()
   const selectedCurrency = useSelector(selectSelectedCurrency)
 
@@ -37,12 +35,10 @@ export const useSearchPaymentMethods = ({
       serviceProviders,
       accountFilter,
       selectedCurrency,
-      cryptoCurrencyCode,
-      isSandboxBlocked
+      cryptoCurrencyCode
     ],
     queryFn: () =>
       MeldService.searchPaymentMethods({
-        sandbox: !isSandboxBlocked,
         fiatCurrencies: [selectedCurrency],
         cryptoCurrencyCodes: cryptoCurrencyCode
           ? [cryptoCurrencyCode]

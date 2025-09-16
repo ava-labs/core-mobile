@@ -1,6 +1,4 @@
 import { useQuery, UseQueryResult } from '@tanstack/react-query'
-import { selectIsEnableMeldSandboxBlocked } from 'store/posthog/slice'
-import { useSelector } from 'react-redux'
 import MeldService from 'features/meld/services/MeldService'
 import { ReactQueryKeys } from 'consts/reactQueryKeys'
 import { FiatCurrency, MeldDefaultParams } from '../types'
@@ -19,7 +17,6 @@ export const useSearchFiatCurrencies = ({
   FiatCurrency[],
   Error
 > => {
-  const isSandboxBlocked = useSelector(selectIsEnableMeldSandboxBlocked)
   const { data: serviceProvidersData } = useSearchServiceProviders({
     categories
   })
@@ -33,12 +30,10 @@ export const useSearchFiatCurrencies = ({
       serviceProviders,
       fiatCurrencies,
       countries,
-      categories,
-      isSandboxBlocked
+      categories
     ],
     queryFn: () =>
       MeldService.searchFiatCurrencies({
-        sandbox: !isSandboxBlocked,
         categories,
         accountFilter,
         serviceProviders,

@@ -1,4 +1,4 @@
-import { AppListenerEffectAPI, AppStartListening } from 'store/types'
+import { AppListenerEffectAPI, AppStartListening, RootState } from 'store/types'
 import { selectTokensWithBalanceForAccount } from 'store/balance'
 import { Account, selectActiveAccount } from 'store/account'
 import { createInAppRequest } from 'store/rpc/utils/createInAppRequest'
@@ -38,8 +38,13 @@ import { retry } from 'utils/js/retry'
 import { showAlert } from '@avalabs/k2-alpine'
 import { MeldTransaction } from 'features/meld/types'
 import { ChainId, Network } from '@avalabs/core-chains-sdk'
-import { selectIsEnableMeldSandboxBlocked } from 'store/posthog/slice'
+import {
+  selectIsEnableMeldSandboxBlocked,
+  setFeatureFlags
+} from 'store/posthog/slice'
 import { HyperSDKClient } from 'hypersdk-client'
+import { isAnyOf } from '@reduxjs/toolkit'
+import { onAppUnlocked } from 'store/app'
 import { offrampSend } from './slice'
 
 const handleOfframpSend = async (
@@ -48,7 +53,6 @@ const handleOfframpSend = async (
 ): Promise<void> => {
   const { getState, dispatch } = listenerApi
   const state = getState()
-  const isSandboxBlocked = selectIsEnableMeldSandboxBlocked(state)
   const request = createInAppRequest(dispatch)
   const isDeveloperMode = selectIsDeveloperMode(state)
   const activeAccount = selectActiveAccount(state)
@@ -66,8 +70,7 @@ const handleOfframpSend = async (
     response = await retry({
       operation: () => {
         return MeldService.fetchTrasactionBySessionId({
-          sessionId,
-          sandbox: !isSandboxBlocked
+          sessionId
         })
       },
       shouldStop: result => result?.transaction !== undefined,
@@ -266,10 +269,40 @@ const getDecimals = (token: TokenWithBalance, network: Network): number => {
     : network.networkToken.decimals
 }
 
+const initMeldService = async (
+  listenerApi: AppListenerEffectAPI
+): Promise<void> => {
+  const state = listenerApi.getState()
+
+  const prevState = listenerApi.getOriginalState()
+  if (!shouldReinitializeMeldService(prevState, state)) return
+
+  const isSandboxBlocked = selectIsEnableMeldSandboxBlocked(state)
+
+  MeldService.init({
+    sandbox: !isSandboxBlocked
+  })
+}
+
+// Check if any of the feature gate states
+export const shouldReinitializeMeldService = (
+  prevState: RootState,
+  currState: RootState
+): boolean => {
+  const prevSandboxBlocked = selectIsEnableMeldSandboxBlocked(prevState)
+  const currSandboxBlocked = selectIsEnableMeldSandboxBlocked(currState)
+  return prevSandboxBlocked !== currSandboxBlocked
+}
+
 export const addMeldListeners = (startListening: AppStartListening): void => {
   startListening({
     actionCreator: offrampSend,
     effect: async (action, listenerApi) =>
       handleOfframpSend(action.payload.searchParams, listenerApi)
+  })
+
+  startListening({
+    matcher: isAnyOf(onAppUnlocked, setFeatureFlags),
+    effect: (_, listenerApi) => initMeldService(listenerApi)
   })
 }

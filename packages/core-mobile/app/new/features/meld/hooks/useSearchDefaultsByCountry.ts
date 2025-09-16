@@ -1,7 +1,5 @@
 import { useQuery, UseQueryResult } from '@tanstack/react-query'
 import { ReactQueryKeys } from 'consts/reactQueryKeys'
-import { selectIsEnableMeldSandboxBlocked } from 'store/posthog/slice'
-import { useSelector } from 'react-redux'
 import { isAndroid, isIOS } from 'utils/Utils'
 import { MeldDefaultParams, SearchDefaultsByCountry } from '../types'
 import MeldService from '../services/MeldService'
@@ -20,7 +18,6 @@ export const useSearchDefaultsByCountry = ({
   SearchDefaultsByCountry[],
   Error
 > => {
-  const isSandboxBlocked = useSelector(selectIsEnableMeldSandboxBlocked)
   const [countryCode] = useMeldCountryCode()
 
   return useQuery<SearchDefaultsByCountry[]>({
@@ -29,12 +26,10 @@ export const useSearchDefaultsByCountry = ({
       ReactQueryKeys.MELD_SEARCH_DEFAULTS_BY_COUNTRY,
       categories,
       accountFilter,
-      countryCode,
-      isSandboxBlocked
+      countryCode
     ],
     queryFn: () =>
       MeldService.searchDefaultsByCountry({
-        sandbox: !isSandboxBlocked,
         countries: countryCode ? [countryCode] : undefined,
         categories,
         accountFilter

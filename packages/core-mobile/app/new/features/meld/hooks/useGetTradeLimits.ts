@@ -1,7 +1,5 @@
 import { useQuery, UseQueryResult } from '@tanstack/react-query'
 import { CurrencySymbol } from 'store/settings/currency'
-import { useSelector } from 'react-redux'
-import { selectIsEnableMeldSandboxBlocked } from 'store/posthog/slice'
 import { ReactQueryKeys } from 'consts/reactQueryKeys'
 import { GetTradeLimits, MeldDefaultParams } from '../types'
 import MeldService from '../services/MeldService'
@@ -26,7 +24,6 @@ export const useGetTradeLimits = ({
 > & {
   category: ServiceProviderCategories
 }): UseQueryResult<GetTradeLimits[], Error> => {
-  const isSandboxBlocked = useSelector(selectIsEnableMeldSandboxBlocked)
   const { data: serviceProvidersData } = useSearchServiceProviders({
     categories: [category]
   })
@@ -51,11 +48,9 @@ export const useGetTradeLimits = ({
       includeDetails,
       cryptoCurrencyCodes,
       serviceProviders,
-      isSandboxBlocked
     ],
     queryFn: () => {
       const params = {
-        sandbox: !isSandboxBlocked,
         serviceProviders,
         categories: [category],
         countries: countryCode ? [countryCode] : undefined,

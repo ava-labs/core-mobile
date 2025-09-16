@@ -1,6 +1,4 @@
 import { useCallback, useMemo } from 'react'
-import { useSelector } from 'react-redux'
-import { selectIsEnableMeldSandboxBlocked } from 'store/posthog/slice'
 import { CreateSessionWidget, CreateSessionWidgetParams } from '../types'
 import MeldService from '../services/MeldService'
 import { useMeldCountryCode, useMeldPaymentMethod } from '../store'
@@ -23,7 +21,6 @@ export const useCreateSessionWidget = ({
 }): {
   createSessionWidget: () => Promise<CreateSessionWidget | undefined>
 } => {
-  const isSandboxBlocked = useSelector(selectIsEnableMeldSandboxBlocked)
   const [countryCode] = useMeldCountryCode()
   const [meldPaymentMethod] = useMeldPaymentMethod()
   const {
@@ -64,7 +61,6 @@ export const useCreateSessionWidget = ({
     }
 
     return MeldService.createSessionWidget({
-      sandbox: !isSandboxBlocked,
       sessionType,
       sessionData: {
         walletAddress,
