@@ -98,7 +98,7 @@
     "@walletconnect/utils": "2.17.2",
     "@zodios/core": "10.9.6",
     "assert": "2.1.0",
-    "axios": "1.7.7",
+    "axios": "1.12.0",
     "base-64": "1.0.0",
     "big.js": "6.2.2",
     "bip174": "2.1.0",
