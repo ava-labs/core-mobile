@@ -6,7 +6,7 @@ import {
 } from '@avalabs/k2-alpine'
 import { useHeaderHeight } from '@react-navigation/elements'
 import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
-import React, { useCallback, useRef, useState } from 'react'
+import React, { useCallback, useState } from 'react'
 import {
   LayoutChangeEvent,
   LayoutRectangle,
