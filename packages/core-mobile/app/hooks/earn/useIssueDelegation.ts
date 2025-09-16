@@ -1,17 +1,9 @@
 import {
   useMutation,
-  useQueryClient,
   QueryClient,
   UseMutationResult
 } from '@tanstack/react-query'
-import { useSelector } from 'react-redux'
-import { selectIsDeveloperMode } from 'store/settings/advanced/slice'
-import { selectActiveAccount } from 'store/account/slice'
-import { selectSelectedCurrency } from 'store/settings/currency/slice'
-import Logger from 'utils/Logger'
-import { FundsStuckError } from 'hooks/earn/errors'
 import { useDelegationContext } from 'contexts/DelegationContext'
-import { useEffect, useState } from 'react'
 
 /**
  * Custom hook to issue a staking delegation transaction.
@@ -26,11 +18,7 @@ import { useEffect, useState } from 'react'
  *  - By setting a state value (`delegationTxHash` or `delegationError`) and handling it in `useEffect`,
  *    we ensure the UI callbacks are fired on the next render frame, making transitions more stable.
  */
-export const useIssueDelegation = (
-  onSuccess: (txId: string) => void,
-  onError: (error: Error) => void,
-  onFundsStuck: (error: Error) => void
-): {
+export const useIssueDelegation = (): {
   issueDelegationMutation: UseMutationResult<
     string,
     Error,
@@ -44,38 +32,6 @@ export const useIssueDelegation = (
   >
 } => {
   const { delegate, compute, steps, stakeAmount } = useDelegationContext()
-  const queryClient = useQueryClient()
-  const activeAccount = useSelector(selectActiveAccount)
-  const isDeveloperMode = useSelector(selectIsDeveloperMode)
-  const selectedCurrency = useSelector(selectSelectedCurrency)
-
-  const pAddress = activeAccount?.addressPVM ?? ''
-  const cAddress = activeAccount?.addressC ?? ''
-
-  // Store mutation results/errors temporarily to trigger callbacks
-  const [delegationTxHash, setDelegationTxHash] = useState<string>()
-  const [delegationError, setDelegationError] = useState<Error>()
-
-  // When tx hash is set, trigger success callback in next render frame
-  useEffect(() => {
-    if (!delegationTxHash) return
-
-    onSuccess(delegationTxHash)
-    setDelegationTxHash(undefined)
-  }, [delegationTxHash, onSuccess])
-
-  // When error is set, trigger appropriate error callback in next render frame
-  useEffect(() => {
-    if (!delegationError) return
-
-    if (delegationError instanceof FundsStuckError) {
-      onFundsStuck(delegationError)
-    } else {
-      onError(delegationError)
-    }
-
-    setDelegationError(undefined)
-  }, [delegationError, onFundsStuck, onError])
 
   const issueDelegationMutation = useMutation({
     mutationFn: async ({
@@ -105,21 +61,6 @@ export const useIssueDelegation = (
         endDate,
         nodeId
       })
-    },
-    onSuccess: txId => {
-      refetchQueries({
-        isDeveloperMode,
-        queryClient,
-        pAddress,
-        cAddress,
-        selectedCurrency
-      })
-      // handle UI success state
-      setDelegationTxHash(txId)
-    },
-    onError: error => {
-      Logger.error('delegation failed', error)
-      setDelegationError(error)
     }
   })
 

@@ -11,6 +11,7 @@ import {
   View
 } from '@avalabs/k2-alpine'
 import { UTCDate } from '@date-fns/utc'
+import { useQueryClient } from '@tanstack/react-query'
 import { ScrollScreen } from 'common/components/ScrollScreen'
 import { usePreventScreenRemoval } from 'common/hooks/usePreventScreenRemoval'
 import { copyToClipboard } from 'common/utils/clipboard'
@@ -26,8 +27,12 @@ import { useLocalSearchParams, useRouter } from 'expo-router'
 import { StakeTokenUnitValue } from 'features/stake/components/StakeTokenUnitValue'
 import { useStakeEstimatedReward } from 'features/stake/hooks/useStakeEstimatedReward'
 import { useValidateStakingEndTime } from 'features/stake/utils/useValidateStakingEndTime'
+import { FundsStuckError } from 'hooks/earn/errors'
 import { useGetValidatorByNodeId } from 'hooks/earn/useGetValidatorByNodeId'
-import { useIssueDelegation } from 'hooks/earn/useIssueDelegation'
+import {
+  refetchQueries,
+  useIssueDelegation
+} from 'hooks/earn/useIssueDelegation'
 import { useNodes } from 'hooks/earn/useNodes'
 import { useSearchNode } from 'hooks/earn/useSearchNode'
 import { useNow } from 'hooks/time/useNow'
@@ -38,6 +43,8 @@ import NetworkService from 'services/network/NetworkService'
 import { selectActiveAccount } from 'store/account'
 import { scheduleStakingCompleteNotifications } from 'store/notifications'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
+import { selectSelectedCurrency } from 'store/settings/currency'
+import Logger from 'utils/Logger'
 import { truncateNodeId } from 'utils/Utils'
 
 const StakeConfirmScreen = (): JSX.Element => {
@@ -221,68 +228,7 @@ const StakeConfirmScreen = (): JSX.Element => {
     })
   }, [handleDismiss])
 
-  const onDelegationSuccess = useCallback(
-    (txHash: string): void => {
-      AnalyticsService.capture('StakeDelegationSuccess')
-      transactionSnackbar.success({ message: 'Stake successful' })
-
-      handleDismiss()
-      // @ts-ignore TODO: make routes typesafe
-      navigate('/stake')
-
-      dispatch(
-        scheduleStakingCompleteNotifications([
-          {
-            txHash,
-            endTimestamp: getUnixTime(validatedStakingEndTime),
-            accountId: activeAccount?.id,
-            isDeveloperMode
-          }
-        ])
-      )
-    },
-    [
-      activeAccount?.id,
-      dispatch,
-      isDeveloperMode,
-      validatedStakingEndTime,
-      handleDismiss,
-      navigate
-    ]
-  )
-
-  const onDelegationError = useCallback((e: Error): void => {
-    AnalyticsService.capture('StakeDelegationFail')
-    transactionSnackbar.error({ error: e.message })
-  }, [])
-
-  function onFundsStuck(): void {
-    showAlert({
-      title: 'Funds stuck',
-      description:
-        'Your stake failed due to network issues. Would you like to keep trying to stake your funds?',
-      buttons: [
-        {
-          text: 'Cancel stake',
-          onPress: () => {
-            handleDismiss()
-          }
-        },
-        {
-          text: 'Try again',
-          onPress: () => {
-            issueDelegation(true)
-          }
-        }
-      ]
-    })
-  }
-
-  const { issueDelegationMutation } = useIssueDelegation(
-    onDelegationSuccess,
-    onDelegationError,
-    onFundsStuck
-  )
+  const { issueDelegationMutation } = useIssueDelegation()
 
   usePreventScreenRemoval(issueDelegationMutation.isPending)
 
@@ -319,20 +265,94 @@ const StakeConfirmScreen = (): JSX.Element => {
     isFetchingNodes
   ])
 
+  const queryClient = useQueryClient()
+  const selectedCurrency = useSelector(selectSelectedCurrency)
+
   const issueDelegation = useCallback(
-    (recomputeSteps = false): void => {
+    async (recomputeSteps = false): Promise<void> => {
       if (!validator) return
 
       AnalyticsService.capture('StakeIssueDelegation')
 
-      issueDelegationMutation.mutate({
-        startDate: minStartTime,
-        endDate: validatedStakingEndTime,
-        nodeId: validator.nodeID,
-        recomputeSteps
-      })
+      try {
+        const txHash = await issueDelegationMutation.mutateAsync({
+          startDate: minStartTime,
+          endDate: validatedStakingEndTime,
+          nodeId: validator.nodeID,
+          recomputeSteps
+        })
+
+        const pAddress = activeAccount?.addressPVM ?? ''
+        const cAddress = activeAccount?.addressC ?? ''
+
+        refetchQueries({
+          isDeveloperMode,
+          queryClient,
+          pAddress,
+          cAddress,
+          selectedCurrency
+        })
+
+        requestAnimationFrame(() => {
+          AnalyticsService.capture('StakeDelegationSuccess')
+          transactionSnackbar.success({ message: 'Stake successful' })
+
+          handleDismiss()
+          // @ts-ignore TODO: make routes typesafe
+          navigate('/stake')
+
+          dispatch(
+            scheduleStakingCompleteNotifications([
+              {
+                txHash,
+                endTimestamp: getUnixTime(validatedStakingEndTime),
+                accountId: activeAccount?.id,
+                isDeveloperMode
+              }
+            ])
+          )
+        })
+      } catch (e) {
+        Logger.error('delegation failed', e)
+        if (e instanceof FundsStuckError) {
+          showAlert({
+            title: 'Funds stuck',
+            description:
+              'Your stake failed due to network issues. Would you like to keep trying to stake your funds?',
+            buttons: [
+              {
+                text: 'Cancel stake',
+                onPress: () => {
+                  handleDismiss()
+                }
+              },
+              {
+                text: 'Try again',
+                onPress: () => {
+                  issueDelegation(true)
+                }
+              }
+            ]
+          })
+        } else if (e instanceof Error) {
+          AnalyticsService.capture('StakeDelegationFail')
+          transactionSnackbar.error({ error: e.message })
+        }
+      }
     },
-    [issueDelegationMutation, minStartTime, validatedStakingEndTime, validator]
+    [
+      issueDelegationMutation,
+      minStartTime,
+      validatedStakingEndTime,
+      validator,
+      activeAccount,
+      isDeveloperMode,
+      queryClient,
+      selectedCurrency,
+      handleDismiss,
+      dispatch,
+      navigate
+    ]
   )
 
   const renderFooter = useCallback(() => {
