@@ -105,7 +105,13 @@ const tabSlice = createSlice({
 
       // limit max tab histories
       if (tab.historyIds.length > MAXIMUM_TAB_HISTORIES) {
-        tab.historyIds = tab.historyIds.slice(-MAXIMUM_TAB_HISTORIES)
+        const trimmedHistoryIds = tab.historyIds.slice(-MAXIMUM_TAB_HISTORIES)
+        tabAdapter.updateOne(state, {
+          id: activeTabId,
+          changes: {
+            historyIds: trimmedHistoryIds
+          }
+        })
       }
     },
     removeTab: (state: TabState, action: PayloadAction<TabPayload>) => {
