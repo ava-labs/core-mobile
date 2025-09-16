@@ -6,7 +6,7 @@ import {
   stackScreensOptions,
   useModalScreensOptions
 } from 'common/consts/screenOptions'
-
+import { useTriggerAfterLoginFlows } from 'common/hooks/useTriggerAfterLoginFlows'
 import { BridgeProvider } from 'features/bridge/contexts/BridgeContext'
 import { CollectiblesProvider } from 'features/portfolio/collectibles/CollectiblesContext'
 import { MigrateFavoriteIds } from 'new/common/components/MigrateFavoriteIds'
@@ -34,6 +34,8 @@ export default function WalletLayout(): JSX.Element {
     // which closes the app on Android
     // BackHandler.exitApp()
   })
+
+  useTriggerAfterLoginFlows()
 
   return (
     <BridgeProvider>
@@ -213,6 +215,10 @@ export default function WalletLayout(): JSX.Element {
           />
           <Stack.Screen
             name="(modals)/solanaLaunch"
+            options={modalScreensOptions}
+          />
+          <Stack.Screen
+            name="(modals)/appUpdate"
             options={modalScreensOptions}
           />
         </Stack>

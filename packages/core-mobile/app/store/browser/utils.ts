@@ -17,13 +17,15 @@ export const getLatestTab = (tabs: Tab[]): Tab => {
   return latestTab
 }
 
-export const tabAdapter = createEntityAdapter<Tab>({ selectId: tab => tab.id })
+export const tabAdapter = createEntityAdapter<Readonly<Tab>>({
+  selectId: tab => tab.id
+})
 export const tabAdapterSelectors = tabAdapter.getSelectors()
 
-export const historyAdapter = createEntityAdapter<History>({
+export const historyAdapter = createEntityAdapter<Readonly<History>>({
   selectId: history => history.id
 })
-export const favoriteAdapter = createEntityAdapter<Favorite>({
+export const favoriteAdapter = createEntityAdapter<Readonly<Favorite>>({
   selectId: favorite => favorite.id
 })
 

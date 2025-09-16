@@ -50,10 +50,10 @@ export const TokenList = ({
     )
 
   useEffect(() => {
-    if (filteredErc20TokenList?.length) {
+    if (filteredErc20TokenList.length > 0) {
       setTokenIndex(filteredErc20TokenList)
     }
-    if (filteredSolanaTokenList) {
+    if (filteredSolanaTokenList.length > 0) {
       setSplTokenIndex(filteredSolanaTokenList)
     }
   }, [
