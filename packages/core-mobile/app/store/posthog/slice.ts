@@ -409,6 +409,16 @@ export const selectStakeAnnualPercentageYieldBPS = (
   return parseInt(featureFlags[FeatureVars.STAKE_APY_BPS] as string)
 }
 
+export const selectIsInAppUpdateAndroidBlocked = (
+  state: RootState
+): boolean => {
+  const { featureFlags } = state.posthog
+  return (
+    !featureFlags[FeatureGates.IN_APP_UPDATE_ANDROID] ||
+    !featureFlags[FeatureGates.EVERYTHING]
+  )
+}
+
 // actions
 export const { regenerateUserId, toggleAnalytics, setFeatureFlags } =
   posthogSlice.actions
