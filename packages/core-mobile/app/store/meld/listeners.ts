@@ -1,4 +1,4 @@
-import { AppListenerEffectAPI, AppStartListening, RootState } from 'store/types'
+import { AppListenerEffectAPI, AppStartListening } from 'store/types'
 import { selectTokensWithBalanceForAccount } from 'store/balance'
 import { Account, selectActiveAccount } from 'store/account'
 import { createInAppRequest } from 'store/rpc/utils/createInAppRequest'
