@@ -173,18 +173,20 @@ export const useCollectiblesFilterAndSort = (
         CollectibleTypeFilter.Videos
       ]
 
+      let tempNfts = [...nfts]
+
       if (isUnprocessableHidden)
-        nfts = nfts.filter((nft: NftItem) => {
+        tempNfts = tempNfts.filter((nft: NftItem) => {
           return nft.status === NftLocalStatus.Processed
         })
 
       if (contentType !== CollectibleStatus.Hidden)
-        nfts = nfts.filter((nft: NftItem) => {
+        tempNfts = tempNfts.filter((nft: NftItem) => {
           return isCollectibleVisible(collectiblesVisibility, nft)
         })
 
       if (availableNetworks.includes(network as AssetNetworkFilter))
-        nfts = nfts.filter((nft: NftItem) => {
+        tempNfts = tempNfts.filter((nft: NftItem) => {
           switch (network) {
             case AssetNetworkFilter.AvalancheCChain:
               return isAvalancheChainId(nft.networkChainId)
@@ -196,7 +198,7 @@ export const useCollectiblesFilterAndSort = (
         })
 
       if (availableContentTypes.includes(contentType as CollectibleTypeFilter))
-        nfts = nfts.filter((nft: NftItem) => {
+        tempNfts = tempNfts.filter((nft: NftItem) => {
           switch (contentType) {
             case CollectibleTypeFilter.Pictures:
               return (
@@ -214,7 +216,7 @@ export const useCollectiblesFilterAndSort = (
           }
         })
 
-      return nfts
+      return tempNfts
     },
     [filter.selected, isUnprocessableHidden, collectiblesVisibility]
   )
