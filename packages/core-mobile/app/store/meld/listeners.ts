@@ -284,7 +284,7 @@ const initMeldService = async (
   })
 }
 
-// Check if any of the feature gate states
+// Check if the ff has changed
 export const shouldReinitializeMeldService = (
   prevState: RootState,
   currState: RootState

@@ -47,7 +47,7 @@ export const useGetTradeLimits = ({
       fiatCurrencies,
       includeDetails,
       cryptoCurrencyCodes,
-      serviceProviders,
+      serviceProviders
     ],
     queryFn: () => {
       const params = {
