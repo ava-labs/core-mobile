@@ -69,6 +69,7 @@ export const rootReducer = (state: any, action: AnyAction) => {
   if (action.type === onLogOut.type) {
     // reset state
     // except the following keys
+    // eslint-disable-next-line no-param-reassign
     state = {
       app: state.app,
       posthog: state.posthog

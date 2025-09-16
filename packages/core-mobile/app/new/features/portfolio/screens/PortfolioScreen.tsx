@@ -36,7 +36,7 @@ import { useSendSelectedToken } from 'features/send/store'
 import { useNavigateToSwap } from 'features/swap/hooks/useNavigateToSwap'
 import { useWatchlist } from 'hooks/watchlist/useWatchlist'
 import { useFormatCurrency } from 'new/common/hooks/useFormatCurrency'
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import React, { useCallback, useMemo, useRef, useState } from 'react'
 import {
   InteractionManager,
   LayoutChangeEvent,
@@ -48,7 +48,7 @@ import Animated, {
   useSharedValue
 } from 'react-native-reanimated'
 import { useSafeAreaFrame } from 'react-native-safe-area-context'
-import { useDispatch, useSelector } from 'react-redux'
+import { useSelector } from 'react-redux'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { AnalyticsEventName } from 'services/analytics/types'
 import { selectActiveAccount } from 'store/account'
@@ -61,7 +61,6 @@ import {
   selectIsRefetchingBalances,
   selectTokensWithBalanceForAccount
 } from 'store/balance'
-import { promptEnableNotifications } from 'store/notifications'
 import { selectTokenVisibility } from 'store/portfolio'
 import { selectIsMeldOfframpBlocked } from 'store/posthog'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
@@ -88,7 +87,6 @@ const PortfolioHomeScreen = (): JSX.Element => {
   const isPrivacyModeEnabled = useFocusedSelector(selectIsPrivacyModeEnabled)
   const [_, setSelectedToken] = useSendSelectedToken()
   const { theme } = useTheme()
-  const dispatch = useDispatch()
   const { navigate, push } = useRouter()
   const { navigateToSwap } = useNavigateToSwap()
 
@@ -201,10 +199,6 @@ const PortfolioHomeScreen = (): JSX.Element => {
     },
     []
   )
-
-  useEffect(() => {
-    dispatch(promptEnableNotifications)
-  }, [dispatch])
 
   const handleSend = useCallback((): void => {
     setSelectedToken(undefined)

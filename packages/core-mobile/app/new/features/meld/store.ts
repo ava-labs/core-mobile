@@ -68,23 +68,28 @@ export const useOfframpActivityIndicator = (): {
 type TokenIndex = {
   nativeMap: Map<string, LocalTokenWithBalance>
   erc20Map: Map<string, LocalTokenWithBalance>
+}
+
+type SplTokenIndex = {
   splMap: Map<string, LocalTokenWithBalance>
 }
 
 type TokenIndexStore = {
   tokenIndex: TokenIndex | null
+  splTokenIndex: SplTokenIndex | null
   setTokenIndex: (tokens: LocalTokenWithBalance[]) => void
+  setSplTokenIndex: (tokens: LocalTokenWithBalance[]) => void
   reset: () => void
 }
 
 const tokenIndexStore = create<TokenIndexStore>((set, get) => ({
   tokenIndex: null,
+  splTokenIndex: null,
   setTokenIndex: tokens => {
     if (get().tokenIndex) return // already built, skip
 
     const nativeMap = new Map<string, LocalTokenWithBalance>()
     const erc20Map = new Map<string, LocalTokenWithBalance>()
-    const splMap = new Map<string, LocalTokenWithBalance>()
 
     for (const token of tokens) {
       if (token.type === 'NATIVE') {
@@ -93,6 +98,16 @@ const tokenIndexStore = create<TokenIndexStore>((set, get) => ({
       if ('chainId' in token && token.address) {
         erc20Map.set(`${token.chainId}-${token.address.toLowerCase()}`, token)
       }
+    }
+
+    set({ tokenIndex: { nativeMap, erc20Map } })
+  },
+  setSplTokenIndex: tokens => {
+    if (get().splTokenIndex) return // already built, skip
+
+    const splMap = new Map<string, LocalTokenWithBalance>()
+
+    for (const token of tokens) {
       if (
         token.type === 'SPL' &&
         token.networkChainId === ChainId.SOLANA_MAINNET_ID
@@ -104,9 +119,9 @@ const tokenIndexStore = create<TokenIndexStore>((set, get) => ({
       }
     }
 
-    set({ tokenIndex: { nativeMap, erc20Map, splMap } })
+    set({ splTokenIndex: { splMap } })
   },
-  reset: () => set({ tokenIndex: null })
+  reset: () => set({ tokenIndex: null, splTokenIndex: null })
 }))
 
 export const useTokenIndex = (): TokenIndexStore => {
@@ -114,20 +129,25 @@ export const useTokenIndex = (): TokenIndexStore => {
 }
 
 type SupportedCryptoCurrenciesStore = {
-  supportedCryptoCurrencies: CryptoCurrencyWithBalance[]
+  supportedErc20AndNativeCryptoCurrencies: CryptoCurrencyWithBalance[]
+  supportedSplCryptoCurrencies: CryptoCurrencyWithBalance[]
   setSupportedCryptoCurrencies: (
     cryptos: CryptoCurrency[],
     tokenIndexes: TokenIndex
+  ) => void
+  setSupportedSplCryptoCurrencies: (
+    cryptos: CryptoCurrency[],
+    tokenIndexes: SplTokenIndex
   ) => void
   reset: () => void
 }
 
 const supportedCryptoCurrenciesStore = create<SupportedCryptoCurrenciesStore>(
   (set, get) => ({
-    supportedCryptoCurrencies: [],
-    // eslint-disable-next-line sonarjs/cognitive-complexity
+    supportedErc20AndNativeCryptoCurrencies: [],
+    supportedSplCryptoCurrencies: [],
     setSupportedCryptoCurrencies: (cryptos, tokenIndexes) => {
-      if (get().supportedCryptoCurrencies.length > 0) return // already built, skip
+      if (get().supportedErc20AndNativeCryptoCurrencies.length > 0) return // already built, skip
 
       const result: CryptoCurrencyWithBalance[] = []
 
@@ -159,6 +179,23 @@ const supportedCryptoCurrenciesStore = create<SupportedCryptoCurrenciesStore>(
           )
         }
 
+        if (match) {
+          result.push({
+            ...crypto,
+            tokenWithBalance: match
+          })
+        }
+      }
+      set({ supportedErc20AndNativeCryptoCurrencies: result })
+    },
+    setSupportedSplCryptoCurrencies: (cryptos, tokenIndexes) => {
+      if (get().supportedSplCryptoCurrencies.length > 0) return // already built, skip
+
+      const result: CryptoCurrencyWithBalance[] = []
+
+      for (const crypto of cryptos) {
+        let match: LocalTokenWithBalance | undefined
+
         // SPL token
         if (
           !match &&
@@ -180,9 +217,13 @@ const supportedCryptoCurrenciesStore = create<SupportedCryptoCurrenciesStore>(
         }
       }
 
-      set({ supportedCryptoCurrencies: result })
+      set({ supportedSplCryptoCurrencies: result })
     },
-    reset: () => set({ supportedCryptoCurrencies: [] })
+    reset: () =>
+      set({
+        supportedErc20AndNativeCryptoCurrencies: [],
+        supportedSplCryptoCurrencies: []
+      })
   })
 )
 
