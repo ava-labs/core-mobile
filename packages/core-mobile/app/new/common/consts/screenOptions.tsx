@@ -37,9 +37,7 @@ export const modalScreensOptions: NativeStackNavigationOptions = {
   sheetAllowedDetents: [Platform.OS === 'android' ? 0.93 : 0.99],
   headerLeft: () => <BackBarButton />,
   gestureEnabled: true,
-  statusBarTranslucent: true,
   headerTransparent: true,
-  headerTopInsetEnabled: false, // Disable top inset for form sheets to avoid double padding
   ...(Platform.OS === 'ios' && {
     // iOS will display empty content without this
     contentStyle: {
