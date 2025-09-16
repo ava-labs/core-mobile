@@ -60,9 +60,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@avalabs/avalanche-module@npm:1.9.10":
-  version: 1.9.10
-  resolution: "@avalabs/avalanche-module@npm:1.9.10"
+"@avalabs/avalanche-module@npm:1.9.12":
+  version: 1.9.12
+  resolution: "@avalabs/avalanche-module@npm:1.9.12"
   dependencies:
     "@avalabs/avalanchejs": 5.1.0-alpha.2
     "@avalabs/core-chains-sdk": 3.1.0-alpha.58
@@ -72,12 +72,12 @@ __metadata:
     "@avalabs/core-wallets-sdk": 3.1.0-alpha.58
     "@avalabs/glacier-sdk": 3.1.0-alpha.58
     "@avalabs/types": 3.1.0-alpha.58
-    "@avalabs/vm-module-types": 1.9.10
+    "@avalabs/vm-module-types": 1.9.12
     "@metamask/rpc-errors": 6.3.0
     big.js: 6.2.1
     bn.js: 5.2.1
     zod: 3.23.8
-  checksum: b6d7dc10c9f2dbd2b3f33712e414409693aef450fc635b23695cef6abcb60d7d198289e9c06054d7eb2ecd12cf9947a97cc14076092167637fdb273a061a1089
+  checksum: c67117bf5bef5e559ba7a2369c59bfbc4b95a49e07c5893dbe5e939550e520675b5d92c18150a04c97d253f86da03b3e4b9a7bb721cf6eb1b05e34688a71b043
   languageName: node
   linkType: hard
 
@@ -94,20 +94,20 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@avalabs/bitcoin-module@npm:1.9.10":
-  version: 1.9.10
-  resolution: "@avalabs/bitcoin-module@npm:1.9.10"
+"@avalabs/bitcoin-module@npm:1.9.12":
+  version: 1.9.12
+  resolution: "@avalabs/bitcoin-module@npm:1.9.12"
   dependencies:
     "@avalabs/core-coingecko-sdk": 3.1.0-alpha.58
     "@avalabs/core-utils-sdk": 3.1.0-alpha.58
     "@avalabs/core-wallets-sdk": 3.1.0-alpha.58
-    "@avalabs/vm-module-types": 1.9.10
+    "@avalabs/vm-module-types": 1.9.12
     "@metamask/rpc-errors": 6.3.0
     big.js: 6.2.1
     bitcoinjs-lib: 5.2.0
     bn.js: 5.2.1
     zod: 3.23.8
-  checksum: e1ebda5542a7b90f5e61156c911ee055116bf595b24385e8031dad5221c9f7905d9730cec11c3c9a09be4b6096ac3cfbb92f0f3fd25305ed064a8bf432fee67b
+  checksum: b0707fe530c335a229f0c0ee412789d0b75559fa67cb9995b23445ce8b23f148a46f2cdd260468d68fdb5dcd4bc255879eeafeffdc0640b666b3f7cf6bad518d
   languageName: node
   linkType: hard
 
@@ -185,9 +185,9 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@avalabs/core-mobile@workspace:packages/core-mobile"
   dependencies:
-    "@avalabs/avalanche-module": 1.9.10
+    "@avalabs/avalanche-module": 1.9.12
     "@avalabs/avalanchejs": 5.1.0-alpha.2
-    "@avalabs/bitcoin-module": 1.9.10
+    "@avalabs/bitcoin-module": 1.9.12
     "@avalabs/bridge-unified": 4.0.3
     "@avalabs/core-bridge-sdk": 3.1.0-alpha.58
     "@avalabs/core-chains-sdk": 3.1.0-alpha.58
@@ -195,13 +195,13 @@ __metadata:
     "@avalabs/core-gasless-sdk": 3.1.0-alpha.58
     "@avalabs/core-utils-sdk": 3.1.0-alpha.58
     "@avalabs/core-wallets-sdk": 3.1.0-alpha.58
-    "@avalabs/evm-module": 1.9.10
+    "@avalabs/evm-module": 1.9.12
     "@avalabs/glacier-sdk": 3.1.0-alpha.58
     "@avalabs/k2-alpine": "workspace:*"
-    "@avalabs/svm-module": 1.9.10
+    "@avalabs/svm-module": 1.9.12
     "@avalabs/tsconfig-mobile": "workspace:*"
     "@avalabs/types": 3.1.0-alpha.58
-    "@avalabs/vm-module-types": 1.9.10
+    "@avalabs/vm-module-types": 1.9.12
     "@babel/core": 7.28.0
     "@babel/plugin-proposal-nullish-coalescing-operator": 7.18.6
     "@babel/plugin-syntax-object-rest-spread": 7.8.3
@@ -212,7 +212,7 @@ __metadata:
     "@babel/preset-typescript": 7.25.7
     "@babel/runtime": 7.25.7
     "@bitcoinerlab/secp256k1": 1.2.0
-    "@blockaid/client": 0.27.4
+    "@blockaid/client": 0.48.0
     "@bottom-tabs/react-navigation": 0.10.1
     "@coinbase/cbpay-js": 2.2.1
     "@config-plugins/detox": 9.0.0
@@ -264,12 +264,10 @@ __metadata:
     "@react-native/eslint-config": 0.79.5
     "@react-native/metro-config": 0.79.5
     "@react-native/typescript-config": 0.79.5
-    "@react-navigation/bottom-tabs": 7.4.6
-    "@react-navigation/drawer": 7.5.5
+    "@react-navigation/bottom-tabs": 7.4.7
     "@react-navigation/elements": 2.6.3
     "@react-navigation/native": 7.1.16
     "@react-navigation/native-stack": 7.3.25
-    "@react-navigation/stack": 7.1.2
     "@reduxjs/toolkit": 1.8.1
     "@reown/walletkit": 1.0.0
     "@rushstack/eslint-patch": 1.10.4
@@ -309,7 +307,7 @@ __metadata:
     "@welldone-software/why-did-you-render": 8.0.3
     "@zodios/core": 10.9.6
     assert: 2.1.0
-    axios: 1.7.7
+    axios: 1.12.0
     babel-jest: 29.7.0
     babel-loader: 9.2.1
     babel-plugin-inline-dotenv: 1.7.0
@@ -398,7 +396,7 @@ __metadata:
     react-native-inappbrowser-reborn: 3.7.0
     react-native-ios-context-menu: 3.1.0
     react-native-ios-utilities: 5.1.2
-    react-native-keyboard-controller: 1.18.2
+    react-native-keyboard-controller: 1.18.6
     react-native-keychain: 10.0.0
     react-native-level-fs: 3.0.1
     react-native-localize: 3.2.1
@@ -420,7 +418,7 @@ __metadata:
     react-native-restart: 0.0.27
     react-native-root-siblings: 5.0.1
     react-native-safe-area-context: 5.5.2
-    react-native-screens: 4.11.1
+    react-native-screens: 4.15.4
     react-native-sensors: 7.3.6
     react-native-share: 12.0.9
     react-native-sound: 0.12.0
@@ -515,9 +513,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@avalabs/evm-module@npm:1.9.10":
-  version: 1.9.10
-  resolution: "@avalabs/evm-module@npm:1.9.10"
+"@avalabs/evm-module@npm:1.9.12":
+  version: 1.9.12
+  resolution: "@avalabs/evm-module@npm:1.9.12"
   dependencies:
     "@avalabs/core-chains-sdk": 3.1.0-alpha.58
     "@avalabs/core-coingecko-sdk": 3.1.0-alpha.58
@@ -526,8 +524,8 @@ __metadata:
     "@avalabs/core-wallets-sdk": 3.1.0-alpha.58
     "@avalabs/glacier-sdk": 3.1.0-alpha.58
     "@avalabs/types": 3.1.0-alpha.58
-    "@avalabs/vm-module-types": 1.9.10
-    "@blockaid/client": 0.36.0
+    "@avalabs/vm-module-types": 1.9.12
+    "@blockaid/client": 0.48.0
     "@metamask/rpc-errors": 6.3.0
     "@openzeppelin/contracts": 4.9.6
     bn.js: 5.2.1
@@ -536,7 +534,7 @@ __metadata:
     zod: 3.23.8
   peerDependencies:
     ethers: 6.13.5
-  checksum: ffcdb2884661948ee77fb5763e5063fa03582be00d31001bc2ca4e3cd100d57f7f9eb7d9d3081dd719e0e195c701c872aa802f7f745a66e4e2c665645b26a2d3
+  checksum: c8eee1fe90daa051845eb946a351eecd716b6adbd1b189e04bff7c5ce84a832d65669caea5721d2e0d5b91639e8840abb14a796bedeca9ee600a9cf6dcea57a6
   languageName: node
   linkType: hard
 
@@ -685,15 +683,15 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@avalabs/svm-module@npm:1.9.10":
-  version: 1.9.10
-  resolution: "@avalabs/svm-module@npm:1.9.10"
+"@avalabs/svm-module@npm:1.9.12":
+  version: 1.9.12
+  resolution: "@avalabs/svm-module@npm:1.9.12"
   dependencies:
     "@avalabs/core-chains-sdk": 3.1.0-alpha.58
     "@avalabs/core-coingecko-sdk": 3.1.0-alpha.58
     "@avalabs/core-utils-sdk": 3.1.0-alpha.58
     "@avalabs/core-wallets-sdk": 3.1.0-alpha.58
-    "@avalabs/vm-module-types": 1.9.10
+    "@avalabs/vm-module-types": 1.9.12
     "@blockaid/client": 0.48.0
     "@metamask/rpc-errors": 6.3.0
     "@scure/base": 1.2.4
@@ -704,7 +702,7 @@ __metadata:
     "@wallet-standard/base": 1.1.0
     "@wallet-standard/features": 1.1.0
     zod: 3.23.8
-  checksum: e972b05aa72ae184b20c4320af895a7b0509bea125a5a06b0aece8f85f98c65af7ae6a13adcdf5e01eb29fef3bf2901ed5cabe12c0e15c9100edcd9345a25e97
+  checksum: 4653668282ea673d41b928af02cdc9c0c260eeaaea7478c19ba17b1aedd553ebaba653261cfabd3c62a15eb00f26fe0db5471e644ad43afd898ac842e2397596
   languageName: node
   linkType: hard
 
@@ -721,19 +719,20 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@avalabs/vm-module-types@npm:1.9.10":
-  version: 1.9.10
-  resolution: "@avalabs/vm-module-types@npm:1.9.10"
+"@avalabs/vm-module-types@npm:1.9.12":
+  version: 1.9.12
+  resolution: "@avalabs/vm-module-types@npm:1.9.12"
   dependencies:
     "@avalabs/core-wallets-sdk": 3.1.0-alpha.58
     "@avalabs/glacier-sdk": 3.1.0-alpha.58
+    "@blockaid/client": 0.48.0
     "@metamask/rpc-errors": 6.3.0
     bitcoinjs-lib: 5.2.0
     hypersdk-client: 0.4.16
     zod: 3.23.8
   peerDependencies:
     ethers: 6.13.5
-  checksum: 7b3d9525bb135ec0380696795b96fa4016c827f403b025ceaba8c76b6350ff1fd2940e8a256b1b9ab8ab0b2b395b69d6942a8b9d6715141ee975c8ee6763ba28
+  checksum: a247c83f9501897c9a83551e5a8142ef82158775f2c93849ecdb27d09263255716c3d120516662460db891a90c739a79131a709f2df4a52f8c8fc391a044153e
   languageName: node
   linkType: hard
 
@@ -4202,36 +4201,6 @@ __metadata:
     "@noble/hashes": ^1.1.5
     "@noble/secp256k1": ^1.7.1
   checksum: 410a60394f2877941815a8b2ac6b70215ab2278ee106dea67673224c55cee87c8fc7136fc7a0d8ce73181b7953a811738d4c9480bdc2216c9cd75e2e07407723
-  languageName: node
-  linkType: hard
-
-"@blockaid/client@npm:0.27.4":
-  version: 0.27.4
-  resolution: "@blockaid/client@npm:0.27.4"
-  dependencies:
-    "@types/node": ^18.11.18
-    "@types/node-fetch": ^2.6.4
-    abort-controller: ^3.0.0
-    agentkeepalive: ^4.2.1
-    form-data-encoder: 1.7.2
-    formdata-node: ^4.3.2
-    node-fetch: ^2.6.7
-  checksum: c89fe4467fe77e9bcac401f7ddb30c646e86000d5e4913ba6e11560c349fde71ad200551c4ec277fd6e3aad0d9f11cf137194e9568472eb78a2c0617d6011136
-  languageName: node
-  linkType: hard
-
-"@blockaid/client@npm:0.36.0":
-  version: 0.36.0
-  resolution: "@blockaid/client@npm:0.36.0"
-  dependencies:
-    "@types/node": ^18.11.18
-    "@types/node-fetch": ^2.6.4
-    abort-controller: ^3.0.0
-    agentkeepalive: ^4.2.1
-    form-data-encoder: 1.7.2
-    formdata-node: ^4.3.2
-    node-fetch: ^2.6.7
-  checksum: 7d3468822bc7248fdddf1d98e1b30f478b031589896fd9dade0d4e00a54d664a5314c25355687d0cdbae47be01ec2746e55300f7b4db8fcbfc69cb04d2d424c3
   languageName: node
   linkType: hard
 
@@ -9995,11 +9964,11 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@react-navigation/bottom-tabs@npm:7.4.6":
-  version: 7.4.6
-  resolution: "@react-navigation/bottom-tabs@npm:7.4.6"
+"@react-navigation/bottom-tabs@npm:7.4.7":
+  version: 7.4.7
+  resolution: "@react-navigation/bottom-tabs@npm:7.4.7"
   dependencies:
-    "@react-navigation/elements": ^2.6.3
+    "@react-navigation/elements": ^2.6.4
     color: ^4.2.3
   peerDependencies:
     "@react-navigation/native": ^7.1.17
@@ -10007,7 +9976,7 @@ __metadata:
     react-native: "*"
     react-native-safe-area-context: ">= 4.0.0"
     react-native-screens: ">= 4.0.0"
-  checksum: 42f6bf8d043a227c2c5cca8e68fd7b6d3870bef269d415a09003fae210b8e53eab1f80fe013c401e2ccb48d360e3afb8cff72642e8c5f952f1aea433300a783c
+  checksum: 9ff291b086b00d4f656d67fd29b084c7d801c68e8db41c3b18192076d9593e6d4c9d4d28d1bde12be71c0499b6af83331cbe348549c15ff5fa5f8daf42c6bae3
   languageName: node
   linkType: hard
 
@@ -10044,26 +10013,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@react-navigation/drawer@npm:7.5.5":
-  version: 7.5.5
-  resolution: "@react-navigation/drawer@npm:7.5.5"
-  dependencies:
-    "@react-navigation/elements": ^2.6.1
-    color: ^4.2.3
-    react-native-drawer-layout: ^4.1.12
-    use-latest-callback: ^0.2.4
-  peerDependencies:
-    "@react-navigation/native": ^7.1.16
-    react: ">= 18.2.0"
-    react-native: "*"
-    react-native-gesture-handler: ">= 2.0.0"
-    react-native-reanimated: ">= 2.0.0"
-    react-native-safe-area-context: ">= 4.0.0"
-    react-native-screens: ">= 4.0.0"
-  checksum: 3acbf6e44edeabf51425c84c75d07620c802b5cdf816abe5cbafae849be82d6e481accec88374dc2c05b369f3c831d9a7094b7921c5533026422342497d5e730
-  languageName: node
-  linkType: hard
-
 "@react-navigation/elements@npm:2.6.3, @react-navigation/elements@npm:^2.6.3":
   version: 2.6.3
   resolution: "@react-navigation/elements@npm:2.6.3"
@@ -10084,24 +10033,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@react-navigation/elements@npm:^2.2.6":
-  version: 2.2.6
-  resolution: "@react-navigation/elements@npm:2.2.6"
-  dependencies:
-    color: ^4.2.3
-  peerDependencies:
-    "@react-native-masked-view/masked-view": ">= 0.2.0"
-    "@react-navigation/native": ^7.0.15
-    react: ">= 18.2.0"
-    react-native: "*"
-    react-native-safe-area-context: ">= 4.0.0"
-  peerDependenciesMeta:
-    "@react-native-masked-view/masked-view":
-      optional: true
-  checksum: 4979be0fb72ae667f34c7f6a665ac366f29d8bebf50a4e0919b9f0aa74c1ac13a913ca1fd474f5fa829109c041bea2befaf682adf5a91ca09474dbd7b0b9edc1
-  languageName: node
-  linkType: hard
-
 "@react-navigation/elements@npm:^2.6.1":
   version: 2.6.1
   resolution: "@react-navigation/elements@npm:2.6.1"
@@ -10119,6 +10050,26 @@ __metadata:
     "@react-native-masked-view/masked-view":
       optional: true
   checksum: 4613f01b8fca9a23a97be9b4bb6176d8206f2ab1fff1686920b961b62a054f712b9c26ed119737c7c3be8536b24e8ca00e63b069818010b2b03303eea34f7fe4
+  languageName: node
+  linkType: hard
+
+"@react-navigation/elements@npm:^2.6.4":
+  version: 2.6.4
+  resolution: "@react-navigation/elements@npm:2.6.4"
+  dependencies:
+    color: ^4.2.3
+    use-latest-callback: ^0.2.4
+    use-sync-external-store: ^1.5.0
+  peerDependencies:
+    "@react-native-masked-view/masked-view": ">= 0.2.0"
+    "@react-navigation/native": ^7.1.17
+    react: ">= 18.2.0"
+    react-native: "*"
+    react-native-safe-area-context: ">= 4.0.0"
+  peerDependenciesMeta:
+    "@react-native-masked-view/masked-view":
+      optional: true
+  checksum: 5ebcf77ca85755efbc35983a32caf6f82371bd8ca7ba705deb4317c250a9a9c1898765d02fe2373adfb2aae852666ac54f07b9185bf1a91fbfe185920ac9c46d
   languageName: node
   linkType: hard
 
@@ -10176,23 +10127,6 @@ __metadata:
   dependencies:
     nanoid: ^3.3.11
   checksum: 49f04894f7e8b8e2c16abb96bbc1a9775a02341bb00fb9c0d9ce97f8d82613c27570921f2b854f8fd1639c29309df05345aa734124d48bdbcb5a934055b8af12
-  languageName: node
-  linkType: hard
-
-"@react-navigation/stack@npm:7.1.2":
-  version: 7.1.2
-  resolution: "@react-navigation/stack@npm:7.1.2"
-  dependencies:
-    "@react-navigation/elements": ^2.2.6
-    color: ^4.2.3
-  peerDependencies:
-    "@react-navigation/native": ^7.0.15
-    react: ">= 18.2.0"
-    react-native: "*"
-    react-native-gesture-handler: ">= 2.0.0"
-    react-native-safe-area-context: ">= 4.0.0"
-    react-native-screens: ">= 4.0.0"
-  checksum: 8ee3e52c22b393a162815df623ba4ea0b50d0ceac2f121473df472c843834ef5699eff851d44140c9fcdbab79525f33b4eaa5137c4cc38d2d5bdff4802706162
   languageName: node
   linkType: hard
 
@@ -14615,14 +14549,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"axios@npm:1.7.7":
-  version: 1.7.7
-  resolution: "axios@npm:1.7.7"
+"axios@npm:1.12.0":
+  version: 1.12.0
+  resolution: "axios@npm:1.12.0"
   dependencies:
     follow-redirects: ^1.15.6
-    form-data: ^4.0.0
+    form-data: ^4.0.4
     proxy-from-env: ^1.1.0
-  checksum: 882d4fe0ec694a07c7f5c1f68205eb6dc5a62aecdb632cc7a4a3d0985188ce3030e0b277e1a8260ac3f194d314ae342117660a151fabffdc5081ca0b5a8b47fe
+  checksum: f2a109efea16711907ae86acc46434d52da28e889bf1d2fc2b66844e82c9908f6d96d988ad9043b37d4146abc182e67d61abd87367152bbbc1cd73afa3c5de71
   languageName: node
   linkType: hard
 
@@ -20223,6 +20157,19 @@ __metadata:
     combined-stream: ^1.0.8
     mime-types: ^2.1.12
   checksum: 01135bf8675f9d5c61ff18e2e2932f719ca4de964e3be90ef4c36aacfc7b9cb2fceb5eca0b7e0190e3383fe51c5b37f4cb80b62ca06a99aaabfcfd6ac7c9328c
+  languageName: node
+  linkType: hard
+
+"form-data@npm:^4.0.4":
+  version: 4.0.4
+  resolution: "form-data@npm:4.0.4"
+  dependencies:
+    asynckit: ^0.4.0
+    combined-stream: ^1.0.8
+    es-set-tostringtag: ^2.1.0
+    hasown: ^2.0.2
+    mime-types: ^2.1.12
+  checksum: 9b7788836df9fa5a6999e0c02515b001946b2a868cfe53f026c69e2c537a2ff9fbfb8e9d2b678744628f3dc7a2d6e14e4e45dfaf68aa6239727f0bdb8ce0abf2
   languageName: node
   linkType: hard
 
@@ -27566,20 +27513,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-native-drawer-layout@npm:^4.1.12":
-  version: 4.1.12
-  resolution: "react-native-drawer-layout@npm:4.1.12"
-  dependencies:
-    use-latest-callback: ^0.2.4
-  peerDependencies:
-    react: ">= 18.2.0"
-    react-native: "*"
-    react-native-gesture-handler: ">= 2.0.0"
-    react-native-reanimated: ">= 2.0.0"
-  checksum: fd61fec9663e03caf3ac2a7a4cf031c6944f3841fb8af9dcd8c0a4dbe29c50cc869625b0648c85c36c76685b527a78f85efb37b2ddc0d1307bd56d6eddc8eec4
-  languageName: node
-  linkType: hard
-
 "react-native-edge-to-edge@npm:1.6.0":
   version: 1.6.0
   resolution: "react-native-edge-to-edge@npm:1.6.0"
@@ -27711,7 +27644,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-native-is-edge-to-edge@npm:^1.1.7, react-native-is-edge-to-edge@npm:^1.2.1":
+"react-native-is-edge-to-edge@npm:^1.2.1":
   version: 1.2.1
   resolution: "react-native-is-edge-to-edge@npm:1.2.1"
   peerDependencies:
@@ -27721,16 +27654,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-native-keyboard-controller@npm:1.18.2":
-  version: 1.18.2
-  resolution: "react-native-keyboard-controller@npm:1.18.2"
+"react-native-keyboard-controller@npm:1.18.6":
+  version: 1.18.6
+  resolution: "react-native-keyboard-controller@npm:1.18.6"
   dependencies:
     react-native-is-edge-to-edge: ^1.2.1
   peerDependencies:
     react: "*"
     react-native: "*"
     react-native-reanimated: ">=3.0.0"
-  checksum: 2d1fb8a43d70d172196d77acc7481d063592691fb26168bda4b75138055db7cf58872f7dafd631bb00b6311edbf9d424a69c4b401257c9f9f549646711a34a03
+  checksum: 3de794b78c115a2c3ce2b7dac5971c04a3cde6be43dd38065522ce0e987eff8a76bda226bad6c0bfa19ace9b64e19a9001f3c7a4e7cf8fa57906573d9ab19674
   languageName: node
   linkType: hard
 
@@ -28034,17 +27967,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-native-screens@npm:4.11.1":
-  version: 4.11.1
-  resolution: "react-native-screens@npm:4.11.1"
+"react-native-screens@npm:4.15.4":
+  version: 4.15.4
+  resolution: "react-native-screens@npm:4.15.4"
   dependencies:
     react-freeze: ^1.0.0
-    react-native-is-edge-to-edge: ^1.1.7
+    react-native-is-edge-to-edge: ^1.2.1
     warn-once: ^0.1.0
   peerDependencies:
     react: "*"
     react-native: "*"
-  checksum: 22d3c302ef90a1cb20eed8c130b32e53d49288a19eba844f506a5e38342ef2add0d4f7a2ff5501cc05052aef6bf7f180db26a067b01f70f3cc12d3e1497329d6
+  checksum: e0e5fbfcb77f0cd1b5358faa09b46661ef26fbcfa191ac49019967f2068feccf7cd3fa83e8dd7d52207443cd5f6263831440c365ba276fbb97def596a77626bb
   languageName: node
   linkType: hard
 
