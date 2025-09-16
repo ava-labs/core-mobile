@@ -180,6 +180,7 @@ const TabBar = ({
             }}>
             <Icon color={theme.colors.$textPrimary} />
             <Text
+              testID={`${title}_tab`}
               style={{
                 fontFamily: 'Inter-SemiBold',
                 fontSize: 10
