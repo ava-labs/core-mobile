@@ -1,39 +1,43 @@
-import {
-  useMutation,
-  QueryClient,
-  UseMutationResult
-} from '@tanstack/react-query'
+import { useMutation, QueryClient, useQueryClient } from '@tanstack/react-query'
 import { useDelegationContext } from 'contexts/DelegationContext'
+import { useCallback } from 'react'
+import AnalyticsService from 'services/analytics/AnalyticsService'
+import Logger from 'utils/Logger'
+import { useSelector } from 'react-redux'
+import { selectSelectedCurrency } from 'store/settings/currency'
+import { selectIsDeveloperMode } from 'store/settings/advanced'
+import { selectActiveAccount } from 'store/account'
+import { FundsStuckError } from './errors'
 
-/**
- * Custom hook to issue a staking delegation transaction.
- *
- * This wraps a React Query mutation and triggers UI callbacks (onSuccess/onError)
- * via state + useEffect rather than directly in the mutation callbacks.
- *
- * Why?
- *  - React Query's `onSuccess`/`onError` are invoked in the same render frame as the mutation resolution.
- *    Triggering heavy UI actions (navigation, dismissing modals, snackbars) in that timing
- *    caused race conditions with native-stack transitions and layout.
- *  - By setting a state value (`delegationTxHash` or `delegationError`) and handling it in `useEffect`,
- *    we ensure the UI callbacks are fired on the next render frame, making transitions more stable.
- */
-export const useIssueDelegation = (): {
-  issueDelegationMutation: UseMutationResult<
-    string,
-    Error,
-    {
-      nodeId: string
-      startDate: Date
-      endDate: Date
-      recomputeSteps?: boolean
-    },
-    unknown
-  >
+export const useIssueDelegation = ({
+  onSuccess,
+  onError,
+  onFundsStuck
+}: {
+  onSuccess: (txId: string) => void
+  onError: (error: Error) => void
+  onFundsStuck: (error: Error) => void
+}): {
+  issueDelegation: ({
+    nodeId,
+    startDate,
+    endDate,
+    recomputeSteps
+  }: {
+    nodeId: string
+    startDate: Date
+    endDate: Date
+    recomputeSteps?: boolean
+  }) => Promise<void>
+  isPending: boolean
 } => {
   const { delegate, compute, steps, stakeAmount } = useDelegationContext()
+  const queryClient = useQueryClient()
+  const selectedCurrency = useSelector(selectSelectedCurrency)
+  const isDeveloperMode = useSelector(selectIsDeveloperMode)
+  const activeAccount = useSelector(selectActiveAccount)
 
-  const issueDelegationMutation = useMutation({
+  const { mutateAsync: issueDelegationMutateAsync, isPending } = useMutation({
     mutationFn: async ({
       nodeId,
       startDate,
@@ -64,8 +68,64 @@ export const useIssueDelegation = (): {
     }
   })
 
+  const issueDelegation = useCallback(
+    async ({
+      nodeId,
+      startDate,
+      endDate,
+      recomputeSteps = false
+    }: {
+      nodeId: string
+      startDate: Date
+      endDate: Date
+      recomputeSteps?: boolean
+    }): Promise<void> => {
+      AnalyticsService.capture('StakeIssueDelegation')
+
+      try {
+        const txHash = await issueDelegationMutateAsync({
+          startDate,
+          endDate,
+          nodeId,
+          recomputeSteps
+        })
+
+        const pAddress = activeAccount?.addressPVM ?? ''
+        const cAddress = activeAccount?.addressC ?? ''
+
+        refetchQueries({
+          isDeveloperMode,
+          queryClient,
+          pAddress,
+          cAddress,
+          selectedCurrency
+        })
+
+        onSuccess(txHash)
+      } catch (e) {
+        Logger.error('delegation failed', e)
+        if (e instanceof FundsStuckError) {
+          onFundsStuck(e)
+        } else if (e instanceof Error) {
+          onError(e)
+        }
+      }
+    },
+    [
+      issueDelegationMutateAsync,
+      activeAccount,
+      isDeveloperMode,
+      queryClient,
+      selectedCurrency,
+      onSuccess,
+      onError,
+      onFundsStuck
+    ]
+  )
+
   return {
-    issueDelegationMutation
+    issueDelegation,
+    isPending
   }
 }
 
