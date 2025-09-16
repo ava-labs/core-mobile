@@ -3,7 +3,6 @@ import React from 'react'
 import { selectIsIdled } from 'store/app/slice'
 import { useSelector } from 'react-redux'
 import { useBgDetect } from 'common/hooks/useBgDetect'
-import { FullWindowOverlay } from 'react-native-screens'
 
 export const PrivacyScreen = (): JSX.Element | null => {
   const isIdled = useSelector(selectIsIdled)
@@ -14,24 +13,18 @@ export const PrivacyScreen = (): JSX.Element | null => {
 
   if (isIdled || inBackground) {
     return (
-      <FullWindowOverlay
-        // @ts-ignore: FullWindowOverlayProps is not typed with style, but we can still apply style to Android React Native View component
+      <View
         style={{
+          flex: 1,
           position: 'absolute',
           width: '100%',
           height: '100%',
-          backgroundColor: colors.$surfacePrimary
+          backgroundColor: colors.$surfacePrimary,
+          alignItems: 'center',
+          justifyContent: 'center'
         }}>
-        <View
-          style={{
-            flex: 1,
-            backgroundColor: colors.$surfacePrimary,
-            alignItems: 'center',
-            justifyContent: 'center'
-          }}>
-          <Logos.AppIcons.Core color={colors.$textPrimary} />
-        </View>
-      </FullWindowOverlay>
+        <Logos.AppIcons.Core color={colors.$textPrimary} />
+      </View>
     )
   }
 
