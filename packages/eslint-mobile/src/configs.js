@@ -25,6 +25,7 @@ const recommended = {
   ],
   rules: {
     'no-console': 2,
+    'no-param-reassign': 2,
     radix: 'off',
     'react-hooks/exhaustive-deps': 1,
     'react-native/no-inline-styles': 'off',
