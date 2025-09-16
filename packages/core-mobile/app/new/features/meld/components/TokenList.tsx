@@ -18,7 +18,6 @@ import { useSearchableERC20AndSolanaTokenList } from 'common/hooks/useSearchable
 import { useSupportedCryptoCurrencies, useTokenIndex } from '../store'
 import { CryptoCurrency, CryptoCurrencyWithBalance } from '../types'
 import { MELD_CURRENCY_CODES, ServiceProviderCategories } from '../consts'
-import { lightModeColors } from '../../../../../../k2-alpine/src/theme/tokens/colors'
 
 export const TokenList = ({
   category,
