@@ -231,36 +231,34 @@ const StakeConfirmScreen = (): JSX.Element => {
 
   const onDelegationSuccess = useCallback(
     (txHash: string): void => {
-      requestAnimationFrame(() => {
-        const pAddress = activeAccount?.addressPVM ?? ''
-        const cAddress = activeAccount?.addressC ?? ''
+      const pAddress = activeAccount?.addressPVM ?? ''
+      const cAddress = activeAccount?.addressC ?? ''
 
-        refetchQueries({
-          isDeveloperMode,
-          queryClient,
-          pAddress,
-          cAddress,
-          selectedCurrency
-        })
-
-        AnalyticsService.capture('StakeDelegationSuccess')
-        transactionSnackbar.success({ message: 'Stake successful' })
-
-        handleDismiss()
-        // @ts-ignore TODO: make routes typesafe
-        navigate('/stake')
-
-        dispatch(
-          scheduleStakingCompleteNotifications([
-            {
-              txHash,
-              endTimestamp: getUnixTime(validatedStakingEndTime),
-              accountId: activeAccount?.id,
-              isDeveloperMode
-            }
-          ])
-        )
+      refetchQueries({
+        isDeveloperMode,
+        queryClient,
+        pAddress,
+        cAddress,
+        selectedCurrency
       })
+
+      AnalyticsService.capture('StakeDelegationSuccess')
+      transactionSnackbar.success({ message: 'Stake successful' })
+
+      handleDismiss()
+      // @ts-ignore TODO: make routes typesafe
+      navigate('/stake')
+
+      dispatch(
+        scheduleStakingCompleteNotifications([
+          {
+            txHash,
+            endTimestamp: getUnixTime(validatedStakingEndTime),
+            accountId: activeAccount?.id,
+            isDeveloperMode
+          }
+        ])
+      )
     },
     [
       dispatch,
@@ -311,6 +309,8 @@ const StakeConfirmScreen = (): JSX.Element => {
   const handleDelegate = useCallback(
     (recomputeSteps = false): void => {
       if (!validator) return
+
+      AnalyticsService.capture('StakeIssueDelegation')
 
       issueDelegation({
         nodeId: validator.nodeID,

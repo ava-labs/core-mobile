@@ -1,7 +1,7 @@
-import { useMutation, QueryClient } from '@tanstack/react-query'
+import { QueryClient } from '@tanstack/react-query'
 import { useDelegationContext } from 'contexts/DelegationContext'
 import { useCallback } from 'react'
-import AnalyticsService from 'services/analytics/AnalyticsService'
+import { useUiSafeMutation } from 'hooks/useUiSafeMutation'
 import Logger from 'utils/Logger'
 import { FundsStuckError } from './errors'
 
@@ -28,9 +28,8 @@ export const useIssueDelegation = ({
   isPending: boolean
 } => {
   const { delegate, compute, steps, stakeAmount } = useDelegationContext()
-
-  const { mutateAsync: issueDelegationMutateAsync, isPending } = useMutation({
-    mutationFn: async ({
+  const mutationFn = useCallback(
+    async ({
       nodeId,
       startDate,
       endDate,
@@ -57,46 +56,30 @@ export const useIssueDelegation = ({
         endDate,
         nodeId
       })
-    }
-  })
-
-  const issueDelegation = useCallback(
-    async ({
-      nodeId,
-      startDate,
-      endDate,
-      recomputeSteps = false
-    }: {
-      nodeId: string
-      startDate: Date
-      endDate: Date
-      recomputeSteps?: boolean
-    }): Promise<void> => {
-      AnalyticsService.capture('StakeIssueDelegation')
-
-      try {
-        const txHash = await issueDelegationMutateAsync({
-          startDate,
-          endDate,
-          nodeId,
-          recomputeSteps
-        })
-
-        onSuccess(txHash)
-      } catch (e) {
-        Logger.error('delegation failed', e)
-        if (e instanceof FundsStuckError) {
-          onFundsStuck(e)
-        } else if (e instanceof Error) {
-          onError(e)
-        }
-      }
     },
-    [issueDelegationMutateAsync, onSuccess, onError, onFundsStuck]
+    [compute, delegate, steps, stakeAmount]
   )
 
+  const handleError = useCallback(
+    (error: unknown) => {
+      Logger.error('delegation failed', error)
+      if (error instanceof FundsStuckError) {
+        onFundsStuck(error)
+      } else if (error instanceof Error) {
+        onError(error)
+      }
+    },
+    [onFundsStuck, onError]
+  )
+
+  const { safeMutate, isPending } = useUiSafeMutation({
+    mutationFn,
+    onSuccess,
+    onError: handleError
+  })
+
   return {
-    issueDelegation,
+    issueDelegation: safeMutate,
     isPending
   }
 }
