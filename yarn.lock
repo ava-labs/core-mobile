@@ -379,6 +379,7 @@ __metadata:
     react-native-bootsplash: 6.3.10
     react-native-bottom-tabs: 0.10.1
     react-native-chart-kit: 6.12.0
+    react-native-check-version: 1.4.0
     react-native-circular-progress: 1.4.0
     react-native-collapsible: 1.6.2
     react-native-collapsible-tab-view: 8.0.0
@@ -389,6 +390,7 @@ __metadata:
     react-native-gesture-handler: 2.24.0
     react-native-get-random-values: 1.11.0
     react-native-graph: 1.1.0
+    react-native-in-app-updates: 0.2.2
     react-native-inappbrowser-reborn: 3.7.0
     react-native-ios-context-menu: 3.1.0
     react-native-ios-utilities: 5.1.2
@@ -27045,6 +27047,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"react-native-check-version@npm:1.4.0":
+  version: 1.4.0
+  resolution: "react-native-check-version@npm:1.4.0"
+  peerDependencies:
+    react-native: ">=0.40.0"
+    react-native-device-info: ">=0.20.0"
+  checksum: c6b62ac524dc0a905d2eff0f4586ac81a2fd08589eec41f385618373696b57428bad02057ce847c45ff92ae34f71a91f81b1909553159b46b30a9285e50756cb
+  languageName: node
+  linkType: hard
+
 "react-native-circular-progress@npm:1.4.0":
   version: 1.4.0
   resolution: "react-native-circular-progress@npm:1.4.0"
@@ -27189,6 +27201,16 @@ __metadata:
     react-native-gesture-handler: ">=2"
     react-native-reanimated: ">=3.1.0"
   checksum: 1973714f22763b89e8d5a1524eb8033eef4db86e336829fb17824125964757a753dd29fef7aba5faa25d64a985fc08b875be53d6ca77c4c14ef55d92eff79980
+  languageName: node
+  linkType: hard
+
+"react-native-in-app-updates@npm:0.2.2":
+  version: 0.2.2
+  resolution: "react-native-in-app-updates@npm:0.2.2"
+  peerDependencies:
+    react: "*"
+    react-native: "*"
+  checksum: f53d5634ff78c1734a8e263d4807a4c2b995e4fd5168f29f4d2b8870f696c83f369754047280a8ed4d123bfeaf772eb8dd4c0eb92eb82efd82bd84583b39a9c3
   languageName: node
   linkType: hard
 
