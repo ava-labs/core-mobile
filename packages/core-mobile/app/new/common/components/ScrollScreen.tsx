@@ -112,8 +112,8 @@ export const ScrollScreen = ({
 
   const headerRef = useRef<View>(null)
   const contentHeaderHeight = useSharedValue<number>(0)
-  const footerRef = useRef<View>(null)
   const footerHeight = useSharedValue<number>(0)
+  const footerRef = useRef<View>(null)
 
   const { onScroll, scrollY, targetHiddenProgress } = useFadingHeaderNavigation(
     {
@@ -189,16 +189,33 @@ export const ScrollScreen = ({
           {renderHeader?.()}
         </View>
       )
+    } else {
+      // If we don't have a title or subtitle, we need to render an empty header
+      // so that the header height is not undefined
+      return (
+        <View
+          ref={headerRef}
+          style={[
+            headerStyle,
+            {
+              position: 'absolute',
+              minHeight: headerHeight,
+              pointerEvents: 'none'
+            }
+          ]}
+        />
+      )
     }
-  }, [animatedHeaderStyle, headerStyle, renderHeader, subtitle, title, titleSx])
-
-  const animatedContentContainerStyle = useAnimatedStyle(() => {
-    return {
-      paddingBottom: disableStickyFooter
-        ? insets.bottom + 24
-        : footerHeight.value
-    }
-  })
+  }, [
+    animatedHeaderStyle,
+    headerRef,
+    headerHeight,
+    headerStyle,
+    renderHeader,
+    subtitle,
+    title,
+    titleSx
+  ])
 
   const [showFooter, setShowFooter] = useState(false)
 
@@ -304,8 +321,10 @@ export const ScrollScreen = ({
           }}
           contentContainerStyle={[
             props?.contentContainerStyle,
-            animatedContentContainerStyle,
             {
+              paddingBottom: disableStickyFooter
+                ? insets.bottom + 24
+                : footerHeight.value,
               paddingTop: headerHeight
             }
           ]}
