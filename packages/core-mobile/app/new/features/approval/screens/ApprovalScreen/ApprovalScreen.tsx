@@ -1,8 +1,14 @@
 import { Separator, showAlert, Text, View } from '@avalabs/k2-alpine'
 import { RpcMethod } from '@avalabs/vm-module-types'
+import { NetworkTokenSymbols } from 'common/components/TokenIcon'
+import { withWalletConnectCache } from 'common/components/withWalletConnectCache'
 import { validateFee } from 'common/hooks/send/utils/evm/validate'
 import { SendErrorMessage } from 'common/hooks/send/utils/types'
+import { useActiveWallet } from 'common/hooks/useActiveWallet'
+import { dismissKeyboardIfNeeded } from 'common/utils/dismissKeyboardIfNeeded'
+import { L2_NETWORK_SYMBOL_MAPPING } from 'consts/chainIdsWithIncorrectSymbol'
 import { router } from 'expo-router'
+import { useNativeTokenWithBalanceByNetwork } from 'features/send/hooks/useNativeTokenWithBalanceByNetwork'
 import { useNetworks } from 'hooks/networks/useNetworks'
 import { useGasless } from 'hooks/useGasless'
 import { useSpendLimits } from 'hooks/useSpendLimits'
@@ -21,11 +27,6 @@ import { selectIsSeedlessSigningBlocked } from 'store/posthog/slice'
 import { getChainIdFromCaip2 } from 'utils/caip2ChainIds'
 import Logger from 'utils/Logger'
 import { Eip1559Fees } from 'utils/Utils'
-import { withWalletConnectCache } from 'common/components/withWalletConnectCache'
-import { useNativeTokenWithBalanceByNetwork } from 'features/send/hooks/useNativeTokenWithBalanceByNetwork'
-import { NetworkTokenSymbols } from 'common/components/TokenIcon'
-import { L2_NETWORK_SYMBOL_MAPPING } from 'consts/chainIdsWithIncorrectSymbol'
-import { useActiveWallet } from 'common/hooks/useActiveWallet'
 import { Account } from '../../components/Account'
 import BalanceChange from '../../components/BalanceChange/BalanceChange'
 import { Details } from '../../components/Details'
@@ -219,6 +220,10 @@ const ApprovalScreen = ({
     }
     validateEthSendTransaction()
   }, [validateEthSendTransaction, gaslessEnabled])
+
+  useEffect(() => {
+    dismissKeyboardIfNeeded()
+  }, [])
 
   const renderGaslessAlert = useCallback((): JSX.Element | null => {
     if (gaslessError === null || gaslessError.length === 0) return null
