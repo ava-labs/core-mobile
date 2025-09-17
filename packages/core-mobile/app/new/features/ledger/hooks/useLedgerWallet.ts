@@ -808,9 +808,6 @@ export function useLedgerWallet(): UseLedgerWalletReturn {
       deviceId,
       deviceName = 'Ledger Device',
       derivationPathType = LedgerDerivationPathType.BIP44,
-      accountCount = derivationPathType === LedgerDerivationPathType.BIP44
-        ? 3
-        : 1,
       individualKeys = [],
       progressCallback
     }: WalletCreationOptions) => {
