@@ -39,22 +39,22 @@ export const PinScreenOverlay = (): JSX.Element => {
           flex: 1,
           backgroundColor: colors.$surfacePrimary
         }}>
-        <KeyboardAwareScrollView
-          keyboardDismissMode="interactive"
-          keyboardShouldPersistTaps="handled"
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={{
-            flex: 1
-          }}>
-          {showForgotPin ? (
-            <ForgotPinComponent
-              onCancel={() => setShowForgotPin(false)}
-              onConfirm={handleConfirm}
-            />
-          ) : (
+        {showForgotPin ? (
+          <ForgotPinComponent
+            onCancel={() => setShowForgotPin(false)}
+            onConfirm={handleConfirm}
+          />
+        ) : (
+          <KeyboardAwareScrollView
+            keyboardDismissMode="interactive"
+            keyboardShouldPersistTaps="handled"
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={{
+              flex: 1
+            }}>
             <PinScreen onForgotPin={() => setShowForgotPin(true)} />
-          )}
-        </KeyboardAwareScrollView>
+          </KeyboardAwareScrollView>
+        )}
       </View>
     </FullWindowOverlay>
   )
