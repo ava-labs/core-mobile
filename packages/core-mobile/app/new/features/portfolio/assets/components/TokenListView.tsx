@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react'
+import React from 'react'
 import {
   AnimatedPressable,
   Icons,
@@ -13,9 +13,6 @@ import {
 import { selectIsPrivacyModeEnabled } from 'store/settings/securityPrivacy'
 import { useSelector } from 'react-redux'
 import { HiddenBalanceText } from 'common/components/HiddenBalanceText'
-import { CHAIN_IDS_WITH_INCORRECT_SYMBOL } from 'consts/chainIdsWithIncorrectSymbol'
-import { useNetworks } from 'hooks/networks/useNetworks'
-import { TokenType } from '@avalabs/vm-module-types'
 import { SubTextNumber } from 'common/components/SubTextNumber'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
 import { TokenListViewProps } from '../types'
@@ -23,6 +20,7 @@ import { LogoWithNetwork } from './LogoWithNetwork'
 
 export const TokenListView = ({
   token,
+  tokenNameForDisplay,
   index,
   onPress,
   formattedBalance,
@@ -32,18 +30,27 @@ export const TokenListView = ({
   const {
     theme: { colors }
   } = useTheme()
-  const { allNetworks } = useNetworks()
   const isPrivacyModeEnabled = useSelector(selectIsPrivacyModeEnabled)
 
-  const tokenName = useMemo(() => {
+  const renderPriceChangeIndicator = (): JSX.Element | undefined => {
     if (
-      CHAIN_IDS_WITH_INCORRECT_SYMBOL.includes(token.networkChainId) &&
-      token.type === TokenType.NATIVE
-    ) {
-      return allNetworks[token.networkChainId]?.chainName ?? token.name
-    }
-    return token.name
-  }, [allNetworks, token.name, token.networkChainId, token.type])
+      priceChangeStatus === PriceChangeStatus.Neutral ||
+      formattedBalance === undefined
+    )
+      return undefined
+
+    if (priceChangeStatus === undefined)
+      return <Text variant="buttonSmall">{UNKNOWN_AMOUNT}</Text>
+
+    return (
+      <PriceChangeIndicator
+        shouldMask={isPrivacyModeEnabled}
+        maskWidth={40}
+        formattedPrice={formattedPrice}
+        status={priceChangeStatus}
+      />
+    )
+  }
 
   return (
     <View>
@@ -80,8 +87,8 @@ export const TokenListView = ({
                 variant="buttonMedium"
                 numberOfLines={1}
                 sx={{ flex: 1 }}
-                testID={`portfolio_token_item__${tokenName}`}>
-                {tokenName}
+                testID={`portfolio_token_item__${tokenNameForDisplay}`}>
+                {tokenNameForDisplay}
               </Text>
               <MaskedText
                 shouldMask={isPrivacyModeEnabled}
@@ -143,17 +150,7 @@ export const TokenListView = ({
                   </Text>
                 )}
               </View>
-              {priceChangeStatus !== PriceChangeStatus.Neutral &&
-                (formattedPrice !== UNKNOWN_AMOUNT ||
-                  (formattedPrice === UNKNOWN_AMOUNT &&
-                    formattedBalance !== '')) && (
-                  <PriceChangeIndicator
-                    formattedPrice={formattedPrice}
-                    status={priceChangeStatus}
-                    shouldMask={isPrivacyModeEnabled}
-                    maskWidth={40}
-                  />
-                )}
+              {renderPriceChangeIndicator()}
             </View>
           </View>
           <View

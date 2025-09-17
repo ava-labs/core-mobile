@@ -1,11 +1,11 @@
 import { PriceChangeStatus } from '@avalabs/k2-alpine'
-import { UNKNOWN_AMOUNT } from 'consts/amount'
 import { useFormatCurrency } from 'new/common/hooks/useFormatCurrency'
 import React, { useRef, useCallback } from 'react'
 import { LocalTokenWithBalance } from 'store/balance'
 import { useMarketTokenBySymbol } from 'common/hooks/useMarketTokenBySymbol'
-import { TokenGridView } from './TokenGridView'
+import { useTokenNameForDisplay } from 'common/hooks/useTokenNameForDisplay'
 import { TokenListView } from './TokenListView'
+import { TokenGridView } from './TokenGridView'
 
 interface TokenListItemProps {
   token: LocalTokenWithBalance
@@ -24,7 +24,9 @@ export const TokenListItem = ({
   const { balanceInCurrency, symbol } = token
   const formattedBalance = balanceInCurrency
     ? formatCurrency({ amount: balanceInCurrency })
-    : ''
+    : undefined
+
+  const tokenNameForDisplay = useTokenNameForDisplay({ token }) ?? token.name
 
   const marketToken = useMarketTokenBySymbol({
     symbol,
@@ -38,15 +40,16 @@ export const TokenListItem = ({
   const formattedPrice =
     priceChange !== undefined
       ? formatCurrency({ amount: Math.abs(priceChange) })
-      : UNKNOWN_AMOUNT
+      : undefined
 
-  const status = priceChange
-    ? priceChange > 0
-      ? PriceChangeStatus.Up
-      : priceChange < 0
-      ? PriceChangeStatus.Down
-      : PriceChangeStatus.Neutral
-    : PriceChangeStatus.Neutral
+  const status =
+    priceChange !== undefined
+      ? priceChange > 0
+        ? PriceChangeStatus.Up
+        : priceChange < 0
+        ? PriceChangeStatus.Down
+        : PriceChangeStatus.Neutral
+      : undefined
 
   const isPressDisabledRef = useRef(false)
 
@@ -68,6 +71,7 @@ export const TokenListItem = ({
   return isGridView ? (
     <TokenGridView
       token={token}
+      tokenNameForDisplay={tokenNameForDisplay}
       index={index}
       onPress={handlePress}
       priceChangeStatus={status}
@@ -77,6 +81,7 @@ export const TokenListItem = ({
   ) : (
     <TokenListView
       token={token}
+      tokenNameForDisplay={tokenNameForDisplay}
       index={index}
       onPress={handlePress}
       priceChangeStatus={status}

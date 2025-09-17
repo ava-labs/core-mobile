@@ -27,6 +27,7 @@ const SCREEN_WIDTH = Dimensions.get('window').width
 
 export const TokenGridView = ({
   token,
+  tokenNameForDisplay,
   index,
   onPress,
   priceChangeStatus,
@@ -38,6 +39,26 @@ export const TokenGridView = ({
   const {
     theme: { colors }
   } = useTheme()
+
+  const renderPriceChangeIndicator = (): JSX.Element => {
+    if (
+      priceChangeStatus === PriceChangeStatus.Neutral ||
+      formattedBalance === undefined
+    )
+      return <Text variant="buttonSmall" />
+
+    if (priceChangeStatus === undefined)
+      return <Text variant="buttonSmall">{UNKNOWN_AMOUNT}</Text>
+
+    return (
+      <PriceChangeIndicator
+        shouldMask={isPrivacyModeEnabled}
+        maskWidth={40}
+        formattedPrice={formattedPrice}
+        status={priceChangeStatus}
+      />
+    )
+  }
 
   return (
     <Animated.View
@@ -58,11 +79,11 @@ export const TokenGridView = ({
           />
           <View>
             <Text
-              testID={`portfolio_token_item__${token.name}`}
+              testID={`portfolio_token_item__${tokenNameForDisplay}`}
               variant="buttonMedium"
               numberOfLines={1}
               sx={{ lineHeight: 16 }}>
-              {token.name}
+              {tokenNameForDisplay}
             </Text>
             <View sx={{ flexDirection: 'row', flexShrink: 1 }}>
               <MaskedText
@@ -122,19 +143,7 @@ export const TokenGridView = ({
                   </Text>
                 )}
               </View>
-              {priceChangeStatus !== PriceChangeStatus.Neutral &&
-              (formattedPrice !== UNKNOWN_AMOUNT ||
-                (formattedPrice === UNKNOWN_AMOUNT &&
-                  formattedBalance !== '')) ? (
-                <PriceChangeIndicator
-                  shouldMask={isPrivacyModeEnabled}
-                  maskWidth={40}
-                  formattedPrice={formattedPrice}
-                  status={priceChangeStatus}
-                />
-              ) : (
-                <Text variant="buttonSmall" />
-              )}
+              {renderPriceChangeIndicator()}
             </View>
           </View>
         </View>

@@ -336,6 +336,8 @@ export const TokenDetailScreen = (): React.JSX.Element => {
   const renderEmptyTabBar = useCallback((): JSX.Element => <></>, [])
 
   const renderHeader = useCallback((): JSX.Element => {
+    if (!token) return <></>
+
     return (
       <View
         style={{
