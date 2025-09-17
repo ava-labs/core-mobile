@@ -154,11 +154,7 @@ export const ListScreen = <T,>({
     const translateY = interpolate(
       scrollY.value,
       [0, contentHeaderHeight.value],
-      [
-        0,
-        -contentHeaderHeight.value -
-          (isModal ? 8 : Platform.OS === 'ios' ? 8 : 16)
-      ],
+      [0, -contentHeaderHeight.value - 8],
       'clamp'
     )
 
@@ -274,7 +270,7 @@ export const ListScreen = <T,>({
           (headerLayout?.height ?? 0) +
           // Android formsheet in native-stack has a default top padding of insets.top
           // so we need to add this to adjust the height of the list
-          (isModal && Platform.OS === 'android' ? insets.top : 0)
+          (isModal && Platform.OS === 'android' ? insets.top - 16 : 0)
       }
     ] as StyleProp<ViewStyle>[]
   }, [
