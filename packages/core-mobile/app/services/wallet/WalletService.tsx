@@ -253,7 +253,7 @@ class WalletService {
       accountIndex,
       isTestnet
     })
-    
+
     Logger.info(`Final addresses for account ${accountIndex}:`, addresses)
     return addresses
   }

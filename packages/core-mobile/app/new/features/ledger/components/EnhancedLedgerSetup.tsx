@@ -9,7 +9,6 @@ import {
   WalletCreationOptions
 } from '../hooks/useLedgerWallet'
 import { DerivationPathSelector } from './DerivationPathSelector'
-import { DerivationPathEducation } from './DerivationPathEducation'
 import { LedgerSetupProgress } from './LedgerSetupProgress'
 import { LedgerAppConnection } from './LedgerAppConnection'
 
@@ -167,7 +166,6 @@ export const EnhancedLedgerSetup: React.FC<EnhancedLedgerSetupProps> = ({
     handleStartSetup
   ])
 
-  // Handle derivation path selection
   const handleDerivationPathSelect = useCallback(
     (derivationPathType: LedgerDerivationPathType) => {
       setSelectedDerivationPath(derivationPathType)
@@ -176,21 +174,6 @@ export const EnhancedLedgerSetup: React.FC<EnhancedLedgerSetupProps> = ({
     []
   )
 
-  // Handle education flow
-  const handleShowEducation = useCallback(() => {
-    setCurrentStep('education')
-  }, [])
-
-  const handleEducationClose = useCallback(() => {
-    setCurrentStep('path-selection')
-  }, [])
-
-  const handleEducationRecommended = useCallback(() => {
-    setSelectedDerivationPath(LedgerDerivationPathType.BIP44)
-    setCurrentStep('device-connection')
-  }, [])
-
-  // Handle cancellation
   const handleCancel = useCallback(async () => {
     if (connectedDeviceId) {
       await disconnectDevice()
@@ -198,7 +181,6 @@ export const EnhancedLedgerSetup: React.FC<EnhancedLedgerSetupProps> = ({
     onCancel?.()
   }, [connectedDeviceId, disconnectDevice, onCancel])
 
-  // Render current step
   const renderCurrentStep = (): React.ReactNode => {
     switch (currentStep) {
       case 'path-selection':
@@ -208,30 +190,7 @@ export const EnhancedLedgerSetup: React.FC<EnhancedLedgerSetupProps> = ({
               onSelect={handleDerivationPathSelect}
               onCancel={handleCancel}
             />
-
-            {/* Help button */}
-            <View
-              style={{
-                position: 'absolute',
-                top: 24,
-                right: 24
-              }}>
-              <Button
-                type="tertiary"
-                size="small"
-                onPress={handleShowEducation}>
-                Need Help?
-              </Button>
-            </View>
           </View>
-        )
-
-      case 'education':
-        return (
-          <DerivationPathEducation
-            onClose={handleEducationClose}
-            onSelectRecommended={handleEducationRecommended}
-          />
         )
 
       case 'device-connection':
