@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react'
+import { useCallback, useEffect, useMemo } from 'react'
 import {
   Charts,
   MarketToken,
@@ -105,6 +105,23 @@ export const useWatchlist = (): UseWatchListReturnType => {
     transformedTrendingTokens?.tokens,
     favoriteIds
   ])
+  useEffect(() => {
+    if (Object.values(topTokensResponse?.tokens ?? {}).length) {
+      // eslint-disable-next-line no-alert
+      alert(
+        'topTokensResponse length:' +
+          Object.values(topTokensResponse?.tokens ?? {}).length
+      )
+    }
+
+    if (Object.values(transformedTrendingTokens?.tokens ?? {}).length > 0) {
+      // eslint-disable-next-line no-alert
+      alert(
+        'transformedTrendingTokens length:' +
+          Object.values(transformedTrendingTokens?.tokens ?? {}).length
+      )
+    }
+  }, [topTokensResponse?.tokens, transformedTrendingTokens?.tokens])
 
   const allTokens = useMemo(() => {
     const seen = new Set<string>()

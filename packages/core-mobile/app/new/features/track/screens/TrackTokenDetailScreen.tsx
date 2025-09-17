@@ -65,7 +65,10 @@ const TrackTokenDetailScreen = (): JSX.Element => {
   }>()
 
   const marketType = passedInMarketType ?? MarketType.TRENDING
-
+  // eslint-disable-next-line no-alert
+  alert(tokenId)
+  // eslint-disable-next-line no-alert
+  alert(marketType)
   const { back, navigate } = useRouter()
   const [isChartInteracting, setIsChartInteracting] = useState(false)
   const { navigateToSwap } = useNavigateToSwap()
