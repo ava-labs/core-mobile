@@ -15,7 +15,7 @@ import { LoadingState } from 'common/components/LoadingState'
 import { usePinOrBiometryLogin } from 'common/hooks/usePinOrBiometryLogin'
 import { usePreventScreenRemoval } from 'common/hooks/usePreventScreenRemoval'
 import { useStoredBiometrics } from 'common/hooks/useStoredBiometrics'
-import { useFocusEffect, useRouter } from 'expo-router'
+import { useFocusEffect } from 'expo-router'
 import { useWallet } from 'hooks/useWallet'
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import {
@@ -39,7 +39,11 @@ import Logger from 'utils/Logger'
 import { commonStorage } from 'utils/mmkv'
 import { StorageKey } from 'resources/Constants'
 
-export const PinScreen = (): JSX.Element => {
+export const PinScreen = ({
+  onForgotPin
+}: {
+  onForgotPin: () => void
+}): JSX.Element => {
   const walletState = useSelector(selectWalletState)
   usePreventScreenRemoval(walletState === WalletState.INACTIVE)
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
@@ -47,7 +51,6 @@ export const PinScreen = (): JSX.Element => {
   const { theme } = useTheme()
   const pinInputRef = useRef<PinInputActions>(null)
   const { unlock } = useWallet()
-  const router = useRouter()
   const walletId = useSelector(selectActiveWalletId)
 
   const isProcessing = useSharedValue(false)
@@ -157,11 +160,6 @@ export const PinScreen = (): JSX.Element => {
   const blurPinInput = (): void => {
     pinInputRef.current?.blur()
     setIsEnteringPin(false)
-  }
-
-  const handleForgotPin = (): void => {
-    // @ts-ignore TODO: make routes typesafe
-    router.navigate('/forgotPin')
   }
 
   const handleTogglePinInput = (): void => {
@@ -351,7 +349,7 @@ export const PinScreen = (): JSX.Element => {
             </Reanimated.View>
           </View>
           <Reanimated.View style={[forgotPinButtonOpacityStyle]}>
-            <Button size="medium" type="tertiary" onPress={handleForgotPin}>
+            <Button size="medium" type="tertiary" onPress={onForgotPin}>
               Forgot PIN?
             </Button>
           </Reanimated.View>

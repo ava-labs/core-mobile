@@ -1,13 +1,29 @@
-import React from 'react'
+import React, { useCallback, useState } from 'react'
 import { KeyboardAwareScrollView } from 'react-native-keyboard-controller'
 import { useTheme, View } from '@avalabs/k2-alpine'
 import { FullWindowOverlay } from 'react-native-screens'
+import { useFocusEffect } from 'expo-router'
+import { Keyboard } from 'react-native'
+import { useDeleteWallet } from 'common/hooks/useDeleteWallet'
+import { ForgotPinComponent } from './ForgotPinComponent'
 import { PinScreen } from './PinScreen'
 
 export const PinScreenOverlay = (): JSX.Element => {
+  const [showForgotPin, setShowForgotPin] = useState(false)
+  const { deleteWallet } = useDeleteWallet()
   const {
     theme: { colors }
   } = useTheme()
+
+  useFocusEffect(
+    useCallback(() => {
+      Keyboard.dismiss()
+    }, [])
+  )
+
+  const handleConfirm = useCallback(() => {
+    deleteWallet()
+  }, [deleteWallet])
 
   return (
     <FullWindowOverlay
@@ -30,7 +46,14 @@ export const PinScreenOverlay = (): JSX.Element => {
           contentContainerStyle={{
             flex: 1
           }}>
-          <PinScreen />
+          {showForgotPin ? (
+            <ForgotPinComponent
+              onCancel={() => setShowForgotPin(false)}
+              onConfirm={handleConfirm}
+            />
+          ) : (
+            <PinScreen onForgotPin={() => setShowForgotPin(true)} />
+          )}
         </KeyboardAwareScrollView>
       </View>
     </FullWindowOverlay>

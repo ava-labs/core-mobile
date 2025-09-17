@@ -69,6 +69,7 @@ export function RootNavigator(): JSX.Element {
               gestureEnabled: false
             }}
           />
+          <Stack.Screen name="forgotPin" options={{ headerShown: true }} />
         </Stack.Protected>
 
         {/* wallet nonexistent */}
@@ -85,7 +86,6 @@ export function RootNavigator(): JSX.Element {
         </Stack.Protected>
 
         <Stack.Screen name="+not-found" />
-        <Stack.Screen name="forgotPin" options={{ headerShown: true }} />
       </Stack>
 
       {/* render this pin screen as full window overlay if walletState is previously active and app is coming back from background state */}

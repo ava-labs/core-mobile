@@ -5,7 +5,6 @@ import { RecoveryMethod } from 'features/onboarding/hooks/useAvailableRecoveryMe
 import React, { useCallback } from 'react'
 import SeedlessService from 'seedless/services/SeedlessService'
 import { useWallet } from 'hooks/useWallet'
-import { FullWindowOverlay } from 'react-native-screens'
 
 const SelectMfaMethodScreen = (): React.JSX.Element => {
   const { unlock } = useWallet()
@@ -42,13 +41,11 @@ const SelectMfaMethodScreen = (): React.JSX.Element => {
   )
 
   return (
-    <FullWindowOverlay>
-      <SelectRecoveryMethods
-        mfaMethods={mfaMethods ?? []}
-        onSelectMfa={type => handleSelectMfa(type)}
-        isLoading={isLoading}
-      />
-    </FullWindowOverlay>
+    <SelectRecoveryMethods
+      mfaMethods={mfaMethods ?? []}
+      onSelectMfa={type => handleSelectMfa(type)}
+      isLoading={isLoading}
+    />
   )
 }
 

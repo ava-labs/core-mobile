@@ -18,7 +18,6 @@ import { onLogOut } from 'store/app'
 import Logger from 'utils/Logger'
 import { useUserMfa } from 'common/hooks/useUserMfa'
 import { useWallet } from 'hooks/useWallet'
-import { FullWindowOverlay } from 'react-native-screens'
 
 const SessionExpiredScreen = (): React.JSX.Element => {
   const { data: mfaMethods } = useUserMfa()
@@ -111,36 +110,29 @@ const SessionExpiredScreen = (): React.JSX.Element => {
   }, [dispatch, unlock, mfaMethods, router])
 
   return (
-    <FullWindowOverlay>
-      <SafeAreaView
-        style={{
-          flex: 1,
-          justifyContent: 'space-between',
-          marginHorizontal: 16
-        }}>
-        <View
-          style={{ alignItems: 'center', justifyContent: 'center', flex: 1 }}>
-          <Icons.Action.Info
-            color={colors.$textPrimary}
-            width={36}
-            height={36}
-          />
-          <Space y={24} />
-          <Text variant={'heading5'}>Your session has timed out</Text>
-          <Space y={8} />
-          <Text variant={'body2'} style={{ textAlign: 'center' }}>
-            Tap Retry to continue
-          </Text>
-        </View>
-        <Button
-          size={'large'}
-          type={'primary'}
-          onPress={onRetry}
-          style={{ width: '100%', marginBottom: 16 }}>
-          Retry
-        </Button>
-      </SafeAreaView>
-    </FullWindowOverlay>
+    <SafeAreaView
+      style={{
+        flex: 1,
+        justifyContent: 'space-between',
+        marginHorizontal: 16
+      }}>
+      <View style={{ alignItems: 'center', justifyContent: 'center', flex: 1 }}>
+        <Icons.Action.Info color={colors.$textPrimary} width={36} height={36} />
+        <Space y={24} />
+        <Text variant={'heading5'}>Your session has timed out</Text>
+        <Space y={8} />
+        <Text variant={'body2'} style={{ textAlign: 'center' }}>
+          Tap Retry to continue
+        </Text>
+      </View>
+      <Button
+        size={'large'}
+        type={'primary'}
+        onPress={onRetry}
+        style={{ width: '100%', marginBottom: 16 }}>
+        Retry
+      </Button>
+    </SafeAreaView>
   )
 }
 

@@ -1,9 +1,11 @@
 import { Logos, View, useTheme } from '@avalabs/k2-alpine'
-import React from 'react'
+import React, { useCallback } from 'react'
 import { selectIsIdled } from 'store/app/slice'
 import { useSelector } from 'react-redux'
 import { useBgDetect } from 'common/hooks/useBgDetect'
 import { FullWindowOverlay } from 'react-native-screens'
+import { useFocusEffect } from 'expo-router'
+import { Keyboard } from 'react-native'
 
 export const PrivacyScreen = (): JSX.Element | null => {
   const isIdled = useSelector(selectIsIdled)
@@ -11,6 +13,12 @@ export const PrivacyScreen = (): JSX.Element | null => {
   const {
     theme: { colors }
   } = useTheme()
+
+  useFocusEffect(
+    useCallback(() => {
+      Keyboard.dismiss()
+    }, [])
+  )
 
   if (isIdled || inBackground) {
     return (
