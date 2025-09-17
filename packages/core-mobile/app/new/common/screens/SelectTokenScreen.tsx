@@ -2,6 +2,7 @@ import { Network } from '@avalabs/core-chains-sdk'
 import { Button, SearchBar, View } from '@avalabs/k2-alpine'
 import { ListRenderItem } from '@shopify/flash-list'
 import { ListScreen } from 'common/components/ListScreen'
+import { dismissKeyboardIfNeeded } from 'common/utils/dismissKeyboardIfNeeded'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { FlatList } from 'react-native'
 
@@ -95,6 +96,10 @@ export const SelectTokenScreen = <T extends object>({
       }
     }
   }, [networkChainId, networks])
+
+  useEffect(() => {
+    dismissKeyboardIfNeeded()
+  }, [])
 
   return (
     <ListScreen

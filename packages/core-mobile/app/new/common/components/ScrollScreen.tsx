@@ -244,15 +244,14 @@ export const ScrollScreen = ({
           <KeyboardStickyView
             enabled={!disableStickyFooter}
             offset={{
-              closed: -insets.bottom,
-              opened: 0
+              opened: insets.bottom
             }}>
             <LinearGradientBottomWrapper>
               <View
                 ref={footerRef}
                 style={{
-                  padding: 16,
-                  paddingTop: 0
+                  paddingHorizontal: 16,
+                  paddingBottom: insets.bottom + 16
                 }}>
                 {renderFooter()}
               </View>
@@ -347,8 +346,7 @@ export const ScrollScreen = ({
         <LinearGradientBottomWrapper>
           <View
             style={{
-              padding: 16,
-              paddingTop: 0,
+              paddingHorizontal: 16,
               paddingBottom: insets.bottom + 16
             }}>
             {renderFooter()}
