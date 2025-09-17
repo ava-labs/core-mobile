@@ -39,6 +39,18 @@ export enum LedgerAppType {
   UNKNOWN = 'Unknown'
 }
 
+export const LedgerReturnCode = {
+  SUCCESS: 0x9000,
+  USER_REJECTED: 0x6985,
+  APP_NOT_OPEN: 0x6a80,
+  DEVICE_LOCKED: 0x5515,
+  INVALID_PARAMETER: 0x6b00,
+  COMMAND_NOT_ALLOWED: 0x6986
+} as const
+
+export type LedgerReturnCodeType =
+  typeof LedgerReturnCode[keyof typeof LedgerReturnCode]
+
 export interface AppInfo {
   applicationName: string
   version: string
@@ -80,7 +92,7 @@ export class LedgerService {
     this.appPollingEnabled = true
     this.appPollingInterval = setInterval(async () => {
       try {
-        if (!this.transport || this.transport.isDisconnected) {
+        if (!this.transport || !this.transport.isConnected) {
           this.stopAppPolling()
           return
         }
@@ -116,7 +128,7 @@ export class LedgerService {
       throw new Error('Transport not initialized')
     }
 
-    return await getLedgerAppInfo(this.transport)
+    return await getLedgerAppInfo(this.transport as any)
   }
 
   // Map app name to our enum
@@ -179,7 +191,7 @@ export class LedgerService {
   private async reconnectIfNeeded(deviceId: string): Promise<void> {
     Logger.info('Checking if reconnection is needed')
 
-    if (!this.transport || this.transport.isDisconnected) {
+    if (!this.transport || !this.transport.isConnected) {
       Logger.info('Transport is disconnected, attempting reconnection')
       try {
         await this.connect(deviceId)
@@ -211,7 +223,7 @@ export class LedgerService {
     Logger.info('Avalanche app detected, creating app instance...')
 
     // Create Avalanche app instance
-    const avalancheApp = new AppAvalanche(this.transport)
+    const avalancheApp = new AppAvalanche(this.transport as any)
     Logger.info('Avalanche app instance created')
 
     try {
@@ -231,7 +243,7 @@ export class LedgerService {
       Logger.info('EVM response return code:', evmXpubResponse.returnCode)
 
       // Check for error response
-      if (evmXpubResponse.returnCode !== 0x9000) {
+      if (evmXpubResponse.returnCode !== LedgerReturnCode.SUCCESS) {
         Logger.error(
           'EVM extended public key error:',
           evmXpubResponse.errorMessage
@@ -264,7 +276,7 @@ export class LedgerService {
       )
 
       // Check for error response
-      if (avalancheXpubResponse.returnCode !== 0x9000) {
+      if (avalancheXpubResponse.returnCode !== LedgerReturnCode.SUCCESS) {
         Logger.error(
           'Avalanche extended public key error:',
           avalancheXpubResponse.errorMessage
@@ -320,8 +332,6 @@ export class LedgerService {
       Logger.error('=== getExtendedPublicKeys FAILED ===', error)
       throw new Error(`Failed to get extended public keys: ${error}`)
     }
-
-    Logger.info('=== getExtendedPublicKeys COMPLETED SUCCESSFULLY ===')
   }
 
   // Check if Solana app is open
@@ -400,7 +410,7 @@ export class LedgerService {
       // Use the SDK function directly (like the extension does)
       const publicKey = await getSolanaPublicKeyFromLedger(
         startIndex,
-        this.transport
+        this.transport as any
       )
 
       const publicKeys: PublicKeyInfo[] = [
@@ -467,7 +477,7 @@ export class LedgerService {
     await this.waitForApp(LedgerAppType.AVALANCHE)
 
     // Create Avalanche app instance
-    const avalancheApp = new AppAvalanche(this.transport)
+    const avalancheApp = new AppAvalanche(this.transport as any)
 
     const publicKeys: PublicKeyInfo[] = []
 
@@ -541,7 +551,7 @@ export class LedgerService {
     await this.waitForApp(LedgerAppType.AVALANCHE)
 
     // Create Avalanche app instance
-    const avalancheApp = new AppAvalanche(this.transport)
+    const avalancheApp = new AppAvalanche(this.transport as any)
 
     const addresses: AddressInfo[] = []
 
@@ -670,7 +680,7 @@ export class LedgerService {
 
   // Check if transport is available and connected
   isConnected(): boolean {
-    return this.transport !== null && !this.transport.isDisconnected
+    return this.transport !== null && this.transport.isConnected
   }
 
   // Ensure connection is established for a specific device
