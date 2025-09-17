@@ -332,9 +332,6 @@ export const SwapScreen = (): JSX.Element => {
       slippageTolerance: slippage
     })
 
-    // (Android) native screens need to dismiss the keyboard before navigating
-    // the footer is outside of the scrollview that controls keyboardShouldPersistTaps
-    // so on Android we need to dismiss it before navigating
     dismissKeyboardIfNeeded()
 
     swap()

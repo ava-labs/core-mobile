@@ -229,7 +229,6 @@ export const BridgeScreen = (): JSX.Element => {
     try {
       setIsPending(true)
 
-      // (Android) native screens need to dismiss the keyboard before navigating
       dismissKeyboardIfNeeded()
 
       const [txHash, transferError] = await resolve(transfer())
