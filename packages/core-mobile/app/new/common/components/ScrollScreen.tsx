@@ -6,7 +6,13 @@ import {
 } from '@avalabs/k2-alpine'
 import { useHeaderHeight } from '@react-navigation/elements'
 import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
-import React, { useCallback, useLayoutEffect, useRef, useState } from 'react'
+import React, {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState
+} from 'react'
 import { LayoutRectangle, StyleProp, View, ViewStyle } from 'react-native'
 import { ScrollView } from 'react-native-gesture-handler'
 import {
@@ -194,8 +200,16 @@ export const ScrollScreen = ({
     }
   })
 
+  const [showFooter, setShowFooter] = useState(false)
+
+  useEffect(() => {
+    requestAnimationFrame(() => {
+      setShowFooter(true)
+    })
+  }, [renderFooter])
+
   const renderFooterContent = useCallback(() => {
-    if (renderFooter && renderFooter()) {
+    if (renderFooter && renderFooter() && showFooter) {
       if (shouldAvoidKeyboard) {
         return (
           <KeyboardStickyView
@@ -205,7 +219,7 @@ export const ScrollScreen = ({
             }}>
             <LinearGradientBottomWrapper>
               <Animated.View
-                entering={FadeIn.delay(500)}
+                entering={FadeIn.delay(150)}
                 style={{
                   paddingHorizontal: 16,
                   paddingBottom: insets.bottom + 16
@@ -219,7 +233,7 @@ export const ScrollScreen = ({
         return (
           <LinearGradientBottomWrapper>
             <Animated.View
-              entering={FadeIn.delay(500)}
+              entering={FadeIn.delay(150)}
               style={{
                 paddingHorizontal: 16,
                 paddingBottom: insets.bottom + 16
@@ -231,7 +245,13 @@ export const ScrollScreen = ({
       }
     }
     return null
-  }, [renderFooter, insets.bottom, shouldAvoidKeyboard, disableStickyFooter])
+  }, [
+    renderFooter,
+    showFooter,
+    shouldAvoidKeyboard,
+    disableStickyFooter,
+    insets.bottom
+  ])
 
   const renderHeaderBackground = useCallback(() => {
     return (
