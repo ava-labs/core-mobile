@@ -41,7 +41,7 @@ export const LedgerAppConnection: React.FC<LedgerAppConnectionProps> = ({
 
   // Auto-progress through steps
   useEffect(() => {
-    let timeoutId: NodeJS.Timeout
+    let timeoutId: ReturnType<typeof setTimeout>
 
     switch (currentStep) {
       case 'avalanche-success':
@@ -182,7 +182,7 @@ export const LedgerAppConnection: React.FC<LedgerAppConnectionProps> = ({
                 width: 64,
                 height: 64,
                 borderRadius: 32,
-                backgroundColor: colors.$accentSuccessL,
+                backgroundColor: colors.$textSuccess,
                 alignItems: 'center',
                 justifyContent: 'center',
                 marginBottom: 24
@@ -293,7 +293,7 @@ export const LedgerAppConnection: React.FC<LedgerAppConnectionProps> = ({
                 width: 64,
                 height: 64,
                 borderRadius: 32,
-                backgroundColor: colors.$accentSuccessL,
+                backgroundColor: colors.$textSuccess,
                 alignItems: 'center',
                 justifyContent: 'center',
                 marginBottom: 24
@@ -330,7 +330,7 @@ export const LedgerAppConnection: React.FC<LedgerAppConnectionProps> = ({
                 width: 64,
                 height: 64,
                 borderRadius: 32,
-                backgroundColor: colors.$accentSuccessL,
+                backgroundColor: colors.$textSuccess,
                 alignItems: 'center',
                 justifyContent: 'center',
                 marginBottom: 24
