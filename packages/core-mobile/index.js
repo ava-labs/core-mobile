@@ -8,7 +8,6 @@ import Logger, { LogLevel } from 'utils/Logger'
 import DevDebuggingConfig from 'utils/debugging/DevDebuggingConfig'
 import SentryService from 'services/sentry/SentryService'
 import NewApp from 'new/ContextApp'
-import { hideMenu } from 'expo-dev-client'
 import { expo } from './app.json'
 import { server } from './tests/msw/native/server'
 
@@ -38,10 +37,6 @@ let AppEntryPoint = NewApp
 if (DevDebuggingConfig.STORYBOOK_ENABLED) {
   Bootsplash.hide()
   //AppEntryPoint = require('./storybook').default
-}
-
-if (DevDebuggingConfig.METRO_DEV_MENU) {
-  hideMenu()
 }
 
 AppCheckService.init()
