@@ -32,7 +32,10 @@ module.exports = {
         'map-obj',
         'camelcase',
         'quick-lru',
-        'react-redux'
+        'react-redux',
+        'uuid',
+        '@ledgerhq',
+        '@avalabs/hw-app-avalanche'
       ].join('|') +
       ')'
   ]
