@@ -229,15 +229,14 @@ export const ScrollScreen = ({
               opened: insets.bottom
             }}>
             <LinearGradientBottomWrapper>
-              <Animated.View
-                entering={FadeIn.delay(500)}
+              <View
                 ref={footerRef}
                 style={{
                   paddingHorizontal: 16,
                   paddingBottom: insets.bottom + 16
                 }}>
                 {renderFooter()}
-              </Animated.View>
+              </View>
             </LinearGradientBottomWrapper>
           </KeyboardStickyView>
         ) : null}
@@ -327,14 +326,14 @@ export const ScrollScreen = ({
 
       {renderFooter && renderFooter() ? (
         <LinearGradientBottomWrapper>
-          <Animated.View
-            entering={FadeIn.delay(500)}
+          <View
+            // entering={FadeIn.delay(500)}
             style={{
               paddingHorizontal: 16,
               paddingBottom: insets.bottom + 16
             }}>
             {renderFooter()}
-          </Animated.View>
+          </View>
         </LinearGradientBottomWrapper>
       ) : null}
     </View>
