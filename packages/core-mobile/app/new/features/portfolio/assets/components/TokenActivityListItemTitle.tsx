@@ -96,7 +96,6 @@ export const TokenActivityListItemTitle = ({
       // Find tokens that are actually sent FROM the user (input tokens)
       // Note: For swaps, the user's wallet should be in transaction.from
       const inputTokens = transaction.tokens.filter(token => {
-
         return token.from?.address === userAddress
       })
 
