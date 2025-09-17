@@ -12,6 +12,7 @@ interface Props {
   urTypes: string[]
   onSuccess: (ur: UR) => void
   onError?: () => void
+  onCameraPermissionGranted?: (granted: boolean) => void
   info?: string
 }
 
@@ -19,11 +20,13 @@ export const KeystoneQrScanner: (props: Props) => JSX.Element = ({
   info,
   urTypes,
   onSuccess,
-  onError
+  onError,
+  onCameraPermissionGranted
 }) => {
   const [urDecoder, setUrDecoder] = useState(new URDecoder())
   const [progress, setProgress] = useState<number>(0)
   const [showTroubleshooting, setShowTroubleshooting] = useState(false)
+  const [cameraPermissionGranted, setCameraPermissionGranted] = useState(false)
   const { theme } = useTheme()
 
   const progressColor = theme.isDark ? theme.colors.$white : theme.colors.$black
@@ -50,6 +53,12 @@ export const KeystoneQrScanner: (props: Props) => JSX.Element = ({
       showErrorSheet()
     }
   }, [showTroubleshooting, showErrorSheet, onError])
+
+  useEffect(() => {
+    if (onCameraPermissionGranted) {
+      onCameraPermissionGranted(cameraPermissionGranted)
+    }
+  }, [cameraPermissionGranted, onCameraPermissionGranted])
 
   const handleScan = useCallback(
     (code: string) => {
@@ -107,13 +116,14 @@ export const KeystoneQrScanner: (props: Props) => JSX.Element = ({
           width: SCANNER_WIDTH,
           height: SCANNER_WIDTH
         }}
+        onCameraPermissionGranted={setCameraPermissionGranted}
       />
       <View
         sx={{
           alignItems: 'center',
           flexDirection: 'column'
         }}>
-        <Space y={70} />
+        <Space y={cameraPermissionGranted ? 70 : SCANNER_WIDTH} />
         <Progress.Bar
           borderRadius={8}
           color={progressColor}

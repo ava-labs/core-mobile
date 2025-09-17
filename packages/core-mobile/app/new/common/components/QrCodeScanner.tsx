@@ -24,6 +24,7 @@ type Props = {
   onSuccess: (data: string) => void
   vibrate?: boolean
   sx?: SxProp
+  onCameraPermissionGranted?: (granted: boolean) => void
   paused?: boolean
 }
 
@@ -31,6 +32,7 @@ export const QrCodeScanner = ({
   onSuccess,
   vibrate = false,
   sx,
+  onCameraPermissionGranted,
   paused = false
 }: Props): React.JSX.Element | undefined => {
   const {
@@ -200,6 +202,12 @@ export const QrCodeScanner = ({
       </>
     )
   }, [colors.$textDanger])
+
+  useEffect(() => {
+    if (onCameraPermissionGranted) {
+      onCameraPermissionGranted(cameraPermissionGranted)
+    }
+  }, [cameraPermissionGranted, onCameraPermissionGranted])
 
   if (cameraPermissionPending) return <View sx={containerStyle} />
 

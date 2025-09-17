@@ -2,10 +2,13 @@ import React, { useEffect, useMemo, useState } from 'react'
 import { Stack } from 'common/components/Stack'
 import { PageControl } from '@avalabs/k2-alpine'
 import { stackNavigatorScreenOptions } from 'common/consts/screenOptions'
-import { useRootNavigationState } from 'expo-router'
+import { useNavigation, useRootNavigationState } from 'expo-router'
 import { NavigationState } from '@react-navigation/native'
+import { Platform } from 'react-native'
+import { NativeStackNavigationOptions } from '@react-navigation/native-stack'
 
 export default function KeystoneOnboardingLayout(): JSX.Element {
+  const navigation = useNavigation()
   const [currentPage, setCurrentPage] = useState(0)
   const rootState: NavigationState = useRootNavigationState()
 
@@ -24,11 +27,20 @@ export default function KeystoneOnboardingLayout(): JSX.Element {
     <PageControl numberOfPage={screens.length - 1} currentPage={currentPage} />
   )
 
+  useEffect(() => {
+    if (Platform.OS === 'ios') {
+      const navigationOptions: NativeStackNavigationOptions = {
+        headerTitle: renderPageControl
+      }
+      navigation.getParent()?.setOptions(navigationOptions)
+    }
+  }, [navigation, renderPageControl])
+
   return (
     <Stack
       screenOptions={{
         ...stackNavigatorScreenOptions,
-        headerTitle: renderPageControl
+        headerShown: false
       }}>
       {screens.map(screen => {
         return <Stack.Screen key={screen} name={screen} />
