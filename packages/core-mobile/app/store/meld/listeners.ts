@@ -45,6 +45,7 @@ import {
 import { HyperSDKClient } from 'hypersdk-client'
 import { isAnyOf } from '@reduxjs/toolkit'
 import { onAppUnlocked } from 'store/app'
+import DeviceInfoService from 'services/deviceInfo/DeviceInfoService'
 import { offrampSend } from './slice'
 
 const handleOfframpSend = async (
@@ -272,9 +273,11 @@ const getDecimals = (token: TokenWithBalance, network: Network): number => {
 const initMeldService = async (
   listenerApi: AppListenerEffectAPI
 ): Promise<void> => {
+  const bundleId = DeviceInfoService.getBundleId()
+  const isInternal = bundleId.includes('internal')
   const state = listenerApi.getState()
   const isSandboxBlocked = selectIsEnableMeldSandboxBlocked(state)
-  MeldService.init(!isSandboxBlocked)
+  MeldService.init(!isSandboxBlocked && isInternal)
 }
 
 export const addMeldListeners = (startListening: AppStartListening): void => {
