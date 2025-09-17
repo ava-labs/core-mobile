@@ -1,27 +1,29 @@
-import { ScrollScreen } from 'common/components/ScrollScreen'
-import React, { useCallback, useEffect, useState } from 'react'
 import {
-  Button,
-  View,
-  Text,
-  Icons,
-  Pressable,
-  useTheme,
-  FiatAmountInputWidget,
   ActivityIndicator,
+  Button,
+  FiatAmountInputWidget,
+  Icons,
+  Keyboard,
+  Pressable,
   showAlert,
-  useInversedTheme
+  Text,
+  useInversedTheme,
+  useTheme,
+  View
 } from '@avalabs/k2-alpine'
-import { LogoWithNetwork } from 'features/portfolio/assets/components/LogoWithNetwork'
-import { selectSelectedCurrency } from 'store/settings/currency'
-import { useSelector } from 'react-redux'
+import { ScrollScreen } from 'common/components/ScrollScreen'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import useInAppBrowser from 'common/hooks/useInAppBrowser'
-import { useSelectAmount } from '../hooks/useSelectAmount'
+import { LogoWithNetwork } from 'features/portfolio/assets/components/LogoWithNetwork'
+import React, { useCallback, useEffect, useState } from 'react'
+import { Platform } from 'react-native'
+import { useSelector } from 'react-redux'
+import { selectSelectedCurrency } from 'store/settings/currency'
 import { ServiceProviderCategories } from '../consts'
+import { useResetMeldTokenList } from '../hooks/useResetMeldTokenList'
+import { useSelectAmount } from '../hooks/useSelectAmount'
 import { useOfframpActivityIndicator, useOfframpSessionId } from '../store'
 import { getErrorMessage } from '../utils'
-import { useResetMeldTokenList } from '../hooks/useResetMeldTokenList'
 
 interface SelectAmountProps {
   title: string
@@ -93,6 +95,14 @@ export const SelectAmount = ({
   const onNext = useCallback(async (): Promise<void> => {
     setSessionId(undefined)
     setIsLoadingCreateSessionWidget(true)
+
+    // (Android) native screens need to dismiss the keyboard before navigating
+    // the footer is outside of the scrollview that controls keyboardShouldPersistTaps
+    // so on Android we need to dismiss it before navigating
+    if (Platform.OS === 'android' && Keyboard.isVisible()) {
+      Keyboard.dismiss()
+    }
+
     try {
       const sessionWidget = await createSessionWidget()
 
