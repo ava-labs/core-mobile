@@ -7,7 +7,7 @@ import { useRouter } from 'expo-router'
  */
 export default function ConnectWallet(): JSX.Element {
   const router = useRouter()
-  
+
   // Redirect to enhanced setup - this route is deprecated
   React.useEffect(() => {
     router.replace('/accountSettings/ledger/enhancedSetup')
