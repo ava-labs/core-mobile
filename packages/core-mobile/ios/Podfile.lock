@@ -62,7 +62,6 @@ PODS:
   - DatadogWebViewTracking (2.24.1):
     - DatadogInternal (= 2.24.1)
   - DGSwiftUtilities (0.47.0)
-  - DGSwiftUtilities (0.47.0)
   - DoubleConversion (1.1.6)
   - EXApplication (6.1.5):
     - ExpoModulesCore
