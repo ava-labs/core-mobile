@@ -7,6 +7,7 @@ import { dismissTotpStack } from 'features/accountSettings/utils/dismissTotpStac
 import { useNavigation } from '@react-navigation/native'
 import SeedlessService from 'seedless/services/SeedlessService'
 import { useWallet } from 'hooks/useWallet'
+import { FullWindowOverlay } from 'react-native-screens'
 
 const VerifyTotpCodeScreen = (): React.JSX.Element => {
   const { unlock } = useWallet()
@@ -40,10 +41,12 @@ const VerifyTotpCodeScreen = (): React.JSX.Element => {
   )
 
   return (
-    <VerifyCode
-      onVerifyCode={handleVerifyCode}
-      onVerifySuccess={handleVerifySuccess}
-    />
+    <FullWindowOverlay>
+      <VerifyCode
+        onVerifyCode={handleVerifyCode}
+        onVerifySuccess={handleVerifySuccess}
+      />
+    </FullWindowOverlay>
   )
 }
 
