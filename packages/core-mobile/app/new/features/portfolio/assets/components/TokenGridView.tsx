@@ -45,7 +45,7 @@ export const TokenGridView = ({
       priceChangeStatus === PriceChangeStatus.Neutral ||
       formattedBalance === undefined
     )
-      return <Text variant="buttonSmall" />
+      return <Text variant="buttonSmall" /> // empty to maintain layout consistency in grid view
 
     if (priceChangeStatus === undefined)
       return <Text variant="buttonSmall">{UNKNOWN_AMOUNT}</Text>
