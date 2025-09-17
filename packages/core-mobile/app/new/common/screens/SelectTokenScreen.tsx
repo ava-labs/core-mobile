@@ -2,8 +2,9 @@ import { Network } from '@avalabs/core-chains-sdk'
 import { Button, SearchBar, View } from '@avalabs/k2-alpine'
 import { ListRenderItem } from '@shopify/flash-list'
 import { ListScreen } from 'common/components/ListScreen'
+import { dismissKeyboardIfNeeded } from 'common/utils/dismissKeyboardIfNeeded'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
-import { FlatList, Keyboard, Platform } from 'react-native'
+import { FlatList } from 'react-native'
 
 export const SelectTokenScreen = <T extends object>({
   tokens,
@@ -100,9 +101,7 @@ export const SelectTokenScreen = <T extends object>({
     // (Android) native screens need to dismiss the keyboard before navigating
     // the footer is outside of the scrollview that controls keyboardShouldPersistTaps
     // so on Android we need to dismiss it before navigating
-    if (Platform.OS === 'android' && Keyboard.isVisible()) {
-      Keyboard.dismiss()
-    }
+    dismissKeyboardIfNeeded()
   }, [])
 
   return (

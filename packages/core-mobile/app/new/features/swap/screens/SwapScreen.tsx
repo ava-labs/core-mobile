@@ -28,6 +28,7 @@ import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import { usePreventScreenRemoval } from 'common/hooks/usePreventScreenRemoval'
 import { usePrevious } from 'common/hooks/usePrevious'
 import { useSwapList } from 'common/hooks/useSwapList'
+import { dismissKeyboardIfNeeded } from 'common/utils/dismissKeyboardIfNeeded'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
 import { ParaswapError, ParaswapErrorCode } from 'errors/swapError'
 import { useGlobalSearchParams, useRouter } from 'expo-router'
@@ -36,7 +37,6 @@ import useSolanaNetwork from 'hooks/earn/useSolanaNetwork'
 import { useNetworks } from 'hooks/networks/useNetworks'
 import { useWatchlist } from 'hooks/watchlist/useWatchlist'
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { Keyboard, Platform } from 'react-native'
 import Animated, {
   FadeIn,
   FadeOut,
@@ -335,9 +335,7 @@ export const SwapScreen = (): JSX.Element => {
     // (Android) native screens need to dismiss the keyboard before navigating
     // the footer is outside of the scrollview that controls keyboardShouldPersistTaps
     // so on Android we need to dismiss it before navigating
-    if (Platform.OS === 'android' && Keyboard.isVisible()) {
-      Keyboard.dismiss()
-    }
+    dismissKeyboardIfNeeded()
 
     swap()
   }, [swap, destination, slippage])

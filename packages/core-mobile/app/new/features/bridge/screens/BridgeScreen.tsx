@@ -24,6 +24,7 @@ import {
   unwrapAssetSymbol,
   wrapAssetSymbol
 } from 'common/utils/bridgeUtils'
+import { dismissKeyboardIfNeeded } from 'common/utils/dismissKeyboardIfNeeded'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
 import { useGlobalSearchParams, useRouter } from 'expo-router'
 import BridgeTypeFootnote from 'features/bridge/components/BridgeTypeFootnote'
@@ -37,7 +38,6 @@ import {
 } from 'features/bridge/store/store'
 import useCChainNetwork from 'hooks/earn/useCChainNetwork'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
-import { Keyboard, Platform } from 'react-native'
 import Animated, {
   FadeIn,
   FadeOut,
@@ -230,9 +230,7 @@ export const BridgeScreen = (): JSX.Element => {
       setIsPending(true)
 
       // (Android) native screens need to dismiss the keyboard before navigating
-      if (Platform.OS === 'android' && Keyboard.isVisible()) {
-        Keyboard.dismiss()
-      }
+      dismissKeyboardIfNeeded()
 
       const [txHash, transferError] = await resolve(transfer())
       setIsPending(false)

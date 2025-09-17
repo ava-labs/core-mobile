@@ -13,9 +13,9 @@ import {
 import { ScrollScreen } from 'common/components/ScrollScreen'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import useInAppBrowser from 'common/hooks/useInAppBrowser'
+import { dismissKeyboardIfNeeded } from 'common/utils/dismissKeyboardIfNeeded'
 import { LogoWithNetwork } from 'features/portfolio/assets/components/LogoWithNetwork'
 import React, { useCallback, useEffect, useState } from 'react'
-import { Keyboard, Platform } from 'react-native'
 import { useSelector } from 'react-redux'
 import { selectSelectedCurrency } from 'store/settings/currency'
 import { ServiceProviderCategories } from '../consts'
@@ -98,9 +98,7 @@ export const SelectAmount = ({
     // (Android) native screens need to dismiss the keyboard before navigating
     // the footer is outside of the scrollview that controls keyboardShouldPersistTaps
     // so on Android we need to dismiss it before navigating
-    if (Platform.OS === 'android' && Keyboard.isVisible()) {
-      Keyboard.dismiss()
-    }
+    dismissKeyboardIfNeeded()
 
     try {
       const sessionWidget = await createSessionWidget()

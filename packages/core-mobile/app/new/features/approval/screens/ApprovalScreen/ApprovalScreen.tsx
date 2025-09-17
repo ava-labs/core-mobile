@@ -5,6 +5,7 @@ import { withWalletConnectCache } from 'common/components/withWalletConnectCache
 import { validateFee } from 'common/hooks/send/utils/evm/validate'
 import { SendErrorMessage } from 'common/hooks/send/utils/types'
 import { useActiveWallet } from 'common/hooks/useActiveWallet'
+import { dismissKeyboardIfNeeded } from 'common/utils/dismissKeyboardIfNeeded'
 import { L2_NETWORK_SYMBOL_MAPPING } from 'consts/chainIdsWithIncorrectSymbol'
 import { router } from 'expo-router'
 import { useNativeTokenWithBalanceByNetwork } from 'features/send/hooks/useNativeTokenWithBalanceByNetwork'
@@ -15,7 +16,6 @@ import { ActionSheet } from 'new/common/components/ActionSheet'
 import { TokenLogo } from 'new/common/components/TokenLogo'
 import { Warning } from 'new/common/components/Warning'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
-import { Keyboard, Platform } from 'react-native'
 import { useSelector } from 'react-redux'
 import { ApprovalParams } from 'services/walletconnectv2/walletConnectCache/types'
 import {
@@ -225,9 +225,7 @@ const ApprovalScreen = ({
     // (Android) native screens need to dismiss the keyboard before navigating
     // the footer is outside of the scrollview that controls keyboardShouldPersistTaps
     // so on Android we need to dismiss it before navigating
-    if (Platform.OS === 'android' && Keyboard.isVisible()) {
-      Keyboard.dismiss()
-    }
+    dismissKeyboardIfNeeded()
   }, [])
 
   const renderGaslessAlert = useCallback((): JSX.Element | null => {

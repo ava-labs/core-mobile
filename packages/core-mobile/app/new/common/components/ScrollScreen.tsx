@@ -15,7 +15,6 @@ import {
   KeyboardStickyView
 } from 'react-native-keyboard-controller'
 import Animated, {
-  FadeIn,
   interpolate,
   useAnimatedStyle,
   useSharedValue
@@ -346,7 +345,6 @@ export const ScrollScreen = ({
       {renderFooter && renderFooter() ? (
         <LinearGradientBottomWrapper>
           <View
-            // entering={FadeIn.delay(500)}
             style={{
               paddingHorizontal: 16,
               paddingBottom: insets.bottom + 16
