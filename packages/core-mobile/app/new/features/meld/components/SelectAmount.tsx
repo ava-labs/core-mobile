@@ -3,7 +3,6 @@ import {
   Button,
   FiatAmountInputWidget,
   Icons,
-  Keyboard,
   Pressable,
   showAlert,
   Text,
@@ -16,7 +15,7 @@ import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import useInAppBrowser from 'common/hooks/useInAppBrowser'
 import { LogoWithNetwork } from 'features/portfolio/assets/components/LogoWithNetwork'
 import React, { useCallback, useEffect, useState } from 'react'
-import { Platform } from 'react-native'
+import { Keyboard, Platform } from 'react-native'
 import { useSelector } from 'react-redux'
 import { selectSelectedCurrency } from 'store/settings/currency'
 import { ServiceProviderCategories } from '../consts'
