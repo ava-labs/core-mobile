@@ -57,13 +57,5 @@
     "node": ">=20.18.0",
     "yarn": ">=3.6.4"
   },
-  "packageManager": "yarn@3.6.4",
-  "dependencies": {
-    "@ethereumjs/util": "9.1.0",
-    "@keystonehq/animated-qr": "0.10.0",
-    "@keystonehq/keystone-sdk": "0.11.3",
-    "@ngraveio/bc-ur": "1.1.13",
-    "react-native-popover-view": "6.1.0",
-    "react-native-progress": "5.0.1"
-  }
+  "packageManager": "yarn@3.6.4"
 }
