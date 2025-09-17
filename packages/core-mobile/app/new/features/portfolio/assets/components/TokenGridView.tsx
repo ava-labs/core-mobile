@@ -4,6 +4,7 @@ import {
   Icons,
   MaskedText,
   PriceChangeIndicator,
+  PriceChangeStatus,
   SPRING_LINEAR_TRANSITION,
   Text,
   useTheme,
@@ -18,6 +19,7 @@ import Animated from 'react-native-reanimated'
 import { useSelector } from 'react-redux'
 import { selectIsPrivacyModeEnabled } from 'store/settings/securityPrivacy'
 import { SubTextNumber } from 'common/components/SubTextNumber'
+import { UNKNOWN_AMOUNT } from 'consts/amount'
 import { TokenListViewProps } from '../types'
 import { LogoWithNetwork } from './LogoWithNetwork'
 
@@ -120,12 +122,19 @@ export const TokenGridView = ({
                   </Text>
                 )}
               </View>
-              <PriceChangeIndicator
-                shouldMask={isPrivacyModeEnabled}
-                maskWidth={40}
-                formattedPrice={formattedPrice}
-                status={priceChangeStatus}
-              />
+              {priceChangeStatus !== PriceChangeStatus.Neutral &&
+              (formattedPrice !== UNKNOWN_AMOUNT ||
+                (formattedPrice === UNKNOWN_AMOUNT &&
+                  formattedBalance !== '')) ? (
+                <PriceChangeIndicator
+                  shouldMask={isPrivacyModeEnabled}
+                  maskWidth={40}
+                  formattedPrice={formattedPrice}
+                  status={priceChangeStatus}
+                />
+              ) : (
+                <Text variant="buttonSmall" />
+              )}
             </View>
           </View>
         </View>

@@ -1,9 +1,9 @@
 import { PriceChangeStatus } from '@avalabs/k2-alpine'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
-import { useWatchlist } from 'hooks/watchlist/useWatchlist'
 import { useFormatCurrency } from 'new/common/hooks/useFormatCurrency'
 import React, { useRef, useCallback } from 'react'
 import { LocalTokenWithBalance } from 'store/balance'
+import { useMarketTokenBySymbol } from 'common/hooks/useMarketTokenBySymbol'
 import { TokenGridView } from './TokenGridView'
 import { TokenListView } from './TokenListView'
 
@@ -20,22 +20,25 @@ export const TokenListItem = ({
   isGridView,
   onPress
 }: TokenListItemProps): React.JSX.Element => {
-  const { getMarketTokenBySymbol } = useWatchlist()
   const { formatCurrency } = useFormatCurrency()
   const { balanceInCurrency, symbol } = token
   const formattedBalance = balanceInCurrency
     ? formatCurrency({ amount: balanceInCurrency })
     : ''
 
-  const marketToken = getMarketTokenBySymbol(symbol)
+  const marketToken = useMarketTokenBySymbol({
+    symbol,
+    errorContext: 'TokenListItem'
+  })
   const percentChange = marketToken?.priceChangePercentage24h ?? undefined
   const priceChange =
-    percentChange && balanceInCurrency
+    percentChange !== undefined && balanceInCurrency !== undefined
       ? (balanceInCurrency * percentChange) / 100
       : undefined
-  const formattedPrice = priceChange
-    ? formatCurrency({ amount: Math.abs(priceChange) })
-    : UNKNOWN_AMOUNT
+  const formattedPrice =
+    priceChange !== undefined
+      ? formatCurrency({ amount: Math.abs(priceChange) })
+      : UNKNOWN_AMOUNT
 
   const status = priceChange
     ? priceChange > 0

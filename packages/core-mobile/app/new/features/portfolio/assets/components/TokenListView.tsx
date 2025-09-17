@@ -7,7 +7,8 @@ import {
   Text,
   useTheme,
   View,
-  alpha
+  alpha,
+  PriceChangeStatus
 } from '@avalabs/k2-alpine'
 import { selectIsPrivacyModeEnabled } from 'store/settings/securityPrivacy'
 import { useSelector } from 'react-redux'
@@ -65,15 +66,15 @@ export const TokenListView = ({
             sx={{
               flexGrow: 1,
               flexShrink: 1,
-              marginHorizontal: 12
+              marginHorizontal: 12,
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'space-between'
             }}>
             <View
               sx={{
                 flexShrink: 1,
-                flexDirection: 'row',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                gap: 24
+                gap: 1
               }}>
               <Text
                 variant="buttonMedium"
@@ -82,6 +83,37 @@ export const TokenListView = ({
                 testID={`portfolio_token_item__${tokenName}`}>
                 {tokenName}
               </Text>
+              <MaskedText
+                shouldMask={isPrivacyModeEnabled}
+                maskWidth={55}
+                sx={{ lineHeight: 16, flex: 1 }}
+                ellipsizeMode="tail"
+                numberOfLines={1}
+                testID={`list_token_balance__${index}`}>
+                <View sx={{ flexDirection: 'row' }}>
+                  <SubTextNumber
+                    number={Number(
+                      token.balanceDisplayValue.replaceAll(',', '')
+                    )}
+                    textVariant="body2"
+                  />
+                  <Text
+                    variant="body2"
+                    sx={{
+                      marginTop: 1,
+                      color: alpha(colors.$textPrimary, 0.6)
+                    }}>
+                    {' ' + token.symbol}
+                  </Text>
+                </View>
+              </MaskedText>
+            </View>
+            <View
+              sx={{
+                flexShrink: 1,
+                alignItems: 'flex-end',
+                gap: 2
+              }}>
               <View
                 sx={{
                   flexDirection: 'row',
@@ -111,49 +143,17 @@ export const TokenListView = ({
                   </Text>
                 )}
               </View>
-            </View>
-            <View
-              sx={{
-                flexDirection: 'row',
-                flexShrink: 1,
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                gap: 24
-              }}>
-              <MaskedText
-                shouldMask={isPrivacyModeEnabled}
-                maskWidth={55}
-                sx={{ lineHeight: 16, flex: 1 }}
-                ellipsizeMode="tail"
-                numberOfLines={1}
-                testID={`list_token_balance__${index}`}>
-                <View sx={{ flexDirection: 'row' }}>
-                  <SubTextNumber
-                    number={Number(
-                      token.balanceDisplayValue.replaceAll(',', '')
-                    )}
-                    textVariant="body2"
+              {priceChangeStatus !== PriceChangeStatus.Neutral &&
+                (formattedPrice !== UNKNOWN_AMOUNT ||
+                  (formattedPrice === UNKNOWN_AMOUNT &&
+                    formattedBalance !== '')) && (
+                  <PriceChangeIndicator
+                    formattedPrice={formattedPrice}
+                    status={priceChangeStatus}
+                    shouldMask={isPrivacyModeEnabled}
+                    maskWidth={40}
                   />
-                  <Text
-                    variant="body2"
-                    sx={{
-                      marginTop: 1,
-                      color: alpha(colors.$textPrimary, 0.6)
-                    }}>
-                    {' ' + token.symbol}
-                  </Text>
-                </View>
-              </MaskedText>
-              {(formattedPrice !== UNKNOWN_AMOUNT ||
-                (formattedPrice === UNKNOWN_AMOUNT &&
-                  formattedBalance !== '')) && (
-                <PriceChangeIndicator
-                  formattedPrice={formattedPrice}
-                  status={priceChangeStatus}
-                  shouldMask={isPrivacyModeEnabled}
-                  maskWidth={40}
-                />
-              )}
+                )}
             </View>
           </View>
           <View
