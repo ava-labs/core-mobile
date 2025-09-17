@@ -14,9 +14,17 @@ import {
 } from '@avalabs/k2-alpine'
 import { NetworkVMType } from '@avalabs/vm-module-types'
 import { useNavigation } from '@react-navigation/native'
+import { ScrollScreen } from 'common/components/ScrollScreen'
 import { TokenInputWidget } from 'common/components/TokenInputWidget'
+import { useCoreBrowser } from 'common/hooks/useCoreBrowser'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import { usePreventScreenRemoval } from 'common/hooks/usePreventScreenRemoval'
+import {
+  AssetBalance,
+  unwrapAssetSymbol,
+  wrapAssetSymbol
+} from 'common/utils/bridgeUtils'
+import { dismissKeyboardIfNeeded } from 'common/utils/dismissKeyboardIfNeeded'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
 import { useGlobalSearchParams, useRouter } from 'expo-router'
 import BridgeTypeFootnote from 'features/bridge/components/BridgeTypeFootnote'
@@ -36,14 +44,8 @@ import Animated, {
   LinearTransition
 } from 'react-native-reanimated'
 import { useSelector } from 'react-redux'
-import {
-  unwrapAssetSymbol,
-  wrapAssetSymbol,
-  AssetBalance
-} from 'common/utils/bridgeUtils'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import GaslessService from 'services/gasless/GaslessService'
-import { RootState } from 'store/types'
 import { selectActiveAccount } from 'store/account'
 import { selectAvailableNativeTokenBalanceForNetworkAndAccount } from 'store/balance'
 import {
@@ -51,12 +53,11 @@ import {
   selectIsHallidayBridgeBannerBlocked
 } from 'store/posthog'
 import { isUserRejectedError } from 'store/rpc/providers/walletConnect/utils'
+import { RootState } from 'store/types'
 import { selectHasBeenViewedOnce, ViewOnceKey } from 'store/viewOnce'
 import { audioFeedback, Audios } from 'utils/AudioFeedback'
 import Logger from 'utils/Logger'
 import { getJsonRpcErrorMessage } from 'utils/getJsonRpcErrorMessage/getJsonRpcErrorMessage'
-import { ScrollScreen } from 'common/components/ScrollScreen'
-import { useCoreBrowser } from 'common/hooks/useCoreBrowser'
 import useBridge, { TokenWithBalanceInNetwork } from '../hooks/useBridge'
 
 export const BridgeScreen = (): JSX.Element => {
@@ -227,6 +228,9 @@ export const BridgeScreen = (): JSX.Element => {
     })
     try {
       setIsPending(true)
+
+      dismissKeyboardIfNeeded()
+
       const [txHash, transferError] = await resolve(transfer())
       setIsPending(false)
       if (transferError || !txHash) {

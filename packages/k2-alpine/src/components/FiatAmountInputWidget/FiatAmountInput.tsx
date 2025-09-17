@@ -9,7 +9,6 @@ import React, {
   useState
 } from 'react'
 import {
-  InteractionManager,
   Platform,
   ReturnKeyTypeOptions,
   StyleSheet,
@@ -137,7 +136,7 @@ export const FiatAmountInput = forwardRef<
 
     useEffect(() => {
       if (autoFocus) {
-        InteractionManager.runAfterInteractions(() => {
+        requestAnimationFrame(() => {
           textInputRef.current?.focus()
         })
       }
