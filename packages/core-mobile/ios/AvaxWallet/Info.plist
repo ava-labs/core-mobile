@@ -106,5 +106,7 @@
 	<false/>
 	<key>NSBluetoothAlwaysUsageDescription</key>
 	<string>We use bluetooth to connect to ledger devices</string>
+	<key>NSBluetoothPeripheralUsageDescription</key>
+	<string>We use bluetooth to connect to ledger devices</string>
 </dict>
 </plist>
