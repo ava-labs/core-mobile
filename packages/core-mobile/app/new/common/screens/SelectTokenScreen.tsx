@@ -3,7 +3,7 @@ import { Button, SearchBar, View } from '@avalabs/k2-alpine'
 import { ListRenderItem } from '@shopify/flash-list'
 import { ListScreen } from 'common/components/ListScreen'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
-import { FlatList } from 'react-native'
+import { FlatList, Keyboard, Platform } from 'react-native'
 
 export const SelectTokenScreen = <T extends object>({
   tokens,
@@ -95,6 +95,13 @@ export const SelectTokenScreen = <T extends object>({
       }
     }
   }, [networkChainId, networks])
+
+  useEffect(() => {
+    // (Android) native screens need to dismiss the keyboard when the screen is focused
+    if (Platform.OS === 'android' && Keyboard.isVisible()) {
+      Keyboard.dismiss()
+    }
+  }, [])
 
   return (
     <ListScreen
