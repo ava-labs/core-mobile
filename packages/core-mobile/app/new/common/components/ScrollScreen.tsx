@@ -15,6 +15,7 @@ import {
   KeyboardStickyView
 } from 'react-native-keyboard-controller'
 import Animated, {
+  FadeIn,
   interpolate,
   useAnimatedStyle,
   useSharedValue
@@ -225,18 +226,18 @@ export const ScrollScreen = ({
           <KeyboardStickyView
             enabled={!disableStickyFooter}
             offset={{
-              closed: -insets.bottom,
-              opened: 0
+              opened: insets.bottom
             }}>
             <LinearGradientBottomWrapper>
-              <View
+              <Animated.View
+                entering={FadeIn.delay(500)}
                 ref={footerRef}
                 style={{
-                  padding: 16,
-                  paddingTop: 0
+                  paddingHorizontal: 16,
+                  paddingBottom: insets.bottom + 16
                 }}>
                 {renderFooter()}
-              </View>
+              </Animated.View>
             </LinearGradientBottomWrapper>
           </KeyboardStickyView>
         ) : null}
@@ -326,14 +327,14 @@ export const ScrollScreen = ({
 
       {renderFooter && renderFooter() ? (
         <LinearGradientBottomWrapper>
-          <View
+          <Animated.View
+            entering={FadeIn.delay(500)}
             style={{
-              padding: 16,
-              paddingTop: 0,
+              paddingHorizontal: 16,
               paddingBottom: insets.bottom + 16
             }}>
             {renderFooter()}
-          </View>
+          </Animated.View>
         </LinearGradientBottomWrapper>
       ) : null}
     </View>
