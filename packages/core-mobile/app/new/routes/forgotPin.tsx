@@ -4,7 +4,6 @@ import SlideToConfirm from 'common/components/SlideToConfirm'
 import { useRouter } from 'expo-router'
 import React, { useCallback } from 'react'
 import { useDeleteWallet } from 'new/common/hooks/useDeleteWallet'
-import { FullWindowOverlay } from 'react-native-screens'
 
 const ForgotPin = (): JSX.Element => {
   const router = useRouter()
@@ -35,32 +34,30 @@ const ForgotPin = (): JSX.Element => {
   }, [handleCancel, handleConfirm])
 
   return (
-    <FullWindowOverlay>
-      <ScrollScreen
-        style={{ backgroundColor: theme.colors.$surfacePrimary }}
-        title={`Do you want to\nreset your PIN?`}
-        navigationTitle="Reset your PIN?"
-        renderFooter={renderFooter}
-        contentContainerStyle={{ padding: 16, flex: 1 }}>
-        <View>
-          <View
-            sx={{
-              flexDirection: 'row',
-              alignItems: 'center',
-              gap: 8
-            }}>
-            <Icons.Alert.ErrorOutline color={theme.colors.$textDanger} />
-            <Text
-              variant="subtitle1"
-              sx={{ color: '$textDanger', flexShrink: 1 }}>
-              If you continue, the current wallet session will be terminated and
-              you will need to recover your wallet using a social login or
-              recovery phrase.
-            </Text>
-          </View>
+    <ScrollScreen
+      style={{ backgroundColor: theme.colors.$surfacePrimary }}
+      title={`Do you want to\nreset your PIN?`}
+      navigationTitle="Reset your PIN?"
+      renderFooter={renderFooter}
+      contentContainerStyle={{ padding: 16, flex: 1 }}>
+      <View>
+        <View
+          sx={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            gap: 8
+          }}>
+          <Icons.Alert.ErrorOutline color={theme.colors.$textDanger} />
+          <Text
+            variant="subtitle1"
+            sx={{ color: '$textDanger', flexShrink: 1 }}>
+            If you continue, the current wallet session will be terminated and
+            you will need to recover your wallet using a social login or
+            recovery phrase.
+          </Text>
         </View>
-      </ScrollScreen>
-    </FullWindowOverlay>
+      </View>
+    </ScrollScreen>
   )
 }
 
