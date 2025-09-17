@@ -97,18 +97,21 @@ export const LedgerSetupProgress: React.FC<LedgerSetupProgressProps> = ({
 
         {/* Progress bar */}
         <View style={{ marginBottom: 16 }}>
-          <View style={{
-            height: 8,
-            backgroundColor: colors.$surfaceSecondary,
-            borderRadius: 4,
-            overflow: 'hidden'
-          }}>
-            <View style={{
-              height: '100%',
-              width: `${progress.progress}%`,
-              backgroundColor: colors.$textPrimary,
-              borderRadius: 4
-            }} />
+          <View
+            style={{
+              height: 8,
+              backgroundColor: colors.$surfaceSecondary,
+              borderRadius: 4,
+              overflow: 'hidden'
+            }}>
+            <View
+              style={{
+                height: '100%',
+                width: `${progress.progress}%`,
+                backgroundColor: colors.$textPrimary,
+                borderRadius: 4
+              }}
+            />
           </View>
         </View>
 

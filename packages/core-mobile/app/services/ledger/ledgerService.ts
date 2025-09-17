@@ -45,9 +45,9 @@ export interface AppInfo {
 }
 
 export class LedgerService {
-  private transport: any = null
+  private transport: TransportBLE | null = null
   private currentAppType: LedgerAppType = LedgerAppType.UNKNOWN
-  private appPollingInterval: NodeJS.Timeout | null = null
+  private appPollingInterval: number | null = null
   private appPollingEnabled = false
 
   // Connect to Ledger device (transport only, no apps)
@@ -144,8 +144,10 @@ export class LedgerService {
     Logger.info(`Waiting for ${appType} app (timeout: ${timeoutMs}ms)...`)
 
     while (Date.now() - startTime < timeoutMs) {
-      Logger.info(`Current app type: ${this.currentAppType}, waiting for: ${appType}`)
-      
+      Logger.info(
+        `Current app type: ${this.currentAppType}, waiting for: ${appType}`
+      )
+
       if (this.currentAppType === appType) {
         Logger.info(`${appType} app is ready`)
         return
@@ -220,24 +222,27 @@ export class LedgerService {
         vmType: NetworkVMType.EVM
       }).replace('/0/0', '')
       Logger.info('EVM derivation path:', evmPath)
-      
+
       const evmXpubResponse = await avalancheApp.getExtendedPubKey(
         evmPath,
         false
       )
 
       Logger.info('EVM response return code:', evmXpubResponse.returnCode)
-      
+
       // Check for error response
       if (evmXpubResponse.returnCode !== 0x9000) {
-        Logger.error('EVM extended public key error:', evmXpubResponse.errorMessage)
+        Logger.error(
+          'EVM extended public key error:',
+          evmXpubResponse.errorMessage
+        )
         throw new Error(
           `EVM extended public key error: ${
             evmXpubResponse.errorMessage || 'Unknown error'
           }`
         )
       }
-      
+
       Logger.info('EVM extended public key retrieved successfully')
 
       // Get Avalanche extended public key (m/44'/9000'/0')
@@ -247,24 +252,30 @@ export class LedgerService {
         vmType: NetworkVMType.AVM
       }).replace('/0/0', '')
       Logger.info('Avalanche derivation path:', avalanchePath)
-      
+
       const avalancheXpubResponse = await avalancheApp.getExtendedPubKey(
         avalanchePath,
         false
       )
 
-      Logger.info('Avalanche response return code:', avalancheXpubResponse.returnCode)
-      
+      Logger.info(
+        'Avalanche response return code:',
+        avalancheXpubResponse.returnCode
+      )
+
       // Check for error response
       if (avalancheXpubResponse.returnCode !== 0x9000) {
-        Logger.error('Avalanche extended public key error:', avalancheXpubResponse.errorMessage)
+        Logger.error(
+          'Avalanche extended public key error:',
+          avalancheXpubResponse.errorMessage
+        )
         throw new Error(
           `Avalanche extended public key error: ${
             avalancheXpubResponse.errorMessage || 'Unknown error'
           }`
         )
       }
-      
+
       Logger.info('Avalanche extended public key retrieved successfully')
 
       return {
@@ -309,7 +320,7 @@ export class LedgerService {
       Logger.error('=== getExtendedPublicKeys FAILED ===', error)
       throw new Error(`Failed to get extended public keys: ${error}`)
     }
-    
+
     Logger.info('=== getExtendedPublicKeys COMPLETED SUCCESSFULLY ===')
   }
 
@@ -334,31 +345,33 @@ export class LedgerService {
   }
 
   // Get Solana public keys using SDK function (like extension)
-  async getSolanaPublicKeys(startIndex: number): Promise<PublicKeyInfo[]> {
+  async getSolanaPublicKeys(
+    startIndex: number,
+    count: number
+  ): Promise<PublicKeyInfo[]> {
     if (!this.transport) {
       throw new Error('Transport not initialized')
     }
 
     // Create a fresh AppSolana instance for each call (like the SDK does)
     const freshSolanaApp = new AppSolana(this.transport)
-
-    // Use correct Solana derivation path format
-    const derivationPath = `44'/501'/0'/0'/${startIndex}`
+    const publicKeys: PublicKeyInfo[] = []
 
     try {
-      // Simple direct call to get Solana address using fresh instance
-      const result = await freshSolanaApp.getAddress(derivationPath, false)
-      const publicKey = result.address
+      for (let i = startIndex; i < startIndex + count; i++) {
+        // Use correct Solana derivation path format
+        const derivationPath = `44'/501'/0'/0'/${i}`
 
-      console.log('HIT PUBLIC KEY', publicKey)
+        // Simple direct call to get Solana address using fresh instance
+        const result = await freshSolanaApp.getAddress(derivationPath, false)
+        const publicKey = result.address
 
-      const publicKeys: PublicKeyInfo[] = [
-        {
+        publicKeys.push({
           key: publicKey.toString('hex'),
           derivationPath,
           curve: 'ed25519'
-        }
-      ]
+        })
+      }
 
       return publicKeys
     } catch (error) {
@@ -390,8 +403,6 @@ export class LedgerService {
         this.transport
       )
 
-      console.log('HIT PUBLIC KEY via SDK', publicKey)
-
       const publicKeys: PublicKeyInfo[] = [
         {
           key: publicKey.toString('hex'),
@@ -416,96 +427,6 @@ export class LedgerService {
     }
   }
 
-  // Robust method with timeout and retry logic
-  async getSolanaPublicKeysRobust(
-    startIndex: number,
-    _count: number
-  ): Promise<PublicKeyInfo[]> {
-    if (!this.transport) {
-      throw new Error('Transport not initialized')
-    }
-
-    const maxRetries = 3
-    const retryDelay = 1000 // 1 second
-
-    for (let attempt = 1; attempt <= maxRetries; attempt++) {
-      try {
-        Logger.info(`Solana attempt ${attempt}/${maxRetries}`)
-
-        // Create a fresh transport connection for each attempt
-        const freshTransport = await TransportBLE.open(
-          this.transport.deviceId || 'unknown',
-          15000
-        )
-
-        // Create fresh app instance
-        const freshSolanaApp = new AppSolana(freshTransport)
-
-        // Use derivation path
-        const derivationPath = `44'/501'/0'/0'/${startIndex}`
-
-        // Call with timeout wrapper
-        const timeoutPromise = new Promise<never>((_, reject) => {
-          setTimeout(
-            () => reject(new Error('Solana getAddress timeout')),
-            10000
-          )
-        })
-
-        const getAddressPromise = freshSolanaApp.getAddress(
-          derivationPath,
-          false
-        )
-
-        const result = await Promise.race([getAddressPromise, timeoutPromise])
-        const publicKey = result.address
-
-        console.log('HIT PUBLIC KEY robust method', publicKey)
-
-        // Close the fresh transport
-        await freshTransport.close()
-
-        const publicKeys: PublicKeyInfo[] = [
-          {
-            key: publicKey.toString('hex'),
-            derivationPath,
-            curve: 'ed25519'
-          }
-        ]
-
-        return publicKeys
-      } catch (error) {
-        Logger.error(`Solana attempt ${attempt} failed:`, error)
-
-        if (attempt === maxRetries) {
-          if (error instanceof Error) {
-            if (error.message.includes('6a80')) {
-              throw new Error(
-                'Wrong app open. Please open the Solana app on your Ledger device.'
-              )
-            }
-            if (error.message.includes('DisconnectedDevice')) {
-              throw new Error(
-                'Ledger device disconnected. Please ensure the Solana app is open and try again.'
-              )
-            }
-            throw new Error(
-              `Failed to get Solana address after ${maxRetries} attempts: ${error.message}`
-            )
-          }
-          throw new Error(
-            `Failed to get Solana address after ${maxRetries} attempts`
-          )
-        }
-
-        // Wait before retry
-        await new Promise(resolve => setTimeout(resolve, retryDelay))
-      }
-    }
-
-    throw new Error('Unexpected error in getSolanaPublicKeysRobust')
-  }
-
   // Get Solana addresses from public keys
   async getSolanaAddresses(
     startIndex: number,
@@ -513,7 +434,7 @@ export class LedgerService {
   ): Promise<AddressInfo[]> {
     Logger.info('Starting getSolanaAddresses')
     try {
-      const publicKeys = await this.getSolanaPublicKeys(startIndex)
+      const publicKeys = await this.getSolanaPublicKeys(startIndex, count)
       Logger.info('Got Solana public keys, converting to addresses')
 
       return publicKeys.map((pk, index) => {

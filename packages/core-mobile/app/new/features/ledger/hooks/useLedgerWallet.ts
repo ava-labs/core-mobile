@@ -115,13 +115,13 @@ export function useLedgerWallet(): UseLedgerWalletReturn {
   // Monitor BLE transport state
   useEffect(() => {
     const subscription = TransportBLE.observeState({
-      next: event => {
+      next: (event: { available: boolean }) => {
         setTransportState({
           available: event.available,
           powered: false
         })
       },
-      error: error => {
+      error: (error: Error) => {
         Alert.alert(
           'BLE Error',
           `Failed to monitor BLE state: ${error.message}`
@@ -207,7 +207,10 @@ export function useLedgerWallet(): UseLedgerWalletReturn {
 
     try {
       const subscription = TransportBLE.listen({
-        next: event => {
+        next: (event: {
+          type: string
+          descriptor: { id: string; name?: string; rssi?: number }
+        }) => {
           if (event.type === 'add') {
             const device: LedgerDevice = {
               id: event.descriptor.id,
@@ -470,9 +473,6 @@ export function useLedgerWallet(): UseLedgerWalletReturn {
       deviceId,
       deviceName = 'Ledger Device',
       derivationPathType = LedgerDerivationPathType.BIP44,
-      accountCount = derivationPathType === LedgerDerivationPathType.BIP44
-        ? 3
-        : 1,
       individualKeys = [],
       progressCallback
     }: WalletCreationOptions) => {

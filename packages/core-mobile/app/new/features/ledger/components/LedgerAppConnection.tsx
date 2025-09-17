@@ -5,7 +5,7 @@ import { ScrollScreen } from 'common/components/ScrollScreen'
 import { LoadingState } from 'common/components/LoadingState'
 import { LedgerDerivationPathType } from 'services/wallet/LedgerWallet'
 
-type AppConnectionStep = 
+type AppConnectionStep =
   | 'avalanche-connect'
   | 'avalanche-loading'
   | 'avalanche-success'
@@ -34,8 +34,9 @@ export const LedgerAppConnection: React.FC<LedgerAppConnectionProps> = ({
   const {
     theme: { colors }
   } = useTheme()
-  
-  const [currentStep, setCurrentStep] = useState<AppConnectionStep>('avalanche-connect')
+
+  const [currentStep, setCurrentStep] =
+    useState<AppConnectionStep>('avalanche-connect')
   const [error, setError] = useState<string | null>(null)
 
   // Auto-progress through steps
@@ -71,11 +72,13 @@ export const LedgerAppConnection: React.FC<LedgerAppConnectionProps> = ({
     try {
       setError(null)
       setCurrentStep('avalanche-loading')
-      
+
       await getAvalancheKeys()
       setCurrentStep('avalanche-success')
     } catch (err) {
-      setError('Failed to connect to Avalanche app. Please make sure the Avalanche app is open on your Ledger.')
+      setError(
+        'Failed to connect to Avalanche app. Please make sure the Avalanche app is open on your Ledger.'
+      )
       setCurrentStep('avalanche-connect')
     }
   }, [getAvalancheKeys])
@@ -84,11 +87,13 @@ export const LedgerAppConnection: React.FC<LedgerAppConnectionProps> = ({
     try {
       setError(null)
       setCurrentStep('solana-loading')
-      
+
       await getSolanaKeys()
       setCurrentStep('solana-success')
     } catch (err) {
-      setError('Failed to connect to Solana app. Please make sure the Solana app is open on your Ledger.')
+      setError(
+        'Failed to connect to Solana app. Please make sure the Solana app is open on your Ledger.'
+      )
       setCurrentStep('solana-connect')
     }
   }, [getSolanaKeys])
@@ -98,10 +103,7 @@ export const LedgerAppConnection: React.FC<LedgerAppConnectionProps> = ({
       case 'avalanche-connect':
         return (
           <View style={{ alignItems: 'center', paddingVertical: 48 }}>
-            <Icons.TokenLogos.AVAX
-              width={64}
-              height={64}
-            />
+            <Icons.TokenLogos.AVAX width={64} height={64} />
             <Text
               variant="heading4"
               style={{ textAlign: 'center', marginTop: 24, marginBottom: 16 }}>
@@ -115,9 +117,10 @@ export const LedgerAppConnection: React.FC<LedgerAppConnectionProps> = ({
                 marginBottom: 32,
                 maxWidth: 320
               }}>
-              Open the Avalanche app on your {deviceName} and press continue when ready.
+              Open the Avalanche app on your {deviceName} and press continue
+              when ready.
             </Text>
-            
+
             {error && (
               <View
                 style={{
@@ -142,7 +145,7 @@ export const LedgerAppConnection: React.FC<LedgerAppConnectionProps> = ({
               style={{ marginBottom: 16 }}>
               Continue
             </Button>
-            
+
             <Button type="tertiary" size="large" onPress={onCancel}>
               Cancel Setup
             </Button>
@@ -165,7 +168,8 @@ export const LedgerAppConnection: React.FC<LedgerAppConnectionProps> = ({
                 color: colors.$textSecondary,
                 maxWidth: 320
               }}>
-              Please confirm the connection on your {deviceName}. We're retrieving your Avalanche addresses...
+              Please confirm the connection on your {deviceName}. We're
+              retrieving your Avalanche addresses...
             </Text>
           </View>
         )
@@ -201,7 +205,8 @@ export const LedgerAppConnection: React.FC<LedgerAppConnectionProps> = ({
                 color: colors.$textSecondary,
                 maxWidth: 320
               }}>
-              Successfully retrieved your Avalanche addresses. Now let's connect to Solana...
+              Successfully retrieved your Avalanche addresses. Now let's connect
+              to Solana...
             </Text>
           </View>
         )
@@ -209,10 +214,7 @@ export const LedgerAppConnection: React.FC<LedgerAppConnectionProps> = ({
       case 'solana-connect':
         return (
           <View style={{ alignItems: 'center', paddingVertical: 48 }}>
-            <Icons.TokenLogos.SOL
-              width={64}
-              height={64}
-            />
+            <Icons.TokenLogos.SOL width={64} height={64} />
             <Text
               variant="heading4"
               style={{ textAlign: 'center', marginTop: 24, marginBottom: 16 }}>
@@ -226,9 +228,10 @@ export const LedgerAppConnection: React.FC<LedgerAppConnectionProps> = ({
                 marginBottom: 32,
                 maxWidth: 320
               }}>
-              Close the Avalanche app and open the Solana app on your {deviceName}, then press continue.
+              Close the Avalanche app and open the Solana app on your{' '}
+              {deviceName}, then press continue.
             </Text>
-            
+
             {error && (
               <View
                 style={{
@@ -253,7 +256,7 @@ export const LedgerAppConnection: React.FC<LedgerAppConnectionProps> = ({
               style={{ marginBottom: 16 }}>
               Continue
             </Button>
-            
+
             <Button type="tertiary" size="large" onPress={onCancel}>
               Cancel Setup
             </Button>
@@ -276,7 +279,8 @@ export const LedgerAppConnection: React.FC<LedgerAppConnectionProps> = ({
                 color: colors.$textSecondary,
                 maxWidth: 320
               }}>
-              Please confirm the connection on your {deviceName}. We're retrieving your Solana addresses...
+              Please confirm the connection on your {deviceName}. We're
+              retrieving your Solana addresses...
             </Text>
           </View>
         )
@@ -312,7 +316,8 @@ export const LedgerAppConnection: React.FC<LedgerAppConnectionProps> = ({
                 color: colors.$textSecondary,
                 maxWidth: 320
               }}>
-              Successfully retrieved your Solana addresses. Setting up your wallet...
+              Successfully retrieved your Solana addresses. Setting up your
+              wallet...
             </Text>
           </View>
         )
@@ -348,7 +353,8 @@ export const LedgerAppConnection: React.FC<LedgerAppConnectionProps> = ({
                 color: colors.$textSecondary,
                 maxWidth: 320
               }}>
-              Both Avalanche and Solana apps are connected. Proceeding to wallet setup...
+              Both Avalanche and Solana apps are connected. Proceeding to wallet
+              setup...
             </Text>
           </View>
         )
@@ -359,8 +365,11 @@ export const LedgerAppConnection: React.FC<LedgerAppConnectionProps> = ({
   }
 
   const getProgressText = (): string => {
-    const pathType = selectedDerivationPath === LedgerDerivationPathType.LedgerLive ? 'Ledger Live' : 'BIP44'
-    
+    const pathType =
+      selectedDerivationPath === LedgerDerivationPathType.LedgerLive
+        ? 'Ledger Live'
+        : 'BIP44'
+
     switch (currentStep) {
       case 'avalanche-connect':
       case 'avalanche-loading':
