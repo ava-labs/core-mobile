@@ -7,12 +7,14 @@ export const useMarketTokenBySymbol = ({
   symbol,
   errorContext
 }: {
-  symbol: string
+  symbol: string | undefined
   errorContext?: string
 }): MarketToken | undefined => {
   const { getMarketTokenBySymbol } = useWatchlist()
 
   return useMemo(() => {
+    if (!symbol) return undefined
+
     const tokenBySymbol = getMarketTokenBySymbol(symbol)
     if (errorContext && !tokenBySymbol) {
       Logger.error(`[${errorContext}] Market token not found`, { symbol })

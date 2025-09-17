@@ -5,7 +5,6 @@ import { selectSelectedCurrency } from 'store/settings/currency'
 import { useSelector } from 'react-redux'
 import { useNetworks } from 'hooks/networks/useNetworks'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
-import { useWatchlist } from 'hooks/watchlist/useWatchlist'
 import { LocalTokenWithBalance } from 'store/balance'
 import { getAddressByNetwork } from 'store/account/utils'
 import { selectActiveAccount } from 'store/account'
@@ -13,6 +12,7 @@ import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import { useNavigation } from '@react-navigation/native'
 import { ACTIONS } from 'contexts/DeeplinkContext/types'
 import { useDebouncedCallback } from 'use-debounce'
+import { useMarketTokenBySymbol } from 'common/hooks/useMarketTokenBySymbol'
 import {
   PaymentMethodNames,
   ServiceProviderCategories,
@@ -80,7 +80,6 @@ export const useSelectAmount = ({
   const [countryCode] = useMeldCountryCode()
 
   const { getFromPopulatedNetwork } = useNetworks()
-  const { getMarketTokenBySymbol } = useWatchlist()
 
   // debounce since fetching quotes can take awhile
   const debouncedSetAmount = useDebouncedCallback(
@@ -113,13 +112,13 @@ export const useSelectAmount = ({
     )
   }, [network?.networkToken.decimals, token?.tokenWithBalance])
 
+  const currentPrice =
+    useMarketTokenBySymbol({
+      symbol: token?.tokenWithBalance.symbol
+    })?.currentPrice ?? 0
+
   const getSourceAmountInTokenUnit = useCallback(
     (amt: number | undefined | null): TokenUnit => {
-      const currentPrice = token?.tokenWithBalance.symbol
-        ? getMarketTokenBySymbol(token.tokenWithBalance.symbol)?.currentPrice ??
-          0
-        : 0
-
       const maxDecimals =
         token?.tokenWithBalance && 'decimals' in token.tokenWithBalance
           ? token.tokenWithBalance.decimals
@@ -136,7 +135,7 @@ export const useSelectAmount = ({
         token?.tokenWithBalance.symbol ?? ''
       )
     },
-    [getMarketTokenBySymbol, token?.tokenWithBalance]
+    [token?.tokenWithBalance, currentPrice]
   )
 
   const hasEnoughBalance = useMemo(() => {
