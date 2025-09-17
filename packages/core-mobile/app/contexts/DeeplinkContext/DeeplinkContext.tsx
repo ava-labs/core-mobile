@@ -56,7 +56,7 @@ export const DeeplinkContextProvider = ({
         )
         return
       }
-      if (!data.url) {
+      if (!data.url && !data.urlV2) {
         Logger.error(`[DeeplinkContext.tsx][handleNotificationCallback] no url`)
         return
       }
@@ -64,7 +64,8 @@ export const DeeplinkContextProvider = ({
         dispatch(processNotificationData({ data }))
       }
       setPendingDeepLink({
-        url: data.url as string,
+        // TODO: remove urlV2 after backend is updated to send just url for NEWS notifications
+        url: (data.urlV2 ?? data.url) as string,
         origin: DeepLinkOrigin.ORIGIN_NOTIFICATION,
         callback: runCallback
       })

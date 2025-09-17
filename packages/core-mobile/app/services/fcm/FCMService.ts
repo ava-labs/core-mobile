@@ -141,11 +141,8 @@ class FCMService {
         url: `${PROTOCOLS.CORE}://${ACTIONS.Portfolio}`
       }
     } else if (fcmData.type === NotificationTypes.NEWS) {
-      // eslint-disable-next-line no-alert
-      alert(JSON.stringify(fcmData, null, 2))
       return {
-        // TODO: remove url and use urlV2 only after backend is updated to send urlV2
-        // for all NEWS notifications
+        // TODO: remove urlV2 after backend is updated to send just url for NEWS notifications
         url: fcmData.urlV2 ?? fcmData.url ?? ''
       }
     }
