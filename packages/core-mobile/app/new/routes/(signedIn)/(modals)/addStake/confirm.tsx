@@ -29,6 +29,7 @@ import { useValidateStakingEndTime } from 'features/stake/utils/useValidateStaki
 import { useGetValidatorByNodeId } from 'hooks/earn/useGetValidatorByNodeId'
 import { useIssueDelegation } from 'hooks/earn/useIssueDelegation'
 import { useNodes } from 'hooks/earn/useNodes'
+import { useRefreshStakingBalances } from 'hooks/earn/useRefreshStakingBalances'
 import { useSearchNode } from 'hooks/earn/useSearchNode'
 import { useNow } from 'hooks/time/useNow'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
@@ -44,6 +45,7 @@ const StakeConfirmScreen = (): JSX.Element => {
   const { theme } = useTheme()
   const { back, dismissAll, navigate } = useRouter()
   const dispatch = useDispatch()
+
   const { stakeAmount, networkFees } = useDelegationContext()
   const { stakeEndTime, nodeId } = useLocalSearchParams<{
     stakeEndTime: string
@@ -94,6 +96,7 @@ const StakeConfirmScreen = (): JSX.Element => {
   const [isAlertVisible, setIsAlertVisible] = useState(false)
 
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
+  const refreshStakingBalances = useRefreshStakingBalances()
 
   const pNetwork = NetworkService.getAvalancheNetworkP(isDeveloperMode)
   const networkFeesInAvax = useMemo(
@@ -223,6 +226,8 @@ const StakeConfirmScreen = (): JSX.Element => {
 
   const onDelegationSuccess = useCallback(
     (txHash: string): void => {
+      refreshStakingBalances({ shouldRefreshStakes: true })
+
       AnalyticsService.capture('StakeDelegationSuccess')
       transactionSnackbar.success({ message: 'Stake successful' })
 
@@ -242,12 +247,13 @@ const StakeConfirmScreen = (): JSX.Element => {
       )
     },
     [
-      activeAccount?.id,
       dispatch,
       isDeveloperMode,
       validatedStakingEndTime,
       handleDismiss,
-      navigate
+      navigate,
+      activeAccount,
+      refreshStakingBalances
     ]
   )
 
@@ -255,6 +261,13 @@ const StakeConfirmScreen = (): JSX.Element => {
     AnalyticsService.capture('StakeDelegationFail')
     transactionSnackbar.error({ error: e.message })
   }, [])
+
+  const { issueDelegation, isPending: isIssueDelegationPending } =
+    useIssueDelegation({
+      onSuccess: onDelegationSuccess,
+      onError: onDelegationError,
+      onFundsStuck
+    })
 
   function onFundsStuck(): void {
     showAlert({
@@ -271,20 +284,30 @@ const StakeConfirmScreen = (): JSX.Element => {
         {
           text: 'Try again',
           onPress: () => {
-            issueDelegation(true)
+            handleDelegate(true)
           }
         }
       ]
     })
   }
 
-  const { issueDelegationMutation } = useIssueDelegation(
-    onDelegationSuccess,
-    onDelegationError,
-    onFundsStuck
+  const handleDelegate = useCallback(
+    (recomputeSteps = false): void => {
+      if (!validator) return
+
+      AnalyticsService.capture('StakeIssueDelegation')
+
+      issueDelegation({
+        nodeId: validator.nodeID,
+        startDate: minStartTime,
+        endDate: validatedStakingEndTime,
+        recomputeSteps
+      })
+    },
+    [issueDelegation, minStartTime, validatedStakingEndTime, validator]
   )
 
-  usePreventScreenRemoval(issueDelegationMutation.isPending)
+  usePreventScreenRemoval(isIssueDelegationPending)
 
   useEffect(() => {
     if (
@@ -319,22 +342,6 @@ const StakeConfirmScreen = (): JSX.Element => {
     isFetchingNodes
   ])
 
-  const issueDelegation = useCallback(
-    (recomputeSteps = false): void => {
-      if (!validator) return
-
-      AnalyticsService.capture('StakeIssueDelegation')
-
-      issueDelegationMutation.mutate({
-        startDate: minStartTime,
-        endDate: validatedStakingEndTime,
-        nodeId: validator.nodeID,
-        recomputeSteps
-      })
-    },
-    [issueDelegationMutation, minStartTime, validatedStakingEndTime, validator]
-  )
-
   const renderFooter = useCallback(() => {
     return (
       <View
@@ -356,27 +363,23 @@ const StakeConfirmScreen = (): JSX.Element => {
         <Button
           type="primary"
           size="large"
-          onPress={issueDelegation}
-          disabled={issueDelegationMutation.isPending}>
-          {issueDelegationMutation.isPending ? (
-            <ActivityIndicator />
-          ) : (
-            'Confirm stake'
-          )}
+          onPress={handleDelegate}
+          disabled={isIssueDelegationPending}>
+          {isIssueDelegationPending ? <ActivityIndicator /> : 'Confirm stake'}
         </Button>
         <Button
           type="tertiary"
           size="large"
           onPress={handleCancel}
-          disabled={issueDelegationMutation.isPending}>
+          disabled={isIssueDelegationPending}>
           Cancel
         </Button>
       </View>
     )
   }, [
     handleCancel,
-    issueDelegation,
-    issueDelegationMutation.isPending,
+    handleDelegate,
+    isIssueDelegationPending,
     theme.colors.$textPrimary
   ])
 
