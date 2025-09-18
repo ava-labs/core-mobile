@@ -14,6 +14,7 @@ import { Space } from 'common/components/Space'
 import { LoadingState } from 'common/components/LoadingState'
 import { portfolioTabContentHeight } from 'features/portfolio/utils'
 import { ErrorState } from 'common/components/ErrorState'
+import Logger from 'utils/Logger'
 import { useSearchPaymentMethods } from '../hooks/useSearchPaymentMethods'
 import {
   PaymentMethodNames,
@@ -174,6 +175,10 @@ export const SelectPaymentMethod = ({
       return <LoadingState sx={{ height: portfolioTabContentHeight }} />
     }
     if (paymentMethodsError) {
+      Logger.error(
+        '[SelectPaymentMethod] Unable to load payment methods',
+        paymentMethodsError
+      )
       return (
         <ErrorState
           sx={{ height: portfolioTabContentHeight }}
@@ -183,6 +188,7 @@ export const SelectPaymentMethod = ({
       )
     }
     if (data.length === 0) {
+      Logger.error('[SelectPaymentMethod] No payment methods available')
       return (
         <ErrorState
           sx={{ height: portfolioTabContentHeight }}
