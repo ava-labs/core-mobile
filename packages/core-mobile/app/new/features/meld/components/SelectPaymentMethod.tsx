@@ -173,7 +173,16 @@ export const SelectPaymentMethod = ({
     if (isLoadingPaymentMethods) {
       return <LoadingState sx={{ height: portfolioTabContentHeight }} />
     }
-    if (data.length === 0 || paymentMethodsError) {
+    if (paymentMethodsError) {
+      return (
+        <ErrorState
+          sx={{ height: portfolioTabContentHeight }}
+          title="Unable to load payment methods"
+          description="Please try again later"
+        />
+      )
+    }
+    if (data.length === 0) {
       return (
         <ErrorState
           sx={{ height: portfolioTabContentHeight }}
@@ -182,6 +191,7 @@ export const SelectPaymentMethod = ({
         />
       )
     }
+
     return <GroupList data={data} subtitleVariant="body1" />
   }, [data, isLoadingPaymentMethods, paymentMethodsError])
 
