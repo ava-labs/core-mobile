@@ -26,7 +26,7 @@ export const useSearchCryptoCurrencies = ({
   const [countryCode] = useMeldCountryCode()
 
   return useQuery({
-    enabled: !!serviceProviders,
+    enabled: serviceProviders && serviceProviders?.length > 0,
     queryKey: [
       ReactQueryKeys.MELD_SEARCH_CRYPTO_CURRENCIES,
       categories,
