@@ -248,22 +248,23 @@ export const ScrollScreen = ({
               </LinearGradientBottomWrapper>
             </KeyboardStickyView>
           )
+        } else {
+          return (
+            <LinearGradientBottomWrapper>
+              <Animated.View
+                entering={FadeIn.delay(150)}
+                style={{
+                  paddingHorizontal: 16,
+                  paddingBottom: insets.bottom + 16
+                }}>
+                {footer}
+              </Animated.View>
+            </LinearGradientBottomWrapper>
+          )
         }
-      } else {
-        return (
-          <LinearGradientBottomWrapper>
-            <Animated.View
-              entering={FadeIn.delay(150)}
-              style={{
-                paddingHorizontal: 16,
-                paddingBottom: insets.bottom + 16
-              }}>
-              {footer}
-            </Animated.View>
-          </LinearGradientBottomWrapper>
-        )
       }
     }
+
     return null
   }, [
     renderFooter,
