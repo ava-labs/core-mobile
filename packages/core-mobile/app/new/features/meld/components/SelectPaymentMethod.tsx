@@ -13,6 +13,7 @@ import { useRouter } from 'expo-router'
 import { Space } from 'common/components/Space'
 import { LoadingState } from 'common/components/LoadingState'
 import { portfolioTabContentHeight } from 'features/portfolio/utils'
+import { ErrorState } from 'common/components/ErrorState'
 import { useSearchPaymentMethods } from '../hooks/useSearchPaymentMethods'
 import {
   PaymentMethodNames,
@@ -165,6 +166,22 @@ export const SelectPaymentMethod = ({
     setMeldPaymentMethod
   ])
 
+  const renderContent = useCallback(() => {
+    if (isLoadingPaymentMethods) {
+      return <LoadingState sx={{ height: portfolioTabContentHeight }} />
+    }
+    if (data.length === 0) {
+      return (
+        <ErrorState
+          sx={{ height: portfolioTabContentHeight }}
+          title="No payment methods available"
+          description="Try a different token or amount"
+        />
+      )
+    }
+    return <GroupList data={data} subtitleVariant="body1" />
+  }, [data, isLoadingPaymentMethods])
+
   return (
     <ScrollScreen
       isModal
@@ -175,11 +192,7 @@ export const SelectPaymentMethod = ({
         padding: 16
       }}>
       <Space y={21} />
-      {isLoadingPaymentMethods ? (
-        <LoadingState sx={{ height: portfolioTabContentHeight }} />
-      ) : (
-        <GroupList data={data} subtitleVariant="body1" />
-      )}
+      {renderContent()}
     </ScrollScreen>
   )
 }
