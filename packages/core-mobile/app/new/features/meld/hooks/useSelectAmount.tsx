@@ -13,6 +13,7 @@ import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import { useNavigation } from '@react-navigation/native'
 import { ACTIONS } from 'contexts/DeeplinkContext/types'
 import { useDebouncedCallback } from 'use-debounce'
+import Logger from 'utils/Logger'
 import {
   PaymentMethodNames,
   ServiceProviderCategories,
@@ -309,6 +310,10 @@ export const useSelectAmount = ({
           .toLowerCase()
           .includes('does not match service providers'))
     ) {
+      Logger.error(
+        `invalid request to fetch quotes for ${category}:`,
+        cryptoQuotesError
+      )
       return `${token?.tokenWithBalance.name} cannot be ${
         category === ServiceProviderCategories.CRYPTO_ONRAMP
           ? 'purchased'
@@ -316,8 +321,12 @@ export const useSelectAmount = ({
       } at the moment, please adjust the amount or try again later.`
     }
 
-    if (cryptoQuotesError?.message) {
-      return cryptoQuotesError.message
+    if (cryptoQuotesError) {
+      Logger.error(`failed to fetch quotes for ${category}:`, cryptoQuotesError)
+      return (
+        cryptoQuotesError.message ??
+        'We are unable to fetch the quotes, please try again later'
+      )
     }
 
     return undefined
@@ -329,8 +338,7 @@ export const useSelectAmount = ({
     sourceAmount,
     isBelowMaximumLimit,
     maximumLimit,
-    cryptoQuotesError?.statusCode,
-    cryptoQuotesError?.message,
+    cryptoQuotesError,
     token?.tokenWithBalance.symbol,
     token?.tokenWithBalance.name,
     formatCurrency,
