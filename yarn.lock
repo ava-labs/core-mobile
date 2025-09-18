@@ -386,6 +386,7 @@ __metadata:
     react-native-config: 1.5.3
     react-native-device-info: 13.0.0
     react-native-edge-to-edge: 1.6.0
+    react-native-fast-confetti: ^1.1.1
     react-native-fs: 2.20.0
     react-native-gesture-handler: 2.24.0
     react-native-get-random-values: 1.11.0
@@ -27647,6 +27648,18 @@ __metadata:
   languageName: node
   linkType: hard
 
+"react-native-fast-confetti@npm:^1.1.1":
+  version: 1.1.1
+  resolution: "react-native-fast-confetti@npm:1.1.1"
+  peerDependencies:
+    "@shopify/react-native-skia": "*"
+    react: "*"
+    react-native: "*"
+    react-native-reanimated: "*"
+  checksum: 1e58a2fe7132a0b1f5a0bf13d712fd6d5b4a64d85d99074a33057af70082008e5ef600898f255ec1a7ea87847b693ed814a2c4384843345db971ae1736b94e4b
+  languageName: node
+  linkType: hard
+
 "react-native-fs@npm:2.20.0":
   version: 2.20.0
   resolution: "react-native-fs@npm:2.20.0"
@@ -28217,7 +28230,7 @@ react-native-webview@ava-labs/react-native-webview:
   peerDependencies:
     react: "*"
     react-native: "*"
-  checksum: d6ceb75e1d0f5755370d6d91f67902bd2b8a23a3ca43cb853d2964b43798f30477e8ab0223ea8b620534fbdf5f56d39550f40d24bec2d2398c323ccfe8a5a556
+  checksum: 3e4689674406deb2ad9efa9f529597341b4ab33e379b7c7cd72aff8d5e37862fda1a37aba984951a67cc3938969be138bc3c4469e4963dd170b172148339e056
   languageName: node
   linkType: hard
 
