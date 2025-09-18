@@ -22,7 +22,6 @@ export default {
   analysticsContentId: 'anlaysticsContent',
   agreeAndContinue: 'Agree and continue',
   termsAndConditions: 'Terms and conditions',
-  termsAndConditionsDescription: 'terms_conditions_description',
   continueButton: 'Continue',
   recoveryPhraseInput: `text_area__recovery_phrase`,
   recoveryPhraseHeader: 'recovery_phrase__header',

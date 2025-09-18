@@ -65,8 +65,8 @@ class CommonElsPage {
     return by.id(commonEls.carrotSVG)
   }
 
-  get calendarSVG() {
-    return by.id(commonEls.calendarSVG)
+  get updateAppModalTitle() {
+    return by.id(commonEls.updateAppModalTitle)
   }
 
   get datePicker() {
@@ -241,6 +241,10 @@ class CommonElsPage {
     return by.text(commonElsLoc.gotIt)
   }
 
+  get solanaLaunchTitle() {
+    return by.id(commonElsLoc.solanaLaunchTitle)
+  }
+
   async filter(
     item = commonElsLoc.cChain_2,
     filterDropdown = this.filterDropdown
@@ -389,11 +393,14 @@ class CommonElsPage {
     await Actions.waitAndTap(this.next, 1000, isEnableSync)
   }
 
-  async dismissBottomSheet() {
-    await Actions.waitForElement(this.grabber, 20000)
-    await delay(2000)
+  async dismissUpdateAppModal() {
+    await Actions.waitForElement(this.updateAppModalTitle, 20000)
     await Actions.drag(this.grabber, 'down', 0.5, 0)
-    await delay(1000)
+  }
+
+  async dismissBottomSheet(element: Detox.NativeMatcher = this.grabber) {
+    await Actions.waitForElement(element, 20000)
+    await Actions.drag(this.grabber, 'down', 0.5, 0)
   }
 
   async selectDropdown(name: string, dropdownItem: string) {
@@ -498,11 +505,8 @@ class CommonElsPage {
 
   async verifyLoggedIn(bottomSheetIsVisible = true) {
     if (bottomSheetIsVisible) {
-      try {
-        await this.dismissBottomSheet()
-      } catch (e) {
-        console.log('Bottom sheet not found')
-      }
+      await this.dismissUpdateAppModal()
+      await this.dismissBottomSheet(this.solanaLaunchTitle)
     }
 
     await Actions.waitForElement(accountManagePage.accountOne, 20000)
