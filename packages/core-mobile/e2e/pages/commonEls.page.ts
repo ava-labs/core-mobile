@@ -65,6 +65,10 @@ class CommonElsPage {
     return by.id(commonEls.carrotSVG)
   }
 
+  get calendarSVG() {
+    return by.id(commonEls.calendarSVG)
+  }
+
   get updateAppModalTitle() {
     return by.id(commonEls.updateAppModalTitle)
   }
