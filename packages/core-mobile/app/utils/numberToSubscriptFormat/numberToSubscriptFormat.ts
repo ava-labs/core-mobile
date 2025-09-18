@@ -28,7 +28,7 @@ export const numberToSubscriptFormat = (
   // Handle less than 0
   if (number < 0)
     return {
-      mainTextBefore: UNKNOWN_AMOUNT,
+      mainTextBefore: '-',
       subText: '',
       mainTextAfter: ''
     }

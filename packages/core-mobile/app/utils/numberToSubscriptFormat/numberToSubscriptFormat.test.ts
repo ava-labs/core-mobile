@@ -1,3 +1,4 @@
+import { UNKNOWN_AMOUNT } from 'consts/amount'
 import { numberToSubscriptFormat } from './numberToSubscriptFormat' // Adjust path as needed
 
 // Small numbers (< 0.00001)
@@ -101,13 +102,13 @@ test('handles negative numbers correctly', () => {
 test('handles non numbers correctly', () => {
   // @ts-ignore
   expect(numberToSubscriptFormat('some string')).toEqual({
-    mainTextBefore: '-',
+    mainTextBefore: UNKNOWN_AMOUNT,
     subText: '',
     mainTextAfter: ''
   })
 
   expect(numberToSubscriptFormat(undefined)).toEqual({
-    mainTextBefore: '-',
+    mainTextBefore: UNKNOWN_AMOUNT,
     subText: '',
     mainTextAfter: ''
   })
