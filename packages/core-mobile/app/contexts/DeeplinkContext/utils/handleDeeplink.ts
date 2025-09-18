@@ -10,21 +10,18 @@ import { navigateFromDeeplinkUrl } from 'utils/navigateFromDeeplink'
 import { dismissMeldStack } from 'features/meld/utils'
 import { offrampSend } from 'store/meld/slice'
 import { closeInAppBrowser } from 'utils/openInAppBrowser'
-import { hasRouteByName, NavState } from 'common/utils/hasRouteByName'
 import { ACTIONS, DeepLink, PROTOCOLS } from '../types'
 
 export const handleDeeplink = ({
   deeplink,
   dispatch,
   isEarnBlocked,
-  openUrl,
-  navigationState
+  openUrl
 }: {
   deeplink: DeepLink
   dispatch: Dispatch
   isEarnBlocked: boolean
   openUrl: (history: Pick<History, 'url' | 'title'>) => void
-  navigationState?: NavState
   // eslint-disable-next-line sonarjs/cognitive-complexity
 }): void => {
   let url
@@ -77,9 +74,8 @@ export const handleDeeplink = ({
         closeInAppBrowser()
         dismissMeldStack(action, searchParams)
       } else {
-        const hasPortfolioRoute = hasRouteByName(navigationState, 'portfolio')
         const path = deeplink.url.split(':/')[1]
-        path && navigateFromDeeplinkUrl(path, hasPortfolioRoute)
+        path && navigateFromDeeplinkUrl(path)
       }
       break
     }
