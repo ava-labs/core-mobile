@@ -42,10 +42,13 @@ export const SelectPaymentMethod = ({
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<
     PaymentMethods | undefined
   >(meldPaymentMethod)
-  const { data: paymentMethods, isLoading: isLoadingPaymentMethods } =
-    useSearchPaymentMethods({
-      categories: [category]
-    })
+  const {
+    data: paymentMethods,
+    isLoading: isLoadingPaymentMethods,
+    error: paymentMethodsError
+  } = useSearchPaymentMethods({
+    categories: [category]
+  })
 
   const isOnramp = category === ServiceProviderCategories.CRYPTO_ONRAMP
 
@@ -170,7 +173,7 @@ export const SelectPaymentMethod = ({
     if (isLoadingPaymentMethods) {
       return <LoadingState sx={{ height: portfolioTabContentHeight }} />
     }
-    if (data.length === 0) {
+    if (data.length === 0 || paymentMethodsError) {
       return (
         <ErrorState
           sx={{ height: portfolioTabContentHeight }}
@@ -180,7 +183,7 @@ export const SelectPaymentMethod = ({
       )
     }
     return <GroupList data={data} subtitleVariant="body1" />
-  }, [data, isLoadingPaymentMethods])
+  }, [data, isLoadingPaymentMethods, paymentMethodsError])
 
   return (
     <ScrollScreen
