@@ -324,7 +324,7 @@ export const ScrollScreen = ({
             {
               paddingBottom: disableStickyFooter
                 ? insets.bottom + 24
-                : footerHeight.value,
+                : footerHeight.value + 16,
               paddingTop: headerHeight
             }
           ]}
