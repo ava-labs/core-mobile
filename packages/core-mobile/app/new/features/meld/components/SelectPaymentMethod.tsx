@@ -174,7 +174,7 @@ export const SelectPaymentMethod = ({
     if (data.length === 0) {
       Logger.error('[SelectPaymentMethod] No payment methods available')
     }
-  }, [data])
+  }, [data.length])
 
   const renderContent = useCallback(() => {
     if (isLoadingPaymentMethods) {
