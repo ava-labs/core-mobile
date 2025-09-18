@@ -56,7 +56,13 @@ const ContextApp = (): JSX.Element => {
           offsetTop={30}
           normalColor={'00FFFFFF'}
         />
-        <Confetti ref={setGlobalConfetti} />
+        {Platform.OS === 'ios' ? (
+          <FullWindowOverlay>
+            <Confetti ref={setGlobalConfetti} />
+          </FullWindowOverlay>
+        ) : (
+          <Confetti ref={setGlobalConfetti} />
+        )}
       </ContextProviders>
     </Sentry.ErrorBoundary>
   )
