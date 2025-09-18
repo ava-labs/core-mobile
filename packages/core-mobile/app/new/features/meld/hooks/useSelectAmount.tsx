@@ -273,6 +273,27 @@ export const useSelectAmount = ({
     setServiceProvider
   ])
 
+  useEffect(() => {
+    if (cryptoQuotesError === undefined) return
+
+    if (
+      (cryptoQuotesError?.statusCode === CreateCryptoQuoteErrorCode.NOT_FOUND &&
+        cryptoQuotesError.message.toLowerCase().includes('not found')) ||
+      (cryptoQuotesError?.statusCode ===
+        CreateCryptoQuoteErrorCode.INCOMPATIBLE_REQUEST &&
+        cryptoQuotesError.message
+          .toLowerCase()
+          .includes('does not match service providers'))
+    ) {
+      Logger.error(
+        `invalid request to fetch quotes for ${category}:`,
+        cryptoQuotesError
+      )
+      return
+    }
+    Logger.error(`failed to fetch quotes for ${category}:`, cryptoQuotesError)
+  }, [cryptoQuotesError, category])
+
   const errorMessage = useMemo(() => {
     if (
       category === ServiceProviderCategories.CRYPTO_OFFRAMP &&
@@ -308,10 +329,6 @@ export const useSelectAmount = ({
           .toLowerCase()
           .includes('does not match service providers'))
     ) {
-      Logger.error(
-        `invalid request to fetch quotes for ${category}:`,
-        cryptoQuotesError
-      )
       return `${token?.tokenWithBalance.name} cannot be ${
         category === ServiceProviderCategories.CRYPTO_ONRAMP
           ? 'purchased'
@@ -320,7 +337,6 @@ export const useSelectAmount = ({
     }
 
     if (cryptoQuotesError) {
-      Logger.error(`failed to fetch quotes for ${category}:`, cryptoQuotesError)
       return (
         cryptoQuotesError.message ??
         'We are unable to fetch the quotes, please try again later'
