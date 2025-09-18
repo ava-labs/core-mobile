@@ -226,26 +226,29 @@ export const ScrollScreen = ({
   }, [renderFooter])
 
   const renderFooterContent = useCallback(() => {
-    if (renderFooter && renderFooter() && showFooter) {
-      if (shouldAvoidKeyboard) {
-        return (
-          <KeyboardStickyView
-            enabled={!disableStickyFooter}
-            offset={{
-              opened: insets.bottom
-            }}>
-            <LinearGradientBottomWrapper>
-              <Animated.View
-                entering={FadeIn.delay(150)}
-                style={{
-                  paddingHorizontal: 16,
-                  paddingBottom: insets.bottom + 16
-                }}>
-                {renderFooter?.()}
-              </Animated.View>
-            </LinearGradientBottomWrapper>
-          </KeyboardStickyView>
-        )
+    if (renderFooter && showFooter) {
+      const footer = renderFooter()
+      if (footer) {
+        if (shouldAvoidKeyboard) {
+          return (
+            <KeyboardStickyView
+              enabled={!disableStickyFooter}
+              offset={{
+                opened: insets.bottom
+              }}>
+              <LinearGradientBottomWrapper>
+                <Animated.View
+                  entering={FadeIn.delay(150)}
+                  style={{
+                    paddingHorizontal: 16,
+                    paddingBottom: insets.bottom + 16
+                  }}>
+                  {footer}
+                </Animated.View>
+              </LinearGradientBottomWrapper>
+            </KeyboardStickyView>
+          )
+        }
       } else {
         return (
           <LinearGradientBottomWrapper>
@@ -255,7 +258,7 @@ export const ScrollScreen = ({
                 paddingHorizontal: 16,
                 paddingBottom: insets.bottom + 16
               }}>
-              {renderFooter?.()}
+              {footer}
             </Animated.View>
           </LinearGradientBottomWrapper>
         )
