@@ -1,9 +1,9 @@
 import { K2AlpineThemeProvider } from '@avalabs/k2-alpine'
 import { Stack } from 'common/components/Stack'
 import {
-  modalScreensOptions,
   stackNavigatorScreenOptions,
-  stackScreensOptions
+  stackScreensOptions,
+  useModalScreensOptions
 } from 'common/consts/screenOptions'
 import NavigationThemeProvider from 'common/contexts/NavigationThemeProvider'
 import { useLoadFonts } from 'common/hooks/useLoadFonts'
@@ -35,6 +35,7 @@ export default function Root(): JSX.Element | null {
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const selectedAppearance = useSelector(selectSelectedAppearance)
   const colorScheme = useSelector(selectSelectedColorScheme)
+  const { modalScreensOptions } = useModalScreensOptions()
 
   useEffect(() => {
     const subscription = RnAppearance.addChangeListener(

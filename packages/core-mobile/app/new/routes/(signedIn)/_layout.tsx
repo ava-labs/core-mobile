@@ -2,10 +2,9 @@ import { usePreventRemove } from '@react-navigation/native'
 import { LastTransactedNetworks } from 'common/components/LastTransactedNetworks'
 import { Stack } from 'common/components/Stack'
 import {
-  modalScreensOptions,
-  secondaryModalScreensOptions,
   stackNavigatorScreenOptions,
-  stackScreensOptions
+  stackScreensOptions,
+  useModalScreensOptions
 } from 'common/consts/screenOptions'
 import { useTriggerAfterLoginFlows } from 'common/hooks/useTriggerAfterLoginFlows'
 import { BridgeProvider } from 'features/bridge/contexts/BridgeContext'
@@ -25,6 +24,9 @@ export const unstable_settings = {
 
 export default function WalletLayout(): JSX.Element {
   const walletState = useSelector(selectWalletState)
+
+  const { modalScreensOptions, secondaryModalScreensOptions } =
+    useModalScreensOptions()
 
   usePreventRemove(walletState === WalletState.ACTIVE, () => {
     // TODO: uncomment this after we fix the multiple back() calls

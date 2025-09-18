@@ -1,3 +1,5 @@
+import { TokenUnit } from '@avalabs/core-utils-sdk'
+import { SxProp } from 'dripsy'
 import React, {
   forwardRef,
   useCallback,
@@ -7,10 +9,7 @@ import React, {
   useRef,
   useState
 } from 'react'
-import { SxProp } from 'dripsy'
-import { TokenUnit } from '@avalabs/core-utils-sdk'
 import {
-  InteractionManager,
   LayoutChangeEvent,
   Platform,
   ReturnKeyTypeOptions,
@@ -19,12 +18,12 @@ import {
   TouchableWithoutFeedback
 } from 'react-native'
 import { useTheme } from '../../hooks'
-import { Text, View } from '../Primitives'
 import { alpha } from '../../utils'
 import {
-  normalizeValue,
-  normalizeNumericTextInput
+  normalizeNumericTextInput,
+  normalizeValue
 } from '../../utils/tokenUnitInput'
+import { Text, View } from '../Primitives'
 
 export type TokenUnitInputHandle = {
   setValue: (value: string) => void
@@ -151,7 +150,7 @@ export const TokenUnitInput = forwardRef<
 
     useEffect(() => {
       if (autoFocus) {
-        InteractionManager.runAfterInteractions(() => {
+        requestAnimationFrame(() => {
           textInputRef.current?.focus()
         })
       }
