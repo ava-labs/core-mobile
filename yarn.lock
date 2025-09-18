@@ -386,7 +386,7 @@ __metadata:
     react-native-config: 1.5.3
     react-native-device-info: 13.0.0
     react-native-edge-to-edge: 1.6.0
-    react-native-fast-confetti: ^1.1.1
+    react-native-fast-confetti: 1.1.1
     react-native-fs: 2.20.0
     react-native-gesture-handler: 2.24.0
     react-native-get-random-values: 1.11.0
@@ -605,7 +605,6 @@ __metadata:
     react-native: 0.79.5
     react-native-awesome-slider: 2.9.0
     react-native-dialog: 9.3.0
-    react-native-fast-confetti: 0.8.2
     react-native-gesture-handler: 2.24.0
     react-native-modal-datetime-picker: 18.0.0
     react-native-reanimated: 3.17.5
@@ -27636,19 +27635,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-native-fast-confetti@npm:0.8.2":
-  version: 0.8.2
-  resolution: "react-native-fast-confetti@npm:0.8.2"
-  peerDependencies:
-    "@shopify/react-native-skia": "*"
-    react: "*"
-    react-native: "*"
-    react-native-reanimated: "*"
-  checksum: bfd8b3ba3c0e84a7577a42e7687ef8c2acb2c01d61e9b7b11eb1440aa712fc2925f36ef0c51e681420af5d6dca10ca44323281ad49890bffe4b95e563b977fc9
-  languageName: node
-  linkType: hard
-
-"react-native-fast-confetti@npm:^1.1.1":
+"react-native-fast-confetti@npm:1.1.1":
   version: 1.1.1
   resolution: "react-native-fast-confetti@npm:1.1.1"
   peerDependencies:
