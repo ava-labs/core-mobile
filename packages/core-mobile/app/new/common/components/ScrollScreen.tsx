@@ -220,9 +220,11 @@ export const ScrollScreen = ({
   const [showFooter, setShowFooter] = useState(false)
 
   useEffect(() => {
-    requestAnimationFrame(() => {
-      setShowFooter(true)
-    })
+    if (renderFooter) {
+      requestAnimationFrame(() => {
+        setShowFooter(true)
+      })
+    }
   }, [renderFooter])
 
   const renderFooterContent = useCallback(() => {
