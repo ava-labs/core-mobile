@@ -1,5 +1,5 @@
 import { ScrollScreen } from 'common/components/ScrollScreen'
-import React, { useCallback, useMemo, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import {
   View,
   Text,
@@ -170,15 +170,17 @@ export const SelectPaymentMethod = ({
     setMeldPaymentMethod
   ])
 
+  useEffect(() => {
+    if (data.length === 0) {
+      Logger.error('[SelectPaymentMethod] No payment methods available')
+    }
+  }, [data])
+
   const renderContent = useCallback(() => {
     if (isLoadingPaymentMethods) {
       return <LoadingState sx={{ height: portfolioTabContentHeight }} />
     }
     if (paymentMethodsError) {
-      Logger.error(
-        '[SelectPaymentMethod] Unable to load payment methods',
-        paymentMethodsError
-      )
       return (
         <ErrorState
           sx={{ height: portfolioTabContentHeight }}
@@ -188,7 +190,6 @@ export const SelectPaymentMethod = ({
       )
     }
     if (data.length === 0) {
-      Logger.error('[SelectPaymentMethod] No payment methods available')
       return (
         <ErrorState
           sx={{ height: portfolioTabContentHeight }}

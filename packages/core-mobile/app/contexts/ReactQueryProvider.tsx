@@ -1,5 +1,10 @@
 import React, { PropsWithChildren, useEffect } from 'react'
-import { Query, QueryClient, focusManager } from '@tanstack/react-query'
+import {
+  Query,
+  QueryCache,
+  QueryClient,
+  focusManager
+} from '@tanstack/react-query'
 import {
   PersistQueryClientProvider,
   removeOldestQuery
@@ -12,6 +17,7 @@ import { ReactQueryKeys } from 'consts/reactQueryKeys'
 import { createSyncStoragePersister } from '@tanstack/query-sync-storage-persister'
 import { useNetworksListener } from 'hooks/networks/useNetworksListener'
 import { useWatchlistListener } from 'hooks/watchlist/useWatchlistListener'
+import Logger from 'utils/Logger'
 
 export const queryClient = new QueryClient({
   defaultOptions: {
@@ -19,7 +25,12 @@ export const queryClient = new QueryClient({
       staleTime: 10000,
       gcTime: Infinity
     }
-  }
+  },
+  queryCache: new QueryCache({
+    onError: (error: unknown) => {
+      Logger.error('[ReactQueryProvider] Query error', error)
+    }
+  })
 })
 
 const clientPersister = createSyncStoragePersister({
