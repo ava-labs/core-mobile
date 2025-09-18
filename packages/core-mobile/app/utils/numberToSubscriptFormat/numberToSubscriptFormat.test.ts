@@ -93,9 +93,9 @@ test('handles zero correctly', () => {
 test('handles negative numbers correctly', () => {
   const result = numberToSubscriptFormat(-0.0000092)
   expect(result).toEqual({
-    mainTextBefore: '-',
-    subText: '',
-    mainTextAfter: ''
+    mainTextBefore: '-0.0',
+    subText: '5',
+    mainTextAfter: '92'
   })
 })
 

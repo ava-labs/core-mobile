@@ -26,12 +26,15 @@ export const numberToSubscriptFormat = (
     }
 
   // Handle less than 0
-  if (number < 0)
+  if (number < 0) {
+    const sign = '-'
+    const pos = numberToSubscriptFormat(Math.abs(number))
     return {
-      mainTextBefore: '-',
-      subText: '',
-      mainTextAfter: ''
+      mainTextBefore: sign + pos.mainTextBefore,
+      subText: pos.subText,
+      mainTextAfter: pos.mainTextAfter
     }
+  }
 
   if (number >= 1000) {
     return {
