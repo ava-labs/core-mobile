@@ -345,7 +345,7 @@ export const ScrollScreen = ({
   // All of our screens have to be scrollable
   // If we don't have an input on the screen then we should not enable keyboard avoiding
   return (
-    <View style={{ flex: 1 }}>
+    <View style={[{ flex: 1 }, props.style]}>
       <ScrollView
         style={{ flex: 1 }}
         showsVerticalScrollIndicator={false}
