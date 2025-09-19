@@ -307,6 +307,18 @@ export const useSelectAmount = ({
         CreateCryptoQuoteErrorCode.INCOMPATIBLE_REQUEST &&
         cryptoQuotesError.message
           .toLowerCase()
+          .includes('not within the payment method limits'))
+    ) {
+      return 'The selected amount is not within the minimum and maximum limits'
+    }
+
+    if (
+      (cryptoQuotesError?.statusCode === CreateCryptoQuoteErrorCode.NOT_FOUND &&
+        cryptoQuotesError.message.toLowerCase().includes('not found')) ||
+      (cryptoQuotesError?.statusCode ===
+        CreateCryptoQuoteErrorCode.INCOMPATIBLE_REQUEST &&
+        cryptoQuotesError.message
+          .toLowerCase()
           .includes('does not match service providers'))
     ) {
       return `${token?.tokenWithBalance.name} cannot be ${
