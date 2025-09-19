@@ -172,6 +172,7 @@ export const PinScreen = ({
   }
 
   const handlePromptBioLogin = useCallback(() => {
+    blurPinInput()
     verifyBiometric().catch(Logger.error)
   }, [verifyBiometric])
 
