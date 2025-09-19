@@ -1077,3 +1077,5 @@ export function useLedgerWallet(): UseLedgerWalletReturn {
 >>>>>>> 6a596f952 (ledger live address derivation working, transactiosn on avalanche and solana proven with this setup)
   }
 }
+
+}
