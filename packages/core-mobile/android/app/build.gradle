@@ -159,6 +159,10 @@ android {
     packagingOptions {
         pickFirst '**/*.so'
     }
+    // disabling compression for .bundle files for faster launch speed
+    androidResources {
+        noCompress += ["bundle"]
+    }
 }
 
 dependencies {
