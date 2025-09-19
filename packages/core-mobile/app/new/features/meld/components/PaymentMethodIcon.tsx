@@ -16,9 +16,11 @@ export const PaymentMethodIcon = ({
   const {
     theme: { colors, isDark }
   } = useTheme()
-  const Icon = paymentMethod.paymentMethod
-    ? PAYMENT_METHOD_TO_ICON[paymentMethod.paymentMethod]
-    : undefined
+  const Icon =
+    paymentMethod.paymentMethod &&
+    PAYMENT_METHOD_TO_ICON[paymentMethod.paymentMethod]
+      ? PAYMENT_METHOD_TO_ICON[paymentMethod.paymentMethod]
+      : undefined
   return Icon ? (
     <View
       sx={{
@@ -37,7 +39,7 @@ export const PaymentMethodIcon = ({
   ) : (
     <Image
       accessibilityRole="image"
-      sx={{ width: size, height: size }}
+      sx={{ width: size, height: size, borderRadius: size / 2 }}
       source={{
         uri: isDark
           ? paymentMethod?.logos?.dark ?? ''
@@ -47,10 +49,7 @@ export const PaymentMethodIcon = ({
   )
 }
 
-const PAYMENT_METHOD_TO_ICON: Record<
-  PaymentMethods,
-  React.FC<SvgProps> | undefined
-> = {
+const PAYMENT_METHOD_TO_ICON: Record<string, React.FC<SvgProps> | undefined> = {
   [PaymentMethods.APPLEPAY_EU]: Icons.Custom.ApplePay,
   [PaymentMethods.APPLE_PAY]: Icons.Custom.ApplePay,
   [PaymentMethods.PAYPAL]: Icons.Custom.PayPal,
@@ -151,5 +150,6 @@ const PAYMENT_METHOD_TO_ICON: Record<
   [PaymentMethods.PROMPTPAY]: undefined,
   [PaymentMethods.BLIK]: undefined,
 
-  [PaymentMethods.PAYOUT_TO_CARD]: undefined
+  [PaymentMethods.PAYOUT_TO_CARD]: undefined,
+  [PaymentMethods.LINKAJA]: undefined
 }
