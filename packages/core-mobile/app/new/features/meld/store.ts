@@ -7,7 +7,6 @@ import { CryptoCurrency, CryptoCurrencyWithBalance } from './types'
 import {
   NATIVE_ERC20_TOKEN_CONTRACT_ADDRESS,
   PaymentMethods,
-  ServiceProviders,
   SOLANA_MELD_CHAIN_ID
 } from './consts'
 
@@ -19,13 +18,13 @@ export const useMeldToken = createZustandStore<CryptoCurrency | undefined>(
   undefined
 )
 
-export const useMeldServiceProvider = createZustandStore<
-  ServiceProviders | undefined
->(undefined)
+export const useMeldServiceProvider = createZustandStore<string | undefined>(
+  undefined
+)
 
-export const useMeldPaymentMethod = createZustandStore<
-  PaymentMethods | undefined
->(undefined)
+export const useMeldPaymentMethod = createZustandStore<string | undefined>(
+  undefined
+)
 
 export const useMeldFiatAmount = createZustandStore<number | undefined>(
   undefined

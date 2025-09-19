@@ -241,11 +241,21 @@ export const useSelectAmount = ({
   }, [category, countryCode, crytoQuotes, defaultsByCountry])
 
   const paymentMethodToDisplay = useMemo(() => {
-    return paymentMethod ? PaymentMethodNames[paymentMethod] : undefined
+    if (paymentMethod && PaymentMethodNames[paymentMethod]) {
+      return PaymentMethodNames[paymentMethod]
+    }
+    return paymentMethod
+      ? capitalize(paymentMethod).replace(/_/g, ' ')
+      : undefined
   }, [paymentMethod])
 
   const serviceProviderToDisplay = useMemo(() => {
-    return serviceProvider ? ServiceProviderNames[serviceProvider] : undefined
+    if (serviceProvider && ServiceProviderNames[serviceProvider]) {
+      return ServiceProviderNames[serviceProvider]
+    }
+    return serviceProvider
+      ? capitalize(serviceProvider).replace(/_/g, ' ')
+      : undefined
   }, [serviceProvider])
 
   useLayoutEffect(() => {
