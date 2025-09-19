@@ -13,6 +13,7 @@ import {
 import { ScrollScreen } from 'common/components/ScrollScreen'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import useInAppBrowser from 'common/hooks/useInAppBrowser'
+import { dismissKeyboardIfNeeded } from 'common/utils/dismissKeyboardIfNeeded'
 import { LogoWithNetwork } from 'features/portfolio/assets/components/LogoWithNetwork'
 import React, { useCallback, useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
@@ -22,7 +23,6 @@ import { useResetMeldTokenList } from '../hooks/useResetMeldTokenList'
 import { useSelectAmount } from '../hooks/useSelectAmount'
 import { useOfframpActivityIndicator, useOfframpSessionId } from '../store'
 import { getErrorMessage } from '../utils'
-import { dismissKeyboardIfNeeded } from 'common/utils/dismissKeyboardIfNeeded'
 
 interface SelectAmountProps {
   title: string
