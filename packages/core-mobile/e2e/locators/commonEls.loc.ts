@@ -74,5 +74,7 @@ export default {
   filterDropdown: 'filter_dropdown_btn',
   networkFilterDropdown: 'network_dropdown_btn',
   transactionFail: 'Transaction failed',
-  gotIt: 'Got it'
+  gotIt: 'Got it',
+  updateAppModalTitle: 'update_app_title',
+  solanaLaunchTitle: 'solana_launch_title'
 }

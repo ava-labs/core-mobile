@@ -73,7 +73,10 @@ function SolanaLaunchScreen(): JSX.Element {
           </View>
         </View>
         <View style={{ gap: 10, paddingHorizontal: 32 }}>
-          <Text variant="heading3" style={{ textAlign: 'center' }}>
+          <Text
+            testID="solana_launch_title"
+            variant="heading3"
+            style={{ textAlign: 'center' }}>
             {`Trade on Solana\ndirectly from Core`}
           </Text>
           <Text variant="subtitle1" style={{ textAlign: 'center' }}>

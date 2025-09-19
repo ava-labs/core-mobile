@@ -372,9 +372,11 @@ const drag = async (
   percentage = 0.2,
   index = 0
 ) => {
+  await delay(1000)
   await waitForElement(item, 10000, index)
   await element(item).atIndex(index).longPress()
   await element(item).atIndex(index).swipe(direction, 'fast', percentage)
+  await delay(1000)
 }
 
 const dragTo = async (

@@ -3,14 +3,14 @@
  * @jest-environment ./environment.ts
  */
 import actions from '../../helpers/actions'
-import { handleJailbrokenWarning } from '../../helpers/warmup'
+import { handleJailbrokenWarning, initialArgs } from '../../helpers/warmup'
 import onboardingLoc from '../../locators/onboarding.loc'
 import commonElsPage from '../../pages/commonEls.page'
 import onboardingPage from '../../pages/onboarding.page'
 
 describe('Onboarding', () => {
   beforeAll(async () => {
-    await device.launchApp({ newInstance: true })
+    await device.launchApp(initialArgs)
     await commonElsPage.exitMetro()
     await handleJailbrokenWarning()
   })
@@ -54,7 +54,7 @@ describe('Onboarding', () => {
 
     // Verify `Select Avatar` page
     await onboardingPage.verifySelectAvatarPage()
-    await commonElsPage.tapNext()
+    await commonElsPage.tapNext(true)
 
     // Verify `Confirmation screen`
     await onboardingPage.verifyConfirmationPage()

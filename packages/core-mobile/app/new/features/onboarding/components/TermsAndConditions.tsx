@@ -41,13 +41,7 @@ export const TermsAndConditions = ({
         width: SCREEN_WIDTH
       }}
       renderFooter={renderFooter}>
-      {isLoading ? (
-        <Loader />
-      ) : (
-        <View sx={{ gap: 12 }} testID="terms_conditions_description">
-          {termsComponent}
-        </View>
-      )}
+      {isLoading ? <Loader /> : <View sx={{ gap: 12 }}>{termsComponent}</View>}
     </ScrollScreen>
   )
 }
