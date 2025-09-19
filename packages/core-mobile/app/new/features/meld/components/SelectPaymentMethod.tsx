@@ -145,7 +145,7 @@ export const SelectPaymentMethod = ({
           PaymentMethodNames[paymentMethod.paymentMethod]
             ? PaymentMethodNames[paymentMethod.paymentMethod]
             : paymentMethod.paymentMethod
-            ? capitalize(paymentMethod.paymentMethod).replace(/_/g, ' ')
+            ? humanize(paymentMethod.paymentMethod)
             : '',
         subtitle:
           paymentMethod.paymentMethod &&
