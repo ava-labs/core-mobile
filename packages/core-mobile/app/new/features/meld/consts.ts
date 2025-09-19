@@ -82,6 +82,7 @@ export enum PaymentMethods {
   ZALOPAY = 'ZALOPAY',
   PROMPTPAY = 'PROMPTPAY',
   BLIK = 'BLIK',
+  LINKAJA = 'LINKAJA',
   UAE_BANK_TRANSFER = 'UAE_BANK_TRANSFER',
   VN_BANK_TRANSFER = 'VN_BANK_TRANSFER',
   NG_BANK_TRANSFER = 'NG_BANK_TRANSFER',
@@ -126,7 +127,7 @@ export enum PaymentMethods {
   ACH = 'ACH'
 }
 
-export const PaymentMethodNames = {
+export const PaymentMethodNames: Record<string, string> = {
   [PaymentMethods.CREDIT_DEBIT_CARD]: 'Debit/credit card',
   [PaymentMethods.APPLE_PAY]: 'Apple Pay',
   [PaymentMethods.GOOGLE_PAY]: 'Google Pay',
@@ -222,10 +223,11 @@ export const PaymentMethodNames = {
   [PaymentMethods.PA_CASH]: 'Local Cash Vouchers',
   [PaymentMethods.PH_CASH]: 'Local Cash Vouchers',
   [PaymentMethods.PY_CASH]: 'Local Cash Vouchers',
-  [PaymentMethods.PAYOUT_TO_CARD]: 'Payout via Debit Card'
+  [PaymentMethods.PAYOUT_TO_CARD]: 'Payout via Debit Card',
+  [PaymentMethods.LINKAJA]: 'Linkaja'
 }
 
-export const PaymentMethodTimeLimits = {
+export const PaymentMethodTimeLimits: Record<string, string> = {
   [PaymentMethods.FAST]: 'Instant',
   [PaymentMethods.REVOLUT_PAY]: 'Under 10 minutes',
   [PaymentMethods.BINANCE_P2P]: 'Under 10 minutes',
@@ -374,10 +376,13 @@ export enum ServiceProviders {
   TRANSAK = 'TRANSAK',
   UNLIMIT = 'UNLIMIT',
   YELLOWCARD = 'YELLOWCARD',
-  YODLEE = 'YODLEE'
+  YODLEE = 'YODLEE',
+  KRYPTONIM = 'KRYPTONIM',
+  SWAPPED = 'SWAPPED',
+  BOOMFI = 'BOOMFI'
 }
 
-export const ServiceProviderNames: Record<ServiceProviders, string> = {
+export const ServiceProviderNames: Record<string, string> = {
   [ServiceProviders.AKOYA]: 'Akoya',
   [ServiceProviders.ALCHEMYPAY]: 'Alchemy Pay',
   [ServiceProviders.BTCDIRECT]: 'BTC Direct',
@@ -417,7 +422,10 @@ export const ServiceProviderNames: Record<ServiceProviders, string> = {
   [ServiceProviders.TRANSAK]: 'Transak',
   [ServiceProviders.UNLIMIT]: 'Unlimit',
   [ServiceProviders.YELLOWCARD]: 'Yellow Card',
-  [ServiceProviders.YODLEE]: 'Yodlee'
+  [ServiceProviders.YODLEE]: 'Yodlee',
+  [ServiceProviders.KRYPTONIM]: 'Kryptonim',
+  [ServiceProviders.SWAPPED]: 'Swapped.com',
+  [ServiceProviders.BOOMFI]: 'Boomfi'
 }
 
 export const SOLANA_MELD_CHAIN_ID = 101

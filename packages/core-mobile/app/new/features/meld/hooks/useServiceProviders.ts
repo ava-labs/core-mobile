@@ -4,7 +4,7 @@ import { QueryObserverResult, RefetchOptions } from '@tanstack/react-query'
 import { useMemo } from 'react'
 import { useMeldCountryCode, useMeldToken } from '../store'
 import { CreateCryptoQuote, CryptoQuotesError, Quote } from '../types'
-import { PaymentMethods, ServiceProviderCategories } from '../consts'
+import { ServiceProviderCategories } from '../consts'
 import { getErrorMessage } from '../utils'
 import { useCreateCryptoQuote } from './useCreateCryptoQuote'
 
@@ -15,7 +15,7 @@ export const useServiceProviders = ({
 }: {
   enabled?: boolean
   category: ServiceProviderCategories
-  paymentMethodType?: PaymentMethods
+  paymentMethodType?: string
 }): {
   crytoQuotes: Quote[]
   isLoadingCryptoQuotes: boolean
