@@ -305,6 +305,20 @@ export const useSelectAmount = ({
         cryptoQuotesError.message.toLowerCase().includes('not found')) ||
       (cryptoQuotesError?.statusCode ===
         CreateCryptoQuoteErrorCode.INCOMPATIBLE_REQUEST &&
+        cryptoQuotesError?.message
+          .toLowerCase()
+          .includes('not within the payment method limits')) ||
+      cryptoQuotesError?.message.toLowerCase().includes('crypto_min_limit') ||
+      cryptoQuotesError?.message.toLowerCase().includes('crypto_max_limit')
+    ) {
+      return 'The selected amount is not within the minimum and maximum limits'
+    }
+
+    if (
+      (cryptoQuotesError?.statusCode === CreateCryptoQuoteErrorCode.NOT_FOUND &&
+        cryptoQuotesError.message.toLowerCase().includes('not found')) ||
+      (cryptoQuotesError?.statusCode ===
+        CreateCryptoQuoteErrorCode.INCOMPATIBLE_REQUEST &&
         cryptoQuotesError.message
           .toLowerCase()
           .includes('does not match service providers'))
