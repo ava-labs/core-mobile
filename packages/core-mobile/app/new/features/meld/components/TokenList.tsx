@@ -171,12 +171,7 @@ export const TokenList = ({
               </Text>
               <View sx={{ flexDirection: 'row' }}>
                 <SubTextNumber
-                  number={Number(
-                    item.tokenWithBalance.balanceDisplayValue.replaceAll(
-                      ',',
-                      ''
-                    )
-                  )}
+                  number={item.tokenWithBalance.balanceDisplayValue}
                   textColor={colors.$textPrimary}
                   textVariant="subtitle2"
                 />

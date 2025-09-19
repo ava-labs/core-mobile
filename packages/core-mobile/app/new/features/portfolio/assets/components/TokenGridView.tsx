@@ -72,9 +72,7 @@ export const TokenGridView = ({
                 sx={{ lineHeight: 16 }}>
                 <View sx={{ flexDirection: 'row' }}>
                   <SubTextNumber
-                    number={Number(
-                      token.balanceDisplayValue.replaceAll(',', '')
-                    )}
+                    number={token.balanceDisplayValue}
                     textVariant="body2"
                   />
                   <Text

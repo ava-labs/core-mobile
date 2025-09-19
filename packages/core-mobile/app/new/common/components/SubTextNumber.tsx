@@ -10,7 +10,7 @@ export const SubTextNumber = ({
   style,
   textVariant = 'body1'
 }: {
-  number: number | undefined
+  number: number | string | undefined
   testID?: string
   textColor?: string
   style?: ViewStyle
@@ -19,10 +19,11 @@ export const SubTextNumber = ({
   const {
     theme: { colors }
   } = useTheme()
-  const { mainTextBefore, subText, mainTextAfter } = useMemo(
-    () => numberToSubscriptFormat(number),
-    [number]
-  )
+  const { mainTextBefore, subText, mainTextAfter } = useMemo(() => {
+    const num =
+      typeof number === 'string' ? Number(number.replaceAll(',', '')) : number
+    return numberToSubscriptFormat(num)
+  }, [number])
   const subTextStyle = useMemo(
     () => getSubTextStyle(textVariant),
     [textVariant]
