@@ -39,7 +39,7 @@ export const PaymentMethodIcon = ({
   ) : (
     <Image
       accessibilityRole="image"
-      sx={{ width: size, height: size, borderRadius: 1000 }}
+      sx={{ width: size, height: size, borderRadius: size / 2 }}
       source={{
         uri: isDark
           ? paymentMethod?.logos?.dark ?? ''
