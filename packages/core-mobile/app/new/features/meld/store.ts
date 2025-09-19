@@ -165,7 +165,6 @@ const supportedCryptoCurrenciesStore = create<SupportedCryptoCurrenciesStore>(
         }
 
         if (
-          crypto.name === 'Ethereum' &&
           crypto.chainId &&
           crypto.contractAddress === NATIVE_ERC20_TOKEN_CONTRACT_ADDRESS
         ) {
