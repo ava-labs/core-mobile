@@ -1,30 +1,31 @@
-import React, { useCallback, useMemo } from 'react'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
 import {
-  useTheme,
-  View,
-  Text,
   GroupList,
   GroupListItem,
-  TouchableOpacity,
-  Separator,
   Icons,
-  Logos
+  Logos,
+  Separator,
+  Text,
+  TouchableOpacity,
+  useTheme,
+  View
 } from '@avalabs/k2-alpine'
 import { ScrollScreen } from 'common/components/ScrollScreen'
-import { FlatList } from 'react-native-gesture-handler'
-import { LocalTokenWithBalance } from 'store/balance/types'
-import { UNKNOWN_AMOUNT } from 'consts/amount'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
+import { dismissKeyboardIfNeeded } from 'common/utils/dismissKeyboardIfNeeded'
+import { UNKNOWN_AMOUNT } from 'consts/amount'
+import React, { useCallback, useEffect, useMemo } from 'react'
+import { FlatList } from 'react-native-gesture-handler'
 import { SvgProps } from 'react-native-svg'
+import { LocalTokenWithBalance } from 'store/balance/types'
+import { useSwapRate } from '../hooks/useSwapRate'
+import { MarkrQuote } from '../services/MarkrService'
 import {
   isJupiterQuote,
   isMarkrQuote,
   NormalizedSwapQuote,
   NormalizedSwapQuoteResult
 } from '../types'
-import { MarkrQuote } from '../services/MarkrService'
-import { useSwapRate } from '../hooks/useSwapRate'
 
 // Provider logo mapping
 const PRICE_PROVIDER_ICONS: Record<string, React.FC<SvgProps> | undefined> = {
@@ -254,6 +255,12 @@ export const SwapPricingDetailsScreen = ({
 
     return items
   }, [quotes, fromToken, toToken, manuallySelected, renderItem, rate])
+
+  useEffect(() => {
+    setTimeout(() => {
+      dismissKeyboardIfNeeded()
+    }, 0)
+  }, [])
 
   return (
     <ScrollScreen
