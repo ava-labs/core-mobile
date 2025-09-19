@@ -6,7 +6,6 @@ import { LocalTokenWithBalance } from 'store/balance'
 import { CryptoCurrency, CryptoCurrencyWithBalance } from './types'
 import {
   NATIVE_ERC20_TOKEN_CONTRACT_ADDRESS,
-  PaymentMethods,
   SOLANA_MELD_CHAIN_ID
 } from './consts'
 
