@@ -11,7 +11,7 @@ export default function ConnectWallet(): JSX.Element {
   // Redirect to enhanced setup - this route is deprecated
   React.useEffect(() => {
     // @ts-ignore TODO: make routes typesafe
-    router.replace('/accountSettings/ledger/enhancedSetup')
+    router.replace('/accountSettings/ledger')
   }, [router])
 
   // Return null while redirecting
