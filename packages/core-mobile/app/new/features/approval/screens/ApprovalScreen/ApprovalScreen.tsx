@@ -222,7 +222,9 @@ const ApprovalScreen = ({
   }, [validateEthSendTransaction, gaslessEnabled])
 
   useEffect(() => {
-    dismissKeyboardIfNeeded()
+    setTimeout(() => {
+      dismissKeyboardIfNeeded()
+    }, 0)
   }, [])
 
   const renderGaslessAlert = useCallback((): JSX.Element | null => {
