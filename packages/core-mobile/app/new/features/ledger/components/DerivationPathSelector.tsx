@@ -1,6 +1,6 @@
-import React, { useState, useCallback } from 'react'
-import { View } from 'react-native'
-import { Text, Button, useTheme, GroupList, Icons } from '@avalabs/k2-alpine'
+import React from 'react'
+import { View, TouchableOpacity } from 'react-native'
+import { Text, useTheme, Icons } from '@avalabs/k2-alpine'
 import { ScrollScreen } from 'common/components/ScrollScreen'
 import { LedgerDerivationPathType } from 'services/ledger/types'
 
@@ -22,7 +22,7 @@ interface DerivationPathSelectorProps {
 const derivationPathOptions: DerivationPathOption[] = [
   {
     type: LedgerDerivationPathType.BIP44,
-    title: 'BIP44 (Recommended)',
+    title: 'BIP44',
     subtitle: 'Standard approach for most users',
     benefits: [
       'Faster setup (~15 seconds)',
@@ -127,137 +127,23 @@ export const DerivationPathSelector: React.FC<DerivationPathSelectorProps> = ({
 
   return (
     <ScrollScreen
-      title="Choose Setup Method"
-      subtitle="Select how you'd like to set up your Ledger wallet. Both options are secure."
+      title="First, choose your setup Method"
+      subtitle="Select how you would like to set up your Ledger wallet. Both options are secure"
       isModal
-      renderFooter={renderFooter}
-      contentContainerStyle={{ padding: 16, flex: 1 }}>
-      <View style={{ marginTop: 24 }}>
-        <GroupList itemHeight={70} data={groupListData} />
-      </View>
+      contentContainerStyle={{
+        padding: 16,
+        gap: 16,
+        paddingBottom: 100
+      }}>
+      <View style={{ marginTop: 16 }} />
 
-      {selectedOption && (
-        <View style={{ marginTop: 32 }}>
-          {/* Recommendation badge */}
-          {selectedOption.recommended && (
-            <View
-              style={{
-                backgroundColor: colors.$textSuccess,
-                paddingHorizontal: 12,
-                paddingVertical: 6,
-                borderRadius: 16,
-                alignSelf: 'flex-start',
-                marginBottom: 16
-              }}>
-              <Text
-                variant="caption"
-                style={{ color: colors.$white, fontWeight: '600' }}>
-                RECOMMENDED
-              </Text>
-            </View>
-          )}
-
-          {/* Quick stats */}
-          <View
-            style={{
-              backgroundColor: colors.$surfaceSecondary,
-              borderRadius: 12,
-              padding: 16,
-              marginBottom: 24
-            }}>
-            <View
-              style={{
-                flexDirection: 'row',
-                justifyContent: 'space-between'
-              }}>
-              <View style={{ flex: 1 }}>
-                <Text
-                  variant="caption"
-                  style={{ color: colors.$textSecondary }}>
-                  Setup Time
-                </Text>
-                <Text
-                  variant="body1"
-                  style={{ fontWeight: '600', marginTop: 4 }}>
-                  {selectedOption.setupTime}
-                </Text>
-              </View>
-              <View style={{ flex: 1 }}>
-                <Text
-                  variant="caption"
-                  style={{ color: colors.$textSecondary }}>
-                  New Accounts
-                </Text>
-                <Text
-                  variant="body1"
-                  style={{ fontWeight: '600', marginTop: 4 }}>
-                  {selectedOption.newAccountRequirement}
-                </Text>
-              </View>
-            </View>
-          </View>
-
-          {/* Benefits */}
-          <View style={{ marginBottom: 24 }}>
-            <Text
-              variant="heading6"
-              style={{ marginBottom: 12, color: colors.$textSuccess }}>
-              ✓ Benefits
-            </Text>
-            {selectedOption.benefits.map((benefit, index) => (
-              <View
-                key={index}
-                style={{
-                  flexDirection: 'row',
-                  alignItems: 'flex-start',
-                  marginBottom: 8
-                }}>
-                <Text
-                  variant="body2"
-                  style={{ color: colors.$textSuccess, marginRight: 8 }}>
-                  •
-                </Text>
-                <Text
-                  variant="body2"
-                  style={{ color: colors.$textSecondary, flex: 1 }}>
-                  {benefit}
-                </Text>
-              </View>
-            ))}
-          </View>
-
-          {/* Considerations */}
-          {selectedOption.warnings.length > 0 && (
-            <View>
-              <Text
-                variant="heading6"
-                style={{ marginBottom: 12, color: colors.$textSecondary }}>
-                ⚠️ Considerations
-              </Text>
-              {selectedOption.warnings.map((warning, index) => (
-                <View
-                  key={index}
-                  style={{
-                    flexDirection: 'row',
-                    alignItems: 'flex-start',
-                    marginBottom: 8
-                  }}>
-                  <Text
-                    variant="body2"
-                    style={{ color: colors.$textSecondary, marginRight: 8 }}>
-                    •
-                  </Text>
-                  <Text
-                    variant="body2"
-                    style={{ color: colors.$textSecondary, flex: 1 }}>
-                    {warning}
-                  </Text>
-                </View>
-              ))}
-            </View>
-          )}
-        </View>
-      )}
+      {derivationPathOptions.map(option => (
+        <OptionCard
+          key={option.type}
+          option={option}
+          onPress={() => onSelect(option.type)}
+        />
+      ))}
     </ScrollScreen>
   )
 }

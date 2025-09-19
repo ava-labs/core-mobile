@@ -1,3 +1,5 @@
 export { DerivationPathSelector } from './DerivationPathSelector'
 export { LedgerSetupProgress } from './LedgerSetupProgress'
 export { EnhancedLedgerSetup } from './EnhancedLedgerSetup'
+export { LedgerAppConnection } from './LedgerAppConnection'
+export { ScanningAnimation } from './ScanningAnimation'

@@ -10,7 +10,8 @@ export default function ConfirmAddresses(): JSX.Element {
 
   // Redirect to enhanced setup - this route is deprecated
   React.useEffect(() => {
-    router.replace('/accountSettings/ledger/enhancedSetup')
+    // @ts-ignore TODO: make routes typesafe
+    router.replace('/accountSettings/ledger')
   }, [router])
 
   // Return null while redirecting
