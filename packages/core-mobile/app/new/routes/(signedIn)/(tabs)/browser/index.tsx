@@ -51,7 +51,7 @@ const Browser = (): React.ReactNode => {
       dispatch(addHistoryForActiveTab({ url: deeplinkUrl, title: '' }))
 
       // Clear the deeplinkUrl param to mark it as handled
-      // @ts-expect-error
+      // @ts-ignore
       router.setParams({ deeplinkUrl: undefined })
     }
   }, [dispatch, deeplinkUrl, router])
