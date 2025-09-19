@@ -2,7 +2,7 @@ import { alpha, ANIMATED, useTheme, View } from '@avalabs/k2-alpine'
 import { colors } from '@avalabs/k2-alpine/src/theme/tokens/colors'
 import { BlurViewWithFallback } from 'common/components/BlurViewWithFallback'
 import { useBottomTabBarHeight } from 'common/hooks/useBottomTabBarHeight'
-import { useFocusEffect, useGlobalSearchParams, useRouter } from 'expo-router'
+import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router'
 import { useBrowserContext } from 'features/browser/BrowserContext'
 import { BrowserControls } from 'features/browser/components/BrowserControls'
 import { BrowserSnapshot } from 'features/browser/components/BrowserSnapshot'
@@ -34,7 +34,7 @@ const Browser = (): React.ReactNode => {
   const { browserRefs } = useBrowserContext()
   const dispatch = useDispatch()
   const router = useRouter()
-  const { deeplinkUrl } = useGlobalSearchParams<{ deeplinkUrl: string }>()
+  const { deeplinkUrl } = useLocalSearchParams<{ deeplinkUrl?: string }>()
   const activeTab = useSelector(selectActiveTab)
   const allTabs = useSelector(selectAllTabs)
   const showEmptyTab = useSelector(selectIsTabEmpty)
@@ -49,6 +49,10 @@ const Browser = (): React.ReactNode => {
     if (deeplinkUrl) {
       dispatch(addTab())
       dispatch(addHistoryForActiveTab({ url: deeplinkUrl, title: '' }))
+
+      // Clear the deeplinkUrl param to mark it as handled
+      // @ts-ignore
+      router.setParams({ deeplinkUrl: undefined })
     }
   }, [dispatch, deeplinkUrl, router])
 
