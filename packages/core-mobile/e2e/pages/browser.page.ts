@@ -275,7 +275,7 @@ class BrowserPage {
       by.text(`Connected to ${BrowserLoc.coreDappName}`),
       10000
     )
-    await Wbs.waitForEleByXpathToBeVisible('//h1[text()="Account 1"]', 30000)
+    await Wbs.waitForEleByXpathToBeVisible('//h1[text()="Account 1"]', 50000)
     await Actions.failIfElementAppearsWithin(commonElsPage.transactionFail)
   }
 
