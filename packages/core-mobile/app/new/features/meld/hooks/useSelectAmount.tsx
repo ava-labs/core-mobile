@@ -13,7 +13,7 @@ import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import { useNavigation } from '@react-navigation/native'
 import { ACTIONS } from 'contexts/DeeplinkContext/types'
 import { useDebouncedCallback } from 'use-debounce'
-import { capitalize } from 'lodash'
+import { humanize } from 'utils/string/humanize'
 import {
   PaymentMethodNames,
   ServiceProviderCategories,
@@ -245,18 +245,14 @@ export const useSelectAmount = ({
     if (paymentMethod && PaymentMethodNames[paymentMethod]) {
       return PaymentMethodNames[paymentMethod]
     }
-    return paymentMethod
-      ? capitalize(paymentMethod).replace(/_/g, ' ')
-      : undefined
+    return paymentMethod ? humanize(paymentMethod) : undefined
   }, [paymentMethod])
 
   const serviceProviderToDisplay = useMemo(() => {
     if (serviceProvider && ServiceProviderNames[serviceProvider]) {
       return ServiceProviderNames[serviceProvider]
     }
-    return serviceProvider
-      ? capitalize(serviceProvider).replace(/_/g, ' ')
-      : undefined
+    return serviceProvider ? humanize(serviceProvider) : undefined
   }, [serviceProvider])
 
   useLayoutEffect(() => {

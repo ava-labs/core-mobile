@@ -13,7 +13,7 @@ import { useRouter } from 'expo-router'
 import { Space } from 'common/components/Space'
 import { LoadingState } from 'common/components/LoadingState'
 import { portfolioTabContentHeight } from 'features/portfolio/utils'
-import { capitalize } from 'lodash'
+import { humanize } from 'utils/string/humanize'
 import { useSearchPaymentMethods } from '../hooks/useSearchPaymentMethods'
 import {
   PaymentMethodNames,
@@ -142,7 +142,7 @@ export const SelectPaymentMethod = ({
           PaymentMethodNames[paymentMethod.paymentMethod]
             ? PaymentMethodNames[paymentMethod.paymentMethod]
             : paymentMethod.paymentMethod
-            ? capitalize(paymentMethod.paymentMethod).replace(/_/g, ' ')
+            ? humanize(paymentMethod.paymentMethod)
             : '',
         subtitle:
           paymentMethod.paymentMethod &&
