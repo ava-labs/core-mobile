@@ -1,8 +1,8 @@
 import { alpha, PriceChangeStatus, useTheme, View } from '@avalabs/k2-alpine'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
-import { useWatchlist } from 'hooks/watchlist/useWatchlist'
 import React, { FC, useMemo } from 'react'
 import { Transaction } from 'store/transaction'
+import { useMarketTokenBySymbol } from 'common/hooks/useMarketTokenBySymbol'
 import ActivityListItem from './ActivityListItem'
 import { TransactionTypeIcon } from './TransactionTypeIcon'
 import { XPTokenActivityListItemTitle } from './XPTokenActivityListItemTitle'
@@ -27,11 +27,9 @@ export const XpActivityListItem: FC<Props> = ({
   const borderColor = isDark ? colors.$borderPrimary : alpha('#000000', 0.15)
   const backgroundColor = colors.$borderPrimary
   const { formatTokenInCurrency } = useFormatCurrency()
-  const { getMarketTokenBySymbol } = useWatchlist()
-
-  const currentPrice = tx.tokens[0]?.symbol
-    ? getMarketTokenBySymbol(tx.tokens[0].symbol)?.currentPrice
-    : undefined
+  const currentPrice = useMarketTokenBySymbol({
+    symbol: tx.tokens[0]?.symbol
+  })?.currentPrice
 
   const formattedAmountInCurrency = useMemo(() => {
     const amount = Number(tx.tokens[0]?.amount.replaceAll(',', ''))

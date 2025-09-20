@@ -1,7 +1,7 @@
 import { useSelector } from 'react-redux'
 import { selectSelectedCurrency } from 'store/settings/currency'
 import { useMemo } from 'react'
-import { useWatchlist } from 'hooks/watchlist/useWatchlist'
+import { useMarketTokenBySymbol } from 'common/hooks/useMarketTokenBySymbol'
 import { ServiceProviderCategories } from '../consts'
 import { useMeldFiatAmount } from '../store'
 import { useGetTradeLimits } from './useGetTradeLimits'
@@ -23,7 +23,6 @@ export const useFiatSourceAmount = ({
   hasValidSourceAmount: boolean
   // eslint-disable-next-line sonarjs/cognitive-complexity
 } => {
-  const { getMarketTokenBySymbol } = useWatchlist()
   const [sourceAmount, setSourceAmount] = useMeldFiatAmount()
   const selectedCurrency = useSelector(selectSelectedCurrency)
   const token = useMeldTokenWithBalance({ category })
@@ -36,14 +35,9 @@ export const useFiatSourceAmount = ({
         : undefined
     })
 
-  const currentTokenPrice = useMemo(
-    () =>
-      token?.tokenWithBalance.symbol
-        ? getMarketTokenBySymbol(token.tokenWithBalance.symbol)?.currentPrice ??
-          undefined
-        : undefined,
-    [getMarketTokenBySymbol, token?.tokenWithBalance.symbol]
-  )
+  const currentTokenPrice = useMarketTokenBySymbol({
+    symbol: token?.tokenWithBalance.symbol
+  })?.currentPrice
 
   const currencyCode = useMemo(() => {
     return category === ServiceProviderCategories.CRYPTO_ONRAMP

@@ -4,6 +4,7 @@ import {
   Icons,
   MaskedText,
   PriceChangeIndicator,
+  PriceChangeStatus,
   SPRING_LINEAR_TRANSITION,
   Text,
   useTheme,
@@ -18,6 +19,7 @@ import Animated from 'react-native-reanimated'
 import { useSelector } from 'react-redux'
 import { selectIsPrivacyModeEnabled } from 'store/settings/securityPrivacy'
 import { SubTextNumber } from 'common/components/SubTextNumber'
+import { UNKNOWN_AMOUNT } from 'consts/amount'
 import { TokenListViewProps } from '../types'
 import { LogoWithNetwork } from './LogoWithNetwork'
 
@@ -25,6 +27,7 @@ const SCREEN_WIDTH = Dimensions.get('window').width
 
 export const TokenGridView = ({
   token,
+  tokenNameForDisplay,
   index,
   onPress,
   priceChangeStatus,
@@ -36,6 +39,26 @@ export const TokenGridView = ({
   const {
     theme: { colors }
   } = useTheme()
+
+  const renderPriceChangeIndicator = (): JSX.Element => {
+    if (
+      priceChangeStatus === PriceChangeStatus.Neutral ||
+      formattedBalance === undefined
+    )
+      return <Text variant="buttonSmall" /> // empty to maintain layout consistency in grid view
+
+    if (priceChangeStatus === undefined)
+      return <Text variant="buttonSmall">{UNKNOWN_AMOUNT}</Text>
+
+    return (
+      <PriceChangeIndicator
+        shouldMask={isPrivacyModeEnabled}
+        maskWidth={40}
+        formattedPrice={formattedPrice}
+        status={priceChangeStatus}
+      />
+    )
+  }
 
   return (
     <Animated.View
@@ -56,11 +79,11 @@ export const TokenGridView = ({
           />
           <View>
             <Text
-              testID={`portfolio_token_item__${token.name}`}
+              testID={`portfolio_token_item__${tokenNameForDisplay}`}
               variant="buttonMedium"
               numberOfLines={1}
               sx={{ lineHeight: 16 }}>
-              {token.name}
+              {tokenNameForDisplay}
             </Text>
             <View sx={{ flexDirection: 'row', flexShrink: 1 }}>
               <MaskedText
@@ -120,12 +143,7 @@ export const TokenGridView = ({
                   </Text>
                 )}
               </View>
-              <PriceChangeIndicator
-                shouldMask={isPrivacyModeEnabled}
-                maskWidth={40}
-                formattedPrice={formattedPrice}
-                status={priceChangeStatus}
-              />
+              {renderPriceChangeIndicator()}
             </View>
           </View>
         </View>

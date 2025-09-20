@@ -1,3 +1,4 @@
+import { UNKNOWN_AMOUNT } from 'consts/amount'
 import { numberToSubscriptFormat } from './numberToSubscriptFormat' // Adjust path as needed
 
 // Small numbers (< 0.00001)
@@ -92,22 +93,22 @@ test('handles zero correctly', () => {
 test('handles negative numbers correctly', () => {
   const result = numberToSubscriptFormat(-0.0000092)
   expect(result).toEqual({
-    mainTextBefore: '-',
-    subText: '',
-    mainTextAfter: ''
+    mainTextBefore: '-0.0',
+    subText: '5',
+    mainTextAfter: '92'
   })
 })
 
 test('handles non numbers correctly', () => {
   // @ts-ignore
   expect(numberToSubscriptFormat('some string')).toEqual({
-    mainTextBefore: '-',
+    mainTextBefore: UNKNOWN_AMOUNT,
     subText: '',
     mainTextAfter: ''
   })
 
   expect(numberToSubscriptFormat(undefined)).toEqual({
-    mainTextBefore: '-',
+    mainTextBefore: UNKNOWN_AMOUNT,
     subText: '',
     mainTextAfter: ''
   })

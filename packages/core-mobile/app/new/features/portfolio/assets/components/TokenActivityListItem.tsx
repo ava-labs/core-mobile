@@ -6,9 +6,9 @@ import {
   isPotentiallySwap
 } from 'features/activity/utils'
 import { CollectibleFetchAndRender } from 'features/portfolio/collectibles/components/CollectibleFetchAndRender'
-import { useWatchlist } from 'hooks/watchlist/useWatchlist'
 import React, { FC, useMemo } from 'react'
 import { ActivityTransactionType, Transaction } from 'store/transaction'
+import { useMarketTokenBySymbol } from 'common/hooks/useMarketTokenBySymbol'
 import ActivityListItem from './ActivityListItem'
 import { TokenActivityListItemTitle } from './TokenActivityListItemTitle'
 import { TransactionTypeIcon } from './TransactionTypeIcon'
@@ -22,11 +22,9 @@ export const TokenActivityListItem: FC<Props> = ({
     theme: { colors }
   } = useTheme()
   const { formatTokenInCurrency } = useFormatCurrency()
-  const { getMarketTokenBySymbol } = useWatchlist()
-
-  const currentPrice = tx.tokens[0]?.symbol
-    ? getMarketTokenBySymbol(tx.tokens[0].symbol)?.currentPrice
-    : undefined
+  const currentPrice = useMarketTokenBySymbol({
+    symbol: tx.tokens[0]?.symbol
+  })?.currentPrice
 
   const status = useMemo(() => {
     switch (tx.txType) {

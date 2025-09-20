@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react'
+import React from 'react'
 import {
   AnimatedPressable,
   Icons,
@@ -7,14 +7,12 @@ import {
   Text,
   useTheme,
   View,
-  alpha
+  alpha,
+  PriceChangeStatus
 } from '@avalabs/k2-alpine'
 import { selectIsPrivacyModeEnabled } from 'store/settings/securityPrivacy'
 import { useSelector } from 'react-redux'
 import { HiddenBalanceText } from 'common/components/HiddenBalanceText'
-import { CHAIN_IDS_WITH_INCORRECT_SYMBOL } from 'consts/chainIdsWithIncorrectSymbol'
-import { useNetworks } from 'hooks/networks/useNetworks'
-import { TokenType } from '@avalabs/vm-module-types'
 import { SubTextNumber } from 'common/components/SubTextNumber'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
 import { TokenListViewProps } from '../types'
@@ -22,6 +20,7 @@ import { LogoWithNetwork } from './LogoWithNetwork'
 
 export const TokenListView = ({
   token,
+  tokenNameForDisplay,
   index,
   onPress,
   formattedBalance,
@@ -31,18 +30,27 @@ export const TokenListView = ({
   const {
     theme: { colors }
   } = useTheme()
-  const { allNetworks } = useNetworks()
   const isPrivacyModeEnabled = useSelector(selectIsPrivacyModeEnabled)
 
-  const tokenName = useMemo(() => {
+  const renderPriceChangeIndicator = (): JSX.Element | undefined => {
     if (
-      CHAIN_IDS_WITH_INCORRECT_SYMBOL.includes(token.networkChainId) &&
-      token.type === TokenType.NATIVE
-    ) {
-      return allNetworks[token.networkChainId]?.chainName ?? token.name
-    }
-    return token.name
-  }, [allNetworks, token.name, token.networkChainId, token.type])
+      priceChangeStatus === PriceChangeStatus.Neutral ||
+      formattedBalance === undefined
+    )
+      return undefined
+
+    if (priceChangeStatus === undefined)
+      return <Text variant="buttonSmall">{UNKNOWN_AMOUNT}</Text>
+
+    return (
+      <PriceChangeIndicator
+        shouldMask={isPrivacyModeEnabled}
+        maskWidth={40}
+        formattedPrice={formattedPrice}
+        status={priceChangeStatus}
+      />
+    )
+  }
 
   return (
     <View>
@@ -65,23 +73,54 @@ export const TokenListView = ({
             sx={{
               flexGrow: 1,
               flexShrink: 1,
-              marginHorizontal: 12
+              marginHorizontal: 12,
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'space-between'
             }}>
             <View
               sx={{
                 flexShrink: 1,
-                flexDirection: 'row',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                gap: 24
+                gap: 1
               }}>
               <Text
                 variant="buttonMedium"
                 numberOfLines={1}
                 sx={{ flex: 1 }}
-                testID={`portfolio_token_item__${tokenName}`}>
-                {tokenName}
+                testID={`portfolio_token_item__${tokenNameForDisplay}`}>
+                {tokenNameForDisplay}
               </Text>
+              <MaskedText
+                shouldMask={isPrivacyModeEnabled}
+                maskWidth={55}
+                sx={{ lineHeight: 16, flex: 1 }}
+                ellipsizeMode="tail"
+                numberOfLines={1}
+                testID={`list_token_balance__${index}`}>
+                <View sx={{ flexDirection: 'row' }}>
+                  <SubTextNumber
+                    number={Number(
+                      token.balanceDisplayValue.replaceAll(',', '')
+                    )}
+                    textVariant="body2"
+                  />
+                  <Text
+                    variant="body2"
+                    sx={{
+                      marginTop: 1,
+                      color: alpha(colors.$textPrimary, 0.6)
+                    }}>
+                    {' ' + token.symbol}
+                  </Text>
+                </View>
+              </MaskedText>
+            </View>
+            <View
+              sx={{
+                flexShrink: 1,
+                alignItems: 'flex-end',
+                gap: 2
+              }}>
               <View
                 sx={{
                   flexDirection: 'row',
@@ -111,49 +150,7 @@ export const TokenListView = ({
                   </Text>
                 )}
               </View>
-            </View>
-            <View
-              sx={{
-                flexDirection: 'row',
-                flexShrink: 1,
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                gap: 24
-              }}>
-              <MaskedText
-                shouldMask={isPrivacyModeEnabled}
-                maskWidth={55}
-                sx={{ lineHeight: 16, flex: 1 }}
-                ellipsizeMode="tail"
-                numberOfLines={1}
-                testID={`list_token_balance__${index}`}>
-                <View sx={{ flexDirection: 'row' }}>
-                  <SubTextNumber
-                    number={Number(
-                      token.balanceDisplayValue.replaceAll(',', '')
-                    )}
-                    textVariant="body2"
-                  />
-                  <Text
-                    variant="body2"
-                    sx={{
-                      marginTop: 1,
-                      color: alpha(colors.$textPrimary, 0.6)
-                    }}>
-                    {' ' + token.symbol}
-                  </Text>
-                </View>
-              </MaskedText>
-              {(formattedPrice !== UNKNOWN_AMOUNT ||
-                (formattedPrice === UNKNOWN_AMOUNT &&
-                  formattedBalance !== '')) && (
-                <PriceChangeIndicator
-                  formattedPrice={formattedPrice}
-                  status={priceChangeStatus}
-                  shouldMask={isPrivacyModeEnabled}
-                  maskWidth={40}
-                />
-              )}
+              {renderPriceChangeIndicator()}
             </View>
           </View>
           <View
