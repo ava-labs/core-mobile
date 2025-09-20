@@ -38,7 +38,14 @@ import { retry } from 'utils/js/retry'
 import { showAlert } from '@avalabs/k2-alpine'
 import { MeldTransaction } from 'features/meld/types'
 import { ChainId, Network } from '@avalabs/core-chains-sdk'
+import {
+  selectIsEnableMeldSandboxBlocked,
+  setFeatureFlags
+} from 'store/posthog/slice'
 import { HyperSDKClient } from 'hypersdk-client'
+import { isAnyOf } from '@reduxjs/toolkit'
+import { onAppUnlocked } from 'store/app'
+import DeviceInfoService from 'services/deviceInfo/DeviceInfoService'
 import { offrampSend } from './slice'
 
 const handleOfframpSend = async (
@@ -263,10 +270,25 @@ const getDecimals = (token: TokenWithBalance, network: Network): number => {
     : network.networkToken.decimals
 }
 
+const initMeldService = async (
+  listenerApi: AppListenerEffectAPI
+): Promise<void> => {
+  const bundleId = DeviceInfoService.getBundleId()
+  const isInternal = bundleId.includes('internal')
+  const state = listenerApi.getState()
+  const isSandboxBlocked = selectIsEnableMeldSandboxBlocked(state)
+  MeldService.init(!isSandboxBlocked && isInternal)
+}
+
 export const addMeldListeners = (startListening: AppStartListening): void => {
   startListening({
     actionCreator: offrampSend,
     effect: async (action, listenerApi) =>
       handleOfframpSend(action.payload.searchParams, listenerApi)
+  })
+
+  startListening({
+    matcher: isAnyOf(onAppUnlocked, setFeatureFlags),
+    effect: (_, listenerApi) => initMeldService(listenerApi)
   })
 }

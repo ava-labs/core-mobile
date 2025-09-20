@@ -22,13 +22,19 @@ import { GetTradeLimitsParams } from '../hooks/useGetTradeLimits'
 import { meldApiClient } from './apiClient'
 
 class MeldService {
+  #meldApiClient: ReturnType<typeof meldApiClient>
+
+  init(sandbox?: boolean): void {
+    this.#meldApiClient = meldApiClient(sandbox)
+  }
+
   async searchCountries({
     accountFilter,
     categories,
     serviceProviders,
     countries
   }: MeldDefaultParams): Promise<Country[]> {
-    return meldApiClient.getCountries({
+    return this.#meldApiClient.getCountries({
       queries: {
         serviceProviders: serviceProviders?.join(','),
         categories: categories.join(','),
@@ -45,7 +51,7 @@ class MeldService {
     fiatCurrencies,
     countries
   }: SearchFiatCurrenciesParams): Promise<FiatCurrency[]> {
-    return meldApiClient.getFiatCurrencies({
+    return this.#meldApiClient.getFiatCurrencies({
       queries: {
         serviceProviders: serviceProviders?.join(','),
         categories: categories.join(','),
@@ -70,7 +76,7 @@ class MeldService {
       countries: countries?.join(','),
       cryptoCurrencies: cryptoCurrencies?.join(',')
     }
-    return meldApiClient.getCryptoCurrencies({
+    return this.#meldApiClient.getCryptoCurrencies({
       queries
     })
   }
@@ -87,7 +93,7 @@ class MeldService {
       countries: countries?.join(','),
       cryptoCurrencies: cryptoCurrencies?.join(',')
     }
-    return meldApiClient.getServiceProviders({
+    return this.#meldApiClient.getServiceProviders({
       queries
     })
   }
@@ -102,7 +108,7 @@ class MeldService {
       accountFilter,
       countries: countries?.join(',')
     }
-    return meldApiClient.getDefaultsByCountry({ queries })
+    return this.#meldApiClient.getDefaultsByCountry({ queries })
   }
 
   async getPurchaseLimits({
@@ -123,7 +129,7 @@ class MeldService {
       cryptoCurrencies: cryptoCurrencyCodes?.join(','),
       includeDetails
     }
-    return meldApiClient.getPurchaseLimits({ queries })
+    return this.#meldApiClient.getPurchaseLimits({ queries })
   }
 
   async getSellLimits({
@@ -144,7 +150,7 @@ class MeldService {
       cryptoCurrencies: cryptoCurrencyCodes?.join(','),
       includeDetails
     }
-    return meldApiClient.getSellLimits({ queries })
+    return this.#meldApiClient.getSellLimits({ queries })
   }
 
   async searchPaymentMethods({
@@ -163,7 +169,7 @@ class MeldService {
       fiatCurrencies: fiatCurrencies?.join(','),
       cryptoCurrencies: cryptoCurrencyCodes?.join(',')
     }
-    return meldApiClient.getPaymentMethods({ queries })
+    return this.#meldApiClient.getPaymentMethods({ queries })
   }
 
   async createCryptoQuote({
@@ -186,7 +192,7 @@ class MeldService {
       subdivision,
       paymentMethodType
     }
-    return meldApiClient.createCryptoQuotes(body)
+    return this.#meldApiClient.createCryptoQuotes(body)
   }
 
   async createSessionWidget({
@@ -217,7 +223,7 @@ class MeldService {
         walletAddress
       }
     }
-    return meldApiClient.createSessionWidget(body)
+    return this.#meldApiClient.createSessionWidget(body)
   }
 
   // Fetch transaction by session id
@@ -230,7 +236,7 @@ class MeldService {
   }: {
     sessionId: string
   }): Promise<MeldTransaction | undefined> {
-    return await meldApiClient.fetchTransactionBySessionId({
+    return await this.#meldApiClient.fetchTransactionBySessionId({
       params: { id: sessionId }
     })
   }
