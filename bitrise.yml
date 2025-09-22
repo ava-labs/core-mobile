@@ -311,16 +311,6 @@ workflows:
     - deploy-to-bitrise-io@2:
         inputs:
         - pipeline_intermediate_files: $BITRISE_APP_DIR_PATH:BITRISE_APP_DIR_PATH
-    - script-runner@0:
-        title: Create iOS Test Run
-        inputs:
-        - file_path: scripts/bitrise/detox/createIosTestRun.sh
-        - variables:
-          - TESTRAIL_RUN_ID=$TESTRAIL_RUN_ID
-    - share-pipeline-variable@1:
-        inputs:
-        - variables: |-
-            TESTRAIL_RUN_ID=$TESTRAIL_RUN_ID
   _install-and-set-env:
     before_run:
     - _install-node-20
@@ -1044,6 +1034,16 @@ workflows:
         is_expand: false
     steps:
     - script-runner@0:
+        title: Create iOS Test Run
+        inputs:
+        - file_path: scripts/bitrise/detox/createIosTestRun.sh
+        - variables:
+          - TESTRAIL_RUN_ID=$TESTRAIL_RUN_ID
+    - share-pipeline-variable@1:
+        inputs:
+        - variables: |-
+            TESTRAIL_RUN_ID=$TESTRAIL_RUN_ID
+    - script-runner@0:
         title: Detox
         no_output_timeout: 300
         inputs:
@@ -1082,6 +1082,13 @@ workflows:
       opts:
         is_expand: false
     steps:
+    - script-runner@0:
+        title: Create iOS Test Run
+        inputs:
+        - file_path: scripts/bitrise/detox/createIosTestRun.sh
+        - variables:
+          - TESTRAIL_RUN_ID=$TESTRAIL_RUN_ID
+          - IS_REGRESSION_RUN=$IS_REGRESSION_RUN
     - share-pipeline-variable@1:
         no_output_timeout: 300
         inputs:

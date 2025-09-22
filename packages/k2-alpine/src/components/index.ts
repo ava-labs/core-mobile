@@ -45,7 +45,6 @@ export * from './TokenUnitInput/TokenUnitInputWidget'
 export * from './TokenUnitInput/SendTokenUnitInputWidget'
 export * from './TokenAmountInput/TokenAmountInput'
 export * from './DateTimePicker/DateTimePicker'
-export * from './Confetti/Confetti'
 
 export * from './PriceChangeIndicator/types'
 

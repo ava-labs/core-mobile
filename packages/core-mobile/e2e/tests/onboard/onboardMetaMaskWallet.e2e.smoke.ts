@@ -4,12 +4,12 @@
  */
 import { ENV } from '../../helpers/getEnvs'
 import loginRecoverWallet from '../../helpers/loginRecoverWallet'
-import { handleJailbrokenWarning } from '../../helpers/warmup'
+import { handleJailbrokenWarning, initialArgs } from '../../helpers/warmup'
 import commonElsPage from '../../pages/commonEls.page'
 
 describe('Onboarding', () => {
   beforeAll(async () => {
-    await device.launchApp({ newInstance: true })
+    await device.launchApp(initialArgs)
     await commonElsPage.exitMetro()
     await handleJailbrokenWarning()
   })
