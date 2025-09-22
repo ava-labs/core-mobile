@@ -185,7 +185,12 @@ export const TokenInputWidget = ({
             alignItems: 'center',
             gap: 24
           }}>
-          <View sx={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+          <View
+            sx={{
+              flexDirection: 'row',
+              alignItems: 'flex-start',
+              gap: 12
+            }}>
             {token && network && (
               <LogoWithNetwork
                 token={token}
@@ -204,7 +209,7 @@ export const TokenInputWidget = ({
                 <TouchableOpacity
                   onPress={onSelectToken}
                   disabled={!isTokenSelectable || disabled}>
-                  <View sx={{ gap: 1 }}>
+                  <View sx={{ gap: 1, minHeight: 52 }}>
                     {token && <Text variant="subtitle2">{title}</Text>}
                     <View sx={{ flexDirection: 'row', alignItems: 'center' }}>
                       <Text testID="select_token_title" variant="heading6">
@@ -229,6 +234,7 @@ export const TokenInputWidget = ({
                   <View
                     sx={{
                       alignItems: 'flex-end',
+                      justifyContent: 'center',
                       flex: 1
                     }}
                     pointerEvents={token === undefined ? 'none' : 'auto'}>
@@ -239,12 +245,13 @@ export const TokenInputWidget = ({
                         editable={editable}
                         denomination={token?.decimals ?? 0}
                         style={{
-                          fontFamily: 'Aeonik-Medium',
-                          fontSize: 42,
-                          minWidth: 100,
                           width: '100%',
                           textAlign: 'right',
-                          marginRight: Platform.OS === 'android' ? -4 : 0,
+                          height: 52,
+                          fontFamily: 'Aeonik-Medium',
+                          marginTop: Platform.OS === 'android' ? 6 : -10,
+                          marginBottom: Platform.OS === 'android' ? -6 : 0,
+                          paddingTop: 0,
                           color:
                             inputTextColor ??
                             (editable
@@ -262,7 +269,6 @@ export const TokenInputWidget = ({
                     ) : (
                       <View
                         style={{
-                          height: 50,
                           width: '100%',
                           justifyContent: 'flex-end'
                         }}>
@@ -296,7 +302,7 @@ export const TokenInputWidget = ({
                   alignItems: 'center',
                   gap: 24,
                   justifyContent: 'space-between',
-                  marginTop: Platform.OS === 'android' && editable ? -14 : -4
+                  marginTop: -8
                 }}>
                 <View>
                   {token &&

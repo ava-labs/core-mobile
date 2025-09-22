@@ -53,3 +53,4 @@ export * from './MaskedText/MaskedText'
 
 export * from './FiatAmountInputWidget/FiatAmountInputWidget'
 export * from './FiatAmountInputWidget/FiatAmountInput'
+export * from './AutoSizeTextInput/AutoSizeTextInput'

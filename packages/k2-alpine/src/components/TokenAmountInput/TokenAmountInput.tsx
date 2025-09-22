@@ -8,6 +8,7 @@ import {
   normalizeNumericTextInput,
   splitIntegerAndFraction
 } from '../../utils/tokenUnitInput'
+import { AutoFitTextInput } from '../AutoSizeTextInput/AutoSizeTextInput'
 
 /**
  * TokenAmountInput takes user's input via InputText component and calls "onChange" callback with { value: bigint; valueString: string } object.
@@ -78,14 +79,10 @@ export const TokenAmountInput = ({
   }, [valueAsString])
 
   return (
-    <TextInput
+    <AutoFitTextInput
       {...props}
+      value={valueAsString}
       ref={inputRef}
-      /**
-       * keyboardType="numeric" causes noticeable input lag on Android.
-       * Using inputMode="numeric" provides the same behavior without the performance issues.
-       * See: https://github.com/expo/expo/issues/34156
-       */
       keyboardType={Platform.OS === 'ios' ? 'numeric' : undefined}
       inputMode={Platform.OS === 'android' ? 'numeric' : undefined}
       onChangeText={handleChangeText}

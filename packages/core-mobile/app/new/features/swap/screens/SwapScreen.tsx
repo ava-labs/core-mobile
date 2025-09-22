@@ -660,6 +660,8 @@ export const SwapScreen = (): JSX.Element => {
     setToToken
   ])
 
+  const [dummyValue, setDummyValue] = useState<string>('')
+
   return (
     <ScrollScreen
       title="Swap"
