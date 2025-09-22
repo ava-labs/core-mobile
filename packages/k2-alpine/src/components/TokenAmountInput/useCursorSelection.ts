@@ -13,7 +13,7 @@ import {
  */
 export const useCursorSelection = (): {
   selection: { start: number; end: number } | undefined
-  onSelectionChange:
+  handleSelectionChange:
     | ((e: NativeSyntheticEvent<TextInputSelectionChangeEventData>) => void)
     | undefined
   moveCursorToFront: () => void
@@ -21,7 +21,7 @@ export const useCursorSelection = (): {
 } => {
   const [selection, setSelection] = useState({ start: 0, end: 0 })
 
-  const onSelectionChange = useCallback(
+  const handleSelectionChange = useCallback(
     (e: NativeSyntheticEvent<TextInputSelectionChangeEventData>) => {
       setSelection(e.nativeEvent.selection)
     },
@@ -44,11 +44,16 @@ export const useCursorSelection = (): {
   if (Platform.OS === 'ios') {
     return {
       selection: undefined,
-      onSelectionChange: undefined,
+      handleSelectionChange: undefined,
       moveCursorToFront: noop,
       moveCursorToEnd: noop
     }
   }
 
-  return { selection, onSelectionChange, moveCursorToFront, moveCursorToEnd }
+  return {
+    selection,
+    handleSelectionChange,
+    moveCursorToFront,
+    moveCursorToEnd
+  }
 }

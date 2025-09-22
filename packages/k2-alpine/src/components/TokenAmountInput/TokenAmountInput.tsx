@@ -7,13 +7,20 @@ import React, {
   useRef,
   useState
 } from 'react'
-import { Platform, TextInput, TextInputProps } from 'react-native'
+import {
+  NativeSyntheticEvent,
+  Platform,
+  TextInput,
+  TextInputFocusEventData,
+  TextInputProps
+} from 'react-native'
 import { useTheme } from '../../hooks'
 import { alpha } from '../../utils'
 import {
   normalizeNumericTextInput,
   splitIntegerAndFraction
 } from '../../utils/tokenUnitInput'
+import { useCursorSelection } from './useCursorSelection'
 
 export interface TokenAmountInputRef {
   focus: () => void
@@ -37,6 +44,8 @@ export const TokenAmountInput = forwardRef<
       isLoading,
       hideErrorMessage,
       autoFocus,
+      onBlur,
+      onFocus,
       ...props
     },
     ref
@@ -46,6 +55,13 @@ export const TokenAmountInput = forwardRef<
     const [valueAsString, setValueAsString] = useState('')
     const valueBig = value ? bigintToBig(value, denomination) : undefined
     const inputRef = useRef<TextInput>(null)
+
+    const {
+      selection,
+      handleSelectionChange,
+      moveCursorToFront,
+      moveCursorToEnd
+    } = useCursorSelection()
 
     useImperativeHandle(ref, () => ({
       focus: () => inputRef.current?.focus(),
@@ -104,6 +120,20 @@ export const TokenAmountInput = forwardRef<
       }
     }, [valueAsString])
 
+    const handleBlur = (
+      e: NativeSyntheticEvent<TextInputFocusEventData>
+    ): void => {
+      onBlur?.(e)
+      moveCursorToFront()
+    }
+
+    const handleFocus = (
+      e: NativeSyntheticEvent<TextInputFocusEventData>
+    ): void => {
+      onFocus?.(e)
+      moveCursorToEnd(valueAsString)
+    }
+
     return (
       <TextInput
         {...props}
@@ -121,6 +151,10 @@ export const TokenAmountInput = forwardRef<
         selectionColor={theme.colors.$textPrimary}
         allowFontScaling={false}
         style={[{ color: theme.colors.$textPrimary }, props.style]}
+        onBlur={handleBlur}
+        onFocus={handleFocus}
+        selection={selection}
+        onSelectionChange={handleSelectionChange}
       />
     )
   }

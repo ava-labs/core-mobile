@@ -23,7 +23,6 @@ import Animated, {
   FadeOut,
   LinearTransition
 } from 'react-native-reanimated'
-import { useCursorSelection } from 'common/hooks/useCursorSelection'
 import { roundToUnitOrSignificantDigit } from 'common/utils/roundToUnitOrSignificantDigit'
 import { LogoWithNetwork } from './LogoWithNetwork'
 
@@ -77,9 +76,6 @@ export const TokenInputWidget = ({
 
   const tokenAmountInputRef = useRef<TokenAmountInputRef>(null)
 
-  const { selection, onSelectionChange, moveCursorToFront, moveCursorToEnd } =
-    useCursorSelection()
-
   const handlePressPercentageButton = (
     button: PercentageButton,
     index: number
@@ -121,16 +117,11 @@ export const TokenInputWidget = ({
   const handleFocus = (): void => {
     onFocus?.()
     setIsAmountInputFocused(true)
-
-    if (amount) {
-      moveCursorToEnd(amount.toString())
-    }
   }
 
   const handleBlur = (): void => {
     onBlur?.()
     setIsAmountInputFocused(false)
-    moveCursorToFront()
   }
 
   const isTokenSelectable = onSelectToken !== undefined
@@ -256,8 +247,6 @@ export const TokenInputWidget = ({
                         onFocus={handleFocus}
                         onBlur={handleBlur}
                         placeholder="0.00"
-                        selection={selection}
-                        onSelectionChange={onSelectionChange}
                       />
                     ) : (
                       <View
