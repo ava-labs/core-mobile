@@ -13,6 +13,7 @@ import { useNavigation } from '@react-navigation/native'
 import { ACTIONS } from 'contexts/DeeplinkContext/types'
 import { useDebouncedCallback } from 'use-debounce'
 import { useMarketTokenBySymbol } from 'common/hooks/useMarketTokenBySymbol'
+import Logger from 'utils/Logger'
 import {
   PaymentMethodNames,
   ServiceProviderCategories,
@@ -34,7 +35,6 @@ import { useCreateSessionWidget } from './useCreateSessionWidget'
 import { useServiceProviders } from './useServiceProviders'
 import { useFiatSourceAmount } from './useFiatSourceAmount'
 import { useMeldTokenWithBalance } from './useMeldTokenWithBalance'
-import Logger from 'utils/Logger'
 
 const DEFAULT_DEBOUNCE_MILLISECONDS = 300
 
