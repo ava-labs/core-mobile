@@ -328,7 +328,7 @@ export const useSelectAmount = ({
     }
 
     if (minMaxErrorMessage) {
-      return 'The selected amount is not within the minimum and maximum limits'
+      return 'Transaction amount is invalid: it must be between the minimum and maximum allowed.'
     }
 
     if (cryptoQuotesError?.statusCode) {
