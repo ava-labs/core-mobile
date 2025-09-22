@@ -9,12 +9,13 @@ import {
   SxProp,
   Text,
   TokenAmount,
-  TokenAmountInput,
   TouchableOpacity,
+  TokenAmountInput,
+  TokenAmountInputRef,
   useTheme,
   View
 } from '@avalabs/k2-alpine'
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Platform } from 'react-native'
 import Animated, {
   Easing,
@@ -22,6 +23,7 @@ import Animated, {
   FadeOut,
   LinearTransition
 } from 'react-native-reanimated'
+import { useCursorSelection } from 'common/hooks/useCursorSelection'
 import { roundToUnitOrSignificantDigit } from 'common/utils/roundToUnitOrSignificantDigit'
 import { LogoWithNetwork } from './LogoWithNetwork'
 
@@ -73,6 +75,11 @@ export const TokenInputWidget = ({
     PercentageButton[]
   >([])
 
+  const tokenAmountInputRef = useRef<TokenAmountInputRef>(null)
+
+  const { selection, onSelectionChange, moveCursorToFront, moveCursorToEnd } =
+    useCursorSelection()
+
   const handlePressPercentageButton = (
     button: PercentageButton,
     index: number
@@ -114,11 +121,16 @@ export const TokenInputWidget = ({
   const handleFocus = (): void => {
     onFocus?.()
     setIsAmountInputFocused(true)
+
+    if (amount) {
+      moveCursorToEnd(amount.toString())
+    }
   }
 
   const handleBlur = (): void => {
     onBlur?.()
     setIsAmountInputFocused(false)
+    moveCursorToFront()
   }
 
   const isTokenSelectable = onSelectToken !== undefined
@@ -221,6 +233,7 @@ export const TokenInputWidget = ({
                     pointerEvents={token === undefined ? 'none' : 'auto'}>
                     {editable ? (
                       <TokenAmountInput
+                        ref={tokenAmountInputRef}
                         testID="token_amount_input_field"
                         autoFocus={autoFocus}
                         editable={editable}
@@ -243,6 +256,8 @@ export const TokenInputWidget = ({
                         onFocus={handleFocus}
                         onBlur={handleBlur}
                         placeholder="0.00"
+                        selection={selection}
+                        onSelectionChange={onSelectionChange}
                       />
                     ) : (
                       <View
@@ -345,6 +360,7 @@ export const TokenInputWidget = ({
                   disabled={disabled || balance === undefined}
                   onPress={() => {
                     handlePressPercentageButton(button, index)
+                    tokenAmountInputRef.current?.blur()
                   }}>
                   {button.text}
                 </Button>
