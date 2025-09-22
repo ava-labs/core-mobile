@@ -8,7 +8,8 @@ import {
   CreateCryptoQuoteNotFoundError,
   CreateCryptoQuoteError,
   CryptoCurrency,
-  CryptoQuotesError
+  CryptoQuotesError,
+  CreateCryptoQuoteErrorCode
 } from './types'
 
 export const isSupportedNativeErc20Token = (
@@ -100,6 +101,12 @@ export const getErrorMessage = (
       return {
         statusCode: response.data.code,
         message: response.data.message
+      }
+    }
+    if ('status' in response && 'statusText' in response) {
+      return {
+        statusCode: response.status as CreateCryptoQuoteErrorCode,
+        message: response.statusText as string | undefined
       }
     }
   }

@@ -273,26 +273,33 @@ export const useSelectAmount = ({
     setServiceProvider
   ])
 
+  const minMaxErrorMessage = useMemo(
+    () =>
+      (cryptoQuotesError?.statusCode ===
+        CreateCryptoQuoteErrorCode.NO_RESOURCE_FOUND &&
+        cryptoQuotesError.message?.toLowerCase().includes('not found')) ||
+      (cryptoQuotesError?.statusCode ===
+        CreateCryptoQuoteErrorCode.INCOMPATIBLE_REQUEST &&
+        cryptoQuotesError?.message
+          ?.toLowerCase()
+          .includes('not within the payment method limits')) ||
+      cryptoQuotesError?.message?.toLowerCase().includes('crypto_min_limit') ||
+      cryptoQuotesError?.message?.toLowerCase().includes('crypto_max_limit'),
+    [cryptoQuotesError]
+  )
+
   useEffect(() => {
     if (cryptoQuotesError === undefined) return
 
-    if (
-      (cryptoQuotesError?.statusCode === CreateCryptoQuoteErrorCode.NOT_FOUND &&
-        cryptoQuotesError.message.toLowerCase().includes('not found')) ||
-      (cryptoQuotesError?.statusCode ===
-        CreateCryptoQuoteErrorCode.INCOMPATIBLE_REQUEST &&
-        cryptoQuotesError.message
-          .toLowerCase()
-          .includes('does not match service providers'))
-    ) {
+    if (minMaxErrorMessage) {
       Logger.error(
-        `invalid request to fetch quotes for ${category}:`,
+        `The selected amount is not within the minimum and maximum limits for ${category}:`,
         cryptoQuotesError
       )
       return
     }
     Logger.error(`failed to fetch quotes for ${category}:`, cryptoQuotesError)
-  }, [cryptoQuotesError, category])
+  }, [minMaxErrorMessage, category, cryptoQuotesError])
 
   const errorMessage = useMemo(() => {
     if (
@@ -320,26 +327,14 @@ export const useSelectAmount = ({
         : `The maximum withdrawal token amount is ${formattedMaximumLimit} ${selectedCurrency}`
     }
 
-    if (
-      (cryptoQuotesError?.statusCode === CreateCryptoQuoteErrorCode.NOT_FOUND &&
-        cryptoQuotesError.message.toLowerCase().includes('not found')) ||
-      (cryptoQuotesError?.statusCode ===
-        CreateCryptoQuoteErrorCode.INCOMPATIBLE_REQUEST &&
-        cryptoQuotesError.message
-          .toLowerCase()
-          .includes('does not match service providers'))
-    ) {
-      return `${token?.tokenWithBalance.name} cannot be ${
-        category === ServiceProviderCategories.CRYPTO_ONRAMP
-          ? 'purchased'
-          : 'withdrawn'
-      } at the moment, please adjust the amount or try again later.`
+    if (minMaxErrorMessage) {
+      return 'The selected amount is not within the minimum and maximum limits'
     }
 
-    if (cryptoQuotesError) {
+    if (cryptoQuotesError?.statusCode) {
       return (
         cryptoQuotesError.message ??
-        'We are unable to fetch the quotes, please try again later'
+        'We are unable to fetch the quotes, please check your input. Adjust the country, currency, token, or amount and try again.'
       )
     }
 
@@ -352,9 +347,9 @@ export const useSelectAmount = ({
     sourceAmount,
     isBelowMaximumLimit,
     maximumLimit,
+    minMaxErrorMessage,
     cryptoQuotesError,
     token?.tokenWithBalance.symbol,
-    token?.tokenWithBalance.name,
     formatCurrency,
     selectedCurrency
   ])
