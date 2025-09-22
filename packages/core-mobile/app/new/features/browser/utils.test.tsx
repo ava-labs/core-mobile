@@ -11,7 +11,8 @@ import {
   removeTrailingSlash,
   prepareFaviconToLoad,
   isValidUrlWithProtocols,
-  isValidHttpUrlRegexp
+  isValidHttpUrlRegexp,
+  isValidHttpsUrl
 } from './utils'
 
 describe('sortDeFiProtocolInformationListByTvl', () => {
@@ -119,25 +120,25 @@ describe('isValidHttpUrl', () => {
 describe('isValidHttpsUrl', () => {
   it('should have returned true with https:// protocol', () => {
     const url = 'https://core.app'
-    const result = isValidHttpUrl(url)
+    const result = isValidHttpsUrl(url)
     expect(result).toStrictEqual(true)
   })
 
   it('should have returned false with http:// protocol', () => {
     const url = 'http://core.app'
-    const result = isValidHttpUrl(url)
-    expect(result).toStrictEqual(true)
+    const result = isValidHttpsUrl(url)
+    expect(result).toStrictEqual(false)
   })
 
   it('should have returned false without protocol', () => {
     const url = 'core.app'
-    const result = isValidHttpUrl(url)
+    const result = isValidHttpsUrl(url)
     expect(result).toStrictEqual(false)
   })
 
   it('should have returned false with non-http protocol', () => {
     const url = 'core://stake'
-    const result = isValidHttpUrl(url)
+    const result = isValidHttpsUrl(url)
     expect(result).toStrictEqual(false)
   })
 })
