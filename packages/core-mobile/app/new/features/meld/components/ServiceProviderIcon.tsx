@@ -80,7 +80,10 @@ const SERVICE_PROVIDER_TO_ICON: Record<string, React.FC<SvgProps> | undefined> =
     [ServiceProviders.PAYBIS]: Logos.PartnerLogos.Paybis,
     [ServiceProviders.STRIPE]: Logos.PartnerLogos.Stripe,
     [ServiceProviders.ONRAMPMONEY]: Logos.PartnerLogos.Onramp,
+    [ServiceProviders.KRYPTONIM]: Logos.PartnerLogos.Kryptonim,
+    [ServiceProviders.SWAPPED]: Logos.PartnerLogos.Swappeddotcom,
 
+    [ServiceProviders.BOOMFI]: undefined,
     [ServiceProviders.CHECKOUT]: undefined,
     [ServiceProviders.CIRCLE]: undefined,
     [ServiceProviders.FINICITY]: undefined,
@@ -91,9 +94,5 @@ const SERVICE_PROVIDER_TO_ICON: Record<string, React.FC<SvgProps> | undefined> =
     [ServiceProviders.MOOV]: undefined,
     [ServiceProviders.PLAID]: undefined,
     [ServiceProviders.SALTEDGE]: undefined,
-    [ServiceProviders.SALTEDGEPARTNERS]: undefined,
-
-    [ServiceProviders.KRYPTONIM]: undefined,
-    [ServiceProviders.SWAPPED]: undefined,
-    [ServiceProviders.BOOMFI]: undefined
+    [ServiceProviders.SALTEDGEPARTNERS]: undefined
   }
