@@ -103,10 +103,11 @@ export const getErrorMessage = (
         message: response.data.message
       }
     }
-    if ('status' in response && 'statusText' in response) {
+    if ('status' in response) {
       return {
         statusCode: response.status as CreateCryptoQuoteErrorCode,
-        message: response.statusText as string | undefined
+        message:
+          'statusText' in response ? (response.statusText as string) : undefined
       }
     }
   }
