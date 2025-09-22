@@ -26,7 +26,7 @@ interface TextInputProps extends _TextInputProps {
 }
 
 export const AutoFitTextInput = forwardRef<TextInput, TextInputProps>(
-  ({ initialFontSize = 42, ...props }): JSX.Element => {
+  ({ initialFontSize = 42, ...props }, ref): JSX.Element => {
     const animatedFontSize = useSharedValue(initialFontSize)
     const [containerWidth, setContainerWidth] = useState(0)
 
@@ -40,7 +40,7 @@ export const AutoFitTextInput = forwardRef<TextInput, TextInputProps>(
 
     const textStyle = useAnimatedStyle(() => {
       return {
-        fontSize: animatedFontSize.value + 1
+        fontSize: animatedFontSize.value + (Platform.OS === 'ios' ? 6 : 0.5)
       }
     })
 
@@ -58,7 +58,7 @@ export const AutoFitTextInput = forwardRef<TextInput, TextInputProps>(
       if (textWidth > 0) {
         const ratio = containerWidth / textWidth
         const newFontSize = Math.max(
-          12,
+          10,
           Math.min(initialFontSize, Math.floor(animatedFontSize.value * ratio))
         )
 
@@ -80,13 +80,9 @@ export const AutoFitTextInput = forwardRef<TextInput, TextInputProps>(
           }}>
           <AnimatedTextInput
             {...props}
-            style={[
-              {
-                width: '100%'
-              },
-              textInputStyle,
-              props.style
-            ]}
+            ref={ref}
+            style={[{ padding: 0 }, textInputStyle, props.style]}
+            allowFontScaling={false}
             multiline={false}
             numberOfLines={1}
             value={props.value}
@@ -110,9 +106,8 @@ export const AutoFitTextInput = forwardRef<TextInput, TextInputProps>(
                 fontFamily: 'Aeonik-Medium',
                 position: 'absolute',
                 textAlign: 'right',
-                right: Platform.OS === 'ios' ? 0 : 5,
+                right: Platform.OS === 'ios' ? 0 : 4,
                 opacity: 0
-                // color: 'green'
               },
               textStyle
             ]}
