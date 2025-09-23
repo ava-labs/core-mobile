@@ -167,7 +167,8 @@ export const useWatchlist = (): UseWatchListReturnType => {
   const getMarketTokenBySymbol = useCallback(
     (symbol: string): MarketToken | undefined =>
       allTokens.find(
-        token => token.symbol.toLowerCase() === symbol.toLowerCase()
+        token =>
+          token.symbol.toLowerCase().trim() === symbol.toLowerCase().trim() // handle symbols with different casing or extra spaces
       ),
     [allTokens]
   )
