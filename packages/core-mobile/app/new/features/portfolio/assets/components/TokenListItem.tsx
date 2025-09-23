@@ -1,11 +1,11 @@
 import { PriceChangeStatus } from '@avalabs/k2-alpine'
-import { UNKNOWN_AMOUNT } from 'consts/amount'
-import { useWatchlist } from 'hooks/watchlist/useWatchlist'
 import { useFormatCurrency } from 'new/common/hooks/useFormatCurrency'
 import React, { useRef, useCallback } from 'react'
 import { LocalTokenWithBalance } from 'store/balance'
-import { TokenGridView } from './TokenGridView'
+import { useMarketTokenBySymbol } from 'common/hooks/useMarketTokenBySymbol'
+import { useTokenNameForDisplay } from 'common/hooks/useTokenNameForDisplay'
 import { TokenListView } from './TokenListView'
+import { TokenGridView } from './TokenGridView'
 
 interface TokenListItemProps {
   token: LocalTokenWithBalance
@@ -20,30 +20,36 @@ export const TokenListItem = ({
   isGridView,
   onPress
 }: TokenListItemProps): React.JSX.Element => {
-  const { getMarketTokenBySymbol } = useWatchlist()
   const { formatCurrency } = useFormatCurrency()
   const { balanceInCurrency, symbol } = token
   const formattedBalance = balanceInCurrency
     ? formatCurrency({ amount: balanceInCurrency })
-    : ''
+    : undefined
 
-  const marketToken = getMarketTokenBySymbol(symbol)
+  const tokenNameForDisplay = useTokenNameForDisplay({ token }) ?? token.name
+
+  const marketToken = useMarketTokenBySymbol({
+    symbol,
+    errorContext: 'TokenListItem'
+  })
   const percentChange = marketToken?.priceChangePercentage24h ?? undefined
   const priceChange =
-    percentChange && balanceInCurrency
+    percentChange !== undefined && balanceInCurrency !== undefined
       ? (balanceInCurrency * percentChange) / 100
       : undefined
-  const formattedPrice = priceChange
-    ? formatCurrency({ amount: Math.abs(priceChange) })
-    : UNKNOWN_AMOUNT
+  const formattedPrice =
+    priceChange !== undefined
+      ? formatCurrency({ amount: Math.abs(priceChange) })
+      : undefined
 
-  const status = priceChange
-    ? priceChange > 0
-      ? PriceChangeStatus.Up
-      : priceChange < 0
-      ? PriceChangeStatus.Down
-      : PriceChangeStatus.Neutral
-    : PriceChangeStatus.Neutral
+  const status =
+    priceChange !== undefined
+      ? priceChange > 0
+        ? PriceChangeStatus.Up
+        : priceChange < 0
+        ? PriceChangeStatus.Down
+        : PriceChangeStatus.Neutral
+      : undefined
 
   const isPressDisabledRef = useRef(false)
 
@@ -65,6 +71,7 @@ export const TokenListItem = ({
   return isGridView ? (
     <TokenGridView
       token={token}
+      tokenNameForDisplay={tokenNameForDisplay}
       index={index}
       onPress={handlePress}
       priceChangeStatus={status}
@@ -74,6 +81,7 @@ export const TokenListItem = ({
   ) : (
     <TokenListView
       token={token}
+      tokenNameForDisplay={tokenNameForDisplay}
       index={index}
       onPress={handlePress}
       priceChangeStatus={status}

@@ -5,6 +5,7 @@ import BackBarButton from 'common/components/BackBarButton'
 import { ConnectButton } from 'common/components/ConnectButton'
 import React from 'react'
 import { Platform } from 'react-native'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 export const TAB_BAR_HEIGHT = 60
 
@@ -43,6 +44,32 @@ export const modalScreensOptions: NativeStackNavigationOptions = {
       height: '100%'
     }
   })
+}
+
+export function useModalScreensOptions(): {
+  modalScreensOptions: NativeStackNavigationOptions
+  secondaryModalScreensOptions: NativeStackNavigationOptions
+} {
+  const insets = useSafeAreaInsets()
+  return {
+    modalScreensOptions: {
+      ...modalScreensOptions,
+      contentStyle: {
+        // Android formsheet in native-stack has a default top padding of insets.top
+        // by removing the insets.top this we adjust the navigation bar position
+        marginTop: Platform.OS === 'android' ? -insets.top + 8 : 0
+      }
+    },
+    secondaryModalScreensOptions: {
+      ...modalScreensOptions,
+      contentStyle: {
+        // Android formsheet in native-stack has a default top padding of insets.top
+        // by removing the insets.top this we adjust the navigation bar position
+        marginTop: Platform.OS === 'android' ? -insets.top + 8 : 0
+      },
+      sheetAllowedDetents: [Platform.OS === 'android' ? 0.92 : 0.99]
+    }
+  }
 }
 
 export const secondaryModalScreensOptions: NativeStackNavigationOptions = {

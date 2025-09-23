@@ -6,7 +6,13 @@ import {
 } from '@avalabs/k2-alpine'
 import { useHeaderHeight } from '@react-navigation/elements'
 import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
-import React, { useCallback, useLayoutEffect, useRef, useState } from 'react'
+import React, {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState
+} from 'react'
 import { LayoutRectangle, StyleProp, View, ViewStyle } from 'react-native'
 import { ScrollView } from 'react-native-gesture-handler'
 import {
@@ -15,6 +21,7 @@ import {
   KeyboardStickyView
 } from 'react-native-keyboard-controller'
 import Animated, {
+  FadeIn,
   interpolate,
   useAnimatedStyle,
   useSharedValue
@@ -105,8 +112,8 @@ export const ScrollScreen = ({
 
   const headerRef = useRef<View>(null)
   const contentHeaderHeight = useSharedValue<number>(0)
-  const footerRef = useRef<View>(null)
   const footerHeight = useSharedValue<number>(0)
+  const footerRef = useRef<View>(null)
 
   const { onScroll, scrollY, targetHiddenProgress } = useFadingHeaderNavigation(
     {
@@ -182,119 +189,95 @@ export const ScrollScreen = ({
           {renderHeader?.()}
         </View>
       )
-    }
-  }, [animatedHeaderStyle, headerStyle, renderHeader, subtitle, title, titleSx])
-
-  const animatedContentContainerStyle = useAnimatedStyle(() => {
-    return {
-      paddingBottom: disableStickyFooter
-        ? insets.bottom + 24
-        : footerHeight.value
-    }
-  })
-
-  // 90% of our screens reuse this component but only some need keyboard avoiding
-  // If you have an input on the screen, you need to enable this prop
-  if (shouldAvoidKeyboard) {
-    return (
-      <View style={{ flex: 1 }}>
-        <KeyboardScrollView
-          extraKeyboardSpace={
-            disableStickyFooter ? -footerHeight.value - insets.bottom : 0
-          }
-          keyboardDismissMode="interactive"
-          keyboardShouldPersistTaps="handled"
-          showsVerticalScrollIndicator={false}
-          {...props}
-          style={{
-            flex: 1
-          }}
-          contentContainerStyle={[
-            props?.contentContainerStyle,
-            animatedContentContainerStyle,
+    } else {
+      // If we don't have a title or subtitle, we need to render an empty header
+      // so that the header height is not undefined
+      return (
+        <View
+          ref={headerRef}
+          style={[
+            headerStyle,
             {
-              paddingTop: headerHeight
+              position: 'absolute',
+              minHeight: headerHeight,
+              pointerEvents: 'none'
             }
           ]}
-          onScroll={onScroll}>
-          {renderHeaderContent()}
-          {children}
-        </KeyboardScrollView>
+        />
+      )
+    }
+  }, [
+    animatedHeaderStyle,
+    headerRef,
+    headerHeight,
+    headerStyle,
+    renderHeader,
+    subtitle,
+    title,
+    titleSx
+  ])
 
-        {renderFooter && renderFooter() ? (
-          <KeyboardStickyView
-            enabled={!disableStickyFooter}
-            offset={{
-              closed: -insets.bottom,
-              opened: 0
-            }}>
+  const [showFooter, setShowFooter] = useState(false)
+
+  useEffect(() => {
+    if (renderFooter) {
+      requestAnimationFrame(() => {
+        setShowFooter(true)
+      })
+    }
+  }, [renderFooter])
+
+  const renderFooterContent = useCallback(() => {
+    if (renderFooter && showFooter) {
+      const footer = renderFooter()
+      if (footer) {
+        if (shouldAvoidKeyboard) {
+          return (
+            <KeyboardStickyView
+              enabled={!disableStickyFooter}
+              offset={{
+                opened: insets.bottom
+              }}>
+              <LinearGradientBottomWrapper>
+                <Animated.View
+                  entering={FadeIn.delay(150)}
+                  style={{
+                    paddingHorizontal: 16,
+                    paddingBottom: insets.bottom + 16
+                  }}>
+                  {footer}
+                </Animated.View>
+              </LinearGradientBottomWrapper>
+            </KeyboardStickyView>
+          )
+        } else {
+          return (
             <LinearGradientBottomWrapper>
-              <View
-                ref={footerRef}
+              <Animated.View
+                entering={FadeIn.delay(150)}
                 style={{
-                  padding: 16,
-                  paddingTop: 0
+                  paddingHorizontal: 16,
+                  paddingBottom: insets.bottom + 16
                 }}>
-                {renderFooter()}
-              </View>
+                {footer}
+              </Animated.View>
             </LinearGradientBottomWrapper>
-          </KeyboardStickyView>
-        ) : null}
+          )
+        }
+      }
+    }
 
-        <View
-          pointerEvents="none"
-          style={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            height: headerHeight
-          }}>
-          <BlurViewWithFallback
-            style={{
-              flex: 1
-            }}
-          />
-          <Animated.View
-            style={[
-              animatedBorderStyle,
-              {
-                position: 'absolute',
-                bottom: 0,
-                left: 0,
-                right: 0
-              }
-            ]}>
-            <Separator />
-          </Animated.View>
-        </View>
-      </View>
-    )
-  }
+    return null
+  }, [
+    renderFooter,
+    showFooter,
+    shouldAvoidKeyboard,
+    disableStickyFooter,
+    insets.bottom
+  ])
 
-  // All of our screens have to be scrollable
-  // If we don't have an input on the screen then we should not enable keyboard avoiding
-  return (
-    <View style={{ flex: 1 }}>
-      <ScrollView
-        style={{ flex: 1 }}
-        showsVerticalScrollIndicator={false}
-        keyboardDismissMode="interactive"
-        keyboardShouldPersistTaps="handled"
-        {...props}
-        contentContainerStyle={[
-          props?.contentContainerStyle,
-          {
-            paddingBottom: insets.bottom + 32,
-            paddingTop: headerHeight
-          }
-        ]}
-        onScroll={onScroll}>
-        {renderHeaderContent()}
-        {children}
-      </ScrollView>
-
+  const renderHeaderBackground = useCallback(() => {
+    return (
       <View
         pointerEvents="none"
         style={{
@@ -323,19 +306,69 @@ export const ScrollScreen = ({
           <Separator />
         </Animated.View>
       </View>
+    )
+  }, [headerHeight, animatedBorderStyle])
 
-      {renderFooter && renderFooter() ? (
-        <LinearGradientBottomWrapper>
-          <View
-            style={{
-              padding: 16,
-              paddingTop: 0,
-              paddingBottom: insets.bottom + 16
-            }}>
-            {renderFooter()}
-          </View>
-        </LinearGradientBottomWrapper>
-      ) : null}
+  // 90% of our screens reuse this component but only some need keyboard avoiding
+  // If you have an input on the screen, you need to enable this prop
+  if (shouldAvoidKeyboard) {
+    return (
+      <View style={{ flex: 1 }}>
+        <KeyboardScrollView
+          extraKeyboardSpace={
+            disableStickyFooter ? -footerHeight.value - insets.bottom : 0
+          }
+          keyboardDismissMode="interactive"
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+          {...props}
+          style={{
+            flex: 1
+          }}
+          contentContainerStyle={[
+            props?.contentContainerStyle,
+            {
+              paddingBottom: disableStickyFooter
+                ? insets.bottom + 24
+                : footerHeight.value + 16,
+              paddingTop: headerHeight
+            }
+          ]}
+          onScroll={onScroll}>
+          {renderHeaderContent()}
+          {children}
+        </KeyboardScrollView>
+
+        {renderFooterContent()}
+        {renderHeaderBackground()}
+      </View>
+    )
+  }
+
+  // All of our screens have to be scrollable
+  // If we don't have an input on the screen then we should not enable keyboard avoiding
+  return (
+    <View style={[{ flex: 1 }, props.style]}>
+      <ScrollView
+        style={{ flex: 1 }}
+        showsVerticalScrollIndicator={false}
+        keyboardDismissMode="interactive"
+        keyboardShouldPersistTaps="handled"
+        {...props}
+        contentContainerStyle={[
+          props?.contentContainerStyle,
+          {
+            paddingBottom: insets.bottom + 32,
+            paddingTop: headerHeight
+          }
+        ]}
+        onScroll={onScroll}>
+        {renderHeaderContent()}
+        {children}
+      </ScrollView>
+
+      {renderFooterContent()}
+      {renderHeaderBackground()}
     </View>
   )
 }

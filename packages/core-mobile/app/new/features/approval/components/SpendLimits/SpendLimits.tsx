@@ -6,10 +6,10 @@ import { DropdownGroup } from 'new/common/components/DropdownMenu'
 import { bigIntToString, TokenUnit } from '@avalabs/core-utils-sdk'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
-import { useWatchlist } from 'hooks/watchlist/useWatchlist'
 import { useSelector } from 'react-redux'
 import { selectSelectedCurrency } from 'store/settings/currency/slice'
 import { Space } from 'common/components/Space'
+import { useMarketTokenBySymbol } from 'common/hooks/useMarketTokenBySymbol'
 import { getDefaultSpendLimitValue } from './utils'
 import { MenuId } from './types'
 import { SpendLimitOptions } from './SpendLimitOptions'
@@ -21,7 +21,6 @@ export const SpendLimits = ({
   spendLimits: SpendLimit[]
   onSelect?: (spendLimit: SpendLimit) => void
 }): JSX.Element | null => {
-  const { getMarketTokenBySymbol } = useWatchlist()
   const { formatTokenInCurrency } = useFormatCurrency()
   const selectedCurrency = useSelector(selectSelectedCurrency)
 
@@ -88,6 +87,7 @@ export const SpendLimits = ({
       : 0
   const tokenSymbol = spendLimit?.tokenApproval.token.symbol
   const limitType = spendLimit?.limitType
+  const marketToken = useMarketTokenBySymbol({ symbol: tokenSymbol })
 
   const [amount, amountInCurrency] = useMemo(() => {
     if (limitType === Limit.UNLIMITED) return ['∞', undefined]
@@ -100,8 +100,6 @@ export const SpendLimits = ({
       tokenDecimals,
       tokenSymbol
     ).toDisplay()
-
-    const marketToken = getMarketTokenBySymbol(tokenSymbol)
 
     if (!marketToken || !marketToken.currentPrice)
       return [amountToDisplay, undefined]
@@ -120,7 +118,7 @@ export const SpendLimits = ({
     limitType,
     formatTokenInCurrency,
     selectedCurrency,
-    getMarketTokenBySymbol
+    marketToken
   ])
 
   return (

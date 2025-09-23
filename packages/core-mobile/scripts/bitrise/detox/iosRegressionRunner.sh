@@ -15,10 +15,9 @@ else
   QT_QPA_PLATFORM=xcb; ./node_modules/.bin/detox test -c ios.external.release.ci --headless --max-workers 2; test_result=$?
 fi
 
-./scripts/datadog/updateIosDashboard.sh && sleep 5
-
 npx ts-node ./e2e/attachLogsSendResultsToTestrail.ts && sleep 5
 
+./scripts/datadog/updateIosDashboard.sh && sleep 5
 
 if ((test_result != 0)); then
   exit 1

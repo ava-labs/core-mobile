@@ -18,17 +18,18 @@ import {
   View
 } from '@avalabs/k2-alpine'
 import { ScrollScreen } from 'common/components/ScrollScreen'
+import { TRUNCATE_ADDRESS_LENGTH } from 'common/consts/text'
+import { usePrevious } from 'common/hooks/usePrevious'
+import { dismissKeyboardIfNeeded } from 'common/utils/dismissKeyboardIfNeeded'
 import { loadAvatar } from 'common/utils/loadAvatar'
+import { xpAddressWithoutPrefix } from 'common/utils/xpAddressWIthoutPrefix'
+import { MINIMUM_SATOSHI_SEND_AMOUNT } from 'consts/amount'
 import { useRouter } from 'expo-router'
 import { LogoWithNetwork } from 'features/portfolio/assets/components/LogoWithNetwork'
 import { useWatchlist } from 'hooks/watchlist/useWatchlist'
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { selectSelectedCurrency } from 'store/settings/currency'
-import { TRUNCATE_ADDRESS_LENGTH } from 'common/consts/text'
-import { xpAddressWithoutPrefix } from 'common/utils/xpAddressWIthoutPrefix'
-import { usePrevious } from 'common/hooks/usePrevious'
-import { MINIMUM_SATOSHI_SEND_AMOUNT } from 'consts/amount'
 import { useSendContext } from '../context/sendContext'
 import { useSendSelectedToken } from '../store'
 
@@ -176,6 +177,12 @@ export const SendToken = ({ onSend }: { onSend: () => void }): JSX.Element => {
     return loadAvatar(recipient?.avatar)
   }, [recipient?.avatar])
 
+  const onSubmit = useCallback(() => {
+    dismissKeyboardIfNeeded()
+
+    onSend()
+  }, [onSend])
+
   const renderFooter = useCallback(() => {
     return (
       <View
@@ -187,12 +194,12 @@ export const SendToken = ({ onSend }: { onSend: () => void }): JSX.Element => {
           disabled={!canSubmit}
           type="primary"
           size="large"
-          onPress={onSend}>
+          onPress={onSubmit}>
           {isSending ? <ActivityIndicator size="small" /> : 'Next'}
         </Button>
       </View>
     )
-  }, [canSubmit, isSending, onSend])
+  }, [canSubmit, isSending, onSubmit])
 
   return (
     <ScrollScreen

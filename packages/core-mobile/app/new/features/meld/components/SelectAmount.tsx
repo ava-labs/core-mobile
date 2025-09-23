@@ -1,27 +1,28 @@
-import { ScrollScreen } from 'common/components/ScrollScreen'
-import React, { useCallback, useEffect, useState } from 'react'
 import {
+  ActivityIndicator,
   Button,
-  View,
-  Text,
+  FiatAmountInputWidget,
   Icons,
   Pressable,
-  useTheme,
-  FiatAmountInputWidget,
-  ActivityIndicator,
   showAlert,
-  useInversedTheme
+  Text,
+  useInversedTheme,
+  useTheme,
+  View
 } from '@avalabs/k2-alpine'
-import { LogoWithNetwork } from 'features/portfolio/assets/components/LogoWithNetwork'
-import { selectSelectedCurrency } from 'store/settings/currency'
-import { useSelector } from 'react-redux'
+import { ScrollScreen } from 'common/components/ScrollScreen'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import useInAppBrowser from 'common/hooks/useInAppBrowser'
-import { useSelectAmount } from '../hooks/useSelectAmount'
+import { dismissKeyboardIfNeeded } from 'common/utils/dismissKeyboardIfNeeded'
+import { LogoWithNetwork } from 'features/portfolio/assets/components/LogoWithNetwork'
+import React, { useCallback, useEffect, useState } from 'react'
+import { useSelector } from 'react-redux'
+import { selectSelectedCurrency } from 'store/settings/currency'
 import { ServiceProviderCategories } from '../consts'
+import { useResetMeldTokenList } from '../hooks/useResetMeldTokenList'
+import { useSelectAmount } from '../hooks/useSelectAmount'
 import { useOfframpActivityIndicator, useOfframpSessionId } from '../store'
 import { getErrorMessage } from '../utils'
-import { useResetMeldTokenList } from '../hooks/useResetMeldTokenList'
 
 interface SelectAmountProps {
   title: string
@@ -93,6 +94,9 @@ export const SelectAmount = ({
   const onNext = useCallback(async (): Promise<void> => {
     setSessionId(undefined)
     setIsLoadingCreateSessionWidget(true)
+
+    dismissKeyboardIfNeeded()
+
     try {
       const sessionWidget = await createSessionWidget()
 

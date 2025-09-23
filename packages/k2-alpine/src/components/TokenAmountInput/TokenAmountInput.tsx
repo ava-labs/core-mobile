@@ -1,12 +1,7 @@
 import { bigintToBig, bigToBigInt } from '@avalabs/core-utils-sdk'
 import Big from 'big.js'
 import React, { useEffect, useRef, useState } from 'react'
-import {
-  InteractionManager,
-  Platform,
-  TextInput,
-  TextInputProps
-} from 'react-native'
+import { Platform, TextInput, TextInputProps } from 'react-native'
 import { useTheme } from '../../hooks'
 import { alpha } from '../../utils'
 import {
@@ -70,7 +65,7 @@ export const TokenAmountInput = ({
 
   useEffect(() => {
     if (autoFocus) {
-      InteractionManager.runAfterInteractions(() => {
+      requestAnimationFrame(() => {
         inputRef.current?.focus()
       })
     }

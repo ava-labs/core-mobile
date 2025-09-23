@@ -39,7 +39,7 @@ export const useGetTradeLimits = ({
   const [countryCode] = useMeldCountryCode()
 
   return useQuery({
-    enabled: !!serviceProviders,
+    enabled: serviceProviders && serviceProviders?.length > 0,
     queryKey: [
       meldQueryKey,
       category,
