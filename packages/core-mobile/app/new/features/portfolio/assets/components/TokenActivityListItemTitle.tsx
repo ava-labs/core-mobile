@@ -229,14 +229,26 @@ export const TokenActivityListItemTitle = ({
               ]
             }
 
+            if (tx.tokens.some(token => token.type === TokenType.NATIVE)) {
+              return [
+                renderAmount(a1),
+                ' ',
+                s1,
+                ' swapped for ',
+                renderAmount(a2),
+                ' ',
+                s2
+              ]
+            }
+
             return [
-              renderAmount(a1),
-              ' ',
-              s1,
-              ' swapped for ',
               renderAmount(a2),
               ' ',
-              s2
+              s2,
+              ' swapped for ',
+              renderAmount(a1),
+              ' ',
+              s1
             ]
           }
 
