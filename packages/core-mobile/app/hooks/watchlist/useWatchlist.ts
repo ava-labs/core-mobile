@@ -12,6 +12,7 @@ import { useSelector } from 'react-redux'
 import { ChartData } from 'services/token/types'
 import { transformTrendingTokens } from 'services/watchlist/utils/transform'
 import { useIsFocused } from '@react-navigation/native'
+import { unwrapAssetSymbol } from 'common/utils/bridgeUtils'
 import { useGetPrices } from './useGetPrices'
 import { useGetTokensAndCharts } from './useGetTokensAndCharts'
 import { useGetTrendingTokens } from './useGetTrendingTokens'
@@ -166,10 +167,14 @@ export const useWatchlist = (): UseWatchListReturnType => {
 
   const getMarketTokenBySymbol = useCallback(
     (symbol: string): MarketToken | undefined =>
-      allTokens.find(
-        token =>
-          token.symbol.toLowerCase().trim() === symbol.toLowerCase().trim() // handle symbols with different casing or extra spaces
-      ),
+      allTokens.find(token => {
+        const sourceSymbol = token.symbol.toLowerCase().trim()
+        const targetSymbol = symbol.toLowerCase().trim()
+        return (
+          sourceSymbol === targetSymbol ||
+          sourceSymbol === unwrapAssetSymbol(targetSymbol)
+        )
+      }),
     [allTokens]
   )
 
