@@ -60,6 +60,7 @@ allprojects {
         maven { url("$rootDir/../node_modules/detox/Detox-android") } // This is required for detox to work
         mavenCentral()
         maven { url "$rootDir/../node_modules/expo-camera/android/maven" }
+        maven { url 'https://www.jitpack.io' }
     }
     
     configurations.all {
