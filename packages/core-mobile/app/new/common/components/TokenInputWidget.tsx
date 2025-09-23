@@ -266,15 +266,15 @@ export const TokenInputWidget = ({
                       <View
                         style={{
                           width: '100%',
-                          marginBottom: Platform.OS === 'ios' ? 8 : 0
+                          marginBottom: Platform.OS === 'ios' ? 4 : 0
                         }}>
                         <Text
                           adjustsFontSizeToFit
                           numberOfLines={1}
                           style={{
                             fontFamily: 'Aeonik-Medium',
-                            fontSize: 42,
-                            lineHeight: 42,
+                            fontSize: 36,
+                            lineHeight: 36,
                             width: '100%',
                             textAlign: 'right',
                             color: !amount
