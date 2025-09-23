@@ -14,7 +14,7 @@ This repository is a monorepo that we manage using [Yarn workspaces](https://yar
 | Package                                                                                                               | Description                         |
 | :-------------------------------------------------------------------------------------------------------------------- | :---------------------------------- |
 | [@avalabs/core-mobile](https://github.com/ava-labs/avalanche-wallet-apps/tree/main/packages/core-mobile)           | Core Mobile app                     |
-| [@avalabs/k2-alpine](https://github.com/ava-labs/avalanche-wallet-apps/tree/main/packages/k2-alpine)               | Mobile Design System (under 🚧👷‍♂️🚧) |
+| [@avalabs/k2-alpine](https://github.com/ava-labs/avalanche-wallet-apps/tree/main/packages/k2-alpine)               | Mobile Design System                |
 | [eslint-plugin-avalabs-mobile](https://github.com/ava-labs/avalanche-wallet-apps/tree/main/packages/eslint-mobile) | Shared Eslint plugin                |
 | [@avalabs/tsconfig-mobile](https://github.com/ava-labs/avalanche-wallet-apps/tree/main/packages/tsconfig-mobile)   | Shared Typescript config            |
 
