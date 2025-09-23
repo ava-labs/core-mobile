@@ -13,8 +13,7 @@
     "tsc": "yarn workspaces foreach -p run tsc",
     "test": "yarn workspaces foreach -p run test",
     "core": "yarn workspace @avalabs/core-mobile",
-    "k2": "yarn workspace @avalabs/k2-mobile",
-    "alpine": "yarn workspace @avalabs/k2-alpine"
+    "k2": "yarn workspace @avalabs/k2-alpine"
   },
   "devDependencies": {
     "husky": "9.1.6",
