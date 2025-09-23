@@ -11,9 +11,9 @@ import {
 import { useNetworks } from 'hooks/networks/useNetworks'
 import React, { ReactNode, useCallback, useMemo } from 'react'
 import { useSelector } from 'react-redux'
-import { selectIsPrivacyModeEnabled } from 'store/settings/securityPrivacy'
 import { selectActiveAccount } from 'store/account'
 import { getAddressByNetwork } from 'store/account/utils'
+import { selectIsPrivacyModeEnabled } from 'store/settings/securityPrivacy'
 import Logger from 'utils/Logger'
 import { TokenActivityTransaction } from './TokenActivityListItem'
 
@@ -151,7 +151,7 @@ export const TokenActivityListItemTitle = ({
   // Build an array of nodes: strings and React elements
   // eslint-disable-next-line sonarjs/cognitive-complexity
   const nodes = useMemo<ReactNode[]>(() => {
-    const { a1, a2, s1, s2 } = getIOTokenAmountAndSymbol()
+    const { a1, s1 } = getIOTokenAmountAndSymbol()
 
     switch (tx.txType) {
       case TransactionType.BRIDGE:
@@ -193,8 +193,6 @@ export const TokenActivityListItemTitle = ({
         if (tx.isContractCall) {
           // if the tx has 3 tokens, it means we funded the gas
           if (tx.tokens.length > 2) {
-            const a3 = tx.tokens[2]?.amount
-            const s3 = tx.tokens[2]?.symbol
             // if all the tokens have the same symbol, it's a send/receive
             if (
               tx.tokens[0]?.symbol === tx.tokens[1]?.symbol &&
@@ -208,15 +206,7 @@ export const TokenActivityListItemTitle = ({
               ]
             }
 
-            return [
-              renderAmount(a1),
-              ' ',
-              s1,
-              ' swapped for ',
-              renderAmount(a3),
-              ' ',
-              s3
-            ]
+            return getSwapTitle(tx)
           }
 
           if (tx.tokens.length > 1) {
@@ -229,33 +219,14 @@ export const TokenActivityListItemTitle = ({
               ]
             }
 
-            if (tx.tokens.some(token => token.type === TokenType.NATIVE)) {
-              return [
-                renderAmount(a1),
-                ' ',
-                s1,
-                ' swapped for ',
-                renderAmount(a2),
-                ' ',
-                s2
-              ]
-            }
-
-            return [
-              renderAmount(a2),
-              ' ',
-              s2,
-              ' swapped for ',
-              renderAmount(a1),
-              ' ',
-              s1
-            ]
+            return getSwapTitle(tx)
           }
 
           if (tx.tokens.length === 1) {
             if (isPotentiallySwap(tx)) {
-              return [renderAmount(a1), ' ', s1, ' swapped for ', s2]
+              return getSwapTitle(tx)
             }
+
             return [
               renderAmount(a1),
               ' ',
