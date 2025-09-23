@@ -198,19 +198,16 @@ export const TokenInputWidget = ({
                 outerBorderColor={colors.$surfaceSecondary}
               />
             )}
-            <View
-              sx={{ flex: 1, minHeight: 56, justifyContent: 'space-between' }}>
+            <View sx={{ flex: 1, justifyContent: 'space-between' }}>
               <View
                 sx={{
                   flexDirection: 'row',
-                  alignItems: 'center',
-                  gap: 10,
-                  justifyContent: 'space-between'
+                  gap: 8
                 }}>
                 <TouchableOpacity
                   onPress={onSelectToken}
                   disabled={!isTokenSelectable || disabled}>
-                  <View sx={{ gap: 1, minHeight: 48 }}>
+                  <View sx={{ gap: 1 }}>
                     {token && <Text variant="subtitle2">{title}</Text>}
                     <View sx={{ flexDirection: 'row', alignItems: 'center' }}>
                       <Text testID="select_token_title" variant="heading6">
@@ -236,7 +233,8 @@ export const TokenInputWidget = ({
                     sx={{
                       alignItems: 'flex-end',
                       justifyContent: 'center',
-                      flex: 1
+                      flex: 1,
+                      minHeight: 50
                     }}
                     pointerEvents={token === undefined ? 'none' : 'auto'}>
                     {editable ? (
@@ -248,7 +246,7 @@ export const TokenInputWidget = ({
                         style={{
                           width: '100%',
                           textAlign: 'right',
-                          // height: 52,
+                          height: 50,
                           fontFamily: 'Aeonik-Medium',
                           color:
                             inputTextColor ??
@@ -268,7 +266,7 @@ export const TokenInputWidget = ({
                       <View
                         style={{
                           width: '100%',
-                          justifyContent: 'flex-end'
+                          marginBottom: Platform.OS === 'ios' ? 8 : 0
                         }}>
                         <Text
                           adjustsFontSizeToFit

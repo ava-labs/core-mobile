@@ -1,5 +1,5 @@
 import { SxProp } from 'dripsy'
-import React, { forwardRef, useState } from 'react'
+import React, { forwardRef, useState, useCallback, useRef } from 'react'
 import {
   LayoutChangeEvent,
   Platform,
@@ -26,50 +26,63 @@ interface TextInputProps extends _TextInputProps {
 }
 
 export const AutoFitTextInput = forwardRef<TextInput, TextInputProps>(
-  ({ initialFontSize = 42, ...props }, ref): JSX.Element => {
+  ({ initialFontSize = 42, onChangeText, ...props }, ref): JSX.Element => {
     const animatedFontSize = useSharedValue(initialFontSize)
     const [containerWidth, setContainerWidth] = useState(0)
+    const lastCalculatedText = useRef<string>('')
+    const isCalculating = useRef<boolean>(false)
 
-    const handleLayout = (e: LayoutChangeEvent): void => {
+    const handleLayout = useCallback((e: LayoutChangeEvent): void => {
       setContainerWidth(e.nativeEvent.layout.width)
-    }
+    }, [])
 
-    const handleTextChange = (value: string): void => {
-      props.onChangeText?.(value)
-    }
+    const handleTextChange = useCallback(
+      (value: string): void => {
+        onChangeText?.(value)
+      },
+      [onChangeText]
+    )
 
     const textStyle = useAnimatedStyle(() => {
       return {
-        fontSize: animatedFontSize.value
+        fontSize: animatedFontSize.value,
+        lineHeight: animatedFontSize.value
       }
     })
 
-    const textInputStyle = useAnimatedStyle(() => {
-      return {
-        fontSize: animatedFontSize.value
-      }
-    })
+    const handleTextLayout = useCallback(
+      (e: LayoutChangeEvent): void => {
+        if (!containerWidth || isCalculating.current) return
 
-    const handleTextLayout = (e: LayoutChangeEvent): void => {
-      if (!containerWidth) return
+        const textWidth = e.nativeEvent.layout.width
+        const currentText = props.value || ''
 
-      const textWidth = e.nativeEvent.layout.width
+        // Avoid recalculation if text hasn't changed
+        if (lastCalculatedText.current === currentText) return
 
-      if (textWidth > 0) {
-        const ratio = containerWidth / textWidth
-        const newFontSize = Math.max(
-          10,
-          Math.min(initialFontSize, Math.floor(animatedFontSize.value * ratio))
-        )
+        if (textWidth > 0) {
+          const ratio = containerWidth / textWidth
+          const newFontSize = Math.max(
+            10,
+            Math.min(
+              initialFontSize,
+              Math.round(animatedFontSize.value * ratio)
+            )
+          )
 
-        if (newFontSize !== animatedFontSize.value) {
-          animatedFontSize.value = withTiming(newFontSize, {
-            ...ANIMATED.TIMING_CONFIG,
-            duration: 300
-          })
+          // Only animate if there's a meaningful difference (avoid micro-adjustments)
+          if (Math.abs(newFontSize - animatedFontSize.value) > 0.5) {
+            animatedFontSize.value = withTiming(newFontSize, {
+              ...ANIMATED.TIMING_CONFIG,
+              duration: 300
+            })
+          }
+
+          lastCalculatedText.current = currentText
         }
-      }
-    }
+      },
+      [containerWidth, initialFontSize, props.value, animatedFontSize]
+    )
 
     return (
       <>
@@ -81,11 +94,9 @@ export const AutoFitTextInput = forwardRef<TextInput, TextInputProps>(
           <AnimatedTextInput
             {...props}
             ref={ref}
-            style={[{ padding: 0 }, textInputStyle, props.style]}
-            allowFontScaling={false}
+            style={[{ padding: 0 }, textStyle, props.style]}
             multiline={false}
             numberOfLines={1}
-            value={props.value}
             onChangeText={handleTextChange}
           />
         </View>
@@ -106,8 +117,10 @@ export const AutoFitTextInput = forwardRef<TextInput, TextInputProps>(
                 fontFamily: 'Aeonik-Medium',
                 position: 'absolute',
                 textAlign: 'right',
+                right: 0,
                 paddingRight: Platform.OS === 'ios' ? 32 : 0,
                 opacity: 0
+                // color: 'green'
               },
               textStyle
             ]}
