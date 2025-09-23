@@ -198,7 +198,8 @@ export const TokenInputWidget = ({
                 outerBorderColor={colors.$surfaceSecondary}
               />
             )}
-            <View sx={{ flex: 1, gap: 8 }}>
+            <View
+              sx={{ flex: 1, minHeight: 56, justifyContent: 'space-between' }}>
               <View
                 sx={{
                   flexDirection: 'row',
@@ -209,7 +210,7 @@ export const TokenInputWidget = ({
                 <TouchableOpacity
                   onPress={onSelectToken}
                   disabled={!isTokenSelectable || disabled}>
-                  <View sx={{ gap: 1, minHeight: 42 }}>
+                  <View sx={{ gap: 1, minHeight: 48 }}>
                     {token && <Text variant="subtitle2">{title}</Text>}
                     <View sx={{ flexDirection: 'row', alignItems: 'center' }}>
                       <Text testID="select_token_title" variant="heading6">

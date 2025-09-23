@@ -40,7 +40,7 @@ export const AutoFitTextInput = forwardRef<TextInput, TextInputProps>(
 
     const textStyle = useAnimatedStyle(() => {
       return {
-        fontSize: animatedFontSize.value + (Platform.OS === 'ios' ? 6 : 0.5)
+        fontSize: animatedFontSize.value
       }
     })
 
@@ -106,7 +106,7 @@ export const AutoFitTextInput = forwardRef<TextInput, TextInputProps>(
                 fontFamily: 'Aeonik-Medium',
                 position: 'absolute',
                 textAlign: 'right',
-                right: Platform.OS === 'ios' ? 0 : 4,
+                paddingRight: Platform.OS === 'ios' ? 32 : 0,
                 opacity: 0
               },
               textStyle
