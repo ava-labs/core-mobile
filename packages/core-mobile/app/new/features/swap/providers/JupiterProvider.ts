@@ -101,12 +101,21 @@ export const JupiterProvider: SwapProvider<
       }
     })
 
+    // If no fee account is available, remove platformFee from quote to maintain consistency
+    // Jupiter API expects either both platformFee + feeAccount or neither
+    const cleanedQuote = feeAccount
+      ? quote
+      : {
+          ...quote,
+          platformFee: null
+        }
+
     const [txResponse, buildTxError] = await resolve(
       jupiterApi.swap({
-        quoteResponse: quote,
+        quoteResponse: cleanedQuote,
         userPublicKey: userAddress,
         dynamicComputeUnitLimit: true, // Gives us a higher chance of the transaction landing
-        feeAccount
+        ...(feeAccount && { feeAccount })
       })
     )
 
