@@ -14,6 +14,7 @@ import { ACTIONS } from 'contexts/DeeplinkContext/types'
 import { useDebouncedCallback } from 'use-debounce'
 import { useMarketTokenBySymbol } from 'common/hooks/useMarketTokenBySymbol'
 import Logger from 'utils/Logger'
+import { humanize } from 'utils/string/humanize'
 import {
   PaymentMethodNames,
   ServiceProviderCategories,
