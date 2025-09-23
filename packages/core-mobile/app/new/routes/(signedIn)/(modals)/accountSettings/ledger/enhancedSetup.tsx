@@ -12,8 +12,6 @@ export default function EnhancedLedgerSetupScreen(): JSX.Element {
   }
 
   const handleCancel = (): void => {
-    // @ts-ignore TODO: make routes typesafe
-    // Go back to the import wallet screen
     router.back()
   }
 

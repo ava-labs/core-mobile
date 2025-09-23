@@ -431,6 +431,12 @@ export class LedgerWallet implements Wallet {
           // For now, we'll return null and let it fall back to device connection
           return null
         }
+        case NetworkVMType.PVM: {
+          // For PVM (Avalanche P-Chain), we need to use Avalanche address format
+          // This is more complex and would require Avalanche-specific address generation
+          // For now, we'll return null and let it fall back to device connection
+          return null
+        }
         case NetworkVMType.BITCOIN: {
           // For Bitcoin, convert public key to Bitcoin address
           return getBtcAddressFromPubKey(
