@@ -172,7 +172,7 @@ export const SelectServiceProvider = ({
                   borderColor: alpha(colors.$textPrimary, 0.1)
                 }}>
                 <ServiceProviderIcon
-                  serviceProvider={serviceProvider.serviceProvider}
+                  serviceProvider={serviceProvider}
                   size={IMAGE_SIZE}
                 />
               </View>
@@ -184,7 +184,8 @@ export const SelectServiceProvider = ({
                     fontWeight: 600,
                     color: colors.$textPrimary
                   }}>
-                  {ServiceProviderNames[serviceProvider.serviceProvider]}
+                  {ServiceProviderNames[serviceProvider.serviceProvider] ??
+                    serviceProvider.name}
                 </Text>
                 {index === 0 &&
                   category === ServiceProviderCategories.CRYPTO_ONRAMP && (
