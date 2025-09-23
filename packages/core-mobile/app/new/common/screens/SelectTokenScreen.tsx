@@ -98,7 +98,9 @@ export const SelectTokenScreen = <T extends object>({
   }, [networkChainId, networks])
 
   useEffect(() => {
-    dismissKeyboardIfNeeded()
+    setTimeout(() => {
+      dismissKeyboardIfNeeded()
+    }, 0)
   }, [])
 
   return (

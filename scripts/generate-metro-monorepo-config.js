@@ -9,7 +9,7 @@ const fs = require('fs')
 
 const METRO_CONFIG_NAME = 'metro.monorepo.config.js'
 const AVALABS_ALIAS = '@avalabs'
-const PACKAGES_TO_PROCESS = ['k2-mobile', 'k2-alpine']
+const PACKAGES_TO_PROCESS = ['k2-alpine']
 const CWD = process.cwd()
 
 function getSymlinkedDependenciesPaths() {
