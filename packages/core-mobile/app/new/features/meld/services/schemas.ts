@@ -1,11 +1,4 @@
 import { object, record, string, number, z, boolean } from 'zod'
-import {
-  PaymentMethods,
-  PaymentTypes,
-  ServiceProviderCategories,
-  ServiceProviders
-} from '../consts'
-import { SessionTypes } from '../types'
 
 export const RegionSchema = z.object({
   regionCode: string().optional().nullable(),
@@ -36,17 +29,11 @@ export const SearchCryptoCurrencySchema = object({
 }).passthrough()
 
 export const SearchServiceProviderSchema = object({
-  serviceProvider: z.nativeEnum(ServiceProviders),
+  serviceProvider: string(),
   name: string().optional().nullable(),
   status: string().optional().nullable(),
-  categories: z
-    .nativeEnum(ServiceProviderCategories)
-    .array()
-    .optional()
-    .nullable(),
-  categoryStatuses: record(z.nativeEnum(ServiceProviderCategories), string())
-    .optional()
-    .nullable(),
+  categories: z.string().array().optional().nullable(),
+  categoryStatuses: record(string(), string()).optional().nullable(),
   websiteUrl: string().optional().nullable(),
   customerSupportUrl: string().optional().nullable(),
   logos: object({
@@ -60,11 +47,7 @@ export const SearchServiceProviderSchema = object({
 export const SearchDefaultsByCountrySchema = object({
   countryCode: string().optional().nullable(),
   defaultCurrencyCode: string().optional().nullable(),
-  defaultPaymentMethods: z
-    .nativeEnum(PaymentMethods)
-    .array()
-    .optional()
-    .nullable()
+  defaultPaymentMethods: string().array().optional().nullable()
 }).passthrough()
 
 const AmountDetailsSchema = object({
@@ -80,18 +63,15 @@ export const GetTradeLimitsSchema = object({
   minimumAmount: number().optional().nullable(),
   maximumAmount: number().optional().nullable(),
   meldDetails: AmountDetailsSchema.optional().nullable(),
-  serviceProviderDetails: record(
-    z.nativeEnum(ServiceProviders),
-    AmountDetailsSchema
-  )
+  serviceProviderDetails: record(string(), AmountDetailsSchema)
     .optional()
     .nullable()
 }).passthrough()
 
 export const SearchPaymentMethodsSchema = object({
-  paymentMethod: z.nativeEnum(PaymentMethods).optional().nullable(),
+  paymentMethod: string().optional().nullable(),
   name: string().optional().nullable(),
-  paymentType: z.nativeEnum(PaymentTypes).optional().nullable(),
+  paymentType: string().optional().nullable(),
   logos: object({
     dark: string().optional().nullable(),
     light: string().optional().nullable()
@@ -99,13 +79,13 @@ export const SearchPaymentMethodsSchema = object({
 }).passthrough()
 
 export const CreateCryptoQuoteBodySchema = object({
-  serviceProviders: z.nativeEnum(ServiceProviders).array().optional(),
+  serviceProviders: string().array().optional(),
   walletAddress: string().optional(),
   sourceAmount: number().optional(),
   sourceCurrencyCode: string(),
   destinationCurrencyCode: string(),
   countryCode: string().optional().nullable(),
-  paymentMethodType: z.nativeEnum(PaymentMethods).optional(),
+  paymentMethodType: string().optional(),
   subdivision: string().optional()
 })
 
@@ -123,8 +103,8 @@ export const QuoteSchema = object({
   destinationAmount: number().optional().nullable(),
   destinationCurrencyCode: string().optional().nullable(),
   exchangeRate: number().optional().nullable(),
-  paymentMethodType: z.nativeEnum(PaymentMethods).optional().nullable(),
-  serviceProvider: z.nativeEnum(ServiceProviders).optional().nullable(),
+  paymentMethodType: string().optional().nullable(),
+  serviceProvider: string().optional().nullable(),
   customerScore: number().optional().nullable(),
   institutionName: string().optional().nullable(),
   lowKyc: boolean().optional().nullable(),
@@ -139,19 +119,19 @@ export const CreateCryptoQuoteSchema = object({
 }).passthrough()
 
 export const SessionDataSchema = object({
-  serviceProvider: z.nativeEnum(ServiceProviders).optional().nullable(),
+  serviceProvider: string().optional().nullable(),
   redirectFlow: boolean().optional().nullable(),
   redirectUrl: string().optional().nullable(),
   countryCode: string().optional().nullable(),
   sourceCurrencyCode: string().optional().nullable(),
   destinationCurrencyCode: string().optional().nullable(),
-  paymentMethodType: z.nativeEnum(PaymentMethods).optional().nullable(),
+  paymentMethodType: string().optional().nullable(),
   sourceAmount: number().optional().nullable(),
   walletAddress: string().optional().nullable()
 }).passthrough()
 
 export const CreateSessionWidgetBodySchema = object({
-  sessionType: z.nativeEnum(SessionTypes),
+  sessionType: string(),
   sessionData: SessionDataSchema
 })
 
