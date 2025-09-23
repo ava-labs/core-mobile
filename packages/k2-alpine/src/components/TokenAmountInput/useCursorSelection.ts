@@ -6,6 +6,8 @@ import {
   Platform
 } from 'react-native'
 
+const CURSOR_MAX = 100 // arbitrarily large number
+
 /**
  * Hook to manage text input cursor (selection).
  * - iOS: returns `undefined` for selection and handler (use native behavior).
@@ -17,7 +19,7 @@ export const useCursorSelection = (): {
     | ((e: NativeSyntheticEvent<TextInputSelectionChangeEventData>) => void)
     | undefined
   moveCursorToFront: () => void
-  moveCursorToEnd: (text: string) => void
+  moveCursorToEnd: () => void
 } => {
   const [selection, setSelection] = useState({ start: 0, end: 0 })
 
@@ -34,10 +36,11 @@ export const useCursorSelection = (): {
     })
   }, [])
 
-  const moveCursorToEnd = useCallback((text: string) => {
+  const moveCursorToEnd = useCallback(() => {
+    // Use a large selection index to force the cursor to the end.
+    // React Native will clamp it to the actual text length if it's shorter.
     requestAnimationFrame(() => {
-      const pos = text.length
-      setSelection({ start: pos, end: pos })
+      setSelection({ start: CURSOR_MAX, end: CURSOR_MAX })
     })
   }, [])
 

@@ -5,7 +5,8 @@ import React, {
   useEffect,
   useImperativeHandle,
   useRef,
-  useState
+  useState,
+  useCallback
 } from 'react'
 import {
   NativeSyntheticEvent,
@@ -120,19 +121,21 @@ export const TokenAmountInput = forwardRef<
       }
     }, [valueAsString])
 
-    const handleBlur = (
-      e: NativeSyntheticEvent<TextInputFocusEventData>
-    ): void => {
-      onBlur?.(e)
-      moveCursorToFront()
-    }
+    const handleBlur = useCallback(
+      (e: NativeSyntheticEvent<TextInputFocusEventData>): void => {
+        onBlur?.(e)
+        moveCursorToFront()
+      },
+      [moveCursorToFront, onBlur]
+    )
 
-    const handleFocus = (
-      e: NativeSyntheticEvent<TextInputFocusEventData>
-    ): void => {
-      onFocus?.(e)
-      moveCursorToEnd(valueAsString)
-    }
+    const handleFocus = useCallback(
+      (e: NativeSyntheticEvent<TextInputFocusEventData>): void => {
+        onFocus?.(e)
+        moveCursorToEnd()
+      },
+      [moveCursorToEnd, onFocus]
+    )
 
     return (
       <TextInput
