@@ -14,6 +14,16 @@ import {
 import { jupiterApi } from '../utils/svm/jupiterApi.client'
 import JupiterService from '../services/JupiterService'
 
+const validateSwapParams = (params: PerformSwapSvmParams): void => {
+  const { userAddress, quote, srcTokenAddress, destTokenAddress, slippage } =
+    params
+  if (!userAddress) throw swapError.missingParam('userAddress')
+  if (!quote) throw swapError.missingParam('quote')
+  if (!srcTokenAddress) throw swapError.missingParam('srcTokenAddress')
+  if (!destTokenAddress) throw swapError.missingParam('destTokenAddress')
+  if (!slippage) throw swapError.missingParam('slippage')
+}
+
 export const JupiterProvider: SwapProvider<
   GetSvmQuoteParams,
   PerformSwapSvmParams
@@ -67,27 +77,21 @@ export const JupiterProvider: SwapProvider<
     const {
       userAddress,
       quote,
-      srcTokenAddress,
-      destTokenAddress,
-      slippage,
       isSwapFeesEnabled,
       network,
       signAndSend
-    } = params
-    if (!userAddress) throw swapError.missingParam('userAddress')
+    }: PerformSwapSvmParams = params
 
-    if (!quote) throw swapError.missingParam('quote')
-
-    if (!srcTokenAddress) throw swapError.missingParam('srcTokenAddress')
-
-    if (!destTokenAddress) throw swapError.missingParam('destTokenAddress')
-
-    if (!slippage) throw swapError.missingParam('slippage')
+    validateSwapParams(params)
 
     const provider = await NetworkService.getProviderForNetwork(network)
 
     if (!isSolanaProvider(provider)) {
       throw swapError.networkNotSupported(network.chainName)
+    }
+
+    if (!quote) {
+      throw swapError.missingParam('quote')
     }
 
     const feeAccount = await getJupiterFeeAccount({
@@ -113,7 +117,7 @@ export const JupiterProvider: SwapProvider<
     const [txResponse, buildTxError] = await resolve(
       jupiterApi.swap({
         quoteResponse: cleanedQuote,
-        userPublicKey: userAddress,
+        userPublicKey: userAddress as string, // userAddress is validated in validateSwapParams
         dynamicComputeUnitLimit: true, // Gives us a higher chance of the transaction landing
         ...(feeAccount && { feeAccount })
       })
@@ -135,7 +139,7 @@ export const JupiterProvider: SwapProvider<
     const [approvalTxHash, approvalTxError] = await resolve(
       signAndSend([
         {
-          account: userAddress,
+          account: userAddress as string, // userAddress is validated in validateSwapParams
           serializedTx: txResponse.swapTransaction
         }
       ])
