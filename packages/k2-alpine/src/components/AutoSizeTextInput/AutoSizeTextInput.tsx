@@ -127,9 +127,8 @@ export const AutoFitTextInput = forwardRef<
               position: 'absolute',
               textAlign: 'right',
               right: 0,
-              paddingRight: Platform.OS === 'ios' ? 32 : 0,
+              paddingRight: Platform.OS === 'ios' ? 32 : 6,
               opacity: 0
-              // color: 'green'
             },
             textStyle
           ]}
