@@ -43,9 +43,7 @@ export * from './ProgressBar/MaskedProgressBar'
 export * from './TokenUnitInput/TokenUnitInput'
 export * from './TokenUnitInput/TokenUnitInputWidget'
 export * from './TokenUnitInput/SendTokenUnitInputWidget'
-export * from './TokenAmountInput/TokenAmountInput'
 export * from './DateTimePicker/DateTimePicker'
-export * from './Confetti/Confetti'
 
 export * from './PriceChangeIndicator/types'
 
@@ -54,3 +52,11 @@ export * from './MaskedText/MaskedText'
 
 export * from './FiatAmountInputWidget/FiatAmountInputWidget'
 export * from './FiatAmountInputWidget/FiatAmountInput'
+
+// for TokenAmountInput, we have to use explicit exports here because it is a forwardRef component
+// otherwise, we will get the "Component is not a function" error
+export { TokenAmountInput } from './TokenAmountInput/TokenAmountInput'
+export type {
+  TokenAmount,
+  TokenAmountInputRef
+} from './TokenAmountInput/TokenAmountInput'

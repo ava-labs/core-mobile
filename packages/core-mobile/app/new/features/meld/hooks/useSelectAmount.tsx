@@ -5,7 +5,6 @@ import { selectSelectedCurrency } from 'store/settings/currency'
 import { useSelector } from 'react-redux'
 import { useNetworks } from 'hooks/networks/useNetworks'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
-import { useWatchlist } from 'hooks/watchlist/useWatchlist'
 import { LocalTokenWithBalance } from 'store/balance'
 import { getAddressByNetwork } from 'store/account/utils'
 import { selectActiveAccount } from 'store/account'
@@ -13,6 +12,8 @@ import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import { useNavigation } from '@react-navigation/native'
 import { ACTIONS } from 'contexts/DeeplinkContext/types'
 import { useDebouncedCallback } from 'use-debounce'
+import { useMarketTokenBySymbol } from 'common/hooks/useMarketTokenBySymbol'
+import Logger from 'utils/Logger'
 import {
   PaymentMethodNames,
   ServiceProviderCategories,
@@ -80,7 +81,6 @@ export const useSelectAmount = ({
   const [countryCode] = useMeldCountryCode()
 
   const { getFromPopulatedNetwork } = useNetworks()
-  const { getMarketTokenBySymbol } = useWatchlist()
 
   // debounce since fetching quotes can take awhile
   const debouncedSetAmount = useDebouncedCallback(
@@ -113,13 +113,13 @@ export const useSelectAmount = ({
     )
   }, [network?.networkToken.decimals, token?.tokenWithBalance])
 
+  const currentPrice =
+    useMarketTokenBySymbol({
+      symbol: token?.tokenWithBalance.symbol
+    })?.currentPrice ?? 0
+
   const getSourceAmountInTokenUnit = useCallback(
     (amt: number | undefined | null): TokenUnit => {
-      const currentPrice = token?.tokenWithBalance.symbol
-        ? getMarketTokenBySymbol(token.tokenWithBalance.symbol)?.currentPrice ??
-          0
-        : 0
-
       const maxDecimals =
         token?.tokenWithBalance && 'decimals' in token.tokenWithBalance
           ? token.tokenWithBalance.decimals
@@ -136,7 +136,7 @@ export const useSelectAmount = ({
         token?.tokenWithBalance.symbol ?? ''
       )
     },
-    [getMarketTokenBySymbol, token?.tokenWithBalance]
+    [token?.tokenWithBalance, currentPrice]
   )
 
   const hasEnoughBalance = useMemo(() => {
@@ -274,6 +274,34 @@ export const useSelectAmount = ({
     setServiceProvider
   ])
 
+  const minMaxErrorMessage = useMemo(
+    () =>
+      (cryptoQuotesError?.statusCode ===
+        CreateCryptoQuoteErrorCode.NO_RESOURCE_FOUND &&
+        cryptoQuotesError.message?.toLowerCase().includes('not found')) ||
+      (cryptoQuotesError?.statusCode ===
+        CreateCryptoQuoteErrorCode.INCOMPATIBLE_REQUEST &&
+        cryptoQuotesError?.message
+          ?.toLowerCase()
+          .includes('not within the payment method limits')) ||
+      cryptoQuotesError?.message?.toLowerCase().includes('crypto_min_limit') ||
+      cryptoQuotesError?.message?.toLowerCase().includes('crypto_max_limit'),
+    [cryptoQuotesError]
+  )
+
+  useEffect(() => {
+    if (cryptoQuotesError === undefined) return
+
+    if (minMaxErrorMessage) {
+      Logger.error(
+        `The selected amount is not within the minimum and maximum limits for ${category}:`,
+        cryptoQuotesError
+      )
+      return
+    }
+    Logger.error(`failed to fetch quotes for ${category}:`, cryptoQuotesError)
+  }, [minMaxErrorMessage, category, cryptoQuotesError])
+
   const errorMessage = useMemo(() => {
     if (
       category === ServiceProviderCategories.CRYPTO_OFFRAMP &&
@@ -300,24 +328,15 @@ export const useSelectAmount = ({
         : `The maximum withdrawal token amount is ${formattedMaximumLimit} ${selectedCurrency}`
     }
 
-    if (
-      (cryptoQuotesError?.statusCode === CreateCryptoQuoteErrorCode.NOT_FOUND &&
-        cryptoQuotesError.message.toLowerCase().includes('not found')) ||
-      (cryptoQuotesError?.statusCode ===
-        CreateCryptoQuoteErrorCode.INCOMPATIBLE_REQUEST &&
-        cryptoQuotesError.message
-          .toLowerCase()
-          .includes('does not match service providers'))
-    ) {
-      return `${token?.tokenWithBalance.name} cannot be ${
-        category === ServiceProviderCategories.CRYPTO_ONRAMP
-          ? 'purchased'
-          : 'withdrawn'
-      } at the moment, please adjust the amount or try again later.`
+    if (minMaxErrorMessage) {
+      return 'Transaction amount is invalid: it must be between the minimum and maximum allowed.'
     }
 
-    if (cryptoQuotesError?.message) {
-      return cryptoQuotesError.message
+    if (cryptoQuotesError?.statusCode) {
+      return (
+        cryptoQuotesError.message ??
+        'We are unable to fetch the quotes, please check your input. Adjust the country, currency, token, or amount and try again.'
+      )
     }
 
     return undefined
@@ -329,10 +348,9 @@ export const useSelectAmount = ({
     sourceAmount,
     isBelowMaximumLimit,
     maximumLimit,
-    cryptoQuotesError?.statusCode,
-    cryptoQuotesError?.message,
+    minMaxErrorMessage,
+    cryptoQuotesError,
     token?.tokenWithBalance.symbol,
-    token?.tokenWithBalance.name,
     formatCurrency,
     selectedCurrency
   ])

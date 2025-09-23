@@ -1,16 +1,10 @@
-import React, { useMemo } from 'react'
+import React from 'react'
 import { LayoutChangeEvent } from 'react-native'
 import { Text, View, Icons, BalanceLoader, useTheme } from '@avalabs/k2-alpine'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
 import { LogoWithNetwork } from 'features/portfolio/assets/components/LogoWithNetwork'
-import {
-  isTokenWithBalanceAVM,
-  isTokenWithBalancePVM
-} from '@avalabs/avalanche-module'
 import { PrivacyModeAlert } from '@avalabs/k2-alpine'
-import { TokenType } from '@avalabs/vm-module-types'
-import { CHAIN_IDS_WITH_INCORRECT_SYMBOL } from 'consts/chainIdsWithIncorrectSymbol'
-import { useNetworks } from 'hooks/networks/useNetworks'
+import { useTokenNameForDisplay } from 'common/hooks/useTokenNameForDisplay'
 import { LocalTokenWithBalance } from '../../../store/balance/types'
 import { HiddenBalanceText } from './HiddenBalanceText'
 import { SubTextNumber } from './SubTextNumber'
@@ -24,7 +18,7 @@ export const TokenHeader = ({
   isLoading,
   isPrivacyModeEnabled = false
 }: {
-  token?: LocalTokenWithBalance
+  token: LocalTokenWithBalance
   formattedBalance: string
   currency: string
   errorMessage?: string
@@ -32,27 +26,14 @@ export const TokenHeader = ({
   isLoading?: boolean
   isPrivacyModeEnabled?: boolean
 }): React.JSX.Element => {
-  const { allNetworks } = useNetworks()
   const {
     theme: { colors }
   } = useTheme()
 
-  const tokenName = useMemo(() => {
-    if (token && isTokenWithBalanceAVM(token)) {
-      return 'Avalanche X-Chain'
-    }
-    if (token && isTokenWithBalancePVM(token)) {
-      return 'Avalanche P-Chain'
-    }
-    if (
-      token &&
-      CHAIN_IDS_WITH_INCORRECT_SYMBOL.includes(token.networkChainId) &&
-      token.type === TokenType.NATIVE
-    ) {
-      return allNetworks[token.networkChainId]?.chainName ?? token.name
-    }
-    return token?.name
-  }, [allNetworks, token])
+  const tokenNameForDisplay = useTokenNameForDisplay({
+    token,
+    shouldShowAvaxTokenFullname: true
+  })
 
   const renderBalance = (): React.JSX.Element => {
     if (isLoading) {
@@ -133,7 +114,7 @@ export const TokenHeader = ({
         variant="heading2"
         sx={{ color: '$textSecondary', lineHeight: 38, marginTop: 10 }}
         numberOfLines={1}>
-        {tokenName}
+        {tokenNameForDisplay}
       </Text>
       {renderBalance()}
     </View>
