@@ -14,12 +14,12 @@ import { Space } from 'common/components/Space'
 import { LoadingState } from 'common/components/LoadingState'
 import { portfolioTabContentHeight } from 'features/portfolio/utils'
 import { ErrorState } from 'common/components/ErrorState'
+import { humanize } from 'utils/string/humanize'
 import { useSearchPaymentMethods } from '../hooks/useSearchPaymentMethods'
 import {
   PaymentMethodNames,
   ServiceProviderCategories,
-  PaymentMethodTimeLimits,
-  PaymentMethods
+  PaymentMethodTimeLimits
 } from '../consts'
 import { useMeldPaymentMethod } from '../store'
 import { useServiceProviders } from '../hooks/useServiceProviders'
@@ -40,7 +40,7 @@ export const SelectPaymentMethod = ({
   const { back, canGoBack } = useRouter()
   const [meldPaymentMethod, setMeldPaymentMethod] = useMeldPaymentMethod()
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<
-    PaymentMethods | undefined
+    string | undefined
   >(meldPaymentMethod)
   const {
     data: paymentMethods,
@@ -141,12 +141,18 @@ export const SelectPaymentMethod = ({
 
     return supportedPaymentMethods.map(paymentMethod => {
       return {
-        title: paymentMethod.paymentMethod
-          ? PaymentMethodNames[paymentMethod.paymentMethod]
-          : '',
-        subtitle: paymentMethod.paymentMethod
-          ? PaymentMethodTimeLimits[paymentMethod.paymentMethod]
-          : '',
+        title:
+          paymentMethod.paymentMethod &&
+          PaymentMethodNames[paymentMethod.paymentMethod]
+            ? PaymentMethodNames[paymentMethod.paymentMethod]
+            : paymentMethod.paymentMethod
+            ? humanize(paymentMethod.paymentMethod)
+            : '',
+        subtitle:
+          paymentMethod.paymentMethod &&
+          PaymentMethodTimeLimits[paymentMethod.paymentMethod]
+            ? PaymentMethodTimeLimits[paymentMethod.paymentMethod]
+            : '',
         onPress: () => {
           if (paymentMethod.paymentMethod) {
             setSelectedPaymentMethod(paymentMethod.paymentMethod)
