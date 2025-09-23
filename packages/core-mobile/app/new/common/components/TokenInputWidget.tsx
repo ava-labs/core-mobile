@@ -320,10 +320,15 @@ export const TokenInputWidget = ({
                   sx={{
                     flexDirection: 'row',
                     alignItems: 'center',
-                    gap: 6,
                     flexShrink: 1
                   }}>
-                  {isLoadingAmount && <ActivityIndicator size="small" />}
+                  {isLoadingAmount && (
+                    <View>
+                      <View style={{ position: 'absolute', right: 6, top: -8 }}>
+                        <ActivityIndicator size="small" />
+                      </View>
+                    </View>
+                  )}
                   <Text
                     variant="subtitle2"
                     numberOfLines={1}
