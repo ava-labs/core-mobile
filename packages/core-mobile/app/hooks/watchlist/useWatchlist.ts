@@ -13,7 +13,7 @@ import { ChartData } from 'services/token/types'
 import { transformTrendingTokens } from 'services/watchlist/utils/transform'
 import { useIsFocused } from '@react-navigation/native'
 import { LocalTokenWithBalance } from 'store/balance'
-import { getCaip2ChainIdForTokenType } from 'utils/caip2ChainIds'
+import { getCaip2ChainIdForToken } from 'utils/caip2ChainIds'
 import { isNetworkContractToken } from 'utils/isNetworkContractToken'
 import { useGetPrices } from './useGetPrices'
 import { useGetTokensAndCharts } from './useGetTokensAndCharts'
@@ -187,7 +187,7 @@ export const useWatchlist = (): UseWatchListReturnType => {
 
   const resolveMarketToken = useCallback(
     (token: LocalTokenWithBalance): MarketToken | undefined => {
-      const caip2ChainId = getCaip2ChainIdForTokenType({
+      const caip2ChainId = getCaip2ChainIdForToken({
         type: token.type,
         chainId: token.networkChainId
       })

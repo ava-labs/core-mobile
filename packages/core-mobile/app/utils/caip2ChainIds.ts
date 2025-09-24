@@ -234,7 +234,7 @@ export const getCaip2ChainId = (chainId: number): string => {
   return getEvmCaip2ChainId(chainId)
 }
 
-export const getCaip2ChainIdForTokenType = ({
+export const getCaip2ChainIdForToken = ({
   chainId,
   type
 }: {
