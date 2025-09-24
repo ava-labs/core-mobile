@@ -424,11 +424,6 @@ describe('BiometricsSDK', () => {
       mockKeychain.getSupportedBiometryType.mockResolvedValue(null)
       expect(await BiometricsSDK.getBiometryType()).toBe(BiometricType.NONE)
     })
-
-    it('should warmup', async () => {
-      await BiometricsSDK.warmup()
-      expect(mockKeychain.getAllGenericPasswordServices).toHaveBeenCalled()
-    })
   })
 
   describe('Legacy Methods', () => {

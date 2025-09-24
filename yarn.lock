@@ -343,6 +343,7 @@ __metadata:
     expo-local-authentication: 16.0.5
     expo-localization: 16.1.6
     expo-router: 5.1.4
+    expo-secure-store: 15.0.7
     expo-sms: 13.1.4
     expo-video: 2.2.2
     fast-equals: 5.2.2
@@ -19432,6 +19433,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"expo-secure-store@npm:15.0.7":
+  version: 15.0.7
+  resolution: "expo-secure-store@npm:15.0.7"
+  peerDependencies:
+    expo: "*"
+  checksum: 103e797e6b793dfa355d80d01aae531ee5bc9abfc90d0ee4b8354a64633ee4b797fdd330891feccfec7f49b88753623deadf54a7bd632eae7b0b788b2533bbc3
+  languageName: node
+  linkType: hard
+
 "expo-sms@npm:13.1.4":
   version: 13.1.4
   resolution: "expo-sms@npm:13.1.4"
@@ -28153,7 +28163,7 @@ react-native-webview@ava-labs/react-native-webview:
   peerDependencies:
     react: "*"
     react-native: "*"
-  checksum: d6ceb75e1d0f5755370d6d91f67902bd2b8a23a3ca43cb853d2964b43798f30477e8ab0223ea8b620534fbdf5f56d39550f40d24bec2d2398c323ccfe8a5a556
+  checksum: e08d1254d04f3074970b63cdf0a363d6b189009270d457e868a26ef534addd69b320b85bef2a22e4eddb79006751bded431b56aaf2baf41976a6d0a5a2a2b91e
   languageName: node
   linkType: hard
 
