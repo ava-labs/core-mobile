@@ -32,6 +32,7 @@ import { AppListenerEffectAPI, AppStartListening } from 'store/types'
 import BiometricsSDK from 'utils/BiometricsSDK'
 import Logger from 'utils/Logger'
 import { commonStorage } from 'utils/mmkv'
+import { selectWallets } from 'store/wallet/slice'
 import {
   onAppLocked,
   onAppUnlocked,
@@ -43,7 +44,6 @@ import {
   setIsIdled,
   setWalletType
 } from './slice'
-import { selectWallets } from 'store/wallet/slice'
 
 const TIME_TO_LOCK_IN_SECONDS = 5
 

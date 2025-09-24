@@ -241,11 +241,6 @@ class BiometricsSDK {
   }
 
   async loadEncryptionKeyWithBiometry(): Promise<boolean> {
-    const result = await LocalAuthentication.authenticateAsync(
-      COMMON_BIO_PROMPT
-    )
-    if (!result.success) return false
-
     const key = await SecureStore.getItemAsync(
       bioSecureStoreOptions.key,
       bioSecureStoreOptions.options
@@ -274,11 +269,6 @@ class BiometricsSDK {
     encryptionKey: string
   ): Promise<boolean> {
     try {
-      const result = await LocalAuthentication.authenticateAsync(
-        COMMON_BIO_PROMPT
-      )
-      if (!result.success) return false
-
       await SecureStore.setItemAsync(
         bioSecureStoreOptions.key,
         encryptionKey,

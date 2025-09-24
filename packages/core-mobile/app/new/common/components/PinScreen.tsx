@@ -40,9 +40,11 @@ import { commonStorage } from 'utils/mmkv'
 import { StorageKey } from 'resources/Constants'
 
 export const PinScreen = ({
-  onForgotPin
+  onForgotPin,
+  shouldMigrate = false
 }: {
   onForgotPin: () => void
+  shouldMigrate?: boolean
 }): JSX.Element => {
   const walletState = useSelector(selectWalletState)
   usePreventScreenRemoval(walletState === WalletState.INACTIVE)
@@ -106,6 +108,7 @@ export const PinScreen = ({
     bioType,
     isBiometricAvailable
   } = usePinOrBiometryLogin({
+    shouldMigrate,
     onWrongPin: handleWrongPin,
     onStartLoading: handleStartLoading,
     onStopLoading: handleStopLoading

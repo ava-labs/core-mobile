@@ -17,7 +17,7 @@ const LoginWithPinOrBiometry = (): JSX.Element => {
       hideHeaderBackground
       scrollEnabled={false}
       contentContainerStyle={{ flex: 1 }}>
-      <PinScreen onForgotPin={handleForgotPin} />
+      <PinScreen onForgotPin={handleForgotPin} shouldMigrate={true} />
     </ScrollScreen>
   )
 }
