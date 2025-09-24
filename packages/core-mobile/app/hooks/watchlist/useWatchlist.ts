@@ -191,17 +191,27 @@ export const useWatchlist = (): UseWatchListReturnType => {
         type: token.type,
         chainId: token.networkChainId
       })
+      const contractTokenAddress = isNetworkContractToken(token)
+        ? token.address.toLowerCase()
+        : undefined
       const targetSymbol = token.symbol.toLowerCase().trim()
 
       return allTokens.find(marketToken => {
+        // First try to match by internal id
+        if (token.internalId === marketToken.id) {
+          return true
+        }
+
+        // Next try to match by contract address if possible
         if (
-          isNetworkContractToken(token) &&
+          contractTokenAddress &&
           marketToken.platforms?.[caip2ChainId]?.toLowerCase() ===
-            token.address.toLowerCase()
+            contractTokenAddress
         ) {
           return true
         }
 
+        // Finally, fallback to matching by symbol (not ideal, but better than nothing)
         return marketToken.symbol.toLowerCase().trim() === targetSymbol
       })
     },
