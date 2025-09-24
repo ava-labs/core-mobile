@@ -12,7 +12,9 @@ import { useSelector } from 'react-redux'
 import { ChartData } from 'services/token/types'
 import { transformTrendingTokens } from 'services/watchlist/utils/transform'
 import { useIsFocused } from '@react-navigation/native'
-import { unwrapAssetSymbol } from 'common/utils/bridgeUtils'
+import { LocalTokenWithBalance } from 'store/balance'
+import { getCaip2ChainIdForTokenType } from 'utils/caip2ChainIds'
+import { isNetworkContractToken } from 'utils/isNetworkContractToken'
 import { useGetPrices } from './useGetPrices'
 import { useGetTokensAndCharts } from './useGetTokensAndCharts'
 import { useGetTrendingTokens } from './useGetTrendingTokens'
@@ -28,6 +30,7 @@ type UseWatchListReturnType = {
   getWatchlistChart: (id: string) => ChartData
   getMarketTokenBySymbol: (symbol: string) => MarketToken | undefined
   getMarketTokenById: (id: string) => MarketToken | undefined
+  resolveMarketToken: (token: LocalTokenWithBalance) => MarketToken | undefined
   isLoadingFavorites: boolean
   isLoadingTrendingTokens: boolean
   isLoadingTopTokens: boolean
@@ -166,21 +169,42 @@ export const useWatchlist = (): UseWatchListReturnType => {
   )
 
   const getMarketTokenBySymbol = useCallback(
-    (symbol: string): MarketToken | undefined =>
-      allTokens.find(token => {
-        const sourceSymbol = token.symbol.toLowerCase().trim()
-        const targetSymbol = symbol.toLowerCase().trim()
-        return (
-          sourceSymbol === targetSymbol ||
-          sourceSymbol === unwrapAssetSymbol(targetSymbol)
-        )
-      }),
+    (symbol: string): MarketToken | undefined => {
+      const targetSymbol = symbol.toLowerCase().trim()
+
+      return allTokens.find(
+        marketToken => marketToken.symbol.toLowerCase().trim() === targetSymbol
+      )
+    },
     [allTokens]
   )
 
   const getMarketTokenById = useCallback(
     (id: string): MarketToken | undefined =>
       allTokens.find(token => token.id === id),
+    [allTokens]
+  )
+
+  const resolveMarketToken = useCallback(
+    (token: LocalTokenWithBalance): MarketToken | undefined => {
+      const caip2ChainId = getCaip2ChainIdForTokenType({
+        type: token.type,
+        chainId: token.networkChainId
+      })
+      const targetSymbol = token.symbol.toLowerCase().trim()
+
+      return allTokens.find(marketToken => {
+        if (
+          isNetworkContractToken(token) &&
+          marketToken.platforms?.[caip2ChainId]?.toLowerCase() ===
+            token.address.toLowerCase()
+        ) {
+          return true
+        }
+
+        return marketToken.symbol.toLowerCase().trim() === targetSymbol
+      })
+    },
     [allTokens]
   )
 
@@ -195,6 +219,7 @@ export const useWatchlist = (): UseWatchListReturnType => {
     getWatchlistChart,
     getMarketTokenBySymbol,
     getMarketTokenById,
+    resolveMarketToken,
     isLoadingFavorites,
     isLoadingTrendingTokens,
     isLoadingTopTokens,

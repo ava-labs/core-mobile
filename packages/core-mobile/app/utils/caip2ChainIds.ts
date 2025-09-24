@@ -6,6 +6,7 @@ import {
   ChainId,
   SolanaCaip2ChainId
 } from '@avalabs/core-chains-sdk'
+import { TokenType } from '@avalabs/vm-module-types'
 
 /**
  * Legacy Solana chain ID format used by some WalletConnect dApps. While the standard
@@ -231,4 +232,26 @@ export const getCaip2ChainId = (chainId: number): string => {
 
   // Default to EVM for any other chain ID
   return getEvmCaip2ChainId(chainId)
+}
+
+export const getCaip2ChainIdForTokenType = ({
+  chainId,
+  type
+}: {
+  chainId: number
+  type: TokenType
+}): string => {
+  if (
+    type === TokenType.ERC1155 ||
+    type === TokenType.ERC721 ||
+    type === TokenType.ERC20
+  ) {
+    return getEvmCaip2ChainId(chainId)
+  }
+
+  if (type === TokenType.SPL) {
+    return getSolanaCaip2ChainId(chainId)
+  }
+
+  return getCaip2ChainId(chainId)
 }
