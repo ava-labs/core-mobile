@@ -364,43 +364,33 @@ const DeviceConnectionStep: React.FC<{
       renderFooter={renderFooter}
       contentContainerStyle={{ padding: 16, flex: 1 }}>
       {isScanning && (
-        <View style={{ marginTop: 24 }}>
-          <LoadingState sx={{ marginBottom: 16 }} />
-          <Text
-            variant="body2"
-            style={{
-              textAlign: 'center',
-              color: colors.$textSecondary
-            }}>
-            Searching for Ledger devices...
-          </Text>
-        </View>
+        <AnimatedIconWithText
+          icon={
+            <Icons.Custom.Ledger
+              color={colors.$textPrimary}
+              width={44}
+              height={44}
+            />
+          }
+          title="Looking for devices..."
+          subtitle="Make sure your Ledger device is unlocked and the Avalanche app is open"
+          showAnimation={true}
+        />
       )}
 
       {!isScanning && devices.length === 0 && (
-        <View
-          style={{
-            flex: 1,
-            justifyContent: 'center',
-            alignItems: 'center',
-            paddingVertical: 48
-          }}>
-          <Icons.Device.Encrypted
-            color={colors.$textSecondary}
-            width={48}
-            height={48}
-          />
-          <Text
-            variant="body1"
-            style={{
-              textAlign: 'center',
-              color: colors.$textSecondary,
-              marginTop: 16,
-              maxWidth: 280
-            }}>
-            No devices found. Make sure your Ledger is connected and unlocked.
-          </Text>
-        </View>
+        <AnimatedIconWithText
+          icon={
+            <Icons.Custom.Ledger
+              color={colors.$textPrimary}
+              width={44}
+              height={44}
+            />
+          }
+          title="No devices found"
+          subtitle="Make sure your Ledger is connected and unlocked."
+          showAnimation={false}
+        />
       )}
 
       {devices.length > 0 && (

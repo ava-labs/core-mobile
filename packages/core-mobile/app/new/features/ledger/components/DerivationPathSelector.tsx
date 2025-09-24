@@ -23,9 +23,9 @@ const derivationPathOptions: DerivationPathOption[] = [
   {
     type: LedgerDerivationPathType.BIP44,
     title: 'BIP44',
-    subtitle: 'Standard approach for most users',
+    subtitle: 'Recommended for most users',
     benefits: [
-      'Faster setup (~15 seconds)',
+      'Faster setup, about 15 seconds',
       'Create new accounts without device',
       'Industry standard approach',
       'Better for multiple accounts'
@@ -135,7 +135,7 @@ export const DerivationPathSelector: React.FC<DerivationPathSelectorProps> = ({
         gap: 16,
         paddingBottom: 100
       }}>
-      <View style={{ marginTop: 16 }} />
+      <View style={{ marginTop: 8 }} />
 
       {derivationPathOptions.map(option => (
         <OptionCard

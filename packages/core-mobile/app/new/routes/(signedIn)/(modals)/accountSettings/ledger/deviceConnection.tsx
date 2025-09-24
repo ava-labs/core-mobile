@@ -4,7 +4,7 @@ import { useRouter } from 'expo-router'
 import { Text, Button, useTheme, GroupList, Icons } from '@avalabs/k2-alpine'
 import { ScrollScreen } from 'common/components/ScrollScreen'
 import { useLedgerSetupContext } from 'new/features/ledger/contexts/LedgerSetupContext'
-import { ScanningAnimation } from 'new/features/ledger/components/ScanningAnimation'
+import { AnimatedIconWithText } from 'features/ledger/components/AnimatedIconWithText'
 
 interface LedgerDevice {
   id: string
@@ -104,87 +104,37 @@ export default function DeviceConnectionScreen(): JSX.Element {
       renderFooter={renderFooter}
       contentContainerStyle={{ padding: 16, flex: 1 }}>
       {isScanning && (
-        <View
-          style={{
-            flex: 1,
-            justifyContent: 'center',
-            alignItems: 'center',
-            paddingVertical: 48
-          }}>
-          <View
-            style={{
-              position: 'relative',
-              width: '100%',
-              alignItems: 'center'
-            }}>
-            <ScanningAnimation size={180} iconSize={28} />
-
-            {/* Text positioned 34px below the center icon */}
-            <View
-              style={{
-                position: 'absolute',
-                top: 124, // 90px (center of 180px animation) + 34px below icon
-                left: 0,
-                right: 0,
-                alignItems: 'center'
-              }}>
-              <Text
-                variant="heading6"
-                style={{
-                  textAlign: 'center',
-                  marginBottom: 16
-                }}>
-                Looking for devices...
-              </Text>
-              <Text
-                variant="body1"
-                style={{
-                  textAlign: 'center',
-                  color: colors.$textSecondary,
-                  maxWidth: 280,
-                  paddingHorizontal: 20
-                }}>
-                Make sure your Ledger device is unlocked and the Avalanche app
-                is open
-              </Text>
-            </View>
-          </View>
-        </View>
+        <AnimatedIconWithText
+          icon={
+            <Icons.Custom.Ledger
+              color={colors.$textPrimary}
+              width={44}
+              height={44}
+            />
+          }
+          title="Looking for devices..."
+          subtitle="Make sure your Ledger device is unlocked and the Avalanche app is open"
+          showAnimation={true}
+        />
       )}
 
       {!isScanning && devices.length === 0 && (
-        <View
-          style={{
-            flex: 1,
-            justifyContent: 'center',
-            alignItems: 'center',
-            paddingVertical: 48
-          }}>
-          <Icons.Custom.Ledger
-            color={colors.$textSecondary}
-            width={32}
-            height={32}
-          />
-          <Text variant="heading6" style={{ marginTop: 34 }}>
-            Get your Ledger ready
-          </Text>
-          <Text
-            variant="body1"
-            style={{
-              textAlign: 'center',
-              color: colors.$textSecondary,
-              marginTop: 8
-            }}>
-            Make sure your Ledger device is unlocked
-          </Text>
-        </View>
+        <AnimatedIconWithText
+          icon={
+            <Icons.Custom.Ledger
+              color={colors.$textPrimary}
+              width={44}
+              height={44}
+            />
+          }
+          title="Get your Ledger ready"
+          subtitle="Make sure your Ledger device is unlocked"
+          showAnimation={false}
+        />
       )}
 
       {devices.length > 0 && (
         <View style={{ marginTop: 24 }}>
-          <Text variant="heading6" style={{ marginBottom: 16 }}>
-            Available Devices
-          </Text>
           <GroupList itemHeight={70} data={deviceListData} />
         </View>
       )}
