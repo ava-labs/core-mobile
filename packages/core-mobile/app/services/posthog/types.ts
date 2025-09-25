@@ -37,6 +37,7 @@ export enum FeatureGates {
   GASLESS = 'gasless-feature',
   SWAP_FEES = 'swap-fees',
   SOLANA_SUPPORT = 'solana-support',
+  SOLANA_LAUNCH_MODAL = 'solana-launch-modal',
   MELD_ONRAMP = 'meld-onramp',
   MELD_OFFRAMP = 'meld-offramp',
   SWAP_USE_MARKR = 'swap-use-markr',
