@@ -41,7 +41,7 @@ export const All = (): JSX.Element => {
         {ITEMS_LIST.map((items, index) => (
           <View key={index}>
             <SegmentedControlStory
-              items={items}
+              items={items.map(item => ({ title: item }))}
               dynamicItemWidth={dynamicItemWidth}
             />
           </View>
@@ -55,7 +55,7 @@ const SegmentedControlStory = ({
   items,
   dynamicItemWidth
 }: {
-  items: string[]
+  items: { title: string; badge?: JSX.Element }[]
   dynamicItemWidth: boolean
 }): JSX.Element => {
   const selectedSegmentIndex = useSharedValue(0)
@@ -76,7 +76,7 @@ const SegmentedControlStory = ({
         }}
       />
       <Text variant="body2">
-        {items[Math.floor(selectedSegmentIndex.get())]}
+        {items[Math.floor(selectedSegmentIndex.get())]?.title}
       </Text>
     </View>
   )

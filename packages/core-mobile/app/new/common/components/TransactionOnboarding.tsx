@@ -18,7 +18,8 @@ export const TransactionOnboarding = ({
   subtitle,
   buttonTitle,
   viewOnceKey,
-  onPressNext
+  onPressNext,
+  footerAccessory
 }: {
   icon: {
     component: React.FC<SvgProps>
@@ -29,6 +30,7 @@ export const TransactionOnboarding = ({
   buttonTitle?: string
   viewOnceKey: ViewOnceKey
   onPressNext: () => void
+  footerAccessory?: JSX.Element
 }): JSX.Element => {
   const { theme } = useTheme()
   const dispatch = useDispatch()
@@ -55,6 +57,7 @@ export const TransactionOnboarding = ({
   const renderFooter = useCallback(() => {
     return (
       <View sx={{ gap: 20 }}>
+        {footerAccessory}
         <GroupList
           data={groupListData}
           titleSx={{ fontFamily: 'Inter-regular', fontSize: 15 }}
@@ -71,7 +74,7 @@ export const TransactionOnboarding = ({
         </Button>
       </View>
     )
-  }, [groupListData, handlePressNext, buttonTitle])
+  }, [groupListData, handlePressNext, buttonTitle, footerAccessory])
 
   return (
     <ScrollScreen
