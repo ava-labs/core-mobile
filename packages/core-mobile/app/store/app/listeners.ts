@@ -33,7 +33,6 @@ import { AppListenerEffectAPI, AppStartListening } from 'store/types'
 import BiometricsSDK from 'utils/BiometricsSDK'
 import Logger from 'utils/Logger'
 import { commonStorage } from 'utils/mmkv'
-import { selectWallets } from 'store/wallet/slice'
 import {
   onAppLocked,
   onAppUnlocked,
