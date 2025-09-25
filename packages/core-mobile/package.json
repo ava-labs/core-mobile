@@ -129,7 +129,6 @@
     "expo-local-authentication": "16.0.5",
     "expo-localization": "16.1.6",
     "expo-router": "5.1.4",
-    "expo-secure-store": "15.0.7",
     "expo-sms": "13.1.4",
     "expo-video": "2.2.2",
     "fast-equals": "5.2.2",

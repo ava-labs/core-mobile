@@ -392,8 +392,6 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
-  - ExpoSecureStore (15.0.7):
-    - ExpoModulesCore
   - ExpoSMS (13.1.4):
     - ExpoModulesCore
   - ExpoVideo (2.2.2):
@@ -3370,7 +3368,6 @@ DEPENDENCIES:
   - ExpoLocalAuthentication (from `../node_modules/expo-local-authentication/ios`)
   - ExpoLocalization (from `../node_modules/expo-localization/ios`)
   - ExpoModulesCore (from `../node_modules/expo-modules-core`)
-  - ExpoSecureStore (from `../node_modules/expo-secure-store/ios`)
   - ExpoSMS (from `../node_modules/expo-sms/ios`)
   - ExpoVideo (from `../node_modules/expo-video/ios`)
   - EXUpdatesInterface (from `../node_modules/expo-updates-interface/ios`)
@@ -3603,8 +3600,6 @@ EXTERNAL SOURCES:
     :path: "../node_modules/expo-localization/ios"
   ExpoModulesCore:
     :path: "../node_modules/expo-modules-core"
-  ExpoSecureStore:
-    :path: "../node_modules/expo-secure-store/ios"
   ExpoSMS:
     :path: "../node_modules/expo-sms/ios"
   ExpoVideo:
@@ -3900,7 +3895,6 @@ SPEC CHECKSUMS:
   ExpoLocalAuthentication: 78f74d187ee51126e1a789d73fee32d6d7e60f1f
   ExpoLocalization: 677e45c2536bf918119962f78d7ffeeea317e07d
   ExpoModulesCore: 16f74d8df26d7e4b6bf7eb3d0effaf0f15df7b80
-  ExpoSecureStore: f44dee1354536bdb3d7fab8cc451ee737c41beca
   ExpoSMS: de195632beeb7ef00556750da10da667596d8967
   ExpoVideo: 84edf8e48b71317fb1d7f17c3d49a310476dc0f4
   EXUpdatesInterface: 64f35449b8ef89ce08cdd8952a4d119b5de6821d

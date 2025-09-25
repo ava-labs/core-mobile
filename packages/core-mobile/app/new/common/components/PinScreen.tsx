@@ -41,7 +41,7 @@ import { StorageKey } from 'resources/Constants'
 
 export const PinScreen = ({
   onForgotPin,
-  isInitialLogin,
+  isInitialLogin = false,
   onBiometricPrompt
 }: {
   onForgotPin: () => void
