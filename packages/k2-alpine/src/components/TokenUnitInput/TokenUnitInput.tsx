@@ -170,6 +170,7 @@ export const TokenUnitInput = forwardRef<
               gap: 5
             }}>
             <Text
+              testID="token_amount_input_field"
               onLayout={handleTextInputLayout}
               style={[
                 styles.textInput,
@@ -178,7 +179,6 @@ export const TokenUnitInput = forwardRef<
               {PLACEHOLDER}
             </Text>
             <TextInput
-              testID="token_amount_input_field"
               returnKeyType={returnKeyType}
               ref={textInputRef}
               editable={editable}
@@ -205,6 +205,7 @@ export const TokenUnitInput = forwardRef<
               maxLength={maxLength}
               selectionColor={colors.$textPrimary}
               allowFontScaling={false}
+              testID="token_amount_input_field"
             />
             <Text
               sx={{

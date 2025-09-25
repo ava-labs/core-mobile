@@ -1,37 +1,51 @@
 import path from 'path'
 import {
+  addCaseToRun,
   getSection,
   getTestCase,
   getTestRun,
   sendResult
-} from './test-appium/testrail/testrail.service'
+} from './testrail/testrail.service'
 
 let runId: number | undefined
-const sectionCache: Record<string, number> = {} // { '섹션1: 1 ,.... }
+const sectionCache: Record<string, number> = {}
 const isBitrise = process.env.CI === 'true'
 const iosPath = isBitrise
-  ? '/Users/vagrant/git/build/Build/Products/Release-iphonesimulator/Diary.app'
-  : path.resolve('./ios/DerivedData/Debug-iphonesimulator/Diary.app')
+  ? '/Users/vagrant/git/build/Build/Products/Release-iphonesimulator/AvaxWallet.app'
+  : path.resolve(
+      './ios/DerivedData/Build/Products/Debug-iphonesimulator/AvaxWallet.app'
+    )
 const platformToRun = process.env.PLATFORM
 const allCaps = [
   {
-    // capabilities for local Appium web tests on an Android Emulator
     platformName: 'Android',
-    'appium:deviceName': 'pixel_7',
-    'appium:platformVersion': '15.0',
+    'appium:deviceName': 'pixel_7_pro',
+    'appium:platformVersion': '14.0',
     'appium:automationName': 'UiAutomator2',
     'appium:app': path.resolve(
-      './android/app/build/outputs/apk/debug/diary.apk'
-    )
-    // 'appium:noReset': true
+      './android/app/build/outputs/apk/internal/debug/app-internal-debug.apk'
+    ),
+    'appium:appWaitActivity': '*',
+    'appium:autoGrantPermissions': true,
+    'wdio:autoGrantPermissions': true
   },
   {
     platformName: 'iOS',
+    // 'appium:noReset': true,
     'appium:deviceName': 'iPhone 16 Pro',
     'appium:platformVersion': '18.4',
     'appium:automationName': 'xcuitest',
-    'appium:app': iosPath
-    // 'appium:noReset': true
+    'appium:app': iosPath,
+    'appium:usePrebuiltWDA': true,
+    'appium:shouldUseSingletonTestManager': false,
+    'appium:waitForIdleTimeout': 0,
+    'appium:simpleIsVisibleCheck': true,
+    'appium:shouldUseCompactResponses': true,
+    'appium:maxTypingFrequency': 30,
+    'appium:reduceMotion': true,
+    'appium:newCommandTimeout': 300,
+    'appium:autoAcceptAlerts': true,
+    'appium:autoDismissAlerts': true
   }
 ]
 
@@ -41,51 +55,51 @@ const caps = platformToRun
 
 export const config: WebdriverIO.Config = {
   runner: 'local',
-  tsConfigPath: './test/tsconfig.json',
-  specs: ['./test/specs/**/*.ts'],
+  tsConfigPath: './tsconfig.json',
+  specs: ['./specs/**/*.ts'],
   exclude: [
     // 'path/to/excluded/files'
-    './test/specs/login.e2e.ts'
+    './specs/login.e2e.ts'
   ],
   maxInstances: 10,
   capabilities: caps,
-  services: ['appium'],
+  hostname: 'localhost',
+  port: 4723,
   logLevel: 'error',
   bail: 0,
   waitforTimeout: 10000,
   connectionRetryTimeout: 120000,
-  connectionRetryCount: 3,
+  connectionRetryCount: 2,
   framework: 'mocha',
   reporters: ['spec'],
   mochaOpts: {
     ui: 'bdd',
-    timeout: 60000
+    timeout: 600000
   },
 
-  // 테스트 전에 딱 한 번 돌아가는 훅: testrun만들거나 겟할 예정입니다
+  // hoook before: make or get testRun before test
   before: async () => {
     const platform = driver.isAndroid ? 'Android' : 'iOS'
     runId = await getTestRun(platform)
   },
 
-  // 매번 테스트가 돌아갈때마다 한번씩 돌아가는 훅: test section만들거나 겟할 예정입니다
+  // hoook beforeTest: make or get testSection before test
   beforeTest: async test => {
     const sectionTitle = test.parent
     sectionCache[sectionTitle] = await getSection(sectionTitle)
   },
 
-  // 테스트 후에 진행될 훅: testcase만들거나 겟 + 결과값을 전송
+  // hoook afterTest: make or get testCase and send result after test
   afterTest: async (test, _, { passed }) => {
     const sectionTitle = test.parent
     const sectionId = sectionCache[sectionTitle]
     const caseId = await getTestCase(test.title, sectionId)
     const statusId = passed ? 1 : 5
     if (runId) {
+      await addCaseToRun(runId, caseId)
       await sendResult(runId, caseId, statusId)
     } else {
-      console.error(
-        '테스트런이 아예 만들어진적이 없어서 결과값을 추가할 수 없습니다!'
-      )
+      console.error('testRun not found')
     }
   }
 }

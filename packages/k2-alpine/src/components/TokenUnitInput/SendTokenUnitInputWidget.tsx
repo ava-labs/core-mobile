@@ -42,6 +42,7 @@ type SendTokenUnitInputWidgetProps = {
   disabled?: boolean
   returnKeyType?: ReturnKeyTypeOptions
   autoFocus?: boolean
+  testID?: string
 }
 
 export const SendTokenUnitInputWidget = forwardRef<

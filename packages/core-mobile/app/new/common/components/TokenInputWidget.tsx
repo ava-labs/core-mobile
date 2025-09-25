@@ -234,7 +234,6 @@ export const TokenInputWidget = ({
                     pointerEvents={token === undefined ? 'none' : 'auto'}>
                     {editable ? (
                       <TokenAmountInput
-                        testID="token_amount_input_field"
                         autoFocus={autoFocus}
                         editable={editable}
                         denomination={token?.decimals ?? 0}

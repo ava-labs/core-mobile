@@ -18,7 +18,9 @@
     "storybook-watch": "sb-rn-watcher",
     "gen:contracts": "typechain --target=ethers-v6 --out-dir app/contracts/openzeppelin ./node_modules/@openzeppelin/contracts/build/contracts/ERC20.json ./node_modules/@openzeppelin/contracts/build/contracts/ERC721.json ./node_modules/@openzeppelin/contracts/build/contracts/ERC1155.json",
     "gen:glacierApi": "npx openapi-zod-client 'https://glacier-api-dev.avax.network/api-json' -o './app/utils/network/glacierApi.client.ts'",
-    "wdio": "wdio run ./wdio.conf.ts"
+    "appium:ios": "PLATFORM=ios wdio run ./test-appium/wdio.conf.ts",
+    "appium:android": "PLATFORM=android wdio run ./test-appium/wdio.conf.ts",
+    "appium": "wdio run ./test-appium/wdio.conf.ts"
   },
   "dependencies": {
     "@avalabs/avalanche-module": "1.9.13",
@@ -268,11 +270,11 @@
     "@types/react-dom": "19.0.4",
     "@types/react-test-renderer": "19.1.0",
     "@types/semver": "7.5.4",
-    "@wdio/appium-service": "latest",
+    "@wdio/appium-service": "9.19.2",
     "@wdio/cli": "9.19.2",
-    "@wdio/local-runner": "latest",
-    "@wdio/mocha-framework": "latest",
-    "@wdio/spec-reporter": "latest",
+    "@wdio/local-runner": "9.19.2",
+    "@wdio/mocha-framework": "9.19.2",
+    "@wdio/spec-reporter": "9.19.2",
     "@wdio/types": "9.19.2",
     "@welldone-software/why-did-you-render": "8.0.3",
     "appium": "^3.0.2",
@@ -306,7 +308,8 @@
     "ts-jest": "29.4.1",
     "ts-node": "10.9.2",
     "typechain": "8.3.2",
-    "typescript": "5.8.3"
+    "typescript": "5.8.3",
+    "webdriverio": "9.19.2"
   },
   "engines": {
     "node": ">=20.18.0",

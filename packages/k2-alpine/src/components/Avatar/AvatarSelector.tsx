@@ -59,7 +59,7 @@ export const AvatarSelector = ({
             marginLeft: -gap / 2,
             zIndex: index % 2 === 0 ? 0 : 1
           }}>
-          <AnimatedPressable
+          {/* <AnimatedPressable
             onPress={() => handleSelect(index)}
             style={{
               top: index % 2 === 0 ? avatarWidth : configuration.spacing,
@@ -70,7 +70,7 @@ export const AvatarSelector = ({
               size={avatarWidth}
               isSelected={isSelected}
             />
-          </AnimatedPressable>
+          </AnimatedPressable> */}
         </View>
       )
     },

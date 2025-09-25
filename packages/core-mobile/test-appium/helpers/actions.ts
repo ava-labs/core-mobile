@@ -1,12 +1,22 @@
-/* eslint-disable @typescript-eslint/explicit-function-return-type */
+import assert from 'assert'
 import { ChainablePromiseElement } from 'webdriverio'
-import { assert } from 'chai'
 import { selectors } from './selectors'
 
 async function type(element: ChainablePromiseElement, text: string | number) {
   await waitFor(element)
-  await element.setValue('')
-  await element.setValue(text)
+  await element.clearValue()
+  await element.addValue(text)
+}
+
+async function tapNumberPad(keyCode: string) {
+  for (const char of keyCode.split('')) {
+    if (driver.isIOS) {
+      await selectors.getByText(char).click()
+    } else {
+      const num = 7 + parseInt(char, 10)
+      await driver.pressKeyCode(num)
+    }
+  }
 }
 
 // getText == targetText
@@ -15,24 +25,18 @@ async function verifyElementText(
   targetText: string
 ) {
   const eleText = await element.getText()
-
-  // chai 검증
-  assert.equal(
-    eleText,
-    targetText,
-    `"${eleText}"와 "${targetText}"는 같지 않습니다!`
-  )
+  assert.equal(eleText, targetText, `"${eleText}" !== "${targetText}"`)
 }
 
-async function waitFor(element: ChainablePromiseElement, timeout = 5000) {
+async function waitFor(element: ChainablePromiseElement, timeout = 10000) {
   await element.waitForDisplayed({ timeout })
 }
 
 async function isVisible(element: ChainablePromiseElement, targetBool = true) {
   const visible = await element.isDisplayed()
 
-  // chai 검증
-  assert.equal(visible, targetBool)
+  assert.equal(visible, targetBool, element.toString())
+  return visible
 }
 
 async function isVisibleTrueOrFalse(element: ChainablePromiseElement) {
@@ -41,28 +45,34 @@ async function isVisibleTrueOrFalse(element: ChainablePromiseElement) {
 
 async function isSelected(element: ChainablePromiseElement, targetBool = true) {
   const selected = await element.isSelected()
-
-  // chai 검증
-  assert.equal(selected, targetBool)
+  assert.equal(selected, targetBool, element.toString())
+  return selected
 }
 
 async function isEnabled(element: ChainablePromiseElement, targetBool = true) {
-  const enabled = await element.isEnabled() // true나 false 리턴할겁니다.
-
-  // chai 검증
-  assert.equal(enabled, targetBool)
+  const enabled = await element.isEnabled()
+  assert.equal(enabled, targetBool, element.toString())
+  return enabled
 }
 
 async function tap(element: ChainablePromiseElement) {
+  await element.waitForEnabled()
+  await element.tap()
+}
+
+async function click(element: ChainablePromiseElement) {
+  await waitFor(element)
+  await element.waitForEnabled()
   await element.click()
 }
 
-async function dismissKeyboard(text = 'Return') {
+async function dismissKeyboard(id = 'Return') {
   if (driver.isIOS) {
-    await tap(selectors.getByText(text))
+    await tap(selectors.getById(id))
   } else {
     await driver.hideKeyboard()
   }
+  console.log('keyboard is dismissed')
 }
 
 async function getText(element: ChainablePromiseElement) {
@@ -94,31 +104,34 @@ async function delay(ms: number) {
   return new Promise(resolve => setTimeout(resolve, ms))
 }
 
-function journalDate(date: number, month: number, year: number) {
-  const targetDate = new Date()
-
-  if (date) {
-    targetDate.setDate(targetDate.getDate() - date)
-  } else if (month) {
-    targetDate.setMonth(targetDate.getMonth() - month)
-  } else if (year) {
-    targetDate.setFullYear(targetDate.getFullYear() - year)
-  }
-  return targetDate.toISOString().split('T')[0]
+async function dragAndDrop(
+  ele: ChainablePromiseElement,
+  targetOffset: [number, number],
+  duration = 500
+) {
+  await ele.dragAndDrop(
+    {
+      x: targetOffset[0],
+      y: targetOffset[1]
+    },
+    { duration }
+  )
 }
 
 export const actions = {
   type,
+  tapNumberPad,
   verifyElementText,
   waitFor,
   isVisible,
   isSelected,
   isEnabled,
   tap,
+  click,
   dismissKeyboard,
   getText,
   swipe,
+  dragAndDrop,
   delay,
-  journalDate,
   isVisibleTrueOrFalse
 }

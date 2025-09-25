@@ -1,6 +1,4 @@
-/* eslint-disable @typescript-eslint/explicit-function-return-type */
 import axios from 'axios'
-import Logger from 'utils/Logger'
 import { testRailConfig } from './testrail.config'
 
 const { domain, username, apiKey, projectId, suiteId } = testRailConfig
@@ -14,7 +12,7 @@ const testrail = axios.create({
 export async function getTestRun(platform: string) {
   // iOS: today
   const today = new Date().toISOString().split('T')[0]
-  const title = `${platform}: ${today}`
+  const title = `[Appium] ${platform}: ${today}`
 
   try {
     // testRun exists, return it
@@ -24,19 +22,21 @@ export async function getTestRun(platform: string) {
       ? runs.find(run => run.name === title)
       : undefined
     if (existing) {
-      Logger.info('testRun found', existing.id)
+      console.log('testRun found', existing.id)
       return existing.id
     }
 
     // testRun not exists, create it and return it
     const res = await testrail.post(`/add_run/${projectId}`, {
       suiteId: suiteId,
-      name: title
+      name: title,
+      include_all: false,
+      case_ids: []
     })
-    Logger.info('new testRun created', res.data.id)
+    console.info('new testRun created', res.data.id)
     return res.data.id
   } catch (e: any) {
-    Logger.error('error creating testRun', e.response?.data || e.message)
+    console.error('error creating testRun', e.response?.data || e.message)
     return undefined
   }
 }
@@ -62,7 +62,7 @@ export async function getSection(name: string) {
 }
 
 // 3. create test case
-export async function getTestCase(title: string, sectionId: number) {
+export async function getTestCase(title: string, sectionId?: number) {
   // if exists, get it
   const { data } = await testrail.get(
     `/get_cases/${projectId}&suite_id=${suiteId}&section_id=${sectionId}`
@@ -91,8 +91,33 @@ export async function sendResult(
     await testrail.post(`/add_result_for_case/${runId}/${caseId}`, {
       status_id: statusId
     })
-    Logger.info('result sent')
+    console.info('result sent')
   } catch (e: any) {
-    Logger.error('error sending result', e.response?.data || e.message)
+    console.error('error sending result', e.response?.data || e.message)
+  }
+}
+
+// 5. update run with new caseId
+export async function addCaseToRun(runId: number, caseId: number) {
+  try {
+    // get current caseIds in run
+    const { data } = await testrail.get(`/get_run/${runId}`)
+    const currentCaseIds: number[] = data.case_ids || []
+
+    // prevent duplicate
+    if (currentCaseIds.includes(caseId)) {
+      console.log(`case ${caseId} already in run ${runId}`)
+      return
+    }
+
+    const updatedCaseIds = [...currentCaseIds, caseId]
+
+    // call update_run
+    await testrail.post(`/update_run/${runId}`, {
+      case_ids: updatedCaseIds
+    })
+    console.info(`case ${caseId} added to run ${runId}`)
+  } catch (e: any) {
+    console.error('error updating run with case', e.response?.data || e.message)
   }
 }

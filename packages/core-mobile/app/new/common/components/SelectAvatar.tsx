@@ -73,6 +73,7 @@ export const SelectAvatar = memo(
           size="large"
           type="primary"
           onPress={handleSubmit}
+          testID={isLoading ? undefined : 'avatar_next_btn'}
           disabled={isLoading}>
           {isLoading ? <ActivityIndicator /> : buttonText}
         </Button>

@@ -138,6 +138,8 @@ export const RecentContacts = ({
                     width: '90%'
                   }}>
                   <Text
+                    testID={`recent_contacts__${name}`}
+                    accessibilityLabel={`recent_contacts__${name}`}
                     variant="buttonMedium"
                     numberOfLines={1}
                     sx={{ flex: 1 }}>
