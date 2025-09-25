@@ -1,6 +1,7 @@
 import { ScrollScreen } from 'common/components/ScrollScreen'
-import React from 'react'
+import React, { useCallback } from 'react'
 import { useRouter } from 'expo-router'
+import BiometricsSDK from 'utils/BiometricsSDK'
 import { PinScreen } from '../common/components/PinScreen'
 
 const LoginWithPinOrBiometry = (): JSX.Element => {
@@ -11,13 +12,21 @@ const LoginWithPinOrBiometry = (): JSX.Element => {
     router.navigate('/forgotPin')
   }
 
+  const handleBiometricPrompt = useCallback(async () => {
+    return BiometricsSDK.loadEncryptionKeyWithBiometry()
+  }, [])
+
   return (
     <ScrollScreen
       shouldAvoidKeyboard
       hideHeaderBackground
       scrollEnabled={false}
       contentContainerStyle={{ flex: 1 }}>
-      <PinScreen onForgotPin={handleForgotPin} shouldMigrate={true} />
+      <PinScreen
+        onForgotPin={handleForgotPin}
+        isInitialLogin={true}
+        onBiometricPrompt={handleBiometricPrompt}
+      />
     </ScrollScreen>
   )
 }

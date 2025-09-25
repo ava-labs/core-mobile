@@ -19,12 +19,14 @@ export function usePinOrBiometryLogin({
   onStartLoading,
   onStopLoading,
   onWrongPin,
-  shouldMigrate
+  isInitialLogin = false,
+  onBiometricPrompt
 }: {
   onStartLoading: () => void
   onStopLoading: (onComplete?: () => void) => void
   onWrongPin: () => void
-  shouldMigrate?: boolean
+  isInitialLogin?: boolean
+  onBiometricPrompt: () => Promise<boolean>
 }): {
   enteredPin: string
   onEnterPin: (pinKey: string) => void
@@ -89,7 +91,7 @@ export function usePinOrBiometryLogin({
           throw new Error('Active wallet ID is not set')
         }
 
-        if (shouldMigrate) {
+        if (isInitialLogin) {
           const migrator = new KeychainMigrator(activeWalletId)
           await migrator.migrateIfNeeded('PIN', pin)
         }
@@ -131,7 +133,7 @@ export function usePinOrBiometryLogin({
     [
       onStartLoading,
       activeWalletId,
-      shouldMigrate,
+      isInitialLogin,
       resetRateLimiter,
       onStopLoading,
       increaseAttempt,
@@ -166,7 +168,7 @@ export function usePinOrBiometryLogin({
         if (accessType === 'BIO') {
           // Check if migration is needed first
 
-          if (shouldMigrate) {
+          if (isInitialLogin) {
             const migrator = new KeychainMigrator(activeWalletId)
             const result = await migrator.migrateIfNeeded('BIO')
             if (
@@ -188,7 +190,7 @@ export function usePinOrBiometryLogin({
             }
           }
           //already migrated
-          const isSuccess = await BiometricsSDK.loadEncryptionKeyWithBiometry()
+          const isSuccess = await onBiometricPrompt()
 
           if (isSuccess) {
             setVerified(true)
@@ -211,7 +213,13 @@ export function usePinOrBiometryLogin({
         setVerified(false)
         throw err
       }
-    }, [activeWalletId, alertBadData, resetRateLimiter, shouldMigrate])
+    }, [
+      activeWalletId,
+      alertBadData,
+      resetRateLimiter,
+      isInitialLogin,
+      onBiometricPrompt
+    ])
 
   useEffect(() => {
     async function getBiometryType(): Promise<void> {

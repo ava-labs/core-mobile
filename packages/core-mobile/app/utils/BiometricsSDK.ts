@@ -31,6 +31,13 @@ export const ENCRYPTION_KEY_SERVICE = 'encryption-key-service'
 export const ENCRYPTION_KEY_SERVICE_BIO = 'encryption-key-service-bio'
 const iOS = Platform.OS === 'ios'
 
+const bioAuthenticationOptions: LocalAuthentication.LocalAuthenticationOptions =
+  {
+    promptMessage: COMMON_BIO_PROMPT.promptMessage,
+    fallbackLabel: COMMON_BIO_PROMPT.fallbackLabel,
+    cancelLabel: 'Cancel'
+  }
+
 export const passcodeGetKeyChainOptions: GetOptions = {
   service: ENCRYPTION_KEY_SERVICE,
   accessControl: iOS ? undefined : Keychain.ACCESS_CONTROL.APPLICATION_PASSWORD
@@ -428,6 +435,30 @@ class BiometricsSDK {
       Logger.error('Failed to validate PIN', error)
       return false
     }
+  }
+
+  async authenticateAsync(): Promise<boolean> {
+    try {
+      const isEnrolled = await this.isEnrolledAsync()
+      if (!isEnrolled) {
+        Logger.error(
+          'Failed to authenticate with biometric',
+          new Error('Biometric not enrolled')
+        )
+        return false
+      }
+      const result = await LocalAuthentication.authenticateAsync(
+        bioAuthenticationOptions
+      )
+      return result.success
+    } catch (error) {
+      Logger.error('Failed to authenticate with biometric', error)
+      return false
+    }
+  }
+
+  async isEnrolledAsync(): Promise<boolean> {
+    return LocalAuthentication.isEnrolledAsync()
   }
 }
 
