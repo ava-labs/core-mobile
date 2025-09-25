@@ -40,7 +40,7 @@ import CompleteCardBackgroundImageLight from '../../../assets/icons/complete-car
 import { getActiveStakeProgress, getStakeTitle } from '../utils'
 import { useAddStake } from '../hooks/useAddStake'
 import { useStakeFilterAndSort } from '../hooks/useStakeFilterAndSort'
-import { Banner } from './Banner'
+import { Banner } from '../components/Banner'
 
 const StakeTabScreen = ({
   onScroll,

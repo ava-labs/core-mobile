@@ -27,7 +27,7 @@ import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { isCompleted, isOnGoing } from 'utils/earn/status'
 import { useDeposits } from 'hooks/earn/useDeposits'
 import { useRouter } from 'expo-router'
-import { getActiveStakeProgress, getStakeTitle } from '../utils'
+import { getActiveStakeProgress, getStakeTitle } from '../../stake/utils'
 
 const DepositTabScreen = ({
   onScroll,

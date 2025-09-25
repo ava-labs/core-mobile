@@ -34,8 +34,8 @@ import {
   selectIsInAppDefiBlocked,
   selectIsInAppDefiNewBlocked
 } from 'store/posthog'
-import StakeTabScreen from '../components/StakeTabScreen'
-import DepositTabScreen from '../components/DepositTabScreen'
+import DepositTabScreen from 'features/deposit/screens/DepositTabScreen'
+import StakeTabScreen from './StakeTabScreen'
 
 export const EarnHomeScreen = (): JSX.Element => {
   const frame = useSafeAreaFrame()
