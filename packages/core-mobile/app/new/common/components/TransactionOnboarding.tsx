@@ -19,7 +19,8 @@ export const TransactionOnboarding = ({
   buttonTitle,
   viewOnceKey,
   onPressNext,
-  footerAccessory
+  footerAccessory,
+  scrollEnabled
 }: {
   icon: {
     component: React.FC<SvgProps>
@@ -31,6 +32,7 @@ export const TransactionOnboarding = ({
   viewOnceKey: ViewOnceKey
   onPressNext: () => void
   footerAccessory?: JSX.Element
+  scrollEnabled?: boolean
 }): JSX.Element => {
   const { theme } = useTheme()
   const dispatch = useDispatch()
@@ -79,7 +81,7 @@ export const TransactionOnboarding = ({
   return (
     <ScrollScreen
       isModal
-      scrollEnabled={false}
+      scrollEnabled={scrollEnabled}
       renderFooter={renderFooter}
       contentContainerStyle={{
         padding: 16

@@ -50,6 +50,7 @@ export const DepositOnboardingScreen = (): JSX.Element => {
       viewOnceKey={ViewOnceKey.DEPOSIT_ONBOARDING}
       onPressNext={handlePressNext}
       footerAccessory={renderFooterAccessory()}
+      scrollEnabled={true}
     />
   )
 }
