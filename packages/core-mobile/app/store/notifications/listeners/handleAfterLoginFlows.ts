@@ -5,6 +5,7 @@ import { AppUpdateService } from 'services/AppUpdateService/AppUpdateService'
 import NotificationsService from 'services/notifications/NotificationsService'
 import {
   selectIsEnableNotificationPromptBlocked,
+  selectIsSolanaLaunchModalBlocked,
   selectIsSolanaSupportBlocked
 } from 'store/posthog'
 import { AppListenerEffectAPI } from 'store/types'
@@ -128,9 +129,12 @@ const promptSolanaLaunchModalIfNeeded = async (
   )(state)
 
   const isSolanaSupportBlocked = selectIsSolanaSupportBlocked(state)
+  const isSolanaLaunchModalBlocked = selectIsSolanaLaunchModalBlocked(state)
 
   const shouldShowSolanaLaunchModal =
-    !hasBeenViewedSolanaLaunch && !isSolanaSupportBlocked
+    !hasBeenViewedSolanaLaunch &&
+    !isSolanaSupportBlocked &&
+    !isSolanaLaunchModalBlocked
   if (shouldShowSolanaLaunchModal) {
     await waitForInteractions()
 
