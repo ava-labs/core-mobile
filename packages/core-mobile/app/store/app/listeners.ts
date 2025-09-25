@@ -4,6 +4,7 @@ import { differenceInSeconds } from 'date-fns'
 import {
   AppState,
   AppStateStatus,
+  Platform,
   Appearance as RnAppearance
 } from 'react-native'
 import BootSplash from 'react-native-bootsplash'
@@ -63,6 +64,9 @@ const init = async (
   AnalyticsService.capture('ApplicationOpened')
   listenToAppState(listenerApi)
 
+  if (Platform.OS === 'android') {
+    await BiometricsSDK.warmup()
+  }
   dispatch(setIsReady(true))
 }
 
@@ -157,17 +161,14 @@ const clearData = async (
   _: Action,
   listenerApi: AppListenerEffectAPI
 ): Promise<void> => {
-  const { dispatch, getState } = listenerApi
-  const state = getState()
-  const wallets = selectWallets(state)
+  const { dispatch } = listenerApi
   dispatch(setWalletState(WalletState.NONEXISTENT))
   dispatch(setWalletType(WalletType.UNSET))
   dispatch(setSelectedAppearance(Appearance.System))
   dispatch(
     setSelectedColorScheme(RnAppearance.getColorScheme() as ColorSchemeName)
   )
-  const walletIds = Object.keys(wallets)
-  await BiometricsSDK.clearAllData(walletIds).catch(e =>
+  await BiometricsSDK.clearAllData().catch(e =>
     Logger.error('failed to clear biometrics', e)
   )
   await SecureStorageService.clearAll().catch(e =>
