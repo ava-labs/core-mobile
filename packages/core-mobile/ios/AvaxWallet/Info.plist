@@ -99,5 +99,12 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<false/>
+	<key>branch_key</key>
+	<dict>
+		<key>test</key>
+		<string>key_test_huEgqNimBs9nak9ICf2TlhdfsDdptcAD</string>
+		<key>live</key>
+		<string>key_live_iDtcATcmEAXhac4Rze6LgbllBAkfvayk</string>
+	</dict>
 </dict>
 </plist>
