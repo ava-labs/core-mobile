@@ -150,9 +150,11 @@ android {
         internal {
             applicationIdSuffix ".internal"
             buildConfigField "boolean", "ENABLE_FLAG_SECURE", "false"
+            manifestPlaceholders = [BRANCH_TEST_MODE:"true"]
         }
         external {
             buildConfigField "boolean", "ENABLE_FLAG_SECURE", "true"
+            manifestPlaceholders = [BRANCH_TEST_MODE:"false"]
         }
     }
 
@@ -169,6 +171,11 @@ dependencies {
     // The version of react-native is set by the React Native Gradle Plugin
     implementation("com.facebook.react:react-android")
 
+    implementation "com.google.android.gms:play-services-ads-identifier:18.0.1"
+    implementation "com.huawei.hms:ads-identifier:3.4.39.302"
+    implementation "com.miui.referrer:homereferrer:1.0.0.6"
+    implementation "store.galaxy.samsung.installreferrer:samsung_galaxystore_install_referrer:4.0.0"
+    
     if (hermesEnabled.toBoolean()) {
         implementation("com.facebook.react:hermes-android")
     } else {
