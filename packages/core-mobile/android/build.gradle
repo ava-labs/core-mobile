@@ -61,7 +61,7 @@ allprojects {
         mavenCentral()
         maven { url "$rootDir/../node_modules/expo-camera/android/maven" }
         maven { url 'https://maven.google.com/' }
-        maven { url 'http://developer.huawei.com/repo/' }
+        maven { url 'https://developer.huawei.com/repo/' }
         maven { url 'https://repos.xiaomi.com/maven/' }
     }
     
