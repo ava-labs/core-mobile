@@ -77,8 +77,15 @@ export const XPTokenActivityListItemTitle = ({
         ]
       case PChainTransactionType.ADVANCE_TIME_TX:
         return [renderAmount(a1), ' ', s1, ' ', 'advanced time']
-      case PChainTransactionType.BASE_TX:
+      case PChainTransactionType.BASE_TX: {
+        if (tx.isIncoming) {
+          return [renderAmount(a1), ' ', s1, ' ', 'received']
+        }
+        if (tx.isOutgoing) {
+          return [renderAmount(a1), ' ', s1, ' ', 'sent']
+        }
         return [renderAmount(a1), ' ', s1, ' ', 'base transaction']
+      }
       case PChainTransactionType.CREATE_CHAIN_TX:
         return [renderAmount(a1), ' ', s1, ' ', 'created chain']
       case PChainTransactionType.CREATE_SUBNET_TX:
@@ -102,7 +109,7 @@ export const XPTokenActivityListItemTitle = ({
       default:
         return ['Unknown']
     }
-  }, [tx.tokens, tx.txType, renderAmount])
+  }, [tx, renderAmount])
 
   return (
     <View
