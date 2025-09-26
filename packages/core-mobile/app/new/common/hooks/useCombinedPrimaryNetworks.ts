@@ -9,8 +9,6 @@ import {
 } from 'services/network/consts'
 import { selectIsSolanaSupportBlocked } from 'store/posthog/slice'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
-import { WalletType } from 'services/wallet/types'
-import { useActiveWallet } from './useActiveWallet'
 
 /**
  * Hook to get the combined primary networks (networks are merged together with same address)
@@ -23,24 +21,20 @@ export function useCombinedPrimaryNetworks(): {
 } {
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const isSolanaSupportBlocked = useSelector(selectIsSolanaSupportBlocked)
-  const wallet = useActiveWallet()
 
   const networks = useMemo(() => {
-    const blockSolana =
-      isSolanaSupportBlocked || wallet.type === WalletType.KEYSTONE
-
     // Test networks
     if (isDeveloperMode) {
-      return blockSolana
+      return isSolanaSupportBlocked
         ? (TEST_PRIMARY_NETWORKS as Network[])
         : [...TEST_PRIMARY_NETWORKS, NETWORK_SOLANA_DEVNET]
     }
 
     // Main networks
-    return blockSolana
+    return isSolanaSupportBlocked
       ? (MAIN_PRIMARY_NETWORKS as Network[])
       : [...MAIN_PRIMARY_NETWORKS, NETWORK_SOLANA]
-  }, [isDeveloperMode, isSolanaSupportBlocked, wallet.type])
+  }, [isDeveloperMode, isSolanaSupportBlocked])
 
   return { networks }
 }
