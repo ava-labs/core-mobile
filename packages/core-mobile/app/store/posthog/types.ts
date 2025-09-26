@@ -49,7 +49,8 @@ export const DefaultFeatureFlagConfig = {
   [FeatureGates.SWAP_SOLANA]: true,
   [FeatureGates.SWAP_FEES_JUPITER]: true,
   [FeatureGates.IN_APP_UPDATE_ANDROID]: false,
-  [FeatureGates.ENABLE_MELD_SANDBOX]: false
+  [FeatureGates.ENABLE_MELD_SANDBOX]: false,
+  [FeatureGates.SOLANA_LAUNCH_MODAL]: false
 }
 
 export const initialState = {
