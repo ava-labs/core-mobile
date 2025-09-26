@@ -19,7 +19,9 @@ class AppDelegate: ExpoAppDelegate {
     RNFBAppCheckModule.sharedInstance()
     FirebaseApp.configure()
     
-    RNBranch.useTestInstance()
+    if let displayName = Bundle.main.object(forInfoDictionaryKey: "CFBundleDisplayName") as? String, displayName.lowercased().contains("internal")  {
+      RNBranch.useTestInstance()
+    }
     RNBranch.initSession(launchOptions: launchOptions, isReferrable: true)
     
     let delegate = ReactNativeDelegate()
