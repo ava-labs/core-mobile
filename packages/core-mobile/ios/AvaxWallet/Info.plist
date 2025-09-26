@@ -105,5 +105,14 @@
 	<string>We use Bluetooth to connect to ledger devices</string>
 	<key>NSBluetoothPeripheralUsageDescription</key>
 	<string>We use Bluetooth to connect to ledger devices</string>
+	<key>branch_key</key>
+	<dict>
+		<key>test</key>
+		<string>key_test_huEgqNimBs9nak9ICf2TlhdfsDdptcAD</string>
+		<key>live</key>
+		<string>key_live_iDtcATcmEAXhac4Rze6LgbllBAkfvayk</string>
+	</dict>
+  <key>NSUserTrackingUsageDescription</key>
+  <string>This identifier will be used to deliver relevant ads and measure campaign performance.</string>
 </dict>
 </plist>
