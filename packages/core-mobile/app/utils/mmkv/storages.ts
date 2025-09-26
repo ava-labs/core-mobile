@@ -5,7 +5,8 @@ import { PersistStorage, StateStorage } from 'zustand/middleware'
 
 export const commonStorageKeys = [
   StorageKey.POSTHOG_SUSPENDED,
-  StorageKey.SECURE_ACCESS_SET
+  StorageKey.SECURE_ACCESS_SET,
+  StorageKey.LAST_SEEN_UPDATE_APP_VERSION
 ]
 
 export const commonStorage = new MMKV({

@@ -39,6 +39,8 @@ import Transak from '../../assets/logos/provider-transak.svg'
 import Transfi from '../../assets/logos/provider-transfi.svg'
 import Unlimit from '../../assets/logos/provider-unlimit.svg'
 import YellowCard from '../../assets/logos/provider-yellowcard.svg'
+import Kryptonim from '../../assets/logos/provider-kryptonim.svg'
+import Swappeddotcom from '../../assets/logos/provider-swappeddotcom.svg'
 
 // price provider logos
 import Velora from '../../assets/logos/provider-velora.svg'
@@ -92,6 +94,8 @@ export const Logos = {
     Velora: Velora,
     Odos: Odos,
     Kyber: Kyber,
-    Yak: Yak
+    Yak: Yak,
+    Kryptonim: Kryptonim,
+    Swappeddotcom: Swappeddotcom
   }
 }

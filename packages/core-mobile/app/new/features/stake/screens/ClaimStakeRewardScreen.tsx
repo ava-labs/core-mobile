@@ -26,6 +26,7 @@ import { useSelector } from 'react-redux'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import NetworkService from 'services/network/NetworkService'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
+import { useRefreshStakingBalances } from 'hooks/earn/useRefreshStakingBalances'
 
 export const ClaimStakeRewardScreen = (): JSX.Element => {
   const { navigate, back } = useRouter()
@@ -37,18 +38,18 @@ export const ClaimStakeRewardScreen = (): JSX.Element => {
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const pNetwork = NetworkService.getAvalancheNetworkP(isDeveloperMode)
   const avaxPrice = useAvaxTokenPriceInSelectedCurrency()
+  const refreshStakingBalances = useRefreshStakingBalances()
   const onClaimSuccess = (): void => {
+    refreshStakingBalances({ shouldRefreshStakes: false })
+
     AnalyticsService.capture('StakeClaimSuccess')
 
     transactionSnackbar.success({ message: 'Stake reward claimed' })
+    back()
+
     setTimeout(() => {
       confetti.restart()
     }, 100)
-    // this is a workaround for the issue where back navigation is not working,
-    // when it's called within the onSuccess callback of the mutation
-    setTimeout(() => {
-      back()
-    }, 300)
   }
 
   const onClaimError = (error: Error): void => {
@@ -75,7 +76,8 @@ export const ClaimStakeRewardScreen = (): JSX.Element => {
   }
 
   const {
-    mutation: claimRewardsMutation,
+    claimRewards,
+    isPending: isClaimRewardsPending,
     totalFees,
     feeCalculationError
   } = useClaimRewards(onClaimSuccess, onClaimError, onFundsStuck)
@@ -86,12 +88,10 @@ export const ClaimStakeRewardScreen = (): JSX.Element => {
     feeCalculationError === SendErrorMessage.INSUFFICIENT_BALANCE_FOR_FEE
 
   const shouldDisableClaimButton =
-    unableToGetFees ||
-    insufficientBalanceForFee ||
-    claimRewardsMutation.isPending
+    unableToGetFees || insufficientBalanceForFee || isClaimRewardsPending
 
   useEffect(() => {
-    if (claimRewardsMutation.isPending) return
+    if (isClaimRewardsPending) return
 
     // the balance is usually updated faster than the tx "committed" event
     // and we don't want to show the updated balance while the tx is still pending (spinner is being displayed)
@@ -109,7 +109,7 @@ export const ClaimStakeRewardScreen = (): JSX.Element => {
   }, [
     data?.balancePerType.unlockedUnstaked,
     pNetwork.networkToken,
-    claimRewardsMutation.isPending
+    isClaimRewardsPending
   ])
 
   const handleCancel = useCallback(() => {
@@ -123,8 +123,8 @@ export const ClaimStakeRewardScreen = (): JSX.Element => {
 
   const issueClaimRewards = useCallback(() => {
     AnalyticsService.capture('StakeIssueClaim')
-    claimRewardsMutation.mutate()
-  }, [claimRewardsMutation])
+    claimRewards()
+  }, [claimRewards])
 
   const formatInCurrency = useCallback(
     (amount: TokenUnit): string => {
@@ -159,7 +159,7 @@ export const ClaimStakeRewardScreen = (): JSX.Element => {
     ]
   }, [totalFees, insufficientBalanceForFee])
 
-  usePreventScreenRemoval(claimRewardsMutation.isPending)
+  usePreventScreenRemoval(isClaimRewardsPending)
 
   useEffect(() => {
     if (claimableAmountInAvax) {
@@ -188,19 +188,19 @@ export const ClaimStakeRewardScreen = (): JSX.Element => {
           size="large"
           onPress={issueClaimRewards}
           disabled={shouldDisableClaimButton}>
-          {claimRewardsMutation.isPending ? <ActivityIndicator /> : 'Claim now'}
+          {isClaimRewardsPending ? <ActivityIndicator /> : 'Claim now'}
         </Button>
         <Button
           type="tertiary"
           size="large"
           onPress={handleCancel}
-          disabled={claimRewardsMutation.isPending}>
+          disabled={isClaimRewardsPending}>
           Cancel
         </Button>
       </View>
     )
   }, [
-    claimRewardsMutation.isPending,
+    isClaimRewardsPending,
     handleCancel,
     issueClaimRewards,
     shouldDisableClaimButton
@@ -236,7 +236,7 @@ export const ClaimStakeRewardScreen = (): JSX.Element => {
               autoFocus
             />
           </View>
-          {!claimRewardsMutation.isPending && insufficientBalanceForFee && (
+          {!isClaimRewardsPending && insufficientBalanceForFee && (
             <Text
               testID="insufficent_balance_error_msg"
               variant="caption"

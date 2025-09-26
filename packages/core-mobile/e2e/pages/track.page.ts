@@ -383,8 +383,8 @@ class WatchListPage {
     symbol: string,
     expectedPrice: string
   ) {
-    await Action.waitForElement(by.text(symbol), 20000)
-    await Assert.isVisible(by.text(name))
+    await Action.waitForElement(by.text(name), 20000)
+    await Assert.isVisible(by.text(symbol))
     await Assert.isVisible(by.text(expectedPrice), 1)
   }
 

@@ -1,11 +1,15 @@
 #!/usr/bin/env bash
-
-# make pipelines' return status equal the last command to exit with a non-zero status, or zero if all commands exit successfully
 set -o pipefail
 
-npm rebuild detox
+./node_modules/.bin/detox clean-framework-cache && ./node_modules/.bin/detox build-framework-cache
 
-./node_modules/.bin/detox test --configuration ios.internal.release.smoke.ci --record-logs all --retries 1 --max-workers 2; test_result=$?
+./node_modules/.bin/detox test \
+  --configuration ios.internal.release.smoke.ci \
+  --record-logs all \
+  --cleanup \
+  --retries 1 \
+  --headless \
+  --max-workers 1; test_result=$?
 
 npx ts-node ./e2e/attachLogsSendResultsToTestrail.ts && sleep 5
 

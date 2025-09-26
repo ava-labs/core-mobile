@@ -2,12 +2,11 @@ import { usePreventRemove } from '@react-navigation/native'
 import { LastTransactedNetworks } from 'common/components/LastTransactedNetworks'
 import { Stack } from 'common/components/Stack'
 import {
-  modalScreensOptions,
-  secondaryModalScreensOptions,
   stackNavigatorScreenOptions,
-  stackScreensOptions
+  stackScreensOptions,
+  useModalScreensOptions
 } from 'common/consts/screenOptions'
-
+import { useTriggerAfterLoginFlows } from 'common/hooks/useTriggerAfterLoginFlows'
 import { BridgeProvider } from 'features/bridge/contexts/BridgeContext'
 import { CollectiblesProvider } from 'features/portfolio/collectibles/CollectiblesContext'
 import { MigrateFavoriteIds } from 'new/common/components/MigrateFavoriteIds'
@@ -26,12 +25,17 @@ export const unstable_settings = {
 export default function WalletLayout(): JSX.Element {
   const walletState = useSelector(selectWalletState)
 
+  const { modalScreensOptions, secondaryModalScreensOptions } =
+    useModalScreensOptions()
+
   usePreventRemove(walletState === WalletState.ACTIVE, () => {
     // TODO: uncomment this after we fix the multiple back() calls
     // back() calls are triggered too many times when closing a bunch of modals
     // which closes the app on Android
     // BackHandler.exitApp()
   })
+
+  useTriggerAfterLoginFlows()
 
   return (
     <BridgeProvider>
@@ -219,6 +223,10 @@ export default function WalletLayout(): JSX.Element {
           />
           <Stack.Screen
             name="(modals)/solanaLaunch"
+            options={modalScreensOptions}
+          />
+          <Stack.Screen
+            name="(modals)/appUpdate"
             options={modalScreensOptions}
           />
         </Stack>

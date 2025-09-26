@@ -80,6 +80,7 @@
 	<array>
 		<string>twitter</string>
 		<string>mailto</string>
+		<string>itms-apps</string>
 	</array>
 	<key>UIBackgroundModes</key>
 	<array>

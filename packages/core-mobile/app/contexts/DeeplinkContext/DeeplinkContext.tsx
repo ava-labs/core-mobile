@@ -17,7 +17,6 @@ import {
 } from 'store/posthog'
 import { FIDO_CALLBACK_URL } from 'services/passkey/consts'
 import { processNotificationData } from 'store/notifications'
-import { useRootNavigationState } from 'expo-router'
 import { useCoreBrowser } from 'common/hooks/useCoreBrowser'
 import { handleDeeplink } from './utils/handleDeeplink'
 import {
@@ -46,7 +45,6 @@ export const DeeplinkContextProvider = ({
   const isIdled = useSelector(selectIsIdled)
   const [pendingDeepLink, setPendingDeepLink] = useState<DeepLink>()
   const { openUrl } = useCoreBrowser()
-  const navigationState = useRootNavigationState()
 
   const handleNotificationCallback: HandleNotificationCallback = useCallback(
     (data: NotificationData | undefined) => {
@@ -56,7 +54,7 @@ export const DeeplinkContextProvider = ({
         )
         return
       }
-      if (!data.url) {
+      if (!data.url && !data.urlV2) {
         Logger.error(`[DeeplinkContext.tsx][handleNotificationCallback] no url`)
         return
       }
@@ -64,7 +62,8 @@ export const DeeplinkContextProvider = ({
         dispatch(processNotificationData({ data }))
       }
       setPendingDeepLink({
-        url: data.url as string,
+        // TODO: remove urlV2 after backend is updated to send just url for NEWS notifications
+        url: (data.urlV2 ?? data.url) as string,
         origin: DeepLinkOrigin.ORIGIN_NOTIFICATION,
         callback: runCallback
       })
@@ -143,8 +142,7 @@ export const DeeplinkContextProvider = ({
         deeplink: pendingDeepLink,
         dispatch,
         isEarnBlocked,
-        openUrl,
-        navigationState
+        openUrl
       })
       // once we used the url, we can expire it
       setPendingDeepLink(undefined)
@@ -155,8 +153,7 @@ export const DeeplinkContextProvider = ({
     dispatch,
     isEarnBlocked,
     openUrl,
-    isIdled,
-    navigationState
+    isIdled
   ])
 
   return (

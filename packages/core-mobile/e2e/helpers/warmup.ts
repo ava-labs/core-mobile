@@ -6,22 +6,25 @@ import Action from './actions'
 import { Platform } from './constants'
 import loginRecoverWallet from './loginRecoverWallet'
 
-export const warmup = async (newInstance = false) => {
-  const initialArgs: DeviceLaunchAppConfig = {
-    permissions: { notifications: 'YES', camera: 'YES' },
-    launchArgs: {
-      detoxURLBlacklistRegex: [
-        '.*cloudflare-ipfs.*',
-        '.*[ipfs.io/ipfs].*',
-        '.*[amazonaws.com].*',
-        '*facebook.react.*'
-      ]
-    }
+export const initialArgs: DeviceLaunchAppConfig = {
+  permissions: { notifications: 'YES', camera: 'YES' },
+  launchArgs: {
+    detoxEnableSynchronization: false,
+    detoxURLBlacklistRegex: [
+      '.*cloudflare-ipfs.*',
+      '.*[ipfs.io/ipfs].*',
+      '.*[amazonaws.com].*',
+      '*facebook.react.*'
+    ]
   }
-  if (newInstance || process.env.CI === 'true') {
+}
+
+export const warmup = async (newInstance = false) => {
+  if (newInstance) {
     console.log('CI is true, setting newInstance to true')
     initialArgs.newInstance = true
   }
+
   await device.launchApp(initialArgs)
 
   // Jailbreak Check

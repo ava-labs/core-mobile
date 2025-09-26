@@ -37,13 +37,16 @@ export enum FeatureGates {
   GASLESS = 'gasless-feature',
   SWAP_FEES = 'swap-fees',
   SOLANA_SUPPORT = 'solana-support',
+  SOLANA_LAUNCH_MODAL = 'solana-launch-modal',
   MELD_ONRAMP = 'meld-onramp',
   MELD_OFFRAMP = 'meld-offramp',
   SWAP_USE_MARKR = 'swap-use-markr',
   KEYSTONE = 'keystone',
   MELD_INTEGRATION = 'meld-integration',
   SWAP_FEES_JUPITER = 'swap-fees-jupiter',
-  SWAP_SOLANA = 'swap-solana'
+  SWAP_SOLANA = 'swap-solana',
+  IN_APP_UPDATE_ANDROID = 'in-app-update-android',
+  ENABLE_MELD_SANDBOX = 'enable-meld-sandbox'
 }
 
 export enum FeatureVars {

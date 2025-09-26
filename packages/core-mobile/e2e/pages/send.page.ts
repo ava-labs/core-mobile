@@ -83,7 +83,7 @@ class SendPage {
   }
 
   async goToSelectTokenList() {
-    await Actions.tap(this.sendSelectTokenListBtn)
+    await Actions.tapElementAtIndex(this.sendSelectTokenListBtn, 0, 5000)
     await Actions.tapElementAtIndex(this.selectTokenTitle, 0)
   }
 

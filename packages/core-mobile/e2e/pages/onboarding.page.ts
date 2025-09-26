@@ -81,10 +81,6 @@ class OnboardingPage {
     return by.text(onboardingLoc.termsAndConditions)
   }
 
-  get termsAndConditionsDescription() {
-    return by.id(onboardingLoc.termsAndConditionsDescription)
-  }
-
   get agreeAndContinue() {
     return by.text(onboardingLoc.agreeAndContinue)
   }
@@ -180,7 +176,7 @@ class OnboardingPage {
   }
 
   async tapTypeInRecoveryPhase() {
-    await Action.tap(this.typeRecoveryPhraseBtn)
+    await Action.tap(this.typeRecoveryPhraseBtn, true)
   }
 
   async tapCreateNewWalletBtn() {
@@ -206,7 +202,6 @@ class OnboardingPage {
 
   async verifyTermsAndConditionsPage() {
     await Action.waitForElement(this.termsAndCondition)
-    await Assert.isVisible(this.termsAndConditionsDescription)
     await Assert.isVisible(this.agreeAndContinue)
   }
 

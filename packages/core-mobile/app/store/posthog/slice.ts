@@ -430,6 +430,32 @@ export const selectStakeAnnualPercentageYieldBPS = (
   return parseInt(featureFlags[FeatureVars.STAKE_APY_BPS] as string)
 }
 
+export const selectIsInAppUpdateAndroidBlocked = (
+  state: RootState
+): boolean => {
+  const { featureFlags } = state.posthog
+  return (
+    !featureFlags[FeatureGates.IN_APP_UPDATE_ANDROID] ||
+    !featureFlags[FeatureGates.EVERYTHING]
+  )
+}
+
+export const selectIsEnableMeldSandboxBlocked = (state: RootState): boolean => {
+  const { featureFlags } = state.posthog
+  return (
+    !featureFlags[FeatureGates.ENABLE_MELD_SANDBOX] ||
+    !featureFlags[FeatureGates.EVERYTHING]
+  )
+}
+
+export const selectIsSolanaLaunchModalBlocked = (state: RootState): boolean => {
+  const { featureFlags } = state.posthog
+  return (
+    !featureFlags[FeatureGates.SOLANA_LAUNCH_MODAL] ||
+    !featureFlags[FeatureGates.EVERYTHING]
+  )
+}
+
 // actions
 export const { regenerateUserId, toggleAnalytics, setFeatureFlags } =
   posthogSlice.actions

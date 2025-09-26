@@ -18,7 +18,14 @@ module.exports = {
       type: 'ios.simulator',
       device: {
         type: 'iPhone 16 Pro',
-        os: 'iOS 18.2'
+        os: 'iOS 18.4'
+      }
+    },
+    simulator_ci: {
+      type: 'ios.simulator',
+      device: {
+        type: 'iPhone 16 Pro',
+        os: 'iOS 18.4'
       }
     },
     emulator_ci: {
@@ -186,7 +193,7 @@ module.exports = {
       }
     },
     'ios.internal.release.ci': {
-      device: 'simulator',
+      device: 'simulator_ci',
       app: 'ios.internal.release.ci',
       artifacts: {
         rootDir: './e2e/artifacts/ios',
@@ -196,7 +203,7 @@ module.exports = {
       }
     },
     'ios.internal.release.regression.ci': {
-      device: 'simulator',
+      device: 'simulator_ci',
       app: 'ios.internal.release.ci',
       artifacts: {
         rootDir: './e2e/artifacts/ios',
@@ -212,7 +219,7 @@ module.exports = {
       }
     },
     'ios.internal.release.dapp.ci': {
-      device: 'simulator',
+      device: 'simulator_ci',
       app: 'ios.internal.release.ci',
       artifacts: {
         rootDir: './e2e/artifacts/ios',
@@ -228,7 +235,7 @@ module.exports = {
       }
     },
     'ios.internal.release.bridge.ci': {
-      device: 'simulator',
+      device: 'simulator_ci',
       app: 'ios.internal.release.ci',
       artifacts: {
         rootDir: './e2e/artifacts/ios',
@@ -244,7 +251,7 @@ module.exports = {
       }
     },
     'ios.internal.release.smoke.ci': {
-      device: 'simulator',
+      device: 'simulator_ci',
       app: 'ios.internal.release.ci',
       artifacts: {
         rootDir: './e2e/artifacts/ios',
@@ -276,7 +283,7 @@ module.exports = {
       }
     },
     'ios.external.release.ci': {
-      device: 'simulator',
+      device: 'simulator_ci',
       app: 'ios.external.release.ci',
       artifacts: {
         rootDir: './e2e/artifacts/ios',
@@ -292,7 +299,7 @@ module.exports = {
       }
     },
     'ios.external.release.smoke.ci': {
-      device: 'simulator',
+      device: 'simulator_ci',
       app: 'ios.external.release.ci',
       artifacts: {
         rootDir: './e2e/artifacts/ios',

@@ -1,14 +1,15 @@
 import { Button, Text, useTheme, View } from '@avalabs/k2-alpine'
 import { ScrollScreen } from 'common/components/ScrollScreen'
-import { useFocusEffect, useRouter } from 'expo-router'
-import React, { useCallback } from 'react'
+import { useRouter } from 'expo-router'
+import React, { useCallback, useEffect } from 'react'
 import { useDispatch } from 'react-redux'
 import { setViewOnce, ViewOnceKey } from 'store/viewOnce'
 
 import { Image } from 'expo-image'
+import { withNavigationEvents } from 'common/utils/navigateWithPromise'
 import Glow from '../../../../assets/glow-solana.png'
 
-export default function SolanaLaunchScreen(): JSX.Element {
+function SolanaLaunchScreen(): JSX.Element {
   const { theme } = useTheme()
   const dispatch = useDispatch()
   const router = useRouter()
@@ -26,13 +27,11 @@ export default function SolanaLaunchScreen(): JSX.Element {
   }, [handleDismiss])
 
   // Set view once flag when user dismisses the modal by gesture or button
-  useFocusEffect(
-    useCallback(() => {
-      return () => {
-        dispatch(setViewOnce(ViewOnceKey.SOLANA_LAUNCH))
-      }
-    }, [dispatch])
-  )
+  useEffect(() => {
+    return () => {
+      dispatch(setViewOnce(ViewOnceKey.SOLANA_LAUNCH))
+    }
+  }, [dispatch])
 
   return (
     <ScrollScreen
@@ -74,7 +73,10 @@ export default function SolanaLaunchScreen(): JSX.Element {
           </View>
         </View>
         <View style={{ gap: 10, paddingHorizontal: 32 }}>
-          <Text variant="heading3" style={{ textAlign: 'center' }}>
+          <Text
+            testID="solana_launch_title"
+            variant="heading3"
+            style={{ textAlign: 'center' }}>
             {`Trade on Solana\ndirectly from Core`}
           </Text>
           <Text variant="subtitle1" style={{ textAlign: 'center' }}>
@@ -86,3 +88,5 @@ export default function SolanaLaunchScreen(): JSX.Element {
     </ScrollScreen>
   )
 }
+
+export default withNavigationEvents(SolanaLaunchScreen)

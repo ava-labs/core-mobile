@@ -35,6 +35,7 @@ const ForgotPin = (): JSX.Element => {
 
   return (
     <ScrollScreen
+      style={{ backgroundColor: theme.colors.$surfacePrimary }}
       title={`Do you want to\nreset your PIN?`}
       navigationTitle="Reset your PIN?"
       renderFooter={renderFooter}

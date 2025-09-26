@@ -7,15 +7,11 @@ class BottomsTabsPage {
   }
 
   get activityTab() {
-    return by
-      .text(bottomTabsLoc.activityTab)
-      .withAncestor(by.label(bottomTabsLoc.tabBar))
+    return by.id(bottomTabsLoc.activityTab)
   }
 
   get watchlistTab() {
-    return by
-      .text(bottomTabsLoc.watchlistTab)
-      .withAncestor(by.label(bottomTabsLoc.tabBar))
+    return by.id(bottomTabsLoc.watchlistTab)
   }
 
   get plusIcon() {
@@ -23,27 +19,19 @@ class BottomsTabsPage {
   }
 
   get portfolioTab() {
-    return by
-      .text(bottomTabsLoc.portfolioTab)
-      .withAncestor(by.label(bottomTabsLoc.tabBar))
+    return by.id(bottomTabsLoc.portfolioTab)
   }
 
   get trackTab() {
-    return by
-      .text(bottomTabsLoc.trackTab)
-      .withAncestor(by.label(bottomTabsLoc.tabBar))
+    return by.id(bottomTabsLoc.trackTab)
   }
 
   get stakeTab() {
-    return by
-      .text(bottomTabsLoc.stakeTab)
-      .withAncestor(by.label(bottomTabsLoc.tabBar))
+    return by.id(bottomTabsLoc.stakeTab)
   }
 
   get browserTab() {
-    return by
-      .text(bottomTabsLoc.browserTab)
-      .withAncestor(by.label(bottomTabsLoc.tabBar))
+    return by.id(bottomTabsLoc.browserTab)
   }
 
   get activityTabTitle() {

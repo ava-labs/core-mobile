@@ -286,24 +286,28 @@ workflows:
         - verbose: "true"
         - source_root_path: $BITRISE_SOURCE_DIR/ios
     - save-cocoapods-cache@1: {}
-    - xcode-build-for-simulator@3:
+    - script@1:
+        title: Build iOS Simulator
         inputs:
-        - scheme: $IOS_SCHEME
-        - project_path: $IOS_PROJECT_PATH
-        - destination: "platform=iOS Simulator,name=iPhone 16 Pro,OS=latest"
-        - configuration: $IOS_CONFIGURATION
-        - code_signing_allowed: "no"
-        - log_formatter: xcpretty
-    - script-runner@0:
-        title: Create iOS Test Run
-        inputs:
-        - file_path: scripts/bitrise/detox/createIosTestRun.sh
-        - variables:
-          - TESTRAIL_RUN_ID=$TESTRAIL_RUN_ID
-    - share-pipeline-variable@1:
-        inputs:
-        - variables: |-
-            TESTRAIL_RUN_ID=$TESTRAIL_RUN_ID
+        - content: |-
+            #!/usr/bin/env bash
+            set -euo pipefail
+
+            xcodebuild \
+              -workspace $IOS_PROJECT_PATH \
+              -scheme $IOS_SCHEME \
+              -configuration $IOS_CONFIGURATION \
+              -destination 'generic/platform=iOS Simulator' \
+              -derivedDataPath $BITRISE_DEPLOY_DIR/
+            APP_PATH="$BITRISE_DEPLOY_DIR/Build/Products/$IOS_CONFIGURATION-iphonesimulator/$IOS_SCHEME.app"
+            echo "Built app at: $APP_PATH"
+            envman add --key BITRISE_APP_DIR_PATH --value "$APP_PATH"
+            envman add --key BITRISE_APP_DIR_PATH_LIST --value "$APP_PATH"
+
+            APP_PATH="$BITRISE_DEPLOY_DIR/Build/Products/$IOS_CONFIGURATION-iphonesimulator/$IOS_SCHEME.app"
+
+            cd "$(dirname "$APP_PATH")"
+            zip -r "$BITRISE_DEPLOY_DIR/$IOS_SCHEME.app.zip" "$(basename "$APP_PATH")"
     - deploy-to-bitrise-io@2:
         inputs:
         - pipeline_intermediate_files: $BITRISE_APP_DIR_PATH:BITRISE_APP_DIR_PATH
@@ -1030,6 +1034,16 @@ workflows:
         is_expand: false
     steps:
     - script-runner@0:
+        title: Create iOS Test Run
+        inputs:
+        - file_path: scripts/bitrise/detox/createIosTestRun.sh
+        - variables:
+          - TESTRAIL_RUN_ID=$TESTRAIL_RUN_ID
+    - share-pipeline-variable@1:
+        inputs:
+        - variables: |-
+            TESTRAIL_RUN_ID=$TESTRAIL_RUN_ID
+    - script-runner@0:
         title: Detox
         no_output_timeout: 300
         inputs:
@@ -1068,6 +1082,13 @@ workflows:
       opts:
         is_expand: false
     steps:
+    - script-runner@0:
+        title: Create iOS Test Run
+        inputs:
+        - file_path: scripts/bitrise/detox/createIosTestRun.sh
+        - variables:
+          - TESTRAIL_RUN_ID=$TESTRAIL_RUN_ID
+          - IS_REGRESSION_RUN=$IS_REGRESSION_RUN
     - share-pipeline-variable@1:
         no_output_timeout: 300
         inputs:
