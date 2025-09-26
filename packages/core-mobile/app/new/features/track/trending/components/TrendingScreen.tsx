@@ -1,13 +1,11 @@
-import { SPRING_LINEAR_TRANSITION } from '@avalabs/k2-alpine'
+import { AnimatedFadeInUp } from '@avalabs/k2-alpine'
 import { CollapsibleTabs } from 'common/components/CollapsibleTabs'
 import { useIsSwapListLoaded } from 'common/hooks/useIsSwapListLoaded'
-import { getListItemEnteringAnimation } from 'common/utils/animations'
 import { useWatchlist } from 'hooks/watchlist/useWatchlist'
 import { ErrorState } from 'new/common/components/ErrorState'
 import { LoadingState } from 'new/common/components/LoadingState'
 import React, { useMemo } from 'react'
 import { ViewStyle } from 'react-native'
-import Animated from 'react-native-reanimated'
 import { MarketType } from 'store/watchlist'
 import TrendingTokensScreen from './TrendingTokensScreen'
 
@@ -68,18 +66,13 @@ export const TrendingScreen = ({
   }
 
   return (
-    <Animated.View
-      entering={getListItemEnteringAnimation(5)}
-      layout={SPRING_LINEAR_TRANSITION}
-      style={{
-        flex: 1
-      }}>
+    <AnimatedFadeInUp style={{ flex: 1 }}>
       <TrendingTokensScreen
         data={trendingTokens}
         goToMarketDetail={goToMarketDetail}
         emptyComponent={emptyComponent}
         containerStyle={containerStyle}
       />
-    </Animated.View>
+    </AnimatedFadeInUp>
   )
 }

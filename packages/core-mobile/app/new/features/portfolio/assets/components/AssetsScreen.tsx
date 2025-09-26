@@ -1,13 +1,11 @@
-import { SPRING_LINEAR_TRANSITION, View } from '@avalabs/k2-alpine'
+import { AnimatedFadeInUp, View } from '@avalabs/k2-alpine'
 import { CollapsibleTabs } from 'common/components/CollapsibleTabs'
 import { DropdownSelections } from 'common/components/DropdownSelections'
 import { ErrorState } from 'common/components/ErrorState'
 import { LoadingState } from 'common/components/LoadingState'
 import { Space } from 'common/components/Space'
-import { getListItemEnteringAnimation } from 'common/utils/animations'
 import React, { FC, memo, useCallback } from 'react'
 import { ViewStyle } from 'react-native'
-import Animated from 'react-native-reanimated'
 import { useSelector } from 'react-redux'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { selectActiveAccount } from 'store/account'
@@ -234,12 +232,7 @@ const AssetsScreen: FC<Props> = ({
   }
 
   return (
-    <Animated.View
-      entering={getListItemEnteringAnimation(10)}
-      layout={SPRING_LINEAR_TRANSITION}
-      style={{
-        flex: 1
-      }}>
+    <AnimatedFadeInUp style={{ flex: 1 }}>
       <CollapsibleTabs.FlashList
         key={`assets-list-${listType}`}
         data={data}
@@ -259,7 +252,7 @@ const AssetsScreen: FC<Props> = ({
         refreshing={isRefetching || isLoading}
         onRefresh={refetch}
       />
-    </Animated.View>
+    </AnimatedFadeInUp>
   )
 }
 

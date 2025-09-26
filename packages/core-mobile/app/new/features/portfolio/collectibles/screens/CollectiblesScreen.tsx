@@ -1,8 +1,8 @@
 import {
+  AnimatedFadeInUp,
   AnimatedPressable,
   Icons,
   SCREEN_WIDTH,
-  SPRING_LINEAR_TRANSITION,
   useTheme,
   View
 } from '@avalabs/k2-alpine'
@@ -15,7 +15,6 @@ import { getListItemEnteringAnimation } from 'common/utils/animations'
 import React, { ReactNode, useCallback, useEffect, useMemo } from 'react'
 import { Platform, ViewStyle } from 'react-native'
 import { useHeaderMeasurements } from 'react-native-collapsible-tab-view'
-import Animated from 'react-native-reanimated'
 import { NftItem } from 'services/nft/types'
 import {
   AssetManageView,
@@ -277,12 +276,7 @@ export const CollectiblesScreen = ({
   }
 
   return (
-    <Animated.View
-      entering={getListItemEnteringAnimation(0)}
-      layout={SPRING_LINEAR_TRANSITION}
-      style={{
-        flex: 1
-      }}>
+    <AnimatedFadeInUp style={{ flex: 1 }}>
       <CollapsibleTabs.MasonryList
         data={filteredAndSorted}
         extraData={{
@@ -307,6 +301,6 @@ export const CollectiblesScreen = ({
         showsVerticalScrollIndicator={false}
         nestedScrollEnabled
       />
-    </Animated.View>
+    </AnimatedFadeInUp>
   )
 }

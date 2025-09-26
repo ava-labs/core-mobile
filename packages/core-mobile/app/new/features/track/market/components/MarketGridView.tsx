@@ -1,21 +1,19 @@
-import React, { memo } from 'react'
 import {
+  AnimatedFadeInUp,
   AnimatedPressable,
   Icons,
   MiniChart,
   PriceChangeIndicator,
   PriceChangeStatus,
-  SPRING_LINEAR_TRANSITION,
   Text,
   View
 } from '@avalabs/k2-alpine'
-import { Dimensions } from 'react-native'
-import Animated from 'react-native-reanimated'
-import { getListItemEnteringAnimation } from 'common/utils/animations'
-import { MarketToken } from 'store/watchlist'
 import { TokenLogo } from 'common/components/TokenLogo'
-import { ChartData } from 'services/token/types'
 import { GRID_GAP } from 'common/consts'
+import React, { memo } from 'react'
+import { Dimensions } from 'react-native'
+import { ChartData } from 'services/token/types'
+import { MarketToken } from 'store/watchlist'
 
 const SCREEN_WIDTH = Dimensions.get('window').width
 const CHART_WIDTH = 90
@@ -46,9 +44,7 @@ export const MarketGridView = memo(
     const { dataPoints, ranges } = chartData
 
     return (
-      <Animated.View
-        entering={getListItemEnteringAnimation(index)}
-        layout={SPRING_LINEAR_TRANSITION}>
+      <AnimatedFadeInUp delay={index * 50}>
         <AnimatedPressable onPress={onPress}>
           <View
             sx={{
@@ -109,7 +105,7 @@ export const MarketGridView = memo(
             </View>
           </View>
         </AnimatedPressable>
-      </Animated.View>
+      </AnimatedFadeInUp>
     )
   },
   (prevProps, nextProps) => {

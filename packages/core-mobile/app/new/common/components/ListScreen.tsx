@@ -1,13 +1,12 @@
 import {
   ANIMATED,
+  AnimatedFadeInUp,
   NavigationTitleHeader,
   Separator,
-  SPRING_LINEAR_TRANSITION,
   Text
 } from '@avalabs/k2-alpine'
 import { useHeaderHeight } from '@react-navigation/elements'
 import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
-import { getListItemEnteringAnimation } from 'common/utils/animations'
 import React, {
   useCallback,
   useLayoutEffect,
@@ -285,10 +284,7 @@ export const ListScreen = <T,>({
   ])
 
   return (
-    <Animated.View
-      style={[{ flex: 1 }]}
-      layout={SPRING_LINEAR_TRANSITION}
-      entering={getListItemEnteringAnimation(0)}>
+    <AnimatedFadeInUp style={{ flex: 1 }}>
       {/* @ts-expect-error */}
       <AnimatedFlatList
         data={data}
@@ -307,7 +303,7 @@ export const ListScreen = <T,>({
         ListHeaderComponent={ListHeaderComponent}
         ListEmptyComponent={ListEmptyComponent}
       />
-    </Animated.View>
+    </AnimatedFadeInUp>
   )
 }
 

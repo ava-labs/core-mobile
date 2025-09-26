@@ -1,28 +1,26 @@
 import {
+  AnimatedFadeInUp,
   Icons,
   Pressable,
-  SPRING_LINEAR_TRANSITION,
   Text,
   useTheme,
   View
 } from '@avalabs/k2-alpine'
-import { getListItemEnteringAnimation } from 'common/utils/animations'
-import { useSearchHistory } from 'hooks/browser/useSearchHistory'
-import React, { ReactNode, useEffect } from 'react'
-import { FlatList, FlatListProps, ListRenderItem } from 'react-native'
-import Animated from 'react-native-reanimated'
-import { useDispatch } from 'react-redux'
-import AnalyticsService from 'services/analytics/AnalyticsService'
-import { addHistoryForActiveTab, addTab, History } from 'store/browser'
 import {
   format,
   isSameDay,
-  isYesterday,
-  isSameWeek,
   isSameMonth,
-  subWeeks,
-  subMonths
+  isSameWeek,
+  isYesterday,
+  subMonths,
+  subWeeks
 } from 'date-fns'
+import { useSearchHistory } from 'hooks/browser/useSearchHistory'
+import React, { ReactNode, useEffect } from 'react'
+import { FlatList, FlatListProps, ListRenderItem } from 'react-native'
+import { useDispatch } from 'react-redux'
+import AnalyticsService from 'services/analytics/AnalyticsService'
+import { addHistoryForActiveTab, addTab, History } from 'store/browser'
 import { useBrowserContext } from '../BrowserContext'
 import { HORIZONTAL_MARGIN } from '../consts'
 import {
@@ -165,12 +163,7 @@ export const HistoryList = (
   }
 
   return (
-    <Animated.View
-      entering={getListItemEnteringAnimation(0)}
-      layout={SPRING_LINEAR_TRANSITION}
-      style={{
-        flex: 1
-      }}>
+    <AnimatedFadeInUp style={{ flex: 1 }}>
       <FlatList
         keyExtractor={item => item.id}
         {...props}
@@ -181,6 +174,6 @@ export const HistoryList = (
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
       />
-    </Animated.View>
+    </AnimatedFadeInUp>
   )
 }

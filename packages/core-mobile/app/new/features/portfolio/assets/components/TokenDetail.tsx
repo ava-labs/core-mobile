@@ -5,25 +5,23 @@ import {
 import { TokenUnit } from '@avalabs/core-utils-sdk'
 import { PChainBalance, XChainBalances } from '@avalabs/glacier-sdk'
 import {
+  AnimatedFadeInUp,
   Icons,
-  SPRING_LINEAR_TRANSITION,
   Text,
   useTheme,
   View
 } from '@avalabs/k2-alpine'
+import { BalanceText } from 'common/components/BalanceText'
 import { CollapsibleTabs } from 'common/components/CollapsibleTabs'
-import { getListItemEnteringAnimation } from 'common/utils/animations'
+import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
 import React, { FC, useCallback, useMemo } from 'react'
-import Animated from 'react-native-reanimated'
 import {
   assetPDisplayNames,
   assetXDisplayNames,
   LocalTokenWithBalance
 } from 'store/balance'
 import { xpChainToken } from 'utils/units/knownTokens'
-import { BalanceText } from 'common/components/BalanceText'
-import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import { LogoWithNetwork } from './LogoWithNetwork'
 
 type PChainBalanceType = keyof PChainBalance
@@ -191,9 +189,7 @@ const TokenDetail: FC<Props> = ({ token }): React.JSX.Element => {
   }
 
   return (
-    <Animated.View
-      entering={getListItemEnteringAnimation(5)}
-      layout={SPRING_LINEAR_TRANSITION}>
+    <AnimatedFadeInUp>
       <CollapsibleTabs.FlatList
         style={{
           paddingTop: 4
@@ -208,7 +204,7 @@ const TokenDetail: FC<Props> = ({ token }): React.JSX.Element => {
         showsVerticalScrollIndicator={false}
         keyExtractor={item => item}
       />
-    </Animated.View>
+    </AnimatedFadeInUp>
   )
 }
 

@@ -1,9 +1,4 @@
-import {
-  Image,
-  SCREEN_WIDTH,
-  SPRING_LINEAR_TRANSITION,
-  View
-} from '@avalabs/k2-alpine'
+import { AnimatedFadeInUp, Image, SCREEN_WIDTH, View } from '@avalabs/k2-alpine'
 import { ListRenderItem } from '@shopify/flash-list'
 import { CollapsibleTabs } from 'common/components/CollapsibleTabs'
 import { DropdownSelections } from 'common/components/DropdownSelections'
@@ -12,13 +7,11 @@ import { LoadingState } from 'common/components/LoadingState'
 import { Placeholder } from 'common/components/Placeholder'
 import { HORIZONTAL_MARGIN } from 'common/consts'
 import { useCoreBrowser } from 'common/hooks/useCoreBrowser'
-import { getListItemEnteringAnimation } from 'common/utils/animations'
 import { useRouter } from 'expo-router'
 import { HORIZONTAL_ITEM_GAP } from 'features/portfolio/collectibles/consts'
 import { useExchangedAmount } from 'new/common/hooks/useExchangedAmount'
 import React, { useCallback, useEffect, useMemo } from 'react'
 import { ViewStyle } from 'react-native'
-import Animated from 'react-native-reanimated'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { DeFiSimpleProtocol } from 'services/defi/types'
 import { useDeFiProtocols } from '../hooks/useDeFiProtocols'
@@ -204,12 +197,7 @@ export const DeFiScreen = ({
   }
 
   return (
-    <Animated.View
-      entering={getListItemEnteringAnimation(0)}
-      layout={SPRING_LINEAR_TRANSITION}
-      style={{
-        flex: 1
-      }}>
+    <AnimatedFadeInUp style={{ flex: 1 }}>
       <CollapsibleTabs.FlashList
         key={`assets-list-${listType}`}
         data={data}
@@ -226,6 +214,6 @@ export const DeFiScreen = ({
         ListEmptyComponent={emptyComponent}
         showsVerticalScrollIndicator={false}
       />
-    </Animated.View>
+    </AnimatedFadeInUp>
   )
 }

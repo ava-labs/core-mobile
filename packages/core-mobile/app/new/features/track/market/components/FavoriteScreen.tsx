@@ -1,12 +1,10 @@
-import { Image, SPRING_LINEAR_TRANSITION } from '@avalabs/k2-alpine'
+import { AnimatedFadeInUp, Image } from '@avalabs/k2-alpine'
 import { CollapsibleTabs } from 'common/components/CollapsibleTabs'
 import { ErrorState } from 'common/components/ErrorState'
 import { LoadingState } from 'common/components/LoadingState'
-import { getListItemEnteringAnimation } from 'common/utils/animations'
 import { useWatchlist } from 'hooks/watchlist/useWatchlist'
 import React, { useCallback, useMemo } from 'react'
 import { ViewStyle } from 'react-native'
-import Animated from 'react-native-reanimated'
 import { MarketType } from 'store/watchlist'
 import { MarketView, useTrackSortAndView } from '../hooks/useTrackSortAndView'
 import MarketTokensScreen from './MarketTokensScreen'
@@ -49,12 +47,7 @@ const FavoriteScreen = ({
   }, [emptyComponent])
 
   return (
-    <Animated.View
-      entering={getListItemEnteringAnimation(5)}
-      layout={SPRING_LINEAR_TRANSITION}
-      style={{
-        flex: 1
-      }}>
+    <AnimatedFadeInUp style={{ flex: 1 }}>
       <MarketTokensScreen
         key={`favorite-tokens-list-${listType}`}
         data={data}
@@ -71,7 +64,7 @@ const FavoriteScreen = ({
         renderEmpty={renderEmpty}
         containerStyle={containerStyle}
       />
-    </Animated.View>
+    </AnimatedFadeInUp>
   )
 }
 

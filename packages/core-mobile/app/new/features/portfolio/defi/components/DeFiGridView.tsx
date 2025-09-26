@@ -1,21 +1,19 @@
-import React from 'react'
 import {
+  AnimatedFadeInUp,
   AnimatedPressable,
   Icons,
   MaskedText,
-  SPRING_LINEAR_TRANSITION,
   Text,
   TouchableOpacity,
   usePreventParentPress,
   useTheme,
   View
 } from '@avalabs/k2-alpine'
-import { Dimensions, ViewStyle } from 'react-native'
-import Animated from 'react-native-reanimated'
-import { DeFiChain, DeFiSimpleProtocol } from 'services/defi/types'
-import { getListItemEnteringAnimation } from 'common/utils/animations'
 import { GRID_GAP } from 'common/consts'
+import React from 'react'
+import { Dimensions, ViewStyle } from 'react-native'
 import { useSelector } from 'react-redux'
+import { DeFiChain, DeFiSimpleProtocol } from 'services/defi/types'
 import { selectIsPrivacyModeEnabled } from 'store/settings/securityPrivacy'
 import { LogoWithNetwork } from './LogoWithNetwork'
 
@@ -50,10 +48,7 @@ export const DeFiGridView = ({
   })
 
   return (
-    <Animated.View
-      entering={getListItemEnteringAnimation(index)}
-      layout={SPRING_LINEAR_TRANSITION}
-      style={style}>
+    <AnimatedFadeInUp delay={index * 50} style={style}>
       <AnimatedPressable onPress={handleOnPress}>
         <View
           sx={{
@@ -84,7 +79,7 @@ export const DeFiGridView = ({
           </View>
         </View>
       </AnimatedPressable>
-    </Animated.View>
+    </AnimatedFadeInUp>
   )
 }
 

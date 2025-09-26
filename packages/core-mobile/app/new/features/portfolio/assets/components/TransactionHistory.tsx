@@ -1,11 +1,11 @@
 import { BridgeTransfer } from '@avalabs/bridge-unified'
 import { BridgeTransaction } from '@avalabs/core-bridge-sdk'
-import { Image, SPRING_LINEAR_TRANSITION } from '@avalabs/k2-alpine'
+import { AnimatedFadeInUp, Image } from '@avalabs/k2-alpine'
 import { TransactionType } from '@avalabs/vm-module-types'
+import { DropdownGroup } from 'common/components/DropdownMenu'
 import { DropdownSelections } from 'common/components/DropdownSelections'
 import { ErrorState } from 'common/components/ErrorState'
 import { LoadingState } from 'common/components/LoadingState'
-import { getListItemEnteringAnimation } from 'common/utils/animations'
 import { getBridgeAssetSymbol } from 'common/utils/bridgeUtils'
 import { ActivityList } from 'features/activity/components/ActivityList'
 import {
@@ -19,12 +19,10 @@ import { portfolioTabContentHeight } from 'features/portfolio/utils'
 import { useNetworks } from 'hooks/networks/useNetworks'
 import React, { FC, useCallback, useMemo } from 'react'
 import { StyleSheet } from 'react-native'
-import Animated from 'react-native-reanimated'
 import { isAvalancheCChainId } from 'services/network/utils/isAvalancheNetwork'
 import { isEthereumChainId } from 'services/network/utils/isEthereumNetwork'
 import { LocalTokenWithBalance } from 'store/balance'
 import { Transaction, useGetRecentTransactions } from 'store/transaction'
-import { DropdownGroup } from 'common/components/DropdownMenu'
 import { isPChain } from 'utils/network/isAvalancheNetwork'
 import {
   TOKEN_DETAIL_FILTERS,
@@ -171,12 +169,7 @@ const TransactionHistory: FC<Props> = ({
   }, [filter, sort])
 
   return (
-    <Animated.View
-      entering={getListItemEnteringAnimation(0)}
-      layout={SPRING_LINEAR_TRANSITION}
-      style={{
-        flex: 1
-      }}>
+    <AnimatedFadeInUp style={{ flex: 1 }}>
       <ActivityList
         data={combinedData}
         xpToken={token}
@@ -193,7 +186,7 @@ const TransactionHistory: FC<Props> = ({
         isRefreshing={isRefreshing}
         refresh={refresh}
       />
-    </Animated.View>
+    </AnimatedFadeInUp>
   )
 }
 

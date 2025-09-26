@@ -3,9 +3,9 @@ import { BridgeTransaction } from '@avalabs/core-bridge-sdk'
 import { Network } from '@avalabs/core-chains-sdk'
 import {
   ANIMATED,
+  AnimatedFadeInUp,
   Chip,
   Image,
-  SPRING_LINEAR_TRANSITION,
   useTheme,
   View
 } from '@avalabs/k2-alpine'
@@ -14,7 +14,7 @@ import { DropdownMenu } from 'common/components/DropdownMenu'
 import { DropdownSelections } from 'common/components/DropdownSelections'
 import { NetworkLogoWithChain } from 'common/components/NetworkLogoWithChain'
 import { DropdownSelection } from 'common/types'
-import { getListItemEnteringAnimation } from 'common/utils/animations'
+
 import { ErrorState } from 'new/common/components/ErrorState'
 import { LoadingState } from 'new/common/components/LoadingState'
 import React, { useCallback, useMemo } from 'react'
@@ -130,7 +130,7 @@ export const ActivityScreen = ({
 
   const renderEmpty = useCallback(() => {
     return (
-      <CollapsibleTabs.ContentWrapper extraOffset={100}>
+      <CollapsibleTabs.ContentWrapper extraOffset={-100}>
         <Animated.View
           style={[keyboardAvoidingStyle, { justifyContent: 'center' }]}>
           {emptyComponent}
@@ -144,12 +144,7 @@ export const ActivityScreen = ({
   }, [data, isLoadingXpToken])
 
   return (
-    <Animated.View
-      entering={getListItemEnteringAnimation(5)}
-      layout={SPRING_LINEAR_TRANSITION}
-      style={{
-        flex: 1
-      }}>
+    <AnimatedFadeInUp style={{ flex: 1 }}>
       <ActivityList
         data={activityListData}
         xpToken={xpToken}
@@ -165,7 +160,7 @@ export const ActivityScreen = ({
         isRefreshing={isRefreshing}
         refresh={refresh}
       />
-    </Animated.View>
+    </AnimatedFadeInUp>
   )
 }
 
