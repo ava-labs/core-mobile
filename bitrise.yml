@@ -928,6 +928,32 @@ workflows:
     - IS_EXTERNAL_BUILD: "true"
       opts:
         is_expand: false
+  appium-setup:
+    before_run:
+    - _install-and-set-env
+    - _set-version
+    envs:
+    - ENVIRONMENT: production
+      opts:
+        is_expand: false
+    - PLATFORM: iOS
+      opts:
+        is_expand: false
+    - IOS_CONFIGURATION: Release
+      opts:
+        is_expand: false
+    - IOS_SCHEME: AvaxWallet
+      opts:
+        is_expand: false
+    - APP_TITLE: Core Mobile
+      opts:
+        is_expand: false
+    - E2E: "true"
+      opts:
+        is_expand: false
+    - IS_INTERNAL_BUILD: "true"
+      opts:
+        is_expand: false
   ios-internal:
     before_run:
     - _install-and-set-env
