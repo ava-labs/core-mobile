@@ -127,7 +127,6 @@ export const useActivityFilterAndSearch = ({
     if (selectedNetwork?.chainId) {
       const newFilters = [...(TOKEN_DETAIL_FILTERS[0]?.items ?? [])]
 
-      // Swap and Bridge are only available for non-Xp chains
       if (isXpChain) {
         newFilters.push({
           id: TokenDetailFilter.Imported,
@@ -146,6 +145,7 @@ export const useActivityFilterAndSearch = ({
           })
         }
       } else {
+        // Swap and Bridge are only available for non-Xp chains
         newFilters.push({
           id: TokenDetailFilter.Swap,
           title: TokenDetailFilter.Swap
