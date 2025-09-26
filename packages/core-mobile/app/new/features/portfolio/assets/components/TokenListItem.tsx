@@ -30,6 +30,7 @@ TokenListItemProps): React.JSX.Element => {
   const tokenNameForDisplay = useTokenNameForDisplay({ token }) ?? token.name
 
   const marketToken = useMarketToken({
+    // Only resolve market token when token.change24 is missing
     token: token.change24 === undefined ? token : undefined,
     errorContext: 'TokenListItem'
   })
