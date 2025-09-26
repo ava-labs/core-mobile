@@ -9,6 +9,8 @@ import com.facebook.react.defaults.DefaultNewArchitectureEntryPoint.fabricEnable
 import com.facebook.react.defaults.DefaultReactActivityDelegate
 import com.zoontek.rnbootsplash.RNBootSplash
 import expo.modules.ReactActivityDelegateWrapper
+import io.branch.rnbranch.*
+import android.content.Intent
 
 class MainActivity : ReactActivity() {
 
@@ -29,6 +31,11 @@ class MainActivity : ReactActivity() {
                     DefaultReactActivityDelegate(this, mainComponentName, fabricEnabled)
             )
 
+    override fun onStart() {
+        super.onStart()
+        RNBranchModule.initSession(getIntent().getData(), this)
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         RNBootSplash.init(this, R.style.BootTheme)
         super.onCreate(null)
@@ -41,5 +48,11 @@ class MainActivity : ReactActivity() {
                     WindowManager.LayoutParams.FLAG_SECURE
             )
         }
+    }
+
+    override fun onNewIntent(intent: Intent?) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        RNBranchModule.reInitSession(this)
     }
 }
