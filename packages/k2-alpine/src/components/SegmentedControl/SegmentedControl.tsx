@@ -31,7 +31,7 @@ export const SegmentedControl = ({
   style,
   type = 'default'
 }: {
-  items: string[]
+  items: { title: string; badge?: JSX.Element }[]
   selectedSegmentIndex: SharedValue<number> | DerivedValue<number>
   onSelectSegment: (index: number) => void
   dynamicItemWidth: boolean
@@ -142,13 +142,14 @@ export const SegmentedControl = ({
                 sx={{ paddingVertical: type === 'thin' ? 8 : 12 }}
                 key={index}
                 ratio={dynamicItemWidth ? textRatios : 1 / items.length}
-                text={item}
+                text={item.title}
                 index={index}
                 selectedIndex={selectedSegmentIndex}
                 onTextWidthChange={
                   dynamicItemWidth ? handleTextWidthChange : undefined
                 }
                 onPress={() => onSelectSegment(index)}
+                badge={item.badge}
               />
             )
           })}
@@ -168,7 +169,8 @@ const Segment = ({
   selectedIndex,
   backgroundColor,
   onTextWidthChange,
-  onPress
+  onPress,
+  badge
 }: {
   sx?: SxProp
   ratio: number | DerivedValue<number[]>
@@ -178,6 +180,7 @@ const Segment = ({
   backgroundColor?: string
   onTextWidthChange?: (index: number, width: number) => void
   onPress: () => void
+  badge?: JSX.Element
 }): JSX.Element => {
   const { theme } = useTheme()
 
@@ -223,12 +226,15 @@ const Segment = ({
     <Animated.View style={flexStyle}>
       <Pressable onPress={throttledOnPress}>
         <View sx={{ alignItems: 'center', backgroundColor, ...sx }}>
-          <Animated.Text
-            onLayout={handleTextLayout}
-            style={[styles.text, textColorAnimatedStyle]}
-            allowFontScaling={false}>
-            {text}
-          </Animated.Text>
+          <View>
+            <Animated.Text
+              onLayout={handleTextLayout}
+              style={[styles.text, textColorAnimatedStyle]}
+              allowFontScaling={false}>
+              {text}
+            </Animated.Text>
+            {badge}
+          </View>
         </View>
       </Pressable>
     </Animated.View>

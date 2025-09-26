@@ -285,7 +285,7 @@ enum StakeHomeScreenTab {
 }
 
 const SEGMENT_ITEMS = [
-  StakeHomeScreenTab.All,
-  StakeHomeScreenTab.Active,
-  StakeHomeScreenTab.Completed
+  { title: StakeHomeScreenTab.All },
+  { title: StakeHomeScreenTab.Active },
+  { title: StakeHomeScreenTab.Completed }
 ]

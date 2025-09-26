@@ -1,4 +1,4 @@
-import { PChainTransaction } from '@avalabs/glacier-sdk'
+import { PChainTransaction, SortOrder } from '@avalabs/glacier-sdk'
 import { UseQueryResult } from '@tanstack/react-query'
 import { refetchIntervals } from 'consts/earn'
 import { useRefreshableQuery } from 'hooks/query/useRefreshableQuery'
@@ -14,7 +14,9 @@ type UseStakesReturnType = UseQueryResult<PChainTransaction[], unknown> & {
   readonly isRefreshing: boolean
 }
 
-export const useStakes = (): UseStakesReturnType => {
+export const useStakes = (
+  sortOrder: SortOrder = SortOrder.DESC
+): UseStakesReturnType => {
   const walletState = useSelector(selectWalletState)
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const account = useSelector(selectActiveAccount)
@@ -38,11 +40,12 @@ export const useStakes = (): UseStakesReturnType => {
   return useRefreshableQuery({
     refetchInterval: refetchIntervals.stakes,
     enabled,
-    queryKey: ['stakes', isDeveloperMode, pAddress],
+    queryKey: ['stakes', isDeveloperMode, pAddress, sortOrder],
     queryFn: () =>
       EarnService.getAllStakes({
         isTestnet: isDeveloperMode,
-        addresses: [pAddress]
+        addresses: [pAddress],
+        sortOrder
       })
   })
 }

@@ -69,7 +69,11 @@ import { selectIsPrivacyModeEnabled } from 'store/settings/securityPrivacy'
 import { RootState } from 'store/types'
 import { useFocusedSelector } from 'utils/performance/useFocusedSelector'
 
-const SEGMENT_ITEMS = ['Assets', 'Collectibles', 'DeFi']
+const SEGMENT_ITEMS = [
+  { title: 'Assets' },
+  { title: 'Collectibles' },
+  { title: 'DeFi' }
+]
 
 const SEGMENT_EVENT_MAP: Record<number, AnalyticsEventName> = {
   0: 'PortfolioAssetsClicked',
