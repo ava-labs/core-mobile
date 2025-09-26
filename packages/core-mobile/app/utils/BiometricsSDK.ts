@@ -425,7 +425,7 @@ class BiometricsSDK {
     }
   }
 
-  async isEnrolledAsync(): Promise<boolean> {
+  private async isEnrolledAsync(): Promise<boolean> {
     return LocalAuthentication.isEnrolledAsync()
   }
 }
