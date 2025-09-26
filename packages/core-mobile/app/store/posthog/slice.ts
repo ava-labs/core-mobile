@@ -3,6 +3,7 @@ import { RootState } from 'store/types'
 import { FeatureGates, FeatureFlags, FeatureVars } from 'services/posthog/types'
 import { WalletType } from 'services/wallet/types'
 import { uuid } from 'utils/uuid'
+import { selectActiveWallet } from 'store/wallet/slice'
 import { initialState } from './types'
 
 const reducerName = 'posthog'
@@ -346,6 +347,12 @@ export const selectIsSwapFeesBlocked = (state: RootState): boolean => {
 
 export const selectIsSolanaSupportBlocked = (state: RootState): boolean => {
   const { featureFlags } = state.posthog
+
+  const activeWallet = selectActiveWallet(state)
+  if (activeWallet?.type === WalletType.KEYSTONE) {
+    return true
+  }
+
   return (
     !featureFlags[FeatureGates.SOLANA_SUPPORT] ||
     !featureFlags[FeatureGates.EVERYTHING]
@@ -364,6 +371,14 @@ export const selectIsMeldOfframpBlocked = (state: RootState): boolean => {
   const { featureFlags } = state.posthog
   return (
     !featureFlags[FeatureGates.MELD_OFFRAMP] ||
+    !featureFlags[FeatureGates.EVERYTHING]
+  )
+}
+
+export const selectIsKeystoneBlocked = (state: RootState): boolean => {
+  const { featureFlags } = state.posthog
+  return (
+    !featureFlags[FeatureGates.KEYSTONE] ||
     !featureFlags[FeatureGates.EVERYTHING]
   )
 }
@@ -396,6 +411,12 @@ export const selectIsSwapFeesJupiterBlocked = (state: RootState): boolean => {
 
 export const selectIsSolanaSwapBlocked = (state: RootState): boolean => {
   const { featureFlags } = state.posthog
+
+  const activeWallet = selectActiveWallet(state)
+  if (activeWallet?.type === WalletType.KEYSTONE) {
+    return true
+  }
+
   return (
     !featureFlags[FeatureGates.SWAP_SOLANA] ||
     !featureFlags[FeatureGates.EVERYTHING]
