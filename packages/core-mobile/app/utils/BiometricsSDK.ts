@@ -407,7 +407,7 @@ class BiometricsSDK {
 
   async authenticateAsync(): Promise<boolean> {
     try {
-      const isEnrolled = await this.isEnrolledAsync()
+      const isEnrolled = await LocalAuthentication.isEnrolledAsync()
       if (!isEnrolled) {
         Logger.error(
           'Failed to authenticate with biometric',
@@ -423,10 +423,6 @@ class BiometricsSDK {
       Logger.error('Failed to authenticate with biometric', error)
       return false
     }
-  }
-
-  private async isEnrolledAsync(): Promise<boolean> {
-    return LocalAuthentication.isEnrolledAsync()
   }
 }
 
