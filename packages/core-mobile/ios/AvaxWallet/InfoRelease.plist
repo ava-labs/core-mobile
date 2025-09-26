@@ -91,8 +91,8 @@
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<false/>
 	<key>NSBluetoothAlwaysUsageDescription</key>
-	<string>We use bluetooth to connect to ledger devices</string>
+	<string>We use Bluetooth to connect to ledger devices</string>
 	<key>NSBluetoothPeripheralUsageDescription</key>
-	<string>We use bluetooth to connect to ledger devices</string>
+	<string>We use Bluetooth to connect to ledger devices</string>
 </dict>
 </plist>

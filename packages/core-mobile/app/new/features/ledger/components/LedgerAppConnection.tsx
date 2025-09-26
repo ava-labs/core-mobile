@@ -5,14 +5,15 @@ import { ScrollScreen } from 'common/components/ScrollScreen'
 import { LoadingState } from 'common/components/LoadingState'
 import { LedgerDerivationPathType } from 'services/wallet/LedgerWallet'
 
-type AppConnectionStep =
-  | 'avalanche-connect'
-  | 'avalanche-loading'
-  | 'avalanche-success'
-  | 'solana-connect'
-  | 'solana-loading'
-  | 'solana-success'
-  | 'complete'
+enum AppConnectionStep {
+  AVALANCHE_CONNECT = 'avalanche-connect',
+  AVALANCHE_LOADING = 'avalanche-loading',
+  AVALANCHE_SUCCESS = 'avalanche-success',
+  SOLANA_CONNECT = 'solana-connect',
+  SOLANA_LOADING = 'solana-loading',
+  SOLANA_SUCCESS = 'solana-success',
+  COMPLETE = 'complete'
+}
 
 interface LedgerAppConnectionProps {
   onComplete: () => void
@@ -35,8 +36,9 @@ export const LedgerAppConnection: React.FC<LedgerAppConnectionProps> = ({
     theme: { colors }
   } = useTheme()
 
-  const [currentStep, setCurrentStep] =
-    useState<AppConnectionStep>('avalanche-connect')
+  const [currentStep, setCurrentStep] = useState<AppConnectionStep>(
+    AppConnectionStep.AVALANCHE_CONNECT
+  )
   const [error, setError] = useState<string | null>(null)
 
   // Auto-progress through steps
@@ -44,17 +46,17 @@ export const LedgerAppConnection: React.FC<LedgerAppConnectionProps> = ({
     let timeoutId: ReturnType<typeof setTimeout>
 
     switch (currentStep) {
-      case 'avalanche-success':
+      case AppConnectionStep.AVALANCHE_SUCCESS:
         timeoutId = setTimeout(() => {
-          setCurrentStep('solana-connect')
+          setCurrentStep(AppConnectionStep.SOLANA_CONNECT)
         }, 2000)
         break
-      case 'solana-success':
+      case AppConnectionStep.SOLANA_SUCCESS:
         timeoutId = setTimeout(() => {
-          setCurrentStep('complete')
+          setCurrentStep(AppConnectionStep.COMPLETE)
         }, 2000)
         break
-      case 'complete':
+      case AppConnectionStep.COMPLETE:
         timeoutId = setTimeout(() => {
           onComplete()
         }, 1500)
@@ -71,36 +73,36 @@ export const LedgerAppConnection: React.FC<LedgerAppConnectionProps> = ({
   const handleConnectAvalanche = useCallback(async () => {
     try {
       setError(null)
-      setCurrentStep('avalanche-loading')
+      setCurrentStep(AppConnectionStep.AVALANCHE_LOADING)
 
       await getAvalancheKeys()
-      setCurrentStep('avalanche-success')
+      setCurrentStep(AppConnectionStep.AVALANCHE_SUCCESS)
     } catch (err) {
       setError(
         'Failed to connect to Avalanche app. Please make sure the Avalanche app is open on your Ledger.'
       )
-      setCurrentStep('avalanche-connect')
+      setCurrentStep(AppConnectionStep.AVALANCHE_CONNECT)
     }
   }, [getAvalancheKeys])
 
   const handleConnectSolana = useCallback(async () => {
     try {
       setError(null)
-      setCurrentStep('solana-loading')
+      setCurrentStep(AppConnectionStep.SOLANA_LOADING)
 
       await getSolanaKeys()
-      setCurrentStep('solana-success')
+      setCurrentStep(AppConnectionStep.SOLANA_SUCCESS)
     } catch (err) {
       setError(
         'Failed to connect to Solana app. Please make sure the Solana app is open on your Ledger.'
       )
-      setCurrentStep('solana-connect')
+      setCurrentStep(AppConnectionStep.SOLANA_CONNECT)
     }
   }, [getSolanaKeys])
 
   const renderStepContent = (): React.ReactNode => {
     switch (currentStep) {
-      case 'avalanche-connect':
+      case AppConnectionStep.AVALANCHE_CONNECT:
         return (
           <View style={{ alignItems: 'center', paddingVertical: 48 }}>
             <Icons.TokenLogos.AVAX width={64} height={64} />
@@ -152,7 +154,7 @@ export const LedgerAppConnection: React.FC<LedgerAppConnectionProps> = ({
           </View>
         )
 
-      case 'avalanche-loading':
+      case AppConnectionStep.AVALANCHE_LOADING:
         return (
           <View style={{ alignItems: 'center', paddingVertical: 48 }}>
             <LoadingState sx={{ marginBottom: 24 }} />
@@ -174,7 +176,7 @@ export const LedgerAppConnection: React.FC<LedgerAppConnectionProps> = ({
           </View>
         )
 
-      case 'avalanche-success':
+      case AppConnectionStep.AVALANCHE_SUCCESS:
         return (
           <View style={{ alignItems: 'center', paddingVertical: 48 }}>
             <View
@@ -211,7 +213,7 @@ export const LedgerAppConnection: React.FC<LedgerAppConnectionProps> = ({
           </View>
         )
 
-      case 'solana-connect':
+      case AppConnectionStep.SOLANA_CONNECT:
         return (
           <View style={{ alignItems: 'center', paddingVertical: 48 }}>
             <Icons.TokenLogos.SOL width={64} height={64} />
@@ -263,7 +265,7 @@ export const LedgerAppConnection: React.FC<LedgerAppConnectionProps> = ({
           </View>
         )
 
-      case 'solana-loading':
+      case AppConnectionStep.SOLANA_LOADING:
         return (
           <View style={{ alignItems: 'center', paddingVertical: 48 }}>
             <LoadingState sx={{ marginBottom: 24 }} />
@@ -285,7 +287,7 @@ export const LedgerAppConnection: React.FC<LedgerAppConnectionProps> = ({
           </View>
         )
 
-      case 'solana-success':
+      case AppConnectionStep.SOLANA_SUCCESS:
         return (
           <View style={{ alignItems: 'center', paddingVertical: 48 }}>
             <View
@@ -322,7 +324,7 @@ export const LedgerAppConnection: React.FC<LedgerAppConnectionProps> = ({
           </View>
         )
 
-      case 'complete':
+      case AppConnectionStep.COMPLETE:
         return (
           <View style={{ alignItems: 'center', paddingVertical: 48 }}>
             <View
@@ -371,15 +373,15 @@ export const LedgerAppConnection: React.FC<LedgerAppConnectionProps> = ({
         : 'BIP44'
 
     switch (currentStep) {
-      case 'avalanche-connect':
-      case 'avalanche-loading':
-      case 'avalanche-success':
+      case AppConnectionStep.AVALANCHE_CONNECT:
+      case AppConnectionStep.AVALANCHE_LOADING:
+      case AppConnectionStep.AVALANCHE_SUCCESS:
         return `Step 1 of 2: Avalanche (${pathType})`
-      case 'solana-connect':
-      case 'solana-loading':
-      case 'solana-success':
+      case AppConnectionStep.SOLANA_CONNECT:
+      case AppConnectionStep.SOLANA_LOADING:
+      case AppConnectionStep.SOLANA_SUCCESS:
         return `Step 2 of 2: Solana (${pathType})`
-      case 'complete':
+      case AppConnectionStep.COMPLETE:
         return `Complete (${pathType})`
       default:
         return ''

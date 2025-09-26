@@ -14,7 +14,7 @@ export interface BtcWalletPolicyDetails {
 
 export interface WalletPolicyDetails {
   hmac: Buffer
-  policy: any // WalletPolicy type from @avalabs/core-wallets-sdk
+  policy: WalletPolicy
 }
 
 export interface BitcoinWalletPolicyRegistrationResult {

@@ -17,7 +17,6 @@ interface DerivationPathOption {
 
 interface DerivationPathSelectorProps {
   onSelect: (derivationPathType: LedgerDerivationPathType) => void
-  onCancel?: () => void
 }
 
 const derivationPathOptions: DerivationPathOption[] = [
@@ -53,8 +52,7 @@ const derivationPathOptions: DerivationPathOption[] = [
 ]
 
 export const DerivationPathSelector: React.FC<DerivationPathSelectorProps> = ({
-  onSelect,
-  onCancel
+  onSelect
 }) => {
   const {
     theme: { colors }
@@ -76,15 +74,9 @@ export const DerivationPathSelector: React.FC<DerivationPathSelectorProps> = ({
           onPress={() => selectedType && onSelect(selectedType)}>
           Continue
         </Button>
-
-        {onCancel && (
-          <Button type="tertiary" size="large" onPress={onCancel}>
-            Cancel
-          </Button>
-        )}
       </View>
     )
-  }, [selectedType, onSelect, onCancel])
+  }, [selectedType, onSelect])
 
   const groupListData = derivationPathOptions.map(option => ({
     title: option.title,

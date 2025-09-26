@@ -22,7 +22,7 @@ type SetupStep =
 
 interface EnhancedLedgerSetupProps {
   onComplete: (walletId: string) => void
-  onCancel?: () => void
+  onCancel: () => void
 }
 
 export const EnhancedLedgerSetup: React.FC<EnhancedLedgerSetupProps> = ({
@@ -103,11 +103,7 @@ export const EnhancedLedgerSetup: React.FC<EnhancedLedgerSetupProps> = ({
         deviceId: connectedDeviceId,
         deviceName: connectedDeviceName,
         derivationPathType: selectedDerivationPath,
-        accountCount: 3, // Standard 3 accounts for both BIP44 and Ledger Live
-        // Don't pass individualKeys - let the wallet creation use the keys already stored
-        progressCallback: (_step, _progress, _totalSteps) => {
-          // Progress callback for UI updates
-        }
+        accountCount: 3 // Standard 3 accounts for both BIP44 and Ledger Live
       }
 
       const walletId = await createLedgerWallet(walletCreationOptions)
@@ -186,10 +182,7 @@ export const EnhancedLedgerSetup: React.FC<EnhancedLedgerSetupProps> = ({
       case 'path-selection':
         return (
           <View style={{ flex: 1 }}>
-            <DerivationPathSelector
-              onSelect={handleDerivationPathSelect}
-              onCancel={handleCancel}
-            />
+            <DerivationPathSelector onSelect={handleDerivationPathSelect} />
           </View>
         )
 

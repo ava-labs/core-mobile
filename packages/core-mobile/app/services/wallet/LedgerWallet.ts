@@ -26,8 +26,9 @@ import bs58 from 'bs58'
 import { TransactionRequest } from 'ethers'
 import { now } from 'moment'
 import { getBitcoinProvider } from 'services/network/utils/providerUtils'
-import { LedgerService } from 'services/ledger/ledgerService'
-import { LedgerAppType } from 'services/ledger/ledgerService'
+import LedgerService from 'services/ledger/LedgerService'
+import { LedgerAppType } from 'services/ledger/LedgerService'
+import { LEDGER_TIMEOUTS } from 'new/features/ledger/consts'
 import { bip32 } from 'utils/bip32'
 import Logger from 'utils/Logger'
 import { Curve } from 'utils/publicKeys'
@@ -103,33 +104,26 @@ export class LedgerWallet implements Wallet {
     }
   }>
   private transport?: TransportBLE // Keep for backward compatibility
-  private ledgerService: LedgerService
+  private ledgerService = LedgerService
   private evmSigner?: LedgerSigner
   private avalancheSigner?:
     | Avalanche.SimpleLedgerSigner
     | Avalanche.LedgerSigner
   private bitcoinWallet?: BitcoinLedgerWallet
 
-  constructor(ledgerData: LedgerWalletData, ledgerService?: LedgerService) {
+  constructor(ledgerData: LedgerWalletData) {
     this.deviceId = ledgerData.deviceId
     this.derivationPath = ledgerData.derivationPath
     this.derivationPathSpec = ledgerData.derivationPathSpec
     this.publicKeys = ledgerData.publicKeys
     this.transport = ledgerData.transport // Keep for backward compatibility
 
-    // Handle extended keys based on derivation path type
+    /**
+     * Handle extended keys based on derivation path type
+     * For Ledger Live, extendedPublicKeys remains undefined
+     */
     if (ledgerData.derivationPathSpec === LedgerDerivationPathType.BIP44) {
       this.extendedPublicKeys = ledgerData.extendedPublicKeys
-    }
-    // For Ledger Live, extendedPublicKeys remains undefined
-
-    // Use provided LedgerService or create new one
-    if (ledgerService) {
-      Logger.info('Using provided LedgerService instance')
-      this.ledgerService = ledgerService
-    } else {
-      Logger.info('Creating new LedgerService instance')
-      this.ledgerService = new LedgerService()
     }
   }
 
@@ -139,7 +133,7 @@ export class LedgerWallet implements Wallet {
     // Use LedgerService transport if available, fallback to stored transport
     if (this.ledgerService.isConnected()) {
       Logger.info('LedgerService is connected, using its transport')
-      return this.ledgerService.getTransport()
+      return this.ledgerService.ensureConnection(this.deviceId)
     }
 
     Logger.info('LedgerService not connected, attempting to reconnect')
@@ -268,12 +262,14 @@ export class LedgerWallet implements Wallet {
     return this.avalancheSigner
   }
 
-  private async getBitcoinProvider(): Promise<BitcoinLedgerWallet> {
+  private async getBitcoinProvider(
+    isTestnet = false
+  ): Promise<BitcoinLedgerWallet> {
     if (!this.bitcoinWallet) {
       Logger.info('bitcoinLedgerWallet', now())
 
-      // Get the proper Bitcoin provider
-      const bitcoinProvider = await getBitcoinProvider(false) // false for mainnet, true for testnet
+      // Get the proper Bitcoin provider using provided network context
+      const bitcoinProvider = await getBitcoinProvider(isTestnet)
 
       // Get wallet policy details from public key data (on-demand storage)
       let walletPolicyDetails = null
@@ -438,7 +434,7 @@ export class LedgerWallet implements Wallet {
           return null
         }
         case NetworkVMType.BITCOIN: {
-          // For Bitcoin, convert public key to Bitcoin address
+          // For Bitcoin, convert public key to Bitcoin address using provided network context
           return getBtcAddressFromPubKey(
             childNode.publicKey,
             isTestnet ? networks.testnet : networks.bitcoin
@@ -503,7 +499,7 @@ export class LedgerWallet implements Wallet {
   public async signBtcTransaction({
     accountIndex: _accountIndex,
     transaction,
-    network: _network,
+    network,
     provider: _provider
   }: {
     accountIndex: number
@@ -511,7 +507,7 @@ export class LedgerWallet implements Wallet {
     network: Network
     provider: BitcoinProvider
   }): Promise<string> {
-    const signer = await this.getBitcoinProvider()
+    const signer = await this.getBitcoinProvider(network.isTestnet)
 
     if (!(signer instanceof BitcoinLedgerWallet)) {
       throw new Error('Unable to sign btc transaction: invalid signer')
@@ -585,7 +581,10 @@ export class LedgerWallet implements Wallet {
     // Now ensure Avalanche app is ready
     Logger.info('Ensuring Avalanche app is ready...')
     try {
-      await this.ledgerService.waitForApp(LedgerAppType.AVALANCHE, 60000) // 60 second timeout
+      await this.ledgerService.waitForApp(
+        LedgerAppType.AVALANCHE,
+        LEDGER_TIMEOUTS.APP_WAIT_TIMEOUT_SIGNING
+      )
       Logger.info('Avalanche app is ready')
     } catch (error) {
       Logger.error('Failed to detect Avalanche app:', error)
@@ -751,7 +750,10 @@ export class LedgerWallet implements Wallet {
     // Now ensure Solana app is ready
     Logger.info('Ensuring Solana app is ready...')
     try {
-      await this.ledgerService.waitForApp(LedgerAppType.SOLANA, 60000) // 60 second timeout
+      await this.ledgerService.waitForApp(
+        LedgerAppType.SOLANA,
+        LEDGER_TIMEOUTS.APP_WAIT_TIMEOUT_SIGNING
+      )
       Logger.info('Solana app is ready')
     } catch (error) {
       Logger.error('Failed to detect Solana app:', error)
