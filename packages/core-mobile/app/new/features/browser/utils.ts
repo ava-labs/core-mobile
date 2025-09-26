@@ -31,11 +31,33 @@ export function isValidUrl(url: string): boolean {
   }
 }
 
-export function isValidHttpUrl(url: string): boolean {
+export function isValidHttpUrlRegexp(url: string): boolean {
   //urls such as http://core we will discard, it must have at least one dot
-  const basicHttpUrlRegex = new RegExp('[^ ]*[.][^ ]*', 'i')
-  if (!basicHttpUrlRegex.test(url)) return false
+  const basicHttpUrlRegex = new RegExp('^(http|https):\\/\\/[^ ]*[.][^ ]*', 'i')
+  return basicHttpUrlRegex.test(url)
+}
 
+export function isValidHttpUrl(url: string): boolean {
+  return (
+    isValidHttpUrlRegexp(url) &&
+    isValidUrlWithProtocols({ url, protocols: ['http:', 'https:'] })
+  )
+}
+
+export function isValidHttpsUrl(url: string): boolean {
+  return (
+    isValidHttpUrlRegexp(url) &&
+    isValidUrlWithProtocols({ url, protocols: ['https:'] })
+  )
+}
+
+export function isValidUrlWithProtocols({
+  url,
+  protocols
+}: {
+  url: string
+  protocols: string[]
+}): boolean {
   let urlObj
   try {
     urlObj = new URL(url)
@@ -43,7 +65,7 @@ export function isValidHttpUrl(url: string): boolean {
     return false
   }
 
-  return urlObj.protocol === 'http:' || urlObj.protocol === 'https:'
+  return protocols.includes(urlObj.protocol)
 }
 
 /**
