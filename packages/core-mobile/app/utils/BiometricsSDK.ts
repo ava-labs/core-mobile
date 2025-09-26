@@ -1,18 +1,30 @@
-import Keychain, {
-  getSupportedBiometryType,
-  SetOptions,
-  GetOptions,
-  BaseOptions,
-  hasGenericPassword
-} from 'react-native-keychain'
+import * as LocalAuthentication from 'expo-local-authentication'
 import { StorageKey } from 'resources/Constants'
-import { Platform } from 'react-native'
 import { commonStorage } from 'utils/mmkv'
 import { decrypt, encrypt } from 'utils/EncryptionHelper'
 import Aes from 'react-native-aes-crypto'
 import { Result } from 'types/result'
+import Keychain, {
+  BaseOptions,
+  GetOptions,
+  getSupportedBiometryType,
+  hasGenericPassword,
+  SetOptions
+} from 'react-native-keychain'
+import { Platform } from 'react-native'
 import Logger from './Logger'
 import { assertNotNull } from './assertions'
+
+const OVERLAY_BIO_PROMPT = {
+  promptMessage: 'Access Wallet',
+  fallbackLabel: 'Use passcode'
+}
+
+const COMMON_BIO_PROMPT = {
+  title: 'Access Wallet',
+  subtitle: 'Use biometric data to access securely stored wallet information',
+  cancel: 'Cancel'
+}
 
 /**
  * @deprecated Legacy service keys used for backwards compatibility
@@ -30,11 +42,12 @@ export const ENCRYPTION_KEY_SERVICE = 'encryption-key-service'
 export const ENCRYPTION_KEY_SERVICE_BIO = 'encryption-key-service-bio'
 const iOS = Platform.OS === 'ios'
 
-const COMMON_BIO_PROMPT = {
-  title: 'Access Wallet',
-  subtitle: 'Use biometric data to access securely stored wallet information',
-  cancel: 'Cancel'
-}
+const bioAuthenticationOptions: LocalAuthentication.LocalAuthenticationOptions =
+  {
+    promptMessage: OVERLAY_BIO_PROMPT.promptMessage,
+    fallbackLabel: OVERLAY_BIO_PROMPT.fallbackLabel,
+    cancelLabel: 'Cancel'
+  }
 
 export const passcodeGetOptions: GetOptions = {
   service: ENCRYPTION_KEY_SERVICE,
@@ -77,8 +90,6 @@ class BiometricsSDK {
     return commonStorage.getString(StorageKey.SECURE_ACCESS_SET)
   }
 
-  // Generate a new encryption key during onboarding, it is not used for migration
-  // it returns the key if it is already generated, to avoid generating it again during re-render
   async generateEncryptionKey(): Promise<string> {
     if (this.#encryptionKey) {
       return this.#encryptionKey
@@ -91,7 +102,6 @@ class BiometricsSDK {
     this.#encryptionKey = null
   }
 
-  // Generate a new encryption key during migration, it is not used for onboarding
   async generateMigrationEncryptionKey(): Promise<string> {
     this.clearEncryptionKey()
     this.#encryptionKey = await Aes.randomKey(32)
@@ -391,6 +401,26 @@ class BiometricsSDK {
       }
     } catch (error) {
       Logger.error('Failed to validate PIN', error)
+      return false
+    }
+  }
+
+  async authenticateAsync(): Promise<boolean> {
+    try {
+      const isEnrolled = await LocalAuthentication.isEnrolledAsync()
+      if (!isEnrolled) {
+        Logger.error(
+          'Failed to authenticate with biometric',
+          new Error('Biometric not enrolled')
+        )
+        return false
+      }
+      const result = await LocalAuthentication.authenticateAsync(
+        bioAuthenticationOptions
+      )
+      return result.success
+    } catch (error) {
+      Logger.error('Failed to authenticate with biometric', error)
       return false
     }
   }
