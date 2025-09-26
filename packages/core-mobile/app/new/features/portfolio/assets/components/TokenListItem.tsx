@@ -2,8 +2,8 @@ import { PriceChangeStatus } from '@avalabs/k2-alpine'
 import { useFormatCurrency } from 'new/common/hooks/useFormatCurrency'
 import React, { useRef, useCallback } from 'react'
 import { LocalTokenWithBalance } from 'store/balance'
-import { useMarketTokenBySymbol } from 'common/hooks/useMarketTokenBySymbol'
 import { useTokenNameForDisplay } from 'common/hooks/useTokenNameForDisplay'
+import { useMarketToken } from 'common/hooks/useMarketToken'
 import { TokenListView } from './TokenListView'
 import { TokenGridView } from './TokenGridView'
 
@@ -21,15 +21,15 @@ export const TokenListItem = ({
   onPress
 }: TokenListItemProps): React.JSX.Element => {
   const { formatCurrency } = useFormatCurrency()
-  const { balanceInCurrency, symbol } = token
+  const { balanceInCurrency } = token
   const formattedBalance = balanceInCurrency
     ? formatCurrency({ amount: balanceInCurrency })
     : undefined
 
   const tokenNameForDisplay = useTokenNameForDisplay({ token }) ?? token.name
 
-  const marketToken = useMarketTokenBySymbol({
-    symbol,
+  const marketToken = useMarketToken({
+    token,
     errorContext: 'TokenListItem'
   })
   const percentChange = marketToken?.priceChangePercentage24h ?? undefined
