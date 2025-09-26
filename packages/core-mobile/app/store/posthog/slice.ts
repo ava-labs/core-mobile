@@ -419,6 +419,22 @@ export const selectIsInAppUpdateAndroidBlocked = (
   )
 }
 
+export const selectIsEnableMeldSandboxBlocked = (state: RootState): boolean => {
+  const { featureFlags } = state.posthog
+  return (
+    !featureFlags[FeatureGates.ENABLE_MELD_SANDBOX] ||
+    !featureFlags[FeatureGates.EVERYTHING]
+  )
+}
+
+export const selectIsSolanaLaunchModalBlocked = (state: RootState): boolean => {
+  const { featureFlags } = state.posthog
+  return (
+    !featureFlags[FeatureGates.SOLANA_LAUNCH_MODAL] ||
+    !featureFlags[FeatureGates.EVERYTHING]
+  )
+}
+
 // actions
 export const { regenerateUserId, toggleAnalytics, setFeatureFlags } =
   posthogSlice.actions

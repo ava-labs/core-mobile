@@ -9,7 +9,10 @@ import {
   normalizeUrlWithHttps,
   removeProtocol,
   removeTrailingSlash,
-  prepareFaviconToLoad
+  prepareFaviconToLoad,
+  isValidUrlWithProtocols,
+  isValidHttpUrlRegexp,
+  isValidHttpsUrl
 } from './utils'
 
 describe('sortDeFiProtocolInformationListByTvl', () => {
@@ -111,6 +114,63 @@ describe('isValidHttpUrl', () => {
     const url = 'core://stake'
     const result = isValidHttpUrl(url)
     expect(result).toStrictEqual(false)
+  })
+})
+
+describe('isValidHttpsUrl', () => {
+  it('should have returned true with https:// protocol', () => {
+    const url = 'https://core.app'
+    const result = isValidHttpsUrl(url)
+    expect(result).toStrictEqual(true)
+  })
+
+  it('should have returned false with http:// protocol', () => {
+    const url = 'http://core.app'
+    const result = isValidHttpsUrl(url)
+    expect(result).toStrictEqual(false)
+  })
+
+  it('should have returned false without protocol', () => {
+    const url = 'core.app'
+    const result = isValidHttpsUrl(url)
+    expect(result).toStrictEqual(false)
+  })
+
+  it('should have returned false with non-http protocol', () => {
+    const url = 'core://stake'
+    const result = isValidHttpsUrl(url)
+    expect(result).toStrictEqual(false)
+  })
+})
+
+describe('isValidUrlWithProtocols', () => {
+  test.each([
+    [{ url: 'https://core.com', protocols: ['https:'] }, true],
+    [{ url: 'http://example.com', protocols: ['http:', 'https:'] }, true],
+    [{ url: 'ftp://example.com', protocols: ['http:', 'https:'] }, false],
+    [{ url: 'data:text/plain,hello', protocols: ['https:'] }, false],
+    [{ url: 'not a url', protocols: ['https:'] }, false]
+  ])(
+    'isValidUrlWithProtocols(%j) -> %s',
+    (args: { url: string; protocols: string[] }, expected) => {
+      expect(isValidUrlWithProtocols(args)).toBe(expected)
+    }
+  )
+})
+
+describe('isValidHttpUrlRegexp', () => {
+  test.each([
+    ['https://core.com', true],
+    ['http://example.com', true],
+    ['https://sub.domain.co.kr/path', true],
+    ['http://core', false], // must contain a dot
+    ['https:core.com', false], // missing //
+    ['data:text/plain,hello', false], // not http/https
+    ['mailto:test@example.com', false],
+    ['https://', false],
+    ['', false]
+  ])('isValidHttpUrlRegexp("%s") -> %s', (u, expected) => {
+    expect(isValidHttpUrlRegexp(u)).toBe(expected)
   })
 })
 

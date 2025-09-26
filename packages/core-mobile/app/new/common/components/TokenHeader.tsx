@@ -58,9 +58,7 @@ export const TokenHeader = ({
               {token?.balanceDisplayValue ? (
                 <View sx={{ flexDirection: 'row' }}>
                   <SubTextNumber
-                    number={Number(
-                      token.balanceDisplayValue.replaceAll(',', '')
-                    )}
+                    number={token.balanceDisplayValue}
                     textColor={colors.$textPrimary}
                     textVariant="heading2"
                   />

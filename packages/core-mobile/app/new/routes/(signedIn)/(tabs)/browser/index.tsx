@@ -1,4 +1,4 @@
-import { alpha, ANIMATED, useTheme, View } from '@avalabs/k2-alpine'
+import { alpha, ANIMATED, showAlert, useTheme, View } from '@avalabs/k2-alpine'
 import { colors } from '@avalabs/k2-alpine/src/theme/tokens/colors'
 import { BlurViewWithFallback } from 'common/components/BlurViewWithFallback'
 import { useBottomTabBarHeight } from 'common/hooks/useBottomTabBarHeight'
@@ -12,6 +12,7 @@ import {
 } from 'features/browser/components/BrowserTab'
 import { Discover } from 'features/browser/components/Discover'
 import { BROWSER_CONTROLS_HEIGHT } from 'features/browser/consts'
+import { isValidHttpsUrl } from 'features/browser/utils'
 import React, { useCallback, useEffect, useMemo } from 'react'
 import { Platform } from 'react-native'
 import {
@@ -47,8 +48,17 @@ const Browser = (): React.ReactNode => {
 
   useEffect(() => {
     if (deeplinkUrl) {
-      dispatch(addTab())
-      dispatch(addHistoryForActiveTab({ url: deeplinkUrl, title: '' }))
+      if (isValidHttpsUrl(deeplinkUrl)) {
+        dispatch(addTab())
+        dispatch(addHistoryForActiveTab({ url: deeplinkUrl, title: '' }))
+      } else {
+        showAlert({
+          title: 'Invalid URL',
+          description:
+            'The provided URL in the deep link is not valid. Please try again.',
+          buttons: [{ text: 'OK', style: 'default' }]
+        })
+      }
 
       // Clear the deeplinkUrl param to mark it as handled
       // @ts-ignore
