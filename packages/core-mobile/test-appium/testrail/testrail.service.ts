@@ -100,9 +100,10 @@ export async function sendResult(
 // 5. update run with new caseId
 export async function addCaseToRun(runId: number, caseId: number) {
   try {
-    // get current caseIds in run
-    const { data } = await testrail.get(`/get_run/${runId}`)
-    const currentCaseIds: number[] = data.case_ids || []
+    // get current caseIds in run (via get_tests)
+    const { data } = await testrail.get(`/get_tests/${runId}`)
+    const tests = Array.isArray(data?.tests) ? data.tests : []
+    const currentCaseIds: number[] = tests.map((t: any) => t.case_id)
 
     // prevent duplicate
     if (currentCaseIds.includes(caseId)) {
@@ -114,7 +115,8 @@ export async function addCaseToRun(runId: number, caseId: number) {
 
     // call update_run
     await testrail.post(`/update_run/${runId}`, {
-      case_ids: updatedCaseIds
+      case_ids: updatedCaseIds,
+      include_all: false
     })
     console.info(`case ${caseId} added to run ${runId}`)
   } catch (e: any) {
