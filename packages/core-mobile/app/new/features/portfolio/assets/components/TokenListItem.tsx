@@ -19,7 +19,8 @@ export const TokenListItem = ({
   index,
   isGridView,
   onPress
-}: TokenListItemProps): React.JSX.Element => {
+}: // eslint-disable-next-line sonarjs/cognitive-complexity
+TokenListItemProps): React.JSX.Element => {
   const { formatCurrency } = useFormatCurrency()
   const { balanceInCurrency } = token
   const formattedBalance = balanceInCurrency
@@ -29,10 +30,12 @@ export const TokenListItem = ({
   const tokenNameForDisplay = useTokenNameForDisplay({ token }) ?? token.name
 
   const marketToken = useMarketToken({
-    token,
+    // Only resolve market token when token.change24 is missing
+    token: token.change24 === undefined ? token : undefined,
     errorContext: 'TokenListItem'
   })
-  const percentChange = marketToken?.priceChangePercentage24h ?? undefined
+  const percentChange =
+    token.change24 ?? marketToken?.priceChangePercentage24h ?? undefined
   const priceChange =
     percentChange !== undefined && balanceInCurrency !== undefined
       ? (balanceInCurrency * percentChange) / 100
