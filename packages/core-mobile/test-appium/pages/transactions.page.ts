@@ -38,7 +38,7 @@ class TransactionsPage {
   }
 
   get transactionsuccess() {
-    return selectors.getById(txLoc.transactionSuccess)
+    return selectors.getByText(txLoc.transactionSuccess)
   }
 
   async tapSelectTokenTitle() {

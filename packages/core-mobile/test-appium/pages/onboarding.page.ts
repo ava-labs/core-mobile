@@ -74,13 +74,17 @@ class OnboardingPage {
 
   async exitMetro() {
     if (process.env.E2E !== 'true') {
+      try {
       console.log('you are using a dev build, skipping metro dev menu now...')
       const preceedingHost = driver.isIOS ? 'localhost' : '10.0.2.2'
       await actions.waitFor(selectors.getByText(`http://${preceedingHost}:8081`))
       await actions.tap(selectors.getByText(`http://${preceedingHost}:8081`))
-      const dismissBtn = selectors.getBySomeText('This is the developer menu.')
+      const dismissBtn = selectors.getByText('This is the developer menu. It gives you access to useful tools in your development builds.')
       await actions.waitFor(dismissBtn, 10000)
       await actions.dragAndDrop(dismissBtn, [0, 1500])
+      } catch (e) {
+        console.log('Metro dev menu is not found...')
+      }
     }
   }
 
@@ -144,7 +148,6 @@ class OnboardingPage {
 
   async dismissModals() {
     await this.dismissUpdateAppModal()
-    await this.dismissBottomSheet(this.solanaLaunchTitle)
   }
 
   async tapZero(pin = '000000') {

@@ -12,6 +12,7 @@ import { loadAvatar } from 'common/utils/loadAvatar'
 import React, { memo, useCallback, useMemo, useState } from 'react'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useFocusEffect } from 'expo-router'
+import Config from 'react-native-config'
 import { ScrollScreen } from './ScrollScreen'
 
 export const SelectAvatar = memo(
@@ -140,18 +141,19 @@ export const SelectAvatar = memo(
               />
             </View>
           )}
-
-          <View
-            style={{
-              marginBottom: -insets.bottom,
-              paddingBottom: 16
-            }}>
-            <AvatarSelector
-              selectedId={selectedAvatar?.id}
-              avatars={avatarsWithSelectedAsMiddle}
-              onSelect={onSelect}
-            />
-          </View>
+          {!Config.E2E_MEMONIC && (
+            <View
+              style={{
+                marginBottom: -insets.bottom,
+                paddingBottom: 16
+              }}>
+              <AvatarSelector
+                selectedId={selectedAvatar?.id}
+                avatars={avatarsWithSelectedAsMiddle}
+                onSelect={onSelect}
+              />
+            </View>
+          )}
         </View>
       </ScrollScreen>
     )
