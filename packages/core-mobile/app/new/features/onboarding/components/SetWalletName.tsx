@@ -34,6 +34,7 @@ export const SetWalletName = ({
         size="large"
         type="primary"
         onPress={handleNext}
+        testID={isLoading ? undefined : 'name_wallet_next_btn'}
         disabled={name.length === 0 || isLoading}>
         {isLoading ? <ActivityIndicator /> : 'Next'}
       </Button>

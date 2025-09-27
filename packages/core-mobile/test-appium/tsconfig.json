@@ -1,0 +1,13 @@
+{
+  "extends": "@avalabs/tsconfig-mobile/base.json",
+  "compilerOptions": {
+    "types": [
+      "@wdio/globals/types",
+      "@wdio/types",
+      "@types/mocha"
+    ],
+  },
+  "include": [
+    "**/*.ts"
+  ]
+}

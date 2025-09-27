@@ -22,7 +22,7 @@ module.exports = {
   ],
   overrides: [
     {
-      files: ['e2e/**/*'],
+      files: ['e2e/**/*', 'test-appium/**/*'],
       rules: {
         'no-console': 0,
         '@typescript-eslint/explicit-function-return-type': 0,

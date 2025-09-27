@@ -303,11 +303,6 @@ workflows:
             echo "Built app at: $APP_PATH"
             envman add --key BITRISE_APP_DIR_PATH --value "$APP_PATH"
             envman add --key BITRISE_APP_DIR_PATH_LIST --value "$APP_PATH"
-
-            APP_PATH="$BITRISE_DEPLOY_DIR/Build/Products/$IOS_CONFIGURATION-iphonesimulator/$IOS_SCHEME.app"
-
-            cd "$(dirname "$APP_PATH")"
-            zip -r "$BITRISE_DEPLOY_DIR/$IOS_SCHEME.app.zip" "$(basename "$APP_PATH")"
     - deploy-to-bitrise-io@2:
         inputs:
         - pipeline_intermediate_files: $BITRISE_APP_DIR_PATH:BITRISE_APP_DIR_PATH
@@ -931,6 +926,32 @@ workflows:
       opts:
         is_expand: false
     - IS_EXTERNAL_BUILD: "true"
+      opts:
+        is_expand: false
+  appium-setup:
+    before_run:
+    - _install-and-set-env
+    - _set-version
+    envs:
+    - ENVIRONMENT: production
+      opts:
+        is_expand: false
+    - PLATFORM: iOS
+      opts:
+        is_expand: false
+    - IOS_CONFIGURATION: Release
+      opts:
+        is_expand: false
+    - IOS_SCHEME: AvaxWallet
+      opts:
+        is_expand: false
+    - APP_TITLE: Core Mobile
+      opts:
+        is_expand: false
+    - E2E: "true"
+      opts:
+        is_expand: false
+    - IS_INTERNAL_BUILD: "true"
       opts:
         is_expand: false
   ios-internal:
