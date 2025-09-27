@@ -10,7 +10,13 @@
       "common/*": ["new/common/*"],
       "@avalabs/core-utils-sdk": ["../node_modules/@avalabs/core-utils-sdk"],
       "@avalabs/core-utils-sdk/*": ["../node_modules/@avalabs/core-utils-sdk/*"]
-    }
+    },
+    "types": [
+      "@wdio/globals/types",
+      "@wdio/types",
+      "jest",
+      "detox"
+    ]
   },
   "include": [
     "**/*.ts",
