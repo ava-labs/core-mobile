@@ -26,17 +26,25 @@ import { LocalTokenWithBalance } from 'store/balance'
 import { Transaction, useGetRecentTransactions } from 'store/transaction'
 import { DropdownGroup } from 'common/components/DropdownMenu'
 import { isPChain } from 'utils/network/isAvalancheNetwork'
+import { isSolanaChainId } from 'utils/network/isSolanaNetwork'
+import { useSelector } from 'react-redux'
+import { selectActiveAccount } from 'store/account/slice'
 import {
   TOKEN_DETAIL_FILTERS,
   TokenDetailFilter,
   useTokenDetailFilterAndSort
 } from '../hooks/useTokenDetailFilterAndSort'
 
+const viewInExplorerIcon = require('../../../../assets/icons/flashlight.png')
 const errorIcon = require('../../../../assets/icons/unamused_emoji.png')
 
 interface Props {
   token?: LocalTokenWithBalance
-  handleExplorerLink: (explorerLink: string) => void
+  handleExplorerLink: (
+    explorerLink: string,
+    hash?: string,
+    hashType?: 'account' | 'tx'
+  ) => void
   handlePendingBridge: (transaction: BridgeTransaction | BridgeTransfer) => void
 }
 
@@ -46,6 +54,10 @@ const TransactionHistory: FC<Props> = ({
   handlePendingBridge
 }): React.JSX.Element => {
   const { getNetwork } = useNetworks()
+  const account = useSelector(selectActiveAccount)
+
+  const isSolanaNetwork =
+    token?.networkChainId && isSolanaChainId(token.networkChainId)
 
   const network = useMemo(() => {
     return getNetwork(token?.networkChainId)
@@ -154,6 +166,28 @@ const TransactionHistory: FC<Props> = ({
       )
     }
 
+    if (isSolanaNetwork) {
+      return (
+        <ErrorState
+          sx={{ height: portfolioTabContentHeight }}
+          icon={
+            <Image source={viewInExplorerIcon} sx={{ width: 42, height: 42 }} />
+          }
+          title={`View transaction\ndetails in the Explorer`}
+          description="Visit the Explorer for more info"
+          button={{
+            title: 'View in Explorer',
+            onPress: () =>
+              handleExplorerLink(
+                network?.explorerUrl ?? '',
+                account?.addressSVM,
+                'account'
+              )
+          }}
+        />
+      )
+    }
+
     return (
       <ErrorState
         sx={{ height: portfolioTabContentHeight }}
@@ -162,7 +196,16 @@ const TransactionHistory: FC<Props> = ({
         description="Interact with this token onchain and see your activity here"
       />
     )
-  }, [isError, isLoading, isRefreshing, refresh])
+  }, [
+    account?.addressSVM,
+    handleExplorerLink,
+    isError,
+    isLoading,
+    isRefreshing,
+    isSolanaNetwork,
+    network?.explorerUrl,
+    refresh
+  ])
 
   const renderHeader = useCallback(() => {
     return (
