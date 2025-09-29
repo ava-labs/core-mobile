@@ -1,5 +1,5 @@
 import { Action } from '@reduxjs/toolkit'
-import { onAppUnlocked, onLogOut } from 'store/app'
+import { onLogOut, onRehydrationComplete } from 'store/app'
 import { selectDistinctID } from 'store/posthog'
 import { AppListenerEffectAPI, AppStartListening } from 'store/types'
 import Branch from 'react-native-branch'
@@ -18,7 +18,7 @@ export const addBranchListeners = (startListening: AppStartListening): void => {
   }
 
   startListening({
-    actionCreator: onAppUnlocked,
+    actionCreator: onRehydrationComplete,
     effect: branchIdentifyUser
   })
 
