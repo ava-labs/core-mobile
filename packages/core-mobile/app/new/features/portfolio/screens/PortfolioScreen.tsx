@@ -160,9 +160,9 @@ const PortfolioHomeScreen = (): JSX.Element => {
   )
 
   const formattedPriceChange =
-    totalPriceChanged > 0
+    totalPriceChanged !== 0
       ? formatCurrency({ amount: Math.abs(totalPriceChanged) })
-      : ''
+      : undefined
 
   const indicatorStatus =
     totalPriceChanged > 0
@@ -323,7 +323,7 @@ const PortfolioHomeScreen = (): JSX.Element => {
               formattedBalance={formattedBalance}
               currency={selectedCurrency}
               priceChange={
-                totalPriceChanged > 0
+                totalPriceChanged !== 0
                   ? {
                       formattedPrice: formattedPriceChange,
                       status: indicatorStatus,

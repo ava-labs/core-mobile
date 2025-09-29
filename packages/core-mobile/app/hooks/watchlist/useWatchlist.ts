@@ -12,6 +12,9 @@ import { useSelector } from 'react-redux'
 import { ChartData } from 'services/token/types'
 import { transformTrendingTokens } from 'services/watchlist/utils/transform'
 import { useIsFocused } from '@react-navigation/native'
+import { LocalTokenWithBalance } from 'store/balance'
+import { getCaip2ChainIdForToken } from 'utils/caip2ChainIds'
+import { isNetworkContractToken } from 'utils/isNetworkContractToken'
 import { useGetPrices } from './useGetPrices'
 import { useGetTokensAndCharts } from './useGetTokensAndCharts'
 import { useGetTrendingTokens } from './useGetTrendingTokens'
@@ -27,6 +30,7 @@ type UseWatchListReturnType = {
   getWatchlistChart: (id: string) => ChartData
   getMarketTokenBySymbol: (symbol: string) => MarketToken | undefined
   getMarketTokenById: (id: string) => MarketToken | undefined
+  resolveMarketToken: (token: LocalTokenWithBalance) => MarketToken | undefined
   isLoadingFavorites: boolean
   isLoadingTrendingTokens: boolean
   isLoadingTopTokens: boolean
@@ -165,16 +169,52 @@ export const useWatchlist = (): UseWatchListReturnType => {
   )
 
   const getMarketTokenBySymbol = useCallback(
-    (symbol: string): MarketToken | undefined =>
-      allTokens.find(
-        token => token.symbol.toLowerCase() === symbol.toLowerCase()
-      ),
+    (symbol: string): MarketToken | undefined => {
+      const targetSymbol = symbol.toLowerCase().trim()
+
+      return allTokens.find(
+        marketToken => marketToken.symbol.toLowerCase().trim() === targetSymbol
+      )
+    },
     [allTokens]
   )
 
   const getMarketTokenById = useCallback(
     (id: string): MarketToken | undefined =>
       allTokens.find(token => token.id === id),
+    [allTokens]
+  )
+
+  const resolveMarketToken = useCallback(
+    (token: LocalTokenWithBalance): MarketToken | undefined => {
+      const caip2ChainId = getCaip2ChainIdForToken({
+        type: token.type,
+        chainId: token.networkChainId
+      })
+      const contractTokenAddress = isNetworkContractToken(token)
+        ? token.address.toLowerCase()
+        : undefined
+      const targetSymbol = token.symbol.toLowerCase().trim()
+
+      return allTokens.find(marketToken => {
+        // First try to match by internal id
+        if (token.internalId === marketToken.id) {
+          return true
+        }
+
+        // Next try to match by contract address if possible
+        if (
+          contractTokenAddress &&
+          marketToken.platforms?.[caip2ChainId]?.toLowerCase() ===
+            contractTokenAddress
+        ) {
+          return true
+        }
+
+        // Finally, fallback to matching by symbol (not ideal, but better than nothing)
+        return marketToken.symbol.toLowerCase().trim() === targetSymbol
+      })
+    },
     [allTokens]
   )
 
@@ -189,6 +229,7 @@ export const useWatchlist = (): UseWatchListReturnType => {
     getWatchlistChart,
     getMarketTokenBySymbol,
     getMarketTokenById,
+    resolveMarketToken,
     isLoadingFavorites,
     isLoadingTrendingTokens,
     isLoadingTopTokens,

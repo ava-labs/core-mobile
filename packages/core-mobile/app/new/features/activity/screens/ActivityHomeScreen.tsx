@@ -13,6 +13,7 @@ import {
   CollapsibleTabsRef,
   OnTabChange
 } from 'common/components/CollapsibleTabs'
+import { useBottomTabBarHeight } from 'common/hooks/useBottomTabBarHeight'
 import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
 import useInAppBrowser from 'common/hooks/useInAppBrowser'
 import { getSourceChainId } from 'common/utils/bridgeUtils'
@@ -40,6 +41,7 @@ import { ActivityScreen } from './ActivityScreen'
 const ActivityHomeScreen = (): JSX.Element => {
   const { navigate } = useRouter()
   const { theme } = useTheme()
+  const tabBarHeight = useBottomTabBarHeight()
   const insets = useSafeAreaInsets()
   const frame = useSafeAreaFrame()
 
@@ -182,7 +184,7 @@ const ActivityHomeScreen = (): JSX.Element => {
 
   const contentContainerStyle = useMemo(() => {
     return {
-      paddingBottom: 16,
+      paddingBottom: tabBarHeight + 16,
       paddingTop: 10,
       minHeight: tabHeight
     }
