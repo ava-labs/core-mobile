@@ -21,10 +21,14 @@ import React, { useCallback, useMemo } from 'react'
 import { Platform, ViewStyle } from 'react-native'
 import { useHeaderMeasurements } from 'react-native-collapsible-tab-view'
 import Animated, { useAnimatedStyle, withTiming } from 'react-native-reanimated'
+import { isSolanaChainId } from 'utils/network/isSolanaNetwork'
+import { selectActiveAccount } from 'store/account/slice'
+import { useSelector } from 'react-redux'
 import { ActivityList } from '../components/ActivityList'
 import { useActivityFilterAndSearch } from '../hooks/useActivityFilterAndSearch'
 
-const errorIcon = require('../../../assets/icons/unamused_emoji.png')
+const errorIcon = require('../../../assets/icons/flashlight.png')
+const viewInExplorerIcon = require('../../../assets/icons/flashlight.png')
 
 export const ActivityScreen = ({
   isSearchBarFocused,
@@ -35,7 +39,11 @@ export const ActivityScreen = ({
 }: {
   isSearchBarFocused: boolean
   searchText: string
-  handleExplorerLink: (explorerLink: string) => void
+  handleExplorerLink: (
+    explorerLink: string,
+    hash?: string,
+    hashType?: 'account' | 'tx'
+  ) => void
   handlePendingBridge: (transaction: BridgeTransaction | BridgeTransfer) => void
   containerStyle: ViewStyle
 }): JSX.Element => {
@@ -53,6 +61,9 @@ export const ActivityScreen = ({
     isXpChain,
     refresh
   } = useActivityFilterAndSearch({ searchText })
+  const account = useSelector(selectActiveAccount)
+
+  const isSolanaNetwork = network && isSolanaChainId(network.chainId)
 
   const isLoadingXpToken = useMemo(() => {
     return isXpChain && !xpToken
@@ -112,6 +123,27 @@ export const ActivityScreen = ({
       )
     }
 
+    if (isSolanaNetwork) {
+      return (
+        <ErrorState
+          icon={
+            <Image source={viewInExplorerIcon} sx={{ width: 42, height: 42 }} />
+          }
+          title={`View transaction\ndetails in the Explorer`}
+          description="Visit the Explorer for more info"
+          button={{
+            title: 'View in Explorer',
+            onPress: () =>
+              handleExplorerLink(
+                network?.explorerUrl ?? '',
+                account?.addressSVM,
+                'account'
+              )
+          }}
+        />
+      )
+    }
+
     return (
       <ErrorState
         icon={<Image source={errorIcon} sx={{ width: 42, height: 42 }} />}
@@ -120,10 +152,14 @@ export const ActivityScreen = ({
       />
     )
   }, [
+    account?.addressSVM,
+    handleExplorerLink,
     isError,
     isLoading,
     isLoadingXpToken,
     isRefreshing,
+    isSolanaNetwork,
+    network?.explorerUrl,
     refresh,
     searchText.length
   ])
