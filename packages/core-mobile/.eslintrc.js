@@ -18,7 +18,8 @@ module.exports = {
     'metro.monorepo.config.js',
     '**/node_modules/**',
     'android/app/build/**',
-    'expo-env.d.ts'
+    'expo-env.d.ts',
+    'ios/DerivedData'
   ],
   overrides: [
     {
