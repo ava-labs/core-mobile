@@ -8,6 +8,7 @@
     ],
   },
   "include": [
-    "**/*.ts"
+    "**/*.ts",
+    "wdio.conf.ts"
   ]
 }

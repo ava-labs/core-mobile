@@ -23,7 +23,23 @@ module.exports = {
   ],
   overrides: [
     {
-      files: ['e2e/**/*', 'test-appium/**/*'],
+      files: ['e2e/**/*'],
+      parserOptions: {
+        project: './e2e/tsconfig.json',
+        tsconfigRootDir: __dirname
+      },
+      rules: {
+        'no-console': 0,
+        '@typescript-eslint/explicit-function-return-type': 0,
+        'no-param-reassign': 0
+      }
+    },
+    {
+      files: ['test-appium/**/*'],
+      parserOptions: {
+        project: './test-appium/tsconfig.json',
+        tsconfigRootDir: __dirname
+      },
       rules: {
         'no-console': 0,
         '@typescript-eslint/explicit-function-return-type': 0,
