@@ -151,7 +151,6 @@ const ContentWrapper = ({
           ? {
               // iOS works with 100%, but android needs specific height
               height: '100%',
-              // TODO: Remove this and replace it in each screen that uses this component
               paddingBottom: tabBarHeight
             }
           : {
