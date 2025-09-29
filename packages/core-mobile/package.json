@@ -347,7 +347,7 @@
       "@wdio/cli>@wdio/utils>geckodriver": false,
       "@wdio/cli>tsx>esbuild": true,
       "appium": true,
-      "appium-xcuitest-driver>appium-ios-remotexpc>appium-ios-tuntap": true,
+      "appium-xcuitest-driver>appium-ios-remotexpc>appium-ios-tuntap": false,
       "appium>@appium/support>sharp": true
     }
   },
