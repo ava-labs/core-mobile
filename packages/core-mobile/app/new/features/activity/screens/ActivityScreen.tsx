@@ -27,7 +27,7 @@ import { useSelector } from 'react-redux'
 import { ActivityList } from '../components/ActivityList'
 import { useActivityFilterAndSearch } from '../hooks/useActivityFilterAndSearch'
 
-const errorIcon = require('../../../assets/icons/flashlight.png')
+const errorIcon = require('../../../assets/icons/unamused_emoji.png')
 const viewInExplorerIcon = require('../../../assets/icons/flashlight.png')
 
 export const ActivityScreen = ({
