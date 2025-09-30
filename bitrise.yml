@@ -922,6 +922,7 @@ workflows:
     before_run:
     - _install-and-set-env
     - _set-version
+    - _pull_app_files
     envs:
     - ENVIRONMENT: production
       opts:
