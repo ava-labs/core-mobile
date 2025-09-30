@@ -160,6 +160,8 @@ workflows:
         inputs:
         - gradle_task: ":$ANDROID_MODULE:assembleInternalE2e"
         - project_location: $ANDROID_PROJECT_LOCATION
+        - gradlew_path: $ANDROID_PROJECT_LOCATION/gradlew
+
         - cache_level: all
     - save-gradle-cache@1: {}
     - deploy-to-bitrise-io@2:
