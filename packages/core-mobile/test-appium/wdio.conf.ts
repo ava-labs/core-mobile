@@ -66,7 +66,10 @@ export const config: WebdriverIO.Config = {
       'appium',
       {
         command: 'appium',
-        args: ['--base-path', '/']
+        args: {
+          basePath: '/',
+          port: 4723
+        }
       }
     ]
   ],
