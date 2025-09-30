@@ -156,38 +156,26 @@ workflows:
         title: Fix Android Env Vars
         inputs:
         - file_path: scripts/bitrise/fixAndroidEnvVars.sh
-    - script-runner@0:
-        title: Create Test Run
+    - gradle-runner@2:
         inputs:
-        - file_path: scripts/bitrise/detox/createAndroidTestRun.sh
-        - variables:
-          - TESTRAIL_RUN_ID=$TESTRAIL_RUN_ID
-    - android-build-for-ui-testing@0:
-        inputs:
-        - module: $ANDROID_MODULE
-        - variant: $ANDROID_BUILD_VARIANT
-        - cache_level: all
+        - gradle_task: ":$ANDROID_MODULE:assembleInternalE2e"
         - project_location: $ANDROID_PROJECT_LOCATION
+        - cache_level: all
     - save-gradle-cache@1: {}
-    - sign-apk@1:
-        inputs:
-        - android_app: $BITRISE_APK_PATH|$BITRISE_TEST_APK_PATH
-        - use_apk_signer: "true"
-        - debuggable_permitted: "false"
-        - keystore_url: $BITRISEIO_ANDROID_KEY_STORE_URL
-        - keystore_password: $ANDROID_STORE_PASSWORD
-        - keystore_alias: $ANDROID_KEY_ALIAS
-        - private_key_password: $ANDROID_KEY_PASSWORD
     - deploy-to-bitrise-io@2:
         inputs:
         - pipeline_intermediate_files: |-
             $BITRISE_DEPLOY_DIR/app-internal-e2e-bitrise-signed.apk:BITRISE_APK_PATH
             $BITRISE_DEPLOY_DIR/app-internal-e2e-androidTest-bitrise-signed.apk:BITRISE_TEST_APK_PATH	
-    - script-runner@0:
-        title: Create Tests To Run Arrays
+    - avd-manager@1.2:
         inputs:
-        - file_path: scripts/bitrise/detox/distributeAndroidTests.sh
-    - share-pipeline-variable@1:
+        - api_level: "34"
+        - emulator_id: emulator-5554
+        - emulator_channel: "0"
+        - create_command_flags: --sdcard 512M
+        - tag: default
+        - abi: x86_64
+        - profile: pixel_7_pro
         inputs:
         - variables: |-
             TESTRAIL_PROJECT_ID=$TESTRAIL_PROJECT_ID
@@ -928,25 +916,12 @@ workflows:
     - IS_EXTERNAL_BUILD: "true"
       opts:
         is_expand: false
-  appium-ios-setup:
+  appium-setup:
     before_run:
     - _install-and-set-env
     - _set-version
-    - _build-ios-simulator
     envs:
     - ENVIRONMENT: production
-      opts:
-        is_expand: false
-    - PLATFORM: iOS
-      opts:
-        is_expand: false
-    - IOS_CONFIGURATION: Release
-      opts:
-        is_expand: false
-    - IOS_SCHEME: AvaxWallet
-      opts:
-        is_expand: false
-    - APP_TITLE: Core Mobile
       opts:
         is_expand: false
     - E2E: "true"
@@ -955,36 +930,6 @@ workflows:
     - IS_INTERNAL_BUILD: "true"
       opts:
         is_expand: false
-  appium-android-setup:
-    before_run:
-    - _install-and-set-env
-    - _set-version
-    envs:
-    - ENVIRONMENT: production
-      opts:
-        is_expand: false
-    - PLATFORM: Android
-      opts:
-        is_expand: false
-    - ANDROID_BUILD_VARIANT: internalE2e
-      opts:
-        is_expand: false
-    - APP_TITLE: Core Mobile Internal
-      opts:
-        is_expand: false
-    - E2E: "true"
-      opts:
-        is_expand: false
-    - IS_INTERNAL_BUILD: "true"
-      opts:
-        is_expand: false
-    steps:
-    - android-build-for-ui-testing@0:
-        inputs:
-        - module: $ANDROID_MODULE
-        - variant: $ANDROID_BUILD_VARIANT
-        - cache_level: all
-        - project_location: $ANDROID_PROJECT_LOCATION
   ios-internal:
     before_run:
     - _install-and-set-env
