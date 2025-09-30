@@ -932,6 +932,7 @@ workflows:
     before_run:
     - _install-and-set-env
     - _set-version
+    - _build-ios-simulator
     envs:
     - ENVIRONMENT: production
       opts:
@@ -954,26 +955,6 @@ workflows:
     - IS_INTERNAL_BUILD: "true"
       opts:
         is_expand: false
-    steps:
-    - restore-cocoapods-cache@1: {}
-    - script@1:
-        title: Copy Gemfile to iOS folder
-        inputs:
-        - content: |-
-            #!/usr/bin/env bash
-            # fail if any commands fails
-            set -e
-            # make pipelines' return status equal the last command to exit with a non-zero status, or zero if all commands exit successfully
-            set -o pipefail
-
-            # we need to do this to make sure the cocoapods install step consider our Gemfile
-            cp Gemfile ios
-            cp Gemfile.lock ios
-    - cocoapods-install@2:
-        inputs:
-        - verbose: "true"
-        - source_root_path: $BITRISE_SOURCE_DIR/ios
-    - save-cocoapods-cache@1: {}
   appium-android-setup:
     before_run:
     - _install-and-set-env
@@ -997,6 +978,13 @@ workflows:
     - IS_INTERNAL_BUILD: "true"
       opts:
         is_expand: false
+    steps:
+    - android-build-for-ui-testing@0:
+        inputs:
+        - module: $ANDROID_MODULE
+        - variant: $ANDROID_BUILD_VARIANT
+        - cache_level: all
+        - project_location: $ANDROID_PROJECT_LOCATION
   ios-internal:
     before_run:
     - _install-and-set-env
