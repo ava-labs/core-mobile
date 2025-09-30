@@ -318,7 +318,7 @@ workflows:
         - key: node-20-{{ .OS }}-{{ .Arch }}
     - nvm@1:
         inputs:
-        - node_version: 20.11.1
+        - node_version: 20.19.0
     - save-cache@1:
         title: Save Node 20 Cache
         inputs:
