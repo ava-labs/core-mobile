@@ -10,4 +10,4 @@ yarn -v
 npx appium -v || true
 npx appium driver list || true
 
-yarn appium:ios
+npx appium --base-path /wd/hub --port 4723 & yarn appium:ios

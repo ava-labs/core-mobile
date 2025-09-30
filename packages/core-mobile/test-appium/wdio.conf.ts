@@ -61,18 +61,9 @@ export const config: WebdriverIO.Config = {
   ],
   maxInstances: 10,
   capabilities: caps,
-  services: [
-    [
-      'appium',
-      {
-        command: 'appium',
-        args: {
-          basePath: '/',
-          port: 4723
-        }
-      }
-    ]
-  ],
+  hostname: '127.0.0.1',
+  port: 4723,
+  path: '/wd/hub',
   logLevel: 'debug',
   bail: 0,
   waitforTimeout: 10000,
