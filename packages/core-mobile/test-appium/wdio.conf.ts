@@ -10,7 +10,11 @@ import {
 let runId: number | undefined
 const sectionCache: Record<string, number> = {}
 const isBitrise = process.env.CI === 'true'
-const iosPath = process.env.BITRISE_APP_DIR_PATH
+const iosPath = isBitrise
+  ? process.env.BITRISE_APP_DIR_PATH
+  : path.resolve(
+      './ios/DerivedData/Build/Products/Debug-iphonesimulator/AvaxWallet.app'
+    )
 const androidPath = isBitrise
   ? process.env.BITRISE_APK_PATH
   : path.resolve(
@@ -57,8 +61,16 @@ export const config: WebdriverIO.Config = {
   ],
   maxInstances: 10,
   capabilities: caps,
-  services: [['appium', { command: 'appium' }]],
-  logLevel: 'error',
+  services: [
+    [
+      'appium',
+      {
+        command: 'appium',
+        args: ['--base-path', '/']
+      }
+    ]
+  ],
+  logLevel: 'debug',
   bail: 0,
   waitforTimeout: 10000,
   connectionRetryTimeout: 120000,

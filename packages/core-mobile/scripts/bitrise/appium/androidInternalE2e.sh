@@ -7,9 +7,7 @@ ls -la "$BITRISE_APK_PATH" || true
 which node
 node -v
 yarn -v
-
-npm install -g appium@next
-npm install -g @wdio/cli
-appium driver install uiautomator2 || echo "uiautomator2 already installed, skipping"
+npx appium -v || true
+npx appium driver list || true
 
 yarn appium:android

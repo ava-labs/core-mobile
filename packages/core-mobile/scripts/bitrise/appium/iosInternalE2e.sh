@@ -7,9 +7,7 @@ ls -la "$BITRISE_APP_DIR_PATH" || true
 which node
 node -v
 yarn -v
-
-npm install -g appium@next
-npm install -g @wdio/cli
-appium driver install xcuitest || echo "xcuitest already installed, skipping"
+npx appium -v || true
+npx appium driver list || true
 
 yarn appium:ios
