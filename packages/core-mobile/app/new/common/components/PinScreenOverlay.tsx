@@ -5,6 +5,7 @@ import { FullWindowOverlay } from 'react-native-screens'
 import { useFocusEffect } from 'expo-router'
 import { Keyboard } from 'react-native'
 import { useDeleteWallet } from 'common/hooks/useDeleteWallet'
+import BiometricsSDK from 'utils/BiometricsSDK'
 import { ForgotPinComponent } from './ForgotPinComponent'
 import { PinScreen } from './PinScreen'
 
@@ -24,6 +25,10 @@ export const PinScreenOverlay = (): JSX.Element => {
   const handleConfirm = useCallback(() => {
     deleteWallet()
   }, [deleteWallet])
+
+  const handleBiometricPrompt = useCallback(async () => {
+    return BiometricsSDK.authenticateAsync()
+  }, [])
 
   return (
     <FullWindowOverlay
@@ -52,7 +57,10 @@ export const PinScreenOverlay = (): JSX.Element => {
             contentContainerStyle={{
               flex: 1
             }}>
-            <PinScreen onForgotPin={() => setShowForgotPin(true)} />
+            <PinScreen
+              onForgotPin={() => setShowForgotPin(true)}
+              onBiometricPrompt={handleBiometricPrompt}
+            />
           </KeyboardAwareScrollView>
         )}
       </View>
