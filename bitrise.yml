@@ -913,6 +913,7 @@ workflows:
     - appium-server@0.0.6:
         inputs:
         - appium_version: "next"
+        - drivers: ""
     - script-runner@0:
         title: Appium iOS testing
         no_output_timeout: 300
@@ -937,6 +938,7 @@ workflows:
     - appium-server@0.0.6:
         inputs:
         - appium_version: "next"
+        - drivers: ""
     - script-runner@0:
         title: Appium Android testing
         no_output_timeout: 300
