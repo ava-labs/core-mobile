@@ -213,4 +213,25 @@ export type AnalyticsEvents = {
 
   //SOLANA
   SolanaSwapFeeAccountNotInitialized: { mint: string }
+
+  // PUSH NOTIFICATIONS
+  PushNotificationReceived: {
+    notificationType: string
+    event: string
+    channelId?: string
+  }
+  PushNotificationDisplayed: {
+    notificationType: string
+    event: string
+    channelId?: string
+  }
+  PushNotificationPressed: {
+    notificationType: string
+    event: string
+    channelId?: string
+  }
+  PushNotificationUnsubscribed: {
+    channelType?: string
+    reason?: string
+  }
 }

@@ -24,6 +24,7 @@ import {
 import { handleDeeplink } from 'contexts/DeeplinkContext/utils/handleDeeplink'
 import { CORE_UNIVERSAL_LINK_HOSTS } from 'resources/Constants'
 import { router } from 'expo-router'
+import AnalyticsService from 'services/analytics/AnalyticsService'
 
 type UnsubscribeFunc = () => void
 
@@ -64,6 +65,13 @@ class FCMService {
         )
         return
       }
+
+      // Track notification received
+      AnalyticsService.capture('PushNotificationReceived', {
+        notificationType: result.data.data.type,
+        event: result.data.data.event,
+        channelId: EVENT_TO_CH_ID[result.data.data.event]
+      })
 
       if (
         result.data.data.event === BalanceChangeEvents.BALANCES_SPENT ||
@@ -176,6 +184,14 @@ class FCMService {
         )
         return
       }
+
+      // Track notification received in background (iOS)
+      AnalyticsService.capture('PushNotificationReceived', {
+        notificationType: result.data.data.type,
+        event: result.data.data.event,
+        channelId: EVENT_TO_CH_ID[result.data.data.event]
+      })
+
       const notificationData = this.#prepareNotificationData(result.data)
 
       if (
@@ -218,6 +234,13 @@ class FCMService {
         )
         return
       }
+
+      AnalyticsService.capture('PushNotificationReceived', {
+        notificationType: result.data.data.type,
+        event: result.data.data.event,
+        channelId: EVENT_TO_CH_ID[result.data.data.event]
+      })
+
       if (result.data.notification) {
         //skip, FCM sdk handles this already
         return

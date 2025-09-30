@@ -9,19 +9,20 @@ import notifee, {
   TriggerNotification,
   TriggerType
 } from '@notifee/react-native'
+import messaging from '@react-native-firebase/messaging'
+import { HandleNotificationCallback } from 'contexts/DeeplinkContext/types'
 import { fromUnixTime, isPast } from 'date-fns'
 import { Linking, Platform } from 'react-native'
+import AnalyticsService from 'services/analytics/AnalyticsService'
 import {
   ChannelId,
   NewsChannelId,
   notificationChannels
 } from 'services/notifications/channels'
-import { StakeCompleteNotification } from 'store/notifications'
-import Logger from 'utils/Logger'
-import { HandleNotificationCallback } from 'contexts/DeeplinkContext/types'
 import { DisplayNotificationParams } from 'services/notifications/types'
+import { StakeCompleteNotification } from 'store/notifications'
 import { audioFiles } from 'utils/AudioFeedback'
-import messaging from '@react-native-firebase/messaging'
+import Logger from 'utils/Logger'
 import {
   LAUNCH_ACTIVITY,
   PressActionId,
@@ -252,6 +253,17 @@ class NotificationsService {
     if (detail?.notification?.id) {
       await this.cancelTriggerNotification(detail.notification.id)
     }
+
+    // Track notification pressed
+    if (detail?.notification?.data) {
+      const data = detail.notification.data
+      AnalyticsService.capture('PushNotificationPressed', {
+        notificationType: String(data.type || 'unknown'),
+        event: String(data.event || 'unknown'),
+        channelId: data.channelId ? String(data.channelId) : undefined
+      })
+    }
+
     callback(detail?.notification?.data)
   }
 
@@ -265,6 +277,15 @@ class NotificationsService {
     switch (type) {
       case EventType.DELIVERED:
         await this.incrementBadgeCount(1)
+        // Track notification displayed
+        if (detail?.notification?.data) {
+          const data = detail.notification.data
+          AnalyticsService.capture('PushNotificationDisplayed', {
+            notificationType: String(data.type || 'unknown'),
+            event: String(data.event || 'unknown'),
+            channelId: data.channelId ? String(data.channelId) : undefined
+          })
+        }
         break
       case EventType.PRESS:
         await this.handleNotificationPress({
