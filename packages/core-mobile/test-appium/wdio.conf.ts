@@ -11,9 +11,14 @@ let runId: number | undefined
 const sectionCache: Record<string, number> = {}
 const isBitrise = process.env.CI === 'true'
 const iosPath = isBitrise
-  ? '/Users/vagrant/deploy/Build/Products/Release-iphonesimulator/AvaxWallet.app'
+  ? process.env.BITRISE_APP_DIR_PATH
   : path.resolve(
       './ios/DerivedData/Build/Products/Debug-iphonesimulator/AvaxWallet.app'
+    )
+const androidPath = isBitrise
+  ? process.env.BITRISE_APK_PATH
+  : path.resolve(
+      './android/app/build/outputs/apk/internal/debug/app-internal-debug.apk'
     )
 const platformToRun = process.env.PLATFORM
 const allCaps = [
@@ -22,9 +27,7 @@ const allCaps = [
     'appium:deviceName': 'pixel_7_pro',
     'appium:platformVersion': '14.0',
     'appium:automationName': 'UiAutomator2',
-    'appium:app': path.resolve(
-      './android/app/build/outputs/apk/internal/debug/app-internal-debug.apk'
-    ),
+    'appium:app': androidPath,
     'appium:appWaitActivity': '*',
     'appium:autoGrantPermissions': true
   },
