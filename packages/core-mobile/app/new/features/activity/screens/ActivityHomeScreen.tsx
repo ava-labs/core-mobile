@@ -36,6 +36,7 @@ import {
 import { useSelector } from 'react-redux'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { selectIsDeveloperMode } from 'store/settings/advanced/slice'
+import { getExplorerAddressByNetwork } from 'utils/getExplorerAddressByNetwork'
 import { ActivityScreen } from './ActivityScreen'
 
 const ActivityHomeScreen = (): JSX.Element => {
@@ -158,9 +159,14 @@ const ActivityHomeScreen = (): JSX.Element => {
   const { openUrl } = useInAppBrowser()
 
   const handleExplorerLink = useCallback(
-    (explorerLink: string): void => {
+    (
+      explorerLink: string,
+      hash?: string,
+      hashType?: 'account' | 'tx'
+    ): void => {
       AnalyticsService.capture('ExplorerLinkClicked')
-      openUrl(explorerLink)
+      const url = getExplorerAddressByNetwork(explorerLink, hash, hashType)
+      openUrl(url)
     },
     [openUrl]
   )
@@ -188,7 +194,7 @@ const ActivityHomeScreen = (): JSX.Element => {
       paddingTop: 10,
       minHeight: tabHeight
     }
-  }, [tabHeight])
+  }, [tabBarHeight, tabHeight])
 
   const renderEmptyTabBar = useCallback((): JSX.Element => <></>, [])
 
