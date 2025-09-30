@@ -166,7 +166,7 @@ workflows:
     - deploy-to-bitrise-io@2:
         inputs:
         - pipeline_intermediate_files: |-
-            $BITRISE_DEPLOY_DIR/app-internal-e2e.apk:BITRISE_APK_PATH
+            $BITRISE_DEPLOY_DIR/app-internal-e2e-unsigned.apk:BITRISE_APK_PATH
     - avd-manager@1.2:
         inputs:
         - api_level: "34"
@@ -198,7 +198,7 @@ workflows:
         inputs:
         - artifact_sources: .*
         - pipeline_intermediate_files: |-
-            $BITRISE_DEPLOY_DIR/app-internal-e2e.apk:BITRISE_APK_PATH
+            $BITRISE_DEPLOY_DIR/app-internal-e2e-unsigned.apk:BITRISE_APK_PATH
             $BITRISE_DEPLOY_DIR/AvaxWalletInternal.app:BITRISE_APP_DIR_PATH
   _pull_external_app_files:
     steps:

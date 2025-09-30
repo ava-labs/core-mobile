@@ -13,7 +13,7 @@ const isBitrise = process.env.CI === 'true'
 const iosPath = isBitrise
   ? process.env.BITRISE_APP_DIR_PATH
   : path.resolve(
-      '/Users/eunji.song/Downloads/AvaxWalletInternal.app'
+      './ios/DerivedData/Build/Products/Debug-iphonesimulator/AvaxWallet.app'
     )
 const androidPath = isBitrise
   ? process.env.BITRISE_APK_PATH
