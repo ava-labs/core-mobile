@@ -10,11 +10,7 @@ import {
 let runId: number | undefined
 const sectionCache: Record<string, number> = {}
 const isBitrise = process.env.CI === 'true'
-const iosPath = isBitrise
-  ? process.env.BITRISE_APP_DIR_PATH
-  : path.resolve(
-      './ios/DerivedData/Build/Products/Debug-iphonesimulator/AvaxWallet.app'
-    )
+const iosPath = process.env.BITRISE_APP_DIR_PATH
 const androidPath = isBitrise
   ? process.env.BITRISE_APK_PATH
   : path.resolve(
@@ -76,6 +72,9 @@ export const config: WebdriverIO.Config = {
 
   // hoook before: make or get testRun before test
   before: async () => {
+    console.log('before')
+    console.log(process.env.BITRISE_APP_DIR_PATH)
+    console.log('after')
     const platform = driver.isAndroid ? 'Android' : 'iOS'
     runId = await getTestRun(platform)
   },
