@@ -50,7 +50,9 @@ export const DefaultFeatureFlagConfig = {
   [FeatureGates.SWAP_FEES_JUPITER]: true,
   [FeatureGates.IN_APP_UPDATE_ANDROID]: false,
   [FeatureGates.ENABLE_MELD_SANDBOX]: false,
-  [FeatureGates.SOLANA_LAUNCH_MODAL]: false
+  [FeatureGates.SOLANA_LAUNCH_MODAL]: false,
+  [FeatureGates.IN_APP_DEFI]: false,
+  [FeatureGates.IN_APP_DEFI_IS_NEW]: true
 }
 
 export const initialState = {

@@ -221,6 +221,7 @@ export default function WalletLayout(): JSX.Element {
             name="(modals)/appUpdate"
             options={modalScreensOptions}
           />
+          <Stack.Screen name="(modals)/deposit" options={modalScreensOptions} />
         </Stack>
         <PolyfillCrypto />
         <LastTransactedNetworks />

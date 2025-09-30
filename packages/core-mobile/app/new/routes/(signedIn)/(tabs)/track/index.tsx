@@ -398,9 +398,9 @@ enum TrackHomeScreenTab {
 }
 
 const SEGMENT_ITEMS = [
-  TrackHomeScreenTab.Trending,
-  TrackHomeScreenTab.Favorites,
-  TrackHomeScreenTab.Market
+  { title: TrackHomeScreenTab.Trending },
+  { title: TrackHomeScreenTab.Favorites },
+  { title: TrackHomeScreenTab.Market }
 ]
 
 export default TrackHomeScreen

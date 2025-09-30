@@ -561,7 +561,13 @@ const SEGMENT_INDEX_MAP: Record<number, number> = {
   4: 365 // 1Y
 }
 
-const SEGMENT_ITEMS = ['24H', '1W', '1M', '3M', '1Y']
+const SEGMENT_ITEMS = [
+  { title: '24H' },
+  { title: '1W' },
+  { title: '1M' },
+  { title: '3M' },
+  { title: '1Y' }
+]
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
