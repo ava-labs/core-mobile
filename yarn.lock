@@ -239,7 +239,7 @@ __metadata:
     "@lavamoat/preinstall-always-fail": 2.1.0
     "@ledgerhq/hw-app-eth": 6.24.1
     "@ledgerhq/hw-app-solana": 6.24.1
-    "@ledgerhq/react-native-hw-transport-ble": latest
+    "@ledgerhq/react-native-hw-transport-ble": 6.35.3
     "@metamask/eth-sig-util": 7.0.3
     "@metamask/rpc-errors": 6.3.0
     "@ngraveio/bc-ur": 1.1.13
@@ -7324,6 +7324,30 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@ledgerhq/devices@npm:8.5.1":
+  version: 8.5.1
+  resolution: "@ledgerhq/devices@npm:8.5.1"
+  dependencies:
+    "@ledgerhq/errors": ^6.25.0
+    "@ledgerhq/logs": ^6.13.0
+    rxjs: ^7.8.1
+    semver: ^7.3.5
+  checksum: ce066b5f4bf7ebab0e40bf5e96a87d61137d3d497548f6061ed81975a91a19873cf5056d924ce5454b6c4a967df000834ae8358cc2b4c6b8f8aa6470cb8d3a5c
+  languageName: node
+  linkType: hard
+
+"@ledgerhq/devices@npm:8.6.0":
+  version: 8.6.0
+  resolution: "@ledgerhq/devices@npm:8.6.0"
+  dependencies:
+    "@ledgerhq/errors": ^6.25.0
+    "@ledgerhq/logs": ^6.13.0
+    rxjs: ^7.8.1
+    semver: ^7.3.5
+  checksum: 371533537909a9e51023507ba1e62ddd31a20f3032c6d0682699a918a4e5252c803b05293af8ae0623afbc2dc8b47b1ef3fb043301993c3af8282f54171ec543
+  languageName: node
+  linkType: hard
+
 "@ledgerhq/devices@npm:^8.0.7":
   version: 8.0.7
   resolution: "@ledgerhq/devices@npm:8.0.7"
@@ -7416,6 +7440,13 @@ __metadata:
   version: 6.19.1
   resolution: "@ledgerhq/errors@npm:6.19.1"
   checksum: f4e1cf0d6a5808c58235c54e2a1565556de8e683552bd94d97609f790e8c25226114bfa2af9914bb329c3e7c314585b60c66ddac8d8f8f1d072b7e791a889ad8
+  languageName: node
+  linkType: hard
+
+"@ledgerhq/errors@npm:^6.25.0":
+  version: 6.25.0
+  resolution: "@ledgerhq/errors@npm:6.25.0"
+  checksum: 066e4b97b6becda9b86b616829b5e025d60d658172179e5d7a9e7662e2f2c5ea70733d9930fee9031d18728da2996b632485f98258629267bb561526ab4e0367
   languageName: node
   linkType: hard
 
@@ -7588,7 +7619,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@ledgerhq/hw-transport@npm:^6.24.1, @ledgerhq/hw-transport@npm:^6.31.8":
+"@ledgerhq/hw-transport@npm:^6.24.1":
   version: 6.31.8
   resolution: "@ledgerhq/hw-transport@npm:6.31.8"
   dependencies:
@@ -7609,6 +7640,18 @@ __metadata:
     "@ledgerhq/logs": ^6.12.0
     events: ^3.3.0
   checksum: 97911686ed4de1aaedcde364616c36a9831278002d7a168ea8469c0ce79d1712ded53c1f6deec3b7a86b76cad8b7ad4ba819670e864b1acfeb873271a829ee36
+  languageName: node
+  linkType: hard
+
+"@ledgerhq/hw-transport@npm:^6.31.10":
+  version: 6.31.11
+  resolution: "@ledgerhq/hw-transport@npm:6.31.11"
+  dependencies:
+    "@ledgerhq/devices": 8.6.0
+    "@ledgerhq/errors": ^6.25.0
+    "@ledgerhq/logs": ^6.13.0
+    events: ^3.3.0
+  checksum: 8a3871159d9215540dbb3f540e6e9ec63ddaba936371f5d760ece2c46e56422a94997ececc04d5fbb8d05a45ef5c3fc592244d718639f8d8f87de92991d535b7
   languageName: node
   linkType: hard
 
@@ -7690,18 +7733,18 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@ledgerhq/react-native-hw-transport-ble@npm:latest":
-  version: 6.35.1
-  resolution: "@ledgerhq/react-native-hw-transport-ble@npm:6.35.1"
+"@ledgerhq/react-native-hw-transport-ble@npm:6.35.3":
+  version: 6.35.3
+  resolution: "@ledgerhq/react-native-hw-transport-ble@npm:6.35.3"
   dependencies:
-    "@ledgerhq/devices": 8.4.8
-    "@ledgerhq/errors": ^6.23.0
-    "@ledgerhq/hw-transport": ^6.31.8
+    "@ledgerhq/devices": 8.5.1
+    "@ledgerhq/errors": ^6.25.0
+    "@ledgerhq/hw-transport": ^6.31.10
     "@ledgerhq/logs": ^6.13.0
     react-native-ble-plx: 3.4.0
     rxjs: ^7.8.1
     uuid: ^9.0.1
-  checksum: d1a10dd2c6e137edfd11740ef89e320374de0b7d2daa7a0a704fede1f3a50ee201cf1b3a301914893c1de5ec067f906a05cba3fcbd915ee115c139671c1f49be
+  checksum: b66f98b936e8fda09ba0590479efbc7564cfb148816ff45d5e994d6a411118f4fcc55dce71768c97520b3a0226e09112c7f120dd98fa15967fcc5078e5810197
   languageName: node
   linkType: hard
 
@@ -28688,7 +28731,7 @@ react-native-webview@ava-labs/react-native-webview:
   peerDependencies:
     react: "*"
     react-native: "*"
-  checksum: 41fa46ec459d849e308753d5dd983f140c8d14804c969ca18e09108929d9859f217b1ba5f72ae20917388676c467e22314b9681dfb069aaea0a7b750e1189f44
+  checksum: 57322e733d20b38881da9514a1ebb03a24a2457ed59683e4f714630c2a0ab29eb9981ad9acb02d7b7b32d7a0f5c02791146fc23c13a39c8254f7d0437844dcb4
   languageName: node
   linkType: hard
 
