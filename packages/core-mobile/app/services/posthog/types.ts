@@ -46,7 +46,9 @@ export enum FeatureGates {
   SWAP_FEES_JUPITER = 'swap-fees-jupiter',
   SWAP_SOLANA = 'swap-solana',
   IN_APP_UPDATE_ANDROID = 'in-app-update-android',
-  ENABLE_MELD_SANDBOX = 'enable-meld-sandbox'
+  ENABLE_MELD_SANDBOX = 'enable-meld-sandbox',
+  IN_APP_DEFI = 'in-app-defi',
+  IN_APP_DEFI_IS_NEW = 'in-app-defi-is-new'
 }
 
 export enum FeatureVars {

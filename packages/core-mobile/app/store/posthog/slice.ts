@@ -456,6 +456,22 @@ export const selectIsSolanaLaunchModalBlocked = (state: RootState): boolean => {
   )
 }
 
+export const selectIsInAppDefiBlocked = (state: RootState): boolean => {
+  const { featureFlags } = state.posthog
+  return (
+    !featureFlags[FeatureGates.IN_APP_DEFI] ||
+    !featureFlags[FeatureGates.EVERYTHING]
+  )
+}
+
+export const selectIsInAppDefiNewBlocked = (state: RootState): boolean => {
+  const { featureFlags } = state.posthog
+  return (
+    !featureFlags[FeatureGates.IN_APP_DEFI_IS_NEW] ||
+    !featureFlags[FeatureGates.EVERYTHING]
+  )
+}
+
 // actions
 export const { regenerateUserId, toggleAnalytics, setFeatureFlags } =
   posthogSlice.actions
