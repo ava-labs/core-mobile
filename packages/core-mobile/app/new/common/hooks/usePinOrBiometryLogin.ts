@@ -18,11 +18,15 @@ import { useRateLimiter } from './useRateLimiter'
 export function usePinOrBiometryLogin({
   onStartLoading,
   onStopLoading,
-  onWrongPin
+  onWrongPin,
+  isInitialLogin = false,
+  onBiometricPrompt
 }: {
   onStartLoading: () => void
   onStopLoading: (onComplete?: () => void) => void
   onWrongPin: () => void
+  isInitialLogin?: boolean
+  onBiometricPrompt: () => Promise<boolean>
 }): {
   enteredPin: string
   onEnterPin: (pinKey: string) => void
@@ -86,8 +90,11 @@ export function usePinOrBiometryLogin({
         if (!activeWalletId) {
           throw new Error('Active wallet ID is not set')
         }
-        const migrator = new KeychainMigrator(activeWalletId)
-        await migrator.migrateIfNeeded('PIN', pin)
+
+        if (isInitialLogin) {
+          const migrator = new KeychainMigrator(activeWalletId)
+          await migrator.migrateIfNeeded('PIN', pin)
+        }
 
         // Load encryption key
         const isValidPin = await BiometricsSDK.loadEncryptionKeyWithPin(pin)
@@ -126,10 +133,11 @@ export function usePinOrBiometryLogin({
     [
       onStartLoading,
       activeWalletId,
+      isInitialLogin,
+      resetRateLimiter,
       onStopLoading,
       increaseAttempt,
       onWrongPin,
-      resetRateLimiter,
       alertBadData
     ]
   )
@@ -146,6 +154,7 @@ export function usePinOrBiometryLogin({
   }
 
   const verifyBiometric =
+    // eslint-disable-next-line sonarjs/cognitive-complexity
     useCallback(async (): Promise<WalletLoadingResults> => {
       try {
         if (!activeWalletId) {
@@ -158,27 +167,30 @@ export function usePinOrBiometryLogin({
 
         if (accessType === 'BIO') {
           // Check if migration is needed first
-          const migrator = new KeychainMigrator(activeWalletId)
-          const result = await migrator.migrateIfNeeded('BIO')
-          if (
-            result.success &&
-            result.value === MigrationStatus.RunBiometricMigration
-          ) {
-            //already prompted user for bio, assume verified
-            setVerified(true)
-            resetRateLimiter()
-            return new NothingToLoad()
-          }
-          if (
-            result.success &&
-            result.value !== MigrationStatus.NoMigrationNeeded
-          ) {
-            throw new Error(
-              'Invalid state: migration status is not RunBiometricMigration'
-            )
+
+          if (isInitialLogin) {
+            const migrator = new KeychainMigrator(activeWalletId)
+            const result = await migrator.migrateIfNeeded('BIO')
+            if (
+              result.success &&
+              result.value === MigrationStatus.RunBiometricMigration
+            ) {
+              //already prompted user for bio, assume verified
+              setVerified(true)
+              resetRateLimiter()
+              return new NothingToLoad()
+            }
+            if (
+              result.success &&
+              result.value !== MigrationStatus.NoMigrationNeeded
+            ) {
+              throw new Error(
+                'Invalid state: migration status is not RunBiometricMigration'
+              )
+            }
           }
           //already migrated
-          const isSuccess = await BiometricsSDK.loadEncryptionKeyWithBiometry()
+          const isSuccess = await onBiometricPrompt()
 
           if (isSuccess) {
             setVerified(true)
@@ -201,7 +213,13 @@ export function usePinOrBiometryLogin({
         setVerified(false)
         throw err
       }
-    }, [activeWalletId, alertBadData, resetRateLimiter])
+    }, [
+      activeWalletId,
+      alertBadData,
+      resetRateLimiter,
+      isInitialLogin,
+      onBiometricPrompt
+    ])
 
   useEffect(() => {
     async function getBiometryType(): Promise<void> {
