@@ -23,7 +23,7 @@ import Animated, {
   FadeOut,
   LinearTransition
 } from 'react-native-reanimated'
-import { roundToUnitOrSignificantDigit } from 'common/utils/roundToUnitOrSignificantDigit'
+import { roundTokenDecimals } from 'common/utils/roundTokenDecimals'
 import { LogoWithNetwork } from './LogoWithNetwork'
 
 export const TokenInputWidget = ({
@@ -87,7 +87,9 @@ export const TokenInputWidget = ({
       value = BigInt(Math.floor(Number(balance ?? 0n) * button.percent))
     }
 
-    value = roundToUnitOrSignificantDigit(value, 14)
+    if (token?.decimals !== undefined) {
+      value = roundTokenDecimals(value, token.decimals)
+    }
 
     onAmountChange?.(value)
 
