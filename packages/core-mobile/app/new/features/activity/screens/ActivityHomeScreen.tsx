@@ -192,7 +192,7 @@ const ActivityHomeScreen = (): JSX.Element => {
       paddingTop: 10,
       minHeight: tabHeight
     }
-  }, [tabBarHeight, tabHeight])
+  }, [tabHeight])
 
   const renderEmptyTabBar = useCallback((): JSX.Element => <></>, [])
 
