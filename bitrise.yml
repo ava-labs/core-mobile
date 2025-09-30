@@ -156,12 +156,12 @@ workflows:
         title: Fix Android Env Vars
         inputs:
         - file_path: scripts/bitrise/fixAndroidEnvVars.sh
-    - gradle-runner@2:
+    - android-build-for-ui-testing@0:
         inputs:
-        - gradle_task: ":$ANDROID_MODULE:assembleInternalE2e"
-        - project_location: $ANDROID_PROJECT_LOCATION
-        - gradlew_path: $ANDROID_PROJECT_LOCATION/gradlew
+        - module: $ANDROID_MODULE
+        - variant: $ANDROID_BUILD_VARIANT
         - cache_level: all
+        - project_location: $ANDROID_PROJECT_LOCATION
     - save-gradle-cache@1: {}
     - deploy-to-bitrise-io@2:
         inputs:
@@ -531,8 +531,6 @@ workflows:
     - _install-and-set-env
     - _set-version
     - _build-android-internal-for-testing
-    after_run:
-    - _upload-detox-artifacts
     envs:
     - ENVIRONMENT: production
       opts:
