@@ -4,7 +4,7 @@ import { KeystoneTroubleshootingParams } from 'services/walletconnectv2/walletCo
 import { useNavigation, Link } from 'expo-router'
 import { ScrollScreen } from 'common/components/ScrollScreen'
 import { BackHandler } from 'react-native'
-import { View, Text, SCREEN_WIDTH, Button, useTheme } from '@avalabs/k2-alpine'
+import { View, Text, SCREEN_WIDTH, Button } from '@avalabs/k2-alpine'
 import { Space } from 'common/components/Space'
 import { Steps } from 'features/onboarding/components/KeystoneTroubleshooting'
 

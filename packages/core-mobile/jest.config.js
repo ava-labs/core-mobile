@@ -34,10 +34,7 @@ module.exports = {
         'quick-lru',
         'react-redux',
         'uuid',
-        '@keystonehq/animated-qr',
-        '@keystonehq/keystone-sdk',
-        '@keystonehq/bc-ur-registry-eth',
-        '@keystonehq/bc-ur-registry-avalanche'
+        '@keystonehq'
       ].join('|') +
       ')'
   ]

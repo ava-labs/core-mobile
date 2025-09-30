@@ -116,11 +116,12 @@ const convertToHexString = (n: string): string => {
 export function makeBigIntLike(
   n: BigNumberish | undefined | null
 ): BigIntLike | undefined {
-  if (n == null) return undefined
-  if (isString(n)) {
-    n = convertToHexString(n)
+  let _n = n
+  if (_n == null) return undefined
+  if (isString(_n)) {
+    _n = convertToHexString(_n)
   }
-  return ('0x' + BigInt(n).toString(16)) as BigIntLike
+  return ('0x' + BigInt(_n).toString(16)) as BigIntLike
 }
 
 export function convertTxData(txData: TransactionRequest): LegacyTxData {
