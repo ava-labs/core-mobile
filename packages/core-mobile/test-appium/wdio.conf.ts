@@ -57,7 +57,7 @@ export const config: WebdriverIO.Config = {
   ],
   maxInstances: 10,
   capabilities: caps,
-  services: ['appium'],
+  services: [['appium', { command: 'appium' }]],
   logLevel: 'error',
   bail: 0,
   waitforTimeout: 10000,
