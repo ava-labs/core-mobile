@@ -126,11 +126,33 @@ export const useActivityFilterAndSearch = ({
   const filters: DropdownGroup[] | undefined = useMemo(() => {
     if (selectedNetwork?.chainId) {
       const newFilters = [...(TOKEN_DETAIL_FILTERS[0]?.items ?? [])]
-      // Stake filter is only available for P-Chain
-      if (isPChain(selectedNetwork?.chainId)) {
+
+      if (isXpChain) {
         newFilters.push({
-          id: TokenDetailFilter.Stake,
-          title: TokenDetailFilter.Stake
+          id: TokenDetailFilter.Imported,
+          title: TokenDetailFilter.Imported
+        })
+        newFilters.push({
+          id: TokenDetailFilter.Exported,
+          title: TokenDetailFilter.Exported
+        })
+
+        // Stake filter is only available for P-Chain
+        if (isPChain(selectedNetwork?.chainId)) {
+          newFilters.push({
+            id: TokenDetailFilter.Stake,
+            title: TokenDetailFilter.Stake
+          })
+        }
+      } else {
+        // Swap and Bridge are only available for non-Xp chains
+        newFilters.push({
+          id: TokenDetailFilter.Swap,
+          title: TokenDetailFilter.Swap
+        })
+        newFilters.push({
+          id: TokenDetailFilter.Bridge,
+          title: TokenDetailFilter.Bridge
         })
       }
 
@@ -141,6 +163,7 @@ export const useActivityFilterAndSearch = ({
           title: TokenDetailFilter.NFT
         })
       }
+
       return [
         {
           key: 'token-detail-filters',
@@ -148,7 +171,7 @@ export const useActivityFilterAndSearch = ({
         }
       ]
     }
-  }, [selectedNetwork?.chainId])
+  }, [isXpChain, selectedNetwork?.chainId])
 
   const { data, filter, sort, resetFilter } = useTokenDetailFilterAndSort({
     transactions: transactionsBySymbol,
@@ -189,11 +212,17 @@ export const useActivityFilterAndSearch = ({
   ])
 
   useEffect(() => {
-    // In case the user is searching and the filter is not the default one, reset the filter
+    // In case the user is changing the network,
+    // reset the filter if the selected filter is not in the new filters list
+    if (!filters?.some(f => f.items.find(i => filter.selected === i.id))) {
+      resetFilter()
+    }
+
+    // In case the user is searching we want to keep the default filter (All)
     if (searchText.length > 0 && filter.selected !== TokenDetailFilter.All) {
       resetFilter()
     }
-  }, [filter.selected, resetFilter, searchText.length])
+  }, [filter.selected, filters, resetFilter, searchText.length])
 
   const combinedData = useMemo(() => {
     const filteredPendingBridgeTxs = pendingBridgeTxs.toSorted(

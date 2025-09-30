@@ -1,13 +1,13 @@
-import { useCallback, useMemo, useState } from 'react'
-import { Transaction } from 'store/transaction'
 import {
   PChainTransactionType,
   TransactionType
 } from '@avalabs/vm-module-types'
-import { sortUndefined } from 'common/utils/sortUndefined'
-import { DropdownSelection } from 'common/types'
-import { isCollectibleTransaction } from 'features/activity/utils'
 import { DropdownGroup } from 'common/components/DropdownMenu'
+import { DropdownSelection } from 'common/types'
+import { sortUndefined } from 'common/utils/sortUndefined'
+import { isCollectibleTransaction } from 'features/activity/utils'
+import { useCallback, useMemo, useState } from 'react'
+import { Transaction } from 'store/transaction'
 import { fixUnknownTxType } from '../components/TokenActivityListItem'
 
 export const useTokenDetailFilterAndSort = ({
@@ -33,12 +33,17 @@ export const useTokenDetailFilterAndSort = ({
     setSelectedFilter(TokenDetailFilter.All)
   }, [])
 
+  // eslint-disable-next-line sonarjs/cognitive-complexity
   const getFiltered = useCallback(() => {
     if (transactions.length === 0) {
       return []
     }
     return transactions.filter(tx => {
       switch (selectedFilter) {
+        case TokenDetailFilter.Imported:
+          return tx.txType === PChainTransactionType.IMPORT_TX
+        case TokenDetailFilter.Exported:
+          return tx.txType === PChainTransactionType.EXPORT_TX
         case TokenDetailFilter.Stake:
           return (
             tx.txType === PChainTransactionType.ADD_PERMISSIONLESS_DELEGATOR_TX
@@ -46,11 +51,17 @@ export const useTokenDetailFilterAndSort = ({
         case TokenDetailFilter.NFT:
           return isCollectibleTransaction(tx)
         case TokenDetailFilter.Received:
+          if (tx.txType === PChainTransactionType.BASE_TX) {
+            return tx.isIncoming
+          }
           if (isCollectibleTransaction(tx)) {
             return !tx.isSender
           }
           return fixUnknownTxType(tx) === TransactionType.RECEIVE
         case TokenDetailFilter.Sent:
+          if (tx.txType === PChainTransactionType.BASE_TX) {
+            return tx.isOutgoing
+          }
           if (isCollectibleTransaction(tx)) {
             return tx.isSender
           }
@@ -150,7 +161,9 @@ export enum TokenDetailFilter {
   Bridge = 'Bridge',
   Swap = 'Swap',
   Stake = 'Stake',
-  NFT = 'NFT'
+  NFT = 'NFT',
+  Imported = 'Imported',
+  Exported = 'Exported'
 }
 
 export enum TokenDetailSort {
@@ -173,14 +186,6 @@ export const TOKEN_DETAIL_FILTERS: DropdownGroup[] = [
       {
         id: TokenDetailFilter.Received,
         title: TokenDetailFilter.Received
-      },
-      {
-        id: TokenDetailFilter.Swap,
-        title: TokenDetailFilter.Swap
-      },
-      {
-        id: TokenDetailFilter.Bridge,
-        title: TokenDetailFilter.Bridge
       }
     ]
   }

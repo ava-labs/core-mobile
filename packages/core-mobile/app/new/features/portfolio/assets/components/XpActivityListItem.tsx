@@ -1,8 +1,12 @@
 import { alpha, PriceChangeStatus, useTheme, View } from '@avalabs/k2-alpine'
+import {
+  PChainTransactionType,
+  TransactionType
+} from '@avalabs/vm-module-types'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
+import { useMarketTokenBySymbol } from 'common/hooks/useMarketTokenBySymbol'
 import React, { FC, useMemo } from 'react'
 import { Transaction } from 'store/transaction'
-import { useMarketTokenBySymbol } from 'common/hooks/useMarketTokenBySymbol'
 import ActivityListItem from './ActivityListItem'
 import { TransactionTypeIcon } from './TransactionTypeIcon'
 import { XPTokenActivityListItemTitle } from './XPTokenActivityListItemTitle'
@@ -31,6 +35,28 @@ export const XpActivityListItem: FC<Props> = ({
     symbol: tx.tokens[0]?.symbol
   })?.currentPrice
 
+  const txType = useMemo(() => {
+    if (tx.txType === PChainTransactionType.BASE_TX) {
+      if (tx.isIncoming) return TransactionType.RECEIVE
+      if (tx.isOutgoing) return TransactionType.SEND
+    }
+
+    return tx.txType
+  }, [tx])
+
+  const status = useMemo(() => {
+    if (tx.txType === PChainTransactionType.BASE_TX) {
+      if (tx.isIncoming) {
+        return PriceChangeStatus.Up
+      }
+      if (tx.isOutgoing) {
+        return PriceChangeStatus.Down
+      }
+    }
+
+    return PriceChangeStatus.Neutral
+  }, [tx])
+
   const formattedAmountInCurrency = useMemo(() => {
     const amount = Number(tx.tokens[0]?.amount.replaceAll(',', ''))
     if (!currentPrice || isNaN(amount)) {
@@ -57,12 +83,12 @@ export const XpActivityListItem: FC<Props> = ({
           borderColor
         }}>
         <TransactionTypeIcon
-          txType={tx.txType}
+          txType={txType}
           isContractCall={tx.isContractCall}
         />
       </View>
     )
-  }, [backgroundColor, borderColor, tx.isContractCall, tx.txType])
+  }, [backgroundColor, borderColor, tx.isContractCall, txType])
 
   return (
     <ActivityListItem
@@ -71,7 +97,7 @@ export const XpActivityListItem: FC<Props> = ({
       subtitleType="amountInToken"
       icon={transactionTypeIcon}
       onPress={onPress}
-      status={PriceChangeStatus.Neutral}
+      status={status}
       timestamp={tx.timestamp}
       showSeparator={showSeparator}
     />
