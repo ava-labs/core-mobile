@@ -13,7 +13,7 @@ const isBitrise = process.env.CI === 'true'
 const iosPath = isBitrise
   ? process.env.BITRISE_APP_DIR_PATH
   : path.resolve(
-      './ios/DerivedData/Build/Products/Debug-iphonesimulator/AvaxWallet.app'
+      '/Users/eunji.song/Downloads/AvaxWalletInternal.app'
     )
 const androidPath = isBitrise
   ? process.env.BITRISE_APK_PATH
@@ -35,19 +35,14 @@ const allCaps = [
     platformName: 'iOS',
     // 'appium:noReset': true,
     'appium:deviceName': 'iPhone 16 Pro',
+    'appium:waitForIdleTimeout': 0,
+    'appium:maxTypingFrequency': 30,
     'appium:platformVersion': '18.4',
+    'appium:wdaStartupRetries': 3,
     'appium:automationName': 'xcuitest',
     'appium:app': iosPath,
-    'appium:waitForIdleTimeout': 3,
-    'appium:maxTypingFrequency': 30,
-    'appium:reduceMotion': true,
-    'appium:newCommandTimeout': 300,
     'appium:autoAcceptAlerts': true,
-    'appium:autoDismissAlerts': true,
-    'appium:wdaStartupRetries': 3,
-    'appium:wdaStartupRetryInterval': 20000,
-    'appium:shouldUseSingletonTestManager': false,
-    'appium:usePrebuiltWDA': true
+    'appium:autoDismissAlerts': true
   }
 ]
 
@@ -65,9 +60,7 @@ export const config: WebdriverIO.Config = {
   ],
   maxInstances: 10,
   capabilities: caps,
-  hostname: '127.0.0.1',
-  port: 4723,
-  path: '/',
+  services: [['appium', { command: 'appium' }]],
   logLevel: 'error',
   bail: 0,
   waitforTimeout: 10000,

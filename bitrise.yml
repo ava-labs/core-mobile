@@ -910,13 +910,6 @@ workflows:
       opts:
         is_expand: false
     steps:
-    - script@1:
-        title: Run Appium server
-        inputs:
-        - content: |-
-            set -e
-            nohup npx appium --session-override &
-            echo "Appium started in background"
     - script-runner@0:
         title: Appium iOS testing
         no_output_timeout: 300
@@ -938,13 +931,6 @@ workflows:
       opts:
         is_expand: false
     steps:
-    - script@1:
-        title: Run Appium server
-        inputs:
-        - content: |-
-            set -e
-            nohup npx appium --session-override &
-            echo "Appium started in background"
     - script-runner@0:
         title: Appium Android testing
         no_output_timeout: 300
