@@ -161,38 +161,18 @@ workflows:
         - gradle_task: ":$ANDROID_MODULE:assembleInternalE2e"
         - project_location: $ANDROID_PROJECT_LOCATION
         - gradlew_path: $ANDROID_PROJECT_LOCATION/gradlew
-
         - cache_level: all
     - save-gradle-cache@1: {}
     - deploy-to-bitrise-io@2:
         inputs:
         - pipeline_intermediate_files: |-
-            $BITRISE_DEPLOY_DIR/app-internal-e2e-bitrise-signed.apk:BITRISE_APK_PATH
-            $BITRISE_DEPLOY_DIR/app-internal-e2e-androidTest-bitrise-signed.apk:BITRISE_TEST_APK_PATH	
+            $BITRISE_DEPLOY_DIR/app-internal-e2e.apk:BITRISE_APK_PATH
     - avd-manager@1.2:
         inputs:
         - api_level: "34"
         - emulator_id: emulator-5554
         - emulator_channel: "0"
         - create_command_flags: --sdcard 512M
-        - tag: default
-        - abi: x86_64
-        - profile: pixel_7_pro
-        inputs:
-        - variables: |-
-            TESTRAIL_PROJECT_ID=$TESTRAIL_PROJECT_ID
-            TESTRAIL_RUN_ID=$TESTRAIL_RUN_ID
-            TESTS_TO_RUN_GROUP_1=$TESTS_1
-            TESTS_TO_RUN_GROUP_2=$TESTS_2
-            TESTS_TO_RUN_GROUP_3=$TESTS_3
-            TESTS_TO_RUN_GROUP_4=$TESTS_4
-            BITRISE_TEST_APK_PATH=$BITRISE_TEST_APK_PATH
-            BITRISE_APK_PATH=$BITRISE_APK_PATH
-            IS_INTERNAL_BUILD=$IS_INTERNAL_BUILD
-        - api_level: "34"
-        - emulator_id: emulator-5554
-        - emulator_channel: "0"
-        - create_command_flags: --sdcard 2048M
         - tag: default
         - abi: x86_64
         - profile: pixel_7_pro
@@ -218,10 +198,8 @@ workflows:
         inputs:
         - artifact_sources: .*
         - pipeline_intermediate_files: |-
-            $BITRISE_DEPLOY_DIR/app-internal-e2e-bitrise-signed.apk:BITRISE_APK_PATH
-            $BITRISE_DEPLOY_DIR/app-internal-e2e-androidTest-bitrise-signed.apk:BITRISE_TEST_APK_PATH
+            $BITRISE_DEPLOY_DIR/app-internal-e2e.apk:BITRISE_APK_PATH
             $BITRISE_DEPLOY_DIR/AvaxWalletInternal.app:BITRISE_APP_DIR_PATH
-
   _pull_external_app_files:
     steps:
     - pull-intermediate-files@1:
@@ -918,7 +896,7 @@ workflows:
     - IS_EXTERNAL_BUILD: "true"
       opts:
         is_expand: false
-  appium-setup:
+  appium-ios-setup:
     before_run:
     - _install-and-set-env
     - _set-version
@@ -933,6 +911,33 @@ workflows:
     - IS_INTERNAL_BUILD: "true"
       opts:
         is_expand: false
+    steps:
+    - script-runner@0:
+        title: Appium iOS testing
+        no_output_timeout: 300
+        inputs:
+        - file_path: scripts/bitrise/appium/iosInternalE2e.sh
+  appium-android-setup:
+    before_run:
+    - _install-and-set-env
+    - _set-version
+    - _pull_app_files
+    envs:
+    - ENVIRONMENT: production
+      opts:
+        is_expand: false
+    - E2E: "true"
+      opts:
+        is_expand: false
+    - IS_INTERNAL_BUILD: "true"
+      opts:
+        is_expand: false
+    steps:
+    - script-runner@0:
+        title: Appium Android testing
+        no_output_timeout: 300
+        inputs:
+        - file_path: scripts/bitrise/appium/androidInternalE2e.sh
   ios-internal:
     before_run:
     - _install-and-set-env

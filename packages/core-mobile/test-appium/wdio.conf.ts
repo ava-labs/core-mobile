@@ -72,9 +72,6 @@ export const config: WebdriverIO.Config = {
 
   // hoook before: make or get testRun before test
   before: async () => {
-    console.log('before')
-    console.log(process.env.BITRISE_APP_DIR_PATH)
-    console.log('after')
     const platform = driver.isAndroid ? 'Android' : 'iOS'
     runId = await getTestRun(platform)
   },
