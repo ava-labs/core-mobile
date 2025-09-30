@@ -38,12 +38,16 @@ const allCaps = [
     'appium:platformVersion': '18.4',
     'appium:automationName': 'xcuitest',
     'appium:app': iosPath,
-    'appium:waitForIdleTimeout': 0,
+    'appium:waitForIdleTimeout': 3,
     'appium:maxTypingFrequency': 30,
     'appium:reduceMotion': true,
     'appium:newCommandTimeout': 300,
     'appium:autoAcceptAlerts': true,
-    'appium:autoDismissAlerts': true
+    'appium:autoDismissAlerts': true,
+    'appium:wdaStartupRetries': 3,
+    'appium:wdaStartupRetryInterval': 20000,
+    'appium:shouldUseSingletonTestManager': false,
+    'appium:usePrebuiltWDA': true
   }
 ]
 
