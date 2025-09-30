@@ -38,7 +38,7 @@ const allCaps = [
     'appium:platformVersion': '18.4',
     'appium:automationName': 'xcuitest',
     'appium:app': iosPath,
-    'appium:waitForIdleTimeout': 100,
+    'appium:waitForIdleTimeout': 0,
     'appium:maxTypingFrequency': 30,
     'appium:reduceMotion': true,
     'appium:newCommandTimeout': 300,

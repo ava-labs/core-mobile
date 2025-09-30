@@ -27,9 +27,6 @@ class TransactionsPage {
   }
 
   get amountToSendInput() {
-    if (driver.isIOS) {
-      return selectors.getByText(txLoc.amountToSend)
-    }
     return selectors.getById(txLoc.amountToSend)
   }
 
