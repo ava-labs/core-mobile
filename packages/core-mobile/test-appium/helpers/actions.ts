@@ -73,6 +73,7 @@ async function dismissKeyboard(id = 'Return') {
     await driver.hideKeyboard()
   }
   console.log('keyboard is dismissed')
+  await delay(1000)
 }
 
 async function getText(element: ChainablePromiseElement) {

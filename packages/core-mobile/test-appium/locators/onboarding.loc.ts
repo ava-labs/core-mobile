@@ -6,7 +6,7 @@ export default {
   letsGo: 'lets_go_btn',
   unlockBtn: 'Unlock',
   agreeAndContinue: 'agreeAndContinueBtn',
-  import: `Import`,
+  import: `import_btn`,
   enterPinSecondScreenTitle: 'Confirm your\nPIN code',
   enterPinFirstScreenTitle: 'Secure your wallet\nwith a PIN',
   pinInputField: 'pin_input',

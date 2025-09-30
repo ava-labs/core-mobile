@@ -26,8 +26,7 @@ const allCaps = [
       './android/app/build/outputs/apk/internal/debug/app-internal-debug.apk'
     ),
     'appium:appWaitActivity': '*',
-    'appium:autoGrantPermissions': true,
-    'wdio:autoGrantPermissions': true
+    'appium:autoGrantPermissions': true
   },
   {
     platformName: 'iOS',
@@ -36,6 +35,9 @@ const allCaps = [
     'appium:platformVersion': '18.4',
     'appium:automationName': 'xcuitest',
     'appium:app': iosPath,
+    'appium:waitForIdleTimeout': 100,
+    'appium:maxTypingFrequency': 30,
+    'appium:reduceMotion': true,
     'appium:newCommandTimeout': 300,
     'appium:autoAcceptAlerts': true,
     'appium:autoDismissAlerts': true

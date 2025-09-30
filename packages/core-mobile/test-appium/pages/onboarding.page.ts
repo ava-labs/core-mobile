@@ -33,7 +33,7 @@ class OnboardingPage {
   }
 
   get import() {
-    return selectors.getByText(onboardingLoc.import)
+    return selectors.getById(onboardingLoc.import)
   }
 
   get enterPinSecondScreenTitle() {
