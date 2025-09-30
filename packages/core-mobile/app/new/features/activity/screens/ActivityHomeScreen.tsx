@@ -13,6 +13,7 @@ import {
   CollapsibleTabsRef,
   OnTabChange
 } from 'common/components/CollapsibleTabs'
+import { useBottomTabBarHeight } from 'common/hooks/useBottomTabBarHeight'
 import { useFadingHeaderNavigation } from 'common/hooks/useFadingHeaderNavigation'
 import useInAppBrowser from 'common/hooks/useInAppBrowser'
 import { getSourceChainId } from 'common/utils/bridgeUtils'
@@ -35,11 +36,13 @@ import {
 import { useSelector } from 'react-redux'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { selectIsDeveloperMode } from 'store/settings/advanced/slice'
+import { getExplorerAddressByNetwork } from 'utils/getExplorerAddressByNetwork'
 import { ActivityScreen } from './ActivityScreen'
 
 const ActivityHomeScreen = (): JSX.Element => {
   const { navigate } = useRouter()
   const { theme } = useTheme()
+  const tabBarHeight = useBottomTabBarHeight()
   const insets = useSafeAreaInsets()
   const frame = useSafeAreaFrame()
 
@@ -156,9 +159,14 @@ const ActivityHomeScreen = (): JSX.Element => {
   const { openUrl } = useInAppBrowser()
 
   const handleExplorerLink = useCallback(
-    (explorerLink: string): void => {
+    (
+      explorerLink: string,
+      hash?: string,
+      hashType?: 'account' | 'tx'
+    ): void => {
       AnalyticsService.capture('ExplorerLinkClicked')
-      openUrl(explorerLink)
+      const url = getExplorerAddressByNetwork(explorerLink, hash, hashType)
+      openUrl(url)
     },
     [openUrl]
   )
@@ -182,11 +190,11 @@ const ActivityHomeScreen = (): JSX.Element => {
 
   const contentContainerStyle = useMemo(() => {
     return {
-      paddingBottom: 16,
+      paddingBottom: tabBarHeight + 16,
       paddingTop: 10,
       minHeight: tabHeight
     }
-  }, [tabHeight])
+  }, [tabBarHeight, tabHeight])
 
   const renderEmptyTabBar = useCallback((): JSX.Element => <></>, [])
 
