@@ -11,7 +11,7 @@ let runId: number | undefined
 const sectionCache: Record<string, number> = {}
 const isBitrise = process.env.CI === 'true'
 const iosPath = isBitrise
-  ? '/Users/vagrant/git/build/Build/Products/Release-iphonesimulator/AvaxWallet.app'
+  ? '/Users/vagrant/deploy/Build/Products/Release-iphonesimulator/AvaxWallet.app'
   : path.resolve(
       './ios/DerivedData/Build/Products/Debug-iphonesimulator/AvaxWallet.app'
     )
