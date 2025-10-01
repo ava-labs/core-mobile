@@ -253,6 +253,7 @@ class NotificationsService {
     if (detail?.notification?.id) {
       await this.cancelTriggerNotification(detail.notification.id)
     }
+    console.warn(JSON.stringify(detail, null, 2))
 
     if (detail?.notification?.data?.url) {
       const url = new URL(detail.notification?.data?.url as string)
