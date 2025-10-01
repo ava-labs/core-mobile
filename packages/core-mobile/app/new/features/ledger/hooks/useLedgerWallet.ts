@@ -71,7 +71,7 @@ export interface UseLedgerWalletReturn {
   isLoading: boolean
   setupProgress: SetupProgress | null
   transportState: LedgerTransportState
-  
+
   // Key states and methods
   keys: {
     solanaKeys: Array<{
@@ -87,14 +87,24 @@ export interface UseLedgerWalletReturn {
     bitcoinAddress: string
     xpAddress: string
   }
-  
+
   // Methods
   scanForDevices: () => Promise<void>
   connectToDevice: (deviceId: string) => Promise<void>
   disconnectDevice: () => Promise<void>
   getSolanaKeys: () => Promise<void>
   getAvalancheKeys: () => Promise<void>
-  getLedgerLiveKeys: (accountCount?: number, progressCallback?: (step: string, progress: number, totalSteps: number) => void) => Promise<{ avalancheKeys: { evm: string; avalanche: string; pvm: string; } | null; individualKeys: Array<{ key: string; derivationPath: string; curve: Curve; }>; }>
+  getLedgerLiveKeys: (
+    accountCount?: number,
+    progressCallback?: (
+      step: string,
+      progress: number,
+      totalSteps: number
+    ) => void
+  ) => Promise<{
+    avalancheKeys: { evm: string; avalanche: string; pvm: string } | null
+    individualKeys: Array<{ key: string; derivationPath: string; curve: Curve }>
+  }>
   resetKeys: () => void
   createLedgerWallet: (options: WalletCreationOptions) => Promise<string>
 }
@@ -389,7 +399,7 @@ export function useLedgerWallet(): UseLedgerWalletReturn {
         const individualKeys: Array<{
           key: string
           derivationPath: string
-          curve: string
+          curve: Curve
         }> = []
         let avalancheKeysResult: LedgerKeys['avalancheKeys'] = null
 
@@ -433,7 +443,7 @@ export function useLedgerWallet(): UseLedgerWalletReturn {
             individualKeys.push({
               key: evmPublicKey.key,
               derivationPath: DERIVATION_PATHS.LEDGER_LIVE.EVM(accountIndex),
-              curve: evmPublicKey.curve
+              curve: evmPublicKey.curve as Curve
             })
           }
 
@@ -442,7 +452,7 @@ export function useLedgerWallet(): UseLedgerWalletReturn {
               key: avmPublicKey.key,
               derivationPath:
                 DERIVATION_PATHS.LEDGER_LIVE.AVALANCHE(accountIndex),
-              curve: avmPublicKey.curve
+              curve: avmPublicKey.curve as Curve
             })
           }
 
