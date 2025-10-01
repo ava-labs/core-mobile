@@ -17,7 +17,6 @@ export async function unsubscribeAllNotifications(): Promise<void> {
     }),
     unsubscribeForPriceAlert()
   ])
-
   if (result.some(r => r.status === 'rejected')) {
     //as fallback invalidate token so user doesn't get notifications
     await messaging().deleteToken()

@@ -32,6 +32,5 @@ export async function setPriceAlertSubscriptions(
       `[setPriceAlertSubscriptions] Failed to set token subscriptions:`,
       error
     )
-    throw error
   }
 }
