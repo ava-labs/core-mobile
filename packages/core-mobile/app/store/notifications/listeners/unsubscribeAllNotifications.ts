@@ -20,10 +20,7 @@ export async function unsubscribeAllNotifications(): Promise<void> {
   ])
 
   AnalyticsService.capture('PushNotificationUnsubscribed', {
-    channelType: 'all',
-    reason: result.some(r => r.status === 'rejected')
-      ? 'partial_failure'
-      : 'success'
+    channelType: 'all'
   })
 
   if (result.some(r => r.status === 'rejected')) {

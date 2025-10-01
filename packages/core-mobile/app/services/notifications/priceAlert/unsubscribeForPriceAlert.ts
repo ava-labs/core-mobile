@@ -7,18 +7,9 @@ export async function unsubscribeForPriceAlert(): Promise<void> {
   const fcmToken = await FCMService.getFCMToken()
   const deviceArn = await registerDeviceToNotificationSender(fcmToken)
 
-  try {
-    await setPriceAlertSubscriptions({ tokens: [], deviceArn })
+  await setPriceAlertSubscriptions({ tokens: [], deviceArn })
 
-    AnalyticsService.capture('PushNotificationUnsubscribed', {
-      channelType: 'price_alert',
-      reason: 'success'
-    })
-  } catch (error) {
-    AnalyticsService.capture('PushNotificationUnsubscribed', {
-      channelType: 'price_alert',
-      reason: 'failure'
-    })
-    throw error
-  }
+  AnalyticsService.capture('PushNotificationUnsubscribed', {
+    channelType: 'price_alert'
+  })
 }

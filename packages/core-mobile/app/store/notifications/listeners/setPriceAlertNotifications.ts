@@ -1,15 +1,15 @@
-import Logger from 'utils/Logger'
 import { AnyAction } from '@reduxjs/toolkit'
+import AnalyticsService from 'services/analytics/AnalyticsService'
+import FCMService from 'services/fcm/FCMService'
+import { ChannelId } from 'services/notifications/channels'
+import NotificationsService from 'services/notifications/NotificationsService'
+import { setPriceAlertSubscriptions } from 'services/notifications/priceAlert/setPriceAlertSubscriptions'
+import { unsubscribeForPriceAlert } from 'services/notifications/priceAlert/unsubscribeForPriceAlert'
+import { registerDeviceToNotificationSender } from 'services/notifications/registerDeviceToNotificationSender'
+import { selectNotificationSubscription } from 'store/notifications'
 import { AppListenerEffectAPI } from 'store/types'
 import { selectWatchlistFavoriteIds } from 'store/watchlist'
-import FCMService from 'services/fcm/FCMService'
-import { registerDeviceToNotificationSender } from 'services/notifications/registerDeviceToNotificationSender'
-import NotificationsService from 'services/notifications/NotificationsService'
-import { selectNotificationSubscription } from 'store/notifications'
-import { ChannelId } from 'services/notifications/channels'
-import { unsubscribeForPriceAlert } from 'services/notifications/priceAlert/unsubscribeForPriceAlert'
-import { setPriceAlertSubscriptions } from 'services/notifications/priceAlert/setPriceAlertSubscriptions'
-import AnalyticsService from 'services/analytics/AnalyticsService'
+import Logger from 'utils/Logger'
 
 export const setPriceAlertNotifications = async (
   _: AnyAction,
@@ -52,21 +52,15 @@ export const setPriceAlertNotifications = async (
       tokens,
       deviceArn
     })
-    AnalyticsService.capture('PushNotificationSubscribed', {
-      channelType: 'price_alert',
-      channelId: ChannelId.FAV_TOKEN_PRICE_ALERTS,
-      reason: 'success'
-    })
+
     Logger.info(
       `[TokenChange] Successfully subscribed to token price alerts for ${tokens.length} tokens`
     )
-  } catch (error) {
     AnalyticsService.capture('PushNotificationSubscribed', {
       channelType: 'price_alert',
-      channelId: ChannelId.FAV_TOKEN_PRICE_ALERTS,
-      reason: 'failure'
+      channelId: ChannelId.FAV_TOKEN_PRICE_ALERTS
     })
-
+  } catch (error) {
     // Handle specific APNS/FCM token errors gracefully
     Logger.error(`[setTokenSubscriptionsForFavorites]${error}`)
   }

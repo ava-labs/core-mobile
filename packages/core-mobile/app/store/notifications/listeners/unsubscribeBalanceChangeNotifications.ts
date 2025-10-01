@@ -8,17 +8,9 @@ export async function unsubscribeBalanceChangeNotifications(): Promise<void> {
 
   const deviceArn = await registerDeviceToNotificationSender(fcmToken)
 
-  try {
-    await unSubscribeForBalanceChange({ deviceArn })
-    AnalyticsService.capture('PushNotificationUnsubscribed', {
-      channelType: 'balance_change',
-      reason: 'success'
-    })
-  } catch (error) {
-    AnalyticsService.capture('PushNotificationUnsubscribed', {
-      channelType: 'balance_change',
-      reason: 'failure'
-    })
-    throw error
-  }
+  await unSubscribeForBalanceChange({ deviceArn })
+
+  AnalyticsService.capture('PushNotificationUnsubscribed', {
+    channelType: 'balance_change'
+  })
 }

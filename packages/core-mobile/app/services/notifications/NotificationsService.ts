@@ -254,7 +254,6 @@ class NotificationsService {
       await this.cancelTriggerNotification(detail.notification.id)
     }
 
-    // Track notification pressed
     if (detail?.notification?.data) {
       const data = detail.notification.data
       AnalyticsService.capture('PushNotificationPressed', {
@@ -277,7 +276,6 @@ class NotificationsService {
     switch (type) {
       case EventType.DELIVERED:
         await this.incrementBadgeCount(1)
-        // Track notification displayed
         if (detail?.notification?.data) {
           const data = detail.notification.data
           AnalyticsService.capture('PushNotificationDisplayed', {

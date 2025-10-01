@@ -27,18 +27,12 @@ export async function setPriceAlertSubscriptions(
       )
 
       AnalyticsService.capture('PushNotificationSubscribed', {
-        channelType: 'price_alert',
-        reason: 'success'
+        channelType: 'price_alert'
       })
     } else {
       throw new Error(`${response.status}:${response.statusText}`)
     }
   } catch (error) {
-    AnalyticsService.capture('PushNotificationSubscribed', {
-      channelType: 'price_alert',
-      reason: 'failure'
-    })
-
     Logger.error(
       `[setPriceAlertSubscriptions] Failed to set token subscriptions:`,
       error

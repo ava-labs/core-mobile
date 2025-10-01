@@ -52,31 +52,21 @@ export async function subscribeBalanceChangeNotifications(
     ChainId.AVALANCHE_TESTNET_ID.toString()
   ]
 
-  try {
-    const response = await subscribeForBalanceChange({
-      addresses,
-      chainIds,
-      deviceArn
-    })
+  const response = await subscribeForBalanceChange({
+    addresses,
+    chainIds,
+    deviceArn
+  })
 
-    if (response.message !== 'ok') {
-      Logger.error(
-        `[setupBalanceChangeNotifications.ts][setupBalanceChangeNotifications]${response.message}`
-      )
-      throw Error(response.message)
-    }
-
-    AnalyticsService.capture('PushNotificationSubscribed', {
-      channelType: 'balance_change',
-      channelId: ChannelId.BALANCE_CHANGES,
-      reason: 'success'
-    })
-  } catch (error) {
-    AnalyticsService.capture('PushNotificationSubscribed', {
-      channelType: 'balance_change',
-      channelId: ChannelId.BALANCE_CHANGES,
-      reason: 'failure'
-    })
-    throw error
+  if (response.message !== 'ok') {
+    Logger.error(
+      `[setupBalanceChangeNotifications.ts][setupBalanceChangeNotifications]${response.message}`
+    )
+    throw Error(response.message)
   }
+
+  AnalyticsService.capture('PushNotificationSubscribed', {
+    channelType: 'balance_change',
+    channelId: ChannelId.BALANCE_CHANGES
+  })
 }

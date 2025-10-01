@@ -66,7 +66,6 @@ class FCMService {
         return
       }
 
-      // Track notification received
       AnalyticsService.capture('PushNotificationReceived', {
         notificationType: result.data.data.type,
         event: result.data.data.event,
@@ -185,7 +184,6 @@ class FCMService {
         return
       }
 
-      // Track notification received in background (iOS)
       AnalyticsService.capture('PushNotificationReceived', {
         notificationType: result.data.data.type,
         event: result.data.data.event,

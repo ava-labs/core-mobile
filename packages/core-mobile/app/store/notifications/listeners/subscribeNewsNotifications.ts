@@ -54,35 +54,22 @@ export async function subscribeNewsNotifications(
   }
 
   //subscribe
-  try {
-    const response = await subscribeForNews({
-      deviceArn,
-      channelIds: enabledNewsNotifications
-    })
+  const response = await subscribeForNews({
+    deviceArn,
+    channelIds: enabledNewsNotifications
+  })
 
-    if (response.message !== 'ok') {
-      Logger.error(
-        `[subscribeNewsNotifications.ts][subscribeNewsNotifications]${response.message}`
-      )
-      throw Error(response.message)
-    }
-
-    enabledNewsNotifications.forEach(channelId => {
-      AnalyticsService.capture('PushNotificationSubscribed', {
-        channelType: 'news',
-        channelId: channelId,
-        reason: 'success'
-      })
-    })
-  } catch (error) {
-    // Track failed subscription for each channel
-    enabledNewsNotifications.forEach(channelId => {
-      AnalyticsService.capture('PushNotificationSubscribed', {
-        channelType: 'news',
-        channelId: channelId,
-        reason: 'failure'
-      })
-    })
-    throw error
+  if (response.message !== 'ok') {
+    Logger.error(
+      `[subscribeNewsNotifications.ts][subscribeNewsNotifications]${response.message}`
+    )
+    throw Error(response.message)
   }
+
+  enabledNewsNotifications.forEach(channelId => {
+    AnalyticsService.capture('PushNotificationSubscribed', {
+      channelType: 'news',
+      channelId: channelId
+    })
+  })
 }
