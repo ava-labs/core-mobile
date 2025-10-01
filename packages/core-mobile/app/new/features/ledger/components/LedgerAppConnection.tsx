@@ -3,7 +3,7 @@ import { View } from 'react-native'
 import { Text, Button, useTheme, Icons } from '@avalabs/k2-alpine'
 import { ScrollScreen } from 'common/components/ScrollScreen'
 import { LoadingState } from 'common/components/LoadingState'
-import { LedgerDerivationPathType } from 'services/wallet/LedgerWallet'
+import { LedgerDerivationPathType } from 'services/ledger/types'
 
 enum AppConnectionStep {
   AVALANCHE_CONNECT = 'avalanche-connect',
