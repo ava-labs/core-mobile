@@ -10,7 +10,7 @@ import notifee, {
   TriggerType
 } from '@notifee/react-native'
 import messaging from '@react-native-firebase/messaging'
-import { HandleNotificationCallback } from 'contexts/DeeplinkContext/types'
+import { ACTIONS, HandleNotificationCallback } from 'contexts/DeeplinkContext/types'
 import { fromUnixTime, isPast } from 'date-fns'
 import { Linking, Platform } from 'react-native'
 import AnalyticsService from 'services/analytics/AnalyticsService'
@@ -254,13 +254,21 @@ class NotificationsService {
       await this.cancelTriggerNotification(detail.notification.id)
     }
 
-    if (detail?.notification?.data) {
-      const data = detail.notification.data
-      AnalyticsService.capture('PushNotificationPressed', {
-        notificationType: String(data.type || 'unknown'),
-        event: String(data.event || 'unknown'),
-        channelId: data.channelId ? String(data.channelId) : undefined
-      })
+    if (detail?.notification?.data?.url) {
+      const url = new URL(detail.notification?.data?.url as string)
+      const { host } = url
+      if (host === ACTIONS.WatchList) {
+        AnalyticsService.capture('PushNotificationPressed', {
+          channelId: ChannelId.FAV_TOKEN_PRICE_ALERTS
+        })
+      } else if (host === 'https') {
+        AnalyticsService.capture('PushNotificationPressed', {
+          // this could also be PRODUCT_ANNOUNCEMENTS or OFFERS_AND_PROMOTIONS
+          // if they are just deeplinks with url core://https://...
+          // but for simplicity we are using MARKET_NEWS
+          channelId: ChannelId.MARKET_NEWS
+        })
+      }
     }
 
     callback(detail?.notification?.data)
