@@ -237,10 +237,6 @@ class FCMService {
         result.data.data
       )
 
-      AnalyticsService.capture('PushNotificationReceived', {
-        channelId: notificationData.channelId
-      })
-
       await NotificationsService.displayNotification(notificationData).catch(
         Logger.error
       )
