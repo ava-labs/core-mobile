@@ -24,12 +24,16 @@ type Props = {
   onSuccess: (data: string) => void
   vibrate?: boolean
   sx?: SxProp
+  onCameraPermissionGranted?: (granted: boolean) => void
+  paused?: boolean
 }
 
 export const QrCodeScanner = ({
   onSuccess,
   vibrate = false,
-  sx
+  sx,
+  onCameraPermissionGranted,
+  paused = false
 }: Props): React.JSX.Element | undefined => {
   const {
     theme: { colors }
@@ -40,20 +44,27 @@ export const QrCodeScanner = ({
   )
   const [data, setData] = useState<string>()
 
-  const handleSuccess = (scanningResult: BarcodeScanningResult): void => {
-    // expo-camera's onBarcodeScanned callback is not debounced, so we need to debounce it ourselves
-    setData(scanningResult.data)
-  }
+  useEffect(() => {
+    if (paused) {
+      setData(undefined)
+    }
+  }, [paused, setData])
 
   useEffect(() => {
-    if (data) {
+    if (data && !paused) {
       onSuccess(data)
 
       if (vibrate) {
         notificationAsync(NotificationFeedbackType.Success)
       }
     }
-  }, [data, onSuccess, vibrate])
+  }, [data, onSuccess, vibrate, paused])
+
+  const handleSuccess = (scanningResult: BarcodeScanningResult): void => {
+    if (paused) return
+    // expo-camera's onBarcodeScanned callback is not debounced, so we need to debounce it ourselves
+    setData(scanningResult.data)
+  }
 
   const checkIosPermission = useCallback(async () => {
     if (
@@ -191,6 +202,12 @@ export const QrCodeScanner = ({
       </>
     )
   }, [colors.$textDanger])
+
+  useEffect(() => {
+    if (onCameraPermissionGranted) {
+      onCameraPermissionGranted(cameraPermissionGranted)
+    }
+  }, [cameraPermissionGranted, onCameraPermissionGranted])
 
   if (cameraPermissionPending) return <View sx={containerStyle} />
 
