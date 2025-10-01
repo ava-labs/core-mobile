@@ -1,6 +1,7 @@
-import { AppListenerEffectAPI } from 'store/types'
+import AnalyticsService from 'services/analytics/AnalyticsService'
 import { notificationChannels } from 'services/notifications/channels'
 import NotificationsService from 'services/notifications/NotificationsService'
+import { AppListenerEffectAPI } from 'store/types'
 import { setNotificationSubscriptions } from '../slice'
 
 export const handleTurnOnAllNotifications = async (
@@ -19,4 +20,6 @@ export const handleTurnOnAllNotifications = async (
   if (hasBlockedNotifications) {
     NotificationsService.openSystemSettings()
   }
+
+  AnalyticsService.capture('PushNotificationAccepted')
 }

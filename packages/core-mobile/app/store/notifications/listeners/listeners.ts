@@ -51,9 +51,6 @@ export const addNotificationsListeners = (
         listenerApi,
         action.payload.channelId
       ).catch(Logger.error)
-      AnalyticsService.capture('PushNotificationSubscribed', {
-        channelId: action.payload.channelId
-      })
     }
   })
 
@@ -61,9 +58,6 @@ export const addNotificationsListeners = (
     actionCreator: turnOffNotificationsFor,
     effect: async (action: AnyAction, listenerApi) => {
       await handleTurnOffNotificationsFor(listenerApi, action.payload.channelId)
-      AnalyticsService.capture('PushNotificationUnsubscribed', {
-        channelId: action.payload.channelId
-      })
     }
   })
 
@@ -71,7 +65,6 @@ export const addNotificationsListeners = (
     actionCreator: turnOnAllNotifications,
     effect: async (_, listenerApi) => {
       await handleTurnOnAllNotifications(listenerApi).catch(Logger.error)
-      AnalyticsService.capture('PushNotificationAccepted')
     }
   })
 

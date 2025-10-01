@@ -79,10 +79,6 @@ class FCMService {
           ? this.#prepareDataOnlyNotificationData(result.data.data)
           : this.#prepareNotificationData(result.data)
 
-      AnalyticsService.capture('PushNotificationReceived', {
-        channelId: notificationData.channelId
-      })
-
       await NotificationsService.displayNotification(notificationData).catch(
         Logger.error
       )
@@ -211,9 +207,12 @@ class FCMService {
           })
       })
 
-      AnalyticsService.capture('PushNotificationReceived', {
-        channelId: notificationData.channelId
-      })
+      if (notificationData.data) {
+        AnalyticsService.capture('PushNotificationPressed', {
+          channelId: notificationData.data?.channelId as string,
+          deeplinkUrl: notificationData.data?.url as string
+        })
+      }
     })
   }
 
