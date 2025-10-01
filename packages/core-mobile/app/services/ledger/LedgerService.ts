@@ -1,4 +1,5 @@
 import TransportBLE from '@ledgerhq/react-native-hw-transport-ble'
+import Transport from '@ledgerhq/hw-transport'
 import AppAvalanche from '@avalabs/hw-app-avalanche'
 import AppSolana from '@ledgerhq/hw-app-solana'
 import { NetworkVMType } from '@avalabs/core-chains-sdk'
@@ -17,49 +18,14 @@ import {
   getSolanaDerivationPath
 } from 'new/features/ledger/consts'
 import { assertNotNull } from 'utils/assertions'
-
-export interface AddressInfo {
-  id: string
-  address: string
-  derivationPath: string
-  network: string
-}
-
-export interface ExtendedPublicKey {
-  path: string
-  key: string
-  chainCode: string
-}
-
-export interface PublicKeyInfo {
-  key: string
-  derivationPath: string
-  curve: 'secp256k1' | 'ed25519'
-}
-
-export enum LedgerAppType {
-  AVALANCHE = 'Avalanche',
-  SOLANA = 'Solana',
-  ETHEREUM = 'Ethereum',
-  UNKNOWN = 'Unknown'
-}
-
-export const LedgerReturnCode = {
-  SUCCESS: 0x9000,
-  USER_REJECTED: 0x6985,
-  APP_NOT_OPEN: 0x6a80,
-  DEVICE_LOCKED: 0x5515,
-  INVALID_PARAMETER: 0x6b00,
-  COMMAND_NOT_ALLOWED: 0x6986
-} as const
-
-export type LedgerReturnCodeType =
-  typeof LedgerReturnCode[keyof typeof LedgerReturnCode]
-
-export interface AppInfo {
-  applicationName: string
-  version: string
-}
+import {
+  AddressInfo,
+  ExtendedPublicKey,
+  PublicKeyInfo,
+  LedgerAppType,
+  LedgerReturnCode,
+  AppInfo
+} from './types'
 
 export class LedgerService {
   #transport: TransportBLE | null = null
@@ -145,7 +111,7 @@ export class LedgerService {
 
   // Get current app info from device
   private async getCurrentAppInfo(): Promise<AppInfo> {
-    return await getLedgerAppInfo(this.transport as any)
+    return await getLedgerAppInfo(this.transport as Transport)
   }
 
   // Map app name to our enum
@@ -241,7 +207,7 @@ export class LedgerService {
     Logger.info('Avalanche app detected, creating app instance...')
 
     // Create Avalanche app instance
-    const avalancheApp = new AppAvalanche(this.transport as any)
+    const avalancheApp = new AppAvalanche(this.transport as Transport)
     Logger.info('Avalanche app instance created')
 
     try {
@@ -361,7 +327,7 @@ export class LedgerService {
     try {
       // Create fresh Solana app instance
       const transport = await this.getTransport()
-      const solanaApp = new AppSolana(transport as any)
+      const solanaApp = new AppSolana(transport as Transport)
       // Try to get a simple address to check if app is open
       // Use a standard Solana derivation path
       const testPath = "m/44'/501'/0'"
@@ -377,7 +343,7 @@ export class LedgerService {
   async getSolanaAddress(derivationPath: string): Promise<{ address: Buffer }> {
     await this.waitForApp(LedgerAppType.SOLANA)
     const transport = await this.getTransport()
-    const solanaApp = new AppSolana(transport as any)
+    const solanaApp = new AppSolana(transport as Transport)
     return await solanaApp.getAddress(derivationPath, false)
   }
 
@@ -388,7 +354,7 @@ export class LedgerService {
   ): Promise<PublicKeyInfo[]> {
     // Create a fresh AppSolana instance for each call (like the SDK does)
     const transport = await this.getTransport()
-    const freshSolanaApp = new AppSolana(transport as any)
+    const freshSolanaApp = new AppSolana(transport as Transport)
     const publicKeys: PublicKeyInfo[] = []
 
     try {
@@ -430,7 +396,7 @@ export class LedgerService {
       // Use the SDK function directly (like the extension does)
       const publicKey = await getSolanaPublicKeyFromLedger(
         startIndex,
-        this.transport as any
+        this.transport as Transport
       )
 
       const publicKeys: PublicKeyInfo[] = [
@@ -493,7 +459,7 @@ export class LedgerService {
     await this.waitForApp(LedgerAppType.AVALANCHE)
 
     // Create Avalanche app instance
-    const avalancheApp = new AppAvalanche(this.transport as any)
+    const avalancheApp = new AppAvalanche(this.transport as Transport)
 
     const publicKeys: PublicKeyInfo[] = []
 
@@ -563,7 +529,7 @@ export class LedgerService {
     await this.waitForApp(LedgerAppType.AVALANCHE)
 
     // Create Avalanche app instance
-    const avalancheApp = new AppAvalanche(this.transport as any)
+    const avalancheApp = new AppAvalanche(this.transport as Transport)
 
     const addresses: AddressInfo[] = []
 

@@ -2,7 +2,7 @@ import React, { useState, useCallback } from 'react'
 import { View } from 'react-native'
 import { Text, Button, useTheme, GroupList, Icons } from '@avalabs/k2-alpine'
 import { ScrollScreen } from 'common/components/ScrollScreen'
-import { LedgerDerivationPathType } from 'services/wallet/LedgerWallet'
+import { LedgerDerivationPathType } from 'services/ledger/types'
 
 interface DerivationPathOption {
   type: LedgerDerivationPathType

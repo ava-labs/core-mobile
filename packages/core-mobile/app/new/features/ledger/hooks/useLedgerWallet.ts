@@ -2,10 +2,11 @@ import { useState, useCallback, useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { Alert, Platform, PermissionsAndroid } from 'react-native'
 import TransportBLE from '@ledgerhq/react-native-hw-transport-ble'
+import Transport from '@ledgerhq/hw-transport'
 import AppSolana from '@ledgerhq/hw-app-solana'
 import bs58 from 'bs58'
-import LedgerService, { LedgerAppType } from 'services/ledger/LedgerService'
-import { LedgerDerivationPathType } from 'services/wallet/LedgerWallet'
+import LedgerService from 'services/ledger/LedgerService'
+import { LedgerAppType, LedgerDerivationPathType } from 'services/ledger/types'
 import { ChainName } from 'services/network/consts'
 import { WalletType } from 'services/wallet/types'
 import { AppThunkDispatch } from 'store/types'
@@ -24,7 +25,7 @@ import {
   LedgerDevice,
   LedgerTransportState,
   LedgerKeys
-} from '../types'
+} from 'services/ledger/types'
 
 export interface UseLedgerWalletReturn {
   // Connection state
@@ -267,7 +268,7 @@ export function useLedgerWallet(): UseLedgerWalletReturn {
 
       // Get address directly from Solana app
       const transport = await LedgerService.getTransport()
-      const solanaApp = new AppSolana(transport as any)
+      const solanaApp = new AppSolana(transport as Transport)
       const derivationPath = SOLANA_DERIVATION_PATH
       const result = await solanaApp.getAddress(derivationPath, false)
 

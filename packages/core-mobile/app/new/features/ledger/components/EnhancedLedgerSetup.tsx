@@ -3,11 +3,11 @@ import { View, Alert } from 'react-native'
 import { Text, Button, useTheme, GroupList, Icons } from '@avalabs/k2-alpine'
 import { ScrollScreen } from 'common/components/ScrollScreen'
 import { LoadingState } from 'common/components/LoadingState'
-import { LedgerDerivationPathType } from 'services/wallet/LedgerWallet'
 import {
-  useLedgerWallet,
+  LedgerDerivationPathType,
   WalletCreationOptions
-} from '../hooks/useLedgerWallet'
+} from 'services/ledger/types'
+import { useLedgerWallet } from '../hooks/useLedgerWallet'
 import { DerivationPathSelector } from './DerivationPathSelector'
 import { LedgerSetupProgress } from './LedgerSetupProgress'
 import { LedgerAppConnection } from './LedgerAppConnection'

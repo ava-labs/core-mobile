@@ -21,13 +21,18 @@ import {
 import AppAvax from '@avalabs/hw-app-avalanche'
 import AppSolana from '@ledgerhq/hw-app-solana'
 import TransportBLE from '@ledgerhq/react-native-hw-transport-ble'
+import Transport from '@ledgerhq/hw-transport'
 import { networks } from 'bitcoinjs-lib'
 import bs58 from 'bs58'
 import { TransactionRequest } from 'ethers'
 import { now } from 'moment'
 import { getBitcoinProvider } from 'services/network/utils/providerUtils'
 import LedgerService from 'services/ledger/LedgerService'
-import { LedgerAppType } from 'services/ledger/LedgerService'
+import {
+  LedgerAppType,
+  LedgerDerivationPathType,
+  LedgerWalletData
+} from 'services/ledger/types'
 import {
   LEDGER_TIMEOUTS,
   getSolanaDerivationPath
@@ -44,51 +49,7 @@ import {
 } from './types'
 import { getAddressDerivationPath } from './utils'
 
-// Define the derivation path type as an enum for type safety
-export enum LedgerDerivationPathType {
-  BIP44 = 'BIP44',
-  LedgerLive = 'LedgerLive'
-}
-
-// Base interface for common wallet data
-interface BaseLedgerWalletData {
-  deviceId: string
-  vmType: NetworkVMType
-  transport?: TransportBLE // Optional for backward compatibility
-  publicKeys: Array<{
-    key: string
-    derivationPath: string
-    curve: Curve
-    btcWalletPolicy?: {
-      hmacHex: string
-      xpub: string
-      masterFingerprint: string
-      name: string
-    }
-  }>
-}
-
-// BIP44 specific wallet data
-interface BIP44LedgerWalletData extends BaseLedgerWalletData {
-  derivationPathSpec: LedgerDerivationPathType.BIP44
-  derivationPath: string
-  // Extended keys required for BIP44
-  extendedPublicKeys: {
-    evm: string
-    avalanche: string
-  }
-}
-
-// Ledger Live specific wallet data
-interface LedgerLiveWalletData extends BaseLedgerWalletData {
-  derivationPathSpec: LedgerDerivationPathType.LedgerLive
-  derivationPath: string
-  // No extended keys for Ledger Live
-  extendedPublicKeys?: never
-}
-
-// Union type for all possible Ledger wallet data
-export type LedgerWalletData = BIP44LedgerWalletData | LedgerLiveWalletData
+// Types are now imported from services/ledger/types
 
 export class LedgerWallet implements Wallet {
   private deviceId: string
@@ -159,7 +120,7 @@ export class LedgerWallet implements Wallet {
         // constructor(accountIndex, transport, derivationSpec, provider?)
         this.evmSigner = new LedgerSigner(
           targetAccountIndex,
-          transport as any,
+          transport as Transport,
           (this.derivationPathSpec || 'BIP44') as any,
           provider
         )
@@ -282,7 +243,7 @@ export class LedgerWallet implements Wallet {
         Buffer.from(this.deviceId, 'hex'), // publicKey - using deviceId as placeholder, should be actual public key
         this.derivationPath,
         bitcoinProvider, // provider - BitcoinProviderAbstract
-        transport as any, // transport
+        transport as Transport, // transport
         walletPolicyDetails as any // Use actual wallet policy details or null if not available
       )
 
@@ -569,7 +530,7 @@ export class LedgerWallet implements Wallet {
     Logger.info('Got transport')
 
     // Create Avalanche app instance
-    const avaxApp = new AppAvax(transport as any) // Type compatibility issue with different @ledgerhq versions
+    const avaxApp = new AppAvax(transport as Transport) // Type compatibility issue with different @ledgerhq versions
     Logger.info('Created Avalanche app instance')
 
     try {
@@ -738,7 +699,7 @@ export class LedgerWallet implements Wallet {
     Logger.info('Got transport')
 
     // Create AppSolana instance
-    const solanaApp = new AppSolana(transport as any)
+    const solanaApp = new AppSolana(transport as Transport)
     Logger.info('Created AppSolana instance')
 
     try {

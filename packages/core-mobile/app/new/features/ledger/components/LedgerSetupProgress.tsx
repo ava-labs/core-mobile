@@ -1,8 +1,8 @@
 import React from 'react'
 import { View, ActivityIndicator, TouchableOpacity } from 'react-native'
 import { Text, useTheme } from '@avalabs/k2-alpine'
-import { LedgerDerivationPathType } from 'services/wallet/LedgerWallet'
-import { SetupProgress } from '../hooks/useLedgerWallet'
+import { LedgerDerivationPathType } from 'services/ledger/types'
+import { SetupProgress } from 'services/ledger/types'
 
 interface LedgerSetupProgressProps {
   progress: SetupProgress
