@@ -32,7 +32,7 @@ async function verifyElementText(
   assert.equal(eleText, targetText, `"${eleText}" !== "${targetText}"`)
 }
 
-async function waitFor(element: ChainablePromiseElement, timeout = 10000) {
+async function waitFor(element: ChainablePromiseElement, timeout = 20000) {
   await element.waitForDisplayed({ timeout })
 }
 
@@ -60,6 +60,7 @@ async function isEnabled(element: ChainablePromiseElement, targetBool = true) {
 }
 
 async function tap(element: ChainablePromiseElement) {
+  await waitFor(element)
   await element.waitForEnabled()
   await element.tap()
 }
