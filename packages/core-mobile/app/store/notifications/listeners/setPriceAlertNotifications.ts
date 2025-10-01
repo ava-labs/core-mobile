@@ -9,6 +9,7 @@ import { selectNotificationSubscription } from 'store/notifications'
 import { ChannelId } from 'services/notifications/channels'
 import { unsubscribeForPriceAlert } from 'services/notifications/priceAlert/unsubscribeForPriceAlert'
 import { setPriceAlertSubscriptions } from 'services/notifications/priceAlert/setPriceAlertSubscriptions'
+import AnalyticsService from 'services/analytics/AnalyticsService'
 
 export const setPriceAlertNotifications = async (
   _: AnyAction,
@@ -51,10 +52,21 @@ export const setPriceAlertNotifications = async (
       tokens,
       deviceArn
     })
+    AnalyticsService.capture('PushNotificationSubscribed', {
+      channelType: 'price_alert',
+      channelId: ChannelId.FAV_TOKEN_PRICE_ALERTS,
+      reason: 'success'
+    })
     Logger.info(
       `[TokenChange] Successfully subscribed to token price alerts for ${tokens.length} tokens`
     )
   } catch (error) {
+    AnalyticsService.capture('PushNotificationSubscribed', {
+      channelType: 'price_alert',
+      channelId: ChannelId.FAV_TOKEN_PRICE_ALERTS,
+      reason: 'failure'
+    })
+
     // Handle specific APNS/FCM token errors gracefully
     Logger.error(`[setTokenSubscriptionsForFavorites]${error}`)
   }

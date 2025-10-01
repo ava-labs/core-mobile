@@ -10,13 +10,11 @@ export async function unsubscribeForPriceAlert(): Promise<void> {
   try {
     await setPriceAlertSubscriptions({ tokens: [], deviceArn })
 
-    // Track successful unsubscribe
     AnalyticsService.capture('PushNotificationUnsubscribed', {
       channelType: 'price_alert',
       reason: 'success'
     })
   } catch (error) {
-    // Track failed unsubscribe
     AnalyticsService.capture('PushNotificationUnsubscribed', {
       channelType: 'price_alert',
       reason: 'failure'

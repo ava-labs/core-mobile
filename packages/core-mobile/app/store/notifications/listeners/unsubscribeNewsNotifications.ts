@@ -13,7 +13,6 @@ export async function unsubscribeNewsNotifications({
   const deviceArn = await registerDeviceToNotificationSender(fcmToken)
   try {
     await unSubscribeForNews({ deviceArn, channelIds })
-    // Track successful unsubscribe for each channel
     channelIds.forEach(channelId => {
       AnalyticsService.capture('PushNotificationUnsubscribed', {
         channelType: 'news',
@@ -22,7 +21,6 @@ export async function unsubscribeNewsNotifications({
       })
     })
   } catch (error) {
-    // Track failed unsubscribe
     channelIds.forEach(channelId => {
       AnalyticsService.capture('PushNotificationUnsubscribed', {
         channelType: 'news',

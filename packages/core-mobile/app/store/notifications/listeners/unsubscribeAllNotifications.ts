@@ -19,7 +19,6 @@ export async function unsubscribeAllNotifications(): Promise<void> {
     unsubscribeForPriceAlert()
   ])
 
-  // Track unsubscribe event
   AnalyticsService.capture('PushNotificationUnsubscribed', {
     channelType: 'all',
     reason: result.some(r => r.status === 'rejected')

@@ -6,6 +6,7 @@ import Logger from 'utils/Logger'
 import NotificationsService from 'services/notifications/NotificationsService'
 import { NewsChannelId } from 'services/notifications/channels'
 import { subscribeForNews } from 'services/notifications/news/subscribeForNews'
+import AnalyticsService from 'services/analytics/AnalyticsService'
 import { selectEnabledNewsNotificationSubscriptions } from '../slice'
 import { unsubscribeNewsNotifications } from './unsubscribeNewsNotifications'
 
@@ -53,14 +54,35 @@ export async function subscribeNewsNotifications(
   }
 
   //subscribe
-  const response = await subscribeForNews({
-    deviceArn,
-    channelIds: enabledNewsNotifications
-  })
-  if (response.message !== 'ok') {
-    Logger.error(
-      `[subscribeNewsNotifications.ts][subscribeNewsNotifications]${response.message}`
-    )
-    throw Error(response.message)
+  try {
+    const response = await subscribeForNews({
+      deviceArn,
+      channelIds: enabledNewsNotifications
+    })
+
+    if (response.message !== 'ok') {
+      Logger.error(
+        `[subscribeNewsNotifications.ts][subscribeNewsNotifications]${response.message}`
+      )
+      throw Error(response.message)
+    }
+
+    enabledNewsNotifications.forEach(channelId => {
+      AnalyticsService.capture('PushNotificationSubscribed', {
+        channelType: 'news',
+        channelId: channelId,
+        reason: 'success'
+      })
+    })
+  } catch (error) {
+    // Track failed subscription for each channel
+    enabledNewsNotifications.forEach(channelId => {
+      AnalyticsService.capture('PushNotificationSubscribed', {
+        channelType: 'news',
+        channelId: channelId,
+        reason: 'failure'
+      })
+    })
+    throw error
   }
 }

@@ -10,13 +10,11 @@ export async function unsubscribeBalanceChangeNotifications(): Promise<void> {
 
   try {
     await unSubscribeForBalanceChange({ deviceArn })
-    // Track successful unsubscribe
     AnalyticsService.capture('PushNotificationUnsubscribed', {
       channelType: 'balance_change',
       reason: 'success'
     })
   } catch (error) {
-    // Track failed unsubscribe
     AnalyticsService.capture('PushNotificationUnsubscribed', {
       channelType: 'balance_change',
       reason: 'failure'

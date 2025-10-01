@@ -8,6 +8,7 @@ import { subscribeForBalanceChange } from 'services/notifications/balanceChange/
 import Logger from 'utils/Logger'
 import { ChannelId } from 'services/notifications/channels'
 import NotificationsService from 'services/notifications/NotificationsService'
+import AnalyticsService from 'services/analytics/AnalyticsService'
 import { selectNotificationSubscription } from '../slice'
 
 export async function subscribeBalanceChangeNotifications(
@@ -50,15 +51,32 @@ export async function subscribeBalanceChangeNotifications(
     ChainId.AVALANCHE_MAINNET_ID.toString(),
     ChainId.AVALANCHE_TESTNET_ID.toString()
   ]
-  const response = await subscribeForBalanceChange({
-    addresses,
-    chainIds,
-    deviceArn
-  })
-  if (response.message !== 'ok') {
-    Logger.error(
-      `[setupBalanceChangeNotifications.ts][setupBalanceChangeNotifications]${response.message}`
-    )
-    throw Error(response.message)
+
+  try {
+    const response = await subscribeForBalanceChange({
+      addresses,
+      chainIds,
+      deviceArn
+    })
+
+    if (response.message !== 'ok') {
+      Logger.error(
+        `[setupBalanceChangeNotifications.ts][setupBalanceChangeNotifications]${response.message}`
+      )
+      throw Error(response.message)
+    }
+
+    AnalyticsService.capture('PushNotificationSubscribed', {
+      channelType: 'balance_change',
+      channelId: ChannelId.BALANCE_CHANGES,
+      reason: 'success'
+    })
+  } catch (error) {
+    AnalyticsService.capture('PushNotificationSubscribed', {
+      channelType: 'balance_change',
+      channelId: ChannelId.BALANCE_CHANGES,
+      reason: 'failure'
+    })
+    throw error
   }
 }
