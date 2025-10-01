@@ -74,8 +74,12 @@ class TransactionsPage {
     await actions.tap(selectors.getById(`token_selector__${tokenName}`))
   }
 
-  async enterAmount(amount: string) {
-    await actions.type(this.amountToSendInput, amount)
+  async enterSendAmount(amount: string) {
+    if (driver.isIOS) {
+      await actions.tapNumberPad(amount)
+    } else {
+      await actions.type(this.amountToSendInput, amount)
+    }
   }
 
   async tapNextButton() {
@@ -99,7 +103,7 @@ class TransactionsPage {
       await this.goToSelectTokenList()
       await this.selectToken(token)
     }
-    await this.enterAmount(amount)
+    await this.enterSendAmount(amount)
     await this.tapNextButton()
     await this.tapApproveButton()
   }

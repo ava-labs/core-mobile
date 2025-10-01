@@ -11,7 +11,11 @@ async function type(element: ChainablePromiseElement, text: string | number) {
 async function tapNumberPad(keyCode: string) {
   for (const char of keyCode.split('')) {
     if (driver.isIOS) {
-      await selectors.getByText(char).click()
+      await selectors
+        .getByXpath(
+          `//*[contains(@name, 'UIKeyboardLayoutStar')]//*[@name='${char}']`
+        )
+        .click()
     } else {
       const num = 7 + parseInt(char, 10)
       await driver.pressKeyCode(num)
