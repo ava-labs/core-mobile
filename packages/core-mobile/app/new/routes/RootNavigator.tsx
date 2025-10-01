@@ -9,12 +9,15 @@ import { WalletState } from 'store/app/types'
 import { useSelector } from 'react-redux'
 import { selectIsReady, selectWalletState } from 'store/app/slice'
 import { PinScreenOverlay } from 'common/components/PinScreenOverlay'
+import { useBranchDeeplinkObserver } from '../common/hooks/useBranchDeeplinkObserver'
 
 export function RootNavigator(): JSX.Element {
   const walletState = useSelector(selectWalletState)
   const appIsReady = useSelector(selectIsReady)
   const [shouldRenderOnlyPinScreen, setShouldRenderOnlyPinScreen] =
     useState(true)
+
+  useBranchDeeplinkObserver()
 
   useEffect(() => {
     // set shouldRenderOnlyPinScreen to false once wallet is unlocked

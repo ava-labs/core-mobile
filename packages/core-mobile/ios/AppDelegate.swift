@@ -2,6 +2,7 @@ import Expo
 import Firebase
 import React
 import ReactAppDependencyProvider
+import RNBranch
 
 @main
 class AppDelegate: ExpoAppDelegate {
@@ -17,6 +18,11 @@ class AppDelegate: ExpoAppDelegate {
     // Firebase App Check and configuration
     RNFBAppCheckModule.sharedInstance()
     FirebaseApp.configure()
+    
+    if let displayName = Bundle.main.object(forInfoDictionaryKey: "CFBundleDisplayName") as? String, displayName.lowercased().contains("internal")  {
+      RNBranch.useTestInstance()
+    }
+    RNBranch.initSession(launchOptions: launchOptions, isReferrable: true)
     
     let delegate = ReactNativeDelegate()
     let factory = ExpoReactNativeFactory(delegate: delegate)
@@ -45,6 +51,7 @@ class AppDelegate: ExpoAppDelegate {
     open url: URL,
     options: [UIApplication.OpenURLOptionsKey: Any] = [:]
   ) -> Bool {
+    RNBranch.application(app, open:url, options:options)
     return super.application(app, open: url, options: options) || RCTLinkingManager.application(app, open: url, options: options)
   }
 
@@ -54,6 +61,7 @@ class AppDelegate: ExpoAppDelegate {
     continue userActivity: NSUserActivity,
     restorationHandler: @escaping ([UIUserActivityRestoring]?) -> Void
   ) -> Bool {
+    RNBranch.continue(userActivity)
     let result = RCTLinkingManager.application(application, continue: userActivity, restorationHandler: restorationHandler)
     return super.application(application, continue: userActivity, restorationHandler: restorationHandler) || result
   }
