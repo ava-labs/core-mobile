@@ -276,14 +276,6 @@ class NotificationsService {
     switch (type) {
       case EventType.DELIVERED:
         await this.incrementBadgeCount(1)
-        if (detail?.notification?.data) {
-          const data = detail.notification.data
-          AnalyticsService.capture('PushNotificationDisplayed', {
-            notificationType: String(data.type || 'unknown'),
-            event: String(data.event || 'unknown'),
-            channelId: data.channelId ? String(data.channelId) : undefined
-          })
-        }
         break
       case EventType.PRESS:
         await this.handleNotificationPress({

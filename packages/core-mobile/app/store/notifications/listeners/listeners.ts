@@ -1,7 +1,11 @@
 import { AnyAction, isAnyOf, PayloadAction } from '@reduxjs/toolkit'
 import type { Action } from 'redux'
 import AnalyticsService from 'services/analytics/AnalyticsService'
-import { ChannelId, NewsChannelId } from 'services/notifications/channels'
+import {
+  ChannelId,
+  NewsChannelId,
+  notificationChannels
+} from 'services/notifications/channels'
 import { unsubscribeForPriceAlert } from 'services/notifications/priceAlert/unsubscribeForPriceAlert'
 import { FeatureFlags, FeatureGates } from 'services/posthog/types'
 import { setAccount, setAccounts, setNonActiveAccounts } from 'store/account'
@@ -71,6 +75,14 @@ export const addNotificationsListeners = (
     actionCreator: turnOnAllNotifications,
     effect: async (_, listenerApi) => {
       await handleTurnOnAllNotifications(listenerApi).catch(Logger.error)
+      const state = listenerApi.getState()
+      Object.entries(state.notifications.notificationSubscriptions).forEach(
+        ([key]) => {
+          AnalyticsService.capture('PushNotificationSubscribed', {
+            channelId: key
+          })
+        }
+      )
     }
   })
 
@@ -162,8 +174,11 @@ export const addNotificationsListeners = (
       await unsubscribeAllNotifications().catch(reason => {
         Logger.error(`[listeners.ts][unsubscribeAllNotifications]${reason}`)
       })
-      AnalyticsService.capture('PushNotificationUnsubscribed', {
-        channelId: 'All'
+
+      notificationChannels.forEach(channel => {
+        AnalyticsService.capture('PushNotificationUnsubscribed', {
+          channelId: channel.id
+        })
       })
     }
   })
@@ -223,9 +238,6 @@ export const addNotificationsListeners = (
     ),
     effect: async (_, listenerApi) => {
       await setPriceAlertNotifications(_, listenerApi)
-      AnalyticsService.capture('PushNotificationSubscribed', {
-        channelId: ChannelId.FAV_TOKEN_PRICE_ALERTS
-      })
     }
   })
 
