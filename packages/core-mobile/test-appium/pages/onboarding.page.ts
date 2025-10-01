@@ -171,8 +171,12 @@ class OnboardingPage {
   }
 
   async dismissUpdateAppModal() {
+    try {
     await actions.waitFor(this.updateAppModalTitle, 30000)
     await actions.dragAndDrop(this.updateAppModalTitle, [0, 500])
+  } catch (e) {
+    console.log('Update app modal not found')
+  }
   }
 
   async dismissBottomSheet(element = this.grabber) {
