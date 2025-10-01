@@ -66,12 +66,6 @@ class FCMService {
         return
       }
 
-      AnalyticsService.capture('PushNotificationReceived', {
-        notificationType: result.data.data.type,
-        event: result.data.data.event,
-        channelId: EVENT_TO_CH_ID[result.data.data.event]
-      })
-
       if (
         result.data.data.event === BalanceChangeEvents.BALANCES_SPENT ||
         result.data.data.event === BalanceChangeEvents.BALANCES_TRANSFERRED
@@ -85,7 +79,9 @@ class FCMService {
           ? this.#prepareDataOnlyNotificationData(result.data.data)
           : this.#prepareNotificationData(result.data)
 
-      alert(JSON.stringify(notificationData, null, 2))
+      AnalyticsService.capture('PushNotificationReceived', {
+        channelId: notificationData.channelId
+      })
 
       await NotificationsService.displayNotification(notificationData).catch(
         Logger.error
@@ -186,12 +182,6 @@ class FCMService {
         return
       }
 
-      AnalyticsService.capture('PushNotificationReceived', {
-        notificationType: result.data.data.type,
-        event: result.data.data.event,
-        channelId: EVENT_TO_CH_ID[result.data.data.event]
-      })
-
       const notificationData = this.#prepareNotificationData(result.data)
 
       if (
@@ -220,6 +210,10 @@ class FCMService {
             params: { deeplinkUrl: link.url }
           })
       })
+
+      AnalyticsService.capture('PushNotificationReceived', {
+        channelId: notificationData.channelId
+      })
     })
   }
 
@@ -235,12 +229,6 @@ class FCMService {
         return
       }
 
-      AnalyticsService.capture('PushNotificationReceived', {
-        notificationType: result.data.data.type,
-        event: result.data.data.event,
-        channelId: EVENT_TO_CH_ID[result.data.data.event]
-      })
-
       if (result.data.notification) {
         //skip, FCM sdk handles this already
         return
@@ -249,6 +237,10 @@ class FCMService {
       const notificationData = this.#prepareDataOnlyNotificationData(
         result.data.data
       )
+
+      AnalyticsService.capture('PushNotificationReceived', {
+        channelId: notificationData.channelId
+      })
 
       await NotificationsService.displayNotification(notificationData).catch(
         Logger.error
