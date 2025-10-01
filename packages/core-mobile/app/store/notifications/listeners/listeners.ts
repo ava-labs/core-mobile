@@ -219,9 +219,7 @@ export const addNotificationsListeners = (
       onNotificationsEnabled,
       onNotificationsTurnedOnForFavTokenPriceAlerts
     ),
-    effect: async (_, listenerApi) => {
-      await setPriceAlertNotifications(_, listenerApi)
-    }
+    effect: setPriceAlertNotifications
   })
 
   startListening({
