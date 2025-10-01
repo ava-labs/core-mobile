@@ -1,7 +1,7 @@
-import Config from 'react-native-config'
 import { TokenSubscriptionPayload } from 'services/notifications/priceAlert/types'
 import Logger from 'utils/Logger'
 import fetchWithAppCheck from 'utils/httpClient'
+import Config from 'react-native-config'
 
 export async function setPriceAlertSubscriptions(
   payload: TokenSubscriptionPayload

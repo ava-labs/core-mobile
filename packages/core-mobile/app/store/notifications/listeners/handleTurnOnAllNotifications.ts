@@ -1,7 +1,6 @@
-import AnalyticsService from 'services/analytics/AnalyticsService'
+import { AppListenerEffectAPI } from 'store/types'
 import { notificationChannels } from 'services/notifications/channels'
 import NotificationsService from 'services/notifications/NotificationsService'
-import { AppListenerEffectAPI } from 'store/types'
 import { setNotificationSubscriptions } from '../slice'
 
 export const handleTurnOnAllNotifications = async (

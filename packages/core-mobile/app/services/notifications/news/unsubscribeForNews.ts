@@ -27,7 +27,6 @@ export async function unSubscribeForNews({
     Logger.error(`[unsubscribeForNews.ts][unsubscribe]${error}`)
     throw error
   })
-
   if (response.ok) {
     return response.json()
   } else {
