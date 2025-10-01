@@ -1,14 +1,14 @@
+import Logger from 'utils/Logger'
 import { AnyAction } from '@reduxjs/toolkit'
-import FCMService from 'services/fcm/FCMService'
-import { ChannelId } from 'services/notifications/channels'
-import NotificationsService from 'services/notifications/NotificationsService'
-import { setPriceAlertSubscriptions } from 'services/notifications/priceAlert/setPriceAlertSubscriptions'
-import { unsubscribeForPriceAlert } from 'services/notifications/priceAlert/unsubscribeForPriceAlert'
-import { registerDeviceToNotificationSender } from 'services/notifications/registerDeviceToNotificationSender'
-import { selectNotificationSubscription } from 'store/notifications'
 import { AppListenerEffectAPI } from 'store/types'
 import { selectWatchlistFavoriteIds } from 'store/watchlist'
-import Logger from 'utils/Logger'
+import FCMService from 'services/fcm/FCMService'
+import { registerDeviceToNotificationSender } from 'services/notifications/registerDeviceToNotificationSender'
+import NotificationsService from 'services/notifications/NotificationsService'
+import { selectNotificationSubscription } from 'store/notifications'
+import { ChannelId } from 'services/notifications/channels'
+import { unsubscribeForPriceAlert } from 'services/notifications/priceAlert/unsubscribeForPriceAlert'
+import { setPriceAlertSubscriptions } from 'services/notifications/priceAlert/setPriceAlertSubscriptions'
 
 export const setPriceAlertNotifications = async (
   _: AnyAction,
@@ -51,7 +51,6 @@ export const setPriceAlertNotifications = async (
       tokens,
       deviceArn
     })
-
     Logger.info(
       `[TokenChange] Successfully subscribed to token price alerts for ${tokens.length} tokens`
     )

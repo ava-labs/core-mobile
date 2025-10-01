@@ -5,6 +5,5 @@ import { registerDeviceToNotificationSender } from 'services/notifications/regis
 export async function unsubscribeForPriceAlert(): Promise<void> {
   const fcmToken = await FCMService.getFCMToken()
   const deviceArn = await registerDeviceToNotificationSender(fcmToken)
-
   await setPriceAlertSubscriptions({ tokens: [], deviceArn })
 }
