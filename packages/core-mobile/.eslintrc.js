@@ -35,9 +35,9 @@ module.exports = {
       }
     },
     {
-      files: ['test-appium/**/*'],
+      files: ['wdio/**/*'],
       parserOptions: {
-        project: './test-appium/tsconfig.json',
+        project: './wdio/tsconfig.json',
         tsconfigRootDir: __dirname
       },
       rules: {

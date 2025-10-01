@@ -28,5 +28,5 @@
     ".expo/types/**/*.ts",
     "expo-env.d.ts"
   ],
-  "exclude": ["node_modules", "./test-appium", "./e2e/artifacts/*", "./ios/DerivedData"]
+  "exclude": ["node_modules", "wdio", "./e2e/artifacts/*", "./ios/DerivedData"]
 }
