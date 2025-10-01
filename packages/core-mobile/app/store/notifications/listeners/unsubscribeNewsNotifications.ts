@@ -14,17 +14,19 @@ export async function unsubscribeNewsNotifications({
   try {
     await unSubscribeForNews({ deviceArn, channelIds })
     // Track successful unsubscribe for each channel
-    channelIds.forEach(() => {
+    channelIds.forEach(channelId => {
       AnalyticsService.capture('PushNotificationUnsubscribed', {
         channelType: 'news',
+        channelId: channelId,
         reason: 'success'
       })
     })
   } catch (error) {
     // Track failed unsubscribe
-    channelIds.forEach(() => {
+    channelIds.forEach(channelId => {
       AnalyticsService.capture('PushNotificationUnsubscribed', {
         channelType: 'news',
+        channelId: channelId,
         reason: 'failure'
       })
     })

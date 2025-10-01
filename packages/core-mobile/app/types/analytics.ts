@@ -232,6 +232,7 @@ export type AnalyticsEvents = {
   }
   PushNotificationUnsubscribed: {
     channelType?: string
+    channelId?: string
     reason?: string
   }
 }
