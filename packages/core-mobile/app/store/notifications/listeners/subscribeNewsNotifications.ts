@@ -1,12 +1,11 @@
-import { AppListenerEffectAPI } from 'store/types'
-import { selectAccounts } from 'store/account'
-import { registerDeviceToNotificationSender } from 'services/notifications/registerDeviceToNotificationSender'
 import FCMService from 'services/fcm/FCMService'
-import Logger from 'utils/Logger'
 import NotificationsService from 'services/notifications/NotificationsService'
 import { NewsChannelId } from 'services/notifications/channels'
 import { subscribeForNews } from 'services/notifications/news/subscribeForNews'
-import AnalyticsService from 'services/analytics/AnalyticsService'
+import { registerDeviceToNotificationSender } from 'services/notifications/registerDeviceToNotificationSender'
+import { selectAccounts } from 'store/account'
+import { AppListenerEffectAPI } from 'store/types'
+import Logger from 'utils/Logger'
 import { selectEnabledNewsNotificationSubscriptions } from '../slice'
 import { unsubscribeNewsNotifications } from './unsubscribeNewsNotifications'
 
@@ -65,11 +64,4 @@ export async function subscribeNewsNotifications(
     )
     throw Error(response.message)
   }
-
-  enabledNewsNotifications.forEach(channelId => {
-    AnalyticsService.capture('PushNotificationSubscribed', {
-      channelType: 'news',
-      channelId: channelId
-    })
-  })
 }

@@ -1,19 +1,20 @@
-import { AppStartListening } from 'store/types'
-import { onAppUnlocked, onLogOut, onRehydrationComplete } from 'store/app'
-import { setAccount, setAccounts, setNonActiveAccounts } from 'store/account'
-import { subscribeBalanceChangeNotifications } from 'store/notifications/listeners/subscribeBalanceChangeNotifications'
-import Logger from 'utils/Logger'
 import { AnyAction, isAnyOf, PayloadAction } from '@reduxjs/toolkit'
+import type { Action } from 'redux'
+import AnalyticsService from 'services/analytics/AnalyticsService'
+import { ChannelId, NewsChannelId } from 'services/notifications/channels'
+import { unsubscribeForPriceAlert } from 'services/notifications/priceAlert/unsubscribeForPriceAlert'
+import { FeatureFlags, FeatureGates } from 'services/posthog/types'
+import { setAccount, setAccounts, setNonActiveAccounts } from 'store/account'
+import { onAppUnlocked, onLogOut, onRehydrationComplete } from 'store/app'
+import { handleProcessNotificationData } from 'store/notifications/listeners/handleProcessNotificationData'
 import { manageForegroundNotificationSubscription } from 'store/notifications/listeners/manageForegroundNotificationSubscription'
+import { setPriceAlertNotifications } from 'store/notifications/listeners/setPriceAlertNotifications'
+import { subscribeBalanceChangeNotifications } from 'store/notifications/listeners/subscribeBalanceChangeNotifications'
 import { unsubscribeBalanceChangeNotifications } from 'store/notifications/listeners/unsubscribeBalanceChangeNotifications'
 import { setFeatureFlags } from 'store/posthog/slice'
-import { FeatureFlags, FeatureGates } from 'services/posthog/types'
-import type { Action } from 'redux'
-import { ChannelId, NewsChannelId } from 'services/notifications/channels'
-import { handleProcessNotificationData } from 'store/notifications/listeners/handleProcessNotificationData'
+import { AppStartListening } from 'store/types'
 import { toggleWatchListFavorite } from 'store/watchlist'
-import { setPriceAlertNotifications } from 'store/notifications/listeners/setPriceAlertNotifications'
-import { unsubscribeForPriceAlert } from 'services/notifications/priceAlert/unsubscribeForPriceAlert'
+import Logger from 'utils/Logger'
 import {
   afterLoginFlowsRequested,
   onFcmTokenChange,
@@ -23,17 +24,17 @@ import {
   turnOnAllNotifications,
   turnOnNotificationsFor
 } from '../slice'
-import { handleScheduleStakingCompleteNotifications } from './handleScheduleStakingCompleteNotifications'
+import { handleAfterLoginFlows } from './handleAfterLoginFlows'
 import { handleNotificationCleanup } from './handleNotificationCleanup'
-import { handleTurnOnNotificationsFor } from './handleTurnOnNotificationsFor'
+import { handleScheduleStakingCompleteNotifications } from './handleScheduleStakingCompleteNotifications'
 import { handleTurnOffNotificationsFor } from './handleTurnOffNotificationsFor'
-import { scheduleNotificationsForActiveStakesPeriodically } from './scheduleNotificationsForActiveStakesPeriodically'
 import { handleTurnOnAllNotifications } from './handleTurnOnAllNotifications'
+import { handleTurnOnNotificationsFor } from './handleTurnOnNotificationsFor'
 import { manageNotificationChannelsCreation } from './manageNotificationChannelsCreation'
+import { scheduleNotificationsForActiveStakesPeriodically } from './scheduleNotificationsForActiveStakesPeriodically'
+import { subscribeNewsNotifications } from './subscribeNewsNotifications'
 import { unsubscribeAllNotifications } from './unsubscribeAllNotifications'
 import { unsubscribeNewsNotifications } from './unsubscribeNewsNotifications'
-import { subscribeNewsNotifications } from './subscribeNewsNotifications'
-import { handleAfterLoginFlows } from './handleAfterLoginFlows'
 
 export const addNotificationsListeners = (
   startListening: AppStartListening
@@ -50,6 +51,9 @@ export const addNotificationsListeners = (
         listenerApi,
         action.payload.channelId
       ).catch(Logger.error)
+      AnalyticsService.capture('PushNotificationSubscribed', {
+        channelId: action.payload.channelId
+      })
     }
   })
 
@@ -57,6 +61,9 @@ export const addNotificationsListeners = (
     actionCreator: turnOffNotificationsFor,
     effect: async (action: AnyAction, listenerApi) => {
       await handleTurnOffNotificationsFor(listenerApi, action.payload.channelId)
+      AnalyticsService.capture('PushNotificationUnsubscribed', {
+        channelId: action.payload.channelId
+      })
     }
   })
 
@@ -155,6 +162,9 @@ export const addNotificationsListeners = (
       await unsubscribeAllNotifications().catch(reason => {
         Logger.error(`[listeners.ts][unsubscribeAllNotifications]${reason}`)
       })
+      AnalyticsService.capture('PushNotificationUnsubscribed', {
+        channelId: 'All'
+      })
     }
   })
 
@@ -195,7 +205,12 @@ export const addNotificationsListeners = (
 
   startListening({
     actionCreator: toggleWatchListFavorite,
-    effect: setPriceAlertNotifications
+    effect: async (_, listenerApi) => {
+      await setPriceAlertNotifications(_, listenerApi)
+      AnalyticsService.capture('PushNotificationSubscribed', {
+        channelId: ChannelId.FAV_TOKEN_PRICE_ALERTS
+      })
+    }
   })
 
   startListening({
@@ -206,7 +221,12 @@ export const addNotificationsListeners = (
       onNotificationsEnabled,
       onNotificationsTurnedOnForFavTokenPriceAlerts
     ),
-    effect: setPriceAlertNotifications
+    effect: async (_, listenerApi) => {
+      await setPriceAlertNotifications(_, listenerApi)
+      AnalyticsService.capture('PushNotificationSubscribed', {
+        channelId: ChannelId.FAV_TOKEN_PRICE_ALERTS
+      })
+    }
   })
 
   startListening({

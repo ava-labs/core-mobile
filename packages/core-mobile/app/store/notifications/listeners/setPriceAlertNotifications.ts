@@ -1,5 +1,4 @@
 import { AnyAction } from '@reduxjs/toolkit'
-import AnalyticsService from 'services/analytics/AnalyticsService'
 import FCMService from 'services/fcm/FCMService'
 import { ChannelId } from 'services/notifications/channels'
 import NotificationsService from 'services/notifications/NotificationsService'
@@ -56,10 +55,6 @@ export const setPriceAlertNotifications = async (
     Logger.info(
       `[TokenChange] Successfully subscribed to token price alerts for ${tokens.length} tokens`
     )
-    AnalyticsService.capture('PushNotificationSubscribed', {
-      channelType: 'price_alert',
-      channelId: ChannelId.FAV_TOKEN_PRICE_ALERTS
-    })
   } catch (error) {
     // Handle specific APNS/FCM token errors gracefully
     Logger.error(`[setTokenSubscriptionsForFavorites]${error}`)

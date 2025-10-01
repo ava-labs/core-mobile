@@ -1,8 +1,7 @@
+import Config from 'react-native-config'
 import { TokenSubscriptionPayload } from 'services/notifications/priceAlert/types'
 import Logger from 'utils/Logger'
 import fetchWithAppCheck from 'utils/httpClient'
-import Config from 'react-native-config'
-import AnalyticsService from 'services/analytics/AnalyticsService'
 
 export async function setPriceAlertSubscriptions(
   payload: TokenSubscriptionPayload
@@ -25,10 +24,6 @@ export async function setPriceAlertSubscriptions(
         '[setPriceAlertSubscriptions] Successfully subscribed to token price alerts:',
         result
       )
-
-      AnalyticsService.capture('PushNotificationSubscribed', {
-        channelType: 'price_alert'
-      })
     } else {
       throw new Error(`${response.status}:${response.statusText}`)
     }

@@ -1,8 +1,7 @@
-import { registerDeviceToNotificationSender } from 'services/notifications/registerDeviceToNotificationSender'
 import FCMService from 'services/fcm/FCMService'
-import { unSubscribeForNews } from 'services/notifications/news/unsubscribeForNews'
 import { NewsChannelId } from 'services/notifications/channels'
-import AnalyticsService from 'services/analytics/AnalyticsService'
+import { unSubscribeForNews } from 'services/notifications/news/unsubscribeForNews'
+import { registerDeviceToNotificationSender } from 'services/notifications/registerDeviceToNotificationSender'
 
 export async function unsubscribeNewsNotifications({
   channelIds
@@ -12,11 +11,4 @@ export async function unsubscribeNewsNotifications({
   const fcmToken = await FCMService.getFCMToken()
   const deviceArn = await registerDeviceToNotificationSender(fcmToken)
   await unSubscribeForNews({ deviceArn, channelIds })
-
-  channelIds.forEach(channelId => {
-    AnalyticsService.capture('PushNotificationUnsubscribed', {
-      channelType: 'news',
-      channelId: channelId
-    })
-  })
 }

@@ -1,11 +1,10 @@
-import { registerDeviceToNotificationSender } from 'services/notifications/registerDeviceToNotificationSender'
+import messaging from '@react-native-firebase/messaging'
 import FCMService from 'services/fcm/FCMService'
 import { unSubscribeForBalanceChange } from 'services/notifications/balanceChange/unsubscribeForBalanceChange'
 import { unSubscribeForNews } from 'services/notifications/news/unsubscribeForNews'
-import messaging from '@react-native-firebase/messaging'
-import Logger from 'utils/Logger'
 import { unsubscribeForPriceAlert } from 'services/notifications/priceAlert/unsubscribeForPriceAlert'
-import AnalyticsService from 'services/analytics/AnalyticsService'
+import { registerDeviceToNotificationSender } from 'services/notifications/registerDeviceToNotificationSender'
+import Logger from 'utils/Logger'
 
 export async function unsubscribeAllNotifications(): Promise<void> {
   const fcmToken = await FCMService.getFCMToken()
@@ -18,10 +17,6 @@ export async function unsubscribeAllNotifications(): Promise<void> {
     }),
     unsubscribeForPriceAlert()
   ])
-
-  AnalyticsService.capture('PushNotificationUnsubscribed', {
-    channelType: 'all'
-  })
 
   if (result.some(r => r.status === 'rejected')) {
     //as fallback invalidate token so user doesn't get notifications
