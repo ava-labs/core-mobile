@@ -167,15 +167,6 @@ workflows:
         inputs:
         - pipeline_intermediate_files: |-
             $BITRISE_DEPLOY_DIR/app-internal-e2e-unsigned.apk:BITRISE_APK_PATH
-    - avd-manager@1.2:
-        inputs:
-        - api_level: "34"
-        - emulator_id: emulator-5554
-        - emulator_channel: "0"
-        - create_command_flags: --sdcard 512M
-        - tag: default
-        - abi: x86_64
-        - profile: pixel_7_pro
   _install-old-android-version:
     steps:
     - script-runner@0:
@@ -931,6 +922,16 @@ workflows:
       opts:
         is_expand: false
     steps:
+    - avd-manager@1.2:
+        inputs:
+        - api_level: "34"
+        - emulator_id: emulator-5554
+        - emulator_channel: "0"
+        - create_command_flags: --sdcard 512M
+        - tag: default
+        - abi: x86_64
+        - profile: pixel_7_pro
+    - wait-for-android-emulator@1: {}
     - script-runner@0:
         title: Appium Android testing
         no_output_timeout: 300

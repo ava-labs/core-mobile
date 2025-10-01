@@ -14,6 +14,7 @@ const iosPath = isBitrise
   ? process.env.BITRISE_APP_DIR_PATH
   : path.resolve(
       './ios/DerivedData/Build/Products/Debug-iphonesimulator/AvaxWallet.app'
+      // '/Users/eunji.song/Downloads/AvaxWalletInternal.app'
     )
 const androidPath = isBitrise
   ? process.env.BITRISE_APK_PATH
@@ -24,7 +25,7 @@ const platformToRun = process.env.PLATFORM
 const allCaps = [
   {
     platformName: 'Android',
-    'appium:deviceName': 'pixel_7_pro',
+    'appium:deviceName': 'emulator-5554',
     'appium:platformVersion': '14.0',
     'appium:automationName': 'UiAutomator2',
     'appium:app': androidPath,
@@ -38,11 +39,15 @@ const allCaps = [
     'appium:waitForIdleTimeout': 0,
     'appium:maxTypingFrequency': 30,
     'appium:platformVersion': '18.4',
-    'appium:wdaStartupRetries': 3,
     'appium:automationName': 'xcuitest',
     'appium:app': iosPath,
     'appium:autoAcceptAlerts': true,
-    'appium:autoDismissAlerts': true
+    'appium:autoDismissAlerts': true,
+    'appium:wdaStartupRetries': 5,
+    'appium:wdaStartupRetryInterval': 20000,
+    'appium:usePrebuiltWDA': false,
+    'appium:shouldUseSingletonTestManager': false,
+    'appium:showXcodeLog': true
   }
 ]
 
@@ -59,15 +64,16 @@ export const config: WebdriverIO.Config = {
     './specs/login.e2e.ts'
   ],
   maxInstances: 10,
-  capabilities: caps,
+  port: 4723,
   services: [['appium', { command: 'appium' }]],
   logLevel: 'error',
   bail: 0,
   waitforTimeout: 10000,
   connectionRetryTimeout: 120000,
-  connectionRetryCount: 2,
+  connectionRetryCount: 3,
   framework: 'mocha',
   reporters: ['spec'],
+  capabilities: caps,
   mochaOpts: {
     ui: 'bdd',
     timeout: 600000
