@@ -1,0 +1,22 @@
+export default {
+  accessExistingWallet: 'Access existing wallet',
+  chooseWalletTitle: 'How would you like to access your existing wallet?',
+  typeRecoverPhase: 'Type in a recovery phrase',
+  recoveryPhraseInput: `text_area__recovery_phrase`,
+  letsGo: 'lets_go_btn',
+  unlockBtn: 'Unlock',
+  agreeAndContinue: 'agreeAndContinueBtn',
+  import: `import_btn`,
+  enterPinSecondScreenTitle: 'Confirm your\nPIN code',
+  enterPinFirstScreenTitle: 'Secure your wallet\nwith a PIN',
+  pinInputField: 'pin_input',
+  nameWalletInput: 'name_text_input',
+  selectAvatarTitle: 'Select your\npersonal avatar',
+  nameWalletTitle: 'Add a name for your wallet',
+  nameWalletNextBtn: 'name_wallet_next_btn',
+  nextBtnOnAvatarScreen: 'avatar_next_btn',
+  updateAppModalTitle: 'update_app_title',
+  solanaLaunchTitle: 'solana_launch_title',
+  grabber: 'grabber',
+  forgotPin: 'forgot_pin_btn'
+}
