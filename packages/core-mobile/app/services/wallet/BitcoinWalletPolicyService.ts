@@ -14,7 +14,7 @@ export interface BtcWalletPolicyDetails {
 
 export interface WalletPolicyDetails {
   hmac: Buffer
-  policy: WalletPolicy
+  policy: ReturnType<typeof createWalletPolicy>
 }
 
 export interface BitcoinWalletPolicyRegistrationResult {

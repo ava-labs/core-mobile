@@ -28,6 +28,18 @@ export const DERIVATION_PATHS = {
 // Raw derivation paths for Solana (without m/ prefix)
 export const SOLANA_DERIVATION_PATH = "44'/501'/0'/0'/0"
 
+// Solana derivation path prefix for generating indexed paths
+export const SOLANA_DERIVATION_PATH_PREFIX = "44'/501'/0'/0'"
+
+/**
+ * Generate a Solana derivation path for a specific account index
+ * @param accountIndex - The account index to generate the path for
+ * @returns The complete derivation path string
+ */
+export const getSolanaDerivationPath = (accountIndex: number): string => {
+  return `${SOLANA_DERIVATION_PATH_PREFIX}/${accountIndex}`
+}
+
 // Timeout constants
 export const LEDGER_TIMEOUTS = {
   SCAN_TIMEOUT: 30000, // 30 seconds

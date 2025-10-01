@@ -28,7 +28,10 @@ import { now } from 'moment'
 import { getBitcoinProvider } from 'services/network/utils/providerUtils'
 import LedgerService from 'services/ledger/LedgerService'
 import { LedgerAppType } from 'services/ledger/LedgerService'
-import { LEDGER_TIMEOUTS } from 'new/features/ledger/consts'
+import {
+  LEDGER_TIMEOUTS,
+  getSolanaDerivationPath
+} from 'new/features/ledger/consts'
 import { bip32 } from 'utils/bip32'
 import Logger from 'utils/Logger'
 import { Curve } from 'utils/publicKeys'
@@ -103,8 +106,6 @@ export class LedgerWallet implements Wallet {
       name: string
     }
   }>
-  private transport?: TransportBLE // Keep for backward compatibility
-  private ledgerService = LedgerService
   private evmSigner?: LedgerSigner
   private avalancheSigner?:
     | Avalanche.SimpleLedgerSigner
@@ -116,7 +117,6 @@ export class LedgerWallet implements Wallet {
     this.derivationPath = ledgerData.derivationPath
     this.derivationPathSpec = ledgerData.derivationPathSpec
     this.publicKeys = ledgerData.publicKeys
-    this.transport = ledgerData.transport // Keep for backward compatibility
 
     /**
      * Handle extended keys based on derivation path type
@@ -128,37 +128,8 @@ export class LedgerWallet implements Wallet {
   }
 
   private async getTransport(): Promise<TransportBLE> {
-    Logger.info('getTransport called - checking LedgerService connection')
-
-    // Use LedgerService transport if available, fallback to stored transport
-    if (this.ledgerService.isConnected()) {
-      Logger.info('LedgerService is connected, using its transport')
-      return this.ledgerService.ensureConnection(this.deviceId)
-    }
-
-    Logger.info('LedgerService not connected, attempting to reconnect')
-
-    // Try to connect using LedgerService
-    try {
-      Logger.info(
-        'Calling ledgerService.ensureConnection with deviceId:',
-        this.deviceId
-      )
-      const transport = await this.ledgerService.ensureConnection(this.deviceId)
-      Logger.info('Successfully reconnected via LedgerService')
-      return transport
-    } catch (error) {
-      Logger.error('Failed to reconnect via LedgerService:', error)
-
-      // Fallback to stored transport if LedgerService connection fails
-      if (this.transport) {
-        Logger.warn('Using fallback transport from stored data')
-        return this.transport
-      }
-
-      Logger.error('No transport available - throwing error')
-      throw new Error('No transport available for Ledger wallet')
-    }
+    Logger.info('getTransport called - using LedgerService')
+    return LedgerService.ensureConnection(this.deviceId)
   }
 
   private async getEvmSigner(
@@ -174,7 +145,7 @@ export class LedgerWallet implements Wallet {
 
       Logger.info('getEvmSigner', {
         provider,
-        transport: this.transport,
+        transport: this.getTransport(),
         derivationPath: this.derivationPath,
         derivationPathSpec: this.derivationPathSpec,
         accountIndex,
@@ -569,7 +540,7 @@ export class LedgerWallet implements Wallet {
     // First ensure we're connected to the device
     Logger.info('Ensuring connection to Ledger device...')
     try {
-      await this.ledgerService.ensureConnection(this.deviceId)
+      await LedgerService.ensureConnection(this.deviceId)
       Logger.info('Successfully connected to Ledger device')
     } catch (error) {
       Logger.error('Failed to connect to Ledger device:', error)
@@ -581,9 +552,9 @@ export class LedgerWallet implements Wallet {
     // Now ensure Avalanche app is ready
     Logger.info('Ensuring Avalanche app is ready...')
     try {
-      await this.ledgerService.waitForApp(
+      await LedgerService.waitForApp(
         LedgerAppType.AVALANCHE,
-        LEDGER_TIMEOUTS.APP_WAIT_TIMEOUT_SIGNING
+        LEDGER_TIMEOUTS.APP_WAIT_TIMEOUT
       )
       Logger.info('Avalanche app is ready')
     } catch (error) {
@@ -738,7 +709,7 @@ export class LedgerWallet implements Wallet {
     // First ensure we're connected to the device
     Logger.info('Ensuring connection to Ledger device...')
     try {
-      await this.ledgerService.ensureConnection(this.deviceId)
+      await LedgerService.ensureConnection(this.deviceId)
       Logger.info('Successfully connected to Ledger device')
     } catch (error) {
       Logger.error('Failed to connect to Ledger device:', error)
@@ -750,9 +721,9 @@ export class LedgerWallet implements Wallet {
     // Now ensure Solana app is ready
     Logger.info('Ensuring Solana app is ready...')
     try {
-      await this.ledgerService.waitForApp(
+      await LedgerService.waitForApp(
         LedgerAppType.SOLANA,
-        LEDGER_TIMEOUTS.APP_WAIT_TIMEOUT_SIGNING
+        LEDGER_TIMEOUTS.APP_WAIT_TIMEOUT
       )
       Logger.info('Solana app is ready')
     } catch (error) {
@@ -767,12 +738,12 @@ export class LedgerWallet implements Wallet {
     Logger.info('Got transport')
 
     // Create AppSolana instance
-    const solanaApp = new AppSolana(transport)
+    const solanaApp = new AppSolana(transport as any)
     Logger.info('Created AppSolana instance')
 
     try {
       // Get the derivation path for this account
-      const derivationPath = `44'/501'/0'/0'/${accountIndex}`
+      const derivationPath = getSolanaDerivationPath(accountIndex)
       Logger.info('Using derivation path:', derivationPath)
 
       // First verify we can get the correct address
@@ -885,7 +856,7 @@ export class LedgerWallet implements Wallet {
   // Cleanup method to disconnect LedgerService when wallet is no longer needed
   public async cleanup(): Promise<void> {
     try {
-      await this.ledgerService.disconnect()
+      await LedgerService.disconnect()
       Logger.info('LedgerService disconnected successfully')
     } catch (error) {
       Logger.warn('Failed to disconnect LedgerService during cleanup:', error)

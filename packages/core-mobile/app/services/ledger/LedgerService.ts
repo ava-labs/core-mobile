@@ -12,8 +12,11 @@ import {
 import { networks } from 'bitcoinjs-lib'
 import Logger from 'utils/Logger'
 import bs58 from 'bs58'
-import { LEDGER_TIMEOUTS } from 'new/features/ledger/consts'
-import { assertNotUndefined } from 'utils/assertions'
+import {
+  LEDGER_TIMEOUTS,
+  getSolanaDerivationPath
+} from 'new/features/ledger/consts'
+import { assertNotNull } from 'utils/assertions'
 
 export interface AddressInfo {
   id: string
@@ -66,11 +69,11 @@ export class LedgerService {
 
   // Transport getter/setter with automatic error handling
   private get transport(): TransportBLE {
-    assertNotUndefined(
+    assertNotNull(
       this.#transport,
       'Ledger transport is not initialized. Please connect to a device first.'
     )
-    return this.#transport as TransportBLE
+    return this.#transport
   }
 
   private set transport(transport: TransportBLE) {
@@ -357,7 +360,8 @@ export class LedgerService {
 
     try {
       // Create fresh Solana app instance
-      const solanaApp = new AppSolana(this.transport)
+      const transport = await this.getTransport()
+      const solanaApp = new AppSolana(transport as any)
       // Try to get a simple address to check if app is open
       // Use a standard Solana derivation path
       const testPath = "m/44'/501'/0'"
@@ -370,11 +374,10 @@ export class LedgerService {
   }
 
   // Get Solana address for a specific derivation path
-  async getSolanaAddress(
-    derivationPath: string
-  ): Promise<{ address: Buffer; publicKey: Buffer }> {
+  async getSolanaAddress(derivationPath: string): Promise<{ address: Buffer }> {
     await this.waitForApp(LedgerAppType.SOLANA)
-    const solanaApp = new AppSolana(this.transport)
+    const transport = await this.getTransport()
+    const solanaApp = new AppSolana(transport as any)
     return await solanaApp.getAddress(derivationPath, false)
   }
 
@@ -384,13 +387,14 @@ export class LedgerService {
     count: number
   ): Promise<PublicKeyInfo[]> {
     // Create a fresh AppSolana instance for each call (like the SDK does)
-    const freshSolanaApp = new AppSolana(this.transport)
+    const transport = await this.getTransport()
+    const freshSolanaApp = new AppSolana(transport as any)
     const publicKeys: PublicKeyInfo[] = []
 
     try {
       for (let i = startIndex; i < startIndex + count; i++) {
         // Use correct Solana derivation path format
-        const derivationPath = `44'/501'/0'/0'/${i}`
+        const derivationPath = getSolanaDerivationPath(i)
 
         // Simple direct call to get Solana address using fresh instance
         const result = await freshSolanaApp.getAddress(derivationPath, false)
@@ -432,7 +436,7 @@ export class LedgerService {
       const publicKeys: PublicKeyInfo[] = [
         {
           key: publicKey.toString('hex'),
-          derivationPath: `44'/501'/0'/0'/${startIndex}`,
+          derivationPath: getSolanaDerivationPath(startIndex),
           curve: 'ed25519'
         }
       ]
@@ -686,6 +690,11 @@ export class LedgerService {
   // Ensure connection is established for a specific device
   async ensureConnection(deviceId: string): Promise<TransportBLE> {
     await this.reconnectIfNeeded(deviceId)
+    return this.transport
+  }
+
+  // Get the current transport (for compatibility with existing code)
+  async getTransport(): Promise<TransportBLE> {
     return this.transport
   }
 }

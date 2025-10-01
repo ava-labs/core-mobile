@@ -17,14 +17,87 @@ import { CoreAccountType } from '@avalabs/types'
 import { showSnackbar } from 'new/common/utils/toast'
 import { uuid } from 'utils/uuid'
 import Logger from 'utils/Logger'
-import type {
-  LedgerDevice,
-  LedgerTransportState,
-  LedgerKeys,
-  WalletCreationOptions,
-  SetupProgress,
-  UseLedgerWalletReturn
-} from '../types'
+import { Curve } from 'utils/publicKeys'
+// Types for Ledger wallet functionality
+export interface SetupProgress {
+  currentStep: string
+  progress: number
+  totalSteps: number
+  estimatedTimeRemaining?: number
+}
+
+export interface WalletCreationOptions {
+  deviceId: string
+  deviceName?: string
+  derivationPathType?: LedgerDerivationPathType
+  accountCount?: number
+  individualKeys?: Array<{
+    key: string
+    derivationPath: string
+    curve: Curve
+  }>
+}
+
+export interface LedgerDevice {
+  id: string
+  name: string
+  rssi?: number
+}
+
+export interface LedgerTransportState {
+  available: boolean
+  powered: boolean
+  device?: LedgerDevice
+}
+
+export interface LedgerKeys {
+  solanaKeys: Array<{
+    key: string
+    derivationPath: string
+    curve: Curve
+  }>
+  avalancheKeys: {
+    evm: string
+    avalanche: string
+    pvm: string
+  } | null
+}
+
+export interface UseLedgerWalletReturn {
+  // Connection state
+  devices: LedgerDevice[]
+  isScanning: boolean
+  isConnecting: boolean
+  isLoading: boolean
+  setupProgress: SetupProgress | null
+  transportState: LedgerTransportState
+  
+  // Key states and methods
+  keys: {
+    solanaKeys: Array<{
+      key: string
+      derivationPath: string
+      curve: Curve
+    }>
+    avalancheKeys: {
+      evm: string
+      avalanche: string
+      pvm: string
+    } | null
+    bitcoinAddress: string
+    xpAddress: string
+  }
+  
+  // Methods
+  scanForDevices: () => Promise<void>
+  connectToDevice: (deviceId: string) => Promise<void>
+  disconnectDevice: () => Promise<void>
+  getSolanaKeys: () => Promise<void>
+  getAvalancheKeys: () => Promise<void>
+  getLedgerLiveKeys: (accountCount?: number, progressCallback?: (step: string, progress: number, totalSteps: number) => void) => Promise<{ avalancheKeys: { evm: string; avalanche: string; pvm: string; } | null; individualKeys: Array<{ key: string; derivationPath: string; curve: Curve; }>; }>
+  resetKeys: () => void
+  createLedgerWallet: (options: WalletCreationOptions) => Promise<string>
+}
 import {
   DERIVATION_PATHS,
   SOLANA_DERIVATION_PATH,
@@ -220,7 +293,8 @@ export function useLedgerWallet(): UseLedgerWalletReturn {
       await LedgerService.waitForApp(LedgerAppType.SOLANA)
 
       // Get address directly from Solana app
-      const solanaApp = new AppSolana(LedgerService.getTransport())
+      const transport = await LedgerService.getTransport()
+      const solanaApp = new AppSolana(transport as any)
       const derivationPath = SOLANA_DERIVATION_PATH
       const result = await solanaApp.getAddress(derivationPath, false)
 
@@ -231,8 +305,7 @@ export function useLedgerWallet(): UseLedgerWalletReturn {
         {
           key: solanaAddress,
           derivationPath,
-          curve: 'ed25519',
-          publicKey: solanaAddress
+          curve: Curve.ED25519
         }
       ])
       Logger.info('Successfully got Solana address', solanaAddress)
@@ -273,9 +346,9 @@ export function useLedgerWallet(): UseLedgerWalletReturn {
 
       // Store the addresses directly from the device
       setAvalancheKeys({
-        evm: { key: evmAddress, address: evmAddress },
-        avalanche: { key: xChainAddress, address: xChainAddress },
-        pvm: { key: pvmAddress, address: pvmAddress }
+        evm: evmAddress,
+        avalanche: xChainAddress,
+        pvm: pvmAddress
       })
       setBitcoinAddress(btcAddress)
       setXpAddress(xChainAddress)
@@ -376,14 +449,9 @@ export function useLedgerWallet(): UseLedgerWalletReturn {
           // Store first account's keys as primary
           if (accountIndex === 0) {
             avalancheKeysResult = {
-              evm: {
-                key: evmPublicKey?.key || '',
-                address: evmAddress?.address || ''
-              },
-              avalanche: {
-                key: avmPublicKey?.key || '',
-                address: xChainAddr?.address || ''
-              }
+              evm: evmAddress?.address || '',
+              avalanche: xChainAddr?.address || '',
+              pvm: '' // Will be set when PVM addresses are implemented
             }
           }
         }
@@ -462,8 +530,8 @@ export function useLedgerWallet(): UseLedgerWalletReturn {
               derivationPathSpec: derivationPathType,
               ...(derivationPathType === LedgerDerivationPathType.BIP44 && {
                 extendedPublicKeys: {
-                  evm: avalancheKeys.evm.key,
-                  avalanche: avalancheKeys.avalanche.key
+                  evm: avalancheKeys.evm,
+                  avalanche: avalancheKeys.avalanche
                 }
               }),
               publicKeys:
@@ -473,25 +541,24 @@ export function useLedgerWallet(): UseLedgerWalletReturn {
                   : [
                       // Use existing keys for BIP44
                       {
-                        key: avalancheKeys.evm.key,
+                        key: avalancheKeys.evm,
                         derivationPath: DERIVATION_PATHS.BIP44.EVM,
-                        curve: 'secp256k1'
+                        curve: Curve.SECP256K1
                       },
                       {
-                        key: avalancheKeys.avalanche.key,
+                        key: avalancheKeys.avalanche,
                         derivationPath: DERIVATION_PATHS.BIP44.AVALANCHE,
-                        curve: 'secp256k1'
+                        curve: Curve.SECP256K1
                       },
                       {
-                        key:
-                          avalancheKeys.pvm?.key || avalancheKeys.avalanche.key,
+                        key: avalancheKeys.pvm || avalancheKeys.avalanche,
                         derivationPath: DERIVATION_PATHS.BIP44.PVM,
-                        curve: 'secp256k1'
+                        curve: Curve.SECP256K1
                       },
                       {
                         key: solanaKeys[0]?.key || '',
                         derivationPath: DERIVATION_PATHS.BIP44.SOLANA,
-                        curve: 'ed25519'
+                        curve: Curve.ED25519
                       }
                     ],
               avalancheKeys,
@@ -508,11 +575,11 @@ export function useLedgerWallet(): UseLedgerWalletReturn {
 
         // Create addresses from the keys
         const addresses = {
-          EVM: avalancheKeys.evm.address,
-          AVM: avalancheKeys.avalanche.address,
-          PVM: avalancheKeys.pvm?.address || avalancheKeys.avalanche.address,
+          EVM: avalancheKeys.evm,
+          AVM: avalancheKeys.avalanche,
+          PVM: avalancheKeys.pvm || avalancheKeys.avalanche,
           BITCOIN: bitcoinAddress,
-          SVM: solanaKeys[0]?.publicKey || '',
+          SVM: solanaKeys[0]?.key || '',
           CoreEth: ''
         }
 
