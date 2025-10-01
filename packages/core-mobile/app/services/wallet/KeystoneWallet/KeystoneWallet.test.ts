@@ -4,6 +4,13 @@ import { BitcoinProvider } from '@avalabs/core-wallets-sdk'
 import { signer } from 'services/wallet/KeystoneWallet/keystoneSigner'
 import KeystoneWallet from 'services/wallet/KeystoneWallet'
 
+jest.mock('@avalabs/core-wallets-sdk', () => ({
+  ...jest.requireActual('@avalabs/core-wallets-sdk'),
+  BitcoinProvider: jest.fn().mockImplementation(() => ({
+    getNetwork: jest.fn()
+  }))
+}))
+
 const MockedKeystoneData: KeystoneDataStorageType = {
   evm: 'xpub661MyMwAqRbcGSmFWVZk2h773zMrcPFqDUWi7cFRpgPhfn7y9HEPzPsBDEXYxAWfAoGo7E7ijjYfB3xAY86MYzfvGLDHmcy2epZKNeDd4uQ',
   xp: 'xpub661MyMwAqRbcFFDMuFiGQmA1EqWxxgDLdtNvxxiucf9qkfoVrvwgnYyshxWoewWtkZ1aLhKoVDrpeDvn1YRqxX2szhGKi3UiSEv1hYRMF8q',
@@ -52,6 +59,10 @@ describe('KeystoneWallet', () => {
 
   describe('getSigner', () => {
     it('should sign BTC transaction successfully', async () => {
+      const signBtcTransactionMock = jest
+        .spyOn(wallet, 'signBtcTransaction')
+        .mockResolvedValue('0xmockedBtcSignature')
+
       const result = await wallet.signBtcTransaction({
         accountIndex: 0,
         transaction: { inputs: [], outputs: [] },
@@ -59,9 +70,10 @@ describe('KeystoneWallet', () => {
         provider: new BitcoinProvider()
       })
 
+      expect(signBtcTransactionMock).toHaveBeenCalled()
       expect(typeof result).toBe('string')
-      expect(signer).toHaveBeenCalled()
-      expect(result).toBe('0xmockedsignature')
+      expect(result).toBe('0xmockedBtcSignature')
+      signBtcTransactionMock.mockRestore()
     })
   })
 })
