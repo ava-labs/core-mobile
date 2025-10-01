@@ -12,7 +12,7 @@ const testrail = axios.create({
 export async function getTestRun(platform: string) {
   // iOS: today
   const today = new Date().toISOString().split('T')[0]
-  const title = `[Appium] ${platform}: ${today}`
+  const title = `${platform} Test Run: ${today}`
 
   try {
     // testRun exists, return it
