@@ -1,7 +1,6 @@
 import { KeystoneDataStorageType } from 'features/keystone/storage/KeystoneDataStorage'
 import { Curve } from 'utils/publicKeys'
 import { BitcoinProvider } from '@avalabs/core-wallets-sdk'
-import { signer } from 'services/wallet/KeystoneWallet/keystoneSigner'
 import KeystoneWallet from 'services/wallet/KeystoneWallet'
 
 jest.mock('@avalabs/core-wallets-sdk', () => ({
