@@ -8,6 +8,8 @@ import React, { FC, useMemo } from 'react'
 import { Platform, StyleSheet } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { SvgProps } from 'react-native-svg'
+import { useSelector } from 'react-redux'
+import { selectIsInAppDefiBlocked } from 'store/posthog'
 
 const isIOS = Platform.OS === 'ios'
 
@@ -48,6 +50,7 @@ export default function TabLayout(): JSX.Element {
         : alpha(theme.colors.$white, isIOS ? 0.8 : 1)
     }
   }, [theme.colors.$white, theme.isDark])
+  const isInAppDefiBlocked = useSelector(selectIsInAppDefiBlocked)
 
   return (
     <BottomTabs
@@ -85,7 +88,7 @@ export default function TabLayout(): JSX.Element {
         name="stake"
         options={{
           tabBarButtonTestID: 'stake_tab',
-          title: 'Stake',
+          title: isInAppDefiBlocked ? 'Stake' : 'Earn',
           tabBarIcon: () => stakeIcon,
           freezeOnBlur
         }}

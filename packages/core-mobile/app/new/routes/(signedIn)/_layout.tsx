@@ -60,6 +60,14 @@ export default function WalletLayout(): JSX.Element {
               return modalScreensOptions
             }}
           />
+          <Stack.Screen
+            name="(modals)/keystoneSigner"
+            options={secondaryModalScreensOptions}
+          />
+          <Stack.Screen
+            name="(modals)/keystoneTroubleshooting"
+            options={secondaryModalScreensOptions}
+          />
           <Stack.Screen name="(modals)/receive" options={modalScreensOptions} />
           <Stack.Screen
             name="(modals)/notifications"
@@ -221,6 +229,7 @@ export default function WalletLayout(): JSX.Element {
             name="(modals)/appUpdate"
             options={modalScreensOptions}
           />
+          <Stack.Screen name="(modals)/deposit" options={modalScreensOptions} />
         </Stack>
         <PolyfillCrypto />
         <LastTransactedNetworks />

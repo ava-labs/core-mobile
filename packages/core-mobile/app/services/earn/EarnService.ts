@@ -305,11 +305,13 @@ class EarnService {
   getAllStakes = async ({
     isTestnet,
     addresses,
-    startTimestamp
+    startTimestamp,
+    sortOrder = SortOrder.DESC
   }: {
     isTestnet: boolean
     addresses: string[]
     startTimestamp?: number
+    sortOrder?: SortOrder
   }): Promise<PChainTransaction[]> => {
     const addressesStr = addresses.join(',')
     let pageToken: string | undefined
@@ -324,7 +326,7 @@ class EarnService {
         queries: {
           addresses: addressesStr,
           pageSize: 100,
-          sortOrder: SortOrder.DESC,
+          sortOrder,
           pageToken,
           txTypes: [
             PChainTransactionType.ADD_PERMISSIONLESS_DELEGATOR_TX,

@@ -71,6 +71,7 @@ import { ChainId } from '@avalabs/core-chains-sdk'
 import { useBuy } from 'features/meld/hooks/useBuy'
 import { useWithdraw } from 'features/meld/hooks/useWithdraw'
 import { selectIsMeldOfframpBlocked } from 'store/posthog'
+import { getExplorerAddressByNetwork } from 'utils/getExplorerAddressByNetwork'
 
 export const TokenDetailScreen = (): React.JSX.Element => {
   const {
@@ -290,9 +291,14 @@ export const TokenDetailScreen = (): React.JSX.Element => {
   const { openUrl } = useInAppBrowser()
 
   const handleExplorerLink = useCallback(
-    (explorerLink: string): void => {
+    (
+      explorerLink: string,
+      hash?: string,
+      hashType?: 'account' | 'tx'
+    ): void => {
       AnalyticsService.capture('ExplorerLinkClicked')
-      openUrl(explorerLink)
+      const url = getExplorerAddressByNetwork(explorerLink, hash, hashType)
+      openUrl(url)
     },
     [openUrl]
   )
@@ -436,4 +442,7 @@ export enum TokenDetailTab {
   Activity = 'Activity'
 }
 
-const SEGMENT_ITEMS = [TokenDetailTab.Tokens, TokenDetailTab.Activity]
+const SEGMENT_ITEMS = [
+  { title: TokenDetailTab.Tokens },
+  { title: TokenDetailTab.Activity }
+]
