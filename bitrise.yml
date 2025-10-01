@@ -163,10 +163,19 @@ workflows:
         - cache_level: all
         - project_location: $ANDROID_PROJECT_LOCATION
     - save-gradle-cache@1: {}
+    - sign-apk@1:
+        inputs:
+        - android_app: $BITRISE_APK_PATH|$BITRISE_TEST_APK_PATH
+        - use_apk_signer: "true"
+        - debuggable_permitted: "false"
+        - keystore_url: $BITRISEIO_ANDROID_KEY_STORE_URL
+        - keystore_password: $ANDROID_STORE_PASSWORD
+        - keystore_alias: $ANDROID_KEY_ALIAS
+        - private_key_password: $ANDROID_KEY_PASSWORD
     - deploy-to-bitrise-io@2:
         inputs:
         - pipeline_intermediate_files: |-
-            $BITRISE_DEPLOY_DIR/app-internal-e2e-unsigned.apk:BITRISE_APK_PATH
+            $BITRISE_DEPLOY_DIR/app-internal-e2e-bitrise-signed.apk:BITRISE_APK_PATH
   _install-old-android-version:
     steps:
     - script-runner@0:
@@ -189,7 +198,7 @@ workflows:
         inputs:
         - artifact_sources: .*
         - pipeline_intermediate_files: |-
-            $BITRISE_DEPLOY_DIR/app-internal-e2e-unsigned.apk:BITRISE_APK_PATH
+            $BITRISE_DEPLOY_DIR/app-internal-e2e-bitrise-signed.apk:BITRISE_APK_PATH
             $BITRISE_DEPLOY_DIR/AvaxWalletInternal.app:BITRISE_APP_DIR_PATH
   _pull_external_app_files:
     steps:
