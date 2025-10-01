@@ -113,6 +113,7 @@ const promptEnableNotificationsIfNeeded = async (
               return
             }
             dispatch(turnOnAllNotifications())
+            AnalyticsService.capture('PushNotificationAccepted')
             resolve()
           }
         }

@@ -20,6 +20,4 @@ export const handleTurnOnAllNotifications = async (
   if (hasBlockedNotifications) {
     NotificationsService.openSystemSettings()
   }
-
-  AnalyticsService.capture('PushNotificationAccepted')
 }

@@ -9,7 +9,6 @@ import { unsubscribeForPriceAlert } from 'services/notifications/priceAlert/unsu
 export async function unsubscribeAllNotifications(): Promise<void> {
   const fcmToken = await FCMService.getFCMToken()
   const deviceArn = await registerDeviceToNotificationSender(fcmToken)
-
   const result = await Promise.allSettled([
     unSubscribeForBalanceChange({ deviceArn }),
     unSubscribeForNews({

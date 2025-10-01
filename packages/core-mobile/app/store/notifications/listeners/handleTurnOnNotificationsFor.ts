@@ -23,6 +23,6 @@ export const handleTurnOnNotificationsFor = async (
   }
 
   AnalyticsService.capture('PushNotificationSubscribed', {
-    channelId: channelId
+    channelId
   })
 }
