@@ -75,11 +75,7 @@ class TransactionsPage {
   }
 
   async enterSendAmount(amount: string) {
-    if (driver.isIOS) {
-      await actions.tapNumberPad(amount)
-    } else {
-      await actions.type(this.amountToSendInput, amount)
-    }
+    await actions.type(this.amountToSendInput, amount)
   }
 
   async tapNextButton() {

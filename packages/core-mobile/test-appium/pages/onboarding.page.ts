@@ -79,8 +79,8 @@ class OnboardingPage {
       const preceedingHost = driver.isIOS ? 'localhost' : '10.0.2.2'
       await actions.waitFor(selectors.getByText(`http://${preceedingHost}:8081`))
       await actions.tap(selectors.getByText(`http://${preceedingHost}:8081`))
-      const dismissBtn = selectors.getByText('This is the developer menu. It gives you access to useful tools in your development builds.')
-      await actions.waitFor(dismissBtn, 10000)
+      const dismissBtn = selectors.getByText("AvaxWallet")
+      await actions.waitFor(dismissBtn)
       await actions.dragAndDrop(dismissBtn, [0, 1500])
       } catch (e) {
         console.log('Metro dev menu is not found...')
@@ -91,8 +91,8 @@ class OnboardingPage {
   async exitMetroAfterLogin() {
     if (process.env.E2E !== 'true') {
       try {
-      const dismissBtn = selectors.getBySomeText('This is the developer menu.')
-      await actions.dragAndDrop(dismissBtn, [0, 200])
+        const dismissBtn = selectors.getByText("AvaxWallet")
+        await actions.dragAndDrop(dismissBtn, [0, 200])
       } catch (e) {
         console.log('Metro dev menu is not found...')
       }
@@ -172,8 +172,8 @@ class OnboardingPage {
 
   async dismissUpdateAppModal() {
     try {
-    await actions.waitFor(this.grabber, 30000)
-    await actions.dragAndDrop(this.grabber, [0, 500])
+    await actions.waitFor(this.updateAppModalTitle, 30000)
+    await actions.dragAndDrop(this.updateAppModalTitle, [0, 500])
   } catch (e) {
     console.log('Update app modal not found')
   }

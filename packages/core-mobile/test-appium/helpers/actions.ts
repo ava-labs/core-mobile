@@ -25,50 +25,54 @@ async function tapNumberPad(keyCode: string) {
 
 // getText == targetText
 async function verifyElementText(
-  element: ChainablePromiseElement,
+  ele: ChainablePromiseElement,
   targetText: string
 ) {
-  const eleText = await element.getText()
+  const eleText = await ele.getText()
   assert.equal(eleText, targetText, `"${eleText}" !== "${targetText}"`)
 }
 
-async function waitFor(element: ChainablePromiseElement, timeout = 20000) {
-  await element.waitForDisplayed({ timeout })
+async function waitFor(ele: ChainablePromiseElement, timeout = 20000) {
+  await ele.waitForExist({ timeout })
 }
 
-async function isVisible(element: ChainablePromiseElement, targetBool = true) {
-  const visible = await element.isDisplayed()
+async function waitForDisplayed(ele: ChainablePromiseElement, timeout = 20000) {
+  await ele.waitForDisplayed({ timeout })
+}
 
-  assert.equal(visible, targetBool, element.toString())
+async function isVisible(ele: ChainablePromiseElement, targetBool = true) {
+  const visible = await ele.isDisplayed()
+
+  assert.equal(visible, targetBool, ele.toString())
   return visible
 }
 
-async function isVisibleTrueOrFalse(element: ChainablePromiseElement) {
-  return await element.isDisplayed()
+async function isVisibleTrueOrFalse(ele: ChainablePromiseElement) {
+  return await ele.isDisplayed()
 }
 
-async function isSelected(element: ChainablePromiseElement, targetBool = true) {
-  const selected = await element.isSelected()
-  assert.equal(selected, targetBool, element.toString())
+async function isSelected(ele: ChainablePromiseElement, targetBool = true) {
+  const selected = await ele.isSelected()
+  assert.equal(selected, targetBool, ele.toString())
   return selected
 }
 
-async function isEnabled(element: ChainablePromiseElement, targetBool = true) {
-  const enabled = await element.isEnabled()
-  assert.equal(enabled, targetBool, element.toString())
+async function isEnabled(ele: ChainablePromiseElement, targetBool = true) {
+  const enabled = await ele.isEnabled()
+  assert.equal(enabled, targetBool, ele.toString())
   return enabled
 }
 
-async function tap(element: ChainablePromiseElement) {
-  await waitFor(element)
-  await element.waitForEnabled()
-  await element.tap()
+async function tap(ele: ChainablePromiseElement) {
+  await waitFor(ele)
+  await ele.waitForEnabled()
+  await ele.tap()
 }
 
-async function click(element: ChainablePromiseElement) {
-  await waitFor(element)
-  await element.waitForEnabled()
-  await element.click()
+async function click(ele: ChainablePromiseElement) {
+  await waitFor(ele)
+  await ele.waitForEnabled()
+  await ele.click()
 }
 
 async function dismissKeyboard(id = 'Return') {
@@ -81,15 +85,15 @@ async function dismissKeyboard(id = 'Return') {
   await delay(1000)
 }
 
-async function getText(element: ChainablePromiseElement) {
-  await waitFor(element)
-  return await element.getText()
+async function getText(ele: ChainablePromiseElement) {
+  await waitFor(ele)
+  return await ele.getText()
 }
 
 async function swipe(
   direction: string,
   percent: number,
-  element: ChainablePromiseElement
+  ele: ChainablePromiseElement
 ) {
   if (driver.isIOS) {
     await driver.execute('mobile: swipe', {
@@ -97,7 +101,7 @@ async function swipe(
       percent: percent
     })
   } else {
-    const elementId = await element.elementId
+    const elementId = await ele.elementId
     await driver.execute('mobile: swipeGesture', {
       elementId: elementId,
       direction: direction,
@@ -124,11 +128,16 @@ async function dragAndDrop(
   )
 }
 
+async function clearText(ele: ChainablePromiseElement) {
+  await ele.clearValue()
+}
+
 export const actions = {
   type,
   tapNumberPad,
   verifyElementText,
   waitFor,
+  waitForDisplayed,
   isVisible,
   isSelected,
   isEnabled,
@@ -139,5 +148,6 @@ export const actions = {
   swipe,
   dragAndDrop,
   delay,
-  isVisibleTrueOrFalse
+  isVisibleTrueOrFalse,
+  clearText
 }

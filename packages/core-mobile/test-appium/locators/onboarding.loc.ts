@@ -18,5 +18,6 @@ export default {
   updateAppModalTitle: 'update_app_title',
   solanaLaunchTitle: 'solana_launch_title',
   grabber: 'grabber',
-  forgotPin: 'forgot_pin_btn'
+  forgotPin: 'forgot_pin_btn',
+  manuallyCreateNewWallet: 'manually_create_new_wallet_button'
 }
