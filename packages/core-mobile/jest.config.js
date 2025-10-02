@@ -34,6 +34,8 @@ module.exports = {
         'quick-lru',
         'react-redux',
         'uuid',
+        '@ledgerhq',
+        '@avalabs/hw-app-avalanche',
         '@keystonehq'
       ].join('|') +
       ')'
