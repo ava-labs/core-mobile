@@ -9,16 +9,12 @@ import { WalletState } from 'store/app/types'
 import { useSelector } from 'react-redux'
 import { selectIsReady, selectWalletState } from 'store/app/slice'
 import { PinScreenOverlay } from 'common/components/PinScreenOverlay'
-import { useInAppRequest } from 'hooks/useInAppRequest'
-import { RpcMethod } from 'store/rpc/types'
 
 export function RootNavigator(): JSX.Element {
   const walletState = useSelector(selectWalletState)
   const appIsReady = useSelector(selectIsReady)
   const [shouldRenderOnlyPinScreen, setShouldRenderOnlyPinScreen] =
     useState(true)
-
-  const { request } = useInAppRequest()
 
   useEffect(() => {
     // set shouldRenderOnlyPinScreen to false once wallet is unlocked
@@ -28,13 +24,6 @@ export function RootNavigator(): JSX.Element {
 
     setShouldRenderOnlyPinScreen(walletState !== WalletState.ACTIVE)
   }, [appIsReady, shouldRenderOnlyPinScreen, walletState])
-
-  useEffect(() => {
-    request({
-      method: RpcMethod.AVALANCHE_GET_USER_ENABLED_NETWORKS,
-      params: [false]
-    })
-  }, [request])
 
   return (
     <>
