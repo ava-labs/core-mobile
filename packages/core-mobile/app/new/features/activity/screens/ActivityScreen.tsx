@@ -21,9 +21,9 @@ import React, { useCallback, useMemo } from 'react'
 import { Platform, ViewStyle } from 'react-native'
 import { useHeaderMeasurements } from 'react-native-collapsible-tab-view'
 import Animated, { useAnimatedStyle, withTiming } from 'react-native-reanimated'
-import { isSolanaChainId } from 'utils/network/isSolanaNetwork'
-import { selectActiveAccount } from 'store/account/slice'
 import { useSelector } from 'react-redux'
+import { selectActiveAccount } from 'store/account/slice'
+import { isSolanaChainId } from 'utils/network/isSolanaNetwork'
 import { ActivityList } from '../components/ActivityList'
 import { useActivityFilterAndSearch } from '../hooks/useActivityFilterAndSearch'
 
@@ -58,16 +58,11 @@ export const ActivityScreen = ({
     xpToken,
     network,
     networkFilterDropdown,
-    isXpChain,
     refresh
   } = useActivityFilterAndSearch({ searchText })
   const account = useSelector(selectActiveAccount)
 
   const isSolanaNetwork = network && isSolanaChainId(network.chainId)
-
-  const isLoadingXpToken = useMemo(() => {
-    return isXpChain && !xpToken
-  }, [isXpChain, xpToken])
 
   const keyboardAvoidingStyle = useAnimatedStyle(() => {
     return {
@@ -104,7 +99,7 @@ export const ActivityScreen = ({
   }, [filter, network, networkFilterDropdown])
 
   const emptyComponent = useMemo(() => {
-    if (isRefreshing || isLoading || isLoadingXpToken) {
+    if (isRefreshing || isLoading) {
       return <LoadingState />
     }
 
@@ -156,7 +151,6 @@ export const ActivityScreen = ({
     handleExplorerLink,
     isError,
     isLoading,
-    isLoadingXpToken,
     isRefreshing,
     isSolanaNetwork,
     network?.explorerUrl,
@@ -176,8 +170,8 @@ export const ActivityScreen = ({
   }, [emptyComponent, keyboardAvoidingStyle])
 
   const activityListData = useMemo(() => {
-    return isLoadingXpToken ? [] : data
-  }, [data, isLoadingXpToken])
+    return isLoading ? [] : data
+  }, [data, isLoading])
 
   return (
     <Animated.View
