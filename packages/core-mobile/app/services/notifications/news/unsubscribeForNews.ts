@@ -1,6 +1,6 @@
+import Logger from 'utils/Logger'
 import Config from 'react-native-config'
 import fetchWithAppCheck from 'utils/httpClient'
-import Logger from 'utils/Logger'
 import { NewsChannelId } from '../channels'
 import { channelIdToNewsEventMap } from './events'
 

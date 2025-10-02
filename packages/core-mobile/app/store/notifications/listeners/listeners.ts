@@ -195,9 +195,7 @@ export const addNotificationsListeners = (
 
   startListening({
     actionCreator: toggleWatchListFavorite,
-    effect: async (_, listenerApi) => {
-      await setPriceAlertNotifications(_, listenerApi)
-    }
+    effect: setPriceAlertNotifications
   })
 
   startListening({
