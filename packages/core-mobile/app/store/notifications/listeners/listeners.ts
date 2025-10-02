@@ -1,6 +1,5 @@
 import { AnyAction, isAnyOf, PayloadAction } from '@reduxjs/toolkit'
 import type { Action } from 'redux'
-import AnalyticsService from 'services/analytics/AnalyticsService'
 import { ChannelId, NewsChannelId } from 'services/notifications/channels'
 import { unsubscribeForPriceAlert } from 'services/notifications/priceAlert/unsubscribeForPriceAlert'
 import { FeatureFlags, FeatureGates } from 'services/posthog/types'
@@ -198,9 +197,6 @@ export const addNotificationsListeners = (
     actionCreator: toggleWatchListFavorite,
     effect: async (_, listenerApi) => {
       await setPriceAlertNotifications(_, listenerApi)
-      AnalyticsService.capture('PushNotificationSubscribed', {
-        channelId: ChannelId.FAV_TOKEN_PRICE_ALERTS
-      })
     }
   })
 
