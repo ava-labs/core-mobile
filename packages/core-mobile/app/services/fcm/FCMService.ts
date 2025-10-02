@@ -207,12 +207,10 @@ class FCMService {
           })
       })
 
-      if (notificationData.data) {
-        AnalyticsService.capture('PushNotificationPressed', {
-          channelId: notificationData.data?.channelId as string,
-          deeplinkUrl: notificationData.data?.url as string
-        })
-      }
+      AnalyticsService.capture('PushNotificationPressed', {
+        channelId: notificationData.data?.channelId as string,
+        deeplinkUrl: notificationData.data?.url as string
+      })
     })
   }
 

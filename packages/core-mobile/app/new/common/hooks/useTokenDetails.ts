@@ -228,7 +228,8 @@ export const useTokenDetails = ({
         ? 'PushNotificationUnsubscribed'
         : 'PushNotificationSubscribed',
       {
-        channelId: ChannelId.FAV_TOKEN_PRICE_ALERTS
+        channelId: ChannelId.FAV_TOKEN_PRICE_ALERTS,
+        tokenId
       }
     )
     dispatch(toggleWatchListFavorite(tokenId))
