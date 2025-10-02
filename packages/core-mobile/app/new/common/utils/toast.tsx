@@ -43,6 +43,7 @@ export const GlobalToast = (): JSX.Element => {
             }
           : undefined
       }
+      containerStyle={{ width: undefined }}
       placement="top"
       animationType="slide-in"
       offsetTop={offsetTop}
