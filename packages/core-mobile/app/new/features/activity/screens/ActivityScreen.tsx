@@ -26,6 +26,7 @@ import { selectActiveAccount } from 'store/account/slice'
 import { isSolanaChainId } from 'utils/network/isSolanaNetwork'
 import { ActivityList } from '../components/ActivityList'
 import { useActivityFilterAndSearch } from '../hooks/useActivityFilterAndSearch'
+import { selectIsLoadingBalances } from 'store/balance/slice'
 
 const errorIcon = require('../../../assets/icons/unamused_emoji.png')
 const viewInExplorerIcon = require('../../../assets/icons/flashlight.png')
@@ -58,11 +59,17 @@ export const ActivityScreen = ({
     xpToken,
     network,
     networkFilterDropdown,
+    isXpChain,
     refresh
   } = useActivityFilterAndSearch({ searchText })
   const account = useSelector(selectActiveAccount)
+  const isLoadingBalances = useSelector(selectIsLoadingBalances)
 
   const isSolanaNetwork = network && isSolanaChainId(network.chainId)
+
+  const isLoadingXpToken = useMemo(() => {
+    return isXpChain && isLoadingBalances
+  }, [isXpChain, isLoadingBalances])
 
   const keyboardAvoidingStyle = useAnimatedStyle(() => {
     return {
@@ -99,7 +106,7 @@ export const ActivityScreen = ({
   }, [filter, network, networkFilterDropdown])
 
   const emptyComponent = useMemo(() => {
-    if (isRefreshing || isLoading) {
+    if (isRefreshing || isLoading || isLoadingXpToken) {
       return <LoadingState />
     }
 
@@ -151,6 +158,7 @@ export const ActivityScreen = ({
     handleExplorerLink,
     isError,
     isLoading,
+    isLoadingXpToken,
     isRefreshing,
     isSolanaNetwork,
     network?.explorerUrl,
@@ -170,8 +178,8 @@ export const ActivityScreen = ({
   }, [emptyComponent, keyboardAvoidingStyle])
 
   const activityListData = useMemo(() => {
-    return isLoading ? [] : data
-  }, [data, isLoading])
+    return isLoadingXpToken ? [] : data
+  }, [data, isLoadingXpToken])
 
   return (
     <Animated.View
