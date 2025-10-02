@@ -110,7 +110,7 @@ export const TransactionSnackbar = ({
       onPress={onPress}>
       <View
         style={{
-          maxWidth: SCREEN_WIDTH * 0.8,
+          maxWidth: SCREEN_WIDTH * 0.9,
           justifyContent: 'center',
           alignItems: 'center'
         }}>
