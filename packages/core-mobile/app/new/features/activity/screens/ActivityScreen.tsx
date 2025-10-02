@@ -23,10 +23,10 @@ import { useHeaderMeasurements } from 'react-native-collapsible-tab-view'
 import Animated, { useAnimatedStyle, withTiming } from 'react-native-reanimated'
 import { useSelector } from 'react-redux'
 import { selectActiveAccount } from 'store/account/slice'
+import { selectIsLoadingBalances } from 'store/balance/slice'
 import { isSolanaChainId } from 'utils/network/isSolanaNetwork'
 import { ActivityList } from '../components/ActivityList'
 import { useActivityFilterAndSearch } from '../hooks/useActivityFilterAndSearch'
-import { selectIsLoadingBalances } from 'store/balance/slice'
 
 const errorIcon = require('../../../assets/icons/unamused_emoji.png')
 const viewInExplorerIcon = require('../../../assets/icons/flashlight.png')
