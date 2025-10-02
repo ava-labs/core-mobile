@@ -14,6 +14,7 @@ import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { selectIsSolanaSupportBlocked } from 'store/posthog'
 import { RootState } from '../types'
 import { ChainID, Networks, NetworkState } from './types'
+import { getCaip2ChainId } from 'utils/caip2ChainIds'
 
 export const defaultNetwork = BITCOIN_NETWORK
 
@@ -213,6 +214,20 @@ export const selectEnabledNetworks = createSelector(
     }, [] as Network[])
   }
 )
+
+export const selectEnabledNetworksByTestnet =
+  (isTestnet: boolean) => (state: RootState) => {
+    const networks = selectNetworks(state)
+    const enabledChainIds = selectEnabledChainIds(state)
+    return enabledChainIds.reduce((acc, chainId) => {
+      const network = networks[chainId]
+      if (network && network.isTestnet === isTestnet) {
+        const caip2ChainId = getCaip2ChainId(chainId)
+        acc.push(caip2ChainId)
+      }
+      return acc
+    }, [] as string[])
+  }
 
 export const selectIsTestnet = (chainId: number) => (state: RootState) => {
   const networks = selectAllNetworks(state)

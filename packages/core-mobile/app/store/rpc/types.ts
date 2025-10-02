@@ -68,6 +68,7 @@ export enum RpcMethod {
   BITCOIN_SIGN_TRANSACTION = 'bitcoin_signTransaction',
   AVALANCHE_SIGN_MESSAGE = 'avalanche_signMessage',
   AVALANCHE_RENAME_ACCOUNT = 'avalanche_renameAccount',
+  AVALANCHE_GET_USER_ENABLED_NETWORKS = 'avalanche_getUserEnabledNetworks',
 
   /* Solana methods */
   SOLANA_SIGN_AND_SEND_TRANSACTION = 'solana_signAndSendTransaction',

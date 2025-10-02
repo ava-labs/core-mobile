@@ -81,6 +81,31 @@ export const useNetworks = () => {
     )
   }, [networks, _customNetworks])
 
+  const getEnabledNetworksByTestnet = useCallback(
+    (isTestnet: boolean): string[] => {
+      if (networks === undefined) return []
+
+      const lastTransactedChainIds = lastTransactedChains
+        ? Object.values(lastTransactedChains).map(chain => chain.chainId)
+        : []
+
+      const allChainIds = uniq([...lastTransactedChainIds, ...enabledChainIds])
+
+      return allChainIds.reduce((acc, chainId) => {
+        const network = networks[chainId]
+        if (
+          network &&
+          network.isTestnet === isTestnet &&
+          network.caip2ChainId !== undefined
+        ) {
+          acc.push(network.caip2ChainId)
+        }
+        return acc
+      }, [] as string[])
+    },
+    [networks, lastTransactedChains, enabledChainIds]
+  )
+
   const enabledNetworks = useMemo(() => {
     if (networks === undefined) return []
 
@@ -181,7 +206,8 @@ export const useNetworks = () => {
     getNetwork,
     getNetworkByCaip2ChainId,
     getFromPopulatedNetwork,
-    toggleNetwork
+    toggleNetwork,
+    getEnabledNetworksByTestnet
   }
 }
 
