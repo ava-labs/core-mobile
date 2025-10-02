@@ -442,4 +442,7 @@ export enum TokenDetailTab {
   Activity = 'Activity'
 }
 
-const SEGMENT_ITEMS = [TokenDetailTab.Tokens, TokenDetailTab.Activity]
+const SEGMENT_ITEMS = [
+  { title: TokenDetailTab.Tokens },
+  { title: TokenDetailTab.Activity }
+]
