@@ -40,7 +40,7 @@ export const EmptyState = ({
         )
       },
       {
-        title: 'Transfer crypto',
+        title: 'Receive crypto',
         subtitle: 'Move funds from another wallet or exchange',
         // @ts-ignore TODO: make routes typesafe
         onPress: () => router.navigate('/receive'),
