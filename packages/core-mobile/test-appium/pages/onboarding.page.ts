@@ -65,26 +65,24 @@ class OnboardingPage {
   }
 
   async tapAccessExistingWallet() {
-    await actions.tap(this.accessExistingWallet)
+    await actions.tap(this.accessExistingWallet, this.typeInRecoveryPhase)
   }
 
   async tapTypeInRecoveryPhase() {
-    await actions.tap(this.typeInRecoveryPhase)
+    await actions.tap(this.typeInRecoveryPhase, this.agreeAndContinue)
   }
 
   async exitMetro() {
-    if (process.env.E2E !== 'true') {
-      try {
-      console.log('you are using a dev build, skipping metro dev menu now...')
-      const preceedingHost = driver.isIOS ? 'localhost' : '10.0.2.2'
-      await actions.waitFor(selectors.getByText(`http://${preceedingHost}:8081`))
-      await actions.tap(selectors.getByText(`http://${preceedingHost}:8081`))
-      const dismissBtn = selectors.getByText("AvaxWallet")
-      await actions.waitFor(dismissBtn)
-      await actions.dragAndDrop(dismissBtn, [0, 1500])
-      } catch (e) {
-        console.log('Metro dev menu is not found...')
-      }
+    try {
+    console.log('you are using a dev build, skipping metro dev menu now...')
+    const preceedingHost = driver.isIOS ? 'localhost' : '10.0.2.2'
+    await actions.waitFor(selectors.getByText(`http://${preceedingHost}:8081`))
+    await actions.tap(selectors.getByText(`http://${preceedingHost}:8081`))
+    const dismissBtn = selectors.getByText("AvaxWallet")
+    await actions.waitFor(dismissBtn, 30000)
+    await actions.dragAndDrop(dismissBtn, [0, 1500])
+    } catch (e) {
+      console.log('Metro dev menu is not found...')
     }
   }
 
@@ -116,11 +114,11 @@ class OnboardingPage {
   }
 
   async tapNextBtnOnNameWallet() {
-    await actions.tap(this.nameWalletNextBtn)
+    await actions.tap(this.nameWalletNextBtn, this.nextBtnOnAvatarScreen)
   }
 
   async tapNextBtnOnAvatarScreen() {
-    await actions.tap(this.nextBtnOnAvatarScreen)
+    await actions.tap(this.nextBtnOnAvatarScreen, this.letsGo)
   }
 
   async tapLetsGo() {
@@ -128,15 +126,15 @@ class OnboardingPage {
   }
 
   async tapUnlockBtn() {
-    await actions.tap(this.unlockBtn)
+    await actions.tap(this.unlockBtn, this.recoveryPhraseInput)
   }
 
   async tapAgreeAndContinue() {
-    await actions.tap(this.agreeAndContinue)
+    await actions.tap(this.agreeAndContinue, this.unlockBtn)
   }
 
   async tapImport() {
-    await actions.tap(this.import)
+    await actions.tap(this.import, this.enterPinFirstScreenTitle)
   }
 
   async enterPin(pin = '000000') {

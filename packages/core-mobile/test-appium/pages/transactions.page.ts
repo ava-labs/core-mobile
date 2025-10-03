@@ -79,10 +79,12 @@ class TransactionsPage {
   }
 
   async tapNextButton() {
+    await actions.waitFor(this.nextBtn)
     await actions.tap(this.nextBtn)
   }
 
   async tapApproveButton() {
+    await actions.waitFor(this.approveBtn)
     await actions.tap(this.approveBtn)
   }
 

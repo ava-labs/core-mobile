@@ -49,7 +49,6 @@ class Settings {
   }
 
   async tapManageAccountsBtn() {
-    await actions.waitFor(this.settingsScrollView, 10000)
     while (!(await actions.isVisibleTrueOrFalse(this.manageAccountsBtn))) {
       await actions.swipe('left', 0.5, this.accountList)
     }
@@ -59,6 +58,11 @@ class Settings {
   async goSettings() {
     await actions.delay(1500)
     await actions.click(this.settingsBtn)
+    try {
+      await actions.waitFor(this.settingsScrollView)
+    } catch (e) {
+      await actions.click(this.settingsBtn)
+    }
   }
   async createNthAccount(account = 2, activeAccount = settings.account) {
     await this.goSettings()

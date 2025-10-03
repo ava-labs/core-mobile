@@ -63,11 +63,21 @@ async function isEnabled(ele: ChainablePromiseElement, targetBool = true) {
   return enabled
 }
 
-async function tap(ele: ChainablePromiseElement) {
+async function tap(
+  ele: ChainablePromiseElement,
+  expectedEle?: ChainablePromiseElement
+) {
   await waitFor(ele)
   await ele.waitForEnabled()
   await delay(1000)
   await ele.tap()
+  if (expectedEle) {
+    try {
+      await waitFor(expectedEle)
+    } catch (e) {
+      await ele.tap()
+    }
+  }
 }
 
 async function click(ele: ChainablePromiseElement) {
