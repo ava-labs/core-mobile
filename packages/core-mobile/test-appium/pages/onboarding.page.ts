@@ -5,7 +5,7 @@ import onboardingLoc from '../locators/onboarding.loc'
 
 class OnboardingPage {
   get accessExistingWallet() {
-    return selectors.getByText(onboardingLoc.accessExistingWallet)
+    return selectors.getById(onboardingLoc.accessExistingWallet)
   }
 
   get chooseWalletTitle() {
@@ -29,7 +29,7 @@ class OnboardingPage {
   }
 
   get agreeAndContinue() {
-    return selectors.getById(onboardingLoc.agreeAndContinue)
+    return selectors.getByText(onboardingLoc.agreeAndContinue)
   }
 
   get import() {

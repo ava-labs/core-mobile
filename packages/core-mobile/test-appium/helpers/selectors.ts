@@ -3,7 +3,10 @@ function withPlatform(ios: string, android: string) {
 }
 
 function getByText(text: string) {
-  return withPlatform(`//*[@name='${text}']`, `//*[@text='${text}']`)
+  return withPlatform(
+    `//*[@name='${text}' and @accessible='true']`,
+    `//*[@text='${text}']`
+  )
 }
 
 function getById(id: string) {

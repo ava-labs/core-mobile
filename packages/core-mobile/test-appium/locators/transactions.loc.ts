@@ -22,7 +22,7 @@ export default {
   amountToSend: 'token_amount_input_field',
   sendSelectTokenListBtn: 'send_select_token_list_btn',
   usdcToken: 'USDC',
-  wethToken: 'WETH.e',
+  wethToken: 'WETH',
   addressField: 'end_token__send_field',
   searchBarOnSelectToken: 'search_bar__select_token',
   searchBar: 'search_bar',

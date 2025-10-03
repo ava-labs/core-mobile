@@ -1,11 +1,11 @@
 export default {
-  accessExistingWallet: 'Access existing wallet',
+  accessExistingWallet: 'accessExistingWallet',
   chooseWalletTitle: 'How would you like to access your existing wallet?',
   typeRecoverPhase: 'Type in a recovery phrase',
   recoveryPhraseInput: `text_area__recovery_phrase`,
   letsGo: 'lets_go_btn',
   unlockBtn: 'Unlock',
-  agreeAndContinue: 'agreeAndContinueBtn',
+  agreeAndContinue: 'Agree and continue',
   import: `import_btn`,
   enterPinSecondScreenTitle: 'Confirm your\nPIN code',
   enterPinFirstScreenTitle: 'Secure your wallet\nwith a PIN',

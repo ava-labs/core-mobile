@@ -66,6 +66,7 @@ async function isEnabled(ele: ChainablePromiseElement, targetBool = true) {
 async function tap(ele: ChainablePromiseElement) {
   await waitFor(ele)
   await ele.waitForEnabled()
+  await delay(1000)
   await ele.tap()
 }
 
@@ -81,7 +82,6 @@ async function dismissKeyboard(id = 'Return') {
   } else {
     await driver.hideKeyboard()
   }
-  console.log('keyboard is dismissed')
   await delay(1000)
 }
 

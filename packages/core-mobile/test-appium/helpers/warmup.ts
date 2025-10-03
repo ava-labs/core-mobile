@@ -1,7 +1,8 @@
 import onboardingPage from '../pages/onboarding.page'
+import settingsPage from '../pages/settings.page'
 import { actions } from './actions'
 
-export default async function login() {
+export default async function warmup(addAccount = false) {
   await onboardingPage.exitMetro()
   await onboardingPage.tapAccessExistingWallet()
   await onboardingPage.tapTypeInRecoveryPhase()
@@ -15,6 +16,9 @@ export default async function login() {
   await onboardingPage.tapNextBtnOnAvatarScreen()
   await onboardingPage.tapLetsGo()
   await onboardingPage.dismissModals()
+  if (addAccount) {
+    await settingsPage.createNthAccount()
+  }
 }
 
 export async function unlockLoggedIn(pin = '000000') {
