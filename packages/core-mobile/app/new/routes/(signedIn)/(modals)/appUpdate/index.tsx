@@ -45,6 +45,7 @@ function AppUpdateScreen(): JSX.Element {
           <View style={{ gap: 10, maxWidth: 300 }}>
             <Text
               testID="update_app_title"
+              accessibilityLabel="update_app_title"
               variant="heading3"
               style={{ textAlign: 'center' }}>
               {`A new version\nof Core is available!`}
