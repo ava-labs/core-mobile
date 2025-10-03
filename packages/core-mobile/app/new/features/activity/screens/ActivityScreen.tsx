@@ -21,9 +21,10 @@ import React, { useCallback, useMemo } from 'react'
 import { Platform, ViewStyle } from 'react-native'
 import { useHeaderMeasurements } from 'react-native-collapsible-tab-view'
 import Animated, { useAnimatedStyle, withTiming } from 'react-native-reanimated'
-import { isSolanaChainId } from 'utils/network/isSolanaNetwork'
-import { selectActiveAccount } from 'store/account/slice'
 import { useSelector } from 'react-redux'
+import { selectActiveAccount } from 'store/account/slice'
+import { selectIsLoadingBalances } from 'store/balance/slice'
+import { isSolanaChainId } from 'utils/network/isSolanaNetwork'
 import { ActivityList } from '../components/ActivityList'
 import { useActivityFilterAndSearch } from '../hooks/useActivityFilterAndSearch'
 
@@ -62,12 +63,13 @@ export const ActivityScreen = ({
     refresh
   } = useActivityFilterAndSearch({ searchText })
   const account = useSelector(selectActiveAccount)
+  const isLoadingBalances = useSelector(selectIsLoadingBalances)
 
   const isSolanaNetwork = network && isSolanaChainId(network.chainId)
 
   const isLoadingXpToken = useMemo(() => {
-    return isXpChain && !xpToken
-  }, [isXpChain, xpToken])
+    return isXpChain && isLoadingBalances
+  }, [isXpChain, isLoadingBalances])
 
   const keyboardAvoidingStyle = useAnimatedStyle(() => {
     return {
