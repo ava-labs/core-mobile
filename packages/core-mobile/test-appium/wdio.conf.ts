@@ -66,7 +66,7 @@ export const config: WebdriverIO.Config = {
     // 'path/to/excluded/files'
     './specs/login.e2e.ts'
   ],
-  maxInstances: 2,
+  maxInstances: 1,
   port: 4723,
   services: [['appium', { command: 'appium' }]],
   logLevel: 'error',
