@@ -104,6 +104,41 @@ export const selectTokensWithBalanceByNetwork = (
     }
   )
 
+export const selectTokensByNetwork = (
+  tokenVisibility: TokenVisibility,
+  chainId?: number
+): ((state: RootState) => {
+  enabledTokens: string[]
+  disabledTokens: string[]
+}) =>
+  createSelector(
+    [selectActiveAccount, _selectAllBalances],
+    (
+      activeAccount,
+      balances
+    ): {
+      enabledTokens: string[]
+      disabledTokens: string[]
+    } => {
+      if (!chainId) return { enabledTokens: [], disabledTokens: [] }
+      if (!activeAccount) return { enabledTokens: [], disabledTokens: [] }
+
+      const balanceKey = getKey(chainId, activeAccount.id)
+      const tokens = balances[balanceKey]?.tokens ?? []
+
+      const enabled: string[] = []
+      const disabled: string[] = []
+      tokens.forEach(token => {
+        if (isTokenVisible(tokenVisibility, token)) {
+          'chainId' in token && enabled.push(token.address)
+        } else {
+          'chainId' in token && disabled.push(token.address)
+        }
+      })
+      return { enabledTokens: enabled, disabledTokens: disabled }
+    }
+  )
+
 export const selectTokensWithZeroBalanceByNetworks = (
   chainIds: number[]
 ): ((state: RootState) => LocalTokenWithBalance[]) =>

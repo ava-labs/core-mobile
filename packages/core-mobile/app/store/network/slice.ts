@@ -222,11 +222,10 @@ export const selectEnabledNetworksByTestnet =
     return enabledChainIds.reduce((acc, chainId) => {
       const network = networks[chainId]
       if (network && network.isTestnet === isTestnet) {
-        const caip2ChainId = getCaip2ChainId(chainId)
-        acc.push(caip2ChainId)
+        acc.push(network)
       }
       return acc
-    }, [] as string[])
+    }, [] as Network[])
   }
 
 export const selectIsTestnet = (chainId: number) => (state: RootState) => {
