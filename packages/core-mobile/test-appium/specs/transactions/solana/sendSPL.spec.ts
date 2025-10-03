@@ -3,7 +3,7 @@ import settingsPage from '../../../pages/settings.page'
 import txPage from '../../../pages/transactions.page'
 import txLoc from '../../../locators/transactions.loc'
 
-describe('Send SPL on Solana', () => {
+describe('Send transaction', () => {
   before(async () => {
     await warmup()
     await settingsPage.createNthAccount()

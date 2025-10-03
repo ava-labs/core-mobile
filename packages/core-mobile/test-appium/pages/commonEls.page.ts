@@ -248,8 +248,9 @@ class CommonElsPage {
     item = commonEls.cChain_2,
     filterDropdown = this.filterDropdown
   ) {
-    await actions.tap(filterDropdown)
+    await actions.click(filterDropdown)
     await this.selectDropdownItem(item)
+    console.log('3 done selecting dropdown item')
   }
 
   async getBalanceHeaderAccountName(whichScreen: string) {
@@ -389,11 +390,11 @@ class CommonElsPage {
   }
 
   async selectDropdownItem(item: string) {
-    const ele = selectors.getById(`${commonEls.dropdownItem}${item}`)
-    while (!(await actions.isVisibleTrueOrFalse(ele))) {
-      await actions.swipe('down', 0.5, this.dropdownScrollView)
-    }
-    await actions.tap(selectors.getById(`${commonEls.dropdownItem}${item}`))
+    const xpath = driver.isIOS
+      ? `//XCUIElementTypeCell//*[contains(@name, "${item}")]`
+      : `//android.widget.ListView//*[contains(@text, "${item}")]`
+    const ele = selectors.getByXpath(xpath)
+    await actions.tap(ele)
   }
 
   async goSettings() {

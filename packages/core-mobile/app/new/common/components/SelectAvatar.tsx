@@ -141,7 +141,7 @@ export const SelectAvatar = memo(
               />
             </View>
           )}
-          {!Config.E2E_MNEMONIC && (
+          {!Config.E2E && (
             <View
               style={{
                 marginBottom: -insets.bottom,

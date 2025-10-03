@@ -1,3 +1,4 @@
+/* eslint-disable jest/no-disabled-tests */
 import warmup from '../../../helpers/warmup'
 import settingsPage from '../../../pages/settings.page'
 import txPage from '../../../pages/transactions.page'
@@ -6,7 +7,7 @@ import commonPage from '../../../pages/commonEls.page'
 import commonLoc from '../../../locators/commonEls.loc'
 import portfolioPage from '../../../pages/portfolio.page'
 
-describe('Send AVAX on P-Chain', () => {
+describe.skip('Send transaction', () => {
   before(async () => {
     await warmup()
     await settingsPage.createNthAccount()

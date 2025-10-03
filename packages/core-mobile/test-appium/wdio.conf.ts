@@ -31,7 +31,8 @@ const allCaps = [
     'appium:automationName': 'UiAutomator2',
     'appium:app': androidPath,
     'appium:appWaitActivity': '*',
-    'appium:autoGrantPermissions': true
+    'appium:autoGrantPermissions': true,
+    'appium:settings[snapshotMaxDepth]': 70
   },
   {
     platformName: 'iOS',
@@ -48,7 +49,8 @@ const allCaps = [
     'appium:wdaStartupRetryInterval': 20000,
     'appium:usePrebuiltWDA': false,
     'appium:shouldUseSingletonTestManager': false,
-    'appium:showXcodeLog': true
+    'appium:showXcodeLog': true,
+    'appium:settings[snapshotMaxDepth]': 70
   }
 ]
 
@@ -64,12 +66,11 @@ export const config: WebdriverIO.Config = {
     // 'path/to/excluded/files'
     './specs/login.e2e.ts'
   ],
-  maxInstances: 10,
+  maxInstances: 2,
   port: 4723,
   services: [['appium', { command: 'appium' }]],
   logLevel: 'error',
   bail: 0,
-  specFileRetries: 2,
   waitforTimeout: 20000,
   connectionRetryTimeout: 120000,
   connectionRetryCount: 2,

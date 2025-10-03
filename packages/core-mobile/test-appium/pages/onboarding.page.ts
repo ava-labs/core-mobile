@@ -73,7 +73,7 @@ class OnboardingPage {
   }
 
   async exitMetro() {
-    if (process.env.E2E !== 'true') {
+    if (process.env.E2E === 'true') {
       try {
       console.log('you are using a dev build, skipping metro dev menu now...')
       const preceedingHost = driver.isIOS ? 'localhost' : '10.0.2.2'
@@ -174,6 +174,7 @@ class OnboardingPage {
     try {
     await actions.waitFor(this.updateAppModalTitle, 30000)
     await actions.dragAndDrop(this.updateAppModalTitle, [0, 500])
+    await actions.delay(1000)
   } catch (e) {
     console.log('Update app modal not found')
   }

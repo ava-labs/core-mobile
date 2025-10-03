@@ -6,7 +6,7 @@ import commonPage from '../../../pages/commonEls.page'
 import commonLoc from '../../../locators/commonEls.loc'
 import portfolioPage from '../../../pages/portfolio.page'
 
-describe('Send AVAX on P-Chain', () => {
+describe('Send transaction', () => {
   before(async () => {
     await warmup()
     await settingsPage.createNthAccount()

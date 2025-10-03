@@ -57,6 +57,7 @@ class Settings {
   }
 
   async goSettings() {
+    await actions.delay(1500)
     await actions.click(this.settingsBtn)
   }
   async createNthAccount(account = 2, activeAccount = settings.account) {
