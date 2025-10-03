@@ -10,7 +10,7 @@ import { selectTokensByNetwork } from 'store/balance'
 import { HandleResponse, RpcRequestHandler } from '../types'
 import { parseRequestParams } from './utils'
 
-type NetworkStateResponse = {
+type Network = {
   caip2ChainId: string
   rpcUrl: string
   name: string
@@ -25,19 +25,23 @@ type NetworkStateResponse = {
   disabledTokens: string[]
 }
 
+type NetworkStateResponse = {
+  networks: Network[]
+}
+
 export type WalletGetNetworkStateRpcRequest =
   RpcRequest<RpcMethod.WALLET_GET_NETWORK_STATE>
 
 class WalletGetNetworkStateHandler
   implements
-    RpcRequestHandler<WalletGetNetworkStateRpcRequest, NetworkStateResponse[]>
+    RpcRequestHandler<WalletGetNetworkStateRpcRequest, NetworkStateResponse>
 {
   methods = [RpcMethod.WALLET_GET_NETWORK_STATE]
 
   handle = async (
     request: WalletGetNetworkStateRpcRequest,
     listenerApi: AppListenerEffectAPI
-  ): HandleResponse<NetworkStateResponse[]> => {
+  ): HandleResponse<NetworkStateResponse> => {
     const { getState } = listenerApi
     const state = getState()
     const isDeveloperMode = selectIsDeveloperMode(getState())
@@ -70,7 +74,7 @@ class WalletGetNetworkStateHandler
     const enabledNetworks = selectEnabledNetworksByTestnet(isTestnet)(state)
     const tokenVisibility = selectTokenVisibility(state)
 
-    const networkStateResponses = enabledNetworks.map(network => {
+    const networks = enabledNetworks.map(network => {
       const { enabledTokens, disabledTokens } = selectTokensByNetwork(
         tokenVisibility,
         network.chainId
@@ -92,7 +96,7 @@ class WalletGetNetworkStateHandler
       }
     })
 
-    return { success: true, value: networkStateResponses }
+    return { success: true, value: { networks } }
   }
 }
 

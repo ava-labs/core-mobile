@@ -12,7 +12,6 @@ import {
 import { getNetworksFromCache } from 'hooks/networks/utils/getNetworksFromCache'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { selectIsSolanaSupportBlocked } from 'store/posthog'
-import { getCaip2ChainId } from 'utils/caip2ChainIds'
 import { RootState } from '../types'
 import { ChainID, Networks, NetworkState } from './types'
 
