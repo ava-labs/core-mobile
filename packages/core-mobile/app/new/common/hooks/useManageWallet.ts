@@ -152,6 +152,17 @@ export const useManageWallet = (): {
         }
       ]
 
+      if (
+        [WalletType.MNEMONIC, WalletType.SEEDLESS, WalletType.LEDGER].includes(
+          wallet.type
+        )
+      ) {
+        baseItems.push({
+          id: 'add_account',
+          title: 'Add account to this wallet'
+        })
+      }
+
       if (canRemoveWallet(wallet)) {
         baseItems.push({
           id: 'remove',
