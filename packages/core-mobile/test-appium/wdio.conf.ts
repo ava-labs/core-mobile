@@ -13,14 +13,14 @@ const isBitrise = process.env.CI === 'true'
 const iosPath = isBitrise
   ? process.env.BITRISE_APP_DIR_PATH
   : path.resolve(
-      './ios/DerivedData/Build/Products/Debug-iphonesimulator/AvaxWallet.app'
-      // '/Users/eunji.song/Downloads/AvaxWalletInternal.app'
+      // './ios/DerivedData/Build/Products/Debug-iphonesimulator/AvaxWallet.app'
+      '/Users/eunji.song/Downloads/AvaxWalletInternal.app'
     )
 const androidPath = isBitrise
   ? process.env.BITRISE_APK_PATH
   : path.resolve(
-      './android/app/build/outputs/apk/internal/debug/app-internal-debug.apk'
-      // '/Users/eunji.song/Downloads/app-internal-e2e-bitrise-signed.apk'
+      // './android/app/build/outputs/apk/internal/debug/app-internal-debug.apk'
+      '/Users/eunji.song/Downloads/app-internal-e2e-bitrise-signed.apk'
     )
 const platformToRun = process.env.PLATFORM
 const allCaps = [
@@ -32,7 +32,8 @@ const allCaps = [
     'appium:app': androidPath,
     'appium:appWaitActivity': '*',
     'appium:autoGrantPermissions': true,
-    'appium:settings[snapshotMaxDepth]': 70
+    'appium:settings[snapshotMaxDepth]': 70,
+    'appium:isHeadless': true
   },
   {
     platformName: 'iOS',
@@ -50,7 +51,8 @@ const allCaps = [
     'appium:usePrebuiltWDA': false,
     'appium:shouldUseSingletonTestManager': false,
     'appium:showXcodeLog': true,
-    'appium:settings[snapshotMaxDepth]': 70
+    'appium:settings[snapshotMaxDepth]': 70,
+    'appium:isHeadless': true
   }
 ]
 
