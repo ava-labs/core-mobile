@@ -125,13 +125,18 @@ export const useManageWallet = (): {
       // 1. Seedless wallets cannot be removed
       if (wallet.type === WalletType.SEEDLESS) return false
 
-      // 2. Mnemonic wallets can be removed if there are multiple mnemonic or seedless wallets
+      // 2. Mnemonic wallets can be removed if there are multiple mnemonic/seedless/keystone wallets
       const walletCount = Object.values(wallets).filter(
-        w => w.type === WalletType.MNEMONIC || w.type === WalletType.SEEDLESS
+        w =>
+          w.type === WalletType.MNEMONIC ||
+          w.type === WalletType.SEEDLESS ||
+          w.type === WalletType.KEYSTONE
       ).length
 
       const isLastRemovableMnemonic =
-        walletCount === 1 && wallet.type === WalletType.MNEMONIC
+        walletCount === 1 &&
+        (wallet.type === WalletType.MNEMONIC ||
+          wallet.type === WalletType.KEYSTONE)
 
       return !isLastRemovableMnemonic
     },
@@ -147,6 +152,17 @@ export const useManageWallet = (): {
         }
       ]
 
+      if (
+        [WalletType.MNEMONIC, WalletType.SEEDLESS, WalletType.LEDGER].includes(
+          wallet.type
+        )
+      ) {
+        baseItems.push({
+          id: 'add_account',
+          title: 'Add account to this wallet'
+        })
+      }
+
       if (canRemoveWallet(wallet)) {
         baseItems.push({
           id: 'remove',
@@ -155,7 +171,13 @@ export const useManageWallet = (): {
         })
       }
 
-      if ([WalletType.MNEMONIC, WalletType.SEEDLESS].includes(wallet.type)) {
+      if (
+        [
+          WalletType.MNEMONIC,
+          WalletType.SEEDLESS,
+          WalletType.KEYSTONE
+        ].includes(wallet.type)
+      ) {
         baseItems.push({
           id: 'add_account',
           title: 'Add account to this wallet'

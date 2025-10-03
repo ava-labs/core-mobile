@@ -41,11 +41,15 @@ export enum FeatureGates {
   MELD_ONRAMP = 'meld-onramp',
   MELD_OFFRAMP = 'meld-offramp',
   SWAP_USE_MARKR = 'swap-use-markr',
+  KEYSTONE = 'keystone',
   MELD_INTEGRATION = 'meld-integration',
   SWAP_FEES_JUPITER = 'swap-fees-jupiter',
   SWAP_SOLANA = 'swap-solana',
   IN_APP_UPDATE_ANDROID = 'in-app-update-android',
-  ENABLE_MELD_SANDBOX = 'enable-meld-sandbox'
+  ENABLE_MELD_SANDBOX = 'enable-meld-sandbox',
+  LEDGER_SUPPORT = 'ledger-support',
+  IN_APP_DEFI = 'in-app-defi',
+  IN_APP_DEFI_IS_NEW = 'in-app-defi-is-new'
 }
 
 export enum FeatureVars {

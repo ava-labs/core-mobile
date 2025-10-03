@@ -7,19 +7,12 @@ import { EncryptedStoreProvider } from 'contexts/EncryptedStoreProvider'
 import { PosthogContextProvider } from 'contexts/PosthogContext'
 import { ReactQueryProvider } from 'contexts/ReactQueryProvider'
 import React, { FC, PropsWithChildren } from 'react'
-import { Platform } from 'react-native'
 import { ConfettiMethods } from 'react-native-fast-confetti'
 import { RootSiblingParent } from 'react-native-root-siblings'
-import { FullWindowOverlay } from 'react-native-screens'
-import Toast from 'react-native-toast-notifications'
 import SentryService from 'services/sentry/SentryService'
 import { App } from './App'
 import JailbreakCheck from './common/components/JailbreakCheck'
 import TopLevelErrorFallback from './common/components/TopLevelErrorFallback'
-
-const setGlobalToast = (toast: Toast): void => {
-  global.toast = toast
-}
 
 const setGlobalConfetti = (confetti: ConfettiMethods): void => {
   global.confetti = confetti
@@ -44,22 +37,6 @@ const ContextApp = (): JSX.Element => {
           <App />
         </RootSiblingParent>
         <JailbreakCheck />
-        <Toast
-          ToastContainerWrapper={
-            Platform.OS === 'ios'
-              ? {
-                  component: FullWindowOverlay,
-                  props: {
-                    children: undefined
-                  }
-                }
-              : undefined
-          }
-          ref={setGlobalToast}
-          offsetTop={30}
-          normalColor={'00FFFFFF'}
-        />
-
         <Confetti ref={setGlobalConfetti} />
       </ContextProviders>
     </Sentry.ErrorBoundary>

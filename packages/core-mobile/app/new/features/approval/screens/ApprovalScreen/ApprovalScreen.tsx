@@ -337,7 +337,7 @@ const ApprovalScreen = ({
   }, [balanceChange, hasBalanceChange])
 
   const renderSpendLimits = (): JSX.Element | null => {
-    if (spendLimits.length === 0 || hasBalanceChange) {
+    if (spendLimits.length === 0) {
       return null
     }
 

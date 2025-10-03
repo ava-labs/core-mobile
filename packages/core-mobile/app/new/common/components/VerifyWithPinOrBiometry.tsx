@@ -27,6 +27,10 @@ export const VerifyWithPinOrBiometry = ({
     pinInputRef.current?.stopLoadingAnimation(onComplete)
   }
 
+  const handleBiometricPrompt = useCallback(async () => {
+    return BiometricsSDK.authenticateAsync()
+  }, [])
+
   const {
     enteredPin,
     onEnterPin,
@@ -35,6 +39,7 @@ export const VerifyWithPinOrBiometry = ({
     disableKeypad,
     timeRemaining
   } = usePinOrBiometryLogin({
+    onBiometricPrompt: handleBiometricPrompt,
     onWrongPin: handleWrongPin,
     onStartLoading: handleStartLoading,
     onStopLoading: handleStopLoading

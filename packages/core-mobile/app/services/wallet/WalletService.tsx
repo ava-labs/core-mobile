@@ -50,6 +50,8 @@ import {
 } from './utils'
 import WalletFactory from './WalletFactory'
 import { MnemonicWallet } from './MnemonicWallet'
+import { LedgerWallet } from './LedgerWallet'
+import KeystoneWallet from './KeystoneWallet'
 
 // Tolerate 50% buffer for burn amount for EVM transactions
 const EVM_FEE_TOLERANCE = 50
@@ -211,14 +213,49 @@ class WalletService {
         // prompt Core Seedless API to derive new keys
         await wallet.addAccount(accountIndex)
       }
+    } else if (walletType === WalletType.LEDGER) {
+      // For BIP44 Ledger wallets, try to derive addresses from extended public keys
+      // This avoids the need to connect to the device for new accounts
+      const wallet = await WalletFactory.createWallet({
+        walletId,
+        walletType
+      })
+
+      if (wallet instanceof LedgerWallet && wallet.isBIP44()) {
+        // Try to derive addresses from extended public keys
+        const evmAddress = wallet.deriveAddressFromXpub(
+          accountIndex,
+          NetworkVMType.EVM,
+          isTestnet
+        )
+        const btcAddress = wallet.deriveAddressFromXpub(
+          accountIndex,
+          NetworkVMType.BITCOIN,
+          isTestnet
+        )
+
+        if (evmAddress && btcAddress) {
+          // We can derive EVM and Bitcoin addresses from xpubs
+          Logger.info(
+            `Derived addresses from xpub for account ${accountIndex}:`,
+            {
+              evm: evmAddress,
+              btc: btcAddress
+            }
+          )
+        }
+      }
     }
 
-    return this.getAddresses({
+    const addresses = await this.getAddresses({
       walletId,
       walletType,
       accountIndex,
       isTestnet
     })
+
+    Logger.info(`Final addresses for account ${accountIndex}:`, addresses)
+    return addresses
   }
 
   /**
@@ -314,7 +351,7 @@ class WalletService {
     walletId: string
     walletType: WalletType
   }): Promise<string> {
-    if (walletType !== WalletType.MNEMONIC) {
+    if (![WalletType.MNEMONIC, WalletType.KEYSTONE].includes(walletType)) {
       throw new Error('Unable to get raw xpub XP: unsupported wallet type')
     }
 
@@ -323,9 +360,12 @@ class WalletService {
       walletType
     })
 
-    if (!(wallet instanceof MnemonicWallet)) {
+    if (
+      !(wallet instanceof MnemonicWallet) &&
+      !(wallet instanceof KeystoneWallet)
+    ) {
       throw new Error(
-        'Unable to get raw xpub XP: Expected MnemonicWallet instance'
+        'Unable to get raw xpub XP: Expected MnemonicWallet or KeystoneWallet instance'
       )
     }
 
@@ -355,7 +395,7 @@ class WalletService {
       return []
     }
 
-    if (walletType === WalletType.MNEMONIC) {
+    if ([WalletType.MNEMONIC, WalletType.KEYSTONE].includes(walletType)) {
       const provXP = await NetworkService.getAvalancheProviderXP(isTestnet)
 
       const xpubXP = await this.getRawXpubXP({ walletId, walletType })
