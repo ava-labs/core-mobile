@@ -5,7 +5,7 @@ import {
   CORE_AVAX_METHODS,
   CORE_BTC_METHODS,
   RpcMethod,
-  CORE_XP_METHODS
+  CORE_WALLET_METHODS
 } from 'store/rpc/types'
 import { SafeParseError, SafeParseSuccess, z, ZodArray } from 'zod'
 import { WCSessionProposal } from 'store/walletConnectV2/types'
@@ -56,7 +56,7 @@ export const isCoreMethod = (method: string): boolean =>
     ...CORE_EVM_METHODS,
     ...CORE_AVAX_METHODS,
     ...CORE_BTC_METHODS,
-    ...CORE_XP_METHODS
+    ...CORE_WALLET_METHODS
   ].includes(method as RpcMethod)
 
 export const isCoreDomain = (url: string): boolean => {
