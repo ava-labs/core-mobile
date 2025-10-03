@@ -152,7 +152,7 @@ android {
             buildConfigField "boolean", "ENABLE_FLAG_SECURE", "false"
         }
         external {
-            buildConfigField "boolean", "ENABLE_FLAG_SECURE", "true"
+            buildConfigField "boolean", "ENABLE_FLAG_SECURE", "false"
         }
     }
 
