@@ -24,6 +24,7 @@ import {
 import { handleDeeplink } from 'contexts/DeeplinkContext/utils/handleDeeplink'
 import { CORE_UNIVERSAL_LINK_HOSTS } from 'resources/Constants'
 import { router } from 'expo-router'
+import AnalyticsService from 'services/analytics/AnalyticsService'
 
 type UnsubscribeFunc = () => void
 
@@ -176,6 +177,7 @@ class FCMService {
         )
         return
       }
+
       const notificationData = this.#prepareNotificationData(result.data)
 
       if (
@@ -204,6 +206,11 @@ class FCMService {
             params: { deeplinkUrl: link.url }
           })
       })
+
+      AnalyticsService.capture('PushNotificationPressed', {
+        channelId: notificationData.data?.channelId as string,
+        deeplinkUrl: notificationData.data?.url as string
+      })
     })
   }
 
@@ -218,6 +225,7 @@ class FCMService {
         )
         return
       }
+
       if (result.data.notification) {
         //skip, FCM sdk handles this already
         return

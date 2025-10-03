@@ -1,21 +1,23 @@
-import { useCallback, useEffect, useState, useMemo } from 'react'
 import { VsCurrencyType } from '@avalabs/core-coingecko-sdk'
+import { getTokenAddress, getTokenChainId } from 'features/track/utils/utils'
+import { useGetTrendingToken } from 'hooks/watchlist/useGetTrendingTokens'
+import { useWatchlist } from 'hooks/watchlist/useWatchlist'
+import { useCoreBrowser } from 'new/common/hooks/useCoreBrowser'
+import { useCallback, useEffect, useMemo, useState } from 'react'
+import { InteractionManager } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
+import AnalyticsService from 'services/analytics/AnalyticsService'
+import { ChannelId } from 'services/notifications/channels'
+import TokenService from 'services/token/TokenService'
+import { Ranges, TrendingToken } from 'services/token/types'
+import { selectSelectedCurrency } from 'store/settings/currency'
 import {
   MarketToken,
   MarketType,
   selectIsWatchlistFavorite,
   toggleWatchListFavorite
 } from 'store/watchlist'
-import { InteractionManager } from 'react-native'
-import TokenService from 'services/token/TokenService'
-import { useWatchlist } from 'hooks/watchlist/useWatchlist'
-import { useGetTrendingToken } from 'hooks/watchlist/useGetTrendingTokens'
 import { getSocialHandle } from 'utils/getSocialHandle/getSocialHandle'
-import { Ranges, TrendingToken } from 'services/token/types'
-import { selectSelectedCurrency } from 'store/settings/currency'
-import { useCoreBrowser } from 'new/common/hooks/useCoreBrowser'
-import { getTokenAddress, getTokenChainId } from 'features/track/utils/utils'
 import { usePrevious } from './usePrevious'
 
 const isTrendingToken = (token: MarketToken | undefined): boolean =>
@@ -221,8 +223,17 @@ export const useTokenDetails = ({
   ])
 
   const handleFavorite = useCallback(() => {
+    AnalyticsService.capture(
+      isFavorite
+        ? 'PushNotificationUnsubscribed'
+        : 'PushNotificationSubscribed',
+      {
+        channelId: ChannelId.FAV_TOKEN_PRICE_ALERTS,
+        tokenId
+      }
+    )
     dispatch(toggleWatchListFavorite(tokenId))
-  }, [tokenId, dispatch])
+  }, [isFavorite, dispatch, tokenId])
 
   const prevChartDays = usePrevious(chartDays)
 
