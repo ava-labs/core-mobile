@@ -20,7 +20,6 @@ import {
   selectIsAllBalancesInaccurate,
   selectIsBalanceLoadedForAccount,
   selectIsLoadingBalances,
-  selectIsPollingBalances,
   selectIsRefetchingBalances
 } from 'store/balance'
 import { selectEnabledNetworks } from 'store/network'
@@ -44,16 +43,8 @@ const AssetsScreen: FC<Props> = ({
   goToBuy,
   onScrollResync
 }): JSX.Element => {
-  const {
-    onResetFilter,
-    data,
-    filter,
-    sort,
-    view,
-    refetch,
-    isRefetching,
-    isLoading
-  } = useAssetsFilterAndSort()
+  const { onResetFilter, data, filter, sort, view, refetch, isRefetching } =
+    useAssetsFilterAndSort()
   const listType = view.selected as AssetManageView
 
   const activeAccount = useSelector(selectActiveAccount)
@@ -67,7 +58,6 @@ const AssetsScreen: FC<Props> = ({
   )
   const isAllBalancesError = useSelector(selectIsAllBalancesError)
   const isBalanceLoading = useSelector(selectIsLoadingBalances)
-  const isBalancePolling = useSelector(selectIsPollingBalances)
   const isRefetchingBalance = useSelector(selectIsRefetchingBalances)
   const tokenVisibility = useSelector(selectTokenVisibility)
   const balanceTotalInCurrency = useSelector(
@@ -94,11 +84,11 @@ const AssetsScreen: FC<Props> = ({
   const isGridView = view.selected === AssetManageView.Grid
   const numColumns = isGridView ? 2 : 1
 
+  // Only show loading state for initial load, not during background polling
+  const isInitialLoading = isLoadingBalance && !isBalanceLoaded
+
   const hasNoAssets =
-    isBalanceLoaded &&
-    balanceTotalInCurrency === 0 &&
-    !isLoadingBalance &&
-    !isBalancePolling
+    isBalanceLoaded && balanceTotalInCurrency === 0 && !isInitialLoading
 
   const renderItem = useCallback(
     (item: LocalTokenWithBalance, index: number): JSX.Element => {
@@ -137,7 +127,8 @@ const AssetsScreen: FC<Props> = ({
   }, [isGridView])
 
   const renderEmptyComponent = useCallback(() => {
-    if (isLoadingBalance || !isBalanceLoaded || isBalancePolling) {
+    // Only show loading state during initial load, not background polling
+    if (isInitialLoading) {
       return <LoadingState />
     }
 
@@ -174,9 +165,8 @@ const AssetsScreen: FC<Props> = ({
       )
     }
   }, [
-    isLoadingBalance,
+    isInitialLoading,
     isBalanceLoaded,
-    isBalancePolling,
     isAllBalancesError,
     isAllBalancesInaccurate,
     filter.selected,
@@ -196,7 +186,7 @@ const AssetsScreen: FC<Props> = ({
   }, [renderEmptyComponent])
 
   const renderHeader = useCallback(() => {
-    if (hasNoAssets || isLoadingBalance) {
+    if (hasNoAssets || isInitialLoading) {
       return
     }
 
@@ -213,7 +203,7 @@ const AssetsScreen: FC<Props> = ({
         />
       </View>
     )
-  }, [hasNoAssets, isLoadingBalance, filter, sort, view, handleManageList])
+  }, [hasNoAssets, isInitialLoading, filter, sort, view, handleManageList])
 
   const overrideProps = {
     contentContainerStyle: {
@@ -256,7 +246,7 @@ const AssetsScreen: FC<Props> = ({
         ListEmptyComponent={renderEmpty}
         ItemSeparatorComponent={renderSeparator}
         showsVerticalScrollIndicator={false}
-        refreshing={isRefetching || isLoading}
+        refreshing={isRefetching}
         onRefresh={refetch}
       />
     </Animated.View>
