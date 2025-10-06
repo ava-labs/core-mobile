@@ -15,7 +15,7 @@ import mergeWith from 'lodash/mergeWith'
 import isArray from 'lodash/isArray'
 import union from 'lodash/union'
 
-import { RpcMethod, CORE_EVM_METHODS } from '../../types'
+import { RpcMethod, CORE_EVM_METHODS, CORE_WALLET_METHODS } from '../../types'
 import {
   RpcRequestHandler,
   DEFERRED_RESULT,
@@ -59,7 +59,7 @@ class WCSessionRequestHandler implements RpcRequestHandler<WCSessionProposal> {
     // that use Wagmi to be able to send/access more rpc methods
     // by default, Wagmi only requests eth_sendTransaction and personal_sign
     return isCoreApp
-      ? [...supportedEvmMethods, ...CORE_EVM_METHODS]
+      ? [...supportedEvmMethods, ...CORE_EVM_METHODS, ...CORE_WALLET_METHODS]
       : supportedEvmMethods
   }
 
