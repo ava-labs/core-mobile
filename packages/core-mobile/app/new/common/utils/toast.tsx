@@ -142,6 +142,11 @@ type TransactionSnackbarToast =
       toastId?: string
       content: { type: 'error'; message?: string; error?: string }
     }
+  | {
+      toastType: ToastType.TRANSACTION_SNACKBAR
+      toastId?: string
+      content: { type: 'plain'; message?: string }
+    }
 
 type ToastProps =
   | SnackbarToast
@@ -160,7 +165,7 @@ const getDuration = (props: ToastProps, config?: ToastConfig): number => {
     : DURATION_LONG
 }
 
-function showToast(props: ToastProps, config?: ToastConfig): void {
+export function showToast(props: ToastProps, config?: ToastConfig): void {
   global.toast?.hideAll()
 
   const _toastId = props.toastId ?? uuid()
@@ -175,7 +180,7 @@ function showToast(props: ToastProps, config?: ToastConfig): void {
   })
 }
 
-function updateToast({
+export function updateToast({
   toastId,
   props,
   config
@@ -194,7 +199,7 @@ function updateToast({
   })
 }
 
-function dismissToast(toastId: string): void {
+export function dismissToast(toastId: string): void {
   global?.toast?.hide(toastId)
 }
 
@@ -278,5 +283,24 @@ export const transactionSnackbar = {
       {
         duration: DURATION_LONG
       }
-    )
+    ),
+  /*
+   * Displays a plain(no icon) snackbar.
+   *
+   * `message` is a short, one-line message for the snackbar.
+   */
+  plain: ({ toastId, message }: { toastId?: string; message?: string }) => {
+    const props: ToastProps = {
+      toastType: ToastType.TRANSACTION_SNACKBAR,
+      content: { type: 'plain', message }
+    }
+    if (toastId) {
+      updateToast({
+        toastId,
+        props
+      })
+    } else {
+      showToast(props)
+    }
+  }
 }

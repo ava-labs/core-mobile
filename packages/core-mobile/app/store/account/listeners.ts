@@ -1,4 +1,4 @@
-import accountService from 'services/account/AccountsService'
+import AccountsService from 'services/account/AccountsService'
 import {
   selectIsDeveloperMode,
   toggleDeveloperMode
@@ -7,34 +7,33 @@ import { AppListenerEffectAPI, AppStartListening } from 'store/types'
 import { AnyAction } from '@reduxjs/toolkit'
 import { onAppUnlocked, onLogIn } from 'store/app/slice'
 import { WalletType } from 'services/wallet/types'
-import { SeedlessPubKeysStorage } from 'seedless/services/storage/SeedlessPubKeysStorage'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import SeedlessService from 'seedless/services/SeedlessService'
-import { isEvmPublicKey } from 'utils/publicKeys'
 import { recentAccountsStore } from 'new/features/accountSettings/store'
 import {
   selectActiveWallet,
-  selectActiveWalletId,
   selectSeedlessWallet,
   selectWallets,
   setWalletName
 } from 'store/wallet/slice'
 import { selectIsSolanaSupportBlocked } from 'store/posthog'
 import BiometricsSDK from 'utils/BiometricsSDK'
-import WalletFactory from 'services/wallet/WalletFactory'
-import SeedlessWallet from 'seedless/services/wallet/SeedlessWallet'
-import { transactionSnackbar } from 'common/utils/toast'
 import Logger from 'utils/Logger'
 import KeystoneService from 'features/keystone/services/KeystoneService'
 import { pendingSeedlessWalletNameStore } from 'features/onboarding/store'
 import {
   selectAccounts,
   setAccounts,
-  setNonActiveAccounts,
   setActiveAccountId,
   selectAccountsByWalletId
 } from './slice'
 import { AccountCollection } from './types'
+import {
+  canMigrateActiveAccounts,
+  deriveMissingSeedlessSessionKeys,
+  migrateRemainingActiveAccounts,
+  shouldMigrateActiveAccounts
+} from './utils'
 const initAccounts = async (
   _action: AnyAction,
   listenerApi: AppListenerEffectAPI
@@ -44,7 +43,7 @@ const initAccounts = async (
   const isDeveloperMode = selectIsDeveloperMode(state)
   const isSolanaSupportBlocked = selectIsSolanaSupportBlocked(state)
   const activeWallet = selectActiveWallet(state)
-  let accounts: AccountCollection = {}
+  const accounts: AccountCollection = {}
 
   if (!activeWallet) {
     throw new Error('Active wallet is not set')
@@ -74,13 +73,32 @@ const initAccounts = async (
     }
   }
 
-  const acc = await accountService.createNextAccount({
+  const name = await AccountsService.getAccountName({
+    walletType: activeWallet.type,
+    accountIndex: 0
+  })
+
+  const acc = await AccountsService.createNextAccount({
     index: 0,
     walletType: activeWallet.type,
     isTestnet: isDeveloperMode,
     walletId: activeWallet.id,
-    name: `Account 1`
+    name
   })
+
+  if (
+    activeWallet.type === WalletType.MNEMONIC ||
+    activeWallet.type === WalletType.PRIVATE_KEY ||
+    activeWallet.type === WalletType.SEEDLESS
+  ) {
+    accounts[acc.id] = acc
+    listenerApi.dispatch(setAccounts(accounts))
+    const firstAccountId = Object.keys(accounts)[0]
+    if (!firstAccountId) {
+      throw new Error('No accounts created')
+    }
+    listenerApi.dispatch(setActiveAccountId(firstAccountId))
+  }
 
   if (activeWallet.type === WalletType.SEEDLESS) {
     // setting wallet name
@@ -99,27 +117,6 @@ const initAccounts = async (
         pendingSeedlessWalletName: undefined
       })
     }
-
-    // retrieving firstaccount name from cubist
-    const title = await SeedlessService.getAccountName(0)
-    const accountTitle = title ?? acc.name
-    accounts[acc.id] = { ...acc, name: accountTitle }
-    listenerApi.dispatch(setAccounts(accounts))
-    const firstAccountId = Object.keys(accounts)[0]
-    if (!firstAccountId) {
-      throw new Error('No accounts created')
-    }
-    listenerApi.dispatch(setActiveAccountId(firstAccountId))
-
-    // to avoid initial account fetching taking too long,
-    // we fetch the remaining accounts in the background
-    const addedAccounts = await fetchRemainingAccounts({
-      walletType: activeWallet.type,
-      startIndex: 1,
-      listenerApi
-    })
-
-    accounts = { ...accounts, ...addedAccounts }
 
     const entries = Object.values(accounts)
     // Only derive missing Solana keys if Solana support is enabled
@@ -160,49 +157,6 @@ const initAccounts = async (
   }
 }
 
-const fetchRemainingAccounts = async ({
-  walletType,
-  listenerApi,
-  startIndex
-}: {
-  walletType: WalletType
-  listenerApi: AppListenerEffectAPI
-  startIndex: number
-}): Promise<AccountCollection> => {
-  /**
-   * note:
-   * adding accounts cannot be parallelized, they need to be added one-by-one.
-   * otherwise race conditions occur and addresses get mixed up.
-   */
-  const state = listenerApi.getState()
-  const isDeveloperMode = selectIsDeveloperMode(state)
-  const pubKeys = await SeedlessPubKeysStorage.retrieve()
-  const numberOfAccounts = pubKeys.filter(isEvmPublicKey).length
-
-  const accounts: AccountCollection = {}
-  const activeWalletId = selectActiveWalletId(state)
-
-  if (!activeWalletId) {
-    throw new Error('Active wallet ID is not set')
-  }
-  // fetch the remaining accounts in the background
-  for (let i = startIndex; i < numberOfAccounts; i++) {
-    const acc = await accountService.createNextAccount({
-      index: i,
-      walletType,
-      isTestnet: isDeveloperMode,
-      walletId: activeWalletId,
-      name: `Account ${i + 1}`
-    })
-    const title = await SeedlessService.getAccountName(i)
-    const accountTitle = title ?? acc.name
-    accounts[acc.id] = { ...acc, name: accountTitle }
-  }
-  listenerApi.dispatch(setNonActiveAccounts(accounts))
-
-  return accounts
-}
-
 // reload addresses
 const reloadAccounts = async (
   _action: unknown,
@@ -219,7 +173,7 @@ const reloadAccounts = async (
       accountsCollection[account.id] = account
     }
 
-    const reloadedAccounts = await accountService.reloadAccounts({
+    const reloadedAccounts = await AccountsService.reloadAccounts({
       accounts: accountsCollection,
       isTestnet: isDeveloperMode,
       walletId: wallet.id,
@@ -232,26 +186,34 @@ const reloadAccounts = async (
 const handleActiveAccountIndexChange = (
   action: ReturnType<typeof setActiveAccountId>
 ): void => {
-  recentAccountsStore.getState().addRecentAccount(action.payload)
+  recentAccountsStore.getState().updateRecentAccount(action.payload)
 }
 
-const fetchSeedlessAccountsIfNeeded = async (
+const migrateActiveAccountsIfNeeded = async (
   _action: AnyAction,
   listenerApi: AppListenerEffectAPI
 ): Promise<void> => {
   const state = listenerApi.getState()
-  const seedlessWallet = selectSeedlessWallet(state)
-  if (!seedlessWallet) {
+  const activeWallet = selectActiveWallet(state)
+  if (!activeWallet || !canMigrateActiveAccounts(activeWallet)) {
     return
   }
-
-  const accounts = selectAccountsByWalletId(state, seedlessWallet.id)
-
-  fetchRemainingAccounts({
-    walletType: seedlessWallet.type,
-    listenerApi,
-    startIndex: Object.keys(accounts).length
+  const accounts = selectAccountsByWalletId(state, activeWallet.id)
+  // there should be at least one account
+  const numberOfAccounts = Math.max(1, Object.keys(accounts).length)
+  const shouldMigrate = await shouldMigrateActiveAccounts({
+    wallet: activeWallet,
+    numberOfAccounts
   })
+
+  if (shouldMigrate) {
+    await migrateRemainingActiveAccounts({
+      listenerApi,
+      walletId: activeWallet.id,
+      walletType: activeWallet.type,
+      startIndex: numberOfAccounts
+    })
+  }
 }
 
 const migrateSolanaAddressesIfNeeded = async (
@@ -271,30 +233,6 @@ const migrateSolanaAddressesIfNeeded = async (
     }
     // reload only when there are accounts without Solana addresses
     reloadAccounts(_action, listenerApi)
-  }
-}
-
-const deriveMissingSeedlessSessionKeys = async (
-  walletId: string
-): Promise<void> => {
-  const wallet = await WalletFactory.createWallet({
-    walletId,
-    walletType: WalletType.SEEDLESS
-  })
-  if (wallet instanceof SeedlessWallet) {
-    try {
-      transactionSnackbar.pending({ message: 'Updating accounts...' })
-
-      // prompt Core Seedless API to derive missing keys
-      await wallet.deriveMissingKeys()
-
-      transactionSnackbar.success({ message: 'Accounts updated' })
-    } catch (error) {
-      Logger.error('Failed to derive missing keys', error)
-      transactionSnackbar.error({
-        error: 'Failed to update accounts'
-      })
-    }
   }
 }
 
@@ -318,7 +256,7 @@ export const addAccountListeners = (
 
   startListening({
     actionCreator: onAppUnlocked,
-    effect: fetchSeedlessAccountsIfNeeded
+    effect: migrateActiveAccountsIfNeeded
   })
 
   startListening({

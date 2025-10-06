@@ -34,6 +34,7 @@ export const AVALANCHE_MAINNET_NETWORK = {
   networkToken: {
     name: 'Avalanche',
     symbol: 'AVAX',
+    decimals: 18,
     logoUri:
       'https://images.ctfassets.net/gcj8jwzm6086/5VHupNKwnDYJvqMENeV7iJ/3e4b8ff10b69bfa31e70080a4b142cd0/avalanche-avax-logo.svg'
   },
@@ -47,7 +48,9 @@ export const AVALANCHE_TESTNET_NETWORK = {
   logoUri:
     'https://images.ctfassets.net/gcj8jwzm6086/5VHupNKwnDYJvqMENeV7iJ/3e4b8ff10b69bfa31e70080a4b142cd0/avalanche-avax-logo.svg',
   networkToken: {
+    name: 'Avalanche',
     symbol: 'AVAX',
+    decimals: 18,
     logoUri:
       'https://images.ctfassets.net/gcj8jwzm6086/5VHupNKwnDYJvqMENeV7iJ/3e4b8ff10b69bfa31e70080a4b142cd0/avalanche-avax-logo.svg'
   },
