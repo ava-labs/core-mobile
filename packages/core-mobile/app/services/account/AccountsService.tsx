@@ -207,7 +207,7 @@ class AccountsService {
      * adding accounts cannot be parallelized, they need to be added one-by-one.
      * otherwise race conditions occur and addresses get mixed up.
      */
-    const numberOfAccounts = await this.getNumberOfActiveAccounts({
+    const activeAccountsCount = await this.getActiveAccountsCount({
       walletId,
       walletType
     })
@@ -215,7 +215,7 @@ class AccountsService {
     const accounts: AccountCollection = {}
 
     // fetch the remaining accounts in the background
-    for (let i = startIndex; i < numberOfAccounts; i++) {
+    for (let i = startIndex; i < activeAccountsCount; i++) {
       const name = await this.getAccountName({
         walletType,
         accountIndex: i
@@ -238,18 +238,19 @@ class AccountsService {
     return pubKeys.filter(isEvmPublicKey).length
   }
 
-  private async getMnemonicActiveAccountCount(
-    walletId: string,
-    {
-      maxConsecutiveInactive = 2,
-      startIndex = 1,
-      maxScan = 1000
-    }: {
-      maxConsecutiveInactive?: number
-      startIndex?: number
-      maxScan?: number
-    } = {}
-  ): Promise<number> {
+  private async getSeedBasedActiveAccountCount({
+    walletId,
+    walletType,
+    maxConsecutiveInactive = 2,
+    startIndex = 1, // start from 1 because we assume the first account is always active
+    maxScan = 1000
+  }: {
+    walletId: string
+    walletType: WalletType.MNEMONIC | WalletType.KEYSTONE
+    maxConsecutiveInactive?: number
+    startIndex?: number
+    maxScan?: number
+  }): Promise<number> {
     let consecutiveInactive = 0
     let lastActiveIndex: number | null = 0
 
@@ -257,7 +258,7 @@ class AccountsService {
       try {
         const isActive = await this.isAccountActive({
           walletId,
-          walletType: WalletType.MNEMONIC,
+          walletType,
           accountIndex: i
         })
 
@@ -305,7 +306,7 @@ class AccountsService {
     return response.transactions.length > 0
   }
 
-  private async getNumberOfActiveAccounts({
+  private async getActiveAccountsCount({
     walletId,
     walletType
   }: {
@@ -318,7 +319,7 @@ class AccountsService {
 
       case WalletType.MNEMONIC:
       case WalletType.KEYSTONE:
-        return this.getMnemonicActiveAccountCount(walletId)
+        return this.getSeedBasedActiveAccountCount({ walletId, walletType })
 
       default:
         return 1
