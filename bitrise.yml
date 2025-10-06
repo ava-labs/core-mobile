@@ -909,6 +909,18 @@ workflows:
     - IS_INTERNAL_BUILD: "true"
       opts:
         is_expand: false
+    - PLATFORM: iOS
+      opts:
+        is_expand: false
+    - IOS_CONFIGURATION: Release
+      opts:
+        is_expand: false
+    - IOS_SCHEME: AvaxWalletInternal
+      opts:
+        is_expand: false
+    - APP_TITLE: Core Mobile Internal
+      opts:
+        is_expand: false
     steps:
     - script-runner@0:
         title: Appium iOS testing
@@ -928,6 +940,15 @@ workflows:
       opts:
         is_expand: false
     - IS_INTERNAL_BUILD: "true"
+      opts:
+        is_expand: false
+    - PLATFORM: Android
+      opts:
+        is_expand: false
+    - ANDROID_BUILD_VARIANT: internalE2e
+      opts:
+        is_expand: false
+    - APP_TITLE: Core Mobile Internal
       opts:
         is_expand: false
     steps:

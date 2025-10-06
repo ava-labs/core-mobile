@@ -73,16 +73,18 @@ class OnboardingPage {
   }
 
   async exitMetro() {
-    try {
-    console.log('you are using a dev build, skipping metro dev menu now...')
-    const preceedingHost = driver.isIOS ? 'localhost' : '10.0.2.2'
-    await actions.waitFor(selectors.getByText(`http://${preceedingHost}:8081`))
-    await actions.tap(selectors.getByText(`http://${preceedingHost}:8081`))
-    const dismissBtn = selectors.getByText("AvaxWallet")
-    await actions.waitFor(dismissBtn, 30000)
-    await actions.dragAndDrop(dismissBtn, [0, 1500])
-    } catch (e) {
-      console.log('Metro dev menu is not found...')
+    if (process.env.E2E !== 'true') {
+      try {
+      console.log('you are using a dev build, skipping metro dev menu now...')
+      const preceedingHost = driver.isIOS ? 'localhost' : '10.0.2.2'
+      await actions.waitFor(selectors.getByText(`http://${preceedingHost}:8081`))
+      await actions.tap(selectors.getByText(`http://${preceedingHost}:8081`))
+      const dismissBtn = selectors.getByText("AvaxWallet")
+      await actions.waitFor(dismissBtn, 30000)
+      await actions.dragAndDrop(dismissBtn, [0, 1500])
+      } catch (e) {
+        console.log('Metro dev menu is not found...')
+      }
     }
   }
 
