@@ -542,7 +542,8 @@ describe('session_request handler', () => {
           methods: [
             'avalanche_sendTransaction',
             'avalanche_signTransaction',
-            'avalanche_signMessage'
+            'avalanche_signMessage',
+            'wallet_getNetworkState'
           ]
         },
         bip122: {
@@ -699,7 +700,8 @@ describe('session_request handler', () => {
           methods: [
             'avalanche_sendTransaction',
             'avalanche_signTransaction',
-            'avalanche_signMessage'
+            'avalanche_signMessage',
+            'wallet_getNetworkState'
           ]
         },
         bip122: {
