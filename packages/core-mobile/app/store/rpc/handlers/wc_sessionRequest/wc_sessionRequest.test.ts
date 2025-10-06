@@ -504,7 +504,8 @@ describe('session_request handler', () => {
             'avalanche_updateContact',
             'avalanche_getAddressesInRange',
             'avalanche_renameAccount',
-            'wallet_getNetworkState'
+            'wallet_getNetworkState',
+            'avalanche_addAccount'
           ],
           // all requested events
           events: validRequiredNamespaces.eip155.events
@@ -662,7 +663,8 @@ describe('session_request handler', () => {
             'avalanche_updateContact',
             'avalanche_getAddressesInRange',
             'avalanche_renameAccount',
-            'wallet_getNetworkState'
+            'wallet_getNetworkState',
+            'avalanche_addAccount'
           ],
           // all requested events
           events: validRequiredNamespaces.eip155.events
