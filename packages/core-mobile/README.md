@@ -15,7 +15,7 @@ Java version >= 17
 ```shell 
 java -version
 ```
-cocoapods >= 1.15.2
+cocoapods >= 1.16.2
 ```shell 
 pod --version
 ```
