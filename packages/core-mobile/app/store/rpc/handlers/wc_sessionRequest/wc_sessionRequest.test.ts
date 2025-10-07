@@ -504,6 +504,7 @@ describe('session_request handler', () => {
             'avalanche_updateContact',
             'avalanche_getAddressesInRange',
             'avalanche_renameAccount',
+            'avalanche_addAccount',
             'wallet_getNetworkState'
           ],
           // all requested events
@@ -662,6 +663,7 @@ describe('session_request handler', () => {
             'avalanche_updateContact',
             'avalanche_getAddressesInRange',
             'avalanche_renameAccount',
+            'avalanche_addAccount',
             'wallet_getNetworkState'
           ],
           // all requested events
