@@ -103,7 +103,11 @@ export const migrateRemainingActiveAccounts = async ({
 }): Promise<AccountCollection> => {
   try {
     const toastId = uuid()
-    transactionSnackbar.pending({ message: 'Adding accounts...', toastId })
+    const shouldShowToast = walletType !== WalletType.SEEDLESS
+
+    if (shouldShowToast) {
+      transactionSnackbar.pending({ message: 'Adding accounts...', toastId })
+    }
 
     const accounts = await AccountsService.fetchRemainingActiveAccounts({
       walletId,
@@ -117,15 +121,19 @@ export const migrateRemainingActiveAccounts = async ({
 
       recentAccountsStore.getState().addRecentAccounts(accountIds)
 
-      transactionSnackbar.success({
-        message: `${accountIds.length} accounts successfully added`,
-        toastId
-      })
+      if (shouldShowToast) {
+        transactionSnackbar.success({
+          message: `${accountIds.length} accounts successfully added`,
+          toastId
+        })
+      }
     } else {
-      transactionSnackbar.plain({
-        message: 'No accounts found',
-        toastId
-      })
+      if (shouldShowToast) {
+        transactionSnackbar.plain({
+          message: 'No accounts found',
+          toastId
+        })
+      }
     }
 
     markWalletAsMigrated(walletId)
