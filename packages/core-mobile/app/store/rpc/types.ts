@@ -68,6 +68,8 @@ export enum RpcMethod {
   BITCOIN_SIGN_TRANSACTION = 'bitcoin_signTransaction',
   AVALANCHE_SIGN_MESSAGE = 'avalanche_signMessage',
   AVALANCHE_RENAME_ACCOUNT = 'avalanche_renameAccount',
+  WALLET_GET_NETWORK_STATE = 'wallet_getNetworkState',
+  AVALANCHE_ADD_ACCOUNT = 'avalanche_addAccount',
 
   /* Solana methods */
   SOLANA_SIGN_AND_SEND_TRANSACTION = 'solana_signAndSendTransaction',
@@ -89,7 +91,8 @@ export const CORE_EVM_METHODS = [
   RpcMethod.AVALANCHE_SET_DEVELOPER_MODE,
   RpcMethod.AVALANCHE_UPDATE_CONTACT,
   RpcMethod.AVALANCHE_GET_ADDRESSES_IN_RANGE,
-  RpcMethod.AVALANCHE_RENAME_ACCOUNT
+  RpcMethod.AVALANCHE_RENAME_ACCOUNT,
+  RpcMethod.AVALANCHE_ADD_ACCOUNT
 ]
 
 export const CORE_AVAX_METHODS = [
@@ -97,6 +100,8 @@ export const CORE_AVAX_METHODS = [
   RpcMethod.AVALANCHE_SIGN_TRANSACTION,
   RpcMethod.AVALANCHE_SIGN_MESSAGE
 ]
+
+export const CORE_WALLET_METHODS = [RpcMethod.WALLET_GET_NETWORK_STATE]
 
 export const CORE_BTC_METHODS = [
   RpcMethod.BITCOIN_SEND_TRANSACTION,
