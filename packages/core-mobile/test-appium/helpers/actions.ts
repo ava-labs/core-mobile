@@ -71,11 +71,14 @@ async function tap(
   await ele.waitForEnabled()
   await delay(1000)
   await ele.tap()
+  const selector = await ele.selector
+  console.log(`Tapped on selector: ${selector}`)
   if (expectedEle) {
     try {
       await waitFor(expectedEle)
     } catch (e) {
       await ele.tap()
+      console.log(`Tapped again: ${selector}`)
     }
   }
 }
@@ -84,6 +87,8 @@ async function click(ele: ChainablePromiseElement) {
   await waitFor(ele)
   await ele.waitForEnabled()
   await ele.click()
+  const selector = await ele.selector
+  console.log(`Tapped on selector: ${selector}`)
 }
 
 async function dismissKeyboard(id = 'Return') {

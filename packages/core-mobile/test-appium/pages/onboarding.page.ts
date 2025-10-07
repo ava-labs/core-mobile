@@ -2,6 +2,7 @@
 import { actions } from '../helpers/actions'
 import { selectors } from '../helpers/selectors'
 import onboardingLoc from '../locators/onboarding.loc'
+import commonElsPage from './commonEls.page'
 
 class OnboardingPage {
   get accessExistingWallet() {
@@ -62,6 +63,38 @@ class OnboardingPage {
 
   get forgotPin() {
     return selectors.getByText(onboardingLoc.forgotPin)
+  }
+
+  get manuallyCreateNewWallet() {
+    return selectors.getById(onboardingLoc.manuallyCreateNewWallet)
+  }
+
+  get noThanksBtn() {
+    return selectors.getByText(onboardingLoc.noThanksBtn)
+  }
+
+  get newRecoveryPhraseTitle() {
+    return selectors.getByText(onboardingLoc.newRecoveryPhraseTitle)
+  }
+
+  get updateAppModalTitle() {
+    return selectors.getById(onboardingLoc.updateAppModalTitle)
+  }
+
+  get solanaLaunchTitle() {
+    return selectors.getById(onboardingLoc.solanaLaunchTitle)
+  }
+
+  get grabber() {
+    return selectors.getById(onboardingLoc.grabber)
+  }
+
+  get securityWarningContent() {
+    return selectors.getByText(onboardingLoc.securityWarningContent)
+  }
+
+  get verifyYourRecoveryPhraseTitle() {
+    return selectors.getByText(onboardingLoc.verifyYourRecoveryPhraseTitle)
   }
 
   async tapAccessExistingWallet() {
@@ -158,18 +191,6 @@ class OnboardingPage {
     }
   }
 
-  get updateAppModalTitle() {
-    return selectors.getById(onboardingLoc.updateAppModalTitle)
-  }
-
-  get solanaLaunchTitle() {
-    return selectors.getById(onboardingLoc.solanaLaunchTitle)
-  }
-
-  get grabber() {
-    return selectors.getById(onboardingLoc.grabber)
-  }
-
   async dismissUpdateAppModal() {
     try {
     await actions.waitFor(this.updateAppModalTitle, 30000)
@@ -187,8 +208,49 @@ class OnboardingPage {
 
   async verifyLoggedIn(bottomSheetIsVisible = true) {
     if (bottomSheetIsVisible) {
-      await this.dismissUpdateAppModal()
-      await this.dismissBottomSheet(this.solanaLaunchTitle)
+      await this.dismissModals()
+    }
+    await actions.waitFor(commonElsPage.accountOne, 20000)
+  }
+
+  async tapManuallyCreateNewWallet() {
+    await actions.tap(this.manuallyCreateNewWallet, this.agreeAndContinue)
+  }
+
+  async tapNoThanksBtn() {
+    await actions.tap(this.noThanksBtn)
+  }
+
+  async getMnemonicWords() {
+    const mnemonicWords: string[] = []
+
+    for (let i = 1; i <= 24; i++) {
+      const word = (await actions.getText(
+        selectors.getById(`mnemonic__${i}`)
+      )) as string
+      mnemonicWords.push(word)
+    }
+    return mnemonicWords
+  }
+
+  async dismissSecurityWarning() {
+    if (driver.isAndroid) {
+      await actions.waitForDisplayed(this.securityWarningContent)
+      await actions.tap(commonElsPage.dismiss)
+    }
+  }
+
+  async selectWord(words: string[], questionId: string) {
+    const title = await actions.getText(selectors.getById(`${questionId}_title`))
+    if (title) {
+      const target = title.match(/"(.*?)"/)
+      const targetIndex = target && target[1] ? words.indexOf(target[1]) : -1
+      const isBefore = title.indexOf('before') > -1
+      if (isBefore) {
+        await actions.click(selectors.getById(`${questionId}_${words[targetIndex - 1]}`))
+      } else {
+        await actions.click(selectors.getById(`${questionId}_${words[targetIndex + 1]}`))
+      }
     }
   }
 }

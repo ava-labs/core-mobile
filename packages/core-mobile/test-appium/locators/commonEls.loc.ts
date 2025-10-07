@@ -18,6 +18,7 @@ export default {
   okBtn: 'OK',
   next: 'Next',
   dismiss: 'Dismiss',
+  dismissAndroid: 'DISMISS',
   grabber: 'grabber',
   cChain: 'Avalanche C-Chain',
   cChain_2: 'Avalanche (C-Chain)',

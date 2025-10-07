@@ -81,7 +81,8 @@ class CommonElsPage {
   }
 
   get dismiss() {
-    return selectors.getByText(commonEls.dismiss)
+    const theBtn = driver.isIOS ? commonEls.dismiss : commonEls.dismissAndroid
+    return selectors.getByText(theBtn)
   }
 
   get grabber() {
@@ -149,7 +150,7 @@ class CommonElsPage {
   }
 
   get copy() {
-    return selectors.getByText(commonEls.copy)
+    return selectors.getBySomeText(commonEls.copy)
   }
 
   get nextButton() {
@@ -242,6 +243,10 @@ class CommonElsPage {
 
   get solanaLaunchTitle() {
     return selectors.getById(commonEls.solanaLaunchTitle)
+  }
+
+  get accountOne() {
+    return selectors.getByText(commonEls.accountOne)
   }
 
   async filter(
@@ -341,7 +346,11 @@ class CommonElsPage {
   }
 
   async tapNext() {
-    await actions.tap(this.next)
+    try {
+      await actions.tap(this.next)
+    } catch (e) {
+      await actions.tap(this.nextButton)
+    }
   }
 
   async dismissBottomSheet(element = this.grabber) {
@@ -379,11 +388,6 @@ class CommonElsPage {
     )
   }
 
-  async tapNextButton() {
-    await actions.waitFor(this.nextButton)
-    await actions.tap(this.nextButton)
-  }
-
   async tapApproveButton() {
     await actions.waitFor(this.approveButton, 20000)
     await actions.tap(this.approveButton)
@@ -419,6 +423,11 @@ class CommonElsPage {
       await actions.delay(2000)
       await this.dismissBottomSheet()
     }
+  }
+
+  async tapCopy() {
+    await actions.tap(this.copy)
+    await actions.waitForDisplayed(this.copied)
   }
 }
 

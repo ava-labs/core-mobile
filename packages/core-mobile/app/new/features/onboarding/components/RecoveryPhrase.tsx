@@ -38,6 +38,7 @@ export const RecoveryPhrase = ({
   const renderFooter = useCallback(() => {
     return (
       <Button
+        testID="next_btn"
         size="large"
         type="primary"
         onPress={handleNext}

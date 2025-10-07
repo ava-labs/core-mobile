@@ -19,5 +19,10 @@ export default {
   solanaLaunchTitle: 'solana_launch_title',
   grabber: 'grabber',
   forgotPin: 'forgot_pin_btn',
-  manuallyCreateNewWallet: 'manually_create_new_wallet_button'
+  manuallyCreateNewWallet: 'manually_create_new_wallet_button',
+  noThanksBtn: 'No thanks',
+  newRecoveryPhraseTitle: "Here is your wallet's recovery phrase",
+  verifyYourRecoveryPhraseTitle: 'Verify your recovery phrase',
+  securityWarningContent:
+    'For your security, you should not screenshot your recovery phrase. It is best to write it down and store it in a secure location.'
 }
