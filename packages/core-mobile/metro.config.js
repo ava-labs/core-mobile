@@ -39,6 +39,16 @@ const baseConfig = {
     assetExts: assetExts.filter(ext => ext !== 'svg'),
     sourceExts: [...sourceExts, 'svg', 'cjs', 'mjs'],
     resolveRequest: (context, moduleName, platform) => {
+      if (moduleName.startsWith('@ledgerhq/cryptoassets-evm-signatures')) {
+        return context.resolveRequest(
+          context,
+          moduleName.replace(
+            '@ledgerhq/cryptoassets-evm-signatures',
+            '@ledgerhq/cryptoassets-evm-signatures/lib-es'
+          ),
+          platform
+        )
+      }
       if (moduleName.startsWith('@ledgerhq/cryptoassets')) {
         return context.resolveRequest(
           context,
