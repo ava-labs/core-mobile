@@ -13,6 +13,7 @@ import { walletGetEthereumChainHandler } from './chain/wallet_getEthereumChain/w
 import { avalancheGetAddressesInRangeHandler } from './avalanche_getAddressesInRange/avalanche_getAddressesInRange'
 import { avalancheRenameAccountHandler } from './account/avalanche_renameAccount/avalanche_renameAccount'
 import { walletGetNetworkStateHandler } from './wallet_getNetworkState/wallet_getNetworkState'
+import { avalancheAddAccountHandler } from './account/avalanche_addAccount/avalanche_addAccount'
 
 const handlerMap = [
   avalancheSelectAccountHandler,
@@ -28,7 +29,8 @@ const handlerMap = [
   avalancheSetDeveloperModeHandler,
   avalancheGetAddressesInRangeHandler,
   avalancheRenameAccountHandler,
-  walletGetNetworkStateHandler
+  walletGetNetworkStateHandler,
+  avalancheAddAccountHandler
 ].reduce((acc, current) => {
   if (current?.methods === undefined) return acc
 
