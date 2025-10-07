@@ -25,7 +25,8 @@ import {
   selectAccounts,
   setAccounts,
   setActiveAccountId,
-  selectAccountsByWalletId
+  selectAccountsByWalletId,
+  selectActiveAccount
 } from './slice'
 import { AccountCollection } from './types'
 import {
@@ -88,6 +89,7 @@ const initAccounts = async (
 
   if (
     activeWallet.type === WalletType.MNEMONIC ||
+    activeWallet.type === WalletType.KEYSTONE ||
     activeWallet.type === WalletType.PRIVATE_KEY ||
     activeWallet.type === WalletType.SEEDLESS
   ) {
@@ -100,6 +102,7 @@ const initAccounts = async (
     listenerApi.dispatch(setActiveAccountId(firstAccountId))
   }
 
+  const accountValues = Object.values(accounts)
   if (activeWallet.type === WalletType.SEEDLESS) {
     // setting wallet name
     const { pendingSeedlessWalletName } =
@@ -118,34 +121,20 @@ const initAccounts = async (
       })
     }
 
-    const entries = Object.values(accounts)
     // Only derive missing Solana keys if Solana support is enabled
     if (
       !isSolanaSupportBlocked &&
-      entries.some(account => !account.addressSVM)
+      accountValues.some(account => !account.addressSVM)
     ) {
       await deriveMissingSeedlessSessionKeys(activeWallet.id)
       // reload only when there are accounts without Solana addresses
       reloadAccounts(_action, listenerApi)
     }
-  } else if (
-    activeWallet.type === WalletType.MNEMONIC ||
-    activeWallet.type === WalletType.PRIVATE_KEY ||
-    activeWallet.type === WalletType.KEYSTONE
-  ) {
-    accounts[acc.id] = acc
-
-    listenerApi.dispatch(setAccounts(accounts))
-    const firstAccountId = Object.keys(accounts)[0]
-    if (!firstAccountId) {
-      throw new Error('No accounts created')
-    }
-    listenerApi.dispatch(setActiveAccountId(firstAccountId))
   }
 
   if (isDeveloperMode === false) {
     AnalyticsService.captureWithEncryption('AccountAddressesUpdated', {
-      addresses: Object.values(accounts).map(account => ({
+      addresses: accountValues.map(account => ({
         address: account.addressC,
         addressBtc: account.addressBTC,
         addressAVM: account.addressAVM ?? '',
@@ -153,6 +142,16 @@ const initAccounts = async (
         addressCoreEth: account.addressCoreEth ?? '',
         addressSVM: acc.addressSVM ?? ''
       }))
+    })
+  }
+
+  if (canMigrateActiveAccounts(activeWallet)) {
+    const numberOfAccounts = Math.max(1, accountValues.length)
+    await migrateRemainingActiveAccounts({
+      listenerApi,
+      walletId: activeWallet.id,
+      walletType: activeWallet.type,
+      startIndex: numberOfAccounts
     })
   }
 }
@@ -195,7 +194,12 @@ const migrateActiveAccountsIfNeeded = async (
 ): Promise<void> => {
   const state = listenerApi.getState()
   const activeWallet = selectActiveWallet(state)
-  if (!activeWallet || !canMigrateActiveAccounts(activeWallet)) {
+  const activeAccount = selectActiveAccount(state)
+  if (
+    !activeWallet ||
+    !canMigrateActiveAccounts(activeWallet) ||
+    !activeAccount
+  ) {
     return
   }
   const accounts = selectAccountsByWalletId(state, activeWallet.id)

@@ -118,11 +118,13 @@ export const migrateRemainingActiveAccounts = async ({
       recentAccountsStore.getState().addRecentAccounts(accountIds)
 
       transactionSnackbar.success({
-        message: `${accountIds.length} accounts successfully added`
+        message: `${accountIds.length} accounts successfully added`,
+        toastId
       })
     } else {
       transactionSnackbar.plain({
-        message: 'No accounts found'
+        message: 'No accounts found',
+        toastId
       })
     }
 
