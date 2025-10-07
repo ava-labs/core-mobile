@@ -8,6 +8,7 @@ import { ProposalTypes } from '@walletconnect/types'
 import {
   CORE_AVAX_METHODS,
   CORE_BTC_METHODS,
+  CORE_WALLET_METHODS,
   SOLANA_METHODS
 } from 'store/rpc/types'
 
@@ -29,7 +30,7 @@ export const NON_EVM_OPTIONAL_NAMESPACES: ProposalTypes.OptionalNamespaces = {
       AvalancheCaip2ChainId.X,
       AvalancheCaip2ChainId.X_TESTNET
     ],
-    methods: CORE_AVAX_METHODS,
+    methods: [...CORE_AVAX_METHODS, ...CORE_WALLET_METHODS],
     events: COMMON_EVENTS
   },
   [BlockchainNamespace.BIP122]: {
