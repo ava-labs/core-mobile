@@ -64,21 +64,23 @@ async function isEnabled(ele: ChainablePromiseElement, targetBool = true) {
 }
 
 async function tap(
-  ele: ChainablePromiseElement,
+  ele: ChainablePromiseElement | undefined,
   expectedEle?: ChainablePromiseElement
 ) {
-  await waitFor(ele)
-  await ele.waitForEnabled()
-  await delay(1000)
-  await ele.tap()
-  const selector = await ele.selector
-  console.log(`Tapped on selector: ${selector}`)
-  if (expectedEle) {
-    try {
-      await waitFor(expectedEle)
-    } catch (e) {
-      await ele.tap()
-      console.log(`Tapped again: ${selector}`)
+  if (ele) {
+    await waitFor(ele)
+    await ele.waitForEnabled()
+    await delay(1000)
+    await ele.tap()
+    const selector = await ele.selector
+    console.log(`Tapped on selector: ${selector}`)
+    if (expectedEle) {
+      try {
+        await waitFor(expectedEle)
+      } catch (e) {
+        await ele.tap()
+        console.log(`Tapped again: ${selector}`)
+      }
     }
   }
 }

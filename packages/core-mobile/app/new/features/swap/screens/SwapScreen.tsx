@@ -699,6 +699,7 @@ export const SwapScreen = (): JSX.Element => {
                 right: 0
               }}>
               <CircularButton
+                testID="swap_vertical_icon"
                 backgroundColor={swapButtonBackgroundColor}
                 style={{
                   width: 40,

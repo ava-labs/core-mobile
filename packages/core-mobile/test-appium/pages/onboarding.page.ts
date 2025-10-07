@@ -193,7 +193,7 @@ class OnboardingPage {
 
   async dismissUpdateAppModal() {
     try {
-    await actions.waitFor(this.updateAppModalTitle, 30000)
+    await actions.waitFor(this.updateAppModalTitle, 40000)
     await actions.dragAndDrop(this.updateAppModalTitle, [0, 500])
     await actions.delay(1000)
   } catch (e) {

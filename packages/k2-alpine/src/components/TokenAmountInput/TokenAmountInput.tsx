@@ -47,6 +47,7 @@ export const TokenAmountInput = forwardRef<
       autoFocus,
       onBlur,
       onFocus,
+      testID,
       ...props
     },
     ref
@@ -146,6 +147,7 @@ export const TokenAmountInput = forwardRef<
          * Using inputMode="numeric" provides the same behavior without the performance issues.
          * See: https://github.com/expo/expo/issues/34156
          */
+        testID={testID}
         keyboardType={Platform.OS === 'ios' ? 'numeric' : undefined}
         inputMode={Platform.OS === 'android' ? 'numeric' : undefined}
         onChangeText={handleChangeText}

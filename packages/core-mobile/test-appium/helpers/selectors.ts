@@ -2,11 +2,31 @@ function withPlatform(ios: string, android: string) {
   return driver.isIOS ? $(ios) : $(android)
 }
 
+function withPlatformAll(ios: string, android: string) {
+  return driver.isIOS ? $$(ios) : $$(android)
+}
+
 function getByText(text: string) {
   return withPlatform(
     `//*[@name='${text}' and @accessible='true']`,
     `//*[@text='${text}']`
   )
+}
+
+function getByIdWithIndex(id: string, index = 0) {
+  const elements = withPlatformAll(
+    `~${id}`,
+    `//*[@resource-id='${id}' or @content-desc='${id}']`
+  )
+  return elements[index]
+}
+
+function getByTextWithIndex(text: string, index = 0) {
+  const elements = withPlatformAll(
+    `//*[@name='${text}' and @accessible='true']`,
+    `//*[@text='${text}']`
+  )
+  return elements[index]
 }
 
 function getById(id: string) {
@@ -22,7 +42,7 @@ function getByXpath(xpath: string) {
 
 function getBySomeText(text: string) {
   return withPlatform(
-    `//*[contains(@name, '${text}')]`,
+    `//*[contains(@name, '${text}') and @accessible='true']`,
     `//*[contains(@text, '${text}')]`
   )
 }
@@ -30,6 +50,8 @@ function getBySomeText(text: string) {
 export const selectors = {
   getByText,
   getById,
+  getByIdWithIndex,
+  getByTextWithIndex,
   getBySomeText,
   getByXpath
 }
