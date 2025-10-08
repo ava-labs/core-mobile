@@ -14429,11 +14429,11 @@ __metadata:
   linkType: hard
 
 "@types/node@npm:^24.0.10":
-  version: 24.6.2
-  resolution: "@types/node@npm:24.6.2"
+  version: 24.7.0
+  resolution: "@types/node@npm:24.7.0"
   dependencies:
-    undici-types: ~7.13.0
-  checksum: 95766998060f005403a1aea198c2c472fd1d695cb9e7cebb62adb0e3aceb871ae1201e90577df31a7c1d6a2c2fadccbd9a9868f9014cb77ebd3232104de8f4fb
+    undici-types: ~7.14.0
+  checksum: 154e6113dae3e551386d37d9e84e15bbf2a81ee14700ce42815f123ff35904363ab86a5650f98b555a892f1502b45a0aaa91666a979ec8860d95b09179d7100f
   languageName: node
   linkType: hard
 
@@ -15728,9 +15728,9 @@ __metadata:
   linkType: hard
 
 "@zip.js/zip.js@npm:^2.7.53":
-  version: 2.8.5
-  resolution: "@zip.js/zip.js@npm:2.8.5"
-  checksum: 470e1768021e3d7cfbb924f460c4c4740c858b23ccd219fcd6d55c22e2fbe33bbf7c3719909e07f7ce12395d0c44e48492dab259755972781240ade10df103fc
+  version: 2.8.7
+  resolution: "@zip.js/zip.js@npm:2.8.7"
+  checksum: 8d7b8d30a90726d45b857d9c02d56030c9fdfd6eb6f09392b621f8c294bef91acff55f1f018add1050f738c33dbcd45667bc01eb83225f08c0f4388a8e84f3ed
   languageName: node
   linkType: hard
 
@@ -16207,9 +16207,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"appium-adb@npm:^13.0.0, appium-adb@npm:^13.0.5":
-  version: 13.0.5
-  resolution: "appium-adb@npm:13.0.5"
+"appium-adb@npm:^13.0.0, appium-adb@npm:^13.0.9":
+  version: 13.0.9
+  resolution: "appium-adb@npm:13.0.9"
   dependencies:
     "@appium/support": ^7.0.0-rc.1
     async-lock: ^1.0.0
@@ -16221,7 +16221,7 @@ __metadata:
     semver: ^7.0.0
     source-map-support: ^0.x
     teen_process: ^3.0.0
-  checksum: 354e2a4caa96871483b2d214f14eff2563cb8f4622fca75d3181b60b27411def535c22e684d428a3667e4f4119b36b5058588d64874efbb18271e24ef331d2f4
+  checksum: 3bba621bdb7b9353ae1c3d42add7a4b2149e3f2d66ddc7f55e20cdd11fd5ad776f7fb4d7f8c32f3360c30e41cb33c9c578196ecd232d22ebedcdd0ed543abb2e
   languageName: node
   linkType: hard
 
@@ -16247,12 +16247,12 @@ __metadata:
   linkType: hard
 
 "appium-android-driver@npm:^11.0.4":
-  version: 11.0.5
-  resolution: "appium-android-driver@npm:11.0.5"
+  version: 11.0.6
+  resolution: "appium-android-driver@npm:11.0.6"
   dependencies:
     "@appium/support": ^7.0.0-rc.1
     "@colors/colors": ^1.6.0
-    appium-adb: ^13.0.5
+    appium-adb: ^13.0.9
     appium-chromedriver: ^8.0.0
     asyncbox: ^3.0.0
     axios: ^1.x
@@ -16269,13 +16269,13 @@ __metadata:
     ws: ^8.0.0
   peerDependencies:
     appium: ^3.0.0-rc.2
-  checksum: 66415c481f901e22f108bac8f6434dab4e5da7573af3e12dd6eb2d067c6ed796eebe56ac13684cff79321ede041e3fec7a6563aa54c3236dbb4558b4f8fefcc5
+  checksum: c8bc2275378e4907aa4b0db5da6988e8c6e045f6ceafe9485441efb54737366a93e349ecbcda16330ddc95ba6e50cea3fdb39c126e01e11085e888dc6d77ddcd
   languageName: node
   linkType: hard
 
 "appium-chromedriver@npm:^8.0.0":
-  version: 8.0.10
-  resolution: "appium-chromedriver@npm:8.0.10"
+  version: 8.0.11
+  resolution: "appium-chromedriver@npm:8.0.11"
   dependencies:
     "@appium/base-driver": ^10.0.0-rc.2
     "@appium/support": ^7.0.0-rc.1
@@ -16290,7 +16290,7 @@ __metadata:
     source-map-support: ^0.x
     teen_process: ^3.0.0
     xpath: ^0.x
-  checksum: 66ca572d01a49d0a33a099080089580ef4c4b75afa4ad6e36d6346f448efc67774e4eb19e9199b387752b6789fdbf9c62d9035a698d281d1fe413e7764ef5ca7
+  checksum: 49b6a8980f44de47a472769902ad5824452f1bf096d6cec3ed27c6bd0cd935022468029a1517c749578d21717f4272a2542fb910f74d86e7e7725074adc92626
   languageName: node
   linkType: hard
 
@@ -16347,8 +16347,8 @@ __metadata:
   linkType: hard
 
 "appium-ios-remotexpc@npm:^0.x":
-  version: 0.5.0
-  resolution: "appium-ios-remotexpc@npm:0.5.0"
+  version: 0.6.2
+  resolution: "appium-ios-remotexpc@npm:0.6.2"
   dependencies:
     "@appium/strongbox": ^1.0.0-rc.1
     "@appium/support": ^7.0.0-rc.1
@@ -16357,7 +16357,7 @@ __metadata:
     appium-ios-tuntap: ^0.x
     axios: ^1.12.0
     npm-run-all2: ^8.0.4
-  checksum: 5e4b68247c9a52e73f91ac0290b6e8d0e44f0cb44ce573bf5f3143df19e60730fb67270a4f92d92870cd83ca3fdea1c0ccbe6ff01a857787bfdfd5e85695420d
+  checksum: 098767155976ade960a13eb8356a4546821801914ef02e6d0ce046936ccb339db0648b3571859dfd7e20830d58a408e74d664f65f1f75296afb81a1ff477cadc
   languageName: node
   linkType: hard
 
@@ -16393,8 +16393,8 @@ __metadata:
   linkType: hard
 
 "appium-remote-debugger@npm:^15.0.2":
-  version: 15.0.3
-  resolution: "appium-remote-debugger@npm:15.0.3"
+  version: 15.1.0
+  resolution: "appium-remote-debugger@npm:15.1.0"
   dependencies:
     "@appium/base-driver": ^10.0.0-rc.1
     "@appium/support": ^7.0.0-rc.1
@@ -16406,7 +16406,7 @@ __metadata:
     lodash: ^4.17.11
     source-map-support: ^0.x
     teen_process: ^3.0.0
-  checksum: 5cce296f95af9fbc315b1e1529f09d4e23d6c162a51487d36621f36d58f9b92bfc0208ce8ecfccfe905116650ea71a7a87037b5a5a2c20a0552b2fac320697d7
+  checksum: 655b4af5b96df8ee3a215d48173cc3359f722ed8d8455eaa03297293af8a8847de80017c0dfacaca49ffff686c91ce885fa975501ccf783480b37fbb85fe2e97
   languageName: node
   linkType: hard
 
@@ -16480,8 +16480,8 @@ __metadata:
   linkType: hard
 
 "appium-webdriveragent@npm:^10.1.0":
-  version: 10.1.1
-  resolution: "appium-webdriveragent@npm:10.1.1"
+  version: 10.1.2
+  resolution: "appium-webdriveragent@npm:10.1.2"
   dependencies:
     "@appium/base-driver": ^10.0.0-rc.1
     "@appium/strongbox": ^1.0.0-rc.1
@@ -16495,7 +16495,7 @@ __metadata:
     lodash: ^4.17.11
     source-map-support: ^0.x
     teen_process: ^3.0.0
-  checksum: 11a750a10900be1d6736fdaa87b426153af3aa2b19f059504dda58b07e55abcece45971a0b09ff7112c164e545a2c67c489c6afd31bb15cc41d8409b9aa56c96
+  checksum: 4289a7dcf88a5f74bdb51037fc9b6e64d0d0f196c57b6c8e7ba579007e0227000ce46b8e8d394da975195949d00acd7dff6ef6c85aa35a3beb6d4697ebf292b5
   languageName: node
   linkType: hard
 
@@ -17564,8 +17564,8 @@ __metadata:
   linkType: hard
 
 "bare-fs@npm:^4.0.1":
-  version: 4.4.5
-  resolution: "bare-fs@npm:4.4.5"
+  version: 4.4.7
+  resolution: "bare-fs@npm:4.4.7"
   dependencies:
     bare-events: ^2.5.4
     bare-path: ^3.0.0
@@ -17577,7 +17577,7 @@ __metadata:
   peerDependenciesMeta:
     bare-buffer:
       optional: true
-  checksum: bc550fbf8d70eb0f17b7a311da482f49a59ef4408bdd2e4e2e508824c09bf5c2f18b802872cbea6b2c3ca3d5b32bcc7c665f62f11eba06927be5c537ecb0cccb
+  checksum: ff0e5047b65bdbf8edbb05be4ea8dbfd398a733375cb3df2508316c399dcfeea73c123c4f81ee46e5d57da33b4add46ddf374bb8a7fcaf51179977fb14ab9b9d
   languageName: node
   linkType: hard
 
@@ -20627,9 +20627,9 @@ __metadata:
   linkType: hard
 
 "detect-libc@npm:^2.0.4":
-  version: 2.1.1
-  resolution: "detect-libc@npm:2.1.1"
-  checksum: fcda34a75f08a7f7857f469999b2cd76a2cb7bd591be4d069c63c4c6c2928c9bae2c82d4bfe8676920ce1acecf2cc1a6ef699b57a9456051e1eb0c770b19bb0d
+  version: 2.1.2
+  resolution: "detect-libc@npm:2.1.2"
+  checksum: 471740d52365084c4b2ae359e507b863f2b1d79b08a92835ebdf701918e08fc9cfba175b3db28483ca33b155e1311a91d69dc42c6d192b476f41a9e1f094ce6a
   languageName: node
   linkType: hard
 
@@ -24258,11 +24258,11 @@ __metadata:
   linkType: hard
 
 "get-tsconfig@npm:^4.7.5":
-  version: 4.10.1
-  resolution: "get-tsconfig@npm:4.10.1"
+  version: 4.11.0
+  resolution: "get-tsconfig@npm:4.11.0"
   dependencies:
     resolve-pkg-maps: ^1.0.0
-  checksum: 22925debda6bd0992171a44ee79a22c32642063ba79534372c4d744e0c9154abe2c031659da0fb86bc9e73fc56a3b76b053ea5d24ca3ac3da43d2e6f7d1c3c33
+  checksum: 70c789ceaae9a6164e138542b6478fe2ed47bd1725ae26f639f2c678be38e81fafc1472c89c84ad2ae5718632d079ee4a91730fb9a52d517d21b1d1b610c406b
   languageName: node
   linkType: hard
 
@@ -37236,10 +37236,10 @@ react-native-webview@ava-labs/react-native-webview:
   languageName: node
   linkType: hard
 
-"undici-types@npm:~7.13.0":
-  version: 7.13.0
-  resolution: "undici-types@npm:7.13.0"
-  checksum: fcb3e1195a36615fce3935eb97c21ebe4dbafe968f831ed00e6f22e8e73c0655b8e3242acc6ba4ff0f3c34e3f3f860f19fbb59c00b261bd4e20b515abbc2de7c
+"undici-types@npm:~7.14.0":
+  version: 7.14.0
+  resolution: "undici-types@npm:7.14.0"
+  checksum: bd28cb36b33a51359f02c27b84bfe8563cdad57bdab0aa6ac605ce64d51aff49fd0aa4cb2d3b043caaa93c3ec42e96b5757df5d2d9bcc06a5f3e71899c765035
   languageName: node
   linkType: hard
 
