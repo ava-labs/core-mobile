@@ -14,6 +14,7 @@ import { Wallet } from 'store/wallet/types'
 import { commonStorage } from 'utils/mmkv'
 import { StorageKey } from 'resources/Constants'
 import { appendToStoredArray, loadArrayFromStorage } from 'utils/mmkv/storages'
+import { setIsMigratingActiveAccounts } from 'store/wallet/slice'
 import { setNonActiveAccounts } from './slice'
 
 export function getAddressByVM(
@@ -101,6 +102,8 @@ export const migrateRemainingActiveAccounts = async ({
   walletType: WalletType.SEEDLESS | WalletType.MNEMONIC | WalletType.KEYSTONE
   startIndex: number
 }): Promise<AccountCollection> => {
+  listenerApi.dispatch(setIsMigratingActiveAccounts(true))
+
   try {
     const toastId = uuid()
     const shouldShowToast = walletType !== WalletType.SEEDLESS
@@ -145,6 +148,8 @@ export const migrateRemainingActiveAccounts = async ({
       error: 'Failed to add accounts'
     })
     return {}
+  } finally {
+    listenerApi.dispatch(setIsMigratingActiveAccounts(false))
   }
 }
 
