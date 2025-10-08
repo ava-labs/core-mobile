@@ -1,4 +1,4 @@
-import { Button, Text, View } from '@avalabs/k2-alpine'
+import { ActivityIndicator, Button, Text, View } from '@avalabs/k2-alpine'
 import { ScrollScreen } from 'common/components/ScrollScreen'
 import React, { useCallback, useEffect } from 'react'
 import { useDispatch } from 'react-redux'
@@ -12,15 +12,19 @@ function AppUpdateScreen(): JSX.Element {
   const { appVersion } = useLocalSearchParams<{ appVersion: string }>()
   const dispatch = useDispatch()
 
-  const handleUpdate = useUpdateApp()
+  const { updateApp, isUpdating } = useUpdateApp()
 
   const renderFooter = useCallback(() => {
     return (
-      <Button type="primary" size="large" onPress={handleUpdate}>
-        Update Core
+      <Button
+        type="primary"
+        size="large"
+        onPress={updateApp}
+        disabled={isUpdating}>
+        {isUpdating ? <ActivityIndicator /> : 'Update Core'}
       </Button>
     )
-  }, [handleUpdate])
+  }, [updateApp, isUpdating])
 
   useEffect(() => {
     return () => {
