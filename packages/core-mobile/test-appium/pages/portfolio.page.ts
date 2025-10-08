@@ -221,7 +221,7 @@ class PortfolioPage {
     if (all) {
       await actions.isVisible(this.collectiblesTab)
     } else {
-      await actions.isVisible(this.collectiblesTab, false)
+      await actions.isNotVisible(this.collectiblesTab)
     }
   }
 
@@ -339,9 +339,8 @@ class PortfolioPage {
 
   async verifyNetworkRemoved(network: string) {
     await this.tapNetworksDropdown()
-    await actions.isVisible(
-      selectors.getById(portfolio.networksDropdownItem + network),
-      false
+    await actions.isNotVisible(
+      selectors.getById(portfolio.networksDropdownItem + network)
     )
     await this.tapNetworksDropdownAVAX()
   }
@@ -419,9 +418,8 @@ class PortfolioPage {
 
     for (const hiddenNetwork of networksToHide[network] ||
       networksToHide.default) {
-      await actions.isVisible(
-        selectors.getById(`network_logo__${hiddenNetwork}`),
-        false
+      await actions.isNotVisible(
+        selectors.getById(`network_logo__${hiddenNetwork}`)
       )
     }
   }

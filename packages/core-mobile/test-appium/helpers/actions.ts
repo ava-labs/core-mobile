@@ -40,14 +40,21 @@ async function waitForDisplayed(ele: ChainablePromiseElement, timeout = 20000) {
   await ele.waitForDisplayed({ timeout })
 }
 
-async function isVisible(ele: ChainablePromiseElement, targetBool = true) {
+async function isVisible(ele: ChainablePromiseElement) {
   const visible = await ele.isDisplayed()
-
-  assert.equal(visible, targetBool, ele.toString())
+  console.log('isVisible? ', visible)
+  assert.equal(visible, true, ele.toString())
   return visible
 }
 
-async function isVisibleTrueOrFalse(ele: ChainablePromiseElement) {
+async function isNotVisible(ele: ChainablePromiseElement) {
+  const visible = await ele.isDisplayed()
+  console.log('isNotVisible? ', visible)
+  assert.equal(visible, false, ele.toString())
+  return visible
+}
+
+async function getVisible(ele: ChainablePromiseElement) {
   return await ele.isDisplayed()
 }
 
@@ -149,6 +156,11 @@ async function clearText(ele: ChainablePromiseElement) {
   await ele.clearValue()
 }
 
+async function scrollToBottom(ele: ChainablePromiseElement) {
+  await waitFor(ele)
+  await ele.scrollIntoView({ direction: 'down', maxScrolls: 10 })
+}
+
 export const actions = {
   type,
   tapNumberPad,
@@ -156,6 +168,7 @@ export const actions = {
   waitFor,
   waitForDisplayed,
   isVisible,
+  isNotVisible,
   isSelected,
   isEnabled,
   tap,
@@ -165,6 +178,7 @@ export const actions = {
   swipe,
   dragAndDrop,
   delay,
-  isVisibleTrueOrFalse,
-  clearText
+  getVisible,
+  clearText,
+  scrollToBottom
 }

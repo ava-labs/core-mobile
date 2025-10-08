@@ -367,7 +367,7 @@ class CommonElsPage {
     if (isVisible) {
       await actions.waitFor(selectors.getById(`${name}_dropdown_btn`))
     } else {
-      await actions.isVisible(selectors.getById(`${name}_dropdown_btn`), false)
+      await actions.isNotVisible(selectors.getById(`${name}_dropdown_btn`))
     }
   }
 

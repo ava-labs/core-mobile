@@ -175,14 +175,11 @@ class TransactionsPage {
     let tryCount = 5
     let newAmount = amount
 
-    while (await actions.isVisibleTrueOrFalse(this.errorMsg)) {
+    while (await actions.getVisible(this.errorMsg)) {
       newAmount = await this.adjustAmount(newAmount)
       await this.enterSendAmount(newAmount)
       tryCount--
-      if (
-        (await actions.isVisibleTrueOrFalse(this.nextBtn)) ||
-        tryCount === 0
-      ) {
+      if ((await actions.getVisible(this.nextBtn)) || tryCount === 0) {
         break
       }
     }
