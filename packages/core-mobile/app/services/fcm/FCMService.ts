@@ -182,7 +182,9 @@ class FCMService {
 
       if (
         notificationData.data?.url === undefined ||
-        typeof notificationData.data.url !== 'string'
+        typeof notificationData.data.url !== 'string' ||
+        typeof notificationData.data?.channelId !== 'string' ||
+        notificationData.data?.channelId.length === 0
       ) {
         return
       }
@@ -208,8 +210,8 @@ class FCMService {
       })
 
       AnalyticsService.capture('PushNotificationPressed', {
-        channelId: notificationData.data?.channelId as string,
-        deeplinkUrl: notificationData.data?.url as string
+        channelId: notificationData.data.channelId,
+        deeplinkUrl: notificationData.data.url
       })
     })
   }
