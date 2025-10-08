@@ -386,6 +386,16 @@ class WalletService {
     networkType: NetworkVMType.AVM | NetworkVMType.PVM
     isTestnet: boolean
   }): Promise<NetworkAddresses> {
+    if (walletType !== WalletType.MNEMONIC) {
+      // we only support mnemonic for now
+      // for all other wallet types, we return empty addresses
+      return {
+        networkType,
+        externalAddresses: [],
+        internalAddresses: []
+      }
+    }
+
     try {
       const xpubXP = await this.getRawXpubXP({
         walletId,
