@@ -7,7 +7,7 @@ import {
   JsonRpcBatchInternal
 } from '@avalabs/core-wallets-sdk'
 import { pvm, UnsignedTx } from '@avalabs/avalanchejs'
-import { Network } from '@avalabs/core-chains-sdk'
+import { Network, NetworkVMType } from '@avalabs/core-chains-sdk'
 import {
   MessageTypes,
   RpcMethod,
@@ -255,4 +255,15 @@ export interface Wallet {
     network: Network
     provider: SolanaProvider
   }): Promise<string>
+}
+
+export interface AddressEntry {
+  address: string
+  index: number
+}
+
+export interface NetworkAddresses {
+  networkType: NetworkVMType.AVM | NetworkVMType.PVM
+  externalAddresses: AddressEntry[]
+  internalAddresses: AddressEntry[]
 }
