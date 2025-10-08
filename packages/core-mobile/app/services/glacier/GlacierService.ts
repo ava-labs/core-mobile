@@ -2,8 +2,7 @@ import {
   Erc1155Token,
   Erc721Token,
   Glacier,
-  ListAddressChainsResponse,
-  ListTransactionDetailsResponse
+  ListAddressChainsResponse
 } from '@avalabs/glacier-sdk'
 import Config from 'react-native-config'
 import Logger from 'utils/Logger'
@@ -95,19 +94,6 @@ class GlacierService {
   }): Promise<ListAddressChainsResponse> {
     return this.glacierSdk.evmChains.listAddressChains({
       address
-    })
-  }
-
-  async listTransactions({
-    address,
-    chainId
-  }: {
-    address: string
-    chainId: string
-  }): Promise<ListTransactionDetailsResponse> {
-    return this.glacierSdk.evmTransactions.listTransactions({
-      address,
-      chainId
     })
   }
 }
