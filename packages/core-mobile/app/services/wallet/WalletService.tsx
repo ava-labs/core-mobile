@@ -1,3 +1,4 @@
+import Config from 'react-native-config'
 import {
   Avalanche,
   BitcoinProvider,
@@ -11,6 +12,7 @@ import {
   CreateImportCTxParams,
   CreateImportPTxParams,
   CreateSendPTxParams,
+  NetworkAddresses,
   PubKeyType,
   SignTransactionRequest,
   Wallet,
@@ -39,6 +41,7 @@ import { SpanName } from 'services/sentry/types'
 import SeedlessWallet from 'seedless/services/wallet/SeedlessWallet'
 import { Curve, isEvmPublicKey } from 'utils/publicKeys'
 import ModuleManager from 'vmModule/ModuleManager'
+import fetchWithAppCheck from 'utils/httpClient'
 import {
   getAddressDerivationPath,
   getAssetId,
@@ -370,6 +373,43 @@ class WalletService {
     }
 
     return wallet.getRawXpubXP()
+  }
+
+  public async getActiveAddresses({
+    walletId,
+    walletType,
+    networkType,
+    isTestnet = false
+  }: {
+    walletId: string
+    walletType: WalletType
+    networkType: NetworkVMType.AVM | NetworkVMType.PVM
+    isTestnet: boolean
+  }): Promise<NetworkAddresses> {
+    try {
+      const xpubXP = await this.getRawXpubXP({
+        walletId,
+        walletType
+      })
+
+      const res = await fetchWithAppCheck(
+        `${Config.CORE_PROFILE_URL}/v1/get-addresses`,
+        JSON.stringify({
+          networkType: networkType,
+          extendedPublicKey: xpubXP,
+          isTestnet
+        })
+      )
+
+      if (!res.ok) {
+        throw new Error(`${res.status}:${res.statusText}`)
+      }
+
+      return res.json()
+    } catch (err) {
+      Logger.error(`[WalletService.ts][getActiveAddressesFromXpubXP]${err}`)
+      throw err
+    }
   }
 
   public async getAddressesByIndices({
