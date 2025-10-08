@@ -165,7 +165,7 @@ const getDuration = (props: ToastProps, config?: ToastConfig): number => {
     : DURATION_LONG
 }
 
-export function showToast(props: ToastProps, config?: ToastConfig): void {
+function showToast(props: ToastProps, config?: ToastConfig): void {
   global.toast?.hideAll()
 
   const _toastId = props.toastId ?? uuid()
@@ -180,7 +180,7 @@ export function showToast(props: ToastProps, config?: ToastConfig): void {
   })
 }
 
-export function updateToast({
+function updateToast({
   toastId,
   props,
   config
@@ -199,7 +199,7 @@ export function updateToast({
   })
 }
 
-export function dismissToast(toastId: string): void {
+function dismissToast(toastId: string): void {
   global?.toast?.hide(toastId)
 }
 
