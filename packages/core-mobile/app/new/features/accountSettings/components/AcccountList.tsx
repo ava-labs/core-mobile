@@ -31,13 +31,13 @@ export const AccountList = (): React.JSX.Element => {
   const accountCollection = useSelector(selectAccounts)
   const flatListRef = useRef<FlatList>(null)
 
-  const { recentAccountIds, addRecentAccount } = useRecentAccounts()
+  const { recentAccountIds, updateRecentAccount } = useRecentAccounts()
 
   useEffect(() => {
     if (recentAccountIds.length === 0 && activeAccount) {
-      addRecentAccount(activeAccount.id.toString())
+      updateRecentAccount(activeAccount.id.toString())
     }
-  }, [activeAccount, addRecentAccount, recentAccountIds])
+  }, [activeAccount, updateRecentAccount, recentAccountIds])
 
   const recentAccounts = useMemo(() => {
     return recentAccountIds

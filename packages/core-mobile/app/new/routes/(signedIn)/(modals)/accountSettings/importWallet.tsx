@@ -12,6 +12,7 @@ import { addAccount } from 'store/account'
 import { selectAccounts } from 'store/account/slice'
 import { selectIsLedgerSupportBlocked } from 'store/posthog'
 import { AppThunkDispatch } from 'store/types'
+import { selectIsMigratingActiveAccounts } from 'store/wallet/slice'
 import Logger from 'utils/Logger'
 
 const ITEM_HEIGHT = 70
@@ -26,6 +27,7 @@ const ImportWalletScreen = (): JSX.Element => {
   const dispatch = useDispatch<AppThunkDispatch>()
   const activeWallet = useActiveWallet()
   const isLedgerSupportBlocked = useSelector(selectIsLedgerSupportBlocked)
+  const isMigratingActiveAccounts = useSelector(selectIsMigratingActiveAccounts)
 
   const handleCreateNewAccount = useCallback(async (): Promise<void> => {
     if (isAddingAccount) return
@@ -136,7 +138,10 @@ const ImportWalletScreen = (): JSX.Element => {
       })
     }
 
-    if (activeWallet?.type !== WalletType.PRIVATE_KEY) {
+    if (
+      activeWallet?.type !== WalletType.PRIVATE_KEY &&
+      !isMigratingActiveAccounts
+    ) {
       return [
         {
           title: 'Create new account',
@@ -170,7 +175,8 @@ const ImportWalletScreen = (): JSX.Element => {
     activeWallet?.type,
     colors,
     handleCreateNewAccount,
-    isLedgerSupportBlocked
+    isLedgerSupportBlocked,
+    isMigratingActiveAccounts
   ])
 
   return (
