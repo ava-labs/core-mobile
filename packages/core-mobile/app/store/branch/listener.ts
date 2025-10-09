@@ -11,6 +11,7 @@ export const addBranchListeners = (startListening: AppStartListening): void => {
   ): void => {
     const distinctId = selectDistinctID(listenerApi.getState())
     Branch.setIdentity(distinctId)
+    Branch.setRequestMetadata('$posthog_distinct_id', distinctId)
   }
 
   const branchLogout = (_: Action, __: AppListenerEffectAPI): void => {
