@@ -11,7 +11,8 @@ import { storeWallet } from './thunks'
 describe('wallet slice', () => {
   const initialState = {
     wallets: {},
-    activeWalletId: null
+    activeWalletId: null,
+    isMigratingActiveAccounts: false
   }
 
   const mockWallet = {

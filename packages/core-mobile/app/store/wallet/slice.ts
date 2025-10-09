@@ -8,7 +8,8 @@ export const reducerName = 'wallet'
 
 const initialState: WalletsState = {
   wallets: {},
-  activeWalletId: null
+  activeWalletId: null,
+  isMigratingActiveAccounts: false
 }
 
 const walletsSlice = createSlice({
@@ -41,6 +42,9 @@ const walletsSlice = createSlice({
       }
 
       delete state.wallets[walletId]
+    },
+    setIsMigratingActiveAccounts: (state, action: PayloadAction<boolean>) => {
+      state.isMigratingActiveAccounts = action.payload
     }
   },
   extraReducers: builder => {
@@ -73,8 +77,16 @@ export const selectWalletById =
   (state: RootState): Wallet | undefined =>
     state.wallet.wallets[walletId]
 
+export const selectIsMigratingActiveAccounts = (state: RootState): boolean =>
+  state.wallet.isMigratingActiveAccounts
+
 // actions
-export const { addWallet, setWalletName, setActiveWallet, _removeWallet } =
-  walletsSlice.actions
+export const {
+  addWallet,
+  setWalletName,
+  setActiveWallet,
+  _removeWallet,
+  setIsMigratingActiveAccounts
+} = walletsSlice.actions
 
 export const walletsReducer = walletsSlice.reducer

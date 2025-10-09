@@ -5,7 +5,11 @@ import {
 } from 'common/utils/alertWithTextInput'
 import { useCallback, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { selectWallets, setWalletName } from 'store/wallet/slice'
+import {
+  selectIsMigratingActiveAccounts,
+  selectWallets,
+  setWalletName
+} from 'store/wallet/slice'
 import { Wallet } from 'store/wallet/types'
 import { showAlert } from '@avalabs/k2-alpine'
 import { removeWallet } from 'store/wallet/thunks'
@@ -25,6 +29,7 @@ export const useManageWallet = (): {
   const dispatch = useDispatch<AppThunkDispatch>()
   const wallets = useSelector(selectWallets)
   const accounts = useSelector(selectAccounts)
+  const isMigratingActiveAccounts = useSelector(selectIsMigratingActiveAccounts)
 
   const handleRenameWallet = useCallback(
     (wallet: Wallet): void => {
@@ -153,13 +158,17 @@ export const useManageWallet = (): {
       ]
 
       if (
-        [WalletType.MNEMONIC, WalletType.SEEDLESS, WalletType.LEDGER].includes(
-          wallet.type
-        )
+        [
+          WalletType.MNEMONIC,
+          WalletType.SEEDLESS,
+          WalletType.LEDGER,
+          WalletType.KEYSTONE
+        ].includes(wallet.type)
       ) {
         baseItems.push({
           id: 'add_account',
-          title: 'Add account to this wallet'
+          title: 'Add account to this wallet',
+          disabled: isMigratingActiveAccounts
         })
       }
 
@@ -171,22 +180,9 @@ export const useManageWallet = (): {
         })
       }
 
-      if (
-        [
-          WalletType.MNEMONIC,
-          WalletType.SEEDLESS,
-          WalletType.KEYSTONE
-        ].includes(wallet.type)
-      ) {
-        baseItems.push({
-          id: 'add_account',
-          title: 'Add account to this wallet'
-        })
-      }
-
       return baseItems
     },
-    [canRemoveWallet]
+    [canRemoveWallet, isMigratingActiveAccounts]
   )
 
   const handleWalletMenuAction = useCallback(
