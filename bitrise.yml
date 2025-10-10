@@ -435,7 +435,6 @@ workflows:
     steps:
     - script-runner@0:
         title: Post comment on PR
-        run_if: '{{enveq "BITRISE_PULL_REQUEST" "true"}}'
         inputs:
         - file_path: scripts/bitrise/commentOnPR.sh
   _set-version:
