@@ -28,7 +28,7 @@ export async function createEmptyTestRun(
   }
 
   try {
-    const testRunResponse = await api.addRun(projectId, content)
+    const testRunResponse = await (api as any).addRun(projectId, content)
     const testRun = testRunResponse.body
     console.log(
       `The test run "${testRunName}" with id ${testRun.id} has been successfully created in TestRail...`
@@ -48,7 +48,8 @@ export async function getRunIdFromName() {
   const content = {
     created_after: midnight
   }
-  const myRun = await api.getRuns(projectId, content)
+  const myRunResponse = await api.getRuns(projectId, content)
+  const myRun = myRunResponse.body
 
   return myRun[0]?.id
 }
@@ -58,7 +59,8 @@ export async function getTestCaseId(testCaseName: any) {
     filter: testCaseName
   }
 
-  const my_case = await api.getCases(projectId, content)
+  const myCaseResponse = await (api as any).getCases(projectId, content)
+  const my_case = myCaseResponse.body
   if (my_case[0] !== undefined) {
     return my_case[0].id
   } else {
@@ -75,7 +77,8 @@ async function createTestCase(sectionID: any, title: any) {
 }
 
 async function getAllSectionsFromTestrail() {
-  const sections = await api.getSections(projectId)
+  const sectionsResponse = await api.getSections(projectId)
+  const sections = sectionsResponse.body
   const sectionNamesAndIds: { sectionName: any; sectionID: any }[] = []
   sections.forEach(function (section: { name: any; id: any }) {
     const sectionName = section.name
@@ -94,7 +97,7 @@ async function createNewTestSection(sectionName: any) {
   console.log(
     `${content.name} is a new section and has been added to the test suite`
   )
-  await api.addSection(projectId, content)
+  await (api as any).addSection(projectId, content)
 }
 
 // Todo grab the test case names using the method
@@ -302,30 +305,31 @@ async function createSubsection(parentID: number, sectionName: string) {
     parent_id: parentID,
     name: sectionName
   }
-  await api.addSection(projectId, content)
+  await (api as any).addSection(projectId, content)
 }
 
 async function getSectionsFromTestRail() {
-  const sections = await api.getSections(projectId)
+  const sectionsResponse = await api.getSections(projectId)
+  const sections = sectionsResponse.body
   const children: any[] = []
 
-  sections.forEach(function (arrayItem) {
+  sections.forEach(function (arrayItem: any) {
     if (arrayItem.parent_id !== null) {
       children.push(arrayItem)
     }
   })
 
-  sections.forEach(function (childArrayItem) {
+  sections.forEach(function (childArrayItem: any) {
     const childArray: string[] = []
     children.forEach(function (theChildItem) {
       if (theChildItem.parent_id === childArrayItem.id) {
         childArray.push(JSON.stringify(theChildItem))
       }
     })
-    childArrayItem.children = childArray
+    ;(childArrayItem as any).children = childArray
   })
 
-  sections.forEach(function (item) {
+  sections.forEach(function (item: any) {
     if (item.parent_id !== null) {
       const index = sections.indexOf(item)
       delete sections[index]
@@ -337,8 +341,9 @@ async function getSectionsFromTestRail() {
 
 async function getAllTestCasesFromTestrail() {
   const tcArray: any[] = []
-  const cases = await api.getCases(projectId)
-  cases.forEach(function (testCase: { title: any }) {
+  const casesResponse = await api.getCases(projectId)
+  const cases = casesResponse.body
+  ;(cases as any[]).forEach(function (testCase: { title: any }) {
     const testCaseTitle = testCase.title
     tcArray.push(testCaseTitle)
   })
@@ -407,9 +412,13 @@ async function getTestCasesBySection(section_id: number) {
   const content = {
     section_id: section_id
   }
-  const cases = await api.getCases(projectId, content)
+  const casesResponse = await api.getCases(projectId, content)
+  const cases = casesResponse.body
 
-  cases.forEach(function (arrayItem: { title: any; section_id: any }) {
+  ;(cases as any[]).forEach(function (arrayItem: {
+    title: any
+    section_id: any
+  }) {
     const testCaseTitle = arrayItem.title
     const sectionID = arrayItem.section_id
     // console.log(tCtitle)
@@ -421,7 +430,8 @@ async function getTestCasesBySection(section_id: number) {
 //getTestCasesBySection(518)
 
 export async function deleteEmptyTestSections() {
-  const sections = await api.getSections(projectId)
+  const sectionsResponse = await api.getSections(projectId)
+  const sections = sectionsResponse.body
   sections.forEach(async function (section: { name: any; id: any }) {
     const sectionName = section.name
     const sectionID = section.id
@@ -440,13 +450,14 @@ export async function deleteEmptyTestSections() {
 // deleteEmptyTestSections()
 
 export async function getTestRunCases(testRunId: any) {
-  const cases = await api.getTests(testRunId)
+  const casesResponse = await (api as any).getTests(testRunId)
+  const cases = casesResponse.body
   const caseTitles: {
     caseTitle: string
     testRunCaseId: number
     result: number
   }[] = []
-  cases.forEach(
+  ;(cases as any[]).forEach(
     (testRunCase: { title: string; id: number; status_id: number }) => {
       const caseTitle = testRunCase.title
       const testRunCaseId = testRunCase.id
@@ -477,7 +488,8 @@ export async function createNewTestRunBool(platform: any) {
   const content = {
     created_after: yesterdayUTC
   }
-  const runDetails = await api.getRuns(projectId, content)
+  const runDetailsResponse = await api.getRuns(projectId, content)
+  const runDetails = runDetailsResponse.body
   if (
     runDetails.length === 0 ||
     !runDetails[0] ||
@@ -504,7 +516,8 @@ export const isExistingSmokeTestRun = async (platform: any) => {
   const content = {
     created_after: Math.ceil(yesterdayUTC)
   }
-  const testRuns = await api.getRuns(projectId, content)
+  const testRunsResponse = await api.getRuns(projectId, content)
+  const testRuns = testRunsResponse.body
   const runIDs = []
   for (const run of testRuns) {
     const testRunName = run.name
@@ -564,7 +577,8 @@ export function getUniqueListBy(arr: any, key: string) {
 }
 
 export async function getTestCasesFromRun(runId: number): Promise<object[]> {
-  const casesObject = await api.getTests(runId)
+  const casesObjectResponse = await (api as any).getTests(runId)
+  const casesObject = casesObjectResponse.body
   const titleArray = []
   for (const testCase of casesObject) {
     const testCaseName = testCase.title
