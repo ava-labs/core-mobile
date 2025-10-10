@@ -1,7 +1,7 @@
 /* eslint-disable no-var */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import TestRail from '@dlenroc/testrail'
+import TestRail from 'testrail-api'
 import getTestLogs, {
   isSmokeTestRun,
   testRunTimestamp
