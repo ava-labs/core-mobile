@@ -13,7 +13,7 @@ const password = String(process.env.TESTRAIL_API_KEY)
 
 export var api = new TestRail({
   host: 'https://avalabs.testrail.net',
-  username: 'mobiledevs@avalabs.org',
+  user: 'mobiledevs@avalabs.org',
   password: password
 })
 
@@ -28,7 +28,8 @@ export async function createEmptyTestRun(
   }
 
   try {
-    const testRun = await api.addRun(projectId, content)
+    const testRunResponse = await api.addRun(projectId, content)
+    const testRun = testRunResponse.body
     console.log(
       `The test run "${testRunName}" with id ${testRun.id} has been successfully created in TestRail...`
     )
@@ -479,7 +480,8 @@ export async function createNewTestRunBool(platform: any) {
   const runDetails = await api.getRuns(projectId, content)
   if (
     runDetails.length === 0 ||
-    (runDetails[0] as TestRail.Run).created_on < yesterdayUTC
+    !runDetails[0] ||
+    (runDetails[0] as any).created_on < yesterdayUTC
   ) {
     return false
   } else {
