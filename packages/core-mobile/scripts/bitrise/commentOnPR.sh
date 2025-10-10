@@ -1,6 +1,13 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+echo "🔍 Checking if build was triggered by a PR..."
+
+if [ -z "${BITRISE_PULL_REQUEST:-}" ]; then
+  echo "ℹ️  Not a PR build, skipping GitHub comment."
+  exit 0
+fi
+
 echo "🧩 Preparing GitHub PR comment for platform: $PLATFORM"
 
 # Prepare platform-specific links
