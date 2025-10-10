@@ -15,7 +15,7 @@ jobs:
       - name: Trigger Bitrise internal pipeline
         env:
           BITRISE_APP_SLUG: ${{ secrets.BITRISE_APP_SLUG }}
-          BITRISE_TOKEN: ${{ secrets.BITRISE_TOKEN }}
+          BITRISE_ACCESS_TOKEN: ${{ secrets.BITRISE_ACCESS_TOKEN }}
           HEAD_REF: ${{ github.event.issue.pull_request.head.ref }}
           HEAD_REPO: ${{ github.event.issue.pull_request.head.repo.full_name }}
           COMMIT_SHA: ${{ github.event.issue.pull_request.head.sha }}
@@ -23,7 +23,7 @@ jobs:
         run: |
           echo "Triggering Bitrise pipeline: build-apps-internal"
           curl -X POST "https://api.bitrise.io/v0.1/apps/${BITRISE_APP_SLUG}/pipelines" \
-            -H "Authorization: ${BITRISE_TOKEN}" \
+            -H "Authorization: ${BITRISE_ACCESS_TOKEN}" \
             -H "Content-Type: application/json" \
             -d '{
               "pipeline_id": "build-apps-internal",
