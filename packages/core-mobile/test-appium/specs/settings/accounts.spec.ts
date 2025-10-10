@@ -7,9 +7,9 @@ describe('Settings', () => {
   it('Accounts - should verify the account detail', async () => {
     // go to the account detail from the accounts carousel
     await warmup()
-    await common.goSettings()
+    await settings.goSettings()
     await settings.goToAccountDetail(sl.account)
-    await settings.verifyAccountDetail(sl.account)
+    await common.verifyAccountName(sl.account)
   })
 
   it('Accounts - should rename the account name', async () => {

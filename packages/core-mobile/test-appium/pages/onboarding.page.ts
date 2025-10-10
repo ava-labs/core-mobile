@@ -134,11 +134,7 @@ class OnboardingPage {
 
   async enterRecoveryPhrase(recoveryPhrase: string) {
     await actions.type(this.recoveryPhraseInput, recoveryPhrase)
-    try {
-      await actions.dismissKeyboard(onboardingLoc.recoveryPhraseInput)
-    } catch (e) {
-      console.warn('the keyboard is not displayed')
-    }
+    await actions.dismissKeyboard(onboardingLoc.recoveryPhraseInput)
   }
 
   async enterWalletName(walletName: string | undefined = undefined) {
@@ -153,7 +149,7 @@ class OnboardingPage {
   }
 
   async tapNextBtnOnAvatarScreen() {
-    await actions.tap(this.nextBtnOnAvatarScreen, this.letsGo)
+    await actions.longPress(this.nextBtnOnAvatarScreen, this.letsGo)
   }
 
   async tapLetsGo() {
@@ -179,10 +175,6 @@ class OnboardingPage {
     await this.tapZero(pin)
   }
 
-  async dismissModals() {
-    await this.dismissUpdateAppModal()
-  }
-
   async tapZero(pin = '000000') {
     if (driver.isIOS) {
       await actions.type(this.pinInputField, pin)
@@ -192,13 +184,9 @@ class OnboardingPage {
   }
 
   async dismissUpdateAppModal() {
-    try {
-    await actions.waitFor(this.updateAppModalTitle, 40000)
+    await actions.waitFor(this.updateAppModalTitle, 50000)
     await actions.dragAndDrop(this.updateAppModalTitle, [0, 500])
     await actions.delay(1000)
-  } catch (e) {
-    console.log('Update app modal not found')
-  }
   }
 
   async dismissBottomSheet(element = this.grabber) {
@@ -206,11 +194,10 @@ class OnboardingPage {
     await actions.dragAndDrop(element, [0, 500])
   }
 
-  async verifyLoggedIn(bottomSheetIsVisible = true) {
-    if (bottomSheetIsVisible) {
-      await this.dismissModals()
-    }
+async verifyLoggedIn() {
+    await this.dismissUpdateAppModal()
     await actions.waitFor(commonElsPage.accountOne, 20000)
+    console.log('Verified you are logged in')
   }
 
   async tapManuallyCreateNewWallet() {

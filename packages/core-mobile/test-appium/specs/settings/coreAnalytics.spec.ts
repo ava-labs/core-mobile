@@ -15,13 +15,13 @@ describe('Settings', () => {
     await settingsPage.tapAnalyticsSwitch()
     await settingsPage.verifyAnalyticsSwitch(false)
     await commonElsPage.goBack()
-    await settingsPage.tapSecurityAndPrivacy()
+    await settingsPage.tapSecurityAndPrivacy(false)
     await settingsPage.verifyAnalyticsSwitch(false)
 
     // enable the switch and verify it's ON
     await settingsPage.tapAnalyticsSwitch(false)
     await commonElsPage.goBack()
-    await settingsPage.tapSecurityAndPrivacy()
+    await settingsPage.tapSecurityAndPrivacy(false)
     await settingsPage.verifyAnalyticsSwitch()
   })
 })

@@ -24,7 +24,7 @@ describe('Settings', () => {
   })
 
   it('Theme - should change appereance to dark', async () => {
-    await settings.tapTheme()
+    await settings.tapTheme(false)
     await settings.selectTheme(settingsLoc.dark)
     await settings.verifyTheme(settingsLoc.dark, [
       settingsLoc.system,

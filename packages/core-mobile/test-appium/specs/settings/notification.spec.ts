@@ -1,5 +1,6 @@
 import warmup from '../../helpers/warmup'
 import settingsPage from '../../pages/settings.page'
+import common from '../../pages/commonEls.page'
 
 describe('Settings', () => {
   const notiData = {
@@ -19,10 +20,17 @@ describe('Settings', () => {
     await settingsPage.verifyNotificationsScreen(notiData)
   })
 
-  Object.entries(notiData).forEach(([title]) => {
-    it(`Notifications - Should toggle ${title}`, async () => {
+  it('Notifications - should turn ON all notifications', async () => {
+    for (const [title] of Object.entries(notiData)) {
       await settingsPage.toggleAndVerify('enabled', title)
+    }
+  })
+
+  it('Notifications - should turn OFF all notifications', async () => {
+    await common.goBack()
+    await settingsPage.tapNotifications()
+    for (const [title] of Object.entries(notiData)) {
       await settingsPage.toggleAndVerify('disabled', title)
-    })
+    }
   })
 })

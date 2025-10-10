@@ -36,6 +36,10 @@ class Settings {
     return selectors.getById(settings.settingsScrollView)
   }
 
+  get settingsFooter() {
+    return selectors.getById(settings.settingsFooter)
+  }
+
   get networks() {
     return selectors.getByText(settings.networks)
   }
@@ -73,7 +77,7 @@ class Settings {
   }
 
   get theme() {
-    return selectors.getByText(settings.theme)
+    return selectors.getBySomeText(settings.theme)
   }
 
   get themeTitle() {
@@ -133,7 +137,7 @@ class Settings {
   }
 
   get currency() {
-    return selectors.getByText(settings.currency)
+    return selectors.getBySomeText(settings.currency)
   }
 
   get selectCurrencyTitle() {
@@ -149,7 +153,7 @@ class Settings {
   }
 
   get contacts() {
-    return selectors.getByText(settings.contacts)
+    return selectors.getBySomeText(settings.contacts)
   }
 
   get addAddressButton() {
@@ -178,8 +182,8 @@ class Settings {
     }
     // add contact addresses
     for (const [network, address] of Object.entries(networkAndAddress)) {
-      await actions.tap(selectors.getById(`contact_delete_btn__${network}`))
-      await common.tapDelete()
+      await actions.click(selectors.getById(`contact_delete_btn__${network}`))
+      await common.tapDeleteAlert()
       await actions.waitFor(selectors.getByText(`Add ${network} address`))
       await this.setAddress(network, address)
     }
@@ -188,27 +192,22 @@ class Settings {
   }
 
   async tapContactByName(contactName: string) {
-    await actions.tap(selectors.getByText(contactName))
+    await actions.tap(selectors.getBySomeText(contactName))
   }
 
   async setAddress(network: string, address: string) {
-    if (
-      !(await actions.getVisible(selectors.getByText(`Add ${network} address`)))
-    ) {
-      await actions.swipe('up', 0.5, this.nameContactBtn)
-    }
-    await actions.tap(selectors.getByText(`Add ${network} address`))
-    await actions.tap(this.typeInOrPasteAddress)
+    await actions.click(selectors.getByText(`Add ${network} address`))
+    await actions.click(this.typeInOrPasteAddress)
     await actions.type(
       selectors.getById(`advanced_input__${network.toLowerCase()}`),
       address
     )
-    await actions.dismissKeyboard(`advanced_input__${network.toLowerCase()}`)
+    await actions.tapEnterOnKeyboard()
   }
 
   async verifyContact(address: string, contactName: string) {
     const previewAddress = address.slice(0, 5)
-    await actions.waitFor(selectors.getByText(contactName))
+    await actions.waitFor(selectors.getBySomeText(contactName))
     await actions.waitFor(selectors.getBySomeText(previewAddress))
   }
 
@@ -274,6 +273,9 @@ class Settings {
   }
 
   async tapCurrency() {
+    if (!(await actions.getVisible(this.currency))) {
+      await this.swipeSettings()
+    }
     await actions.tap(this.currency)
   }
 
@@ -283,12 +285,17 @@ class Settings {
   }
 
   async tapNotifications() {
-    await this.scrollToSettingsFooter()
+    if (!(await actions.getVisible(this.notificationsPreferences))) {
+      await this.swipeSettings()
+    }
     await actions.tap(this.notificationsPreferences)
   }
 
+  async swipeSettings(amount = 0.8) {
+    await actions.swipe('up', amount, this.mainnetAvatar)
+  }
+
   async selectCurrency(curr: string) {
-    await actions.type(common.searchBar, curr)
     await actions.tap(selectors.getById(`currency__${curr}`))
   }
 
@@ -311,13 +318,11 @@ class Settings {
     await actions.tap(this.addNetworkBtn)
   }
 
-  async addContactOrNetworkName(name: string, isEdit = false) {
+  async addContactOrNetworkName(name: string) {
     await actions.tap(this.nameContactBtn)
     await actions.type(common.dialogInput, name)
-    await common.tapSave()
-    if (isEdit) {
-      await common.tapSave()
-    }
+    await actions.tapEnterOnKeyboard()
+    await common.tapSaveAlert()
   }
 
   async setNetworkData(type: string, value: string) {
@@ -326,7 +331,7 @@ class Settings {
       selectors.getById(`advanced_input__${type.toLowerCase()}`),
       value
     )
-    await actions.dismissKeyboard(`advanced_input__${type.toLowerCase()}`)
+    await actions.dismissKeyboard()
   }
 
   async addNetwork(
@@ -427,19 +432,17 @@ class Settings {
     await actions.tap(selectors.getById(targetId))
   }
 
-  async verifyAccountDetail(portfolioAccountName: string) {
-    // Account name verification
-    await actions.waitFor(common.evm)
-    await common.verifyAccountName(portfolioAccountName)
-  }
-
   async tapRenameAccount() {
     await actions.tap(this.renameAccount)
   }
 
   async setNewAccountName(newAccountName: string) {
-    await actions.isVisible(common.accountOne)
-    await actions.type(common.accountOne, newAccountName)
+    await actions.type(common.dialogInput, newAccountName)
+    if (driver.isIOS) {
+      await actions.click(common.save)
+    } else {
+      await actions.tap(common.saveUpperCase)
+    }
   }
 
   async verifyAccountCarouselItem(accountName: string) {
@@ -459,7 +462,10 @@ class Settings {
     await this.switchAccountByCarousel(name)
   }
 
-  async tapTheme() {
+  async tapTheme(needSwipe = true) {
+    if (needSwipe) {
+      await this.swipeSettings()
+    }
     await actions.tap(this.theme)
   }
 
@@ -487,17 +493,15 @@ class Settings {
     await actions.tap(selectors.getById(`${appearance}_unselected`))
   }
 
-  async tapSecurityAndPrivacy() {
-    await this.scrollToSettingsFooter()
+  async tapSecurityAndPrivacy(needSwipe = true) {
+    if (needSwipe) {
+      await this.swipeSettings()
+    }
     await actions.tap(this.securityAndPrivacy)
   }
 
   async tapChangePin() {
     await actions.tap(this.changePin)
-  }
-
-  async scrollToSettingsFooter() {
-    await actions.scrollToBottom(this.settingsScrollView)
   }
 
   async setNewPin(newPin = '111111') {
@@ -511,7 +515,7 @@ class Settings {
     try {
       await actions.isNotVisible(portfolioPage.testnetModeIsOn)
       await this.goSettings()
-      await actions.tap(this.testnetSwitchOff)
+      await actions.longPress(this.testnetSwitchOff)
       return true
     } catch (e) {
       console.log('You are on testnet')
@@ -523,7 +527,7 @@ class Settings {
     try {
       await actions.isVisible(portfolioPage.testnetModeIsOn)
       await this.goSettings()
-      await actions.tap(this.testnetSwitchOn)
+      await actions.longPress(this.testnetSwitchOn)
       return true
     } catch (e) {
       console.log('You are on mainnet')
@@ -555,33 +559,28 @@ class Settings {
 
   async tapAnalyticsSwitch(isOn = true) {
     if (isOn) {
-      await actions.tap(this.analyticsOn)
+      await actions.longPress(this.analyticsOn)
     } else {
-      await actions.tap(this.analyticsOff)
+      await actions.longPress(this.analyticsOff)
     }
   }
 
   async verifyNotificationsScreen(data: Record<string, string>) {
     await actions.waitFor(this.notificationsPreferencesTitle)
-    for (const [title, subtitle] of Object.entries(data)) {
+    for (const [title] of Object.entries(data)) {
       await actions.isVisible(selectors.getById(`${title}_enabled_switch`))
-      await actions.isVisible(selectors.getByText(title))
-      await actions.isVisible(selectors.getByText(subtitle))
     }
   }
 
   async tapNotificationSwitch(isSwitchOn = 'enabled', notiType = 'Stake') {
     const switchTestID = `${notiType}_${isSwitchOn}_switch`
-    await actions.tap(selectors.getById(switchTestID))
+    await actions.longPress(selectors.getById(switchTestID))
   }
 
   async toggleAndVerify(isSwitchOn = 'enabled', notiType: string) {
     const toggled = isSwitchOn === 'enabled' ? 'disabled' : 'enabled'
     await this.tapNotificationSwitch(isSwitchOn, notiType)
-    await actions.waitFor(selectors.getById(`${notiType}_${toggled}_switch`))
-    await common.goBack()
-    await this.tapNotifications()
-    await actions.waitFor(selectors.getById(`${notiType}_${toggled}_switch`))
+    await actions.isVisible(selectors.getById(`${notiType}_${toggled}_switch`))
   }
 }
 

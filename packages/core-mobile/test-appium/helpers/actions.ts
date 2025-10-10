@@ -42,14 +42,16 @@ async function waitForDisplayed(ele: ChainablePromiseElement, timeout = 20000) {
 
 async function isVisible(ele: ChainablePromiseElement) {
   const visible = await ele.isDisplayed()
-  console.log('isVisible? ', visible)
+  const eleSelector = await ele.selector
+  console.log(`${eleSelector} isVisible? `, visible)
   assert.equal(visible, true, ele.toString())
   return visible
 }
 
 async function isNotVisible(ele: ChainablePromiseElement) {
   const visible = await ele.isDisplayed()
-  console.log('isNotVisible? ', visible)
+  const eleSelector = await ele.selector
+  console.log(`${eleSelector} isNotVisible? `, visible)
   assert.equal(visible, false, ele.toString())
   return visible
 }
@@ -80,13 +82,35 @@ async function tap(
     await delay(1000)
     await ele.tap()
     const selector = await ele.selector
-    console.log(`Tapped on selector: ${selector}`)
+    console.log(`Tapped "${selector}"`)
     if (expectedEle) {
       try {
         await waitFor(expectedEle)
       } catch (e) {
         await ele.tap()
-        console.log(`Tapped again: ${selector}`)
+        console.log(`Tapped again "${selector}"`)
+      }
+    }
+  }
+}
+
+async function longPress(
+  ele: ChainablePromiseElement | undefined,
+  expectedEle?: ChainablePromiseElement
+) {
+  if (ele) {
+    await waitFor(ele)
+    await ele.waitForEnabled()
+    await delay(1000)
+    await ele.longPress()
+    const selector = await ele.selector
+    console.log(`longPress "${selector}"`)
+    if (expectedEle) {
+      try {
+        await waitFor(expectedEle)
+      } catch (e) {
+        await ele.longPress()
+        console.log(`longPress again "${selector}"`)
       }
     }
   }
@@ -107,6 +131,14 @@ async function dismissKeyboard(id = 'Return') {
     await driver.hideKeyboard()
   }
   await delay(1000)
+}
+
+async function tapEnterOnKeyboard(id = 'Return') {
+  if (driver.isIOS) {
+    await click(selectors.getById(id))
+  } else {
+    await driver.pressKeyCode(66)
+  }
 }
 
 async function getText(ele: ChainablePromiseElement) {
@@ -156,9 +188,11 @@ async function clearText(ele: ChainablePromiseElement) {
   await ele.clearValue()
 }
 
-async function scrollToBottom(ele: ChainablePromiseElement) {
-  await waitFor(ele)
-  await ele.scrollIntoView({ direction: 'down', maxScrolls: 10 })
+async function scrollTo(
+  ele: ChainablePromiseElement
+  // direction: 'down' | 'up' | 'left' | 'right' = 'down'
+) {
+  await ele.scrollIntoView()
 }
 
 export const actions = {
@@ -172,13 +206,15 @@ export const actions = {
   isSelected,
   isEnabled,
   tap,
+  longPress,
   click,
   dismissKeyboard,
+  tapEnterOnKeyboard,
   getText,
   swipe,
   dragAndDrop,
   delay,
   getVisible,
   clearText,
-  scrollToBottom
+  scrollTo
 }

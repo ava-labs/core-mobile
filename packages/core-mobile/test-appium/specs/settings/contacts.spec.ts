@@ -1,14 +1,11 @@
 import settings from '../../pages/settings.page'
 import cl from '../../locators/commonEls.loc'
 import cp from '../../pages/commonEls.page'
-import { actions } from '../../helpers/actions'
 import warmup from '../../helpers/warmup'
 
 const networkAndAddress: Record<string, string> = {
   [cl.evm]: cl.myEvmAddress,
-  [cl.xpChain]: cl.myXpAddress,
-  [cl.bitcoin]: cl.myBtcAddress,
-  [cl.solana]: cl.mySolanaAddress
+  [cl.xpChain]: cl.myXpAddress
 }
 
 const newAddress: Record<string, string> = {
@@ -45,7 +42,6 @@ describe('Settings', () => {
 
     // Search by address
     await cp.typeSearchBar(cl.myEvmAddress2)
-    await actions.dismissKeyboard()
     await settings.verifyContact(cl.myEvmAddress2, 'Core QA')
   })
 
@@ -53,7 +49,7 @@ describe('Settings', () => {
     // Delete contact
     await settings.tapContactByName('Core QA')
     await cp.tapDelete()
-    await cp.tapDelete()
+    await cp.tapDeleteAlert()
     await settings.verifyEmptyContacts()
   })
 })

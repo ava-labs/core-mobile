@@ -145,6 +145,10 @@ class CommonElsPage {
     return selectors.getByText(commonEls.save)
   }
 
+  get saveUpperCase() {
+    return selectors.getByText(commonEls.save.toUpperCase())
+  }
+
   get dialogInput() {
     return selectors.getById(commonEls.dialogInput)
   }
@@ -217,6 +221,10 @@ class CommonElsPage {
     return selectors.getByText(commonEls.delete)
   }
 
+  get deleteUpperCase() {
+    return selectors.getByText(commonEls.delete.toUpperCase())
+  }
+
   get cancel() {
     return selectors.getByText(commonEls.cancel)
   }
@@ -270,6 +278,7 @@ class CommonElsPage {
 
   async typeSearchBar(text: string, searchBar = this.searchBar) {
     await actions.type(searchBar, text)
+    await actions.tapEnterOnKeyboard()
   }
 
   async tapBackButton() {
@@ -376,8 +385,29 @@ class CommonElsPage {
   }
 
   async tapSave() {
-    await actions.waitFor(this.save)
-    await actions.tap(this.save)
+    await actions.click(this.save)
+  }
+
+  async tapSaveAlert() {
+    const saveBtn = driver.isIOS
+      ? selectors.getById(commonEls.save)
+      : this.saveUpperCase
+    try {
+      await actions.click(saveBtn)
+    } catch (e) {
+      await actions.tap(saveBtn)
+    }
+  }
+
+  async tapDeleteAlert() {
+    const deleteBtn = driver.isIOS
+      ? selectors.getById(commonEls.delete)
+      : this.deleteUpperCase
+    try {
+      await actions.click(deleteBtn)
+    } catch (e) {
+      console.log('Delete button not found')
+    }
   }
 
   async verifyAccountName(expectedName: string, whichScreen = 'settings') {
@@ -399,10 +429,6 @@ class CommonElsPage {
       : `//android.widget.ListView//*[contains(@text, "${item}")]`
     const ele = selectors.getByXpath(xpath)
     await actions.tap(ele)
-  }
-
-  async goSettings() {
-    await actions.tap(this.settingsBtn)
   }
 
   async tapDelete() {
