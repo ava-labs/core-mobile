@@ -114,8 +114,10 @@ class FCMService {
   ): DisplayNotificationParams => {
     if (!fcm.notification) throw Error('No notification payload')
     const data = this.#extractDeepLinkData(fcm.data)
+
     return {
-      channelId: fcm.notification.android?.channelId,
+      channelId:
+        fcm.notification.android?.channelId ?? EVENT_TO_CH_ID[fcm.data.event],
       title: fcm.notification.title,
       body: fcm.notification.body,
       sound: fcm.notification.sound,
@@ -132,7 +134,7 @@ class FCMService {
         transactionHash: string
         url: string
       }
-    | { url: string }
+    | { url: string; channelId: string }
     | undefined => {
     if (fcmData.type === NotificationTypes.BALANCE_CHANGES) {
       return {
@@ -144,7 +146,8 @@ class FCMService {
     } else if (fcmData.type === NotificationTypes.NEWS) {
       return {
         // TODO: remove urlV2 after backend is updated to send just url for NEWS notifications
-        url: fcmData.urlV2 ?? fcmData.url ?? ''
+        url: fcmData.urlV2 ?? fcmData.url ?? '',
+        channelId: EVENT_TO_CH_ID[fcmData.event] as string
       }
     }
   }

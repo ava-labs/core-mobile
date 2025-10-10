@@ -342,16 +342,10 @@ class NotificationsService {
         pressAction: {
           id: PressActionId.OPEN_PORTFOLIO,
           launchActivity: LAUNCH_ACTIVITY
-        }
+        },
+        channelId: channelId ?? ''
       },
       data
-    }
-    if (channelId) {
-      notification.android = { ...notification.android, channelId }
-      notification.data = {
-        ...data,
-        channelId
-      }
     }
     notification.ios = { sound: sound ?? audioFiles.Default.file }
     await notifee.displayNotification(notification).catch(Logger.error)
