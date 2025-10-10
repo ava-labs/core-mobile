@@ -256,6 +256,8 @@ class NotificationsService {
 
     if (detail?.notification?.data) {
       AnalyticsService.capture('PushNotificationPressed', {
+        title: detail.notification?.title ?? '',
+        body: detail.notification?.body ?? '',
         channelId: detail.notification?.data?.channelId as string,
         deeplinkUrl: detail.notification?.data?.url as string
       })
@@ -349,6 +351,8 @@ class NotificationsService {
     }
     notification.ios = { sound: sound ?? audioFiles.Default.file }
     AnalyticsService.capture('PushNotificationReceived', {
+      title: title ?? '',
+      body: body ?? '',
       channelId: channelId ?? (data?.channelId as ChannelId),
       deeplinkUrl: data?.url as string
     })

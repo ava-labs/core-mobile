@@ -214,6 +214,8 @@ class FCMService {
         notificationData.data?.channelId.length !== 0
       ) {
         AnalyticsService.capture('PushNotificationPressed', {
+          title: notificationData.title,
+          body: notificationData.body,
           channelId: notificationData.data.channelId,
           deeplinkUrl: notificationData.data.url
         })
