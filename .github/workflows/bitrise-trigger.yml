@@ -20,18 +20,19 @@ jobs:
           HEAD_REPO: ${{ github.event.issue.pull_request.head.repo.full_name }}
           COMMIT_SHA: ${{ github.event.issue.pull_request.head.sha }}
           COMMENT_BODY: ${{ github.event.comment.body }}
+          PR_NUMBER: ${{ github.event.issue.number }}
         run: |
           echo "Triggering Bitrise pipeline: build-apps-internal"
-          curl -X POST "https://api.bitrise.io/v0.1/apps/${BITRISE_APP_SLUG}/pipelines" \
+          curl -X POST "https://api.bitrise.io/v0.1/apps/${BITRISE_APP_SLUG}/builds" \
             -H "Authorization: ${BITRISE_ACCESS_TOKEN}" \
             -H "Content-Type: application/json" \
             -d '{
-              "pipeline_id": "build-apps-internal",
+              "hook_info": { "type": "bitrise" },
               "build_params": {
                 "branch": "'"${HEAD_REF}"'",
-                "commit_hash": "'"${COMMIT_SHA}"'",
+                "pipeline_id": "build-apps-internal",
                 "commit_message": "Triggered from GitHub comment: '${COMMENT_BODY}'",
-                "pull_request_repository_url": "https://github.com/'"${HEAD_REPO}"'"
+                "pull_request_repository_url": "https://github.com/'"${HEAD_REPO}"'",
               },
               "triggered_by": "GitHub Action PR comment"
             }'

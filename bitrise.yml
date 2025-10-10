@@ -431,6 +431,13 @@ workflows:
             View Build|${BITRISE_BUILD_URL}
             View Test Run|https://avalabs.testrail.io/index.php?/runs/view/${TESTRAIL_RUN_ID}&group_by=cases:section_id&group_order=asc
         - webhook_url: $SLACK_TEST_RESULT_WEBHOOK_URL
+  _comment-on-github-pull-request:
+    steps:
+    - script-runner@0:
+        title: Post comment on PR
+        run_if: '{{enveq "BITRISE_PULL_REQUEST" "true"}}'
+        inputs:
+        - file_path: scripts/bitrise/commentOnPR.sh
   _set-version:
     steps:
     - script-runner@0:
@@ -541,6 +548,7 @@ workflows:
     - _build-android
     after_run:
     - _send-notification-slack
+    - _comment-on-github-pull-request
     envs:
     - ENVIRONMENT: production
       opts:
@@ -940,6 +948,7 @@ workflows:
     - _build-ios
     after_run:
     - _send-notification-slack
+    - _comment-on-github-pull-request
     envs:
     - ENVIRONMENT: production
       opts:
