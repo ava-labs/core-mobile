@@ -348,13 +348,13 @@ class NotificationsService {
       data
     }
     notification.ios = { sound: sound ?? audioFiles.Default.file }
-    await notifee.displayNotification(notification).catch(Logger.error)
-
-    if (channelId) {
+    if (channelId || data?.channelId) {
       AnalyticsService.capture('PushNotificationReceived', {
-        channelId
+        channelId: channelId ?? (data?.channelId as ChannelId)
       })
     }
+    await notifee.displayNotification(notification).catch(Logger.error)
+
   }
 }
 
