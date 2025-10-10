@@ -7,7 +7,7 @@ declare module 'testrail-api' {
 
   class TestRail {
     constructor(config: TestRailConfig)
-    
+
     // All methods return any to avoid type conflicts
     addRun(projectId: number, content: any): Promise<any>
     getRuns(projectId: number, filters?: any): Promise<any>
@@ -21,7 +21,11 @@ declare module 'testrail-api' {
     addResultForCase(runId: number, caseId: number, content: any): Promise<any>
     addResultsForCases(runId: number, content: any): Promise<any>
     getResults(runId: number, filters?: any): Promise<any>
-    getResultsForCase(runId: number, caseId: number, filters?: any): Promise<any>
+    getResultsForCase(
+      runId: number,
+      caseId: number,
+      filters?: any
+    ): Promise<any>
     getResultsForRun(runId: number, filters?: any): Promise<any>
 
     getTest(testId: number): Promise<any>
