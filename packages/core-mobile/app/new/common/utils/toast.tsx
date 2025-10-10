@@ -142,6 +142,11 @@ type TransactionSnackbarToast =
       toastId?: string
       content: { type: 'error'; message?: string; error?: string }
     }
+  | {
+      toastType: ToastType.TRANSACTION_SNACKBAR
+      toastId?: string
+      content: { type: 'plain'; message?: string }
+    }
 
 type ToastProps =
   | SnackbarToast
@@ -278,5 +283,24 @@ export const transactionSnackbar = {
       {
         duration: DURATION_LONG
       }
-    )
+    ),
+  /*
+   * Displays a plain(no icon) snackbar.
+   *
+   * `message` is a short, one-line message for the snackbar.
+   */
+  plain: ({ toastId, message }: { toastId?: string; message?: string }) => {
+    const props: ToastProps = {
+      toastType: ToastType.TRANSACTION_SNACKBAR,
+      content: { type: 'plain', message }
+    }
+    if (toastId) {
+      updateToast({
+        toastId,
+        props
+      })
+    } else {
+      showToast(props)
+    }
+  }
 }

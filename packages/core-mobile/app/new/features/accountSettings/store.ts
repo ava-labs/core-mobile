@@ -11,7 +11,8 @@ export const useNewContactAvatar = createZustandStore<AvatarType | undefined>(
 
 interface RecentAccountsState {
   recentAccountIds: string[]
-  addRecentAccount: (accountId: string) => void
+  addRecentAccounts: (accountIds: string[]) => void
+  updateRecentAccount: (accountId: string) => void
   deleteRecentAccounts: () => void
 }
 
@@ -20,12 +21,19 @@ export const recentAccountsStore = create<RecentAccountsState>()(
   persist(
     set => ({
       recentAccountIds: [],
-      addRecentAccount: (accountId: string) =>
+      addRecentAccounts: (accountIds: string[]) =>
+        set(state => ({
+          recentAccountIds: [...state.recentAccountIds, ...accountIds].slice(
+            0,
+            MAX_RECENT_ACCOUNTS
+          )
+        })),
+      updateRecentAccount: (accountId: string) =>
         set(state => ({
           recentAccountIds: [
             accountId,
             ...state.recentAccountIds.filter(id => id !== accountId)
-          ].slice(0, 5)
+          ].slice(0, MAX_RECENT_ACCOUNTS)
         })),
       deleteRecentAccounts: () =>
         set({
@@ -35,6 +43,7 @@ export const recentAccountsStore = create<RecentAccountsState>()(
     {
       name: ZustandStorageKeys.RECENT_ACCOUNTS,
       storage: zustandMMKVStorage,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       migrate: (persistedState: any) => {
         // Check if this is legacy data with recentAccountIndexes
         if (persistedState && 'recentAccountIndexes' in persistedState) {
@@ -53,3 +62,5 @@ export const recentAccountsStore = create<RecentAccountsState>()(
 export const useRecentAccounts = (): RecentAccountsState => {
   return recentAccountsStore()
 }
+
+const MAX_RECENT_ACCOUNTS = 5

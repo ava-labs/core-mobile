@@ -14,15 +14,19 @@ export enum SuggestedSiteName {
   AAVE = 'Aave',
   GOGOPOOL = 'GoGoPool',
   SALVOR = 'Salvor',
-  DELTA_PRIME = 'Delta Prime',
   THE_ARENA = 'The Arena',
-  STEAKHUT = 'SteakHut',
   PHARAOH = 'Pharaoh',
   PANGOLIN = 'Pangolin',
-  BENQI = 'Benqi'
+  BENQI = 'Benqi',
+  BLACK_HOLE = 'BlackHole',
+  SUZAKU_NETWORK = 'Suzaku'
 }
 
 export const SUGGESTED_ITEMS: SuggestedItem[] = [
+  {
+    name: SuggestedSiteName.BLACK_HOLE,
+    siteUrl: 'https://blackhole.xyz/'
+  },
   {
     name: SuggestedSiteName.LFJ,
     siteUrl: 'https://lfj.gg/'
@@ -48,16 +52,12 @@ export const SUGGESTED_ITEMS: SuggestedItem[] = [
     siteUrl: 'https://salvor.io/'
   },
   {
-    name: SuggestedSiteName.DELTA_PRIME,
-    siteUrl: 'https://app.deltaprime.io/#/pools'
-  },
-  {
     name: SuggestedSiteName.THE_ARENA,
     siteUrl: 'https://arena.social/'
   },
   {
-    name: SuggestedSiteName.STEAKHUT,
-    siteUrl: 'https://app.steakhut.finance/liquidity'
+    name: SuggestedSiteName.SUZAKU_NETWORK,
+    siteUrl: 'https://suzaku.network/'
   },
   {
     name: SuggestedSiteName.PHARAOH,

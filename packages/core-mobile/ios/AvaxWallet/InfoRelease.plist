@@ -66,6 +66,8 @@
 	<string>To scan QR we need camera permission.</string>
 	<key>NSFaceIDUsageDescription</key>
 	<string>$(DISPLAY_NAME) requires Face ID access to allow you quick and secure access to your wallet.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>$(DISPLAY_NAME) needs access to save images from the browser to your photo library.</string>
 	<key>LSApplicationQueriesSchemes</key>
 	<array>
 		<string>twitter</string>
