@@ -185,9 +185,7 @@ class FCMService {
 
       if (
         notificationData.data?.url === undefined ||
-        typeof notificationData.data.url !== 'string' ||
-        typeof notificationData.data?.channelId !== 'string' ||
-        notificationData.data?.channelId.length === 0
+        typeof notificationData.data.url !== 'string'
       ) {
         return
       }
@@ -211,11 +209,15 @@ class FCMService {
             params: { deeplinkUrl: link.url }
           })
       })
-
-      AnalyticsService.capture('PushNotificationPressed', {
-        channelId: notificationData.data.channelId,
-        deeplinkUrl: notificationData.data.url
-      })
+      if (
+        typeof notificationData.data?.channelId === 'string' &&
+        notificationData.data?.channelId.length !== 0
+      ) {
+        AnalyticsService.capture('PushNotificationPressed', {
+          channelId: notificationData.data.channelId,
+          deeplinkUrl: notificationData.data.url
+        })
+      }
     })
   }
 
