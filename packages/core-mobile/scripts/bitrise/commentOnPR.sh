@@ -3,6 +3,13 @@ set -euo pipefail
 
 echo "🔍 Checking for an open PR for branch: $BITRISE_GIT_BRANCH"
 
+GITHUB_REPOSITORY=$(git config --get remote.origin.url | sed -E 's/.*github\.com[:/](.*)\.git/\1/')
+
+if [ -z "${GITHUB_REPOSITORY:-}" ]; then
+  echo "❌ Unable to determine GitHub repository."
+  exit 1
+fi
+
 API_URL="https://api.github.com/repos/${GITHUB_REPOSITORY}/pulls?head=${GITHUB_REPOSITORY}:${BITRISE_GIT_BRANCH}&state=open"
 PR_RESPONSE=$(curl -s -H "Authorization: token ${GITHUB_ACCESS_TOKEN}" "$API_URL")
 
