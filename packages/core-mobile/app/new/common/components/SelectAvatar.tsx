@@ -141,19 +141,23 @@ export const SelectAvatar = memo(
               />
             </View>
           )}
-          {!Config.E2E && (
-            <View
-              style={{
-                marginBottom: -insets.bottom,
-                paddingBottom: 16
-              }}>
-              <AvatarSelector
-                selectedId={selectedAvatar?.id}
-                avatars={avatarsWithSelectedAsMiddle}
-                onSelect={onSelect}
-              />
-            </View>
-          )}
+          {
+            // TODO: Remove this once we have a proper way to handle avatar selection on appium tests.
+            // We are doing this because the avatar selector is not working properly on appium tests.
+            !Config.E2E && (
+              <View
+                style={{
+                  marginBottom: -insets.bottom,
+                  paddingBottom: 16
+                }}>
+                <AvatarSelector
+                  selectedId={selectedAvatar?.id}
+                  avatars={avatarsWithSelectedAsMiddle}
+                  onSelect={onSelect}
+                />
+              </View>
+            )
+          }
         </View>
       </ScrollScreen>
     )

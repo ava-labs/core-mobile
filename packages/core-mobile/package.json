@@ -18,9 +18,9 @@
     "storybook-watch": "sb-rn-watcher",
     "gen:contracts": "typechain --target=ethers-v6 --out-dir app/contracts/openzeppelin ./node_modules/@openzeppelin/contracts/build/contracts/ERC20.json ./node_modules/@openzeppelin/contracts/build/contracts/ERC721.json ./node_modules/@openzeppelin/contracts/build/contracts/ERC1155.json",
     "gen:glacierApi": "npx openapi-zod-client 'https://glacier-api-dev.avax.network/api-json' -o './app/utils/network/glacierApi.client.ts'",
-    "appium:ios": "PLATFORM=ios wdio run ./test-appium/wdio.conf.ts",
-    "appium:android": "PLATFORM=android wdio run ./test-appium/wdio.conf.ts",
-    "appium": "wdio run ./test-appium/wdio.conf.ts"
+    "appium:ios": "PLATFORM=ios wdio run ./e2e-appium/wdio.conf.ts",
+    "appium:android": "PLATFORM=android wdio run ./e2e-appium/wdio.conf.ts",
+    "appium": "wdio run ./e2e-appium/wdio.conf.ts"
   },
   "dependencies": {
     "@avalabs/avalanche-module": "1.10.2",

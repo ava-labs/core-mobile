@@ -8,7 +8,7 @@ module.exports = {
   },
   testPathIgnorePatterns: [
     '<rootDir>/e2e/tests/playwright/',
-    '<rootDir>/test-appium/'
+    '<rootDir>/e2e-appium/'
   ],
   setupFilesAfterEnv: [
     '<rootDir>/tests/msw/jestSetup.js',
