@@ -545,6 +545,7 @@ workflows:
     before_run:
     - _install-and-set-env
     - _set-version
+    - _comment-on-github-pull-request
     - _build-android
     after_run:
     - _send-notification-slack
@@ -945,6 +946,7 @@ workflows:
     before_run:
     - _install-and-set-env
     - _set-version
+    - _comment-on-github-pull-request
     - _build-ios
     after_run:
     - _send-notification-slack
