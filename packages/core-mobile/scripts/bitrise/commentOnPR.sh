@@ -1,16 +1,21 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-echo "🔍 Checking if build was triggered by a PR..."
+echo "🔍 Checking for an open PR for branch: $BITRISE_GIT_BRANCH"
 
-if [ -z "${BITRISE_PULL_REQUEST:-}" ]; then
-  echo "ℹ️  Not a PR build, skipping GitHub comment."
+API_URL="https://api.github.com/repos/${GITHUB_REPOSITORY}/pulls?head=${GITHUB_REPOSITORY}:${BITRISE_GIT_BRANCH}&state=open"
+PR_RESPONSE=$(curl -s -H "Authorization: token ${GITHUB_ACCESS_TOKEN}" "$API_URL")
+
+PR_NUMBER=$(echo "$PR_RESPONSE" | jq '.[0].number // empty')
+
+if [ -z "$PR_NUMBER" ]; then
+  echo "ℹ️  No open PR found for branch '$BITRISE_GIT_BRANCH'. Skipping PR comment."
   exit 0
 fi
 
-echo "🧩 Preparing GitHub PR comment for platform: $PLATFORM"
+echo "✅ Found open PR #$PR_NUMBER for branch $BITRISE_GIT_BRANCH"
 
-# Prepare platform-specific links
+# Prepare platform-specific info
 if [ "$PLATFORM" = "Android" ]; then
   LINKS="📦 [**APK**]($BITRISE_PUBLIC_INSTALL_PAGE_URL)
 🧾 [**QR Code**]($BITRISE_PUBLIC_INSTALL_PAGE_QR_CODE_IMAGE_URL)"
@@ -18,14 +23,12 @@ else
   LINKS=""
 fi
 
-# Lowercase platform tag (ios / android)
 PLATFORM_TAG=$(echo "$PLATFORM" | tr '[:upper:]' '[:lower:]')
 
-# Create the comment body
 COMMENT_BODY=$(cat <<EOF
 ## $PLATFORM Build Available!
 
-**Commit:** [$GIT_CLONE_COMMIT_HASH](https://github.com/ava-labs/core-mobile/commit/$GIT_CLONE_COMMIT_HASH)  
+**Commit:** [$GIT_CLONE_COMMIT_HASH](https://github.com/${GITHUB_REPOSITORY}/commit/$GIT_CLONE_COMMIT_HASH)  
 **Message:** _$GIT_CLONE_COMMIT_MESSAGE_SUBJECT_
 
 ✅ **$PLATFORM:** $APP_VERSION.$BUILD_NUMBER
@@ -34,22 +37,18 @@ $LINKS
 
 🔗 [**View Build**]($BITRISE_BUILD_URL)
 
-<!-- bitrise-builds-$PLATFORM_TAG -->
+<!-- bitrise-build-$PLATFORM_TAG -->
 EOF
 )
 
-# # Save for later steps (optional, if needed)
-# envman add --key GITHUB_COMMENT_BODY --value "${COMMENT_BODY}"
-# envman add --key PLATFORM_TAG --value "${PLATFORM_TAG}"
+# Post or update the comment using GitHub API directly
+echo "💬 Posting comment to PR #$PR_NUMBER..."
 
-echo "✅ Comment body prepared, posting to PR..."
-
-# Post the comment using Bitrise CLI step (through API)
-bitrise run comment-on-github-pull-request@0.11.0 \
-  --personal_access_token "$GITHUB_ACCESS_TOKEN" \
-  --repository_url "$BITRISE_PULL_REQUEST_REPOSITORY_URL" \
-  --issue_number "$BITRISE_PULL_REQUEST_ID" \
-  --update_comment_tag "bitrise-build-$PLATFORM_TAG" \
-  --body "$COMMENT_BODY"
+curl -s -X POST \
+  -H "Authorization: token ${GITHUB_ACCESS_TOKEN}" \
+  -H "Content-Type: application/json" \
+  -d "$(jq -nc --arg body "$COMMENT_BODY" '{body: $body}')" \
+  "https://api.github.com/repos/${GITHUB_REPOSITORY}/issues/${PR_NUMBER}/comments" \
+  > /dev/null
 
 echo "🚀 Comment posted successfully for $PLATFORM!"
