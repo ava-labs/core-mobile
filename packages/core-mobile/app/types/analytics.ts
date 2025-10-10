@@ -219,14 +219,10 @@ export type AnalyticsEvents = {
   PushNotificationRejected: undefined
   PushNotificationReceived: {
     channelId: string
-    title?: string
-    body?: string
     deeplinkUrl?: string
   }
   PushNotificationPressed: {
     channelId: string
-    title?: string
-    body?: string
     deeplinkUrl?: string
   }
   PushNotificationUnsubscribed: {
