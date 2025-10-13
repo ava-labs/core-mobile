@@ -3,9 +3,15 @@ import txPage from '../../../pages/transactions.page'
 import txLoc from '../../../locators/transactions.loc'
 
 describe('Send transaction', () => {
-  it('should send SPL on Solana', async () => {
+  it('should send SOL on Solana', async () => {
     // login & create account
     await warmup(true)
+    // Send
+    await txPage.send(txLoc.solToken, txLoc.sendingAmount)
+    await txPage.verifySuccessToast()
+  })
+
+  it('should send SPL on Solana', async () => {
     // Send
     await txPage.send(txLoc.jupToken, txLoc.sendingAmount)
     await txPage.verifySuccessToast()
