@@ -161,17 +161,17 @@ export function getSuggestedImage(name: string): SuggestedSiteName | undefined {
       return require('assets/icons/browser_suggested_icons/ggp.png')
     case SuggestedSiteName.SALVOR:
       return require('assets/icons/browser_suggested_icons/salvor.png')
-    case SuggestedSiteName.DELTA_PRIME:
-      return require('assets/icons/browser_suggested_icons/deltaprime.png')
     case SuggestedSiteName.THE_ARENA:
       return require('assets/icons/browser_suggested_icons/arena.png')
-    case SuggestedSiteName.STEAKHUT:
-      return require('assets/icons/browser_suggested_icons/steakhut.png')
     case SuggestedSiteName.PHARAOH:
       return require('assets/icons/browser_suggested_icons/pharaoh.png')
     case SuggestedSiteName.PANGOLIN:
       return require('assets/icons/browser_suggested_icons/pango.png')
     case SuggestedSiteName.BENQI:
       return require('assets/icons/browser_suggested_icons/benqi.png')
+    case SuggestedSiteName.BLACK_HOLE:
+      return require('assets/icons/browser_suggested_icons/blackhole.png')
+    case SuggestedSiteName.SUZAKU_NETWORK:
+      return require('assets/icons/browser_suggested_icons/suzakunetwork.png')
   }
 }

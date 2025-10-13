@@ -10,6 +10,7 @@ export interface Wallet {
 export interface WalletsState {
   wallets: { [key: WalletId]: Wallet }
   activeWalletId: WalletId | null
+  isMigratingActiveAccounts: boolean
 }
 
 export interface StoreWalletParams {

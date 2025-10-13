@@ -1,12 +1,18 @@
 import React from 'react'
-import { Button, Logos, Text, View } from '@avalabs/k2-alpine'
+import {
+  ActivityIndicator,
+  Button,
+  Logos,
+  Text,
+  View
+} from '@avalabs/k2-alpine'
 import { useSelector } from 'react-redux'
 import { selectSelectedColorScheme } from 'store/settings/appearance'
 import { useUpdateApp } from 'common/hooks/useUpdateApp'
 
 export const AppUpdateBanner = (): JSX.Element => {
   const selectedColorScheme = useSelector(selectSelectedColorScheme)
-  const handleUpdate = useUpdateApp()
+  const { updateApp, isUpdating } = useUpdateApp()
 
   return (
     <View
@@ -54,8 +60,12 @@ export const AppUpdateBanner = (): JSX.Element => {
           </View>
         </View>
       </View>
-      <Button type="secondary" size="small" onPress={handleUpdate}>
-        Update
+      <Button
+        type="secondary"
+        size="small"
+        onPress={updateApp}
+        disabled={isUpdating}>
+        {isUpdating ? <ActivityIndicator /> : 'Update'}
       </Button>
     </View>
   )

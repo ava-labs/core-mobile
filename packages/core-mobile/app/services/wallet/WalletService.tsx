@@ -1,3 +1,4 @@
+import Config from 'react-native-config'
 import {
   Avalanche,
   BitcoinProvider,
@@ -11,6 +12,7 @@ import {
   CreateImportCTxParams,
   CreateImportPTxParams,
   CreateSendPTxParams,
+  NetworkAddresses,
   PubKeyType,
   SignTransactionRequest,
   Wallet,
@@ -24,7 +26,6 @@ import Logger from 'utils/Logger'
 import { pvm, UnsignedTx, utils } from '@avalabs/avalanchejs'
 import { getUnixTime, secondsToMilliseconds } from 'date-fns'
 import { getMinimumStakeEndTime } from 'services/earn/utils'
-import { SeedlessPubKeysStorage } from 'seedless/services/storage/SeedlessPubKeysStorage'
 import { PChainId } from '@avalabs/glacier-sdk'
 import {
   MessageTypes,
@@ -36,9 +37,8 @@ import {
 import { UTCDate } from '@date-fns/utc'
 import { nanoToWei } from 'utils/units/converter'
 import { SpanName } from 'services/sentry/types'
-import SeedlessWallet from 'seedless/services/wallet/SeedlessWallet'
-import { Curve, isEvmPublicKey } from 'utils/publicKeys'
-import ModuleManager from 'vmModule/ModuleManager'
+import { Curve } from 'utils/publicKeys'
+import fetchWithAppCheck from 'utils/httpClient'
 import {
   getAddressDerivationPath,
   getAssetId,
@@ -50,7 +50,6 @@ import {
 } from './utils'
 import WalletFactory from './WalletFactory'
 import { MnemonicWallet } from './MnemonicWallet'
-import { LedgerWallet } from './LedgerWallet'
 import KeystoneWallet from './KeystoneWallet'
 
 // Tolerate 50% buffer for burn amount for EVM transactions
@@ -184,108 +183,6 @@ class WalletService {
   //   this.walletType = WalletType.UNSET
   // }
 
-  public async addAddress({
-    walletId,
-    walletType,
-    accountIndex,
-    isTestnet
-  }: {
-    walletId: string
-    walletType: WalletType
-    accountIndex: number
-    isTestnet: boolean
-  }): Promise<Record<NetworkVMType, string>> {
-    if (walletType === WalletType.SEEDLESS) {
-      const storedPubKeys = await SeedlessPubKeysStorage.retrieve()
-      const pubKeys = storedPubKeys.filter(isEvmPublicKey)
-
-      const wallet = await WalletFactory.createWallet({
-        walletId,
-        walletType
-      })
-
-      // create next account only if it doesn't exist yet
-      if (!pubKeys[accountIndex]) {
-        if (!(wallet instanceof SeedlessWallet)) {
-          throw new Error('Expected SeedlessWallet instance')
-        }
-
-        // prompt Core Seedless API to derive new keys
-        await wallet.addAccount(accountIndex)
-      }
-    } else if (walletType === WalletType.LEDGER) {
-      // For BIP44 Ledger wallets, try to derive addresses from extended public keys
-      // This avoids the need to connect to the device for new accounts
-      const wallet = await WalletFactory.createWallet({
-        walletId,
-        walletType
-      })
-
-      if (wallet instanceof LedgerWallet && wallet.isBIP44()) {
-        // Try to derive addresses from extended public keys
-        const evmAddress = wallet.deriveAddressFromXpub(
-          accountIndex,
-          NetworkVMType.EVM,
-          isTestnet
-        )
-        const btcAddress = wallet.deriveAddressFromXpub(
-          accountIndex,
-          NetworkVMType.BITCOIN,
-          isTestnet
-        )
-
-        if (evmAddress && btcAddress) {
-          // We can derive EVM and Bitcoin addresses from xpubs
-          Logger.info(
-            `Derived addresses from xpub for account ${accountIndex}:`,
-            {
-              evm: evmAddress,
-              btc: btcAddress
-            }
-          )
-        }
-      }
-    }
-
-    const addresses = await this.getAddresses({
-      walletId,
-      walletType,
-      accountIndex,
-      isTestnet
-    })
-
-    Logger.info(`Final addresses for account ${accountIndex}:`, addresses)
-    return addresses
-  }
-
-  /**
-   * Generates addresses for the given account index and testnet flag.
-   */
-
-  public async getAddresses({
-    walletId,
-    walletType,
-    accountIndex,
-    isTestnet
-  }: {
-    walletId: string
-    walletType: WalletType
-    accountIndex?: number
-    isTestnet: boolean
-  }): Promise<Record<NetworkVMType, string>> {
-    // all vm modules need is just the isTestnet flag
-    const network = {
-      isTestnet
-    } as Network
-
-    return ModuleManager.deriveAddresses({
-      walletId,
-      walletType,
-      accountIndex,
-      network
-    })
-  }
-
   /**
    * Get the public key of an account
    * @param account Account to get public key of.
@@ -370,6 +267,53 @@ class WalletService {
     }
 
     return wallet.getRawXpubXP()
+  }
+
+  public async getActiveAddresses({
+    walletId,
+    walletType,
+    networkType,
+    isTestnet = false
+  }: {
+    walletId: string
+    walletType: WalletType
+    networkType: NetworkVMType.AVM | NetworkVMType.PVM
+    isTestnet: boolean
+  }): Promise<NetworkAddresses> {
+    if (walletType !== WalletType.MNEMONIC) {
+      // we only support mnemonic for now
+      // for all other wallet types, we return empty addresses
+      return {
+        networkType,
+        externalAddresses: [],
+        internalAddresses: []
+      }
+    }
+
+    try {
+      const xpubXP = await this.getRawXpubXP({
+        walletId,
+        walletType
+      })
+
+      const res = await fetchWithAppCheck(
+        `${Config.CORE_PROFILE_URL}/v1/get-addresses`,
+        JSON.stringify({
+          networkType: networkType,
+          extendedPublicKey: xpubXP,
+          isTestnet
+        })
+      )
+
+      if (!res.ok) {
+        throw new Error(`${res.status}:${res.statusText}`)
+      }
+
+      return res.json()
+    } catch (err) {
+      Logger.error(`[WalletService.ts][getActiveAddressesFromXpubXP]${err}`)
+      throw err
+    }
   }
 
   public async getAddressesByIndices({

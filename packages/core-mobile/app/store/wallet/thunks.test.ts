@@ -10,7 +10,8 @@ describe('wallet thunks', () => {
   const mockState: Partial<RootState> = {
     wallet: {
       wallets: {},
-      activeWalletId: null
+      activeWalletId: null,
+      isMigratingActiveAccounts: false
     }
   }
 

@@ -42,11 +42,17 @@ export const alwaysEnabledChainIds = [
   ChainsSDKChainId.SOLANA_TESTNET_ID
 ]
 
+export const defaultEnabledChainIds = [
+  ...alwaysEnabledChainIds,
+  ChainsSDKChainId.AVALANCHE_X,
+  ChainsSDKChainId.AVALANCHE_TEST_X
+]
+
 export const reducerName = 'network'
 
 const initialState: NetworkState = {
   customNetworks: {},
-  enabledChainIds: alwaysEnabledChainIds,
+  enabledChainIds: defaultEnabledChainIds,
   disabledLastTransactedChainIds: [],
   active: noActiveNetwork
 }
@@ -213,6 +219,19 @@ export const selectEnabledNetworks = createSelector(
     }, [] as Network[])
   }
 )
+
+export const selectEnabledNetworksByTestnet =
+  (isTestnet: boolean) => (state: RootState) => {
+    const networks = selectNetworks(state)
+    const enabledChainIds = selectEnabledChainIds(state)
+    return enabledChainIds.reduce((acc, chainId) => {
+      const network = networks[chainId]
+      if (network && network.isTestnet === isTestnet) {
+        acc.push(network)
+      }
+      return acc
+    }, [] as Network[])
+  }
 
 export const selectIsTestnet = (chainId: number) => (state: RootState) => {
   const networks = selectAllNetworks(state)
