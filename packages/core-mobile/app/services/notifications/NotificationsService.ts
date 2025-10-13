@@ -348,10 +348,6 @@ class NotificationsService {
       data
     }
     notification.ios = { sound: sound ?? audioFiles.Default.file }
-    AnalyticsService.capture('PushNotificationReceived', {
-      channelId: channelId ?? (data?.channelId as ChannelId),
-      deeplinkUrl: data?.url as string
-    })
     await notifee.displayNotification(notification).catch(Logger.error)
   }
 }

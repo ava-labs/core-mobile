@@ -1,11 +1,14 @@
 import messaging from '@react-native-firebase/messaging'
-import Logger from 'utils/Logger'
-import NotificationsService from 'services/notifications/NotificationsService'
 import {
   ACTIONS,
   DeepLinkOrigin,
   PROTOCOLS
 } from 'contexts/DeeplinkContext/types'
+import { handleDeeplink } from 'contexts/DeeplinkContext/utils/handleDeeplink'
+import { router } from 'expo-router'
+import { Platform } from 'react-native'
+import { CORE_UNIVERSAL_LINK_HOSTS } from 'resources/Constants'
+import AnalyticsService from 'services/analytics/AnalyticsService'
 import {
   BalanceChangeData,
   BalanceChangeEvents,
@@ -15,16 +18,13 @@ import {
   NotificationPayloadSchema,
   NotificationTypes
 } from 'services/fcm/types'
-import { Platform } from 'react-native'
-import { DisplayNotificationParams } from 'services/notifications/types'
 import {
   ChannelId,
   DEFAULT_ANDROID_CHANNEL
 } from 'services/notifications/channels'
-import { handleDeeplink } from 'contexts/DeeplinkContext/utils/handleDeeplink'
-import { CORE_UNIVERSAL_LINK_HOSTS } from 'resources/Constants'
-import { router } from 'expo-router'
-import AnalyticsService from 'services/analytics/AnalyticsService'
+import NotificationsService from 'services/notifications/NotificationsService'
+import { DisplayNotificationParams } from 'services/notifications/types'
+import Logger from 'utils/Logger'
 
 type UnsubscribeFunc = () => void
 
@@ -78,6 +78,11 @@ class FCMService {
         Platform.OS === 'android' && !result.data.notification
           ? this.#prepareDataOnlyNotificationData(result.data.data)
           : this.#prepareNotificationData(result.data)
+
+      AnalyticsService.capture('PushNotificationReceived', {
+        channelId: notificationData.channelId as string,
+        deeplinkUrl: notificationData.data?.url as string
+      })
 
       await NotificationsService.displayNotification(notificationData).catch(
         Logger.error
@@ -241,6 +246,11 @@ class FCMService {
       const notificationData = this.#prepareDataOnlyNotificationData(
         result.data.data
       )
+
+      AnalyticsService.capture('PushNotificationReceived', {
+        channelId: notificationData.channelId as string,
+        deeplinkUrl: notificationData.data?.url as string
+      })
 
       await NotificationsService.displayNotification(notificationData).catch(
         Logger.error
