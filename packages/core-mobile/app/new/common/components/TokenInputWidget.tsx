@@ -194,12 +194,15 @@ export const TokenInputWidget = ({
                   justifyContent: 'space-between'
                 }}>
                 <TouchableOpacity
+                  accessible={true}
+                  accessibilityLabel={`select_token_title__${title}`}
+                  testID={`select_token_title__${title}`}
                   onPress={onSelectToken}
                   disabled={!isTokenSelectable || disabled}>
                   <View sx={{ gap: 1 }}>
                     {token && <Text variant="subtitle2">{title}</Text>}
                     <View sx={{ flexDirection: 'row', alignItems: 'center' }}>
-                      <Text testID="select_token_title" variant="heading6">
+                      <Text variant="heading6">
                         {token
                           ? token.symbol
                           : isTokenSelectable
@@ -228,6 +231,8 @@ export const TokenInputWidget = ({
                       <TokenAmountInput
                         ref={tokenAmountInputRef}
                         testID="token_amount_input_field"
+                        accessibilityLabel="token_amount_input_field"
+                        accessible={true}
                         autoFocus={autoFocus}
                         editable={editable}
                         denomination={token?.decimals ?? 0}
