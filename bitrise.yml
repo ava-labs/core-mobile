@@ -431,12 +431,6 @@ workflows:
             View Build|${BITRISE_BUILD_URL}
             View Test Run|https://avalabs.testrail.io/index.php?/runs/view/${TESTRAIL_RUN_ID}&group_by=cases:section_id&group_order=asc
         - webhook_url: $SLACK_TEST_RESULT_WEBHOOK_URL
-  _comment-on-github-pull-request:
-    steps:
-    - script-runner@0:
-        title: Post comment on PR
-        inputs:
-        - file_path: scripts/bitrise/commentOnPR.sh
   _set-version:
     steps:
     - script-runner@0:
@@ -544,11 +538,9 @@ workflows:
     before_run:
     - _install-and-set-env
     - _set-version
-    - _comment-on-github-pull-request
     - _build-android
     after_run:
     - _send-notification-slack
-    - _comment-on-github-pull-request
     envs:
     - ENVIRONMENT: production
       opts:
@@ -571,6 +563,27 @@ workflows:
         - app_path: $BITRISE_SIGNED_AAB_PATH
         - track: internal
         - service_account_json_key_path: $BITRISEIO_AVALABS_GOOGLE_PLAY_SERVICE_ACCOUNT_JSON_KEY_URL
+    - comment-on-github-pull-request@0:
+        inputs:
+        - personal_access_token: "$GITHUB_ACCESS_TOKEN"
+        - update_comment_tag: bitrise-build-android-internal
+        - issue_number: "$BITRISE_PULL_REQUEST"
+        - repository_url: "$GIT_REPOSITORY_URL"
+        - body: "## $PLATFORM Build Available!
+
+            **Commit:**
+            [$GIT_CLONE_COMMIT_HASH](https://github.com/${GITHUB_REPOSITORY}/co\
+            mmit/$GIT_CLONE_COMMIT_HASH) \ 
+
+            **Message:** _$GIT_CLONE_COMMIT_MESSAGE_SUBJECT_
+
+            ✅ **$PLATFORM:** $APP_VERSION.$BUILD_NUMBER
+
+            📦 [**APK**]($BITRISE_PUBLIC_INSTALL_PAGE_URL)
+
+            🧾 [**QR Code**]($BITRISE_PUBLIC_INSTALL_PAGE_QR_CODE_IMAGE_URL)
+
+            🔗 [**View Build**]($BITRISE_BUILD_URL)"
   android-internal-e2e:
     before_run:
     - _install-and-set-env
@@ -945,11 +958,9 @@ workflows:
     before_run:
     - _install-and-set-env
     - _set-version
-    - _comment-on-github-pull-request
     - _build-ios
     after_run:
     - _send-notification-slack
-    - _comment-on-github-pull-request
     envs:
     - ENVIRONMENT: production
       opts:
@@ -979,6 +990,23 @@ workflows:
         - altool_options: --verbose
         - api_issuer: $APPSTORE_CONNECT_KEY_ISSUER_ID
         - connection: api_key
+    - comment-on-github-pull-request@0:
+        inputs:
+        - personal_access_token: "$GITHUB_ACCESS_TOKEN"
+        - update_comment_tag: bitrise-build-ios-internal
+        - issue_number: "$BITRISE_PULL_REQUEST"
+        - repository_url: "$GIT_REPOSITORY_URL"
+        - body: "## $PLATFORM Build Available!
+
+            **Commit:**
+            [$GIT_CLONE_COMMIT_HASH](https://github.com/${GITHUB_REPOSITORY}/co\
+            mmit/$GIT_CLONE_COMMIT_HASH) \ 
+
+            **Message:** _$GIT_CLONE_COMMIT_MESSAGE_SUBJECT_
+
+            ✅ **$PLATFORM:** $APP_VERSION.$BUILD_NUMBER
+
+            🔗 [**View Build**]($BITRISE_BUILD_URL)"
   ios-internal-e2e:
     before_run:
     - _install-and-set-env
