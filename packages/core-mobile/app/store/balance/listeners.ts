@@ -301,7 +301,6 @@ const onXpBalanceUpdateCore = async ({
 
       dispatch(setBalances(xpBalances))
       dispatch(setStatus({ queryType: QueryType.XP, status: QueryStatus.IDLE }))
-
       Logger.info('finished fetching xp balances')
       span?.end()
     }
