@@ -9,7 +9,7 @@ import portfolioPage from '../../../pages/portfolio.page'
 describe.skip('Send transaction', () => {
   it('should send AVAX on X-Chain', async () => {
     // login & create account
-    await warmup(true)
+    await warmup()
     // Go to X-Chain & token detail
     await commonPage.filter(commonLoc.pChain)
     await portfolioPage.tapToken()
