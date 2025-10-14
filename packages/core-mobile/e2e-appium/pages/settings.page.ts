@@ -262,6 +262,12 @@ class Settings {
     await actions.tap(this.manageAccountsBtn)
   }
 
+  async verifyManageAccountsListItem(accountName: string) {
+    await actions.waitFor(
+      selectors.getById(`manage_accounts_list__${accountName}`)
+    )
+  }
+
   async goSettings() {
     await actions.delay(1500)
     await actions.click(this.settingsBtn)
