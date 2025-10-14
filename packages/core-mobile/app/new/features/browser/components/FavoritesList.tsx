@@ -18,13 +18,13 @@ import Animated from 'react-native-reanimated'
 import { useDispatch, useSelector } from 'react-redux'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { addHistoryForActiveTab, Favorite } from 'store/browser'
-import { SUGGESTED_ITEMS } from 'store/browser/const'
 import {
   removeFavorite,
   selectAllFavorites,
   updateFavorite
 } from 'store/browser/slices/favorites'
 import { useBrowserContext } from '../BrowserContext'
+import { useFavoriteProjects } from '../hooks/useFavoriteProjects'
 import {
   getSuggestedImage,
   isSuggestedSiteName,
@@ -42,6 +42,8 @@ export const FavoritesList = (
   const dispatch = useDispatch()
   const favorites = useSelector(selectAllFavorites)
   const { handleUrlSubmit } = useBrowserContext()
+
+  const { data } = useFavoriteProjects()
 
   const onPress = (item: FavoriteOrSuggested): void => {
     if (item.isSuggested) {
@@ -84,23 +86,25 @@ export const FavoritesList = (
     )
   }
 
-  const data = useMemo(() => {
+  const combinedFavorites = useMemo(() => {
     const newFavorites = [...favorites].reverse()
 
     return [
       ...newFavorites,
-      ...SUGGESTED_ITEMS.map(item => ({
+      ...(data?.items.map(item => ({
+        ...item,
         title: item.name,
-        url: item.siteUrl,
+        url: item.website,
+        favicon: item.logo?.url,
         isSuggested: true
-      }))
+      })) || [])
     ] as FavoriteOrSuggested[]
-  }, [favorites])
+  }, [data, favorites])
 
   return (
     <FlatList
       {...props}
-      data={data}
+      data={combinedFavorites}
       showsVerticalScrollIndicator={false}
       renderItem={renderItem}
       keyboardShouldPersistTaps="handled"
