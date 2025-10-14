@@ -5,7 +5,7 @@ import txLoc from '../../../locators/transactions.loc'
 describe('Send transaction', () => {
   it('should send AVAX on C-Chain', async () => {
     // login & create account
-    await warmup(true)
+    await warmup()
     // Send
     await txPage.send(txLoc.avaxToken, txLoc.sendingAmount)
     await txPage.verifySuccessToast()

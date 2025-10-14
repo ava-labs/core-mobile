@@ -144,7 +144,7 @@ export const SelectAvatar = memo(
           {
             // TODO: Remove this once we have a proper way to handle avatar selection on appium tests.
             // We are doing this because the avatar selector is not working properly on appium tests.
-            !Config.E2E && (
+            !Config.E2E_MNEMONIC && (
               <View
                 style={{
                   marginBottom: -insets.bottom,
