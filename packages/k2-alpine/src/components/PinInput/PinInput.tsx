@@ -162,6 +162,7 @@ export const PinInput = forwardRef<PinInputActions, PinInputProps>(
         activeOpacity={1}>
         {/* Hidden TextInput for capturing input */}
         <TextInput
+          accessibilityLabel="pin_input"
           testID="pin_input"
           ref={textInputRef}
           style={{ position: 'absolute', opacity: 0 }}
