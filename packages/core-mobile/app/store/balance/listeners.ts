@@ -226,6 +226,8 @@ const onXpBalanceUpdateCore = async ({
   SentryWrapper.startSpan(
     { name: 'get-balances', contextName: 'svc.balance.get_for_xp_networks' },
     async span => {
+      Logger.info('fetching xp balances')
+
       // fetch all network balances
       const networkPromises: {
         key: string
@@ -246,6 +248,7 @@ const onXpBalanceUpdateCore = async ({
 
       dispatch(setBalances(networkBalances))
       dispatch(setStatus({ queryType: QueryType.XP, status: QueryStatus.IDLE }))
+      Logger.info('finished fetching xp balances')
       span?.end()
     }
   )
