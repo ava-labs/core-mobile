@@ -19,8 +19,8 @@ import {
   setIsMigratingActiveAccounts
 } from 'store/wallet/slice'
 import WalletService from 'services/wallet/WalletService'
-import { setNonActiveAccounts } from './slice'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
+import { setNonActiveAccounts } from './slice'
 
 export function getAddressByVM(
   vm: VM,
