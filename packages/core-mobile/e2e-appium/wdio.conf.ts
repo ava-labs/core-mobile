@@ -10,6 +10,8 @@ import {
 let runId: number | undefined
 const sectionCache: Record<string, number> = {}
 const isBitrise = process.env.CI === 'true'
+const goHeadless = isBitrise ? true : false
+const goRetry = isBitrise ? 1 : 0
 const iosPath = isBitrise
   ? process.env.BITRISE_APP_DIR_PATH
   : path.resolve(
@@ -33,7 +35,7 @@ const allCaps = [
     'appium:appWaitActivity': '*',
     'appium:autoGrantPermissions': true,
     'appium:settings[snapshotMaxDepth]': 70,
-    'appium:isHeadless': true,
+    'appium:isHeadless': goHeadless,
     'appium:newCommandTimeout': 120,
     'appium:adbExecTimeout': 60000,
     'appium:uiautomator2ServerLaunchTimeout': 60000,
@@ -56,7 +58,7 @@ const allCaps = [
     'appium:shouldUseSingletonTestManager': false,
     'appium:showXcodeLog': true,
     'appium:settings[snapshotMaxDepth]': 70,
-    'appium:isHeadless': true
+    'appium:isHeadless': goHeadless
   }
 ]
 
@@ -78,7 +80,7 @@ export const config: WebdriverIO.Config = {
   logLevel: 'error',
   bail: 0,
   waitforTimeout: 20000,
-  specFileRetries: 1,
+  specFileRetries: goRetry,
   connectionRetryTimeout: 120000,
   connectionRetryCount: 2,
   framework: 'mocha',
