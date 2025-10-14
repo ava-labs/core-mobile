@@ -2,7 +2,6 @@ import { Network } from '@avalabs/core-chains-sdk'
 import { TokenType, TokenWithBalanceEVM } from '@avalabs/vm-module-types'
 import ModuleManager from 'vmModule/ModuleManager'
 import { mapToVmNetwork } from 'vmModule/utils/mapToVmNetwork'
-import { coingeckoInMemoryCache } from 'utils/coingeckoInMemoryCache'
 import Logger from 'utils/Logger'
 
 const invalidErrorMessage = 'Invalid C-Chain balance'
@@ -25,7 +24,6 @@ export const getCChainBalance = async ({
     addresses: [cAddress],
     currency,
     network: mapToVmNetwork(cChainNetwork),
-    storage: coingeckoInMemoryCache,
     tokenTypes: [TokenType.NATIVE]
   })
 

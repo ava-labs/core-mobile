@@ -9,7 +9,6 @@ import {
 } from '@avalabs/vm-module-types'
 import ModuleManager from 'vmModule/ModuleManager'
 import { mapToVmNetwork } from 'vmModule/utils/mapToVmNetwork'
-import { coingeckoInMemoryCache } from 'utils/coingeckoInMemoryCache'
 import { NetworkVMType } from '@avalabs/core-chains-sdk'
 
 export type BalancesForAccount = {
@@ -45,7 +44,6 @@ export class BalanceService {
       addresses: [accountAddress],
       currency,
       network: mapToVmNetwork(network),
-      storage: coingeckoInMemoryCache,
       tokenTypes
     })
 

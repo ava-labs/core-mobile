@@ -1,7 +1,6 @@
 import ModuleManager from 'vmModule/ModuleManager'
 import { mapToVmNetwork } from 'vmModule/utils/mapToVmNetwork'
 import { TokenWithBalancePVM } from '@avalabs/vm-module-types'
-import { coingeckoInMemoryCache } from 'utils/coingeckoInMemoryCache'
 import { isTokenWithBalancePVM } from '@avalabs/avalanche-module'
 import Logger from 'utils/Logger'
 import { Network } from '@avalabs/core-chains-sdk'
@@ -18,8 +17,7 @@ export const getPChainBalance = async ({
   const balancesResponse = await ModuleManager.avalancheModule.getBalances({
     addresses: [pAddress],
     currency,
-    network: mapToVmNetwork(avaxXPNetwork),
-    storage: coingeckoInMemoryCache
+    network: mapToVmNetwork(avaxXPNetwork)
   })
 
   const pChainBalanceResponse = balancesResponse[pAddress]
