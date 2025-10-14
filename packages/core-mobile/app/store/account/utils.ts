@@ -2,20 +2,25 @@ import { AVM, EVM, PVM, VM } from '@avalabs/avalanchejs'
 import { Account, AccountCollection } from 'store/account/types'
 import { Network, NetworkVMType } from '@avalabs/core-chains-sdk'
 import WalletFactory from 'services/wallet/WalletFactory'
-import { WalletType } from 'services/wallet/types'
+import { NetworkAddresses, WalletType } from 'services/wallet/types'
 import SeedlessWallet from 'seedless/services/wallet/SeedlessWallet'
 import { transactionSnackbar } from 'common/utils/toast'
 import Logger from 'utils/Logger'
 import AccountsService from 'services/account/AccountsService'
-import { AppListenerEffectAPI } from 'store/types'
+import { AppListenerEffectAPI, RootState } from 'store/types'
 import { recentAccountsStore } from 'features/accountSettings/store'
 import { uuid } from 'utils/uuid'
 import { Wallet } from 'store/wallet/types'
 import { commonStorage } from 'utils/mmkv'
 import { StorageKey } from 'resources/Constants'
 import { appendToStoredArray, loadArrayFromStorage } from 'utils/mmkv/storages'
-import { setIsMigratingActiveAccounts } from 'store/wallet/slice'
+import {
+  selectActiveWalletId,
+  setIsMigratingActiveAccounts
+} from 'store/wallet/slice'
+import WalletService from 'services/wallet/WalletService'
 import { setNonActiveAccounts } from './slice'
+import { selectIsDeveloperMode } from 'store/settings/advanced'
 
 export function getAddressByVM(
   vm: VM,
@@ -201,4 +206,24 @@ const markWalletAsMigrated = (walletId: string): void => {
     StorageKey.MIGRATED_ACTIVE_ACCOUNTS_WALLET_IDS,
     walletId
   )
+}
+export async function getAddressesForXP(
+  state: RootState
+): Promise<NetworkAddresses> {
+  const walletId = selectActiveWalletId(state)
+  const isDeveloperMode = selectIsDeveloperMode(state)
+  if (!walletId) {
+    throw new Error('Wallet ID is required')
+  }
+  try {
+    return WalletService.getActiveAddresses({
+      walletId: walletId,
+      walletType: WalletType.MNEMONIC,
+      networkType: NetworkVMType.PVM,
+      isTestnet: isDeveloperMode
+    })
+  } catch (error) {
+    Logger.error('Failed to get addresses for XP', error)
+    throw new Error('Failed to get addresses for XP')
+  }
 }

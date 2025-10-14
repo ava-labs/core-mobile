@@ -1,5 +1,5 @@
 import { Network } from '@avalabs/core-chains-sdk'
-import { Action, isAnyOf, TaskAbortError } from '@reduxjs/toolkit'
+import { Action, ForkedTask, isAnyOf, TaskAbortError } from '@reduxjs/toolkit'
 import BalanceService, {
   BalancesForAccount
 } from 'services/balance/BalanceService'
@@ -25,7 +25,8 @@ import Logger from 'utils/Logger'
 import {
   getLocalTokenId,
   getNetworksToFetch,
-  getPollingConfig
+  getPollingConfig,
+  XP_POLLING_INTERVAL
 } from 'store/balance/utils'
 import { selectHasBeenViewedOnce, setViewOnce } from 'store/viewOnce/slice'
 import { ViewOnceKey } from 'store/viewOnce/types'
@@ -42,12 +43,18 @@ import { ReactQueryKeys } from 'consts/reactQueryKeys'
 import { queryClient } from 'contexts/ReactQueryProvider'
 import { selectIsSolanaSupportBlocked } from 'store/posthog'
 import { runAfterInteractions } from 'utils/runAfterInteractions'
-import { Balances, LocalTokenWithBalance, QueryStatus } from './types'
+import {
+  Balances,
+  LocalTokenWithBalance,
+  QueryStatus,
+  QueryType
+} from './types'
 import {
   fetchBalanceForAccount,
   getKey,
   refetchBalance,
-  selectBalanceStatus,
+  selectAllBalanceStatus,
+  selectXpBalanceStatus,
   setBalances,
   setStatus
 } from './slice'
@@ -73,11 +80,16 @@ const onBalanceUpdate = async (
     address: account?.addressC ?? ''
   })
 
-  onBalanceUpdateCore({
+  await onBalanceUpdateCore({
     queryStatus,
     listenerApi,
     networks,
     account
+  }).catch(Logger.error)
+
+  await onXpBalanceUpdateCore({
+    queryStatus,
+    listenerApi
   }).catch(Logger.error)
 }
 
@@ -131,7 +143,7 @@ const onBalanceUpdateCore = async ({
 
   const { getState, dispatch } = listenerApi
   const state = getState()
-  const currentStatus = selectBalanceStatus(state)
+  const currentStatus = selectAllBalanceStatus(state)
 
   if (
     queryStatus === QueryStatus.POLLING &&
@@ -143,7 +155,7 @@ const onBalanceUpdateCore = async ({
     return
   }
 
-  dispatch(setStatus(queryStatus))
+  dispatch(setStatus({ queryType: QueryType.ALL, status: queryStatus }))
 
   const currency = selectSelectedCurrency(state).toLowerCase()
 
@@ -173,7 +185,67 @@ const onBalanceUpdateCore = async ({
       const networkBalances = await fetchBalanceForNetworks(networkPromises)
 
       dispatch(setBalances(networkBalances))
-      dispatch(setStatus(QueryStatus.IDLE))
+      dispatch(
+        setStatus({ queryType: QueryType.ALL, status: QueryStatus.IDLE })
+      )
+      span?.end()
+    }
+  )
+}
+
+const onXpBalanceUpdateCore = async ({
+  queryStatus,
+  listenerApi
+}: {
+  queryStatus: QueryStatus
+  listenerApi: AppListenerEffectAPI
+}): Promise<void> => {
+  const { getState, dispatch } = listenerApi
+  const state = getState()
+  const currentStatus = selectXpBalanceStatus(state)
+  const enabledNetworks = selectEnabledNetworks(state)
+
+  const networks = enabledNetworks.filter(
+    n => isPChain(n.chainId) || isXChain(n.chainId)
+  )
+
+  if (
+    queryStatus === QueryStatus.POLLING &&
+    [QueryStatus.LOADING, QueryStatus.REFETCHING, QueryStatus.POLLING].includes(
+      currentStatus
+    )
+  ) {
+    Logger.info('a xp balance query is already in flight')
+    return
+  }
+
+  dispatch(setStatus({ queryType: QueryType.XP, status: queryStatus }))
+
+  const currency = selectSelectedCurrency(state).toLowerCase()
+
+  SentryWrapper.startSpan(
+    { name: 'get-balances', contextName: 'svc.balance.get_for_xp_networks' },
+    async span => {
+      // fetch all network balances
+      const networkPromises: {
+        key: string
+        promise: Promise<BalancesForAccount>
+      }[] = []
+
+      for (const n of networks) {
+        networkPromises.push({
+          key: getKey(n.chainId, n.vmName),
+          promise: BalanceService.getBalancesForAccountsXP({
+            network: n,
+            currency,
+            state
+          })
+        })
+      }
+      const networkBalances = await fetchBalanceForNetworks(networkPromises)
+
+      dispatch(setBalances(networkBalances))
+      dispatch(setStatus({ queryType: QueryType.XP, status: QueryStatus.IDLE }))
       span?.end()
     }
   )
@@ -182,16 +254,13 @@ const onBalanceUpdateCore = async ({
 const fetchBalancePeriodically = async (
   _: Action,
   listenerApi: AppListenerEffectAPI
-  // eslint-disable-next-line sonarjs/cognitive-complexity
 ): Promise<void> => {
-  const { condition, getState, delay } = listenerApi
+  const { condition, getState } = listenerApi
   const state = getState()
   const isDeveloperMode = selectIsDeveloperMode(state)
   const selectedEnabledNetworks = selectEnabledNetworks(state)
   const isSolanaSupportBlocked = selectIsSolanaSupportBlocked(state)
   let enabledNetworks: Network[]
-  let iteration = 1
-  let nonPrimaryNetworksIteration = 0
 
   if (selectedEnabledNetworks.length > 0) {
     enabledNetworks = selectedEnabledNetworks
@@ -209,18 +278,71 @@ const fetchBalancePeriodically = async (
     enabledNetworks = selectEnabledNetworks(state)
   }
 
-  runAfterInteractions(() => {
-    onBalanceUpdate(QueryStatus.LOADING, listenerApi).catch(Logger.error)
+  const pollingConfig = getPollingConfig({ isDeveloperMode, enabledNetworks })
+
+  const pollingAllNetworksTask = await handleAllNetworksPolling({
+    listenerApi,
+    pollingConfig
   })
 
-  const pollingConfig = getPollingConfig({ isDeveloperMode, enabledNetworks })
+  const pollingXpNetworksTask = await handleXpNetworksPolling({
+    listenerApi
+  })
+
+  await condition(isAnyOf(onAppLocked, onLogOut))
+  pollingAllNetworksTask.cancel()
+  pollingXpNetworksTask.cancel()
+}
+
+const handleXpNetworksPolling = async ({
+  listenerApi
+}: {
+  listenerApi: AppListenerEffectAPI
+}): Promise<ForkedTask<void>> => {
+  const taskId = uuid().slice(0, 8)
+  Logger.info(`started task ${taskId}`, 'fetch balance periodically')
+  return listenerApi.fork(async forkApi => {
+    try {
+      // eslint-disable-next-line no-constant-condition
+      while (true) {
+        await forkApi.pause(
+          runAfterInteractions(async () => {
+            await onXpBalanceUpdateCore({
+              queryStatus: QueryStatus.POLLING,
+              listenerApi
+            })
+          })
+        )
+
+        // cancellation-aware delay
+        await forkApi.delay(XP_POLLING_INTERVAL)
+      }
+    } catch (err) {
+      if (err instanceof TaskAbortError) {
+        // task got cancelled or the listener got cancelled
+        Logger.info(`stopped task ${taskId}`)
+      }
+    }
+  })
+}
+
+const handleAllNetworksPolling = async ({
+  listenerApi,
+  pollingConfig
+}: {
+  listenerApi: AppListenerEffectAPI
+  pollingConfig: {
+    allNetworks: number
+    primaryNetworks: number
+  }
+}): Promise<ForkedTask<void>> => {
+  let iteration = 0
+  let nonPrimaryNetworksIteration = 0
 
   const allNetworksOperand =
     pollingConfig.allNetworks / pollingConfig.primaryNetworks
 
-  await delay(pollingConfig.primaryNetworks)
-
-  const pollingTask = listenerApi.fork(async forkApi => {
+  return listenerApi.fork(async forkApi => {
     const taskId = uuid().slice(0, 8)
     Logger.info(`started task ${taskId}`, 'fetch balance periodically')
 
@@ -264,9 +386,6 @@ const fetchBalancePeriodically = async (
       }
     }
   })
-
-  await condition(isAnyOf(onAppLocked, onLogOut))
-  pollingTask.cancel()
 }
 
 const handleFetchBalanceForAccount = async (
@@ -300,9 +419,10 @@ const fetchBalanceForNetworks = async (
   return (
     await Promise.allSettled(keyedPromises.map(value => value.promise))
   ).reduce<Balances>((acc, result, i) => {
+    const key: string = keys[i] ?? ''
+
     if (result.status === 'rejected') {
       Logger.warn('failed to get balance', result.reason)
-      const key: string = keys[i] ?? ''
       acc[key] = {
         dataAccurate: false,
         accountId: undefined,
@@ -314,6 +434,7 @@ const fetchBalanceForNetworks = async (
     }
 
     const { accountId, chainId, tokens, error } = result.value
+
     const balances = {
       dataAccurate: true,
       accountId,
@@ -368,7 +489,8 @@ const fetchBalanceForNetworks = async (
       ]
     }, [] as LocalTokenWithBalance[])
 
-    acc[getKey(chainId, accountId)] = balances
+    acc[key] = balances
+
     return acc
   }, {})
 }
