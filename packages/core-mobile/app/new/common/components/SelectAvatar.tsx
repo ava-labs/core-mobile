@@ -74,7 +74,7 @@ export const SelectAvatar = memo(
           size="large"
           type="primary"
           onPress={handleSubmit}
-          testID={isLoading ? undefined : 'avatar_next_btn'}
+          testID="avatar_next_btn"
           disabled={isLoading}>
           {isLoading ? <ActivityIndicator /> : buttonText}
         </Button>
@@ -144,7 +144,7 @@ export const SelectAvatar = memo(
           {
             // TODO: Remove this once we have a proper way to handle avatar selection on appium tests.
             // We are doing this because the avatar selector is not working properly on appium tests.
-            !Config.E2E_MNEMONIC && (
+            !Config.E2E && (
               <View
                 style={{
                   marginBottom: -insets.bottom,

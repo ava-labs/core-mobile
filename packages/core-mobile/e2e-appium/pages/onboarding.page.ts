@@ -61,6 +61,10 @@ class OnboardingPage {
     return selectors.getById(onboardingLoc.nextBtnOnAvatarScreen)
   }
 
+  get selectAvatarTitle() {
+    return selectors.getByText(onboardingLoc.selectAvatarTitle)
+  }
+
   get forgotPin() {
     return selectors.getByText(onboardingLoc.forgotPin)
   }
@@ -145,11 +149,12 @@ class OnboardingPage {
   }
 
   async tapNextBtnOnNameWallet() {
-    await actions.tap(this.nameWalletNextBtn, this.nextBtnOnAvatarScreen)
+    await actions.tap(this.nameWalletNextBtn)
   }
 
   async tapNextBtnOnAvatarScreen() {
-    await actions.longPress(this.nextBtnOnAvatarScreen, this.letsGo)
+    await actions.waitFor(this.selectAvatarTitle)
+    await actions.tap(this.nextBtnOnAvatarScreen, this.letsGo)
   }
 
   async tapLetsGo() {

@@ -51,7 +51,7 @@ async function isVisible(ele: ChainablePromiseElement) {
 async function isNotVisible(ele: ChainablePromiseElement) {
   const visible = await ele.isDisplayed()
   const eleSelector = await ele.selector
-  console.log(`${eleSelector} isNotVisible? `, visible)
+  console.log(`${eleSelector} isVisible? `, visible)
   assert.equal(visible, false, ele.toString())
   return visible
 }
