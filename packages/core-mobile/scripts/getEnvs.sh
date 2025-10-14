@@ -22,10 +22,6 @@ ENV_INTERNAL_E2E=$(getSecretFromAWS "core/dev/mobile/.env.internal.e2e")
 ./scripts/common/writeEnvsToFile.sh "$ENV_INTERNAL" ".env.internal"
 ./scripts/common/writeEnvsToFile.sh "$ENV_INTERNAL_E2E" ".env.internal.e2e"
 
-# Write to xcconfig files
-./scripts/common/writeEnvsToXcConfig.sh "$ENV_PROD" "ios/Release.xcconfig" "BRANCH_KEY"
-./scripts/common/writeEnvsToXcConfig.sh "$ENV_INTERNAL" "ios/Debug.xcconfig" "BRANCH_KEY"
-
 # Use .env.development as the default
 cp .env.development .env
 echo ".env.development copied to .env"
