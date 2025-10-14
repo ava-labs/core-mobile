@@ -25,11 +25,7 @@ import {
 } from 'store/browser/slices/favorites'
 import { useBrowserContext } from '../BrowserContext'
 import { useFavoriteProjects } from '../hooks/useFavoriteProjects'
-import {
-  getSuggestedImage,
-  isSuggestedSiteName,
-  prepareFaviconToLoad
-} from '../utils'
+import { prepareFaviconToLoad } from '../utils'
 import { BrowserItem } from './BrowserItem'
 
 interface FavoriteOrSuggested extends Favorite {
@@ -58,7 +54,7 @@ export const FavoritesList = (
 
   const renderItem: ListRenderItem<FavoriteOrSuggested> = ({ item }) => {
     if (item.isSuggested) {
-      const image = getSuggestedImage(item.title)
+      const image = prepareFaviconToLoad(item.url, item.favicon)
 
       return (
         <View
@@ -141,9 +137,7 @@ const FavoriteItem = ({
 
   const [isLongPressActive, setIsLongPressActive] = useState(false)
 
-  const image = isSuggestedSiteName(item.title)
-    ? getSuggestedImage(item.title)
-    : prepareFaviconToLoad(item.url, item.favicon)
+  const image = prepareFaviconToLoad(item.url, item.favicon)
 
   const handleRemoveFavorite = useCallback(() => {
     dispatch(removeFavorite({ url: item.url }))

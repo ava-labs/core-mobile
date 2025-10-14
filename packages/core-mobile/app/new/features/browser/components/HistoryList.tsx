@@ -25,11 +25,7 @@ import {
 } from 'date-fns'
 import { useBrowserContext } from '../BrowserContext'
 import { HORIZONTAL_MARGIN } from '../consts'
-import {
-  getSuggestedImage,
-  isSuggestedSiteName,
-  prepareFaviconToLoad
-} from '../utils'
+import { prepareFaviconToLoad } from '../utils'
 import { BrowserItem } from './BrowserItem'
 
 export const HistoryList = (
@@ -91,9 +87,7 @@ export const HistoryList = (
 
   const renderItem: ListRenderItem<History> = ({ item }) => {
     const date = formatDate(new Date(item.lastVisited * 1000))
-    const image = isSuggestedSiteName(item.title)
-      ? getSuggestedImage(item.title)
-      : prepareFaviconToLoad(item.url, item.favicon)
+    const image = prepareFaviconToLoad(item.url, item.favicon)
 
     return (
       <BrowserItem
