@@ -176,6 +176,17 @@ workflows:
         inputs:
         - pipeline_intermediate_files: |-
             $BITRISE_DEPLOY_DIR/app-internal-e2e-bitrise-signed.apk:BITRISE_APK_PATH
+    - share-pipeline-variable@1:
+        inputs:
+        - variables: |-
+            BITRISE_APK_PATH=$BITRISE_APK_PATH
+            IS_INTERNAL_BUILD=$IS_INTERNAL_BUILD
+        - emulator_id: emulator-5554
+        - emulator_channel: "0"
+        - create_command_flags: --sdcard 2048M
+        - tag: default
+        - abi: x86_64
+        - profile: pixel_7_pro
   _install-old-android-version:
     steps:
     - script-runner@0:
