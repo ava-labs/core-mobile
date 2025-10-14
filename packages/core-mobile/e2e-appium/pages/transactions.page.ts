@@ -97,7 +97,6 @@ class TransactionsPage {
 
   async goToSelectTokenList() {
     await actions.tap(this.sendSelectTokenListBtn)
-    await actions.tap(this.selectTokenTitle)
   }
 
   async selectToken(
