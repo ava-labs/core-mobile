@@ -18,11 +18,28 @@ module.exports = {
     'metro.monorepo.config.js',
     '**/node_modules/**',
     'android/app/build/**',
-    'expo-env.d.ts'
+    'expo-env.d.ts',
+    'ios/DerivedData'
   ],
   overrides: [
     {
       files: ['e2e/**/*'],
+      parserOptions: {
+        project: './e2e/tsconfig.json',
+        tsconfigRootDir: __dirname
+      },
+      rules: {
+        'no-console': 0,
+        '@typescript-eslint/explicit-function-return-type': 0,
+        'no-param-reassign': 0
+      }
+    },
+    {
+      files: ['e2e-appium/**/*'],
+      parserOptions: {
+        project: './e2e-appium/tsconfig.json',
+        tsconfigRootDir: __dirname
+      },
       rules: {
         'no-console': 0,
         '@typescript-eslint/explicit-function-return-type': 0,
