@@ -96,4 +96,4 @@ expo-env.d.ts
 # @end expo-cli
 
 # Branch
-# /ios/tmp.xcconfig
+/ios/tmp.xcconfig
