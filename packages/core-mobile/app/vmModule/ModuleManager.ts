@@ -25,7 +25,7 @@ import { APPLICATION_NAME, APPLICATION_VERSION } from 'utils/network/constants'
 import { DerivationPath } from '@avalabs/core-wallets-sdk'
 import { emptyAddresses } from 'utils/publicKeys'
 import { WalletType } from 'services/wallet/types'
-import { coingeckoInMemoryCache } from 'utils/coingeckoInMemoryCache'
+import { tokenServiceInMemoryCache } from 'utils/tokenServiceInMemoryCache'
 import { ModuleErrors, VmModuleErrors } from './errors'
 import { approvalController } from './ApprovalController/ApprovalController'
 
@@ -99,7 +99,7 @@ class ModuleManager {
         fetch: global.fetch,
         httpAgent: new http.Agent()
       },
-      cacheStorage: coingeckoInMemoryCache
+      cacheStorage: tokenServiceInMemoryCache
     }
 
     this.modules = [
