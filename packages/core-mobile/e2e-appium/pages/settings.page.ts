@@ -275,11 +275,9 @@ class Settings {
     await actions.log()
     try {
       await actions.waitFor(commonElsPage.grabber)
-      console.log('grabber found')
     } catch (e) {
       await actions.click(this.settingsBtn)
     }
-    await actions.log()
   }
 
   async tapCurrency() {

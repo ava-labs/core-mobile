@@ -190,7 +190,7 @@ class OnboardingPage {
 
   async dismissUpdateAppModal() {
     await actions.waitFor(this.updateAppModalTitle, 50000)
-    await actions.dragAndDrop(this.updateAppModalTitle, [0, 500])
+    await actions.dragAndDrop(this.updateAppModalTitle, [0, 1000])
     console.log('Dismissed update app modal')
     await actions.delay(1000)
   }
@@ -229,7 +229,6 @@ async verifyLoggedIn() {
   async dismissSecurityWarning() {
     if (driver.isAndroid) {
       await actions.waitForDisplayed(this.securityWarningContent)
-      await actions.log()
       try {
         await actions.tap(commonElsPage.dismiss)
       } catch (e) {
