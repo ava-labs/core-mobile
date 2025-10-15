@@ -533,6 +533,57 @@ PODS:
     - nanopb/encode (= 3.30910.0)
   - nanopb/decode (3.30910.0)
   - nanopb/encode (3.30910.0)
+  - NitroAvalabsCrypto (0.1.0):
+    - DoubleConversion
+    - glog
+    - hermes-engine
+    - NitroModules
+    - RCT-Folly (= 2024.11.18.00)
+    - RCTRequired
+    - RCTTypeSafety
+    - React-callinvoker
+    - React-Core
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
+    - React-hermes
+    - React-ImageManager
+    - React-jsi
+    - React-NativeModulesApple
+    - React-RCTFabric
+    - React-renderercss
+    - React-rendererdebug
+    - React-utils
+    - ReactCodegen
+    - ReactCommon/turbomodule/bridging
+    - ReactCommon/turbomodule/core
+    - Yoga
+  - NitroModules (0.30.2):
+    - DoubleConversion
+    - glog
+    - hermes-engine
+    - RCT-Folly (= 2024.11.18.00)
+    - RCTRequired
+    - RCTTypeSafety
+    - React-callinvoker
+    - React-Core
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
+    - React-hermes
+    - React-ImageManager
+    - React-jsi
+    - React-NativeModulesApple
+    - React-RCTFabric
+    - React-renderercss
+    - React-rendererdebug
+    - React-utils
+    - ReactCodegen
+    - ReactCommon/turbomodule/bridging
+    - ReactCommon/turbomodule/core
+    - Yoga
   - OpenSSL-Universal (1.1.1100)
   - OpenTelemetrySwiftApi (1.13.1)
   - PLCrashReporter (1.12.0)
@@ -2158,6 +2209,30 @@ PODS:
     - React-Codegen
     - React-Core
     - ReactCommon/turbomodule/core
+  - react-native-performance (6.0.0):
+    - DoubleConversion
+    - glog
+    - hermes-engine
+    - RCT-Folly (= 2024.11.18.00)
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Core
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
+    - React-hermes
+    - React-ImageManager
+    - React-jsi
+    - React-NativeModulesApple
+    - React-RCTFabric
+    - React-renderercss
+    - React-rendererdebug
+    - React-utils
+    - ReactCodegen
+    - ReactCommon/turbomodule/bridging
+    - ReactCommon/turbomodule/core
+    - Yoga
   - react-native-quick-base64 (2.1.2):
     - DoubleConversion
     - glog
@@ -3230,7 +3305,7 @@ PODS:
     - Yoga
   - RNSensors (7.3.6):
     - React-Core
-  - RNSentry (6.14.0):
+  - RNSentry (7.4.0):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -3253,31 +3328,7 @@ PODS:
     - ReactCodegen
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
-    - Sentry/HybridSDK (= 8.50.2)
-    - Yoga
-  - RNShare (12.0.9):
-    - DoubleConversion
-    - glog
-    - hermes-engine
-    - RCT-Folly (= 2024.11.18.00)
-    - RCTRequired
-    - RCTTypeSafety
-    - React-Core
-    - React-debug
-    - React-Fabric
-    - React-featureflags
-    - React-graphics
-    - React-hermes
-    - React-ImageManager
-    - React-jsi
-    - React-NativeModulesApple
-    - React-RCTFabric
-    - React-renderercss
-    - React-rendererdebug
-    - React-utils
-    - ReactCodegen
-    - ReactCommon/turbomodule/bridging
-    - ReactCommon/turbomodule/core
+    - Sentry/HybridSDK (= 8.57.0)
     - Yoga
   - RNSound (0.12.0):
     - DoubleConversion
@@ -3360,7 +3411,7 @@ PODS:
     - SDWebImage (~> 5.10)
   - SDWebImageSVGCoder (1.7.0):
     - SDWebImage/Core (~> 5.6)
-  - Sentry/HybridSDK (8.50.2)
+  - Sentry/HybridSDK (8.57.0)
   - SocketRocket (0.7.1)
   - SwiftUIIntrospect (1.3.0)
   - Yoga (0.0.0)
@@ -3410,6 +3461,8 @@ DEPENDENCIES:
   - hermes-engine (from `../node_modules/react-native/sdks/hermes-engine/hermes-engine.podspec`)
   - jail-monkey (from `../node_modules/jail-monkey`)
   - lottie-react-native (from `../node_modules/lottie-react-native`)
+  - NitroAvalabsCrypto (from `../node_modules/react-native-nitro-avalabs-crypto`)
+  - NitroModules (from `../node_modules/react-native-nitro-modules`)
   - OpenSSL-Universal (= 1.1.1100)
   - RCT-Folly (from `../node_modules/react-native/third-party-podspecs/RCT-Folly.podspec`)
   - RCT-Folly/Fabric (from `../node_modules/react-native/third-party-podspecs/RCT-Folly.podspec`)
@@ -3460,6 +3513,7 @@ DEPENDENCIES:
   - "react-native-netinfo (from `../node_modules/@react-native-community/netinfo`)"
   - react-native-pager-view (from `../node_modules/react-native-pager-view`)
   - react-native-passkey (from `../node_modules/react-native-passkey`)
+  - react-native-performance (from `../node_modules/react-native-performance`)
   - react-native-quick-base64 (from `../node_modules/react-native-quick-base64`)
   - react-native-quick-crypto (from `../node_modules/react-native-quick-crypto`)
   - react-native-restart (from `../node_modules/react-native-restart`)
@@ -3527,7 +3581,6 @@ DEPENDENCIES:
   - RNScreens (from `../node_modules/react-native-screens`)
   - RNSensors (from `../node_modules/react-native-sensors`)
   - "RNSentry (from `../node_modules/@sentry/react-native`)"
-  - RNShare (from `../node_modules/react-native-share`)
   - RNSound (from `../node_modules/react-native-sound`)
   - RNSVG (from `../node_modules/react-native-svg`)
   - Yoga (from `../node_modules/react-native/ReactCommon/yoga`)
@@ -3655,6 +3708,10 @@ EXTERNAL SOURCES:
     :path: "../node_modules/jail-monkey"
   lottie-react-native:
     :path: "../node_modules/lottie-react-native"
+  NitroAvalabsCrypto:
+    :path: "../node_modules/react-native-nitro-avalabs-crypto"
+  NitroModules:
+    :path: "../node_modules/react-native-nitro-modules"
   RCT-Folly:
     :podspec: "../node_modules/react-native/third-party-podspecs/RCT-Folly.podspec"
   RCTDeprecation:
@@ -3749,6 +3806,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-pager-view"
   react-native-passkey:
     :path: "../node_modules/react-native-passkey"
+  react-native-performance:
+    :path: "../node_modules/react-native-performance"
   react-native-quick-base64:
     :path: "../node_modules/react-native-quick-base64"
   react-native-quick-crypto:
@@ -3883,8 +3942,6 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-sensors"
   RNSentry:
     :path: "../node_modules/@sentry/react-native"
-  RNShare:
-    :path: "../node_modules/react-native-share"
   RNSound:
     :path: "../node_modules/react-native-sound"
   RNSVG:
@@ -3962,6 +4019,8 @@ SPEC CHECKSUMS:
   lottie-react-native: 8bc11e10576d1a3f77f4e0ae5b70503c5c890a09
   MultiplatformBleAdapter: b1fddd0d499b96b607e00f0faa8e60648343dc1d
   nanopb: fad817b59e0457d11a5dfbde799381cd727c1275
+  NitroAvalabsCrypto: 04b9f004efee45b190f5f55edb4695e20bcdb1ea
+  NitroModules: a0e083750af37516a6b356ccf3373716eb1d01a1
   OpenSSL-Universal: ebc357f1e6bc71fa463ccb2fe676756aff50e88c
   OpenTelemetrySwiftApi: aaee576ed961e0c348af78df58b61300e95bd104
   PLCrashReporter: db59ef96fa3d25f3650040d02ec2798cffee75f2
@@ -4014,6 +4073,7 @@ SPEC CHECKSUMS:
   react-native-netinfo: cec9c4e86083cb5b6aba0e0711f563e2fbbff187
   react-native-pager-view: f238ed7fb53458bd03366944a33686f067c83e9a
   react-native-passkey: 3aac247c18127443ef4a002b59d8e12dc7e99f2e
+  react-native-performance: 83bf66f3ada75bb7b0cd69735ac7d51e8f3ca81d
   react-native-quick-base64: 651d972291fd5d9902869636a1b3c46820324490
   react-native-quick-crypto: 71b622aa0a231ac068759f5eef37982ad5eae58c
   react-native-restart: 0bc732f4461709022a742bb29bcccf6bbc5b4863
@@ -4080,14 +4140,13 @@ SPEC CHECKSUMS:
   RNReanimated: 722d67dfde539bfe29b572878f4bc805f727726b
   RNScreens: f0678748c5310b49a3f920f1485f5ec477afd345
   RNSensors: 111159597ac51505df10413c61b28bcd28e88983
-  RNSentry: 3bc708566b3390947b6ecd785645398cd1a0049e
-  RNShare: 43faaefd287ef344e8379caeaca12d112f713295
+  RNSentry: 0f61ae3c111d9129a978aeedd1fa05d0cd2307a9
   RNSound: 72c4886fb80b8a0e8c40131099223e09422aa8b4
   RNSVG: 794f269526df9ddc1f79b3d1a202b619df0368e3
   SDWebImage: 8a6b7b160b4d710e2a22b6900e25301075c34cb3
   SDWebImageAVIFCoder: 00310d246aab3232ce77f1d8f0076f8c4b021d90
   SDWebImageSVGCoder: 15a300a97ec1c8ac958f009c02220ac0402e936c
-  Sentry: d95f5f3b32d01324b3e27d3c52747005302cc026
+  Sentry: e1b49e5f49367ff211b25c431a60e2bd83b792aa
   SocketRocket: d4aabe649be1e368d1318fdf28a022d714d65748
   SwiftUIIntrospect: fee9aa07293ee280373a591e1824e8ddc869ba5d
   Yoga: adb397651e1c00672c12e9495babca70777e411e
