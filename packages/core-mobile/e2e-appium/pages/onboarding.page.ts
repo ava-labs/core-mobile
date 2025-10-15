@@ -201,8 +201,13 @@ class OnboardingPage {
   }
 
 async verifyLoggedIn() {
-    await this.dismissUpdateAppModal()
     await actions.waitFor(commonElsPage.accountOne, 20000)
+    await this.dismissUpdateAppModal()
+    try {
+      await this.dismissUpdateAppModal()
+    } catch (e) {
+      console.log('Update app modal not found')
+    }
     console.log('Verified you are logged in')
   }
 
