@@ -39,7 +39,7 @@ const promptAppUpdateScreenIfNeeded = async (): Promise<void> => {
   const shouldShowAppUpdateScreen =
     hasBeenViewedAppUpdateScreen === false &&
     appUpdateStatus.needsUpdate === true &&
-    !Config.TEST_MNEMONIC
+    !Config.E2E_MNEMONIC
   if (shouldShowAppUpdateScreen) {
     await waitForInteractions()
 
