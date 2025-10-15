@@ -109,7 +109,7 @@ export const config: WebdriverIO.Config = {
   },
 
   after: async function () {
-    console.log('🧹 Cleaning up session (letting WDIO handle it)...')
+    console.log('------------Cleaning up session------------')
     await new Promise(res => setTimeout(res, 500))
   },
 

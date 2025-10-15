@@ -121,7 +121,7 @@ async function click(ele: ChainablePromiseElement) {
   await ele.waitForEnabled()
   await ele.click()
   const selector = await ele.selector
-  console.log(`Tapped on selector: ${selector}`)
+  console.log(`Clicked on selector: ${selector}`)
 }
 
 async function dismissKeyboard(id = 'Return') {
@@ -151,6 +151,7 @@ async function swipe(
   percent: number,
   ele: ChainablePromiseElement
 ) {
+  await waitFor(ele)
   if (driver.isIOS) {
     await driver.execute('mobile: swipe', {
       direction: direction,

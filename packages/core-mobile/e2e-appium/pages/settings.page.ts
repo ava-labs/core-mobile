@@ -270,7 +270,7 @@ class Settings {
 
   async goSettings() {
     await actions.delay(1500)
-    await actions.click(this.settingsBtn)
+    await actions.tap(this.settingsBtn, this.settingsScrollView)
     try {
       await actions.waitFor(this.settingsScrollView)
     } catch (e) {

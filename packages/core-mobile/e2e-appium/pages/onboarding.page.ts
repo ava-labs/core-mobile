@@ -154,7 +154,6 @@ class OnboardingPage {
 
   async tapNextBtnOnAvatarScreen() {
     await actions.delay(2000)
-    await driver.getPageSource().then(src => console.log('📄 Before AvatarScreen:', src.slice(0, 500)))
     await actions.tap(this.nextBtnOnAvatarScreen, this.letsGo)
   }
 
@@ -192,6 +191,7 @@ class OnboardingPage {
   async dismissUpdateAppModal() {
     await actions.waitFor(this.updateAppModalTitle, 50000)
     await actions.dragAndDrop(this.updateAppModalTitle, [0, 500])
+    console.log('Dismissed update app modal')
     await actions.delay(1000)
   }
 
