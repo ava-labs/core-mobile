@@ -112,14 +112,18 @@ export const SpendLimits = ({
 
     return [amountToDisplay, amountInCurrencyToDisplay]
   }, [
+    limitType,
     tokenValue,
     tokenDecimals,
     tokenSymbol,
-    limitType,
+    marketToken,
     formatTokenInCurrency,
-    selectedCurrency,
-    marketToken
+    selectedCurrency
   ])
+
+  if (!tokenValue) {
+    return null
+  }
 
   return (
     <View>
