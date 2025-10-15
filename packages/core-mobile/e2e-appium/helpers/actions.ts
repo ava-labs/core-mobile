@@ -196,6 +196,13 @@ async function scrollTo(
   await ele.scrollIntoView()
 }
 
+async function log() {
+  const src = await driver.getPageSource()
+  console.log('📄📄📄')
+  console.log(src)
+  console.log('📄📄📄')
+}
+
 export const actions = {
   type,
   tapNumberPad,
@@ -217,5 +224,6 @@ export const actions = {
   delay,
   getVisible,
   clearText,
-  scrollTo
+  scrollTo,
+  log
 }

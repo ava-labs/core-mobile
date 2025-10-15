@@ -6,6 +6,7 @@ import commonElsLoc from '../locators/commonEls.loc'
 import common from './commonEls.page'
 import onboardingPage from './onboarding.page'
 import portfolioPage from './portfolio.page'
+import commonElsPage from './commonEls.page'
 
 class Settings {
   get addWalletBtn() {
@@ -270,12 +271,15 @@ class Settings {
 
   async goSettings() {
     await actions.delay(1500)
-    await actions.tap(this.settingsBtn, this.settingsScrollView)
+    await actions.tap(this.settingsBtn, commonElsPage.grabber)
+    await actions.log()
     try {
-      await actions.waitFor(this.settingsScrollView)
+      await actions.waitFor(commonElsPage.grabber)
+      console.log('grabber found')
     } catch (e) {
       await actions.click(this.settingsBtn)
     }
+    await actions.log()
   }
 
   async tapCurrency() {

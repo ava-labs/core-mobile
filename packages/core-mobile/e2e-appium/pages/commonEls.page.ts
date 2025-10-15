@@ -81,8 +81,11 @@ class CommonElsPage {
   }
 
   get dismiss() {
-    const theBtn = driver.isIOS ? commonEls.dismiss : commonEls.dismissAndroid
-    return selectors.getByText(theBtn)
+    return selectors.getByText(commonEls.dismiss)
+  }
+
+  get dismissAndroid() {
+    return selectors.getByText(commonEls.dismissAndroid)
   }
 
   get grabber() {

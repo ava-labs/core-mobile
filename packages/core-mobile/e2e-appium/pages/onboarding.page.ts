@@ -229,7 +229,12 @@ async verifyLoggedIn() {
   async dismissSecurityWarning() {
     if (driver.isAndroid) {
       await actions.waitForDisplayed(this.securityWarningContent)
-      await actions.tap(commonElsPage.dismiss)
+      await actions.log()
+      try {
+        await actions.tap(commonElsPage.dismiss)
+      } catch (e) {
+        await actions.tap(commonElsPage.dismissAndroid)
+      }
     }
   }
 
