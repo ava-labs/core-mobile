@@ -1,24 +1,25 @@
-import { Limit, SpendLimit } from 'hooks/useSpendLimits'
-import React, { useMemo } from 'react'
-import { View, GroupList, Text } from '@avalabs/k2-alpine'
-import { DropdownMenuIcon } from 'new/common/components/DropdownMenuIcons'
-import { DropdownGroup } from 'new/common/components/DropdownMenu'
 import { bigIntToString, TokenUnit } from '@avalabs/core-utils-sdk'
+import { GroupList, Text, View } from '@avalabs/k2-alpine'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
+import { useMarketTokenBySymbol } from 'common/hooks/useMarketTokenBySymbol'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
+import { Limit, SpendLimit } from 'hooks/useSpendLimits'
+import { DropdownGroup } from 'new/common/components/DropdownMenu'
+import { DropdownMenuIcon } from 'new/common/components/DropdownMenuIcons'
+import React, { useMemo } from 'react'
 import { useSelector } from 'react-redux'
 import { selectSelectedCurrency } from 'store/settings/currency/slice'
-import { Space } from 'common/components/Space'
-import { useMarketTokenBySymbol } from 'common/hooks/useMarketTokenBySymbol'
-import { getDefaultSpendLimitValue } from './utils'
-import { MenuId } from './types'
 import { SpendLimitOptions } from './SpendLimitOptions'
+import { MenuId } from './types'
+import { getDefaultSpendLimitValue } from './utils'
 
 export const SpendLimits = ({
   spendLimits,
-  onSelect
+  onSelect,
+  hasBalanceChange
 }: {
   spendLimits: SpendLimit[]
+  hasBalanceChange?: boolean
   onSelect?: (spendLimit: SpendLimit) => void
 }): JSX.Element | null => {
   const { formatTokenInCurrency } = useFormatCurrency()
@@ -121,12 +122,10 @@ export const SpendLimits = ({
     selectedCurrency
   ])
 
-  if (!tokenValue || !tokenDecimals || !tokenSymbol) {
-    return null
-  }
+  const renderSpendLimit = (): JSX.Element | null => {
+    if (hasBalanceChange) return null
 
-  return (
-    <View>
+    return (
       <View
         sx={{
           backgroundColor: '$surfaceSecondary',
@@ -174,7 +173,12 @@ export const SpendLimits = ({
           </View>
         )}
       </View>
-      <Space y={12} />
+    )
+  }
+
+  return (
+    <View style={{ gap: 12 }}>
+      {renderSpendLimit()}
       <GroupList
         data={data}
         titleSx={{
