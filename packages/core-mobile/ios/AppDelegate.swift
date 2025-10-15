@@ -41,8 +41,29 @@ class AppDelegate: ExpoAppDelegate {
     #endif
 
     loadRocketSimConnect()
+    
+    if let displayName = Bundle.main.object(forInfoDictionaryKey: "branch_key") as? [String: String] {
+      print(displayName["test"]!)
+      DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+        self.showAlert(title: "branch_key", message: displayName["test"]!)
+      }
+    }
 
+    
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
+  }
+  
+  func showAlert(title: String, message: String) {
+      guard let window = window,
+            let rootVC = window.rootViewController else { return }
+
+      let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
+      let okAction = UIAlertAction(title: "OK", style: .default)
+      alert.addAction(okAction)
+
+      DispatchQueue.main.async {
+          rootVC.present(alert, animated: true, completion: nil)
+      }
   }
 
   // Linking API
