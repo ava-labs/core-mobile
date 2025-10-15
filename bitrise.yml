@@ -165,7 +165,7 @@ workflows:
     - save-gradle-cache@1: {}
     - sign-apk@1:
         inputs:
-        - android_app: $BITRISE_APK_PATH|$BITRISE_TEST_APK_PATH
+        - android_app: $BITRISE_APK_PATH
         - use_apk_signer: "true"
         - debuggable_permitted: "false"
         - keystore_url: $BITRISEIO_ANDROID_KEY_STORE_URL
@@ -561,10 +561,6 @@ workflows:
     - IS_INTERNAL_BUILD: "true"
       opts:
         is_expand: false
-    - share-pipeline-variable@1:
-        inputs:
-        - variables: |-
-            IS_INTERNAL_BUILD=$IS_INTERNAL_BUILD
   android-external-e2e-regression-run:
     before_run:
     - _install-and-set-env
