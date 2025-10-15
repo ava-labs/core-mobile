@@ -202,9 +202,11 @@ class OnboardingPage {
     await actions.dragAndDrop(element, [0, 500])
   }
 
-async verifyLoggedIn() {
+async verifyLoggedIn(hasModal = true) {
     await actions.waitFor(commonElsPage.accountOne, 40000)
-    await this.dismissUpdateAppModal()
+    if (hasModal) {
+      await this.dismissUpdateAppModal()
+    }
     console.log('Verified you are logged in')
   }
 

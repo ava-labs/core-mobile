@@ -17,6 +17,7 @@ import {
 import { showAlert } from '@avalabs/k2-alpine'
 import { waitForInteractions } from 'common/utils/waitForInteractions'
 import { turnOnAllNotifications } from '../slice'
+import Config from 'react-native-config'
 
 export const handleAfterLoginFlows = async (
   _: AnyAction,
@@ -37,7 +38,8 @@ const promptAppUpdateScreenIfNeeded = async (): Promise<void> => {
   )
   const shouldShowAppUpdateScreen =
     hasBeenViewedAppUpdateScreen === false &&
-    appUpdateStatus.needsUpdate === true
+    appUpdateStatus.needsUpdate === true &&
+    !Config.TEST_MNEMONIC
   if (shouldShowAppUpdateScreen) {
     await waitForInteractions()
 

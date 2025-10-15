@@ -36,6 +36,6 @@ describe('Onboarding', () => {
 
     // finish onboarding
     await onboardingPage.tapLetsGo()
-    await onboardingPage.verifyLoggedIn()
+    await onboardingPage.verifyLoggedIn(false)
   })
 })
