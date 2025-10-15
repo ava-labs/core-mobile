@@ -5,10 +5,7 @@ import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { getAddressesFromXpubXP } from 'utils/getAddressesFromXpubXP'
 import { selectActiveWallet } from 'store/wallet/slice'
 import { WalletType } from 'services/wallet/types'
-import {
-  selectAccountsByWalletId,
-  selectActiveAccount
-} from 'store/account/slice'
+import { selectActiveAccount } from 'store/account/slice'
 import { stripXPPrefix } from 'utils/stripXPPrefix'
 import { HandleResponse, RpcRequestHandler } from '../types'
 import { AvalancheGetAddressesInRangeRpcRequest } from './types'
@@ -57,12 +54,14 @@ class AvalancheGetAddressesInRangeHandler
       activeWallet.type === WalletType.SEEDLESS ||
       activeWallet.type === WalletType.LEDGER_LIVE
     ) {
-      const accounts = selectAccountsByWalletId(state, activeWallet.id)
-
+      // for seedless and ledger live wallets,
+      // return empty arrays for now until multi-address signing support is added
+      // for the avalanche_sendTransaction RPC.
+      // more details: https://ava-labs.atlassian.net/browse/CP-12347?focusedCommentId=58482
       return {
         success: true,
         value: {
-          external: accounts.map(account => stripXPPrefix(account.addressPVM)),
+          external: [],
           internal: []
         }
       }

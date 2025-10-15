@@ -29,8 +29,7 @@ jest.mock('store/account/slice', () => {
   const actual = jest.requireActual('store/account/slice')
   return {
     ...actual,
-    selectActiveAccount: () => mockAccounts['1'],
-    selectAccountsByWalletId: () => Object.values(mockAccounts)
+    selectActiveAccount: () => mockAccounts['1']
   }
 })
 
@@ -103,7 +102,7 @@ describe('avalanche_getAddressesInRangeHandler', () => {
     })
   })
 
-  it('returns all account addresses for SEEDLESS wallet', async () => {
+  it('returns empty arrays for SEEDLESS wallet', async () => {
     jest
       .spyOn(require('store/wallet/slice'), 'selectActiveWallet')
       .mockReturnValueOnce({ ...mockActiveWallet, type: WalletType.SEEDLESS })
@@ -116,15 +115,12 @@ describe('avalanche_getAddressesInRangeHandler', () => {
     expect(result.success).toBe(true)
     // @ts-ignore
     expect(result.value).toEqual({
-      external: [
-        'fuji1e0r9s2lf6v9mfqyy6pxrpkar8dm5jxqcvhg99n',
-        'fuji1e0r8s2lf6v9mfqyy6pxrpkar8dm5jxqcvhg99n'
-      ],
+      external: [],
       internal: []
     })
   })
 
-  it('returns all account addresses for LEDGER_LIVE wallet', async () => {
+  it('returns empty arrays for LEDGER_LIVE wallet', async () => {
     jest
       .spyOn(require('store/wallet/slice'), 'selectActiveWallet')
       .mockReturnValueOnce({
@@ -140,10 +136,7 @@ describe('avalanche_getAddressesInRangeHandler', () => {
     expect(result.success).toBe(true)
     // @ts-ignore
     expect(result.value).toEqual({
-      external: [
-        'fuji1e0r9s2lf6v9mfqyy6pxrpkar8dm5jxqcvhg99n',
-        'fuji1e0r8s2lf6v9mfqyy6pxrpkar8dm5jxqcvhg99n'
-      ],
+      external: [],
       internal: []
     })
   })
