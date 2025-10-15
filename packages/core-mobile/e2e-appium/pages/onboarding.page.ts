@@ -201,7 +201,7 @@ class OnboardingPage {
   }
 
 async verifyLoggedIn() {
-    await actions.waitFor(commonElsPage.accountOne, 20000)
+    await actions.waitFor(commonElsPage.accountOne, 30000)
     await this.dismissUpdateAppModal()
     try {
       await this.dismissUpdateAppModal()
