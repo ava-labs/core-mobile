@@ -1,22 +1,15 @@
 import { RpcMethod, RpcProvider } from 'store/rpc/types'
-import mockSession from 'tests/fixtures/walletConnect/session.json'
 import { rpcErrors } from '@metamask/rpc-errors'
-import WalletService from 'services/wallet/WalletService'
-import mockNetworks from 'tests/fixtures/networks.json'
+import mockSession from 'tests/fixtures/walletConnect/session.json'
 import mockWallets from 'tests/fixtures/wallets.json'
+import mockAccounts from 'tests/fixtures/accounts.json'
+import * as getAddressesFromXpubXPModule from 'utils/getAddressesFromXpubXP'
+import { WalletType } from 'services/wallet/types'
 import { avalancheGetAddressesInRangeHandler } from './avalanche_getAddressesInRange'
 import { AvalancheGetAddressesInRangeRpcRequest } from './types'
 
-jest.mock('../index')
-jest
-  .spyOn(WalletService, 'getAddressesByIndices')
-  .mockImplementation(
-    ({ indices }: { indices: number[] }): Promise<string[]> =>
-      Promise.resolve(indices.map(index => `X-avax${index}`))
-  )
-
-jest.mock('store/settings/advanced/slice', () => {
-  const actual = jest.requireActual('store/settings/advanced/slice')
+jest.mock('store/settings/advanced', () => {
+  const actual = jest.requireActual('store/settings/advanced')
   return {
     ...actual,
     selectIsDeveloperMode: () => true
@@ -32,85 +25,212 @@ jest.mock('store/wallet/slice', () => {
   }
 })
 
-const createRequest = (
-  params: unknown
-): AvalancheGetAddressesInRangeRpcRequest => {
+jest.mock('store/account/slice', () => {
+  const actual = jest.requireActual('store/account/slice')
   return {
-    provider: RpcProvider.WALLET_CONNECT,
-    method: RpcMethod.AVALANCHE_GET_ADDRESSES_IN_RANGE,
-    data: {
-      id: 1,
-      topic: '1',
-      params: {
-        request: {
-          method: RpcMethod.AVALANCHE_GET_ADDRESSES_IN_RANGE,
-          params
-        },
-        chainId: 'eip155:43114'
-      }
-    },
-    peerMeta: mockSession.peer.metadata
+    ...actual,
+    selectActiveAccount: () => mockAccounts['1'],
+    selectAccountsByWalletId: () => Object.values(mockAccounts)
   }
-}
+})
 
-describe('avalanche_getAddressesInRange.ts', () => {
+jest
+  .spyOn(getAddressesFromXpubXPModule, 'getAddressesFromXpubXP')
+  .mockResolvedValue({
+    external: ['fuji1abc', 'fuji1def'],
+    internal: ['fuji1ghi']
+  })
+
+const createRequest = (): AvalancheGetAddressesInRangeRpcRequest => ({
+  provider: RpcProvider.WALLET_CONNECT,
+  method: RpcMethod.AVALANCHE_GET_ADDRESSES_IN_RANGE,
+  data: {
+    id: 1,
+    topic: '1',
+    params: {
+      request: {
+        method: RpcMethod.AVALANCHE_GET_ADDRESSES_IN_RANGE,
+        params: [] // no longer relevant since indices are gone
+      },
+      chainId: 'eip155:43114'
+    }
+  },
+  peerMeta: mockSession.peer.metadata
+})
+
+describe('avalanche_getAddressesInRangeHandler', () => {
   const mockListenerApi = {
     getState: () => ({
-      network: { active: 43114, customNetworks: mockNetworks },
-      settings: { advanced: { developerMode: false } }
+      settings: { advanced: { developerMode: true } }
     }),
     dispatch: jest.fn()
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } as any
 
-  describe('handle', () => {
-    it('returns error if request params do not meet zod validation rules', async () => {
-      const requests = [
-        createRequest([1, 2, 3, 4, 5]),
-        createRequest([1, 2, 3]),
-        createRequest(['1', 2, 3, 4]),
-        createRequest([])
-      ]
+  it('returns error if no active wallet', async () => {
+    jest
+      .spyOn(require('store/wallet/slice'), 'selectActiveWallet')
+      .mockReturnValueOnce(null)
 
-      for (const request of requests) {
-        const result = await avalancheGetAddressesInRangeHandler.handle(
-          request,
-          mockListenerApi
-        )
-        expect(result).toEqual({
-          success: false,
-          error: rpcErrors.invalidParams(
-            'avalanche_getAddressesInRange param is invalid'
-          )
-        })
-      }
+    const result = await avalancheGetAddressesInRangeHandler.handle(
+      createRequest(),
+      mockListenerApi
+    )
+
+    expect(result).toEqual({
+      success: false,
+      error: rpcErrors.internal('No active wallet')
     })
+  })
 
-    it('returns x/p addresses', async () => {
-      const request = createRequest([0, 1, 1, 3])
+  it('returns 1 account address for PRIVATE_KEY wallet', async () => {
+    jest
+      .spyOn(require('store/wallet/slice'), 'selectActiveWallet')
+      .mockReturnValueOnce({
+        ...mockActiveWallet,
+        type: WalletType.PRIVATE_KEY
+      })
+    const result = await avalancheGetAddressesInRangeHandler.handle(
+      createRequest(),
+      mockListenerApi
+    )
+
+    expect(result.success).toBe(true)
+    // @ts-ignore
+    expect(result.value).toEqual({
+      external: ['fuji1e0r8s2lf6v9mfqyy6pxrpkar8dm5jxqcvhg99n'],
+      internal: []
+    })
+  })
+
+  it('returns all account addresses for SEEDLESS wallet', async () => {
+    jest
+      .spyOn(require('store/wallet/slice'), 'selectActiveWallet')
+      .mockReturnValueOnce({ ...mockActiveWallet, type: WalletType.SEEDLESS })
+
+    const result = await avalancheGetAddressesInRangeHandler.handle(
+      createRequest(),
+      mockListenerApi
+    )
+
+    expect(result.success).toBe(true)
+    // @ts-ignore
+    expect(result.value).toEqual({
+      external: [
+        'fuji1e0r9s2lf6v9mfqyy6pxrpkar8dm5jxqcvhg99n',
+        'fuji1e0r8s2lf6v9mfqyy6pxrpkar8dm5jxqcvhg99n'
+      ],
+      internal: []
+    })
+  })
+
+  it('returns all account addresses for LEDGER_LIVE wallet', async () => {
+    jest
+      .spyOn(require('store/wallet/slice'), 'selectActiveWallet')
+      .mockReturnValueOnce({
+        ...mockActiveWallet,
+        type: WalletType.LEDGER_LIVE
+      })
+
+    const result = await avalancheGetAddressesInRangeHandler.handle(
+      createRequest(),
+      mockListenerApi
+    )
+
+    expect(result.success).toBe(true)
+    // @ts-ignore
+    expect(result.value).toEqual({
+      external: [
+        'fuji1e0r9s2lf6v9mfqyy6pxrpkar8dm5jxqcvhg99n',
+        'fuji1e0r8s2lf6v9mfqyy6pxrpkar8dm5jxqcvhg99n'
+      ],
+      internal: []
+    })
+  })
+
+  describe('returns all addresses from xpubXP for all other wallet types', () => {
+    it('MNEMONIC wallet', async () => {
+      jest
+        .spyOn(require('store/wallet/slice'), 'selectActiveWallet')
+        .mockReturnValueOnce({ ...mockActiveWallet, type: WalletType.MNEMONIC })
 
       const result = await avalancheGetAddressesInRangeHandler.handle(
-        request,
+        createRequest(),
         mockListenerApi
       )
+
+      expect(
+        getAddressesFromXpubXPModule.getAddressesFromXpubXP
+      ).toHaveBeenCalled()
+
       expect(result).toEqual({
         success: true,
-        value: { external: ['avax0'], internal: ['avax1', 'avax2', 'avax3'] }
+        value: {
+          external: ['fuji1abc', 'fuji1def'],
+          internal: ['fuji1ghi']
+        }
+      })
+    })
+
+    it('KEYSTONE wallet', async () => {
+      jest
+        .spyOn(require('store/wallet/slice'), 'selectActiveWallet')
+        .mockReturnValueOnce({ ...mockActiveWallet, type: WalletType.KEYSTONE })
+
+      const result = await avalancheGetAddressesInRangeHandler.handle(
+        createRequest(),
+        mockListenerApi
+      )
+
+      expect(
+        getAddressesFromXpubXPModule.getAddressesFromXpubXP
+      ).toHaveBeenCalled()
+
+      expect(result).toEqual({
+        success: true,
+        value: {
+          external: ['fuji1abc', 'fuji1def'],
+          internal: ['fuji1ghi']
+        }
+      })
+    })
+
+    it('LEDGER wallet', async () => {
+      jest
+        .spyOn(require('store/wallet/slice'), 'selectActiveWallet')
+        .mockReturnValueOnce({ ...mockActiveWallet, type: WalletType.LEDGER })
+
+      const result = await avalancheGetAddressesInRangeHandler.handle(
+        createRequest(),
+        mockListenerApi
+      )
+
+      expect(
+        getAddressesFromXpubXPModule.getAddressesFromXpubXP
+      ).toHaveBeenCalled()
+
+      expect(result).toEqual({
+        success: true,
+        value: {
+          external: ['fuji1abc', 'fuji1def'],
+          internal: ['fuji1ghi']
+        }
       })
     })
   })
 
-  it('returns maximum of 100 x/p addresses', async () => {
-    const request = createRequest([0, 1, 101, 203])
+  it('returns error when getAddressesFromXpubXP throws', async () => {
+    jest
+      .spyOn(getAddressesFromXpubXPModule, 'getAddressesFromXpubXP')
+      .mockRejectedValueOnce(new Error('network error'))
 
     const result = await avalancheGetAddressesInRangeHandler.handle(
-      request,
+      createRequest(),
       mockListenerApi
     )
-    expect(result.success).toBe(true)
+
+    expect(result.success).toBe(false)
     // @ts-ignore
-    expect(result.value.external.length).toBe(100)
-    // @ts-ignore
-    expect(result.value.internal.length).toBe(100)
+    expect(result.error).toEqual(rpcErrors.internal('network error'))
   })
 })

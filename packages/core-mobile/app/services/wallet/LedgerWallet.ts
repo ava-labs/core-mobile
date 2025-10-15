@@ -121,6 +121,7 @@ export class LedgerWallet implements Wallet {
         this.evmSigner = new LedgerSigner(
           targetAccountIndex,
           transport as Transport,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           (this.derivationPathSpec || 'BIP44') as any,
           provider
         )
@@ -156,6 +157,7 @@ export class LedgerWallet implements Wallet {
 
         this.avalancheSigner = new Avalanche.SimpleLedgerSigner(
           targetAccountIndex,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           transport as any, // TransportBLE is runtime compatible with wallets SDK expectations
           extPublicKey.key
         )
@@ -185,6 +187,7 @@ export class LedgerWallet implements Wallet {
           this.getDerivationPath(targetAccountIndex, NetworkVMType.AVM),
           Buffer.from(pubkeyEVM, 'hex'),
           this.getDerivationPath(targetAccountIndex, NetworkVMType.EVM),
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           transport as any // TransportBLE is runtime compatible with wallets SDK expectations
         )
       }
@@ -244,6 +247,7 @@ export class LedgerWallet implements Wallet {
         this.derivationPath,
         bitcoinProvider, // provider - BitcoinProviderAbstract
         transport as Transport, // transport
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         walletPolicyDetails as any // Use actual wallet policy details or null if not available
       )
 
@@ -824,6 +828,11 @@ export class LedgerWallet implements Wallet {
     }
   }
 
+  public async getRawXpubXP(): Promise<string> {
+    // TODO: implement this
+    throw new Error('getRawXpubXP not implemented yet for LedgerWallet')
+  }
+
   // Private helper methods for message signing
   private async signSolanaMessage(): Promise<string> {
     // SolanaLedgerSigner doesn't have signMessage method
@@ -836,6 +845,7 @@ export class LedgerWallet implements Wallet {
 
   private async signAvalancheMessage(
     accountIndex: number,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     data: any
   ): Promise<string> {
     const signer = await this.getAvalancheProvider(accountIndex)
