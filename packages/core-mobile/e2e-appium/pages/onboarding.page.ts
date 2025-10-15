@@ -189,9 +189,11 @@ class OnboardingPage {
   }
 
   async dismissUpdateAppModal() {
-    await actions.waitFor(this.updateAppModalTitle, 50000)
-    await actions.dragAndDrop(this.updateAppModalTitle, [0, 1000])
-    console.log('Dismissed update app modal')
+    while (await actions.getVisible(this.updateAppModalTitle)) {
+      await actions.delay(1000)
+      await actions.dragAndDrop(this.updateAppModalTitle, [0, 1000])
+      console.log('Dismissed update app modal')
+    }
     await actions.delay(1000)
   }
 
@@ -203,11 +205,6 @@ class OnboardingPage {
 async verifyLoggedIn() {
     await actions.waitFor(commonElsPage.accountOne, 40000)
     await this.dismissUpdateAppModal()
-    try {
-      await this.dismissUpdateAppModal()
-    } catch (e) {
-      console.log('Update app modal not found')
-    }
     console.log('Verified you are logged in')
   }
 

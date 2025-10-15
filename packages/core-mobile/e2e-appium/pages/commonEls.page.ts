@@ -367,7 +367,7 @@ class CommonElsPage {
 
   async dismissBottomSheet(element = this.grabber) {
     await actions.waitFor(element, 20000)
-    await actions.dragAndDrop(this.grabber, [0, 1500])
+    await actions.dragAndDrop(this.grabber, [0, 100])
   }
 
   async selectDropdown(name: string, dropdownItem: string) {

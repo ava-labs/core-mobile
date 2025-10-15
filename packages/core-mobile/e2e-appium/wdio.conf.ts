@@ -21,8 +21,8 @@ const iosPath = isBitrise
 const androidPath = isBitrise
   ? process.env.BITRISE_APK_PATH
   : path.resolve(
-      './android/app/build/outputs/apk/internal/debug/app-internal-debug.apk'
-      // '/Users/eunji.song/Downloads/app-internal-e2e-bitrise-signed.apk'
+      // './android/app/build/outputs/apk/internal/debug/app-internal-debug.apk'
+      '/Users/eunji.song/Downloads/app-internal-e2e-bitrise-signed.apk'
     )
 const platformToRun = process.env.PLATFORM
 const allCaps = [
