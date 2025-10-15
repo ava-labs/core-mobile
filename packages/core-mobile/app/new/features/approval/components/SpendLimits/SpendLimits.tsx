@@ -121,7 +121,7 @@ export const SpendLimits = ({
     selectedCurrency
   ])
 
-  if (!tokenValue) {
+  if (!tokenValue || !tokenDecimals || !tokenSymbol) {
     return null
   }
 
