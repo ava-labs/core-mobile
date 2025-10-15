@@ -6,11 +6,7 @@ import NavigationBarButton from 'common/components/NavigationBarButton'
 import { useBottomTabBarHeight } from 'common/hooks/useBottomTabBarHeight'
 import { BrowserItem } from 'features/browser/components/BrowserItem'
 import { useSearchHistory } from 'features/browser/hooks/useSearchHistory'
-import {
-  getSuggestedImage,
-  isSuggestedSiteName,
-  prepareFaviconToLoad
-} from 'features/browser/utils'
+import { prepareFaviconToLoad } from 'features/browser/utils'
 import React from 'react'
 import { ListRenderItem, Platform } from 'react-native'
 import { useDispatch, useSelector } from 'react-redux'
@@ -70,9 +66,7 @@ const HistoryScreen = (): JSX.Element => {
   }
 
   const renderItem: ListRenderItem<History> = ({ item, index }) => {
-    const image = isSuggestedSiteName(item.title)
-      ? getSuggestedImage(item.title)
-      : prepareFaviconToLoad(item.url, item.favicon)
+    const image = prepareFaviconToLoad(item.url, item.favicon)
 
     return (
       <BrowserItem

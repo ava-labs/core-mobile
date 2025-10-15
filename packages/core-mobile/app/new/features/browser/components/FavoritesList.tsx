@@ -18,18 +18,14 @@ import Animated from 'react-native-reanimated'
 import { useDispatch, useSelector } from 'react-redux'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { addHistoryForActiveTab, Favorite } from 'store/browser'
-import { SUGGESTED_ITEMS } from 'store/browser/const'
 import {
   removeFavorite,
   selectAllFavorites,
   updateFavorite
 } from 'store/browser/slices/favorites'
 import { useBrowserContext } from '../BrowserContext'
-import {
-  getSuggestedImage,
-  isSuggestedSiteName,
-  prepareFaviconToLoad
-} from '../utils'
+import { useFavoriteProjects } from '../hooks/useFavoriteProjects'
+import { prepareFaviconToLoad } from '../utils'
 import { BrowserItem } from './BrowserItem'
 
 interface FavoriteOrSuggested extends Favorite {
@@ -42,6 +38,8 @@ export const FavoritesList = (
   const dispatch = useDispatch()
   const favorites = useSelector(selectAllFavorites)
   const { handleUrlSubmit } = useBrowserContext()
+
+  const { data } = useFavoriteProjects()
 
   const onPress = (item: FavoriteOrSuggested): void => {
     if (item.isSuggested) {
@@ -56,7 +54,7 @@ export const FavoritesList = (
 
   const renderItem: ListRenderItem<FavoriteOrSuggested> = ({ item }) => {
     if (item.isSuggested) {
-      const image = getSuggestedImage(item.title)
+      const image = prepareFaviconToLoad(item.url, item.favicon)
 
       return (
         <View
@@ -84,23 +82,25 @@ export const FavoritesList = (
     )
   }
 
-  const data = useMemo(() => {
+  const combinedFavorites = useMemo(() => {
     const newFavorites = [...favorites].reverse()
 
     return [
       ...newFavorites,
-      ...SUGGESTED_ITEMS.map(item => ({
+      ...(data?.items.map(item => ({
+        ...item,
         title: item.name,
-        url: item.siteUrl,
+        url: item.website,
+        favicon: item.logo?.url,
         isSuggested: true
-      }))
+      })) || [])
     ] as FavoriteOrSuggested[]
-  }, [favorites])
+  }, [data, favorites])
 
   return (
     <FlatList
       {...props}
-      data={data}
+      data={combinedFavorites}
       showsVerticalScrollIndicator={false}
       renderItem={renderItem}
       keyboardShouldPersistTaps="handled"
@@ -137,9 +137,7 @@ const FavoriteItem = ({
 
   const [isLongPressActive, setIsLongPressActive] = useState(false)
 
-  const image = isSuggestedSiteName(item.title)
-    ? getSuggestedImage(item.title)
-    : prepareFaviconToLoad(item.url, item.favicon)
+  const image = prepareFaviconToLoad(item.url, item.favicon)
 
   const handleRemoveFavorite = useCallback(() => {
     dispatch(removeFavorite({ url: item.url }))

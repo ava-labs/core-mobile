@@ -180,11 +180,13 @@ export const AccountItem = memo(
               sx={{ color: subtitleColor, lineHeight: 16, marginRight: 8 }}>
               {truncateAddress(account.addressC)}
             </Text>
-            <TouchableOpacity onPress={handleAccountDetails} hitSlop={16}>
-              <Icons.Alert.AlertCircle
-                color={iconColor}
-                testID={`account_detail_icon__${account.name}`}
-              />
+            <TouchableOpacity
+              accessible={true}
+              testID={`account_detail_icon__${account.name}`}
+              accessibilityLabel={`account_detail_icon__${account.name}`}
+              onPress={handleAccountDetails}
+              hitSlop={16}>
+              <Icons.Alert.AlertCircle color={iconColor} />
             </TouchableOpacity>
           </View>
         </AnimatedPressable>

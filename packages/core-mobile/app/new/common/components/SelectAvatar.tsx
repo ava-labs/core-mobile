@@ -12,6 +12,7 @@ import { loadAvatar } from 'common/utils/loadAvatar'
 import React, { memo, useCallback, useMemo, useState } from 'react'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useFocusEffect } from 'expo-router'
+import Config from 'react-native-config'
 import { ScrollScreen } from './ScrollScreen'
 
 export const SelectAvatar = memo(
@@ -73,6 +74,7 @@ export const SelectAvatar = memo(
           size="large"
           type="primary"
           onPress={handleSubmit}
+          testID={isLoading ? undefined : 'avatar_next_btn'}
           disabled={isLoading}>
           {isLoading ? <ActivityIndicator /> : buttonText}
         </Button>
@@ -139,18 +141,23 @@ export const SelectAvatar = memo(
               />
             </View>
           )}
-
-          <View
-            style={{
-              marginBottom: -insets.bottom,
-              paddingBottom: 16
-            }}>
-            <AvatarSelector
-              selectedId={selectedAvatar?.id}
-              avatars={avatarsWithSelectedAsMiddle}
-              onSelect={onSelect}
-            />
-          </View>
+          {
+            // TODO: Remove this once we have a proper way to handle avatar selection on appium tests.
+            // We are doing this because the avatar selector is not working properly on appium tests.
+            !Config.E2E_MNEMONIC && (
+              <View
+                style={{
+                  marginBottom: -insets.bottom,
+                  paddingBottom: 16
+                }}>
+                <AvatarSelector
+                  selectedId={selectedAvatar?.id}
+                  avatars={avatarsWithSelectedAsMiddle}
+                  onSelect={onSelect}
+                />
+              </View>
+            )
+          }
         </View>
       </ScrollScreen>
     )

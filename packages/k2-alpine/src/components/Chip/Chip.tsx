@@ -24,6 +24,7 @@ interface ChipProps {
   variant?: ChipVariant
   rightIcon?: ChipIconType | JSX.Element
   hitSlop?: number | Insets
+  accessibilityLabel?: string
   renderLeft?: () => JSX.Element
 }
 
@@ -39,6 +40,7 @@ export const Chip = forwardRef<
       style,
       children,
       testID,
+      accessibilityLabel,
       renderLeft,
       ...rest
     },
@@ -61,8 +63,9 @@ export const Chip = forwardRef<
     return (
       <TouchableOpacity
         ref={ref}
-        accessible={false}
         testID={testID}
+        accessibilityLabel={testID}
+        accessible={true}
         style={[
           {
             ...sizeStyles[size],

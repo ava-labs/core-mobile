@@ -346,6 +346,7 @@ export const PinScreen = ({
               )}
             </Reanimated.View>
             <Reanimated.View
+              pointerEvents="none"
               style={[
                 isProcessingStyle,
                 {

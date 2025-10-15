@@ -56,6 +56,7 @@ export const EnterRecoveryPhrase = ({
           </Button>
         )}
         <Button
+          testID="import_btn"
           size="large"
           type="primary"
           onPress={handleNext}

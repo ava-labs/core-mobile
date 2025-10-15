@@ -41,7 +41,6 @@ import {
 import Logger from 'utils/Logger'
 import ErrorIcon from '../../../assets/icons/melting_face.png'
 import { useBrowserContext } from '../BrowserContext'
-import { isSuggestedSiteName } from '../utils'
 import { WebView } from './Webview'
 
 export interface BrowserTabRef {
@@ -175,8 +174,7 @@ export const BrowserTab = forwardRef<BrowserTabRef, { tabId: string }>(
           ) as GetDescriptionAndFavicon
 
           if (favi || desc) {
-            // if the favicon is already set to static favicon from suggested list, don't update it
-            const icon = isSuggestedSiteName(activeHistory?.favicon)
+            const icon = activeHistory?.favicon
               ? activeHistory?.favicon
               : favi === 'null'
               ? undefined
