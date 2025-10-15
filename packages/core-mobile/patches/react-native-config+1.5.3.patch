@@ -59,7 +59,7 @@ index 0000000..1675490
 +connection.project.dir=../../../android
 +eclipse.preferences.version=1
 diff --git a/node_modules/react-native-config/ios/ReactNativeConfig/BuildXCConfig.rb b/node_modules/react-native-config/ios/ReactNativeConfig/BuildXCConfig.rb
-index 07d5233..5bb4f5d 100755
+index 07d5233..9c60de1 100755
 --- a/node_modules/react-native-config/ios/ReactNativeConfig/BuildXCConfig.rb
 +++ b/node_modules/react-native-config/ios/ReactNativeConfig/BuildXCConfig.rb
 @@ -5,9 +5,23 @@ require_relative 'ReadDotEnv'
@@ -84,7 +84,7 @@ index 07d5233..5bb4f5d 100755
 +end
 +
 +# Format the selected entries for output
-+dotenv_xcconfig = entries_to_write.map { |k, v| %(#{k} = #{v.gsub(/\/\//, "/$()/")}) }.join("\n")
++dotenv_xcconfig = entries_to_write.map { |k, v| %(#{k} = "#{v.gsub(/\/\//, "/$()/")}") }.join("\n")
 +
 +# Write the selected entries to the output file
  File.open(config_output, 'w') { |f| f.puts dotenv_xcconfig }
