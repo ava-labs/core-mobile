@@ -93,6 +93,8 @@ export const config: WebdriverIO.Config = {
 
   // hoook before: make or get testRun before test
   before: async () => {
+    console.log('androidPath: ', androidPath)
+    console.log('iosPath: ', iosPath)
     const platform = driver.isAndroid ? 'Android' : 'iOS'
     runId = await getTestRun(platform)
   },
