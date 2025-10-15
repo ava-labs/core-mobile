@@ -13737,6 +13737,30 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@walletconnect/core@patch:@walletconnect/core@npm%3A2.16.1#./.yarn/patches/@walletconnect-core-npm-2.16.1-42d08707e6.patch::locator=mobile-monorepo%40workspace%3A.":
+  version: 2.16.1
+  resolution: "@walletconnect/core@patch:@walletconnect/core@npm%3A2.16.1#./.yarn/patches/@walletconnect-core-npm-2.16.1-42d08707e6.patch::version=2.16.1&hash=ba47c6&locator=mobile-monorepo%40workspace%3A."
+  dependencies:
+    "@walletconnect/heartbeat": 1.2.2
+    "@walletconnect/jsonrpc-provider": 1.0.14
+    "@walletconnect/jsonrpc-types": 1.0.4
+    "@walletconnect/jsonrpc-utils": 1.0.8
+    "@walletconnect/jsonrpc-ws-connection": 1.0.14
+    "@walletconnect/keyvaluestorage": 1.1.1
+    "@walletconnect/logger": 2.1.2
+    "@walletconnect/relay-api": 1.0.11
+    "@walletconnect/relay-auth": 1.0.4
+    "@walletconnect/safe-json": 1.0.2
+    "@walletconnect/time": 1.0.2
+    "@walletconnect/types": 2.16.1
+    "@walletconnect/utils": 2.16.1
+    events: 3.3.0
+    lodash.isequal: 4.5.0
+    uint8arrays: 3.1.0
+  checksum: 00ac1393a60fd18525bbdd08dd3f4801b6b0230ec89d4fd4e67b212d35bddf164881a39c048f77e198241b93d943bef9ac101f267e816ff8dd96f4d043cd559f
+  languageName: node
+  linkType: hard
+
 "@walletconnect/environment@npm:^1.0.1":
   version: 1.0.1
   resolution: "@walletconnect/environment@npm:1.0.1"
@@ -13915,6 +13939,23 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@walletconnect/sign-client@patch:@walletconnect/sign-client@npm%3A2.16.1#./.yarn/patches/@walletconnect-sign-client-npm-2.16.1-b9bdaa2d98.patch::locator=mobile-monorepo%40workspace%3A.":
+  version: 2.16.1
+  resolution: "@walletconnect/sign-client@patch:@walletconnect/sign-client@npm%3A2.16.1#./.yarn/patches/@walletconnect-sign-client-npm-2.16.1-b9bdaa2d98.patch::version=2.16.1&hash=73f242&locator=mobile-monorepo%40workspace%3A."
+  dependencies:
+    "@walletconnect/core": 2.16.1
+    "@walletconnect/events": 1.0.1
+    "@walletconnect/heartbeat": 1.2.2
+    "@walletconnect/jsonrpc-utils": 1.0.8
+    "@walletconnect/logger": 2.1.2
+    "@walletconnect/time": 1.0.2
+    "@walletconnect/types": 2.16.1
+    "@walletconnect/utils": 2.16.1
+    events: 3.3.0
+  checksum: d3750186101d02675d9d0d0ccb18dec9a8326d1563bb98d28348a3bf6315cf61cf4bb7efac040f1fc9421593660e9c872b08303bccb765bf1dfcaaa3575e05bd
+  languageName: node
+  linkType: hard
+
 "@walletconnect/time@npm:1.0.2, @walletconnect/time@npm:^1.0.2":
   version: 1.0.2
   resolution: "@walletconnect/time@npm:1.0.2"
@@ -13952,30 +13993,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@walletconnect/utils@npm:2.16.1":
-  version: 2.16.1
-  resolution: "@walletconnect/utils@npm:2.16.1"
-  dependencies:
-    "@stablelib/chacha20poly1305": 1.0.1
-    "@stablelib/hkdf": 1.0.1
-    "@stablelib/random": 1.0.2
-    "@stablelib/sha256": 1.0.1
-    "@stablelib/x25519": 1.0.3
-    "@walletconnect/relay-api": 1.0.11
-    "@walletconnect/relay-auth": 1.0.4
-    "@walletconnect/safe-json": 1.0.2
-    "@walletconnect/time": 1.0.2
-    "@walletconnect/types": 2.16.1
-    "@walletconnect/window-getters": 1.0.1
-    "@walletconnect/window-metadata": 1.0.1
-    detect-browser: 5.3.0
-    elliptic: ^6.5.7
-    query-string: 7.1.3
-    uint8arrays: 3.1.0
-  checksum: 404c5f262e020c208ab30283c1dbe23f7a4876d3d89ebb23dde95ea32deb8ada72886d64151f6a826d21774797fa44feed70d33729661aa0de4b6850b3ace0d5
-  languageName: node
-  linkType: hard
-
 "@walletconnect/utils@npm:2.17.2":
   version: 2.17.2
   resolution: "@walletconnect/utils@npm:2.17.2"
@@ -14001,6 +14018,34 @@ __metadata:
     query-string: 7.1.3
     uint8arrays: 3.1.0
   checksum: 5d7ca3982053d4988955ad1084f561e99b64c3949967988e325548dbfb5a0c4a180516c22fb5d6d428f5d515d49ede4d32921282f5d3ad625fc66f18c00f7453
+  languageName: node
+  linkType: hard
+
+"@walletconnect/utils@patch:@walletconnect/utils@npm%3A2.17.2#./.yarn/patches/@walletconnect-utils-npm-2.17.2-43f96abc05.patch::locator=mobile-monorepo%40workspace%3A.":
+  version: 2.17.2
+  resolution: "@walletconnect/utils@patch:@walletconnect/utils@npm%3A2.17.2#./.yarn/patches/@walletconnect-utils-npm-2.17.2-43f96abc05.patch::version=2.17.2&hash=633b2e&locator=mobile-monorepo%40workspace%3A."
+  dependencies:
+    "@ethersproject/hash": 5.7.0
+    "@ethersproject/transactions": 5.7.0
+    "@stablelib/chacha20poly1305": 1.0.1
+    "@stablelib/hkdf": 1.0.1
+    "@stablelib/random": 1.0.2
+    "@stablelib/sha256": 1.0.1
+    "@stablelib/x25519": 1.0.3
+    "@walletconnect/jsonrpc-utils": 1.0.8
+    "@walletconnect/keyvaluestorage": 1.1.1
+    "@walletconnect/relay-api": 1.0.11
+    "@walletconnect/relay-auth": 1.0.4
+    "@walletconnect/safe-json": 1.0.2
+    "@walletconnect/time": 1.0.2
+    "@walletconnect/types": 2.17.2
+    "@walletconnect/window-getters": 1.0.1
+    "@walletconnect/window-metadata": 1.0.1
+    detect-browser: 5.3.0
+    elliptic: 6.6.0
+    query-string: 7.1.3
+    uint8arrays: 3.1.0
+  checksum: 3c843c362826293bdfd1058bd8294d1f1e56558512f9b483ea6d65149b9483883ef562c007096a7ebfde297e685163fab42120bda3437dcd4468e23b243ddade
   languageName: node
   linkType: hard
 
