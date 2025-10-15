@@ -958,10 +958,10 @@ workflows:
         - api_level: "34"
         - emulator_id: emulator-5554
         - emulator_channel: "0"
-        - create_command_flags: --sdcard 2048M --device "pixel_8"
+        - create_command_flags: --sdcard 2048M --device "pixel_7_pro"
         - tag: google_apis
         - abi: x86_64
-        - profile: pixel_8
+        - profile: pixel_7_pro
         - custom_command_flags: -no-snapshot -noaudio -no-window
     - wait-for-android-emulator@1: {}
     - script-runner@0:
