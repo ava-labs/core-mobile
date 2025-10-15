@@ -34,12 +34,17 @@ const allCaps = [
     'appium:app': androidPath,
     'appium:appWaitActivity': '*',
     'appium:autoGrantPermissions': true,
-    'appium:settings[snapshotMaxDepth]': 70,
-    'appium:isHeadless': goHeadless,
     'appium:newCommandTimeout': 120,
     'appium:adbExecTimeout': 60000,
     'appium:uiautomator2ServerLaunchTimeout': 60000,
-    'appium:uiautomator2ServerInstallTimeout': 60000
+    'appium:uiautomator2ServerInstallTimeout': 60000,
+    'appium:noSign': true,
+    'appium:disableWindowAnimation': true,
+    'appium:fullReset': true,
+    'appium:enforceAppInstall': true,
+    'appium:uiautomator2ServerReadTimeout': 60000,
+    'appium:skipDeviceInitialization': false,
+    'appium:skipLogcatCapture': false
   },
   {
     platformName: 'iOS',
@@ -93,8 +98,6 @@ export const config: WebdriverIO.Config = {
 
   // hoook before: make or get testRun before test
   before: async () => {
-    console.log('androidPath: ', androidPath)
-    console.log('iosPath: ', iosPath)
     const platform = driver.isAndroid ? 'Android' : 'iOS'
     runId = await getTestRun(platform)
   },

@@ -181,12 +181,6 @@ workflows:
         - variables: |-
             BITRISE_APK_PATH=$BITRISE_APK_PATH
             IS_INTERNAL_BUILD=$IS_INTERNAL_BUILD
-        - emulator_id: emulator-5554
-        - emulator_channel: "0"
-        - create_command_flags: --sdcard 2048M
-        - tag: default
-        - abi: x86_64
-        - profile: pixel_7_pro
   _install-old-android-version:
     steps:
     - script-runner@0:
@@ -964,10 +958,11 @@ workflows:
         - api_level: "34"
         - emulator_id: emulator-5554
         - emulator_channel: "0"
-        - create_command_flags: --sdcard 512M
-        - tag: default
+        - create_command_flags: --sdcard 2048M --device "pixel_8"
+        - tag: google_apis
         - abi: x86_64
-        - profile: pixel_7_pro
+        - profile: pixel_8
+        - custom_command_flags: -no-snapshot -noaudio -no-window
     - wait-for-android-emulator@1: {}
     - script-runner@0:
         title: Appium Android testing

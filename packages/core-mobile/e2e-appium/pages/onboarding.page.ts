@@ -153,7 +153,8 @@ class OnboardingPage {
   }
 
   async tapNextBtnOnAvatarScreen() {
-    await actions.waitFor(this.selectAvatarTitle)
+    await actions.delay(2000)
+    await driver.getPageSource().then(src => console.log('📄 Before AvatarScreen:', src.slice(0, 500)))
     await actions.tap(this.nextBtnOnAvatarScreen, this.letsGo)
   }
 
