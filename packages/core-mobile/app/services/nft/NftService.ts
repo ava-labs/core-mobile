@@ -2,7 +2,6 @@ import { Network } from '@avalabs/core-chains-sdk'
 import ModuleManager from 'vmModule/ModuleManager'
 import { TokenType } from '@avalabs/vm-module-types'
 import { mapToVmNetwork } from 'vmModule/utils/mapToVmNetwork'
-import { coingeckoInMemoryCache } from 'utils/coingeckoInMemoryCache'
 import Logger from 'utils/Logger'
 import { getNftLocalId, isNft } from './utils'
 import { UnprocessedNftItem } from './types'
@@ -23,7 +22,6 @@ export class NftService {
       addresses: [address],
       currency,
       network: mapToVmNetwork(network),
-      storage: coingeckoInMemoryCache,
       tokenTypes: [TokenType.ERC721, TokenType.ERC1155]
     })
 

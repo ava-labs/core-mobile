@@ -1,6 +1,6 @@
 import * as inMemoryCache from 'utils/InMemoryCache'
 
-export const coingeckoInMemoryCache = {
+export const tokenServiceInMemoryCache = {
   get: inMemoryCache.getCache,
   set: inMemoryCache.setCache
 }
