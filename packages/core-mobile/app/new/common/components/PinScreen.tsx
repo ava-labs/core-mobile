@@ -210,12 +210,14 @@ export const PinScreen = ({
   }, [])
 
   const handleLoginOptions = useCallback(() => {
-    const accessType = BiometricsSDK.getAccessType()
-    if (accessType === 'BIO') {
-      handlePromptBioLogin()
-    } else {
-      focusPinInput()
-    }
+    requestAnimationFrame(() => {
+      const accessType = BiometricsSDK.getAccessType()
+      if (accessType === 'BIO') {
+        handlePromptBioLogin()
+      } else {
+        focusPinInput()
+      }
+    })
   }, [handlePromptBioLogin, focusPinInput])
 
   const handleBrokenBioState = useCallback(() => {
