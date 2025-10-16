@@ -122,6 +122,12 @@ describe('avalanche_getAccounts handler', () => {
         type: 'LEDGER'
       })
 
+      // Mock WalletService to throw error for Ledger wallets
+      const mockWalletService = require('services/wallet/WalletService')
+      mockWalletService.default.getRawXpubXP.mockRejectedValueOnce(
+        new Error('Unsupported wallet type')
+      )
+
       const result = await handler.handle(testRequest, mockListenerApi)
 
       expect(result.success).toBe(true)

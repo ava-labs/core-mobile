@@ -5,7 +5,6 @@ import { RpcMethod, RpcRequest } from 'store/rpc/types'
 import { rpcErrors } from '@metamask/rpc-errors'
 import { WalletType } from 'services/wallet/types'
 import WalletService from 'services/wallet/WalletService'
-import Logger from 'utils/Logger'
 import { HandleResponse, RpcRequestHandler } from '../../types'
 
 export type AvalancheGetAccountsRpcRequest =
@@ -37,16 +36,8 @@ class AvalancheGetAccountsHandler
       walletType: WalletType
     ): Promise<string | undefined> => {
       try {
-        // Only mnemonic and keystone wallets support xpubXP
-        if (
-          walletType === WalletType.MNEMONIC ||
-          walletType === WalletType.KEYSTONE
-        ) {
-          return await WalletService.getRawXpubXP({ walletId, walletType })
-        }
-        return undefined
+        return await WalletService.getRawXpubXP({ walletId, walletType })
       } catch (error) {
-        Logger.warn(`Failed to get xpubXP for wallet ${walletId}:`, error)
         return undefined
       }
     }
