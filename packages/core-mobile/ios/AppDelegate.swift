@@ -41,7 +41,45 @@ class AppDelegate: ExpoAppDelegate {
     #endif
 
     loadRocketSimConnect()
+    
+    #if DEBUG
+    if let branchDict = Bundle.main.object(forInfoDictionaryKey: "branch_key") as? [String: Any] {
+        let testKey = branchDict["test"] as? String ?? "missing"
+        let liveKey = branchDict["live"] as? String ?? "missing"
 
+        // Determine current mode manually
+        let displayName = Bundle.main.object(forInfoDictionaryKey: "CFBundleDisplayName") as? String ?? ""
+        let isUsingTestInstance = displayName.lowercased().contains("internal") 
+        let currentMode = isUsingTestInstance ? "TEST" : "LIVE"
+
+        print("🔑 Branch Keys -> test: \(testKey), live: \(liveKey)")
+        print("🧩 Current Branch mode: \(currentMode)")
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+            if let scene = UIApplication.shared.connectedScenes
+                .first(where: { $0.activationState == .foregroundActive }) as? UIWindowScene,
+               let window = scene.windows.first(where: { $0.isKeyWindow }) {
+                
+                let alert = UIAlertController(
+                    title: "Branch Configuration",
+                    message: """
+                    Mode: \(currentMode)
+                    Test Key: \(testKey)
+                    Live Key: \(liveKey)
+                    """,
+                    preferredStyle: .alert
+                )
+                alert.addAction(UIAlertAction(title: "OK", style: .default))
+                window.rootViewController?.present(alert, animated: true)
+            } else {
+                print("⚠️ Unable to find an active window scene for displaying alert.")
+            }
+        }
+    } else {
+        print("⚠️ Could not find branch_key in Info.plist")
+    }
+    #endif
+    
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
   }
 
