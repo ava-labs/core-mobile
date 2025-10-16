@@ -719,7 +719,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "echo \":wrench: Generating config.xcconfig from .env\"\n\n\"${SRCROOT}/../node_modules/react-native-config/ios/ReactNativeConfig/BuildXCConfig.rb\" \"${SRCROOT}\" \"${SRCROOT}/config.xcconfig\" \"BRANCH_KEY\"\n";
+			shellScript = "echo \":wrench: Generating config.xcconfig from .env\"\n\n\"${SRCROOT}/../node_modules/react-native-config/ios/ReactNativeConfig/BuildXCConfig.rb\" \"${SRCROOT}/..\" \"${SRCROOT}/config.xcconfig\" \"BRANCH_KEY\"\n";
 		};
 		81548E862EA171F400600BA3 /* Setup React Native Config */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -737,7 +737,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "echo \":wrench: Generating config.xcconfig from .env\"\n\n\"${SRCROOT}/../node_modules/react-native-config/ios/ReactNativeConfig/BuildXCConfig.rb\" \"${SRCROOT}\" \"${SRCROOT}/config.xcconfig\" \"BRANCH_KEY\"\n";
+			shellScript = "echo \":wrench: Generating config.xcconfig from .env\"\n\n\"${SRCROOT}/../node_modules/react-native-config/ios/ReactNativeConfig/BuildXCConfig.rb\" \"${SRCROOT}/..\" \"${SRCROOT}/config.xcconfig\" \"BRANCH_KEY\"\n";
 		};
 		8E858A5428AFD47300236EF2 /* Start Packager */ = {
 			isa = PBXShellScriptBuildPhase;
