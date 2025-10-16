@@ -141,7 +141,7 @@ export const SpendLimitOptions = ({
           sx={{
             ...sharedValueStyle,
             flexGrow: 1,
-            width: '70%',
+            width: '45%',
             textAlign: 'right'
           }}>
           {displayValue}
@@ -150,7 +150,10 @@ export const SpendLimitOptions = ({
           <Text variant="body1" sx={sharedValueStyle}>
             {' ' + token.symbol}
           </Text>
-          <Icons.Navigation.ChevronRight color={colors.$textSecondary} />
+          <Icons.Navigation.ChevronRight
+            color={colors.$textSecondary}
+            style={{ marginRight: -8 }}
+          />
         </View>
       </View>
     </DropdownMenu>
