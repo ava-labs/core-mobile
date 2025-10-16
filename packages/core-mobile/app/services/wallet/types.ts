@@ -260,10 +260,11 @@ export interface Wallet {
 export interface AddressEntry {
   address: string
   index: number
+  hasActivity: boolean
 }
 
 export interface NetworkAddresses {
   networkType: NetworkVMType.AVM | NetworkVMType.PVM
-  externalAddresses: AddressEntry[]
-  internalAddresses: AddressEntry[]
+  externalAddresses: { address: string; index: number; hasActivity: boolean }[]
+  internalAddresses: { address: string; index: number; hasActivity: boolean }[]
 }
