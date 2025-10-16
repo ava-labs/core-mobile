@@ -7,19 +7,15 @@ import SeedlessWallet from 'seedless/services/wallet/SeedlessWallet'
 import { transactionSnackbar } from 'common/utils/toast'
 import Logger from 'utils/Logger'
 import AccountsService from 'services/account/AccountsService'
-import { AppListenerEffectAPI, RootState } from 'store/types'
+import { AppListenerEffectAPI } from 'store/types'
 import { recentAccountsStore } from 'features/accountSettings/store'
 import { uuid } from 'utils/uuid'
 import { Wallet } from 'store/wallet/types'
 import { commonStorage } from 'utils/mmkv'
 import { StorageKey } from 'resources/Constants'
 import { appendToStoredArray, loadArrayFromStorage } from 'utils/mmkv/storages'
-import {
-  selectActiveWalletId,
-  setIsMigratingActiveAccounts
-} from 'store/wallet/slice'
+import { setIsMigratingActiveAccounts } from 'store/wallet/slice'
 import WalletService from 'services/wallet/WalletService'
-import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { setNonActiveAccounts } from './slice'
 
 export function getAddressByVM(
@@ -208,10 +204,9 @@ const markWalletAsMigrated = (walletId: string): void => {
   )
 }
 export async function getAddressesForXP(
-  state: RootState
+  isDeveloperMode: boolean,
+  walletId: string | null
 ): Promise<NetworkAddresses> {
-  const walletId = selectActiveWalletId(state)
-  const isDeveloperMode = selectIsDeveloperMode(state)
   if (!walletId) {
     throw new Error('Wallet ID is required')
   }

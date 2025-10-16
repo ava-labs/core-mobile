@@ -1,6 +1,6 @@
 import { Network } from '@avalabs/core-chains-sdk'
 import { Account } from 'store/account/types'
-import { getAddressByNetwork, getAddressesForXP } from 'store/account/utils'
+import { getAddressByNetwork } from 'store/account/utils'
 import {
   type NetworkContractToken,
   type TokenWithBalance,
@@ -12,7 +12,7 @@ import { mapToVmNetwork } from 'vmModule/utils/mapToVmNetwork'
 import { coingeckoInMemoryCache } from 'utils/coingeckoInMemoryCache'
 import { NetworkVMType } from '@avalabs/core-chains-sdk'
 import { chunk, uniqWith } from 'lodash'
-import { RootState } from 'store/types'
+import { NetworkAddresses } from 'services/wallet/types';
 
 export type BalancesForAccount = {
   accountId: string
@@ -77,13 +77,12 @@ export class BalanceService {
   async getBalancesForAccountsXP({
     currency,
     network,
-    state
+    activeAddresses
   }: {
     currency: string
     network: Network
-    state: RootState
+    activeAddresses: NetworkAddresses
   }): Promise<BalancesForAccount> {
-    const activeAddresses = await getAddressesForXP(state)
     const externalAddresses = activeAddresses.externalAddresses.map(
       address => address.address
     )
