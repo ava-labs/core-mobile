@@ -6,7 +6,7 @@ import { getAddressesFromXpubXP } from 'utils/getAddressesFromXpubXP'
 import { selectActiveWallet } from 'store/wallet/slice'
 import { WalletType } from 'services/wallet/types'
 import { selectActiveAccount } from 'store/account/slice'
-import { stripXPPrefix } from 'utils/stripXPPrefix'
+import { xpAddressWithoutPrefix } from 'new/common/utils/xpAddressWIthoutPrefix'
 import { HandleResponse, RpcRequestHandler } from '../types'
 import { AvalancheGetAddressesInRangeRpcRequest } from './types'
 
@@ -44,7 +44,7 @@ class AvalancheGetAddressesInRangeHandler
       return {
         success: true,
         value: {
-          external: [stripXPPrefix(activeAccount.addressPVM)],
+          external: [xpAddressWithoutPrefix(activeAccount.addressPVM)],
           internal: []
         }
       }

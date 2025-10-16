@@ -1,7 +1,7 @@
 import { NetworkVMType } from '@avalabs/core-chains-sdk'
 import WalletService from 'services/wallet/WalletService'
 import { WalletType, NetworkAddresses } from 'services/wallet/types'
-import { stripXPPrefix } from './stripXPPrefix'
+import { xpAddressWithoutPrefix } from 'new/common/utils/xpAddressWIthoutPrefix'
 
 type FlattenedAddresses = {
   external: string[]
@@ -16,19 +16,25 @@ const isResponseLonger = (
 }
 
 const flattenAddresses = (
-  pResponse: NetworkAddresses,
-  xResponse: NetworkAddresses
+  pAddresses: NetworkAddresses,
+  xAddresses: NetworkAddresses
 ): FlattenedAddresses => {
-  const longerResponse = isResponseLonger(pResponse, xResponse)
-    ? pResponse
-    : xResponse
+  const longerResponse = isResponseLonger(pAddresses, xAddresses)
+    ? pAddresses
+    : xAddresses
 
   const external = Array.from(
-    new Set(longerResponse.externalAddresses.map(a => stripXPPrefix(a.address)))
+    new Set(
+      longerResponse.externalAddresses.map(a =>
+        xpAddressWithoutPrefix(a.address)
+      )
+    )
   )
 
   const internal = Array.from(
-    new Set(xResponse.internalAddresses.map(a => stripXPPrefix(a.address)))
+    new Set(
+      xAddresses.internalAddresses.map(a => xpAddressWithoutPrefix(a.address))
+    )
   )
 
   return { external, internal }
