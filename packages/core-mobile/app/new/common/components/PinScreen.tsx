@@ -210,7 +210,7 @@ export const PinScreen = ({
   }, [])
 
   const handleLoginOptions = useCallback(() => {
-    InteractionManager.runAfterInteractions(() => {
+    requestAnimationFrame(() => {
       const accessType = BiometricsSDK.getAccessType()
       if (accessType === 'BIO') {
         handlePromptBioLogin()
