@@ -236,9 +236,10 @@ export const PinScreen = ({
       if (isBrokenBioState) {
         commonStorage.set(StorageKey.SECURE_ACCESS_SET, 'PIN')
         accessType = BiometricsSDK.getAccessType()
+        focusPinInput()
       }
     })
-  }, [useBiometrics, isBiometricAvailable])
+  }, [useBiometrics, isBiometricAvailable, focusPinInput])
 
   useFocusEffect(
     useCallback(() => {
