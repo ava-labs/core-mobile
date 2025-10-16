@@ -2,12 +2,13 @@ import { AppListenerEffectAPI } from 'store/types'
 import { rpcErrors } from '@metamask/rpc-errors'
 import { RpcMethod } from 'store/rpc/types'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
-import Logger from 'utils/Logger'
-import { getAddressesInRange } from 'utils/getAddressesInRange'
+import { getAddressesFromXpubXP } from 'utils/getAddressesFromXpubXP'
 import { selectActiveWallet } from 'store/wallet/slice'
+import { WalletType } from 'services/wallet/types'
+import { selectActiveAccount } from 'store/account/slice'
+import { xpAddressWithoutPrefix } from 'new/common/utils/xpAddressWIthoutPrefix'
 import { HandleResponse, RpcRequestHandler } from '../types'
-import { parseRequestParams } from './utils'
-import { RequestParams, AvalancheGetAddressesInRangeRpcRequest } from './types'
+import { AvalancheGetAddressesInRangeRpcRequest } from './types'
 
 class AvalancheGetAddressesInRangeHandler
   implements RpcRequestHandler<AvalancheGetAddressesInRangeRpcRequest>
@@ -23,17 +24,6 @@ class AvalancheGetAddressesInRangeHandler
     const activeWallet = selectActiveWallet(state)
     const isDeveloperMode = selectIsDeveloperMode(state)
 
-    const result = parseRequestParams(request.data.params.request.params)
-    if (!result.success) {
-      Logger.error('Invalid param', result.error)
-      return {
-        success: false,
-        error: rpcErrors.invalidParams(
-          'avalanche_getAddressesInRange param is invalid'
-        )
-      }
-    }
-
     if (!activeWallet) {
       return {
         success: false,
@@ -41,20 +31,47 @@ class AvalancheGetAddressesInRangeHandler
       }
     }
 
-    const [externalStart, internalStart, externalLimit, internalLimit] =
-      result.data as RequestParams
+    if (activeWallet.type === WalletType.PRIVATE_KEY) {
+      const activeAccount = selectActiveAccount(state)
+
+      if (!activeAccount) {
+        return {
+          success: false,
+          error: rpcErrors.internal('No active account')
+        }
+      }
+
+      return {
+        success: true,
+        value: {
+          external: [xpAddressWithoutPrefix(activeAccount.addressPVM)],
+          internal: []
+        }
+      }
+    }
+
+    if (
+      activeWallet.type === WalletType.SEEDLESS ||
+      activeWallet.type === WalletType.LEDGER_LIVE
+    ) {
+      // for seedless and ledger live wallets,
+      // return empty arrays for now until multi-address signing support is added
+      // for the avalanche_sendTransaction RPC.
+      // more details: https://ava-labs.atlassian.net/browse/CP-12347?focusedCommentId=58482
+      return {
+        success: true,
+        value: {
+          external: [],
+          internal: []
+        }
+      }
+    }
 
     try {
-      const addresses = await getAddressesInRange({
+      const addresses = await getAddressesFromXpubXP({
         isDeveloperMode: isDeveloperMode,
         walletId: activeWallet.id,
-        walletType: activeWallet.type,
-        params: {
-          externalStart,
-          internalStart,
-          externalLimit,
-          internalLimit
-        }
+        walletType: activeWallet.type
       })
       return { success: true, value: addresses }
     } catch (e) {

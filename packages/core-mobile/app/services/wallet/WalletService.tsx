@@ -51,6 +51,7 @@ import {
 import WalletFactory from './WalletFactory'
 import { MnemonicWallet } from './MnemonicWallet'
 import KeystoneWallet from './KeystoneWallet'
+import { LedgerWallet } from './LedgerWallet'
 
 // Tolerate 50% buffer for burn amount for EVM transactions
 const EVM_FEE_TOLERANCE = 50
@@ -248,7 +249,7 @@ class WalletService {
     walletId: string
     walletType: WalletType
   }): Promise<string> {
-    if (![WalletType.MNEMONIC, WalletType.KEYSTONE].includes(walletType)) {
+    if (!this.hasXpub(walletType)) {
       throw new Error('Unable to get raw xpub XP: unsupported wallet type')
     }
 
@@ -259,49 +260,43 @@ class WalletService {
 
     if (
       !(wallet instanceof MnemonicWallet) &&
-      !(wallet instanceof KeystoneWallet)
+      !(wallet instanceof KeystoneWallet) &&
+      !(wallet instanceof LedgerWallet)
     ) {
       throw new Error(
-        'Unable to get raw xpub XP: Expected MnemonicWallet or KeystoneWallet instance'
+        'Unable to get raw xpub XP: Expected MnemonicWallet, KeystoneWallet or LedgerWallet instance'
       )
     }
 
     return wallet.getRawXpubXP()
   }
 
-  public async getActiveAddresses({
+  public async getAddressesFromXpubXP({
     walletId,
     walletType,
     networkType,
-    isTestnet = false
+    isTestnet = false,
+    onlyWithActivity
   }: {
     walletId: string
     walletType: WalletType
     networkType: NetworkVMType.AVM | NetworkVMType.PVM
     isTestnet: boolean
+    onlyWithActivity: boolean
   }): Promise<NetworkAddresses> {
-    if (walletType !== WalletType.MNEMONIC) {
-      // we only support mnemonic for now
-      // for all other wallet types, we return empty addresses
-      return {
-        networkType,
-        externalAddresses: [],
-        internalAddresses: []
-      }
-    }
+    const xpubXP = await this.getRawXpubXP({
+      walletId,
+      walletType
+    })
 
     try {
-      const xpubXP = await this.getRawXpubXP({
-        walletId,
-        walletType
-      })
-
       const res = await fetchWithAppCheck(
         `${Config.CORE_PROFILE_URL}/v1/get-addresses`,
         JSON.stringify({
           networkType: networkType,
           extendedPublicKey: xpubXP,
-          isTestnet
+          isTestnet,
+          onlyWithActivity
         })
       )
 
@@ -311,7 +306,7 @@ class WalletService {
 
       return res.json()
     } catch (err) {
-      Logger.error(`[WalletService.ts][getActiveAddressesFromXpubXP]${err}`)
+      Logger.error(`[WalletService.ts][getAddressesFromXpubXP]${err}`)
       throw err
     }
   }
@@ -927,6 +922,14 @@ class WalletService {
       provider
     })
     return '0x' + buffer.toString('hex')
+  }
+
+  public hasXpub(walletType: WalletType): boolean {
+    return [
+      WalletType.MNEMONIC,
+      WalletType.KEYSTONE,
+      WalletType.LEDGER
+    ].includes(walletType)
   }
 
   private async getReadOnlyAvaSigner(
