@@ -9,19 +9,20 @@ import notifee, {
   TriggerNotification,
   TriggerType
 } from '@notifee/react-native'
+import messaging from '@react-native-firebase/messaging'
+import { HandleNotificationCallback } from 'contexts/DeeplinkContext/types'
 import { fromUnixTime, isPast } from 'date-fns'
 import { Linking, Platform } from 'react-native'
+import AnalyticsService from 'services/analytics/AnalyticsService'
 import {
   ChannelId,
   NewsChannelId,
   notificationChannels
 } from 'services/notifications/channels'
-import { StakeCompleteNotification } from 'store/notifications'
-import Logger from 'utils/Logger'
-import { HandleNotificationCallback } from 'contexts/DeeplinkContext/types'
 import { DisplayNotificationParams } from 'services/notifications/types'
+import { StakeCompleteNotification } from 'store/notifications'
 import { audioFiles } from 'utils/AudioFeedback'
-import messaging from '@react-native-firebase/messaging'
+import Logger from 'utils/Logger'
 import {
   LAUNCH_ACTIVITY,
   PressActionId,
@@ -252,6 +253,14 @@ class NotificationsService {
     if (detail?.notification?.id) {
       await this.cancelTriggerNotification(detail.notification.id)
     }
+
+    if (detail?.notification?.data) {
+      AnalyticsService.capture('PushNotificationPressed', {
+        channelId: detail.notification?.data?.channelId as string,
+        deeplinkUrl: detail.notification?.data?.url as string
+      })
+    }
+
     callback(detail?.notification?.data)
   }
 
@@ -311,7 +320,7 @@ class NotificationsService {
   }
 
   /**
-   * @param channelId For Android only
+   * @param channelId
    * @param title
    * @param body
    * @param sound For iOS only
