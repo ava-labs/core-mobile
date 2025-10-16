@@ -2,7 +2,8 @@ import { AVM, EVM, PVM, VM } from '@avalabs/avalanchejs'
 import { Account, AccountCollection } from 'store/account/types'
 import { Network, NetworkVMType } from '@avalabs/core-chains-sdk'
 import WalletFactory from 'services/wallet/WalletFactory'
-import { NetworkAddresses, WalletType } from 'services/wallet/types'
+import { WalletType } from 'services/wallet/types'
+import { uniqWith } from 'lodash'
 import SeedlessWallet from 'seedless/services/wallet/SeedlessWallet'
 import { transactionSnackbar } from 'common/utils/toast'
 import Logger from 'utils/Logger'
@@ -203,20 +204,33 @@ const markWalletAsMigrated = (walletId: string): void => {
     walletId
   )
 }
-export async function getAddressesForXP(
-  isDeveloperMode: boolean,
+export async function getAddressesForXP({
+  networkType,
+  isDeveloperMode,
+  walletId,
+}: {
+  networkType: NetworkVMType.AVM | NetworkVMType.PVM
+  isDeveloperMode: boolean
   walletId: string | null
-): Promise<NetworkAddresses> {
+): Promise<string[]> {
   if (!walletId) {
     throw new Error('Wallet ID is required')
   }
   try {
-    return WalletService.getActiveAddresses({
+    const activeAddresses = await WalletService.getActiveAddresses({
       walletId: walletId,
       walletType: WalletType.MNEMONIC,
-      networkType: NetworkVMType.PVM,
+      networkType,
       isTestnet: isDeveloperMode
     })
+    
+    const externalAddresses = activeAddresses.externalAddresses.map(
+      address => address.address
+    )
+    const internalAddresses = activeAddresses.internalAddresses.map(
+      address => address.address
+    )
+    return uniqWith([...externalAddresses, ...internalAddresses], (a, b) => a === b)
   } catch (error) {
     Logger.error('Failed to get addresses for XP', error)
     throw new Error('Failed to get addresses for XP')

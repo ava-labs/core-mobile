@@ -11,8 +11,7 @@ import ModuleManager from 'vmModule/ModuleManager'
 import { mapToVmNetwork } from 'vmModule/utils/mapToVmNetwork'
 import { coingeckoInMemoryCache } from 'utils/coingeckoInMemoryCache'
 import { NetworkVMType } from '@avalabs/core-chains-sdk'
-import { chunk, uniqWith } from 'lodash'
-import { NetworkAddresses } from 'services/wallet/types'
+import { chunk } from 'lodash'
 
 export type BalancesForAccount = {
   accountId: string
@@ -81,19 +80,8 @@ export class BalanceService {
   }: {
     currency: string
     network: Network
-    activeAddresses: NetworkAddresses
+    activeAddresses: string[]
   }): Promise<BalancesForAccount> {
-    const externalAddresses = activeAddresses.externalAddresses.map(
-      address => address.address
-    )
-    const internalAddresses = activeAddresses.internalAddresses.map(
-      address => address.address
-    )
-    const addresses = uniqWith(
-      [...externalAddresses, ...internalAddresses],
-      (a, b) => a === b
-    )
-
     const allBalances: BalancesForAccount = {
       accountId: '',
       accountAddress: '',
@@ -104,7 +92,7 @@ export class BalanceService {
 
     // avalancheModule.getBalances can only process up to 64 addresses at a time, so we need to split the addresses into chunks
     const chunkSize = 64
-    const chunks = chunk(addresses, chunkSize)
+    const chunks = chunk(activeAddresses, chunkSize)
 
     await Promise.all(
       chunks.map(async c => {

@@ -45,6 +45,7 @@ import { selectIsSolanaSupportBlocked } from 'store/posthog'
 import { runAfterInteractions } from 'utils/runAfterInteractions'
 import { getAddressesForXP } from 'store/account/utils'
 import { selectActiveWalletId } from 'store/wallet/slice'
+import { NetworkVMType } from '@avalabs/vm-module-types'
 import {
   Balances,
   LocalTokenWithBalance,
@@ -238,9 +239,12 @@ const onXpBalanceUpdateCore = async ({
         promise: Promise<BalancesForAccount>
       }[] = []
 
-      const activeAddresses = await getAddressesForXP(isDeveloperMode, walletId)
-
       for (const n of networks) {
+        const activeAddresses = await getAddressesForXP({
+          networkType: n.vmName as NetworkVMType.AVM | NetworkVMType.PVM,
+          isDeveloperMode,
+          walletId
+        })
         networkPromises.push({
           key: getKey(n.chainId, n.vmName),
           promise: BalanceService.getBalancesForAccountsXP({
