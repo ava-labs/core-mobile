@@ -230,7 +230,7 @@ export const PinScreen = ({
        * which was called by KeychainMigrator during app updates/migrations.
        * The bug set SECURE_ACCESS_SET to 'BIO' before checking if biometric storage succeeded,
        * leaving users in an inconsistent state when biometrics weren't available.
-       * We automatically cor rect this by setting SECURE_ACCESS_SET back to 'PIN'
+       * We automatically correct this by setting SECURE_ACCESS_SET back to 'PIN'
        */
       const isBrokenBioState =
         accessType === 'BIO' && (!useBiometrics || !isBiometricAvailable)
