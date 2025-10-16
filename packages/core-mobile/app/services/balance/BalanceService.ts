@@ -12,7 +12,7 @@ import { mapToVmNetwork } from 'vmModule/utils/mapToVmNetwork'
 import { coingeckoInMemoryCache } from 'utils/coingeckoInMemoryCache'
 import { NetworkVMType } from '@avalabs/core-chains-sdk'
 import { chunk, uniqWith } from 'lodash'
-import { NetworkAddresses } from 'services/wallet/types';
+import { NetworkAddresses } from 'services/wallet/types'
 
 export type BalancesForAccount = {
   accountId: string
