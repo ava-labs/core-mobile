@@ -175,18 +175,16 @@ class Settings {
 
   async editContactAddress(
     networkAndAddress: Record<string, string>,
-    contactName: string | undefined = undefined
+    contactName: string
   ) {
     // add contact name
-    if (contactName) {
-      await this.addContactOrNetworkName(contactName)
-    }
+    await this.addContactOrNetworkName(contactName)
     // add contact addresses
     for (const [network, address] of Object.entries(networkAndAddress)) {
       await actions.click(selectors.getById(`contact_delete_btn__${network}`))
       await common.tapDeleteAlert()
       await actions.waitFor(selectors.getByText(`Add ${network} address`))
-      await this.setAddress(network, address)
+      await this.setAddress(network, address, contactName)
     }
     // exit the edit contact form
     await common.goBack()
@@ -196,14 +194,14 @@ class Settings {
     await actions.tap(selectors.getBySomeText(contactName))
   }
 
-  async setAddress(network: string, address: string) {
+  async setAddress(network: string, address: string, contactName: string) {
     await actions.click(selectors.getByText(`Add ${network} address`))
     await actions.click(this.typeInOrPasteAddress)
     await actions.type(
       selectors.getById(`advanced_input__${network.toLowerCase()}`),
       address
     )
-    await actions.tapEnterOnKeyboard()
+    await actions.tap(selectors.getByText(contactName))
   }
 
   async verifyContact(address: string, contactName: string) {
@@ -220,7 +218,7 @@ class Settings {
     await this.addContactOrNetworkName(contactName)
     // add contact addresses
     for (const [network, address] of Object.entries(networkAndAddress)) {
-      await this.setAddress(network, address)
+      await this.setAddress(network, address, contactName)
     }
     // save contact
     await common.tapSave()
