@@ -17,7 +17,7 @@ import { StorageKey } from 'resources/Constants'
 import { appendToStoredArray, loadArrayFromStorage } from 'utils/mmkv/storages'
 import { setIsMigratingActiveAccounts } from 'store/wallet/slice'
 import WalletService from 'services/wallet/WalletService'
-import { setNonActiveAccounts } from './slice'
+import { setAccounts } from './slice'
 
 export function getAddressByVM(
   vm: VM,
@@ -122,7 +122,7 @@ export const migrateRemainingActiveAccounts = async ({
 
     const accountIds = Object.keys(accounts)
     if (accountIds.length > 0) {
-      listenerApi.dispatch(setNonActiveAccounts(accounts))
+      listenerApi.dispatch(setAccounts(accounts))
 
       recentAccountsStore.getState().addRecentAccounts(accountIds)
 
