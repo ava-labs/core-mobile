@@ -96,5 +96,18 @@
 	<string>We use Bluetooth to connect to ledger devices</string>
 	<key>NSBluetoothPeripheralUsageDescription</key>
 	<string>We use Bluetooth to connect to ledger devices</string>
+	<key>branch_key</key>
+	<dict>
+		<key>test</key>
+		<string>$(BRANCH_KEY)</string>
+		<key>live</key>
+		<string>$(BRANCH_KEY)</string>
+	</dict>
+	<key>branch_universal_link_domains</key>
+	<array>
+		<string>nlfvn.test-app.link</string>
+		<string>nlfvn-alternate.test-app.link</string>
+		<string>nlfvn.app.link</string>
+	</array>
 </dict>
 </plist>
