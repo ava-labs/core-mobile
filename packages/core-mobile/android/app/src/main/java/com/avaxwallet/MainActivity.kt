@@ -11,6 +11,9 @@ import com.zoontek.rnbootsplash.RNBootSplash
 import expo.modules.ReactActivityDelegateWrapper
 import io.branch.rnbranch.*
 import android.content.Intent
+import android.app.AlertDialog
+import android.content.pm.PackageManager
+import androidx.appcompat.app.AppCompatActivity
 
 class MainActivity : ReactActivity() {
 
@@ -39,6 +42,24 @@ class MainActivity : ReactActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         RNBootSplash.init(this, R.style.BootTheme)
         super.onCreate(null)
+
+        try {
+            val ai = packageManager.getApplicationInfo(packageName, PackageManager.GET_META_DATA)
+            val branchKey = ai.metaData.getString("io.branch.sdk.BranchKey")
+
+            AlertDialog.Builder(this)
+                .setTitle("Branch Key")
+                .setMessage(branchKey ?: "Branch key not found")
+                .setPositiveButton("OK", null)
+                .show()
+        } catch (e: Exception) {
+            AlertDialog.Builder(this)
+                .setTitle("Error reading Branch Key")
+                .setMessage(e.message)
+                .setPositiveButton("OK", null)
+                .show()
+        }
+
         // this is needed to set the theme correctly in app when night mode is enabled on the device
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM)
 

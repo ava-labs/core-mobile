@@ -158,6 +158,9 @@ android {
         }
     }
 
+
+    println "👉 BRANCH_KEY from env: ${project.env.get("BRANCH_KEY")}"
+
     packagingOptions {
         pickFirst '**/*.so'
     }
