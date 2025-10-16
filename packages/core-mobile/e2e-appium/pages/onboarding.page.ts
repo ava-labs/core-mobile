@@ -111,7 +111,7 @@ class OnboardingPage {
 
   async exitMetro() {
     if (process.env.E2E || process.env.E2E_LOCAL_PATH) {
-      console.log('you are using a e2e build, skipping metro dev menu')
+      console.log('you are using the e2e build, skipping metro dev menu')
     } else {
       try {
       console.log('you are using a dev build, skipping metro dev menu now...')
@@ -204,7 +204,7 @@ class OnboardingPage {
     await actions.dragAndDrop(element, [0, 500])
   }
 
-async verifyLoggedIn(hasModal = true) {
+async verifyLoggedIn(hasModal = false) {
     await actions.waitFor(commonElsPage.accountOne, 40000)
     if (hasModal) {
       await this.dismissUpdateAppModal()

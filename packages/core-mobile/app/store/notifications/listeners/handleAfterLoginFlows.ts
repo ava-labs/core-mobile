@@ -16,8 +16,8 @@ import {
 } from 'store/viewOnce'
 import { showAlert } from '@avalabs/k2-alpine'
 import { waitForInteractions } from 'common/utils/waitForInteractions'
-import { turnOnAllNotifications } from '../slice'
 import Config from 'react-native-config'
+import { turnOnAllNotifications } from '../slice'
 
 export const handleAfterLoginFlows = async (
   _: AnyAction,

@@ -367,7 +367,7 @@ class CommonElsPage {
 
   async dismissBottomSheet(element = this.grabber) {
     await actions.waitFor(element, 20000)
-    await actions.dragAndDrop(this.grabber, [0, 100])
+    await actions.dragAndDrop(this.grabber, [0, 1500])
   }
 
   async selectDropdown(name: string, dropdownItem: string) {
@@ -393,7 +393,11 @@ class CommonElsPage {
 
   async tapSaveAlert() {
     if (driver.isIOS) {
-      await actions.click(selectors.getById(commonEls.save))
+      try {
+        await actions.click(selectors.getById(commonEls.save))
+      } catch (e) {
+        console.log('Appium handled the auto accept alerts')
+      }
     } else {
       await actions.click(selectors.getBySmartText(commonEls.save))
     }
@@ -401,7 +405,11 @@ class CommonElsPage {
 
   async tapDeleteAlert() {
     if (driver.isIOS) {
-      await actions.click(selectors.getById(commonEls.delete))
+      try {
+        await actions.click(selectors.getById(commonEls.delete))
+      } catch (e) {
+        console.log('Appium handled the auto accept alerts')
+      }
     } else {
       await actions.click(selectors.getBySmartText(commonEls.delete))
     }

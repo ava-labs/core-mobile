@@ -198,9 +198,9 @@ async function scrollTo(
 
 async function log() {
   const src = await driver.getPageSource()
-  console.log('📄📄📄')
+  console.log('Printing page source...')
   console.log(src)
-  console.log('📄📄📄')
+  console.log('...done')
 }
 
 export const actions = {
