@@ -42,7 +42,6 @@ class AppDelegate: ExpoAppDelegate {
 
     loadRocketSimConnect()
     
-    #if DEBUG
     if let branchDict = Bundle.main.object(forInfoDictionaryKey: "branch_key") as? [String: Any] {
         let testKey = branchDict["test"] as? String ?? "missing"
         let liveKey = branchDict["live"] as? String ?? "missing"
@@ -78,7 +77,6 @@ class AppDelegate: ExpoAppDelegate {
     } else {
         print("⚠️ Could not find branch_key in Info.plist")
     }
-    #endif
     
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
   }
