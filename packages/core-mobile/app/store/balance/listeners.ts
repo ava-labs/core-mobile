@@ -1,11 +1,13 @@
 import { Network } from '@avalabs/core-chains-sdk'
 import { Action, ForkedTask, isAnyOf, TaskAbortError } from '@reduxjs/toolkit'
 import BalanceService, {
-  BalancesForAccount
+  BalancesForAccount,
+  BalancesForXpAddress
 } from 'services/balance/BalanceService'
 import { AppListenerEffectAPI, AppStartListening } from 'store/types'
 import { Account } from 'store/account/types'
 import {
+  selectAccounts,
   selectActiveAccount,
   setAccounts,
   setActiveAccountId
@@ -35,7 +37,12 @@ import {
   selectIsDeveloperMode,
   toggleDeveloperMode
 } from 'store/settings/advanced/slice'
-import { isPChain, isXChain } from 'utils/network/isAvalancheNetwork'
+import {
+  isAvmNetwork,
+  isPChain,
+  isPvmNetwork,
+  isXChain
+} from 'utils/network/isAvalancheNetwork'
 import ActivityService from 'services/activity/ActivityService'
 import { uuid } from 'utils/uuid'
 import SentryWrapper from 'services/sentry/SentryWrapper'
@@ -44,8 +51,9 @@ import { queryClient } from 'contexts/ReactQueryProvider'
 import { selectIsSolanaSupportBlocked } from 'store/posthog'
 import { runAfterInteractions } from 'utils/runAfterInteractions'
 import { getAddressesForXP } from 'store/account/utils'
-import { selectActiveWalletId } from 'store/wallet/slice'
+import { selectActiveWallet, selectActiveWalletId } from 'store/wallet/slice'
 import { NetworkVMType } from '@avalabs/vm-module-types'
+import { WalletType } from 'services/wallet/types'
 import {
   Balances,
   LocalTokenWithBalance,
@@ -54,7 +62,6 @@ import {
 } from './types'
 import {
   fetchBalanceForAccount,
-  getKey,
   refetchBalance,
   selectAllBalanceStatus,
   selectXpBalanceStatus,
@@ -83,17 +90,18 @@ const onBalanceUpdate = async (
     address: account?.addressC ?? ''
   })
 
-  await onBalanceUpdateCore({
-    queryStatus,
-    listenerApi,
-    networks,
-    account
-  }).catch(Logger.error)
-
-  await onXpBalanceUpdateCore({
-    queryStatus,
-    listenerApi
-  }).catch(Logger.error)
+  await Promise.all([
+    onBalanceUpdateCore({
+      queryStatus,
+      listenerApi,
+      networks,
+      account
+    }),
+    onXpBalanceUpdateCore({
+      queryStatus,
+      listenerApi
+    })
+  ])
 }
 
 const onBalancePolling = async ({
@@ -176,7 +184,7 @@ const onBalanceUpdateCore = async ({
         const customTokensByChainIdAndNetwork =
           customTokens[n.chainId.toString()] ?? []
         networkPromises.push({
-          key: getKey(n.chainId, account.id),
+          key: n.chainId.toString(),
           promise: BalanceService.getBalancesForAccount({
             network: n,
             account,
@@ -209,9 +217,11 @@ const onXpBalanceUpdateCore = async ({
   const enabledNetworks = selectEnabledNetworks(state)
   const isDeveloperMode = selectIsDeveloperMode(state)
   const walletId = selectActiveWalletId(state)
+  const wallet = selectActiveWallet(state)
+  const accounts = selectAccounts(state)
 
   const networks = enabledNetworks.filter(
-    n => isPChain(n.chainId) || isXChain(n.chainId)
+    n => isPvmNetwork(n) || isAvmNetwork(n)
   )
 
   if (
@@ -233,31 +243,40 @@ const onXpBalanceUpdateCore = async ({
     async span => {
       Logger.info('fetching xp balances')
 
-      // fetch all network balances
-      const networkPromises: {
-        key: string
-        promise: Promise<BalancesForAccount>
+      const xpPromises: {
+        addresses: string[]
+        promise: Promise<BalancesForXpAddress[]>
       }[] = []
-
       for (const n of networks) {
-        const activeAddresses = await getAddressesForXP({
-          networkType: n.vmName as NetworkVMType.AVM | NetworkVMType.PVM,
-          isDeveloperMode,
-          walletId
-        })
-        networkPromises.push({
-          key: getKey(n.chainId, n.vmName),
-          promise: BalanceService.getBalancesForAccountsXP({
+        let addresses: string[] = []
+        if (wallet?.type === WalletType.SEEDLESS) {
+          addresses = Object.values(accounts).map(a =>
+            n.vmName === NetworkVMType.PVM ? a.addressPVM : a.addressAVM
+          )
+        } else {
+          addresses = await getAddressesForXP({
+            networkType: n.vmName,
+            isDeveloperMode,
+            walletId,
+            walletType: wallet?.type,
+            onlyWithActivity: true
+          })
+        }
+        xpPromises.push({
+          addresses,
+          promise: BalanceService.getXPBalances({
             network: n,
             currency,
-            activeAddresses
+            addresses
           })
         })
       }
-      const networkBalances = await fetchBalanceForNetworks(networkPromises)
 
-      dispatch(setBalances(networkBalances))
+      const xpBalances = await fetchBalanceForXpNetworks(xpPromises)
+
+      dispatch(setBalances(xpBalances))
       dispatch(setStatus({ queryType: QueryType.XP, status: QueryStatus.IDLE }))
+
       Logger.info('finished fetching xp balances')
       span?.end()
     }
@@ -270,14 +289,10 @@ const fetchBalancePeriodically = async (
 ): Promise<void> => {
   const { condition, getState } = listenerApi
   const state = getState()
-  const isDeveloperMode = selectIsDeveloperMode(state)
   const selectedEnabledNetworks = selectEnabledNetworks(state)
   const isSolanaSupportBlocked = selectIsSolanaSupportBlocked(state)
-  let enabledNetworks: Network[]
 
-  if (selectedEnabledNetworks.length > 0) {
-    enabledNetworks = selectedEnabledNetworks
-  } else {
+  if (selectedEnabledNetworks.length === 0) {
     // when the app is first launched, there are no networks cached yet,
     // so we need to wait for the networks to be fetched
     // before we can start polling
@@ -288,19 +303,12 @@ const fetchBalancePeriodically = async (
           includeSolana: !isSolanaSupportBlocked
         })
     })
-    enabledNetworks = selectEnabledNetworks(state)
   }
 
-  const pollingConfig = getPollingConfig({ isDeveloperMode, enabledNetworks })
-
-  const pollingAllNetworksTask = await handleAllNetworksPolling({
-    listenerApi,
-    pollingConfig
-  })
-
-  const pollingXpNetworksTask = await handleXpNetworksPolling({
-    listenerApi
-  })
+  const [pollingAllNetworksTask, pollingXpNetworksTask] = await Promise.all([
+    handleAllNetworksPolling({ listenerApi }),
+    handleXpNetworksPolling({ listenerApi })
+  ])
 
   await condition(isAnyOf(onAppLocked, onLogOut))
   pollingAllNetworksTask.cancel()
@@ -313,7 +321,8 @@ const handleXpNetworksPolling = async ({
   listenerApi: AppListenerEffectAPI
 }): Promise<ForkedTask<void>> => {
   const taskId = uuid().slice(0, 8)
-  Logger.info(`started task ${taskId}`, 'fetch balance periodically')
+  Logger.info(`started task ${taskId}`, 'fetch xp balances periodically')
+
   return listenerApi.fork(async forkApi => {
     try {
       // eslint-disable-next-line no-constant-condition
@@ -340,24 +349,25 @@ const handleXpNetworksPolling = async ({
 }
 
 const handleAllNetworksPolling = async ({
-  listenerApi,
-  pollingConfig
+  listenerApi
 }: {
   listenerApi: AppListenerEffectAPI
-  pollingConfig: {
-    allNetworks: number
-    primaryNetworks: number
-  }
 }): Promise<ForkedTask<void>> => {
+  const state = listenerApi.getState()
+  const isDeveloperMode = selectIsDeveloperMode(state)
+  const enabledNetworks = selectEnabledNetworks(state)
+
   let iteration = 0
   let nonPrimaryNetworksIteration = 0
+
+  const pollingConfig = getPollingConfig({ isDeveloperMode, enabledNetworks })
 
   const allNetworksOperand =
     pollingConfig.allNetworks / pollingConfig.primaryNetworks
 
   return listenerApi.fork(async forkApi => {
     const taskId = uuid().slice(0, 8)
-    Logger.info(`started task ${taskId}`, 'fetch balance periodically')
+    Logger.info(`started task ${taskId}`, 'fetch balances periodically')
 
     try {
       // eslint-disable-next-line no-constant-condition
@@ -506,6 +516,55 @@ const fetchBalanceForNetworks = async (
 
     return acc
   }, {})
+}
+
+const fetchBalanceForXpNetworks = async (
+  promises: {
+    addresses: string[]
+    promise: Promise<BalancesForXpAddress[]>
+  }[]
+): Promise<Balances> => {
+  const allSettledResults = await Promise.allSettled(
+    promises.map(p => p.promise)
+  )
+
+  const allBalances: Balances = {}
+  allSettledResults.forEach((result, index) => {
+    const addresses = promises[index]?.addresses ?? []
+
+    // if the promise is rejected, set the balances for the active addresses
+    if (result.status === 'rejected') {
+      Logger.warn('failed to get balance', result.reason)
+      addresses.forEach(address => {
+        allBalances[address] = {
+          dataAccurate: false,
+          accountId: undefined,
+          chainId: 0,
+          tokens: [],
+          error: result.reason
+        }
+      })
+      return
+    }
+
+    // add the balances for the active addresses to allBalances
+    result.value.forEach(balance => {
+      allBalances[balance.accountAddress] = {
+        accountId: undefined,
+        dataAccurate: true,
+        chainId: balance.chainId,
+        tokens: balance.tokens.map(token => ({
+          ...token,
+          localId: isPChain(balance.chainId) ? AVAX_P_ID : AVAX_X_ID,
+          isDataAccurate: 'error' in token ? false : true,
+          networkChainId: balance.chainId,
+          error: 'error' in token ? token.error : null
+        })) as LocalTokenWithBalance[],
+        error: balance.error
+      }
+    })
+  })
+  return allBalances
 }
 
 const addXChainToEnabledChainIdsIfNeeded = async (

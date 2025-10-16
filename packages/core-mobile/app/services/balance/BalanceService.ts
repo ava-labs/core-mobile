@@ -21,6 +21,8 @@ export type BalancesForAccount = {
   error: Error | null
 }
 
+export type BalancesForXpAddress = Omit<BalancesForAccount, 'accountId'>
+
 export class BalanceService {
   async getBalancesForAccount({
     network,
@@ -73,26 +75,20 @@ export class BalanceService {
   /**
    * Get balances for active addresses on XP chain
    */
-  async getBalancesForAccountsXP({
+  async getXPBalances({
     currency,
     network,
-    activeAddresses
+    addresses
   }: {
     currency: string
-    network: Network
-    activeAddresses: string[]
-  }): Promise<BalancesForAccount> {
-    const allBalances: BalancesForAccount = {
-      accountId: '',
-      accountAddress: '',
-      chainId: network.chainId,
-      tokens: [],
-      error: null
-    }
+    network: Network & { vmName: NetworkVMType.AVM | NetworkVMType.PVM }
+    addresses: string[]
+  }): Promise<BalancesForXpAddress[]> {
+    const allBalances: BalancesForXpAddress[] = []
 
     // avalancheModule.getBalances can only process up to 64 addresses at a time, so we need to split the addresses into chunks
     const chunkSize = 64
-    const chunks = chunk(activeAddresses, chunkSize)
+    const chunks = chunk(addresses, chunkSize)
 
     await Promise.all(
       chunks.map(async c => {
@@ -108,9 +104,19 @@ export class BalanceService {
         for (const address in balancesResponse) {
           const balances = balancesResponse[address] ?? {}
           if ('error' in balances) {
-            allBalances.error = balances.error as Error
+            allBalances.push({
+              accountAddress: address,
+              chainId: network.chainId,
+              tokens: [],
+              error: balances.error as Error
+            })
           } else {
-            allBalances.tokens.push(...Object.values(balances))
+            allBalances.push({
+              accountAddress: address,
+              chainId: network.chainId,
+              tokens: Object.values(balances),
+              error: null
+            })
           }
         }
       })

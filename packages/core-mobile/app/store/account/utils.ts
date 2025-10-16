@@ -205,23 +205,31 @@ const markWalletAsMigrated = (walletId: string): void => {
   )
 }
 export async function getAddressesForXP({
-  networkType,
   isDeveloperMode,
-  walletId
+  walletId,
+  walletType,
+  networkType,
+  onlyWithActivity
 }: {
-  networkType: NetworkVMType.AVM | NetworkVMType.PVM
   isDeveloperMode: boolean
   walletId: string | null
+  walletType: WalletType | undefined
+  networkType: NetworkVMType.AVM | NetworkVMType.PVM
+  onlyWithActivity: boolean
 }): Promise<string[]> {
   if (!walletId) {
     throw new Error('Wallet ID is required')
   }
+  if (!walletType) {
+    throw new Error('Wallet type is unknown')
+  }
   try {
-    const activeAddresses = await WalletService.getActiveAddresses({
-      walletId: walletId,
-      walletType: WalletType.MNEMONIC,
+    const activeAddresses = await WalletService.getAddressesFromXpubXP({
+      walletId,
+      walletType,
       networkType,
-      isTestnet: isDeveloperMode
+      isTestnet: isDeveloperMode,
+      onlyWithActivity
     })
 
     const externalAddresses = activeAddresses.externalAddresses.map(
