@@ -210,12 +210,14 @@ export const PinScreen = ({
   }, [])
 
   const handleLoginOptions = useCallback(() => {
-    const accessType = BiometricsSDK.getAccessType()
-    if (accessType === 'BIO') {
-      handlePromptBioLogin()
-    } else {
-      focusPinInput()
-    }
+    InteractionManager.runAfterInteractions(() => {
+      const accessType = BiometricsSDK.getAccessType()
+      if (accessType === 'BIO') {
+        handlePromptBioLogin()
+      } else {
+        focusPinInput()
+      }
+    })
   }, [handlePromptBioLogin, focusPinInput])
 
   const handleBrokenBioState = useCallback(() => {
@@ -228,7 +230,7 @@ export const PinScreen = ({
        * which was called by KeychainMigrator during app updates/migrations.
        * The bug set SECURE_ACCESS_SET to 'BIO' before checking if biometric storage succeeded,
        * leaving users in an inconsistent state when biometrics weren't available.
-       * We automatically correct this by setting SECURE_ACCESS_SET back to 'PIN'
+       * We automatically cor rect this by setting SECURE_ACCESS_SET back to 'PIN'
        */
       const isBrokenBioState =
         accessType === 'BIO' && (!useBiometrics || !isBiometricAvailable)
@@ -236,10 +238,9 @@ export const PinScreen = ({
       if (isBrokenBioState) {
         commonStorage.set(StorageKey.SECURE_ACCESS_SET, 'PIN')
         accessType = BiometricsSDK.getAccessType()
-        focusPinInput()
       }
     })
-  }, [useBiometrics, isBiometricAvailable, focusPinInput])
+  }, [useBiometrics, isBiometricAvailable])
 
   useFocusEffect(
     useCallback(() => {
