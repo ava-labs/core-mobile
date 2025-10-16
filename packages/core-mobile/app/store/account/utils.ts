@@ -207,12 +207,12 @@ const markWalletAsMigrated = (walletId: string): void => {
 export async function getAddressesForXP({
   networkType,
   isDeveloperMode,
-  walletId,
+  walletId
 }: {
   networkType: NetworkVMType.AVM | NetworkVMType.PVM
   isDeveloperMode: boolean
   walletId: string | null
-): Promise<string[]> {
+}): Promise<string[]> {
   if (!walletId) {
     throw new Error('Wallet ID is required')
   }
@@ -223,14 +223,17 @@ export async function getAddressesForXP({
       networkType,
       isTestnet: isDeveloperMode
     })
-    
+
     const externalAddresses = activeAddresses.externalAddresses.map(
       address => address.address
     )
     const internalAddresses = activeAddresses.internalAddresses.map(
       address => address.address
     )
-    return uniqWith([...externalAddresses, ...internalAddresses], (a, b) => a === b)
+    return uniqWith(
+      [...externalAddresses, ...internalAddresses],
+      (a, b) => a === b
+    )
   } catch (error) {
     Logger.error('Failed to get addresses for XP', error)
     throw new Error('Failed to get addresses for XP')
