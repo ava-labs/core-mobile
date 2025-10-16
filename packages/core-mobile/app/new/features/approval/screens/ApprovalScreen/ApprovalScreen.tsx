@@ -344,6 +344,7 @@ const ApprovalScreen = ({
     return (
       <SpendLimits
         spendLimits={spendLimits}
+        hasBalanceChange={hasBalanceChange}
         onSelect={canEdit ? updateSpendLimit : undefined}
       />
     )
