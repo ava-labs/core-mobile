@@ -36,6 +36,15 @@ function getById(id: string) {
   )
 }
 
+function getBySmartText(textOrId: string) {
+  return withPlatform(
+    // iOS
+    `//*[@name='${textOrId}' or @label='${textOrId}' or @accessibilityIdentifier='${textOrId}' or @name='${textOrId.toUpperCase()}']`,
+    // Android
+    `//*[@resource-id='${textOrId}' or @content-desc='${textOrId}' or @text='${textOrId}' or @text='${textOrId.toUpperCase()}']`
+  )
+}
+
 function getByXpath(xpath: string) {
   return $(xpath)
 }
@@ -53,5 +62,6 @@ export const selectors = {
   getByIdWithIndex,
   getByTextWithIndex,
   getBySomeText,
-  getByXpath
+  getByXpath,
+  getBySmartText
 }

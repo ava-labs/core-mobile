@@ -12,19 +12,20 @@ const sectionCache: Record<string, number> = {}
 const isBitrise = process.env.CI === 'true'
 const goHeadless = isBitrise ? true : false
 const goRetry = isBitrise ? 1 : 0
+const iosLocalPath = process.env.E2E_LOCAL_PATH
+  ? '/Users/eunji.song/Downloads/AvaxWalletInternal.app'
+  : './ios/DerivedData/Build/Products/Debug-iphonesimulator/AvaxWallet.app'
+const androidLocalPath = process.env.E2E_LOCAL_PATH
+  ? '/Users/eunji.song/Downloads/app-internal-e2e-bitrise-signed.apk'
+  : './android/app/build/outputs/apk/internal/debug/app-internal-debug.apk'
 const iosPath = isBitrise
   ? process.env.BITRISE_APP_DIR_PATH
-  : path.resolve(
-      './ios/DerivedData/Build/Products/Debug-iphonesimulator/AvaxWallet.app'
-      // '/Users/eunji.song/Downloads/AvaxWalletInternal.app'
-    )
+  : path.resolve(iosLocalPath)
 const androidPath = isBitrise
   ? process.env.BITRISE_APK_PATH
-  : path.resolve(
-      // './android/app/build/outputs/apk/internal/debug/app-internal-debug.apk'
-      '/Users/eunji.song/Downloads/app-internal-e2e-bitrise-signed.apk'
-    )
+  : path.resolve(androidLocalPath)
 const platformToRun = process.env.PLATFORM
+
 const allCaps = [
   {
     platformName: 'Android',
@@ -79,7 +80,7 @@ export const config: WebdriverIO.Config = {
     // 'path/to/excluded/files'
     './specs/login.e2e.ts'
   ],
-  maxInstances: 1,
+  maxInstances: 2,
   port: 4723,
   services: [['appium', { command: 'appium' }]],
   logLevel: 'error',

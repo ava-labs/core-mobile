@@ -121,7 +121,7 @@ async function click(ele: ChainablePromiseElement) {
   await ele.waitForEnabled()
   await ele.click()
   const selector = await ele.selector
-  console.log(`Clicked on selector: ${selector}`)
+  console.log(`Clicked ${selector}`)
 }
 
 async function dismissKeyboard(id = 'Return') {

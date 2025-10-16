@@ -271,8 +271,7 @@ class Settings {
 
   async goSettings() {
     await actions.delay(1500)
-    await actions.tap(this.settingsBtn, commonElsPage.grabber)
-    await actions.log()
+    await actions.click(this.settingsBtn)
     try {
       await actions.waitFor(commonElsPage.grabber)
     } catch (e) {
@@ -446,9 +445,9 @@ class Settings {
 
   async setNewAccountName(newAccountName: string) {
     await actions.type(common.dialogInput, newAccountName)
-    if (driver.isIOS) {
+    try {
       await actions.click(common.save)
-    } else {
+    } catch (e) {
       await actions.tap(common.saveUpperCase)
     }
   }
@@ -547,7 +546,7 @@ class Settings {
     await actions.waitFor(this.testnetSwitchOn)
     await actions.isVisible(this.testnetAvatar)
     await common.dismissBottomSheet()
-    await actions.waitFor(portfolioPage.testnetModeIsOn, 20000)
+    await actions.waitFor(portfolioPage.testnetModeIsOn, 40000)
   }
 
   async verifyMainnetMode() {

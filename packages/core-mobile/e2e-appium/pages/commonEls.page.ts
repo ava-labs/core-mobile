@@ -392,24 +392,18 @@ class CommonElsPage {
   }
 
   async tapSaveAlert() {
-    const saveBtn = driver.isIOS
-      ? selectors.getById(commonEls.save)
-      : this.saveUpperCase
-    try {
-      await actions.click(saveBtn)
-    } catch (e) {
-      await actions.tap(saveBtn)
+    if (driver.isIOS) {
+      await actions.click(selectors.getById(commonEls.save))
+    } else {
+      await actions.click(selectors.getBySmartText(commonEls.save))
     }
   }
 
   async tapDeleteAlert() {
-    const deleteBtn = driver.isIOS
-      ? selectors.getById(commonEls.delete)
-      : this.deleteUpperCase
-    try {
-      await actions.click(deleteBtn)
-    } catch (e) {
-      console.log('Delete button not found')
+    if (driver.isIOS) {
+      await actions.click(selectors.getById(commonEls.delete))
+    } else {
+      await actions.click(selectors.getBySmartText(commonEls.delete))
     }
   }
 

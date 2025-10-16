@@ -110,7 +110,9 @@ class OnboardingPage {
   }
 
   async exitMetro() {
-    if (process.env.E2E !== 'true') {
+    if (process.env.E2E || process.env.E2E_LOCAL_PATH) {
+      console.log('you are using a e2e build, skipping metro dev menu')
+    } else {
       try {
       console.log('you are using a dev build, skipping metro dev menu now...')
       const preceedingHost = driver.isIOS ? 'localhost' : '10.0.2.2'
