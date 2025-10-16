@@ -416,6 +416,7 @@ class CommonElsPage {
   }
 
   async verifyAccountName(expectedName: string, whichScreen = 'settings') {
+    await actions.waitFor(selectors.getByText(expectedName), 30000)
     const UIaccountName = await this.getBalanceHeaderAccountName(whichScreen)
     assert(
       expectedName === UIaccountName,
