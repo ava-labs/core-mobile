@@ -376,7 +376,6 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 13B07F931A680F5B00A75B9A /* Build configuration list for PBXNativeTarget "AvaxWallet" */;
 			buildPhases = (
-				81548E852EA1712F00600BA3 /* Setup React Native Config */,
 				5602960B24A2A6CEAB36203E /* [CP] Check Pods Manifest.lock */,
 				FD10A7F022414F080027D42C /* Start Packager */,
 				EFFA1F3CA157F5BDAB10C843 /* [Expo] Configure project */,
@@ -439,7 +438,6 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 8E858A6328AFD47300236EF2 /* Build configuration list for PBXNativeTarget "AvaxWalletInternal" */;
 			buildPhases = (
-				81548E862EA171F400600BA3 /* Setup React Native Config */,
 				9D68254D3FEDA4B13C42E695 /* [CP] Check Pods Manifest.lock */,
 				8E858A5428AFD47300236EF2 /* Start Packager */,
 				7C608EFDA163D625CE80CBE7 /* [Expo] Configure project */,
@@ -702,42 +700,6 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "# This script configures Expo modules and generates the modules provider file.\nbash -l -c \"./Pods/Target\\ Support\\ Files/Pods-common-AvaxWalletInternal/expo-configure-project.sh\"\n";
-		};
-		81548E852EA1712F00600BA3 /* Setup React Native Config */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-			);
-			name = "Setup React Native Config";
-			outputFileListPaths = (
-			);
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "echo \":wrench: Generating config.xcconfig from .env\"\n\n\"${SRCROOT}/../node_modules/react-native-config/ios/ReactNativeConfig/BuildXCConfig.rb\" \"${SRCROOT}/..\" \"${SRCROOT}/config.xcconfig\" \"BRANCH_KEY\"\n";
-		};
-		81548E862EA171F400600BA3 /* Setup React Native Config */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-			);
-			name = "Setup React Native Config";
-			outputFileListPaths = (
-			);
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "echo \":wrench: Generating config.xcconfig from .env\"\n\n\"${SRCROOT}/../node_modules/react-native-config/ios/ReactNativeConfig/BuildXCConfig.rb\" \"${SRCROOT}/..\" \"${SRCROOT}/config.xcconfig\" \"BRANCH_KEY\"\n";
 		};
 		8E858A5428AFD47300236EF2 /* Start Packager */ = {
 			isa = PBXShellScriptBuildPhase;
