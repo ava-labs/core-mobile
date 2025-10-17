@@ -562,6 +562,7 @@ __metadata:
     react-native-ble-plx: 3.4.0
     react-native-bootsplash: 6.3.10
     react-native-bottom-tabs: 0.10.1
+    react-native-branch: 6.8.0
     react-native-chart-kit: 6.12.0
     react-native-check-version: 1.4.0
     react-native-circular-progress: 1.4.0
@@ -32477,6 +32478,15 @@ __metadata:
     react: "*"
     react-native: "*"
   checksum: 3aa6fcce576db3e0497f54f4949bde63163637e17840fb34a47d5011548d9295a9e746cd21e4b717eb81398a33be1897e3e1335511f2f1e5ab7c0a21ca048836
+  languageName: node
+  linkType: hard
+
+"react-native-branch@npm:6.8.0":
+  version: 6.8.0
+  resolution: "react-native-branch@npm:6.8.0"
+  peerDependencies:
+    react-native: ">= 0.60"
+  checksum: 04788c174864e323d19e675d504fd930b325207a48e8379eff1a8e22336090c8491d77f46900affb9568ffd5f36334e6d72bbd008512317301c173999de63d09
   languageName: node
   linkType: hard
 
