@@ -87,6 +87,7 @@ abstract_target 'common' do
   pod "OpenSSL-Universal", "1.1.1100"
   pod 'GoogleUtilities', :modular_headers => true;
   pod 'FirebaseCore', :modular_headers => true
+  pod 'react-native-branch', path: '../node_modules/react-native-branch'
   
   target 'AvaxWallet' do
   end
