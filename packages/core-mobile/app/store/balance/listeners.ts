@@ -62,6 +62,7 @@ import {
 } from './types'
 import {
   fetchBalanceForAccount,
+  getKey,
   refetchBalance,
   selectAllBalanceStatus,
   selectXpBalanceStatus,
@@ -71,6 +72,32 @@ import {
 
 export const AVAX_X_ID = 'AVAX-X'
 export const AVAX_P_ID = 'AVAX-P'
+
+const onBalanceUpdateForAccount = async (
+  queryStatus: QueryStatus,
+  listenerApi: AppListenerEffectAPI
+): Promise<void> => {
+  const { getState } = listenerApi
+  const state = getState()
+  const account = selectActiveAccount(state)
+  const isDeveloperMode = selectIsDeveloperMode(state)
+  const enabledNetworks = selectEnabledNetworks(state)
+  const networks = getNetworksToFetch({
+    isDeveloperMode,
+    enabledNetworks,
+    iteration: 0,
+    nonPrimaryNetworksIteration: 0,
+    pullPrimaryNetworks: true,
+    address: account?.addressC ?? ''
+  })
+
+  onBalanceUpdateCore({
+    queryStatus,
+    listenerApi,
+    networks,
+    account
+  })
+}
 
 const onBalanceUpdate = async (
   queryStatus: QueryStatus,
@@ -184,7 +211,7 @@ const onBalanceUpdateCore = async ({
         const customTokensByChainIdAndNetwork =
           customTokens[n.chainId.toString()] ?? []
         networkPromises.push({
-          key: n.chainId.toString(),
+          key: getKey(n.chainId, account.id),
           promise: BalanceService.getBalancesForAccount({
             network: n,
             account,
@@ -641,13 +668,17 @@ export const addBalanceListeners = (
       setSelectedCurrency,
       setAccounts,
       setActiveAccountId,
-      addCustomToken,
       toggleEnabledChainId,
-      addCustomNetwork,
       toggleDeveloperMode
     ),
     effect: async (_, listenerApi) =>
       onBalanceUpdate(QueryStatus.LOADING, listenerApi)
+  })
+
+  startListening({
+    matcher: isAnyOf(addCustomToken, addCustomNetwork),
+    effect: async (_, listenerApi) =>
+      onBalanceUpdateForAccount(QueryStatus.LOADING, listenerApi)
   })
 
   startListening({

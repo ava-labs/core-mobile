@@ -5,7 +5,6 @@ import {
   fetchBalanceForAccount,
   QueryStatus,
   selectAllBalanceStatus,
-  selectXpBalanceStatus,
   selectBalanceTotalInCurrencyForAccount,
   selectIsBalanceLoadedForAccount
 } from 'store/balance'
@@ -21,10 +20,7 @@ export const useBalanceForAccount = (
 } => {
   const dispatch = useDispatch()
   const allBalanceStatus = useSelector(selectAllBalanceStatus)
-  const xpBalanceStatus = useSelector(selectXpBalanceStatus)
-  const isBalanceLoading =
-    allBalanceStatus !== QueryStatus.IDLE ||
-    xpBalanceStatus !== QueryStatus.IDLE
+  const isBalanceLoading = allBalanceStatus !== QueryStatus.IDLE
   const [isFetchingBalance, setIsFetchingBalance] = useState(true)
   const tokenVisibility = useSelector(selectTokenVisibility)
   const accountBalance = useSelector(
