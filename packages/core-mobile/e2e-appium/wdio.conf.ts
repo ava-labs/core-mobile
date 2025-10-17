@@ -12,19 +12,20 @@ const sectionCache: Record<string, number> = {}
 const isBitrise = process.env.CI === 'true'
 const goHeadless = isBitrise ? true : false
 const goRetry = isBitrise ? 1 : 0
+const iosLocalPath = process.env.E2E_LOCAL_PATH
+  ? '/Users/eunji.song/Downloads/AvaxWalletInternal.app'
+  : './ios/DerivedData/Build/Products/Debug-iphonesimulator/AvaxWallet.app'
+const androidLocalPath = process.env.E2E_LOCAL_PATH
+  ? '/Users/eunji.song/Downloads/app-internal-e2e-bitrise-signed.apk'
+  : './android/app/build/outputs/apk/internal/debug/app-internal-debug.apk'
 const iosPath = isBitrise
   ? process.env.BITRISE_APP_DIR_PATH
-  : path.resolve(
-      './ios/DerivedData/Build/Products/Debug-iphonesimulator/AvaxWallet.app'
-      // '/Users/eunji.song/Downloads/AvaxWalletInternal.app'
-    )
+  : path.resolve(iosLocalPath)
 const androidPath = isBitrise
   ? process.env.BITRISE_APK_PATH
-  : path.resolve(
-      './android/app/build/outputs/apk/internal/debug/app-internal-debug.apk'
-      // '/Users/eunji.song/Downloads/app-internal-e2e-bitrise-signed.apk'
-    )
+  : path.resolve(androidLocalPath)
 const platformToRun = process.env.PLATFORM
+
 const allCaps = [
   {
     platformName: 'Android',
@@ -34,12 +35,17 @@ const allCaps = [
     'appium:app': androidPath,
     'appium:appWaitActivity': '*',
     'appium:autoGrantPermissions': true,
-    'appium:settings[snapshotMaxDepth]': 70,
-    'appium:isHeadless': goHeadless,
     'appium:newCommandTimeout': 120,
     'appium:adbExecTimeout': 60000,
     'appium:uiautomator2ServerLaunchTimeout': 60000,
-    'appium:uiautomator2ServerInstallTimeout': 60000
+    'appium:uiautomator2ServerInstallTimeout': 60000,
+    'appium:noSign': true,
+    'appium:disableWindowAnimation': true,
+    'appium:fullReset': true,
+    'appium:enforceAppInstall': true,
+    'appium:uiautomator2ServerReadTimeout': 60000,
+    'appium:skipDeviceInitialization': false,
+    'appium:skipLogcatCapture': false
   },
   {
     platformName: 'iOS',
@@ -104,7 +110,7 @@ export const config: WebdriverIO.Config = {
   },
 
   after: async function () {
-    console.log('🧹 Cleaning up session (letting WDIO handle it)...')
+    console.log('------------Cleaning up session------------')
     await new Promise(res => setTimeout(res, 500))
   },
 

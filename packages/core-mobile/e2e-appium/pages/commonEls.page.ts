@@ -81,8 +81,11 @@ class CommonElsPage {
   }
 
   get dismiss() {
-    const theBtn = driver.isIOS ? commonEls.dismiss : commonEls.dismissAndroid
-    return selectors.getByText(theBtn)
+    return selectors.getByText(commonEls.dismiss)
+  }
+
+  get dismissAndroid() {
+    return selectors.getByText(commonEls.dismissAndroid)
   }
 
   get grabber() {
@@ -389,28 +392,31 @@ class CommonElsPage {
   }
 
   async tapSaveAlert() {
-    const saveBtn = driver.isIOS
-      ? selectors.getById(commonEls.save)
-      : this.saveUpperCase
-    try {
-      await actions.click(saveBtn)
-    } catch (e) {
-      await actions.tap(saveBtn)
+    if (driver.isIOS) {
+      try {
+        await actions.click(selectors.getById(commonEls.save))
+      } catch (e) {
+        console.log('Appium handled the auto accept alerts')
+      }
+    } else {
+      await actions.click(selectors.getBySmartText(commonEls.save))
     }
   }
 
   async tapDeleteAlert() {
-    const deleteBtn = driver.isIOS
-      ? selectors.getById(commonEls.delete)
-      : this.deleteUpperCase
-    try {
-      await actions.click(deleteBtn)
-    } catch (e) {
-      console.log('Delete button not found')
+    if (driver.isIOS) {
+      try {
+        await actions.click(selectors.getById(commonEls.delete))
+      } catch (e) {
+        console.log('Appium handled the auto accept alerts')
+      }
+    } else {
+      await actions.click(selectors.getBySmartText(commonEls.delete))
     }
   }
 
   async verifyAccountName(expectedName: string, whichScreen = 'settings') {
+    await actions.waitFor(selectors.getByText(expectedName), 30000)
     const UIaccountName = await this.getBalanceHeaderAccountName(whichScreen)
     assert(
       expectedName === UIaccountName,

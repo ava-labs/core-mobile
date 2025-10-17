@@ -76,7 +76,6 @@ export default {
   solanaLaunchTitle: 'solana_launch_title',
   youPay: 'select_token_title__You pay',
   youReceive: 'select_token_title__You receive',
-  tokenSpendApproval: 'Do you approve this spend limit?',
   trackBuyBtn: 'trending_token_buy_btn__',
   errorMsg: 'error_msg',
   cChain: 'Avalanche (C-Chain)',

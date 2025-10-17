@@ -14,6 +14,7 @@ export default async function warmup(
   await onboardingPage.enterRecoveryPhrase(mnemonic)
   await onboardingPage.tapImport()
   await onboardingPage.enterPin()
+  await onboardingPage.enterWalletName()
   await onboardingPage.tapNextBtnOnNameWallet()
   await onboardingPage.tapNextBtnOnAvatarScreen()
   await onboardingPage.tapLetsGo()
