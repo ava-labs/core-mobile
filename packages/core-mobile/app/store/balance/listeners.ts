@@ -117,18 +117,16 @@ const onBalanceUpdate = async (
     address: account?.addressC ?? ''
   })
 
-  await Promise.all([
-    onBalanceUpdateCore({
-      queryStatus,
-      listenerApi,
-      networks,
-      account
-    }),
-    onXpBalanceUpdateCore({
-      queryStatus,
-      listenerApi
-    })
-  ])
+  onBalanceUpdateCore({
+    queryStatus,
+    listenerApi,
+    networks,
+    account
+  })
+  onXpBalanceUpdateCore({
+    queryStatus,
+    listenerApi
+  })
 }
 
 const onBalancePolling = async ({
