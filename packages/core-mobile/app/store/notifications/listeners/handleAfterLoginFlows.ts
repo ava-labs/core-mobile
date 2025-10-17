@@ -16,6 +16,7 @@ import {
 } from 'store/viewOnce'
 import { showAlert } from '@avalabs/k2-alpine'
 import { waitForInteractions } from 'common/utils/waitForInteractions'
+import Config from 'react-native-config'
 import { turnOnAllNotifications } from '../slice'
 
 export const handleAfterLoginFlows = async (
@@ -37,7 +38,8 @@ const promptAppUpdateScreenIfNeeded = async (): Promise<void> => {
   )
   const shouldShowAppUpdateScreen =
     hasBeenViewedAppUpdateScreen === false &&
-    appUpdateStatus.needsUpdate === true
+    appUpdateStatus.needsUpdate === true &&
+    !Config.E2E_MNEMONIC // TODO: android automation can't handle the app update modal properly on bitrise, so we need to hide it for now
   if (shouldShowAppUpdateScreen) {
     await waitForInteractions()
 

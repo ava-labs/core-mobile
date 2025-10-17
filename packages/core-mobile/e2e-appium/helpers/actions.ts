@@ -51,7 +51,7 @@ async function isVisible(ele: ChainablePromiseElement) {
 async function isNotVisible(ele: ChainablePromiseElement) {
   const visible = await ele.isDisplayed()
   const eleSelector = await ele.selector
-  console.log(`${eleSelector} isNotVisible? `, visible)
+  console.log(`${eleSelector} isVisible? `, visible)
   assert.equal(visible, false, ele.toString())
   return visible
 }
@@ -121,7 +121,7 @@ async function click(ele: ChainablePromiseElement) {
   await ele.waitForEnabled()
   await ele.click()
   const selector = await ele.selector
-  console.log(`Tapped on selector: ${selector}`)
+  console.log(`Clicked ${selector}`)
 }
 
 async function dismissKeyboard(id = 'Return') {
@@ -151,6 +151,7 @@ async function swipe(
   percent: number,
   ele: ChainablePromiseElement
 ) {
+  await waitFor(ele)
   if (driver.isIOS) {
     await driver.execute('mobile: swipe', {
       direction: direction,
@@ -195,6 +196,13 @@ async function scrollTo(
   await ele.scrollIntoView()
 }
 
+async function log() {
+  const src = await driver.getPageSource()
+  console.log('Printing page source...')
+  console.log(src)
+  console.log('...done')
+}
+
 export const actions = {
   type,
   tapNumberPad,
@@ -216,5 +224,6 @@ export const actions = {
   delay,
   getVisible,
   clearText,
-  scrollTo
+  scrollTo,
+  log
 }

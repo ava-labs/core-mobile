@@ -2,6 +2,7 @@ export default {
   // NEW BELOW:
   account: 'Account 1',
   account2: 'Account 2',
+  account3: 'Account 3',
   eyeIcon: 'eye_icon',
   settingsScrollView: 'settings_scroll_view',
   settingsFooter: 'settings_footer',
