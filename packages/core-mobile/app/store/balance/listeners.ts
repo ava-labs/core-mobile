@@ -17,6 +17,7 @@ import { addCustomToken, selectAllCustomTokens } from 'store/customToken'
 import {
   addCustomNetwork,
   selectEnabledNetworks,
+  selectEnabledNetworksWithoutXP,
   toggleEnabledChainId
 } from 'store/network/slice'
 import {
@@ -107,7 +108,8 @@ const onBalanceUpdate = async (
   const state = getState()
   const account = selectActiveAccount(state)
   const isDeveloperMode = selectIsDeveloperMode(state)
-  const enabledNetworks = selectEnabledNetworks(state)
+  const enabledNetworks = selectEnabledNetworksWithoutXP(state)
+
   const networks = getNetworksToFetch({
     isDeveloperMode,
     enabledNetworks,
@@ -146,7 +148,8 @@ const onBalancePolling = async ({
   const state = getState()
   const account = selectActiveAccount(state)
   const isDeveloperMode = selectIsDeveloperMode(state)
-  const enabledNetworks = selectEnabledNetworks(state)
+  const enabledNetworks = selectEnabledNetworksWithoutXP(state)
+
   const networks = getNetworksToFetch({
     isDeveloperMode,
     enabledNetworks,
@@ -378,9 +381,10 @@ const handleAllNetworksPolling = async ({
 }: {
   listenerApi: AppListenerEffectAPI
 }): Promise<ForkedTask<void>> => {
-  const state = listenerApi.getState()
+  const { getState } = listenerApi
+  const state = getState()
   const isDeveloperMode = selectIsDeveloperMode(state)
-  const enabledNetworks = selectEnabledNetworks(state)
+  const enabledNetworks = selectEnabledNetworksWithoutXP(state)
 
   let iteration = 0
   let nonPrimaryNetworksIteration = 0
@@ -442,7 +446,8 @@ const handleFetchBalanceForAccount = async (
 ): Promise<void> => {
   const state = listenerApi.getState()
   const isDeveloperMode = selectIsDeveloperMode(state)
-  const enabledNetworks = selectEnabledNetworks(state)
+  const enabledNetworks = selectEnabledNetworksWithoutXP(state)
+
   const networks = getNetworksToFetch({
     isDeveloperMode,
     enabledNetworks,
