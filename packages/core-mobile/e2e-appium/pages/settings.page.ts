@@ -6,6 +6,7 @@ import commonElsLoc from '../locators/commonEls.loc'
 import common from './commonEls.page'
 import onboardingPage from './onboarding.page'
 import portfolioPage from './portfolio.page'
+import commonElsPage from './commonEls.page'
 
 class Settings {
   get addWalletBtn() {
@@ -174,18 +175,16 @@ class Settings {
 
   async editContactAddress(
     networkAndAddress: Record<string, string>,
-    contactName: string | undefined = undefined
+    contactName: string
   ) {
     // add contact name
-    if (contactName) {
-      await this.addContactOrNetworkName(contactName)
-    }
+    await this.addContactOrNetworkName(contactName)
     // add contact addresses
     for (const [network, address] of Object.entries(networkAndAddress)) {
       await actions.click(selectors.getById(`contact_delete_btn__${network}`))
       await common.tapDeleteAlert()
       await actions.waitFor(selectors.getByText(`Add ${network} address`))
-      await this.setAddress(network, address)
+      await this.setAddress(network, address, contactName)
     }
     // exit the edit contact form
     await common.goBack()
@@ -195,14 +194,14 @@ class Settings {
     await actions.tap(selectors.getBySomeText(contactName))
   }
 
-  async setAddress(network: string, address: string) {
+  async setAddress(network: string, address: string, contactName: string) {
     await actions.click(selectors.getByText(`Add ${network} address`))
     await actions.click(this.typeInOrPasteAddress)
     await actions.type(
       selectors.getById(`advanced_input__${network.toLowerCase()}`),
       address
     )
-    await actions.tapEnterOnKeyboard()
+    await actions.tap(selectors.getByText(contactName))
   }
 
   async verifyContact(address: string, contactName: string) {
@@ -219,7 +218,7 @@ class Settings {
     await this.addContactOrNetworkName(contactName)
     // add contact addresses
     for (const [network, address] of Object.entries(networkAndAddress)) {
-      await this.setAddress(network, address)
+      await this.setAddress(network, address, contactName)
     }
     // save contact
     await common.tapSave()
@@ -262,11 +261,17 @@ class Settings {
     await actions.tap(this.manageAccountsBtn)
   }
 
+  async verifyManageAccountsListItem(accountName: string) {
+    await actions.waitFor(
+      selectors.getById(`manage_accounts_list__${accountName}`)
+    )
+  }
+
   async goSettings() {
     await actions.delay(1500)
     await actions.click(this.settingsBtn)
     try {
-      await actions.waitFor(this.settingsScrollView)
+      await actions.waitFor(commonElsPage.grabber)
     } catch (e) {
       await actions.click(this.settingsBtn)
     }
@@ -438,9 +443,9 @@ class Settings {
 
   async setNewAccountName(newAccountName: string) {
     await actions.type(common.dialogInput, newAccountName)
-    if (driver.isIOS) {
+    try {
       await actions.click(common.save)
-    } else {
+    } catch (e) {
       await actions.tap(common.saveUpperCase)
     }
   }
@@ -539,7 +544,7 @@ class Settings {
     await actions.waitFor(this.testnetSwitchOn)
     await actions.isVisible(this.testnetAvatar)
     await common.dismissBottomSheet()
-    await actions.waitFor(portfolioPage.testnetModeIsOn, 20000)
+    await actions.waitFor(portfolioPage.testnetModeIsOn, 40000)
   }
 
   async verifyMainnetMode() {
