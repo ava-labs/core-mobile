@@ -17,7 +17,7 @@ import { StorageKey } from 'resources/Constants'
 import { appendToStoredArray, loadArrayFromStorage } from 'utils/mmkv/storages'
 import { setIsMigratingActiveAccounts } from 'store/wallet/slice'
 import WalletService from 'services/wallet/WalletService'
-import { setAccounts } from './slice'
+import { setAccounts, setNonActiveAccounts } from './slice'
 
 export function getAddressByVM(
   vm: VM,
@@ -122,7 +122,12 @@ export const migrateRemainingActiveAccounts = async ({
 
     const accountIds = Object.keys(accounts)
     if (accountIds.length > 0) {
-      listenerApi.dispatch(setAccounts(accounts))
+      // set accounts for seedless wallet, which trigger balance update
+      // * seedless wallet fetches xp balances by iterating over xp addresses over all accounts
+      // * so we need to wait for all accounts to be fetched to update balances
+      walletType === WalletType.SEEDLESS
+        ? listenerApi.dispatch(setAccounts(accounts))
+        : listenerApi.dispatch(setNonActiveAccounts(accounts))
 
       recentAccountsStore.getState().addRecentAccounts(accountIds)
 
