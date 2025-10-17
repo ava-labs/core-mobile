@@ -3,7 +3,7 @@ import {
   GroupList,
   GroupListItem,
   Icons,
-  Logos,
+  Image,
   Separator,
   Text,
   TouchableOpacity,
@@ -16,7 +16,6 @@ import { dismissKeyboardIfNeeded } from 'common/utils/dismissKeyboardIfNeeded'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
 import React, { useCallback, useEffect, useMemo } from 'react'
 import { FlatList } from 'react-native-gesture-handler'
-import { SvgProps } from 'react-native-svg'
 import { LocalTokenWithBalance } from 'store/balance/types'
 import { useSwapRate } from '../hooks/useSwapRate'
 import { MarkrQuote } from '../services/MarkrService'
@@ -26,19 +25,6 @@ import {
   NormalizedSwapQuote,
   NormalizedSwapQuoteResult
 } from '../types'
-
-// Provider logo mapping
-const PRICE_PROVIDER_ICONS: Record<string, React.FC<SvgProps> | undefined> = {
-  velora: Logos.PartnerLogos.Velora,
-  odos: Logos.PartnerLogos.Odos,
-  kyber: Logos.PartnerLogos.Kyber,
-  yak: Logos.PartnerLogos.Yak
-}
-
-// Function to get provider logo with fallback
-const getPriceProviderIcon = (id: string): React.FC<SvgProps> | null => {
-  return PRICE_PROVIDER_ICONS[id] || null
-}
 
 export const SwapPricingDetailsScreen = ({
   fromToken,
@@ -91,7 +77,7 @@ export const SwapPricingDetailsScreen = ({
 
       const quote = item.quote as MarkrQuote
 
-      const { id, name } = quote.aggregator
+      const { id, name, logo_url } = quote.aggregator
       const isLastItem = index === quotes.quotes.length - 1
       const isSelected =
         (!manuallySelected && index === 0) ||
@@ -101,9 +87,6 @@ export const SwapPricingDetailsScreen = ({
         id === 'auto'
           ? 0
           : formatInCurrency(toToken, BigInt(item.metadata.amountOut as string))
-
-      // Get the logo for this provider dynamically
-      const Icon = getPriceProviderIcon(id)
 
       return (
         <TouchableOpacity
@@ -133,8 +116,16 @@ export const SwapPricingDetailsScreen = ({
               }}>
               {id === 'auto' ? (
                 <Icons.Custom.SwapProviderAuto />
-              ) : Icon ? (
-                <Icon testID={`icon__${id}`} width={36} height={36} />
+              ) : logo_url ? (
+                <Image
+                  source={{ uri: logo_url }}
+                  testID={`icon__${id}`}
+                  sx={{
+                    borderRadius: 18,
+                    width: 36,
+                    height: 36
+                  }}
+                />
               ) : (
                 <Text variant="body2" sx={{ color: colors.$textSecondary }}>
                   {name.charAt(0).toUpperCase()}
