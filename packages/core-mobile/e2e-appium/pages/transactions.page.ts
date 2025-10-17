@@ -64,7 +64,11 @@ class TransactionsPage {
   }
 
   get tokenSpendApproval() {
-    return selectors.getByText(txLoc.tokenSpendApproval)
+    return selectors.getByText(txLoc.approvePopupSpendTitle)
+  }
+
+  get approveTitle() {
+    return selectors.getByText(txLoc.approvePopupTitle)
   }
 
   get errorMsg() {
@@ -224,12 +228,13 @@ class TransactionsPage {
     // If `from` is not AVAX, we need to approve the spend limit
     if (from !== 'AVAX') {
       try {
-        await actions.waitFor(this.tokenSpendApproval)
+        await actions.waitFor(this.tokenSpendApproval, 30000)
         await this.tapApprove()
       } catch (e) {
         console.log('Spend limit approval is not needed')
       }
     }
+    await actions.waitFor(this.approveTitle, 40000)
     await this.tapApprove()
   }
 

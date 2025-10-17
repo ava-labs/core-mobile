@@ -13,7 +13,7 @@ describe('Settings', () => {
     await settings.setNewPin()
   })
 
-  it('should verify the new pin', async () => {
+  it('Change PIN - should verify the new pin', async () => {
     // Enter the current pin
     await settings.tapChangePin()
     await settings.enterCurrentPin()

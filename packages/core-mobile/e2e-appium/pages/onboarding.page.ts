@@ -61,6 +61,10 @@ class OnboardingPage {
     return selectors.getById(onboardingLoc.nextBtnOnAvatarScreen)
   }
 
+  get selectAvatarTitle() {
+    return selectors.getByText(onboardingLoc.selectAvatarTitle)
+  }
+
   get forgotPin() {
     return selectors.getByText(onboardingLoc.forgotPin)
   }
@@ -106,7 +110,9 @@ class OnboardingPage {
   }
 
   async exitMetro() {
-    if (process.env.E2E !== 'true') {
+    if (process.env.E2E || process.env.E2E_LOCAL_PATH) {
+      console.log('you are using the e2e build, skipping metro dev menu')
+    } else {
       try {
       console.log('you are using a dev build, skipping metro dev menu now...')
       const preceedingHost = driver.isIOS ? 'localhost' : '10.0.2.2'
@@ -145,11 +151,12 @@ class OnboardingPage {
   }
 
   async tapNextBtnOnNameWallet() {
-    await actions.tap(this.nameWalletNextBtn, this.nextBtnOnAvatarScreen)
+    await actions.tap(this.nameWalletNextBtn)
   }
 
   async tapNextBtnOnAvatarScreen() {
-    await actions.longPress(this.nextBtnOnAvatarScreen, this.letsGo)
+    await actions.delay(2000)
+    await actions.tap(this.nextBtnOnAvatarScreen, this.letsGo)
   }
 
   async tapLetsGo() {
@@ -184,8 +191,11 @@ class OnboardingPage {
   }
 
   async dismissUpdateAppModal() {
-    await actions.waitFor(this.updateAppModalTitle, 50000)
-    await actions.dragAndDrop(this.updateAppModalTitle, [0, 500])
+    while (await actions.getVisible(this.updateAppModalTitle)) {
+      await actions.delay(1000)
+      await actions.dragAndDrop(this.updateAppModalTitle, [0, 1000])
+      console.log('Dismissed update app modal')
+    }
     await actions.delay(1000)
   }
 
@@ -194,9 +204,11 @@ class OnboardingPage {
     await actions.dragAndDrop(element, [0, 500])
   }
 
-async verifyLoggedIn() {
-    await this.dismissUpdateAppModal()
-    await actions.waitFor(commonElsPage.accountOne, 20000)
+async verifyLoggedIn(hasModal = false) {
+    await actions.waitFor(commonElsPage.accountOne, 40000)
+    if (hasModal) {
+      await this.dismissUpdateAppModal()
+    }
     console.log('Verified you are logged in')
   }
 
@@ -223,7 +235,11 @@ async verifyLoggedIn() {
   async dismissSecurityWarning() {
     if (driver.isAndroid) {
       await actions.waitForDisplayed(this.securityWarningContent)
-      await actions.tap(commonElsPage.dismiss)
+      try {
+        await actions.tap(commonElsPage.dismiss)
+      } catch (e) {
+        await actions.tap(commonElsPage.dismissAndroid)
+      }
     }
   }
 
