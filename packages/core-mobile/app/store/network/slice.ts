@@ -12,6 +12,7 @@ import {
 import { getNetworksFromCache } from 'hooks/networks/utils/getNetworksFromCache'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { selectIsSolanaSupportBlocked } from 'store/posthog'
+import { isAvmNetwork, isPvmNetwork } from 'utils/network/isAvalancheNetwork'
 import { RootState } from '../types'
 import { ChainID, Networks, NetworkState } from './types'
 
@@ -217,6 +218,13 @@ export const selectEnabledNetworks = createSelector(
       }
       return acc
     }, [] as Network[])
+  }
+)
+
+export const selectEnabledNetworksWithoutXP = createSelector(
+  [selectEnabledNetworks],
+  enabledNetworks => {
+    return enabledNetworks.filter(n => !isPvmNetwork(n) && !isAvmNetwork(n))
   }
 )
 
