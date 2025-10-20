@@ -17,6 +17,7 @@ import com.facebook.react.defaults.DefaultReactNativeHost
 import com.facebook.react.modules.network.OkHttpClientProvider
 import com.facebook.react.soloader.OpenSourceMergedSoMapping
 import com.facebook.soloader.SoLoader
+import com.gantix.JailMonkey.Rooted.RootedCheck
 import java.lang.reflect.Field
 
 class MainApplication : Application(), ReactApplication {
@@ -43,6 +44,8 @@ class MainApplication : Application(), ReactApplication {
 
     override fun onCreate() {
         super.onCreate()
+
+        RootedCheck.precompute(this);
 
         increaseWindowCursorSize()
 
