@@ -29,14 +29,19 @@ describe('Settings', () => {
     await settings.verifyAccountCarouselItem(sl.newAccountName)
   })
 
-  it('Accounts - should add new account', async () => {
+  it('Accounts - should auto-add the second account', async () => {
+    await settings.verifyAccountCarouselItem(sl.account2)
     await settings.tapManageAccountsBtn()
-    await settings.addAccount(2)
+    await settings.verifyManageAccountsListItem(sl.account2)
+  })
+
+  it('Accounts - should add an account', async () => {
+    await settings.addAccount(3)
     await common.dismissBottomSheet()
   })
 
   it('Accounts - should switch account', async () => {
-    await common.verifyAccountName(sl.account2, 'portfolio')
+    await common.verifyAccountName(sl.account3, 'portfolio')
     await settings.switchAccount(sl.newAccountName)
     await common.verifyAccountName(sl.newAccountName, 'portfolio')
   })

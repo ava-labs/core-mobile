@@ -165,7 +165,7 @@ workflows:
     - save-gradle-cache@1: {}
     - sign-apk@1:
         inputs:
-        - android_app: $BITRISE_APK_PATH|$BITRISE_TEST_APK_PATH
+        - android_app: $BITRISE_APK_PATH
         - use_apk_signer: "true"
         - debuggable_permitted: "false"
         - keystore_url: $BITRISEIO_ANDROID_KEY_STORE_URL
@@ -176,6 +176,11 @@ workflows:
         inputs:
         - pipeline_intermediate_files: |-
             $BITRISE_DEPLOY_DIR/app-internal-e2e-bitrise-signed.apk:BITRISE_APK_PATH
+    - share-pipeline-variable@1:
+        inputs:
+        - variables: |-
+            BITRISE_APK_PATH=$BITRISE_APK_PATH
+            IS_INTERNAL_BUILD=$IS_INTERNAL_BUILD
   _install-old-android-version:
     steps:
     - script-runner@0:
@@ -550,10 +555,6 @@ workflows:
     - IS_INTERNAL_BUILD: "true"
       opts:
         is_expand: false
-    - share-pipeline-variable@1:
-        inputs:
-        - variables: |-
-            IS_INTERNAL_BUILD=$IS_INTERNAL_BUILD
   android-external-e2e-regression-run:
     before_run:
     - _install-and-set-env
@@ -957,10 +958,11 @@ workflows:
         - api_level: "34"
         - emulator_id: emulator-5554
         - emulator_channel: "0"
-        - create_command_flags: --sdcard 512M
-        - tag: default
+        - create_command_flags: --sdcard 2048M --device "pixel_7_pro"
+        - tag: google_apis
         - abi: x86_64
         - profile: pixel_7_pro
+        - custom_command_flags: -no-snapshot -noaudio -no-window
     - wait-for-android-emulator@1: {}
     - script-runner@0:
         title: Appium Android testing

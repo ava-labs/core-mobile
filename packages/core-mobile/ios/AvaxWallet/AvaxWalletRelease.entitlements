@@ -13,6 +13,9 @@
 		<string>applinks:core.app</string>
 		<string>applinks:test.core.app</string>
 		<string>webcredentials:identity.core.app</string>
+		<string>nlfvn.test-app.link</string>
+		<string>nlfvn-alternate.test-app.link</string>
+		<string>nlfvn.app.link</string>
 	</array>
 	<key>com.apple.developer.devicecheck.appattest-environment</key>
 	<string>production</string>
