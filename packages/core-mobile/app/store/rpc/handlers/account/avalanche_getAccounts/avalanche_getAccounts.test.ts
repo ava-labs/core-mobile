@@ -12,6 +12,29 @@ jest.mock('store/account/slice', () => {
   }
 })
 
+jest.mock('store/wallet/slice', () => ({
+  selectWalletById: () => () => ({
+    id: 'wallet-1',
+    name: 'Test Wallet',
+    type: 'MNEMONIC'
+  })
+}))
+
+jest.mock('services/wallet/WalletService', () => ({
+  __esModule: true,
+  default: {
+    getRawXpubXP: jest
+      .fn()
+      .mockResolvedValue(
+        'xpub6D4BDPcP2GT577Vvch3R8wDkScZWzQzMMUm3PWbmWvVJrZwQY4VUNgqFJPMM3No2dFDFGTsxxpG5uJh7n7epu4trkrX7x7DogT5Uv6fcLW5'
+      )
+  }
+}))
+
+jest.mock('utils/Logger', () => ({
+  warn: jest.fn()
+}))
+
 const mockDispatch = jest.fn()
 const mockListenerApi = {
   getState: jest.fn(),
@@ -44,7 +67,7 @@ describe('avalanche_getAccounts handler', () => {
   })
 
   describe('handle', () => {
-    it('should return success with the list of available accounts', async () => {
+    it('should return success with the list of available accounts including xpubXP for mnemonic wallets', async () => {
       const result = await handler.handle(testRequest, mockListenerApi)
 
       expect(result).toEqual({
@@ -63,7 +86,10 @@ describe('avalanche_getAccounts handler', () => {
             active: true,
             type: 'primary',
             walletId: 'wallet-1',
-            walletType: 'mnemonic'
+            walletType: 'MNEMONIC',
+            walletName: 'Test Wallet',
+            xpubXP:
+              'xpub6D4BDPcP2GT577Vvch3R8wDkScZWzQzMMUm3PWbmWvVJrZwQY4VUNgqFJPMM3No2dFDFGTsxxpG5uJh7n7epu4trkrX7x7DogT5Uv6fcLW5'
           },
           {
             id: '1',
@@ -78,10 +104,40 @@ describe('avalanche_getAccounts handler', () => {
             active: false,
             type: 'primary',
             walletId: 'wallet-1',
-            walletType: 'mnemonic'
+            walletType: 'MNEMONIC',
+            walletName: 'Test Wallet',
+            xpubXP:
+              'xpub6D4BDPcP2GT577Vvch3R8wDkScZWzQzMMUm3PWbmWvVJrZwQY4VUNgqFJPMM3No2dFDFGTsxxpG5uJh7n7epu4trkrX7x7DogT5Uv6fcLW5'
           }
         ]
       })
+    })
+
+    it('should return accounts without xpubXP for non-supported wallet types', async () => {
+      // Mock a Ledger wallet (doesn't support xpubXP)
+      const mockWalletSlice = require('store/wallet/slice')
+      mockWalletSlice.selectWalletById = () => () => ({
+        id: 'wallet-1',
+        name: 'Ledger Wallet',
+        type: 'LEDGER'
+      })
+
+      // Mock WalletService to throw error for Ledger wallets
+      const mockWalletService = require('services/wallet/WalletService')
+      mockWalletService.default.getRawXpubXP.mockRejectedValueOnce(
+        new Error('Unsupported wallet type')
+      )
+
+      const result = await handler.handle(testRequest, mockListenerApi)
+
+      expect(result.success).toBe(true)
+      if (result.success) {
+        const accounts = result.value as any[]
+        expect(accounts).toHaveLength(2)
+        expect(accounts[0].xpubXP).toBeUndefined()
+        expect(accounts[0].walletType).toBe('LEDGER')
+        expect(accounts[0].walletName).toBe('Ledger Wallet')
+      }
     })
   })
 })
