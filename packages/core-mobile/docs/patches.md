@@ -111,3 +111,8 @@ You can wrap a toast container with a custom wrapper.
 </>
 
 // In order to display a toast over a native-stack modal, use [FullWindowOverlay component](https://github.com/software-mansion/react-native-screens?tab=readme-ov-file#fullwindowoverlay).
+```
+
+### jail-monkey
+
+We patched this to precompute constants so we don't block js thread when whe check if phone is rooted.
