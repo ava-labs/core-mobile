@@ -24,7 +24,7 @@ function hexToArrayBuffer(hex: string): ArrayBuffer {
   }
   return out.buffer;
 }
-
+ 
 /** Convert a Uint8Array or ArrayBuffer to a tight ArrayBuffer view. */
 function toArrayBuffer(input: Uint8Array | ArrayBuffer): ArrayBuffer {
   if (input instanceof ArrayBuffer) return input;
@@ -44,6 +44,13 @@ function hexLikeToArrayBuffer(input: string | ArrayBuffer | Uint8Array): ArrayBu
 function ensure32(name: string, ab: ArrayBuffer): ArrayBuffer {
   if (ab.byteLength !== 32) throw new TypeError(`${name} must be 32 bytes`);
   return ab;
+}
+
+/** Ensure a public key buffer is compressed (33B) or uncompressed (65B). */
+function ensurePubKey(name: string, ab: ArrayBuffer): ArrayBuffer {
+  const len = ab.byteLength;
+  if (len === 33 || len === 65) return ab;
+  throw new TypeError(`${name} must be 33 or 65 bytes (got ${len})`);
 }
 
 /** bigint → 32-byte ArrayBuffer (left-padded). Throws if it doesn't fit. */
@@ -139,10 +146,79 @@ export function pointAddScalar(
   isCompressed = true
 ): Uint8Array {
   con.log('[Crypto] pointAddScalar called');
+  // print args and their types
+  con.log('pointAddScalar [Crypto] publicKey:', publicKey, 'type:', typeof publicKey);
+  con.log('pointAddScalar [Crypto] tweak:', tweak, 'type:', typeof tweak);
+  con.log('pointAddScalar [Crypto] isCompressed:', isCompressed, 'type:', typeof isCompressed);
+  const pkAB0 = hexLikeToArrayBuffer(publicKey as any);
+  const twAB0 = hexLikeToArrayBuffer(tweak as any);
+  const pkLen = pkAB0.byteLength;
+  const twLen = twAB0.byteLength;
+  con.log('pointAddScalar [Crypto] pkAB byteLength:', pkLen);
+  con.log('pointAddScalar [Crypto] twAB byteLength:', twLen);
+
+  if (twLen !== 32) throw new TypeError(`tweak must be 32 bytes (got ${twLen})`);
+
+  // Handle possible x-only (32B) public keys explicitly
+  if (pkLen === 32) {
+    con.warn('[Crypto] pointAddScalar: publicKey is 32 bytes (x-only or wrong value).');
+    if (typeof (NativeCrypto as any).pointAddScalarXOnly === 'function') {
+      con.log('[Crypto] Using NativeCrypto.pointAddScalarXOnly');
+      const out = (NativeCrypto as any).pointAddScalarXOnly(pkAB0, twAB0, isCompressed);
+      return new Uint8Array(out);
+    }
+    throw new TypeError('publicKey must be compressed (33B) or uncompressed (65B). If you intended x-only, provide 33B/65B or add native support for pointAddScalarXOnly.');
+  }
+
+  // Validate standard pubkey lengths
+  const pkAB = ensurePubKey('publicKey', pkAB0);
+  const twAB = ensure32('tweak', twAB0);
+
+  try {
+    const out = NativeCrypto.pointAddScalar(pkAB, twAB, isCompressed);
+    return new Uint8Array(out);
+  } catch (e) {
+    con.error('pointAddScalarNative failed:', e, 'pkLen=', pkLen, 'twLen=', twLen, 'isCompressed=', isCompressed);
+    throw e;
+  }
+}
+
+/** Convenience: auto-detect 32B x-only vs 33/65B full pubkey and route natively. */
+export function pointAddScalarAuto(
+  publicKey: string | ArrayBuffer | Uint8Array,
+  tweak: string | ArrayBuffer | Uint8Array,
+  isCompressed = true
+): Uint8Array {
   const pkAB = hexLikeToArrayBuffer(publicKey as any);
-  const twAB = hexLikeToArrayBuffer(tweak as any);
-  const out = NativeCrypto.pointAddScalar(pkAB, twAB, isCompressed);
-  return new Uint8Array(out);
+  const twAB = ensure32('tweak', hexLikeToArrayBuffer(tweak as any));
+  const pkLen = pkAB.byteLength;
+
+  if (pkLen === 32) {
+    if (typeof (NativeCrypto as any).pointAddScalarXOnly !== 'function') {
+      throw new TypeError('x-only (32B) publicKey given but native pointAddScalarXOnly is not available');
+    }
+    const out = (NativeCrypto as any).pointAddScalarXOnly(pkAB, twAB, isCompressed);
+    if (out == null) throw new Error('Tweaked point at infinity or invalid tweak');
+    return out instanceof ArrayBuffer ? new Uint8Array(out) : new Uint8Array(out);
+  }
+
+  if (pkLen === 33 || pkLen === 65) {
+    const out = NativeCrypto.pointAddScalar(ensurePubKey('publicKey', pkAB), twAB, isCompressed);
+    return out instanceof ArrayBuffer ? new Uint8Array(out) : new Uint8Array(out);
+  }
+
+  throw new TypeError(`Invalid publicKey length ${pkLen}; expected 32 (x-only) or 33/65 (full)`);
+}
+
+/** Direct x-only tweak add wrapper (returns { xOnlyPubkey, parity } | null). */
+export function xOnlyPointAddTweak(
+  xOnly: string | ArrayBuffer | Uint8Array,
+  tweak: string | ArrayBuffer | Uint8Array
+) {
+  const xAB = ensure32('xOnly', hexLikeToArrayBuffer(xOnly as any));
+  const tAB = ensure32('tweak', hexLikeToArrayBuffer(tweak as any));
+  // Native method returns null on invalid/infinity
+  return (NativeCrypto as any).xOnlyPointAddTweak(xAB, tAB) ?? null;
 }
 
 /** ECDSA sign. Message must be a 32-byte digest. Returns DER signature bytes. */
