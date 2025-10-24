@@ -440,6 +440,13 @@ const PortfolioHomeScreen = (): JSX.Element => {
     navigate('/collectibleManagement')
   }, [navigate])
 
+  const handleGoToDiscoverCollectibles = useCallback((): void => {
+    navigate({
+      // @ts-ignore TODO: make routes typesafe
+      pathname: '/discoverCollectibles'
+    })
+  }, [navigate])
+
   const renderEmptyTabBar = useCallback((): JSX.Element => <></>, [])
 
   const handleScrollResync = useCallback(() => {
@@ -487,6 +494,7 @@ const PortfolioHomeScreen = (): JSX.Element => {
           <CollectiblesScreen
             goToCollectibleDetail={handleGoToCollectibleDetail}
             goToCollectibleManagement={handleGoToCollectibleManagement}
+            goToDiscoverCollectibles={handleGoToDiscoverCollectibles}
             onScrollResync={handleScrollResync}
             containerStyle={contentContainerStyle}
           />
@@ -509,7 +517,8 @@ const PortfolioHomeScreen = (): JSX.Element => {
     handleScrollResync,
     contentContainerStyle,
     handleGoToCollectibleDetail,
-    handleGoToCollectibleManagement
+    handleGoToCollectibleManagement,
+    handleGoToDiscoverCollectibles
   ])
 
   const renderSegmentedControl = useCallback((): JSX.Element => {

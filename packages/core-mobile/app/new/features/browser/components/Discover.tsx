@@ -6,9 +6,11 @@ import { ScrollView } from 'react-native-gesture-handler'
 import Animated from 'react-native-reanimated'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { BROWSER_CONTROLS_HEIGHT, HORIZONTAL_MARGIN } from '../consts'
+import { DiscoverCollectibles } from './DiscoverCollectibles'
 import { DiscoverEcosystemProjects } from './DiscoverEcosystemProjects'
 import { DiscoverFeaturedProjects } from './DiscoverFeaturedProjects'
 import { DiscoverLearn } from './DiscoverLearn'
+import { Platform } from 'react-native'
 
 export const Discover = (): JSX.Element => {
   const insets = useSafeAreaInsets()
@@ -76,6 +78,7 @@ export const Discover = (): JSX.Element => {
         </View>
         <DiscoverFeaturedProjects />
       </View>
+      {Platform.OS === 'android' && <DiscoverCollectibles />}
       <View
         style={{
           gap: 12

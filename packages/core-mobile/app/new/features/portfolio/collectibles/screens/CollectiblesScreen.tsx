@@ -1,6 +1,9 @@
 import {
+  AnimatedPressable,
+  Icons,
   SCREEN_WIDTH,
   SPRING_LINEAR_TRANSITION,
+  useTheme,
   View
 } from '@avalabs/k2-alpine'
 import { ListRenderItem } from '@shopify/flash-list'
@@ -11,6 +14,7 @@ import { LoadingState } from 'common/components/LoadingState'
 import { getListItemEnteringAnimation } from 'common/utils/animations'
 import React, { ReactNode, useCallback, useEffect, useMemo } from 'react'
 import { Platform, ViewStyle } from 'react-native'
+import { useHeaderMeasurements } from 'react-native-collapsible-tab-view'
 import Animated from 'react-native-reanimated'
 import { NftItem } from 'services/nft/types'
 import {
@@ -21,6 +25,7 @@ import {
   CollectibleView
 } from 'store/balance'
 import { useCollectiblesContext } from '../CollectiblesContext'
+import { CardContainer } from '../components/CardContainer'
 import { CollectibleItem } from '../components/CollectibleItem'
 import { HORIZONTAL_ITEM_GAP, HORIZONTAL_MARGIN } from '../consts'
 import {
@@ -32,6 +37,7 @@ export const CollectiblesScreen = ({
   containerStyle,
   goToCollectibleDetail,
   goToCollectibleManagement,
+  goToDiscoverCollectibles,
   onScrollResync
 }: {
   goToCollectibleDetail: (
@@ -39,9 +45,13 @@ export const CollectiblesScreen = ({
     initial: CollectibleFilterAndSortInitialState
   ) => void
   goToCollectibleManagement: () => void
+  goToDiscoverCollectibles: () => void
   onScrollResync: () => void
   containerStyle: ViewStyle
 }): ReactNode => {
+  const {
+    theme: { colors }
+  } = useTheme()
   const {
     isLoading,
     isEnabled,
@@ -236,6 +246,41 @@ export const CollectiblesScreen = ({
       ...contentContainerStyle,
       ...containerStyle
     }
+  }
+
+  const header = useHeaderMeasurements()
+
+  if (
+    Platform.OS === 'android' &&
+    collectibles.length === 0 &&
+    !isLoading &&
+    isEnabled
+  ) {
+    return (
+      <View
+        sx={{
+          flexDirection: 'row',
+          gap: HORIZONTAL_MARGIN,
+          paddingHorizontal: HORIZONTAL_MARGIN,
+          paddingTop: header.height + HORIZONTAL_MARGIN / 2
+        }}>
+        <AnimatedPressable
+          onPress={goToDiscoverCollectibles}
+          entering={getListItemEnteringAnimation(0)}>
+          <CardContainer
+            style={{
+              height: 220,
+              width: (SCREEN_WIDTH - HORIZONTAL_MARGIN * 3) / 2
+            }}>
+            <Icons.Content.Add
+              color={colors.$textPrimary}
+              width={40}
+              height={40}
+            />
+          </CardContainer>
+        </AnimatedPressable>
+      </View>
+    )
   }
 
   return (
