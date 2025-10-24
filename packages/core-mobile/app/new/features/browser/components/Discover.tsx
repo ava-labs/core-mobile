@@ -2,6 +2,7 @@ import { alpha, Text, useTheme, View } from '@avalabs/k2-alpine'
 import { useBottomTabBarHeight } from 'common/hooks/useBottomTabBarHeight'
 import { LinearGradient } from 'expo-linear-gradient'
 import React from 'react'
+import { Platform } from 'react-native'
 import { ScrollView } from 'react-native-gesture-handler'
 import Animated from 'react-native-reanimated'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
@@ -10,7 +11,6 @@ import { DiscoverCollectibles } from './DiscoverCollectibles'
 import { DiscoverEcosystemProjects } from './DiscoverEcosystemProjects'
 import { DiscoverFeaturedProjects } from './DiscoverFeaturedProjects'
 import { DiscoverLearn } from './DiscoverLearn'
-import { Platform } from 'react-native'
 
 export const Discover = (): JSX.Element => {
   const insets = useSafeAreaInsets()
