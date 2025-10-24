@@ -490,7 +490,7 @@ __metadata:
     babel-loader: 9.2.1
     babel-plugin-inline-dotenv: 1.7.0
     babel-plugin-module-resolver: 5.0.2
-    babel-plugin-react-compiler: 19.1.0-rc.2
+    babel-plugin-react-compiler: latest
     babel-plugin-react-require: 4.0.3
     base-64: 1.0.0
     big.js: 6.2.2
@@ -17402,12 +17402,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"babel-plugin-react-compiler@npm:19.1.0-rc.2":
-  version: 19.1.0-rc.2
-  resolution: "babel-plugin-react-compiler@npm:19.1.0-rc.2"
+"babel-plugin-react-compiler@npm:latest":
+  version: 1.0.0
+  resolution: "babel-plugin-react-compiler@npm:1.0.0"
   dependencies:
     "@babel/types": ^7.26.0
-  checksum: cfb156ee8c5f18dda947e42139ccd6951c8d37a1d3ad88fed25e2dfd84bc90d19758e9763ba3b3a3cb92c5a49ee19eceaf936a4d1e280979ace5f0630e824e04
+  checksum: 4c5c6c209a27477b7af8ce2361f3e5ddbc1ef59ebac5fc9d85cf91c3921752c19ac814bb7f98e7f55084db3cb585fc966aa05191018fa70e4444f2f4a980fff2
   languageName: node
   linkType: hard
 
