@@ -2,7 +2,11 @@
 import type { HybridObject } from 'react-native-nitro-modules';
 
 // Use ArrayBuffer in specs (Nitro’s zero-copy binary type)
+
 export type HexLike = string | ArrayBuffer;
+
+/** Result of x-only tweak add — mirrors libsecp: x-only pubkey + parity (0 even, 1 odd). */
+export type XOnlyTweakResult = { xOnlyPubkey: ArrayBuffer; parity: 0 | 1 };
 
 export interface Crypto extends HybridObject<{ ios: 'c++', android: 'c++' }> {
   // existing methods
@@ -18,6 +22,26 @@ export interface Crypto extends HybridObject<{ ios: 'c++', android: 'c++' }> {
    * @returns ArrayBuffer for resulting public key
    */
   pointAddScalar(publicKey: HexLike, tweak: HexLike, isCompressed?: boolean): ArrayBuffer;
+
+  /**
+   * X-only tweak add: given an x-only public key P.x and scalar t, compute Q = P + t·G.
+   * Returns null if the result is the point at infinity or the tweak is invalid (t == 0 or t ≥ n).
+   * Mirrors secp256k1_xonly_pubkey_tweak_add semantics.
+   * @param xOnly 32-byte x-only public key (ArrayBuffer or hex)
+   * @param tweak 32-byte scalar (ArrayBuffer or hex)
+   * @returns { xOnlyPubkey, parity } or null
+   */
+  xOnlyPointAddTweak(xOnly: HexLike, tweak: HexLike): XOnlyTweakResult | null;
+
+  /**
+   * Convenience: x-only tweak add that returns a full pubkey (compressed by default).
+   * Returns null when result is infinity/invalid tweak. Intended for callers that need a full point.
+   * @param xOnly 32-byte x-only public key
+   * @param tweak 32-byte scalar
+   * @param isCompressed whether to return a 33-byte compressed key (default true); if false returns 65-byte
+   * @returns ArrayBuffer (33/65 bytes) or null
+   */
+  pointAddScalarXOnly(xOnly: HexLike, tweak: HexLike, isCompressed?: boolean): ArrayBuffer | null;
 
   /**
    * Generic sign (e.g., ECDSA) using secret key.

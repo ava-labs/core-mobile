@@ -1,6 +1,7 @@
 #pragma once
 
 #include "HybridCryptoSpec.hpp"          // your generated spec
+#include "XOnlyTweakResult.hpp"
 #include <secp256k1.h>
 // Schnorr / xonly
 #include <secp256k1_schnorrsig.h>
@@ -33,6 +34,17 @@ public:
   std::shared_ptr<ArrayBuffer> getPublicKeyFromArrayBuffer(const std::shared_ptr<ArrayBuffer>& secretKey, std::optional<bool> isCompressed) override;
   std::shared_ptr<ArrayBuffer> pointAddScalar(
     const std::variant<std::string, std::shared_ptr<ArrayBuffer>>& publicKey,
+    const std::variant<std::string, std::shared_ptr<ArrayBuffer>>& tweak,
+    std::optional<bool> isCompressed) override;
+
+  // X-only tweak add (returns x-only result or null)
+  std::optional<XOnlyTweakResult> xOnlyPointAddTweak(
+    const std::variant<std::string, std::shared_ptr<ArrayBuffer>>& xOnly,
+    const std::variant<std::string, std::shared_ptr<ArrayBuffer>>& tweak) override;
+
+  // X-only tweak add returning a full pubkey (33/65) or null
+  std::optional<std::shared_ptr<ArrayBuffer>> pointAddScalarXOnly(
+    const std::variant<std::string, std::shared_ptr<ArrayBuffer>>& xOnly,
     const std::variant<std::string, std::shared_ptr<ArrayBuffer>>& tweak,
     std::optional<bool> isCompressed) override;
 

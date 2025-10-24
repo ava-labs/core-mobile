@@ -36,6 +36,11 @@ else
   fi
 fi
 
+# Resolve repo root and Yarn patches directory (works when run from subdirs)
+REPO_ROOT="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
+PATCH_DIR="$REPO_ROOT/.yarn/patches"
+mkdir -p "$PATCH_DIR"
+
 # Resolve node_modules path (supports @scope/name and optional @version)
 if [[ "$PKG" == @*/* ]]; then
   SCOPE="${PKG%%/*}"          # @scope
@@ -64,10 +69,93 @@ TMP_DIR="$(sed -nE 's/.*edit the following folder: (.*)$/\1/p' <<<"$OUT" | tail 
 [[ -d "$PKG_DIR" ]] || { echo "❌ Package dir not found: $PKG_DIR"; exit 1; }
 
 echo "→ Copying $PKG_DIR → $TMP_DIR"
-cp -a "$PKG_DIR"/. "$TMP_DIR"/
+# Use rsync to exclude android/build, android/.cxx, and node_modules if available
+if command -v rsync >/dev/null 2>&1; then
+  rsync -a \
+    --exclude '/android/build/***' \
+    --exclude '/android/.cxx/***' \
+    --exclude '/**/node_modules/***' \
+    "$PKG_DIR"/ "$TMP_DIR"/
+else
+  cp -a "$PKG_DIR"/. "$TMP_DIR"/
+  # Remove android/build, android/.cxx, and node_modules directories if present
+  find "$TMP_DIR" -type d \( -path '*/android/build' -o -path '*/android/.cxx' -o -path '*/node_modules' \) -prune -exec rm -rf {} +
+fi
+
+# Snapshot existing patches to reliably detect the new file
+PRE_PATCH_LIST=$(ls -1 "$PATCH_DIR"/*.patch 2>/dev/null || true)
 
 echo "→ yarn patch-commit"
 # NOTE: On Yarn Berry, -s takes NO message string
-yarn patch-commit -s "$TMP_DIR"
+PATCH_COMMIT_OUT="$(yarn patch-commit -s "$TMP_DIR" 2>&1 | tee /dev/stderr)"
 
-echo "✅ Patch created under .yarn/patches"
+# Try to extract the patch path directly from yarn output
+PATCH_FROM_OUTPUT=$(echo "$PATCH_COMMIT_OUT" | grep -Eo '\.yarn/patches/[^[:space:]]+\.patch' | tail -n1 || true)
+if [[ -n "$PATCH_FROM_OUTPUT" ]]; then
+  # Normalize to absolute path
+  if [[ "$PATCH_FROM_OUTPUT" = /* ]]; then
+    LATEST_PATCH="$PATCH_FROM_OUTPUT"
+  else
+    LATEST_PATCH="$REPO_ROOT/$PATCH_FROM_OUTPUT"
+  fi
+else
+  # Fallback: detect the newly created patch path via snapshot diff
+  POST_PATCH_LIST=$(ls -1 "$PATCH_DIR"/*.patch 2>/dev/null || true)
+  NEW_PATCH=""
+  if [[ -n "$POST_PATCH_LIST" ]]; then
+    for f in $POST_PATCH_LIST; do
+      echo "$PRE_PATCH_LIST" | grep -qx "$f" || NEW_PATCH="$f"
+    done
+  fi
+  # Final fallback to newest in PATCH_DIR
+  LATEST_PATCH="${NEW_PATCH:-$(ls -t "$PATCH_DIR"/*.patch 2>/dev/null | head -n1 || true)}"
+fi
+
+if [[ -n "$LATEST_PATCH" && -f "$LATEST_PATCH" ]]; then
+  echo "→ Filtering out diffs touching android/build, android/.cxx, and node_modules in: $LATEST_PATCH"
+  TMP_FILTERED="$LATEST_PATCH.filtered"
+
+  # Section-aware filter: drop entire diff sections that reference excluded paths anywhere in the section
+  awk '
+    BEGIN { havePrelude=1; prelude=""; section=""; seen=0 }
+    /^diff --git / {
+      if (seen==0) { # first diff: print prelude before deciding about sections
+        if (prelude != "") printf "%s", prelude
+        havePrelude=0
+        seen=1
+      }
+      if (section != "") {
+        if (section !~ /(android\/build\/|android\/.cxx\/|(^|\/)node_modules\/)/) {
+          printf "%s", section
+        }
+      }
+      section = $0 "\n"
+      next
+    }
+    {
+      if (seen==0) {
+        prelude = prelude $0 "\n"
+      } else {
+        section = section $0 "\n"
+      }
+      next
+    }
+    END {
+      if (seen==0) {
+        # No diff sections at all; just output prelude
+        if (prelude != "") printf "%s", prelude
+      } else {
+        if (section != "" && section !~ /(android\/build\/|android\/.cxx\/|(^|\/)node_modules\/)/) {
+          printf "%s", section
+        }
+      }
+    }
+  ' "$LATEST_PATCH" > "$TMP_FILTERED"
+
+  # Overwrite original with filtered result
+  mv "$TMP_FILTERED" "$LATEST_PATCH"
+else
+  echo "⚠️  Could not locate generated patch to filter. Skipping filtering."
+fi
+
+echo "✅ Patch created under .yarn/patches (filtered)"

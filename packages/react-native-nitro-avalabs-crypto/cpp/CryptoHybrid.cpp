@@ -1,4 +1,5 @@
 #include "CryptoHybrid.hpp"
+#include "XOnlyTweakResult.hpp"
 #include <NitroModules/ArrayBuffer.hpp>
 #include <algorithm>
 #include <cctype>
@@ -153,6 +154,76 @@ std::shared_ptr<ArrayBuffer> CryptoHybrid::pointAddScalar(
   }
 
   return toAB(serializePubkey(pk, comp));
+}
+
+/* ------------------- xOnlyPointAddTweak: x-only P + t·G ------------------- */
+std::optional<XOnlyTweakResult> CryptoHybrid::xOnlyPointAddTweak(
+  const std::variant<std::string, std::shared_ptr<ArrayBuffer>>& xOnly,
+  const std::variant<std::string, std::shared_ptr<ArrayBuffer>>& tweak
+) {
+  // Parse & validate inputs (exactly 32 bytes each for x-only and tweak)
+  auto x32 = require32(xOnly,  "xOnly");
+  auto t32 = require32(tweak,  "tweak");
+
+  // Parse x-only pubkey
+  secp256k1_xonly_pubkey xpk{};
+  if (secp256k1_xonly_pubkey_parse(ctx(), &xpk, x32.data()) != 1) {
+    return std::nullopt; // invalid x-only input
+  }
+
+  // Compute Q = P + t·G (into a *full* pubkey)
+  secp256k1_pubkey q{};
+  if (secp256k1_xonly_pubkey_tweak_add(ctx(), &q, &xpk, t32.data()) != 1) {
+    // per libsecp: returns 0 on invalid tweak (0 or >= n) or if result is infinity
+    return std::nullopt;
+  }
+
+  // Convert resulting full pubkey back to x-only and get parity
+  secp256k1_xonly_pubkey qx{};
+  int parity = 0;
+  if (secp256k1_xonly_pubkey_from_pubkey(ctx(), &qx, &parity, &q) != 1) {
+    return std::nullopt; // should not happen if tweak_add succeeded, but be defensive
+  }
+
+  unsigned char out32[32];
+  if (secp256k1_xonly_pubkey_serialize(ctx(), out32, &qx) != 1) {
+    return std::nullopt;
+  }
+
+  XOnlyTweakResult res{};
+  res.xOnlyPubkey = toAB(std::vector<uint8_t>(out32, out32 + 32));
+  res.parity = static_cast<int>(parity);
+  return res;
+}
+
+/* -------- pointAddScalarXOnly: return full key (33/65) from x-only op ------- */
+std::optional<std::shared_ptr<ArrayBuffer>> CryptoHybrid::pointAddScalarXOnly(
+  const std::variant<std::string, std::shared_ptr<ArrayBuffer>>& xOnly,
+  const std::variant<std::string, std::shared_ptr<ArrayBuffer>>& tweak,
+  std::optional<bool> isCompressed
+) {
+  bool comp = isCompressed.value_or(true);
+
+  auto x32 = require32(xOnly,  "xOnly");
+  auto t32 = require32(tweak,  "tweak");
+
+  secp256k1_xonly_pubkey xpk{};
+  if (secp256k1_xonly_pubkey_parse(ctx(), &xpk, x32.data()) != 1) {
+    return std::nullopt;
+  }
+
+  secp256k1_pubkey q{};
+  if (secp256k1_xonly_pubkey_tweak_add(ctx(), &q, &xpk, t32.data()) != 1) {
+    return std::nullopt; // invalid tweak or infinity
+  }
+
+  // Serialize as normal EC pubkey (compressed/uncompressed)
+  try {
+    auto out = serializePubkey(q, comp);
+    return toAB(out);
+  } catch (...) {
+    return std::nullopt;
+  }
 }
 
 /* ----------------------------- ECDSA sign/verify -------------------------- */
