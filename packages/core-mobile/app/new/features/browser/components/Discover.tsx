@@ -2,6 +2,7 @@ import { alpha, Text, useTheme, View } from '@avalabs/k2-alpine'
 import { useBottomTabBarHeight } from 'common/hooks/useBottomTabBarHeight'
 import { LinearGradient } from 'expo-linear-gradient'
 import React from 'react'
+import { Platform } from 'react-native'
 import { ScrollView } from 'react-native-gesture-handler'
 import Animated from 'react-native-reanimated'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
@@ -77,9 +78,7 @@ export const Discover = (): JSX.Element => {
         </View>
         <DiscoverFeaturedProjects />
       </View>
-
-      <DiscoverCollectibles />
-
+      {Platform.OS === 'android' && <DiscoverCollectibles />}
       <View
         style={{
           gap: 12
