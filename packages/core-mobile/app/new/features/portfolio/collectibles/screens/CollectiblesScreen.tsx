@@ -174,7 +174,7 @@ export const CollectiblesScreen = ({
       )
     }
 
-    return <ErrorState title="No Collectibles found" description="" />
+    return <ErrorState title="No collectibles found" description="" />
   }, [
     isLoading,
     isEnabled,
