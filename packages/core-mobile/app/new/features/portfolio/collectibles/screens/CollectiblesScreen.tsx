@@ -150,7 +150,7 @@ export const CollectiblesScreen = ({
     if (filteredAndSorted.length === 0 && hasFilters) {
       return (
         <ErrorState
-          title="No Collectibles found"
+          title="No collectibles found"
           description="
               Try changing the filter settings or reset the filter to see all assets."
           button={{
@@ -173,6 +173,8 @@ export const CollectiblesScreen = ({
         />
       )
     }
+
+    return <ErrorState title="No collectibles found" description="" />
   }, [
     isLoading,
     isEnabled,
@@ -248,7 +250,12 @@ export const CollectiblesScreen = ({
 
   const header = useHeaderMeasurements()
 
-  if (collectibles.length === 0 && !isLoading && isEnabled) {
+  if (
+    Platform.OS === 'android' &&
+    collectibles.length === 0 &&
+    !isLoading &&
+    isEnabled
+  ) {
     return (
       <View
         sx={{
