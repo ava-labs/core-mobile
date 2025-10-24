@@ -150,7 +150,7 @@ export const CollectiblesScreen = ({
     if (filteredAndSorted.length === 0 && hasFilters) {
       return (
         <ErrorState
-          title="No Collectibles found"
+          title="No collectibles found"
           description="
               Try changing the filter settings or reset the filter to see all assets."
           button={{
