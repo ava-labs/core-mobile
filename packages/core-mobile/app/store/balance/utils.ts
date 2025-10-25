@@ -11,6 +11,9 @@ import { LocalTokenWithBalance } from './types'
 
 const UPDATE_PERIOD = 15
 
+// 5 minutes
+export const XP_POLLING_INTERVAL = 300000
+
 export function getLocalTokenId(
   token: TokenWithBalance | NetworkContractToken
 ): string {

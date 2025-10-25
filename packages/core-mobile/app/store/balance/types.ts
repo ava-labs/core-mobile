@@ -48,8 +48,16 @@ export enum QueryStatus {
 }
 
 export type BalanceState = {
-  status: QueryStatus
+  status: {
+    all: QueryStatus
+    xp: QueryStatus
+  }
   balances: Balances
+}
+
+export enum QueryType {
+  XP = 'xp',
+  ALL = 'all'
 }
 
 export const assetPDisplayNames: Record<string, string> = {
