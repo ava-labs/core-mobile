@@ -16,6 +16,7 @@ import { addUnifiedBridgeListeners } from 'store/unifiedBridge/listeners'
 import { AppAddListener, AppStartListening } from 'store/types'
 import { addCurrencyListeners } from 'store/settings/currency/listeners'
 import { addMeldListeners } from 'store/meld/listeners'
+import { addBranchListeners } from 'store/branch/listener'
 
 const listener = createListenerMiddleware({
   onError: (error, errorInfo) => {
@@ -55,6 +56,8 @@ addAppearanceListeners(startListening)
 addCurrencyListeners(startListening)
 
 addMeldListeners(startListening)
+
+addBranchListeners(startListening)
 
 export const addAppListener = addListener as AppAddListener
 
