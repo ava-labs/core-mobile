@@ -1,15 +1,10 @@
-import './profiler'
+//import './profiler'
+import { observe } from './PerformanceTracer'
+observe();
+
 import { enableFreeze } from 'react-native-screens'
 
 enableFreeze(true)
-
-
-
-
-
-
-
-
 
 import { AppRegistry, LogBox, Platform, UIManager } from 'react-native'
 import './polyfills'
