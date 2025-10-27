@@ -82,5 +82,6 @@ export default {
   solana: 'Solana',
   swapText: 'Swap',
   swapVerticalIcon: 'swap_vertical_icon',
-  trendingDetailSwapBtn: 'token_detail_swap_btn'
+  trendingDetailSwapBtn: 'token_detail_swap_btn',
+  collectiblesHandler: 'collectibles_handler'
 }

@@ -252,7 +252,7 @@ class PortfolioPage {
   }
 
   async tapCollectiblesTab() {
-    await actions.tap(this.collectiblesTab)
+    await actions.click(this.collectiblesTab)
   }
 
   async tapDefiTab() {
@@ -439,14 +439,6 @@ class PortfolioPage {
       (await actions.getText(selectors.getById('list_fiat_balance__0'))) ?? ''
     console.log(`${fiatBal}`)
     assert(fiatBal.includes(currency), 'Fiat currency not found')
-  }
-
-  async tapSend() {
-    await actions.tap(this.sendButton)
-  }
-
-  async tapSwap() {
-    await actions.tap(this.swapButton)
   }
 
   async tapBuy() {

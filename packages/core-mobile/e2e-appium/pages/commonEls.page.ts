@@ -266,7 +266,6 @@ class CommonElsPage {
   ) {
     await actions.click(filterDropdown)
     await this.selectDropdownItem(item)
-    console.log('3 done selecting dropdown item')
   }
 
   async getBalanceHeaderAccountName(whichScreen: string) {
@@ -434,7 +433,7 @@ class CommonElsPage {
       ? `//XCUIElementTypeCell//*[contains(@name, "${item}")]`
       : `//android.widget.ListView//*[contains(@text, "${item}")]`
     const ele = selectors.getByXpath(xpath)
-    await actions.tap(ele)
+    await actions.click(ele)
   }
 
   async tapDelete() {
