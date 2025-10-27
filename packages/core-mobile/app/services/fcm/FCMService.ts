@@ -79,10 +79,6 @@ class FCMService {
           ? this.#prepareDataOnlyNotificationData(result.data.data)
           : this.#prepareNotificationData(result.data)
 
-      AnalyticsService.capture('PushNotificationReceived', {
-        channelId: notificationData.channelId as string,
-        deeplinkUrl: notificationData.data?.url as string
-      })
 
       await NotificationsService.displayNotification(notificationData).catch(
         Logger.error
@@ -246,11 +242,6 @@ class FCMService {
       const notificationData = this.#prepareDataOnlyNotificationData(
         result.data.data
       )
-
-      AnalyticsService.capture('PushNotificationReceived', {
-        channelId: notificationData.channelId as string,
-        deeplinkUrl: notificationData.data?.url as string
-      })
 
       await NotificationsService.displayNotification(notificationData).catch(
         Logger.error
