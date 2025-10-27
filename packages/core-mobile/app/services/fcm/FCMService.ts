@@ -79,7 +79,6 @@ class FCMService {
           ? this.#prepareDataOnlyNotificationData(result.data.data)
           : this.#prepareNotificationData(result.data)
 
-
       await NotificationsService.displayNotification(notificationData).catch(
         Logger.error
       )

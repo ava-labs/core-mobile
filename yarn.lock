@@ -562,6 +562,7 @@ __metadata:
     react-native-ble-plx: 3.4.0
     react-native-bootsplash: 6.3.10
     react-native-bottom-tabs: 0.10.1
+    react-native-branch: 6.8.0
     react-native-chart-kit: 6.12.0
     react-native-check-version: 1.4.0
     react-native-circular-progress: 1.4.0
@@ -32480,6 +32481,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"react-native-branch@npm:6.8.0":
+  version: 6.8.0
+  resolution: "react-native-branch@npm:6.8.0"
+  peerDependencies:
+    react-native: ">= 0.60"
+  checksum: 04788c174864e323d19e675d504fd930b325207a48e8379eff1a8e22336090c8491d77f46900affb9568ffd5f36334e6d72bbd008512317301c173999de63d09
+  languageName: node
+  linkType: hard
+
 "react-native-chart-kit@npm:6.12.0":
   version: 6.12.0
   resolution: "react-native-chart-kit@npm:6.12.0"
@@ -33189,7 +33199,7 @@ react-native-webview@ava-labs/react-native-webview:
   peerDependencies:
     react: "*"
     react-native: "*"
-  checksum: fbf6f420002cabeaf80eda574a5ebfa1e536fe6dfe822f136e7dfb24feaf874e5702fa31b405b5e601a95d48c343bd502f42274e3e1549c3daddc8721fc3fce6
+  checksum: e08d1254d04f3074970b63cdf0a363d6b189009270d457e868a26ef534addd69b320b85bef2a22e4eddb79006751bded431b56aaf2baf41976a6d0a5a2a2b91e
   languageName: node
   linkType: hard
 

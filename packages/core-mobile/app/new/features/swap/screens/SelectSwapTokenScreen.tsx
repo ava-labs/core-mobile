@@ -17,6 +17,7 @@ import useCChainNetwork from 'hooks/earn/useCChainNetwork'
 import useSolanaNetwork from 'hooks/earn/useSolanaNetwork'
 import { useSelector } from 'react-redux'
 import { selectIsSolanaSwapBlocked } from 'store/posthog'
+import { ChainId } from '@avalabs/core-chains-sdk'
 
 export const SelectSwapTokenScreen = ({
   tokens,
@@ -39,7 +40,17 @@ export const SelectSwapTokenScreen = ({
   const isSolanaSwapBlocked = useSelector(selectIsSolanaSwapBlocked)
   const networkFilters = useMemo(() => {
     if (isSolanaSwapBlocked) return undefined
-    return [cChainNetwork, solanaNetwork].filter(network => !!network)
+    return [cChainNetwork, solanaNetwork]
+      .filter(network => !!network)
+      .map(network => {
+        if (network.chainId === ChainId.AVALANCHE_MAINNET_ID) {
+          return {
+            ...network,
+            name: 'Avalanche'
+          }
+        }
+        return network
+      })
   }, [isSolanaSwapBlocked, cChainNetwork, solanaNetwork])
 
   const handleSelectToken = (token: LocalTokenWithBalance): void => {

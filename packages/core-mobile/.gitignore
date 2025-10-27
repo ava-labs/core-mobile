@@ -94,3 +94,6 @@ GoogleService-Info.plist*
 
 expo-env.d.ts
 # @end expo-cli
+
+# Branch
+/ios/config.xcconfig

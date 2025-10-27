@@ -34,6 +34,7 @@ export type MarkrQuote = {
   aggregator: {
     id: string
     name: string
+    logo_url?: string
   }
   tokenIn: string
   tokenInDecimals: number

@@ -14,7 +14,8 @@ export interface DeepLink {
 export enum DeepLinkOrigin {
   ORIGIN_DEEPLINK = 'deeplink',
   ORIGIN_QR_CODE = 'qr-code',
-  ORIGIN_NOTIFICATION = 'notification'
+  ORIGIN_NOTIFICATION = 'notification',
+  ORIGIN_BRANCH = 'branch'
 }
 
 export const PROTOCOLS = {
