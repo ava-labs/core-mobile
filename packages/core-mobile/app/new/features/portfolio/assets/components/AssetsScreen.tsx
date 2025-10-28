@@ -20,6 +20,7 @@ import {
   selectIsAllBalancesInaccurate,
   selectIsBalanceLoadedForAccount,
   selectIsLoadingBalances,
+  selectIsPollingBalances,
   selectIsRefetchingBalances
 } from 'store/balance'
 import { selectEnabledNetworks } from 'store/network'
@@ -58,6 +59,7 @@ const AssetsScreen: FC<Props> = ({
   )
   const isAllBalancesError = useSelector(selectIsAllBalancesError)
   const isBalanceLoading = useSelector(selectIsLoadingBalances)
+  const isBalancePolling = useSelector(selectIsPollingBalances)
   const isRefetchingBalance = useSelector(selectIsRefetchingBalances)
   const tokenVisibility = useSelector(selectTokenVisibility)
   const balanceTotalInCurrency = useSelector(
@@ -81,7 +83,7 @@ const AssetsScreen: FC<Props> = ({
   )
 
   const isLoadingBalance =
-    isRefetchingBalance || isBalanceLoading || !isBalanceLoaded
+    isRefetchingBalance || isBalanceLoading || isBalancePolling
 
   const isGridView = view.selected === AssetManageView.Grid
   const numColumns = isGridView ? 2 : 1
