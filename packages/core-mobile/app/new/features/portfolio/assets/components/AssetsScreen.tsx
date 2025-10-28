@@ -80,7 +80,9 @@ const AssetsScreen: FC<Props> = ({
     [goToTokenManagement, view, onScrollResync]
   )
 
-  const isLoadingBalance = isRefetchingBalance || isBalanceLoading
+  const isLoadingBalance =
+    isRefetchingBalance || isBalanceLoading || !isBalanceLoaded
+
   const isGridView = view.selected === AssetManageView.Grid
   const numColumns = isGridView ? 2 : 1
 
