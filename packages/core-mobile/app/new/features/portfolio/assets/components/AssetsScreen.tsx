@@ -20,6 +20,7 @@ import {
   selectIsAllBalancesInaccurate,
   selectIsBalanceLoadedForAccount,
   selectIsLoadingBalances,
+  selectIsPollingBalances,
   selectIsRefetchingBalances
 } from 'store/balance'
 import { selectEnabledNetworks } from 'store/network'
@@ -58,6 +59,7 @@ const AssetsScreen: FC<Props> = ({
   )
   const isAllBalancesError = useSelector(selectIsAllBalancesError)
   const isBalanceLoading = useSelector(selectIsLoadingBalances)
+  const isBalancePolling = useSelector(selectIsPollingBalances)
   const isRefetchingBalance = useSelector(selectIsRefetchingBalances)
   const tokenVisibility = useSelector(selectTokenVisibility)
   const balanceTotalInCurrency = useSelector(
@@ -80,11 +82,13 @@ const AssetsScreen: FC<Props> = ({
     [goToTokenManagement, view, onScrollResync]
   )
 
-  const isLoadingBalance = isRefetchingBalance || isBalanceLoading
+  const isLoadingBalance =
+    isRefetchingBalance || isBalanceLoading || isBalancePolling
+
   const isGridView = view.selected === AssetManageView.Grid
   const numColumns = isGridView ? 2 : 1
 
-  // Only show loading state for initial load, not during background polling
+  // Only show loading state for initial load
   const isInitialLoading = isLoadingBalance && !isBalanceLoaded
 
   const hasNoAssets =
