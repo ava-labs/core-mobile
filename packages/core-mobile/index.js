@@ -1,3 +1,7 @@
+import { enableFreeze } from 'react-native-screens'
+
+enableFreeze(true)
+
 import { AppRegistry, LogBox, Platform, UIManager } from 'react-native'
 import './polyfills'
 import Big from 'big.js'
