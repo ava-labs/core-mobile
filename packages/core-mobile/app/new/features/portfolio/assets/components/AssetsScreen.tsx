@@ -88,7 +88,7 @@ const AssetsScreen: FC<Props> = ({
   const isGridView = view.selected === AssetManageView.Grid
   const numColumns = isGridView ? 2 : 1
 
-  // Only show loading state for initial load, not during background polling
+  // Only show loading state for initial load
   const isInitialLoading = isLoadingBalance && !isBalanceLoaded
 
   const hasNoAssets =
