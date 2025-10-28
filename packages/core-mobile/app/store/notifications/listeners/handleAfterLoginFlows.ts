@@ -1,6 +1,9 @@
+import { showAlert } from '@avalabs/k2-alpine'
 import { AuthorizationStatus } from '@notifee/react-native'
 import { AnyAction } from '@reduxjs/toolkit'
 import { navigateWithPromise } from 'common/utils/navigateWithPromise'
+import { waitForInteractions } from 'common/utils/waitForInteractions'
+import AnalyticsService from 'services/analytics/AnalyticsService'
 import { AppUpdateService } from 'services/AppUpdateService/AppUpdateService'
 import NotificationsService from 'services/notifications/NotificationsService'
 import {
@@ -14,8 +17,6 @@ import {
   setViewOnce,
   ViewOnceKey
 } from 'store/viewOnce'
-import { showAlert } from '@avalabs/k2-alpine'
-import { waitForInteractions } from 'common/utils/waitForInteractions'
 import Config from 'react-native-config'
 import { turnOnAllNotifications } from '../slice'
 
@@ -99,6 +100,7 @@ const promptEnableNotificationsIfNeeded = async (
         {
           text: 'Not now',
           onPress: () => {
+            AnalyticsService.capture('PushNotificationRejected')
             resolve()
           }
         },
@@ -113,6 +115,7 @@ const promptEnableNotificationsIfNeeded = async (
               return
             }
             dispatch(turnOnAllNotifications())
+            AnalyticsService.capture('PushNotificationAccepted')
             resolve()
           }
         }
