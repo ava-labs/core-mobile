@@ -9,7 +9,6 @@ describe('Send transaction', () => {
     await warmup()
     await portfolioPage.tapCollectiblesTab()
     await common.filter(commonLoc.cChain)
-    await portfolioPage.selectView()
     await txPage.sendNft()
     await txPage.verifySuccessToast()
   })

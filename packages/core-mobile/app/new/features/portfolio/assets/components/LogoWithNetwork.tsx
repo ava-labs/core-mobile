@@ -112,7 +112,7 @@ export const LogoWithNetwork = ({
             right: -4,
             backgroundColor: 'transparent'
           }}
-          testID="network_logo">
+          testID={`network_logo__${network.chainName}`}>
           {renderNetworkLogo(token, network)}
         </View>
       ) : undefined}

@@ -268,6 +268,11 @@ class CommonElsPage {
     await this.selectDropdownItem(item)
   }
 
+  async selectDropdown(name: string, dropdownItem: string) {
+    await actions.click(selectors.getById(`${name}_dropdown_btn`))
+    await this.selectDropdownItem(dropdownItem)
+  }
+
   async getBalanceHeaderAccountName(whichScreen: string) {
     return await actions.getText(
       selectors.getById(`${whichScreen}__${commonEls.balanceHeaderAccountName}`)
@@ -317,12 +322,16 @@ class CommonElsPage {
     await driver.back()
   }
 
-  async goBack() {
+  async goBack(nxtEle: ChainablePromiseElement) {
     await actions.delay(1000)
     try {
-      await actions.tap(this.backButton)
+      await actions.click(this.backButton)
     } catch (e) {
-      await actions.tap(this.backButton)
+      if (nxtEle) {
+        await actions.tap(this.backButton, nxtEle)
+      } else {
+        await actions.tap(this.backButton)
+      }
     }
     await actions.delay(1500)
   }
@@ -367,11 +376,6 @@ class CommonElsPage {
   async dismissBottomSheet(element = this.grabber) {
     await actions.waitFor(element, 20000)
     await actions.dragAndDrop(this.grabber, [0, 1500])
-  }
-
-  async selectDropdown(name: string, dropdownItem: string) {
-    await actions.tap(selectors.getById(`${name}_dropdown_btn`))
-    await actions.tap(selectors.getById(`dropdown_item__${dropdownItem}`))
   }
 
   async visibleDropdown(name: string, isVisible = true) {

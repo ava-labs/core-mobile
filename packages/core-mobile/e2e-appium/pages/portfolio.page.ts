@@ -319,10 +319,27 @@ class PortfolioPage {
     await actions.tap(selectors.getById(portfolio.activeNetwork + network))
   }
 
-  async tapToken(token = 'Avalanche') {
+  async tapToken(token = 'avax') {
     await actions.tap(
       selectors.getById(`${portfolio.portfolioTokenItem}${token}`)
     )
+  }
+
+  async getFiatBalance() {
+    const balance = await actions.getText(
+      selectors.getById('token_header_fiat_balance')
+    )
+    const amount = balance.split(' ')[0] || '0'
+    console.log(`Fiat balance: ${amount}`)
+    return amount
+  }
+
+  async verifyOwnedTokenActionButtons(buttons: string[]) {
+    for (const button of buttons) {
+      if (button) {
+        await actions.waitFor(selectors.getById(`action_button__${button}`))
+      }
+    }
   }
 
   async verifyActiveNetwork(network: string) {
@@ -368,14 +385,13 @@ class PortfolioPage {
   async verifyAssetRow(index: number, isListView = true) {
     const prefix = isListView ? 'list' : 'grid'
     await actions.waitFor(selectors.getById(`${prefix}_fiat_balance__${index}`))
-    await actions.waitFor(
+    await actions.isVisible(
       selectors.getById(`${prefix}_token_balance__${index}`)
     )
-    await actions.waitFor(selectors.getById(`${prefix}_token_name__${index}`))
   }
 
   async displayAssetsByNetwork(network: string) {
-    if (network !== commonEls.bitcoinNetwork) {
+    if (network !== commonEls.bitcoin) {
       if (network === commonEls.pChain_2 || network === commonEls.xChain_2) {
         try {
           await actions.waitFor(selectors.getByText('No assets yet'))
@@ -389,28 +405,28 @@ class PortfolioPage {
 
     const networksToHide = {
       [commonEls.cChain_2]: [
-        commonEls.pChain_2,
-        commonEls.xChain_2,
+        commonEls.pChain_3,
+        commonEls.xChain_3,
         commonEls.ethereum
       ],
-      [commonEls.pChain_2]: [
+      [commonEls.pChain_3]: [
         commonEls.cChain_2,
-        commonEls.xChain_2,
+        commonEls.xChain_3,
         commonEls.ethereum
       ],
-      [commonEls.xChain_2]: [
+      [commonEls.xChain_3]: [
         commonEls.pChain_2,
         commonEls.cChain_2,
         commonEls.ethereum
       ],
       [commonEls.ethereum]: [
-        commonEls.pChain_2,
-        commonEls.xChain_2,
+        commonEls.pChain_3,
+        commonEls.xChain_3,
         commonEls.cChain_2
       ],
       default: [
-        commonEls.pChain_2,
-        commonEls.xChain_2,
+        commonEls.pChain_3,
+        commonEls.xChain_3,
         commonEls.ethereum,
         commonEls.cChain_2
       ]
@@ -462,8 +478,15 @@ class PortfolioPage {
   }
 
   async selectView(viewType = 'List view') {
-    await actions.tap(this.view)
+    await actions.click(this.view)
     await commonElsPage.selectDropdownItem(viewType)
+  }
+
+  async verifyOwnedTokenDetail(token: string, buttons: string[]) {
+    await this.tapToken(token)
+    await this.verifyOwnedTokenActionButtons(buttons)
+    const fiatBalance = await this.getFiatBalance()
+    await commonElsPage.goBack(selectors.getByText(fiatBalance))
   }
 }
 

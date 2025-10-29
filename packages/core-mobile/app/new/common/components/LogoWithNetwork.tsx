@@ -44,9 +44,8 @@ export const LogoWithNetwork = ({
             right: offset,
             backgroundColor: 'transparent'
           }}
-          testID="network_logo">
+          testID={`network_logo__${network.chainName}`}>
           <TokenLogo
-            testID={`network_logo__${network.chainName}`}
             size={networkLogoWidth}
             symbol={network.networkToken.symbol}
             chainId={network.chainId}

@@ -5,16 +5,19 @@ import Animated from 'react-native-reanimated'
 
 export const CardContainer = ({
   style,
-  children
+  children,
+  testID
 }: {
   style: ViewStyle | ViewStyle[]
   children?: ReactNode
+  testID?: string
 }): JSX.Element => {
   const {
     theme: { colors }
   } = useTheme()
   return (
     <Animated.View
+      testID={testID}
       style={[
         {
           height: 220,

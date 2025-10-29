@@ -48,7 +48,7 @@ export const LogoWithNetwork = ({
           borderColor,
           borderWidth: 2
         }}
-        testID="network_logo"
+        testID={`network_logo__${chain?.name}`}
       />
     </View>
   )

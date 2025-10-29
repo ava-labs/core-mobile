@@ -264,9 +264,9 @@ class TransactionsPage {
     await this.verifySuccessToast()
   }
 
-  async sendNft(nftName = 'BUNNY', account = txLoc.accountTwo) {
+  async sendNft(nftName = 'ABC', account = txLoc.accountTwo) {
     await this.tapNftByName(nftName)
-    await actions.swipe('up', 0.2, this.collectiblesHandler)
+    await actions.dragAndDrop(this.collectiblesHandler, [0, -1000])
     await this.tapSend()
     await this.dismissTransactionOnboarding()
     await this.typeSearchBar(account)
@@ -274,8 +274,10 @@ class TransactionsPage {
     await this.tapApprove()
   }
 
-  async tapNftByName(nftName = 'BUNNY') {
-    await actions.tap(selectors.getById(`collectible_name__${nftName}`))
+  async tapNftByName(nftName = 'ABC') {
+    const ele = selectors.getById(`collectible_name__${nftName}`)
+    await actions.waitFor(ele, 40000)
+    await actions.click(ele)
   }
 }
 
