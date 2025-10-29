@@ -3,6 +3,7 @@ import Firebase
 import React
 import ReactAppDependencyProvider
 import RNBranch
+import AppTrackingTransparency
 
 @main
 class AppDelegate: ExpoAppDelegate {
@@ -22,7 +23,19 @@ class AppDelegate: ExpoAppDelegate {
     if let displayName = Bundle.main.object(forInfoDictionaryKey: "CFBundleDisplayName") as? String, displayName.lowercased().contains("internal")  {
       RNBranch.useTestInstance()
     }
-    RNBranch.initSession(launchOptions: launchOptions, isReferrable: true)
+    
+    if #available(iOS 14.0, *)  {
+      // Check that `trackingAuthorizationStatus` is `notDetermined`, otherwise prompt will not display
+      if ATTrackingManager.trackingAuthorizationStatus == .notDetermined {
+        ATTrackingManager.requestTrackingAuthorization { (status) in
+          RNBranch.initSession(launchOptions: launchOptions, isReferrable: true)
+        }
+      } else {
+        RNBranch.initSession(launchOptions: launchOptions, isReferrable: true)
+      }
+    } else {
+      RNBranch.initSession(launchOptions: launchOptions, isReferrable: true)
+    }
     
     let delegate = ReactNativeDelegate()
     let factory = ExpoReactNativeFactory(delegate: delegate)

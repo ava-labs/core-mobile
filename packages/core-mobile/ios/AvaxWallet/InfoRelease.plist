@@ -109,5 +109,7 @@
 		<string>nlfvn-alternate.test-app.link</string>
 		<string>nlfvn.app.link</string>
 	</array>
+  <key>NSUserTrackingUsageDescription</key>
+  <string>To personalize your experience, and improve our services, your activity will be used to understand how our features are used.</string>
 </dict>
 </plist>
