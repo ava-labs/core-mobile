@@ -20,10 +20,10 @@ class AppDelegate: ExpoAppDelegate {
     RNFBAppCheckModule.sharedInstance()
     FirebaseApp.configure()
     
-//    if let displayName = Bundle.main.object(forInfoDictionaryKey: "CFBundleDisplayName") as? String, displayName.lowercased().contains("internal")  {
-//      RNBranch.useTestInstance()
-//    }
-    
+    RNBranch.enableLogging()
+    if let displayName = Bundle.main.object(forInfoDictionaryKey: "CFBundleDisplayName") as? String, displayName.lowercased().contains("internal")  {
+      RNBranch.useTestInstance()
+    }
     // Delay for 1 second before initializing Branch SDK
     DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
       if #available(iOS 14.0, *)  {
