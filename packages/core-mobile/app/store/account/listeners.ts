@@ -35,6 +35,7 @@ import {
   migrateRemainingActiveAccounts,
   shouldMigrateActiveAccounts
 } from './utils'
+
 const initAccounts = async (
   _action: AnyAction,
   listenerApi: AppListenerEffectAPI
