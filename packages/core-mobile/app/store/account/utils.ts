@@ -140,7 +140,7 @@ export const migrateRemainingActiveAccounts = async ({
     } else {
       if (shouldShowToast) {
         transactionSnackbar.plain({
-          message: 'No accounts found',
+          message: 'No additional accounts found',
           toastId
         })
       }

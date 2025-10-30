@@ -266,7 +266,11 @@ class CommonElsPage {
   ) {
     await actions.click(filterDropdown)
     await this.selectDropdownItem(item)
-    console.log('3 done selecting dropdown item')
+  }
+
+  async selectDropdown(name: string, dropdownItem: string) {
+    await actions.click(selectors.getById(`${name}_dropdown_btn`))
+    await this.selectDropdownItem(dropdownItem)
   }
 
   async getBalanceHeaderAccountName(whichScreen: string) {
@@ -318,12 +322,16 @@ class CommonElsPage {
     await driver.back()
   }
 
-  async goBack() {
+  async goBack(nxtEle: ChainablePromiseElement) {
     await actions.delay(1000)
     try {
-      await actions.tap(this.backButton)
+      await actions.click(this.backButton)
     } catch (e) {
-      await actions.tap(this.backButton)
+      if (nxtEle) {
+        await actions.tap(this.backButton, nxtEle)
+      } else {
+        await actions.tap(this.backButton)
+      }
     }
     await actions.delay(1500)
   }
@@ -368,11 +376,6 @@ class CommonElsPage {
   async dismissBottomSheet(element = this.grabber) {
     await actions.waitFor(element, 20000)
     await actions.dragAndDrop(this.grabber, [0, 1500])
-  }
-
-  async selectDropdown(name: string, dropdownItem: string) {
-    await actions.tap(selectors.getById(`${name}_dropdown_btn`))
-    await actions.tap(selectors.getById(`dropdown_item__${dropdownItem}`))
   }
 
   async visibleDropdown(name: string, isVisible = true) {
@@ -434,7 +437,7 @@ class CommonElsPage {
       ? `//XCUIElementTypeCell//*[contains(@name, "${item}")]`
       : `//android.widget.ListView//*[contains(@text, "${item}")]`
     const ele = selectors.getByXpath(xpath)
-    await actions.tap(ele)
+    await actions.click(ele)
   }
 
   async tapDelete() {

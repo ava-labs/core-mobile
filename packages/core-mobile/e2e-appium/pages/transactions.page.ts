@@ -19,6 +19,10 @@ class TransactionsPage {
     return selectors.getById(txLoc.trendingDetailSwapBtn)
   }
 
+  get collectiblesHandler() {
+    return selectors.getById(txLoc.collectiblesHandler)
+  }
+
   get swapVerticalIcon() {
     return selectors.getById(txLoc.swapVerticalIcon)
   }
@@ -132,6 +136,10 @@ class TransactionsPage {
     await actions.tap(this.approveBtn)
   }
 
+  async tapRecentAccount(account: string) {
+    await actions.tap(selectors.getById(`recent_contacts__${account}`))
+  }
+
   async send(
     token: string | undefined,
     amount: string,
@@ -140,7 +148,7 @@ class TransactionsPage {
     await this.tapSend()
     await this.dismissTransactionOnboarding()
     await this.typeSearchBar(account)
-    await actions.tap(selectors.getById(`recent_contacts__${account}`))
+    await this.tapRecentAccount(account)
     if (token) {
       await this.goToSelectTokenList()
       await this.selectToken(token)
@@ -254,6 +262,22 @@ class TransactionsPage {
     await this.tapNext()
     await this.tapApprove()
     await this.verifySuccessToast()
+  }
+
+  async sendNft(nftName = 'ABC', account = txLoc.accountTwo) {
+    await this.tapNftByName(nftName)
+    await actions.dragAndDrop(this.collectiblesHandler, [0, -1000])
+    await this.tapSend()
+    await this.dismissTransactionOnboarding()
+    await this.typeSearchBar(account)
+    await this.tapRecentAccount(account)
+    await this.tapApprove()
+  }
+
+  async tapNftByName(nftName = 'ABC') {
+    const ele = selectors.getById(`collectible_name__${nftName}`)
+    await actions.waitFor(ele, 40000)
+    await actions.click(ele)
   }
 }
 
