@@ -22,6 +22,7 @@ import { RootState } from 'store/types'
 import { PriceChangeStatus } from '@avalabs/k2-alpine'
 import { selectActiveWallet } from 'store/wallet/slice'
 import { NetworkVMType } from '@avalabs/vm-module-types'
+import { isPlatformAccount } from 'store/account/utils'
 
 export const usePortfolioHeader = (): {
   balanceTotalInCurrency: number
@@ -41,13 +42,6 @@ export const usePortfolioHeader = (): {
   const activeWallet = useFocusedSelector(selectActiveWallet)
   const activeAccount = useFocusedSelector(selectActiveAccount)
   const tokenVisibility = useFocusedSelector(selectTokenVisibility)
-
-  const isPlatformAccount = useMemo(() => {
-    return (
-      activeAccount?.id === NetworkVMType.AVM ||
-      activeAccount?.id === NetworkVMType.PVM
-    )
-  }, [activeAccount])
 
   const balanceTotalInCurrencyForAccount = useFocusedSelector(
     selectBalanceTotalInCurrencyForAccount(
@@ -78,11 +72,11 @@ export const usePortfolioHeader = (): {
     )
   )
 
-  const balanceTotalInCurrency = isPlatformAccount
+  const balanceTotalInCurrency = isPlatformAccount(activeAccount?.id ?? '')
     ? balanceTotalInCurrencyForXpNetwork
     : balanceTotalInCurrencyForAccount
 
-  const balanceAccurate = isPlatformAccount
+  const balanceAccurate = isPlatformAccount(activeAccount?.id ?? '')
     ? xpBalanceAccurate
     : accountBalanceAccurate
 
@@ -122,7 +116,9 @@ export const usePortfolioHeader = (): {
     [isXpBalanceLoading, isRefetchingXpBalance, isXpBalanceLoaded]
   )
 
-  const isLoading = isPlatformAccount ? isXpAccountLoading : isAccountLoading
+  const isLoading = isPlatformAccount(activeAccount?.id ?? '')
+    ? isXpAccountLoading
+    : isAccountLoading
 
   const { formatCurrency } = useFormatCurrency()
   const formattedBalance = useMemo(() => {

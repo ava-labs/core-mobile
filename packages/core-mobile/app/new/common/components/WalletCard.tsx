@@ -12,8 +12,8 @@ import React, { useCallback, useMemo } from 'react'
 import { StyleProp, ViewStyle } from 'react-native'
 import { useSelector } from 'react-redux'
 import { selectAccounts } from 'store/account'
-import { NetworkVMType } from '@avalabs/vm-module-types'
 import { TotalAccountBalanceForWallet } from 'features/accountSettings/components/ToalAccountBalanceForWallet'
+import { isPlatformAccount } from 'store/account/utils'
 import { DropdownMenu } from './DropdownMenu'
 
 const ITEM_HEIGHT = 50
@@ -42,11 +42,9 @@ const WalletCard = ({
 
   // number of accounts in the wallet (excluding X/P chains)
   const accountsCount = useMemo(() => {
-    return Object.values(accounts).filter(
+    return accounts.filter(
       account =>
-        account.walletId === wallet.id &&
-        account.id !== NetworkVMType.AVM &&
-        account.id !== NetworkVMType.PVM
+        account.walletId === wallet.id && !isPlatformAccount(account.id)
     ).length
   }, [accounts, wallet.id])
 

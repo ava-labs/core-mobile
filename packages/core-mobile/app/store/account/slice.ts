@@ -7,6 +7,7 @@ import {
   AccountCollection,
   PrimaryAccount
 } from './types'
+import { isPlatformAccount } from './utils'
 
 export const reducerName = 'account'
 
@@ -56,13 +57,26 @@ const accountsSlice = createSlice({
 })
 
 // selectors
-export const selectAccounts = (state: RootState): AccountCollection =>
+export const selectAllAccounts = (state: RootState): AccountCollection =>
   state.account.accounts
+
+// select all accounts except platform accounts
+export const selectAccounts = createSelector(
+  [selectAllAccounts],
+  (accounts): Account[] =>
+    Object.values(accounts).filter(account => !isPlatformAccount(account.id))
+)
+
+export const selectPlatformAccounts = createSelector(
+  [selectAllAccounts],
+  (accounts): Account[] =>
+    Object.values(accounts).filter(account => isPlatformAccount(account.id))
+)
 
 export const selectAccountByAddress =
   (address: string) =>
   (state: RootState): Account | undefined => {
-    const accounts: Account[] = Object.values(state.account.accounts)
+    const accounts = selectAccounts(state)
     const givenAddress = address.toLowerCase()
 
     return accounts.find(acc => {
@@ -91,19 +105,27 @@ export const selectActiveAccount = (state: RootState): Account | undefined => {
 export const selectAccountsByWalletId = createSelector(
   [selectAccounts, (_: RootState, walletId: string) => walletId],
   (accounts, walletId) => {
-    return Object.values(accounts)
+    return accounts
       .filter(account => account.walletId === walletId)
       .sort((a, b) => a.index - b.index)
+  }
+)
+
+export const selectPlatformAccountsByWalletId = createSelector(
+  [selectPlatformAccounts, (_: RootState, walletId: string) => walletId],
+  (accounts, walletId) => {
+    return accounts.filter(account => account.walletId === walletId)
   }
 )
 
 export const selectAccountByIndex =
   (walletId: string, index: number) =>
   (state: RootState): Account | undefined => {
-    const accounts = Object.values(state.account.accounts).filter(
+    const accounts = selectAccounts(state)
+    const accountsByWalletId = accounts.filter(
       account => account.walletId === walletId
     )
-    const primaryAccount = accounts.find(
+    const primaryAccount = accountsByWalletId.find(
       (account): account is PrimaryAccount =>
         'index' in account && account.index === index
     )

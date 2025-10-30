@@ -8,11 +8,11 @@ import { useDispatch, useSelector } from 'react-redux'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import {
   Account,
-  selectAccounts,
   selectActiveAccount,
+  selectAllAccounts,
   setActiveAccount
 } from 'store/account'
-import { NetworkVMType } from '@avalabs/vm-module-types'
+import { isPlatformAccount } from 'store/account/utils'
 import { useRecentAccounts } from '../store'
 import { AccountItem } from './AccountItem'
 import { XpAccountItem } from './XpAccountItem'
@@ -30,7 +30,7 @@ export const AccountList = (): React.JSX.Element => {
   const dispatch = useDispatch()
   const { navigate, dismiss } = useRouter()
   const activeAccount = useSelector(selectActiveAccount)
-  const accountCollection = useSelector(selectAccounts)
+  const accountCollection = useSelector(selectAllAccounts)
   const flatListRef = useRef<FlatList>(null)
 
   const { recentAccountIds, updateRecentAccount } = useRecentAccounts()
@@ -96,7 +96,7 @@ export const AccountList = (): React.JSX.Element => {
 
   const renderItem = useCallback(
     ({ item, index }: { item: Account; index: number }) => {
-      if (item.id === NetworkVMType.AVM || item.id === NetworkVMType.PVM) {
+      if (isPlatformAccount(item.id)) {
         return (
           <XpAccountItem
             index={index}

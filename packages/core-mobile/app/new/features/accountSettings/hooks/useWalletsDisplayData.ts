@@ -4,12 +4,12 @@ import { WalletType } from 'services/wallet/types'
 import {
   Account,
   PlatformAccount,
-  selectAccounts,
+  selectAllAccounts,
   selectActiveAccount
 } from 'store/account'
 import { selectWallets } from 'store/wallet/slice'
 import { WalletDisplayData } from 'common/types'
-import { NetworkVMType } from '@avalabs/vm-module-types'
+import { isPlatformAccount } from 'store/account/utils'
 import {
   IMPORTED_ACCOUNTS_VIRTUAL_WALLET_ID,
   IMPORTED_ACCOUNTS_VIRTUAL_WALLET_NAME
@@ -22,7 +22,7 @@ export const useWalletsDisplayData = (
   const allWallets = useSelector(selectWallets)
   const activeAccount = useSelector(selectActiveAccount)
   const { getAccountData, getXpAccountData } = useGetAccountData()
-  const accountCollection = useSelector(selectAccounts)
+  const accountCollection = useSelector(selectAllAccounts)
 
   const allAccountsArray: Account[] = useMemo(
     () => Object.values(accountCollection),
@@ -86,10 +86,7 @@ export const useWalletsDisplayData = (
         const nextAccount = accountsForWallet[index + 1]
         const hideSeparator = isActive || nextAccount?.id === activeAccount?.id
 
-        if (
-          account.id === NetworkVMType.AVM ||
-          account.id === NetworkVMType.PVM
-        ) {
+        if (isPlatformAccount(account.id)) {
           return getXpAccountData({
             hideSeparator: false,
             isActive,
@@ -107,10 +104,10 @@ export const useWalletsDisplayData = (
       })
 
       accountDataForWallet.sort((a, b) => {
-        if (a.id === NetworkVMType.PVM || a.id === NetworkVMType.AVM) {
+        if (isPlatformAccount(a.id)) {
           return -1
         }
-        if (b.id === NetworkVMType.PVM || b.id === NetworkVMType.AVM) {
+        if (isPlatformAccount(b.id)) {
           return 1
         }
         return 0

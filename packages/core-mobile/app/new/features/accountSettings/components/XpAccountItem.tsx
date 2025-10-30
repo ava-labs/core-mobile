@@ -19,8 +19,8 @@ import { useSelector } from 'react-redux'
 import { Account } from 'store/account'
 import { selectIsPrivacyModeEnabled } from 'store/settings/securityPrivacy'
 import { useBalanceFoXpAccount } from 'common/contexts/useBalanceForXpAccunt'
-import { ACCOUNT_CARD_SIZE } from './AcccountList'
 import { XpNetworkVMType } from 'store/network/types'
+import { ACCOUNT_CARD_SIZE } from './AcccountList'
 
 export const XpAccountItem = memo(
   ({

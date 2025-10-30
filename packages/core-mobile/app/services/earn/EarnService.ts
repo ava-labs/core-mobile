@@ -1,4 +1,4 @@
-import { Account, AccountCollection } from 'store/account/types'
+import { Account } from 'store/account/types'
 import { importPWithBalanceCheck } from 'services/earn/importP'
 import Big from 'big.js'
 import { FujiParams, MainnetParams } from 'utils/NetworkParams'
@@ -352,7 +352,7 @@ class EarnService {
   }: {
     walletId: string
     walletType: WalletType
-    accounts: AccountCollection
+    accounts: Account[]
     isTestnet: boolean
     startTimestamp?: number
   }): Promise<
@@ -365,10 +365,8 @@ class EarnService {
       }[]
     | undefined
   > => {
-    const accountsArray = Object.values(accounts)
-
     try {
-      const currentNetworkAddresses = accountsArray
+      const currentNetworkAddresses = accounts
         .map(account => account.addressPVM)
         .filter((address): address is string => address !== undefined)
       const currentNetworkTransactions = await getTransformedTransactions(
@@ -400,9 +398,7 @@ class EarnService {
         .concat(oppositeNetworkTransactions)
         .flatMap(transaction => {
           // find account that matches the transaction's index
-          const account = accountsArray.find(
-            acc => acc.index === transaction.index
-          )
+          const account = accounts.find(acc => acc.index === transaction.index)
 
           // flat map will remove this
           if (!account) return []

@@ -272,3 +272,6 @@ export async function getAddressesForXP({
     throw new Error('Failed to get addresses for XP')
   }
 }
+
+export const isPlatformAccount = (accountId: string): boolean =>
+  accountId === NetworkVMType.AVM || accountId === NetworkVMType.PVM

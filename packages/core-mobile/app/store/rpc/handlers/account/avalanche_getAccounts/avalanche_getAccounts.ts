@@ -44,7 +44,7 @@ class AvalancheGetAccountsHandler
 
     // Process accounts and add xpubXP where available
     const accountsArray = await Promise.all(
-      Object.values(accounts).map(async account => {
+      accounts.map(async account => {
         const wallet = selectWalletById(account.walletId)(state)
         const xpubXP = wallet
           ? await getXpubXP(account.walletId, wallet.type)

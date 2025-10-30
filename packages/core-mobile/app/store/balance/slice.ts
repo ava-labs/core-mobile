@@ -8,7 +8,8 @@ import { RootState } from 'store/types'
 import {
   Account,
   selectAccountsByWalletId,
-  selectActiveAccount
+  selectActiveAccount,
+  selectPlatformAccountsByWalletId
 } from 'store/account'
 import {
   selectAllNetworks,
@@ -24,6 +25,7 @@ import {
 } from '@avalabs/avalanche-module'
 import { TokenVisibility } from 'store/portfolio'
 import { Wallet } from 'store/wallet/types'
+import { isPlatformAccount } from 'store/account/utils'
 import {
   Balance,
   Balances,
@@ -368,12 +370,10 @@ export const selectBalanceTotalInCurrencyForWallet =
   (walletId: string, tokenVisibility: TokenVisibility) =>
   (state: RootState) => {
     const accounts = selectAccountsByWalletId(state, walletId)
+    const platformAccounts = selectPlatformAccountsByWalletId(state, walletId)
 
-    return accounts.reduce((acc, account) => {
-      if (
-        account.id === NetworkVMType.AVM ||
-        account.id === NetworkVMType.PVM
-      ) {
+    return [...accounts, ...platformAccounts].reduce((acc, account) => {
+      if (isPlatformAccount(account.id)) {
         const balance = selectBalanceTotalInCurrencyForXpNetwork(
           walletId,
           account.id === NetworkVMType.AVM

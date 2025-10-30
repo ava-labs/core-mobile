@@ -120,7 +120,7 @@ export const importMnemonicWalletAndAccount = createAsyncThunk<
     thunkApi.dispatch(setActiveWallet(newWalletId))
 
     const allAccounts = selectAccounts(state)
-    const allAccountsCount = Object.keys(allAccounts).length
+    const allAccountsCount = allAccounts.length
 
     const addresses = await AccountsService.getAddresses({
       walletId: newWalletId,

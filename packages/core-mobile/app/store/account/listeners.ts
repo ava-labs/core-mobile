@@ -174,11 +174,19 @@ const initAccounts = async (
   }
 
   if (canMigrateActiveAccounts(activeWallet)) {
+    const accountsWithoutPlatformAccounts = accountValues.filter(
+      account =>
+        account.id !== NetworkVMType.AVM && account.id !== NetworkVMType.PVM
+    )
+    const numberOfAccounts = Math.max(
+      1,
+      Object.keys(accountsWithoutPlatformAccounts).length
+    )
     await migrateRemainingActiveAccounts({
       listenerApi,
       walletId: activeWallet.id,
       walletType: activeWallet.type,
-      startIndex: 1
+      startIndex: numberOfAccounts
     })
   }
 }
@@ -231,7 +239,14 @@ const migrateActiveAccountsIfNeeded = async (
   }
   const accounts = selectAccountsByWalletId(state, activeWallet.id)
   // there should be at least one account
-  const numberOfAccounts = Math.max(1, Object.keys(accounts).length)
+  const accountsWithoutPlatformAccounts = accounts.filter(
+    account =>
+      account.id !== NetworkVMType.AVM && account.id !== NetworkVMType.PVM
+  )
+  const numberOfAccounts = Math.max(
+    1,
+    Object.keys(accountsWithoutPlatformAccounts).length
+  )
   const shouldMigrate = await shouldMigrateActiveAccounts({
     wallet: activeWallet,
     numberOfAccounts
@@ -255,9 +270,11 @@ const migrateSolanaAddressesIfNeeded = async (
   const state = getState()
   const isSolanaSupportBlocked = selectIsSolanaSupportBlocked(state)
   const accounts = selectAccounts(state)
-  const entries = Object.values(accounts)
   // Only migrate Solana addresses if Solana support is enabled
-  if (!isSolanaSupportBlocked && entries.some(account => !account.addressSVM)) {
+  if (
+    !isSolanaSupportBlocked &&
+    accounts.some(account => !account.addressSVM)
+  ) {
     const seedlessWallet = selectSeedlessWallet(state)
     if (seedlessWallet) {
       await deriveMissingSeedlessSessionKeys(seedlessWallet.id)

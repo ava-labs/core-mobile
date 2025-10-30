@@ -291,7 +291,7 @@ const onXpBalanceUpdateCore = async ({
       for (const n of networks) {
         let addresses: string[] = []
         if (wallet.type === WalletType.SEEDLESS) {
-          addresses = Object.values(accounts).map(a =>
+          addresses = accounts.map(a =>
             n.vmName === NetworkVMType.PVM ? a.addressPVM : a.addressAVM
           )
         } else {

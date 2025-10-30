@@ -82,10 +82,6 @@ const PortfolioHomeScreen = (): JSX.Element => {
     formattedPercent
   } = usePortfolioHeader()
 
-  console.log('isLoading', isLoading)
-  console.log('formattedBalance', formattedBalance)
-  console.log('balanceAccurate', balanceAccurate)
-
   const handleSegmentedControlLayout = useCallback(
     (event: LayoutChangeEvent): void => {
       setSegmentedControlLayout(event.nativeEvent.layout)
