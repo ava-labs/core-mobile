@@ -294,7 +294,7 @@
     "babel-loader": "9.2.1",
     "babel-plugin-inline-dotenv": "1.7.0",
     "babel-plugin-module-resolver": "5.0.2",
-    "babel-plugin-react-compiler": "latest",
+    "babel-plugin-react-compiler": "19.1.0-rc.3",
     "babel-plugin-react-require": "4.0.3",
     "detox": "20.41.1",
     "eslint": "8.50.0",
