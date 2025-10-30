@@ -55,7 +55,7 @@ const prodClient = axios.create({
 })
 
 // Force validation on/off
-const useValidation =  __DEV__ //in normal use
+const useValidation = __DEV__ //in normal use
 
 export const watchListCacheClient = {
   /**
