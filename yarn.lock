@@ -418,7 +418,6 @@ __metadata:
     "@react-native-community/cli": 18.0.0
     "@react-native-community/cli-platform-android": 18.0.0
     "@react-native-community/cli-platform-ios": 18.0.0
-    "@react-native-community/cli-tools": ^20.0.2
     "@react-native-community/datetimepicker": 8.4.1
     "@react-native-community/netinfo": 11.4.1
     "@react-native-community/slider": 4.5.6
@@ -542,7 +541,6 @@ __metadata:
     lodash.merge: 4.6.2
     lottie-react-native: 7.2.2
     lru-cache: 11.0.2
-    metro-symbolicate: ^0.83.3
     mocha: 11.7.2
     moment: 2.30.1
     msw: 1.3.2
@@ -588,7 +586,6 @@ __metadata:
     react-native-localize: 3.2.1
     react-native-mmkv: 3.2.0
     react-native-modal-datetime-picker: 18.0.0
-    react-native-nitro-modules: ^0.30.2
     react-native-os: 1.2.6
     react-native-pager-view: 6.7.1
     react-native-passkey: 3.1.0
@@ -11063,24 +11060,6 @@ __metadata:
     prompts: ^2.4.2
     semver: ^7.5.2
   checksum: 96a941c4b62da75dccd2fb09dc859dbc724e46be7ca2a9061a2235d58bb2a2c1d6040b203efcdc03dd0c8dbe9306b47a903073abc9fe2f300dcce9f8cd4afd84
-  languageName: node
-  linkType: hard
-
-"@react-native-community/cli-tools@npm:^20.0.2":
-  version: 20.0.2
-  resolution: "@react-native-community/cli-tools@npm:20.0.2"
-  dependencies:
-    "@vscode/sudo-prompt": ^9.0.0
-    appdirsjs: ^1.2.4
-    chalk: ^4.1.2
-    execa: ^5.0.0
-    find-up: ^5.0.0
-    launch-editor: ^2.9.1
-    mime: ^2.4.1
-    ora: ^5.4.1
-    prompts: ^2.4.2
-    semver: ^7.5.2
-  checksum: cc6d765e1778b982ee173b757a9e30f47173c185484321d4909ecf0dcf6441b7eb4a8d7ede44f1b3e8d3052ce2b97247ea4f2171eb523a5289f795220f7d6a4c
   languageName: node
   linkType: hard
 
@@ -28915,24 +28894,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"metro-source-map@npm:0.83.3":
-  version: 0.83.3
-  resolution: "metro-source-map@npm:0.83.3"
-  dependencies:
-    "@babel/traverse": ^7.25.3
-    "@babel/traverse--for-generate-function-map": "npm:@babel/traverse@^7.25.3"
-    "@babel/types": ^7.25.2
-    flow-enums-runtime: ^0.0.6
-    invariant: ^2.2.4
-    metro-symbolicate: 0.83.3
-    nullthrows: ^1.1.1
-    ob1: 0.83.3
-    source-map: ^0.5.6
-    vlq: ^1.0.0
-  checksum: 5bf3b7a1561bc1f0ad6ab3b7b550d4b4581da31964a7f218727a3201576912076c909a2e50fba4dd3c649d79312324dec683a37228f4559811c37b69ecca8831
-  languageName: node
-  linkType: hard
-
 "metro-symbolicate@npm:0.82.5":
   version: 0.82.5
   resolution: "metro-symbolicate@npm:0.82.5"
@@ -28946,22 +28907,6 @@ __metadata:
   bin:
     metro-symbolicate: src/index.js
   checksum: ae91be09cca42567ea3c2bee695e0db42512fc8bf28cf2aa281ae8043edc3bbddcadd0793b401b6bcb7e0cc1df1428647662462a8f515ab6c47420421b1e96f8
-  languageName: node
-  linkType: hard
-
-"metro-symbolicate@npm:0.83.3, metro-symbolicate@npm:^0.83.3":
-  version: 0.83.3
-  resolution: "metro-symbolicate@npm:0.83.3"
-  dependencies:
-    flow-enums-runtime: ^0.0.6
-    invariant: ^2.2.4
-    metro-source-map: 0.83.3
-    nullthrows: ^1.1.1
-    source-map: ^0.5.6
-    vlq: ^1.0.0
-  bin:
-    metro-symbolicate: src/index.js
-  checksum: 943cc2456d56ae2ed8369495c18966d91feff636b37909b5225ffb8ce2a50eba8fbedf116f3bea3059d431ebc621c9c9af8a8bfd181b0cd1fece051507e10ffd
   languageName: node
   linkType: hard
 
@@ -30315,15 +30260,6 @@ __metadata:
   dependencies:
     flow-enums-runtime: ^0.0.6
   checksum: 3faa161e5b5307188b6bbbf7e21727b1e434b8f6c31c51386808b2efd5e7238cf85a7ce71416d9a3f073625afb5a2212f80ec267996dc88fe086944adbb525d9
-  languageName: node
-  linkType: hard
-
-"ob1@npm:0.83.3":
-  version: 0.83.3
-  resolution: "ob1@npm:0.83.3"
-  dependencies:
-    flow-enums-runtime: ^0.0.6
-  checksum: 20dfe91d48d0cadd97159cfd53f5abdca435b55d58b1f562e0687485e8f44f8a95e8ab3c835badd13d0d8c01e3d7b14d639a316aa4bf82841ac78b49611d4e5c
   languageName: node
   linkType: hard
 
@@ -32864,16 +32800,6 @@ __metadata:
   dependencies:
     prop-types: ^15.5.10
   checksum: c7b00ebceb6fe15e025ef1655483bc98fdb150453fb27e71d17a282a87317c5b1e242a1108f5247fac99594e6778470513d19c21e02eb2ce81f80688dd616419
-  languageName: node
-  linkType: hard
-
-"react-native-nitro-modules@npm:^0.30.2":
-  version: 0.30.2
-  resolution: "react-native-nitro-modules@npm:0.30.2"
-  peerDependencies:
-    react: "*"
-    react-native: "*"
-  checksum: da06b99c7f2def27c43da39a9eef2535b36bef48ef4cd45f49c0180fa735a0407a6f2feb6a30d39c4645a849230827e391ebc23e74236bde98a6f6176c6b291a
   languageName: node
   linkType: hard
 
