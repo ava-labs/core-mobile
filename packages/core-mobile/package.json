@@ -191,7 +191,6 @@
     "react-native-localize": "3.2.1",
     "react-native-mmkv": "3.2.0",
     "react-native-modal-datetime-picker": "18.0.0",
-    "react-native-nitro-avalabs-crypto": "workspace:*",
     "react-native-nitro-modules": "^0.30.2",
     "react-native-os": "1.2.6",
     "react-native-pager-view": "6.7.1",
