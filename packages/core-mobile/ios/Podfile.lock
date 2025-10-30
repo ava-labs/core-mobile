@@ -2279,6 +2279,30 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
+  - react-native-release-profiler (0.4.2):
+    - DoubleConversion
+    - glog
+    - hermes-engine
+    - RCT-Folly (= 2024.11.18.00)
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Core
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
+    - React-hermes
+    - React-ImageManager
+    - React-jsi
+    - React-NativeModulesApple
+    - React-RCTFabric
+    - React-renderercss
+    - React-rendererdebug
+    - React-utils
+    - ReactCodegen
+    - ReactCommon/turbomodule/bridging
+    - ReactCommon/turbomodule/core
+    - Yoga
   - react-native-restart (0.0.27):
     - React-Core
   - react-native-safe-area-context (5.5.2):
@@ -3326,7 +3350,7 @@ PODS:
     - ReactCommon/turbomodule/core
     - Sentry/HybridSDK (= 8.50.2)
     - Yoga
-  - RNShare (12.0.9):
+  - RNShare (12.2.0):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -3535,6 +3559,7 @@ DEPENDENCIES:
   - react-native-performance (from `../node_modules/react-native-performance`)
   - react-native-quick-base64 (from `../node_modules/react-native-quick-base64`)
   - react-native-quick-crypto (from `../node_modules/react-native-quick-crypto`)
+  - react-native-release-profiler (from `../node_modules/react-native-release-profiler`)
   - react-native-restart (from `../node_modules/react-native-restart`)
   - react-native-safe-area-context (from `../node_modules/react-native-safe-area-context`)
   - "react-native-skia (from `../node_modules/@shopify/react-native-skia`)"
@@ -3829,6 +3854,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-quick-base64"
   react-native-quick-crypto:
     :path: "../node_modules/react-native-quick-crypto"
+  react-native-release-profiler:
+    :path: "../node_modules/react-native-release-profiler"
   react-native-restart:
     :path: "../node_modules/react-native-restart"
   react-native-safe-area-context:
@@ -4037,7 +4064,7 @@ SPEC CHECKSUMS:
   lottie-react-native: 8bc11e10576d1a3f77f4e0ae5b70503c5c890a09
   MultiplatformBleAdapter: b1fddd0d499b96b607e00f0faa8e60648343dc1d
   nanopb: fad817b59e0457d11a5dfbde799381cd727c1275
-  NitroAvalabsCrypto: 015b3c3900296eee3f64be0bbf4bc9cd7acfc83b
+  NitroAvalabsCrypto: 04b9f004efee45b190f5f55edb4695e20bcdb1ea
   NitroModules: a0e083750af37516a6b356ccf3373716eb1d01a1
   OpenSSL-Universal: ebc357f1e6bc71fa463ccb2fe676756aff50e88c
   OpenTelemetrySwiftApi: aaee576ed961e0c348af78df58b61300e95bd104
@@ -4093,6 +4120,7 @@ SPEC CHECKSUMS:
   react-native-performance: 83bf66f3ada75bb7b0cd69735ac7d51e8f3ca81d
   react-native-quick-base64: 651d972291fd5d9902869636a1b3c46820324490
   react-native-quick-crypto: 71b622aa0a231ac068759f5eef37982ad5eae58c
+  react-native-release-profiler: eabf967166faddbbe19448a0a0a6a4add896eb44
   react-native-restart: 0bc732f4461709022a742bb29bcccf6bbc5b4863
   react-native-safe-area-context: 7e926a200d4bc9c56562275743705c6b56176455
   react-native-skia: 5c086469906cf854e26126b5b88dcbb6c93eb90f
@@ -4158,7 +4186,7 @@ SPEC CHECKSUMS:
   RNScreens: f0678748c5310b49a3f920f1485f5ec477afd345
   RNSensors: 111159597ac51505df10413c61b28bcd28e88983
   RNSentry: 3bc708566b3390947b6ecd785645398cd1a0049e
-  RNShare: 43faaefd287ef344e8379caeaca12d112f713295
+  RNShare: a60af5971cb114a8d31df642b108e3fe00e5b987
   RNSound: 72c4886fb80b8a0e8c40131099223e09422aa8b4
   RNSVG: 794f269526df9ddc1f79b3d1a202b619df0368e3
   SDWebImage: 8a6b7b160b4d710e2a22b6900e25301075c34cb3
