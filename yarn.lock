@@ -9679,10 +9679,10 @@ __metadata:
 
 "@noble/curves@patch:@noble/curves@npm%3A1.9.7#./.yarn/patches/@noble-curves-npm-1.9.7-2b9efc8ab4.patch::locator=mobile-monorepo%40workspace%3A.":
   version: 1.9.7
-  resolution: "@noble/curves@patch:@noble/curves@npm%3A1.9.7#./.yarn/patches/@noble-curves-npm-1.9.7-2b9efc8ab4.patch::version=1.9.7&hash=6e657d&locator=mobile-monorepo%40workspace%3A."
+  resolution: "@noble/curves@patch:@noble/curves@npm%3A1.9.7#./.yarn/patches/@noble-curves-npm-1.9.7-2b9efc8ab4.patch::version=1.9.7&hash=033597&locator=mobile-monorepo%40workspace%3A."
   dependencies:
     "@noble/hashes": 1.8.0
-  checksum: 361b941e92b6005d4a3db05d64c03b49a156426a990faf686414232c3dbf18d5df701ca765e24907f708f8061e6ab8b6e3014625a085d4e428abd7a7e3dbfbf1
+  checksum: 31dc3dc0070b44d4fb6d3ecbc7d4f996b146dc79385b80ed33eee03334450b177174c71a8e1a787ce4b8b451310fd9962a55099f573617f35361e30f5e1c2427
   languageName: node
   linkType: hard
 
