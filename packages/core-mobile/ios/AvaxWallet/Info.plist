@@ -108,9 +108,9 @@
 	<key>branch_key</key>
 	<dict>
 		<key>test</key>
-		<string>$(BRANCH_KEY)</string>
+		<string>key_test_huEgqNimBs9nak9ICf2TlhdfsDdptcAD</string>
 		<key>live</key>
-		<string>$(BRANCH_KEY)</string>
+		<string>key_test_huEgqNimBs9nak9ICf2TlhdfsDdptcAD</string>
 	</dict>
 	<key>branch_universal_link_domains</key>
 	<array>
@@ -118,7 +118,7 @@
 		<string>nlfvn-alternate.test-app.link</string>
 		<string>nlfvn.app.link</string>
 	</array>
-  <key>NSUserTrackingUsageDescription</key>
-  <string>To personalize your experience, and improve our services, your activity will be used to understand how our features are used.</string>
+	<key>NSUserTrackingUsageDescription</key>
+	<string>To personalize your experience, and improve our services, your activity will be used to understand how our features are used.</string>
 </dict>
 </plist>

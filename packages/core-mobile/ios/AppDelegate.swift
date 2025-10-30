@@ -20,27 +20,21 @@ class AppDelegate: ExpoAppDelegate {
     RNFBAppCheckModule.sharedInstance()
     FirebaseApp.configure()
     
-    RNBranch.enableLogging()
-    if let displayName = Bundle.main.object(forInfoDictionaryKey: "CFBundleDisplayName") as? String, displayName.lowercased().contains("internal")  {
-      RNBranch.useTestInstance()
-    }
-    RNBranch.initSession(launchOptions: launchOptions, isReferrable: true)
-
-    // Delay for 1 second before initializing Branch SDK
-//    DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
-//      if #available(iOS 14.0, *)  {
-//        // Check that `trackingAuthorizationStatus` is `notDetermined`, otherwise prompt will not display
-//        if ATTrackingManager.trackingAuthorizationStatus == .notDetermined {
-//          ATTrackingManager.requestTrackingAuthorization { (status) in
-//            RNBranch.initSession(launchOptions: launchOptions, isReferrable: true)
-//          }
-//        } else {
-//          RNBranch.initSession(launchOptions: launchOptions, isReferrable: true)
-//        }
-//      } else {
-//        RNBranch.initSession(launchOptions: launchOptions, isReferrable: true)
-//      }
-//     }
+//     Delay for 1 second before initializing Branch SDK
+    DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+      if #available(iOS 14.0, *)  {
+        // Check that `trackingAuthorizationStatus` is `notDetermined`, otherwise prompt will not display
+        if ATTrackingManager.trackingAuthorizationStatus == .notDetermined {
+          ATTrackingManager.requestTrackingAuthorization { (status) in
+            RNBranch.initSession(launchOptions: launchOptions, isReferrable: true)
+          }
+        } else {
+          RNBranch.initSession(launchOptions: launchOptions, isReferrable: true)
+        }
+      } else {
+        RNBranch.initSession(launchOptions: launchOptions, isReferrable: true)
+      }
+     }
     
     let delegate = ReactNativeDelegate()
     let factory = ExpoReactNativeFactory(delegate: delegate)
