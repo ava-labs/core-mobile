@@ -38,10 +38,11 @@ Pod::Spec.new do |s|
   # -----------------------------------------------------------------
   # Use the XCFramework – **no manual paths or -lsecp256k1**
   # -----------------------------------------------------------------
-  s.vendored_frameworks = 'ios/secp-out/secp256k1.xcframework'
+  s.vendored_frameworks = '$(PODS_TARGET_SRCROOT)/ios/secp-out/secp256k1.xcframework'
 
   # Keep your C++/Swift flags (they are harmless)
   s.pod_target_xcconfig = {
+    'HEADER_SEARCH_PATHS' => '$(inherited) $(PODS_TARGET_SRCROOT)/ios/secp-out/include',
     'CLANG_CXX_LIBRARY'               => 'libc++',
     'OTHER_CPLUSPLUSFLAGS'            => '$(inherited) -std=gnu++20',
     'CLANG_CXX_LANGUAGE_STANDARD'     => 'c++20',
@@ -52,8 +53,15 @@ Pod::Spec.new do |s|
 
   # Tell Xcode where the public headers live
   s.xcconfig = {
-   'HEADER_SEARCH_PATHS' => '$(PODS_TARGET_SRCROOT)/ios/secp-out/include'
+   'HEADER_SEARCH_PATHS' => '$(inherited) $(PODS_TARGET_SRCROOT)/ios/secp-out/include',
   }
 
+  s.user_target_xcconfig = {
+      'LIBRARY_SEARCH_PATHS[sdk=iphoneos*]' => '$(inherited) "$(PODS_ROOT)/../../node_modules/react-native-nitro-avalabs-crypto/ios/secp-build/iphoneos-arm64/lib"',
+    'LIBRARY_SEARCH_PATHS[sdk=iphonesimulator*]' => '$(inherited) "$(PODS_ROOT)/../../node_modules/react-native-nitro-avalabs-crypto/ios/secp-build/iphonesimulator-arm64/lib"',
+    'OTHER_LDFLAGS' => '$(inherited) -lsecp256k1'
+}
+
+  s.static_framework = true
   install_modules_dependencies(s)
 end
