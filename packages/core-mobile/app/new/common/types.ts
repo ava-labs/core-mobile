@@ -17,17 +17,20 @@ export type WalletDisplayData = {
   id: string
   name: string
   type: WalletType
-  accounts: Array<{
-    hideSeparator: boolean
-    containerSx: {
-      backgroundColor: string
-      borderRadius: number
-    }
-    title: React.JSX.Element
-    subtitle: React.JSX.Element
-    leftIcon: React.JSX.Element
-    value: React.JSX.Element
-    onPress: () => void
-    accessory: React.JSX.Element
-  }>
+  accounts: AccountDataForWallet[]
+}
+
+export type AccountDataForWallet = {
+  id: string
+  hideSeparator: boolean
+  containerSx: {
+    backgroundColor: string
+    borderRadius: number
+  }
+  title: React.JSX.Element
+  subtitle: React.JSX.Element
+  leftIcon: React.JSX.Element
+  value: React.JSX.Element
+  onPress: () => void
+  accessory: React.JSX.Element
 }

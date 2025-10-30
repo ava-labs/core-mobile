@@ -12,8 +12,10 @@ import {
   selectActiveAccount,
   setActiveAccount
 } from 'store/account'
+import { NetworkVMType } from '@avalabs/vm-module-types'
 import { useRecentAccounts } from '../store'
 import { AccountItem } from './AccountItem'
+import { XpAccountItem } from './XpAccountItem'
 
 const CARD_PADDING = 12
 
@@ -93,15 +95,27 @@ export const AccountList = (): React.JSX.Element => {
   }, [recentAccounts.length])
 
   const renderItem = useCallback(
-    ({ item, index }: { item: Account; index: number }) => (
-      <AccountItem
-        index={index}
-        isActive={item.id === activeAccount?.id}
-        account={item as Account}
-        onSelectAccount={onSelectAccount}
-        gotoAccountDetails={gotoAccountDetails}
-      />
-    ),
+    ({ item, index }: { item: Account; index: number }) => {
+      if (item.id === NetworkVMType.AVM || item.id === NetworkVMType.PVM) {
+        return (
+          <XpAccountItem
+            index={index}
+            isActive={item.id === activeAccount?.id}
+            account={item as Account}
+            onSelectAccount={onSelectAccount}
+          />
+        )
+      }
+      return (
+        <AccountItem
+          index={index}
+          isActive={item.id === activeAccount?.id}
+          account={item as Account}
+          onSelectAccount={onSelectAccount}
+          gotoAccountDetails={gotoAccountDetails}
+        />
+      )
+    },
     [activeAccount?.id, gotoAccountDetails, onSelectAccount]
   )
 

@@ -1,5 +1,9 @@
 import { AVM, EVM, PVM, VM } from '@avalabs/avalanchejs'
-import { Account, AccountCollection } from 'store/account/types'
+import {
+  Account,
+  AccountCollection,
+  PlatformAccount
+} from 'store/account/types'
 import { Network, NetworkVMType } from '@avalabs/core-chains-sdk'
 import WalletFactory from 'services/wallet/WalletFactory'
 import { WalletType } from 'services/wallet/types'
@@ -125,9 +129,25 @@ export const migrateRemainingActiveAccounts = async ({
       // set accounts for seedless wallet, which trigger balance update
       // * seedless wallet fetches xp balances by iterating over xp addresses over all accounts
       // * so we need to wait for all accounts to be fetched to update balances
-      walletType === WalletType.SEEDLESS
-        ? listenerApi.dispatch(setAccounts(accounts))
-        : listenerApi.dispatch(setNonActiveAccounts(accounts))
+      if (walletType === WalletType.SEEDLESS) {
+        // add xp addresses to the platform accounts
+        const avmAddresses = Object.values(accounts).map(
+          account => account.addressAVM
+        )
+        const pvmAddresses = Object.values(accounts).map(
+          account => account.addressPVM
+        )
+        const avmAccount = accounts[NetworkVMType.AVM] as PlatformAccount
+        const pvmAccount = accounts[NetworkVMType.PVM] as PlatformAccount
+        avmAccount.addresses = [...avmAccount.addresses, ...avmAddresses]
+        pvmAccount.addresses = [...pvmAccount.addresses, ...pvmAddresses]
+        accounts[NetworkVMType.AVM] = avmAccount
+        accounts[NetworkVMType.PVM] = pvmAccount
+
+        listenerApi.dispatch(setAccounts(accounts))
+      } else {
+        listenerApi.dispatch(setNonActiveAccounts(accounts))
+      }
 
       recentAccountsStore.getState().addRecentAccounts(accountIds)
 

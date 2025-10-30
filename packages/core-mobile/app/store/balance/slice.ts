@@ -5,19 +5,25 @@ import {
   PayloadAction
 } from '@reduxjs/toolkit'
 import { RootState } from 'store/types'
-import { Account, selectActiveAccount } from 'store/account'
+import {
+  Account,
+  selectAccountsByWalletId,
+  selectActiveAccount
+} from 'store/account'
 import {
   selectAllNetworks,
   selectEnabledChainIds,
-  selectNetworks
+  selectNetworks,
+  XpNetworkVMType
 } from 'store/network'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
-import { TokenType } from '@avalabs/vm-module-types'
+import { NetworkVMType, TokenType } from '@avalabs/vm-module-types'
 import {
   isTokenWithBalanceAVM,
   isTokenWithBalancePVM
 } from '@avalabs/avalanche-module'
 import { TokenVisibility } from 'store/portfolio'
+import { Wallet } from 'store/wallet/types'
 import {
   Balance,
   Balances,
@@ -90,17 +96,49 @@ export const selectIsBalanceLoadedForAccount =
     return !!foundBalance
   }
 
-export const selectIsPollingBalances = (state: RootState): boolean =>
-  state.balance.status[QueryType.ALL] === QueryStatus.POLLING ||
+export const selectIsXpBalanceLoadedForWallet =
+  (walletId: string, networkType: XpNetworkVMType) => (state: RootState) => {
+    const key = Object.keys(state.balance.balances).find(
+      k => k.includes(walletId) && k.includes(networkType)
+    )
+    return key !== undefined && !!state.balance.balances[key]
+  }
+
+export const selectIsPollingAccountBalances = (state: RootState): boolean =>
+  state.balance.status[QueryType.ALL] === QueryStatus.POLLING
+
+export const selectIsPollingXpBalances = (state: RootState): boolean =>
   state.balance.status[QueryType.XP] === QueryStatus.POLLING
 
-export const selectIsLoadingBalances = (state: RootState): boolean =>
-  state.balance.status[QueryType.ALL] === QueryStatus.LOADING ||
+export const selectIsPollingBalances = createSelector(
+  [selectIsPollingAccountBalances, selectIsPollingXpBalances],
+  (isPollingAccountBalances, isPollingXpBalances) =>
+    isPollingAccountBalances || isPollingXpBalances
+)
+
+export const selectIsLoadingAccountBalances = (state: RootState): boolean =>
+  state.balance.status[QueryType.ALL] === QueryStatus.LOADING
+
+export const selectIsLoadingXpBalances = (state: RootState): boolean =>
   state.balance.status[QueryType.XP] === QueryStatus.LOADING
 
-export const selectIsRefetchingBalances = (state: RootState): boolean =>
-  state.balance.status[QueryType.ALL] === QueryStatus.REFETCHING ||
+export const selectIsLoadingBalances = createSelector(
+  [selectIsLoadingAccountBalances, selectIsLoadingXpBalances],
+  (isLoadingAccountBalances, isLoadingXpBalances) =>
+    isLoadingAccountBalances || isLoadingXpBalances
+)
+
+export const selectIsRefetchingAccountBalances = (state: RootState): boolean =>
+  state.balance.status[QueryType.ALL] === QueryStatus.REFETCHING
+
+export const selectIsRefetchingXpBalances = (state: RootState): boolean =>
   state.balance.status[QueryType.XP] === QueryStatus.REFETCHING
+
+export const selectIsRefetchingBalances = createSelector(
+  [selectIsRefetchingAccountBalances, selectIsRefetchingXpBalances],
+  (isRefetchingAccountBalances, isRefetchingXpBalances) =>
+    isRefetchingAccountBalances || isRefetchingXpBalances
+)
 
 const _selectAllBalances = (state: RootState): Balances => {
   return state.balance.balances
@@ -212,6 +250,19 @@ const _selectBalancesByAccountId = createSelector(
   }
 )
 
+const _selectBalancesByXpNetwork =
+  (walletId: string, xpNetworkType: XpNetworkVMType) => (state: RootState) => {
+    const balances = _selectAllBalances(state)
+
+    const matchingKeys = Object.keys(balances).filter(
+      key => key.includes(walletId) && key.includes(xpNetworkType)
+    )
+
+    return matchingKeys
+      .map(key => balances[key])
+      .filter(balance => balance !== undefined)
+  }
+
 export const selectTokensWithBalanceForAccount = createSelector(
   [selectIsDeveloperMode, selectAllNetworks, _selectBalancesByAccountId],
   (isDeveloperMode, networks, balancesByAccountId) => {
@@ -259,6 +310,86 @@ export const selectBalanceTotalInCurrencyForAccount =
       .reduce((acc, token) => acc + (token.balanceInCurrency ?? 0), 0)
   }
 
+export const selectTokensWithXpBalanceForWallet =
+  (walletId: string, networkType: XpNetworkVMType) => (state: RootState) => {
+    const balances = _selectAllBalances(state)
+    const matchingKeys = Object.keys(balances).filter(
+      key => key.includes(walletId) && key.includes(networkType)
+    )
+    const balancesToSum: Balance[] = []
+    for (const key of matchingKeys) {
+      balances[key] && balancesToSum.push(balances[key])
+    }
+    return balancesToSum
+  }
+
+export const selectXPBalanceTotalByWallet =
+  (walletId: string, networkType: XpNetworkVMType) => (state: RootState) => {
+    const balances = selectTokensWithXpBalanceForWallet(
+      walletId,
+      networkType
+    )(state)
+
+    if (balances.length === 0) {
+      return 0n
+    }
+
+    return balances.reduce(
+      (acc, balance) =>
+        acc +
+        balance.tokens.reduce((a, token) => a + (token.balance ?? 0n), 0n),
+      0n
+    )
+  }
+
+export const selectBalanceTotalInCurrencyForXpNetwork =
+  (walletId: string, networkType: XpNetworkVMType) => (state: RootState) => {
+    const balances = selectTokensWithXpBalanceForWallet(
+      walletId,
+      networkType
+    )(state)
+
+    if (balances.length === 0) {
+      return 0
+    }
+
+    return balances.reduce(
+      (acc, balance) =>
+        acc +
+        balance.tokens.reduce(
+          (a, token) => a + (token.balanceInCurrency ?? 0),
+          0
+        ),
+      0
+    )
+  }
+
+export const selectBalanceTotalInCurrencyForWallet =
+  (walletId: string, tokenVisibility: TokenVisibility) =>
+  (state: RootState) => {
+    const accounts = selectAccountsByWalletId(state, walletId)
+
+    return accounts.reduce((acc, account) => {
+      if (
+        account.id === NetworkVMType.AVM ||
+        account.id === NetworkVMType.PVM
+      ) {
+        const balance = selectBalanceTotalInCurrencyForXpNetwork(
+          walletId,
+          account.id === NetworkVMType.AVM
+            ? NetworkVMType.AVM
+            : NetworkVMType.PVM
+        )(state)
+        return acc + balance
+      }
+      const balance = selectBalanceTotalInCurrencyForAccount(
+        account.id,
+        tokenVisibility
+      )(state)
+      return acc + balance
+    }, 0)
+  }
+
 export const selectBalanceForAccountIsAccurate =
   (accountId: string) => (state: RootState) => {
     const tokens = selectTokensWithBalanceForAccount(state, accountId)
@@ -267,6 +398,13 @@ export const selectBalanceForAccountIsAccurate =
     return !Object.values(state.balance.balances)
       .filter(balance => balance.accountId === accountId)
       .some(balance => !balance.dataAccurate)
+  }
+
+export const selectXpBalanceForAccountIsAccurate =
+  (walletId: string, xpNetworkType: XpNetworkVMType) => (state: RootState) => {
+    const tokens = _selectBalancesByXpNetwork(walletId, xpNetworkType)(state)
+    if (tokens.length === 0) return false
+    return !tokens.some(balance => !balance.dataAccurate)
   }
 
 const _selectBalanceKeyForNetworkAndAccount = (
@@ -353,4 +491,9 @@ export const refetchBalance = createAction(`${reducerName}/refetchBalance`)
 export const fetchBalanceForAccount = createAction<{ account: Account }>(
   `${reducerName}/fetchBalanceForAccount`
 )
+
+export const fetchXpBalancesForWallet = createAction<{ wallet: Wallet }>(
+  `${reducerName}/fetchXpBalancesForWallet`
+)
+
 export const balanceReducer = balanceSlice.reducer

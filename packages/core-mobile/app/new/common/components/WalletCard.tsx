@@ -8,8 +8,12 @@ import {
 } from '@avalabs/k2-alpine'
 import { useManageWallet } from 'common/hooks/useManageWallet'
 import { WalletDisplayData } from 'common/types'
-import React, { useCallback } from 'react'
+import React, { useCallback, useMemo } from 'react'
 import { StyleProp, ViewStyle } from 'react-native'
+import { useSelector } from 'react-redux'
+import { selectAccounts } from 'store/account'
+import { NetworkVMType } from '@avalabs/vm-module-types'
+import { TotalAccountBalanceForWallet } from 'features/accountSettings/components/ToalAccountBalanceForWallet'
 import { DropdownMenu } from './DropdownMenu'
 
 const ITEM_HEIGHT = 50
@@ -33,6 +37,18 @@ const WalletCard = ({
     theme: { colors }
   } = useTheme()
   const { getDropdownItems, handleDropdownSelect } = useManageWallet()
+
+  const accounts = useSelector(selectAccounts)
+
+  // number of accounts in the wallet (excluding X/P chains)
+  const accountsCount = useMemo(() => {
+    return Object.values(accounts).filter(
+      account =>
+        account.walletId === wallet.id &&
+        account.id !== NetworkVMType.AVM &&
+        account.id !== NetworkVMType.PVM
+    ).length
+  }, [accounts, wallet.id])
 
   const renderExpansionIcon = useCallback(() => {
     return (
@@ -82,17 +98,34 @@ const WalletCard = ({
             {renderExpansionIcon()}
             {renderWalletIcon()}
           </View>
-          <Text
-            testID={`manage_accounts_wallet_name__${wallet.name}`}
-            variant="buttonSmall"
-            numberOfLines={1}
-            style={{
-              fontSize: 14,
-              flex: 1
-            }}>
-            {wallet.name}
-          </Text>
+          <View sx={{ flex: 1 }}>
+            <Text
+              testID={`manage_accounts_wallet_name__${wallet.name}`}
+              variant="buttonSmall"
+              numberOfLines={1}
+              style={{
+                fontSize: 14
+              }}>
+              {wallet.name}
+            </Text>
+            <Text
+              testID={`manage_accounts_wallet_name__${wallet.name}`}
+              variant="caption"
+              numberOfLines={1}
+              style={{
+                fontSize: 12,
+                fontWeight: 400,
+                color: colors.$textSecondary
+              }}>
+              {`${accountsCount} ${
+                accountsCount > 1 ? 'accounts' : 'account'
+              } + X/P Chains`}
+            </Text>
+          </View>
         </View>
+
+        {/* total balance */}
+        <TotalAccountBalanceForWallet walletId={wallet.id} />
 
         {showMoreButton && (
           <DropdownMenu

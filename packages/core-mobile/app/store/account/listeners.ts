@@ -21,6 +21,8 @@ import BiometricsSDK from 'utils/BiometricsSDK'
 import Logger from 'utils/Logger'
 import KeystoneService from 'features/keystone/services/KeystoneService'
 import { pendingSeedlessWalletNameStore } from 'features/onboarding/store'
+import { CoreAccountType } from '@avalabs/types'
+import { NetworkVMType } from '@avalabs/vm-module-types'
 import {
   selectAccounts,
   setAccounts,
@@ -35,6 +37,7 @@ import {
   migrateRemainingActiveAccounts,
   shouldMigrateActiveAccounts
 } from './utils'
+import { P_CHAIN_ACCOUNT_NAME, X_CHAIN_ACCOUNT_NAME } from './consts'
 
 const initAccounts = async (
   _action: AnyAction,
@@ -95,11 +98,35 @@ const initAccounts = async (
     activeWallet.type === WalletType.SEEDLESS
   ) {
     accounts[acc.id] = acc
-    listenerApi.dispatch(setAccounts(accounts))
     const firstAccountId = Object.keys(accounts)[0]
     if (!firstAccountId) {
       throw new Error('No accounts created')
     }
+
+    // set the x and p chain accounts
+    ;[NetworkVMType.AVM, NetworkVMType.PVM].forEach(networkType => {
+      accounts[networkType] = {
+        index: 0,
+        id: networkType,
+        walletId: activeWallet.id,
+        name:
+          networkType === NetworkVMType.PVM
+            ? P_CHAIN_ACCOUNT_NAME
+            : X_CHAIN_ACCOUNT_NAME,
+        type: CoreAccountType.PRIMARY,
+        addressC: '',
+        addressBTC: '',
+        addressAVM: '',
+        addressPVM: '',
+        addressCoreEth: '',
+        addressSVM: '',
+        addresses: [
+          networkType === NetworkVMType.PVM ? acc.addressPVM : acc.addressAVM
+        ]
+      }
+    })
+
+    listenerApi.dispatch(setAccounts(accounts))
     listenerApi.dispatch(setActiveAccountId(firstAccountId))
   }
 
@@ -147,12 +174,11 @@ const initAccounts = async (
   }
 
   if (canMigrateActiveAccounts(activeWallet)) {
-    const numberOfAccounts = Math.max(1, accountValues.length)
     await migrateRemainingActiveAccounts({
       listenerApi,
       walletId: activeWallet.id,
       walletType: activeWallet.type,
-      startIndex: numberOfAccounts
+      startIndex: 1
     })
   }
 }
