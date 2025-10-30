@@ -14,8 +14,13 @@ if (!Config.PROXY_URL)
 
 const baseUrl = `${Config.PROXY_URL}/watchlist`
 
-// Zodios endpoint definitions
-const endpoints = [
+// Infer types from schemas for typings
+export type SimplePriceResponse = z.infer<typeof SimplePriceResponseSchema>
+export type TopToken = z.infer<typeof TopTokenSchema>
+export type TrendingToken = z.infer<typeof TrendingTokenSchema>
+
+// Dev (validated) and Prod (raw) clients
+const devClient = new Zodios(baseUrl, [
   {
     method: 'get',
     path: '/price',
@@ -35,15 +40,7 @@ const endpoints = [
     alias: 'trending',
     response: array(TrendingTokenSchema)
   }
-] as const
-
-// Infer types from schemas for typings
-export type SimplePriceResponse = z.infer<typeof SimplePriceResponseSchema>
-export type TopToken = z.infer<typeof TopTokenSchema>
-export type TrendingToken = z.infer<typeof TrendingTokenSchema>
-
-// Dev (validated) and Prod (raw) clients
-const devClient = new Zodios(baseUrl, endpoints, {
+], {
   axiosConfig: {
     headers: { 'Content-Type': 'application/json' }
   }
