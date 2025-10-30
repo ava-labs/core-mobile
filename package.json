@@ -52,7 +52,7 @@
     "@scure/btc-signer/@noble/hashes": "1.8.0",
     "lodash@4.17.3": "4.17.21",
     "@ledgerhq/hw-transport": "6.31.0",
-    "@walletconnect/sign-client@2.16.1": "patch:@walletconnect/sign-client@npm%3A2.16.1#./.yarn/patches/@walletconnect-sign-client-npm-2.16.1-b9bdaa2d98.patch",
+    "@walletconnect/core@2.16.1": "patch:@walletconnect/core@npm%3A2.16.1#./.yarn/patches/@walletconnect-core-npm-2.16.1-42d08707e6.patch",
     "@walletconnect/utils@2.17.2": "patch:@walletconnect/utils@npm%3A2.17.2#./.yarn/patches/@walletconnect-utils-npm-2.17.2-43f96abc05.patch"
   },
   "engines": {

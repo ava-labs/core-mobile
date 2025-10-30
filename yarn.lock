@@ -16851,6 +16851,30 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@walletconnect/core@patch:@walletconnect/core@npm%3A2.16.1#./.yarn/patches/@walletconnect-core-npm-2.16.1-42d08707e6.patch::locator=mobile-monorepo%40workspace%3A.":
+  version: 2.16.1
+  resolution: "@walletconnect/core@patch:@walletconnect/core@npm%3A2.16.1#./.yarn/patches/@walletconnect-core-npm-2.16.1-42d08707e6.patch::version=2.16.1&hash=22d130&locator=mobile-monorepo%40workspace%3A."
+  dependencies:
+    "@walletconnect/heartbeat": 1.2.2
+    "@walletconnect/jsonrpc-provider": 1.0.14
+    "@walletconnect/jsonrpc-types": 1.0.4
+    "@walletconnect/jsonrpc-utils": 1.0.8
+    "@walletconnect/jsonrpc-ws-connection": 1.0.14
+    "@walletconnect/keyvaluestorage": 1.1.1
+    "@walletconnect/logger": 2.1.2
+    "@walletconnect/relay-api": 1.0.11
+    "@walletconnect/relay-auth": 1.0.4
+    "@walletconnect/safe-json": 1.0.2
+    "@walletconnect/time": 1.0.2
+    "@walletconnect/types": 2.16.1
+    "@walletconnect/utils": 2.16.1
+    events: 3.3.0
+    lodash.isequal: 4.5.0
+    uint8arrays: 3.1.0
+  checksum: 3831d5a0153d6ff466ef32e99cae8adec3b2a22d83300b2f56a1fca40b4bb64040a842a854577e8f2f29b42955aac647fff9bf9438462d670388d7c59bd21527
+  languageName: node
+  linkType: hard
+
 "@walletconnect/environment@npm:^1.0.1":
   version: 1.0.1
   resolution: "@walletconnect/environment@npm:1.0.1"
@@ -17026,23 +17050,6 @@ __metadata:
     "@walletconnect/utils": 2.16.1
     events: 3.3.0
   checksum: e25808e2fbfc01cff47391281e7cb050927cde2e83f5eec640e5be52c8adc9ee50bd70447a2e72defc9cad3d3e3009ef48ac7d1b694dafa5d6a62e046863b58a
-  languageName: node
-  linkType: hard
-
-"@walletconnect/sign-client@patch:@walletconnect/sign-client@npm%3A2.16.1#./.yarn/patches/@walletconnect-sign-client-npm-2.16.1-b9bdaa2d98.patch::locator=mobile-monorepo%40workspace%3A.":
-  version: 2.16.1
-  resolution: "@walletconnect/sign-client@patch:@walletconnect/sign-client@npm%3A2.16.1#./.yarn/patches/@walletconnect-sign-client-npm-2.16.1-b9bdaa2d98.patch::version=2.16.1&hash=73f242&locator=mobile-monorepo%40workspace%3A."
-  dependencies:
-    "@walletconnect/core": 2.16.1
-    "@walletconnect/events": 1.0.1
-    "@walletconnect/heartbeat": 1.2.2
-    "@walletconnect/jsonrpc-utils": 1.0.8
-    "@walletconnect/logger": 2.1.2
-    "@walletconnect/time": 1.0.2
-    "@walletconnect/types": 2.16.1
-    "@walletconnect/utils": 2.16.1
-    events: 3.3.0
-  checksum: d3750186101d02675d9d0d0ccb18dec9a8326d1563bb98d28348a3bf6315cf61cf4bb7efac040f1fc9421593660e9c872b08303bccb765bf1dfcaaa3575e05bd
   languageName: node
   linkType: hard
 
