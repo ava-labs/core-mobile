@@ -26522,6 +26522,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"jail-monkey@patch:jail-monkey@npm%3A2.8.0#./.yarn/patches/jail-monkey-npm-2.8.0-77e4d06b40.patch::locator=mobile-monorepo%40workspace%3A.":
+  version: 2.8.0
+  resolution: "jail-monkey@patch:jail-monkey@npm%3A2.8.0#./.yarn/patches/jail-monkey-npm-2.8.0-77e4d06b40.patch::version=2.8.0&hash=225a6a&locator=mobile-monorepo%40workspace%3A."
+  checksum: c5caacdc4a38dcdd45209f55c3376d39cd2ea7ae788f90e4bdb270838cb8f13c1b5001a79cd7c6f1ed7f0d462c9ef2d0fbc959e1e48a26dff4dd9aa7ab9ab4f4
+  languageName: node
+  linkType: hard
+
 "jake@npm:^10.8.5":
   version: 10.9.2
   resolution: "jake@npm:10.9.2"
