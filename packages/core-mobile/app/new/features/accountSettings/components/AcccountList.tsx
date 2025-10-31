@@ -43,7 +43,7 @@ export const AccountList = (): React.JSX.Element => {
 
   const recentAccounts = useMemo(() => {
     return recentAccountIds
-      .map(id => accountCollection[id])
+      .map(id => (isPlatformAccount(id) ? undefined : accountCollection[id]))
       .filter((account): account is Account => account !== undefined)
   }, [accountCollection, recentAccountIds])
 

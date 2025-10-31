@@ -33,7 +33,6 @@ export const SelectAccounts = ({
   } = useTheme()
 
   const data = useMemo(() => {
-
     return [
       {
         // eslint-disable-next-line react/no-unstable-nested-components
