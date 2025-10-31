@@ -137,33 +137,31 @@ export const migrateRemainingActiveAccounts = async ({
       // * so we need to wait for all accounts to be fetched to update balances
       if (walletType === WalletType.SEEDLESS) {
         // add xp addresses to the platform accounts
-        // const avmAddresses = Object.values(accounts).map(
-        //   account => account.addressAVM
-        // )
-        // const pvmAddresses = Object.values(accounts).map(
-        //   account => account.addressPVM
-        // )
-        // const platformAccounts = selectPlatformAccountsByWalletId(
-        //   state,
-        //   walletId
-        // )
+        const avmAddresses = Object.values(accounts).map(
+          account => account.addressAVM
+        )
+        const pvmAddresses = Object.values(accounts).map(
+          account => account.addressPVM
+        )
+        const platformAccounts = selectPlatformAccountsByWalletId(
+          state,
+          walletId
+        )
 
-        // for (const platformAccount of platformAccounts as PlatformAccount[]) {
-        //   if (platformAccount.id === `${walletId}-${NetworkVMType.AVM}`) {
-        //     platformAccount.addresses = [
-        //       ...platformAccount.addresses,
-        //       ...avmAddresses
-        //     ]
-        //     accounts[NetworkVMType.AVM] = platformAccount
-        //   }
-        //   if (platformAccount.id === NetworkVMType.PVM) {
-        //     platformAccount.addresses = [
-        //       ...platformAccount.addresses,
-        //       ...pvmAddresses
-        //     ]
-        //     accounts[NetworkVMType.PVM] = platformAccount
-        //   }
-        // }
+        for (const platformAccount of platformAccounts as PlatformAccount[]) {
+          if (platformAccount.id === `${walletId}-${NetworkVMType.AVM}`) {
+            accounts[`${walletId}-${NetworkVMType.AVM}`] = {
+              ...platformAccount,
+              addresses: [...platformAccount.addresses, ...avmAddresses]
+            }
+          }
+          if (platformAccount.id === `${walletId}-${NetworkVMType.PVM}`) {
+            accounts[`${walletId}-${NetworkVMType.PVM}`] = {
+              ...platformAccount,
+              addresses: [...platformAccount.addresses, ...pvmAddresses]
+            }
+          }
+        }
 
         listenerApi.dispatch(setAccounts(accounts))
       } else {
