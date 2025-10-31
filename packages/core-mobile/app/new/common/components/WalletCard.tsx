@@ -90,7 +90,7 @@ const WalletCard = ({
             alignItems: 'center',
             gap: 8,
             flex: 1,
-            paddingHorizontal: 10
+            padding: 10
           }}>
           <View sx={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
             {renderExpansionIcon()}
@@ -109,7 +109,7 @@ const WalletCard = ({
             <Text
               testID={`manage_accounts_wallet_name__${wallet.name}`}
               variant="caption"
-              numberOfLines={1}
+              numberOfLines={2}
               style={{
                 fontSize: 12,
                 fontWeight: 400,
