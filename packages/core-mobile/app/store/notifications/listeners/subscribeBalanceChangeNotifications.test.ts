@@ -62,7 +62,7 @@ describe('subscribeBalanceChangeNotifications', () => {
   })
 
   it('should skip subscription if there are no accounts', async () => {
-    ;(selectAccounts as jest.Mock).mockReturnValue({})
+    ;(selectAccounts as unknown as jest.Mock).mockReturnValue([])
 
     await subscribeBalanceChangeNotifications(listenerApi)
 
@@ -82,9 +82,9 @@ describe('subscribeBalanceChangeNotifications', () => {
   })
 
   it('should unsubscribe if balance change notifications are blocked', async () => {
-    ;(selectAccounts as jest.Mock).mockReturnValue({
-      account1: { addressC: 'address1' }
-    })
+    ;(selectAccounts as unknown as jest.Mock).mockReturnValue([
+      { addressC: 'address1' }
+    ])
     ;(FCMService.getFCMToken as jest.Mock).mockResolvedValue('fcmToken')
     ;(registerDeviceToNotificationSender as jest.Mock).mockResolvedValue(
       'deviceArn'
@@ -102,9 +102,9 @@ describe('subscribeBalanceChangeNotifications', () => {
   })
 
   it('should subscribe for balance change notifications if not blocked', async () => {
-    ;(selectAccounts as jest.Mock).mockReturnValue({
-      account1: { addressC: 'address1' }
-    })
+    ;(selectAccounts as unknown as jest.Mock).mockReturnValue([
+      { addressC: 'address1' }
+    ])
     ;(FCMService.getFCMToken as jest.Mock).mockResolvedValue('fcmToken')
     ;(registerDeviceToNotificationSender as jest.Mock).mockResolvedValue(
       'deviceArn'
@@ -129,9 +129,9 @@ describe('subscribeBalanceChangeNotifications', () => {
   })
 
   it('should log error and throw if subscription response is not "ok"', async () => {
-    ;(selectAccounts as jest.Mock).mockReturnValue({
-      account1: { addressC: 'address1' }
-    })
+    ;(selectAccounts as unknown as jest.Mock).mockReturnValue([
+      { addressC: 'address1' }
+    ])
     ;(FCMService.getFCMToken as jest.Mock).mockResolvedValue('fcmToken')
     ;(registerDeviceToNotificationSender as jest.Mock).mockResolvedValue(
       'deviceArn'
@@ -153,9 +153,9 @@ describe('subscribeBalanceChangeNotifications', () => {
   })
 
   it('should handle error during device registration and not proceed with subscription', async () => {
-    ;(selectAccounts as jest.Mock).mockReturnValue({
-      account1: { addressC: 'address1' }
-    })
+    ;(selectAccounts as unknown as jest.Mock).mockReturnValue([
+      { addressC: 'address1' }
+    ])
     ;(FCMService.getFCMToken as jest.Mock).mockResolvedValue('fcmToken')
     ;(registerDeviceToNotificationSender as jest.Mock).mockRejectedValue(
       new Error('Device registration error')

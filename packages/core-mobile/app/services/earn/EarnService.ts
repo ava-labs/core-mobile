@@ -377,7 +377,7 @@ class EarnService {
 
       const oppositeNetworkAddresses = (
         await Promise.all(
-          accountsArray.map(account =>
+          accounts.map(account =>
             AccountsService.getAddresses({
               walletId,
               walletType,

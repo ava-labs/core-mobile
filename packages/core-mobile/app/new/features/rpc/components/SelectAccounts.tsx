@@ -12,7 +12,7 @@ import {
   useTheme,
   View
 } from '@avalabs/k2-alpine'
-import type { Account, AccountCollection } from 'store/account/types'
+import type { Account } from 'store/account/types'
 import { useFormatCurrency } from 'new/common/hooks/useFormatCurrency'
 import { useBalanceForAccount } from 'new/common/contexts/useBalanceForAccount'
 import { TRUNCATE_ADDRESS_LENGTH } from 'common/consts/text'
@@ -20,7 +20,7 @@ import { TRUNCATE_ADDRESS_LENGTH } from 'common/consts/text'
 type Props = {
   onSelect: (account: Account) => void
   selectedAccounts: Account[]
-  accounts: AccountCollection
+  accounts: Account[]
 }
 
 export const SelectAccounts = ({
@@ -33,7 +33,6 @@ export const SelectAccounts = ({
   } = useTheme()
 
   const data = useMemo(() => {
-    const allAccounts = Object.values(accounts)
 
     return [
       {
@@ -75,8 +74,8 @@ export const SelectAccounts = ({
         expanded: true,
         accordion: (
           <View style={{ marginVertical: 12 }}>
-            {allAccounts.map((account, index) => {
-              const lastItem = index === allAccounts.length - 1
+            {accounts.map((account, index) => {
+              const lastItem = index === accounts.length - 1
               const isSelected =
                 selectedAccounts.findIndex(
                   selectedAccount =>

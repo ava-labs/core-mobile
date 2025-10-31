@@ -95,9 +95,9 @@ describe('subscribeNewsNotifications', () => {
     ;(selectEnabledNewsNotificationSubscriptions as jest.Mock).mockReturnValue([
       ChannelId.MARKET_NEWS
     ])
-    ;(selectAccounts as jest.Mock).mockReturnValue({
-      account1: { addressC: 'address1' }
-    })
+    ;(selectAccounts as unknown as jest.Mock).mockReturnValue([
+      { addressC: 'address1' }
+    ])
     ;(FCMService.getFCMToken as jest.Mock).mockResolvedValue('fcmToken')
     ;(registerDeviceToNotificationSender as jest.Mock).mockResolvedValue(
       'deviceArn'
@@ -133,9 +133,9 @@ describe('subscribeNewsNotifications', () => {
       ChannelId.PRICE_ALERTS,
       ChannelId.PRODUCT_ANNOUNCEMENTS
     ])
-    ;(selectAccounts as jest.Mock).mockReturnValue({
-      account1: { addressC: 'address1' }
-    })
+    ;(selectAccounts as unknown as jest.Mock).mockReturnValue([
+      { addressC: 'address1' }
+    ])
     ;(FCMService.getFCMToken as jest.Mock).mockResolvedValue('fcmToken')
     ;(registerDeviceToNotificationSender as jest.Mock).mockResolvedValue(
       'deviceArn'
@@ -168,9 +168,9 @@ describe('subscribeNewsNotifications', () => {
       ChannelId.PRICE_ALERTS,
       ChannelId.PRODUCT_ANNOUNCEMENTS
     ])
-    ;(selectAccounts as jest.Mock).mockReturnValue({
-      account1: { addressC: 'address1' }
-    })
+    ;(selectAccounts as unknown as jest.Mock).mockReturnValue([
+      { addressC: 'address1' }
+    ])
     ;(FCMService.getFCMToken as jest.Mock).mockResolvedValue('fcmToken')
     ;(registerDeviceToNotificationSender as jest.Mock).mockResolvedValue(
       'deviceArn'
@@ -198,9 +198,9 @@ describe('subscribeNewsNotifications', () => {
       ChannelId.PRICE_ALERTS,
       ChannelId.PRODUCT_ANNOUNCEMENTS
     ])
-    ;(selectAccounts as jest.Mock).mockReturnValue({
-      account1: { addressC: 'address1' }
-    })
+    ;(selectAccounts as unknown as jest.Mock).mockReturnValue([
+      { addressC: 'address1' }
+    ])
     ;(FCMService.getFCMToken as jest.Mock).mockResolvedValue('fcmToken')
     ;(registerDeviceToNotificationSender as jest.Mock).mockRejectedValue(
       new Error('Device registration error')
