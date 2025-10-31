@@ -142,10 +142,7 @@ export const CollectibleListItem = memo(
               style={{
                 flex: 1
               }}>
-              <Text
-                testID={`collectible_name__${collectibleName}`}
-                variant="buttonMedium"
-                numberOfLines={1}>
+              <Text variant="buttonMedium" numberOfLines={1}>
                 {collectibleName}
               </Text>
               <Text
@@ -210,11 +207,12 @@ export const CollectibleGridItem = memo(
     onPress,
     ...props
   }: CollectibleGridItemProps): ReactNode => {
+    const collectibleName = getCollectibleName(collectible)
     const height = getGridCardHeight(type, index)
-
     return (
       <AnimatedPressable onPress={onPress} {...props}>
         <CardContainer
+          testID={`collectible_name__${collectibleName}`}
           style={[
             {
               height

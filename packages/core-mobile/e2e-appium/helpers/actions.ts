@@ -185,6 +185,12 @@ async function dragAndDrop(
   )
 }
 
+const getAmount = (amount: string | undefined): number => {
+  if (amount) {
+    return parseFloat(amount.replace(/\$/g, '').replace(/,/g, ''))
+  } else return 0
+}
+
 async function clearText(ele: ChainablePromiseElement) {
   await ele.clearValue()
 }
@@ -225,5 +231,6 @@ export const actions = {
   getVisible,
   clearText,
   scrollTo,
-  log
+  log,
+  getAmount
 }
