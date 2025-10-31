@@ -27,7 +27,7 @@ export async function subscribeBalanceChangeNotifications(
   }
 
   const accounts = selectAccounts(state)
-  const addresses = Object.values(accounts).map(account => account.addressC)
+  const addresses = accounts.map(account => account.addressC)
 
   if (addresses.length === 0) {
     // skip if no addresses, means wallet is not yet created

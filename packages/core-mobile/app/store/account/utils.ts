@@ -1,5 +1,9 @@
 import { AVM, EVM, PVM, VM } from '@avalabs/avalanchejs'
-import { Account, AccountCollection } from 'store/account/types'
+import {
+  Account,
+  AccountCollection,
+  PlatformAccount
+} from 'store/account/types'
 import { Network, NetworkVMType } from '@avalabs/core-chains-sdk'
 import WalletFactory from 'services/wallet/WalletFactory'
 import { WalletType } from 'services/wallet/types'
@@ -17,7 +21,11 @@ import { StorageKey } from 'resources/Constants'
 import { appendToStoredArray, loadArrayFromStorage } from 'utils/mmkv/storages'
 import { setIsMigratingActiveAccounts } from 'store/wallet/slice'
 import WalletService from 'services/wallet/WalletService'
-import { setAccounts, setNonActiveAccounts } from './slice'
+import {
+  selectPlatformAccountsByWalletId,
+  setAccounts,
+  setNonActiveAccounts
+} from './slice'
 
 export function getAddressByVM(
   vm: VM,
@@ -103,7 +111,9 @@ export const migrateRemainingActiveAccounts = async ({
   walletId: string
   walletType: WalletType.SEEDLESS | WalletType.MNEMONIC | WalletType.KEYSTONE
   startIndex: number
+  // eslint-disable-next-line sonarjs/cognitive-complexity
 }): Promise<AccountCollection> => {
+  const state = listenerApi.getState()
   listenerApi.dispatch(setIsMigratingActiveAccounts(true))
 
   try {
@@ -125,9 +135,38 @@ export const migrateRemainingActiveAccounts = async ({
       // set accounts for seedless wallet, which trigger balance update
       // * seedless wallet fetches xp balances by iterating over xp addresses over all accounts
       // * so we need to wait for all accounts to be fetched to update balances
-      walletType === WalletType.SEEDLESS
-        ? listenerApi.dispatch(setAccounts(accounts))
-        : listenerApi.dispatch(setNonActiveAccounts(accounts))
+      if (walletType === WalletType.SEEDLESS) {
+        // add xp addresses to the platform accounts
+        const avmAddresses = Object.values(accounts).map(
+          account => account.addressAVM
+        )
+        const pvmAddresses = Object.values(accounts).map(
+          account => account.addressPVM
+        )
+        const platformAccounts = selectPlatformAccountsByWalletId(
+          state,
+          walletId
+        )
+
+        for (const platformAccount of platformAccounts as PlatformAccount[]) {
+          if (platformAccount.id === `${walletId}-${NetworkVMType.AVM}`) {
+            accounts[`${walletId}-${NetworkVMType.AVM}`] = {
+              ...platformAccount,
+              addresses: [...platformAccount.addresses, ...avmAddresses]
+            }
+          }
+          if (platformAccount.id === `${walletId}-${NetworkVMType.PVM}`) {
+            accounts[`${walletId}-${NetworkVMType.PVM}`] = {
+              ...platformAccount,
+              addresses: [...platformAccount.addresses, ...pvmAddresses]
+            }
+          }
+        }
+
+        listenerApi.dispatch(setAccounts(accounts))
+      } else {
+        listenerApi.dispatch(setNonActiveAccounts(accounts))
+      }
 
       recentAccountsStore.getState().addRecentAccounts(accountIds)
 
@@ -252,3 +291,6 @@ export async function getAddressesForXP({
     throw new Error('Failed to get addresses for XP')
   }
 }
+
+export const isPlatformAccount = (accountId: string): boolean =>
+  accountId.includes(NetworkVMType.AVM) || accountId.includes(NetworkVMType.PVM)

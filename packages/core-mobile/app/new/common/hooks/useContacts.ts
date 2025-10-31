@@ -15,12 +15,12 @@ export const useContacts = (): {
   contacts: Contact[]
 } => {
   const selectedRecentContacts = useSelector(selectRecentContacts)
-  const accountCollection = useSelector(selectAccounts)
+  const allAccounts = useSelector(selectAccounts)
   const { avatar } = useAvatar()
 
   const accounts = useMemo(
     () =>
-      Object.values(accountCollection).map(
+      allAccounts.map(
         account =>
           ({
             id: account.id,
@@ -33,7 +33,7 @@ export const useContacts = (): {
             type: 'account'
           } as Contact)
       ),
-    [accountCollection, avatar]
+    [allAccounts, avatar]
   )
   const contactCollection = useSelector(selectContacts)
   const contacts = useMemo(() => {

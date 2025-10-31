@@ -1,4 +1,5 @@
 import { Network } from '@avalabs/core-chains-sdk'
+import { NetworkVMType } from '@avalabs/vm-module-types'
 
 export type ChainID = number
 
@@ -58,3 +59,5 @@ export enum TokenSymbol {
   OP = 'OP',
   BASE = 'BASE'
 }
+
+export type XpNetworkVMType = NetworkVMType.AVM | NetworkVMType.PVM

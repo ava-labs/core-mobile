@@ -17,6 +17,7 @@ import { addCustomToken, selectAllCustomTokens } from 'store/customToken'
 import {
   addCustomNetwork,
   selectEnabledNetworks,
+  selectEnabledNetworksWithoutXP,
   toggleEnabledChainId
 } from 'store/network/slice'
 import {
@@ -51,9 +52,11 @@ import { queryClient } from 'contexts/ReactQueryProvider'
 import { selectIsSolanaSupportBlocked } from 'store/posthog'
 import { runAfterInteractions } from 'utils/runAfterInteractions'
 import { getAddressesForXP } from 'store/account/utils'
-import { selectActiveWallet, selectActiveWalletId } from 'store/wallet/slice'
 import { NetworkVMType } from '@avalabs/vm-module-types'
 import { WalletType } from 'services/wallet/types'
+import { Wallet as StoreWallet } from 'store/wallet/types'
+import { selectActiveWallet } from 'store/wallet/slice'
+import { XpNetworkVMType } from 'store/network'
 import {
   Balances,
   LocalTokenWithBalance,
@@ -62,6 +65,7 @@ import {
 } from './types'
 import {
   fetchBalanceForAccount,
+  fetchXpBalancesForWallet,
   getKey,
   refetchBalance,
   selectAllBalanceStatus,
@@ -105,9 +109,11 @@ const onBalanceUpdate = async (
 ): Promise<void> => {
   const { getState } = listenerApi
   const state = getState()
-  const account = selectActiveAccount(state)
   const isDeveloperMode = selectIsDeveloperMode(state)
-  const enabledNetworks = selectEnabledNetworks(state)
+  const enabledNetworks = selectEnabledNetworksWithoutXP(state)
+  const account = selectActiveAccount(state)
+  const wallet = selectActiveWallet(state)
+
   const networks = getNetworksToFetch({
     isDeveloperMode,
     enabledNetworks,
@@ -125,6 +131,7 @@ const onBalanceUpdate = async (
   })
   onXpBalanceUpdateCore({
     queryStatus,
+    wallet,
     listenerApi
   })
 }
@@ -146,7 +153,8 @@ const onBalancePolling = async ({
   const state = getState()
   const account = selectActiveAccount(state)
   const isDeveloperMode = selectIsDeveloperMode(state)
-  const enabledNetworks = selectEnabledNetworks(state)
+  const enabledNetworks = selectEnabledNetworksWithoutXP(state)
+
   const networks = getNetworksToFetch({
     isDeveloperMode,
     enabledNetworks,
@@ -231,18 +239,25 @@ const onBalanceUpdateCore = async ({
 
 const onXpBalanceUpdateCore = async ({
   queryStatus,
+  wallet,
   listenerApi
 }: {
   queryStatus: QueryStatus
+  wallet?: StoreWallet
   listenerApi: AppListenerEffectAPI
 }): Promise<void> => {
+  if (wallet === undefined) {
+    Logger.error(
+      'onXpBalanceUpdateCore: wallet is undefined, skipping xp balance update'
+    )
+    return
+  }
+
   const { getState, dispatch } = listenerApi
   const state = getState()
   const currentStatus = selectXpBalanceStatus(state)
   const enabledNetworks = selectEnabledNetworks(state)
   const isDeveloperMode = selectIsDeveloperMode(state)
-  const walletId = selectActiveWalletId(state)
-  const wallet = selectActiveWallet(state)
   const accounts = selectAccounts(state)
 
   const networks = enabledNetworks.filter(
@@ -270,25 +285,27 @@ const onXpBalanceUpdateCore = async ({
 
       const xpPromises: {
         addresses: string[]
+        networkType: XpNetworkVMType
         promise: Promise<BalancesForXpAddress[]>
       }[] = []
       for (const n of networks) {
         let addresses: string[] = []
-        if (wallet?.type === WalletType.SEEDLESS) {
-          addresses = Object.values(accounts).map(a =>
+        if (wallet.type === WalletType.SEEDLESS) {
+          addresses = accounts.map(a =>
             n.vmName === NetworkVMType.PVM ? a.addressPVM : a.addressAVM
           )
         } else {
           addresses = await getAddressesForXP({
             networkType: n.vmName,
             isDeveloperMode,
-            walletId,
+            walletId: wallet.id,
             walletType: wallet?.type,
             onlyWithActivity: true
           })
         }
         xpPromises.push({
           addresses,
+          networkType: n.vmName,
           promise: BalanceService.getXPBalances({
             network: n,
             currency,
@@ -297,11 +314,11 @@ const onXpBalanceUpdateCore = async ({
         })
       }
 
-      const xpBalances = await fetchBalanceForXpNetworks(xpPromises)
+      // store the xp balances by `${walletId}-${networkType}-${accountAddress}`
+      const xpBalances = await fetchBalanceForXpNetworks(xpPromises, wallet.id)
 
       dispatch(setBalances(xpBalances))
       dispatch(setStatus({ queryType: QueryType.XP, status: QueryStatus.IDLE }))
-
       Logger.info('finished fetching xp balances')
       span?.end()
     }
@@ -378,9 +395,10 @@ const handleAllNetworksPolling = async ({
 }: {
   listenerApi: AppListenerEffectAPI
 }): Promise<ForkedTask<void>> => {
-  const state = listenerApi.getState()
+  const { getState } = listenerApi
+  const state = getState()
   const isDeveloperMode = selectIsDeveloperMode(state)
-  const enabledNetworks = selectEnabledNetworks(state)
+  const enabledNetworks = selectEnabledNetworksWithoutXP(state)
 
   let iteration = 0
   let nonPrimaryNetworksIteration = 0
@@ -442,7 +460,8 @@ const handleFetchBalanceForAccount = async (
 ): Promise<void> => {
   const state = listenerApi.getState()
   const isDeveloperMode = selectIsDeveloperMode(state)
-  const enabledNetworks = selectEnabledNetworks(state)
+  const enabledNetworks = selectEnabledNetworksWithoutXP(state)
+
   const networks = getNetworksToFetch({
     isDeveloperMode,
     enabledNetworks,
@@ -458,6 +477,17 @@ const handleFetchBalanceForAccount = async (
     networks,
     account
   }).catch(Logger.error)
+}
+
+const handleFetchXpBalancesForWallet = async (
+  listenerApi: AppListenerEffectAPI,
+  wallet: StoreWallet
+): Promise<void> => {
+  onXpBalanceUpdateCore({
+    queryStatus: QueryStatus.LOADING,
+    listenerApi,
+    wallet
+  })
 }
 
 const fetchBalanceForNetworks = async (
@@ -546,8 +576,10 @@ const fetchBalanceForNetworks = async (
 const fetchBalanceForXpNetworks = async (
   promises: {
     addresses: string[]
+    networkType: XpNetworkVMType
     promise: Promise<BalancesForXpAddress[]>
-  }[]
+  }[],
+  walletId: string
 ): Promise<Balances> => {
   const allSettledResults = await Promise.allSettled(
     promises.map(p => p.promise)
@@ -556,12 +588,12 @@ const fetchBalanceForXpNetworks = async (
   const allBalances: Balances = {}
   allSettledResults.forEach((result, index) => {
     const addresses = promises[index]?.addresses ?? []
-
+    const networkType = promises[index]?.networkType
     // if the promise is rejected, set the balances for the active addresses
     if (result.status === 'rejected') {
       Logger.warn('failed to get balance', result.reason)
       addresses.forEach(address => {
-        allBalances[address] = {
+        allBalances[`${walletId}-${networkType}-${address}`] = {
           dataAccurate: false,
           accountId: undefined,
           chainId: 0,
@@ -574,8 +606,8 @@ const fetchBalanceForXpNetworks = async (
 
     // add the balances for the active addresses to allBalances
     result.value.forEach(balance => {
-      allBalances[balance.accountAddress] = {
-        accountId: undefined,
+      allBalances[`${walletId}-${networkType}-${balance.accountAddress}`] = {
+        accountId: `${walletId}-${networkType}`,
         dataAccurate: true,
         chainId: balance.chainId,
         tokens: balance.tokens.map(token => ({
@@ -683,6 +715,12 @@ export const addBalanceListeners = (
     actionCreator: fetchBalanceForAccount,
     effect: async (action, listenerApi) =>
       handleFetchBalanceForAccount(listenerApi, action.payload.account)
+  })
+
+  startListening({
+    actionCreator: fetchXpBalancesForWallet,
+    effect: async (action, listenerApi) =>
+      handleFetchXpBalancesForWallet(listenerApi, action.payload.wallet)
   })
 
   startListening({

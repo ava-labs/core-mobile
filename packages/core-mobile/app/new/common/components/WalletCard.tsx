@@ -8,8 +8,12 @@ import {
 } from '@avalabs/k2-alpine'
 import { useManageWallet } from 'common/hooks/useManageWallet'
 import { WalletDisplayData } from 'common/types'
-import React, { useCallback } from 'react'
+import React, { useCallback, useMemo } from 'react'
 import { StyleProp, ViewStyle } from 'react-native'
+import { useSelector } from 'react-redux'
+import { selectAccounts } from 'store/account'
+import { TotalAccountBalanceForWallet } from 'features/accountSettings/components/ToalAccountBalanceForWallet'
+import { isPlatformAccount } from 'store/account/utils'
 import { DropdownMenu } from './DropdownMenu'
 
 const ITEM_HEIGHT = 50
@@ -33,6 +37,16 @@ const WalletCard = ({
     theme: { colors }
   } = useTheme()
   const { getDropdownItems, handleDropdownSelect } = useManageWallet()
+
+  const accounts = useSelector(selectAccounts)
+
+  // number of accounts in the wallet (excluding X/P chains)
+  const accountsCount = useMemo(() => {
+    return accounts.filter(
+      account =>
+        account.walletId === wallet.id && !isPlatformAccount(account.id)
+    ).length
+  }, [accounts, wallet.id])
 
   const renderExpansionIcon = useCallback(() => {
     return (
@@ -76,23 +90,40 @@ const WalletCard = ({
             alignItems: 'center',
             gap: 8,
             flex: 1,
-            paddingHorizontal: 10
+            padding: 10
           }}>
           <View sx={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
             {renderExpansionIcon()}
             {renderWalletIcon()}
           </View>
-          <Text
-            testID={`manage_accounts_wallet_name__${wallet.name}`}
-            variant="buttonSmall"
-            numberOfLines={1}
-            style={{
-              fontSize: 14,
-              flex: 1
-            }}>
-            {wallet.name}
-          </Text>
+          <View sx={{ flex: 1 }}>
+            <Text
+              testID={`manage_accounts_wallet_name__${wallet.name}`}
+              variant="buttonSmall"
+              numberOfLines={1}
+              style={{
+                fontSize: 14
+              }}>
+              {wallet.name}
+            </Text>
+            <Text
+              testID={`manage_accounts_wallet_name__${wallet.name}`}
+              variant="caption"
+              numberOfLines={2}
+              style={{
+                fontSize: 12,
+                fontWeight: 400,
+                color: colors.$textSecondary
+              }}>
+              {`${accountsCount} ${
+                accountsCount > 1 ? 'accounts' : 'account'
+              } + X/P Chains`}
+            </Text>
+          </View>
         </View>
+
+        {/* total balance */}
+        <TotalAccountBalanceForWallet walletId={wallet.id} />
 
         {showMoreButton && (
           <DropdownMenu

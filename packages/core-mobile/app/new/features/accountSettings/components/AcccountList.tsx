@@ -8,12 +8,14 @@ import { useDispatch, useSelector } from 'react-redux'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import {
   Account,
-  selectAccounts,
   selectActiveAccount,
+  selectAllAccounts,
   setActiveAccount
 } from 'store/account'
+import { isPlatformAccount } from 'store/account/utils'
 import { useRecentAccounts } from '../store'
 import { AccountItem } from './AccountItem'
+import { XpAccountItem } from './XpAccountItem'
 
 const CARD_PADDING = 12
 
@@ -28,7 +30,7 @@ export const AccountList = (): React.JSX.Element => {
   const dispatch = useDispatch()
   const { navigate, dismiss } = useRouter()
   const activeAccount = useSelector(selectActiveAccount)
-  const accountCollection = useSelector(selectAccounts)
+  const accountCollection = useSelector(selectAllAccounts)
   const flatListRef = useRef<FlatList>(null)
 
   const { recentAccountIds, updateRecentAccount } = useRecentAccounts()
@@ -41,7 +43,7 @@ export const AccountList = (): React.JSX.Element => {
 
   const recentAccounts = useMemo(() => {
     return recentAccountIds
-      .map(id => accountCollection[id])
+      .map(id => (isPlatformAccount(id) ? undefined : accountCollection[id]))
       .filter((account): account is Account => account !== undefined)
   }, [accountCollection, recentAccountIds])
 
@@ -93,15 +95,27 @@ export const AccountList = (): React.JSX.Element => {
   }, [recentAccounts.length])
 
   const renderItem = useCallback(
-    ({ item, index }: { item: Account; index: number }) => (
-      <AccountItem
-        index={index}
-        isActive={item.id === activeAccount?.id}
-        account={item as Account}
-        onSelectAccount={onSelectAccount}
-        gotoAccountDetails={gotoAccountDetails}
-      />
-    ),
+    ({ item, index }: { item: Account; index: number }) => {
+      if (isPlatformAccount(item.id)) {
+        return (
+          <XpAccountItem
+            index={index}
+            isActive={item.id === activeAccount?.id}
+            account={item as Account}
+            onSelectAccount={onSelectAccount}
+          />
+        )
+      }
+      return (
+        <AccountItem
+          index={index}
+          isActive={item.id === activeAccount?.id}
+          account={item as Account}
+          onSelectAccount={onSelectAccount}
+          gotoAccountDetails={gotoAccountDetails}
+        />
+      )
+    },
     [activeAccount?.id, gotoAccountDetails, onSelectAccount]
   )
 

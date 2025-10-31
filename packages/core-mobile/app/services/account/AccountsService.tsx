@@ -29,14 +29,14 @@ class AccountsService {
     walletId,
     walletType
   }: {
-    accounts: AccountCollection
+    accounts: Account[]
     isTestnet: boolean
     walletId: string
     walletType: WalletType
-  }): Promise<AccountCollection> {
-    const reloadedAccounts: AccountCollection = {}
+  }): Promise<Account[]> {
+    const reloadedAccounts: Account[] = []
 
-    for (const [key, account] of Object.entries(accounts)) {
+    for (const account of accounts) {
       const addresses = await this.getAddresses({
         walletId,
         walletType,
@@ -49,7 +49,7 @@ class AccountsService {
           ? await SeedlessService.getAccountName(account.index)
           : account.name
 
-      reloadedAccounts[key] = {
+      reloadedAccounts.push({
         id: account.id,
         name: title ?? account.name,
         type: account.type,
@@ -61,7 +61,7 @@ class AccountsService {
         addressPVM: addresses[NetworkVMType.PVM],
         addressCoreEth: addresses[NetworkVMType.CoreEth],
         addressSVM: addresses[NetworkVMType.SVM]
-      } as Account
+      } as Account)
     }
     return reloadedAccounts
   }

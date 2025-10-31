@@ -33,7 +33,7 @@ export const addAccount = createAsyncThunk<void, string, ThunkApi>(
       throw new Error('Wallet not found')
     }
 
-    const allAccountsCount = Object.keys(allAccounts).length
+    const allAccountsCount = allAccounts.length
     const accountsByWalletId = selectAccountsByWalletId(state, walletId)
 
     const acc = await AccountsService.createNextAccount({
@@ -96,7 +96,7 @@ export const removeAccountWithActiveCheck = createAsyncThunk<
       if (activeAccount?.id === accountId) {
         // Find another account from a different wallet to set as active
         const allAccounts = selectAccounts(state)
-        const otherAccount = Object.values(allAccounts).find(
+        const otherAccount = allAccounts.find(
           acc => acc.walletId !== accountToRemove.walletId
         )
 

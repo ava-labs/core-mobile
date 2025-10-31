@@ -13,7 +13,11 @@ export type ImportedAccount = Omit<CoreImportedAccount, 'active'> & {
   index: 0
 }
 
-export type Account = PrimaryAccount | ImportedAccount
+export type PlatformAccount = PrimaryAccount & {
+  addresses: string[]
+}
+
+export type Account = PrimaryAccount | ImportedAccount | PlatformAccount
 
 export type AccountCollection = { [id: string]: Account }
 

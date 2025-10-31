@@ -21,12 +21,15 @@ import BiometricsSDK from 'utils/BiometricsSDK'
 import Logger from 'utils/Logger'
 import KeystoneService from 'features/keystone/services/KeystoneService'
 import { pendingSeedlessWalletNameStore } from 'features/onboarding/store'
+import { CoreAccountType } from '@avalabs/types'
+import { NetworkVMType } from '@avalabs/vm-module-types'
 import {
   selectAccounts,
   setAccounts,
   setActiveAccountId,
   selectAccountsByWalletId,
-  selectActiveAccount
+  selectActiveAccount,
+  selectPlatformAccountsByWalletId
 } from './slice'
 import { AccountCollection } from './types'
 import {
@@ -35,6 +38,7 @@ import {
   migrateRemainingActiveAccounts,
   shouldMigrateActiveAccounts
 } from './utils'
+import { P_CHAIN_ACCOUNT_NAME, X_CHAIN_ACCOUNT_NAME } from './consts'
 
 const initAccounts = async (
   _action: AnyAction,
@@ -95,15 +99,39 @@ const initAccounts = async (
     activeWallet.type === WalletType.SEEDLESS
   ) {
     accounts[acc.id] = acc
-    listenerApi.dispatch(setAccounts(accounts))
     const firstAccountId = Object.keys(accounts)[0]
     if (!firstAccountId) {
       throw new Error('No accounts created')
     }
+
+    // set platform accounts
+    ;[NetworkVMType.AVM, NetworkVMType.PVM].forEach(networkType => {
+      accounts[`${activeWallet.id}-${networkType}`] = {
+        index: 0,
+        id: `${activeWallet.id}-${networkType}`,
+        walletId: activeWallet.id,
+        name:
+          networkType === NetworkVMType.PVM
+            ? P_CHAIN_ACCOUNT_NAME
+            : X_CHAIN_ACCOUNT_NAME,
+        type: CoreAccountType.PRIMARY,
+        addressC: '',
+        addressBTC: '',
+        addressAVM: '',
+        addressPVM: '',
+        addressCoreEth: '',
+        addressSVM: '',
+        addresses: [
+          networkType === NetworkVMType.PVM ? acc.addressPVM : acc.addressAVM
+        ]
+      }
+    })
+
+    listenerApi.dispatch(setAccounts(accounts))
     listenerApi.dispatch(setActiveAccountId(firstAccountId))
   }
 
-  const accountValues = Object.values(accounts)
+  const accountValues = selectAccountsByWalletId(state, activeWallet.id)
   if (activeWallet.type === WalletType.SEEDLESS) {
     // setting wallet name
     const { pendingSeedlessWalletName } =
@@ -167,19 +195,23 @@ const reloadAccounts = async (
   const wallets = selectWallets(state)
   for (const wallet of Object.values(wallets)) {
     const accounts = selectAccountsByWalletId(state, wallet.id)
-    //convert accounts to AccountCollection
-    const accountsCollection: AccountCollection = {}
-    for (const account of accounts) {
-      accountsCollection[account.id] = account
-    }
-
     const reloadedAccounts = await AccountsService.reloadAccounts({
-      accounts: accountsCollection,
+      accounts,
       isTestnet: isDeveloperMode,
       walletId: wallet.id,
       walletType: wallet.type
     })
-    listenerApi.dispatch(setAccounts(reloadedAccounts))
+
+    const allAccounts = [
+      ...reloadedAccounts,
+      ...selectPlatformAccountsByWalletId(state, wallet.id)
+    ]
+    //convert accounts to AccountCollection
+    const accountsCollection: AccountCollection = {}
+    for (const account of allAccounts) {
+      accountsCollection[account.id] = account
+    }
+    listenerApi.dispatch(setAccounts(accountsCollection))
   }
 }
 
@@ -229,9 +261,11 @@ const migrateSolanaAddressesIfNeeded = async (
   const state = getState()
   const isSolanaSupportBlocked = selectIsSolanaSupportBlocked(state)
   const accounts = selectAccounts(state)
-  const entries = Object.values(accounts)
   // Only migrate Solana addresses if Solana support is enabled
-  if (!isSolanaSupportBlocked && entries.some(account => !account.addressSVM)) {
+  if (
+    !isSolanaSupportBlocked &&
+    accounts.some(account => !account.addressSVM)
+  ) {
     const seedlessWallet = selectSeedlessWallet(state)
     if (seedlessWallet) {
       await deriveMissingSeedlessSessionKeys(seedlessWallet.id)
