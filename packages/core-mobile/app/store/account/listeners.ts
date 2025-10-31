@@ -35,7 +35,6 @@ import { AccountCollection } from './types'
 import {
   canMigrateActiveAccounts,
   deriveMissingSeedlessSessionKeys,
-  isPlatformAccount,
   migrateRemainingActiveAccounts,
   shouldMigrateActiveAccounts
 } from './utils'
