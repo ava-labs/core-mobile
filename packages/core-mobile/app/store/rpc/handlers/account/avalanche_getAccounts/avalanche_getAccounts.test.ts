@@ -7,7 +7,7 @@ jest.mock('store/account/slice', () => {
   const actual = jest.requireActual('store/account/slice')
   return {
     ...actual,
-    selectAccounts: () => mockAccounts,
+    selectAccounts: () => Object.values(mockAccounts),
     selectActiveAccount: () => mockAccounts['0']
   }
 })
