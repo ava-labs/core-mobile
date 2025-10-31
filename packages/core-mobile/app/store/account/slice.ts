@@ -67,7 +67,7 @@ export const selectAccounts = createSelector(
     Object.values(accounts).filter(account => !isPlatformAccount(account.id))
 )
 
-export const selectPlatformAccounts = createSelector(
+const _selectPlatformAccounts = createSelector(
   [selectAllAccounts],
   (accounts): Account[] =>
     Object.values(accounts).filter(account => isPlatformAccount(account.id))
@@ -112,7 +112,7 @@ export const selectAccountsByWalletId = createSelector(
 )
 
 export const selectPlatformAccountsByWalletId = createSelector(
-  [selectPlatformAccounts, (_: RootState, walletId: string) => walletId],
+  [_selectPlatformAccounts, (_: RootState, walletId: string) => walletId],
   (accounts, walletId) => {
     return accounts.filter(account => account.walletId === walletId)
   }
