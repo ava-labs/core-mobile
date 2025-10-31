@@ -53,7 +53,7 @@ export const usePortfolioHeader = (): {
   const balanceTotalInCurrencyForXpNetwork = useFocusedSelector(
     selectBalanceTotalInCurrencyForXpNetwork(
       activeWallet?.id ?? '',
-      activeAccount?.id === NetworkVMType.AVM
+      activeAccount?.id.includes(NetworkVMType.AVM)
         ? NetworkVMType.AVM
         : NetworkVMType.PVM
     )
@@ -66,7 +66,7 @@ export const usePortfolioHeader = (): {
   const xpBalanceAccurate = useFocusedSelector(
     selectXpBalanceForAccountIsAccurate(
       activeWallet?.id ?? '',
-      activeAccount?.id === NetworkVMType.AVM
+      activeAccount?.id.includes(NetworkVMType.AVM)
         ? NetworkVMType.AVM
         : NetworkVMType.PVM
     )
@@ -94,7 +94,7 @@ export const usePortfolioHeader = (): {
   const isXpBalanceLoaded = useFocusedSelector(
     selectIsXpBalanceLoadedForWallet(
       activeWallet?.id ?? '',
-      activeAccount?.id === NetworkVMType.AVM
+      activeAccount?.id.includes(NetworkVMType.AVM)
         ? NetworkVMType.AVM
         : NetworkVMType.PVM
     )

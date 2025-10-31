@@ -607,7 +607,7 @@ const fetchBalanceForXpNetworks = async (
     // add the balances for the active addresses to allBalances
     result.value.forEach(balance => {
       allBalances[`${walletId}-${networkType}-${balance.accountAddress}`] = {
-        accountId: undefined,
+        accountId: `${walletId}-${networkType}`,
         dataAccurate: true,
         chainId: balance.chainId,
         tokens: balance.tokens.map(token => ({

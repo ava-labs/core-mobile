@@ -4,9 +4,9 @@ import AnalyticsService from 'services/analytics/AnalyticsService'
 import { WalletType } from 'services/wallet/types'
 import {
   Account,
+  AccountCollection,
   ImportedAccount,
   selectAccounts,
-  setAccount,
   setActiveAccount
 } from 'store/account'
 import { ThunkApi } from 'store/types'
@@ -18,9 +18,16 @@ import { selectIsDeveloperMode } from 'store/settings/advanced'
 import {
   removeAccount,
   selectAccountsByWalletId,
+  selectPlatformAccountsByWalletId,
+  setAccounts,
   setActiveAccountId
 } from 'store/account/slice'
 import AccountsService from 'services/account/AccountsService'
+import { NetworkVMType } from '@avalabs/vm-module-types'
+import {
+  P_CHAIN_ACCOUNT_NAME,
+  X_CHAIN_ACCOUNT_NAME
+} from 'store/account/consts'
 import { generateWalletName } from './utils'
 import { _removeWallet, selectActiveWalletId } from './slice'
 
@@ -61,7 +68,7 @@ export const importPrivateKeyWalletAndAccount = createAsyncThunk<
     const dispatch = thunkApi.dispatch
     const state = thunkApi.getState()
     const isDeveloperMode = selectIsDeveloperMode(state)
-
+    const accounts: AccountCollection = {}
     const newWalletId = uuid()
 
     await dispatch(
@@ -90,8 +97,32 @@ export const importPrivateKeyWalletAndAccount = createAsyncThunk<
       addressSVM: addresses.SVM,
       addressCoreEth: addresses.CoreEth
     }
+    accounts[accountToImport.id] = accountToImport
 
-    thunkApi.dispatch(setAccount(accountToImport))
+    // set platform accounts
+    ;[NetworkVMType.AVM, NetworkVMType.PVM].forEach(networkType => {
+      accounts[`${newWalletId}-${networkType}`] = {
+        index: 0,
+        id: `${newWalletId}-${networkType}`,
+        walletId: newWalletId,
+        name:
+          networkType === NetworkVMType.PVM
+            ? P_CHAIN_ACCOUNT_NAME
+            : X_CHAIN_ACCOUNT_NAME,
+        type: CoreAccountType.PRIMARY,
+        addressC: '',
+        addressBTC: '',
+        addressAVM: '',
+        addressPVM: '',
+        addressCoreEth: '',
+        addressSVM: '',
+        addresses: [
+          networkType === NetworkVMType.PVM ? addresses.PVM : addresses.AVM
+        ]
+      }
+    })
+
+    thunkApi.dispatch(setAccounts(accounts))
     thunkApi.dispatch(setActiveAccount(accountToImport.id))
   }
 )
@@ -106,7 +137,7 @@ export const importMnemonicWalletAndAccount = createAsyncThunk<
     const dispatch = thunkApi.dispatch
     const state = thunkApi.getState()
     const isDeveloperMode = selectIsDeveloperMode(state)
-
+    const accounts: AccountCollection = {}
     const newWalletId = uuid()
 
     await dispatch(
@@ -143,8 +174,32 @@ export const importMnemonicWalletAndAccount = createAsyncThunk<
       addressSVM: addresses.SVM,
       addressCoreEth: addresses.CoreEth
     }
+    accounts[newAccountId] = newAccount
 
-    dispatch(setAccount(newAccount))
+    // set platform accounts
+    ;[NetworkVMType.AVM, NetworkVMType.PVM].forEach(networkType => {
+      accounts[`${newWalletId}-${networkType}`] = {
+        index: 0,
+        id: `${newWalletId}-${networkType}`,
+        walletId: newWalletId,
+        name:
+          networkType === NetworkVMType.PVM
+            ? P_CHAIN_ACCOUNT_NAME
+            : X_CHAIN_ACCOUNT_NAME,
+        type: CoreAccountType.PRIMARY,
+        addressC: '',
+        addressBTC: '',
+        addressAVM: '',
+        addressPVM: '',
+        addressCoreEth: '',
+        addressSVM: '',
+        addresses: [
+          networkType === NetworkVMType.PVM ? addresses.PVM : addresses.AVM
+        ]
+      }
+    })
+
+    dispatch(setAccounts(accounts))
     dispatch(setActiveAccount(newAccountId))
 
     AnalyticsService.capture('MnemonicWalletImported', {
@@ -165,7 +220,10 @@ export const removeWallet = createAsyncThunk<void, string, ThunkApi>(
       selectWallets(stateBefore)
     ).indexOf(activeWalletIdBefore)
 
-    const accountsToRemove = selectAccountsByWalletId(stateBefore, walletId)
+    const accountsToRemove = [
+      ...selectAccountsByWalletId(stateBefore, walletId),
+      ...selectPlatformAccountsByWalletId(stateBefore, walletId)
+    ]
     accountsToRemove.forEach(account => {
       thunkApi.dispatch(removeAccount(account.id))
     })

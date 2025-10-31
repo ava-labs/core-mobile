@@ -28,7 +28,8 @@ import {
   setAccounts,
   setActiveAccountId,
   selectAccountsByWalletId,
-  selectActiveAccount
+  selectActiveAccount,
+  selectPlatformAccountsByWalletId
 } from './slice'
 import { AccountCollection } from './types'
 import {
@@ -103,11 +104,11 @@ const initAccounts = async (
       throw new Error('No accounts created')
     }
 
-    // set the x and p chain accounts
+    // set platform accounts
     ;[NetworkVMType.AVM, NetworkVMType.PVM].forEach(networkType => {
-      accounts[networkType] = {
+      accounts[`${activeWallet.id}-${networkType}`] = {
         index: 0,
-        id: networkType,
+        id: `${activeWallet.id}-${networkType}`,
         walletId: activeWallet.id,
         name:
           networkType === NetworkVMType.PVM
@@ -130,7 +131,7 @@ const initAccounts = async (
     listenerApi.dispatch(setActiveAccountId(firstAccountId))
   }
 
-  const accountValues = Object.values(accounts)
+  const accountValues = selectAccountsByWalletId(state, activeWallet.id)
   if (activeWallet.type === WalletType.SEEDLESS) {
     // setting wallet name
     const { pendingSeedlessWalletName } =
@@ -174,14 +175,7 @@ const initAccounts = async (
   }
 
   if (canMigrateActiveAccounts(activeWallet)) {
-    const accountsWithoutPlatformAccounts = accountValues.filter(
-      account =>
-        account.id !== NetworkVMType.AVM && account.id !== NetworkVMType.PVM
-    )
-    const numberOfAccounts = Math.max(
-      1,
-      Object.keys(accountsWithoutPlatformAccounts).length
-    )
+    const numberOfAccounts = Math.max(1, accountValues.length)
     await migrateRemainingActiveAccounts({
       listenerApi,
       walletId: activeWallet.id,
@@ -201,19 +195,23 @@ const reloadAccounts = async (
   const wallets = selectWallets(state)
   for (const wallet of Object.values(wallets)) {
     const accounts = selectAccountsByWalletId(state, wallet.id)
-    //convert accounts to AccountCollection
-    const accountsCollection: AccountCollection = {}
-    for (const account of accounts) {
-      accountsCollection[account.id] = account
-    }
-
     const reloadedAccounts = await AccountsService.reloadAccounts({
-      accounts: accountsCollection,
+      accounts,
       isTestnet: isDeveloperMode,
       walletId: wallet.id,
       walletType: wallet.type
     })
-    listenerApi.dispatch(setAccounts(reloadedAccounts))
+
+    const allAccounts = [
+      ...reloadedAccounts,
+      ...selectPlatformAccountsByWalletId(state, wallet.id)
+    ]
+    //convert accounts to AccountCollection
+    const accountsCollection: AccountCollection = {}
+    for (const account of allAccounts) {
+      accountsCollection[account.id] = account
+    }
+    listenerApi.dispatch(setAccounts(accountsCollection))
   }
 }
 

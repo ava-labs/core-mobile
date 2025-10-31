@@ -145,7 +145,7 @@ export const useGetAccountData = (): {
       accountId,
       numberOfAddresses
     }: GetXpAccountDataProps): AccountDataForWallet => {
-      const isPvm = accountId === NetworkVMType.PVM
+      const isPvm = accountId.includes(NetworkVMType.PVM.toString())
       const accountName = isPvm ? P_CHAIN_ACCOUNT_NAME : X_CHAIN_ACCOUNT_NAME
       return {
         id: accountId,

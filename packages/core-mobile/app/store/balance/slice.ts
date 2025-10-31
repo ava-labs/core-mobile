@@ -376,7 +376,7 @@ export const selectBalanceTotalInCurrencyForWallet =
       if (isPlatformAccount(account.id)) {
         const balance = selectBalanceTotalInCurrencyForXpNetwork(
           walletId,
-          account.id === NetworkVMType.AVM
+          account.id.includes(NetworkVMType.AVM)
             ? NetworkVMType.AVM
             : NetworkVMType.PVM
         )(state)
