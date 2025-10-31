@@ -279,7 +279,6 @@ const swipe = async (
   speed: Detox.Speed = 'slow',
   offset = 0.25,
   index = 0
-  // eslint-disable-next-line max-params
 ) => {
   await element(item).atIndex(index).swipe(direction, speed, offset)
 }
