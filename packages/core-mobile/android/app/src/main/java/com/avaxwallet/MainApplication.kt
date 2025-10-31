@@ -17,6 +17,7 @@ import com.facebook.react.defaults.DefaultReactNativeHost
 import com.facebook.react.modules.network.OkHttpClientProvider
 import com.facebook.react.soloader.OpenSourceMergedSoMapping
 import com.facebook.soloader.SoLoader
+import com.gantix.JailMonkey.Rooted.RootedCheck
 import java.lang.reflect.Field
 import io.branch.rnbranch.*
 
@@ -45,7 +46,10 @@ class MainApplication : Application(), ReactApplication {
     override fun onCreate() {
         super.onCreate()
 
+        RootedCheck.precompute(this)
+
         increaseWindowCursorSize()
+
         RNBranchModule.getAutoInstance(this);
         
         // Manually set user agent to our format. This helps avoid getting identified as a bot and rate limited by cloudflare
