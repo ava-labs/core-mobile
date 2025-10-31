@@ -314,7 +314,7 @@ const onXpBalanceUpdateCore = async ({
         })
       }
 
-      // store the xp balances by `${walletId}-${accountAddress}`
+      // store the xp balances by `${walletId}-${networkType}-${accountAddress}`
       const xpBalances = await fetchBalanceForXpNetworks(xpPromises, wallet.id)
 
       dispatch(setBalances(xpBalances))

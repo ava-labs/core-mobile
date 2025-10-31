@@ -35,6 +35,7 @@ import { AccountCollection } from './types'
 import {
   canMigrateActiveAccounts,
   deriveMissingSeedlessSessionKeys,
+  isPlatformAccount,
   migrateRemainingActiveAccounts,
   shouldMigrateActiveAccounts
 } from './utils'
@@ -237,14 +238,7 @@ const migrateActiveAccountsIfNeeded = async (
   }
   const accounts = selectAccountsByWalletId(state, activeWallet.id)
   // there should be at least one account
-  const accountsWithoutPlatformAccounts = accounts.filter(
-    account =>
-      account.id !== NetworkVMType.AVM && account.id !== NetworkVMType.PVM
-  )
-  const numberOfAccounts = Math.max(
-    1,
-    Object.keys(accountsWithoutPlatformAccounts).length
-  )
+  const numberOfAccounts = Math.max(1, Object.keys(accounts).length)
   const shouldMigrate = await shouldMigrateActiveAccounts({
     wallet: activeWallet,
     numberOfAccounts
