@@ -20,31 +20,35 @@ export type TopToken = z.infer<typeof TopTokenSchema>
 export type TrendingToken = z.infer<typeof TrendingTokenSchema>
 
 // Dev (validated) and Prod (raw) clients
-const devClient = new Zodios(baseUrl, [
+const devClient = new Zodios(
+  baseUrl,
+  [
+    {
+      method: 'get',
+      path: '/price',
+      alias: 'simplePrice',
+      response: SimplePriceResponseSchema
+    },
+    {
+      method: 'get',
+      path: '/tokens',
+      parameters: [{ name: 'currency', type: 'Query', schema: string() }],
+      alias: 'tokens',
+      response: array(TopTokenSchema)
+    },
+    {
+      method: 'get',
+      path: '/trending',
+      alias: 'trending',
+      response: array(TrendingTokenSchema)
+    }
+  ],
   {
-    method: 'get',
-    path: '/price',
-    alias: 'simplePrice',
-    response: SimplePriceResponseSchema
-  },
-  {
-    method: 'get',
-    path: '/tokens',
-    parameters: [{ name: 'currency', type: 'Query', schema: string() }],
-    alias: 'tokens',
-    response: array(TopTokenSchema)
-  },
-  {
-    method: 'get',
-    path: '/trending',
-    alias: 'trending',
-    response: array(TrendingTokenSchema)
+    axiosConfig: {
+      headers: { 'Content-Type': 'application/json' }
+    }
   }
-], {
-  axiosConfig: {
-    headers: { 'Content-Type': 'application/json' }
-  }
-})
+)
 
 const prodClient = axios.create({
   baseURL: baseUrl,
