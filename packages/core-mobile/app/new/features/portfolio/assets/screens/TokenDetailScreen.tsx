@@ -153,11 +153,11 @@ export const TokenDetailScreen = (): React.JSX.Element => {
 
   const isBridgeDisabled = useMemo(() => {
     if (isBridgeBtcBlocked && token?.networkChainId) {
-      return isBitcoinChainId(token?.networkChainId)
+      return isBitcoinChainId(token.networkChainId)
     }
 
     if (isBridgeEthBlocked && token?.networkChainId) {
-      return isEthereumChainId(token?.networkChainId)
+      return isEthereumChainId(token.networkChainId)
     }
 
     return isBridgeUIDisabledForNetwork || isBridgeBlocked
