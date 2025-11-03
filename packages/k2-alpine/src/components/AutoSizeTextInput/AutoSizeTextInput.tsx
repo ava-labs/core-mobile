@@ -1,10 +1,10 @@
 import { SxProp } from 'dripsy'
 import React, {
   forwardRef,
-  useState,
   useCallback,
+  useImperativeHandle,
   useRef,
-  useImperativeHandle
+  useState
 } from 'react'
 import {
   LayoutChangeEvent,
@@ -19,7 +19,7 @@ import Animated, {
   withTiming
 } from 'react-native-reanimated'
 import { ANIMATED } from '../../utils'
-import { Text, View } from '../Primitives'
+import { View } from '../Primitives'
 
 const AnimatedTextInput = Animated.createAnimatedComponent(TextInput)
 
@@ -75,6 +75,7 @@ export const AutoFitTextInput = forwardRef<
 
     const textStyle = useAnimatedStyle(() => {
       return {
+        fontFamily: 'Aeonik-Medium',
         fontSize: animatedFontSize.value,
         lineHeight: animatedFontSize.value + 4
       }
@@ -160,7 +161,6 @@ export const AutoFitTextInput = forwardRef<
                 right: textAlign === 'right' ? 0 : undefined,
                 left: textAlign === 'left' ? 0 : undefined,
                 paddingRight: Platform.OS === 'ios' ? 32 : 6,
-                // backgroundColor: 'red'
                 opacity: 0
               },
               textStyle

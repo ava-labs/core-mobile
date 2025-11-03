@@ -11,7 +11,6 @@ import React, {
 import {
   Platform,
   ReturnKeyTypeOptions,
-  StyleSheet,
   TextInput,
   TouchableWithoutFeedback
 } from 'react-native'
@@ -188,7 +187,6 @@ export const FiatAmountInput = forwardRef<
               editable={editable}
               style={[
                 {
-                  fontFamily: 'Aeonik-Medium',
                   color: isAmountValid
                     ? alpha(theme.colors.$textPrimary, 0.9)
                     : theme.colors.$textDanger
