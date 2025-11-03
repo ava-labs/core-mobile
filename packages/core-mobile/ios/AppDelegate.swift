@@ -21,16 +21,17 @@ class AppDelegate: ExpoAppDelegate {
     FirebaseApp.configure()
         
     if let bundleId = Bundle.main.object(forInfoDictionaryKey: "CFBundleIdentifier") as? String, bundleId.lowercased().contains("internal")  {
-      Branch.getInstance("key_test_huEgqNimBs9nak9ICf2TlhdfsDdptcAD")
+      RNBranch.useTestInstance()
     }
 
-    Branch.getInstance("key_test_huEgqNimBs9nak9ICf2TlhdfsDdptcAD").initSession(launchOptions: launchOptions) { (params, error) in
+    RNBranch.branch.initSession(launchOptions: launchOptions) { (params, error) in
         // Branch is ready, now present ATT prompt if needed
         if #available(iOS 14.0, *) {
             if ATTrackingManager.trackingAuthorizationStatus == .notDetermined {
                 ATTrackingManager.requestTrackingAuthorization { status in
                     // Optionally log status with Branch or process IDFA
-                    Branch.getInstance().handleATTAuthorizationStatus(status.rawValue)
+//                    Branch.getInstance().handleATTAuthorizationStatus(status.rawValue)
+                    RNBranch.branch.handleATTAuthorizationStatus(status.rawValue)
                 }
             }
         }
