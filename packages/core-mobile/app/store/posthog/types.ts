@@ -10,9 +10,6 @@ export const DefaultFeatureFlagConfig = {
   [FeatureGates.BRIDGE_BTC]: true,
   [FeatureGates.BRIDGE_ETH]: true,
   [FeatureGates.EARN]: true,
-  [FeatureGates.SEND]: true,
-  [FeatureGates.SEND_NFT_IOS]: true,
-  [FeatureGates.SEND_NFT_ANDROID]: true,
   [FeatureVars.SENTRY_SAMPLE_RATE]: '10', // 10% of events/errors
   [FeatureVars.P_FEE_ADJUSTMENT_THRESHOLD]: '1e-3', // 0.1%
   [FeatureVars.CROSS_CHAIN_FEES_MULTIPLIER]: '4e0', // 400%
@@ -21,10 +18,6 @@ export const DefaultFeatureFlagConfig = {
   [FeatureVars.MARKR_SWAP_MAX_RETRIES]: '3', // 3 retries
   [FeatureVars.STAKE_APY_BPS]: `${DEFAULT_ANNUAL_PERCENTAGE_YIELD_BPS}`,
   [FeatureGates.BUY_COINBASE_PAY]: true,
-  [FeatureGates.DEFI]: true,
-  [FeatureGates.BROWSER]: true,
-  [FeatureGates.LEFT_FAB]: false,
-  [FeatureGates.DARK_MODE]: false,
   [FeatureGates.SEEDLESS_ONBOARDING]: true,
   [FeatureGates.SEEDLESS_ONBOARDING_GOOGLE]: true,
   [FeatureGates.SEEDLESS_ONBOARDING_APPLE]: true,
@@ -32,7 +25,6 @@ export const DefaultFeatureFlagConfig = {
   [FeatureGates.SEEDLESS_MFA_AUTHENTICATOR]: true,
   [FeatureGates.SEEDLESS_MFA_YUBIKEY]: true,
   [FeatureGates.SEEDLESS_SIGNING]: true,
-  [FeatureGates.BLOCKAID_TRANSACTION_VALIDATION]: true,
   [FeatureGates.BLOCKAID_DAPP_SCAN]: true,
   [FeatureGates.ALL_NOTIFICATIONS]: true,
   [FeatureGates.UNIFIED_BRIDGE_CCTP]: true,

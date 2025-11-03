@@ -93,40 +93,10 @@ export const selectIsBridgeEthBlocked = (state: RootState): boolean => {
   )
 }
 
-export const selectIsSendBlocked = (state: RootState): boolean => {
-  const { featureFlags } = state.posthog
-
-  const isSeedlessWallet = state.app.walletType === WalletType.SEEDLESS
-
-  if (isSeedlessWallet) {
-    return isSeedlessSigningBlocked(featureFlags)
-  }
-
-  return (
-    !featureFlags[FeatureGates.SEND] || !featureFlags[FeatureGates.EVERYTHING]
-  )
-}
-
 export const selectIsEarnBlocked = (state: RootState): boolean => {
   const { featureFlags } = state.posthog
   return (
     !featureFlags[FeatureGates.EARN] || !featureFlags[FeatureGates.EVERYTHING]
-  )
-}
-
-export const selectIsSendNftBlockediOS = (state: RootState): boolean => {
-  const { featureFlags } = state.posthog
-  return (
-    !featureFlags[FeatureGates.SEND_NFT_IOS] ||
-    !featureFlags[FeatureGates.EVERYTHING]
-  )
-}
-
-export const selectIsSendNftBlockedAndroid = (state: RootState): boolean => {
-  const { featureFlags } = state.posthog
-  return (
-    !featureFlags[FeatureGates.SEND_NFT_ANDROID] ||
-    !featureFlags[FeatureGates.EVERYTHING]
   )
 }
 
@@ -142,21 +112,6 @@ export const selectIsCoinbasePayBlocked = (state: RootState): boolean => {
   return (
     !featureFlags[FeatureGates.BUY_COINBASE_PAY] ||
     !featureFlags[FeatureGates.EVERYTHING]
-  )
-}
-
-export const selectIsBrowserBlocked = (state: RootState): boolean => {
-  const { featureFlags } = state.posthog
-  return (
-    !featureFlags[FeatureGates.BROWSER] ||
-    !featureFlags[FeatureGates.EVERYTHING]
-  )
-}
-
-export const selectIsDeFiBlocked = (state: RootState): boolean => {
-  const { featureFlags } = state.posthog
-  return (
-    !featureFlags[FeatureGates.DEFI] || !featureFlags[FeatureGates.EVERYTHING]
   )
 }
 
@@ -185,22 +140,6 @@ export const selectCrossChainFeesMultiplier = (state: RootState): number => {
 export const selectCBaseFeeMultiplier = (state: RootState): number => {
   const { featureFlags } = state.posthog
   return parseFloat(featureFlags[FeatureVars.C_BASE_FEE_MULTIPLIER] as string)
-}
-
-export const selectUseLeftFab = (state: RootState): boolean => {
-  const { featureFlags } = state.posthog
-  return (
-    Boolean(featureFlags[FeatureGates.LEFT_FAB]) ||
-    !featureFlags[FeatureGates.EVERYTHING]
-  )
-}
-
-export const selectUseDarkMode = (state: RootState): boolean => {
-  const { featureFlags } = state.posthog
-  return (
-    Boolean(featureFlags[FeatureGates.DARK_MODE]) ||
-    !featureFlags[FeatureGates.EVERYTHING]
-  )
 }
 
 export const selectIsSeedlessOnboardingBlocked = (
@@ -279,16 +218,6 @@ export const selectIsLogErrorsWithSentryBlocked = (
   const { featureFlags } = state.posthog
   return (
     !featureFlags[FeatureGates.LOG_ERRORS_TO_SENTRY] ||
-    !featureFlags[FeatureGates.EVERYTHING]
-  )
-}
-
-export const selectIsBlockaidTransactionValidationBlocked = (
-  state: RootState
-): boolean => {
-  const { featureFlags } = state.posthog
-  return (
-    !featureFlags[FeatureGates.BLOCKAID_TRANSACTION_VALIDATION] ||
     !featureFlags[FeatureGates.EVERYTHING]
   )
 }
