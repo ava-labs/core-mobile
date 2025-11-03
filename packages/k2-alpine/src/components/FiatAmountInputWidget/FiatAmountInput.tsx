@@ -21,7 +21,8 @@ import {
   normalizeNumericTextInput,
   normalizeValue
 } from '../../utils/tokenUnitInput'
-import { Text, View } from '../Primitives'
+import { AutoFitTextInput } from '../AutoSizeTextInput/AutoSizeTextInput'
+import { View } from '../Primitives'
 
 export type FiatAmountInputHandle = {
   setValue: (value: string) => void
@@ -57,14 +58,13 @@ export const FiatAmountInput = forwardRef<
       sx,
       editable,
       returnKeyType = 'done',
-      autoFocus
+      autoFocus,
+      ...props
     },
     ref
     // eslint-disable-next-line sonarjs/cognitive-complexity
   ) => {
-    const {
-      theme: { colors }
-    } = useTheme()
+    const { theme } = useTheme()
     const [value, setValue] = useState(amount)
     const [maxLength, setMaxLength] = useState<number>()
     const textInputRef = useRef<TextInput>(null)
@@ -159,35 +159,18 @@ export const FiatAmountInput = forwardRef<
           <View
             sx={{
               flexDirection: 'row',
-              alignItems: 'center',
-              gap: 5
+              width: '100%',
+              paddingHorizontal: 32,
+              justifyContent: 'center'
             }}>
-            {displayLeadingFiatCurrency && (
-              <Text
-                sx={{
-                  ...styles.textInput,
-                  lineHeight: 68,
-                  color: isAmountValid
-                    ? alpha(colors.$textPrimary, 0.9)
-                    : colors.$textDanger
-                }}>
-                {displayLeadingFiatCurrency}
-              </Text>
-            )}
-            <TextInput
-              returnKeyType={returnKeyType}
+            <AutoFitTextInput
+              {...props}
               ref={textInputRef}
-              editable={editable}
-              style={[
-                styles.textInput,
-                {
-                  flexShrink: 1,
-                  color: isAmountValid
-                    ? alpha(colors.$textPrimary, 0.9)
-                    : colors.$textDanger,
-                  textAlign: 'right'
-                }
-              ]}
+              value={value}
+              onChangeText={handleValueChanged}
+              initialFontSize={60}
+              prefix={displayLeadingFiatCurrency}
+              suffix={displayTrailingFiatCurrency}
               /**
                * keyboardType="numeric" causes noticeable input lag on Android.
                * Using inputMode="numeric" provides the same behavior without the performance issues.
@@ -195,41 +178,29 @@ export const FiatAmountInput = forwardRef<
                */
               keyboardType={Platform.OS === 'ios' ? 'numeric' : undefined}
               inputMode={Platform.OS === 'android' ? 'numeric' : undefined}
+              placeholderTextColor={alpha(theme.colors.$textSecondary, 0.2)}
+              selectionColor={theme.colors.$textPrimary}
               placeholder={PLACEHOLDER}
-              placeholderTextColor={alpha(colors.$textSecondary, 0.2)}
-              value={value}
-              onChangeText={handleValueChanged}
-              maxLength={maxLength}
-              allowFontScaling={false}
-              selectionColor={colors.$textPrimary}
-            />
-            {displayTrailingFiatCurrency && (
-              <Text
-                sx={{
+              // TODO: Add this back?
+              // maxLength={maxLength}
+              returnKeyType={returnKeyType}
+              textAlign="center"
+              editable={editable}
+              style={[
+                {
                   fontFamily: 'Aeonik-Medium',
-                  fontSize: 24,
-                  lineHeight: 24,
-                  marginBottom: 8,
                   color: isAmountValid
-                    ? alpha(colors.$textPrimary, 0.9)
-                    : colors.$textDanger
-                }}>
-                {currency}
-              </Text>
-            )}
+                    ? alpha(theme.colors.$textPrimary, 0.9)
+                    : theme.colors.$textDanger
+                }
+              ]}
+            />
           </View>
         </TouchableWithoutFeedback>
       </View>
     )
   }
 )
-
-const styles = StyleSheet.create({
-  textInput: {
-    fontFamily: 'Aeonik-Medium',
-    fontSize: 60
-  }
-})
 
 const PLACEHOLDER = '0.00'
 
