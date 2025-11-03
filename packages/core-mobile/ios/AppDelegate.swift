@@ -25,20 +25,34 @@ class AppDelegate: ExpoAppDelegate {
     }
 
 //     Delay for 1 second before initializing Branch SDK
-    DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
-      if #available(iOS 14.0, *)  {
-        // Check that `trackingAuthorizationStatus` is `notDetermined`, otherwise prompt will not display
-        if ATTrackingManager.trackingAuthorizationStatus == .notDetermined {
-          ATTrackingManager.requestTrackingAuthorization { (status) in
-            RNBranch.initSession(launchOptions: launchOptions, isReferrable: true)
-          }
+//    DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+//      if #available(iOS 14.0, *)  {
+//        // Check that `trackingAuthorizationStatus` is `notDetermined`, otherwise prompt will not display
+//        if ATTrackingManager.trackingAuthorizationStatus == .notDetermined {
+//          ATTrackingManager.requestTrackingAuthorization { (status) in
+//            RNBranch.initSession(launchOptions: launchOptions, isReferrable: true)
+//          }
+//        } else {
+//          RNBranch.initSession(launchOptions: launchOptions, isReferrable: true)
+//        }
+//      } else {
+//        RNBranch.initSession(launchOptions: launchOptions, isReferrable: true)
+//      }
+//     }
+    
+    NotificationCenter.default.addObserver(forName: UIApplication.didBecomeActiveNotification, object: nil, queue: .main) { _ in
+        if #available(iOS 14.0, *) {
+            if ATTrackingManager.trackingAuthorizationStatus == .notDetermined {
+                ATTrackingManager.requestTrackingAuthorization { status in
+                    RNBranch.initSession(launchOptions: launchOptions, isReferrable: true)
+                }
+            } else {
+                RNBranch.initSession(launchOptions: launchOptions, isReferrable: true)
+            }
         } else {
-          RNBranch.initSession(launchOptions: launchOptions, isReferrable: true)
+            RNBranch.initSession(launchOptions: launchOptions, isReferrable: true)
         }
-      } else {
-        RNBranch.initSession(launchOptions: launchOptions, isReferrable: true)
-      }
-     }
+    }
     
     let delegate = ReactNativeDelegate()
     let factory = ExpoReactNativeFactory(delegate: delegate)
