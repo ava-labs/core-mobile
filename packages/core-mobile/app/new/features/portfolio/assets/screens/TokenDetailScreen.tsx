@@ -70,8 +70,15 @@ import { useNetworks } from 'hooks/networks/useNetworks'
 import { ChainId } from '@avalabs/core-chains-sdk'
 import { useBuy } from 'features/meld/hooks/useBuy'
 import { useWithdraw } from 'features/meld/hooks/useWithdraw'
-import { selectIsMeldOfframpBlocked } from 'store/posthog'
+import {
+  selectIsBridgeBlocked,
+  selectIsBridgeBtcBlocked,
+  selectIsBridgeEthBlocked,
+  selectIsMeldOfframpBlocked
+} from 'store/posthog'
 import { getExplorerAddressByNetwork } from 'utils/getExplorerAddressByNetwork'
+import { isBitcoinChainId } from 'utils/network/isBitcoinNetwork'
+import { isEthereumChainId } from 'services/network/utils/isEthereumNetwork'
 
 export const TokenDetailScreen = (): React.JSX.Element => {
   const {
@@ -136,10 +143,31 @@ export const TokenDetailScreen = (): React.JSX.Element => {
     UI.Swap,
     token?.networkChainId
   )
-  const isBridgeDisabled = useIsUIDisabledForNetwork(
+  const isBridgeBlocked = useSelector(selectIsBridgeBlocked)
+  const isBridgeBtcBlocked = useSelector(selectIsBridgeBtcBlocked)
+  const isBridgeEthBlocked = useSelector(selectIsBridgeEthBlocked)
+  const isBridgeUIDisabledForNetwork = useIsUIDisabledForNetwork(
     UI.Bridge,
     token?.networkChainId
   )
+
+  const isBridgeDisabled = useMemo(() => {
+    if (isBridgeBtcBlocked && token?.networkChainId) {
+      return isBitcoinChainId(token?.networkChainId)
+    }
+
+    if (isBridgeEthBlocked && token?.networkChainId) {
+      return isEthereumChainId(token?.networkChainId)
+    }
+
+    return isBridgeUIDisabledForNetwork || isBridgeBlocked
+  }, [
+    token?.networkChainId,
+    isBridgeUIDisabledForNetwork,
+    isBridgeBlocked,
+    isBridgeBtcBlocked,
+    isBridgeEthBlocked
+  ])
   const { assetsWithBalances } = useAssetBalances(token?.networkChainId)
   const isTokenBridgeable = Boolean(
     assetsWithBalances &&

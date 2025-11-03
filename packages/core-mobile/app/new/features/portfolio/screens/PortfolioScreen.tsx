@@ -62,7 +62,10 @@ import {
   selectTokensWithBalanceForAccount
 } from 'store/balance'
 import { selectTokenVisibility } from 'store/portfolio'
-import { selectIsMeldOfframpBlocked } from 'store/posthog'
+import {
+  selectIsBridgeBlocked,
+  selectIsMeldOfframpBlocked
+} from 'store/posthog'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { selectSelectedCurrency } from 'store/settings/currency'
 import { selectIsPrivacyModeEnabled } from 'store/settings/securityPrivacy'
@@ -85,6 +88,7 @@ const PortfolioHomeScreen = (): JSX.Element => {
   const frame = useSafeAreaFrame()
   const headerHeight = useHeaderHeight()
   const isMeldOfframpBlocked = useSelector(selectIsMeldOfframpBlocked)
+  const isBridgeBlocked = useSelector(selectIsBridgeBlocked)
 
   const { navigateToBuy } = useBuy()
   const { navigateToWithdraw } = useWithdraw()
@@ -272,11 +276,13 @@ const PortfolioHomeScreen = (): JSX.Element => {
       icon: 'receive',
       onPress: handleReceive
     })
-    buttons.push({
-      title: ActionButtonTitle.Bridge,
-      icon: 'bridge',
-      onPress: handleBridge
-    })
+    if (!isBridgeBlocked) {
+      buttons.push({
+        title: ActionButtonTitle.Bridge,
+        icon: 'bridge',
+        onPress: handleBridge
+      })
+    }
     if (!isMeldOfframpBlocked) {
       buttons.push({
         title: ActionButtonTitle.Withdraw,
@@ -293,7 +299,8 @@ const PortfolioHomeScreen = (): JSX.Element => {
     handleReceive,
     handleBridge,
     navigateToSwap,
-    isMeldOfframpBlocked
+    isMeldOfframpBlocked,
+    isBridgeBlocked
   ])
 
   const renderMaskView = useCallback((): JSX.Element => {
