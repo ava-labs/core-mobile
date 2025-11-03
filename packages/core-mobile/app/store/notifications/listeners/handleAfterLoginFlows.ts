@@ -1,10 +1,14 @@
+import { showAlert } from '@avalabs/k2-alpine'
 import { AuthorizationStatus } from '@notifee/react-native'
 import { AnyAction } from '@reduxjs/toolkit'
 import { navigateWithPromise } from 'common/utils/navigateWithPromise'
+import { waitForInteractions } from 'common/utils/waitForInteractions'
+import AnalyticsService from 'services/analytics/AnalyticsService'
 import { AppUpdateService } from 'services/AppUpdateService/AppUpdateService'
 import NotificationsService from 'services/notifications/NotificationsService'
 import {
   selectIsEnableNotificationPromptBlocked,
+  selectIsSolanaLaunchModalBlocked,
   selectIsSolanaSupportBlocked
 } from 'store/posthog'
 import { AppListenerEffectAPI } from 'store/types'
@@ -13,8 +17,7 @@ import {
   setViewOnce,
   ViewOnceKey
 } from 'store/viewOnce'
-import { showAlert } from '@avalabs/k2-alpine'
-import { waitForInteractions } from 'common/utils/waitForInteractions'
+import Config from 'react-native-config'
 import { turnOnAllNotifications } from '../slice'
 
 export const handleAfterLoginFlows = async (
@@ -36,7 +39,8 @@ const promptAppUpdateScreenIfNeeded = async (): Promise<void> => {
   )
   const shouldShowAppUpdateScreen =
     hasBeenViewedAppUpdateScreen === false &&
-    appUpdateStatus.needsUpdate === true
+    appUpdateStatus.needsUpdate === true &&
+    !Config.E2E_MNEMONIC // TODO: android automation can't handle the app update modal properly on bitrise, so we need to hide it for now
   if (shouldShowAppUpdateScreen) {
     await waitForInteractions()
 
@@ -96,6 +100,7 @@ const promptEnableNotificationsIfNeeded = async (
         {
           text: 'Not now',
           onPress: () => {
+            AnalyticsService.capture('PushNotificationRejected')
             resolve()
           }
         },
@@ -110,6 +115,7 @@ const promptEnableNotificationsIfNeeded = async (
               return
             }
             dispatch(turnOnAllNotifications())
+            AnalyticsService.capture('PushNotificationAccepted')
             resolve()
           }
         }
@@ -128,9 +134,12 @@ const promptSolanaLaunchModalIfNeeded = async (
   )(state)
 
   const isSolanaSupportBlocked = selectIsSolanaSupportBlocked(state)
+  const isSolanaLaunchModalBlocked = selectIsSolanaLaunchModalBlocked(state)
 
   const shouldShowSolanaLaunchModal =
-    !hasBeenViewedSolanaLaunch && !isSolanaSupportBlocked
+    !hasBeenViewedSolanaLaunch &&
+    !isSolanaSupportBlocked &&
+    !isSolanaLaunchModalBlocked
   if (shouldShowSolanaLaunchModal) {
     await waitForInteractions()
 

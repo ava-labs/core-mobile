@@ -9,24 +9,21 @@ import {
   SxProp,
   Text,
   TokenAmount,
-  TokenAmountInput,
   TouchableOpacity,
+  TokenAmountInput,
+  TokenAmountInputRef,
   useTheme,
   View
 } from '@avalabs/k2-alpine'
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
-import {
-  NativeSyntheticEvent,
-  Platform,
-  TextInputSelectionChangeEventData
-} from 'react-native'
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { Platform } from 'react-native'
 import Animated, {
   Easing,
   FadeIn,
   FadeOut,
   LinearTransition
 } from 'react-native-reanimated'
-import { useTextInputSelection } from 'common/hooks/useTextInputSelection'
+import { roundTokenDecimals } from 'common/utils/roundTokenDecimals'
 import { LogoWithNetwork } from './LogoWithNetwork'
 
 export const TokenInputWidget = ({
@@ -77,8 +74,7 @@ export const TokenInputWidget = ({
     PercentageButton[]
   >([])
 
-  const { setShouldResetSelection, selection, setSelection } =
-    useTextInputSelection()
+  const tokenAmountInputRef = useRef<TokenAmountInputRef>(null)
 
   const handlePressPercentageButton = (
     button: PercentageButton,
@@ -91,6 +87,10 @@ export const TokenInputWidget = ({
       value = BigInt(Math.floor(Number(balance ?? 0n) * button.percent))
     }
 
+    if (token?.decimals !== undefined) {
+      value = roundTokenDecimals(value, token.decimals)
+    }
+
     onAmountChange?.(value)
 
     setPercentageButtons(prevButtons =>
@@ -98,8 +98,6 @@ export const TokenInputWidget = ({
         i === index ? { ...b, isSelected: true } : { ...b, isSelected: false }
       )
     )
-
-    setShouldResetSelection(true)
   }
 
   const handleAmountChange = useCallback(
@@ -126,12 +124,6 @@ export const TokenInputWidget = ({
   const handleBlur = (): void => {
     onBlur?.()
     setIsAmountInputFocused(false)
-  }
-
-  const handleSelectionChange = (
-    e: NativeSyntheticEvent<TextInputSelectionChangeEventData>
-  ): void => {
-    setSelection(e.nativeEvent.selection)
   }
 
   const isTokenSelectable = onSelectToken !== undefined
@@ -205,12 +197,15 @@ export const TokenInputWidget = ({
                   gap: 8
                 }}>
                 <TouchableOpacity
+                  accessible={true}
+                  accessibilityLabel={`select_token_title__${title}`}
+                  testID={`select_token_title__${title}`}
                   onPress={onSelectToken}
                   disabled={!isTokenSelectable || disabled}>
                   <View sx={{ gap: 1 }}>
                     {token && <Text variant="subtitle2">{title}</Text>}
                     <View sx={{ flexDirection: 'row', alignItems: 'center' }}>
-                      <Text testID="select_token_title" variant="heading6">
+                      <Text variant="heading6">
                         {token
                           ? token.symbol
                           : isTokenSelectable
@@ -239,7 +234,10 @@ export const TokenInputWidget = ({
                     pointerEvents={token === undefined ? 'none' : 'auto'}>
                     {editable ? (
                       <TokenAmountInput
+                        ref={tokenAmountInputRef}
                         testID="token_amount_input_field"
+                        accessibilityLabel="token_amount_input_field"
+                        accessible={true}
                         autoFocus={autoFocus}
                         editable={editable}
                         denomination={token?.decimals ?? 0}
@@ -259,8 +257,6 @@ export const TokenInputWidget = ({
                         onFocus={handleFocus}
                         onBlur={handleBlur}
                         placeholder="0.00"
-                        selection={selection}
-                        onSelectionChange={handleSelectionChange}
                       />
                     ) : (
                       <View
@@ -366,6 +362,7 @@ export const TokenInputWidget = ({
                   disabled={disabled || balance === undefined}
                   onPress={() => {
                     handlePressPercentageButton(button, index)
+                    tokenAmountInputRef.current?.blur()
                   }}>
                   {button.text}
                 </Button>

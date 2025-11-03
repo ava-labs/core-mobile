@@ -111,7 +111,7 @@ export const NetworkLogoWithChain = ({
             backgroundColor: 'transparent',
             ...chainLogoStyle
           }}
-          testID="network_logo">
+          testID={`network_logo__${network.chainName}`}>
           {renderChainLogo()}
         </View>
       )}

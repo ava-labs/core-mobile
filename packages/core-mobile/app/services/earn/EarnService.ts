@@ -29,6 +29,7 @@ import AnalyticsService from 'services/analytics/AnalyticsService'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
 import { Avalanche } from '@avalabs/core-wallets-sdk'
 import { AvaxXP } from 'types/AvaxXP'
+import AccountsService from 'services/account/AccountsService'
 import {
   getTransformedTransactions,
   maxGetAtomicUTXOsRetries,
@@ -305,11 +306,13 @@ class EarnService {
   getAllStakes = async ({
     isTestnet,
     addresses,
-    startTimestamp
+    startTimestamp,
+    sortOrder = SortOrder.DESC
   }: {
     isTestnet: boolean
     addresses: string[]
     startTimestamp?: number
+    sortOrder?: SortOrder
   }): Promise<PChainTransaction[]> => {
     const addressesStr = addresses.join(',')
     let pageToken: string | undefined
@@ -324,7 +327,7 @@ class EarnService {
         queries: {
           addresses: addressesStr,
           pageSize: 100,
-          sortOrder: SortOrder.DESC,
+          sortOrder,
           pageToken,
           txTypes: [
             PChainTransactionType.ADD_PERMISSIONLESS_DELEGATOR_TX,
@@ -377,7 +380,7 @@ class EarnService {
       const oppositeNetworkAddresses = (
         await Promise.all(
           accountsArray.map(account =>
-            WalletService.getAddresses({
+            AccountsService.getAddresses({
               walletId,
               walletType,
               accountIndex: account.index,

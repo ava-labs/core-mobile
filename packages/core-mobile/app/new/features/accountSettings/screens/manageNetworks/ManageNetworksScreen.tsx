@@ -70,6 +70,25 @@ export const ManageNetworksScreen = (): JSX.Element => {
     [enabledNetworks, searchText]
   )
 
+  const filterPrimaryNetworks = useCallback(
+    (items: Network[]) => {
+      // For primary networks, maintain sort order regardless of enabled/disabled status
+      // Apply search filter if needed, but don't reorder by enabled/disabled
+      if (searchText.length) {
+        return items.filter(
+          network =>
+            network.chainName
+              .toLowerCase()
+              .includes(searchText.toLowerCase()) ||
+            network.chainId.toString().includes(searchText)
+        )
+      }
+
+      return items
+    },
+    [searchText]
+  )
+
   const data = useMemo(() => {
     const primaryNetworks = Object.values(networks)
       .filter(network => {
@@ -103,7 +122,7 @@ export const ManageNetworksScreen = (): JSX.Element => {
       {
         key: 'primary-networks',
         title: '',
-        data: filterNetworks(primaryNetworks)
+        data: filterPrimaryNetworks(primaryNetworks)
       }
     ]
 
@@ -131,7 +150,7 @@ export const ManageNetworksScreen = (): JSX.Element => {
         key: item.chainId.toString()
       }))
     ])
-  }, [customNetworks, filterNetworks, networks])
+  }, [customNetworks, filterNetworks, filterPrimaryNetworks, networks])
 
   const renderSectionHeader = useCallback((sectionItem: SectionItemType) => {
     if (!sectionItem.title) {

@@ -65,8 +65,16 @@ export type CreateCryptoQuoteError = {
   requestId?: string
 }
 
+// https://docs.meld.io/docs/status-codes
 export enum CreateCryptoQuoteErrorCode {
-  NOT_FOUND = 404,
+  BAD_REQUEST = 400,
+  UNAUTHORIZED = 401,
+  FORBIDDEN = 403,
+  NO_RESOURCE_FOUND = 404,
+  INPUT_VALIDATION_FAILED = 422,
+  FAILURE_TOO_EARLY = 425,
+  TOO_MANY_REQUESTS = 429,
+  UNEXPECTED_ISSUE = 500,
   INCOMPATIBLE_REQUEST = 'INCOMPATIBLE_REQUEST'
 }
 
@@ -78,7 +86,7 @@ export enum SessionTypes {
 
 export type CryptoQuotesError = {
   statusCode: CreateCryptoQuoteErrorCode
-  message: string
+  message?: string
 }
 
 export type CryptoCurrencyWithBalance = CryptoCurrency & {

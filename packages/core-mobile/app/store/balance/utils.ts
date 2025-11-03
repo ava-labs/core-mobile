@@ -11,6 +11,9 @@ import { LocalTokenWithBalance } from './types'
 
 const UPDATE_PERIOD = 15
 
+// 5 minutes
+export const XP_POLLING_INTERVAL = 300000
+
 export function getLocalTokenId(
   token: TokenWithBalance | NetworkContractToken
 ): string {
@@ -31,6 +34,7 @@ const PRIMARY_TESTNET_CHAIN_IDS = [
   ChainId.ETHEREUM_TEST_SEPOLIA,
   ChainId.BITCOIN_TESTNET,
   ChainId.AVALANCHE_TEST_P,
+  ChainId.AVALANCHE_TEST_X,
   ChainId.SOLANA_TESTNET_ID,
   ChainId.SOLANA_DEVNET_ID
 ]
@@ -40,6 +44,7 @@ const PRIMARY_MAINNET_CHAIN_IDS = [
   ChainId.ETHEREUM_HOMESTEAD,
   ChainId.BITCOIN,
   ChainId.AVALANCHE_P,
+  ChainId.AVALANCHE_X,
   ChainId.SOLANA_MAINNET_ID
 ]
 

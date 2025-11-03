@@ -10,6 +10,15 @@
     <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES" tools:node="remove" tools:ignore="QueryAllPackagesPermission" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" tools:node="remove" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="com.google.android.gms.permission.AD_ID"/>
+
+    <uses-permission android:name="android.permission.BLUETOOTH_SCAN" />
+    <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
+    <!-- Android < 12 -->
+    <uses-permission android:name="android.permission.BLUETOOTH" android:maxSdkVersion="30" />
+    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" android:maxSdkVersion="30" />
+    <!-- common -->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
 
     <queries>
         <package android:name="com.twitter.android" />
@@ -25,6 +34,11 @@
         <meta-data
                 android:name="com.google.firebase.messaging.default_notification_icon"
                 android:resource="@drawable/notification_icon" />
+        <!-- Branch init -->
+		<meta-data android:name="io.branch.sdk.BranchKey" android:value="${BRANCH_KEY}" />
+        <meta-data android:name="io.branch.sdk.BranchKey.test" android:value="${BRANCH_KEY}" />
+		<!-- Set to `true` to use `BranchKey.test` -->
+		<meta-data android:name="io.branch.sdk.TestMode" android:value="${BRANCH_TEST_MODE}" />
         <activity
             android:name=".MainActivity"
             android:configChanges="keyboard|keyboardHidden|orientation|screenLayout|screenSize|smallestScreenSize|uiMode"

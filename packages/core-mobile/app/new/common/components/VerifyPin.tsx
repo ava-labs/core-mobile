@@ -3,6 +3,7 @@ import { useFocusEffect } from 'expo-router'
 import React, { useCallback, useEffect, useRef } from 'react'
 import { InteractionManager, Keyboard, Platform } from 'react-native'
 import { usePinOrBiometryLogin } from 'common/hooks/usePinOrBiometryLogin'
+import BiometricsSDK from 'utils/BiometricsSDK'
 import { ScrollScreen } from './ScrollScreen'
 
 /**
@@ -34,8 +35,13 @@ export const VerifyPin = ({
     pinInputRef.current?.stopLoadingAnimation(onComplete)
   }
 
+  const handleBiometricPrompt = useCallback(async () => {
+    return BiometricsSDK.authenticateAsync()
+  }, [])
+
   const { enteredPin, onEnterPin, disableKeypad, timeRemaining, verified } =
     usePinOrBiometryLogin({
+      onBiometricPrompt: handleBiometricPrompt,
       onWrongPin: handleWrongPin,
       onStartLoading: handleStartLoading,
       onStopLoading: handleStopLoading

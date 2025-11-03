@@ -63,7 +63,8 @@ const createTestStore = () => {
       },
       wallet: {
         wallets: {},
-        activeWalletId: null
+        activeWalletId: null,
+        isMigratingActiveAccounts: false
       }
     }
   })

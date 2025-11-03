@@ -1,11 +1,14 @@
 import messaging from '@react-native-firebase/messaging'
-import Logger from 'utils/Logger'
-import NotificationsService from 'services/notifications/NotificationsService'
 import {
   ACTIONS,
   DeepLinkOrigin,
   PROTOCOLS
 } from 'contexts/DeeplinkContext/types'
+import { handleDeeplink } from 'contexts/DeeplinkContext/utils/handleDeeplink'
+import { router } from 'expo-router'
+import { Platform } from 'react-native'
+import { CORE_UNIVERSAL_LINK_HOSTS } from 'resources/Constants'
+import AnalyticsService from 'services/analytics/AnalyticsService'
 import {
   BalanceChangeData,
   BalanceChangeEvents,
@@ -15,15 +18,13 @@ import {
   NotificationPayloadSchema,
   NotificationTypes
 } from 'services/fcm/types'
-import { Platform } from 'react-native'
-import { DisplayNotificationParams } from 'services/notifications/types'
 import {
   ChannelId,
   DEFAULT_ANDROID_CHANNEL
 } from 'services/notifications/channels'
-import { handleDeeplink } from 'contexts/DeeplinkContext/utils/handleDeeplink'
-import { CORE_UNIVERSAL_LINK_HOSTS } from 'resources/Constants'
-import { router } from 'expo-router'
+import NotificationsService from 'services/notifications/NotificationsService'
+import { DisplayNotificationParams } from 'services/notifications/types'
+import Logger from 'utils/Logger'
 
 type UnsubscribeFunc = () => void
 
@@ -113,8 +114,10 @@ class FCMService {
   ): DisplayNotificationParams => {
     if (!fcm.notification) throw Error('No notification payload')
     const data = this.#extractDeepLinkData(fcm.data)
+
     return {
-      channelId: fcm.notification.android?.channelId,
+      channelId:
+        fcm.notification.android?.channelId ?? EVENT_TO_CH_ID[fcm.data.event],
       title: fcm.notification.title,
       body: fcm.notification.body,
       sound: fcm.notification.sound,
@@ -131,7 +134,7 @@ class FCMService {
         transactionHash: string
         url: string
       }
-    | { url: string }
+    | { url: string; channelId: string }
     | undefined => {
     if (fcmData.type === NotificationTypes.BALANCE_CHANGES) {
       return {
@@ -143,7 +146,8 @@ class FCMService {
     } else if (fcmData.type === NotificationTypes.NEWS) {
       return {
         // TODO: remove urlV2 after backend is updated to send just url for NEWS notifications
-        url: fcmData.urlV2 ?? fcmData.url ?? ''
+        url: fcmData.urlV2 ?? fcmData.url ?? '',
+        channelId: EVENT_TO_CH_ID[fcmData.event] as string
       }
     }
   }
@@ -176,6 +180,7 @@ class FCMService {
         )
         return
       }
+
       const notificationData = this.#prepareNotificationData(result.data)
 
       if (
@@ -204,6 +209,15 @@ class FCMService {
             params: { deeplinkUrl: link.url }
           })
       })
+      if (
+        typeof notificationData.data?.channelId === 'string' &&
+        notificationData.data?.channelId.length !== 0
+      ) {
+        AnalyticsService.capture('PushNotificationPressed', {
+          channelId: notificationData.data.channelId,
+          deeplinkUrl: notificationData.data.url
+        })
+      }
     })
   }
 
@@ -218,6 +232,7 @@ class FCMService {
         )
         return
       }
+
       if (result.data.notification) {
         //skip, FCM sdk handles this already
         return

@@ -206,19 +206,17 @@ export const SwapScreen = (): JSX.Element => {
 
   const applyFeeDeduction = useCallback(
     (amount: string, direction: SwapSide): bigint => {
-      const slippagePercent = slippage / 100
       const feePercent = PARASWAP_PARTNER_FEE_BPS / 10_000
-      const totalPercent = slippagePercent + feePercent
 
       if (direction === SwapSide.SELL) {
-        const minAmountOut = new Big(amount).times(1 - totalPercent).toFixed(0)
+        const minAmountOut = new Big(amount).times(1 - feePercent).toFixed(0)
         return BigInt(minAmountOut)
       } else {
-        const maxAmountIn = new Big(amount).times(1 + totalPercent).toFixed(0)
+        const maxAmountIn = new Big(amount).times(1 + feePercent).toFixed(0)
         return BigInt(maxAmountIn)
       }
     },
-    [slippage]
+    []
   )
 
   const applyQuote = useCallback(() => {
@@ -701,6 +699,7 @@ export const SwapScreen = (): JSX.Element => {
                 right: 0
               }}>
               <CircularButton
+                testID="swap_vertical_icon"
                 backgroundColor={swapButtonBackgroundColor}
                 style={{
                   width: 40,

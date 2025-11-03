@@ -156,12 +156,6 @@ workflows:
         title: Fix Android Env Vars
         inputs:
         - file_path: scripts/bitrise/fixAndroidEnvVars.sh
-    - script-runner@0:
-        title: Create Test Run
-        inputs:
-        - file_path: scripts/bitrise/detox/createAndroidTestRun.sh
-        - variables:
-          - TESTRAIL_RUN_ID=$TESTRAIL_RUN_ID
     - android-build-for-ui-testing@0:
         inputs:
         - module: $ANDROID_MODULE
@@ -171,7 +165,7 @@ workflows:
     - save-gradle-cache@1: {}
     - sign-apk@1:
         inputs:
-        - android_app: $BITRISE_APK_PATH|$BITRISE_TEST_APK_PATH
+        - android_app: $BITRISE_APK_PATH
         - use_apk_signer: "true"
         - debuggable_permitted: "false"
         - keystore_url: $BITRISEIO_ANDROID_KEY_STORE_URL
@@ -182,30 +176,11 @@ workflows:
         inputs:
         - pipeline_intermediate_files: |-
             $BITRISE_DEPLOY_DIR/app-internal-e2e-bitrise-signed.apk:BITRISE_APK_PATH
-            $BITRISE_DEPLOY_DIR/app-internal-e2e-androidTest-bitrise-signed.apk:BITRISE_TEST_APK_PATH	
-    - script-runner@0:
-        title: Create Tests To Run Arrays
-        inputs:
-        - file_path: scripts/bitrise/detox/distributeAndroidTests.sh
     - share-pipeline-variable@1:
         inputs:
         - variables: |-
-            TESTRAIL_PROJECT_ID=$TESTRAIL_PROJECT_ID
-            TESTRAIL_RUN_ID=$TESTRAIL_RUN_ID
-            TESTS_TO_RUN_GROUP_1=$TESTS_1
-            TESTS_TO_RUN_GROUP_2=$TESTS_2
-            TESTS_TO_RUN_GROUP_3=$TESTS_3
-            TESTS_TO_RUN_GROUP_4=$TESTS_4
-            BITRISE_TEST_APK_PATH=$BITRISE_TEST_APK_PATH
             BITRISE_APK_PATH=$BITRISE_APK_PATH
             IS_INTERNAL_BUILD=$IS_INTERNAL_BUILD
-        - api_level: "34"
-        - emulator_id: emulator-5554
-        - emulator_channel: "0"
-        - create_command_flags: --sdcard 2048M
-        - tag: default
-        - abi: x86_64
-        - profile: pixel_7_pro
   _install-old-android-version:
     steps:
     - script-runner@0:
@@ -229,9 +204,7 @@ workflows:
         - artifact_sources: .*
         - pipeline_intermediate_files: |-
             $BITRISE_DEPLOY_DIR/app-internal-e2e-bitrise-signed.apk:BITRISE_APK_PATH
-            $BITRISE_DEPLOY_DIR/app-internal-e2e-androidTest-bitrise-signed.apk:BITRISE_TEST_APK_PATH
             $BITRISE_DEPLOY_DIR/AvaxWalletInternal.app:BITRISE_APP_DIR_PATH
-
   _pull_external_app_files:
     steps:
     - pull-intermediate-files@1:
@@ -303,11 +276,6 @@ workflows:
             echo "Built app at: $APP_PATH"
             envman add --key BITRISE_APP_DIR_PATH --value "$APP_PATH"
             envman add --key BITRISE_APP_DIR_PATH_LIST --value "$APP_PATH"
-
-            APP_PATH="$BITRISE_DEPLOY_DIR/Build/Products/$IOS_CONFIGURATION-iphonesimulator/$IOS_SCHEME.app"
-
-            cd "$(dirname "$APP_PATH")"
-            zip -r "$BITRISE_DEPLOY_DIR/$IOS_SCHEME.app.zip" "$(basename "$APP_PATH")"
     - deploy-to-bitrise-io@2:
         inputs:
         - pipeline_intermediate_files: $BITRISE_APP_DIR_PATH:BITRISE_APP_DIR_PATH
@@ -355,7 +323,7 @@ workflows:
         - key: node-20-{{ .OS }}-{{ .Arch }}
     - nvm@1:
         inputs:
-        - node_version: 20.11.1
+        - node_version: 20.19.0
     - save-cache@1:
         title: Save Node 20 Cache
         inputs:
@@ -568,8 +536,6 @@ workflows:
     - _install-and-set-env
     - _set-version
     - _build-android-internal-for-testing
-    after_run:
-    - _upload-detox-artifacts
     envs:
     - ENVIRONMENT: production
       opts:
@@ -589,10 +555,6 @@ workflows:
     - IS_INTERNAL_BUILD: "true"
       opts:
         is_expand: false
-    - share-pipeline-variable@1:
-        inputs:
-        - variables: |-
-            IS_INTERNAL_BUILD=$IS_INTERNAL_BUILD
   android-external-e2e-regression-run:
     before_run:
     - _install-and-set-env
@@ -933,6 +895,80 @@ workflows:
     - IS_EXTERNAL_BUILD: "true"
       opts:
         is_expand: false
+  appium-ios-setup:
+    before_run:
+    - _install-and-set-env
+    - _set-version
+    - _pull_app_files
+    envs:
+    - ENVIRONMENT: production
+      opts:
+        is_expand: false
+    - E2E: "true"
+      opts:
+        is_expand: false
+    - IS_INTERNAL_BUILD: "true"
+      opts:
+        is_expand: false
+    - PLATFORM: iOS
+      opts:
+        is_expand: false
+    - IOS_CONFIGURATION: Release
+      opts:
+        is_expand: false
+    - IOS_SCHEME: AvaxWalletInternal
+      opts:
+        is_expand: false
+    - APP_TITLE: Core Mobile Internal
+      opts:
+        is_expand: false
+    steps:
+    - script-runner@0:
+        title: Appium iOS testing
+        no_output_timeout: 300
+        inputs:
+        - file_path: scripts/bitrise/appium/iosInternalE2e.sh
+  appium-android-setup:
+    before_run:
+    - _install-and-set-env
+    - _set-version
+    - _pull_app_files
+    envs:
+    - ENVIRONMENT: production
+      opts:
+        is_expand: false
+    - E2E: "true"
+      opts:
+        is_expand: false
+    - IS_INTERNAL_BUILD: "true"
+      opts:
+        is_expand: false
+    - PLATFORM: Android
+      opts:
+        is_expand: false
+    - ANDROID_BUILD_VARIANT: internalE2e
+      opts:
+        is_expand: false
+    - APP_TITLE: Core Mobile Internal
+      opts:
+        is_expand: false
+    steps:
+    - avd-manager@1.2:
+        inputs:
+        - api_level: "34"
+        - emulator_id: emulator-5554
+        - emulator_channel: "0"
+        - create_command_flags: --sdcard 2048M --device "pixel_7_pro"
+        - tag: google_apis
+        - abi: x86_64
+        - profile: pixel_7_pro
+        - custom_command_flags: -no-snapshot -noaudio -no-window
+    - wait-for-android-emulator@1: {}
+    - script-runner@0:
+        title: Appium Android testing
+        no_output_timeout: 300
+        inputs:
+        - file_path: scripts/bitrise/appium/androidInternalE2e.sh
   ios-internal:
     before_run:
     - _install-and-set-env

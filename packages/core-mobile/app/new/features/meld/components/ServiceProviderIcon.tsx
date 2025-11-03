@@ -1,7 +1,8 @@
 import React from 'react'
-import { Logos, useTheme, View } from '@avalabs/k2-alpine'
+import { Image, Logos, useTheme, View } from '@avalabs/k2-alpine'
 import { SvgProps } from 'react-native-svg'
 import { ServiceProviders } from '../consts'
+import { ServiceProvider } from '../types'
 
 const DEFAULT_SIZE = 27
 
@@ -9,15 +10,16 @@ export const ServiceProviderIcon = ({
   serviceProvider,
   size = DEFAULT_SIZE
 }: {
-  serviceProvider: ServiceProviders
+  serviceProvider: ServiceProvider
   size?: number
 }): React.JSX.Element | undefined => {
   const {
-    theme: { colors }
+    theme: { colors, isDark }
   } = useTheme()
-  const Icon = SERVICE_PROVIDER_TO_ICON[serviceProvider]
-  return (
-    Icon && (
+  const Icon = SERVICE_PROVIDER_TO_ICON[serviceProvider.serviceProvider]
+
+  if (Icon) {
+    return (
       <View
         sx={{
           borderColor: colors.$borderPrimary,
@@ -32,52 +34,65 @@ export const ServiceProviderIcon = ({
         <Icon testID={`icon__${serviceProvider}`} width={size} height={size} />
       </View>
     )
+  }
+
+  return (
+    <Image
+      accessibilityRole="image"
+      sx={{ width: size, height: size }}
+      source={{
+        uri: isDark
+          ? serviceProvider.logos.darkShort ?? ''
+          : serviceProvider.logos.lightShort ?? ''
+      }}
+    />
   )
 }
 
-const SERVICE_PROVIDER_TO_ICON: Record<
-  ServiceProviders,
-  React.FC<SvgProps> | undefined
-> = {
-  [ServiceProviders.ALCHEMYPAY]: Logos.PartnerLogos.Alchemy,
-  [ServiceProviders.BTCDIRECT]: Logos.PartnerLogos.BtcDirect,
-  [ServiceProviders.BANXA]: Logos.PartnerLogos.Banxa,
-  [ServiceProviders.BILIRA]: Logos.PartnerLogos.Bilira,
-  [ServiceProviders.BINANCECONNECT]: Logos.PartnerLogos.BinanceConnect,
-  [ServiceProviders.BLOCKCHAINDOTCOM]: Logos.PartnerLogos.BlockChainDotCom,
-  [ServiceProviders.COINBASEPAY]: Logos.PartnerLogos.CoinbasePay,
-  [ServiceProviders.COINFLOW]: Logos.PartnerLogos.Coinflow,
-  [ServiceProviders.FONBNK]: Logos.PartnerLogos.Fonbnk,
-  [ServiceProviders.GUARDARIAN]: Logos.PartnerLogos.Guardarian,
-  [ServiceProviders.HARBOUR]: Logos.PartnerLogos.Harbour,
-  [ServiceProviders.KOYWE]: Logos.PartnerLogos.Koywe,
-  [ServiceProviders.MERCURYO]: Logos.PartnerLogos.Mercuryo,
-  [ServiceProviders.MESH]: Logos.PartnerLogos.Mesh,
-  [ServiceProviders.ONMETA]: Logos.PartnerLogos.Onmeta,
-  [ServiceProviders.PAYPAL]: Logos.PartnerLogos.Paypal,
-  [ServiceProviders.REVOLUT]: Logos.PartnerLogos.Revolut,
-  [ServiceProviders.ROBINHOOD]: Logos.PartnerLogos.Robinhood,
-  [ServiceProviders.SARDINE]: Logos.PartnerLogos.Sardine,
-  [ServiceProviders.SHIFT4]: Logos.PartnerLogos.Shift4,
-  [ServiceProviders.SIMPLEX]: Logos.PartnerLogos.Simplex,
-  [ServiceProviders.TRANSFI]: Logos.PartnerLogos.Transfi,
-  [ServiceProviders.TRANSAK]: Logos.PartnerLogos.Transak,
-  [ServiceProviders.UNLIMIT]: Logos.PartnerLogos.Unlimit,
-  [ServiceProviders.YELLOWCARD]: Logos.PartnerLogos.YellowCard,
-  [ServiceProviders.TOPPER]: Logos.PartnerLogos.Topper,
-  [ServiceProviders.PAYBIS]: Logos.PartnerLogos.Paybis,
-  [ServiceProviders.STRIPE]: Logos.PartnerLogos.Stripe,
-  [ServiceProviders.ONRAMPMONEY]: Logos.PartnerLogos.Onramp,
+const SERVICE_PROVIDER_TO_ICON: Record<string, React.FC<SvgProps> | undefined> =
+  {
+    [ServiceProviders.ALCHEMYPAY]: Logos.PartnerLogos.Alchemy,
+    [ServiceProviders.BTCDIRECT]: Logos.PartnerLogos.BtcDirect,
+    [ServiceProviders.BANXA]: Logos.PartnerLogos.Banxa,
+    [ServiceProviders.BILIRA]: Logos.PartnerLogos.Bilira,
+    [ServiceProviders.BINANCECONNECT]: Logos.PartnerLogos.BinanceConnect,
+    [ServiceProviders.BLOCKCHAINDOTCOM]: Logos.PartnerLogos.BlockChainDotCom,
+    [ServiceProviders.COINBASEPAY]: Logos.PartnerLogos.CoinbasePay,
+    [ServiceProviders.COINFLOW]: Logos.PartnerLogos.Coinflow,
+    [ServiceProviders.FONBNK]: Logos.PartnerLogos.Fonbnk,
+    [ServiceProviders.GUARDARIAN]: Logos.PartnerLogos.Guardarian,
+    [ServiceProviders.HARBOUR]: Logos.PartnerLogos.Harbour,
+    [ServiceProviders.KOYWE]: Logos.PartnerLogos.Koywe,
+    [ServiceProviders.MERCURYO]: Logos.PartnerLogos.Mercuryo,
+    [ServiceProviders.MESH]: Logos.PartnerLogos.Mesh,
+    [ServiceProviders.ONMETA]: Logos.PartnerLogos.Onmeta,
+    [ServiceProviders.PAYPAL]: Logos.PartnerLogos.Paypal,
+    [ServiceProviders.REVOLUT]: Logos.PartnerLogos.Revolut,
+    [ServiceProviders.ROBINHOOD]: Logos.PartnerLogos.Robinhood,
+    [ServiceProviders.SARDINE]: Logos.PartnerLogos.Sardine,
+    [ServiceProviders.SHIFT4]: Logos.PartnerLogos.Shift4,
+    [ServiceProviders.SIMPLEX]: Logos.PartnerLogos.Simplex,
+    [ServiceProviders.TRANSFI]: Logos.PartnerLogos.Transfi,
+    [ServiceProviders.TRANSAK]: Logos.PartnerLogos.Transak,
+    [ServiceProviders.UNLIMIT]: Logos.PartnerLogos.Unlimit,
+    [ServiceProviders.YELLOWCARD]: Logos.PartnerLogos.YellowCard,
+    [ServiceProviders.TOPPER]: Logos.PartnerLogos.Topper,
+    [ServiceProviders.PAYBIS]: Logos.PartnerLogos.Paybis,
+    [ServiceProviders.STRIPE]: Logos.PartnerLogos.Stripe,
+    [ServiceProviders.ONRAMPMONEY]: Logos.PartnerLogos.Onramp,
+    [ServiceProviders.KRYPTONIM]: Logos.PartnerLogos.Kryptonim,
+    [ServiceProviders.SWAPPED]: Logos.PartnerLogos.Swappeddotcom,
 
-  [ServiceProviders.CHECKOUT]: undefined,
-  [ServiceProviders.CIRCLE]: undefined,
-  [ServiceProviders.FINICITY]: undefined,
-  [ServiceProviders.YODLEE]: undefined,
-  [ServiceProviders.AKOYA]: undefined,
-  [ServiceProviders.MX]: undefined,
-  [ServiceProviders.MESO]: undefined,
-  [ServiceProviders.MOOV]: undefined,
-  [ServiceProviders.PLAID]: undefined,
-  [ServiceProviders.SALTEDGE]: undefined,
-  [ServiceProviders.SALTEDGEPARTNERS]: undefined
-}
+    [ServiceProviders.BOOMFI]: undefined,
+    [ServiceProviders.CHECKOUT]: undefined,
+    [ServiceProviders.CIRCLE]: undefined,
+    [ServiceProviders.FINICITY]: undefined,
+    [ServiceProviders.YODLEE]: undefined,
+    [ServiceProviders.AKOYA]: undefined,
+    [ServiceProviders.MX]: undefined,
+    [ServiceProviders.MESO]: undefined,
+    [ServiceProviders.MOOV]: undefined,
+    [ServiceProviders.PLAID]: undefined,
+    [ServiceProviders.SALTEDGE]: undefined,
+    [ServiceProviders.SALTEDGEPARTNERS]: undefined
+  }

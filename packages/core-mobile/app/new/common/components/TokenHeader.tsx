@@ -58,9 +58,7 @@ export const TokenHeader = ({
               {token?.balanceDisplayValue ? (
                 <View sx={{ flexDirection: 'row' }}>
                   <SubTextNumber
-                    number={Number(
-                      token.balanceDisplayValue.replaceAll(',', '')
-                    )}
+                    number={token.balanceDisplayValue}
                     textColor={colors.$textPrimary}
                     textVariant="heading2"
                   />
@@ -94,7 +92,7 @@ export const TokenHeader = ({
           ) : isPrivacyModeEnabled ? (
             <PrivacyModeAlert />
           ) : (
-            <Text variant="body2">
+            <Text testID="token_header_fiat_balance" variant="body2">
               {formattedBalance} {currency}
             </Text>
           )}

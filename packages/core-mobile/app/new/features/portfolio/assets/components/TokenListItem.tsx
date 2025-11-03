@@ -2,8 +2,8 @@ import { PriceChangeStatus } from '@avalabs/k2-alpine'
 import { useFormatCurrency } from 'new/common/hooks/useFormatCurrency'
 import React, { useRef, useCallback } from 'react'
 import { LocalTokenWithBalance } from 'store/balance'
-import { useMarketTokenBySymbol } from 'common/hooks/useMarketTokenBySymbol'
 import { useTokenNameForDisplay } from 'common/hooks/useTokenNameForDisplay'
+import { useMarketToken } from 'common/hooks/useMarketToken'
 import { TokenListView } from './TokenListView'
 import { TokenGridView } from './TokenGridView'
 
@@ -19,20 +19,23 @@ export const TokenListItem = ({
   index,
   isGridView,
   onPress
-}: TokenListItemProps): React.JSX.Element => {
+}: // eslint-disable-next-line sonarjs/cognitive-complexity
+TokenListItemProps): React.JSX.Element => {
   const { formatCurrency } = useFormatCurrency()
-  const { balanceInCurrency, symbol } = token
+  const { balanceInCurrency } = token
   const formattedBalance = balanceInCurrency
     ? formatCurrency({ amount: balanceInCurrency })
     : undefined
 
   const tokenNameForDisplay = useTokenNameForDisplay({ token }) ?? token.name
 
-  const marketToken = useMarketTokenBySymbol({
-    symbol,
+  const marketToken = useMarketToken({
+    // Only resolve market token when token.change24 is missing
+    token: token.change24 === undefined ? token : undefined,
     errorContext: 'TokenListItem'
   })
-  const percentChange = marketToken?.priceChangePercentage24h ?? undefined
+  const percentChange =
+    token.change24 ?? marketToken?.priceChangePercentage24h ?? undefined
   const priceChange =
     percentChange !== undefined && balanceInCurrency !== undefined
       ? (balanceInCurrency * percentChange) / 100

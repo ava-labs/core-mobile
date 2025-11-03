@@ -3,8 +3,11 @@ import SeedlessService from 'seedless/services/SeedlessService'
 import BiometricsSDK from 'utils/BiometricsSDK'
 import { PrivateKeyWallet } from 'services/wallet/PrivateKeyWallet'
 import { SeedlessPubKeysStorage } from 'seedless/services/storage/SeedlessPubKeysStorage'
+import { KeystoneDataStorage } from 'features/keystone/storage/KeystoneDataStorage'
+import KeystoneWallet from 'services/wallet/KeystoneWallet'
 import { Wallet, WalletType } from './types'
 import { MnemonicWallet } from './MnemonicWallet'
+import { LedgerWallet } from './LedgerWallet'
 
 class WalletFactory {
   async createWallet({
@@ -38,12 +41,31 @@ class WalletFactory {
         }
         return new MnemonicWallet(walletSecret.value)
       }
+      case WalletType.KEYSTONE: {
+        const keystoneData = await KeystoneDataStorage.retrieve()
+
+        if (!keystoneData) {
+          throw new Error('Keystone data not available')
+        }
+
+        return new KeystoneWallet(keystoneData)
+      }
       case WalletType.PRIVATE_KEY: {
         const walletSecret = await BiometricsSDK.loadWalletSecret(walletId)
         if (!walletSecret.success) {
           throw new Error('Failed to load wallet secret')
         }
         return new PrivateKeyWallet(walletSecret.value)
+      }
+      case WalletType.LEDGER:
+      case WalletType.LEDGER_LIVE: {
+        const walletSecret = await BiometricsSDK.loadWalletSecret(walletId)
+        if (!walletSecret.success) {
+          throw new Error('Failed to load wallet secret')
+        }
+
+        const ledgerData = JSON.parse(walletSecret.value)
+        return new LedgerWallet(ledgerData)
       }
       default:
         throw new Error(

@@ -13,6 +13,8 @@ import { useNavigation } from '@react-navigation/native'
 import { ACTIONS } from 'contexts/DeeplinkContext/types'
 import { useDebouncedCallback } from 'use-debounce'
 import { useMarketTokenBySymbol } from 'common/hooks/useMarketTokenBySymbol'
+import Logger from 'utils/Logger'
+import { humanize } from 'utils/string/humanize'
 import {
   PaymentMethodNames,
   ServiceProviderCategories,
@@ -240,11 +242,17 @@ export const useSelectAmount = ({
   }, [category, countryCode, crytoQuotes, defaultsByCountry])
 
   const paymentMethodToDisplay = useMemo(() => {
-    return paymentMethod ? PaymentMethodNames[paymentMethod] : undefined
+    if (paymentMethod && PaymentMethodNames[paymentMethod]) {
+      return PaymentMethodNames[paymentMethod]
+    }
+    return paymentMethod ? humanize(paymentMethod) : undefined
   }, [paymentMethod])
 
   const serviceProviderToDisplay = useMemo(() => {
-    return serviceProvider ? ServiceProviderNames[serviceProvider] : undefined
+    if (serviceProvider && ServiceProviderNames[serviceProvider]) {
+      return ServiceProviderNames[serviceProvider]
+    }
+    return serviceProvider ? humanize(serviceProvider) : undefined
   }, [serviceProvider])
 
   useLayoutEffect(() => {
@@ -273,6 +281,34 @@ export const useSelectAmount = ({
     setServiceProvider
   ])
 
+  const minMaxErrorMessage = useMemo(
+    () =>
+      (cryptoQuotesError?.statusCode ===
+        CreateCryptoQuoteErrorCode.NO_RESOURCE_FOUND &&
+        cryptoQuotesError.message?.toLowerCase().includes('not found')) ||
+      (cryptoQuotesError?.statusCode ===
+        CreateCryptoQuoteErrorCode.INCOMPATIBLE_REQUEST &&
+        cryptoQuotesError?.message
+          ?.toLowerCase()
+          .includes('not within the payment method limits')) ||
+      cryptoQuotesError?.message?.toLowerCase().includes('crypto_min_limit') ||
+      cryptoQuotesError?.message?.toLowerCase().includes('crypto_max_limit'),
+    [cryptoQuotesError]
+  )
+
+  useEffect(() => {
+    if (cryptoQuotesError === undefined) return
+
+    if (minMaxErrorMessage) {
+      Logger.error(
+        `The selected amount is not within the minimum and maximum limits for ${category}:`,
+        cryptoQuotesError
+      )
+      return
+    }
+    Logger.error(`failed to fetch quotes for ${category}:`, cryptoQuotesError)
+  }, [minMaxErrorMessage, category, cryptoQuotesError])
+
   const errorMessage = useMemo(() => {
     if (
       category === ServiceProviderCategories.CRYPTO_OFFRAMP &&
@@ -299,24 +335,15 @@ export const useSelectAmount = ({
         : `The maximum withdrawal token amount is ${formattedMaximumLimit} ${selectedCurrency}`
     }
 
-    if (
-      (cryptoQuotesError?.statusCode === CreateCryptoQuoteErrorCode.NOT_FOUND &&
-        cryptoQuotesError.message.toLowerCase().includes('not found')) ||
-      (cryptoQuotesError?.statusCode ===
-        CreateCryptoQuoteErrorCode.INCOMPATIBLE_REQUEST &&
-        cryptoQuotesError.message
-          .toLowerCase()
-          .includes('does not match service providers'))
-    ) {
-      return `${token?.tokenWithBalance.name} cannot be ${
-        category === ServiceProviderCategories.CRYPTO_ONRAMP
-          ? 'purchased'
-          : 'withdrawn'
-      } at the moment, please adjust the amount or try again later.`
+    if (minMaxErrorMessage) {
+      return 'Transaction amount is invalid: it must be between the minimum and maximum allowed.'
     }
 
-    if (cryptoQuotesError?.message) {
-      return cryptoQuotesError.message
+    if (cryptoQuotesError?.statusCode) {
+      return (
+        cryptoQuotesError.message ??
+        'We are unable to fetch the quotes, please check your input. Adjust the country, currency, token, or amount and try again.'
+      )
     }
 
     return undefined
@@ -328,10 +355,9 @@ export const useSelectAmount = ({
     sourceAmount,
     isBelowMaximumLimit,
     maximumLimit,
-    cryptoQuotesError?.statusCode,
-    cryptoQuotesError?.message,
+    minMaxErrorMessage,
+    cryptoQuotesError,
     token?.tokenWithBalance.symbol,
-    token?.tokenWithBalance.name,
     formatCurrency,
     selectedCurrency
   ])

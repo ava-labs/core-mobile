@@ -26,11 +26,15 @@ import {
   QueryStatus
 } from './types'
 import { isTokenVisible } from './utils'
+import { QueryType } from './types'
 
 const reducerName = 'balance'
 
 const initialState: BalanceState = {
-  status: QueryStatus.IDLE,
+  status: {
+    [QueryType.ALL]: QueryStatus.IDLE,
+    [QueryType.XP]: QueryStatus.IDLE
+  },
   balances: {}
 }
 
@@ -49,8 +53,14 @@ export const balanceSlice = createSlice({
   name: reducerName,
   initialState,
   reducers: {
-    setStatus: (state, action: PayloadAction<QueryStatus>) => {
-      state.status = action.payload
+    setStatus: (
+      state,
+      action: PayloadAction<{ status: QueryStatus; queryType: QueryType }>
+    ) => {
+      state.status = {
+        ...state.status,
+        [action.payload.queryType]: action.payload.status
+      }
     },
     setBalances: (state, action: PayloadAction<Balances>) => {
       for (const [key, balance] of Object.entries(action.payload)) {
@@ -61,8 +71,11 @@ export const balanceSlice = createSlice({
 })
 
 // selectors
-export const selectBalanceStatus = (state: RootState): QueryStatus =>
-  state.balance.status
+export const selectAllBalanceStatus = (state: RootState): QueryStatus =>
+  state.balance.status[QueryType.ALL]
+
+export const selectXpBalanceStatus = (state: RootState): QueryStatus =>
+  state.balance.status[QueryType.XP]
 
 export const selectIsBalanceLoadedForAccount =
   (accountId: string) => (state: RootState) => {
@@ -78,13 +91,16 @@ export const selectIsBalanceLoadedForAccount =
   }
 
 export const selectIsPollingBalances = (state: RootState): boolean =>
-  state.balance.status === QueryStatus.POLLING
+  state.balance.status[QueryType.ALL] === QueryStatus.POLLING ||
+  state.balance.status[QueryType.XP] === QueryStatus.POLLING
 
 export const selectIsLoadingBalances = (state: RootState): boolean =>
-  state.balance.status === QueryStatus.LOADING
+  state.balance.status[QueryType.ALL] === QueryStatus.LOADING ||
+  state.balance.status[QueryType.XP] === QueryStatus.LOADING
 
 export const selectIsRefetchingBalances = (state: RootState): boolean =>
-  state.balance.status === QueryStatus.REFETCHING
+  state.balance.status[QueryType.ALL] === QueryStatus.REFETCHING ||
+  state.balance.status[QueryType.XP] === QueryStatus.REFETCHING
 
 const _selectAllBalances = (state: RootState): Balances => {
   return state.balance.balances
@@ -101,6 +117,41 @@ export const selectTokensWithBalanceByNetwork = (
 
       const balanceKey = getKey(chainId, activeAccount.id)
       return balances[balanceKey]?.tokens ?? []
+    }
+  )
+
+export const selectTokensByNetwork = (
+  tokenVisibility: TokenVisibility,
+  chainId?: number
+): ((state: RootState) => {
+  enabledTokens: string[]
+  disabledTokens: string[]
+}) =>
+  createSelector(
+    [selectActiveAccount, _selectAllBalances],
+    (
+      activeAccount,
+      balances
+    ): {
+      enabledTokens: string[]
+      disabledTokens: string[]
+    } => {
+      if (!chainId) return { enabledTokens: [], disabledTokens: [] }
+      if (!activeAccount) return { enabledTokens: [], disabledTokens: [] }
+
+      const balanceKey = getKey(chainId, activeAccount.id)
+      const tokens = balances[balanceKey]?.tokens ?? []
+
+      const enabled: string[] = []
+      const disabled: string[] = []
+      tokens.forEach(token => {
+        if (isTokenVisible(tokenVisibility, token)) {
+          'chainId' in token && enabled.push(token.address)
+        } else {
+          'chainId' in token && disabled.push(token.address)
+        }
+      })
+      return { enabledTokens: enabled, disabledTokens: disabled }
     }
   )
 

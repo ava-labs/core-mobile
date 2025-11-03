@@ -40,9 +40,13 @@ import { commonStorage } from 'utils/mmkv'
 import { StorageKey } from 'resources/Constants'
 
 export const PinScreen = ({
-  onForgotPin
+  onForgotPin,
+  isInitialLogin = false,
+  onBiometricPrompt
 }: {
   onForgotPin: () => void
+  isInitialLogin?: boolean
+  onBiometricPrompt: () => Promise<boolean>
 }): JSX.Element => {
   const walletState = useSelector(selectWalletState)
   usePreventScreenRemoval(walletState === WalletState.INACTIVE)
@@ -82,19 +86,21 @@ export const PinScreen = ({
     // JS thread is blocked, so we need to wait for the animation to finish for updating the UI after the keyboard is closed
     setTimeout(async () => {
       try {
-        if (!walletId) {
-          throw new Error('Wallet ID is not set')
-        }
-        const result = await BiometricsSDK.loadWalletSecret(walletId) //for now we only support one wallet, multiple wallets will be supported in the upcoming PR
-        if (!result.success) {
-          throw result.error
+        if (isInitialLogin) {
+          if (!walletId) {
+            throw new Error('Wallet ID is not set')
+          }
+          const result = await BiometricsSDK.loadWalletSecret(walletId) //for now we only support one wallet, multiple wallets will be supported in the upcoming PR
+          if (!result.success) {
+            throw result.error
+          }
         }
         await unlock()
       } catch (error) {
         Logger.error('Failed to login:', error)
       }
     }, 0)
-  }, [handleStartLoading, isProcessing, unlock, walletId])
+  }, [handleStartLoading, isInitialLogin, isProcessing, unlock, walletId])
 
   const {
     enteredPin,
@@ -106,6 +112,8 @@ export const PinScreen = ({
     bioType,
     isBiometricAvailable
   } = usePinOrBiometryLogin({
+    isInitialLogin,
+    onBiometricPrompt,
     onWrongPin: handleWrongPin,
     onStartLoading: handleStartLoading,
     onStopLoading: handleStopLoading
@@ -201,43 +209,50 @@ export const PinScreen = ({
     }
   }, [])
 
+  const handleLoginOptions = useCallback(() => {
+    requestAnimationFrame(() => {
+      const accessType = BiometricsSDK.getAccessType()
+      if (accessType === 'BIO') {
+        handlePromptBioLogin()
+      } else {
+        focusPinInput()
+      }
+    })
+  }, [handlePromptBioLogin, focusPinInput])
+
+  const handleBrokenBioState = useCallback(() => {
+    InteractionManager.runAfterInteractions(() => {
+      let accessType = BiometricsSDK.getAccessType()
+
+      /*
+       * Fix inconsistent state: if accessType is 'BIO' but biometrics are disabled or not available
+       * This is needed due to previous bug in BiometricsSDK.storeEncryptionKeyWithBiometry()
+       * which was called by KeychainMigrator during app updates/migrations.
+       * The bug set SECURE_ACCESS_SET to 'BIO' before checking if biometric storage succeeded,
+       * leaving users in an inconsistent state when biometrics weren't available.
+       * We automatically correct this by setting SECURE_ACCESS_SET back to 'PIN'
+       */
+      const isBrokenBioState =
+        accessType === 'BIO' && (!useBiometrics || !isBiometricAvailable)
+
+      if (isBrokenBioState) {
+        commonStorage.set(StorageKey.SECURE_ACCESS_SET, 'PIN')
+        accessType = BiometricsSDK.getAccessType()
+      }
+    })
+  }, [useBiometrics, isBiometricAvailable])
+
   useFocusEffect(
     useCallback(() => {
-      InteractionManager.runAfterInteractions(() => {
-        let accessType = BiometricsSDK.getAccessType()
-
-        /*
-         * Fix inconsistent state: if accessType is 'BIO' but biometrics are disabled or not available
-         * This is needed due to previous bug in BiometricsSDK.storeEncryptionKeyWithBiometry()
-         * which was called by KeychainMigrator during app updates/migrations.
-         * The bug set SECURE_ACCESS_SET to 'BIO' before checking if biometric storage succeeded,
-         * leaving users in an inconsistent state when biometrics weren't available.
-         * We automatically correct this by setting SECURE_ACCESS_SET back to 'PIN'
-         */
-        const isBrokenBioState =
-          accessType === 'BIO' && (!useBiometrics || !isBiometricAvailable)
-
-        if (isBrokenBioState) {
-          commonStorage.set(StorageKey.SECURE_ACCESS_SET, 'PIN')
-          accessType = BiometricsSDK.getAccessType()
-        }
-
-        if (accessType === 'BIO') {
-          handlePromptBioLogin()
-        } else {
-          focusPinInput()
-        }
-      })
+      if (isInitialLogin) {
+        handleBrokenBioState()
+      }
+      handleLoginOptions()
 
       return () => {
         blurPinInput()
       }
-    }, [
-      isBiometricAvailable,
-      useBiometrics,
-      handlePromptBioLogin,
-      focusPinInput
-    ])
+    }, [isInitialLogin, handleBrokenBioState, handleLoginOptions])
   )
 
   useEffect(() => {
@@ -333,6 +348,7 @@ export const PinScreen = ({
               )}
             </Reanimated.View>
             <Reanimated.View
+              pointerEvents="none"
               style={[
                 isProcessingStyle,
                 {

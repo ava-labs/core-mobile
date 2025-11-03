@@ -5,7 +5,11 @@ import {
 } from 'common/utils/alertWithTextInput'
 import { useCallback, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { selectWallets, setWalletName } from 'store/wallet/slice'
+import {
+  selectIsMigratingActiveAccounts,
+  selectWallets,
+  setWalletName
+} from 'store/wallet/slice'
 import { Wallet } from 'store/wallet/types'
 import { showAlert } from '@avalabs/k2-alpine'
 import { removeWallet } from 'store/wallet/thunks'
@@ -25,6 +29,7 @@ export const useManageWallet = (): {
   const dispatch = useDispatch<AppThunkDispatch>()
   const wallets = useSelector(selectWallets)
   const accounts = useSelector(selectAccounts)
+  const isMigratingActiveAccounts = useSelector(selectIsMigratingActiveAccounts)
 
   const handleRenameWallet = useCallback(
     (wallet: Wallet): void => {
@@ -125,13 +130,18 @@ export const useManageWallet = (): {
       // 1. Seedless wallets cannot be removed
       if (wallet.type === WalletType.SEEDLESS) return false
 
-      // 2. Mnemonic wallets can be removed if there are multiple mnemonic or seedless wallets
+      // 2. Mnemonic wallets can be removed if there are multiple mnemonic/seedless/keystone wallets
       const walletCount = Object.values(wallets).filter(
-        w => w.type === WalletType.MNEMONIC || w.type === WalletType.SEEDLESS
+        w =>
+          w.type === WalletType.MNEMONIC ||
+          w.type === WalletType.SEEDLESS ||
+          w.type === WalletType.KEYSTONE
       ).length
 
       const isLastRemovableMnemonic =
-        walletCount === 1 && wallet.type === WalletType.MNEMONIC
+        walletCount === 1 &&
+        (wallet.type === WalletType.MNEMONIC ||
+          wallet.type === WalletType.KEYSTONE)
 
       return !isLastRemovableMnemonic
     },
@@ -147,6 +157,21 @@ export const useManageWallet = (): {
         }
       ]
 
+      if (
+        [
+          WalletType.MNEMONIC,
+          WalletType.SEEDLESS,
+          WalletType.LEDGER,
+          WalletType.KEYSTONE
+        ].includes(wallet.type)
+      ) {
+        baseItems.push({
+          id: 'add_account',
+          title: 'Add account to this wallet',
+          disabled: isMigratingActiveAccounts
+        })
+      }
+
       if (canRemoveWallet(wallet)) {
         baseItems.push({
           id: 'remove',
@@ -155,16 +180,9 @@ export const useManageWallet = (): {
         })
       }
 
-      if ([WalletType.MNEMONIC, WalletType.SEEDLESS].includes(wallet.type)) {
-        baseItems.push({
-          id: 'add_account',
-          title: 'Add account to this wallet'
-        })
-      }
-
       return baseItems
     },
-    [canRemoveWallet]
+    [canRemoveWallet, isMigratingActiveAccounts]
   )
 
   const handleWalletMenuAction = useCallback(

@@ -66,6 +66,8 @@
 	<string>To scan QR we need camera permission.</string>
 	<key>NSFaceIDUsageDescription</key>
 	<string>$(DISPLAY_NAME) requires Face ID access to allow you quick and secure access to your wallet.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>$(DISPLAY_NAME) needs access to save images from the browser to your photo library.</string>
 	<key>LSApplicationQueriesSchemes</key>
 	<array>
 		<string>twitter</string>
@@ -90,5 +92,22 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<false/>
+	<key>NSBluetoothAlwaysUsageDescription</key>
+	<string>We use Bluetooth to connect to ledger devices</string>
+	<key>NSBluetoothPeripheralUsageDescription</key>
+	<string>We use Bluetooth to connect to ledger devices</string>
+	<key>branch_key</key>
+	<dict>
+		<key>test</key>
+		<string>$(BRANCH_KEY)</string>
+		<key>live</key>
+		<string>$(BRANCH_KEY)</string>
+	</dict>
+	<key>branch_universal_link_domains</key>
+	<array>
+		<string>nlfvn.test-app.link</string>
+		<string>nlfvn-alternate.test-app.link</string>
+		<string>nlfvn.app.link</string>
+	</array>
 </dict>
 </plist>

@@ -69,7 +69,11 @@ import { selectIsPrivacyModeEnabled } from 'store/settings/securityPrivacy'
 import { RootState } from 'store/types'
 import { useFocusedSelector } from 'utils/performance/useFocusedSelector'
 
-const SEGMENT_ITEMS = ['Assets', 'Collectibles', 'DeFi']
+const SEGMENT_ITEMS = [
+  { title: 'Assets' },
+  { title: 'Collectibles' },
+  { title: 'DeFi' }
+]
 
 const SEGMENT_EVENT_MAP: Record<number, AnalyticsEventName> = {
   0: 'PortfolioAssetsClicked',
@@ -156,9 +160,9 @@ const PortfolioHomeScreen = (): JSX.Element => {
   )
 
   const formattedPriceChange =
-    totalPriceChanged > 0
+    totalPriceChanged !== 0
       ? formatCurrency({ amount: Math.abs(totalPriceChanged) })
-      : ''
+      : undefined
 
   const indicatorStatus =
     totalPriceChanged > 0
@@ -319,7 +323,7 @@ const PortfolioHomeScreen = (): JSX.Element => {
               formattedBalance={formattedBalance}
               currency={selectedCurrency}
               priceChange={
-                totalPriceChanged > 0
+                totalPriceChanged !== 0
                   ? {
                       formattedPrice: formattedPriceChange,
                       status: indicatorStatus,

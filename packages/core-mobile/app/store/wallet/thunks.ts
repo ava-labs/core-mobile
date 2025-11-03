@@ -2,7 +2,6 @@ import { CoreAccountType } from '@avalabs/types'
 import { createAsyncThunk } from '@reduxjs/toolkit'
 import AnalyticsService from 'services/analytics/AnalyticsService'
 import { WalletType } from 'services/wallet/types'
-import WalletService from 'services/wallet/WalletService'
 import {
   Account,
   ImportedAccount,
@@ -21,6 +20,7 @@ import {
   selectAccountsByWalletId,
   setActiveAccountId
 } from 'store/account/slice'
+import AccountsService from 'services/account/AccountsService'
 import { generateWalletName } from './utils'
 import { _removeWallet, selectActiveWalletId } from './slice'
 
@@ -74,7 +74,7 @@ export const importPrivateKeyWalletAndAccount = createAsyncThunk<
 
     thunkApi.dispatch(setActiveWallet(newWalletId))
 
-    const addresses = await WalletService.getAddresses({
+    const addresses = await AccountsService.getAddresses({
       walletId: newWalletId,
       walletType: WalletType.PRIVATE_KEY,
       isTestnet: isDeveloperMode
@@ -122,7 +122,7 @@ export const importMnemonicWalletAndAccount = createAsyncThunk<
     const allAccounts = selectAccounts(state)
     const allAccountsCount = Object.keys(allAccounts).length
 
-    const addresses = await WalletService.getAddresses({
+    const addresses = await AccountsService.getAddresses({
       walletId: newWalletId,
       walletType: WalletType.MNEMONIC,
       accountIndex: 0,
