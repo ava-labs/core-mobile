@@ -7,18 +7,20 @@ import React, {
   useState
 } from 'react'
 import {
+  TextInputProps as _TextInputProps,
   LayoutChangeEvent,
   Platform,
   TextInput,
-  TextStyle,
-  TextInputProps as _TextInputProps
+  TextStyle
 } from 'react-native'
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
   withTiming
 } from 'react-native-reanimated'
-import { ANIMATED } from '../../utils'
+import { useTheme } from '../../hooks'
+
+import { alpha, ANIMATED } from '../../utils'
 import { View } from '../Primitives'
 
 const AnimatedTextInput = Animated.createAnimatedComponent(TextInput)
@@ -26,9 +28,13 @@ const AnimatedTextInput = Animated.createAnimatedComponent(TextInput)
 interface TextInputProps extends _TextInputProps {
   prefix?: string
   suffix?: string
+  suffixSx?: TextStyle
+  prefixSx?: TextStyle
   containerSx?: SxProp
   textInputSx?: TextStyle
   initialFontSize?: number
+  renderLeft?: () => React.ReactNode
+  renderRight?: () => React.ReactNode
 }
 
 export const AutoFitTextInput = forwardRef<
@@ -46,11 +52,16 @@ export const AutoFitTextInput = forwardRef<
       prefix,
       suffix,
       textAlign,
+      prefixSx,
+      suffixSx,
+      renderLeft,
+      renderRight,
       onChangeText,
       ...props
     },
     ref
   ): JSX.Element => {
+    const { theme } = useTheme()
     const animatedFontSize = useSharedValue(initialFontSize)
     const [containerWidth, setContainerWidth] = useState(0)
     const inputRef = useRef<TextInput>(null)
@@ -120,26 +131,32 @@ export const AutoFitTextInput = forwardRef<
             justifyContent: 'center',
             gap: 5
           }}>
-          {prefix && (
-            <Animated.Text style={[textStyle, props.style]}>
-              {prefix}
-            </Animated.Text>
-          )}
+          {renderLeft
+            ? renderLeft?.()
+            : prefix && (
+                <Animated.Text style={[textStyle, props.style, prefixSx]}>
+                  {prefix}
+                </Animated.Text>
+              )}
           <AnimatedTextInput
             {...props}
             ref={inputRef}
             style={[{ padding: 0 }, textStyle, props.style]}
-            multiline={false}
-            numberOfLines={1}
             maxLength={maxLength}
             onChangeText={handleTextChange}
+            placeholderTextColor={alpha(theme.colors.$textSecondary, 0.2)}
+            selectionColor={theme.colors.$textPrimary}
+            multiline={false}
+            numberOfLines={1}
             allowFontScaling={false}
           />
-          {suffix && (
-            <Animated.Text style={[textStyle, props.style]}>
-              {suffix}
-            </Animated.Text>
-          )}
+          {renderRight
+            ? renderRight?.()
+            : suffix && (
+                <Animated.Text style={[textStyle, props.style, suffixSx]}>
+                  {suffix}
+                </Animated.Text>
+              )}
         </View>
 
         {/* Hidden TextInput for capturing layout width */}

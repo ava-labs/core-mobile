@@ -16,7 +16,6 @@ import {
   TextInputProps
 } from 'react-native'
 import { useTheme } from '../../hooks'
-import { alpha } from '../../utils'
 import {
   normalizeNumericTextInput,
   splitIntegerAndFraction
@@ -161,10 +160,7 @@ export const TokenAmountInput = forwardRef<
         keyboardType={Platform.OS === 'ios' ? 'numeric' : undefined}
         inputMode={Platform.OS === 'android' ? 'numeric' : undefined}
         onChangeText={handleChangeText}
-        numberOfLines={1}
-        placeholderTextColor={alpha(theme.colors.$textSecondary, 0.2)}
         selectionColor={theme.colors.$textPrimary}
-        allowFontScaling={false}
         style={[{ color: theme.colors.$textPrimary }, props.style]}
         onBlur={handleBlur}
         onFocus={handleFocus}

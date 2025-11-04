@@ -177,11 +177,8 @@ export const FiatAmountInput = forwardRef<
                */
               keyboardType={Platform.OS === 'ios' ? 'numeric' : undefined}
               inputMode={Platform.OS === 'android' ? 'numeric' : undefined}
-              placeholderTextColor={alpha(theme.colors.$textSecondary, 0.2)}
-              selectionColor={theme.colors.$textPrimary}
               placeholder={PLACEHOLDER}
-              // TODO: Add this back?
-              // maxLength={maxLength}
+              maxLength={maxLength}
               returnKeyType={returnKeyType}
               textAlign="center"
               editable={editable}
