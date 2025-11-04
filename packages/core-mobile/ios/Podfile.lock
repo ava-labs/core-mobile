@@ -3330,6 +3330,30 @@ PODS:
     - ReactCommon/turbomodule/core
     - Sentry/HybridSDK (= 8.57.0)
     - Yoga
+  - RNShare (12.0.9):
+    - DoubleConversion
+    - glog
+    - hermes-engine
+    - RCT-Folly (= 2024.11.18.00)
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Core
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
+    - React-hermes
+    - React-ImageManager
+    - React-jsi
+    - React-NativeModulesApple
+    - React-RCTFabric
+    - React-renderercss
+    - React-rendererdebug
+    - React-utils
+    - ReactCodegen
+    - ReactCommon/turbomodule/bridging
+    - ReactCommon/turbomodule/core
+    - Yoga
   - RNSound (0.12.0):
     - DoubleConversion
     - glog
@@ -3581,6 +3605,7 @@ DEPENDENCIES:
   - RNScreens (from `../node_modules/react-native-screens`)
   - RNSensors (from `../node_modules/react-native-sensors`)
   - "RNSentry (from `../node_modules/@sentry/react-native`)"
+  - RNShare (from `../node_modules/react-native-share`)
   - RNSound (from `../node_modules/react-native-sound`)
   - RNSVG (from `../node_modules/react-native-svg`)
   - Yoga (from `../node_modules/react-native/ReactCommon/yoga`)
@@ -3942,6 +3967,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-sensors"
   RNSentry:
     :path: "../node_modules/@sentry/react-native"
+  RNShare:
+    :path: "../node_modules/react-native-share"
   RNSound:
     :path: "../node_modules/react-native-sound"
   RNSVG:
@@ -4141,6 +4168,7 @@ SPEC CHECKSUMS:
   RNScreens: f0678748c5310b49a3f920f1485f5ec477afd345
   RNSensors: 111159597ac51505df10413c61b28bcd28e88983
   RNSentry: 0f61ae3c111d9129a978aeedd1fa05d0cd2307a9
+  RNShare: 43faaefd287ef344e8379caeaca12d112f713295
   RNSound: 72c4886fb80b8a0e8c40131099223e09422aa8b4
   RNSVG: 794f269526df9ddc1f79b3d1a202b619df0368e3
   SDWebImage: 8a6b7b160b4d710e2a22b6900e25301075c34cb3
