@@ -138,7 +138,11 @@ class Settings {
   }
 
   get currency() {
-    return selectors.getBySomeText(settings.currency)
+    return selectors.getByText(settings.currency)
+  }
+
+  get currencyId() {
+    return selectors.getById(settings.currencyId)
   }
 
   get selectCurrencyTitle() {
@@ -282,10 +286,10 @@ class Settings {
   }
 
   async tapCurrency() {
-    if (!(await actions.getVisible(this.currency))) {
+    if (!(await actions.getVisible(this.currencyId))) {
       await this.swipeSettings()
     }
-    await actions.tap(this.currency)
+    await actions.tap(this.currencyId)
   }
 
   async verifyCurrencyScreen(curr = 'USD') {
