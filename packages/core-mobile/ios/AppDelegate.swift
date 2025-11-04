@@ -21,23 +21,21 @@ class AppDelegate: ExpoAppDelegate {
     FirebaseApp.configure()
         
     if let bundleId = Bundle.main.object(forInfoDictionaryKey: "CFBundleIdentifier") as? String, bundleId.lowercased().contains("internal")  {
-      RNBranch.useTestInstance()
+      Branch.useTestBranchKey()
     }
 
-    DispatchQueue.main.asyncAfter(deadline: .now() + 5) {
-      if #available(iOS 14.0, *)  {
-        // Check that `trackingAuthorizationStatus` is `notDetermined`, otherwise prompt will not display
-        if ATTrackingManager.trackingAuthorizationStatus == .notDetermined {
-          ATTrackingManager.requestTrackingAuthorization { (status) in
-            RNBranch.initSession(launchOptions: launchOptions, isReferrable: true)
-          }
-        } else {
-          RNBranch.initSession(launchOptions: launchOptions, isReferrable: true)
+    // Initialize Branch SDK with launchOptions
+    Branch.getInstance().initSession(launchOptions: launchOptions) { params, error in
+        // Now present ATT prompt only if needed
+        if #available(iOS 14.0, *) {
+            if ATTrackingManager.trackingAuthorizationStatus == .notDetermined {
+                ATTrackingManager.requestTrackingAuthorization { status in
+                    // Let Branch handle ATT status internally if needed
+                    Branch.getInstance().handleATTAuthorizationStatus(status.rawValue)
+                }
+            }
         }
-      } else {
-        RNBranch.initSession(launchOptions: launchOptions, isReferrable: true)
-      }
-     }
+    }
     
     let delegate = ReactNativeDelegate()
     let factory = ExpoReactNativeFactory(delegate: delegate)
