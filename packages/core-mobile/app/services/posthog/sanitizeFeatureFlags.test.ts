@@ -63,22 +63,20 @@ describe('app/contexts/posthogUtils.ts', () => {
           featureFlags = sanitizeFeatureFlags(
             {
               featureFlags: {
-                [FeatureGates.DEFI]: true,
-                [FeatureGates.SEND]: true,
+                [FeatureGates.SOLANA_SUPPORT]: true,
                 [FeatureGates.SWAP]: false
               },
               featureFlagPayloads: {
-                [FeatureGates.DEFI]: JSON.stringify('a.b.c')
+                [FeatureGates.SOLANA_SUPPORT]: JSON.stringify('a.b.c')
               }
             },
             '1.0.0'
           )
         })
         it('the version-specific feature flag should be disabled', () => {
-          expect(featureFlags[FeatureGates.DEFI]).toBe(false)
+          expect(featureFlags[FeatureGates.SOLANA_SUPPORT]).toBe(false)
         })
         it('the basic feature flags are left in-tact', () => {
-          expect(featureFlags[FeatureGates.SEND]).toBe(true)
           expect(featureFlags[FeatureGates.SWAP]).toBe(false)
         })
       })
@@ -152,13 +150,13 @@ describe('app/contexts/posthogUtils.ts', () => {
               {
                 featureFlags: {
                   [FeatureGates.BRIDGE]: false,
-                  [FeatureGates.DEFI]: true,
-                  [FeatureGates.SEND]: true,
+                  [FeatureGates.SOLANA_SUPPORT]: true,
                   [FeatureGates.SWAP]: false
                 },
                 featureFlagPayloads: {
                   [FeatureGates.BRIDGE]: JSON.stringify(featureFlagPayloads),
-                  [FeatureGates.DEFI]: JSON.stringify(featureFlagPayloads)
+                  [FeatureGates.SOLANA_SUPPORT]:
+                    JSON.stringify(featureFlagPayloads)
                 }
               },
               appVersion
@@ -166,8 +164,7 @@ describe('app/contexts/posthogUtils.ts', () => {
 
             expect(featureFlags).toEqual({
               [FeatureGates.BRIDGE]: false, // Comes disabled, should stay disabled even though it has a version attached.
-              [FeatureGates.DEFI]: isEnabled, // Comes enabled with a payload, gotta be matched against the current version
-              [FeatureGates.SEND]: true, // Comes without a payload, should stay in-tact
+              [FeatureGates.SOLANA_SUPPORT]: isEnabled, // Comes enabled with a payload, gotta be matched against the current version
               [FeatureGates.SWAP]: false // Comes without a payload, should stay in-tact
             })
           }
