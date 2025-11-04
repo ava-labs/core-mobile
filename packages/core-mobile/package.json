@@ -362,7 +362,9 @@
       "@wdio/cli>tsx>esbuild": true,
       "appium": true,
       "appium-xcuitest-driver>appium-ios-remotexpc>appium-ios-tuntap": false,
-      "appium>@appium/support>sharp": true
+      "appium>@appium/support>sharp": true,
+      "react-native-nitro-modules": true,
+      "react-native-nitro-avalabs-crypto>react-native-nitro-modules": true
     }
   },
   "react-native": {
