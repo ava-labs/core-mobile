@@ -490,7 +490,7 @@ __metadata:
     babel-loader: 9.2.1
     babel-plugin-inline-dotenv: 1.7.0
     babel-plugin-module-resolver: 5.0.2
-    babel-plugin-react-compiler: 19.1.0-rc.2
+    babel-plugin-react-compiler: 19.1.0-rc.3
     babel-plugin-react-require: 4.0.3
     base-64: 1.0.0
     big.js: 6.2.2
@@ -17417,12 +17417,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"babel-plugin-react-compiler@npm:19.1.0-rc.2":
-  version: 19.1.0-rc.2
-  resolution: "babel-plugin-react-compiler@npm:19.1.0-rc.2"
+"babel-plugin-react-compiler@npm:19.1.0-rc.3":
+  version: 19.1.0-rc.3
+  resolution: "babel-plugin-react-compiler@npm:19.1.0-rc.3"
   dependencies:
     "@babel/types": ^7.26.0
-  checksum: cfb156ee8c5f18dda947e42139ccd6951c8d37a1d3ad88fed25e2dfd84bc90d19758e9763ba3b3a3cb92c5a49ee19eceaf936a4d1e280979ace5f0630e824e04
+  checksum: 1435e8a42fc6025642d98678c21d14974db0652cb799601369e962f5ea99cb3d2e2bcc0f67d464c1f179629d8e06464c40df248a984bab201243a327598cb3ff
   languageName: node
   linkType: hard
 
@@ -26534,6 +26534,13 @@ __metadata:
   version: 2.8.0
   resolution: "jail-monkey@npm:2.8.0"
   checksum: 103956be764707954799924f9851255a0fc5d978621cee811547c26354411eba372dcf309ade406ab20d48fb36202274c6b4e8f698f8bf802a03b12d1a6dfb57
+  languageName: node
+  linkType: hard
+
+"jail-monkey@patch:jail-monkey@npm%3A2.8.0#./.yarn/patches/jail-monkey-npm-2.8.0-77e4d06b40.patch::locator=mobile-monorepo%40workspace%3A.":
+  version: 2.8.0
+  resolution: "jail-monkey@patch:jail-monkey@npm%3A2.8.0#./.yarn/patches/jail-monkey-npm-2.8.0-77e4d06b40.patch::version=2.8.0&hash=225a6a&locator=mobile-monorepo%40workspace%3A."
+  checksum: c5caacdc4a38dcdd45209f55c3376d39cd2ea7ae788f90e4bdb270838cb8f13c1b5001a79cd7c6f1ed7f0d462c9ef2d0fbc959e1e48a26dff4dd9aa7ab9ab4f4
   languageName: node
   linkType: hard
 
