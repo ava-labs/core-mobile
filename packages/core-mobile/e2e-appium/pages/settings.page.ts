@@ -169,6 +169,10 @@ class Settings {
     return selectors.getByText(settings.emptyContacts)
   }
 
+  get hkd() {
+    return selectors.getByText(settings.hkd)
+  }
+
   async verifyEmptyContacts() {
     await actions.waitFor(this.emptyContacts)
   }
@@ -353,6 +357,14 @@ class Settings {
     await this.setNetworkData('token symbol', nativeTokenSymbol)
     await this.setNetworkData('token name', nativeTokenName)
     await common.tapSave()
+  }
+
+  async verifySettingsRow(row: string, rightVal: string | undefined) {
+    await actions.waitFor(selectors.getById(`list_item__${row}`))
+
+    if (rightVal) {
+      await actions.isVisible(selectors.getById(`right_value__${rightVal}`))
+    }
   }
 
   async verifyNetworkRow(

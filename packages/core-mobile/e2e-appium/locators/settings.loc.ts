@@ -79,5 +79,6 @@ export default {
   currency: 'Currency',
   nameContactBtn: 'name_btn',
   typeInOrPasteAddress: 'Type in or paste address',
-  contactPreviewAddress: 'contact_preview_address'
+  contactPreviewAddress: 'contact_preview_address',
+  hkd: 'HKD'
 }

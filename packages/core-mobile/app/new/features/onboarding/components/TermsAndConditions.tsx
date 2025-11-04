@@ -21,7 +21,9 @@ export const TermsAndConditions = ({
   const renderFooter = (): React.ReactNode => {
     return (
       <Button
-        testID="agreeAndContinueBtn"
+        testID={
+          isLoading ? 'agreeAndContinueBtnDisabled' : 'agreeAndContinueBtn'
+        }
         size="large"
         type="primary"
         onPress={onAgreeAndContinue}
