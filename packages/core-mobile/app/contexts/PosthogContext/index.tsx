@@ -11,13 +11,7 @@ import SentryWrapper from 'services/sentry/SentryWrapper'
 import { useSelector, useDispatch } from 'react-redux'
 import {
   selectIsAnalyticsEnabled,
-  selectIsBridgeBtcBlocked,
-  selectIsBridgeEthBlocked,
-  selectIsBrowserBlocked,
-  selectIsEarnBlocked,
   selectIsEventsBlocked,
-  selectIsSendNftBlockedAndroid,
-  selectIsSendNftBlockediOS,
   selectSentrySampleRate,
   toggleAnalytics
 } from 'store/posthog/slice'
@@ -31,12 +25,6 @@ export const PosthogContext = createContext<PosthogContextState>(
 
 export interface PosthogContextState {
   setAnalyticsConsent: Dispatch<boolean | undefined>
-  bridgeBtcBlocked: boolean
-  bridgeEthBlocked: boolean
-  earnBlocked: boolean
-  browserBlocked: boolean
-  sendNftBlockediOS: boolean
-  sendNftBlockedAndroid: boolean
   sentrySampleRate: number
 }
 
@@ -48,15 +36,8 @@ export const PosthogContextProvider = ({
   const dispatch = useDispatch()
   const isAnalyticsEnabled = useSelector(selectIsAnalyticsEnabled)
 
-  // TODO: in react components, use flags directly from redux
-  const bridgeBtcBlocked = useSelector(selectIsBridgeBtcBlocked)
-  const bridgeEthBlocked = useSelector(selectIsBridgeEthBlocked)
-  const earnBlocked = useSelector(selectIsEarnBlocked)
-  const sendNftBlockediOS = useSelector(selectIsSendNftBlockediOS)
-  const sendNftBlockedAndroid = useSelector(selectIsSendNftBlockedAndroid)
   const eventsBlocked = useSelector(selectIsEventsBlocked)
   const sentrySampleRate = useSelector(selectSentrySampleRate)
-  const browserBlocked = useSelector(selectIsBrowserBlocked)
 
   const { timeoutPassed } = useAppBackgroundTracker({
     timeoutMs: 30 * 60 * 1000,
@@ -113,13 +94,7 @@ export const PosthogContextProvider = ({
     <PosthogContext.Provider
       value={{
         setAnalyticsConsent,
-        bridgeBtcBlocked,
-        bridgeEthBlocked,
-        earnBlocked,
-        sendNftBlockediOS,
-        sendNftBlockedAndroid,
-        sentrySampleRate,
-        browserBlocked
+        sentrySampleRate
       }}>
       {children}
     </PosthogContext.Provider>
