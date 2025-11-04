@@ -168,7 +168,6 @@ class TransactionsPage {
   async tapWithdraw() {
     await actions.waitFor(this.receiveButton, 40000)
     await actions.dragAndDrop(this.receiveButton, [-500, 0])
-    console.log('dragging button to the left...')
     await actions.tap(this.withdrawButton)
   }
 

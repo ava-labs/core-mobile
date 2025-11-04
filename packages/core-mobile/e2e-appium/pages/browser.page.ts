@@ -12,13 +12,15 @@ class BrowserPage {
     return selectors.getById(browserLoc.close)
   }
 
+  get androidChromePager() {
+    return selectors.getById(browserLoc.androidChromePager)
+  }
+
   async tapClose() {
     if (driver.isIOS) {
       await actions.tap(this.close)
     } else {
-      await actions.waitFor(
-        selectors.getById('com.android.chrome:id/fre_pager')
-      )
+      await actions.waitFor(this.androidChromePager)
       await commonElsPage.goAndroidBack()
     }
   }

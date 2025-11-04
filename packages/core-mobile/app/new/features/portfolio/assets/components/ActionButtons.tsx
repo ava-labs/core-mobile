@@ -36,9 +36,6 @@ export const ActionButtons = ({
 
   return (
     <Animated.FlatList
-      // accessible={true}
-      // accessibilityLabel="action_buttons_list"
-      testID="action_buttons_list"
       style={{ overflow: 'visible' }}
       contentContainerStyle={[{ gap: 10 }, contentContainerStyle]}
       horizontal

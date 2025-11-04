@@ -1,4 +1,5 @@
 export default {
   topBrowserBar: 'TopBrowserBar',
-  close: 'Close'
+  close: 'Close',
+  androidChromePager: 'com.android.chrome:id/fre_pager'
 }
