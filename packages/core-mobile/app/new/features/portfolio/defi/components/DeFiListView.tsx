@@ -18,12 +18,14 @@ export const DeFiListView = ({
   item,
   chain,
   formattedPrice,
+  index,
   onPress,
   onPressArrow
 }: {
   item: DeFiSimpleProtocol
   chain: DeFiChain | undefined
   formattedPrice: string
+  index: number
   onPress: () => void
   onPressArrow: () => void
 }): React.JSX.Element => {
@@ -39,7 +41,12 @@ export const DeFiListView = ({
         alignItems: 'center',
         gap: HORIZONTAL_ITEM_GAP
       }}>
-      <LogoWithNetwork item={item} chain={chain} size="small" />
+      <LogoWithNetwork
+        item={item}
+        chain={chain}
+        size="small"
+        testID={`defi_list_item__${index}`}
+      />
       <View
         sx={{
           flex: 1,
@@ -53,17 +60,24 @@ export const DeFiListView = ({
           paddingRight: HORIZONTAL_MARGIN
         }}>
         <View style={{ flex: 1 }}>
-          <Text variant="buttonMedium" numberOfLines={1}>
+          <Text
+            variant="buttonMedium"
+            numberOfLines={1}
+            testID={`defi_list_title__${index}`}>
             {item.name}
           </Text>
           <View sx={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
             <MaskedText
+              testID={`defi_list_price__${index}`}
               shouldMask={isPrivacyModeEnabled}
               sx={{ color: '$textSecondary', lineHeight: 18 }}
               numberOfLines={1}>
               {formattedPrice}
             </MaskedText>
-            <TouchableOpacity onPress={onPressArrow} hitSlop={10}>
+            <TouchableOpacity
+              testID={`defi_list_browser_btn__${index}`}
+              onPress={onPressArrow}
+              hitSlop={10}>
               <Icons.Custom.Outbound color={theme.colors.$textPrimary} />
             </TouchableOpacity>
           </View>

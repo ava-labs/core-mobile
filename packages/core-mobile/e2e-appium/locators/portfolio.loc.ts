@@ -52,5 +52,21 @@ export default {
   activeNetworkBalance: 'active_network_balance',
   tokensTabListView: 'tokens_tab_list_view',
   portfolioTokenList: 'portfolio_token_list',
-  portfolioTokenItem: 'portfolio_token_item__'
+  portfolioTokenItem: 'portfolio_token_item__',
+  defiGridTitle: 'defi_grid_title',
+  defiListTitle: 'defi_list_title',
+  defiGridItem: 'defi_grid_item',
+  defiListItem: 'defi_list_item',
+  defiGridBrowserBtn: 'defi_grid_browser_btn',
+  defiListBrowserBtn: 'defi_list_browser_btn',
+  defiGridPrice: 'defi_grid_price',
+  defiListPrice: 'defi_list_price',
+  defiDetailTitle: 'defi_detail_title',
+  defiDetailPrice: 'defi_detail_price',
+  defiEmptyScreenTitle: 'No positions yet',
+  defiEmptyScreenDescription:
+    'Discover a wide variety of apps, blockchains, wallets and explorers, built on the Avalanche ecosystem',
+  defiEmptyScreenExploreBtn: 'Explore DeFi',
+  aaveDefiUrl: 'https://app.aave.com/',
+  defiDetailBrowserBtn: 'defi_detail_browser_btn'
 }
