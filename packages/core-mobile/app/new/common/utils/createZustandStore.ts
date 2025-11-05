@@ -1,5 +1,26 @@
 import { create } from 'zustand'
 
+/**
+ * A lightweight utility for creating isolated Zustand stores that behave like `useState`
+ * but can be shared across components.
+ *
+ * 🧩 Example:
+ * ```ts
+ * const useCounter = createZustandStore(0)
+ *
+ * function Counter() {
+ *   const [count, setCount] = useCounter()
+ *
+ *   // You can set a value directly:
+ *   // setCount(10)
+ *
+ *   // Or update it using the previous state:
+ *   // setCount(prev => prev + 1)
+ *
+ *   return <button onClick={() => setCount(prev => prev + 1)}>Count: {count}</button>
+ * }
+ * ```
+ */
 export function createZustandStore<T>(
   initialValue: T
 ): () => readonly [T, (next: T | ((curr: T) => T)) => void] {

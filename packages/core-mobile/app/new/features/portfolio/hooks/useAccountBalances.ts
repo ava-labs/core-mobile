@@ -63,8 +63,10 @@ export function useAccountBalances(
     [enabledNetworks]
   )
 
+  const isNotReady = !account || nonXpNetworks.length === 0
+
   const queries = useMemo(() => {
-    if (!account || nonXpNetworks.length === 0) return []
+    if (isNotReady) return []
 
     return nonXpNetworks.map((network: Network) => ({
       // eslint-disable-next-line @tanstack/query/exhaustive-deps
@@ -81,7 +83,7 @@ export function useAccountBalances(
       staleTime,
       enabled
     }))
-  }, [nonXpNetworks, account, currency, customTokens, enabled])
+  }, [isNotReady, account, nonXpNetworks, currency, customTokens, enabled])
 
   const results = useQueries({
     queries
@@ -94,7 +96,7 @@ export function useAccountBalances(
    * ✅ Works even when `enabled: false`, since it calls each query's refetch function directly.
    */
   const refetch = useCallback(async (): Promise<void> => {
-    if (!account || nonXpNetworks.length === 0) return
+    if (isNotReady) return
 
     setIsRefetching(prev => ({ ...prev, [account.id]: true }))
 
@@ -104,19 +106,21 @@ export function useAccountBalances(
     } finally {
       setIsRefetching(prev => ({ ...prev, [account.id]: false }))
     }
-  }, [refetchFns, nonXpNetworks.length, account, setIsRefetching])
+  }, [refetchFns, isNotReady, account?.id, setIsRefetching])
 
   /** Invalidate all balances (causes auto refetch on focus/mount) */
   const invalidate = useCallback(async (): Promise<void> => {
-    if (!account) return
+    if (!isNotReady) return
+
     await Promise.allSettled(
       nonXpNetworks.map(network =>
         queryClient.invalidateQueries({
-          queryKey: balanceKey(account, network)
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+          queryKey: balanceKey(account!, network)
         })
       )
     )
-  }, [nonXpNetworks, account, queryClient])
+  }, [nonXpNetworks, isNotReady, account, queryClient])
 
   return {
     results,
