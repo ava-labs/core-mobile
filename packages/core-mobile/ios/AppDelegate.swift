@@ -20,21 +20,17 @@ class AppDelegate: ExpoAppDelegate {
     RNFBAppCheckModule.sharedInstance()
     FirebaseApp.configure()
         
-    if let bundleId = Bundle.main.object(forInfoDictionaryKey: "CFBundleIdentifier") as? String, bundleId.lowercased().contains("internal")  {
-      Branch.useTestBranchKey()
-    }
-
-    // Initialize Branch SDK with launchOptions
-    Branch.getInstance().initSession(launchOptions: launchOptions) { params, error in
-        // Now present ATT prompt only if needed
-        if #available(iOS 14.0, *) {
-            if ATTrackingManager.trackingAuthorizationStatus == .notDetermined {
-                ATTrackingManager.requestTrackingAuthorization { status in
-                    // Let Branch handle ATT status internally if needed
-                    Branch.getInstance().handleATTAuthorizationStatus(status.rawValue)
-                }
+    RNBranch.initSession(launchOptions: launchOptions, isReferrable: true)
+    if #available(iOS 14.0, *) {
+      DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+        if ATTrackingManager.trackingAuthorizationStatus == .notDetermined {
+          ATTrackingManager.requestTrackingAuthorization { status in
+            if (status == .authorized) {
+              RNBranch.branch.handleATTAuthorizationStatus(status.rawValue)
             }
+          }
         }
+      }
     }
     
     let delegate = ReactNativeDelegate()
