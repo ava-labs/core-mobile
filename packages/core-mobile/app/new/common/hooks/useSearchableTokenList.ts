@@ -1,19 +1,15 @@
 import { NetworkContractToken, TokenType } from '@avalabs/vm-module-types'
 import { useMemo, useState } from 'react'
-import { useDispatch, useSelector } from 'react-redux'
+import { useSelector } from 'react-redux'
 import { selectActiveAccount } from 'store/account'
-import {
-  refetchBalance,
-  selectIsLoadingBalances,
-  selectIsRefetchingBalances,
-  selectTokensWithBalanceForAccount,
-  selectTokensWithBalanceForAccountAndNetwork
-} from 'store/balance/slice'
-import { LocalTokenId, LocalTokenWithBalance } from 'store/balance/types'
-import { getLocalTokenId, isTokenVisible } from 'store/balance/utils'
+import { LocalTokenWithBalance } from 'store/balance/types'
+import { isTokenVisible } from 'store/balance/utils'
 import { selectEnabledChainIds } from 'store/network'
 import { selectTokenVisibility, TokenVisibility } from 'store/portfolio'
-import { RootState } from 'store/types'
+import { getLocalTokenId } from 'services/balance/utils'
+import { useIsLoadingBalancesForAccount } from 'features/portfolio/hooks/useIsLoadingBalancesForAccount'
+import { useTokensWithBalanceForAccount } from 'features/portfolio/hooks/useTokensWithBalanceForAccount'
+import { useAccountBalances } from '../../features/portfolio/hooks/useAccountBalances'
 
 const isGreaterThanZero = (token: LocalTokenWithBalance): boolean =>
   token.balance > 0n
@@ -82,28 +78,23 @@ export function useSearchableTokenList({
     )
   }, [tokens])
 
-  const dispatch = useDispatch()
   const [searchText, setSearchText] = useState('')
   const tokenVisibility = useSelector(selectTokenVisibility)
-  const isLoadingBalances = useSelector(selectIsLoadingBalances)
-  const isRefetchingBalances = useSelector(selectIsRefetchingBalances)
   const activeAccount = useSelector(selectActiveAccount)
+  const isLoadingBalances = useIsLoadingBalancesForAccount(activeAccount)
   const enabledChainIds = useSelector(selectEnabledChainIds)
-  const tokensWithBalance = useSelector((state: RootState) => {
-    if (chainId) {
-      return selectTokensWithBalanceForAccountAndNetwork(
-        state,
-        chainId,
-        activeAccount?.id
-      )
-    }
-    return selectTokensWithBalanceForAccount(state, activeAccount?.id)
+  const tokensWithBalance = useTokensWithBalanceForAccount(
+    activeAccount,
+    chainId
+  )
+  const { refetch, isRefetching } = useAccountBalances(activeAccount, {
+    enabled: false
   })
 
   // 1. merge tokens with balance with the remaining
   // zero balance tokens from avalanche and ethereum networks
   const mergedTokens = useMemo(() => {
-    const tokensWithBalanceIDs: Record<LocalTokenId, boolean> = {}
+    const tokensWithBalanceIDs: Record<string, boolean> = {}
 
     tokensWithBalance.forEach(token => {
       tokensWithBalanceIDs[token.localId.toLowerCase()] = true
@@ -165,16 +156,12 @@ export function useSearchableTokenList({
     [tokensFiltered]
   )
 
-  const refetch = (): void => {
-    dispatch(refetchBalance())
-  }
-
   return {
     filteredTokenList: tokensSortedByAmount,
     searchText,
     setSearchText,
     isLoading: isLoadingBalances,
     refetch,
-    isRefetching: isRefetchingBalances
+    isRefetching
   }
 }

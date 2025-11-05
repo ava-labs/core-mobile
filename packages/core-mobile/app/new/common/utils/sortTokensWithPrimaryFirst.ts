@@ -1,6 +1,7 @@
 import { TokenType } from '@avalabs/vm-module-types'
+import { AVAX_P_ID, AVAX_X_ID } from 'services/balance/const'
+import { LocalTokenWithBalance } from 'store/balance/types'
 import { isEthereumChainId } from 'services/network/utils/isEthereumNetwork'
-import { AVAX_P_ID, AVAX_X_ID, LocalTokenWithBalance } from 'store/balance'
 import { TokenSymbol } from 'store/network'
 
 export const sortTokensWithPrimaryFirst = ({

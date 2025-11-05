@@ -30,7 +30,7 @@ const ImportPrivateKeyScreen = (): JSX.Element => {
   const { derivedAddresses, tempAccountDetails, showDerivedInfo } =
     useDeriveAddresses(privateKey, isDeveloperMode)
 
-  const { totalBalanceDisplay, isAwaitingOurBalance } =
+  const { totalBalanceDisplay, isFetching } =
     usePrivateKeyBalance(tempAccountDetails)
 
   // Extract import handler logic
@@ -64,7 +64,7 @@ const ImportPrivateKeyScreen = (): JSX.Element => {
   const renderFooter = useCallback(() => {
     const disabled =
       privateKey === '' ||
-      isAwaitingOurBalance ||
+      isFetching ||
       isCheckingMigration ||
       isImporting ||
       !showDerivedInfo ||
@@ -81,7 +81,7 @@ const ImportPrivateKeyScreen = (): JSX.Element => {
     )
   }, [
     handleImportPrivateKey,
-    isAwaitingOurBalance,
+    isFetching,
     isCheckingMigration,
     isImporting,
     privateKey,
@@ -151,7 +151,7 @@ const ImportPrivateKeyScreen = (): JSX.Element => {
               data={[
                 {
                   title: 'Total balance',
-                  value: isAwaitingOurBalance ? (
+                  value: isFetching ? (
                     <ActivityIndicator size="small" />
                   ) : (
                     <Text

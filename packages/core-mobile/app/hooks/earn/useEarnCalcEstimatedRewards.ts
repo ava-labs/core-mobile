@@ -1,13 +1,13 @@
 import { useSelector } from 'react-redux'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import EarnService from 'services/earn/EarnService'
-import { selectAvaxPrice } from 'store/balance/slice'
 import { UseQueryResult, useQuery } from '@tanstack/react-query'
 import { pvm } from '@avalabs/avalanchejs'
 import { Seconds } from 'types/siUnits'
 import { TokenUnit } from '@avalabs/core-utils-sdk'
 import NetworkService from 'services/network/NetworkService'
 import { useAvalancheXpProvider } from 'hooks/networks/networkProviderHooks'
+import { useAvaxPrice } from 'features/portfolio/hooks/useAvaxPrice'
 
 export type useEarnCalcEstimatedRewardsProps = {
   amountNanoAvax: bigint
@@ -34,7 +34,7 @@ export const useEarnCalcEstimatedRewards = ({
   Error
 > => {
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
-  const avaxPrice = useSelector(selectAvaxPrice)
+  const avaxPrice = useAvaxPrice()
   const provider = useAvalancheXpProvider(isDeveloperMode)
   const { networkToken } = NetworkService.getAvalancheNetworkP(isDeveloperMode)
 

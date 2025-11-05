@@ -12,11 +12,12 @@ import {
   TokenWithBalanceERC20
 } from '@avalabs/vm-module-types'
 import { useNetworkContractTokens } from 'hooks/networks/useNetworkContractTokens'
-import { selectTokensWithBalanceByNetwork } from 'store/balance'
 import {
   useSelectedNetwork,
   useTokenAddress
 } from 'features/tokenManagement/store'
+import { useTokensWithBalanceByNetworkForAccount } from 'features/portfolio/hooks/useTokensWithBalanceByNetworkForAccount'
+import { selectActiveAccount } from 'store/account'
 
 enum AddressValidationStatus {
   Valid,
@@ -79,8 +80,10 @@ const useAddCustomToken = (callback: () => void): CustomToken => {
   const chainId = selectedNetwork?.chainId
 
   const tokens = useNetworkContractTokens(selectedNetwork)
-  const tokensWithBalance = useSelector(
-    selectTokensWithBalanceByNetwork(chainId)
+  const activeAccount = useSelector(selectActiveAccount)
+  const tokensWithBalance = useTokensWithBalanceByNetworkForAccount(
+    activeAccount,
+    chainId
   )
 
   const tokenAddresses = useMemo(
