@@ -13,7 +13,6 @@ import DevDebuggingConfig from 'utils/debugging/DevDebuggingConfig'
 import SentryService from 'services/sentry/SentryService'
 import NewApp from 'new/ContextApp'
 import { expo } from './app.json'
-import { server } from './tests/msw/native/server'
 
 if (__DEV__) {
   require('./ReactotronConfig')
