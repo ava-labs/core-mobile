@@ -10,7 +10,8 @@ export const useSolanaTokens = (): NetworkContractToken[] => {
 
   const { data } = useQuery({
     enabled: solanaNetwork !== undefined,
-    queryKey: [ReactQueryKeys.NETWORK_CONTRACT_TOKENS, solanaNetwork],
+    // eslint-disable-next-line @tanstack/query/exhaustive-deps
+    queryKey: [ReactQueryKeys.NETWORK_CONTRACT_TOKENS, solanaNetwork?.chainId],
     queryFn: () => getNetworkContractTokens(solanaNetwork),
     staleTime: 120000, // 2 mins,
     networkMode: 'offlineFirst'

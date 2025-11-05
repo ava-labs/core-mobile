@@ -8,12 +8,11 @@ import { getTokenAddress, getTokenChainId } from 'features/track/utils/utils'
 import React, { useCallback } from 'react'
 import { StyleSheet, ViewStyle } from 'react-native'
 import { useSelector } from 'react-redux'
-import { selectBalanceTotalForAccount } from 'store/balance'
-import { selectTokenVisibility } from 'store/portfolio'
 import { selectIsSwapBlocked } from 'store/posthog'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { selectActiveAccount } from 'store/account'
 import { MarketToken, MarketType } from 'store/watchlist'
+import { useBalanceTotalForAccount } from 'features/portfolio/hooks/useBalanceTotalForAccount'
 import { TrendingTokenListItem } from './TrendingTokenListItem'
 
 const numColumns = 1
@@ -35,12 +34,10 @@ const TrendingTokensScreen = ({
   const activeAccount = useSelector(selectActiveAccount)
   const { isSwappable } = useIsSwappable()
   const isSwapBlocked = useSelector(selectIsSwapBlocked)
-  const tokenVisibility = useSelector(selectTokenVisibility)
   const { navigateToBuy } = useBuy()
 
-  const balanceTotal = useSelector(
-    selectBalanceTotalForAccount(activeAccount?.id ?? '', tokenVisibility)
-  )
+  const balanceTotal = useBalanceTotalForAccount(activeAccount)
+
   const isZeroBalance = balanceTotal === 0n
 
   const openBuy = useCallback(
