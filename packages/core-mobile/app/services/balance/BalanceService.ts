@@ -13,7 +13,7 @@ import { mapToVmNetwork } from 'vmModule/utils/mapToVmNetwork'
 import { coingeckoInMemoryCache } from 'utils/coingeckoInMemoryCache'
 import { NetworkVMType } from '@avalabs/core-chains-sdk'
 import { chunk } from 'lodash'
-import { isPChain } from 'utils/network/isAvalancheNetwork'
+import { isPChain, isXChain } from 'utils/network/isAvalancheNetwork'
 import Logger from 'utils/Logger'
 import SentryWrapper from 'services/sentry/SentryWrapper'
 import { LocalTokenWithBalance } from 'store/balance/types'
@@ -83,7 +83,12 @@ export class BalanceService {
             // Keep only successful token entries
             .filter((t): t is TokenWithBalance => !('error' in t))
             .map(token => {
-              const localId = getLocalTokenId(token)
+              // TODO: remove xp network logic when platform account redesign is completed
+              const localId = isPChain(network.chainId)
+                ? AVAX_P_ID
+                : isXChain(network.chainId)
+                ? AVAX_X_ID
+                : getLocalTokenId(token)
 
               return {
                 ...token,
