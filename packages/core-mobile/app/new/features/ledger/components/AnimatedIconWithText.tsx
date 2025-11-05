@@ -3,6 +3,9 @@ import { View } from 'react-native'
 import LottieView from 'lottie-react-native'
 import { Text, useTheme } from '@avalabs/k2-alpine'
 
+// Import animation at the top level
+const connectWavesAnimation = require('assets/lotties/connect-waves.json')
+
 interface AnimatedIconWithTextProps {
   /** The icon component to display */
   icon: React.ReactNode
@@ -18,6 +21,8 @@ interface AnimatedIconWithTextProps {
   animationSize?: { width: number; height: number }
   /** Custom icon positioning offset for animation centering */
   animationOffset?: { top: number; left: number }
+  /** Custom color for the animation (defaults to theme textPrimary) */
+  animationColor?: string
 }
 
 export const AnimatedIconWithText: React.FC<AnimatedIconWithTextProps> = ({
@@ -25,8 +30,9 @@ export const AnimatedIconWithText: React.FC<AnimatedIconWithTextProps> = ({
   title,
   subtitle,
   showAnimation = false,
-  animationSource = require('assets/lotties/connect-waves.json'),
-  animationSize = { width: 220, height: 220 }
+  animationSource = connectWavesAnimation,
+  animationSize = { width: 220, height: 220 },
+  animationColor
 }) => {
   const {
     theme: { colors }
@@ -66,6 +72,13 @@ export const AnimatedIconWithText: React.FC<AnimatedIconWithTextProps> = ({
             source={animationSource}
             autoPlay
             loop
+            resizeMode="contain"
+            colorFilters={[
+              {
+                keypath: '*', // Apply to all layers
+                color: animationColor || colors.$textPrimary // Use custom color or theme default
+              }
+            ]}
             style={{
               position: 'absolute',
               width: animationSize.width,

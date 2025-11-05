@@ -14,7 +14,8 @@ export default function LedgerSetupLayout(): JSX.Element {
           ...modalStackNavigatorScreenOptions,
           headerShown: false
         }}
-        initialRouteName="pathSelection">
+        initialRouteName="index">
+        <Stack.Screen name="index" options={modalFirstScreenOptions} />
         <Stack.Screen name="pathSelection" options={modalFirstScreenOptions} />
         <Stack.Screen name="deviceConnection" />
         <Stack.Screen name="appConnection" />
@@ -30,6 +31,7 @@ export default function LedgerSetupLayout(): JSX.Element {
             gestureEnabled: false // Prevent going back after completion
           }}
         />
+        <Stack.Screen name="enhancedSetup" />
       </Stack>
     </LedgerSetupProvider>
   )

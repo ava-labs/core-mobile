@@ -2,15 +2,15 @@ import React, { useState, useCallback, useEffect } from 'react'
 import { View, Alert } from 'react-native'
 import { Text, Button, useTheme, GroupList, Icons } from '@avalabs/k2-alpine'
 import { ScrollScreen } from 'common/components/ScrollScreen'
-import { LoadingState } from 'common/components/LoadingState'
 import {
   LedgerDerivationPathType,
   WalletCreationOptions
 } from 'services/ledger/types'
-import { useLedgerWallet } from '../hooks/useLedgerWallet'
+import { useLedgerSetupContext } from '../contexts/LedgerSetupContext'
 import { DerivationPathSelector } from './DerivationPathSelector'
 import { LedgerSetupProgress } from './LedgerSetupProgress'
 import { LedgerAppConnection } from './LedgerAppConnection'
+import { AnimatedIconWithText } from './AnimatedIconWithText'
 
 type SetupStep =
   | 'path-selection'
@@ -33,16 +33,17 @@ export const EnhancedLedgerSetup: React.FC<EnhancedLedgerSetupProps> = ({
     theme: { colors }
   } = useTheme()
   const [currentStep, setCurrentStep] = useState<SetupStep>('path-selection')
-  const [selectedDerivationPath, setSelectedDerivationPath] =
-    useState<LedgerDerivationPathType | null>(null)
-  const [connectedDeviceId, setConnectedDeviceId] = useState<string | null>(
-    null
-  )
-  const [connectedDeviceName, setConnectedDeviceName] =
-    useState<string>('Ledger Device')
-  const [isCreatingWallet, setIsCreatingWallet] = useState<boolean>(false)
 
   const {
+    // Context state
+    selectedDerivationPath,
+    connectedDeviceId,
+    connectedDeviceName,
+    isCreatingWallet,
+    setSelectedDerivationPath,
+    setConnectedDevice,
+    setIsCreatingWallet,
+    // Ledger wallet functionality
     devices,
     isScanning,
     isConnecting,
@@ -54,8 +55,9 @@ export const EnhancedLedgerSetup: React.FC<EnhancedLedgerSetupProps> = ({
     getAvalancheKeys,
     createLedgerWallet,
     setupProgress,
-    keys
-  } = useLedgerWallet()
+    keys,
+    resetSetup
+  } = useLedgerSetupContext()
 
   // Check if keys are available and auto-progress to setup
   useEffect(() => {
@@ -73,8 +75,7 @@ export const EnhancedLedgerSetup: React.FC<EnhancedLedgerSetupProps> = ({
     async (deviceId: string, deviceName: string) => {
       try {
         await connectToDevice(deviceId)
-        setConnectedDeviceId(deviceId)
-        setConnectedDeviceName(deviceName)
+        setConnectedDevice(deviceId, deviceName)
 
         // Move to app connection step instead of getting keys immediately
         setCurrentStep('app-connection')
@@ -86,7 +87,7 @@ export const EnhancedLedgerSetup: React.FC<EnhancedLedgerSetupProps> = ({
         )
       }
     },
-    [connectToDevice]
+    [connectToDevice, setConnectedDevice]
   )
 
   // Start wallet setup (called from setup-progress step)
@@ -140,6 +141,7 @@ export const EnhancedLedgerSetup: React.FC<EnhancedLedgerSetupProps> = ({
     selectedDerivationPath,
     isCreatingWallet,
     createLedgerWallet,
+    setIsCreatingWallet,
     onComplete,
     onCancel
   ])
@@ -167,15 +169,16 @@ export const EnhancedLedgerSetup: React.FC<EnhancedLedgerSetupProps> = ({
       setSelectedDerivationPath(derivationPathType)
       setCurrentStep('device-connection')
     },
-    []
+    [setSelectedDerivationPath]
   )
 
   const handleCancel = useCallback(async () => {
     if (connectedDeviceId) {
       await disconnectDevice()
     }
+    resetSetup()
     onCancel?.()
-  }, [connectedDeviceId, disconnectDevice, onCancel])
+  }, [connectedDeviceId, disconnectDevice, resetSetup, onCancel])
 
   const renderCurrentStep = (): React.ReactNode => {
     switch (currentStep) {
@@ -184,31 +187,6 @@ export const EnhancedLedgerSetup: React.FC<EnhancedLedgerSetupProps> = ({
           <View style={{ flex: 1 }}>
             <DerivationPathSelector onSelect={handleDerivationPathSelect} />
           </View>
-        )
-
-      case 'device-connection':
-        return (
-          <DeviceConnectionStep
-            devices={devices}
-            isScanning={isScanning}
-            isConnecting={isConnecting}
-            transportState={transportState}
-            onScan={scanForDevices}
-            onConnect={handleDeviceConnection}
-            onCancel={handleCancel}
-          />
-        )
-
-      case 'app-connection':
-        return (
-          <LedgerAppConnection
-            onComplete={() => setCurrentStep('setup-progress')}
-            onCancel={handleCancel}
-            getSolanaKeys={getSolanaKeys}
-            getAvalancheKeys={getAvalancheKeys}
-            deviceName={connectedDeviceName}
-            selectedDerivationPath={selectedDerivationPath}
-          />
         )
 
       case 'device-connection':

@@ -6,7 +6,7 @@ import React, {
   useMemo,
   ReactNode
 } from 'react'
-import { LedgerDerivationPathType } from 'services/wallet/LedgerWallet'
+import { LedgerDerivationPathType } from 'services/ledger/types'
 import {
   WalletCreationOptions,
   useLedgerWallet

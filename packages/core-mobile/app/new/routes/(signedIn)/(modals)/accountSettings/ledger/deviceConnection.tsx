@@ -1,10 +1,10 @@
 import React, { useCallback } from 'react'
-import { View, Alert } from 'react-native'
+import { View, Alert, ActivityIndicator } from 'react-native'
 import { useRouter } from 'expo-router'
 import { Text, Button, useTheme, GroupList, Icons } from '@avalabs/k2-alpine'
 import { ScrollScreen } from 'common/components/ScrollScreen'
 import { useLedgerSetupContext } from 'new/features/ledger/contexts/LedgerSetupContext'
-import { AnimatedIconWithText } from 'features/ledger/components/AnimatedIconWithText'
+import { AnimatedIconWithText } from 'new/features/ledger/components/AnimatedIconWithText'
 
 interface LedgerDevice {
   id: string
@@ -53,41 +53,35 @@ export default function DeviceConnectionScreen(): JSX.Element {
     back()
   }, [resetSetup, back])
 
-  const renderFooter = useCallback(() => {
-    return (
-      <View style={{ padding: 16, gap: 12 }}>
-        <Button
-          type="primary"
-          size="large"
-          onPress={scanForDevices}
-          disabled={isScanning || isConnecting}>
-          {isScanning ? 'Scanning for devices...' : 'Scan for Devices'}
-        </Button>
-
-        <Button type="tertiary" size="large" onPress={handleCancel}>
-          Cancel
-        </Button>
-      </View>
-    )
-  }, [isScanning, isConnecting, scanForDevices, handleCancel])
-
   const deviceListData = devices.map((device: LedgerDevice) => ({
     title: device.name || 'Ledger Device',
     subtitle: (
-      <Text variant="caption" sx={{ fontSize: 12, paddingTop: 4 }}>
+      <Text
+        variant="caption"
+        sx={{ fontSize: 12, paddingTop: 4, color: colors.$textSecondary }}>
         Found over Bluetooth
       </Text>
     ),
     leftIcon: (
-      <Icons.Custom.Bluetooth
-        color={colors.$textPrimary}
-        width={24}
-        height={24}
-      />
+      <View
+        style={{
+          width: 40,
+          height: 40,
+          borderRadius: 20,
+          backgroundColor: colors.$surfaceSecondary,
+          justifyContent: 'center',
+          alignItems: 'center'
+        }}>
+        <Icons.Custom.Bluetooth
+          color={colors.$textPrimary}
+          width={24}
+          height={24}
+        />
+      </View>
     ),
     accessory: (
       <Button
-        type="secondary"
+        type="primary"
         size="small"
         onPress={() => handleDeviceConnection(device.id, device.name)}
         disabled={isConnecting}>
@@ -96,6 +90,40 @@ export default function DeviceConnectionScreen(): JSX.Element {
     ),
     onPress: () => handleDeviceConnection(device.id, device.name)
   }))
+
+  const renderFooter = useCallback(() => {
+    return (
+      <View style={{ padding: 16, gap: 12 }}>
+        {!isScanning && devices.length === 0 && (
+          <Button type="primary" size="large" onPress={scanForDevices}>
+            Scan for Device
+          </Button>
+        )}
+
+        {isScanning && devices.length === 0 && (
+          <View
+            style={{
+              height: 48,
+              justifyContent: 'center',
+              alignItems: 'center',
+              borderRadius: 12
+            }}>
+            <ActivityIndicator size="small" color={colors.$textPrimary} />
+          </View>
+        )}
+
+        <Button type="tertiary" size="large" onPress={handleCancel}>
+          Cancel
+        </Button>
+      </View>
+    )
+  }, [
+    isScanning,
+    scanForDevices,
+    devices.length,
+    colors.$textPrimary,
+    handleCancel
+  ])
 
   return (
     <ScrollScreen
@@ -128,14 +156,20 @@ export default function DeviceConnectionScreen(): JSX.Element {
             />
           }
           title="Get your Ledger ready"
-          subtitle="Make sure your Ledger device is unlocked"
+          subtitle="Make sure your Ledger device is unlocked and ready to connect"
           showAnimation={false}
         />
       )}
 
       {devices.length > 0 && (
-        <View style={{ marginTop: 24 }}>
-          <GroupList itemHeight={70} data={deviceListData} />
+        <View
+          style={{
+            flex: 1,
+            ...(isScanning
+              ? { justifyContent: 'flex-end', marginBottom: -20 }
+              : { paddingTop: 24 })
+          }}>
+          <GroupList itemHeight={56} data={deviceListData} />
         </View>
       )}
     </ScrollScreen>

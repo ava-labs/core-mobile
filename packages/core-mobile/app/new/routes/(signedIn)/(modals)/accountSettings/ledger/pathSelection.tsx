@@ -2,7 +2,7 @@ import React, { useCallback } from 'react'
 import { useRouter } from 'expo-router'
 import { DerivationPathSelector } from 'new/features/ledger/components/DerivationPathSelector'
 import { useLedgerSetupContext } from 'new/features/ledger/contexts/LedgerSetupContext'
-import { LedgerDerivationPathType } from 'services/wallet/LedgerWallet'
+import { LedgerDerivationPathType } from 'services/ledger/types'
 
 export default function PathSelectionScreen(): JSX.Element {
   const { push, back } = useRouter()
