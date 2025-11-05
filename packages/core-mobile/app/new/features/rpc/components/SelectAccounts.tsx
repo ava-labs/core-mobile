@@ -14,7 +14,7 @@ import {
 } from '@avalabs/k2-alpine'
 import type { Account, AccountCollection } from 'store/account/types'
 import { useFormatCurrency } from 'new/common/hooks/useFormatCurrency'
-import { useBalanceForAccount } from 'new/common/contexts/useBalanceForAccount'
+import { useBalanceForAccount } from 'features/portfolio/hooks/useBalanceForAccount'
 import { TRUNCATE_ADDRESS_LENGTH } from 'common/consts/text'
 
 type Props = {

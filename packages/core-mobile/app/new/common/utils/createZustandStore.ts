@@ -2,15 +2,24 @@ import { create } from 'zustand'
 
 export function createZustandStore<T>(
   initialValue: T
-): () => readonly [T, (next: T) => void] {
-  const useInner = create<{ value: T; setValue: (next: T) => void }>(set => ({
+): () => readonly [T, (next: T | ((curr: T) => T)) => void] {
+  const useInner = create<{
+    value: T
+    setValue: (next: T | ((curr: T) => T)) => void
+  }>(set => ({
     value: initialValue,
-    setValue: next => set({ value: next })
+    setValue: next =>
+      set(state => ({
+        value:
+          typeof next === 'function'
+            ? (next as (curr: T) => T)(state.value)
+            : next
+      }))
   }))
 
   return () => {
     const value = useInner(s => s.value)
     const setValue = useInner(s => s.setValue)
-    return [value, setValue]
+    return [value, setValue] as const
   }
 }

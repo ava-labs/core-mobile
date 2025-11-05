@@ -44,15 +44,14 @@ import Animated, {
 } from 'react-native-reanimated'
 import { useSelector } from 'react-redux'
 import AnalyticsService from 'services/analytics/AnalyticsService'
-import {
-  LocalTokenWithBalance,
-  selectTokensWithZeroBalanceByNetworks
-} from 'store/balance'
+import { LocalTokenWithBalance } from 'store/balance'
 import {
   selectIsSwapFeesBlocked,
   selectIsSwapFeesJupiterBlocked
 } from 'store/posthog'
 import { basisPointsToPercentage } from 'utils/basisPointsToPercentage'
+import { useTokensWithZeroBalanceByNetworksForAccount } from 'features/portfolio/hooks/useTokensWithZeroBalanceByNetworksForAccount'
+import { selectActiveAccount } from 'store/account'
 import { SlippageInput } from '../components.tsx/SlippageInput'
 import {
   JUPITER_PARTNER_FEE_BPS,
@@ -104,13 +103,14 @@ export const SwapScreen = (): JSX.Element => {
   const [localError, setLocalError] = useState<string>('')
   const cChainNetwork = useCChainNetwork()
   const solanaNetwork = useSolanaNetwork()
-  const tokensWithZeroBalance = useSelector(
-    selectTokensWithZeroBalanceByNetworks(
-      [cChainNetwork, solanaNetwork]
-        .map(network => network?.chainId)
-        .filter(chainId => chainId !== undefined) as number[]
-    )
+  const activeAccount = useSelector(selectActiveAccount)
+  const tokensWithZeroBalance = useTokensWithZeroBalanceByNetworksForAccount(
+    activeAccount,
+    [cChainNetwork?.chainId, solanaNetwork?.chainId].filter(
+      chainId => chainId !== undefined
+    ) as number[]
   )
+
   const { getNetwork } = useNetworks()
 
   const [isInputFocused, setIsInputFocused] = useState<boolean>(false)
