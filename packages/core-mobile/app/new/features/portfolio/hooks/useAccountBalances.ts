@@ -58,17 +58,17 @@ export function useAccountBalances(
   const enabled = options?.enabled ?? true
 
   // Skip XP networks (PVM / AVM) - they are handled in the useWalletXpBalances hook
-  const nonXpNetworks = useMemo(
-    () => enabledNetworks.filter(n => !isXpNetwork(n)),
-    [enabledNetworks]
-  )
+  // const nonXpNetworks = useMemo(
+  //   () => enabledNetworks.filter(n => !isXpNetwork(n)),
+  //   [enabledNetworks]
+  // )
 
-  const isNotReady = !account || nonXpNetworks.length === 0
+  const isNotReady = !account || enabledNetworks.length === 0
 
   const queries = useMemo(() => {
     if (isNotReady) return []
 
-    return nonXpNetworks.map((network: Network) => ({
+    return enabledNetworks.map((network: Network) => ({
       // eslint-disable-next-line @tanstack/query/exhaustive-deps
       queryKey: balanceKey(account, network),
       queryFn: () => {
@@ -83,7 +83,7 @@ export function useAccountBalances(
       staleTime,
       enabled
     }))
-  }, [isNotReady, account, nonXpNetworks, currency, customTokens, enabled])
+  }, [isNotReady, account, enabledNetworks, currency, customTokens, enabled])
 
   const results = useQueries({
     queries
@@ -113,14 +113,14 @@ export function useAccountBalances(
     if (!isNotReady) return
 
     await Promise.allSettled(
-      nonXpNetworks.map(network =>
+      enabledNetworks.map(network =>
         queryClient.invalidateQueries({
           // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
           queryKey: balanceKey(account!, network)
         })
       )
     )
-  }, [nonXpNetworks, isNotReady, account, queryClient])
+  }, [enabledNetworks, isNotReady, account, queryClient])
 
   return {
     results,
