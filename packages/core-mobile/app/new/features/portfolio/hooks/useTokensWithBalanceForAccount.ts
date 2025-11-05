@@ -8,6 +8,7 @@ import { isDefined } from 'new/common/utils/isDefined'
 import { queryClient } from 'contexts/ReactQueryProvider'
 import { NormalizedBalancesForAccount } from 'services/balance/types'
 import { Networks } from 'store/network'
+import { isXpNetwork } from './utils'
 import { balanceKey, useAccountBalances } from './useAccountBalances'
 
 /**
@@ -74,9 +75,9 @@ export function getTokensWithBalanceForAccountFromCache({
   const networkList = Object.values(networks)
 
   // Skip XP networks (AVM/PVM)
-  // const nonXpNetworks = networkList.filter(n => !isXpNetwork(n))
+  const nonXpNetworks = networkList.filter(n => !isXpNetwork(n))
 
-  const results = networkList
+  const results = nonXpNetworks
     .map(
       network =>
         queryClient.getQueryData(balanceKey(account, network)) as
