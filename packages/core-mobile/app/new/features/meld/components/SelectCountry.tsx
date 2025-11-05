@@ -67,6 +67,7 @@ export const SelectCountry = ({
       const isSelected = countryCode === selectedCountryCode
       return (
         <TouchableOpacity
+          testID={`select_country__${name}`}
           sx={{ marginTop: 18 }}
           onPress={() => {
             countryCode && setSelectedCountryCode(countryCode)

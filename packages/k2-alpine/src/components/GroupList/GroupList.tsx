@@ -150,8 +150,9 @@ export const GroupList = ({
         } = item
 
         return (
-          <View key={index} sx={containerSx} testID={testID}>
+          <View key={index} sx={containerSx}>
             <TouchableOpacity
+              testID={testID ? testID : `list_item__${title}`}
               onPress={() => handlePress(item, index)}
               disabled={!onPress && !accordion}
               onLongPress={onLongPress}>
