@@ -11,7 +11,9 @@ import { ChainId, Network, NetworkVMType } from '@avalabs/core-chains-sdk'
 export function getFetchingInterval(n: Network): number {
   if (
     n.chainId === ChainId.AVALANCHE_MAINNET_ID ||
-    n.chainId === ChainId.AVALANCHE_TESTNET_ID
+    n.chainId === ChainId.AVALANCHE_TESTNET_ID ||
+    n.vmName === NetworkVMType.PVM ||
+    n.vmName === NetworkVMType.AVM
   )
     return 15_000
 
@@ -20,8 +22,8 @@ export function getFetchingInterval(n: Network): number {
   if (n.vmName === NetworkVMType.BITCOIN || n.vmName === NetworkVMType.SVM)
     return 60_000
 
-  if (n.vmName === NetworkVMType.PVM || n.vmName === NetworkVMType.AVM)
-    return 300_000 // 5 minutes
+  // if (n.vmName === NetworkVMType.PVM || n.vmName === NetworkVMType.AVM)
+  //   return 300_000 // 5 minutes
 
   return 60_000 // fallback
 }
