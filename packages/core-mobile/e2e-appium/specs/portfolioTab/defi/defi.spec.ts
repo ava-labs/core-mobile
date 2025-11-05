@@ -29,7 +29,6 @@ describe('Defi', () => {
     await portfolioPage.tapDefiDetailBrowserBtn()
     await browserPage.verifyUrl(portfolioLoc.aaveDefiUrl)
     await bottomTabsPage.tapPortfolioTab()
-    await portfolioPage.tapDefiTab()
 
     await portfolioPage.tapDefiBrowserBtn(0, false)
     await browserPage.verifyUrl(portfolioLoc.aaveDefiUrl)
