@@ -50,5 +50,5 @@ export default {
   securityWarningContent:
     'For your security, you should not screenshot your recovery phrase. It is best to write it down and store it in a secure location.',
   verifyYourRecoveryPhraseTitle: 'Verify your recovery phrase',
-  verifyYourRecoveryPhraseDescription: `Select the words below to verify your\nrecover phrase`
+  verifyYourRecoveryPhraseDescription: `Select the words below to verify your\nrecovery phrase`
 }
