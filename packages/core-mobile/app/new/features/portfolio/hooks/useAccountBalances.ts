@@ -15,7 +15,7 @@ import { ReactQueryKeys } from 'consts/reactQueryKeys'
 import { NormalizedBalancesForAccount } from 'services/balance/types'
 import { useStable } from 'common/hooks/useStable'
 import * as store from '../store'
-import { getFetchingInterval, isXpNetwork } from './utils'
+import { getFetchingInterval } from './utils'
 
 /**
  * Stale time in milliseconds

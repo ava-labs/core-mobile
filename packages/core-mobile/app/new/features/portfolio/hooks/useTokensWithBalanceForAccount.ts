@@ -8,7 +8,6 @@ import { isDefined } from 'new/common/utils/isDefined'
 import { queryClient } from 'contexts/ReactQueryProvider'
 import { NormalizedBalancesForAccount } from 'services/balance/types'
 import { Networks } from 'store/network'
-import { isXpNetwork } from './utils'
 import { balanceKey, useAccountBalances } from './useAccountBalances'
 
 /**
