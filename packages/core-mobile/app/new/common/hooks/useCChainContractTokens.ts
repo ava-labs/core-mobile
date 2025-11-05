@@ -14,7 +14,8 @@ export const useCChainContractTokens = (): NetworkContractToken[] => {
 
   const { data } = useQuery({
     enabled: cChainNetwork !== undefined,
-    queryKey: [ReactQueryKeys.NETWORK_CONTRACT_TOKENS, cChainNetwork],
+    // eslint-disable-next-line @tanstack/query/exhaustive-deps
+    queryKey: [ReactQueryKeys.NETWORK_CONTRACT_TOKENS, cChainNetwork?.chainId],
     queryFn: () => getNetworkContractTokens(cChainNetwork),
     staleTime: 120000, // 2 mins,
     networkMode: 'offlineFirst'

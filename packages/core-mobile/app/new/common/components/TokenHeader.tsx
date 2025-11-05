@@ -5,7 +5,7 @@ import { UNKNOWN_AMOUNT } from 'consts/amount'
 import { LogoWithNetwork } from 'features/portfolio/assets/components/LogoWithNetwork'
 import { PrivacyModeAlert } from '@avalabs/k2-alpine'
 import { useTokenNameForDisplay } from 'common/hooks/useTokenNameForDisplay'
-import { LocalTokenWithBalance } from '../../../store/balance/types'
+import { LocalTokenWithBalance } from 'store/balance/types'
 import { HiddenBalanceText } from './HiddenBalanceText'
 import { SubTextNumber } from './SubTextNumber'
 

@@ -14,7 +14,7 @@ import {
 import { HiddenBalanceText } from 'common/components/HiddenBalanceText'
 import { useFormatCurrency } from 'common/hooks/useFormatCurrency'
 import { getItemEnteringAnimation } from 'common/utils/animations'
-import { useBalanceForAccount } from 'new/common/contexts/useBalanceForAccount'
+import { useBalanceForAccount } from 'features/portfolio/hooks/useBalanceForAccount'
 import React, { memo, useCallback, useMemo } from 'react'
 import { TouchableOpacity } from 'react-native'
 import Animated, { LinearTransition } from 'react-native-reanimated'

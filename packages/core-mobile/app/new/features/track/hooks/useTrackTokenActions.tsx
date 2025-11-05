@@ -5,8 +5,7 @@ import { useIsSwapListLoaded } from 'common/hooks/useIsSwapListLoaded'
 import { useHasEnoughAvaxToStake } from 'hooks/earn/useHasEnoughAvaxToStake'
 import React, { useCallback, useMemo } from 'react'
 import { useSelector } from 'react-redux'
-import { selectBalanceTotalForAccount } from 'store/balance'
-import { selectTokenVisibility } from 'store/portfolio'
+import { useBalanceTotalForAccount } from 'features/portfolio/hooks/useBalanceTotalForAccount'
 import { selectIsEarnBlocked, selectIsSwapBlocked } from 'store/posthog'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { MarketType } from 'store/watchlist'
@@ -34,10 +33,7 @@ export function useTrackTokenActions({
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const { isSwappable } = useIsSwappable()
   const isSwapBlocked = useSelector(selectIsSwapBlocked)
-  const tokenVisibility = useSelector(selectTokenVisibility)
-  const balanceTotal = useSelector(
-    selectBalanceTotalForAccount(activeAccount?.id ?? '', tokenVisibility)
-  )
+  const balanceTotal = useBalanceTotalForAccount(activeAccount)
   const isZeroBalance = balanceTotal === 0n
   const { hasEnoughAvax } = useHasEnoughAvaxToStake()
   const isEarnBlocked = useSelector(selectIsEarnBlocked)

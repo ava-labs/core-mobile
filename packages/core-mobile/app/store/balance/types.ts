@@ -1,63 +1,11 @@
 import { TokenWithBalance } from '@avalabs/vm-module-types'
 import { DropdownGroup } from 'common/components/DropdownMenu'
 
-export type LocalTokenId = string
-
 export type LocalTokenWithBalance = TokenWithBalance & {
   localId: string
   internalId?: string
   isDataAccurate: boolean
   networkChainId: number
-}
-
-export type Balance = {
-  dataAccurate: boolean
-  accountId: string | undefined
-  chainId: number
-  tokens: LocalTokenWithBalance[]
-  error: unknown
-}
-
-export type Balances = { [chainId_address: string]: Balance }
-
-export enum QueryStatus {
-  /**
-   * Indicates no query is in flight
-   */
-  IDLE = 'idle',
-
-  /**
-   * Indicates the query is being run for the first time
-   * This status is usually used to show a skeleton loader
-   */
-  LOADING = 'loading',
-
-  /**
-   * Indicates the query is being re-run on demand (user clicks refetch for example)
-   * This status is usually used to show a refresh indicator (with ScrollView, Flatlist,...)
-   */
-  REFETCHING = 'refetching',
-
-  /**
-   * Indicates that a polling query is currently in flight.
-   * For example if the query runs every 10 seconds then
-   * the status will switch to `polling` every 10 seconds until
-   * the query has resolved.
-   */
-  POLLING = 'polling'
-}
-
-export type BalanceState = {
-  status: {
-    all: QueryStatus
-    xp: QueryStatus
-  }
-  balances: Balances
-}
-
-export enum QueryType {
-  XP = 'xp',
-  ALL = 'all'
 }
 
 export const assetPDisplayNames: Record<string, string> = {
@@ -151,9 +99,6 @@ export enum CollectibleTypeFilter {
   GIFs = 'GIFs',
   Videos = 'Videos'
 }
-
-export type AssetNetworkFilterType = AssetNetworkFilter | CollectibleStatus
-export type CollectibleFilterType = CollectibleTypeFilter | CollectibleStatus
 
 export enum CollectibleSort {
   NameAToZ = 'Name A to Z',
