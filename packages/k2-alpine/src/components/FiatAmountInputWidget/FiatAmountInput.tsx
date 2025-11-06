@@ -177,7 +177,7 @@ export const FiatAmountInput = forwardRef<
                 amountInCurrency
               )}${PLACEHOLDER}`}
               // TODO: Decide if we set it as max 20 or keep original logic
-              // maxLength={maxLength}
+              maxLength={maxLength}
               returnKeyType={returnKeyType}
               editable={editable}
               style={[
