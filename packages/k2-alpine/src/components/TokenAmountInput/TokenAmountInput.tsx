@@ -162,7 +162,6 @@ export const TokenAmountInput = forwardRef<
         onChangeText={handleChangeText}
         selectionColor={theme.colors.$textPrimary}
         style={[{ color: theme.colors.$textPrimary }, props.style]}
-        maxLength={20}
         onBlur={handleBlur}
         onFocus={handleFocus}
         selection={selection}

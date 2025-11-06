@@ -39,6 +39,7 @@ type FiatAmountInputProps = {
   editable?: boolean
   onChange?(amount: string): void
   autoFocus?: boolean
+  placeholder?: string
   returnKeyType?: ReturnKeyTypeOptions
 }
 
@@ -55,6 +56,7 @@ export const FiatAmountInput = forwardRef<
       formatInCurrency,
       formatInSubTextNumber,
       sx,
+      placeholder,
       editable,
       returnKeyType = 'done',
       autoFocus,
@@ -62,7 +64,7 @@ export const FiatAmountInput = forwardRef<
     },
     ref
     // eslint-disable-next-line sonarjs/cognitive-complexity
-  ) => {
+  ): JSX.Element => {
     const { theme } = useTheme()
     const [value, setValue] = useState(amount)
     const [maxLength, setMaxLength] = useState<number>()
@@ -166,11 +168,14 @@ export const FiatAmountInput = forwardRef<
               value={value}
               onChangeText={handleValueChanged}
               initialFontSize={60}
+              textAlign="right"
               prefix={displayLeadingFiatCurrency}
               suffix={displayTrailingFiatCurrency}
-              placeholder={PLACEHOLDER}
+              placeholder={`${getCurrencySymbol(
+                amountInCurrency
+              )}${PLACEHOLDER}`}
               // TODO: Decide if we set it as max 20 or keep original logic
-              maxLength={maxLength}
+              // maxLength={maxLength}
               returnKeyType={returnKeyType}
               editable={editable}
               style={[

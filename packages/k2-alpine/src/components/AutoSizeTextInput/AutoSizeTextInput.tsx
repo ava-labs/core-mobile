@@ -9,16 +9,19 @@ import React, {
 import {
   TextInputProps as _TextInputProps,
   LayoutChangeEvent,
+  NativeSyntheticEvent,
   Platform,
-  TextInput
+  Pressable,
+  TextInput,
+  TextInputFocusEventData,
+  TextStyle
 } from 'react-native'
 import Animated, {
   useAnimatedStyle,
-  useSharedValue,
-  withTiming
+  useSharedValue
 } from 'react-native-reanimated'
 import { useTheme } from '../../hooks'
-import { alpha, ANIMATED } from '../../utils'
+import { alpha } from '../../utils'
 import { View } from '../Primitives'
 
 const AnimatedTextInput = Animated.createAnimatedComponent(TextInput)
@@ -36,6 +39,12 @@ interface TextInputProps extends _TextInputProps {
   renderLeft?: () => React.ReactNode
   /** Right component with no autoresizing */
   renderRight?: () => React.ReactNode
+  /** Left text style */
+  prefixSx?: TextStyle
+  /** Right text style */
+  suffixSx?: TextStyle
+  /** Always show prefix and suffix */
+  alwaysShowPrefixAndSuffix?: boolean
 }
 
 export const AutoSizeTextInput = forwardRef<
@@ -54,19 +63,23 @@ export const AutoSizeTextInput = forwardRef<
       suffix,
       textAlign,
       containerSx,
+      prefixSx,
+      suffixSx,
+      alwaysShowPrefixAndSuffix,
       renderLeft,
       renderRight,
       onChangeText,
       ...props
     },
     ref
-    // eslint-disable-next-line sonarjs/cognitive-complexity
   ): JSX.Element => {
     const { theme } = useTheme()
 
     const [containerWidth, setContainerWidth] = useState(0)
     const [leftWidth, setLeftWidth] = useState(0)
     const [rightWidth, setRightWidth] = useState(0)
+
+    const isFocused = useSharedValue(false)
 
     const animatedFontSize = useSharedValue(initialFontSize)
     const inputRef = useRef<TextInput>(null)
@@ -84,7 +97,7 @@ export const AutoSizeTextInput = forwardRef<
         textAlign,
         fontFamily: 'Aeonik-Medium',
         fontSize: animatedFontSize.value,
-        lineHeight: animatedFontSize.value
+        lineHeight: animatedFontSize.value * 1.1
       }
     })
 
@@ -98,7 +111,11 @@ export const AutoSizeTextInput = forwardRef<
 
         // Calculate available width for text input
         const availableWidth =
-          containerWidth - leftWidth - rightWidth - totalGapWidth
+          containerWidth -
+          leftWidth -
+          rightWidth -
+          totalGapWidth -
+          (Platform.OS === 'ios' ? 32 : 8)
 
         if (availableWidth <= 0) return
 
@@ -107,10 +124,7 @@ export const AutoSizeTextInput = forwardRef<
         newFontSize = Math.max(10, Math.min(initialFontSize, newFontSize))
 
         if (Math.abs(newFontSize - animatedFontSize.value) > 0.5) {
-          animatedFontSize.value = withTiming(newFontSize, {
-            ...ANIMATED.TIMING_CONFIG,
-            duration: 200
-          })
+          animatedFontSize.value = newFontSize
         }
       },
       [
@@ -157,68 +171,127 @@ export const AutoSizeTextInput = forwardRef<
       [containerWidth, props.value, calculateAndUpdateFontSize]
     )
 
-    const leftRightStyle = useAnimatedStyle(() => {
-      let marginBottom = 0
-      if (Platform.OS === 'ios') {
-        if (animatedFontSize.value > 40) {
-          marginBottom = 10
-        } else if (animatedFontSize.value > 24) {
-          marginBottom = 6
-        } else {
-          marginBottom = 4
-        }
-      }
-      return { marginBottom }
-    }, [animatedFontSize.value])
+    const focusTextInput = useCallback(() => {
+      inputRef.current?.focus()
+    }, [])
 
     const renderPrefix = useCallback(() => {
       if (renderLeft) {
-        return <View onLayout={handleLeftLayout}>{renderLeft()}</View>
+        return (
+          <Pressable onPress={focusTextInput} onLayout={handleLeftLayout}>
+            {renderLeft()}
+          </Pressable>
+        )
       }
 
-      if (prefix) {
+      if (
+        prefix &&
+        (alwaysShowPrefixAndSuffix ||
+          (props.value && props?.value?.length >= 1))
+      ) {
         return (
-          <View onLayout={handleLeftLayout}>
-            <Animated.Text style={[textStyle, leftRightStyle, props.style]}>
+          <Pressable onPress={focusTextInput} onLayout={handleLeftLayout}>
+            <Animated.Text
+              style={[
+                textStyle,
+                props.style,
+                prefixSx,
+                {
+                  color:
+                    props?.value && props?.value?.length > 0
+                      ? theme.colors.$textPrimary
+                      : alpha(theme.colors.$textSecondary, 0.2)
+                }
+              ]}>
               {prefix}
             </Animated.Text>
-          </View>
+          </Pressable>
         )
       }
     }, [
+      alwaysShowPrefixAndSuffix,
+      focusTextInput,
       handleLeftLayout,
       prefix,
-      leftRightStyle,
+      prefixSx,
       props.style,
+      props.value,
       renderLeft,
-      textStyle
+      textStyle,
+      theme.colors.$textPrimary,
+      theme.colors.$textSecondary
     ])
 
     const renderSuffix = useCallback(() => {
       if (renderRight) {
-        return <View onLayout={handleRightLayout}>{renderRight()}</View>
+        return (
+          <Pressable onPress={focusTextInput} onLayout={handleRightLayout}>
+            {renderRight()}
+          </Pressable>
+        )
       }
 
-      if (suffix) {
+      if (
+        suffix &&
+        (alwaysShowPrefixAndSuffix ||
+          (props.value && props?.value?.length >= 1))
+      ) {
         return (
-          <View onLayout={handleRightLayout}>
-            <Animated.Text style={[textStyle, leftRightStyle, props.style]}>
+          <Pressable onPress={focusTextInput} onLayout={handleRightLayout}>
+            <Animated.Text
+              style={[
+                textStyle,
+                props.style,
+                suffixSx,
+                {
+                  color:
+                    props?.value && props?.value?.length > 0
+                      ? theme.colors.$textPrimary
+                      : alpha(theme.colors.$textSecondary, 0.2)
+                }
+              ]}>
               {suffix}
             </Animated.Text>
-          </View>
+          </Pressable>
         )
       }
     }, [
+      alwaysShowPrefixAndSuffix,
+      focusTextInput,
       handleRightLayout,
-      leftRightStyle,
       props.style,
+      props.value,
       renderRight,
       suffix,
-      textStyle
+      suffixSx,
+      textStyle,
+      theme.colors.$textPrimary,
+      theme.colors.$textSecondary
     ])
 
+    const onBlurTextInput = useCallback(
+      (e: NativeSyntheticEvent<TextInputFocusEventData>) => {
+        isFocused.value = false
+        props.onBlur?.(e)
+      },
+      [isFocused, props]
+    )
+
+    const onFocusTextInput = useCallback(
+      (e: NativeSyntheticEvent<TextInputFocusEventData>) => {
+        isFocused.value = true
+        props.onFocus?.(e)
+      },
+      [isFocused, props]
+    )
+
     return (
-      <View sx={containerSx}>
+      <View
+        sx={{
+          ...containerSx,
+          minHeight: initialFontSize + 12,
+          justifyContent: 'center'
+        }}>
         <View
           onLayout={handleLayout}
           style={{
@@ -235,6 +308,8 @@ export const AutoSizeTextInput = forwardRef<
             ref={inputRef}
             style={[{ padding: 0 }, textStyle, props.style]}
             maxLength={maxLength}
+            onBlur={onBlurTextInput}
+            onFocus={onFocusTextInput}
             onChangeText={onChangeText}
             placeholderTextColor={alpha(theme.colors.$textSecondary, 0.2)}
             selectionColor={theme.colors.$textPrimary}
@@ -263,10 +338,6 @@ export const AutoSizeTextInput = forwardRef<
                 fontFamily: 'Aeonik-Medium',
                 position: 'absolute',
                 textAlign,
-                right: textAlign === 'right' ? 0 : undefined,
-                left: textAlign === 'left' ? 0 : undefined,
-                // TODO: Verify if this is actually necessary
-                paddingRight: Platform.OS === 'ios' ? 32 : 6,
                 opacity: 0
               },
               textStyle
@@ -279,4 +350,4 @@ export const AutoSizeTextInput = forwardRef<
   }
 )
 
-const GAP_WIDTH = 5
+const GAP_WIDTH = 4
