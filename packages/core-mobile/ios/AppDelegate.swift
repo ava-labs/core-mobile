@@ -19,6 +19,10 @@ class AppDelegate: ExpoAppDelegate {
     // Firebase App Check and configuration
     RNFBAppCheckModule.sharedInstance()
     FirebaseApp.configure()
+    
+    if let bundleId = Bundle.main.object(forInfoDictionaryKey: "CFBundleIdentifier") as? String, bundleId.lowercased().contains("internal")  {
+      RNBranch.useTestInstance()
+    }
         
     RNBranch.initSession(launchOptions: launchOptions, isReferrable: true)
     if #available(iOS 14.0, *) {
