@@ -2,7 +2,7 @@ import { AppListenerEffectAPI, AppStartListening } from 'store/types'
 import { Account, selectActiveAccount } from 'store/account'
 import { createInAppRequest } from 'store/rpc/utils/createInAppRequest'
 import NetworkService from 'services/network/NetworkService'
-import { selectEnabledNetworks, selectNetwork } from 'store/network'
+import { selectEnabledNetworksMap, selectNetwork } from 'store/network'
 import Logger from 'utils/Logger'
 import {
   NetworkTokenWithBalance,
@@ -114,7 +114,7 @@ const handleOfframpSend = async (
 
   const tokens = getTokensWithBalanceForAccountFromCache({
     account: activeAccount,
-    networks: selectEnabledNetworks(state),
+    networks: selectEnabledNetworksMap(state),
     isDeveloperMode
   })
 
