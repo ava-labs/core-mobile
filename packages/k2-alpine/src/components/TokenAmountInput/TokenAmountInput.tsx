@@ -20,7 +20,7 @@ import {
   normalizeNumericTextInput,
   splitIntegerAndFraction
 } from '../../utils/tokenUnitInput'
-import { AutoFitTextInput } from '../AutoSizeTextInput/AutoSizeTextInput'
+import { AutoSizeTextInput } from '../AutoSizeTextInput/AutoSizeTextInput'
 import { useCursorSelection } from './useCursorSelection'
 export interface TokenAmountInputRef {
   focus: () => void
@@ -152,7 +152,7 @@ export const TokenAmountInput = forwardRef<
     )
 
     return (
-      <AutoFitTextInput
+      <AutoSizeTextInput
         {...props}
         value={valueAsString}
         ref={inputRef}
@@ -162,6 +162,7 @@ export const TokenAmountInput = forwardRef<
         onChangeText={handleChangeText}
         selectionColor={theme.colors.$textPrimary}
         style={[{ color: theme.colors.$textPrimary }, props.style]}
+        maxLength={20}
         onBlur={handleBlur}
         onFocus={handleFocus}
         selection={selection}

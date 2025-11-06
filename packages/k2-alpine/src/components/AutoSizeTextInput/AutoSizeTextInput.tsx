@@ -10,8 +10,7 @@ import {
   TextInputProps as _TextInputProps,
   LayoutChangeEvent,
   Platform,
-  TextInput,
-  TextStyle
+  TextInput
 } from 'react-native'
 import Animated, {
   useAnimatedStyle,
@@ -19,25 +18,27 @@ import Animated, {
   withTiming
 } from 'react-native-reanimated'
 import { useTheme } from '../../hooks'
-
 import { alpha, ANIMATED } from '../../utils'
 import { View } from '../Primitives'
 
 const AnimatedTextInput = Animated.createAnimatedComponent(TextInput)
 
 interface TextInputProps extends _TextInputProps {
-  prefix?: string
-  suffix?: string
-  suffixSx?: TextStyle
-  prefixSx?: TextStyle
-  containerSx?: SxProp
-  textInputSx?: TextStyle
+  /** Initial and maximum font size */
   initialFontSize?: number
+  /** Cpntainer style */
+  containerSx?: SxProp
+  /** Left text that autoresizes */
+  prefix?: string
+  /** Right text that autoresizes */
+  suffix?: string
+  /** Left component with no autoresizing */
   renderLeft?: () => React.ReactNode
+  /** Right component with no autoresizing */
   renderRight?: () => React.ReactNode
 }
 
-export const AutoFitTextInput = forwardRef<
+export const AutoSizeTextInput = forwardRef<
   {
     focus: () => void
     blur: () => void
@@ -52,8 +53,7 @@ export const AutoFitTextInput = forwardRef<
       prefix,
       suffix,
       textAlign,
-      prefixSx,
-      suffixSx,
+      containerSx,
       renderLeft,
       renderRight,
       onChangeText,
@@ -62,9 +62,14 @@ export const AutoFitTextInput = forwardRef<
     ref
   ): JSX.Element => {
     const { theme } = useTheme()
-    const animatedFontSize = useSharedValue(initialFontSize)
+
     const [containerWidth, setContainerWidth] = useState(0)
+    const [leftWidth, setLeftWidth] = useState(0)
+    const [rightWidth, setRightWidth] = useState(0)
+
+    const animatedFontSize = useSharedValue(initialFontSize)
     const inputRef = useRef<TextInput>(null)
+    const lastTextRef = useRef<string>('')
 
     useImperativeHandle(ref, () => ({
       focus: () => inputRef.current?.focus(),
@@ -73,55 +78,125 @@ export const AutoFitTextInput = forwardRef<
         inputRef.current?.setNativeProps(_props)
     }))
 
+    const textStyle = useAnimatedStyle(() => {
+      return {
+        textAlign,
+        fontFamily: 'Aeonik-Medium',
+        fontSize: animatedFontSize.value,
+        lineHeight: animatedFontSize.value
+      }
+    })
+
+    const calculateAndUpdateFontSize = useCallback(
+      (textWidth: number): void => {
+        // Calculate gaps: gap appears between elements that exist
+        const hasLeft = !!(renderLeft || prefix)
+        const hasRight = !!(renderRight || suffix)
+        const gapCount = (hasLeft ? 1 : 0) + (hasRight ? 1 : 0)
+        const totalGapWidth = gapCount * GAP_WIDTH
+
+        // Calculate available width for text input
+        const availableWidth =
+          containerWidth - leftWidth - rightWidth - totalGapWidth
+
+        if (availableWidth <= 0) return
+
+        const ratio = availableWidth / textWidth
+        let newFontSize = Math.round(animatedFontSize.value * ratio)
+        newFontSize = Math.max(10, Math.min(initialFontSize, newFontSize))
+
+        if (Math.abs(newFontSize - animatedFontSize.value) > 1) {
+          animatedFontSize.value = withTiming(newFontSize, {
+            ...ANIMATED.TIMING_CONFIG,
+            duration: 200
+          })
+        }
+      },
+      [
+        leftWidth,
+        rightWidth,
+        animatedFontSize,
+        containerWidth,
+        prefix,
+        suffix,
+        initialFontSize,
+        renderLeft,
+        renderRight
+      ]
+    )
+
     const handleLayout = useCallback((e: LayoutChangeEvent): void => {
       setContainerWidth(e.nativeEvent.layout.width)
     }, [])
 
-    const handleTextChange = useCallback(
-      (value: string): void => {
-        onChangeText?.(value)
-      },
-      [onChangeText]
-    )
+    const handleLeftLayout = useCallback((e: LayoutChangeEvent): void => {
+      setLeftWidth(e.nativeEvent.layout.width)
+    }, [])
 
-    const textStyle = useAnimatedStyle(() => {
-      return {
-        fontFamily: 'Aeonik-Medium',
-        fontSize: animatedFontSize.value,
-        lineHeight: animatedFontSize.value + 4
-      }
-    })
+    const handleRightLayout = useCallback((e: LayoutChangeEvent): void => {
+      setRightWidth(e.nativeEvent.layout.width)
+    }, [])
 
     const handleTextLayout = useCallback(
       (e: LayoutChangeEvent): void => {
         if (!containerWidth) return
 
+        const currentText = props.value || ''
+        if (lastTextRef.current === currentText) {
+          return
+        }
+
+        lastTextRef.current = currentText
         const textWidth = e.nativeEvent.layout.width
 
         if (textWidth > 0) {
-          const ratio = containerWidth / textWidth
-          const newFontSize = Math.max(
-            10,
-            Math.min(
-              initialFontSize,
-              Math.round(animatedFontSize.value * ratio)
-            )
-          )
-
-          // Only animate if there's a meaningful difference (avoid micro-adjustments)
-          if (Math.abs(newFontSize - animatedFontSize.value) > 0.5) {
-            animatedFontSize.value = withTiming(newFontSize, {
-              ...ANIMATED.TIMING_CONFIG,
-              duration: 300
-            })
-          }
+          calculateAndUpdateFontSize(textWidth)
         }
       },
-      [containerWidth, initialFontSize, animatedFontSize]
+      [containerWidth, props.value, calculateAndUpdateFontSize]
     )
 
+    const renderPrefix = useCallback(() => {
+      if (renderLeft) {
+        return <View onLayout={handleLeftLayout}>{renderLeft()}</View>
+      }
+
+      if (prefix) {
+        return (
+          <View onLayout={handleLeftLayout}>
+            <Animated.Text
+              style={[
+                textStyle,
+                props.style,
+                {
+                  marginBottom: 6
+                }
+              ]}>
+              {prefix}
+            </Animated.Text>
+          </View>
+        )
+      }
+    }, [handleLeftLayout, prefix, props.style, renderLeft, textStyle])
+
+    const renderSuffix = useCallback(() => {
+      if (renderRight) {
+        return <View onLayout={handleRightLayout}>{renderRight()}</View>
+      }
+
+      if (suffix) {
+        return (
+          <View onLayout={handleRightLayout}>
+            <Animated.Text style={[textStyle, props.style]}>
+              {suffix}
+            </Animated.Text>
+          </View>
+        )
+      }
+    }, [handleRightLayout, props.style, renderRight, suffix, textStyle])
+
     return (
-      <>
+      <View sx={containerSx}>
         <View
           onLayout={handleLayout}
           style={{
@@ -129,34 +204,24 @@ export const AutoFitTextInput = forwardRef<
             flexDirection: 'row',
             alignItems: 'center',
             justifyContent: 'center',
-            gap: 5
+            gap: GAP_WIDTH
           }}>
-          {renderLeft
-            ? renderLeft?.()
-            : prefix && (
-                <Animated.Text style={[textStyle, props.style, prefixSx]}>
-                  {prefix}
-                </Animated.Text>
-              )}
+          {renderPrefix()}
+
           <AnimatedTextInput
             {...props}
             ref={inputRef}
             style={[{ padding: 0 }, textStyle, props.style]}
             maxLength={maxLength}
-            onChangeText={handleTextChange}
+            onChangeText={onChangeText}
             placeholderTextColor={alpha(theme.colors.$textSecondary, 0.2)}
             selectionColor={theme.colors.$textPrimary}
             multiline={false}
             numberOfLines={1}
             allowFontScaling={false}
           />
-          {renderRight
-            ? renderRight?.()
-            : suffix && (
-                <Animated.Text style={[textStyle, props.style, suffixSx]}>
-                  {suffix}
-                </Animated.Text>
-              )}
+
+          {renderSuffix()}
         </View>
 
         {/* Hidden TextInput for capturing layout width */}
@@ -168,25 +233,28 @@ export const AutoFitTextInput = forwardRef<
           <Animated.Text
             pointerEvents="none"
             numberOfLines={1}
+            onLayout={handleTextLayout}
             style={[
               {
-                flexShrink: 0, // prevent it from shrinking to fit
+                flexShrink: 0,
                 flexWrap: 'nowrap',
                 fontFamily: 'Aeonik-Medium',
                 position: 'absolute',
                 textAlign,
                 right: textAlign === 'right' ? 0 : undefined,
                 left: textAlign === 'left' ? 0 : undefined,
+                // TODO: Verify if this is actually necessary
                 paddingRight: Platform.OS === 'ios' ? 32 : 6,
                 opacity: 0
               },
               textStyle
-            ]}
-            onLayout={handleTextLayout}>
+            ]}>
             {props.value || ' '}
           </Animated.Text>
         </View>
-      </>
+      </View>
     )
   }
 )
+
+const GAP_WIDTH = 5

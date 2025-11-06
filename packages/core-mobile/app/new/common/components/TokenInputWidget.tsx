@@ -241,11 +241,9 @@ export const TokenInputWidget = ({
                         autoFocus={autoFocus}
                         editable={editable}
                         denomination={token?.decimals ?? 0}
+                        textAlign="right"
                         style={{
-                          width: '100%',
-                          textAlign: 'right',
                           height: 50,
-                          fontFamily: 'Aeonik-Medium',
                           color:
                             inputTextColor ??
                             (editable

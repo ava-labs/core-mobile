@@ -22,7 +22,7 @@ import {
   normalizeValue
 } from '../../utils/tokenUnitInput'
 import { Text, View } from '../Primitives'
-import { AutoFitTextInput } from '../AutoSizeTextInput/AutoSizeTextInput'
+import { AutoSizeTextInput } from '../AutoSizeTextInput/AutoSizeTextInput'
 
 export type TokenUnitInputHandle = {
   setValue: (value: string) => void
@@ -154,18 +154,19 @@ export const TokenUnitInput = forwardRef<
           ...sx
         }}>
         <TouchableWithoutFeedback onPress={handlePress}>
-          <View
-            sx={{
-              flexDirection: 'row',
-              alignItems: 'flex-start',
-              gap: 5,
-              paddingHorizontal: 32
-            }}>
-            <AutoFitTextInput
-              initialFontSize={60}
-              returnKeyType={returnKeyType}
+          <View style={{ paddingHorizontal: 16, width: '100%' }}>
+            <AutoSizeTextInput
               ref={textInputRef}
+              testID="token_amount_input_field"
               editable={editable}
+              placeholder={PLACEHOLDER}
+              value={value}
+              textAlign="right"
+              onChangeText={handleValueChanged}
+              returnKeyType={returnKeyType}
+              // TODO: Decide if we set it as max 20 or keep original logic
+              maxLength={maxLength}
+              initialFontSize={60}
               renderRight={() => (
                 <Text
                   sx={{
@@ -184,14 +185,10 @@ export const TokenUnitInput = forwardRef<
                */
               keyboardType={Platform.OS === 'ios' ? 'numeric' : undefined}
               inputMode={Platform.OS === 'android' ? 'numeric' : undefined}
-              placeholder={PLACEHOLDER}
-              value={value}
-              onChangeText={handleValueChanged}
-              maxLength={maxLength}
-              testID="token_amount_input_field"
             />
           </View>
         </TouchableWithoutFeedback>
+
         {formatInCurrency && (
           <Text
             variant="subtitle2"
@@ -204,6 +201,6 @@ export const TokenUnitInput = forwardRef<
   }
 )
 
-const PLACEHOLDER = '0.0'
+const PLACEHOLDER = '0.00'
 
 const SYMBOL_MARGIN_TOP = 20

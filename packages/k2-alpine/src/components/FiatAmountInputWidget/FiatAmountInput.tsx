@@ -20,7 +20,7 @@ import {
   normalizeNumericTextInput,
   normalizeValue
 } from '../../utils/tokenUnitInput'
-import { AutoFitTextInput } from '../AutoSizeTextInput/AutoSizeTextInput'
+import { AutoSizeTextInput } from '../AutoSizeTextInput/AutoSizeTextInput'
 import { View } from '../Primitives'
 
 export type FiatAmountInputHandle = {
@@ -83,7 +83,7 @@ export const FiatAmountInput = forwardRef<
     }, [amountInCurrency])
 
     const displayTrailingFiatCurrency = useMemo(() => {
-      return amountInCurrency.endsWith(currency) ? currency : ''
+      return amountInCurrency.endsWith(currency) ? currency : undefined
     }, [amountInCurrency, currency])
 
     const handleValueChanged = useCallback(
@@ -154,15 +154,13 @@ export const FiatAmountInput = forwardRef<
           ...sx
         }}>
         {formatInSubTextNumber?.(Number(inputAmount ?? 0))}
-        <TouchableWithoutFeedback onPress={handlePress}>
+        <TouchableWithoutFeedback onPress={handlePress} style={{}}>
           <View
-            sx={{
-              flexDirection: 'row',
-              width: '100%',
-              paddingHorizontal: 32,
-              justifyContent: 'center'
+            style={{
+              paddingHorizontal: 16,
+              width: '100%'
             }}>
-            <AutoFitTextInput
+            <AutoSizeTextInput
               {...props}
               ref={textInputRef}
               value={value}
@@ -170,14 +168,8 @@ export const FiatAmountInput = forwardRef<
               initialFontSize={60}
               prefix={displayLeadingFiatCurrency}
               suffix={displayTrailingFiatCurrency}
-              /**
-               * keyboardType="numeric" causes noticeable input lag on Android.
-               * Using inputMode="numeric" provides the same behavior without the performance issues.
-               * See: https://github.com/expo/expo/issues/34156
-               */
-              keyboardType={Platform.OS === 'ios' ? 'numeric' : undefined}
-              inputMode={Platform.OS === 'android' ? 'numeric' : undefined}
               placeholder={PLACEHOLDER}
+              // TODO: Decide if we set it as max 20 or keep original logic
               maxLength={maxLength}
               returnKeyType={returnKeyType}
               textAlign="center"
@@ -189,6 +181,13 @@ export const FiatAmountInput = forwardRef<
                     : theme.colors.$textDanger
                 }
               ]}
+              /**
+               * keyboardType="numeric" causes noticeable input lag on Android.
+               * Using inputMode="numeric" provides the same behavior without the performance issues.
+               * See: https://github.com/expo/expo/issues/34156
+               */
+              keyboardType={Platform.OS === 'ios' ? 'numeric' : undefined}
+              inputMode={Platform.OS === 'android' ? 'numeric' : undefined}
             />
           </View>
         </TouchableWithoutFeedback>
