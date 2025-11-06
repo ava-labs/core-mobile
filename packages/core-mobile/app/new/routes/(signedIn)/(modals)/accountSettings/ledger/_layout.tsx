@@ -14,24 +14,16 @@ export default function LedgerSetupLayout(): JSX.Element {
           ...modalStackNavigatorScreenOptions,
           headerShown: false
         }}
-        initialRouteName="index">
-        <Stack.Screen name="index" options={modalFirstScreenOptions} />
+        initialRouteName="pathSelection">
         <Stack.Screen name="pathSelection" options={modalFirstScreenOptions} />
         <Stack.Screen name="deviceConnection" />
         <Stack.Screen name="appConnection" />
-        <Stack.Screen
-          name="setupProgress"
-          options={{
-            gestureEnabled: false // Prevent going back during wallet creation
-          }}
-        />
         <Stack.Screen
           name="complete"
           options={{
             gestureEnabled: false // Prevent going back after completion
           }}
         />
-        <Stack.Screen name="enhancedSetup" />
       </Stack>
     </LedgerSetupProvider>
   )

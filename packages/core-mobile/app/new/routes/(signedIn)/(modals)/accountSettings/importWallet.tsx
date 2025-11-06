@@ -72,7 +72,7 @@ const ImportWalletScreen = (): JSX.Element => {
 
     const handleImportLedger = (): void => {
       // @ts-ignore TODO: make routes typesafe
-      navigate({ pathname: '/accountSettings/ledger' })
+      navigate({ pathname: '/accountSettings/ledger/pathSelection' })
     }
 
     const baseData = [

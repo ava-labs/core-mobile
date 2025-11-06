@@ -16,17 +16,17 @@ export default function AppConnectionScreen(): JSX.Element {
     disconnectDevice
   } = useLedgerSetupContext()
 
-  // Check if keys are available and auto-progress to setup
+  // Check if keys are available and auto-progress to complete
   useEffect(() => {
     if (keys.avalancheKeys && keys.solanaKeys.length > 0) {
       // @ts-ignore TODO: make routes typesafe
-      push('/accountSettings/ledger/setupProgress')
+      push('/accountSettings/ledger/complete')
     }
   }, [keys.avalancheKeys, keys.solanaKeys, push])
 
   const handleComplete = useCallback(() => {
     // @ts-ignore TODO: make routes typesafe
-    push('/accountSettings/ledger/setupProgress')
+    push('/accountSettings/ledger/complete')
   }, [push])
 
   const handleCancel = useCallback(async () => {
