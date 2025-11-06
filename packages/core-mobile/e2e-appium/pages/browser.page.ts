@@ -1,3 +1,4 @@
+import assert from 'assert'
 import { actions } from '../helpers/actions'
 import { selectors } from '../helpers/selectors'
 import browserLoc from '../locators/browser.loc'
@@ -16,6 +17,10 @@ class BrowserPage {
     return selectors.getById(browserLoc.androidChromePager)
   }
 
+  get browserUrl() {
+    return selectors.getById(browserLoc.browserUrl)
+  }
+
   async tapClose() {
     if (driver.isIOS) {
       await actions.tap(this.close)
@@ -23,6 +28,13 @@ class BrowserPage {
       await actions.waitFor(this.androidChromePager)
       await commonElsPage.goAndroidBack()
     }
+  }
+
+  async verifyUrl(url: string) {
+    await actions.waitFor(this.browserUrl)
+    const urlText = await actions.getText(this.browserUrl)
+    assert.equal(urlText, url, `${urlText} not equal to ${url}`)
+    console.log('URL text: ', urlText)
   }
 }
 
