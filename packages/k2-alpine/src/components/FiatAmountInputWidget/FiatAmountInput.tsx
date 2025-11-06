@@ -14,8 +14,6 @@ import {
   TextInput,
   TouchableWithoutFeedback
 } from 'react-native'
-import { useTheme } from '../../hooks'
-import { alpha } from '../../utils'
 import {
   normalizeNumericTextInput,
   normalizeValue
@@ -65,7 +63,6 @@ export const FiatAmountInput = forwardRef<
     ref
     // eslint-disable-next-line sonarjs/cognitive-complexity
   ): JSX.Element => {
-    const { theme } = useTheme()
     const [value, setValue] = useState(amount)
     const [maxLength, setMaxLength] = useState<number>()
     const textInputRef = useRef<TextInput>(null)
@@ -75,9 +72,7 @@ export const FiatAmountInput = forwardRef<
     }, [value])
 
     const amountInCurrency = useMemo(() => {
-      return inputAmount && Number(inputAmount)
-        ? formatInCurrency(Number(inputAmount))
-        : ''
+      return formatInCurrency(Number(inputAmount))
     }, [formatInCurrency, inputAmount])
 
     const displayLeadingFiatCurrency = useMemo(() => {
@@ -158,7 +153,7 @@ export const FiatAmountInput = forwardRef<
           ...sx
         }}>
         {formatInSubTextNumber?.(Number(inputAmount ?? 0))}
-        <TouchableWithoutFeedback onPress={handlePress} style={{}}>
+        <TouchableWithoutFeedback onPress={handlePress}>
           <View
             style={{
               paddingHorizontal: 16,
@@ -175,20 +170,12 @@ export const FiatAmountInput = forwardRef<
               textAlign="right"
               prefix={displayLeadingFiatCurrency}
               suffix={displayTrailingFiatCurrency}
-              placeholder={`${getCurrencySymbol(
-                amountInCurrency
-              )}${PLACEHOLDER}`}
+              placeholder={`${PLACEHOLDER}`}
               // TODO: Decide if we set it as max 20 or keep original logic
               maxLength={maxLength}
               returnKeyType={returnKeyType}
               editable={editable}
-              style={[
-                {
-                  color: isAmountValid
-                    ? alpha(theme.colors.$textPrimary, 0.9)
-                    : theme.colors.$textDanger
-                }
-              ]}
+              valid={isAmountValid}
               /**
                * keyboardType="numeric" causes noticeable input lag on Android.
                * Using inputMode="numeric" provides the same behavior without the performance issues.
@@ -212,5 +199,5 @@ function getCurrencySymbol(amountWithSymbol: string): string {
   const ScRe =
     /[$\xA2-\xA5\u058F\u060B\u09F2\u09F3\u09FB\u0AF1\u0BF9\u0E3F\u17DB\u20A0-\u20BD\uA838\uFDFC\uFE69\uFF04\uFFE0\uFFE1\uFFE5\uFFE6]/
 
-  return amountWithSymbol.match(ScRe)?.[0] ?? ''
+  return amountWithSymbol.match(ScRe)?.[0] ?? '$'
 }

@@ -42,9 +42,9 @@ export const TokenInputWidget = ({
   sx,
   disabled,
   editable = true,
-  inputTextColor,
   isLoadingAmount = false,
-  autoFocus
+  autoFocus,
+  valid = true
 }: {
   title: string
   amount?: bigint
@@ -61,9 +61,9 @@ export const TokenInputWidget = ({
   sx?: SxProp
   disabled?: boolean
   editable?: boolean
-  inputTextColor?: string
   isLoadingAmount?: boolean
   autoFocus?: boolean
+  valid?: boolean
   // eslint-disable-next-line sonarjs/cognitive-complexity
 }): JSX.Element => {
   const {
@@ -242,41 +242,38 @@ export const TokenInputWidget = ({
                         editable={editable}
                         denomination={token?.decimals ?? 0}
                         textAlign="right"
-                        style={{
-                          height: 50,
-                          color:
-                            inputTextColor ??
-                            (editable
-                              ? colors.$textPrimary
-                              : colors.$textSecondary)
-                        }}
+                        valid={valid}
                         value={amount}
                         onChange={handleAmountChange}
                         onFocus={handleFocus}
                         onBlur={handleBlur}
                         placeholder="0.00"
+                        style={{
+                          marginBottom: 8
+                        }}
                       />
                     ) : (
                       <View
                         style={{
                           width: '100%',
-                          marginBottom: Platform.OS === 'ios' ? 4 : 0
+                          marginBottom: Platform.OS === 'ios' ? 12 : 0
                         }}>
                         <Text
                           adjustsFontSizeToFit
                           numberOfLines={1}
                           style={{
                             fontFamily: 'Aeonik-Medium',
-                            fontSize: 36,
-                            lineHeight: 36,
+                            fontSize: 42,
+                            lineHeight: 42,
                             width: '100%',
                             textAlign: 'right',
                             color: !amount
                               ? alpha(colors.$textSecondary, 0.2)
-                              : inputTextColor ??
-                                (editable
-                                  ? colors.$textPrimary
-                                  : colors.$textSecondary)
+                              : !valid
+                              ? colors.$textDanger
+                              : editable
+                              ? colors.$textPrimary
+                              : colors.$textSecondary
                           }}>
                           {nonEditableInputValue}
                         </Text>
@@ -291,7 +288,7 @@ export const TokenInputWidget = ({
                   alignItems: 'center',
                   gap: 24,
                   justifyContent: 'space-between',
-                  marginTop: -8
+                  marginTop: -12
                 }}>
                 <View>
                   {token &&
@@ -327,7 +324,7 @@ export const TokenInputWidget = ({
                     variant="subtitle2"
                     numberOfLines={1}
                     sx={{
-                      color: inputTextColor ?? '$textSecondary'
+                      color: valid ? colors.$textSecondary : colors.$textDanger
                     }}>
                     {formatInCurrency(amount)}
                   </Text>

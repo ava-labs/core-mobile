@@ -19,8 +19,7 @@ import {
 import Animated, {
   interpolateColor,
   useAnimatedStyle,
-  useSharedValue,
-  withTiming
+  useSharedValue
 } from 'react-native-reanimated'
 import { useTheme } from '../../hooks'
 import { alpha } from '../../utils'
@@ -31,7 +30,7 @@ const AnimatedTextInput = Animated.createAnimatedComponent(TextInput)
 interface TextInputProps extends _TextInputProps {
   /** Initial and maximum font size */
   initialFontSize?: number
-  /** Cpntainer style */
+  /** Container style */
   containerSx?: SxProp
   /** Left text that autoresizes */
   prefix?: string
@@ -49,6 +48,8 @@ interface TextInputProps extends _TextInputProps {
   prefixFontSizeMultiplier?: number
   /** Suffix fontSize multiplier */
   suffixFontSizeMultiplier?: number
+  /** Whether the input is valid */
+  valid?: boolean
 }
 
 export const AutoSizeTextInput = forwardRef<
@@ -61,8 +62,8 @@ export const AutoSizeTextInput = forwardRef<
 >(
   (
     {
-      initialFontSize = 36,
-      maxLength = 20,
+      initialFontSize = 42,
+      maxLength = 24,
       prefix,
       suffix,
       textAlign,
@@ -73,9 +74,12 @@ export const AutoSizeTextInput = forwardRef<
       renderLeft,
       renderRight,
       onChangeText,
+      editable = true,
+      valid = true,
       ...props
     },
     ref
+    // eslint-disable-next-line sonarjs/cognitive-complexity
   ): JSX.Element => {
     const { theme } = useTheme()
 
@@ -86,6 +90,9 @@ export const AutoSizeTextInput = forwardRef<
     const isFocused = useSharedValue(false)
 
     const animatedFontSize = useSharedValue(initialFontSize)
+    const animatedSuffixFontSize = useSharedValue(
+      initialFontSize * suffixFontSizeMultiplier
+    )
     const inputRef = useRef<TextInput>(null)
     const lastTextRef = useRef<string>('')
 
@@ -96,30 +103,39 @@ export const AutoSizeTextInput = forwardRef<
         inputRef.current?.setNativeProps(_props)
     }))
 
+    const textColor = !valid
+      ? theme.colors.$textDanger
+      : editable
+      ? theme.colors.$textPrimary
+      : theme.colors.$textSecondary
+    const placeholderTextColor = alpha(theme.colors.$textSecondary, 0.2)
+
     const textStyle = useAnimatedStyle(() => {
+      const color = interpolateColor(
+        props?.value && props?.value?.length > 0 ? 1 : 0,
+        [0, 1],
+        [placeholderTextColor, textColor]
+      )
       return {
         textAlign,
         fontFamily: 'Aeonik-Medium',
         fontSize: animatedFontSize.value,
-        lineHeight: animatedFontSize.value * 1.1
+        lineHeight: animatedFontSize.value * 1.1,
+        color
       }
     })
-
-    const placeholderTextColor = alpha(theme.colors.$textSecondary, 0.2)
 
     const suffixTextStyle = useAnimatedStyle(() => {
       const color = interpolateColor(
         props?.value && props?.value?.length > 0 ? 1 : 0,
         [0, 1],
-        [placeholderTextColor, theme.colors.$textPrimary]
+        [placeholderTextColor, textColor]
       )
-
       return {
-        textAlign,
         fontFamily: 'Aeonik-Medium',
-        fontSize: animatedFontSize.value * suffixFontSizeMultiplier,
-        lineHeight: animatedFontSize.value * 1.1 * suffixFontSizeMultiplier,
-        color: withTiming(color, { duration: 150 })
+        fontSize: animatedSuffixFontSize.value,
+        lineHeight: animatedSuffixFontSize.value * 1.1,
+        color
       }
     })
 
@@ -143,22 +159,35 @@ export const AutoSizeTextInput = forwardRef<
 
         const ratio = availableWidth / textWidth
         let newFontSize = Math.round(animatedFontSize.value * ratio)
+        let newSuffixFontSize = Math.round(animatedSuffixFontSize.value * ratio)
         newFontSize = Math.max(10, Math.min(initialFontSize, newFontSize))
+        newSuffixFontSize = Math.max(
+          10,
+          Math.min(
+            initialFontSize * suffixFontSizeMultiplier,
+            newSuffixFontSize
+          )
+        )
 
         if (Math.abs(newFontSize - animatedFontSize.value) > 0.5) {
           animatedFontSize.value = newFontSize
+        }
+        if (Math.abs(newSuffixFontSize - animatedSuffixFontSize.value) > 0.5) {
+          animatedSuffixFontSize.value = newSuffixFontSize
         }
       },
       [
         leftWidth,
         rightWidth,
         animatedFontSize,
+        animatedSuffixFontSize,
         containerWidth,
         prefix,
         suffix,
         initialFontSize,
         renderLeft,
-        renderRight
+        renderRight,
+        suffixFontSizeMultiplier
       ]
     )
 
@@ -209,20 +238,19 @@ export const AutoSizeTextInput = forwardRef<
       if (prefix) {
         return (
           <Pressable onPress={focusTextInput} onLayout={handleLeftLayout}>
-            <Animated.Text style={[suffixTextStyle, props.style, prefixSx]}>
+            <Animated.Text style={[suffixTextStyle, prefixSx]}>
               {prefix}
             </Animated.Text>
           </Pressable>
         )
       }
     }, [
+      renderLeft,
+      prefix,
       focusTextInput,
       handleLeftLayout,
-      prefix,
-      prefixSx,
       suffixTextStyle,
-      props.style,
-      renderLeft
+      prefixSx
     ])
 
     const renderSuffix = useCallback(() => {
@@ -237,7 +265,7 @@ export const AutoSizeTextInput = forwardRef<
       if (suffix) {
         return (
           <Pressable onPress={focusTextInput} onLayout={handleRightLayout}>
-            <Animated.Text style={[suffixTextStyle, props.style, suffixSx]}>
+            <Animated.Text style={[suffixTextStyle, suffixSx]}>
               {suffix}
             </Animated.Text>
           </Pressable>
@@ -246,7 +274,6 @@ export const AutoSizeTextInput = forwardRef<
     }, [
       focusTextInput,
       handleRightLayout,
-      props.style,
       renderRight,
       suffix,
       suffixSx,
@@ -292,10 +319,11 @@ export const AutoSizeTextInput = forwardRef<
             ref={inputRef}
             style={[{ padding: 0 }, textStyle, props.style]}
             maxLength={maxLength}
+            editable={editable}
             onBlur={onBlurTextInput}
             onFocus={onFocusTextInput}
             onChangeText={onChangeText}
-            placeholderTextColor={alpha(theme.colors.$textSecondary, 0.2)}
+            placeholderTextColor={placeholderTextColor}
             selectionColor={theme.colors.$textPrimary}
             multiline={false}
             numberOfLines={1}

@@ -47,6 +47,7 @@ export const TokenAmountInput = forwardRef<
       onBlur,
       onFocus,
       testID,
+      valid = true,
       ...props
     },
     ref
@@ -161,11 +162,12 @@ export const TokenAmountInput = forwardRef<
         inputMode={Platform.OS === 'android' ? 'numeric' : undefined}
         onChangeText={handleChangeText}
         selectionColor={theme.colors.$textPrimary}
-        style={[{ color: theme.colors.$textPrimary }, props.style]}
+        style={props.style}
         onBlur={handleBlur}
         onFocus={handleFocus}
         selection={selection}
         onSelectionChange={handleSelectionChange}
+        valid={valid}
       />
     )
   }
@@ -173,6 +175,7 @@ export const TokenAmountInput = forwardRef<
 interface TokenAmountInputProps
   extends Omit<TextInputProps, 'onChange' | 'value'> {
   value?: bigint
+  valid?: boolean
   denomination: number
 
   onChange?(val: TokenAmount): void
