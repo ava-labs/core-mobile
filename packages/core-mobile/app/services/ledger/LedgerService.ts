@@ -14,30 +14,47 @@ import { networks } from 'bitcoinjs-lib'
 import Logger from 'utils/Logger'
 import bs58 from 'bs58'
 import {
-  LedgerAppType,
+  LEDGER_TIMEOUTS,
+  getSolanaDerivationPath
+} from 'new/features/ledger/consts'
+import { assertNotNull } from 'utils/assertions'
+import {
+  AddressInfo,
   ExtendedPublicKey,
-  LedgerReturnCode,
   PublicKeyInfo,
-  AddressInfo
+  LedgerAppType,
+  LedgerReturnCode,
+  AppInfo
 } from './types'
 
-export interface AppInfo {
-  applicationName: string
-  version: string
-}
-
 export class LedgerService {
-  private transport: TransportBLE | null = null
+  #transport: TransportBLE | null = null
   private currentAppType: LedgerAppType = LedgerAppType.UNKNOWN
   private appPollingInterval: number | null = null
   private appPollingEnabled = false
+
+  // Transport getter/setter with automatic error handling
+  private get transport(): TransportBLE {
+    assertNotNull(
+      this.#transport,
+      'Ledger transport is not initialized. Please connect to a device first.'
+    )
+    return this.#transport
+  }
+
+  private set transport(transport: TransportBLE) {
+    this.#transport = transport
+  }
 
   // Connect to Ledger device (transport only, no apps)
   async connect(deviceId: string): Promise<void> {
     try {
       Logger.info('Starting BLE connection attempt with deviceId:', deviceId)
-      // Use a longer timeout for connection (30 seconds)
-      this.transport = await TransportBLE.open(deviceId, 30000)
+      // Use a longer timeout for connection
+      this.transport = await TransportBLE.open(
+        deviceId,
+        LEDGER_TIMEOUTS.CONNECTION_TIMEOUT
+      )
       Logger.info('BLE transport connected successfully')
       this.currentAppType = LedgerAppType.UNKNOWN
 
@@ -62,7 +79,7 @@ export class LedgerService {
     this.appPollingEnabled = true
     this.appPollingInterval = setInterval(async () => {
       try {
-        if (!this.transport || !this.transport.isConnected) {
+        if (!this.#transport || !this.#transport.isConnected) {
           this.stopAppPolling()
           return
         }
@@ -80,7 +97,7 @@ export class LedgerService {
         Logger.error('Error polling app info', error)
         // Don't stop polling on error, just log it
       }
-    }, 2000) // Poll every 2 seconds like the extension
+    }, LEDGER_TIMEOUTS.APP_POLLING_INTERVAL) // Poll every 2 seconds like the extension
   }
 
   // Stop passive app detection polling
@@ -94,10 +111,6 @@ export class LedgerService {
 
   // Get current app info from device
   private async getCurrentAppInfo(): Promise<AppInfo> {
-    if (!this.transport) {
-      throw new Error('Transport not initialized')
-    }
-
     return await getLedgerAppInfo(this.transport as Transport)
   }
 
@@ -121,7 +134,10 @@ export class LedgerService {
   }
 
   // Wait for specific app to be open (passive approach)
-  async waitForApp(appType: LedgerAppType, timeoutMs = 30000): Promise<void> {
+  async waitForApp(
+    appType: LedgerAppType,
+    timeoutMs = LEDGER_TIMEOUTS.APP_WAIT_TIMEOUT
+  ): Promise<void> {
     const startTime = Date.now()
     Logger.info(`Waiting for ${appType} app (timeout: ${timeoutMs}ms)...`)
 
@@ -135,8 +151,10 @@ export class LedgerService {
         return
       }
 
-      // Wait 1 second before next check
-      await new Promise(resolve => setTimeout(resolve, 1000))
+      // Wait before next check
+      await new Promise(resolve =>
+        setTimeout(resolve, LEDGER_TIMEOUTS.APP_CHECK_DELAY)
+      )
     }
 
     Logger.error(`Timeout waiting for ${appType} app after ${timeoutMs}ms`)
@@ -161,7 +179,7 @@ export class LedgerService {
   private async reconnectIfNeeded(deviceId: string): Promise<void> {
     Logger.info('Checking if reconnection is needed')
 
-    if (!this.transport || !this.transport.isConnected) {
+    if (!this.#transport || !this.#transport.isConnected) {
       Logger.info('Transport is disconnected, attempting reconnection')
       try {
         await this.connect(deviceId)
@@ -180,10 +198,6 @@ export class LedgerService {
     evm: ExtendedPublicKey
     avalanche: ExtendedPublicKey
   }> {
-    if (!this.transport) {
-      throw new Error('Transport not initialized')
-    }
-
     Logger.info('=== getExtendedPublicKeys STARTED ===')
     Logger.info('Current app type:', this.currentAppType)
 
@@ -306,7 +320,7 @@ export class LedgerService {
 
   // Check if Solana app is open
   async checkSolanaApp(): Promise<boolean> {
-    if (!this.transport) {
+    if (!this.#transport) {
       return false
     }
 
@@ -325,15 +339,19 @@ export class LedgerService {
     }
   }
 
+  // Get Solana address for a specific derivation path
+  async getSolanaAddress(derivationPath: string): Promise<{ address: Buffer }> {
+    await this.waitForApp(LedgerAppType.SOLANA)
+    const transport = await this.getTransport()
+    const solanaApp = new AppSolana(transport as Transport)
+    return await solanaApp.getAddress(derivationPath, false)
+  }
+
   // Get Solana public keys using SDK function (like extension)
   async getSolanaPublicKeys(
     startIndex: number,
     count: number
   ): Promise<PublicKeyInfo[]> {
-    if (!this.transport) {
-      throw new Error('Transport not initialized')
-    }
-
     // Create a fresh AppSolana instance for each call (like the SDK does)
     const transport = await this.getTransport()
     const freshSolanaApp = new AppSolana(transport as Transport)
@@ -342,7 +360,7 @@ export class LedgerService {
     try {
       for (let i = startIndex; i < startIndex + count; i++) {
         // Use correct Solana derivation path format
-        const derivationPath = `44'/501'/0'/0'/${i}`
+        const derivationPath = getSolanaDerivationPath(i)
 
         // Simple direct call to get Solana address using fresh instance
         const result = await freshSolanaApp.getAddress(derivationPath, false)
@@ -374,10 +392,6 @@ export class LedgerService {
     startIndex: number,
     _count: number
   ): Promise<PublicKeyInfo[]> {
-    if (!this.transport) {
-      throw new Error('Transport not initialized')
-    }
-
     try {
       // Use the SDK function directly (like the extension does)
       const publicKey = await getSolanaPublicKeyFromLedger(
@@ -388,7 +402,7 @@ export class LedgerService {
       const publicKeys: PublicKeyInfo[] = [
         {
           key: publicKey.toString('hex'),
-          derivationPath: `44'/501'/0'/0'/${startIndex}`,
+          derivationPath: getSolanaDerivationPath(startIndex),
           curve: 'ed25519'
         }
       ]
@@ -441,10 +455,6 @@ export class LedgerService {
     startIndex: number,
     count: number
   ): Promise<PublicKeyInfo[]> {
-    if (!this.transport) {
-      throw new Error('Transport not initialized')
-    }
-
     // Connect to Avalanche app
     await this.waitForApp(LedgerAppType.AVALANCHE)
 
@@ -515,10 +525,6 @@ export class LedgerService {
     startIndex: number,
     count: number
   ): Promise<AddressInfo[]> {
-    if (!this.transport) {
-      throw new Error('Transport not initialized')
-    }
-
     // Connect to Avalanche app
     await this.waitForApp(LedgerAppType.AVALANCHE)
 
@@ -634,31 +640,28 @@ export class LedgerService {
 
   // Disconnect from Ledger device
   async disconnect(): Promise<void> {
-    if (this.transport) {
-      await this.transport.close()
-      this.transport = null
+    if (this.#transport) {
+      await this.#transport.close()
+      this.#transport = null
       this.currentAppType = LedgerAppType.UNKNOWN
       this.stopAppPolling() // Stop polling on disconnect
     }
   }
 
-  // Get current transport (for wallet usage)
-  getTransport(): TransportBLE {
-    if (!this.transport) {
-      throw new Error('Transport not initialized. Call connect() first.')
-    }
-    return this.transport
-  }
-
   // Check if transport is available and connected
   isConnected(): boolean {
-    return this.transport !== null && this.transport.isConnected
+    return this.#transport !== null && this.#transport.isConnected
   }
 
   // Ensure connection is established for a specific device
   async ensureConnection(deviceId: string): Promise<TransportBLE> {
     await this.reconnectIfNeeded(deviceId)
-    return this.getTransport()
+    return this.transport
+  }
+
+  // Get the current transport (for compatibility with existing code)
+  async getTransport(): Promise<TransportBLE> {
+    return this.transport
   }
 }
 
