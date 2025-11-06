@@ -96,13 +96,19 @@ export const useWalletDisplayData = (
       const platformAccountsDataForWallet = [
         NetworkVMType.PVM,
         NetworkVMType.AVM
-      ].map(networkVmType =>
-        getPrimaryPlatformAccountData({
+      ].map(networkVmType => {
+        const hideSeparator =
+          networkVmType === NetworkVMType.PVM
+            ? false
+            : accountsForWallet[0]?.id === activeAccount?.id
+
+        return getPrimaryPlatformAccountData({
+          hideSeparator,
           wallet,
           numberOfAddresses: accountsForWallet.length,
           networkVmType: networkVmType as NetworkVMType.AVM | NetworkVMType.PVM
         })
-      )
+      })
 
       return {
         ...wallet,
@@ -148,12 +154,17 @@ export const useWalletDisplayData = (
     const platformAccountsDataForWallet = [
       NetworkVMType.PVM,
       NetworkVMType.AVM
-    ].map(networkVmType =>
-      getImportedPlatformAccountData({
+    ].map(networkVmType => {
+      const hideSeparator =
+        networkVmType === NetworkVMType.PVM
+          ? false
+          : allPrivateKeyAccounts[0]?.id === activeAccount?.id
+      return getImportedPlatformAccountData({
+        hideSeparator,
         numberOfAddresses: privateKeyAccountData.length,
         networkVmType: networkVmType as NetworkVMType.AVM | NetworkVMType.PVM
       })
-    )
+    })
 
     // Create virtual wallet for private key accounts
     return {

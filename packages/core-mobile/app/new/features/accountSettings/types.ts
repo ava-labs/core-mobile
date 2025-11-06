@@ -13,6 +13,7 @@ export type GetPrimaryPlatformAccountDataProps = {
   numberOfAddresses: number
   networkVmType: NetworkVMType.AVM | NetworkVMType.PVM
   wallet: Wallet
+  hideSeparator: boolean
 }
 
 export type GetImportedPlatformAccountDataProps = Omit<

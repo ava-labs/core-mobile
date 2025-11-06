@@ -165,6 +165,7 @@ export const useGetAccountData = (): {
 
   const getPrimaryPlatformAccountData = useCallback(
     ({
+      hideSeparator,
       wallet,
       numberOfAddresses,
       networkVmType
@@ -179,7 +180,7 @@ export const useGetAccountData = (): {
       const chainId = isPvm ? pChainId : xChainId
       const accountName = isPvm ? P_CHAIN_ACCOUNT_NAME : X_CHAIN_ACCOUNT_NAME
       return {
-        hideSeparator: false,
+        hideSeparator,
         id: `${PLATFORM_ACCOUNTS_VIRTUAL_WALLET_ID}-${chainId}`,
         containerSx: {
           backgroundColor: 'transparent',
@@ -253,6 +254,7 @@ export const useGetAccountData = (): {
 
   const getImportedPlatformAccountData = useCallback(
     ({
+      hideSeparator,
       numberOfAddresses,
       networkVmType
     }: GetImportedPlatformAccountDataProps): AccountDataForWallet => {
@@ -266,7 +268,7 @@ export const useGetAccountData = (): {
       const chainId = isPvm ? pChainId : xChainId
       const accountName = isPvm ? P_CHAIN_ACCOUNT_NAME : X_CHAIN_ACCOUNT_NAME
       return {
-        hideSeparator: false,
+        hideSeparator,
         id: `${PLATFORM_ACCOUNTS_VIRTUAL_WALLET_ID}-${chainId}`,
         containerSx: {
           backgroundColor: 'transparent',
