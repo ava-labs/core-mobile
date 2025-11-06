@@ -59,7 +59,6 @@ export const All = (): JSX.Element => {
             marginBottom: 20
           }}
           placeholder="0.00"
-          alwaysShowPrefixAndSuffix={true}
           onChangeText={setValue}
           keyboardType={Platform.OS === 'ios' ? 'numeric' : undefined}
           inputMode={Platform.OS === 'android' ? 'numeric' : undefined}
