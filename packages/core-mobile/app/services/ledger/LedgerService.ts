@@ -13,44 +13,13 @@ import {
 import { networks } from 'bitcoinjs-lib'
 import Logger from 'utils/Logger'
 import bs58 from 'bs58'
-
-export interface AddressInfo {
-  id: string
-  address: string
-  derivationPath: string
-  network: string
-}
-
-export interface ExtendedPublicKey {
-  path: string
-  key: string
-  chainCode: string
-}
-
-export interface PublicKeyInfo {
-  key: string
-  derivationPath: string
-  curve: 'secp256k1' | 'ed25519'
-}
-
-export enum LedgerAppType {
-  AVALANCHE = 'Avalanche',
-  SOLANA = 'Solana',
-  ETHEREUM = 'Ethereum',
-  UNKNOWN = 'Unknown'
-}
-
-export const LedgerReturnCode = {
-  SUCCESS: 0x9000,
-  USER_REJECTED: 0x6985,
-  APP_NOT_OPEN: 0x6a80,
-  DEVICE_LOCKED: 0x5515,
-  INVALID_PARAMETER: 0x6b00,
-  COMMAND_NOT_ALLOWED: 0x6986
-} as const
-
-export type LedgerReturnCodeType =
-  typeof LedgerReturnCode[keyof typeof LedgerReturnCode]
+import {
+  LedgerAppType,
+  ExtendedPublicKey,
+  LedgerReturnCode,
+  PublicKeyInfo,
+  AddressInfo
+} from './types'
 
 export interface AppInfo {
   applicationName: string
@@ -238,7 +207,7 @@ export class LedgerService {
     Logger.info('Avalanche app detected, creating app instance...')
 
     // Create Avalanche app instance
-    const avalancheApp = new AppAvalanche(this.transport as any)
+    const avalancheApp = new AppAvalanche(this.transport as Transport)
     Logger.info('Avalanche app instance created')
 
     try {
@@ -427,7 +396,7 @@ export class LedgerService {
       // Use the SDK function directly (like the extension does)
       const publicKey = await getSolanaPublicKeyFromLedger(
         startIndex,
-        this.transport as any
+        this.transport as Transport
       )
 
       const publicKeys: PublicKeyInfo[] = [
@@ -494,7 +463,7 @@ export class LedgerService {
     await this.waitForApp(LedgerAppType.AVALANCHE)
 
     // Create Avalanche app instance
-    const avalancheApp = new AppAvalanche(this.transport as any)
+    const avalancheApp = new AppAvalanche(this.transport as Transport)
 
     const publicKeys: PublicKeyInfo[] = []
 
@@ -568,7 +537,7 @@ export class LedgerService {
     await this.waitForApp(LedgerAppType.AVALANCHE)
 
     // Create Avalanche app instance
-    const avalancheApp = new AppAvalanche(this.transport as any)
+    const avalancheApp = new AppAvalanche(this.transport as Transport)
 
     const addresses: AddressInfo[] = []
 
