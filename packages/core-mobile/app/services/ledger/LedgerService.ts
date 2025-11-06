@@ -14,17 +14,18 @@ import { networks } from 'bitcoinjs-lib'
 import Logger from 'utils/Logger'
 import bs58 from 'bs58'
 import {
-  LedgerAppType,
+  LEDGER_TIMEOUTS,
+  getSolanaDerivationPath
+} from 'new/features/ledger/consts'
+import { assertNotNull } from 'utils/assertions'
+import {
+  AddressInfo,
   ExtendedPublicKey,
-  LedgerReturnCode,
   PublicKeyInfo,
-  AddressInfo
+  LedgerAppType,
+  LedgerReturnCode,
+  AppInfo
 } from './types'
-
-export interface AppInfo {
-  applicationName: string
-  version: string
-}
 
 export class LedgerService {
   #transport: TransportBLE | null = null
@@ -32,6 +33,19 @@ export class LedgerService {
   private appPollingInterval: number | null = null
   private appPollingEnabled = false
   private isDisconnected = false
+
+  // Transport getter/setter with automatic error handling
+  private get transport(): TransportBLE {
+    assertNotNull(
+      this.#transport,
+      'Ledger transport is not initialized. Please connect to a device first.'
+    )
+    return this.#transport
+  }
+
+  private set transport(transport: TransportBLE) {
+    this.#transport = transport
+  }
 
   // Connect to Ledger device (transport only, no apps)
   async connect(deviceId: string): Promise<void> {
@@ -194,10 +208,6 @@ export class LedgerService {
     evm: ExtendedPublicKey
     avalanche: ExtendedPublicKey
   }> {
-    if (!this.transport) {
-      throw new Error('Transport not initialized')
-    }
-
     Logger.info('=== getExtendedPublicKeys STARTED ===')
     Logger.info('Current app type:', this.currentAppType)
 
@@ -320,7 +330,7 @@ export class LedgerService {
 
   // Check if Solana app is open
   async checkSolanaApp(): Promise<boolean> {
-    if (!this.transport) {
+    if (!this.#transport) {
       return false
     }
 
@@ -339,15 +349,19 @@ export class LedgerService {
     }
   }
 
+  // Get Solana address for a specific derivation path
+  async getSolanaAddress(derivationPath: string): Promise<{ address: Buffer }> {
+    await this.waitForApp(LedgerAppType.SOLANA)
+    const transport = await this.getTransport()
+    const solanaApp = new AppSolana(transport as Transport)
+    return await solanaApp.getAddress(derivationPath, false)
+  }
+
   // Get Solana public keys using SDK function (like extension)
   async getSolanaPublicKeys(
     startIndex: number,
     count: number
   ): Promise<PublicKeyInfo[]> {
-    if (!this.transport) {
-      throw new Error('Transport not initialized')
-    }
-
     // Create a fresh AppSolana instance for each call (like the SDK does)
     const transport = await this.getTransport()
     const freshSolanaApp = new AppSolana(transport as Transport)
@@ -356,7 +370,7 @@ export class LedgerService {
     try {
       for (let i = startIndex; i < startIndex + count; i++) {
         // Use correct Solana derivation path format
-        const derivationPath = `44'/501'/0'/0'/${i}`
+        const derivationPath = getSolanaDerivationPath(i)
 
         // Simple direct call to get Solana address using fresh instance
         const result = await freshSolanaApp.getAddress(derivationPath, false)
@@ -388,10 +402,6 @@ export class LedgerService {
     startIndex: number,
     _count: number
   ): Promise<PublicKeyInfo[]> {
-    if (!this.transport) {
-      throw new Error('Transport not initialized')
-    }
-
     try {
       // Use the SDK function directly (like the extension does)
       const publicKey = await getSolanaPublicKeyFromLedger(
@@ -402,7 +412,7 @@ export class LedgerService {
       const publicKeys: PublicKeyInfo[] = [
         {
           key: publicKey.toString('hex'),
-          derivationPath: `44'/501'/0'/0'/${startIndex}`,
+          derivationPath: getSolanaDerivationPath(startIndex),
           curve: 'ed25519'
         }
       ]
@@ -455,10 +465,6 @@ export class LedgerService {
     startIndex: number,
     count: number
   ): Promise<PublicKeyInfo[]> {
-    if (!this.transport) {
-      throw new Error('Transport not initialized')
-    }
-
     // Connect to Avalanche app
     await this.waitForApp(LedgerAppType.AVALANCHE)
 
@@ -529,10 +535,6 @@ export class LedgerService {
     startIndex: number,
     count: number
   ): Promise<AddressInfo[]> {
-    if (!this.transport) {
-      throw new Error('Transport not initialized')
-    }
-
     // Connect to Avalanche app
     await this.waitForApp(LedgerAppType.AVALANCHE)
 
@@ -657,23 +659,20 @@ export class LedgerService {
     }
   }
 
-  // Get current transport (for wallet usage)
-  getTransport(): TransportBLE {
-    if (!this.transport) {
-      throw new Error('Transport not initialized. Call connect() first.')
-    }
-    return this.transport
-  }
-
   // Check if transport is available and connected
   isConnected(): boolean {
-    return this.transport !== null && this.transport.isConnected
+    return this.#transport !== null && this.#transport.isConnected
   }
 
   // Ensure connection is established for a specific device
   async ensureConnection(deviceId: string): Promise<TransportBLE> {
     await this.reconnectIfNeeded(deviceId)
-    return this.getTransport()
+    return this.transport
+  }
+
+  // Get the current transport (for compatibility with existing code)
+  async getTransport(): Promise<TransportBLE> {
+    return this.transport
   }
 }
 
