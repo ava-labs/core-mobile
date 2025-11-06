@@ -172,7 +172,6 @@ export const FiatAmountInput = forwardRef<
               // TODO: Decide if we set it as max 20 or keep original logic
               maxLength={maxLength}
               returnKeyType={returnKeyType}
-              textAlign="center"
               editable={editable}
               style={[
                 {

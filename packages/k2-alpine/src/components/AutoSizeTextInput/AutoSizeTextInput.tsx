@@ -60,6 +60,7 @@ export const AutoSizeTextInput = forwardRef<
       ...props
     },
     ref
+    // eslint-disable-next-line sonarjs/cognitive-complexity
   ): JSX.Element => {
     const { theme } = useTheme()
 
@@ -105,7 +106,7 @@ export const AutoSizeTextInput = forwardRef<
         let newFontSize = Math.round(animatedFontSize.value * ratio)
         newFontSize = Math.max(10, Math.min(initialFontSize, newFontSize))
 
-        if (Math.abs(newFontSize - animatedFontSize.value) > 1) {
+        if (Math.abs(newFontSize - animatedFontSize.value) > 0.5) {
           animatedFontSize.value = withTiming(newFontSize, {
             ...ANIMATED.TIMING_CONFIG,
             duration: 200
@@ -156,6 +157,20 @@ export const AutoSizeTextInput = forwardRef<
       [containerWidth, props.value, calculateAndUpdateFontSize]
     )
 
+    const leftRightStyle = useAnimatedStyle(() => {
+      let marginBottom = 0
+      if (Platform.OS === 'ios') {
+        if (animatedFontSize.value > 40) {
+          marginBottom = 10
+        } else if (animatedFontSize.value > 24) {
+          marginBottom = 6
+        } else {
+          marginBottom = 4
+        }
+      }
+      return { marginBottom }
+    }, [animatedFontSize.value])
+
     const renderPrefix = useCallback(() => {
       if (renderLeft) {
         return <View onLayout={handleLeftLayout}>{renderLeft()}</View>
@@ -164,20 +179,20 @@ export const AutoSizeTextInput = forwardRef<
       if (prefix) {
         return (
           <View onLayout={handleLeftLayout}>
-            <Animated.Text
-              style={[
-                textStyle,
-                props.style,
-                {
-                  marginBottom: 6
-                }
-              ]}>
+            <Animated.Text style={[textStyle, leftRightStyle, props.style]}>
               {prefix}
             </Animated.Text>
           </View>
         )
       }
-    }, [handleLeftLayout, prefix, props.style, renderLeft, textStyle])
+    }, [
+      handleLeftLayout,
+      prefix,
+      leftRightStyle,
+      props.style,
+      renderLeft,
+      textStyle
+    ])
 
     const renderSuffix = useCallback(() => {
       if (renderRight) {
@@ -187,13 +202,20 @@ export const AutoSizeTextInput = forwardRef<
       if (suffix) {
         return (
           <View onLayout={handleRightLayout}>
-            <Animated.Text style={[textStyle, props.style]}>
+            <Animated.Text style={[textStyle, leftRightStyle, props.style]}>
               {suffix}
             </Animated.Text>
           </View>
         )
       }
-    }, [handleRightLayout, props.style, renderRight, suffix, textStyle])
+    }, [
+      handleRightLayout,
+      leftRightStyle,
+      props.style,
+      renderRight,
+      suffix,
+      textStyle
+    ])
 
     return (
       <View sx={containerSx}>
