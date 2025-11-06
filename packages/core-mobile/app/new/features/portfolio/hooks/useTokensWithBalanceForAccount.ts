@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { useSelector } from 'react-redux'
-import { selectEnabledNetworks } from 'store/network/slice'
+import { selectEnabledNetworksMap } from 'store/network/slice'
 import { Account } from 'store/account/types'
 import { LocalTokenWithBalance } from 'store/balance/types'
 import { isDefined } from 'new/common/utils/isDefined'
@@ -21,7 +21,7 @@ export function useTokensWithBalanceForAccount(
   chainId?: number
 ): LocalTokenWithBalance[] {
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
-  const networks = useSelector(selectEnabledNetworks)
+  const networks = useSelector(selectEnabledNetworksMap)
   const { results } = useAccountBalances(account, { enabled: false })
 
   return useMemo(() => {

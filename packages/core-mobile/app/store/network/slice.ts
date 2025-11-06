@@ -220,6 +220,19 @@ export const selectEnabledNetworks = createSelector(
   }
 )
 
+export const selectEnabledNetworksMap = createSelector(
+  [selectEnabledChainIds, selectIsDeveloperMode, selectNetworks],
+  (enabledChainIds, isDeveloperMode, networks) => {
+    return enabledChainIds.reduce<Networks>((acc, chainId) => {
+      const network = networks[chainId]
+      if (network && network.isTestnet === isDeveloperMode) {
+        acc[chainId] = network
+      }
+      return acc
+    }, {})
+  }
+)
+
 export const selectEnabledNetworksByTestnet =
   (isTestnet: boolean) => (state: RootState) => {
     const networks = selectNetworks(state)
