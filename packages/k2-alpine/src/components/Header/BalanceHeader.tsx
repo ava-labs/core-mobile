@@ -2,10 +2,11 @@ import React, { useCallback } from 'react'
 import { LayoutChangeEvent } from 'react-native'
 import { Icons } from '../../theme/tokens/Icons'
 import { colors } from '../../theme/tokens/colors'
-import { PriceChangeIndicator } from '../PriceChangeIndicator/PriceChangeIndicator'
-import { Text, View } from '../Primitives'
-import { PriceChange } from '../PriceChangeIndicator/types'
 import { AnimatedBalance } from '../AnimatedBalance/AnimatedBalance'
+import { LoadingContent } from '../LoadingContent/LoadingContent'
+import { PriceChangeIndicator } from '../PriceChangeIndicator/PriceChangeIndicator'
+import { PriceChange } from '../PriceChangeIndicator/types'
+import { Text, View } from '../Primitives'
 import { BalanceLoader } from './BalanceHeaderLoader'
 import { PrivacyModeAlert } from './PrivacyModeAlert'
 
@@ -17,6 +18,7 @@ export const BalanceHeader = ({
   priceChange,
   onLayout,
   isLoading,
+  isLoadingBalances,
   isPrivacyModeEnabled = false,
   isDeveloperModeEnabled = false,
   renderMaskView,
@@ -29,6 +31,7 @@ export const BalanceHeader = ({
   priceChange?: PriceChange
   onLayout?: (event: LayoutChangeEvent) => void
   isLoading?: boolean
+  isLoadingBalances?: boolean
   isPrivacyModeEnabled?: boolean
   isDeveloperModeEnabled?: boolean
   testID?: string
@@ -94,18 +97,20 @@ export const BalanceHeader = ({
           flexDirection: 'column',
           gap: 5
         }}>
-        <AnimatedBalance
-          balance={formattedBalance}
-          currency={` ${currency}`}
-          shouldMask={isPrivacyModeEnabled}
-          renderMaskView={renderMaskView}
-          balanceSx={{ lineHeight: 38 }}
-          currencySx={{
-            fontFamily: 'Aeonik-Medium',
-            fontSize: 18,
-            lineHeight: 28
-          }}
-        />
+        <LoadingContent isLoading={isLoadingBalances}>
+          <AnimatedBalance
+            balance={formattedBalance}
+            currency={` ${currency}`}
+            shouldMask={isPrivacyModeEnabled}
+            renderMaskView={renderMaskView}
+            balanceSx={{ lineHeight: 38 }}
+            currencySx={{
+              fontFamily: 'Aeonik-Medium',
+              fontSize: 18,
+              lineHeight: 28
+            }}
+          />
+        </LoadingContent>
 
         <View
           style={{
@@ -119,6 +124,7 @@ export const BalanceHeader = ({
     currency,
     formattedBalance,
     isLoading,
+    isLoadingBalances,
     isPrivacyModeEnabled,
     renderMaskView,
     renderPriceChangeIndicator

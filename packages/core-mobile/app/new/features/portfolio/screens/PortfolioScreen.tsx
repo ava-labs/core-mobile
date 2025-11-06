@@ -64,6 +64,7 @@ import { selectSelectedCurrency } from 'store/settings/currency'
 import { selectIsPrivacyModeEnabled } from 'store/settings/securityPrivacy'
 import { useFocusedSelector } from 'utils/performance/useFocusedSelector'
 import { useIsRefetchingBalancesForAccount } from '../hooks/useIsRefetchingBalancesForAccount'
+import { useIsLoadingBalancesForAccount } from '../hooks/useIsLoadingBalancesForAccount'
 
 const SEGMENT_ITEMS = [
   { title: 'Assets' },
@@ -114,6 +115,7 @@ const PortfolioHomeScreen = (): JSX.Element => {
   const totalPriceChange = useBalanceTotalPriceChangeForAccount(activeAccount)
   const tabViewRef = useRef<CollapsibleTabsRef>(null)
   const isBalanceLoaded = useIsBalanceLoadedForAccount(activeAccount)
+  const isLoadingBalances = useIsLoadingBalancesForAccount(activeAccount)
   const isLoading = isRefetchingBalance || !isBalanceLoaded
   const balanceAccurate = useIsAccountBalanceAccurate(activeAccount)
   const selectedCurrency = useSelector(selectSelectedCurrency)
@@ -285,7 +287,8 @@ const PortfolioHomeScreen = (): JSX.Element => {
               errorMessage={
                 balanceAccurate ? undefined : 'Unable to load all balances'
               }
-              isLoading={isLoading}
+              isLoading={isLoading && balanceTotalInCurrency === 0}
+              isLoadingBalances={isLoadingBalances || isLoading}
               isPrivacyModeEnabled={isPrivacyModeEnabled}
               isDeveloperModeEnabled={isDeveloperMode}
               renderMaskView={renderMaskView}
@@ -318,6 +321,8 @@ const PortfolioHomeScreen = (): JSX.Element => {
     percentChange24h,
     balanceAccurate,
     isLoading,
+    balanceTotalInCurrency,
+    isLoadingBalances,
     isPrivacyModeEnabled,
     isDeveloperMode,
     renderMaskView,
