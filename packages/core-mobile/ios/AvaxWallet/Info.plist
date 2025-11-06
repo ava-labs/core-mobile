@@ -2,123 +2,123 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<key>CFBundleDevelopmentRegion</key>
-	<string>en</string>
-	<key>CFBundleDisplayName</key>
-	<string>$(DISPLAY_NAME)</string>
-	<key>CFBundleExecutable</key>
-	<string>$(EXECUTABLE_NAME)</string>
-	<key>CFBundleIdentifier</key>
-	<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
-	<key>CFBundleInfoDictionaryVersion</key>
-	<string>6.0</string>
-	<key>CFBundleName</key>
-	<string>$(PRODUCT_NAME)</string>
-	<key>CFBundlePackageType</key>
-	<string>APPL</string>
-	<key>CFBundleShortVersionString</key>
-	<string>$(MARKETING_VERSION)</string>
-	<key>CFBundleSignature</key>
-	<string>????</string>
-	<key>CFBundleURLTypes</key>
-	<array>
-		<dict>
-			<key>CFBundleURLSchemes</key>
-			<array>
-				<string>wc</string>
-			</array>
-		</dict>
-		<dict>
-			<key>CFBundleURLSchemes</key>
-			<array>
-				<string>core</string>
-			</array>
-		</dict>
-		<dict>
-			<key>CFBundleURLSchemes</key>
-			<array>
-				<string>com.googleusercontent.apps.1023766203719-ngiu0g65qaspe3qoad2sv3hodlhsj9br</string>
-			</array>
-		</dict>
-		<dict>
-			<key>CFBundleURLSchemes</key>
-			<array>
-				<string>com.googleusercontent.apps.1023766203719-ele18nbck20nkq79trj6gm808igl8q2j</string>
-			</array>
-		</dict>
-	</array>
-	<key>CFBundleVersion</key>
-	<string>$(CURRENT_PROJECT_VERSION)</string>
-	<key>ITSAppUsesNonExemptEncryption</key>
-	<false/>
-	<key>LSMinimumSystemVersion</key>
-	<string>13.3.0</string>
-	<key>LSRequiresIPhoneOS</key>
-	<true/>
-	<key>NSAppTransportSecurity</key>
-	<dict>
-		<key>NSAllowsArbitraryLoads</key>
-		<true/>
-		<key>NSAllowsLocalNetworking</key>
-		<true/>
-	</dict>
-	<key>NSCameraUsageDescription</key>
-	<string>To scan QR we need camera permission.</string>
-	<key>NSFaceIDUsageDescription</key>
-	<string>$(DISPLAY_NAME) requires Face ID access to allow you quick and secure access to your wallet.</string>
-	<key>NSPhotoLibraryAddUsageDescription</key>
-	<string>$(DISPLAY_NAME) needs access to save images from the browser to your photo library.</string>
-	<key>UIAppFonts</key>
-	<array>
-		<string>Inter-Regular.ttf</string>
-		<string>Inter-Bold.ttf</string>
-		<string>Inter-SemiBold.ttf</string>
-		<string>Inter-ExtraBold.ttf</string>
-		<string>Aeonik-Bold.otf</string>
-		<string>Aeonik-Medium.otf</string>
-		<string>DejaVuSansMono.ttf</string>
-	</array>
-	<key>LSApplicationQueriesSchemes</key>
-	<array>
-		<string>twitter</string>
-		<string>mailto</string>
-		<string>itms-apps</string>
-	</array>
-	<key>UIBackgroundModes</key>
-	<array>
-		<string>fetch</string>
-		<string>remote-notification</string>
-	</array>
-	<key>UILaunchStoryboardName</key>
-	<string>BootSplash</string>
-	<key>UIRequiredDeviceCapabilities</key>
-	<array>
-		<string>armv7</string>
-	</array>
-	<key>UISupportedInterfaceOrientations</key>
-	<array>
-		<string>UIInterfaceOrientationPortrait</string>
-	</array>
-	<key>UIViewControllerBasedStatusBarAppearance</key>
-	<false/>
-	<key>NSBluetoothAlwaysUsageDescription</key>
-	<string>We use Bluetooth to connect to ledger devices</string>
-	<key>NSBluetoothPeripheralUsageDescription</key>
-	<string>We use Bluetooth to connect to ledger devices</string>
-	<key>branch_key</key>
+  <key>CFBundleDevelopmentRegion</key>
+  <string>en</string>
+  <key>CFBundleDisplayName</key>
+  <string>$(DISPLAY_NAME)</string>
+  <key>CFBundleExecutable</key>
+  <string>$(EXECUTABLE_NAME)</string>
+  <key>CFBundleIdentifier</key>
+  <string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+  <key>CFBundleInfoDictionaryVersion</key>
+  <string>6.0</string>
+  <key>CFBundleName</key>
+  <string>$(PRODUCT_NAME)</string>
+  <key>CFBundlePackageType</key>
+  <string>APPL</string>
+  <key>CFBundleShortVersionString</key>
+  <string>$(MARKETING_VERSION)</string>
+  <key>CFBundleSignature</key>
+  <string>????</string>
+  <key>CFBundleURLTypes</key>
+  <array>
+    <dict>
+      <key>CFBundleURLSchemes</key>
+      <array>
+        <string>wc</string>
+      </array>
+    </dict>
+    <dict>
+      <key>CFBundleURLSchemes</key>
+      <array>
+        <string>core</string>
+      </array>
+    </dict>
+    <dict>
+      <key>CFBundleURLSchemes</key>
+      <array>
+        <string>com.googleusercontent.apps.1023766203719-ngiu0g65qaspe3qoad2sv3hodlhsj9br</string>
+      </array>
+    </dict>
+    <dict>
+      <key>CFBundleURLSchemes</key>
+      <array>
+        <string>com.googleusercontent.apps.1023766203719-ele18nbck20nkq79trj6gm808igl8q2j</string>
+      </array>
+    </dict>
+  </array>
+  <key>CFBundleVersion</key>
+  <string>$(CURRENT_PROJECT_VERSION)</string>
+  <key>ITSAppUsesNonExemptEncryption</key>
+  <false/>
+  <key>LSMinimumSystemVersion</key>
+  <string>13.3.0</string>
+  <key>LSRequiresIPhoneOS</key>
+  <true/>
+  <key>NSAppTransportSecurity</key>
+  <dict>
+    <key>NSAllowsArbitraryLoads</key>
+    <true/>
+    <key>NSAllowsLocalNetworking</key>
+    <true/>
+  </dict>
+  <key>NSCameraUsageDescription</key>
+  <string>To scan QR we need camera permission.</string>
+  <key>NSFaceIDUsageDescription</key>
+  <string>$(DISPLAY_NAME) requires Face ID access to allow you quick and secure access to your wallet.</string>
+  <key>NSPhotoLibraryAddUsageDescription</key>
+  <string>$(DISPLAY_NAME) needs access to save images from the browser to your photo library.</string>
+  <key>UIAppFonts</key>
+  <array>
+    <string>Inter-Regular.ttf</string>
+    <string>Inter-Bold.ttf</string>
+    <string>Inter-SemiBold.ttf</string>
+    <string>Inter-ExtraBold.ttf</string>
+    <string>Aeonik-Bold.otf</string>
+    <string>Aeonik-Medium.otf</string>
+    <string>DejaVuSansMono.ttf</string>
+  </array>
+  <key>LSApplicationQueriesSchemes</key>
+  <array>
+    <string>twitter</string>
+    <string>mailto</string>
+    <string>itms-apps</string>
+  </array>
+  <key>UIBackgroundModes</key>
+  <array>
+    <string>fetch</string>
+    <string>remote-notification</string>
+  </array>
+  <key>UILaunchStoryboardName</key>
+  <string>BootSplash</string>
+  <key>UIRequiredDeviceCapabilities</key>
+  <array>
+    <string>armv7</string>
+  </array>
+  <key>UISupportedInterfaceOrientations</key>
+  <array>
+    <string>UIInterfaceOrientationPortrait</string>
+  </array>
+  <key>UIViewControllerBasedStatusBarAppearance</key>
+  <false/>
+  <key>NSBluetoothAlwaysUsageDescription</key>
+  <string>We use Bluetooth to connect to ledger devices</string>
+  <key>NSBluetoothPeripheralUsageDescription</key>
+  <string>We use Bluetooth to connect to ledger devices</string>
+  <key>branch_key</key>
   <dict>
     <key>test</key>
     <string>key_test_huEgqNimBs9nak9ICf2TlhdfsDdptcAD</string>
     <key>live</key>
     <string>key_live_iDtcATcmEAXhac4Rze6LgbllBAkfvayk</string>
   </dict>
-	<key>branch_universal_link_domains</key>
-	<array>
-		<string>nlfvn.test-app.link</string>
-		<string>nlfvn-alternate.test-app.link</string>
-		<string>nlfvn.app.link</string>
-	</array>
-	<key>NSUserTrackingUsageDescription</key>
-	<string>To personalize your experience, and improve our services, your activity will be used to understand how our features are used.</string>
+  <key>branch_universal_link_domains</key>
+  <array>
+    <string>nlfvn.test-app.link</string>
+    <string>nlfvn-alternate.test-app.link</string>
+    <string>nlfvn.app.link</string>
+  </array>
+  <key>NSUserTrackingUsageDescription</key>
+  <string>To personalize your experience, and improve our services, your activity will be used to understand how our features are used.</string>
 </dict>
 </plist>
