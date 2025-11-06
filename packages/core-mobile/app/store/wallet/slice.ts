@@ -1,4 +1,4 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit'
+import { createSelector, createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { RootState } from 'store/types'
 import { Wallet, WalletsState } from 'store/wallet/types'
 import { WalletType } from 'services/wallet/types'
@@ -58,6 +58,14 @@ const walletsSlice = createSlice({
 // selectors
 export const selectWallets = (state: RootState): { [key: string]: Wallet } =>
   state.wallet.wallets
+
+export const selectImportedWallets = createSelector(
+  [selectWallets],
+  (wallets): Wallet[] =>
+    Object.values(wallets).filter(
+      wallet => wallet.type === WalletType.PRIVATE_KEY
+    )
+)
 
 export const selectActiveWalletId = (state: RootState): string | null =>
   state.wallet.activeWalletId

@@ -12,3 +12,7 @@ export enum AddressType {
   SOLANA = ChainName.SOLANA,
   SOLANA_DEVNET = ChainName.SOLANA_DEVNET
 }
+
+export const PLATFORM_ACCOUNTS_VIRTUAL_WALLET_ID = 'platform-accounts-wallet-id'
+export const IMPORTED_ACCOUNTS_VIRTUAL_WALLET_ID = 'imported-accounts-wallet-id'
+export const IMPORTED_ACCOUNTS_VIRTUAL_WALLET_NAME = 'Imported'

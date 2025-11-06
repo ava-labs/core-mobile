@@ -15,7 +15,6 @@ import {
 } from 'common/components/CollapsibleTabs'
 import { HiddenBalanceText } from 'common/components/HiddenBalanceText'
 import { useAccountPerformanceSummary } from 'features/portfolio/hooks/useAccountPerformanceSummary'
-import { useBalanceTotalInCurrencyForAccount } from 'features/portfolio/hooks/useBalanceTotalInCurrencyForAccount'
 import { useBalanceTotalPriceChangeForAccount } from 'features/portfolio/hooks/useBalanceTotalPriceChangeForAccount'
 import { useIsAccountBalanceAccurate } from 'features/portfolio/hooks/useIsAccountBalanceAccurate'
 import { useIsBalanceLoadedForAccount } from 'features/portfolio/hooks/useIsBalanceLoadedForAccount'
@@ -63,7 +62,8 @@ import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { selectSelectedCurrency } from 'store/settings/currency'
 import { selectIsPrivacyModeEnabled } from 'store/settings/securityPrivacy'
 import { useFocusedSelector } from 'utils/performance/useFocusedSelector'
-import { useIsRefetchingBalancesForAccount } from '../hooks/useIsRefetchingBalancesForAccount'
+import { useIsRefetchingBalancesForAccount } from 'features/portfolio/hooks/useIsRefetchingBalancesForAccount'
+import { useBalanceTotalInCurrencyForAccount } from 'features/portfolio/hooks/useBalanceTotalInCurrencyForAccount'
 
 const SEGMENT_ITEMS = [
   { title: 'Assets' },
@@ -77,7 +77,7 @@ const SEGMENT_EVENT_MAP: Record<number, AnalyticsEventName> = {
   2: 'PortfolioDeFiClicked'
 }
 
-const PortfolioHomeScreen = (): JSX.Element => {
+const PortfolioScreen = (): JSX.Element => {
   const frame = useSafeAreaFrame()
   const headerHeight = useHeaderHeight()
   const isMeldOfframpBlocked = useSelector(selectIsMeldOfframpBlocked)
@@ -512,4 +512,4 @@ const PortfolioHomeScreen = (): JSX.Element => {
   )
 }
 
-export default PortfolioHomeScreen
+export default PortfolioScreen

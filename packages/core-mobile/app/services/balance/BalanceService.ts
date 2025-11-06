@@ -130,7 +130,7 @@ export class BalanceService {
    * Handles batching up to 64 addresses per request and returns
    * a map of address → normalized balance object (including token metadata and accuracy flags).
    */
-  async getXPBalances({
+  async getPlatformAccountBalances({
     currency,
     network,
     addresses

@@ -1,11 +1,13 @@
 import { createSlice, PayloadAction, createSelector } from '@reduxjs/toolkit'
 import { RootState } from 'store/types'
 import { WalletType } from 'services/wallet/types'
+import { CoreAccountType } from '@avalabs/types'
 import {
   Account,
   AccountsState,
   AccountCollection,
-  PrimaryAccount
+  PrimaryAccount,
+  ImportedAccount
 } from './types'
 
 export const reducerName = 'account'
@@ -58,6 +60,14 @@ const accountsSlice = createSlice({
 // selectors
 export const selectAccounts = (state: RootState): AccountCollection =>
   state.account.accounts
+
+export const selectImportedAccounts = createSelector(
+  [selectAccounts],
+  (accounts): ImportedAccount[] =>
+    Object.values(accounts).filter(
+      account => account.type === CoreAccountType.IMPORTED
+    )
+)
 
 export const selectAccountByAddress =
   (address: string) =>

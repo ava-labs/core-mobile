@@ -8,8 +8,12 @@ import {
 } from '@avalabs/k2-alpine'
 import { useManageWallet } from 'common/hooks/useManageWallet'
 import { WalletDisplayData } from 'common/types'
-import React, { useCallback } from 'react'
+import React, { useCallback, useMemo } from 'react'
 import { StyleProp, ViewStyle } from 'react-native'
+import { PLATFORM_ACCOUNTS_VIRTUAL_WALLET_ID } from 'features/accountSettings/consts'
+import { TotalAccountBalanceForWallet } from 'features/accountSettings/components/TotalAccountBalanceForWallet'
+import { WalletType } from 'services/wallet/types'
+import { TotalAccountBalanceForImportedAccounts } from 'features/accountSettings/components/TotalAccountBalanceForImportedAccounts'
 import { DropdownMenu } from './DropdownMenu'
 
 const ITEM_HEIGHT = 50
@@ -33,6 +37,12 @@ const WalletCard = ({
     theme: { colors }
   } = useTheme()
   const { getDropdownItems, handleDropdownSelect } = useManageWallet()
+
+  const accounts = useMemo(() => {
+    return wallet.accounts.filter(
+      account => !account.id.includes(PLATFORM_ACCOUNTS_VIRTUAL_WALLET_ID)
+    )
+  }, [wallet.accounts])
 
   const renderExpansionIcon = useCallback(() => {
     return (
@@ -76,25 +86,46 @@ const WalletCard = ({
             alignItems: 'center',
             gap: 8,
             flex: 1,
-            paddingHorizontal: 10
+            padding: 10
           }}>
           <View sx={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
             {renderExpansionIcon()}
             {renderWalletIcon()}
           </View>
-          <Text
-            testID={`manage_accounts_wallet_name__${wallet.name}`}
-            variant="buttonSmall"
-            numberOfLines={1}
-            style={{
-              fontSize: 14,
-              flex: 1
-            }}>
-            {wallet.name}
-          </Text>
+          <View sx={{ flex: 1 }}>
+            <Text
+              testID={`manage_accounts_wallet_name__${wallet.name}`}
+              variant="buttonSmall"
+              numberOfLines={1}
+              style={{
+                fontSize: 14
+              }}>
+              {wallet.name}
+            </Text>
+            <Text
+              testID={`manage_accounts_wallet_name__${wallet.name}`}
+              variant="caption"
+              numberOfLines={2}
+              style={{
+                fontSize: 12,
+                fontWeight: 400,
+                color: colors.$textSecondary
+              }}>
+              {`${accounts.length} ${
+                accounts.length > 1 ? 'accounts' : 'account'
+              } + X/P Chains`}
+            </Text>
+          </View>
         </View>
 
-        {showMoreButton && (
+        {/* total balance */}
+        {wallet.type === WalletType.PRIVATE_KEY ? (
+          <TotalAccountBalanceForImportedAccounts />
+        ) : (
+          <TotalAccountBalanceForWallet wallet={wallet} />
+        )}
+
+        {showMoreButton ? (
           <DropdownMenu
             groups={[
               {
@@ -115,12 +146,14 @@ const WalletCard = ({
                 alignItems: 'center'
               }}>
               <Icons.Navigation.MoreHoriz
-                color={colors.$textSecondary}
+                color={colors.$textPrimary}
                 width={20}
                 height={20}
               />
             </TouchableOpacity>
           </DropdownMenu>
+        ) : (
+          <View style={{ width: 56, height: 20 }} />
         )}
       </TouchableOpacity>
 

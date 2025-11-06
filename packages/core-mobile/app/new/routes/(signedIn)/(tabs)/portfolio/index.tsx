@@ -1,1 +1,1 @@
-export { default } from 'features/portfolio/screens/PortfolioScreen'
+export { default } from 'features/portfolio/assets/screens/PortfolioScreen'

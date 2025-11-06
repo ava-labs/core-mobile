@@ -7,3 +7,11 @@ export const useIsRefetchingAccountBalances = createZustandStore<
 export const useIsRefetchingWalletXpBalances = createZustandStore<
   Record<string, boolean>
 >({})
+
+export const useIsRefetchingImportedAccountXpBalances = createZustandStore<
+  Record<string, boolean>
+>({})
+
+export const useIsRefetchingImportedAccountBalances = createZustandStore<
+  Record<string, boolean>
+>({})

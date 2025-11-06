@@ -9,15 +9,14 @@ import { NormalizedBalancesForXpAddress } from 'services/balance/types'
 import { useSelector } from 'react-redux'
 import { selectEnabledNetworks } from 'store/network/slice'
 import { selectSelectedCurrency } from 'store/settings/currency/slice'
-import { selectAccountsByWalletId } from 'store/account'
+import { selectImportedAccounts } from 'store/account'
 import { selectIsDeveloperMode } from 'store/settings/advanced/slice'
 import { getAddressesForXP } from 'store/account/utils'
-import { WalletType } from 'services/wallet/types'
 import { Network } from '@avalabs/core-chains-sdk'
-import { NetworkVMType } from '@avalabs/vm-module-types'
-import { RootState } from 'store/types'
-import { Wallet } from 'store/wallet/types'
 import { ReactQueryKeys } from 'consts/reactQueryKeys'
+import { IMPORTED_ACCOUNTS_VIRTUAL_WALLET_ID } from 'features/accountSettings/consts'
+import { selectImportedWallets } from 'store/wallet/slice'
+import { WalletType } from 'services/wallet/types'
 import * as store from '../store'
 import { getFetchingInterval, isXpNetwork } from './utils'
 
@@ -26,25 +25,22 @@ import { getFetchingInterval, isXpNetwork } from './utils'
  */
 const staleTime = 60_000 // 1 minute
 
-export const balanceKey = (wallet: Wallet, network: Network) =>
+export const balanceKey = (network: Network) =>
   [
-    ReactQueryKeys.WALLET_XP_BALANCE,
-    wallet.id,
-    wallet.type,
+    ReactQueryKeys.IMPORTED_ACCOUNT_XP_BALANCE,
+    IMPORTED_ACCOUNTS_VIRTUAL_WALLET_ID,
+    WalletType.PRIVATE_KEY,
     network.chainId
   ] as const
 
 /**
  * Fetches balances for all XP networks (P-Chain and X-Chain)
- * across all addresses (with activities) within the specified wallet.
+ * across all addresses (with activities) within the imported accounts.
  *
  * 🔁 Runs one query per XP network in parallel via React Query.
  * 🕒 Auto-refresh cadence: every 5 minutes.
  */
-export function useWalletXpBalances(
-  wallet?: Wallet,
-  chainId?: number
-): {
+export function useImportedAccountXpBalances(chainId?: number): {
   results: QueryObserverResult<
     Record<string, NormalizedBalancesForXpAddress>,
     Error
@@ -52,15 +48,13 @@ export function useWalletXpBalances(
   refetch: () => Promise<void>
   isRefetching: boolean
 } {
-  const walletId = wallet?.id ?? ''
+  const importedWallets = useSelector(selectImportedWallets)
   const queryClient = useQueryClient()
   const [isRefetching, setIsRefetching] =
     store.useIsRefetchingWalletXpBalances()
   const enabledNetworks = useSelector(selectEnabledNetworks)
   const currency = useSelector(selectSelectedCurrency)
-  const accounts = useSelector((state: RootState) =>
-    selectAccountsByWalletId(state, walletId)
-  )
+  const accounts = useSelector(selectImportedAccounts)
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
 
   const xpNetworks = useMemo(() => {
@@ -72,29 +66,30 @@ export function useWalletXpBalances(
   }, [enabledNetworks, chainId])
 
   const queries = useMemo(() => {
-    if (!wallet || accounts.length === 0 || xpNetworks.length === 0) return []
+    if (
+      importedWallets.length === 0 ||
+      accounts.length === 0 ||
+      xpNetworks.length === 0
+    )
+      return []
 
     return xpNetworks.map(network => ({
-      queryKey: balanceKey(wallet, network),
+      queryKey: balanceKey(network),
       queryFn: async (): Promise<
         Record<string, NormalizedBalancesForXpAddress>
       > => {
-        let addresses: string[] = []
-
-        if (wallet.type === WalletType.SEEDLESS) {
-          addresses = Object.values(accounts).map(a =>
-            network.vmName === NetworkVMType.PVM ? a.addressPVM : a.addressAVM
+        const resolvedAddresses = await Promise.all(
+          importedWallets.map(wallet =>
+            getAddressesForXP({
+              networkType: network.vmName,
+              isDeveloperMode,
+              walletId: wallet.id,
+              walletType: wallet.type,
+              onlyWithActivity: true
+            })
           )
-        } else {
-          addresses = await getAddressesForXP({
-            networkType: network.vmName,
-            isDeveloperMode,
-            walletId,
-            walletType: wallet.type,
-            onlyWithActivity: true
-          })
-        }
-
+        )
+        const addresses = resolvedAddresses.flat()
         return BalanceService.getPlatformAccountBalances({
           network,
           currency: currency.toLowerCase(),
@@ -104,7 +99,7 @@ export function useWalletXpBalances(
       refetchInterval: getFetchingInterval(network),
       staleTime
     }))
-  }, [xpNetworks, wallet, walletId, accounts, currency, isDeveloperMode])
+  }, [xpNetworks, importedWallets, accounts, currency, isDeveloperMode])
 
   const results = useQueries({ queries })
 
@@ -112,26 +107,43 @@ export function useWalletXpBalances(
    * Manually refetch all XP network balances.
    */
   const refetch = useCallback(async (): Promise<void> => {
-    if (!wallet || accounts.length === 0 || xpNetworks.length === 0) return
+    if (
+      importedWallets.length === 0 ||
+      accounts.length === 0 ||
+      xpNetworks.length === 0
+    )
+      return
 
-    setIsRefetching(prev => ({ ...prev, [wallet.id]: true }))
+    setIsRefetching(prev => ({
+      ...prev,
+      [IMPORTED_ACCOUNTS_VIRTUAL_WALLET_ID]: true
+    }))
 
     try {
       await Promise.allSettled(
         xpNetworks.map(network =>
           queryClient.refetchQueries({
-            queryKey: balanceKey(wallet, network)
+            queryKey: balanceKey(network)
           })
         )
       )
     } finally {
-      setIsRefetching(prev => ({ ...prev, [wallet.id]: false }))
+      setIsRefetching(prev => ({
+        ...prev,
+        [IMPORTED_ACCOUNTS_VIRTUAL_WALLET_ID]: false
+      }))
     }
-  }, [xpNetworks, wallet, accounts.length, queryClient, setIsRefetching])
+  }, [
+    xpNetworks,
+    importedWallets,
+    accounts.length,
+    queryClient,
+    setIsRefetching
+  ])
 
   return {
     results,
     refetch,
-    isRefetching: isRefetching[wallet?.id ?? ''] ?? false
+    isRefetching: isRefetching[IMPORTED_ACCOUNTS_VIRTUAL_WALLET_ID] ?? false
   }
 }
