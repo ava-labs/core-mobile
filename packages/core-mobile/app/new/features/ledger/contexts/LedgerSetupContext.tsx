@@ -6,11 +6,11 @@ import React, {
   useMemo,
   ReactNode
 } from 'react'
-import { LedgerDerivationPathType } from 'services/ledger/types'
 import {
-  WalletCreationOptions,
-  useLedgerWallet
-} from '../hooks/useLedgerWallet'
+  LedgerDerivationPathType,
+  WalletCreationOptions
+} from 'services/ledger/types'
+import { useLedgerWallet } from '../hooks/useLedgerWallet'
 
 interface LedgerSetupState {
   selectedDerivationPath: LedgerDerivationPathType | null
