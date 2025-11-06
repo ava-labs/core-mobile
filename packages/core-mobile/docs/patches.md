@@ -94,8 +94,7 @@ we patched the tab selection handlers to allow native tab bars (iOS UITabBarCont
 https://github.com/callstackincubator/react-native-bottom-tabs/issues/383
 https://github.com/callstackincubator/react-native-bottom-tabs/pull/408
 
-
-### react-native-toast-notifications
+### react-native-toast-notifications+3.4.0.patch
 
 We patched this to fix /native-stack toast displaying on top of all screens.
 You can wrap a toast container with a custom wrapper.
@@ -111,3 +110,8 @@ You can wrap a toast container with a custom wrapper.
 </>
 
 // In order to display a toast over a native-stack modal, use [FullWindowOverlay component](https://github.com/software-mansion/react-native-screens?tab=readme-ov-file#fullwindowoverlay).
+```
+
+### @react-buoy+shared-ui+0.1.33.patch
+
+This patch fixed the "unable to resolve @react-buoy/shared-ui/dataViewer" issue. Please refer to https://github.com/LovesWorking/react-native-buoy/issues/46 for more info.
