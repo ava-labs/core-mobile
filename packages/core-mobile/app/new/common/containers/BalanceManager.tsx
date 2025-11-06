@@ -11,6 +11,7 @@ import { selectActiveWallet } from 'store/wallet/slice'
 import { useWalletXpBalances } from 'features/portfolio/hooks/useWalletXpBalances'
 import { addCustomToken } from 'store/customToken/slice'
 import { addListener, isAnyOf } from '@reduxjs/toolkit'
+import { useImportedAccountXpBalances } from 'features/portfolio/hooks/useImportedAccountXpBalances'
 
 /**
  * 🧭 BalanceManager
@@ -37,6 +38,7 @@ export const BalanceManager = (): null => {
   const { invalidate: invalidateAccountBalances } =
     useAccountBalances(activeAccount)
   useWalletXpBalances(activeWallet)
+  useImportedAccountXpBalances()
 
   const queryClient = useQueryClient()
   const enabledNetworks = useSelector(selectEnabledNetworks)

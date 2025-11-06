@@ -12,7 +12,10 @@ import { getTokensWithBalanceForAccountFromCache } from './useTokensWithBalanceF
  * Returns token balances for imported accounts.
  *   (filtered by developer mode to include only testnet/mainnet as appropriate).
  */
-export function useTokensWithBalanceForImportedAccounts(): LocalTokenWithBalance[] {
+export function useTokensWithBalanceForImportedWallets(): {
+  accountTokens: LocalTokenWithBalance[]
+  platformTokens: LocalTokenWithBalance[]
+} {
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const accounts = useSelector(selectImportedAccounts)
   const importedWallets = useSelector(selectImportedWallets)
@@ -44,8 +47,10 @@ export function useTokensWithBalanceForImportedAccounts(): LocalTokenWithBalance
     [importedWallets, networks, isDeveloperMode]
   )
 
-  return useMemo(
-    () => [...accountTokens, ...platformTokens],
-    [accountTokens, platformTokens]
-  )
+  return useMemo(() => {
+    return {
+      accountTokens,
+      platformTokens
+    }
+  }, [accountTokens, platformTokens])
 }

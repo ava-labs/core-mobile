@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 import { Wallet } from 'store/wallet/types'
 import { useWalletXpBalances } from './useWalletXpBalances'
-import { useBalanceTotalInCurrencyFoPlatformAccount } from './useBalanceTotalInCurrencyForPlatfomAccount'
+import { useBalanceTotalInCurrencyForPlatformAccount } from './useBalanceTotalInCurrencyForPlatfomAccount'
 import { useIsBalanceLoadedForPlatformAccount } from './useIsBalanceLoadedForPlatformAccount'
 
 export const useBalanceForPlatformAccount = (
@@ -14,7 +14,7 @@ export const useBalanceForPlatformAccount = (
   balance: number
 } => {
   const { results, refetch } = useWalletXpBalances(wallet, chainId)
-  const accountBalance = useBalanceTotalInCurrencyFoPlatformAccount(
+  const accountBalance = useBalanceTotalInCurrencyForPlatformAccount(
     wallet,
     chainId
   )

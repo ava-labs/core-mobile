@@ -3,25 +3,27 @@ import { selectEnabledChainIds } from 'store/network'
 import { isTokenVisible } from 'store/balance/utils'
 import { selectTokenVisibility } from 'store/portfolio'
 import { useFocusedSelector } from 'utils/performance/useFocusedSelector'
-import { Wallet } from 'store/wallet/types'
+import { selectImportedWallets } from 'store/wallet/slice'
+import { useSelector } from 'react-redux'
 import {
   isTokenWithBalanceAVM,
   isTokenWithBalancePVM
 } from '@avalabs/avalanche-module'
-import { useTokensWithBalanceForWallet } from './useTokensWithBalanceForWallet'
+import { useTokensWithBalanceForImportedWallets } from './useTokensWithBalanceForImportedWallets'
 
 /**
- * Returns the total balance (in fiat currency) for a given wallet,
+ * Returns the total balance (in fiat currency) for imported wallets,
  * filtered by token visibility and enabled networks.
  */
-export function useBalanceTotalInCurrencyForWallet(wallet?: Wallet): number {
+export function useBalanceTotalInCurrencyForImportedWallets(): number {
   const tokenVisibility = useFocusedSelector(selectTokenVisibility)
   const enabledChainIds = useFocusedSelector(selectEnabledChainIds)
   const { accountTokens, platformTokens } =
-    useTokensWithBalanceForWallet(wallet)
+    useTokensWithBalanceForImportedWallets()
+  const importedWallets = useSelector(selectImportedWallets)
 
   const accountTokensBalance = useMemo(() => {
-    if (!wallet) return 0
+    if (importedWallets.length === 0) return 0
 
     return accountTokens
       .filter(
@@ -30,11 +32,9 @@ export function useBalanceTotalInCurrencyForWallet(wallet?: Wallet): number {
           enabledChainIds.includes(token.networkChainId)
       )
       .reduce((acc, token) => acc + (token.balanceInCurrency ?? 0), 0)
-  }, [wallet, accountTokens, tokenVisibility, enabledChainIds])
+  }, [importedWallets.length, accountTokens, tokenVisibility, enabledChainIds])
 
   const platformTokensBalance = useMemo(() => {
-    if (!wallet) return 0
-
     return platformTokens.reduce(
       (acc, token) =>
         acc +
@@ -43,7 +43,7 @@ export function useBalanceTotalInCurrencyForWallet(wallet?: Wallet): number {
           : 0),
       0
     )
-  }, [wallet, platformTokens])
+  }, [platformTokens])
 
   return accountTokensBalance + platformTokensBalance
 }

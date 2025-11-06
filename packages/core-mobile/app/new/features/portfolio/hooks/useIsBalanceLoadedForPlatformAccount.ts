@@ -9,7 +9,7 @@ export function useIsBalanceLoadedForPlatformAccount(
   wallet?: Wallet,
   chainId?: number
 ): boolean {
-  const { results } = useWalletXpBalances(wallet, chainId)
+  const { results } = useWalletXpBalances(wallet, chainId, { enabled: false })
 
   return useMemo(() => {
     if (!wallet) return false

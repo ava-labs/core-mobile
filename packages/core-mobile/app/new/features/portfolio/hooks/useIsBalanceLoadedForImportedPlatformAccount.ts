@@ -7,7 +7,7 @@ import { useImportedAccountXpBalances } from './useImportedAccountXpBalances'
 export function useIsBalanceLoadedForImportedPlatformAccount(
   chainId?: number
 ): boolean {
-  const { results } = useImportedAccountXpBalances(chainId)
+  const { results } = useImportedAccountXpBalances(chainId, { enabled: false })
 
   return useMemo(() => {
     // Any query that has successfully fetched data (even partial)

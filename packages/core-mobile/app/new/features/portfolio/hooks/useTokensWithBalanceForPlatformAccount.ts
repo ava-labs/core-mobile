@@ -24,7 +24,7 @@ export function useTokensWithBalanceForPlatformAccount(
 ): LocalTokenWithBalance[] {
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
   const networks = useSelector(selectEnabledNetworks)
-  const { results } = useWalletXpBalances(wallet, chainId)
+  const { results } = useWalletXpBalances(wallet, chainId, { enabled: false })
 
   return useMemo(() => {
     if (!wallet) return []

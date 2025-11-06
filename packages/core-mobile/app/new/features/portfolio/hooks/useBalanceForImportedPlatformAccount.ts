@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
-import { useBalanceTotalInCurrencyForImportedAccounts } from './useBalanceTotalInCurrencyForImportedAccounts'
 import { useImportedAccountXpBalances } from './useImportedAccountXpBalances'
 import { useIsBalanceLoadedForImportedPlatformAccount } from './useIsBalanceLoadedForImportedPlatformAccount'
+import { useBalanceTotalInCurrencyForImportedPlatformAccount } from './useBalanceTotalInCurrencyForImportedPlatfomAccount'
 
 export const useBalanceForImportedPlatformAccount = (
   chainId: number
@@ -11,8 +11,13 @@ export const useBalanceForImportedPlatformAccount = (
   isFetchingBalance: boolean
   balance: number
 } => {
-  const { results, refetch } = useImportedAccountXpBalances(chainId)
-  const accountBalance = useBalanceTotalInCurrencyForImportedAccounts()
+  const { results, refetch } = useImportedAccountXpBalances(chainId, {
+    enabled: false
+  })
+
+  const accountBalance =
+    useBalanceTotalInCurrencyForImportedPlatformAccount(chainId)
+
   const isBalanceLoaded = useIsBalanceLoadedForImportedPlatformAccount(chainId)
 
   const isFetching = useMemo(

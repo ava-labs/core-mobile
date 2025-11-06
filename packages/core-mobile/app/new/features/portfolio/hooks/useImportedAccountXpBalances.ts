@@ -10,9 +10,7 @@ import { useSelector } from 'react-redux'
 import { selectEnabledNetworks } from 'store/network/slice'
 import { selectSelectedCurrency } from 'store/settings/currency/slice'
 import { selectImportedAccounts } from 'store/account'
-import { selectIsDeveloperMode } from 'store/settings/advanced/slice'
-import { getAddressesForXP } from 'store/account/utils'
-import { Network } from '@avalabs/core-chains-sdk'
+import { Network, NetworkVMType } from '@avalabs/core-chains-sdk'
 import { ReactQueryKeys } from 'consts/reactQueryKeys'
 import { IMPORTED_ACCOUNTS_VIRTUAL_WALLET_ID } from 'features/accountSettings/consts'
 import { selectImportedWallets } from 'store/wallet/slice'
@@ -40,7 +38,10 @@ export const balanceKey = (network: Network) =>
  * 🔁 Runs one query per XP network in parallel via React Query.
  * 🕒 Auto-refresh cadence: every 5 minutes.
  */
-export function useImportedAccountXpBalances(chainId?: number): {
+export function useImportedAccountXpBalances(
+  chainId?: number,
+  options?: { enabled?: boolean }
+): {
   results: QueryObserverResult<
     Record<string, NormalizedBalancesForXpAddress>,
     Error
@@ -48,6 +49,8 @@ export function useImportedAccountXpBalances(chainId?: number): {
   refetch: () => Promise<void>
   isRefetching: boolean
 } {
+  const enabled = options?.enabled ?? true
+
   const importedWallets = useSelector(selectImportedWallets)
   const queryClient = useQueryClient()
   const [isRefetching, setIsRefetching] =
@@ -55,7 +58,6 @@ export function useImportedAccountXpBalances(chainId?: number): {
   const enabledNetworks = useSelector(selectEnabledNetworks)
   const currency = useSelector(selectSelectedCurrency)
   const accounts = useSelector(selectImportedAccounts)
-  const isDeveloperMode = useSelector(selectIsDeveloperMode)
 
   const xpNetworks = useMemo(() => {
     const filtered = enabledNetworks.filter(isXpNetwork)
@@ -74,22 +76,17 @@ export function useImportedAccountXpBalances(chainId?: number): {
       return []
 
     return xpNetworks.map(network => ({
+      enabled,
       queryKey: balanceKey(network),
       queryFn: async (): Promise<
         Record<string, NormalizedBalancesForXpAddress>
       > => {
-        const resolvedAddresses = await Promise.all(
-          importedWallets.map(wallet =>
-            getAddressesForXP({
-              networkType: network.vmName,
-              isDeveloperMode,
-              walletId: wallet.id,
-              walletType: wallet.type,
-              onlyWithActivity: true
-            })
-          )
+        const addresses = accounts.map(account =>
+          network.vmName === NetworkVMType.PVM
+            ? account.addressPVM
+            : account.addressAVM
         )
-        const addresses = resolvedAddresses.flat()
+
         return BalanceService.getPlatformAccountBalances({
           network,
           currency: currency.toLowerCase(),
@@ -99,7 +96,7 @@ export function useImportedAccountXpBalances(chainId?: number): {
       refetchInterval: getFetchingInterval(network),
       staleTime
     }))
-  }, [xpNetworks, importedWallets, accounts, currency, isDeveloperMode])
+  }, [xpNetworks, importedWallets, accounts, currency, enabled])
 
   const results = useQueries({ queries })
 

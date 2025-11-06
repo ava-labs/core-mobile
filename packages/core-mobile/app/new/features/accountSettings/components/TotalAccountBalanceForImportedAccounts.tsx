@@ -12,7 +12,7 @@ import { useFormatCurrency } from 'new/common/hooks/useFormatCurrency'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
 import { HiddenBalanceText } from 'common/components/HiddenBalanceText'
 import { useIsRefetchingBalancesForImportedWallet } from 'features/portfolio/hooks/useIsRefetchingBalancesForImportedWallet'
-import { useBalanceTotalInCurrencyForImportedAccounts } from 'features/portfolio/hooks/useBalanceTotalInCurrencyForImportedAccounts'
+import { useBalanceTotalInCurrencyForImportedWallets } from 'features/portfolio/hooks/useBalanceTotalInCurrencyForImportedWallets'
 
 export const TotalAccountBalanceForImportedAccounts = (): React.JSX.Element => {
   const isPrivacyModeEnabled = useSelector(selectIsPrivacyModeEnabled)
@@ -20,7 +20,7 @@ export const TotalAccountBalanceForImportedAccounts = (): React.JSX.Element => {
     theme: { colors }
   } = useTheme()
   const isFetchingBalance = useIsRefetchingBalancesForImportedWallet()
-  const totalBalance = useBalanceTotalInCurrencyForImportedAccounts()
+  const totalBalance = useBalanceTotalInCurrencyForImportedWallets()
 
   const { formatCurrency } = useFormatCurrency()
 

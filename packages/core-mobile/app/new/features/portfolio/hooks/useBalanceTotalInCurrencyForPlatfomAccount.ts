@@ -1,13 +1,17 @@
 import { useMemo } from 'react'
 import { Wallet } from 'store/wallet/types'
+import {
+  isTokenWithBalanceAVM,
+  isTokenWithBalancePVM
+} from '@avalabs/avalanche-module'
 import { useTokensWithBalanceForPlatformAccount } from './useTokensWithBalanceForPlatformAccount'
 
 /**
  * Returns the total balance (in fiat currency) for a given wallet on a given chain,
  */
-export function useBalanceTotalInCurrencyFoPlatformAccount(
+export function useBalanceTotalInCurrencyForPlatformAccount(
   wallet: Wallet,
-  chainId: number
+  chainId?: number
 ): number {
   const tokens = useTokensWithBalanceForPlatformAccount(wallet, chainId)
 
@@ -15,7 +19,11 @@ export function useBalanceTotalInCurrencyFoPlatformAccount(
     if (!wallet) return 0
 
     return tokens.reduce(
-      (acc, token) => acc + (token.balanceInCurrency ?? 0),
+      (acc, token) =>
+        acc +
+        (isTokenWithBalanceAVM(token) || isTokenWithBalancePVM(token)
+          ? token.availableInCurrency ?? 0
+          : 0),
       0
     )
   }, [tokens, wallet])

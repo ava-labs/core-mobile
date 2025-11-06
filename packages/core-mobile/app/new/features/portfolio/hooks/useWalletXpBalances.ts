@@ -43,7 +43,8 @@ export const balanceKey = (wallet: Wallet, network: Network) =>
  */
 export function useWalletXpBalances(
   wallet?: Wallet,
-  chainId?: number
+  chainId?: number,
+  options?: { enabled?: boolean }
 ): {
   results: QueryObserverResult<
     Record<string, NormalizedBalancesForXpAddress>,
@@ -52,6 +53,8 @@ export function useWalletXpBalances(
   refetch: () => Promise<void>
   isRefetching: boolean
 } {
+  const enabled = options?.enabled ?? true
+
   const walletId = wallet?.id ?? ''
   const queryClient = useQueryClient()
   const [isRefetching, setIsRefetching] =
@@ -75,6 +78,7 @@ export function useWalletXpBalances(
     if (!wallet || accounts.length === 0 || xpNetworks.length === 0) return []
 
     return xpNetworks.map(network => ({
+      enabled,
       queryKey: balanceKey(wallet, network),
       queryFn: async (): Promise<
         Record<string, NormalizedBalancesForXpAddress>
@@ -104,7 +108,15 @@ export function useWalletXpBalances(
       refetchInterval: getFetchingInterval(network),
       staleTime
     }))
-  }, [xpNetworks, wallet, walletId, accounts, currency, isDeveloperMode])
+  }, [
+    xpNetworks,
+    wallet,
+    walletId,
+    accounts,
+    currency,
+    isDeveloperMode,
+    enabled
+  ])
 
   const results = useQueries({ queries })
 
