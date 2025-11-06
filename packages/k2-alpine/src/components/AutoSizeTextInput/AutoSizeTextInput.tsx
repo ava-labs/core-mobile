@@ -43,8 +43,6 @@ interface TextInputProps extends _TextInputProps {
   prefixSx?: TextStyle
   /** Right text style */
   suffixSx?: TextStyle
-  /** Always show prefix and suffix */
-  alwaysShowPrefixAndSuffix?: boolean
 }
 
 export const AutoSizeTextInput = forwardRef<
@@ -65,7 +63,6 @@ export const AutoSizeTextInput = forwardRef<
       containerSx,
       prefixSx,
       suffixSx,
-      alwaysShowPrefixAndSuffix,
       renderLeft,
       renderRight,
       onChangeText,
@@ -184,11 +181,7 @@ export const AutoSizeTextInput = forwardRef<
         )
       }
 
-      if (
-        prefix &&
-        (alwaysShowPrefixAndSuffix ||
-          (props.value && props?.value?.length >= 1))
-      ) {
+      if (prefix) {
         return (
           <Pressable onPress={focusTextInput} onLayout={handleLeftLayout}>
             <Animated.Text
@@ -209,7 +202,6 @@ export const AutoSizeTextInput = forwardRef<
         )
       }
     }, [
-      alwaysShowPrefixAndSuffix,
       focusTextInput,
       handleLeftLayout,
       prefix,
@@ -231,11 +223,7 @@ export const AutoSizeTextInput = forwardRef<
         )
       }
 
-      if (
-        suffix &&
-        (alwaysShowPrefixAndSuffix ||
-          (props.value && props?.value?.length >= 1))
-      ) {
+      if (suffix) {
         return (
           <Pressable onPress={focusTextInput} onLayout={handleRightLayout}>
             <Animated.Text
@@ -256,11 +244,10 @@ export const AutoSizeTextInput = forwardRef<
         )
       }
     }, [
-      alwaysShowPrefixAndSuffix,
       focusTextInput,
       handleRightLayout,
       props.style,
-      props.value,
+      props?.value,
       renderRight,
       suffix,
       suffixSx,
