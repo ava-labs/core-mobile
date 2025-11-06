@@ -1,4 +1,5 @@
 import TransportBLE from '@ledgerhq/react-native-hw-transport-ble'
+import Transport from '@ledgerhq/hw-transport'
 import AppAvalanche from '@avalabs/hw-app-avalanche'
 import AppSolana from '@ledgerhq/hw-app-solana'
 import { NetworkVMType } from '@avalabs/core-chains-sdk'
@@ -356,7 +357,8 @@ export class LedgerService {
 
     try {
       // Create fresh Solana app instance
-      const solanaApp = new AppSolana(this.transport)
+      const transport = await this.getTransport()
+      const solanaApp = new AppSolana(transport as Transport)
       // Try to get a simple address to check if app is open
       // Use a standard Solana derivation path
       const testPath = "m/44'/501'/0'"
@@ -378,7 +380,8 @@ export class LedgerService {
     }
 
     // Create a fresh AppSolana instance for each call (like the SDK does)
-    const freshSolanaApp = new AppSolana(this.transport)
+    const transport = await this.getTransport()
+    const freshSolanaApp = new AppSolana(transport as Transport)
     const publicKeys: PublicKeyInfo[] = []
 
     try {
