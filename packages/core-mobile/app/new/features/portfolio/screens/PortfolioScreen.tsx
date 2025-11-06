@@ -287,8 +287,8 @@ const PortfolioHomeScreen = (): JSX.Element => {
               errorMessage={
                 balanceAccurate ? undefined : 'Unable to load all balances'
               }
-              isLoadingBalances={isLoadingBalances}
-              isLoading={isLoading}
+              isLoading={isLoading && balanceTotalInCurrency === 0}
+              isLoadingBalances={isLoadingBalances || isLoading}
               isPrivacyModeEnabled={isPrivacyModeEnabled}
               isDeveloperModeEnabled={isDeveloperMode}
               renderMaskView={renderMaskView}
@@ -320,8 +320,9 @@ const PortfolioHomeScreen = (): JSX.Element => {
     indicatorStatus,
     percentChange24h,
     balanceAccurate,
-    isLoadingBalances,
     isLoading,
+    balanceTotalInCurrency,
+    isLoadingBalances,
     isPrivacyModeEnabled,
     isDeveloperMode,
     renderMaskView,
