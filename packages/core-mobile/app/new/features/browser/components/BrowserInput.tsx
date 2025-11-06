@@ -122,6 +122,7 @@ export const BrowserInput = (): ReactNode => {
         {activeTab?.activeHistory?.url.length &&
         isValidHttpUrl(activeTab?.activeHistory?.url) ? (
           <Text
+            testID="browser_url"
             numberOfLines={1}
             style={{
               fontFamily: 'Inter-Medium',

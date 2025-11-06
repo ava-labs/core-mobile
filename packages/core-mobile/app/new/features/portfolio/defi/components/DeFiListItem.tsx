@@ -38,6 +38,7 @@ export const DeFiListItem = ({
       item={item}
       chain={chain}
       formattedPrice={formattedPrice}
+      index={index}
       onPress={onPress}
       onPressArrow={onPressArrow}
     />
