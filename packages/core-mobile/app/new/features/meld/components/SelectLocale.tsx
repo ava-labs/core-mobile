@@ -29,14 +29,15 @@ export const SelectLocale = ({
   } = useTheme()
 
   const renderFooter = (): React.JSX.Element => {
+    const isDisabled =
+      selectedCountry === undefined || selectedCurrency === undefined
     return (
       <Button
+        testID={isDisabled ? 'next_btn_disabled' : 'next_btn'}
         type="primary"
         size="large"
         onPress={onNext}
-        disabled={
-          selectedCountry === undefined || selectedCurrency === undefined
-        }>
+        disabled={isDisabled}>
         Next
       </Button>
     )
@@ -49,6 +50,7 @@ export const SelectLocale = ({
 
     return (
       <Text
+        testID={`right_value__${selectedCountry?.name}`}
         variant="body2"
         numberOfLines={1}
         sx={{
@@ -89,7 +91,7 @@ export const SelectLocale = ({
           </View>
         )}
         <Text
-          testID="right_value__Currency"
+          testID={`right_value__${selectedCurrency?.currencyCode?.toUpperCase()}`}
           variant="body2"
           sx={{
             color: colors.$textSecondary,

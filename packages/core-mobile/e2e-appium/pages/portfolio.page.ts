@@ -179,16 +179,36 @@ class PortfolioPage {
     return selectors.getById(portfolio.bridgeButton)
   }
 
-  get receiveButton() {
-    return selectors.getById(portfolio.receiveButton)
-  }
-
   get sort() {
     return selectors.getById(portfolio.sort)
   }
 
   get view() {
     return selectors.getById(portfolio.view)
+  }
+
+  get defiDetailTitle() {
+    return selectors.getById(portfolio.defiDetailTitle)
+  }
+
+  get defiDetailPrice() {
+    return selectors.getById(portfolio.defiDetailPrice)
+  }
+
+  get defiEmptyScreenTitle() {
+    return selectors.getByText(portfolio.defiEmptyScreenTitle)
+  }
+
+  get defiEmptyScreenDescription() {
+    return selectors.getByText(portfolio.defiEmptyScreenDescription)
+  }
+
+  get defiEmptyScreenExploreBtn() {
+    return selectors.getByText(portfolio.defiEmptyScreenExploreBtn)
+  }
+
+  get defiDetailBrowserBtn() {
+    return selectors.getById(portfolio.defiDetailBrowserBtn)
   }
 
   async verifyPorfolioScreen() {
@@ -256,7 +276,7 @@ class PortfolioPage {
   }
 
   async tapDefiTab() {
-    await actions.tap(this.defiTab)
+    await actions.click(this.defiTab)
   }
 
   async tapEthNetwork() {
@@ -465,10 +485,6 @@ class PortfolioPage {
     await actions.tap(this.bridgeButton)
   }
 
-  async tapReceive() {
-    await actions.tap(this.receiveButton)
-  }
-
   async verifyActivityItem(
     from = commonEls.accountOneAddress,
     to = commonEls.accountTwoAddress
@@ -487,6 +503,58 @@ class PortfolioPage {
     await this.verifyOwnedTokenActionButtons(buttons)
     const fiatBalance = await this.getFiatBalance()
     await commonElsPage.goBack(selectors.getByText(fiatBalance))
+  }
+
+  async verifyDefiSort(ascending = true, isGrid = true) {
+    const prefix = isGrid ? portfolio.defiGridTitle : portfolio.defiListTitle
+    const first = await actions.getText(selectors.getById(`${prefix}__0`))
+    const second = await actions.getText(selectors.getById(`${prefix}__2`))
+    console.log(`First: ${first}, Second: ${second}, Ascending: ${ascending}`)
+    const compare = first.localeCompare(second)
+    const isSorted = ascending ? compare <= 0 : compare >= 0
+    assert.ok(isSorted, `Defi not sorted ${ascending ? 'A-Z' : 'Z-A'}`)
+  }
+
+  async tapDefiItem(index = 0, isGrid = true) {
+    const prefix = isGrid ? portfolio.defiGridItem : portfolio.defiListItem
+    await actions.waitFor(selectors.getById(`${prefix}__${index}`))
+    await actions.tap(selectors.getById(`${prefix}__${index}`))
+  }
+
+  async tapDefiDetailBrowserBtn() {
+    await actions.tap(this.defiDetailBrowserBtn)
+  }
+
+  async tapDefiBrowserBtn(index = 0, isGrid = true) {
+    const prefix = isGrid
+      ? portfolio.defiGridBrowserBtn
+      : portfolio.defiListBrowserBtn
+    await actions.tap(selectors.getById(`${prefix}__${index}`))
+  }
+
+  async getDefiItemPrice(index = 0, isGrid = true) {
+    const prefix = isGrid ? portfolio.defiGridPrice : portfolio.defiListPrice
+    return await actions.getText(selectors.getById(`${prefix}__${index}`))
+  }
+
+  async getDefiItemTitle(index = 0, isGrid = true) {
+    const prefix = isGrid ? portfolio.defiGridTitle : portfolio.defiListTitle
+    return await actions.getText(selectors.getById(`${prefix}__${index}`))
+  }
+
+  async verifyDefiItem(price: string, title: string) {
+    await actions.waitFor(this.defiDetailPrice)
+    await actions.isVisible(this.defiDetailTitle)
+    const detailPrice = await actions.getText(this.defiDetailPrice)
+    const detailTitle = await actions.getText(this.defiDetailTitle)
+    assert.equal(detailPrice, price, `${detailPrice} not equal to ${price}`)
+    assert.equal(detailTitle, title, `${detailTitle} not equal to ${title}`)
+  }
+
+  async verifyEmptyDefiScreen() {
+    await actions.waitFor(this.defiEmptyScreenTitle)
+    await actions.isVisible(this.defiEmptyScreenDescription)
+    await actions.isVisible(this.defiEmptyScreenExploreBtn)
   }
 }
 

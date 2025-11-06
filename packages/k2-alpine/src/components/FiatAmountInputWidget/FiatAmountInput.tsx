@@ -166,6 +166,8 @@ export const FiatAmountInput = forwardRef<
               {...props}
               ref={textInputRef}
               value={value}
+              accessibilityLabel="fiat_amount_input"
+              testID="fiat_amount_input"
               onChangeText={handleValueChanged}
               initialFontSize={60}
               textAlign="right"

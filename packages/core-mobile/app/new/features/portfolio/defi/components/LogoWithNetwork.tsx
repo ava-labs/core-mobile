@@ -9,11 +9,13 @@ import {
 export const LogoWithNetwork = ({
   item,
   chain,
-  size
+  size,
+  testID
 }: {
   item: DeFiSimpleProtocol | DeFiProtocol
   chain: DeFiChain | undefined
   size: 'large' | 'medium' | 'small'
+  testID?: string
 }): React.JSX.Element => {
   const {
     theme: { colors }
@@ -34,7 +36,7 @@ export const LogoWithNetwork = ({
           height: width,
           borderRadius: width / 2
         }}
-        testID="protocol_logo"
+        testID={testID}
       />
       <Image
         source={{ uri: networkLogo }}

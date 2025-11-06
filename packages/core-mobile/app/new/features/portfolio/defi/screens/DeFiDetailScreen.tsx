@@ -64,6 +64,7 @@ export const DeFiDetailScreen = (): JSX.Element => {
   const renderFooter = useCallback(() => {
     return (
       <Button
+        testID="defi_detail_browser_btn"
         size="large"
         type="primary"
         rightIcon={
@@ -113,13 +114,16 @@ export const DeFiDetailScreen = (): JSX.Element => {
       <View sx={{ gap: 10, marginTop: 5 }}>
         <LogoWithNetwork size="medium" item={data} chain={memoizedChain} />
         <View>
-          <Text variant="heading2" sx={{ color: '$textSecondary' }}>
+          <Text
+            testID="defi_detail_title"
+            variant="heading2"
+            sx={{ color: '$textSecondary' }}>
             {data.name}
           </Text>
           {isPrivacyModeEnabled ? (
             <HiddenBalanceText variant={'heading2'} />
           ) : (
-            <Text variant="heading2">
+            <Text testID="defi_detail_price" variant="heading2">
               {calculatedTotalValueOfProtocolItems}
             </Text>
           )}

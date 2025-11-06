@@ -260,6 +260,10 @@ class CommonElsPage {
     return selectors.getByText(commonEls.accountOne)
   }
 
+  get hkd() {
+    return selectors.getByText(commonEls.hkd)
+  }
+
   async filter(
     item = commonEls.cChain_2,
     filterDropdown = this.filterDropdown
@@ -318,11 +322,11 @@ class CommonElsPage {
     }
   }
 
-  async tapDeviceBackButton() {
+  async goAndroidBack() {
     await driver.back()
   }
 
-  async goBack(nxtEle: ChainablePromiseElement) {
+  async goBack(nxtEle: ChainablePromiseElement | undefined = undefined) {
     await actions.delay(1000)
     try {
       await actions.click(this.backButton)

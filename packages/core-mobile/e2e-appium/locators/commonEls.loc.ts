@@ -62,9 +62,9 @@ export default {
   copyBtn: 'copy_btn__',
   myEvmAddress2: '0xF65536cDCbc74960b6a835e5902EB362c458F490',
   myEvmAddress: '0xAa7C5180e46e8c995413B9FbDFEDE46f4B2B9Dc2',
-  myXpAddress: 'avax18vaw45gtmc8d3k8ntqdh9ya2fpt5v67syvf6pg',
-  myBtcAddress: 'bc1qx0wc08l9kft3zql6p4q62erw00xpe7qntu92eu',
-  mySolanaAddress: 'GekYiiiREoGcSayESnkPaX9bnPvYaahEDXdDbUdccpwy',
+  myXpAddress: 'avax1mv8plj6j92r8gd0syc8n98c4ke5tcvf22kr2w4',
+  myBtcAddress: 'bc1q853w4p6q9csh3d0nwe8gjyu43hfkx4m2gn04z6',
+  mySolanaAddress: '5MJmmv6SufweTQdmokQn5oiZTigXin7ipKELfc7VPZTy',
   btcbAddress: '0xAa7C5180e46e8c995413B9FbDFEDE46f4B2B9Dc2',
   btcAddress: 'bc1q2f0tczgrukdxjrhhadpft2fehzpcrwrz549u90',
   usdcAddress: '0xb97ef9ef8734c71904d8002f8b6bc66dd9c48a6e',
@@ -97,5 +97,9 @@ export default {
   accountsDropdown: 'accounts_dropdown',
   editedAccountName: 'Edited Account 2',
   accountBalance: 'account_balance',
-  accountTitle: 'account_title'
+  accountTitle: 'account_title',
+  usd: 'USD',
+  hkd: 'HKD',
+  usa: 'United States',
+  southKorea: 'South Korea'
 }

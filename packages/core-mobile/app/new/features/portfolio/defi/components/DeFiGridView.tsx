@@ -65,19 +65,31 @@ export const DeFiGridView = ({
             paddingBottom: 36,
             alignItems: 'center'
           }}>
-          <LogoWithNetwork item={item} chain={chain} size="large" />
+          <LogoWithNetwork
+            item={item}
+            chain={chain}
+            size="large"
+            testID={`defi_grid_item__${index}`}
+          />
           <View sx={{ alignItems: 'center' }}>
-            <Text variant="buttonMedium" numberOfLines={1}>
+            <Text
+              variant="buttonMedium"
+              numberOfLines={1}
+              testID={`defi_grid_title__${index}`}>
               {item.name}
             </Text>
             <View sx={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
               <MaskedText
+                testID={`defi_grid_price__${index}`}
                 shouldMask={isPrivacyModeEnabled}
                 sx={{ color: '$textSecondary', lineHeight: 18 }}
                 numberOfLines={1}>
                 {formattedPrice}
               </MaskedText>
-              <TouchableOpacity onPress={handleOnPressArrow} hitSlop={50}>
+              <TouchableOpacity
+                testID={`defi_grid_browser_btn__${index}`}
+                onPress={handleOnPressArrow}
+                hitSlop={50}>
                 <Icons.Custom.Outbound color={theme.colors.$textPrimary} />
               </TouchableOpacity>
             </View>
