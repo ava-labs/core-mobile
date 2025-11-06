@@ -27,6 +27,9 @@ import {
   LedgerKeys
 } from 'services/ledger/types'
 
+// Re-export types for consumers
+export type { WalletCreationOptions, SetupProgress, LedgerDevice, LedgerKeys }
+
 export interface UseLedgerWalletReturn {
   // Connection state
   devices: LedgerDevice[]
