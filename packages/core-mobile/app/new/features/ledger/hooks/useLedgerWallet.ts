@@ -33,6 +33,9 @@ import {
   SOLANA_DERIVATION_PATH
 } from '../consts'
 
+// Re-export types for consumers
+export type { WalletCreationOptions, SetupProgress, LedgerDevice, LedgerKeys }
+
 export interface UseLedgerWalletReturn {
   // Connection state
   devices: LedgerDevice[]
