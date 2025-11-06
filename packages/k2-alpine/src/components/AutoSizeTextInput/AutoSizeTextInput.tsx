@@ -17,8 +17,10 @@ import {
   TextStyle
 } from 'react-native'
 import Animated, {
+  interpolateColor,
   useAnimatedStyle,
-  useSharedValue
+  useSharedValue,
+  withTiming
 } from 'react-native-reanimated'
 import { useTheme } from '../../hooks'
 import { alpha } from '../../utils'
@@ -43,6 +45,10 @@ interface TextInputProps extends _TextInputProps {
   prefixSx?: TextStyle
   /** Right text style */
   suffixSx?: TextStyle
+  /** Prefix fontSize multiplier */
+  prefixFontSizeMultiplier?: number
+  /** Suffix fontSize multiplier */
+  suffixFontSizeMultiplier?: number
 }
 
 export const AutoSizeTextInput = forwardRef<
@@ -63,6 +69,7 @@ export const AutoSizeTextInput = forwardRef<
       containerSx,
       prefixSx,
       suffixSx,
+      suffixFontSizeMultiplier = 1,
       renderLeft,
       renderRight,
       onChangeText,
@@ -95,6 +102,24 @@ export const AutoSizeTextInput = forwardRef<
         fontFamily: 'Aeonik-Medium',
         fontSize: animatedFontSize.value,
         lineHeight: animatedFontSize.value * 1.1
+      }
+    })
+
+    const placeholderTextColor = alpha(theme.colors.$textSecondary, 0.2)
+
+    const suffixTextStyle = useAnimatedStyle(() => {
+      const color = interpolateColor(
+        props?.value && props?.value?.length > 0 ? 1 : 0,
+        [0, 1],
+        [placeholderTextColor, theme.colors.$textPrimary]
+      )
+
+      return {
+        textAlign,
+        fontFamily: 'Aeonik-Medium',
+        fontSize: animatedFontSize.value * suffixFontSizeMultiplier,
+        lineHeight: animatedFontSize.value * 1.1 * suffixFontSizeMultiplier,
+        color: withTiming(color, { duration: 150 })
       }
     })
 
@@ -184,18 +209,7 @@ export const AutoSizeTextInput = forwardRef<
       if (prefix) {
         return (
           <Pressable onPress={focusTextInput} onLayout={handleLeftLayout}>
-            <Animated.Text
-              style={[
-                textStyle,
-                props.style,
-                prefixSx,
-                {
-                  color:
-                    props?.value && props?.value?.length > 0
-                      ? theme.colors.$textPrimary
-                      : alpha(theme.colors.$textSecondary, 0.2)
-                }
-              ]}>
+            <Animated.Text style={[suffixTextStyle, props.style, prefixSx]}>
               {prefix}
             </Animated.Text>
           </Pressable>
@@ -206,12 +220,9 @@ export const AutoSizeTextInput = forwardRef<
       handleLeftLayout,
       prefix,
       prefixSx,
+      suffixTextStyle,
       props.style,
-      props.value,
-      renderLeft,
-      textStyle,
-      theme.colors.$textPrimary,
-      theme.colors.$textSecondary
+      renderLeft
     ])
 
     const renderSuffix = useCallback(() => {
@@ -226,18 +237,7 @@ export const AutoSizeTextInput = forwardRef<
       if (suffix) {
         return (
           <Pressable onPress={focusTextInput} onLayout={handleRightLayout}>
-            <Animated.Text
-              style={[
-                textStyle,
-                props.style,
-                suffixSx,
-                {
-                  color:
-                    props?.value && props?.value?.length > 0
-                      ? theme.colors.$textPrimary
-                      : alpha(theme.colors.$textSecondary, 0.2)
-                }
-              ]}>
+            <Animated.Text style={[suffixTextStyle, props.style, suffixSx]}>
               {suffix}
             </Animated.Text>
           </Pressable>
@@ -247,13 +247,10 @@ export const AutoSizeTextInput = forwardRef<
       focusTextInput,
       handleRightLayout,
       props.style,
-      props?.value,
       renderRight,
       suffix,
       suffixSx,
-      textStyle,
-      theme.colors.$textPrimary,
-      theme.colors.$textSecondary
+      suffixTextStyle
     ])
 
     const onBlurTextInput = useCallback(

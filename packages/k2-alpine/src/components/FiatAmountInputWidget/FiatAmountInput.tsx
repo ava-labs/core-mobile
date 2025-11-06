@@ -119,7 +119,9 @@ export const FiatAmountInput = forwardRef<
           const sanitizedFrontValue = frontValue.replace(/^0+(?!$)/, '')
 
           //setting maxLength to TextInput prevents flickering, see https://reactnative.dev/docs/textinput#value
-          setMaxLength(sanitizedFrontValue.length + '.'.length + 5)
+          setMaxLength(
+            Math.min(24, sanitizedFrontValue.length + '.'.length + 5)
+          )
 
           const normalizedValue = normalizeValue(changedValue)
           setValue(normalizedValue)

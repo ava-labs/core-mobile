@@ -109,7 +109,10 @@ export const TokenUnitInput = forwardRef<
 
           //setting maxLength to TextInput prevents flickering, see https://reactnative.dev/docs/textinput#value
           setMaxLength(
-            sanitizedFrontValue.length + '.'.length + token.maxDecimals
+            Math.min(
+              24,
+              sanitizedFrontValue.length + '.'.length + token.maxDecimals
+            )
           )
 
           const normalizedValue = normalizeValue(changedValue)
@@ -162,22 +165,15 @@ export const TokenUnitInput = forwardRef<
               placeholder={PLACEHOLDER}
               value={value}
               textAlign="right"
+              suffixFontSizeMultiplier={0.5}
               onChangeText={handleValueChanged}
               returnKeyType={returnKeyType}
-              // TODO: Decide if we set it as max 20 or keep original logic
               maxLength={maxLength}
               initialFontSize={60}
-              renderRight={() => (
-                <Text
-                  sx={{
-                    fontFamily: 'Aeonik-Medium',
-                    fontSize: 24,
-                    lineHeight: 24,
-                    marginBottom: SYMBOL_MARGIN_TOP
-                  }}>
-                  {token.symbol}
-                </Text>
-              )}
+              suffix={token.symbol}
+              suffixSx={{
+                marginBottom: 20
+              }}
               /**
                * keyboardType="numeric" causes noticeable input lag on Android.
                * Using inputMode="numeric" provides the same behavior without the performance issues.
@@ -202,5 +198,3 @@ export const TokenUnitInput = forwardRef<
 )
 
 const PLACEHOLDER = '0.00'
-
-const SYMBOL_MARGIN_TOP = 20
