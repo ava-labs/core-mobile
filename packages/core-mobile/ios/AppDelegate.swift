@@ -23,22 +23,19 @@ class AppDelegate: ExpoAppDelegate {
     if let bundleId = Bundle.main.object(forInfoDictionaryKey: "CFBundleIdentifier") as? String, bundleId.lowercased().contains("internal")  {
       RNBranch.useTestInstance()
     }
-
-//     Delay for 1 second before initializing Branch SDK
-    DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
-      if #available(iOS 14.0, *)  {
-        // Check that `trackingAuthorizationStatus` is `notDetermined`, otherwise prompt will not display
+        
+    RNBranch.initSession(launchOptions: launchOptions, isReferrable: true)
+    if #available(iOS 14.0, *) {
+      DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
         if ATTrackingManager.trackingAuthorizationStatus == .notDetermined {
-          ATTrackingManager.requestTrackingAuthorization { (status) in
-            RNBranch.initSession(launchOptions: launchOptions, isReferrable: true)
+          ATTrackingManager.requestTrackingAuthorization { status in
+            if (status == .authorized) {
+              RNBranch.branch.handleATTAuthorizationStatus(status.rawValue)
+            }
           }
-        } else {
-          RNBranch.initSession(launchOptions: launchOptions, isReferrable: true)
         }
-      } else {
-        RNBranch.initSession(launchOptions: launchOptions, isReferrable: true)
       }
-     }
+    }
     
     let delegate = ReactNativeDelegate()
     let factory = ExpoReactNativeFactory(delegate: delegate)
