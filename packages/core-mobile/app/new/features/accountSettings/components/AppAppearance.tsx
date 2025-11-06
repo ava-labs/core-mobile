@@ -43,7 +43,7 @@ export const AppAppearance = ({
               <CurrencyIcon symbol={currency} size={21} />
             </View>
             <Text
-              testID="right_value__Currency"
+              testID={`right_value__${currency.toUpperCase()}`}
               variant="body2"
               sx={{
                 color: colors.$textSecondary,

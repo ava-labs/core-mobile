@@ -179,10 +179,6 @@ class PortfolioPage {
     return selectors.getById(portfolio.bridgeButton)
   }
 
-  get receiveButton() {
-    return selectors.getById(portfolio.receiveButton)
-  }
-
   get sort() {
     return selectors.getById(portfolio.sort)
   }
@@ -463,10 +459,6 @@ class PortfolioPage {
 
   async tapBridge() {
     await actions.tap(this.bridgeButton)
-  }
-
-  async tapReceive() {
-    await actions.tap(this.receiveButton)
   }
 
   async verifyActivityItem(

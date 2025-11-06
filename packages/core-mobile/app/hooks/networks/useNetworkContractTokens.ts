@@ -15,7 +15,9 @@ export const useNetworkContractTokens = (
   const isDeveloperMode = useSelector(selectIsDeveloperMode)
 
   const { data } = useQuery({
-    queryKey: [ReactQueryKeys.NETWORK_CONTRACT_TOKENS, network],
+    enabled: network !== undefined,
+    // eslint-disable-next-line @tanstack/query/exhaustive-deps
+    queryKey: [ReactQueryKeys.NETWORK_CONTRACT_TOKENS, network?.chainId],
     queryFn: () => getNetworkContractTokens(network),
     staleTime: 120000, // 2 mins,
     networkMode: 'offlineFirst'

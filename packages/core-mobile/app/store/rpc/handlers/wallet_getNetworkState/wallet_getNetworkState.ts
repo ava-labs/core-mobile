@@ -6,9 +6,10 @@ import { selectEnabledNetworksByTestnet } from 'store/network/slice'
 import { selectIsDeveloperMode } from 'store/settings/advanced/slice'
 import { getCaip2ChainId } from 'utils/caip2ChainIds'
 import { selectTokenVisibility } from 'store/portfolio/slice'
-import { selectTokensByNetwork } from 'store/balance'
+import { selectActiveAccount } from 'store/account'
 import { HandleResponse, RpcRequestHandler } from '../types'
 import { parseRequestParams } from './utils'
+import { getTokensByNetworkFromCache } from './getTokensByNetworkFromCache'
 
 type Network = {
   caip2ChainId: string
@@ -74,11 +75,14 @@ class WalletGetNetworkStateHandler
     const enabledNetworks = selectEnabledNetworksByTestnet(isTestnet)(state)
     const tokenVisibility = selectTokenVisibility(state)
 
+    const activeAccount = selectActiveAccount(state)
+
     const networks = enabledNetworks.map(network => {
-      const { enabledTokens, disabledTokens } = selectTokensByNetwork(
-        tokenVisibility,
-        network.chainId
-      )(state)
+      const { enabledTokens, disabledTokens } = getTokensByNetworkFromCache({
+        account: activeAccount,
+        network,
+        tokenVisibility
+      })
 
       return {
         caip2ChainId: getCaip2ChainId(network.chainId),

@@ -136,7 +136,7 @@ export const VerifyRecoveryPhrase = ({
     <ScrollScreen
       showNavigationHeaderTitle={false}
       title="Verify your recovery phrase"
-      subtitle={`Select the words below to verify your\nrecover phrase`}
+      subtitle={`Select the words below to verify your\nrecovery phrase`}
       renderFooter={renderFooter}
       contentContainerStyle={{ padding: 16, flex: 1 }}>
       <Animated.View style={[{ gap: 36, marginTop: 66 }, animatedStyle]}>

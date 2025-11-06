@@ -136,7 +136,7 @@ export const ReceiveScreen = (): ReactNode => {
             />
             <Text
               variant="buttonMedium"
-              testID={`receive_selected_network__${selectedNetwork.chainName}`}>
+              testID={`receive_network__${selectedNetwork.chainName}`}>
               {selectedNetwork.chainName}
             </Text>
             <Icons.Navigation.ChevronRight

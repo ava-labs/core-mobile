@@ -1,12 +1,11 @@
-import { warmup } from '../../helpers/warmup'
-import receivePage from '../../pages/receive.page'
+import warmup from '../../helpers/warmup'
 import cl from '../../locators/commonEls.loc'
-import portfolioPage from '../../pages/portfolio.page'
+import txPage from '../../pages/transactions.page'
 
-describe('Receive Address', () => {
-  beforeAll(async () => {
+describe('Receive', () => {
+  before(async () => {
     await warmup()
-    await portfolioPage.tapReceive()
+    await txPage.tapReceive()
   })
 
   const networkAndAddress: Record<string, string> = {
@@ -19,9 +18,9 @@ describe('Receive Address', () => {
   Object.entries(networkAndAddress).forEach(([network, address]) => {
     it(`should verify ${network} address`, async () => {
       if (network !== cl.evm) {
-        await receivePage.selectNetwork(network)
+        await txPage.selectNetwork(network)
       }
-      await receivePage.verifyReceiveScreen(network, address)
+      await txPage.verifyReceiveScreen(network, address)
     })
   })
 })

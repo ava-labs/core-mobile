@@ -76,8 +76,10 @@ export default {
   explorerUrl: 'Explorer URL',
   iWroteItDownButton: 'I wrote it down',
   contacts: 'Contacts',
+  currencyId: 'list_item__Currency',
   currency: 'Currency',
   nameContactBtn: 'name_btn',
   typeInOrPasteAddress: 'Type in or paste address',
-  contactPreviewAddress: 'contact_preview_address'
+  contactPreviewAddress: 'contact_preview_address',
+  hkd: 'HKD'
 }

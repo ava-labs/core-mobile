@@ -25,10 +25,18 @@ export const AnalyticsConsent = ({
         sx={{
           gap: 20
         }}>
-        <Button size="large" type="primary" onPress={onAcceptAnalytics}>
+        <Button
+          testID="unlock_btn"
+          size="large"
+          type="primary"
+          onPress={onAcceptAnalytics}>
           Unlock
         </Button>
-        <Button size="large" type="tertiary" onPress={onRejectAnalytics}>
+        <Button
+          testID="noThanks_btn"
+          size="large"
+          type="tertiary"
+          onPress={onRejectAnalytics}>
           No thanks
         </Button>
       </View>

@@ -18,7 +18,11 @@ export const useEthereumContractTokens = (): NetworkContractToken[] => {
 
   const { data } = useQuery({
     enabled: ethereumNetwork !== undefined,
-    queryKey: [ReactQueryKeys.NETWORK_CONTRACT_TOKENS, ethereumNetwork],
+    // eslint-disable-next-line @tanstack/query/exhaustive-deps
+    queryKey: [
+      ReactQueryKeys.NETWORK_CONTRACT_TOKENS,
+      ethereumNetwork?.chainId
+    ],
     queryFn: () => getNetworkContractTokens(ethereumNetwork),
     staleTime: 120000, // 2 mins,
     networkMode: 'offlineFirst'
