@@ -20,7 +20,6 @@ class AppDelegate: ExpoAppDelegate {
     RNFBAppCheckModule.sharedInstance()
     FirebaseApp.configure()
         
-    RNBranch.enableLogging()
     if let bundleId = Bundle.main.object(forInfoDictionaryKey: "CFBundleIdentifier") as? String, bundleId.lowercased().contains("internal")  {
       RNBranch.useTestInstance()
     }
