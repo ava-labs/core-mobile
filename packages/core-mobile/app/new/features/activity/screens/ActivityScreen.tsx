@@ -23,8 +23,9 @@ import { useHeaderMeasurements } from 'react-native-collapsible-tab-view'
 import Animated, { useAnimatedStyle, withTiming } from 'react-native-reanimated'
 import { useSelector } from 'react-redux'
 import { selectActiveAccount } from 'store/account/slice'
-import { selectIsLoadingBalances } from 'store/balance/slice'
+import { selectActiveWallet } from 'store/wallet/slice'
 import { isSolanaChainId } from 'utils/network/isSolanaNetwork'
+import { useIsLoadingXpBalancesForWallet } from 'features/portfolio/hooks/useIsLoadingXpBalancesForWallet'
 import { ActivityList } from '../components/ActivityList'
 import { useActivityFilterAndSearch } from '../hooks/useActivityFilterAndSearch'
 
@@ -63,13 +64,14 @@ export const ActivityScreen = ({
     refresh
   } = useActivityFilterAndSearch({ searchText })
   const account = useSelector(selectActiveAccount)
-  const isLoadingBalances = useSelector(selectIsLoadingBalances)
+  const wallet = useSelector(selectActiveWallet)
+  const isLoadingXpBalances = useIsLoadingXpBalancesForWallet(wallet)
 
   const isSolanaNetwork = network && isSolanaChainId(network.chainId)
 
   const isLoadingXpToken = useMemo(() => {
-    return isXpChain && isLoadingBalances
-  }, [isXpChain, isLoadingBalances])
+    return isXpChain && isLoadingXpBalances
+  }, [isXpChain, isLoadingXpBalances])
 
   const keyboardAvoidingStyle = useAnimatedStyle(() => {
     return {

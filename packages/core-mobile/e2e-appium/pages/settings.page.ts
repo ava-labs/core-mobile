@@ -138,7 +138,11 @@ class Settings {
   }
 
   get currency() {
-    return selectors.getBySomeText(settings.currency)
+    return selectors.getByText(settings.currency)
+  }
+
+  get currencyId() {
+    return selectors.getById(settings.currencyId)
   }
 
   get selectCurrencyTitle() {
@@ -167,6 +171,10 @@ class Settings {
 
   get emptyContacts() {
     return selectors.getByText(settings.emptyContacts)
+  }
+
+  get hkd() {
+    return selectors.getByText(settings.hkd)
   }
 
   async verifyEmptyContacts() {
@@ -278,10 +286,10 @@ class Settings {
   }
 
   async tapCurrency() {
-    if (!(await actions.getVisible(this.currency))) {
+    if (!(await actions.getVisible(this.currencyId))) {
       await this.swipeSettings()
     }
-    await actions.tap(this.currency)
+    await actions.tap(this.currencyId)
   }
 
   async verifyCurrencyScreen(curr = 'USD') {
@@ -353,6 +361,14 @@ class Settings {
     await this.setNetworkData('token symbol', nativeTokenSymbol)
     await this.setNetworkData('token name', nativeTokenName)
     await common.tapSave()
+  }
+
+  async verifySettingsRow(row: string, rightVal: string | undefined) {
+    await actions.waitFor(selectors.getById(`list_item__${row}`))
+
+    if (rightVal) {
+      await actions.isVisible(selectors.getById(`right_value__${rightVal}`))
+    }
   }
 
   async verifyNetworkRow(

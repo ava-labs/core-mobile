@@ -57,11 +57,6 @@ import Animated, {
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useSelector } from 'react-redux'
 import AnalyticsService from 'services/analytics/AnalyticsService'
-import {
-  AVAX_P_ID,
-  selectIsBalancesAccurateByNetwork,
-  selectIsLoadingBalances
-} from 'store/balance'
 import { selectIsDeveloperMode } from 'store/settings/advanced'
 import { selectSelectedCurrency } from 'store/settings/currency'
 import { selectIsPrivacyModeEnabled } from 'store/settings/securityPrivacy'
@@ -79,6 +74,10 @@ import {
 import { getExplorerAddressByNetwork } from 'utils/getExplorerAddressByNetwork'
 import { isBitcoinChainId } from 'utils/network/isBitcoinNetwork'
 import { isEthereumChainId } from 'services/network/utils/isEthereumNetwork'
+import { AVAX_P_ID } from 'services/balance/const'
+import { selectActiveAccount } from 'store/account/slice'
+import { useIsLoadingBalancesForAccount } from 'features/portfolio/hooks/useIsLoadingBalancesForAccount'
+import { useIsBalanceAccurateByNetwork } from 'features/portfolio/hooks/useIsBalanceAccurateByNetwork'
 
 export const TokenDetailScreen = (): React.JSX.Element => {
   const {
@@ -119,11 +118,14 @@ export const TokenDetailScreen = (): React.JSX.Element => {
 
   const selectedCurrency = useSelector(selectSelectedCurrency)
 
-  const isBalanceAccurate = useSelector(
-    selectIsBalancesAccurateByNetwork(token?.networkChainId)
+  const activeAccount = useSelector(selectActiveAccount)
+
+  const isBalanceAccurate = useIsBalanceAccurateByNetwork(
+    activeAccount,
+    token?.networkChainId
   )
 
-  const isBalanceLoading = useSelector(selectIsLoadingBalances)
+  const isBalanceLoading = useIsLoadingBalancesForAccount(activeAccount)
 
   const handleHeaderLayout = useCallback((event: LayoutChangeEvent): void => {
     setTokenHeaderLayout(event.nativeEvent.layout)

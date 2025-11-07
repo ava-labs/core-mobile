@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 import { useSelector } from 'react-redux'
-import { selectTokensWithBalanceByNetwork } from 'store/balance/slice'
+import { useTokensWithBalanceByNetworkForAccount } from 'features/portfolio/hooks/useTokensWithBalanceByNetworkForAccount'
+import { selectActiveAccount } from 'store/account'
 import { useTokenInfoContext } from '@avalabs/core-bridge-sdk'
 import { selectTokenVisibility } from 'store/portfolio'
 import { isTokenVisible } from 'store/balance/utils'
@@ -11,6 +12,7 @@ import { bigintToBig } from 'utils/bigNumbers/bigintToBig'
 import { selectEnabledChainIds } from 'store/network'
 import { useBridgeAssets } from './useBridgeAssets'
 import { useAssetBalancePrices } from './useAssetBalancePrices'
+
 /**
  * Get a list of bridge supported assets with the balances.
  * The list is sorted by balance.
@@ -19,8 +21,10 @@ export function useAssetBalances(sourceNetworkChainId?: number): {
   assetsWithBalances: AssetBalance[]
 } {
   const tokenVisibility = useSelector(selectTokenVisibility)
-  const tokens = useSelector(
-    selectTokensWithBalanceByNetwork(sourceNetworkChainId)
+  const activeAccount = useSelector(selectActiveAccount)
+  const tokens = useTokensWithBalanceByNetworkForAccount(
+    activeAccount,
+    sourceNetworkChainId
   )
   const tokenInfoData = useTokenInfoContext()
   const bridgeAssets = useBridgeAssets(sourceNetworkChainId)

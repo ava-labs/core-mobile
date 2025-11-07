@@ -125,6 +125,7 @@ export const SelectAmount = ({
         }}>
         <Button
           disabled={!isEnabled}
+          testID={!isEnabled ? 'next_btn_disabled' : 'next_btn'}
           type="primary"
           size="large"
           onPress={onNext}>
@@ -193,6 +194,7 @@ export const SelectAmount = ({
           }}>
           <Icons.Alert.AlertCircle color={colors.$textDanger} />
           <Text
+            testID="error_msg"
             variant="caption"
             sx={{ fontWeight: 500, color: colors.$textDanger }}>
             {errorMessage || createSessionWidgetErrorMessage}

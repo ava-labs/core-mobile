@@ -126,6 +126,7 @@ export const FiatAmountInputWidget = ({
           <View sx={{ flexDirection: 'row', gap: 7, marginTop: 25 }}>
             {predefinedAmountButtons.map((button, index) => (
               <Button
+                testID={`fiat_amount_button__${button.predefinedAmount}`}
                 key={index}
                 size="small"
                 type={button.isSelected ? 'primary' : 'secondary'}

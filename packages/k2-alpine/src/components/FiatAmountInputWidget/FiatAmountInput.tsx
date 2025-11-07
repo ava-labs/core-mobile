@@ -175,6 +175,9 @@ export const FiatAmountInput = forwardRef<
               </Text>
             )}
             <TextInput
+              accessible={true}
+              accessibilityLabel="fiat_amount_input"
+              testID="fiat_amount_input"
               returnKeyType={returnKeyType}
               ref={textInputRef}
               editable={editable}

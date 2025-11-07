@@ -438,6 +438,14 @@ __metadata:
     "@openzeppelin/contracts": 5.0.2
     "@paraswap/sdk": 7.2.3
     "@playwright/test": 1.48.0
+    "@react-buoy/core": 0.1.33
+    "@react-buoy/debug-borders": 0.1.33
+    "@react-buoy/env": 0.1.33
+    "@react-buoy/network": 0.1.33
+    "@react-buoy/react-query": 0.1.33
+    "@react-buoy/route-events": 0.1.33
+    "@react-buoy/shared-ui": 0.1.33
+    "@react-buoy/storage": 0.1.33
     "@react-native-async-storage/async-storage": 2.1.2
     "@react-native-clipboard/clipboard": 1.15.0
     "@react-native-community/cli": 18.0.0
@@ -12328,6 +12336,106 @@ __metadata:
   version: 1.1.0
   resolution: "@radix-ui/rect@npm:1.1.0"
   checksum: 1ad93efbc9fc3b878bae5e8bb26ffa1005235d8b5b9fca8339eb5dbcf7bf53abc9ccd2a8ce128557820168c8600521e48e0ea4dda96aa5f116381f66f46aeda3
+  languageName: node
+  linkType: hard
+
+"@react-buoy/core@npm:0.1.33":
+  version: 0.1.33
+  resolution: "@react-buoy/core@npm:0.1.33"
+  dependencies:
+    "@react-buoy/shared-ui": 0.1.33
+  peerDependencies:
+    react: "*"
+    react-native: "*"
+  checksum: 2dae8e0a5c0f39ed6d3d8c3514a99182b9b6960f8496468a7d2f4e9964ee1032e65350c1f4faf985ff94ef9a3ef9bf01142024b48a12ba584df01df7828f86be
+  languageName: node
+  linkType: hard
+
+"@react-buoy/debug-borders@npm:0.1.33":
+  version: 0.1.33
+  resolution: "@react-buoy/debug-borders@npm:0.1.33"
+  dependencies:
+    "@react-buoy/shared-ui": 0.1.33
+  peerDependencies:
+    react: "*"
+    react-native: "*"
+  checksum: f6db2f0b463d24218b36beae2888a77e046f3d176b2ab690cbd21437d549875d8b1f434e8f91d1b3a4315a4ac04559b92ceb2d66fa499e1d5869cf75cc5b39fb
+  languageName: node
+  linkType: hard
+
+"@react-buoy/env@npm:0.1.33":
+  version: 0.1.33
+  resolution: "@react-buoy/env@npm:0.1.33"
+  dependencies:
+    "@react-buoy/shared-ui": 0.1.33
+  peerDependencies:
+    react: "*"
+    react-native: "*"
+  checksum: 33b7a21c31e687249a21077ffc8734b489fae1d49f0b326ab3041bd2d92c757d2da14ee7f2071de657a5fdb6417472815a6fb9185ede712464974dd5e457204d
+  languageName: node
+  linkType: hard
+
+"@react-buoy/network@npm:0.1.33":
+  version: 0.1.33
+  resolution: "@react-buoy/network@npm:0.1.33"
+  dependencies:
+    "@react-buoy/react-query": 0.1.33
+    "@react-buoy/shared-ui": 0.1.33
+  peerDependencies:
+    react: "*"
+    react-native: "*"
+  checksum: 0c0b4700c1da3d7fad88c6f5edf5a97bab9025fc93d5c46939766c3229c161113da159489ef43a0a818df7284dbe6310f12d2eb86dc3d9ef3c661e993b649af0
+  languageName: node
+  linkType: hard
+
+"@react-buoy/react-query@npm:0.1.33":
+  version: 0.1.33
+  resolution: "@react-buoy/react-query@npm:0.1.33"
+  dependencies:
+    "@react-buoy/shared-ui": 0.1.33
+  peerDependencies:
+    "@tanstack/react-query": ">=5.0.0"
+    react: "*"
+    react-native: "*"
+  checksum: 93e860c400a23d44a2ba11fdd75f03dbca9c57bfa5681383aeee78aaa182ba3d1b75fb1a5a241870b5073a5f34195e138add283cffd76d3724fa9ca762aa2082
+  languageName: node
+  linkType: hard
+
+"@react-buoy/route-events@npm:0.1.33":
+  version: 0.1.33
+  resolution: "@react-buoy/route-events@npm:0.1.33"
+  dependencies:
+    "@react-buoy/shared-ui": 0.1.33
+  peerDependencies:
+    "@react-native-async-storage/async-storage": "*"
+    "@react-navigation/native": "*"
+    expo-router: "*"
+    react: "*"
+    react-native: "*"
+  checksum: f67bb54fe1507043c0ae88919a2495304b20db4838cf836169c2c7189905ac4845f37afbae97aa5a6dfd9b70c04d8c7c6fd6c6bf18c92f8ec9882de1192c47c7
+  languageName: node
+  linkType: hard
+
+"@react-buoy/shared-ui@npm:0.1.33":
+  version: 0.1.33
+  resolution: "@react-buoy/shared-ui@npm:0.1.33"
+  peerDependencies:
+    react: "*"
+    react-native: "*"
+  checksum: a0fb42a8fb942930f166b5712e6785dbe0535d0fb4a04cb0e6abacd727ecf55e32f20a70c7cba3216f2ad8016ee6b5ff6359744c23fdc4aeccc460cfff91f34b
+  languageName: node
+  linkType: hard
+
+"@react-buoy/storage@npm:0.1.33":
+  version: 0.1.33
+  resolution: "@react-buoy/storage@npm:0.1.33"
+  dependencies:
+    "@react-buoy/shared-ui": 0.1.33
+  peerDependencies:
+    "@react-native-async-storage/async-storage": ">=1.0.0"
+    react: "*"
+    react-native: "*"
+  checksum: 09c2ac673f8a34cc369c35c56593b79793c6c5bb4c51b25b8a0de320c2a1787fb55098e8d97e2de515ab3348760b6e8a319e3b2360fb28565c1cf4996eafcbc7
   languageName: node
   linkType: hard
 
