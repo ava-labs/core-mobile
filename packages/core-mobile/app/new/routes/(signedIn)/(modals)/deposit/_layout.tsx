@@ -12,7 +12,7 @@ export default function DepositLayout(): JSX.Element {
     selectHasBeenViewedOnce(ViewOnceKey.DEPOSIT_ONBOARDING)
   )
 
-  const initialRouteName = shouldHideOnboarding ? 'deposit' : 'onboarding'
+  const initialRouteName = shouldHideOnboarding ? 'selectAsset' : 'onboarding'
 
   return (
     <Stack
@@ -22,9 +22,10 @@ export default function DepositLayout(): JSX.Element {
       initialRouteName={initialRouteName}>
       <Stack.Screen name="onboarding" options={modalFirstScreenOptions} />
       <Stack.Screen
-        name="deposit"
+        name="selectAsset"
         options={shouldHideOnboarding ? modalFirstScreenOptions : undefined}
       />
+      <Stack.Screen name="selectPool" />
     </Stack>
   )
 }

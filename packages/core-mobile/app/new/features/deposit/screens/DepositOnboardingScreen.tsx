@@ -3,6 +3,8 @@ import { TransactionOnboarding } from 'common/components/TransactionOnboarding'
 import { GroupList, Icons, useTheme } from '@avalabs/k2-alpine'
 import { ViewOnceKey } from 'store/viewOnce'
 import { useRouter } from 'expo-router'
+import { LoadingState } from 'common/components/LoadingState'
+import { useAvailableMarkets } from '../hooks/useAvaliableMarkets'
 
 export const DepositOnboardingScreen = (): JSX.Element => {
   const { navigate } = useRouter()
@@ -10,8 +12,14 @@ export const DepositOnboardingScreen = (): JSX.Element => {
 
   const handlePressNext = useCallback(() => {
     // @ts-ignore TODO: make routes typesafe
-    navigate('/deposit/deposit')
+    navigate('/deposit/selectAsset')
   }, [navigate])
+
+  const { data: availableMarkets, isPending: isPendingAvailableMarkets } =
+    useAvailableMarkets()
+  const highestApyMarket = availableMarkets
+    ?.sort((a, b) => b.supplyApyPercent - a.supplyApyPercent)[0]
+    ?.supplyApyPercent?.toFixed(2)
 
   const renderFooterAccessory = useCallback(() => {
     const accessory = (
@@ -22,7 +30,7 @@ export const DepositOnboardingScreen = (): JSX.Element => {
         titleSx={{ fontFamily: 'Inter-regular', fontSize: 15 }}
         data={[
           {
-            title: 'Earn up to 5.78% APY', // TODO: use dynamic value for APY(Live APY)
+            title: `Earn up to ${highestApyMarket}% APY`,
             accessory
           },
           {
@@ -40,7 +48,11 @@ export const DepositOnboardingScreen = (): JSX.Element => {
         ]}
       />
     )
-  }, [theme])
+  }, [theme, highestApyMarket])
+
+  if (isPendingAvailableMarkets) {
+    return <LoadingState sx={{ flex: 1 }} />
+  }
 
   return (
     <TransactionOnboarding
