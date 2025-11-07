@@ -3,6 +3,7 @@ import { onForeground, onLogOut, onRehydrationComplete } from 'store/app'
 import { selectDistinctID } from 'store/posthog'
 import { AppListenerEffectAPI, AppStartListening } from 'store/types'
 import Branch, { BranchEvent } from 'react-native-branch'
+import Logger from 'utils/Logger'
 
 export const addBranchListeners = (startListening: AppStartListening): void => {
   const branchIdentifyUser = async (
@@ -34,7 +35,14 @@ export const addBranchListeners = (startListening: AppStartListening): void => {
     }
 
     const event = new BranchEvent('app_opened', [branchUniversalObject], params)
-    event.logEvent()
+    event
+      .logEvent()
+      .then(() => {
+        Logger.info('branch custom event [app_opened] logged successfully')
+      })
+      .catch(error => {
+        Logger.error('branch custom event [app_opened] logging failed', error)
+      })
   }
 
   const branchLogout = (_: Action, __: AppListenerEffectAPI): void => {
