@@ -1,6 +1,11 @@
+import {
+  isTokenWithBalanceAVM,
+  isTokenWithBalancePVM
+} from '@avalabs/avalanche-module'
 import { BridgeTransfer } from '@avalabs/bridge-unified'
 import { BridgeTransaction } from '@avalabs/core-bridge-sdk'
 import { Text, useTheme, View } from '@avalabs/k2-alpine'
+import { TokenWithBalance } from '@avalabs/vm-module-types'
 import { FlashListProps, ListRenderItem } from '@shopify/flash-list'
 import { CollapsibleTabs } from 'common/components/CollapsibleTabs'
 import { isXpTransaction } from 'common/utils/isXpTransactions'
@@ -8,12 +13,8 @@ import { ACTIVITY_LIST_ITEM_HEIGHT } from 'features/portfolio/assets/components/
 import { PendingBridgeTransactionItem } from 'features/portfolio/assets/components/PendingBridgeTransactionItem'
 import { TokenActivityListItem } from 'features/portfolio/assets/components/TokenActivityListItem'
 import { XpActivityListItem } from 'features/portfolio/assets/components/XpActivityListItem'
+import { useWatchlist } from 'hooks/watchlist/useWatchlist'
 import React, { useCallback } from 'react'
-import { TokenWithBalance } from '@avalabs/vm-module-types'
-import {
-  isTokenWithBalanceAVM,
-  isTokenWithBalancePVM
-} from '@avalabs/avalanche-module'
 import { ActivityListItem } from '../utils'
 
 export const ActivityList = ({
@@ -37,6 +38,7 @@ export const ActivityList = ({
   renderHeader: () => React.ReactNode
   renderEmpty: () => React.ReactNode
 }): JSX.Element => {
+  const { prices } = useWatchlist()
   const renderItem: ListRenderItem<ActivityListItem> = useCallback(
     ({ item, index }) => {
       if (item.type === 'header') {
@@ -97,6 +99,7 @@ export const ActivityList = ({
       key={xpToken?.symbol}
       overrideProps={overrideProps}
       data={data}
+      extraData={{ prices }}
       renderItem={renderItem}
       ListHeaderComponent={renderHeader}
       ListEmptyComponent={renderEmpty}
