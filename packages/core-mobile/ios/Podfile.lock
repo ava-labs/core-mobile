@@ -3230,7 +3230,7 @@ PODS:
     - Yoga
   - RNSensors (7.3.6):
     - React-Core
-  - RNSentry (6.14.0):
+  - RNSentry (7.4.0):
     - DoubleConversion
     - glog
     - hermes-engine
@@ -3253,7 +3253,7 @@ PODS:
     - ReactCodegen
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
-    - Sentry/HybridSDK (= 8.50.2)
+    - Sentry/HybridSDK (= 8.57.0)
     - Yoga
   - RNShare (12.0.9):
     - DoubleConversion
@@ -3355,12 +3355,12 @@ PODS:
   - SDWebImage (5.19.7):
     - SDWebImage/Core (= 5.19.7)
   - SDWebImage/Core (5.19.7)
-  - SDWebImageAVIFCoder (0.11.0):
+  - SDWebImageAVIFCoder (0.11.1):
     - libavif/core (>= 0.11.0)
     - SDWebImage (~> 5.10)
   - SDWebImageSVGCoder (1.7.0):
     - SDWebImage/Core (~> 5.6)
-  - Sentry/HybridSDK (8.50.2)
+  - Sentry/HybridSDK (8.57.0)
   - SocketRocket (0.7.1)
   - SwiftUIIntrospect (1.3.0)
   - Yoga (0.0.0)
@@ -4080,14 +4080,14 @@ SPEC CHECKSUMS:
   RNReanimated: 722d67dfde539bfe29b572878f4bc805f727726b
   RNScreens: f0678748c5310b49a3f920f1485f5ec477afd345
   RNSensors: 111159597ac51505df10413c61b28bcd28e88983
-  RNSentry: 3bc708566b3390947b6ecd785645398cd1a0049e
+  RNSentry: 0f61ae3c111d9129a978aeedd1fa05d0cd2307a9
   RNShare: 43faaefd287ef344e8379caeaca12d112f713295
   RNSound: 72c4886fb80b8a0e8c40131099223e09422aa8b4
   RNSVG: 794f269526df9ddc1f79b3d1a202b619df0368e3
   SDWebImage: 8a6b7b160b4d710e2a22b6900e25301075c34cb3
-  SDWebImageAVIFCoder: 00310d246aab3232ce77f1d8f0076f8c4b021d90
+  SDWebImageAVIFCoder: afe194a084e851f70228e4be35ef651df0fc5c57
   SDWebImageSVGCoder: 15a300a97ec1c8ac958f009c02220ac0402e936c
-  Sentry: d95f5f3b32d01324b3e27d3c52747005302cc026
+  Sentry: e1b49e5f49367ff211b25c431a60e2bd83b792aa
   SocketRocket: d4aabe649be1e368d1318fdf28a022d714d65748
   SwiftUIIntrospect: fee9aa07293ee280373a591e1824e8ddc869ba5d
   Yoga: adb397651e1c00672c12e9495babca70777e411e

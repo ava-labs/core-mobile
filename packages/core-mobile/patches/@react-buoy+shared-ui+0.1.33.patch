@@ -1,0 +1,14 @@
+diff --git a/node_modules/@react-buoy/shared-ui/package.json b/node_modules/@react-buoy/shared-ui/package.json
+index 5f21a4a..4082f6f 100644
+--- a/node_modules/@react-buoy/shared-ui/package.json
++++ b/node_modules/@react-buoy/shared-ui/package.json
+@@ -5,6 +5,9 @@
+   "main": "lib/commonjs/index.js",
+   "module": "lib/module/index.js",
+   "types": "lib/typescript/module/index.d.ts",
++  "react-native": {
++    "./dataViewer": "./lib/commonjs/dataViewer/index.js"
++  },
+   "exports": {
+     ".": {
+       "source": "./src/index.ts",

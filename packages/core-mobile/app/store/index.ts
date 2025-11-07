@@ -8,7 +8,6 @@ import DevDebuggingConfig from 'utils/debugging/DevDebuggingConfig'
 import { EncryptThenMacTransform } from 'store/transforms/EncryptThenMacTransform'
 import reactotron from '../../ReactotronConfig'
 import { networkReducer as network } from './network/slice'
-import { balanceReducer as balance } from './balance/slice'
 import { appReducer as app, onLogOut, onRehydrationComplete } from './app/slice'
 import { listener } from './middleware/listener'
 import { accountsReducer as account } from './account/slice'
@@ -35,12 +34,11 @@ const STORAGE_WRITE_THROTTLE = 200
 
 // list of reducers that don't need to be persisted
 // for nested/partial blacklist, please use transform
-const blacklist = ['balance', 'swap', 'rpc', transactionApi.reducerPath]
+const blacklist = ['swap', 'rpc', transactionApi.reducerPath]
 
 const combinedReducer = combineReducers({
   app,
   network,
-  balance,
   account,
   notifications,
   addressBook,

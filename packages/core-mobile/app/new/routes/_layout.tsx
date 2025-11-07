@@ -21,6 +21,7 @@ import {
   selectSelectedColorScheme,
   setSelectedColorScheme
 } from 'store/settings/appearance'
+import { FloatingDevTools } from 'common/containers/FloatingDevTools'
 import { RootNavigator } from './RootNavigator'
 
 export default function Root(): JSX.Element | null {
@@ -63,6 +64,7 @@ export default function Root(): JSX.Element | null {
               </RecoveryMethodProvider>
             </DeeplinkContextProvider>
           </NavigationThemeProvider>
+          {__DEV__ && <FloatingDevTools />}
           <GlobalToast />
           <GlobalAlertWithTextInput />
         </K2AlpineThemeProvider>

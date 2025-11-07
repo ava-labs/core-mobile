@@ -1,63 +1,53 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import {
-  fetchBalanceForAccount,
-  selectBalanceTotalInCurrencyForAccount,
-  selectIsBalanceLoadedForAccount
-} from 'store/balance'
-import { selectTokenVisibility } from 'store/portfolio'
 import { ImportedAccount } from 'store/account/types'
+import { selectAccountById } from 'store/account'
+import { useIsBalanceLoadedForAccount } from 'features/portfolio/hooks/useIsBalanceLoadedForAccount'
+import { useBalanceTotalInCurrencyForAccount } from 'features/portfolio/hooks/useBalanceTotalInCurrencyForAccount'
+import { useAccountBalances } from 'features/portfolio/hooks/useAccountBalances'
 import { useFormatCurrency } from './useFormatCurrency'
 
 export const usePrivateKeyBalance = (
   tempAccountDetails: ImportedAccount | null
 ): {
   totalBalanceDisplay: string | null
-  isAwaitingOurBalance: boolean
+  isFetching: boolean
   // eslint-disable-next-line sonarjs/cognitive-complexity
 } => {
   const [totalBalanceDisplay, setTotalBalanceDisplay] = useState<string | null>(
     null
   )
-  const [isAwaitingOurBalance, setIsAwaitingOurBalance] = useState(false)
 
   const dispatch = useDispatch()
-  const tokenVisibility = useSelector(selectTokenVisibility)
   const { formatCurrency } = useFormatCurrency()
 
   const accountIdForBalance = tempAccountDetails ? tempAccountDetails.id : ''
-  const currentTempAccountBalance = useSelector(
-    selectBalanceTotalInCurrencyForAccount(accountIdForBalance, tokenVisibility)
-  )
-  const isOurBalanceDataLoadedInStore = useSelector(
-    selectIsBalanceLoadedForAccount(accountIdForBalance)
+  const account = useSelector(selectAccountById(accountIdForBalance))
+  const { results, refetch } = useAccountBalances(account, {
+    enabled: false
+  })
+  const currentTempAccountBalance = useBalanceTotalInCurrencyForAccount(account)
+  const isOurBalanceDataLoadedInStore = useIsBalanceLoadedForAccount(account)
+
+  const isFetching = useMemo(
+    () => results.some(r => r.isLoading || r.isFetching),
+    [results]
   )
 
   useEffect(() => {
-    if (
-      !tempAccountDetails ||
-      isAwaitingOurBalance ||
-      isOurBalanceDataLoadedInStore
-    ) {
+    if (!tempAccountDetails || isFetching || isOurBalanceDataLoadedInStore) {
       return
     }
-    setIsAwaitingOurBalance(true)
-    dispatch(fetchBalanceForAccount({ account: tempAccountDetails }))
+    refetch()
   }, [
     tempAccountDetails,
     dispatch,
-    isAwaitingOurBalance,
+    refetch,
+    isFetching,
     totalBalanceDisplay,
     isOurBalanceDataLoadedInStore,
     currentTempAccountBalance
   ])
-
-  // Effect to handle balance fetch completion
-  useEffect(() => {
-    if (isAwaitingOurBalance && isOurBalanceDataLoadedInStore) {
-      setIsAwaitingOurBalance(false)
-    }
-  }, [isAwaitingOurBalance, isOurBalanceDataLoadedInStore])
 
   // Effect to update balance display
   useEffect(() => {
@@ -65,13 +55,13 @@ export const usePrivateKeyBalance = (
       setTotalBalanceDisplay(null)
       return
     }
-    if (isAwaitingOurBalance && !isOurBalanceDataLoadedInStore) {
+    if (isFetching && !isOurBalanceDataLoadedInStore) {
       setTotalBalanceDisplay('(Fetching...)')
     } else if (isOurBalanceDataLoadedInStore) {
       setTotalBalanceDisplay(
         formatCurrency({ amount: currentTempAccountBalance })
       )
-    } else if (!isAwaitingOurBalance && !isOurBalanceDataLoadedInStore) {
+    } else if (!isFetching && !isOurBalanceDataLoadedInStore) {
       setTotalBalanceDisplay('(No balance data)')
     } else {
       setTotalBalanceDisplay(null)
@@ -79,7 +69,7 @@ export const usePrivateKeyBalance = (
   }, [
     tempAccountDetails,
     currentTempAccountBalance,
-    isAwaitingOurBalance,
+    isFetching,
     isOurBalanceDataLoadedInStore,
     formatCurrency
   ])
@@ -87,29 +77,12 @@ export const usePrivateKeyBalance = (
   // Reset state when tempAccountDetails changes
   useEffect(() => {
     if (!tempAccountDetails) {
-      setIsAwaitingOurBalance(false)
       setTotalBalanceDisplay(null)
     }
   }, [tempAccountDetails])
 
-  useEffect(() => {
-    if (isAwaitingOurBalance) {
-      const timeout = setTimeout(() => {
-        setIsAwaitingOurBalance(false)
-      }, 10000) // 10 second timeout
-
-      // Clear timeout if balance loads
-      if (isOurBalanceDataLoadedInStore) {
-        clearTimeout(timeout)
-        setIsAwaitingOurBalance(false)
-      }
-
-      return () => clearTimeout(timeout)
-    }
-  }, [isAwaitingOurBalance, isOurBalanceDataLoadedInStore])
-
   return {
     totalBalanceDisplay,
-    isAwaitingOurBalance
+    isFetching
   }
 }

@@ -164,6 +164,7 @@ export const TokenList = ({
             />
             <View>
               <Text
+                testID={`token_selector__${item.tokenWithBalance.symbol}`}
                 variant="buttonMedium"
                 numberOfLines={1}
                 sx={{ width: SCREEN_WIDTH * 0.65 }}>

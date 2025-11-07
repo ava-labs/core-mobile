@@ -11,7 +11,11 @@ class SentryWrapper {
   }
 
   public startSpan<T>(
-    props: { name?: SpanName; contextName?: OpName },
+    props: {
+      name?: SpanName
+      contextName?: OpName
+      attributes?: Record<string, unknown>
+    },
     callback: (span?: Sentry.Span) => T
   ): T {
     if (props.name === undefined) {
@@ -27,7 +31,8 @@ class SentryWrapper {
         name: props.name,
         op: props.name,
         attributes: {
-          'sentry.sample_rate': this.sampleRate
+          'sentry.sample_rate': this.sampleRate,
+          ...props.attributes
         }
       },
       callback

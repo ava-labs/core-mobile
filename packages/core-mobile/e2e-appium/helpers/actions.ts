@@ -29,7 +29,12 @@ async function verifyElementText(
   targetText: string
 ) {
   const eleText = await ele.getText()
-  assert.equal(eleText, targetText, `"${eleText}" !== "${targetText}"`)
+  const eleSelector = await ele.selector
+  assert.equal(
+    eleText,
+    targetText,
+    `${eleSelector} text is "${eleText}" !== "${targetText}"`
+  )
 }
 
 async function waitFor(ele: ChainablePromiseElement, timeout = 20000) {
@@ -44,7 +49,7 @@ async function isVisible(ele: ChainablePromiseElement) {
   const visible = await ele.isDisplayed()
   const eleSelector = await ele.selector
   console.log(`${eleSelector} isVisible? `, visible)
-  assert.equal(visible, true, ele.toString())
+  assert.equal(visible, true, `${eleSelector} is not visible`)
   return visible
 }
 
@@ -52,7 +57,7 @@ async function isNotVisible(ele: ChainablePromiseElement) {
   const visible = await ele.isDisplayed()
   const eleSelector = await ele.selector
   console.log(`${eleSelector} isVisible? `, visible)
-  assert.equal(visible, false, ele.toString())
+  assert.equal(visible, false, `${eleSelector} is still visible`)
   return visible
 }
 
@@ -62,13 +67,23 @@ async function getVisible(ele: ChainablePromiseElement) {
 
 async function isSelected(ele: ChainablePromiseElement, targetBool = true) {
   const selected = await ele.isSelected()
-  assert.equal(selected, targetBool, ele.toString())
+  const eleSelector = await ele.selector
+  assert.equal(
+    selected,
+    targetBool,
+    `${eleSelector} is ${targetBool ? 'selected' : 'not selected'}`
+  )
   return selected
 }
 
 async function isEnabled(ele: ChainablePromiseElement, targetBool = true) {
   const enabled = await ele.isEnabled()
-  assert.equal(enabled, targetBool, ele.toString())
+  const eleSelector = await ele.selector
+  assert.equal(
+    enabled,
+    targetBool,
+    `${eleSelector} is ${targetBool ? 'enabled' : 'disabled'}`
+  )
   return enabled
 }
 
@@ -87,8 +102,12 @@ async function tap(
       try {
         await waitFor(expectedEle)
       } catch (e) {
-        await ele.tap()
-        console.log(`Tapped again "${selector}"`)
+        if (await getVisible(ele)) {
+          await ele.tap()
+          console.log(`Tapped again "${selector}"`)
+        } else {
+          console.log(`Skipping tap on "${selector}" because it is not visible`)
+        }
       }
     }
   }
