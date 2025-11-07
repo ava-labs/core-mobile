@@ -115,7 +115,7 @@ export const FiatAmountInput = forwardRef<
 
           //setting maxLength to TextInput prevents flickering, see https://reactnative.dev/docs/textinput#value
           setMaxLength(
-            Math.min(24, sanitizedFrontValue.length + '.'.length + 5)
+            Math.min(20, sanitizedFrontValue.length + '.'.length + 5)
           )
 
           const normalizedValue = normalizeValue(changedValue)
@@ -171,7 +171,6 @@ export const FiatAmountInput = forwardRef<
               prefix={displayLeadingFiatCurrency}
               suffix={displayTrailingFiatCurrency}
               placeholder={`${PLACEHOLDER}`}
-              // TODO: Decide if we set it as max 20 or keep original logic
               maxLength={maxLength}
               returnKeyType={returnKeyType}
               editable={editable}

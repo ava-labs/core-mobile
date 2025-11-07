@@ -110,7 +110,7 @@ export const TokenUnitInput = forwardRef<
           //setting maxLength to TextInput prevents flickering, see https://reactnative.dev/docs/textinput#value
           setMaxLength(
             Math.min(
-              24,
+              20,
               sanitizedFrontValue.length + '.'.length + token.maxDecimals
             )
           )

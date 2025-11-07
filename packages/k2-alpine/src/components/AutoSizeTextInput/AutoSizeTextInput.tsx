@@ -63,7 +63,7 @@ export const AutoSizeTextInput = forwardRef<
   (
     {
       initialFontSize = 42,
-      maxLength = 24,
+      maxLength = 20,
       prefix,
       suffix,
       textAlign,
