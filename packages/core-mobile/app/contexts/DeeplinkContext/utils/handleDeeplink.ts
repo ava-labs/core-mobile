@@ -13,6 +13,10 @@ import { closeInAppBrowser } from 'utils/openInAppBrowser'
 import { ACTIONS, DeepLink, PROTOCOLS } from '../types'
 import { DEEPLINK_WHITELIST } from '../consts'
 
+const lowercasedDeeplinkWhitelist = DEEPLINK_WHITELIST.map(url =>
+  url.toLowerCase()
+)
+
 export const handleDeeplink = ({
   deeplink,
   dispatch,
@@ -76,7 +80,7 @@ export const handleDeeplink = ({
         dismissMeldStack(action, searchParams)
       } else {
         const baseUrl = deeplink.url.split('?')[0]?.toLowerCase()
-        if (baseUrl && !DEEPLINK_WHITELIST.includes(baseUrl)) {
+        if (baseUrl && !lowercasedDeeplinkWhitelist.includes(baseUrl)) {
           Logger.warn(`${deeplink.url} is not allowed to be opened in the app`)
           return
         }
