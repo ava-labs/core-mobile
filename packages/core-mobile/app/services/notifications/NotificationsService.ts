@@ -303,6 +303,7 @@ class NotificationsService {
     return messaging()
       .getInitialNotification()
       .then(notification => {
+        alert('test initial notification')
         callback(notification?.data)
       })
   }
