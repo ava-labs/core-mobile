@@ -430,7 +430,7 @@ export const SwapScreen = (): JSX.Element => {
           onBlur={() => setIsInputFocused(false)}
           onSelectToken={handleSelectFromToken}
           maximum={fromToken?.balance}
-          inputTextColor={localError ? theme.colors.$textDanger : undefined}
+          valid={!localError}
         />
       </View>
     )

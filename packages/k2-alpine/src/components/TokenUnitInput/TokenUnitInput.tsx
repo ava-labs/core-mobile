@@ -10,10 +10,8 @@ import React, {
   useState
 } from 'react'
 import {
-  LayoutChangeEvent,
   Platform,
   ReturnKeyTypeOptions,
-  StyleSheet,
   TextInput,
   TouchableWithoutFeedback
 } from 'react-native'
@@ -24,6 +22,7 @@ import {
   normalizeValue
 } from '../../utils/tokenUnitInput'
 import { Text, View } from '../Primitives'
+import { AutoSizeTextInput } from '../AutoSizeTextInput/AutoSizeTextInput'
 
 export type TokenUnitInputHandle = {
   setValue: (value: string) => void
@@ -68,10 +67,6 @@ export const TokenUnitInput = forwardRef<
     const [value, setValue] = useState(amount?.toDisplay())
     const [maxLength, setMaxLength] = useState<number>()
     const textInputRef = useRef<TextInput>(null)
-    const [textInputMinimumLayout, setTextInputMinimumLayout] = useState<{
-      width: number
-      height: number
-    }>()
 
     const inputAmount = useMemo(() => {
       const sanitizedValue = value?.replace(/,/g, '')
@@ -114,7 +109,10 @@ export const TokenUnitInput = forwardRef<
 
           //setting maxLength to TextInput prevents flickering, see https://reactnative.dev/docs/textinput#value
           setMaxLength(
-            sanitizedFrontValue.length + '.'.length + token.maxDecimals
+            Math.min(
+              20,
+              sanitizedFrontValue.length + '.'.length + token.maxDecimals
+            )
           )
 
           const normalizedValue = normalizeValue(changedValue)
@@ -138,10 +136,6 @@ export const TokenUnitInput = forwardRef<
       textInputRef.current?.focus()
     }
 
-    const handleTextInputLayout = (event: LayoutChangeEvent): void => {
-      setTextInputMinimumLayout(event.nativeEvent.layout)
-    }
-
     useImperativeHandle(ref, () => ({
       setValue: (newValue: string) => setValue(newValue),
       focus: () => textInputRef.current?.focus(),
@@ -163,34 +157,23 @@ export const TokenUnitInput = forwardRef<
           ...sx
         }}>
         <TouchableWithoutFeedback onPress={handlePress}>
-          <View
-            sx={{
-              flexDirection: 'row',
-              alignItems: 'flex-start',
-              gap: 5
-            }}>
-            <Text
-              testID="token_amount_input_field"
-              onLayout={handleTextInputLayout}
-              style={[
-                styles.textInput,
-                { position: 'absolute', top: 0, opacity: 0 }
-              ]}>
-              {PLACEHOLDER}
-            </Text>
-            <TextInput
-              returnKeyType={returnKeyType}
+          <View style={{ paddingHorizontal: 16, width: '100%' }}>
+            <AutoSizeTextInput
               ref={textInputRef}
+              testID="token_amount_input_field"
               editable={editable}
-              style={[
-                styles.textInput,
-                {
-                  flexShrink: 1,
-                  color: colors.$textPrimary,
-                  textAlign: 'right',
-                  minWidth: textInputMinimumLayout?.width
-                }
-              ]}
+              placeholder={PLACEHOLDER}
+              value={value}
+              textAlign="right"
+              suffixFontSizeMultiplier={0.5}
+              onChangeText={handleValueChanged}
+              returnKeyType={returnKeyType}
+              maxLength={maxLength}
+              initialFontSize={60}
+              suffix={token.symbol}
+              suffixSx={{
+                marginBottom: 20
+              }}
               /**
                * keyboardType="numeric" causes noticeable input lag on Android.
                * Using inputMode="numeric" provides the same behavior without the performance issues.
@@ -198,26 +181,10 @@ export const TokenUnitInput = forwardRef<
                */
               keyboardType={Platform.OS === 'ios' ? 'numeric' : undefined}
               inputMode={Platform.OS === 'android' ? 'numeric' : undefined}
-              placeholder={PLACEHOLDER}
-              placeholderTextColor={alpha(colors.$textSecondary, 0.2)}
-              value={value}
-              onChangeText={handleValueChanged}
-              maxLength={maxLength}
-              selectionColor={colors.$textPrimary}
-              allowFontScaling={false}
-              testID="token_amount_input_field"
             />
-            <Text
-              sx={{
-                fontFamily: 'Aeonik-Medium',
-                fontSize: 24,
-                lineHeight: 24,
-                marginTop: SYMBOL_MARGIN_TOP
-              }}>
-              {token.symbol}
-            </Text>
           </View>
         </TouchableWithoutFeedback>
+
         {formatInCurrency && (
           <Text
             variant="subtitle2"
@@ -230,13 +197,4 @@ export const TokenUnitInput = forwardRef<
   }
 )
 
-const styles = StyleSheet.create({
-  textInput: {
-    fontFamily: 'Aeonik-Medium',
-    fontSize: 60
-  }
-})
-
-const PLACEHOLDER = '0.0'
-
-const SYMBOL_MARGIN_TOP = Platform.OS === 'ios' ? 14 : 20
+const PLACEHOLDER = '0.00'

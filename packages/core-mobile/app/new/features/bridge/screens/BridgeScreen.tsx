@@ -440,7 +440,7 @@ export const BridgeScreen = (): JSX.Element => {
           onBlur={() => setIsInputFocused(false)}
           onSelectToken={handleSelectToken}
           maximum={maximum}
-          inputTextColor={errorMessage ? colors.$textDanger : undefined}
+          valid={!errorMessage}
         />
       </Animated.View>
     )
