@@ -38,7 +38,11 @@ async function verifyElementText(
 }
 
 async function waitFor(ele: ChainablePromiseElement, timeout = 20000) {
-  await ele.waitForExist({ timeout })
+  try {
+    await ele.waitForExist({ timeout })
+  } catch (e) {
+    await ele.waitForDisplayed({ timeout })
+  }
 }
 
 async function waitForDisplayed(ele: ChainablePromiseElement, timeout = 20000) {
@@ -79,6 +83,7 @@ async function isSelected(ele: ChainablePromiseElement, targetBool = true) {
 async function isEnabled(ele: ChainablePromiseElement, targetBool = true) {
   const enabled = await ele.isEnabled()
   const eleSelector = await ele.selector
+  console.log(`${eleSelector} isEnabled? `, enabled)
   assert.equal(
     enabled,
     targetBool,
@@ -228,6 +233,16 @@ async function log() {
   console.log('...done')
 }
 
+async function verifyText(text: string, ele: ChainablePromiseElement) {
+  const eleText = await ele.getText()
+  const eleSelector = await ele.selector
+  assert.equal(
+    eleText,
+    text,
+    `${eleSelector} text is "${eleText}" !== "${text}"`
+  )
+}
+
 export const actions = {
   type,
   tapNumberPad,
@@ -251,5 +266,6 @@ export const actions = {
   clearText,
   scrollTo,
   log,
-  getAmount
+  getAmount,
+  verifyText
 }
