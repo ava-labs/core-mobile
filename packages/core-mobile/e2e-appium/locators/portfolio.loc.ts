@@ -55,6 +55,7 @@ export default {
   portfolioTokenItem: 'portfolio_token_item__',
   defiGridTitle: 'defi_grid_title',
   defiListTitle: 'defi_list_title',
+  collectibleListTitle: 'nft_list_title',
   defiGridItem: 'defi_grid_item',
   defiListItem: 'defi_list_item',
   defiGridBrowserBtn: 'defi_grid_browser_btn',
@@ -68,5 +69,22 @@ export default {
     'Discover a wide variety of apps, blockchains, wallets and explorers, built on the Avalanche ecosystem',
   defiEmptyScreenExploreBtn: 'Explore DeFi',
   aaveDefiUrl: 'https://app.aave.com/',
-  defiDetailBrowserBtn: 'defi_detail_browser_btn'
+  defiDetailBrowserBtn: 'defi_detail_browser_btn',
+  hideBtn: 'action_button__Hide',
+  resetFilterBtn: 'Reset filter',
+  noCollectiblesTitle: 'No collectibles found',
+  noCollectiblesDescription:
+    'Try changing the filter settings or reset the filter to see all assets.',
+  collectiblesHandler: 'collectibles_handler',
+  collectibleHero: 'collectible_hero',
+  nftCreatedByTitle: 'list_item__Created by',
+  nftStandardTitle: 'right_value__Standard',
+  nftChainTitle: 'right_value__Chain',
+  refreshBtn: 'refresh_btn',
+  setAsMyAvatarBtn: 'set_as_my_avatar_btn',
+  nftListItem: 'nft_list_item__',
+  managedNft: 'The Free Mint',
+  unreachable: 'unreachable',
+  untitledNft: 'Untitled',
+  untitledDisplayed: 'Untitled_displayed'
 }

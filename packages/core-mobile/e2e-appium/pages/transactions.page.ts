@@ -4,6 +4,7 @@ import { selectors } from '../helpers/selectors'
 import txLoc from '../locators/transactions.loc'
 import browserPage from './browser.page'
 import commonElsPage from './commonEls.page'
+import portfolioPage from './portfolio.page'
 
 class TransactionsPage {
   get sendButton() {
@@ -36,10 +37,6 @@ class TransactionsPage {
 
   get trendingDetailSwapBtn() {
     return selectors.getById(txLoc.trendingDetailSwapBtn)
-  }
-
-  get collectiblesHandler() {
-    return selectors.getById(txLoc.collectiblesHandler)
   }
 
   get swapVerticalIcon() {
@@ -339,7 +336,7 @@ class TransactionsPage {
 
   async sendNft(nftName = 'ABC', account = txLoc.accountTwo) {
     await this.tapNftByName(nftName)
-    await actions.dragAndDrop(this.collectiblesHandler, [0, -1000])
+    await portfolioPage.swipeUpForNftDetails()
     await this.tapSend()
     await this.dismissTransactionOnboarding()
     await this.typeSearchBar(account)

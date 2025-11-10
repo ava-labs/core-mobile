@@ -101,5 +101,7 @@ export default {
   usd: 'USD',
   hkd: 'HKD',
   usa: 'United States',
-  southKorea: 'South Korea'
+  southKorea: 'South Korea',
+  cChainId: '43114',
+  ethChainId: '1'
 }
