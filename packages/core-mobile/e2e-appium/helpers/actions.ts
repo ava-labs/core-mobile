@@ -83,7 +83,6 @@ async function isSelected(ele: ChainablePromiseElement, targetBool = true) {
 async function isEnabled(ele: ChainablePromiseElement, targetBool = true) {
   const enabled = await ele.isEnabled()
   const eleSelector = await ele.selector
-  console.log(`${eleSelector} isEnabled? `, enabled)
   assert.equal(
     enabled,
     targetBool,

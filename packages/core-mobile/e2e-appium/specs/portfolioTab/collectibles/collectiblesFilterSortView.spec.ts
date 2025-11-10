@@ -24,15 +24,15 @@ describe('Portfolio tab', () => {
   })
 
   it('Collectibles - filter collectibles by network', async () => {
+    // all networks
     await portfolioPage.verifyCollectiblesByNetwork()
 
+    // C-Chain
     await commonElsPage.filter(commonElsLoc.cChain)
-    console.log('Filtered by C-Chain')
     await portfolioPage.verifyCollectiblesByNetwork(commonElsLoc.cChainId)
-    console.log('Verified C-Chain')
+
+    // Ethereum
     await commonElsPage.filter(commonElsLoc.ethereum)
-    console.log('Filtered by Ethereum')
     await portfolioPage.verifyCollectiblesByNetwork(commonElsLoc.ethChainId)
-    console.log('Verified Ethereum')
   })
 })
