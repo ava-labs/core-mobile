@@ -60,4 +60,5 @@ export type {
   TokenAmount,
   TokenAmountInputRef
 } from './TokenAmountInput/TokenAmountInput'
+export * from './AutoSizeTextInput/AutoSizeTextInput'
 export * from './LoadingContent/LoadingContent'

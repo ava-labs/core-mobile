@@ -370,7 +370,6 @@ export const useSelectAmount = ({
           sx={{
             flexDirection: 'row',
             justifyContent: 'center',
-            marginBottom: 8,
             color:
               errorMessage === undefined
                 ? alpha(colors.$textPrimary, 0.9)

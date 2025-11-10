@@ -42,9 +42,9 @@ export const TokenInputWidget = ({
   sx,
   disabled,
   editable = true,
-  inputTextColor,
   isLoadingAmount = false,
-  autoFocus
+  autoFocus,
+  valid = true
 }: {
   title: string
   amount?: bigint
@@ -61,9 +61,9 @@ export const TokenInputWidget = ({
   sx?: SxProp
   disabled?: boolean
   editable?: boolean
-  inputTextColor?: string
   isLoadingAmount?: boolean
   autoFocus?: boolean
+  valid?: boolean
   // eslint-disable-next-line sonarjs/cognitive-complexity
 }): JSX.Element => {
   const {
@@ -177,7 +177,12 @@ export const TokenInputWidget = ({
             alignItems: 'center',
             gap: 24
           }}>
-          <View sx={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+          <View
+            sx={{
+              flexDirection: 'row',
+              alignItems: 'flex-start',
+              gap: 12
+            }}>
             {token && network && (
               <LogoWithNetwork
                 token={token}
@@ -185,13 +190,11 @@ export const TokenInputWidget = ({
                 outerBorderColor={colors.$surfaceSecondary}
               />
             )}
-            <View sx={{ flex: 1 }}>
+            <View sx={{ flex: 1, justifyContent: 'space-between' }}>
               <View
                 sx={{
                   flexDirection: 'row',
-                  alignItems: 'center',
-                  gap: 10,
-                  justifyContent: 'space-between'
+                  gap: 8
                 }}>
                 <TouchableOpacity
                   accessible={true}
@@ -224,7 +227,9 @@ export const TokenInputWidget = ({
                   <View
                     sx={{
                       alignItems: 'flex-end',
-                      flex: 1
+                      justifyContent: 'center',
+                      flex: 1,
+                      minHeight: 50
                     }}
                     pointerEvents={token === undefined ? 'none' : 'auto'}>
                     {editable ? (
@@ -236,31 +241,22 @@ export const TokenInputWidget = ({
                         autoFocus={autoFocus}
                         editable={editable}
                         denomination={token?.decimals ?? 0}
-                        style={{
-                          fontFamily: 'Aeonik-Medium',
-                          fontSize: 42,
-                          minWidth: 100,
-                          width: '100%',
-                          textAlign: 'right',
-                          marginRight: Platform.OS === 'android' ? -4 : 0,
-                          color:
-                            inputTextColor ??
-                            (editable
-                              ? colors.$textPrimary
-                              : colors.$textSecondary)
-                        }}
+                        textAlign="right"
+                        valid={valid}
                         value={amount}
                         onChange={handleAmountChange}
                         onFocus={handleFocus}
                         onBlur={handleBlur}
                         placeholder="0.00"
+                        style={{
+                          marginBottom: 8
+                        }}
                       />
                     ) : (
                       <View
                         style={{
-                          height: 50,
                           width: '100%',
-                          justifyContent: 'flex-end'
+                          marginBottom: Platform.OS === 'ios' ? 12 : 0
                         }}>
                         <Text
                           adjustsFontSizeToFit
@@ -269,15 +265,15 @@ export const TokenInputWidget = ({
                             fontFamily: 'Aeonik-Medium',
                             fontSize: 42,
                             lineHeight: 42,
-                            minHeight: 42,
                             width: '100%',
                             textAlign: 'right',
                             color: !amount
                               ? alpha(colors.$textSecondary, 0.2)
-                              : inputTextColor ??
-                                (editable
-                                  ? colors.$textPrimary
-                                  : colors.$textSecondary)
+                              : !valid
+                              ? colors.$textDanger
+                              : editable
+                              ? colors.$textPrimary
+                              : colors.$textSecondary
                           }}>
                           {nonEditableInputValue}
                         </Text>
@@ -292,7 +288,7 @@ export const TokenInputWidget = ({
                   alignItems: 'center',
                   gap: 24,
                   justifyContent: 'space-between',
-                  marginTop: Platform.OS === 'android' && editable ? -14 : -4
+                  marginTop: -12
                 }}>
                 <View>
                   {token &&
@@ -315,15 +311,20 @@ export const TokenInputWidget = ({
                   sx={{
                     flexDirection: 'row',
                     alignItems: 'center',
-                    gap: 6,
                     flexShrink: 1
                   }}>
-                  {isLoadingAmount && <ActivityIndicator size="small" />}
+                  {isLoadingAmount && (
+                    <View>
+                      <View style={{ position: 'absolute', right: 6, top: -8 }}>
+                        <ActivityIndicator size="small" />
+                      </View>
+                    </View>
+                  )}
                   <Text
                     variant="subtitle2"
                     numberOfLines={1}
                     sx={{
-                      color: inputTextColor ?? '$textSecondary'
+                      color: valid ? colors.$textSecondary : colors.$textDanger
                     }}>
                     {formatInCurrency(amount)}
                   </Text>
