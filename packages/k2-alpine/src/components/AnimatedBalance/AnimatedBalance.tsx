@@ -66,6 +66,7 @@ export const AnimatedBalance = ({
         <Text variant={variant} sx={balanceSx} numberOfLines={1}>
           {balance}
         </Text>
+
         {currency && (
           <Text variant={variant} sx={currencySx}>
             {currency}

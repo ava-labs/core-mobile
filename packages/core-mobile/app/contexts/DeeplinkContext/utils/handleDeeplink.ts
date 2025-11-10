@@ -11,6 +11,11 @@ import { dismissMeldStack } from 'features/meld/utils'
 import { offrampSend } from 'store/meld/slice'
 import { closeInAppBrowser } from 'utils/openInAppBrowser'
 import { ACTIONS, DeepLink, PROTOCOLS } from '../types'
+import { DEEPLINK_WHITELIST } from '../consts'
+
+const lowercasedDeeplinkWhitelist = DEEPLINK_WHITELIST.map(url =>
+  url.toLowerCase()
+)
 
 export const handleDeeplink = ({
   deeplink,
@@ -74,6 +79,11 @@ export const handleDeeplink = ({
         closeInAppBrowser()
         dismissMeldStack(action, searchParams)
       } else {
+        const baseUrl = deeplink.url.split('?')[0]?.toLowerCase()
+        if (baseUrl && !lowercasedDeeplinkWhitelist.includes(baseUrl)) {
+          Logger.warn(`${deeplink.url} is not allowed to be opened in the app`)
+          return
+        }
         const path = deeplink.url.split(':/')[1]
         path && navigateFromDeeplinkUrl(path)
       }
