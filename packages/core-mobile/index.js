@@ -1,7 +1,3 @@
-//import './profiler'
-import { observe } from './PerformanceTracer'
-observe();
-
 import { enableFreeze } from 'react-native-screens'
 
 enableFreeze(true)

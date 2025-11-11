@@ -451,7 +451,6 @@ __metadata:
     "@react-native-community/cli": 18.0.0
     "@react-native-community/cli-platform-android": 18.0.0
     "@react-native-community/cli-platform-ios": 18.0.0
-    "@react-native-community/cli-tools": ^20.0.2
     "@react-native-community/datetimepicker": 8.4.1
     "@react-native-community/netinfo": 11.4.1
     "@react-native-community/slider": 4.5.6
@@ -626,7 +625,6 @@ __metadata:
     react-native-os: 1.2.6
     react-native-pager-view: 6.7.1
     react-native-passkey: 3.1.0
-    react-native-performance: ^6.0.0
     react-native-permissions: 4.1.5
     react-native-popable: 0.4.3
     react-native-popover-view: 6.1.0
@@ -12608,24 +12606,6 @@ __metadata:
     prompts: ^2.4.2
     semver: ^7.5.2
   checksum: 96a941c4b62da75dccd2fb09dc859dbc724e46be7ca2a9061a2235d58bb2a2c1d6040b203efcdc03dd0c8dbe9306b47a903073abc9fe2f300dcce9f8cd4afd84
-  languageName: node
-  linkType: hard
-
-"@react-native-community/cli-tools@npm:^20.0.2":
-  version: 20.0.2
-  resolution: "@react-native-community/cli-tools@npm:20.0.2"
-  dependencies:
-    "@vscode/sudo-prompt": ^9.0.0
-    appdirsjs: ^1.2.4
-    chalk: ^4.1.2
-    execa: ^5.0.0
-    find-up: ^5.0.0
-    launch-editor: ^2.9.1
-    mime: ^2.4.1
-    ora: ^5.4.1
-    prompts: ^2.4.2
-    semver: ^7.5.2
-  checksum: cc6d765e1778b982ee173b757a9e30f47173c185484321d4909ecf0dcf6441b7eb4a8d7ede44f1b3e8d3052ce2b97247ea4f2171eb523a5289f795220f7d6a4c
   languageName: node
   linkType: hard
 
@@ -36104,15 +36084,6 @@ __metadata:
     react: "*"
     react-native: "*"
   checksum: 24e39648eae2162bf88c258f421c74a52dea243e9943f5fb89a7a5adc1b201cad61b687d3d0c56c5363fedc8339f6d4e1e160c8076b8a221464514db6b7a2717
-  languageName: node
-  linkType: hard
-
-"react-native-performance@npm:^6.0.0":
-  version: 6.0.0
-  resolution: "react-native-performance@npm:6.0.0"
-  peerDependencies:
-    react-native: "*"
-  checksum: b73c648b1982e2a2f38b94a45c6caeaf089d93fb7a563bd5ec2d9f07e8c5e1ba7f44edc78778d78e0946a4b0bdd78d075b35584c28856b3c7c1b8042344e3cfc
   languageName: node
   linkType: hard
 

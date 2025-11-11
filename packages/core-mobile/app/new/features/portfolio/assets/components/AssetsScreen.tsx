@@ -27,7 +27,6 @@ import { useIsAllBalancesErrorForAccount } from 'features/portfolio/hooks/useIsA
 import { useAssetsFilterAndSort } from '../hooks/useAssetsFilterAndSort'
 import { EmptyState } from './EmptyState'
 import { TokenListItem } from './TokenListItem'
-import { markTIIRender } from '../../../../../../PerformanceTracer'
 
 interface Props {
   containerStyle: ViewStyle
@@ -89,8 +88,6 @@ const AssetsScreen: FC<Props> = ({
   const renderItem = useCallback(
     (item: LocalTokenWithBalance, index: number): JSX.Element => {
       const isLeftColumn = index % numColumns === 0
-
-      markTIIRender();
 
       const style = isGridView
         ? {

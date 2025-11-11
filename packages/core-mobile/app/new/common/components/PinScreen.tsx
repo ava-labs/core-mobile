@@ -38,7 +38,6 @@ import BiometricsSDK, { BiometricType } from 'utils/BiometricsSDK'
 import Logger from 'utils/Logger'
 import { commonStorage } from 'utils/mmkv'
 import { StorageKey } from 'resources/Constants'
-import { markAuthIsDone } from '../../../../PerformanceTracer'
 
 export const PinScreen = ({
   onForgotPin,
@@ -80,7 +79,6 @@ export const PinScreen = ({
   }
 
   const handleLoginSuccess = useCallback(() => {
-    markAuthIsDone()
     handleStartLoading()
     pinInputRef.current?.blur()
     isProcessing.value = true

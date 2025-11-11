@@ -17,7 +17,6 @@ import { SubTextNumber } from 'common/components/SubTextNumber'
 import { UNKNOWN_AMOUNT } from 'consts/amount'
 import { TokenListViewProps } from '../types'
 import { LogoWithNetwork } from './LogoWithNetwork'
-import { markAppReady } from '../../../../../../PerformanceTracer'
 
 export const TokenListView = ({
   token,
@@ -54,7 +53,7 @@ export const TokenListView = ({
   }
 
   return (
-    <View onLayout={markAppReady}>
+    <View>
       <AnimatedPressable onPress={onPress}>
         <View
           sx={{

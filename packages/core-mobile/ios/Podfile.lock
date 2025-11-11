@@ -2209,30 +2209,6 @@ PODS:
     - React-Codegen
     - React-Core
     - ReactCommon/turbomodule/core
-  - react-native-performance (6.0.0):
-    - DoubleConversion
-    - glog
-    - hermes-engine
-    - RCT-Folly (= 2024.11.18.00)
-    - RCTRequired
-    - RCTTypeSafety
-    - React-Core
-    - React-debug
-    - React-Fabric
-    - React-featureflags
-    - React-graphics
-    - React-hermes
-    - React-ImageManager
-    - React-jsi
-    - React-NativeModulesApple
-    - React-RCTFabric
-    - React-renderercss
-    - React-rendererdebug
-    - React-utils
-    - ReactCodegen
-    - ReactCommon/turbomodule/bridging
-    - ReactCommon/turbomodule/core
-    - Yoga
   - react-native-quick-base64 (2.1.2):
     - DoubleConversion
     - glog
@@ -3537,7 +3513,6 @@ DEPENDENCIES:
   - "react-native-netinfo (from `../node_modules/@react-native-community/netinfo`)"
   - react-native-pager-view (from `../node_modules/react-native-pager-view`)
   - react-native-passkey (from `../node_modules/react-native-passkey`)
-  - react-native-performance (from `../node_modules/react-native-performance`)
   - react-native-quick-base64 (from `../node_modules/react-native-quick-base64`)
   - react-native-quick-crypto (from `../node_modules/react-native-quick-crypto`)
   - react-native-restart (from `../node_modules/react-native-restart`)
@@ -3831,8 +3806,6 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-pager-view"
   react-native-passkey:
     :path: "../node_modules/react-native-passkey"
-  react-native-performance:
-    :path: "../node_modules/react-native-performance"
   react-native-quick-base64:
     :path: "../node_modules/react-native-quick-base64"
   react-native-quick-crypto:
@@ -4100,7 +4073,6 @@ SPEC CHECKSUMS:
   react-native-netinfo: cec9c4e86083cb5b6aba0e0711f563e2fbbff187
   react-native-pager-view: f238ed7fb53458bd03366944a33686f067c83e9a
   react-native-passkey: 3aac247c18127443ef4a002b59d8e12dc7e99f2e
-  react-native-performance: 83bf66f3ada75bb7b0cd69735ac7d51e8f3ca81d
   react-native-quick-base64: 651d972291fd5d9902869636a1b3c46820324490
   react-native-quick-crypto: 71b622aa0a231ac068759f5eef37982ad5eae58c
   react-native-restart: 0bc732f4461709022a742bb29bcccf6bbc5b4863

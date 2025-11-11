@@ -3,7 +3,6 @@ import React, { useCallback } from 'react'
 import { useRouter } from 'expo-router'
 import BiometricsSDK from 'utils/BiometricsSDK'
 import { PinScreen } from '../common/components/PinScreen'
-import { markTTIFinal } from '../../../PerformanceTracer'
 
 const LoginWithPinOrBiometry = (): JSX.Element => {
   const router = useRouter()
@@ -19,7 +18,6 @@ const LoginWithPinOrBiometry = (): JSX.Element => {
 
   return (
     <ScrollScreen
-      onLayout={() => {markTTIFinal()}}
       shouldAvoidKeyboard
       hideHeaderBackground
       scrollEnabled={false}
